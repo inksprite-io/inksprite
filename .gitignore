@@ -1,0 +1,28 @@
+# Tests
+*coverage/
+
+# Node modules
+*node_modules/
+
+# TTS Prototype repo
+inksprite-tts/
+
+# Editor
+.vscode/
+
+# Material that stays on this machine: rulebooks and settings condensed from
+# published games, and anything else that is not ours to redistribute. The
+# README says what goes there.
+local/*
+!local/README.md
+
+# Claude Code — personal settings and transient worktree checkouts.
+# Deliberately not the whole directory: a shared .claude/settings.json
+# should stay committable.
+.claude/settings.local.json
+.claude/worktrees/
+# API keys the harnesses read (see app/scripts/endpoints.example.json).
+.claude/*-key
+
+# Playwright MCP output (snapshots, screenshots, evaluate results).
+.playwright-mcp/

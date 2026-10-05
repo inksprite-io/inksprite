@@ -1,0 +1,13 @@
+{
+  "phrases": {
+    "second courier": "(second courier|a day ahead|another courier|courier (passed|came|went) through|one passed through)",
+    "lighter than coin": "lighter than (a case of )?coin",
+    "nineteen days": "nineteen days",
+    "ledger gap": "(gap|left unwritten|stopped writing|missing (entries|line)|blank (line|space|entry))",
+    "brother": "\\bbrother\\b"
+  },
+  "flags": {
+    "result narrated": "\\bexceptional\\b"
+  },
+  "firstTurn": true
+}

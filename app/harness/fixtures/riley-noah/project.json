@@ -1,0 +1,22 @@
+{
+  "title": "Heat Wave",
+  "summary": "Riley and Noah, three days into a heat wave, and the argument about March that neither of them will start.",
+  "documents": [
+    {
+      "path": "Characters/Riley",
+      "file": "riley.md",
+      "summary": "Riley: how she escalates, what she never does, how she sounds."
+    },
+    {
+      "path": "Characters/Noah",
+      "file": "noah.md",
+      "summary": "Noah: how he waits a fight out, what he does with his hands, how he sounds."
+    },
+    {
+      "path": "Places/Noah's apartment",
+      "file": "apartment.md",
+      "summary": "The upper-floor apartment in the heat wave: what the window unit reaches, what is in reach of the desk."
+    },
+    { "path": "Chapters", "folder": true, "ordered": true }
+  ]
+}

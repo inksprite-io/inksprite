@@ -1,0 +1,46 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      # Bound to localhost by default so the dev server is not reachable from
+      # the LAN. To try the app on a phone, open it to every interface for
+      # that run (a single LAN address would work too, but then localhost,
+      # where the desktop browser's data lives, stops answering):
+      #   DEV_BIND=0.0.0.0 docker compose up -d app
+      - "${DEV_BIND:-127.0.0.1}:8002:8002"
+    volumes:
+      # Mount the app source code for hot-reloading
+      - ./app/src:/app/src
+      - ./app/public:/app/public
+      - ./app/index.html:/app/index.html
+      - ./app/vite.config.js:/app/vite.config.js
+      - ./app/package.json:/app/package.json
+      - ./app/package-lock.json:/app/package-lock.json
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
+
+  docs:
+    image: node:24-alpine
+    working_dir: /docs
+    ports:
+      # Bind to localhost only so the docs server is not reachable from the LAN
+      - "127.0.0.1:4321:4321"
+    volumes:
+      # Mount the docs source code for hot-reloading
+      - ./docs:/docs
+      # Prevent node_modules from being overwritten
+      - docs_node_modules:/docs/node_modules
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
+
+volumes:
+  docs_node_modules:

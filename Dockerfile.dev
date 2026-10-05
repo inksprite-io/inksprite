@@ -1,0 +1,16 @@
+FROM node:24-alpine
+
+WORKDIR /app
+
+# Copy package files first for better caching; .npmrc disables install scripts
+COPY app/package*.json app/.npmrc ./
+
+# Install all dependencies including devDependencies
+RUN npm ci --include=dev
+
+# Expose the Vite dev server port
+EXPOSE 8002
+
+# Bind to all interfaces inside the container so the published port can reach it;
+# the host-side binding is restricted to localhost in docker-compose.yml
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

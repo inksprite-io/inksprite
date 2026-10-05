@@ -1,0 +1,118 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { flushPromises, mount } from '@vue/test-utils'
+import { setActivePinia, createPinia } from 'pinia'
+import PrimeVue from 'primevue/config'
+import ChatProfileMenu from '@/components/writer/chats/ChatProfileMenu.vue'
+import { clearChatsInstances, useChats } from '@/composables/useChats'
+import { useChatsStore } from '@/stores/chatsStore'
+import { useProfiles } from '@/composables/useProfiles'
+import { ADVENTURE_PROFILE_ID, CHAT_PROFILE_ID, ROLEPLAY_PROFILE_ID } from '@/ai/profiles/index.js'
+
+vi.mock('@/stores/db', () => ({ default: {} }))
+vi.mock('@/stores/syncStore', () => ({
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+}))
+
+const mountMenu = chatId =>
+  mount(ChatProfileMenu, {
+    props: { storyId: 'story_1', chatId },
+    attachTo: document.body,
+    global: { plugins: [PrimeVue], directives: { tooltip: {} } },
+  })
+
+/** Open the menu and pick an entry by what it says. */
+const pick = async (wrapper, label) => {
+  await wrapper.find('[data-chat-profile]').trigger('click')
+  await flushPromises()
+  const entry = [...document.body.querySelectorAll('[role="menuitem"]')].find(
+    item => item.textContent.trim() === label
+  )
+  entry.querySelector('a').click()
+  await flushPromises()
+}
+
+/** Open the menu and right-click an entry by what it says. */
+const rightClick = async (wrapper, label) => {
+  await wrapper.find('[data-chat-profile]').trigger('click')
+  await flushPromises()
+  const entry = [...document.body.querySelectorAll('[role="menuitem"]')].find(
+    item => item.textContent.trim() === label
+  )
+  entry
+    .querySelector('a')
+    .dispatchEvent(new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }))
+  await flushPromises()
+}
+
+describe('ChatProfileMenu', () => {
+  /** @type {ReturnType<typeof useChats>} */
+  let chats
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    clearChatsInstances()
+    document.body.innerHTML = ''
+    chats = useChats('story_1')
+  })
+
+  it('names the profile the chat is on', () => {
+    const wrapper = mountMenu(chats.unstartedChat.value.id)
+    expect(wrapper.find('[data-chat-profile]').text()).toBe('Default')
+  })
+
+  it('puts the unstarted chat on another profile without saving anything', async () => {
+    const wrapper = mountMenu(chats.unstartedChat.value.id)
+
+    await pick(wrapper, 'Adventure')
+
+    expect(chats.unstartedChat.value.profileId).toBe(ADVENTURE_PROFILE_ID)
+    expect(useChatsStore().getChatsForStory('story_1')).toHaveLength(0)
+    expect(wrapper.find('[data-chat-profile]').text()).toBe('Adventure')
+  })
+
+  it('replaces a started chat’s settings with the profile’s, even ones it does not set', async () => {
+    const chat = chats.createChat(undefined, ROLEPLAY_PROFILE_ID)
+    chats.updateChat(chat.id, { projectContextEnabled: false })
+    const wrapper = mountMenu(chat.id)
+
+    await pick(wrapper, 'Adventure')
+
+    const now = chats.getChatById(chat.id)
+    expect(now.profileId).toBe(ADVENTURE_PROFILE_ID)
+    expect(now.disabledToolGroups).toBeUndefined()
+    expect(now.rules).toBeUndefined()
+    expect(now.projectContextEnabled).toBeUndefined()
+  })
+
+  it('has no way into the settings of its own, the cog being there', async () => {
+    const wrapper = mountMenu(chats.unstartedChat.value.id)
+    await wrapper.find('[data-chat-profile]').trigger('click')
+    await flushPromises()
+    const labels = [...document.body.querySelectorAll('[role="menuitem"]')].map(item =>
+      item.textContent.trim()
+    )
+    expect(labels).toEqual(['Default', 'Adventure', 'Roleplay'])
+  })
+
+  it('deletes one of the writer’s own from its right-click menu, moving the chat off it', async () => {
+    const mine = useProfiles().saveProfile('Mine', { prompt: 'Be terse.' })
+    const chat = chats.createChat(undefined, mine.id)
+    const wrapper = mountMenu(chat.id)
+
+    await rightClick(wrapper, 'Mine')
+    const remove = [...document.body.querySelectorAll('.p-contextmenu [role="menuitem"]')].find(
+      item => item.textContent.trim() === 'Delete profile'
+    )
+    remove.querySelector('a').click()
+    await flushPromises()
+
+    expect(useProfiles().getProfile(mine.id)).toBeNull()
+    expect(chats.getChatById(chat.id).profileId).toBe(CHAT_PROFILE_ID)
+  })
+
+  it('offers no right-click menu on a built-in', async () => {
+    const wrapper = mountMenu(chats.unstartedChat.value.id)
+    await rightClick(wrapper, 'Adventure')
+    expect(document.body.querySelector('.p-contextmenu')).toBeNull()
+  })
+})

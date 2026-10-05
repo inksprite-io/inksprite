@@ -1,0 +1,1169 @@
+{
+  "title": "Findable",
+  "summary": "Search over a writer's own notes, designed for a note-taking app that runs on a laptop with no server. Papers read for it, meeting notes, the design being written, and the drafts it replaced.",
+  "documents": [
+    {
+      "path": "Papers/Dense versus sparse retrieval on personal corpora",
+      "file": "../findable/papers/dense-sparse.md",
+      "summary": "Okonkwo et al. 2024. Dense, BM25 and hybrid retrieval compared on small personal corpora; hybrid wins on long queries, sparse on short keyword ones."
+    },
+    {
+      "path": "Papers/Cross-encoder reranking at the edge",
+      "file": "../findable/papers/reranking.md",
+      "summary": "Lindqvist et al. 2025. A distilled 22M cross-encoder reranks the top 50 on a laptop CPU; what it gains and what it costs."
+    },
+    {
+      "path": "Papers/Hard negatives in contrastive training",
+      "file": "../findable/papers/hard-negatives.md",
+      "summary": "Sato and Brennan 2023. Mining hard negatives for a retriever: the gain, and the point past which mining more of them hurts."
+    },
+    {
+      "path": "Papers/Chunking strategies for long documents",
+      "file": "../findable/papers/chunking.md",
+      "summary": "Ferreira et al. 2024. Fixed windows, sentence windows and late chunking compared for retrieval over long documents."
+    },
+    {
+      "path": "Papers/Query rewriting with small models",
+      "file": "../findable/papers/query-rewriting.md",
+      "summary": "Adeyemi et al. 2025. A small local model rewrites the query before retrieval; helps ambiguous queries, hurts exact phrases."
+    },
+    {
+      "path": "Papers/Evaluating retrieval without labels",
+      "file": "../findable/papers/evaluation.md",
+      "summary": "Zhou et al. 2024. Using a language model as the relevance judge when there are no human labels, and where it goes wrong."
+    },
+    {
+      "path": "Notes/Meeting 2026-08-12",
+      "file": "../findable/notes/meeting-08-12.md",
+      "summary": "Kickoff. Scope, the no-server rule, the first latency budget."
+    },
+    {
+      "path": "Notes/Meeting 2026-08-26",
+      "file": "../findable/notes/meeting-08-26.md",
+      "summary": "Hybrid retrieval chosen; reranking deferred until the Lindqvist numbers are in; index size capped."
+    },
+    {
+      "path": "Notes/Meeting 2026-09-09",
+      "file": "../findable/notes/meeting-09-09.md",
+      "summary": "Latency budget revised for search-as-you-type; conditions for allowing a reranker."
+    },
+    {
+      "path": "Notes/Decisions log",
+      "file": "../findable/notes/decisions.md"
+    },
+    {
+      "path": "Notes/Glossary",
+      "file": "../findable/notes/glossary.md"
+    },
+    {
+      "path": "Notes/Open questions",
+      "file": "../findable/notes/open-questions.md"
+    },
+    {
+      "path": "Notes/Interview with Priya",
+      "file": "../findable/notes/interview-priya.md",
+      "summary": "A user interview: what a heavy note-taker actually searches for."
+    },
+    {
+      "path": "Design/Retrieval design",
+      "file": "../findable/design/retrieval-design.md",
+      "summary": "The design being written: goals, indexing, querying, ranking, latency, evaluation."
+    },
+    {
+      "path": "Design/Architecture overview",
+      "file": "../findable/design/architecture.md",
+      "summary": "The pieces and how they connect: indexer, store, query pipeline, evaluator."
+    },
+    {
+      "path": "Design/API sketch",
+      "file": "../findable/design/api-sketch.md"
+    },
+    {
+      "path": "Archive/Retrieval design v0",
+      "file": "../findable/archive/design-v0.md"
+    },
+    {
+      "path": "Archive/Embedding vendor comparison",
+      "file": "../findable/archive/vendors.md"
+    },
+    {
+      "path": "Archive/Reranker spike",
+      "file": "../findable/archive/reranker-spike.md"
+    },
+    {
+      "path": "Notes/Standups/2026-08-14",
+      "file": "../findable/standups/2026-08-14.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-08-17",
+      "file": "../findable/standups/2026-08-17.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines."
+    },
+    {
+      "path": "Notes/Standups/2026-08-19",
+      "file": "../findable/standups/2026-08-19.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-08-21",
+      "file": "../findable/standups/2026-08-21.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-08-24",
+      "file": "../findable/standups/2026-08-24.md",
+      "summary": "Standup: one line each from Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-08-26",
+      "file": "../findable/standups/2026-08-26.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-08-28",
+      "file": "../findable/standups/2026-08-28.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-08-31",
+      "file": "../findable/standups/2026-08-31.md",
+      "summary": "Standup: one line each from Dana, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-02",
+      "file": "../findable/standups/2026-09-02.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-04",
+      "file": "../findable/standups/2026-09-04.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-07",
+      "file": "../findable/standups/2026-09-07.md",
+      "summary": "Standup: one line each from Dana, Marcus, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-09",
+      "file": "../findable/standups/2026-09-09.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-11",
+      "file": "../findable/standups/2026-09-11.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-14",
+      "file": "../findable/standups/2026-09-14.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines."
+    },
+    {
+      "path": "Notes/Standups/2026-09-16",
+      "file": "../findable/standups/2026-09-16.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-18",
+      "file": "../findable/standups/2026-09-18.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-21",
+      "file": "../findable/standups/2026-09-21.md",
+      "summary": "Standup: one line each from Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-23",
+      "file": "../findable/standups/2026-09-23.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-25",
+      "file": "../findable/standups/2026-09-25.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Journal/2026-03-01",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-02",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-03",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-04",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-05",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-06",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-07",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-08",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-09",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-10",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-11",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-12",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-13",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-14",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-15",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-16",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-17",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-18",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-19",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-20",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-21",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-22",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-23",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-24",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-25",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-26",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-27",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-28",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-29",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-30",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-03-31",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-01",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-02",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-03",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-04",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-05",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-06",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-07",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-08",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-09",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-10",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-11",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-12",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-13",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-14",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-15",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-16",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-17",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-18",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-19",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-20",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-21",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-22",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-23",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-24",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-25",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-26",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-27",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-28",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-29",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-04-30",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-01",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-02",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-03",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-04",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-05",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-06",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-07",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-08",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-09",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-10",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-11",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-12",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-13",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-14",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-15",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-16",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-17",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-18",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-19",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-20",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-21",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-22",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-23",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-24",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-25",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-26",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-27",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-28",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-29",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-30",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-05-31",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-01",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-02",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-03",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-04",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-05",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-06",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-07",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-08",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-09",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-10",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-11",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-12",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-13",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-14",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-15",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-16",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-17",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-18",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-19",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-20",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-21",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-22",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-23",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-24",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-25",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-26",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-27",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-28",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-29",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-06-30",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-01",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-02",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-03",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-04",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-05",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-06",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-07",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-08",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-09",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-10",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-11",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-12",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-13",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-14",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-15",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-16",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-17",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-18",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-19",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-20",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-21",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-22",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-23",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-24",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-25",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-26",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-27",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-28",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-29",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-30",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-07-31",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-01",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-02",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-03",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-04",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-05",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-06",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-07",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-08",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-09",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-10",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-11",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-12",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-13",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-14",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-15",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-16",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-17",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-18",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-19",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-20",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-21",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-22",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-23",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-24",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-25",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-26",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-27",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-28",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-29",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-30",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-08-31",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-01",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-02",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-03",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-04",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-05",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-06",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-07",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-08",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-09",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-10",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-11",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-12",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-13",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-14",
+      "content": "Found the cache warming bug: the index loaded before the model, so the first query paid for both. Fixed by loading the model first; the first query went from 1,400 ms to 210 ms."
+    },
+    {
+      "path": "Notes/Journal/2026-09-15",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-16",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-17",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-18",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-19",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-20",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-21",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-22",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-23",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-24",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-25",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-26",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-27",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-28",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-29",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-09-30",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-01",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-02",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-03",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-04",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-05",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-06",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-07",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-08",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-09",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-10",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-11",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-12",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-13",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-14",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-15",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-16",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-17",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-18",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-19",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-20",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-21",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-22",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-23",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-24",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-25",
+      "content": "Spent most of the day on the tokenizer for code blocks in notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-26",
+      "content": "Spent most of the day on the settings screen for the index cap. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-27",
+      "content": "Spent most of the day on profiling the BM25 path on long notes. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-28",
+      "content": "Spent most of the day on the sync conflict test cases. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-29",
+      "content": "Spent most of the day on the onboarding copy for search. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-30",
+      "content": "Spent most of the day on the fusion weights on the regression set. Nothing worth writing up yet."
+    },
+    {
+      "path": "Notes/Journal/2026-10-31",
+      "content": "Spent most of the day on the crash report from the beta group. Nothing worth writing up yet."
+    }
+  ]
+}

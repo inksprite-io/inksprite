@@ -1,0 +1,21 @@
+{
+  "openrouter": {
+    "type": "openrouter",
+    "apiKeyFile": "../.claude/openrouter-key",
+    "model": "google/gemma-4-31b-it",
+    "routing": {
+      "quantizations": ["int8", "fp8", "mxfp8", "fp16", "bf16", "fp32"]
+    }
+  },
+  "lmstudio": {
+    "endpoint": "http://host.docker.internal:1234/v1/",
+    "apiKeyFile": "../.claude/lmstudio-key",
+    "model": "gemma"
+  },
+  "runpod": {
+    "type": "llamacpp",
+    "endpoint": "https://YOUR-POD-8000.proxy.runpod.net/v1/",
+    "apiKey": "your-key-here",
+    "model": "gemma"
+  }
+}

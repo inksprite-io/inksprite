@@ -1,0 +1,54 @@
+{
+  "fixture": "findable",
+  "messages": [
+    {
+      "text": "I'm working on the retrieval design. First, what do the papers say about reranking: does it pay for itself, and what does it cost on a laptop?",
+      "mentions": ["6\\.2", "38 ?ms"],
+      "reads": ["Papers/Cross-encoder reranking at the edge"]
+    },
+    {
+      "text": "And the recall numbers for dense versus sparse versus hybrid on long queries?",
+      "mentions": ["0\\.71", "0\\.63", "0\\.78"],
+      "reads": ["Papers/Dense versus sparse retrieval on personal corpora"]
+    },
+    {
+      "text": "Add a Reranking section to the design, right after Ranking, replacing the TODO there. Say what we'd use and what it costs, and cite the two papers by title. Keep it under 150 words.",
+      "document": {
+        "path": "Design/Retrieval design",
+        "contains": ["## Reranking", "22M", "16 ?ms"]
+      },
+      "notContains": { "path": "Design/Retrieval design", "patterns": ["TODO: reranking"] }
+    },
+    {
+      "text": "What's our latency budget now? The meeting notes changed it at some point.",
+      "mentions": ["150 ?ms"]
+    },
+    {
+      "text": "Fix the Latency section of the design so it matches that.",
+      "document": { "path": "Design/Retrieval design", "contains": ["150 ?ms"] },
+      "notContains": { "path": "Design/Retrieval design", "patterns": ["budget is 200 ms"] }
+    },
+    {
+      "text": "Did Marcus ever measure the reranker end to end on the low-spec laptop? What did he get?",
+      "mentions": ["17 ?ms", "118 ?ms"],
+      "finds": ["Notes/Standups/2026-09-16"]
+    },
+    {
+      "text": "Is there anything in the Archive folder that contradicts the current design? Just list the contradictions, one line each.",
+      "mentions": ["cloud|hosted|API", "500 ?ms", "190 ?ms|too slow"],
+      "reads": [
+        "Archive/Retrieval design v0",
+        "Archive/Embedding vendor comparison",
+        "Archive/Reranker spike"
+      ]
+    },
+    {
+      "text": "Rewrite the design doc's summary so it mentions reranking and the new budget."
+    },
+    {
+      "text": "One more thing. How does our glossary define 'hard negative', and does the Sato and Brennan paper use it the same way?",
+      "mentions": ["same note", "ranks? (it )?above|ranked above|above the positive"],
+      "reads": ["Notes/Glossary", "Papers/Hard negatives in contrastive training"]
+    }
+  ]
+}

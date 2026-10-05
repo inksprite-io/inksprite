@@ -1,0 +1,54 @@
+{
+  "fixture": "findable",
+  "messages": [
+    {
+      "text": "I've just picked this project up from someone else. What's in it? Give me the lay of the land in one short paragraph.",
+      "calls": ["list_documents"],
+      "mentions": ["paper", "meeting|notes", "design", "archive"],
+      "noWrites": true
+    },
+    {
+      "text": "What did the team decide at the 26 August meeting?",
+      "reads": ["Notes/Meeting 2026-08-26"],
+      "mentions": ["hybrid", "defer", "50,000|50 000|50k|fifty thousand"]
+    },
+    {
+      "text": "Why did they hold off on the reranker?",
+      "notRead": ["Notes/Meeting 2026-08-26"],
+      "mentions": ["190 ?ms", "Lindqvist"]
+    },
+    {
+      "text": "What did the 26 August meeting set the index cap at?",
+      "before": {
+        "edit": {
+          "path": "Notes/Meeting 2026-08-26",
+          "old": "**Decided: cap the index at 50,000 chunks**",
+          "new": "**Decided: cap the index at 80,000 chunks**"
+        }
+      },
+      "readsAgain": ["Notes/Meeting 2026-08-26"],
+      "mentions": ["80,000|80 000|80k|eighty thousand"]
+    },
+    {
+      "text": "What's still TODO in the retrieval design?",
+      "before": { "pin": ["Design/Retrieval design"] },
+      "notRead": ["Design/Retrieval design"],
+      "mentions": ["rerank", "Evaluation|judged|judge"]
+    },
+    {
+      "text": "Who's Priya, and what kinds of search did she describe?",
+      "finds": ["Notes/Interview with Priya"],
+      "mentions": ["phrase", "name|person|project", "topic"]
+    },
+    {
+      "text": "Which papers would help us fill in the reranking TODO? Name them, a line each.",
+      "findsAny": ["Papers/Cross-encoder reranking at the edge"],
+      "mentions": ["Lindqvist|Cross-encoder reranking"]
+    },
+    {
+      "text": "Write a short status note at Design/Status: what's decided, what's still open, and who is doing what.",
+      "noRereads": true,
+      "document": { "path": "Design/Status", "contains": ["hybrid", "rerank"] }
+    }
+  ]
+}

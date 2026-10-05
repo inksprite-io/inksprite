@@ -1,0 +1,189 @@
+{
+  "title": "Findable",
+  "summary": "Search over a writer's own notes, designed for a note-taking app that runs on a laptop with no server. Papers read for it, meeting notes, the design being written, and the drafts it replaced.",
+  "documents": [
+    {
+      "path": "Papers/Dense versus sparse retrieval on personal corpora",
+      "file": "papers/dense-sparse.md",
+      "summary": "Okonkwo et al. 2024. Dense, BM25 and hybrid retrieval compared on small personal corpora; hybrid wins on long queries, sparse on short keyword ones."
+    },
+    {
+      "path": "Papers/Cross-encoder reranking at the edge",
+      "file": "papers/reranking.md",
+      "summary": "Lindqvist et al. 2025. A distilled 22M cross-encoder reranks the top 50 on a laptop CPU; what it gains and what it costs."
+    },
+    {
+      "path": "Papers/Hard negatives in contrastive training",
+      "file": "papers/hard-negatives.md",
+      "summary": "Sato and Brennan 2023. Mining hard negatives for a retriever: the gain, and the point past which mining more of them hurts."
+    },
+    {
+      "path": "Papers/Chunking strategies for long documents",
+      "file": "papers/chunking.md",
+      "summary": "Ferreira et al. 2024. Fixed windows, sentence windows and late chunking compared for retrieval over long documents."
+    },
+    {
+      "path": "Papers/Query rewriting with small models",
+      "file": "papers/query-rewriting.md",
+      "summary": "Adeyemi et al. 2025. A small local model rewrites the query before retrieval; helps ambiguous queries, hurts exact phrases."
+    },
+    {
+      "path": "Papers/Evaluating retrieval without labels",
+      "file": "papers/evaluation.md",
+      "summary": "Zhou et al. 2024. Using a language model as the relevance judge when there are no human labels, and where it goes wrong."
+    },
+    {
+      "path": "Notes/Meeting 2026-08-12",
+      "file": "notes/meeting-08-12.md",
+      "summary": "Kickoff. Scope, the no-server rule, the first latency budget."
+    },
+    {
+      "path": "Notes/Meeting 2026-08-26",
+      "file": "notes/meeting-08-26.md",
+      "summary": "Hybrid retrieval chosen; reranking deferred until the Lindqvist numbers are in; index size capped."
+    },
+    {
+      "path": "Notes/Meeting 2026-09-09",
+      "file": "notes/meeting-09-09.md",
+      "summary": "Latency budget revised for search-as-you-type; conditions for allowing a reranker."
+    },
+    {
+      "path": "Notes/Decisions log",
+      "file": "notes/decisions.md"
+    },
+    {
+      "path": "Notes/Glossary",
+      "file": "notes/glossary.md"
+    },
+    {
+      "path": "Notes/Open questions",
+      "file": "notes/open-questions.md"
+    },
+    {
+      "path": "Notes/Interview with Priya",
+      "file": "notes/interview-priya.md",
+      "summary": "A user interview: what a heavy note-taker actually searches for."
+    },
+    {
+      "path": "Design/Retrieval design",
+      "file": "design/retrieval-design.md",
+      "summary": "The design being written: goals, indexing, querying, ranking, latency, evaluation."
+    },
+    {
+      "path": "Design/Architecture overview",
+      "file": "design/architecture.md",
+      "summary": "The pieces and how they connect: indexer, store, query pipeline, evaluator."
+    },
+    {
+      "path": "Design/API sketch",
+      "file": "design/api-sketch.md"
+    },
+    {
+      "path": "Archive/Retrieval design v0",
+      "file": "archive/design-v0.md"
+    },
+    {
+      "path": "Archive/Embedding vendor comparison",
+      "file": "archive/vendors.md"
+    },
+    {
+      "path": "Archive/Reranker spike",
+      "file": "archive/reranker-spike.md"
+    },
+    {
+      "path": "Notes/Standups/2026-08-14",
+      "file": "standups/2026-08-14.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-08-17",
+      "file": "standups/2026-08-17.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines."
+    },
+    {
+      "path": "Notes/Standups/2026-08-19",
+      "file": "standups/2026-08-19.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-08-21",
+      "file": "standups/2026-08-21.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-08-24",
+      "file": "standups/2026-08-24.md",
+      "summary": "Standup: one line each from Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-08-26",
+      "file": "standups/2026-08-26.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-08-28",
+      "file": "standups/2026-08-28.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-08-31",
+      "file": "standups/2026-08-31.md",
+      "summary": "Standup: one line each from Dana, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-02",
+      "file": "standups/2026-09-02.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-04",
+      "file": "standups/2026-09-04.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-07",
+      "file": "standups/2026-09-07.md",
+      "summary": "Standup: one line each from Dana, Marcus, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-09",
+      "file": "standups/2026-09-09.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-11",
+      "file": "standups/2026-09-11.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-14",
+      "file": "standups/2026-09-14.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines."
+    },
+    {
+      "path": "Notes/Standups/2026-09-16",
+      "file": "standups/2026-09-16.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-18",
+      "file": "standups/2026-09-18.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-21",
+      "file": "standups/2026-09-21.md",
+      "summary": "Standup: one line each from Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-23",
+      "file": "standups/2026-09-23.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    },
+    {
+      "path": "Notes/Standups/2026-09-25",
+      "file": "standups/2026-09-25.md",
+      "summary": "Standup: one line each from Dana, Marcus, Ines, Tom."
+    }
+  ]
+}

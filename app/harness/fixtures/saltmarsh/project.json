@@ -1,0 +1,26 @@
+{
+  "title": "The Saltmarsh Road",
+  "summary": "A courier carries a sealed case to a town that stopped answering its letters three weeks ago.",
+  "documents": [
+    {
+      "path": "Premise",
+      "file": "premise.md",
+      "summary": "What the courier was hired to do, what they were told, and what they were not."
+    },
+    {
+      "path": "Places/Gullet",
+      "file": "gullet.md",
+      "summary": "The last town before the pass: the inn, the ferry, the toll house, who runs what."
+    },
+    {
+      "path": "People/Maren Ashcott",
+      "file": "maren.md",
+      "summary": "The toll keeper at Gullet: what she wants, what she will not say."
+    },
+    {
+      "path": "Notes/Table",
+      "file": "table.md",
+      "summary": "How this table plays: tone, what is off the table, what the GM tracks."
+    }
+  ]
+}

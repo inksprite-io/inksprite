@@ -1,0 +1,5 @@
+{
+  "read_document": "Read a document. Reading a folder lists its contents. Documents that should be kept in context should be pinned into the <project> block using pin_document.",
+  "pin_document": "Pin a document so it stays in the <project> block for the rest of the chat.",
+  "unpin_document": "Unpin a document from the <project> block."
+}

@@ -1,0 +1,13 @@
+{
+  "counts": {
+    "semicolon": ";",
+    "suddenly": "\\bsuddenly\\b",
+    "dash": "[—–]",
+    "italics": "(?<![\\w*])\\*(?![\\s*])[^*\\n]+?\\*(?!\\*)|(?<![\\w_])_(?![\\s_])[^_\\n]+?_(?![\\w_])",
+    "other tag": "\\b(asks|asked|replies|replied|murmurs|murmured|mutters|muttered|whispers|whispered|snaps|snapped|adds|added)\\b",
+    "said": "\\bsaid\\b",
+    "says": "\\bsays\\b",
+    "past": "\\b(he|she|Noah|Riley|they) (was|were|had|said|looked|turned|set|put|went|came|sat|stood|picked|took|didn't|did|kept|let|got|made)\\b",
+    "present": "\\b(he|she|Noah|Riley|they) (is|are|has|says|looks|turns|sets|puts|goes|comes|sits|stands|picks|takes|doesn't|does|keeps|lets|gets|makes)\\b"
+  }
+}

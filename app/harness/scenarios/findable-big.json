@@ -1,0 +1,28 @@
+{
+  "fixture": "findable-big",
+  "messages": [
+    {
+      "text": "What's in this project, roughly? A few lines.",
+      "calls": ["list_documents"],
+      "mentions": ["journal", "paper", "design"],
+      "noWrites": true
+    },
+    {
+      "text": "How many journal entries are there from September?",
+      "mentions": ["\\b30\\b|thirty"],
+      "noWrites": true
+    },
+    {
+      "text": "What did I find on 14 September?",
+      "reads": ["Notes/Journal/2026-09-14"],
+      "mentions": ["cache warming|loaded before the model|loading the model first", "210 ?ms"]
+    },
+    {
+      "text": "Which meeting decided the index cap, and what was it?",
+      "mentions": [
+        "50,000|50 000|50k|fifty thousand",
+        "2026-08-26|08-26|August 26|Aug(ust)? 26|26 Aug"
+      ]
+    }
+  ]
+}

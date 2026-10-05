@@ -1,0 +1,32 @@
+{
+  "setting": "Late afternoon, third day of the heat wave, in Noah's upper-floor apartment: one room, kitchen along the back. The window unit is in the front window and cools about three feet in front of it and nothing else. The couch sits in that three feet and is the only cool place in the apartment. The desk is across the room, under a window that opens a hand's width.",
+  "narration": "Third person limited, inside Noah. No access to Riley's interior.",
+  "props": [
+    "the stack of forty papers",
+    "the red pen",
+    "the box fan on the floor",
+    "a glass sweating a ring into the wood",
+    "the laptop running hot",
+    "the couch in front of the window unit"
+  ],
+  "speakers": {
+    "noah": {
+      "name": "Noah",
+      "sketchFile": "../fixtures/riley-noah/noah.md",
+      "objective": "Get to the end of the stack tonight without agreeing to stop.",
+      "belief": "She is in a mood about the apartment and the heat, and if he does not feed it she will get bored of it and sit down."
+    },
+    "riley": {
+      "name": "Riley",
+      "sketchFile": "../fixtures/riley-noah/riley.md",
+      "objective": "Get him to put the papers down without being the one who suggests it.",
+      "belief": "He is using the papers to avoid the conversation about March. She is about sixty percent right."
+    }
+  },
+  "opening": [
+    {
+      "speaker": "riley",
+      "line": "You've read that page twice. I watched you."
+    }
+  ]
+}

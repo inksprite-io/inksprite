@@ -1,0 +1,99 @@
+@import 'tailwindcss';
+@import 'tailwindcss-primeui';
+@import 'primeicons/primeicons.css';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --shadow-inset-bottom: inset 0 -12px 12px -10px rgba(0, 0, 0, 0.28);
+}
+
+/* The typography plugin wraps every block quote in curly quotes. A writer's
+   block quote is usually dialogue, already quoted, so the editor and the chat
+   show the markdown as written and add no marks of their own. In the
+   components layer so that it also beats the plugin's important variant. */
+@layer components {
+  .prose blockquote p::before,
+  .prose blockquote p::after {
+    content: none !important;
+  }
+}
+
+/* PrimeVue's ScrollPanel makes the box that scrolls a scrollbar's width larger
+   than the panel on both axes, and clips it, to push the native scrollbar out
+   of sight. The same rule already hides the native scrollbar outright, so all
+   the extra size did was put the box's bottom edge below the panel's — below
+   the window, for a panel that reaches the bottom of it. A browser scrolls a
+   drag-selection only when the pointer reaches the edge of the box that
+   scrolls, so selecting downwards in the editor never scrolled. The box is
+   the panel's size here. One class deeper than the theme's, which is injected
+   after this sheet and would otherwise win. */
+.p-scrollpanel .p-scrollpanel-content {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+
+/* A hidden panel's gutter goes with it. The panels are hidden rather than
+   taken out — a chat of any length is not something to build twice — and
+   the splitter, which lays out what it was given, would otherwise leave a
+   gutter beside a panel that is not there. */
+.p-splitter > .p-splitterpanel[style*='display: none'] + .p-splitter-gutter,
+.p-splitter:has(> .p-splitterpanel:last-child[style*='display: none']) > .p-splitter-gutter {
+  display: none;
+}
+
+/* Toast customization - adjust glass effect strength */
+.p-toast-message {
+  backdrop-filter: blur(30px) !important;
+  -webkit-backdrop-filter: blur(30px) !important;
+}
+
+@layer components {
+  .round-button {
+    @apply hover:!bg-surface-0/90
+      dark:hover:!bg-surface-700/90
+      hover:shadow-lg
+
+      focus:!bg-surface-0/90
+      dark:focus:!bg-surface-700/90
+      focus:shadow-lg
+
+      focus-visible:!outline-none
+      focus-visible:!ring-2
+      focus-visible:!ring-surface-400
+      focus-visible:!ring-offset-0;
+  }
+}
+
+@layer utilities {
+  /* Light mode shimmer */
+  .thinking-text {
+    @apply relative inline-block text-transparent 
+           bg-gradient-to-r from-black/40 via-black/90 to-black/40 
+           bg-[length:200%_100%] 
+           bg-clip-text 
+           animate-[shimmer_5s_linear_infinite];
+    -webkit-background-clip: text; /* Safari fix */
+  }
+
+  /* Dark mode shimmer */
+  .dark .thinking-text {
+    @apply relative inline-block text-transparent 
+           bg-gradient-to-r from-white/20 via-white/90 to-white/20 
+           bg-[length:200%_100%] 
+           bg-clip-text 
+           animate-[shimmer_5s_linear_infinite];
+    -webkit-background-clip: text;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

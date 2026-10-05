@@ -1,0 +1,31 @@
+/**
+ * @module editor
+ * @description The document model and the editor's state: a closed schema,
+ * the markdown that is its file format, and the `EditorState` a document
+ * becomes while it is open.
+ *
+ * - **schema** - The nodes and marks a document can hold
+ * - **markdown** - `parseMarkdown` and `serializeMarkdown`, the two directions
+ *   of the file format; `settleMarkdown` for text from outside; `appendBlocks`
+ *   for joining markdown to markdown
+ * - **state** - `createEditorState`, the keys and typed shortcuts, and the
+ *   `replaceContent` and `appendContent` transactions an outside writer asks for
+ *
+ * `Document.content` is markdown. While a document is open — in a tab, with
+ * or without a view over it — its `EditorState` is the truth and the store's
+ * copy is a projection of it, serialized on a debounce (see
+ * `composables/useEditor`); closed, the store's markdown is the truth. A
+ * plain document (`Document.plain`) never becomes an `EditorState`: its text
+ * is the truth while open and is stored as typed, so a prompt keeps whatever
+ * the schema could not hold. The AI tools read and write it as it is; the v13 migration produced
+ * it from the HTML that came before. Design: `.llm/markdown_library_design.md`.
+ *
+ * @example
+ * import { parseMarkdown, serializeMarkdown } from '@/editor/markdown'
+ * const doc = parseMarkdown('# Chapter One\n\nIt was a dark night.')
+ * serializeMarkdown(doc) // '# Chapter One\n\nIt was a dark night.'
+ */
+
+export { schema, NODE_NAMES, MARK_NAMES } from './schema.js'
+export { parseMarkdown, serializeMarkdown, settleMarkdown, appendBlocks } from './markdown.js'
+export { createEditorState, replaceContent, appendContent, isEmptyDocument } from './state.js'

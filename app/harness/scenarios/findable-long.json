@@ -1,0 +1,121 @@
+{
+  "fixture": "findable",
+  "messages": [
+    {
+      "text": "Read the retrieval design and the three meeting notes, then tell me what in the design is still marked TODO.",
+      "mentions": ["Evaluation", "rerank"],
+      "reads": [
+        "Design/Retrieval design",
+        "Notes/Meeting 2026-08-12",
+        "Notes/Meeting 2026-08-26",
+        "Notes/Meeting 2026-09-09"
+      ]
+    },
+    {
+      "text": "Write the Evaluation section from what the September meeting decided, replacing the TODO. Three or four sentences.",
+      "document": {
+        "path": "Design/Retrieval design",
+        "contains": ["## Evaluation", "judge", "200|212"]
+      },
+      "notContains": {
+        "path": "Design/Retrieval design",
+        "patterns": [
+          "TODO: how a change is judged",
+          "merge|ships? only|lands only|passes only|does not regress|must not regress|no human labels|holds or improves|before it ships|not used for tuning|pass or fail"
+        ]
+      }
+    },
+    {
+      "text": "Which paper found that an overlap of 32 beat no overlap?",
+      "mentions": ["Ferreira|Chunking strategies"],
+      "finds": ["Papers/Chunking strategies for long documents"]
+    },
+    {
+      "text": "Update the glossary's Chunk entry so it says where the overlap number comes from.",
+      "document": {
+        "path": "Notes/Glossary",
+        "contains": ["Ferreira|Chunking strategies", "\\*\\*Bi-encoder\\*\\*", "\\*\\*Budget\\*\\*"]
+      }
+    },
+    {
+      "before": {
+        "edit": {
+          "path": "Design/Retrieval design",
+          "old": "256 tokens with 32 tokens of overlap",
+          "new": "256 tokens with 48 tokens of overlap"
+        }
+      },
+      "text": "I just changed the overlap in the design's Indexing section. What does it say now?",
+      "mentions": ["48"],
+      "readsAgain": ["Design/Retrieval design"],
+      "noWrites": true
+    },
+    {
+      "text": "48 is deliberate: we're spiking a value the paper didn't test. Make the glossary's Chunk entry say 48 and note that it's a spike, so it agrees with the design.",
+      "document": { "path": "Notes/Glossary", "contains": ["48", "spik"] },
+      "notContains": {
+        "path": "Notes/Glossary",
+        "patterns": ["32 of overlap", "interview|pronoun|back-reference"]
+      }
+    },
+    {
+      "text": "Record the reranker decision as an ADR at Design/ADR-001 Reranker: context, decision, consequences, short. Give it a one-line summary.",
+      "document": { "path": "Design/ADR-001 Reranker", "contains": ["22M", "Decision"] }
+    },
+    {
+      "text": "Who was at the kickoff?",
+      "mentions": ["Dana", "Marcus", "Ines", "Tom"],
+      "reads": ["Notes/Meeting 2026-08-12"]
+    },
+    {
+      "text": "What did Tom find about int8 quantization of the vectors?",
+      "mentions": ["4x|four times|4×|quarter", "0\\.3"],
+      "findsAny": ["Notes/Standups/2026-09-02", "Notes/Standups/2026-09-04"]
+    },
+    {
+      "before": {
+        "edit": {
+          "path": "Notes/Glossary",
+          "old": "See the decisions log for the current number.",
+          "new": "See the decisions log for the current number, which has changed once already."
+        }
+      },
+      "text": "Update the glossary's Budget entry to state the current number and the date it was set.",
+      "document": {
+        "path": "Notes/Glossary",
+        "contains": ["150", "2026-09-09|September 9|Sept(ember)? 9|9 Sept"]
+      },
+      "notContains": {
+        "path": "Notes/Glossary",
+        "patterns": ["\\*\\*Budget\\*\\*[^\\n]*\\n[^\\n]*\\*\\*Budget\\*\\*"]
+      }
+    },
+    {
+      "text": "Is there a paper about query rewriting? What does it recommend for us?",
+      "mentions": ["rout", "submit|refine|after"],
+      "reads": ["Papers/Query rewriting with small models"]
+    },
+    {
+      "text": "Give me the open questions, one line each.",
+      "mentions": ["late chunking", "fine-tun"],
+      "reads": ["Notes/Open questions"]
+    },
+    {
+      "text": "What were the three kinds of search Priya described?",
+      "mentions": ["phrase", "name|person|project|codeword", "topic"],
+      "reads": ["Notes/Interview with Priya"]
+    },
+    {
+      "text": "Which meeting decided the index cap, and what is the cap?",
+      "mentions": [
+        "50,000|50 000|50k|fifty thousand",
+        "2026-08-26|08-26|August 26|Aug(ust)? 26|26 Aug"
+      ]
+    },
+    {
+      "text": "Add the cap decision to the design's Indexing section if it isn't there already. If it is, tell me so and change nothing.",
+      "mentions": ["already"],
+      "noWrites": true
+    }
+  ]
+}

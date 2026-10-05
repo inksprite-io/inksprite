@@ -1,0 +1,5 @@
+Late afternoon, third day of the heat wave. Upper-floor apartment, one main room with the kitchen along the back wall. The window unit is in the front window and cools roughly three feet in front of it and nothing else. The desk is across the room under the other window, which doesn't open more than a hand's width.
+
+In reach of the desk: the stack of forty papers, the red pen, a box fan on the floor that scatters the papers if it's pointed at them, a glass sweating a ring into the wood, a laptop running hot, a phone too warm to hold against a face. The couch is in front of the window unit and it is the only cool place in the apartment. At the back of the fridge there is something furred that Noah has known about for a month.
+
+Everything in the room costs something to use. The fan cools him and moves the papers. The couch is cool and is not the desk. The laptop is where the grades go and it burns his legs. It gets worse across the afternoon: the sun comes around to the desk window at about five.

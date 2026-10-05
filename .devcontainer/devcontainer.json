@@ -1,0 +1,38 @@
+{
+  "name": "InkSprite",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
+  // The dev server, a browser or two for the MCP tools, and vitest together
+  // sit near 8gb; a heap snapshot of a long chat wants more than that.
+  "hostRequirements": {
+    "memory": "16gb"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "installOhMyZshConfig": true,
+      "upgradePackages": true
+    }
+  },
+  // 8003: the local OpenRouter endpoint the harness runs go through.
+  "forwardPorts": [8002, 8003, 4321],
+  // shm-size: Chrome crashes with Docker's 64MB /dev/shm default.
+  // seccomp: Playwright's profile allows the user-namespace syscalls Chromium's
+  // own sandbox needs, so the MCP browsers run sandboxed (no --no-sandbox).
+  "runArgs": [
+    "--shm-size=1g",
+    "--security-opt",
+    "seccomp=${localWorkspaceFolder}/.devcontainer/seccomp-chrome.json"
+  ],
+  // Persist Claude Code state, shell history, and Playwright browser downloads
+  // across container rebuilds in named Docker volumes — never on the host
+  // filesystem. Git pushes happen from the host, so no credentials live in
+  // the container.
+  "mounts": [
+    "source=inksprite-claude-home,target=/home/node/.claude,type=volume",
+    "source=inksprite-shell-history,target=/commandhistory,type=volume",
+    "source=inksprite-pw-browsers,target=/home/node/.cache/ms-playwright,type=volume"
+  ],
+  "postCreateCommand": "bash .devcontainer/post-create.sh"
+}

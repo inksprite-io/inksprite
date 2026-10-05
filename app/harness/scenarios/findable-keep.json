@@ -1,0 +1,60 @@
+{
+  "fixture": "findable",
+  "messages": [
+    {
+      "text": "Read Design/Retrieval design and list its section headings, nothing else.",
+      "mentions": ["Goals", "Indexing", "Evaluation"],
+      "reads": ["Design/Retrieval design"]
+    },
+    {
+      "text": "Rewrite the Goals section so the exact-phrase case comes first and is named as the one that must never fail. Keep it to three sentences.",
+      "document": {
+        "path": "Design/Retrieval design",
+        "contains": ["## Goals", "never fail|must not fail|non-negotiable"]
+      },
+      "reads": ["Design/Retrieval design"]
+    },
+    {
+      "text": "In Indexing, add one sentence saying how much smaller int8 makes the vectors and what it costs in recall. Tom measured it; find where.",
+      "document": { "path": "Design/Retrieval design", "contains": ["4[x×]|four times", "0\\.3"] },
+      "findsAny": ["Notes/Standups/2026-09-02", "Notes/Standups/2026-09-04"],
+      "reads": ["Design/Retrieval design"]
+    },
+    {
+      "text": "In Query, say why there is no rewriting in the first version, citing the paper that showed the exact-query loss.",
+      "document": {
+        "path": "Design/Retrieval design",
+        "contains": ["Adeyemi|Query rewriting with small models"]
+      },
+      "reads": ["Design/Retrieval design", "Papers/Query rewriting with small models"]
+    },
+    {
+      "text": "Replace the Ranking section's TODO with one sentence saying reranking was settled at the September 9 meeting and pointing at that meeting note.",
+      "notContains": { "path": "Design/Retrieval design", "patterns": ["TODO: reranking"] },
+      "document": {
+        "path": "Design/Retrieval design",
+        "contains": ["2026-09-09|September 9|Sept(ember)? 9|9 Sept"]
+      },
+      "reads": ["Design/Retrieval design"]
+    },
+    {
+      "text": "Does the Latency section still say 200 ms? If so, make it 150 ms per keystroke and say which meeting changed it.",
+      "document": {
+        "path": "Design/Retrieval design",
+        "contains": ["150 ?ms", "2026-09-09|September 9|Sept(ember)? 9|9 Sept"]
+      },
+      "notContains": { "path": "Design/Retrieval design", "patterns": ["budget is 200 ms"] },
+      "reads": ["Design/Retrieval design"]
+    },
+    {
+      "text": "Read the whole design back to me, section by section, one line each.",
+      "mentions": ["Goals", "Latency", "Evaluation"],
+      "reads": ["Design/Retrieval design"]
+    },
+    {
+      "text": "Which sections did we change in this chat?",
+      "mentions": ["Goals", "Indexing", "Query", "Ranking", "Latency"],
+      "noWrites": true
+    }
+  ]
+}

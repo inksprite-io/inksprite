@@ -1,0 +1,19 @@
+{
+  "phrases": {
+    "forty of these": "forty (of these|total|papers)",
+    "I'm on nineteen": "i'?m (on|at) (nineteen|twenty|twenty-one|twenty-two|twenty-three)",
+    "end of this one": "get to the end of (this|the) one",
+    "Sure. Yeah": "sure\\.? yeah",
+    "page twice": "read that (page|paragraph|one) twice",
+    "I watched you": "i watched you",
+    "Fifty-two isn't an hour": "(fifty-two|fifty two) (isn'?t|is not) an hour",
+    "better at telling the story": "better at telling the story",
+    "the good coffee": "bring the good coffee",
+    "there at nine": "i'?ll be there at nine"
+  },
+  "flags": {
+    "heat named": "\\b(oven|degrees|it'?s hot|so hot|the heat (was|had|pressed|sat)|hot air|heat like|like an oven)\\b",
+    "habit explained": "(didn'?t|did not) (know|feel|notice|realize)[^.]*(doing|did) it|without (knowing|noticing|realizing)|caught himself|catches himself",
+    "March": "\\bMarch\\b"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "phrases": {
+    "page twice": "read that (page|paragraph|one) twice",
+    "I watched you": "i watched you",
+    "at eleven": "what you'?re going to do at (eleven|nine|six|ten|midnight)",
+    "not asking you to stop": "not (asking|saying|telling) you to (stop|sit)",
+    "forty of these": "forty (of these|total|papers)",
+    "I'm on nineteen": "i'?m (on|at) (nineteen|twenty|twenty-one|twenty-two|twenty-three)",
+    "end of this one": "get to the end of (this|the) one",
+    "Sure. Yeah": "sure\\.? yeah"
+  },
+  "flags": {
+    "heat named": "\\b(oven|degrees|it'?s hot|so hot|the heat (was|had|pressed|sat)|hot air|heat like|like an oven)\\b",
+    "habit explained": "(didn'?t|did not) (know|feel|notice|realize)[^.]*(doing|did) it|without (knowing|noticing|realizing)|caught himself|catches himself",
+    "March": "\\bMarch\\b"
+  }
+}

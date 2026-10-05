@@ -1,0 +1,37 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Harness endpoints: local machine addresses and API keys.
+scripts/endpoints.local.json
+
+# Transcript harness output: one folder per batch of runs.
+harness/runs/
+
+# Test files for various import scenarios: each subfolder contains a different type of test data.
+harness/test-*/
+
+# Books, papers and articles to test file import against: other people's
+# work, tens of megabytes, and not ours to redistribute.
+harness/research/
