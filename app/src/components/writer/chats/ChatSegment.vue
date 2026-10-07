@@ -332,6 +332,18 @@ const handleEditKeydown = event => {
 </script>
 
 <style scoped>
+/* A table or a link with no spaces in it can be wider than the chat on a
+   phone. The table scrolls on its own and the link breaks, rather than the
+   whole chat scrolling sideways. */
+.prose {
+  overflow-wrap: break-word;
+}
+
+.prose :deep(table) {
+  display: block;
+  overflow-x: auto;
+}
+
 .typing-dot {
   width: 4px;
   height: 4px;

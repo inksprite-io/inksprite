@@ -5,9 +5,15 @@ import { shelfFor, writeCard } from '@/cards/write.js'
 import { readCard } from '@/cards/card.js'
 import { clearDocumentInstances } from '@/composables/useDocuments'
 import { clearChatsInstances } from '@/composables/useChats'
-import { ROLEPLAY_PROFILE_ID } from '@/ai/profiles/index.js'
-import { DEFAULT_ROLEPLAY_NOTE, DEFAULT_ROLEPLAY_PROMPT } from '@/ai/prompts/index.js'
+import { ROLEPLAY_PROFILE_ID, ROLEPLAY_NSFW_PROFILE_ID } from '@/ai/profiles/index.js'
+import {
+  DEFAULT_ROLEPLAY_NOTE,
+  DEFAULT_ROLEPLAY_PROMPT,
+  DEFAULT_ROLEPLAY_NSFW_NOTE,
+  DEFAULT_ROLEPLAY_NSFW_PROMPT,
+} from '@/ai/prompts/index.js'
 import { useProfiles } from '@/composables/useProfiles'
+import { useApplicationState } from '@/composables/useApplicationState'
 
 vi.mock('@/stores/db', () => ({
   default: {
@@ -78,6 +84,7 @@ describe('useCardChat', () => {
     chats.clear()
     messages.length = 0
     vi.clearAllMocks()
+    useApplicationState().resetState()
     cardChats = useCardChat(STORY)
   })
 
@@ -100,6 +107,30 @@ describe('useCardChat', () => {
     expect(mockCreateChat).toHaveBeenCalledWith(STORY, 'Elara', null, expect.any(Object))
     expect(chat.profileId).toBe(ROLEPLAY_PROFILE_ID)
     expect(chat.disabledToolGroups).toEqual(['documents', 'rpg', 'skills'])
+  })
+
+  it('starts it on Roleplay (NSFW) with NSFW profiles switched on', async () => {
+    useApplicationState().setNsfwProfiles(true)
+    const written = await imported()
+
+    const chat = await cardChats.start(await cardChats.read(written.folderId))
+
+    expect(chat.profileId).toBe(ROLEPLAY_NSFW_PROFILE_ID)
+    expect(chat.rules).toBe(DEFAULT_ROLEPLAY_NSFW_NOTE)
+  })
+
+  it("starts a card's own prompt from Roleplay (NSFW)'s with them switched on", async () => {
+    useApplicationState().setNsfwProfiles(true)
+    const written = await imported(
+      { system_prompt: '{{original}}\n\nElara never lies.' },
+      { useSystemPrompt: true }
+    )
+
+    const chat = await cardChats.start(await cardChats.read(written.folderId))
+
+    const prompt = useProfiles().getProfile(chat.profileId).settings.prompt
+    expect(prompt.startsWith(DEFAULT_ROLEPLAY_NSFW_PROMPT.trim())).toBe(true)
+    expect(prompt.endsWith('Elara never lies.')).toBe(true)
   })
 
   it('pins the card so it is in context before anything is said', async () => {

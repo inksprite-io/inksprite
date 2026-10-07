@@ -43,17 +43,14 @@
     <!-- The form: the fields of the frontmatter, and the instructions. -->
     <div v-if="mode === 'form' && form" class="flex flex-col gap-4">
       <div class="flex flex-col gap-1">
-        <SettingLabel
-          label="Name"
-          description="What you type after the slash, and what the model calls it. Lowercase letters, digits and hyphens."
-        />
+        <SettingLabel label="Name" description="Lowercase letters, digits and hyphens." />
         <InputText v-model="form.name" size="small" class="w-full" data-field="name" />
       </div>
 
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Description"
-          description="What it does and when to use it. The model reads this to decide whether to call it."
+          description="The model reads this to decide when to call it."
         />
         <Textarea
           v-model="form.description"
@@ -68,7 +65,7 @@
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Summary"
-          description="What it does, in a line, for you: the / menu and the chat’s settings. The description when left empty."
+          description="One line for the / menu. Defaults to the description."
         />
         <InputText v-model="form.summary" size="small" class="w-full" data-field="summary" />
       </div>
@@ -90,7 +87,7 @@
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="How it runs"
-          description="On its own, it is a model call of its own with these instructions, over the conversation, and it reports back. Joining the conversation, its instructions become part of the turn."
+          description="On its own: a separate model call. Joining: its instructions join the turn."
         />
         <Select
           v-model="form.fork"
@@ -120,7 +117,7 @@
         <div class="flex flex-col gap-1">
           <SettingLabel
             label="Tools"
-            description="The tools it is given. It has none of the chat’s unless they are named here."
+            description="It gets none of the chat’s tools unless listed here."
           />
           <MultiSelect
             v-model="form.tools"
@@ -136,10 +133,7 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
-          <SettingLabel
-            label="Argument"
-            description="A name for what is typed after its name. Named, it is required."
-          />
+          <SettingLabel label="Argument" description="Naming it makes it required." />
           <InputText
             v-model="form.argument"
             size="small"
@@ -163,7 +157,7 @@
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Instructions"
-          :description="`What it runs under, or what it brings to the turn. What was typed after its name goes where ${placeholder} is, or at the end.`"
+          :description="`The argument goes where ${placeholder} is, or at the end.`"
         />
         <Textarea
           v-model="form.body"
@@ -180,7 +174,7 @@
     <div v-else-if="mode === 'file'" class="flex flex-col gap-1">
       <SettingLabel
         label="SKILL.md"
-        description="The skill as a file. Saving from the form writes its frontmatter afresh, so a comment in it goes; everything else stays."
+        description="Saving from the form drops comments in the frontmatter."
       />
       <Textarea
         v-model="text"
@@ -193,8 +187,7 @@
     </div>
 
     <p v-if="files.length" class="text-xs text-surface-500 dark:text-surface-400">
-      {{ files.length }} other {{ files.length === 1 ? 'file comes' : 'files come' }} with it:
-      {{ files.map(file => file.path).join(', ') }}. Nothing reads them yet.
+      Other files, unused: {{ files.map(file => file.path).join(', ') }}.
     </p>
 
     <ul

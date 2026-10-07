@@ -10,9 +10,12 @@
  * moves the chat onto it, which is what the library did with prompts and the
  * behaviour everybody already has in their fingers.
  *
- * The NSFW built-ins are left out until the writer switches them on in the
- * settings. While they are off, a chat or a project that names one runs on its
- * general counterpart, so turning the switch off stops what it started.
+ * An NSFW built-in and its general counterpart are one entry, which the
+ * settings switch decides between. Off, the general one is offered, and a chat
+ * or a project that names the NSFW one runs on the general one; on, the other
+ * way round, so card chats, which start on Roleplay, start on Roleplay (NSFW).
+ * Either way the chat keeps the id it names, and flipping the switch back puts
+ * it where it was.
  */
 
 import { computed } from 'vue'
@@ -43,23 +46,38 @@ const storedEntry = profile => ({
 /** @param {import('@/ai/profiles/index.js').ChatProfile} profile @returns {ProfileEntry} */
 const builtInEntry = profile => ({ ...profile, readOnly: true })
 
+/** Each general built-in's NSFW counterpart, by the general one's id. */
+const NSFW_COUNTERPARTS = Object.fromEntries(
+  BUILT_IN_PROFILES.filter(profile => profile.nsfw).map(profile => [profile.generalId, profile.id])
+)
+
 export const useProfiles = () => {
   const store = useChatProfileStore()
   const { nsfwProfiles } = useApplicationState()
 
-  /** @param {import('@/ai/profiles/index.js').ChatProfile} profile */
-  const offered = profile => !profile.nsfw || nsfwProfiles.value
+  /**
+   * The built-in that runs in place of this one: its counterpart when the
+   * switch is set the other way, and itself otherwise.
+   * @param {import('@/ai/profiles/index.js').ChatProfile} profile
+   * @returns {import('@/ai/profiles/index.js').ChatProfile}
+   */
+  const inPlaceOf = profile => {
+    const counterpart = nsfwProfiles.value
+      ? NSFW_COUNTERPARTS[profile.id]
+      : profile.nsfw && profile.generalId
+    return (counterpart && getBuiltInProfile(counterpart)) || profile
+  }
 
   /** @type {import('vue').ComputedRef<ProfileEntry[]>} */
   const profiles = computed(() => [
-    ...BUILT_IN_PROFILES.filter(offered).map(builtInEntry),
+    ...BUILT_IN_PROFILES.filter(profile => inPlaceOf(profile) === profile).map(builtInEntry),
     ...store.getAllProfiles().map(storedEntry),
   ])
 
   /**
-   * The profile a chat on this id runs on: the one it names, or, for an NSFW
-   * one while they are switched off, its general counterpart. Null for one that
-   * is gone, which callers read as the project's default.
+   * The profile a chat on this id runs on: the one it names, or its NSFW or
+   * general counterpart, as the switch is set. Null for one that is gone, which
+   * callers read as the project's default.
    *
    * @param {string|null|undefined} id
    * @returns {ProfileEntry|null}
@@ -67,7 +85,7 @@ export const useProfiles = () => {
   function getProfile(id) {
     if (!id) return null
     const builtIn = getBuiltInProfile(id)
-    if (builtIn) return offered(builtIn) ? builtInEntry(builtIn) : getProfile(builtIn.generalId)
+    if (builtIn) return builtInEntry(inPlaceOf(builtIn))
     const stored = store.getProfile(id)
     return stored ? storedEntry(stored) : null
   }

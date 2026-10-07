@@ -3574,10 +3574,11 @@ Type: [Object][1036]
 - `settings` **ProfileSettings**&#x20;
 - `notice` **ProfileNotice?** What the writer is told the first time
   they pick it. See composables/useProfileNotice.js.
-- `nsfw` **[boolean][1038]?** Written for explicit content, so offered only
-  once the writer switches NSFW profiles on in the settings
-- `generalId` **[string][1037]?** For an NSFW one, the profile a chat on it
-  runs on while they are off: the same thing without the opt-ins
+- `nsfw` **[boolean][1038]?** Written for explicit content: offered, in place
+  of its general counterpart, only once the writer switches NSFW profiles on
+  in the settings. See composables/useProfiles.js.
+- `generalId` **[string][1037]?** For an NSFW one, that counterpart: the same
+  thing without the opt-ins
 
 ## ALL_TOOL_GROUPS
 

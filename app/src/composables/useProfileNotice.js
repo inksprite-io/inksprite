@@ -3,8 +3,9 @@
  * @description What a profile asks the writer to know the first time they pick
  * it — Roleplay (NSFW)'s opt-ins, and where to change them.
  *
- * Once per profile per browser, and only when the writer picks it: a chat put
- * back on a default, or made from a project's, has not been chosen by anyone.
+ * Once per profile per browser, and only when the writer picks it, or switches
+ * on the setting that puts it in place of another: a chat put back on a
+ * default, or made from a project's, has not been chosen by anyone.
  *
  * The notice waiting to be shown is held here rather than by whoever picked
  * the profile, so a composable can raise it without a component around it, and

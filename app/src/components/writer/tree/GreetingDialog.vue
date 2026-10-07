@@ -7,11 +7,6 @@
     class="w-full max-w-2xl"
     @update:visible="$emit('update:visible', $event)"
   >
-    <p class="text-xs text-surface-500 dark:text-surface-400 mb-3">
-      The card offers more than one way in. Whichever you pick opens the chat as its first message,
-      and you can edit it afterwards like any other.
-    </p>
-
     <div class="flex flex-col gap-2 max-h-[26rem] overflow-y-auto">
       <button
         v-for="(greeting, at) in greetings"

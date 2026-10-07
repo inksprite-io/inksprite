@@ -32,9 +32,9 @@
             <div class="flex flex-col gap-1">
               <SettingLabel
                 label="Profile"
-                description="How this chat is run: its prompt, and the skills under it. Built-in profiles ship with the app; editing one makes a copy of your own and moves this chat onto it."
+                description="Editing a built-in profile makes a copy of your own."
                 :overridden="!isDefaultProfile"
-                reset-tooltip="Back to the profile this project starts chats on"
+                reset-tooltip="Back to the project's default"
                 @reset="setProfile(defaultProfileId)"
               />
 
@@ -119,7 +119,7 @@
             <div class="flex flex-col gap-1">
               <SettingLabel
                 label="Author's note"
-                description="Standing instructions, sent with every message you write, just ahead of it. For the few things a long conversation keeps eroding — tense and point of view, how long a reply runs, what never to do. Keep it short, and say what not to do rather than how it should feel: this close to the answer, every word echoes."
+                description="Sent just ahead of each message you write. Keep it short."
               />
               <Textarea
                 v-model="rules"
@@ -139,7 +139,6 @@
                   Project Context
                 </label>
                 <ToggleSwitch
-                  v-tooltip.top="projectContextEnabled ? 'Enabled' : 'Disabled'"
                   :model-value="projectContextEnabled"
                   class="flex-none"
                   aria-label="Project Context"
@@ -147,9 +146,7 @@
                 />
               </div>
               <p class="text-xs text-surface-500 dark:text-surface-400">
-                Send the project's name and overview, and the documents you pinned, at the end of
-                every turn, with a note of anything read earlier that has changed since. Off makes
-                this a plain conversation; the document tools still work.
+                Sends the project overview and your pinned documents with every turn.
               </p>
             </div>
           </div>
@@ -170,7 +167,6 @@
                 Enable Tools
               </label>
               <ToggleSwitch
-                v-tooltip.top="allToolsEnabled ? 'Enabled' : 'Disabled'"
                 :model-value="allToolsEnabled"
                 :disabled="!modelToolsEnabled"
                 class="flex-none"
@@ -179,7 +175,7 @@
               />
             </div>
             <p v-if="!modelToolsEnabled" class="text-xs text-surface-500 dark:text-surface-400">
-              Tool use is off for the AI preset, so none of these are offered.
+              Tool use is off in the AI preset.
             </p>
             <!-- App-wide, unlike the rest of the section, and it says so. -->
             <div class="flex items-center justify-between gap-2 h-8 px-2">
@@ -187,15 +183,13 @@
                 Apply edits automatically
               </label>
               <ToggleSwitch
-                v-tooltip.top="applyEditsAutomatically ? 'Enabled' : 'Disabled'"
                 v-model="applyEditsAutomatically"
                 class="flex-none"
                 aria-label="Apply edits automatically"
               />
             </div>
             <p class="text-xs text-surface-500 dark:text-surface-400 px-2 pb-1">
-              Off, each change the assistant makes to a document waits in the chat for you to
-              accept, and ends its turn. The same in every chat.
+              Applies to every chat.
             </p>
             <ExpandableSection
               v-for="group in toolGroups"
@@ -243,8 +237,7 @@
                  server connected tomorrow reaches no chat that did not ask. -->
             <template v-if="servers.length > 0">
               <p class="text-xs text-surface-500 dark:text-surface-400 pt-2 px-2">
-                From your connections. A server's tools are offered only in chats that switch it on,
-                or whose profile it's set to be used with.
+                From your connections
               </p>
               <ExpandableSection
                 v-for="server in servers"
@@ -300,10 +293,7 @@
         >
           <div class="flex flex-col gap-1 pt-2 pb-2">
             <p class="text-xs text-surface-500 dark:text-surface-400 pb-1">
-              A skill is a piece of the work with a prompt of its own, run inside a turn. The
-              wording is the profile's, because the same skill wants different things in different
-              company. Switching one off takes it away from the model; you can still call it
-              yourself with its command.
+              Off hides a skill from the model. Its command still works.
             </p>
 
             <ExpandableSection
@@ -349,11 +339,9 @@
                   class="text-xs text-surface-500 dark:text-surface-400 flex items-center gap-2"
                 >
                   <span v-if="skill.dropped" class="flex-1" data-skill-dropped>
-                    Dropped. It's followed until the next summary, and not kept past it.
+                    Dropped at the next summary.
                   </span>
-                  <span v-else class="flex-1">
-                    Loaded in this chat, and followed from where it was loaded.
-                  </span>
+                  <span v-else class="flex-1"> Loaded in this chat. </span>
                   <Button
                     v-if="!skill.dropped"
                     v-tooltip.top="'Not kept past the next summary'"
@@ -387,14 +375,13 @@
             </ExpandableSection>
 
             <p class="text-xs text-surface-500 dark:text-surface-400 pt-1">
-              Your own skills are written and kept in the library, for every project.
               <button
                 type="button"
                 class="underline hover:text-surface-700 dark:hover:text-surface-200"
                 data-action="open-library"
                 @click="settingsPanel.open('skills')"
               >
-                Open the library
+                Open the skill library
               </button>
             </p>
           </div>
@@ -409,9 +396,7 @@
         >
           <div class="flex flex-col gap-3 pt-2 pb-2">
             <AiPresetGroup />
-            <p class="text-xs text-surface-500 dark:text-surface-400">
-              Shared by every chat. What the app connects to is in the settings dialog too.
-            </p>
+            <p class="text-xs text-surface-500 dark:text-surface-400">Shared by every chat.</p>
           </div>
         </ExpandableSection>
 
@@ -426,7 +411,6 @@
             <div class="flex flex-col gap-1">
               <SettingLabel
                 label="Assistant Voice"
-                description="The voice the assistant's messages are read aloud in."
                 :overridden="!!chatVoice"
                 reset-tooltip="Back to the project's default voice"
                 @reset="setVoice(null)"
@@ -447,7 +431,6 @@
             <div class="flex flex-col gap-1">
               <SettingLabel
                 label="Your Voice"
-                description="The voice your own messages are read aloud in."
                 :overridden="!!userVoice"
                 reset-tooltip="Back to the assistant's voice"
                 @reset="setUserVoice(null)"
@@ -466,8 +449,7 @@
             </div>
 
             <p class="text-xs text-surface-500 dark:text-surface-400">
-              Read a message aloud from the speaker button over it. The voices are the project's,
-              kept in the Narration tab.
+              Voices come from the Narration tab.
             </p>
           </div>
         </ExpandableSection>

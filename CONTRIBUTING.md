@@ -3,8 +3,7 @@
 Patches are welcome, and a change sent here is worth more than the same
 change kept on a fork: it gets maintained, and everyone gets it. Small
 fixes can go straight to a pull request. For anything larger, open an
-issue first so the design is agreed before the work is done. The design
-notes under `.llm/` show where things are heading.
+issue first so the design is agreed before the work is done.
 
 ## Working on the code
 

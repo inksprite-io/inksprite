@@ -90,7 +90,7 @@ describe('ChatProfileMenu', () => {
     expect(notice.pending.value?.header).toBe('Roleplay (NSFW)')
 
     notice.dismiss()
-    await pick(wrapper, 'Roleplay')
+    await pick(wrapper, 'Default')
     await pick(wrapper, 'Roleplay (NSFW)')
     expect(notice.pending.value).toBeNull()
   })
@@ -119,7 +119,7 @@ describe('ChatProfileMenu', () => {
     expect(labels).toEqual(['Default', 'Roleplay', 'Blank'])
   })
 
-  it('offers Roleplay (NSFW) once NSFW profiles are switched on', async () => {
+  it('offers Roleplay (NSFW) in place of Roleplay once NSFW profiles are switched on', async () => {
     useApplicationState().setNsfwProfiles(true)
     const wrapper = mountMenu(chats.unstartedChat.value.id)
     await wrapper.find('[data-chat-profile]').trigger('click')
@@ -127,7 +127,19 @@ describe('ChatProfileMenu', () => {
     const labels = [...document.body.querySelectorAll('[role="menuitem"]')].map(item =>
       item.textContent.trim()
     )
-    expect(labels).toEqual(['Default', 'Roleplay', 'Roleplay (NSFW)', 'Blank'])
+    expect(labels).toEqual(['Default', 'Roleplay (NSFW)', 'Blank'])
+  })
+
+  it('names Roleplay (NSFW) for a chat on Roleplay once they are switched on', async () => {
+    const chat = chats.createChat(undefined, ROLEPLAY_PROFILE_ID)
+    const wrapper = mountMenu(chat.id)
+    expect(wrapper.find('[data-chat-profile]').text()).toBe('Roleplay')
+
+    useApplicationState().setNsfwProfiles(true)
+    await flushPromises()
+
+    expect(wrapper.find('[data-chat-profile]').text()).toBe('Roleplay (NSFW)')
+    expect(chats.getChatById(chat.id).profileId).toBe(ROLEPLAY_PROFILE_ID)
   })
 
   it('names Roleplay for a chat on Roleplay (NSFW) once they are switched off', async () => {

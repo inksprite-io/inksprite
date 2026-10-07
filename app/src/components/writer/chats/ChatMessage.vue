@@ -98,10 +98,6 @@
         v-if="expandContext"
         class="px-3 py-2 text-xs border-t-1 border-amber-500/20 flex flex-col gap-2"
       >
-        <p class="text-surface-400 italic m-0">
-          The request that opened this turn. Anything the turn went on to send is under the tool
-          calls below.
-        </p>
         <div v-for="(entry, index) in contextMessages" :key="index" class="flex flex-col gap-1">
           <div class="font-mono font-semibold text-amber-700 dark:text-amber-300">
             {{ entry.role }}
@@ -919,6 +915,18 @@ const formattedThinkingTime = computed(() => {
 
 .thinking-text {
   animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* A table or a link with no spaces in it can be wider than the chat on a
+   phone. The table scrolls on its own and the link breaks, rather than the
+   whole chat scrolling sideways. */
+.prose {
+  overflow-wrap: break-word;
+}
+
+.prose :deep(table) {
+  display: block;
+  overflow-x: auto;
 }
 
 /* Enable line wrapping in code blocks */

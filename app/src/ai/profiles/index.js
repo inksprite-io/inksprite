@@ -62,10 +62,11 @@ import {
  * @property {ProfileSettings} settings
  * @property {ProfileNotice} [notice] - What the writer is told the first time
  *   they pick it. See composables/useProfileNotice.js.
- * @property {boolean} [nsfw] - Written for explicit content, so offered only
- *   once the writer switches NSFW profiles on in the settings
- * @property {string} [generalId] - For an NSFW one, the profile a chat on it
- *   runs on while they are off: the same thing without the opt-ins
+ * @property {boolean} [nsfw] - Written for explicit content: offered, in place
+ *   of its general counterpart, only once the writer switches NSFW profiles on
+ *   in the settings. See composables/useProfiles.js.
+ * @property {string} [generalId] - For an NSFW one, that counterpart: the same
+ *   thing without the opt-ins
  */
 
 export const CHAT_PROFILE_ID = 'builtin_profile_chat'

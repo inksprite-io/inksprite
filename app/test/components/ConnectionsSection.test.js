@@ -214,7 +214,7 @@ describe('ConnectionsSection', () => {
     const wrapper = await mountSection()
 
     await connectTo(wrapper, 'https://mcp.linear.app/mcp')
-    expect(wrapper.find('[data-candidate]').text()).toContain('needs you to sign in')
+    expect(wrapper.find('[data-candidate]').text()).toContain('Sign in to see what it offers')
     expect(wrapper.find('[data-action="keep"]').attributes('disabled')).toBeDefined()
 
     await wrapper.find('[data-action="sign-in"]').trigger('click')
@@ -285,7 +285,7 @@ describe('ConnectionsSection', () => {
 
     expect(wrapper.find(`[data-server="${server.id}"]`).text()).toContain('2 tools · 2 prompts')
     expect(prompts[0]).toContain('/example:outline <topic>')
-    expect(prompts[1]).toMatch(/needs 2 things filled in/)
+    expect(prompts[1]).toMatch(/needs 2 arguments/)
   })
 })
 

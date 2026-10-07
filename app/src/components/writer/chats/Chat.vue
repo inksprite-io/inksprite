@@ -60,7 +60,14 @@
       <!-- Messages. The scroll is listened for here, on its way down to the
          element PrimeVue makes for it: a scroll does not bubble. -->
       <div class="relative flex-1 min-h-0 flex flex-col" @scroll.capture.passive="onPanelScroll">
-        <ScrollPanel ref="scrollPanel" class="flex-1 overflow-auto">
+        <!-- Never sideways: on a phone a chat that can move sideways drifts
+             under a finger scrolling it up or down. Anything wider than the
+             column scrolls in a box of its own. -->
+        <ScrollPanel
+          ref="scrollPanel"
+          class="flex-1 overflow-auto"
+          :pt="{ content: { class: '!overflow-x-hidden' } }"
+        >
           <div class="mx-auto w-full max-w-3xl pb-[10rem] flex flex-col gap-1 p-2 px-4">
             <!-- Display actual messages, folded into the turns they are -->
             <template v-for="(turn, index) in turns" :key="turn.id">

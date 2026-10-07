@@ -43,8 +43,9 @@ export function useChatSettings(storyId, chatId) {
   const defaultProfileId = computed(() => chatsApi.defaultProfileId())
 
   // The profile generation runs the chat on, which is not always the one it
-  // names: one deleted since reads as the project's default, and an NSFW one,
-  // while those are switched off, as its general counterpart.
+  // names: one deleted since reads as the project's default, and one with an
+  // NSFW or general counterpart as whichever the settings switch puts in its
+  // place.
   const selectedProfileId = computed(
     () => profilesApi.getProfile(chat.value?.profileId)?.id ?? defaultProfileId.value
   )

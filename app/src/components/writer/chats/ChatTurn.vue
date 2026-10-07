@@ -6,9 +6,14 @@
     <!-- One header for the whole turn. A run of messages from one side is one
          turn taken in pieces — it reaches the model as a single message — and a
          name and a time repeated over each piece says the writer spoke three
-         times. See utils/turns.js. -->
-    <div class="flex items-center justify-between min-h-6 mb-2">
-      <div class="flex items-center gap-2 text-xs text-surface-500 dark:text-surface-400">
+         times. See utils/turns.js.
+
+         On a phone the buttons do not fit beside all it says about a reply,
+         so they go under it rather than off the edge of the screen. -->
+    <div class="flex flex-wrap items-center justify-between gap-x-2 min-h-6 mb-2">
+      <div
+        class="flex flex-wrap items-center gap-x-2 whitespace-nowrap text-xs text-surface-500 dark:text-surface-400"
+      >
         <span class="font-semibold" :class="authorClass">
           {{ author }}
         </span>
@@ -72,7 +77,7 @@
            nothing floats over is where "edit turn" is looked for anyway. -->
       <div
         :class="[
-          'flex gap-1 transition-opacity',
+          'flex flex-none gap-1 ml-auto transition-opacity',
           menuOpen
             ? 'opacity-100'
             : isMobile

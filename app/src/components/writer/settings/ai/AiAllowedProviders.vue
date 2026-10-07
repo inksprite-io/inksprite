@@ -2,7 +2,6 @@
   <div class="flex flex-col gap-1">
     <SettingLabel
       label="Allowed Providers"
-      description="Route this model only to these providers. Leave empty to allow any the connection's routing allows."
       :overridden="allowed.length > 0"
       reset-tooltip="Allow any provider"
       @reset="emit('update:modelValue', undefined)"

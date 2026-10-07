@@ -1,6 +1,7 @@
 // A chat, a turn and a message stand in here for Chat, ChatTurn and ChatMessage,
 // which the composable is shared between.
 /* eslint-disable vue/one-component-per-file */
+/* global Event */
 /* global Element */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { defineComponent, h, nextTick, ref } from 'vue'
@@ -122,24 +123,26 @@ const chat = (count, kept = ref(null), attach = false, texts = {}) => {
         () => kept.value
       )
       return () =>
-        h(
-          'div',
-          { ref: root },
-          turns.value.map(turn =>
-            h(
-              'div',
-              {
-                key: turn.id,
-                ref: el => near.track(turn.id, el),
-                'data-turn': turn.id,
-                style: near.isMounted(turn.id)
-                  ? undefined
-                  : { height: `${near.heightOf(turn.id)}px` },
-              },
-              near.isMounted(turn.id) ? [h(Turn, { id: turn.id })] : []
+        h('div', { ref: root }, [
+          h(
+            'div',
+            { 'data-container': '' },
+            turns.value.map(turn =>
+              h(
+                'div',
+                {
+                  key: turn.id,
+                  ref: el => near.track(turn.id, el),
+                  'data-turn': turn.id,
+                  style: near.isMounted(turn.id)
+                    ? undefined
+                    : { height: `${near.heightOf(turn.id)}px` },
+                },
+                near.isMounted(turn.id) ? [h(Turn, { id: turn.id })] : []
+              )
             )
-          )
-        )
+          ),
+        ])
     },
   })
   const wrapper = mount(Host, attach ? { attachTo: document.body } : {})
@@ -350,19 +353,20 @@ describe('useNearTurns keeping the view still', () => {
   const real = { t3: 740, t8: 900 }
   let original
 
-  // A layout of the chat's blocks, one under another in the scroller, which is
-  // 800 pixels tall and at the top of the page: what happy-dom does not do.
+  // A layout of the chat's blocks, one under another in their container under
+  // its top margin, in the scroller, which is 800 pixels tall and at the top of
+  // the page: what happy-dom does not do.
   beforeEach(() => {
     original = Element.prototype.getBoundingClientRect
     Element.prototype.getBoundingClientRect = function () {
-      const root = this.hasAttribute('data-turn') ? this.parentElement : this
-      if (this === root) return { top: 0, bottom: 800, height: 800 }
+      if (!this.hasAttribute('data-turn')) return { top: 0, bottom: 800, height: 800 }
+      const container = this.parentElement
       const heightOf = el =>
         el.querySelector('[data-body]')
           ? real[el.dataset.turn] || 300
           : parseFloat(el.style.height) || 0
-      let top = -root.scrollTop
-      for (const el of root.children) {
+      let top = -container.parentElement.scrollTop + (parseFloat(container.style.marginTop) || 0)
+      for (const el of container.children) {
         if (el === this) break
         top += heightOf(el)
       }
@@ -402,6 +406,85 @@ describe('useNearTurns keeping the view still', () => {
     expect(mounted(wrapper)).toContain('t8')
     expect(wrapper.element.scrollTop).toBe(4 * BASE_HEIGHT + 100)
     wrapper.unmount()
+  })
+
+  describe('while it is scrolled by touch', () => {
+    beforeEach(() => vi.useFakeTimers())
+    afterEach(() => vi.useRealTimers())
+
+    /** @param {import('@vue/test-utils').VueWrapper} wrapper @param {string} type */
+    const fire = (wrapper, type) => wrapper.element.dispatchEvent(new Event(type))
+
+    /** @param {import('@vue/test-utils').VueWrapper} wrapper */
+    const container = wrapper => wrapper.find('[data-container]').element
+
+    /** A chat scrolled to t5, with t3 above it about to come in. */
+    const scrolled = async () => {
+      const { wrapper } = chat(12, ref(null), true)
+      await see(wrapper, { t3: false, t4: true, t5: true })
+      wrapper.element.scrollTop = 4 * BASE_HEIGHT + 300 + 100
+      return wrapper
+    }
+
+    it('shifts the turns rather than moving the scroll, which would stop it in iOS', async () => {
+      const wrapper = await scrolled()
+      const reading = block(wrapper, 't5').element.getBoundingClientRect().top
+
+      fire(wrapper, 'touchstart')
+      await see(wrapper, { t3: true })
+      await nextTick()
+
+      expect(block(wrapper, 't5').element.getBoundingClientRect().top).toBe(reading)
+      expect(wrapper.element.scrollTop).toBe(4 * BASE_HEIGHT + 300 + 100)
+      expect(container(wrapper).style.marginTop).toBe(`${-(740 - BASE_HEIGHT)}px`)
+      wrapper.unmount()
+    })
+
+    it('keeps the shift while it coasts, and takes it into the scroll once it is still', async () => {
+      const wrapper = await scrolled()
+      fire(wrapper, 'touchstart')
+      await see(wrapper, { t3: true })
+      await nextTick()
+      const reading = block(wrapper, 't5').element.getBoundingClientRect().top
+
+      fire(wrapper, 'touchend')
+      vi.advanceTimersByTime(150)
+      fire(wrapper, 'scroll')
+      vi.advanceTimersByTime(150)
+      expect(container(wrapper).style.marginTop).not.toBe('')
+
+      vi.advanceTimersByTime(100)
+      expect(container(wrapper).style.marginTop).toBe('')
+      expect(wrapper.element.scrollTop).toBe(4 * BASE_HEIGHT + 300 + 100 + (740 - BASE_HEIGHT))
+      expect(block(wrapper, 't5').element.getBoundingClientRect().top).toBe(reading)
+      wrapper.unmount()
+    })
+
+    it('keeps the shift for as long as a finger is on the panel', async () => {
+      const wrapper = await scrolled()
+      fire(wrapper, 'touchstart')
+      await see(wrapper, { t3: true })
+      await nextTick()
+
+      vi.advanceTimersByTime(1000)
+
+      expect(container(wrapper).style.marginTop).not.toBe('')
+      wrapper.unmount()
+    })
+
+    it('moves the scroll again once the touch is over', async () => {
+      const wrapper = await scrolled()
+      fire(wrapper, 'touchstart')
+      fire(wrapper, 'touchend')
+      vi.advanceTimersByTime(250)
+
+      await see(wrapper, { t3: true })
+      await nextTick()
+
+      expect(container(wrapper).style.marginTop).toBe('')
+      expect(wrapper.element.scrollTop).toBe(4 * BASE_HEIGHT + 300 + 100 + (740 - BASE_HEIGHT))
+      wrapper.unmount()
+    })
   })
 })
 

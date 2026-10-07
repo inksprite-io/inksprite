@@ -27,10 +27,6 @@
           data-nsfw-profiles
         />
       </div>
-      <p class="text-xs text-surface-500 dark:text-surface-400">
-        Adds Roleplay (NSFW) to the profiles, for adults. With this off, chats already on it run as
-        Roleplay.
-      </p>
     </div>
 
     <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
@@ -41,7 +37,7 @@
         <ToggleSwitch v-model="debug" input-id="debug-switch" class="flex-none" data-debug />
       </div>
       <p class="text-xs text-surface-500 dark:text-surface-400">
-        Keeps the request behind each reply, which makes long chats heavy.
+        Keeps the request behind each reply. Long chats get heavy.
       </p>
     </div>
 
@@ -60,14 +56,22 @@ import DataSection from './DataSection.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { applyTheme } from '@/composables/useSystemSettings.js'
 import { useMessagesStore } from '@/stores/messagesStore'
+import { useProfileNotice } from '@/composables/useProfileNotice.js'
+import { ROLEPLAY_NSFW_PROFILE_ID } from '@/ai/profiles/index.js'
 
 const applicationState = useApplicationState()
 const { theme, setTheme } = applicationState
 const messagesStore = useMessagesStore()
+const { noticeFor } = useProfileNotice()
 
+// Switched on, Roleplay (NSFW) takes Roleplay's place, card chats start on it
+// with nobody picking it, and this is the choosing.
 const nsfwProfiles = computed({
   get: () => applicationState.nsfwProfiles.value,
-  set: value => applicationState.setNsfwProfiles(value),
+  set: value => {
+    applicationState.setNsfwProfiles(value)
+    if (value) noticeFor(ROLEPLAY_NSFW_PROFILE_ID)
+  },
 })
 
 // Switched off, it forgets what it kept. A saved request is as large as the

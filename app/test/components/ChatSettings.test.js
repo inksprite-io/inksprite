@@ -499,7 +499,7 @@ describe('ChatSettings skills the chat has loaded', () => {
     const wrapper = await mountSettings()
 
     expect(wrapper.find('[data-skill-loaded]').exists()).toBe(true)
-    expect(wrapper.find('[data-skill-dropped]').text()).toContain('until the next summary')
+    expect(wrapper.find('[data-skill-dropped]').text()).toContain('at the next summary')
     expect(wrapper.find('[data-action="drop-skill"]').exists()).toBe(false)
   })
 })

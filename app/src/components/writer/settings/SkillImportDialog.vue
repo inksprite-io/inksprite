@@ -8,8 +8,7 @@
   >
     <div class="flex flex-col gap-3" data-skill-import>
       <p class="text-sm text-surface-600 dark:text-surface-300">
-        {{ found.length === 1 ? 'One skill' : `${found.length} skills` }} in what you chose. Nothing
-        is kept until you import.
+        {{ found.length === 1 ? 'One skill' : `${found.length} skills` }} found.
       </p>
 
       <div
@@ -48,7 +47,7 @@
           </span>
           <div v-if="row.problem" class="flex flex-col gap-1" data-problem>
             <span class="text-xs text-red-600 dark:text-red-400">
-              {{ row.problem }} Give it another name to bring it in.
+              {{ row.problem }} Rename it to import it.
             </span>
             <InputText
               :model-value="row.name"

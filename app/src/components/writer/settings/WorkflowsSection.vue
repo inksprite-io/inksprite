@@ -20,10 +20,7 @@
         @update:model-value="pick({ allowedProviders: $event })"
       />
       <div class="flex flex-col gap-1">
-        <SettingLabel
-          label="Reasoning Effort"
-          description="How much extended thinking to request. OpenRouter providers only."
-        />
+        <SettingLabel label="Reasoning Effort" description="Levels apply on OpenRouter only." />
         <Select
           input-id="workflow-convert-effort"
           :model-value="settings.reasoningEffort || AI_DEFAULTS.reasoningEffort"

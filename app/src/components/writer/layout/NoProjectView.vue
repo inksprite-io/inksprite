@@ -14,9 +14,6 @@
         <h2 class="text-2xl font-semibold text-surface-700 dark:text-surface-200">
           No project open
         </h2>
-        <p class="text-surface-500 dark:text-surface-400 mt-2">
-          Start one here, or pick one from the list.
-        </p>
         <Button
           label="New project"
           icon="pi pi-plus"

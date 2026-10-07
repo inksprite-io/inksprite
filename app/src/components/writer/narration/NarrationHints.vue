@@ -12,8 +12,7 @@
       @update:model-value="$emit('update:hints', $event)"
     />
     <p class="text-xs text-surface-500 dark:text-surface-400">
-      One to a line: the word, a colon, and how to say it. Whole words only, in any case. The
-      document keeps its spelling; only what the reader hears changes.
+      One per line, <code>word:pronunciation</code>. Whole words only.
     </p>
   </div>
 </template>

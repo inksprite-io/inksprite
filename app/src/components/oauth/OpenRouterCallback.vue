@@ -10,7 +10,6 @@
       <template v-else-if="status === 'success'">
         <div class="success-icon">✓</div>
         <h2>Connected Successfully!</h2>
-        <p>Your OpenRouter account has been connected.</p>
         <p class="close-message">You can now close this tab and return to inksprite.</p>
       </template>
 

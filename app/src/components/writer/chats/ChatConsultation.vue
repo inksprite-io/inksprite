@@ -66,7 +66,7 @@
         v-html="answerHtml"
       />
       <p v-if="consultation.reply" class="text-xs text-surface-500 italic m-0">
-        What it wrote is the reply.
+        Used as the reply.
       </p>
       <p v-if="consultation.error" class="text-xs text-surface-500 italic m-0">
         {{ consultation.error }}

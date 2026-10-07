@@ -21,6 +21,14 @@
  * what mounting a turn is, and without this the chat jumped on nearly every
  * step of scrolling up through a long one there.
  *
+ * Putting it back is moving the scroll position, except while a finger is on
+ * the panel or it is still coasting from one. iOS stops a scroll dead when the
+ * page moves it, so a long chat could not be flung through there: it stopped
+ * at every turn that came in. Then the turns' container is shifted up or down
+ * by its top margin instead, which WebKit leaves the scroll position alone for,
+ * and once the panel has been still for a moment the shift is taken out and the
+ * scroll position moved by as much, where moving it stops nothing.
+ *
  * Some turns stay whatever: the newest two, which are what was just sent and
  * the reply to it, where the writer is looking and where the chat takes them;
  * whatever the chat names in `keep`, such as a summary being written; and a
@@ -74,6 +82,9 @@ const NEWEST = 2
 /** How many of the newest turns are mounted before the page has said which are near. */
 const OPENING = 8
 
+/** How long the panel has to be still, with no finger on it, before a shift is taken out. */
+const STILL_MS = 200
+
 /** @type {import('vue').InjectionKey<(id: string, on: boolean) => void>} */
 const HOLD = Symbol('hold a turn')
 
@@ -91,7 +102,8 @@ const STATE = Symbol('turn state')
 
 /**
  * @param {() => HTMLElement|null} scroller - The element that scrolls, asked
- *   for once the chat is mounted
+ *   for once the chat is mounted. Its first child holds the turns, and is
+ *   shifted by its top margin while the panel is being scrolled by touch
  * @param {import('vue').Ref<TurnLike[]>} turns - The chat's turns, in order
  * @param {() => string|null} [keep] - A turn to keep mounted besides the rest
  */
@@ -121,6 +133,18 @@ export function useNearTurns(scroller, turns, keep = () => null) {
   const elements = new Map()
   /** @type {WeakMap<Element, string>} */
   const ids = new WeakMap()
+
+  /** How far the turns' container is shifted down, by its top margin. */
+  let shift = 0
+  /** Whether a finger is on the panel. */
+  let touching = false
+  /** Whether the panel is being scrolled by touch: a finger on it, or coasting from one. */
+  let touched = false
+  /** @type {ReturnType<typeof setTimeout>|undefined} */
+  let stilling
+  /** The element listened to for touches and scrolling, once there is one. */
+  /** @type {HTMLElement|null} */
+  let listened = null
 
   /** @type {IntersectionObserver|null} */
   let intersect = null
@@ -273,7 +297,47 @@ export function useNearTurns(scroller, turns, keep = () => null) {
   const keepInPlace = (root, was) => {
     if (!was?.el.isConnected) return
     const moved = was.el.getBoundingClientRect().top - root.getBoundingClientRect().top - was.top
-    if (Math.abs(moved) >= 1) root.scrollTop += moved
+    if (Math.abs(moved) < 1) return
+    if (touched) shiftBy(root, -moved)
+    else root.scrollTop += moved
+  }
+
+  /**
+   * Shift the turns' container down, or up for a negative distance.
+   * @param {Element} root
+   * @param {number} by
+   */
+  const shiftBy = (root, by) => {
+    const container = /** @type {HTMLElement|null} */ (root.firstElementChild)
+    if (!container) return
+    shift += by
+    container.style.marginTop = shift ? `${shift}px` : ''
+  }
+
+  /**
+   * Take the shift out and move the scroll position by as much, so that
+   * nothing on screen moves. For once the panel is still.
+   * @param {Element} root
+   */
+  const unshift = root => {
+    if (!shift) return
+    const was = shift
+    shiftBy(root, -was)
+    root.scrollTop -= was
+  }
+
+  /**
+   * Note that the panel moved, or a finger left it, and take the shift out once
+   * it has been still long enough.
+   * @param {Element} root
+   */
+  const stillSoon = root => {
+    clearTimeout(stilling)
+    stilling = setTimeout(() => {
+      if (touching) return
+      touched = false
+      unshift(root)
+    }, STILL_MS)
   }
 
   /**
@@ -289,6 +353,21 @@ export function useNearTurns(scroller, turns, keep = () => null) {
 
   /** @type {ReturnType<typeof setTimeout>|undefined} */
   let settling
+
+  const onTouchStart = () => {
+    touching = true
+    touched = true
+    clearTimeout(stilling)
+  }
+
+  const onTouchEnd = () => {
+    touching = false
+    if (listened) stillSoon(listened)
+  }
+
+  const onScroll = () => {
+    if (touched && !touching && listened) stillSoon(listened)
+  }
 
   onMounted(() => {
     const root = scroller()
@@ -336,6 +415,12 @@ export function useNearTurns(scroller, turns, keep = () => null) {
       }, SETTLE_MS)
     })
 
+    listened = root
+    root.addEventListener('touchstart', onTouchStart, { passive: true })
+    root.addEventListener('touchend', onTouchEnd, { passive: true })
+    root.addEventListener('touchcancel', onTouchEnd, { passive: true })
+    root.addEventListener('scroll', onScroll, { passive: true })
+
     // The width the turns have now, so that the first guesses are made at it.
     const first = elements.values().next().value
     if (first) width.value = first.getBoundingClientRect().width
@@ -350,6 +435,11 @@ export function useNearTurns(scroller, turns, keep = () => null) {
     intersect?.disconnect()
     resize?.disconnect()
     clearTimeout(settling)
+    clearTimeout(stilling)
+    listened?.removeEventListener('touchstart', onTouchStart)
+    listened?.removeEventListener('touchend', onTouchEnd)
+    listened?.removeEventListener('touchcancel', onTouchEnd)
+    listened?.removeEventListener('scroll', onScroll)
   })
 
   return { isMounted, heightOf, track }

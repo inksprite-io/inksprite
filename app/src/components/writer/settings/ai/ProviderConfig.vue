@@ -141,9 +141,6 @@
             class="w-full"
             @click="handleOAuthConnect"
           />
-          <p class="text-xs text-surface-500 dark:text-surface-400 text-center">
-            Securely connect your OpenRouter account
-          </p>
         </div>
 
         <!-- Routing preferences (OpenRouter only) -->

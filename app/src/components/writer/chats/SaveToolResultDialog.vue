@@ -9,8 +9,8 @@
   >
     <div class="flex flex-col gap-3">
       <p class="text-xs text-surface-500 dark:text-surface-400 m-0">
-        What {{ server }} answered to <span class="font-mono">{{ tool }}</span
-        >, as a document in this project, with a line saying where it came from.
+        {{ server }}’s answer to <span class="font-mono">{{ tool }}</span
+        >.
       </p>
       <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
         Title

@@ -32,11 +32,10 @@ describe('EmptyEditor', () => {
     expect(wrapper.find('button').exists()).toBe(true)
   })
 
-  it('says where to look for a project whose tabs are all closed', () => {
+  it('says nothing is open in a project whose tabs are all closed', () => {
     mockApi.firstTextDocument.mockReturnValue({ id: 'doc_1', type: 'text' })
     const wrapper = mountEmpty()
     expect(wrapper.text()).toContain('Nothing open')
-    expect(wrapper.text()).toContain('outline')
     expect(wrapper.find('button').exists()).toBe(true)
   })
 

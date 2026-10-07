@@ -1,9 +1,8 @@
 <template>
   <div class="flex flex-col gap-4 px-2 pt-2 pb-1" data-connections-section>
     <p class="text-sm text-surface-600 dark:text-surface-300">
-      Connect an MCP server and its tools can be offered to the model in your chats. inksprite
-      connects from this page, so the server has to let web pages connect to it. One that runs as a
-      program on your computer needs a bridge that serves it over HTTP.
+      Servers must accept connections from web pages. One that runs as a local program needs an HTTP
+      bridge.
     </p>
 
     <!-- Adding: an address, or a pasted block of servers, then a look at what
@@ -52,7 +51,7 @@
           />
         </label>
         <div class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
-          A header to send, for a server that takes a key (optional)
+          Header (optional)
           <div class="flex gap-2">
             <InputText
               v-model="draft.headerName"
@@ -125,7 +124,7 @@
             {{ candidate.error }}
           </span>
           <span v-else class="flex flex-wrap items-center gap-2 text-xs text-surface-600">
-            It needs you to sign in before it will say what it offers.
+            Sign in to see what it offers.
             <Button
               label="Sign in"
               size="small"
@@ -149,12 +148,11 @@
           v-else-if="!candidate.server.url"
           class="text-xs italic text-surface-500 dark:text-surface-400"
         >
-          Runs as a program, so it needs a bridge before inksprite can reach it. Kept so you can see
-          it.
+          Runs as a program, so it needs an HTTP bridge.
         </span>
         <template v-else-if="candidate.preview">
           <span class="text-xs text-surface-500 dark:text-surface-400">
-            {{ offers(candidate.preview) }}. What the model will be told:
+            {{ offers(candidate.preview) }}:
           </span>
           <ul class="flex flex-col gap-1 pl-3">
             <li
@@ -174,9 +172,7 @@
 
       <template v-if="candidates.length > 0">
         <div class="flex flex-col gap-1">
-          <span class="text-xs text-surface-600 dark:text-surface-300">
-            Use in chats on these profiles. A chat can switch it on or off for itself.
-          </span>
+          <span class="text-xs text-surface-600 dark:text-surface-300"> Used in chats on </span>
           <div class="flex flex-wrap gap-x-4 gap-y-1">
             <label
               v-for="profile in profiles"
@@ -239,8 +235,7 @@
             {{ server.url || server.command }}
           </span>
           <span v-if="!server.url" class="text-xs italic text-surface-500 dark:text-surface-400">
-            Runs as a program, so it needs a bridge that serves it over HTTP. Add the bridge’s
-            address as a server of its own.
+            Runs as a program. Add its HTTP bridge as a server instead.
           </span>
           <span v-else-if="server.error" class="text-xs text-red-600 dark:text-red-400">
             {{ server.error }}
@@ -330,8 +325,8 @@
                 — {{ prompt.description }}</span
               >
               <span v-if="!commandFor(server, prompt)" class="italic text-surface-500">
-                · needs {{ requiredArguments(prompt) }} things filled in, so it isn’t in the
-                <span class="font-mono">/</span> menu yet</span
+                · needs {{ requiredArguments(prompt) }} arguments, so it isn’t in the
+                <span class="font-mono">/</span> menu</span
               >
             </div>
           </div>

@@ -7,15 +7,12 @@
   >
     <div class="flex flex-col gap-3 pt-2 pb-1">
       <p class="text-xs text-surface-500 dark:text-surface-400">
-        Constrain which upstream providers OpenRouter may route to. Applies to every request through
-        this connection, whatever the model. Which providers may serve a given model is set on its
-        preset, under Allowed Providers.
+        Applies to every model on this connection.
       </p>
 
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Ignored Providers"
-          description="Never route to these providers, even as a fallback."
           :overridden="isOverridden('ignore')"
           @reset="setRouting({ ignore: [...ROUTING_DEFAULTS.ignore] })"
         />
@@ -28,7 +25,7 @@
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Data Collection"
-          description="Whether providers that may store your prompts for training are eligible to serve requests. Denied by default."
+          description="Providers that may train on your prompts."
           :overridden="isOverridden('dataCollection')"
           @reset="setRouting({ dataCollection: ROUTING_DEFAULTS.dataCollection })"
         />
@@ -46,7 +43,7 @@
       <div class="flex items-center justify-between gap-2">
         <SettingLabel
           label="Zero Data Retention"
-          description="Route only to endpoints that keep no copy of the prompt or response. On by default; a model with no such endpoint needs this off."
+          description="Some models have no such endpoint and need this off."
           :overridden="isOverridden('zdr')"
           @reset="setRouting({ zdr: ROUTING_DEFAULTS.zdr })"
         />
@@ -60,7 +57,7 @@
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Quantization"
-          description="Serve only at these precisions. Eight-bit or better by default; clear the list to accept any, including endpoints that don't report one."
+          description="Clear to accept any, including unreported."
           :overridden="isOverridden('quantizations')"
           @reset="setRouting({ quantizations: ROUTING_DEFAULTS.quantizations })"
         />
@@ -81,7 +78,7 @@
       <div class="flex items-center justify-between gap-2">
         <SettingLabel
           label="Allow Fallbacks"
-          description="When the cheapest eligible provider is down, let OpenRouter try the next eligible one rather than failing. Never routes outside the filters above."
+          description="Try the next eligible provider when one is down."
           :overridden="isOverridden('allowFallbacks')"
           @reset="setRouting({ allowFallbacks: ROUTING_DEFAULTS.allowFallbacks })"
         />

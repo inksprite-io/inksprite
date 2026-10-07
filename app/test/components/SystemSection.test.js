@@ -29,6 +29,9 @@ vi.mock('@/composables/useApplicationState', () => ({
 vi.mock('@/composables/useSystemSettings.js', () => ({ applyTheme: vi.fn() }))
 vi.mock('@/stores/messagesStore', () => ({ useMessagesStore: () => ({ forgetSavedRequests }) }))
 
+const { noticeFor } = vi.hoisted(() => ({ noticeFor: vi.fn() }))
+vi.mock('@/composables/useProfileNotice.js', () => ({ useProfileNotice: () => ({ noticeFor }) }))
+
 /** The switch whose root carries this attribute. */
 const toggle = (wrapper, attribute) => wrapper.findComponent(`[${attribute}]`)
 
@@ -85,6 +88,7 @@ describe('SystemSection NSFW profiles', () => {
   beforeEach(() => {
     nsfwProfiles.value = false
     setNsfwProfiles.mockClear()
+    noticeFor.mockClear()
   })
 
   it('sits above the debug switch', () => {
@@ -105,6 +109,17 @@ describe('SystemSection NSFW profiles', () => {
 
     await toggle(wrapper, 'data-nsfw-profiles').vm.$emit('update:modelValue', false)
     expect(setNsfwProfiles).toHaveBeenLastCalledWith(false)
+  })
+
+  it('tells the writer what Roleplay (NSFW) asks of them when they switch it on', async () => {
+    const wrapper = mountSection()
+
+    await toggle(wrapper, 'data-nsfw-profiles').vm.$emit('update:modelValue', true)
+    expect(noticeFor).toHaveBeenCalledWith('builtin_profile_roleplay_nsfw')
+
+    noticeFor.mockClear()
+    await toggle(wrapper, 'data-nsfw-profiles').vm.$emit('update:modelValue', false)
+    expect(noticeFor).not.toHaveBeenCalled()
   })
 })
 

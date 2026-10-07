@@ -9,13 +9,6 @@
         <h2 class="text-2xl font-semibold text-surface-700 dark:text-surface-200">
           {{ isEmpty ? 'Nothing to write in yet' : 'Nothing open' }}
         </h2>
-        <p class="text-surface-500 dark:text-surface-400 mt-2">
-          {{
-            isEmpty
-              ? 'A project is whatever folders and documents you put in it.'
-              : 'Pick a document from the outline, or start a new one.'
-          }}
-        </p>
       </div>
       <Button label="New document" icon="pi pi-plus" @click="createDocument" />
     </div>

@@ -81,10 +81,6 @@
           data-voice-mix
           @update:model-value="mixIn"
         />
-        <p class="text-xs text-surface-500 dark:text-surface-400">
-          Passed to the server as written. Kokoro mixes voices with <code>+</code>, weighted in
-          parentheses.
-        </p>
       </div>
 
       <div class="flex flex-col gap-1">
@@ -135,9 +131,6 @@
             @click="update({ color })"
           />
         </div>
-        <p class="text-xs text-surface-500 dark:text-surface-400">
-          Marks this voice's lines in the list, and in the editor while the narration is open.
-        </p>
       </div>
 
       <div class="flex items-center justify-between gap-2">

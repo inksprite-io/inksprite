@@ -4,10 +4,8 @@
 
     <template v-else>
       <p class="text-sm text-surface-600 dark:text-surface-300">
-        A skill is a piece of work with instructions of its own. The model calls one when its
-        description fits, and you call one as <span class="font-mono">/its-name</span>. Yours are
-        kept here, for every project; a chat’s settings can reword any skill for the profile it runs
-        on.
+        Instructions the model calls when they fit, or you call as
+        <span class="font-mono">/its-name</span>.
       </p>
 
       <div class="flex flex-wrap gap-2">
@@ -105,9 +103,6 @@
 
       <section class="flex flex-col gap-2" data-list="built-in">
         <h3 class="text-sm font-semibold text-surface-800 dark:text-surface-100">Built-in</h3>
-        <p class="text-xs text-surface-500 dark:text-surface-400">
-          These ship with the app. Reword one for a profile in a chat’s settings.
-        </p>
         <div
           v-for="skill in builtIn"
           :key="skill.name"

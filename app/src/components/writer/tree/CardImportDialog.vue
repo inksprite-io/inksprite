@@ -24,8 +24,7 @@
         class="text-xs text-surface-600 dark:text-surface-300"
         data-replaces-note
       >
-        Everything in this card's folder is written again from the card it arrived as. Edits made to
-        those documents since are lost.
+        Overwrites this card's documents. Edits made to them since are lost.
       </p>
 
       <div class="flex flex-wrap gap-1.5">
@@ -53,8 +52,7 @@
           autofocus
         />
         <p class="text-xs text-surface-500 dark:text-surface-400">
-          Cards write <code>{{ USER_MACRO }}</code> where they mean whoever is reading. It is put in
-          once, here, so the documents are ordinary text afterwards.
+          Replaces <code>{{ USER_MACRO }}</code> in the card.
         </p>
       </div>
 
@@ -66,8 +64,7 @@
           <ToggleSwitch v-model="useSystemPrompt" class="flex-none" />
         </div>
         <p class="text-xs text-surface-500 dark:text-surface-400">
-          This card carries one. Most that do are carrying a preset's scaffolding rather than
-          anything about the character, so it is off unless you say otherwise.
+          Usually a preset's scaffolding rather than anything about the character.
         </p>
       </div>
     </div>

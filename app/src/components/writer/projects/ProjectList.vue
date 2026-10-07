@@ -56,8 +56,7 @@
         class="flex flex-col items-center justify-center h-full text-surface-400 dark:text-surface-500 p-4"
       >
         <i class="pi pi-book text-4xl mb-3 opacity-50"></i>
-        <p class="text-sm text-center mb-3">No projects yet</p>
-        <p class="text-xs text-center opacity-75">Start one to begin writing.</p>
+        <p class="text-sm text-center">No projects yet</p>
       </div>
     </ScrollPanel>
 

@@ -9,7 +9,7 @@
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Max Tokens"
-          description="Cap on response length. 0 lets the provider decide."
+          description="0 lets the provider decide."
           :overridden="isOverridden('maxTokens')"
           @reset="resetSettings(['maxTokens'])"
         />
@@ -27,7 +27,7 @@
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Reasoning Effort"
-          description="How much extended thinking to request. OpenRouter providers only."
+          description="Levels apply on OpenRouter only."
           :overridden="isOverridden('reasoningEffort')"
           @reset="resetSettings(['reasoningEffort'])"
         />
@@ -45,7 +45,6 @@
       <div class="flex items-center justify-between gap-2">
         <SettingLabel
           label="Show Reasoning"
-          description="Stream the model's thinking into the chat alongside its reply."
           :overridden="isOverridden('showModelReasoning')"
           @reset="resetSettings(['showModelReasoning'])"
         />
@@ -62,22 +61,20 @@
             Allow Tool Use
           </label>
           <ToggleSwitch
-            v-tooltip.top="toolsEnabled ? 'Enabled' : 'Disabled'"
             :model-value="toolsEnabled"
             class="flex-none"
             @update:model-value="setToolsEnabled"
           />
         </div>
         <p class="text-xs text-surface-500 dark:text-surface-400">
-          Turn off for models that don't support tool calling. Which tools a chat is offered is the
-          chat's own, under Context.
+          Turn off for models without tool calling.
         </p>
       </div>
 
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Tool Rounds per Turn"
-          description="How many rounds of tool calls a turn may make before it has to answer. 0 means no limit. A turn that gets the same result from the same call three rounds running stops early either way."
+          description="0 means no limit."
           :overridden="isOverridden('maxToolRounds')"
           @reset="resetSettings(['maxToolRounds'])"
         />

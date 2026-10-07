@@ -31,9 +31,6 @@
       header="Export backup"
       :style="{ width: '24rem', maxWidth: '95vw' }"
     >
-      <p class="text-sm text-surface-600 dark:text-surface-300 mb-3">
-        Saves every project, chat, and setting to a JSON file.
-      </p>
       <div class="flex items-center gap-2">
         <Checkbox v-model="includeApiKeys" input-id="include-api-keys" binary />
         <label for="include-api-keys" class="text-sm">Include API keys</label>

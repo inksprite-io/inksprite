@@ -39,12 +39,13 @@
           <h3 class="text-md font-semibold text-surface-500 dark:text-surface-300">Getting Help</h3>
           <div class="flex flex-col text-surface-700 dark:text-surface-400 gap-3">
             <p>
-              If you need help or want to share feedback with us, you can find us on
+              Report bugs and ask questions in the
               <a
-                href="https://reddit.com/r/inksprite"
+                href="https://github.com/inksprite-io/inksprite/issues"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="text-primary-600 dark:text-primary-400 hover:underline font-medium"
-              >
-                Reddit </a
+                >GitHub issues</a
               >.
             </p>
           </div>

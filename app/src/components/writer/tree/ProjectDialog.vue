@@ -34,9 +34,6 @@
           class="w-full dark:!bg-surface-900"
           size="small"
         />
-        <p class="text-xs text-surface-500 dark:text-surface-400">
-          New chats in this project start on it. Each chat can still pick its own.
-        </p>
       </div>
     </div>
     <template #footer>
@@ -77,7 +74,8 @@ const profiles = computed(() => profilesApi.profiles.value)
 
 /**
  * The profile new chats in the project start on, as it stands: the project's
- * own unless that is gone or an NSFW one switched off.
+ * own unless that is gone or the settings switch puts its NSFW or general
+ * counterpart in its place.
  * @param {any} story
  * @returns {string}
  */
@@ -134,8 +132,8 @@ const save = async () => {
       summary: form.value.summary.trim(),
     })
     const story = storiesStore.getStory(props.storyId)
-    // Against what the dialog showed, so saving a new title leaves an NSFW
-    // default in place for when the writer switches those back on.
+    // Against what the dialog showed, so saving a new title leaves a default
+    // the settings switch has swapped for its counterpart as it was.
     if (story && startingProfileId(story) !== form.value.profileId) {
       await storiesStore.updateStory(props.storyId, {
         options: { ...story.options, profileId: form.value.profileId },

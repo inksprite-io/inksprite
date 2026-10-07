@@ -14,8 +14,7 @@
         @update:model-value="setNarration({ endpoint: String($event ?? '').trim() })"
       />
       <p class="text-xs text-surface-500 dark:text-surface-400">
-        An OpenAI-compatible text-to-speech endpoint. Kokoro-FastAPI answers at this address when
-        run with its docker-compose, and is what the voices and mixes are written for.
+        Any OpenAI-compatible speech endpoint, such as Kokoro-FastAPI.
       </p>
     </div>
 
