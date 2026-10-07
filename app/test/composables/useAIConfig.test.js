@@ -76,6 +76,21 @@ describe('useAIConfig presets', () => {
       // Tuning one model must not retune the other.
       expect(aiConfig.getPreset(source.id).generationOverrides).toEqual({ maxTokens: 512 })
     })
+
+    it('copies the providers allowed for the model, and keeps them its own', () => {
+      const source = aiConfig.activeAIPreset.value
+      aiConfig.updatePreset(source.id, { allowedProviders: ['deepinfra'] })
+
+      const made = aiConfig.createPreset('Another')
+      expect(made.allowedProviders).toEqual(['deepinfra'])
+
+      aiConfig.updatePreset(made.id, { allowedProviders: undefined })
+      expect(aiConfig.getPreset(source.id).allowedProviders).toEqual(['deepinfra'])
+    })
+
+    it('leaves the field off a copy of a preset that allows any provider', () => {
+      expect(aiConfig.createPreset('Another')).not.toHaveProperty('allowedProviders')
+    })
   })
 
   describe('deletePreset', () => {

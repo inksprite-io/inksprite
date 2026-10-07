@@ -80,6 +80,7 @@ import DocumentNode from './DocumentNode.vue'
 import ProjectDialog from './ProjectDialog.vue'
 import CardImportDialog from './CardImportDialog.vue'
 import GreetingDialog from './GreetingDialog.vue'
+import { useBackup } from '@/composables/useBackup'
 import { useCardChat } from '@/composables/useCardChat'
 import { useBulkImport, describeImport } from '@/composables/useBulkImport'
 import { useCardImport, NotACardError } from '@/composables/useCardImport'
@@ -457,6 +458,22 @@ const confirmDeleteProject = () => {
   })
 }
 
+/** Save the project, with its chats, to a file of its own. */
+const exportProject = async () => {
+  try {
+    const { filename } = await useBackup().downloadProject(props.storyId)
+    toast.add({ severity: 'success', summary: 'Exported', detail: `Saved ${filename}`, life: 3000 })
+  } catch (error) {
+    console.error('Project export failed:', error)
+    toast.add({
+      severity: 'error',
+      summary: 'Export failed',
+      detail: error.message,
+      life: 6000,
+    })
+  }
+}
+
 /** Project-level actions, which hang off the root node rather than a header. */
 const projectMenuItems = computed(() => [
   {
@@ -466,6 +483,7 @@ const projectMenuItems = computed(() => [
       showProjectDialog.value = true
     },
   },
+  { label: 'Export project', icon: 'pi pi-download', command: () => exportProject() },
   { label: 'Delete project', icon: 'pi pi-trash', command: () => confirmDeleteProject() },
 ])
 

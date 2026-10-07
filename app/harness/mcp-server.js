@@ -1,6 +1,6 @@
 /* global URLSearchParams */
 /**
- * A small MCP server for trying InkSprite's connections against, with nothing
+ * A small MCP server for trying inksprite's connections against, with nothing
  * else to sign up for.
  *
  * Streamable HTTP, answering every request with JSON (no event streams), and
@@ -134,7 +134,7 @@ function handle(message, session) {
       result: {
         protocolVersion: params.protocolVersion || '2025-06-18',
         capabilities: { tools: {}, prompts: {} },
-        serverInfo: { name: 'InkSprite test server', version: '1.0.0' },
+        serverInfo: { name: 'inksprite test server', version: '1.0.0' },
         instructions: 'A glossary of rhetoric, and a place to keep notes.',
       },
     }
@@ -296,7 +296,7 @@ async function handleOAuth(req, res, cors) {
     res.end(`<!doctype html><title>Sign in</title>
 <body style="font-family:sans-serif;max-width:28rem;margin:4rem auto">
 <h1>Test server</h1>
-<p>InkSprite would like to use your notes and the glossary.</p>
+<p>inksprite would like to use your notes and the glossary.</p>
 <form method="post" action="/authorize">${hidden}
 <button name="decision" value="allow">Allow</button>
 <button name="decision" value="deny">Deny</button>

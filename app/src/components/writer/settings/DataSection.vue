@@ -121,7 +121,7 @@ const handleFileChange = async event => {
 
     confirm.require({
       header: 'Replace all data?',
-      message: `${describeSummary(summary)} Everything currently in InkSprite will be permanently replaced, and the app will reload.`,
+      message: `${describeSummary(summary)} Everything currently in inksprite will be permanently replaced, and the app will reload.`,
       icon: 'pi pi-exclamation-triangle',
       rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       acceptProps: { label: 'Replace', severity: 'danger' },

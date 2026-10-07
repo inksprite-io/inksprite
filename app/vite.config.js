@@ -10,6 +10,8 @@ export default defineConfig({
     port: 8002,
     host: '127.0.0.1',
     allowedHosts: ['inksprite.shimmerspire.io'],
+    // The desktop app's Rust side, and its build, which is large.
+    watch: { ignored: ['**/src-tauri/**'] },
   },
   resolve: {
     alias: {

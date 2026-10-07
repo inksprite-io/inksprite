@@ -9,6 +9,7 @@
  * showing progress as it streams.
  */
 
+import { fetch } from '@/platform/fetch.js'
 import { resolveAISettings } from './defaults.js'
 import { ATTRIBUTION_HEADERS, buildCompletionBody, chatCompletionsUrl } from './wire.js'
 
@@ -29,6 +30,7 @@ import { ATTRIBUTION_HEADERS, buildCompletionBody, chatCompletionsUrl } from './
  * @param {Object} args
  * @param {AIProvider} args.provider
  * @param {string} args.model
+ * @param {string[]} [args.allowedProviders] - The only upstreams OpenRouter may route to
  * @param {Array<{role: string, content: string}>} args.messages
  * @param {import('./defaults.js').AISettingsOverrides} [args.overrides] - On top of AI_DEFAULTS
  * @param {AbortSignal} [args.signal]
@@ -36,7 +38,15 @@ import { ATTRIBUTION_HEADERS, buildCompletionBody, chatCompletionsUrl } from './
  * @returns {Promise<Completion>}
  * @throws {Error} When the provider refuses, fails mid-stream, or the request is aborted
  */
-export async function complete({ provider, model, messages, overrides, signal, onChunk }) {
+export async function complete({
+  provider,
+  model,
+  allowedProviders,
+  messages,
+  overrides,
+  signal,
+  onChunk,
+}) {
   /** @type {Record<string, string>} */
   const headers = {
     'Content-Type': 'application/json',
@@ -49,6 +59,7 @@ export async function complete({ provider, model, messages, overrides, signal, o
     messages,
     model,
     provider,
+    allowedProviders,
     settings: resolveAISettings(overrides),
   })
 

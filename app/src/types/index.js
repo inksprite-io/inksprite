@@ -1,6 +1,6 @@
 /**
  * @module types
- * @description Type definitions and JSDoc typedefs for the InkSprite application.
+ * @description Type definitions and JSDoc typedefs for the inksprite application.
  *
  * ## Type Files
  *
@@ -9,7 +9,7 @@
  *
  * ## Type System
  *
- * InkSprite uses JSDoc annotations for type safety without TypeScript:
+ * inksprite uses JSDoc annotations for type safety without TypeScript:
  * - All functions have explicit parameter and return types
  * - Complex types are defined as JSDoc typedefs
  * - Type checking is done via `npm run typecheck`

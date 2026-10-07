@@ -11,7 +11,7 @@
         <div class="success-icon">✓</div>
         <h2>Connected Successfully!</h2>
         <p>Your OpenRouter account has been connected.</p>
-        <p class="close-message">You can now close this tab and return to InkSprite.</p>
+        <p class="close-message">You can now close this tab and return to inksprite.</p>
       </template>
 
       <template v-else-if="status === 'error'">
@@ -28,78 +28,23 @@
 /* global URLSearchParams */
 
 import { ref, onMounted } from 'vue'
-import { useAIService } from '@/composables/useAIService'
-import { useAIConfig } from '@/composables/useAIConfig'
-import { retrieveOAuthParams } from '@/utils/oauth'
+import { useOpenRouterSignIn } from '@/composables/useOpenRouterSignIn'
 
 const status = ref('processing')
 const errorMessage = ref('')
 
-const aiService = useAIService()
-const aiConfig = useAIConfig()
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
+const openRouter = useOpenRouterSignIn()
 
 onMounted(async () => {
   try {
-    // Get URL parameters
-    const urlParams = new URLSearchParams(window.location.search)
-    const code = urlParams.get('code')
-    const state = urlParams.get('state')
-
-    // Validate we have required parameters
-    if (!code) {
-      throw new Error('No authorization code received')
-    }
-
-    // Retrieve and validate stored OAuth params
-    const storedParams = retrieveOAuthParams()
-    if (!storedParams) {
-      throw new Error('OAuth session expired. Please try connecting again.')
-    }
-
-    // Validate state parameter for security
-    if (state !== storedParams.state) {
-      throw new Error('Invalid state parameter. Possible security issue.')
-    }
-
-    // Exchange code for API key
-    const apiKey = await aiService.exchangeOAuthCode(code, storedParams.verifier)
-
-    // Get or create default OpenRouter provider
-    let provider = aiConfig.getProvider('provider_openrouter_default')
-    if (!provider) {
-      // Create default provider if it doesn't exist
-      await aiConfig.createProvider({
-        id: 'provider_openrouter_default',
-        name: 'OpenRouter',
-        type: 'openrouter',
-        apiKey: apiKey,
-        rememberKey: true,
-        isDefault: true,
-      })
-    } else {
-      // Update existing provider with new key
-      await aiConfig.updateProvider('provider_openrouter_default', {
-        apiKey: apiKey,
-        rememberKey: true,
-      })
-    }
-
-    await sleep(1000) // Brief pause to allow db write to complete
+    const providerId = await openRouter.finish(new URLSearchParams(window.location.search))
 
     status.value = 'success'
 
     // Notify the opener tab that OAuth completed successfully
     if (window.opener && !window.opener.closed) {
       window.opener.postMessage(
-        {
-          type: 'oauth-success',
-          provider: 'openrouter',
-          providerId: 'provider_openrouter_default',
-        },
+        { type: 'oauth-success', provider: 'openrouter', providerId },
         window.location.origin
       )
     }

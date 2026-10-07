@@ -1,8 +1,8 @@
-# InkSprite API Documentation
+# inksprite API Documentation
 
 ## Overview
 
-InkSprite is a co-writing tool for creating fiction with AI assistance. This documentation covers the frontend application's architecture, state management, services, and utilities.
+inksprite is a co-writing tool for creating fiction with AI assistance. This documentation covers the frontend application's architecture, state management, services, and utilities.
 
 ## Module Documentation
 
@@ -16,7 +16,7 @@ Vue 3 composables for reusable application logic:
 
 - AI: a chat turn, the AI preset, the chat profiles a chat runs under, summaries
 - Cards: a character card looked at and then written, and a chat started on one
-- Data: a story's document tree, chat sessions, whole-database backup
+- Data: a story's document tree, chat sessions, whole-database backup, project export and import
 - Narration: a project read aloud, its voices, and a document's speakers; a chat message read then and there
 - UI: the editor, toasts, screen size
 
@@ -77,6 +77,12 @@ Tools from MCP servers the writer connects, offered to the model in their chats:
 - Which chats use which server, opted into per profile or per chat, and which calls wait for the writer to allow them
 - Signing in to a server that wants it, with OAuth and PKCE in a tab of its own, kept in the browser and out of backups
 - What a server's tools are called to the model, and servers from a pasted `mcpServers` block
+
+### 🖥️ [Platform](./platform.md)
+
+What differs between the app in a browser and the app in its desktop window (Tauri, in `src-tauri/`):
+
+- Requests to servers: the page's own in a browser, made from the native side in the desktop app, where no server refuses them for their origin
 
 ### 🧩 [Components](./components.md)
 
@@ -158,6 +164,8 @@ Frontend (Vue 3 + Vite)
 │   ├── servers - The connected servers, which chats use them, which calls ask first
 │   ├── names - What a server's tools are called to the model
 │   └── config - Servers from a pasted mcpServers block
+├── Platform (src/platform)
+│   └── fetch - Requests to servers, from the page or from the desktop app's native side
 ├── Cards (src/cards)
 │   ├── png - The character card hidden in a PNG's text chunks
 │   ├── card - A card or a lorebook as one shape, whatever version it arrived as

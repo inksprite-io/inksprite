@@ -1,6 +1,6 @@
 /**
  * @module utils
- * @description Utility functions and helpers for the InkSprite application.
+ * @description Utility functions and helpers for the inksprite application.
  *
  * ## Utilities Overview
  *
@@ -25,7 +25,7 @@
  *
  * ### Storage
  * - **localStorage** - LocalStorage wrapper with quota management
- * - **backup** - Build and validate whole-database export files
+ * - **backup** - Build and validate export files: the whole database, a chat, a project
  *
  * ## Usage Examples
  *

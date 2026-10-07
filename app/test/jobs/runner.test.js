@@ -40,7 +40,7 @@ const provider = { id: 'p1', name: 'Test', type: 'generic', endpoint: 'http://x'
 vi.mock('@/composables/useAIConfig.js', () => ({
   useAIConfig: () => ({
     getPreset: id => (id === 'preset_strong' ? { providerId: 'p1', model: 'strong' } : null),
-    activeAIPreset: { value: { providerId: 'p1', model: 'active' } },
+    activeAIPreset: { value: { providerId: 'p1', model: 'active', allowedProviders: ['fast'] } },
     getProvider: id => (id === 'p1' ? provider : null),
   }),
 }))
@@ -52,8 +52,8 @@ vi.mock('@/composables/useApplicationState.js', () => ({
 const asked = []
 let answer = async messages => ({ content: `did ${messages[0].content}`, finishReason: 'stop' })
 vi.mock('@/ai/complete.js', () => ({
-  complete: vi.fn(async ({ messages, model, signal }) => {
-    asked.push({ text: messages[0].content, model })
+  complete: vi.fn(async ({ messages, model, allowedProviders, signal }) => {
+    asked.push({ text: messages[0].content, model, allowedProviders })
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => answer(messages).then(resolve, reject), 5)
       signal?.addEventListener('abort', () => {
@@ -134,6 +134,24 @@ describe('the job runner', () => {
     const second = await plan()
     await startJob(second.id)
     expect(asked.at(-1).model).toBe('strong')
+  })
+
+  it('routes to the providers allowed for the model it asks', async () => {
+    // Chosen for a model, so they come with it: the preset's with the
+    // preset's, and a workflow on a model of its own has its own or none.
+    const job = await plan()
+    await startJob(job.id)
+    expect(asked[0].allowedProviders).toEqual(['fast'])
+
+    workflows.value = { convert: { providerId: 'p1', model: 'strong' } }
+    const second = await plan()
+    await startJob(second.id)
+    expect(asked.at(-1).allowedProviders).toBeUndefined()
+
+    workflows.value = { convert: { providerId: 'p1', model: 'strong', allowedProviders: ['big'] } }
+    const third = await plan()
+    await startJob(third.id)
+    expect(asked.at(-1).allowedProviders).toEqual(['big'])
   })
 
   it('pauses after the step in flight, keeps what is done, and resumes from there', async () => {

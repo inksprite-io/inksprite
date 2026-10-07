@@ -4,6 +4,9 @@
   "license": "AGPL-3.0-or-later",
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -29,9 +32,10 @@
     "typecheck:stores": "tsc --noEmit --allowJs --checkJs --target ES2022 --module ESNext --moduleResolution bundler src/stores/*.js",
     "ci": "npm run lint && npm run format:check && npm run typecheck && npm run test:coverage",
     "ci:fix": "npm run lint:fix && npm run format && npm run typecheck && npm run test",
-    "docs": "mkdir -p docs && npm run docs:stores && npm run docs:composables && npm run docs:utils && npm run docs:editor && npm run docs:tts && npm run docs:ai && npm run docs:cards && npm run docs:files && npm run docs:jobs && npm run docs:mcp && npm run docs:components && npm run docs:router && npm run docs:types",
+    "docs": "mkdir -p docs && npm run docs:stores && npm run docs:composables && npm run docs:utils && npm run docs:editor && npm run docs:tts && npm run docs:ai && npm run docs:cards && npm run docs:files && npm run docs:jobs && npm run docs:mcp && npm run docs:platform && npm run docs:components && npm run docs:router && npm run docs:types",
     "docs:jobs": "mkdir -p docs && documentation build src/jobs/index.js src/jobs/*.js -f md > docs/jobs.md && prettier --write --log-level warn docs/jobs.md",
     "docs:mcp": "mkdir -p docs && documentation build src/mcp/index.js src/mcp/*.js -f md > docs/mcp.md && prettier --write --log-level warn docs/mcp.md",
+    "docs:platform": "mkdir -p docs && documentation build src/platform/index.js src/platform/*.js -f md > docs/platform.md && prettier --write --log-level warn docs/platform.md",
     "docs:files": "mkdir -p docs && documentation build src/files/index.js src/files/*.js -f md > docs/files.md && prettier --write --log-level warn docs/files.md",
     "docs:stores": "mkdir -p docs && documentation build src/stores/index.js src/stores/*.js src/stores/migrations/*.js -f md > docs/stores.md && prettier --write --log-level warn docs/stores.md",
     "docs:composables": "mkdir -p docs && documentation build src/composables/index.js src/composables/*.js -f md > docs/composables.md && prettier --write --log-level warn docs/composables.md",
@@ -50,6 +54,8 @@
     "@modelcontextprotocol/client": "^2.2.0",
     "@primeuix/themes": "^1.2.5",
     "@tailwindcss/typography": "^0.5.16",
+    "@tauri-apps/api": "^2.12.1",
+    "@tauri-apps/plugin-http": "^2.8.0",
     "@vercel/analytics": "^1.5.0",
     "dexie": "^4.0.11",
     "fflate": "^0.8.3",

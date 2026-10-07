@@ -1,6 +1,6 @@
 # Context Architecture for LLM Fiction and Roleplay
 
-Design notes for InkSprite and the TTRPG flow.
+Design notes for inksprite and the TTRPG flow.
 
 ---
 

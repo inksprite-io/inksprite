@@ -4,7 +4,7 @@
  * they have to the model.
  *
  * The Model Context Protocol is how other apps let a model reach outside
- * itself — a wiki, a tracker, a search. InkSprite connects to a server from
+ * itself — a wiki, a tracker, a search. inksprite connects to a server from
  * the page, with no backend in between, so only remote servers that let a web
  * page connect can be used; a local one needs a bridge that serves it over
  * HTTP. See `.llm/skills_design.md`, part 6.

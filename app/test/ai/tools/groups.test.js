@@ -35,15 +35,15 @@ describe('tool groups', () => {
       'edit_document',
       'append_document',
     ])
-    expect(byId.rpg).toEqual(['roll_dice', 'oracle', 'roll_table', 'generate_names'])
+    expect(byId.rpg).toEqual(['roll_dice', 'oracle', 'roll_table', 'draw_tarot', 'generate_names'])
     expect(byId.skills).toEqual(['director', 'interpret'])
   })
 
-  it('sends back only the dice and oracle calls of a past turn', () => {
+  it('sends back only the RPG tool calls of a past turn', () => {
     // Small answers the fiction turns on, and the calls worth showing the
     // model. A read is carried by the project block; a search is the payload
     // replay was costing.
-    for (const name of ['roll_dice', 'oracle', 'roll_table', 'generate_names']) {
+    for (const name of ['roll_dice', 'oracle', 'roll_table', 'draw_tarot', 'generate_names']) {
       expect(replaysAcrossTurns(name)).toBe(true)
     }
     for (const name of ['read_document', 'search_documents', 'director', 'interpret', 'nope']) {

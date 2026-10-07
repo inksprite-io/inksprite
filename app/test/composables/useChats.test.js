@@ -303,17 +303,20 @@ describe('useChats', () => {
     })
 
     it('starts a chat on whichever profile the project was created with', () => {
-      mockGetStory.mockReturnValueOnce({ options: { profileId: 'builtin_profile_adventure' } })
+      mockGetStory.mockReturnValueOnce({ options: { profileId: 'builtin_profile_roleplay' } })
 
       composable.createChat('A Session')
 
-      expect(chatsStore.createChat).toHaveBeenCalledWith(mockStoryId, 'A Session', null, {
-        profileId: 'builtin_profile_adventure',
-      })
+      expect(chatsStore.createChat).toHaveBeenCalledWith(
+        mockStoryId,
+        'A Session',
+        null,
+        expect.objectContaining({ profileId: 'builtin_profile_roleplay' })
+      )
     })
 
     it("stamps a chat from the profile it is given, over the project's", () => {
-      mockGetStory.mockReturnValueOnce({ options: { profileId: 'builtin_profile_adventure' } })
+      mockGetStory.mockReturnValueOnce({ options: { profileId: 'builtin_profile_chat' } })
 
       composable.createChat('A Scene', 'builtin_profile_roleplay')
 
@@ -337,9 +340,17 @@ describe('useChats', () => {
     it('knows which profile its chats start on', () => {
       expect(composable.defaultProfileId()).toBe('builtin_profile_chat')
 
+      mockGetStory.mockReturnValueOnce({ options: { profileId: 'builtin_profile_roleplay' } })
+
+      expect(composable.defaultProfileId()).toBe('builtin_profile_roleplay')
+    })
+
+    it('starts chats on the default when the project names a profile that is gone', () => {
+      // Adventure was a built-in until it was retired, and a writer can delete
+      // their own; a project still naming one starts its chats on the default.
       mockGetStory.mockReturnValueOnce({ options: { profileId: 'builtin_profile_adventure' } })
 
-      expect(composable.defaultProfileId()).toBe('builtin_profile_adventure')
+      expect(composable.defaultProfileId()).toBe('builtin_profile_chat')
     })
 
     it('stamps the profile a card chat asks for, over the project default', () => {

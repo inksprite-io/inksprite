@@ -14,11 +14,14 @@
  * it into a newer database has to move those rows forward first. That is what
  * `UPGRADES` is for.
  *
- * A single chat is exported in the same envelope, marked by `scope`, so the
- * same transforms carry it forward. The two are read back in different places
- * and never interchangeably: a chat file is added to a story, a whole backup
+ * A single chat, or a project with its chats, is exported in the same
+ * envelope, marked by `scope`, so the same transforms carry it forward. Each
+ * is read back in its own place and never interchangeably: a chat file is
+ * added to a story, a project file is added beside the others, a whole backup
  * replaces everything.
  */
+
+import { nanoid } from 'nanoid'
 
 import { partsAndScenesToDocuments } from '../stores/migrations/documents.js'
 import { documentsToProjectTree } from '../stores/migrations/projectTree.js'
@@ -41,11 +44,14 @@ import { withoutDeleted } from '../stores/migrations/purgeDeleted.js'
 import { rolesToSkills } from '../stores/migrations/profileSkills.js'
 import { rolesToWorkflows } from '../stores/migrations/jobWorkflows.js'
 import { withoutModelKeeps } from '../stores/migrations/modelKeeps.js'
+import { allowedProvidersToPresets } from '../stores/migrations/allowedProviders.js'
 
 /** Format of the backup envelope itself, independent of the database schema. */
 export const BACKUP_FORMAT = 1
 
 /**
+ * @typedef {'database'|'chat'|'project'} BackupScope
+ *
  * @typedef {Record<string, any[]>} TableData
  *
  * @typedef {Object} Backup
@@ -54,7 +60,7 @@ export const BACKUP_FORMAT = 1
  * @property {number} dbVersion - Dexie schema version the rows were written at
  * @property {number} exported - Timestamp
  * @property {boolean} includesApiKeys - Whether provider credentials were kept
- * @property {'database'|'chat'} [scope] - What the file holds: every table, or one chat and its messages. Files written before there was a choice have none, and hold the database.
+ * @property {BackupScope} [scope] - What the file holds: every table, one chat and its messages, or one project and its chats. Files written before there was a choice have none, and hold the database.
  * @property {TableData} tables - Row arrays keyed by table name
  */
 
@@ -67,6 +73,7 @@ export const BACKUP_FORMAT = 1
 const SCOPES = {
   database: { noun: 'a whole backup', hint: 'Restore it from the Data settings.' },
   chat: { noun: 'one chat', hint: 'Import it from the chat list.' },
+  project: { noun: 'one project', hint: 'Import it from the project list.' },
 }
 
 /**
@@ -241,6 +248,16 @@ const UPGRADES = {
     ...tables,
     chats: withoutModelKeeps(tables.chats || []).chats,
   }),
+
+  // v24 moved each connection's allowed providers onto the presets that use
+  // it. Idempotent.
+  24: tables => {
+    const { providers, presets } = allowedProvidersToPresets(
+      tables.aiProviders || [],
+      tables.aiProfiles || []
+    )
+    return { ...tables, aiProviders: providers, aiProfiles: presets }
+  },
 }
 
 /**
@@ -353,7 +370,7 @@ export function redactApiKeys(providers) {
  * @param {number} opts.dbVersion - Schema version the rows came from
  * @param {boolean} [opts.includeApiKeys] - Keep provider credentials (default false)
  * @param {number} [opts.exported] - Timestamp, injectable for tests
- * @param {'database'|'chat'} [opts.scope] - What the tables hold (default the whole database)
+ * @param {BackupScope} [opts.scope] - What the tables hold (default the whole database)
  * @returns {Backup}
  */
 export function buildBackup(
@@ -382,7 +399,7 @@ export function buildBackup(
  *
  * @param {any} data - Result of JSON.parse on an uploaded file
  * @param {number} currentDbVersion - Schema version of the running database
- * @param {'database'|'chat'} [scope] - What the caller is expecting the file to hold
+ * @param {BackupScope} [scope] - What the caller is expecting the file to hold
  * @returns {{ok: boolean, errors: string[]}}
  */
 export function validateBackup(data, currentDbVersion, scope = 'database') {
@@ -393,21 +410,21 @@ export function validateBackup(data, currentDbVersion, scope = 'database') {
     return { ok: false, errors: ['Not a backup file.'] }
   }
   if (data.app !== 'inksprite') {
-    errors.push('This file was not exported from InkSprite.')
+    errors.push('This file was not exported from inksprite.')
   }
   const held = data.scope ?? 'database'
   if (held !== scope) {
     errors.push(
       held in SCOPES
         ? `This file holds ${SCOPES[held].noun}, not ${SCOPES[scope].noun}. ${SCOPES[held].hint}`
-        : `This file holds something this version of InkSprite does not understand (${held}). Update the app first.`
+        : `This file holds something this version of inksprite does not understand (${held}). Update the app first.`
     )
   }
   if (typeof data.format !== 'number') {
     errors.push('Missing backup format.')
   } else if (data.format > BACKUP_FORMAT) {
     errors.push(
-      `Backup format ${data.format} is newer than this version of InkSprite understands (${BACKUP_FORMAT}). Update the app first.`
+      `Backup format ${data.format} is newer than this version of inksprite understands (${BACKUP_FORMAT}). Update the app first.`
     )
   }
   if (typeof data.dbVersion !== 'number') {
@@ -484,19 +501,40 @@ export function backupFilename(date) {
 }
 
 /**
- * Filename for a downloaded chat, e.g. `inksprite-chat-plot-holes-in-act-two.json`.
+ * A title as a filename's words: lower case, letters and digits joined by
+ * hyphens, cut to a length a file browser shows.
  *
  * @param {string} title
  * @returns {string}
  */
-export function chatFilename(title) {
+function slugOf(title) {
   const slug = (title || '')
     .toLowerCase()
     .replace(/[^\p{L}\p{N}]+/gu, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 60)
     .replace(/-+$/, '')
-  return `inksprite-chat-${slug || 'untitled'}.json`
+  return slug || 'untitled'
+}
+
+/**
+ * Filename for a downloaded chat, e.g. `inksprite-chat-plot-holes-in-act-two.json`.
+ *
+ * @param {string} title
+ * @returns {string}
+ */
+export function chatFilename(title) {
+  return `inksprite-chat-${slugOf(title)}.json`
+}
+
+/**
+ * Filename for a downloaded project, e.g. `inksprite-project-the-salt-road.json`.
+ *
+ * @param {string} title - The project's name
+ * @returns {string}
+ */
+export function projectFilename(title) {
+  return `inksprite-project-${slugOf(title)}.json`
 }
 
 /**
@@ -523,4 +561,164 @@ export function chatFromTables(tables) {
   const prompt = (tables.aiPrompts || []).find(row => row && row.id === chat.promptId)
 
   return prompt ? { chat, messages, prompt } : { chat, messages }
+}
+
+/**
+ * One project's rows, as a project file holds them.
+ *
+ * @typedef {Object} ProjectRows
+ * @property {import('../types/models.js').Story} story
+ * @property {import('../types/models.js').Document[]} documents - Its whole tree, root included
+ * @property {SerializedFile[]} files - The bytes behind its file documents, still as the file carries them
+ * @property {import('../types/models.js').Chat[]} chats
+ * @property {import('../types/models.js').Message[]} messages - Every chat's
+ * @property {import('../types/models.js').StoredChatProfile[]} profiles - The writer's own profiles the project and its chats run on; built-ins are wherever the file is opened
+ */
+
+/**
+ * Pick the project out of a project file.
+ *
+ * The file holds one story and only what belongs to it, but it is read as
+ * though it might hold more: a row that names another story, or a chat that
+ * is not there, stays out rather than being carried into the project under an
+ * id nothing else uses.
+ *
+ * @param {TableData} tables - Already moved forward to the running schema
+ * @returns {ProjectRows}
+ * @throws {Error} If there is no project in the file
+ */
+export function projectFromTables(tables) {
+  const story = (tables.stories || []).find(row => row)
+  if (!story) throw new Error('There is no project in this file.')
+
+  /** @param {any[]} [rows] */
+  const own = rows => (rows || []).filter(row => row && row.storyId === story.id)
+  const chats = own(tables.chats)
+  const chatIds = new Set(chats.map(chat => chat.id))
+
+  return {
+    story,
+    documents: own(tables.documents),
+    files: own(tables.files),
+    chats,
+    messages: (tables.messages || []).filter(row => row && chatIds.has(row.chatId)),
+    profiles: (tables.chatProfiles || []).filter(row => row && row.id),
+  }
+}
+
+/**
+ * The same project under new ids, so it can be added beside the one it was
+ * exported from — or beside an earlier import of the same file — without
+ * either overwriting the other.
+ *
+ * Ids are replaced wherever they appear rather than in a list of the fields
+ * that hold one. A document is named by id in a chat's pins, in an edit a turn
+ * made, in a tool call's arguments, in a read the model was shown; a list
+ * would miss the next field to hold one, and this does not. An id is long and
+ * random, so text that merely looks like one does not come up.
+ *
+ * The documents whose ids are built from the story's — the root above all,
+ * which is found by `rootIdFor(storyId)` — get no id of their own: the story's
+ * new id, replaced inside theirs, gives them the one the app will look for.
+ *
+ * The writer's profiles keep their ids. They are the library's rather than
+ * the project's, and one the library already holds is the one to use.
+ *
+ * @param {ProjectRows} project
+ * @param {(prefix: string) => string} [mint] - A new id for a row of the kind the prefix names
+ * @returns {ProjectRows}
+ */
+export function withFreshIds(project, mint = prefix => `${prefix}_${nanoid()}`) {
+  const { story, documents, files, chats, messages, profiles } = project
+
+  /** @type {Map<string, string>} */
+  const ids = new Map([[story.id, mint('story')]])
+  /**
+   * @param {Array<{id: string}>} rows
+   * @param {string} prefix
+   */
+  const renew = (rows, prefix) => {
+    for (const row of rows) if (!row.id.includes(story.id)) ids.set(row.id, mint(prefix))
+  }
+  renew(documents, 'doc')
+  renew(chats, 'chat')
+  renew(messages, 'message')
+
+  const rewrite = idRewriter(ids)
+  /** @type {<T>(rows: T[]) => T[]} */
+  const rewriteRows = rows => rows.map(row => rewriteIds(row, rewrite))
+
+  return {
+    story: rewriteIds(story, rewrite),
+    documents: rewriteRows(documents),
+    // Only where they are, not what they hold: the bytes are base64, which has
+    // no ids in it, and can be megabytes of nothing to search.
+    files: files.map(file => ({ ...file, id: rewrite(file.id), storyId: rewrite(file.storyId) })),
+    chats: rewriteRows(chats),
+    messages: rewriteRows(messages),
+    profiles,
+  }
+}
+
+/**
+ * Replace every id a string holds.
+ *
+ * Only runs of nanoid's alphabet that have an underscore in them can hold an
+ * id, and only those are looked at. A run is searched rather than looked up
+ * whole: an id can sit inside a longer one, as the story's does in its root's,
+ * or behind an escape in JSON held as a string, where `\ndoc_…` reads as one
+ * run beginning with the `n`. Where two ids could match at once the longer
+ * one wins.
+ *
+ * @param {Map<string, string>} ids - Old id to new
+ * @returns {(text: string) => string}
+ */
+function idRewriter(ids) {
+  const lengths = [...new Set([...ids.keys()].map(id => id.length))].sort((a, b) => b - a)
+  const shortest = lengths[lengths.length - 1]
+
+  /** @param {string} run */
+  const rewriteRun = run => {
+    let out = ''
+    let from = 0
+    for (let at = 0; at + shortest <= run.length; ) {
+      const length = lengths.find(n => at + n <= run.length && ids.has(run.slice(at, at + n)))
+      if (length === undefined) {
+        at++
+        continue
+      }
+      out += run.slice(from, at) + ids.get(run.slice(at, at + length))
+      at += length
+      from = at
+    }
+    return from === 0 ? run : out + run.slice(from)
+  }
+
+  return text =>
+    text.length >= shortest && text.includes('_')
+      ? text.replace(/[\w-]+/g, run =>
+          run.length >= shortest && run.includes('_') ? rewriteRun(run) : run
+        )
+      : text
+}
+
+/**
+ * A row with every string in it, keys included, passed through `rewrite`.
+ *
+ * @template T
+ * @param {T} value - Plain data, as JSON makes it
+ * @param {(text: string) => string} rewrite
+ * @returns {T}
+ */
+function rewriteIds(value, rewrite) {
+  if (typeof value === 'string') return /** @type {T} */ (rewrite(value))
+  if (Array.isArray(value)) return /** @type {T} */ (value.map(item => rewriteIds(item, rewrite)))
+  if (value && typeof value === 'object') {
+    return /** @type {T} */ (
+      Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [rewrite(key), rewriteIds(item, rewrite)])
+      )
+    )
+  }
+  return value
 }

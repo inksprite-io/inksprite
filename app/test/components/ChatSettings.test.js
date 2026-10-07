@@ -7,8 +7,9 @@ import ChatSettings from '@/components/writer/chats/ChatSettings.vue'
 import { useProfiles } from '@/composables/useProfiles'
 import { useChatProfileStore } from '@/stores/chatProfileStore'
 import { DEFAULT_CHAT_PROMPT } from '@/ai/prompts/index.js'
-import { CHAT_PROFILE_ID, ADVENTURE_PROFILE_ID } from '@/ai/profiles/index.js'
+import { CHAT_PROFILE_ID, ROLEPLAY_PROFILE_ID } from '@/ai/profiles/index.js'
 import { setLibrarySkills } from '@/ai/skills/index.js'
+import { useApplicationState } from '@/composables/useApplicationState'
 
 /** The writer's skills library, as the mocked database holds it. */
 const { storedSkills, storedServers } = vi.hoisted(() => ({ storedSkills: [], storedServers: [] }))
@@ -170,7 +171,7 @@ describe('ChatSettings profile', () => {
     const wrapper = await mountSettings()
     expect(button(wrapper, 'Reset Profile').exists()).toBe(false)
 
-    chat.value = { ...chat.value, profileId: ADVENTURE_PROFILE_ID }
+    chat.value = { ...chat.value, profileId: ROLEPLAY_PROFILE_ID }
     await flushPromises()
     await button(wrapper, 'Reset Profile').trigger('click')
 
@@ -180,7 +181,7 @@ describe('ChatSettings profile', () => {
   it('stamps the settings of a profile the chat is switched to', async () => {
     const wrapper = await mountSettings()
 
-    chat.value = { ...chat.value, profileId: ADVENTURE_PROFILE_ID }
+    chat.value = { ...chat.value, profileId: ROLEPLAY_PROFILE_ID }
     await flushPromises()
     await button(wrapper, 'Reset Profile').trigger('click')
 
@@ -221,7 +222,7 @@ describe('ChatSettings profile', () => {
     await wrapper.find('.p-select').trigger('click')
     await flushPromises()
     document.body
-      .querySelector(`[data-profile="${ADVENTURE_PROFILE_ID}"]`)
+      .querySelector(`[data-profile="${ROLEPLAY_PROFILE_ID}"]`)
       .dispatchEvent(new window.MouseEvent('contextmenu', { bubbles: true, cancelable: true }))
     await flushPromises()
 
@@ -356,6 +357,23 @@ describe('ChatSettings tools', () => {
     await toggle(wrapper, 'Enable Tools').vm.$emit('update:modelValue', true)
 
     expect(chat.value.disabledToolGroups).toEqual(['skills'])
+  })
+
+  it('applies edits automatically, or asks first, app-wide rather than on the chat', async () => {
+    const { applyEdits, setApplyEdits } = useApplicationState()
+    setApplyEdits('auto')
+    const wrapper = await mountSettings()
+    const edits = () => toggle(wrapper, 'Apply edits automatically')
+    expect(edits().props('modelValue')).toBe(true)
+
+    await edits().vm.$emit('update:modelValue', false)
+
+    expect(applyEdits.value).toBe('ask')
+    expect(edits().props('modelValue')).toBe(false)
+    expect(updateChat).not.toHaveBeenCalled()
+
+    await edits().vm.$emit('update:modelValue', true)
+    expect(applyEdits.value).toBe('auto')
   })
 
   it('reads as off, and cannot be switched, when the preset has no tools', async () => {

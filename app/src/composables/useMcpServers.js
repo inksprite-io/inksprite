@@ -1,4 +1,4 @@
-/* global BroadcastChannel */
+/* global BroadcastChannel, AbortController */
 /**
  * @module composables/useMcpServers
  * @description The writer's MCP servers: adding one, listing what it offers
@@ -12,13 +12,24 @@
  * A server that wants the writer to sign in says so when it is previewed or
  * listed, and `signIn` sends them, in a tab of its own, to its authorization
  * server; the tab comes back to `/connect/mcp`, which finishes it and says so
- * on a channel this listens to. See mcp/auth.js.
+ * on a channel this listens to. See mcp/auth.js. In the desktop window the
+ * sign-in opens in the system browser instead, and comes back to the window,
+ * which finishes it itself (`platform/signIn.js`).
  */
 
 import { computed, ref } from 'vue'
 import { useMcpServerStore } from '@/stores/mcpServerStore.js'
 import { listServer, describeFailure, disconnect, wantsSignIn } from '@/mcp/client.js'
-import { SIGN_IN_CHANNEL, signOut as forgetSignIn, signedIn, startSignIn } from '@/mcp/auth.js'
+import {
+  CALLBACK_PATH,
+  SIGN_IN_CHANNEL,
+  finishSignIn,
+  signOut as forgetSignIn,
+  signedIn,
+  startSignIn,
+} from '@/mcp/auth.js'
+import { isDesktop } from '@/platform/desktop.js'
+import { signInInBrowser } from '@/platform/signIn.js'
 import { serverTool } from '@/mcp/servers.js'
 import { exposedNames, serverPrefix } from '@/mcp/names.js'
 
@@ -118,19 +129,23 @@ export function useMcpServers() {
   /**
    * Sign in to a server: in a tab of its own, opened here, so it must be
    * called straight from a click — a tab opened after anything has been
-   * waited on is a popup, and browsers block those.
+   * waited on is a popup, and browsers block those. In the desktop window,
+   * in the system browser, with the window waiting for it to come back.
    *
    * @param {string} url
    * @returns {Promise<{signedIn: true}|{error: string}>}
    */
   const signIn = url => {
-    const tab = window.open('', '_blank')
+    const desktop = isDesktop()
+    const tab = desktop ? null : window.open('', '_blank')
+    const waiting = new AbortController()
     return new Promise(resolve => {
       const channel = new BroadcastChannel(SIGN_IN_CHANNEL)
       /** @param {{signedIn: true}|{error: string}} outcome */
       const done = outcome => {
         channel.close()
         clearTimeout(timer)
+        waiting.abort()
         signIns.value++
         resolve(outcome)
       }
@@ -144,7 +159,14 @@ export function useMcpServers() {
       }
 
       startSignIn(url, address => {
-        if (tab) tab.location.href = address.toString()
+        if (desktop) {
+          signInInBrowser(address, CALLBACK_PATH, { signal: waiting.signal })
+            .then(finishSignIn)
+            .then(
+              () => done({ signedIn: true }),
+              error => waiting.signal.aborted || done({ error: error.message })
+            )
+        } else if (tab) tab.location.href = address.toString()
         else window.open(address.toString(), '_blank')
       })
         .then(result => {

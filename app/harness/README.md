@@ -25,8 +25,9 @@ Endpoints come from `scripts/endpoints.local.json`, keys and all, which is
 why it is not committed; `scripts/endpoints.example.json` shows the shape.
 `--endpoint` picks one by name, the first in the file otherwise. `--model`
 overrides the model the entry names. An OpenRouter entry takes a `routing`
-block in the app's shape — `only`, `ignore`, `quantizations` — and gets
-the app's floor (no data collection, zero data retention, eight-bit
+block in the shape of the app's connection policy — `ignore`,
+`quantizations` — and an `allowedProviders` list as a preset holds it, and
+gets the app's floor (no data collection, zero data retention, eight-bit
 precision or better, and Morph left out unless the entry's `ignore` says
 otherwise) whether or not it has one. Routed by price with no
 floor, a model is served at fp4 as often as not, and nothing in a

@@ -1,6 +1,6 @@
-# InkSprite Frontend Documentation
+# inksprite Frontend Documentation
 
-InkSprite is a co-writing tool for creating fiction with AI assistance.
+inksprite is a co-writing tool for creating fiction with AI assistance.
 
 ## Architecture Overview
 

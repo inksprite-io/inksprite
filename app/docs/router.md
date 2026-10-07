@@ -10,7 +10,7 @@
 
 ## router
 
-Vue Router configuration for the InkSprite application.
+Vue Router configuration for the inksprite application.
 
 ## Routes
 

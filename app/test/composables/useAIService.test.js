@@ -182,6 +182,17 @@ describe('useAIService provider routing', () => {
 
     expect(await sentBody()).not.toHaveProperty('provider')
   })
+
+  it('routes only to the providers the preset allows for its model', async () => {
+    streamDeltas([{ content: 'ok' }])
+    await useAIService().generateChatCompletion(
+      [{ role: 'user', content: 'hi' }],
+      { providerId: provider.id, model: 'some-model', allowedProviders: ['deepinfra'] },
+      () => {}
+    )
+
+    expect(JSON.parse(fetch.mock.calls[0][1].body).provider.only).toEqual(['deepinfra'])
+  })
 })
 
 describe('useAIService reasoning request', () => {
@@ -477,6 +488,7 @@ describe('useAIService failure reporting', () => {
     const error = await failureFrom([{ role: 'user', content: 'hi' }])
 
     expect(error.message).toContain('No endpoints found')
+    expect(error.message).toContain('Allowed Providers')
     expect(error.message).toContain('Provider Routing')
   })
 
@@ -530,5 +542,64 @@ describe('useAIService failure reporting', () => {
 
     expect(error.message).toContain('Invalid signature for thinking block')
     expect(error.message).toContain('Reasoning Effort')
+  })
+})
+
+describe('useAIService providers serving a model', () => {
+  // The lookups are cached for the page, module-wide, so each test asks
+  // about a model of its own.
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  /** @param {any} body @param {number} [status] */
+  const answerWith = (body, status = 200) =>
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: status < 400, status, json: async () => body })
+    )
+
+  it('names each provider once, by the slug routing takes', async () => {
+    answerWith({
+      data: {
+        endpoints: [
+          { tag: 'baseten/fp8', provider_name: 'BaseTen' },
+          { tag: 'baseten/fast', provider_name: 'BaseTen' },
+          { tag: 'together', provider_name: 'Together' },
+          { tag: '', provider_name: 'Nameless' },
+        ],
+      },
+    })
+
+    const providers = await useAIService().listModelProviders('z-ai/one-model')
+
+    expect(providers).toEqual([
+      { slug: 'baseten', name: 'BaseTen' },
+      { slug: 'together', name: 'Together' },
+    ])
+    expect(fetch.mock.calls[0][0]).toBe(
+      'https://openrouter.ai/api/v1/models/z-ai/one-model/endpoints'
+    )
+  })
+
+  it('keeps the slash in a model id and escapes the rest', async () => {
+    answerWith({ data: { endpoints: [] } })
+
+    await useAIService().listModelProviders('openai/two-model:free')
+
+    expect(fetch.mock.calls[0][0]).toBe(
+      'https://openrouter.ai/api/v1/models/openai/two-model%3Afree/endpoints'
+    )
+  })
+
+  it('asks once per model, and again after a failure', async () => {
+    answerWith({}, 404)
+    await expect(useAIService().listModelProviders('z-ai/three-model')).rejects.toThrow('404')
+
+    answerWith({ data: { endpoints: [{ tag: 'novita/fp8', provider_name: 'Novita' }] } })
+    await useAIService().listModelProviders('z-ai/three-model')
+    await useAIService().listModelProviders('z-ai/three-model')
+
+    expect(fetch).toHaveBeenCalledTimes(1)
   })
 })

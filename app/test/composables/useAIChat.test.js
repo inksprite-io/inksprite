@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAIChat } from '@/composables/useAIChat'
 import { TITLE_DEFAULTS } from '@/ai/defaults.js'
-import { DEFAULT_CHAT_PROMPT, DEFAULT_ADVENTURE_PROMPT } from '@/ai/prompts/index.js'
+import { DEFAULT_CHAT_PROMPT, DEFAULT_ROLEPLAY_PROMPT } from '@/ai/prompts/index.js'
 import { SKILL_MAX_ROUNDS } from '@/ai/skills/index.js'
 
 // Mock stores
@@ -1423,7 +1423,7 @@ describe('useAIChat', () => {
       const { consult } = await contextForToolCall()
 
       // Those switches say what the assistant the writer is talking to may do.
-      // Reading them here would mean switching off Dice & Oracle quietly put
+      // Reading them here would mean switching off RPG Tools quietly put
       // the Director back to guessing at the outcomes its advice turns on.
       mockChatsApi.getChatById.mockReturnValue({
         ...mockChat,
@@ -3658,18 +3658,33 @@ describe('useAIChat', () => {
     })
 
     it('should follow whichever built-in the chat is pointed at', async () => {
-      withChatSettings({ profileId: 'builtin_profile_adventure' })
+      withChatSettings({ profileId: 'builtin_profile_roleplay' })
 
       // Built-ins are source rather than data, so a chat that tracks one keeps
       // picking up improvements to it.
-      expect(await capturePromptForActiveProfile()).toBe(DEFAULT_ADVENTURE_PROMPT)
+      expect(await capturePromptForActiveProfile()).toBe(DEFAULT_ROLEPLAY_PROMPT)
     })
 
     it("should fall back to the story's built-in when the chat's prompt is gone", async () => {
-      mockChatsApi.defaultProfileId.mockReturnValue('builtin_profile_adventure')
+      mockChatsApi.defaultProfileId.mockReturnValue('builtin_profile_roleplay')
       withChatSettings({ profileId: 'chatprofile_deleted' })
 
-      expect(await capturePromptForActiveProfile()).toBe(DEFAULT_ADVENTURE_PROMPT)
+      expect(await capturePromptForActiveProfile()).toBe(DEFAULT_ROLEPLAY_PROMPT)
+    })
+
+    it('should send no system prompt at all for a chat on Blank', async () => {
+      withChatSettings({ profileId: 'builtin_profile_blank' })
+
+      // Empty, not the default: Blank is the model with nothing in front of it.
+      expect(await capturePromptForActiveProfile()).toBe('')
+    })
+
+    it('should run a chat on a built-in the app no longer ships under the default', async () => {
+      // The Adventure profile was a built-in until it was retired; its chats
+      // go on, under the Default prompt.
+      withChatSettings({ profileId: 'builtin_profile_adventure' })
+
+      expect(await capturePromptForActiveProfile()).toBe(DEFAULT_CHAT_PROMPT)
     })
 
     it('should wait for the library to load before reading the prompt', async () => {

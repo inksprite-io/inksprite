@@ -22,8 +22,8 @@
  *
  * An OpenRouter endpoint carries the app's routing policy, resolved the way
  * the app resolves it — so the privacy floor holds here too, and an entry in
- * `endpoints.local.json` can pin providers or precisions with a `routing`
- * block. What came back says which upstream served it, and that is returned,
+ * `endpoints.local.json` can pin precisions with a `routing` block and
+ * providers with `allowedProviders`. What came back says which upstream served it, and that is returned,
  * because a batch run on an unknown quantization is a batch nobody can
  * compare with anything.
  */
@@ -85,7 +85,11 @@ export async function complete({
   if (tools.length > 0) body.tools = tools
   if (endpoint.type === 'openrouter') {
     body.reasoning = thinking ? { effort: settings.reasoningEffort } : { enabled: false }
-    const routing = buildProviderRouting({ type: endpoint.type, routing: endpoint.routing })
+    const routing = buildProviderRouting(
+      { type: endpoint.type, routing: endpoint.routing },
+      model,
+      endpoint.allowedProviders
+    )
     if (routing) body.provider = routing
   } else if (!thinking) {
     body.reasoning_effort = 'none'

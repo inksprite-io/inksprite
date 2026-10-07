@@ -1,0 +1,110 @@
+name: Desktop Release
+
+# A signed, notarized build of the desktop app for macOS (Apple silicon and
+# Intel), published as a pre-release. Run by pushing a tag (v0.1.0-dev.1), or
+# by hand with one, which is then made at the commit being built.
+#
+# Never on a pull request: this job holds the signing secrets. They live in the
+# `release` environment, which only this job asks for. It runs only on a
+# public repository, because a release there is the only kind that can be
+# downloaded without signing in to GitHub.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The tag to release, such as v0.1.0-dev.1'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    if: ${{ !github.event.repository.private }}
+    environment: release
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      TAURI_CLI_VERSION: 2.12.1
+
+    steps:
+      - name: Check the tag
+        run: |
+          case "$TAG" in
+            v[0-9]*) ;;
+            *) echo "A release tag starts with v and a number: $TAG"; exit 1 ;;
+          esac
+
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          # engines.node: pdfjs-dist 6 needs Node 22.13 or later.
+          node-version-file: app/package.json
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      # VITE_VERCEL_ANALYTICS is left unset, so the desktop build has none.
+      - name: Build the page
+        working-directory: app
+        run: npm run build
+
+      - name: Add both Mac architectures to Rust
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+
+      - name: Cache the Tauri CLI
+        id: tauri-cli
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/cargo-tauri
+          key: tauri-cli-${{ env.TAURI_CLI_VERSION }}-${{ runner.os }}-${{ runner.arch }}
+
+      - name: Install the Tauri CLI
+        if: steps.tauri-cli.outputs.cache-hit != 'true'
+        run: cargo install tauri-cli --version "$TAURI_CLI_VERSION" --locked
+
+      # Tauri imports the certificate into a keychain of its own, signs the
+      # app, sends it to Apple to be notarized, and staples the ticket to it.
+      # The key file is written where the runner throws its files away.
+      - name: Build, sign and notarize
+        working-directory: app/src-tauri
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
+        run: |
+          export APPLE_API_KEY_PATH="$RUNNER_TEMP/AuthKey_$APPLE_API_KEY.p8"
+          printf '%s\n' "$APPLE_API_KEY_P8" > "$APPLE_API_KEY_PATH"
+          cargo tauri build --target universal-apple-darwin
+
+      # The check a Mac makes on an app downloaded from the internet: signed
+      # with a Developer ID, and notarized, with the ticket stapled on.
+      - name: Check Gatekeeper accepts the app
+        working-directory: app/src-tauri/target/universal-apple-darwin/release/bundle
+        run: |
+          spctl --assess --type execute --verbose=2 macos/inksprite.app
+          xcrun stapler validate macos/inksprite.app
+
+      - name: Publish the pre-release
+        working-directory: app/src-tauri/target/universal-apple-darwin/release/bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" dmg/*.dmg \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --prerelease \
+            --title "inksprite $TAG" \
+            --notes "A development build of the desktop app for macOS, for Apple silicon and Intel Macs. Signed and notarized."

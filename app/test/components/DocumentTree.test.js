@@ -57,6 +57,9 @@ vi.mock('../../src/composables/useBulkImport', async importOriginal => {
 const toastAdd = vi.fn()
 vi.mock('primevue/usetoast', () => ({ useToast: () => ({ add: toastAdd }) }))
 
+const downloadProject = vi.fn()
+vi.mock('../../src/composables/useBackup', () => ({ useBackup: () => ({ downloadProject }) }))
+
 const mountTree = () =>
   mount(DocumentTree, {
     props: { storyId: 'story_1' },
@@ -177,5 +180,64 @@ describe('DocumentTree importing', () => {
 
     expect(wrapper.find('[data-drop-hint]').exists()).toBe(false)
     expect(importMany).not.toHaveBeenCalled()
+  })
+})
+
+describe('DocumentTree project menu', () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    clearDocumentInstances()
+    clearChatsInstances()
+    vi.clearAllMocks()
+    await useDocuments('story_1').init()
+  })
+
+  /** The root's menu, which is also what a right-click on the space below it opens. */
+  const projectCommand = (wrapper, label) =>
+    wrapper
+      .findComponent({ name: 'DocumentNode' })
+      .props('extraMenuItems')
+      .find(item => item.label === label)
+      .command()
+
+  it('offers the project settings, an export, and a delete, in that order', async () => {
+    const wrapper = mountTree()
+    await flushPromises()
+
+    const labels = wrapper
+      .findComponent({ name: 'DocumentNode' })
+      .props('extraMenuItems')
+      .map(item => item.label)
+    expect(labels).toEqual(['Project settings', 'Export project', 'Delete project'])
+  })
+
+  it('exports the project, and says where it went', async () => {
+    downloadProject.mockResolvedValue({ filename: 'inksprite-project-my-novel.json', bytes: 1 })
+    const wrapper = mountTree()
+    await flushPromises()
+
+    await projectCommand(wrapper, 'Export project')
+    await flushPromises()
+
+    expect(downloadProject).toHaveBeenCalledWith('story_1')
+    expect(toastAdd).toHaveBeenCalledWith(
+      expect.objectContaining({
+        severity: 'success',
+        detail: 'Saved inksprite-project-my-novel.json',
+      })
+    )
+  })
+
+  it('says why an export failed', async () => {
+    downloadProject.mockRejectedValue(new Error('Quota exceeded'))
+    const wrapper = mountTree()
+    await flushPromises()
+
+    await projectCommand(wrapper, 'Export project')
+    await flushPromises()
+
+    expect(toastAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ severity: 'error', detail: 'Quota exceeded' })
+    )
   })
 })

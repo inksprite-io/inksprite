@@ -8,6 +8,11 @@ Four steps, in that order. Each lands on its own and is what the next builds on.
 `document_tree_design.md` stands for everything about the tree — ids, roots,
 ordering, folders. This supersedes only what it says about `content`.
 
+**Status, 6 Oct 2026.** Steps 1 and 2 are built (2e46231b, f75c7861). Step 4
+moved to `desktop_design.md` and ships before step 3. Step 3 was revised for
+what landed after it was written: hard deletes, the `files`, `jobs`, `skills`
+and `mcpServers` tables, and chats in the tens of megabytes.
+
 ## Why this order
 
 The desktop app was the original question. It is last because its on-disk
@@ -22,7 +27,11 @@ that pays off on the web today.
   document is a file, and almost nothing else has to be invented.
 - **Desktop last** because it is a shell around the other three.
 
-## What is true today
+The last of these did not hold. Once step 1 settled the format, the shell was
+worth having over IndexedDB, and the library was the larger step, so the shell
+goes first (`desktop_design.md`).
+
+## What was true before step 1
 
 **Storage is a sink.** Eleven Dexie call sites in the whole store layer, every
 one `toArray()`, `get(id)`, or `where(field).equals(x).toArray()`. No compound
@@ -267,9 +276,9 @@ My Library/
     .inksprite/
       story.json                 Story: options, layout, openDocumentIds, lastDocumentId
       chats/
-        chat_xxx.json            a chat and its messages
-    .trash/
-      scene_xxx.md               deleted documents, by id
+        chat_xxx.jsonl           the chat's row, then one message per line
+      files/
+        file_xxx.md              an imported file's id, title, path, and extracted text
     .folder.md                   root: id, summary
     Drafts/
       .folder.md
@@ -286,6 +295,7 @@ My Library/
       Characters/
         .folder.md
         Elara.md
+      Rulebook.pdf               an imported file, as it was imported
 ```
 
 A text document:
@@ -304,6 +314,28 @@ The door had been there all along...
 
 A folder's `.folder.md` carries `id`, `ordered`, and the timestamps in
 frontmatter, with the summary as its body.
+
+## Decision: an imported file is itself, with its text beside it
+
+A `type: file` document is the file as it was imported, in its place in the
+tree: a PDF is a PDF that opens in Preview. A PDF cannot carry frontmatter,
+so its identity and its extracted text go in `.inksprite/files/<id>.md`: `id`,
+`title`, the file's `path`, pages and size in frontmatter, and the text as the
+body. The bytes leave the `files` table. Renaming the PDF outside the app
+breaks the link until 3b, under the same rule as any other outside edit.
+
+## Decision: a chat is a JSONL file
+
+A chat runs to tens of megabytes, and `syncStore` flushes every 500ms while a
+reply streams in, so a chat cannot be one JSON file rewritten whole. The first
+line is the chat's row and every line after it is a message. A new message is
+appended. An update to the last one truncates the file at that line and
+appends it again, and the adapter keeps where the line starts. Anything older,
+such as an edit or a compaction that rewrites earlier messages, rewrites the
+file.
+
+Chats live in the library, not the app's data directory: a project export
+already carries them, and a library in a synced folder should too.
 
 ## Decision: identity is in frontmatter, the filename is derived
 
@@ -329,18 +361,27 @@ The prefix is in the *filename*, which is derived, and a reorder renames the
 files. That is the cost of a folder that is correct when opened in Finder or
 Obsidian, and it is paid on reorder, which is rare, not on typing.
 
-## Decision: `.trash/`, not a flag
+## Decision: deletes go to the system trash
 
-`deleted` and `deletedAt` have no filesystem form. A deleted document moves to
-`<story>/.trash/<id>.md`; `deletedAt` is its mtime. `hardDeleteOldDeleted`'s
-30-day retention becomes pruning `.trash/` by mtime. The same again as
-Obsidian.
+The app has had no soft delete since 9c6b0e60: a delete removes the row and
+the bytes. On disk, a deleted document's file goes to the system's trash
+(Finder's Trash, the Recycle Bin, the desktop's trash), from Rust with the
+`trash` crate. The app keeps nothing and prunes nothing. A file put back is
+the same document the next time the project opens, because its id is in its
+frontmatter.
 
 ## Decision: settings stay out of the library
 
-`aiProviders`, `aiProfiles`, `aiPrompts` have no `storyId`; they are app
-configuration, and they hold API keys. They go in the app's data directory, not
-in the library. A library dropped into a synced folder must not sync keys.
+`aiProviders`, `aiParameterPresets`, `aiPrompts`, `chatProfiles`, `skills`
+and `mcpServers` have no `storyId`. They are app configuration, and some hold
+API keys or point at sign-ins. They go in the app's data directory, not in the
+library. A library dropped into a synced folder must not sync keys. Skills
+are already SKILL.md files, so the app-wide library becomes
+`skills/<name>/SKILL.md` there.
+
+`jobs` have a `storyId` but stay out too. As the project export puts it, a
+running job is work on this copy of the app, not part of the project, and
+what a finished one made is already in the tree.
 
 `version` is dropped from frontmatter. It exists for `syncStore` to bump on
 persist; on disk, mtime is the version. `wordCount` is derived and not stored.
@@ -351,15 +392,26 @@ persist; on disk, mtime is the version. `wordCount` is derived and not stored.
 /**
  * @typedef {Object} StorageAdapter
  * @property {() => Promise<Story[]>} loadStories
- * @property {(storyId: string) => Promise<{documents: Document[], chats: Chat[], messages: Message[]}>} loadStory
+ * @property {(storyId: string) => Promise<{documents: Document[], chats: Chat[]}>} loadStory
+ * @property {(chatId: string) => Promise<Message[]>} loadMessages
+ * @property {(fileId: string) => Promise<Blob|undefined>} loadFileBytes
  * @property {(table: string, rows: object[]) => Promise<void>} put
  * @property {(table: string, ids: string[]) => Promise<void>} remove
  */
 ```
 
 `syncStore` talks to the adapter instead of `db`. Two implementations: Dexie
-for the web, filesystem for desktop. The eleven call sites in the stores move
-behind it.
+for the web, filesystem for desktop.
+
+The eleven call sites counted on 5 Sep are about thirty-five now, and some
+are not the shape this sketch assumed. Messages load by chat
+(`messagesStore.js:653`), documents by story and by root
+(`documentsStore.js:386`, `:507`), and file bytes by id (`filesStore.js:53`).
+`jobsStore` and `filesStore` write past `syncStore`, and `useSkills.js:135`
+writes `db.chats` from a composable. The lazy reads become adapter methods
+like the two above. Every write goes through `syncStore` or the adapter, never
+`db`. Gathering them changes nothing a writer sees, so it lands on the web
+before the filesystem adapter exists.
 
 The filesystem adapter owns the id↔path map. It is built by walking the story
 folder on load and is private to the adapter; the stores never see a path. A
@@ -391,6 +443,14 @@ Export a backup on the web, import it on desktop. `useBackup` restores through
 the stores, the stores flush through the adapter, the adapter writes files.
 `UPGRADES` brings old backups forward on the way. No new migration code.
 
+The desktop app ships before this step, so its writers already have data in
+the webview's IndexedDB. Moving it to a folder needs no backup: load through
+the Dexie adapter, write through the filesystem one.
+
+**Choosing the library.** The update asks for a folder, or creates one in
+Documents. The path is remembered in app settings, and the app opens it on
+start.
+
 ## What web keeps
 
 Dexie, behind the adapter. The web version does not get files; it gets the
@@ -403,91 +463,38 @@ the user, but one code path.
 - Adapter round trip: rows → files → rows, for every table.
 - Rename, reorder, move, delete produce the expected operations and nothing
   else.
-- Load a hand-built folder, including one with a `.trash/`.
+- Load a hand-built folder, including an imported file and its sidecar.
+- A chat: append, rewrite the last message, edit an earlier one; the file
+  reads back as the rows that were written.
 - Stability: a document saved, loaded, and saved again is byte-identical.
 
 ---
 
 # Step 4: The desktop shell
 
-## Decision: Tauri v2
-
-Small bundles, first-party updater and signing, plugins for the filesystem,
-dialogs, HTTP, and deep links with scoped permissions. The app is entirely
-client-side already; Electron's main process would have nothing to do.
-
-The cost is WebKitGTK on Linux and WebView2 on Windows instead of Chromium.
-contenteditable is where engines diverge. **Spike this before committing**:
-scaffold Tauri around the existing build, then write in the app for an hour on
-WebKitGTK and stream one generation. If the editor misbehaves, Electron is the
-fallback and nothing else in this document changes.
-
-## What changes
-
-**Requests leave the webview.** The origin becomes `tauri://localhost`, so
-every provider request is cross-origin, and a llama.cpp or Ollama server the
-user points at may send no CORS headers at all. `@tauri-apps/plugin-http` does
-the request in Rust and CORS stops existing. Inject `fetch` into
-`useAIService` rather than importing the plugin there; `scripts/chat-harness.js`
-wants the same seam.
-
-This is a feature, not a workaround: the hosted app cannot reach a model server
-on `http://192.168.1.x` at all — mixed content blocks LAN addresses, only
-`localhost` is exempt. Desktop can.
-
-Streaming through the plugin is the thing to prove in the spike.
-`useAIService.js:339` reads `response.body.getReader()`.
-
-**OAuth needs a new callback.** `utils/oauth.js:115` sends
-`window.location.origin`. On desktop that is not a URL OpenRouter will accept.
-A one-shot loopback listener on `http://localhost:<port>/connect/openrouter`
-is the compatible answer; a deep link is the cleaner one if OpenRouter accepts
-custom schemes. Pasting a key already works, so v1 can ship without it.
-
-**Hash history.** `createWebHistory` on a custom protocol 404s on reload of
-`/write/:id`. `createWebHashHistory` behind a build flag.
-
-**Web-only pieces.** `@vercel/analytics` (`App.vue:16`) is excluded from the
-desktop build. `useBackup.downloadBackup` and the import go through
-`plugin-dialog` and `plugin-fs`.
-
-**Library selection.** First launch asks for a folder, or creates one in
-Documents. The path is remembered in app settings; the app opens it on start.
-
-## Layout and distribution
-
-`app/src-tauri/`, `beforeDevCommand: npm run dev`, `devUrl:
-http://127.0.0.1:8002`, `frontendDist: ../dist`. `tauri-action` builds the
-three platforms in CI. Updater pointed at GitHub Releases.
-
-Linux AppImage and .deb are free. Windows needs the WebView2 bootstrapper
-(bundled) and an unsigned binary trips SmartScreen. macOS needs the Apple
-Developer account for notarization or Gatekeeper blocks the app outright.
+Moved to `desktop_design.md`, decided 6 Oct 2026, and shipped before step 3.
+Tauri v2 is still the choice. What changed is that the shell comes first, the
+fetch seam covers the whole app rather than `useAIService` alone, and OAuth
+through the system browser is needed in the first build.
 
 ---
 
 # Sequencing
 
-| Step | Ships to | Depends on |
-| --- | --- | --- |
-| 1. Markdown | web | — |
-| 2. Editor | web | 1 |
-| 3a. Library | desktop | 1, adapter seam |
-| 4. Shell | desktop | 3a |
-| 3b. Watching | desktop | 3a, 4 |
-
-Step 2 can land before 3a or after; 3a's adapter does not care what the editor
-is. Doing 2 first means the projection and routing are settled before the
-adapter is written against them.
+| Step | Ships to | Depends on | |
+| --- | --- | --- | --- |
+| 1. Markdown | web | — | built |
+| 2. Editor | web | 1 | built |
+| 4. Shell | desktop | — | `desktop_design.md` |
+| Adapter seam | web | — | |
+| 3a. Library | desktop | 1, seam, 4 | |
+| 3b. Watching | desktop | 3a | |
 
 # Open questions
 
-- **Folder metadata.** `.folder.md` is hidden, which keeps the tree clean and
-  costs a human the folder summary in Finder. A visible `index.md` is the
-  alternative; it collides with a document called "index".
-- **`he` and the markdown stability of migrated lore.** Lore migrated at v5 is
-  HTML built from plain text by splitting on blank lines. It will convert
-  cleanly; worth a fixture.
 - **What does 3b do to the open document on conflict?** Prompt, or merge? Not
   decided; not needed until 3b.
-- **Keys on desktop.** App data directory in v1; the OS keychain later.
+
+Settled 6 Oct 2026: folder metadata stays in a hidden `.folder.md`; chats
+live in the library; keys are in `desktop_design.md`. The question about lore
+migrated with `he` closed when step 1 shipped.

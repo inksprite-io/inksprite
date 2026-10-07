@@ -4,7 +4,7 @@ import {
   chatsToProfiles,
   storiesToProfiles,
 } from '@/stores/migrations/profiles.js'
-import { CHAT_PROFILE_ID, ADVENTURE_PROFILE_ID, DEFAULT_PROFILE_ID } from '@/ai/profiles/index.js'
+import { CHAT_PROFILE_ID, ROLEPLAY_PROFILE_ID, DEFAULT_PROFILE_ID } from '@/ai/profiles/index.js'
 
 describe('prompts become profiles', () => {
   describe('promptsToProfiles', () => {
@@ -51,12 +51,20 @@ describe('prompts become profiles', () => {
 
     it('points a chat on a built-in prompt at the profile built around it', () => {
       const { chats } = chatsToProfiles([
-        { id: 'chat_1', promptId: 'builtin_adventure' },
+        { id: 'chat_1', promptId: 'builtin_roleplay' },
         { id: 'chat_2', promptId: 'builtin_chat' },
       ])
 
-      expect(chats[0].profileId).toBe(ADVENTURE_PROFILE_ID)
+      expect(chats[0].profileId).toBe(ROLEPLAY_PROFILE_ID)
       expect(chats[1].profileId).toBe(CHAT_PROFILE_ID)
+    })
+
+    it('puts a chat on a built-in the app no longer ships on the default', () => {
+      // Adventure was retired as a built-in; an old backup's chats on it
+      // come in on the default rather than on a profile that is not there.
+      const { chats } = chatsToProfiles([{ id: 'chat_1', promptId: 'builtin_adventure' }])
+
+      expect(chats[0].profileId).toBe(DEFAULT_PROFILE_ID)
     })
 
     it('falls back to the default for a built-in nothing was built around', () => {
@@ -92,13 +100,13 @@ describe('prompts become profiles', () => {
   describe('storiesToProfiles', () => {
     it("moves a project's default across", () => {
       const { stories, converted } = storiesToProfiles([
-        { id: 's1', options: { promptId: 'builtin_adventure', other: true } },
+        { id: 's1', options: { promptId: 'builtin_roleplay', other: true } },
       ])
 
       expect(stories[0].options).toEqual({
-        promptId: 'builtin_adventure',
+        promptId: 'builtin_roleplay',
         other: true,
-        profileId: ADVENTURE_PROFILE_ID,
+        profileId: ROLEPLAY_PROFILE_ID,
       })
       expect(converted).toBe(1)
     })

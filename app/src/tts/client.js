@@ -7,6 +7,8 @@
  * which is not an error.
  */
 
+import { fetch } from '@/platform/fetch.js'
+
 /**
  * Where the server is, and how to talk to it.
  *

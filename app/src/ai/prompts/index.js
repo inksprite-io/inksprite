@@ -10,14 +10,22 @@
  */
 
 import chatPrompt from './chat.md?raw'
-import adventurePrompt from './adventure.md?raw'
 import roleplayPrompt from './roleplay.md?raw'
+import roleplayNsfwPrompt from './roleplay-nsfw.md?raw'
 import roleplayCompactionPrompt from './roleplay-compaction.md?raw'
 import roleplayNote from './roleplay-note.md?raw'
+import roleplayNsfwNote from './roleplay-nsfw-note.md?raw'
 
 export const DEFAULT_CHAT_PROMPT = chatPrompt.trim()
-export const DEFAULT_ADVENTURE_PROMPT = adventurePrompt.trim()
+
 export const DEFAULT_ROLEPLAY_PROMPT = roleplayPrompt.trim()
+
+/**
+ * Roleplay, with the opt-ins: lines and veils, consent, and explicit content
+ * when the writer has asked for it. A file of its own rather than Roleplay's
+ * with more on the end, so each reads as the whole of what its model is told.
+ */
+export const DEFAULT_ROLEPLAY_NSFW_PROMPT = roleplayNsfwPrompt.trim()
 
 /**
  * What a roleplay chat's compaction runs under.
@@ -41,6 +49,14 @@ export const ROLEPLAY_COMPACTION_PROMPT = roleplayCompactionPrompt.trim()
 export const DEFAULT_ROLEPLAY_NOTE = roleplayNote.trim()
 
 /**
+ * The author's note a Roleplay (NSFW) chat starts with: the Roleplay note,
+ * with the writer's opt-ins. The list of what they have opted into lives here
+ * rather than in the prompt so it is theirs to change, one chat at a time or,
+ * saved as a profile of their own, for every chat they start.
+ */
+export const DEFAULT_ROLEPLAY_NSFW_NOTE = roleplayNsfwNote.trim()
+
+/**
  * A prompt that ships with the app.
  *
  * @typedef {Object} BuiltInPrompt
@@ -50,14 +66,14 @@ export const DEFAULT_ROLEPLAY_NOTE = roleplayNote.trim()
  */
 
 export const CHAT_PROMPT_ID = 'builtin_chat'
-export const ADVENTURE_PROMPT_ID = 'builtin_adventure'
 export const ROLEPLAY_PROMPT_ID = 'builtin_roleplay'
+export const ROLEPLAY_NSFW_PROMPT_ID = 'builtin_roleplay_nsfw'
 
 /** @type {BuiltInPrompt[]} */
 export const BUILT_IN_PROMPTS = [
   { id: CHAT_PROMPT_ID, name: 'Chat', content: DEFAULT_CHAT_PROMPT },
-  { id: ADVENTURE_PROMPT_ID, name: 'Adventure', content: DEFAULT_ADVENTURE_PROMPT },
   { id: ROLEPLAY_PROMPT_ID, name: 'Roleplay', content: DEFAULT_ROLEPLAY_PROMPT },
+  { id: ROLEPLAY_NSFW_PROMPT_ID, name: 'Roleplay (NSFW)', content: DEFAULT_ROLEPLAY_NSFW_PROMPT },
 ]
 
 /**

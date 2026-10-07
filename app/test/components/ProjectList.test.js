@@ -7,9 +7,17 @@ import Menu from 'primevue/menu'
 import ProjectList from '@/components/writer/projects/ProjectList.vue'
 import ProjectCard from '@/components/writer/projects/ProjectCard.vue'
 import NewProjectDialog from '@/components/writer/projects/NewProjectDialog.vue'
+import ProjectDialog from '@/components/writer/tree/ProjectDialog.vue'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
+
+// A real ref, so the template unwraps it. Shared, so a test can be on a phone.
+const { screen } = await vi.hoisted(async () => {
+  const { ref } = await import('vue')
+  return { screen: { isMobile: ref(false) } }
+})
+vi.mock('@/composables/useScreenSize', () => ({ useScreenSize: () => screen }))
 
 vi.mock('@/stores/db', () => {
   const byIndex = () => ({
@@ -34,6 +42,17 @@ vi.mock('@/stores/syncStore', () => ({
   useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
 }))
 
+const { backup, toast } = vi.hoisted(() => ({
+  backup: {
+    downloadProject: vi.fn(),
+    readProjectFile: vi.fn(),
+    importProject: vi.fn(),
+  },
+  toast: { success: vi.fn(), error: vi.fn() },
+}))
+vi.mock('@/composables/useBackup', () => ({ useBackup: () => backup }))
+vi.mock('@/composables/useToast', () => ({ useToast: () => toast }))
+
 // Every deletion is confirmed.
 vi.mock('primevue/useconfirm', () => ({
   useConfirm: () => ({ require: options => options.accept() }),
@@ -48,6 +67,8 @@ describe('ProjectList', () => {
 
   beforeEach(() => {
     setActivePinia(createPinia())
+    vi.clearAllMocks()
+    screen.isMobile.value = false
     storiesStore = useStoriesStore()
     documentsStore = useDocumentsStore()
     router = createRouter({
@@ -65,7 +86,11 @@ describe('ProjectList', () => {
       global: {
         plugins: [router, PrimeVue],
         directives: { tooltip: {} },
-        stubs: { ScrollPanel: { template: '<div><slot /></div>' }, NewProjectDialog: true },
+        stubs: {
+          ScrollPanel: { template: '<div><slot /></div>' },
+          NewProjectDialog: true,
+          ProjectDialog: true,
+        },
       },
     })
     await flushPromises()
@@ -81,14 +106,49 @@ describe('ProjectList', () => {
       .find(item => item.label === label)
       .command()
 
-  it('lists projects most recently worked on first, named from their roots', async () => {
+  it('lists projects by name, numbers as numbers and case aside, named from their roots', async () => {
+    for (const title of ['Zebra', 'Draft 10', 'apple', 'Draft 2']) {
+      await storiesStore.createStory(title)
+    }
+
+    const { wrapper } = await mountList()
+    expect(titles(wrapper)).toEqual(['apple', 'Draft 2', 'Draft 10', 'Zebra'])
+  })
+
+  it('keeps a project where it is when it is worked on', async () => {
     const first = await storiesStore.createStory('First')
     const second = await storiesStore.createStory('Second')
-    // Both were made in the same millisecond; the first is the one worked on since.
-    storiesStore.stories.get(first.id).updated = second.updated + 1000
+    storiesStore.stories.get(second.id).updated = first.updated + 1000
 
     const { wrapper } = await mountList()
     expect(titles(wrapper)).toEqual(['First', 'Second'])
+  })
+
+  it('opens a project’s settings from its card', async () => {
+    await storiesStore.createStory('Draft')
+    const { wrapper } = await mountList()
+    const card = wrapper.findComponent(ProjectCard)
+
+    expect(card.findComponent(ProjectDialog).props('visible')).toBe(false)
+    await menuCommand(card, 'Project settings')
+    await flushPromises()
+    expect(card.findComponent(ProjectDialog).props('visible')).toBe(true)
+  })
+
+  it('offers the card’s menu on right-click, and a button for it only on a phone', async () => {
+    await storiesStore.createStory('Draft')
+    const { wrapper } = await mountList()
+    expect(wrapper.find('[aria-label="Project actions"]').exists()).toBe(false)
+    expect(wrapper.findComponent(ProjectCard).findComponent(Menu).exists()).toBe(true)
+
+    screen.isMobile.value = true
+    await flushPromises()
+    expect(wrapper.find('[aria-label="Project actions"]').exists()).toBe(true)
+  })
+
+  it('has no link to the docs under the list', async () => {
+    const { wrapper } = await mountList()
+    expect(wrapper.find('a[href*="docs.inksprite.io"]').exists()).toBe(false)
   })
 
   it('marks the project open', async () => {
@@ -140,6 +200,70 @@ describe('ProjectList', () => {
     await flushPromises()
 
     expect(documentsStore.getRoot(story.id).title).toBe('Final')
+  })
+
+  it('exports a project from its card', async () => {
+    const story = await storiesStore.createStory('Draft')
+    backup.downloadProject.mockResolvedValue({ filename: 'inksprite-project-draft.json', bytes: 1 })
+    const { wrapper } = await mountList()
+
+    await menuCommand(wrapper.findComponent(ProjectCard), 'Export')
+    await flushPromises()
+
+    expect(backup.downloadProject).toHaveBeenCalledWith(story.id)
+    expect(toast.success).toHaveBeenCalledWith('Saved inksprite-project-draft.json')
+  })
+
+  it('says why an export failed', async () => {
+    await storiesStore.createStory('Draft')
+    backup.downloadProject.mockRejectedValue(new Error('Quota exceeded'))
+    const { wrapper } = await mountList()
+
+    await menuCommand(wrapper.findComponent(ProjectCard), 'Export')
+    await flushPromises()
+
+    expect(toast.error).toHaveBeenCalledWith('Export failed: Quota exceeded')
+  })
+
+  /**
+   * Pick a file in the list's hidden input.
+   * @param {import('@vue/test-utils').VueWrapper} wrapper
+   * @param {File} file
+   */
+  const pickFile = async (wrapper, file) => {
+    const input = wrapper.find('input[type="file"]')
+    Object.defineProperty(input.element, 'files', { value: [file], configurable: true })
+    await input.trigger('change')
+    await flushPromises()
+  }
+
+  it('imports a project file and opens it', async () => {
+    const file = new window.File(['{}'], 'inksprite-project-draft.json')
+    const rows = { story: { id: 'story_from_file' } }
+    backup.readProjectFile.mockResolvedValue(rows)
+    backup.importProject.mockImplementation(() => storiesStore.createStory('Imported'))
+    const { wrapper, push } = await mountList()
+
+    await pickFile(wrapper, file)
+
+    expect(backup.readProjectFile).toHaveBeenCalledWith(file)
+    expect(backup.importProject).toHaveBeenCalledWith(rows)
+    const storyId = [...storiesStore.stories.keys()][0]
+    expect(toast.success).toHaveBeenCalledWith('Imported "Imported"')
+    expect(push).toHaveBeenCalledWith(`/project/${storyId}`)
+  })
+
+  it('says why a file could not be imported, and opens nothing', async () => {
+    backup.readProjectFile.mockRejectedValue(
+      new Error('This file holds one chat, not one project.')
+    )
+    const { wrapper, push } = await mountList()
+
+    await pickFile(wrapper, new window.File(['{}'], 'chat.json'))
+
+    expect(backup.importProject).not.toHaveBeenCalled()
+    expect(toast.error).toHaveBeenCalledWith('This file holds one chat, not one project.')
+    expect(push).not.toHaveBeenCalled()
   })
 
   it('deletes a project, and leaves it when it was the one open', async () => {

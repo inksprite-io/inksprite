@@ -54,7 +54,7 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
-import { initiateOpenRouterOAuth } from '@/utils/oauth'
+import { useOpenRouterSignIn } from '@/composables/useOpenRouterSignIn'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 
 /**
@@ -71,6 +71,7 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'dont-show-again'])
 
 const toast = useToast()
+const openRouter = useOpenRouterSignIn()
 const settings = useSettingsPanel()
 
 const localVisible = ref(props.visible)
@@ -97,11 +98,11 @@ watch(localVisible, newVal => {
  */
 async function handleOAuthConnect() {
   try {
-    const callbackUrl = `${window.location.origin}/connect/openrouter`
-    await initiateOpenRouterOAuth(callbackUrl)
     isConnecting.value = true
+    await openRouter.start()
     console.log('OAuth initiated, waiting for callback...')
   } catch (error) {
+    isConnecting.value = false
     console.error('Failed to initiate OAuth:', error)
     toast.add({
       severity: 'error',

@@ -61,7 +61,7 @@
                   class="flex-1 min-w-0 dark:!bg-surface-900"
                   size="small"
                   :pt="{ list: { onMousedownCapture: ignoreRightButton } }"
-                  @update:model-value="setProfile"
+                  @update:model-value="chooseProfile"
                 >
                   <template #option="{ option }">
                     <span
@@ -102,30 +102,19 @@
               </div>
             </div>
 
-            <!-- Collapsed by default, and capped when open: a long prompt
-                 otherwise fills the panel, and most visits are for something
-                 else. -->
-            <ExpandableSection
-              title="System Prompt"
-              storage-key="ui.chat-settings.system-prompt"
-              subsection
-              content-wrapper-class="flex flex-col"
-            >
-              <div class="flex flex-col gap-1 pt-1 pb-2">
-                <Textarea
-                  v-model="systemPrompt"
-                  size="small"
-                  class="w-full max-h-80 !overflow-y-auto dark:!bg-surface-900"
-                  auto-resize
-                  rows="6"
-                  aria-label="System Prompt"
-                  @input="handleSystemPromptInput"
-                />
-                <p class="text-xs text-surface-500 dark:text-surface-400">
-                  {{ promptHelp }}
-                </p>
-              </div>
-            </ExpandableSection>
+            <!-- Capped: a long prompt otherwise fills the panel. -->
+            <div class="flex flex-col gap-1">
+              <SettingLabel label="System prompt" />
+              <Textarea
+                v-model="systemPrompt"
+                size="small"
+                class="w-full max-h-80 !overflow-y-auto dark:!bg-surface-900"
+                auto-resize
+                rows="6"
+                aria-label="System Prompt"
+                @input="handleSystemPromptInput"
+              />
+            </div>
 
             <div class="flex flex-col gap-1">
               <SettingLabel
@@ -191,6 +180,22 @@
             </div>
             <p v-if="!modelToolsEnabled" class="text-xs text-surface-500 dark:text-surface-400">
               Tool use is off for the AI preset, so none of these are offered.
+            </p>
+            <!-- App-wide, unlike the rest of the section, and it says so. -->
+            <div class="flex items-center justify-between gap-2 h-8 px-2">
+              <label class="text-xs font-medium text-surface-700 dark:text-surface-200">
+                Apply edits automatically
+              </label>
+              <ToggleSwitch
+                v-tooltip.top="applyEditsAutomatically ? 'Enabled' : 'Disabled'"
+                v-model="applyEditsAutomatically"
+                class="flex-none"
+                aria-label="Apply edits automatically"
+              />
+            </div>
+            <p class="text-xs text-surface-500 dark:text-surface-400 px-2 pb-1">
+              Off, each change the assistant makes to a document waits in the chat for you to
+              accept, and ends its turn. The same in every chat.
             </p>
             <ExpandableSection
               v-for="group in toolGroups"
@@ -496,6 +501,7 @@ import { useLoadedSkills } from '@/composables/useLoadedSkills.js'
 import { useMcpServers } from '@/composables/useMcpServers.js'
 import { reachable, serversForChat } from '@/mcp/servers.js'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
+import { useApplicationState } from '@/composables/useApplicationState'
 import { COMMANDS } from '@/ai/commands.js'
 
 /**
@@ -509,8 +515,8 @@ import { COMMANDS } from '@/ai/commands.js'
  *
  * Two scopes are mixed on purpose. The writer does not care which row a setting
  * is stored on; they care that everything about this chat is in one place. What
- * the sections keep straight is which of them are shared — the AI section is
- * the only one, and it is the one that says so.
+ * the sections keep straight is which of them are shared, and each shared one
+ * says so: the AI section, and whether edits apply automatically, under Tools.
  *
  * @typedef {Object} Props
  * @property {string} storyId - The story this chat belongs to
@@ -605,6 +611,15 @@ const skillTools = computed(() => skills.value.flatMap(skill => (skill.tool ? [s
 const activePreset = computed(() => aiConfig.activeAIPreset.value)
 const modelToolsEnabled = computed(() => activePreset.value?.toolsEnabled !== false)
 
+// Whether the assistant's changes to documents go straight in, or wait in the
+// chat for the writer. App-wide; it sits here because this is where the writer
+// looks when deciding what the assistant may do.
+const { applyEdits, setApplyEdits } = useApplicationState()
+const applyEditsAutomatically = computed({
+  get: () => applyEdits.value === 'auto',
+  set: value => setApplyEdits(value ? 'auto' : 'ask'),
+})
+
 const {
   chat,
   update,
@@ -613,6 +628,7 @@ const {
   selectedProfileId,
   selectedProfile,
   setProfile,
+  chooseProfile,
   deleteProfile,
 } = useChatSettings(props.storyId, () => props.chatId)
 
@@ -837,12 +853,6 @@ const resetSkill = id => {
   delete worded[id]
   profilesApi.updateProfile(selectedProfileId.value, { settings: { skills: worded } })
 }
-
-const promptHelp = computed(() =>
-  isSavedProfile.value
-    ? 'One of your own profiles, saved as you type — for this chat and every other on it.'
-    : 'A built-in profile. Editing its prompt starts a copy of your own and switches this chat to it.'
-)
 
 /** The text as the library holds it, which is what the next request sends. */
 const profilePrompt = computed(() => selectedProfile.value?.settings?.prompt ?? DEFAULT_CHAT_PROMPT)

@@ -1,6 +1,6 @@
 {
   "client_id": "https://inksprite.io/oauth/mcp-client.json",
-  "client_name": "InkSprite",
+  "client_name": "inksprite",
   "client_uri": "https://inksprite.io",
   "redirect_uris": ["https://inksprite.io/connect/mcp"],
   "grant_types": ["authorization_code", "refresh_token"],

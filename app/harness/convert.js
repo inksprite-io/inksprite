@@ -138,7 +138,13 @@ const ask = messages =>
   pooled(async () => {
     for (let attempt = 0; ; attempt++) {
       try {
-        return await complete({ provider, model, messages, overrides })
+        return await complete({
+          provider,
+          model,
+          allowedProviders: endpoint.allowedProviders,
+          messages,
+          overrides,
+        })
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         if (attempt >= 3 || !TRANSIENT.test(message)) throw error

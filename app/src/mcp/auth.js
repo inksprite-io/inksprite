@@ -28,6 +28,8 @@
  * Settings, with a click, which is also what lets the app open a tab at all.
  */
 
+import { fetch } from '@/platform/fetch.js'
+import { callbackOrigin } from '@/platform/signIn.js'
 import { localStorage as appStorage } from '@/utils/localStorage.js'
 
 /** @typedef {import('@modelcontextprotocol/client').OAuthClientProvider} OAuthClientProvider */
@@ -142,9 +144,12 @@ export function signOut(url) {
 /** Where this copy of the app is answering from. */
 const appOrigin = () => globalThis.location?.origin || ''
 
-/** Where this copy of the app is sent back to. */
+/**
+ * Where this copy of the app is sent back to: its own origin in a browser,
+ * the listener on localhost in the desktop window.
+ */
 export function callbackUrl() {
-  return `${appOrigin()}${CALLBACK_PATH}`
+  return `${callbackOrigin()}${CALLBACK_PATH}`
 }
 
 /**
@@ -156,7 +161,7 @@ export function callbackUrl() {
  */
 function clientMetadata(redirect) {
   return {
-    client_name: 'InkSprite',
+    client_name: 'inksprite',
     client_uri: PUBLIC_ORIGIN,
     redirect_uris: [redirect],
     grant_types: ['authorization_code', 'refresh_token'],
@@ -284,7 +289,7 @@ const loadSdk = () => import('@modelcontextprotocol/client')
  */
 export async function startSignIn(url, onRedirect) {
   const { auth } = await loadSdk()
-  return auth(authProvider(url, { onRedirect }), { serverUrl: url })
+  return auth(authProvider(url, { onRedirect }), { serverUrl: url, fetchFn: fetch })
 }
 
 /**
@@ -341,6 +346,7 @@ export async function finishSignIn(params) {
   await auth(authProvider(url), {
     serverUrl: url,
     authorizationCode: code,
+    fetchFn: fetch,
     ...(iss ? { iss } : {}),
   })
   updateRecord(url, record => {

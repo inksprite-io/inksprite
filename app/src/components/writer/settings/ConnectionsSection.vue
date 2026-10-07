@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-4 px-2 pt-2 pb-1" data-connections-section>
     <p class="text-sm text-surface-600 dark:text-surface-300">
-      Connect an MCP server and its tools can be offered to the model in your chats. InkSprite
+      Connect an MCP server and its tools can be offered to the model in your chats. inksprite
       connects from this page, so the server has to let web pages connect to it. One that runs as a
       program on your computer needs a bridge that serves it over HTTP.
     </p>
@@ -149,7 +149,7 @@
           v-else-if="!candidate.server.url"
           class="text-xs italic text-surface-500 dark:text-surface-400"
         >
-          Runs as a program, so it needs a bridge before InkSprite can reach it. Kept so you can see
+          Runs as a program, so it needs a bridge before inksprite can reach it. Kept so you can see
           it.
         </span>
         <template v-else-if="candidate.preview">

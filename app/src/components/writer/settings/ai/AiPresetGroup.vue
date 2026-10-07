@@ -10,6 +10,12 @@
       :selected-provider-id="selectedProviderId"
       @update:selected-model-id="handleModelChange"
     />
+    <AiAllowedProviders
+      v-if="routesProviders"
+      :model-value="activePreset?.allowedProviders"
+      :model="selectedModelId || ''"
+      @update:model-value="handleAllowedChange"
+    />
     <AiGenerationGroup />
     <AiSamplingGroup />
   </div>
@@ -32,6 +38,7 @@ import { computed } from 'vue'
 import AiPresetSelector from './AiPresetSelector.vue'
 import AiProviderSelector from './AiProviderSelector.vue'
 import AiModelSelector from './AiModelSelector.vue'
+import AiAllowedProviders from './AiAllowedProviders.vue'
 import AiGenerationGroup from './AiGenerationGroup.vue'
 import AiSamplingGroup from './AiSamplingGroup.vue'
 import { useAIConfig } from '@/composables/useAIConfig'
@@ -41,6 +48,9 @@ const aiConfig = useAIConfig()
 const activePreset = computed(() => aiConfig.activeAIPreset.value)
 const selectedProviderId = computed(() => activePreset.value?.providerId || null)
 const selectedModelId = computed(() => activePreset.value?.model || null)
+const routesProviders = computed(
+  () => aiConfig.getProvider(selectedProviderId.value)?.type === 'openrouter'
+)
 
 const handleProviderChange = providerId => {
   if (!activePreset.value) return
@@ -50,5 +60,11 @@ const handleProviderChange = providerId => {
 const handleModelChange = modelId => {
   if (!activePreset.value) return
   aiConfig.updatePreset(activePreset.value.id, { model: modelId })
+}
+
+/** @param {string[]|undefined} allowedProviders */
+const handleAllowedChange = allowedProviders => {
+  if (!activePreset.value) return
+  aiConfig.updatePreset(activePreset.value.id, { allowedProviders })
 }
 </script>

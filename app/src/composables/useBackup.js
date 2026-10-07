@@ -2,7 +2,7 @@
 /**
  * @module composables/useBackup
  * @description Whole-database export and import — the manual recovery path —
- * and single chats in the same envelope.
+ * and single chats and whole projects in the same envelope.
  *
  * Export flushes anything the sync store is still holding, reads every table,
  * and hands back a JSON file. Import replaces the database wholesale: every
@@ -21,10 +21,21 @@
  * `readChatFile` also takes a chat exported from SillyTavern, which is not a
  * backup of anything but arrives by the same door: the writer has a chat in a
  * file and wants it in the project. See `cards/transcript.js`.
+ *
+ * A project exported on its own carries its tree, the bytes of its files, its
+ * chats with their messages, and the writer's own profiles they run on. It is
+ * read back by `readProjectFile` and added beside the other projects by
+ * `importProject`, under new ids, so it never replaces anything either. Its
+ * jobs stay behind: what a finished one made is already in the tree, and one
+ * still running is work on this database, not the project's.
  */
 
 import db from '@/stores/db'
 import { useSyncStore } from '@/stores/syncStore'
+import { useStoriesStore } from '@/stores/storiesStore'
+import { useDocumentsStore } from '@/stores/documentsStore'
+import { useChatProfileStore } from '@/stores/chatProfileStore'
+import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { isBuiltInPromptId } from '@/ai/prompts/index.js'
 import {
   isBuiltInProfileId,
@@ -41,6 +52,9 @@ import {
   backupFilename,
   chatFilename,
   chatFromTables,
+  projectFilename,
+  projectFromTables,
+  withFreshIds,
   serializeFiles,
   deserializeFiles,
 } from '@/utils/backup'
@@ -49,6 +63,10 @@ import { assembleTurn, inspectCommand } from '@/ai/commands.js'
 import { obfuscateBackup } from '@/utils/obfuscate.js'
 
 /** @typedef {import('@/utils/backup.js').Backup} Backup */
+/** @typedef {import('@/utils/backup.js').BackupScope} BackupScope */
+/** @typedef {import('@/utils/backup.js').ProjectRows} ProjectRows */
+/** @typedef {import('@/types/models.js').Story} Story */
+/** @typedef {import('@/types/models.js').StoredChatProfile} StoredChatProfile */
 /** @typedef {import('@/types/models.js').Chat} Chat */
 /** @typedef {import('@/types/models.js').Message} Message */
 /** @typedef {import('@/types/models.js').AIPrompt} AIPrompt */
@@ -128,7 +146,7 @@ export function useBackup() {
    * Parse an uploaded file and check it is something this build can read.
    *
    * @param {File} file
-   * @param {'database'|'chat'} scope - What the caller expects the file to hold
+   * @param {BackupScope} scope - What the caller expects the file to hold
    * @returns {Promise<Backup>}
    * @throws {Error} If it is not, saying why
    */
@@ -140,7 +158,7 @@ export function useBackup() {
    * The same, for a file already read.
    *
    * @param {string} text
-   * @param {'database'|'chat'} scope
+   * @param {BackupScope} scope
    * @returns {Backup}
    * @throws {Error} If it is not, saying why
    */
@@ -342,6 +360,137 @@ export function useBackup() {
     return { chat, messages, character, note }
   }
 
+  /**
+   * Snapshot one project: its tree, the bytes behind its files, its chats
+   * with their messages, and the writer's own profiles it and they run on.
+   *
+   * @param {string} storyId
+   * @returns {Promise<Backup>}
+   * @throws {Error} If there is no such project
+   */
+  async function createProjectBackup(storyId) {
+    // Flushed both ways, as for a whole backup: the open document may be the
+    // one in this project.
+    useEditor().flush()
+    await useSyncStore().processSync()
+
+    const story = await db.stories.get(storyId)
+    if (!story) throw new Error(`Project '${storyId}' not found`)
+
+    const [documents, files, chats] = await Promise.all([
+      db.documents.where('storyId').equals(storyId).toArray(),
+      db.files.where('storyId').equals(storyId).toArray(),
+      db.chats.where('storyId').equals(storyId).toArray(),
+    ])
+    const messages = (
+      await db.messages
+        .where('chatId')
+        .anyOf(chats.map((/** @type {Chat} */ chat) => chat.id))
+        .toArray()
+    ).sort((/** @type {Message} */ a, /** @type {Message} */ b) => a.created - b.created)
+
+    const profiles = await savedProfilesOf([
+      story.options?.profileId,
+      ...chats.map((/** @type {Chat} */ chat) => chat.profileId || chat.promptId),
+    ])
+
+    return buildBackup(
+      {
+        stories: [story],
+        documents,
+        files: await serializeFiles(files),
+        chats,
+        messages,
+        chatProfiles: profiles,
+      },
+      { dbVersion: db.verno, scope: 'project' }
+    )
+  }
+
+  /**
+   * The writer's own profiles among these ids, those still here. A built-in
+   * is wherever the file is opened; a saved one may not be.
+   *
+   * @param {Array<string|null|undefined>} ids
+   * @returns {Promise<StoredChatProfile[]>}
+   */
+  async function savedProfilesOf(ids) {
+    const own = [...new Set(ids)].filter(
+      id => typeof id === 'string' && id && !isBuiltInProfileId(id) && !isBuiltInPromptId(id)
+    )
+    if (own.length === 0) return []
+    return (await db.chatProfiles.bulkGet(own)).filter(Boolean)
+  }
+
+  /**
+   * Snapshot one project and hand the user a file named after it.
+   *
+   * @param {string} storyId
+   * @returns {Promise<{filename: string, bytes: number}>}
+   */
+  async function downloadProject(storyId) {
+    const backup = await createProjectBackup(storyId)
+    const root = backup.tables.documents.find(document => document.id === rootIdFor(storyId))
+    return downloadJson(projectFilename(root?.title || ''), backup)
+  }
+
+  /**
+   * Read a project file back into rows this build can use. Nothing is written.
+   *
+   * @param {File} file
+   * @returns {Promise<ProjectRows>}
+   * @throws {Error} If the file is not a project this build can read
+   */
+  async function readProjectFile(file) {
+    const parsed = await parseBackupFile(file, 'project')
+    return projectFromTables(upgradeTables(parsed.tables, parsed.dbVersion, db.verno))
+  }
+
+  /**
+   * Add a project read from a file beside the others.
+   *
+   * Everything gets a new id, so the same file can be imported twice, or into
+   * the database it came from, without touching what is there. The rows go
+   * in together or not at all: a project half imported is a tree with no
+   * story, or chats about documents that are not there.
+   *
+   * The profiles it runs on come with it, under their own ids. One the
+   * library already holds is used as it stands, as for a chat imported alone:
+   * the library is what the writer has been editing.
+   *
+   * The rows are written straight to the database, which the stores read
+   * a project at a time, so they only need telling about the project itself:
+   * its record and its root, which carries its name.
+   *
+   * @param {ProjectRows} project
+   * @returns {Promise<Story>} The project as it now exists here
+   */
+  async function importProject(project) {
+    const { story, documents, files, chats, messages, profiles } = withFreshIds(project)
+
+    await db.transaction(
+      'rw',
+      [db.stories, db.documents, db.files, db.chats, db.messages],
+      async () => {
+        await db.stories.add(story)
+        await db.documents.bulkAdd(documents)
+        await db.files.bulkAdd(deserializeFiles(files))
+        await db.chats.bulkAdd(chats)
+        await db.messages.bulkAdd(messages)
+      }
+    )
+
+    const profileStore = useChatProfileStore()
+    await profileStore.ensureInitialized()
+    for (const { id, name, settings } of profiles) {
+      if (!profileStore.getProfile(id)) profileStore.createProfile({ id, name, settings })
+    }
+
+    await useStoriesStore().loadStory(story.id)
+    await useDocumentsStore().loadRoots([story.id])
+    return story
+  }
+
   return {
     createBackup,
     downloadBackup,
@@ -350,5 +499,9 @@ export function useBackup() {
     createChatBackup,
     downloadChat,
     readChatFile,
+    createProjectBackup,
+    downloadProject,
+    readProjectFile,
+    importProject,
   }
 }

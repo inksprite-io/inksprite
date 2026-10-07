@@ -6,7 +6,13 @@ import ChatProfileMenu from '@/components/writer/chats/ChatProfileMenu.vue'
 import { clearChatsInstances, useChats } from '@/composables/useChats'
 import { useChatsStore } from '@/stores/chatsStore'
 import { useProfiles } from '@/composables/useProfiles'
-import { ADVENTURE_PROFILE_ID, CHAT_PROFILE_ID, ROLEPLAY_PROFILE_ID } from '@/ai/profiles/index.js'
+import {
+  CHAT_PROFILE_ID,
+  ROLEPLAY_PROFILE_ID,
+  ROLEPLAY_NSFW_PROFILE_ID,
+} from '@/ai/profiles/index.js'
+import { useProfileNotice } from '@/composables/useProfileNotice.js'
+import { useApplicationState } from '@/composables/useApplicationState'
 
 vi.mock('@/stores/db', () => ({ default: {} }))
 vi.mock('@/stores/syncStore', () => ({
@@ -52,6 +58,7 @@ describe('ChatProfileMenu', () => {
     setActivePinia(createPinia())
     clearChatsInstances()
     document.body.innerHTML = ''
+    useApplicationState().resetState()
     chats = useChats('story_1')
   })
 
@@ -63,11 +70,29 @@ describe('ChatProfileMenu', () => {
   it('puts the unstarted chat on another profile without saving anything', async () => {
     const wrapper = mountMenu(chats.unstartedChat.value.id)
 
-    await pick(wrapper, 'Adventure')
+    await pick(wrapper, 'Roleplay')
 
-    expect(chats.unstartedChat.value.profileId).toBe(ADVENTURE_PROFILE_ID)
+    expect(chats.unstartedChat.value.profileId).toBe(ROLEPLAY_PROFILE_ID)
     expect(useChatsStore().getChatsForStory('story_1')).toHaveLength(0)
-    expect(wrapper.find('[data-chat-profile]').text()).toBe('Adventure')
+    expect(wrapper.find('[data-chat-profile]').text()).toBe('Roleplay')
+  })
+
+  it('tells the writer what Roleplay (NSFW) asks of them the first time they pick it', async () => {
+    window.localStorage.clear()
+    useApplicationState().setNsfwProfiles(true)
+    const notice = useProfileNotice()
+    notice.dismiss()
+    const wrapper = mountMenu(chats.unstartedChat.value.id)
+
+    await pick(wrapper, 'Roleplay (NSFW)')
+
+    expect(chats.unstartedChat.value.profileId).toBe(ROLEPLAY_NSFW_PROFILE_ID)
+    expect(notice.pending.value?.header).toBe('Roleplay (NSFW)')
+
+    notice.dismiss()
+    await pick(wrapper, 'Roleplay')
+    await pick(wrapper, 'Roleplay (NSFW)')
+    expect(notice.pending.value).toBeNull()
   })
 
   it('replaces a started chat’s settings with the profile’s, even ones it does not set', async () => {
@@ -75,10 +100,10 @@ describe('ChatProfileMenu', () => {
     chats.updateChat(chat.id, { projectContextEnabled: false })
     const wrapper = mountMenu(chat.id)
 
-    await pick(wrapper, 'Adventure')
+    await pick(wrapper, 'Default')
 
     const now = chats.getChatById(chat.id)
-    expect(now.profileId).toBe(ADVENTURE_PROFILE_ID)
+    expect(now.profileId).toBe(CHAT_PROFILE_ID)
     expect(now.disabledToolGroups).toBeUndefined()
     expect(now.rules).toBeUndefined()
     expect(now.projectContextEnabled).toBeUndefined()
@@ -91,7 +116,32 @@ describe('ChatProfileMenu', () => {
     const labels = [...document.body.querySelectorAll('[role="menuitem"]')].map(item =>
       item.textContent.trim()
     )
-    expect(labels).toEqual(['Default', 'Adventure', 'Roleplay'])
+    expect(labels).toEqual(['Default', 'Roleplay', 'Blank'])
+  })
+
+  it('offers Roleplay (NSFW) once NSFW profiles are switched on', async () => {
+    useApplicationState().setNsfwProfiles(true)
+    const wrapper = mountMenu(chats.unstartedChat.value.id)
+    await wrapper.find('[data-chat-profile]').trigger('click')
+    await flushPromises()
+    const labels = [...document.body.querySelectorAll('[role="menuitem"]')].map(item =>
+      item.textContent.trim()
+    )
+    expect(labels).toEqual(['Default', 'Roleplay', 'Roleplay (NSFW)', 'Blank'])
+  })
+
+  it('names Roleplay for a chat on Roleplay (NSFW) once they are switched off', async () => {
+    useApplicationState().setNsfwProfiles(true)
+    const chat = chats.createChat(undefined, ROLEPLAY_NSFW_PROFILE_ID)
+    const wrapper = mountMenu(chat.id)
+    expect(wrapper.find('[data-chat-profile]').text()).toBe('Roleplay (NSFW)')
+
+    useApplicationState().setNsfwProfiles(false)
+    await flushPromises()
+
+    expect(wrapper.find('[data-chat-profile]').text()).toBe('Roleplay')
+    // The chat keeps naming it, for when they are switched back on.
+    expect(chats.getChatById(chat.id).profileId).toBe(ROLEPLAY_NSFW_PROFILE_ID)
   })
 
   it('deletes one of the writer’s own from its right-click menu, moving the chat off it', async () => {
@@ -112,7 +162,7 @@ describe('ChatProfileMenu', () => {
 
   it('offers no right-click menu on a built-in', async () => {
     const wrapper = mountMenu(chats.unstartedChat.value.id)
-    await rightClick(wrapper, 'Adventure')
+    await rightClick(wrapper, 'Roleplay')
     expect(document.body.querySelector('.p-contextmenu')).toBeNull()
   })
 })

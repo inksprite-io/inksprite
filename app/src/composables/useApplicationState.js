@@ -32,6 +32,10 @@ const defaultState = {
     // the chat for the writer to accept them. App-wide: how the writer wants
     // to work with the assistant, not a property of any one conversation.
     applyEdits: 'auto',
+    // Whether the built-in profiles written for explicit content are offered.
+    // Off until the writer switches it on, so nobody meets them by opening a
+    // menu.
+    nsfwProfiles: false,
   },
   debug: {
     // Keeps a copy of the request that opened each assistant turn. Off by
@@ -154,6 +158,8 @@ watch(
  *   setDebug: (on: boolean) => void,
  *   applyEdits: import('vue').ComputedRef<'auto'|'ask'>,
  *   setApplyEdits: (mode: 'auto'|'ask') => void,
+ *   nsfwProfiles: import('vue').ComputedRef<boolean>,
+ *   setNsfwProfiles: (on: boolean) => void,
  *   narration: import('vue').ComputedRef<NarrationConnection>,
  *   workflows: import('vue').ComputedRef<Record<string, import('../types/models.js').WorkflowSettings>>,
  *   setWorkflow: (name: string, patch: Partial<import('../types/models.js').WorkflowSettings>) => void,
@@ -225,6 +231,21 @@ export function useApplicationState() {
     if (mode !== 'auto' && mode !== 'ask') return
     if (!state.value.system) state.value.system = {}
     state.value.system.applyEdits = mode
+  }
+
+  /**
+   * Whether the NSFW chat profiles are offered. See `nsfw` on a profile in
+   * ai/profiles.
+   * @type {import('vue').ComputedRef<boolean>}
+   */
+  const nsfwProfiles = computed(() => state.value.system?.nsfwProfiles === true)
+
+  /**
+   * @param {boolean} on
+   */
+  const setNsfwProfiles = on => {
+    if (!state.value.system) state.value.system = {}
+    state.value.system.nsfwProfiles = on === true
   }
 
   /**
@@ -460,6 +481,10 @@ export function useApplicationState() {
     // How the assistant's document changes are applied
     applyEdits,
     setApplyEdits,
+
+    // Whether the NSFW chat profiles are offered
+    nsfwProfiles,
+    setNsfwProfiles,
 
     // The speech server, and whether speakers' lines are coloured
     narration,

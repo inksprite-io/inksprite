@@ -2,6 +2,7 @@
   <component :is="Analytics" v-if="Analytics" />
   <AppToast />
   <JobsToastHost />
+  <ProfileNoticeHost />
   <RouterView />
   <ConfirmDialog />
 </template>
@@ -12,6 +13,7 @@ import { RouterView } from 'vue-router'
 import ConfirmDialog from 'primevue/confirmdialog'
 import AppToast from './components/common/AppToast.vue'
 import JobsToastHost from './components/writer/jobs/JobsToastHost.vue'
+import ProfileNoticeHost from './components/common/ProfileNoticeHost.vue'
 import { applyTheme } from './composables/useSystemSettings'
 import { useApplicationState } from './composables/useApplicationState'
 import { useSkills } from './composables/useSkills'

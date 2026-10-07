@@ -29,7 +29,7 @@ const aiPresetDefaults = {
  *   init: () => Promise<void>,
  *   providers: import('vue').ComputedRef<AIProvider[]>,
  *   getProvider: (id: string) => AIProvider | null,
- *   createProvider: (provider: {name: string, type: 'openrouter'|'llamacpp'|'generic', endpoint?: string, apiKey?: string, rememberKey?: boolean, routing?: import('../ai/routing.js').OpenRouterRouting}) => AIProvider,
+ *   createProvider: (provider: {id?: string, name: string, type: 'openrouter'|'llamacpp'|'generic', endpoint?: string, apiKey?: string, rememberKey?: boolean, routing?: import('../ai/routing.js').OpenRouterRouting, isDefault?: boolean}) => AIProvider,
  *   updateProvider: (id: string, updates: Partial<AIProvider>) => AIProvider | null,
  *   deleteProvider: (id: string) => void,
  *   reloadProvider: (id: string) => Promise<AIProvider>,
@@ -124,6 +124,8 @@ export const useAIConfig = () => {
       name,
       providerId: source?.providerId || DEFAULT_OPENROUTER_PROVIDER_ID,
       model: source?.model || '',
+      // The same model, so the same providers serve it.
+      allowedProviders: source?.allowedProviders ? [...source.allowedProviders] : undefined,
       toolsEnabled: source?.toolsEnabled !== false,
       generationOverrides: { ...(source?.generationOverrides || {}) },
     })

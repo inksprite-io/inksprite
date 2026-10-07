@@ -4,8 +4,8 @@ import { usePrompts } from '@/composables/usePrompts'
 import { useAIPromptStore } from '@/stores/aiPromptStore'
 import {
   DEFAULT_CHAT_PROMPT,
-  DEFAULT_ADVENTURE_PROMPT,
   DEFAULT_ROLEPLAY_PROMPT,
+  DEFAULT_ROLEPLAY_NSFW_PROMPT,
 } from '@/ai/prompts/index.js'
 
 vi.mock('@/stores/db', () => ({
@@ -37,15 +37,15 @@ describe('usePrompts', () => {
       expect(prompts.prompts.value).toEqual([
         { id: 'builtin_chat', name: 'Chat', content: DEFAULT_CHAT_PROMPT, readOnly: true },
         {
-          id: 'builtin_adventure',
-          name: 'Adventure',
-          content: DEFAULT_ADVENTURE_PROMPT,
-          readOnly: true,
-        },
-        {
           id: 'builtin_roleplay',
           name: 'Roleplay',
           content: DEFAULT_ROLEPLAY_PROMPT,
+          readOnly: true,
+        },
+        {
+          id: 'builtin_roleplay_nsfw',
+          name: 'Roleplay (NSFW)',
+          content: DEFAULT_ROLEPLAY_NSFW_PROMPT,
           readOnly: true,
         },
       ])
@@ -57,8 +57,8 @@ describe('usePrompts', () => {
       // Built-ins lead so their position stays put as saved prompts come and go.
       expect(prompts.prompts.value.map(p => p.name)).toEqual([
         'Chat',
-        'Adventure',
         'Roleplay',
+        'Roleplay (NSFW)',
         'Editor',
       ])
       expect(prompts.prompts.value.at(-1).readOnly).toBe(false)
@@ -86,10 +86,10 @@ describe('usePrompts', () => {
     })
 
     it('should take text of its own, which is how a built-in gets edited', () => {
-      const copy = prompts.duplicatePrompt('builtin_adventure', 'Run a heist.')
+      const copy = prompts.duplicatePrompt('builtin_roleplay', 'Run a heist.')
 
       expect(copy.content).toBe('Run a heist.')
-      expect(prompts.getPrompt('builtin_adventure').content).toBe(DEFAULT_ADVENTURE_PROMPT)
+      expect(prompts.getPrompt('builtin_roleplay').content).toBe(DEFAULT_ROLEPLAY_PROMPT)
     })
 
     it('should return null for a prompt that no longer exists', () => {
@@ -143,8 +143,8 @@ describe('usePrompts', () => {
     })
 
     it('should refuse to delete a built-in', () => {
-      expect(prompts.deletePrompt('builtin_adventure')).toBe(false)
-      expect(prompts.getPrompt('builtin_adventure')).not.toBeNull()
+      expect(prompts.deletePrompt('builtin_roleplay')).toBe(false)
+      expect(prompts.getPrompt('builtin_roleplay')).not.toBeNull()
     })
   })
 })

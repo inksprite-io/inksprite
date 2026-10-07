@@ -58,7 +58,7 @@ const props = defineProps({
   chatId: { type: String, required: true },
 })
 
-const { profiles, selectedProfileId, selectedProfile, setProfile } = useChatSettings(
+const { profiles, selectedProfileId, selectedProfile, chooseProfile } = useChatSettings(
   props.storyId,
   () => props.chatId
 )
@@ -71,7 +71,7 @@ const items = computed(() =>
   profiles.value.map(profile => ({
     label: profile.name,
     profileId: profile.id,
-    command: () => setProfile(profile.id),
+    command: () => chooseProfile(profile.id),
   }))
 )
 

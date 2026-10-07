@@ -120,6 +120,7 @@ const ROUND_VERBS = {
   roll_dice: ['Rolling dice', 'Rolled dice'],
   oracle: ['Asking the oracle', 'Asked the oracle'],
   roll_table: ['Rolling on a table', 'Rolled on a table'],
+  draw_tarot: ['Drawing tarot cards', 'Drew tarot cards'],
   generate_names: ['Generating names', 'Generated names'],
   director: ['Asking the director', 'Asked the director'],
   interpret: ['Interpreting a draw', 'Interpreted a draw'],

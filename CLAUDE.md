@@ -2,17 +2,17 @@
 
 ## Project Overview
 
-InkSprite is a writing application with AI integration. It runs entirely in the browser: no backend, data in IndexedDB, AI requests straight from the client to the provider.
+inksprite is a writing application with AI integration. It runs entirely in the browser: no backend, data in IndexedDB, AI requests straight from the client to the provider.
 
 Features:
 - **Editor**: Distraction-free editor (based on TipTap) with markdown support
 - **Projects**: A project is a tree of documents. Folders hold children; text documents hold content; file documents are imported files (PDFs, images, anything) whose extracted text is their content and whose bytes live in the `files` table. A folder can be ordered, in which case its children sort by position and can be dragged into place; otherwise they sort by title. A new project starts empty; the writer lays it out. (The storage still calls a project a story: the `stories` table, `storyId`, and the `Story` typedef.)
 - **AI Integration**: OpenRouter (with OAuth), llama.cpp, and any OpenAI-compatible endpoint. Profiles pair a provider and model with generation settings.
 - **Chat**: Brainstorm with the AI, which reads, searches, creates, and writes the project's documents through tools. Conversations can be compacted into a summary of themselves.
-- **Adventure**: A built-in prompt in the prompt library under which the model runs a text-based tabletop RPG, with skills (director, interpret) that take a turn with tools of their own. Any chat can run on it; a project can make it the default for new chats.
+- **Profiles**: A chat runs under a profile: its system prompt, which tools it is offered, and the author's note it starts with. The built-ins are Default (the project and its tools), Roleplay and Roleplay (NSFW) (a scene, no tools; the NSFW one carries the opt-ins the writer lists in its author's note, and is offered only with Settings › Enable NSFW chat profiles on, a chat on it running as Roleplay while that is off), and Blank (no system prompt, no tools, no project). The RPG tools (dice, oracle, tables, tarot, names, and the director and interpret skills) are offered in chats that have them on; the Adventure prompt they were tuned under lives in `app/harness/prompts/` for the harness.
 - **Backup**: Whole-database export and restore, with forward migrations for old backups.
 
-Design docs for in-progress work live in `.llm/`. `document_tree_design.md` is the current data model; `markdown_library_design.md` is where content, the editor, and storage are going; `files_design.md` is how imported files reach the tree, the viewer, and the model. `google_docs_design.md` is importing Google Docs from Drive as markdown, and images in documents. `skills_design.md` is skills and tools: who may call them, the `/` menu, SKILL.md files in an app-wide library, and tools from MCP servers. `project_context_design.md` is what a chat's model has of the project on every turn: the writer's pins in the project block, document calls kept in the conversation, and `list_documents`.
+Design docs for in-progress work live in `.llm/`. `document_tree_design.md` is the current data model; `markdown_library_design.md` is where content, the editor, and storage are going; `desktop_design.md` is the desktop app, a Tauri shell over the web build first and the library on disk after; `files_design.md` is how imported files reach the tree, the viewer, and the model. `google_docs_design.md` is importing Google Docs from Drive as markdown, and images in documents. `skills_design.md` is skills and tools: who may call them, the `/` menu, SKILL.md files in an app-wide library, and tools from MCP servers. `project_context_design.md` is what a chat's model has of the project on every turn: the writer's pins in the project block, document calls kept in the conversation, and `list_documents`.
 
 ## Development Commands
 
@@ -33,7 +33,9 @@ These commands are run from the `app/` directory.
 
 ## Test Server
 
-There is a test server container running with `docker compose` that is hot updated by Vite. 
+There is a test server container running with `docker compose` that is hot updated by Vite. After a change to the app's dependencies, or a merge that touches `package.json`, `package-lock.json`, `vite.config.js` or `index.html`, the user rebuilds it with `./rebuild-test-server.sh` from the repository root, on their Mac. Never `npm install` inside the container: those files are mounted one at a time and go stale when git replaces them.
+
+The desktop app (`app/src-tauri/`) runs on the user's Mac with `cargo tauri dev`, loading the page from the test server; see `app/src-tauri/README.md`.
 
 ## Guidelines
 

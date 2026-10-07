@@ -9,6 +9,9 @@ import {
   backupFilename,
   chatFilename,
   chatFromTables,
+  projectFilename,
+  projectFromTables,
+  withFreshIds,
 } from '@/utils/backup.js'
 
 const validBackup = (overrides = {}) => ({
@@ -102,6 +105,19 @@ describe('validateBackup', () => {
     expect(errors.join(' ')).toContain('Restore it from the Data settings')
   })
 
+  it('sends a project file to the project list', () => {
+    const { ok, errors } = validateBackup(validBackup({ scope: 'project' }), 2, 'chat')
+    expect(ok).toBe(false)
+    expect(errors.join(' ')).toContain('Import it from the project list')
+  })
+
+  it('takes a project file where a project is expected', () => {
+    expect(validateBackup(validBackup({ scope: 'project' }), 2, 'project').ok).toBe(true)
+    expect(validateBackup(validBackup(), 2, 'project').errors.join(' ')).toContain(
+      'holds a whole backup, not one project'
+    )
+  })
+
   it('refuses a scope it has never heard of', () => {
     const { ok, errors } = validateBackup(validBackup({ scope: 'library' }), 2)
     expect(ok).toBe(false)
@@ -135,7 +151,7 @@ describe('validateBackup', () => {
   it('rejects JSON that came from somewhere else', () => {
     const result = validateBackup({ some: 'other file' }, 2)
     expect(result.ok).toBe(false)
-    expect(result.errors.join(' ')).toContain('not exported from InkSprite')
+    expect(result.errors.join(' ')).toContain('not exported from inksprite')
   })
 
   it.each([
@@ -512,5 +528,194 @@ describe('chatFromTables', () => {
         aiPrompts: [{ id: 'prompt_other' }],
       })
     ).not.toHaveProperty('prompt')
+  })
+})
+
+describe('projectFilename', () => {
+  it('names the file after the project', () => {
+    expect(projectFilename('The Salt Road')).toBe('inksprite-project-the-salt-road.json')
+  })
+
+  it('has a name for a project without one', () => {
+    expect(projectFilename('')).toBe('inksprite-project-untitled.json')
+  })
+})
+
+describe('projectFromTables', () => {
+  const tables = () => ({
+    stories: [{ id: 'story_a' }],
+    documents: [
+      { id: 'root_story_a', storyId: 'story_a' },
+      { id: 'doc_stray', storyId: 'story_b' },
+    ],
+    files: [{ id: 'doc_pdf', storyId: 'story_a', mime: 'application/pdf', data: 'JVBE' }],
+    chats: [
+      { id: 'chat_1', storyId: 'story_a' },
+      { id: 'chat_stray', storyId: 'story_b' },
+    ],
+    messages: [
+      { id: 'message_1', chatId: 'chat_1' },
+      { id: 'message_stray', chatId: 'chat_stray' },
+      { id: 'message_orphan', chatId: 'chat_gone' },
+    ],
+    chatProfiles: [{ id: 'chatprofile_1', name: 'Terse', settings: { prompt: 'Be terse.' } }],
+  })
+
+  it('picks the project and only what is its own', () => {
+    const project = projectFromTables(tables())
+
+    expect(project.story.id).toBe('story_a')
+    expect(project.documents.map(row => row.id)).toEqual(['root_story_a'])
+    expect(project.files.map(row => row.id)).toEqual(['doc_pdf'])
+    expect(project.chats.map(row => row.id)).toEqual(['chat_1'])
+    expect(project.messages.map(row => row.id)).toEqual(['message_1'])
+    expect(project.profiles.map(row => row.id)).toEqual(['chatprofile_1'])
+  })
+
+  it('reads a file with only the story in it', () => {
+    const project = projectFromTables({ stories: [{ id: 'story_a' }] })
+    expect(project).toMatchObject({
+      documents: [],
+      files: [],
+      chats: [],
+      messages: [],
+      profiles: [],
+    })
+  })
+
+  it('refuses a file with no project in it', () => {
+    expect(() => projectFromTables({ stories: [] })).toThrow('no project')
+    expect(() => projectFromTables({})).toThrow('no project')
+  })
+})
+
+describe('withFreshIds', () => {
+  // Long and random-looking, as real ids are: the rewrite is by id, and short
+  // ones would be found inside other words.
+  const STORY = 'story_V1StGXR8Z5jdHi6BmyT'
+  const DOC = 'doc_q8L2nPw0xYtR3sVbKe7Zc'
+  const PDF = 'doc_Hn4Jw9pQz2LsXcV7bTm1R'
+  const CHAT = 'chat_Ua8sK1dFq3ZmW0pVyN6xT'
+  const MESSAGE = 'message_Rt5Yh2Lp9GcX4bNw8QeJm'
+  const ROOT = `root_${STORY}`
+
+  /** @returns {import('@/utils/backup.js').ProjectRows} */
+  const project = () =>
+    /** @type {any} */ ({
+      story: { id: STORY, lastDocumentId: DOC, openDocumentIds: [DOC], options: {} },
+      documents: [
+        { id: ROOT, storyId: STORY, parentId: STORY, type: 'folder', title: 'The Salt Road' },
+        { id: DOC, storyId: STORY, parentId: ROOT, type: 'text', content: 'Chapter one.' },
+        { id: PDF, storyId: STORY, parentId: ROOT, type: 'file', content: '' },
+      ],
+      files: [{ id: PDF, storyId: STORY, mime: 'application/pdf', data: 'JVBERi0x' }],
+      chats: [{ id: CHAT, storyId: STORY, pinnedIds: [DOC], profileId: 'chatprofile_mine' }],
+      messages: [
+        {
+          id: MESSAGE,
+          chatId: CHAT,
+          content: 'Done.',
+          metadata: {
+            documentEdits: [{ id: 'edit_1', documentId: DOC, path: '/Chapter' }],
+            apiTrajectory: [
+              {
+                role: 'assistant',
+                tool_calls: [
+                  {
+                    id: 'call_1',
+                    type: 'function',
+                    function: { name: 'read_document', arguments: JSON.stringify({ id: DOC }) },
+                  },
+                ],
+              },
+              { role: 'tool', tool_call_id: 'call_1', content: 'Chapter one.', _document: DOC },
+            ],
+          },
+        },
+      ],
+      profiles: [{ id: 'chatprofile_mine', name: 'Mine', settings: { prompt: 'Hello.' } }],
+    })
+
+  let minted = 0
+  const mint = (/** @type {string} */ prefix) => `${prefix}_new${++minted}`
+
+  it('gives every row a new id', () => {
+    minted = 0
+    const fresh = withFreshIds(project(), mint)
+
+    expect(fresh.story.id).toBe('story_new1')
+    expect(fresh.documents.map(row => row.id)).toEqual(['root_story_new1', 'doc_new2', 'doc_new3'])
+    expect(fresh.chats[0].id).toBe('chat_new4')
+    expect(fresh.messages[0].id).toBe('message_new5')
+  })
+
+  it('gives the root the id the app finds it by', () => {
+    const fresh = withFreshIds(project())
+    expect(fresh.documents[0].id).toBe(`root_${fresh.story.id}`)
+    expect(fresh.documents[0].parentId).toBe(fresh.story.id)
+  })
+
+  it('carries every reference across', () => {
+    const fresh = withFreshIds(project())
+    const [root, doc] = fresh.documents
+    const [message] = fresh.messages
+
+    expect(fresh.story.lastDocumentId).toBe(doc.id)
+    expect(fresh.story.openDocumentIds).toEqual([doc.id])
+    expect(doc.parentId).toBe(root.id)
+    expect(fresh.chats[0].storyId).toBe(fresh.story.id)
+    expect(fresh.chats[0].pinnedIds).toEqual([doc.id])
+    expect(message.chatId).toBe(fresh.chats[0].id)
+    expect(message.metadata.documentEdits[0].documentId).toBe(doc.id)
+    expect(message.metadata.apiTrajectory[1]._document).toBe(doc.id)
+    // Inside a string that is itself JSON, which no list of fields would reach.
+    expect(JSON.parse(message.metadata.apiTrajectory[0].tool_calls[0].function.arguments)).toEqual({
+      id: doc.id,
+    })
+  })
+
+  it('finds an id behind an escape in JSON held as a string', () => {
+    const rows = project()
+    rows.messages[0].content = JSON.stringify({ text: `see\n${DOC}` })
+    const fresh = withFreshIds(rows)
+    expect(fresh.messages[0].content).toContain(`\\n${fresh.documents[1].id}`)
+  })
+
+  it('rewrites keys as well as values', () => {
+    const rows = project()
+    rows.story.layout = /** @type {any} */ ({ [DOC]: true })
+    const fresh = withFreshIds(rows)
+    expect(Object.keys(fresh.story.layout)).toEqual([fresh.documents[1].id])
+  })
+
+  it('moves a file to its document, leaving its bytes alone', () => {
+    const fresh = withFreshIds(project())
+    expect(fresh.files).toEqual([
+      {
+        id: fresh.documents[2].id,
+        storyId: fresh.story.id,
+        mime: 'application/pdf',
+        data: 'JVBERi0x',
+      },
+    ])
+  })
+
+  it("keeps the writer's profiles, and what runs on them, as they are", () => {
+    const fresh = withFreshIds(project())
+    expect(fresh.profiles).toEqual(project().profiles)
+    expect(fresh.chats[0].profileId).toBe('chatprofile_mine')
+  })
+
+  it('leaves the rows it was given untouched', () => {
+    const rows = project()
+    withFreshIds(rows)
+    expect(rows).toEqual(project())
+  })
+
+  it('leaves text that only looks like an id', () => {
+    const rows = project()
+    rows.documents[1].content = 'snake_case and doc_q8L2 are not ids.'
+    const fresh = withFreshIds(rows)
+    expect(fresh.documents[1].content).toBe('snake_case and doc_q8L2 are not ids.')
   })
 })

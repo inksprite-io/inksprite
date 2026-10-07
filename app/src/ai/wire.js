@@ -223,6 +223,8 @@ export function toWireMessages(messages, provider) {
  * @param {Array<any>} args.messages - The conversation, before wire translation
  * @param {string} args.model
  * @param {AIProvider} args.provider
+ * @param {string[]} [args.allowedProviders] - The preset's: the only upstreams
+ *   OpenRouter may route this model to. Empty or absent allows any.
  * @param {AISettings} args.settings - Already resolved over AI_DEFAULTS
  * @param {ToolDefinition[]} [args.tools]
  * @param {'auto'|'none'} [args.toolChoice] - `none` for a request that must
@@ -231,7 +233,15 @@ export function toWireMessages(messages, provider) {
  *   are not
  * @returns {{body: Record<string, any>, sentReasoning: boolean, askedForEffort: boolean}}
  */
-export function buildCompletionBody({ messages, model, provider, settings, tools, toolChoice }) {
+export function buildCompletionBody({
+  messages,
+  model,
+  provider,
+  allowedProviders,
+  settings,
+  tools,
+  toolChoice,
+}) {
   const params = settings.parameters
 
   /** @type {Record<string, any>} */
@@ -288,9 +298,9 @@ export function buildCompletionBody({ messages, model, provider, settings, tools
     body.chat_template_kwargs = { enable_thinking: false }
   }
 
-  // Provider routing. Undefined for a connection left at defaults, so the body
-  // is unchanged for anyone who never opens the routing panel.
-  const routing = buildProviderRouting(provider, model)
+  // Provider routing: the connection's policy, and the providers the preset
+  // allows for this model.
+  const routing = buildProviderRouting(provider, model, allowedProviders)
   if (routing) body.provider = routing
 
   return {

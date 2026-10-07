@@ -128,12 +128,12 @@ off, so their rows stay as text lines: readable, nothing lost, not a grid.
 
 A writer only ever imports their own files, with their own Google sign-in,
 and the files go straight from Google to their browser. The Cloud project is
-still needed: it is InkSprite's registration with Google, not a server, and
+still needed: it is inksprite's registration with Google, not a server, and
 nothing runs in it or passes through it.
 
 - **Sign-in** only issues tokens to a registered OAuth client. The client
   names the sites allowed to ask (the authorized origins), so another site
-  cannot ask in InkSprite's name, and the consent screen's "InkSprite wants
+  cannot ask in inksprite's name, and the consent screen's "inksprite wants
   to see the files you choose" takes its name from the project.
 - **`drive.file` access is granted to an app.** The picker's app ID is the
   project number; a picked file is opened to that app, and only to it.
@@ -143,7 +143,7 @@ nothing runs in it or passes through it.
 The project's owner sees request counts and error rates in the Cloud console,
 not whose files or what is in them.
 
-The project, owned by InkSprite's own Google account:
+The project, owned by inksprite's own Google account:
 
 - **APIs**: Google Drive API and Google Picker API, enabled.
 - **Consent screen**: app name, support email and developer contact, scope

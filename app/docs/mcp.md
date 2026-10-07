@@ -41,19 +41,19 @@
   - [Parameters][37]
 - [authProvider][38]
   - [Parameters][39]
-- [authProvider][40]
-- [authProvider][41]
-- [authProvider][42]
-- [authProvider][43]
-- [loadSdk][44]
-- [loadSdk][45]
-- [startSignIn][46]
+- [loadSdk][40]
+- [loadSdk][41]
+- [startSignIn][42]
+  - [Parameters][43]
+- [SignInError][44]
+  - [Parameters][45]
+- [finishSignIn][46]
   - [Parameters][47]
-- [SignInError][48]
-  - [Parameters][49]
-- [finishSignIn][50]
-  - [Parameters][51]
-- [mcp/client][52]
+- [mcp/client][48]
+- [fetch][49]
+- [fetch][50]
+- [fetch][51]
+- [fetch][52]
 - [CLIENT_INFO][53]
 - [MAX_PAGES][54]
 - [sdk][55]
@@ -323,7 +323,8 @@ Where this copy of the app is answering from.
 
 ## callbackUrl
 
-Where this copy of the app is sent back to.
+Where this copy of the app is sent back to: its own origin in a browser,
+the listener on localhost in the desktop window.
 
 ## clientMetadata
 
@@ -373,14 +374,6 @@ The SDK's view of a server's sign-in.
 
 Returns **OAuthClientProvider**&#x20;
 
-## authProvider
-
-## authProvider
-
-## authProvider
-
-## authProvider
-
 ## loadSdk
 
 ## loadSdk
@@ -426,7 +419,7 @@ the writer cancelled is over too, and the tab waiting on it should hear so.
 
 <!---->
 
-- Throws **[SignInError][48]** With what the writer should be told
+- Throws **[SignInError][44]** With what the writer should be told
 
 Returns **[Promise][159]<{url: [string][156]}>**&#x20;
 
@@ -434,7 +427,7 @@ Returns **[Promise][159]<{url: [string][156]}>**&#x20;
 
 Talking to an MCP server from the page.
 
-InkSprite has no backend, so the browser connects to the server itself:
+inksprite has no backend, so the browser connects to the server itself:
 Streamable HTTP, falling back to the older HTTP with SSE when a server
 answers the first with a 4xx, as the spec says a client should. The client
 is the SDK's (`@modelcontextprotocol/client`), imported the first time a
@@ -452,6 +445,14 @@ What the browser rules out has to be said plainly when it happens. A server
 that will not answer a page (no CORS for this app's origin) fails exactly
 like one that is down — the browser tells the page nothing more — so the
 message names both.
+
+## fetch
+
+## fetch
+
+## fetch
+
+## fetch
 
 ## CLIENT_INFO
 
@@ -730,7 +731,7 @@ Tools from MCP servers: connecting to them, and offering what
 they have to the model.
 
 The Model Context Protocol is how other apps let a model reach outside
-itself — a wiki, a tracker, a search. InkSprite connects to a server from
+itself — a wiki, a tracker, a search. inksprite connects to a server from
 the page, with no backend in between, so only remote servers that let a web
 page connect can be used; a local one needs a bridge that serves it over
 HTTP. See `.llm/skills_design.md`, part 6.
@@ -1107,19 +1108,19 @@ Returns **[boolean][158]**&#x20;
 [37]: #parameters-8
 [38]: #authprovider
 [39]: #parameters-9
-[40]: #authprovider-1
-[41]: #authprovider-2
-[42]: #authprovider-3
-[43]: #authprovider-4
-[44]: #loadsdk
-[45]: #loadsdk-1
-[46]: #startsignin
-[47]: #parameters-10
-[48]: #signinerror
-[49]: #parameters-11
-[50]: #finishsignin
-[51]: #parameters-12
-[52]: #mcpclient
+[40]: #loadsdk
+[41]: #loadsdk-1
+[42]: #startsignin
+[43]: #parameters-10
+[44]: #signinerror
+[45]: #parameters-11
+[46]: #finishsignin
+[47]: #parameters-12
+[48]: #mcpclient
+[49]: #fetch
+[50]: #fetch-1
+[51]: #fetch-2
+[52]: #fetch-3
 [53]: #client_info
 [54]: #max_pages
 [55]: #sdk

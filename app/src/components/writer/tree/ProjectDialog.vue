@@ -57,6 +57,7 @@ import { useToast } from 'primevue/usetoast'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { useProfiles } from '@/composables/useProfiles'
+import { useProfileNotice } from '@/composables/useProfileNotice.js'
 import { DEFAULT_PROFILE_ID } from '@/ai/profiles/index.js'
 
 const props = defineProps({
@@ -70,8 +71,18 @@ const toast = useToast()
 const documentsStore = useDocumentsStore()
 const storiesStore = useStoriesStore()
 const profilesApi = useProfiles()
+const { noticeFor } = useProfileNotice()
 
 const profiles = computed(() => profilesApi.profiles.value)
+
+/**
+ * The profile new chats in the project start on, as it stands: the project's
+ * own unless that is gone or an NSFW one switched off.
+ * @param {any} story
+ * @returns {string}
+ */
+const startingProfileId = story =>
+  profilesApi.getProfile(story?.options?.profileId)?.id ?? DEFAULT_PROFILE_ID
 
 // Title and summary live on the root document. Its title is the name the
 // bookshelf and the tree show, and its summary is the project's overview — the
@@ -83,14 +94,17 @@ const form = ref({ title: '', summary: '', profileId: DEFAULT_PROFILE_ID })
 
 watch(
   () => props.visible,
-  isVisible => {
+  async isVisible => {
     if (!isVisible) return
+    // Opened from the projects list, the project may not be the one open,
+    // and only its root is needed here.
+    await documentsStore.loadRoots([props.storyId])
     const root = documentsStore.getRoot(props.storyId)
     const story = storiesStore.getStory(props.storyId)
     form.value = {
       title: root?.title || '',
       summary: root?.summary || '',
-      profileId: story?.options?.profileId || DEFAULT_PROFILE_ID,
+      profileId: startingProfileId(story),
     }
   },
   { immediate: true }
@@ -120,10 +134,14 @@ const save = async () => {
       summary: form.value.summary.trim(),
     })
     const story = storiesStore.getStory(props.storyId)
-    if (story && (story.options?.profileId || DEFAULT_PROFILE_ID) !== form.value.profileId) {
+    // Against what the dialog showed, so saving a new title leaves an NSFW
+    // default in place for when the writer switches those back on.
+    if (story && startingProfileId(story) !== form.value.profileId) {
       await storiesStore.updateStory(props.storyId, {
         options: { ...story.options, profileId: form.value.profileId },
       })
+      // Every new chat here will start on it, which is choosing it.
+      noticeFor(form.value.profileId)
     }
     emit('update:visible', false)
     toast.add({ severity: 'success', summary: 'Success', detail: 'Project updated', life: 3000 })

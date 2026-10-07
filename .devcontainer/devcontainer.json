@@ -1,5 +1,5 @@
 {
-  "name": "InkSprite",
+  "name": "inksprite",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
   // The dev server, a browser or two for the MCP tools, and vitest together
   // sit near 8gb; a heap snapshot of a long chat wants more than that.

@@ -9,10 +9,15 @@
  * A built-in cannot be edited. Editing one makes a copy of the writer's own and
  * moves the chat onto it, which is what the library did with prompts and the
  * behaviour everybody already has in their fingers.
+ *
+ * The NSFW built-ins are left out until the writer switches them on in the
+ * settings. While they are off, a chat or a project that names one runs on its
+ * general counterpart, so turning the switch off stops what it started.
  */
 
 import { computed } from 'vue'
 import { useChatProfileStore } from '@/stores/chatProfileStore'
+import { useApplicationState } from './useApplicationState.js'
 import { BUILT_IN_PROFILES, DEFAULT_PROFILE_ID, getBuiltInProfile } from '@/ai/profiles/index.js'
 
 /**
@@ -40,21 +45,29 @@ const builtInEntry = profile => ({ ...profile, readOnly: true })
 
 export const useProfiles = () => {
   const store = useChatProfileStore()
+  const { nsfwProfiles } = useApplicationState()
+
+  /** @param {import('@/ai/profiles/index.js').ChatProfile} profile */
+  const offered = profile => !profile.nsfw || nsfwProfiles.value
 
   /** @type {import('vue').ComputedRef<ProfileEntry[]>} */
   const profiles = computed(() => [
-    ...BUILT_IN_PROFILES.map(builtInEntry),
+    ...BUILT_IN_PROFILES.filter(offered).map(builtInEntry),
     ...store.getAllProfiles().map(storedEntry),
   ])
 
   /**
+   * The profile a chat on this id runs on: the one it names, or, for an NSFW
+   * one while they are switched off, its general counterpart. Null for one that
+   * is gone, which callers read as the project's default.
+   *
    * @param {string|null|undefined} id
    * @returns {ProfileEntry|null}
    */
   function getProfile(id) {
     if (!id) return null
     const builtIn = getBuiltInProfile(id)
-    if (builtIn) return builtInEntry(builtIn)
+    if (builtIn) return offered(builtIn) ? builtInEntry(builtIn) : getProfile(builtIn.generalId)
     const stored = store.getProfile(id)
     return stored ? storedEntry(stored) : null
   }

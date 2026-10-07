@@ -4,28 +4,38 @@ import { mount, flushPromises } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import ProjectDialog from '@/components/writer/tree/ProjectDialog.vue'
 
-const { root, story, updateDocument, updateStory, profiles } = vi.hoisted(() => ({
-  root: { id: 'root_story_1', title: 'My Novel', summary: 'A knight rides north.' },
-  story: { value: { id: 'story_1', options: {} } },
-  updateDocument: vi.fn(),
-  updateStory: vi.fn(async () => {}),
-  profiles: [
+const { root, story, updateDocument, updateStory, profiles, getProfile } = vi.hoisted(() => {
+  const profiles = [
     { id: 'builtin_profile_chat', name: 'Default', readOnly: true },
-    { id: 'builtin_profile_adventure', name: 'Adventure', readOnly: true },
+    { id: 'builtin_profile_roleplay', name: 'Roleplay', readOnly: true },
     { id: 'chatprofile_editor', name: 'Editor', readOnly: false },
-  ],
-}))
+  ]
+  // As with NSFW profiles switched off: the NSFW one is not offered, and
+  // reads as its general counterpart.
+  const standIns = { builtin_profile_roleplay_nsfw: 'builtin_profile_roleplay' }
+  return {
+    root: { id: 'root_story_1', title: 'My Novel', summary: 'A knight rides north.' },
+    story: { value: { id: 'story_1', options: {} } },
+    updateDocument: vi.fn(),
+    updateStory: vi.fn(async () => {}),
+    profiles,
+    getProfile: id => profiles.find(profile => profile.id === (standIns[id] || id)) || null,
+  }
+})
 
 vi.mock('@/stores/documentsStore', () => ({
-  useDocumentsStore: () => ({ getRoot: () => root, updateDocument }),
+  useDocumentsStore: () => ({ getRoot: () => root, updateDocument, loadRoots: async () => {} }),
 }))
 vi.mock('@/stores/storiesStore', () => ({
   useStoriesStore: () => ({ getStory: () => story.value, updateStory }),
 }))
 vi.mock('@/composables/useProfiles', () => ({
-  useProfiles: () => ({ profiles: ref(profiles) }),
+  useProfiles: () => ({ profiles: ref(profiles), getProfile }),
 }))
 vi.mock('primevue/usetoast', () => ({ useToast: () => ({ add: vi.fn() }) }))
+
+const { noticeFor } = vi.hoisted(() => ({ noticeFor: vi.fn() }))
+vi.mock('@/composables/useProfileNotice.js', () => ({ useProfileNotice: () => ({ noticeFor }) }))
 
 const Dialog = { template: '<div><slot /><slot name="footer" /></div>' }
 const Select = {
@@ -55,13 +65,25 @@ describe('ProjectDialog', () => {
   it('shows the built-in chat profile as the default when the project has none', async () => {
     const wrapper = await mountDialog()
     expect(wrapper.find('select').element.value).toBe('builtin_profile_chat')
-    expect(wrapper.findAll('option').map(o => o.text())).toEqual(['Default', 'Adventure', 'Editor'])
+    expect(wrapper.findAll('option').map(o => o.text())).toEqual(['Default', 'Roleplay', 'Editor'])
   })
 
   it("shows the project's own default when it has one", async () => {
-    story.value = { id: 'story_1', options: { profileId: 'builtin_profile_adventure' } }
+    story.value = { id: 'story_1', options: { profileId: 'builtin_profile_roleplay' } }
     const wrapper = await mountDialog()
-    expect(wrapper.find('select').element.value).toBe('builtin_profile_adventure')
+    expect(wrapper.find('select').element.value).toBe('builtin_profile_roleplay')
+  })
+
+  it('shows the general counterpart of an NSFW default while those are off', async () => {
+    story.value = { id: 'story_1', options: { profileId: 'builtin_profile_roleplay_nsfw' } }
+    const wrapper = await mountDialog()
+    expect(wrapper.find('select').element.value).toBe('builtin_profile_roleplay')
+  })
+
+  it('shows Default when the project names a profile that is gone', async () => {
+    story.value = { id: 'story_1', options: { profileId: 'builtin_profile_retired' } }
+    const wrapper = await mountDialog()
+    expect(wrapper.find('select').element.value).toBe('builtin_profile_chat')
   })
 
   it('writes a changed default onto the project, keeping its other options', async () => {
@@ -79,6 +101,8 @@ describe('ProjectDialog', () => {
       title: 'My Novel',
       summary: 'A knight rides north.',
     })
+    // Every new chat here starts on it now, which is choosing it.
+    expect(noticeFor).toHaveBeenCalledWith('chatprofile_editor')
   })
 
   it('leaves the project alone when the default did not change', async () => {
@@ -88,5 +112,20 @@ describe('ProjectDialog', () => {
 
     expect(updateStory).not.toHaveBeenCalled()
     expect(updateDocument).toHaveBeenCalled()
+    expect(noticeFor).not.toHaveBeenCalled()
+  })
+
+  it('keeps an NSFW default through a save while those are off', async () => {
+    story.value = { id: 'story_1', options: { profileId: 'builtin_profile_roleplay_nsfw' } }
+    const wrapper = await mountDialog()
+    await wrapper.find('input').setValue('Renamed')
+    await save(wrapper)
+    await flushPromises()
+
+    expect(updateStory).not.toHaveBeenCalled()
+    expect(updateDocument).toHaveBeenCalledWith(
+      'root_story_1',
+      expect.objectContaining({ title: 'Renamed' })
+    )
   })
 })

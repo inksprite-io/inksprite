@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useChats, clearChatsInstances } from '@/composables/useChats'
 import { useChatsStore } from '@/stores/chatsStore'
-import { ADVENTURE_PROFILE_ID, CHAT_PROFILE_ID, getBuiltInProfile } from '@/ai/profiles/index.js'
+import { ROLEPLAY_PROFILE_ID, CHAT_PROFILE_ID, getBuiltInProfile } from '@/ai/profiles/index.js'
 
 vi.mock('@/stores/db', () => {
   const empty = () => ({
@@ -45,16 +45,16 @@ describe('useChats unstarted chat', () => {
   })
 
   it('becomes a chat under its own id, with its settings, when started', () => {
-    const adventure = getBuiltInProfile(ADVENTURE_PROFILE_ID)
+    const roleplay = getBuiltInProfile(ROLEPLAY_PROFILE_ID)
     const { id } = chats.unstartedChat.value
-    chats.updateUnstartedChat({ profileId: adventure.id, rules: 'No dragons.' })
+    chats.updateUnstartedChat({ profileId: roleplay.id, rules: 'No dragons.' })
 
     const chat = chats.startChat()
 
     expect(chat.id).toBe(id)
     expect(chat).toMatchObject({
       storyId: 'story_1',
-      profileId: adventure.id,
+      profileId: roleplay.id,
       rules: 'No dragons.',
     })
     expect(store.chats.get(id)).toEqual(chat)

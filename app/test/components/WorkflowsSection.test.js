@@ -15,8 +15,9 @@ vi.mock('@/composables/useApplicationState', () => ({
 }))
 
 const preset = ref(null)
+const providers = { p1: { id: 'p1', type: 'openrouter' }, p2: { id: 'p2', type: 'generic' } }
 vi.mock('@/composables/useAIConfig', () => ({
-  useAIConfig: () => ({ activeAIPreset: preset }),
+  useAIConfig: () => ({ activeAIPreset: preset, getProvider: id => providers[id] || null }),
 }))
 
 // The selectors fetch providers and models; what matters here is what they are given.
@@ -34,6 +35,13 @@ const mountSection = () =>
       stubs: {
         AiProviderSelector: stub('AiProviderSelector'),
         AiModelSelector: stub('AiModelSelector'),
+        // Fetches OpenRouter's directory; what matters is what it holds.
+        AiAllowedProviders: {
+          name: 'AiAllowedProviders',
+          props: ['modelValue', 'model'],
+          emits: ['update:modelValue'],
+          template: '<div />',
+        },
       },
     },
   })
@@ -59,6 +67,34 @@ describe('WorkflowsSection', () => {
       reasoningEffort: 'low',
     })
     expect(wrapper.findComponent({ name: 'AiModelSelector' }).props('selectedModelId')).toBe('glm')
+  })
+
+  it('takes the providers allowed for the preset’s model with it', () => {
+    preset.value = { ...preset.value, allowedProviders: ['deepinfra'] }
+    mountSection()
+
+    expect(setWorkflow).toHaveBeenCalledWith(
+      'convert',
+      expect.objectContaining({ model: 'glm', allowedProviders: ['deepinfra'] })
+    )
+  })
+
+  it('offers allowed providers for an OpenRouter model, and keeps them the workflow’s', () => {
+    state.value = { convert: { providerId: 'p1', model: 'glm', reasoningEffort: 'high' } }
+    const wrapper = mountSection()
+    const allowed = wrapper.findComponent({ name: 'AiAllowedProviders' })
+    expect(allowed.props('model')).toBe('glm')
+
+    allowed.vm.$emit('update:modelValue', ['deepinfra'])
+
+    expect(setWorkflow).toHaveBeenCalledWith('convert', { allowedProviders: ['deepinfra'] })
+  })
+
+  it('offers no allowed providers off OpenRouter, where nothing routes', () => {
+    state.value = { convert: { providerId: 'p2', model: 'gemma', reasoningEffort: 'high' } }
+    const wrapper = mountSection()
+
+    expect(wrapper.findComponent({ name: 'AiAllowedProviders' }).exists()).toBe(false)
   })
 
   it('takes the app default effort from a preset that sets none', () => {

@@ -90,12 +90,14 @@ export function retrieveOAuthParams() {
 }
 
 /**
- * Initiates OpenRouter OAuth flow by opening authorization URL in new tab
+ * The address to connect an OpenRouter account at, with a fresh PKCE
+ * challenge; the verifier and state are kept for when OpenRouter sends the
+ * writer back
  * @param {string} callbackUrl - The callback URL to redirect to after authorization
- * @returns {Promise<void>}
+ * @returns {Promise<string>}
  * @throws {Error} If not in a secure context or Web Crypto API unavailable
  */
-export async function initiateOpenRouterOAuth(callbackUrl) {
+export async function openRouterAuthorizationUrl(callbackUrl) {
   // Check if we're in a secure context
   if (typeof window !== 'undefined' && window.isSecureContext === false) {
     throw new Error(
@@ -116,7 +118,15 @@ export async function initiateOpenRouterOAuth(callbackUrl) {
   authUrl.searchParams.set('code_challenge', challenge)
   authUrl.searchParams.set('code_challenge_method', 'S256')
   authUrl.searchParams.set('state', state)
+  return authUrl.toString()
+}
 
-  // Open in new tab
-  window.open(authUrl.toString(), '_blank')
+/**
+ * Initiates OpenRouter OAuth flow by opening authorization URL in new tab
+ * @param {string} callbackUrl - The callback URL to redirect to after authorization
+ * @returns {Promise<void>}
+ * @throws {Error} If not in a secure context or Web Crypto API unavailable
+ */
+export async function initiateOpenRouterOAuth(callbackUrl) {
+  window.open(await openRouterAuthorizationUrl(callbackUrl), '_blank')
 }

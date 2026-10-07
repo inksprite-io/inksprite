@@ -104,6 +104,22 @@ export function joinPages(pages) {
 }
 
 /**
+ * Whether pdf.js may hand a PDF's JPEGs to the browser's `ImageDecoder`.
+ *
+ * Not in WebKit. Safari has no `ImageDecoder`, so this costs it nothing, but
+ * WebKit on Linux has one, and drawing a page through it there brings down the
+ * page's process. pdf.js decodes in JavaScript instead, as it already does for
+ * any JPEG the API cannot take. Every browser on iOS is WebKit whatever it
+ * calls itself, and sends `CriOS/` or `EdgiOS/` rather than `Chrome/` or `Edg/`.
+ *
+ * @param {string} [userAgent]
+ * @returns {boolean}
+ */
+export function imageDecoderAllowed(userAgent = globalThis.navigator?.userAgent || '') {
+  return !/AppleWebKit/.test(userAgent) || /Chrome\/|Chromium\/|Edg\//.test(userAgent)
+}
+
+/**
  * A PDF opened for reading its pages, and the way to let it go.
  *
  * @typedef {Object} OpenedPdf
@@ -132,6 +148,7 @@ export async function openPdf(data, { fonts = false } = {}) {
   const task = lib.getDocument({
     data: bytes,
     disableFontFace: !fonts,
+    isImageDecoderSupported: imageDecoderAllowed(),
     verbosity: lib.VerbosityLevel.ERRORS,
   })
   try {

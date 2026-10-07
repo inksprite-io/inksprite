@@ -12,6 +12,7 @@
 import { computed, toValue } from 'vue'
 import { useChats } from './useChats.js'
 import { useProfiles } from './useProfiles.js'
+import { useProfileNotice } from './useProfileNotice.js'
 import { settingsForProfileSwitch } from '@/ai/profiles/index.js'
 
 /** @typedef {import('../types/models.js').Chat} Chat */
@@ -23,6 +24,7 @@ import { settingsForProfileSwitch } from '@/ai/profiles/index.js'
 export function useChatSettings(storyId, chatId) {
   const chatsApi = useChats(storyId)
   const profilesApi = useProfiles()
+  const { noticeFor } = useProfileNotice()
 
   const unstarted = computed(() => chatsApi.isUnstarted(toValue(chatId)))
 
@@ -40,13 +42,12 @@ export function useChatSettings(storyId, chatId) {
   /** The profile chats in this project start on, and go back to on reset. */
   const defaultProfileId = computed(() => chatsApi.defaultProfileId())
 
-  // A profile the chat was pointed at can be deleted later, so show the
-  // project's default rather than nothing — it is what generation falls back
-  // to as well.
-  const selectedProfileId = computed(() => {
-    const id = chat.value?.profileId
-    return id && profilesApi.getProfile(id) ? id : defaultProfileId.value
-  })
+  // The profile generation runs the chat on, which is not always the one it
+  // names: one deleted since reads as the project's default, and an NSFW one,
+  // while those are switched off, as its general counterpart.
+  const selectedProfileId = computed(
+    () => profilesApi.getProfile(chat.value?.profileId)?.id ?? defaultProfileId.value
+  )
 
   const selectedProfile = computed(() => profilesApi.getProfile(selectedProfileId.value))
 
@@ -64,6 +65,18 @@ export function useChatSettings(storyId, chatId) {
   const setProfile = id => {
     const profile = profilesApi.getProfile(id)
     if (profile) update(settingsForProfileSwitch(profile))
+  }
+
+  /**
+   * Put this chat on the profile the writer picked, and tell them what it
+   * asks them to know, the first time. Not `setProfile` itself: a chat sent
+   * back to the default has not been put there by anyone.
+   *
+   * @param {string} id
+   */
+  const chooseProfile = id => {
+    setProfile(id)
+    noticeFor(id)
   }
 
   /**
@@ -89,6 +102,7 @@ export function useChatSettings(storyId, chatId) {
     selectedProfileId,
     selectedProfile,
     setProfile,
+    chooseProfile,
     deleteProfile,
   }
 }

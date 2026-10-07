@@ -1635,3 +1635,82 @@ Morph.
 the guard makes a matter of wasted turns rather than ruined chats. A chat long
 enough to reach a summary, to see the growth level off. A weaker local model,
 where a small context fills faster with kept reads.
+
+## A general opening for the default prompt (6 Oct 2026, GLM 5.2)
+
+`chat.md` opened as a creative writing assistant, one line on brainstorming
+and feedback, and spent everything after on tools. It now opens for any kind
+of project (fiction, notes, research, worldbuilding, roleplay, planning) with
+four bullets on how to help: think with them and say which option you would
+pick; be specific and honest about what works and what doesn't; write in the
+project's voice and change only what was asked; answer in proportion. The
+tool paragraphs keep their words, but for "the user" throughout and examples
+that are not all fiction or all rulebook. New scenario `riley-noah-assistant`
+is the first the default prompt has had for what it says its job is: a
+critique, a brainstorm, a quick question and a note, with checks on the reads,
+the count and the writes.
+
+| Batch                                                | Checks | Brainstorm words | Picks one | Quick answer, words |
+| ---------------------------------------------------- | ------ | ---------------- | --------- | ------------------- |
+| assistant, new opening (`01-22-40`)                  | 15/15  | 645–959          | 1 of 3    | 1–17                |
+| assistant, options "a line or two each" (`01-33-01`) | 15/15  | 597–770          | 1 of 3    | 5–183               |
+| `findable-design`, new opening (`01-26-50`)          | 30/30  | —                | —         | —                   |
+
+**Tool discipline did not move.** `findable-design` checked 30 of 30, as dev
+did on 5 Oct, with the same one error: a section of the glossary named by
+guess. Every note in the assistant scenario was written from the character
+notes, in a folder made for it.
+
+**The critique is what the bullet asks for.** Each run said what works before
+what is thin, quoted the notes for both, and named the gap a writer could act
+on (Noah written only from the outside, nothing of him when things are fine).
+
+**Brainstorm length and the pick did not hold, in either wording.** "Offer
+options, say which you would pick" got a pick in one run of three and options
+a paragraph or more each; "a line or two each, then say which one you would
+pick" made them a little shorter and no more likely to pick. Shipped with the
+first wording, which reads better and did as well. If it matters, try it as a
+check ("each option is one sentence; the last line names your pick"), the
+form GLM has kept where principles failed.
+
+One quick answer in the second batch, served partly by BaseTen, counted five
+documents and cited a chapter that does not exist; the first batch answered
+"3" every time. Watch it, but one run is not a finding.
+
+## The default prompt cut to a third (6 Oct 2026, GLM 5.2)
+
+The opening above sat on 25 lines of tool mechanics that the tools' own
+descriptions already say: how paths work, reading a long document by section,
+search's `titled`, which write tool to prefer. Those went, with the line that
+content is Markdown and the explanation of `summary`, leaving the role, the
+four bullets, what `pinned` and `changed` mean, and the three rules the
+earlier rounds kept: look things up rather than guess, ask when "this
+chapter" is ambiguous, and write nothing into a document the documents don't
+support. 1,114 words to 336. Three tool descriptions lost examples that were
+all fiction or all rulebook.
+
+| Scenario               | Runs | Checks, before | Checks, slim | Prompt tokens a turn, slim |
+| ---------------------- | ---- | -------------- | ------------ | -------------------------- |
+| `findable-design`      | 2    | 30/30          | 30/30        | 10.8k (12.0k before)       |
+| `findable-long`        | 2    | 55/56          | 55/56        | 10.2k                      |
+| `findable-explore`     | 3    | 50/51          | 51/51        | 7.0k                       |
+| `findable-big`         | 3    | 24/24          | 24/24        | 7.2k                       |
+| `riley-noah-assistant` | 3    | 15/15          | 15/15        | 5.5k (6.7k before)         |
+
+("Before" is 5 Oct for the four `findable` scenarios and this morning's new
+opening for the assistant one.)
+
+**Nothing the long version said was holding the tools up.** No scenario lost a
+check, and the tool errors fell to one, the glossary section named by guess
+that every recent batch has made once.
+
+**One new miss in `findable-long`.** Asked what Priya said, one run answered
+from the pinned design, which lists her three kinds of query, and said "I
+read the Priya interview earlier in this conversation", which it had not; the
+other run read it. The 5 Oct miss on this scenario, an invented gate, did not
+recur. Two runs cannot tell either from noise, but a claimed read that never
+happened is worth watching for.
+
+**The assistant turns held, a little better.** Critiques still specific and
+honest; two brainstorms in three now come down on one option (one in three
+before), at 665–738 words; the count came back as "Three."

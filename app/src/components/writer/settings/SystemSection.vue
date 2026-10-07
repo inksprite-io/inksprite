@@ -16,19 +16,20 @@
     </div>
 
     <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
-      <label class="text-xs font-medium text-surface-700 dark:text-surface-200">Edits</label>
-      <Select
-        id="apply-edits-select"
-        :model-value="applyEdits"
-        :options="applyEditsOptions"
-        option-label="label"
-        option-value="value"
-        class="w-full dark:!bg-surface-900"
-        size="small"
-        @update:model-value="setApplyEdits"
-      />
+      <div class="flex items-center justify-between gap-2">
+        <label for="nsfw-switch" class="text-xs font-medium text-surface-700 dark:text-surface-200"
+          >Enable NSFW chat profiles</label
+        >
+        <ToggleSwitch
+          v-model="nsfwProfiles"
+          input-id="nsfw-switch"
+          class="flex-none"
+          data-nsfw-profiles
+        />
+      </div>
       <p class="text-xs text-surface-500 dark:text-surface-400">
-        Asking ends the assistant's turn at each change it proposes.
+        Adds Roleplay (NSFW) to the profiles, for adults. With this off, chats already on it run as
+        Roleplay.
       </p>
     </div>
 
@@ -61,8 +62,13 @@ import { applyTheme } from '@/composables/useSystemSettings.js'
 import { useMessagesStore } from '@/stores/messagesStore'
 
 const applicationState = useApplicationState()
-const { theme, setTheme, applyEdits, setApplyEdits } = applicationState
+const { theme, setTheme } = applicationState
 const messagesStore = useMessagesStore()
+
+const nsfwProfiles = computed({
+  get: () => applicationState.nsfwProfiles.value,
+  set: value => applicationState.setNsfwProfiles(value),
+})
 
 // Switched off, it forgets what it kept. A saved request is as large as the
 // conversation behind it, and in a long chat kept with it on they came to most
@@ -78,11 +84,6 @@ const debug = computed({
     }
   },
 })
-
-const applyEditsOptions = [
-  { label: 'Apply automatically', value: 'auto' },
-  { label: 'Ask me first', value: 'ask' },
-]
 
 const themeOptions = [
   { label: 'Light', value: 'light' },

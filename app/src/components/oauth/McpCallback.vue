@@ -10,8 +10,8 @@
       <template v-else-if="status === 'success'">
         <div class="success-icon">✓</div>
         <h2>Signed in</h2>
-        <p>InkSprite can use this server now.</p>
-        <p class="close-message">You can close this tab and go back to InkSprite.</p>
+        <p>inksprite can use this server now.</p>
+        <p class="close-message">You can close this tab and go back to inksprite.</p>
       </template>
 
       <template v-else>

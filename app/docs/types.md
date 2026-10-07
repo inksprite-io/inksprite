@@ -121,7 +121,7 @@ Type: [Object][91]
 
 ## LorebookEntry
 
-Type definitions and JSDoc typedefs for the InkSprite application.
+Type definitions and JSDoc typedefs for the inksprite application.
 
 ## Type Files
 
@@ -130,7 +130,7 @@ Type definitions and JSDoc typedefs for the InkSprite application.
 
 ## Type System
 
-InkSprite uses JSDoc annotations for type safety without TypeScript:
+inksprite uses JSDoc annotations for type safety without TypeScript:
 
 - All functions have explicit parameter and return types
 - Complex types are defined as JSDoc typedefs
@@ -178,7 +178,7 @@ Type: [Object][91]
 
 ##
 
-Type definitions for InkSprite data models
+Type definitions for inksprite data models
 These JSDoc typedefs are used across all store files for type checking
 
 ## StoryOptions
@@ -758,6 +758,7 @@ Type: [Object][91]
 - `name` **[string][92]** Profile name
 - `providerId` **[string][92]** ID of the AI provider to use
 - `model` **[string][92]** Model identifier
+- `allowedProviders` **[Array][95]<[string][92]>?** OpenRouter only: the upstream providers allowed to serve this model, by slug. Absent or empty allows any the connection's routing does. Here rather than on the connection because it is a choice about the model. See ai/routing.js.
 - `toolsEnabled` **[boolean][94]?** Whether the model may call tools. Undefined is treated as enabled.
 - `isDefault` **[boolean][94]** Whether this is a default profile
 - `version` **[number][93]** Version number for conflict resolution
@@ -932,6 +933,7 @@ Type: [Object][91]
 
 - `providerId` **([string][92] | null)** The provider the workflow runs on; null for the active preset's
 - `model` **([string][92] | null)** The model; null for the active preset's
+- `allowedProviders` **[Array][95]<[string][92]>?** OpenRouter only: the upstreams allowed to serve the model, like a preset's. Read only when the workflow names its own provider; one that runs on the active preset runs on the preset's list.
 - `reasoningEffort` **([string][92] | null)?** How hard the model thinks: `disabled`, `enabled`, `low`, `medium`, `high`;
   null for the app's default (`AI_DEFAULTS.reasoningEffort`)
 - `onImport` **[boolean][94]?** Convert only: convert every file with text as it is imported

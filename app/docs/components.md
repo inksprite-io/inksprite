@@ -38,7 +38,7 @@
 
 ## components
 
-Vue components for the InkSprite application UI.
+Vue components for the inksprite application UI.
 
 ## Component Structure
 

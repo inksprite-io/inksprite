@@ -21,8 +21,9 @@ import { DEFAULT_PROFILE_ID } from '@/ai/profiles/index.js'
  * The built-in profile that was built around a given built-in prompt.
  *
  * The profiles used to name a prompt; now they carry one. A chat pointed at
- * `builtin_adventure` was asking for the Adventure profile in everything but
- * name, so that is what it gets.
+ * `builtin_roleplay` was asking for the Roleplay profile in everything but
+ * name, so that is what it gets; one whose profile the app no longer ships,
+ * as `builtin_adventure`'s, gets the default.
  *
  * @param {string} promptId
  * @returns {string|null}

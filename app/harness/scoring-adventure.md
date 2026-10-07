@@ -1,7 +1,7 @@
 # Scoring an adventure run
 
 For transcripts written by `run.js` on an `adventure-*` scenario: three player
-turns against `src/ai/prompts/adventure.md`, with the Saltmarsh fixture behind
+turns against `harness/prompts/adventure.md`, with the Saltmarsh fixture behind
 it. The variants differ only in what the chat allows — the Director before the
 turn, the dice and oracle group, the skills group — so score each run on its
 own and the comparison falls out.

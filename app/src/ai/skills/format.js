@@ -7,7 +7,7 @@
  * for something a skill here needs, the field is spelled its way —
  * `disable-model-invocation`, `user-invocable`, `context: fork`, `arguments`,
  * `argument-hint`, `allowed-tools` — so a file written for it reads here as it
- * was meant. What only InkSprite needs goes under `metadata`, as
+ * was meant. What only inksprite needs goes under `metadata`, as
  * `inksprite-*`, because claude.ai refuses a skill whose frontmatter has fields
  * it does not know.
  *

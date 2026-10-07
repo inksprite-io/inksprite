@@ -6,6 +6,7 @@ import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import ProviderRouting from '@/components/writer/settings/ai/ProviderRouting.vue'
+import SettingLabel from '@/components/common/SettingLabel.vue'
 import { ROUTING_DEFAULTS } from '@/ai/routing.js'
 
 const PROVIDER_ID = 'provider_openrouter_default'
@@ -42,10 +43,10 @@ async function mountPanel() {
   return wrapper
 }
 
-/** The three MultiSelects, in template order. */
+/** The two MultiSelects, in template order. */
 function selectors(wrapper) {
-  const [only, ignore, quantizations] = wrapper.findAllComponents(MultiSelect)
-  return { only, ignore, quantizations }
+  const [ignore, quantizations] = wrapper.findAllComponents(MultiSelect)
+  return { ignore, quantizations }
 }
 
 describe('ProviderRouting', () => {
@@ -62,11 +63,19 @@ describe('ProviderRouting', () => {
   it('offers the fetched providers by display name', async () => {
     const wrapper = await mountPanel()
 
-    expect(selectors(wrapper).only.props('options')).toEqual([
+    expect(selectors(wrapper).ignore.props('options')).toEqual([
       { slug: 'anthropic', name: 'Anthropic' },
       { slug: 'deepinfra', name: 'DeepInfra' },
       { slug: 'morph', name: 'Morph' },
     ])
+  })
+
+  it('has no allowed list: that is the preset’s', async () => {
+    const wrapper = await mountPanel()
+
+    const labels = wrapper.findAllComponents(SettingLabel).map(label => label.props('label'))
+    expect(labels).not.toContain('Allowed Providers')
+    expect(wrapper.findAllComponents(MultiSelect)).toHaveLength(2)
   })
 
   it('shows Morph left out of a connection nobody has configured', async () => {
@@ -80,10 +89,10 @@ describe('ProviderRouting', () => {
     // older record half-written.
     const wrapper = await mountPanel()
 
-    selectors(wrapper).only.vm.$emit('update:modelValue', ['anthropic'])
+    selectors(wrapper).ignore.vm.$emit('update:modelValue', ['anthropic'])
 
     expect(updateProvider).toHaveBeenCalledWith(PROVIDER_ID, {
-      routing: { ...ROUTING_DEFAULTS, only: ['anthropic'] },
+      routing: { ...ROUTING_DEFAULTS, ignore: ['anthropic'] },
     })
   })
 
@@ -111,33 +120,6 @@ describe('ProviderRouting', () => {
     })
   })
 
-  it('offers a stored slug the directory does not list', async () => {
-    // Sub-provider variants like `deepinfra/turbo` aren't in the directory.
-    // Without them in the options the MultiSelect renders the stored choice as
-    // unselected and drops it on the next edit.
-    provider.value.routing = { ...ROUTING_DEFAULTS, only: ['deepinfra/turbo'] }
-    const wrapper = await mountPanel()
-
-    expect(selectors(wrapper).only.props('options')).toContainEqual({
-      slug: 'deepinfra/turbo',
-      name: 'deepinfra/turbo',
-    })
-  })
-
-  it('warns but stays usable when the directory fetch fails', async () => {
-    listOpenRouterProviders.mockRejectedValue(new Error('offline'))
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-    provider.value.routing = { ...ROUTING_DEFAULTS, only: ['anthropic'] }
-
-    const wrapper = await mountPanel()
-
-    expect(wrapper.text()).toContain("Couldn't load the provider list")
-    expect(selectors(wrapper).only.props('options')).toEqual([
-      { slug: 'anthropic', name: 'anthropic' },
-      { slug: 'morph', name: 'morph' },
-    ])
-  })
-
   it('renders the stored scalar knobs', async () => {
     provider.value.routing = {
       ...ROUTING_DEFAULTS,
@@ -160,6 +142,18 @@ describe('ProviderRouting', () => {
     const [zdr] = wrapper.findAllComponents(ToggleSwitch)
     expect(wrapper.findComponent(Select).props('modelValue')).toBe('deny')
     expect(zdr.props('modelValue')).toBe(true)
+  })
+
+  it('resets the ignore list to the default, Morph and all', async () => {
+    provider.value.routing = { ...ROUTING_DEFAULTS, ignore: ['deepinfra'] }
+    const wrapper = await mountPanel()
+
+    const label = wrapper
+      .findAll('button')
+      .find(b => b.attributes('aria-label') === 'Reset Ignored Providers')
+    await label.trigger('click')
+
+    expect(updateProvider).toHaveBeenCalledWith(PROVIDER_ID, { routing: ROUTING_DEFAULTS })
   })
 
   it('resets a knob back to its default', async () => {

@@ -1,0 +1,20 @@
+{
+  "fixture": "riley-noah",
+  "messages": [
+    {
+      "text": "Read the character notes. What's thin about Noah so far? Be honest.",
+      "reads": ["Characters/Noah"],
+      "noWrites": true
+    },
+    {
+      "text": "Give me three different ways the argument about March could go.",
+      "noWrites": true
+    },
+    {
+      "text": "Quick one: how many documents does this project have?",
+      "mentions": ["\\b(3|three)\\b"],
+      "noWrites": true
+    },
+    "Put the open questions about March in a note in the project, so I don't lose them."
+  ]
+}

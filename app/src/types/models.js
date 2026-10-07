@@ -1,5 +1,5 @@
 /**
- * Type definitions for InkSprite data models
+ * Type definitions for inksprite data models
  * These JSDoc typedefs are used across all store files for type checking
  */
 
@@ -476,7 +476,7 @@
  * @property {string} [endpoint] - API endpoint URL, for every type but OpenRouter
  * @property {string} [apiKey] - API key for authentication
  * @property {boolean} [rememberKey] - Whether to persist API key in IndexedDB (default true). If false, key is stored in sessionStorage only
- * @property {import('../ai/routing.js').OpenRouterRouting} [routing] - OpenRouter provider routing policy. Absent means the defaults: no data collection, zero-data-retention endpoints only.
+ * @property {import('../ai/routing.js').OpenRouterRouting} [routing] - OpenRouter provider routing policy, for every model on this connection. Absent means the defaults: no data collection, zero-data-retention endpoints only. Which providers may serve a model is the preset's `allowedProviders`.
  * @property {boolean} [isDefault] - Whether this is a default provider (cannot be deleted)
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
@@ -490,6 +490,7 @@
  * @property {string} name - Profile name
  * @property {string} providerId - ID of the AI provider to use
  * @property {string} model - Model identifier
+ * @property {string[]} [allowedProviders] - OpenRouter only: the upstream providers allowed to serve this model, by slug. Absent or empty allows any the connection's routing does. Here rather than on the connection because it is a choice about the model. See ai/routing.js.
  * @property {boolean} [toolsEnabled] - Whether the model may call tools. Undefined is treated as enabled.
  * @property {import('../ai/defaults.js').AISettingsOverrides} [generationOverrides] - Sparse overrides on AI_DEFAULTS (sampler params, seed, max tokens, reasoning). Absent keys fall back to the defaults.
  * @property {boolean} isDefault - Whether this is a default profile
@@ -643,6 +644,7 @@
  * @typedef {Object} WorkflowSettings
  * @property {string|null} providerId - The provider the workflow runs on; null for the active preset's
  * @property {string|null} model - The model; null for the active preset's
+ * @property {string[]} [allowedProviders] - OpenRouter only: the upstreams allowed to serve the model, like a preset's. Read only when the workflow names its own provider; one that runs on the active preset runs on the preset's list.
  * @property {string|null} [reasoningEffort] - How hard the model thinks: `disabled`, `enabled`, `low`, `medium`, `high`;
  *   null for the app's default (`AI_DEFAULTS.reasoningEffort`)
  * @property {boolean} [onImport] - Convert only: convert every file with text as it is imported

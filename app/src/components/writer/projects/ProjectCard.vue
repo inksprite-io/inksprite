@@ -5,29 +5,31 @@
     @click="handleClick"
     @contextmenu.prevent="openMenu"
   >
-    <div class="absolute top-2 right-2 z-10">
-      <Button
-        type="button"
-        icon="pi pi-ellipsis-v"
-        :aria-controls="`project_menu_${storyId}`"
-        aria-label="Project actions"
-        class="bg-surface-0/90 dark:bg-surface-900/90 backdrop-blur-md shadow-sm hover:shadow-md"
-        severity="secondary"
-        text
-        rounded
-        size="small"
-        @click.stop="toggleMenu"
-      />
-      <Menu
-        :id="`project_menu_${storyId}`"
-        ref="menu"
-        :model="menuItems"
-        :popup="true"
-        @hide="onMenuHide"
-      />
-    </div>
+    <!-- On a phone only, as on the outline's rows: everywhere else the menu is
+         on right-click, and a phone has none. -->
+    <Button
+      v-if="isMobile"
+      type="button"
+      icon="pi pi-ellipsis-v"
+      :aria-controls="`project_menu_${storyId}`"
+      aria-label="Project actions"
+      class="!absolute top-2 right-2 z-10"
+      severity="secondary"
+      text
+      rounded
+      size="small"
+      @click.stop="toggleMenu"
+    />
+    <Menu
+      :id="`project_menu_${storyId}`"
+      ref="menu"
+      :model="menuItems"
+      :popup="true"
+      @hide="onMenuHide"
+    />
+    <ProjectDialog v-model:visible="showSettings" :story-id="storyId" />
 
-    <div class="flex flex-col gap-1 pr-8">
+    <div class="flex flex-col gap-1" :class="{ 'pr-8': isMobile }">
       <div
         v-if="!isEditing"
         class="text-sm font-medium text-surface-900 dark:text-surface-0 truncate"
@@ -61,8 +63,12 @@ import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Menu from 'primevue/menu'
+import ProjectDialog from '@/components/writer/tree/ProjectDialog.vue'
+import { useBackup } from '@/composables/useBackup'
 import { useProjects } from '@/composables/useProjects'
 import { useReactiveTime } from '@/composables/useReactiveTime'
+import { useScreenSize } from '@/composables/useScreenSize'
+import { useToast } from '@/composables/useToast'
 
 /**
  * One project in the list: its name, when it was last worked on, and what can
@@ -88,12 +94,16 @@ const emit = defineEmits(['menu-open', 'menu-closed'])
 const router = useRouter()
 const confirm = useConfirm()
 const projects = useProjects()
+const backup = useBackup()
+const toast = useToast()
 const { formatRelativeTime } = useReactiveTime()
+const { isMobile } = useScreenSize()
 
 const menu = ref()
 const titleInput = ref()
 const isEditing = ref(false)
 const editedTitle = ref(props.title)
+const showSettings = ref(false)
 
 // A click that closes the menu, or lands just after it closed, is not a click
 // on the card.
@@ -101,6 +111,13 @@ const menuOpen = ref(false)
 const closing = ref(false)
 
 const menuItems = computed(() => [
+  {
+    label: 'Project settings',
+    icon: 'pi pi-cog',
+    command: () => {
+      showSettings.value = true
+    },
+  },
   {
     label: 'Rename',
     icon: 'pi pi-pencil',
@@ -111,6 +128,7 @@ const menuItems = computed(() => [
       titleInput.value?.$el?.focus()
     },
   },
+  { label: 'Export', icon: 'pi pi-download', command: () => exportProject() },
   { label: 'Delete', icon: 'pi pi-trash', command: () => confirmDelete() },
 ])
 
@@ -125,7 +143,7 @@ const toggleMenu = event => {
   emit('menu-open')
 }
 
-/** The same actions, at the pointer. @param {Event} event */
+/** The card's actions, at the pointer. @param {Event} event */
 const openMenu = event => {
   if (!menuOpen.value) toggleMenu(event)
 }
@@ -141,7 +159,15 @@ const onMenuHide = () => {
 }
 
 const handleClick = () => {
-  if (menuOpen.value || closing.value || props.isAnyMenuOpen || isEditing.value) return
+  if (
+    menuOpen.value ||
+    closing.value ||
+    props.isAnyMenuOpen ||
+    isEditing.value ||
+    showSettings.value
+  ) {
+    return
+  }
   projects.open(props.storyId)
 }
 
@@ -161,6 +187,17 @@ const saveTitle = async () => {
 const cancelEdit = () => {
   editedTitle.value = props.title
   isEditing.value = false
+}
+
+/** Save the project, with its chats, to a file of its own. */
+const exportProject = async () => {
+  try {
+    const { filename } = await backup.downloadProject(props.storyId)
+    toast.success(`Saved ${filename}`)
+  } catch (error) {
+    console.error('Project export failed:', error)
+    toast.error(`Export failed: ${error.message}`)
+  }
 }
 
 const confirmDelete = () => {

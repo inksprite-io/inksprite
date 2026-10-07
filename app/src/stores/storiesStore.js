@@ -1,6 +1,6 @@
 /**
  * @module stores/storiesStore
- * @description Central store for managing stories in InkSprite. Handles all CRUD operations
+ * @description Central store for managing stories in inksprite. Handles all CRUD operations
  * for stories including creation, deletion, updates, and synchronization with IndexedDB.
  * Stories are the top-level entities that contain parts (acts) and scenes (chapters).
  *
@@ -196,6 +196,23 @@ export const useStoriesStore = defineStore('stories', () => {
   }
 
   /**
+   * Read one story's record into the store, for a story written to the
+   * database by something other than the store: an imported project, whose
+   * rows go in together in one transaction.
+   *
+   * @param {string} storyId
+   * @returns {Promise<Story|null>} The story, or null if the database has no such row
+   */
+  async function loadStory(storyId) {
+    await ensureInitialized()
+
+    const story = await db.stories.get(storyId)
+    if (!story) return null
+    stories.value.set(story.id, story)
+    return story
+  }
+
+  /**
    * Get a single story by ID
    * @param {string} storyId - Story ID to retrieve
    * @returns {Story|null} Story or null if not found
@@ -236,6 +253,7 @@ export const useStoriesStore = defineStore('stories', () => {
     createStory,
     updateStory,
     deleteStory,
+    loadStory,
     getStory,
     getAllStories,
     getAllStoriesOrdered,

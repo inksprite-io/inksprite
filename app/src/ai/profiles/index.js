@@ -26,10 +26,11 @@
 
 import {
   DEFAULT_CHAT_PROMPT,
-  DEFAULT_ADVENTURE_PROMPT,
   DEFAULT_ROLEPLAY_PROMPT,
+  DEFAULT_ROLEPLAY_NSFW_PROMPT,
   ROLEPLAY_COMPACTION_PROMPT,
   DEFAULT_ROLEPLAY_NOTE,
+  DEFAULT_ROLEPLAY_NSFW_NOTE,
 } from '@/ai/prompts/index.js'
 
 /**
@@ -50,16 +51,52 @@ import {
  *   than a copy: a skill absent here reads the wording its own file has, and
  *   keeps picking up improvements to it. See `skillPrompt` in ai/skills.
  *
+ * @typedef {Object} ProfileNotice
+ * @property {string} header
+ * @property {string} message - Paragraphs, separated by a blank line
+ *
  * @typedef {Object} ChatProfile
  * @property {string} id - Stable identifier, prefixed so it cannot collide with a stored profile
  * @property {string} name - Display name
  * @property {string} [description] - One line, for the picker; the built-ins have one
  * @property {ProfileSettings} settings
+ * @property {ProfileNotice} [notice] - What the writer is told the first time
+ *   they pick it. See composables/useProfileNotice.js.
+ * @property {boolean} [nsfw] - Written for explicit content, so offered only
+ *   once the writer switches NSFW profiles on in the settings
+ * @property {string} [generalId] - For an NSFW one, the profile a chat on it
+ *   runs on while they are off: the same thing without the opt-ins
  */
 
 export const CHAT_PROFILE_ID = 'builtin_profile_chat'
-export const ADVENTURE_PROFILE_ID = 'builtin_profile_adventure'
 export const ROLEPLAY_PROFILE_ID = 'builtin_profile_roleplay'
+export const ROLEPLAY_NSFW_PROFILE_ID = 'builtin_profile_roleplay_nsfw'
+export const BLANK_PROFILE_ID = 'builtin_profile_blank'
+
+/**
+ * Every group of tools the app has, by the ids `TOOL_GROUP_LABELS` names
+ * them — written out rather than imported: a profile is data, and
+ * `ai/tools/index.js` registers every tool in the app as a side effect of
+ * being loaded. A server's tools are not among them; a server reaches only the
+ * profiles it lists.
+ */
+const ALL_TOOL_GROUPS = ['documents', 'rpg', 'skills']
+
+/**
+ * What both roleplay profiles run with besides their words.
+ *
+ * Cards are written for a model with no tools, and a tool schema in context
+ * pulls the voice toward the assistant register it was written to get away
+ * from. A starting position, not a principle — the oracle is the first one
+ * worth trying again.
+ *
+ * And what a played-out scene is made of is the scenes and the lines, not what
+ * was decided and what is left to do. See ai/skills/compact.
+ */
+const ROLEPLAY_SETTINGS = {
+  disabledToolGroups: [...ALL_TOOL_GROUPS],
+  skills: { compact: { prompt: ROLEPLAY_COMPACTION_PROMPT } },
+}
 
 /** @type {ChatProfile[]} */
 export const BUILT_IN_PROFILES = [
@@ -70,29 +107,44 @@ export const BUILT_IN_PROFILES = [
     settings: { prompt: DEFAULT_CHAT_PROMPT },
   },
   {
-    id: ADVENTURE_PROFILE_ID,
-    name: 'Adventure',
-    description: 'A text-based tabletop RPG, with dice and the oracle.',
-    settings: { prompt: DEFAULT_ADVENTURE_PROMPT },
-  },
-  {
     id: ROLEPLAY_PROFILE_ID,
     name: 'Roleplay',
     description: 'A scene with one character, in their voice. No tools.',
     settings: {
+      ...ROLEPLAY_SETTINGS,
       prompt: DEFAULT_ROLEPLAY_PROMPT,
-      // Cards are written for a model with no tools, and a tool schema in
-      // context pulls the voice toward the assistant register it was written
-      // to get away from. A starting position, not a principle — the oracle is
-      // the first one worth trying again.
-      // The group ids as `TOOL_GROUP_LABELS` names them, written out rather
-      // than imported: a profile is data, and `ai/tools/index.js` registers
-      // every tool in the app as a side effect of being loaded.
-      disabledToolGroups: ['documents', 'rpg', 'skills'],
       rules: DEFAULT_ROLEPLAY_NOTE,
-      // What a played-out scene is made of is the scenes and the lines, not
-      // what was decided and what is left to do. See ai/skills/compact.
-      skills: { compact: { prompt: ROLEPLAY_COMPACTION_PROMPT } },
+    },
+  },
+  {
+    id: ROLEPLAY_NSFW_PROFILE_ID,
+    name: 'Roleplay (NSFW)',
+    description: 'Roleplay, with the explicit themes you opt into.',
+    nsfw: true,
+    generalId: ROLEPLAY_PROFILE_ID,
+    settings: {
+      ...ROLEPLAY_SETTINGS,
+      prompt: DEFAULT_ROLEPLAY_NSFW_PROMPT,
+      rules: DEFAULT_ROLEPLAY_NSFW_NOTE,
+    },
+    notice: {
+      header: 'Roleplay (NSFW)',
+      message: [
+        "A chat on this profile tells the model you're an adult and have opted into the themes in its author's note. To begin with, that's explicit sexual content, graphic violence and dark themes.",
+        "Add or remove themes in the chat's settings, under Author's note. To start every new chat with your own list, save a chat as a profile of your own with New profile.",
+      ].join('\n\n'),
+    },
+  },
+  {
+    id: BLANK_PROFILE_ID,
+    name: 'Blank',
+    description: 'No system prompt, no tools, no project: the model as it comes.',
+    // Nothing between the writer and the model: no system message is sent for
+    // an empty prompt, no tool is offered, and the project block stays out.
+    settings: {
+      prompt: '',
+      disabledToolGroups: [...ALL_TOOL_GROUPS],
+      projectContextEnabled: false,
     },
   },
 ]

@@ -589,7 +589,7 @@ part 2.
 
 ## Decision: remote servers, reached from the page
 
-InkSprite has no backend, so it talks to a server from the browser: Streamable
+inksprite has no backend, so it talks to a server from the browser: Streamable
 HTTP, falling back to the older HTTP with SSE the way the spec says a client
 should. The client is the SDK's (`@modelcontextprotocol/client`, which has
 browser shims), imported the first time a server is connected, so a writer
@@ -707,7 +707,7 @@ folder last saved to in a project is offered next time (`mcp/saved.js`,
   could be imported into the skills library from Connections, if more
   servers serve skills that way.
 - Sampling, where a server asks the client for an inference on the writer's
-  model. That is a skill served from elsewhere, the shape InkSprite's skills
+  model. That is a skill served from elsewhere, the shape inksprite's skills
   already have, and few servers use it.
 - A server tool the writer calls themselves, as `/roll` calls the dice: worth
   having for a tool that takes one string, after prompts.
@@ -872,7 +872,7 @@ Checked in the browser on 1 Oct 2026:
 - A tool called in the page carried the token. After Sign out, the row
   offered Sign in again and a call said to sign in.
 - Linear: discovery and registration ran from the page, and its consent page
-  named InkSprite, `https://inksprite.io` and the local return address. It was
+  named inksprite, `https://inksprite.io` and the local return address. It was
   not approved: the test browser was signed in to a Linear workspace that is
   not the app's to grant.
 

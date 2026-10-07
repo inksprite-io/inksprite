@@ -1400,9 +1400,10 @@ export function useAIChat(storyId, chatId) {
           ? getEnabledToolDefinitions({
               disabledTools: chat?.disabledTools,
               disabledGroups: chat?.disabledToolGroups,
-              servers: serversForChat(chat, chat?.profileId || chatsApi.defaultProfileId()).map(
-                server => server.id
-              ),
+              servers: serversForChat(
+                chat,
+                profilesApi.getProfile(chat?.profileId)?.id ?? chatsApi.defaultProfileId()
+              ).map(server => server.id),
             })
           : []
       const { apiTrajectory, edits, usage } = await runCompletionLoop({
@@ -1826,7 +1827,11 @@ export function useAIChat(storyId, chatId) {
 
       await aiService.generateChatCompletion(
         messages,
-        { providerId: profile.providerId, model: profile.model },
+        {
+          providerId: profile.providerId,
+          model: profile.model,
+          allowedProviders: profile.allowedProviders,
+        },
         chunkData => {
           if (chunkData.content) {
             title += chunkData.content

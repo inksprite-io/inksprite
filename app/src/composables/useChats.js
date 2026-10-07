@@ -123,12 +123,16 @@ export const useChats = storyId => {
   })
 
   /**
-   * The profile a chat in this story starts on: the one its template named, or
-   * the app's default.
+   * The profile a chat in this story starts on: the one the project names, or
+   * the app's default — also when the one it names is gone, a writer's own
+   * deleted or a built-in the app no longer ships. An NSFW one, while those are
+   * switched off, is its general counterpart.
    * @returns {string}
    */
-  const defaultProfileId = () =>
-    useStoriesStore().getStory(storyId)?.options?.profileId || DEFAULT_PROFILE_ID
+  const defaultProfileId = () => {
+    const named = useStoriesStore().getStory(storyId)?.options?.profileId
+    return profilesApi.getProfile(named)?.id ?? DEFAULT_PROFILE_ID
+  }
 
   /**
    * Create a new chat, stamped from a profile.

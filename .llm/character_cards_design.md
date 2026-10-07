@@ -18,7 +18,7 @@ reputation is a fixed point. What changes is our end.
 
 **It is a direct comparison of two context architectures.** SillyTavern pushes:
 the card's fields go into every request, and a lorebook entry is injected when
-one of its keywords appears in the scan window. InkSprite pulls: the model is
+one of its keywords appears in the scan window. inksprite pulls: the model is
 handed a listing and fetches what it wants. Both are trying to have the right
 paragraph in context at the right turn, and the second has never been measured
 against the first on material the first was designed for. Same card, same

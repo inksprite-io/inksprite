@@ -63,7 +63,7 @@ export const DIRECTOR_PROMPT = DIRECTOR.body
  *
  * That line is the whole configuration: add a name to give the Director a tool,
  * remove one to take it away. It is not the chat's to change — a writer who
- * switches off Dice & Oracle is saying what the Game Master may do at the
+ * switches off RPG Tools is saying what the Game Master may do at the
  * table, not that the Director should go back to guessing.
  *
  * Names, not definitions, so this module imports nothing from ../tools — which

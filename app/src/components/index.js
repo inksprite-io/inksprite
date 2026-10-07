@@ -1,6 +1,6 @@
 /**
  * @module components
- * @description Vue components for the InkSprite application UI.
+ * @description Vue components for the inksprite application UI.
  *
  * ## Component Structure
  *

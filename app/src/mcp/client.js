@@ -2,7 +2,7 @@
  * @module mcp/client
  * @description Talking to an MCP server from the page.
  *
- * InkSprite has no backend, so the browser connects to the server itself:
+ * inksprite has no backend, so the browser connects to the server itself:
  * Streamable HTTP, falling back to the older HTTP with SSE when a server
  * answers the first with a 4xx, as the spec says a client should. The client
  * is the SDK's (`@modelcontextprotocol/client`), imported the first time a
@@ -27,10 +27,11 @@
 /** @typedef {import('../types/models.js').McpPrompt} McpPrompt */
 /** @typedef {import('@modelcontextprotocol/client').Client} Client */
 
+import { fetch } from '@/platform/fetch.js'
 import { authProvider, signedIn } from './auth.js'
 
 /** Who the app says it is, to the server. */
-const CLIENT_INFO = { name: 'InkSprite', version: '1.0.0' }
+const CLIENT_INFO = { name: 'inksprite', version: '1.0.0' }
 
 /** How many pages of tools or prompts are read before giving up. */
 const MAX_PAGES = 20
@@ -94,6 +95,7 @@ async function open(server) {
   // the sign-in is theirs to start, with a click, from Settings.
   const options = {
     requestInit,
+    fetch,
     ...(signedIn(server.url) ? { authProvider: authProvider(server.url) } : {}),
   }
 

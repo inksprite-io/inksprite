@@ -84,7 +84,7 @@
 import {
   executeOracle,
   executeRollTable,
-  drawTarot,
+  executeDrawTarot,
   parseDice,
   rollDice,
   DEFAULT_TAROT_DECK,
@@ -533,15 +533,17 @@ const WRITTEN = {
       const asked = parseTarotAsk(param)
       if ('error' in asked) return asked
 
-      // The question is optional: a draw with nothing asked is a reading of
-      // the scene as it stands. The cards go where the oracle's answer goes —
-      // what the writer drew is a fact about the turn they are taking — and
-      // they are quoted so a name with spaces in it stays one card.
+      // The same draw the model makes with `draw_tarot`. The question is
+      // optional: a draw with nothing asked is a reading of the scene as it
+      // stands. The cards go where the oracle's answer goes — what the writer
+      // drew is a fact about the turn they are taking — and they are quoted so
+      // a name with spaces in it stays one card.
+      const cards = await executeDrawTarot(asked)
+      if (!Array.isArray(cards)) return cards
+
       return {
         ...(input ? { label: input } : {}),
-        result: drawTarot(asked.count, TAROT_DECKS[asked.deck])
-          .map(card => `"${card}"`)
-          .join(' '),
+        result: cards.map(card => `"${card}"`).join(' '),
       }
     },
   },

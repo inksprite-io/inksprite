@@ -1,6 +1,6 @@
 /**
  * @module config/credits
- * @description Other people's work that ships with InkSprite, and the credit
+ * @description Other people's work that ships with inksprite, and the credit
  * each asks for. Settings › About shows it in the app, and CREDITS.md at the
  * repository root says the same to a reader of the source; a test holds the
  * three together.
@@ -8,7 +8,7 @@
  * The icons are from the Noun Project, under CC BY 3.0, which asks for the
  * title, the creator and the license wherever the icon is used. Each icon
  * component under `components/icons/` draws one of them, except the few
- * drawn for InkSprite itself (`OWN_ICONS`); the SVG it came from is kept
+ * drawn for inksprite itself (`OWN_ICONS`); the SVG it came from is kept
  * under `public/static/icons/`, named for its number on the site.
  */
 
@@ -18,7 +18,7 @@
  * @property {string} title - Its title there
  * @property {string} creator - Its creator's name there
  * @property {string} file - The SVG as downloaded, under `public/static/icons/`
- * @property {string[]} usedAs - What InkSprite makes of it: icon components, or
+ * @property {string[]} usedAs - What inksprite makes of it: icon components, or
  *   adapted copies; empty when nothing uses it yet
  */
 
@@ -272,7 +272,7 @@ export const ICON_CREDITS = Object.freeze([
   },
 ])
 
-/** Icon components drawn for InkSprite itself, which credit nobody. */
+/** Icon components drawn for inksprite itself, which credit nobody. */
 export const OWN_ICONS = Object.freeze(['DatabaseIcon', 'RetryIcon', 'SendIcon', 'SpeakerIcon'])
 
 /**

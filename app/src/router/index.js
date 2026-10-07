@@ -1,6 +1,6 @@
 /**
  * @module router
- * @description Vue Router configuration for the InkSprite application.
+ * @description Vue Router configuration for the inksprite application.
  *
  * ## Routes
  *

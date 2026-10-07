@@ -4,6 +4,7 @@
  */
 
 import { useAIConfig } from '@/composables/useAIConfig'
+import { fetch } from '@/platform/fetch.js'
 import { resolveAISettings } from '@/ai/defaults.js'
 import {
   ATTRIBUTION_HEADERS,
@@ -60,6 +61,8 @@ async function parseModelsResponse(response, providerName) {
  * @typedef {Object} AIConfig
  * @property {string} providerId - Provider ID
  * @property {string} model - Model identifier
+ * @property {string[]} [allowedProviders] - OpenRouter only: the upstreams
+ *   allowed to serve this model. Empty or absent allows any.
  */
 
 /**
@@ -189,6 +192,58 @@ function listOpenRouterProviders() {
 }
 
 /**
+ * Which providers serve each model, by model id. Cached for the life of the
+ * page like the directory: the picker asks again every time it opens, and
+ * which upstreams carry a model changes over weeks, not minutes.
+ *
+ * @type {Map<string, Promise<OpenRouterProvider[]>>}
+ */
+const modelProvidersPromises = new Map()
+
+/**
+ * The upstream providers that serve one model on OpenRouter, so a picker for
+ * that model can offer them and not the hundred that don't. Public, like the
+ * directory.
+ *
+ * OpenRouter lists endpoints, not providers: one provider can serve a model
+ * several ways (`baseten/fp8`, `baseten/fast`), and the part of the tag before
+ * the slash is the provider's slug, the one routing takes. An empty list is
+ * not "nobody serves it" — a router model like `openrouter/auto` has no
+ * endpoints of its own — so the caller decides what empty means.
+ *
+ * @param {string} model - A model id as OpenRouter lists it, `z-ai/glm-5.2`
+ * @returns {Promise<OpenRouterProvider[]>} Each provider once, in the order listed
+ * @throws {Error} When the request fails, the model is unknown, or the shape is unexpected
+ */
+function listModelProviders(model) {
+  if (!modelProvidersPromises.has(model)) {
+    const path = model.split('/').map(encodeURIComponent).join('/')
+    const promise = (async () => {
+      const response = await fetch(`https://openrouter.ai/api/v1/models/${path}/endpoints`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+      const data = await response.json()
+      const endpoints = data?.data?.endpoints
+      if (!Array.isArray(endpoints)) throw new Error('Invalid response format from OpenRouter')
+
+      const providers = new Map()
+      for (const endpoint of endpoints) {
+        const slug = typeof endpoint?.tag === 'string' ? endpoint.tag.split('/')[0] : ''
+        if (!slug || providers.has(slug)) continue
+        providers.set(slug, { slug, name: endpoint.provider_name || slug })
+      }
+      return [...providers.values()]
+    })().catch(error => {
+      // Not cached, for the same reason as the directory.
+      modelProvidersPromises.delete(model)
+      throw error
+    })
+    modelProvidersPromises.set(model, promise)
+  }
+  return modelProvidersPromises.get(model)
+}
+
+/**
  * Say what a provider's refusal actually means, when it means the reasoning.
  *
  * Two ways a request gets refused over thinking, and they need different
@@ -205,8 +260,10 @@ function listOpenRouterProviders() {
  *
  * The third is routing. A connection's policy — the privacy and precision
  * floor it has by default — can exclude every endpoint that serves a model,
- * and OpenRouter answers with a 404 that names the filter and nothing else.
- * The writer never set that filter, so say where it lives.
+ * and so can a preset's allowed providers, when none of them serves the model
+ * it was moved to. OpenRouter answers with a 404 that names the filter and
+ * nothing else. The writer never set the floor, and may have set the list for
+ * another model, so say where both live.
  *
  * @param {unknown} reported - What the provider said
  * @param {{sentReasoning: boolean, askedForEffort: boolean, routed?: boolean}} request - What this request carried
@@ -217,7 +274,7 @@ function explainFailure(reported, { sentReasoning, askedForEffort, routed = fals
 
   if (routed && /no endpoints found/i.test(message)) {
     console.warn('No endpoint passed the routing policy this request carried:', message)
-    return `${message} — this connection's routing policy excludes every endpoint that serves this model. Open the connection's Provider Routing settings and lower the precision or zero-data-retention floor to reach it.`
+    return `${message} — this request's routing excludes every endpoint that serves this model. Check the preset's Allowed Providers serve it, or open the connection's Provider Routing settings and lower the precision or zero-data-retention floor to reach it.`
   }
 
   if (!/signature|thinking|reasoning|effort/i.test(message)) return message
@@ -241,6 +298,7 @@ function explainFailure(reported, { sentReasoning, askedForEffort, routed = fals
  * @returns {{
  *   listModels: (providerId: string) => Promise<AIModel[]>,
  *   listOpenRouterProviders: () => Promise<OpenRouterProvider[]>,
+ *   listModelProviders: (model: string) => Promise<OpenRouterProvider[]>,
  *   generateChatCompletion: (messages: Array<{role: string, content: string|null, tool_call_id?: string, tool_calls?: ToolCall[], reasoning_details?: ReasoningDetail[]}>, config: AIConfig, onChunk: (chunk: StreamChunk) => void, options?: {tools?: ToolDefinition[], toolChoice?: 'auto'|'none', overrides?: AISettingsOverrides, signal?: AbortSignal}) => Promise<{usage?: {prompt_tokens: number, completion_tokens: number, total_tokens: number}, toolCalls?: ToolCall[], reasoningDetails?: ReasoningDetail[], finishReason?: string|null}>,
  *   validateOpenRouterKey: (apiKey: string) => Promise<boolean>,
  *   exchangeOAuthCode: (code: string, codeVerifier: string) => Promise<string>
@@ -287,12 +345,13 @@ export const useAIService = () => {
   /**
    * Generate chat completion with streaming.
    *
-   * `config` only needs `providerId` and `model`. Sampler/reasoning/maxTokens
-   * come from AI_DEFAULTS, optionally adjusted by `options.overrides` (used
-   * for short auxiliary calls like title generation).
+   * `config` needs `providerId` and `model`, and carries the preset's
+   * `allowedProviders` when it has any — a preset passed whole does. Sampler,
+   * reasoning and maxTokens come from AI_DEFAULTS, optionally adjusted by
+   * `options.overrides` (used for short auxiliary calls like title generation).
    *
    * @param {Array<{role: string, content: string|null, tool_call_id?: string, tool_calls?: ToolCall[], reasoning_details?: ReasoningDetail[]}>} messages - Chat messages
-   * @param {AIConfig} config - Active AI configuration (providerId + model)
+   * @param {AIConfig} config - Active AI configuration (providerId, model, allowed providers)
    * @param {(chunk: StreamChunk) => void} onChunk - Callback for each streamed chunk
    * @param {Object} [options] - Additional options
    * @param {ToolDefinition[]} [options.tools] - Tool definitions to include
@@ -330,6 +389,7 @@ export const useAIService = () => {
         messages,
         model: config.model,
         provider,
+        allowedProviders: config.allowedProviders,
         settings: resolveAISettings(options.overrides),
         tools: options.tools,
         toolChoice: options.toolChoice,
@@ -550,6 +610,7 @@ export const useAIService = () => {
   return {
     listModels,
     listOpenRouterProviders,
+    listModelProviders,
     generateChatCompletion,
     validateOpenRouterKey,
     exchangeOAuthCode,

@@ -126,7 +126,7 @@ Usage: npm run transcripts -- --scenario <name> [options]
   -n, --runs <n>              How many times to run it (default: 1)
   -e, --endpoint <name>       Endpoint from scripts/endpoints.local.json (default: the first)
   -m, --model <id>            Model to run, overriding the endpoint's
-  -p, --prompt <id|path>      System prompt: builtin_chat, builtin_adventure, a built-in profile
+  -p, --prompt <id|path>      System prompt: builtin_chat, builtin_roleplay, a built-in profile
                               such as builtin_profile_roleplay, or a markdown file
                               (default: the built-in chat prompt)
   -d, --descriptions <file>   JSON of tool name to description, to run the tools under
@@ -263,6 +263,7 @@ async function configurePreset(endpoint, model, toolsEnabled) {
     name: `${endpoint.name} ${model}`,
     providerId: provider.id,
     model,
+    allowedProviders: endpoint.allowedProviders,
     toolsEnabled,
   })
   useApplicationState().setActiveAIPresetId(preset.id)

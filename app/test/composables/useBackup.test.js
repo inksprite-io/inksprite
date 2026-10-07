@@ -112,7 +112,7 @@ describe('useBackup', () => {
 
     it('rejects JSON from another app', async () => {
       await expect(useBackup().readBackupFile(fileOf({ hello: 'world' }))).rejects.toThrow(
-        'not exported from InkSprite'
+        'not exported from inksprite'
       )
     })
 

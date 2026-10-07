@@ -85,7 +85,14 @@ import {
   onSkillsChanged,
   toolDefinitionFor,
 } from '../skills/index.js'
-import { oracleDefinition, executeOracle, rollTableDefinition, executeRollTable } from './rpg.js'
+import {
+  oracleDefinition,
+  executeOracle,
+  rollTableDefinition,
+  executeRollTable,
+  drawTarotDefinition,
+  executeDrawTarot,
+} from './rpg.js'
 import { USE_SKILL, executeUseSkill, loadableSkills, useSkillDefinition } from './useSkill.js'
 import { allServers, getServer, onServersChanged, reachable } from '../../mcp/servers.js'
 import { serverGroup, serverOfGroup } from '../../mcp/names.js'
@@ -108,7 +115,7 @@ export const SKILLS_GROUP = 'skills'
  */
 export const TOOL_GROUP_LABELS = {
   documents: 'Documents',
-  rpg: 'Dice & Oracle',
+  rpg: 'RPG Tools',
   [SKILLS_GROUP]: 'Skills',
 }
 
@@ -160,12 +167,13 @@ toolRegistry.register(
 toolRegistry.register('roll_dice', diceToolDefinition, executeDiceTool, 'rpg')
 toolRegistry.register('oracle', oracleDefinition, executeOracle, 'rpg')
 toolRegistry.register('roll_table', rollTableDefinition, executeRollTable, 'rpg')
+toolRegistry.register('draw_tarot', drawTarotDefinition, executeDrawTarot, 'rpg')
 toolRegistry.register('generate_names', generateNamesDefinition, executeGenerateNames, 'rpg')
 
 // Every built-in skill the model may call, as the tool its SKILL.md describes.
-// No card draw among them: a card is a prompt rather than an answer, and
-// whoever is handed one reads it at the front of their own next paragraph;
-// `interpret` draws it out of sight and returns what it made of it. See
+// `interpret` draws a card of its own out of sight and returns what it made
+// of it, for a Game Master that wants an idea rather than a card to read;
+// `draw_tarot`, above, is for one that wants the cards. See
 // ../skills/interpret.
 for (const skill of BUILT_IN_SKILLS) {
   if (!skill.model || !skill.execute) continue
@@ -396,7 +404,7 @@ export function getEnabledToolDefinitions(selection) {
  * the names as given. The chat's own selection is deliberately not consulted:
  * those switches say what the assistant the writer is talking to may do, and
  * the Director is not that assistant. Reading them here would mean switching
- * off Dice & Oracle quietly put the Director back to guessing at the outcomes
+ * off RPG Tools quietly put the Director back to guessing at the outcomes
  * its advice turns on, with nothing to say it had.
  *
  * Skills are the exception, and only because of how deep they already are.

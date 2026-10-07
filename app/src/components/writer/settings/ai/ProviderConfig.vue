@@ -166,7 +166,7 @@ import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { useAIConfig } from '@/composables/useAIConfig'
 import { useAIService } from '@/composables/useAIService'
-import { initiateOpenRouterOAuth } from '@/utils/oauth'
+import { useOpenRouterSignIn } from '@/composables/useOpenRouterSignIn'
 import { PROVIDER_TYPES, providerLabel, needsEndpoint } from '@/ai/providers.js'
 import ProviderRouting from './ProviderRouting.vue'
 
@@ -199,6 +199,7 @@ class ValidationError extends Error {
 }
 
 const toast = useToast()
+const openRouter = useOpenRouterSignIn()
 const confirm = useConfirm()
 const aiConfig = useAIConfig()
 const aiService = useAIService()
@@ -440,8 +441,7 @@ async function handleTestConnection() {
  */
 async function handleOAuthConnect() {
   try {
-    const callbackUrl = `${window.location.origin}/connect/openrouter`
-    await initiateOpenRouterOAuth(callbackUrl)
+    await openRouter.start()
     console.log('OAuth initiated, waiting for callback...')
   } catch (error) {
     console.error('Failed to initiate OAuth:', error)

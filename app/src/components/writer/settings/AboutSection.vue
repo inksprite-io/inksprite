@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-5 px-2 pt-2 pb-1 text-xs text-surface-500 dark:text-surface-400">
     <section class="flex flex-col gap-1">
       <p class="text-sm text-surface-700 dark:text-surface-200">
-        InkSprite is free software under the
+        inksprite is free software under the
         <a :href="LICENSE_URL" target="_blank" rel="noopener noreferrer" :class="LINK"
           >GNU Affero General Public License, version 3 or later</a
         >. Its source is at
@@ -60,7 +60,7 @@
 
 <script setup>
 /**
- * What InkSprite is released under, where its source is, and the credit the
+ * What inksprite is released under, where its source is, and the credit the
  * icons and the font ask for wherever they are used — which, for a build
  * someone paid for, means inside the app.
  */

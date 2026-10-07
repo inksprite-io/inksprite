@@ -1,6 +1,6 @@
 /**
  * @module composables
- * @description Vue 3 composables providing reusable logic for the InkSprite application.
+ * @description Vue 3 composables providing reusable logic for the inksprite application.
  *
  * ## Composables Overview
  *
@@ -20,7 +20,7 @@
  * - **useDocuments** - A story's document tree, shaped for the tree UI, and the editor's tabs
  * - **useChats** - Chat session management
  * - **useChatSettings** - One chat's settings and profile, started or not
- * - **useBackup** - Whole-database export and restore, and single chats as files
+ * - **useBackup** - Whole-database export and restore, and single chats and projects as files
  * - **useNarration** - A project read aloud: its voices and hints, a document's speakers, and the readings
  * - **useSpeech** - Something read aloud then and there, a line at a time: a chat message. One thing at a time, app-wide
  *

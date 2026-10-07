@@ -61,6 +61,18 @@ describe('useApplicationState', () => {
     })
   })
 
+  describe('nsfwProfiles', () => {
+    it('is off until switched on, and app-wide', () => {
+      const a = useApplicationState()
+      const b = useApplicationState()
+      expect(a.nsfwProfiles.value).toBe(false)
+      a.setNsfwProfiles(true)
+      expect(b.nsfwProfiles.value).toBe(true)
+      a.setNsfwProfiles(false)
+      expect(b.nsfwProfiles.value).toBe(false)
+    })
+  })
+
   describe('debug', () => {
     it('is off until switched on, and app-wide', () => {
       const a = useApplicationState()

@@ -2,8 +2,9 @@ import { describe, it, expect } from 'vitest'
 import {
   BUILT_IN_PROFILES,
   CHAT_PROFILE_ID,
-  ADVENTURE_PROFILE_ID,
   ROLEPLAY_PROFILE_ID,
+  ROLEPLAY_NSFW_PROFILE_ID,
+  BLANK_PROFILE_ID,
   DEFAULT_PROFILE_ID,
   getBuiltInProfile,
   isBuiltInProfileId,
@@ -15,14 +16,34 @@ import { TOOL_GROUP_LABELS } from '@/ai/tools/index.js'
 
 describe('chat profiles', () => {
   describe('the built-ins', () => {
-    it('carries a prompt of its own', () => {
+    it('carries a prompt of its own, all but Blank', () => {
       // The prompt belongs to the profile rather than to a library of its own:
       // a prompt without the tools it was written for is half an answer.
       const texts = BUILT_IN_PROMPTS.map(prompt => prompt.content)
-      for (const profile of BUILT_IN_PROFILES) {
+      for (const profile of BUILT_IN_PROFILES.filter(p => p.id !== BLANK_PROFILE_ID)) {
         expect(profile.settings.prompt).toBeTruthy()
         expect(texts).toContain(profile.settings.prompt)
       }
+    })
+
+    it('puts nothing between the writer and the model on Blank', () => {
+      const blank = getBuiltInProfile(BLANK_PROFILE_ID).settings
+
+      expect(blank.prompt).toBe('')
+      expect([...blank.disabledToolGroups].sort()).toEqual(Object.keys(TOOL_GROUP_LABELS).sort())
+      expect(blank.projectContextEnabled).toBe(false)
+      expect(blank.rules).toBeUndefined()
+    })
+
+    it('stamps Blank onto a new chat with every tool and the project off', () => {
+      const stamped = settingsForNewChat(getBuiltInProfile(BLANK_PROFILE_ID))
+
+      expect(stamped).toMatchObject({
+        profileId: BLANK_PROFILE_ID,
+        disabledToolGroups: expect.arrayContaining(Object.keys(TOOL_GROUP_LABELS)),
+        projectContextEnabled: false,
+      })
+      expect(stamped).not.toHaveProperty('prompt')
     })
 
     it('cannot be mistaken for a prompt or for a stored profile', () => {
@@ -45,13 +66,45 @@ describe('chat profiles', () => {
       )
     })
 
-    it('gives Roleplay standing rules and nothing else does', () => {
-      // That it has them, not what they say. The rules are a tuning surface
+    it('gives the roleplay profiles standing rules and Default none', () => {
+      // That they have them, not what they say. The rules are a tuning surface
       // like the prompts are, and pinning their wording would mean editing a
       // test every time they are reworded.
       expect(getBuiltInProfile(ROLEPLAY_PROFILE_ID).settings.rules).toBeTruthy()
+      expect(getBuiltInProfile(ROLEPLAY_NSFW_PROFILE_ID).settings.rules).toBeTruthy()
       expect(getBuiltInProfile(CHAT_PROFILE_ID).settings.rules).toBeUndefined()
-      expect(getBuiltInProfile(ADVENTURE_PROFILE_ID).settings.rules).toBeUndefined()
+    })
+
+    describe('Roleplay and Roleplay (NSFW)', () => {
+      const roleplay = getBuiltInProfile(ROLEPLAY_PROFILE_ID)
+      const nsfw = getBuiltInProfile(ROLEPLAY_NSFW_PROFILE_ID)
+
+      it('run the same way, and differ only in their words', () => {
+        const { prompt: _p, rules: _r, ...plain } = roleplay.settings
+        const { prompt: _np, rules: _nr, ...explicit } = nsfw.settings
+        expect(explicit).toEqual(plain)
+      })
+
+      it('each carry a prompt of their own', () => {
+        expect(nsfw.settings.prompt).toBeTruthy()
+        expect(nsfw.settings.prompt).not.toBe(roleplay.settings.prompt)
+      })
+
+      it('keeps the opt-ins out of Roleplay, prompt and note alike', () => {
+        for (const text of [roleplay.settings.prompt, roleplay.settings.rules]) {
+          expect(text).not.toMatch(/opted into/i)
+          expect(text).not.toMatch(/sexual/i)
+        }
+        expect(nsfw.settings.rules).toMatch(/opted into/i)
+      })
+
+      it('tells the writer about the opt-ins the first time, and only NSFW does', () => {
+        expect(nsfw.notice.header).toBeTruthy()
+        expect(nsfw.notice.message).toMatch(/author.s note/i)
+        for (const profile of BUILT_IN_PROFILES.filter(p => p.id !== ROLEPLAY_NSFW_PROFILE_ID)) {
+          expect(profile.notice).toBeUndefined()
+        }
+      })
     })
 
     it('does not answer to an id it does not have', () => {

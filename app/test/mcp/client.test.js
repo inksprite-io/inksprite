@@ -50,7 +50,7 @@ describe('the client, against a server', () => {
   it('lists what a server offers', async () => {
     const listed = await listServer({ url: open.url })
 
-    expect(listed.serverName).toBe('InkSprite test server')
+    expect(listed.serverName).toBe('inksprite test server')
     expect(listed.instructions).toContain('glossary')
     expect(listed.tools.map(tool => tool.name)).toEqual(['look_up', 'save_note', 'break'])
     expect(listed.tools[0].annotations).toEqual({ readOnlyHint: true })

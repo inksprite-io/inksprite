@@ -7,10 +7,12 @@
  * `type` (`openrouter`, `llamacpp`, or `generic`; generic when absent),
  * `endpoint` for anything that is not OpenRouter, and the key as either
  * `apiKey` inline or `apiKeyFile`, a path relative to `app/` to a file holding
- * the key alone. An OpenRouter entry may carry `routing`, the app's own
- * routing policy (`only`, `ignore`, `quantizations`, and the rest — see
- * ai/routing.js), which is resolved the way the app resolves it, so an entry
- * without one still gets the privacy floor. The file is not committed;
+ * the key alone. An OpenRouter entry may carry `routing`, the connection's
+ * routing policy in the app's shape (`ignore`, `quantizations`, and the rest —
+ * see ai/routing.js), which is resolved the way the app resolves it, so an
+ * entry without one still gets the privacy floor; and `allowedProviders`, the
+ * upstreams allowed to serve its model, which a preset carries in the app.
+ * The file is not committed;
  * `endpoints.example.json` shows the shape.
  */
 
@@ -32,6 +34,8 @@ export const ENDPOINTS_FILE = join(APP_DIR, 'scripts', 'endpoints.local.json')
  * @property {string} [model] - The model to run, when the entry names one
  * @property {Partial<import('@/ai/routing.js').OpenRouterRouting>} [routing] - Provider
  *   routing for an OpenRouter entry; absent means the app's defaults
+ * @property {string[]} [allowedProviders] - The only upstreams OpenRouter may
+ *   serve the model from, as a preset holds them; absent allows any
  */
 
 /**

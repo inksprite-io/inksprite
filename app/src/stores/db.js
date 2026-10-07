@@ -16,6 +16,7 @@ import { FLAGGED_TABLES, deletedIds } from './migrations/purgeDeleted.js'
 import { rolesToSkills } from './migrations/profileSkills.js'
 import { rolesToWorkflows } from './migrations/jobWorkflows.js'
 import { withoutModelKeeps } from './migrations/modelKeeps.js'
+import { allowedProvidersToPresets } from './migrations/allowedProviders.js'
 
 /**
  * @typedef {import('../types/models.js').Story} Story
@@ -364,6 +365,20 @@ db.version(23).upgrade(async tx => {
   const { chats, moved } = withoutModelKeeps(await tx.table('chats').toArray())
   if (moved > 0) await tx.table('chats').bulkPut(chats)
   console.log(`Took the model's keeps off ${moved} chats' pins`)
+})
+
+// Which providers may serve is the preset's, beside the model it was chosen
+// for: a connection's allowed list moves onto every preset that uses it.
+db.version(24).upgrade(async tx => {
+  const { providers, presets, moved } = allowedProvidersToPresets(
+    await tx.table('aiProviders').toArray(),
+    await tx.table('aiProfiles').toArray()
+  )
+  if (moved > 0) {
+    await tx.table('aiProviders').bulkPut(providers)
+    await tx.table('aiProfiles').bulkPut(presets)
+  }
+  console.log(`Moved ${moved} connections' allowed providers onto their presets`)
 })
 
 // A summary is stored where it is read: above the turns it kept, rather than at

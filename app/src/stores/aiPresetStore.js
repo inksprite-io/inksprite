@@ -95,6 +95,7 @@ export const useAIPresetStore = defineStore('aiProfiles', () => {
    * @param {string} opts.name - Preset name
    * @param {string} opts.providerId - Provider ID
    * @param {string} opts.model - Model identifier
+   * @param {string[]} [opts.allowedProviders] - OpenRouter upstreams allowed to serve the model
    * @param {boolean} [opts.toolsEnabled] - Whether the model may call tools
    * @param {import('../ai/defaults.js').AISettingsOverrides} [opts.generationOverrides] - Sparse overrides on AI_DEFAULTS
    * @param {boolean} [opts.isDefault] - Whether this is a default preset
@@ -106,6 +107,7 @@ export const useAIPresetStore = defineStore('aiProfiles', () => {
     name,
     providerId,
     model,
+    allowedProviders,
     toolsEnabled = true,
     generationOverrides = {},
     isDefault = false,
@@ -117,6 +119,7 @@ export const useAIPresetStore = defineStore('aiProfiles', () => {
       name,
       providerId,
       model,
+      ...(allowedProviders?.length ? { allowedProviders } : {}),
       toolsEnabled,
       generationOverrides,
       isDefault,

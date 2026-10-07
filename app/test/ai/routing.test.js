@@ -17,18 +17,24 @@ describe('resolveRouting', () => {
 
   it('keeps knobs a partial record does carry', () => {
     // Records written before a knob existed simply don't have it.
-    expect(resolveRouting({ only: ['deepinfra'] })).toEqual({
+    expect(resolveRouting({ ignore: ['deepinfra'] })).toEqual({
       ...ROUTING_DEFAULTS,
-      only: ['deepinfra'],
+      ignore: ['deepinfra'],
     })
+  })
+
+  it('has no allowed list: that is the preset’s', () => {
+    // A record from before the move still carries one, until the upgrade
+    // takes it off. It must not reach the request from here.
+    expect(resolveRouting({ only: ['deepinfra'] })).toEqual(ROUTING_DEFAULTS)
   })
 
   it('gives a record from before the floor the floor', () => {
     // A connection saved when routing had no privacy knobs is not a decision
     // to allow data collection; it gets the default like any other missing knob.
-    expect(resolveRouting({ only: [] }).zdr).toBe(true)
-    expect(resolveRouting({ only: [] }).dataCollection).toBe('deny')
-    expect(resolveRouting({ only: [] }).quantizations).toEqual(ROUTING_DEFAULTS.quantizations)
+    expect(resolveRouting({ ignore: [] }).zdr).toBe(true)
+    expect(resolveRouting({ ignore: [] }).dataCollection).toBe('deny')
+    expect(resolveRouting({ ignore: [] }).quantizations).toEqual(ROUTING_DEFAULTS.quantizations)
   })
 
   it('keeps a floor that was lowered on purpose', () => {
@@ -45,15 +51,17 @@ describe('resolveRouting', () => {
 
   it('drops junk out of the slug lists', () => {
     // Routing crosses the backup boundary, where a hand-edited file can put
-    // anything in these arrays. A malformed `only` must not narrow routing.
-    const resolved = resolveRouting({ only: ['deepinfra', '', null, 42, 'together'] })
+    // anything in these arrays.
+    const resolved = resolveRouting({ ignore: ['deepinfra', '', null, 42, 'together'] })
 
-    expect(resolved.only).toEqual(['deepinfra', 'together'])
+    expect(resolved.ignore).toEqual(['deepinfra', 'together'])
   })
 
   it('treats a non-array list as unset', () => {
-    expect(resolveRouting({ only: 'deepinfra' }).only).toEqual([])
     expect(resolveRouting({ ignore: 'deepinfra' }).ignore).toEqual(ROUTING_DEFAULTS.ignore)
+    expect(resolveRouting({ quantizations: 'fp8' }).quantizations).toEqual(
+      ROUTING_DEFAULTS.quantizations
+    )
   })
 
   it('leaves Morph out of a connection with no ignore list, and keeps one a writer set', () => {
@@ -72,8 +80,9 @@ describe('isRoutingOverridden', () => {
   })
 
   it('reports a list that differs from its default as overridden', () => {
-    expect(isRoutingOverridden({ only: ['deepinfra'] }, 'only')).toBe(true)
-    expect(isRoutingOverridden({ only: [] }, 'only')).toBe(false)
+    expect(isRoutingOverridden({ ignore: ['deepinfra'] }, 'ignore')).toBe(true)
+    expect(isRoutingOverridden({ ignore: [] }, 'ignore')).toBe(true)
+    expect(isRoutingOverridden({ ignore: ['morph'] }, 'ignore')).toBe(false)
     // The precision list's default is not empty, so emptying it is a change.
     expect(isRoutingOverridden({ quantizations: ['fp8'] }, 'quantizations')).toBe(true)
     expect(isRoutingOverridden({ quantizations: [] }, 'quantizations')).toBe(true)
@@ -133,13 +142,14 @@ describe('buildProviderRouting', () => {
   it('translates every knob to its wire name', () => {
     const field = buildProviderRouting(
       openRouter({
-        only: ['anthropic'],
         ignore: ['together'],
         dataCollection: 'deny',
         zdr: true,
         quantizations: ['fp8', 'bf16'],
         allowFallbacks: false,
-      })
+      }),
+      'z-ai/glm-5.2',
+      ['anthropic']
     )
 
     expect(field).toEqual({
@@ -159,11 +169,35 @@ describe('buildProviderRouting', () => {
           zdr: true,
           dataCollection: 'allow',
           quantizations: [],
-          only: ['anthropic'],
           ignore: [],
-        })
+        }),
+        'z-ai/glm-5.2',
+        ['anthropic']
       )
     ).toEqual({ zdr: true, only: ['anthropic'] })
+  })
+
+  it('sends the preset’s allowed providers, and not a list left on the connection', () => {
+    const connection = openRouter({ only: ['together'] })
+
+    expect(buildProviderRouting(connection, 'z-ai/glm-5.2').only).toBeUndefined()
+    expect(buildProviderRouting(connection, 'z-ai/glm-5.2', ['deepinfra']).only).toEqual([
+      'deepinfra',
+    ])
+  })
+
+  it('drops junk out of the allowed list rather than narrow routing to nothing', () => {
+    // The list crosses the backup boundary on the preset.
+    expect(
+      buildProviderRouting(openRouter(undefined), 'z-ai/glm-5.2', ['deepinfra', '', null, 7]).only
+    ).toEqual(['deepinfra'])
+    expect(
+      buildProviderRouting(openRouter(undefined), 'z-ai/glm-5.2', 'deepinfra')
+    ).not.toHaveProperty('only')
+  })
+
+  it('sends no allowed list to anything but OpenRouter', () => {
+    expect(buildProviderRouting({ type: 'generic' }, 'gemma', ['deepinfra'])).toBeUndefined()
   })
 
   it("doesn't send the permissive values of the boolean knobs", () => {

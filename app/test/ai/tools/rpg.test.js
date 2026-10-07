@@ -8,6 +8,9 @@ import {
   rollTableDefinition,
   executeRollTable,
   drawTarot,
+  drawTarotDefinition,
+  executeDrawTarot,
+  MAX_TAROT_CARDS,
   TAROT_DECKS,
 } from '@/ai/tools/rpg.js'
 import { getToolDefinitions } from '@/ai/tools/index.js'
@@ -209,12 +212,53 @@ describe('oracle and cards', () => {
       expect(TAROT_DECKS.major).toBe(MAJOR_ARCANA)
       expect(TAROT_DECKS.full).toBe(TAROT_DECK)
     })
+  })
 
-    it('is not a tool any model is offered', () => {
+  describe('draw_tarot', () => {
+    it('is a tool the model is offered, with nothing it must say', () => {
       const names = getToolDefinitions().map(d => d.function.name)
+      const params = drawTarotDefinition.function.parameters
 
-      expect(names).not.toContain('tarot')
-      expect(names).not.toContain('draw_tarot')
+      expect(names).toContain('draw_tarot')
+      expect(params.required).toBeUndefined()
+      expect(params.properties.deck.enum).toEqual(['major', 'full'])
+      expect(params.properties.count.maximum).toBe(MAX_TAROT_CARDS)
+    })
+
+    it('draws three from the Major Arcana when asked nothing', async () => {
+      const cards = await executeDrawTarot({})
+
+      expect(cards).toHaveLength(3)
+      for (const card of cards) expect(MAJOR_ARCANA).toContain(card)
+    })
+
+    it('draws as many as asked, from the deck named', async () => {
+      const cards = await executeDrawTarot({ count: 10, deck: 'full', question: 'Will it hold?' })
+
+      expect(cards).toHaveLength(10)
+      for (const card of cards) expect(TAROT_DECK).toContain(card)
+    })
+
+    it('reads a count sent as a string, and a null one as unsaid', async () => {
+      expect(await executeDrawTarot({ count: '2' })).toHaveLength(2)
+      expect(await executeDrawTarot({ count: null, deck: null })).toHaveLength(3)
+    })
+
+    it('answers with the cards alone', async () => {
+      // Like the oracle's answer: the question is the model's own, and
+      // echoing it back is working rather than answer.
+      const cards = await executeDrawTarot({ count: 1, question: 'Who knocks?' })
+
+      expect(Array.isArray(cards)).toBe(true)
+      expect(JSON.stringify(cards)).not.toContain('Who knocks?')
+    })
+
+    it('refuses a count out of range or not whole, and a deck there is not', async () => {
+      expect((await executeDrawTarot({ count: 0 })).error).toMatch(/between 1 and 10.*not 0/)
+      expect((await executeDrawTarot({ count: 11 })).error).toMatch(/not 11/)
+      expect((await executeDrawTarot({ count: 1.5 })).error).toMatch(/not 1.5/)
+      expect((await executeDrawTarot({ count: 'some' })).error).toMatch(/not some/)
+      expect((await executeDrawTarot({ deck: 'minor' })).error).toMatch(/Unknown deck "minor"/)
     })
   })
 

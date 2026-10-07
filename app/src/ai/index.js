@@ -5,7 +5,7 @@
  * in, prompt defaults, provider routing, compaction (what a conversation reads
  * as once it has outgrown its window — see ./compaction.js), what the model
  * has read of the project and what of it has changed since (./context/reads.js),
- * and the tool registry for the InkSprite chat and summarize features.
+ * and the tool registry for the inksprite chat and summarize features.
  *
  * @module ai
  */

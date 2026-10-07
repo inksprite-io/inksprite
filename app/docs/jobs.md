@@ -774,6 +774,9 @@ Whether a job is running in this tab. @param {string} jobId
 
 The way to ask the model a workflow names, or an error saying what is not set.
 
+The allowed providers come with the model they were chosen for: the
+preset's with the preset's, the workflow's own with its own.
+
 ### Parameters
 
 - `name` **[string][233]** A workflow in the application state's `workflows`

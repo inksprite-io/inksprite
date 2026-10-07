@@ -1,6 +1,6 @@
 /**
  * @module stores
- * @description State management layer for InkSprite using Pinia stores.
+ * @description State management layer for inksprite using Pinia stores.
  *
  * ## Architecture
  *

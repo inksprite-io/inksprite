@@ -26,10 +26,11 @@
  *   writer reaching for dice is reaching for the one thing at the table that
  *   nobody gets to choose. It is `/roll`, and nothing else calls it.
  *
- * - `drawTarot(count, deck)` turns over cards from a shuffled deck — three from
- *   the Major Arcana unless asked otherwise. Not a tool, for the reason
- *   `drawCard` is not: the cards are a prompt to be read against the story,
- *   and these are the writer's to read. It is `/tarot`.
+ * - `draw_tarot(count, deck)` turns over cards from a shuffled deck — three
+ *   from the Major Arcana unless asked otherwise. The same draw the writer
+ *   makes with `/tarot`. Unlike `drawCard`, the model is handed the cards
+ *   themselves: a spread is something it asked for, to read as it chooses,
+ *   where the `interpret` card answers a question it put to someone else.
  */
 
 import { MAJOR_ARCANA, TAROT_DECK } from './data/tarot.js'
@@ -332,9 +333,8 @@ export const MAX_TAROT_CARDS = 10
  *
  * Without replacement, because there is one of each: The Tower turning up
  * twice is not a stronger omen but a mistake. The cards are not interpreted
- * here and no model is handed them raw, for the reason `drawCard` gives —
- * they mean nothing until somebody reads them against the scene in front of
- * them, and that somebody is the writer.
+ * here: they mean nothing until somebody reads them against the scene in
+ * front of them, the writer or the model that drew them.
  *
  * @param {number} [count] - How many to turn over
  * @param {readonly string[]} [cards] - The deck to draw from, one of TAROT_DECKS
@@ -349,6 +349,64 @@ export function drawTarot(count = TAROT_SPREAD, cards = TAROT_DECKS[DEFAULT_TARO
     drawn.push(card)
   }
   return drawn
+}
+
+/** The decks a draw can come from, for the tool's enum and its errors. */
+const TAROT_DECK_NAMES = Object.keys(TAROT_DECKS)
+
+/** @type {ToolDefinition} */
+export const drawTarotDefinition = {
+  type: /** @type {const} */ ('function'),
+  function: {
+    name: 'draw_tarot',
+    description: `Draw tarot cards from a shuffled deck, each card at most once. Use this for a reading in the fiction, or for inspiration when you want an image to build on. The cards mean nothing until you read them against the scene. For a yes/no question use the oracle instead.`,
+    parameters: {
+      type: 'object',
+      properties: {
+        count: {
+          type: 'integer',
+          minimum: 1,
+          maximum: MAX_TAROT_CARDS,
+          description: `How many cards to draw, 1 to ${MAX_TAROT_CARDS}. Defaults to ${TAROT_SPREAD}: past, present and future.`,
+        },
+        deck: {
+          type: 'string',
+          enum: TAROT_DECK_NAMES,
+          description:
+            'Which deck: "major" for the 22 cards of the Major Arcana, "full" for all 78. Defaults to "major".',
+        },
+        question: {
+          type: 'string',
+          description: 'What the reading is about, if anything.',
+        },
+      },
+    },
+  },
+}
+
+/**
+ * The cards, in the order they came, and nothing else.
+ *
+ * The question is not echoed: like the oracle's, the model already knows what
+ * it asked, and the cards are the answer to it. Count and deck are checked
+ * here rather than trusted to the schema, which a model does not always keep
+ * to; a count sent as "3" is read as the number it says.
+ *
+ * @param {{ count?: number|string, deck?: string, question?: string }} [args]
+ * @returns {Promise<string[]|{error: string}>}
+ */
+export async function executeDrawTarot(args) {
+  const count = Number(args?.count ?? TAROT_SPREAD)
+  const deck = args?.deck ?? DEFAULT_TAROT_DECK
+
+  if (!Number.isInteger(count) || count < 1 || count > MAX_TAROT_CARDS) {
+    return { error: `Draw between 1 and ${MAX_TAROT_CARDS} cards, not ${args?.count}.` }
+  }
+  if (!TAROT_DECK_NAMES.includes(deck)) {
+    return { error: `Unknown deck "${deck}". Use one of: ${TAROT_DECK_NAMES.join(', ')}.` }
+  }
+
+  return drawTarot(count, TAROT_DECKS[deck])
 }
 
 /**

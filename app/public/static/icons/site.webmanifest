@@ -1,6 +1,6 @@
 {
-  "name": "InkSprite",
-  "short_name": "InkSprite",
+  "name": "inksprite",
+  "short_name": "inksprite",
   "icons": [
     {
       "src": "/static/icons/web-app-manifest-192x192.png",

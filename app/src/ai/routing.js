@@ -3,17 +3,20 @@
  * @description OpenRouter provider routing — which upstream provider is allowed
  * to serve a request, and which ones are disqualified.
  *
- * Stored on the AIProvider rather than the AI profile: these describe an
+ * Two owners. The policy here is stored on the AIProvider: it describes an
  * OpenRouter *connection*, not a model. A privacy floor ("never route to an
  * endpoint that keeps my prompts") should hold for every request made through
- * that account, not be re-chosen each time a profile is created.
+ * that account, not be re-chosen each time a preset is created. Which
+ * providers may serve is the other way round: it is a choice about a model —
+ * the one upstream that serves it well, or the few that serve it at all — so
+ * it is the preset's `allowedProviders`, beside the model it was chosen for,
+ * and handed in with the request.
  *
  * @see https://openrouter.ai/docs/guides/routing/provider-selection
  */
 
 /**
  * @typedef {Object} OpenRouterRouting
- * @property {string[]} only - Provider slugs allowed to serve the request. Empty = any.
  * @property {string[]} ignore - Provider slugs never routed to.
  * @property {'allow'|'deny'} dataCollection - Whether providers that may store prompts are eligible.
  * @property {boolean} zdr - Restrict routing to zero-data-retention endpoints.
@@ -39,14 +42,12 @@
  * One upstream is left out from the start: Morph. Serving GLM 5.2 in the
  * harness on 5 Oct 2026, it returned responses that were nothing but the same
  * tool call, hundreds of times over (harness/findings.md). A writer can take it
- * off the list like any other. The allowed list and the fallback switch stay
- * neutral: empty and permissive mean "don't constrain", and only those are
- * left out of the request.
+ * off the list like any other. The fallback switch stays neutral: permissive
+ * means "don't constrain", and is left out of the request.
  *
  * @type {OpenRouterRouting}
  */
 export const ROUTING_DEFAULTS = {
-  only: [],
   ignore: ['morph'],
   dataCollection: 'deny',
   zdr: true,
@@ -78,12 +79,12 @@ export const QUANTIZATIONS = [
 /**
  * Keep only usable slugs. Routing crosses the backup and sync boundary, where a
  * hand-edited file can hand us a string or a null where a list belongs — and a
- * malformed `only` would silently narrow routing to nothing.
+ * malformed allowed list would silently narrow routing to nothing.
  *
  * @param {unknown} value
  * @returns {string[]}
  */
-function toSlugList(value) {
+export function toSlugList(value) {
   if (!Array.isArray(value)) return []
   return value.filter(entry => typeof entry === 'string' && entry.length > 0)
 }
@@ -104,7 +105,6 @@ function toSlugList(value) {
  */
 export function resolveRouting(routing) {
   return {
-    only: toSlugList(routing?.only),
     ignore: Array.isArray(routing?.ignore)
       ? toSlugList(routing.ignore)
       : [...ROUTING_DEFAULTS.ignore],
@@ -134,26 +134,6 @@ export function isRoutingOverridden(routing, key) {
   return value !== fallback
 }
 
-/**
- * Build the `provider` field of an OpenRouter chat completion request.
- *
- * Only knobs that constrain routing are sent: the permissive values are what
- * OpenRouter does anyway, so a connection with the whole floor lowered and
- * nothing else set yields `undefined` and the field is omitted. A connection
- * at the defaults sends the floor, because the floor is not OpenRouter's
- * default. Every filter sent is a hard one — `allow_fallbacks` lets
- * OpenRouter try the next eligible provider when the cheapest is down, never
- * one outside the filters.
- *
- * The quantization floor is for open weights, which any provider may serve at
- * any precision. A vendor serving its own closed model — Anthropic, OpenAI,
- * Google — reports no quantization, and a floor on it finds no endpoint at
- * all; so for those the floor is left out, and the rest of the policy holds.
- *
- * @param {{type?: string, routing?: Partial<OpenRouterRouting>}} provider
- * @param {string} [model] - The model asked for, to tell closed weights from open
- * @returns {Object|undefined} The `provider` field, or undefined to omit it
- */
 /** Vendors whose models on OpenRouter are closed weights, served by themselves. */
 const CLOSED_VENDORS = [
   'anthropic/',
@@ -175,14 +155,37 @@ export function isClosedWeights(model) {
   return CLOSED_VENDORS.some(vendor => id.startsWith(vendor))
 }
 
-export function buildProviderRouting(provider, model) {
+/**
+ * Build the `provider` field of an OpenRouter chat completion request.
+ *
+ * Only knobs that constrain routing are sent: the permissive values are what
+ * OpenRouter does anyway, so a connection with the whole floor lowered, on a
+ * preset that allows any provider, yields `undefined` and the field is
+ * omitted. A connection at the defaults sends the floor, because the floor is
+ * not OpenRouter's default. Every filter sent is a hard one — `allow_fallbacks` lets
+ * OpenRouter try the next eligible provider when the cheapest is down, never
+ * one outside the filters.
+ *
+ * The quantization floor is for open weights, which any provider may serve at
+ * any precision. A vendor serving its own closed model — Anthropic, OpenAI,
+ * Google — reports no quantization, and a floor on it finds no endpoint at
+ * all; so for those the floor is left out, and the rest of the policy holds.
+ *
+ * @param {{type?: string, routing?: Partial<OpenRouterRouting>}} provider
+ * @param {string} [model] - The model asked for, to tell closed weights from open
+ * @param {unknown} [allowed] - The preset's `allowedProviders`: the only
+ *   providers that may serve this model. Empty or absent allows any.
+ * @returns {Object|undefined} The `provider` field, or undefined to omit it
+ */
+export function buildProviderRouting(provider, model, allowed) {
   if (provider?.type !== 'openrouter') return undefined
 
   const routing = resolveRouting(provider.routing)
+  const only = toSlugList(allowed)
 
   /** @type {Record<string, any>} */
   const field = {}
-  if (routing.only.length > 0) field.only = routing.only
+  if (only.length > 0) field.only = only
   if (routing.ignore.length > 0) field.ignore = routing.ignore
   if (routing.quantizations.length > 0 && !isClosedWeights(model)) {
     field.quantizations = routing.quantizations

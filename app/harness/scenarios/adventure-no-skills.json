@@ -1,6 +1,6 @@
 {
   "fixture": "saltmarsh",
-  "prompt": "builtin_adventure",
+  "prompt": "harness/prompts/adventure.md",
   "messages": [
     "I'm the courier. Let's begin — I'm coming into Gullet at dusk with the case under my coat. Read the project notes first.",
     "I go to the toll house rather than the inn, and I ask Maren whether anyone has crossed toward the pass in the last three weeks.",

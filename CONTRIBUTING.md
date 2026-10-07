@@ -28,14 +28,14 @@ covers it the same way.
 
 ## The license of a contribution
 
-InkSprite is released under the GNU Affero General Public License,
+inksprite is released under the GNU Affero General Public License,
 version 3 or later (`LICENSE`). Contributions come in under different
 terms, and you should know what they are and why before you send one.
 
 **By submitting a contribution you license it under the Apache License,
 Version 2.0.** You keep the copyright. The grant is non-exclusive, so you
 can use your own work anywhere else, under any terms you like. The
-project combines it with the rest of InkSprite and releases the whole
+project combines it with the rest of inksprite and releases the whole
 under the AGPL.
 
 The reason is to keep the project's options open without having to
@@ -46,7 +46,7 @@ version if that ever becomes necessary. What is intended, and what the
 inbound license makes possible, are not the same thing, so here is the
 intent in plain terms:
 
-- InkSprite stays free to use and its source stays public and
+- inksprite stays free to use and its source stays public and
   modifiable. If the license ever changes, it will be to keep that true
   while stopping something specific, not to close the code.
 - A version released under the AGPL stays under the AGPL. Nothing can
@@ -72,6 +72,6 @@ every commit and fails the pull request if one is missing.
 
 ## What the license does not cover
 
-The InkSprite name and logo are not part of the license; see the README.
+The inksprite name and logo are not part of the license; see the README.
 Your own writing is never part of it: what you write, generate or import
-with InkSprite is yours.
+with inksprite is yours.

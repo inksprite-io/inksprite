@@ -462,7 +462,7 @@ export const listDocumentsDefinition = {
   function: {
     name: 'list_documents',
     description:
-      'List what the project holds, or what is under one folder: a line for each document and folder, by the full path every tool takes, with how long each document is and whether the writer pinned it. A folder ends in "/". Everything under the folder is listed when it fits; in a large project, a folder further down says how many it holds instead, and listing it shows them.',
+      'List what the project holds, or what is under one folder: a line for each document and folder, by the full path every tool takes, with how long each document is and whether the user pinned it. A folder ends in "/". Everything under the folder is listed when it fits; in a large project, a folder further down says how many it holds instead, and listing it shows them.',
     parameters: {
       type: 'object',
       properties: {
@@ -754,7 +754,7 @@ export const describeDocumentDefinition = {
   function: {
     name: 'describe_document',
     description:
-      "A document's sections, without its text: its headings as a tree, each with the link read_document takes as `section` and how many words it runs to, its subsections included. A section with a long run of subsections — every spell, every monster — gives `entries` (how many) and `range` (the first and last) instead of listing them; name it as `section` to list them. Use it before reading a long document, to go straight to the part you need and to see how big it is.",
+      "A document's sections, without its text: its headings as a tree, each with the link read_document takes as `section` and how many words it runs to, its subsections included. A section with a long run of subsections — every term in a glossary, every entry in a reference — gives `entries` (how many) and `range` (the first and last) instead of listing them; name it as `section` to list them. Use it before reading a long document, to go straight to the part you need and to see how big it is.",
     parameters: {
       type: 'object',
       properties: {
@@ -1163,7 +1163,7 @@ export const createDocumentDefinition = {
   function: {
     name: 'create_document',
     description:
-      'Create a document in the project. Use this to record a new character, location, or piece of background, or to start a new chapter. The path says both what it is called and where it goes, so check list_documents for the folder that exists rather than assuming one — the folder has to be there already, and create_folder is how to add one.',
+      'Create a document in the project. Use this for a new note, page or chapter. The path says both what it is called and where it goes, so check list_documents for the folder that exists rather than assuming one — the folder has to be there already, and create_folder is how to add one.',
     parameters: {
       type: 'object',
       properties: {
