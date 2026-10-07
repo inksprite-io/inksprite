@@ -54,7 +54,6 @@
 import PenIcon from '@/components/icons/PenIcon.vue'
 import StoryboardIcon from '@/components/icons/StoryboardIcon.vue'
 import ChatBubbleIcon from '@/components/icons/ChatBubbleIcon.vue'
-import LibraryIcon from '@/components/icons/LibraryIcon.vue'
 import SettingsIcon from '@/components/icons/SettingsIcon.vue'
 import SpeakerIcon from '@/components/icons/SpeakerIcon.vue'
 import InProcessIcon from '@/components/icons/InProcessIcon.vue'
@@ -68,7 +67,7 @@ import { useJobsToast } from '@/composables/useJobsToast.js'
  * @typedef {Object} Props
  * @property {string} activeMobileTab
  * @property {boolean} [hasStory] - Whether a project is open. Without one only
- *   the project list and the settings mean anything.
+ *   the writing view, which says so, the jobs and the settings mean anything.
  */
 defineProps({
   activeMobileTab: {
@@ -90,11 +89,10 @@ const BUTTON =
   'flex-1 flex items-center p-3 justify-center text-surface-contrast duration-150 transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500'
 
 const TABS = [
-  { id: 'write', label: 'Write', icon: PenIcon, needsStory: true },
+  { id: 'write', label: 'Write', icon: PenIcon, needsStory: false },
   { id: 'outline', label: 'Outline', icon: StoryboardIcon, needsStory: true },
   { id: 'chat', label: 'Chat', icon: ChatBubbleIcon, needsStory: true },
   { id: 'narration', label: 'Narration', icon: SpeakerIcon, needsStory: true },
-  { id: 'projects', label: 'Projects', icon: LibraryIcon, needsStory: false },
   { id: 'settings', label: 'Settings', icon: SettingsIcon, needsStory: false },
 ]
 </script>

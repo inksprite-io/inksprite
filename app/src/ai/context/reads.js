@@ -122,7 +122,7 @@ export function readsInView(messages) {
 }
 
 /**
- * What a read took of a document: the section, offset or page. Two reads of
+ * What a read took of a document: the section, offset, page or lines. Two reads of
  * the same text that took the same part read the same thing.
  *
  * @param {Record<string, any>} args
@@ -130,7 +130,14 @@ export function readsInView(messages) {
  */
 function partOf(args) {
   const section = typeof args?.section === 'string' ? args.section.trim().toLowerCase() : ''
-  return JSON.stringify([section, Number(args?.from) || 0, Number(args?.page) || 0])
+  return JSON.stringify([
+    section,
+    Number(args?.from) || 0,
+    Number(args?.page) || 0,
+    // A source file's lines; 1 is the top, the same as not saying.
+    Math.max(1, Number(args?.line) || 1),
+    Number(args?.until) || 0,
+  ])
 }
 
 /**

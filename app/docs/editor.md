@@ -5,44 +5,130 @@
 - [editor][1]
   - [Examples][2]
 - [editor/markdown][3]
-- [tokenizer][4]
-- [state][5]
-- [][6]
-- [parseMarkdown][7]
-  - [Parameters][8]
-- [serializeMarkdown][9]
-  - [Parameters][10]
-- [settleMarkdown][11]
+- [cellsIn][4]
+  - [Parameters][5]
+- [cellsIn][6]
+  - [Parameters][7]
+- [tokenizerOf][8]
+- [block][9]
+- [block][10]
+- [state][11]
   - [Parameters][12]
-- [appendBlocks][13]
-  - [Parameters][14]
-- [editor/schema][15]
-- [languageOf][16]
+  - [state][13]
+- [alignmentOf][14]
+  - [Parameters][15]
+- [alignmentOf][16]
   - [Parameters][17]
-- [code_block][18]
-- [][19]
-- [strikethrough][20]
-- [NODE_NAMES][21]
-- [MARK_NAMES][22]
-- [schema][23]
-- [editor/state][24]
-- [strong][25]
-- [insertHardBreak][26]
+- [][18]
+- [cells][19]
+- [rowOf][20]
+  - [Parameters][21]
+- [ruleOf][22]
+  - [Parameters][23]
+- [parseMarkdown][24]
+  - [Parameters][25]
+- [serializeMarkdown][26]
   - [Parameters][27]
-- [keys][28]
-- [markInputRule][29]
-  - [Parameters][30]
-- [horizontalRuleRule][31]
-- [rules][32]
-- [plugins][33]
-- [createEditorState][34]
-  - [Parameters][35]
-- [isEmptyDocument][36]
-  - [Parameters][37]
-- [replaceContent][38]
-  - [Parameters][39]
-- [appendContent][40]
-  - [Parameters][41]
+- [settleMarkdown][28]
+  - [Parameters][29]
+- [appendBlocks][30]
+  - [Parameters][31]
+- [editor/schema][32]
+- [languageOf][33]
+  - [Parameters][34]
+- [code_block][35]
+- [][36]
+- [strikethrough][37]
+- [ALIGNMENTS][38]
+- [cellAttrs][39]
+  - [Parameters][40]
+- [BREAKS][41]
+- [cellContent][42]
+  - [Parameters][43]
+- [cloneNode][44]
+- [table][45]
+- [table_row][46]
+- [table_cell][47]
+- [NODE_NAMES][48]
+- [MARK_NAMES][49]
+- [schema][50]
+- [editor/search][51]
+- [SearchState][52]
+  - [Properties][53]
+- [NOT_TEXT][54]
+- [searchKey][55]
+- [NONE][56]
+- [escapeRegExp][57]
+  - [Parameters][58]
+- [findMatches][59]
+  - [Parameters][60]
+- [matches][61]
+- [firstFrom][62]
+  - [Parameters][63]
+- [searchState][64]
+  - [Parameters][65]
+- [searchPlugin][66]
+- [set][67]
+- [searchOf][68]
+  - [Parameters][69]
+- [withSearch][70]
+  - [Parameters][71]
+- [find][72]
+  - [Parameters][73]
+- [findNext][74]
+  - [Parameters][75]
+- [replaceText][76]
+  - [Parameters][77]
+- [replaceCurrent][78]
+  - [Parameters][79]
+- [replaceAll][80]
+  - [Parameters][81]
+- [editor/state][82]
+- [strong][83]
+- [insertHardBreak][84]
+  - [Parameters][85]
+- [keys][86]
+- [wholeTableKeys][87]
+- [markInputRule][88]
+  - [Parameters][89]
+- [horizontalRuleRule][90]
+- [rules][91]
+- [plugins][92]
+- [createEditorState][93]
+  - [Parameters][94]
+- [isEmptyDocument][95]
+  - [Parameters][96]
+- [replaceContent][97]
+  - [Parameters][98]
+- [appendContent][99]
+  - [Parameters][100]
+- [editor/tables][101]
+- [paragraph][102]
+- [intoCell][103]
+  - [Parameters][104]
+- [paragraphAfter][105]
+  - [Parameters][106]
+- [cellsOfRow][107]
+  - [Parameters][108]
+- [tableFromRow][109]
+  - [Parameters][110]
+- [nextRow][111]
+  - [Parameters][112]
+- [exitTable][113]
+  - [Parameters][114]
+- [deleteEmptyTable][115]
+  - [Parameters][116]
+- [nextCell][117]
+  - [Parameters][118]
+- [previousCell][119]
+  - [Parameters][120]
+- [alignColumn][121]
+  - [Parameters][122]
+- [alignmentAt][123]
+  - [Parameters][124]
+- [lineOf][125]
+  - [Parameters][126]
+- [cellPaste][127]
 
 ## editor
 
@@ -56,6 +142,10 @@ becomes while it is open.
   for joining markdown to markdown
 - **state** - `createEditorState`, the keys and typed shortcuts, and the
   `replaceContent` and `appendContent` transactions an outside writer asks for
+- **search** - Find and replace: the matches as a plugin's state, drawn as
+  decorations, and the commands that move between and replace them
+- **tables** - A table made by typing its header row, the keys that move
+  through one, column alignment, and pasting into a cell
 
 `Document.content` is markdown. While a document is open — in a tab, with
 or without a view over it — its `EditorState` is the truth and the store's
@@ -82,9 +172,17 @@ what the model reads and writes, and what a file on disk will be.
 Built on `prosemirror-markdown`, the reference implementation, with the
 parser and serializer configured against our schema rather than inherited.
 The parser is markdown-it's `default` preset — CommonMark plus GFM
-strikethrough — with raw HTML off, so a tag in a document is text, and with
-tables and images off, since the schema has nowhere to put them and they
-would otherwise throw; a table's pipes stay as the text they are.
+strikethrough and tables — with raw HTML off, so a tag in a document is
+text, and with images off, since the schema has nowhere to put them and they
+would otherwise throw.
+
+A table is written the plainest way GFM reads: a pipe at each end of every
+row, one space inside each, and no padding to line the columns up, so that
+an edit to one cell is an edit to one line. A pipe in a cell is escaped,
+inside code as well, since the row is cut at its pipes before anything else
+is read. markdown-it keeps as many cells in a row as the header has and
+drops the rest, so a table with a row longer than its header is read as the
+text it was written as, whole: words are not lost to a save.
 
 A lone newline is a hard break, in both directions. A writer who ended a line
 meant it to end there, and CommonMark's soft wrap is not a reading anyone
@@ -98,13 +196,96 @@ Two properties are pinned by tests: `parse(serialize(doc))` is `doc` for
 every node and mark, and `serialize(parse(md))` is a fixed point after one
 pass, which is what matters once files are edited outside the app.
 
-## tokenizer
+## cellsIn
+
+### Parameters
+
+- `line` &#x20;
+
+## cellsIn
+
+How many cells markdown-it finds in a row: the line cut at every pipe not
+escaped, less the empty ends a leading and a trailing pipe leave.
+
+### Parameters
+
+- `line` **[string][128]**&#x20;
+
+Returns **[number][129]**&#x20;
+
+## tokenizerOf
+
+markdown-it with GFM's table rule made to refuse a table it would lose words
+from. The rule is run in full and its tokens taken back when a row has more
+cells than the header — and when only asked whether a table starts here,
+which must be answered the same way without leaving anything behind.
+
+## block
+
+Type: {\_\_rules\_\_: [Array][130]<{name: [string][128], fn: [Function][131], alt: [Array][130]<[string][128]>}>}
+
+## block
+
+Type: unknown
 
 ## state
+
+### Parameters
+
+- `state` **StateBlock**&#x20;
+- `startLine` **[number][129]**&#x20;
+- `endLine` **[number][129]**&#x20;
+- `silent` **[boolean][132]**&#x20;
+
+### state
+
+## alignmentOf
+
+A cell's alignment, from the style markdown-it gives it.
+
+### Parameters
+
+- `token` **Token**&#x20;
+
+## alignmentOf
+
+A pasted cell's alignment, from its style or the attribute older pages use.
+
+### Parameters
+
+- `dom` **[HTMLElement][133]**&#x20;
+
+Returns **([string][128] | null)**&#x20;
 
 ##
 
 Type: unknown
+
+## cells
+
+The cells' own serializer: a cell's text and marks, written as a paragraph's
+would be, but without the escapes for what starts a line, since a cell
+starts after a pipe. A dash in a cell stays a dash.
+
+## rowOf
+
+One row of a table, as a line.
+
+### Parameters
+
+- `row` **[Node][134]**&#x20;
+
+Returns **[string][128]**&#x20;
+
+## ruleOf
+
+A column's cell in the line under the header.
+
+### Parameters
+
+- `align` **([string][128] | null)**&#x20;
+
+Returns **[string][128]**&#x20;
 
 ## parseMarkdown
 
@@ -113,9 +294,9 @@ cannot hold is read as the text it was written as.
 
 ### Parameters
 
-- `markdown` **([string][42] | null | [undefined][43])**&#x20;
+- `markdown` **([string][128] | null | [undefined][135])**&#x20;
 
-Returns **[Node][44]** A document in the editor's schema
+Returns **[Node][134]** A document in the editor's schema
 
 ## serializeMarkdown
 
@@ -123,9 +304,9 @@ Write a document as markdown.
 
 ### Parameters
 
-- `doc` **[Node][44]**&#x20;
+- `doc` **[Node][134]**&#x20;
 
-Returns **[string][42]**&#x20;
+Returns **[string][128]**&#x20;
 
 ## settleMarkdown
 
@@ -138,9 +319,9 @@ is byte-identical.
 
 ### Parameters
 
-- `markdown` **([string][42] | null | [undefined][43])**&#x20;
+- `markdown` **([string][128] | null | [undefined][135])**&#x20;
 
-Returns **[string][42]**&#x20;
+Returns **[string][128]**&#x20;
 
 ## appendBlocks
 
@@ -149,10 +330,10 @@ block of its own rather than running on from the last one.
 
 ### Parameters
 
-- `content` **([string][42] | null | [undefined][43])**&#x20;
-- `text` **[string][42]**&#x20;
+- `content` **([string][128] | null | [undefined][135])**&#x20;
+- `text` **[string][128]**&#x20;
 
-Returns **[string][42]**&#x20;
+Returns **[string][128]**&#x20;
 
 ## editor/schema
 
@@ -166,10 +347,18 @@ set is declared here, one spec at a time, and pinned by a test rather than
 inherited from whatever a starter kit ships with this year.
 
 The specs are `prosemirror-schema-basic`'s and `prosemirror-schema-list`'s,
-minus the image, plus strikethrough and a code block that keeps its
-language. Their `parseDOM` rules are what the v13 migration read the old
-HTML through, so `<b>`, `<i>`, and `<s>` are covered as well as the tags the
-editor writes.
+minus the image, plus strikethrough, a code block that keeps its language,
+and GFM's table. Their `parseDOM` rules are what the v13 migration read the
+old HTML through, so `<b>`, `<i>`, and `<s>` are covered as well as the tags
+the editor writes.
+
+A table is what GFM can write: a grid of one-line cells, the first row its
+header, each column aligned or not. So a cell holds text and nothing else —
+no break, which would end the row — and the header is the first row because
+it is first: there is one kind of cell, and no way to put a header row
+anywhere markdown could not. The cells carry `colspan` and `rowspan` only
+because `prosemirror-tables` reads them; nothing sets them, and they are
+always 1.
 
 ## languageOf
 
@@ -178,17 +367,56 @@ A code block's language, from the info string kept on `data-params` or the
 
 ### Parameters
 
-- `dom` **[HTMLElement][45]**&#x20;
+- `dom` **[HTMLElement][133]**&#x20;
 
-Returns **[string][42]**&#x20;
+Returns **[string][128]**&#x20;
 
 ## code_block
 
 ##
 
-Type: [HTMLElement][45]
+Type: [HTMLElement][133]
 
 ## strikethrough
+
+## ALIGNMENTS
+
+What a column can be aligned to.
+
+## cellAttrs
+
+### Parameters
+
+- `dom` **[HTMLElement][133]**&#x20;
+
+## BREAKS
+
+Where one block, or one line, of a pasted cell ends.
+
+Type: [string][128]
+
+## cellContent
+
+A pasted cell's text, with its marks, as the one line a cell holds. A cell
+from a page can hold blocks — Google Docs puts a paragraph in every one —
+and read as they are, the blocks would close the cell, and the table, to
+find somewhere to go. Read inside a cell, there is nowhere else for their
+words to go, and a space after each keeps two blocks' words apart.
+
+### Parameters
+
+- `dom` **[Node][134]**&#x20;
+- `schema` **Schema**&#x20;
+
+## cloneNode
+
+Type: [HTMLElement][133]
+
+## table
+
+## table_row
+
+## table_cell
 
 ## NODE_NAMES
 
@@ -206,6 +434,188 @@ tests, so a node from any of them is a node in all of them.
 
 Type: Schema
 
+## editor/search
+
+Find and replace in a document: what matches, which match is the
+one the writer is on, and the transactions that move between the matches and
+replace them.
+
+The matches are a plugin's state, so they live with the document they were
+found in and follow its text as it changes, and they are drawn as
+decorations: nothing is written into the document to show them. A match is
+within one textblock, a paragraph or a heading or a code block, whatever
+marks it runs across: "the long road" finds "the **long** road". Case does
+not count.
+
+Moving to a match selects it, which is where the caret is when the find is
+closed, and where a replace or the next search starts from. The commands
+leave scrolling to the view, which knows how much of the page there is to
+show it in.
+
+## SearchState
+
+Type: [Object][136]
+
+### Properties
+
+- `from` **[number][129]**&#x20;
+- `to` **[number][129]**&#x20;
+- `query` **[string][128]** What is being looked for; empty while nothing is
+- `matches` **[Array][130]\<Match>** Every match, in document order
+- `current` **[number][129]** Which of them the writer is on, or -1 for none
+- `decorations` **DecorationSet**&#x20;
+
+## NOT_TEXT
+
+Stands in for an inline node that is not text, such as a line break, so positions line up.
+
+Type: [string][128]
+
+## searchKey
+
+Type: PluginKey<[SearchState][52]>
+
+## NONE
+
+Type: [SearchState][52]
+
+## escapeRegExp
+
+### Parameters
+
+- `text` **[string][128]**&#x20;
+
+## findMatches
+
+Every place the query is found in the document, in order.
+
+### Parameters
+
+- `doc` **[Node][134]**&#x20;
+- `query` **[string][128]**&#x20;
+
+Returns **[Array][130]\<Match>**&#x20;
+
+## matches
+
+Type: [Array][130]\<Match>
+
+## firstFrom
+
+The first match at or after a position, going round to the first of all
+from past the last. -1 when there are none.
+
+### Parameters
+
+- `matches` **[Array][130]\<Match>**&#x20;
+- `pos` **[number][129]**&#x20;
+
+## searchState
+
+### Parameters
+
+- `doc` **[Node][134]**&#x20;
+- `query` **[string][128]**&#x20;
+- `matches` **[Array][130]\<Match>**&#x20;
+- `current` **[number][129]**&#x20;
+
+Returns **[SearchState][52]**&#x20;
+
+## searchPlugin
+
+The plugin that keeps the search. A transaction that sets one carries it
+whole, found against the document it leaves; any other change to the
+document finds the query again, staying on the match that was current, or
+the next one if that one went.
+
+Returns **Plugin<[SearchState][52]>**&#x20;
+
+## set
+
+Type: ({query: [string][128], matches: [Array][130]\<Match>, current: [number][129]} | [undefined][135])
+
+## searchOf
+
+The search a state holds. None for a state made without the plugin.
+
+### Parameters
+
+- `state` **EditorState**&#x20;
+
+Returns **[SearchState][52]**&#x20;
+
+## withSearch
+
+Put the search on a transaction, and select the match it is on.
+
+### Parameters
+
+- `tr` **Transaction**&#x20;
+- `query` **[string][128]**&#x20;
+- `matches` **[Array][130]\<Match>**&#x20;
+- `current` **[number][129]**&#x20;
+
+Returns **Transaction**&#x20;
+
+## find
+
+Look for something, starting at the selection: as the query grows letter by
+letter, the match the writer is on stays theirs for as long as it still
+matches. An empty query is the search put away.
+
+### Parameters
+
+- `query` **[string][128]**&#x20;
+
+Returns **Command**&#x20;
+
+## findNext
+
+Move to the match after the one the writer is on, or before it, going round
+at the ends. Nothing to do without a match.
+
+### Parameters
+
+- `step` **(`1` | `-1`)?** (optional, default `1`)
+
+Returns **Command**&#x20;
+
+## replaceText
+
+Write text over a range, in the marks the range has, so that a word replaced
+in italics is still in italics. Nothing is a deletion.
+
+### Parameters
+
+- `tr` **Transaction**&#x20;
+- `match` **Match**&#x20;
+  - `match.from` &#x20;
+  - `match.to` &#x20;
+
+- `text` **[string][128]**&#x20;
+
+## replaceCurrent
+
+Replace the match the writer is on, and move to the next one after what
+went in, so that a replacement holding the query is not found again.
+
+### Parameters
+
+- `replacement` **[string][128]**&#x20;
+
+Returns **Command**&#x20;
+
+## replaceAll
+
+Replace every match, as one change and so one undo. The selection stays
+where it was, moved along with the text.
+
+### Parameters
+
+- `replacement` **[string][128]**&#x20;
+
+Returns **Command**&#x20;
+
 ## editor/state
 
 The editor's state layer: how a document becomes an
@@ -221,8 +631,10 @@ one; `Editor.vue` puts an `EditorView` in front of the state, and
 The keys follow the previous editor's where it had them — Mod-B, Mod-I,
 Mod-Shift-S, Mod-Alt-1 through 6, Mod-Shift-7 and 8, Mod-Shift-B, Mod-Alt-C
 — and the reference's for lists: Enter splits an item, Tab and Shift-Tab
-nest and lift. The typed shortcuts are markdown's own: `# `, `- `, `1. `,
-`> `, ` ``` `, `---`, and `**bold**` as you type.
+nest and lift. In a table they move between cells and rows (see
+`editor/tables`). The typed shortcuts are markdown's own: `# `, `- `, `1. `,
+`> `, ` ``` `, `---`, `**bold**` as you type, and a table's header
+row followed by Enter.
 
 ## strong
 
@@ -237,11 +649,20 @@ Type: Command
 
 ## keys
 
-The keys, in front of the base keymap. Enter tries the list split first
-and falls through to a paragraph split; Backspace undoes a typed shortcut
-before it deletes.
+The keys, in front of the base keymap. Enter makes a table of a typed
+header row, moves down one, or tries the list split, and falls through to a
+paragraph split; Backspace undoes a typed shortcut before it deletes.
+Shift-Enter leaves a table where it would break a line, since a cell has
+only the one.
 
-Type: Record<[string][42], Command>
+Type: Record<[string][128], Command>
+
+## wholeTableKeys
+
+The keys a whole table answers ahead of `tableEditing`, which would only
+empty its cells again.
+
+Type: Record<[string][128], Command>
 
 ## markInputRule
 
@@ -252,7 +673,7 @@ plain.
 
 ### Parameters
 
-- `regexp` **[RegExp][46]**&#x20;
+- `regexp` **[RegExp][137]**&#x20;
 - `markType` **MarkType**&#x20;
 
 Returns **InputRule**&#x20;
@@ -266,7 +687,7 @@ Type: InputRule
 
 ## rules
 
-Type: [Array][47]\<InputRule>
+Type: [Array][130]\<InputRule>
 
 ## plugins
 
@@ -279,7 +700,7 @@ coming back to a chapter wants to be.
 
 ### Parameters
 
-- `markdown` **([string][42] | null | [undefined][43])**&#x20;
+- `markdown` **([string][128] | null | [undefined][135])**&#x20;
 
 Returns **EditorState**&#x20;
 
@@ -289,9 +710,9 @@ Whether a document holds nothing: one textblock with nothing in it.
 
 ### Parameters
 
-- `doc` **[Node][44]**&#x20;
+- `doc` **[Node][134]**&#x20;
 
-Returns **[boolean][48]**&#x20;
+Returns **[boolean][132]**&#x20;
 
 ## replaceContent
 
@@ -301,7 +722,7 @@ the end of what arrived.
 ### Parameters
 
 - `state` **EditorState**&#x20;
-- `markdown` **[string][42]**&#x20;
+- `markdown` **[string][128]**&#x20;
 
 Returns **Transaction**&#x20;
 
@@ -314,55 +735,321 @@ added to, so no blank paragraph is left standing above.
 ### Parameters
 
 - `state` **EditorState**&#x20;
-- `markdown` **[string][42]**&#x20;
+- `markdown` **[string][128]**&#x20;
 
 Returns **Transaction**&#x20;
+
+## editor/tables
+
+Tables in the editor: making one by typing its header row,
+moving through it from the keyboard, and the row and column commands its
+menu offers.
+
+A table is made the way the rest of the document is, by typing its
+markdown: `| Name | Age |` and Enter becomes a table with that header and an
+empty row under it. Inside one, Tab and Shift-Tab go from cell to cell, and
+Tab from the last cell adds a row. Enter goes down a row, adding one at the
+bottom; on an empty last row it ends the table there, as Enter on an empty
+list item ends the list. Shift-Enter and Mod-Enter leave the table for a
+paragraph after it, as they leave a code block. Backspace on the whole
+table empties its cells, and on an empty one deletes it. Rows, columns, and
+the table itself are added and taken away from a menu, with
+`prosemirror-tables`' own commands, and a column is aligned with
+`alignColumn`.
+
+The rest is `prosemirror-tables` too: selecting cells, pasting cells, and
+keeping every row as wide as the others. Anything else pasted into a cell
+is made to fit its one line (`cellPaste`).
+
+## paragraph
+
+## intoCell
+
+Put the caret at the end of the cell that starts at `pos`.
+
+### Parameters
+
+- `tr` **Transaction**&#x20;
+- `pos` **[number][129]** Directly before the cell
+
+Returns **Transaction**&#x20;
+
+## paragraphAfter
+
+A new paragraph after a table, with the caret in it.
+
+### Parameters
+
+- `tr` **Transaction**&#x20;
+- `after` **[number][129]** Directly after the table
+
+Returns **Transaction**&#x20;
+
+## cellsOfRow
+
+The cells a typed header row names: what lies between its pipes, trimmed,
+with its marks. Null when the line is not a row — not all text, or not
+opened and closed with a pipe.
+
+### Parameters
+
+- `line` **[Node][134]** A paragraph
+
+Returns **([Array][130]\<Fragment> | null)**&#x20;
+
+## tableFromRow
+
+Enter at the end of a typed header row, `| Name | Age |`: the row becomes a
+table, with an empty row under it and the caret there.
+
+Type: Command
+
+### Parameters
+
+- `state` &#x20;
+- `dispatch` &#x20;
+
+## nextRow
+
+Enter in a table: down a row, keeping the column, with a row added at the
+bottom. An empty last row, below the header, ends the table: it goes, and
+the caret goes to a paragraph after.
+
+Type: Command
+
+### Parameters
+
+- `state` &#x20;
+- `dispatch` &#x20;
+
+## exitTable
+
+Leave the table for a new paragraph after it.
+
+Type: Command
+
+### Parameters
+
+- `state` &#x20;
+- `dispatch` &#x20;
+
+## deleteEmptyTable
+
+Backspace or Delete on a whole table whose cells are empty: the table goes,
+and the caret goes to the start of what followed it, or the end of what came
+before. A table that was all its parent held leaves an empty paragraph,
+since the parent has to hold something. With words still in the cells,
+`prosemirror-tables` empties them first, so a table goes in two presses, or
+three from the start of the paragraph after it, where the first selects it.
+
+Type: Command
+
+### Parameters
+
+- `state` &#x20;
+- `dispatch` &#x20;
+
+## nextCell
+
+Tab in a table: the next cell, or a new row from the last.
+
+Type: Command
+
+### Parameters
+
+- `state` &#x20;
+- `dispatch` &#x20;
+
+## previousCell
+
+Shift-Tab in a table: the cell before, and nowhere from the first, so that
+the key does not take the caret out of the editor.
+
+Type: Command
+
+### Parameters
+
+- `state` &#x20;
+- `dispatch` &#x20;
+
+## alignColumn
+
+Align the columns the selection is in, or take their alignment away.
+
+### Parameters
+
+- `align` **(`"left"` | `"center"` | `"right"` | null)**&#x20;
+
+Returns **Command**&#x20;
+
+## alignmentAt
+
+The column alignment the selection is in, as the first row has it.
+
+### Parameters
+
+- `state` &#x20;
+
+Returns **([string][128] | null)**&#x20;
+
+## lineOf
+
+What a paste puts in a cell: its inline content, when it is one line of
+text, marks and all; otherwise null, and its words go in instead.
+
+### Parameters
+
+- `slice` **Slice**&#x20;
+
+Returns **(Slice | null)**&#x20;
+
+## cellPaste
+
+Pasting into a cell. Cells copied from a table are `prosemirror-tables`'s,
+pasted over the cells from this one on. Anything else goes into the one
+line this cell has: a line of text as it is, and more than that as its
+words, a space where each line or block ended. Left to the usual paste,
+each line would be made a cell of its own, since a cell is the only
+textblock a row can hold, and laid over the cells beside this one.
+
+Ahead of `tableEditing`, which would paste those cells.
+
+Returns **Plugin**&#x20;
 
 [1]: #editor
 [2]: #examples
 [3]: #editormarkdown
-[4]: #tokenizer
-[5]: #state
-[6]: #
-[7]: #parsemarkdown
-[8]: #parameters
-[9]: #serializemarkdown
-[10]: #parameters-1
-[11]: #settlemarkdown
+[4]: #cellsin
+[5]: #parameters
+[6]: #cellsin-1
+[7]: #parameters-1
+[8]: #tokenizerof
+[9]: #block
+[10]: #block-1
+[11]: #state
 [12]: #parameters-2
-[13]: #appendblocks
-[14]: #parameters-3
-[15]: #editorschema
-[16]: #languageof
+[13]: #state-1
+[14]: #alignmentof
+[15]: #parameters-3
+[16]: #alignmentof-1
 [17]: #parameters-4
-[18]: #code_block
-[19]: #-1
-[20]: #strikethrough
-[21]: #node_names
-[22]: #mark_names
-[23]: #schema
-[24]: #editorstate
-[25]: #strong
-[26]: #inserthardbreak
-[27]: #parameters-5
-[28]: #keys
-[29]: #markinputrule
-[30]: #parameters-6
-[31]: #horizontalrulerule
-[32]: #rules
-[33]: #plugins
-[34]: #createeditorstate
-[35]: #parameters-7
-[36]: #isemptydocument
-[37]: #parameters-8
-[38]: #replacecontent
-[39]: #parameters-9
-[40]: #appendcontent
-[41]: #parameters-10
-[42]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[43]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[44]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
-[45]: https://developer.mozilla.org/docs/Web/HTML/Element
-[46]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp
-[47]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[48]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[18]: #
+[19]: #cells
+[20]: #rowof
+[21]: #parameters-5
+[22]: #ruleof
+[23]: #parameters-6
+[24]: #parsemarkdown
+[25]: #parameters-7
+[26]: #serializemarkdown
+[27]: #parameters-8
+[28]: #settlemarkdown
+[29]: #parameters-9
+[30]: #appendblocks
+[31]: #parameters-10
+[32]: #editorschema
+[33]: #languageof
+[34]: #parameters-11
+[35]: #code_block
+[36]: #-1
+[37]: #strikethrough
+[38]: #alignments
+[39]: #cellattrs
+[40]: #parameters-12
+[41]: #breaks
+[42]: #cellcontent
+[43]: #parameters-13
+[44]: #clonenode
+[45]: #table
+[46]: #table_row
+[47]: #table_cell
+[48]: #node_names
+[49]: #mark_names
+[50]: #schema
+[51]: #editorsearch
+[52]: #searchstate
+[53]: #properties
+[54]: #not_text
+[55]: #searchkey
+[56]: #none
+[57]: #escaperegexp
+[58]: #parameters-14
+[59]: #findmatches
+[60]: #parameters-15
+[61]: #matches
+[62]: #firstfrom
+[63]: #parameters-16
+[64]: #searchstate-1
+[65]: #parameters-17
+[66]: #searchplugin
+[67]: #set
+[68]: #searchof
+[69]: #parameters-18
+[70]: #withsearch
+[71]: #parameters-19
+[72]: #find
+[73]: #parameters-20
+[74]: #findnext
+[75]: #parameters-21
+[76]: #replacetext
+[77]: #parameters-22
+[78]: #replacecurrent
+[79]: #parameters-23
+[80]: #replaceall
+[81]: #parameters-24
+[82]: #editorstate
+[83]: #strong
+[84]: #inserthardbreak
+[85]: #parameters-25
+[86]: #keys
+[87]: #wholetablekeys
+[88]: #markinputrule
+[89]: #parameters-26
+[90]: #horizontalrulerule
+[91]: #rules
+[92]: #plugins
+[93]: #createeditorstate
+[94]: #parameters-27
+[95]: #isemptydocument
+[96]: #parameters-28
+[97]: #replacecontent
+[98]: #parameters-29
+[99]: #appendcontent
+[100]: #parameters-30
+[101]: #editortables
+[102]: #paragraph
+[103]: #intocell
+[104]: #parameters-31
+[105]: #paragraphafter
+[106]: #parameters-32
+[107]: #cellsofrow
+[108]: #parameters-33
+[109]: #tablefromrow
+[110]: #parameters-34
+[111]: #nextrow
+[112]: #parameters-35
+[113]: #exittable
+[114]: #parameters-36
+[115]: #deleteemptytable
+[116]: #parameters-37
+[117]: #nextcell
+[118]: #parameters-38
+[119]: #previouscell
+[120]: #parameters-39
+[121]: #aligncolumn
+[122]: #parameters-40
+[123]: #alignmentat
+[124]: #parameters-41
+[125]: #lineof
+[126]: #parameters-42
+[127]: #cellpaste
+[128]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[129]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[130]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[131]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[132]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[133]: https://developer.mozilla.org/docs/Web/HTML/Element
+[134]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
+[135]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[136]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[137]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp

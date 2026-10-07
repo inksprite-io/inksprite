@@ -6,9 +6,17 @@
  * Built on `prosemirror-markdown`, the reference implementation, with the
  * parser and serializer configured against our schema rather than inherited.
  * The parser is markdown-it's `default` preset — CommonMark plus GFM
- * strikethrough — with raw HTML off, so a tag in a document is text, and with
- * tables and images off, since the schema has nowhere to put them and they
- * would otherwise throw; a table's pipes stay as the text they are.
+ * strikethrough and tables — with raw HTML off, so a tag in a document is
+ * text, and with images off, since the schema has nowhere to put them and they
+ * would otherwise throw.
+ *
+ * A table is written the plainest way GFM reads: a pipe at each end of every
+ * row, one space inside each, and no padding to line the columns up, so that
+ * an edit to one cell is an edit to one line. A pipe in a cell is escaped,
+ * inside code as well, since the row is cut at its pipes before anything else
+ * is read. markdown-it keeps as many cells in a row as the header has and
+ * drops the rest, so a table with a row longer than its header is read as the
+ * text it was written as, whole: words are not lost to a save.
  *
  * A lone newline is a hard break, in both directions. A writer who ended a line
  * meant it to end there, and CommonMark's soft wrap is not a reading anyone
@@ -32,17 +40,97 @@ import {
 } from 'prosemirror-markdown'
 import { schema } from './schema.js'
 
-/** @typedef {import('prosemirror-model').Node} Node */
+/**
+ * @typedef {import('prosemirror-model').Node} Node
+ * @typedef {import('markdown-it').StateBlock} StateBlock
+ * @typedef {import('markdown-it').Token} Token
+ */
 
-const tokenizer = new MarkdownIt('default', { html: false }).disable(['table', 'image'])
+/**
+ * How many cells markdown-it finds in a row: the line cut at every pipe not
+ * escaped, less the empty ends a leading and a trailing pipe leave.
+ *
+ * @param {string} line
+ * @returns {number}
+ */
+function cellsIn(line) {
+  const cells = line.trim().split(/(?<!\\)\|/)
+  if (cells[0] === '') cells.shift()
+  if (cells.length && cells[cells.length - 1] === '') cells.pop()
+  return cells.length
+}
+
+/**
+ * markdown-it with GFM's table rule made to refuse a table it would lose words
+ * from. The rule is run in full and its tokens taken back when a row has more
+ * cells than the header — and when only asked whether a table starts here,
+ * which must be answered the same way without leaving anything behind.
+ *
+ * @returns {import('markdown-it').MarkdownIt}
+ */
+function tokenizerOf() {
+  const md = new MarkdownIt('default', { html: false }).disable(['image'])
+  const ruler = /** @type {{__rules__: {name: string, fn: Function, alt: string[]}[]}} */ (
+    /** @type {unknown} */ (md.block.ruler)
+  )
+  // Its `alt` goes with it: it is what lets a table end a paragraph.
+  const { fn: gfm, alt } = ruler.__rules__.find(rule => rule.name === 'table')
+
+  md.block.ruler.at(
+    'table',
+    /**
+     * @param {StateBlock} state
+     * @param {number} startLine
+     * @param {number} endLine
+     * @param {boolean} silent
+     */
+    (state, startLine, endLine, silent) => {
+      const tokens = state.tokens.length
+      const line = state.line
+      if (!gfm(state, startLine, endLine, false)) return false
+
+      const added = state.tokens.slice(tokens)
+      const columns = added.filter(token => token.type === 'th_open').length
+      let whole = true
+      for (let row = startLine + 2; row < state.line && whole; row++) {
+        const text = state.src.slice(state.bMarks[row] + state.tShift[row], state.eMarks[row])
+        whole = cellsIn(text) <= columns
+      }
+
+      if (whole && !silent) return true
+      state.tokens.length = tokens
+      state.line = line
+      return whole
+    },
+    { alt }
+  )
+  return md
+}
+
+/**
+ * A cell's alignment, from the style markdown-it gives it.
+ *
+ * @param {Token} token
+ * @returns {{align: string|null}}
+ */
+const alignmentOf = token => ({
+  align: /text-align:(\w+)/.exec(String(token.attrGet('style') ?? ''))?.[1] || null,
+})
 
 // The reference token map is written for the same node names; it only lacks
-// strikethrough, and reads a soft break as a space.
+// strikethrough and tables, and reads a soft break as a space. The header and
+// the body are not kept apart: the header is the first row.
 const { image: _image, ...tokens } = defaultMarkdownParser.tokens
-const parser = new MarkdownParser(schema, tokenizer, {
+const parser = new MarkdownParser(schema, tokenizerOf(), {
   ...tokens,
   softbreak: { node: 'hard_break' },
   s: { mark: 'strikethrough' },
+  table: { block: 'table' },
+  thead: { ignore: true },
+  tbody: { ignore: true },
+  tr: { block: 'table_row' },
+  th: { block: 'table_cell', getAttrs: alignmentOf },
+  td: { block: 'table_cell', getAttrs: alignmentOf },
 })
 
 const { image: _imageNode, ...nodes } = defaultMarkdownSerializer.nodes
@@ -68,6 +156,20 @@ const serializer = new MarkdownSerializer(
       else nodes.text(state, node, parent, index)
     },
 
+    table(state, node) {
+      const header = node.firstChild
+      const rows = []
+      node.forEach(row => rows.push(rowOf(row)))
+      const rule = []
+      header.forEach(cell => rule.push(ruleOf(cell.attrs.align)))
+      rows.splice(1, 0, `| ${rule.join(' | ')} |`)
+      rows.forEach((row, i) => {
+        if (i) state.write('\n')
+        state.write(row)
+      })
+      state.closeBlock(node)
+    },
+
     hard_break(state, node, parent, index) {
       // Trailing breaks have no form and are dropped, as the reference does.
       let followed = false
@@ -87,6 +189,50 @@ const serializer = new MarkdownSerializer(
     strikethrough: { open: '~~', close: '~~', mixable: true, expelEnclosingWhitespace: true },
   }
 )
+
+/**
+ * The cells' own serializer: a cell's text and marks, written as a paragraph's
+ * would be, but without the escapes for what starts a line, since a cell
+ * starts after a pipe. A dash in a cell stays a dash.
+ */
+const cells = new MarkdownSerializer(
+  {
+    ...serializer.nodes,
+    table_cell(state, node) {
+      state.renderInline(node, false)
+    },
+  },
+  serializer.marks
+)
+
+/**
+ * One row of a table, as a line.
+ *
+ * @param {Node} row
+ * @returns {string}
+ */
+function rowOf(row) {
+  const out = []
+  row.forEach(cell => {
+    // Serialized as the only child of a row, which is what a cell may be.
+    const text = cells.serialize(row.type.create(null, cell))
+    out.push(text.replace(/\n/g, ' ').replace(/\|/g, '\\|'))
+  })
+  return `| ${out.join(' | ')} |`
+}
+
+/**
+ * A column's cell in the line under the header.
+ *
+ * @param {string|null} align
+ * @returns {string}
+ */
+function ruleOf(align) {
+  if (align === 'left') return ':---'
+  if (align === 'center') return ':---:'
+  if (align === 'right') return '---:'
+  return '---'
+}
 
 /**
  * Read markdown into a document. Never throws on content: what the schema

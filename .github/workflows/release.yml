@@ -54,8 +54,13 @@ jobs:
         run: npm ci
 
       # VITE_VERCEL_ANALYTICS is left unset, so the desktop build has none.
+      # The desktop Google client is the release environment's; unset, the
+      # build has no import from Google Drive.
       - name: Build the page
         working-directory: app
+        env:
+          VITE_GOOGLE_DESKTOP_CLIENT_ID: ${{ vars.VITE_GOOGLE_DESKTOP_CLIENT_ID }}
+          VITE_GOOGLE_DESKTOP_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_DESKTOP_CLIENT_SECRET }}
         run: npm run build
 
       - name: Add both Mac architectures to Rust

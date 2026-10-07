@@ -1,43 +1,29 @@
 <template>
-  <div class="w-full h-full flex flex-col p-2">
-    <div class="flex items-center justify-between px-2">
-      <h3 class="text-xl font-semibold text-surface-700 dark:text-surface-200">Narration</h3>
-      <div class="flex items-center">
-        <Button
-          v-tooltip.bottom="
-            highlightSpeakers
-              ? 'Stop colouring speakers in the editor'
-              : 'Colour speakers in the editor'
-          "
-          type="button"
-          icon="pi pi-palette"
-          severity="secondary"
-          size="small"
-          rounded
-          class="!bg-transparent !border-transparent hover:!bg-surface-700"
-          :class="{ 'opacity-50': !highlightSpeakers }"
-          aria-label="Colour speakers in the editor"
-          :aria-pressed="highlightSpeakers"
-          data-action="toggle-highlight"
-          @click="setHighlightSpeakers(!highlightSpeakers)"
-        />
-        <Button
-          v-tooltip.bottom="'Narration settings'"
-          type="button"
-          icon="pi pi-cog"
-          severity="secondary"
-          size="small"
-          rounded
-          class="!bg-transparent !border-transparent hover:!bg-surface-700"
-          aria-label="Narration settings"
-          data-action="narration-settings"
-          @click="openSettings('narration')"
-        />
-      </div>
-    </div>
+  <div class="w-full h-full flex flex-col">
+    <PanelHeader title="Narration">
+      <HeaderButton
+        icon="pi pi-palette"
+        :label="
+          highlightSpeakers
+            ? 'Stop colouring speakers in the editor'
+            : 'Colour speakers in the editor'
+        "
+        :class="{ 'opacity-50': !highlightSpeakers }"
+        aria-label="Colour speakers in the editor"
+        :aria-pressed="highlightSpeakers"
+        data-action="toggle-highlight"
+        @click="setHighlightSpeakers(!highlightSpeakers)"
+      />
+      <HeaderButton
+        icon="pi pi-cog"
+        label="Narration settings"
+        data-action="narration-settings"
+        @click="openSettings('narration')"
+      />
+    </PanelHeader>
 
     <ScrollPanel class="flex-1 min-h-0 overflow-auto">
-      <div class="flex flex-col gap-3 px-2 py-2 pb-16">
+      <div class="flex flex-col gap-3 p-4 pb-16">
         <p
           v-if="!narration.configured.value"
           class="text-sm text-surface-500 dark:text-surface-400"
@@ -209,6 +195,8 @@ import Message from 'primevue/message'
 import ProgressBar from 'primevue/progressbar'
 import ScrollPanel from 'primevue/scrollpanel'
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
+import HeaderButton from '../layout/HeaderButton.vue'
+import PanelHeader from '../layout/PanelHeader.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useDocuments } from '@/composables/useDocuments'
 import { useNarration } from '@/composables/useNarration'

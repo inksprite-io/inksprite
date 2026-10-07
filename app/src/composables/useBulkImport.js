@@ -26,6 +26,8 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
  * @property {number} cards - Cards and lorebooks among them, written with the defaults
  * @property {number} scans - PDFs with no text in them
  * @property {Array<{name: string, reason: string}>} skipped - What could not be read, and why
+ * @property {number} [images] - Pictures left out of what came in: a Google
+ *   Doc's, which documents cannot hold yet
  */
 
 /**
@@ -42,9 +44,11 @@ export function useBulkImport(storyId) {
    * @param {Object} [options]
    * @param {string} [options.parentId] - Where the batch goes; the project's top otherwise
    * @param {(done: number, total: number) => void} [options.onProgress] - Told after each file
+   * @param {AbortSignal} [options.signal] - Stops it before the next file; what
+   *   was written stays
    * @returns {Promise<Imported>}
    */
-  async function importMany(gathered, { parentId, onProgress } = {}) {
+  async function importMany(gathered, { parentId, onProgress, signal } = {}) {
     await api.init()
     const into = parentId || rootIdFor(storyId)
     /** @type {Imported} */
@@ -77,8 +81,10 @@ export function useBulkImport(storyId) {
 
     let done = 0
     for (const { file, folders } of gathered) {
+      signal?.throwIfAborted()
       try {
         const found = await cards.inspect(file)
+        signal?.throwIfAborted()
         const written = await cards.write(found, { parentId: folderFor(folders) })
         result.documents += written.documents
         if (found.shape === 'card' || found.shape === 'lorebook') result.cards++
@@ -86,6 +92,7 @@ export function useBulkImport(storyId) {
           result.scans++
         }
       } catch (error) {
+        if (signal?.aborted) throw error
         result.skipped.push({
           name: file.name,
           reason: error instanceof Error ? error.message : String(error),
@@ -118,6 +125,7 @@ export function describeImport(result) {
     )
   }
   if (result.scans > 0) notes.push(`${count(result.scans, 'PDF')} with no text: a scan.`)
+  if (result.images) notes.push(`${count(result.images, 'image')} left out.`)
   if (result.skipped.length > 0) {
     const names = result.skipped
       .slice(0, 3)

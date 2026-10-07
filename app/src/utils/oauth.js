@@ -9,7 +9,7 @@
  * Generates a cryptographically random code verifier for PKCE
  * @returns {string} A random string suitable for use as a code verifier
  */
-function generateCodeVerifier() {
+export function generateCodeVerifier() {
   const array = new Uint8Array(32)
   crypto.getRandomValues(array)
   return base64URLEncode(array)
@@ -21,7 +21,7 @@ function generateCodeVerifier() {
  * @returns {Promise<string>} The base64url-encoded SHA-256 hash of the verifier
  * @throws {Error} If Web Crypto API is not available (insecure context)
  */
-async function generateCodeChallenge(verifier) {
+export async function generateCodeChallenge(verifier) {
   if (!crypto || !crypto.subtle) {
     throw new Error(
       'Web Crypto API not available. OAuth requires a secure context (HTTPS or localhost).'
@@ -38,7 +38,7 @@ async function generateCodeChallenge(verifier) {
  * Generates a random state parameter for OAuth security
  * @returns {string} A random state string
  */
-function generateState() {
+export function generateState() {
   const array = new Uint8Array(16)
   crypto.getRandomValues(array)
   return base64URLEncode(array)

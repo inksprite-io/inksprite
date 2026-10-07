@@ -18,6 +18,10 @@ If you use inksprite's AI tools, requests will go directly from your browser to 
 
 Practically, this means that you might get banned from a service like OpenAI if your work is particularly spicy. For this reason, we suggest using a service like OpenRouter. You can also run your own model locally if you have suitable hardware.
 
+#### Google Drive
+
+Nothing goes to Google until you import from Google Drive. Then Google's own sign-in opens, in a window of its own (in the desktop app, in your browser), and you choose the files there. inksprite can open those files and no others. They go straight from Google to your device, so we never see them, and the sign-in is used for that one import and never saved. Google's [privacy policy](https://policies.google.com/privacy) covers its side.
+
 #### Browser Storage
 
 Your data is stored locally in your browser, which means that we have no access to it. There is still a small risk that a malicious browser extension or script could access your data.

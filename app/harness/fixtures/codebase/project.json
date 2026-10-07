@@ -1,0 +1,11 @@
+{
+  "title": "inksprite internals",
+  "summary": "Design notes on inksprite, a writing app that runs in the browser, written against its own source code, which is in the inksprite repository.",
+  "documents": [
+    {
+      "path": "Design/Overview",
+      "content": "Notes toward design docs for the app's internals. Each note says how something works now, citing the code by path and line, before saying what should change."
+    },
+    { "path": "inksprite", "repository": "../../../src" }
+  ]
+}

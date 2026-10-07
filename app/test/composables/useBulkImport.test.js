@@ -1,4 +1,4 @@
-/* global File */
+/* global File, AbortController */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useBulkImport, describeImport } from '@/composables/useBulkImport.js'
@@ -105,6 +105,23 @@ describe('useBulkImport', () => {
     expect(progress).toHaveBeenLastCalledWith(2, 2)
   })
 
+  it('stops by its signal before the next file, keeping what was written', async () => {
+    const bulk = useBulkImport(STORY)
+    const controller = new AbortController()
+
+    await expect(
+      bulk.importMany(
+        [
+          { file: md('one.md'), folders: [] },
+          { file: md('two.md'), folders: [] },
+        ],
+        { signal: controller.signal, onProgress: () => controller.abort() }
+      )
+    ).rejects.toMatchObject({ name: 'AbortError' })
+
+    expect(titlesUnder(rootIdFor(STORY))).toEqual(['one'])
+  })
+
   it('writes a card in the batch with the defaults and counts it', async () => {
     const bulk = useBulkImport(STORY)
     const card = new File(
@@ -149,5 +166,15 @@ describe('describeImport', () => {
     expect(
       describeImport({ documents: 0, folders: 0, cards: 0, scans: 0, skipped: [] }).severity
     ).toBe('error')
+  })
+
+  it('counts the pictures a Doc came with and lost', () => {
+    expect(
+      describeImport({ documents: 2, folders: 0, cards: 0, scans: 0, images: 3, skipped: [] })
+    ).toEqual({
+      severity: 'success',
+      summary: 'Imported 2 documents',
+      detail: '3 images left out.',
+    })
   })
 })

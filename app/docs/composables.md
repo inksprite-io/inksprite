@@ -34,1382 +34,1548 @@
 - [turn][30]
 - [current][31]
 - [current][32]
-- [begin][33]
-- [end][34]
-  - [Parameters][35]
-- [commandContext][36]
-  - [Parameters][37]
-- [activity][38]
+- [current][33]
+- [begin][34]
+- [end][35]
+  - [Parameters][36]
+- [commandContext][37]
+  - [Parameters][38]
 - [activity][39]
-- [getActiveProfile][40]
-- [getChatProfileIfValid][41]
-- [configurationError][42]
-- [resolveSystemPrompt][43]
-- [skillPromptFor][44]
-  - [Parameters][45]
-- [REPEATS_BEFORE_STUCK][46]
-- [roundSignature][47]
-  - [Parameters][48]
-- [wrapUpNote][49]
-  - [Parameters][50]
-- [TOOL_TIMEOUT_MS][51]
-- [untilAborted][52]
-  - [Parameters][53]
-- [consult][54]
-  - [Parameters][55]
-- [executeOneToolCall][56]
-  - [Parameters][57]
-- [message][58]
-  - [message][59]
+- [activity][40]
+- [getActiveProfile][41]
+- [getChatProfileIfValid][42]
+- [configurationError][43]
+- [resolveSystemPrompt][44]
+- [skillPromptFor][45]
+  - [Parameters][46]
+- [REPEATS_BEFORE_STUCK][47]
+- [roundSignature][48]
+  - [Parameters][49]
+- [wrapUpNote][50]
+  - [Parameters][51]
+- [TOOL_TIMEOUT_MS][52]
+- [untilAborted][53]
+  - [Parameters][54]
+- [consult][55]
+  - [Parameters][56]
+- [executeOneToolCall][57]
+  - [Parameters][58]
+- [message][59]
   - [message][60]
   - [message][61]
-- [message][62]
-  - [message][63]
+  - [message][62]
+- [message][63]
   - [message][64]
   - [message][65]
-- [message][66]
-  - [message][67]
+  - [message][66]
+- [message][67]
   - [message][68]
   - [message][69]
-- [executeToolCalls][70]
-  - [Parameters][71]
-- [runToolCall][72]
-  - [Parameters][73]
-- [record][74]
-- [buildAssistantMessage][75]
-  - [Parameters][76]
-- [StreamingState][77]
-  - [Properties][78]
-- [endThinking][79]
-  - [Parameters][80]
-- [createStreamingCallback][81]
-  - [Parameters][82]
-- [replyIn][83]
-  - [Parameters][84]
-- [handOverReply][85]
-  - [Parameters][86]
-- [answered][87]
-- [unlessForgotten][88]
-  - [Parameters][89]
-- [runCompletionLoop][90]
-  - [Parameters][91]
-- [apiTrajectory][92]
-- [edits][93]
-- [wrapUp][94]
-- [recentRounds][95]
-- [lastCalls][96]
-- [result][97]
-  - [][98]
-- [generateAIResponse][99]
-  - [Parameters][100]
-- [][101]
-- [sendMessage][102]
-  - [Parameters][103]
-- [insertMessage][104]
-  - [Parameters][105]
-- [regenerateMessage][106]
-  - [Parameters][107]
-- [selectAlternate][108]
-  - [Parameters][109]
-- [selectAlternate][110]
-  - [Parameters][111]
-- [revertMessages][112]
-  - [Parameters][113]
-- [reverted][114]
-- [skipped][115]
+  - [message][70]
+- [executeToolCalls][71]
+  - [Parameters][72]
+- [runToolCall][73]
+  - [Parameters][74]
+- [record][75]
+- [buildAssistantMessage][76]
+  - [Parameters][77]
+- [StreamingState][78]
+  - [Properties][79]
+- [endThinking][80]
+  - [Parameters][81]
+- [createStreamingCallback][82]
+  - [Parameters][83]
+- [replyIn][84]
+  - [Parameters][85]
+- [handOverReply][86]
+  - [Parameters][87]
+- [answered][88]
+- [unlessForgotten][89]
+  - [Parameters][90]
+- [runCompletionLoop][91]
+  - [Parameters][92]
+- [apiTrajectory][93]
+- [edits][94]
+- [wrapUp][95]
+- [recentRounds][96]
+- [lastCalls][97]
+- [result][98]
+  - [][99]
+- [generateAIResponse][100]
+  - [Parameters][101]
+- [][102]
+- [sendMessage][103]
+  - [Parameters][104]
+- [insertMessage][105]
+  - [Parameters][106]
+- [regenerateMessage][107]
+  - [Parameters][108]
+- [selectAlternate][109]
+  - [Parameters][110]
+- [selectAlternate][111]
+  - [Parameters][112]
+- [revertMessages][113]
+  - [Parameters][114]
+- [reverted][115]
 - [skipped][116]
 - [skipped][117]
 - [skipped][118]
-- [editsOf][119]
-  - [Parameters][120]
-- [out][121]
-- [out][122]
+- [skipped][119]
+- [skipped][120]
+- [editsOf][121]
+  - [Parameters][122]
 - [out][123]
 - [out][124]
 - [out][125]
 - [out][126]
 - [out][127]
 - [out][128]
-- [reapplyMessage][129]
-  - [Parameters][130]
-- [made][131]
-- [recordOf][132]
-  - [Parameters][133]
-- [rewriteEdit][134]
+- [out][129]
+- [out][130]
+- [reapplyMessage][131]
+  - [Parameters][132]
+- [made][133]
+- [recordOf][134]
   - [Parameters][135]
-- [acceptEdit][136]
+- [rewriteEdit][136]
   - [Parameters][137]
-- [rejectEdit][138]
+- [acceptEdit][138]
   - [Parameters][139]
-- [rewindPlan][140]
+- [rejectEdit][140]
   - [Parameters][141]
-- [documents][142]
-- [documents][143]
+- [rewindPlan][142]
+  - [Parameters][143]
 - [documents][144]
-- [rewindTo][145]
-  - [Parameters][146]
-- [resendMessage][147]
+- [documents][145]
+- [documents][146]
+- [rewindTo][147]
   - [Parameters][148]
-- [generateChatTitle][149]
+- [resendMessage][149]
   - [Parameters][150]
-- [messages][151]
-- [rerunCommand][152]
-  - [Parameters][153]
-- [editCommand][154]
+- [generateChatTitle][151]
+  - [Parameters][152]
+- [messages][153]
+- [rerunCommand][154]
   - [Parameters][155]
-- [halt][156]
-- [isEmptyAnswer][157]
-  - [Parameters][158]
-- [stopGeneration][159]
-- [stopGeneration][160]
-- [removeMessage][161]
-  - [Parameters][162]
-- [aiPresetDefaults][163]
-- [useAIConfig][164]
-- [createPreset][165]
-  - [Parameters][166]
-- [deletePreset][167]
+- [editCommand][156]
+  - [Parameters][157]
+- [halt][158]
+- [isEmptyAnswer][159]
+  - [Parameters][160]
+- [stopGeneration][161]
+- [stopGeneration][162]
+- [removeMessage][163]
+  - [Parameters][164]
+- [aiPresetDefaults][165]
+- [useAIConfig][166]
+- [createPreset][167]
   - [Parameters][168]
-- [useDocumentsStore][169]
-- [BuildArgs][170]
-  - [Properties][171]
-- [build][172]
-  - [Parameters][173]
-- [AIModel][174]
-- [parseModelsResponse][175]
-  - [Parameters][176]
-- [AIConfig][177]
-  - [Properties][178]
-- [StreamChunk][179]
+- [deletePreset][169]
+  - [Parameters][170]
+- [useDocumentsStore][171]
+- [BuildArgs][172]
+  - [Properties][173]
+- [build][174]
+  - [Parameters][175]
+- [AIModel][176]
+- [parseModelsResponse][177]
+  - [Parameters][178]
+- [AIConfig][179]
   - [Properties][180]
-- [accumulateToolCalls][181]
-  - [Parameters][182]
-- [][183]
-- [delta][184]
-- [ReasoningDetail][185]
-  - [Properties][186]
-- [accumulateReasoningDetails][187]
-  - [Parameters][188]
-- [OpenRouterProvider][189]
-- [openRouterProvidersPromise][190]
-- [listOpenRouterProviders][191]
-- [modelProvidersPromises][192]
-- [listModelProviders][193]
-  - [Parameters][194]
-- [explainFailure][195]
+- [StreamChunk][181]
+  - [Properties][182]
+- [accumulateToolCalls][183]
+  - [Parameters][184]
+- [][185]
+- [delta][186]
+- [ReasoningDetail][187]
+  - [Properties][188]
+- [accumulateReasoningDetails][189]
+  - [Parameters][190]
+- [OpenRouterProvider][191]
+- [openRouterProvidersPromise][192]
+- [listOpenRouterProviders][193]
+- [modelProvidersPromises][194]
+- [listModelProviders][195]
   - [Parameters][196]
-- [useAIService][197]
-- [listModels][198]
-  - [Parameters][199]
-- [headers][200]
-- [headers][201]
-- [generateChatCompletion][202]
-  - [Parameters][203]
-- [toolCalls][204]
-- [reasoningDetails][205]
-- [streamError][206]
-- [validateOpenRouterKey][207]
-  - [Parameters][208]
-- [exchangeOAuthCode][209]
+- [explainFailure][197]
+  - [Parameters][198]
+- [useAIService][199]
+- [listModels][200]
+  - [Parameters][201]
+- [headers][202]
+- [headers][203]
+- [generateChatCompletion][204]
+  - [Parameters][205]
+- [toolCalls][206]
+- [reasoningDetails][207]
+- [streamError][208]
+- [validateOpenRouterKey][209]
   - [Parameters][210]
-- [composables/useAISummarize][211]
-  - [Examples][212]
-- [ref][213]
-- [isGenerating][214]
-- [controller][215]
-- [controller][216]
-- [useAISummarize][217]
-- [getWriteProfileIfValid][218]
-- [getSceneContent][219]
-  - [Parameters][220]
-- [handleSummarize][221]
+- [exchangeOAuthCode][211]
+  - [Parameters][212]
+- [composables/useAISummarize][213]
+  - [Examples][214]
+- [ref][215]
+- [isGenerating][216]
+- [controller][217]
+- [controller][218]
+- [useAISummarize][219]
+- [getWriteProfileIfValid][220]
+- [getSceneContent][221]
   - [Parameters][222]
-- [utils/markdown][223]
-- [SAFE_SCHEMES][224]
-- [escapeHtml][225]
-  - [Parameters][226]
-- [isSafeUrl][227]
+- [handleSummarize][223]
+  - [Parameters][224]
+- [utils/markdown][225]
+- [SAFE_SCHEMES][226]
+- [escapeHtml][227]
   - [Parameters][228]
-- [reader][229]
-- [renderMarkdown][230]
-  - [Parameters][231]
-- [stripMarkdown][232]
+- [isSafeUrl][229]
+  - [Parameters][230]
+- [reader][231]
+- [renderMarkdown][232]
   - [Parameters][233]
-- [stores/documentsStore][234]
-  - [Examples][235]
-- [generateDocumentId][236]
-- [generateDocumentId][237]
-- [childrenByParent][238]
-- [\_loadingByStory][239]
-- [indexChild][240]
-  - [Parameters][241]
-- [unindexChild][242]
-  - [Parameters][243]
-- [getDocument][244]
+- [stripMarkdown][234]
+  - [Parameters][235]
+- [stores/documentsStore][236]
+  - [Examples][237]
+- [generateDocumentId][238]
+- [generateDocumentId][239]
+- [generateDocumentId][240]
+- [EDITED_GRAIN][241]
+- [childrenByParent][242]
+- [\_loadingByStory][243]
+- [indexChild][244]
   - [Parameters][245]
-- [getChildren][246]
+- [unindexChild][246]
   - [Parameters][247]
-- [getChildrenOrdered][248]
+- [getDocument][248]
   - [Parameters][249]
-- [][250]
-- [][251]
-- [containsDocument][252]
+- [getChildren][250]
+  - [Parameters][251]
+- [getChildrenOrdered][252]
   - [Parameters][253]
-- [createDocument][254]
-  - [Parameters][255]
-- [document][256]
-- [updateDocument][257]
-  - [Parameters][258]
-- [next][259]
-- [next][260]
-- [deleteDocument][261]
+- [][254]
+- [][255]
+- [containsDocument][256]
+  - [Parameters][257]
+- [createDocument][258]
+  - [Parameters][259]
+- [document][260]
+- [updateDocument][261]
   - [Parameters][262]
-- [deleteChildren][263]
-  - [Parameters][264]
-- [reorderChildren][265]
+- [next][263]
+- [next][264]
+- [deleteDocument][265]
   - [Parameters][266]
-- [updates][267]
-- [loadStory][268]
-  - [Parameters][269]
-- [ensureRoot][270]
-  - [Parameters][271]
-- [deleteStoryDocuments][272]
-  - [Parameters][273]
-- [getRoot][274]
+- [markEdited][267]
+  - [Parameters][268]
+- [deleteChildren][269]
+  - [Parameters][270]
+- [reorderChildren][271]
+  - [Parameters][272]
+- [updates][273]
+- [loadStory][274]
   - [Parameters][275]
-- [loadRoots][276]
+- [ensureRoot][276]
   - [Parameters][277]
-- [renameProject][278]
+- [deleteStoryDocuments][278]
   - [Parameters][279]
-- [isStoryLoaded][280]
+- [getRoot][280]
   - [Parameters][281]
-- [SYNC_DEBOUNCE_MS][282]
-- [pendingChanges][283]
-- [isSyncing][284]
-- [syncTimer][285]
-- [trackChange][286]
+- [loadRoots][282]
+  - [Parameters][283]
+- [renameProject][284]
+  - [Parameters][285]
+- [isStoryLoaded][286]
   - [Parameters][287]
-- [trackDelete][288]
-  - [Parameters][289]
-- [schedule][290]
-- [persistEntityChanges][291]
-  - [Parameters][292]
-- [table][293]
-- [processSync][294]
-- [grouped][295]
-- [stores/migrations/projectTree][296]
-- [rootIdFor][297]
+- [SYNC_DEBOUNCE_MS][288]
+- [pendingChanges][289]
+- [isSyncing][290]
+- [syncTimer][291]
+- [trackChange][292]
+  - [Parameters][293]
+- [trackDelete][294]
+  - [Parameters][295]
+- [schedule][296]
+- [persistEntityChanges][297]
   - [Parameters][298]
-- [rootIdFor][299]
-  - [Parameters][300]
-- [manuscriptIdFor][301]
-  - [Parameters][302]
-- [notesIdFor][303]
-  - [Parameters][304]
-- [draftsIdFor][305]
-  - [Parameters][306]
-- [folder][307]
-  - [Parameters][308]
-- [folder][309]
-  - [Parameters][310]
-- [rootNode][311]
-  - [Parameters][312]
-- [defaultProjectFolders][313]
-  - [Parameters][314]
-- [actTitle][315]
-  - [Parameters][316]
-- [byOrder][317]
-  - [Parameters][318]
-- [documentsToProjectTree][319]
-  - [Parameters][320]
-- [byStory][321]
-- [restructured][322]
-- [db][323]
-- [db][324]
-- [stores/migrations/documents][325]
-- [partsAndScenesToDocuments][326]
+- [table][299]
+- [table][300]
+- [processSync][301]
+- [grouped][302]
+- [stores/migrations/projectTree][303]
+- [rootIdFor][304]
+  - [Parameters][305]
+- [rootIdFor][306]
+  - [Parameters][307]
+- [manuscriptIdFor][308]
+  - [Parameters][309]
+- [notesIdFor][310]
+  - [Parameters][311]
+- [draftsIdFor][312]
+  - [Parameters][313]
+- [folder][314]
+  - [Parameters][315]
+- [folder][316]
+  - [Parameters][317]
+- [rootNode][318]
+  - [Parameters][319]
+- [defaultProjectFolders][320]
+  - [Parameters][321]
+- [actTitle][322]
+  - [Parameters][323]
+- [byOrder][324]
+  - [Parameters][325]
+- [documentsToProjectTree][326]
   - [Parameters][327]
-- [partsAndScenesToDocuments][328]
-  - [Parameters][329]
-- [storyIdByPart][330]
-- [deleted][331]
-- [deleted][332]
-- [deleted][333]
-- [deleted][334]
-- [deletedAt][335]
-- [deletedAt][336]
-- [stores/migrations/lore][337]
-- [slug][338]
-  - [Parameters][339]
-- [slug][340]
-  - [Parameters][341]
-- [categoryFolderIdFor][342]
-  - [Parameters][343]
-- [archiveFolderIdFor][344]
-  - [Parameters][345]
-- [plainTextToHtml][346]
-  - [Parameters][347]
-- [countWords][348]
-  - [Parameters][349]
-- [loreToDocuments][350]
-  - [Parameters][351]
-- [storyIdByLorebook][352]
-- [emittedFolders][353]
-- [folderCount][354]
-- [entryCount][355]
-- [nextOrder][356]
-  - [Parameters][357]
-- [][358]
-- [entry][359]
-- [stores/migrations/lastDocument][360]
-- [lastSceneToLastDocument][361]
-  - [Parameters][362]
-- [lastSceneToLastDocument][363]
+- [byStory][328]
+- [restructured][329]
+- [db][330]
+- [db][331]
+- [stores/migrations/documents][332]
+- [partsAndScenesToDocuments][333]
+  - [Parameters][334]
+- [partsAndScenesToDocuments][335]
+  - [Parameters][336]
+- [storyIdByPart][337]
+- [deleted][338]
+- [deleted][339]
+- [deleted][340]
+- [deleted][341]
+- [deletedAt][342]
+- [deletedAt][343]
+- [stores/migrations/lore][344]
+- [slug][345]
+  - [Parameters][346]
+- [slug][347]
+  - [Parameters][348]
+- [categoryFolderIdFor][349]
+  - [Parameters][350]
+- [archiveFolderIdFor][351]
+  - [Parameters][352]
+- [plainTextToHtml][353]
+  - [Parameters][354]
+- [countWords][355]
+  - [Parameters][356]
+- [loreToDocuments][357]
+  - [Parameters][358]
+- [storyIdByLorebook][359]
+- [emittedFolders][360]
+- [folderCount][361]
+- [entryCount][362]
+- [nextOrder][363]
   - [Parameters][364]
-- [stores/migrations/overview][365]
-- [overviewToRootSummary][366]
-  - [Parameters][367]
-- [overviewToRootSummary][368]
+- [][365]
+- [entry][366]
+- [stores/migrations/lastDocument][367]
+- [lastSceneToLastDocument][368]
   - [Parameters][369]
-- [overviewToRootSummary][370]
+- [lastSceneToLastDocument][370]
   - [Parameters][371]
-- [byId][372]
-- [root][373]
-  - [root][374]
-  - [root][375]
-- [stores/migrations/commandInput][376]
-- [commandArgsToInput][377]
+- [stores/migrations/overview][372]
+- [overviewToRootSummary][373]
+  - [Parameters][374]
+- [overviewToRootSummary][375]
+  - [Parameters][376]
+- [overviewToRootSummary][377]
   - [Parameters][378]
-- [commandArgsToInput][379]
-  - [Parameters][380]
-- [commandArgsToInput][381]
-  - [Parameters][382]
-- [stores/migrations/commandVoice][383]
-- [CONSULTED][384]
-- [CONSULTED][385]
-- [commandsIntoTheirVoice][386]
+- [byId][379]
+- [root][380]
+  - [root][381]
+  - [root][382]
+- [stores/migrations/commandInput][383]
+- [commandArgsToInput][384]
+  - [Parameters][385]
+- [commandArgsToInput][386]
   - [Parameters][387]
-- [stores/migrations/characterSigil][388]
-- [COMMANDS][389]
-- [COMMANDS][390]
-- [markCharacters][391]
-  - [Parameters][392]
-- [][393]
-- [stores/migrations/turnSegments][394]
-- [TAGS][395]
-- [TAGS][396]
-- [renderCommand][397]
-  - [Parameters][398]
-- [segmentOf][399]
-  - [Parameters][400]
-- [foldTurns][401]
-  - [Parameters][402]
-- [byChat][403]
-- [byChat][404]
-- [untouched][405]
-- [run][406]
-- [run][407]
-- [run][408]
-- [stores/migrations/turnRuns][409]
-- [cutOf][410]
-  - [Parameters][411]
-- [cutOf][412]
-  - [Parameters][413]
-- [piecesOf][414]
-  - [Parameters][415]
-- [piecesOf][416]
-  - [Parameters][417]
-- [piecesOf][418]
-  - [Parameters][419]
-- [piecesOf][420]
-  - [Parameters][421]
-- [piecesOf][422]
-  - [Parameters][423]
-- [piecesOf][424]
-  - [Parameters][425]
-- [piecesOf][426]
-  - [Parameters][427]
-- [foldChat][428]
-  - [Parameters][429]
-- [rows][430]
-- [foldRuns][431]
+- [commandArgsToInput][388]
+  - [Parameters][389]
+- [stores/migrations/commandVoice][390]
+- [CONSULTED][391]
+- [CONSULTED][392]
+- [commandsIntoTheirVoice][393]
+  - [Parameters][394]
+- [stores/migrations/characterSigil][395]
+- [COMMANDS][396]
+- [COMMANDS][397]
+- [markCharacters][398]
+  - [Parameters][399]
+- [][400]
+- [stores/migrations/turnSegments][401]
+- [TAGS][402]
+- [TAGS][403]
+- [renderCommand][404]
+  - [Parameters][405]
+- [segmentOf][406]
+  - [Parameters][407]
+- [foldTurns][408]
+  - [Parameters][409]
+- [byChat][410]
+- [byChat][411]
+- [untouched][412]
+- [run][413]
+- [run][414]
+- [run][415]
+- [stores/migrations/turnRuns][416]
+- [cutOf][417]
+  - [Parameters][418]
+- [cutOf][419]
+  - [Parameters][420]
+- [piecesOf][421]
+  - [Parameters][422]
+- [piecesOf][423]
+  - [Parameters][424]
+- [piecesOf][425]
+  - [Parameters][426]
+- [piecesOf][427]
+  - [Parameters][428]
+- [piecesOf][429]
+  - [Parameters][430]
+- [piecesOf][431]
   - [Parameters][432]
-- [stores/migrations/markdown][433]
-- [htmlToMarkdown][434]
-  - [Parameters][435]
-- [htmlToMarkdown][436]
-  - [Parameters][437]
-- [documentsToMarkdown][438]
+- [piecesOf][433]
+  - [Parameters][434]
+- [foldChat][435]
+  - [Parameters][436]
+- [rows][437]
+- [foldRuns][438]
   - [Parameters][439]
-- [editor/schema][440]
-- [languageOf][441]
+- [stores/migrations/markdown][440]
+- [htmlToMarkdown][441]
   - [Parameters][442]
-- [code_block][443]
-- [][444]
-- [strikethrough][445]
-- [NODE_NAMES][446]
-- [MARK_NAMES][447]
-- [schema][448]
-- [editor/markdown][449]
-- [tokenizer][450]
-- [state][451]
-  - [state][452]
-- [][453]
-- [parseMarkdown][454]
+- [htmlToMarkdown][443]
+  - [Parameters][444]
+- [documentsToMarkdown][445]
+  - [Parameters][446]
+- [editor/schema][447]
+- [languageOf][448]
+  - [Parameters][449]
+- [code_block][450]
+- [][451]
+- [strikethrough][452]
+- [ALIGNMENTS][453]
+- [alignmentOf][454]
   - [Parameters][455]
-- [serializeMarkdown][456]
+- [alignmentOf][456]
   - [Parameters][457]
-- [settleMarkdown][458]
+- [cellAttrs][458]
   - [Parameters][459]
-- [appendBlocks][460]
-  - [Parameters][461]
-- [stores/migrations/profiles][462]
-- [builtInFor][463]
-  - [Parameters][464]
-- [profileFrom][465]
-  - [Parameters][466]
-- [promptsToProfiles][467]
-  - [Parameters][468]
-- [chatsToProfiles][469]
-  - [Parameters][470]
-- [storiesToProfiles][471]
-  - [Parameters][472]
-- [stores/migrations/summariesInPlace][473]
-- [stoodFor][474]
-  - [Parameters][475]
-- [stoodFor][476]
-  - [Parameters][477]
-- [placeChat][478]
-  - [Parameters][479]
-- [targets][480]
-- [order][481]
-- [moved][482]
-- [summariesIntoPlace][483]
-  - [Parameters][484]
-- [chats][485]
-- [chats][486]
-- [changed][487]
-- [stores/migrations/purgeDeleted][488]
-- [FLAGGED_TABLES][489]
-- [Purged][490]
-  - [Properties][491]
-- [withoutDeleted][492]
+- [BREAKS][460]
+- [cellContent][461]
+  - [Parameters][462]
+- [cloneNode][463]
+- [table_row][464]
+- [table_cell][465]
+- [NODE_NAMES][466]
+- [MARK_NAMES][467]
+- [schema][468]
+- [editor/markdown][469]
+- [cellsIn][470]
+  - [Parameters][471]
+- [cellsIn][472]
+  - [Parameters][473]
+- [tokenizerOf][474]
+- [block][475]
+- [block][476]
+- [state][477]
+  - [Parameters][478]
+  - [state][479]
+- [state][480]
+  - [state][481]
+- [][482]
+- [cells][483]
+- [rowOf][484]
+  - [Parameters][485]
+- [ruleOf][486]
+  - [Parameters][487]
+- [parseMarkdown][488]
+  - [Parameters][489]
+- [serializeMarkdown][490]
+  - [Parameters][491]
+- [settleMarkdown][492]
   - [Parameters][493]
-- [goneFiles][494]
-- [deletedIds][495]
-  - [Parameters][496]
-- [stores/migrations/profileSkills][497]
-- [RENAMED][498]
-- [rolesToSkills][499]
+- [appendBlocks][494]
+  - [Parameters][495]
+- [stores/migrations/profiles][496]
+- [builtInFor][497]
+  - [Parameters][498]
+- [profileFrom][499]
   - [Parameters][500]
-- [skills][501]
-- [skills][502]
-- [][503]
-- [stores/migrations/jobWorkflows][504]
-- [rolesToWorkflows][505]
+- [promptsToProfiles][501]
+  - [Parameters][502]
+- [chatsToProfiles][503]
+  - [Parameters][504]
+- [storiesToProfiles][505]
   - [Parameters][506]
-- [stores/migrations/modelKeeps][507]
-- [withoutModelKeeps][508]
+- [stores/migrations/summariesInPlace][507]
+- [stoodFor][508]
   - [Parameters][509]
-- [stores/migrations/allowedProviders][510]
-- [allowedProvidersToPresets][511]
-  - [Parameters][512]
-- [composables/useApplicationState][513]
-  - [Examples][514]
-- [loadState][515]
-- [NarrationConnection][516]
-  - [Properties][517]
-- [useApplicationState][518]
-- [debug][519]
-- [setDebug][520]
-  - [Parameters][521]
-- [applyEdits][522]
-- [setApplyEdits][523]
-  - [Parameters][524]
-- [nsfwProfiles][525]
-- [setNsfwProfiles][526]
+- [stoodFor][510]
+  - [Parameters][511]
+- [placeChat][512]
+  - [Parameters][513]
+- [targets][514]
+- [order][515]
+- [moved][516]
+- [summariesIntoPlace][517]
+  - [Parameters][518]
+- [chats][519]
+- [chats][520]
+- [changed][521]
+- [stores/migrations/purgeDeleted][522]
+- [FLAGGED_TABLES][523]
+- [Purged][524]
+  - [Properties][525]
+- [withoutDeleted][526]
   - [Parameters][527]
-- [narration][528]
-- [setNarration][529]
+- [goneFiles][528]
+- [deletedIds][529]
   - [Parameters][530]
-- [workflows][531]
-- [merged][532]
-- [setWorkflow][533]
+- [stores/migrations/profileSkills][531]
+- [RENAMED][532]
+- [rolesToSkills][533]
   - [Parameters][534]
-- [highlightSpeakers][535]
-- [setHighlightSpeakers][536]
-  - [Parameters][537]
-- [setTheme][538]
-  - [Parameters][539]
-- [getTheme][540]
-- [theme][541]
-- [getState][542]
+- [skills][535]
+- [skills][536]
+- [][537]
+- [stores/migrations/jobWorkflows][538]
+- [rolesToWorkflows][539]
+  - [Parameters][540]
+- [stores/migrations/modelKeeps][541]
+- [withoutModelKeeps][542]
   - [Parameters][543]
-- [setState][544]
-  - [Parameters][545]
-- [setLorebookSortBy][546]
-  - [Parameters][547]
-- [getLorebookSortBy][548]
-- [setLorebookSortOrder][549]
-  - [Parameters][550]
-- [getLorebookSortOrder][551]
-- [setShowProviderSetupDialog][552]
-  - [Parameters][553]
-- [getShowProviderSetupDialog][554]
-- [showProviderSetupDialog][555]
-- [showProviderSetupDialog][556]
-- [setShowWelcomeDialog][557]
+- [stores/migrations/allowedProviders][544]
+- [allowedProvidersToPresets][545]
+  - [Parameters][546]
+- [composables/useApplicationState][547]
+  - [Examples][548]
+- [loadState][549]
+- [NarrationConnection][550]
+  - [Properties][551]
+- [useApplicationState][552]
+- [debug][553]
+- [setDebug][554]
+  - [Parameters][555]
+- [applyEdits][556]
+- [setApplyEdits][557]
   - [Parameters][558]
-- [getShowWelcomeDialog][559]
-- [showWelcomeDialog][560]
-- [checkAndShowWelcomeDialog][561]
-- [resetState][562]
-- [composables/useBackup][563]
-- [downloadJson][564]
-  - [Parameters][565]
-- [downloadJson][566]
-  - [Parameters][567]
-- [downloadJson][568]
-  - [Parameters][569]
-- [downloadJson][570]
+- [nsfwProfiles][559]
+- [setNsfwProfiles][560]
+  - [Parameters][561]
+- [narration][562]
+- [setNarration][563]
+  - [Parameters][564]
+- [workflows][565]
+- [merged][566]
+- [setWorkflow][567]
+  - [Parameters][568]
+- [highlightSpeakers][569]
+- [setHighlightSpeakers][570]
   - [Parameters][571]
-- [downloadJson][572]
+- [setTheme][572]
   - [Parameters][573]
-- [downloadJson][574]
-  - [Parameters][575]
-- [downloadJson][576]
+- [getTheme][574]
+- [theme][575]
+- [getState][576]
   - [Parameters][577]
-- [downloadJson][578]
+- [setState][578]
   - [Parameters][579]
-- [downloadJson][580]
+- [setLorebookSortBy][580]
   - [Parameters][581]
-- [readAllTables][582]
-- [tables][583]
-- [][584]
-- [createBackup][585]
-  - [Parameters][586]
-- [downloadBackup][587]
-  - [Parameters][588]
-- [parseBackupFile][589]
-  - [Parameters][590]
-- [parseBackup][591]
+- [getLorebookSortBy][582]
+- [setLorebookSortOrder][583]
+  - [Parameters][584]
+- [getLorebookSortOrder][585]
+- [setShowProviderSetupDialog][586]
+  - [Parameters][587]
+- [getShowProviderSetupDialog][588]
+- [showProviderSetupDialog][589]
+- [showProviderSetupDialog][590]
+- [setShowWelcomeDialog][591]
   - [Parameters][592]
-- [parsed][593]
-- [readBackupFile][594]
-  - [Parameters][595]
-- [restoreBackup][596]
-  - [Parameters][597]
-- [createChatBackup][598]
+- [getShowWelcomeDialog][593]
+- [showWelcomeDialog][594]
+- [checkAndShowWelcomeDialog][595]
+- [resetState][596]
+- [composables/useBackup][597]
+- [downloadJson][598]
   - [Parameters][599]
-- [][600]
-- [][601]
-- [savedPromptOf][602]
+- [downloadJson][600]
+  - [Parameters][601]
+- [downloadJson][602]
   - [Parameters][603]
-- [downloadChat][604]
+- [downloadJson][604]
   - [Parameters][605]
-- [readChatFile][606]
+- [downloadJson][606]
   - [Parameters][607]
-- [chatFromTranscript][608]
+- [downloadJson][608]
   - [Parameters][609]
-- [chat][610]
-- [chat][611]
-- [createProjectBackup][612]
+- [downloadJson][610]
+  - [Parameters][611]
+- [downloadJson][612]
   - [Parameters][613]
-- [][614]
-- [][615]
-- [][616]
-- [][617]
-- [savedProfilesOf][618]
-  - [Parameters][619]
-- [downloadProject][620]
-  - [Parameters][621]
-- [readProjectFile][622]
-  - [Parameters][623]
-- [importProject][624]
-  - [Parameters][625]
-- [composables/useBulkImport][626]
-- [useBulkImport][627]
-  - [Parameters][628]
-- [useBulkImport][629]
-  - [Parameters][630]
-- [Imported][631]
-  - [Properties][632]
-- [importMany][633]
-  - [Parameters][634]
-- [known][635]
-- [folderFor][636]
+- [downloadJson][614]
+  - [Parameters][615]
+- [readAllTables][616]
+- [tables][617]
+- [][618]
+- [createBackup][619]
+  - [Parameters][620]
+- [downloadBackup][621]
+  - [Parameters][622]
+- [parseBackupFile][623]
+  - [Parameters][624]
+- [parseBackup][625]
+  - [Parameters][626]
+- [parsed][627]
+- [readBackupFile][628]
+  - [Parameters][629]
+- [restoreBackup][630]
+  - [Parameters][631]
+- [createChatBackup][632]
+  - [Parameters][633]
+- [][634]
+- [][635]
+- [savedPromptOf][636]
   - [Parameters][637]
-- [describeImport][638]
+- [downloadChat][638]
   - [Parameters][639]
-- [][640]
-- [][641]
-- [composables/useCardChat][642]
-- [useCardChat][643]
-  - [Parameters][644]
-- [read][645]
-  - [Parameters][646]
-- [settingsFrom][647]
-  - [Parameters][648]
-- [settings][649]
-- [settings][650]
-- [start][651]
-  - [Parameters][652]
-- [start][653]
-- [attach][654]
+- [readChatFile][640]
+  - [Parameters][641]
+- [chatFromTranscript][642]
+  - [Parameters][643]
+- [chat][644]
+- [chat][645]
+- [createProjectBackup][646]
+  - [Parameters][647]
+- [][648]
+- [][649]
+- [][650]
+- [][651]
+- [savedProfilesOf][652]
+  - [Parameters][653]
+- [downloadProject][654]
   - [Parameters][655]
-- [attach][656]
+- [readProjectFile][656]
   - [Parameters][657]
-- [composables/useCardImport][658]
-- [Found][659]
-  - [Properties][660]
-- [MARKDOWN][661]
-- [PNG][662]
-- [JSON_FILE][663]
-- [NotACardError][664]
-  - [Parameters][665]
-- [NOTHING][666]
-- [useCardImport][667]
+- [importProject][658]
+  - [Parameters][659]
+- [composables/useBulkImport][660]
+- [useBulkImport][661]
+  - [Parameters][662]
+- [useBulkImport][663]
+  - [Parameters][664]
+- [Imported][665]
+  - [Properties][666]
+- [importMany][667]
   - [Parameters][668]
-- [inspect][669]
-  - [Parameters][670]
-- [inspectCard][671]
-  - [Parameters][672]
-- [write][673]
-  - [Parameters][674]
-- [write][675]
-  - [Parameters][676]
-- [write][677]
+- [known][669]
+- [folderFor][670]
+  - [Parameters][671]
+- [describeImport][672]
+  - [Parameters][673]
+- [][674]
+- [][675]
+- [composables/useCardChat][676]
+- [useCardChat][677]
   - [Parameters][678]
-- [foundCard][679]
+- [read][679]
   - [Parameters][680]
-- [cardInPng][681]
+- [settingsFrom][681]
   - [Parameters][682]
-- [parseJson][683]
-  - [Parameters][684]
-- [composables/useChatCommands][685]
-- [useChatCommands][686]
-  - [Parameters][687]
-- [history][688]
-- [roomFor][689]
-  - [Parameters][690]
-- [openTurn][691]
-- [submit][692]
+- [settings][683]
+- [settings][684]
+- [start][685]
+  - [Parameters][686]
+- [start][687]
+- [start][688]
+- [start][689]
+- [attach][690]
+  - [Parameters][691]
+- [attach][692]
   - [Parameters][693]
-- [answers][694]
-- [spoken][695]
-- [pending][696]
-- [pending][697]
-- [pending][698]
-- [waiting][699]
-- [waiting][700]
-- [waiting][701]
-- [waiting][702]
-- [fill][703]
+- [composables/useCardImport][694]
+- [Found][695]
+  - [Properties][696]
+- [MARKDOWN][697]
+- [PNG][698]
+- [JSON_FILE][699]
+- [NotACardError][700]
+  - [Parameters][701]
+- [NOTHING][702]
+- [useCardImport][703]
   - [Parameters][704]
-- [streamed][705]
-- [watched][706]
-  - [Parameters][707]
-- [commandOf][708]
-  - [Parameters][709]
-- [writeCommand][710]
-  - [Parameters][711]
-- [][712]
-- [drop][713]
+- [inspect][705]
+  - [Parameters][706]
+- [inspectCard][707]
+  - [Parameters][708]
+- [write][709]
+  - [Parameters][710]
+- [write][711]
+  - [Parameters][712]
+- [write][713]
   - [Parameters][714]
-- [drop][715]
+- [write][715]
   - [Parameters][716]
-- [fold][717]
-- [remove][718]
-  - [Parameters][719]
-- [remove][720]
-  - [Parameters][721]
-- [remove][722]
-  - [Parameters][723]
-- [remove][724]
+- [foundCard][717]
+  - [Parameters][718]
+- [cardInPng][719]
+  - [Parameters][720]
+- [parseJson][721]
+  - [Parameters][722]
+- [composables/useChatCommands][723]
+- [useChatCommands][724]
   - [Parameters][725]
-- [ask][726]
-  - [Parameters][727]
-- [rerun][728]
-  - [Parameters][729]
-- [takeSurvivor][730]
+- [history][726]
+- [roomFor][727]
+  - [Parameters][728]
+- [openTurn][729]
+- [submit][730]
   - [Parameters][731]
-- [revise][732]
-  - [Parameters][733]
-- [held][734]
-  - [][735]
-- [held][736]
-  - [][737]
-- [instances][738]
-- [instances][739]
-- [instances][740]
-- [instances][741]
-- [instances][742]
-- [instances][743]
-- [instances][744]
-- [instances][745]
-- [instances][746]
-- [instances][747]
-- [clearChatsInstances][748]
-- [useChats][749]
-  - [Parameters][750]
-- [useChats][751]
+- [answers][732]
+- [spoken][733]
+- [pending][734]
+- [pending][735]
+- [pending][736]
+- [waiting][737]
+- [waiting][738]
+- [waiting][739]
+- [waiting][740]
+- [fill][741]
+  - [Parameters][742]
+- [streamed][743]
+- [watched][744]
+  - [Parameters][745]
+- [commandOf][746]
+  - [Parameters][747]
+- [writeCommand][748]
+  - [Parameters][749]
+- [][750]
+- [drop][751]
   - [Parameters][752]
-- [draftMessages][753]
-- [\_initPromise][754]
-- [init][755]
-- [init][756]
-- [init][757]
-- [chatMessages][758]
-- [defaultProfileId][759]
-- [defaultProfileId][760]
-- [createChat][761]
-  - [Parameters][762]
-- [unstartedChanges][763]
-- [unstartedChat][764]
-- [isUnstarted][765]
-  - [Parameters][766]
-- [updateUnstartedChat][767]
-  - [Parameters][768]
-- [startChat][769]
-- [updateChat][770]
+- [drop][753]
+  - [Parameters][754]
+- [fold][755]
+- [remove][756]
+  - [Parameters][757]
+- [remove][758]
+  - [Parameters][759]
+- [remove][760]
+  - [Parameters][761]
+- [remove][762]
+  - [Parameters][763]
+- [ask][764]
+  - [Parameters][765]
+- [rerun][766]
+  - [Parameters][767]
+- [takeSurvivor][768]
+  - [Parameters][769]
+- [revise][770]
   - [Parameters][771]
-- [deleteChat][772]
-  - [Parameters][773]
-- [getChatById][774]
-  - [Parameters][775]
-- [addMessage][776]
-  - [Parameters][777]
-- [streamMessageContent][778]
-  - [Parameters][779]
-- [updateMessage][780]
-  - [Parameters][781]
-- [beginAlternate][782]
-  - [Parameters][783]
-- [dropAlternate][784]
-  - [Parameters][785]
-- [writeTurn][786]
-  - [Parameters][787]
-- [writeSegment][788]
+- [held][772]
+  - [][773]
+- [held][774]
+  - [][775]
+- [composables/useChatFind][776]
+- [SETTLE_MS][777]
+- [SETTLE_MS][778]
+- [ChatMatch][779]
+  - [Properties][780]
+- [FindableTurn][781]
+  - [Properties][782]
+- [escapeRegExp][783]
+  - [Parameters][784]
+- [patternFor][785]
+  - [Parameters][786]
+- [registry][787]
+- [rangesIn][788]
   - [Parameters][789]
-- [deleteMessage][790]
-  - [Parameters][791]
-- [moveMessage][792]
+- [nodes][790]
+- [][791]
+- [locate][792]
   - [Parameters][793]
-- [truncateMessagesForChat][794]
+- [locate][794]
   - [Parameters][795]
-- [getMessagesForChat][796]
-  - [Parameters][797]
-- [getMessageById][798]
-  - [Parameters][799]
-- [getDraftMessage][800]
-  - [Parameters][801]
-- [setDraftMessage][802]
-  - [Parameters][803]
-- [clearDraftMessage][804]
-  - [Parameters][805]
-- [copyChat][806]
-  - [Parameters][807]
-- [forkChat][808]
-  - [Parameters][809]
-- [importChat][810]
-  - [Parameters][811]
-- [composables/useChatSettings][812]
-- [useChatSettings][813]
-  - [Parameters][814]
-- [useChatSettings][815]
+- [ranges][796]
+- [useChatFind][797]
+  - [Parameters][798]
+- [holding][799]
+- [holding][800]
+- [texts][801]
+- [texts][802]
+- [readable][803]
+  - [Parameters][804]
+- [textOf][805]
+  - [Parameters][806]
+- [matches][807]
+- [found][808]
+- [found][809]
+- [firstOnScreen][810]
+- [nearest][811]
+  - [Parameters][812]
+- [wentAt][813]
+- [going][814]
+- [rangesOfMessage][815]
   - [Parameters][816]
-- [update][817]
-  - [Parameters][818]
-- [setProfile][819]
-  - [Parameters][820]
-- [chooseProfile][821]
-  - [Parameters][822]
-- [deleteProfile][823]
-  - [Parameters][824]
-- [deleteProfile][825]
-  - [Parameters][826]
-- [composables/useCommandMenu][827]
-- [commandOptionId][828]
-  - [Parameters][829]
-- [commandOptionId][830]
-  - [Parameters][831]
-- [useCommandMenu][832]
-  - [Parameters][833]
-- [caret][834]
-- [][835]
-- [shut][836]
-- [][837]
-- [track][838]
-- [track][839]
-  - [Parameters][840]
-- [pick][841]
-  - [Parameters][842]
-- [onKeydown][843]
-  - [Parameters][844]
-- [spot][845]
-- [composables/useCopyPath][846]
-- [useCopyPath][847]
-  - [Parameters][848]
-- [copyPath][849]
-  - [Parameters][850]
-- [composables/useDocuments][851]
-- [clearDocumentInstances][852]
-- [useDocuments][853]
-  - [Parameters][854]
-- [pendingRenameId][855]
-- [error][856]
-- [error][857]
-  - [Parameters][858]
-- [initPromise][859]
-- [tabs][860]
-- [activeDocumentId][861]
-- [writeTabs][862]
-  - [Parameters][863]
-- [open][864]
-  - [Parameters][865]
-- [open][866]
-  - [Parameters][867]
-- [open][868]
-  - [Parameters][869]
-- [open][870]
-  - [Parameters][871]
-- [keep][872]
-  - [Parameters][873]
-- [focus][874]
-  - [Parameters][875]
-- [focus][876]
-  - [Parameters][877]
-- [closeTab][878]
-  - [Parameters][879]
-- [releaseTabs][880]
-- [get][881]
+- [currentRange][817]
+- [reveal][818]
+  - [Parameters][819]
+- [paint][820]
+- [go][821]
+- [frame][822]
+- [observer][823]
+- [lookFor][824]
+  - [Parameters][825]
+- [step][826]
+  - [Parameters][827]
+- [openFind][828]
+- [instances][829]
+- [instances][830]
+- [instances][831]
+- [instances][832]
+- [instances][833]
+- [instances][834]
+- [instances][835]
+- [instances][836]
+- [instances][837]
+- [instances][838]
+- [clearChatsInstances][839]
+- [useChats][840]
+  - [Parameters][841]
+- [useChats][842]
+  - [Parameters][843]
+- [draftMessages][844]
+- [\_initPromise][845]
+- [init][846]
+- [init][847]
+- [init][848]
+- [chatMessages][849]
+- [defaultProfileId][850]
+- [defaultProfileId][851]
+- [createChat][852]
+  - [Parameters][853]
+- [unstartedChanges][854]
+- [unstartedChat][855]
+- [isUnstarted][856]
+  - [Parameters][857]
+- [updateUnstartedChat][858]
+  - [Parameters][859]
+- [startChat][860]
+- [updateChat][861]
+  - [Parameters][862]
+- [deleteChat][863]
+  - [Parameters][864]
+- [getChatById][865]
+  - [Parameters][866]
+- [addMessage][867]
+  - [Parameters][868]
+- [streamMessageContent][869]
+  - [Parameters][870]
+- [updateMessage][871]
+  - [Parameters][872]
+- [beginAlternate][873]
+  - [Parameters][874]
+- [dropAlternate][875]
+  - [Parameters][876]
+- [writeTurn][877]
+  - [Parameters][878]
+- [writeSegment][879]
+  - [Parameters][880]
+- [deleteMessage][881]
   - [Parameters][882]
-- [get][883]
-- [get][884]
-- [get][885]
-- [childrenOf][886]
-  - [Parameters][887]
-- [isFolder][888]
-  - [Parameters][889]
-- [isOrdered][890]
-  - [Parameters][891]
-- [isHidden][892]
-  - [Parameters][893]
-- [displayTitle][894]
-  - [Parameters][895]
-- [pathOf][896]
-  - [Parameters][897]
-- [titlesOf][898]
-  - [Parameters][899]
-- [firstTextDocument][900]
-- [walk][901]
+- [moveMessage][883]
+  - [Parameters][884]
+- [truncateMessagesForChat][885]
+  - [Parameters][886]
+- [getMessagesForChat][887]
+  - [Parameters][888]
+- [getMessageById][889]
+  - [Parameters][890]
+- [getDraftMessage][891]
+  - [Parameters][892]
+- [setDraftMessage][893]
+  - [Parameters][894]
+- [clearDraftMessage][895]
+  - [Parameters][896]
+- [copyChat][897]
+  - [Parameters][898]
+- [forkChat][899]
+  - [Parameters][900]
+- [importChat][901]
   - [Parameters][902]
-- [createFolder][903]
-  - [Parameters][904]
-- [createTextDocument][905]
-  - [Parameters][906]
-- [uniqueTitle][907]
-  - [Parameters][908]
-- [rename][909]
-  - [Parameters][910]
-- [rename][911]
-  - [Parameters][912]
-- [isPlain][913]
-  - [Parameters][914]
-- [stored][915]
-  - [Parameters][916]
-- [setContent][917]
-  - [Parameters][918]
-- [currentContent][919]
+- [composables/useChatSettings][903]
+- [useChatSettings][904]
+  - [Parameters][905]
+- [useChatSettings][906]
+  - [Parameters][907]
+- [update][908]
+  - [Parameters][909]
+- [setProfile][910]
+  - [Parameters][911]
+- [chooseProfile][912]
+  - [Parameters][913]
+- [deleteProfile][914]
+  - [Parameters][915]
+- [deleteProfile][916]
+  - [Parameters][917]
+- [composables/useCommandMenu][918]
+- [commandOptionId][919]
   - [Parameters][920]
-- [replaceText][921]
+- [commandOptionId][921]
   - [Parameters][922]
-- [appendContent][923]
+- [useCommandMenu][923]
   - [Parameters][924]
-- [appendContent][925]
-  - [Parameters][926]
-- [wouldSettle][927]
-  - [Parameters][928]
-- [setPlain][929]
-  - [Parameters][930]
-- [revertEdit][931]
-  - [Parameters][932]
-- [reapplyEdit][933]
-  - [Parameters][934]
-- [editableTitle][935]
-  - [Parameters][936]
-- [removed][937]
-- [][938]
-- [reorder][939]
-  - [Parameters][940]
-- [setOrdered][941]
-  - [Parameters][942]
-- [setHidden][943]
-  - [Parameters][944]
-- [canDropInto][945]
-  - [Parameters][946]
-- [requestRename][947]
-  - [Parameters][948]
-- [claimRename][949]
-  - [Parameters][950]
-- [composables/useEditor][951]
-- [Entry][952]
-  - [Properties][953]
-- [PROJECTION_DELAY][954]
-- [entries][955]
-- [clearEditor][956]
-- [contentOf][957]
+- [caret][925]
+- [][926]
+- [shut][927]
+- [][928]
+- [track][929]
+- [track][930]
+  - [Parameters][931]
+- [pick][932]
+  - [Parameters][933]
+- [onKeydown][934]
+  - [Parameters][935]
+- [spot][936]
+- [composables/useCopyPath][937]
+- [useCopyPath][938]
+  - [Parameters][939]
+- [copyPath][940]
+  - [Parameters][941]
+- [composables/useDocuments][942]
+- [clearDocumentInstances][943]
+- [useDocuments][944]
+  - [Parameters][945]
+- [pendingRenameId][946]
+- [error][947]
+- [error][948]
+  - [Parameters][949]
+- [initPromise][950]
+- [tabs][951]
+- [activeDocumentId][952]
+- [writeTabs][953]
+  - [Parameters][954]
+- [open][955]
+  - [Parameters][956]
+- [open][957]
   - [Parameters][958]
-- [flushEntry][959]
+- [open][959]
   - [Parameters][960]
-- [markDirty][961]
+- [open][961]
   - [Parameters][962]
-- [makeEntry][963]
+- [keep][963]
   - [Parameters][964]
-- [useEditor][965]
-- [convert][966]
-  - [Parameters][967]
-- [convert][968]
-  - [Parameters][969]
-- [close][970]
-  - [Parameters][971]
-- [discard][972]
+- [focus][965]
+  - [Parameters][966]
+- [focus][967]
+  - [Parameters][968]
+- [closeTab][969]
+  - [Parameters][970]
+- [releaseTabs][971]
+- [get][972]
   - [Parameters][973]
-- [holds][974]
-  - [Parameters][975]
-- [openIds][976]
-- [stateOf][977]
+- [get][974]
+- [get][975]
+- [get][976]
+- [childrenOf][977]
   - [Parameters][978]
-- [rememberScroll][979]
+- [isFolder][979]
   - [Parameters][980]
-- [scrollTop][981]
+- [isOrdered][981]
   - [Parameters][982]
-- [dispatch][983]
+- [isHidden][983]
   - [Parameters][984]
-- [setText][985]
+- [displayTitle][985]
   - [Parameters][986]
-- [flush][987]
+- [pathOf][987]
   - [Parameters][988]
-- [replaceContent][989]
+- [titlesOf][989]
   - [Parameters][990]
-- [markdown][991]
-  - [Parameters][992]
-- [composables/useFileView][993]
-- [asText][994]
-- [keyFor][995]
-  - [Parameters][996]
-- [][997]
-- [useFileView][998]
+- [firstTextDocument][991]
+- [walk][992]
+  - [Parameters][993]
+- [createFolder][994]
+  - [Parameters][995]
+- [createTextDocument][996]
+  - [Parameters][997]
+- [uniqueTitle][998]
   - [Parameters][999]
-- [showsText][1000]
+- [rename][1000]
   - [Parameters][1001]
-- [setShowsText][1002]
+- [isPlain][1002]
   - [Parameters][1003]
-- [fileViewItem][1004]
+- [stored][1004]
   - [Parameters][1005]
-- [clearFileViews][1006]
-- [utils/sessionStorage][1007]
-- [sessionStorage][1008]
-  - [get][1009]
-    - [Parameters][1010]
-  - [set][1011]
-    - [Parameters][1012]
-  - [remove][1013]
-    - [Parameters][1014]
-- [composables/useGenerationSettings][1015]
-- [SettingKey][1016]
-- [composables/useJobs][1017]
-- [progressOf][1018]
+- [setContent][1006]
+  - [Parameters][1007]
+- [currentContent][1008]
+  - [Parameters][1009]
+- [replaceText][1010]
+  - [Parameters][1011]
+- [appendContent][1012]
+  - [Parameters][1013]
+- [appendContent][1014]
+  - [Parameters][1015]
+- [wouldSettle][1016]
+  - [Parameters][1017]
+- [setPlain][1018]
   - [Parameters][1019]
-- [progressOf][1020]
+- [revertEdit][1020]
   - [Parameters][1021]
-- [elapsedOf][1022]
+- [reapplyEdit][1022]
   - [Parameters][1023]
-- [formatElapsed][1024]
+- [editableTitle][1024]
   - [Parameters][1025]
-- [useJobs][1026]
-- [jobs][1027]
-- [anyRunning][1028]
-- [runningJobs][1029]
-- [runningOn][1030]
+- [removed][1026]
+- [][1027]
+- [reorder][1028]
+  - [Parameters][1029]
+- [setOrdered][1030]
   - [Parameters][1031]
-- [projectOf][1032]
+- [setHidden][1032]
   - [Parameters][1033]
-- [load][1034]
-- [composables/useJobsToast][1035]
-- [show][1036]
-- [toggle][1037]
-- [closed][1038]
-- [composables/useJumpToBottom][1039]
-- [HUSH_MS][1040]
-- [MAX_PASSES][1041]
-- [drawn][1042]
-- [useJumpToBottom][1043]
+- [canDropInto][1034]
+  - [Parameters][1035]
+- [requestRename][1036]
+  - [Parameters][1037]
+- [claimRename][1038]
+  - [Parameters][1039]
+- [composables/useDriveImport][1040]
+- [useDriveImport][1041]
+  - [Parameters][1042]
+- [useDriveImport][1043]
   - [Parameters][1044]
-- [gapOf][1045]
+- [useDriveImport][1045]
   - [Parameters][1046]
-- [far][1047]
-- [onScroll][1048]
-- [hush][1049]
-- [jump][1050]
-- [composables/useLoadedSkills][1051]
-- [useLoadedSkills][1052]
-  - [Parameters][1053]
-- [loaded][1054]
-- [dropped][1055]
-- [composables/useMcpServers][1056]
-- [named][1057]
-  - [Parameters][1058]
-- [named][1059]
-  - [Parameters][1060]
-- [named][1061]
-  - [Parameters][1062]
-- [named][1063]
-  - [Parameters][1064]
-- [named][1065]
-  - [Parameters][1066]
-- [ServerPreview][1067]
-  - [Properties][1068]
-- [SIGN_IN_WAIT_MS][1069]
-- [signIns][1070]
-- [useMcpServers][1071]
-- [preview][1072]
-  - [Parameters][1073]
-- [preview][1074]
-  - [Parameters][1075]
-- [isSignedIn][1076]
-  - [Parameters][1077]
-- [signIn][1078]
-  - [Parameters][1079]
-- [done][1080]
-  - [Parameters][1081]
-- [signOut][1082]
+- [useDriveImport][1047]
+  - [Parameters][1048]
+- [useDriveImport][1049]
+  - [Parameters][1050]
+- [choose][1051]
+  - [Parameters][1052]
+- [importPicked][1053]
+  - [Parameters][1054]
+- [gathered][1055]
+- [composables/useEditor][1056]
+- [Entry][1057]
+  - [Properties][1058]
+- [PROJECTION_DELAY][1059]
+- [entries][1060]
+- [clearEditor][1061]
+- [contentOf][1062]
+  - [Parameters][1063]
+- [flushEntry][1064]
+  - [Parameters][1065]
+- [markDirty][1066]
+  - [Parameters][1067]
+- [makeEntry][1068]
+  - [Parameters][1069]
+- [useEditor][1070]
+- [convert][1071]
+  - [Parameters][1072]
+- [convert][1073]
+  - [Parameters][1074]
+- [close][1075]
+  - [Parameters][1076]
+- [discard][1077]
+  - [Parameters][1078]
+- [holds][1079]
+  - [Parameters][1080]
+- [openIds][1081]
+- [stateOf][1082]
   - [Parameters][1083]
-- [addServer][1084]
+- [rememberScroll][1084]
   - [Parameters][1085]
-- [][1086]
-- [refreshServer][1087]
-  - [Parameters][1088]
-- [updateServer][1089]
-  - [Parameters][1090]
-- [removeServer][1091]
-  - [Parameters][1092]
-- [allowTool][1093]
-  - [Parameters][1094]
-- [allowServer][1095]
-  - [Parameters][1096]
-- [composables/useMessageField][1097]
-- [fitsBeside][1098]
-  - [Parameters][1099]
-- [useMessageField][1100]
+- [scrollTop][1086]
+  - [Parameters][1087]
+- [dispatch][1088]
+  - [Parameters][1089]
+- [setText][1090]
+  - [Parameters][1091]
+- [flush][1092]
+  - [Parameters][1093]
+- [replaceContent][1094]
+  - [Parameters][1095]
+- [markdown][1096]
+  - [Parameters][1097]
+- [composables/useFileView][1098]
+- [asText][1099]
+- [keyFor][1100]
   - [Parameters][1101]
-- [fit][1102]
-- [settling][1103]
-- [settling][1104]
-- [composables/useNarration][1105]
-- [ReadingTrack][1106]
-  - [Properties][1107]
-- [Reading][1108]
-  - [Properties][1109]
-- [clearNarrationInstances][1110]
-- [NarrationApi][1111]
-- [useNarration][1112]
-  - [Parameters][1113]
-- [serverVoices][1114]
-- [serverVoicesFrom][1115]
-- [loadServerVoices][1116]
-- [voiceById][1117]
-  - [Parameters][1118]
-- [addVoice][1119]
-  - [Parameters][1120]
-- [voice][1121]
-- [updateVoice][1122]
-  - [Parameters][1123]
-- [removeVoice][1124]
+- [][1102]
+- [useFileView][1103]
+  - [Parameters][1104]
+- [showsText][1105]
+  - [Parameters][1106]
+- [setShowsText][1107]
+  - [Parameters][1108]
+- [fileViewItem][1109]
+  - [Parameters][1110]
+- [clearFileViews][1111]
+- [utils/sessionStorage][1112]
+- [sessionStorage][1113]
+  - [get][1114]
+    - [Parameters][1115]
+  - [set][1116]
+    - [Parameters][1117]
+  - [remove][1118]
+    - [Parameters][1119]
+- [composables/useFindKey][1120]
+- [pressed][1121]
+- [pressed][1122]
+- [pressed][1123]
+- [remember][1124]
   - [Parameters][1125]
-- [setDefaultVoice][1126]
+- [isFindKey][1126]
   - [Parameters][1127]
-- [setHints][1128]
+- [useFindKey][1128]
   - [Parameters][1129]
-- [blocksOf][1130]
+- [onKeyDown][1130]
   - [Parameters][1131]
-- [textsOf][1132]
+- [onKeyDown][1132]
   - [Parameters][1133]
-- [speakersOf][1134]
-  - [Parameters][1135]
-- [setSpeaker][1136]
-  - [Parameters][1137]
-- [utterancesOf][1138]
-  - [Parameters][1139]
-- [watching][1140]
-- [readings][1141]
-- [controllers][1142]
-- [readingOf][1143]
+- [composables/useGenerationSettings][1134]
+- [SettingKey][1135]
+- [composables/useJobs][1136]
+- [progressOf][1137]
+  - [Parameters][1138]
+- [progressOf][1139]
+  - [Parameters][1140]
+- [elapsedOf][1141]
+  - [Parameters][1142]
+- [formatElapsed][1143]
   - [Parameters][1144]
-- [ensureReading][1145]
-  - [Parameters][1146]
-- [reading][1147]
-- [audible][1148]
-  - [Parameters][1149]
-- [inStep][1150]
-  - [Parameters][1151]
-- [refreshTrack][1152]
-  - [Parameters][1153]
-- [joined][1154]
-- [stop][1155]
-  - [Parameters][1156]
-- [stop][1157]
-- [narrate][1158]
-  - [Parameters][1159]
-- [forget][1160]
-  - [Parameters][1161]
-- [download][1162]
+- [useJobs][1145]
+- [jobs][1146]
+- [anyRunning][1147]
+- [runningJobs][1148]
+- [runningOn][1149]
+  - [Parameters][1150]
+- [projectOf][1151]
+  - [Parameters][1152]
+- [load][1153]
+- [composables/useJobsToast][1154]
+- [show][1155]
+- [toggle][1156]
+- [closed][1157]
+- [composables/useJumpToBottom][1158]
+- [HUSH_MS][1159]
+- [MAX_PASSES][1160]
+- [drawn][1161]
+- [useJumpToBottom][1162]
   - [Parameters][1163]
-- [readAloud][1164]
+- [gapOf][1164]
   - [Parameters][1165]
-- [dispose][1166]
-- [api][1167]
-- [composables/useNearTurns][1168]
-- [AHEAD][1169]
-- [BASE_HEIGHT][1170]
-- [LINE_HEIGHT][1171]
-- [CHARACTER_WIDTH][1172]
-- [UNKNOWN_WIDTH][1173]
-- [SETTLE_MS][1174]
-- [NEWEST][1175]
-- [OPENING][1176]
-- [STILL_MS][1177]
-- [HOLD][1178]
-- [HOLD_THIS][1179]
-- [STATE][1180]
-- [TurnLike][1181]
-  - [Properties][1182]
-- [useNearTurns][1183]
-  - [Parameters][1184]
-- [near][1185]
-- [reported][1186]
-- [measured][1187]
-- [measured][1188]
-- [width][1189]
-- [lineHeight][1190]
-- [lineCounts][1191]
-- [lineCounts][1192]
-- [elements][1193]
-- [ids][1194]
-- [shift][1195]
-- [touching][1196]
-- [touched][1197]
-- [stilling][1198]
-- [listened][1199]
-- [listened][1200]
-- [intersect][1201]
-- [resize][1202]
-- [isMounted][1203]
-  - [Parameters][1204]
-- [perLine][1205]
-- [linesOf][1206]
+- [far][1166]
+- [onScroll][1167]
+- [hush][1168]
+- [jump][1169]
+- [composables/useLoadedSkills][1170]
+- [useLoadedSkills][1171]
+  - [Parameters][1172]
+- [loaded][1173]
+- [dropped][1174]
+- [composables/useLongPress][1175]
+- [LONG_PRESS_MS][1176]
+- [SLOP][1177]
+- [LongPressHandlers][1178]
+- [useLongPress][1179]
+  - [Parameters][1180]
+- [timer][1181]
+- [touchstart][1182]
+  - [Parameters][1183]
+- [touchmove][1184]
+  - [Parameters][1185]
+- [touchend][1186]
+  - [Parameters][1187]
+- [composables/useMcpServers][1188]
+- [named][1189]
+  - [Parameters][1190]
+- [named][1191]
+  - [Parameters][1192]
+- [named][1193]
+  - [Parameters][1194]
+- [named][1195]
+  - [Parameters][1196]
+- [named][1197]
+  - [Parameters][1198]
+- [ServerPreview][1199]
+  - [Properties][1200]
+- [SIGN_IN_WAIT_MS][1201]
+- [signIns][1202]
+- [useMcpServers][1203]
+- [preview][1204]
+  - [Parameters][1205]
+- [preview][1206]
   - [Parameters][1207]
-- [guesses][1208]
-- [heightOf][1209]
-  - [Parameters][1210]
-- [calibrate][1211]
-- [hold][1212]
+- [isSignedIn][1208]
+  - [Parameters][1209]
+- [signIn][1210]
+  - [Parameters][1211]
+- [done][1212]
   - [Parameters][1213]
-- [onScreen][1214]
+- [signOut][1214]
   - [Parameters][1215]
-- [found][1216]
-- [keepInPlace][1217]
-  - [Parameters][1218]
-- [shiftBy][1219]
+- [addServer][1216]
+  - [Parameters][1217]
+- [][1218]
+- [refreshServer][1219]
   - [Parameters][1220]
-- [unshift][1221]
+- [updateServer][1221]
   - [Parameters][1222]
-- [stillSoon][1223]
+- [removeServer][1223]
   - [Parameters][1224]
-- [rearrange][1225]
+- [allowTool][1225]
   - [Parameters][1226]
-- [useTurnHolder][1227]
+- [allowServer][1227]
   - [Parameters][1228]
-- [holdTurnWhile][1229]
-  - [Parameters][1230]
-- [set][1231]
-  - [Parameters][1232]
-- [useTurnState][1233]
-  - [Parameters][1234]
-- [has][1235]
-- [composables/useOpenRouterSignIn][1236]
-- [OPENROUTER_CALLBACK_PATH][1237]
-- [PROVIDER_ID][1238]
-- [WAIT_MS][1239]
-- [sleep][1240]
-  - [Parameters][1241]
-- [finish][1242]
-  - [Parameters][1243]
-- [composables/usePlainText][1244]
-- [usePlainText][1245]
-  - [Parameters][1246]
-- [togglePlain][1247]
-  - [Parameters][1248]
-- [plainTextItem][1249]
+- [composables/useMessageField][1229]
+- [fitsBeside][1230]
+  - [Parameters][1231]
+- [useMessageField][1232]
+  - [Parameters][1233]
+- [fit][1234]
+- [settling][1235]
+- [settling][1236]
+- [composables/useNarration][1237]
+- [ReadingTrack][1238]
+  - [Properties][1239]
+- [Reading][1240]
+  - [Properties][1241]
+- [clearNarrationInstances][1242]
+- [NarrationApi][1243]
+- [useNarration][1244]
+  - [Parameters][1245]
+- [serverVoices][1246]
+- [serverVoicesFrom][1247]
+- [loadServerVoices][1248]
+- [voiceById][1249]
   - [Parameters][1250]
-- [utils/lineDiff][1251]
-- [LineChange][1252]
-  - [Properties][1253]
-- [MAX_MATCHED][1254]
-- [changedLines][1255]
-  - [Parameters][1256]
-- [changes][1257]
-- [changes][1258]
-- [composables/useProfileNotice][1259]
-- [seenKey][1260]
+- [addVoice][1251]
+  - [Parameters][1252]
+- [voice][1253]
+- [updateVoice][1254]
+  - [Parameters][1255]
+- [removeVoice][1256]
+  - [Parameters][1257]
+- [setDefaultVoice][1258]
+  - [Parameters][1259]
+- [setHints][1260]
   - [Parameters][1261]
-- [noticeFor][1262]
+- [blocksOf][1262]
   - [Parameters][1263]
-- [dismiss][1264]
-- [composables/useProfiles][1265]
-- [ProfileEntry][1266]
-  - [Properties][1267]
-- [storedEntry][1268]
+- [textsOf][1264]
+  - [Parameters][1265]
+- [speakersOf][1266]
+  - [Parameters][1267]
+- [setSpeaker][1268]
   - [Parameters][1269]
-- [builtInEntry][1270]
+- [utterancesOf][1270]
   - [Parameters][1271]
-- [NSFW_COUNTERPARTS][1272]
-- [inPlaceOf][1273]
-  - [Parameters][1274]
-- [profiles][1275]
-- [getProfile][1276]
-  - [Parameters][1277]
-- [ready][1278]
-- [ready][1279]
-- [ready][1280]
-- [saveProfile][1281]
-  - [Parameters][1282]
-- [duplicateProfile][1283]
-  - [Parameters][1284]
-- [updateProfile][1285]
-  - [Parameters][1286]
-- [][1287]
-- [composables/useProjects][1288]
-  - [Examples][1289]
-- [useProjects][1290]
-- [useProjects][1291]
-- [projects][1292]
-- [nameOf][1293]
-  - [Parameters][1294]
-- [create][1295]
-  - [Parameters][1296]
-- [composables/usePrompts][1297]
-- [toEntry][1298]
-  - [Parameters][1299]
-- [toEntry][1300]
-  - [Parameters][1301]
-- [PromptEntry][1302]
-  - [Properties][1303]
-- [usePrompts][1304]
-- [getPrompt][1305]
-  - [Parameters][1306]
-- [savePrompt][1307]
-  - [Parameters][1308]
-- [duplicatePrompt][1309]
-  - [Parameters][1310]
-- [updatePrompt][1311]
-  - [Parameters][1312]
-- [deletePrompt][1313]
-  - [Parameters][1314]
-- [composables/useProviderSetup][1315]
-  - [Examples][1316]
-- [useProviderSetup][1317]
-- [isProviderSetupDialogEnabled][1318]
-- [hideProviderSetupDialog][1319]
-- [handleProviderConnect][1320]
-  - [Parameters][1321]
-- [handleDontShowAgain][1322]
-- [useReactiveTime][1323]
-  - [Parameters][1324]
-- [formatRelativeTime][1325]
-  - [Parameters][1326]
-- [useScreenSize][1327]
-- [SearchOptions][1328]
-  - [Properties][1329]
-- [SearchResult][1330]
-  - [Properties][1331]
-- [useSearch][1332]
-  - [Parameters][1333]
-- [stripHtml][1334]
+- [watching][1272]
+- [readings][1273]
+- [controllers][1274]
+- [readingOf][1275]
+  - [Parameters][1276]
+- [ensureReading][1277]
+  - [Parameters][1278]
+- [reading][1279]
+- [audible][1280]
+  - [Parameters][1281]
+- [inStep][1282]
+  - [Parameters][1283]
+- [refreshTrack][1284]
+  - [Parameters][1285]
+- [joined][1286]
+- [stop][1287]
+  - [Parameters][1288]
+- [stop][1289]
+- [narrate][1290]
+  - [Parameters][1291]
+- [forget][1292]
+  - [Parameters][1293]
+- [download][1294]
+  - [Parameters][1295]
+- [readAloud][1296]
+  - [Parameters][1297]
+- [dispose][1298]
+- [api][1299]
+- [composables/useNearTurns][1300]
+- [AHEAD][1301]
+- [BASE_HEIGHT][1302]
+- [LINE_HEIGHT][1303]
+- [CHARACTER_WIDTH][1304]
+- [UNKNOWN_WIDTH][1305]
+- [NEWEST][1306]
+- [OPENING][1307]
+- [STILL_MS][1308]
+- [HOLD][1309]
+- [HOLD_THIS][1310]
+- [STATE][1311]
+- [TurnLike][1312]
+  - [Properties][1313]
+- [useNearTurns][1314]
+  - [Parameters][1315]
+- [near][1316]
+- [reported][1317]
+- [measured][1318]
+- [measured][1319]
+- [width][1320]
+- [lineHeight][1321]
+- [lineCounts][1322]
+- [lineCounts][1323]
+- [elements][1324]
+- [ids][1325]
+- [shift][1326]
+- [touching][1327]
+- [touched][1328]
+- [stilling][1329]
+- [listened][1330]
+- [listened][1331]
+- [intersect][1332]
+- [resize][1333]
+- [isMounted][1334]
   - [Parameters][1335]
-- [composables/useSettingsPanel][1336]
-- [SettingsSection][1337]
-- [requestedSection][1338]
-- [useSettingsPanel][1339]
-- [takeSection][1340]
-- [composables/useSkills][1341]
-- [renamedIn][1342]
-  - [Parameters][1343]
-- [renamedIn][1344]
-  - [Parameters][1345]
-- [renamedIn][1346]
-  - [Parameters][1347]
-- [ImportRow][1348]
-  - [Properties][1349]
-- [useSkills][1350]
-- [nameProblem][1351]
+- [perLine][1336]
+- [linesOf][1337]
+  - [Parameters][1338]
+- [guesses][1339]
+- [heightOf][1340]
+  - [Parameters][1341]
+- [calibrate][1342]
+- [hold][1343]
+  - [Parameters][1344]
+- [onScreen][1345]
+  - [Parameters][1346]
+- [keepInPlace][1347]
+  - [Parameters][1348]
+- [shiftBy][1349]
+  - [Parameters][1350]
+- [unshift][1351]
   - [Parameters][1352]
-- [carryRename][1353]
+- [stillSoon][1353]
   - [Parameters][1354]
-- [][1355]
-- [saveSkill][1356]
-  - [Parameters][1357]
-- [planImport][1358]
-  - [Parameters][1359]
-- [seen][1360]
-- [importSkills][1361]
+- [rearrange][1355]
+  - [Parameters][1356]
+- [useTurnHolder][1357]
+  - [Parameters][1358]
+- [holdTurnWhile][1359]
+  - [Parameters][1360]
+- [set][1361]
   - [Parameters][1362]
-- [failed][1363]
-- [composables/useSpeech][1364]
-- [SpeechRequest][1365]
-  - [Properties][1366]
-- [status][1367]
-- [deferred][1368]
-- [resolve][1369]
-- [reject][1370]
-- [promise][1371]
-- [speak][1372]
+- [useTurnState][1363]
+  - [Parameters][1364]
+- [has][1365]
+- [composables/useOpenRouterSignIn][1366]
+- [OPENROUTER_CALLBACK_PATH][1367]
+- [PROVIDER_ID][1368]
+- [WAIT_MS][1369]
+- [sleep][1370]
+  - [Parameters][1371]
+- [finish][1372]
   - [Parameters][1373]
-- [useSpeech][1374]
-- [applyTheme][1375]
+- [composables/usePlainText][1374]
+- [usePlainText][1375]
   - [Parameters][1376]
-- [][1377]
-- [useToast][1378]
-- [showToast][1379]
+- [togglePlain][1377]
+  - [Parameters][1378]
+- [plainTextItem][1379]
   - [Parameters][1380]
-- [success][1381]
-  - [Parameters][1382]
-- [warning][1383]
-  - [Parameters][1384]
-- [info][1385]
+- [utils/lineDiff][1381]
+- [LineChange][1382]
+  - [Properties][1383]
+- [MAX_MATCHED][1384]
+- [changedLines][1385]
   - [Parameters][1386]
-- [action][1387]
-  - [Parameters][1388]
-- [composables/useToolApprovals][1389]
-- [Decision][1390]
-- [PendingApproval][1391]
-  - [Properties][1392]
-- [askApproval][1393]
-  - [Parameters][1394]
-- [answerApproval][1395]
-  - [Parameters][1396]
-- [denyWaiting][1397]
-  - [Parameters][1398]
-- [useToolApprovals][1399]
-  - [Parameters][1400]
-- [composables/useTopmostEscape][1401]
-- [MASK_SELECTOR][1402]
-- [isTopmostMask][1403]
+- [changes][1387]
+- [changes][1388]
+- [composables/useProfileNotice][1389]
+- [seenKey][1390]
+  - [Parameters][1391]
+- [noticeFor][1392]
+  - [Parameters][1393]
+- [dismiss][1394]
+- [composables/useProfiles][1395]
+- [ProfileEntry][1396]
+  - [Properties][1397]
+- [storedEntry][1398]
+  - [Parameters][1399]
+- [builtInEntry][1400]
+  - [Parameters][1401]
+- [NSFW_COUNTERPARTS][1402]
+- [inPlaceOf][1403]
   - [Parameters][1404]
-- [useTopmostEscape][1405]
-  - [Parameters][1406]
-- [onKeyDown][1407]
-  - [Parameters][1408]
+- [profiles][1405]
+- [getProfile][1406]
+  - [Parameters][1407]
+- [ready][1408]
+- [ready][1409]
+- [ready][1410]
+- [saveProfile][1411]
+  - [Parameters][1412]
+- [duplicateProfile][1413]
+  - [Parameters][1414]
+- [updateProfile][1415]
+  - [Parameters][1416]
+- [][1417]
+- [composables/useProjects][1418]
+  - [Examples][1419]
+- [useProjects][1420]
+- [useProjects][1421]
+- [projects][1422]
+- [workOutEdited][1423]
+  - [Parameters][1424]
+- [nameOf][1425]
+  - [Parameters][1426]
+- [editedOf][1427]
+  - [Parameters][1428]
+- [create][1429]
+  - [Parameters][1430]
+- [importFile][1431]
+  - [Parameters][1432]
+- [workingOut][1433]
+- [composables/usePrompts][1434]
+- [toEntry][1435]
+  - [Parameters][1436]
+- [toEntry][1437]
+  - [Parameters][1438]
+- [PromptEntry][1439]
+  - [Properties][1440]
+- [usePrompts][1441]
+- [getPrompt][1442]
+  - [Parameters][1443]
+- [savePrompt][1444]
+  - [Parameters][1445]
+- [duplicatePrompt][1446]
+  - [Parameters][1447]
+- [updatePrompt][1448]
+  - [Parameters][1449]
+- [deletePrompt][1450]
+  - [Parameters][1451]
+- [composables/useProviderSetup][1452]
+  - [Examples][1453]
+- [useProviderSetup][1454]
+- [isProviderSetupDialogEnabled][1455]
+- [hideProviderSetupDialog][1456]
+- [handleProviderConnect][1457]
+  - [Parameters][1458]
+- [handleDontShowAgain][1459]
+- [useReactiveTime][1460]
+  - [Parameters][1461]
+- [formatRelativeTime][1462]
+  - [Parameters][1463]
+- [composables/useRepositoryImport][1464]
+- [useRepositoryImport][1465]
+  - [Parameters][1466]
+- [useRepositoryImport][1467]
+  - [Parameters][1468]
+- [useRepositoryImport][1469]
+  - [Parameters][1470]
+- [useRepositoryImport][1471]
+  - [Parameters][1472]
+- [useRepositoryImport][1473]
+  - [Parameters][1474]
+- [RepositoryImported][1475]
+  - [Properties][1476]
+- [ImportOptions][1477]
+  - [Properties][1478]
+- [][1479]
+- [][1480]
+- [importFolder][1481]
+  - [Parameters][1482]
+- [source][1483]
+- [source][1484]
+- [importGitHub][1485]
+  - [Parameters][1486]
+- [refresh][1487]
+  - [Parameters][1488]
+- [fromGitHub][1489]
+  - [Parameters][1490]
+- [describeRepositoryImport][1491]
+  - [Parameters][1492]
+- [][1493]
+- [][1494]
+- [useScreenSize][1495]
+- [SearchOptions][1496]
+  - [Properties][1497]
+- [SearchResult][1498]
+  - [Properties][1499]
+- [useSearch][1500]
+  - [Parameters][1501]
+- [stripHtml][1502]
+  - [Parameters][1503]
+- [composables/useSettingsPanel][1504]
+- [SettingsSection][1505]
+- [requestedSection][1506]
+- [useSettingsPanel][1507]
+- [takeSection][1508]
+- [composables/useSkills][1509]
+- [renamedIn][1510]
+  - [Parameters][1511]
+- [renamedIn][1512]
+  - [Parameters][1513]
+- [renamedIn][1514]
+  - [Parameters][1515]
+- [ImportRow][1516]
+  - [Properties][1517]
+- [useSkills][1518]
+- [nameProblem][1519]
+  - [Parameters][1520]
+- [carryRename][1521]
+  - [Parameters][1522]
+- [][1523]
+- [saveSkill][1524]
+  - [Parameters][1525]
+- [planImport][1526]
+  - [Parameters][1527]
+- [seen][1528]
+- [importSkills][1529]
+  - [Parameters][1530]
+- [failed][1531]
+- [composables/useSpeech][1532]
+- [SpeechRequest][1533]
+  - [Properties][1534]
+- [status][1535]
+- [deferred][1536]
+- [resolve][1537]
+- [reject][1538]
+- [promise][1539]
+- [speak][1540]
+  - [Parameters][1541]
+- [useSpeech][1542]
+- [applyTheme][1543]
+  - [Parameters][1544]
+- [][1545]
+- [useToast][1546]
+- [showToast][1547]
+  - [Parameters][1548]
+- [success][1549]
+  - [Parameters][1550]
+- [warning][1551]
+  - [Parameters][1552]
+- [info][1553]
+  - [Parameters][1554]
+- [action][1555]
+  - [Parameters][1556]
+- [composables/useToolApprovals][1557]
+- [Decision][1558]
+- [PendingApproval][1559]
+  - [Properties][1560]
+- [askApproval][1561]
+  - [Parameters][1562]
+- [answerApproval][1563]
+  - [Parameters][1564]
+- [denyWaiting][1565]
+  - [Parameters][1566]
+- [useToolApprovals][1567]
+  - [Parameters][1568]
+- [composables/useTopmostEscape][1569]
+- [MASK_SELECTOR][1570]
+- [isTopmostMask][1571]
+  - [Parameters][1572]
+- [useTopmostEscape][1573]
+  - [Parameters][1574]
 
 ## composables
 
@@ -1431,7 +1597,7 @@ Vue 3 composables providing reusable logic for the inksprite application.
 
 ### Data
 
-- **useProjects** - The project list, and creating, opening, renaming and deleting projects
+- **useProjects** - Every project, and creating, importing, opening and deleting them
 - **useDocuments** - A story's document tree, shaped for the tree UI, and the editor's tabs
 - **useChats** - Chat session management
 - **useChatSettings** - One chat's settings and profile, started or not
@@ -1452,6 +1618,9 @@ Vue 3 composables providing reusable logic for the inksprite application.
 - **useTopmostEscape** - Escape closes the dialog on top, and only that one
 - **useCopyPath** - Copy a document's path, the address the tools take, to the clipboard
 - **usePlainText** - Turn a document plain or back, with an undo when that rewrote its text
+- **useLongPress** - A finger held still on something, for what a right-click opens elsewhere
+- **useFindKey** - Command-F (Control-F off a Mac) opens the find of the panel the writer is in
+- **useChatFind** - Finding in a chat, most of which is not in the page: counted in the messages, gone to and highlighted in the page
 
 ## Patterns
 
@@ -1503,9 +1672,9 @@ here wants the answer, not the thinking.
 
 ### Parameters
 
-- `raw` **[string][1409]** Accumulated content
+- `raw` **[string][1575]** Accumulated content
 
-Returns **[string][1409]** The content with any reasoning removed
+Returns **[string][1575]** The content with any reasoning removed
 
 ## extractTitle
 
@@ -1516,9 +1685,9 @@ despite being told not to.
 
 ### Parameters
 
-- `raw` **[string][1409]** Accumulated content
+- `raw` **[string][1575]** Accumulated content
 
-Returns **[string][1409]** A cleaned title, or '' if nothing usable came back
+Returns **[string][1575]** A cleaned title, or '' if nothing usable came back
 
 ## TRACE_RESULT_CHARS
 
@@ -1527,7 +1696,7 @@ the writer to see what a skill did, and a document a skill read is already
 in the project; the whole of it on the turn as well would be the turn's
 largest part for nothing.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## consultedCalls
 
@@ -1537,8 +1706,8 @@ skill it reached did in turn when it reached one.
 
 ### Parameters
 
-- `calls` **[Array][1411]\<ToolCall>**&#x20;
-- `answered` **[Array][1411]\<ApiMessage>** Their results, in the same order
+- `calls` **[Array][1577]\<ToolCall>**&#x20;
+- `answered` **[Array][1577]\<ApiMessage>** Their results, in the same order
 
 ## useAIChat
 
@@ -1553,27 +1722,27 @@ AI chat service for assistant conversations
 
 ### Parameters
 
-- `storyId` **[string][1409]** The story ID
-- `chatId` **[string][1409]** The chat ID
+- `storyId` **[string][1575]** The story ID
+- `chatId` **[string][1575]** The chat ID
 
 ## RewindPlan
 
 What rewinding to a message would do, for asking the writer first.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `messages` **[Array][1411]\<Message>** The turns after it, which go
-- `edits` **[Array][1411]\<DocumentEdit>** Their changes, in the order they would be undone
-- `documents` **[Array][1411]<{documentId: [string][1409], path: [string][1409]}>** The documents those touch, each once
+- `messages` **[Array][1577]\<Message>** The turns after it, which go
+- `edits` **[Array][1577]\<DocumentEdit>** Their changes, in the order they would be undone
+- `documents` **[Array][1577]<{documentId: [string][1575], path: [string][1575]}>** The documents those touch, each once
 
 ## RewindOutcome
 
 How a rewind went: what was undone, and what was left because the writer
 had edited it since.
 
-Type: {reverted: [Array][1411]\<DocumentEdit>, skipped: [Array][1411]\<DocumentEdit>}
+Type: {reverted: [Array][1577]\<DocumentEdit>, skipped: [Array][1577]\<DocumentEdit>}
 
 ## TurnActivity
 
@@ -1585,13 +1754,13 @@ returned. `thinking` and `writing` are the model streaming one or the other.
 Live only, and never stored: a page reloaded mid-turn has no turn running,
 and nothing left over should say it has.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `messageId` **[string][1409]** The message the turn is writing into
+- `messageId` **[string][1575]** The message the turn is writing into
 - `phase` **(`"calling"` | `"running"` | `"waiting"` | `"thinking"` | `"writing"`)**&#x20;
-- `since` **[number][1410]?** When a wait began, for saying how long it has been
+- `since` **[number][1576]?** When a wait began, for saying how long it has been
 
 ## turn
 
@@ -1604,7 +1773,7 @@ one turn at a time.
 
 ## turn
 
-Type: [Array][1411]\<MessageSegment>
+Type: [Array][1577]\<MessageSegment>
 
 ## current
 
@@ -1615,6 +1784,10 @@ work may hold the chat, so it looks after every wait and before it
 writes, and once stopped touches neither.
 
 Type: (AbortController | null)
+
+## current
+
+Which match the writer is on, or -1 for none.
 
 ## current
 
@@ -1661,7 +1834,7 @@ Returns **(AIPreset | null)**&#x20;
 Check if AI is properly configured for chat
 
 - Throws **ProviderNotConfiguredError** If provider is not properly configured
-- Throws **[Error][1413]** If other configuration issues exist
+- Throws **[Error][1579]** If other configuration issues exist
 
 Returns **AIPreset** The active AI profile if configured
 
@@ -1687,7 +1860,7 @@ instructions" rather than "use the default". Only a chat with no prompt,
 or one whose prompt has since been deleted, falls back to the built-in
 its story starts chats on.
 
-Returns **[Promise][1414]<[string][1409]>**&#x20;
+Returns **[Promise][1580]<[string][1575]>**&#x20;
 
 ## skillPromptFor
 
@@ -1700,9 +1873,9 @@ very prompt it is about to use.
 
 ### Parameters
 
-- `name` **[string][1409]** The skill's
+- `name` **[string][1575]** The skill's
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## REPEATS_BEFORE_STUCK
 
@@ -1711,7 +1884,7 @@ answers before it is taken to be going round: re-reading a document it
 has, retrying a call that fails the same way. The answers are part of it,
 so three rolls of the same die are three rolls and not a loop.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## roundSignature
 
@@ -1720,10 +1893,10 @@ that is working: its calls, and what came back.
 
 ### Parameters
 
-- `calls` **[Array][1411]\<ToolCall>**&#x20;
-- `results` **[Array][1411]\<ApiMessage>**&#x20;
+- `calls` **[Array][1577]\<ToolCall>**&#x20;
+- `results` **[Array][1577]\<ApiMessage>**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## wrapUpNote
 
@@ -1735,15 +1908,15 @@ needs to read it.
 ### Parameters
 
 - `why` **(`"limit"` | `"stuck"`)**&#x20;
-- `rounds` **[number][1410]** The rounds the turn made
+- `rounds` **[number][1576]** The rounds the turn made
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## TOOL_TIMEOUT_MS
 
 Per-tool execution timeout. Long enough for slow lookups, short enough that a stuck tool doesn't hang the chat.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## untilAborted
 
@@ -1753,10 +1926,10 @@ it to is not waited for.
 
 ### Parameters
 
-- `promise` **[Promise][1414]\<T>**&#x20;
+- `promise` **[Promise][1580]\<T>**&#x20;
 - `signal` **AbortSignal**&#x20;
 
-Returns **[Promise][1414]\<T>**&#x20;
+Returns **[Promise][1580]\<T>**&#x20;
 
 ## consult
 
@@ -1788,22 +1961,22 @@ conversation. Cadence is not the saving it looks like.
 
 ### Parameters
 
-- `systemPrompt` **[string][1409]** The role to run as
-- `toolNames` **[Array][1411]<[string][1409]>?** Tools the skill is asking for, by name (optional, default `[]`)
-- `options` **[Object][1412]?** (optional, default `{}`)
-  - `options.depth` **[number][1410]?** How many skills deep this consultation
+- `systemPrompt` **[string][1575]** The role to run as
+- `toolNames` **[Array][1577]<[string][1575]>?** Tools the skill is asking for, by name (optional, default `[]`)
+- `options` **[Object][1578]?** (optional, default `{}`)
+  - `options.depth` **[number][1576]?** How many skills deep this consultation
     is. The turn is 0 and each skill it reaches through adds one; a skill
     among the names is offered only while there is depth left for it. The
     loop sets it, not the skill: a skill that named its own depth could
     claim to be shallower than it is.
-  - `options.before` **[string][1409]?** Read the conversation as it stood before
+  - `options.before` **[string][1575]?** Read the conversation as it stood before
     this message. Set by a caller whose consultation is itself a message in
     the chat, so it neither reads itself nor, asked again later, reads a
     conversation that has moved on without it.
-  - `options.past` **[number][1410]?** With `before`: read this many messages
+  - `options.past` **[number][1576]?** With `before`: read this many messages
     past it as well. Compaction's, whose summary sits above the turns that
     were kept and read them all the same.
-  - `options.edits` **[Array][1411]\<DocumentEdit>?** The turn's record of what its
+  - `options.edits` **[Array][1577]\<DocumentEdit>?** The turn's record of what its
     tools changed, for the skill's own writes to join
   - `options.signal` **AbortSignal?** Stops it. Set by whoever runs the
     work it is part of, not by the skill.
@@ -1812,7 +1985,7 @@ conversation. Cadence is not the saving it looks like.
 
 - Throws **any** The signal's reason, once stopped
 
-Returns **[Promise][1414]<[string][1409]>** What it said, or '' if it said nothing usable
+Returns **[Promise][1580]<[string][1575]>** What it said, or '' if it said nothing usable
 
 ## executeOneToolCall
 
@@ -1825,7 +1998,7 @@ than the chat hanging.
 - `toolCall` **ToolCall**&#x20;
 - `context` &#x20;
 
-Returns **[Promise][1414]\<ApiMessage>**&#x20;
+Returns **[Promise][1580]\<ApiMessage>**&#x20;
 
 ## message
 
@@ -1861,7 +2034,7 @@ Type: any
 
 ## message
 
-Type: (StoredCommand | [undefined][1415])
+Type: (StoredCommand | [undefined][1581])
 
 ### message
 
@@ -1889,15 +2062,15 @@ Director first, and don't re-ask what it tells you it already asked.
 
 ### Parameters
 
-- `toolCalls` **[Array][1411]\<ToolCall>**&#x20;
-- `depth` **[number][1410]** How many skills deep these calls are being made.
+- `toolCalls` **[Array][1577]\<ToolCall>**&#x20;
+- `depth` **[number][1576]** How many skills deep these calls are being made.
   The turn's own are 0; a skill reached from here consults one deeper.
-- `edits` **([Array][1411]\<DocumentEdit> | [undefined][1415])** The turn's record of what its tools
+- `edits` **([Array][1577]\<DocumentEdit> | [undefined][1581])** The turn's record of what its tools
   changed, for a writing tool to add to. A skill's calls add to the same
   record: they are the turn's changes too.
 - `signal` **AbortSignal** The work's, which stops the calls with it
 
-Returns **[Promise][1414]<[Array][1411]\<ApiMessage>>**&#x20;
+Returns **[Promise][1580]<[Array][1577]\<ApiMessage>>**&#x20;
 
 ## runToolCall
 
@@ -1914,13 +2087,13 @@ at" any more. A tool that acts on a document is told which one.
 ### Parameters
 
 - `toolCall` **ToolCall**&#x20;
-- `depth` **[number][1410]** How many skills deep the call is made. The turn's
+- `depth` **[number][1576]** How many skills deep the call is made. The turn's
   own are 0; a skill reached from here consults one deeper.
-- `edits` **([Array][1411]\<DocumentEdit> | [undefined][1415])** The turn's record of what its tools changed
+- `edits` **([Array][1577]\<DocumentEdit> | [undefined][1581])** The turn's record of what its tools changed
 - `signal` **AbortSignal** The work's
 - `stream` (optional, default `{}`)
 
-Returns **[Promise][1414]\<ApiMessage>**&#x20;
+Returns **[Promise][1580]\<ApiMessage>**&#x20;
 
 ## record
 
@@ -1931,8 +2104,8 @@ tools, or the trailing text the turn ended on.
 
 ### Parameters
 
-- `content` **([string][1409] | null)** Message content
-- `toolCalls` **[Array][1411]\<ToolCall>?** Tool calls, when this iteration made any
+- `content` **([string][1575] | null)** Message content
+- `toolCalls` **[Array][1577]\<ToolCall>?** Tool calls, when this iteration made any
 - `reasoningDetails` &#x20;
 
 Returns **ApiMessage**&#x20;
@@ -1941,23 +2114,23 @@ Returns **ApiMessage**&#x20;
 
 Streaming state for a chat completion
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `content` **[string][1409]** Accumulated content
-- `reasoning` **([string][1409] | null)** Accumulated reasoning
-- `reasoningBreak` **[boolean][1416]** Whether a new iteration is about to think
-- `contentBreak` **[boolean][1416]** Whether a new iteration is about to write, so its
+- `content` **[string][1575]** Accumulated content
+- `reasoning` **([string][1575] | null)** Accumulated reasoning
+- `reasoningBreak` **[boolean][1582]** Whether a new iteration is about to think
+- `contentBreak` **[boolean][1582]** Whether a new iteration is about to write, so its
   first words start a paragraph rather than run on from the last
-- `thinkingFinishTime` **([number][1410] | null)** When thinking first finished
-- `roundStart` **[number][1410]** When this round's request went out
-- `awaiting` **[boolean][1416]** Whether this round has had nothing back yet
-- `thinkingSince` **([number][1410] | null)** When the stretch of thinking under
+- `thinkingFinishTime` **([number][1576] | null)** When thinking first finished
+- `roundStart` **[number][1576]** When this round's request went out
+- `awaiting` **[boolean][1582]** Whether this round has had nothing back yet
+- `thinkingSince` **([number][1576] | null)** When the stretch of thinking under
   way began. A round that opens by thinking counts from its request, since
   taking in what it was sent is part of the thought.
-- `thinkingTime` **[number][1410]** Milliseconds thought, over the stretches that have ended
-- `timing` **[Object][1412]** Timing info for the message
+- `thinkingTime` **[number][1576]** Milliseconds thought, over the stretches that have ended
+- `timing` **[Object][1578]** Timing info for the message
 
 ## endThinking
 
@@ -1968,7 +2141,7 @@ ended.
 
 ### Parameters
 
-- `state` **[StreamingState][77]**&#x20;
+- `state` **[StreamingState][78]**&#x20;
 
 ## createStreamingCallback
 
@@ -1976,8 +2149,8 @@ Create a streaming callback that updates message state
 
 ### Parameters
 
-- `messageId` **[string][1409]** Message ID to update
-- `state` **[StreamingState][77]** Mutable state object
+- `messageId` **[string][1575]** Message ID to update
+- `state` **[StreamingState][78]** Mutable state object
 - `signal` **AbortSignal** The turn's
 
 ## replyIn
@@ -1990,7 +2163,7 @@ writer's with an `answer`.
 
 - `message` **ApiMessage**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## handOverReply
 
@@ -2013,18 +2186,18 @@ model reads the error in the next round, as it would any tool's.
 
 ### Parameters
 
-- `toolCalls` **[Array][1411]\<ToolCall>** The round's calls, one of them handing over
-- `messageId` **[string][1409]** The assistant message being written
-- `state` **[StreamingState][77]** The turn's streaming state
-- `edits` **[Array][1411]\<DocumentEdit>** The turn's record of what its tools changed
+- `toolCalls` **[Array][1577]\<ToolCall>** The round's calls, one of them handing over
+- `messageId` **[string][1575]** The assistant message being written
+- `state` **[StreamingState][78]** The turn's streaming state
+- `edits` **[Array][1577]\<DocumentEdit>** The turn's record of what its tools changed
 - `signal` **AbortSignal** The turn's
 
-Returns **[Promise][1414]<{results: [Array][1411]\<ApiMessage>, wrote: [boolean][1416]}>** The round's
+Returns **[Promise][1580]<{results: [Array][1577]\<ApiMessage>, wrote: [boolean][1582]}>** The round's
 results in call order, and whether the reply was written
 
 ## answered
 
-Type: [Map][1417]\<ToolCall, ApiMessage>
+Type: [Map][1583]\<ToolCall, ApiMessage>
 
 ## unlessForgotten
 
@@ -2034,9 +2207,9 @@ saved request, and a turn still running would otherwise write its own back.
 
 ### Parameters
 
-- `metadata` **Record<[string][1409], any>**&#x20;
+- `metadata` **Record<[string][1575], any>**&#x20;
 
-Returns **Record<[string][1409], any>**&#x20;
+Returns **Record<[string][1575], any>**&#x20;
 
 ## runCompletionLoop
 
@@ -2062,10 +2235,10 @@ where it got to rather than mid-work.
 
 ### Parameters
 
-- `params` **[Object][1412]**&#x20;
-  - `params.messages` **[Array][1411]** Initial messages
-  - `params.messageId` **[string][1409]** Assistant message ID for streaming
-  - `params.turnMetadata` **[Object][1412]?** Metadata already on the message, carried
+- `params` **[Object][1578]**&#x20;
+  - `params.messages` **[Array][1577]** Initial messages
+  - `params.messageId` **[string][1575]** Assistant message ID for streaming
+  - `params.turnMetadata` **[Object][1578]?** Metadata already on the message, carried
     through the mid-turn writes because updateMessage replaces metadata whole (optional, default `{}`)
   - `params.signal` **AbortSignal** The turn's. Once it is aborted the
     loop writes nothing more and throws its reason.
@@ -2074,7 +2247,7 @@ where it got to rather than mid-work.
 
 ## apiTrajectory
 
-Type: [Array][1411]\<ApiMessage>
+Type: [Array][1577]\<ApiMessage>
 
 ## edits
 
@@ -2092,7 +2265,7 @@ What the last few rounds amounted to. @type {string\[]}
 
 ## result
 
-Type: [Imported][631]
+Type: [Imported][665]
 
 ###
 
@@ -2104,16 +2277,16 @@ Generate an AI response for the current conversation
 
 ### Parameters
 
-- `storyId` **[string][1409]** The story ID
-- `chatId` **[string][1409]** The chat ID
-- `into` **[string][1409]** An assistant message to write into, emptied and
+- `storyId` **[string][1575]** The story ID
+- `chatId` **[string][1575]** The chat ID
+- `into` **[string][1575]** An assistant message to write into, emptied and
   waiting, or '' for a new one at the end. Asking again: the message
   keeps its place and its other answers, and the conversation is read
   as it stood before it.
 - `signal` **AbortSignal** The work's, from `begin`. Whoever began it
   ends it.
 
-Returns **[Promise][1414]<(Message | null)>** The generated assistant message, or null
+Returns **[Promise][1580]<(Message | null)>** The generated assistant message, or null
 if it was stopped
 
 ##
@@ -2126,9 +2299,9 @@ Send a message and get AI response
 
 ### Parameters
 
-- `userMessage` **[string][1409]** The user's message
+- `userMessage` **[string][1575]** The user's message
 
-Returns **[Promise][1414]<(Message | null)>** The generated assistant message or null
+Returns **[Promise][1580]<(Message | null)>** The generated assistant message or null
 
 ## insertMessage
 
@@ -2147,10 +2320,10 @@ that promises not to call a model.
 
 ### Parameters
 
-- `text` **[string][1409]** What to write
+- `text` **[string][1575]** What to write
 - `role` **(`"user"` | `"assistant"`)?** Whose turn it is (optional, default `'user'`)
 
-Returns **[Promise][1414]<(Message | null)>** The last message written, or null if there
+Returns **[Promise][1580]<(Message | null)>** The last message written, or null if there
 was nothing to write
 
 ## regenerateMessage
@@ -2165,9 +2338,9 @@ forced.
 
 ### Parameters
 
-- `messageId` **[string][1409]** The assistant message to ask again
+- `messageId` **[string][1575]** The assistant message to ask again
 
-Returns **[Promise][1414]<(Message | null)>** The message, answered again, or null
+Returns **[Promise][1580]<(Message | null)>** The message, answered again, or null
 
 ## selectAlternate
 
@@ -2181,15 +2354,15 @@ each where the writer has not been since, and the rest reported.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `index` **[number][1410]** Which answer, in the order they were asked for
+- `messageId` **[string][1575]**&#x20;
+- `index` **[number][1576]** Which answer, in the order they were asked for
 
 <!---->
 
-- Throws **[Error][1413]** While an answer is being written, when the message is
+- Throws **[Error][1579]** While an answer is being written, when the message is
   not the last, or when there is no such answer
 
-Returns **[Promise][1414]<{skipped: [Array][1411]\<DocumentEdit>}>** The changes left as the
+Returns **[Promise][1580]<{skipped: [Array][1577]\<DocumentEdit>}>** The changes left as the
 writer has them, in either direction
 
 ## selectAlternate
@@ -2198,8 +2371,8 @@ Show one of a message's answers.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `index` **[number][1410]**&#x20;
+- `messageId` **[string][1575]**&#x20;
+- `index` **[number][1576]**&#x20;
 
 Returns **Message**&#x20;
 
@@ -2211,29 +2384,31 @@ left as the writer has it, and reported.
 
 ### Parameters
 
-- `messages` **[Array][1411]\<Message>** The turns being removed, in chat order
+- `messages` **[Array][1577]\<Message>** The turns being removed, in chat order
 
 Returns **[RewindOutcome][25]**&#x20;
 
 ## reverted
 
-Type: [Array][1411]\<DocumentEdit>
+Type: [Array][1577]\<DocumentEdit>
 
 ## skipped
 
-Type: [Array][1411]\<DocumentEdit>
+Type: [Array][1577]\<DocumentEdit>
 
 ## skipped
 
-Type: [Array][1411]\<DocumentEdit>
+Type: [Array][1577]\<DocumentEdit>
 
 ## skipped
 
-Type: [Array][1411]<{id: [string][1409], reason: [string][1409]}>
+Type: [Array][1577]<{id: [string][1575], reason: [string][1575]}>
 
 ## skipped
 
-Type: [Array][1411]<{id: [string][1409], reason: [string][1409]}>
+Type: [Array][1577]<{id: [string][1575], reason: [string][1575]}>
+
+## skipped
 
 ## editsOf
 
@@ -2242,41 +2417,41 @@ turn's last change first.
 
 ### Parameters
 
-- `messages` **[Array][1411]\<Message>** In chat order
+- `messages` **[Array][1577]\<Message>** In chat order
 
-Returns **[Array][1411]\<DocumentEdit>**&#x20;
-
-## out
-
-Type: [Array][1411]\<DocumentEdit>
+Returns **[Array][1577]\<DocumentEdit>**&#x20;
 
 ## out
 
-Type: [Array][1411]<[Document][1418]>
+Type: [Array][1577]\<DocumentEdit>
 
 ## out
 
-Type: [Array][1411]<[Document][1418]>
+Type: [Array][1577]<[Document][1584]>
 
 ## out
 
-Type: [Array][1411]<[Document][1418]>
+Type: [Array][1577]<[Document][1584]>
 
 ## out
 
-Type: [Array][1411]\<Message>
+Type: [Array][1577]<[Document][1584]>
 
 ## out
 
-Type: [Array][1411]\<Message>
+Type: [Array][1577]\<Message>
 
 ## out
 
-Type: [Array][1411]<[Document][1418]>
+Type: [Array][1577]\<Message>
 
 ## out
 
-Type: Record<[string][1409], [Array][1411]\<any>>
+Type: [Array][1577]<[Document][1584]>
+
+## out
+
+Type: Record<[string][1575], [Array][1577]\<any>>
 
 ## reapplyMessage
 
@@ -2288,11 +2463,11 @@ edited since is left as they have it, and reported.
 
 - `message` **Message** The turn, showing the answer whose changes to make
 
-Returns **[Promise][1414]<{made: [Array][1411]\<DocumentEdit>, skipped: [Array][1411]\<DocumentEdit>}>**&#x20;
+Returns **[Promise][1580]<{made: [Array][1577]\<DocumentEdit>, skipped: [Array][1577]\<DocumentEdit>}>**&#x20;
 
 ## made
 
-Type: [Array][1411]\<DocumentEdit>
+Type: [Array][1577]\<DocumentEdit>
 
 ## recordOf
 
@@ -2301,9 +2476,9 @@ decision the writer made while the turn was still writing.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
+- `messageId` **[string][1575]**&#x20;
 
-Returns **([Array][1411]\<DocumentEdit> | [undefined][1415])**&#x20;
+Returns **([Array][1577]\<DocumentEdit> | [undefined][1581])**&#x20;
 
 ## rewriteEdit
 
@@ -2311,8 +2486,8 @@ One recorded change with its status rewritten, on the message it belongs to.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `index` **[number][1410]**&#x20;
+- `messageId` **[string][1575]**&#x20;
+- `index` **[number][1576]**&#x20;
 - `change` &#x20;
 
 ## acceptEdit
@@ -2322,12 +2497,12 @@ it. Recorded as applied, so rewinding past the turn undoes it.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `index` **[number][1410]** Which of the turn's recorded changes
+- `messageId` **[string][1575]**&#x20;
+- `index` **[number][1576]** Which of the turn's recorded changes
 
 <!---->
 
-- Throws **[Error][1413]** When the document has changed since, or nothing is waiting
+- Throws **[Error][1579]** When the document has changed since, or nothing is waiting
 
 ## rejectEdit
 
@@ -2336,8 +2511,8 @@ what was offered.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `index` **[number][1410]**&#x20;
+- `messageId` **[string][1575]**&#x20;
+- `index` **[number][1576]**&#x20;
 
 ## rewindPlan
 
@@ -2346,13 +2521,13 @@ the documents their tools changed, so the writer can be asked first.
 
 ### Parameters
 
-- `messageId` **[string][1409]** The message to keep as the last one
+- `messageId` **[string][1575]** The message to keep as the last one
 
 Returns **[RewindPlan][23]**&#x20;
 
 ## documents
 
-Type: [Map][1417]<[string][1409], {documentId: [string][1409], path: [string][1409]}>
+Type: [Map][1583]<[string][1575], {documentId: [string][1575], path: [string][1575]}>
 
 ## documents
 
@@ -2361,7 +2536,7 @@ is queued for removal.
 
 ## documents
 
-Type: [Array][1411]<[Document][1418]>
+Type: [Array][1577]<[Document][1584]>
 
 ## rewindTo
 
@@ -2371,7 +2546,7 @@ has not been since.
 
 ### Parameters
 
-- `messageId` **[string][1409]** The message to keep as the last one
+- `messageId` **[string][1575]** The message to keep as the last one
 
 Returns **[RewindOutcome][25]**&#x20;
 
@@ -2381,9 +2556,9 @@ Resend a user message (truncate everything after it and generate new response)
 
 ### Parameters
 
-- `messageId` **[string][1409]** The user message ID to resend
+- `messageId` **[string][1575]** The user message ID to resend
 
-Returns **[Promise][1414]<(Message | null)>** The new assistant message or null
+Returns **[Promise][1580]<(Message | null)>** The new assistant message or null
 
 ## generateChatTitle
 
@@ -2391,10 +2566,10 @@ Generate a title for a chat based on the first user message
 
 ### Parameters
 
-- `userMessage` **[string][1409]** The first user message
+- `userMessage` **[string][1575]** The first user message
 - `signal` **AbortSignal?** Stops it, and it answers with the default
 
-Returns **[Promise][1414]<[string][1409]>** Generated title
+Returns **[Promise][1580]<[string][1575]>** Generated title
 
 ## messages
 
@@ -2407,10 +2582,10 @@ model, and this is where the model is. See useChatCommands.
 
 ### Parameters
 
-- `messageId` **[string][1409]** A message carrying a command
-- `index` **([number][1410] | null)?** Which segment, on a turn the writer took (optional, default `null`)
+- `messageId` **[string][1575]** A message carrying a command
+- `index` **([number][1576] | null)?** Which segment, on a turn the writer took (optional, default `null`)
 
-Returns **[Promise][1414]<(Message | null)>**&#x20;
+Returns **[Promise][1580]<(Message | null)>**&#x20;
 
 ## editCommand
 
@@ -2429,11 +2604,11 @@ which is the one being written and would be written straight over.
 
 ### Parameters
 
-- `messageId` **[string][1409]** A message carrying a command
-- `index` **([number][1410] | null)** Which piece, or null for the whole turn
-- `text` **[string][1409]** The turn as the writer has now written it
+- `messageId` **[string][1575]** A message carrying a command
+- `index` **([number][1576] | null)** Which piece, or null for the whole turn
+- `text` **[string][1575]** The turn as the writer has now written it
 
-Returns **[Promise][1414]<(Message | null)>**&#x20;
+Returns **[Promise][1580]<(Message | null)>**&#x20;
 
 ## halt
 
@@ -2451,7 +2626,7 @@ thinking, and no record of a call it made or a change it made.
 
 - `message` **Message**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## stopGeneration
 
@@ -2463,7 +2638,7 @@ altogether; one asked for again goes back to the answer it was asked
 instead of, and the project to how that answer left it, since asking
 again undid it.
 
-Returns **[Promise][1414]<{skipped: [Array][1411]\<DocumentEdit>}>** The changes of the answer
+Returns **[Promise][1580]<{skipped: [Array][1577]\<DocumentEdit>}>** The changes of the answer
 gone back to that were left as the writer has them
 
 ## stopGeneration
@@ -2477,8 +2652,8 @@ first, when it is the one going.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `index` **([number][1410] | null)?** Which piece, on a turn of pieces (optional, default `null`)
+- `messageId` **[string][1575]**&#x20;
+- `index` **([number][1576] | null)?** Which piece, on a turn of pieces (optional, default `null`)
 
 ## aiPresetDefaults
 
@@ -2503,7 +2678,7 @@ which is what the old separate Duplicate was for.
 
 ### Parameters
 
-- `name` **[string][1409]?** Display name (optional, default `'New preset'`)
+- `name` **[string][1575]?** Display name (optional, default `'New preset'`)
 
 Returns **AIPreset**&#x20;
 
@@ -2514,9 +2689,9 @@ never left pointing at a deleted preset.
 
 ### Parameters
 
-- `presetId` **[string][1409]** Preset to delete
+- `presetId` **[string][1575]** Preset to delete
 
-Returns **[boolean][1416]** True if deleted
+Returns **[boolean][1582]** True if deleted
 
 ## useDocumentsStore
 
@@ -2525,29 +2700,29 @@ buildContext.
 
 ## BuildArgs
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
 - `mode` **ContextMode**&#x20;
-- `documentId` **[string][1409]?**&#x20;
-- `chatId` **[string][1409]?**&#x20;
-- `systemPrompt` **[string][1409]**&#x20;
-- `userPrompt` **[string][1409]?**&#x20;
-- `before` **[string][1409]?**&#x20;
-- `past` **[number][1410]?**&#x20;
+- `documentId` **[string][1575]?**&#x20;
+- `chatId` **[string][1575]?**&#x20;
+- `systemPrompt` **[string][1575]**&#x20;
+- `userPrompt` **[string][1575]?**&#x20;
+- `before` **[string][1575]?**&#x20;
+- `past` **[number][1576]?**&#x20;
 
 ## build
 
 ### Parameters
 
-- `opts` **[BuildArgs][170]**&#x20;
+- `opts` **[BuildArgs][172]**&#x20;
 
-Returns **[Promise][1414]<{messages: [Array][1411]}>**&#x20;
+Returns **[Promise][1580]<{messages: [Array][1577]}>**&#x20;
 
 ## AIModel
 
-Type: {id: [string][1409], name: [string][1409]}
+Type: {id: [string][1575], name: [string][1575]}
 
 ## parseModelsResponse
 
@@ -2555,24 +2730,24 @@ Parse models response from API
 
 ### Parameters
 
-- `response` **[Response][1419]** Fetch response
-- `providerName` **[string][1409]** Provider name for logging
+- `response` **[Response][1585]** Fetch response
+- `providerName` **[string][1575]** Provider name for logging
 
 <!---->
 
-- Throws **[Error][1413]** When response is invalid
+- Throws **[Error][1579]** When response is invalid
 
-Returns **[Promise][1414]<[Array][1411]<[AIModel][174]>>** Parsed and sorted models
+Returns **[Promise][1580]<[Array][1577]<[AIModel][176]>>** Parsed and sorted models
 
 ## AIConfig
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `providerId` **[string][1409]** Provider ID
-- `model` **[string][1409]** Model identifier
-- `allowedProviders` **[Array][1411]<[string][1409]>?** OpenRouter only: the upstreams
+- `providerId` **[string][1575]** Provider ID
+- `model` **[string][1575]** Model identifier
+- `allowedProviders` **[Array][1577]<[string][1575]>?** OpenRouter only: the upstreams
   allowed to serve this model. Empty or absent allows any.
 
 ## StreamChunk
@@ -2582,12 +2757,12 @@ that just arrived; `toolCalls` is every call so far, whole, each time any
 of them grows — the arguments are a JSON text mid-arrival, and the chat
 reads them as such.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `content` **[string][1409]**&#x20;
-- `reasoning` **([string][1409] | null)**&#x20;
+- `content` **[string][1575]**&#x20;
+- `reasoning` **([string][1575] | null)**&#x20;
 
 ## accumulateToolCalls
 
@@ -2596,7 +2771,7 @@ Tool calls stream as indexed deltas that need merging
 
 ### Parameters
 
-- `accumulated` **[Array][1411]\<ToolCall>** Array of accumulated tool calls
+- `accumulated` **[Array][1577]\<ToolCall>** Array of accumulated tool calls
 - `deltas` &#x20;
 
 ##
@@ -2617,15 +2792,15 @@ readable text. Anything a provider sends is passed through untouched, since
 a block that has lost a field it was signed with is a block the provider
 will reject when the turn continues.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `type` **[string][1409]** Type of reasoning (e.g., 'reasoning.text')
-- `text` **[string][1409]?** Reasoning text content
-- `signature` **[string][1409]?** Cryptographic signature for continuation
-- `format` **[string][1409]?** Format identifier (e.g., 'anthropic-claude-v1')
-- `index` **[number][1410]** Index in the reasoning chain
+- `type` **[string][1575]** Type of reasoning (e.g., 'reasoning.text')
+- `text` **[string][1575]?** Reasoning text content
+- `signature` **[string][1575]?** Cryptographic signature for continuation
+- `format` **[string][1575]?** Format identifier (e.g., 'anthropic-claude-v1')
+- `index` **[number][1576]** Index in the reasoning chain
 
 ## accumulateReasoningDetails
 
@@ -2639,12 +2814,12 @@ failure shows up later, mid-tool-loop, as a rejected continuation.
 
 ### Parameters
 
-- `accumulated` **[Array][1411]<[ReasoningDetail][185]>** Array of accumulated reasoning details
-- `deltas` **[Array][1411]<[ReasoningDetail][185]>** Deltas to merge
+- `accumulated` **[Array][1577]<[ReasoningDetail][187]>** Array of accumulated reasoning details
+- `deltas` **[Array][1577]<[ReasoningDetail][187]>** Deltas to merge
 
 ## OpenRouterProvider
 
-Type: {slug: [string][1409], name: [string][1409]}
+Type: {slug: [string][1575], name: [string][1575]}
 
 ## openRouterProvidersPromise
 
@@ -2652,16 +2827,16 @@ The upstream providers OpenRouter can route to. Public — no key needed — and
 stable enough to cache for the life of the page, since the routing panel
 re-reads it every time it opens.
 
-Type: ([Promise][1414]<[Array][1411]<[OpenRouterProvider][189]>> | null)
+Type: ([Promise][1580]<[Array][1577]<[OpenRouterProvider][191]>> | null)
 
 ## listOpenRouterProviders
 
 Fetch the OpenRouter provider directory, so the routing panel can offer real
 names instead of asking the user to know slugs.
 
-- Throws **[Error][1413]** When the request fails or returns an unexpected shape
+- Throws **[Error][1579]** When the request fails or returns an unexpected shape
 
-Returns **[Promise][1414]<[Array][1411]<[OpenRouterProvider][189]>>** Providers sorted by display name
+Returns **[Promise][1580]<[Array][1577]<[OpenRouterProvider][191]>>** Providers sorted by display name
 
 ## modelProvidersPromises
 
@@ -2669,7 +2844,7 @@ Which providers serve each model, by model id. Cached for the life of the
 page like the directory: the picker asks again every time it opens, and
 which upstreams carry a model changes over weeks, not minutes.
 
-Type: [Map][1417]<[string][1409], [Promise][1414]<[Array][1411]<[OpenRouterProvider][189]>>>
+Type: [Map][1583]<[string][1575], [Promise][1580]<[Array][1577]<[OpenRouterProvider][191]>>>
 
 ## listModelProviders
 
@@ -2685,13 +2860,13 @@ endpoints of its own — so the caller decides what empty means.
 
 ### Parameters
 
-- `model` **[string][1409]** A model id as OpenRouter lists it, `z-ai/glm-5.2`
+- `model` **[string][1575]** A model id as OpenRouter lists it, `z-ai/glm-5.2`
 
 <!---->
 
-- Throws **[Error][1413]** When the request fails, the model is unknown, or the shape is unexpected
+- Throws **[Error][1579]** When the request fails, the model is unknown, or the shape is unexpected
 
-Returns **[Promise][1414]<[Array][1411]<[OpenRouterProvider][189]>>** Each provider once, in the order listed
+Returns **[Promise][1580]<[Array][1577]<[OpenRouterProvider][191]>>** Each provider once, in the order listed
 
 ## explainFailure
 
@@ -2719,12 +2894,12 @@ another model, so say where both live.
 ### Parameters
 
 - `reported` **unknown** What the provider said
-- `$1` **[Object][1412]**&#x20;
+- `$1` **[Object][1578]**&#x20;
   - `$1.sentReasoning` &#x20;
   - `$1.askedForEffort` &#x20;
   - `$1.routed` (optional, default `false`)
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## useAIService
 
@@ -2736,21 +2911,21 @@ List available models for a specific provider
 
 ### Parameters
 
-- `providerId` **[string][1409]** The provider ID
+- `providerId` **[string][1575]** The provider ID
 
 <!---->
 
-- Throws **[Error][1413]** When provider not found or API call fails
+- Throws **[Error][1579]** When provider not found or API call fails
 
-Returns **[Promise][1414]<[Array][1411]<[AIModel][174]>>** Array of available models
-
-## headers
-
-Type: Record<[string][1409], [string][1409]>
+Returns **[Promise][1580]<[Array][1577]<[AIModel][176]>>** Array of available models
 
 ## headers
 
-Type: Record<[string][1409], [string][1409]>
+Type: Record<[string][1575], [string][1575]>
+
+## headers
+
+Type: Record<[string][1575], [string][1575]>
 
 ## generateChatCompletion
 
@@ -2764,10 +2939,10 @@ reasoning and maxTokens come from AI_DEFAULTS, optionally adjusted by
 ### Parameters
 
 - `messages` &#x20;
-- `config` **[AIConfig][177]** Active AI configuration (providerId, model, allowed providers)
+- `config` **[AIConfig][179]** Active AI configuration (providerId, model, allowed providers)
 - `onChunk` &#x20;
-- `options` **[Object][1412]?** Additional options (optional, default `{}`)
-  - `options.tools` **[Array][1411]\<ToolDefinition>?** Tool definitions to include
+- `options` **[Object][1578]?** Additional options (optional, default `{}`)
+  - `options.tools` **[Array][1577]\<ToolDefinition>?** Tool definitions to include
   - `options.toolChoice` **(`"auto"` | `"none"`)?** `none` to have it answer without calling any
   - `options.overrides` **AISettingsOverrides?** Per-call overrides on top of AI_DEFAULTS
   - `options.signal` **AbortSignal?** Stops the request. Each caller
@@ -2776,16 +2951,16 @@ reasoning and maxTokens come from AI_DEFAULTS, optionally adjusted by
 
 <!---->
 
-- Throws **[Error][1413]** When provider not found or API call fails, and the
+- Throws **[Error][1579]** When provider not found or API call fails, and the
   signal's `AbortError` when it is stopped
 
 ## toolCalls
 
-Type: [Array][1411]\<ToolCall>
+Type: [Array][1577]\<ToolCall>
 
 ## reasoningDetails
 
-Type: [Array][1411]<[ReasoningDetail][185]>
+Type: [Array][1577]<[ReasoningDetail][187]>
 
 ## streamError
 
@@ -2797,9 +2972,9 @@ Validate an OpenRouter API key by checking the auth endpoint
 
 ### Parameters
 
-- `apiKey` **[string][1409]** The API key to validate
+- `apiKey` **[string][1575]** The API key to validate
 
-Returns **[Promise][1414]<[boolean][1416]>** True if valid, false otherwise
+Returns **[Promise][1580]<[boolean][1582]>** True if valid, false otherwise
 
 ## exchangeOAuthCode
 
@@ -2807,14 +2982,14 @@ Exchange OAuth authorization code for an API key
 
 ### Parameters
 
-- `code` **[string][1409]** Authorization code from OAuth callback
-- `codeVerifier` **[string][1409]** PKCE code verifier
+- `code` **[string][1575]** Authorization code from OAuth callback
+- `codeVerifier` **[string][1575]** PKCE code verifier
 
 <!---->
 
-- Throws **[Error][1413]** When exchange fails
+- Throws **[Error][1579]** When exchange fails
 
-Returns **[Promise][1414]<[string][1409]>** The API key
+Returns **[Promise][1580]<[string][1575]>** The API key
 
 ## composables/useAISummarize
 
@@ -2854,7 +3029,7 @@ This is a singleton composable - all instances share the same state
 Check if AI is properly configured
 
 - Throws **ProviderNotConfiguredError** If provider is not properly configured
-- Throws **[Error][1413]** If other configuration issues exist
+- Throws **[Error][1579]** If other configuration issues exist
 
 Returns **AIPreset** The active AI profile if configured
 
@@ -2864,9 +3039,9 @@ Get the content of a scene
 
 ### Parameters
 
-- `documentId` **[string][1409]** The scene ID
+- `documentId` **[string][1575]** The scene ID
 
-Returns **[string][1409]** The scene content as plain text
+Returns **[string][1575]** The scene content as plain text
 
 ## handleSummarize
 
@@ -2874,11 +3049,11 @@ Generate a summary for a scene/chapter
 
 ### Parameters
 
-- `storyId` **[string][1409]** The story ID
-- `documentId` **[string][1409]** Scene ID to summarize
+- `storyId` **[string][1575]** The story ID
+- `documentId` **[string][1575]** Scene ID to summarize
 - `onChunk` &#x20;
 
-Returns **[Promise][1414]<[string][1409]>** The generated summary
+Returns **[Promise][1580]<[string][1575]>** The generated summary
 
 ## utils/markdown
 
@@ -2912,9 +3087,9 @@ What a link in a story is allowed to be. Everything else is not a link.
 
 ### Parameters
 
-- `text` **[string][1409]**&#x20;
+- `text` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## isSafeUrl
 
@@ -2927,9 +3102,9 @@ is this app.
 
 ### Parameters
 
-- `href` **[string][1409]**&#x20;
+- `href` **[string][1575]**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## reader
 
@@ -2945,9 +3120,9 @@ Render markdown to HTML
 
 ### Parameters
 
-- `markdown` **[string][1409]** Markdown text to render
+- `markdown` **[string][1575]** Markdown text to render
 
-Returns **[string][1409]** Rendered HTML
+Returns **[string][1575]** Rendered HTML
 
 ## stripMarkdown
 
@@ -2955,9 +3130,9 @@ Strip markdown formatting from text for immediate display
 
 ### Parameters
 
-- `text` **[string][1409]** Text with markdown formatting
+- `text` **[string][1575]** Text with markdown formatting
 
-Returns **[string][1409]** Plain text with markdown symbols removed
+Returns **[string][1575]** Plain text with markdown symbols removed
 
 ## stores/documentsStore
 
@@ -2985,9 +3160,17 @@ const chapters = store.getChildrenOrdered('part_456')
 
 ## generateDocumentId
 
+## generateDocumentId
+
 Generate a unique document ID
 
-Returns **[string][1409]** Document ID in format doc_xxx
+Returns **[string][1575]** Document ID in format doc_xxx
+
+## EDITED_GRAIN
+
+How finely a project's last edit is kept: a minute, in milliseconds.
+
+Type: [number][1576]
 
 ## childrenByParent
 
@@ -3003,8 +3186,8 @@ Add a document id to its parent's child set.
 
 ### Parameters
 
-- `parentId` **[string][1409]**&#x20;
-- `id` **[string][1409]**&#x20;
+- `parentId` **[string][1575]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## unindexChild
 
@@ -3012,8 +3195,8 @@ Remove a document id from its parent's child set.
 
 ### Parameters
 
-- `parentId` **[string][1409]**&#x20;
-- `id` **[string][1409]**&#x20;
+- `parentId` **[string][1575]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## getDocument
 
@@ -3021,9 +3204,9 @@ Get a live document by id
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **([Document][1418] | null)**&#x20;
+Returns **([Document][1584] | null)**&#x20;
 
 ## getChildren
 
@@ -3031,9 +3214,9 @@ Get the children of a parent, unsorted
 
 ### Parameters
 
-- `parentId` **[string][1409]** A document id, or a storyId for root documents
+- `parentId` **[string][1575]** A document id, or a storyId for root documents
 
-Returns **[Array][1411]<[Document][1418]>**&#x20;
+Returns **[Array][1577]<[Document][1584]>**&#x20;
 
 ## getChildrenOrdered
 
@@ -3046,17 +3229,17 @@ arbitrary one.
 
 ### Parameters
 
-- `parentId` **[string][1409]**&#x20;
+- `parentId` **[string][1575]**&#x20;
 
-Returns **[Array][1411]<[Document][1418]>**&#x20;
-
-##
-
-Type: [Document][1418]
+Returns **[Array][1577]<[Document][1584]>**&#x20;
 
 ##
 
-Type: [Document][1418]
+Type: [Document][1584]
+
+##
+
+Type: [Document][1584]
 
 ## containsDocument
 
@@ -3068,10 +3251,10 @@ that a two-finger gesture rather than a hypothetical.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `candidateId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
+- `candidateId` **[string][1575]**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## createDocument
 
@@ -3079,33 +3262,34 @@ Create a document.
 
 ### Parameters
 
-- `opts` **[object][1412]**&#x20;
-  - `opts.storyId` **[string][1409]** Owning story
-  - `opts.parentId` **[string][1409]** Parent document id, or the storyId for a root document
+- `opts` **[object][1578]**&#x20;
+  - `opts.storyId` **[string][1575]** Owning story
+  - `opts.parentId` **[string][1575]** Parent document id, or the storyId for a root document
   - `opts.type` **(`"folder"` | `"text"` | `"file"`)**&#x20;
-  - `opts.title` **[string][1409]**&#x20;
-  - `opts.id` **[string][1409]?** Explicit id, for callers that mint their own
-  - `opts.order` **[number][1410]?** Defaults to appending after existing siblings
-  - `opts.content` **[string][1409]?** Text documents and files only: markdown,
+  - `opts.title` **[string][1575]**&#x20;
+  - `opts.id` **[string][1575]?** Explicit id, for callers that mint their own
+  - `opts.order` **[number][1576]?** Defaults to appending after existing siblings
+  - `opts.content` **[string][1575]?** Text documents and files only: markdown,
     or the text read out of the file (optional, default `''`)
-  - `opts.ordered` **[boolean][1416]?** Folders only; new folders are unordered by default (optional, default `false`)
-  - `opts.summary` **[string][1409]?** A short description, for the listing the model reads (optional, default `''`)
-  - `opts.kind` **[string][1409]?** What this document is, for an importer and its exporter
-  - `opts.hidden` **[boolean][1416]?** Kept from the model, and so is anything under it
-  - `opts.plain` **[boolean][1416]?** Edited as plain text and stored as typed
-  - `opts.mime` **[string][1409]?** Files only: the media type
-  - `opts.size` **[number][1410]?** Files only: bytes
-  - `opts.pages` **[number][1410]?** Files only: how many pages, when the format has them
+  - `opts.ordered` **[boolean][1582]?** Folders only; new folders are unordered by default (optional, default `false`)
+  - `opts.summary` **[string][1575]?** A short description, for the listing the model reads (optional, default `''`)
+  - `opts.kind` **[string][1575]?** What this document is, for an importer and its exporter
+  - `opts.hidden` **[boolean][1582]?** Kept from the model, and so is anything under it
+  - `opts.plain` **[boolean][1582]?** Edited as plain text and stored as typed
+  - `opts.mime` **[string][1575]?** Files only: the media type
+  - `opts.size` **[number][1576]?** Files only: bytes
+  - `opts.pages` **[number][1576]?** Files only: how many pages, when the format has them
+  - `opts.source` **RepositorySource?** Repository folders only: where its code was read from
 
 <!---->
 
-- Throws **[Error][1413]** If storyId or parentId is missing
+- Throws **[Error][1579]** If storyId or parentId is missing
 
-Returns **[Document][1418]**&#x20;
+Returns **[Document][1584]**&#x20;
 
 ## document
 
-Type: [Document][1418]
+Type: [Document][1584]
 
 ## updateDocument
 
@@ -3114,22 +3298,22 @@ content.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `updates` **Partial<[Document][1418]>**&#x20;
+- `documentId` **[string][1575]**&#x20;
+- `updates` **Partial<[Document][1584]>**&#x20;
 
 <!---->
 
-- Throws **[Error][1413]** If the document is not found
+- Throws **[Error][1579]** If the document is not found
 
-Returns **[Document][1418]**&#x20;
-
-## next
-
-Type: [Document][1418]
+Returns **[Document][1584]**&#x20;
 
 ## next
 
-Type: [Array][1411]\<MessageSegment>
+Type: [Document][1584]
+
+## next
+
+Type: [Array][1577]\<MessageSegment>
 
 ## deleteDocument
 
@@ -3138,11 +3322,23 @@ caller's decision, as it was with parts and scenes.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 <!---->
 
-- Throws **[Error][1413]** If the document is not found
+- Throws **[Error][1579]** If the document is not found
+
+## markEdited
+
+Note on a project's root that something in it changed, for the project
+picker's "last edited". To the minute, which is as finely as the picker
+tells time, so that typing does not rewrite the root on every save. Written
+to the root directly: through `updateDocument` it would note itself.
+
+### Parameters
+
+- `storyId` **[string][1575]**&#x20;
+- `at` **[number][1576]?** When, if not now: worked out after the fact (optional, default `Date.now()`)
 
 ## deleteChildren
 
@@ -3150,10 +3346,10 @@ Delete every child of a parent, optionally of one type only.
 
 ### Parameters
 
-- `parentId` **[string][1409]**&#x20;
+- `parentId` **[string][1575]**&#x20;
 - `type` **(`"folder"` | `"text"` | `"file"`)?** Restrict to one kind of child
 
-Returns **[number][1410]** How many were deleted
+Returns **[number][1576]** How many were deleted
 
 ## reorderChildren
 
@@ -3162,18 +3358,18 @@ is how a drag between folders lands.
 
 ### Parameters
 
-- `parentId` **[string][1409]**&#x20;
-- `documentIds` **[Array][1411]<[string][1409]>** Child ids in their new order
+- `parentId` **[string][1575]**&#x20;
+- `documentIds` **[Array][1577]<[string][1575]>** Child ids in their new order
 
 <!---->
 
-- Throws **[Error][1413]** If parentId is missing or an id is unknown
+- Throws **[Error][1579]** If parentId is missing or an id is unknown
 
-Returns **[Array][1411]<[Document][1418]>** The reordered children
+Returns **[Array][1577]<[Document][1584]>** The reordered children
 
 ## updates
 
-Type: Partial<[Document][1418]>
+Type: Partial<[Document][1584]>
 
 ## loadStory
 
@@ -3184,13 +3380,13 @@ hundred documents, so one read covers it.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 <!---->
 
-- Throws **[Error][1413]** If storyId is missing or the read fails
+- Throws **[Error][1579]** If storyId is missing or the read fails
 
-Returns **[Promise][1414]\<void>**&#x20;
+Returns **[Promise][1580]\<void>**&#x20;
 
 ## ensureRoot
 
@@ -3210,10 +3406,10 @@ dead on the next reload is nothing but a bug.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
-- `storyTitle` **[string][1409]?** Seeds the root node's title; it is its own from then on
+- `storyId` **[string][1575]**&#x20;
+- `storyTitle` **[string][1575]?** Seeds the root node's title; it is its own from then on
 
-Returns **[Document][1418]** The root, created or already present
+Returns **[Document][1584]** The root, created or already present
 
 ## deleteStoryDocuments
 
@@ -3225,9 +3421,9 @@ tree has to go.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
-Returns **[Promise][1414]<[number][1410]>** How many were deleted
+Returns **[Promise][1580]<[number][1576]>** How many were deleted
 
 ## getRoot
 
@@ -3235,9 +3431,9 @@ A story's root node — the project itself, which carries its name.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
-Returns **([Document][1418] | null)**&#x20;
+Returns **([Document][1584] | null)**&#x20;
 
 ## loadRoots
 
@@ -3252,9 +3448,9 @@ root-only read would make `loadStory` skip the rest of the tree.
 
 ### Parameters
 
-- `storyIds` **[Array][1411]<[string][1409]>**&#x20;
+- `storyIds` **[Array][1577]<[string][1575]>**&#x20;
 
-Returns **[Promise][1414]\<void>**&#x20;
+Returns **[Promise][1580]\<void>**&#x20;
 
 ## renameProject
 
@@ -3265,14 +3461,14 @@ the bookshelf renames stories it has only the records for.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
-- `title` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
+- `title` **[string][1575]**&#x20;
 
 <!---->
 
-- Throws **[Error][1413]** If the story has no root node
+- Throws **[Error][1579]** If the story has no root node
 
-Returns **[Promise][1414]<[Document][1418]>**&#x20;
+Returns **[Promise][1580]<[Document][1584]>**&#x20;
 
 ## isStoryLoaded
 
@@ -3280,13 +3476,13 @@ Whether a story's tree is already in memory.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## SYNC_DEBOUNCE_MS
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## pendingChanges
 
@@ -3300,8 +3496,8 @@ Track a change for persistence
 
 ### Parameters
 
-- `entityType` **[string][1409]** Type of entity (table name)
-- `id` **[string][1409]** Entity ID
+- `entityType` **[string][1575]** Type of entity (table name)
+- `id` **[string][1575]** Entity ID
 - `data` **any** Entity data to persist
 
 Returns **void**&#x20;
@@ -3317,8 +3513,8 @@ delete — a restore — wins over it.
 
 ### Parameters
 
-- `entityType` **[string][1409]** Type of entity (table name)
-- `id` **[string][1409]** Entity ID
+- `entityType` **[string][1575]** Type of entity (table name)
+- `id` **[string][1575]** Entity ID
 
 Returns **void**&#x20;
 
@@ -3332,10 +3528,12 @@ Persist changes for a single entity type
 
 ### Parameters
 
-- `entityType` **[string][1409]** Type of entity (table name)
-- `entityChanges` **[Array][1411]\<Change>** Array of changes to persist
+- `entityType` **[string][1575]** Type of entity (table name)
+- `entityChanges` **[Array][1577]\<Change>** Array of changes to persist
 
-Returns **[Promise][1414]<[boolean][1416]>** True if successful
+Returns **[Promise][1580]<[boolean][1582]>** True if successful
+
+## table
 
 ## table
 
@@ -3343,11 +3541,11 @@ Returns **[Promise][1414]<[boolean][1416]>** True if successful
 
 Process all pending changes
 
-Returns **[Promise][1414]\<void>**&#x20;
+Returns **[Promise][1580]\<void>**&#x20;
 
 ## grouped
 
-Type: [Object][1412]<[string][1409], [Array][1411]\<Change>>
+Type: [Object][1578]<[string][1575], [Array][1577]\<Change>>
 
 ## stores/migrations/projectTree
 
@@ -3371,25 +3569,25 @@ and shared between the Dexie upgrade hook and backup restore.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 ## manuscriptIdFor
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 ## notesIdFor
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 ## draftsIdFor
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 ## folder
 
@@ -3397,16 +3595,16 @@ Build one of the fixed structural folders.
 
 ### Parameters
 
-- `opts` **[object][1412]**&#x20;
-  - `opts.id` **[string][1409]**&#x20;
-  - `opts.storyId` **[string][1409]**&#x20;
-  - `opts.parentId` **[string][1409]**&#x20;
-  - `opts.title` **[string][1409]**&#x20;
-  - `opts.order` **[number][1410]**&#x20;
-  - `opts.ordered` **[boolean][1416]**&#x20;
-  - `opts.now` **[number][1410]**&#x20;
+- `opts` **[object][1578]**&#x20;
+  - `opts.id` **[string][1575]**&#x20;
+  - `opts.storyId` **[string][1575]**&#x20;
+  - `opts.parentId` **[string][1575]**&#x20;
+  - `opts.title` **[string][1575]**&#x20;
+  - `opts.order` **[number][1576]**&#x20;
+  - `opts.ordered` **[boolean][1582]**&#x20;
+  - `opts.now` **[number][1576]**&#x20;
 
-Returns **[Document][1418]**&#x20;
+Returns **[Document][1584]**&#x20;
 
 ## folder
 
@@ -3414,15 +3612,15 @@ Build a folder document.
 
 ### Parameters
 
-- `opts` **[object][1412]**&#x20;
-  - `opts.id` **[string][1409]**&#x20;
-  - `opts.storyId` **[string][1409]**&#x20;
-  - `opts.parentId` **[string][1409]**&#x20;
-  - `opts.title` **[string][1409]**&#x20;
-  - `opts.order` **[number][1410]**&#x20;
-  - `opts.now` **[number][1410]**&#x20;
+- `opts` **[object][1578]**&#x20;
+  - `opts.id` **[string][1575]**&#x20;
+  - `opts.storyId` **[string][1575]**&#x20;
+  - `opts.parentId` **[string][1575]**&#x20;
+  - `opts.title` **[string][1575]**&#x20;
+  - `opts.order` **[number][1576]**&#x20;
+  - `opts.now` **[number][1576]**&#x20;
 
-Returns **[Document][1418]**&#x20;
+Returns **[Document][1584]**&#x20;
 
 ## rootNode
 
@@ -3435,11 +3633,11 @@ root without searching.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
-- `storyTitle` **[string][1409]?** Copied once; the root node's title is its own from then on
-- `now` **[number][1410]?** (optional, default `Date.now()`)
+- `storyId` **[string][1575]**&#x20;
+- `storyTitle` **[string][1575]?** Copied once; the root node's title is its own from then on
+- `now` **[number][1576]?** (optional, default `Date.now()`)
 
-Returns **[Document][1418]**&#x20;
+Returns **[Document][1584]**&#x20;
 
 ## defaultProjectFolders
 
@@ -3452,11 +3650,11 @@ nothing under its root.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
-- `storyTitle` **[string][1409]** Copied once; the root node's title is its own from then on
-- `now` **[number][1410]?** (optional, default `Date.now()`)
+- `storyId` **[string][1575]**&#x20;
+- `storyTitle` **[string][1575]** Copied once; the root node's title is its own from then on
+- `now` **[number][1576]?** (optional, default `Date.now()`)
 
-Returns **[Array][1411]<[Document][1418]>** root, manuscript, notes
+Returns **[Array][1577]<[Document][1584]>** root, manuscript, notes
 
 ## actTitle
 
@@ -3464,9 +3662,9 @@ The title the old outline would have displayed for an untitled act.
 
 ### Parameters
 
-- `act` **[Document][1418]**&#x20;
+- `act` **[Document][1584]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## byOrder
 
@@ -3474,8 +3672,8 @@ Sort helper matching the store's stable ordering.
 
 ### Parameters
 
-- `a` **[Document][1418]**&#x20;
-- `b` **[Document][1418]**&#x20;
+- `a` **[Document][1584]**&#x20;
+- `b` **[Document][1584]**&#x20;
 
 ## documentsToProjectTree
 
@@ -3490,19 +3688,19 @@ retried upgrade or a re-imported backup cannot double-nest.
 
 ### Parameters
 
-- `documents` **[Array][1411]<[Document][1418]>** Every document, across all stories
+- `documents` **[Array][1577]<[Document][1584]>** Every document, across all stories
 - `stories` &#x20;
-- `now` **[number][1410]?** (optional, default `Date.now()`)
+- `now` **[number][1576]?** (optional, default `Date.now()`)
 
-Returns **{documents: [Array][1411]<[Document][1418]>, restructured: [Array][1411]<[string][1409]>}** Full document set, and the stories touched
+Returns **{documents: [Array][1577]<[Document][1584]>, restructured: [Array][1577]<[string][1575]>}** Full document set, and the stories touched
 
 ## byStory
 
-Type: [Map][1417]<[string][1409], [Array][1411]<[Document][1418]>>
+Type: [Map][1583]<[string][1575], [Array][1577]<[Document][1584]>>
 
 ## restructured
 
-Type: [Array][1411]<[string][1409]>
+Type: [Array][1577]<[string][1575]>
 
 ## db
 
@@ -3543,14 +3741,14 @@ to be skipped rather than guessed at.
 
 ### Parameters
 
-- `parts` **[Array][1411]\<Part>**&#x20;
-- `scenes` **[Array][1411]\<Scene>**&#x20;
+- `parts` **[Array][1577]\<Part>**&#x20;
+- `scenes` **[Array][1577]\<Scene>**&#x20;
 
-Returns **{documents: [Array][1411]<[Document][1418]>, skipped: [Array][1411]<{id: [string][1409], reason: [string][1409]}>}**&#x20;
+Returns **{documents: [Array][1577]<[Document][1584]>, skipped: [Array][1577]<{id: [string][1575], reason: [string][1575]}>}**&#x20;
 
 ## storyIdByPart
 
-Type: [Map][1417]<[string][1409], [string][1409]>
+Type: [Map][1583]<[string][1575], [string][1575]>
 
 ## deleted
 
@@ -3605,9 +3803,9 @@ land in one folder rather than two that look identical in the tree.
 
 ### Parameters
 
-- `category` **[string][1409]**&#x20;
+- `category` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## categoryFolderIdFor
 
@@ -3616,10 +3814,10 @@ the folder it made last time instead of building a second one.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
-- `category` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
+- `category` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## archiveFolderIdFor
 
@@ -3627,9 +3825,9 @@ Where entries the writer had switched off end up.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## plainTextToHtml
 
@@ -3641,17 +3839,17 @@ dropping them would run a character sheet into one block of prose.
 
 ### Parameters
 
-- `text` **[string][1409]**&#x20;
+- `text` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## countWords
 
 ### Parameters
 
-- `text` **[string][1409]**&#x20;
+- `text` **[string][1575]**&#x20;
 
-Returns **[number][1410]**&#x20;
+Returns **[number][1576]**&#x20;
 
 ## loreToDocuments
 
@@ -3670,39 +3868,39 @@ upgrade or a re-imported backup cannot migrate it twice.
 
 ### Parameters
 
-- `lorebooks` **[Array][1411]\<Lorebook>**&#x20;
-- `loreEntries` **[Array][1411]\<LoreEntry>**&#x20;
-- `documents` **[Array][1411]<[Document][1418]>** Every existing document, across all stories
-- `now` **[number][1410]?** (optional, default `Date.now()`)
+- `lorebooks` **[Array][1577]\<Lorebook>**&#x20;
+- `loreEntries` **[Array][1577]\<LoreEntry>**&#x20;
+- `documents` **[Array][1577]<[Document][1584]>** Every existing document, across all stories
+- `now` **[number][1576]?** (optional, default `Date.now()`)
 
-Returns **{documents: [Array][1411]<[Document][1418]>, skipped: [Array][1411]<{id: [string][1409], reason: [string][1409]}>}** New documents only
+Returns **{documents: [Array][1577]<[Document][1584]>, skipped: [Array][1577]<{id: [string][1575], reason: [string][1575]}>}** New documents only
 
 ## storyIdByLorebook
 
-Type: [Map][1417]<[string][1409], [string][1409]>
+Type: [Map][1583]<[string][1575], [string][1575]>
 
 ## emittedFolders
 
-Type: [Set][1420]<[string][1409]>
+Type: [Set][1586]<[string][1575]>
 
 ## folderCount
 
-Type: [Map][1417]<[string][1409], [number][1410]>
+Type: [Map][1583]<[string][1575], [number][1576]>
 
 ## entryCount
 
-Type: [Map][1417]<[string][1409], [number][1410]>
+Type: [Map][1583]<[string][1575], [number][1576]>
 
 ## nextOrder
 
 ### Parameters
 
 - `counter` &#x20;
-- `parentId` **[string][1409]**&#x20;
+- `parentId` **[string][1575]**&#x20;
 
 ##
 
-Type: [Map][1417]<[string][1409], [number][1410]>
+Type: [Map][1583]<[string][1575], [number][1576]>
 
 ## entry
 
@@ -3737,7 +3935,7 @@ one.
 
 - `stories` &#x20;
 
-Returns **{stories: [Array][1411]\<Story>, renamed: [number][1410]}**&#x20;
+Returns **{stories: [Array][1577]\<Story>, renamed: [number][1576]}**&#x20;
 
 ## stores/migrations/overview
 
@@ -3785,14 +3983,14 @@ since edited back to the overview it was copied from.
 
 ### Parameters
 
-- `stories` **[Array][1411]\<Story>**&#x20;
-- `documents` **[Array][1411]<[Document][1418]>**&#x20;
+- `stories` **[Array][1577]\<Story>**&#x20;
+- `documents` **[Array][1577]<[Document][1584]>**&#x20;
 
-Returns **{documents: [Array][1411]<[Document][1418]>, moved: [number][1410]}**&#x20;
+Returns **{documents: [Array][1577]<[Document][1584]>, moved: [number][1576]}**&#x20;
 
 ## byId
 
-Type: [Map][1417]<[string][1409], [Document][1418]>
+Type: [Map][1583]<[string][1575], [Document][1584]>
 
 ## root
 
@@ -3804,7 +4002,7 @@ Type: any
 
 ### root
 
-Type: ([HTMLElement][1421] | null)
+Type: ([HTMLElement][1587] | null)
 
 ## stores/migrations/commandInput
 
@@ -3847,9 +4045,9 @@ message that never held a command, which is nearly all of them.
 
 ### Parameters
 
-- `messages` **[Array][1411]\<Message>**&#x20;
+- `messages` **[Array][1577]\<Message>**&#x20;
 
-Returns **{messages: [Array][1411]\<Message>, converted: [number][1410]}**&#x20;
+Returns **{messages: [Array][1577]\<Message>, converted: [number][1576]}**&#x20;
 
 ## stores/migrations/commandVoice
 
@@ -3891,9 +4089,9 @@ assistant turn that said nothing looks like anyway.
 
 ### Parameters
 
-- `messages` **[Array][1411]\<Message>**&#x20;
+- `messages` **[Array][1577]\<Message>**&#x20;
 
-Returns **{messages: [Array][1411]\<Message>, moved: [number][1410]}**&#x20;
+Returns **{messages: [Array][1577]\<Message>, moved: [number][1576]}**&#x20;
 
 ## stores/migrations/characterSigil
 
@@ -3930,9 +4128,9 @@ retried upgrade or a backup taken after this one restores unchanged.
 
 ### Parameters
 
-- `messages` **[Array][1411]\<Message>**&#x20;
+- `messages` **[Array][1577]\<Message>**&#x20;
 
-Returns **{messages: [Array][1411]\<Message>, marked: [number][1410]}**&#x20;
+Returns **{messages: [Array][1577]\<Message>, marked: [number][1576]}**&#x20;
 
 ##
 
@@ -3975,7 +4173,7 @@ The block a command was already being sent as. See ai/commands.js.
 
 - `command` **any**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## segmentOf
 
@@ -4000,33 +4198,33 @@ being read as a single run anyway.
 
 ### Parameters
 
-- `messages` **[Array][1411]\<Message>**&#x20;
+- `messages` **[Array][1577]\<Message>**&#x20;
 
-Returns **{messages: [Array][1411]\<Message>, folded: [number][1410]}**&#x20;
-
-## byChat
-
-Type: [Map][1417]<[string][1409], [Array][1411]\<Message>>
+Returns **{messages: [Array][1577]\<Message>, folded: [number][1576]}**&#x20;
 
 ## byChat
 
-Type: [Map][1417]<[string][1409], [Array][1411]\<Message>>
+Type: [Map][1583]<[string][1575], [Array][1577]\<Message>>
+
+## byChat
+
+Type: [Map][1583]<[string][1575], [Array][1577]\<Message>>
 
 ## untouched
 
-Type: [Array][1411]\<Message>
+Type: [Array][1577]\<Message>
 
 ## run
 
-Type: [Array][1411]\<Message>
+Type: [Array][1577]\<Message>
 
 ## run
 
-Type: [Array][1411]<{message: Message, at: [number][1410]}>
+Type: [Array][1577]<{message: Message, at: [number][1576]}>
 
 ## run
 
-Type: [LineChange][1252]
+Type: [LineChange][1382]
 
 ## stores/migrations/turnRuns
 
@@ -4061,9 +4259,9 @@ ai/compaction.js.
 
 ### Parameters
 
-- `history` **[Array][1411]\<Message>** The chat in order
+- `history` **[Array][1577]\<Message>** The chat in order
 
-Returns **({index: [number][1410], cut: [number][1410]} | null)** Where the summary sits, and how
+Returns **({index: [number][1576], cut: [number][1576]} | null)** Where the summary sits, and how
 many messages from the start it stands for
 
 ## piecesOf
@@ -4075,7 +4273,7 @@ since schema 11; one that somehow does not is its content, as one piece.
 
 - `message` **any**&#x20;
 
-Returns **[Array][1411]\<any>**&#x20;
+Returns **[Array][1577]\<any>**&#x20;
 
 ## piecesOf
 
@@ -4116,7 +4314,7 @@ since schema 11; one that somehow does not is its content, as one piece.
 
 - `message` **Message**&#x20;
 
-Returns **[Array][1411]\<MessageSegment>**&#x20;
+Returns **[Array][1577]\<MessageSegment>**&#x20;
 
 ## foldChat
 
@@ -4124,14 +4322,14 @@ Fold every run of the writer's messages in a chat into one message each.
 
 ### Parameters
 
-- `history` **[Array][1411]\<Message>** The chat in order
+- `history` **[Array][1577]\<Message>** The chat in order
 
-Returns **{rows: [Array][1411]\<Message>, folded: [number][1410]}** The chat with its runs folded,
+Returns **{rows: [Array][1577]\<Message>, folded: [number][1576]}** The chat with its runs folded,
 and how many were
 
 ## rows
 
-Type: [Array][1411]\<Message>
+Type: [Array][1577]\<Message>
 
 ## foldRuns
 
@@ -4143,9 +4341,9 @@ being read as a single run anyway.
 
 ### Parameters
 
-- `messages` **[Array][1411]\<Message>**&#x20;
+- `messages` **[Array][1577]\<Message>**&#x20;
 
-Returns **{messages: [Array][1411]\<Message>, folded: [number][1410]}**&#x20;
+Returns **{messages: [Array][1577]\<Message>, folded: [number][1576]}**&#x20;
 
 ## stores/migrations/markdown
 
@@ -4184,9 +4382,9 @@ The markdown a piece of editor HTML held.
 
 ### Parameters
 
-- `html` **[string][1409]**&#x20;
+- `html` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## documentsToMarkdown
 
@@ -4196,9 +4394,9 @@ reads the same either way.
 
 ### Parameters
 
-- `documents` **[Array][1411]<[Document][1418]>**&#x20;
+- `documents` **[Array][1577]<[Document][1584]>**&#x20;
 
-Returns **{documents: [Array][1411]<[Document][1418]>, converted: [number][1410]}** Only the documents that changed
+Returns **{documents: [Array][1577]<[Document][1584]>, converted: [number][1576]}** Only the documents that changed
 
 ## editor/schema
 
@@ -4212,10 +4410,18 @@ set is declared here, one spec at a time, and pinned by a test rather than
 inherited from whatever a starter kit ships with this year.
 
 The specs are `prosemirror-schema-basic`'s and `prosemirror-schema-list`'s,
-minus the image, plus strikethrough and a code block that keeps its
-language. Their `parseDOM` rules are what the v13 migration read the old
-HTML through, so `<b>`, `<i>`, and `<s>` are covered as well as the tags the
-editor writes.
+minus the image, plus strikethrough, a code block that keeps its language,
+and GFM's table. Their `parseDOM` rules are what the v13 migration read the
+old HTML through, so `<b>`, `<i>`, and `<s>` are covered as well as the tags
+the editor writes.
+
+A table is what GFM can write: a grid of one-line cells, the first row its
+header, each column aligned or not. So a cell holds text and nothing else —
+no break, which would end the row — and the header is the first row because
+it is first: there is one kind of cell, and no way to put a header row
+anywhere markdown could not. The cells carry `colspan` and `rowspan` only
+because `prosemirror-tables` reads them; nothing sets them, and they are
+always 1.
 
 ## languageOf
 
@@ -4224,17 +4430,72 @@ A code block's language, from the info string kept on `data-params` or the
 
 ### Parameters
 
-- `dom` **[HTMLElement][1421]**&#x20;
+- `dom` **[HTMLElement][1587]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## code_block
 
 ##
 
-Type: [HTMLElement][1421]
+Type: [HTMLElement][1587]
 
 ## strikethrough
+
+## ALIGNMENTS
+
+What a column can be aligned to.
+
+## alignmentOf
+
+A pasted cell's alignment, from its style or the attribute older pages use.
+
+### Parameters
+
+- `dom` **[HTMLElement][1587]**&#x20;
+
+Returns **([string][1575] | null)**&#x20;
+
+## alignmentOf
+
+A cell's alignment, from the style markdown-it gives it.
+
+### Parameters
+
+- `token` **Token**&#x20;
+
+## cellAttrs
+
+### Parameters
+
+- `dom` **[HTMLElement][1587]**&#x20;
+
+## BREAKS
+
+Where one block, or one line, of a pasted cell ends.
+
+Type: [string][1575]
+
+## cellContent
+
+A pasted cell's text, with its marks, as the one line a cell holds. A cell
+from a page can hold blocks — Google Docs puts a paragraph in every one —
+and read as they are, the blocks would close the cell, and the table, to
+find somewhere to go. Read inside a cell, there is nowhere else for their
+words to go, and a space after each keeps two blocks' words apart.
+
+### Parameters
+
+- `dom` **[Node][1588]**&#x20;
+- `schema` **Schema**&#x20;
+
+## cloneNode
+
+Type: [HTMLElement][1587]
+
+## table_row
+
+## table_cell
 
 ## NODE_NAMES
 
@@ -4260,9 +4521,17 @@ what the model reads and writes, and what a file on disk will be.
 Built on `prosemirror-markdown`, the reference implementation, with the
 parser and serializer configured against our schema rather than inherited.
 The parser is markdown-it's `default` preset — CommonMark plus GFM
-strikethrough — with raw HTML off, so a tag in a document is text, and with
-tables and images off, since the schema has nowhere to put them and they
-would otherwise throw; a table's pipes stay as the text they are.
+strikethrough and tables — with raw HTML off, so a tag in a document is
+text, and with images off, since the schema has nowhere to put them and they
+would otherwise throw.
+
+A table is written the plainest way GFM reads: a pipe at each end of every
+row, one space inside each, and no padding to line the columns up, so that
+an edit to one cell is an edit to one line. A pipe in a cell is escaped,
+inside code as well, since the row is cut at its pipes before anything else
+is read. markdown-it keeps as many cells in a row as the header has and
+drops the rest, so a table with a row longer than its header is read as the
+text it was written as, whole: words are not lost to a save.
 
 A lone newline is a hard break, in both directions. A writer who ended a line
 meant it to end there, and CommonMark's soft wrap is not a reading anyone
@@ -4276,17 +4545,84 @@ Two properties are pinned by tests: `parse(serialize(doc))` is `doc` for
 every node and mark, and `serialize(parse(md))` is a fixed point after one
 pass, which is what matters once files are edited outside the app.
 
-## tokenizer
+## cellsIn
+
+### Parameters
+
+- `line` &#x20;
+
+## cellsIn
+
+How many cells markdown-it finds in a row: the line cut at every pipe not
+escaped, less the empty ends a leading and a trailing pipe leave.
+
+### Parameters
+
+- `line` **[string][1575]**&#x20;
+
+Returns **[number][1576]**&#x20;
+
+## tokenizerOf
+
+markdown-it with GFM's table rule made to refuse a table it would lose words
+from. The rule is run in full and its tokens taken back when a row has more
+cells than the header — and when only asked whether a table starts here,
+which must be answered the same way without leaving anything behind.
+
+## block
+
+Type: {\_\_rules\_\_: [Array][1577]<{name: [string][1575], fn: [Function][1589], alt: [Array][1577]<[string][1575]>}>}
+
+## block
+
+Type: unknown
 
 ## state
 
-Type: {open: [boolean][1416]}
+### Parameters
+
+- `state` **StateBlock**&#x20;
+- `startLine` **[number][1576]**&#x20;
+- `endLine` **[number][1576]**&#x20;
+- `silent` **[boolean][1582]**&#x20;
+
+### state
+
+## state
+
+Type: {open: [boolean][1582]}
 
 ### state
 
 ##
 
 Type: unknown
+
+## cells
+
+The cells' own serializer: a cell's text and marks, written as a paragraph's
+would be, but without the escapes for what starts a line, since a cell
+starts after a pipe. A dash in a cell stays a dash.
+
+## rowOf
+
+One row of a table, as a line.
+
+### Parameters
+
+- `row` **[Node][1588]**&#x20;
+
+Returns **[string][1575]**&#x20;
+
+## ruleOf
+
+A column's cell in the line under the header.
+
+### Parameters
+
+- `align` **([string][1575] | null)**&#x20;
+
+Returns **[string][1575]**&#x20;
 
 ## parseMarkdown
 
@@ -4295,9 +4631,9 @@ cannot hold is read as the text it was written as.
 
 ### Parameters
 
-- `markdown` **([string][1409] | null | [undefined][1415])**&#x20;
+- `markdown` **([string][1575] | null | [undefined][1581])**&#x20;
 
-Returns **[Node][1422]** A document in the editor's schema
+Returns **[Node][1588]** A document in the editor's schema
 
 ## serializeMarkdown
 
@@ -4305,9 +4641,9 @@ Write a document as markdown.
 
 ### Parameters
 
-- `doc` **[Node][1422]**&#x20;
+- `doc` **[Node][1588]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## settleMarkdown
 
@@ -4320,9 +4656,9 @@ is byte-identical.
 
 ### Parameters
 
-- `markdown` **([string][1409] | null | [undefined][1415])**&#x20;
+- `markdown` **([string][1575] | null | [undefined][1581])**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## appendBlocks
 
@@ -4331,10 +4667,10 @@ block of its own rather than running on from the last one.
 
 ### Parameters
 
-- `content` **([string][1409] | null | [undefined][1415])**&#x20;
-- `text` **[string][1409]**&#x20;
+- `content` **([string][1575] | null | [undefined][1581])**&#x20;
+- `text` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## stores/migrations/profiles
 
@@ -4362,9 +4698,9 @@ as `builtin_adventure`'s, gets the default.
 
 ### Parameters
 
-- `promptId` **[string][1409]**&#x20;
+- `promptId` **[string][1575]**&#x20;
 
-Returns **([string][1409] | null)**&#x20;
+Returns **([string][1575] | null)**&#x20;
 
 ## profileFrom
 
@@ -4382,9 +4718,9 @@ The profiles a library of saved prompts becomes.
 
 ### Parameters
 
-- `prompts` **[Array][1411]\<any>** `aiPrompts` rows
+- `prompts` **[Array][1577]\<any>** `aiPrompts` rows
 
-Returns **{profiles: [Array][1411]\<any>}**&#x20;
+Returns **{profiles: [Array][1577]\<any>}**&#x20;
 
 ## chatsToProfiles
 
@@ -4400,9 +4736,9 @@ what the chat was pointed at before this ran.
 
 ### Parameters
 
-- `chats` **[Array][1411]\<any>**&#x20;
+- `chats` **[Array][1577]\<any>**&#x20;
 
-Returns **{chats: [Array][1411]\<any>, converted: [number][1410]}**&#x20;
+Returns **{chats: [Array][1577]\<any>, converted: [number][1576]}**&#x20;
 
 ## storiesToProfiles
 
@@ -4410,9 +4746,9 @@ The project's default, which named a prompt for the same reason a chat did.
 
 ### Parameters
 
-- `stories` **[Array][1411]\<any>**&#x20;
+- `stories` **[Array][1577]\<any>**&#x20;
 
-Returns **{stories: [Array][1411]\<any>, converted: [number][1410]}**&#x20;
+Returns **{stories: [Array][1577]\<any>, converted: [number][1576]}**&#x20;
 
 ## stores/migrations/summariesInPlace
 
@@ -4453,7 +4789,7 @@ Whether this was a summary that stood in for anything, as of schema 14.
 
 - `message` **Message**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## placeChat
 
@@ -4461,21 +4797,21 @@ One chat's messages, with its summaries where they are read.
 
 ### Parameters
 
-- `history` **[Array][1411]\<Message>** The chat in order
+- `history` **[Array][1577]\<Message>** The chat in order
 
-Returns **{rows: [Array][1411]\<Message>, moved: [number][1410]}**&#x20;
+Returns **{rows: [Array][1577]\<Message>, moved: [number][1576]}**&#x20;
 
 ## targets
 
-Type: [Map][1417]<[string][1409], [number][1410]>
+Type: [Map][1583]<[string][1575], [number][1576]>
 
 ## order
 
-Type: [Array][1411]\<Message>
+Type: [Array][1577]\<Message>
 
 ## moved
 
-Type: [Set][1420]<[string][1409]>
+Type: [Set][1586]<[string][1575]>
 
 ## summariesIntoPlace
 
@@ -4487,20 +4823,20 @@ counting.
 
 ### Parameters
 
-- `messages` **[Array][1411]\<Message>** Every message, in any order
+- `messages` **[Array][1577]\<Message>** Every message, in any order
 
-Returns **{messages: [Array][1411]\<Message>, moved: [number][1410]}** The rows that changed, and
+Returns **{messages: [Array][1577]\<Message>, moved: [number][1576]}** The rows that changed, and
 how many summaries moved
 
 ## chats
 
-Type: [Map][1417]<[string][1409], [Array][1411]\<Message>>
+Type: [Map][1583]<[string][1575], [Array][1577]\<Message>>
 
 ## chats
 
 ## changed
 
-Type: [Array][1411]\<Message>
+Type: [Array][1577]\<Message>
 
 ## stores/migrations/purgeDeleted
 
@@ -4518,12 +4854,12 @@ The tables that carried the flag.
 
 ## Purged
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `tables` **Record<[string][1409], [Array][1411]\<any>>** The same tables, without the rows marked deleted
-- `removed` **[number][1410]** How many rows went, file rows included
+- `tables` **Record<[string][1575], [Array][1577]\<any>>** The same tables, without the rows marked deleted
+- `removed` **[number][1576]** How many rows went, file rows included
 
 ## withoutDeleted
 
@@ -4531,13 +4867,13 @@ Drop every row marked deleted, and the bytes of any file document among them.
 
 ### Parameters
 
-- `tables` **Record<[string][1409], [Array][1411]\<any>>** Rows by table name
+- `tables` **Record<[string][1575], [Array][1577]\<any>>** Rows by table name
 
-Returns **[Purged][490]**&#x20;
+Returns **[Purged][524]**&#x20;
 
 ## goneFiles
 
-Type: [Set][1420]<[string][1409]>
+Type: [Set][1586]<[string][1575]>
 
 ## deletedIds
 
@@ -4547,9 +4883,9 @@ For the Dexie upgrade, which deletes by id rather than rewriting tables.
 
 ### Parameters
 
-- `rows` **[Array][1411]\<any>**&#x20;
+- `rows` **[Array][1577]\<any>**&#x20;
 
-Returns **[Array][1411]<[string][1409]>**&#x20;
+Returns **[Array][1577]<[string][1575]>**&#x20;
 
 ## stores/migrations/profileSkills
 
@@ -4584,9 +4920,9 @@ somehow has both, what is already under `skills` wins.
 
 ### Parameters
 
-- `profiles` **[Array][1411]\<any>** `chatProfiles` rows
+- `profiles` **[Array][1577]\<any>** `chatProfiles` rows
 
-Returns **{profiles: [Array][1411]\<any>, moved: [number][1410]}**&#x20;
+Returns **{profiles: [Array][1577]\<any>, moved: [number][1576]}**&#x20;
 
 ## skills
 
@@ -4619,9 +4955,9 @@ keeps its `workflow`.
 
 ### Parameters
 
-- `jobs` **[Array][1411]\<any>** `jobs` rows
+- `jobs` **[Array][1577]\<any>** `jobs` rows
 
-Returns **{jobs: [Array][1411]\<any>, moved: [number][1410]}**&#x20;
+Returns **{jobs: [Array][1577]\<any>, moved: [number][1576]}**&#x20;
 
 ## stores/migrations/modelKeeps
 
@@ -4646,9 +4982,9 @@ or a backup taken after this one restores unchanged.
 
 ### Parameters
 
-- `chats` **[Array][1411]\<any>** `chats` rows
+- `chats` **[Array][1577]\<any>** `chats` rows
 
-Returns **{chats: [Array][1411]\<any>, moved: [number][1410]}**&#x20;
+Returns **{chats: [Array][1577]\<any>, moved: [number][1576]}**&#x20;
 
 ## stores/migrations/allowedProviders
 
@@ -4678,10 +5014,10 @@ taken after this one restores unchanged.
 
 ### Parameters
 
-- `providers` **[Array][1411]\<any>** `aiProviders` rows
-- `presets` **[Array][1411]\<any>** `aiProfiles` rows
+- `providers` **[Array][1577]\<any>** `aiProviders` rows
+- `presets` **[Array][1577]\<any>** `aiProfiles` rows
 
-Returns **{providers: [Array][1411]\<any>, presets: [Array][1411]\<any>, moved: [number][1410]}** `moved` counts
+Returns **{providers: [Array][1577]\<any>, presets: [Array][1577]\<any>, moved: [number][1576]}** `moved` counts
 the connections whose list came off
 
 ## composables/useApplicationState
@@ -4707,20 +5043,20 @@ const theme = getState('ui.theme')
 
 Load state from localStorage with defaults
 
-Returns **[object][1412]** Merged state
+Returns **[object][1578]** Merged state
 
 ## NarrationConnection
 
 Where documents are read aloud: a speech server's address, a key if it
 wants one, and the model to ask for. See `tts/client.js`.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `endpoint` **[string][1409]**&#x20;
-- `apiKey` **[string][1409]**&#x20;
-- `model` **[string][1409]**&#x20;
+- `endpoint` **[string][1575]**&#x20;
+- `apiKey` **[string][1575]**&#x20;
+- `model` **[string][1575]**&#x20;
 
 ## useApplicationState
 
@@ -4737,7 +5073,7 @@ setting saved under that name still counts.
 
 ### Parameters
 
-- `on` **[boolean][1416]**&#x20;
+- `on` **[boolean][1582]**&#x20;
 
 ## applyEdits
 
@@ -4759,7 +5095,7 @@ ai/profiles.
 
 ### Parameters
 
-- `on` **[boolean][1416]**&#x20;
+- `on` **[boolean][1582]**&#x20;
 
 ## narration
 
@@ -4773,7 +5109,7 @@ Change some of the speech server's details, leaving the rest.
 
 ### Parameters
 
-- `patch` **Partial<[NarrationConnection][516]>**&#x20;
+- `patch` **Partial<[NarrationConnection][550]>**&#x20;
 
 ## workflows
 
@@ -4787,7 +5123,7 @@ Change how a workflow is run, leaving the rest of it.
 
 ### Parameters
 
-- `name` **[string][1409]**&#x20;
+- `name` **[string][1575]**&#x20;
 - `patch` &#x20;
 
 ## highlightSpeakers
@@ -4799,7 +5135,7 @@ showing. On unless switched off.
 
 ### Parameters
 
-- `highlight` **[boolean][1416]**&#x20;
+- `highlight` **[boolean][1582]**&#x20;
 
 ## setTheme
 
@@ -4825,7 +5161,7 @@ Get state value by dot notation path
 
 ### Parameters
 
-- `path` **[string][1409]** Dot notation path (e.g., 'ai.activeChatProfileId')
+- `path` **[string][1575]** Dot notation path (e.g., 'ai.activeChatProfileId')
 
 Returns **any** Value at path or undefined
 
@@ -4835,7 +5171,7 @@ Set state value by dot notation path
 
 ### Parameters
 
-- `path` **[string][1409]** Dot notation path (e.g., 'ui.theme')
+- `path` **[string][1575]** Dot notation path (e.g., 'ui.theme')
 - `value` **any** Value to set
 
 ## setLorebookSortBy
@@ -4872,13 +5208,13 @@ Set show provider setup dialog state
 
 ### Parameters
 
-- `show` **[boolean][1416]** Whether to show the provider setup dialog
+- `show` **[boolean][1582]** Whether to show the provider setup dialog
 
 ## getShowProviderSetupDialog
 
 Get show provider setup dialog state
 
-Returns **[boolean][1416]** Whether to show the provider setup dialog
+Returns **[boolean][1582]** Whether to show the provider setup dialog
 
 ## showProviderSetupDialog
 
@@ -4894,13 +5230,13 @@ Set show welcome dialog state
 
 ### Parameters
 
-- `show` **[boolean][1416]** Whether to show the welcome dialog
+- `show` **[boolean][1582]** Whether to show the welcome dialog
 
 ## getShowWelcomeDialog
 
 Get show welcome dialog state
 
-Returns **[boolean][1416]** Whether to show the welcome dialog
+Returns **[boolean][1582]** Whether to show the welcome dialog
 
 ## showWelcomeDialog
 
@@ -5007,10 +5343,10 @@ Hand the user a JSON file.
 
 ### Parameters
 
-- `filename` **[string][1409]**&#x20;
+- `filename` **[string][1575]**&#x20;
 - `data` **unknown**&#x20;
 
-Returns **{filename: [string][1409], bytes: [number][1410]}**&#x20;
+Returns **{filename: [string][1575], bytes: [number][1576]}**&#x20;
 
 ## readAllTables
 
@@ -5021,11 +5357,11 @@ later is backed up without anyone remembering to update this. The one
 table that cannot go into JSON as read is `files`, whose rows hold a
 Blob; those are written out as base64 and read back the same way.
 
-Returns **[Promise][1414]\<Record<[string][1409], [Array][1411]\<any>>>**&#x20;
+Returns **[Promise][1580]\<Record<[string][1575], [Array][1577]\<any>>>**&#x20;
 
 ## tables
 
-Type: Record<[string][1409], [Array][1411]\<any>>
+Type: Record<[string][1575], [Array][1577]\<any>>
 
 ##
 
@@ -5035,10 +5371,10 @@ Snapshot the database.
 
 ### Parameters
 
-- `$0` **[Object][1412]** (optional, default `{}`)
+- `$0` **[Object][1578]** (optional, default `{}`)
   - `$0.includeApiKeys` (optional, default `false`)
 
-Returns **[Promise][1414]\<Backup>**&#x20;
+Returns **[Promise][1580]\<Backup>**&#x20;
 
 ## downloadBackup
 
@@ -5048,7 +5384,7 @@ Snapshot the database and hand the user a file.
 
 - `opts` (optional, default `{}`)
 
-Returns **[Promise][1414]<{filename: [string][1409], bytes: [number][1410]}>**&#x20;
+Returns **[Promise][1580]<{filename: [string][1575], bytes: [number][1576]}>**&#x20;
 
 ## parseBackupFile
 
@@ -5061,9 +5397,9 @@ Parse an uploaded file and check it is something this build can read.
 
 <!---->
 
-- Throws **[Error][1413]** If it is not, saying why
+- Throws **[Error][1579]** If it is not, saying why
 
-Returns **[Promise][1414]\<Backup>**&#x20;
+Returns **[Promise][1580]\<Backup>**&#x20;
 
 ## parseBackup
 
@@ -5071,12 +5407,12 @@ The same, for a file already read.
 
 ### Parameters
 
-- `text` **[string][1409]**&#x20;
+- `text` **[string][1575]**&#x20;
 - `scope` **BackupScope**&#x20;
 
 <!---->
 
-- Throws **[Error][1413]** If it is not, saying why
+- Throws **[Error][1579]** If it is not, saying why
 
 Returns **Backup**&#x20;
 
@@ -5094,9 +5430,9 @@ Parse and validate an uploaded file without touching the database.
 
 <!---->
 
-- Throws **[Error][1413]** If the file is not readable as a backup for this build
+- Throws **[Error][1579]** If the file is not readable as a backup for this build
 
-Returns **[Promise][1414]<{backup: Backup, summary: [Array][1411]<{table: [string][1409], count: [number][1410]}>}>**&#x20;
+Returns **[Promise][1580]<{backup: Backup, summary: [Array][1577]<{table: [string][1575], count: [number][1576]}>}>**&#x20;
 
 ## restoreBackup
 
@@ -5111,7 +5447,7 @@ backup is the whole truth, not a patch.
 
 - `backup` **Backup**&#x20;
 
-Returns **[Promise][1414]<{restored: [number][1410]}>** Total rows written
+Returns **[Promise][1580]<{restored: [number][1576]}>** Total rows written
 
 ## createChatBackup
 
@@ -5123,13 +5459,13 @@ transforms when it is read back.
 
 ### Parameters
 
-- `chatId` **[string][1409]**&#x20;
+- `chatId` **[string][1575]**&#x20;
 
 <!---->
 
-- Throws **[Error][1413]** If there is no such chat
+- Throws **[Error][1579]** If there is no such chat
 
-Returns **[Promise][1414]\<Backup>**&#x20;
+Returns **[Promise][1580]\<Backup>**&#x20;
 
 ##
 
@@ -5152,7 +5488,7 @@ tools is a better outcome than one that arrives with neither.
 
 - `chat` **Chat**&#x20;
 
-Returns **[Promise][1414]<(AIPrompt | [undefined][1415])>**&#x20;
+Returns **[Promise][1580]<(AIPrompt | [undefined][1581])>**&#x20;
 
 ## downloadChat
 
@@ -5165,11 +5501,11 @@ utils/obfuscate.js for what is kept.
 
 ### Parameters
 
-- `chatId` **[string][1409]**&#x20;
-- `$1` **[Object][1412]** (optional, default `{}`)
+- `chatId` **[string][1575]**&#x20;
+- `$1` **[Object][1578]** (optional, default `{}`)
   - `$1.obfuscated` (optional, default `false`)
 
-Returns **[Promise][1414]<{filename: [string][1409], bytes: [number][1410]}>**&#x20;
+Returns **[Promise][1580]<{filename: [string][1575], bytes: [number][1576]}>**&#x20;
 
 ## readChatFile
 
@@ -5190,7 +5526,7 @@ Note. `useCardChat().attach` takes both.
 
 <!---->
 
-- Throws **[Error][1413]** If the file is not a chat this build can read
+- Throws **[Error][1579]** If the file is not a chat this build can read
 
 ## chatFromTranscript
 
@@ -5205,10 +5541,10 @@ written.
 
 ### Parameters
 
-- `text` **[string][1409]**&#x20;
-- `filename` **[string][1409]**&#x20;
+- `text` **[string][1575]**&#x20;
+- `filename` **[string][1575]**&#x20;
 
-Returns **{chat: Chat, messages: [Array][1411]\<Message>, character: [string][1409], note: [string][1409]}**&#x20;
+Returns **{chat: Chat, messages: [Array][1577]\<Message>, character: [string][1575], note: [string][1575]}**&#x20;
 
 ## chat
 
@@ -5223,13 +5559,13 @@ with their messages, and the writer's own profiles it and they run on.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 <!---->
 
-- Throws **[Error][1413]** If there is no such project
+- Throws **[Error][1579]** If there is no such project
 
-Returns **[Promise][1414]\<Backup>**&#x20;
+Returns **[Promise][1580]\<Backup>**&#x20;
 
 ##
 
@@ -5254,9 +5590,9 @@ is wherever the file is opened; a saved one may not be.
 
 ### Parameters
 
-- `ids` **[Array][1411]<([string][1409] | null | [undefined][1415])>**&#x20;
+- `ids` **[Array][1577]<([string][1575] | null | [undefined][1581])>**&#x20;
 
-Returns **[Promise][1414]<[Array][1411]\<StoredChatProfile>>**&#x20;
+Returns **[Promise][1580]<[Array][1577]\<StoredChatProfile>>**&#x20;
 
 ## downloadProject
 
@@ -5264,9 +5600,9 @@ Snapshot one project and hand the user a file named after it.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
-Returns **[Promise][1414]<{filename: [string][1409], bytes: [number][1410]}>**&#x20;
+Returns **[Promise][1580]<{filename: [string][1575], bytes: [number][1576]}>**&#x20;
 
 ## readProjectFile
 
@@ -5278,9 +5614,9 @@ Read a project file back into rows this build can use. Nothing is written.
 
 <!---->
 
-- Throws **[Error][1413]** If the file is not a project this build can read
+- Throws **[Error][1579]** If the file is not a project this build can read
 
-Returns **[Promise][1414]\<ProjectRows>**&#x20;
+Returns **[Promise][1580]\<ProjectRows>**&#x20;
 
 ## importProject
 
@@ -5303,7 +5639,7 @@ its record and its root, which carries its name.
 
 - `project` **ProjectRows**&#x20;
 
-Returns **[Promise][1414]\<Story>** The project as it now exists here
+Returns **[Promise][1580]\<Story>** The project as it now exists here
 
 ## composables/useBulkImport
 
@@ -5327,21 +5663,23 @@ is skipped and named at the end, rather than stopping the rest.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 ## Imported
 
 What a batch left behind.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `documents` **[number][1410]** Written, folders not counted
-- `folders` **[number][1410]** Made new; ones already there are not counted
-- `cards` **[number][1410]** Cards and lorebooks among them, written with the defaults
-- `scans` **[number][1410]** PDFs with no text in them
-- `skipped` **[Array][1411]<{name: [string][1409], reason: [string][1409]}>** What could not be read, and why
+- `documents` **[number][1576]** Written, folders not counted
+- `folders` **[number][1576]** Made new; ones already there are not counted
+- `cards` **[number][1576]** Cards and lorebooks among them, written with the defaults
+- `scans` **[number][1576]** PDFs with no text in them
+- `skipped` **[Array][1577]<{name: [string][1575], reason: [string][1575]}>** What could not be read, and why
+- `images` **[number][1576]?** Pictures left out of what came in: a Google
+  Doc's, which documents cannot hold yet
 
 ## importMany
 
@@ -5349,12 +5687,14 @@ Write a batch of files, each into the folders above it.
 
 ### Parameters
 
-- `gathered` **[Array][1411]\<Gathered>**&#x20;
-- `options` **[Object][1412]?** (optional, default `{}`)
-  - `options.parentId` **[string][1409]?** Where the batch goes; the project's top otherwise
+- `gathered` **[Array][1577]\<Gathered>**&#x20;
+- `options` **[Object][1578]?** (optional, default `{}`)
+  - `options.parentId` **[string][1575]?** Where the batch goes; the project's top otherwise
+  - `options.signal` **AbortSignal?** Stops it before the next file; what
+    was written stays
   - `options.onProgress` &#x20;
 
-Returns **[Promise][1414]<[Imported][631]>**&#x20;
+Returns **[Promise][1580]<[Imported][665]>**&#x20;
 
 ## known
 
@@ -5364,7 +5704,7 @@ Folders made or found on the way, by their path under `into`.
 
 ### Parameters
 
-- `folders` **[Array][1411]<[string][1409]>**&#x20;
+- `folders` **[Array][1577]<[string][1575]>**&#x20;
 
 ## describeImport
 
@@ -5372,15 +5712,15 @@ What to tell the writer when a batch is done.
 
 ### Parameters
 
-- `result` **[Imported][631]**&#x20;
+- `result` **[Imported][665]**&#x20;
 
 ##
 
-Type: [number][1410]
+Type: [number][1576]
 
 ##
 
-Type: [string][1409]
+Type: [string][1575]
 
 ## composables/useCardChat
 
@@ -5400,7 +5740,7 @@ that character's card and puts the same pins and author's note on it.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 ## read
 
@@ -5408,7 +5748,7 @@ What a card folder offers, or null if it is not one.
 
 ### Parameters
 
-- `folderId` **[string][1409]**&#x20;
+- `folderId` **[string][1575]**&#x20;
 
 ## settingsFrom
 
@@ -5417,7 +5757,7 @@ What a card puts on a chat that runs on it.
 ### Parameters
 
 - `card` &#x20;
-- `note` **[string][1409]?** The author's note the chat would have without the
+- `note` **[string][1575]?** The author's note the chat would have without the
   card: its profile's (optional, default `''`)
 
 ## settings
@@ -5431,11 +5771,19 @@ Start a chat on a card.
 ### Parameters
 
 - `card` &#x20;
-- `$1` **[Object][1412]** (optional, default `{}`)
+- `$1` **[Object][1578]** (optional, default `{}`)
   - `$1.greeting` (optional, default `0`)
 
-- `options` **[Object][1412]?**&#x20;
-  - `options.greeting` **[number][1410]?** Which greeting opens it; the first by default
+- `options` **[Object][1578]?**&#x20;
+  - `options.greeting` **[number][1576]?** Which greeting opens it; the first by default
+
+## start
+
+Where the finger went down, while it is still a press.
+
+## start
+
+Type: ({x: [number][1576], y: [number][1576]} | null)
 
 ## start
 
@@ -5443,9 +5791,9 @@ Send the writer to OpenRouter to connect their account. In a browser this
 returns once the tab is open; in the desktop window, once they are back
 and the key is kept.
 
-- Throws **[Error][1413]** With what the writer should be told
+- Throws **[Error][1579]** With what the writer should be told
 
-Returns **[Promise][1414]\<void>**&#x20;
+Returns **[Promise][1580]\<void>**&#x20;
 
 ## attach
 
@@ -5461,10 +5809,10 @@ there is nothing to pin, and with two there is no telling which.
 
 ### Parameters
 
-- `chatId` **[string][1409]**&#x20;
-- `character` **[string][1409]** The name they spoke under
-- `options` **[Object][1412]?** (optional, default `{}`)
-  - `options.note` **[string][1409]?** The chat's own Author's Note from ST,
+- `chatId` **[string][1575]**&#x20;
+- `character` **[string][1575]** The name they spoke under
+- `options` **[Object][1578]?** (optional, default `{}`)
+  - `options.note` **[string][1575]?** The chat's own Author's Note from ST,
     which goes after what the card puts in the author's note rather than
     being replaced by it: it says where the scene has got to, not how a turn
     is written (optional, default `''`)
@@ -5477,7 +5825,7 @@ open.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 - `view` **(View | null)**&#x20;
 
 ## composables/useCardImport
@@ -5511,30 +5859,30 @@ write when the writer says so.
 Counts rather than the text itself — this is what a dialog renders, and a
 card's description is not something to put in one.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
 - `shape` **(`"card"` | `"lorebook"` | `"markdown"` | `"file"`)**&#x20;
-- `title` **[string][1409]** What the folder, or the document, will be called
-- `name` **[string][1409]** The character's own name; the same as `title` as often as not
-- `creator` **[string][1409]**&#x20;
-- `description` **[boolean][1416]**&#x20;
-- `personality` **[boolean][1416]**&#x20;
-- `scenario` **[boolean][1416]**&#x20;
-- `examples` **[boolean][1416]**&#x20;
-- `rules` **[boolean][1416]**&#x20;
-- `systemPrompt` **[boolean][1416]**&#x20;
-- `greetings` **[number][1410]**&#x20;
-- `lore` **[number][1410]**&#x20;
-- `documents` **[number][1410]** How many this will write, sidecar included
-- `asks` **[boolean][1416]** Whether there is anything to decide before writing
-- `mime` **[string][1409]?** A file: what it is
-- `pages` **[number][1410]?** A file: how many pages, for a format that has them
-- `text` **[boolean][1416]?** A file: whether any text could be read out of it
+- `title` **[string][1575]** What the folder, or the document, will be called
+- `name` **[string][1575]** The character's own name; the same as `title` as often as not
+- `creator` **[string][1575]**&#x20;
+- `description` **[boolean][1582]**&#x20;
+- `personality` **[boolean][1582]**&#x20;
+- `scenario` **[boolean][1582]**&#x20;
+- `examples` **[boolean][1582]**&#x20;
+- `rules` **[boolean][1582]**&#x20;
+- `systemPrompt` **[boolean][1582]**&#x20;
+- `greetings` **[number][1576]**&#x20;
+- `lore` **[number][1576]**&#x20;
+- `documents` **[number][1576]** How many this will write, sidecar included
+- `asks` **[boolean][1582]** Whether there is anything to decide before writing
+- `mime` **[string][1575]?** A file: what it is
+- `pages` **[number][1576]?** A file: how many pages, for a format that has them
+- `text` **[boolean][1582]?** A file: whether any text could be read out of it
 - `portrait` **(File | null)?** A card that came in a PNG: the PNG, kept
   in the card's folder as its picture
-- `replaces` **[string][1409]?** A card read back out of its own folder, to
+- `replaces` **[string][1575]?** A card read back out of its own folder, to
   be written there again over what is in it
 - `value` **any** The card, the book, the text, or the inspected file
 
@@ -5558,7 +5906,7 @@ What a file with none of this in it gets told.
 
 ### Parameters
 
-- `message` **[string][1409]**&#x20;
+- `message` **[string][1575]**&#x20;
 
 ## NOTHING
 
@@ -5568,7 +5916,7 @@ The fields a card's dialog reads, at their defaults for anything that is not a c
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 ## inspect
 
@@ -5580,10 +5928,10 @@ Read a file and say what is in it, writing nothing.
 
 <!---->
 
-- Throws **[NotACardError][664]** If the file is a lorebook with nothing in it
-- Throws **[Error][1413]** If the file cannot be read at all
+- Throws **[NotACardError][700]** If the file is a lorebook with nothing in it
+- Throws **[Error][1579]** If the file cannot be read at all
 
-Returns **[Promise][1414]<[Found][659]>**&#x20;
+Returns **[Promise][1580]<[Found][695]>**&#x20;
 
 ## inspectCard
 
@@ -5593,14 +5941,14 @@ the card came in one, is beside it.
 
 ### Parameters
 
-- `folderId` **[string][1409]** A card folder
+- `folderId` **[string][1575]** A card folder
 
 <!---->
 
-- Throws **[NotACardError][664]** When the folder has no sidecar to read, or it no
+- Throws **[NotACardError][700]** When the folder has no sidecar to read, or it no
   longer parses as a card
 
-Returns **[Promise][1414]<[Found][659]>**&#x20;
+Returns **[Promise][1580]<[Found][695]>**&#x20;
 
 ## write
 
@@ -5617,11 +5965,11 @@ folder, over what is there, wherever the folder is.
 
 ### Parameters
 
-- `found` **[Found][659]**&#x20;
-- `options` **[Object][1412]?** (optional, default `{}`)
-  - `options.parentId` **[string][1409]?** The folder it was asked for on
-  - `options.userName` **[string][1409]?** What `{{user}}` becomes
-  - `options.useSystemPrompt` **[boolean][1416]?** Keep the card's prompt override
+- `found` **[Found][695]**&#x20;
+- `options` **[Object][1578]?** (optional, default `{}`)
+  - `options.parentId` **[string][1575]?** The folder it was asked for on
+  - `options.userName` **[string][1575]?** What `{{user}}` becomes
+  - `options.useSystemPrompt` **[boolean][1582]?** Keep the card's prompt override
 
 ## write
 
@@ -5641,6 +5989,23 @@ it was called the narrator is carried over and the old name let go.
 
 - `patch` **Partial\<StoryNarration>**&#x20;
 
+## write
+
+Write what was gathered: a new repository, or the one being refreshed.
+
+### Parameters
+
+- `gathered` &#x20;
+- `source` **RepositorySource**&#x20;
+- `title` **[string][1575]**&#x20;
+- `$3` **[Object][1578]**&#x20;
+  - `$3.parentId` &#x20;
+  - `$3.signal` &#x20;
+  - `$3.onStep` &#x20;
+  - `$3.refresh` &#x20;
+
+Returns **[Promise][1580]<[RepositoryImported][1475]>**&#x20;
+
 ## foundCard
 
 What a card is described as, before it is written.
@@ -5650,7 +6015,7 @@ What a card is described as, before it is written.
 - `card` &#x20;
 - `portrait` **(File | null)** The PNG it came in, when it came in one
 
-Returns **[Found][659]**&#x20;
+Returns **[Found][695]**&#x20;
 
 ## cardInPng
 
@@ -5660,7 +6025,7 @@ other rather than a mistake to report.
 
 ### Parameters
 
-- `data` **[ArrayBuffer][1423]**&#x20;
+- `data` **[ArrayBuffer][1590]**&#x20;
 
 Returns **(any | null)**&#x20;
 
@@ -5668,7 +6033,7 @@ Returns **(any | null)**&#x20;
 
 ### Parameters
 
-- `text` **[string][1409]**&#x20;
+- `text` **[string][1575]**&#x20;
 
 Returns **(any | null)** Null when it does not parse, or parses to nothing a card could be
 
@@ -5712,14 +6077,14 @@ lets it be edited, deleted and read as the thing it is. See utils/turns.js.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
-- `chatId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
+- `chatId` **[string][1575]**&#x20;
 
 ## history
 
 The chat as it reads, in order.
 
-Returns **[Array][1411]\<Message>**&#x20;
+Returns **[Array][1577]\<Message>**&#x20;
 
 ## roomFor
 
@@ -5733,9 +6098,9 @@ already — would be read again as a turn under it.
 
 ### Parameters
 
-- `messageId` **[string][1409]** The summary, which may still be being written
+- `messageId` **[string][1575]** The summary, which may still be being written
 
-Returns **{up: [number][1410], down: [number][1410]}**&#x20;
+Returns **{up: [number][1576], down: [number][1576]}**&#x20;
 
 ## openTurn
 
@@ -5761,22 +6126,22 @@ things and asks for no turn.
 
 ### Parameters
 
-- `input` **[string][1409]** Everything the writer submitted
+- `input` **[string][1575]** Everything the writer submitted
 - `context` (optional, default `{}`)
 
 <!---->
 
 - Throws **CommandError** If a command cannot run. Nothing has been written.
 
-Returns **[Promise][1414]<{spoken: [string][1409]}>** The prose among it, joined
+Returns **[Promise][1580]<{spoken: [string][1575]}>** The prose among it, joined
 
 ## answers
 
-Type: [Map][1417]<[number][1410], ChatCommand>
+Type: [Map][1583]<[number][1576], ChatCommand>
 
 ## spoken
 
-Type: [Array][1411]<[string][1409]>
+Type: [Array][1577]<[string][1575]>
 
 ## pending
 
@@ -5790,11 +6155,11 @@ Pieces with no answer yet, by where they sit in the turn.
 
 ## waiting
 
-Type: [Array][1411]<{at: [number][1410], asked: CommandInput}>
+Type: [Array][1577]<{at: [number][1576], asked: CommandInput}>
 
 ## waiting
 
-Type: [Array][1411]<{at: [number][1410], asked: CommandInput}>
+Type: [Array][1577]<{at: [number][1576], asked: CommandInput}>
 
 ## waiting
 
@@ -5809,13 +6174,13 @@ again from the message itself.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `index` **([number][1410] | null)** Which piece of the turn, or null for a message
+- `messageId` **[string][1575]**&#x20;
+- `index` **([number][1576] | null)** Which piece of the turn, or null for a message
   that is nothing but this command
 - `parsed` **CommandInput**&#x20;
 - `context` **ToolContext**&#x20;
 
-Returns **[Promise][1414]\<void>**&#x20;
+Returns **[Promise][1580]\<void>**&#x20;
 
 ## streamed
 
@@ -5840,7 +6205,7 @@ far, so it is about the same conversation however many times it is asked.
 
 ### Parameters
 
-- `$0` **[Object][1412]**&#x20;
+- `$0` **[Object][1578]**&#x20;
   - `$0.messageId` &#x20;
   - `$0.index` &#x20;
   - `$0.parsed` &#x20;
@@ -5860,12 +6225,12 @@ somebody else took is a message of its own, and there is nothing to index.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `index` **([number][1410] | null)?** Which segment, on a turn the writer took
+- `messageId` **[string][1575]**&#x20;
+- `index` **([number][1576] | null)?** Which segment, on a turn the writer took
 
 <!---->
 
-- Throws **[Error][1413]** If there is no command there
+- Throws **[Error][1579]** If there is no command there
 
 Returns **ChatCommand**&#x20;
 
@@ -5879,10 +6244,10 @@ to assemble on a message that is only ever one command.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `index` **([number][1410] | null)**&#x20;
+- `messageId` **[string][1575]**&#x20;
+- `index` **([number][1576] | null)**&#x20;
 - `command` **ChatCommand**&#x20;
-- `$3` **[Object][1412]** (optional, default `{}`)
+- `$3` **[Object][1578]** (optional, default `{}`)
   - `$3.streamed` (optional, default `false`)
 
 ##
@@ -5895,7 +6260,7 @@ Take messages out of the chat.
 
 ### Parameters
 
-- `ids` **[Array][1411]<[string][1409]>**&#x20;
+- `ids` **[Array][1577]<[string][1575]>**&#x20;
 
 ## drop
 
@@ -5905,7 +6270,7 @@ nothing is marked edited, and the turn's content stays as it was.
 
 ### Parameters
 
-- `name` **[string][1409]**&#x20;
+- `name` **[string][1575]**&#x20;
 
 ## fold
 
@@ -5926,8 +6291,8 @@ what its going leaves touching is folded back together. See `fold`.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `index` **([number][1410] | null)?**&#x20;
+- `messageId` **[string][1575]**&#x20;
+- `index` **([number][1576] | null)?**&#x20;
 
 ## remove
 
@@ -5936,15 +6301,15 @@ state has nowhere to go and its tab nothing to show, so both go with it.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **[number][1410]** How many documents were removed
+Returns **[number][1576]** How many documents were removed
 
 ## remove
 
 ### Parameters
 
-- `jobId` **[string][1409]**&#x20;
+- `jobId` **[string][1575]**&#x20;
 
 ## remove
 
@@ -5955,9 +6320,9 @@ stores depend on the jobs that depend on them.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
-Returns **[Promise][1414]\<void>**&#x20;
+Returns **[Promise][1580]\<void>**&#x20;
 
 ## ask
 
@@ -5965,12 +6330,12 @@ Put the question to the command again and keep whatever it says.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `index` **([number][1410] | null)**&#x20;
+- `messageId` **[string][1575]**&#x20;
+- `index` **([number][1576] | null)**&#x20;
 - `parsed` **CommandInput**&#x20;
 - `context` **ToolContext**&#x20;
 
-Returns **[Promise][1414]\<Message>**&#x20;
+Returns **[Promise][1580]\<Message>**&#x20;
 
 ## rerun
 
@@ -5983,11 +6348,11 @@ and not an argument between two.
 
 ### Parameters
 
-- `messageId` **[string][1409]** A message carrying a command
+- `messageId` **[string][1575]** A message carrying a command
 - `index` (optional, default `null`)
 - `context` **ToolContext?** What a consulting command needs to run (optional, default `{}`)
 
-Returns **[Promise][1414]\<Message>**&#x20;
+Returns **[Promise][1580]\<Message>**&#x20;
 
 ## takeSurvivor
 
@@ -6022,9 +6387,9 @@ fudged and an untouched question stay answered.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `at` **([number][1410] | null)** Which piece, or null for the whole turn
-- `text` **[string][1409]** The turn as the writer has now written it
+- `messageId` **[string][1575]**&#x20;
+- `at` **([number][1576] | null)** Which piece, or null for the whole turn
+- `text` **[string][1575]** The turn as the writer has now written it
   A context with no model to consult — which is what the caller passes while
   one is already answering — still takes every edit that asks nothing new of
   it, and refuses the ones that do.
@@ -6034,7 +6399,7 @@ fudged and an untouched question stay answered.
 
 - Throws **CommandError** If it cannot be run as written. Nothing has changed.
 
-Returns **[Promise][1414]\<Message>**&#x20;
+Returns **[Promise][1580]\<Message>**&#x20;
 
 ## held
 
@@ -6050,7 +6415,242 @@ Type: const
 
 Type: const
 
-## instances
+## composables/useChatFind
+
+Finding in a chat, most of which is not in the page.
+
+A long chat keeps only the turns near the screen in the page (see
+useNearTurns), so the browser's own find cannot see the rest. This finds in
+the messages themselves instead: in their text as it reads, the markdown
+rendered and its marks gone, so that what is counted is what the writer
+would see. Going to a match keeps its turn in the page and scrolls the match
+into view.
+
+The matches in the turns that are in the page are highlighted where they
+are, with the CSS Custom Highlight API, which marks text without touching
+the page: nothing a message renders is rewritten to show a match, and a
+message re-rendered under the highlights is simply found in again. Where the
+API is missing, a match is still gone to, just not marked.
+
+A message reads as its content, or a turn the writer took in pieces as the
+prose of each piece, which is what the chat shows of it. The page has that
+text in its `[data-find-text]` elements, inside the element marked with the
+message's id. Where the text on screen is not quite the text counted, as in
+a message shown raw, the nth match of a message is the nth on screen, or the
+last there is.
+
+## SETTLE_MS
+
+How long after going to a match it is kept in view while the turns around it come in.
+
+Type: [number][1576]
+
+## SETTLE_MS
+
+How long a change of width has to hold before the guesses are made again at it.
+
+Type: [number][1576]
+
+## ChatMatch
+
+Type: [Object][1578]
+
+### Properties
+
+- `turn` **[string][1575]** The turn it is in
+- `message` **[string][1575]** The message it is in
+- `nth` **[number][1576]** Which match in the message it is, from 0
+
+## FindableTurn
+
+Type: [Object][1578]
+
+### Properties
+
+- `id` **[string][1575]**&#x20;
+- `content` **[string][1575]?**&#x20;
+- `id` **[string][1575]**&#x20;
+- `messages` **[Array][1577]\<FindableMessage>**&#x20;
+
+## escapeRegExp
+
+### Parameters
+
+- `text` **[string][1575]**&#x20;
+
+## patternFor
+
+### Parameters
+
+- `query` **[string][1575]**&#x20;
+
+## registry
+
+The page's highlight registry, where there is one.
+
+## rangesIn
+
+Where the query is in an element's text, as ranges over the text nodes it
+is in. A match can run across nodes, out of a bold word and on.
+
+### Parameters
+
+- `element` **[Element][1591]**&#x20;
+- `pattern` **[RegExp][1592]**&#x20;
+
+Returns **[Array][1577]<[Range][1593]>**&#x20;
+
+## nodes
+
+Type: [Array][1577]<{node: [Text][1594], start: [number][1576]}>
+
+##
+
+Type: [Text][1594]
+
+## locate
+
+The node an offset into the text falls in, and how far into it.
+
+### Parameters
+
+- `offset` &#x20;
+
+## locate
+
+### Parameters
+
+- `offset` **[number][1576]** @returns {\[Text, number]}
+
+## ranges
+
+Type: [Array][1577]<[Range][1593]>
+
+## useChatFind
+
+### Parameters
+
+- `turns` &#x20;
+- `scroller` &#x20;
+
+## holding
+
+The turn the match the writer is on is in, kept in the page while the find is open.
+
+## holding
+
+## texts
+
+Each message's text as it reads, until what it says changes.
+
+## texts
+
+## readable
+
+### Parameters
+
+- `markdown` **[string][1575]**&#x20;
+
+## textOf
+
+### Parameters
+
+- `message` **FindableMessage**&#x20;
+
+## matches
+
+## found
+
+Type: [Array][1577]<[ChatMatch][779]>
+
+## found
+
+Type: ([Element][1591] | null)
+
+## firstOnScreen
+
+The first turn on screen, by its place in the chat. Every turn has its
+block in the page, in or out.
+
+## nearest
+
+The match nearest where the writer is: the first in or after the turn the
+last match was in, or with none the first turn on screen; failing that,
+the last before it, which in a chat read from the bottom is the nearest.
+
+### Parameters
+
+- `was` **([ChatMatch][779] | [undefined][1581])**&#x20;
+
+## wentAt
+
+Where the writer last went to a match, for keeping it in view as the page settles.
+
+## going
+
+Which going-to is the latest, so that one overtaken by another gives way.
+
+## rangesOfMessage
+
+The ranges of a message's matches on screen.
+
+### Parameters
+
+- `root` **[Element][1591]**&#x20;
+- `id` **[string][1575]**&#x20;
+- `pattern` **[RegExp][1592]**&#x20;
+
+## currentRange
+
+The range of the match the writer is on, if its message is on the page.
+
+## reveal
+
+Bring a range into view, a third of the way down, unless it is well in
+view already.
+
+### Parameters
+
+- `target` **([Range][1593] | [Element][1591])**&#x20;
+
+## paint
+
+Mark every match on the page, and the one the writer is on apart.
+
+## go
+
+Go to the match the writer is on: keep its turn in the page, and show it.
+
+## frame
+
+Type: ([number][1576] | [undefined][1581])
+
+## observer
+
+Type: ([MutationObserver][1595] | null)
+
+## lookFor
+
+Look for something: from the match the writer is on, so that it stays
+theirs while the query grows and still matches it, or from the screen.
+
+### Parameters
+
+- `text` **[string][1575]**&#x20;
+
+## step
+
+Move to the match after the one the writer is on, or before it, going
+round at the ends.
+
+### Parameters
+
+- `by` **(`1` | `-1`)**&#x20;
+
+## openFind
+
+Open the find, looking for what is selected in the chat if that is a few
+words on one line, and otherwise for what was looked for last.
 
 ## instances
 
@@ -6070,7 +6670,9 @@ Type: const
 
 ## instances
 
-Type: [Map][1417]<[string][1409], [NarrationApi][1111]>
+## instances
+
+Type: [Map][1583]<[string][1575], [NarrationApi][1243]>
 
 ## clearChatsInstances
 
@@ -6089,7 +6691,7 @@ Returns a singleton instance per storyId to avoid duplicate state and watchers
 
 ### Parameters
 
-- `storyId` **[string][1409]?** Optional story ID to load chats for
+- `storyId` **[string][1575]?** Optional story ID to load chats for
 
 Returns **ChatsApi** API for managing chats and messages
 
@@ -6097,25 +6699,26 @@ Returns **ChatsApi** API for managing chats and messages
 
 ## \_initPromise
 
-Type: ([Promise][1414]\<void> | null)
+Type: ([Promise][1580]\<void> | null)
 
 ## init
 
 Load chats and their messages for the story. Safe to call multiple times.
 
-- Throws **[Error][1413]** If loading chats or messages fails
+- Throws **[Error][1579]** If loading chats or messages fails
 
-Returns **[Promise][1414]\<void>**&#x20;
+Returns **[Promise][1580]\<void>**&#x20;
 
 ## init
 
 Load the story's tree and make sure it has a root to hang from.
 
-Returns **[Promise][1414]\<void>**&#x20;
+Returns **[Promise][1580]\<void>**&#x20;
 
 ## init
 
-Load the story records and the root documents their names live on.
+Load the story records and the root documents their names live on, and
+work out when each project was last edited where its root does not say.
 
 ## chatMessages
 
@@ -6128,7 +6731,7 @@ the app's default — also when the one it names is gone, a writer's own
 deleted or a built-in the app no longer ships. One with an NSFW or general
 counterpart is whichever the settings switch puts in its place.
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## defaultProfileId
 
@@ -6146,12 +6749,12 @@ others, and nothing on screen would tell them they had.
 
 ### Parameters
 
-- `title` **[string][1409]?** Optional chat title
-- `profileId` **[string][1409]?** Profile to stamp from; the project's otherwise
+- `title` **[string][1575]?** Optional chat title
+- `profileId` **[string][1575]?** Profile to stamp from; the project's otherwise
 
 <!---->
 
-- Throws **[Error][1413]** If chat creation fails
+- Throws **[Error][1579]** If chat creation fails
 
 Returns **(Chat | null)** Created chat or null
 
@@ -6171,9 +6774,9 @@ Whether an id is the unstarted chat's.
 
 ### Parameters
 
-- `chatId` **([string][1409] | null | [undefined][1415])**&#x20;
+- `chatId` **([string][1575] | null | [undefined][1581])**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## updateUnstartedChat
 
@@ -6196,12 +6799,12 @@ Update a chat
 
 ### Parameters
 
-- `chatId` **[string][1409]** Chat ID
+- `chatId` **[string][1575]** Chat ID
 - `updates` **Partial\<Chat>** Updates to apply
 
 <!---->
 
-- Throws **[Error][1413]** If chat update fails
+- Throws **[Error][1579]** If chat update fails
 
 Returns **(Chat | null)** Updated chat or null if not found
 
@@ -6211,11 +6814,11 @@ Delete a chat and its messages
 
 ### Parameters
 
-- `chatId` **[string][1409]** Chat ID to delete
+- `chatId` **[string][1575]** Chat ID to delete
 
 <!---->
 
-- Throws **[Error][1413]** If deletion fails
+- Throws **[Error][1579]** If deletion fails
 
 Returns **void**&#x20;
 
@@ -6225,7 +6828,7 @@ Get a chat by ID
 
 ### Parameters
 
-- `chatId` **[string][1409]** Chat ID
+- `chatId` **[string][1575]** Chat ID
 
 Returns **(Chat | null)** Chat or null if not found
 
@@ -6235,15 +6838,15 @@ Add a message to a chat
 
 ### Parameters
 
-- `chatId` **[string][1409]** Chat ID
+- `chatId` **[string][1575]** Chat ID
 - `role` **(`"user"` | `"assistant"`)** Message role (must be 'user' or 'assistant')
-- `content` **[string][1409]** Message content
-- `reasoningContent` **([string][1409] | null)** Optional model reasoning content (optional, default `null`)
+- `content` **[string][1575]** Message content
+- `reasoningContent` **([string][1575] | null)** Optional model reasoning content (optional, default `null`)
 - `segments` (optional, default `null`)
 
 <!---->
 
-- Throws **[Error][1413]** If message creation fails
+- Throws **[Error][1579]** If message creation fails
 
 Returns **Message** Created message
 
@@ -6253,15 +6856,15 @@ Stream content updates to a message (for AI responses)
 
 ### Parameters
 
-- `messageId` **[string][1409]** Message ID
-- `content` **[string][1409]** Updated content
-- `reasoningContent` **([string][1409] | null)** Optional updated reasoning content (optional, default `null`)
+- `messageId` **[string][1575]** Message ID
+- `content` **[string][1575]** Updated content
+- `reasoningContent` **([string][1575] | null)** Optional updated reasoning content (optional, default `null`)
 - `timing` (optional, default `{}`)
 - `pendingToolCalls` (optional, default `undefined`)
 
 <!---->
 
-- Throws **[Error][1413]** If update fails
+- Throws **[Error][1579]** If update fails
 
 Returns **(Message | null)** Updated message or null if not found
 
@@ -6271,12 +6874,12 @@ Update a message
 
 ### Parameters
 
-- `messageId` **[string][1409]** Message ID
+- `messageId` **[string][1575]** Message ID
 - `updates` **Partial\<Message>** Updates to apply
 
 <!---->
 
-- Throws **[Error][1413]** If update fails
+- Throws **[Error][1579]** If update fails
 
 Returns **(Message | null)** Updated message or null if not found
 
@@ -6286,7 +6889,7 @@ Ask a message for another answer, keeping the one it has.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
+- `messageId` **[string][1575]**&#x20;
 
 Returns **Message**&#x20;
 
@@ -6296,7 +6899,7 @@ Take back the answer a message is showing, and show the one before it.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
+- `messageId` **[string][1575]**&#x20;
 
 Returns **Message**&#x20;
 
@@ -6309,9 +6912,9 @@ stamped so.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
+- `messageId` **[string][1575]**&#x20;
 - `segments` &#x20;
-- `content` **[string][1409]** The turn assembled from them
+- `content` **[string][1575]** The turn assembled from them
 
 Returns **Message**&#x20;
 
@@ -6321,10 +6924,10 @@ Write one of a turn's pieces without calling the turn edited.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `index` **[number][1410]**&#x20;
+- `messageId` **[string][1575]**&#x20;
+- `index` **[number][1576]**&#x20;
 - `command` &#x20;
-- `content` **[string][1409]** The turn assembled around it
+- `content` **[string][1575]** The turn assembled around it
 
 Returns **Message**&#x20;
 
@@ -6334,13 +6937,13 @@ Delete a message
 
 ### Parameters
 
-- `messageId` **[string][1409]** Message ID
+- `messageId` **[string][1575]** Message ID
 
 <!---->
 
-- Throws **[Error][1413]** If deletion fails
+- Throws **[Error][1579]** If deletion fails
 
-Returns **[boolean][1416]** True if deleted, false otherwise
+Returns **[boolean][1582]** True if deleted, false otherwise
 
 ## moveMessage
 
@@ -6348,8 +6951,8 @@ Move a message up its chat, or down it. See the store's `moveMessage`.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
-- `by` **[number][1410]** How many places up; negative for down
+- `messageId` **[string][1575]**&#x20;
+- `by` **[number][1576]** How many places up; negative for down
 
 Returns **Message**&#x20;
 
@@ -6359,10 +6962,10 @@ Truncate messages for a chat from a given index
 
 ### Parameters
 
-- `chatId` **[string][1409]** Chat ID
-- `fromIndex` **[number][1410]** Index to start deletion from
+- `chatId` **[string][1575]** Chat ID
+- `fromIndex` **[number][1576]** Index to start deletion from
 
-Returns **[number][1410]** Number of messages deleted
+Returns **[number][1576]** Number of messages deleted
 
 ## getMessagesForChat
 
@@ -6370,7 +6973,7 @@ Get all messages for a chat as a reactive computed ref
 
 ### Parameters
 
-- `chatId` **[string][1409]** Chat ID
+- `chatId` **[string][1575]** Chat ID
 
 ## getMessageById
 
@@ -6378,7 +6981,7 @@ Get a message by its ID as a reactive computed ref
 
 ### Parameters
 
-- `messageId` **[string][1409]** Message ID
+- `messageId` **[string][1575]** Message ID
 
 ## getDraftMessage
 
@@ -6386,9 +6989,9 @@ Get draft message content for a chat
 
 ### Parameters
 
-- `chatId` **[string][1409]** Chat ID
+- `chatId` **[string][1575]** Chat ID
 
-Returns **[string][1409]** Draft message content (empty string if no draft)
+Returns **[string][1575]** Draft message content (empty string if no draft)
 
 ## setDraftMessage
 
@@ -6396,8 +6999,8 @@ Set draft message content for a chat
 
 ### Parameters
 
-- `chatId` **[string][1409]** Chat ID
-- `content` **[string][1409]** Draft message content
+- `chatId` **[string][1575]** Chat ID
+- `content` **[string][1575]** Draft message content
 
 Returns **void**&#x20;
 
@@ -6407,7 +7010,7 @@ Clear draft message for a chat
 
 ### Parameters
 
-- `chatId` **[string][1409]** Chat ID
+- `chatId` **[string][1575]** Chat ID
 
 Returns **void**&#x20;
 
@@ -6434,8 +7037,8 @@ every other character in the project.
 ### Parameters
 
 - `source` **Chat** Whose settings to carry over
-- `messages` **[Array][1411]\<Message>** In order; each is duplicated under the new chat
-- `title` **[string][1409]**&#x20;
+- `messages` **[Array][1577]\<Message>** In order; each is duplicated under the new chat
+- `title` **[string][1575]**&#x20;
 
 Returns **Chat**&#x20;
 
@@ -6445,12 +7048,12 @@ Fork a chat at a specific message, creating a new chat with all messages up to t
 
 ### Parameters
 
-- `chatId` **[string][1409]** Original chat ID
-- `messageId` **[string][1409]** Last message ID to include in the fork
+- `chatId` **[string][1575]** Original chat ID
+- `messageId` **[string][1575]** Last message ID to include in the fork
 
 <!---->
 
-- Throws **[Error][1413]** If chat not found or fork operation fails
+- Throws **[Error][1579]** If chat not found or fork operation fails
 
 Returns **Chat** The newly created forked chat
 
@@ -6470,7 +7073,7 @@ on that.
 ### Parameters
 
 - `chat` **Chat** As it was exported
-- `messages` **[Array][1411]\<Message>** Its messages, in order
+- `messages` **[Array][1577]\<Message>** Its messages, in order
 - `prompt` **AIPrompt?** The prompt it ran on, if the file carried one
 
 Returns **Chat** The chat as it now exists here
@@ -6496,7 +7099,7 @@ nothing showing them has to know.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 - `chatId` &#x20;
 
 ## update
@@ -6517,7 +7120,7 @@ nobody could trust.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## chooseProfile
 
@@ -6527,7 +7130,7 @@ back to the default has not been put there by anyone.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## deleteProfile
 
@@ -6537,15 +7140,15 @@ next turn, since a profile that is gone reads as the default.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## deleteProfile
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## composables/useCommandMenu
 
@@ -6570,10 +7173,10 @@ while the focus stays in the field.
 
 ### Parameters
 
-- `listId` **[string][1409]** The menu's id
-- `name` **[string][1409]** The command's
+- `listId` **[string][1575]** The menu's id
+- `name` **[string][1575]** The command's
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## useCommandMenu
 
@@ -6608,7 +7211,7 @@ Where the caret is, or null while the field is not focused or holds a selection.
 
 ##
 
-Type: ([number][1410] | null)
+Type: ([number][1576] | null)
 
 ## shut
 
@@ -6629,8 +7232,8 @@ turn is gone.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
-- `el` **([Element][1424] | null)**&#x20;
+- `id` **[string][1575]**&#x20;
+- `el` **([Element][1591] | null)**&#x20;
 
 ## pick
 
@@ -6638,13 +7241,13 @@ Finish the name with this entry, and put the caret after it.
 
 ### Parameters
 
-- `index` **[number][1410]** Which of the entries
+- `index` **[number][1576]** Which of the entries
 
 ## onKeydown
 
 ### Parameters
 
-- `event` **[KeyboardEvent][1425]**&#x20;
+- `event` **[KeyboardEvent][1596]**&#x20;
 
 ## spot
 
@@ -6661,7 +7264,7 @@ and this is the one thing they do with it.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 ## copyPath
 
@@ -6671,7 +7274,7 @@ word.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## composables/useDocuments
 
@@ -6712,7 +7315,7 @@ Clear all singleton instances (for testing)
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 ## pendingRenameId
 
@@ -6728,12 +7331,12 @@ Show an error toast
 
 ### Parameters
 
-- `message` **[string][1409]** The message to display
-- `options` **[Object][1412]?** Additional options (optional, default `{}`)
+- `message` **[string][1575]** The message to display
+- `options` **[Object][1578]?** Additional options (optional, default `{}`)
 
 ## initPromise
 
-Type: ([Promise][1414]\<void> | null)
+Type: ([Promise][1580]\<void> | null)
 
 ## tabs
 
@@ -6763,7 +7366,7 @@ would.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 - `options` &#x20;
 
 ## open
@@ -6775,9 +7378,9 @@ open as the other kind is turned into this one.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
-- `markdown` **[string][1409]** What the store holds
-- `plain` **[boolean][1416]?** As text, rather than as a structured document (optional, default `false`)
+- `id` **[string][1575]**&#x20;
+- `markdown` **[string][1575]** What the store holds
+- `plain` **[boolean][1582]?** As text, rather than as a structured document (optional, default `false`)
 
 Returns **(EditorState | null)** The state, for a structured document
 
@@ -6788,7 +7391,7 @@ story remembers.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 ## open
 
@@ -6796,7 +7399,7 @@ Show the settings, on a section when one is named.
 
 ### Parameters
 
-- `section` **[SettingsSection][1337]?**&#x20;
+- `section` **[SettingsSection][1505]?**&#x20;
 
 ## keep
 
@@ -6805,7 +7408,7 @@ its place. For when the writer types in it or double-clicks it.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## focus
 
@@ -6815,13 +7418,13 @@ writer's next keystroke belongs in the document.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## focus
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## closeTab
 
@@ -6831,7 +7434,7 @@ story remembers too.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## releaseTabs
 
@@ -6843,21 +7446,21 @@ comes back from the store rather than from memory.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **([Document][1418] | null)**&#x20;
-
-## get
-
-Type: [string][1409]
+Returns **([Document][1584] | null)**&#x20;
 
 ## get
 
-Type: [NarrationApi][1111]
+Type: [string][1575]
 
 ## get
 
-Type: [ArrayBuffer][1423]
+Type: [NarrationApi][1243]
+
+## get
+
+Type: [ArrayBuffer][1590]
 
 ## childrenOf
 
@@ -6865,17 +7468,17 @@ Children of a folder, in display order.
 
 ### Parameters
 
-- `parentId` **[string][1409]**&#x20;
+- `parentId` **[string][1575]**&#x20;
 
-Returns **[Array][1411]<[Document][1418]>**&#x20;
+Returns **[Array][1577]<[Document][1584]>**&#x20;
 
 ## isFolder
 
 ### Parameters
 
-- `document` **([Document][1418] | null)**&#x20;
+- `document` **([Document][1584] | null)**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## isOrdered
 
@@ -6884,9 +7487,9 @@ whether dragging to a position within it means anything.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## isHidden
 
@@ -6896,9 +7499,9 @@ and the folder is where it is switched off again.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## displayTitle
 
@@ -6908,9 +7511,9 @@ thing display adds is a stand-in for a document nobody has named yet.
 
 ### Parameters
 
-- `document` **([Document][1418] | null)**&#x20;
+- `document` **([Document][1584] | null)**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## pathOf
 
@@ -6921,9 +7524,9 @@ tool takes. See `utils/documentPath.js`.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **[string][1409]** The path, or '' for a document not in the tree
+Returns **[string][1575]** The path, or '' for a document not in the tree
 
 ## titlesOf
 
@@ -6931,9 +7534,9 @@ The titles `pathOf` joins, for a caller that needs them one by one.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **[Array][1411]<[string][1409]>**&#x20;
+Returns **[Array][1577]<[string][1575]>**&#x20;
 
 ## firstTextDocument
 
@@ -6944,32 +7547,32 @@ last had open. This is what a project with no history gets, and root
 children sort by title, so the default structure lands in `manuscript`
 without the code having to know that folder exists.
 
-Returns **([Document][1418] | null)**&#x20;
+Returns **([Document][1584] | null)**&#x20;
 
 ## walk
 
 ### Parameters
 
-- `parentId` **[string][1409]**&#x20;
+- `parentId` **[string][1575]**&#x20;
 
 ## createFolder
 
 ### Parameters
 
-- `parentId` **[string][1409]**&#x20;
-- `title` **[string][1409]**&#x20;
+- `parentId` **[string][1575]**&#x20;
+- `title` **[string][1575]**&#x20;
 
-Returns **[Document][1418]**&#x20;
+Returns **[Document][1584]**&#x20;
 
 ## createTextDocument
 
 ### Parameters
 
-- `parentId` **[string][1409]**&#x20;
-- `title` **[string][1409]**&#x20;
-- `content` **[string][1409]?** Markdown, for callers creating a document with a body (optional, default `''`)
+- `parentId` **[string][1575]**&#x20;
+- `title` **[string][1575]**&#x20;
+- `content` **[string][1575]?** Markdown, for callers creating a document with a body (optional, default `''`)
 
-Returns **[Document][1418]**&#x20;
+Returns **[Document][1584]**&#x20;
 
 ## uniqueTitle
 
@@ -6984,26 +7587,17 @@ changed.
 
 ### Parameters
 
-- `parentId` **[string][1409]**&#x20;
-- `title` **[string][1409]**&#x20;
+- `parentId` **[string][1575]**&#x20;
+- `title` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## rename
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `title` **[string][1409]**&#x20;
-
-## rename
-
-A project's name lives on its root node, the same one the tree renames.
-
-### Parameters
-
-- `storyId` **[string][1409]**&#x20;
-- `title` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
+- `title` **[string][1575]**&#x20;
 
 ## isPlain
 
@@ -7011,9 +7605,9 @@ Whether a document is edited as plain text and stored as typed.
 
 ### Parameters
 
-- `documentId` **([string][1409] | null | [undefined][1415])**&#x20;
+- `documentId` **([string][1575] | null | [undefined][1581])**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## stored
 
@@ -7022,10 +7616,10 @@ settled for a structured one, so that it reads the same when opened.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `content` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
+- `content` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## setContent
 
@@ -7033,8 +7627,8 @@ Replace a document's body. Word count follows from it.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `content` **[string][1409]** Markdown
+- `documentId` **[string][1575]**&#x20;
+- `content` **[string][1575]** Markdown
 
 ## currentContent
 
@@ -7043,9 +7637,9 @@ document, since the store hears about typing only after a pause.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## replaceText
 
@@ -7054,11 +7648,11 @@ found exactly once; otherwise nothing changes and the count says why.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `old` **[string][1409]** The passage, exactly as the body has it
-- `replacement` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
+- `old` **[string][1575]** The passage, exactly as the body has it
+- `replacement` **[string][1575]**&#x20;
 
-Returns **{applied: [boolean][1416], count: [number][1410]}**&#x20;
+Returns **{applied: [boolean][1582], count: [number][1576]}**&#x20;
 
 ## appendContent
 
@@ -7066,8 +7660,8 @@ Add to the end of a document's body, as blocks of its own.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `markdown` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
+- `markdown` **[string][1575]**&#x20;
 
 ## appendContent
 
@@ -7075,8 +7669,8 @@ Add blocks at the end of an open document. Written through at once.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
-- `markdown` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
+- `markdown` **[string][1575]**&#x20;
 
 ## wouldSettle
 
@@ -7085,9 +7679,9 @@ it is not what the editor would write. Worth asking about first.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## setPlain
 
@@ -7098,8 +7692,8 @@ kept. One that is open is turned in place, keeping what was typed.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `plain` **[boolean][1416]**&#x20;
+- `documentId` **[string][1575]**&#x20;
+- `plain` **[boolean][1582]**&#x20;
 
 ## revertEdit
 
@@ -7112,7 +7706,7 @@ stands.
 
 - `edit` &#x20;
 
-Returns **[boolean][1416]** Whether it was undone
+Returns **[boolean][1582]** Whether it was undone
 
 ## reapplyEdit
 
@@ -7127,7 +7721,7 @@ half of `revertEdit`, for an answer switched back to.
 
 - `edit` &#x20;
 
-Returns **[Promise][1414]<[boolean][1416]>** Whether it was made
+Returns **[Promise][1580]<[boolean][1582]>** Whether it was made
 
 ## editableTitle
 
@@ -7135,17 +7729,17 @@ The name currently in the rename input for a document.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## removed
 
-Type: [Array][1411]<[string][1409]>
+Type: [Array][1577]<[string][1575]>
 
 ##
 
-Type: [string][1409]
+Type: [string][1575]
 
 ## reorder
 
@@ -7153,8 +7747,8 @@ Commit a drag: reparents anything that moved and renumbers the folder.
 
 ### Parameters
 
-- `parentId` **[string][1409]**&#x20;
-- `documentIds` **[Array][1411]<[string][1409]>** Children in their new order
+- `parentId` **[string][1575]**&#x20;
+- `documentIds` **[Array][1577]<[string][1575]>** Children in their new order
 
 ## setOrdered
 
@@ -7165,26 +7759,28 @@ sequence things were made in.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `ordered` **[boolean][1416]**&#x20;
+- `documentId` **[string][1575]**&#x20;
+- `ordered` **[boolean][1582]**&#x20;
 
 ## setHidden
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `hidden` **[boolean][1416]**&#x20;
+- `documentId` **[string][1575]**&#x20;
+- `hidden` **[boolean][1582]**&#x20;
 
 ## canDropInto
 
-Whether a document can be dropped into a folder.
+Whether a document can be dropped into a folder. Nothing goes into a
+repository or comes out of one: what is in it is settled against where it
+came from, by path, and a refresh would undo the move.
 
 ### Parameters
 
-- `folderId` **[string][1409]**&#x20;
-- `documentId` **[string][1409]**&#x20;
+- `folderId` **[string][1575]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## requestRename
 
@@ -7192,13 +7788,95 @@ Ask the node for `documentId` to start renaming as soon as it mounts.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## claimRename
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
+
+## composables/useDriveImport
+
+Files picked in Google Drive, brought into a folder of the
+project.
+
+The steps are `drive/`'s: Google's sign-in with its picker, in a popup or
+the system browser, then each picked file looked up and fetched. This puts
+them in order and hands what came back to the bulk importer, as a batch
+chosen from disk would be, so a Doc is a text document and a PDF a file
+document. A Doc's pictures are taken out first and counted. See
+`.llm/google_docs_design.md`.
+
+## useDriveImport
+
+### Parameters
+
+- `storyId` &#x20;
+
+## useDriveImport
+
+### Parameters
+
+- `storyId` &#x20;
+
+## useDriveImport
+
+### Parameters
+
+- `storyId` &#x20;
+
+## useDriveImport
+
+Where an import is, for the dialog to say.
+
+### Parameters
+
+- `storyId` &#x20;
+
+## useDriveImport
+
+### Parameters
+
+- `storyId` **[string][1575]**&#x20;
+
+## choose
+
+Sign in and pick on Google's own page: a popup in a browser, the system
+browser in the desktop window. In a browser, call it straight from a
+click, with nothing awaited first: the popup opens before this returns.
+
+### Parameters
+
+- `options` **[Object][1578]?** (optional, default `{}`)
+  - `options.signal` **AbortSignal?** Stops the wait, and closes the popup
+
+Returns **[Promise][1580]<(Picked | null)>** Null when the writer cancelled or picked nothing
+
+## importPicked
+
+Fetch the picked files and write them into a folder. One that cannot be
+fetched is skipped and named, as one that cannot be read is; a sign-in
+that ran out stops the lot before anything is written.
+
+### Parameters
+
+- `ids` **[Array][1577]<[string][1575]>** The picked files' Drive ids
+- `token` **[string][1575]**&#x20;
+- `options` **[Object][1578]?** (optional, default `{}`)
+  - `options.parentId` **[string][1575]?** The folder; the project's top otherwise
+  - `options.signal` **AbortSignal?**&#x20;
+  - `options.onStep` **OnStep?**&#x20;
+
+<!---->
+
+- Throws **SignInLapsedError** When Drive stopped taking the token
+
+Returns **[Promise][1580]<[Imported][665]>**&#x20;
+
+## gathered
+
+Type: [Array][1577]\<Gathered>
 
 ## composables/useEditor
 
@@ -7234,22 +7912,22 @@ Type: (DocumentEntry | TextEntry)
 - `kind` **`"document"`**&#x20;
 - `state` **EditorState**&#x20;
 - `view` **(View | null)** The view showing the state, if one is
-- `dirty` **[boolean][1416]** Changed since the store last heard
-- `scrollTop` **[number][1410]** Where the view was scrolled to when it last wentA plain document, open: its text, as typed.
+- `dirty` **[boolean][1582]** Changed since the store last heard
+- `scrollTop` **[number][1576]** Where the view was scrolled to when it last wentA plain document, open: its text, as typed.
 - `kind` **`"text"`**&#x20;
-- `text` **[string][1409]**&#x20;
-- `dirty` **[boolean][1416]**&#x20;
-- `scrollTop` **[number][1410]**&#x20;
+- `text` **[string][1575]**&#x20;
+- `dirty` **[boolean][1582]**&#x20;
+- `scrollTop` **[number][1576]**&#x20;
 
 ## PROJECTION_DELAY
 
 How long typing can go on before the store hears about it, in ms.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## entries
 
-Type: [Map][1417]<[string][1409], [Entry][359]>
+Type: [Map][1583]<[string][1575], [Entry][366]>
 
 ## clearEditor
 
@@ -7261,9 +7939,9 @@ A document's body as it stands in its entry.
 
 ### Parameters
 
-- `entry` **[Entry][359]**&#x20;
+- `entry` **[Entry][366]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## flushEntry
 
@@ -7273,15 +7951,15 @@ typed since the last projection goes with it.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
-- `entry` **[Entry][359]**&#x20;
+- `id` **[string][1575]**&#x20;
+- `entry` **[Entry][366]**&#x20;
 
 ## markDirty
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
-- `entry` **[Entry][359]**&#x20;
+- `id` **[string][1575]**&#x20;
+- `entry` **[Entry][366]**&#x20;
 
 ## makeEntry
 
@@ -7290,11 +7968,11 @@ dependency, never proxied.
 
 ### Parameters
 
-- `markdown` **[string][1409]**&#x20;
-- `plain` **[boolean][1416]**&#x20;
-- `scrollTop` **[number][1410]?** (optional, default `0`)
+- `markdown` **[string][1575]**&#x20;
+- `plain` **[boolean][1582]**&#x20;
+- `scrollTop` **[number][1576]?** (optional, default `0`)
 
-Returns **[Entry][359]**&#x20;
+Returns **[Entry][366]**&#x20;
 
 ## useEditor
 
@@ -7308,15 +7986,15 @@ differently from here on, and the store should say so.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
-- `plain` **[boolean][1416]**&#x20;
+- `id` **[string][1575]**&#x20;
+- `plain` **[boolean][1582]**&#x20;
 
 ## convert
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
-- `documentId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## close
 
@@ -7324,7 +8002,7 @@ Close a document, writing it out, and forget its entry.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## discard
 
@@ -7333,7 +8011,7 @@ entry has nowhere to go.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## holds
 
@@ -7341,9 +8019,9 @@ Whether the document is open.
 
 ### Parameters
 
-- `id` **([string][1409] | null | [undefined][1415])**&#x20;
+- `id` **([string][1575] | null | [undefined][1581])**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## openIds
 
@@ -7355,7 +8033,7 @@ A structured document's state; null for a plain one, or one not open.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 Returns **(EditorState | null)**&#x20;
 
@@ -7366,16 +8044,16 @@ so a tab comes back where it was left.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
-- `top` **[number][1410]**&#x20;
+- `id` **[string][1575]**&#x20;
+- `top` **[number][1576]**&#x20;
 
 ## scrollTop
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
-Returns **[number][1410]**&#x20;
+Returns **[number][1576]**&#x20;
 
 ## dispatch
 
@@ -7384,7 +8062,7 @@ through here, from the view and from the document API alike.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 - `tr` **Transaction**&#x20;
 
 ## setText
@@ -7394,8 +8072,8 @@ here, and the store hears after a pause.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
-- `text` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
+- `text` **[string][1575]**&#x20;
 
 ## flush
 
@@ -7404,7 +8082,7 @@ on the debounce, and by anyone about to read the store.
 
 ### Parameters
 
-- `id` **[string][1409]?**&#x20;
+- `id` **[string][1575]?**&#x20;
 
 ## replaceContent
 
@@ -7414,8 +8092,8 @@ document takes the text as it is.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
-- `markdown` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
+- `markdown` **[string][1575]**&#x20;
 
 ## markdown
 
@@ -7423,9 +8101,9 @@ An open document as markdown, whether or not it has been flushed.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## composables/useFileView
 
@@ -7452,13 +8130,13 @@ The session key a document's choice is kept under.
 
 ##
 
-Type: [string][1409]
+Type: [string][1575]
 
 ## useFileView
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 ## showsText
 
@@ -7466,9 +8144,9 @@ Whether this document's tab shows its text rather than the file.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## setShowsText
 
@@ -7476,8 +8154,8 @@ Show the file's text, or the file again.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `text` **[boolean][1416]**&#x20;
+- `documentId` **[string][1575]**&#x20;
+- `text` **[boolean][1582]**&#x20;
 
 ## fileViewItem
 
@@ -7486,7 +8164,7 @@ file has a file to show; anything else gets none.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## clearFileViews
 
@@ -7506,7 +8184,7 @@ Get a value from sessionStorage
 
 #### Parameters
 
-- `key` **[string][1409]** The storage key
+- `key` **[string][1575]** The storage key
 - `defaultValue` **T** Default value if key doesn't exist (optional, default `null`)
 
 Returns **T** The stored value or defaultValue
@@ -7517,10 +8195,10 @@ Set a value in sessionStorage
 
 #### Parameters
 
-- `key` **[string][1409]** The storage key
+- `key` **[string][1575]** The storage key
 - `value` **any** The value to store (will be JSON stringified)
 
-Returns **[boolean][1416]** Success status
+Returns **[boolean][1582]** Success status
 
 ### remove
 
@@ -7528,9 +8206,71 @@ Remove an item from sessionStorage
 
 #### Parameters
 
-- `key` **[string][1409]** The storage key
+- `key` **[string][1575]** The storage key
 
-Returns **[boolean][1416]** Success status
+Returns **[boolean][1582]** Success status
+
+## composables/useFindKey
+
+Command-F, or Control-F off a Mac, finds in the panel the
+writer is in.
+
+The browser's own find sees only what is in the page, and most of a long
+chat is not: see useNearTurns. A document is found in by the editor, which
+can replace as well. So the key is taken from the browser by the panel that
+has the focus, or with nothing in it focused the one last clicked or
+touched, and only when the panel has a find of its own to open. Anywhere else, in a
+dialog or a plain document, the key is still the browser's.
+
+## pressed
+
+What was last clicked or touched, for when nothing has the focus.
+
+## pressed
+
+Type: ([EventTarget][1597] | null)
+
+## pressed
+
+Whether the press was taken.
+
+## remember
+
+### Parameters
+
+- `event` **PointerEvent**&#x20;
+
+## isFindKey
+
+Whether a key is the find key: the browser's own, so that it is the one the
+writer already reaches for.
+
+### Parameters
+
+- `event` **[KeyboardEvent][1596]**&#x20;
+
+Returns **[boolean][1582]**&#x20;
+
+## useFindKey
+
+Open a panel's find on the find key, while the writer is in the panel.
+
+### Parameters
+
+- `root` &#x20;
+- `open` &#x20;
+
+## onKeyDown
+
+### Parameters
+
+- `event` **[KeyboardEvent][1596]**&#x20;
+
+## onKeyDown
+
+### Parameters
+
+- `event` **[KeyboardEvent][1596]**&#x20;
 
 ## composables/useGenerationSettings
 
@@ -7566,7 +8306,7 @@ How far along a job is: steps done over steps in all.
 
 - `job` **Job**&#x20;
 
-Returns **{done: [number][1410], total: [number][1410], fraction: [number][1410]}**&#x20;
+Returns **{done: [number][1576], total: [number][1576], fraction: [number][1576]}**&#x20;
 
 ## elapsedOf
 
@@ -7576,9 +8316,9 @@ the run in hand's time when one is going.
 ### Parameters
 
 - `job` **Job**&#x20;
-- `now` **[number][1410]**&#x20;
+- `now` **[number][1576]**&#x20;
 
-Returns **[number][1410]** ms
+Returns **[number][1576]** ms
 
 ## formatElapsed
 
@@ -7586,7 +8326,7 @@ A length of time the way the panel says it: `45s`, `12m 05s`, `1h 02m`.
 
 ### Parameters
 
-- `ms` **[number][1410]**&#x20;
+- `ms` **[number][1576]**&#x20;
 
 ## useJobs
 
@@ -7610,13 +8350,13 @@ The job running on a document, if one is.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 Returns **(Job | null)**&#x20;
 
 ## projectOf
 
-The name of the project a job is for, as the project list shows it.
+The name of the project a job is for, as the projects menu shows it.
 
 ### Parameters
 
@@ -7674,13 +8414,13 @@ message landing there.
 
 How long after the chat moves the panel its scrolling is taken to be the chat's.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## MAX_PASSES
 
 How many times a jump goes again when the end moved under it.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## drawn
 
@@ -7699,7 +8439,7 @@ How far below what can be seen the end of the content is.
 
 ### Parameters
 
-- `panel` **[HTMLElement][1421]**&#x20;
+- `panel` **[HTMLElement][1587]**&#x20;
 
 ## far
 
@@ -7723,7 +8463,7 @@ it is. The panel can change height under it too, as the message box sizes
 itself when a chat opens. So the jump is made again once a frame has been
 drawn, until it is at the end.
 
-Returns **[Promise][1414]\<void>**&#x20;
+Returns **[Promise][1580]\<void>**&#x20;
 
 ## composables/useLoadedSkills
 
@@ -7748,6 +8488,66 @@ The skills loaded here, in the order they were first loaded.
 ## dropped
 
 The loaded skills that go at the next summary.
+
+## composables/useLongPress
+
+A finger held still on something, for what a right-click opens
+everywhere else.
+
+A phone has no right-click, and iOS fires no `contextmenu` for a long press,
+so the press is timed here. It is a press only while the finger stays put: a
+finger that moves first is scrolling, and is left to.
+
+A finger that moves once the press has been taken is dragging what it is on,
+which a held finger also starts in the outline, so whatever the press opened
+is told to close again. A finger lifted after a press is not a tap: the
+click that would follow is cancelled, so the row it was on does not open as
+the menu does.
+
+## LONG_PRESS_MS
+
+How long a finger has to stay down to be a long press. iOS takes about this long.
+
+Type: [number][1576]
+
+## SLOP
+
+How far a finger can wander, in pixels, and still be held still.
+
+Type: [number][1576]
+
+## LongPressHandlers
+
+Type: [Object][1578]
+
+## useLongPress
+
+### Parameters
+
+- `onPress` &#x20;
+- `onMoveAfter` (optional, default `()=>{}`)
+
+Returns **[LongPressHandlers][1178]**&#x20;
+
+## timer
+
+## touchstart
+
+### Parameters
+
+- `event` **[TouchEvent][1598]**&#x20;
+
+## touchmove
+
+### Parameters
+
+- `event` **[TouchEvent][1598]**&#x20;
+
+## touchend
+
+### Parameters
+
+- `event` **[TouchEvent][1598]**&#x20;
 
 ## composables/useMcpServers
 
@@ -7800,23 +8600,23 @@ Its tools with the names the model will call them by.
 
 ### Parameters
 
-- `prefix` **[string][1409]**&#x20;
-- `tools` **[Array][1411]\<Omit\<McpTool, `"exposed"`>>**&#x20;
+- `prefix` **[string][1575]**&#x20;
+- `tools` **[Array][1577]\<Omit\<McpTool, `"exposed"`>>**&#x20;
 
-Returns **[Array][1411]\<McpTool>**&#x20;
+Returns **[Array][1577]\<McpTool>**&#x20;
 
 ## ServerPreview
 
 What a server offers, read for the writer before it is kept.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `serverName` **[string][1409]** What it calls itself
-- `instructions` **[string][1409]** What it tells a client about using it
-- `tools` **[Array][1411]\<Omit\<McpTool, `"exposed"`>>**&#x20;
-- `prompts` **[Array][1411]\<McpPrompt>**&#x20;
+- `serverName` **[string][1575]** What it calls itself
+- `instructions` **[string][1575]** What it tells a client about using it
+- `tools` **[Array][1577]\<Omit\<McpTool, `"exposed"`>>**&#x20;
+- `prompts` **[Array][1577]\<McpPrompt>**&#x20;
 
 ## SIGN_IN_WAIT_MS
 
@@ -7853,7 +8653,7 @@ Whether the writer is signed in to the server at this address.
 
 ### Parameters
 
-- `url` **[string][1409]**&#x20;
+- `url` **[string][1575]**&#x20;
 
 ## signIn
 
@@ -7864,15 +8664,15 @@ in the system browser, with the window waiting for it to come back.
 
 ### Parameters
 
-- `url` **[string][1409]**&#x20;
+- `url` **[string][1575]**&#x20;
 
-Returns **[Promise][1414]<({signedIn: `true`} | {error: [string][1409]})>**&#x20;
+Returns **[Promise][1580]<({signedIn: `true`} | {error: [string][1575]})>**&#x20;
 
 ## done
 
 ### Parameters
 
-- `outcome` **({signedIn: `true`} | {error: [string][1409]})**&#x20;
+- `outcome` **({signedIn: `true`} | {error: [string][1575]})**&#x20;
 
 ## signOut
 
@@ -7881,7 +8681,7 @@ registered as.
 
 ### Parameters
 
-- `url` **[string][1409]**&#x20;
+- `url` **[string][1575]**&#x20;
 
 ## addServer
 
@@ -7890,8 +8690,8 @@ Keep a server, with what it offered when it was previewed.
 ### Parameters
 
 - `configured` **ConfiguredServer**&#x20;
-- `listed` **[ServerPreview][1067]?** Absent for one that runs as a program
-- `profiles` **[Array][1411]<[string][1409]>?** The profiles whose chats use it (optional, default `[]`)
+- `listed` **[ServerPreview][1199]?** Absent for one that runs as a program
+- `profiles` **[Array][1577]<[string][1575]>?** The profiles whose chats use it (optional, default `[]`)
 
 ##
 
@@ -7905,13 +8705,13 @@ it had; a new one gets the next free one.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## updateServer
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 - `updates` **Partial\<Pick\<McpServer, (`"name"` | `"url"` | `"headers"` | `"profiles"` | `"allowed"` | `"allowAll"` | `"auth"`)>>**&#x20;
 
 ## removeServer
@@ -7921,7 +8721,7 @@ at the same address.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## allowTool
 
@@ -7930,7 +8730,7 @@ asked.
 
 ### Parameters
 
-- `exposed` **[string][1409]** The tool, as the model calls it
+- `exposed` **[string][1575]** The tool, as the model calls it
 
 ## allowServer
 
@@ -7939,7 +8739,7 @@ included: the writer said so when one of its tools asked.
 
 ### Parameters
 
-- `exposed` **[string][1409]** One of its tools, as the model calls it
+- `exposed` **[string][1575]** One of its tools, as the model calls it
 
 ## composables/useMessageField
 
@@ -7962,10 +8762,10 @@ measure a pixel over its own box. Another line is a lot more than that.
 
 ### Parameters
 
-- `row` **[HTMLElement][1421]** The flex row the field shares with its buttons
-- `field` **[HTMLElement][1421]** The textarea
+- `row` **[HTMLElement][1587]** The flex row the field shares with its buttons
+- `field` **[HTMLElement][1587]** The textarea
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## useMessageField
 
@@ -8020,31 +8820,31 @@ something to hear.
 
 The audio a document has, joined: where each block plays.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `segments` **[Array][1411]<{start: [number][1410], end: [number][1410], index: [number][1410]}>** In seconds, with the block each is
-- `duration` **[number][1410]** Seconds
-- `key` **[string][1409]** What it was joined from; see `trackKeyOf`
+- `segments` **[Array][1577]<{start: [number][1576], end: [number][1576], index: [number][1576]}>** In seconds, with the block each is
+- `duration` **[number][1576]** Seconds
+- `key` **[string][1575]** What it was joined from; see `trackKeyOf`
 
 ## Reading
 
 A document's reading: the audio it has, and how the last run went.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
 - `status` **(`"idle"` | `"running"` | `"done"` | `"stopped"` | `"failed"`)** The last run, or the one under way
-- `done` **[number][1410]** How many utterances this run has read
-- `total` **[number][1410]** How many it set out to
-- `current` **([string][1409] | null)** The signature being asked for now
-- `failed` **([string][1409] | null)** The signature the last run failed on
-- `error` **([string][1409] | null)** Why it failed, when it did
-- `clips` **[Map][1417]<[string][1409], [ArrayBuffer][1423]>** The audio, by signature. Reactive.
-- `track` **([ReadingTrack][1106] | null)** The audio joined, in document order
-- `url` **([string][1409] | null)** The track as an object URL, for a player
+- `done` **[number][1576]** How many utterances this run has read
+- `total` **[number][1576]** How many it set out to
+- `current` **([string][1575] | null)** The signature being asked for now
+- `failed` **([string][1575] | null)** The signature the last run failed on
+- `error` **([string][1575] | null)** Why it failed, when it did
+- `clips` **[Map][1583]<[string][1575], [ArrayBuffer][1590]>** The audio, by signature. Reactive.
+- `track` **([ReadingTrack][1238] | null)** The audio joined, in document order
+- `url` **([string][1575] | null)** The track as an object URL, for a player
 
 ## clearNarrationInstances
 
@@ -8052,15 +8852,15 @@ Drop every instance, letting go of their audio. For tests.
 
 ## NarrationApi
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ## useNarration
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
-Returns **[NarrationApi][1111]**&#x20;
+Returns **[NarrationApi][1243]**&#x20;
 
 ## serverVoices
 
@@ -8078,7 +8878,7 @@ a voice.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## addVoice
 
@@ -8096,7 +8896,7 @@ Type: TtsVoice
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 - `updates` **Partial\<TtsVoice>**&#x20;
 
 ## removeVoice
@@ -8106,19 +8906,19 @@ voice. Blocks it spoke read in the default voice from here.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## setDefaultVoice
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## setHints
 
 ### Parameters
 
-- `text` **[string][1409]**&#x20;
+- `text` **[string][1575]**&#x20;
 
 ## blocksOf
 
@@ -8127,13 +8927,13 @@ document is open.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## textsOf
 
 ### Parameters
 
-- `blocks` **[Array][1411]\<Block>**&#x20;
+- `blocks` **[Array][1577]\<Block>**&#x20;
 
 ## speakersOf
 
@@ -8142,8 +8942,8 @@ its blocks now.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `blocks` **[Array][1411]\<Block>?** The blocks, when the caller has them (optional, default `blocksOf(documentId)`)
+- `documentId` **[string][1575]**&#x20;
+- `blocks` **[Array][1577]\<Block>?** The blocks, when the caller has them (optional, default `blocksOf(documentId)`)
 
 ## setSpeaker
 
@@ -8152,9 +8952,9 @@ however many there are.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `indices` **[Array][1411]<[number][1410]>**&#x20;
-- `voiceId` **([string][1409] | null)**&#x20;
+- `documentId` **[string][1575]**&#x20;
+- `indices` **[Array][1577]<[number][1576]>**&#x20;
+- `voiceId` **([string][1575] | null)**&#x20;
 
 ## utterancesOf
 
@@ -8163,9 +8963,9 @@ its blocks, in their speakers' voices, hints applied.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `blocks` **[Array][1411]\<Block>?** (optional, default `blocksOf(documentId)`)
-- `speakers` **[Array][1411]<([string][1409] | null)>?** (optional, default `speakersOf(documentId,blocks)`)
+- `documentId` **[string][1575]**&#x20;
+- `blocks` **[Array][1577]\<Block>?** (optional, default `blocksOf(documentId)`)
+- `speakers` **[Array][1577]<([string][1575] | null)>?** (optional, default `speakersOf(documentId,blocks)`)
 
 ## watching
 
@@ -8173,29 +8973,29 @@ How many narration panels are showing.
 
 ## readings
 
-Type: [Map][1417]<[string][1409], [Reading][1108]>
+Type: [Map][1583]<[string][1575], [Reading][1240]>
 
 ## controllers
 
-Type: [Map][1417]<[string][1409], AbortController>
+Type: [Map][1583]<[string][1575], AbortController>
 
 ## readingOf
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## ensureReading
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
-Returns **[Reading][1108]**&#x20;
+Returns **[Reading][1240]**&#x20;
 
 ## reading
 
-Type: [Reading][1108]
+Type: [Reading][1240]
 
 ## audible
 
@@ -8203,15 +9003,15 @@ The utterances there is audio for, which is what a track is joined from.
 
 ### Parameters
 
-- `reading` **[Reading][1108]**&#x20;
-- `utterances` **[Array][1411]\<Utterance>**&#x20;
+- `reading` **[Reading][1240]**&#x20;
+- `utterances` **[Array][1577]\<Utterance>**&#x20;
 
 ## inStep
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `utterances` **[Array][1411]\<Utterance>?** As they stand, when the caller has them (optional, default `utterancesOf(documentId)`)
+- `documentId` **[string][1575]**&#x20;
+- `utterances` **[Array][1577]\<Utterance>?** As they stand, when the caller has them (optional, default `utterancesOf(documentId)`)
 
 ## refreshTrack
 
@@ -8224,13 +9024,13 @@ same utterance with a different take, which no key can tell apart.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `$1` **[Object][1412]** (optional, default `{}`)
+- `documentId` **[string][1575]**&#x20;
+- `$1` **[Object][1578]** (optional, default `{}`)
   - `$1.fresh` (optional, default `false`)
 
 ## joined
 
-Type: [Array][1411]\<BlobPart>
+Type: [Array][1577]\<BlobPart>
 
 ## stop
 
@@ -8238,7 +9038,7 @@ Stop a run. What was read stays.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## stop
 
@@ -8256,15 +9056,15 @@ is under way, this does nothing.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
-- `$1` **[Object][1412]** (optional, default `{}`)
+- `documentId` **[string][1575]**&#x20;
+- `$1` **[Object][1578]** (optional, default `{}`)
   - `$1.blocks` &#x20;
 
 ## forget
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## download
 
@@ -8272,7 +9072,7 @@ Hand the writer the track as a file, named for the document.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## readAloud
 
@@ -8283,11 +9083,11 @@ document would be; but in one voice, and nothing is kept. See
 
 ### Parameters
 
-- `key` **[string][1409]** Names what is read, for `useSpeech().current`
-- `markdown` **[string][1409]**&#x20;
-- `voiceId` **([string][1409] | null)?** The voice; the default when absent or gone
+- `key` **[string][1575]** Names what is read, for `useSpeech().current`
+- `markdown` **[string][1575]**&#x20;
+- `voiceId` **([string][1575] | null)?** The voice; the default when absent or gone
 
-Returns **[Promise][1414]\<void>** When it has been read, or stopped
+Returns **[Promise][1580]\<void>** When it has been read, or stopped
 
 ## dispose
 
@@ -8295,7 +9095,7 @@ Stop every reading and let go of their audio.
 
 ## api
 
-Type: [NarrationApi][1111]
+Type: [NarrationApi][1243]
 
 ## composables/useNearTurns
 
@@ -8330,9 +9130,9 @@ scroll position moved by as much, where moving it stops nothing.
 
 Some turns stay whatever: the newest two, which are what was just sent and
 the reply to it, where the writer is looking and where the chat takes them;
-whatever the chat names in `keep`, such as a summary being written; and a
-turn with an editor open in it, so that going to look something up does not
-throw away what was being typed. Until the page has said which turns are
+whatever the chat names in `keep`, such as a summary being written or the
+turn a find is on; and a turn with an editor open in it, so that going to
+look something up does not throw away what was being typed. Until the page has said which turns are
 near, the newest few are mounted, so that a chat opens onto its end drawn.
 
 A turn let go loses what its components held, so what the writer opened in
@@ -8345,55 +9145,49 @@ Without IntersectionObserver — under test — every turn is mounted.
 
 How far off screen a turn is mounted ahead of time: one screen either way.
 
-Type: [string][1409]
+Type: [string][1575]
 
 ## BASE_HEIGHT
 
 What a turn takes besides its text: its header, its padding and border.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## LINE_HEIGHT
 
 The height of a line of text until turns at this width have been measured: the chat's prose.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## CHARACTER_WIDTH
 
 How much of the turn's width a character of its text takes, on average.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## UNKNOWN_WIDTH
 
 The width taken until the turns have one.
 
-Type: [number][1410]
-
-## SETTLE_MS
-
-How long a change of width has to hold before the guesses are made again at it.
-
-Type: [number][1410]
+Type: [number][1576]
 
 ## NEWEST
 
 How many of the newest turns stay mounted wherever the writer is.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## OPENING
 
 How many of the newest turns are mounted before the page has said which are near.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## STILL_MS
 
 How long the panel has to be still, with no finger on it, before a shift is taken out.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## HOLD
 
@@ -8403,11 +9197,11 @@ Type: [number][1410]
 
 ## TurnLike
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## useNearTurns
 
@@ -8415,7 +9209,7 @@ Type: [Object][1412]
 
 - `scroller` &#x20;
 - `turns` &#x20;
-- `keep` (optional, default `()=>null`)
+- `keep` (optional, default `()=>[]`)
 
 ## near
 
@@ -8429,7 +9223,7 @@ The height each turn had when it was last mounted, and how wide it was then.
 
 ## measured
 
-Type: [Map][1417]<[string][1409], {height: [number][1410], width: [number][1410]}>
+Type: [Map][1583]<[string][1575], {height: [number][1576], width: [number][1576]}>
 
 ## width
 
@@ -8445,15 +9239,15 @@ The lines each message's text takes, until the text or the width changes.
 
 ## lineCounts
 
-Type: [Map][1417]<[string][1409], {content: [string][1409], perLine: [number][1410], lines: [number][1410]}>
+Type: [Map][1583]<[string][1575], {content: [string][1575], perLine: [number][1576], lines: [number][1576]}>
 
 ## elements
 
-Type: [Map][1417]<[string][1409], [Element][1424]>
+Type: [Map][1583]<[string][1575], [Element][1591]>
 
 ## ids
 
-Type: [WeakMap][1426]<[Element][1424], [string][1409]>
+Type: [WeakMap][1599]<[Element][1591], [string][1575]>
 
 ## shift
 
@@ -8475,7 +9269,7 @@ The element listened to for touches and scrolling, once there is one.
 
 ## listened
 
-Type: ([HTMLElement][1421] | null)
+Type: ([HTMLElement][1587] | null)
 
 ## intersect
 
@@ -8491,7 +9285,7 @@ Whether the turn is in the page, rather than standing as a block.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## perLine
 
@@ -8503,8 +9297,8 @@ The lines a turn's text takes, counted once for each message and width.
 
 ### Parameters
 
-- `turn` **[TurnLike][1181]**&#x20;
-- `chars` **[number][1410]**&#x20;
+- `turn` **[TurnLike][1312]**&#x20;
+- `chars` **[number][1576]**&#x20;
 
 ## guesses
 
@@ -8516,7 +9310,7 @@ The height the turn stands at while it is not mounted.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 
 ## calibrate
 
@@ -8530,8 +9324,8 @@ An editor opened or closed in a turn.
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
-- `on` **[boolean][1416]**&#x20;
+- `id` **[string][1575]**&#x20;
+- `on` **[boolean][1582]**&#x20;
 
 ## onScreen
 
@@ -8539,13 +9333,9 @@ The first turn on screen, and how far below the top of the scroller it is.
 
 ### Parameters
 
-- `root` **[Element][1424]**&#x20;
+- `root` **[Element][1591]**&#x20;
 
-Returns **({el: [Element][1424], top: [number][1410]} | null)**&#x20;
-
-## found
-
-Type: ([Element][1424] | null)
+Returns **({el: [Element][1591], top: [number][1576]} | null)**&#x20;
 
 ## keepInPlace
 
@@ -8556,8 +9346,8 @@ did, and nothing else.
 
 ### Parameters
 
-- `root` **[Element][1424]**&#x20;
-- `was` **({el: [Element][1424], top: [number][1410]} | null)**&#x20;
+- `root` **[Element][1591]**&#x20;
+- `was` **({el: [Element][1591], top: [number][1576]} | null)**&#x20;
 
 ## shiftBy
 
@@ -8565,8 +9355,8 @@ Shift the turns' container down, or up for a negative distance.
 
 ### Parameters
 
-- `root` **[Element][1424]**&#x20;
-- `by` **[number][1410]**&#x20;
+- `root` **[Element][1591]**&#x20;
+- `by` **[number][1576]**&#x20;
 
 ## unshift
 
@@ -8575,7 +9365,7 @@ nothing on screen moves. For once the panel is still.
 
 ### Parameters
 
-- `root` **[Element][1424]**&#x20;
+- `root` **[Element][1591]**&#x20;
 
 ## stillSoon
 
@@ -8584,7 +9374,7 @@ it has been still long enough.
 
 ### Parameters
 
-- `root` **[Element][1424]**&#x20;
+- `root` **[Element][1591]**&#x20;
 
 ## rearrange
 
@@ -8592,7 +9382,7 @@ Change what the turns stand at, keeping the one being read where it is.
 
 ### Parameters
 
-- `root` **[Element][1424]**&#x20;
+- `root` **[Element][1591]**&#x20;
 - `change` &#x20;
 
 ## useTurnHolder
@@ -8616,7 +9406,7 @@ is open.
 
 ### Parameters
 
-- `on` **[boolean][1416]**&#x20;
+- `on` **[boolean][1582]**&#x20;
 
 ## useTurnState
 
@@ -8626,7 +9416,7 @@ it is the component's own, as a ref would be.
 
 ### Parameters
 
-- `key` **[string][1409]** What it belongs to: a message id and what is open in it
+- `key` **[string][1575]** What it belongs to: a message id and what is open in it
 - `initial` **T**&#x20;
 
 ## has
@@ -8649,13 +9439,13 @@ Whoever listens for the message hears it either way.
 
 Where OpenRouter sends the writer back.
 
-Type: [string][1409]
+Type: [string][1575]
 
 ## PROVIDER_ID
 
 The provider a connected account is kept as.
 
-Type: [string][1409]
+Type: [string][1575]
 
 ## WAIT_MS
 
@@ -8665,7 +9455,7 @@ How long the desktop window waits for the writer to come back.
 
 ### Parameters
 
-- `ms` **[number][1410]**&#x20;
+- `ms` **[number][1576]**&#x20;
 
 ## finish
 
@@ -8678,9 +9468,9 @@ the code for a key, and keep it on the OpenRouter provider.
 
 <!---->
 
-- Throws **[Error][1413]** With what the writer should be told
+- Throws **[Error][1579]** With what the writer should be told
 
-Returns **[Promise][1414]<[string][1409]>** The provider's id
+Returns **[Promise][1580]<[string][1575]>** The provider's id
 
 ## composables/usePlainText
 
@@ -8694,7 +9484,7 @@ do with it — including offering the way back when the switch rewrote text.
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
 ## togglePlain
 
@@ -8706,7 +9496,7 @@ they ask, and one click puts the text they typed back.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## plainTextItem
 
@@ -8715,7 +9505,7 @@ document has a kind to switch; a folder gets none.
 
 ### Parameters
 
-- `documentId` **[string][1409]**&#x20;
+- `documentId` **[string][1575]**&#x20;
 
 ## utils/lineDiff
 
@@ -8728,12 +9518,12 @@ a bullet here and an escape there, and a run per place is what reads.
 
 ## LineChange
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `removed` **[Array][1411]<[string][1409]>** The lines that went, in order
-- `added` **[Array][1411]<[string][1409]>** The lines in their place, in order
+- `removed` **[Array][1577]<[string][1575]>** The lines that went, in order
+- `added` **[Array][1577]<[string][1575]>** The lines in their place, in order
 
 ## MAX_MATCHED
 
@@ -8741,7 +9531,7 @@ Past this many lines on each side of the part that differs, the lines are
 not matched up one by one: the table that matches them grows with the
 square, and a change that big is one run anyway.
 
-Type: [number][1410]
+Type: [number][1576]
 
 ## changedLines
 
@@ -8754,14 +9544,14 @@ kept lines is a change.
 
 ### Parameters
 
-- `before` **[string][1409]**&#x20;
-- `after` **[string][1409]**&#x20;
+- `before` **[string][1575]**&#x20;
+- `after` **[string][1575]**&#x20;
 
-Returns **[Array][1411]<[LineChange][1252]>** Empty when nothing changed
+Returns **[Array][1577]<[LineChange][1382]>** Empty when nothing changed
 
 ## changes
 
-Type: [Array][1411]<[LineChange][1252]>
+Type: [Array][1577]<[LineChange][1382]>
 
 ## changes
 
@@ -8784,9 +9574,9 @@ Where a profile's notice is remembered as shown.
 
 ### Parameters
 
-- `profileId` **[string][1409]**&#x20;
+- `profileId` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## noticeFor
 
@@ -8798,7 +9588,7 @@ one nobody could get rid of.
 
 ### Parameters
 
-- `profileId` **[string][1409]** The profile the writer just picked
+- `profileId` **[string][1575]** The profile the writer just picked
 
 ## dismiss
 
@@ -8828,14 +9618,14 @@ it where it was.
 A profile as the library hands it over: the same shape whether it ships with
 the app or was saved.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `id` **[string][1409]**&#x20;
-- `name` **[string][1409]**&#x20;
-- `description` **[string][1409]?** Built-ins only, for the picker
-- `readOnly` **[boolean][1416]** True for the ones that ship with the app
+- `id` **[string][1575]**&#x20;
+- `name` **[string][1575]**&#x20;
+- `description` **[string][1575]?** Built-ins only, for the picker
+- `readOnly` **[boolean][1582]** True for the ones that ship with the app
 
 ## storedEntry
 
@@ -8872,16 +9662,16 @@ callers read as the project's default.
 
 ### Parameters
 
-- `id` **([string][1409] | null | [undefined][1415])**&#x20;
+- `id` **([string][1575] | null | [undefined][1581])**&#x20;
 
-Returns **([ProfileEntry][1266] | null)**&#x20;
+Returns **([ProfileEntry][1396] | null)**&#x20;
 
 ## ready
 
 The saved profiles load from the database, so anything that must not read
 a half-built library waits on this first.
 
-Returns **[Promise][1414]\<void>**&#x20;
+Returns **[Promise][1580]\<void>**&#x20;
 
 ## ready
 
@@ -8889,7 +9679,7 @@ Settles once the saved prompts have loaded. The built-ins are always
 there, but a saved prompt looked up before this resolves is not — so
 anything about to send a chat's prompt waits on it first.
 
-Returns **[Promise][1414]\<void>**&#x20;
+Returns **[Promise][1580]\<void>**&#x20;
 
 ## ready
 
@@ -8900,10 +9690,10 @@ a turn started the moment the app opens still has the writer's skills.
 
 ### Parameters
 
-- `name` **[string][1409]**&#x20;
+- `name` **[string][1575]**&#x20;
 - `settings` &#x20;
 
-Returns **[ProfileEntry][1266]**&#x20;
+Returns **[ProfileEntry][1396]**&#x20;
 
 ## duplicateProfile
 
@@ -8911,19 +9701,19 @@ A copy of a profile under a new name, which is how a built-in is edited.
 
 ### Parameters
 
-- `id` **[string][1409]** The profile to copy
+- `id` **[string][1575]** The profile to copy
 - `changes` (optional, default `{}`)
 
-Returns **([ProfileEntry][1266] | null)**&#x20;
+Returns **([ProfileEntry][1396] | null)**&#x20;
 
 ## updateProfile
 
 ### Parameters
 
-- `id` **[string][1409]**&#x20;
+- `id` **[string][1575]**&#x20;
 - `updates` &#x20;
 
-Returns **([ProfileEntry][1266] | null)**&#x20;
+Returns **([ProfileEntry][1396] | null)**&#x20;
 
 ##
 
@@ -8931,10 +9721,10 @@ Type: any
 
 ## composables/useProjects
 
-The project list: every story, the one worked on most recently
-first, and the actions the list offers on them. A project's name lives on
-its root document, so the list loads those alongside the story records —
-one keyed read, not a tree per project.
+Every project, and starting, importing, opening and deleting
+them. A project's name, and when it was last edited, live on its root
+document, so the list loads those alongside the story records — one keyed
+read, not a tree per project.
 
 ### Examples
 
@@ -8952,13 +9742,35 @@ projects.open(projects.projects.value[0].id)
 
 Every project, most recently worked on first.
 
+## workOutEdited
+
+When projects whose roots were written before the time was kept were last
+edited: the latest of their documents' times and their chats', which
+move with every message. Each project is read whole for it, once; the
+root keeps the answer.
+
+### Parameters
+
+- `storyIds` **[Array][1577]<[string][1575]>**&#x20;
+
 ## nameOf
 
 ### Parameters
 
-- `storyId` **[string][1409]**&#x20;
+- `storyId` **[string][1575]**&#x20;
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
+
+## editedOf
+
+When something in a project last changed, to the minute. Nothing for a
+project whose root does not say yet; `init` works it out.
+
+### Parameters
+
+- `storyId` **[string][1575]**&#x20;
+
+Returns **([number][1576] | [undefined][1581])**&#x20;
 
 ## create
 
@@ -8967,9 +9779,24 @@ on the invitation to make a first document.
 
 ### Parameters
 
-- `title` **[string][1409]**&#x20;
+- `title` **[string][1575]**&#x20;
 
-Returns **[Promise][1414]\<Story>**&#x20;
+Returns **[Promise][1580]\<Story>**&#x20;
+
+## importFile
+
+Add a project file, exported from a project's menu, beside the others
+with ids of its own, and open it.
+
+### Parameters
+
+- `file` **File**&#x20;
+
+Returns **[Promise][1580]\<Story>**&#x20;
+
+## workingOut
+
+Projects whose last edit is being worked out, so that it is read only once.
 
 ## composables/usePrompts
 
@@ -8994,20 +9821,20 @@ built-ins are read-only, so editing one is what makes that copy — see
 
 - `prompt` **AIPrompt** A stored prompt
 
-Returns **[PromptEntry][1302]** The same prompt in library form
+Returns **[PromptEntry][1439]** The same prompt in library form
 
 ## PromptEntry
 
 A prompt as the library presents it, whether it came from source or storage.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `id` **[string][1409]** Prompt identifier
-- `name` **[string][1409]** Display name
-- `content` **[string][1409]** The prompt text
-- `readOnly` **[boolean][1416]** True for the prompts that ship with the app
+- `id` **[string][1575]** Prompt identifier
+- `name` **[string][1575]** Display name
+- `content` **[string][1575]** The prompt text
+- `readOnly` **[boolean][1582]** True for the prompts that ship with the app
 
 ## usePrompts
 
@@ -9019,9 +9846,9 @@ Look up a prompt from either half of the library.
 
 ### Parameters
 
-- `id` **[string][1409]** Prompt ID
+- `id` **[string][1575]** Prompt ID
 
-Returns **([PromptEntry][1302] | null)** The prompt, or null if it no longer exists
+Returns **([PromptEntry][1439] | null)** The prompt, or null if it no longer exists
 
 ## savePrompt
 
@@ -9029,10 +9856,10 @@ Save text to the library under a new name.
 
 ### Parameters
 
-- `name` **[string][1409]** Display name
-- `content` **[string][1409]** Prompt text
+- `name` **[string][1575]** Display name
+- `content` **[string][1575]** Prompt text
 
-Returns **[PromptEntry][1302]** The saved prompt
+Returns **[PromptEntry][1439]** The saved prompt
 
 ## duplicatePrompt
 
@@ -9042,10 +9869,10 @@ prompt of the user's own.
 
 ### Parameters
 
-- `id` **[string][1409]** Prompt to copy
-- `content` **[string][1409]?** Text for the copy, if not the original's
+- `id` **[string][1575]** Prompt to copy
+- `content` **[string][1575]?** Text for the copy, if not the original's
 
-Returns **([PromptEntry][1302] | null)** The copy, or null if there is nothing to copy
+Returns **([PromptEntry][1439] | null)** The copy, or null if there is nothing to copy
 
 ## updatePrompt
 
@@ -9054,10 +9881,10 @@ rather than silently forked.
 
 ### Parameters
 
-- `id` **[string][1409]** Prompt ID
+- `id` **[string][1575]** Prompt ID
 - `updates` &#x20;
 
-Returns **([PromptEntry][1302] | null)** The updated prompt, or null if it can't be edited
+Returns **([PromptEntry][1439] | null)** The updated prompt, or null if it can't be edited
 
 ## deletePrompt
 
@@ -9066,9 +9893,9 @@ copy of the text.
 
 ### Parameters
 
-- `id` **[string][1409]** Prompt ID
+- `id` **[string][1575]** Prompt ID
 
-Returns **[boolean][1416]** True if deleted
+Returns **[boolean][1582]** True if deleted
 
 ## composables/useProviderSetup
 
@@ -9091,7 +9918,7 @@ Composable for managing provider setup dialog
 
 Check if the provider setup dialog is enabled
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## hideProviderSetupDialog
 
@@ -9103,7 +9930,7 @@ Handle the connect action from the provider setup dialog
 
 ### Parameters
 
-- `data` **{apiKey: [string][1409], rememberKey: [boolean][1416]}**&#x20;
+- `data` **{apiKey: [string][1575], rememberKey: [boolean][1582]}**&#x20;
 
 ## handleDontShowAgain
 
@@ -9116,7 +9943,7 @@ This allows relative time displays to update automatically without page refresh
 
 ### Parameters
 
-- `updateInterval` **[number][1410]** Update interval in milliseconds (default: 1 minute) (optional, default `60000`)
+- `updateInterval` **[number][1576]** Update interval in milliseconds (default: 1 minute) (optional, default `60000`)
 
 ## formatRelativeTime
 
@@ -9124,9 +9951,150 @@ Format a timestamp as relative time using the reactive 'now' value
 
 ### Parameters
 
-- `timestamp` **[number][1410]** Unix timestamp in milliseconds
+- `timestamp` **[number][1576]** Unix timestamp in milliseconds
 
-Returns **[string][1409]** Formatted relative time string
+Returns **[string][1575]** Formatted relative time string
+
+## composables/useRepositoryImport
+
+A codebase brought into a project as a repository, from a
+folder or from GitHub, and brought up to date again.
+
+The steps are `source/`'s: the files listed and sorted by the rules, the
+text read, the tree written. This puts them in order for each way in and
+says how it went. See `.llm/source_code_design.md`.
+
+## useRepositoryImport
+
+### Parameters
+
+- `storyId` &#x20;
+
+## useRepositoryImport
+
+### Parameters
+
+- `storyId` &#x20;
+
+## useRepositoryImport
+
+### Parameters
+
+- `storyId` &#x20;
+
+## useRepositoryImport
+
+Where an import is, for the dialog to say.
+
+### Parameters
+
+- `storyId` &#x20;
+
+## useRepositoryImport
+
+### Parameters
+
+- `storyId` **[string][1575]**&#x20;
+
+## RepositoryImported
+
+What an import or a refresh did.
+
+Type: [Object][1578]
+
+### Properties
+
+- `folderId` **[string][1575]** The repository folder
+- `name` **[string][1575]** Its source's name
+- `files` **[number][1576]** How many files came in
+- `left` **LeftOut** What was left out, and why
+- `refreshed` **Refreshed?** For a refresh, what changed
+
+## ImportOptions
+
+Type: [Object][1578]
+
+### Properties
+
+- `parentId` **[string][1575]?** Where a new repository goes; the project's top otherwise
+- `signal` **AbortSignal?**&#x20;
+- `onStep` **OnStep?**&#x20;
+
+##
+
+Type: [number][1576]
+
+##
+
+Type: [number][1576]
+
+## importFolder
+
+A folder chosen with the folder chooser.
+
+### Parameters
+
+- `chosen` **ArrayLike\<File>**&#x20;
+- `options` (optional, default `{}`)
+
+Returns **[Promise][1580]<[RepositoryImported][1475]>**&#x20;
+
+## source
+
+Type: RepositorySource
+
+## source
+
+Type: RepositorySource
+
+## importGitHub
+
+A repository on GitHub, by its URL.
+
+### Parameters
+
+- `url` **[string][1575]**&#x20;
+- `options` (optional, default `{}`)
+
+Returns **[Promise][1580]<[RepositoryImported][1475]>**&#x20;
+
+## refresh
+
+Bring a repository up to date from where it came from. A folder has to
+be chosen again: a page cannot keep hold of one.
+
+### Parameters
+
+- `folderId` **[string][1575]** The repository folder
+- `options` (optional, default `{}`)
+
+Returns **[Promise][1580]<[RepositoryImported][1475]>**&#x20;
+
+## fromGitHub
+
+### Parameters
+
+- `address` &#x20;
+- `at` **({ref: [string][1575], subpath: [string][1575]} | [undefined][1581])**&#x20;
+- `options` &#x20;
+
+Returns **[Promise][1580]<[RepositoryImported][1475]>**&#x20;
+
+## describeRepositoryImport
+
+What to tell the writer when an import or a refresh is done.
+
+### Parameters
+
+- `result` **[RepositoryImported][1475]**&#x20;
+
+##
+
+Type: [number][1576]
+
+##
+
+Type: [string][1575]
 
 ## useScreenSize
 
@@ -9134,25 +10102,25 @@ Composable to detect screen size and check if it matches Tailwind's md breakpoin
 
 ## SearchOptions
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `threshold` **[number][1410]?** Fuzzy match tolerance (0 = exact, 1 = match anything)
-- `minMatchCharLength` **[number][1410]?** Minimum characters before searching
-- `includeScore` **[boolean][1416]?** Include match scores in results
-- `ignoreLocation` **[boolean][1416]?** Search anywhere in text
-- `debounceMs` **[number][1410]?** Debounce time in milliseconds
+- `threshold` **[number][1576]?** Fuzzy match tolerance (0 = exact, 1 = match anything)
+- `minMatchCharLength` **[number][1576]?** Minimum characters before searching
+- `includeScore` **[boolean][1582]?** Include match scores in results
+- `ignoreLocation` **[boolean][1582]?** Search anywhere in text
+- `debounceMs` **[number][1576]?** Debounce time in milliseconds
 
 ## SearchResult
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
 - `item` **T** The original item
-- `score` **[number][1410]?** Match score (lower is better)
-- `matches` **[Object][1412]?** Match details
+- `score` **[number][1576]?** Match score (lower is better)
+- `matches` **[Object][1578]?** Match details
 
 ## useSearch
 
@@ -9161,7 +10129,7 @@ Composable for fuzzy searching with Fuse.js
 ### Parameters
 
 - `items` &#x20;
-- `options` **[SearchOptions][1328]\<T>** Search configuration
+- `options` **[SearchOptions][1496]\<T>** Search configuration
 
 ## stripHtml
 
@@ -9169,9 +10137,9 @@ Strip HTML tags from text
 
 ### Parameters
 
-- `html` **[string][1409]** HTML string to strip
+- `html` **[string][1575]** HTML string to strip
 
-Returns **[string][1409]** Plain text
+Returns **[string][1575]** Plain text
 
 ## composables/useSettingsPanel
 
@@ -9199,7 +10167,7 @@ The section the last caller asked for, until the settings have shown it.
 The section asked for, handed over once so the settings do not keep
 jumping back to it.
 
-Returns **([SettingsSection][1337] | null)**&#x20;
+Returns **([SettingsSection][1505] | null)**&#x20;
 
 ## composables/useSkills
 
@@ -9237,28 +10205,28 @@ switched off. Nothing, when nothing in them names it.
 ### Parameters
 
 - `settings` &#x20;
-- `from` **[string][1409]**&#x20;
-- `to` **[string][1409]**&#x20;
+- `from` **[string][1575]**&#x20;
+- `to` **[string][1575]**&#x20;
 
 ## ImportRow
 
 A skill found in what the writer handed over, as the import shows it before
 anything is kept.
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `path` **[string][1409]** Where it was found
-- `text` **[string][1409]** Its SKILL.md
-- `files` **[Array][1411]\<SkillFile>** What came with it
-- `dropped` **[Array][1411]<[string][1409]>** What was left behind, and why
-- `ignored` **[Array][1411]<[string][1409]>** Fields in it this app does not use
-- `errors` **[Array][1411]<[string][1409]>** Why its file does not read; it cannot come in
-- `name` **[string][1409]** What it is called, when it reads
-- `replaces` **([string][1409] | null)** One of the writer's own it would replace,
+- `path` **[string][1575]** Where it was found
+- `text` **[string][1575]** Its SKILL.md
+- `files` **[Array][1577]\<SkillFile>** What came with it
+- `dropped` **[Array][1577]<[string][1575]>** What was left behind, and why
+- `ignored` **[Array][1577]<[string][1575]>** Fields in it this app does not use
+- `errors` **[Array][1577]<[string][1575]>** Why its file does not read; it cannot come in
+- `name` **[string][1575]** What it is called, when it reads
+- `replaces` **([string][1575] | null)** One of the writer's own it would replace,
   having the same name
-- `problem` **[string][1409]** Why it cannot come in under its name, when it
+- `problem` **[string][1575]** Why it cannot come in under its name, when it
   is not one of theirs that has it: it needs another
 
 ## useSkills
@@ -9273,10 +10241,10 @@ another of theirs.
 
 ### Parameters
 
-- `name` **[string][1409]**&#x20;
-- `exceptId` **([string][1409] | null)?** The skill being saved, which may keep its own (optional, default `null`)
+- `name` **[string][1575]**&#x20;
+- `exceptId` **([string][1575] | null)?** The skill being saved, which may keep its own (optional, default `null`)
 
-Returns **[string][1409]**&#x20;
+Returns **[string][1575]**&#x20;
 
 ## carryRename
 
@@ -9286,8 +10254,8 @@ old turns keep the name they were run under.
 
 ### Parameters
 
-- `from` **[string][1409]**&#x20;
-- `to` **[string][1409]**&#x20;
+- `from` **[string][1575]**&#x20;
+- `to` **[string][1575]**&#x20;
 
 ##
 
@@ -9302,12 +10270,12 @@ free. A change of name carries the rewordings and the switches with it.
 
 ### Parameters
 
-- `$0` **[Object][1412]**&#x20;
+- `$0` **[Object][1578]**&#x20;
   - `$0.id` (optional, default `null`)
   - `$0.text` &#x20;
   - `$0.files` &#x20;
 
-Returns **[Promise][1414]<({skill: StoredSkill} | {errors: [Array][1411]<[string][1409]>})>**&#x20;
+Returns **[Promise][1580]<({skill: StoredSkill} | {errors: [Array][1577]<[string][1575]>})>**&#x20;
 
 ## planImport
 
@@ -9320,11 +10288,11 @@ a tool's, or another's in the same batch.
 
 - `found` &#x20;
 
-Returns **[Array][1411]<[ImportRow][1348]>**&#x20;
+Returns **[Array][1577]<[ImportRow][1516]>**&#x20;
 
 ## seen
 
-Type: [Set][1420]<[string][1409]>
+Type: [Set][1586]<[string][1575]>
 
 ## importSkills
 
@@ -9334,13 +10302,13 @@ a skill in again after changing it elsewhere should do.
 
 ### Parameters
 
-- `rows` **[Array][1411]<[ImportRow][1348]>**&#x20;
+- `rows` **[Array][1577]<[ImportRow][1516]>**&#x20;
 
-Returns **[Promise][1414]<{imported: [number][1410], failed: [Array][1411]<[string][1409]>}>**&#x20;
+Returns **[Promise][1580]<{imported: [number][1576], failed: [Array][1577]<[string][1575]>}>**&#x20;
 
 ## failed
 
-Type: [Array][1411]<[string][1409]>
+Type: [Array][1577]<[string][1575]>
 
 ## composables/useSpeech
 
@@ -9359,11 +10327,11 @@ audio kept and joined into a track. This is for hearing a message once.
 
 ## SpeechRequest
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `lines` **[Array][1411]<[string][1409]>** What to say, a paragraph each, in order
+- `lines` **[Array][1577]<[string][1575]>** What to say, a paragraph each, in order
 
 ## status
 
@@ -9379,7 +10347,7 @@ A promise, and the means to settle it from outside.
 
 ## promise
 
-Type: [Promise][1414]<[ArrayBuffer][1423]>
+Type: [Promise][1580]<[ArrayBuffer][1590]>
 
 ## speak
 
@@ -9388,17 +10356,17 @@ when the reading is stopped, by `stop` or by another starting.
 
 ### Parameters
 
-- `key` **[string][1409]** What this is a reading of, for `current` to say
-- `request` **[SpeechRequest][1365]**&#x20;
+- `key` **[string][1575]** What this is a reading of, for `current` to say
+- `request` **[SpeechRequest][1533]**&#x20;
   - `request.connection` &#x20;
   - `request.voice` &#x20;
   - `request.lines` &#x20;
 
 <!---->
 
-- Throws **[Error][1413]** When the server refuses a line, or it cannot be played
+- Throws **[Error][1579]** When the server refuses a line, or it cannot be played
 
-Returns **[Promise][1414]\<void>**&#x20;
+Returns **[Promise][1580]\<void>**&#x20;
 
 ## useSpeech
 
@@ -9412,7 +10380,7 @@ Apply the specified theme to the document.
 
 ##
 
-Type: [boolean][1416]
+Type: [boolean][1582]
 
 ## useToast
 
@@ -9425,12 +10393,12 @@ Show a toast notification
 
 ### Parameters
 
-- `options` **[Object][1412]** Toast options
-  - `options.message` **[string][1409]** The message to display
-  - `options.title` **[string][1409]?** Optional title
-  - `options.type` **[string][1409]** Toast type: 'success', 'error', 'warning', 'info' (optional, default `'info'`)
-  - `options.duration` **[number][1410]** Duration in milliseconds (0 for permanent) (optional, default `5000`)
-  - `options.dismissible` **[boolean][1416]** Whether the toast can be dismissed (optional, default `true`)
+- `options` **[Object][1578]** Toast options
+  - `options.message` **[string][1575]** The message to display
+  - `options.title` **[string][1575]?** Optional title
+  - `options.type` **[string][1575]** Toast type: 'success', 'error', 'warning', 'info' (optional, default `'info'`)
+  - `options.duration` **[number][1576]** Duration in milliseconds (0 for permanent) (optional, default `5000`)
+  - `options.dismissible` **[boolean][1582]** Whether the toast can be dismissed (optional, default `true`)
 
 ## success
 
@@ -9438,8 +10406,8 @@ Show a success toast
 
 ### Parameters
 
-- `message` **[string][1409]** The message to display
-- `options` **[Object][1412]?** Additional options (optional, default `{}`)
+- `message` **[string][1575]** The message to display
+- `options` **[Object][1578]?** Additional options (optional, default `{}`)
 
 ## warning
 
@@ -9447,8 +10415,8 @@ Show a warning toast
 
 ### Parameters
 
-- `message` **[string][1409]** The message to display
-- `options` **[Object][1412]?** Additional options (optional, default `{}`)
+- `message` **[string][1575]** The message to display
+- `options` **[Object][1578]?** Additional options (optional, default `{}`)
 
 ## info
 
@@ -9456,8 +10424,8 @@ Show an info toast
 
 ### Parameters
 
-- `message` **[string][1409]** The message to display
-- `options` **[Object][1412]?** Additional options (optional, default `{}`)
+- `message` **[string][1575]** The message to display
+- `options` **[Object][1578]?** Additional options (optional, default `{}`)
 
 ## action
 
@@ -9466,11 +10434,11 @@ little longer than a notice, so there is time to take it up.
 
 ### Parameters
 
-- `message` **[string][1409]** The message to display
+- `message` **[string][1575]** The message to display
 - `action` &#x20;
-- `options` **[Object][1412]?** Additional options (optional, default `{}`)
-  - `options.duration` **[number][1410]?**&#x20;
-  - `options.dismissible` **[boolean][1416]?**&#x20;
+- `options` **[Object][1578]?** Additional options (optional, default `{}`)
+  - `options.duration` **[number][1576]?**&#x20;
+  - `options.dismissible` **[boolean][1582]?**&#x20;
 
 ## composables/useToolApprovals
 
@@ -9494,14 +10462,14 @@ Type: (`"allow"` | `"always"` | `"always-server"` | `"deny"`)
 
 ## PendingApproval
 
-Type: [Object][1412]
+Type: [Object][1578]
 
 ### Properties
 
-- `id` **[string][1409]** The call's id
-- `messageId` **[string][1409]** The turn it was made in
-- `name` **[string][1409]** The tool, as the model called it
-- `arguments` **[string][1409]** As the model wrote them
+- `id` **[string][1575]** The call's id
+- `messageId` **[string][1575]** The turn it was made in
+- `name` **[string][1575]** The tool, as the model called it
+- `arguments` **[string][1575]** As the model wrote them
 
 ## askApproval
 
@@ -9509,10 +10477,10 @@ Wait for the writer to decide on a call.
 
 ### Parameters
 
-- `messageId` **[string][1409]**&#x20;
+- `messageId` **[string][1575]**&#x20;
 - `call` &#x20;
 
-Returns **[Promise][1414]<[Decision][1390]>**&#x20;
+Returns **[Promise][1580]<[Decision][1558]>**&#x20;
 
 ## answerApproval
 
@@ -9520,8 +10488,8 @@ The writer's answer to a call.
 
 ### Parameters
 
-- `id` **[string][1409]** The call's id
-- `decision` **[Decision][1390]**&#x20;
+- `id` **[string][1575]** The call's id
+- `decision` **[Decision][1558]**&#x20;
 
 ## denyWaiting
 
@@ -9530,7 +10498,7 @@ come of them.
 
 ### Parameters
 
-- `messageId` **[string][1409]?** The turn's message; every turn's when absent
+- `messageId` **[string][1575]?** The turn's message; every turn's when absent
 
 ## useToolApprovals
 
@@ -9554,7 +10522,7 @@ listener closes only when it is the topmost dialog on the page.
 
 Every dialog mask on the page, in the order they were opened.
 
-Type: [string][1409]
+Type: [string][1575]
 
 ## isTopmostMask
 
@@ -9563,9 +10531,9 @@ opened over it.
 
 ### Parameters
 
-- `mask` **([Element][1424] | null | [undefined][1415])**&#x20;
+- `mask` **([Element][1591] | null | [undefined][1581])**&#x20;
 
-Returns **[boolean][1416]**&#x20;
+Returns **[boolean][1582]**&#x20;
 
 ## useTopmostEscape
 
@@ -9580,12 +10548,6 @@ the dialog is showing.
 - `visible` &#x20;
 - `mask` &#x20;
 - `close` &#x20;
-
-## onKeyDown
-
-### Parameters
-
-- `event` **[KeyboardEvent][1425]**&#x20;
 
 [1]: #composables
 [2]: #composables-overview
@@ -9619,1397 +10581,1570 @@ the dialog is showing.
 [30]: #turn-2
 [31]: #current
 [32]: #current-1
-[33]: #begin
-[34]: #end
-[35]: #parameters-5
-[36]: #commandcontext
-[37]: #parameters-6
-[38]: #activity
-[39]: #activity-1
-[40]: #getactiveprofile
-[41]: #getchatprofileifvalid
-[42]: #configurationerror
-[43]: #resolvesystemprompt
-[44]: #skillpromptfor
-[45]: #parameters-7
-[46]: #repeats_before_stuck
-[47]: #roundsignature
-[48]: #parameters-8
-[49]: #wrapupnote
-[50]: #parameters-9
-[51]: #tool_timeout_ms
-[52]: #untilaborted
-[53]: #parameters-10
-[54]: #consult
-[55]: #parameters-11
-[56]: #executeonetoolcall
-[57]: #parameters-12
-[58]: #message
-[59]: #message-1
-[60]: #message-2
-[61]: #message-3
-[62]: #message-4
-[63]: #message-5
-[64]: #message-6
-[65]: #message-7
-[66]: #message-8
-[67]: #message-9
-[68]: #message-10
-[69]: #message-11
-[70]: #executetoolcalls
-[71]: #parameters-13
-[72]: #runtoolcall
-[73]: #parameters-14
-[74]: #record
-[75]: #buildassistantmessage
-[76]: #parameters-15
-[77]: #streamingstate
-[78]: #properties-2
-[79]: #endthinking
-[80]: #parameters-16
-[81]: #createstreamingcallback
-[82]: #parameters-17
-[83]: #replyin
-[84]: #parameters-18
-[85]: #handoverreply
-[86]: #parameters-19
-[87]: #answered
-[88]: #unlessforgotten
-[89]: #parameters-20
-[90]: #runcompletionloop
-[91]: #parameters-21
-[92]: #apitrajectory
-[93]: #edits
-[94]: #wrapup
-[95]: #recentrounds
-[96]: #lastcalls
-[97]: #result
-[98]: #
-[99]: #generateairesponse
-[100]: #parameters-22
-[101]: #-1
-[102]: #sendmessage
-[103]: #parameters-23
-[104]: #insertmessage
-[105]: #parameters-24
-[106]: #regeneratemessage
-[107]: #parameters-25
-[108]: #selectalternate
-[109]: #parameters-26
-[110]: #selectalternate-1
-[111]: #parameters-27
-[112]: #revertmessages
-[113]: #parameters-28
-[114]: #reverted
-[115]: #skipped
-[116]: #skipped-1
-[117]: #skipped-2
-[118]: #skipped-3
-[119]: #editsof
-[120]: #parameters-29
-[121]: #out
-[122]: #out-1
-[123]: #out-2
-[124]: #out-3
-[125]: #out-4
-[126]: #out-5
-[127]: #out-6
-[128]: #out-7
-[129]: #reapplymessage
-[130]: #parameters-30
-[131]: #made
-[132]: #recordof
-[133]: #parameters-31
-[134]: #rewriteedit
-[135]: #parameters-32
-[136]: #acceptedit
-[137]: #parameters-33
-[138]: #rejectedit
-[139]: #parameters-34
-[140]: #rewindplan-1
-[141]: #parameters-35
-[142]: #documents
-[143]: #documents-1
-[144]: #documents-2
-[145]: #rewindto
-[146]: #parameters-36
-[147]: #resendmessage
-[148]: #parameters-37
-[149]: #generatechattitle
-[150]: #parameters-38
-[151]: #messages
-[152]: #reruncommand
-[153]: #parameters-39
-[154]: #editcommand
-[155]: #parameters-40
-[156]: #halt
-[157]: #isemptyanswer
-[158]: #parameters-41
-[159]: #stopgeneration
-[160]: #stopgeneration-1
-[161]: #removemessage
-[162]: #parameters-42
-[163]: #aipresetdefaults
-[164]: #useaiconfig
-[165]: #createpreset
-[166]: #parameters-43
-[167]: #deletepreset
-[168]: #parameters-44
-[169]: #usedocumentsstore
-[170]: #buildargs
-[171]: #properties-3
-[172]: #build
-[173]: #parameters-45
-[174]: #aimodel
-[175]: #parsemodelsresponse
-[176]: #parameters-46
-[177]: #aiconfig
-[178]: #properties-4
-[179]: #streamchunk
-[180]: #properties-5
-[181]: #accumulatetoolcalls
-[182]: #parameters-47
-[183]: #-2
-[184]: #delta
-[185]: #reasoningdetail
-[186]: #properties-6
-[187]: #accumulatereasoningdetails
-[188]: #parameters-48
-[189]: #openrouterprovider
-[190]: #openrouterproviderspromise
-[191]: #listopenrouterproviders
-[192]: #modelproviderspromises
-[193]: #listmodelproviders
-[194]: #parameters-49
-[195]: #explainfailure
-[196]: #parameters-50
-[197]: #useaiservice
-[198]: #listmodels
-[199]: #parameters-51
-[200]: #headers
-[201]: #headers-1
-[202]: #generatechatcompletion
-[203]: #parameters-52
-[204]: #toolcalls
-[205]: #reasoningdetails
-[206]: #streamerror
-[207]: #validateopenrouterkey
-[208]: #parameters-53
-[209]: #exchangeoauthcode
-[210]: #parameters-54
-[211]: #composablesuseaisummarize
-[212]: #examples-2
-[213]: #ref
-[214]: #isgenerating
-[215]: #controller
-[216]: #controller-1
-[217]: #useaisummarize
-[218]: #getwriteprofileifvalid
-[219]: #getscenecontent
-[220]: #parameters-55
-[221]: #handlesummarize
-[222]: #parameters-56
-[223]: #utilsmarkdown
-[224]: #safe_schemes
-[225]: #escapehtml
-[226]: #parameters-57
-[227]: #issafeurl
-[228]: #parameters-58
-[229]: #reader
-[230]: #rendermarkdown
-[231]: #parameters-59
-[232]: #stripmarkdown
-[233]: #parameters-60
-[234]: #storesdocumentsstore
-[235]: #examples-3
-[236]: #generatedocumentid
-[237]: #generatedocumentid-1
-[238]: #childrenbyparent
-[239]: #_loadingbystory
-[240]: #indexchild
-[241]: #parameters-61
-[242]: #unindexchild
-[243]: #parameters-62
-[244]: #getdocument
-[245]: #parameters-63
-[246]: #getchildren
-[247]: #parameters-64
-[248]: #getchildrenordered
-[249]: #parameters-65
-[250]: #-3
-[251]: #-4
-[252]: #containsdocument
-[253]: #parameters-66
-[254]: #createdocument
-[255]: #parameters-67
-[256]: #document
-[257]: #updatedocument
-[258]: #parameters-68
-[259]: #next
-[260]: #next-1
-[261]: #deletedocument
-[262]: #parameters-69
-[263]: #deletechildren
-[264]: #parameters-70
-[265]: #reorderchildren
-[266]: #parameters-71
-[267]: #updates
-[268]: #loadstory
-[269]: #parameters-72
-[270]: #ensureroot
-[271]: #parameters-73
-[272]: #deletestorydocuments
-[273]: #parameters-74
-[274]: #getroot
-[275]: #parameters-75
-[276]: #loadroots
-[277]: #parameters-76
-[278]: #renameproject
-[279]: #parameters-77
-[280]: #isstoryloaded
-[281]: #parameters-78
-[282]: #sync_debounce_ms
-[283]: #pendingchanges
-[284]: #issyncing
-[285]: #synctimer
-[286]: #trackchange
+[33]: #current-2
+[34]: #begin
+[35]: #end
+[36]: #parameters-5
+[37]: #commandcontext
+[38]: #parameters-6
+[39]: #activity
+[40]: #activity-1
+[41]: #getactiveprofile
+[42]: #getchatprofileifvalid
+[43]: #configurationerror
+[44]: #resolvesystemprompt
+[45]: #skillpromptfor
+[46]: #parameters-7
+[47]: #repeats_before_stuck
+[48]: #roundsignature
+[49]: #parameters-8
+[50]: #wrapupnote
+[51]: #parameters-9
+[52]: #tool_timeout_ms
+[53]: #untilaborted
+[54]: #parameters-10
+[55]: #consult
+[56]: #parameters-11
+[57]: #executeonetoolcall
+[58]: #parameters-12
+[59]: #message
+[60]: #message-1
+[61]: #message-2
+[62]: #message-3
+[63]: #message-4
+[64]: #message-5
+[65]: #message-6
+[66]: #message-7
+[67]: #message-8
+[68]: #message-9
+[69]: #message-10
+[70]: #message-11
+[71]: #executetoolcalls
+[72]: #parameters-13
+[73]: #runtoolcall
+[74]: #parameters-14
+[75]: #record
+[76]: #buildassistantmessage
+[77]: #parameters-15
+[78]: #streamingstate
+[79]: #properties-2
+[80]: #endthinking
+[81]: #parameters-16
+[82]: #createstreamingcallback
+[83]: #parameters-17
+[84]: #replyin
+[85]: #parameters-18
+[86]: #handoverreply
+[87]: #parameters-19
+[88]: #answered
+[89]: #unlessforgotten
+[90]: #parameters-20
+[91]: #runcompletionloop
+[92]: #parameters-21
+[93]: #apitrajectory
+[94]: #edits
+[95]: #wrapup
+[96]: #recentrounds
+[97]: #lastcalls
+[98]: #result
+[99]: #
+[100]: #generateairesponse
+[101]: #parameters-22
+[102]: #-1
+[103]: #sendmessage
+[104]: #parameters-23
+[105]: #insertmessage
+[106]: #parameters-24
+[107]: #regeneratemessage
+[108]: #parameters-25
+[109]: #selectalternate
+[110]: #parameters-26
+[111]: #selectalternate-1
+[112]: #parameters-27
+[113]: #revertmessages
+[114]: #parameters-28
+[115]: #reverted
+[116]: #skipped
+[117]: #skipped-1
+[118]: #skipped-2
+[119]: #skipped-3
+[120]: #skipped-4
+[121]: #editsof
+[122]: #parameters-29
+[123]: #out
+[124]: #out-1
+[125]: #out-2
+[126]: #out-3
+[127]: #out-4
+[128]: #out-5
+[129]: #out-6
+[130]: #out-7
+[131]: #reapplymessage
+[132]: #parameters-30
+[133]: #made
+[134]: #recordof
+[135]: #parameters-31
+[136]: #rewriteedit
+[137]: #parameters-32
+[138]: #acceptedit
+[139]: #parameters-33
+[140]: #rejectedit
+[141]: #parameters-34
+[142]: #rewindplan-1
+[143]: #parameters-35
+[144]: #documents
+[145]: #documents-1
+[146]: #documents-2
+[147]: #rewindto
+[148]: #parameters-36
+[149]: #resendmessage
+[150]: #parameters-37
+[151]: #generatechattitle
+[152]: #parameters-38
+[153]: #messages
+[154]: #reruncommand
+[155]: #parameters-39
+[156]: #editcommand
+[157]: #parameters-40
+[158]: #halt
+[159]: #isemptyanswer
+[160]: #parameters-41
+[161]: #stopgeneration
+[162]: #stopgeneration-1
+[163]: #removemessage
+[164]: #parameters-42
+[165]: #aipresetdefaults
+[166]: #useaiconfig
+[167]: #createpreset
+[168]: #parameters-43
+[169]: #deletepreset
+[170]: #parameters-44
+[171]: #usedocumentsstore
+[172]: #buildargs
+[173]: #properties-3
+[174]: #build
+[175]: #parameters-45
+[176]: #aimodel
+[177]: #parsemodelsresponse
+[178]: #parameters-46
+[179]: #aiconfig
+[180]: #properties-4
+[181]: #streamchunk
+[182]: #properties-5
+[183]: #accumulatetoolcalls
+[184]: #parameters-47
+[185]: #-2
+[186]: #delta
+[187]: #reasoningdetail
+[188]: #properties-6
+[189]: #accumulatereasoningdetails
+[190]: #parameters-48
+[191]: #openrouterprovider
+[192]: #openrouterproviderspromise
+[193]: #listopenrouterproviders
+[194]: #modelproviderspromises
+[195]: #listmodelproviders
+[196]: #parameters-49
+[197]: #explainfailure
+[198]: #parameters-50
+[199]: #useaiservice
+[200]: #listmodels
+[201]: #parameters-51
+[202]: #headers
+[203]: #headers-1
+[204]: #generatechatcompletion
+[205]: #parameters-52
+[206]: #toolcalls
+[207]: #reasoningdetails
+[208]: #streamerror
+[209]: #validateopenrouterkey
+[210]: #parameters-53
+[211]: #exchangeoauthcode
+[212]: #parameters-54
+[213]: #composablesuseaisummarize
+[214]: #examples-2
+[215]: #ref
+[216]: #isgenerating
+[217]: #controller
+[218]: #controller-1
+[219]: #useaisummarize
+[220]: #getwriteprofileifvalid
+[221]: #getscenecontent
+[222]: #parameters-55
+[223]: #handlesummarize
+[224]: #parameters-56
+[225]: #utilsmarkdown
+[226]: #safe_schemes
+[227]: #escapehtml
+[228]: #parameters-57
+[229]: #issafeurl
+[230]: #parameters-58
+[231]: #reader
+[232]: #rendermarkdown
+[233]: #parameters-59
+[234]: #stripmarkdown
+[235]: #parameters-60
+[236]: #storesdocumentsstore
+[237]: #examples-3
+[238]: #generatedocumentid
+[239]: #generatedocumentid-1
+[240]: #generatedocumentid-2
+[241]: #edited_grain
+[242]: #childrenbyparent
+[243]: #_loadingbystory
+[244]: #indexchild
+[245]: #parameters-61
+[246]: #unindexchild
+[247]: #parameters-62
+[248]: #getdocument
+[249]: #parameters-63
+[250]: #getchildren
+[251]: #parameters-64
+[252]: #getchildrenordered
+[253]: #parameters-65
+[254]: #-3
+[255]: #-4
+[256]: #containsdocument
+[257]: #parameters-66
+[258]: #createdocument
+[259]: #parameters-67
+[260]: #document
+[261]: #updatedocument
+[262]: #parameters-68
+[263]: #next
+[264]: #next-1
+[265]: #deletedocument
+[266]: #parameters-69
+[267]: #markedited
+[268]: #parameters-70
+[269]: #deletechildren
+[270]: #parameters-71
+[271]: #reorderchildren
+[272]: #parameters-72
+[273]: #updates
+[274]: #loadstory
+[275]: #parameters-73
+[276]: #ensureroot
+[277]: #parameters-74
+[278]: #deletestorydocuments
+[279]: #parameters-75
+[280]: #getroot
+[281]: #parameters-76
+[282]: #loadroots
+[283]: #parameters-77
+[284]: #renameproject
+[285]: #parameters-78
+[286]: #isstoryloaded
 [287]: #parameters-79
-[288]: #trackdelete
-[289]: #parameters-80
-[290]: #schedule
-[291]: #persistentitychanges
-[292]: #parameters-81
-[293]: #table
-[294]: #processsync
-[295]: #grouped
-[296]: #storesmigrationsprojecttree
-[297]: #rootidfor
+[288]: #sync_debounce_ms
+[289]: #pendingchanges
+[290]: #issyncing
+[291]: #synctimer
+[292]: #trackchange
+[293]: #parameters-80
+[294]: #trackdelete
+[295]: #parameters-81
+[296]: #schedule
+[297]: #persistentitychanges
 [298]: #parameters-82
-[299]: #rootidfor-1
-[300]: #parameters-83
-[301]: #manuscriptidfor
-[302]: #parameters-84
-[303]: #notesidfor
-[304]: #parameters-85
-[305]: #draftsidfor
-[306]: #parameters-86
-[307]: #folder
-[308]: #parameters-87
-[309]: #folder-1
-[310]: #parameters-88
-[311]: #rootnode
-[312]: #parameters-89
-[313]: #defaultprojectfolders
-[314]: #parameters-90
-[315]: #acttitle
-[316]: #parameters-91
-[317]: #byorder
-[318]: #parameters-92
-[319]: #documentstoprojecttree
-[320]: #parameters-93
-[321]: #bystory
-[322]: #restructured
-[323]: #db
-[324]: #db-1
-[325]: #storesmigrationsdocuments
-[326]: #partsandscenestodocuments
+[299]: #table
+[300]: #table-1
+[301]: #processsync
+[302]: #grouped
+[303]: #storesmigrationsprojecttree
+[304]: #rootidfor
+[305]: #parameters-83
+[306]: #rootidfor-1
+[307]: #parameters-84
+[308]: #manuscriptidfor
+[309]: #parameters-85
+[310]: #notesidfor
+[311]: #parameters-86
+[312]: #draftsidfor
+[313]: #parameters-87
+[314]: #folder
+[315]: #parameters-88
+[316]: #folder-1
+[317]: #parameters-89
+[318]: #rootnode
+[319]: #parameters-90
+[320]: #defaultprojectfolders
+[321]: #parameters-91
+[322]: #acttitle
+[323]: #parameters-92
+[324]: #byorder
+[325]: #parameters-93
+[326]: #documentstoprojecttree
 [327]: #parameters-94
-[328]: #partsandscenestodocuments-1
-[329]: #parameters-95
-[330]: #storyidbypart
-[331]: #deleted
-[332]: #deleted-1
-[333]: #deleted-2
-[334]: #deleted-3
-[335]: #deletedat
-[336]: #deletedat-1
-[337]: #storesmigrationslore
-[338]: #slug
-[339]: #parameters-96
-[340]: #slug-1
-[341]: #parameters-97
-[342]: #categoryfolderidfor
-[343]: #parameters-98
-[344]: #archivefolderidfor
-[345]: #parameters-99
-[346]: #plaintexttohtml
-[347]: #parameters-100
-[348]: #countwords
-[349]: #parameters-101
-[350]: #loretodocuments
-[351]: #parameters-102
-[352]: #storyidbylorebook
-[353]: #emittedfolders
-[354]: #foldercount
-[355]: #entrycount
-[356]: #nextorder
-[357]: #parameters-103
-[358]: #-5
-[359]: #entry
-[360]: #storesmigrationslastdocument
-[361]: #lastscenetolastdocument
-[362]: #parameters-104
-[363]: #lastscenetolastdocument-1
-[364]: #parameters-105
-[365]: #storesmigrationsoverview
-[366]: #overviewtorootsummary
-[367]: #parameters-106
-[368]: #overviewtorootsummary-1
-[369]: #parameters-107
-[370]: #overviewtorootsummary-2
-[371]: #parameters-108
-[372]: #byid
-[373]: #root
-[374]: #root-1
-[375]: #root-2
-[376]: #storesmigrationscommandinput
-[377]: #commandargstoinput
+[328]: #bystory
+[329]: #restructured
+[330]: #db
+[331]: #db-1
+[332]: #storesmigrationsdocuments
+[333]: #partsandscenestodocuments
+[334]: #parameters-95
+[335]: #partsandscenestodocuments-1
+[336]: #parameters-96
+[337]: #storyidbypart
+[338]: #deleted
+[339]: #deleted-1
+[340]: #deleted-2
+[341]: #deleted-3
+[342]: #deletedat
+[343]: #deletedat-1
+[344]: #storesmigrationslore
+[345]: #slug
+[346]: #parameters-97
+[347]: #slug-1
+[348]: #parameters-98
+[349]: #categoryfolderidfor
+[350]: #parameters-99
+[351]: #archivefolderidfor
+[352]: #parameters-100
+[353]: #plaintexttohtml
+[354]: #parameters-101
+[355]: #countwords
+[356]: #parameters-102
+[357]: #loretodocuments
+[358]: #parameters-103
+[359]: #storyidbylorebook
+[360]: #emittedfolders
+[361]: #foldercount
+[362]: #entrycount
+[363]: #nextorder
+[364]: #parameters-104
+[365]: #-5
+[366]: #entry
+[367]: #storesmigrationslastdocument
+[368]: #lastscenetolastdocument
+[369]: #parameters-105
+[370]: #lastscenetolastdocument-1
+[371]: #parameters-106
+[372]: #storesmigrationsoverview
+[373]: #overviewtorootsummary
+[374]: #parameters-107
+[375]: #overviewtorootsummary-1
+[376]: #parameters-108
+[377]: #overviewtorootsummary-2
 [378]: #parameters-109
-[379]: #commandargstoinput-1
-[380]: #parameters-110
-[381]: #commandargstoinput-2
-[382]: #parameters-111
-[383]: #storesmigrationscommandvoice
-[384]: #consulted
-[385]: #consulted-1
-[386]: #commandsintotheirvoice
-[387]: #parameters-112
-[388]: #storesmigrationscharactersigil
-[389]: #commands
-[390]: #commands-1
-[391]: #markcharacters
-[392]: #parameters-113
-[393]: #-6
-[394]: #storesmigrationsturnsegments
-[395]: #tags
-[396]: #tags-1
-[397]: #rendercommand
-[398]: #parameters-114
-[399]: #segmentof
-[400]: #parameters-115
-[401]: #foldturns
-[402]: #parameters-116
-[403]: #bychat
-[404]: #bychat-1
-[405]: #untouched
-[406]: #run
-[407]: #run-1
-[408]: #run-2
-[409]: #storesmigrationsturnruns
-[410]: #cutof
-[411]: #parameters-117
-[412]: #cutof-1
-[413]: #parameters-118
-[414]: #piecesof
-[415]: #parameters-119
-[416]: #piecesof-1
-[417]: #parameters-120
-[418]: #piecesof-2
-[419]: #parameters-121
-[420]: #piecesof-3
-[421]: #parameters-122
-[422]: #piecesof-4
-[423]: #parameters-123
-[424]: #piecesof-5
-[425]: #parameters-124
-[426]: #piecesof-6
-[427]: #parameters-125
-[428]: #foldchat
-[429]: #parameters-126
-[430]: #rows
-[431]: #foldruns
-[432]: #parameters-127
-[433]: #storesmigrationsmarkdown
-[434]: #htmltomarkdown
-[435]: #parameters-128
-[436]: #htmltomarkdown-1
-[437]: #parameters-129
-[438]: #documentstomarkdown
-[439]: #parameters-130
-[440]: #editorschema
-[441]: #languageof
-[442]: #parameters-131
-[443]: #code_block
-[444]: #-7
-[445]: #strikethrough
-[446]: #node_names
-[447]: #mark_names
-[448]: #schema
-[449]: #editormarkdown
-[450]: #tokenizer
-[451]: #state
-[452]: #state-1
-[453]: #-8
-[454]: #parsemarkdown
-[455]: #parameters-132
-[456]: #serializemarkdown
-[457]: #parameters-133
-[458]: #settlemarkdown
-[459]: #parameters-134
-[460]: #appendblocks
-[461]: #parameters-135
-[462]: #storesmigrationsprofiles
-[463]: #builtinfor
-[464]: #parameters-136
-[465]: #profilefrom
-[466]: #parameters-137
-[467]: #promptstoprofiles
-[468]: #parameters-138
-[469]: #chatstoprofiles
-[470]: #parameters-139
-[471]: #storiestoprofiles
-[472]: #parameters-140
-[473]: #storesmigrationssummariesinplace
-[474]: #stoodfor
-[475]: #parameters-141
-[476]: #stoodfor-1
-[477]: #parameters-142
-[478]: #placechat
-[479]: #parameters-143
-[480]: #targets
-[481]: #order
-[482]: #moved
-[483]: #summariesintoplace
-[484]: #parameters-144
-[485]: #chats
-[486]: #chats-1
-[487]: #changed
-[488]: #storesmigrationspurgedeleted
-[489]: #flagged_tables
-[490]: #purged
-[491]: #properties-7
-[492]: #withoutdeleted
-[493]: #parameters-145
-[494]: #gonefiles
-[495]: #deletedids
-[496]: #parameters-146
-[497]: #storesmigrationsprofileskills
-[498]: #renamed
-[499]: #rolestoskills
+[379]: #byid
+[380]: #root
+[381]: #root-1
+[382]: #root-2
+[383]: #storesmigrationscommandinput
+[384]: #commandargstoinput
+[385]: #parameters-110
+[386]: #commandargstoinput-1
+[387]: #parameters-111
+[388]: #commandargstoinput-2
+[389]: #parameters-112
+[390]: #storesmigrationscommandvoice
+[391]: #consulted
+[392]: #consulted-1
+[393]: #commandsintotheirvoice
+[394]: #parameters-113
+[395]: #storesmigrationscharactersigil
+[396]: #commands
+[397]: #commands-1
+[398]: #markcharacters
+[399]: #parameters-114
+[400]: #-6
+[401]: #storesmigrationsturnsegments
+[402]: #tags
+[403]: #tags-1
+[404]: #rendercommand
+[405]: #parameters-115
+[406]: #segmentof
+[407]: #parameters-116
+[408]: #foldturns
+[409]: #parameters-117
+[410]: #bychat
+[411]: #bychat-1
+[412]: #untouched
+[413]: #run
+[414]: #run-1
+[415]: #run-2
+[416]: #storesmigrationsturnruns
+[417]: #cutof
+[418]: #parameters-118
+[419]: #cutof-1
+[420]: #parameters-119
+[421]: #piecesof
+[422]: #parameters-120
+[423]: #piecesof-1
+[424]: #parameters-121
+[425]: #piecesof-2
+[426]: #parameters-122
+[427]: #piecesof-3
+[428]: #parameters-123
+[429]: #piecesof-4
+[430]: #parameters-124
+[431]: #piecesof-5
+[432]: #parameters-125
+[433]: #piecesof-6
+[434]: #parameters-126
+[435]: #foldchat
+[436]: #parameters-127
+[437]: #rows
+[438]: #foldruns
+[439]: #parameters-128
+[440]: #storesmigrationsmarkdown
+[441]: #htmltomarkdown
+[442]: #parameters-129
+[443]: #htmltomarkdown-1
+[444]: #parameters-130
+[445]: #documentstomarkdown
+[446]: #parameters-131
+[447]: #editorschema
+[448]: #languageof
+[449]: #parameters-132
+[450]: #code_block
+[451]: #-7
+[452]: #strikethrough
+[453]: #alignments
+[454]: #alignmentof
+[455]: #parameters-133
+[456]: #alignmentof-1
+[457]: #parameters-134
+[458]: #cellattrs
+[459]: #parameters-135
+[460]: #breaks
+[461]: #cellcontent
+[462]: #parameters-136
+[463]: #clonenode
+[464]: #table_row
+[465]: #table_cell
+[466]: #node_names
+[467]: #mark_names
+[468]: #schema
+[469]: #editormarkdown
+[470]: #cellsin
+[471]: #parameters-137
+[472]: #cellsin-1
+[473]: #parameters-138
+[474]: #tokenizerof
+[475]: #block
+[476]: #block-1
+[477]: #state
+[478]: #parameters-139
+[479]: #state-1
+[480]: #state-2
+[481]: #state-3
+[482]: #-8
+[483]: #cells
+[484]: #rowof
+[485]: #parameters-140
+[486]: #ruleof
+[487]: #parameters-141
+[488]: #parsemarkdown
+[489]: #parameters-142
+[490]: #serializemarkdown
+[491]: #parameters-143
+[492]: #settlemarkdown
+[493]: #parameters-144
+[494]: #appendblocks
+[495]: #parameters-145
+[496]: #storesmigrationsprofiles
+[497]: #builtinfor
+[498]: #parameters-146
+[499]: #profilefrom
 [500]: #parameters-147
-[501]: #skills
-[502]: #skills-1
-[503]: #-9
-[504]: #storesmigrationsjobworkflows
-[505]: #rolestoworkflows
-[506]: #parameters-148
-[507]: #storesmigrationsmodelkeeps
-[508]: #withoutmodelkeeps
-[509]: #parameters-149
-[510]: #storesmigrationsallowedproviders
-[511]: #allowedproviderstopresets
-[512]: #parameters-150
-[513]: #composablesuseapplicationstate
-[514]: #examples-4
-[515]: #loadstate
-[516]: #narrationconnection
-[517]: #properties-8
-[518]: #useapplicationstate
-[519]: #debug
-[520]: #setdebug
-[521]: #parameters-151
-[522]: #applyedits
-[523]: #setapplyedits
-[524]: #parameters-152
-[525]: #nsfwprofiles
-[526]: #setnsfwprofiles
-[527]: #parameters-153
-[528]: #narration
-[529]: #setnarration
-[530]: #parameters-154
-[531]: #workflows
-[532]: #merged
-[533]: #setworkflow
-[534]: #parameters-155
-[535]: #highlightspeakers
-[536]: #sethighlightspeakers
-[537]: #parameters-156
-[538]: #settheme
-[539]: #parameters-157
-[540]: #gettheme
-[541]: #theme
-[542]: #getstate
-[543]: #parameters-158
-[544]: #setstate
-[545]: #parameters-159
-[546]: #setlorebooksortby
-[547]: #parameters-160
-[548]: #getlorebooksortby
-[549]: #setlorebooksortorder
-[550]: #parameters-161
-[551]: #getlorebooksortorder
-[552]: #setshowprovidersetupdialog
-[553]: #parameters-162
-[554]: #getshowprovidersetupdialog
-[555]: #showprovidersetupdialog
-[556]: #showprovidersetupdialog-1
-[557]: #setshowwelcomedialog
-[558]: #parameters-163
-[559]: #getshowwelcomedialog
-[560]: #showwelcomedialog
-[561]: #checkandshowwelcomedialog
-[562]: #resetstate
-[563]: #composablesusebackup
-[564]: #downloadjson
-[565]: #parameters-164
-[566]: #downloadjson-1
-[567]: #parameters-165
-[568]: #downloadjson-2
-[569]: #parameters-166
-[570]: #downloadjson-3
-[571]: #parameters-167
-[572]: #downloadjson-4
-[573]: #parameters-168
-[574]: #downloadjson-5
-[575]: #parameters-169
-[576]: #downloadjson-6
-[577]: #parameters-170
-[578]: #downloadjson-7
-[579]: #parameters-171
-[580]: #downloadjson-8
-[581]: #parameters-172
-[582]: #readalltables
-[583]: #tables
-[584]: #-10
-[585]: #createbackup
-[586]: #parameters-173
-[587]: #downloadbackup
-[588]: #parameters-174
-[589]: #parsebackupfile
-[590]: #parameters-175
-[591]: #parsebackup
-[592]: #parameters-176
-[593]: #parsed
-[594]: #readbackupfile
-[595]: #parameters-177
-[596]: #restorebackup
-[597]: #parameters-178
-[598]: #createchatbackup
-[599]: #parameters-179
-[600]: #-11
-[601]: #-12
-[602]: #savedpromptof
-[603]: #parameters-180
-[604]: #downloadchat
-[605]: #parameters-181
-[606]: #readchatfile
-[607]: #parameters-182
-[608]: #chatfromtranscript
-[609]: #parameters-183
-[610]: #chat
-[611]: #chat-1
-[612]: #createprojectbackup
-[613]: #parameters-184
-[614]: #-13
-[615]: #-14
-[616]: #-15
-[617]: #-16
-[618]: #savedprofilesof
-[619]: #parameters-185
-[620]: #downloadproject
-[621]: #parameters-186
-[622]: #readprojectfile
-[623]: #parameters-187
-[624]: #importproject
-[625]: #parameters-188
-[626]: #composablesusebulkimport
-[627]: #usebulkimport
-[628]: #parameters-189
-[629]: #usebulkimport-1
-[630]: #parameters-190
-[631]: #imported
-[632]: #properties-9
-[633]: #importmany
-[634]: #parameters-191
-[635]: #known
-[636]: #folderfor
-[637]: #parameters-192
-[638]: #describeimport
-[639]: #parameters-193
-[640]: #-17
-[641]: #-18
-[642]: #composablesusecardchat
-[643]: #usecardchat
-[644]: #parameters-194
-[645]: #read
-[646]: #parameters-195
-[647]: #settingsfrom
-[648]: #parameters-196
-[649]: #settings
-[650]: #settings-1
-[651]: #start
-[652]: #parameters-197
-[653]: #start-1
-[654]: #attach
-[655]: #parameters-198
-[656]: #attach-1
-[657]: #parameters-199
-[658]: #composablesusecardimport
-[659]: #found
-[660]: #properties-10
-[661]: #markdown
-[662]: #png
-[663]: #json_file
-[664]: #notacarderror
-[665]: #parameters-200
-[666]: #nothing
-[667]: #usecardimport
+[501]: #promptstoprofiles
+[502]: #parameters-148
+[503]: #chatstoprofiles
+[504]: #parameters-149
+[505]: #storiestoprofiles
+[506]: #parameters-150
+[507]: #storesmigrationssummariesinplace
+[508]: #stoodfor
+[509]: #parameters-151
+[510]: #stoodfor-1
+[511]: #parameters-152
+[512]: #placechat
+[513]: #parameters-153
+[514]: #targets
+[515]: #order
+[516]: #moved
+[517]: #summariesintoplace
+[518]: #parameters-154
+[519]: #chats
+[520]: #chats-1
+[521]: #changed
+[522]: #storesmigrationspurgedeleted
+[523]: #flagged_tables
+[524]: #purged
+[525]: #properties-7
+[526]: #withoutdeleted
+[527]: #parameters-155
+[528]: #gonefiles
+[529]: #deletedids
+[530]: #parameters-156
+[531]: #storesmigrationsprofileskills
+[532]: #renamed
+[533]: #rolestoskills
+[534]: #parameters-157
+[535]: #skills
+[536]: #skills-1
+[537]: #-9
+[538]: #storesmigrationsjobworkflows
+[539]: #rolestoworkflows
+[540]: #parameters-158
+[541]: #storesmigrationsmodelkeeps
+[542]: #withoutmodelkeeps
+[543]: #parameters-159
+[544]: #storesmigrationsallowedproviders
+[545]: #allowedproviderstopresets
+[546]: #parameters-160
+[547]: #composablesuseapplicationstate
+[548]: #examples-4
+[549]: #loadstate
+[550]: #narrationconnection
+[551]: #properties-8
+[552]: #useapplicationstate
+[553]: #debug
+[554]: #setdebug
+[555]: #parameters-161
+[556]: #applyedits
+[557]: #setapplyedits
+[558]: #parameters-162
+[559]: #nsfwprofiles
+[560]: #setnsfwprofiles
+[561]: #parameters-163
+[562]: #narration
+[563]: #setnarration
+[564]: #parameters-164
+[565]: #workflows
+[566]: #merged
+[567]: #setworkflow
+[568]: #parameters-165
+[569]: #highlightspeakers
+[570]: #sethighlightspeakers
+[571]: #parameters-166
+[572]: #settheme
+[573]: #parameters-167
+[574]: #gettheme
+[575]: #theme
+[576]: #getstate
+[577]: #parameters-168
+[578]: #setstate
+[579]: #parameters-169
+[580]: #setlorebooksortby
+[581]: #parameters-170
+[582]: #getlorebooksortby
+[583]: #setlorebooksortorder
+[584]: #parameters-171
+[585]: #getlorebooksortorder
+[586]: #setshowprovidersetupdialog
+[587]: #parameters-172
+[588]: #getshowprovidersetupdialog
+[589]: #showprovidersetupdialog
+[590]: #showprovidersetupdialog-1
+[591]: #setshowwelcomedialog
+[592]: #parameters-173
+[593]: #getshowwelcomedialog
+[594]: #showwelcomedialog
+[595]: #checkandshowwelcomedialog
+[596]: #resetstate
+[597]: #composablesusebackup
+[598]: #downloadjson
+[599]: #parameters-174
+[600]: #downloadjson-1
+[601]: #parameters-175
+[602]: #downloadjson-2
+[603]: #parameters-176
+[604]: #downloadjson-3
+[605]: #parameters-177
+[606]: #downloadjson-4
+[607]: #parameters-178
+[608]: #downloadjson-5
+[609]: #parameters-179
+[610]: #downloadjson-6
+[611]: #parameters-180
+[612]: #downloadjson-7
+[613]: #parameters-181
+[614]: #downloadjson-8
+[615]: #parameters-182
+[616]: #readalltables
+[617]: #tables
+[618]: #-10
+[619]: #createbackup
+[620]: #parameters-183
+[621]: #downloadbackup
+[622]: #parameters-184
+[623]: #parsebackupfile
+[624]: #parameters-185
+[625]: #parsebackup
+[626]: #parameters-186
+[627]: #parsed
+[628]: #readbackupfile
+[629]: #parameters-187
+[630]: #restorebackup
+[631]: #parameters-188
+[632]: #createchatbackup
+[633]: #parameters-189
+[634]: #-11
+[635]: #-12
+[636]: #savedpromptof
+[637]: #parameters-190
+[638]: #downloadchat
+[639]: #parameters-191
+[640]: #readchatfile
+[641]: #parameters-192
+[642]: #chatfromtranscript
+[643]: #parameters-193
+[644]: #chat
+[645]: #chat-1
+[646]: #createprojectbackup
+[647]: #parameters-194
+[648]: #-13
+[649]: #-14
+[650]: #-15
+[651]: #-16
+[652]: #savedprofilesof
+[653]: #parameters-195
+[654]: #downloadproject
+[655]: #parameters-196
+[656]: #readprojectfile
+[657]: #parameters-197
+[658]: #importproject
+[659]: #parameters-198
+[660]: #composablesusebulkimport
+[661]: #usebulkimport
+[662]: #parameters-199
+[663]: #usebulkimport-1
+[664]: #parameters-200
+[665]: #imported
+[666]: #properties-9
+[667]: #importmany
 [668]: #parameters-201
-[669]: #inspect
-[670]: #parameters-202
-[671]: #inspectcard
-[672]: #parameters-203
-[673]: #write
-[674]: #parameters-204
-[675]: #write-1
-[676]: #parameters-205
-[677]: #write-2
-[678]: #parameters-206
-[679]: #foundcard
-[680]: #parameters-207
-[681]: #cardinpng
-[682]: #parameters-208
-[683]: #parsejson
-[684]: #parameters-209
-[685]: #composablesusechatcommands
-[686]: #usechatcommands
-[687]: #parameters-210
-[688]: #history
-[689]: #roomfor
-[690]: #parameters-211
-[691]: #openturn
-[692]: #submit
-[693]: #parameters-212
-[694]: #answers
-[695]: #spoken
-[696]: #pending
-[697]: #pending-1
-[698]: #pending-2
-[699]: #waiting
-[700]: #waiting-1
-[701]: #waiting-2
-[702]: #waiting-3
-[703]: #fill
-[704]: #parameters-213
-[705]: #streamed
-[706]: #watched
-[707]: #parameters-214
-[708]: #commandof
-[709]: #parameters-215
-[710]: #writecommand
-[711]: #parameters-216
-[712]: #-19
-[713]: #drop
-[714]: #parameters-217
-[715]: #drop-1
-[716]: #parameters-218
-[717]: #fold
-[718]: #remove
-[719]: #parameters-219
-[720]: #remove-1
-[721]: #parameters-220
-[722]: #remove-2
-[723]: #parameters-221
-[724]: #remove-3
-[725]: #parameters-222
-[726]: #ask
-[727]: #parameters-223
-[728]: #rerun
-[729]: #parameters-224
-[730]: #takesurvivor
-[731]: #parameters-225
-[732]: #revise
-[733]: #parameters-226
-[734]: #held
-[735]: #-20
-[736]: #held-1
-[737]: #-21
-[738]: #instances
-[739]: #instances-1
-[740]: #instances-2
-[741]: #instances-3
-[742]: #instances-4
-[743]: #instances-5
-[744]: #instances-6
-[745]: #instances-7
-[746]: #instances-8
-[747]: #instances-9
-[748]: #clearchatsinstances
-[749]: #usechats
-[750]: #parameters-227
-[751]: #usechats-1
+[669]: #known
+[670]: #folderfor
+[671]: #parameters-202
+[672]: #describeimport
+[673]: #parameters-203
+[674]: #-17
+[675]: #-18
+[676]: #composablesusecardchat
+[677]: #usecardchat
+[678]: #parameters-204
+[679]: #read
+[680]: #parameters-205
+[681]: #settingsfrom
+[682]: #parameters-206
+[683]: #settings
+[684]: #settings-1
+[685]: #start
+[686]: #parameters-207
+[687]: #start-1
+[688]: #start-2
+[689]: #start-3
+[690]: #attach
+[691]: #parameters-208
+[692]: #attach-1
+[693]: #parameters-209
+[694]: #composablesusecardimport
+[695]: #found
+[696]: #properties-10
+[697]: #markdown
+[698]: #png
+[699]: #json_file
+[700]: #notacarderror
+[701]: #parameters-210
+[702]: #nothing
+[703]: #usecardimport
+[704]: #parameters-211
+[705]: #inspect
+[706]: #parameters-212
+[707]: #inspectcard
+[708]: #parameters-213
+[709]: #write
+[710]: #parameters-214
+[711]: #write-1
+[712]: #parameters-215
+[713]: #write-2
+[714]: #parameters-216
+[715]: #write-3
+[716]: #parameters-217
+[717]: #foundcard
+[718]: #parameters-218
+[719]: #cardinpng
+[720]: #parameters-219
+[721]: #parsejson
+[722]: #parameters-220
+[723]: #composablesusechatcommands
+[724]: #usechatcommands
+[725]: #parameters-221
+[726]: #history
+[727]: #roomfor
+[728]: #parameters-222
+[729]: #openturn
+[730]: #submit
+[731]: #parameters-223
+[732]: #answers
+[733]: #spoken
+[734]: #pending
+[735]: #pending-1
+[736]: #pending-2
+[737]: #waiting
+[738]: #waiting-1
+[739]: #waiting-2
+[740]: #waiting-3
+[741]: #fill
+[742]: #parameters-224
+[743]: #streamed
+[744]: #watched
+[745]: #parameters-225
+[746]: #commandof
+[747]: #parameters-226
+[748]: #writecommand
+[749]: #parameters-227
+[750]: #-19
+[751]: #drop
 [752]: #parameters-228
-[753]: #draftmessages
-[754]: #_initpromise
-[755]: #init
-[756]: #init-1
-[757]: #init-2
-[758]: #chatmessages
-[759]: #defaultprofileid
-[760]: #defaultprofileid-1
-[761]: #createchat
-[762]: #parameters-229
-[763]: #unstartedchanges
-[764]: #unstartedchat
-[765]: #isunstarted
-[766]: #parameters-230
-[767]: #updateunstartedchat
-[768]: #parameters-231
-[769]: #startchat
-[770]: #updatechat
-[771]: #parameters-232
-[772]: #deletechat
-[773]: #parameters-233
-[774]: #getchatbyid
-[775]: #parameters-234
-[776]: #addmessage
-[777]: #parameters-235
-[778]: #streammessagecontent
-[779]: #parameters-236
-[780]: #updatemessage
-[781]: #parameters-237
-[782]: #beginalternate
-[783]: #parameters-238
-[784]: #dropalternate
-[785]: #parameters-239
-[786]: #writeturn
-[787]: #parameters-240
-[788]: #writesegment
-[789]: #parameters-241
-[790]: #deletemessage
-[791]: #parameters-242
-[792]: #movemessage
-[793]: #parameters-243
-[794]: #truncatemessagesforchat
-[795]: #parameters-244
-[796]: #getmessagesforchat
-[797]: #parameters-245
-[798]: #getmessagebyid
-[799]: #parameters-246
-[800]: #getdraftmessage
-[801]: #parameters-247
-[802]: #setdraftmessage
-[803]: #parameters-248
-[804]: #cleardraftmessage
-[805]: #parameters-249
-[806]: #copychat
-[807]: #parameters-250
-[808]: #forkchat
-[809]: #parameters-251
-[810]: #importchat
-[811]: #parameters-252
-[812]: #composablesusechatsettings
-[813]: #usechatsettings
-[814]: #parameters-253
-[815]: #usechatsettings-1
-[816]: #parameters-254
-[817]: #update
-[818]: #parameters-255
-[819]: #setprofile
-[820]: #parameters-256
-[821]: #chooseprofile
-[822]: #parameters-257
-[823]: #deleteprofile
-[824]: #parameters-258
-[825]: #deleteprofile-1
-[826]: #parameters-259
-[827]: #composablesusecommandmenu
-[828]: #commandoptionid
-[829]: #parameters-260
-[830]: #commandoptionid-1
-[831]: #parameters-261
-[832]: #usecommandmenu
-[833]: #parameters-262
-[834]: #caret
-[835]: #-22
-[836]: #shut
-[837]: #-23
-[838]: #track
-[839]: #track-1
-[840]: #parameters-263
-[841]: #pick
-[842]: #parameters-264
-[843]: #onkeydown
-[844]: #parameters-265
-[845]: #spot
-[846]: #composablesusecopypath
-[847]: #usecopypath
-[848]: #parameters-266
-[849]: #copypath
-[850]: #parameters-267
-[851]: #composablesusedocuments
-[852]: #cleardocumentinstances
-[853]: #usedocuments
-[854]: #parameters-268
-[855]: #pendingrenameid
-[856]: #error
-[857]: #error-1
-[858]: #parameters-269
-[859]: #initpromise
-[860]: #tabs
-[861]: #activedocumentid
-[862]: #writetabs
-[863]: #parameters-270
-[864]: #open
-[865]: #parameters-271
-[866]: #open-1
-[867]: #parameters-272
-[868]: #open-2
-[869]: #parameters-273
-[870]: #open-3
-[871]: #parameters-274
-[872]: #keep
-[873]: #parameters-275
-[874]: #focus
-[875]: #parameters-276
-[876]: #focus-1
-[877]: #parameters-277
-[878]: #closetab
-[879]: #parameters-278
-[880]: #releasetabs
-[881]: #get
-[882]: #parameters-279
-[883]: #get-1
-[884]: #get-2
-[885]: #get-3
-[886]: #childrenof
-[887]: #parameters-280
-[888]: #isfolder
-[889]: #parameters-281
-[890]: #isordered
-[891]: #parameters-282
-[892]: #ishidden
-[893]: #parameters-283
-[894]: #displaytitle
-[895]: #parameters-284
-[896]: #pathof
-[897]: #parameters-285
-[898]: #titlesof
-[899]: #parameters-286
-[900]: #firsttextdocument
-[901]: #walk
-[902]: #parameters-287
-[903]: #createfolder
-[904]: #parameters-288
-[905]: #createtextdocument
-[906]: #parameters-289
-[907]: #uniquetitle
-[908]: #parameters-290
-[909]: #rename
-[910]: #parameters-291
-[911]: #rename-1
-[912]: #parameters-292
-[913]: #isplain
-[914]: #parameters-293
-[915]: #stored
-[916]: #parameters-294
-[917]: #setcontent
-[918]: #parameters-295
-[919]: #currentcontent
-[920]: #parameters-296
-[921]: #replacetext
-[922]: #parameters-297
-[923]: #appendcontent
-[924]: #parameters-298
-[925]: #appendcontent-1
-[926]: #parameters-299
-[927]: #wouldsettle
-[928]: #parameters-300
-[929]: #setplain
-[930]: #parameters-301
-[931]: #revertedit
-[932]: #parameters-302
-[933]: #reapplyedit
-[934]: #parameters-303
-[935]: #editabletitle
-[936]: #parameters-304
-[937]: #removed
-[938]: #-24
-[939]: #reorder
-[940]: #parameters-305
-[941]: #setordered
-[942]: #parameters-306
-[943]: #sethidden
-[944]: #parameters-307
-[945]: #candropinto
-[946]: #parameters-308
-[947]: #requestrename
-[948]: #parameters-309
-[949]: #claimrename
-[950]: #parameters-310
-[951]: #composablesuseeditor
-[952]: #entry-1
-[953]: #properties-11
-[954]: #projection_delay
-[955]: #entries
-[956]: #cleareditor
-[957]: #contentof
-[958]: #parameters-311
-[959]: #flushentry
-[960]: #parameters-312
-[961]: #markdirty
-[962]: #parameters-313
-[963]: #makeentry
-[964]: #parameters-314
-[965]: #useeditor
-[966]: #convert
-[967]: #parameters-315
-[968]: #convert-1
-[969]: #parameters-316
-[970]: #close
-[971]: #parameters-317
-[972]: #discard
-[973]: #parameters-318
-[974]: #holds
-[975]: #parameters-319
-[976]: #openids
-[977]: #stateof
-[978]: #parameters-320
-[979]: #rememberscroll
-[980]: #parameters-321
-[981]: #scrolltop
-[982]: #parameters-322
-[983]: #dispatch
-[984]: #parameters-323
-[985]: #settext
-[986]: #parameters-324
-[987]: #flush
-[988]: #parameters-325
-[989]: #replacecontent
-[990]: #parameters-326
-[991]: #markdown-1
-[992]: #parameters-327
-[993]: #composablesusefileview
-[994]: #astext
-[995]: #keyfor
-[996]: #parameters-328
-[997]: #-25
-[998]: #usefileview
-[999]: #parameters-329
-[1000]: #showstext
-[1001]: #parameters-330
-[1002]: #setshowstext
-[1003]: #parameters-331
-[1004]: #fileviewitem
-[1005]: #parameters-332
-[1006]: #clearfileviews
-[1007]: #utilssessionstorage
-[1008]: #sessionstorage
-[1009]: #get-4
-[1010]: #parameters-333
-[1011]: #set
-[1012]: #parameters-334
-[1013]: #remove-4
-[1014]: #parameters-335
-[1015]: #composablesusegenerationsettings
-[1016]: #settingkey
-[1017]: #composablesusejobs
-[1018]: #progressof
-[1019]: #parameters-336
-[1020]: #progressof-1
-[1021]: #parameters-337
-[1022]: #elapsedof
-[1023]: #parameters-338
-[1024]: #formatelapsed
-[1025]: #parameters-339
-[1026]: #usejobs
-[1027]: #jobs
-[1028]: #anyrunning
-[1029]: #runningjobs
-[1030]: #runningon
-[1031]: #parameters-340
-[1032]: #projectof
-[1033]: #parameters-341
-[1034]: #load
-[1035]: #composablesusejobstoast
-[1036]: #show
-[1037]: #toggle
-[1038]: #closed
-[1039]: #composablesusejumptobottom
-[1040]: #hush_ms
-[1041]: #max_passes
-[1042]: #drawn
-[1043]: #usejumptobottom
-[1044]: #parameters-342
-[1045]: #gapof
-[1046]: #parameters-343
-[1047]: #far
-[1048]: #onscroll
-[1049]: #hush
-[1050]: #jump
-[1051]: #composablesuseloadedskills
-[1052]: #useloadedskills
-[1053]: #parameters-344
-[1054]: #loaded
-[1055]: #dropped
-[1056]: #composablesusemcpservers
-[1057]: #named
-[1058]: #parameters-345
-[1059]: #named-1
-[1060]: #parameters-346
-[1061]: #named-2
-[1062]: #parameters-347
-[1063]: #named-3
-[1064]: #parameters-348
-[1065]: #named-4
-[1066]: #parameters-349
-[1067]: #serverpreview
-[1068]: #properties-12
-[1069]: #sign_in_wait_ms
-[1070]: #signins
-[1071]: #usemcpservers
-[1072]: #preview
-[1073]: #parameters-350
-[1074]: #preview-1
-[1075]: #parameters-351
-[1076]: #issignedin
-[1077]: #parameters-352
-[1078]: #signin
-[1079]: #parameters-353
-[1080]: #done
-[1081]: #parameters-354
-[1082]: #signout
-[1083]: #parameters-355
-[1084]: #addserver
-[1085]: #parameters-356
-[1086]: #-26
-[1087]: #refreshserver
-[1088]: #parameters-357
-[1089]: #updateserver
-[1090]: #parameters-358
-[1091]: #removeserver
-[1092]: #parameters-359
-[1093]: #allowtool
-[1094]: #parameters-360
-[1095]: #allowserver
-[1096]: #parameters-361
-[1097]: #composablesusemessagefield
-[1098]: #fitsbeside
-[1099]: #parameters-362
-[1100]: #usemessagefield
-[1101]: #parameters-363
-[1102]: #fit
-[1103]: #settling
-[1104]: #settling-1
-[1105]: #composablesusenarration
-[1106]: #readingtrack
-[1107]: #properties-13
-[1108]: #reading
-[1109]: #properties-14
-[1110]: #clearnarrationinstances
-[1111]: #narrationapi
-[1112]: #usenarration
-[1113]: #parameters-364
-[1114]: #servervoices
-[1115]: #servervoicesfrom
-[1116]: #loadservervoices
-[1117]: #voicebyid
-[1118]: #parameters-365
-[1119]: #addvoice
-[1120]: #parameters-366
-[1121]: #voice
-[1122]: #updatevoice
-[1123]: #parameters-367
-[1124]: #removevoice
-[1125]: #parameters-368
-[1126]: #setdefaultvoice
-[1127]: #parameters-369
-[1128]: #sethints
-[1129]: #parameters-370
-[1130]: #blocksof
-[1131]: #parameters-371
-[1132]: #textsof
-[1133]: #parameters-372
-[1134]: #speakersof
-[1135]: #parameters-373
-[1136]: #setspeaker
-[1137]: #parameters-374
-[1138]: #utterancesof
-[1139]: #parameters-375
-[1140]: #watching
-[1141]: #readings
-[1142]: #controllers
-[1143]: #readingof
-[1144]: #parameters-376
-[1145]: #ensurereading
-[1146]: #parameters-377
-[1147]: #reading-1
-[1148]: #audible
-[1149]: #parameters-378
-[1150]: #instep
-[1151]: #parameters-379
-[1152]: #refreshtrack
-[1153]: #parameters-380
-[1154]: #joined
-[1155]: #stop
-[1156]: #parameters-381
-[1157]: #stop-1
-[1158]: #narrate
-[1159]: #parameters-382
-[1160]: #forget
-[1161]: #parameters-383
-[1162]: #download
-[1163]: #parameters-384
-[1164]: #readaloud
-[1165]: #parameters-385
-[1166]: #dispose
-[1167]: #api
-[1168]: #composablesusenearturns
-[1169]: #ahead
-[1170]: #base_height
-[1171]: #line_height
-[1172]: #character_width
-[1173]: #unknown_width
-[1174]: #settle_ms
-[1175]: #newest
-[1176]: #opening
-[1177]: #still_ms
-[1178]: #hold
-[1179]: #hold_this
-[1180]: #state-2
-[1181]: #turnlike
-[1182]: #properties-15
-[1183]: #usenearturns
-[1184]: #parameters-386
-[1185]: #near
-[1186]: #reported
-[1187]: #measured
-[1188]: #measured-1
-[1189]: #width
-[1190]: #lineheight
-[1191]: #linecounts
-[1192]: #linecounts-1
-[1193]: #elements
-[1194]: #ids
-[1195]: #shift
-[1196]: #touching
-[1197]: #touched
-[1198]: #stilling
-[1199]: #listened
-[1200]: #listened-1
-[1201]: #intersect
-[1202]: #resize
-[1203]: #ismounted
-[1204]: #parameters-387
-[1205]: #perline
-[1206]: #linesof
-[1207]: #parameters-388
-[1208]: #guesses
-[1209]: #heightof
-[1210]: #parameters-389
-[1211]: #calibrate
-[1212]: #hold-1
-[1213]: #parameters-390
-[1214]: #onscreen
-[1215]: #parameters-391
-[1216]: #found-1
-[1217]: #keepinplace
-[1218]: #parameters-392
-[1219]: #shiftby
-[1220]: #parameters-393
-[1221]: #unshift
-[1222]: #parameters-394
-[1223]: #stillsoon
-[1224]: #parameters-395
-[1225]: #rearrange
-[1226]: #parameters-396
-[1227]: #useturnholder
-[1228]: #parameters-397
-[1229]: #holdturnwhile
-[1230]: #parameters-398
-[1231]: #set-1
-[1232]: #parameters-399
-[1233]: #useturnstate
-[1234]: #parameters-400
-[1235]: #has
-[1236]: #composablesuseopenroutersignin
-[1237]: #openrouter_callback_path
-[1238]: #provider_id
-[1239]: #wait_ms
-[1240]: #sleep
-[1241]: #parameters-401
-[1242]: #finish
-[1243]: #parameters-402
-[1244]: #composablesuseplaintext
-[1245]: #useplaintext
-[1246]: #parameters-403
-[1247]: #toggleplain
-[1248]: #parameters-404
-[1249]: #plaintextitem
-[1250]: #parameters-405
-[1251]: #utilslinediff
-[1252]: #linechange
-[1253]: #properties-16
-[1254]: #max_matched
-[1255]: #changedlines
-[1256]: #parameters-406
-[1257]: #changes
-[1258]: #changes-1
-[1259]: #composablesuseprofilenotice
-[1260]: #seenkey
-[1261]: #parameters-407
-[1262]: #noticefor
-[1263]: #parameters-408
-[1264]: #dismiss
-[1265]: #composablesuseprofiles
-[1266]: #profileentry
-[1267]: #properties-17
-[1268]: #storedentry
-[1269]: #parameters-409
-[1270]: #builtinentry
-[1271]: #parameters-410
-[1272]: #nsfw_counterparts
-[1273]: #inplaceof
-[1274]: #parameters-411
-[1275]: #profiles
-[1276]: #getprofile
-[1277]: #parameters-412
-[1278]: #ready
-[1279]: #ready-1
-[1280]: #ready-2
-[1281]: #saveprofile
-[1282]: #parameters-413
-[1283]: #duplicateprofile
-[1284]: #parameters-414
-[1285]: #updateprofile
-[1286]: #parameters-415
-[1287]: #-27
-[1288]: #composablesuseprojects
-[1289]: #examples-5
-[1290]: #useprojects
-[1291]: #useprojects-1
-[1292]: #projects
-[1293]: #nameof
-[1294]: #parameters-416
-[1295]: #create
-[1296]: #parameters-417
-[1297]: #composablesuseprompts
-[1298]: #toentry
-[1299]: #parameters-418
-[1300]: #toentry-1
-[1301]: #parameters-419
-[1302]: #promptentry
-[1303]: #properties-18
-[1304]: #useprompts
-[1305]: #getprompt
-[1306]: #parameters-420
-[1307]: #saveprompt
-[1308]: #parameters-421
-[1309]: #duplicateprompt
-[1310]: #parameters-422
-[1311]: #updateprompt
-[1312]: #parameters-423
-[1313]: #deleteprompt
-[1314]: #parameters-424
-[1315]: #composablesuseprovidersetup
-[1316]: #examples-6
-[1317]: #useprovidersetup
-[1318]: #isprovidersetupdialogenabled
-[1319]: #hideprovidersetupdialog
-[1320]: #handleproviderconnect
-[1321]: #parameters-425
-[1322]: #handledontshowagain
-[1323]: #usereactivetime
-[1324]: #parameters-426
-[1325]: #formatrelativetime
-[1326]: #parameters-427
-[1327]: #usescreensize
-[1328]: #searchoptions
-[1329]: #properties-19
-[1330]: #searchresult
-[1331]: #properties-20
-[1332]: #usesearch
-[1333]: #parameters-428
-[1334]: #striphtml
-[1335]: #parameters-429
-[1336]: #composablesusesettingspanel
-[1337]: #settingssection
-[1338]: #requestedsection
-[1339]: #usesettingspanel
-[1340]: #takesection
-[1341]: #composablesuseskills
-[1342]: #renamedin
-[1343]: #parameters-430
-[1344]: #renamedin-1
-[1345]: #parameters-431
-[1346]: #renamedin-2
-[1347]: #parameters-432
-[1348]: #importrow
-[1349]: #properties-21
-[1350]: #useskills
-[1351]: #nameproblem
+[753]: #drop-1
+[754]: #parameters-229
+[755]: #fold
+[756]: #remove
+[757]: #parameters-230
+[758]: #remove-1
+[759]: #parameters-231
+[760]: #remove-2
+[761]: #parameters-232
+[762]: #remove-3
+[763]: #parameters-233
+[764]: #ask
+[765]: #parameters-234
+[766]: #rerun
+[767]: #parameters-235
+[768]: #takesurvivor
+[769]: #parameters-236
+[770]: #revise
+[771]: #parameters-237
+[772]: #held
+[773]: #-20
+[774]: #held-1
+[775]: #-21
+[776]: #composablesusechatfind
+[777]: #settle_ms
+[778]: #settle_ms-1
+[779]: #chatmatch
+[780]: #properties-11
+[781]: #findableturn
+[782]: #properties-12
+[783]: #escaperegexp
+[784]: #parameters-238
+[785]: #patternfor
+[786]: #parameters-239
+[787]: #registry
+[788]: #rangesin
+[789]: #parameters-240
+[790]: #nodes
+[791]: #-22
+[792]: #locate
+[793]: #parameters-241
+[794]: #locate-1
+[795]: #parameters-242
+[796]: #ranges
+[797]: #usechatfind
+[798]: #parameters-243
+[799]: #holding
+[800]: #holding-1
+[801]: #texts
+[802]: #texts-1
+[803]: #readable
+[804]: #parameters-244
+[805]: #textof
+[806]: #parameters-245
+[807]: #matches
+[808]: #found-1
+[809]: #found-2
+[810]: #firstonscreen
+[811]: #nearest
+[812]: #parameters-246
+[813]: #wentat
+[814]: #going
+[815]: #rangesofmessage
+[816]: #parameters-247
+[817]: #currentrange
+[818]: #reveal
+[819]: #parameters-248
+[820]: #paint
+[821]: #go
+[822]: #frame
+[823]: #observer
+[824]: #lookfor
+[825]: #parameters-249
+[826]: #step
+[827]: #parameters-250
+[828]: #openfind
+[829]: #instances
+[830]: #instances-1
+[831]: #instances-2
+[832]: #instances-3
+[833]: #instances-4
+[834]: #instances-5
+[835]: #instances-6
+[836]: #instances-7
+[837]: #instances-8
+[838]: #instances-9
+[839]: #clearchatsinstances
+[840]: #usechats
+[841]: #parameters-251
+[842]: #usechats-1
+[843]: #parameters-252
+[844]: #draftmessages
+[845]: #_initpromise
+[846]: #init
+[847]: #init-1
+[848]: #init-2
+[849]: #chatmessages
+[850]: #defaultprofileid
+[851]: #defaultprofileid-1
+[852]: #createchat
+[853]: #parameters-253
+[854]: #unstartedchanges
+[855]: #unstartedchat
+[856]: #isunstarted
+[857]: #parameters-254
+[858]: #updateunstartedchat
+[859]: #parameters-255
+[860]: #startchat
+[861]: #updatechat
+[862]: #parameters-256
+[863]: #deletechat
+[864]: #parameters-257
+[865]: #getchatbyid
+[866]: #parameters-258
+[867]: #addmessage
+[868]: #parameters-259
+[869]: #streammessagecontent
+[870]: #parameters-260
+[871]: #updatemessage
+[872]: #parameters-261
+[873]: #beginalternate
+[874]: #parameters-262
+[875]: #dropalternate
+[876]: #parameters-263
+[877]: #writeturn
+[878]: #parameters-264
+[879]: #writesegment
+[880]: #parameters-265
+[881]: #deletemessage
+[882]: #parameters-266
+[883]: #movemessage
+[884]: #parameters-267
+[885]: #truncatemessagesforchat
+[886]: #parameters-268
+[887]: #getmessagesforchat
+[888]: #parameters-269
+[889]: #getmessagebyid
+[890]: #parameters-270
+[891]: #getdraftmessage
+[892]: #parameters-271
+[893]: #setdraftmessage
+[894]: #parameters-272
+[895]: #cleardraftmessage
+[896]: #parameters-273
+[897]: #copychat
+[898]: #parameters-274
+[899]: #forkchat
+[900]: #parameters-275
+[901]: #importchat
+[902]: #parameters-276
+[903]: #composablesusechatsettings
+[904]: #usechatsettings
+[905]: #parameters-277
+[906]: #usechatsettings-1
+[907]: #parameters-278
+[908]: #update
+[909]: #parameters-279
+[910]: #setprofile
+[911]: #parameters-280
+[912]: #chooseprofile
+[913]: #parameters-281
+[914]: #deleteprofile
+[915]: #parameters-282
+[916]: #deleteprofile-1
+[917]: #parameters-283
+[918]: #composablesusecommandmenu
+[919]: #commandoptionid
+[920]: #parameters-284
+[921]: #commandoptionid-1
+[922]: #parameters-285
+[923]: #usecommandmenu
+[924]: #parameters-286
+[925]: #caret
+[926]: #-23
+[927]: #shut
+[928]: #-24
+[929]: #track
+[930]: #track-1
+[931]: #parameters-287
+[932]: #pick
+[933]: #parameters-288
+[934]: #onkeydown
+[935]: #parameters-289
+[936]: #spot
+[937]: #composablesusecopypath
+[938]: #usecopypath
+[939]: #parameters-290
+[940]: #copypath
+[941]: #parameters-291
+[942]: #composablesusedocuments
+[943]: #cleardocumentinstances
+[944]: #usedocuments
+[945]: #parameters-292
+[946]: #pendingrenameid
+[947]: #error
+[948]: #error-1
+[949]: #parameters-293
+[950]: #initpromise
+[951]: #tabs
+[952]: #activedocumentid
+[953]: #writetabs
+[954]: #parameters-294
+[955]: #open
+[956]: #parameters-295
+[957]: #open-1
+[958]: #parameters-296
+[959]: #open-2
+[960]: #parameters-297
+[961]: #open-3
+[962]: #parameters-298
+[963]: #keep
+[964]: #parameters-299
+[965]: #focus
+[966]: #parameters-300
+[967]: #focus-1
+[968]: #parameters-301
+[969]: #closetab
+[970]: #parameters-302
+[971]: #releasetabs
+[972]: #get
+[973]: #parameters-303
+[974]: #get-1
+[975]: #get-2
+[976]: #get-3
+[977]: #childrenof
+[978]: #parameters-304
+[979]: #isfolder
+[980]: #parameters-305
+[981]: #isordered
+[982]: #parameters-306
+[983]: #ishidden
+[984]: #parameters-307
+[985]: #displaytitle
+[986]: #parameters-308
+[987]: #pathof
+[988]: #parameters-309
+[989]: #titlesof
+[990]: #parameters-310
+[991]: #firsttextdocument
+[992]: #walk
+[993]: #parameters-311
+[994]: #createfolder
+[995]: #parameters-312
+[996]: #createtextdocument
+[997]: #parameters-313
+[998]: #uniquetitle
+[999]: #parameters-314
+[1000]: #rename
+[1001]: #parameters-315
+[1002]: #isplain
+[1003]: #parameters-316
+[1004]: #stored
+[1005]: #parameters-317
+[1006]: #setcontent
+[1007]: #parameters-318
+[1008]: #currentcontent
+[1009]: #parameters-319
+[1010]: #replacetext
+[1011]: #parameters-320
+[1012]: #appendcontent
+[1013]: #parameters-321
+[1014]: #appendcontent-1
+[1015]: #parameters-322
+[1016]: #wouldsettle
+[1017]: #parameters-323
+[1018]: #setplain
+[1019]: #parameters-324
+[1020]: #revertedit
+[1021]: #parameters-325
+[1022]: #reapplyedit
+[1023]: #parameters-326
+[1024]: #editabletitle
+[1025]: #parameters-327
+[1026]: #removed
+[1027]: #-25
+[1028]: #reorder
+[1029]: #parameters-328
+[1030]: #setordered
+[1031]: #parameters-329
+[1032]: #sethidden
+[1033]: #parameters-330
+[1034]: #candropinto
+[1035]: #parameters-331
+[1036]: #requestrename
+[1037]: #parameters-332
+[1038]: #claimrename
+[1039]: #parameters-333
+[1040]: #composablesusedriveimport
+[1041]: #usedriveimport
+[1042]: #parameters-334
+[1043]: #usedriveimport-1
+[1044]: #parameters-335
+[1045]: #usedriveimport-2
+[1046]: #parameters-336
+[1047]: #usedriveimport-3
+[1048]: #parameters-337
+[1049]: #usedriveimport-4
+[1050]: #parameters-338
+[1051]: #choose
+[1052]: #parameters-339
+[1053]: #importpicked
+[1054]: #parameters-340
+[1055]: #gathered
+[1056]: #composablesuseeditor
+[1057]: #entry-1
+[1058]: #properties-13
+[1059]: #projection_delay
+[1060]: #entries
+[1061]: #cleareditor
+[1062]: #contentof
+[1063]: #parameters-341
+[1064]: #flushentry
+[1065]: #parameters-342
+[1066]: #markdirty
+[1067]: #parameters-343
+[1068]: #makeentry
+[1069]: #parameters-344
+[1070]: #useeditor
+[1071]: #convert
+[1072]: #parameters-345
+[1073]: #convert-1
+[1074]: #parameters-346
+[1075]: #close
+[1076]: #parameters-347
+[1077]: #discard
+[1078]: #parameters-348
+[1079]: #holds
+[1080]: #parameters-349
+[1081]: #openids
+[1082]: #stateof
+[1083]: #parameters-350
+[1084]: #rememberscroll
+[1085]: #parameters-351
+[1086]: #scrolltop
+[1087]: #parameters-352
+[1088]: #dispatch
+[1089]: #parameters-353
+[1090]: #settext
+[1091]: #parameters-354
+[1092]: #flush
+[1093]: #parameters-355
+[1094]: #replacecontent
+[1095]: #parameters-356
+[1096]: #markdown-1
+[1097]: #parameters-357
+[1098]: #composablesusefileview
+[1099]: #astext
+[1100]: #keyfor
+[1101]: #parameters-358
+[1102]: #-26
+[1103]: #usefileview
+[1104]: #parameters-359
+[1105]: #showstext
+[1106]: #parameters-360
+[1107]: #setshowstext
+[1108]: #parameters-361
+[1109]: #fileviewitem
+[1110]: #parameters-362
+[1111]: #clearfileviews
+[1112]: #utilssessionstorage
+[1113]: #sessionstorage
+[1114]: #get-4
+[1115]: #parameters-363
+[1116]: #set
+[1117]: #parameters-364
+[1118]: #remove-4
+[1119]: #parameters-365
+[1120]: #composablesusefindkey
+[1121]: #pressed
+[1122]: #pressed-1
+[1123]: #pressed-2
+[1124]: #remember
+[1125]: #parameters-366
+[1126]: #isfindkey
+[1127]: #parameters-367
+[1128]: #usefindkey
+[1129]: #parameters-368
+[1130]: #onkeydown-1
+[1131]: #parameters-369
+[1132]: #onkeydown-2
+[1133]: #parameters-370
+[1134]: #composablesusegenerationsettings
+[1135]: #settingkey
+[1136]: #composablesusejobs
+[1137]: #progressof
+[1138]: #parameters-371
+[1139]: #progressof-1
+[1140]: #parameters-372
+[1141]: #elapsedof
+[1142]: #parameters-373
+[1143]: #formatelapsed
+[1144]: #parameters-374
+[1145]: #usejobs
+[1146]: #jobs
+[1147]: #anyrunning
+[1148]: #runningjobs
+[1149]: #runningon
+[1150]: #parameters-375
+[1151]: #projectof
+[1152]: #parameters-376
+[1153]: #load
+[1154]: #composablesusejobstoast
+[1155]: #show
+[1156]: #toggle
+[1157]: #closed
+[1158]: #composablesusejumptobottom
+[1159]: #hush_ms
+[1160]: #max_passes
+[1161]: #drawn
+[1162]: #usejumptobottom
+[1163]: #parameters-377
+[1164]: #gapof
+[1165]: #parameters-378
+[1166]: #far
+[1167]: #onscroll
+[1168]: #hush
+[1169]: #jump
+[1170]: #composablesuseloadedskills
+[1171]: #useloadedskills
+[1172]: #parameters-379
+[1173]: #loaded
+[1174]: #dropped
+[1175]: #composablesuselongpress
+[1176]: #long_press_ms
+[1177]: #slop
+[1178]: #longpresshandlers
+[1179]: #uselongpress
+[1180]: #parameters-380
+[1181]: #timer
+[1182]: #touchstart
+[1183]: #parameters-381
+[1184]: #touchmove
+[1185]: #parameters-382
+[1186]: #touchend
+[1187]: #parameters-383
+[1188]: #composablesusemcpservers
+[1189]: #named
+[1190]: #parameters-384
+[1191]: #named-1
+[1192]: #parameters-385
+[1193]: #named-2
+[1194]: #parameters-386
+[1195]: #named-3
+[1196]: #parameters-387
+[1197]: #named-4
+[1198]: #parameters-388
+[1199]: #serverpreview
+[1200]: #properties-14
+[1201]: #sign_in_wait_ms
+[1202]: #signins
+[1203]: #usemcpservers
+[1204]: #preview
+[1205]: #parameters-389
+[1206]: #preview-1
+[1207]: #parameters-390
+[1208]: #issignedin
+[1209]: #parameters-391
+[1210]: #signin
+[1211]: #parameters-392
+[1212]: #done
+[1213]: #parameters-393
+[1214]: #signout
+[1215]: #parameters-394
+[1216]: #addserver
+[1217]: #parameters-395
+[1218]: #-27
+[1219]: #refreshserver
+[1220]: #parameters-396
+[1221]: #updateserver
+[1222]: #parameters-397
+[1223]: #removeserver
+[1224]: #parameters-398
+[1225]: #allowtool
+[1226]: #parameters-399
+[1227]: #allowserver
+[1228]: #parameters-400
+[1229]: #composablesusemessagefield
+[1230]: #fitsbeside
+[1231]: #parameters-401
+[1232]: #usemessagefield
+[1233]: #parameters-402
+[1234]: #fit
+[1235]: #settling
+[1236]: #settling-1
+[1237]: #composablesusenarration
+[1238]: #readingtrack
+[1239]: #properties-15
+[1240]: #reading
+[1241]: #properties-16
+[1242]: #clearnarrationinstances
+[1243]: #narrationapi
+[1244]: #usenarration
+[1245]: #parameters-403
+[1246]: #servervoices
+[1247]: #servervoicesfrom
+[1248]: #loadservervoices
+[1249]: #voicebyid
+[1250]: #parameters-404
+[1251]: #addvoice
+[1252]: #parameters-405
+[1253]: #voice
+[1254]: #updatevoice
+[1255]: #parameters-406
+[1256]: #removevoice
+[1257]: #parameters-407
+[1258]: #setdefaultvoice
+[1259]: #parameters-408
+[1260]: #sethints
+[1261]: #parameters-409
+[1262]: #blocksof
+[1263]: #parameters-410
+[1264]: #textsof
+[1265]: #parameters-411
+[1266]: #speakersof
+[1267]: #parameters-412
+[1268]: #setspeaker
+[1269]: #parameters-413
+[1270]: #utterancesof
+[1271]: #parameters-414
+[1272]: #watching
+[1273]: #readings
+[1274]: #controllers
+[1275]: #readingof
+[1276]: #parameters-415
+[1277]: #ensurereading
+[1278]: #parameters-416
+[1279]: #reading-1
+[1280]: #audible
+[1281]: #parameters-417
+[1282]: #instep
+[1283]: #parameters-418
+[1284]: #refreshtrack
+[1285]: #parameters-419
+[1286]: #joined
+[1287]: #stop
+[1288]: #parameters-420
+[1289]: #stop-1
+[1290]: #narrate
+[1291]: #parameters-421
+[1292]: #forget
+[1293]: #parameters-422
+[1294]: #download
+[1295]: #parameters-423
+[1296]: #readaloud
+[1297]: #parameters-424
+[1298]: #dispose
+[1299]: #api
+[1300]: #composablesusenearturns
+[1301]: #ahead
+[1302]: #base_height
+[1303]: #line_height
+[1304]: #character_width
+[1305]: #unknown_width
+[1306]: #newest
+[1307]: #opening
+[1308]: #still_ms
+[1309]: #hold
+[1310]: #hold_this
+[1311]: #state-4
+[1312]: #turnlike
+[1313]: #properties-17
+[1314]: #usenearturns
+[1315]: #parameters-425
+[1316]: #near
+[1317]: #reported
+[1318]: #measured
+[1319]: #measured-1
+[1320]: #width
+[1321]: #lineheight
+[1322]: #linecounts
+[1323]: #linecounts-1
+[1324]: #elements
+[1325]: #ids
+[1326]: #shift
+[1327]: #touching
+[1328]: #touched
+[1329]: #stilling
+[1330]: #listened
+[1331]: #listened-1
+[1332]: #intersect
+[1333]: #resize
+[1334]: #ismounted
+[1335]: #parameters-426
+[1336]: #perline
+[1337]: #linesof
+[1338]: #parameters-427
+[1339]: #guesses
+[1340]: #heightof
+[1341]: #parameters-428
+[1342]: #calibrate
+[1343]: #hold-1
+[1344]: #parameters-429
+[1345]: #onscreen
+[1346]: #parameters-430
+[1347]: #keepinplace
+[1348]: #parameters-431
+[1349]: #shiftby
+[1350]: #parameters-432
+[1351]: #unshift
 [1352]: #parameters-433
-[1353]: #carryrename
+[1353]: #stillsoon
 [1354]: #parameters-434
-[1355]: #-28
-[1356]: #saveskill
-[1357]: #parameters-435
-[1358]: #planimport
-[1359]: #parameters-436
-[1360]: #seen
-[1361]: #importskills
-[1362]: #parameters-437
-[1363]: #failed
-[1364]: #composablesusespeech
-[1365]: #speechrequest
-[1366]: #properties-22
-[1367]: #status
-[1368]: #deferred
-[1369]: #resolve
-[1370]: #reject
-[1371]: #promise
-[1372]: #speak
-[1373]: #parameters-438
-[1374]: #usespeech
-[1375]: #applytheme
-[1376]: #parameters-439
-[1377]: #-29
-[1378]: #usetoast
-[1379]: #showtoast
-[1380]: #parameters-440
-[1381]: #success
-[1382]: #parameters-441
-[1383]: #warning
-[1384]: #parameters-442
-[1385]: #info
-[1386]: #parameters-443
-[1387]: #action
-[1388]: #parameters-444
-[1389]: #composablesusetoolapprovals
-[1390]: #decision
-[1391]: #pendingapproval
-[1392]: #properties-23
-[1393]: #askapproval
-[1394]: #parameters-445
-[1395]: #answerapproval
-[1396]: #parameters-446
-[1397]: #denywaiting
-[1398]: #parameters-447
-[1399]: #usetoolapprovals
-[1400]: #parameters-448
-[1401]: #composablesusetopmostescape
-[1402]: #mask_selector
-[1403]: #istopmostmask
-[1404]: #parameters-449
-[1405]: #usetopmostescape
-[1406]: #parameters-450
-[1407]: #onkeydown-1
-[1408]: #parameters-451
-[1409]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[1410]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[1411]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[1412]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[1413]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[1414]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[1415]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[1416]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[1417]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[1418]: https://developer.mozilla.org/docs/Web/API/Document
-[1419]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[1420]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
-[1421]: https://developer.mozilla.org/docs/Web/HTML/Element
-[1422]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
-[1423]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
-[1424]: https://developer.mozilla.org/docs/Web/API/Element
-[1425]: https://developer.mozilla.org/docs/Web/API/KeyboardEvent
-[1426]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/WeakMap
+[1355]: #rearrange
+[1356]: #parameters-435
+[1357]: #useturnholder
+[1358]: #parameters-436
+[1359]: #holdturnwhile
+[1360]: #parameters-437
+[1361]: #set-1
+[1362]: #parameters-438
+[1363]: #useturnstate
+[1364]: #parameters-439
+[1365]: #has
+[1366]: #composablesuseopenroutersignin
+[1367]: #openrouter_callback_path
+[1368]: #provider_id
+[1369]: #wait_ms
+[1370]: #sleep
+[1371]: #parameters-440
+[1372]: #finish
+[1373]: #parameters-441
+[1374]: #composablesuseplaintext
+[1375]: #useplaintext
+[1376]: #parameters-442
+[1377]: #toggleplain
+[1378]: #parameters-443
+[1379]: #plaintextitem
+[1380]: #parameters-444
+[1381]: #utilslinediff
+[1382]: #linechange
+[1383]: #properties-18
+[1384]: #max_matched
+[1385]: #changedlines
+[1386]: #parameters-445
+[1387]: #changes
+[1388]: #changes-1
+[1389]: #composablesuseprofilenotice
+[1390]: #seenkey
+[1391]: #parameters-446
+[1392]: #noticefor
+[1393]: #parameters-447
+[1394]: #dismiss
+[1395]: #composablesuseprofiles
+[1396]: #profileentry
+[1397]: #properties-19
+[1398]: #storedentry
+[1399]: #parameters-448
+[1400]: #builtinentry
+[1401]: #parameters-449
+[1402]: #nsfw_counterparts
+[1403]: #inplaceof
+[1404]: #parameters-450
+[1405]: #profiles
+[1406]: #getprofile
+[1407]: #parameters-451
+[1408]: #ready
+[1409]: #ready-1
+[1410]: #ready-2
+[1411]: #saveprofile
+[1412]: #parameters-452
+[1413]: #duplicateprofile
+[1414]: #parameters-453
+[1415]: #updateprofile
+[1416]: #parameters-454
+[1417]: #-28
+[1418]: #composablesuseprojects
+[1419]: #examples-5
+[1420]: #useprojects
+[1421]: #useprojects-1
+[1422]: #projects
+[1423]: #workoutedited
+[1424]: #parameters-455
+[1425]: #nameof
+[1426]: #parameters-456
+[1427]: #editedof
+[1428]: #parameters-457
+[1429]: #create
+[1430]: #parameters-458
+[1431]: #importfile
+[1432]: #parameters-459
+[1433]: #workingout
+[1434]: #composablesuseprompts
+[1435]: #toentry
+[1436]: #parameters-460
+[1437]: #toentry-1
+[1438]: #parameters-461
+[1439]: #promptentry
+[1440]: #properties-20
+[1441]: #useprompts
+[1442]: #getprompt
+[1443]: #parameters-462
+[1444]: #saveprompt
+[1445]: #parameters-463
+[1446]: #duplicateprompt
+[1447]: #parameters-464
+[1448]: #updateprompt
+[1449]: #parameters-465
+[1450]: #deleteprompt
+[1451]: #parameters-466
+[1452]: #composablesuseprovidersetup
+[1453]: #examples-6
+[1454]: #useprovidersetup
+[1455]: #isprovidersetupdialogenabled
+[1456]: #hideprovidersetupdialog
+[1457]: #handleproviderconnect
+[1458]: #parameters-467
+[1459]: #handledontshowagain
+[1460]: #usereactivetime
+[1461]: #parameters-468
+[1462]: #formatrelativetime
+[1463]: #parameters-469
+[1464]: #composablesuserepositoryimport
+[1465]: #userepositoryimport
+[1466]: #parameters-470
+[1467]: #userepositoryimport-1
+[1468]: #parameters-471
+[1469]: #userepositoryimport-2
+[1470]: #parameters-472
+[1471]: #userepositoryimport-3
+[1472]: #parameters-473
+[1473]: #userepositoryimport-4
+[1474]: #parameters-474
+[1475]: #repositoryimported
+[1476]: #properties-21
+[1477]: #importoptions
+[1478]: #properties-22
+[1479]: #-29
+[1480]: #-30
+[1481]: #importfolder
+[1482]: #parameters-475
+[1483]: #source
+[1484]: #source-1
+[1485]: #importgithub
+[1486]: #parameters-476
+[1487]: #refresh
+[1488]: #parameters-477
+[1489]: #fromgithub
+[1490]: #parameters-478
+[1491]: #describerepositoryimport
+[1492]: #parameters-479
+[1493]: #-31
+[1494]: #-32
+[1495]: #usescreensize
+[1496]: #searchoptions
+[1497]: #properties-23
+[1498]: #searchresult
+[1499]: #properties-24
+[1500]: #usesearch
+[1501]: #parameters-480
+[1502]: #striphtml
+[1503]: #parameters-481
+[1504]: #composablesusesettingspanel
+[1505]: #settingssection
+[1506]: #requestedsection
+[1507]: #usesettingspanel
+[1508]: #takesection
+[1509]: #composablesuseskills
+[1510]: #renamedin
+[1511]: #parameters-482
+[1512]: #renamedin-1
+[1513]: #parameters-483
+[1514]: #renamedin-2
+[1515]: #parameters-484
+[1516]: #importrow
+[1517]: #properties-25
+[1518]: #useskills
+[1519]: #nameproblem
+[1520]: #parameters-485
+[1521]: #carryrename
+[1522]: #parameters-486
+[1523]: #-33
+[1524]: #saveskill
+[1525]: #parameters-487
+[1526]: #planimport
+[1527]: #parameters-488
+[1528]: #seen
+[1529]: #importskills
+[1530]: #parameters-489
+[1531]: #failed
+[1532]: #composablesusespeech
+[1533]: #speechrequest
+[1534]: #properties-26
+[1535]: #status
+[1536]: #deferred
+[1537]: #resolve
+[1538]: #reject
+[1539]: #promise
+[1540]: #speak
+[1541]: #parameters-490
+[1542]: #usespeech
+[1543]: #applytheme
+[1544]: #parameters-491
+[1545]: #-34
+[1546]: #usetoast
+[1547]: #showtoast
+[1548]: #parameters-492
+[1549]: #success
+[1550]: #parameters-493
+[1551]: #warning
+[1552]: #parameters-494
+[1553]: #info
+[1554]: #parameters-495
+[1555]: #action
+[1556]: #parameters-496
+[1557]: #composablesusetoolapprovals
+[1558]: #decision
+[1559]: #pendingapproval
+[1560]: #properties-27
+[1561]: #askapproval
+[1562]: #parameters-497
+[1563]: #answerapproval
+[1564]: #parameters-498
+[1565]: #denywaiting
+[1566]: #parameters-499
+[1567]: #usetoolapprovals
+[1568]: #parameters-500
+[1569]: #composablesusetopmostescape
+[1570]: #mask_selector
+[1571]: #istopmostmask
+[1572]: #parameters-501
+[1573]: #usetopmostescape
+[1574]: #parameters-502
+[1575]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[1576]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[1577]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[1578]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[1579]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[1580]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[1581]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[1582]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[1583]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[1584]: https://developer.mozilla.org/docs/Web/API/Document
+[1585]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[1586]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
+[1587]: https://developer.mozilla.org/docs/Web/HTML/Element
+[1588]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
+[1589]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[1590]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
+[1591]: https://developer.mozilla.org/docs/Web/API/Element
+[1592]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp
+[1593]: https://developer.mozilla.org/docs/Web/HTML/Element/Input
+[1594]: https://developer.mozilla.org/docs/Web/HTML
+[1595]: https://developer.mozilla.org/docs/Web/API/MutationObserver
+[1596]: https://developer.mozilla.org/docs/Web/API/KeyboardEvent
+[1597]: https://developer.mozilla.org/docs/Web/API/EventTarget
+[1598]: https://developer.mozilla.org/docs/Web/API/TouchEvent
+[1599]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/WeakMap

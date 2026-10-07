@@ -23,7 +23,7 @@
         />
         <template v-else-if="noProject">
           <Settings v-if="mobileTab === 'settings'" />
-          <ProjectList v-else class="bg-surface-100 dark:bg-surface-800" />
+          <NoProjectView v-else />
         </template>
       </div>
     </div>
@@ -85,7 +85,6 @@ import MobileTopBar from './layout/MobileTopBar.vue'
 import MobileView from './layout/MobileView.vue'
 import DesktopView from './layout/DesktopView.vue'
 import NoProjectView from './layout/NoProjectView.vue'
-import ProjectList from './projects/ProjectList.vue'
 import Settings from './settings/Settings.vue'
 import SettingsDialog from './settings/SettingsDialog.vue'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
@@ -131,10 +130,10 @@ const activeMobileTab = ref('write')
 
 /**
  * The phone shows one thing at a time, and with no project open only the
- * project list and the settings are things.
+ * settings and the writing view, which says so, are things.
  */
 const mobileTab = computed(() =>
-  currentStoryId.value || activeMobileTab.value === 'settings' ? activeMobileTab.value : 'projects'
+  currentStoryId.value || activeMobileTab.value === 'settings' ? activeMobileTab.value : 'write'
 )
 
 /**
@@ -250,7 +249,7 @@ const openRouteProject = async () => {
 /**
  * Nothing in the URL names a project: the app was opened at its root, or the
  * project that was open is gone. Go to the project worked on most recently,
- * and with none, stay here with the project list.
+ * and with none, stay here and say so.
  */
 const openMostRecentProject = async () => {
   currentStoryId.value = ''

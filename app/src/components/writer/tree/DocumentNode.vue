@@ -4,7 +4,7 @@
          the tab order — the document open, or the root — and the arrows move
          between the rest. See handleKeydown. -->
     <div
-      class="group flex items-center gap-1 py-1 pr-1 rounded cursor-pointer select-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500"
+      class="group flex items-center gap-1 py-1 pr-1 rounded cursor-pointer select-none [-webkit-touch-callout:none] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500"
       :class="[
         !isDragging && 'hover:bg-surface-200 dark:hover:bg-surface-700',
         isActive && 'bg-surface-200 dark:bg-surface-600',
@@ -20,6 +20,10 @@
       @dblclick="handleDoubleClick"
       @keydown="handleKeydown"
       @contextmenu="contextMenu.show($event)"
+      @touchstart.passive="press.touchstart"
+      @touchmove.passive="press.touchmove"
+      @touchend="press.touchend"
+      @touchcancel="press.touchend"
     >
       <!-- Twisty. Text documents get an equivalent gap so titles line up. -->
       <button
@@ -40,11 +44,13 @@
         :class="
           converting
             ? 'pi pi-spin pi-spinner'
-            : isFolder
-              ? expanded
-                ? 'pi pi-folder-open'
-                : 'pi pi-folder'
-              : leafIcon
+            : isRepositoryFolder
+              ? repositoryIcon
+              : isFolder
+                ? expanded
+                  ? 'pi pi-folder-open'
+                  : 'pi pi-folder'
+                : leafIcon
         "
         style="font-size: 0.75rem"
         :title="converting ? 'Converting to Markdown' : undefined"
@@ -117,7 +123,7 @@
 
       <!-- On a phone only. Everywhere else the menu is on right-click and on
            the menu key, and a button for it on every row was a row of them. A
-           phone has no right-click, and its long press is the drag. -->
+           phone has a long press for it too, but nothing on the row says so. -->
       <template v-if="isMobile">
         <Button
           icon="pi pi-ellipsis-h"
@@ -128,7 +134,7 @@
           size="small"
           @click.stop="menu.toggle($event)"
         />
-        <Menu ref="menu" :model="menuItems" :popup="true" />
+        <TieredMenu ref="menu" :model="menuItems" :popup="true" />
       </template>
       <ContextMenu ref="contextMenu" :model="menuItems" />
     </div>
@@ -169,6 +175,9 @@
           @open="emit('open', $event)"
           @import="emit('import', $event)"
           @import-folder="emit('import-folder', $event)"
+          @import-drive="emit('import-drive', $event)"
+          @import-repository="emit('import-repository', $event)"
+          @refresh-repository="emit('refresh-repository', $event)"
           @chat-with="emit('chat-with', $event)"
           @reimport="emit('reimport', $event)"
           @convert="emit('convert', $event)"
@@ -180,12 +189,13 @@
 </template>
 
 <script setup>
+/* global Blob */
 import { computed, nextTick, onMounted, ref } from 'vue'
 import Draggable from 'vuedraggable'
 import Button from 'primevue/button'
 import ContextMenu from 'primevue/contextmenu'
 import InputText from 'primevue/inputtext'
-import Menu from 'primevue/menu'
+import TieredMenu from 'primevue/tieredmenu'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import DocumentSummary from './DocumentSummary.vue'
@@ -198,11 +208,14 @@ import { isCard } from '@/cards/chat.js'
 import { chatVisibility, markOf, unpinned, withMark } from '@/utils/visibility.js'
 import { useDocuments } from '@/composables/useDocuments'
 import { useScreenSize } from '@/composables/useScreenSize'
+import { useLongPress } from '@/composables/useLongPress.js'
 import { useFilesStore } from '@/stores/filesStore'
 import { downloadBlob, filenameFor } from '@/files/download.js'
-import { EPUB_MIME, hasText } from '@/files/inspect.js'
+import { EPUB_MIME, hasText, isText } from '@/files/inspect.js'
+import { inRepository, isRepository, repositoryOf } from '@/source/tree.js'
 import { reextractFile } from '@/files/write.js'
 import { sessionStorage } from '@/utils/sessionStorage'
+import { driveAvailable } from '@/drive/config.js'
 
 defineOptions({ name: 'DocumentNode' })
 
@@ -224,6 +237,9 @@ const emit = defineEmits([
   'open',
   'import',
   'import-folder',
+  'import-drive',
+  'import-repository',
+  'refresh-repository',
   'chat-with',
   'reimport',
   'convert',
@@ -268,6 +284,23 @@ const showMenuAtRow = row => {
     preventDefault() {},
   })
 }
+
+/**
+ * A finger held on the row opens its menu where the finger is, as a
+ * right-click does under a mouse. Held and then moved, it is dragging the row,
+ * and the menu goes again. See useLongPress.
+ */
+const press = useLongPress(
+  ({ x, y }) =>
+    contextMenu.value?.show({
+      pageX: x + window.scrollX,
+      pageY: y + window.scrollY,
+      stopPropagation() {},
+      preventDefault() {},
+    }),
+  () => contextMenu.value?.hide()
+)
+
 const renameInput = ref(null)
 const isRenaming = ref(false)
 const draftTitle = ref('')
@@ -283,6 +316,16 @@ const isFolder = computed(() => api.isFolder(node.value))
 const isFile = computed(() => node.value?.type === 'file')
 const isCardFolder = computed(() => isCard(node.value))
 
+/**
+ * A repository, or something in one. What is in a repository is read from
+ * where it came from and settled against it again on a refresh, by path, so
+ * nothing is made, moved or renamed in it here; the repository folder itself
+ * can be renamed, and anything can be deleted, which a refresh puts back.
+ */
+const repository = computed(() => repositoryOf(api.get, node.value))
+const isRepositoryFolder = computed(() => isRepository(node.value))
+const isInRepository = computed(() => inRepository(api.get, node.value))
+
 /** What a document that is not a folder is drawn as: a page, or the kind of file it is. */
 const leafIcon = computed(() => {
   const mime = node.value?.mime || ''
@@ -290,19 +333,32 @@ const leafIcon = computed(() => {
   if (mime === 'application/pdf') return 'pi pi-file-pdf'
   if (mime.startsWith('image/')) return 'pi pi-image'
   if (mime === EPUB_MIME) return 'pi pi-book'
+  if (isInRepository.value) return 'pi pi-code'
   return 'pi pi-file'
 })
+
+/** A repository is drawn as where it came from. */
+const repositoryIcon = computed(() =>
+  node.value?.source?.from === 'github' ? 'pi pi-github' : 'pi pi-box'
+)
 
 /** Hand the writer the file back, named as it came in. */
 const download = async () => {
   const document = node.value
   if (!document) return
-  const blob = await useFilesStore().getFile(document.id)
+  // A repository's file keeps no bytes; its text is the file.
+  const blob =
+    (await useFilesStore().getFile(document.id)) ||
+    (isText(document.mime || '')
+      ? new Blob([document.content || ''], { type: document.mime })
+      : null)
   if (blob) downloadBlob(blob, filenameFor(document))
 }
 
 /** Whether reading this file's bytes again could change its text. */
-const extractable = computed(() => isFile.value && hasText(node.value?.mime || ''))
+const extractable = computed(
+  () => isFile.value && !isInRepository.value && hasText(node.value?.mime || '')
+)
 
 /** Read the file's text out of its bytes again, in place of what is there. */
 const reextract = async () => {
@@ -533,7 +589,9 @@ const childList = computed({
 
 const expandedKey = computed(() => `ui.tree.${props.documentId}.expanded`)
 // Folders start open: a collapsed tree on first load hides the whole story.
-const expanded = ref(sessionStorage.get(expandedKey.value, true))
+// Not in a repository, whose thousands of files would all be drawn at once;
+// there a folder opens when it is asked to.
+const expanded = ref(sessionStorage.get(expandedKey.value, !isInRepository.value))
 
 const summaryKey = computed(() => `ui.tree.${props.documentId}.summary`)
 const showSummary = ref(sessionStorage.get(summaryKey.value, false))
@@ -726,7 +784,7 @@ const menuItems = computed(() => {
   /** @type {any[]} */
   const items = []
 
-  if (isFolder.value) {
+  if (isFolder.value && !repository.value) {
     items.push(
       { label: 'New document', icon: 'pi pi-file', command: () => createChild('text') },
       { label: 'New folder', icon: 'pi pi-folder', command: () => createChild('folder') },
@@ -751,7 +809,7 @@ const menuItems = computed(() => {
     // A model puts the structure back into text that lost it — headings,
     // tables, paragraphs — which is a file's text, read out of it. A
     // document written here, or a conversion's own copy, has its structure.
-    if (isFile.value && (node.value?.content || '').trim()) {
+    if (isFile.value && !isInRepository.value && (node.value?.content || '').trim()) {
       items.push({
         label: 'Convert to Markdown…',
         icon: 'pi pi-sparkles',
@@ -760,8 +818,10 @@ const menuItems = computed(() => {
     }
   }
 
+  if (!isInRepository.value) {
+    items.push({ label: 'Rename', icon: 'pi pi-pencil', command: () => startRename() })
+  }
   items.push(
-    { label: 'Rename', icon: 'pi pi-pencil', command: () => startRename() },
     // The address the tools take, for naming the document to the assistant.
     { label: 'Copy path', icon: 'pi pi-copy', command: () => copyPath(props.documentId) }
   )
@@ -796,20 +856,48 @@ const menuItems = computed(() => {
   // A folder is where anything imported goes: files chosen together, or a
   // folder whole with the folders inside it. The tree owns the file choosers
   // and what they open; this only says where. Files can also be dropped on
-  // the row from the desktop.
-  if (isFolder.value) {
-    items.push(
-      {
-        label: 'Import files…',
-        icon: 'pi pi-download',
-        command: () => emit('import', props.documentId),
-      },
-      {
-        label: 'Import folder…',
-        icon: 'pi pi-folder-open',
-        command: () => emit('import-folder', props.documentId),
-      }
-    )
+  // the row from the desktop. The ways in share one submenu.
+  if (isFolder.value && !repository.value) {
+    items.push({
+      label: 'Import',
+      icon: 'pi pi-download',
+      items: [
+        {
+          label: 'Files…',
+          icon: 'pi pi-file',
+          command: () => emit('import', props.documentId),
+        },
+        {
+          label: 'Folder…',
+          icon: 'pi pi-folder-open',
+          command: () => emit('import-folder', props.documentId),
+        },
+        // Picked in Google's picker; only where the build has a Google project
+        // and the page can sign in to it.
+        ...(driveAvailable()
+          ? [
+              {
+                label: 'Google Drive…',
+                icon: 'pi pi-google',
+                command: () => emit('import-drive', props.documentId),
+              },
+            ]
+          : []),
+        // A codebase, to write about: from GitHub or a folder, read-only.
+        {
+          label: 'Repository…',
+          icon: 'pi pi-code',
+          command: () => emit('import-repository', props.documentId),
+        },
+      ],
+    })
+  }
+  if (isRepositoryFolder.value) {
+    items.push({
+      label: 'Refresh repository…',
+      icon: 'pi pi-refresh',
+      command: () => emit('refresh-repository', props.documentId),
+    })
   }
 
   // The open chat's own marks, so there is nothing to offer without one. A

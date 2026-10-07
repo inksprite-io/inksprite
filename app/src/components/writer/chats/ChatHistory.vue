@@ -1,36 +1,17 @@
 <template>
-  <div class="w-full h-full flex flex-col p-2 px-2">
-    <div class="flex items-center justify-between px-2">
-      <!-- Header -->
-      <h3 class="text-xl font-semibold text-surface-700 dark:text-surface-200">Chats</h3>
-      <div class="flex items-center">
-        <!-- Import a chat exported from here or elsewhere -->
-        <Button
-          v-tooltip.bottom="'Import a chat'"
-          type="button"
-          icon="pi pi-upload"
-          severity="secondary"
-          size="small"
-          rounded
-          class="!bg-transparent !border-transparent hover:!bg-surface-700"
-          :loading="isImporting"
-          @click="fileInput?.click()"
-        />
-        <!-- New chat, on whatever the project starts chats on. Its header
-             is where to put it on something else. -->
-        <Button
-          v-tooltip.bottom="'New chat'"
-          type="button"
-          icon="pi pi-plus"
-          severity="secondary"
-          size="small"
-          rounded
-          class="!bg-transparent !border-transparent hover:!bg-surface-700"
-          aria-label="New chat"
-          @click="handleNewChat"
-        />
-      </div>
-    </div>
+  <div class="w-full h-full flex flex-col">
+    <PanelHeader title="Chats">
+      <!-- Import a chat exported from here or elsewhere -->
+      <HeaderButton
+        icon="pi pi-upload"
+        label="Import a chat"
+        :loading="isImporting"
+        @click="fileInput?.click()"
+      />
+      <!-- New chat, on whatever the project starts chats on. Its header
+           is where to put it on something else. -->
+      <HeaderButton icon="pi pi-plus" label="New chat" @click="handleNewChat" />
+    </PanelHeader>
     <input
       ref="fileInput"
       type="file"
@@ -39,7 +20,7 @@
       @change="handleImportFile"
     />
     <!-- Search Bar -->
-    <div class="w-full py-2">
+    <div class="w-full p-2">
       <IconField icon-position="left" class="w-full">
         <InputIcon
           class="pi pi-search text-surface-300 dark:text-surface-600"
@@ -56,7 +37,7 @@
       </IconField>
     </div>
     <!-- Chat History -->
-    <ScrollPanel class="flex-1 overflow-auto">
+    <ScrollPanel class="flex-1 overflow-auto px-2">
       <!-- Search Results Info -->
       <div
         v-if="isSearching && chatsApi.chats.value.length > 0"
@@ -109,7 +90,6 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import Button from 'primevue/button'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
@@ -121,6 +101,8 @@ import { useChats } from '@/composables/useChats'
 import { useSearch, stripHtml } from '@/composables/useSearch'
 import { useToast } from '@/composables/useToast'
 import ChatHistoryCard from './ChatHistoryCard.vue'
+import HeaderButton from '../layout/HeaderButton.vue'
+import PanelHeader from '../layout/PanelHeader.vue'
 
 /**
  * @typedef {Object} Props

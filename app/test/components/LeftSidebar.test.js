@@ -14,10 +14,6 @@ const ChatHistory = {
   template:
     '<div data-list :data-selected="selectedChatId" @click="$emit(\'select-chat\', \'chat_9\')" />',
 }
-const ProjectList = {
-  props: ['storyId'],
-  template: '<div data-projects :data-story="storyId" />',
-}
 const NarrationPanel = {
   props: ['storyId', 'documentId'],
   template: '<div data-narration :data-document="documentId" />',
@@ -28,7 +24,7 @@ const mountSidebar = props =>
     props: { storyId: 'story_1', documentId: 'doc_1', tab: 'outline', ...props },
     global: {
       plugins: [PrimeVue],
-      stubs: { DocumentTree, ChatHistory, ProjectList, NarrationPanel },
+      stubs: { DocumentTree, ChatHistory, NarrationPanel },
     },
   })
 
@@ -41,9 +37,6 @@ describe('LeftSidebar', () => {
     const chats = mountSidebar({ tab: 'chats', chatId: 'chat_3' })
     expect(chats.find('[data-tree]').exists()).toBe(false)
     expect(chats.find('[data-list]').attributes('data-selected')).toBe('chat_3')
-
-    const projects = mountSidebar({ tab: 'projects' })
-    expect(projects.find('[data-projects]').attributes('data-story')).toBe('story_1')
 
     const narration = mountSidebar({ tab: 'narration', documentId: 'doc_7' })
     expect(narration.find('[data-narration]').attributes('data-document')).toBe('doc_7')

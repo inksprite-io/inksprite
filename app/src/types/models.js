@@ -25,7 +25,7 @@
  * @property {boolean} sidebar - Whether the left sidebar is showing
  * @property {boolean} editor - Whether the editor is showing
  * @property {boolean} chat - Whether the chat is showing. Never false while `editor` is.
- * @property {'outline'|'chats'|'narration'|'jobs'|'projects'} sidebarTab - Which list the sidebar is on
+ * @property {'outline'|'chats'|'narration'} sidebarTab - Which list the sidebar is on
  */
 
 /**
@@ -149,6 +149,13 @@
  *   the importer and the exporter and nothing else — the titles belong to the
  *   writer, so a renamed document is still found by this. Absent on an ordinary
  *   document, which is most of them.
+ * @property {RepositorySource} [source] - Repository folders only (`kind:
+ *   'repository'`): where the code under it was read from, which a refresh
+ *   reads again. See `source/`.
+ * @property {number} [edited] - Roots only: when something in the project last
+ *   changed, a document in it or a message in one of its chats, to the minute.
+ *   What the project picker shows. Absent on a root written before it was kept,
+ *   until the picker works it out.
  * @property {boolean} [hidden] - Kept from the model. A hidden document is left out
  *   of the project the AI is shown and out of reach of its tools, and so is
  *   everything under a hidden folder. Absent counts as shown.
@@ -171,6 +178,22 @@
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
  * @property {number} updated - Last update timestamp
+ */
+
+/**
+ * Where a repository's code came from: a GitHub repository at a ref, or a
+ * folder the writer chose. See `.llm/source_code_design.md`.
+ *
+ * @typedef {Object} RepositorySource
+ * @property {'github'|'folder'} from
+ * @property {string} name - `owner/repo` for GitHub, the folder's name otherwise
+ * @property {string} [ref] - The branch, tag or commit asked for; absent for
+ *   the default branch
+ * @property {string} [commit] - The commit it was read at, as GitHub's archive
+ *   names it
+ * @property {string} [subpath] - The folder of the repository imported, when
+ *   not all of it
+ * @property {number} imported - When it was last read
  */
 
 /**

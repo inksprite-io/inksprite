@@ -1,0 +1,32 @@
+{
+  "fixture": "codebase",
+  "messages": [
+    {
+      "text": "I'm writing a design doc about how the app reads long documents. Where is the size of a single read set, and how big is it?",
+      "calls": ["search_documents"],
+      "finds": ["inksprite/ai/tools/slices.js"],
+      "mentions": ["40,000|40000|40 000|40k"],
+      "noWrites": true
+    },
+    {
+      "text": "What does the repository importer always leave out of a codebase, whatever its .gitignore says? Cite the file and line.",
+      "finds": ["inksprite/source/rules.js"],
+      "mentions": [
+        "node_modules",
+        "\\.env|secret",
+        "rules\\.js(:\\d+|[\\s\\S]{0,80}\\blines? \\d+)"
+      ],
+      "noWrites": true
+    },
+    {
+      "text": "When a repository is refreshed, how does a chat that already read one of its files find out the file changed?",
+      "findsAny": ["inksprite/source/write.js", "inksprite/ai/context/reads.js"],
+      "mentions": ["\\bid\\b|ids", "changed|edited"],
+      "noWrites": true
+    },
+    {
+      "text": "Write a short design note at Design/Reading code: how the model lists, reads and searches a repository's files today (line numbers, line ranges, search hits), citing path:line for each claim.",
+      "document": { "path": "Design/Reading code", "contains": ["line"] }
+    }
+  ]
+}

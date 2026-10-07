@@ -31,9 +31,9 @@
  *
  * Some turns stay whatever: the newest two, which are what was just sent and
  * the reply to it, where the writer is looking and where the chat takes them;
- * whatever the chat names in `keep`, such as a summary being written; and a
- * turn with an editor open in it, so that going to look something up does not
- * throw away what was being typed. Until the page has said which turns are
+ * whatever the chat names in `keep`, such as a summary being written or the
+ * turn a find is on; and a turn with an editor open in it, so that going to
+ * look something up does not throw away what was being typed. Until the page has said which turns are
  * near, the newest few are mounted, so that a chat opens onto its end drawn.
  *
  * A turn let go loses what its components held, so what the writer opened in
@@ -105,9 +105,9 @@ const STATE = Symbol('turn state')
  *   for once the chat is mounted. Its first child holds the turns, and is
  *   shifted by its top margin while the panel is being scrolled by touch
  * @param {import('vue').Ref<TurnLike[]>} turns - The chat's turns, in order
- * @param {() => string|null} [keep] - A turn to keep mounted besides the rest
+ * @param {() => (string|null)[]} [keep] - Turns to keep mounted besides the rest
  */
-export function useNearTurns(scroller, turns, keep = () => null) {
+export function useNearTurns(scroller, turns, keep = () => []) {
   const watching =
     typeof IntersectionObserver !== 'undefined' && typeof ResizeObserver !== 'undefined'
 
@@ -160,7 +160,11 @@ export function useNearTurns(scroller, turns, keep = () => null) {
    * @param {string} id
    */
   const isMounted = id =>
-    !watching || near.value.has(id) || newest.value.has(id) || held.value.has(id) || keep() === id
+    !watching ||
+    near.value.has(id) ||
+    newest.value.has(id) ||
+    held.value.has(id) ||
+    keep().includes(id)
 
   /** How many characters fit across a turn's text. */
   const perLine = () => Math.max(20, Math.floor((width.value || UNKNOWN_WIDTH) / CHARACTER_WIDTH))

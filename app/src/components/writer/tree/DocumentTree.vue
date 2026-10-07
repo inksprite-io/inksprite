@@ -7,13 +7,12 @@
     @dragleave="onDragLeave"
     @drop="onDrop"
   >
+    <PanelHeader title="Outline">
+      <ProjectMenu :story-id="storyId" />
+    </PanelHeader>
+
     <ScrollPanel class="flex-1 min-h-0 overflow-auto overflow-x-hidden">
-      <div
-        class="p-2 pt-4 pb-[10rem]"
-        role="tree"
-        aria-label="Documents"
-        @contextmenu="openRootMenu"
-      >
+      <div class="p-2 pb-[10rem]" role="tree" aria-label="Documents" @contextmenu="openRootMenu">
         <DocumentNode
           v-if="root"
           ref="rootNode"
@@ -27,6 +26,9 @@
           @open="openDocument"
           @import="chooseCard"
           @import-folder="chooseFolder"
+          @import-drive="openDriveDialog"
+          @import-repository="openRepositoryDialog($event, null)"
+          @refresh-repository="openRepositoryDialog(null, $event)"
           @chat-with="startCardChat"
           @reimport="reimportCard"
           @convert="convertDocument"
@@ -61,6 +63,13 @@
     />
 
     <ProjectDialog v-model:visible="showProjectDialog" :story-id="storyId" />
+    <RepositoryDialog
+      v-model:visible="showRepositoryDialog"
+      :story-id="storyId"
+      :parent-id="repositoryParentId"
+      :refresh-id="repositoryRefreshId"
+    />
+    <DriveImportDialog v-if="driveOffered" ref="driveDialog" :story-id="storyId" />
     <CardImportDialog v-model:visible="showCardDialog" :found="found" @confirm="importCard" />
     <GreetingDialog
       v-model:visible="showGreetingDialog"
@@ -80,15 +89,22 @@ import DocumentNode from './DocumentNode.vue'
 import ProjectDialog from './ProjectDialog.vue'
 import CardImportDialog from './CardImportDialog.vue'
 import GreetingDialog from './GreetingDialog.vue'
+import RepositoryDialog from './RepositoryDialog.vue'
+import DriveImportDialog from './DriveImportDialog.vue'
+import PanelHeader from '../layout/PanelHeader.vue'
+import ProjectMenu from '../projects/ProjectMenu.vue'
 import { useBackup } from '@/composables/useBackup'
 import { useCardChat } from '@/composables/useCardChat'
 import { useBulkImport, describeImport } from '@/composables/useBulkImport'
 import { useCardImport, NotACardError } from '@/composables/useCardImport'
 import { useDocuments } from '@/composables/useDocuments'
+import { useProjects } from '@/composables/useProjects'
 import { useJobs } from '@/composables/useJobs.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
 import { requestsFor } from '@/jobs/index.js'
 import { carriesFiles, gatherDropped, gatherFiles } from '@/files/batch.js'
+import { repositoryOf } from '@/source/tree.js'
+import { driveAvailable } from '@/drive/config.js'
 import { useStoriesStore } from '@/stores/storiesStore'
 
 const props = defineProps({
@@ -104,6 +120,7 @@ const router = useRouter()
 const toast = useToast()
 const confirm = useConfirm()
 const storiesStore = useStoriesStore()
+const projects = useProjects()
 const api = useDocuments(props.storyId)
 
 /** @type {import('vue').Ref<any>} */
@@ -135,6 +152,34 @@ const cardChats = useCardChat(props.storyId)
 const cardInput = ref(null)
 /** @type {import('vue').Ref<any>} */
 const folderInput = ref(null)
+
+const showRepositoryDialog = ref(false)
+/** Where a new repository goes. @type {import('vue').Ref<string|null>} */
+const repositoryParentId = ref(null)
+/** The repository being refreshed, when that is what the dialog is for. @type {import('vue').Ref<string|null>} */
+const repositoryRefreshId = ref(null)
+
+/**
+ * @param {string|null} parentId - The folder to import a repository into
+ * @param {string|null} refreshId - Or the repository to refresh
+ */
+const openRepositoryDialog = (parentId, refreshId) => {
+  repositoryParentId.value = parentId
+  repositoryRefreshId.value = refreshId
+  showRepositoryDialog.value = true
+}
+/** Whether this build can import from Drive here; the dialog is not made otherwise. */
+const driveOffered = driveAvailable()
+/** @type {import('vue').Ref<any>} */
+const driveDialog = ref(null)
+
+/**
+ * Called within the menu's click, which is what lets the dialog open
+ * Google's sign-in straight away.
+ *
+ * @param {string} folderId
+ */
+const openDriveDialog = folderId => driveDialog.value?.open(folderId)
 const showCardDialog = ref(false)
 /** @type {import('vue').Ref<import('@/composables/useCardImport.js').Found|null>} */
 const found = ref(null)
@@ -279,6 +324,9 @@ const targetOf = event => {
   const id = row?.getAttribute('data-document-id') || root.value?.id
   let document = id ? api.get(id) : null
   if (document && !api.isFolder(document)) document = api.get(document.parentId)
+  // Nothing is imported into a repository; a drop on one lands beside it.
+  const repository = repositoryOf(api.get, document)
+  if (repository) document = api.get(repository.parentId) || root.value
   return document ? { id: document.id, title: api.displayTitle(document) } : null
 }
 
@@ -437,7 +485,7 @@ const confirmDeleteProject = () => {
     acceptProps: { label: 'Delete', severity: 'danger' },
     accept: async () => {
       try {
-        await storiesStore.deleteStory(props.storyId)
+        await projects.remove(props.storyId)
         toast.add({
           severity: 'success',
           summary: 'Success',

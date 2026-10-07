@@ -28,21 +28,24 @@ describe('normalizeLayout', () => {
     expect(layout.chat).toBe(false)
   })
 
-  it('keeps any of the four lists, and falls back to the outline otherwise', () => {
+  it('keeps any of the three lists, and falls back to the outline otherwise', () => {
     expect(normalizeLayout({ sidebarTab: 'chats' }).sidebarTab).toBe(SIDEBAR_TABS.CHATS)
     expect(normalizeLayout({ sidebarTab: 'narration' }).sidebarTab).toBe(SIDEBAR_TABS.NARRATION)
-    expect(normalizeLayout({ sidebarTab: 'projects' }).sidebarTab).toBe(SIDEBAR_TABS.PROJECTS)
     expect(normalizeLayout({ sidebarTab: 'lore' }).sidebarTab).toBe(SIDEBAR_TABS.OUTLINE)
+  })
+
+  it('brings a project left on the old project list back on the outline', () => {
+    expect(normalizeLayout({ sidebarTab: 'projects' }).sidebarTab).toBe(SIDEBAR_TABS.OUTLINE)
   })
 })
 
 describe('selectSidebarTab', () => {
   it('shows the sidebar on the list picked', () => {
     const hidden = { ...DEFAULT_LAYOUT, sidebar: false }
-    expect(selectSidebarTab(hidden, SIDEBAR_TABS.PROJECTS)).toEqual({
+    expect(selectSidebarTab(hidden, SIDEBAR_TABS.NARRATION)).toEqual({
       ...DEFAULT_LAYOUT,
       sidebar: true,
-      sidebarTab: SIDEBAR_TABS.PROJECTS,
+      sidebarTab: SIDEBAR_TABS.NARRATION,
     })
   })
 
@@ -80,9 +83,9 @@ describe('togglePanel', () => {
   })
 
   it('leaves the sidebar on any other list', () => {
-    const onProjects = { ...DEFAULT_LAYOUT, sidebarTab: SIDEBAR_TABS.PROJECTS }
-    expect(togglePanel(onProjects, PANELS.EDITOR).sidebarTab).toBe(SIDEBAR_TABS.PROJECTS)
-    expect(togglePanel(onProjects, PANELS.CHAT).sidebarTab).toBe(SIDEBAR_TABS.PROJECTS)
+    const onNarration = { ...DEFAULT_LAYOUT, sidebarTab: SIDEBAR_TABS.NARRATION }
+    expect(togglePanel(onNarration, PANELS.EDITOR).sidebarTab).toBe(SIDEBAR_TABS.NARRATION)
+    expect(togglePanel(onNarration, PANELS.CHAT).sidebarTab).toBe(SIDEBAR_TABS.NARRATION)
 
     const onChats = { ...DEFAULT_LAYOUT, sidebarTab: SIDEBAR_TABS.CHATS }
     expect(togglePanel(onChats, PANELS.EDITOR).sidebarTab).toBe(SIDEBAR_TABS.CHATS)
@@ -118,9 +121,8 @@ describe('togglePanel', () => {
 })
 
 describe('with no project open', () => {
-  it('shows the project list and nothing to chat in', () => {
-    expect(NO_PROJECT_LAYOUT.sidebarTab).toBe(SIDEBAR_TABS.PROJECTS)
-    expect(NO_PROJECT_LAYOUT.sidebar).toBe(true)
+  it('shows no list and nothing to chat in', () => {
+    expect(NO_PROJECT_LAYOUT.sidebar).toBe(false)
     expect(NO_PROJECT_LAYOUT.chat).toBe(false)
   })
 })

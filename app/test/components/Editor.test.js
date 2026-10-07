@@ -1,6 +1,8 @@
+/* global KeyboardEvent */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
 import { mount, flushPromises } from '@vue/test-utils'
+import PrimeVue from 'primevue/config'
 import Editor from '@/components/writer/editor/Editor.vue'
 import { useEditor, clearEditor } from '@/composables/useEditor.js'
 
@@ -155,5 +157,91 @@ describe('Editor', () => {
     ])
     // The assistant writing in a preview is not the writer keeping it.
     expect(mockApi.keep).not.toHaveBeenCalled()
+  })
+
+  describe('find and replace', () => {
+    /** The find key, as it is off a Mac, which is what the tests run as. */
+    const findKey = target =>
+      target.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true, cancelable: true })
+      )
+
+    const mountAttached = async () => {
+      const wrapper = mount(Editor, {
+        props: { storyId: 'story_1', documentId: 'doc_1' },
+        attachTo: document.body,
+        global: {
+          plugins: [PrimeVue],
+          stubs: { ScrollPanel: { template: '<div><slot /></div>' } },
+        },
+      })
+      await flushPromises()
+      return wrapper
+    }
+
+    it('opens on the find key in the document, and marks what it finds', async () => {
+      const wrapper = await mountAttached()
+      const page = wrapper.find('.ProseMirror').element
+      page.focus()
+
+      findKey(page)
+      await flushPromises()
+      expect(wrapper.find('[data-find-bar]').exists()).toBe(true)
+
+      await wrapper.find('[data-find-query]').setValue('snow')
+      expect(wrapper.find('[data-find-status]').text()).toBe('1 of 1')
+      expect(wrapper.find('.ProseMirror .find-match-current').text()).toBe('Snow')
+      wrapper.unmount()
+    })
+
+    it('puts the find and its marks away on Escape', async () => {
+      const wrapper = await mountAttached()
+      wrapper.vm.openFind()
+      await flushPromises()
+      await wrapper.find('[data-find-query]').setValue('snow')
+
+      await wrapper.find('[data-find-query]').trigger('keydown', { key: 'Escape' })
+
+      expect(wrapper.find('[data-find-bar]').exists()).toBe(false)
+      expect(wrapper.find('.ProseMirror .find-match').exists()).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('leaves the key to the browser outside the editor', async () => {
+      const wrapper = await mountAttached()
+      const elsewhere = document.createElement('input')
+      document.body.appendChild(elsewhere)
+      elsewhere.focus()
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'f',
+        ctrlKey: true,
+        bubbles: true,
+        cancelable: true,
+      })
+      elsewhere.dispatchEvent(event)
+      await flushPromises()
+
+      expect(event.defaultPrevented).toBe(false)
+      expect(wrapper.find('[data-find-bar]').exists()).toBe(false)
+      elsewhere.remove()
+      wrapper.unmount()
+    })
+
+    it('replaces, as an edit that keeps a previewed tab', async () => {
+      const wrapper = await mountAttached()
+      wrapper.vm.openFind()
+      await flushPromises()
+      await wrapper.find('[data-find-query]').setValue('snow')
+      await wrapper.find('[data-action="toggle-replace"]').trigger('click')
+      await wrapper.find('[data-find-replacement]').setValue('Rain')
+
+      await wrapper.find('[data-action="replace"]').trigger('click')
+
+      expect(wrapper.find('.ProseMirror p').text()).toBe('Rain fell.')
+      expect(wrapper.find('[data-find-status]').text()).toBe('No results')
+      expect(mockApi.keep).toHaveBeenCalledWith('doc_1')
+      wrapper.unmount()
+    })
   })
 })

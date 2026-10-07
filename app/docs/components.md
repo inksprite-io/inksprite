@@ -18,23 +18,22 @@
 - [][14]
 - [][15]
 - [][16]
-- [][17]
+- [DEFAULT_LAYOUT][17]
 - [DEFAULT_LAYOUT][18]
-- [DEFAULT_LAYOUT][19]
-- [NO_PROJECT_LAYOUT][20]
-- [CONTENT_PANELS][21]
-- [normalizeLayout][22]
-  - [Parameters][23]
-- [isSidebarTab][24]
-  - [Parameters][25]
-- [][26]
-- [selectSidebarTab][27]
-  - [Parameters][28]
-- [canHide][29]
-  - [Parameters][30]
-- [togglePanel][31]
-  - [Parameters][32]
-- [ROW_SIZES][33]
+- [NO_PROJECT_LAYOUT][19]
+- [CONTENT_PANELS][20]
+- [normalizeLayout][21]
+  - [Parameters][22]
+- [isSidebarTab][23]
+  - [Parameters][24]
+- [][25]
+- [selectSidebarTab][26]
+  - [Parameters][27]
+- [canHide][28]
+  - [Parameters][29]
+- [togglePanel][30]
+  - [Parameters][31]
+- [ROW_SIZES][32]
 
 ## components
 
@@ -53,14 +52,18 @@ Vue components for the inksprite application UI.
 
 - **writer/** - The whole application, once past the OAuth callback
   - `layout/` - The writer's frame. A 48px rail (`AppNavbar`) picks what the
-    sidebar shows (outline, chats, narration, projects), toggles the three panels that
+    sidebar shows (outline, chats, narration), toggles the three panels that
     `DesktopView` lays side by side (`LeftSidebar`, `EditorPanel`,
     `ChatPanel`), and opens the settings. Which are showing is the story's
     `layout`, with the rules in `layout.js`: the editor and the chat are never
     both hidden, and hiding one moves the sidebar off its list. With no
-    project open, `NoProjectView` shows the list and an invitation. Phones
-    get `MobileTopBar` and `MobileView` instead, one view at a time.
-  - `projects/` - The project list, its cards, and the new-project dialog
+    project open, `NoProjectView` invites the writer to start one. Phones
+    get `MobileTopBar` and `MobileView` instead, one view at a time. The
+    sidebar's lists head themselves with `PanelHeader`, the height of the
+    editor's tab strip and the chat's header, and the small icon buttons in
+    all of them are `HeaderButton`.
+  - `projects/` - `ProjectMenu`, at the top of the outline, for switching
+    projects and starting or importing one, and the new-project dialog
   - `editor/` - The editor over a structured document, the field over a
     plain one, the strip of tabs above them, and the empty editor for a
     project with no documents or no tabs
@@ -105,8 +108,8 @@ All components follow Vue 3 Composition API patterns:
 
 The writer's panel arrangement: which of the sidebar, the editor
 and the chat are showing, and which list the sidebar is on — the outline,
-the chats, the narration of the open document, or the projects. It is kept on
-the story rather than app-wide, so each project reopens the way it was left:
+the chats, or the narration of the open document. It is kept on the story
+rather than app-wide, so each project reopens the way it was left:
 an adventure chat-only, a novel with the editor beside its chat.
 
 The rail picks the sidebar's list, and picking the list showing hides the
@@ -145,10 +148,6 @@ Type: `"chats"`
 
 Type: `"narration"`
 
-##
-
-Type: `"projects"`
-
 ## DEFAULT_LAYOUT
 
 ## DEFAULT_LAYOUT
@@ -157,8 +156,9 @@ Type: StoryLayout
 
 ## NO_PROJECT_LAYOUT
 
-The arrangement with no project open: the project list, and room to say so.
-Nothing here is the writer's to change until a project is.
+The arrangement with no project open: no sidebar, since every list in it is
+a project's, and room to say so. Nothing here is the writer's to change
+until a project is.
 
 Type: StoryLayout
 
@@ -174,7 +174,7 @@ so nothing that was saved can open onto an empty screen.
 
 ### Parameters
 
-- `stored` **(Partial\<StoryLayout> | null | [undefined][34])**&#x20;
+- `stored` **(Partial\<StoryLayout> | null | [undefined][33])**&#x20;
 
 Returns **StoryLayout**&#x20;
 
@@ -212,7 +212,7 @@ both hidden: the last one showing stays.
 - `layout` **StoryLayout**&#x20;
 - `panel` **[Panel][13]**&#x20;
 
-Returns **[boolean][35]**&#x20;
+Returns **[boolean][34]**&#x20;
 
 ## togglePanel
 
@@ -255,22 +255,21 @@ only the first time.
 [14]: #-3
 [15]: #-4
 [16]: #-5
-[17]: #-6
-[18]: #default_layout
-[19]: #default_layout-1
-[20]: #no_project_layout
-[21]: #content_panels
-[22]: #normalizelayout
-[23]: #parameters
-[24]: #issidebartab
-[25]: #parameters-1
-[26]: #-7
-[27]: #selectsidebartab
-[28]: #parameters-2
-[29]: #canhide
-[30]: #parameters-3
-[31]: #togglepanel
-[32]: #parameters-4
-[33]: #row_sizes
-[34]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[35]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[17]: #default_layout
+[18]: #default_layout-1
+[19]: #no_project_layout
+[20]: #content_panels
+[21]: #normalizelayout
+[22]: #parameters
+[23]: #issidebartab
+[24]: #parameters-1
+[25]: #-6
+[26]: #selectsidebartab
+[27]: #parameters-2
+[28]: #canhide
+[29]: #parameters-3
+[30]: #togglepanel
+[31]: #parameters-4
+[32]: #row_sizes
+[33]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[34]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean

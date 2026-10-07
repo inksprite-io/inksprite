@@ -4,6 +4,9 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
+  // Not the app's own .env files: a test sees the same environment on every
+  // machine, whatever a developer has put in .env.local. Nothing is kept here.
+  envDir: './test',
   test: {
     globals: true,
     environment: 'happy-dom',

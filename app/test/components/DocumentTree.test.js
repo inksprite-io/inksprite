@@ -22,18 +22,33 @@ vi.mock('../../src/stores/db', () => ({
 vi.mock('../../src/stores/syncStore', () => ({
   useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
 }))
-vi.mock('vue-router', () => ({ useRouter: () => ({ push: vi.fn() }) }))
 
-const { mockStory } = await vi.hoisted(async () => {
+const { mockStory, deleteStory, push } = await vi.hoisted(async () => {
   const { reactive } = await import('vue')
-  return { mockStory: reactive({ id: 'story_1', title: 'My Novel' }) }
+  return {
+    mockStory: reactive({ id: 'story_1', title: 'My Novel' }),
+    deleteStory: vi.fn(async () => undefined),
+    push: vi.fn(),
+  }
 })
+vi.mock('vue-router', () => ({ useRouter: () => ({ push }) }))
 vi.mock('../../src/stores/storiesStore', () => ({
   useStoriesStore: () => ({
     getStory: id => (id === 'story_1' ? mockStory : null),
     updateStory: vi.fn((_id, updates) => Object.assign(mockStory, updates)),
-    deleteStory: vi.fn(),
+    deleteStory,
   }),
+}))
+
+const dropJobsForStory = vi.fn(async () => undefined)
+vi.mock('../../src/jobs/index.js', async importOriginal => ({
+  ...(await importOriginal()),
+  dropJobsForStory: storyId => dropJobsForStory(storyId),
+}))
+
+// Every deletion is confirmed.
+vi.mock('primevue/useconfirm', () => ({
+  useConfirm: () => ({ require: options => options.accept() }),
 }))
 vi.mock('../../src/composables/useScreenSize', () => ({
   useScreenSize: () => ({ isMobile: { value: false } }),
@@ -60,12 +75,18 @@ vi.mock('primevue/usetoast', () => ({ useToast: () => ({ add: toastAdd }) }))
 const downloadProject = vi.fn()
 vi.mock('../../src/composables/useBackup', () => ({ useBackup: () => ({ downloadProject }) }))
 
+const ProjectMenu = {
+  props: ['storyId'],
+  template: '<div data-project-menu :data-story="storyId" />',
+}
+
 const mountTree = () =>
   mount(DocumentTree, {
     props: { storyId: 'story_1' },
     global: {
       plugins: [PrimeVue, ConfirmationService, ToastService],
       directives: { tooltip: Tooltip },
+      stubs: { ProjectMenu },
     },
   })
 
@@ -209,6 +230,26 @@ describe('DocumentTree project menu', () => {
       .props('extraMenuItems')
       .map(item => item.label)
     expect(labels).toEqual(['Project settings', 'Export project', 'Delete project'])
+  })
+
+  it('has the projects menu at the top, for the project open, under the Outline title', () => {
+    const wrapper = mountTree()
+    const header = wrapper.findComponent({ name: 'PanelHeader' })
+    expect(header.props('title')).toBe('Outline')
+    expect(header.find('h2').text()).toBe('Outline')
+    expect(header.find('[data-project-menu]').attributes('data-story')).toBe('story_1')
+  })
+
+  it('deletes the project with its jobs, and leaves it', async () => {
+    const wrapper = mountTree()
+    await flushPromises()
+
+    await projectCommand(wrapper, 'Delete project')
+    await flushPromises()
+
+    expect(dropJobsForStory).toHaveBeenCalledWith('story_1')
+    expect(deleteStory).toHaveBeenCalledWith('story_1')
+    expect(push).toHaveBeenCalledWith('/')
   })
 
   it('exports the project, and says where it went', async () => {

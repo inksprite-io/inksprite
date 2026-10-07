@@ -12,8 +12,17 @@
       @close="api.closeTab"
       @keep="api.keep"
     >
-      <template v-if="chatShowing !== null" #end>
+      <template v-if="chatShowing !== null || laidOut" #end>
+        <!-- The way to the find where there is no key for it, as on a phone. -->
+        <HeaderButton
+          v-if="laidOut"
+          icon="pi pi-search"
+          label="Find and replace"
+          data-action="find"
+          @click="editorView?.openFind()"
+        />
         <PanelToggle
+          v-if="chatShowing !== null"
           panel="chat"
           side="right"
           :showing="chatShowing"
@@ -33,18 +42,25 @@
         :document-id="activeId"
         class="h-full w-full"
       />
-      <Editor v-else :story-id="storyId" :document-id="activeId" class="h-full w-full" />
+      <Editor
+        v-else
+        ref="editorView"
+        :story-id="storyId"
+        :document-id="activeId"
+        class="h-full w-full"
+      />
     </div>
     <EmptyEditor v-else :story-id="storyId" class="flex-1 min-h-0" />
   </main>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import Editor from '../editor/Editor.vue'
 import EditorTabs from '../editor/EditorTabs.vue'
 import EmptyEditor from '../editor/EmptyEditor.vue'
 import FileView from '../editor/FileView.vue'
+import HeaderButton from './HeaderButton.vue'
 import PanelToggle from './PanelToggle.vue'
 import RawMarkdown from '../editor/RawMarkdown.vue'
 import { useCopyPath } from '@/composables/useCopyPath.js'
@@ -104,6 +120,11 @@ const activeId = computed(() => api.tabs.value.active)
 /** A file showing as the file. Its text is a plain document like any other. */
 const file = computed(() => api.get(activeId.value)?.type === 'file' && !showsText(activeId.value))
 const plain = computed(() => api.isPlain(activeId.value))
+/** A document laid out in the editor, which has a find of its own. */
+const laidOut = computed(() => !!activeId.value && !file.value && !plain.value)
+
+/** @type {import('vue').Ref<{ openFind: () => boolean }|null>} */
+const editorView = ref(null)
 
 // Titles come from the tree, so a rename or a move shows in the strip at
 // once. Each is named by as much of its path as tells it apart.

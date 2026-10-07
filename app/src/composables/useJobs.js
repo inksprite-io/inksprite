@@ -78,7 +78,7 @@ export function useJobs() {
     runningJobs.value.find(job => job.documentId === documentId) || null
 
   /**
-   * The name of the project a job is for, as the project list shows it.
+   * The name of the project a job is for, as the projects menu shows it.
    * @param {Job} job
    */
   const projectOf = job => documents.getRoot(job.storyId)?.title || 'Untitled'

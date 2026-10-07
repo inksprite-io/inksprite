@@ -30,6 +30,14 @@
       ></article>
     </div>
 
+    <!-- Text: source code, data, anything that reads as it is. -->
+    <CodeView
+      v-else-if="kind === 'code'"
+      :content="document?.content || ''"
+      :filename="document?.title || ''"
+      class="flex-1 min-h-0"
+    />
+
     <!-- Anything the panel cannot show, and a file whose bytes are gone. -->
     <div v-else-if="kind === 'none'" class="flex-1 min-h-0 flex items-center justify-center">
       <div class="flex flex-col items-center gap-4 text-center px-4" data-file-none>
@@ -54,19 +62,24 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onBeforeUnmount, ref, watch } from 'vue'
 import Button from 'primevue/button'
 import PdfView from './PdfView.vue'
+
+// CodeMirror and its languages load with the first file of text opened.
+const CodeView = defineAsyncComponent(() => import('./CodeView.vue'))
 import { useDocuments } from '@/composables/useDocuments'
 import { useFilesStore } from '@/stores/filesStore'
 import { downloadBlob, filenameFor } from '@/files/download.js'
 import { extractEpub } from '@/files/epub.js'
-import { EPUB_MIME, isImage, sizeLabel } from '@/files/inspect.js'
+import { EPUB_MIME, isImage, isText, sizeLabel } from '@/files/inspect.js'
 import { renderMarkdown } from '@/utils/markdown.js'
 
 /**
  * A file document, shown as the file: the picture, the PDF's pages
- * (`PdfView`), an epub's chapters read out of it again, or a line saying
+ * (`PdfView`), an epub's chapters read out of it again, a file of text as
+ * code (`CodeView`) — a repository's files, which keep no bytes since their
+ * text is the file, and a JSON or CSV imported on its own — or a line saying
  * there is no preview of this kind and the way to download it instead. Its text is a different view, `RawMarkdown` on its
  * `content`, reached from the tab's menu; this shows the bytes.
  *
@@ -106,10 +119,13 @@ const unreadable = ref('')
 /** Which view this file gets: nothing until the bytes are known. */
 const kind = computed(() => {
   if (!loaded.value) return 'loading'
-  if (!blob.value) return 'none'
+  // A repository's file keeps no bytes: its text is the file.
+  if (!blob.value) return isText(mime.value) ? 'code' : 'none'
   if (isImage(mime.value)) return 'image'
   if (mime.value === 'application/pdf') return 'pdf'
   if (book.value) return 'epub'
+  // A web page's text is what was read out of it, not its markup.
+  if (isText(mime.value) && mime.value !== 'text/html') return 'code'
   return 'none'
 })
 

@@ -10,13 +10,21 @@
  * inherited from whatever a starter kit ships with this year.
  *
  * The specs are `prosemirror-schema-basic`'s and `prosemirror-schema-list`'s,
- * minus the image, plus strikethrough and a code block that keeps its
- * language. Their `parseDOM` rules are what the v13 migration read the old
- * HTML through, so `<b>`, `<i>`, and `<s>` are covered as well as the tags the
- * editor writes.
+ * minus the image, plus strikethrough, a code block that keeps its language,
+ * and GFM's table. Their `parseDOM` rules are what the v13 migration read the
+ * old HTML through, so `<b>`, `<i>`, and `<s>` are covered as well as the tags
+ * the editor writes.
+ *
+ * A table is what GFM can write: a grid of one-line cells, the first row its
+ * header, each column aligned or not. So a cell holds text and nothing else —
+ * no break, which would end the row — and the header is the first row because
+ * it is first: there is one kind of cell, and no way to put a header row
+ * anywhere markdown could not. The cells carry `colspan` and `rowspan` only
+ * because `prosemirror-tables` reads them; nothing sets them, and they are
+ * always 1.
  */
 
-import { Schema } from 'prosemirror-model'
+import { DOMParser, Schema } from 'prosemirror-model'
 import { nodes as basic, marks as basicMarks } from 'prosemirror-schema-basic'
 import { bulletList, orderedList, listItem } from 'prosemirror-schema-list'
 
@@ -69,6 +77,90 @@ const strikethrough = {
   },
 }
 
+/** What a column can be aligned to. */
+const ALIGNMENTS = ['left', 'center', 'right']
+
+/**
+ * A pasted cell's alignment, from its style or the attribute older pages use.
+ *
+ * @param {HTMLElement} dom
+ * @returns {string|null}
+ */
+function alignmentOf(dom) {
+  const align = dom.style.textAlign || dom.getAttribute('align') || ''
+  return ALIGNMENTS.includes(align) ? align : null
+}
+
+/**
+ * @param {HTMLElement} dom
+ * @returns {{align: string|null}}
+ */
+const cellAttrs = dom => ({ align: alignmentOf(dom) })
+
+/** Where one block, or one line, of a pasted cell ends. */
+const BREAKS = 'p, div, h1, h2, h3, h4, h5, h6, li, blockquote, pre, tr, br'
+
+/**
+ * A pasted cell's text, with its marks, as the one line a cell holds. A cell
+ * from a page can hold blocks — Google Docs puts a paragraph in every one —
+ * and read as they are, the blocks would close the cell, and the table, to
+ * find somewhere to go. Read inside a cell, there is nowhere else for their
+ * words to go, and a space after each keeps two blocks' words apart.
+ *
+ * @param {Node} dom
+ * @param {Schema} schema
+ * @returns {import('prosemirror-model').Fragment}
+ */
+function cellContent(dom, schema) {
+  const copy = /** @type {HTMLElement} */ (dom.cloneNode(true))
+  copy.querySelectorAll(BREAKS).forEach(block => block.after(' '))
+  return DOMParser.fromSchema(schema).parse(copy, { topNode: schema.nodes.table_cell.create() })
+    .content
+}
+
+/** @type {import('prosemirror-model').NodeSpec} */
+const table = {
+  content: 'table_row+',
+  group: 'block',
+  tableRole: 'table',
+  isolating: true,
+  parseDOM: [{ tag: 'table' }],
+  toDOM() {
+    // In a box of its own, which scrolls sideways when the table is wider
+    // than the page, as the page itself does not.
+    return ['div', { class: 'table-scroll' }, ['table', ['tbody', 0]]]
+  },
+}
+
+/** @type {import('prosemirror-model').NodeSpec} */
+const table_row = {
+  content: 'table_cell+',
+  tableRole: 'row',
+  parseDOM: [{ tag: 'tr' }],
+  toDOM() {
+    return ['tr', 0]
+  },
+}
+
+/** @type {import('prosemirror-model').NodeSpec} */
+const table_cell = {
+  content: 'text*',
+  attrs: {
+    align: { default: null },
+    colspan: { default: 1 },
+    rowspan: { default: 1 },
+  },
+  tableRole: 'cell',
+  isolating: true,
+  parseDOM: [
+    { tag: 'td', getAttrs: cellAttrs, getContent: cellContent },
+    { tag: 'th', getAttrs: cellAttrs, getContent: cellContent },
+  ],
+  toDOM(node) {
+    return ['td', node.attrs.align ? { style: `text-align: ${node.attrs.align}` } : {}, 0]
+  },
+}
+
 /**
  * Every node the schema has. The serializer has an entry for each of these
  * and the parser produces nothing else.
@@ -87,6 +179,9 @@ export const NODE_NAMES = Object.freeze([
   'code_block',
   'horizontal_rule',
   'hard_break',
+  'table',
+  'table_row',
+  'table_cell',
 ])
 
 /**
@@ -115,6 +210,9 @@ export const schema = new Schema({
     code_block,
     horizontal_rule: basic.horizontal_rule,
     hard_break: basic.hard_break,
+    table,
+    table_row,
+    table_cell,
   },
   marks: {
     link: basicMarks.link,

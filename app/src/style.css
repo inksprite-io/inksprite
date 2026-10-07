@@ -20,6 +20,39 @@
   }
 }
 
+/* A table in the editor. It scrolls sideways in a box of its own when it is
+   wider than the page, which does not. Its first row is the header, by
+   position, as markdown has it, so it is styled as the typography plugin
+   styles a header. Selected cells are tinted, as prosemirror-tables marks
+   them, and an empty cell is still wide enough to click into. */
+.ProseMirror .table-scroll {
+  overflow-x: auto;
+}
+
+.ProseMirror td {
+  position: relative;
+  vertical-align: top;
+  min-width: 4em;
+}
+
+.ProseMirror tr:first-child > td {
+  font-weight: 600;
+  color: var(--tw-prose-headings);
+  vertical-align: bottom;
+}
+
+.ProseMirror tbody > tr:first-child {
+  border-bottom-color: var(--tw-prose-th-borders);
+}
+
+.ProseMirror .selectedCell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--p-primary-color) 20%, transparent);
+  pointer-events: none;
+}
+
 /* PrimeVue's ScrollPanel makes the box that scrolls a scrollbar's width larger
    than the panel on both axes, and clips it, to push the native scrollbar out
    of sight. The same rule already hides the native scrollbar outright, so all
@@ -96,4 +129,25 @@
   100% {
     background-position: -200% 0;
   }
+}
+
+/* What a find matched: in the editor as decorations (see editor/search), in
+   the chat as highlights over the text as it is (see useChatFind). The one the
+   writer is on is stronger. Separate rules, because a browser without
+   highlights would throw out a rule that names one, and the editor's with it. */
+.find-match {
+  background-color: rgb(250 204 21 / 0.4);
+  border-radius: 0.15em;
+}
+
+.find-match-current {
+  background-color: rgb(249 115 22 / 0.6);
+}
+
+::highlight(find-match) {
+  background-color: rgb(250 204 21 / 0.4);
+}
+
+::highlight(find-match-current) {
+  background-color: rgb(249 115 22 / 0.6);
 }

@@ -1470,6 +1470,19 @@ export function commandWritesProse(command) {
 }
 
 /**
+ * What a piece of a turn reads as, in the chat: a text piece's words, or the
+ * prose a command answered with. A die or a table answers in a box of its own,
+ * not in prose, and reads as nothing here.
+ *
+ * @param {import('../types/models.js').MessageSegment} segment
+ * @returns {string}
+ */
+export function segmentProse(segment) {
+  if (segment.type === 'text') return segment.content
+  return commandWritesProse(segment.command) ? segment.command.result || '' : ''
+}
+
+/**
  * What the record of an answer that has not arrived yet looks like, on its way
  * into a turn: the question, and room for the rest.
  *

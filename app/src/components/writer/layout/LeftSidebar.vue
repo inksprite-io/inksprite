@@ -19,20 +19,19 @@
       :story-id="storyId"
       :document-id="documentId"
     />
-    <ProjectList v-else :story-id="storyId" />
   </div>
 </template>
 
 <script setup>
 import ChatHistory from '../chats/ChatHistory.vue'
 import NarrationPanel from '../narration/NarrationPanel.vue'
-import ProjectList from '../projects/ProjectList.vue'
 import DocumentTree from '../tree/DocumentTree.vue'
 import { SIDEBAR_TABS } from './layout.js'
 
 /**
- * Where the writer picks what to work on: the project's documents, its chats,
- * or another project — or hears the document open in the editor read aloud.
+ * Where the writer picks what to work on: the project's documents, with
+ * the other projects a menu away at the top, or its chats — or hears the
+ * document open in the editor read aloud.
  * Which is showing is chosen on the rail and kept in the story's layout, so
  * it is asked for here rather than held.
  *

@@ -79,6 +79,16 @@ harness) in place of her note, greetings hidden. Cards under `test-cards/`
 are other people's and not committed, so a fixture that names one only runs
 where the card is.
 
+A document entry can also name a folder of code (`"repository": "../../../src"`),
+which goes through the repository importer — its rules, `.gitignore` files and
+all — and lands as a read-only repository titled by the path's last segment.
+`codebase` is the app's own `src/` beside a design note, and
+`codebase-design` asks where things are and why, with answers that are in the
+code and checks that the model cites them by line. The code is read as it is
+when the run starts, so a check names what is unlikely to move.
+`npm run source -- <folder | GitHub URL>` shows what the importer would take
+from a codebase, without a project.
+
 A message can also be an object: `{ "text": "…", "mentions": ["150 ?ms"],
 "reads": ["Notes/Meeting 2026-09-09"] }`, carrying what the turn is expected
 to do. `tools.js` checks each expectation against the transcript and the

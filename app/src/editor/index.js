@@ -10,6 +10,10 @@
  *   for joining markdown to markdown
  * - **state** - `createEditorState`, the keys and typed shortcuts, and the
  *   `replaceContent` and `appendContent` transactions an outside writer asks for
+ * - **search** - Find and replace: the matches as a plugin's state, drawn as
+ *   decorations, and the commands that move between and replace them
+ * - **tables** - A table made by typing its header row, the keys that move
+ *   through one, column alignment, and pasting into a cell
  *
  * `Document.content` is markdown. While a document is open — in a tab, with
  * or without a view over it — its `EditorState` is the truth and the store's
@@ -29,3 +33,4 @@
 export { schema, NODE_NAMES, MARK_NAMES } from './schema.js'
 export { parseMarkdown, serializeMarkdown, settleMarkdown, appendBlocks } from './markdown.js'
 export { createEditorState, replaceContent, appendContent, isEmptyDocument } from './state.js'
+export { find, findNext, replaceCurrent, replaceAll, searchOf } from './search.js'

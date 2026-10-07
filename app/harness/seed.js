@@ -38,6 +38,9 @@ import { getSkill } from '@/ai/skills/index.js'
 import { cardFromPng } from '@/cards/png.js'
 import { readCard, shapeOf } from '@/cards/card.js'
 import { writeCard } from '@/cards/write.js'
+import { gatherSource } from '@/source/gather.js'
+import { writeRepository } from '@/source/write.js'
+import { entriesOnDisk } from './disk.js'
 
 /**
  * @typedef {Object} FixtureDocument
@@ -51,6 +54,9 @@ import { writeCard } from '@/cards/write.js'
  *   imported as the app imports one, into a folder titled by the path's last segment
  * @property {string} [userName] - Cards only: what `{{user}}` becomes; "You" otherwise,
  *   which is the app's default too
+ * @property {string} [repository] - A folder of code, relative to project.json;
+ *   imported as the app imports one from a folder, into a repository titled by
+ *   the path's last segment
  * @property {string[]} [hidden] - Cards only: kinds of the card's documents to hide from
  *   the model, the way a writer hides one in the tree — `greeting`, say, which is an
  *   opening for a chat rather than a note about the character
@@ -124,6 +130,20 @@ export async function seedProject(fixtureDir) {
       }
       byPath.set(entry.path, written.folderId)
       count += written.documents
+      continue
+    }
+    if (entry.repository) {
+      const gathered = await gatherSource(
+        await entriesOnDisk(resolve(fixtureDir, entry.repository))
+      )
+      const written = await writeRepository(story.id, {
+        parentId,
+        title,
+        source: { from: 'folder', name: title, imported: Date.now() },
+        files: gathered.files,
+      })
+      byPath.set(entry.path, written.folderId)
+      count += written.files
       continue
     }
     const content = entry.file

@@ -13,14 +13,18 @@
  * ### Feature Components
  * - **writer/** - The whole application, once past the OAuth callback
  *   - `layout/` - The writer's frame. A 48px rail (`AppNavbar`) picks what the
- *     sidebar shows (outline, chats, narration, projects), toggles the three panels that
+ *     sidebar shows (outline, chats, narration), toggles the three panels that
  *     `DesktopView` lays side by side (`LeftSidebar`, `EditorPanel`,
  *     `ChatPanel`), and opens the settings. Which are showing is the story's
  *     `layout`, with the rules in `layout.js`: the editor and the chat are never
  *     both hidden, and hiding one moves the sidebar off its list. With no
- *     project open, `NoProjectView` shows the list and an invitation. Phones
- *     get `MobileTopBar` and `MobileView` instead, one view at a time.
- *   - `projects/` - The project list, its cards, and the new-project dialog
+ *     project open, `NoProjectView` invites the writer to start one. Phones
+ *     get `MobileTopBar` and `MobileView` instead, one view at a time. The
+ *     sidebar's lists head themselves with `PanelHeader`, the height of the
+ *     editor's tab strip and the chat's header, and the small icon buttons in
+ *     all of them are `HeaderButton`.
+ *   - `projects/` - `ProjectMenu`, at the top of the outline, for switching
+ *     projects and starting or importing one, and the new-project dialog
  *   - `editor/` - The editor over a structured document, the field over a
  *     plain one, the strip of tabs above them, and the empty editor for a
  *     project with no documents or no tabs

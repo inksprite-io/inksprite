@@ -5,11 +5,13 @@
  * ## Routes
  *
  * - `/` - The writer, opening the project worked on most recently; with no
- *   projects yet, the project list and an invitation to start one
+ *   projects yet, an invitation to start one
  * - `/project/:storyId` - The writer, on one project. It opens on the document
  *   the writer left, which the story remembers
  * - `/connect/openrouter` - OAuth callback for OpenRouter authentication
  * - `/connect/mcp` - OAuth callback for signing in to an MCP server
+ * - `/connect/google` - Where Google's sign-in, with its picker, sends the
+ *   Drive import's popup back to
  * - anything else redirects to `/`
  *
  * ## Navigation Patterns
@@ -32,6 +34,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import WriterView from '../components/writer/WriterView.vue'
 import OpenRouterCallback from '../components/oauth/OpenRouterCallback.vue'
 import McpCallback from '../components/oauth/McpCallback.vue'
+import GoogleCallback from '../components/oauth/GoogleCallback.vue'
 
 /** @type {import('vue-router').RouteRecordRaw[]} */
 const routes = [
@@ -54,6 +57,11 @@ const routes = [
     path: '/connect/mcp',
     name: 'mcp-callback',
     component: McpCallback,
+  },
+  {
+    path: '/connect/google',
+    name: 'google-callback',
+    component: GoogleCallback,
   },
   // Anything else — a document URL from before projects were the address, a
   // typo — names nothing, and the root finds the writer something to open.

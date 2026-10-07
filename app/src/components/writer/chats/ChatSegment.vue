@@ -195,7 +195,7 @@
         aria-hidden="true"
         data-actions-room
       />
-      <div v-html="bodyHtml" />
+      <div data-find-text v-html="bodyHtml" />
     </div>
   </div>
 </template>
@@ -215,6 +215,7 @@ import {
   commandIsPrompt,
   commandDetail,
   formatSegment,
+  segmentProse,
 } from '@/ai/commands.js'
 import { formatThinkingTime } from '@/utils/formatters'
 
@@ -278,10 +279,7 @@ const detail = computed(() => (command.value ? commandDetail(command.value) : ''
 const prose = computed(() => Boolean(command.value && commandWritesProse(command.value)))
 
 /** The prose of it, which a character and an interpretation have. */
-const body = computed(() => {
-  if (props.segment.type === 'text') return props.segment.content
-  return prose.value ? command.value.result : ''
-})
+const body = computed(() => segmentProse(props.segment))
 
 const bodyHtml = computed(() => renderMarkdown(body.value))
 

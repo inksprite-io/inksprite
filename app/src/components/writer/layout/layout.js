@@ -2,8 +2,8 @@
  * @module components/writer/layout/layout
  * @description The writer's panel arrangement: which of the sidebar, the editor
  * and the chat are showing, and which list the sidebar is on — the outline,
- * the chats, the narration of the open document, or the projects. It is kept on
- * the story rather than app-wide, so each project reopens the way it was left:
+ * the chats, or the narration of the open document. It is kept on the story
+ * rather than app-wide, so each project reopens the way it was left:
  * an adventure chat-only, a novel with the editor beside its chat.
  *
  * The rail picks the sidebar's list, and picking the list showing hides the
@@ -26,7 +26,6 @@ export const SIDEBAR_TABS = Object.freeze({
   OUTLINE: /** @type {'outline'} */ ('outline'),
   CHATS: /** @type {'chats'} */ ('chats'),
   NARRATION: /** @type {'narration'} */ ('narration'),
-  PROJECTS: /** @type {'projects'} */ ('projects'),
 })
 
 /** @typedef {typeof SIDEBAR_TABS[keyof typeof SIDEBAR_TABS]} SidebarTab */
@@ -40,15 +39,16 @@ export const DEFAULT_LAYOUT = Object.freeze({
 })
 
 /**
- * The arrangement with no project open: the project list, and room to say so.
- * Nothing here is the writer's to change until a project is.
+ * The arrangement with no project open: no sidebar, since every list in it is
+ * a project's, and room to say so. Nothing here is the writer's to change
+ * until a project is.
  * @type {StoryLayout}
  */
 export const NO_PROJECT_LAYOUT = Object.freeze({
-  sidebar: true,
+  sidebar: false,
   editor: true,
   chat: false,
-  sidebarTab: SIDEBAR_TABS.PROJECTS,
+  sidebarTab: SIDEBAR_TABS.OUTLINE,
 })
 
 /** The panels whose content the writer is working in, as opposed to picking from. */

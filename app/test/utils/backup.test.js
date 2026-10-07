@@ -105,10 +105,10 @@ describe('validateBackup', () => {
     expect(errors.join(' ')).toContain('Restore it from the Data settings')
   })
 
-  it('sends a project file to the project list', () => {
+  it('sends a project file to the projects menu', () => {
     const { ok, errors } = validateBackup(validBackup({ scope: 'project' }), 2, 'chat')
     expect(ok).toBe(false)
-    expect(errors.join(' ')).toContain('Import it from the project list')
+    expect(errors.join(' ')).toContain('Import it from the Projects menu atop the outline')
   })
 
   it('takes a project file where a project is expected', () => {

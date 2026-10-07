@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useDocumentsStore } from '../../src/stores/documentsStore'
 
@@ -377,6 +377,72 @@ describe('DocumentsStore', () => {
       await expect(store.loadStory('story_1')).rejects.toThrow(
         'Failed to load documents: Database error'
       )
+    })
+  })
+
+  describe('markEdited', () => {
+    const MINUTE = 60_000
+    let now = 0
+    /** @type {import('vitest').MockInstance} */
+    let clock
+    const edited = () => store.getRoot('story_1').edited
+
+    beforeEach(() => {
+      now = 10 * MINUTE
+      clock = vi.spyOn(Date, 'now').mockImplementation(() => now)
+      store.ensureRoot('story_1', 'Novel')
+    })
+    afterEach(() => clock.mockRestore())
+
+    it('notes on the root when a document in the project is made, changed or deleted', () => {
+      const rootId = store.getRoot('story_1').id
+      expect(edited()).toBe(now)
+
+      now += MINUTE
+      text('doc_1', rootId)
+      expect(edited()).toBe(now)
+
+      now += MINUTE
+      store.updateDocument('doc_1', { content: 'More.' })
+      expect(edited()).toBe(now)
+
+      now += MINUTE
+      store.deleteDocument('doc_1')
+      expect(edited()).toBe(now)
+      expect(trackChange).toHaveBeenLastCalledWith('documents', rootId, store.getRoot('story_1'))
+    })
+
+    it('keeps it to the minute, so typing does not rewrite the root on every save', () => {
+      const rootId = store.getRoot('story_1').id
+      const first = edited()
+      text('doc_1', rootId)
+      trackChange.mockClear()
+
+      now += MINUTE / 2
+      store.updateDocument('doc_1', { content: 'A word.' })
+
+      expect(edited()).toBe(first)
+      expect(trackChange).toHaveBeenCalledTimes(1)
+      expect(trackChange).toHaveBeenCalledWith('documents', 'doc_1', expect.anything())
+    })
+
+    it('keeps the time when the root itself is renamed', () => {
+      const first = edited()
+      now += MINUTE / 2
+      store.updateDocument(store.getRoot('story_1').id, { title: 'Renamed' })
+      expect(edited()).toBe(first)
+    })
+
+    it('takes a time worked out after the fact, and nothing for a project not loaded', () => {
+      const root = store.getRoot('story_1')
+      const { edited: _, ...unmarked } = root
+      store.documents.set(root.id, unmarked)
+
+      store.markEdited('story_1', 3 * MINUTE)
+      expect(edited()).toBe(3 * MINUTE)
+
+      expect(() => store.markEdited('story_2')).not.toThrow()
+      expect(store.getRoot('story_2')).toBeNull()
     })
   })
 

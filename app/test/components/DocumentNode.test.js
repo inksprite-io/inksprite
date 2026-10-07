@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+/* global Event */
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
@@ -10,6 +11,7 @@ import { useDocuments, clearDocumentInstances } from '../../src/composables/useD
 import { useDocumentsStore } from '../../src/stores/documentsStore'
 import { useChatsStore } from '../../src/stores/chatsStore'
 import { clearChatsInstances, useChats } from '../../src/composables/useChats'
+import { LONG_PRESS_MS } from '../../src/composables/useLongPress.js'
 
 const reextractFile = vi.fn()
 vi.mock('../../src/files/write.js', () => ({ reextractFile: (...args) => reextractFile(...args) }))
@@ -620,7 +622,7 @@ describe('DocumentNode', () => {
       // The same actions as the right-click menu: one set, however asked for.
       expect(
         wrapper
-          .findComponent({ name: 'Menu' })
+          .findComponent({ name: 'TieredMenu' })
           .props('model')
           .map(i => i.label)
       ).toEqual(
@@ -629,6 +631,52 @@ describe('DocumentNode', () => {
           .props('model')
           .map(i => i.label)
       )
+    })
+  })
+
+  describe('held under a finger', () => {
+    const at = (x, y) => ({ touches: [{ clientX: x, clientY: y }] })
+
+    beforeEach(() => vi.useFakeTimers())
+    afterEach(() => vi.useRealTimers())
+
+    it('opens the actions where the finger is, and does not open the document', async () => {
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      const wrapper = mountNode(chapter.id)
+      const contextMenu = wrapper.findComponent({ name: 'ContextMenu' })
+
+      await row(wrapper, chapter.id).trigger('touchstart', at(40, 12))
+      vi.advanceTimersByTime(LONG_PRESS_MS)
+      expect(contextMenu.emitted('before-show')).toHaveLength(1)
+
+      const lifted = new Event('touchend', { cancelable: true })
+      row(wrapper, chapter.id).element.dispatchEvent(lifted)
+      // The click a lifted finger makes would open the document under the menu.
+      expect(lifted.defaultPrevented).toBe(true)
+    })
+
+    it('leaves a finger that moves first to scroll', async () => {
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      const wrapper = mountNode(chapter.id)
+      const contextMenu = wrapper.findComponent({ name: 'ContextMenu' })
+
+      await row(wrapper, chapter.id).trigger('touchstart', at(40, 12))
+      await row(wrapper, chapter.id).trigger('touchmove', at(40, 60))
+      vi.advanceTimersByTime(LONG_PRESS_MS)
+
+      expect(contextMenu.emitted('before-show')).toBeUndefined()
+    })
+
+    it('puts the actions away again when the finger goes on to drag the row', async () => {
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      const wrapper = mountNode(chapter.id)
+      const contextMenu = wrapper.findComponent({ name: 'ContextMenu' })
+
+      await row(wrapper, chapter.id).trigger('touchstart', at(40, 12))
+      vi.advanceTimersByTime(LONG_PRESS_MS)
+      await row(wrapper, chapter.id).trigger('touchmove', at(40, 60))
+
+      expect(contextMenu.emitted('before-hide')).toHaveLength(1)
     })
   })
 
@@ -861,26 +909,47 @@ describe('DocumentNode', () => {
   })
 
   describe('importing', () => {
-    it('offers files together and a folder whole, on a folder only', () => {
-      const act = api.createFolder('manuscript_story_1', 'First Act')
-      const wrapper = mountNode(act.id)
-      const items = wrapper.findComponent({ name: 'ContextMenu' }).props('model')
-      const labels = items.map(item => item.label)
-      expect(labels).toContain('Import files…')
-      expect(labels).toContain('Import folder…')
-
-      items.find(item => item.label === 'Import files…').command()
-      items.find(item => item.label === 'Import folder…').command()
-      expect(wrapper.emitted('import')).toEqual([[act.id]])
-      expect(wrapper.emitted('import-folder')).toEqual([[act.id]])
-
-      const doc = api.createTextDocument('notes_story_1', 'Loose')
-      const docLabels = mountNode(doc.id)
+    /** The Import submenu's items, or undefined when the menu has none. */
+    const importsOf = wrapper =>
+      wrapper
         .findComponent({ name: 'ContextMenu' })
         .props('model')
-        .map(item => item.label)
-      expect(docLabels).not.toContain('Import files…')
-      expect(docLabels).not.toContain('Import folder…')
+        .find(item => item.label === 'Import')?.items
+
+    it('offers every way in under one Import submenu, on a folder only', () => {
+      const act = api.createFolder('manuscript_story_1', 'First Act')
+      const wrapper = mountNode(act.id)
+      const imports = importsOf(wrapper)
+      expect(imports.map(item => item.label)).toEqual(['Files…', 'Folder…', 'Repository…'])
+
+      for (const item of imports) item.command()
+      expect(wrapper.emitted('import')).toEqual([[act.id]])
+      expect(wrapper.emitted('import-folder')).toEqual([[act.id]])
+      expect(wrapper.emitted('import-repository')).toEqual([[act.id]])
+
+      const doc = api.createTextDocument('notes_story_1', 'Loose')
+      expect(importsOf(mountNode(doc.id))).toBeUndefined()
+    })
+
+    it('offers Google Drive in it only when the build names a Google client', () => {
+      const act = api.createFolder('manuscript_story_1', 'First Act')
+      expect(importsOf(mountNode(act.id)).map(item => item.label)).not.toContain('Google Drive…')
+
+      vi.stubEnv('VITE_GOOGLE_CLIENT_ID', 'client-1')
+      try {
+        const wrapper = mountNode(act.id)
+        const imports = importsOf(wrapper)
+        expect(imports.map(item => item.label)).toEqual([
+          'Files…',
+          'Folder…',
+          'Google Drive…',
+          'Repository…',
+        ])
+        imports.find(item => item.label === 'Google Drive…').command()
+        expect(wrapper.emitted('import-drive')).toEqual([[act.id]])
+      } finally {
+        vi.unstubAllEnvs()
+      }
     })
   })
 
@@ -908,5 +977,94 @@ describe('DocumentNode', () => {
       await wrapper.vm.$nextTick()
       expect(wrapper.find('[data-node-icon]').classes()).not.toContain('pi-spinner')
     })
+  })
+})
+
+describe('DocumentNode, in a repository', () => {
+  /** @type {ReturnType<typeof useDocumentsStore>} */
+  let store
+  let repository
+  let folder
+  let source
+
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    clearDocumentInstances()
+    vi.clearAllMocks()
+    store = useDocumentsStore()
+    await useDocuments('story_1').init()
+    repository = store.createDocument({
+      storyId: 'story_1',
+      parentId: 'root_story_1',
+      type: 'folder',
+      kind: 'repository',
+      title: 'widgets',
+      source: { from: 'github', name: 'acme/widgets', imported: 1 },
+    })
+    folder = store.createDocument({
+      storyId: 'story_1',
+      parentId: repository.id,
+      type: 'folder',
+      title: 'src',
+    })
+    source = store.createDocument({
+      storyId: 'story_1',
+      parentId: folder.id,
+      type: 'file',
+      title: 'index.ts',
+      mime: 'text/x-typescript',
+      content: 'export {}\n',
+    })
+  })
+
+  const labelsOf = wrapper =>
+    wrapper
+      .findComponent({ name: 'ContextMenu' })
+      .props('model')
+      .map(item => item.label)
+      .filter(Boolean)
+
+  it('offers a refresh on the repository, and nothing that makes or imports inside it', () => {
+    const labels = labelsOf(mountNode(repository.id))
+    expect(labels).toContain('Refresh repository…')
+    expect(labels).toContain('Rename')
+    expect(labels).toContain('Delete')
+    for (const label of ['New document', 'New folder', 'Import']) {
+      expect(labels).not.toContain(label)
+    }
+  })
+
+  it('offers no rename inside it, which a refresh would undo', () => {
+    expect(labelsOf(mountNode(folder.id))).not.toContain('Rename')
+    expect(labelsOf(mountNode(folder.id))).not.toContain('New document')
+  })
+
+  it('offers a source file for download and copying its path, and not as text, a conversion or a fresh reading', () => {
+    const labels = labelsOf(mountNode(source.id))
+    expect(labels).toContain('Download')
+    expect(labels).toContain('Copy path')
+    for (const label of ['Show as text', 'Convert to Markdown…', 'Re-extract text', 'Rename']) {
+      expect(labels).not.toContain(label)
+    }
+  })
+
+  it('offers a repository import on an ordinary folder', () => {
+    const imports = mountNode('root_story_1', { canDelete: false })
+      .findComponent({ name: 'ContextMenu' })
+      .props('model')
+      .find(item => item.label === 'Import').items
+    expect(imports.map(item => item.label)).toContain('Repository…')
+  })
+
+  it('draws a repository by where it came from, and a source file as code', () => {
+    expect(mountNode(repository.id).find('[data-node-icon]').classes()).toContain('pi-github')
+    expect(mountNode(source.id).find('[data-node-icon]').classes()).toContain('pi-code')
+  })
+
+  it('lets nothing be dragged into a repository or out of one', () => {
+    const api = useDocuments('story_1')
+    expect(api.canDropInto(folder.id, 'manuscript_story_1')).toBe(false)
+    expect(api.canDropInto('root_story_1', source.id)).toBe(false)
+    expect(api.canDropInto('root_story_1', repository.id)).toBe(true)
   })
 })

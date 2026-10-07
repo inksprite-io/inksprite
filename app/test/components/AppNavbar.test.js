@@ -81,8 +81,7 @@ describe('AppNavbar', () => {
     const wrapper = mountRail(DEFAULT_LAYOUT)
     await tab(wrapper, 'chats').trigger('click')
     await tab(wrapper, 'narration').trigger('click')
-    await tab(wrapper, 'projects').trigger('click')
-    expect(wrapper.emitted('select-tab')).toEqual([['chats'], ['narration'], ['projects']])
+    expect(wrapper.emitted('select-tab')).toEqual([['chats'], ['narration']])
   })
 
   it('marks the list showing, and none while the sidebar is hidden', () => {
@@ -96,14 +95,19 @@ describe('AppNavbar', () => {
 
   it('has nothing for the panels: the editor and the chat hide each other', () => {
     const wrapper = mountRail(DEFAULT_LAYOUT)
-    expect(wrapper.findAll('button')).toHaveLength(6)
+    expect(wrapper.findAll('button')).toHaveLength(5)
     expect(wrapper.find('[data-panel]').exists()).toBe(false)
   })
 
-  it('offers only the projects and the settings with no project open', async () => {
+  it('has no projects list: they are switched from the outline', () => {
+    const wrapper = mountRail(DEFAULT_LAYOUT)
+    expect(tab(wrapper, 'projects').exists()).toBe(false)
+  })
+
+  it('offers only the jobs and the settings with no project open', async () => {
     const wrapper = mountRail(NO_PROJECT_LAYOUT, { hasStory: false })
 
-    expect(tab(wrapper, 'projects').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.find('[aria-pressed="true"]').exists()).toBe(false)
     expect(tab(wrapper, 'outline').attributes('aria-disabled')).toBe('true')
     expect(tab(wrapper, 'chats').attributes('aria-disabled')).toBe('true')
     expect(tab(wrapper, 'narration').attributes('aria-disabled')).toBe('true')

@@ -51,6 +51,9 @@ import { diffAppend, diffEdit } from '@/utils/edits.js'
 import { chatVisibility } from '@/utils/visibility.js'
 import { readInView, textHash } from '@/ai/context/reads.js'
 import { skillWithFile } from './useSkill.js'
+import { describeRepository, isRepository, isSourceFile, repositoryOf } from '@/source/tree.js'
+import { languageOf } from '@/source/language.js'
+import { lineCount } from '@/source/text.js'
 
 /**
  * The answer for a path nothing is at. When the path is one of the files of a
@@ -333,6 +336,7 @@ function resolveNewPath(api, storyId, path, sees) {
  * @property {string} type
  * @property {number} [words] - How long a document is; a folder has no length
  * @property {number} [pages] - A file's pages, for one that has pages
+ * @property {number} [lines] - A source file's lines, in place of words
  */
 
 /**
@@ -347,19 +351,22 @@ function resolveNewPath(api, storyId, path, sees) {
  * How long a document is, for a model deciding whether to read it whole.
  *
  * A folder has no length of its own. A file says its pages too, when it has
- * them, since a page is what a paged read will take.
+ * them, since a page is what a paged read will take. A source file says
+ * lines instead of words: code is read and cited by line.
  *
  * @param {Document} document
- * @returns {{words?: number, pages?: number}}
+ * @param {(id: string) => Document|undefined} [get] - For telling a source
+ *   file, which is one by being in a repository
+ * @returns {{words?: number, pages?: number, lines?: number}}
  */
-function sizeOf(document) {
+function sizeOf(document, get) {
   if (document.type === 'folder') return {}
+  if (get && isSourceFile(get, document)) return { lines: lineCount(document.content || '') }
   return {
     words: document.wordCount || 0,
     ...(typeof document.pages === 'number' ? { pages: document.pages } : {}),
   }
 }
-
 /**
  * Everything below `parentId` that the chat can see, depth first, each with how
  * many levels down it is. A folder the chat cannot see is still walked into: a
@@ -419,7 +426,7 @@ export async function pinnedDocuments(storyId, chat) {
       id: document.id,
       path: pathOf(api, document),
       type: document.type,
-      ...sizeOf(document),
+      ...sizeOf(document, api.get),
     }))
 }
 
@@ -462,7 +469,7 @@ export const listDocumentsDefinition = {
   function: {
     name: 'list_documents',
     description:
-      'List what the project holds, or what is under one folder: a line for each document and folder, by the full path every tool takes, with how long each document is and whether the user pinned it. A folder ends in "/". Everything under the folder is listed when it fits; in a large project, a folder further down says how many it holds instead, and listing it shows them.',
+      'List what the project holds, or what is under one folder: a line for each document and folder, by the full path every tool takes, with how long each document is and whether the user pinned it. A folder ends in "/". Everything under the folder is listed when it fits; in a large project, a folder further down says how many it holds instead, and listing it shows them. A repository (a codebase) is one line until its own path is listed; its files are code, measured in lines.',
     parameters: {
       type: 'object',
       properties: {
@@ -499,12 +506,14 @@ function listingLine(api, document, markFor, hidden) {
     if (hidden === null) return `${path}/`
     return `${path}/ — ${hidden === 0 ? 'empty' : `${counted(hidden)} inside, not listed`}`
   }
-  const facts = [
-    ...(document.type === 'file' ? ['file'] : []),
-    ...(typeof document.pages === 'number' ? [`${counted(document.pages)} pages`] : []),
-    `${counted(document.wordCount || 0)} words`,
-    ...(markFor(document) === 'pinned' ? ['pinned'] : []),
-  ]
+  const facts = isSourceFile(api.get, document)
+    ? ['code', `${counted(lineCount(document.content || ''))} lines`]
+    : [
+        ...(document.type === 'file' ? ['file'] : []),
+        ...(typeof document.pages === 'number' ? [`${counted(document.pages)} pages`] : []),
+        `${counted(document.wordCount || 0)} words`,
+      ]
+  if (markFor(document) === 'pinned') facts.push('pinned')
   return `${path} — ${facts.join(', ')}`
 }
 
@@ -533,7 +542,30 @@ export async function executeListDocuments(args, context) {
     return { error: `"${asked}" is a document, not a folder. read_document reads it.` }
   }
 
-  const entries = entriesBelow(api, folder.id, sees)
+  // A repository listed from above is one line however deep the listing
+  // goes: its files would otherwise fill the listing, and push the writer's
+  // own folders up to their first level. Listing the repository lists it.
+  /** @type {Map<string, number>} repository folder → how many files are in it */
+  const folded = new Map()
+  let entries = entriesBelow(api, folder.id, sees)
+  if (!repositoryOf(api.get, folder)) {
+    /** @type {{id: string, depth: number}|null} */
+    let inside = null
+    entries = entries.filter(entry => {
+      if (inside && entry.depth > inside.depth) {
+        if (entry.document.type !== 'folder') {
+          folded.set(inside.id, (folded.get(inside.id) || 0) + 1)
+        }
+        return false
+      }
+      inside = null
+      if (isRepository(entry.document)) {
+        inside = { id: entry.document.id, depth: entry.depth }
+        folded.set(entry.document.id, 0)
+      }
+      return true
+    })
+  }
   if (entries.length === 0) return `"${asked}" is empty.`
 
   // As deep as asked, or the deepest level whose entries fit; at least the
@@ -549,6 +581,10 @@ export async function executeListDocuments(args, context) {
   return entries
     .map((entry, at) => {
       if (entry.depth > depth) return null
+      const files = folded.get(entry.document.id)
+      if (files !== undefined) {
+        return `${pathOf(api, entry.document)}/ — ${describeRepository(entry.document, files)}, not listed`
+      }
       let hidden = null
       if (entry.document.type === 'folder' && entry.depth === depth) {
         hidden = 0
@@ -573,7 +609,7 @@ export const readDocumentDefinition = {
   function: {
     name: 'read_document',
     description:
-      'Read a document. What you read stays in the conversation: if the document changes afterwards, the project block lists it under `changed`, and reading it again gets the new text; reading something unchanged that is still above says so rather than sending it again. A document up to about 7,000 words comes whole; a longer one comes one slice at a time, with `next` for the offset to go on from and its top sections with their links. For a long document, look at its sections with describe_document first and read the ones you need with `section`, rather than paging through it.',
+      'Read a document. What you read stays in the conversation: if the document changes afterwards, the project block lists it under `changed`, and reading it again gets the new text; reading something unchanged that is still above says so rather than sending it again. A document up to about 7,000 words comes whole; a longer one comes one slice at a time, with `next` for the offset to go on from and its top sections with their links. For a long document, look at its sections with describe_document first and read the ones you need with `section`, rather than paging through it. A source file in a repository comes with its line numbers, and is read by line with `line` and `until`.',
     parameters: {
       type: 'object',
       properties: {
@@ -597,14 +633,89 @@ export const readDocumentDefinition = {
           description:
             'For a file with pages that has not been converted: the page to read from, counted from 1. Takes precedence over `from`.',
         },
+        line: {
+          type: 'integer',
+          description:
+            'For a source file: the first line to read, counted from 1, as a search hit or `next` gave it. Default 1.',
+        },
+        until: {
+          type: 'integer',
+          description:
+            'For a source file: the last line to read. Default: as far as one read goes, with `next` for the line to go on from.',
+        },
       },
       required: ['path'],
     },
   },
 }
 
+/** How long a line of code a read shows before it is cut. */
+const LINE_LIMIT = 2000
+
 /**
- * @param {{path: string, section?: string, from?: number, page?: number}} args
+ * A source file read by line: numbered, from `line` to `until` or as far as
+ * a read goes. No sections — a `#` that starts a line of Python or shell is
+ * a comment, not a heading — and no offsets: code is cited by line, and the
+ * numbers on each line are what make that possible without counting.
+ *
+ * @param {Document} document
+ * @param {Record<string, any>} base - What every read answers with
+ * @param {{line?: number, until?: number, from?: number}} args
+ * @returns {Record<string, any>}
+ */
+function readSource(document, base, args) {
+  const text = document.content || ''
+  const lines = text.endsWith('\n') ? text.slice(0, -1).split('\n') : text.split('\n')
+  const total = text ? lines.length : 0
+  const kind = {
+    type: 'file',
+    language: languageOf(document.title || '').language,
+  }
+  if (total === 0) return { ...base, ...kind, content: '', note: 'This file is empty.' }
+
+  // A source file has no offsets: a `from` given to one, as a model used to
+  // prose will give, is the line it meant.
+  const first = Math.max(1, Math.floor(Number(args.line ?? args.from) || 1))
+  if (first > total) {
+    return { error: `"${base.path}" has ${total} lines; line ${first} is past the end.` }
+  }
+  const asked = Math.floor(Number(args.until) || 0)
+  const last = asked >= first ? Math.min(total, asked) : total
+
+  // As far as the budget goes, but always at least the first line.
+  const cost = (/** @type {string} */ line) => Math.min(line.length, LINE_LIMIT) + 8
+  let to = first
+  let size = cost(lines[first - 1])
+  while (to < last && size + cost(lines[to]) <= READ_BUDGET) {
+    size += cost(lines[to])
+    to++
+  }
+
+  const width = String(to).length
+  const content = lines
+    .slice(first - 1, to)
+    .map((line, at) => {
+      const shown =
+        line.length > LINE_LIMIT
+          ? `${line.slice(0, LINE_LIMIT)}… (${counted(line.length - LINE_LIMIT)} more characters)`
+          : line
+      return `${String(first + at).padStart(width)}\t${shown}`
+    })
+    .join('\n')
+
+  const whole = first === 1 && to === total
+  return {
+    ...base,
+    ...kind,
+    ...(whole ? {} : { line: first, until: to }),
+    ...(to < last ? { next: to + 1, note: 'There is more: read again with line: next.' } : {}),
+    ...(!whole && to === total ? { note: 'This is the end of the file.' } : {}),
+    content,
+  }
+}
+
+/**
+ * @param {{path: string, section?: string, from?: number, page?: number, line?: number, until?: number}} args
  * @param {ToolContext} context
  */
 export async function executeReadDocument(args, context) {
@@ -636,8 +747,10 @@ export async function executeReadDocument(args, context) {
     id: document.id,
     title: document.title || '(untitled)',
     path: pathOf(api, document),
-    ...sizeOf(document),
+    ...sizeOf(document, api.get),
   }
+
+  if (isSourceFile(api.get, document)) return readSource(document, base, args)
 
   // A file answers with the text that was read out of it when it came in —
   // a PDF's, page by page under `[p.N]` markers — which is what there is of
@@ -787,13 +900,20 @@ export async function executeDescribeDocument(args, context) {
   if (document.type === 'folder') {
     return { error: `"${args.path}" is a folder. list_documents lists what is in it.` }
   }
-  const sections = sectionsOfText(document.content || '')
   const base = {
     id: document.id,
     title: document.title || '(untitled)',
     path: pathOf(api, document),
-    ...sizeOf(document),
+    ...sizeOf(document, api.get),
   }
+  if (isSourceFile(api.get, document)) {
+    return {
+      ...base,
+      language: languageOf(document.title || '').language,
+      note: 'A source file has no sections. read_document reads it by line, with line and until; search_documents finds the lines that mention something.',
+    }
+  }
+  const sections = sectionsOfText(document.content || '')
   if (typeof args.section === 'string' && args.section.trim()) {
     const section = findSection(sections, args.section)
     if (!section) {
@@ -877,10 +997,15 @@ export const searchDocumentsDefinition = {
   function: {
     name: 'search_documents',
     description:
-      'Find every document that contains a word or phrase, with the passages around the hits. Case-insensitive, across titles and text. In a long document with sections, `titled` lists the sections named with the words — a section named exactly that comes first — and each passage says the `section` it is in and where that sits (`in`), so the next step is read_document(path, section) on the one you need, not a read of the document around it; `inSections` says how many sections the words appear in when more than are shown. In a long document without sections a passage gives its offset and page to read from. One call finds where something is said — a number, a name, a term — where opening documents one by one would cost a read each.',
+      'Find every document that contains a word or phrase, with the passages around the hits. Case-insensitive, across titles and text. In a long document with sections, `titled` lists the sections named with the words — a section named exactly that comes first — and each passage says the `section` it is in and where that sits (`in`), so the next step is read_document(path, section) on the one you need, not a read of the document around it; `inSections` says how many sections the words appear in when more than are shown. In a long document without sections a passage gives its offset and page to read from. One call finds where something is said — a number, a name, a term — where opening documents one by one would cost a read each. In a source file a hit gives the lines that say it (`hits`), each with its number, to read around with read_document(path, line).',
     parameters: {
       type: 'object',
       properties: {
+        path: {
+          type: 'string',
+          description:
+            'Search only under this folder (or only this document), by its path from the project root. Default: the whole project.',
+        },
         query: {
           type: 'string',
           description:
@@ -895,6 +1020,55 @@ export const searchDocumentsDefinition = {
 /** How many documents a search reports, and how many passages from each. */
 const SEARCH_LIMIT = 20
 const SNIPPETS_PER_DOCUMENT = 3
+
+/** How many lines of one source file a search shows, and how much of each. */
+const LINES_PER_FILE = 8
+const HIT_LINE_LIMIT = 200
+
+/**
+ * The lines of a source file that say something, each with its number: the
+ * line as it is, cut to a window around the hit when it is long, and never
+ * run together with the next the way a passage of prose is.
+ *
+ * @param {string} text
+ * @param {string} needle - Lowercased
+ * @returns {Array<{line: number, text: string}>}
+ */
+function linesSaying(text, needle) {
+  /** @type {Array<{line: number, text: string}>} */
+  const found = []
+  const lines = text.split('\n')
+  for (let at = 0; at < lines.length && found.length < LINES_PER_FILE; at++) {
+    const index = lines[at].toLowerCase().indexOf(needle)
+    if (index === -1) continue
+    const line = lines[at]
+    if (line.trim().length <= HIT_LINE_LIMIT) {
+      found.push({ line: at + 1, text: line.trim() })
+      continue
+    }
+    const start = Math.max(0, index - 80)
+    const end = Math.min(line.length, start + HIT_LINE_LIMIT)
+    found.push({
+      line: at + 1,
+      text: `${start > 0 ? '…' : ''}${line.slice(start, end).trim()}${end < line.length ? '…' : ''}`,
+    })
+  }
+  return found
+}
+
+/**
+ * Whether a document is under a folder, at any depth.
+ *
+ * @param {DocumentsApi} api
+ * @param {Document} document
+ * @param {string} folderId
+ */
+function isUnder(api, document, folderId) {
+  for (let at = api.get(document.parentId); at; at = api.get(at.parentId)) {
+    if (at.id === folderId) return true
+  }
+  return false
+}
 
 /**
  * The passages around each place a document says something, up to a few.
@@ -1048,7 +1222,7 @@ function titledSections(document, needle) {
 }
 
 /**
- * @param {{query: string}} args
+ * @param {{query: string, path?: string}} args
  * @param {ToolContext} context
  */
 export async function executeSearchDocuments(args, context) {
@@ -1057,9 +1231,25 @@ export async function executeSearchDocuments(args, context) {
 
   const phrase = norm(args.query)
   if (!phrase) return { results: [] }
-  const documents = visibleDocuments(api, context.storyId, sees).filter(
+  let documents = visibleDocuments(api, context.storyId, sees).filter(
     document => document.type !== 'folder'
   )
+
+  // A search can be kept to one folder — a repository, the notes — or to one
+  // document. The root is the whole project, the same as no path.
+  const scopePath = typeof args.path === 'string' ? args.path.trim().replace(/^\/+|\/+$/g, '') : ''
+  if (scopePath) {
+    const scope = findByPath(api, context.storyId, scopePath, sees)
+    if (!scope) {
+      return {
+        error: `Nothing at "${args.path}" to search in. list_documents shows the folders that exist.`,
+      }
+    }
+    documents =
+      scope.type === 'folder'
+        ? documents.filter(document => isUnder(api, document, scope.id))
+        : documents.filter(document => document.id === scope.id)
+  }
 
   /**
    * @typedef {Object} Hit
@@ -1067,19 +1257,33 @@ export async function executeSearchDocuments(args, context) {
    * @property {string} title
    * @property {string} path
    * @property {number} matches
-   * @property {Array<{text: string, at?: number, page?: number, section?: string, in?: string}>} passages - Up
+   * @property {Array<{text: string, at?: number, page?: number, section?: string, in?: string}>} [passages] - Up
    *   to a few, each with its offset and page in a long document, and its section where it has them
+   * @property {Array<{line: number, text: string}>} [hits] - In a source file, the lines
+   *   that say it, in place of passages
    * @property {Array<{section: string, in: string, words: number}>} [titled] - Sections named with the words
    * @property {number} [inSections] - How many sections have the words, when more than are shown
    * @property {boolean} [exact] - Whether a section is named exactly that; for ranking, not sent
    * @property {number} [words] - How long the document is, for deciding whether to read it whole
    * @property {number} [pages]
+   * @property {number} [lines] - A source file's length, in place of words
    */
   const toHit = (
     /** @type {Document} */ document,
     /** @type {NonNullable<ReturnType<typeof findIn>>} */ found,
     /** @type {string} */ needle
   ) => {
+    if (isSourceFile(api.get, document)) {
+      return {
+        id: document.id,
+        title: document.title || '(untitled)',
+        path: pathOf(api, document),
+        matches: found.matches,
+        hits: linesSaying(document.content || '', needle),
+        ...sizeOf(document, api.get),
+        exact: false,
+      }
+    }
     const { passages, sections } = passagesOf(document, found.snippets, needle)
     const { titled, exact } = titledSections(document, needle)
     return {
@@ -1090,7 +1294,7 @@ export async function executeSearchDocuments(args, context) {
       ...(titled.length > 0 ? { titled } : {}),
       passages,
       ...(sections !== undefined && sections > passages.length ? { inSections: sections } : {}),
-      ...sizeOf(document),
+      ...sizeOf(document, api.get),
       exact,
     }
   }

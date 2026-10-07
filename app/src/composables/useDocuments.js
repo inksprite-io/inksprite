@@ -31,6 +31,7 @@
  */
 
 import { computed, ref } from 'vue'
+import { inRepository, repositoryOf } from '@/source/tree.js'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
@@ -565,13 +566,17 @@ export const useDocuments = storyId => {
   const setHidden = (documentId, hidden) => documentsStore.updateDocument(documentId, { hidden })
 
   /**
-   * Whether a document can be dropped into a folder.
+   * Whether a document can be dropped into a folder. Nothing goes into a
+   * repository or comes out of one: what is in it is settled against where it
+   * came from, by path, and a refresh would undo the move.
    * @param {string} folderId
    * @param {string} documentId
    * @returns {boolean}
    */
   const canDropInto = (folderId, documentId) =>
-    !documentsStore.containsDocument(documentId, folderId)
+    !documentsStore.containsDocument(documentId, folderId) &&
+    !repositoryOf(get, get(folderId)) &&
+    !inRepository(get, get(documentId))
 
   /**
    * Ask the node for `documentId` to start renaming as soon as it mounts.

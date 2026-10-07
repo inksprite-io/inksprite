@@ -27,6 +27,7 @@ import db from './db'
 import { countWords } from '@/utils/wordCount.js'
 
 /** @typedef {import('../types/models.js').Document} Document */
+/** @typedef {import('../types/models.js').RepositorySource} RepositorySource */
 
 /**
  * Generate a unique document ID
@@ -35,6 +36,9 @@ import { countWords } from '@/utils/wordCount.js'
 function generateDocumentId() {
   return `doc_${nanoid()}`
 }
+
+/** How finely a project's last edit is kept: a minute, in milliseconds. */
+const EDITED_GRAIN = 60_000
 
 export const useDocumentsStore = defineStore('documents', () => {
   /**
@@ -170,6 +174,7 @@ export const useDocumentsStore = defineStore('documents', () => {
    * @param {string} [opts.mime] - Files only: the media type
    * @param {number} [opts.size] - Files only: bytes
    * @param {number} [opts.pages] - Files only: how many pages, when the format has them
+   * @param {RepositorySource} [opts.source] - Repository folders only: where its code was read from
    * @returns {Document}
    * @throws {Error} If storyId or parentId is missing
    */
@@ -189,6 +194,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     mime,
     size,
     pages,
+    source,
   }) {
     if (!storyId) throw new Error('Story ID is required to create a document')
     if (!parentId) throw new Error('Parent ID is required to create a document')
@@ -217,6 +223,7 @@ export const useDocumentsStore = defineStore('documents', () => {
       ...(isFile && mime ? { mime } : {}),
       ...(isFile && typeof size === 'number' ? { size } : {}),
       ...(isFile && typeof pages === 'number' ? { pages } : {}),
+      ...(isFolder && source ? { source } : {}),
       version: 1,
       created: Date.now(),
       updated: Date.now(),
@@ -229,6 +236,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     triggerRef(childrenByParent)
 
     syncStore.trackChange('documents', document.id, document)
+    markEdited(storyId)
 
     return document
   }
@@ -283,6 +291,7 @@ export const useDocumentsStore = defineStore('documents', () => {
 
     triggerRef(documents)
     syncStore.trackChange('documents', documentId, next)
+    markEdited(next.storyId)
 
     return next
   }
@@ -310,6 +319,26 @@ export const useDocumentsStore = defineStore('documents', () => {
 
     documents.value.delete(documentId)
     triggerRef(documents)
+    markEdited(document.storyId)
+  }
+
+  /**
+   * Note on a project's root that something in it changed, for the project
+   * picker's "last edited". To the minute, which is as finely as the picker
+   * tells time, so that typing does not rewrite the root on every save. Written
+   * to the root directly: through `updateDocument` it would note itself.
+   *
+   * @param {string} storyId
+   * @param {number} [at] - When, if not now: worked out after the fact
+   */
+  function markEdited(storyId, at = Date.now()) {
+    const root = documents.value.get(rootIdFor(storyId))
+    if (!root || at - (root.edited || 0) < EDITED_GRAIN) return
+
+    const next = { ...root, edited: at }
+    documents.value.set(root.id, next)
+    triggerRef(documents)
+    syncStore.trackChange('documents', root.id, next)
   }
 
   /**
@@ -559,6 +588,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     deleteChildren,
     deleteStoryDocuments,
     reorderChildren,
+    markEdited,
     loadStory,
     loadRoots,
     getRoot,

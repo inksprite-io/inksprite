@@ -22,17 +22,18 @@ const Chat = {
   template: '<div data-chat :data-id="chatId" @click="$emit(\'new-chat\')" />',
 }
 
-const mountView = () =>
+const DocumentTree = { props: ['chatId'], template: '<div data-tree :data-chat-id="chatId" />' }
+
+const mountView = (activeMobileTab = 'chat') =>
   mount(MobileView, {
-    props: { storyId: 'story_1', activeMobileTab: 'chat' },
+    props: { storyId: 'story_1', activeMobileTab },
     global: {
       stubs: {
         ChatHistory,
         Chat,
         EditorPanel: true,
-        DocumentTree: true,
+        DocumentTree,
         NarrationPanel: true,
-        ProjectList: true,
         Settings: true,
       },
     },
@@ -68,5 +69,13 @@ describe('MobileView chat', () => {
     await flushPromises()
 
     expect(JSON.parse(window.sessionStorage.getItem(KEY))).toBe(id)
+  })
+
+  it('gives the outline the chat open on the chat tab, to pin documents to', async () => {
+    window.sessionStorage.setItem(KEY, JSON.stringify('chat_open'))
+    const wrapper = mountView('outline')
+    await flushPromises()
+
+    expect(wrapper.find('[data-tree]').attributes('data-chat-id')).toBe('chat_open')
   })
 })

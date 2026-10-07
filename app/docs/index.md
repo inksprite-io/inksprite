@@ -36,6 +36,7 @@ The document model:
 
 - The closed schema a document can hold, and the extensions the editor runs on
 - Markdown as the file format: `parseMarkdown` and `serializeMarkdown`
+- GFM tables: made by typing a header row, edited from the keyboard and a menu
 
 ### 🔊 [TTS](./tts.md)
 
@@ -68,6 +69,24 @@ Files that are not prose — PDFs, images, anything — brought into the project
 - A PDF's text read out page by page with pdf.js, on demand, so a paper is a document the model can read, search and pin
 - A file looked at before it is written: its media type, its size, and what text is in it
 - The document written into the tree, with its bytes kept in a table of their own
+
+### 💻 [Source](./source.md)
+
+A codebase in a project, to write about rather than edit:
+
+- A repository from a folder in either build, or from GitHub in the desktop app, read as one archive
+- What comes in: never version control, packages or secrets; not by default build output, lock files or minified code; and the codebase's own `.gitignore` files
+- Each file a read-only document titled by its filename, its text the file, refreshed in place by path so a chat that read one hears it changed
+- Shown with CodeMirror, and read and searched by the model by line
+
+### ☁️ [Drive](./drive.md)
+
+Files picked in the writer's Google Drive, brought into a folder of the project:
+
+- Google's sign-in with its picker and `drive.file`, so only what the writer picks is reachable: a popup in a browser, the system browser in the desktop app, and nothing of Google's loaded in the page
+- A Doc exported as markdown, a Sheet as CSV, Slides as a PDF, a Drawing as a PNG, and anything else downloaded as it is, then imported as from disk
+- A Doc's pictures taken out before the importer sees it, and counted
+- Offered only when the build names a Google client for where it runs
 
 ### 🔌 [MCP](./mcp.md)
 
@@ -140,6 +159,7 @@ Frontend (Vue 3 + Vite)
 ├── Composables (Composition API)
 │   ├── AI: useAIChat, useAIConfig, useProfiles, useAISummarize
 │   ├── Cards: useCardImport, useCardChat
+│   ├── Import: useBulkImport, useRepositoryImport, useDriveImport
 │   ├── Data: useDocuments, useChats, useBackup, useNarration, useSpeech
 │   └── UI: useEditor, useToast
 ├── TTS (src/tts)
@@ -166,6 +186,17 @@ Frontend (Vue 3 + Vite)
 │   └── config - Servers from a pasted mcpServers block
 ├── Platform (src/platform)
 │   └── fetch - Requests to servers, from the page or from the desktop app's native side
+├── Source (src/source)
+│   ├── rules - What of a codebase comes in, and what is left out
+│   ├── gather - Its files listed, sorted by the rules, read, and capped
+│   ├── github - A repository downloaded as one archive
+│   └── write - The repository written into the tree, and refreshed by path
+├── Drive (src/drive)
+│   ├── config - The build's Google client, and whether the import is offered
+│   ├── signIn - Google's sign-in with its picker, in a popup or the system browser
+│   ├── fetch - A picked file looked up and fetched as a File: exported or downloaded
+│   ├── images - A Doc's pictures taken out of its markdown
+│   └── errors - What stops an import, said for the writer
 ├── Cards (src/cards)
 │   ├── png - The character card hidden in a PNG's text chunks
 │   ├── card - A card or a lorebook as one shape, whatever version it arrived as

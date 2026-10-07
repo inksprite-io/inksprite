@@ -120,7 +120,7 @@ const chat = (count, kept = ref(null), attach = false, texts = {}) => {
       const near = useNearTurns(
         () => root.value,
         turns,
-        () => kept.value
+        () => [kept.value]
       )
       return () =>
         h('div', { ref: root }, [

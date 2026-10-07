@@ -22,6 +22,12 @@ services:
       - /app/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
+    # The Google project the Drive import signs in to, when app/.env.local
+    # names one (see app/.env.example). Read when the container is made, so
+    # a change to it needs ./rebuild-test-server.sh.
+    env_file:
+      - path: ./app/.env.local
+        required: false
     stdin_open: true
     tty: true
 

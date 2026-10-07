@@ -9,7 +9,14 @@
       v-else-if="activeMobileTab === 'outline'"
       class="h-full bg-surface-100 dark:bg-surface-800"
     >
-      <DocumentTree :story-id="storyId" :document-id="documentId" @open="openDocument" />
+      <!-- The chat is the one the chat tab has open, which is what a
+           document is pinned to and hidden from here. -->
+      <DocumentTree
+        :story-id="storyId"
+        :document-id="documentId"
+        :chat-id="selectedChatId"
+        @open="openDocument"
+      />
     </div>
 
     <!-- Chat -->
@@ -36,14 +43,6 @@
       <NarrationPanel :story-id="storyId" :document-id="documentId" />
     </div>
 
-    <!-- Projects -->
-    <div
-      v-else-if="activeMobileTab === 'projects'"
-      class="h-full bg-surface-100 dark:bg-surface-800"
-    >
-      <ProjectList :story-id="storyId" />
-    </div>
-
     <!-- Settings -->
     <div
       v-else-if="activeMobileTab === 'settings'"
@@ -62,7 +61,6 @@ import DocumentTree from '../tree/DocumentTree.vue'
 import ChatHistory from '../chats/ChatHistory.vue'
 import Chat from '../chats/Chat.vue'
 import NarrationPanel from '../narration/NarrationPanel.vue'
-import ProjectList from '../projects/ProjectList.vue'
 import Settings from '../settings/Settings.vue'
 import { useChats } from '@/composables/useChats'
 import { useDocuments } from '@/composables/useDocuments'

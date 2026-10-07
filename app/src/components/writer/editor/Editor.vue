@@ -1,13 +1,41 @@
 <template>
-  <div class="h-full w-full flex flex-col items-center min-w-0">
+  <!-- Escape in the page puts the find away as well, as it does in the bar. -->
+  <div
+    ref="root"
+    class="h-full w-full flex flex-col items-center min-w-0"
+    @keydown.esc="finding && closeFind()"
+  >
+    <!-- Find and replace, over the page rather than in it. See editor/search. -->
+    <FindBar
+      v-if="finding"
+      ref="findBar"
+      class="w-full"
+      :query="query"
+      :count="search?.matches.length ?? 0"
+      :current="search?.current ?? -1"
+      replaceable
+      :replacement="replacement"
+      @update:query="lookFor"
+      @update:replacement="replacement = $event"
+      @next="step(1)"
+      @previous="step(-1)"
+      @replace="run(replaceCurrent(replacement))"
+      @replace-all="run(replaceAll(replacement))"
+      @close="closeFind"
+    />
     <ScrollPanel
       ref="scrollPanel"
       class="flex-1 w-full min-h-0 min-w-0 overflow-auto overflow-x-hidden"
     >
       <div class="w-full h-full flex flex-col items-center min-w-0">
-        <div ref="host" class="flex-1 w-full max-w-[50rem] min-w-0 px-4" />
+        <div
+          ref="host"
+          class="flex-1 w-full max-w-[50rem] min-w-0 px-4"
+          @contextmenu="openTableMenu"
+        />
       </div>
     </ScrollPanel>
+    <TableMenu ref="tableMenu" />
   </div>
 </template>
 
@@ -18,8 +46,12 @@ import 'prosemirror-view/style/prosemirror.css'
 import 'prosemirror-gapcursor/style/gapcursor.css'
 import ScrollPanel from 'primevue/scrollpanel'
 
+import FindBar from '@/components/common/FindBar.vue'
+import TableMenu from './TableMenu.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useEditor } from '@/composables/useEditor.js'
+import { useFindKey } from '@/composables/useFindKey.js'
+import { find, findNext, replaceAll, replaceCurrent, searchOf } from '@/editor/search.js'
 import { useDocuments } from '@/composables/useDocuments'
 import { useNarration } from '@/composables/useNarration'
 import { TINT, speakerRanges } from '@/tts/highlight.js'
@@ -99,6 +131,100 @@ const decorations = state => {
 // recoloured, the panel closed — and the view is told to look again.
 watch(highlight, () => view?.setProps({ decorations }))
 
+/** @type {import('vue').Ref<HTMLElement|null>} */
+const root = ref(null)
+/** @type {import('vue').Ref<{ focus: () => void }|null>} */
+const findBar = ref(null)
+const finding = ref(false)
+const query = ref('')
+const replacement = ref('')
+
+/** The search the document holds, while the find is open. */
+const search = computed(() => {
+  const state = editor.stateOf(props.documentId)
+  return finding.value && state ? searchOf(state) : null
+})
+
+/**
+ * Bring the match the writer is on into view, a third of the way down, unless
+ * it is well in view already. ProseMirror would scroll it only as far as the
+ * edge.
+ */
+const reveal = () => {
+  const element = scroller()
+  const found = search.value
+  const match = found?.matches[found.current]
+  if (!view || !element || !match) return
+  const at = view.coordsAtPos(match.from)
+  const box = element.getBoundingClientRect()
+  const margin = Math.min(48, box.height / 4)
+  if (at.top >= box.top + margin && at.bottom <= box.bottom - margin) return
+  element.scrollTop += at.top - box.top - box.height / 3
+}
+
+/**
+ * Run a search command against the document, through the view, so that a
+ * replacement keeps a previewed tab as an edit would. Then show where it left
+ * the writer.
+ *
+ * @param {import('prosemirror-state').Command} command
+ */
+const run = command => {
+  if (!view) return
+  command(view.state, view.dispatch)
+  reveal()
+}
+
+/** @param {string} text */
+const lookFor = text => {
+  query.value = text
+  run(find(text))
+}
+
+/** @param {1|-1} direction */
+const step = direction => run(findNext(direction))
+
+/**
+ * Open the find, or go back to it, looking for what is selected if that is a
+ * few words on one line, and otherwise for what was looked for last.
+ *
+ * @returns {boolean}
+ */
+const openFind = () => {
+  if (!view) return false
+  const { from, to } = view.state.selection
+  const selected = view.state.doc.textBetween(from, to, '\n')
+  if (selected && !selected.includes('\n') && selected.length <= 200) query.value = selected
+  finding.value = true
+  lookFor(query.value)
+  nextTick(() => findBar.value?.focus())
+  return true
+}
+
+/** Put the find away, with the caret on the match the writer was on. */
+const closeFind = () => {
+  if (!finding.value) return
+  finding.value = false
+  if (!view) return
+  find('')(view.state, view.dispatch)
+  view.focus()
+}
+
+useFindKey(() => root.value, openFind)
+defineExpose({ openFind })
+
+/** @type {import('vue').Ref<InstanceType<typeof TableMenu>|null>} */
+const tableMenu = ref(null)
+
+/**
+ * A right-click in a table opens its menu; anywhere else, the browser's.
+ *
+ * @param {MouseEvent} event
+ */
+const openTableMenu = event => {
+  if (view && tableMenu.value?.open(view, event)) event.preventDefault()
+}
+
 /** The tab going to the background is the last chance to write the document out. */
 const onVisibilityChange = () => {
   if (document.hidden) editor.flush(props.documentId)
@@ -152,6 +278,9 @@ onBeforeUnmount(() => {
   const element = scroller()
   if (element) editor.rememberScroll(id, element.scrollTop)
   editor.flush(id)
+  // The search goes with the find, which is this view's: the document stays
+  // open without it.
+  if (finding.value && view) find('')(view.state, view.dispatch)
   editor.attach(id, null)
   view?.destroy()
   view = null

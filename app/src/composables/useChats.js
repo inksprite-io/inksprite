@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { generateChatId, useChatsStore } from '@/stores/chatsStore'
 import { useMessagesStore } from '@/stores/messagesStore'
+import { useDocumentsStore } from '@/stores/documentsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { DEFAULT_PROFILE_ID, settingsForNewChat } from '@/ai/profiles/index.js'
 import { useProfiles } from './useProfiles.js'
@@ -69,6 +70,11 @@ export const useChats = storyId => {
   const chatsStore = useChatsStore()
   const messagesStore = useMessagesStore()
   const profilesApi = useProfiles()
+
+  // A conversation is work on the project as much as its documents are, so a
+  // message changing marks the project edited too.
+  const documentsStore = useDocumentsStore()
+  const markEdited = () => documentsStore.markEdited(storyId)
 
   const ready = ref(false)
   const error = ref(null)
@@ -247,6 +253,7 @@ export const useChats = storyId => {
    */
   const addMessage = (chatId, role, content, reasoningContent = null, segments = null) => {
     const message = messagesStore.createMessage(chatId, role, content, reasoningContent, segments)
+    markEdited()
 
     // Update the chat's last message timestamp
     try {
@@ -291,6 +298,7 @@ export const useChats = storyId => {
    * @throws {Error} If update fails
    */
   const updateMessage = (messageId, updates) => {
+    markEdited()
     return messagesStore.updateMessage(messageId, updates)
   }
 
@@ -357,6 +365,7 @@ export const useChats = storyId => {
    * @throws {Error} If deletion fails
    */
   const deleteMessage = messageId => {
+    markEdited()
     return messagesStore.deleteMessage(messageId)
   }
 
@@ -483,6 +492,7 @@ export const useChats = storyId => {
     messages.forEach(message => {
       messagesStore.duplicateMessage(message, copy.id)
     })
+    markEdited()
 
     // Stamped with the last copied message, so the copy sorts where the
     // conversation left off rather than at the top as something new.

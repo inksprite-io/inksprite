@@ -13,6 +13,7 @@
 import { reactive } from 'vue'
 import { sessionStorage } from '../utils/sessionStorage.js'
 import { useDocuments } from './useDocuments.js'
+import { isSourceFile } from '@/source/tree.js'
 
 /** Which documents are showing as text, shared by every panel and menu. */
 const asText = reactive(new Set())
@@ -56,7 +57,10 @@ export function useFileView(storyId) {
    * @returns {import('primevue/menuitem').MenuItem|null}
    */
   const fileViewItem = documentId => {
-    if (api.get(documentId)?.type !== 'file') return null
+    const document = api.get(documentId)
+    if (document?.type !== 'file') return null
+    // A source file is shown as its text already, and is not for editing.
+    if (isSourceFile(api.get, document)) return null
     const text = showsText(documentId)
     return {
       label: text ? 'Show the file' : 'Show as text',

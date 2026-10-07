@@ -42,6 +42,21 @@
           {{ chatTitle }}
         </h2>
         <ChatProfileMenu :story-id="props.storyId" :chat-id="props.chatId" />
+        <!-- Finding in the chat, which the browser's find cannot do for the
+           turns not in the page. Here for a phone, which has no key for it. -->
+        <Button
+          v-if="!unstarted"
+          v-tooltip.bottom="'Find in chat'"
+          type="button"
+          icon="pi pi-search"
+          severity="secondary"
+          size="small"
+          rounded
+          class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-700"
+          aria-label="Find in chat"
+          data-action="find"
+          @click="openFind"
+        />
         <!-- A fresh conversation, without going back to the list for one. A
            chat not started yet is already one. -->
         <Button
@@ -57,6 +72,18 @@
           @click="emit('new-chat')"
         />
       </div>
+      <!-- Finding in the chat. See useChatFind. -->
+      <FindBar
+        v-if="finding"
+        ref="findBar"
+        :query="findQuery"
+        :count="findCount"
+        :current="findCurrent"
+        @update:query="chatFind.lookFor"
+        @next="chatFind.step(1)"
+        @previous="chatFind.step(-1)"
+        @close="chatFind.closeFind"
+      />
       <!-- Messages. The scroll is listened for here, on its way down to the
          element PrimeVue makes for it: a scroll does not bubble. -->
       <div class="relative flex-1 min-h-0 flex flex-col" @scroll.capture.passive="onPanelScroll">
@@ -308,10 +335,13 @@ import ChatTurn from './ChatTurn.vue'
 import ChatSettings from './ChatSettings.vue'
 import ChatCommandMenu from './ChatCommandMenu.vue'
 import ChatProfileMenu from './ChatProfileMenu.vue'
+import FindBar from '@/components/common/FindBar.vue'
 import InitialProviderSetup from '@/components/common/InitialProviderSetup.vue'
 import { useChats } from '@/composables/useChats'
 import { useJumpToBottom } from '@/composables/useJumpToBottom'
 import { useNearTurns } from '@/composables/useNearTurns.js'
+import { useChatFind } from '@/composables/useChatFind.js'
+import { useFindKey } from '@/composables/useFindKey.js'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from 'primevue/useconfirm'
 import { useAIChat } from '@/composables/useAIChat'
@@ -456,9 +486,23 @@ let shown = false
 /** The element that scrolls, inside PrimeVue's panel. */
 const scroller = () => scrollPanel.value?.$el.querySelector('.p-scrollpanel-content') || null
 
-// Which turns are in the page: those near the screen, the newest two, and the
-// summary being written, which the chat is about to take the writer to.
-const nearTurns = useNearTurns(scroller, turns, () => summarising.value)
+// Finding in the chat, whose turns are mostly not in the page.
+const chatFind = useChatFind(turns, scroller)
+const { open: finding, query: findQuery, count: findCount, current: findCurrent } = chatFind
+/** @type {import('vue').Ref<{ focus: () => void }|null>} */
+const findBar = ref(null)
+
+/** Open the find, or go back to it, with the caret in what to look for. */
+const openFind = () => {
+  chatFind.openFind()
+  nextTick(() => findBar.value?.focus())
+  return true
+}
+
+// Which turns are in the page: those near the screen, the newest two, the
+// summary being written, which the chat is about to take the writer to, and
+// the turn the find is on.
+const nearTurns = useNearTurns(scroller, turns, () => [summarising.value, chatFind.holding.value])
 
 // The way back down, for somebody a long way up and heading that way. The
 // room kept under a summary is not content, so it is not part of how far away
@@ -705,6 +749,8 @@ const handleStopGenerating = async () => {
 
 /** @type {import('vue').Ref<HTMLElement|null>} */
 const root = ref(null)
+
+useFindKey(() => root.value, openFind)
 
 /**
  * Escape stops the answer being written, from anywhere in the chat, or from

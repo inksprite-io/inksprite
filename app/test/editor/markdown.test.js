@@ -52,8 +52,7 @@ describe('parseMarkdown', () => {
     expect(doc.firstChild.firstChild.marks).toEqual([])
   })
 
-  it('reads a table and an image as text rather than throwing', () => {
-    expect(parseMarkdown('| a | b |\n| - | - |\n| 1 | 2 |').textContent).toContain('| a | b |')
+  it('reads an image as text rather than throwing', () => {
     const image = parseMarkdown('![alt](http://x/y.png)')
     expect(image.textContent).toContain('alt')
   })
@@ -96,6 +95,116 @@ describe('parseMarkdown', () => {
     const marks = doc.lastChild.content.content.flatMap(n => n.marks.map(m => m.type.name))
     expect(marks).toEqual(['strong', 'em', 'code', 'strikethrough', 'link'])
     expect(doc.lastChild.lastChild.marks[0].attrs.href).toBe('https://example.com')
+  })
+})
+
+describe('tables', () => {
+  /** A table's rows as arrays of their cells' text. */
+  const grid = table => {
+    const rows = []
+    table.forEach(row => {
+      const cells = []
+      row.forEach(cell => cells.push(cell.textContent))
+      rows.push(cells)
+    })
+    return rows
+  }
+
+  it('reads a table into rows of cells, the header first', () => {
+    const doc = parseMarkdown('| Name | Age |\n| --- | --- |\n| Ada | 36 |\n| Bo | 7 |')
+    expect(doc.childCount).toBe(1)
+    expect(doc.firstChild.type.name).toBe('table')
+    expect(grid(doc.firstChild)).toEqual([
+      ['Name', 'Age'],
+      ['Ada', '36'],
+      ['Bo', '7'],
+    ])
+  })
+
+  it("keeps each column's alignment on its cells", () => {
+    const doc = parseMarkdown('| a | b | c | d |\n| --- | :-- | :-: | --: |\n| 1 | 2 | 3 | 4 |')
+    const aligns = row => row.content.content.map(cell => cell.attrs.align)
+    expect(aligns(doc.firstChild.child(0))).toEqual([null, 'left', 'center', 'right'])
+    expect(aligns(doc.firstChild.child(1))).toEqual([null, 'left', 'center', 'right'])
+  })
+
+  it('reads marks in a cell', () => {
+    const doc = parseMarkdown('| **bold** `code` |\n| --- |')
+    const cell = doc.firstChild.firstChild.firstChild
+    expect(cell.content.content.map(n => n.marks.map(m => m.type.name))).toEqual([
+      ['strong'],
+      [],
+      ['code'],
+    ])
+  })
+
+  it('reads a table with a row longer than its header as the text it is', () => {
+    const markdown = '| a | b |\n| --- | --- |\n| 1 | 2 | 3 |'
+    const doc = parseMarkdown(markdown)
+    expect(doc.firstChild.type.name).toBe('paragraph')
+    expect(settle(markdown)).toBe(markdown)
+  })
+
+  it('counts a pipe in code as one, which is why that row is too long', () => {
+    const markdown = '| a | b |\n| --- | --- |\n| `x || y` | z |'
+    expect(parseMarkdown(markdown).firstChild.type.name).toBe('paragraph')
+    expect(settle(markdown)).toBe(markdown)
+  })
+
+  it('fills a short row with empty cells', () => {
+    expect(settle('| a | b |\n| --- | --- |\n| 1 |')).toBe('| a | b |\n| --- | --- |\n| 1 |  |')
+  })
+
+  it('writes a table with a pipe at each end and no padding', () => {
+    expect(settle('Name   | Age\n:------|----:\nAda    |  36')).toBe(
+      '| Name | Age |\n| :--- | ---: |\n| Ada | 36 |'
+    )
+  })
+
+  it('escapes a pipe in a cell, in code as well', () => {
+    const doc = schema.nodeFromJSON({
+      type: 'doc',
+      content: [
+        {
+          type: 'table',
+          content: [
+            {
+              type: 'table_row',
+              content: [
+                { type: 'table_cell', content: [{ type: 'text', text: 'a | b' }] },
+                {
+                  type: 'table_cell',
+                  content: [{ type: 'text', text: 'x || y', marks: [{ type: 'code' }] }],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+    const { markdown, doc: back } = roundTrip(doc)
+    expect(markdown).toBe('| a \\| b | `x \\|\\| y` |\n| --- | --- |')
+    expect(back.eq(doc)).toBe(true)
+  })
+
+  it('does not escape what would start a line, since a cell does not', () => {
+    expect(settle('| - | # | 1. | > |\n| --- | --- | --- | --- |')).toBe(
+      '| - | # | 1. | > |\n| --- | --- | --- | --- |'
+    )
+  })
+
+  it('reads a table in a quote and in a list, and writes their markers on every row', () => {
+    const quoted = '> | a | b |\n> | --- | --- |\n> | 1 | 2 |'
+    expect(parseMarkdown(quoted).firstChild.firstChild.type.name).toBe('table')
+    expect(settle(quoted)).toBe(quoted)
+    const listed = '- item\n\n  | a |\n  | --- |\n  | 1 |'
+    expect(parseMarkdown(listed).firstChild.firstChild.lastChild.type.name).toBe('table')
+    expect(settle(listed)).toBe(listed)
+  })
+
+  it('ends a paragraph the table starts under', () => {
+    const doc = parseMarkdown('Before\n| a |\n| --- |\n| 1 |')
+    expect(doc.content.content.map(n => n.type.name)).toEqual(['paragraph', 'table'])
   })
 })
 
@@ -257,6 +366,11 @@ describe('round trip', () => {
     code: '`code`',
     strike: '~~gone~~',
     link: '[link](https://example.com)',
+    table: '| Name | Age |\n| --- | --- |\n| Ada | 36 |',
+    'aligned table': '| a | b | c | d |\n| --- | :--- | :---: | ---: |\n| 1 | 2 | 3 | 4 |',
+    'table with marks and an empty cell':
+      '| **bold** | `a \\| b` |\n| --- | --- |\n| [link](https://example.com) |  |',
+    'header-only table': '| a | b |\n| --- | --- |',
     'marks nested': '***both*** and [**bold link**](https://example.com)',
     'escaped syntax': 'not \\*emphasis\\* and a literal \\[bracket\\]',
     'a whole scene':

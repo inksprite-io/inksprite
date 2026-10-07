@@ -23,6 +23,10 @@ describe('blocksOf', () => {
       '',
       '---',
       '',
+      '| not | read |',
+      '| --- | --- |',
+      '| aloud | either |',
+      '',
       'The end.',
     ].join('\n')
 

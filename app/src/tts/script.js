@@ -56,7 +56,8 @@ function spoken(node) {
  *
  * Every node that holds text is one — a paragraph proper, a heading, a list
  * item, a quoted line — with the markdown taken off. Code is not read aloud,
- * and a rule has nothing to say. Nothing empty is kept.
+ * nor a table, which is a grid to look along rather than something said; and
+ * a rule has nothing to say. Nothing empty is kept.
  *
  * @param {import('prosemirror-model').Node} doc
  * @returns {Block[]}
@@ -66,6 +67,7 @@ export function blocksOfDoc(doc) {
   const blocks = []
 
   doc.descendants((node, pos) => {
+    if (node.type.name === 'table') return false
     if (!node.isTextblock) return true
     if (node.type.name === 'code_block') return false
 

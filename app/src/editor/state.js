@@ -13,8 +13,10 @@
  * The keys follow the previous editor's where it had them — Mod-B, Mod-I,
  * Mod-Shift-S, Mod-Alt-1 through 6, Mod-Shift-7 and 8, Mod-Shift-B, Mod-Alt-C
  * — and the reference's for lists: Enter splits an item, Tab and Shift-Tab
- * nest and lift. The typed shortcuts are markdown's own: `# `, `- `, `1. `,
- * `> `, ```` ``` ````, `---`, and `**bold**` as you type.
+ * nest and lift. In a table they move between cells and rows (see
+ * `editor/tables`). The typed shortcuts are markdown's own: `# `, `- `, `1. `,
+ * `> `, ```` ``` ````, `---`, `**bold**` as you type, and a table's header
+ * row followed by Enter.
  */
 
 import { EditorState, Selection, TextSelection } from 'prosemirror-state'
@@ -38,8 +40,19 @@ import {
 } from 'prosemirror-inputrules'
 import { dropCursor } from 'prosemirror-dropcursor'
 import { gapCursor } from 'prosemirror-gapcursor'
+import { tableEditing } from 'prosemirror-tables'
 import { schema } from './schema.js'
 import { parseMarkdown } from './markdown.js'
+import { searchPlugin } from './search.js'
+import {
+  cellPaste,
+  deleteEmptyTable,
+  exitTable,
+  nextCell,
+  nextRow,
+  previousCell,
+  tableFromRow,
+} from './tables.js'
 
 /**
  * @typedef {import('prosemirror-state').Transaction} Transaction
@@ -68,9 +81,11 @@ const insertHardBreak = (state, dispatch) => {
 }
 
 /**
- * The keys, in front of the base keymap. Enter tries the list split first
- * and falls through to a paragraph split; Backspace undoes a typed shortcut
- * before it deletes.
+ * The keys, in front of the base keymap. Enter makes a table of a typed
+ * header row, moves down one, or tries the list split, and falls through to a
+ * paragraph split; Backspace undoes a typed shortcut before it deletes.
+ * Shift-Enter leaves a table where it would break a line, since a cell has
+ * only the one.
  *
  * @type {Record<string, Command>}
  */
@@ -85,12 +100,12 @@ export const keys = {
   'Mod-`': toggleMark(code),
   'Mod-Shift-s': toggleMark(strikethrough),
 
-  'Shift-Enter': chainCommands(exitCode, insertHardBreak),
-  'Mod-Enter': chainCommands(exitCode, insertHardBreak),
+  'Shift-Enter': chainCommands(exitCode, exitTable, insertHardBreak),
+  'Mod-Enter': chainCommands(exitCode, exitTable, insertHardBreak),
 
-  Enter: splitListItem(list_item),
-  Tab: sinkListItem(list_item),
-  'Shift-Tab': liftListItem(list_item),
+  Enter: chainCommands(tableFromRow, nextRow, splitListItem(list_item)),
+  Tab: chainCommands(nextCell, sinkListItem(list_item)),
+  'Shift-Tab': chainCommands(previousCell, liftListItem(list_item)),
   'Mod-Shift-7': wrapInList(ordered_list),
   'Mod-Shift-8': wrapInList(bullet_list),
   'Mod-Shift-b': wrapIn(blockquote),
@@ -102,6 +117,19 @@ export const keys = {
   'Mod-Alt-5': setBlockType(heading, { level: 5 }),
   'Mod-Alt-6': setBlockType(heading, { level: 6 }),
   'Mod-Alt-c': setBlockType(code_block),
+}
+
+/**
+ * The keys a whole table answers ahead of `tableEditing`, which would only
+ * empty its cells again.
+ *
+ * @type {Record<string, Command>}
+ */
+export const wholeTableKeys = {
+  Backspace: deleteEmptyTable,
+  'Mod-Backspace': deleteEmptyTable,
+  Delete: deleteEmptyTable,
+  'Mod-Delete': deleteEmptyTable,
 }
 
 /**
@@ -175,11 +203,15 @@ export const rules = [
 export function plugins() {
   return [
     inputRules({ rules }),
+    cellPaste(),
+    keymap(wholeTableKeys),
+    tableEditing(),
     keymap(keys),
     keymap(baseKeymap),
     dropCursor(),
     gapCursor(),
     history(),
+    searchPlugin(),
   ]
 }
 

@@ -16,7 +16,7 @@
  * - **usePrompts** - Legacy. The prompt library the profiles replaced; read by cleanup alone
  *
  * ### Data
- * - **useProjects** - The project list, and creating, opening, renaming and deleting projects
+ * - **useProjects** - Every project, and creating, importing, opening and deleting them
  * - **useDocuments** - A story's document tree, shaped for the tree UI, and the editor's tabs
  * - **useChats** - Chat session management
  * - **useChatSettings** - One chat's settings and profile, started or not
@@ -36,6 +36,9 @@
  * - **useTopmostEscape** - Escape closes the dialog on top, and only that one
  * - **useCopyPath** - Copy a document's path, the address the tools take, to the clipboard
  * - **usePlainText** - Turn a document plain or back, with an undo when that rewrote its text
+ * - **useLongPress** - A finger held still on something, for what a right-click opens elsewhere
+ * - **useFindKey** - Command-F (Control-F off a Mac) opens the find of the panel the writer is in
+ * - **useChatFind** - Finding in a chat, most of which is not in the page: counted in the messages, gone to and highlighted in the page
  *
  * ## Patterns
  *

@@ -309,13 +309,26 @@ describe('NarrationPanel', () => {
     expect(narration.watching.value).toBe(1)
 
     const toggle = wrapper.find('[data-action="toggle-highlight"]')
+    expect(toggle.element.tagName).toBe('BUTTON')
     expect(toggle.attributes('aria-pressed')).toBe('true')
     await toggle.trigger('click')
     expect(setHighlightSpeakers).toHaveBeenCalledWith(false)
     expect(toggle.attributes('aria-pressed')).toBe('false')
+    // Its name stays put; whether it is on is what it says pressed.
+    expect(toggle.attributes('aria-label')).toBe('Colour speakers in the editor')
 
     wrapper.unmount()
     expect(narration.watching.value).toBe(0)
+  })
+
+  it('has its title and buttons in the header', () => {
+    const wrapper = mountPanel()
+    const header = wrapper.findComponent({ name: 'PanelHeader' })
+    expect(header.props('title')).toBe('Narration')
+    expect(header.findAll('button').map(b => b.attributes('data-action'))).toEqual([
+      'toggle-highlight',
+      'narration-settings',
+    ])
   })
 
   it('opens the settings on the speech server', async () => {

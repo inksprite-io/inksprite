@@ -22,6 +22,15 @@ vi.mock('@/files/download.js', () => ({
   filenameFor: document => `${document.title}.bin`,
 }))
 
+// CodeMirror is CodeView's business, tested on its own.
+vi.mock('@/components/writer/editor/CodeView.vue', () => ({
+  __esModule: true,
+  default: {
+    props: ['content', 'filename'],
+    template: '<pre data-code-stub :data-filename="filename">{{ content }}</pre>',
+  },
+}))
+
 // The pages are pdf.js's business, tested on their own.
 const PdfView = { props: ['blob'], template: '<div data-pdf-stub :data-type="blob.type" />' }
 
@@ -136,5 +145,53 @@ describe('FileView', () => {
 
     wrapper.unmount()
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:the-file')
+  })
+
+  describe('a file of text', () => {
+    it("shows a repository's file, which keeps no bytes, as code", async () => {
+      documents.set('src', {
+        id: 'src',
+        type: 'file',
+        title: 'index.ts',
+        mime: 'text/x-typescript',
+        content: 'export {}\n',
+      })
+      getFile.mockResolvedValue(null)
+
+      const wrapper = mountView('src')
+      await flushPromises()
+
+      const code = wrapper.find('[data-code-stub]')
+      expect(code.text()).toBe('export {}')
+      expect(code.attributes('data-filename')).toBe('index.ts')
+      expect(wrapper.find('[data-file-none]').exists()).toBe(false)
+    })
+
+    it('shows a JSON file imported on its own as code, and a web page still as no preview', async () => {
+      documents.set('json', {
+        id: 'json',
+        type: 'file',
+        title: 'data',
+        mime: 'application/json',
+        content: '{"a": 1}',
+      })
+      documents.set('html', { id: 'html', type: 'file', title: 'Page', mime: 'text/html' })
+
+      const json = mountView('json')
+      await flushPromises()
+      expect(json.find('[data-code-stub]').exists()).toBe(true)
+
+      const html = mountView('html')
+      await flushPromises()
+      expect(html.find('[data-code-stub]').exists()).toBe(false)
+      expect(html.find('[data-file-none]').exists()).toBe(true)
+    })
+
+    it('still shows a picture as a picture', async () => {
+      const wrapper = mountView('img')
+      await flushPromises()
+      expect(wrapper.find('[data-file-image]').exists()).toBe(true)
+      expect(wrapper.find('[data-code-stub]').exists()).toBe(false)
+    })
   })
 })

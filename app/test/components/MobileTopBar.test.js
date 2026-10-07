@@ -21,7 +21,6 @@ describe('MobileTopBar', () => {
       'Outline',
       'Chat',
       'Narration',
-      'Projects',
       'Jobs',
       'Settings',
     ])
@@ -35,17 +34,17 @@ describe('MobileTopBar', () => {
     expect(wrapper.emitted('update:activeMobileTab')).toEqual([['outline']])
   })
 
-  it('offers only the projects and the settings with no project open', async () => {
-    const wrapper = mountBar({ hasStory: false, activeMobileTab: 'projects' })
+  it('offers only the writing view, which says there is no project, and the settings with no project open', async () => {
+    const wrapper = mountBar({ hasStory: false, activeMobileTab: 'settings' })
 
-    expect(wrapper.find('[data-tab="write"]').attributes('aria-disabled')).toBe('true')
-    expect(wrapper.find('[data-tab="projects"]').attributes('aria-disabled')).toBeUndefined()
+    expect(wrapper.find('[data-tab="outline"]').attributes('aria-disabled')).toBe('true')
+    expect(wrapper.find('[data-tab="write"]').attributes('aria-disabled')).toBeUndefined()
 
-    await wrapper.find('[data-tab="write"]').trigger('click')
+    await wrapper.find('[data-tab="outline"]').trigger('click')
     expect(wrapper.emitted('update:activeMobileTab')).toBeUndefined()
 
-    await wrapper.find('[data-tab="settings"]').trigger('click')
-    expect(wrapper.emitted('update:activeMobileTab')).toEqual([['settings']])
+    await wrapper.find('[data-tab="write"]').trigger('click')
+    expect(wrapper.emitted('update:activeMobileTab')).toEqual([['write']])
   })
 
   it('opens and closes the jobs toast, with the running count on its button', async () => {
@@ -60,7 +59,7 @@ describe('MobileTopBar', () => {
       title: 'One',
       steps,
     })
-    const wrapper = mountBar({ hasStory: false, activeMobileTab: 'projects' })
+    const wrapper = mountBar({ hasStory: false, activeMobileTab: 'write' })
     const jobs = wrapper.find('[data-action="jobs"]')
     expect(jobs.find('[data-rail-badge]').exists()).toBe(false)
 

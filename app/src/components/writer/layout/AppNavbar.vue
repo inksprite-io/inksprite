@@ -42,7 +42,6 @@
 <script setup>
 import ChatBubbleIcon from '@/components/icons/ChatBubbleIcon.vue'
 import InProcessIcon from '@/components/icons/InProcessIcon.vue'
-import LibraryIcon from '@/components/icons/LibraryIcon.vue'
 import SettingsIcon from '@/components/icons/SettingsIcon.vue'
 import SpeakerIcon from '@/components/icons/SpeakerIcon.vue'
 import StoryboardIcon from '@/components/icons/StoryboardIcon.vue'
@@ -53,15 +52,15 @@ import { useJobsToast } from '@/composables/useJobsToast.js'
 
 /**
  * The rail. Top to bottom: what the sidebar can show — the outline, the
- * chats, the narration, the projects — then, at the foot, the jobs toast's
- * button and the settings. Picking the list
- * showing hides the sidebar, which is how it is hidden; the editor and the
- * chat hide each other from their own headers.
+ * chats, the narration — then, at the foot, the jobs toast's button and the
+ * settings. Picking the list showing hides the sidebar, which is how it is
+ * hidden; the editor and the chat hide each other from their own headers.
+ * The projects are switched from the top of the outline.
  *
  * @typedef {Object} Props
  * @property {import('@/types/models.js').StoryLayout} layout - Which panels are showing
  * @property {boolean} [hasStory] - Whether a project is open. Without one only
- *   the project list and the settings mean anything.
+ *   the jobs and the settings mean anything.
  */
 defineProps({
   layout: {
@@ -84,6 +83,5 @@ const TABS = [
   { id: SIDEBAR_TABS.OUTLINE, label: 'Outline', icon: StoryboardIcon, needsStory: true },
   { id: SIDEBAR_TABS.CHATS, label: 'Chats', icon: ChatBubbleIcon, needsStory: true },
   { id: SIDEBAR_TABS.NARRATION, label: 'Narration', icon: SpeakerIcon, needsStory: true },
-  { id: SIDEBAR_TABS.PROJECTS, label: 'Projects', icon: LibraryIcon, needsStory: false },
 ]
 </script>

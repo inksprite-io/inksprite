@@ -73,7 +73,7 @@ export const BACKUP_FORMAT = 1
 const SCOPES = {
   database: { noun: 'a whole backup', hint: 'Restore it from the Data settings.' },
   chat: { noun: 'one chat', hint: 'Import it from the chat list.' },
-  project: { noun: 'one project', hint: 'Import it from the project list.' },
+  project: { noun: 'one project', hint: 'Import it from the Projects menu atop the outline.' },
 }
 
 /**

@@ -1,5 +1,7 @@
 <template>
-  <div class="group/message relative">
+  <!-- The message's id and its text's elements are what a find looks in. See
+       useChatFind. -->
+  <div class="group/message relative" :data-message-id="messageId">
     <!-- What is asked of this message rather than of its turn, only when the
          two differ: a turn that is one message has these asked in its header
          (see ChatTurn), and every turn the writer takes is one message however
@@ -418,6 +420,7 @@
     >
       <pre
         class="text-sm text-surface-700 dark:text-surface-300 whitespace-pre-wrap break-words m-0"
+        data-find-text
         >{{ message?.content }}</pre
       >
     </div>
@@ -438,7 +441,7 @@
 
     <!-- Content. A consultation has already shown what it was asked. -->
     <div v-else-if="message?.content" class="prose dark:prose-invert prose-sm sm:prose max-w-none">
-      <div v-html="contentHtml" />
+      <div data-find-text v-html="contentHtml" />
     </div>
 
     <!-- Empty state for new messages. Not for a command: its own block is

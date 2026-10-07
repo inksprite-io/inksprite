@@ -1,19 +1,16 @@
 <template>
-  <button
-    v-tooltip.bottom="label"
-    type="button"
-    class="flex-none w-7 h-7 rounded flex items-center justify-center text-surface-500 dark:text-surface-400 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500"
-    :aria-label="label"
+  <HeaderButton
+    :icon="icon"
+    :label="label"
     :aria-pressed="!showing"
     :data-panel-toggle="panel"
     @click="$emit('toggle')"
-  >
-    <i :class="icon" style="font-size: 0.75rem"></i>
-  </button>
+  />
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import HeaderButton from './HeaderButton.vue'
 
 /**
  * The button at the edge of a panel's header that takes the neighbouring

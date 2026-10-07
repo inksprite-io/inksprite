@@ -12,7 +12,11 @@
         :min-size="12"
         class="min-w-0 grow overflow-hidden"
       >
+        <!-- Keyed on the project like the panels beside it: its lists bind to
+             one project when they mount, and the outline is where another
+             project is switched to. -->
         <LeftSidebar
+          :key="`sidebar:${storyId}`"
           class="h-full w-full"
           :story-id="storyId"
           :document-id="documentId"
