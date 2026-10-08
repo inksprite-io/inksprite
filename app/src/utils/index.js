@@ -23,6 +23,9 @@
  * ### Editor
  * - **tabs** - The editor's tabs: open, close, and what a story remembers of them
  *
+ * ### Browser
+ * - **webkit** - Whether the page is running in WebKit, for what only WebKit does
+ *
  * ### Storage
  * - **localStorage** - LocalStorage wrapper with quota management
  * - **backup** - Build and validate export files: the whole database, a chat, a project

@@ -211,10 +211,13 @@ export function toWireMessages(messages, provider) {
 /**
  * The whole request body for a streamed chat completion.
  *
- * Sampler values with a sentinel — 0, or 1.0 for a penalty that multiplies —
- * are left out rather than sent at their neutral value, because a backend that
- * has never heard of the key rejects the request and one that has may take the
- * neutral value as a deliberate override of its own default.
+ * Sampler values at their neutral value — 1.0 for temperature, top-p and a
+ * penalty that multiplies, 0 for the rest — are left out rather than sent,
+ * because a backend that has never heard of the key rejects the request, one
+ * that has may take the neutral value as a deliberate override of its own
+ * default, and some refuse keys they know: Claude takes a temperature or a
+ * top-p but not both, and its newest models take neither. So temperature at
+ * 1.0 is the server's own default, which on a local server may be cooler.
  *
  * Also reports the two things about this body a provider can refuse over in
  * terms that won't explain themselves, so the caller can say what happened.
@@ -248,10 +251,6 @@ export function buildCompletionBody({
   const body = {
     model,
     messages: toWireMessages(messages, provider),
-    temperature: params.temperature,
-    top_p: params.topP,
-    frequency_penalty: params.frequencyPenalty,
-    presence_penalty: params.presencePenalty,
     stream: true,
     // OpenRouter sends usage on a streamed response anyway; OpenAI and most
     // local servers only do when asked, and without it there's nothing to
@@ -260,6 +259,10 @@ export function buildCompletionBody({
   }
 
   if (settings.maxTokens > 0) body.max_tokens = settings.maxTokens
+  if (params.temperature !== 1.0) body.temperature = params.temperature
+  if (params.topP !== 1.0) body.top_p = params.topP
+  if (params.frequencyPenalty !== 0) body.frequency_penalty = params.frequencyPenalty
+  if (params.presencePenalty !== 0) body.presence_penalty = params.presencePenalty
   if (params.minP > 0) body.min_p = params.minP
   if (params.repetitionPenalty !== 1.0) body.repetition_penalty = params.repetitionPenalty
   if (params.topK > 0) body.top_k = params.topK

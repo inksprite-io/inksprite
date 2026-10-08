@@ -5,11 +5,21 @@ import PrimeVue from 'primevue/config'
 import ToggleSwitch from 'primevue/toggleswitch'
 import SystemSection from '@/components/writer/settings/SystemSection.vue'
 
-const { debug, setDebug, nsfwProfiles, setNsfwProfiles, forgetSavedRequests } = vi.hoisted(() => ({
+const {
+  debug,
+  setDebug,
+  nsfwProfiles,
+  setNsfwProfiles,
+  compactText,
+  setCompactText,
+  forgetSavedRequests,
+} = vi.hoisted(() => ({
   debug: { value: false },
   setDebug: vi.fn(),
   nsfwProfiles: { value: false },
   setNsfwProfiles: vi.fn(),
+  compactText: { value: true },
+  setCompactText: vi.fn(),
   forgetSavedRequests: vi.fn(),
 }))
 
@@ -24,6 +34,8 @@ vi.mock('@/composables/useApplicationState', () => ({
     setDebug,
     nsfwProfiles,
     setNsfwProfiles,
+    compactText,
+    setCompactText,
   }),
 }))
 vi.mock('@/composables/useSystemSettings.js', () => ({ applyTheme: vi.fn() }))
@@ -93,7 +105,11 @@ describe('SystemSection NSFW profiles', () => {
 
   it('sits above the debug switch', () => {
     const switches = mountSection().findAllComponents(ToggleSwitch)
-    expect(switches.map(one => one.props('inputId'))).toEqual(['nsfw-switch', 'debug-switch'])
+    expect(switches.map(one => one.props('inputId'))).toEqual([
+      'compact-text-switch',
+      'nsfw-switch',
+      'debug-switch',
+    ])
   })
 
   it('shows whether they are on', () => {
@@ -120,6 +136,18 @@ describe('SystemSection NSFW profiles', () => {
     noticeFor.mockClear()
     await toggle(wrapper, 'data-nsfw-profiles').vm.$emit('update:modelValue', false)
     expect(noticeFor).not.toHaveBeenCalled()
+  })
+})
+
+describe('SystemSection compact text', () => {
+  it('shows whether it is on, and switches it', async () => {
+    const wrapper = mountSection()
+    const compact = toggle(wrapper, 'data-compact-text')
+    expect(compact.props('modelValue')).toBe(true)
+
+    await compact.vm.$emit('update:modelValue', false)
+
+    expect(setCompactText).toHaveBeenCalledWith(false)
   })
 })
 

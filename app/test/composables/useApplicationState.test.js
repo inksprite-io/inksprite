@@ -73,6 +73,18 @@ describe('useApplicationState', () => {
     })
   })
 
+  describe('compactText', () => {
+    it('is on until switched off, and app-wide', () => {
+      const a = useApplicationState()
+      const b = useApplicationState()
+      expect(a.compactText.value).toBe(true)
+      a.setCompactText(false)
+      expect(b.compactText.value).toBe(false)
+      a.setCompactText(true)
+      expect(b.compactText.value).toBe(true)
+    })
+  })
+
   describe('debug', () => {
     it('is off until switched on, and app-wide', () => {
       const a = useApplicationState()

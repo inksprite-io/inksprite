@@ -27,7 +27,7 @@
 
     <ScrollPanel class="flex-1 min-w-0 min-h-0">
       <div class="p-4 pb-16 max-w-2xl">
-        <h2 class="text-lg font-semibold text-surface-800 dark:text-surface-100 mb-3">
+        <h2 class="text-base font-semibold text-surface-800 dark:text-surface-100 mb-3">
           {{ active.label }}
         </h2>
         <component :is="active.component" />

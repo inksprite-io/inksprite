@@ -17,6 +17,23 @@
 
     <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
       <div class="flex items-center justify-between gap-2">
+        <label
+          for="compact-text-switch"
+          class="text-xs font-medium text-surface-700 dark:text-surface-200"
+          >Compact text</label
+        >
+        <ToggleSwitch
+          :model-value="applicationState.compactText.value"
+          input-id="compact-text-switch"
+          class="flex-none"
+          data-compact-text
+          @update:model-value="applicationState.setCompactText"
+        />
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
+      <div class="flex items-center justify-between gap-2">
         <label for="nsfw-switch" class="text-xs font-medium text-surface-700 dark:text-surface-200"
           >Enable NSFW chat profiles</label
         >

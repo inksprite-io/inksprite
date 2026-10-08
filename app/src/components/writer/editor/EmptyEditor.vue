@@ -6,7 +6,7 @@
         :class="isEmpty ? 'pi pi-file-edit' : 'pi pi-folder-open'"
       ></i>
       <div>
-        <h2 class="text-2xl font-semibold text-surface-700 dark:text-surface-200">
+        <h2 class="text-xl font-semibold text-surface-700 dark:text-surface-200">
           {{ isEmpty ? 'Nothing to write in yet' : 'Nothing open' }}
         </h2>
       </div>

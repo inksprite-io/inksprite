@@ -49,6 +49,7 @@ describe('Editor', () => {
       { id: 'riley', name: 'Riley', voice: 'af_nicole', color: '#3b82f6' },
     ])
     mockAppState.highlightSpeakers = ref(true)
+    mockAppState.compactText = ref(true)
   })
 
   it('opens the document into the editor on mount and renders it', async () => {
@@ -142,6 +143,20 @@ describe('Editor', () => {
 
     wrapper.unmount()
     mockApi.get.mockImplementation(original)
+  })
+
+  it('sets its text close or not as the setting says, while it is open', async () => {
+    const wrapper = mountEditor()
+    await flushPromises()
+    const classes = () => wrapper.find('.ProseMirror').classes()
+
+    expect(classes()).toContain('leading-normal!')
+    mockAppState.compactText.value = false
+    await flushPromises()
+    expect(classes()).not.toContain('leading-normal!')
+    expect(classes()).toContain('prose')
+
+    wrapper.unmount()
   })
 
   it('shows a transaction from outside in the view', async () => {

@@ -17,6 +17,8 @@
  *   a sign-in in the system browser, waited for on localhost
  * - **updates** - In the desktop app, an update looked for and downloaded,
  *   and installed when the writer restarts into it
+ * - **open** - Links to other sites, opened in a new tab in a browser and in
+ *   the system browser from the desktop window, never in the app's own place
  *
  * Design: `.llm/desktop_design.md`.
  *
@@ -30,3 +32,4 @@ export { isDesktop } from './desktop.js'
 export { fetch } from './fetch.js'
 export { SIGN_IN_PORT, callbackOrigin, signInInBrowser } from './signIn.js'
 export { downloadUpdate, installUpdate } from './updates.js'
+export { openUrl, openLinkClicked } from './open.js'

@@ -427,6 +427,17 @@ describe('useEditor', () => {
     expect(() => editor.rememberScroll('doc_9', 1)).not.toThrow()
   })
 
+  it("keeps a plain document's own anchor beside the offset, and not past a conversion", () => {
+    const anchor = { at: 'line 300' }
+    editor.open('p_1', 'text', true)
+    editor.rememberScroll('p_1', 420, anchor)
+    expect(editor.scrollAnchor('p_1')).toBe(anchor)
+
+    editor.convert('p_1', false)
+    expect(editor.scrollTop('p_1')).toBe(420)
+    expect(editor.scrollAnchor('p_1')).toBeNull()
+  })
+
   it('focuses the view a document has', () => {
     const view = fakeView()
     editor.open('doc_1', 'One')

@@ -1077,12 +1077,11 @@ Whether pdf.js may hand a PDF's JPEGs to the browser's `ImageDecoder`.
 Not in WebKit. Safari has no `ImageDecoder`, so this costs it nothing, but
 WebKit on Linux has one, and drawing a page through it there brings down the
 page's process. pdf.js decodes in JavaScript instead, as it already does for
-any JPEG the API cannot take. Every browser on iOS is WebKit whatever it
-calls itself, and sends `CriOS/` or `EdgiOS/` rather than `Chrome/` or `Edg/`.
+any JPEG the API cannot take.
 
 ### Parameters
 
-- `userAgent` **[string][198]?** (optional, default `globalThis.navigator?.userAgent||''`)
+- `userAgent` **[string][198]?**&#x20;
 
 Returns **[boolean][199]**&#x20;
 

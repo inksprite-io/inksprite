@@ -16,13 +16,13 @@
  * @property {AISamplerParameters} parameters - Sampler parameters. Fields with sentinel values are omitted from requests.
  *
  * @typedef {Object} AISamplerParameters
- * @property {number} temperature
- * @property {number} topP
+ * @property {number} temperature - 1.0 = omitted.
+ * @property {number} topP - 1.0 = omitted.
  * @property {number} minP - 0 = omitted.
  * @property {number} topA - 0 = omitted.
  * @property {number} topK - 0 = omitted.
- * @property {number} frequencyPenalty
- * @property {number} presencePenalty
+ * @property {number} frequencyPenalty - 0 = omitted.
+ * @property {number} presencePenalty - 0 = omitted.
  * @property {number} repetitionPenalty - 1.0 = omitted.
  */
 
@@ -117,7 +117,10 @@ export function mergeAISettings(base, over) {
 }
 
 /**
- * Title-generation request overrides. Short, deterministic.
+ * Title-generation request overrides. Short, and no sampler values: these go
+ * to whatever model the chat is on, instead of the writer's, and a strict
+ * server refuses the whole request over one it doesn't take — Claude over a
+ * temperature and a top-p together. A title comes out fine at the defaults.
  * @type {AISettingsOverrides}
  */
 export const TITLE_DEFAULTS = {
@@ -128,14 +131,4 @@ export const TITLE_DEFAULTS = {
   maxTokens: 500,
   reasoningEffort: 'disabled',
   showModelReasoning: false,
-  parameters: {
-    temperature: 0.5,
-    topP: 0.8,
-    minP: 0.1,
-    topA: 0,
-    topK: 40,
-    frequencyPenalty: -0.2,
-    presencePenalty: -0.1,
-    repetitionPenalty: 0.9,
-  },
 }

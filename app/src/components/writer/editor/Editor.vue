@@ -28,11 +28,23 @@
       class="flex-1 w-full min-h-0 min-w-0 overflow-auto overflow-x-hidden"
     >
       <div class="w-full h-full flex flex-col items-center min-w-0">
+        <!-- Positioned, so that what is drawn over the text (the link
+             popover, the drop cursor) is placed here and scrolls with it. -->
         <div
           ref="host"
-          class="flex-1 w-full max-w-[50rem] min-w-0 px-4"
+          class="relative flex-1 w-full max-w-[50rem] min-w-0 px-4"
           @contextmenu="openTableMenu"
-        />
+        >
+          <LinkPopover
+            v-if="linkPopover"
+            v-bind="linkPopover"
+            @open="openUrl(linkPopover.href)"
+            @edit="editLink"
+            @remove="unlink"
+            @apply="applyLink"
+            @close="closeLink"
+          />
+        </div>
       </div>
     </ScrollPanel>
     <TableMenu ref="tableMenu" />
@@ -48,6 +60,7 @@ import ScrollPanel from 'primevue/scrollpanel'
 
 import FindBar from '@/components/common/FindBar.vue'
 import TableMenu from './TableMenu.vue'
+import LinkPopover from './LinkPopover.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useEditor } from '@/composables/useEditor.js'
 import { useFindKey } from '@/composables/useFindKey.js'
@@ -55,6 +68,8 @@ import { find, findNext, replaceAll, replaceCurrent, searchOf } from '@/editor/s
 import { useDocuments } from '@/composables/useDocuments'
 import { useNarration } from '@/composables/useNarration'
 import { TINT, speakerRanges } from '@/tts/highlight.js'
+import { linkAround, links, normalizeHref, removeLink, setLink } from '@/editor/links.js'
+import { openUrl } from '@/platform/open.js'
 import { isTextField } from '@/utils/focus.js'
 
 /**
@@ -84,6 +99,31 @@ const scrollPanel = ref(null)
 /** @type {EditorView|null} */
 let view = null
 
+/**
+ * The link the caret is in, shown under it, or the field for making or
+ * changing one. See `editor/links`.
+ *
+ * @type {import('vue').Ref<{ href: string, left: number, top: number, editing: boolean, withText: boolean }|null>}
+ */
+const linkPopover = ref(null)
+
+/**
+ * The typography plugin's spacing, tightened for drafting: its sizes are made
+ * for reading articles, with lines 1.75 times the text and close to a blank
+ * line between paragraphs. In WebKit the caret and a selection are as tall as
+ * the line, so a shorter line shortens them too. The line height has to be
+ * important to beat the sizes' own, which come later behind a breakpoint.
+ * Every list item holds a paragraph, so a tight list would otherwise be
+ * spaced as a loose one.
+ */
+const COMPACT = [
+  'leading-normal!',
+  'prose-p:my-[0.67em]',
+  'prose-headings:mt-[1.2em] prose-headings:mb-[0.4em] [&>:first-child]:mt-0',
+  'prose-ul:my-[0.67em] prose-ol:my-[0.67em] prose-li:my-[0.25em] [&_li>*]:my-0',
+  'prose-blockquote:my-[1em] prose-hr:my-[1.5em]',
+].join(' ')
+
 /** The element that scrolls, inside the scroll panel. */
 const scroller = () => scrollPanel.value?.$el?.querySelector?.('.p-scrollpanel-content') ?? null
 
@@ -91,7 +131,7 @@ const scroller = () => scrollPanel.value?.$el?.querySelector?.('.p-scrollpanel-c
 // coloured in the text. Decorations, so nothing is written into the document:
 // the speakers are an overlay here as they are everywhere.
 const narration = useNarration(props.storyId)
-const { highlightSpeakers } = useApplicationState()
+const { highlightSpeakers, compactText } = useApplicationState()
 
 /** What the colouring is made from, or null while there is none to do. */
 const highlight = computed(() => {
@@ -104,7 +144,7 @@ const highlight = computed(() => {
 let drawn = { doc: null, source: null, set: DecorationSet.empty }
 
 /** @param {import('prosemirror-state').EditorState} state */
-const decorations = state => {
+const speakerColouring = state => {
   const source = highlight.value
   if (!source) return DecorationSet.empty
   if (drawn.doc !== state.doc || drawn.source !== source) {
@@ -127,9 +167,33 @@ const decorations = state => {
   return drawn.set
 }
 
+/**
+ * The speakers' colouring, and while the link field is open, the text it will
+ * link: the focus is in the field, and the selection would not show.
+ *
+ * @param {import('prosemirror-state').EditorState} state
+ */
+const decorations = state => {
+  const set = speakerColouring(state)
+  const { from, to } = state.selection
+  if (!linkPopover.value?.editing || from === to) return set
+  return set.add(state.doc, [Decoration.inline(from, to, { class: 'link-target' })])
+}
+
 // The colouring changes from outside the editor — a speaker given, a voice
-// recoloured, the panel closed — and the view is told to look again.
+// recoloured, the panel closed — and the view is told to look again, as it
+// is when the link field opens or closes.
 watch(highlight, () => view?.setProps({ decorations }))
+watch(
+  () => linkPopover.value?.editing,
+  () => view?.setProps({ decorations })
+)
+
+/** The editor's own element's, read again whenever the view updates. */
+const attributes = () => ({
+  class: `flex-1 prose font-sans dark:prose-invert sm:prose lg:prose-lg focus:outline-none pt-[1rem] pb-[50rem] ${compactText.value ? COMPACT : ''}`,
+})
+watch(compactText, () => view?.setProps({ attributes }))
 
 /** @type {import('vue').Ref<HTMLElement|null>} */
 const root = ref(null)
@@ -225,6 +289,79 @@ const openTableMenu = event => {
   if (view && tableMenu.value?.open(view, event)) event.preventDefault()
 }
 
+/**
+ * Where in the page a popover goes: under the line `pos` is on, and from
+ * `from` if that starts on the same line, as the start of a link does.
+ *
+ * @param {EditorView} editorView
+ * @param {number} pos
+ * @param {number} [from]
+ */
+const below = (editorView, pos, from = pos) => {
+  const box = /** @type {HTMLElement} */ (host.value).getBoundingClientRect()
+  const at = editorView.coordsAtPos(pos)
+  const start = editorView.coordsAtPos(from)
+  const left = start.bottom > at.top ? start.left : at.left
+  return { left: left - box.left, top: at.bottom - box.top + 4 }
+}
+
+/**
+ * Show the link the caret is in, while the editor has the focus. A field
+ * being typed in stays.
+ *
+ * @param {EditorView} editorView
+ */
+const showLink = editorView => {
+  if (linkPopover.value?.editing) return
+  const { selection } = editorView.state
+  const around = selection.empty && editorView.hasFocus() ? linkAround(selection.$from) : null
+  linkPopover.value = around
+    ? {
+        href: around.href,
+        editing: false,
+        withText: false,
+        ...below(editorView, selection.head, around.from),
+      }
+    : null
+}
+
+/** The field for the link at the selection: Mod-K, or Edit. */
+const editLink = () => {
+  if (!view) return
+  const { selection } = view.state
+  const around = linkAround(selection.$from)
+  linkPopover.value = {
+    href: around?.href ?? '',
+    editing: true,
+    withText: selection.empty && !around,
+    ...below(view, selection.to, selection.empty ? around?.from : selection.from),
+  }
+}
+
+/**
+ * Make or change the link; an empty address takes it off.
+ *
+ * @param {{ href: string, text: string }} link
+ */
+const applyLink = ({ href, text }) => {
+  linkPopover.value = null
+  if (!view) return
+  const address = normalizeHref(href)
+  if (address) setLink(address, text.trim())(view.state, view.dispatch)
+  else removeLink(view.state, view.dispatch)
+  view.focus()
+}
+
+const unlink = () => {
+  if (view) removeLink(view.state, view.dispatch)
+}
+
+/** @param {boolean} refocus - Back to the text, as Escape goes */
+const closeLink = refocus => {
+  linkPopover.value = null
+  if (refocus) view?.focus()
+}
+
 /** The tab going to the background is the last chance to write the document out. */
 const onVisibilityChange = () => {
   if (document.hidden) editor.flush(props.documentId)
@@ -241,16 +378,14 @@ onMounted(async () => {
   const state = editor.open(id, currentDocument.value?.content || '')
   view = new EditorView(host.value, {
     state,
+    plugins: [links({ edit: editLink, open: openUrl, update: showLink })],
     decorations,
     dispatchTransaction: tr => {
       editor.dispatch(id, tr)
       // Writing in a preview is keeping it.
       if (tr.docChanged) api.keep(id)
     },
-    attributes: {
-      class:
-        'flex-1 prose font-sans dark:prose-invert sm:prose lg:prose-lg focus:outline-none pt-[1rem] pb-[50rem]',
-    },
+    attributes,
     handleDOMEvents: {
       blur: () => {
         editor.flush(id)

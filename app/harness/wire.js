@@ -74,11 +74,11 @@ export async function complete({
   const body = {
     model,
     messages,
-    temperature: params.temperature,
-    top_p: params.topP,
     stream: false,
   }
   if (maxTokens > 0) body.max_tokens = maxTokens
+  if (params.temperature !== 1.0) body.temperature = params.temperature
+  if (params.topP !== 1.0) body.top_p = params.topP
   if (params.minP > 0) body.min_p = params.minP
   if (params.topK > 0) body.top_k = params.topK
   if (params.repetitionPenalty !== 1.0) body.repetition_penalty = params.repetitionPenalty

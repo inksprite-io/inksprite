@@ -29,6 +29,20 @@ describe('driveConfig', () => {
     })
   })
 
+  it('trims the spaces a pasted value can bring', () => {
+    vi.stubEnv('VITE_GOOGLE_CLIENT_ID', ' web-1\n')
+    vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_ID', 'desktop-1 ')
+    vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_SECRET', '\tsecret-1 ')
+    expect(driveConfig()).toEqual({ kind: 'web', clientId: 'web-1' })
+
+    vi.stubGlobal('__TAURI_INTERNALS__', {})
+    expect(driveConfig()).toEqual({
+      kind: 'desktop',
+      clientId: 'desktop-1',
+      clientSecret: 'secret-1',
+    })
+  })
+
   it('offers nothing where the build has no client for it', () => {
     vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_ID', 'desktop-1')
     vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_SECRET', 'secret-1')

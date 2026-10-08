@@ -36,6 +36,9 @@ const defaultState = {
     // Off until the writer switches it on, so nobody meets them by opening a
     // menu.
     nsfwProfiles: false,
+    // Whether the editor sets its text close, or with the typography plugin's
+    // article spacing. For comparing the two while one is chosen.
+    compactText: true,
   },
   debug: {
     // Keeps a copy of the request that opened each assistant turn. Off by
@@ -160,6 +163,8 @@ watch(
  *   setApplyEdits: (mode: 'auto'|'ask') => void,
  *   nsfwProfiles: import('vue').ComputedRef<boolean>,
  *   setNsfwProfiles: (on: boolean) => void,
+ *   compactText: import('vue').ComputedRef<boolean>,
+ *   setCompactText: (on: boolean) => void,
  *   narration: import('vue').ComputedRef<NarrationConnection>,
  *   workflows: import('vue').ComputedRef<Record<string, import('../types/models.js').WorkflowSettings>>,
  *   setWorkflow: (name: string, patch: Partial<import('../types/models.js').WorkflowSettings>) => void,
@@ -246,6 +251,21 @@ export function useApplicationState() {
   const setNsfwProfiles = on => {
     if (!state.value.system) state.value.system = {}
     state.value.system.nsfwProfiles = on === true
+  }
+
+  /**
+   * Whether the editor sets its text close. Anything but an explicit off is
+   * on. See `COMPACT` in the editor.
+   * @type {import('vue').ComputedRef<boolean>}
+   */
+  const compactText = computed(() => state.value.system?.compactText !== false)
+
+  /**
+   * @param {boolean} on
+   */
+  const setCompactText = on => {
+    if (!state.value.system) state.value.system = {}
+    state.value.system.compactText = on !== false
   }
 
   /**
@@ -485,6 +505,10 @@ export function useApplicationState() {
     // Whether the NSFW chat profiles are offered
     nsfwProfiles,
     setNsfwProfiles,
+
+    // How close the editor sets its text
+    compactText,
+    setCompactText,
 
     // The speech server, and whether speakers' lines are coloured
     narration,

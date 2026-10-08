@@ -24,20 +24,23 @@ export const COMPACT = readBuiltInSkill(skillFile)
 export const COMPACT_PROMPT = COMPACT.body
 
 /**
- * How the summarizer's own request is sampled.
+ * How the summarizer's own request is sampled: the way the writer tuned their
+ * model, and nothing laid over it.
  *
- * The one role here that is not writing. Everything else on this table is tuned
- * to invent, and a summary written at those settings invents too — a detail
- * that reads well, is never corrected, and is a fact for the rest of the game
- * because it is the only version of the past that survived. So the temperature
- * comes down, and nothing else is named: what the writer tuned for their model
- * still applies everywhere this does not.
+ * What was here was a temperature of 0.3. This is the one role that is not
+ * writing, and a summary written at settings tuned to invent invents too — a
+ * detail that reads well, is never corrected, and is a fact for the rest of
+ * the game because it is the only version of the past that survived. But the
+ * request goes to whatever model the chat is on, and the newest Claude models
+ * refuse any temperature at all, so compacting failed outright on a server
+ * that passes the key on. If summaries start to invent, the prompt is the
+ * place to say so.
  *
  * The place to tune the role — see ai/skills/index.js.
  *
  * @type {import('../../defaults.js').AISettingsOverrides}
  */
-export const COMPACT_SETTINGS = { parameters: { temperature: 0.3 } }
+export const COMPACT_SETTINGS = {}
 
 /**
  * The role, and what this particular compaction is for.

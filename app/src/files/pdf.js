@@ -21,6 +21,8 @@
  * out as no text at all, so the import can say so.
  */
 
+import { isWebKit } from '@/utils/webkit.js'
+
 /** The library, loaded on first use and then kept. @type {Promise<typeof import('pdfjs-dist')>|null} */
 let library = null
 
@@ -109,14 +111,13 @@ export function joinPages(pages) {
  * Not in WebKit. Safari has no `ImageDecoder`, so this costs it nothing, but
  * WebKit on Linux has one, and drawing a page through it there brings down the
  * page's process. pdf.js decodes in JavaScript instead, as it already does for
- * any JPEG the API cannot take. Every browser on iOS is WebKit whatever it
- * calls itself, and sends `CriOS/` or `EdgiOS/` rather than `Chrome/` or `Edg/`.
+ * any JPEG the API cannot take.
  *
  * @param {string} [userAgent]
  * @returns {boolean}
  */
-export function imageDecoderAllowed(userAgent = globalThis.navigator?.userAgent || '') {
-  return !/AppleWebKit/.test(userAgent) || /Chrome\/|Chromium\/|Edg\//.test(userAgent)
+export function imageDecoderAllowed(userAgent) {
+  return !isWebKit(userAgent)
 }
 
 /**

@@ -12,10 +12,10 @@
       @close="api.closeTab"
       @keep="api.keep"
     >
-      <template v-if="chatShowing !== null || laidOut" #end>
+      <template v-if="chatShowing !== null || findable" #end>
         <!-- The way to the find where there is no key for it, as on a phone. -->
         <HeaderButton
-          v-if="laidOut"
+          v-if="findable"
           icon="pi pi-search"
           label="Find and replace"
           data-action="find"
@@ -38,6 +38,7 @@
       <FileView v-if="file" :story-id="storyId" :document-id="activeId" class="h-full w-full" />
       <RawMarkdown
         v-else-if="plain"
+        ref="editorView"
         :story-id="storyId"
         :document-id="activeId"
         class="h-full w-full"
@@ -55,19 +56,21 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import Editor from '../editor/Editor.vue'
 import EditorTabs from '../editor/EditorTabs.vue'
 import EmptyEditor from '../editor/EmptyEditor.vue'
 import FileView from '../editor/FileView.vue'
 import HeaderButton from './HeaderButton.vue'
 import PanelToggle from './PanelToggle.vue'
-import RawMarkdown from '../editor/RawMarkdown.vue'
 import { useCopyPath } from '@/composables/useCopyPath.js'
 import { useDocuments } from '@/composables/useDocuments'
 import { useFileView } from '@/composables/useFileView.js'
 import { usePlainText } from '@/composables/usePlainText.js'
 import { tabNames } from '@/utils/tabs.js'
+
+// Loaded the first time a plain document is opened, with CodeMirror.
+const RawMarkdown = defineAsyncComponent(() => import('../editor/RawMarkdown.vue'))
 
 /**
  * The editor panel: the strip of open documents, the one showing — laid out,
@@ -120,8 +123,8 @@ const activeId = computed(() => api.tabs.value.active)
 /** A file showing as the file. Its text is a plain document like any other. */
 const file = computed(() => api.get(activeId.value)?.type === 'file' && !showsText(activeId.value))
 const plain = computed(() => api.isPlain(activeId.value))
-/** A document laid out in the editor, which has a find of its own. */
-const laidOut = computed(() => !!activeId.value && !file.value && !plain.value)
+/** A document laid out or as plain text, either of which has a find of its own. */
+const findable = computed(() => !!activeId.value && !file.value)
 
 /** @type {import('vue').Ref<{ openFind: () => boolean }|null>} */
 const editorView = ref(null)

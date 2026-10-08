@@ -58,6 +58,9 @@ import { useDocumentsStore } from '@/stores/documentsStore.js'
  * @property {boolean} dirty
  * @property {ReturnType<typeof setTimeout>|null} timer
  * @property {number} scrollTop
+ * @property {unknown} anchor - Where its view was scrolled to, as that view
+ * keeps it: a long text's view guesses at the height of what it has not
+ * drawn, so a pixel offset does not come back to the same line
  *
  * @typedef {DocumentEntry|TextEntry} Entry
  */
@@ -120,7 +123,14 @@ const markDirty = (id, entry) => {
  */
 const makeEntry = (markdown, plain, scrollTop = 0) =>
   plain
-    ? shallowReactive({ kind: 'text', text: markdown, dirty: false, timer: null, scrollTop })
+    ? shallowReactive({
+        kind: 'text',
+        text: markdown,
+        dirty: false,
+        timer: null,
+        scrollTop,
+        anchor: null,
+      })
     : shallowReactive({
         kind: 'document',
         state: createEditorState(markdown),
@@ -142,8 +152,9 @@ const makeEntry = (markdown, plain, scrollTop = 0) =>
  *   openIds: () => string[],
  *   stateOf: (id: string) => EditorState|null,
  *   attach: (id: string, view: View|null) => void,
- *   rememberScroll: (id: string, top: number) => void,
+ *   rememberScroll: (id: string, top: number, anchor?: unknown) => void,
  *   scrollTop: (id: string) => number,
+ *   scrollAnchor: (id: string) => unknown,
  *   dispatch: (id: string, tr: Transaction) => void,
  *   setText: (id: string, text: string) => void,
  *   flush: (id?: string) => void,
@@ -249,13 +260,18 @@ export function useEditor() {
 
   /**
    * Where a document's view was scrolled to, kept for the next view over it,
-   * so a tab comes back where it was left.
+   * so a tab comes back where it was left. A plain document's view keeps its
+   * own anchor beside the offset, which a view of the other kind, after a
+   * conversion, goes without.
    * @param {string} id
    * @param {number} top
+   * @param {unknown} [anchor]
    */
-  const rememberScroll = (id, top) => {
+  const rememberScroll = (id, top, anchor = null) => {
     const entry = entries.get(id)
-    if (entry) entry.scrollTop = top
+    if (!entry) return
+    entry.scrollTop = top
+    if (entry.kind === 'text') entry.anchor = anchor
   }
 
   /**
@@ -263,6 +279,16 @@ export function useEditor() {
    * @returns {number}
    */
   const scrollTop = id => entries.get(id)?.scrollTop ?? 0
+
+  /**
+   * A plain document's view's own anchor, if it left one.
+   * @param {string} id
+   * @returns {unknown}
+   */
+  const scrollAnchor = id => {
+    const entry = entries.get(id)
+    return entry?.kind === 'text' ? entry.anchor : null
+  }
 
   /**
    * Apply a transaction to a structured document. Every change to one comes
@@ -371,6 +397,7 @@ export function useEditor() {
     attach,
     rememberScroll,
     scrollTop,
+    scrollAnchor,
     dispatch,
     setText,
     flush,

@@ -153,10 +153,13 @@ describe('EditorPanel', () => {
     expect(asText.find('[data-raw]').attributes('data-id')).toBe('doc_2')
     expect(asText.find('[data-editor]').exists()).toBe(false)
     expect(plainTextItem(asText, 'doc_2').label).toBe('Edit as a document')
+    // Either kind has a find of its own.
+    expect(asText.find('[data-action="find"]').exists()).toBe(true)
 
     const laidOut = mountPanel({ open: ['doc_1', 'doc_2'], active: 'doc_1' })
     expect(laidOut.find('[data-editor]').attributes('data-id')).toBe('doc_1')
     expect(plainTextItem(laidOut, 'doc_1').label).toBe('Edit as plain text')
+    expect(laidOut.find('[data-action="find"]').exists()).toBe(true)
   })
 
   it('shows a file as the file, and as its text from the menu', async () => {
@@ -171,6 +174,7 @@ describe('EditorPanel', () => {
     const wrapper = mountPanel({ open: ['pdf_1'], active: 'pdf_1' })
     expect(wrapper.find('[data-file]').attributes('data-id')).toBe('pdf_1')
     expect(wrapper.find('[data-raw]').exists()).toBe(false)
+    expect(wrapper.find('[data-action="find"]').exists()).toBe(false)
 
     const actions = wrapper.findComponent({ name: 'EditorTabs' }).props('actions')
     // A file is never a document to lay out, so there is no kind to switch.

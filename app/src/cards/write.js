@@ -19,7 +19,8 @@ import { useDocuments } from '@/composables/useDocuments'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { useFilesStore } from '@/stores/filesStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
-import { settleMarkdown } from '@/editor/markdown.js'
+import { parseMarkdown, serializeMarkdown, settleMarkdown } from '@/editor/markdown.js'
+import { laysOut } from '@/editor/size.js'
 import { substitute, uncomment, undecorate } from './card.js'
 
 /** @typedef {import('./card.js').Card} Card */
@@ -266,7 +267,8 @@ async function writePortrait(store, storyId, folderId, portrait) {
  * a file of prose is a document, and the tree is made of documents. Titled
  * after the file rather than after a heading inside it — a heading is the
  * writer's text and eating it to make a name is a decision the importer has no
- * business taking.
+ * business taking. One too long for the editor to lay out comes in plain, as
+ * the text it is: see editor/size.
  *
  * @param {string} storyId
  * @param {string} title
@@ -281,12 +283,15 @@ export async function writeMarkdown(storyId, title, content, { parentId } = {}) 
   const store = useDocumentsStore()
 
   const parent = parentId || rootIdFor(storyId)
+  const doc = parseMarkdown(content)
+  const plain = !laysOut(doc)
   const made = store.createDocument({
     storyId,
     parentId: parent,
     type: 'text',
     title: api.uniqueTitle(parent, title || 'Untitled'),
-    content: settleMarkdown(content),
+    plain,
+    content: plain ? content : serializeMarkdown(doc),
   })
 
   return {

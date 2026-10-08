@@ -4,11 +4,12 @@
  * writer is in.
  *
  * The browser's own find sees only what is in the page, and most of a long
- * chat is not: see useNearTurns. A document is found in by the editor, which
- * can replace as well. So the key is taken from the browser by the panel that
- * has the focus, or with nothing in it focused the one last clicked or
- * touched, and only when the panel has a find of its own to open. Anywhere else, in a
- * dialog or a plain document, the key is still the browser's.
+ * chat is not: see useNearTurns, nor most of a long plain document. A
+ * document is found in by its view, which can replace as well. So the key is
+ * taken from the browser by the panel that has the focus, or with nothing in
+ * it focused the one last clicked or touched, and only when the panel has a
+ * find of its own to open. Anywhere else, in a dialog, the key is still the
+ * browser's.
  */
 
 /* global Node */

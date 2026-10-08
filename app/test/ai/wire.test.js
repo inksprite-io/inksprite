@@ -1,6 +1,17 @@
 import { describe, it, expect } from 'vitest'
 import { buildCompletionBody, toWireMessages, chatCompletionsUrl, modelsUrl } from '@/ai/wire.js'
-import { AI_DEFAULTS, resolveAISettings } from '@/ai/defaults.js'
+import { AI_DEFAULTS, TITLE_DEFAULTS, resolveAISettings } from '@/ai/defaults.js'
+
+const SAMPLER_KEYS = [
+  'temperature',
+  'top_p',
+  'frequency_penalty',
+  'presence_penalty',
+  'min_p',
+  'top_k',
+  'top_a',
+  'repetition_penalty',
+]
 
 const local = { type: 'generic', endpoint: 'http://localhost:1234/v1' }
 const openrouter = { type: 'openrouter', endpoint: 'ignored' }
@@ -45,24 +56,40 @@ describe('buildCompletionBody', () => {
   it('leaves sampler keys out at their sentinel values', () => {
     const { body } = buildCompletionBody({ ...base, settings: AI_DEFAULTS })
 
-    // A backend that has never heard of the key rejects the request, and one
-    // that has may read the neutral value as a deliberate override.
-    expect(body).not.toHaveProperty('min_p')
-    expect(body).not.toHaveProperty('top_k')
-    expect(body).not.toHaveProperty('top_a')
-    expect(body).not.toHaveProperty('repetition_penalty')
+    // A backend that has never heard of the key rejects the request, one that
+    // has may read the neutral value as a deliberate override, and Claude
+    // refuses a temperature and a top-p together.
+    for (const key of SAMPLER_KEYS) expect(body).not.toHaveProperty(key)
     expect(body).not.toHaveProperty('max_tokens')
     expect(body).not.toHaveProperty('seed')
     expect(body).not.toHaveProperty('tools')
   })
 
+  it('asks for a title without a sampler key a strict server could refuse', () => {
+    const { body } = buildCompletionBody({ ...base, settings: resolveAISettings(TITLE_DEFAULTS) })
+
+    for (const key of SAMPLER_KEYS) expect(body).not.toHaveProperty(key)
+  })
+
   it('sends the sampler keys that were actually set', () => {
     const { body } = buildCompletionBody({
       ...base,
-      settings: resolveAISettings({ maxTokens: 100, seed: 7, parameters: { minP: 0.1, topK: 40 } }),
+      settings: resolveAISettings({
+        maxTokens: 100,
+        seed: 7,
+        parameters: { temperature: 0, minP: 0.1, topK: 40, presencePenalty: 0.5 },
+      }),
     })
 
-    expect(body).toMatchObject({ max_tokens: 100, seed: 7, min_p: 0.1, top_k: 40 })
+    expect(body).toMatchObject({
+      max_tokens: 100,
+      seed: 7,
+      temperature: 0,
+      min_p: 0.1,
+      top_k: 40,
+      presence_penalty: 0.5,
+    })
+    expect(body).not.toHaveProperty('top_p')
   })
 
   it('says not to call the tools when asked, and keeps them declared', () => {

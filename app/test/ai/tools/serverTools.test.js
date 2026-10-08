@@ -12,7 +12,6 @@ import {
   executeTool,
   getEnabledToolDefinitions,
   getToolDefinitions,
-  isServerTool,
   isSkill,
 } from '@/ai/tools/index.js'
 
@@ -85,11 +84,9 @@ describe('a server’s tools in the registry', () => {
     ).not.toContain('wiki__edit')
   })
 
-  it('knows them as a server’s, and not as skills', () => {
+  it('does not take them for skills', () => {
     setServers([wiki])
 
-    expect(isServerTool('wiki__search')).toBe(true)
-    expect(isServerTool('read_document')).toBe(false)
     expect(isSkill('wiki__search')).toBe(false)
   })
 

@@ -32,6 +32,10 @@ The window keeps its own data, apart from any browser's. To bring projects
 over, export a backup in the browser and restore it in the window (Settings →
 Data). MCP sign-ins do not come with a backup; sign in again in the window.
 
+The Web Inspector opens with a right-click → Inspect Element, or
+Cmd-Option-I, in a release build as well: its console is where a failure the
+app doesn't show is logged, a chat title the provider refused among them.
+
 ## A build
 
 `npm run build` in the container writes `app/dist`; `cargo tauri build` on the

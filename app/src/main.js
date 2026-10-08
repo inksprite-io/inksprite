@@ -64,6 +64,10 @@ const auraindigoPreset = definePreset(Aura, {
     },
   },
   components: {
+    // Dialog titles a step down from Aura's 1.25rem, in line with the app's headings.
+    dialog: {
+      title: { fontSize: '1.125rem' },
+    },
     // Aura tints the handle the same surface a panel is likely painted with,
     // which leaves it invisible against, say, a chat in dark mode. Pull it
     // clear of the backgrounds these panels actually sit on.

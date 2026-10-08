@@ -4,6 +4,7 @@
 // No console window beside the app on Windows, in a release build.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod open;
 mod sign_in;
 mod update;
 
@@ -12,13 +13,15 @@ fn main() {
         // Requests to servers, made here rather than in the page, so that no
         // server refuses them for the page's origin (`src/platform/fetch.js`).
         .plugin(tauri_plugin_http::init())
-        // Sign-ins, in the system browser and back (`sign_in.rs`).
+        // Sign-ins, in the system browser and back (`sign_in.rs`), and links
+        // to other sites (`open.rs`).
         .plugin(tauri_plugin_opener::init())
         .manage(sign_in::Waiting::default())
         // Updates from the public repository's releases (`update.rs`).
         .plugin(tauri_plugin_updater::Builder::new().build())
         .manage(update::Downloaded::default())
         .invoke_handler(tauri::generate_handler![
+            open::open_in_browser,
             sign_in::sign_in_in_browser,
             sign_in::stop_sign_in,
             update::download_update,

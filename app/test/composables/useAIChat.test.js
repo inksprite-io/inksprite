@@ -95,7 +95,6 @@ vi.mock('@/ai/tools/index.js', () => ({
   hasTools: vi.fn().mockReturnValue(false),
   isSkill: vi.fn(name => name === 'director' || name === 'scene'),
   // A tool of the connected server's, in the approval tests.
-  isServerTool: vi.fn(name => name.startsWith('wiki__')),
   // A skill of the writer's that answers as the reply.
   handsOverReply: vi.fn(name => name === 'scene'),
 }))
@@ -1820,12 +1819,12 @@ describe('useAIChat', () => {
       expect(tools.executeTool).not.toHaveBeenCalled()
     })
 
-    it('proposes every change to a document while a server’s tools are on offer', async () => {
+    it('applies edits as the setting says while a server’s tools are on offer', async () => {
       applyEdits.value = 'auto'
       const { turn, tools } = await startTurn([call('c1', 'edit_document')])
       await turn
 
-      expect(tools.executeTool.mock.calls[0][1]).toMatchObject({ propose: true })
+      expect(tools.executeTool.mock.calls[0][1].propose).toBeUndefined()
     })
   })
 

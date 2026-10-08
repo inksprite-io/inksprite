@@ -307,17 +307,6 @@ registerServerTools()
 onServersChanged(registerServerTools)
 
 /**
- * Whether this tool is a server's: text from a stranger, as far as the chat is
- * concerned. See ../../mcp/index.js.
- *
- * @param {string} name
- * @returns {boolean}
- */
-export function isServerTool(name) {
-  return serverOfGroup(toolRegistry.groupOf(name)) !== null
-}
-
-/**
  * The group whose calls a recent turn sends back with the conversation, for
  * the last few turns.
  *

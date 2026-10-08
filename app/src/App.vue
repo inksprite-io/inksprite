@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent, onMounted } from 'vue'
+import { defineAsyncComponent, onBeforeUnmount, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import ConfirmDialog from 'primevue/confirmdialog'
 import AppToast from './components/common/AppToast.vue'
@@ -18,6 +18,7 @@ import { applyTheme } from './composables/useSystemSettings'
 import { useApplicationState } from './composables/useApplicationState'
 import { useSkills } from './composables/useSkills'
 import { useUpdates } from './composables/useUpdates'
+import { openLinkClicked } from './platform/open.js'
 
 // Page views go to Vercel Web Analytics only from a build that asks for them
 // with VITE_VERCEL_ANALYTICS=true, as the project's own site does. The value
@@ -40,5 +41,10 @@ useUpdates()
 onMounted(() => {
   const { theme } = useApplicationState()
   applyTheme(theme.value)
+  // A link to another site, in a chat or anywhere else, opens outside the
+  // app rather than in its place.
+  document.addEventListener('click', openLinkClicked)
 })
+
+onBeforeUnmount(() => document.removeEventListener('click', openLinkClicked))
 </script>

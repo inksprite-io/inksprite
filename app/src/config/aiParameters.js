@@ -3,7 +3,8 @@ export const AI_PARAMETERS = {
   // Core generation parameters
   temperature: {
     label: 'Temperature',
-    description: 'Randomness. Lower is more predictable, higher more varied.',
+    description:
+      'Randomness. Lower is more predictable, higher more varied. 1 leaves it to the server.',
     min: 0.0,
     max: 2.0,
     step: 0.1,

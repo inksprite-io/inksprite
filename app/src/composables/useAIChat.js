@@ -43,7 +43,6 @@ import {
   executeTool,
   hasTools,
   isSkill,
-  isServerTool,
   handsOverReply,
 } from '@/ai/tools/index.js'
 import { needsApproval, serversForChat } from '@/mcp/servers.js'
@@ -207,12 +206,10 @@ export function useAIChat(storyId, chatId) {
 
   /**
    * The turn under way, for the tool calls made inside it: which message a
-   * call waiting on the writer belongs to, and whether a server's tools are on
-   * offer, in which case every change to a document is proposed. A chat runs
-   * one turn at a time.
+   * call waiting on the writer belongs to. A chat runs one turn at a time.
    */
-  /** @type {{messageId: string, strangers: boolean, finish: (() => void)|null}} */
-  const turn = { messageId: '', strangers: false, finish: null }
+  /** @type {{messageId: string, finish: (() => void)|null}} */
+  const turn = { messageId: '', finish: null }
 
   /**
    * The work under way — a turn, a submission and the turn it asks for, a
@@ -697,9 +694,7 @@ export function useAIChat(storyId, chatId) {
 
     // Whether the writer is asked before a document changes is theirs to
     // set, app-wide; read here so the tools need not know where it lives.
-    // While a server's tools are on offer it is not: an answer from one is
-    // text from a stranger, in the same context as edit_document.
-    const propose = applyEdits.value === 'ask' || turn.strangers
+    const propose = applyEdits.value === 'ask'
     /** @type {{thinking: string, calls: import('../types/models.js').ConsultedCall[]}} */
     const record = { thinking: '', calls: [] }
 
@@ -1129,7 +1124,6 @@ export function useAIChat(storyId, chatId) {
       // Nothing will come of a call still waiting on the writer.
       denyWaiting(messageId)
       turn.messageId = ''
-      turn.strangers = false
       turn.finish = null
       // What the tools changed that the message has no record of yet: a round
       // stopped, or thrown, partway through, with a call that wrote finished
@@ -1149,7 +1143,6 @@ export function useAIChat(storyId, chatId) {
     }
 
     turn.messageId = messageId
-    turn.strangers = tools.some(tool => isServerTool(tool.function.name))
     turn.finish = finish
 
     // The last round's calls, whose results the next request carries: what

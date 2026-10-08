@@ -27,12 +27,14 @@ import { isDesktop } from '@/platform/desktop.js'
  */
 export function driveConfig() {
   const env = import.meta.env
+  // Trimmed: a value pasted into a CI variable can keep a space at its end,
+  // and Google knows no client by an ID with a space in it.
   if (isDesktop()) {
-    const clientId = env.VITE_GOOGLE_DESKTOP_CLIENT_ID
-    const clientSecret = env.VITE_GOOGLE_DESKTOP_CLIENT_SECRET
+    const clientId = env.VITE_GOOGLE_DESKTOP_CLIENT_ID?.trim()
+    const clientSecret = env.VITE_GOOGLE_DESKTOP_CLIENT_SECRET?.trim()
     return clientId && clientSecret ? { kind: 'desktop', clientId, clientSecret } : null
   }
-  const clientId = env.VITE_GOOGLE_CLIENT_ID
+  const clientId = env.VITE_GOOGLE_CLIENT_ID?.trim()
   return clientId ? { kind: 'web', clientId } : null
 }
 

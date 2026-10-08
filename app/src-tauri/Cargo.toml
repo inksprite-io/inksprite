@@ -10,7 +10,9 @@ publish = false
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+# `devtools`: the Web Inspector in a release build too, for the console. On
+# macOS it takes a private API, which only the App Store would refuse.
+tauri = { version = "2", features = ["devtools"] }
 # `tauri::generate_context!` writes the plugins' configuration out as its values.
 serde_json = "1"
 tauri-plugin-http = "2"

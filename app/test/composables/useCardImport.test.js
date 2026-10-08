@@ -9,6 +9,7 @@ vi.mock('@/jobs/index.js', () => ({ startConversion: (...args) => startConversio
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { clearDocumentInstances } from '@/composables/useDocuments'
 import { SHELF_KINDS } from '@/cards/write.js'
+import { LAYOUT_LIMIT } from '@/editor/size.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
 vi.mock('@/stores/db', () => ({
@@ -230,6 +231,29 @@ describe('useCardImport', () => {
       const found = await cards.inspect(file('notes.txt', 'Some notes.'))
 
       expect(found.shape).toBe('markdown')
+    })
+
+    it('writes one too long to lay out as plain text, as it came', async () => {
+      const store = useDocumentsStore()
+      const row = '| *one* | two |'
+      const table = ['| a | b |', '| --- | --- |', ...Array(LAYOUT_LIMIT / 2).fill(row)].join('\n')
+      const found = await cards.inspect(file('Tables.md', table))
+
+      const written = await cards.write(found)
+
+      const document = store.getDocument(written.folderId)
+      expect(document.plain).toBe(true)
+      expect(document.content).toBe(table)
+    })
+
+    it('lays out one that is long in words alone', async () => {
+      const store = useDocumentsStore()
+      const prose = Array(3000).fill('A paragraph of the *road* north.').join('\n\n')
+      const found = await cards.inspect(file('Novel.md', prose))
+
+      const written = await cards.write(found)
+
+      expect(store.getDocument(written.folderId).plain).toBeUndefined()
     })
 
     it('does not make two documents of one name', async () => {

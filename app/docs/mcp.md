@@ -753,9 +753,7 @@ HTTP. See `.llm/skills_design.md`, part 6.
 The servers are kept in `stores/mcpServerStore.js`, registered as tools in
 `ai/tools/index.js`, one group per server, and run by the chat like any
 other tool — except that a tool that does not say it only reads waits for
-the writer to allow it, and while any server's tools are offered, the
-document tools propose their changes rather than make them. A tool's answer
-is text from a stranger, arriving in the same context as `edit_document`.
+the writer to allow it.
 
 A server's prompts are the writer's: each that takes at most one argument
 is a command in the `/` menu, `/<prefix>:<prompt>`, whose text the server

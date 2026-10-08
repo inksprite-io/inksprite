@@ -10,18 +10,26 @@
   - [Parameters][6]
 - [platform][7]
   - [Examples][8]
-- [platform/signIn][9]
-- [SIGN_IN_PORT][10]
-- [callbackOrigin][11]
-- [signInInBrowser][12]
-  - [Parameters][13]
-- [channel][14]
-- [platform/updates][15]
-- [downloadUpdate][16]
-- [catch][17]
-- [installUpdate][18]
-- [rejectAsError][19]
-  - [Parameters][20]
+- [platform/open][9]
+- [SCHEMES][10]
+- [openable][11]
+  - [Parameters][12]
+- [openUrl][13]
+  - [Parameters][14]
+- [openLinkClicked][15]
+  - [Parameters][16]
+- [platform/signIn][17]
+- [SIGN_IN_PORT][18]
+- [callbackOrigin][19]
+- [signInInBrowser][20]
+  - [Parameters][21]
+- [channel][22]
+- [platform/updates][23]
+- [downloadUpdate][24]
+- [catch][25]
+- [installUpdate][26]
+- [rejectAsError][27]
+  - [Parameters][28]
 
 ## platform/desktop
 
@@ -34,7 +42,7 @@ Whether the app is running in its desktop window.
 Decided at runtime, not when the app is built: in development the browser
 tab and the window load the same bundle from the same server.
 
-Returns **[boolean][21]**&#x20;
+Returns **[boolean][29]**&#x20;
 
 ## platform/fetch
 
@@ -62,10 +70,10 @@ page's own does, streamed body and abort signal included.
 
 ### Parameters
 
-- `input` **(RequestInfo | [URL][22])**&#x20;
+- `input` **(RequestInfo | [URL][30])**&#x20;
 - `init` **RequestInit?**&#x20;
 
-Returns **[Promise][23]<[Response][24]>**&#x20;
+Returns **[Promise][31]<[Response][32]>**&#x20;
 
 ## platform
 
@@ -86,6 +94,8 @@ sign-in rather than for a platform.
   a sign-in in the system browser, waited for on localhost
 - **updates** - In the desktop app, an update looked for and downloaded,
   and installed when the writer restarts into it
+- **open** - Links to other sites, opened in a new tab in a browser and in
+  the system browser from the desktop window, never in the app's own place
 
 Design: `.llm/desktop_design.md`.
 
@@ -96,6 +106,52 @@ import { fetch } from '@/platform/fetch.js'
 
 const response = await fetch(`${endpoint}/models`, { signal })
 ```
+
+## platform/open
+
+Links to other sites, opened outside the app.
+
+In a browser a link opens in a new tab, never in the app's own. In the
+desktop window it opens in the system browser: the window has no tabs, and
+a link followed there takes the app's place. Only web and mail links open;
+the page shows what models write, and anything else in an address, a
+`javascript:` or a `file:`, is not followed. The desktop side refuses those
+too.
+
+## SCHEMES
+
+What a link may open.
+
+## openable
+
+The address a link goes to, if it is one that may open.
+
+### Parameters
+
+- `href` **[string][33]**&#x20;
+
+Returns **([URL][30] | null)**&#x20;
+
+## openUrl
+
+Open a link outside the app.
+
+### Parameters
+
+- `href` **[string][33]**&#x20;
+
+Returns **[Promise][31]<[boolean][29]>** Whether it was one that may open
+
+## openLinkClicked
+
+For a click anywhere in the page: a link to another site opens outside the
+app. Links in the app itself are the router's, and links in the editor are
+text being written. A browser already sends a link with a target, a mail
+link, or a click with a modifier somewhere other than this tab.
+
+### Parameters
+
+- `event` **[MouseEvent][34]**&#x20;
 
 ## platform/signIn
 
@@ -116,14 +172,14 @@ some hold it to exactly that address.
 
 Where the desktop app listens for a sign-in to come back.
 
-Type: [number][25]
+Type: [number][35]
 
 ## callbackOrigin
 
 Where a sign-in comes back to: this page's own origin in a browser, the
 desktop app's listener in its window.
 
-Returns **[string][26]**&#x20;
+Returns **[string][33]**&#x20;
 
 ## signInInBrowser
 
@@ -135,13 +191,13 @@ while another is waiting takes its place.
 
 ### Parameters
 
-- `address` **([string][26] | [URL][22])** Where to sign in
-- `path` **[string][26]** Where the service sends the browser back, under
+- `address` **([string][33] | [URL][30])** Where to sign in
+- `path` **[string][33]** Where the service sends the browser back, under
   `callbackOrigin()`: `/connect/mcp`
-- `$2` **[Object][27]** (optional, default `{}`)
+- `$2` **[Object][36]** (optional, default `{}`)
   - `$2.signal` &#x20;
 
-Returns **[Promise][23]\<URLSearchParams>** The query it came back with
+Returns **[Promise][31]\<URLSearchParams>** The query it came back with
 
 ## channel
 
@@ -158,19 +214,19 @@ is always the latest.
 
 Look for an update and download it, in the desktop app.
 
-Returns **[Promise][23]<([string][26] | null)>** The version downloaded, ready to install;
+Returns **[Promise][31]<([string][33] | null)>** The version downloaded, ready to install;
 null when the app is up to date, or not the desktop app
 
 ## catch
 
-Type: [Promise][23]<([string][26] | null)>
+Type: [Promise][31]<([string][33] | null)>
 
 ## installUpdate
 
 Install the update `downloadUpdate` downloaded, and restart into it. Does
 not return, unless the install fails.
 
-Returns **[Promise][23]\<void>**&#x20;
+Returns **[Promise][31]\<void>**&#x20;
 
 ## rejectAsError
 
@@ -190,22 +246,31 @@ Returns **never**&#x20;
 [6]: #parameters
 [7]: #platform
 [8]: #examples
-[9]: #platformsignin
-[10]: #sign_in_port
-[11]: #callbackorigin
-[12]: #signininbrowser
-[13]: #parameters-1
-[14]: #channel
-[15]: #platformupdates
-[16]: #downloadupdate
-[17]: #catch
-[18]: #installupdate
-[19]: #rejectaserror
-[20]: #parameters-2
-[21]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[22]: https://developer.mozilla.org/docs/Web/API/URL/URL
-[23]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[24]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[25]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[26]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[27]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[9]: #platformopen
+[10]: #schemes
+[11]: #openable
+[12]: #parameters-1
+[13]: #openurl
+[14]: #parameters-2
+[15]: #openlinkclicked
+[16]: #parameters-3
+[17]: #platformsignin
+[18]: #sign_in_port
+[19]: #callbackorigin
+[20]: #signininbrowser
+[21]: #parameters-4
+[22]: #channel
+[23]: #platformupdates
+[24]: #downloadupdate
+[25]: #catch
+[26]: #installupdate
+[27]: #rejectaserror
+[28]: #parameters-5
+[29]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[30]: https://developer.mozilla.org/docs/Web/API/URL/URL
+[31]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[32]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[33]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[34]: https://developer.mozilla.org/docs/Web/API/MouseEvent
+[35]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[36]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object

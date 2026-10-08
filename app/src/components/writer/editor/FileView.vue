@@ -43,7 +43,7 @@
       <div class="flex flex-col items-center gap-4 text-center px-4" data-file-none>
         <i class="pi pi-file text-6xl text-surface-400"></i>
         <div>
-          <h2 class="text-2xl font-semibold text-surface-700 dark:text-surface-200">
+          <h2 class="text-xl font-semibold text-surface-700 dark:text-surface-200">
             No preview available
           </h2>
           <p class="text-surface-500 dark:text-surface-400 mt-2">{{ detail }}</p>

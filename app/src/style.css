@@ -20,6 +20,28 @@
   }
 }
 
+/* Headings a step down from the typography plugin's, whose first heading is
+   two and a half times the text beside it at the editor's size. In ems, so the
+   editor, the chat and the summaries, each a different size of prose, scale
+   alike. One element more specific than every size of the plugin's. */
+.prose h1 {
+  font-size: 1.75em;
+}
+
+.prose h2 {
+  font-size: 1.375em;
+}
+
+.prose h3 {
+  font-size: 1.125em;
+}
+
+/* The text the link field will link, while the focus is in the field and the
+   selection does not show (see editor/links). */
+.ProseMirror .link-target {
+  background-color: color-mix(in srgb, var(--p-primary-color) 20%, transparent);
+}
+
 /* A table in the editor. It scrolls sideways in a box of its own when it is
    wider than the page, which does not. Its first row is the header, by
    position, as markdown has it, so it is styled as the typography plugin
