@@ -55,17 +55,20 @@ can sign with. `spctl` says `source=Notarized Developer ID` when it worked.
 
 ## A release
 
-`.github/workflows/release.yml` builds the app for Apple silicon and Intel
-Macs at once, signs and notarizes it, and publishes it as a pre-release. It
+`.github/workflows/release.yml` builds the app for macOS (Apple silicon and
+Intel Macs at once, signed and notarized), Windows (an installer, unsigned)
+and Linux (an AppImage and a `.deb`), and publishes them as a pre-release. It
 runs when a tag starting with `v` is pushed, or by hand with one, and only in
 a public repository. Its secrets live in the repository's `release`
-environment:
+environment; only the Mac build uses the Apple ones:
 
-| Secret                       | What it is                                                                                                         |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `APPLE_CERTIFICATE`          | The Developer ID Application certificate and its private key, exported from Keychain Access as a `.p12`, in base64 |
-| `APPLE_CERTIFICATE_PASSWORD` | The password the `.p12` was exported with                                                                          |
-| `APPLE_SIGNING_IDENTITY`     | `Developer ID Application: Your Name (TEAMID)`                                                                     |
-| `APPLE_API_ISSUER`           | The App Store Connect API key's issuer ID                                                                          |
-| `APPLE_API_KEY`              | The key's ID                                                                                                       |
-| `APPLE_API_KEY_P8`           | The contents of the key's `.p8` file                                                                               |
+| Secret                              | What it is                                                                                                         |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `VITE_GOOGLE_DESKTOP_CLIENT_ID`     | The desktop Google client's ID, for imports from Drive (a variable, not a secret)                                  |
+| `VITE_GOOGLE_DESKTOP_CLIENT_SECRET` | The desktop Google client's secret                                                                                 |
+| `APPLE_CERTIFICATE`                 | The Developer ID Application certificate and its private key, exported from Keychain Access as a `.p12`, in base64 |
+| `APPLE_CERTIFICATE_PASSWORD`        | The password the `.p12` was exported with                                                                          |
+| `APPLE_SIGNING_IDENTITY`            | `Developer ID Application: Your Name (TEAMID)`                                                                     |
+| `APPLE_API_ISSUER`                  | The App Store Connect API key's issuer ID                                                                          |
+| `APPLE_API_KEY`                     | The key's ID                                                                                                       |
+| `APPLE_API_KEY_P8`                  | The contents of the key's `.p8` file                                                                               |
