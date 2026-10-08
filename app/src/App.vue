@@ -17,6 +17,7 @@ import ProfileNoticeHost from './components/common/ProfileNoticeHost.vue'
 import { applyTheme } from './composables/useSystemSettings'
 import { useApplicationState } from './composables/useApplicationState'
 import { useSkills } from './composables/useSkills'
+import { useUpdates } from './composables/useUpdates'
 
 // Page views go to Vercel Web Analytics only from a build that asks for them
 // with VITE_VERCEL_ANALYTICS=true, as the project's own site does. The value
@@ -31,6 +32,10 @@ const Analytics =
 // every chat, so the library is read as the app opens rather than when a
 // screen that lists it first does.
 useSkills()
+
+// In the desktop app, an update is looked for as it opens, and offered once
+// it is downloaded.
+useUpdates()
 
 onMounted(() => {
   const { theme } = useApplicationState()

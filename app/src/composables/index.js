@@ -39,6 +39,7 @@
  * - **useLongPress** - A finger held still on something, for what a right-click opens elsewhere
  * - **useFindKey** - Command-F (Control-F off a Mac) opens the find of the panel the writer is in
  * - **useChatFind** - Finding in a chat, most of which is not in the page: counted in the messages, gone to and highlighted in the page
+ * - **useUpdates** - In the desktop app, an update downloaded as soon as there is one, and a toast to restart into it
  *
  * ## Patterns
  *

@@ -98,14 +98,14 @@ export const useToast = () => {
    * @param {Object} [options] - Additional options
    * @param {import('@/utils/lineDiff.js').LineChange[]} [options.changes] - The lines
    *   it changed, offered under "What changed?"
-   * @param {number} [options.duration]
+   * @param {number} [options.duration] - In milliseconds; 0 keeps it until it is closed
    * @param {boolean} [options.dismissible]
    */
   const action = (message, action, options = {}) => {
     primeToast.add({
       severity: 'info',
       detail: message,
-      life: options.duration || 8000,
+      life: options.duration === 0 ? null : options.duration || 8000,
       closable: options.dismissible !== false,
       action,
       changes: options.changes,

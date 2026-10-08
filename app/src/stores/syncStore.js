@@ -127,16 +127,34 @@ export const useSyncStore = defineStore('sync', () => {
     }
   }
 
+  /** @type {Promise<void>|null} The save under way, if there is one. */
+  let saving = null
+
   /**
-   * Process all pending changes
+   * Save every pending change.
+   *
+   * One save runs at a time. Asked for during one, this waits for it, then
+   * saves what came in meanwhile, so once it resolves every change made
+   * before it was called is in the database, unless saving failed and a retry
+   * is due.
    * @returns {Promise<void>}
    */
   async function processSync() {
-    // Skip if already syncing or no changes
-    if (isSyncing.value || pendingChanges.value.size === 0) {
-      return
+    while (saving) await saving
+    if (pendingChanges.value.size === 0) return
+    saving = save()
+    try {
+      await saving
+    } finally {
+      saving = null
     }
+  }
 
+  /**
+   * Save the pending changes as they are now.
+   * @returns {Promise<void>}
+   */
+  async function save() {
     isSyncing.value = true
     const changes = Array.from(pendingChanges.value.values())
     pendingChanges.value.clear()

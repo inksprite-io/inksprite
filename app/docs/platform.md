@@ -16,6 +16,12 @@
 - [signInInBrowser][12]
   - [Parameters][13]
 - [channel][14]
+- [platform/updates][15]
+- [downloadUpdate][16]
+- [catch][17]
+- [installUpdate][18]
+- [rejectAsError][19]
+  - [Parameters][20]
 
 ## platform/desktop
 
@@ -28,7 +34,7 @@ Whether the app is running in its desktop window.
 Decided at runtime, not when the app is built: in development the browser
 tab and the window load the same bundle from the same server.
 
-Returns **[boolean][15]**&#x20;
+Returns **[boolean][21]**&#x20;
 
 ## platform/fetch
 
@@ -56,10 +62,10 @@ page's own does, streamed body and abort signal included.
 
 ### Parameters
 
-- `input` **(RequestInfo | [URL][16])**&#x20;
+- `input` **(RequestInfo | [URL][22])**&#x20;
 - `init` **RequestInit?**&#x20;
 
-Returns **[Promise][17]<[Response][18]>**&#x20;
+Returns **[Promise][23]<[Response][24]>**&#x20;
 
 ## platform
 
@@ -78,6 +84,8 @@ sign-in rather than for a platform.
   their origin
 - **signIn** - Where a sign-in comes back to, and, in the desktop window,
   a sign-in in the system browser, waited for on localhost
+- **updates** - In the desktop app, an update looked for and downloaded,
+  and installed when the writer restarts into it
 
 Design: `.llm/desktop_design.md`.
 
@@ -108,14 +116,14 @@ some hold it to exactly that address.
 
 Where the desktop app listens for a sign-in to come back.
 
-Type: [number][19]
+Type: [number][25]
 
 ## callbackOrigin
 
 Where a sign-in comes back to: this page's own origin in a browser, the
 desktop app's listener in its window.
 
-Returns **[string][20]**&#x20;
+Returns **[string][26]**&#x20;
 
 ## signInInBrowser
 
@@ -127,15 +135,52 @@ while another is waiting takes its place.
 
 ### Parameters
 
-- `address` **([string][20] | [URL][16])** Where to sign in
-- `path` **[string][20]** Where the service sends the browser back, under
+- `address` **([string][26] | [URL][22])** Where to sign in
+- `path` **[string][26]** Where the service sends the browser back, under
   `callbackOrigin()`: `/connect/mcp`
-- `$2` **[Object][21]** (optional, default `{}`)
+- `$2` **[Object][27]** (optional, default `{}`)
   - `$2.signal` &#x20;
 
-Returns **[Promise][17]\<URLSearchParams>** The query it came back with
+Returns **[Promise][23]\<URLSearchParams>** The query it came back with
 
 ## channel
+
+## platform/updates
+
+Updates to the desktop app.
+
+The native side looks for one in the public repository's releases,
+downloads it and checks its signature (`src-tauri/src/update.rs`); the page
+only asks, and says when to install. A browser has none: the page it loads
+is always the latest.
+
+## downloadUpdate
+
+Look for an update and download it, in the desktop app.
+
+Returns **[Promise][23]<([string][26] | null)>** The version downloaded, ready to install;
+null when the app is up to date, or not the desktop app
+
+## catch
+
+Type: [Promise][23]<([string][26] | null)>
+
+## installUpdate
+
+Install the update `downloadUpdate` downloaded, and restart into it. Does
+not return, unless the install fails.
+
+Returns **[Promise][23]\<void>**&#x20;
+
+## rejectAsError
+
+The native side says what went wrong as a plain string.
+
+### Parameters
+
+- `error` **unknown**&#x20;
+
+Returns **never**&#x20;
 
 [1]: #platformdesktop
 [2]: #isdesktop
@@ -151,10 +196,16 @@ Returns **[Promise][17]\<URLSearchParams>** The query it came back with
 [12]: #signininbrowser
 [13]: #parameters-1
 [14]: #channel
-[15]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[16]: https://developer.mozilla.org/docs/Web/API/URL/URL
-[17]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[18]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[19]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[20]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[21]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[15]: #platformupdates
+[16]: #downloadupdate
+[17]: #catch
+[18]: #installupdate
+[19]: #rejectaserror
+[20]: #parameters-2
+[21]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[22]: https://developer.mozilla.org/docs/Web/API/URL/URL
+[23]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[24]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[25]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[26]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[27]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object

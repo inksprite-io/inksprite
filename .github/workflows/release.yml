@@ -1,19 +1,25 @@
 name: Desktop Release
 
-# The desktop app for macOS, Windows and Linux, published as a pre-release.
-# The Mac build is for Apple silicon and Intel Macs at once, signed and
-# notarized; the Windows and Linux builds are not signed. Run by pushing a tag
-# (v0.1.0-dev.1), or by hand with one, which is then made at the commit being
-# built.
+# The desktop app for macOS, Windows and Linux, published as the latest
+# release. The Mac build is for Apple silicon and Intel Macs at once, signed
+# and notarized; the Windows and Linux builds are not code-signed. Run by
+# pushing a tag (v0.1.0-dev.1), or by hand with one, which is then made at the
+# commit being built. The app is built as the tag's version.
 #
 # The page is built once, and each platform wraps that same build. The release
 # is made only when every platform has built, so it never goes out with one
 # missing.
 #
+# The app updates itself from the latest release (app/src-tauri/src/update.rs):
+# each build comes with an update signed with the updater's key, and the
+# release with latest.json, which says where each platform's update is.
+# GitHub's latest release is never a pre-release, so these are not marked as
+# pre-releases.
+#
 # Never on a pull request: this workflow holds the signing secrets. They live
-# in the `release` environment, which only the page and macOS jobs ask for. It
-# runs only on a public repository, because a release there is the only kind
-# that can be downloaded without signing in to GitHub.
+# in the `release` environment. It runs only on a public repository, because
+# a release there is the only kind that can be downloaded without signing in
+# to GitHub.
 
 on:
   push:
@@ -37,14 +43,21 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !github.event.repository.private }}
     environment: release
+    outputs:
+      version: ${{ steps.tag.outputs.version }}
 
     steps:
+      # The version is the tag without its v: v0.1.0-dev.4 is 0.1.0-dev.4.
+      # The updater compares versions as semver, so 0.1.0-dev.10 comes after
+      # 0.1.0-dev.9, and 0.1.0 after both.
       - name: Check the tag
+        id: tag
         run: |
-          case "$TAG" in
-            v[0-9]*) ;;
-            *) echo "A release tag starts with v and a number: $TAG"; exit 1 ;;
-          esac
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "A release tag is v and a version, such as v0.1.0 or v0.1.0-dev.4: $TAG"
+            exit 1
+          fi
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
 
@@ -82,6 +95,9 @@ jobs:
     needs: page
     runs-on: macos-latest
     environment: release
+    env:
+      RELEASE_CONFIG: '{"version": "${{ needs.page.outputs.version }}", "bundle": {"createUpdaterArtifacts": true}}'
+      VERSION: ${{ needs.page.outputs.version }}
 
     steps:
       - uses: actions/checkout@v4
@@ -107,10 +123,13 @@ jobs:
 
       # Tauri imports the certificate into a keychain of its own, signs the
       # app, sends it to Apple to be notarized, and staples the ticket to it.
-      # The key file is written where the runner throws its files away.
+      # The key file is written where the runner throws its files away. The
+      # update is the app in a .tar.gz, signed with the updater's key.
       - name: Build, sign and notarize
         working-directory: app/src-tauri
         env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
@@ -120,7 +139,7 @@ jobs:
         run: |
           export APPLE_API_KEY_PATH="$RUNNER_TEMP/AuthKey_$APPLE_API_KEY.p8"
           printf '%s\n' "$APPLE_API_KEY_P8" > "$APPLE_API_KEY_PATH"
-          cargo tauri build --target universal-apple-darwin
+          cargo tauri build --target universal-apple-darwin --config "$RELEASE_CONFIG"
 
       # The check a Mac makes on an app downloaded from the internet: signed
       # with a Developer ID, and notarized, with the ticket stapled on.
@@ -130,10 +149,21 @@ jobs:
           spctl --assess --type execute --verbose=2 macos/inksprite.app
           xcrun stapler validate macos/inksprite.app
 
+      # Named like the other platforms' files, with its version.
+      - name: Name the update
+        working-directory: app/src-tauri/target/universal-apple-darwin/release/bundle/macos
+        run: |
+          name="inksprite_${VERSION}_universal.app.tar.gz"
+          mv inksprite.app.tar.gz "$name"
+          mv inksprite.app.tar.gz.sig "$name.sig"
+
       - uses: actions/upload-artifact@v4
         with:
           name: app-macOS
-          path: app/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+          path: |
+            app/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+            app/src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
+            app/src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz.sig
           if-no-files-found: error
           retention-days: 7
 
@@ -141,6 +171,9 @@ jobs:
     name: ${{ matrix.name }}
     needs: page
     runs-on: ${{ matrix.runner }}
+    environment: release
+    env:
+      RELEASE_CONFIG: '{"version": "${{ needs.page.outputs.version }}", "bundle": {"createUpdaterArtifacts": true}}'
     defaults:
       run:
         shell: bash
@@ -155,14 +188,18 @@ jobs:
             cli: cargo-tauri
             files: |
               app/src-tauri/target/release/bundle/appimage/*.AppImage
+              app/src-tauri/target/release/bundle/appimage/*.AppImage.sig
               app/src-tauri/target/release/bundle/deb/*.deb
+              app/src-tauri/target/release/bundle/deb/*.deb.sig
           # The NSIS installer only: it installs for the user, with no admin
           # prompt, where an unsigned MSI would ask as an unknown publisher.
           - name: Windows
             runner: windows-latest
             bundles: nsis
             cli: cargo-tauri.exe
-            files: app/src-tauri/target/release/bundle/nsis/*-setup.exe
+            files: |
+              app/src-tauri/target/release/bundle/nsis/*-setup.exe
+              app/src-tauri/target/release/bundle/nsis/*-setup.exe.sig
 
     steps:
       - uses: actions/checkout@v4
@@ -195,9 +232,13 @@ jobs:
         if: steps.tauri-cli.outputs.cache-hit != 'true'
         run: cargo install tauri-cli --version "$TAURI_CLI_VERSION" --locked
 
+      # Each installer is its own update, signed with the updater's key.
       - name: Build
         working-directory: app/src-tauri
-        run: cargo tauri build --bundles ${{ matrix.bundles }}
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: cargo tauri build --bundles ${{ matrix.bundles }} --config "$RELEASE_CONFIG"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -208,27 +249,46 @@ jobs:
 
   publish:
     name: Publish
-    needs: [macos, linux-windows]
+    needs: [page, macos, linux-windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      VERSION: ${{ needs.page.outputs.version }}
 
     steps:
+      # The key the app trusts, and the script that checks the updates
+      # against it.
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/latest-json.mjs
+            app/src-tauri/tauri.conf.json
+          sparse-checkout-cone-mode: false
+
       - uses: actions/download-artifact@v4
         with:
           pattern: app-*
           path: release
           merge-multiple: true
 
-      - name: Publish the pre-release
+      # Every file in one folder, as they are in the release.
+      - name: Write latest.json
+        run: |
+          mkdir assets
+          find release -type f -exec mv -t assets {} +
+          node .github/scripts/latest-json.mjs assets "$VERSION" \
+            "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG" \
+            "$(jq -r .plugins.updater.pubkey app/src-tauri/tauri.conf.json)"
+
+      - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          mapfile -t files < <(find release -type f | sort)
-          gh release create "$TAG" "${files[@]}" \
+          gh release create "$TAG" assets/* \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --prerelease \
+            --latest \
             --title "inksprite $TAG" \
             --notes-file - <<'EOF'
           A development build of the desktop app.
@@ -236,6 +296,8 @@ jobs:
           - **macOS**: the `.dmg`, for Apple silicon and Intel Macs. Signed and notarized.
           - **Windows**: the `-setup.exe`. It isn't signed, so Windows warns that it doesn't recognize the app: choose More info, then Run anyway.
           - **Linux**: the `.AppImage`, or the `.deb` for Debian and Ubuntu. If the window opens blank, start the app with `WEBKIT_DISABLE_DMABUF_RENDERER=1` set.
+
+          Once installed, the app updates itself: it downloads each new release and offers to restart into it. The `.tar.gz`, `.sig` and `latest.json` files are for the updater.
 
           The Windows and Linux builds haven't been tried on a real machine yet.
           EOF

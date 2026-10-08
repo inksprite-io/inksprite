@@ -283,16 +283,30 @@ describe('SyncStore', () => {
       expect(store.pendingChanges.size).toBe(0)
     })
 
-    it('should skip if already syncing', async () => {
+    it('waits for a save under way, then saves what came in meanwhile', async () => {
       const { default: db } = await import('../../src/stores/db')
+      /** @type {(value?: unknown) => void} */
+      let finishFirst = () => {}
+      db.transaction.mockImplementationOnce(async (mode, tables, fn) => {
+        await new Promise(resolve => (finishFirst = resolve))
+        await fn()
+      })
 
-      store.isSyncing = true
-      store.trackChange('stories', 'story_1', { title: 'Story 1' })
+      store.trackChange('stories', 'story_1', { id: 'story_1', version: 0 })
+      const first = store.processSync()
+      store.trackChange('stories', 'story_2', { id: 'story_2', version: 0 })
+      let secondDone = false
+      const second = store.processSync().then(() => (secondDone = true))
 
-      await store.processSync()
+      await Promise.resolve()
+      expect(db.transaction).toHaveBeenCalledTimes(1)
+      expect(secondDone).toBe(false)
 
-      expect(db.transaction).not.toHaveBeenCalled()
-      expect(store.pendingChanges.size).toBe(1) // Still pending
+      finishFirst()
+      await Promise.all([first, second])
+      expect(db.stories.put).toHaveBeenCalledWith(expect.objectContaining({ id: 'story_1' }))
+      expect(db.stories.put).toHaveBeenCalledWith(expect.objectContaining({ id: 'story_2' }))
+      expect(store.pendingChanges.size).toBe(0)
     })
 
     it('should skip if no pending changes', async () => {

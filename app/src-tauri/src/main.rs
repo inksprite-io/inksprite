@@ -5,6 +5,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod sign_in;
+mod update;
 
 fn main() {
     tauri::Builder::default()
@@ -14,9 +15,14 @@ fn main() {
         // Sign-ins, in the system browser and back (`sign_in.rs`).
         .plugin(tauri_plugin_opener::init())
         .manage(sign_in::Waiting::default())
+        // Updates from the public repository's releases (`update.rs`).
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(update::Downloaded::default())
         .invoke_handler(tauri::generate_handler![
             sign_in::sign_in_in_browser,
-            sign_in::stop_sign_in
+            sign_in::stop_sign_in,
+            update::download_update,
+            update::install_update
         ])
         .run(tauri::generate_context!())
         .expect("the app could not start");

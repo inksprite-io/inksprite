@@ -15,6 +15,8 @@
  *   their origin
  * - **signIn** - Where a sign-in comes back to, and, in the desktop window,
  *   a sign-in in the system browser, waited for on localhost
+ * - **updates** - In the desktop app, an update looked for and downloaded,
+ *   and installed when the writer restarts into it
  *
  * Design: `.llm/desktop_design.md`.
  *
@@ -27,3 +29,4 @@
 export { isDesktop } from './desktop.js'
 export { fetch } from './fetch.js'
 export { SIGN_IN_PORT, callbackOrigin, signInInBrowser } from './signIn.js'
+export { downloadUpdate, installUpdate } from './updates.js'
