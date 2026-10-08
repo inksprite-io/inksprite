@@ -1,6 +1,12 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+import { MarkdownSerializer, MarkdownSerializerState } from 'prosemirror-markdown'
 import { schema, NODE_NAMES, MARK_NAMES } from '../../src/editor/schema.js'
-import { parseMarkdown, serializeMarkdown, settleMarkdown } from '../../src/editor/markdown.js'
+import {
+  parseMarkdown,
+  serializeMarkdown,
+  serializer,
+  settleMarkdown,
+} from '../../src/editor/markdown.js'
 
 /** Serialize, parse the result, and hand back both. */
 const roundTrip = doc => {
@@ -335,6 +341,72 @@ describe('serializeMarkdown', () => {
     const { markdown, doc: back } = roundTrip(doc)
     expect(markdown).toBe('````md\na ``` b\n````')
     expect(back.eq(doc)).toBe(true)
+  })
+})
+
+describe('serializeMarkdown on a long document', () => {
+  const block = [
+    '## A heading',
+    'A paragraph with **bold** in it.',
+    '- one\n- two',
+    '| a | b |\n| --- | --- |\n| 1 | 2 |',
+    '> said once',
+  ].join('\n\n')
+  const long = Array.from({ length: 200 }, () => block).join('\n\n')
+  const list = Array.from({ length: 1000 }, () => '- An item with **bold** in it').join('\n')
+  const quote = Array.from({ length: 1000 }, () => '> A line said once').join('\n>\n')
+
+  it('writes it as it was, in blocks or as one list or quote', () => {
+    expect(settle(long)).toBe(long)
+    expect(settle(list)).toBe(list)
+    expect(settle(quote)).toBe(quote)
+  })
+
+  // The state reads its output to see whether a line has ended. Were the
+  // whole document there, every block would cost the whole document, and in
+  // one long list every item would cost the list.
+  it('keeps no more than a few lines of output in the state, at any depth', () => {
+    const atBlank = MarkdownSerializerState.prototype.atBlank
+    let longest = 0
+    const spy = vi
+      .spyOn(MarkdownSerializerState.prototype, 'atBlank')
+      .mockImplementation(function () {
+        longest = Math.max(longest, this.out.length)
+        return atBlank.call(this)
+      })
+    try {
+      for (const markdown of [long, list, quote]) settle(markdown)
+    } finally {
+      spy.mockRestore()
+    }
+    expect(longest).toBeGreaterThan(0)
+    expect(longest).toBeLessThan(500)
+  })
+
+  // The state is left only the end of its output, which is all the reference
+  // reads back today. Were a later version to read further, or to do more in
+  // its own serialize, the two would part here. The scene is moved along a
+  // character at a time, so that the state is cut at every point in it.
+  it("writes what the reference's own serialize writes", () => {
+    const scene = [
+      '# A heading',
+      'Text with **bold**, *italic*, `code`, ~~gone~~ and a [link](https://example.com).',
+      'A bang before a link: wow\\![link](https://example.com)',
+      'And after a backslash: wow\\\\![link](https://example.com)',
+      'Once\nupon a time\\\n\\\nand after',
+      '> quoted\n>\n> - a list in a quote',
+      '- one\n  - nested\n- two\n\n1. first\n2. second',
+      '```js\nraw *text*\n```',
+      '---',
+      '| a | b |\n| :--- | ---: |\n| **1** | `2 \\| 3` |',
+    ].join('\n\n')
+    for (let shift = 0; shift < 300; shift++) {
+      const doc = parseMarkdown(`${'x'.repeat(shift)}\n\n${scene}`)
+      const reference = MarkdownSerializer.prototype.serialize.call(serializer, doc, {
+        tightLists: true,
+      })
+      expect(serializeMarkdown(doc)).toBe(reference)
+    }
   })
 })
 

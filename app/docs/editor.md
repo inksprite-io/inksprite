@@ -19,116 +19,123 @@
   - [Parameters][15]
 - [alignmentOf][16]
   - [Parameters][17]
-- [][18]
-- [cells][19]
-- [rowOf][20]
-  - [Parameters][21]
-- [ruleOf][22]
-  - [Parameters][23]
-- [parseMarkdown][24]
-  - [Parameters][25]
-- [serializeMarkdown][26]
-  - [Parameters][27]
-- [settleMarkdown][28]
-  - [Parameters][29]
-- [appendBlocks][30]
-  - [Parameters][31]
-- [editor/schema][32]
-- [languageOf][33]
+- [TAIL][18]
+- [ROOM][19]
+- [LinearSerializer][20]
+  - [serialize][21]
+    - [Parameters][22]
+- [][23]
+- [serializer][24]
+- [][25]
+- [cells][26]
+- [rowOf][27]
+  - [Parameters][28]
+- [ruleOf][29]
+  - [Parameters][30]
+- [parseMarkdown][31]
+  - [Parameters][32]
+- [serializeMarkdown][33]
   - [Parameters][34]
-- [code_block][35]
-- [][36]
-- [strikethrough][37]
-- [ALIGNMENTS][38]
-- [cellAttrs][39]
-  - [Parameters][40]
-- [BREAKS][41]
-- [cellContent][42]
-  - [Parameters][43]
-- [cloneNode][44]
-- [table][45]
-- [table_row][46]
-- [table_cell][47]
-- [NODE_NAMES][48]
-- [MARK_NAMES][49]
-- [schema][50]
-- [editor/search][51]
-- [SearchState][52]
-  - [Properties][53]
-- [NOT_TEXT][54]
-- [searchKey][55]
-- [NONE][56]
-- [escapeRegExp][57]
-  - [Parameters][58]
-- [findMatches][59]
-  - [Parameters][60]
-- [matches][61]
-- [firstFrom][62]
-  - [Parameters][63]
-- [searchState][64]
+- [settleMarkdown][35]
+  - [Parameters][36]
+- [appendBlocks][37]
+  - [Parameters][38]
+- [editor/schema][39]
+- [languageOf][40]
+  - [Parameters][41]
+- [code_block][42]
+- [][43]
+- [strikethrough][44]
+- [ALIGNMENTS][45]
+- [cellAttrs][46]
+  - [Parameters][47]
+- [BREAKS][48]
+- [cellContent][49]
+  - [Parameters][50]
+- [cloneNode][51]
+- [table][52]
+- [table_row][53]
+- [table_cell][54]
+- [NODE_NAMES][55]
+- [MARK_NAMES][56]
+- [schema][57]
+- [editor/search][58]
+- [SearchState][59]
+  - [Properties][60]
+- [NOT_TEXT][61]
+- [searchKey][62]
+- [NONE][63]
+- [escapeRegExp][64]
   - [Parameters][65]
-- [searchPlugin][66]
-- [set][67]
-- [searchOf][68]
-  - [Parameters][69]
-- [withSearch][70]
-  - [Parameters][71]
-- [find][72]
-  - [Parameters][73]
-- [findNext][74]
-  - [Parameters][75]
-- [replaceText][76]
-  - [Parameters][77]
-- [replaceCurrent][78]
-  - [Parameters][79]
-- [replaceAll][80]
-  - [Parameters][81]
-- [editor/state][82]
-- [strong][83]
-- [insertHardBreak][84]
-  - [Parameters][85]
-- [keys][86]
-- [wholeTableKeys][87]
-- [markInputRule][88]
-  - [Parameters][89]
-- [horizontalRuleRule][90]
-- [rules][91]
-- [plugins][92]
-- [createEditorState][93]
-  - [Parameters][94]
-- [isEmptyDocument][95]
+- [findMatches][66]
+  - [Parameters][67]
+- [matches][68]
+- [firstFrom][69]
+  - [Parameters][70]
+- [searchState][71]
+  - [Parameters][72]
+- [searchPlugin][73]
+- [set][74]
+- [searchOf][75]
+  - [Parameters][76]
+- [withSearch][77]
+  - [Parameters][78]
+- [find][79]
+  - [Parameters][80]
+- [findNext][81]
+  - [Parameters][82]
+- [replaceText][83]
+  - [Parameters][84]
+- [replaceCurrent][85]
+  - [Parameters][86]
+- [replaceAll][87]
+  - [Parameters][88]
+- [editor/state][89]
+- [strong][90]
+- [insertHardBreak][91]
+  - [Parameters][92]
+- [keys][93]
+- [wholeTableKeys][94]
+- [markInputRule][95]
   - [Parameters][96]
-- [replaceContent][97]
-  - [Parameters][98]
-- [appendContent][99]
-  - [Parameters][100]
-- [editor/tables][101]
-- [paragraph][102]
-- [intoCell][103]
-  - [Parameters][104]
-- [paragraphAfter][105]
-  - [Parameters][106]
-- [cellsOfRow][107]
-  - [Parameters][108]
-- [tableFromRow][109]
-  - [Parameters][110]
-- [nextRow][111]
-  - [Parameters][112]
-- [exitTable][113]
-  - [Parameters][114]
-- [deleteEmptyTable][115]
-  - [Parameters][116]
-- [nextCell][117]
-  - [Parameters][118]
-- [previousCell][119]
-  - [Parameters][120]
-- [alignColumn][121]
-  - [Parameters][122]
-- [alignmentAt][123]
-  - [Parameters][124]
-- [lineOf][125]
-  - [Parameters][126]
-- [cellPaste][127]
+- [horizontalRuleRule][97]
+- [rules][98]
+- [plugins][99]
+- [createEditorState][100]
+  - [Parameters][101]
+- [isEmptyDocument][102]
+  - [Parameters][103]
+- [replaceContent][104]
+  - [Parameters][105]
+- [appendContent][106]
+  - [Parameters][107]
+- [editor/tables][108]
+- [paragraph][109]
+- [intoCell][110]
+  - [Parameters][111]
+- [paragraphAfter][112]
+  - [Parameters][113]
+- [cellsOfRow][114]
+  - [Parameters][115]
+- [tableFromRow][116]
+  - [Parameters][117]
+- [nextRow][118]
+  - [Parameters][119]
+- [exitTable][120]
+  - [Parameters][121]
+- [deleteEmptyTable][122]
+  - [Parameters][123]
+- [nextCell][124]
+  - [Parameters][125]
+- [previousCell][126]
+  - [Parameters][127]
+- [alignColumn][128]
+  - [Parameters][129]
+- [alignmentAt][130]
+  - [Parameters][131]
+- [lineOf][132]
+  - [Parameters][133]
+- [cellPaste][134]
 
 ## editor
 
@@ -209,9 +216,9 @@ escaped, less the empty ends a leading and a trailing pipe leave.
 
 ### Parameters
 
-- `line` **[string][128]**&#x20;
+- `line` **[string][135]**&#x20;
 
-Returns **[number][129]**&#x20;
+Returns **[number][136]**&#x20;
 
 ## tokenizerOf
 
@@ -222,7 +229,7 @@ which must be answered the same way without leaving anything behind.
 
 ## block
 
-Type: {\_\_rules\_\_: [Array][130]<{name: [string][128], fn: [Function][131], alt: [Array][130]<[string][128]>}>}
+Type: {\_\_rules\_\_: [Array][137]<{name: [string][135], fn: [Function][138], alt: [Array][137]<[string][135]>}>}
 
 ## block
 
@@ -233,9 +240,9 @@ Type: unknown
 ### Parameters
 
 - `state` **StateBlock**&#x20;
-- `startLine` **[number][129]**&#x20;
-- `endLine` **[number][129]**&#x20;
-- `silent` **[boolean][132]**&#x20;
+- `startLine` **[number][136]**&#x20;
+- `endLine` **[number][136]**&#x20;
+- `silent` **[boolean][139]**&#x20;
 
 ### state
 
@@ -253,9 +260,52 @@ A pasted cell's alignment, from its style or the attribute older pages use.
 
 ### Parameters
 
-- `dom` **[HTMLElement][133]**&#x20;
+- `dom` **[HTMLElement][140]**&#x20;
 
-Returns **([string][128] | null)**&#x20;
+Returns **([string][135] | null)**&#x20;
+
+## TAIL
+
+How much of the output the state keeps to look back on. Two characters would
+do: whether a line has ended, and whether a `!` before a link is escaped.
+
+Type: [number][136]
+
+## ROOM
+
+How long the state's output grows before all but its tail is moved out.
+
+Type: [number][136]
+
+## LinearSerializer
+
+**Extends MarkdownSerializer**
+
+The reference serializer, writing in time linear in the document's length.
+
+Its state asks whether its output ends a line before nearly every block, and
+a string grown a piece at a time is copied whole to be read. In a long
+document that copy is the whole document, made again for every block: 20
+seconds for a 1.5 MB rulebook in Chromium, 40 in WebKit, every time it was
+saved, and as long for a list of 20,000 items. Here the state holds only the
+end of its output, and what comes before is moved out as it is written, so
+it answers the same, at once, at any depth.
+
+### serialize
+
+#### Parameters
+
+- `content` **[Node][141]**&#x20;
+- `options` (optional, default `{}`)
+
+Returns **[string][135]**&#x20;
+
+##
+
+## serializer
+
+The serializer `serializeMarkdown` writes with. Exported for tests, which
+hold it to what the reference's own `serialize` writes.
 
 ##
 
@@ -273,9 +323,9 @@ One row of a table, as a line.
 
 ### Parameters
 
-- `row` **[Node][134]**&#x20;
+- `row` **[Node][141]**&#x20;
 
-Returns **[string][128]**&#x20;
+Returns **[string][135]**&#x20;
 
 ## ruleOf
 
@@ -283,9 +333,9 @@ A column's cell in the line under the header.
 
 ### Parameters
 
-- `align` **([string][128] | null)**&#x20;
+- `align` **([string][135] | null)**&#x20;
 
-Returns **[string][128]**&#x20;
+Returns **[string][135]**&#x20;
 
 ## parseMarkdown
 
@@ -294,9 +344,9 @@ cannot hold is read as the text it was written as.
 
 ### Parameters
 
-- `markdown` **([string][128] | null | [undefined][135])**&#x20;
+- `markdown` **([string][135] | null | [undefined][142])**&#x20;
 
-Returns **[Node][134]** A document in the editor's schema
+Returns **[Node][141]** A document in the editor's schema
 
 ## serializeMarkdown
 
@@ -304,9 +354,9 @@ Write a document as markdown.
 
 ### Parameters
 
-- `doc` **[Node][134]**&#x20;
+- `doc` **[Node][141]**&#x20;
 
-Returns **[string][128]**&#x20;
+Returns **[string][135]**&#x20;
 
 ## settleMarkdown
 
@@ -319,9 +369,9 @@ is byte-identical.
 
 ### Parameters
 
-- `markdown` **([string][128] | null | [undefined][135])**&#x20;
+- `markdown` **([string][135] | null | [undefined][142])**&#x20;
 
-Returns **[string][128]**&#x20;
+Returns **[string][135]**&#x20;
 
 ## appendBlocks
 
@@ -330,10 +380,10 @@ block of its own rather than running on from the last one.
 
 ### Parameters
 
-- `content` **([string][128] | null | [undefined][135])**&#x20;
-- `text` **[string][128]**&#x20;
+- `content` **([string][135] | null | [undefined][142])**&#x20;
+- `text` **[string][135]**&#x20;
 
-Returns **[string][128]**&#x20;
+Returns **[string][135]**&#x20;
 
 ## editor/schema
 
@@ -367,15 +417,15 @@ A code block's language, from the info string kept on `data-params` or the
 
 ### Parameters
 
-- `dom` **[HTMLElement][133]**&#x20;
+- `dom` **[HTMLElement][140]**&#x20;
 
-Returns **[string][128]**&#x20;
+Returns **[string][135]**&#x20;
 
 ## code_block
 
 ##
 
-Type: [HTMLElement][133]
+Type: [HTMLElement][140]
 
 ## strikethrough
 
@@ -387,13 +437,13 @@ What a column can be aligned to.
 
 ### Parameters
 
-- `dom` **[HTMLElement][133]**&#x20;
+- `dom` **[HTMLElement][140]**&#x20;
 
 ## BREAKS
 
 Where one block, or one line, of a pasted cell ends.
 
-Type: [string][128]
+Type: [string][135]
 
 ## cellContent
 
@@ -405,12 +455,12 @@ words to go, and a space after each keeps two blocks' words apart.
 
 ### Parameters
 
-- `dom` **[Node][134]**&#x20;
+- `dom` **[Node][141]**&#x20;
 - `schema` **Schema**&#x20;
 
 ## cloneNode
 
-Type: [HTMLElement][133]
+Type: [HTMLElement][140]
 
 ## table
 
@@ -454,36 +504,36 @@ show it in.
 
 ## SearchState
 
-Type: [Object][136]
+Type: [Object][143]
 
 ### Properties
 
-- `from` **[number][129]**&#x20;
-- `to` **[number][129]**&#x20;
-- `query` **[string][128]** What is being looked for; empty while nothing is
-- `matches` **[Array][130]\<Match>** Every match, in document order
-- `current` **[number][129]** Which of them the writer is on, or -1 for none
+- `from` **[number][136]**&#x20;
+- `to` **[number][136]**&#x20;
+- `query` **[string][135]** What is being looked for; empty while nothing is
+- `matches` **[Array][137]\<Match>** Every match, in document order
+- `current` **[number][136]** Which of them the writer is on, or -1 for none
 - `decorations` **DecorationSet**&#x20;
 
 ## NOT_TEXT
 
 Stands in for an inline node that is not text, such as a line break, so positions line up.
 
-Type: [string][128]
+Type: [string][135]
 
 ## searchKey
 
-Type: PluginKey<[SearchState][52]>
+Type: PluginKey<[SearchState][59]>
 
 ## NONE
 
-Type: [SearchState][52]
+Type: [SearchState][59]
 
 ## escapeRegExp
 
 ### Parameters
 
-- `text` **[string][128]**&#x20;
+- `text` **[string][135]**&#x20;
 
 ## findMatches
 
@@ -491,14 +541,14 @@ Every place the query is found in the document, in order.
 
 ### Parameters
 
-- `doc` **[Node][134]**&#x20;
-- `query` **[string][128]**&#x20;
+- `doc` **[Node][141]**&#x20;
+- `query` **[string][135]**&#x20;
 
-Returns **[Array][130]\<Match>**&#x20;
+Returns **[Array][137]\<Match>**&#x20;
 
 ## matches
 
-Type: [Array][130]\<Match>
+Type: [Array][137]\<Match>
 
 ## firstFrom
 
@@ -507,19 +557,19 @@ from past the last. -1 when there are none.
 
 ### Parameters
 
-- `matches` **[Array][130]\<Match>**&#x20;
-- `pos` **[number][129]**&#x20;
+- `matches` **[Array][137]\<Match>**&#x20;
+- `pos` **[number][136]**&#x20;
 
 ## searchState
 
 ### Parameters
 
-- `doc` **[Node][134]**&#x20;
-- `query` **[string][128]**&#x20;
-- `matches` **[Array][130]\<Match>**&#x20;
-- `current` **[number][129]**&#x20;
+- `doc` **[Node][141]**&#x20;
+- `query` **[string][135]**&#x20;
+- `matches` **[Array][137]\<Match>**&#x20;
+- `current` **[number][136]**&#x20;
 
-Returns **[SearchState][52]**&#x20;
+Returns **[SearchState][59]**&#x20;
 
 ## searchPlugin
 
@@ -528,11 +578,11 @@ whole, found against the document it leaves; any other change to the
 document finds the query again, staying on the match that was current, or
 the next one if that one went.
 
-Returns **Plugin<[SearchState][52]>**&#x20;
+Returns **Plugin<[SearchState][59]>**&#x20;
 
 ## set
 
-Type: ({query: [string][128], matches: [Array][130]\<Match>, current: [number][129]} | [undefined][135])
+Type: ({query: [string][135], matches: [Array][137]\<Match>, current: [number][136]} | [undefined][142])
 
 ## searchOf
 
@@ -542,7 +592,7 @@ The search a state holds. None for a state made without the plugin.
 
 - `state` **EditorState**&#x20;
 
-Returns **[SearchState][52]**&#x20;
+Returns **[SearchState][59]**&#x20;
 
 ## withSearch
 
@@ -551,9 +601,9 @@ Put the search on a transaction, and select the match it is on.
 ### Parameters
 
 - `tr` **Transaction**&#x20;
-- `query` **[string][128]**&#x20;
-- `matches` **[Array][130]\<Match>**&#x20;
-- `current` **[number][129]**&#x20;
+- `query` **[string][135]**&#x20;
+- `matches` **[Array][137]\<Match>**&#x20;
+- `current` **[number][136]**&#x20;
 
 Returns **Transaction**&#x20;
 
@@ -565,7 +615,7 @@ matches. An empty query is the search put away.
 
 ### Parameters
 
-- `query` **[string][128]**&#x20;
+- `query` **[string][135]**&#x20;
 
 Returns **Command**&#x20;
 
@@ -592,7 +642,7 @@ in italics is still in italics. Nothing is a deletion.
   - `match.from` &#x20;
   - `match.to` &#x20;
 
-- `text` **[string][128]**&#x20;
+- `text` **[string][135]**&#x20;
 
 ## replaceCurrent
 
@@ -601,7 +651,7 @@ went in, so that a replacement holding the query is not found again.
 
 ### Parameters
 
-- `replacement` **[string][128]**&#x20;
+- `replacement` **[string][135]**&#x20;
 
 Returns **Command**&#x20;
 
@@ -612,7 +662,7 @@ where it was, moved along with the text.
 
 ### Parameters
 
-- `replacement` **[string][128]**&#x20;
+- `replacement` **[string][135]**&#x20;
 
 Returns **Command**&#x20;
 
@@ -655,14 +705,14 @@ paragraph split; Backspace undoes a typed shortcut before it deletes.
 Shift-Enter leaves a table where it would break a line, since a cell has
 only the one.
 
-Type: Record<[string][128], Command>
+Type: Record<[string][135], Command>
 
 ## wholeTableKeys
 
 The keys a whole table answers ahead of `tableEditing`, which would only
 empty its cells again.
 
-Type: Record<[string][128], Command>
+Type: Record<[string][135], Command>
 
 ## markInputRule
 
@@ -673,7 +723,7 @@ plain.
 
 ### Parameters
 
-- `regexp` **[RegExp][137]**&#x20;
+- `regexp` **[RegExp][144]**&#x20;
 - `markType` **MarkType**&#x20;
 
 Returns **InputRule**&#x20;
@@ -687,7 +737,7 @@ Type: InputRule
 
 ## rules
 
-Type: [Array][130]\<InputRule>
+Type: [Array][137]\<InputRule>
 
 ## plugins
 
@@ -700,7 +750,7 @@ coming back to a chapter wants to be.
 
 ### Parameters
 
-- `markdown` **([string][128] | null | [undefined][135])**&#x20;
+- `markdown` **([string][135] | null | [undefined][142])**&#x20;
 
 Returns **EditorState**&#x20;
 
@@ -710,9 +760,9 @@ Whether a document holds nothing: one textblock with nothing in it.
 
 ### Parameters
 
-- `doc` **[Node][134]**&#x20;
+- `doc` **[Node][141]**&#x20;
 
-Returns **[boolean][132]**&#x20;
+Returns **[boolean][139]**&#x20;
 
 ## replaceContent
 
@@ -722,7 +772,7 @@ the end of what arrived.
 ### Parameters
 
 - `state` **EditorState**&#x20;
-- `markdown` **[string][128]**&#x20;
+- `markdown` **[string][135]**&#x20;
 
 Returns **Transaction**&#x20;
 
@@ -735,7 +785,7 @@ added to, so no blank paragraph is left standing above.
 ### Parameters
 
 - `state` **EditorState**&#x20;
-- `markdown` **[string][128]**&#x20;
+- `markdown` **[string][135]**&#x20;
 
 Returns **Transaction**&#x20;
 
@@ -770,7 +820,7 @@ Put the caret at the end of the cell that starts at `pos`.
 ### Parameters
 
 - `tr` **Transaction**&#x20;
-- `pos` **[number][129]** Directly before the cell
+- `pos` **[number][136]** Directly before the cell
 
 Returns **Transaction**&#x20;
 
@@ -781,7 +831,7 @@ A new paragraph after a table, with the caret in it.
 ### Parameters
 
 - `tr` **Transaction**&#x20;
-- `after` **[number][129]** Directly after the table
+- `after` **[number][136]** Directly after the table
 
 Returns **Transaction**&#x20;
 
@@ -793,9 +843,9 @@ opened and closed with a pipe.
 
 ### Parameters
 
-- `line` **[Node][134]** A paragraph
+- `line` **[Node][141]** A paragraph
 
-Returns **([Array][130]\<Fragment> | null)**&#x20;
+Returns **([Array][137]\<Fragment> | null)**&#x20;
 
 ## tableFromRow
 
@@ -890,7 +940,7 @@ The column alignment the selection is in, as the first row has it.
 
 - `state` &#x20;
 
-Returns **([string][128] | null)**&#x20;
+Returns **([string][135] | null)**&#x20;
 
 ## lineOf
 
@@ -933,123 +983,130 @@ Returns **Plugin**&#x20;
 [15]: #parameters-3
 [16]: #alignmentof-1
 [17]: #parameters-4
-[18]: #
-[19]: #cells
-[20]: #rowof
-[21]: #parameters-5
-[22]: #ruleof
-[23]: #parameters-6
-[24]: #parsemarkdown
-[25]: #parameters-7
-[26]: #serializemarkdown
-[27]: #parameters-8
-[28]: #settlemarkdown
-[29]: #parameters-9
-[30]: #appendblocks
-[31]: #parameters-10
-[32]: #editorschema
-[33]: #languageof
-[34]: #parameters-11
-[35]: #code_block
-[36]: #-1
-[37]: #strikethrough
-[38]: #alignments
-[39]: #cellattrs
-[40]: #parameters-12
-[41]: #breaks
-[42]: #cellcontent
-[43]: #parameters-13
-[44]: #clonenode
-[45]: #table
-[46]: #table_row
-[47]: #table_cell
-[48]: #node_names
-[49]: #mark_names
-[50]: #schema
-[51]: #editorsearch
-[52]: #searchstate
-[53]: #properties
-[54]: #not_text
-[55]: #searchkey
-[56]: #none
-[57]: #escaperegexp
-[58]: #parameters-14
-[59]: #findmatches
-[60]: #parameters-15
-[61]: #matches
-[62]: #firstfrom
-[63]: #parameters-16
-[64]: #searchstate-1
-[65]: #parameters-17
-[66]: #searchplugin
-[67]: #set
-[68]: #searchof
-[69]: #parameters-18
-[70]: #withsearch
-[71]: #parameters-19
-[72]: #find
-[73]: #parameters-20
-[74]: #findnext
-[75]: #parameters-21
-[76]: #replacetext
-[77]: #parameters-22
-[78]: #replacecurrent
-[79]: #parameters-23
-[80]: #replaceall
-[81]: #parameters-24
-[82]: #editorstate
-[83]: #strong
-[84]: #inserthardbreak
-[85]: #parameters-25
-[86]: #keys
-[87]: #wholetablekeys
-[88]: #markinputrule
-[89]: #parameters-26
-[90]: #horizontalrulerule
-[91]: #rules
-[92]: #plugins
-[93]: #createeditorstate
-[94]: #parameters-27
-[95]: #isemptydocument
-[96]: #parameters-28
-[97]: #replacecontent
-[98]: #parameters-29
-[99]: #appendcontent
-[100]: #parameters-30
-[101]: #editortables
-[102]: #paragraph
-[103]: #intocell
-[104]: #parameters-31
-[105]: #paragraphafter
-[106]: #parameters-32
-[107]: #cellsofrow
-[108]: #parameters-33
-[109]: #tablefromrow
-[110]: #parameters-34
-[111]: #nextrow
-[112]: #parameters-35
-[113]: #exittable
-[114]: #parameters-36
-[115]: #deleteemptytable
-[116]: #parameters-37
-[117]: #nextcell
-[118]: #parameters-38
-[119]: #previouscell
-[120]: #parameters-39
-[121]: #aligncolumn
-[122]: #parameters-40
-[123]: #alignmentat
-[124]: #parameters-41
-[125]: #lineof
-[126]: #parameters-42
-[127]: #cellpaste
-[128]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[129]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[130]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[131]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
-[132]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[133]: https://developer.mozilla.org/docs/Web/HTML/Element
-[134]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
-[135]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[136]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[137]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp
+[18]: #tail
+[19]: #room
+[20]: #linearserializer
+[21]: #serialize
+[22]: #parameters-5
+[23]: #
+[24]: #serializer
+[25]: #-1
+[26]: #cells
+[27]: #rowof
+[28]: #parameters-6
+[29]: #ruleof
+[30]: #parameters-7
+[31]: #parsemarkdown
+[32]: #parameters-8
+[33]: #serializemarkdown
+[34]: #parameters-9
+[35]: #settlemarkdown
+[36]: #parameters-10
+[37]: #appendblocks
+[38]: #parameters-11
+[39]: #editorschema
+[40]: #languageof
+[41]: #parameters-12
+[42]: #code_block
+[43]: #-2
+[44]: #strikethrough
+[45]: #alignments
+[46]: #cellattrs
+[47]: #parameters-13
+[48]: #breaks
+[49]: #cellcontent
+[50]: #parameters-14
+[51]: #clonenode
+[52]: #table
+[53]: #table_row
+[54]: #table_cell
+[55]: #node_names
+[56]: #mark_names
+[57]: #schema
+[58]: #editorsearch
+[59]: #searchstate
+[60]: #properties
+[61]: #not_text
+[62]: #searchkey
+[63]: #none
+[64]: #escaperegexp
+[65]: #parameters-15
+[66]: #findmatches
+[67]: #parameters-16
+[68]: #matches
+[69]: #firstfrom
+[70]: #parameters-17
+[71]: #searchstate-1
+[72]: #parameters-18
+[73]: #searchplugin
+[74]: #set
+[75]: #searchof
+[76]: #parameters-19
+[77]: #withsearch
+[78]: #parameters-20
+[79]: #find
+[80]: #parameters-21
+[81]: #findnext
+[82]: #parameters-22
+[83]: #replacetext
+[84]: #parameters-23
+[85]: #replacecurrent
+[86]: #parameters-24
+[87]: #replaceall
+[88]: #parameters-25
+[89]: #editorstate
+[90]: #strong
+[91]: #inserthardbreak
+[92]: #parameters-26
+[93]: #keys
+[94]: #wholetablekeys
+[95]: #markinputrule
+[96]: #parameters-27
+[97]: #horizontalrulerule
+[98]: #rules
+[99]: #plugins
+[100]: #createeditorstate
+[101]: #parameters-28
+[102]: #isemptydocument
+[103]: #parameters-29
+[104]: #replacecontent
+[105]: #parameters-30
+[106]: #appendcontent
+[107]: #parameters-31
+[108]: #editortables
+[109]: #paragraph
+[110]: #intocell
+[111]: #parameters-32
+[112]: #paragraphafter
+[113]: #parameters-33
+[114]: #cellsofrow
+[115]: #parameters-34
+[116]: #tablefromrow
+[117]: #parameters-35
+[118]: #nextrow
+[119]: #parameters-36
+[120]: #exittable
+[121]: #parameters-37
+[122]: #deleteemptytable
+[123]: #parameters-38
+[124]: #nextcell
+[125]: #parameters-39
+[126]: #previouscell
+[127]: #parameters-40
+[128]: #aligncolumn
+[129]: #parameters-41
+[130]: #alignmentat
+[131]: #parameters-42
+[132]: #lineof
+[133]: #parameters-43
+[134]: #cellpaste
+[135]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[136]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[137]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[138]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[139]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[140]: https://developer.mozilla.org/docs/Web/HTML/Element
+[141]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
+[142]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[143]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[144]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp

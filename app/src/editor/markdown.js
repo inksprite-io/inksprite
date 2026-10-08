@@ -35,6 +35,7 @@ import MarkdownIt from 'markdown-it'
 import {
   MarkdownParser,
   MarkdownSerializer,
+  MarkdownSerializerState,
   defaultMarkdownParser,
   defaultMarkdownSerializer,
 } from 'prosemirror-markdown'
@@ -133,9 +134,65 @@ const parser = new MarkdownParser(schema, tokenizerOf(), {
   td: { block: 'table_cell', getAttrs: alignmentOf },
 })
 
+/**
+ * How much of the output the state keeps to look back on. Two characters would
+ * do: whether a line has ended, and whether a `!` before a link is escaped.
+ */
+const TAIL = 16
+
+/** How long the state's output grows before all but its tail is moved out. */
+const ROOM = 256
+
+/**
+ * The reference serializer, writing in time linear in the document's length.
+ *
+ * Its state asks whether its output ends a line before nearly every block, and
+ * a string grown a piece at a time is copied whole to be read. In a long
+ * document that copy is the whole document, made again for every block: 20
+ * seconds for a 1.5 MB rulebook in Chromium, 40 in WebKit, every time it was
+ * saved, and as long for a list of 20,000 items. Here the state holds only the
+ * end of its output, and what comes before is moved out as it is written, so
+ * it answers the same, at once, at any depth.
+ */
+class LinearSerializer extends MarkdownSerializer {
+  /**
+   * @param {Node} content
+   * @param {{tightLists?: boolean}} [options]
+   * @returns {string}
+   */
+  serialize(content, options = {}) {
+    // The reference leaves the state's constructor out of its types.
+    const State = /** @type {new (...args: unknown[]) => MarkdownSerializerState} */ (
+      MarkdownSerializerState
+    )
+    const state = new State(this.nodes, this.marks, { ...this.options, ...options })
+    const written = []
+    let tail = ''
+    // The reference only adds to its output or changes its last character,
+    // and reads no further back than two.
+    Object.defineProperty(state, 'out', {
+      get: () => tail,
+      set: value => {
+        tail = value
+        if (tail.length > ROOM) {
+          written.push(tail.slice(0, -TAIL))
+          tail = tail.slice(-TAIL)
+        }
+      },
+    })
+    state.renderContent(content)
+    written.push(tail)
+    return written.join('')
+  }
+}
+
 const { image: _imageNode, ...nodes } = defaultMarkdownSerializer.nodes
 
-const serializer = new MarkdownSerializer(
+/**
+ * The serializer `serializeMarkdown` writes with. Exported for tests, which
+ * hold it to what the reference's own `serialize` writes.
+ */
+export const serializer = new LinearSerializer(
   {
     ...nodes,
 

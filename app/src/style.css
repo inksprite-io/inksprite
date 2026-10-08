@@ -24,13 +24,14 @@
    wider than the page, which does not. Its first row is the header, by
    position, as markdown has it, so it is styled as the typography plugin
    styles a header. Selected cells are tinted, as prosemirror-tables marks
-   them, and an empty cell is still wide enough to click into. */
+   them, and an empty cell is still wide enough to click into. Only a selected
+   cell is positioned, for its tint: a positioned element is a layer of its own
+   to paint and hit-test, and a long document has tens of thousands of cells. */
 .ProseMirror .table-scroll {
   overflow-x: auto;
 }
 
 .ProseMirror td {
-  position: relative;
   vertical-align: top;
   min-width: 4em;
 }
@@ -43,6 +44,10 @@
 
 .ProseMirror tbody > tr:first-child {
   border-bottom-color: var(--tw-prose-th-borders);
+}
+
+.ProseMirror .selectedCell {
+  position: relative;
 }
 
 .ProseMirror .selectedCell::after {
