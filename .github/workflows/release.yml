@@ -98,7 +98,10 @@ jobs:
     defaults:
       run:
         shell: bash
+    # Each system builds to the end even when another fails, so a run says
+    # what is wrong with every one of them. The release still waits on all.
     strategy:
+      fail-fast: false
       matrix:
         include:
           - name: macOS
