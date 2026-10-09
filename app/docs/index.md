@@ -99,7 +99,7 @@ Tools from MCP servers the writer connects, offered to the model in their chats:
 
 ### 🖥️ [Platform](./platform.md)
 
-What differs between the app in a browser and the app in its desktop window (Tauri, in `src-tauri/`):
+What differs between the app in a browser and the app in its desktop window (Electron, in `electron/`):
 
 - Requests to servers: the page's own in a browser, made from the native side in the desktop app, where no server refuses them for their origin
 

@@ -3,37 +3,97 @@
 ### Table of Contents
 
 - [platform/desktop][1]
-- [isDesktop][2]
-- [platform/fetch][3]
-- [native][4]
-- [fetch][5]
-  - [Parameters][6]
-- [platform][7]
-  - [Examples][8]
-- [platform/open][9]
-- [SCHEMES][10]
-- [openable][11]
-  - [Parameters][12]
-- [openUrl][13]
-  - [Parameters][14]
-- [openLinkClicked][15]
-  - [Parameters][16]
-- [platform/signIn][17]
-- [SIGN_IN_PORT][18]
-- [callbackOrigin][19]
-- [signInInBrowser][20]
-  - [Parameters][21]
-- [channel][22]
-- [platform/updates][23]
-- [downloadUpdate][24]
-- [catch][25]
-- [installUpdate][26]
-- [rejectAsError][27]
+- [DesktopRequest][2]
+  - [Properties][3]
+- [DesktopResponse][4]
+  - [Properties][5]
+- [DesktopBodyPart][6]
+- [DesktopBridge][7]
+- [BRIDGE][8]
+- [isDesktop][9]
+- [desktop][10]
+- [platform/fetch][11]
+- [NO_BODY][12]
+- [READERS][13]
+- [last][14]
+- [last][15]
+- [fetch][16]
+  - [Parameters][17]
+- [fetchNatively][18]
+  - [Parameters][19]
+- [controller][20]
+- [onBody][21]
+  - [Parameters][22]
+- [platform][23]
+  - [Examples][24]
+- [platform/open][25]
+- [SCHEMES][26]
+- [openable][27]
   - [Parameters][28]
+- [openUrl][29]
+  - [Parameters][30]
+- [openLinkClicked][31]
+  - [Parameters][32]
+- [platform/signIn][33]
+- [SIGN_IN_PORT][34]
+- [callbackOrigin][35]
+- [signInInBrowser][36]
+  - [Parameters][37]
+- [platform/updates][38]
+- [downloadUpdate][39]
+- [installUpdate][40]
 
 ## platform/desktop
 
-Whether the app is running in its desktop window.
+Whether the app is running in its desktop window, and the
+bridge to the native side there.
+
+## DesktopRequest
+
+What the native side is asked for a request: the page's `Request`, read
+out.
+
+Type: [Object][41]
+
+### Properties
+
+- `url` **[string][42]**&#x20;
+- `method` **[string][42]**&#x20;
+- `headers` **[Array][43]<\[[string][42], [string][42]]>**&#x20;
+- `body` **([Uint8Array][44] | null)**&#x20;
+- `redirect` **RequestRedirect**&#x20;
+
+## DesktopResponse
+
+A response's status and headers, without its body.
+
+Type: [Object][41]
+
+### Properties
+
+- `status` **[number][45]**&#x20;
+- `statusText` **[string][42]**&#x20;
+- `headers` **[Array][43]<\[[string][42], [string][42]]>**&#x20;
+
+## DesktopBodyPart
+
+A piece of a response's body: a chunk of it, or word that it has all come,
+or that it failed.
+
+Type: ({chunk: [Uint8Array][44]} | {done: `true`} | {error: [string][42]})
+
+## DesktopBridge
+
+What the desktop app's native side offers the page (`app/electron/src/
+preload.cjs`). Calls that go wrong reject with an Error saying what did.
+
+Type: [Object][41]
+
+## BRIDGE
+
+Where the bridge is, in the page.
+
+Type: [string][42]
 
 ## isDesktop
 
@@ -42,7 +102,13 @@ Whether the app is running in its desktop window.
 Decided at runtime, not when the app is built: in development the browser
 tab and the window load the same bundle from the same server.
 
-Returns **[boolean][29]**&#x20;
+Returns **[boolean][46]**&#x20;
+
+## desktop
+
+The bridge to the native side, in the desktop window.
+
+Returns **[DesktopBridge][7]**&#x20;
 
 ## platform/fetch
 
@@ -51,17 +117,26 @@ Requests to servers, made from where they can be answered.
 In a browser a request is the page's own, and the server has to allow the
 app's origin (CORS); many MCP servers and most model servers on a home
 network do not. In the desktop app the request goes out from the native
-side, through Tauri's HTTP plugin: there is no page origin for a server to
+side (`app/electron/src/bridge.js`): there is no page origin for a server to
 refuse, and an `http://` address on the local network is as reachable as
 `localhost`. Everything that talks to a server — models, speech, MCP —
 takes its `fetch` from here.
 
-The plugin is loaded in the desktop app only, the first time it is needed,
-so the web build never runs it.
+## NO_BODY
 
-## native
+Statuses whose response has no body.
 
-The plugin's fetch, once loaded. @type {Promise<typeof globalThis.fetch>|null}
+## READERS
+
+What reads a response's body whole.
+
+## last
+
+The id of the last request sent to the native side.
+
+## last
+
+The id of the last sign-in waited for.
 
 ## fetch
 
@@ -70,23 +145,45 @@ page's own does, streamed body and abort signal included.
 
 ### Parameters
 
-- `input` **(RequestInfo | [URL][30])**&#x20;
+- `input` **(RequestInfo | [URL][47])**&#x20;
 - `init` **RequestInit?**&#x20;
 
-Returns **[Promise][31]<[Response][32]>**&#x20;
+Returns **[Promise][48]<[Response][49]>**&#x20;
+
+## fetchNatively
+
+Make `request` from the native side. Its body is streamed back as it
+comes.
+
+### Parameters
+
+- `request` **[Request][50]**&#x20;
+
+Returns **[Promise][48]<[Response][49]>**&#x20;
+
+## controller
+
+Type: ReadableStreamDefaultController<[Uint8Array][44]>
+
+## onBody
+
+### Parameters
+
+- `part` &#x20;
 
 ## platform
 
 What differs between the app in a browser and the app in its
 desktop window.
 
-The desktop app is the same build in a native window (Tauri, in
-`app/src-tauri/`). Most of the app cannot tell the difference and should
+The desktop app is the same build in a window of its own (Electron, in
+`app/electron/`). Most of the app cannot tell the difference and should
 not have to. What can is gathered here, behind functions that do the right
 thing in either place, so the rest of the app asks for a request or a
 sign-in rather than for a platform.
 
-- **desktop** - Whether the app is in its desktop window
+- **desktop** - Whether the app is in its desktop window, and the bridge
+  to the native side there
 - **fetch** - Requests to servers: the page's own in a browser, made from
   the native side in the desktop app, where no server can refuse them for
   their origin
@@ -128,9 +225,9 @@ The address a link goes to, if it is one that may open.
 
 ### Parameters
 
-- `href` **[string][33]**&#x20;
+- `href` **[string][42]**&#x20;
 
-Returns **([URL][30] | null)**&#x20;
+Returns **([URL][47] | null)**&#x20;
 
 ## openUrl
 
@@ -138,9 +235,9 @@ Open a link outside the app.
 
 ### Parameters
 
-- `href` **[string][33]**&#x20;
+- `href` **[string][42]**&#x20;
 
-Returns **[Promise][31]<[boolean][29]>** Whether it was one that may open
+Returns **[Promise][48]<[boolean][46]>** Whether it was one that may open
 
 ## openLinkClicked
 
@@ -151,7 +248,7 @@ link, or a click with a modifier somewhere other than this tab.
 
 ### Parameters
 
-- `event` **[MouseEvent][34]**&#x20;
+- `event` **[MouseEvent][51]**&#x20;
 
 ## platform/signIn
 
@@ -172,14 +269,14 @@ some hold it to exactly that address.
 
 Where the desktop app listens for a sign-in to come back.
 
-Type: [number][35]
+Type: [number][45]
 
 ## callbackOrigin
 
 Where a sign-in comes back to: this page's own origin in a browser, the
 desktop app's listener in its window.
 
-Returns **[string][33]**&#x20;
+Returns **[string][42]**&#x20;
 
 ## signInInBrowser
 
@@ -191,86 +288,85 @@ while another is waiting takes its place.
 
 ### Parameters
 
-- `address` **([string][33] | [URL][30])** Where to sign in
-- `path` **[string][33]** Where the service sends the browser back, under
+- `address` **([string][42] | [URL][47])** Where to sign in
+- `path` **[string][42]** Where the service sends the browser back, under
   `callbackOrigin()`: `/connect/mcp`
-- `$2` **[Object][36]** (optional, default `{}`)
+- `$2` **[Object][41]** (optional, default `{}`)
   - `$2.signal` &#x20;
 
-Returns **[Promise][31]\<URLSearchParams>** The query it came back with
-
-## channel
+Returns **[Promise][48]\<URLSearchParams>** The query it came back with
 
 ## platform/updates
 
 Updates to the desktop app.
 
 The native side looks for one in the public repository's releases,
-downloads it and checks its signature (`src-tauri/src/update.rs`); the page
-only asks, and says when to install. A browser has none: the page it loads
-is always the latest.
+downloads it and checks it (`app/electron/src/updates.js`); the page only
+asks, and says when to install. A browser has none: the page it loads is
+always the latest.
 
 ## downloadUpdate
 
 Look for an update and download it, in the desktop app.
 
-Returns **[Promise][31]<([string][33] | null)>** The version downloaded, ready to install;
+Returns **[Promise][48]<([string][42] | null)>** The version downloaded, ready to install;
 null when the app is up to date, or not the desktop app
-
-## catch
-
-Type: [Promise][31]<([string][33] | null)>
 
 ## installUpdate
 
 Install the update `downloadUpdate` downloaded, and restart into it. Does
 not return, unless the install fails.
 
-Returns **[Promise][31]\<void>**&#x20;
-
-## rejectAsError
-
-The native side says what went wrong as a plain string.
-
-### Parameters
-
-- `error` **unknown**&#x20;
-
-Returns **never**&#x20;
+Returns **[Promise][48]\<void>**&#x20;
 
 [1]: #platformdesktop
-[2]: #isdesktop
-[3]: #platformfetch
-[4]: #native
-[5]: #fetch
-[6]: #parameters
-[7]: #platform
-[8]: #examples
-[9]: #platformopen
-[10]: #schemes
-[11]: #openable
-[12]: #parameters-1
-[13]: #openurl
-[14]: #parameters-2
-[15]: #openlinkclicked
-[16]: #parameters-3
-[17]: #platformsignin
-[18]: #sign_in_port
-[19]: #callbackorigin
-[20]: #signininbrowser
-[21]: #parameters-4
-[22]: #channel
-[23]: #platformupdates
-[24]: #downloadupdate
-[25]: #catch
-[26]: #installupdate
-[27]: #rejectaserror
-[28]: #parameters-5
-[29]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[30]: https://developer.mozilla.org/docs/Web/API/URL/URL
-[31]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[32]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[33]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[34]: https://developer.mozilla.org/docs/Web/API/MouseEvent
-[35]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[36]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[2]: #desktoprequest
+[3]: #properties
+[4]: #desktopresponse
+[5]: #properties-1
+[6]: #desktopbodypart
+[7]: #desktopbridge
+[8]: #bridge
+[9]: #isdesktop
+[10]: #desktop
+[11]: #platformfetch
+[12]: #no_body
+[13]: #readers
+[14]: #last
+[15]: #last-1
+[16]: #fetch
+[17]: #parameters
+[18]: #fetchnatively
+[19]: #parameters-1
+[20]: #controller
+[21]: #onbody
+[22]: #parameters-2
+[23]: #platform
+[24]: #examples
+[25]: #platformopen
+[26]: #schemes
+[27]: #openable
+[28]: #parameters-3
+[29]: #openurl
+[30]: #parameters-4
+[31]: #openlinkclicked
+[32]: #parameters-5
+[33]: #platformsignin
+[34]: #sign_in_port
+[35]: #callbackorigin
+[36]: #signininbrowser
+[37]: #parameters-6
+[38]: #platformupdates
+[39]: #downloadupdate
+[40]: #installupdate
+[41]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[42]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[43]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[44]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[45]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[46]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[47]: https://developer.mozilla.org/docs/Web/API/URL/URL
+[48]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[49]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[50]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
+[51]: https://developer.mozilla.org/docs/Web/API/MouseEvent

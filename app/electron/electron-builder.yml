@@ -1,0 +1,64 @@
+# How the app is packaged for each system: `npm run dist` builds for the one
+# it runs on, from the page in app/dist. The release workflow builds them
+# all (.github/workflows/release.yml).
+
+appId: io.inksprite.inksprite
+productName: inksprite
+directories:
+  buildResources: build
+  output: dist
+
+# The main process, and the page beside it.
+files:
+  - package.json
+  - src/**
+  - from: ../dist
+    to: page
+
+# No spaces: GitHub renames a release's files with spaces in, and the
+# updater would then look for names that aren't there.
+artifactName: ${productName}-${version}-${os}-${arch}.${ext}
+
+# What the app's binary can be made to do other than run the app.
+electronFuses:
+  runAsNode: false
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  grantFileProtocolExtraPrivileges: false
+  onlyLoadAppFromAsar: true
+  enableEmbeddedAsarIntegrityValidation: true
+
+# Where the updater looks: the latest release's latest*.yml (src/updates.js).
+publish:
+  provider: generic
+  url: https://github.com/inksprite-io/inksprite/releases/latest/download
+  channel: latest
+
+# A disk image to install from, and a zip for the updater, for Apple silicon
+# and Intel Macs each. Signed and notarized when the release workflow's
+# Apple secrets are set.
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+    - target: zip
+      arch: [arm64, x64]
+
+# Installs for the user, with no admin prompt, where an unsigned installer
+# for the machine would ask as an unknown publisher.
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+nsis:
+  oneClick: true
+  perMachine: false
+
+# The window goes with the app's .desktop entry by its desktopName
+# (package.json).
+linux:
+  target: [AppImage, deb]
+  category: Office
+  maintainer: inksprite
+  syncDesktopName: true

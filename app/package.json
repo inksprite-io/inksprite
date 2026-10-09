@@ -63,8 +63,6 @@
     "@modelcontextprotocol/client": "^2.2.0",
     "@primeuix/themes": "^1.2.5",
     "@tailwindcss/typography": "^0.5.16",
-    "@tauri-apps/api": "^2.12.1",
-    "@tauri-apps/plugin-http": "^2.8.0",
     "@vercel/analytics": "^1.5.0",
     "dexie": "^4.0.11",
     "fflate": "^0.8.3",

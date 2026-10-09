@@ -36,7 +36,7 @@ const AUTHORIZE = new URL('https://auth.example/authorize?client_id=x')
 describe('signIn, in the desktop window', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
-    globalThis.__TAURI_INTERNALS__ = {}
+    globalThis.__INKSPRITE_DESKTOP__ = {}
     auth.startSignIn.mockImplementation(async (url, onRedirect) => {
       onRedirect(AUTHORIZE)
       return 'REDIRECT'
@@ -44,7 +44,7 @@ describe('signIn, in the desktop window', () => {
   })
 
   afterEach(() => {
-    delete globalThis.__TAURI_INTERNALS__
+    delete globalThis.__INKSPRITE_DESKTOP__
     vi.restoreAllMocks()
   })
 

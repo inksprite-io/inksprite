@@ -55,7 +55,22 @@ export default [
       'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     },
   },
+  // The desktop app's main process and its preload run in Node, not the page.
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/.vite/**', '**/coverage/**', 'src-tauri/**'],
+    files: ['electron/**/*.{js,cjs}'],
+    languageOptions: {
+      globals: {
+        AbortController: 'readonly',
+        Buffer: 'readonly',
+        Response: 'readonly',
+      },
+    },
+  },
+  {
+    files: ['electron/**/*.cjs'],
+    languageOptions: { sourceType: 'commonjs' },
+  },
+  {
+    ignores: ['**/dist/**', '**/node_modules/**', '**/.vite/**', '**/coverage/**'],
   },
 ]

@@ -21,7 +21,7 @@ describe('driveConfig', () => {
 
   it('takes the desktop client, with its secret, in the desktop window', () => {
     configured()
-    vi.stubGlobal('__TAURI_INTERNALS__', {})
+    vi.stubGlobal('__INKSPRITE_DESKTOP__', {})
     expect(driveConfig()).toEqual({
       kind: 'desktop',
       clientId: 'desktop-1',
@@ -35,7 +35,7 @@ describe('driveConfig', () => {
     vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_SECRET', '\tsecret-1 ')
     expect(driveConfig()).toEqual({ kind: 'web', clientId: 'web-1' })
 
-    vi.stubGlobal('__TAURI_INTERNALS__', {})
+    vi.stubGlobal('__INKSPRITE_DESKTOP__', {})
     expect(driveConfig()).toEqual({
       kind: 'desktop',
       clientId: 'desktop-1',
@@ -50,7 +50,7 @@ describe('driveConfig', () => {
 
     vi.stubEnv('VITE_GOOGLE_CLIENT_ID', 'web-1')
     vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_SECRET', '')
-    vi.stubGlobal('__TAURI_INTERNALS__', {})
+    vi.stubGlobal('__INKSPRITE_DESKTOP__', {})
     expect(driveAvailable()).toBe(false)
   })
 })

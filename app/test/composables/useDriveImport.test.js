@@ -196,7 +196,7 @@ describe('useDriveImport', () => {
     })
 
     it('picks in the system browser with the desktop client in the desktop window', async () => {
-      vi.stubGlobal('__TAURI_INTERNALS__', {})
+      vi.stubGlobal('__INKSPRITE_DESKTOP__', {})
       vi.mocked(pickInBrowser).mockResolvedValue(null)
 
       await expect(useDriveImport(STORY).choose()).resolves.toBeNull()

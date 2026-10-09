@@ -39,7 +39,7 @@ describe('useUpdates', () => {
 
   beforeEach(() => {
     vi.useFakeTimers()
-    globalThis.__TAURI_INTERNALS__ = {}
+    globalThis.__INKSPRITE_DESKTOP__ = {}
     saved.length = 0
   })
 
@@ -49,11 +49,11 @@ describe('useUpdates', () => {
     vi.useRealTimers()
     vi.clearAllMocks()
     vi.restoreAllMocks()
-    delete globalThis.__TAURI_INTERNALS__
+    delete globalThis.__INKSPRITE_DESKTOP__
   })
 
   it('looks for nothing in a browser', async () => {
-    delete globalThis.__TAURI_INTERNALS__
+    delete globalThis.__INKSPRITE_DESKTOP__
     app = mountApp()
     await vi.advanceTimersByTimeAsync(UPDATE_CHECK_MS)
 

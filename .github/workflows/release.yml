@@ -1,20 +1,19 @@
 name: Desktop Release
 
 # The desktop app for macOS, Windows and Linux, published as the latest
-# release. The Mac build is for Apple silicon and Intel Macs at once, signed
-# and notarized; the Windows and Linux builds are not code-signed. Run by
-# pushing a tag (v0.1.0-dev.1), or by hand with one, which is then made at the
-# commit being built. The app is built as the tag's version.
+# release. The Mac builds, one for Apple silicon and one for Intel Macs, are
+# signed and notarized; the Windows and Linux builds are not code-signed. Run
+# by pushing a tag (v0.1.0-dev.1), or by hand with one, which is then made at
+# the commit being built. The app is built as the tag's version.
 #
-# The page is built once, and each platform wraps that same build. The release
-# is made only when every platform has built, so it never goes out with one
-# missing.
+# The page is built once, and each system's job wraps that same build with
+# electron-builder (app/electron/electron-builder.yml). The release is made
+# only when every system has built, so it never goes out with one missing.
 #
-# The app updates itself from the latest release (app/src-tauri/src/update.rs):
-# each build comes with an update signed with the updater's key, and the
-# release with latest.json, which says where each platform's update is.
-# GitHub's latest release is never a pre-release, so these are not marked as
-# pre-releases.
+# The app updates itself from the latest release (app/electron/src/
+# updates.js): each system's build comes with a latest*.yml that names its
+# update and the update's hash. GitHub's latest release is never a
+# pre-release, so these are not marked as pre-releases.
 #
 # Never on a pull request: this workflow holds the signing secrets. They live
 # in the `release` environment. It runs only on a public repository, because
@@ -35,7 +34,6 @@ permissions:
 
 env:
   TAG: ${{ inputs.tag || github.ref_name }}
-  TAURI_CLI_VERSION: 2.12.1
 
 jobs:
   page:
@@ -90,116 +88,28 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  macos:
-    name: macOS
-    needs: page
-    runs-on: macos-latest
-    environment: release
-    env:
-      RELEASE_CONFIG: '{"version": "${{ needs.page.outputs.version }}", "bundle": {"createUpdaterArtifacts": true}}'
-      VERSION: ${{ needs.page.outputs.version }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: page
-          path: app/dist
-
-      - name: Add both Mac architectures to Rust
-        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
-
-      - name: Cache the Tauri CLI
-        id: tauri-cli
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo/bin/cargo-tauri
-          key: tauri-cli-${{ env.TAURI_CLI_VERSION }}-${{ runner.os }}-${{ runner.arch }}
-
-      - name: Install the Tauri CLI
-        if: steps.tauri-cli.outputs.cache-hit != 'true'
-        run: cargo install tauri-cli --version "$TAURI_CLI_VERSION" --locked
-
-      # Tauri imports the certificate into a keychain of its own, signs the
-      # app, sends it to Apple to be notarized, and staples the ticket to it.
-      # The key file is written where the runner throws its files away. The
-      # update is the app in a .tar.gz, signed with the updater's key.
-      - name: Build, sign and notarize
-        working-directory: app/src-tauri
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-          APPLE_API_KEY_P8: ${{ secrets.APPLE_API_KEY_P8 }}
-        run: |
-          export APPLE_API_KEY_PATH="$RUNNER_TEMP/AuthKey_$APPLE_API_KEY.p8"
-          printf '%s\n' "$APPLE_API_KEY_P8" > "$APPLE_API_KEY_PATH"
-          cargo tauri build --target universal-apple-darwin --config "$RELEASE_CONFIG"
-
-      # The check a Mac makes on an app downloaded from the internet: signed
-      # with a Developer ID, and notarized, with the ticket stapled on.
-      - name: Check Gatekeeper accepts the app
-        working-directory: app/src-tauri/target/universal-apple-darwin/release/bundle
-        run: |
-          spctl --assess --type execute --verbose=2 macos/inksprite.app
-          xcrun stapler validate macos/inksprite.app
-
-      # Named like the other platforms' files, with its version.
-      - name: Name the update
-        working-directory: app/src-tauri/target/universal-apple-darwin/release/bundle/macos
-        run: |
-          name="inksprite_${VERSION}_universal.app.tar.gz"
-          mv inksprite.app.tar.gz "$name"
-          mv inksprite.app.tar.gz.sig "$name.sig"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: app-macOS
-          path: |
-            app/src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
-            app/src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
-            app/src-tauri/target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz.sig
-          if-no-files-found: error
-          retention-days: 7
-
-  linux-windows:
+  desktop:
     name: ${{ matrix.name }}
     needs: page
     runs-on: ${{ matrix.runner }}
     environment: release
     env:
-      RELEASE_CONFIG: '{"version": "${{ needs.page.outputs.version }}", "bundle": {"createUpdaterArtifacts": true}}'
+      VERSION: ${{ needs.page.outputs.version }}
     defaults:
       run:
         shell: bash
     strategy:
       matrix:
         include:
-          # The oldest Ubuntu GitHub still runs. The app links against the
-          # glibc of the system that builds it, and won't start on one older.
-          - name: Linux
-            runner: ubuntu-22.04
-            bundles: appimage,deb
-            cli: cargo-tauri
-            files: |
-              app/src-tauri/target/release/bundle/appimage/*.AppImage
-              app/src-tauri/target/release/bundle/appimage/*.AppImage.sig
-              app/src-tauri/target/release/bundle/deb/*.deb
-              app/src-tauri/target/release/bundle/deb/*.deb.sig
-          # The NSIS installer only: it installs for the user, with no admin
-          # prompt, where an unsigned MSI would ask as an unknown publisher.
+          - name: macOS
+            runner: macos-latest
+            system: --mac
           - name: Windows
             runner: windows-latest
-            bundles: nsis
-            cli: cargo-tauri.exe
-            files: |
-              app/src-tauri/target/release/bundle/nsis/*-setup.exe
-              app/src-tauri/target/release/bundle/nsis/*-setup.exe.sig
+            system: --win
+          - name: Linux
+            runner: ubuntu-latest
+            system: --linux
 
     steps:
       - uses: actions/checkout@v4
@@ -209,83 +119,86 @@ jobs:
           name: page
           path: app/dist
 
-      # What Tauri builds against, and the GStreamer plugins the AppImage
-      # takes along so narration can play: it carries every plugin installed
-      # here, so recommended packages (ffmpeg's among them) are left out.
-      - name: Install the Linux libraries
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            libwebkit2gtk-4.1-dev libxdo-dev libssl-dev \
-            libayatana-appindicator3-dev librsvg2-dev patchelf \
-            gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-pulseaudio
-
-      - name: Cache the Tauri CLI
-        id: tauri-cli
-        uses: actions/cache@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          path: ~/.cargo/bin/${{ matrix.cli }}
-          key: tauri-cli-${{ env.TAURI_CLI_VERSION }}-${{ runner.os }}-${{ runner.arch }}
+          node-version-file: app/electron/package.json
+          cache: 'npm'
+          cache-dependency-path: app/electron/package-lock.json
 
-      - name: Install the Tauri CLI
-        if: steps.tauri-cli.outputs.cache-hit != 'true'
-        run: cargo install tauri-cli --version "$TAURI_CLI_VERSION" --locked
+      - name: Install dependencies
+        working-directory: app/electron
+        run: npm ci
 
-      # Each installer is its own update, signed with the updater's key.
+      - name: Set the version
+        working-directory: app/electron
+        run: npm pkg set version="$VERSION"
+
+      # On a Mac, electron-builder imports the certificate into a keychain of
+      # its own, signs the app, sends it to Apple to be notarized, and staples
+      # the ticket to it. The key file is written where the runner throws its
+      # files away. Elsewhere the Apple secrets are left out.
       - name: Build
-        working-directory: app/src-tauri
+        working-directory: app/electron
         env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        run: cargo tauri build --bundles ${{ matrix.bundles }} --config "$RELEASE_CONFIG"
+          CSC_LINK: ${{ runner.os == 'macOS' && secrets.APPLE_CERTIFICATE || '' }}
+          CSC_KEY_PASSWORD: ${{ runner.os == 'macOS' && secrets.APPLE_CERTIFICATE_PASSWORD || '' }}
+          APPLE_API_ISSUER: ${{ runner.os == 'macOS' && secrets.APPLE_API_ISSUER || '' }}
+          APPLE_API_KEY_ID: ${{ runner.os == 'macOS' && secrets.APPLE_API_KEY || '' }}
+          APPLE_API_KEY_P8: ${{ runner.os == 'macOS' && secrets.APPLE_API_KEY_P8 || '' }}
+        run: |
+          if [ "$RUNNER_OS" = macOS ]; then
+            export APPLE_API_KEY="$RUNNER_TEMP/AuthKey_$APPLE_API_KEY_ID.p8"
+            printf '%s\n' "$APPLE_API_KEY_P8" > "$APPLE_API_KEY"
+          fi
+          npx electron-builder ${{ matrix.system }} --publish never
 
+      # The check a Mac makes on an app downloaded from the internet: signed
+      # with a Developer ID, and notarized, with the ticket stapled on.
+      - name: Check Gatekeeper accepts the app
+        if: runner.os == 'macOS'
+        working-directory: app/electron/dist
+        run: |
+          for app in mac-arm64/inksprite.app mac/inksprite.app; do
+            spctl --assess --type execute --verbose=2 "$app"
+            xcrun stapler validate "$app"
+          done
+
+      # The installers, and the updates with what the updater reads about
+      # them.
       - uses: actions/upload-artifact@v4
         with:
           name: app-${{ matrix.name }}
-          path: ${{ matrix.files }}
+          path: |
+            app/electron/dist/*.dmg
+            app/electron/dist/*.zip
+            app/electron/dist/*.exe
+            app/electron/dist/*.AppImage
+            app/electron/dist/*.deb
+            app/electron/dist/*.blockmap
+            app/electron/dist/latest*.yml
           if-no-files-found: error
           retention-days: 7
 
   publish:
     name: Publish
-    needs: [page, macos, linux-windows]
+    needs: [page, desktop]
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      VERSION: ${{ needs.page.outputs.version }}
 
     steps:
-      # The key the app trusts, and the script that checks the updates
-      # against it.
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            .github/scripts/latest-json.mjs
-            app/src-tauri/tauri.conf.json
-          sparse-checkout-cone-mode: false
-
       - uses: actions/download-artifact@v4
         with:
           pattern: app-*
           path: release
           merge-multiple: true
 
-      # Every file in one folder, as they are in the release.
-      - name: Write latest.json
-        run: |
-          mkdir assets
-          find release -type f -exec mv -t assets {} +
-          node .github/scripts/latest-json.mjs assets "$VERSION" \
-            "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG" \
-            "$(jq -r .plugins.updater.pubkey app/src-tauri/tauri.conf.json)"
-
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$TAG" assets/* \
+          gh release create "$TAG" release/* \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --latest \
@@ -293,11 +206,11 @@ jobs:
             --notes-file - <<'EOF'
           A development build of the desktop app.
 
-          - **macOS**: the `.dmg`, for Apple silicon and Intel Macs. Signed and notarized.
-          - **Windows**: the `-setup.exe`. It isn't signed, so Windows warns that it doesn't recognize the app: choose More info, then Run anyway.
-          - **Linux**: the `.AppImage`, or the `.deb` for Debian and Ubuntu. If the window opens blank, start the app with `WEBKIT_DISABLE_DMABUF_RENDERER=1` set.
+          - **macOS**: the `.dmg` ending in `arm64` for Apple silicon, or in `x64` for an Intel Mac. Signed and notarized.
+          - **Windows**: the `.exe`. It isn't signed, so Windows warns that it doesn't recognize the app: choose More info, then Run anyway.
+          - **Linux**: the `.AppImage`, or the `.deb` for Debian and Ubuntu. If the AppImage won't start on Ubuntu 24.04 or later, install the `.deb`, or start the AppImage with `--no-sandbox`.
 
-          Once installed, the app updates itself: it downloads each new release and offers to restart into it. The `.tar.gz`, `.sig` and `latest.json` files are for the updater.
+          Once installed, the app updates itself: it downloads each new release and offers to restart into it. The `.zip`, `.blockmap` and `.yml` files are for the updater.
 
-          The Windows and Linux builds haven't been tried on a real machine yet.
+          This is the first release built with Electron. An app installed from an earlier release doesn't update to it; install this one over it.
           EOF

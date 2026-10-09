@@ -108,6 +108,31 @@ jobs:
         working-directory: app
         run: npm run typecheck
 
+  # The desktop app's main process, which has packages of its own. Its lint,
+  # formatting and tests run with the page's, above and below.
+  desktop:
+    name: Desktop Type Check
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false || github.event_name != 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: app/electron/package.json
+          cache: 'npm'
+          cache-dependency-path: app/electron/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app/electron
+        run: npm ci
+
+      - name: Run type checking
+        working-directory: app/electron
+        run: npm run typecheck
+
   test:
     name: Unit Tests
     runs-on: ubuntu-latest

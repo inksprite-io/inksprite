@@ -11,7 +11,7 @@
  * too.
  */
 
-import { isDesktop } from './desktop.js'
+import { desktop, isDesktop } from './desktop.js'
 
 /** What a link may open. */
 const SCHEMES = new Set(['http:', 'https:', 'mailto:'])
@@ -41,8 +41,7 @@ export async function openUrl(href) {
   const url = openable(href)
   if (!url) return false
   if (isDesktop()) {
-    const { invoke } = await import('@tauri-apps/api/core')
-    await invoke('open_in_browser', { url: url.href })
+    await desktop().openInBrowser(url.href)
     return true
   }
   // A link of our own making, so that the browser opens it as it would one

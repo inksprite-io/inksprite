@@ -1,9 +1,6 @@
 /* global HTMLAnchorElement, MouseEvent */
 import { describe, it, expect, vi, afterEach } from 'vitest'
 
-const tauri = vi.hoisted(() => ({ invoke: vi.fn() }))
-vi.mock('@tauri-apps/api/core', () => ({ invoke: tauri.invoke }))
-
 import { openLinkClicked, openUrl } from '@/platform/open.js'
 
 /** The links the page opens itself, by clicking one it made. */
@@ -16,10 +13,16 @@ const clicked = () => {
   return anchors
 }
 
+/** The native side, as the page sees it. */
+const desktop = () => {
+  const bridge = { openInBrowser: vi.fn().mockResolvedValue(undefined) }
+  globalThis.__INKSPRITE_DESKTOP__ = bridge
+  return bridge
+}
+
 afterEach(() => {
-  delete globalThis.__TAURI_INTERNALS__
+  delete globalThis.__INKSPRITE_DESKTOP__
   vi.restoreAllMocks()
-  tauri.invoke.mockReset()
   document.body.innerHTML = ''
 })
 
@@ -47,13 +50,10 @@ describe('openUrl', () => {
   })
 
   it('asks the desktop side to open it in the system browser', async () => {
-    globalThis.__TAURI_INTERNALS__ = {}
+    const bridge = desktop()
     const anchors = clicked()
-    tauri.invoke.mockResolvedValue(undefined)
     await openUrl('https://example.com/page')
-    expect(tauri.invoke).toHaveBeenCalledWith('open_in_browser', {
-      url: 'https://example.com/page',
-    })
+    expect(bridge.openInBrowser).toHaveBeenCalledWith('https://example.com/page')
     expect(anchors).toHaveLength(0)
   })
 })
@@ -109,17 +109,11 @@ describe('openLinkClicked', () => {
   })
 
   it('opens every outside link in the system browser from the desktop window', async () => {
-    globalThis.__TAURI_INTERNALS__ = {}
-    tauri.invoke.mockResolvedValue(undefined)
-    // One at a time: a mocked module imported twice at once can come back
-    // unmocked the second time.
+    const bridge = desktop()
     expect(click({ href: 'https://example.com', target: '_blank' })).toBe(true)
-    await vi.waitFor(() => expect(tauri.invoke).toHaveBeenCalledTimes(1))
     expect(click({ href: 'mailto:someone@example.com' })).toBe(true)
-    await vi.waitFor(() => expect(tauri.invoke).toHaveBeenCalledTimes(2))
-    expect(tauri.invoke).toHaveBeenCalledWith('open_in_browser', { url: 'https://example.com/' })
-    expect(tauri.invoke).toHaveBeenCalledWith('open_in_browser', {
-      url: 'mailto:someone@example.com',
-    })
+    await vi.waitFor(() => expect(bridge.openInBrowser).toHaveBeenCalledTimes(2))
+    expect(bridge.openInBrowser).toHaveBeenCalledWith('https://example.com/')
+    expect(bridge.openInBrowser).toHaveBeenCalledWith('mailto:someone@example.com')
   })
 })

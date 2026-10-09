@@ -21,6 +21,9 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       '@components': fileURLToPath(new URL('./src/components', import.meta.url)),
+      // The desktop app's main process runs in Electron; its tests get stand-ins.
+      electron: fileURLToPath(new URL('./test/electron/electron.js', import.meta.url)),
+      'electron-updater': fileURLToPath(new URL('./test/electron/electron.js', import.meta.url)),
     },
   },
 })

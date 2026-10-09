@@ -15,10 +15,13 @@
  * some hold it to exactly that address.
  */
 
-import { isDesktop } from './desktop.js'
+import { desktop, isDesktop } from './desktop.js'
 
 /** Where the desktop app listens for a sign-in to come back. */
 export const SIGN_IN_PORT = 41721
+
+/** The id of the last sign-in waited for. */
+let last = 0
 
 /**
  * Where a sign-in comes back to: this page's own origin in a browser, the
@@ -43,27 +46,21 @@ export const callbackOrigin = () =>
  * @returns {Promise<URLSearchParams>} The query it came back with
  */
 export async function signInInBrowser(address, path, { signal } = {}) {
-  const { invoke, Channel } = await import('@tauri-apps/api/core')
   signal?.throwIfAborted()
+  const bridge = desktop()
+  const id = ++last
   return new Promise((resolve, reject) => {
-    /** @type {import('@tauri-apps/api/core').Channel<string>} */
-    const channel = new Channel(query => resolve(new URLSearchParams(query)))
-    invoke('sign_in_in_browser', {
-      address: String(address),
-      port: SIGN_IN_PORT,
-      path,
-      onReturn: channel,
-    }).then(
-      id => {
-        const stop = () => {
-          invoke('stop_sign_in', { id }).catch(() => {})
-          reject(signal?.reason)
-        }
-        if (signal?.aborted) stop()
-        else signal?.addEventListener('abort', stop, { once: true })
-      },
-      // The native side says what went wrong as a plain string.
-      error => reject(typeof error === 'string' ? new Error(error) : error)
-    )
+    const stop = () => {
+      bridge.stopSignIn(id)
+      reject(signal?.reason)
+    }
+    const back = query => {
+      signal?.removeEventListener('abort', stop)
+      resolve(new URLSearchParams(query))
+    }
+    bridge.signIn(id, { address: String(address), port: SIGN_IN_PORT, path }, back).then(() => {
+      if (signal?.aborted) stop()
+      else signal?.addEventListener('abort', stop, { once: true })
+    }, reject)
   })
 }

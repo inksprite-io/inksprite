@@ -35,7 +35,7 @@ afterEach(() => {
   vi.useRealTimers()
   vi.unstubAllGlobals()
   vi.clearAllMocks()
-  delete globalThis.__TAURI_INTERNALS__
+  delete globalThis.__INKSPRITE_DESKTOP__
 })
 
 /** @param {Promise<any>} promise */
@@ -87,9 +87,9 @@ describe('start', () => {
   })
 
   it('in the desktop window, waits in the system browser, finishes, and says so', async () => {
-    globalThis.__TAURI_INTERNALS__ = {}
+    globalThis.__INKSPRITE_DESKTOP__ = {}
     const postMessage = vi.fn()
-    vi.stubGlobal('window', { location: { origin: 'tauri://localhost' }, postMessage })
+    vi.stubGlobal('window', { location: { origin: 'app://inksprite' }, postMessage })
     config.getProvider.mockReturnValue(null)
     oauth.openRouterAuthorizationUrl.mockResolvedValue('https://openrouter.ai/auth?x')
     browser.signInInBrowser.mockResolvedValue(new URLSearchParams('code=c&state=s'))
@@ -106,7 +106,7 @@ describe('start', () => {
     )
     expect(postMessage).toHaveBeenCalledWith(
       { type: 'oauth-success', provider: 'openrouter', providerId: 'provider_openrouter_default' },
-      'tauri://localhost'
+      'app://inksprite'
     )
   })
 })
