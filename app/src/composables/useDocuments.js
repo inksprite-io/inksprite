@@ -37,7 +37,7 @@ import { useDocumentsStore } from '@/stores/documentsStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { useEditor } from '@/composables/useEditor.js'
 import { appendBlocks, settleMarkdown } from '@/editor/markdown.js'
-import { documentPath, documentTitles } from '@/utils/documentPath.js'
+import { documentPath, documentTitles, freeTitle, namesake } from '@/utils/documentPath.js'
 import { applyEdit, reverseEdit } from '@/utils/edits.js'
 import {
   closeTab as closed,
@@ -282,14 +282,23 @@ export const useDocuments = storyId => {
   }
 
   /**
+   * A folder, under a name nothing else in `parentId` has: `title`, or
+   * `Title (2)` when that is taken. See `uniqueTitle`.
    * @param {string} parentId
    * @param {string} title
    * @returns {Document}
    */
   const createFolder = (parentId, title) =>
-    documentsStore.createDocument({ storyId, parentId, type: 'folder', title })
+    documentsStore.createDocument({
+      storyId,
+      parentId,
+      type: 'folder',
+      title: uniqueTitle(parentId, title),
+    })
 
   /**
+   * A text document, under a name nothing else in `parentId` has. See
+   * `uniqueTitle`.
    * @param {string} parentId
    * @param {string} title
    * @param {string} [content] - Markdown, for callers creating a document with a body
@@ -300,39 +309,54 @@ export const useDocuments = storyId => {
       storyId,
       parentId,
       type: 'text',
-      title,
+      title: uniqueTitle(parentId, title),
       content: settleMarkdown(content),
     })
 
   /**
-   * A title nothing else in this folder already has, for something coming in
-   * from outside.
+   * A title nothing else in this folder already has: `title`, or the first
+   * free one of `Title (2)`, `Title (3)`…
    *
-   * Importing the same thing twice is a thing people do — a newer version of
-   * it, or the same one by accident — and two rows with one name is a tree
-   * the writer cannot read and a path the model cannot use. The second is
-   * `Elara (2)`, which says which came later without pretending to know what
-   * changed.
+   * Two rows with one name is a tree the writer cannot read and a path the
+   * model cannot use, so whatever puts a document in a folder without the
+   * writer naming it there — making one, importing one, moving one — takes
+   * the next free name. Importing the same thing twice is a thing people do,
+   * a newer version of it or the same one by accident, and `Elara (2)` says
+   * which came later without pretending to know what changed. A name the
+   * writer types is theirs, and is refused rather than changed: `rename`.
    *
    * @param {string} parentId
    * @param {string} title
+   * @param {string} [exceptId] - A document moving in, which is not in its own way
    * @returns {string}
    */
-  const uniqueTitle = (parentId, title) => {
-    const taken = new Set(childrenOf(parentId).map(child => child.title))
-    if (!taken.has(title)) return title
-
-    for (let at = 2; ; at++) {
-      const candidate = `${title} (${at})`
-      if (!taken.has(candidate)) return candidate
-    }
-  }
+  const uniqueTitle = (parentId, title, exceptId) =>
+    freeTitle(childrenOf(parentId), title, exceptId)
 
   /**
+   * The document in `parentId` that already goes by `title`, other than
+   * `exceptId`. Names are compared as the model's paths are: see
+   * `utils/documentPath.js`.
+   * @param {string} parentId
+   * @param {string} title
+   * @param {string} [exceptId] - The document being named
+   * @returns {Document|null}
+   */
+  const namesakeOf = (parentId, title, exceptId) => namesake(childrenOf(parentId), title, exceptId)
+
+  /**
+   * Give a document a name, unless something beside it already has that name.
    * @param {string} documentId
    * @param {string} title
+   * @returns {boolean} Whether it was renamed
    */
-  const rename = (documentId, title) => documentsStore.updateDocument(documentId, { title })
+  const rename = (documentId, title) => {
+    const document = documentsStore.getDocument(documentId)
+    if (!document) return false
+    if (document.parentId && namesakeOf(document.parentId, title, documentId)) return false
+    documentsStore.updateDocument(documentId, { title })
+    return true
+  }
 
   /**
    * Whether a document is edited as plain text and stored as typed.
@@ -536,10 +560,22 @@ export const useDocuments = storyId => {
 
   /**
    * Commit a drag: reparents anything that moved and renumbers the folder.
+   * Something moved in beside a document of its name comes in as `Name (2)`.
    * @param {string} parentId
    * @param {string[]} documentIds - Children in their new order
    */
-  const reorder = (parentId, documentIds) => documentsStore.reorderChildren(parentId, documentIds)
+  const reorder = (parentId, documentIds) => {
+    for (const id of documentIds) {
+      const document = documentsStore.getDocument(id)
+      if (!document || document.parentId === parentId) continue
+      const title = uniqueTitle(parentId, document.title, id)
+      documentsStore.updateDocument(
+        id,
+        title === document.title ? { parentId } : { parentId, title }
+      )
+    }
+    return documentsStore.reorderChildren(parentId, documentIds)
+  }
 
   /**
    * Switch a folder between keeping its children in order and sorting them
@@ -621,6 +657,7 @@ export const useDocuments = storyId => {
     createFolder,
     createTextDocument,
     uniqueTitle,
+    namesakeOf,
     rename,
     isPlain,
     wouldSettle,

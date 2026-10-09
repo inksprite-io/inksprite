@@ -10,8 +10,13 @@ import {
   isBuiltInProfileId,
   settingsForNewChat,
   settingsForProfileSwitch,
+  noteOnProfile,
 } from '@/ai/profiles/index.js'
-import { BUILT_IN_PROMPTS } from '@/ai/prompts/index.js'
+import {
+  BUILT_IN_PROMPTS,
+  DEFAULT_ROLEPLAY_NOTE,
+  DEFAULT_ROLEPLAY_NSFW_NOTE,
+} from '@/ai/prompts/index.js'
 import { TOOL_GROUP_LABELS } from '@/ai/tools/index.js'
 
 describe('chat profiles', () => {
@@ -97,14 +102,6 @@ describe('chat profiles', () => {
         }
         expect(nsfw.settings.rules).toMatch(/opted into/i)
       })
-
-      it('tells the writer about the opt-ins the first time, and only NSFW does', () => {
-        expect(nsfw.notice.header).toBeTruthy()
-        expect(nsfw.notice.message).toMatch(/author.s note/i)
-        for (const profile of BUILT_IN_PROFILES.filter(p => p.id !== ROLEPLAY_NSFW_PROFILE_ID)) {
-          expect(profile.notice).toBeUndefined()
-        }
-      })
     })
 
     it('does not answer to an id it does not have', () => {
@@ -168,6 +165,45 @@ describe('chat profiles', () => {
       expect(updates.disabledToolGroups).toEqual(roleplay.settings.disabledToolGroups)
       expect(updates.rules).toBe(roleplay.settings.rules)
       expect(updates).not.toHaveProperty('prompt')
+    })
+  })
+
+  describe("the author's note a chat runs with", () => {
+    const roleplay = getBuiltInProfile(ROLEPLAY_PROFILE_ID)
+    const nsfw = getBuiltInProfile(ROLEPLAY_NSFW_PROFILE_ID)
+
+    it("reads Roleplay's note as the NSFW one's once the switch puts it on that", () => {
+      // A chat started on Roleplay before the switch was turned on: the prompt
+      // follows on its next turn, and the opt-ins in the note have to as well.
+      expect(noteOnProfile(DEFAULT_ROLEPLAY_NOTE, nsfw)).toBe(DEFAULT_ROLEPLAY_NSFW_NOTE)
+    })
+
+    it("reads the NSFW one's note as Roleplay's once the switch is turned off", () => {
+      expect(noteOnProfile(DEFAULT_ROLEPLAY_NSFW_NOTE, roleplay)).toBe(DEFAULT_ROLEPLAY_NOTE)
+    })
+
+    it('keeps the note the profile itself stamped', () => {
+      expect(noteOnProfile(DEFAULT_ROLEPLAY_NSFW_NOTE, nsfw)).toBe(DEFAULT_ROLEPLAY_NSFW_NOTE)
+      expect(noteOnProfile(DEFAULT_ROLEPLAY_NOTE, roleplay)).toBe(DEFAULT_ROLEPLAY_NOTE)
+    })
+
+    it('keeps one the writer has changed', () => {
+      const edited = `${DEFAULT_ROLEPLAY_NOTE}\nKeep it to two paragraphs.`
+
+      expect(noteOnProfile(edited, nsfw)).toBe(edited)
+    })
+
+    it('keeps none as none', () => {
+      expect(noteOnProfile(undefined, nsfw)).toBeUndefined()
+    })
+
+    it('leaves a profile without a counterpart alone', () => {
+      const saved = { id: 'chatprofile_x', settings: { prompt: 'Be terse.' } }
+
+      expect(noteOnProfile(DEFAULT_ROLEPLAY_NOTE, getBuiltInProfile(CHAT_PROFILE_ID))).toBe(
+        DEFAULT_ROLEPLAY_NOTE
+      )
+      expect(noteOnProfile(DEFAULT_ROLEPLAY_NOTE, saved)).toBe(DEFAULT_ROLEPLAY_NOTE)
     })
   })
 })

@@ -563,6 +563,14 @@
  */
 
 /**
+ * @typedef {Object} SkillWording
+ * @property {string} name - The built-in skill it rewords
+ * @property {string} prompt - What that skill runs under instead of its file's
+ *   instructions, in every chat whose profile has no wording of its own
+ * @property {number} updated
+ */
+
+/**
  * An MCP server the writer has connected, app-wide like their skills.
  *
  * @typedef {Object} McpServer

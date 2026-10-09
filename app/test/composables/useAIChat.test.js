@@ -2,7 +2,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAIChat } from '@/composables/useAIChat'
 import { TITLE_DEFAULTS } from '@/ai/defaults.js'
-import { DEFAULT_CHAT_PROMPT, DEFAULT_ROLEPLAY_PROMPT } from '@/ai/prompts/index.js'
+import {
+  DEFAULT_CHAT_PROMPT,
+  DEFAULT_ROLEPLAY_PROMPT,
+  DEFAULT_ROLEPLAY_NOTE,
+  DEFAULT_ROLEPLAY_NSFW_NOTE,
+} from '@/ai/prompts/index.js'
 import { SKILL_MAX_ROUNDS } from '@/ai/skills/index.js'
 
 // Mock stores
@@ -3715,6 +3720,27 @@ describe('useAIChat', () => {
 
       expect(opts.systemPrompt).toBe(DEFAULT_CHAT_PROMPT)
       expect(opts.documentId).toBeUndefined()
+    })
+
+    /** Drive one generation and return the author's note the builder saw. */
+    const captureNote = async () => {
+      await capturePromptForActiveProfile()
+      const { useAIContext } = await import('@/composables/useAIContext')
+      return useAIContext().build.mock.calls.at(-1)[0].note
+    }
+
+    it("should send the chat's author's note", async () => {
+      withChatSettings({ rules: 'Never write for the player.' })
+
+      expect(await captureNote()).toBe('Never write for the player.')
+    })
+
+    it('should send it as the profile the chat runs on reads it', async () => {
+      // Started on Roleplay, and run on Roleplay (NSFW) since the switch was
+      // turned on: the opt-ins are in the NSFW one's note. See noteOnProfile.
+      withChatSettings({ profileId: 'builtin_profile_roleplay_nsfw', rules: DEFAULT_ROLEPLAY_NOTE })
+
+      expect(await captureNote()).toBe(DEFAULT_ROLEPLAY_NSFW_NOTE)
     })
   })
 })

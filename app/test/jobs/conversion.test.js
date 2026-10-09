@@ -163,6 +163,27 @@ describe('converting a document, as a job', () => {
     expect(copy.content).toContain('# Spells\n\nSpell sentence number 0 is about magic.')
   })
 
+  it('numbers the copy beside a document that already has its name', async () => {
+    documents.createDocument({
+      storyId: STORY,
+      parentId: rootIdFor(STORY),
+      type: 'text',
+      title: 'Notes (Markdown)',
+    })
+    const source = documents.createDocument({
+      storyId: STORY,
+      parentId: rootIdFor(STORY),
+      type: 'text',
+      title: 'Notes',
+      content: ['Intro', ...sentences('intro')].join('\n'),
+    })
+
+    await settled((await startConversion(STORY, source.id)).id)
+
+    const copy = [...documents.documents.values()].find(one => one.convertedFrom === source.id)
+    expect(copy.title).toBe('Notes (Markdown) (2)')
+  })
+
   it('refuses a document with no text', async () => {
     const empty = documents.createDocument({
       storyId: STORY,

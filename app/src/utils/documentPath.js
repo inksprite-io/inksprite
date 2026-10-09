@@ -6,6 +6,10 @@
  * a document has — the AI tools list and resolve it, and the outline copies
  * it — so it is spelled in exactly one place. A title nobody has given reads
  * as "Untitled".
+ *
+ * Being an address, a path has to lead to one document. So no two documents
+ * in a folder go by one name, compared the way a tool matches a path: without
+ * the spaces round it, whatever its case, and "Untitled" for none.
  */
 
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
@@ -48,4 +52,51 @@ export function documentPath(get, document) {
   if (!document) return ''
   if (document.id === rootIdFor(document.storyId)) return '/'
   return documentTitles(get, document).join('/')
+}
+
+/**
+ * A title as names in one folder are compared.
+ * @param {string|null|undefined} title
+ * @returns {string}
+ */
+export function titleKey(title) {
+  return (title?.trim() || 'Untitled').toLowerCase()
+}
+
+/**
+ * The document among `siblings` that already goes by `title`.
+ *
+ * @param {Document[]} siblings - A folder's children
+ * @param {string} title
+ * @param {string} [exceptId] - The document being renamed or moved, which
+ *   does not stand in its own way
+ * @returns {Document|null}
+ */
+export function namesake(siblings, title, exceptId) {
+  const key = titleKey(title)
+  return (
+    siblings.find(sibling => sibling.id !== exceptId && titleKey(sibling.title) === key) || null
+  )
+}
+
+/**
+ * `title` if none of `siblings` goes by it, and otherwise the first of
+ * `Title (2)`, `Title (3)`… that none does.
+ *
+ * @param {Document[]} siblings - A folder's children
+ * @param {string} title
+ * @param {string} [exceptId] - The document being renamed or moved
+ * @returns {string}
+ */
+export function freeTitle(siblings, title, exceptId) {
+  const taken = new Set(
+    siblings.filter(sibling => sibling.id !== exceptId).map(sibling => titleKey(sibling.title))
+  )
+  if (!taken.has(titleKey(title))) return title
+
+  const base = title.trim() || 'Untitled'
+  for (let at = 2; ; at++) {
+    const candidate = `${base} (${at})`
+    if (!taken.has(titleKey(candidate))) return candidate
+  }
 }

@@ -11,7 +11,6 @@ import {
   ROLEPLAY_PROFILE_ID,
   ROLEPLAY_NSFW_PROFILE_ID,
 } from '@/ai/profiles/index.js'
-import { useProfileNotice } from '@/composables/useProfileNotice.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 
 vi.mock('@/stores/db', () => ({ default: {} }))
@@ -75,24 +74,6 @@ describe('ChatProfileMenu', () => {
     expect(chats.unstartedChat.value.profileId).toBe(ROLEPLAY_PROFILE_ID)
     expect(useChatsStore().getChatsForStory('story_1')).toHaveLength(0)
     expect(wrapper.find('[data-chat-profile]').text()).toBe('Roleplay')
-  })
-
-  it('tells the writer what Roleplay (NSFW) asks of them the first time they pick it', async () => {
-    window.localStorage.clear()
-    useApplicationState().setNsfwProfiles(true)
-    const notice = useProfileNotice()
-    notice.dismiss()
-    const wrapper = mountMenu(chats.unstartedChat.value.id)
-
-    await pick(wrapper, 'Roleplay (NSFW)')
-
-    expect(chats.unstartedChat.value.profileId).toBe(ROLEPLAY_NSFW_PROFILE_ID)
-    expect(notice.pending.value?.header).toBe('Roleplay (NSFW)')
-
-    notice.dismiss()
-    await pick(wrapper, 'Default')
-    await pick(wrapper, 'Roleplay (NSFW)')
-    expect(notice.pending.value).toBeNull()
   })
 
   it('replaces a started chat’s settings with the profile’s, even ones it does not set', async () => {

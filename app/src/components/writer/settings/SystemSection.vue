@@ -38,10 +38,11 @@
           >Enable NSFW chat profiles</label
         >
         <ToggleSwitch
-          v-model="nsfwProfiles"
+          :model-value="applicationState.nsfwProfiles.value"
           input-id="nsfw-switch"
           class="flex-none"
           data-nsfw-profiles
+          @update:model-value="applicationState.setNsfwProfiles"
         />
       </div>
     </div>
@@ -73,23 +74,10 @@ import DataSection from './DataSection.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { applyTheme } from '@/composables/useSystemSettings.js'
 import { useMessagesStore } from '@/stores/messagesStore'
-import { useProfileNotice } from '@/composables/useProfileNotice.js'
-import { ROLEPLAY_NSFW_PROFILE_ID } from '@/ai/profiles/index.js'
 
 const applicationState = useApplicationState()
 const { theme, setTheme } = applicationState
 const messagesStore = useMessagesStore()
-const { noticeFor } = useProfileNotice()
-
-// Switched on, Roleplay (NSFW) takes Roleplay's place, card chats start on it
-// with nobody picking it, and this is the choosing.
-const nsfwProfiles = computed({
-  get: () => applicationState.nsfwProfiles.value,
-  set: value => {
-    applicationState.setNsfwProfiles(value)
-    if (value) noticeFor(ROLEPLAY_NSFW_PROFILE_ID)
-  },
-})
 
 // Switched off, it forgets what it kept. A saved request is as large as the
 // conversation behind it, and in a long chat kept with it on they came to most

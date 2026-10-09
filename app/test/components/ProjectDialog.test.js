@@ -34,9 +34,6 @@ vi.mock('@/composables/useProfiles', () => ({
 }))
 vi.mock('primevue/usetoast', () => ({ useToast: () => ({ add: vi.fn() }) }))
 
-const { noticeFor } = vi.hoisted(() => ({ noticeFor: vi.fn() }))
-vi.mock('@/composables/useProfileNotice.js', () => ({ useProfileNotice: () => ({ noticeFor }) }))
-
 const Dialog = { template: '<div><slot /><slot name="footer" /></div>' }
 const Select = {
   props: ['modelValue', 'options'],
@@ -101,8 +98,6 @@ describe('ProjectDialog', () => {
       title: 'My Novel',
       summary: 'A knight rides north.',
     })
-    // Every new chat here starts on it now, which is choosing it.
-    expect(noticeFor).toHaveBeenCalledWith('chatprofile_editor')
   })
 
   it('leaves the project alone when the default did not change', async () => {
@@ -112,7 +107,6 @@ describe('ProjectDialog', () => {
 
     expect(updateStory).not.toHaveBeenCalled()
     expect(updateDocument).toHaveBeenCalled()
-    expect(noticeFor).not.toHaveBeenCalled()
   })
 
   it('keeps an NSFW default through a save while those are off', async () => {

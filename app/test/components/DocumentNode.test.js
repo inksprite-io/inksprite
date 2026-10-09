@@ -285,6 +285,81 @@ describe('DocumentNode', () => {
     expect(api.get(chapter.id).title).toBe('Old name')
   })
 
+  describe('a name something beside it has', () => {
+    const renaming = async title => {
+      api.createTextDocument('notes_story_1', 'Riley')
+      const chapter = api.createTextDocument('notes_story_1', 'Old name')
+      api.requestRename(chapter.id)
+      const wrapper = mountNode(chapter.id)
+      await wrapper.vm.$nextTick()
+      const input = wrapper.find('input')
+      await input.setValue(title)
+      return { wrapper, input, chapter }
+    }
+
+    it('is said under the field on Enter, not as it is typed, in any case', async () => {
+      const { wrapper, input } = await renaming('riley ')
+      expect(wrapper.find('[data-rename-clash]').exists()).toBe(false)
+
+      await input.trigger('keyup.enter')
+
+      expect(wrapper.find('[data-rename-clash]').text()).toBe('“Riley” is already in this folder')
+      expect(wrapper.find('input').attributes('aria-invalid')).toBe('true')
+    })
+
+    it('stops being said once the name is changed', async () => {
+      const { wrapper, input } = await renaming('Riley')
+      await input.trigger('keyup.enter')
+
+      await input.setValue('Rile')
+      expect(wrapper.find('[data-rename-clash]').exists()).toBe(false)
+      await input.setValue('Riley')
+      expect(wrapper.find('[data-rename-clash]').exists()).toBe(false)
+    })
+
+    it('says so at the top of the project, which is a folder too', async () => {
+      const chapter = api.createTextDocument('root_story_1', 'Old name')
+      api.requestRename(chapter.id)
+      const wrapper = mountNode(chapter.id)
+      await wrapper.vm.$nextTick()
+      const input = wrapper.find('input')
+      await input.setValue('Notes')
+      await input.trigger('keyup.enter')
+
+      expect(wrapper.find('[data-rename-clash]').text()).toBe('“notes” is already in this folder')
+    })
+
+    it('leaves the field open on Enter, to choose another', async () => {
+      const { wrapper, input, chapter } = await renaming('Riley')
+      await input.trigger('keyup.enter')
+
+      expect(api.get(chapter.id).title).toBe('Old name')
+      expect(wrapper.find('input').exists()).toBe(true)
+
+      await input.setValue('Riley, again')
+      expect(wrapper.find('[data-rename-clash]').exists()).toBe(false)
+      await input.trigger('keyup.enter')
+      expect(api.get(chapter.id).title).toBe('Riley, again')
+    })
+
+    it('keeps the old name when the field is left', async () => {
+      const { wrapper, input, chapter } = await renaming('Riley')
+      await input.trigger('blur')
+
+      expect(api.get(chapter.id).title).toBe('Old name')
+      expect(wrapper.find('input').exists()).toBe(false)
+      expect(wrapper.find('[data-rename-clash]').exists()).toBe(false)
+    })
+
+    it('is not the document’s own, in another case', async () => {
+      const { wrapper, input, chapter } = await renaming('OLD NAME')
+
+      expect(wrapper.find('[data-rename-clash]').exists()).toBe(false)
+      await input.trigger('keyup.enter')
+      expect(api.get(chapter.id).title).toBe('OLD NAME')
+    })
+  })
+
   it('renders the project root with the story name and its folders beneath', () => {
     const wrapper = mountNode('root_story_1')
 

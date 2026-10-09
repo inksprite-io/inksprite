@@ -61,7 +61,7 @@
                   class="flex-1 min-w-0 dark:!bg-surface-900"
                   size="small"
                   :pt="{ list: { onMousedownCapture: ignoreRightButton } }"
-                  @update:model-value="chooseProfile"
+                  @update:model-value="setProfile"
                 >
                   <template #option="{ option }">
                     <span
@@ -358,7 +358,7 @@
                   <SettingLabel
                     label="Prompt"
                     :overridden="isSkillOverridden(skill.id)"
-                    :reset-tooltip="`Back to the wording ${skill.label} ships with`"
+                    reset-tooltip="Back to its wording in the skill library"
                     @reset="resetSkill(skill.id)"
                   />
                   <Textarea
@@ -515,7 +515,7 @@ const emit = defineEmits(['back'])
 
 const aiConfig = useAIConfig()
 const profilesApi = useProfiles()
-const { skills: library } = useSkills()
+const { skills: library, wordingOf } = useSkills()
 
 // The writer's MCP servers, as the Tools section lists them. See mcp/servers.js.
 const { servers: connectedServers } = useMcpServers()
@@ -609,8 +609,8 @@ const {
   defaultProfileId,
   selectedProfileId,
   selectedProfile,
+  note,
   setProfile,
-  chooseProfile,
   deleteProfile,
 } = useChatSettings(props.storyId, () => props.chatId)
 
@@ -651,14 +651,14 @@ const selectedUserVoiceId = computed(() => userVoice.value?.id ?? selectedVoiceI
 const setUserVoice = voiceId => update({ userVoiceId: voiceId || null })
 
 /**
- * The chat's author's note. Edited locally for the reason the prompt is: the
- * store echoes every write back, and a value that arrives mid-keystroke moves
- * the caret.
+ * The chat's author's note, as the turn reads it. Edited locally for the
+ * reason the prompt is: the store echoes every write back, and a value that
+ * arrives mid-keystroke moves the caret.
  */
-const rules = ref(chat.value?.rules || '')
+const rules = ref(note.value || '')
 
 watch(
-  () => chat.value?.rules,
+  () => note.value,
   next => {
     if ((next || '') !== rules.value) rules.value = next || ''
   }
@@ -778,7 +778,8 @@ const skills = computed(() => {
 
 /**
  * What a skill runs under here, and whether this profile has said so rather
- * than taking the wording the skill ships with.
+ * than taking the skill's own wording: its file's, or the writer's in the
+ * library.
  *
  * @param {string} id
  */
@@ -797,7 +798,11 @@ const skillDrafts = ref(
 )
 
 watch(
-  () => [selectedProfile.value?.settings, skills.value],
+  () => [
+    selectedProfile.value?.settings,
+    skills.value,
+    skills.value.map(skill => wordingOf(skill.id)),
+  ],
   () => {
     for (const skill of skills.value) {
       const stored = skillPromptFor(skill.id)
@@ -824,8 +829,8 @@ const setSkillPrompt = id => {
 }
 
 /**
- * Take the override off, which puts the skill back on the wording it ships
- * with — and keeps it there as that wording improves.
+ * Take the override off, which puts the skill back on its own wording — and
+ * keeps it there as that wording changes.
  *
  * @param {string} id
  */
@@ -862,12 +867,17 @@ const handleSystemPromptInput = () => {
 }
 
 /**
- * Copy the selected profile and switch this chat to the copy.
+ * Copy the selected profile and switch this chat to the copy. The copy starts
+ * new chats with this chat's author's note rather than the profile's: an edited
+ * list of opt-ins, or rules worked out here, is as often as not why the writer
+ * wants one. The chat is given its note as it reads it, which a copy, having
+ * no counterpart, would otherwise read differently. See `noteOnProfile`.
  * @param {Partial<import('@/ai/profiles/index.js').ProfileSettings>} [changes]
  */
 const forkProfile = (changes = {}) => {
-  const copy = profilesApi.duplicateProfile(selectedProfileId.value, changes)
-  if (copy) update({ profileId: copy.id })
+  const rules = note.value
+  const copy = profilesApi.duplicateProfile(selectedProfileId.value, { rules, ...changes })
+  if (copy) update({ profileId: copy.id, rules })
 }
 
 /** @type {import('vue').Ref<any>} */

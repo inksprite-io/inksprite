@@ -676,6 +676,54 @@ describe('useDocuments', () => {
     })
   })
 
+  describe('names in a folder', () => {
+    const notes = 'notes_story_1'
+
+    it('makes a document under the next free name, whatever its case', () => {
+      api.createTextDocument(notes, 'Riley')
+
+      expect(api.createTextDocument(notes, 'riley').title).toBe('riley (2)')
+      expect(api.createFolder(notes, 'Riley').title).toBe('Riley (3)')
+    })
+
+    it('makes a second unnamed document Untitled (2)', () => {
+      expect(api.createTextDocument(notes, '').title).toBe('')
+      expect(api.createTextDocument(notes, '').title).toBe('Untitled (2)')
+    })
+
+    it('refuses a rename to a name something beside it has', () => {
+      api.createTextDocument(notes, 'Riley')
+      const anthony = api.createTextDocument(notes, 'Anthony')
+
+      expect(api.rename(anthony.id, 'RILEY')).toBe(false)
+      expect(api.get(anthony.id).title).toBe('Anthony')
+      expect(api.rename(anthony.id, 'anthony')).toBe(true)
+      expect(api.get(anthony.id).title).toBe('anthony')
+    })
+
+    it('numbers a document moved in beside one of its name', () => {
+      const manuscript = 'manuscript_story_1'
+      const here = api.createTextDocument(manuscript, 'Riley')
+      const moving = api.createTextDocument(notes, 'Riley')
+
+      api.reorder(manuscript, [moving.id, here.id])
+
+      expect(api.get(moving.id)).toMatchObject({ parentId: manuscript, title: 'Riley (2)' })
+      expect(api.get(here.id).title).toBe('Riley')
+      expect(api.childrenOf(manuscript).map(d => d.id)).toEqual([moving.id, here.id])
+    })
+
+    it('leaves names alone in a reorder within the folder', () => {
+      const manuscript = 'manuscript_story_1'
+      const first = api.createTextDocument(manuscript, 'One')
+      const second = api.createTextDocument(manuscript, 'Two')
+
+      api.reorder(manuscript, [second.id, first.id])
+
+      expect(api.childrenOf(manuscript).map(d => d.title)).toEqual(['Two', 'One'])
+    })
+  })
+
   describe('hiding from the model', () => {
     it('is off until the writer turns it on', () => {
       const note = api.createTextDocument('notes_story_1', 'Secret')

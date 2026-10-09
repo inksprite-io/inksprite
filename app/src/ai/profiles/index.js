@@ -51,17 +51,11 @@ import {
  *   than a copy: a skill absent here reads the wording its own file has, and
  *   keeps picking up improvements to it. See `skillPrompt` in ai/skills.
  *
- * @typedef {Object} ProfileNotice
- * @property {string} header
- * @property {string} message - Paragraphs, separated by a blank line
- *
  * @typedef {Object} ChatProfile
  * @property {string} id - Stable identifier, prefixed so it cannot collide with a stored profile
  * @property {string} name - Display name
  * @property {string} [description] - One line, for the picker; the built-ins have one
  * @property {ProfileSettings} settings
- * @property {ProfileNotice} [notice] - What the writer is told the first time
- *   they pick it. See composables/useProfileNotice.js.
  * @property {boolean} [nsfw] - Written for explicit content: offered, in place
  *   of its general counterpart, only once the writer switches NSFW profiles on
  *   in the settings. See composables/useProfiles.js.
@@ -127,13 +121,6 @@ export const BUILT_IN_PROFILES = [
       ...ROLEPLAY_SETTINGS,
       prompt: DEFAULT_ROLEPLAY_NSFW_PROMPT,
       rules: DEFAULT_ROLEPLAY_NSFW_NOTE,
-    },
-    notice: {
-      header: 'Roleplay (NSFW)',
-      message: [
-        "A chat on this profile tells the model you're an adult and have opted into the themes in its author's note. To begin with, that's explicit sexual content, graphic violence and dark themes.",
-        "Add or remove themes in the chat's settings, under Author's note. To start every new chat with your own list, save a chat as a profile of your own with New profile.",
-      ].join('\n\n'),
     },
   },
   {
@@ -225,4 +212,27 @@ const STAMPED_SETTINGS = [
 export function settingsForProfileSwitch(profile) {
   const cleared = Object.fromEntries(STAMPED_SETTINGS.map(key => [key, undefined]))
   return { ...cleared, ...settingsForNewChat(profile) }
+}
+
+/**
+ * The author's note a chat runs with, given the profile it runs on.
+ *
+ * Its own, which the writer may have changed since it was stamped on. Unless
+ * that is still, word for word, the note of the profile's NSFW or general
+ * counterpart: the settings switch moves a chat across to the counterpart
+ * without touching it, and the prompt follows because it is read every turn.
+ * The note has to follow with it, or a Roleplay chat switched to NSFW runs
+ * without the opt-ins, and switched back keeps them.
+ *
+ * @param {string|undefined} note - The chat's
+ * @param {{id: string}|null|undefined} profile - The one it runs on
+ * @returns {string|undefined}
+ */
+export function noteOnProfile(note, profile) {
+  const builtIn = getBuiltInProfile(profile?.id)
+  if (!builtIn || !note) return note
+  const counterpart = BUILT_IN_PROFILES.find(
+    other => other.id === builtIn.generalId || other.generalId === builtIn.id
+  )
+  return counterpart && note === counterpart.settings.rules ? builtIn.settings.rules : note
 }

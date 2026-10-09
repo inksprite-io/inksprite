@@ -20,6 +20,7 @@ import { useDocumentsStore } from '@/stores/documentsStore.js'
 import { useFilesStore } from '@/stores/filesStore.js'
 import { useJobsStore } from '@/stores/jobsStore.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
+import { freeTitle } from '@/utils/documentPath.js'
 import { assemble, convertRequest } from './convert.js'
 import { pauseJob, registerJobKind, startJob } from './runner.js'
 import {
@@ -140,11 +141,12 @@ registerJobKind('convert', {
       return
     }
     const source = documents.getDocument(job.documentId || '')
+    const parentId = source?.parentId || rootIdFor(job.storyId)
     const made = documents.createDocument({
       storyId: job.storyId,
-      parentId: source?.parentId || rootIdFor(job.storyId),
+      parentId,
       type: 'text',
-      title: `${plan.title} (Markdown)`,
+      title: freeTitle(documents.getChildrenOrdered(parentId), `${plan.title} (Markdown)`),
       content,
     })
     documents.updateDocument(made.id, { convertedFrom: job.documentId })

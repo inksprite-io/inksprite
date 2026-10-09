@@ -22,6 +22,9 @@ import { useEditor } from './useEditor.js'
  * @property {string} [documentId]
  * @property {string} [chatId]
  * @property {string} systemPrompt
+ * @property {string} [note] - The chat's author's note, written by the writer,
+ *   for the turn alone: a skill reads the conversation as a transcript and is
+ *   not who it is for
  * @property {string} [userPrompt]
  * @property {import('@/ai/context/build.js').TranscriptRoles} [transcript]
  * @property {string} [before]
@@ -79,9 +82,6 @@ export function useAIContext(storyId) {
       storyId,
       project,
       pinned,
-      // The chat's, written by the writer, and read only by the turn: a skill
-      // reads the conversation as a transcript and is not who it is for.
-      note: chat?.rules,
       replays: replaysAcrossTurns,
       replayTurns: settings.replayTurns,
       keeps: keptInConversation,

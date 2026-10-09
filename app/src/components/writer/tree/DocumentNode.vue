@@ -63,6 +63,9 @@
         v-model="draftTitle"
         class="flex-1 min-w-0"
         size="small"
+        :invalid="!!refusal"
+        :aria-describedby="refusal ? `clash-${documentId}` : undefined"
+        @update:model-value="refused = false"
         @keyup.enter="commitRename(true)"
         @keyup.escape="cancelRename(true)"
         @blur="commitRename(false)"
@@ -138,6 +141,16 @@
       </template>
       <ContextMenu ref="contextMenu" :model="menuItems" />
     </div>
+
+    <p
+      v-if="refusal"
+      :id="`clash-${documentId}`"
+      class="py-0.5 pr-1 text-xs text-red-600 dark:text-red-400"
+      :style="{ paddingLeft: `${depth * 12 + 40}px` }"
+      data-rename-clash
+    >
+      {{ refusal }}
+    </p>
 
     <!-- Summary, for text documents that asked for it -->
     <DocumentSummary
@@ -312,6 +325,21 @@ const draftTitle = ref('')
 const namingNew = ref(false)
 
 const node = computed(() => api.get(props.documentId))
+
+/**
+ * What already goes by the name being typed. Two of one name in a folder is
+ * one path for two documents, so the rename waits for another.
+ */
+const clash = computed(() => {
+  const parentId = node.value?.parentId
+  if (!isRenaming.value || !parentId || !draftTitle.value.trim()) return ''
+  const other = api.namesakeOf(parentId, draftTitle.value.trim(), props.documentId)
+  return other ? `“${api.displayTitle(other)}” is already in this folder` : ''
+})
+/** Whether Enter was refused for the name in the field, until it is changed. */
+const refused = ref(false)
+/** Said under the field once Enter is refused, not while the name is typed. */
+const refusal = computed(() => (refused.value ? clash.value : ''))
 const isFolder = computed(() => api.isFolder(node.value))
 const isFile = computed(() => node.value?.type === 'file')
 const isCardFolder = computed(() => isCard(node.value))
@@ -609,6 +637,7 @@ const setSummaryVisible = visible => {
 
 const startRename = async () => {
   draftTitle.value = api.editableTitle(props.documentId)
+  refused.value = false
   isRenaming.value = true
   await nextTick()
   renameInput.value?.$el?.focus()
@@ -619,10 +648,18 @@ const startRename = async () => {
  * The rename is over: the name stands, or the old one does if nothing was
  * typed. A new document is then written in, when the writer ended the rename
  * themselves; a blur means they went somewhere else, and the focus stays there.
+ *
+ * A name something beside it has is not taken: Enter says so and leaves the
+ * field open to change it, and leaving the field keeps the name it had.
  * @param {boolean} deliberate - Ended with a key rather than by leaving the field
  */
 const commitRename = deliberate => {
   if (!isRenaming.value) return
+  if (clash.value) {
+    if (deliberate) refused.value = true
+    else cancelRename(false)
+    return
+  }
   isRenaming.value = false
 
   const next = draftTitle.value.trim()

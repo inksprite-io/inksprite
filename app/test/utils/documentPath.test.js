@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { documentPath } from '@/utils/documentPath.js'
+import { documentPath, freeTitle, namesake, titleKey } from '@/utils/documentPath.js'
 
 const docs = new Map(
   [
@@ -28,5 +28,33 @@ describe('documentPath', () => {
       'Characters/Elara, before'
     )
     expect(documentPath(get, null)).toBe('')
+  })
+})
+
+describe('names in a folder', () => {
+  const siblings = [
+    { id: 'a', title: 'Elara' },
+    { id: 'b', title: '' },
+    { id: 'c', title: 'Elara (2)' },
+  ]
+
+  it('compares titles as a path is matched', () => {
+    expect(titleKey('  Elara ')).toBe('elara')
+    expect(titleKey('')).toBe('untitled')
+    expect(titleKey(undefined)).toBe('untitled')
+  })
+
+  it('finds what already goes by a name, but not the document being named', () => {
+    expect(namesake(siblings, 'ELARA')?.id).toBe('a')
+    expect(namesake(siblings, 'Untitled')?.id).toBe('b')
+    expect(namesake(siblings, 'Elara', 'a')).toBeNull()
+    expect(namesake(siblings, 'Riley')).toBeNull()
+  })
+
+  it('numbers a name that is taken, past the numbers taken too', () => {
+    expect(freeTitle(siblings, 'Riley')).toBe('Riley')
+    expect(freeTitle(siblings, 'elara')).toBe('elara (3)')
+    expect(freeTitle(siblings, '')).toBe('Untitled (2)')
+    expect(freeTitle(siblings, 'Elara', 'a')).toBe('Elara')
   })
 })

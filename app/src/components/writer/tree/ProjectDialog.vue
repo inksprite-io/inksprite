@@ -54,7 +54,6 @@ import { useToast } from 'primevue/usetoast'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { useProfiles } from '@/composables/useProfiles'
-import { useProfileNotice } from '@/composables/useProfileNotice.js'
 import { DEFAULT_PROFILE_ID } from '@/ai/profiles/index.js'
 
 const props = defineProps({
@@ -68,7 +67,6 @@ const toast = useToast()
 const documentsStore = useDocumentsStore()
 const storiesStore = useStoriesStore()
 const profilesApi = useProfiles()
-const { noticeFor } = useProfileNotice()
 
 const profiles = computed(() => profilesApi.profiles.value)
 
@@ -138,8 +136,6 @@ const save = async () => {
       await storiesStore.updateStory(props.storyId, {
         options: { ...story.options, profileId: form.value.profileId },
       })
-      // Every new chat here will start on it, which is choosing it.
-      noticeFor(form.value.profileId)
     }
     emit('update:visible', false)
     toast.add({ severity: 'success', summary: 'Success', detail: 'Project updated', life: 3000 })

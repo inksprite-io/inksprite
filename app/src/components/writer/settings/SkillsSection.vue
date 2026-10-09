@@ -1,6 +1,17 @@
 <template>
   <div class="flex flex-col gap-4 px-2 pt-2 pb-1" data-skills-section>
-    <SkillEditor v-if="editing" :key="editing.key" :skill-id="editing.id" @close="editing = null" />
+    <BuiltInSkillEditor
+      v-if="editing?.builtIn"
+      :key="editing.key"
+      :name="editing.builtIn"
+      @close="editing = null"
+    />
+    <SkillEditor
+      v-else-if="editing"
+      :key="editing.key"
+      :skill-id="editing.id"
+      @close="editing = null"
+    />
 
     <template v-else>
       <p class="text-sm text-surface-600 dark:text-surface-300">
@@ -103,21 +114,26 @@
 
       <section class="flex flex-col gap-2" data-list="built-in">
         <h3 class="text-sm font-semibold text-surface-800 dark:text-surface-100">Built-in</h3>
-        <div
+        <button
           v-for="skill in builtIn"
           :key="skill.name"
-          class="flex flex-col gap-0.5 rounded-lg px-3 py-2 bg-surface-50 dark:bg-surface-900/40"
+          type="button"
+          class="flex flex-col gap-0.5 rounded-lg px-3 py-2 text-left bg-surface-50 dark:bg-surface-900/40 hover:bg-surface-100 dark:hover:bg-surface-800"
           :data-skill="skill.name"
+          @click="openBuiltIn(skill.name)"
         >
           <span class="flex items-center gap-2 min-w-0">
             <span class="text-sm font-medium truncate">{{ skill.label }}</span>
             <span v-if="skill.command" class="text-xs font-mono text-surface-500">
               {{ skill.command }}
             </span>
+            <span v-if="skill.reworded" class="text-xs text-surface-400" data-reworded>
+              reworded
+            </span>
           </span>
           <span class="text-xs text-surface-500 dark:text-surface-400">{{ skill.kind }}</span>
           <span class="text-xs text-surface-600 dark:text-surface-300">{{ skill.summary }}</span>
-        </div>
+        </button>
       </section>
     </template>
   </div>
@@ -128,6 +144,7 @@ import { computed, ref } from 'vue'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import SkillEditor from './SkillEditor.vue'
+import BuiltInSkillEditor from './BuiltInSkillEditor.vue'
 import SkillImportDialog from './SkillImportDialog.vue'
 import { BUILT_IN_SKILLS, skillLabel } from '@/ai/skills/index.js'
 import { parseSkill } from '@/ai/skills/format.js'
@@ -140,8 +157,8 @@ import { useToast } from '@/composables/useToast'
 
 /**
  * The library: the writer's own skills, to write and change, and the ones that
- * ship with the app, to read. App-wide, beside Workflows — a skill is not any one
- * project's. See `.llm/skills_design.md`, part 3.
+ * ship with the app, to reword. App-wide, beside Workflows — a skill is not any
+ * one project's. See `.llm/skills_design.md`, part 3.
  */
 
 const skillsApi = useSkills()
@@ -196,12 +213,17 @@ const exportAll = () => {
 }
 
 /** The skill being written, or none while the list shows. */
-const editing = ref(/** @type {{id: string|null, key: number}|null} */ (null))
+const editing = ref(/** @type {{id: string|null, builtIn?: string, key: number}|null} */ (null))
 let opened = 0
 
 /** @param {string|null} id - A skill of theirs, or none for a new one */
 const open = id => {
   editing.value = { id, key: ++opened }
+}
+
+/** @param {string} name - A skill that ships with the app */
+const openBuiltIn = name => {
+  editing.value = { id: null, builtIn: name, key: ++opened }
 }
 
 /** Each of the writer's skills, as the list shows it: read from its file. */
@@ -234,14 +256,17 @@ const yours = computed(() =>
   })
 )
 
-/** The skills that ship with the app, read-only. */
-const builtIn = BUILT_IN_SKILLS.map(skill => ({
-  name: skill.name,
-  label: skillLabel(skill),
-  command: skill.user && skill.name in COMMANDS ? `/${skill.name}` : '',
-  kind: describeKind(skill),
-  summary: skill.summary,
-}))
+/** The skills that ship with the app, and whether the writer has reworded each. */
+const builtIn = computed(() =>
+  BUILT_IN_SKILLS.map(skill => ({
+    name: skill.name,
+    label: skillLabel(skill),
+    command: skill.user && skill.name in COMMANDS ? `/${skill.name}` : '',
+    kind: describeKind(skill),
+    summary: skill.summary,
+    reworded: skillsApi.wordingOf(skill.name) !== null,
+  }))
+)
 
 defineExpose({ open })
 </script>

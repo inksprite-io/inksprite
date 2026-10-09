@@ -292,6 +292,26 @@ describe('document tools', () => {
       expect(await executeListDocuments({ path: 'notes' }, inChat)).toBe('"notes" is empty.')
     })
 
+    it('will not rename on top of what the chat hid', async () => {
+      await seed()
+      store.createDocument({
+        id: 'lore_2',
+        storyId: STORY,
+        parentId: 'cat_1',
+        type: 'text',
+        title: 'Riley',
+      })
+      markChat({ hiddenIds: ['lore_2'] })
+
+      const renamed = await executeUpdateDocument(
+        { path: 'notes/Characters/Elara', updates: { title: 'Riley' } },
+        { ...inChat, edits: [] }
+      )
+      expect(renamed).toEqual({
+        error: '"notes/Characters/Riley" is not available. Choose a different title.',
+      })
+    })
+
     it('will not create on top of what the chat hid', async () => {
       await seed()
       markChat({ hiddenIds: ['lore_1'] })
@@ -905,6 +925,35 @@ describe('document tools', () => {
         title: 'Elara Vance',
         summary: 'A knight.',
       })
+    })
+
+    it('refuses a title something beside it has, in any case', async () => {
+      await seed()
+      await executeCreateDocument({ path: 'notes/Characters/Riley', content: 'x' }, context)
+
+      const result = await executeUpdateDocument(
+        { path: 'notes/Characters/Elara', updates: { title: ' riley ', content: 'y' } },
+        context
+      )
+
+      // Two of one name would be one path for two documents.
+      expect(result).toEqual({
+        error: '"notes/Characters/Riley" already exists. Choose a different title.',
+      })
+      expect(store.getDocument('lore_1')).toMatchObject({
+        title: 'Elara',
+        content: 'A knight of the north.',
+      })
+    })
+
+    it('takes a title without the spaces round it', async () => {
+      await seed()
+      const result = await executeUpdateDocument(
+        { path: 'notes/Characters/Elara', updates: { title: ' Elara Vance ' } },
+        context
+      )
+
+      expect(result.document.path).toBe('notes/Characters/Elara Vance')
     })
 
     it('refuses to put content in a folder', async () => {

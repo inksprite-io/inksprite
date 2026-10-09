@@ -53,10 +53,12 @@
  * handOverReply in composables/useAIChat.js); Write is offered to the model
  * once the harness says a chat that hands off its writing still reads well.
  *
- * The wording is a profile's to change. A profile stores an override, never a
- * copy: a skill whose prompt the writer has not touched reads the one its file
- * has, and keeps picking up improvements to it — the reason a profile made
- * today is not stranded on today's wording. See `skillPrompt`.
+ * The wording is the writer's to change, in two places: a built-in's for every
+ * chat, in the library, and any skill's for the chats on one profile. Each is
+ * an override, never a copy: a skill whose prompt the writer has not touched
+ * reads the one its file has, and keeps picking up improvements to it — the
+ * reason a profile made today is not stranded on today's wording. See
+ * `skillPrompt`.
  */
 
 import { DIRECTOR, executeDirector } from './director/index.js'
@@ -144,6 +146,17 @@ export const BUILT_IN_SKILLS = [
  */
 let library = []
 
+/**
+ * What the writer has a built-in run under in every chat, by name, as their
+ * library last said. A built-in absent here runs under its own file's words.
+ *
+ * Set from the same store as the library (`setSkillWordings`). A skill of the
+ * writer's has no entry: its words are its file, which they edit instead.
+ *
+ * @type {Map<string, string>}
+ */
+let wordings = new Map()
+
 /** @type {Set<() => void>} */
 const listeners = new Set()
 
@@ -192,6 +205,23 @@ export function setLibrarySkills(stored) {
   }
   library = made
   for (const listener of listeners) listener()
+}
+
+/**
+ * Replace the writer's wordings of the built-ins with these.
+ *
+ * Nothing made from the list changes with them — a tool's description is its
+ * file's, and the prompt is read when the skill runs — so no one is told.
+ *
+ * @param {Array<{name: string, prompt: string}>} stored - The wordings, as kept
+ */
+export function setSkillWordings(stored) {
+  wordings = new Map(
+    (stored || [])
+      .filter(one => BUILT_IN_SKILLS.some(skill => skill.name === one.name))
+      .filter(one => typeof one.prompt === 'string' && one.prompt.trim())
+      .map(one => [one.name, one.prompt.trim()])
+  )
 }
 
 /**
@@ -257,7 +287,19 @@ export function skillLabel(skill) {
 export function skillPrompt(name, settings) {
   const override = settings?.skills?.[name]?.prompt
   if (typeof override === 'string' && override.trim()) return override.trim()
-  return getSkill(name)?.body || ''
+  return ownPrompt(name)
+}
+
+/**
+ * What a skill runs under on a profile that has not reworded it: the writer's
+ * wording of it in the library, for a built-in they have changed there, and
+ * its file's otherwise.
+ *
+ * @param {string} name - The skill's
+ * @returns {string}
+ */
+export function ownPrompt(name) {
+  return wordings.get(name) ?? (getSkill(name)?.body || '')
 }
 
 export {

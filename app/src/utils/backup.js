@@ -258,6 +258,10 @@ const UPGRADES = {
     )
     return { ...tables, aiProviders: providers, aiProfiles: presets }
   },
+
+  // v25 added `skillWordings`, the writer's wording of the built-in skills.
+  // No existing row changed, so the table starts empty.
+  25: tables => ({ skillWordings: [], ...tables }),
 }
 
 /**

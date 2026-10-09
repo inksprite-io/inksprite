@@ -6,18 +6,32 @@ import PrimeVue from 'primevue/config'
 import ChatSettings from '@/components/writer/chats/ChatSettings.vue'
 import { useProfiles } from '@/composables/useProfiles'
 import { useChatProfileStore } from '@/stores/chatProfileStore'
-import { DEFAULT_CHAT_PROMPT } from '@/ai/prompts/index.js'
-import { CHAT_PROFILE_ID, ROLEPLAY_PROFILE_ID } from '@/ai/profiles/index.js'
-import { setLibrarySkills } from '@/ai/skills/index.js'
+import {
+  DEFAULT_CHAT_PROMPT,
+  DEFAULT_ROLEPLAY_NOTE,
+  DEFAULT_ROLEPLAY_NSFW_NOTE,
+} from '@/ai/prompts/index.js'
+import {
+  CHAT_PROFILE_ID,
+  ROLEPLAY_PROFILE_ID,
+  ROLEPLAY_NSFW_PROFILE_ID,
+} from '@/ai/profiles/index.js'
+import { INTERPRET_PROMPT, setLibrarySkills, setSkillWordings } from '@/ai/skills/index.js'
+import { useSkillStore } from '@/stores/skillStore'
 import { useApplicationState } from '@/composables/useApplicationState'
 
 /** The writer's skills library, as the mocked database holds it. */
-const { storedSkills, storedServers } = vi.hoisted(() => ({ storedSkills: [], storedServers: [] }))
+const { storedSkills, storedWordings, storedServers } = vi.hoisted(() => ({
+  storedSkills: [],
+  storedWordings: [],
+  storedServers: [],
+}))
 
 vi.mock('@/stores/db', () => ({
   default: {
     chatProfiles: { toArray: vi.fn().mockResolvedValue([]), filter: vi.fn(), bulkDelete: vi.fn() },
     skills: { toArray: vi.fn(async () => [...storedSkills]) },
+    skillWordings: { toArray: vi.fn(async () => [...storedWordings]) },
     mcpServers: { toArray: vi.fn(async () => [...storedServers]) },
   },
 }))
@@ -113,6 +127,8 @@ describe('ChatSettings profile', () => {
     await useChatProfileStore().ensureInitialized()
   })
 
+  afterEach(() => useApplicationState().setNsfwProfiles(false))
+
   it('shows the prompt of the profile the chat is on', async () => {
     const wrapper = await mountSettings()
 
@@ -165,6 +181,48 @@ describe('ChatSettings profile', () => {
     // A prompt without the tools it was written for is half an answer.
     const [copy] = saved(library)
     expect(copy.settings.disabledToolGroups).toEqual(['documents', 'rpg', 'skills'])
+  })
+
+  /** Pick New profile from the profile actions menu. */
+  const newProfile = async wrapper => {
+    await button(wrapper, 'Profile actions').trigger('click')
+    await flushPromises()
+    const item = [
+      ...document.body.querySelectorAll('#chat_profile_actions [role="menuitem"]'),
+    ].find(one => one.textContent.trim() === 'New profile')
+    item.querySelector('a').click()
+    await flushPromises()
+  }
+
+  it("starts new chats on a New profile with this chat's author's note", async () => {
+    chat.value = { ...chat.value, profileId: ROLEPLAY_PROFILE_ID, rules: 'Keep it to two lines.' }
+    const wrapper = await mountSettings('chat_1', { attachTo: document.body })
+
+    await newProfile(wrapper)
+
+    const [copy] = saved(library)
+    expect(copy.settings.rules).toBe('Keep it to two lines.')
+    expect(copy.settings.prompt).toBe(library.getProfile(ROLEPLAY_PROFILE_ID).settings.prompt)
+    expect(updateChat).toHaveBeenLastCalledWith('chat_1', {
+      profileId: copy.id,
+      rules: 'Keep it to two lines.',
+    })
+    wrapper.unmount()
+  })
+
+  it('gives a New profile the note the chat reads, on a chat the NSFW switch moved', async () => {
+    chat.value = { ...chat.value, profileId: ROLEPLAY_PROFILE_ID, rules: DEFAULT_ROLEPLAY_NOTE }
+    useApplicationState().setNsfwProfiles(true)
+    const wrapper = await mountSettings('chat_1', { attachTo: document.body })
+
+    await newProfile(wrapper)
+
+    // The copy has no counterpart to read Roleplay's note as the NSFW one's,
+    // so the chat moving onto it takes the note it was showing.
+    const [copy] = saved(library)
+    expect(copy.settings.rules).toBe(DEFAULT_ROLEPLAY_NSFW_NOTE)
+    expect(chat.value.rules).toBe(DEFAULT_ROLEPLAY_NSFW_NOTE)
+    wrapper.unmount()
   })
 
   it('offers a way back to the project default only when off it', async () => {
@@ -264,6 +322,26 @@ describe('ChatSettings author’s note', () => {
     // An empty string and no note at all mean the same thing to the turn, and
     // only one of them should reach the row.
     expect(updateChat).toHaveBeenCalledWith('chat_1', { rules: undefined })
+  })
+
+  describe('on a chat the NSFW switch has moved', () => {
+    afterEach(() => useApplicationState().setNsfwProfiles(false))
+
+    it("shows Roleplay (NSFW)'s note on a chat started on Roleplay", async () => {
+      chat.value = { profileId: ROLEPLAY_PROFILE_ID, rules: DEFAULT_ROLEPLAY_NOTE }
+      useApplicationState().setNsfwProfiles(true)
+      const wrapper = await mountSettings()
+
+      expect(rulesField(wrapper).element.value).toBe(DEFAULT_ROLEPLAY_NSFW_NOTE)
+      expect(updateChat).not.toHaveBeenCalled()
+    })
+
+    it("shows Roleplay's again once the switch is off", async () => {
+      chat.value = { profileId: ROLEPLAY_NSFW_PROFILE_ID, rules: DEFAULT_ROLEPLAY_NSFW_NOTE }
+      const wrapper = await mountSettings()
+
+      expect(rulesField(wrapper).element.value).toBe(DEFAULT_ROLEPLAY_NOTE)
+    })
   })
 })
 
@@ -406,6 +484,59 @@ describe('ChatSettings tools', () => {
     expect(chat.value.disabledTools).toEqual(['interpret'])
     expect(director().props('modelValue')).toBe(true)
     expect(toggle(wrapper, 'Interpret available to the model').props('modelValue')).toBe(false)
+  })
+})
+
+describe('ChatSettings skill prompts', () => {
+  const interpretField = wrapper => wrapper.find('textarea[aria-label="Interpret prompt"]')
+  const resetInterpret = wrapper => wrapper.find('button[aria-label="Reset Prompt"]')
+
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+    chat.value = { id: 'chat_1', storyId: 'story_1', profileId: CHAT_PROFILE_ID }
+    await useChatProfileStore().ensureInitialized()
+  })
+
+  afterEach(() => {
+    storedWordings.splice(0, storedWordings.length)
+    setSkillWordings([])
+  })
+
+  it('shows the wording a skill has in the library, on a profile with none of its own', async () => {
+    storedWordings.push({ name: 'interpret', prompt: 'Read darkly.', updated: 1 })
+    await useSkillStore().ensureInitialized()
+    const wrapper = await mountSettings()
+
+    expect(interpretField(wrapper).element.value).toBe('Read darkly.')
+    expect(resetInterpret(wrapper).exists()).toBe(false)
+  })
+
+  it('follows a change made in the library while it is open', async () => {
+    const wrapper = await mountSettings()
+    expect(interpretField(wrapper).element.value).toBe(INTERPRET_PROMPT)
+
+    useSkillStore().setWording('interpret', 'Read darkly.')
+    await flushPromises()
+
+    expect(interpretField(wrapper).element.value).toBe('Read darkly.')
+  })
+
+  it("goes back to the library's wording when the profile's is reset", async () => {
+    storedWordings.push({ name: 'interpret', prompt: 'Read darkly.', updated: 1 })
+    await useSkillStore().ensureInitialized()
+    const editor = useProfiles().saveProfile('Editor', {
+      prompt: 'Be terse.',
+      skills: { interpret: { prompt: 'Read kindly.' } },
+    })
+    chat.value.profileId = editor.id
+    const wrapper = await mountSettings()
+    expect(interpretField(wrapper).element.value).toBe('Read kindly.')
+
+    await resetInterpret(wrapper).trigger('click')
+    await flushPromises()
+
+    expect(interpretField(wrapper).element.value).toBe('Read darkly.')
   })
 })
 

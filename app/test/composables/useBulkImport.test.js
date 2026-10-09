@@ -75,6 +75,29 @@ describe('useBulkImport', () => {
     expect(titlesUnder(rootIdFor(STORY))).toEqual(['papers'])
   })
 
+  it('uses a folder there under the name in another case', async () => {
+    const existing = api.createFolder(rootIdFor(STORY), 'Papers')
+    const bulk = useBulkImport(STORY)
+
+    await bulk.importMany([{ file: md('a.md'), folders: ['papers'] }])
+
+    expect(titlesUnder(existing.id)).toEqual(['a'])
+    expect(titlesUnder(rootIdFor(STORY))).toEqual(['Papers'])
+  })
+
+  it('makes a folder beside a document of its name as Name (2)', async () => {
+    api.createTextDocument(rootIdFor(STORY), 'papers')
+    const bulk = useBulkImport(STORY)
+
+    await bulk.importMany([
+      { file: md('a.md'), folders: ['papers'] },
+      { file: md('b.md'), folders: ['papers'] },
+    ])
+
+    const made = folderUnder(rootIdFor(STORY), 'papers (2)')
+    expect(titlesUnder(made.id)).toEqual(['a', 'b'])
+  })
+
   it('lands the batch on the folder it was asked for', async () => {
     const into = api.createFolder(rootIdFor(STORY), 'Notes')
     const bulk = useBulkImport(STORY)

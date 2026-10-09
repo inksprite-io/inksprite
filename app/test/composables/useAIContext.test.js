@@ -26,9 +26,17 @@ vi.mock('@/composables/useAIConfig', () => ({
 
 const { useAIContext } = await import('@/composables/useAIContext')
 
-/** Build one chat context and return the options the builder was handed. */
-async function optionsGiven() {
-  await useAIContext('story_1').build({ mode: 'chat', systemPrompt: 'Hi', chatId: 'chat_1' })
+/**
+ * Build one chat context and return the options the builder was handed.
+ * @param {Object} [args] - More for the build
+ */
+async function optionsGiven(args = {}) {
+  await useAIContext('story_1').build({
+    mode: 'chat',
+    systemPrompt: 'Hi',
+    chatId: 'chat_1',
+    ...args,
+  })
   return buildContext.mock.calls.at(-1)[2]
 }
 
@@ -39,10 +47,12 @@ describe('useAIContext', () => {
     chat.value = null
   })
 
-  it("hands the builder the chat's author's note", async () => {
+  it("hands the builder the author's note it was given", async () => {
+    // The caller's, as the profile the chat runs on reads it, rather than the
+    // chat's as it was stamped. See `noteOnProfile`.
     chat.value = { id: 'chat_1', rules: 'Never write for the player.' }
 
-    expect((await optionsGiven()).note).toBe('Never write for the player.')
+    expect((await optionsGiven({ note: 'Write for nobody.' })).note).toBe('Write for nobody.')
   })
 
   it('hands the builder which calls every turn keeps: the document tools', async () => {
@@ -52,8 +62,8 @@ describe('useAIContext', () => {
     expect(keeps('oracle')).toBe(false)
   })
 
-  it('hands it none for a chat without one', async () => {
-    chat.value = { id: 'chat_1' }
+  it('hands it none when given none', async () => {
+    chat.value = { id: 'chat_1', rules: 'Never write for the player.' }
 
     expect((await optionsGiven()).note).toBeUndefined()
   })

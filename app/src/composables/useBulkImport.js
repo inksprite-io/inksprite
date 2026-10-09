@@ -5,7 +5,8 @@
  * Many files at once — chosen together, a folder chosen whole, or dropped
  * from the desktop — each looked at and written the way one file is, into
  * the folders it came in. A folder that is already there under the same name
- * is used; one that is not is made. Nothing is asked along the way: a card
+ * (in any case) is used; one that is not is made, as `Name (2)` beside a
+ * document of that name. Nothing is asked along the way: a card
  * in the batch takes the import's defaults, and can be re-imported from its
  * folder afterwards to answer the questions. One file that cannot be read
  * is skipped and named at the end, rather than stopping the rest.
@@ -14,6 +15,7 @@
 import { useCardImport } from './useCardImport.js'
 import { useDocuments } from './useDocuments.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
+import { titleKey } from '@/utils/documentPath.js'
 
 /** @typedef {import('@/files/batch.js').Gathered} Gathered */
 
@@ -66,7 +68,7 @@ export function useBulkImport(storyId) {
         if (!id) {
           const found = api
             .childrenOf(parent)
-            .find(child => child.type === 'folder' && child.title === name)
+            .find(child => child.type === 'folder' && titleKey(child.title) === titleKey(name))
           if (found) id = found.id
           else {
             id = api.createFolder(parent, name).id

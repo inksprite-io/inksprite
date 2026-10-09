@@ -35,6 +35,7 @@ import { useApplicationState } from './useApplicationState.js'
 import { ProviderNotConfiguredError } from '@/utils/errors.js'
 import { connectionGap } from '@/ai/providers.js'
 import { DEFAULT_CHAT_PROMPT } from '@/ai/prompts/index.js'
+import { noteOnProfile } from '@/ai/profiles/index.js'
 import { TITLE_DEFAULTS, mergeAISettings, resolveAISettings } from '@/ai/defaults.js'
 import {
   getEnabledToolDefinitions,
@@ -314,6 +315,15 @@ export function useAIChat(storyId, chatId) {
   })
 
   /**
+   * The chat profile this chat runs on: the one it names, or the project's
+   * default when that one is gone.
+   * @returns {import('./useProfiles.js').ProfileEntry|null}
+   */
+  const runningProfile = () =>
+    profilesApi.getProfile(chatsApi.getChatById(chatId)?.profileId) ||
+    profilesApi.getProfile(chatsApi.defaultProfileId())
+
+  /**
    * The system prompt for this chat, as the library holds it now.
    *
    * A chat runs on whichever prompt it points at, read fresh each turn, so an
@@ -333,11 +343,15 @@ export function useAIChat(storyId, chatId) {
     // Saved profiles load from the database; a lookup before that would find
     // the built-ins alone and quietly send the wrong prompt.
     await profilesApi.ready()
-    const chat = chatsApi.getChatById(chatId)
-    const profile =
-      profilesApi.getProfile(chat?.profileId) || profilesApi.getProfile(chatsApi.defaultProfileId())
-    return (profile?.settings?.prompt ?? DEFAULT_CHAT_PROMPT).trim()
+    return (runningProfile()?.settings?.prompt ?? DEFAULT_CHAT_PROMPT).trim()
   }
+
+  /**
+   * The author's note this turn sends: the chat's, as the profile it runs on
+   * reads it. See `noteOnProfile`.
+   * @returns {string|undefined}
+   */
+  const resolveNote = () => noteOnProfile(chatsApi.getChatById(chatId)?.rules, runningProfile())
 
   /**
    * What a skill runs under in this chat: the profile's wording for it when it
@@ -350,12 +364,7 @@ export function useAIChat(storyId, chatId) {
    * @param {string} name - The skill's
    * @returns {string}
    */
-  const skillPromptFor = name => {
-    const chat = chatsApi.getChatById(chatId)
-    const profile =
-      profilesApi.getProfile(chat?.profileId) || profilesApi.getProfile(chatsApi.defaultProfileId())
-    return skillPrompt(name, profile?.settings)
-  }
+  const skillPromptFor = name => skillPrompt(name, runningProfile()?.settings)
 
   /**
    * How many rounds running a turn may make the same calls and get the same
@@ -1352,6 +1361,7 @@ export function useAIChat(storyId, chatId) {
       const contextResult = await aiContext.build({
         mode: 'chat',
         systemPrompt: await resolveSystemPrompt(),
+        note: resolveNote(),
         chatId,
         ...(into ? { before: into } : {}),
       })

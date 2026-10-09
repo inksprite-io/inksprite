@@ -6,12 +6,17 @@ import PrimeVue from 'primevue/config'
 import SkillsSection from '@/components/writer/settings/SkillsSection.vue'
 import SkillEditor from '@/components/writer/settings/SkillEditor.vue'
 import SkillImportDialog from '@/components/writer/settings/SkillImportDialog.vue'
+import BuiltInSkillEditor from '@/components/writer/settings/BuiltInSkillEditor.vue'
+import { INTERPRET_PROMPT } from '@/ai/skills/index.js'
 
 const library = vi.hoisted(() => ({
   rows: null,
   saveSkill: null,
   deleteSkill: null,
   importSkills: null,
+  wordings: null,
+  setWording: null,
+  profiles: null,
 }))
 const confirmed = vi.hoisted(() => ({ last: null }))
 
@@ -41,7 +46,13 @@ vi.mock('@/composables/useSkills', () => ({
         }
       }),
     importSkills: (...args) => library.importSkills(...args),
+    wordingOf: name => library.wordings.value[name] ?? null,
+    setWording: (...args) => library.setWording(...args),
   }),
+}))
+
+vi.mock('@/composables/useProfiles', () => ({
+  useProfiles: () => ({ profiles: computed(() => library.profiles.value) }),
 }))
 
 vi.mock('primevue/useconfirm', () => ({
@@ -83,6 +94,9 @@ beforeEach(() => {
   library.saveSkill = vi.fn(async () => ({ skill: {} }))
   library.deleteSkill = vi.fn(() => true)
   library.importSkills = vi.fn(async rows => ({ imported: rows.length, failed: [] }))
+  library.wordings = ref({})
+  library.setWording = vi.fn(() => true)
+  library.profiles = ref([{ id: 'chat', name: 'Default', settings: {} }])
   confirmed.last = null
 })
 
@@ -153,13 +167,29 @@ describe('importing skills', () => {
 })
 
 describe('SkillsSection', () => {
-  it('lists the built-ins, read-only, with the commands you can type for them', () => {
+  it('lists the built-ins, with the commands you can type for them', () => {
     const wrapper = mountSection()
     const builtIn = wrapper.find('[data-list="built-in"]')
 
     expect(builtIn.find('[data-skill="director"]').text()).toContain('Called by the model')
     expect(builtIn.find('[data-skill="interpret"]').text()).toContain('/interpret')
-    expect(builtIn.find('[data-skill="write"] button').exists()).toBe(false)
+  })
+
+  it('says which built-ins you have reworded', () => {
+    library.wordings.value = { interpret: 'Read darkly.' }
+    const builtIn = mountSection().find('[data-list="built-in"]')
+
+    expect(builtIn.find('[data-skill="interpret"] [data-reworded]').exists()).toBe(true)
+    expect(builtIn.find('[data-skill="director"] [data-reworded]').exists()).toBe(false)
+  })
+
+  it('opens a built-in to reword, and comes back', async () => {
+    const wrapper = mountSection()
+    await wrapper.find('[data-list="built-in"] [data-skill="interpret"]').trigger('click')
+
+    expect(wrapper.findComponent(BuiltInSkillEditor).props('name')).toBe('interpret')
+    await wrapper.find('[data-action="back"]').trigger('click')
+    expect(wrapper.find('[data-skill-editor]').exists()).toBe(false)
   })
 
   it('says when you have none yet', () => {
@@ -289,5 +319,67 @@ describe('SkillEditor', () => {
     library.rows.value = [tighten]
 
     expect(mountEditor('skill_tighten').text()).toContain('references/voice.md')
+  })
+})
+
+describe('BuiltInSkillEditor', () => {
+  const mountBuiltIn = (name = 'interpret') =>
+    mount(BuiltInSkillEditor, {
+      props: { name },
+      global: { plugins: [PrimeVue], directives: { tooltip: {} } },
+    })
+
+  const field = wrapper => wrapper.find('[data-field="body"]')
+  const resetButton = wrapper => wrapper.find('button[aria-label="Reset Instructions"]')
+
+  it('opens on the wording it ships with, with nothing to reset', () => {
+    const wrapper = mountBuiltIn()
+
+    expect(field(wrapper).element.value).toBe(INTERPRET_PROMPT)
+    expect(resetButton(wrapper).exists()).toBe(false)
+  })
+
+  it('opens on your wording when you have one', () => {
+    library.wordings.value = { interpret: 'Read darkly.' }
+
+    expect(field(mountBuiltIn()).element.value).toBe('Read darkly.')
+  })
+
+  it('saves the wording as it is typed', async () => {
+    const wrapper = mountBuiltIn()
+
+    await field(wrapper).setValue('Read darkly.')
+
+    expect(library.setWording).toHaveBeenLastCalledWith('interpret', 'Read darkly.')
+  })
+
+  it('puts the wording it ships with back', async () => {
+    library.wordings.value = { interpret: 'Read darkly.' }
+    const wrapper = mountBuiltIn()
+
+    await resetButton(wrapper).trigger('click')
+
+    expect(field(wrapper).element.value).toBe(INTERPRET_PROMPT)
+    expect(library.setWording).toHaveBeenLastCalledWith('interpret', INTERPRET_PROMPT)
+  })
+
+  it('says it reaches every chat', () => {
+    expect(mountBuiltIn().find('[data-scope]').text()).toBe('Applies to every chat.')
+  })
+
+  it('names the profiles that word it their own way', () => {
+    library.profiles.value = [
+      { id: 'chat', name: 'Default', settings: {} },
+      {
+        id: 'roleplay',
+        name: 'Roleplay',
+        settings: { skills: { compact: { prompt: 'Scenes.' } } },
+      },
+      { id: 'mine', name: 'Mine', settings: { skills: { compact: { prompt: ' ' } } } },
+    ]
+
+    expect(mountBuiltIn('compact').find('[data-scope]').text()).toBe(
+      'Applies to every chat but those on Roleplay, which has its own.'
+    )
   })
 })

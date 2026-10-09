@@ -29,9 +29,10 @@
  * outright, or hidden in this chat. See utils/visibility.js. It is left out of
  * the listing, a folder read does not name it, search does not look in it,
  * and its path resolves to nothing — the model was never shown the path, so a
- * path it guesses right has to read the same as one it guesses wrong. The one
- * place the whole tree is consulted is `resolveNewPath`, so that a document is
- * never created on top of one the model cannot see.
+ * path it guesses right has to read the same as one it guesses wrong. The
+ * whole tree is consulted only where a name is given — `resolveNewPath`, and a
+ * title in `update_document` — so that a document is never created or renamed
+ * on top of one the model cannot see.
  *
  * A chat can ask the writer before anything changes. Then a writing tool
  * checks what it would do, records it as proposed, and tells the model so;
@@ -1526,7 +1527,21 @@ export async function executeUpdateDocument(args, context) {
   const updates = args.updates || {}
   /** @type {Partial<Document>} */
   const patch = {}
-  if (typeof updates.title === 'string') patch.title = updates.title
+  if (typeof updates.title === 'string') {
+    // A title something beside it has would be one path for two documents,
+    // refused as a create there would be: see `resolveNewPath`.
+    const title = updates.title.trim()
+    const other = document.parentId ? api.namesakeOf(document.parentId, title, document.id) : null
+    if (other) {
+      const path = pathOf(api, other)
+      return {
+        error: sees(other)
+          ? `"${path}" already exists. Choose a different title.`
+          : `"${path}" is not available. Choose a different title.`,
+      }
+    }
+    patch.title = title
+  }
 
   const hasContent = typeof updates.content === 'string'
   if (hasContent && document.type === 'folder') {

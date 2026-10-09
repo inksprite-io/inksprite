@@ -16,7 +16,8 @@ import db from '@/stores/db.js'
  * tools, the writer's commands — are the registry in ai/skills, which the
  * store keeps up to date. This is what components and the turn reach for, and
  * where a skill is checked before it is kept: that its file reads, and that its
- * name is free.
+ * name is free. And the writer's wording of a built-in, for every chat: the one
+ * part of a skill that ships with the app that is theirs to change.
  */
 
 /** @typedef {import('../types/models.js').StoredSkill} StoredSkill */
@@ -78,6 +79,8 @@ export function renamedIn(settings, from, to) {
  *   deleteSkill: (id: string) => boolean,
  *   planImport: (found: import('@/ai/skills/bundle.js').FoundSkill[]) => ImportRow[],
  *   importSkills: (rows: ImportRow[]) => Promise<{imported: number, failed: string[]}>,
+ *   wordingOf: (name: string) => string|null,
+ *   setWording: (name: string, prompt: string) => boolean,
  * }}
  */
 export function useSkills() {
@@ -239,5 +242,13 @@ export function useSkills() {
     deleteSkill: id => store.deleteSkill(id),
     planImport,
     importSkills,
+    /**
+     * The writer's wording of a built-in, when they have one. Read off the
+     * state rather than through the store's getter, which as an action would
+     * make its store's Pinia the active one wherever it was watched from.
+     */
+    wordingOf: name => store.wordings.get(name)?.prompt ?? null,
+    /** Reword a built-in for every chat. Its own words, or none, put it back. */
+    setWording: (name, prompt) => store.setWording(name, prompt),
   }
 }

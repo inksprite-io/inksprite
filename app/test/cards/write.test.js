@@ -233,6 +233,19 @@ describe('cards/write', () => {
       expect(entry.summary).toBe('')
     })
 
+    it('numbers an entry of a name another already has', async () => {
+      const written = await writeCard(
+        STORY,
+        withLore({ comment: 'Crowns' }, { comment: 'crowns' }, { comment: 'Crowns' })
+      )
+
+      expect(titlesUnder(byTitle(written.folderId, 'Lore').id)).toEqual([
+        'Crowns',
+        'crowns (2)',
+        'Crowns (3)',
+      ])
+    })
+
     it('takes the decoration off an entry title', async () => {
       const written = await writeCard(STORY, withLore({ comment: '[☰] The Realm [☰]' }))
 

@@ -19,6 +19,7 @@ import { useDocuments } from '@/composables/useDocuments'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { useFilesStore } from '@/stores/filesStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
+import { freeTitle } from '@/utils/documentPath.js'
 import { parseMarkdown, serializeMarkdown, settleMarkdown } from '@/editor/markdown.js'
 import { laysOut } from '@/editor/size.js'
 import { substitute, uncomment, undecorate } from './card.js'
@@ -400,8 +401,9 @@ function writeLore(store, storyId, folderId, entries, names, { into } = {}) {
       parentId,
       type: 'text',
       // A title is a title, not markdown — settling one would escape the
-      // punctuation an author put in it.
-      title: say(undecorate(entry.title)),
+      // punctuation an author put in it. A book can have two entries of
+      // one name; the second is `Name (2)`.
+      title: freeTitle(store.getChildrenOrdered(parentId), say(undecorate(entry.title))),
       content: settleMarkdown(say(`${keys}${entry.content}`)),
       // `constant` is not retrieval at all — it is a statement that this
       // paragraph is always in context, which is what a pin is. It goes in the

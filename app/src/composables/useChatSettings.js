@@ -12,8 +12,7 @@
 import { computed, toValue } from 'vue'
 import { useChats } from './useChats.js'
 import { useProfiles } from './useProfiles.js'
-import { useProfileNotice } from './useProfileNotice.js'
-import { settingsForProfileSwitch } from '@/ai/profiles/index.js'
+import { noteOnProfile, settingsForProfileSwitch } from '@/ai/profiles/index.js'
 
 /** @typedef {import('../types/models.js').Chat} Chat */
 
@@ -24,7 +23,6 @@ import { settingsForProfileSwitch } from '@/ai/profiles/index.js'
 export function useChatSettings(storyId, chatId) {
   const chatsApi = useChats(storyId)
   const profilesApi = useProfiles()
-  const { noticeFor } = useProfileNotice()
 
   const unstarted = computed(() => chatsApi.isUnstarted(toValue(chatId)))
 
@@ -52,6 +50,9 @@ export function useChatSettings(storyId, chatId) {
 
   const selectedProfile = computed(() => profilesApi.getProfile(selectedProfileId.value))
 
+  // The author's note as the turn reads it. See `noteOnProfile`.
+  const note = computed(() => noteOnProfile(chat.value?.rules, selectedProfile.value))
+
   /**
    * Point the chat at a profile.
    *
@@ -66,18 +67,6 @@ export function useChatSettings(storyId, chatId) {
   const setProfile = id => {
     const profile = profilesApi.getProfile(id)
     if (profile) update(settingsForProfileSwitch(profile))
-  }
-
-  /**
-   * Put this chat on the profile the writer picked, and tell them what it
-   * asks them to know, the first time. Not `setProfile` itself: a chat sent
-   * back to the default has not been put there by anyone.
-   *
-   * @param {string} id
-   */
-  const chooseProfile = id => {
-    setProfile(id)
-    noticeFor(id)
   }
 
   /**
@@ -102,8 +91,8 @@ export function useChatSettings(storyId, chatId) {
     defaultProfileId,
     selectedProfileId,
     selectedProfile,
+    note,
     setProfile,
-    chooseProfile,
     deleteProfile,
   }
 }

@@ -1,10 +1,13 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import {
   BUILT_IN_SKILLS,
   getSkill,
   skillLabel,
   skillPrompt,
+  ownPrompt,
+  setSkillWordings,
   COMPACT_PROMPT,
+  INTERPRET_PROMPT,
   toolDefinitionFor,
 } from '@/ai/skills/index.js'
 import { getBuiltInProfile, ROLEPLAY_PROFILE_ID, CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
@@ -99,6 +102,42 @@ describe('skillPrompt', () => {
 
   it('is nothing for a skill that does not exist', () => {
     expect(skillPrompt('nothing', {})).toBe('')
+  })
+})
+
+describe("the writer's wording of a built-in", () => {
+  afterEach(() => setSkillWordings([]))
+
+  it('is what a profile with none of its own runs the skill under', () => {
+    setSkillWordings([{ name: 'interpret', prompt: 'Read the card darkly.\n' }])
+
+    expect(ownPrompt('interpret')).toBe('Read the card darkly.')
+    expect(skillPrompt('interpret', {})).toBe('Read the card darkly.')
+  })
+
+  it("gives way to a profile's own", () => {
+    setSkillWordings([{ name: 'compact', prompt: 'Keep everything.' }])
+    const settings = { skills: { compact: { prompt: 'Keep the dialogue.' } } }
+
+    expect(skillPrompt('compact', settings)).toBe('Keep the dialogue.')
+  })
+
+  it('leaves the others on their own files', () => {
+    setSkillWordings([{ name: 'compact', prompt: 'Keep everything.' }])
+
+    expect(skillPrompt('interpret', {})).toBe(INTERPRET_PROMPT)
+  })
+
+  it('is no wording when it is nothing but space', () => {
+    setSkillWordings([{ name: 'interpret', prompt: '  \n' }])
+
+    expect(skillPrompt('interpret', {})).toBe(INTERPRET_PROMPT)
+  })
+
+  it("is only a built-in's: a skill of the writer's is reworded in its file", () => {
+    setSkillWordings([{ name: 'tighten', prompt: 'Cut more.' }])
+
+    expect(skillPrompt('tighten', {})).toBe('')
   })
 })
 
