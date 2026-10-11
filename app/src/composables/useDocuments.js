@@ -10,8 +10,8 @@
  * state instead of racing to initialise.
  *
  * It also owns the editor's tabs: which documents are open and which is
- * showing. They are recorded on the story so the project reopens as it was
- * left, and read back checked against the tree, so a document deleted since
+ * showing. They are recorded in the project's view, on this copy of the app,
+ * so the project reopens as it was left, and read back checked against the tree, so a document deleted since
  * is not among them. `open` and `closeTab` write them; `remove` drops the
  * tabs of what it deletes, and `keep` makes a preview tab stay. See
  * `utils/tabs.js` for the rules.
@@ -33,6 +33,7 @@
 import { computed, ref } from 'vue'
 import { inRepository, repositoryOf } from '@/source/tree.js'
 import { useStoriesStore } from '@/stores/storiesStore'
+import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { useEditor } from '@/composables/useEditor.js'
@@ -67,6 +68,7 @@ export const useDocuments = storyId => {
   if (instances.has(storyId)) return instances.get(storyId)
 
   const storiesStore = useStoriesStore()
+  const projectViewsStore = useProjectViewsStore()
   const documentsStore = useDocumentsStore()
   const editor = useEditor()
 
@@ -92,7 +94,10 @@ export const useDocuments = storyId => {
     if (initPromise) return initPromise
     initPromise = (async () => {
       try {
-        await documentsStore.loadStory(storyId)
+        await Promise.all([
+          documentsStore.loadStory(storyId),
+          projectViewsStore.ensureInitialized(),
+        ])
         documentsStore.ensureRoot(storyId, storiesStore.getStory(storyId)?.title)
         ready.value = true
       } catch (e) {
@@ -107,14 +112,14 @@ export const useDocuments = storyId => {
   const root = computed(() => documentsStore.getDocument(rootIdFor(storyId)))
 
   /**
-   * The editor's tabs, as the story remembers them and the tree allows: only
+   * The editor's tabs, as the project's view remembers them and the tree allows: only
    * a document still in the tree with something to show — text, or a file —
    * can be open, so anything else has been dropped by the time they are
    * read. Before the tree is loaded they are taken as stored.
    * @type {import('vue').ComputedRef<Tabs>}
    */
   const tabs = computed(() => {
-    const stored = tabsOf(storiesStore.getStory(storyId))
+    const stored = tabsOf(projectViewsStore.getView(storyId))
     if (!ready.value) return stored
     return normalizeTabs(stored, id => {
       const type = documentsStore.getDocument(id)?.type
@@ -129,11 +134,11 @@ export const useDocuments = storyId => {
   const activeDocumentId = computed(() => tabs.value.active ?? '')
 
   /**
-   * Record the tabs on the story, so the project reopens as it was left.
+   * Record the tabs in the project's view, so the project reopens as it was left.
    * @param {Tabs} next
    */
   const writeTabs = next => {
-    storiesStore.updateStory(storyId, tabsPatch(next))
+    projectViewsStore.updateView(storyId, tabsPatch(next))
   }
 
   /**

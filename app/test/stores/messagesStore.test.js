@@ -12,8 +12,7 @@ vi.mock('../../src/stores/db', () => ({
           toArray: vi.fn(),
         })),
       })),
-      get: vi.fn(),
-      filter: vi.fn(),
+      toCollection: vi.fn(),
     },
   },
 }))
@@ -581,56 +580,6 @@ describe('MessagesStore', () => {
     })
   })
 
-  describe('getMessage', () => {
-    beforeEach(() => {
-      store.createMessage('chat_123', 'user', 'Test message')
-    })
-
-    it('should return message from memory if available', async () => {
-      const message = await store.getMessage('message_test-id-123')
-
-      expect(message).toBeDefined()
-      expect(message.id).toBe('message_test-id-123')
-      expect(message.content).toBe('Test message')
-    })
-
-    it('should return null for a deleted message', async () => {
-      const { default: db } = await import('../../src/stores/db')
-      db.messages.get.mockResolvedValue(undefined)
-      store.deleteMessage('message_test-id-123')
-
-      const message = await store.getMessage('message_test-id-123')
-
-      expect(message).toBeNull()
-    })
-
-    it('should try to load from database if not in memory', async () => {
-      const { default: db } = await import('../../src/stores/db')
-      const mockMessage = {
-        id: 'message_from_db',
-        chatId: 'chat_456',
-        content: 'DB Message',
-      }
-      db.messages.get.mockResolvedValue(mockMessage)
-
-      const message = await store.getMessage('message_from_db')
-
-      expect(db.messages.get).toHaveBeenCalledWith('message_from_db')
-      expect(message).toEqual(mockMessage)
-      expect(store.messages.has('message_from_db')).toBe(true)
-    })
-
-    it('should return null when the database has no such message', async () => {
-      const { default: db } = await import('../../src/stores/db')
-      db.messages.get.mockResolvedValue(undefined)
-
-      const message = await store.getMessage('message_from_db')
-
-      expect(message).toBeNull()
-      expect(store.messages.has('message_from_db')).toBe(false)
-    })
-  })
-
   describe('getMessagesForChat', () => {
     beforeEach(() => {
       store.createMessage('chat_123', 'user', 'First message')
@@ -841,7 +790,7 @@ describe('MessagesStore', () => {
   })
 
   describe('forgetSavedRequests', () => {
-    /** The rows the database would go through, and what they came out as. */
+    /** The rows the database would go through, and those that changed. */
     let stored
     let modified
 
@@ -849,11 +798,12 @@ describe('MessagesStore', () => {
       const { default: db } = await import('../../src/stores/db')
       stored = []
       modified = []
-      vi.mocked(db.messages.filter).mockImplementation(keep => ({
+      vi.mocked(db.messages.toCollection).mockImplementation(() => ({
         modify: vi.fn(async change => {
-          for (const row of stored.filter(keep)) {
+          for (const row of stored) {
+            const before = JSON.stringify(row)
             change(row)
-            modified.push(row)
+            if (JSON.stringify(row) !== before) modified.push(row)
           }
         }),
       }))

@@ -19,7 +19,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore'
-import db from './db'
+import { storage } from '@/storage/index.js'
 import { DEFAULT_CHAT_TITLE } from '@/utils/chatTitle.js'
 
 /** @typedef {import('../types/models.js').Chat} Chat */
@@ -129,30 +129,6 @@ export const useChatsStore = defineStore('chats', () => {
   }
 
   /**
-   * Get a single chat by ID
-   * @param {string} chatId - Chat ID to retrieve
-   * @returns {Promise<Chat|null>} Chat if found and not deleted, null otherwise
-   */
-  async function getChat(chatId) {
-    const chat = chats.value.get(chatId)
-    if (!chat) {
-      // Try loading from database
-      try {
-        const dbChat = await db.chats.get(chatId)
-        if (dbChat) {
-          chats.value.set(dbChat.id, dbChat)
-          return dbChat
-        }
-      } catch (error) {
-        console.error(`Failed to load chat '${chatId}' from database:`, error)
-      }
-      return null
-    }
-
-    return chat
-  }
-
-  /**
    * Get all chats for a story
    * @param {string} storyId - Story ID
    * @returns {Chat[]} Array of chats for the story
@@ -168,7 +144,7 @@ export const useChatsStore = defineStore('chats', () => {
    */
   async function loadChatsForStory(storyId) {
     try {
-      const storyChats = await db.chats.where('storyId').equals(storyId).toArray()
+      const storyChats = await storage.chats(storyId)
 
       storyChats.forEach(chat => {
         chats.value.set(chat.id, chat)
@@ -216,7 +192,6 @@ export const useChatsStore = defineStore('chats', () => {
     createChat,
     updateChat,
     deleteChat,
-    getChat,
     getChatsForStory,
     loadChatsForStory,
     updateLastMessageTime,

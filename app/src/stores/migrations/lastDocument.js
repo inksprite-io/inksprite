@@ -19,8 +19,8 @@
  * upgrade or a re-imported backup cannot clobber a newer value with an older
  * one.
  *
- * @param {Array<Story & {lastSceneId?: string|null}>} stories
- * @returns {{stories: Story[], renamed: number}}
+ * @param {Array<Story & {lastSceneId?: string|null, lastDocumentId?: string|null}>} stories
+ * @returns {{stories: Array<Story & {lastDocumentId?: string|null}>, renamed: number}}
  */
 export function lastSceneToLastDocument(stories) {
   let renamed = 0

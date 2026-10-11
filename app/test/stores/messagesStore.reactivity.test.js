@@ -14,7 +14,6 @@ vi.mock('../../src/stores/db', () => ({
           toArray: vi.fn(),
         })),
       })),
-      get: vi.fn(),
     },
   },
 }))
@@ -78,9 +77,11 @@ describe('MessagesStore Reactivity', () => {
         chatId: 'chat_456',
         content: 'DB Message',
       }
-      db.messages.get.mockResolvedValue(mockMessage)
+      db.messages.where.mockReturnValueOnce({
+        equals: vi.fn(() => ({ toArray: vi.fn(async () => [mockMessage]) })),
+      })
 
-      await store.getMessage('message_from_db')
+      await store.loadMessagesForChat('chat_456')
 
       const storedMessage = store.messages.get('message_from_db')
       expect(isReactiveValue(storedMessage)).toBe(true)

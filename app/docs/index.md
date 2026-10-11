@@ -106,6 +106,15 @@ The web, for the model, through a search service the writer connects:
 - Which service can search, and which chats search, opted into per profile or per chat
 - A refusal said for the writer, and pages kept for the session so a long one is read on from
 
+### 🗄️ [Storage](./storage.md)
+
+Where the app's rows are kept, and the only module that reads and writes the database:
+
+- A project's tables read the ways the app reads them: a project's tree, a chat's messages, a file's bytes
+- The app's own tables (connections, presets, profiles, skills, MCP servers, web search, jobs, where each project was left) read and written as tables
+- Dexie throughout on the web; in the desktop app, projects are kept in a folder on disk and the app's own tables in Dexie
+- A project as a folder: where each document goes, its file and frontmatter, and the moves and writes from one layout to the next
+
 ### 🖥️ [Platform](./platform.md)
 
 What differs between the app in a browser and the app in its desktop window (Electron, in `electron/`):
@@ -200,8 +209,19 @@ Frontend (Vue 3 + Vite)
 │   ├── answers - The shape the tools answer in, and a refusal said for the writer
 │   ├── config - Which service can search, and which chats search
 │   └── pages - Pages read lately, kept for the session
+├── Storage (src/storage)
+│   ├── dexie - Every table, in IndexedDB
+│   ├── layout - Where a project's documents go in a folder, and reading one back
+│   ├── documents - A document as its file, and back
+│   ├── names - Filenames from titles
+│   ├── frontmatter - YAML at the top of a markdown file
+│   ├── plan - The moves, trashes and writes from one layout to the next
+│   ├── chats - A chat's row and its messages as JSONL
+│   ├── library - Storage in the desktop app's projects folder
+│   └── open - Which storage the app opens with, and the projects moved in
 ├── Platform (src/platform)
-│   └── fetch - Requests to servers, from the page or from the desktop app's native side
+│   ├── fetch - Requests to servers, from the page or from the desktop app's native side
+│   └── library - The desktop app's projects folder, and its files
 ├── Source (src/source)
 │   ├── rules - What of a codebase comes in, and what is left out
 │   ├── gather - Its files listed, sorted by the rules, read, and capped

@@ -17,6 +17,7 @@
  * ## Store Files
  *
  * - `storiesStore.js` - Story CRUD operations and management
+ * - `projectViewsStore.js` - Where the writer left each project on this copy of the app: its tabs and panels
  * - `documentsStore.js` - A story's document tree; the source of truth for its content
  * - `filesStore.js` - The bytes behind a file document, in a table the tree never loads
  * - `chatsStore.js` - AI chat session management
@@ -26,8 +27,9 @@
  * - `aiPromptStore.js` - Saved system prompts, shared app-wide
  * - `skillStore.js` - The writer's own skills, each a SKILL.md and its files, handed to the skills registry as they change
  * - `mcpServerStore.js` - The writer's MCP servers: where each answers and what it offered, handed to `mcp/servers.js` as they change
- * - `syncStore.js` - Database synchronization and state persistence
- * - `db.js` - Dexie (IndexedDB) database configuration
+ * - `syncStore.js` - Saves the stores' changes, a moment after they are made
+ * - `db.js` - The Dexie (IndexedDB) schema and its migrations, read and written
+ *   only through `storage/`
  *
  * ## Usage
  *
@@ -50,9 +52,9 @@
 
 // Re-export all stores for convenience
 export { useStoriesStore } from './storiesStore.js'
+export { useProjectViewsStore } from './projectViewsStore.js'
 export { useDocumentsStore } from './documentsStore.js'
 export { useChatsStore } from './chatsStore.js'
 export { useMessagesStore } from './messagesStore.js'
 export { useAIProvidersStore } from './aiProvidersStore.js'
 export { useSyncStore } from './syncStore.js'
-export { default as db } from './db.js'

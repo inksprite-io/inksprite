@@ -30,7 +30,7 @@
  * still running is work on this database, not the project's.
  */
 
-import db from '@/stores/db'
+import { storage } from '@/storage/index.js'
 import { useSyncStore } from '@/stores/syncStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { useDocumentsStore } from '@/stores/documentsStore'
@@ -94,9 +94,9 @@ function downloadJson(filename, data) {
 
 export function useBackup() {
   /**
-   * Read every table currently declared on the database.
+   * Read every table there is.
    *
-   * Iterating `db.tables` rather than a hardcoded list means a table added
+   * Every table storage has rather than a hardcoded list, so a table added
    * later is backed up without anyone remembering to update this. The one
    * table that cannot go into JSON as read is `files`, whose rows hold a
    * Blob; those are written out as base64 and read back the same way.
@@ -104,14 +104,8 @@ export function useBackup() {
    * @returns {Promise<Record<string, any[]>>}
    */
   async function readAllTables() {
-    /** @type {Record<string, any[]>} */
-    const tables = {}
-    await Promise.all(
-      db.tables.map(async (/** @type {import('dexie').Table} */ table) => {
-        const rows = await table.toArray()
-        tables[table.name] = table.name === 'files' ? await serializeFiles(rows) : rows
-      })
-    )
+    const tables = await storage.dump()
+    if (tables.files) tables.files = await serializeFiles(tables.files)
     return tables
   }
 
@@ -129,7 +123,7 @@ export function useBackup() {
     await useSyncStore().processSync()
 
     const tables = await readAllTables()
-    return buildBackup(tables, { dbVersion: db.verno, includeApiKeys })
+    return buildBackup(tables, { dbVersion: storage.schemaVersion(), includeApiKeys })
   }
 
   /**
@@ -171,7 +165,7 @@ export function useBackup() {
       throw new Error('That file is not valid JSON.')
     }
 
-    const { ok, errors } = validateBackup(parsed, db.verno, scope)
+    const { ok, errors } = validateBackup(parsed, storage.schemaVersion(), scope)
     if (!ok) throw new Error(errors.join(' '))
 
     return parsed
@@ -201,20 +195,12 @@ export function useBackup() {
    * @returns {Promise<{restored: number}>} Total rows written
    */
   async function restoreBackup(backup) {
-    const tables = upgradeTables(backup.tables, backup.dbVersion, db.verno)
-
-    let restored = 0
-    await db.transaction('rw', db.tables, async () => {
-      for (const table of db.tables) {
-        await table.clear()
-        const stored = tables[table.name]
-        if (!Array.isArray(stored) || stored.length === 0) continue
-        const rows = table.name === 'files' ? deserializeFiles(stored) : stored
-        await table.bulkPut(rows)
-        restored += rows.length
-      }
+    const tables = upgradeTables(backup.tables, backup.dbVersion, storage.schemaVersion())
+    const { files } = tables
+    const restored = await storage.replaceAll({
+      ...tables,
+      ...(Array.isArray(files) ? { files: deserializeFiles(files) } : {}),
     })
-
     return { restored }
   }
 
@@ -232,12 +218,10 @@ export function useBackup() {
   async function createChatBackup(chatId) {
     await useSyncStore().processSync()
 
-    const chat = await db.chats.get(chatId)
+    const chat = await storage.chat(chatId)
     if (!chat) throw new Error(`Chat '${chatId}' not found`)
 
-    const messages = (await db.messages.where('chatId').equals(chatId).toArray()).sort(
-      (/** @type {Message} */ a, /** @type {Message} */ b) => a.created - b.created
-    )
+    const messages = (await storage.messages(chatId)).sort((a, b) => a.created - b.created)
 
     // The prompt travels with the chat when it is one of the user's own: a
     // built-in is wherever the file is opened, a saved prompt may not be.
@@ -245,7 +229,7 @@ export function useBackup() {
 
     return buildBackup(
       { chats: [chat], messages, ...(prompt ? { aiPrompts: [prompt] } : {}) },
-      { dbVersion: db.verno, scope: 'chat' }
+      { dbVersion: storage.schemaVersion(), scope: 'chat' }
     )
   }
 
@@ -263,7 +247,7 @@ export function useBackup() {
   async function savedPromptOf(chat) {
     const id = chat.profileId || chat.promptId
     if (!id || isBuiltInProfileId(id) || isBuiltInPromptId(id)) return undefined
-    const profile = await db.chatProfiles.get(id)
+    const profile = await storage.get('chatProfiles', id)
     if (!profile) return undefined
     return {
       id: profile.id,
@@ -320,7 +304,7 @@ export function useBackup() {
     if (isTranscript(text)) return chatFromTranscript(text, file.name)
 
     const parsed = parseBackup(text, 'chat')
-    return chatFromTables(upgradeTables(parsed.tables, parsed.dbVersion, db.verno))
+    return chatFromTables(upgradeTables(parsed.tables, parsed.dbVersion, storage.schemaVersion()))
   }
 
   /**
@@ -377,24 +361,21 @@ export function useBackup() {
     useEditor().flush()
     await useSyncStore().processSync()
 
-    const story = await db.stories.get(storyId)
+    const story = await storage.story(storyId)
     if (!story) throw new Error(`Project '${storyId}' not found`)
 
     const [documents, files, chats] = await Promise.all([
-      db.documents.where('storyId').equals(storyId).toArray(),
-      db.files.where('storyId').equals(storyId).toArray(),
-      db.chats.where('storyId').equals(storyId).toArray(),
+      storage.documents(storyId),
+      storage.projectFiles(storyId),
+      storage.chats(storyId),
     ])
-    const messages = (
-      await db.messages
-        .where('chatId')
-        .anyOf(chats.map((/** @type {Chat} */ chat) => chat.id))
-        .toArray()
-    ).sort((/** @type {Message} */ a, /** @type {Message} */ b) => a.created - b.created)
+    const messages = (await Promise.all(chats.map(chat => storage.messages(chat.id))))
+      .flat()
+      .sort((a, b) => a.created - b.created)
 
     const profiles = await savedProfilesOf([
       story.options?.profileId,
-      ...chats.map((/** @type {Chat} */ chat) => chat.profileId || chat.promptId),
+      ...chats.map(chat => chat.profileId || chat.promptId),
     ])
 
     return buildBackup(
@@ -406,7 +387,7 @@ export function useBackup() {
         messages,
         chatProfiles: profiles,
       },
-      { dbVersion: db.verno, scope: 'project' }
+      { dbVersion: storage.schemaVersion(), scope: 'project' }
     )
   }
 
@@ -422,7 +403,7 @@ export function useBackup() {
       id => typeof id === 'string' && id && !isBuiltInProfileId(id) && !isBuiltInPromptId(id)
     )
     if (own.length === 0) return []
-    return (await db.chatProfiles.bulkGet(own)).filter(Boolean)
+    return storage.getMany('chatProfiles', own)
   }
 
   /**
@@ -446,7 +427,9 @@ export function useBackup() {
    */
   async function readProjectFile(file) {
     const parsed = await parseBackupFile(file, 'project')
-    return projectFromTables(upgradeTables(parsed.tables, parsed.dbVersion, db.verno))
+    return projectFromTables(
+      upgradeTables(parsed.tables, parsed.dbVersion, storage.schemaVersion())
+    )
   }
 
   /**
@@ -461,7 +444,7 @@ export function useBackup() {
    * library already holds is used as it stands, as for a chat imported alone:
    * the library is what the writer has been editing.
    *
-   * The rows are written straight to the database, which the stores read
+   * The rows are written straight to storage, which the stores read
    * a project at a time, so they only need telling about the project itself:
    * its record and its root, which carries its name.
    *
@@ -481,17 +464,13 @@ export function useBackup() {
       if (root) root.title = title
     }
 
-    await db.transaction(
-      'rw',
-      [db.stories, db.documents, db.files, db.chats, db.messages],
-      async () => {
-        await db.stories.add(story)
-        await db.documents.bulkAdd(documents)
-        await db.files.bulkAdd(deserializeFiles(files))
-        await db.chats.bulkAdd(chats)
-        await db.messages.bulkAdd(messages)
-      }
-    )
+    await storage.addProject({
+      story,
+      documents,
+      files: deserializeFiles(files),
+      chats,
+      messages,
+    })
 
     const profileStore = useChatProfileStore()
     await profileStore.ensureInitialized()

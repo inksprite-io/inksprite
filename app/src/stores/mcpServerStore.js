@@ -19,7 +19,7 @@ import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
 import { setServers } from '@/mcp/servers.js'
 import { disconnect } from '@/mcp/client.js'
-import db from './db'
+import { storage } from '@/storage/index.js'
 
 /** @typedef {import('../types/models.js').McpServer} McpServer */
 
@@ -49,7 +49,7 @@ export const useMcpServerStore = defineStore('mcpServers', () => {
 
   async function initialize() {
     try {
-      const stored = await db.mcpServers.toArray()
+      const stored = await storage.all('mcpServers')
       for (const server of stored) servers.value.set(server.id, server)
       console.log(`Loaded ${servers.value.size} MCP servers`)
     } catch (error) {

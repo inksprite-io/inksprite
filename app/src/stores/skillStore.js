@@ -21,7 +21,7 @@ import { ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
 import { BUILT_IN_SKILLS, setLibrarySkills, setSkillWordings } from '@/ai/skills/index.js'
-import db from './db'
+import { storage } from '@/storage/index.js'
 
 /** @typedef {import('../types/models.js').StoredSkill} StoredSkill */
 /** @typedef {import('../types/models.js').SkillFile} SkillFile */
@@ -63,14 +63,14 @@ export const useSkillStore = defineStore('skills', () => {
     /** @type {StoredSkill[]} */
     let stored = []
     try {
-      stored = await db.skills.toArray()
+      stored = await storage.all('skills')
     } catch (error) {
       console.error('Failed to load skills from database:', error)
     }
     /** @type {SkillWording[]} */
     let reworded = []
     try {
-      reworded = await db.skillWordings.toArray()
+      reworded = await storage.all('skillWordings')
     } catch (error) {
       console.error('Failed to load skill wordings from database:', error)
     }

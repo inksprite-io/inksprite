@@ -46,7 +46,7 @@ describe('NarrationSection', () => {
   it('tests the connection by asking for the voices', async () => {
     mockClient.listVoices.mockResolvedValue(['af_heart', 'af_nicole'])
     const wrapper = mountSection()
-    await wrapper.find('[data-action="test-connection"]').trigger('click')
+    await wrapper.find('[data-action="connect"]').trigger('click')
     await Promise.resolve()
 
     expect(mockClient.listVoices).toHaveBeenCalledWith({
@@ -60,7 +60,7 @@ describe('NarrationSection', () => {
   it('says when the server could not be reached', async () => {
     mockClient.listVoices.mockRejectedValue(new TypeError('Failed to fetch'))
     const wrapper = mountSection()
-    await wrapper.find('[data-action="test-connection"]').trigger('click')
+    await wrapper.find('[data-action="connect"]').trigger('click')
     await Promise.resolve()
     await Promise.resolve()
 

@@ -5,7 +5,7 @@ import { useChatsStore } from '@/stores/chatsStore.js'
 import { BUILT_IN_SKILLS, parseSkill } from '@/ai/skills/index.js'
 import { COMMANDS } from '@/ai/commands.js'
 import { hasTool } from '@/ai/tools/index.js'
-import db from '@/stores/db.js'
+import { storage } from '@/storage/index.js'
 
 /**
  * @module composables/useSkills
@@ -127,7 +127,7 @@ export function useSkills() {
     }
 
     // The chats that are open are the store's to change; the rest are only in
-    // the database, and are changed there.
+    // storage, and are changed there.
     const chats = useChatsStore()
     for (const chat of chats.chats.values()) {
       const changes = renamedIn(chat, from, to)
@@ -135,14 +135,11 @@ export function useSkills() {
         chats.updateChat(chat.id, { disabledTools: changes.disabledTools })
     }
     try {
-      const stored = await db.chats.toArray()
-      for (const chat of stored) {
-        if (chats.chats.has(chat.id)) continue
+      await storage.updateEach('chats', chat => {
+        if (chats.chats.has(chat.id)) return null
         const changes = renamedIn(chat, from, to)
-        if (changes?.disabledTools) {
-          await db.chats.update(chat.id, { disabledTools: changes.disabledTools })
-        }
-      }
+        return changes?.disabledTools ? { disabledTools: changes.disabledTools } : null
+      })
     } catch (error) {
       console.error('Failed to carry a skill’s rename to chats that are not open:', error)
     }

@@ -1,10 +1,10 @@
 /**
  * @module utils/tabs
  * @description The editor's tabs: which documents are open, in strip order,
- * which is showing, and which is only being looked at. Kept on the story as
- * `openDocumentIds`, `lastDocumentId` and `previewDocumentId`, so a project
- * reopens with the documents it was left on. The rules are here, as pure
- * functions over the set; `tabsOf` reads it off a story and `tabsPatch`
+ * which is showing, and which is only being looked at. Kept in the project's
+ * view as `openDocumentIds`, `lastDocumentId` and `previewDocumentId`, so a
+ * project reopens with the documents it was left on. The rules are here, as
+ * pure functions over the set; `tabsOf` reads it off a view and `tabsPatch`
  * writes it back.
  *
  * A document opened from the outline is a preview: it takes the preview tab,
@@ -43,26 +43,22 @@ const settled = (open, active, preview = null) => ({
 })
 
 /**
- * The tabs a story record describes. A story from before tabs has no
- * `openDocumentIds`; it opens with one tab, its last document. A story with
- * the field but nothing in it was closed down to nothing on purpose. One
- * from before previews has every tab kept.
+ * The tabs a project's view describes. One from before tabs has no
+ * `openDocumentIds`; it opens with one tab, its last document. One with the
+ * field but nothing in it was closed down to nothing on purpose. One from
+ * before previews has every tab kept.
  *
- * @param {{ openDocumentIds?: string[], lastDocumentId?: string|null, previewDocumentId?: string|null }|null|undefined} story
+ * @param {{ openDocumentIds?: string[], lastDocumentId?: string|null, previewDocumentId?: string|null }|null|undefined} view
  * @returns {Tabs}
  */
-export function tabsOf(story) {
-  const active = story?.lastDocumentId ?? null
-  const open = Array.isArray(story?.openDocumentIds)
-    ? story.openDocumentIds
-    : active
-      ? [active]
-      : []
-  return settled([...new Set(open)], active, story?.previewDocumentId ?? null)
+export function tabsOf(view) {
+  const active = view?.lastDocumentId ?? null
+  const open = Array.isArray(view?.openDocumentIds) ? view.openDocumentIds : active ? [active] : []
+  return settled([...new Set(open)], active, view?.previewDocumentId ?? null)
 }
 
 /**
- * The story fields a set of tabs is written to.
+ * The view's fields a set of tabs is written to.
  *
  * @param {Tabs} tabs
  * @returns {{ openDocumentIds: string[], lastDocumentId: string|null, previewDocumentId: string|null }}

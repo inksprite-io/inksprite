@@ -45,6 +45,7 @@ import { rolesToSkills } from '../stores/migrations/profileSkills.js'
 import { rolesToWorkflows } from '../stores/migrations/jobWorkflows.js'
 import { withoutModelKeeps } from '../stores/migrations/modelKeeps.js'
 import { allowedProvidersToPresets } from '../stores/migrations/allowedProviders.js'
+import { viewsOffStories } from '../stores/migrations/projectViews.js'
 
 /** Format of the backup envelope itself, independent of the database schema. */
 export const BACKUP_FORMAT = 1
@@ -266,6 +267,14 @@ const UPGRADES = {
   // v26 added `webSearch`, how the writer set web search up. No existing row
   // changed, so the table starts empty.
   26: tables => ({ webSearch: [], ...tables }),
+
+  // v27 moved where the writer left each project, its tabs and its panels,
+  // off the story into `projectViews`. Idempotent.
+  27: tables => {
+    if (!tables.stories) return tables
+    const { stories, views } = viewsOffStories(tables.stories)
+    return { ...tables, stories, projectViews: [...(tables.projectViews || []), ...views] }
+  },
 }
 
 /**

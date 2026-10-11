@@ -19,86 +19,88 @@
   - [Properties][15]
 - [Story][16]
   - [Properties][17]
-- [TtsVoice][18]
+- [ProjectView][18]
   - [Properties][19]
-- [SpeakerAssignment][20]
+- [TtsVoice][20]
   - [Properties][21]
-- [StoryNarration][22]
+- [SpeakerAssignment][22]
   - [Properties][23]
-- [Part][24]
+- [StoryNarration][24]
   - [Properties][25]
-- [Scene][26]
+- [Part][26]
   - [Properties][27]
-- [Document][28]
+- [Scene][28]
   - [Properties][29]
-- [RepositorySource][30]
+- [Document][30]
   - [Properties][31]
-- [StoredFile][32]
+- [RepositorySource][32]
   - [Properties][33]
-- [Chat][34]
+- [StoredFile][34]
   - [Properties][35]
-- [ToolCall][36]
+- [Chat][36]
   - [Properties][37]
-- [ReasoningDetail][38]
+- [ToolCall][38]
   - [Properties][39]
-- [ApiMessage][40]
+- [ReasoningDetail][40]
   - [Properties][41]
-- [ConsultedCall][42]
+- [ApiMessage][42]
   - [Properties][43]
-- [TurnUsage][44]
+- [ConsultedCall][44]
   - [Properties][45]
-- [ChatCommand][46]
+- [TurnUsage][46]
   - [Properties][47]
-- [DirectorNote][48]
+- [ChatCommand][48]
   - [Properties][49]
-- [MessageAlternate][50]
+- [DirectorNote][50]
   - [Properties][51]
-- [MessageSegment][52]
-- [DocumentEdit][53]
-  - [Properties][54]
-- [MessageMetadata][55]
+- [MessageAlternate][52]
+  - [Properties][53]
+- [MessageSegment][54]
+- [DocumentEdit][55]
   - [Properties][56]
-- [PendingToolCall][57]
+- [MessageMetadata][57]
   - [Properties][58]
-- [Message][59]
+- [PendingToolCall][59]
   - [Properties][60]
-- [Lorebook][61]
+- [Message][61]
   - [Properties][62]
-- [ActivationKey][63]
+- [Lorebook][63]
   - [Properties][64]
-- [LoreEntry][65]
+- [ActivationKey][65]
   - [Properties][66]
-- [Change][67]
+- [LoreEntry][67]
   - [Properties][68]
-- [StoreState][69]
+- [Change][69]
   - [Properties][70]
-- [AIProvider][71]
+- [StoreState][71]
   - [Properties][72]
-- [AIPreset][73]
+- [AIProvider][73]
   - [Properties][74]
-- [StoredChatProfile][75]
+- [AIPreset][75]
   - [Properties][76]
-- [SkillFile][77]
+- [StoredChatProfile][77]
   - [Properties][78]
-- [SkillWording][79]
+- [SkillFile][79]
   - [Properties][80]
-- [WebServiceId][81]
-- [WebSearchSetup][82]
-  - [Properties][83]
-- [McpServer][84]
+- [SkillWording][81]
+  - [Properties][82]
+- [WebServiceId][83]
+- [WebSearchSetup][84]
   - [Properties][85]
-- [McpTool][86]
+- [McpServer][86]
   - [Properties][87]
-- [McpPrompt][88]
+- [McpTool][88]
   - [Properties][89]
-- [AIPrompt][90]
+- [McpPrompt][90]
   - [Properties][91]
-- [JobStep][92]
+- [AIPrompt][92]
   - [Properties][93]
-- [Job][94]
+- [JobStep][94]
   - [Properties][95]
-- [WorkflowSettings][96]
+- [Job][96]
   - [Properties][97]
+- [WorkflowSettings][98]
+  - [Properties][99]
 
 ##
 
@@ -106,25 +108,25 @@ Type definitions for composables
 
 ## ChatMessage
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Message ID
+- `id` **[string][101]** Message ID
 - `role` **(`"user"` | `"assistant"` | `"system"`)** Message role
-- `content` **[string][99]** Message content
-- `reasoning` **[string][99]?** Model reasoning (optional)
-- `created` **[number][100]** Creation timestamp
+- `content` **[string][101]** Message content
+- `reasoning` **[string][101]?** Model reasoning (optional)
+- `created` **[number][102]** Creation timestamp
 
 ## StoryContext
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Story ID
-- `sceneContext` **[Object][98]?** Current scene context (optional)
-  - `sceneContext.id` **[string][99]?** Scene ID
+- `id` **[string][101]** Story ID
+- `sceneContext` **[Object][100]?** Current scene context (optional)
+  - `sceneContext.id` **[string][101]?** Scene ID
 
 ## LorebookEntry
 
@@ -145,43 +147,43 @@ inksprite uses JSDoc annotations for type safety without TypeScript:
 
 ## Core Types
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Unique identifier
-- `title` **[string][99]** Story title
-- `overview` **[string][99]** Legacy synopsis; see the root document's `summary`
-- `createdAt` **[number][100]** Creation timestamp
-- `updatedAt` **[number][100]** Last update timestamp
-- `id` **[string][99]** Unique identifier
-- `storyId` **[string][99]** Parent story ID
-- `title` **[string][99]** Part title (e.g., "Act 1")
-- `order` **[number][100]** Display order
-- `isDrafts` **[boolean][101]** Whether this is the drafts container
-- `id` **[string][99]** Unique identifier
-- `storyId` **[string][99]** Parent story ID
-- `partId` **[string][99]** Parent part ID
-- `title` **[string][99]** Scene title
-- `content` **[string][99]** Scene content (HTML)
-- `isDraft` **[boolean][101]** Whether this is a draft scene
-- `id` **[string][99]** Unique identifier
-- `storyId` **[string][99]** Associated story ID
-- `title` **[string][99]** Chat title
-- `createdAt` **[number][100]** Creation timestamp
-- `id` **[string][99]** Unique identifier
-- `chatId` **[string][99]** Parent chat ID
-- `role` **[string][99]** Message role ('user' | 'assistant')
-- `content` **[string][99]** Message content
-- `createdAt` **[number][100]** Creation timestamp
-- `id` **[string][99]** Unique identifier
-- `storyId` **[string][99]** Associated story ID
-- `entries` **[Array][102]<[LorebookEntry][6]>** Lorebook entries
-- `id` **[string][99]** Entry identifier
-- `title` **[string][99]** Entry title
-- `content` **[string][99]** Entry content
-- `tags` **[Array][102]<[string][99]>** Associated tags
-- `enabled` **[boolean][101]** Whether entry is active
+- `id` **[string][101]** Unique identifier
+- `title` **[string][101]** Story title
+- `overview` **[string][101]** Legacy synopsis; see the root document's `summary`
+- `createdAt` **[number][102]** Creation timestamp
+- `updatedAt` **[number][102]** Last update timestamp
+- `id` **[string][101]** Unique identifier
+- `storyId` **[string][101]** Parent story ID
+- `title` **[string][101]** Part title (e.g., "Act 1")
+- `order` **[number][102]** Display order
+- `isDrafts` **[boolean][103]** Whether this is the drafts container
+- `id` **[string][101]** Unique identifier
+- `storyId` **[string][101]** Parent story ID
+- `partId` **[string][101]** Parent part ID
+- `title` **[string][101]** Scene title
+- `content` **[string][101]** Scene content (HTML)
+- `isDraft` **[boolean][103]** Whether this is a draft scene
+- `id` **[string][101]** Unique identifier
+- `storyId` **[string][101]** Associated story ID
+- `title` **[string][101]** Chat title
+- `createdAt` **[number][102]** Creation timestamp
+- `id` **[string][101]** Unique identifier
+- `chatId` **[string][101]** Parent chat ID
+- `role` **[string][101]** Message role ('user' | 'assistant')
+- `content` **[string][101]** Message content
+- `createdAt` **[number][102]** Creation timestamp
+- `id` **[string][101]** Unique identifier
+- `storyId` **[string][101]** Associated story ID
+- `entries` **[Array][104]<[LorebookEntry][6]>** Lorebook entries
+- `id` **[string][101]** Entry identifier
+- `title` **[string][101]** Entry title
+- `content` **[string][101]** Entry content
+- `tags` **[Array][104]<[string][101]>** Associated tags
+- `enabled` **[boolean][103]** Whether entry is active
 
 ##
 
@@ -190,79 +192,92 @@ These JSDoc typedefs are used across all store files for type checking
 
 ## StoryOptions
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `profileId` **[string][99]?** Profile new chats in this project are stamped from.
+- `profileId` **[string][101]?** Profile new chats in this project are stamped from.
   A default, not a mode: nothing reads it once a chat exists.
   A default, not a mode: nothing reads it after a chat has been created, and every
   chat can change what it was given. Absent falls back to `promptId`; see
   `ai/profiles/index.js`.
-- `promptId` **[string][99]?** Built-in prompt new chats in this project are seeded
+- `promptId` **[string][101]?** Built-in prompt new chats in this project are seeded
   with, written once by the template the project was created from. What `profileId`
   was before there were profiles, and still read when it is absent.
-- `systemPromptWrite` **[string][99]?** Legacy. Override for write mode system prompt
-- `userPromptWrite` **[string][99]?** Legacy. Override for write mode user prompt
-- `systemPromptChat` **[string][99]?** Legacy. Override for chat mode system prompt
-- `systemPromptSummarize` **[string][99]?** Legacy. Override for summarize mode system prompt
-- `userPromptSummarize` **[string][99]?** Legacy. Override for summarize mode user prompt
+- `systemPromptWrite` **[string][101]?** Legacy. Override for write mode system prompt
+- `userPromptWrite` **[string][101]?** Legacy. Override for write mode user prompt
+- `systemPromptChat` **[string][101]?** Legacy. Override for chat mode system prompt
+- `systemPromptSummarize` **[string][101]?** Legacy. Override for summarize mode system prompt
+- `userPromptSummarize` **[string][101]?** Legacy. Override for summarize mode user prompt
 
 ## StoryLayout
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `sidebar` **[boolean][101]** Whether the left sidebar is showing
-- `editor` **[boolean][101]** Whether the editor is showing
-- `chat` **[boolean][101]** Whether the chat is showing. Never false while `editor` is.
+- `sidebar` **[boolean][103]** Whether the left sidebar is showing
+- `editor` **[boolean][103]** Whether the editor is showing
+- `chat` **[boolean][103]** Whether the chat is showing. Never false while `editor` is.
 - `sidebarTab` **(`"outline"` | `"chats"` | `"narration"` | `"comments"`)** Which list the sidebar is on
 
 ## Story
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Unique story identifier (story_xxx)
-- `title` **[string][99]?** Legacy. The project's name lives on its root document;
+- `id` **[string][101]** Unique story identifier (story_xxx)
+- `title` **[string][101]?** Legacy. The project's name lives on its root document;
   kept so stored rows written before that still parse.
-- `overview` **[string][99]** Legacy synopsis. Migrated to the root document's `summary` at schema v7 and no longer read; the column stays as the way back.
-- `wordCount` **[number][100]** Total word count across all scenes
-- `lastDocumentId` **([string][99] | null)** The document the writer is in: the editor's
-  active tab, so a project reopens where they left off
-- `openDocumentIds` **[Array][102]<[string][99]>?** The documents open in the editor, in tab
-  order. Absent means one tab, the last document; see
-  `utils/tabs.js`.
-- `previewDocumentId` **([string][99] | null)?** The open document that is only being
+- `overview` **[string][101]** Legacy synopsis. Migrated to the root document's `summary` at schema v7 and no longer read; the column stays as the way back.
+- `wordCount` **[number][102]** Total word count across all scenes
+- `narration` **[StoryNarration][24]?** The project's voices and pronunciation
+  hints, for reading it aloud. Absent means one default voice and no hints; see
+  `tts/voices.js`.
+- `options` **[StoryOptions][12]?** Story-specific options and overrides
+- `version` **[number][102]** Version number for conflict resolution
+- `created` **[number][102]** Creation timestamp
+- `updated` **[number][102]** Last update timestamp
+
+## ProjectView
+
+Where the writer left a project on this copy of the app, so it reopens as
+it was left. Kept with the app's settings, not in the project; see
+`stores/projectViewsStore.js`.
+
+Type: [Object][100]
+
+### Properties
+
+- `id` **[string][101]** The story's id
+- `lastDocumentId` **([string][101] | null)?** The document the writer is in: the editor's
+  active tab
+- `openDocumentIds` **[Array][104]<[string][101]>?** The documents open in the editor, in tab
+  order. Absent means one tab, the last document; see `utils/tabs.js`.
+- `previewDocumentId` **([string][101] | null)?** The open document that is only being
   looked at, whose tab the next one opened from the outline takes. Absent or
   null means every tab is kept.
 - `layout` **[StoryLayout][14]?** How the writer left the panels. Absent means the
   default arrangement; see `components/writer/layout/layout.js`.
-- `narration` **[StoryNarration][22]?** The project's voices and pronunciation
-  hints, for reading it aloud. Absent means one default voice and no hints; see
-  `tts/voices.js`.
-- `options` **[StoryOptions][12]?** Story-specific options and overrides
-- `version` **[number][100]** Version number for conflict resolution
-- `created` **[number][100]** Creation timestamp
-- `updated` **[number][100]** Last update timestamp
+- `version` **[number][102]** Bumped each time it is saved
+- `updated` **[number][102]** When the writer was last in the project here
 
 ## TtsVoice
 
 A voice a project is read in: a name for the writer, and what the speech
 server is asked for.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** voice_xxx, or `narrator` for the default
-- `name` **[string][99]** What the writer calls it: Narrator, Riley
-- `voice` **[string][99]** What the server is asked for, as written. A Kokoro mix
+- `id` **[string][101]** voice_xxx, or `narrator` for the default
+- `name` **[string][101]** What the writer calls it: Narrator, Riley
+- `voice` **[string][101]** What the server is asked for, as written. A Kokoro mix
   like `af_heart+af_nicole(2)`, or a plain name.
-- `speed` **[number][100]?** How fast it reads; 1 when absent
-- `color` **[string][99]?** A hex colour its lines are known by, in the
+- `speed` **[number][102]?** How fast it reads; 1 when absent
+- `color` **[string][101]?** A hex colour its lines are known by, in the
   narration's list and behind the text in the editor. Absent means none.
 
 ## SpeakerAssignment
@@ -271,62 +286,62 @@ One block given to one voice: a paragraph, or a stretch of speech in one,
 or what stands around it. Remembered by the block's text and where it was,
 so it can be found again after the document changes.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `text` **[string][99]** The block as spoken, one space between words
-- `index` **[number][100]** Where it was among the blocks when assigned
-- `voiceId` **[string][99]**&#x20;
+- `text` **[string][101]** The block as spoken, one space between words
+- `index` **[number][102]** Where it was among the blocks when assigned
+- `voiceId` **[string][101]**&#x20;
 
 ## StoryNarration
 
 How a project is read aloud. All of it optional: a project that has never
 been read has none of this and reads in the default voice.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `voices` **[Array][102]<[TtsVoice][18]>?** Absent or empty means the one default voice
-- `defaultVoiceId` **[string][99]?** The voice for blocks given no speaker. Absent,
+- `voices` **[Array][104]<[TtsVoice][20]>?** Absent or empty means the one default voice
+- `defaultVoiceId` **[string][101]?** The voice for blocks given no speaker. Absent,
   or naming a voice since removed, means the first.
-- `narratorId` **[string][99]?** Legacy. What `defaultVoiceId` was called for its
+- `narratorId` **[string][101]?** Legacy. What `defaultVoiceId` was called for its
   first few days; read when that is absent, never written.
-- `hints` **[string][99]?** Pronunciation hints, `word:say` one to a line. See
+- `hints` **[string][101]?** Pronunciation hints, `word:say` one to a line. See
   `tts/hints.js`.
 
 ## Part
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Unique part identifier (part_xxx or drafts_storyId)
-- `storyId` **[string][99]** Parent story ID
-- `order` **[number][100]** Display order (drafts always Number.MAX_SAFE_INTEGER)
-- `title` **[string][99]** Part title (e.g., "Act 1", "Drafts")
-- `summary` **[string][99]** Part summary/description
-- `version` **[number][100]** Version number for conflict resolution
-- `created` **[number][100]** Creation timestamp
-- `updated` **[number][100]** Last update timestamp
+- `id` **[string][101]** Unique part identifier (part_xxx or drafts_storyId)
+- `storyId` **[string][101]** Parent story ID
+- `order` **[number][102]** Display order (drafts always Number.MAX_SAFE_INTEGER)
+- `title` **[string][101]** Part title (e.g., "Act 1", "Drafts")
+- `summary` **[string][101]** Part summary/description
+- `version` **[number][102]** Version number for conflict resolution
+- `created` **[number][102]** Creation timestamp
+- `updated` **[number][102]** Last update timestamp
 
 ## Scene
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Unique scene identifier (scene_xxx)
-- `partId` **[string][99]** Parent part ID
-- `order` **[number][100]** Display order within part
-- `title` **[string][99]** Scene title
-- `content` **[string][99]** Scene content (HTML from Tiptap editor)
-- `summary` **[string][99]** Scene summary
-- `wordCount` **[number][100]** Word count for this scene
-- `version` **[number][100]** Version number for conflict resolution
-- `created` **[number][100]** Creation timestamp
-- `updated` **[number][100]** Last update timestamp
+- `id` **[string][101]** Unique scene identifier (scene_xxx)
+- `partId` **[string][101]** Parent part ID
+- `order` **[number][102]** Display order within part
+- `title` **[string][101]** Scene title
+- `content` **[string][101]** Scene content (HTML from Tiptap editor)
+- `summary` **[string][101]** Scene summary
+- `wordCount` **[number][102]** Word count for this scene
+- `version` **[number][102]** Version number for conflict resolution
+- `created` **[number][102]** Creation timestamp
+- `updated` **[number][102]** Last update timestamp
 
 ## Document
 
@@ -335,81 +350,81 @@ a Part was, a text document is what a Scene was. Both keep their original
 ids, so anything already pointing at a `part_xxx` or `scene_xxx` still
 resolves.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** doc_xxx, or a migrated part_xxx / scene_xxx / drafts_storyId
-- `storyId` **[string][99]** Owning story
-- `parentId` **[string][99]** Parent document id, or the storyId when at the root
-- `order` **[number][100]** Display order among siblings
+- `id` **[string][101]** doc_xxx, or a migrated part_xxx / scene_xxx / drafts_storyId
+- `storyId` **[string][101]** Owning story
+- `parentId` **[string][101]** Parent document id, or the storyId when at the root
+- `order` **[number][102]** Display order among siblings
 - `type` **(`"folder"` | `"text"` | `"file"`)** Folders hold children, text holds
   content, and a file is something imported — a PDF, an image — whose bytes
   are kept beside it (see `stores/filesStore.js`) and whose `content` is the
   text that could be read out of it.
-- `mime` **[string][99]?** Files only: the media type, `application/pdf`,
+- `mime` **[string][101]?** Files only: the media type, `application/pdf`,
   `image/png`. What decides how it is shown and whether a model can be
   handed it.
-- `size` **[number][100]?** Files only: the file's size in bytes
-- `pages` **[number][100]?** Files only, and only for a format that has
+- `size` **[number][102]?** Files only: the file's size in bytes
+- `pages` **[number][102]?** Files only, and only for a format that has
   pages: how many
-- `ordered` **[boolean][101]?** Folders only. Ordered folders sort by `order` and
+- `ordered` **[boolean][103]?** Folders only. Ordered folders sort by `order` and
   accept drag-to-position. Unordered folders sort by title. Absent counts as
   unordered.
-- `kind` **[string][99]?** What this document is, when it came from somewhere
+- `kind` **[string][101]?** What this document is, when it came from somewhere
   with a shape of its own: `card` on the folder an imported character card
   became, the field's name on each of its documents, `lore` on a book. Read by
   the importer and the exporter and nothing else — the titles belong to the
   writer, so a renamed document is still found by this. Absent on an ordinary
   document, which is most of them.
-- `source` **[RepositorySource][30]?** Repository folders only (`kind:
+- `source` **[RepositorySource][32]?** Repository folders only (`kind:
 'repository'`): where the code under it was read from, which a refresh
   reads again. See `source/`.
-- `edited` **[number][100]?** Roots only: when something in the project last
+- `edited` **[number][102]?** Roots only: when something in the project last
   changed, a document in it or a message in one of its chats, to the minute.
   What the project picker shows. Absent on a root written before it was kept,
   until the picker works it out.
-- `hidden` **[boolean][101]?** Kept from the model. A hidden document is left out
+- `hidden` **[boolean][103]?** Kept from the model. A hidden document is left out
   of the project the AI is shown and out of reach of its tools, and so is
   everything under a hidden folder. Absent counts as shown.
-- `title` **[string][99]** Document title
-- `convertedFrom` **[string][99]?** For a Markdown copy a conversion wrote, the
+- `title` **[string][101]** Document title
+- `convertedFrom` **[string][101]?** For a Markdown copy a conversion wrote, the
   document it was converted from; a later conversion of that one replaces it
-- `plain` **[boolean][101]?** Edited as plain text and stored as typed, never
+- `plain` **[boolean][103]?** Edited as plain text and stored as typed, never
   settled to what the editor can show. For prompts and the like. Absent counts
   as a structured document.
-- `content` **[string][99]** Markdown; always empty for folders. For a file,
+- `content` **[string][101]** Markdown; always empty for folders. For a file,
   the text extracted from it at import, a PDF's page by page under `[p.N]`
   markers — what the model reads and searches, and what a scan has none of.
   Stored as typed, like a plain document.
-- `speakers` **[Array][102]<[SpeakerAssignment][20]>?** Who speaks which block when the
+- `speakers` **[Array][104]<[SpeakerAssignment][22]>?** Who speaks which block when the
   document is read aloud. An overlay on the blocks, found again by their text
   when the document changes; see `tts/script.js`. Absent means the default voice
   reads all of it.
-- `summary` **[string][99]** Document summary
-- `wordCount` **[number][100]** Word count; always 0 for folders
-- `version` **[number][100]** Version number for conflict resolution
-- `created` **[number][100]** Creation timestamp
-- `updated` **[number][100]** Last update timestamp
+- `summary` **[string][101]** Document summary
+- `wordCount` **[number][102]** Word count; always 0 for folders
+- `version` **[number][102]** Version number for conflict resolution
+- `created` **[number][102]** Creation timestamp
+- `updated` **[number][102]** Last update timestamp
 
 ## RepositorySource
 
 Where a repository's code came from: a GitHub repository at a ref, or a
 folder the writer chose. See `.llm/source_code_design.md`.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
 - `from` **(`"github"` | `"folder"`)**&#x20;
-- `name` **[string][99]** `owner/repo` for GitHub, the folder's name otherwise
-- `ref` **[string][99]?** The branch, tag or commit asked for; absent for
+- `name` **[string][101]** `owner/repo` for GitHub, the folder's name otherwise
+- `ref` **[string][101]?** The branch, tag or commit asked for; absent for
   the default branch
-- `commit` **[string][99]?** The commit it was read at, as GitHub's archive
+- `commit` **[string][101]?** The commit it was read at, as GitHub's archive
   names it
-- `subpath` **[string][99]?** The folder of the repository imported, when
+- `subpath` **[string][101]?** The folder of the repository imported, when
   not all of it
-- `imported` **[number][100]** When it was last read
+- `imported` **[number][102]** When it was last read
 
 ## StoredFile
 
@@ -417,73 +432,73 @@ The bytes behind a file document, in a table of their own so that loading
 a project's tree does not load its papers. Keyed by the document's id, and
 purged with it. See `stores/filesStore.js`.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** The file document's id
-- `storyId` **[string][99]** Its story
-- `blob` **[Blob][103]** The file, carrying its media type
+- `id` **[string][101]** The file document's id
+- `storyId` **[string][101]** Its story
+- `blob` **[Blob][105]** The file, carrying its media type
 
 ## Chat
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Unique chat identifier (chat_xxx)
-- `storyId` **[string][99]** Parent story ID
-- `title` **[string][99]** Chat title
-- `titleSet` **[boolean][101]** Whether title has been set (auto or manual)
-- `lastMessageAt` **([number][100] | null)** Timestamp of last message
-- `description` **[string][99]?** Chat description/purpose
-- `messageCount` **[number][100]?** Number of messages in chat
-- `profileId` **([string][99] | null)?** Chat profile this chat runs on, built-in or the writer's own. Absent, or naming one since deleted, means the profile its project starts chats on.
-- `promptId` **([string][99] | null)?** Legacy. The library prompt this chat ran on before prompts became profiles; kept as the record of what it was pointed at. See `stores/migrations/profiles.js`.
-- `disabledTools` **[Array][102]<[string][99]>?** Names of tools withheld from this chat. Absent means every registered tool is offered.
-- `disabledToolGroups` **[Array][102]<[string][99]>?** Group ids withheld from this chat, which also withholds tools added to those groups later.
-- `mcpServers` **[Array][102]<[string][99]>?** The MCP servers whose tools this chat is offered, by id, once the writer has chosen here. Absent means the servers that list the chat's profile. A server's tools are opted into rather than withheld, so a server connected later reaches no chat that did not ask for it. See mcp/servers.js.
-- `web` **[boolean][101]?** Whether this chat searches the web, once the writer has chosen here. Absent means it does when web search is set up for the chat's profile. Opted into, as a server's tools are. See web/config.js.
-- `projectContextEnabled` **[boolean][101]?** Whether the project block rides at the tail of this conversation. Absent means it does, which is what every chat written before the switch had.
-- `voiceId` **([string][99] | null)?** The voice this chat's messages are read aloud in, one of the project's. Absent, or naming a voice since removed, means the project's default.
-- `rules` **[string][99]?** The chat's author's note: standing instructions the writer keeps as they go, sent in their latest message after the project block and ahead of what they said. Starts as the profile's, combined with a card's post-history instructions for a chat on a card. Absent means none.
-- `pinnedIds` **[Array][102]<[string][99]>?** Documents whose text rides in the project block from the first turn, without the model having read them. A folder pins what is under it. Absent means none.
-- `shownIds` **[Array][102]<[string][99]>?** Documents this chat sees although a folder above them is hidden in it: a character's own folder, under the folder all the characters are in. Absent means none.
-- `hiddenIds` **[Array][102]<[string][99]>?** Documents kept from this chat's model, and everything under them unless something nearer is pinned or shown. The document's own `hidden` keeps it from every chat. See `utils/visibility.js`. Absent means none.
-- `userVoiceId` **([string][99] | null)?** The voice this chat's own messages are read aloud in, one of the project's. Absent means the same voice everything else is read in.
-- `userName` **[string][99]?** The writer's name in this chat: what `{{user}}` becomes in what its model reads. Asked for when a chat on a card starts. Absent means the macro is read as written. See `cards/macros.js`.
-- `characterName` **[string][99]?** The name of the character this chat plays: what `{{char}}` becomes in what its model reads. Absent means the macro is read as written.
-- `version` **[number][100]** Version number for conflict resolution
-- `created` **[number][100]** Creation timestamp
-- `updated` **[number][100]** Last update timestamp
+- `id` **[string][101]** Unique chat identifier (chat_xxx)
+- `storyId` **[string][101]** Parent story ID
+- `title` **[string][101]** Chat title
+- `titleSet` **[boolean][103]** Whether title has been set (auto or manual)
+- `lastMessageAt` **([number][102] | null)** Timestamp of last message
+- `description` **[string][101]?** Chat description/purpose
+- `messageCount` **[number][102]?** Number of messages in chat
+- `profileId` **([string][101] | null)?** Chat profile this chat runs on, built-in or the writer's own. Absent, or naming one since deleted, means the profile its project starts chats on.
+- `promptId` **([string][101] | null)?** Legacy. The library prompt this chat ran on before prompts became profiles; kept as the record of what it was pointed at. See `stores/migrations/profiles.js`.
+- `disabledTools` **[Array][104]<[string][101]>?** Names of tools withheld from this chat. Absent means every registered tool is offered.
+- `disabledToolGroups` **[Array][104]<[string][101]>?** Group ids withheld from this chat, which also withholds tools added to those groups later.
+- `mcpServers` **[Array][104]<[string][101]>?** The MCP servers whose tools this chat is offered, by id, once the writer has chosen here. Absent means the servers that list the chat's profile. A server's tools are opted into rather than withheld, so a server connected later reaches no chat that did not ask for it. See mcp/servers.js.
+- `web` **[boolean][103]?** Whether this chat searches the web, once the writer has chosen here. Absent means it does when web search is set up for the chat's profile. Opted into, as a server's tools are. See web/config.js.
+- `projectContextEnabled` **[boolean][103]?** Whether the project block rides at the tail of this conversation. Absent means it does, which is what every chat written before the switch had.
+- `voiceId` **([string][101] | null)?** The voice this chat's messages are read aloud in, one of the project's. Absent, or naming a voice since removed, means the project's default.
+- `rules` **[string][101]?** The chat's author's note: standing instructions the writer keeps as they go, sent in their latest message after the project block and ahead of what they said. Starts as the profile's, combined with a card's post-history instructions for a chat on a card. Absent means none.
+- `pinnedIds` **[Array][104]<[string][101]>?** Documents whose text rides in the project block from the first turn, without the model having read them. A folder pins what is under it. Absent means none.
+- `shownIds` **[Array][104]<[string][101]>?** Documents this chat sees although a folder above them is hidden in it: a character's own folder, under the folder all the characters are in. Absent means none.
+- `hiddenIds` **[Array][104]<[string][101]>?** Documents kept from this chat's model, and everything under them unless something nearer is pinned or shown. The document's own `hidden` keeps it from every chat. See `utils/visibility.js`. Absent means none.
+- `userVoiceId` **([string][101] | null)?** The voice this chat's own messages are read aloud in, one of the project's. Absent means the same voice everything else is read in.
+- `userName` **[string][101]?** The writer's name in this chat: what `{{user}}` becomes in what its model reads. Asked for when a chat on a card starts. Absent means the macro is read as written. See `cards/macros.js`.
+- `characterName` **[string][101]?** The name of the character this chat plays: what `{{char}}` becomes in what its model reads. Absent means the macro is read as written.
+- `version` **[number][102]** Version number for conflict resolution
+- `created` **[number][102]** Creation timestamp
+- `updated` **[number][102]** Last update timestamp
 
 ## ToolCall
 
 Tool call from the model (OpenAI format)
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Unique call ID
+- `id` **[string][101]** Unique call ID
 - `type` **`"function"`** Call type (always 'function')
-- `function` **[Object][98]** Function call details
-  - `function.name` **[string][99]** Function name
-  - `function.arguments` **[string][99]** JSON string of arguments
+- `function` **[Object][100]** Function call details
+  - `function.name` **[string][101]** Function name
+  - `function.arguments` **[string][101]** JSON string of arguments
 
 ## ReasoningDetail
 
 Reasoning detail entry from OpenRouter extended thinking
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `type` **[string][99]** Type of reasoning (e.g., 'reasoning.text')
-- `text` **[string][99]?** Reasoning text content
-- `signature` **[string][99]?** Cryptographic signature for continuation
-- `format` **[string][99]?** Format identifier (e.g., 'anthropic-claude-v1')
-- `index` **[number][100]** Index in the reasoning chain
+- `type` **[string][101]** Type of reasoning (e.g., 'reasoning.text')
+- `text` **[string][101]?** Reasoning text content
+- `signature` **[string][101]?** Cryptographic signature for continuation
+- `format` **[string][101]?** Format identifier (e.g., 'anthropic-claude-v1')
+- `index` **[number][102]** Index in the reasoning chain
 
 ## ApiMessage
 
@@ -491,19 +506,19 @@ API message format. One entry per actual model invocation or tool result
 within an assistant turn. Assistant entries carry only the text streamed
 during that iteration (delta, not cumulative).
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
 - `role` **(`"assistant"` | `"tool"`)** Message role
-- `content` **([string][99] | null)** Message content (delta for that iteration)
-- `tool_calls` **[Array][102]<[ToolCall][36]>?** Tool calls (for assistant messages requesting tools)
-- `tool_call_id` **[string][99]?** Tool call ID this is responding to (for tool result messages)
-- `reasoning_details` **[Array][102]<[ReasoningDetail][38]>?** Reasoning blocks (intra-turn continuation only; stripped on replay)
-- `_document` **[string][99]?** The document a read put in front of the model. Ours, not the API's, like `_path` and `_hash`: stripped before the message is sent. See ai/context/reads.js.
-- `_path` **[string][99]?** The path the document was read at
-- `_hash` **[string][99]?** A hash of the text the read saw, for telling whether the document has changed since
-- `_reasoning` **[string][99]?** What the model thought during this iteration. Ours, not the API's: the service renames it to whatever the backend calls the field, or drops it. Intra-turn only, so it is never stored on a trajectory.
+- `content` **([string][101] | null)** Message content (delta for that iteration)
+- `tool_calls` **[Array][104]<[ToolCall][38]>?** Tool calls (for assistant messages requesting tools)
+- `tool_call_id` **[string][101]?** Tool call ID this is responding to (for tool result messages)
+- `reasoning_details` **[Array][104]<[ReasoningDetail][40]>?** Reasoning blocks (intra-turn continuation only; stripped on replay)
+- `_document` **[string][101]?** The document a read put in front of the model. Ours, not the API's, like `_path` and `_hash`: stripped before the message is sent. See ai/context/reads.js.
+- `_path` **[string][101]?** The path the document was read at
+- `_hash` **[string][101]?** A hash of the text the read saw, for telling whether the document has changed since
+- `_reasoning` **[string][101]?** What the model thought during this iteration. Ours, not the API's: the service renames it to whatever the backend calls the field, or drops it. Intra-turn only, so it is never stored on a trajectory.
 - `_consultation` **Consultation?** On a skill's result: what the skill did on its way to the answer, for the turn to show. Ours, not the API's: stripped before the message is sent, like `_document`.
 - `_dropped` **`true`?** On a `use_skill` result: the writer dropped what it loaded, so it is not carried past a summary. Sent back where it is until then. See ai/skills/loads.js.
 
@@ -512,18 +527,18 @@ Type: [Object][98]
 What a skill did on its way to its answer, kept beside the answer for the
 writer to read.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `thinking` **[string][99]?** What it thought, when the model thinks
-- `calls` **[Array][102]<[ConsultedCall][42]>** The tools it called, in order
-- `reply` **[boolean][101]?** It wrote the turn's reply, which is the
+- `thinking` **[string][101]?** What it thought, when the model thinks
+- `calls` **[Array][104]<[ConsultedCall][44]>** The tools it called, in order
+- `reply` **[boolean][103]?** It wrote the turn's reply, which is the
   message's content. Its thinking is then the message's too, after the
   turn's own, so it is not kept here as well.
-- `name` **[string][99]** The tool
-- `arguments` **[string][99]** What it was asked, as the model wrote it
-- `result` **[string][99]** What it answered, cut short when long
+- `name` **[string][101]** The tool
+- `arguments` **[string][101]** What it was asked, as the model wrote it
+- `result` **[string][101]** What it answered, cut short when long
 - `consultation` **Consultation?** When the tool was itself a skill: what that one did
 
 ## TurnUsage
@@ -531,13 +546,13 @@ Type: [Object][98]
 Token usage for one assistant turn, which may span several requests when
 tools are called.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `promptTokens` **[number][100]** Context size of the turn's final request
-- `completionTokens` **[number][100]** Generated tokens, summed over requests
-- `requests` **[number][100]** Model invocations in the turn
+- `promptTokens` **[number][102]** Context size of the turn's final request
+- `completionTokens` **[number][102]** Generated tokens, summed over requests
+- `requests` **[number][102]** Model invocations in the turn
 
 ## ChatCommand
 
@@ -549,25 +564,25 @@ is given back when they edit one. `label` and `result` are what the model is
 shown; `detail` is the working — the likelihood a question was asked at, the
 dice behind a total — and stays in front of the writer, who chose it.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `name` **[string][99]** The command that was run
-- `input` **[string][99]** Everything the writer typed after the name, verbatim
-- `param` **[string][99]?** What was in the parentheses, for the commands that take something there
+- `name` **[string][101]** The command that was run
+- `input` **[string][101]** Everything the writer typed after the name, verbatim
+- `param` **[string][101]?** What was in the parentheses, for the commands that take something there
 - `character` **`true`?** Set when this is somebody speaking rather than something answering. See ai/commands.js.
 - `prompt` **`true`?** Set when this is a saved prompt: a skill's instructions, filled in with what the writer typed, as their words. Read off the record, like `character`, so it still reads as one after its skill has gone. See `savedPrompt` in ai/commands.js.
 - `load` **`true`?** With `prompt`: the skill is one the model could load too, so this loaded it for the rest of the chat — carried past a summary, listed as loaded, droppable. See ai/skills/loads.js.
 - `dropped` **`true`?** A load the writer dropped: read where it is, and not carried past a summary. See ai/skills/loads.js.
-- `label` **[string][99]?** The question, as the model reads it, when there was one. A direction the writer simply gave asked nothing.
-- `detail` **[string][99]?** The working, for the writer only, when it is something that happened rather than something derivable. What to show is `commandDetail` — the oracle's odds are read back off `param`.
-- `result` **[string][99]** What came back, empty while a consulting command is still asking
-- `pending` **[boolean][101]?** Set while a command that costs a model call is running
-- `reasoning` **[string][99]?** What it thought on the way to the answer, for the reader. Streamed in as it arrives.
-- `thought` **[number][100]?** How long it thought, in milliseconds, measured to the first word of the answer
-- `error` **[string][99]?** Why there is no result, when there is none
-- `keep` **[number][100]?** Compaction only: how many turns the summary was put above when it was asked for, which it read all the same. The summary's place in the chat is what says what it stands for; this is how to ask it again over the same conversation, and how far to move it when the writer changes the count. See ai/compaction.js.
+- `label` **[string][101]?** The question, as the model reads it, when there was one. A direction the writer simply gave asked nothing.
+- `detail` **[string][101]?** The working, for the writer only, when it is something that happened rather than something derivable. What to show is `commandDetail` — the oracle's odds are read back off `param`.
+- `result` **[string][101]** What came back, empty while a consulting command is still asking
+- `pending` **[boolean][103]?** Set while a command that costs a model call is running
+- `reasoning` **[string][101]?** What it thought on the way to the answer, for the reader. Streamed in as it arrives.
+- `thought` **[number][102]?** How long it thought, in milliseconds, measured to the first word of the answer
+- `error` **[string][101]?** Why there is no result, when there is none
+- `keep` **[number][102]?** Compaction only: how many turns the summary was put above when it was asked for, which it read all the same. The summary's place in the chat is what says what it stands for; this is how to ask it again over the same conversation, and how far to move it when the writer changes the count. See ai/compaction.js.
 
 ## DirectorNote
 
@@ -579,14 +594,14 @@ handed `direction` and nothing else, because the whole point of a Director is
 that its working stays out of the narration. Here it is the only way to see
 why a direction came out the way it did.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `pending` **[boolean][101]?** Set while the call is in flight, cleared by the answer
-- `reasoning` **[string][99]?** What the Director thought on its way to the direction
-- `direction` **[string][99]?** What it told the Game Master
-- `error` **[string][99]?** Why there is no direction, when there is none
+- `pending` **[boolean][103]?** Set while the call is in flight, cleared by the answer
+- `reasoning` **[string][101]?** What the Director thought on its way to the direction
+- `direction` **[string][101]?** What it told the Game Master
+- `error` **[string][101]?** Why there is no direction, when there is none
 
 ## MessageAlternate
 
@@ -599,19 +614,19 @@ about where the message sits in its chat, which is the same for all of
 them. The message's own fields are always the answer it is showing; see
 `selectAlternate` in stores/messagesStore.js.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `content` **[string][99]**&#x20;
-- `reasoningContent` **([string][99] | null)?**&#x20;
-- `streamingStartTime` **([number][100] | null)?**&#x20;
-- `streamingFinishTime` **([number][100] | null)?**&#x20;
-- `thinkingFinishTime` **([number][100] | null)?**&#x20;
-- `thinkingTime` **([number][100] | null)?**&#x20;
-- `edited` **[boolean][101]?**&#x20;
-- `editedAt` **([number][100] | null)?**&#x20;
-- `metadata` **([MessageMetadata][55] | null)?**&#x20;
+- `content` **[string][101]**&#x20;
+- `reasoningContent` **([string][101] | null)?**&#x20;
+- `streamingStartTime` **([number][102] | null)?**&#x20;
+- `streamingFinishTime` **([number][102] | null)?**&#x20;
+- `thinkingFinishTime` **([number][102] | null)?**&#x20;
+- `thinkingTime` **([number][102] | null)?**&#x20;
+- `edited` **[boolean][103]?**&#x20;
+- `editedAt` **([number][102] | null)?**&#x20;
+- `metadata` **([MessageMetadata][57] | null)?**&#x20;
 
 ## MessageSegment
 
@@ -622,7 +637,7 @@ their character does, and tells the Director the scene has gone on long
 enough. That is one turn — one speaker, taken in pieces — and the pieces are
 these. See ai/commands.js.
 
-Type: ({type: `"text"`, content: [string][99]} | {type: `"command"`, command: [ChatCommand][46]})
+Type: ({type: `"text"`, content: [string][101]} | {type: `"command"`, command: [ChatCommand][48]})
 
 ## DocumentEdit
 
@@ -634,174 +649,174 @@ edits elsewhere and refuses when they have edited the passage itself. A
 creation carries what it created; undoing it removes the document, if the
 document still says that.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Names the change, so a decision made on it while the turn is still writing survives the turn's next write
-- `documentId` **[string][99]**&#x20;
-- `path` **[string][99]** Where the document was when it changed, for the writer
-- `tool` **[string][99]** Which tool made the change
-- `old` **[string][99]** The passage as it was; empty for an append or a creation
-- `new` **[string][99]** The passage as the tool left it; the whole body for a creation
+- `id` **[string][101]** Names the change, so a decision made on it while the turn is still writing survives the turn's next write
+- `documentId` **[string][101]**&#x20;
+- `path` **[string][101]** Where the document was when it changed, for the writer
+- `tool` **[string][101]** Which tool made the change
+- `old` **[string][101]** The passage as it was; empty for an append or a creation
+- `new` **[string][101]** The passage as the tool left it; the whole body for a creation
 - `status` **(`"proposed"` | `"accepted"` | `"rejected"`)?** Set when the chat asks the writer first: proposed until they decide. Absent means the change went straight in. While proposed, `old` and `new` are the tool's own arguments, since they are what applies it; accepted, they become the pair that was applied.
-- `summary` **[string][99]?** A proposed creation's summary, to give the document when it is created
+- `summary` **[string][101]?** A proposed creation's summary, to give the document when it is created
 
 ## MessageMetadata
 
 Message metadata structure.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `command` **[ChatCommand][46]?** The tool this message is a record of, when the writer ran one themselves rather than typing a message
-- `director` **[DirectorNote][48]?** The Director's turn, when this chat runs it before the assistant
-- `usage` **[TurnUsage][44]?** Token usage reported by the provider, when it reports any
-- `model` **[string][99]?** Which model wrote this answer, as its provider names it. On the answer rather than the chat, because a chat changes presets as it goes and asking again on another one is half the reason to ask again. Absent on anything written before this was kept, and on a turn nobody generated.
-- `provider` **[string][99]?** Where that model ran, by the name the writer gave the provider — the same model behind two of them is not the same thing. For a chat brought in from SillyTavern, the API it says it used.
-- `documentEdits` **[Array][102]<[DocumentEdit][53]>?** What this assistant turn's tools changed in the project, in the order they changed it. Rewinding past the turn undoes them, newest first.
-- `apiTrajectory` **[Array][102]<[ApiMessage][40]>?** The model's full per-iteration trajectory for this assistant turn (assistant deltas + tool calls + tool results + trailing assistant text). The record of what the turn called: the tool call panel shows it, and the context builder sends its calls back on every later turn without their text: every call when `callsKept`, the document calls when `documentCallsKept`, and its skill loads always. A past turn's words go back as its content. See ai/context/build.js.
+- `command` **[ChatCommand][48]?** The tool this message is a record of, when the writer ran one themselves rather than typing a message
+- `director` **[DirectorNote][50]?** The Director's turn, when this chat runs it before the assistant
+- `usage` **[TurnUsage][46]?** Token usage reported by the provider, when it reports any
+- `model` **[string][101]?** Which model wrote this answer, as its provider names it. On the answer rather than the chat, because a chat changes presets as it goes and asking again on another one is half the reason to ask again. Absent on anything written before this was kept, and on a turn nobody generated.
+- `provider` **[string][101]?** Where that model ran, by the name the writer gave the provider — the same model behind two of them is not the same thing. For a chat brought in from SillyTavern, the API it says it used.
+- `documentEdits` **[Array][104]<[DocumentEdit][55]>?** What this assistant turn's tools changed in the project, in the order they changed it. Rewinding past the turn undoes them, newest first.
+- `apiTrajectory` **[Array][104]<[ApiMessage][42]>?** The model's full per-iteration trajectory for this assistant turn (assistant deltas + tool calls + tool results + trailing assistant text). The record of what the turn called: the tool call panel shows it, and the context builder sends its calls back on every later turn without their text: every call when `callsKept`, the document calls when `documentCallsKept`, and its skill loads always. A past turn's words go back as its content. See ai/context/build.js.
 - `callsKept` **`true`?** Every call this turn made goes back with the conversation. Set on every turn written since they began to; a turn from before keeps going back as it did. See ai/context/build.js.
 - `documentCallsKept` **`true`?** This turn's document calls go back with the conversation. Set on turns written while only they did, before `callsKept`. See ai/context/reads.js.
-- `error` **[string][99]?** Why the turn failed, when it did: the provider's own words, or the app's. Shown where the reply would have been, and gone when the message is asked again. Never sent to the model.
+- `error` **[string][101]?** Why the turn failed, when it did: the provider's own words, or the app's. Shown where the reply would have been, and gone when the message is asked again. Never sent to the model.
 
 ## PendingToolCall
 
 A tool call the model is still writing, as far as it has got.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** The call's id, once the stream has said it
-- `name` **[string][99]** Tool name
-- `arguments` **[string][99]** The arguments JSON so far, likely cut off
+- `id` **[string][101]** The call's id, once the stream has said it
+- `name` **[string][101]** Tool name
+- `arguments` **[string][101]** The arguments JSON so far, likely cut off
 
 ## Message
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Unique message identifier (message_xxx)
-- `chatId` **[string][99]** Parent chat ID
+- `id` **[string][101]** Unique message identifier (message_xxx)
+- `chatId` **[string][101]** Parent chat ID
 - `role` **(`"user"` | `"assistant"`)** Message sender role
-- `content` **[string][99]** What the model is sent. For a message with segments this is assembled from them and never written by hand; see `assembleTurn`.
-- `segments` **[Array][102]<[MessageSegment][52]>?** What the turn was made of, when it was made of more than prose. The writer's side only: a consultation is one speaker saying one thing and carries its record in `metadata.command` instead.
-- `reasoningContent` **([string][99] | null)?** AI reasoning content (for assistant messages)
-- `streamingStartTime` **([number][100] | null)?** Timestamp when streaming started
-- `streamingFinishTime` **([number][100] | null)?** Timestamp when streaming finished
-- `thinkingFinishTime` **([number][100] | null)?** Timestamp when thinking/reasoning finished
-- `thinkingTime` **([number][100] | null)?** How long the turn spent thinking, in milliseconds, over every round it thought in. A turn that calls tools thinks again after each result, so this is the sum and not the time until thinking first stopped. Absent on turns from before it was kept, which read it as `thinkingFinishTime - streamingStartTime`.
-- `pendingToolCalls` **[Array][102]<[PendingToolCall][57]>?** The calls the model is writing or the app is running right now, for the chat to show. In-flight only: cleared as each round's results land and when the turn ends.
-- `alternates` **[Array][102]<[MessageAlternate][50]>?** Every answer the message has had, in the order they were asked for, the one it is showing among them. Only once it has been asked again; a message answered once has none.
-- `alternate` **[number][100]?** Which of them it is showing.
-- `edited` **[boolean][101]?** Whether the message has been edited
-- `editedAt` **([number][100] | null)?** Timestamp when edited
-- `metadata` **([MessageMetadata][55] | null)?** Additional message metadata
-- `version` **[number][100]** Version number for conflict resolution
-- `created` **[number][100]** Creation timestamp
-- `updated` **[number][100]** Last update timestamp
+- `content` **[string][101]** What the model is sent. For a message with segments this is assembled from them and never written by hand; see `assembleTurn`.
+- `segments` **[Array][104]<[MessageSegment][54]>?** What the turn was made of, when it was made of more than prose. The writer's side only: a consultation is one speaker saying one thing and carries its record in `metadata.command` instead.
+- `reasoningContent` **([string][101] | null)?** AI reasoning content (for assistant messages)
+- `streamingStartTime` **([number][102] | null)?** Timestamp when streaming started
+- `streamingFinishTime` **([number][102] | null)?** Timestamp when streaming finished
+- `thinkingFinishTime` **([number][102] | null)?** Timestamp when thinking/reasoning finished
+- `thinkingTime` **([number][102] | null)?** How long the turn spent thinking, in milliseconds, over every round it thought in. A turn that calls tools thinks again after each result, so this is the sum and not the time until thinking first stopped. Absent on turns from before it was kept, which read it as `thinkingFinishTime - streamingStartTime`.
+- `pendingToolCalls` **[Array][104]<[PendingToolCall][59]>?** The calls the model is writing or the app is running right now, for the chat to show. In-flight only: cleared as each round's results land and when the turn ends.
+- `alternates` **[Array][104]<[MessageAlternate][52]>?** Every answer the message has had, in the order they were asked for, the one it is showing among them. Only once it has been asked again; a message answered once has none.
+- `alternate` **[number][102]?** Which of them it is showing.
+- `edited` **[boolean][103]?** Whether the message has been edited
+- `editedAt` **([number][102] | null)?** Timestamp when edited
+- `metadata` **([MessageMetadata][57] | null)?** Additional message metadata
+- `version` **[number][102]** Version number for conflict resolution
+- `created` **[number][102]** Creation timestamp
+- `updated` **[number][102]** Last update timestamp
 
 ## Lorebook
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Unique lorebook identifier (lorebook_xxx)
-- `storyId` **[string][99]** Parent story ID
-- `categories` **[Array][102]<[string][99]>** List of categories in this lorebook
-- `version` **[number][100]** Version number for conflict resolution
-- `created` **[number][100]** Creation timestamp
-- `updated` **[number][100]** Last update timestamp
+- `id` **[string][101]** Unique lorebook identifier (lorebook_xxx)
+- `storyId` **[string][101]** Parent story ID
+- `categories` **[Array][104]<[string][101]>** List of categories in this lorebook
+- `version` **[number][102]** Version number for conflict resolution
+- `created` **[number][102]** Creation timestamp
+- `updated` **[number][102]** Last update timestamp
 
 ## ActivationKey
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `key` **[string][99]** Activation keyword
-- `caseSensitive` **[boolean][101]** Whether the keyword is case sensitive
+- `key` **[string][101]** Activation keyword
+- `caseSensitive` **[boolean][103]** Whether the keyword is case sensitive
 - `matchType` **(`"word"` | `"prefix"` | `"substring"`)** Match type
 
 ## LoreEntry
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Unique entry identifier (lore_xxx)
-- `lorebookId` **[string][99]** Parent lorebook ID
-- `name` **[string][99]** Entry name/title
-- `category` **[string][99]** Entry category (characters, locations, items, concepts etc.)
-- `description` **[string][99]** Short description of the entry
-- `content` **[string][99]** Full entry content/description
-- `activationKeys` **[Array][102]<[ActivationKey][63]>** Keywords that trigger this entry
-- `enabled` **[boolean][101]** Whether entry is active
-- `includeInPrompt` **[boolean][101]** Whether to include in AI prompts
-- `version` **[number][100]** Version number for conflict resolution
-- `created` **[number][100]** Creation timestamp
-- `updated` **[number][100]** Last update timestamp
+- `id` **[string][101]** Unique entry identifier (lore_xxx)
+- `lorebookId` **[string][101]** Parent lorebook ID
+- `name` **[string][101]** Entry name/title
+- `category` **[string][101]** Entry category (characters, locations, items, concepts etc.)
+- `description` **[string][101]** Short description of the entry
+- `content` **[string][101]** Full entry content/description
+- `activationKeys` **[Array][104]<[ActivationKey][65]>** Keywords that trigger this entry
+- `enabled` **[boolean][103]** Whether entry is active
+- `includeInPrompt` **[boolean][103]** Whether to include in AI prompts
+- `version` **[number][102]** Version number for conflict resolution
+- `created` **[number][102]** Creation timestamp
+- `updated` **[number][102]** Last update timestamp
 
 ## Change
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `entityType` **[string][99]** Database table name
-- `id` **[string][99]** Entity ID
+- `entityType` **[string][101]** Database table name
+- `id` **[string][101]** Entity ID
 - `op` **(`"put"` | `"delete"`)** Write the row, or remove it
 - `data` **any** Changed data; null for a removal
-- `timestamp` **[number][100]** Change timestamp
+- `timestamp` **[number][102]** Change timestamp
 
 ## StoreState
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `items` **[Map][104]<[string][99], any>** Map of items by ID
-- `isInitialized` **[boolean][101]** Whether store is initialized
-- `initializePromise` **([Promise][105] | null)** Initialization promise
+- `items` **[Map][106]<[string][101], any>** Map of items by ID
+- `isInitialized` **[boolean][103]** Whether store is initialized
+- `initializePromise` **([Promise][107] | null)** Initialization promise
 
 ## AIProvider
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Unique provider identifier (provider_xxx)
-- `name` **[string][99]** User-friendly name for the provider
+- `id` **[string][101]** Unique provider identifier (provider_xxx)
+- `name` **[string][101]** User-friendly name for the provider
 - `type` **(`"openrouter"` | `"llamacpp"` | `"generic"`)** Provider type. See ai/providers.js.
-- `endpoint` **[string][99]?** API endpoint URL, for every type but OpenRouter
-- `apiKey` **[string][99]?** API key for authentication
-- `rememberKey` **[boolean][101]?** Whether to persist API key in IndexedDB (default true). If false, key is stored in sessionStorage only
-- `isDefault` **[boolean][101]?** Whether this is a default provider (cannot be deleted)
-- `version` **[number][100]** Version number for conflict resolution
-- `created` **[number][100]** Creation timestamp
-- `updated` **[number][100]** Last update timestamp
+- `endpoint` **[string][101]?** API endpoint URL, for every type but OpenRouter
+- `apiKey` **[string][101]?** API key for authentication
+- `rememberKey` **[boolean][103]?** Whether to persist API key in IndexedDB (default true). If false, key is stored in sessionStorage only
+- `isDefault` **[boolean][103]?** Whether this is a default provider (cannot be deleted)
+- `version` **[number][102]** Version number for conflict resolution
+- `created` **[number][102]** Creation timestamp
+- `updated` **[number][102]** Last update timestamp
 
 ## AIPreset
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Unique profile identifier (profile_xxx)
-- `type` **[string][99]?** Profile type (legacy, retained for stored data compatibility)
-- `name` **[string][99]** Profile name
-- `providerId` **[string][99]** ID of the AI provider to use
-- `model` **[string][99]** Model identifier
-- `allowedProviders` **[Array][102]<[string][99]>?** OpenRouter only: the upstream providers allowed to serve this model, by slug. Absent or empty allows any the connection's routing does. Here rather than on the connection because it is a choice about the model. See ai/routing.js.
-- `toolsEnabled` **[boolean][101]?** Whether the model may call tools. Undefined is treated as enabled.
-- `isDefault` **[boolean][101]** Whether this is a default profile
-- `version` **[number][100]** Version number for conflict resolution
-- `created` **[number][100]** Creation timestamp
-- `updated` **[number][100]** Last update timestamp
+- `id` **[string][101]** Unique profile identifier (profile_xxx)
+- `type` **[string][101]?** Profile type (legacy, retained for stored data compatibility)
+- `name` **[string][101]** Profile name
+- `providerId` **[string][101]** ID of the AI provider to use
+- `model` **[string][101]** Model identifier
+- `allowedProviders` **[Array][104]<[string][101]>?** OpenRouter only: the upstream providers allowed to serve this model, by slug. Absent or empty allows any the connection's routing does. Here rather than on the connection because it is a choice about the model. See ai/routing.js.
+- `toolsEnabled` **[boolean][103]?** Whether the model may call tools. Undefined is treated as enabled.
+- `isDefault` **[boolean][103]** Whether this is a default profile
+- `version` **[number][102]** Version number for conflict resolution
+- `created` **[number][102]** Creation timestamp
+- `updated` **[number][102]** Last update timestamp
 
 ## StoredChatProfile
 
@@ -815,15 +830,15 @@ The prompt library's rows became these and kept their ids, which is why some
 of them are `prompt_xxx` rather than `chatprofile_xxx`. See
 `stores/migrations/profiles.js`.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** chatprofile_xxx, or a migrated prompt_xxx
-- `name` **[string][99]**&#x20;
-- `version` **[number][100]**&#x20;
-- `created` **[number][100]**&#x20;
-- `updated` **[number][100]**&#x20;
+- `id` **[string][101]** chatprofile_xxx, or a migrated prompt_xxx
+- `name` **[string][101]**&#x20;
+- `version` **[number][102]**&#x20;
+- `created` **[number][102]**&#x20;
+- `updated` **[number][102]**&#x20;
 
 ## SkillFile
 
@@ -831,31 +846,31 @@ One of the writer's own skills, as the library keeps it: the SKILL.md itself,
 and the other files that came with it. The text is the skill; see
 `ai/skills/format.js`.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** skill_xxx
-- `name` **[string][99]** The name the text gives it, kept beside the text so
+- `id` **[string][101]** skill_xxx
+- `name` **[string][101]** The name the text gives it, kept beside the text so
   the library can be looked up and kept unique without reading every file
-- `text` **[string][99]** The SKILL.md
-- `files` **[Array][102]<[SkillFile][77]>** The rest of its folder that is text
-- `version` **[number][100]**&#x20;
-- `created` **[number][100]**&#x20;
-- `updated` **[number][100]**&#x20;
-- `path` **[string][99]** Where it sits in the skill's folder, e.g. `references/voice.md`
-- `content` **[string][99]**&#x20;
+- `text` **[string][101]** The SKILL.md
+- `files` **[Array][104]<[SkillFile][79]>** The rest of its folder that is text
+- `version` **[number][102]**&#x20;
+- `created` **[number][102]**&#x20;
+- `updated` **[number][102]**&#x20;
+- `path` **[string][101]** Where it sits in the skill's folder, e.g. `references/voice.md`
+- `content` **[string][101]**&#x20;
 
 ## SkillWording
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `name` **[string][99]** The built-in skill it rewords
-- `prompt` **[string][99]** What that skill runs under instead of its file's
+- `name` **[string][101]** The built-in skill it rewords
+- `prompt` **[string][101]** What that skill runs under instead of its file's
   instructions, in every chat whose profile has no wording of its own
-- `updated` **[number][100]**&#x20;
+- `updated` **[number][102]**&#x20;
 
 ## WebServiceId
 
@@ -867,135 +882,135 @@ Type: (`"exa"` | `"kagi"` | `"brave"`)
 
 How the writer set web search up, app-wide: one row, `id` 'web'.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
 - `id` **`"web"`**&#x20;
-- `service` **[WebServiceId][81]?** The service in use. Absent means none is
-- `keys` **Partial\<Record<[WebServiceId][81], [string][99]>>** The writer's key for
+- `service` **[WebServiceId][83]?** The service in use. Absent means none is
+- `keys` **Partial\<Record<[WebServiceId][83], [string][101]>>** The writer's key for
   each service they set one for, kept when they switch to another. Left out
   of backups unless the writer includes keys, as a provider's is: the
   services stay and the keys come back empty.
-- `profiles` **[Array][102]<[string][99]>** The chat profiles whose chats search the
+- `profiles` **[Array][104]<[string][101]>** The chat profiles whose chats search the
   web, unless a chat chooses otherwise
-- `updated` **[number][100]?**&#x20;
+- `updated` **[number][102]?**&#x20;
 
 ## McpServer
 
 An MCP server the writer has connected, app-wide like their skills.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** mcp_xxx
-- `name` **[string][99]** What the writer calls it
-- `prefix` **[string][99]** What its tools' names start with, made from the
+- `id` **[string][101]** mcp_xxx
+- `name` **[string][101]** What the writer calls it
+- `prefix` **[string][101]** What its tools' names start with, made from the
   name when it was added and kept through renames. See mcp/names.js.
-- `url` **[string][99]?** Where it answers
-- `headers` **Record<[string][99], [string][99]>?** Sent with every request: an
+- `url` **[string][101]?** Where it answers
+- `headers` **Record<[string][101], [string][101]>?** Sent with every request: an
   API key, usually. Left out of backups unless the writer includes keys, as
   a provider's key is: the names stay and the values come back empty, and
   an empty one is not sent.
 - `auth` **`"oauth"`?** How the writer signs in to it, when they do. The
   sign-in itself is kept in this browser and never here; see mcp/auth.js.
-- `command` **[string][99]?** For one that runs as a local program, which
+- `command` **[string][101]?** For one that runs as a local program, which
   a page cannot start: kept so the writer can see it needs a bridge
-- `args` **[Array][102]<[string][99]>?**&#x20;
-- `tools` **[Array][102]<[McpTool][86]>** Its tools as last listed
-- `prompts` **[Array][102]<[McpPrompt][88]>** Its prompts as last listed
-- `profiles` **[Array][102]<[string][99]>** The chat profiles whose chats use it, unless
+- `args` **[Array][104]<[string][101]>?**&#x20;
+- `tools` **[Array][104]<[McpTool][88]>** Its tools as last listed
+- `prompts` **[Array][104]<[McpPrompt][90]>** Its prompts as last listed
+- `profiles` **[Array][104]<[string][101]>** The chat profiles whose chats use it, unless
   a chat chooses otherwise
-- `allowed` **[Array][102]<[string][99]>** Its tools the writer always allows, by their
+- `allowed` **[Array][104]<[string][101]>** Its tools the writer always allows, by their
   own names, so a call to one runs without asking
-- `allowAll` **[boolean][101]?** The writer always allows every tool it has,
+- `allowAll` **[boolean][103]?** The writer always allows every tool it has,
   the ones it adds later included, so none of its calls asks
-- `listedAt` **[number][100]?** When its tools were last listed
-- `error` **[string][99]?** Why it could not be listed, the last time it was tried
-- `created` **[number][100]**&#x20;
-- `updated` **[number][100]**&#x20;
+- `listedAt` **[number][102]?** When its tools were last listed
+- `error` **[string][101]?** Why it could not be listed, the last time it was tried
+- `created` **[number][102]**&#x20;
+- `updated` **[number][102]**&#x20;
 
 ## McpTool
 
 A tool a server offers, as it described it.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `name` **[string][99]** The server's name for it
-- `exposed` **[string][99]** The name the model calls it by. See mcp/names.js.
-- `title` **[string][99]?**&#x20;
-- `description` **[string][99]?**&#x20;
-- `inputSchema` **[Object][98]** JSON Schema for its arguments
+- `name` **[string][101]** The server's name for it
+- `exposed` **[string][101]** The name the model calls it by. See mcp/names.js.
+- `title` **[string][101]?**&#x20;
+- `description` **[string][101]?**&#x20;
+- `inputSchema` **[Object][100]** JSON Schema for its arguments
 
 ## McpPrompt
 
 A prompt a server offers.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `name` **[string][99]**&#x20;
-- `title` **[string][99]?**&#x20;
-- `description` **[string][99]?**&#x20;
+- `name` **[string][101]**&#x20;
+- `title` **[string][101]?**&#x20;
+- `description` **[string][101]?**&#x20;
 
 ## AIPrompt
 
 A named system prompt the user has saved. App-wide rather than per-story, so
 the same prompt can be loaded into any chat.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Unique prompt identifier (prompt_xxx)
-- `name` **[string][99]** Display name, e.g. "Adventure" or "Editor"
-- `content` **[string][99]** The prompt text
-- `version` **[number][100]** Version number for conflict resolution
-- `created` **[number][100]** Creation timestamp
-- `updated` **[number][100]** Last update timestamp
+- `id` **[string][101]** Unique prompt identifier (prompt_xxx)
+- `name` **[string][101]** Display name, e.g. "Adventure" or "Editor"
+- `content` **[string][101]** The prompt text
+- `version` **[number][102]** Version number for conflict resolution
+- `created` **[number][102]** Creation timestamp
+- `updated` **[number][102]** Last update timestamp
 
 ## JobStep
 
 One step of a long job.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** Names the step within its job; a conversion's chunk id
-- `label` **[string][99]** What the panel shows: `Pages 12–19`
+- `id` **[string][101]** Names the step within its job; a conversion's chunk id
+- `label` **[string][101]** What the panel shows: `Pages 12–19`
 - `status` **(`"pending"` | `"running"` | `"done"` | `"failed"`)**&#x20;
-- `output` **[string][99]?** What the step produced, kept so the job resumes past it
-- `error` **[string][99]?** Why it failed, when it did
-- `tokens` **[number][100]?** What the step cost, when the provider said
+- `output` **[string][101]?** What the step produced, kept so the job resumes past it
+- `error` **[string][101]?** Why it failed, when it did
+- `tokens` **[number][102]?** What the step cost, when the provider said
 
 ## Job
 
 A long job a model does for a project over many requests.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `id` **[string][99]** job_xxx
-- `storyId` **[string][99]**&#x20;
-- `kind` **[string][99]** Which kind of job; `convert`
-- `workflow` **[string][99]** The workflow whose model runs it; see application state `workflows`
-- `documentId` **[string][99]?** The document it works on, when it works on one
-- `title` **[string][99]** What the panel calls it
+- `id` **[string][101]** job_xxx
+- `storyId` **[string][101]**&#x20;
+- `kind` **[string][101]** Which kind of job; `convert`
+- `workflow` **[string][101]** The workflow whose model runs it; see application state `workflows`
+- `documentId` **[string][101]?** The document it works on, when it works on one
+- `title` **[string][101]** What the panel calls it
 - `status` **(`"queued"` | `"running"` | `"paused"` | `"done"` | `"failed"` | `"cancelled"`)**&#x20;
-- `steps` **[Array][102]<[JobStep][92]>** In order; the runner takes the first not done
+- `steps` **[Array][104]<[JobStep][94]>** In order; the runner takes the first not done
 - `plan` **any?** What the kind planned from: a conversion's chunks and the text they index
-- `error` **[string][99]?** Why the job failed, when it did
-- `resultId` **[string][99]?** The document it wrote, once done: a conversion's copy
-- `elapsed` **[number][100]?** How long it has run, in ms, over every run up to the last stop;
+- `error` **[string][101]?** Why the job failed, when it did
+- `resultId` **[string][101]?** The document it wrote, once done: a conversion's copy
+- `elapsed` **[number][102]?** How long it has run, in ms, over every run up to the last stop;
   the run in hand adds its own time from `jobs/live.js`
-- `created` **[number][100]**&#x20;
-- `updated` **[number][100]**&#x20;
+- `created` **[number][102]**&#x20;
+- `updated` **[number][102]**&#x20;
 
 ## WorkflowSettings
 
@@ -1003,16 +1018,16 @@ Which model a workflow runs on: long work with needs of its own — a
 conversion, later a summary — that may want a stronger or a cheaper model
 than a chat does.
 
-Type: [Object][98]
+Type: [Object][100]
 
 ### Properties
 
-- `providerId` **([string][99] | null)** The provider the workflow runs on; null for the active preset's
-- `model` **([string][99] | null)** The model; null for the active preset's
-- `allowedProviders` **[Array][102]<[string][99]>?** OpenRouter only: the upstreams allowed to serve the model, like a preset's. Read only when the workflow names its own provider; one that runs on the active preset runs on the preset's list.
-- `reasoningEffort` **([string][99] | null)?** How hard the model thinks: `disabled`, `enabled`, `low`, `medium`, `high`;
+- `providerId` **([string][101] | null)** The provider the workflow runs on; null for the active preset's
+- `model` **([string][101] | null)** The model; null for the active preset's
+- `allowedProviders` **[Array][104]<[string][101]>?** OpenRouter only: the upstreams allowed to serve the model, like a preset's. Read only when the workflow names its own provider; one that runs on the active preset runs on the preset's list.
+- `reasoningEffort` **([string][101] | null)?** How hard the model thinks: `disabled`, `enabled`, `low`, `medium`, `high`;
   null for the app's default (`AI_DEFAULTS.reasoningEffort`)
-- `onImport` **[boolean][101]?** Convert only: convert every file with text as it is imported
+- `onImport` **[boolean][103]?** Convert only: convert every file with text as it is imported
 
 [1]: #
 [2]: #chatmessage
@@ -1031,91 +1046,93 @@ Type: [Object][98]
 [15]: #properties-4
 [16]: #story
 [17]: #properties-5
-[18]: #ttsvoice
+[18]: #projectview
 [19]: #properties-6
-[20]: #speakerassignment
+[20]: #ttsvoice
 [21]: #properties-7
-[22]: #storynarration
+[22]: #speakerassignment
 [23]: #properties-8
-[24]: #part
+[24]: #storynarration
 [25]: #properties-9
-[26]: #scene
+[26]: #part
 [27]: #properties-10
-[28]: #document
+[28]: #scene
 [29]: #properties-11
-[30]: #repositorysource
+[30]: #document
 [31]: #properties-12
-[32]: #storedfile
+[32]: #repositorysource
 [33]: #properties-13
-[34]: #chat
+[34]: #storedfile
 [35]: #properties-14
-[36]: #toolcall
+[36]: #chat
 [37]: #properties-15
-[38]: #reasoningdetail
+[38]: #toolcall
 [39]: #properties-16
-[40]: #apimessage
+[40]: #reasoningdetail
 [41]: #properties-17
-[42]: #consultedcall
+[42]: #apimessage
 [43]: #properties-18
-[44]: #turnusage
+[44]: #consultedcall
 [45]: #properties-19
-[46]: #chatcommand
+[46]: #turnusage
 [47]: #properties-20
-[48]: #directornote
+[48]: #chatcommand
 [49]: #properties-21
-[50]: #messagealternate
+[50]: #directornote
 [51]: #properties-22
-[52]: #messagesegment
-[53]: #documentedit
-[54]: #properties-23
-[55]: #messagemetadata
+[52]: #messagealternate
+[53]: #properties-23
+[54]: #messagesegment
+[55]: #documentedit
 [56]: #properties-24
-[57]: #pendingtoolcall
+[57]: #messagemetadata
 [58]: #properties-25
-[59]: #message
+[59]: #pendingtoolcall
 [60]: #properties-26
-[61]: #lorebook
+[61]: #message
 [62]: #properties-27
-[63]: #activationkey
+[63]: #lorebook
 [64]: #properties-28
-[65]: #loreentry
+[65]: #activationkey
 [66]: #properties-29
-[67]: #change
+[67]: #loreentry
 [68]: #properties-30
-[69]: #storestate
+[69]: #change
 [70]: #properties-31
-[71]: #aiprovider
+[71]: #storestate
 [72]: #properties-32
-[73]: #aipreset
+[73]: #aiprovider
 [74]: #properties-33
-[75]: #storedchatprofile
+[75]: #aipreset
 [76]: #properties-34
-[77]: #skillfile
+[77]: #storedchatprofile
 [78]: #properties-35
-[79]: #skillwording
+[79]: #skillfile
 [80]: #properties-36
-[81]: #webserviceid
-[82]: #websearchsetup
-[83]: #properties-37
-[84]: #mcpserver
+[81]: #skillwording
+[82]: #properties-37
+[83]: #webserviceid
+[84]: #websearchsetup
 [85]: #properties-38
-[86]: #mcptool
+[86]: #mcpserver
 [87]: #properties-39
-[88]: #mcpprompt
+[88]: #mcptool
 [89]: #properties-40
-[90]: #aiprompt
+[90]: #mcpprompt
 [91]: #properties-41
-[92]: #jobstep
+[92]: #aiprompt
 [93]: #properties-42
-[94]: #job
+[94]: #jobstep
 [95]: #properties-43
-[96]: #workflowsettings
+[96]: #job
 [97]: #properties-44
-[98]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[99]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[100]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[101]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[102]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[103]: https://developer.mozilla.org/docs/Web/API/Blob
-[104]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[105]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[98]: #workflowsettings
+[99]: #properties-45
+[100]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[101]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[102]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[103]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[104]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[105]: https://developer.mozilla.org/docs/Web/API/Blob
+[106]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[107]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise

@@ -19,7 +19,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
-import db from './db'
+import { storage } from '@/storage/index.js'
 
 /** @typedef {import('../types/models.js').AIPreset} AIPreset */
 
@@ -47,7 +47,7 @@ export const useAIPresetStore = defineStore('aiProfiles', () => {
   async function initialize() {
     try {
       // Load all presets from database
-      const stored = await db.aiProfiles.toArray()
+      const stored = await storage.all('aiProfiles')
       const loaded = stored
 
       // Add database presets to the map

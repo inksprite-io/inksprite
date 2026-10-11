@@ -70,6 +70,25 @@ export default [
     files: ['electron/**/*.cjs'],
     languageOptions: { sourceType: 'commonjs' },
   },
+  // Rows are read and written through storage/ and nowhere else, which is what
+  // lets the desktop app keep projects in a folder. See src/storage/index.js.
+  {
+    files: ['src/**/*.{js,vue}'],
+    ignores: ['src/storage/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/stores/db', '**/stores/db.js', './db', './db.js'],
+              message: 'Read and write rows through storage (src/storage/index.js).',
+            },
+          ],
+        },
+      ],
+    },
+  },
   {
     ignores: ['**/dist/**', '**/node_modules/**', '**/.vite/**', '**/coverage/**'],
   },

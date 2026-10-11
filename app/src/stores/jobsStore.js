@@ -9,7 +9,7 @@
  * got to, so a tab closed halfway resumes from the step after the last one
  * that finished rather than from the top.
  *
- * Written straight to Dexie rather than through `syncStore`: a step's
+ * Written straight to storage rather than through `syncStore`: a step's
  * output is written once, when the step is done, and the jobs are read back
  * whole when the jobs toast first opens. The sync store's debounce would only add a
  * window in which a finished step was not yet safe.
@@ -18,7 +18,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref, shallowRef, triggerRef } from 'vue'
 import { nanoid } from 'nanoid'
-import db from './db'
+import { storage } from '@/storage/index.js'
 
 /** @typedef {import('../types/models.js').Job} Job */
 /** @typedef {import('../types/models.js').JobStep} JobStep */
@@ -40,7 +40,7 @@ export const useJobsStore = defineStore('jobs', () => {
     if (loaded.value) return
     try {
       /** @type {Job[]} */
-      const rows = await db.jobs.toArray()
+      const rows = await storage.all('jobs')
       for (const row of rows) {
         // A job this tab already holds is this tab's: running here, not
         // interrupted. The rows are for what the tab has not seen.
@@ -48,7 +48,7 @@ export const useJobsStore = defineStore('jobs', () => {
         if (row.status === 'running') {
           row.status = 'paused'
           for (const step of row.steps) if (step.status === 'running') step.status = 'pending'
-          await db.jobs.put(row)
+          await storage.put('jobs', row)
         }
         jobs.value.set(row.id, row)
       }
@@ -71,7 +71,7 @@ export const useJobsStore = defineStore('jobs', () => {
     const job = { id: `job_${nanoid()}`, status: 'queued', created: now, updated: now, ...fields }
     jobs.value.set(job.id, job)
     triggerRef(jobs)
-    await db.jobs.put(job)
+    await storage.put('jobs', job)
     return job
   }
 
@@ -89,7 +89,7 @@ export const useJobsStore = defineStore('jobs', () => {
     const next = { ...current, ...patch, updated: Date.now() }
     jobs.value.set(jobId, next)
     triggerRef(jobs)
-    await db.jobs.put(next)
+    await storage.put('jobs', next)
     return next
   }
 
@@ -117,7 +117,7 @@ export const useJobsStore = defineStore('jobs', () => {
   async function deleteJob(jobId) {
     jobs.value.delete(jobId)
     triggerRef(jobs)
-    await db.jobs.delete(jobId)
+    await storage.remove('jobs', [jobId])
   }
 
   /**
@@ -146,12 +146,12 @@ export const useJobsStore = defineStore('jobs', () => {
    */
   async function deleteJobsForStory(storyId) {
     /** @type {Job[]} */
-    const rows = await db.jobs.where('storyId').equals(storyId).toArray()
+    const rows = await storage.ofStory('jobs', storyId)
     const ids = new Set(rows.map(row => row.id))
     for (const job of jobs.value.values()) if (job.storyId === storyId) ids.add(job.id)
     for (const id of ids) jobs.value.delete(id)
     triggerRef(jobs)
-    await db.jobs.bulkDelete([...ids])
+    await storage.remove('jobs', [...ids])
     return [...ids]
   }
 

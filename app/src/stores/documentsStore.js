@@ -23,7 +23,7 @@ import { shallowRef, triggerRef } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore'
 import { rootNode, rootIdFor } from './migrations/projectTree.js'
-import db from './db'
+import { storage } from '@/storage/index.js'
 import { countWords } from '@/utils/wordCount.js'
 
 /** @typedef {import('../types/models.js').Document} Document */
@@ -418,7 +418,7 @@ export const useDocumentsStore = defineStore('documents', () => {
 
     const promise = (async () => {
       try {
-        const rows = await db.documents.where('storyId').equals(storyId).toArray()
+        const rows = await storage.documents(storyId)
 
         for (const row of rows) {
           documents.value.set(row.id, row)
@@ -539,10 +539,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     if (missing.length === 0) return
 
     try {
-      const rows = await db.documents.bulkGet(missing.map(rootIdFor))
-      for (const row of rows) {
-        if (row) documents.value.set(row.id, row)
-      }
+      for (const row of await storage.roots(missing)) documents.value.set(row.id, row)
       triggerRef(documents)
     } catch (error) {
       console.error('Failed to load project roots:', error)

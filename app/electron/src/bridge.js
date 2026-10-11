@@ -1,7 +1,7 @@
 /**
  * What the page may ask of the native side, answered here: requests to
- * servers, sign-ins in the system browser, links opened outside the app, and
- * updates. `preload.cjs` is the page's end of it, and `src/platform/` in the
+ * servers, sign-ins in the system browser, links opened outside the app,
+ * updates, and the library its projects are kept in. `preload.cjs` is the page's end of it, and `src/platform/` in the
  * page is what calls it.
  *
  * Only the app's own page is answered: each call is checked for where it came
@@ -9,9 +9,17 @@
  */
 
 import { BrowserWindow, ipcMain, net, shell } from 'electron'
+import { realpath } from 'node:fs/promises'
 import { openable, originOf, webAddress } from './links.js'
 import { listen } from './loopback.js'
 import { downloadUpdate, installUpdate } from './updates.js'
+import {
+  disableLibrary,
+  enableLibrary,
+  libraryFolder,
+  librarySettings,
+  markMoved,
+} from './library.js'
 
 /** Statuses whose response has no body. */
 const NO_BODY = new Set([101, 103, 204, 205, 304])
@@ -131,6 +139,36 @@ export function handleBridge(origin) {
   // Updates from the public repository's releases (`updates.js`).
   handle('update:download', () => downloadUpdate())
   handle('update:install', () => installUpdate())
+
+  // The library the projects are kept in (`library.js`, and
+  // `src/storage/library.js` in the page). What is done there is done one
+  // call at a time, in the order asked.
+  /** @type {{at: string, folder: ReturnType<typeof libraryFolder>}|null} */
+  let open = null
+  const library = async () => {
+    const { path, enabled } = await librarySettings()
+    if (!enabled) throw new Error('The projects are not kept in a folder.')
+    if (open?.at !== path) open = { at: path, folder: libraryFolder(await realpath(path)) }
+    return open.folder
+  }
+  /** @type {Promise<unknown>} */
+  let doing = Promise.resolve()
+  /** @param {(folder: ReturnType<typeof libraryFolder>) => Promise<any>} work */
+  const inTurn = work => {
+    const done = doing.then(async () => work(await library()))
+    doing = done.catch(() => {})
+    return done
+  }
+  handle('library:settings', () => librarySettings())
+  handle('library:moved', () => markMoved())
+  handle('library:enable', () => enableLibrary())
+  handle('library:disable', () => disableLibrary())
+  handle('library:projects', () => inTurn(folder => folder.projects()))
+  handle('library:walk', (_, dir) => inTurn(folder => folder.walk(dir)))
+  handle('library:read', (_, paths) => inTurn(folder => folder.readTexts(paths)))
+  handle('library:readBytes', (_, path) => inTurn(folder => folder.readBytes(path)))
+  handle('library:apply', (_, ops) => inTurn(folder => folder.apply(ops)))
+  handle('library:reveal', (_, path) => inTurn(folder => folder.reveal(path)))
 }
 
 /**

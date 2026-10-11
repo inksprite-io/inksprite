@@ -5,11 +5,12 @@
  */
 import { vi } from 'vitest'
 
-export const app = { isPackaged: false }
+export const app = { isPackaged: false, getPath: vi.fn() }
 export const ipcMain = { handle: vi.fn(), on: vi.fn() }
 export const net = { fetch: vi.fn() }
 export const protocol = { handle: vi.fn(), registerSchemesAsPrivileged: vi.fn() }
-export const shell = { openExternal: vi.fn() }
+export const shell = { openExternal: vi.fn(), trashItem: vi.fn(), showItemInFolder: vi.fn() }
+export const dialog = { showMessageBox: vi.fn(), showOpenDialog: vi.fn() }
 export const BrowserWindow = { fromWebContents: vi.fn() }
 
 export const autoUpdater = {

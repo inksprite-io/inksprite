@@ -31,23 +31,32 @@
           :placeholder="current.needsKey ? '' : 'Optional'"
           data-field="web-key"
           @blur="saveKey"
-          @keydown.enter="saveKey"
+          @keydown.enter="connectKey"
         />
       </label>
       <p v-if="current.note" class="text-xs text-surface-500 dark:text-surface-400">
         {{ current.note }}
       </p>
-      <p v-if="checking === current.id" class="text-xs text-surface-500" data-web-check>
-        Checking…
-      </p>
-      <p
-        v-else-if="check && 'error' in check"
-        class="text-xs text-red-600 dark:text-red-400"
-        data-web-check
-      >
-        {{ check.error }}
-      </p>
-      <p v-else-if="check" class="text-xs text-surface-500" data-web-check>Connected</p>
+      <div class="flex items-center gap-3">
+        <Button
+          label="Connect"
+          size="small"
+          :loading="checking === current.id"
+          :disabled="current.needsKey && !keyDraft.trim()"
+          data-action="web-connect"
+          @click="connectKey"
+        />
+        <template v-if="checking !== current.id">
+          <p
+            v-if="check && 'error' in check"
+            class="text-xs text-red-600 dark:text-red-400"
+            data-web-check
+          >
+            {{ check.error }}
+          </p>
+          <p v-else-if="check" class="text-xs text-surface-500" data-web-check>Connected</p>
+        </template>
+      </div>
 
       <div class="flex flex-col gap-1">
         <span class="text-xs font-medium text-surface-700 dark:text-surface-200">
@@ -74,6 +83,7 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue'
+import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
@@ -87,7 +97,8 @@ import { getWebService } from '@/web/services.js'
  * composables/useWebSearch.js.
  */
 
-const { setup, services, reachable, checks, checking, choose, setKey, setProfile } = useWebSearch()
+const { setup, services, reachable, checks, checking, choose, setKey, connect, setProfile } =
+  useWebSearch()
 const { profiles } = useProfiles()
 
 /**
@@ -128,5 +139,9 @@ watch(
 
 function saveKey() {
   if (current.value) setKey(current.value.id, keyDraft.value)
+}
+
+function connectKey() {
+  if (current.value) connect(current.value.id, keyDraft.value)
 }
 </script>

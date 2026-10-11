@@ -47,6 +47,28 @@
  * @property {(url: string) => Promise<void>} openInBrowser
  * @property {() => Promise<string|null>} downloadUpdate
  * @property {() => Promise<void>} installUpdate
+ * @property {DesktopLibrary} library - The folder the projects are kept in
+ */
+
+/**
+ * Whether the projects are kept in the library, where it is, and whether
+ * the window's own have been moved into it.
+ *
+ * @typedef {{path: string, enabled: boolean, moved: boolean}} LibrarySettings
+ */
+
+/**
+ * The library: whether the projects are kept in it, where it is, and the
+ * files in it, by paths below it. What is done there is `LibraryDisk` in
+ * `storage/library.js`.
+ *
+ * @typedef {import('../storage/library.js').LibraryDisk & {
+ *   settings: () => Promise<LibrarySettings>,
+ *   markMoved: () => Promise<void>,
+ *   enable: () => Promise<string>,
+ *   disable: () => Promise<void>,
+ *   reveal: (path?: string) => Promise<void>,
+ * }} DesktopLibrary
  */
 
 /** Where the bridge is, in the page. */

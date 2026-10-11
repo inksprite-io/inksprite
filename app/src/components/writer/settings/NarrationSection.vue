@@ -55,13 +55,13 @@
     <div class="flex items-center gap-2 px-2 pt-1 pb-2">
       <Button
         type="button"
-        label="Test connection"
+        label="Connect"
         icon="pi pi-link"
         size="small"
         severity="secondary"
         :loading="testing"
         :disabled="!connection.endpoint"
-        data-action="test-connection"
+        data-action="connect"
         @click="test"
       />
     </div>

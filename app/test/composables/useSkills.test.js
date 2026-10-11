@@ -6,14 +6,17 @@ import { useChatsStore } from '@/stores/chatsStore'
 import { setLibrarySkills } from '@/ai/skills/index.js'
 
 const tables = vi.hoisted(() => ({ skills: [], chatProfiles: [], chats: [] }))
-const chatUpdates = vi.hoisted(() => [])
 
 vi.mock('@/stores/db.js', () => {
   const table = name => ({
     toArray: async () => tables[name],
     where: () => ({ equals: () => ({ toArray: async () => tables[name] }) }),
     get: async id => tables[name].find(row => row.id === id),
-    update: async (id, changes) => chatUpdates.push({ id, changes }),
+    toCollection: () => ({
+      modify: async change => {
+        for (const row of tables[name]) change(row)
+      },
+    }),
   })
   return {
     default: {
@@ -57,7 +60,6 @@ describe('useSkills', () => {
     tables.skills = []
     tables.chatProfiles = []
     tables.chats = []
-    chatUpdates.length = 0
   })
 
   afterEach(() => setLibrarySkills([]))
@@ -110,7 +112,10 @@ describe('useSkills', () => {
         settings: { prompt: 'Hi.', skills: { tighten: { prompt: 'Halve it.' } } },
       },
     ]
-    tables.chats = [{ id: 'chat_closed', storyId: 'story_2', disabledTools: ['tighten'] }]
+    tables.chats = [
+      { id: 'chat_closed', storyId: 'story_2', disabledTools: ['tighten'] },
+      { id: 'chat_open', storyId: 'story_1', disabledTools: ['tighten', 'oracle'] },
+    ]
 
     const chats = useChatsStore()
     chats.chats.set('chat_open', {
@@ -132,7 +137,8 @@ describe('useSkills', () => {
       skills: { trim: { prompt: 'Halve it.' } },
     })
     expect(chats.chats.get('chat_open').disabledTools).toEqual(['trim', 'oracle'])
-    expect(chatUpdates).toEqual([{ id: 'chat_closed', changes: { disabledTools: ['trim'] } }])
+    // A chat that is open is the store's to save; the rest change where they are kept.
+    expect(tables.chats.map(chat => chat.disabledTools)).toEqual([['trim'], ['tighten', 'oracle']])
   })
 
   describe('an import', () => {

@@ -9,7 +9,6 @@ vi.mock('@/stores/db', () => ({
     files: {
       put: vi.fn(async () => undefined),
       get: vi.fn(async () => undefined),
-      bulkDelete: vi.fn(async () => undefined),
     },
   },
 }))
@@ -51,13 +50,5 @@ describe('filesStore', () => {
 
     expect(await store.getFile('doc_1')).toBeNull()
     error.mockRestore()
-  })
-
-  it('deletes the files it is given, and nothing for nothing', async () => {
-    await store.deleteFiles([])
-    expect(db.files.bulkDelete).not.toHaveBeenCalled()
-
-    await store.deleteFiles(['a', 'b'])
-    expect(db.files.bulkDelete).toHaveBeenCalledWith(['a', 'b'])
   })
 })

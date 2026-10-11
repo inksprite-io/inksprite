@@ -15,7 +15,7 @@ import { useSyncStore } from './syncStore.js'
 import { setWebSearch } from '@/web/config.js'
 import { disconnect } from '@/mcp/client.js'
 import { CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
-import db from './db'
+import { storage } from '@/storage/index.js'
 
 /** @typedef {import('../types/models.js').WebSearchSetup} WebSearchSetup */
 
@@ -38,7 +38,7 @@ export const useWebSearchStore = defineStore('webSearch', () => {
 
   async function initialize() {
     try {
-      const stored = await db.webSearch.get(ROW)
+      const stored = await storage.get('webSearch', ROW)
       if (stored) setup.value = { ...emptySetup(), ...stored }
     } catch (error) {
       console.error('Failed to load web search from database:', error)

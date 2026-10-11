@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, toRaw } from 'vue'
-import db from './db'
+import { storage } from '@/storage/index.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 
 /** @typedef {import('../types/models.js').Change} Change */
@@ -100,32 +100,27 @@ export const useSyncStore = defineStore('sync', () => {
    * @returns {Promise<boolean>} True if successful
    */
   async function persistEntityChanges(entityType, entityChanges) {
-    /** @type {import('dexie').Table} */
-    const table = db[entityType]
-
     try {
-      // Use a transaction for all changes of this type
-      await db.transaction('rw', table, async () => {
-        for (const change of entityChanges) {
-          if (change.op === 'delete') {
-            if (debug.value) console.log(`Deleting ${entityType} row:`, change.id)
-            await table.delete(change.id)
-            continue
-          }
-          // Belt-and-suspenders: toRaw() removes Vue reactivity, deep clone ensures
-          // complete isolation and strips non-serializable properties. This fixed
-          // reactivity issues before type checking was added - keeping for safety.
-          const plainData = JSON.parse(JSON.stringify(toRaw(change.data)))
-          const dataToSave = {
-            ...plainData,
-            version: (plainData.version || 0) + 1,
-          }
-          // The whole record, keys and all, so only while the writer has asked
-          // to see what the app is doing.
-          if (debug.value) console.log(`Saving ${entityType} change:`, dataToSave)
-          await table.put(dataToSave)
+      const saved = entityChanges.map(change => {
+        if (change.op === 'delete') {
+          if (debug.value) console.log(`Deleting ${entityType} row:`, change.id)
+          return change
         }
+        // Belt-and-suspenders: toRaw() removes Vue reactivity, deep clone ensures
+        // complete isolation and strips non-serializable properties. This fixed
+        // reactivity issues before type checking was added - keeping for safety.
+        const plainData = JSON.parse(JSON.stringify(toRaw(change.data)))
+        const dataToSave = {
+          ...plainData,
+          version: (plainData.version || 0) + 1,
+        }
+        // The whole record, keys and all, so only while the writer has asked
+        // to see what the app is doing.
+        if (debug.value) console.log(`Saving ${entityType} change:`, dataToSave)
+        return { ...change, data: dataToSave }
       })
+      // All the changes of one type are written together
+      await storage.write(entityType, saved)
       return true
     } catch (error) {
       console.error(`Failed to persist ${entityType}:`, error)
@@ -176,17 +171,12 @@ export const useSyncStore = defineStore('sync', () => {
     }, {})
 
     try {
-      // Check if database is initialized
-      if (!db) {
-        throw new Error('Database not initialized')
-      }
-
       // Save each entity type
       let failureCount = 0
 
       for (const [entityType, entityChanges] of Object.entries(grouped)) {
         // Check if table exists before trying to persist
-        if (!db[entityType]) {
+        if (!storage.has(entityType)) {
           console.error(
             `Table '${entityType}' not found in database - discarding ${entityChanges.length} changes`
           )

@@ -9,7 +9,7 @@
  */
 
 import { checkExa, readExa, searchExa, EXA_LIMITED } from './exa.js'
-import { checkKagi, readKagi, searchKagi } from './kagi.js'
+import { readKagi, searchKagi } from './kagi.js'
 import { searchBrave } from './brave.js'
 import { readDirect } from './direct.js'
 
@@ -33,7 +33,8 @@ import { readDirect } from './direct.js'
  * @property {(query: string, options: CallOptions) => Promise<SearchAnswer>} search
  * @property {(url: string, options: CallOptions) => Promise<Page>} read
  * @property {(key?: string) => Promise<void>} [check] - Whether it answers with
- *   this key, at no cost; one without has its key tried by its first search
+ *   this key, at no cost; one without has its key tried by a search, on Connect
+ *   or by the model's first
  */
 
 /** @type {WebService[]} */
@@ -49,6 +50,8 @@ export const WEB_SERVICES = [
     read: readExa,
     check: checkExa,
   },
+  // No free check for Kagi or Brave: Kagi's server lists its tools for any
+  // key, and a search costs. Connect tries a key with one search.
   {
     id: 'kagi',
     name: 'Kagi',
@@ -56,9 +59,7 @@ export const WEB_SERVICES = [
     desktopOnly: false,
     search: searchKagi,
     read: readKagi,
-    check: checkKagi,
   },
-  // No free check: a search costs, so its key is tried by its first.
   {
     id: 'brave',
     name: 'Brave',

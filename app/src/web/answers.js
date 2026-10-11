@@ -91,17 +91,19 @@ function statusOf(error) {
  *
  * @param {string} name - The service, as the writer knows it
  * @param {any} error
- * @param {{limited?: string}} [says] - What the service's own limit means for
- *   the writer, said instead of the general line
+ * @param {{limited?: string, here?: boolean}} [says] - What the service's own
+ *   limit means for the writer, said instead of the general line; and whether
+ *   the writer is where the key is set, so is not sent there
  * @returns {string}
  */
 export function describeRefusal(name, error, says = {}) {
   if (error instanceof ServiceError) return error.message
   const status = statusOf(error)
+  const checkKey = says.here ? '' : ` Check it in ${WHERE}.`
   if (status === 401 || error?.name === 'UnauthorizedError') {
-    return `${name} refused the key. Check it in ${WHERE}.`
+    return `${name} refused the key.${checkKey}`
   }
-  if (status === 403) return `${name} refused: the key doesn’t have access. Check it in ${WHERE}.`
+  if (status === 403) return `${name} refused: the key doesn’t have access.${checkKey}`
   if (status === 429) return says.limited || `${name} says too many searches for now. Try later.`
   if (status && status >= 500) return `${name} had an error (${status}). Try again later.`
   if (error instanceof TypeError || /fetch|network|load failed/i.test(String(error?.message))) {

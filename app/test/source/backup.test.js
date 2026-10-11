@@ -51,7 +51,6 @@ async function seed() {
     id: STORY,
     overview: '',
     wordCount: 0,
-    lastDocumentId: null,
     options: {},
     version: 1,
     created: 1,

@@ -2,9 +2,10 @@
  * @module components/writer/layout/layout
  * @description The writer's panel arrangement: which of the sidebar, the editor
  * and the chat are showing, and which list the sidebar is on — the outline,
- * the chats, the narration of the open document, or the project's comments. It is kept on the story
- * rather than app-wide, so each project reopens the way it was left:
- * an adventure chat-only, a novel with the editor beside its chat.
+ * the chats, the narration of the open document, or the project's comments.
+ * It is kept in each project's view rather than app-wide, so each project
+ * reopens the way it was left: an adventure chat-only, a novel with the
+ * editor beside its chat.
  *
  * The rail picks the sidebar's list, and picking the list showing hides the
  * sidebar; the editor and the chat each hide the other from a toggle at the

@@ -75,6 +75,7 @@ import { useApplicationState } from '@/composables/useApplicationState'
 import { useDocuments } from '@/composables/useDocuments'
 import { useScreenSize } from '@/composables/useScreenSize'
 import { useStoriesStore } from '@/stores/storiesStore'
+import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
 import { replaceProjectInRoute, storyIdFromRoute } from '@/utils/routeHelpers'
 import { useAIProvidersStore } from '@/stores/aiProvidersStore'
 import { useToast } from 'primevue/usetoast'
@@ -102,6 +103,7 @@ const route = useRoute()
 const router = useRouter()
 const { isMobile } = useScreenSize()
 const storiesStore = useStoriesStore()
+const projectViewsStore = useProjectViewsStore()
 const appState = useApplicationState()
 
 /** The project the URL names. */
@@ -139,18 +141,18 @@ const mobileTab = computed(() =>
 )
 
 /**
- * Which panels are showing. Read off the story, so each project reopens the
- * way it was left; see layout.js for the rules.
+ * Which panels are showing. Read off the project's view, so each project
+ * reopens the way it was left; see layout.js for the rules.
  */
 const layout = computed(() =>
   currentStoryId.value
-    ? normalizeLayout(storiesStore.getStory(currentStoryId.value)?.layout)
+    ? normalizeLayout(projectViewsStore.getView(currentStoryId.value)?.layout)
     : NO_PROJECT_LAYOUT
 )
 
 /** @param {import('@/types/models.js').StoryLayout} next */
 const setLayout = next => {
-  if (currentStoryId.value) storiesStore.updateStory(currentStoryId.value, { layout: next })
+  if (currentStoryId.value) projectViewsStore.updateView(currentStoryId.value, { layout: next })
 }
 
 /** @param {import('./layout/layout.js').Panel} panel */
@@ -243,7 +245,7 @@ const openRouteProject = async () => {
   // A project opened for the first time opens on its first document; one
   // with none shows the invitation. A project closed down to no tabs stays
   // that way: that was a choice.
-  if (!api.tabs.value.active && !storiesStore.getStory(storyId)?.openDocumentIds) {
+  if (!api.tabs.value.active && !projectViewsStore.getView(storyId)?.openDocumentIds) {
     const first = api.firstTextDocument()
     if (first) api.open(first.id)
   }
@@ -251,14 +253,16 @@ const openRouteProject = async () => {
 
 /**
  * Nothing in the URL names a project: the app was opened at its root, or the
- * project that was open is gone. Go to the project worked on most recently,
- * and with none, stay here and say so.
+ * project that was open is gone. Go to the project the writer was last in on
+ * this copy of the app, or with none opened here the one changed last, and
+ * with no projects, stay here and say so.
  */
 const openMostRecentProject = async () => {
   currentStoryId.value = ''
-  await storiesStore.ensureInitialized()
-  const story = storiesStore.getAllStoriesOrdered()[0]
-  if (story) replaceProjectInRoute(router, story.id)
+  await Promise.all([storiesStore.ensureInitialized(), projectViewsStore.ensureInitialized()])
+  const ids = storiesStore.getAllStoriesOrdered().map(story => story.id)
+  const storyId = projectViewsStore.lastOpened(ids) ?? ids[0]
+  if (storyId) replaceProjectInRoute(router, storyId)
   else noProject.value = true
 }
 

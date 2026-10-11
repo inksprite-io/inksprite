@@ -17,6 +17,16 @@
       :loading="isImporting"
       @click="handleImportClick"
     />
+    <Button
+      v-if="inFolder"
+      :label="revealLabel"
+      icon="pi pi-folder-open"
+      size="small"
+      outlined
+      severity="secondary"
+      data-action="reveal"
+      @click="reveal"
+    />
     <input
       ref="fileInput"
       type="file"
@@ -50,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
@@ -58,6 +68,8 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useBackup } from '@/composables/useBackup'
 import { useToast } from '@/composables/useToast'
 import { describeBackupContents } from '@/utils/backup.js'
+import { isDesktop } from '@/platform/desktop.js'
+import { librarySettings, revealInLibrary } from '@/platform/library.js'
 
 const backup = useBackup()
 const toast = useToast()
@@ -69,6 +81,33 @@ const isExporting = ref(false)
 const isImporting = ref(false)
 /** @type {import('vue').Ref<HTMLInputElement|null>} */
 const fileInput = ref(null)
+
+// In the desktop app with the projects kept in a folder, the folder can be
+// shown in the system's file manager.
+const inFolder = ref(false)
+const platform = typeof navigator === 'undefined' ? '' : navigator.userAgent
+const revealLabel = /Mac/.test(platform)
+  ? 'Show in Finder'
+  : /Windows/.test(platform)
+    ? 'Show in Explorer'
+    : 'Show folder'
+
+onMounted(async () => {
+  if (!isDesktop()) return
+  try {
+    inFolder.value = (await librarySettings()).enabled
+  } catch (error) {
+    console.error('Where the library is could not be read:', error)
+  }
+})
+
+const reveal = async () => {
+  try {
+    await revealInLibrary()
+  } catch (error) {
+    toast.error(`The folder couldn't be shown: ${error.message}`)
+  }
+}
 
 const handleExport = async () => {
   exportDialogVisible.value = false

@@ -1,15 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 const callServerTool = vi.hoisted(() => vi.fn())
-const listServer = vi.hoisted(() => vi.fn())
 vi.mock('@/mcp/client.js', async importOriginal => ({
   .../** @type {any} */ (await importOriginal()),
   callServerTool,
-  listServer,
 }))
 
-const { KAGI_URL, checkKagi, kagiPage, readKagi, searchKagi } = await import('@/web/kagi.js')
-const { SEARCH_TEXT_LENGTH } = await import('@/web/answers.js')
+const { KAGI_URL, kagiPage, readKagi, searchKagi } = await import('@/web/kagi.js')
+const { SEARCH_TEXT_LENGTH, describeRefusal } = await import('@/web/answers.js')
 
 /** A CallToolResult with this text. */
 const answered = (text, isError = false) => ({ content: [{ type: 'text', text }], isError })
@@ -17,7 +15,6 @@ const answered = (text, isError = false) => ({ content: [{ type: 'text', text }]
 describe('reaching Kagi', () => {
   beforeEach(() => {
     callServerTool.mockReset()
-    listServer.mockReset()
   })
 
   it('searches with the key as a bearer token, and passes the markdown on', async () => {
@@ -66,13 +63,18 @@ describe('reaching Kagi', () => {
     await expect(searchKagi('tides', { key: 'k1' })).rejects.toThrow('out of credit')
   })
 
-  it('checks the key by listing its tools', async () => {
-    listServer.mockResolvedValue({ tools: [] })
+  it('tells a key Kagi does not know as a refused key', async () => {
+    callServerTool.mockResolvedValue(
+      answered(
+        "Error calling tool 'kagi_search_fetch': Kagi Search API error (400): Token signature failed to verify.",
+        true
+      )
+    )
 
-    await checkKagi('k2')
+    const error = await searchKagi('tides', { key: 'bad' }).catch(caught => caught)
 
-    expect(listServer).toHaveBeenCalledWith(
-      expect.objectContaining({ headers: { Authorization: 'Bearer k2' } })
+    expect(describeRefusal('Kagi', error)).toBe(
+      'Kagi refused the key. Check it in Settings › Connections › Web search.'
     )
   })
 

@@ -30,20 +30,28 @@ const mockEditor = vi.hoisted(() => ({
 }))
 vi.mock('@/composables/useEditor.js', () => ({ useEditor: () => mockEditor }))
 
-const mockStory = reactive({ id: 'story_1', title: 'My Novel', lastDocumentId: null })
-const mockUpdateStory = vi.fn((_id, updates) => Object.assign(mockStory, updates))
-
-/** A story as it was before tabs, or as it was left. */
-const rememberStory = fields => {
-  delete mockStory.openDocumentIds
-  Object.assign(mockStory, { lastDocumentId: null }, fields)
-}
+const mockStory = { id: 'story_1', title: 'My Novel' }
 vi.mock('@/stores/storiesStore', () => ({
   useStoriesStore: () => ({
     getStory: id => (id === 'story_1' ? mockStory : null),
-    updateStory: mockUpdateStory,
     // Another project goes by "Lighthouse".
     freeName: title => (title === 'Lighthouse' ? 'Lighthouse (1)' : title),
+  }),
+}))
+
+const mockView = reactive({ id: 'story_1', lastDocumentId: null })
+const mockUpdateView = vi.fn((_id, updates) => Object.assign(mockView, updates))
+
+/** Where the project was left, or a view from before tabs. */
+const rememberView = fields => {
+  delete mockView.openDocumentIds
+  Object.assign(mockView, { lastDocumentId: null }, fields)
+}
+vi.mock('@/stores/projectViewsStore.js', () => ({
+  useProjectViewsStore: () => ({
+    ensureInitialized: async () => {},
+    getView: id => (id === 'story_1' ? mockView : undefined),
+    updateView: mockUpdateView,
   }),
 }))
 
@@ -57,7 +65,7 @@ describe('useDocuments', () => {
     setActivePinia(createPinia())
     clearDocumentInstances()
     vi.clearAllMocks()
-    rememberStory({})
+    rememberView({})
 
     store = useDocumentsStore()
     api = useDocuments('story_1')
@@ -430,7 +438,7 @@ describe('useDocuments', () => {
       api.open('doc_1')
       api.open('doc_2')
 
-      expect(mockUpdateStory).toHaveBeenLastCalledWith('story_1', {
+      expect(mockUpdateView).toHaveBeenLastCalledWith('story_1', {
         openDocumentIds: ['doc_1', 'doc_2'],
         lastDocumentId: 'doc_2',
         previewDocumentId: null,
@@ -447,13 +455,13 @@ describe('useDocuments', () => {
       expect(api.tabs.value).toEqual({ open: ['doc_1', 'doc_2'], active: 'doc_1', preview: null })
     })
 
-    it('gives a story from before tabs one, its last document', () => {
-      rememberStory({ lastDocumentId: 'doc_2' })
+    it('gives a view from before tabs one, its last document', () => {
+      rememberView({ lastDocumentId: 'doc_2' })
       expect(api.tabs.value).toEqual({ open: ['doc_2'], active: 'doc_2', preview: null })
     })
 
     it('leaves out what is not a text document in the tree', () => {
-      rememberStory({
+      rememberView({
         openDocumentIds: ['doc_1', 'manuscript_story_1', 'doc_gone'],
         lastDocumentId: 'doc_gone',
       })
@@ -501,11 +509,11 @@ describe('useDocuments', () => {
 
     it('writes nothing to keep a tab that is kept already', () => {
       api.open('doc_1')
-      mockUpdateStory.mockClear()
+      mockUpdateView.mockClear()
 
       api.keep('doc_1')
 
-      expect(mockUpdateStory).not.toHaveBeenCalled()
+      expect(mockUpdateView).not.toHaveBeenCalled()
     })
 
     it('remembers a project closed down to nothing', () => {
@@ -513,20 +521,20 @@ describe('useDocuments', () => {
       api.closeTab('doc_1')
 
       expect(api.tabs.value).toEqual({ open: [], active: null, preview: null })
-      expect(mockStory.openDocumentIds).toEqual([])
-      expect(mockStory.lastDocumentId).toBeNull()
+      expect(mockView.openDocumentIds).toEqual([])
+      expect(mockView.lastDocumentId).toBeNull()
     })
 
     it('lets go of every editor state and keeps the tabs when the project is left', () => {
       api.open('doc_1')
       api.open('doc_2')
-      mockUpdateStory.mockClear()
+      mockUpdateView.mockClear()
 
       api.releaseTabs()
 
       expect(mockEditor.close).toHaveBeenCalledWith('doc_1')
       expect(mockEditor.close).toHaveBeenCalledWith('doc_2')
-      expect(mockUpdateStory).not.toHaveBeenCalled()
+      expect(mockUpdateView).not.toHaveBeenCalled()
       expect(api.tabs.value).toEqual({ open: ['doc_1', 'doc_2'], active: 'doc_2', preview: null })
     })
 
@@ -540,29 +548,29 @@ describe('useDocuments', () => {
 
       expect(mockEditor.discard).toHaveBeenCalledWith('doc_2')
       expect(api.tabs.value).toEqual({ open: ['doc_1', 'doc_3'], active: 'doc_3', preview: null })
-      expect(mockStory.openDocumentIds).toEqual(['doc_1', 'doc_3'])
+      expect(mockView.openDocumentIds).toEqual(['doc_1', 'doc_3'])
     })
 
     it('drops every tab under a deleted folder', () => {
       api.open('doc_1')
       api.open('doc_2')
-      mockUpdateStory.mockClear()
+      mockUpdateView.mockClear()
 
       api.remove('manuscript_story_1')
 
       expect(mockEditor.discard).toHaveBeenCalledWith('doc_1')
       expect(mockEditor.discard).toHaveBeenCalledWith('doc_2')
       expect(api.tabs.value).toEqual({ open: [], active: null, preview: null })
-      expect(mockUpdateStory).toHaveBeenCalledTimes(1)
+      expect(mockUpdateView).toHaveBeenCalledTimes(1)
     })
 
     it('leaves the tabs alone when the deletion took none of them', () => {
       api.open('doc_1')
-      mockUpdateStory.mockClear()
+      mockUpdateView.mockClear()
 
       api.remove('doc_3')
 
-      expect(mockUpdateStory).not.toHaveBeenCalled()
+      expect(mockUpdateView).not.toHaveBeenCalled()
       expect(api.tabs.value).toEqual({ open: ['doc_1'], active: 'doc_1', preview: null })
     })
   })

@@ -69,4 +69,17 @@ contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', {
 
   downloadUpdate: () => call('update:download'),
   installUpdate: () => call('update:install'),
+
+  library: {
+    settings: () => call('library:settings'),
+    markMoved: () => call('library:moved'),
+    enable: () => call('library:enable'),
+    disable: () => call('library:disable'),
+    projects: () => call('library:projects'),
+    walk: dir => call('library:walk', dir),
+    read: paths => call('library:read', paths),
+    readBytes: path => call('library:readBytes', path),
+    apply: ops => call('library:apply', ops),
+    reveal: path => call('library:reveal', path),
+  },
 })

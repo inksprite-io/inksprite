@@ -16,6 +16,7 @@ import { applyTheme } from './composables/useSystemSettings'
 import { useApplicationState } from './composables/useApplicationState'
 import { useSkills } from './composables/useSkills'
 import { useUpdates } from './composables/useUpdates'
+import { useLibraryNotices } from './composables/useLibraryNotices'
 import { openLinkClicked } from './platform/open.js'
 
 // Page views go to Vercel Web Analytics only from a build that asks for them
@@ -35,6 +36,10 @@ useSkills()
 // In the desktop app, an update is looked for as it opens, and offered once
 // it is downloaded.
 useUpdates()
+
+// In the desktop app, a file changed elsewhere and saved over goes to the
+// trash first, and the writer is told.
+useLibraryNotices()
 
 onMounted(() => {
   const { theme } = useApplicationState()

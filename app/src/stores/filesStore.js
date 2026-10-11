@@ -10,19 +10,18 @@
  * sits in a table of its own, keyed by the document's id, and is read when
  * something wants to show it or send it.
  *
- * Written straight to Dexie rather than through `syncStore`. The sync store
- * deep-clones a change through JSON on its way to the database, and a Blob
- * comes out of that as `{}`. A file's bytes never change after import, so
- * there is nothing to debounce either: they are put once and read.
+ * Written straight to storage rather than through `syncStore`. The sync store
+ * deep-clones a change through JSON on its way to storage, and a Blob comes
+ * out of that as `{}`. A file's bytes never change after import, so there is
+ * nothing to debounce either: they are put once and read. They go with their
+ * document, which `documentsStore` removes through the sync store.
  *
- * Nothing here is reactive. There is no in-memory copy of a file; the
- * database is where it lives, and a reader is handed it from there.
+ * Nothing here is reactive. There is no in-memory copy of a file; storage is
+ * where it lives, and a reader is handed it from there.
  */
 
 import { defineStore } from 'pinia'
-import db from './db'
-
-/** @typedef {import('../types/models.js').StoredFile} StoredFile */
+import { storage } from '@/storage/index.js'
 
 export const useFilesStore = defineStore('files', () => {
   /**
@@ -35,9 +34,7 @@ export const useFilesStore = defineStore('files', () => {
    */
   async function putFile(id, storyId, blob) {
     if (!id) throw new Error('A file needs the id of the document it belongs to')
-    /** @type {StoredFile} */
-    const row = { id, storyId, blob }
-    await db.files.put(row)
+    await storage.putFileBytes(id, storyId, blob)
   }
 
   /**
@@ -49,29 +46,12 @@ export const useFilesStore = defineStore('files', () => {
   async function getFile(id) {
     if (!id) return null
     try {
-      /** @type {StoredFile|undefined} */
-      const row = await db.files.get(id)
-      return row?.blob ?? null
+      return await storage.fileBytes(id)
     } catch (error) {
       console.error(`Failed to read file ${id}:`, error)
       return null
     }
   }
 
-  /**
-   * Drop the bytes of documents that are gone for good.
-   *
-   * For the purge, once a deleted document's row is removed. Until then the
-   * bytes stay with the row, so a document brought back from the trash still
-   * has its file.
-   *
-   * @param {string[]} ids
-   * @returns {Promise<void>}
-   */
-  async function deleteFiles(ids) {
-    if (ids.length === 0) return
-    await db.files.bulkDelete(ids)
-  }
-
-  return { putFile, getFile, deleteFiles }
+  return { putFile, getFile }
 })

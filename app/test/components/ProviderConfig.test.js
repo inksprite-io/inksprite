@@ -20,8 +20,13 @@ vi.mock('@/composables/useAIConfig', () => ({
     deleteProvider: vi.fn(),
   }),
 }))
-vi.mock('@/composables/useAIService', () => ({ useAIService: () => ({}) }))
-vi.mock('primevue/usetoast', () => ({ useToast: () => ({ add: vi.fn() }) }))
+const listModels = vi.fn()
+const validateOpenRouterKey = vi.fn()
+vi.mock('@/composables/useAIService', () => ({
+  useAIService: () => ({ listModels, validateOpenRouterKey }),
+}))
+const toastAdd = vi.fn()
+vi.mock('primevue/usetoast', () => ({ useToast: () => ({ add: toastAdd }) }))
 vi.mock('primevue/useconfirm', () => ({ useConfirm: () => ({ require: vi.fn() }) }))
 vi.mock('@/utils/oauth', () => ({ initiateOpenRouterOAuth: vi.fn() }))
 
@@ -101,5 +106,56 @@ describe('ProviderConfig name', () => {
 
     expect(providers.value[0].name).toBe('My')
     expect(input.element.value).toBe('My')
+  })
+})
+
+describe('ProviderConfig connect', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('asks a server what it serves, and says how many models it found', async () => {
+    providers.value = [
+      {
+        id: PROVIDER_ID,
+        name: 'Local',
+        type: 'generic',
+        endpoint: 'http://localhost:1234/v1',
+        isDefault: false,
+      },
+    ]
+    listModels.mockResolvedValue([{ id: 'a' }, { id: 'b' }])
+    const wrapper = await mountDialog()
+
+    await wrapper.find('[data-action="connect"]').trigger('click')
+    await flushPromises()
+
+    expect(listModels).toHaveBeenCalledWith(PROVIDER_ID)
+    expect(toastAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ severity: 'success', detail: 'Connected: 2 models available' })
+    )
+  })
+
+  it('tries an OpenRouter key, and offers OAuth beside it', async () => {
+    providers.value = [
+      { id: PROVIDER_ID, name: 'OpenRouter', type: 'openrouter', apiKey: 'sk-or', isDefault: true },
+    ]
+    validateOpenRouterKey.mockResolvedValue(true)
+    const wrapper = await mountDialog()
+
+    await wrapper.find('[data-action="connect"]').trigger('click')
+    await flushPromises()
+
+    expect(validateOpenRouterKey).toHaveBeenCalledWith('sk-or')
+    expect(wrapper.find('[data-action="oauth"]').text()).toBe('Connect with OAuth')
+  })
+
+  it('offers no OAuth for other providers', async () => {
+    providers.value = [
+      { id: PROVIDER_ID, name: 'Local', type: 'generic', endpoint: '', isDefault: false },
+    ]
+    const wrapper = await mountDialog()
+
+    expect(wrapper.find('[data-action="oauth"]').exists()).toBe(false)
   })
 })

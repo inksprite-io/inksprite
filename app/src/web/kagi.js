@@ -9,7 +9,7 @@
  * change. A page is markdown, its title the first heading when it has one.
  */
 
-import { callServerTool, listServer, resultForModel } from '@/mcp/client.js'
+import { callServerTool, resultForModel } from '@/mcp/client.js'
 import { RESULTS, SEARCH_TEXT_LENGTH, ServiceError, clip } from './answers.js'
 
 /** @typedef {import('./answers.js').SearchAnswer} SearchAnswer */
@@ -32,8 +32,12 @@ function server(key) {
   })
 }
 
+/** How Kagi's API says it doesn't know a key, through the server's tool error. */
+const KEY_REFUSED = /Token signature failed|API error \(401\)/i
+
 /**
- * An answer's text, or the refusal it is.
+ * An answer's text, or the refusal it is. A key Kagi doesn't know is refused
+ * as a 401 would be, so it is told as the other services' are.
  *
  * @param {any} result - A CallToolResult
  * @returns {string}
@@ -41,6 +45,7 @@ function server(key) {
 function answerText(result) {
   const read = resultForModel(result)
   if (typeof read === 'string') return read
+  if (KEY_REFUSED.test(read.error)) throw Object.assign(new Error(read.error), { status: 401 })
   throw new ServiceError(`Kagi failed: ${read.error}`)
 }
 
@@ -83,15 +88,4 @@ export async function searchKagi(query, { key = '', signal, timeout }) {
 export async function readKagi(url, { key = '', signal, timeout }) {
   const result = await callServerTool(server(key), 'kagi_extract', { url }, { signal, timeout })
   return kagiPage(answerText(result))
-}
-
-/**
- * Whether Kagi takes this key: its tools listed, which it answers only with a
- * key, and which costs nothing.
- *
- * @param {string} [key]
- * @returns {Promise<void>}
- */
-export async function checkKagi(key = '') {
-  await listServer(server(key))
 }

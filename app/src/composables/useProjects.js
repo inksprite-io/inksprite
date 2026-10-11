@@ -15,7 +15,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { useDocumentsStore } from '@/stores/documentsStore'
-import db from '@/stores/db'
+import { storage } from '@/storage/index.js'
 import { useBackup } from '@/composables/useBackup'
 import { pushProjectToRoute } from '@/utils/routeHelpers'
 import { dropJobsForStory } from '@/jobs/index.js'
@@ -72,14 +72,12 @@ export function useProjects() {
       workingOut.add(storyId)
       try {
         let at = 0
-        await db.documents
-          .where('storyId')
-          .equals(storyId)
-          .each(document => (at = Math.max(at, document.updated || 0)))
-        await db.chats
-          .where('storyId')
-          .equals(storyId)
-          .each(chat => (at = Math.max(at, chat.updated || 0)))
+        for (const row of [
+          ...(await storage.documents(storyId)),
+          ...(await storage.chats(storyId)),
+        ]) {
+          at = Math.max(at, row.updated || 0)
+        }
         if (at > 0) documentsStore.markEdited(storyId, at)
       } catch (error) {
         console.error(`Failed to work out when ${storyId} was last edited:`, error)

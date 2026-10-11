@@ -8,6 +8,7 @@ import { BrowserWindow, app, session, shell } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { handleBridge } from './bridge.js'
+import { ensureLibrary } from './library.js'
 import { openable, originOf } from './links.js'
 import { setMenu, showContextMenu } from './menu.js'
 import { PAGE_URL, registerScheme, servePage } from './page.js'
@@ -59,7 +60,10 @@ if (app.requestSingleInstanceLock()) {
   app.quit()
 }
 
-function start() {
+async function start() {
+  // The projects' folder, when they are kept in one, is there before the
+  // window that keeps them.
+  await ensureLibrary()
   servePage(pageRoot)
   handleBridge(origin)
   session.defaultSession.setPermissionRequestHandler((_, permission, grant) =>

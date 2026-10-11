@@ -17,6 +17,7 @@ import { rolesToSkills } from './migrations/profileSkills.js'
 import { rolesToWorkflows } from './migrations/jobWorkflows.js'
 import { withoutModelKeeps } from './migrations/modelKeeps.js'
 import { allowedProvidersToPresets } from './migrations/allowedProviders.js'
+import { viewsOffStories } from './migrations/projectViews.js'
 
 /**
  * @typedef {import('../types/models.js').Story} Story
@@ -392,6 +393,22 @@ db.version(25).stores({
 db.version(26).stores({
   webSearch: 'id',
 })
+
+// Where the writer left each project, its tabs and its panels, belongs to
+// this copy of the app and not to the project: it comes off the story into a
+// row of its own, by the story's id.
+db.version(27)
+  .stores({
+    projectViews: 'id',
+  })
+  .upgrade(async tx => {
+    const { stories, views, moved } = viewsOffStories(await tx.table('stories').toArray())
+    if (moved > 0) {
+      await tx.table('stories').bulkPut(stories)
+      await tx.table('projectViews').bulkPut(views)
+    }
+    console.log(`Moved where ${moved} projects were left off their stories`)
+  })
 
 // A summary is stored where it is read: above the turns it kept, rather than at
 // the end of the chat with a count of how far to hoist it. What the writer

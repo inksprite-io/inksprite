@@ -20,6 +20,8 @@
  *   and installed when the writer restarts into it
  * - **open** - Links to other sites, opened in a new tab in a browser and in
  *   the system browser from the desktop window, never in the app's own place
+ * - **library** - In the desktop app, the folder the projects are kept in, and
+ *   its files, for `storage/library.js`
  * - **persistence** - Asking the browser to keep the page's data, and what
  *   the writer is told about how long it will
  *
@@ -36,4 +38,5 @@ export { fetch } from './fetch.js'
 export { SIGN_IN_PORT, callbackOrigin, signInInBrowser } from './signIn.js'
 export { downloadUpdate, installUpdate } from './updates.js'
 export { openUrl, openLinkClicked } from './open.js'
+export { librarySettings, enableLibrary, disableLibrary, revealInLibrary } from './library.js'
 export { askToKeepData, storageAdvice } from './persistence.js'

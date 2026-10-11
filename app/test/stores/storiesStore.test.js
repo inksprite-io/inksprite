@@ -168,11 +168,11 @@ describe('StoriesStore', () => {
       expect(store.stories.has(story.id)).toBe(true)
     })
 
-    it('starts a project empty, with nowhere to land and no options', async () => {
+    it('starts a project empty, with no options, and keeps no tabs on it', async () => {
       const story = await store.createStory('Test Story')
 
       expect(useDocumentsStore().getChildren(rootIdFor(story.id))).toEqual([])
-      expect(story.lastDocumentId).toBeNull()
+      expect(story).not.toHaveProperty('lastDocumentId')
       expect(story.options).toEqual({})
     })
 
@@ -225,7 +225,6 @@ describe('StoriesStore', () => {
         title: 'Original Title',
         overview: 'Original Overview',
         wordCount: 100,
-        lastDocumentId: null,
         version: 1,
         created: Date.now() - 1000,
         updated: Date.now() - 1000,
@@ -278,7 +277,6 @@ describe('StoriesStore', () => {
         title: 'Story to Delete',
         overview: '',
         wordCount: 0,
-        lastDocumentId: null,
         version: 1,
         created: Date.now(),
         updated: Date.now(),
@@ -297,6 +295,12 @@ describe('StoriesStore', () => {
       expect(store.stories.has('story_1')).toBe(false) // Removed from cache
       expect(store.getStory('story_1')).toBeNull()
       expect(trackDelete).toHaveBeenCalledWith('stories', 'story_1')
+    })
+
+    it('forgets where the writer left it', async () => {
+      await store.deleteStory('story_1')
+
+      expect(trackDelete).toHaveBeenCalledWith('projectViews', 'story_1')
     })
 
     it('should throw error when deleting non-existent story', async () => {

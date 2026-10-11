@@ -35,16 +35,6 @@
  *   kept so stored rows written before that still parse.
  * @property {string} overview - Legacy synopsis. Migrated to the root document's `summary` at schema v7 and no longer read; the column stays as the way back.
  * @property {number} wordCount - Total word count across all scenes
- * @property {string|null} lastDocumentId - The document the writer is in: the editor's
- *   active tab, so a project reopens where they left off
- * @property {string[]} [openDocumentIds] - The documents open in the editor, in tab
- *   order. Absent means one tab, the last document; see
- *   `utils/tabs.js`.
- * @property {string|null} [previewDocumentId] - The open document that is only being
- *   looked at, whose tab the next one opened from the outline takes. Absent or
- *   null means every tab is kept.
- * @property {StoryLayout} [layout] - How the writer left the panels. Absent means the
- *   default arrangement; see `components/writer/layout/layout.js`.
  * @property {StoryNarration} [narration] - The project's voices and pronunciation
  *   hints, for reading it aloud. Absent means one default voice and no hints; see
  *   `tts/voices.js`.
@@ -52,6 +42,26 @@
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
  * @property {number} updated - Last update timestamp
+ */
+
+/**
+ * Where the writer left a project on this copy of the app, so it reopens as
+ * it was left. Kept with the app's settings, not in the project; see
+ * `stores/projectViewsStore.js`.
+ *
+ * @typedef {Object} ProjectView
+ * @property {string} id - The story's id
+ * @property {string|null} [lastDocumentId] - The document the writer is in: the editor's
+ *   active tab
+ * @property {string[]} [openDocumentIds] - The documents open in the editor, in tab
+ *   order. Absent means one tab, the last document; see `utils/tabs.js`.
+ * @property {string|null} [previewDocumentId] - The open document that is only being
+ *   looked at, whose tab the next one opened from the outline takes. Absent or
+ *   null means every tab is kept.
+ * @property {StoryLayout} [layout] - How the writer left the panels. Absent means the
+ *   default arrangement; see `components/writer/layout/layout.js`.
+ * @property {number} version - Bumped each time it is saved
+ * @property {number} updated - When the writer was last in the project here
  */
 
 /**

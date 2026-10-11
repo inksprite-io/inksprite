@@ -11,7 +11,6 @@ vi.mock('../../src/stores/db', () => ({
           toArray: vi.fn(),
         })),
       })),
-      get: vi.fn(),
     },
   },
 }))
@@ -144,55 +143,6 @@ describe('ChatsStore', () => {
       expect(() => store.deleteChat('non_existent')).toThrow(
         "Failed to delete chat, 'non_existent' not found"
       )
-    })
-  })
-
-  describe('getChat', () => {
-    beforeEach(() => {
-      store.createChat('story_123', 'Test Chat')
-    })
-
-    it('should return chat from memory if available', async () => {
-      const chat = await store.getChat('chat_test-id-123')
-
-      expect(chat).toBeDefined()
-      expect(chat.id).toBe('chat_test-id-123')
-      expect(chat.title).toBe('Test Chat')
-    })
-
-    it('should return null for deleted chats', async () => {
-      const { default: db } = await import('../../src/stores/db')
-      db.chats.get.mockResolvedValue(undefined) // Gone from the database too
-      store.deleteChat('chat_test-id-123')
-
-      const chat = await store.getChat('chat_test-id-123')
-
-      expect(chat).toBeNull()
-    })
-
-    it('should try to load from database if not in memory', async () => {
-      const { default: db } = await import('../../src/stores/db')
-      const mockChat = {
-        id: 'chat_from_db',
-        storyId: 'story_456',
-        title: 'DB Chat',
-      }
-      db.chats.get.mockResolvedValue(mockChat)
-
-      const chat = await store.getChat('chat_from_db')
-
-      expect(db.chats.get).toHaveBeenCalledWith('chat_from_db')
-      expect(chat).toEqual(mockChat)
-      expect(store.chats.has('chat_from_db')).toBe(true) // Added to cache
-    })
-
-    it('should return null if chat not found anywhere', async () => {
-      const { default: db } = await import('../../src/stores/db')
-      db.chats.get.mockResolvedValue(null)
-
-      const chat = await store.getChat('non_existent')
-
-      expect(chat).toBeNull()
     })
   })
 

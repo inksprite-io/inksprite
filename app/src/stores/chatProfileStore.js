@@ -17,7 +17,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
-import db from './db'
+import { storage } from '@/storage/index.js'
 
 /** @typedef {import('../types/models.js').StoredChatProfile} StoredChatProfile */
 
@@ -37,7 +37,7 @@ export const useChatProfileStore = defineStore('chatProfiles', () => {
 
   async function initialize() {
     try {
-      const stored = await db.chatProfiles.toArray()
+      const stored = await storage.all('chatProfiles')
       for (const profile of stored) {
         profiles.value.set(profile.id, profile)
       }

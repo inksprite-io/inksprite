@@ -6,6 +6,30 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.11
+
+Projects kept in a folder in the desktop app, and a Connect button for
+each connection.
+
+- The desktop app can keep its projects in a folder: Settings › System
+  › Data › Keep projects in a folder, off until switched on. On, the
+  app opens again with each project a folder of markdown files in its
+  data folder, the project's chats with it, and Show in Finder (Show in
+  Explorer on Windows) beside the backup buttons opens it. A file
+  changed while the app was closed is read when it opens again.
+  Switched off, the projects are copied back into the app as they are
+  then, and the folder's files stay where they are. Settings, profiles
+  and connections stay in the app either way. It is new: export a
+  backup before switching it on.
+- Each copy of the app keeps its own place in each project: the open
+  tabs, the document shown and the panel layout. A project's export no
+  longer carries them.
+- The provider dialog has a Connect button under the key, and Connect
+  to OpenRouter is now Connect with OAuth. A web search service is
+  checked with Connect, or Enter in its key; Kagi's key is tried with
+  one search, and a key a service refuses is said to be refused.
+  Narration's test button is Connect as well.
+
 ## v0.1.0-dev.10
 
 Web search, comments on passages, and a card's macros filled in per chat.

@@ -18,7 +18,7 @@ import { ref, triggerRef } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
 import { sessionStorage } from '@/utils/sessionStorage'
-import db from './db'
+import { storage } from '@/storage/index.js'
 
 /** @typedef {import('../types/models.js').AIProvider} AIProvider */
 
@@ -91,7 +91,7 @@ export const useAIProvidersStore = defineStore('aiProviders', () => {
   async function initialize() {
     try {
       // Load all providers and filter in memory (IndexedDB doesn't handle boolean indexes well)
-      const allProviders = await db.aiProviders.toArray()
+      const allProviders = await storage.all('aiProviders')
       const loaded = allProviders
       loaded.forEach(provider => {
         providers.value.set(provider.id, provider)
@@ -307,7 +307,7 @@ export const useAIProvidersStore = defineStore('aiProviders', () => {
    */
   async function reloadProvider(providerId) {
     try {
-      const provider = await db.aiProviders.get(providerId)
+      const provider = await storage.get('aiProviders', providerId)
       if (provider) {
         // Restore session API key if needed
         if (provider.rememberKey === false) {

@@ -21,7 +21,7 @@ import { defineStore } from 'pinia'
 import { shallowRef, triggerRef, reactive, computed } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore'
-import db from './db'
+import { storage } from '@/storage/index.js'
 
 /** @typedef {import('../types/models.js').Message} Message */
 
@@ -593,35 +593,6 @@ export const useMessagesStore = defineStore('messages', () => {
   }
 
   /**
-   * Get a single message by ID
-   * @param {string} messageId - Message ID to retrieve
-   * @returns {Promise<Message|null>} Message if found and not deleted, null otherwise
-   */
-  async function getMessage(messageId) {
-    let message = messages.value.get(messageId)
-    if (!message) {
-      // Try loading from database
-      try {
-        const dbMessage = await db.messages.get(messageId)
-        if (dbMessage) {
-          const reactiveMessage = reactive(dbMessage)
-          messages.value.set(dbMessage.id, reactiveMessage)
-          triggerRef(messages)
-          message = reactiveMessage
-        }
-      } catch (error) {
-        console.error(`Failed to load message '${messageId}' from database:`, error)
-      }
-    }
-
-    if (!message) {
-      return null
-    }
-
-    return message
-  }
-
-  /**
    * Get all messages for a chat, sorted by creation time
    * @param {string} chatId - Chat ID
    * @returns {Message[]} Plain array of messages sorted by creation time
@@ -665,7 +636,7 @@ export const useMessagesStore = defineStore('messages', () => {
    */
   async function loadMessagesForChat(chatId) {
     try {
-      const chatMessages = await db.messages.where('chatId').equals(chatId).toArray()
+      const chatMessages = await storage.messages(chatId)
 
       chatMessages.forEach(message => {
         // Wrap message in reactive for deep reactivity
@@ -694,11 +665,7 @@ export const useMessagesStore = defineStore('messages', () => {
       const forgotten = withoutSavedRequests(message)
       if (forgotten) updateMessage(message.id, forgotten)
     }
-    await db.messages
-      .filter(message => withoutSavedRequests(message) !== null)
-      .modify(message => {
-        Object.assign(message, withoutSavedRequests(message))
-      })
+    await storage.updateEach('messages', withoutSavedRequests)
   }
 
   /**
@@ -756,7 +723,6 @@ export const useMessagesStore = defineStore('messages', () => {
     writeSegment,
     deleteMessage,
     moveMessage,
-    getMessage,
     getMessagesForChat,
     deleteMessagesForChat,
     loadMessagesForChat,

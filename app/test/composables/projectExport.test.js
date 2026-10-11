@@ -47,7 +47,6 @@ async function seed() {
       id: STORY,
       overview: '',
       wordCount: 2,
-      lastDocumentId: CHAPTER,
       options: { profileId: PROFILE },
       version: 1,
       created: 1,
@@ -57,7 +56,6 @@ async function seed() {
       id: OTHER,
       overview: '',
       wordCount: 0,
-      lastDocumentId: null,
       options: {},
       version: 1,
       created: 1,
@@ -221,7 +219,6 @@ describe('project export and import', () => {
     expect(chapter.id).not.toBe(CHAPTER)
     expect(chapter.parentId).toBe(root.id)
     expect(chapter.content).toBe('It rained.')
-    expect(story.lastDocumentId).toBe(chapter.id)
 
     const file = await db.files.get(pdf.id)
     expect(file.storyId).toBe(story.id)

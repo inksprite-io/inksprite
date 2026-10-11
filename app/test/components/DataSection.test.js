@@ -1,6 +1,6 @@
 /* global File */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import Tooltip from 'primevue/tooltip'
 import Checkbox from 'primevue/checkbox'
@@ -15,6 +15,11 @@ const { backup, confirmRequire, toast } = vi.hoisted(() => ({
 vi.mock('@/composables/useBackup', () => ({ useBackup: () => backup }))
 vi.mock('@/composables/useToast', () => ({ useToast: () => toast }))
 vi.mock('primevue/useconfirm', () => ({ useConfirm: () => ({ require: confirmRequire }) }))
+
+const desktop = vi.hoisted(() => ({ on: false }))
+const library = vi.hoisted(() => ({ librarySettings: vi.fn(), revealInLibrary: vi.fn() }))
+vi.mock('@/platform/desktop.js', () => ({ isDesktop: () => desktop.on }))
+vi.mock('@/platform/library.js', () => library)
 
 const mountSection = () =>
   mount(DataSection, {
@@ -43,6 +48,7 @@ const pickFile = async (wrapper, file) => {
 describe('DataSection', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    desktop.on = false
   })
 
   it('has no trash to empty', () => {
@@ -120,5 +126,48 @@ describe('DataSection', () => {
 
     expect(confirmRequire).not.toHaveBeenCalled()
     expect(toast.error).toHaveBeenCalledWith('Not a backup file.')
+  })
+
+  describe('the projects folder', () => {
+    const settings = enabled => ({ path: '/Projects', enabled, moved: true })
+
+    it('is not offered in a browser', async () => {
+      const wrapper = mountSection()
+      await flushPromises()
+
+      expect(library.librarySettings).not.toHaveBeenCalled()
+      expect(wrapper.find('[data-action="reveal"]').exists()).toBe(false)
+    })
+
+    it('is not offered while the projects are kept in the app', async () => {
+      desktop.on = true
+      library.librarySettings.mockResolvedValue(settings(false))
+      const wrapper = mountSection()
+      await flushPromises()
+
+      expect(wrapper.find('[data-action="reveal"]').exists()).toBe(false)
+    })
+
+    it('is shown beside the backup buttons while they are kept in it', async () => {
+      desktop.on = true
+      library.librarySettings.mockResolvedValue(settings(true))
+      const wrapper = mountSection()
+      await flushPromises()
+
+      await wrapper.find('[data-action="reveal"]').trigger('click')
+      expect(library.revealInLibrary).toHaveBeenCalledWith()
+    })
+
+    it('says so when it cannot be shown', async () => {
+      desktop.on = true
+      library.librarySettings.mockResolvedValue(settings(true))
+      library.revealInLibrary.mockRejectedValue(new Error('gone'))
+      const wrapper = mountSection()
+      await flushPromises()
+
+      await wrapper.find('[data-action="reveal"]').trigger('click')
+      await flushPromises()
+      expect(toast.error).toHaveBeenCalledWith("The folder couldn't be shown: gone")
+    })
   })
 })

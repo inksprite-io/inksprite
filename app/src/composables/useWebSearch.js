@@ -4,9 +4,9 @@
  * is in use, its key, and which profiles' chats search. See web/ and
  * .llm/web_search_design.md.
  *
- * Choosing a service, or changing its key, checks it at once where the
- * service can be checked for nothing (listing its tools); one that cannot has
- * its key tried by its first search.
+ * Choosing a service checks it at once where that costs nothing (listing its
+ * tools). Connect checks it with the key typed in, and where there is no free
+ * check, as with Brave, does so with a search, the writer having asked.
  */
 
 import { computed, ref } from 'vue'
@@ -30,6 +30,12 @@ const checks = ref({})
 /** The service being checked, while it is. */
 const checking = ref(/** @type {WebServiceId|null} */ (null))
 
+/** What Connect searches for, at a service with no free check. */
+const PROBE = 'weather'
+
+/** How long Connect waits for a search, in milliseconds. */
+const PROBE_TIMEOUT_MS = 30000
+
 /**
  * @returns {{
  *   ready: () => Promise<void>,
@@ -40,7 +46,8 @@ const checking = ref(/** @type {WebServiceId|null} */ (null))
  *   checks: typeof checks,
  *   checking: typeof checking,
  *   choose: (id: WebServiceId|null) => Promise<void>,
- *   setKey: (id: WebServiceId, key: string) => Promise<void>,
+ *   setKey: (id: WebServiceId, key: string) => void,
+ *   connect: (id: WebServiceId, key: string) => Promise<void>,
  *   setProfile: (profileId: string, on: boolean) => void,
  * }}
  */
@@ -53,13 +60,20 @@ export function useWebSearch() {
   const inUse = computed(() => serviceInUse(setup.value) !== null)
 
   /**
-   * Check a service with the key it has, where that costs nothing.
+   * Check a service with the key it has: where that costs nothing, or with a
+   * search when the writer asked.
    *
    * @param {WebServiceId} id
+   * @param {{search?: boolean}} [options] - Whether a search may do for a
+   *   service with no free check
    */
-  async function check(id) {
+  async function check(id, { search = false } = {}) {
     const service = getWebService(id)
-    if (!service?.check || !reachableService(service)) return
+    if (!service || !reachableService(service)) return
+    const tryKey =
+      service.check ||
+      (search ? key => service.search(PROBE, { key, timeout: PROBE_TIMEOUT_MS }) : null)
+    if (!tryKey) return
     const key = setup.value.keys?.[id] || ''
     if (service.needsKey && !key) {
       checks.value = { ...checks.value, [id]: undefined }
@@ -67,12 +81,14 @@ export function useWebSearch() {
     }
     checking.value = id
     try {
-      await service.check(key)
+      await tryKey(key)
       checks.value = { ...checks.value, [id]: { ok: true } }
     } catch (error) {
       checks.value = {
         ...checks.value,
-        [id]: { error: describeRefusal(service.name, error, { limited: service.limited }) },
+        [id]: {
+          error: describeRefusal(service.name, error, { limited: service.limited, here: true }),
+        },
       }
     } finally {
       if (checking.value === id) checking.value = null
@@ -90,16 +106,27 @@ export function useWebSearch() {
   }
 
   /**
-   * Keep a service's key, and check it.
+   * Keep a service's key. What a check of the last one found no longer holds.
    *
    * @param {WebServiceId} id
    * @param {string} key
    */
-  async function setKey(id, key) {
+  function setKey(id, key) {
     const trimmed = key.trim()
     if (trimmed === (setup.value.keys?.[id] || '')) return
     store.update({ keys: { ...setup.value.keys, [id]: trimmed } })
-    await check(id)
+    checks.value = { ...checks.value, [id]: undefined }
+  }
+
+  /**
+   * Keep a service's key, and check it, with a search if need be.
+   *
+   * @param {WebServiceId} id
+   * @param {string} key
+   */
+  async function connect(id, key) {
+    setKey(id, key)
+    await check(id, { search: true })
   }
 
   /**
@@ -125,6 +152,7 @@ export function useWebSearch() {
     checking,
     choose,
     setKey,
+    connect,
     setProfile,
   }
 }

@@ -19,7 +19,7 @@ import { ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore'
 import { useDocumentsStore } from './documentsStore'
-import db from './db'
+import { storage } from '@/storage/index.js'
 import { freeProjectName } from '@/utils/titleValidation.js'
 
 /** @typedef {import('../types/models.js').Story} Story */
@@ -47,9 +47,7 @@ export const useStoriesStore = defineStore('stories', () => {
    */
   async function initialize() {
     try {
-      // Load all stories and filter in memory (IndexedDB doesn't handle boolean indexes well)
-      const allStories = await db.stories.toArray()
-      const loaded = allStories
+      const loaded = await storage.stories()
       loaded.forEach(story => {
         stories.value.set(story.id, story)
       })
@@ -108,7 +106,6 @@ export const useStoriesStore = defineStore('stories', () => {
       id: storyId,
       overview: '',
       wordCount: 0,
-      lastDocumentId: null,
       // Absent options mean the defaults: new chats start on the built-in
       // chat prompt until the project's settings say otherwise.
       options: {},
@@ -176,6 +173,7 @@ export const useStoriesStore = defineStore('stories', () => {
     // Import stores (they're already loaded in the app)
     const { useChatsStore } = await import('./chatsStore.js')
     const { useMessagesStore } = await import('./messagesStore.js')
+    const { useProjectViewsStore } = await import('./projectViewsStore.js')
 
     const chatsStore = useChatsStore()
     const messagesStore = useMessagesStore()
@@ -192,6 +190,7 @@ export const useStoriesStore = defineStore('stories', () => {
       chatsStore.deleteChat(chat.id)
     }
 
+    useProjectViewsStore().deleteView(storyId)
     syncStore.trackDelete('stories', storyId)
     stories.value.delete(storyId)
   }
@@ -207,7 +206,7 @@ export const useStoriesStore = defineStore('stories', () => {
   async function loadStory(storyId) {
     await ensureInitialized()
 
-    const story = await db.stories.get(storyId)
+    const story = await storage.story(storyId)
     if (!story) return null
     stories.value.set(story.id, story)
     return story

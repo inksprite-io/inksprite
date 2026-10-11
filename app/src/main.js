@@ -9,6 +9,7 @@ import Tooltip from 'primevue/tooltip'
 import ToastService from 'primevue/toastservice'
 import App from './App.vue'
 import router from './router'
+import { openStorage } from './storage/open.js'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -96,4 +97,15 @@ app.use(ToastService)
 app.directive('styleclass', StyleClass)
 app.directive('tooltip', Tooltip)
 
-app.mount('#app')
+// In the desktop app the projects are in a folder, which is opened before
+// anything reads from it; the first time, the window's projects are moved in.
+const root = /** @type {HTMLElement} */ (document.getElementById('app'))
+openStorage({
+  onMoving: path => (root.textContent = `Moving your projects into ${path}…`),
+}).then(
+  () => app.mount('#app'),
+  error => {
+    console.error('The library could not be opened:', error)
+    root.textContent = `inksprite couldn't open the folder your projects are kept in: ${error.message}`
+  }
+)

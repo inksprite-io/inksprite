@@ -697,7 +697,7 @@ describe('withFreshIds', () => {
   /** @returns {import('@/utils/backup.js').ProjectRows} */
   const project = () =>
     /** @type {any} */ ({
-      story: { id: STORY, lastDocumentId: DOC, openDocumentIds: [DOC], options: {} },
+      story: { id: STORY, options: {} },
       documents: [
         { id: ROOT, storyId: STORY, parentId: STORY, type: 'folder', title: 'The Salt Road' },
         { id: DOC, storyId: STORY, parentId: ROOT, type: 'text', content: 'Chapter one.' },
@@ -755,8 +755,6 @@ describe('withFreshIds', () => {
     const [root, doc] = fresh.documents
     const [message] = fresh.messages
 
-    expect(fresh.story.lastDocumentId).toBe(doc.id)
-    expect(fresh.story.openDocumentIds).toEqual([doc.id])
     expect(doc.parentId).toBe(root.id)
     expect(fresh.chats[0].storyId).toBe(fresh.story.id)
     expect(fresh.chats[0].pinnedIds).toEqual([doc.id])

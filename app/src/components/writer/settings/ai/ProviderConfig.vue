@@ -40,17 +40,6 @@
           @click="handleNewProvider"
         />
         <Button
-          v-tooltip.top="'Test connection'"
-          icon="pi pi-link"
-          aria-label="Test connection"
-          severity="secondary"
-          text
-          rounded
-          size="small"
-          :disabled="!localSelectedProviderId"
-          @click="handleTestConnection"
-        />
-        <Button
           v-if="selectedProvider?.isDefault === false"
           v-tooltip.top="'Delete provider'"
           icon="pi pi-trash"
@@ -143,6 +132,17 @@
           />
         </div>
 
+        <Button
+          label="Connect"
+          icon="pi pi-link"
+          size="small"
+          class="w-full"
+          :loading="testing"
+          :disabled="!localSelectedProviderId"
+          data-action="connect"
+          @click="handleTestConnection"
+        />
+
         <!-- OAuth Option for OpenRouter -->
         <div v-if="localType === 'openrouter'" class="flex flex-col gap-2">
           <div class="flex items-center gap-2">
@@ -151,10 +151,11 @@
             <div class="flex-1 border-t border-surface-300 dark:border-surface-700"></div>
           </div>
           <Button
-            label="Connect to OpenRouter"
+            label="Connect with OAuth"
             icon="pi pi-sign-in"
             size="small"
             class="w-full"
+            data-action="oauth"
             @click="handleOAuthConnect"
           />
         </div>
@@ -383,10 +384,14 @@ function validateProvider() {
   }
 }
 
+/** Whether a connection is being tested. */
+const testing = ref(false)
+
 /**
  * Handle test connection - validates before testing
  */
 async function handleTestConnection() {
+  testing.value = true
   try {
     validateProvider()
 
@@ -442,6 +447,8 @@ async function handleTestConnection() {
       detail: `Connection failed: ${error.message || 'could not reach the provider'}`,
       life: 5000,
     })
+  } finally {
+    testing.value = false
   }
 }
 

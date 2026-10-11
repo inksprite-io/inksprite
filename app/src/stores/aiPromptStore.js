@@ -14,7 +14,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
-import db from './db'
+import { storage } from '@/storage/index.js'
 
 /** @typedef {import('../types/models.js').AIPrompt} AIPrompt */
 
@@ -40,7 +40,7 @@ export const useAIPromptStore = defineStore('aiPrompts', () => {
    */
   async function initialize() {
     try {
-      const stored = await db.aiPrompts.toArray()
+      const stored = await storage.all('aiPrompts')
       stored.forEach(prompt => {
         prompts.value.set(prompt.id, prompt)
       })
