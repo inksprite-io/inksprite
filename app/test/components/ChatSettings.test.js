@@ -19,12 +19,15 @@ import {
 import { INTERPRET_PROMPT, setLibrarySkills, setSkillWordings } from '@/ai/skills/index.js'
 import { useSkillStore } from '@/stores/skillStore'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { setWebSearch } from '@/web/config.js'
 
 /** The writer's skills library, as the mocked database holds it. */
-const { storedSkills, storedWordings, storedServers } = vi.hoisted(() => ({
+const { storedSkills, storedWordings, storedServers, storedWeb } = vi.hoisted(() => ({
   storedSkills: [],
   storedWordings: [],
   storedServers: [],
+  /** The web search setup, when there is one. */
+  storedWeb: { value: /** @type {any} */ (undefined) },
 }))
 
 vi.mock('@/stores/db', () => ({
@@ -33,6 +36,7 @@ vi.mock('@/stores/db', () => ({
     skills: { toArray: vi.fn(async () => [...storedSkills]) },
     skillWordings: { toArray: vi.fn(async () => [...storedWordings]) },
     mcpServers: { toArray: vi.fn(async () => [...storedServers]) },
+    webSearch: { get: vi.fn(async () => storedWeb.value) },
   },
 }))
 vi.mock('@/stores/syncStore', () => ({
@@ -407,6 +411,22 @@ describe('ChatSettings tools', () => {
     expect(toggle(wrapper, 'Skills tools')).toBeUndefined()
   })
 
+  it('lists the tools by their names in words, not as the model calls them', async () => {
+    const wrapper = await mountSettings()
+
+    expect(toggle(wrapper, 'Read document')).toBeDefined()
+    expect(toggle(wrapper, 'read_document')).toBeUndefined()
+    expect(wrapper.text()).toContain('Roll dice')
+    expect(wrapper.text()).not.toContain('roll_dice')
+  })
+
+  it('names a group already called tools once', async () => {
+    const wrapper = await mountSettings()
+
+    expect(toggle(wrapper, 'RPG Tools')).toBeDefined()
+    expect(toggle(wrapper, 'RPG Tools tools')).toBeUndefined()
+  })
+
   it('switches every group in the list off and on at once', async () => {
     chat.value.disabledTools = ['roll_dice']
     const wrapper = await mountSettings()
@@ -465,25 +485,36 @@ describe('ChatSettings tools', () => {
   it('switches one skill off on its own', async () => {
     const wrapper = await mountSettings()
 
-    await toggle(wrapper, 'Director available to the model').vm.$emit('update:modelValue', false)
+    await toggle(wrapper, 'Interpret available to the model').vm.$emit('update:modelValue', false)
 
-    expect(updateChat).toHaveBeenLastCalledWith('chat_1', { disabledTools: ['director'] })
+    expect(updateChat).toHaveBeenLastCalledWith('chat_1', { disabledTools: ['interpret'] })
   })
 
   it('switches on only the skill asked for when a profile shipped them all off', async () => {
+    // A second skill in the group, to be left off: one of the writer's.
+    storedSkills.splice(0, storedSkills.length, {
+      id: 'skill_critique',
+      name: 'critique',
+      text: '---\nname: critique\ndescription: A critique.\ncontext: fork\n---\n\nCritique it.\n',
+    })
     chat.value.disabledToolGroups = ['documents', 'rpg', 'skills']
-    const wrapper = await mountSettings()
-    const director = () => toggle(wrapper, 'Director available to the model')
-    expect(director().props('modelValue')).toBe(false)
-    // Not a dead switch: nothing else in the panel can lift the group.
-    expect(director().props('disabled')).toBe(false)
+    try {
+      const wrapper = await mountSettings()
+      const interpret = () => toggle(wrapper, 'Interpret available to the model')
+      expect(interpret().props('modelValue')).toBe(false)
+      // Not a dead switch: nothing else in the panel can lift the group.
+      expect(interpret().props('disabled')).toBe(false)
 
-    await director().vm.$emit('update:modelValue', true)
+      await interpret().vm.$emit('update:modelValue', true)
 
-    expect(chat.value.disabledToolGroups).toEqual(['documents', 'rpg'])
-    expect(chat.value.disabledTools).toEqual(['interpret'])
-    expect(director().props('modelValue')).toBe(true)
-    expect(toggle(wrapper, 'Interpret available to the model').props('modelValue')).toBe(false)
+      expect(chat.value.disabledToolGroups).toEqual(['documents', 'rpg'])
+      expect(chat.value.disabledTools).toEqual(['critique'])
+      expect(interpret().props('modelValue')).toBe(true)
+      expect(toggle(wrapper, 'Critique available to the model').props('modelValue')).toBe(false)
+    } finally {
+      storedSkills.splice(0, storedSkills.length)
+      setLibrarySkills([])
+    }
   })
 })
 
@@ -699,6 +730,57 @@ describe('ChatSettings servers', () => {
     await toggle(wrapper, 'Search').vm.$emit('update:modelValue', false)
 
     expect(updateChat).toHaveBeenLastCalledWith('chat_1', { disabledTools: ['wiki__search'] })
+  })
+})
+
+describe('ChatSettings web', () => {
+  const toggle = (wrapper, label) =>
+    wrapper
+      .findAllComponents({ name: 'ToggleSwitch' })
+      .find(one => one.props('ariaLabel') === label)
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    chat.value = {}
+    updateChat.mockClear()
+    preset.value = { toolsEnabled: true, generationOverrides: {} }
+    storedWeb.value = { id: 'web', service: 'exa', keys: {}, profiles: [CHAT_PROFILE_ID] }
+  })
+
+  afterEach(() => {
+    storedWeb.value = undefined
+    setWebSearch(null)
+  })
+
+  it('lists the web with the connections, on for a chat whose profile searches', async () => {
+    const wrapper = await mountSettings()
+
+    expect(toggle(wrapper, 'Web tools').props('modelValue')).toBe(true)
+    expect(toggle(wrapper, 'Web search')).toBeDefined()
+    expect(toggle(wrapper, 'Read web page')).toBeDefined()
+    // Not also among the groups a chat withholds.
+    expect(wrapper.find('[data-tool-group="web"]').exists()).toBe(false)
+  })
+
+  it('is off for a chat on a profile that does not search', async () => {
+    storedWeb.value = { ...storedWeb.value, profiles: [] }
+    const wrapper = await mountSettings()
+
+    expect(toggle(wrapper, 'Web tools').props('modelValue')).toBe(false)
+  })
+
+  it('writes the chat’s own choice', async () => {
+    const wrapper = await mountSettings()
+
+    await toggle(wrapper, 'Web tools').vm.$emit('update:modelValue', false)
+    expect(updateChat).toHaveBeenLastCalledWith('chat_1', { web: false })
+  })
+
+  it('is not listed while no service can search', async () => {
+    storedWeb.value = { id: 'web', service: 'kagi', keys: {}, profiles: [CHAT_PROFILE_ID] }
+    const wrapper = await mountSettings()
+
+    expect(toggle(wrapper, 'Web tools')).toBeUndefined()
   })
 })
 

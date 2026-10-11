@@ -1,6 +1,14 @@
 /* global File */
 import { describe, it, expect } from 'vitest'
-import { carriesFiles, gatherDropped, gatherFiles, isJunk } from '@/files/batch.js'
+import {
+  carriesFiles,
+  folderOf,
+  gatherDropped,
+  gatherFiles,
+  isJunk,
+  listDropped,
+  listFiles,
+} from '@/files/batch.js'
 
 /** A file as a folder chooser hands it over: with its path under the folder. */
 const chosen = (path, type = 'text/plain') => {
@@ -90,6 +98,37 @@ describe('gatherDropped', () => {
     const gathered = await gatherDropped(/** @type {any} */ (transfer))
 
     expect(gathered.map(g => [g.file.name, g.folders])).toEqual([['a.pdf', []]])
+  })
+})
+
+describe('listFiles and listDropped', () => {
+  it('list dotfiles too, for a codebase whose .gitignore says what to leave out', async () => {
+    expect(listFiles([chosen('app/.gitignore'), chosen('app/.git/config')]).length).toBe(2)
+
+    const tree = dirEntry('app', [
+      fileEntry('.gitignore'),
+      dirEntry('.git', [fileEntry('config')]),
+      fileEntry('main.c'),
+    ])
+    const transfer = { items: [{ kind: 'file', webkitGetAsEntry: () => tree }], files: [] }
+
+    const listed = await listDropped(/** @type {any} */ (transfer))
+
+    // A dot-folder is not walked: `.git` is thousands of files nobody imports.
+    expect(listed.map(g => g.file.name)).toEqual(['.gitignore', 'main.c'])
+  })
+})
+
+describe('folderOf', () => {
+  it('is the one folder everything is in, or null', () => {
+    const one = listFiles([chosen('app/a.c'), chosen('app/src/b.c')])
+    const two = listFiles([chosen('app/a.c'), chosen('lib/b.c')])
+    const loose = listFiles([chosen('app/a.c'), new File(['x'], 'b.c')])
+
+    expect(folderOf(one)).toBe('app')
+    expect(folderOf(two)).toBeNull()
+    expect(folderOf(loose)).toBeNull()
+    expect(folderOf([])).toBeNull()
   })
 })
 

@@ -4,17 +4,18 @@ import { ref } from 'vue'
 import PrimeVue from 'primevue/config'
 import ChatHistory from '../../src/components/writer/chats/ChatHistory.vue'
 
-const { mockReadChatFile, mockImportChat, mockAttach, toast } = vi.hoisted(() => ({
+const { mockReadChatFile, mockImportChat, mockAttach, toast, chatList } = vi.hoisted(() => ({
   mockReadChatFile: vi.fn(),
   mockImportChat: vi.fn(),
   mockAttach: vi.fn(),
   toast: { success: vi.fn(), warning: vi.fn(), error: vi.fn() },
+  chatList: { chats: [] },
 }))
 
 vi.mock('../../src/composables/useChats', () => ({
   useChats: () => ({
     init: vi.fn(async () => {}),
-    chats: ref([]),
+    chats: ref(chatList.chats),
     chatMessages: ref(new Map()),
     importChat: mockImportChat,
   }),
@@ -48,7 +49,27 @@ describe('ChatHistory', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    chatList.chats = []
     mockImportChat.mockReturnValue({ id: 'chat_new', title: 'Elara - Branch #4' })
+  })
+
+  describe('with no chats yet', () => {
+    it('offers no search, with nothing to search', () => {
+      expect(mountHistory().find('[data-chat-search]').exists()).toBe(false)
+    })
+
+    it('says where to start one, without assuming a story', () => {
+      const text = mountHistory().text()
+
+      expect(text).toContain('No chats yet')
+      expect(text).not.toMatch(/story/i)
+    })
+  })
+
+  it('offers a search once there are chats', () => {
+    chatList.chats = [{ id: 'chat_1', title: 'Plot holes', created: 1 }]
+
+    expect(mountHistory().find('[data-chat-search]').exists()).toBe(true)
   })
 
   it('takes a SillyTavern chat as well as one of its own', () => {

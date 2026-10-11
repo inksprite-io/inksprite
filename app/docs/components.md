@@ -18,22 +18,27 @@
 - [][14]
 - [][15]
 - [][16]
-- [DEFAULT_LAYOUT][17]
+- [][17]
 - [DEFAULT_LAYOUT][18]
-- [NO_PROJECT_LAYOUT][19]
-- [CONTENT_PANELS][20]
-- [normalizeLayout][21]
-  - [Parameters][22]
-- [isSidebarTab][23]
-  - [Parameters][24]
-- [][25]
-- [selectSidebarTab][26]
-  - [Parameters][27]
-- [canHide][28]
-  - [Parameters][29]
-- [togglePanel][30]
-  - [Parameters][31]
-- [ROW_SIZES][32]
+- [DEFAULT_LAYOUT][19]
+- [NO_PROJECT_LAYOUT][20]
+- [CONTENT_PANELS][21]
+- [normalizeLayout][22]
+  - [Parameters][23]
+- [isSidebarTab][24]
+  - [Parameters][25]
+- [][26]
+- [selectSidebarTab][27]
+  - [Parameters][28]
+- [canHide][29]
+  - [Parameters][30]
+- [togglePanel][31]
+  - [Parameters][32]
+- [ROW_SIZES][33]
+- [keptSizes][34]
+  - [Parameters][35]
+- [shownLayout][36]
+  - [Parameters][37]
 
 ## components
 
@@ -52,7 +57,7 @@ Vue components for the inksprite application UI.
 
 - **writer/** - The whole application, once past the OAuth callback
   - `layout/` - The writer's frame. A 48px rail (`AppNavbar`) picks what the
-    sidebar shows (outline, chats, narration), toggles the three panels that
+    sidebar shows (outline, chats, narration, comments), toggles the three panels that
     `DesktopView` lays side by side (`LeftSidebar`, `EditorPanel`,
     `ChatPanel`), and opens the settings. Which are showing is the story's
     `layout`, with the rules in `layout.js`: the editor and the chat are never
@@ -66,7 +71,12 @@ Vue components for the inksprite application UI.
     projects and starting or importing one, and the new-project dialog
   - `editor/` - The editor over a structured document, the field over a
     plain one, the strip of tabs above them, and the empty editor for a
-    project with no documents or no tabs
+    project with no documents or no tabs. A comment is written under the
+    line in `CommentPopover`, on a selection by Mod-Shift-M or
+    `CommentButton`, and shows there while the caret is in its passage
+  - `comments/` - `CommentsPanel`, the project's comments in the sidebar:
+    picking one opens its document, where `Editor` scrolls to it and marks
+    it; Resolve takes it off
   - `tree/` - The document tree and its nodes
   - `chats/` - A chat, its list, and its settings
   - `narration/` - The document in the editor read aloud: `NarrationPanel`
@@ -108,15 +118,16 @@ All components follow Vue 3 Composition API patterns:
 
 The writer's panel arrangement: which of the sidebar, the editor
 and the chat are showing, and which list the sidebar is on — the outline,
-the chats, or the narration of the open document. It is kept on the story
+the chats, the narration of the open document, or the project's comments. It is kept on the story
 rather than app-wide, so each project reopens the way it was left:
 an adventure chat-only, a novel with the editor beside its chat.
 
 The rail picks the sidebar's list, and picking the list showing hides the
 sidebar; the editor and the chat each hide the other from a toggle at the
 edge of their header. The sidebar's width is its own, and the editor and
-the chat divide the rest. The rules for all of it are here, as pure
-functions over the layout.
+the chat divide the rest. In a window too narrow for all three, the sidebar
+and the chat take turns beside the editor. The rules for all of it are
+here, as pure functions over the layout.
 
 ## PANELS
 
@@ -148,6 +159,10 @@ Type: `"chats"`
 
 Type: `"narration"`
 
+##
+
+Type: `"comments"`
+
 ## DEFAULT_LAYOUT
 
 ## DEFAULT_LAYOUT
@@ -174,7 +189,7 @@ so nothing that was saved can open onto an empty screen.
 
 ### Parameters
 
-- `stored` **(Partial\<StoryLayout> | null | [undefined][33])**&#x20;
+- `stored` **(Partial\<StoryLayout> | null | [undefined][38])**&#x20;
 
 Returns **StoryLayout**&#x20;
 
@@ -212,7 +227,7 @@ both hidden: the last one showing stays.
 - `layout` **StoryLayout**&#x20;
 - `panel` **[Panel][13]**&#x20;
 
-Returns **[boolean][34]**&#x20;
+Returns **[boolean][39]**&#x20;
 
 ## togglePanel
 
@@ -236,8 +251,37 @@ Returns **StoryLayout**&#x20;
 Starting widths, as percentages, for the sidebar against the content and,
 within the content, for the editor against the chat. A panel hidden leaves
 the whole of its splitter to the other and comes back to the split as it
-was; the splitter remembers what the writer drags it to, so these matter
-only the first time.
+was; what the writer drags a splitter to is kept from one session to the
+next, so these matter only the first time.
+
+## keptSizes
+
+The widths a splitter was last dragged to, as kept, or the starting ones
+when what is kept is not a width for each of its panels: nothing yet, or
+something an older version or another hand left there.
+
+### Parameters
+
+- `kept` **unknown** What was read back from storage
+- `starting` **[Array][40]<[number][41]>** The splitter's starting widths, one per panel
+
+Returns **[Array][40]<[number][41]>**&#x20;
+
+## shownLayout
+
+What of a layout shows in the window. In a narrow one the sidebar and the
+chat take turns beside the editor: with all three on, the chat folds away
+while the sidebar is open, and comes back when it closes. Only what shows
+changes; the layout is left as the writer set it, so a wider window shows
+all three again.
+
+### Parameters
+
+- `layout` **StoryLayout**&#x20;
+- `narrow` **[boolean][39]** Whether the window is too narrow for all three;
+  see useScreenSize
+
+Returns **StoryLayout**&#x20;
 
 [1]: #components
 [2]: #component-structure
@@ -255,21 +299,28 @@ only the first time.
 [14]: #-3
 [15]: #-4
 [16]: #-5
-[17]: #default_layout
-[18]: #default_layout-1
-[19]: #no_project_layout
-[20]: #content_panels
-[21]: #normalizelayout
-[22]: #parameters
-[23]: #issidebartab
-[24]: #parameters-1
-[25]: #-6
-[26]: #selectsidebartab
-[27]: #parameters-2
-[28]: #canhide
-[29]: #parameters-3
-[30]: #togglepanel
-[31]: #parameters-4
-[32]: #row_sizes
-[33]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[34]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[17]: #-6
+[18]: #default_layout
+[19]: #default_layout-1
+[20]: #no_project_layout
+[21]: #content_panels
+[22]: #normalizelayout
+[23]: #parameters
+[24]: #issidebartab
+[25]: #parameters-1
+[26]: #-7
+[27]: #selectsidebartab
+[28]: #parameters-2
+[29]: #canhide
+[30]: #parameters-3
+[31]: #togglepanel
+[32]: #parameters-4
+[33]: #row_sizes
+[34]: #keptsizes
+[35]: #parameters-5
+[36]: #shownlayout
+[37]: #parameters-6
+[38]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[39]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[40]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[41]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number

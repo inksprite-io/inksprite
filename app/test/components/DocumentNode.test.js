@@ -12,9 +12,16 @@ import { useDocumentsStore } from '../../src/stores/documentsStore'
 import { useChatsStore } from '../../src/stores/chatsStore'
 import { clearChatsInstances, useChats } from '../../src/composables/useChats'
 import { LONG_PRESS_MS } from '../../src/composables/useLongPress.js'
+import { OPEN_AFTER, useTreeDrop } from '../../src/composables/useTreeDrop.js'
 
 const reextractFile = vi.fn()
 vi.mock('../../src/files/write.js', () => ({ reextractFile: (...args) => reextractFile(...args) }))
+
+const downloadBlob = vi.fn()
+vi.mock('../../src/files/download.js', async importOriginal => ({
+  ...(await importOriginal()),
+  downloadBlob: (...args) => downloadBlob(...args),
+}))
 
 vi.mock('../../src/stores/db', () => ({
   default: {
@@ -386,7 +393,7 @@ describe('DocumentNode', () => {
 
     expect(wrapper.find('span.truncate').classes()).not.toContain('opacity-60')
     items()
-      .find(item => item.label === 'Hide')
+      .find(item => item.label === 'Hide from all chats')
       .command()
     await wrapper.vm.$nextTick()
 
@@ -395,8 +402,99 @@ describe('DocumentNode', () => {
     // toggle. The same menu entry now does the reverse.
     expect(wrapper.find('span.truncate').classes()).toContain('opacity-60')
     expect(wrapper.find('.pi-eye-slash').exists()).toBe(false)
-    expect(labels()).toContain('Unhide')
-    expect(labels()).not.toContain('Hide')
+    expect(labels()).toContain('Unhide in all chats')
+    expect(labels()).not.toContain('Hide from all chats')
+  })
+
+  it('shows a title cut short whole in its tooltip, and a title that fits none', async () => {
+    const chapter = api.createTextDocument('manuscript_story_1', 'A very long chapter title')
+    const wrapper = mountNode(chapter.id)
+    const title = wrapper.find('span.truncate')
+    expect(title.attributes('title')).toBeUndefined()
+
+    Object.defineProperty(title.element, 'scrollWidth', { value: 300, configurable: true })
+    Object.defineProperty(title.element, 'clientWidth', { value: 120, configurable: true })
+    await title.trigger('mouseenter')
+    expect(title.attributes('title')).toBe('A very long chapter title')
+
+    Object.defineProperty(title.element, 'scrollWidth', { value: 120, configurable: true })
+    await title.trigger('mouseenter')
+    expect(title.attributes('title')).toBeUndefined()
+  })
+
+  it('downloads a text document as markdown, as it stands', async () => {
+    const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1', 'She *ran*.')
+    const items = mountNode(chapter.id).findComponent({ name: 'ContextMenu' }).props('model')
+
+    items.find(item => item.label === 'Download').command()
+
+    const [blob, filename] = downloadBlob.mock.calls.at(-1)
+    expect(filename).toBe('Chapter 1.md')
+    expect(blob.type).toBe('text/markdown')
+    expect(await blob.text()).toBe('She *ran*.')
+  })
+
+  it('duplicates a text document beside it, and opens the copy', async () => {
+    const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1', 'She ran.')
+    const wrapper = mountNode(chapter.id)
+
+    wrapper
+      .findComponent({ name: 'ContextMenu' })
+      .props('model')
+      .find(item => item.label === 'Duplicate')
+      .command()
+
+    const copy = api.childrenOf('manuscript_story_1').find(child => child.title === 'Chapter 1 (2)')
+    expect(copy.content).toBe('She ran.')
+    expect(wrapper.emitted('open')).toEqual([[copy.id]])
+  })
+
+  describe('dropped on', () => {
+    afterEach(() => {
+      useTreeDrop().end()
+      vi.useRealTimers()
+    })
+
+    /** Drag `documentId` over the middle of a row, as the tracker sees it. */
+    const holdOver = (row, documentId) => {
+      row.element.getBoundingClientRect = () => ({ top: 0, height: 40, bottom: 40 })
+      document.elementFromPoint = () => row.element
+      useTreeDrop().start('story_1', documentId)
+      const over = new Event('dragover')
+      Object.assign(over, { clientX: 5, clientY: 20 })
+      document.dispatchEvent(over)
+    }
+
+    it('marks a folder’s row as where the drop goes, and opens a shut one after a moment', async () => {
+      vi.useFakeTimers()
+      const act = api.createFolder('manuscript_story_1', 'First Act')
+      api.createTextDocument(act.id, 'Opening')
+      const loose = api.createTextDocument('notes_story_1', 'Loose')
+      const wrapper = mountNode(act.id)
+      await row(wrapper, act.id).trigger('click')
+      expect(row(wrapper, act.id).attributes('aria-expanded')).toBe('false')
+
+      holdOver(row(wrapper, act.id), loose.id)
+      await wrapper.vm.$nextTick()
+      expect(row(wrapper, act.id).attributes('data-drop-target')).toBe('true')
+
+      vi.advanceTimersByTime(OPEN_AFTER)
+      await wrapper.vm.$nextTick()
+      expect(row(wrapper, act.id).attributes('aria-expanded')).toBe('true')
+
+      useTreeDrop().end()
+      expect(api.get(loose.id).parentId).toBe(act.id)
+    })
+  })
+
+  it('says an open folder is empty, and not once something is in it', async () => {
+    const act = api.createFolder('manuscript_story_1', 'First Act')
+    const wrapper = mountNode(act.id)
+    expect(wrapper.find('[data-empty-folder]').text()).toBe('Empty')
+
+    api.createTextDocument(act.id, 'Opening')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[data-empty-folder]').exists()).toBe(false)
   })
 
   it('dims everything under a hidden folder', () => {
@@ -441,7 +539,7 @@ describe('DocumentNode', () => {
       const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
       const labels = menuOf(mountNode(chapter.id, { chatId: CHAT }))().map(item => item.label)
 
-      expect(labels).toContain('Hide')
+      expect(labels).toContain('Hide from all chats')
       for (const item of chatItems) expect(labels).not.toContain(item)
     })
 
@@ -492,7 +590,7 @@ describe('DocumentNode', () => {
       expect(pin().attributes('aria-label')).toBe('Pinned to this chat')
       // At rest the row says so by its colour, not by an icon: the toggle
       // only shows on hover, whatever state it is in.
-      expect(pin().classes()).toContain('opacity-0')
+      expect(wrapper.find('[data-row-toggles]').classes()).toContain('opacity-0')
       expect(title().classes()).toContain('text-primary-600')
       expect(title().attributes('title')).toBe('In this chat’s context')
 
@@ -626,7 +724,7 @@ describe('DocumentNode', () => {
       .props('model')
       .map(item => item.label)
 
-    expect(labels).not.toContain('Hide')
+    expect(labels).not.toContain('Hide from all chats')
   })
 
   it('offers to copy the path the tools address the document by', async () => {
@@ -653,14 +751,16 @@ describe('DocumentNode', () => {
       wrapper
         .findComponent({ name: 'ContextMenu' })
         .props('model')
-        .find(each => each.icon === 'pi pi-code')
+        .find(each => each.label === 'Edit in plain text editor')
 
-    expect(item().label).toBe('Edit as plain text')
+    expect(item().icon).toBe('pi pi-code')
     item().command()
     await wrapper.vm.$nextTick()
 
+    // The same switch, ticked.
     expect(api.isPlain(chapter.id)).toBe(true)
-    expect(labels()).toContain('Edit as a document')
+    expect(item().icon).toBe('pi pi-check')
+    expect(labels().filter(label => label === 'Edit in plain text editor')).toHaveLength(1)
   })
 
   it('offers no plain-text switch on a folder', () => {
@@ -671,7 +771,7 @@ describe('DocumentNode', () => {
       .props('model')
       .map(item => item.label)
 
-    expect(labels).not.toContain('Edit as plain text')
+    expect(labels).not.toContain('Edit in plain text editor')
   })
 
   it('opens the actions at the pointer on right-click, and from the menu key', async () => {
@@ -781,6 +881,57 @@ describe('DocumentNode', () => {
       expect(row(open, chapter.id).attributes('aria-selected')).toBe('true')
     })
 
+    it('is one stop for Tab, named by its title alone', () => {
+      const act = api.createFolder('manuscript_story_1', 'First Act')
+      clearChatsInstances()
+      useChatsStore().chats.set('chat_1', { id: 'chat_1', storyId: 'story_1', title: 'Chat' })
+      const wrapper = mountNode(act.id, { chatId: 'chat_1' })
+      const folder = row(wrapper, act.id)
+
+      expect(folder.attributes('aria-label')).toBe('First Act')
+      // The twisty and the chat's toggles are the mouse's; the arrows twist.
+      const buttons = folder.findAll('button')
+      expect(buttons.length).toBeGreaterThan(1)
+      for (const button of buttons) expect(button.attributes('tabindex')).toBe('-1')
+    })
+
+    it('offers the chat’s marks on the menu opened from the keys, which cannot reach the toggles', async () => {
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      clearChatsInstances()
+      useChatsStore().chats.set('chat_1', { id: 'chat_1', storyId: 'story_1', title: 'Chat' })
+      const wrapper = mountNode(chapter.id, { chatId: 'chat_1' })
+      const labels = () =>
+        wrapper
+          .findComponent({ name: 'ContextMenu' })
+          .props('model')
+          .map(item => item.label)
+
+      await wrapper.find('.group').trigger('contextmenu')
+      expect(labels()).not.toContain('Pin to chat')
+
+      await wrapper.find('.group').trigger('keydown', { key: 'ContextMenu' })
+      expect(labels()).toContain('Pin to chat')
+      expect(labels()).toContain('Hide from this chat')
+    })
+
+    it('gives the focus back to the row when a menu it opened shuts', async () => {
+      vi.useFakeTimers()
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      const wrapper = mountInTree(chapter.id)
+      const chapterRow = row(wrapper, chapter.id)
+
+      await chapterRow.trigger('keydown', { key: 'ContextMenu' })
+      // Escape, which leaves the focus on the page.
+      const focused = /** @type {HTMLElement} */ (document.activeElement)
+      focused.blur()
+      wrapper.findComponent({ name: 'ContextMenu' }).vm.$emit('hide')
+      vi.runAllTimers()
+
+      expect(document.activeElement).toBe(chapterRow.element)
+      vi.useRealTimers()
+      wrapper.unmount()
+    })
+
     it('opens a document on Enter and on Space', async () => {
       const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
       const wrapper = mountNode(chapter.id)
@@ -875,7 +1026,7 @@ describe('DocumentNode', () => {
       expect(labels).toContain('Show as text')
       expect(labels).toContain('Re-extract text')
       expect(labels).toContain('Download')
-      expect(labels).not.toContain('Edit as plain text')
+      expect(labels).not.toContain('Edit in plain text editor')
     })
 
     it('offers conversion for a file with text, and not for a document or a conversion', () => {
@@ -1141,5 +1292,61 @@ describe('DocumentNode, in a repository', () => {
     expect(api.canDropInto(folder.id, 'manuscript_story_1')).toBe(false)
     expect(api.canDropInto('root_story_1', source.id)).toBe(false)
     expect(api.canDropInto('root_story_1', repository.id)).toBe(true)
+  })
+
+  it('asks about the folder a drag is over, not the one it started in', () => {
+    const note = store.createDocument({
+      storyId: 'story_1',
+      parentId: 'root_story_1',
+      type: 'text',
+      title: 'Note',
+    })
+    // Sortable asks the list the drag started in: here, the project's.
+    const move = mountNode('root_story_1', { canDelete: false })
+      .findComponent({ name: 'draggable' })
+      .props('move')
+    const over = folderId => ({
+      draggedContext: { element: { id: note.id } },
+      to: { dataset: { folderId } },
+    })
+
+    expect(move(over(repository.id))).toBe(false)
+    expect(move(over(folder.id))).toBe(false)
+    expect(move(over('root_story_1'))).toBe(true)
+  })
+
+  it('names the folder each list is, for a drag to read', () => {
+    const list = mountNode(repository.id).find('[role="group"]')
+    expect(list.attributes('data-folder-id')).toBe(repository.id)
+  })
+
+  it('moves nothing into a repository, or out of one, whatever lets a drop through', () => {
+    const api = useDocuments('story_1')
+    const note = store.createDocument({
+      storyId: 'story_1',
+      parentId: 'root_story_1',
+      type: 'text',
+      title: 'Note',
+    })
+
+    api.reorder(folder.id, [source.id, note.id])
+    api.reorder('root_story_1', [note.id, source.id])
+
+    expect(store.getDocument(note.id).parentId).toBe('root_story_1')
+    expect(store.getDocument(source.id).parentId).toBe(folder.id)
+  })
+
+  it('lets a text document that is in a repository be moved out, as it was never its own', () => {
+    const api = useDocuments('story_1')
+    const stray = store.createDocument({
+      storyId: 'story_1',
+      parentId: folder.id,
+      type: 'text',
+      title: 'Stray',
+    })
+
+    expect(api.canDropInto('root_story_1', stray.id)).toBe(true)
+    api.reorder('root_story_1', [stray.id])
+    expect(store.getDocument(stray.id).parentId).toBe('root_story_1')
   })
 })

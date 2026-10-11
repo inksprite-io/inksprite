@@ -36,6 +36,49 @@
         </div>
 
         <div class="flex flex-col gap-4">
+          <template v-if="advice">
+            <h3 class="text-md font-semibold text-surface-500 dark:text-surface-300">
+              Browser Storage
+            </h3>
+            <div
+              data-storage-warning
+              class="flex flex-col gap-2 text-surface-700 dark:text-surface-400"
+            >
+              <p>
+                <strong class="text-red-600 dark:text-red-400">Warning:</strong> all data is stored
+                in your browser. If this site's data is deleted, your work will be lost. Back up
+                regularly from Settings › System.
+              </p>
+              <p>
+                <template v-if="advice.desktopApp">
+                  You can also try the
+                  <a
+                    href="https://github.com/inksprite-io/inksprite/releases/latest"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+                    >desktop version</a
+                  >.
+                </template>
+              </p>
+              <p v-if="advice.clearsAfterAWeek" data-safari-warning>
+                <strong class="text-red-600 dark:text-red-400"
+                  >Safari automatically clears site data after a week of inactivity.</strong
+                >
+                <template v-if="advice.homeScreen">
+                  You can avoid this by adding inksprite to your
+                  <a
+                    href="https://support.apple.com/guide/iphone/bookmark-a-website-iph42ab2f3a7/ios#iph4f9a47bbc"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-primary-600 dark:text-primary-400 hover:underline font-medium"
+                    >Home Screen</a
+                  >.
+                </template>
+              </p>
+            </div>
+          </template>
+
           <h3 class="text-md font-semibold text-surface-500 dark:text-surface-300">Getting Help</h3>
           <div class="flex flex-col text-surface-700 dark:text-surface-400 gap-3">
             <p>
@@ -85,6 +128,8 @@
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { isDesktop } from '@/platform/desktop.js'
+import { storageAdvice } from '@/platform/persistence.js'
 
 /**
  * @typedef {Object} Props
@@ -100,6 +145,9 @@ defineProps({
 defineEmits(['update:visible'])
 
 const appState = useApplicationState()
+
+/** What the writer is told about keeping their work; nothing in the desktop app, which keeps it on disk. */
+const advice = isDesktop() ? null : storageAdvice()
 
 /**
  * Handle close button click

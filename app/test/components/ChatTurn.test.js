@@ -333,3 +333,47 @@ describe('ChatTurn', () => {
     })
   })
 })
+
+describe('ChatTurn header', () => {
+  const actions = wrapper => wrapper.find('[data-turn-actions]')
+
+  it('floats its hidden buttons over the end of the line on a wide screen', async () => {
+    window.innerWidth = 1280
+    const wrapper = show([message('m1', 'assistant')])
+    await wrapper.vm.$nextTick()
+
+    // In the line, they wrapped under a long one and left a line of nothing.
+    expect(actions(wrapper).classes()).toContain('absolute')
+    expect(actions(wrapper).classes()).toContain('opacity-0')
+  })
+
+  it('keeps them in the line on a phone, where they are always shown', async () => {
+    window.innerWidth = 400
+    const wrapper = show([message('m1', 'assistant')])
+    await wrapper.vm.$nextTick()
+
+    expect(actions(wrapper).classes()).not.toContain('absolute')
+    window.innerWidth = 1024
+  })
+})
+
+describe('ChatTurn for a screen reader', () => {
+  it('names every button, the answer arrows among them', () => {
+    const wrapper = show(
+      [
+        message('m1', 'assistant', {
+          alternates: [{ content: 'a' }, { content: 'b' }],
+          alternate: 1,
+        }),
+      ],
+      '',
+      { isLast: true }
+    )
+
+    expect(wrapper.find('[aria-label="Previous answer"]').exists()).toBe(true)
+    const unnamed = wrapper
+      .findAll('button')
+      .filter(each => !each.attributes('aria-label') && !each.text().trim())
+    expect(unnamed).toHaveLength(0)
+  })
+})

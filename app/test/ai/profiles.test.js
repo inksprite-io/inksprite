@@ -18,6 +18,13 @@ import {
   DEFAULT_ROLEPLAY_NSFW_NOTE,
 } from '@/ai/prompts/index.js'
 import { TOOL_GROUP_LABELS } from '@/ai/tools/index.js'
+import { WEB_GROUP } from '@/ai/tools/web.js'
+
+/**
+ * The groups a profile withholds by naming them. The web is not one: it is
+ * opted into, as a server's tools are, so no profile has to withhold it.
+ */
+const WITHHELD_GROUPS = Object.keys(TOOL_GROUP_LABELS).filter(id => id !== WEB_GROUP)
 
 describe('chat profiles', () => {
   describe('the built-ins', () => {
@@ -35,7 +42,7 @@ describe('chat profiles', () => {
       const blank = getBuiltInProfile(BLANK_PROFILE_ID).settings
 
       expect(blank.prompt).toBe('')
-      expect([...blank.disabledToolGroups].sort()).toEqual(Object.keys(TOOL_GROUP_LABELS).sort())
+      expect([...blank.disabledToolGroups].sort()).toEqual([...WITHHELD_GROUPS].sort())
       expect(blank.projectContextEnabled).toBe(false)
       expect(blank.rules).toBeUndefined()
     })
@@ -45,7 +52,7 @@ describe('chat profiles', () => {
 
       expect(stamped).toMatchObject({
         profileId: BLANK_PROFILE_ID,
-        disabledToolGroups: expect.arrayContaining(Object.keys(TOOL_GROUP_LABELS)),
+        disabledToolGroups: expect.arrayContaining(WITHHELD_GROUPS),
         projectContextEnabled: false,
       })
       expect(stamped).not.toHaveProperty('prompt')
@@ -66,9 +73,7 @@ describe('chat profiles', () => {
       // The ids are written out in the profile rather than imported, so this is
       // what keeps them honest: a renamed group would otherwise turn into a
       // profile that quietly offers the tools it means to withhold.
-      expect(roleplay.settings.disabledToolGroups.sort()).toEqual(
-        Object.keys(TOOL_GROUP_LABELS).sort()
-      )
+      expect(roleplay.settings.disabledToolGroups.sort()).toEqual([...WITHHELD_GROUPS].sort())
     })
 
     it('gives the roleplay profiles standing rules and Default none', () => {

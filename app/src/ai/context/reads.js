@@ -3,12 +3,12 @@
  * @description What the model has read of the project that is still in the
  * conversation, and which of it has changed since.
  *
- * A turn's calls to the document tools go back with the conversation on every
- * later turn, where they were made (ai/context/build.js). A read is a record of
- * one moment, though: a chapter read and then edited would be quoted as it
- * was. So each read leaves three notes on its result in the stored trajectory
- * (the document, its path, and a hash of the text it read), and two things
- * read them:
+ * A turn's calls go back with the conversation on every later turn, where they
+ * were made, the document tools' among them (ai/context/build.js). A read is a
+ * record of one moment, though: a chapter read and then edited would be quoted
+ * as it was. So each read leaves three notes on its result in the stored
+ * trajectory (the document, its path, and a hash of the text it read), and two
+ * things read them:
  *
  * - the project block, which lists what has changed since its latest read:
  *   edited, moved, or gone;
@@ -17,7 +17,9 @@
  *
  * A read a summary stands in for is not in view, and nothing here counts it.
  * A turn written before document calls stayed in the conversation is not
- * marked, and its reads are not in view either: none of them go back.
+ * marked, and its reads are not in view either: none of them go back. A turn
+ * written since carries one of two marks: `documentCallsKept`, from when only
+ * the document calls went back, or `callsKept`, from when every call did.
  *
  * Nothing here reaches a store. It is handed messages and hands back what is in
  * them. See .llm/project_context_design.md.
@@ -40,14 +42,25 @@ import { applyCompaction } from '../compaction.js'
  */
 
 /**
- * Whether a turn's document calls go back with the conversation: every turn
+ * Whether every call a turn made goes back with the conversation: every turn
  * written since they began to, which says so on its metadata.
  *
  * @param {Message} message
  * @returns {boolean}
  */
+export function keepsEveryCall(message) {
+  return message?.metadata?.callsKept === true
+}
+
+/**
+ * Whether a turn's document calls go back with the conversation: one that
+ * keeps every call, and one written while only the document calls went back.
+ *
+ * @param {Message} message
+ * @returns {boolean}
+ */
 export function keepsDocumentCalls(message) {
-  return message?.metadata?.documentCallsKept === true
+  return keepsEveryCall(message) || message?.metadata?.documentCallsKept === true
 }
 
 /**

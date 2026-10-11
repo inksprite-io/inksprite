@@ -1,14 +1,24 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { reactive, ref } from 'vue'
 import PrimeVue from 'primevue/config'
+import ToastService from 'primevue/toastservice'
 import JobsToast from '@/components/writer/jobs/JobsToast.vue'
 import { formatElapsed, progressOf } from '@/composables/useJobs.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
 
 const jobs = ref([])
 const activity = reactive({})
-const actions = { pause: vi.fn(), resume: vi.fn(), cancel: vi.fn(), remove: vi.fn(), load: vi.fn() }
+const actions = {
+  pause: vi.fn(),
+  resume: vi.fn(),
+  cancel: vi.fn(),
+  remove: vi.fn(),
+  load: vi.fn(),
+  openResult: vi.fn(async () => true),
+}
+const router = { push: vi.fn() }
+vi.mock('vue-router', () => ({ useRouter: () => router }))
 const projects = { s1: 'Rulebooks', s2: 'Novel' }
 vi.mock('@/composables/useJobs.js', async importOriginal => {
   const original = await importOriginal()
@@ -37,7 +47,7 @@ const job = (status, steps, extra = {}) => ({
   ...extra,
 })
 
-const mountToast = () => mount(JobsToast, { global: { plugins: [PrimeVue] } })
+const mountToast = () => mount(JobsToast, { global: { plugins: [PrimeVue, ToastService] } })
 
 describe('the jobs toast', () => {
   beforeEach(() => {
@@ -78,8 +88,8 @@ describe('the jobs toast', () => {
 
     expect(wrapper.find('[data-jobs-running]').text()).toBe('1 running')
     const where = id => wrapper.find(`[data-job-id="${id}"] [data-job-where]`).text()
-    expect(where('job_running')).toBe('Rulebooks · 1 of 3 done')
-    expect(where('job_done')).toBe('Novel · 1 step done in 1m 05s')
+    expect(where('job_running')).toBe('Rulebooks · 1 of 3 steps done')
+    expect(where('job_done')).toBe('Novel · 1 of 1 step done in 1m 05s')
     expect(wrapper.find('[data-job-id="job_running"] [data-job-status-line]').text()).toContain(
       'Pages 9–16'
     )
@@ -119,6 +129,56 @@ describe('the jobs toast', () => {
     expect(actions.cancel).toHaveBeenCalledWith('job_paused')
     await click('job_done', 0)
     expect(actions.remove).toHaveBeenCalledWith('job_done')
+  })
+
+  it('says how far a job got the same way before and after it is done', () => {
+    jobs.value = [
+      job(
+        'paused',
+        [
+          { id: 'a', label: 'a', status: 'done' },
+          { id: 'b', label: 'b', status: 'pending' },
+        ],
+        { elapsed: 5000 }
+      ),
+      job('done', [
+        { id: 'a', label: 'a', status: 'done' },
+        { id: 'b', label: 'b', status: 'done' },
+      ]),
+    ]
+    const wrapper = mountToast()
+    const where = id => wrapper.find(`[data-job-id="${id}"] [data-job-where]`).text()
+
+    expect(where('job_paused')).toBe('Rulebooks · 1 of 2 steps done · 5s')
+    expect(where('job_done')).toBe('Rulebooks · 2 of 2 steps done')
+  })
+
+  it('opens what a finished job wrote, in its project', async () => {
+    jobs.value = [
+      job('done', [{ id: 'a', label: 'a', status: 'done' }], { resultId: 'doc_copy' }),
+      { ...job('cancelled', [{ id: 'a', label: 'a', status: 'pending' }]) },
+    ]
+    const wrapper = mountToast()
+
+    expect(
+      wrapper.find('[data-job-id="job_cancelled"] [data-action="open-job-result"]').exists()
+    ).toBe(false)
+    await wrapper.find('[data-job-id="job_done"] [data-action="open-job-result"]').trigger('click')
+    await flushPromises()
+
+    expect(actions.openResult).toHaveBeenCalledWith(expect.objectContaining({ id: 'job_done' }))
+    expect(router.push).toHaveBeenCalledWith('/project/s1')
+  })
+
+  it('stays where it is when what the job wrote has since been deleted', async () => {
+    actions.openResult.mockResolvedValueOnce(false)
+    jobs.value = [job('done', [{ id: 'a', label: 'a', status: 'done' }], { resultId: 'doc_gone' })]
+    const wrapper = mountToast()
+
+    await wrapper.find('[data-action="open-job-result"]').trigger('click')
+    await flushPromises()
+
+    expect(router.push).not.toHaveBeenCalled()
   })
 
   it('asks to be closed from its own button', async () => {

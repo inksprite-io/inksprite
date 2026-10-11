@@ -961,7 +961,8 @@ describe('/name', () => {
 
     expect(command.result.split('\n')).toHaveLength(3)
     // One per line, and nothing about what was asked: that is in the parameter.
-    expect(command.result.split('\n').every(name => /^\S+ \S+$/.test(name))).toBe(true)
+    // A surname can be more than one word (Van Dyke, St. John).
+    expect(command.result.split('\n').every(name => /^\S+( \S+)+$/.test(name))).toBe(true)
     expect(command.label).toBeUndefined()
   })
 

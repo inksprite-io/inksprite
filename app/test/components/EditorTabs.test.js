@@ -57,6 +57,46 @@ describe('EditorTabs', () => {
     expect(wrapper.emitted('close')).toBeUndefined()
   })
 
+  it('marks a document in the plain text editor, and no other', () => {
+    const wrapper = mountStrip({ items: [items[0], { ...items[1], plain: true }] })
+    expect(tab(wrapper, 'doc_1').find('[data-plain]').exists()).toBe(false)
+    expect(tab(wrapper, 'doc_2').find('[data-plain]').exists()).toBe(true)
+  })
+
+  it('is named by its title, and not by its close button', () => {
+    const wrapper = mountStrip({ items: [items[0], { ...items[1], plain: true }] })
+    expect(tab(wrapper, 'doc_1').attributes('aria-label')).toBe(items[0].title)
+    expect(tab(wrapper, 'doc_2').attributes('aria-label')).toBe(`${items[1].title}, plain text`)
+  })
+
+  describe('from the keyboard', () => {
+    it('is one stop for Tab, on the tab showing', () => {
+      const wrapper = mountStrip({ activeId: 'doc_2' })
+      expect(tab(wrapper, 'doc_1').attributes('tabindex')).toBe('-1')
+      expect(tab(wrapper, 'doc_2').attributes('tabindex')).toBe('0')
+      expect(tab(wrapper, 'doc_2').find('button').attributes('tabindex')).toBe('-1')
+    })
+
+    it('brings a tab forward on Enter and on Space, and closes it on Delete', async () => {
+      const wrapper = mountStrip()
+      await tab(wrapper, 'doc_2').trigger('keydown', { key: 'Enter' })
+      await tab(wrapper, 'doc_2').trigger('keydown', { key: ' ' })
+      await tab(wrapper, 'doc_2').trigger('keydown', { key: 'Delete' })
+      expect(wrapper.emitted('activate')).toEqual([['doc_2'], ['doc_2']])
+      expect(wrapper.emitted('close')).toEqual([['doc_2']])
+    })
+
+    it('goes along the strip with the arrows', async () => {
+      const wrapper = mountStrip()
+      document.body.appendChild(wrapper.element)
+      await tab(wrapper, 'doc_1').trigger('keydown', { key: 'ArrowRight' })
+      expect(document.activeElement).toBe(tab(wrapper, 'doc_2').element)
+      await tab(wrapper, 'doc_2').trigger('keydown', { key: 'ArrowRight' })
+      expect(document.activeElement).toBe(tab(wrapper, 'doc_1').element)
+      wrapper.element.remove()
+    })
+  })
+
   it('names the close button after its document', () => {
     const wrapper = mountStrip()
     expect(tab(wrapper, 'doc_1').find('button').attributes('aria-label')).toBe('Close Chapter One')

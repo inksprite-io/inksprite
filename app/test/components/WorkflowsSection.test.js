@@ -119,11 +119,11 @@ describe('WorkflowsSection', () => {
     expect(setWorkflow).not.toHaveBeenCalled()
   })
 
-  it('calls it Reasoning Effort and offers what the AI section offers', () => {
+  it('calls it Reasoning effort and offers what the AI section offers', () => {
     state.value = { convert: { providerId: 'p2', model: 'sonnet', reasoningEffort: 'high' } }
     const wrapper = mountSection()
 
-    expect(wrapper.text()).toContain('Reasoning Effort')
+    expect(wrapper.text()).toContain('Reasoning effort')
     expect(wrapper.text()).not.toContain('Thinking')
     const select = wrapper.findComponent({ name: 'Select' })
     expect(select.props('options')).toBe(REASONING_EFFORT_OPTIONS)

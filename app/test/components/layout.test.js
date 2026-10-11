@@ -7,8 +7,10 @@ import {
   CONTENT_SIZES,
   ROW_SIZES,
   canHide,
+  keptSizes,
   normalizeLayout,
   selectSidebarTab,
+  shownLayout,
   togglePanel,
 } from '@/components/writer/layout/layout.js'
 
@@ -131,5 +133,37 @@ describe('the splitters', () => {
   it('sizes the sidebar and the content to fill the row, and the editor and the chat the content', () => {
     expect(ROW_SIZES.sidebar + ROW_SIZES.content).toBe(100)
     expect(CONTENT_SIZES.editor + CONTENT_SIZES.chat).toBe(100)
+  })
+})
+
+describe('in a narrow window', () => {
+  it('folds the chat away while the sidebar is open beside the editor', () => {
+    expect(shownLayout(DEFAULT_LAYOUT, true)).toEqual({ ...DEFAULT_LAYOUT, chat: false })
+    expect(shownLayout({ ...DEFAULT_LAYOUT, sidebar: false }, true).chat).toBe(true)
+  })
+
+  it('leaves two panels as they are', () => {
+    const noEditor = { ...DEFAULT_LAYOUT, editor: false }
+    const noChat = { ...DEFAULT_LAYOUT, chat: false }
+    expect(shownLayout(noEditor, true)).toBe(noEditor)
+    expect(shownLayout(noChat, true)).toBe(noChat)
+  })
+
+  it('shows all three in a wide one', () => {
+    expect(shownLayout(DEFAULT_LAYOUT, false)).toBe(DEFAULT_LAYOUT)
+  })
+})
+
+describe('keptSizes', () => {
+  it('gives back the widths kept, one for each panel', () => {
+    expect(keptSizes([25, 75], [20, 80])).toEqual([25, 75])
+  })
+
+  it('starts from the starting widths when what is kept is not that', () => {
+    expect(keptSizes(null, [20, 80])).toEqual([20, 80])
+    expect(keptSizes([25], [20, 80])).toEqual([20, 80])
+    expect(keptSizes([25, 'wide'], [20, 80])).toEqual([20, 80])
+    expect(keptSizes([25, Number.NaN], [20, 80])).toEqual([20, 80])
+    expect(keptSizes({ 0: 25, 1: 75 }, [20, 80])).toEqual([20, 80])
   })
 })

@@ -10,7 +10,7 @@
  */
 
 /** What is dropped whole: it is never the article. */
-const DROPPED = 'script, style, noscript, template, svg, iframe, nav, header, footer, form'
+export const DROPPED = 'script, style, noscript, template, svg, iframe, nav, header, footer, form'
 
 /** Elements that begin and end a line of their own. */
 const BLOCKS = new Set([

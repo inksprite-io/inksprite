@@ -17,6 +17,7 @@
 import { Plugin, TextSelection } from 'prosemirror-state'
 import { keydownHandler } from 'prosemirror-keymap'
 import { schema } from './schema.js'
+import { markAround } from './marks.js'
 
 /**
  * @typedef {import('prosemirror-state').EditorState} EditorState
@@ -46,24 +47,8 @@ const PASTED_LINK = /^(https?:\/\/|mailto:)\S+$/i
  * @returns {LinkRange|null}
  */
 export function linkAround($pos) {
-  const { parent } = $pos
-  let index = $pos.index()
-  let mark = index < parent.childCount ? link.isInSet(parent.child(index).marks) : null
-  if (!mark && $pos.textOffset === 0 && index > 0) {
-    index -= 1
-    mark = link.isInSet(parent.child(index).marks)
-  }
-  if (!mark) return null
-
-  let first = index
-  let last = index
-  while (first > 0 && mark.isInSet(parent.child(first - 1).marks)) first -= 1
-  while (last < parent.childCount - 1 && mark.isInSet(parent.child(last + 1).marks)) last += 1
-  let from = $pos.start()
-  for (let at = 0; at < first; at++) from += parent.child(at).nodeSize
-  let to = from
-  for (let at = first; at <= last; at++) to += parent.child(at).nodeSize
-  return { from, to, href: mark.attrs.href }
+  const around = markAround($pos, link)
+  return around && { from: around.from, to: around.to, href: around.mark.attrs.href }
 }
 
 /**

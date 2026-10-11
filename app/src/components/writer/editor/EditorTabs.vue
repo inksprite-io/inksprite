@@ -5,6 +5,10 @@
     <!-- The lines between tabs and under the strip are the editor's own
          colour, so the tab showing runs straight into the page below it.
 
+         The keyboard has one stop in the strip, the tab showing: the arrows
+         go along it, Enter and Space bring a tab forward, and Delete closes
+         one, as its button does for the mouse.
+
          The tabs scroll; what is at the end of the strip does not. The tab
          showing is marked by a line drawn inside its top edge rather than a
          border, so no tab reserves room for one and every tab's text sits at
@@ -29,11 +33,13 @@
           :key="item.id"
           :ref="el => remember(item.id, el)"
           role="tab"
+          :tabindex="item.id === tabStop ? 0 : -1"
           :aria-selected="item.id === activeId"
+          :aria-label="item.plain ? `${item.title}, plain text` : item.title"
           :title="item.path || item.title"
           :data-tab-id="item.id"
           :data-preview="item.preview || undefined"
-          class="group flex-none flex items-center gap-1 min-w-28 max-w-64 pl-3 pr-1 text-sm cursor-pointer border-r border-surface-0 dark:border-surface-900 transition-colors duration-150"
+          class="group flex-none flex items-center gap-1 min-w-28 max-w-64 pl-3 pr-1 text-sm cursor-pointer border-r border-surface-0 dark:border-surface-900 transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500"
           :class="
             item.id === activeId
               ? 'bg-surface-0 dark:bg-surface-900 shadow-[inset_0_2px_0_0_var(--p-primary-500)] text-surface-900 dark:text-surface-0'
@@ -44,9 +50,18 @@
           @mousedown.middle.prevent
           @auxclick="event => event.button === 1 && $emit('close', item.id)"
           @contextmenu="openMenu(item.id, $event)"
+          @keydown="onKeydown(item.id, $event)"
         >
           <!-- The path gives way before the title does, which is the part that
-           says what the tab is. A preview reads in italics until it is kept. -->
+           says what the tab is. A preview reads in italics until it is kept.
+           A document in the plain text editor is marked so before it. -->
+          <i
+            v-if="item.plain"
+            class="pi pi-code flex-none text-surface-500 dark:text-surface-400"
+            style="font-size: 0.7rem"
+            aria-hidden="true"
+            data-plain
+          ></i>
           <span class="flex-1 min-w-0 flex items-baseline" :class="{ italic: item.preview }">
             <span
               v-if="item.prefix"
@@ -58,6 +73,7 @@
           <!-- Shown on the tab in front and on hover; a row of crosses is noise -->
           <button
             type="button"
+            tabindex="-1"
             :aria-label="`Close ${item.title}`"
             class="flex-none w-5 h-5 rounded flex items-center justify-center text-surface-500 dark:text-surface-400 hover:bg-surface-300 dark:hover:bg-surface-600 hover:text-surface-900 dark:hover:text-surface-0 transition-opacity"
             :class="item.id === activeId ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'"
@@ -102,6 +118,7 @@ import ContextMenu from 'primevue/contextmenu'
  *   it apart from another open tab's, ending in `/`
  * @property {string} [path] - The whole path, for the tooltip
  * @property {boolean} [preview] - Only being looked at, and not yet kept
+ * @property {boolean} [plain] - In the plain text editor rather than laid out
  *
  * @typedef {Object} Props
  * @property {TabItem[]} items - The open documents, in strip order
@@ -115,7 +132,7 @@ const props = defineProps({
   actions: { type: Function, default: null },
 })
 
-defineEmits(['activate', 'close', 'keep'])
+const emit = defineEmits(['activate', 'close', 'keep'])
 
 const menu = ref()
 /** The tab the menu was opened on. @type {import('vue').Ref<string|null>} */
@@ -132,6 +149,47 @@ const openMenu = (id, event) => {
   if (!props.actions) return
   menuFor.value = id
   menu.value?.show(event)
+}
+
+/** The tab Tab lands on in the strip: the one showing, or the first. */
+const tabStop = computed(() =>
+  props.items.some(item => item.id === props.activeId) ? props.activeId : props.items[0]?.id
+)
+
+/**
+ * Keys on a tab, the way a tab list takes them.
+ * @param {string} id
+ * @param {KeyboardEvent} event
+ */
+const onKeydown = (id, event) => {
+  if (event.target !== event.currentTarget) return
+  const at = props.items.findIndex(item => item.id === id)
+  /** @param {number} index */
+  const go = index => elements.get(props.items[index]?.id)?.focus()
+  switch (event.key) {
+    case 'Enter':
+    case ' ':
+      emit('activate', id)
+      break
+    case 'ArrowRight':
+      go((at + 1) % props.items.length)
+      break
+    case 'ArrowLeft':
+      go((at - 1 + props.items.length) % props.items.length)
+      break
+    case 'Home':
+      go(0)
+      break
+    case 'End':
+      go(props.items.length - 1)
+      break
+    case 'Delete':
+      emit('close', id)
+      break
+    default:
+      return
+  }
+  event.preventDefault()
 }
 
 /** @type {Map<string, HTMLElement>} */

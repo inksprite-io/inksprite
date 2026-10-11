@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useSyncStore } from '../../src/stores/syncStore'
+import { useApplicationState } from '../../src/composables/useApplicationState'
 
 // Mock the database module
 vi.mock('../../src/stores/db', () => ({
@@ -281,6 +282,27 @@ describe('SyncStore', () => {
         })
       )
       expect(store.pendingChanges.size).toBe(0)
+    })
+
+    it('logs what it saves only while the Debug switch is on', async () => {
+      const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+      const saves = () => log.mock.calls.filter(([line]) => String(line).startsWith('Saving'))
+      // Where the switch is kept, which the stand-in window above has not got.
+      globalThis.window.localStorage = { setItem: vi.fn(), getItem: vi.fn(), removeItem: vi.fn() }
+      try {
+        useApplicationState().setDebug(false)
+        store.trackChange('stories', 'story_1', { id: 'story_1', apiKey: 'sk-secret' })
+        await store.processSync()
+        expect(saves()).toHaveLength(0)
+
+        useApplicationState().setDebug(true)
+        store.trackChange('stories', 'story_1', { id: 'story_1', title: 'Again' })
+        await store.processSync()
+        expect(saves()).toHaveLength(1)
+      } finally {
+        useApplicationState().setDebug(false)
+        log.mockRestore()
+      }
     })
 
     it('waits for a save under way, then saves what came in meanwhile', async () => {

@@ -29,7 +29,9 @@ import { addChars, clearActivity, setActivity } from './live.js'
  *
  * @typedef {Object} JobKind
  * @property {(job: Job, step: JobStep, run: StepRun) => Promise<{output: string, usage?: any}>} runStep
- * @property {(job: Job) => Promise<void>} finish - Apply the result once every step is done
+ * @property {(job: Job) => Promise<string|void>} finish - Apply the result once every
+ *   step is done; the id of the document it wrote, when it wrote one, for the
+ *   panel to open
  */
 
 /**
@@ -169,15 +171,16 @@ export async function startJob(jobId) {
       const step = current.steps.find(one => one.status !== 'done')
       if (!step) {
         setActivity(jobId, 'finishing')
+        let resultId
         try {
-          await kind.finish(current)
+          resultId = await kind.finish(current)
         } catch (error) {
           // Left as it was, the job would say it was running with nothing
           // running it. Every step is done; a retry only finishes again.
           await stopping({ status: 'failed', error: messageOf(error) })
           return
         }
-        await stopping({ status: 'done' })
+        await stopping({ status: 'done', ...(resultId ? { resultId } : {}) })
         break
       }
 

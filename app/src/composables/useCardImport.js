@@ -12,14 +12,13 @@
  * Two steps, for the ones that need it. A card is somebody else's work and
  * arrives with more in it than its name — a book of several hundred entries, a
  * dozen greetings, a prompt override — so what it holds is shown before any of
- * it lands in the writer's tree, and the two questions that cannot be asked
- * afterwards are asked there: what `{{user}}` becomes, and whether to take the
- * system prompt. A markdown file has nothing to decide and no surprises in it,
+ * it lands in the writer's tree, and the one question that cannot be asked
+ * afterwards is asked there: whether to take the system prompt. A markdown file has nothing to decide and no surprises in it,
  * so it is written straight away, and so is a file: its text is read out of it
  * and it goes where it was asked for.
  *
  * A card already in the tree can be read back out of its sidecar and written
- * again over its own folder, with the questions asked afresh — `inspectCard`,
+ * again over its own folder, with the question asked afresh — `inspectCard`,
  * and then `write` as for anything else.
  */
 
@@ -213,14 +212,12 @@ export function useCardImport(storyId) {
    * @param {Found} found
    * @param {Object} [options]
    * @param {string} [options.parentId] - The folder it was asked for on
-   * @param {string} [options.userName] - What `{{user}}` becomes
    * @param {boolean} [options.useSystemPrompt] - Keep the card's prompt override
    * @returns {Promise<import('@/cards/write.js').Written>}
    */
-  async function write(found, { parentId, userName, useSystemPrompt } = {}) {
+  async function write(found, { parentId, useSystemPrompt } = {}) {
     if (found.replaces) {
       return reimportCard(storyId, found.replaces, found.value, {
-        userName,
         useSystemPrompt,
         portrait: found.portrait || undefined,
       })
@@ -253,7 +250,6 @@ export function useCardImport(storyId) {
     const into = onProject ? await shelfFor(storyId, 'characters') : parentId
     return writeCard(storyId, found.value, {
       parentId: into,
-      userName,
       useSystemPrompt,
       portrait: found.portrait || undefined,
     })

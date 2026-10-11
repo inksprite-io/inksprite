@@ -20,9 +20,8 @@ export function useCopyPath(storyId) {
   const toast = useToast()
 
   /**
-   * Put the document's path on the clipboard. Quietly: the writer asked for
-   * a copy and got one, and only a copy that could not be made is worth a
-   * word.
+   * Put the document's path on the clipboard, and say so in a word: it was
+   * asked for from a menu that closes, and a clipboard shows nothing.
    * @param {string} documentId
    */
   const copyPath = async documentId => {
@@ -30,6 +29,7 @@ export function useCopyPath(storyId) {
     if (!path) return
     try {
       await navigator.clipboard.writeText(path)
+      toast.success('Copied', { duration: 2000 })
     } catch (error) {
       console.error('Failed to copy path:', error)
       toast.error('Could not copy the path. The browser did not allow it here.')

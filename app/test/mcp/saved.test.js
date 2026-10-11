@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { canSave, savedContent, savedTitle } from '@/mcp/saved.js'
+import { canSave, savedContent, savedTitle, wholeRead } from '@/mcp/saved.js'
 
 describe('canSave', () => {
   it('keeps an answer, and not a failure or nothing', () => {
@@ -58,5 +58,71 @@ describe('savedContent', () => {
 
     expect(content).toContain('*From Linear: get_issue, saved 3 October 2026.*')
     expect(content).toContain('```json\n{\n  "id": "ENG-123"\n}\n```')
+  })
+})
+
+describe('a web page the model read', () => {
+  const page = (extra = {}) =>
+    JSON.stringify({
+      url: 'https://example.org/harbour',
+      title: 'Harbour notes',
+      from: 0,
+      to: 16,
+      length: 16,
+      next: null,
+      content: 'The mole is old.',
+      ...extra,
+    })
+
+  it('is titled by the page, or by its site when it has no title', () => {
+    expect(savedTitle(page(), 'Web read_web_page')).toBe('Harbour notes')
+    expect(savedTitle(page({ title: undefined }), 'Web read_web_page')).toBe('example.org')
+  })
+
+  it('is saved as its text, under a line giving its address', () => {
+    const content = savedContent({
+      result: page(),
+      server: 'Web',
+      tool: 'read_web_page',
+      args: { url: 'https://example.org/harbour' },
+      date: new Date(2026, 9, 10),
+    })
+
+    expect(content).toBe(
+      '*From https://example.org/harbour, saved 10 October 2026.*\n\nThe mole is old.\n'
+    )
+  })
+
+  it('says which part of a long page it is', () => {
+    const content = savedContent({
+      result: page({ from: 40000, to: 80000, length: 120000, content: 'Middle.' }),
+      server: 'Web',
+      tool: 'read_web_page',
+      args: {},
+      date: new Date(2026, 9, 10),
+    })
+
+    expect(content.split('\n')[0]).toBe(
+      '*From https://example.org/harbour (characters 40,001–80,000 of 120,000), saved 10 October 2026.*'
+    )
+  })
+
+  it('can be saved, as any answer that is not an error', () => {
+    expect(canSave(page())).toBe(true)
+  })
+
+  it('is saved whole from a slice, given the whole page', () => {
+    const slice = page({ from: 16, to: 32, length: 48, next: 32, content: 'The quay is new.' })
+    const whole = 'The mole is old. The quay is new. The light is red.'
+    const content = savedContent({
+      result: wholeRead(slice, whole),
+      server: 'Web',
+      tool: 'read_web_page',
+      args: {},
+      date: new Date(2026, 9, 10),
+    })
+
+    expect(content).toBe(`*From https://example.org/harbour, saved 10 October 2026.*\n\n${whole}\n`)
+    expect(savedTitle(wholeRead(slice, whole), 'Web read_web_page')).toBe('Harbour notes')
   })
 })

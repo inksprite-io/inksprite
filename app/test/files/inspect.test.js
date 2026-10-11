@@ -55,6 +55,16 @@ describe('titleOf', () => {
   it('has a name for an empty one', () => {
     expect(titleOf('')).toBe('Untitled')
   })
+
+  it('keeps the extension of anything shown as plain text but prose', () => {
+    expect(titleOf('foo.cpp', 'text/x-c++')).toBe('foo.cpp')
+    expect(titleOf('data.csv', 'text/csv')).toBe('data.csv')
+    expect(titleOf('settings.json', 'application/json')).toBe('settings.json')
+    expect(titleOf('Chapter one.md', 'text/markdown')).toBe('Chapter one')
+    expect(titleOf('notes.txt', 'text/plain')).toBe('notes')
+    expect(titleOf('page.html', 'text/html')).toBe('page')
+    expect(titleOf('logo.svg', 'image/svg+xml')).toBe('logo')
+  })
 })
 
 describe('isImage and isText', () => {
@@ -94,7 +104,7 @@ describe('inspectFile', () => {
   it('takes a text file as its own text', async () => {
     const found = await inspectFile(file('data.csv', 'a,b\n1,2', 'text/csv'))
 
-    expect(found).toMatchObject({ title: 'data', mime: 'text/csv', text: 'a,b\n1,2' })
+    expect(found).toMatchObject({ title: 'data.csv', mime: 'text/csv', text: 'a,b\n1,2' })
     expect(found.pages).toBeUndefined()
   })
 
@@ -111,6 +121,48 @@ describe('inspectFile', () => {
     const found = await inspectFile(file('model.gguf', new Uint8Array([1, 2, 3])))
 
     expect(found).toMatchObject({ title: 'model', mime: UNKNOWN_MIME, text: '', size: 3 })
+  })
+
+  it('takes a file no table knows as the text it turns out to be, typed by its name', async () => {
+    const source = await inspectFile(file('foo.cpp', '#include "foo.h"\r\nint main() {}\r\n'))
+    const header = await inspectFile(file('foo.h', '#pragma once\n'))
+    const make = await inspectFile(file('Makefile', 'all:\n\tcc foo.cpp\n'))
+    const log = await inspectFile(file('server.log', 'started\n'))
+
+    expect(source).toMatchObject({
+      title: 'foo.cpp',
+      mime: 'text/x-c++',
+      text: '#include "foo.h"\nint main() {}\n',
+    })
+    expect(source.blob.type).toBe('text/x-c++')
+    expect(header).toMatchObject({ title: 'foo.h', mime: 'text/x-c', text: '#pragma once\n' })
+    expect(make).toMatchObject({ title: 'Makefile', mime: 'text/x-makefile' })
+    expect(log).toMatchObject({ title: 'server.log', mime: 'text/plain', text: 'started\n' })
+  })
+
+  it('reads text the browser gave another type', async () => {
+    const script = await inspectFile(file('build.sh', 'echo hi\n', 'application/x-sh'))
+    const typescript = await inspectFile(file('main.ts', 'export {}\n', 'video/mp2t'))
+    const video = await inspectFile(
+      file('clip.ts', new Uint8Array([0x47, 0x40, 0, 0x10]), 'video/mp2t')
+    )
+
+    expect(script).toMatchObject({ mime: 'text/x-sh', text: 'echo hi\n' })
+    expect(typescript).toMatchObject({ title: 'main.ts', mime: 'text/x-typescript' })
+    expect(video).toMatchObject({ title: 'clip', mime: 'video/mp2t', text: '' })
+  })
+
+  it('keeps a type it keeps as bytes on purpose, even when its bytes are text', async () => {
+    const found = await inspectFile(file('letter.rtf', '{\\rtf1 Dear sir}', 'application/rtf'))
+
+    expect(found).toMatchObject({ title: 'letter', mime: 'application/rtf', text: '' })
+  })
+
+  it('reads a UTF-16 text file by its byte-order mark', async () => {
+    const utf16 = new Uint8Array([0xff, 0xfe, ...[...'Hi\r\n'].flatMap(c => [c.charCodeAt(0), 0])])
+    const found = await inspectFile(file('notes.txt', utf16, 'text/plain'))
+
+    expect(found).toMatchObject({ title: 'notes', text: 'Hi\n' })
   })
 
   it('keeps the bytes with the type the name says when the browser said nothing', async () => {

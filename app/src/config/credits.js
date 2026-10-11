@@ -273,7 +273,13 @@ export const ICON_CREDITS = Object.freeze([
 ])
 
 /** Icon components drawn for inksprite itself, which credit nobody. */
-export const OWN_ICONS = Object.freeze(['DatabaseIcon', 'RetryIcon', 'SendIcon', 'SpeakerIcon'])
+export const OWN_ICONS = Object.freeze([
+  'CommentIcon',
+  'DatabaseIcon',
+  'RetryIcon',
+  'SendIcon',
+  'SpeakerIcon',
+])
 
 /**
  * @typedef {Object} FontCredit

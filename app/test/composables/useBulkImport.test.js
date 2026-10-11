@@ -56,11 +56,11 @@ describe('useBulkImport', () => {
 
     expect(result).toMatchObject({ documents: 4, folders: 2, cards: 0, scans: 0, skipped: [] })
     const root = rootIdFor(STORY)
-    expect(titlesUnder(root)).toEqual(['loose', 'research'])
+    expect(titlesUnder(root)).toEqual(['research', 'loose'])
     const research = folderUnder(root, 'research')
-    expect(titlesUnder(research.id)).toEqual(['index', 'papers'])
+    expect(titlesUnder(research.id)).toEqual(['papers', 'index'])
     const papers = folderUnder(research.id, 'papers')
-    expect(titlesUnder(papers.id)).toEqual(['a', 'b'])
+    expect(titlesUnder(papers.id)).toEqual(['a.csv', 'b.csv'])
     expect(store.getDocument(api.childrenOf(papers.id)[0].id)).toMatchObject({ type: 'file' })
   })
 
@@ -169,8 +169,7 @@ describe('describeImport', () => {
   it('says what landed, and what did not', () => {
     expect(describeImport({ documents: 12, folders: 2, cards: 0, scans: 0, skipped: [] })).toEqual({
       severity: 'success',
-      summary: 'Imported 12 documents, 2 new folders',
-      detail: '',
+      detail: 'Imported 12 documents, 2 new folders.',
     })
     expect(
       describeImport({
@@ -182,13 +181,13 @@ describe('describeImport', () => {
       })
     ).toEqual({
       severity: 'warn',
-      summary: 'Imported 1 document',
       detail:
-        '1 card written with the default name; re-import one to set yours. 1 PDF with no text: a scan. Skipped x.pdf (bad).',
+        'Imported 1 document. 1 card written with the default name; re-import one to set yours. 1 PDF with no text: a scan. Skipped x.pdf (bad).',
     })
-    expect(
-      describeImport({ documents: 0, folders: 0, cards: 0, scans: 0, skipped: [] }).severity
-    ).toBe('error')
+    expect(describeImport({ documents: 0, folders: 0, cards: 0, scans: 0, skipped: [] })).toEqual({
+      severity: 'error',
+      detail: 'Nothing imported.',
+    })
   })
 
   it('counts the pictures a Doc came with and lost', () => {
@@ -196,8 +195,7 @@ describe('describeImport', () => {
       describeImport({ documents: 2, folders: 0, cards: 0, scans: 0, images: 3, skipped: [] })
     ).toEqual({
       severity: 'success',
-      summary: 'Imported 2 documents',
-      detail: '3 images left out.',
+      detail: 'Imported 2 documents. 3 images left out.',
     })
   })
 })

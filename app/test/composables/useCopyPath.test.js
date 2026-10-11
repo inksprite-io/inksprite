@@ -3,7 +3,7 @@ import { useCopyPath } from '@/composables/useCopyPath.js'
 
 const { mockApi, toast } = vi.hoisted(() => ({
   mockApi: { pathOf: vi.fn(id => (id === 'doc_1' ? 'Characters/Elara' : '')) },
-  toast: { error: vi.fn() },
+  toast: { error: vi.fn(), success: vi.fn() },
 }))
 vi.mock('@/composables/useDocuments.js', () => ({ useDocuments: () => mockApi }))
 vi.mock('@/composables/useToast.js', () => ({ useToast: () => toast }))
@@ -17,10 +17,11 @@ describe('useCopyPath', () => {
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
   })
 
-  it('puts the path on the clipboard, without a word', async () => {
+  it('puts the path on the clipboard, and says it did', async () => {
     await useCopyPath('story_1').copyPath('doc_1')
 
     expect(writeText).toHaveBeenCalledWith('Characters/Elara')
+    expect(toast.success).toHaveBeenCalledWith('Copied', expect.anything())
     expect(toast.error).not.toHaveBeenCalled()
   })
 
@@ -31,6 +32,7 @@ describe('useCopyPath', () => {
     await useCopyPath('story_1').copyPath('doc_1')
 
     expect(toast.error).toHaveBeenCalled()
+    expect(toast.success).not.toHaveBeenCalled()
   })
 
   it('copies nothing for a document it cannot place', async () => {

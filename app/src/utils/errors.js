@@ -35,3 +35,40 @@ export class CommandError extends Error {
     this.name = 'CommandError'
   }
 }
+
+/**
+ * Error thrown when a turn fails after its answer was made: the provider
+ * refused, the connection dropped, a round could not be built.
+ *
+ * Its own class because the reason is already on the answer by then, kept
+ * with the chat (`metadata.error`) and shown where the reply would have been,
+ * so the caller has nothing left to report.
+ */
+export class AnswerFailedError extends Error {
+  /**
+   * @param {Error} cause - What went wrong
+   * @param {string} messageId - The answer it is recorded on
+   */
+  constructor(cause, messageId) {
+    super(cause.message, { cause })
+    this.name = 'AnswerFailedError'
+    this.messageId = messageId
+  }
+}
+
+/**
+ * Error thrown when a summary stops short because its request failed.
+ *
+ * What it had written is kept as the summary by then, to be asked for again,
+ * finished by hand or deleted; this is only the news, for the caller to pass
+ * on.
+ */
+export class SummaryCutShortError extends Error {
+  /**
+   * @param {string} reason - Why its request failed
+   */
+  constructor(reason) {
+    super(`Compacted summary was cut short: ${reason}`)
+    this.name = 'SummaryCutShortError'
+  }
+}

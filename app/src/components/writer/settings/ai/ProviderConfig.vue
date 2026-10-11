@@ -1,9 +1,13 @@
 <template>
+  <!-- Escape is useTopmostEscape's, so the delete confirmation over this
+       closes alone. -->
   <Dialog
+    ref="dialog"
     v-model:visible="localVisible"
-    header="Provider Configuration"
+    header="Provider configuration"
     :modal="true"
     :closable="true"
+    :close-on-escape="false"
     :style="{ width: '40rem' }"
     :pt="{
       root: { class: 'shadow-xl !border-4 border-primary-500' },
@@ -17,22 +21,18 @@
         <Select
           id="provider"
           v-model="localSelectedProviderId"
-          :options="providersWithFormattedNames"
-          option-label="displayName"
+          :options="providers"
+          option-label="name"
           option-value="id"
           placeholder="Select a provider"
+          aria-label="Provider"
           class="flex-auto"
           size="small"
-        >
-          <template #option="{ option }">
-            <div class="flex items-center">
-              <div>{{ option.displayName }}</div>
-            </div>
-          </template>
-        </Select>
+        />
         <Button
-          v-tooltip.top="'New Provider'"
+          v-tooltip.top="'New provider'"
           icon="pi pi-plus"
+          aria-label="New provider"
           severity="secondary"
           text
           rounded
@@ -40,8 +40,9 @@
           @click="handleNewProvider"
         />
         <Button
-          v-tooltip.top="'Test Connection'"
+          v-tooltip.top="'Test connection'"
           icon="pi pi-link"
+          aria-label="Test connection"
           severity="secondary"
           text
           rounded
@@ -51,8 +52,9 @@
         />
         <Button
           v-if="selectedProvider?.isDefault === false"
-          v-tooltip.top="'Delete Provider'"
+          v-tooltip.top="'Delete provider'"
           icon="pi pi-trash"
+          aria-label="Delete provider"
           severity="danger"
           text
           rounded
@@ -66,8 +68,13 @@
       <div class="flex flex-col gap-3">
         <!-- Name -->
         <div v-if="selectedProvider?.isDefault === false" class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-surface-700 dark:text-surface-200">Name</label>
+          <label
+            for="provider-name"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Name</label
+          >
           <InputText
+            id="provider-name"
             v-model="localName"
             placeholder="Provider name"
             class="w-full"
@@ -87,6 +94,7 @@
             option-label="displayName"
             option-value="providerType"
             placeholder="Provider type"
+            aria-label="Type"
             class="w-full"
             size="small"
             @change="handleTypeChange"
@@ -101,8 +109,13 @@
 
         <!-- Endpoint field (every type but OpenRouter is a server someone runs) -->
         <div v-if="needsEndpoint(localType)" class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-surface-700 dark:text-surface-200">Endpoint</label>
+          <label
+            for="provider-endpoint"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Endpoint</label
+          >
           <InputText
+            id="provider-endpoint"
             v-model="localEndpoint"
             placeholder="http://localhost:1234/v1"
             class="w-full"
@@ -113,10 +126,14 @@
 
         <!-- API Key field -->
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-surface-700 dark:text-surface-200">
-            {{ needsEndpoint(localType) ? 'API Key (Optional)' : 'API Key' }}
+          <label
+            for="provider-key"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+          >
+            {{ needsEndpoint(localType) ? 'API key (optional)' : 'API key' }}
           </label>
           <InputText
+            id="provider-key"
             v-model="localApiKey"
             type="password"
             placeholder="sk-..."
@@ -134,9 +151,8 @@
             <div class="flex-1 border-t border-surface-300 dark:border-surface-700"></div>
           </div>
           <Button
-            label="Connect with OAuth"
+            label="Connect to OpenRouter"
             icon="pi pi-sign-in"
-            severity="success"
             size="small"
             class="w-full"
             @click="handleOAuthConnect"
@@ -162,9 +178,10 @@ import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { useAIConfig } from '@/composables/useAIConfig'
+import { useTopmostEscape } from '@/composables/useTopmostEscape.js'
 import { useAIService } from '@/composables/useAIService'
 import { useOpenRouterSignIn } from '@/composables/useOpenRouterSignIn'
-import { PROVIDER_TYPES, providerLabel, needsEndpoint } from '@/ai/providers.js'
+import { PROVIDER_TYPES, needsEndpoint } from '@/ai/providers.js'
 import ProviderRouting from './ProviderRouting.vue'
 
 /**
@@ -186,11 +203,10 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'update:selected-provider-id'])
 
 class ValidationError extends Error {
-  /** @param {string} detail @param {string} [summary='Validation Error'] */
-  constructor(detail, summary = 'Validation Error') {
+  /** @param {string} detail */
+  constructor(detail) {
     super(detail)
     this.name = 'ValidationError'
-    this.summary = summary
     this.detail = detail
   }
 }
@@ -203,6 +219,15 @@ const aiService = useAIService()
 
 // Dialog visibility
 const localVisible = ref(props.visible)
+
+/** @type {import('vue').Ref<{ mask?: HTMLElement }|null>} */
+const dialog = ref(null)
+
+useTopmostEscape(
+  localVisible,
+  () => dialog.value?.mask,
+  () => (localVisible.value = false)
+)
 
 // Local copy of selected provider ID (initialized from prop)
 const localSelectedProviderId = ref(props.initialProviderId)
@@ -276,22 +301,14 @@ const providerTypeItems = ref(
   PROVIDER_TYPES.map(entry => ({ displayName: entry.menu, providerType: entry.id }))
 )
 
-/**
- * Computed property to format providers with type in name
- */
-const providersWithFormattedNames = computed(() => {
-  return aiConfig.providers.value.map(provider => ({
-    ...provider,
-    displayName: `${provider.name} (${providerLabel(provider.type)})`,
-  }))
-})
+const providers = computed(() => aiConfig.providers.value)
 
 /**
  * Handle new provider creation - creates the provider immediately
  */
 function handleNewProvider() {
   const newProvider = aiConfig.createProvider({
-    name: 'New Provider',
+    name: 'New provider',
     type: 'generic',
     endpoint: '',
     apiKey: '',
@@ -380,14 +397,13 @@ async function handleTestConnection() {
       if (isValid) {
         toast.add({
           severity: 'success',
-          summary: 'Connection Successful',
+          detail: 'Connected',
           life: 3000,
         })
       } else {
         toast.add({
           severity: 'error',
-          summary: 'Connection Failed',
-          detail: 'Check your API key and try again',
+          detail: 'Connection failed. Check your API key and try again.',
           life: 3000,
         })
       }
@@ -400,15 +416,13 @@ async function handleTestConnection() {
     if (models && models.length > 0) {
       toast.add({
         severity: 'success',
-        summary: 'Connection Successful',
-        detail: `Found ${models.length} available models`,
+        detail: `Connected: ${models.length} models available`,
         life: 3000,
       })
     } else {
       toast.add({
         severity: 'warn',
-        summary: 'Connection Successful',
-        detail: 'Connected but no models found',
+        detail: 'Connected, but no models found',
         life: 3000,
       })
     }
@@ -416,7 +430,6 @@ async function handleTestConnection() {
     if (error instanceof ValidationError) {
       toast.add({
         severity: 'error',
-        summary: error.summary,
         detail: error.detail,
         life: 3000,
       })
@@ -426,8 +439,7 @@ async function handleTestConnection() {
     console.error('Connection test failed:', error)
     toast.add({
       severity: 'error',
-      summary: 'Connection Failed',
-      detail: error.message || 'Could not connect to the provider',
+      detail: `Connection failed: ${error.message || 'could not reach the provider'}`,
       life: 5000,
     })
   }
@@ -444,8 +456,7 @@ async function handleOAuthConnect() {
     console.error('Failed to initiate OAuth:', error)
     toast.add({
       severity: 'error',
-      summary: 'Connection Failed',
-      detail: error.message || 'Could not start the authentication process',
+      detail: `Connection failed: ${error.message || 'the sign-in could not start'}`,
       life: 5000,
     })
   }
@@ -464,7 +475,6 @@ async function handleDeleteProvider() {
   if (provider.isDefault) {
     toast.add({
       severity: 'error',
-      summary: 'Cannot Delete',
       detail: 'Default providers cannot be deleted',
       life: 3000,
     })
@@ -472,10 +482,11 @@ async function handleDeleteProvider() {
   }
 
   confirm.require({
-    message: `Are you sure you want to delete the provider "${provider.name}"?`,
-    header: 'Delete Provider',
+    message: `Are you sure you want to delete "${provider.name}"?`,
+    header: 'Delete provider',
     icon: 'pi pi-exclamation-triangle',
-    acceptClass: 'p-button-danger',
+    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+    acceptProps: { label: 'Delete', severity: 'danger' },
     accept: () => {
       try {
         aiConfig.deleteProvider(localSelectedProviderId.value)
@@ -484,7 +495,6 @@ async function handleDeleteProvider() {
         console.error('Failed to delete provider:', error)
         toast.add({
           severity: 'error',
-          summary: 'Error',
           detail: 'Failed to delete provider',
           life: 3000,
         })

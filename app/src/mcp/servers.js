@@ -70,6 +70,19 @@ export function reachable(server) {
 }
 
 /**
+ * The headers a server has no value for: its key, left out of the backup it
+ * was restored from, and not sent until the writer enters it again.
+ *
+ * @param {Pick<McpServer, 'headers'>} server
+ * @returns {string[]} Their names
+ */
+export function missingHeaders(server) {
+  return Object.entries(server.headers || {})
+    .filter(([, value]) => !value)
+    .map(([name]) => name)
+}
+
+/**
  * The server a tool the model calls belongs to, and the tool.
  *
  * @param {string} exposed - The name the model called

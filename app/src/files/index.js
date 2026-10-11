@@ -39,5 +39,14 @@ export { extractPdf, pageMarker, pageText, joinPages } from './pdf.js'
 export { extractEpub } from './epub.js'
 export { inspectFile, mimeOf, titleOf, hasText, isStructured, sizeLabel } from './inspect.js'
 export { textOfHtml } from './html.js'
-export { gatherFiles, gatherDropped, carriesFiles, isJunk } from './batch.js'
+export {
+  gatherFiles,
+  gatherDropped,
+  listFiles,
+  listDropped,
+  withoutJunk,
+  folderOf,
+  carriesFiles,
+  isJunk,
+} from './batch.js'
 export { writeFile, reextractFile } from './write.js'

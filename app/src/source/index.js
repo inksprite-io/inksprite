@@ -16,13 +16,15 @@
  *   codebase's own `.gitignore` files
  * - **language** - A file's language and media type, by its name
  * - **text** - Whether bytes are text, and how many lines a text has
+ * - **detect** - Whether a folder about to come in as files looks like code
  * - **gather** - Entries listed, sorted by the rules, read, and capped
  * - **github** - A repository downloaded as one archive, in the desktop app
  * - **write** - The tree written, and settled again on a refresh
  * - **tree** - Which repository a document is in
  *
  * `composables/useRepositoryImport.js` puts the steps in order for a folder,
- * for GitHub, and for a refresh. The editor panel shows a file of text in
+ * for GitHub, and for a refresh. A folder chosen or dropped for the ordinary
+ * import that looks like a codebase is offered as a repository instead. The editor panel shows a file of text in
  * `CodeView.vue`, with CodeMirror.
  *
  * Design: `.llm/source_code_design.md`.
@@ -36,7 +38,8 @@
 
 export { createRules, NEVER, NOT_BY_DEFAULT } from './rules.js'
 export { languageOf, isBinaryName } from './language.js'
-export { textOf, lineCount } from './text.js'
+export { textOf, textOfFile, lineCount } from './text.js'
+export { looksLikeCodebase } from './detect.js'
 export { gatherSource, sortEntries, entriesOfFolder, SourceTooLargeError } from './gather.js'
 export { parseGitHubUrl, downloadArchive, readArchive, GitHubError } from './github.js'
 export { writeRepository, refreshRepository, contentsOf } from './write.js'

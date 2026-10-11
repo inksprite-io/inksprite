@@ -85,9 +85,9 @@ export const useAIConfig = () => {
     presetsStore.createPreset({
       ...aiPresetDefaults,
       id: DEFAULT_AI_PROFILE_ID,
-      name: 'Claude Sonnet 4.5',
+      name: 'Default',
       providerId: DEFAULT_OPENROUTER_PROVIDER_ID,
-      model: 'anthropic/claude-sonnet-4.5',
+      model: '~anthropic/claude-sonnet-latest',
       isDefault: true,
     })
     console.log('Created default AI preset')

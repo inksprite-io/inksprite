@@ -17,7 +17,7 @@ import { useAIConfig } from './useAIConfig.js'
  * @typedef {import('../ai/defaults.js').AIDefaults} AIDefaults
  * @typedef {import('../ai/defaults.js').AISettingsOverrides} AISettingsOverrides
  * @typedef {keyof AIDefaults['parameters']} ParameterKey
- * @typedef {'maxTokens'|'seed'|'reasoningEffort'|'showModelReasoning'|'replayTurns'|'maxToolRounds'} SettingKey
+ * @typedef {'maxTokens'|'seed'|'reasoningEffort'|'showModelReasoning'|'maxToolRounds'} SettingKey
  *
  * @returns {{
  *   effective: import('vue').ComputedRef<AIDefaults>,

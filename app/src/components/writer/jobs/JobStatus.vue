@@ -1,8 +1,7 @@
 <template>
   <!-- One line, the height of the text: a spinner, what the job is doing cut
        short rather than wrapped, and how long the job has run, which is
-       never cut. The characters coming back are what tell a long answer
-       from a hung one; the time is what the whole job has taken so far. -->
+       never cut. The time is what the whole job has taken so far. -->
   <div
     class="flex-1 min-w-0 h-5 flex items-center gap-2 text-xs font-medium text-surface-500 dark:text-surface-400"
     role="status"
@@ -58,7 +57,7 @@ const elapsed = computed(() => {
 const line = computed(() => {
   const { phase, detail, chars } = props.activity || {}
   const what = {
-    asking: chars ? `${chars.toLocaleString()} characters back` : 'waiting for the model',
+    asking: chars ? 'the model is answering' : 'waiting for the model',
     checking: 'checking the answer',
     retrying: 'asking again in two halves',
     fallback: 'keeping the text as read for a part that would not convert',

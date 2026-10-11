@@ -25,7 +25,7 @@
  * @property {boolean} sidebar - Whether the left sidebar is showing
  * @property {boolean} editor - Whether the editor is showing
  * @property {boolean} chat - Whether the chat is showing. Never false while `editor` is.
- * @property {'outline'|'chats'|'narration'} sidebarTab - Which list the sidebar is on
+ * @property {'outline'|'chats'|'narration'|'comments'} sidebarTab - Which list the sidebar is on
  */
 
 /**
@@ -221,6 +221,7 @@
  * @property {string[]} [disabledTools] - Names of tools withheld from this chat. Absent means every registered tool is offered.
  * @property {string[]} [disabledToolGroups] - Group ids withheld from this chat, which also withholds tools added to those groups later.
  * @property {string[]} [mcpServers] - The MCP servers whose tools this chat is offered, by id, once the writer has chosen here. Absent means the servers that list the chat's profile. A server's tools are opted into rather than withheld, so a server connected later reaches no chat that did not ask for it. See mcp/servers.js.
+ * @property {boolean} [web] - Whether this chat searches the web, once the writer has chosen here. Absent means it does when web search is set up for the chat's profile. Opted into, as a server's tools are. See web/config.js.
  * @property {boolean} [projectContextEnabled] - Whether the project block rides at the tail of this conversation. Absent means it does, which is what every chat written before the switch had.
  * @property {string|null} [voiceId] - The voice this chat's messages are read aloud in, one of the project's. Absent, or naming a voice since removed, means the project's default.
  * @property {string} [rules] - The chat's author's note: standing instructions the writer keeps as they go, sent in their latest message after the project block and ahead of what they said. Starts as the profile's, combined with a card's post-history instructions for a chat on a card. Absent means none.
@@ -228,6 +229,8 @@
  * @property {string[]} [shownIds] - Documents this chat sees although a folder above them is hidden in it: a character's own folder, under the folder all the characters are in. Absent means none.
  * @property {string[]} [hiddenIds] - Documents kept from this chat's model, and everything under them unless something nearer is pinned or shown. The document's own `hidden` keeps it from every chat. See `utils/visibility.js`. Absent means none.
  * @property {string|null} [userVoiceId] - The voice this chat's own messages are read aloud in, one of the project's. Absent means the same voice everything else is read in.
+ * @property {string} [userName] - The writer's name in this chat: what `{{user}}` becomes in what its model reads. Asked for when a chat on a card starts. Absent means the macro is read as written. See `cards/macros.js`.
+ * @property {string} [characterName] - The name of the character this chat plays: what `{{char}}` becomes in what its model reads. Absent means the macro is read as written.
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
  * @property {number} updated - Last update timestamp
@@ -405,9 +408,11 @@
  * @property {string} [model] - Which model wrote this answer, as its provider names it. On the answer rather than the chat, because a chat changes presets as it goes and asking again on another one is half the reason to ask again. Absent on anything written before this was kept, and on a turn nobody generated.
  * @property {string} [provider] - Where that model ran, by the name the writer gave the provider — the same model behind two of them is not the same thing. For a chat brought in from SillyTavern, the API it says it used.
  * @property {DocumentEdit[]} [documentEdits] - What this assistant turn's tools changed in the project, in the order they changed it. Rewinding past the turn undoes them, newest first.
- * @property {ApiMessage[]} [apiTrajectory] - The model's full per-iteration trajectory for this assistant turn (assistant deltas + tool calls + tool results + trailing assistant text). The record of what the turn called: the tool call panel shows it, the context builder sends its document calls back on every later turn (when `documentCallsKept`), its skill loads always, and its dice and oracle calls for recent turns, all without their text. A past turn's words go back as its content. See ai/context/build.js.
- * @property {true} [documentCallsKept] - This turn's document calls go back with the conversation. Set on every turn written since they began to; a turn from before keeps going back as it did. See ai/context/reads.js.
+ * @property {ApiMessage[]} [apiTrajectory] - The model's full per-iteration trajectory for this assistant turn (assistant deltas + tool calls + tool results + trailing assistant text). The record of what the turn called: the tool call panel shows it, and the context builder sends its calls back on every later turn without their text: every call when `callsKept`, the document calls when `documentCallsKept`, and its skill loads always. A past turn's words go back as its content. See ai/context/build.js.
+ * @property {true} [callsKept] - Every call this turn made goes back with the conversation. Set on every turn written since they began to; a turn from before keeps going back as it did. See ai/context/build.js.
+ * @property {true} [documentCallsKept] - This turn's document calls go back with the conversation. Set on turns written while only they did, before `callsKept`. See ai/context/reads.js.
  * @property {import('../ai/context/build.js').ChatMessage[]} [context] - The request that opened this turn, kept only while the Debug setting is on. Everything the turn went on to append is in apiTrajectory.
+ * @property {string} [error] - Why the turn failed, when it did: the provider's own words, or the app's. Shown where the reply would have been, and gone when the message is asked again. Never sent to the model.
  */
 
 /**
@@ -571,6 +576,27 @@
  */
 
 /**
+ * A search service the model can reach the web through. See web/services.js.
+ *
+ * @typedef {'exa'|'kagi'|'brave'} WebServiceId
+ */
+
+/**
+ * How the writer set web search up, app-wide: one row, `id` 'web'.
+ *
+ * @typedef {Object} WebSearchSetup
+ * @property {'web'} id
+ * @property {WebServiceId} [service] - The service in use. Absent means none is
+ * @property {Partial<Record<WebServiceId, string>>} keys - The writer's key for
+ *   each service they set one for, kept when they switch to another. Left out
+ *   of backups unless the writer includes keys, as a provider's is: the
+ *   services stay and the keys come back empty.
+ * @property {string[]} profiles - The chat profiles whose chats search the
+ *   web, unless a chat chooses otherwise
+ * @property {number} [updated]
+ */
+
+/**
  * An MCP server the writer has connected, app-wide like their skills.
  *
  * @typedef {Object} McpServer
@@ -580,7 +606,9 @@
  *   name when it was added and kept through renames. See mcp/names.js.
  * @property {string} [url] - Where it answers
  * @property {Record<string, string>} [headers] - Sent with every request: an
- *   API key, usually. Rides in backups, as a provider's key does.
+ *   API key, usually. Left out of backups unless the writer includes keys, as
+ *   a provider's key is: the names stay and the values come back empty, and
+ *   an empty one is not sent.
  * @property {'oauth'} [auth] - How the writer signs in to it, when they do. The
  *   sign-in itself is kept in this browser and never here; see mcp/auth.js.
  * @property {string} [command] - For one that runs as a local program, which
@@ -661,6 +689,7 @@
  * @property {JobStep[]} steps - In order; the runner takes the first not done
  * @property {any} [plan] - What the kind planned from: a conversion's chunks and the text they index
  * @property {string} [error] - Why the job failed, when it did
+ * @property {string} [resultId] - The document it wrote, once done: a conversion's copy
  * @property {number} [elapsed] - How long it has run, in ms, over every run up to the last stop;
  *   the run in hand adds its own time from `jobs/live.js`
  * @property {number} created

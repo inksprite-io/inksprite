@@ -6,9 +6,13 @@ import PrimeVue from 'primevue/config'
 import ConnectionsSection from '@/components/writer/settings/ConnectionsSection.vue'
 import { useMcpServerStore } from '@/stores/mcpServerStore.js'
 import { CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
+import { SIGN_IN_NEEDED } from '@/mcp/client.js'
 
 vi.mock('@/stores/db', () => ({
-  default: { mcpServers: { toArray: vi.fn(async () => []) } },
+  default: {
+    mcpServers: { toArray: vi.fn(async () => []) },
+    webSearch: { get: vi.fn(async () => undefined) },
+  },
 }))
 vi.mock('@/stores/syncStore', () => ({
   useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
@@ -145,6 +149,57 @@ describe('ConnectionsSection', () => {
     expect(useMcpServerStore().getAllServers()[0].headers).toEqual({ Authorization: 'Bearer k' })
   })
 
+  it('says a key a backup left out is missing, and lists the server again once entered', async () => {
+    listServer.mockResolvedValue(offered)
+    const wrapper = await mountSection()
+    await connectTo(wrapper, 'https://mcp.example.com/mcp')
+    await wrapper.find('[data-action="keep"]').trigger('click')
+    const store = useMcpServerStore()
+    const [kept] = store.getAllServers()
+    // As a backup without keys restores it.
+    store.updateServer(kept.id, { headers: { Authorization: '' } })
+    await flushPromises()
+
+    const row = () => wrapper.find(`[data-server="${kept.id}"]`)
+    expect(row().find('[data-key-missing]').exists()).toBe(true)
+    // Refused for want of its key, which a sign-in would not give it.
+    store.updateServer(kept.id, { error: SIGN_IN_NEEDED })
+    await flushPromises()
+    expect(row().find('[data-action="sign-in"]').exists()).toBe(false)
+
+    await row().find('button').trigger('click')
+    expect(row().find('[data-field="server-header-name"]').element.value).toBe('Authorization')
+    expect(row().find('[data-action="save-headers"]').exists()).toBe(false)
+    await row().find('[data-field="server-header-value"]').setValue('Bearer again')
+    listServer.mockClear()
+    await row().find('[data-action="save-headers"]').trigger('click')
+    await flushPromises()
+
+    expect(store.getServer(kept.id).headers).toEqual({ Authorization: 'Bearer again' })
+    expect(listServer).toHaveBeenCalledWith(
+      expect.objectContaining({ headers: { Authorization: 'Bearer again' } })
+    )
+    expect(row().find('[data-key-missing]').exists()).toBe(false)
+  })
+
+  it('adds a header to a kept server that had none', async () => {
+    listServer.mockResolvedValue(offered)
+    const wrapper = await mountSection()
+    await connectTo(wrapper, 'https://mcp.example.com/mcp')
+    await wrapper.find('[data-action="keep"]').trigger('click')
+    const store = useMcpServerStore()
+    const [kept] = store.getAllServers()
+    const row = () => wrapper.find(`[data-server="${kept.id}"]`)
+
+    await row().find('button').trigger('click')
+    await row().find('[data-field="server-header-name"]').setValue('X-Api-Key')
+    await row().find('[data-field="server-header-value"]').setValue('k')
+    await row().find('[data-action="save-headers"]').trigger('click')
+    await flushPromises()
+
+    expect(store.getServer(kept.id).headers).toEqual({ 'X-Api-Key': 'k' })
+  })
+
   it('says why one could not be reached, and keeps nothing', async () => {
     listServer.mockRejectedValue(new TypeError('Failed to fetch'))
     const wrapper = await mountSection()
@@ -153,6 +208,33 @@ describe('ConnectionsSection', () => {
 
     expect(wrapper.find('[data-candidate]').text()).toMatch(/CORS/)
     expect(wrapper.find('[data-action="keep"]').attributes('disabled')).toBeDefined()
+  })
+
+  it('opens a new server ready to take its address', async () => {
+    const wrapper = mount(ConnectionsSection, {
+      global: { plugins: [PrimeVue], directives: { tooltip: {} } },
+      attachTo: document.body,
+    })
+    await flushPromises()
+
+    await wrapper.find('[data-action="add-server"]').trigger('click')
+    await flushPromises()
+
+    expect(document.activeElement).toBe(wrapper.find('[data-field="url"]').element)
+    wrapper.unmount()
+  })
+
+  it('refuses an address that is not a web address, at the field, without trying it', async () => {
+    const wrapper = await mountSection()
+
+    await connectTo(wrapper, 'not a url')
+
+    expect(wrapper.find('[data-address-problem]').text()).toBe('That isn’t a web address.')
+    expect(listServer).not.toHaveBeenCalled()
+    expect(wrapper.find('[data-candidate]').exists()).toBe(false)
+
+    await wrapper.find('[data-field="url"]').setValue('https://mcp.example.com/mcp')
+    expect(wrapper.find('[data-address-problem]').exists()).toBe(false)
   })
 
   it('keeps a pasted server that runs as a program, as needing a bridge', async () => {

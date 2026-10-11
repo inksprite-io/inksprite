@@ -78,8 +78,7 @@ describe('DriveImportDialog', () => {
     expect(toast.add).toHaveBeenCalledWith(
       expect.objectContaining({
         severity: 'success',
-        summary: 'Imported 1 document',
-        detail: '2 images left out.',
+        detail: 'Imported 1 document. 2 images left out.',
       })
     )
     expect(shown(wrapper).exists()).toBe(false)

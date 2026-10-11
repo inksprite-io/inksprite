@@ -67,4 +67,22 @@ describe('Settings', () => {
     const second = mountSettings()
     expect(second.find('[data-section-pane="narration"]').exists()).toBe(true)
   })
+
+  it('brings the section it opens on into view, wherever the strip is scrolled', async () => {
+    const shown = vi.fn()
+    const original = window.HTMLElement.prototype.scrollIntoView
+    window.HTMLElement.prototype.scrollIntoView = function (options) {
+      shown(this.dataset.section, options)
+    }
+    try {
+      window.sessionStorage.setItem('ui.settings.section', JSON.stringify('about'))
+      const wrapper = mountSettings()
+      expect(shown).toHaveBeenLastCalledWith('about', { block: 'nearest', inline: 'nearest' })
+
+      await wrapper.find('[data-section="system"]').trigger('click')
+      expect(shown).toHaveBeenLastCalledWith('system', { block: 'nearest', inline: 'nearest' })
+    } finally {
+      window.HTMLElement.prototype.scrollIntoView = original
+    }
+  })
 })

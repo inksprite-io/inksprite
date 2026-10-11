@@ -5,19 +5,14 @@
       <Select
         id="provider"
         v-model="localSelectedProviderId"
-        :options="providersWithFormattedNames"
-        option-label="displayName"
+        :options="providers"
+        option-label="name"
         option-value="id"
         placeholder="Select a provider"
+        aria-label="Provider"
         class="flex-auto !dark:bg-surface-900"
         size="small"
-      >
-        <template #option="{ option }">
-          <div class="flex items-center">
-            <div>{{ option.displayName }}</div>
-          </div>
-        </template>
-      </Select>
+      />
       <Button
         v-tooltip.top="'Configure provider'"
         icon="pi pi-ellipsis-v"
@@ -73,7 +68,7 @@ import Button from 'primevue/button'
 import { useAIConfig } from '@/composables/useAIConfig'
 import ProviderConfig from './ProviderConfig.vue'
 import 'primeicons/primeicons.css'
-import { connectionGap, providerLabel } from '@/ai/providers.js'
+import { connectionGap } from '@/ai/providers.js'
 
 /**
  * @typedef {Object} Props
@@ -115,14 +110,6 @@ const statusText = computed(() => {
     default:
       return 'Ready to use.'
   }
-})
-
-// Format provider names for display
-const providersWithFormattedNames = computed(() => {
-  return providers.value.map(provider => ({
-    ...provider,
-    displayName: `${provider.name} (${providerLabel(provider.type)})`,
-  }))
 })
 
 // Watch for external changes to selectedProviderId

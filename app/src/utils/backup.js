@@ -24,7 +24,7 @@
 import { nanoid } from 'nanoid'
 
 import { partsAndScenesToDocuments } from '../stores/migrations/documents.js'
-import { documentsToProjectTree } from '../stores/migrations/projectTree.js'
+import { documentsToProjectTree, rootIdFor } from '../stores/migrations/projectTree.js'
 import { loreToDocuments } from '../stores/migrations/lore.js'
 import { lastSceneToLastDocument } from '../stores/migrations/lastDocument.js'
 import { overviewToRootSummary } from '../stores/migrations/overview.js'
@@ -262,6 +262,10 @@ const UPGRADES = {
   // v25 added `skillWordings`, the writer's wording of the built-in skills.
   // No existing row changed, so the table starts empty.
   25: tables => ({ skillWordings: [], ...tables }),
+
+  // v26 added `webSearch`, how the writer set web search up. No existing row
+  // changed, so the table starts empty.
+  26: tables => ({ webSearch: [], ...tables }),
 }
 
 /**
@@ -367,12 +371,56 @@ export function redactApiKeys(providers) {
 }
 
 /**
+ * Empty the headers of MCP server rows, which hold an API key as a provider's
+ * row does.
+ *
+ * Each header keeps its name, so a restored server can say what it needs
+ * entered again; the client sends none that is empty.
+ *
+ * @param {any[]} servers
+ * @returns {any[]} Servers with every header's value emptied
+ */
+export function redactServerKeys(servers) {
+  return servers.map(server => {
+    const names = Object.keys(server?.headers || {})
+    if (names.length === 0) return server
+    return { ...server, headers: Object.fromEntries(names.map(name => [name, ''])) }
+  })
+}
+
+/**
+ * Empty the keys of the web search setup, keeping which services had one, so
+ * a restored setup can say which key it needs entered again.
+ *
+ * @param {any[]} rows
+ * @returns {any[]} Rows with every key emptied
+ */
+export function redactWebKeys(rows) {
+  return rows.map(row => {
+    const services = Object.keys(row?.keys || {})
+    if (services.length === 0) return row
+    return { ...row, keys: Object.fromEntries(services.map(service => [service, ''])) }
+  })
+}
+
+/**
+ * What each table holding credentials is redacted by.
+ *
+ * @type {Record<string, (rows: any[]) => any[]>}
+ */
+const REDACTED = {
+  aiProviders: redactApiKeys,
+  mcpServers: redactServerKeys,
+  webSearch: redactWebKeys,
+}
+
+/**
  * Assemble a backup envelope from raw table contents.
  *
  * @param {TableData} tables - Every table, keyed by name
  * @param {object} opts
  * @param {number} opts.dbVersion - Schema version the rows came from
- * @param {boolean} [opts.includeApiKeys] - Keep provider credentials (default false)
+ * @param {boolean} [opts.includeApiKeys] - Keep provider, server and web search credentials (default false)
  * @param {number} [opts.exported] - Timestamp, injectable for tests
  * @param {BackupScope} [opts.scope] - What the tables hold (default the whole database)
  * @returns {Backup}
@@ -384,7 +432,7 @@ export function buildBackup(
   /** @type {TableData} */
   const out = {}
   for (const [name, rows] of Object.entries(tables)) {
-    out[name] = name === 'aiProviders' && !includeApiKeys ? redactApiKeys(rows) : rows
+    out[name] = !includeApiKeys && REDACTED[name] ? REDACTED[name](rows) : rows
   }
 
   return {
@@ -490,6 +538,67 @@ export function summarizeBackup(backup) {
     .map(([table, rows]) => ({ table, count: Array.isArray(rows) ? rows.length : 0 }))
     .filter(entry => entry.count > 0)
     .sort((a, b) => b.count - a.count || a.table.localeCompare(b.table))
+}
+
+/**
+ * What a writer counts in their data, by table: the things they made. A
+ * project's root is not a document they made, so it is not counted as one.
+ */
+const COUNTED = {
+  stories: ['project', 'projects'],
+  documents: ['document', 'documents'],
+  chats: ['chat', 'chats'],
+}
+
+/**
+ * Tables that are part of something counted: a chat's messages, a file
+ * document's bytes, a job on a document, and what a project was made of
+ * before it was a tree of documents.
+ */
+const PART_OF_COUNTED = new Set([
+  'messages',
+  'files',
+  'jobs',
+  'parts',
+  'scenes',
+  'sceneBeats',
+  'lorebooks',
+  'loreEntries',
+])
+
+/**
+ * What a backup holds, in the words a writer would use: how many projects,
+ * documents and chats, and whether it has settings — providers, presets,
+ * profiles, skills, servers — which are not worth counting one by one.
+ *
+ * @param {Backup} backup
+ * @returns {string} A sentence
+ */
+export function describeBackupContents(backup) {
+  const tables = backup.tables || {}
+  /** @param {string} table */
+  const rows = table => (Array.isArray(tables[table]) ? tables[table] : [])
+
+  /** @type {string[]} */
+  const parts = []
+  for (const [table, [one, many]] of Object.entries(COUNTED)) {
+    const made =
+      table === 'documents'
+        ? rows(table).filter(row => row?.id !== rootIdFor(row?.storyId))
+        : rows(table)
+    if (made.length > 0) parts.push(`${made.length} ${made.length === 1 ? one : many}`)
+  }
+  const settings = Object.keys(tables).some(
+    table => !(table in COUNTED) && !PART_OF_COUNTED.has(table) && rows(table).length > 0
+  )
+  if (settings) parts.push('your settings')
+
+  if (parts.length === 0) return 'It holds nothing.'
+  const listed =
+    parts.length === 1
+      ? parts[0]
+      : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
+  return `It holds ${listed}.`
 }
 
 /**

@@ -42,6 +42,8 @@ vi.mock('@/stores/storiesStore', () => ({
   useStoriesStore: () => ({
     getStory: id => (id === 'story_1' ? mockStory : null),
     updateStory: mockUpdateStory,
+    // Another project goes by "Lighthouse".
+    freeName: title => (title === 'Lighthouse' ? 'Lighthouse (1)' : title),
   }),
 }))
 
@@ -577,6 +579,12 @@ describe('useDocuments', () => {
       expect(api.displayTitle(api.root.value)).toBe('A Better Title')
       expect(api.editableTitle('root_story_1')).toBe('A Better Title')
     })
+
+    it('numbers a name another project has', () => {
+      expect(api.rename('root_story_1', 'Lighthouse')).toBe(true)
+
+      expect(api.displayTitle(api.root.value)).toBe('Lighthouse (1)')
+    })
   })
 
   it('returns the same instance per story', () => {
@@ -807,6 +815,46 @@ describe('useDocuments', () => {
     })
   })
 
+  describe('duplicate', () => {
+    it('copies a document beside it under the next free name, with what it is', () => {
+      const chapter = api.createTextDocument('notes_story_1', 'Riley', 'She *ran*.')
+      api.setPlain(chapter.id, true)
+      api.setHidden(chapter.id, true)
+
+      const copy = api.duplicate(chapter.id)
+
+      expect(copy).toMatchObject({
+        parentId: 'notes_story_1',
+        type: 'text',
+        title: 'Riley (2)',
+        content: 'She *ran*.',
+        plain: true,
+        hidden: true,
+      })
+      expect(api.duplicate(copy.id).title).toBe('Riley (3)')
+    })
+
+    it('goes straight after the original in a folder kept in order', () => {
+      const one = api.createTextDocument('manuscript_story_1', 'One')
+      const two = api.createTextDocument('manuscript_story_1', 'Two')
+      api.setOrdered('manuscript_story_1', true)
+
+      const copy = api.duplicate(one.id)
+
+      expect(api.childrenOf('manuscript_story_1').map(child => child.id)).toEqual([
+        one.id,
+        copy.id,
+        two.id,
+      ])
+    })
+
+    it('copies nothing but a text document', () => {
+      const act = api.createFolder('manuscript_story_1', 'Act 1')
+      expect(api.duplicate(act.id)).toBeNull()
+      expect(api.duplicate('root_story_1')).toBeNull()
+    })
+  })
+
   describe('remove', () => {
     it('deletes a whole subtree', () => {
       const act = api.createFolder('manuscript_story_1', 'Act 1')
@@ -836,6 +884,39 @@ describe('useDocuments', () => {
       expect(() => store.updateDocument(act.id, { parentId: nested.id })).toThrow(
         'into its own subtree'
       )
+    })
+  })
+
+  describe('moveInto', () => {
+    it('puts a document at the end of a folder kept in order, under a name of its own there', () => {
+      const act = api.createFolder('manuscript_story_1', 'Act 1')
+      api.setOrdered(act.id, true)
+      api.createTextDocument(act.id, 'Opening')
+      api.createTextDocument(act.id, 'Riley')
+      const riley = api.createTextDocument('notes_story_1', 'Riley')
+
+      api.moveInto(act.id, riley.id)
+
+      expect(api.childrenOf(act.id).map(child => child.title)).toEqual([
+        'Opening',
+        'Riley',
+        'Riley (2)',
+      ])
+      expect(api.get(riley.id).parentId).toBe(act.id)
+    })
+
+    it('leaves a document already in the folder where it is, and refuses its own subtree', () => {
+      const act = api.createFolder('manuscript_story_1', 'Act 1')
+      api.setOrdered(act.id, true)
+      const first = api.createTextDocument(act.id, 'One')
+      api.createTextDocument(act.id, 'Two')
+      const nested = api.createFolder(act.id, 'Fragments')
+
+      api.moveInto(act.id, first.id)
+      expect(api.childrenOf(act.id)[0].id).toBe(first.id)
+
+      api.moveInto(nested.id, act.id)
+      expect(api.get(act.id).parentId).toBe('manuscript_story_1')
     })
   })
 

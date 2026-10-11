@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import {
   BUILT_IN_SKILLS,
+  DIRECTOR,
   getSkill,
   skillLabel,
   skillPrompt,
@@ -15,19 +16,20 @@ import { getToolDefinitions, getToolDefinitionsFor } from '@/ai/tools/index.js'
 import { COMMANDS } from '@/ai/commands.js'
 
 describe('the skills registry', () => {
-  it('has the four that ship, each read from its own SKILL.md', () => {
-    expect(BUILT_IN_SKILLS.map(skill => skill.name)).toEqual([
-      'director',
-      'interpret',
-      'write',
-      'compact',
-    ])
+  it('has the three that ship, each read from its own SKILL.md', () => {
+    expect(BUILT_IN_SKILLS.map(skill => skill.name)).toEqual(['interpret', 'write', 'compact'])
     for (const skill of BUILT_IN_SKILLS) {
       expect(skill.body.trim(), skill.name).toBeTruthy()
       expect(skill.summary.trim(), skill.name).toBeTruthy()
-      // All four run on their own, as an inference of their own.
+      // All three run on their own, as an inference of their own.
       expect(skill.fork, skill.name).toBe(true)
     }
+  })
+
+  it('sets the Director aside: not offered, not listed, its file kept', () => {
+    expect(getSkill('director')).toBeNull()
+    expect(getToolDefinitions().map(d => d.function.name)).not.toContain('director')
+    expect(DIRECTOR.body.trim()).toBeTruthy()
   })
 
   it('offers the model a tool for each skill it may call, and only those', () => {
@@ -55,10 +57,8 @@ describe('the skills registry', () => {
     }
   })
 
-  it('leaves /director as the writer’s own direction, since the Director is the model’s', () => {
-    // The skill is not the writer's to call; the command of the same name is
-    // what they say in its place, and runs nothing.
-    expect(getSkill('director').user).toBe(false)
+  it('leaves /director as the writer’s own direction, which asks no model', () => {
+    expect(DIRECTOR.user).toBe(false)
     expect(COMMANDS.director.consults).toBeUndefined()
   })
 

@@ -3,7 +3,8 @@ import {
   getToolGroups,
   getToolDefinitions,
   getToolDefinitionsFor,
-  replaysAcrossTurns,
+  getEnabledToolDefinitions,
+  keptInConversation,
   TOOL_GROUP_LABELS,
 } from '@/ai/tools/index.js'
 import { DIRECTOR_TOOLS, SKILL_MAX_DEPTH } from '@/ai/skills/index.js'
@@ -34,20 +35,32 @@ describe('tool groups', () => {
       'update_document',
       'edit_document',
       'append_document',
+      'list_comments',
+      'resolve_comment',
     ])
     expect(byId.rpg).toEqual(['roll_dice', 'oracle', 'roll_table', 'draw_tarot', 'generate_names'])
-    expect(byId.skills).toEqual(['director', 'interpret'])
+    expect(byId.skills).toEqual(['interpret'])
+    expect(byId.web).toEqual(['web_search', 'read_web_page'])
   })
 
-  it('sends back only the RPG tool calls of a past turn', () => {
-    // Small answers the fiction turns on, and the calls worth showing the
-    // model. A read is carried by the project block; a search is the payload
-    // replay was costing.
-    for (const name of ['roll_dice', 'oracle', 'roll_table', 'draw_tarot', 'generate_names']) {
-      expect(replaysAcrossTurns(name)).toBe(true)
+  it('offers the web only to a chat that searches, less any tool it switched off', () => {
+    const offered = selection =>
+      getEnabledToolDefinitions(selection)
+        .map(definition => definition.function.name)
+        .filter(name => name === 'web_search' || name === 'read_web_page')
+
+    // Opted into: a chat that withholds nothing still does not search.
+    expect(offered({})).toEqual([])
+    expect(offered({ web: true })).toEqual(['web_search', 'read_web_page'])
+    expect(offered({ web: true, disabledTools: ['read_web_page'] })).toEqual(['web_search'])
+  })
+
+  it('keeps the document calls of a turn from when only they went back', () => {
+    for (const name of ['read_document', 'search_documents', 'edit_document']) {
+      expect(keptInConversation(name)).toBe(true)
     }
-    for (const name of ['read_document', 'search_documents', 'director', 'interpret', 'nope']) {
-      expect(replaysAcrossTurns(name)).toBe(false)
+    for (const name of ['roll_dice', 'oracle', 'director', 'nope']) {
+      expect(keptInConversation(name)).toBe(false)
     }
   })
 
@@ -75,7 +88,7 @@ describe("a skill's tools", () => {
   it('withholds skills at the last permitted depth', () => {
     // Every skill runs inside the turn that called it, on its budget and its
     // clock. Without a floor, how deep that goes is the model's to choose.
-    const names = getToolDefinitionsFor(['director', 'oracle'], SKILL_MAX_DEPTH).map(
+    const names = getToolDefinitionsFor(['interpret', 'oracle'], SKILL_MAX_DEPTH).map(
       d => d.function.name
     )
 

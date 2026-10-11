@@ -8,7 +8,10 @@
     @update:visible="$emit('update:visible', $event)"
   >
     <div class="flex flex-col gap-3">
-      <p class="text-xs text-surface-500 dark:text-surface-400 m-0">
+      <p v-if="page" class="text-xs text-surface-500 dark:text-surface-400 m-0 break-all">
+        {{ page.url }}
+      </p>
+      <p v-else class="text-xs text-surface-500 dark:text-surface-400 m-0">
         {{ server }}’s answer to <span class="font-mono">{{ tool }}</span
         >.
       </p>
@@ -41,6 +44,7 @@
         label="Save"
         size="small"
         :disabled="!title.trim()"
+        :loading="saving"
         data-action="save-result"
         @click="save"
       />
@@ -56,8 +60,11 @@ import Select from 'primevue/select'
 import Button from 'primevue/button'
 import { useDocuments } from '@/composables/useDocuments.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
+import { isRepository } from '@/source/tree.js'
 import { localStorage } from '@/utils/localStorage.js'
-import { savedContent, savedTitle } from '@/mcp/saved.js'
+import { pagePart, savedContent, savedTitle, webPageOf, wholeRead } from '@/mcp/saved.js'
+import { wholePage } from '@/web/pages.js'
+import { WEB_TIMEOUT_MS } from '@/ai/tools/web.js'
 
 /**
  * Keep a server's tool result in the project: a title, a folder, and the
@@ -79,6 +86,9 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'saved'])
 
+/** A web page read, which is said by its address and saved whole. */
+const page = computed(() => webPageOf(props.result))
+
 const documents = useDocuments(props.storyId)
 const rootId = rootIdFor(props.storyId)
 
@@ -86,7 +96,8 @@ const rootId = rootIdFor(props.storyId)
 const lastFolderKey = `ui.save-result.folder.${props.storyId}`
 
 /**
- * Every folder in the project, by path, the project itself first.
+ * Every folder in the project, by path, the project itself first. Not a
+ * repository, which takes nothing in, nor the folders inside one.
  *
  * @returns {Array<{id: string, label: string}>}
  */
@@ -98,7 +109,7 @@ const folders = computed(() => {
    */
   const walk = (parentId, path) => {
     for (const child of documents.childrenOf(parentId)) {
-      if (child.type !== 'folder') continue
+      if (child.type !== 'folder' || isRepository(child)) continue
       const here = path ? `${path} / ${child.title}` : child.title
       out.push({ id: child.id, label: here })
       walk(child.id, here)
@@ -122,13 +133,39 @@ watch(
   { immediate: true }
 )
 
-function save() {
-  if (!title.value.trim()) return
+/** Whether the whole of a page is being fetched to be saved. */
+const saving = ref(false)
+
+/**
+ * What is saved: the answer, or for a slice of a page, the whole page when it
+ * can still be had. When it can't, the slice, whose first line says it is one.
+ *
+ * @returns {Promise<string>}
+ */
+async function toSave() {
+  if (!page.value || !pagePart(page.value)) return props.result
+  try {
+    const whole = await wholePage(page.value.url, { timeout: WEB_TIMEOUT_MS })
+    return whole?.text.trim() ? wholeRead(props.result, whole.text) : props.result
+  } catch {
+    return props.result
+  }
+}
+
+async function save() {
+  if (!title.value.trim() || saving.value) return
+  saving.value = true
+  let result
+  try {
+    result = await toSave()
+  } finally {
+    saving.value = false
+  }
   const parentId = folderId.value || rootId
   const document = documents.createTextDocument(
     parentId,
     documents.uniqueTitle(parentId, title.value.trim()),
-    savedContent({ result: props.result, server: props.server, tool: props.tool, args: props.args })
+    savedContent({ result, server: props.server, tool: props.tool, args: props.args })
   )
   localStorage.set(lastFolderKey, parentId)
   emit('saved', document)

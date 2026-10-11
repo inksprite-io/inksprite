@@ -243,6 +243,13 @@ export const useMessagesStore = defineStore('messages', () => {
   const EMPTY_ANSWER = answerOf({})
 
   /**
+   * Whether an answer failed before it said anything.
+   * @param {import('../types/models.js').MessageAlternate} answer
+   * @returns {boolean}
+   */
+  const failedEmpty = answer => Boolean(answer.metadata?.error) && !answer.content
+
+  /**
    * Every answer the message has had, with the one it is showing as it
    * stands now.
    *
@@ -264,7 +271,9 @@ export const useMessagesStore = defineStore('messages', () => {
    *
    * The message empties, as a message a turn is about to write into, and
    * what it said goes into the list of its answers beside a place for the
-   * next. The writer did none of this, so nothing is marked edited.
+   * next. The writer did none of this, so nothing is marked edited. An
+   * answer that failed before it said anything is not kept: there is nothing
+   * in it to turn back to.
    *
    * @param {string} messageId
    * @returns {Message}
@@ -276,9 +285,15 @@ export const useMessagesStore = defineStore('messages', () => {
       throw new Error(`Failed to begin an alternate, '${messageId}' not found`)
     }
 
-    const kept = alternatesOf(message)
+    const kept = alternatesOf(message).filter(answer => !failedEmpty(answer))
     const next = { ...EMPTY_ANSWER, streamingStartTime: Date.now() }
-    Object.assign(message, next, { alternates: [...kept, next], alternate: kept.length })
+    if (kept.length === 0) {
+      Object.assign(message, next)
+      delete message.alternates
+      delete message.alternate
+    } else {
+      Object.assign(message, next, { alternates: [...kept, next], alternate: kept.length })
+    }
     delete message.pendingToolCalls
     message.updated = Date.now()
 

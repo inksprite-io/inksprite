@@ -211,7 +211,10 @@ describe('ProjectMenu', () => {
 
   it('imports a project file and opens it', async () => {
     const file = new window.File(['{}'], 'inksprite-project-draft.json')
-    const rows = { story: { id: 'story_from_file' } }
+    const rows = {
+      story: { id: 'story_from_file' },
+      documents: [{ id: 'root_story_from_file', title: 'Imported' }],
+    }
     backup.readProjectFile.mockResolvedValue(rows)
     backup.importProject.mockImplementation(() => storiesStore.createStory('Imported'))
     const { wrapper, push } = await mountMenu('')
@@ -219,7 +222,7 @@ describe('ProjectMenu', () => {
     await pickFile(wrapper, file)
 
     expect(backup.readProjectFile).toHaveBeenCalledWith(file)
-    expect(backup.importProject).toHaveBeenCalledWith(rows)
+    expect(backup.importProject).toHaveBeenCalledWith(rows, { title: 'Imported' })
     const storyId = [...storiesStore.stories.keys()][0]
     expect(toast.success).toHaveBeenCalledWith('Imported "Imported"')
     expect(push).toHaveBeenCalledWith(`/project/${storyId}`)

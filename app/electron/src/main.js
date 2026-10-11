@@ -29,8 +29,17 @@ const pageRoot = app.isPackaged
   ? path.join(app.getAppPath(), 'page')
   : fileURLToPath(new URL('../../dist', import.meta.url))
 
-/** What the page may be granted, of what a site asks the writer for. */
-const PERMISSIONS = new Set(['clipboard-read', 'clipboard-sanitized-write', 'fullscreen'])
+/**
+ * What the page may be granted, of what a site asks the writer for.
+ * Persistent storage keeps the database from being cleared when the disk
+ * runs short.
+ */
+const PERMISSIONS = new Set([
+  'clipboard-read',
+  'clipboard-sanitized-write',
+  'fullscreen',
+  'persistent-storage',
+])
 
 registerScheme()
 

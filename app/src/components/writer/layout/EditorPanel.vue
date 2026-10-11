@@ -49,9 +49,11 @@
         :story-id="storyId"
         :document-id="activeId"
         class="h-full w-full"
+        @shortcuts="showingShortcuts = true"
       />
     </div>
     <EmptyEditor v-else :story-id="storyId" class="flex-1 min-h-0" />
+    <ShortcutsDialog v-model:visible="showingShortcuts" />
   </main>
 </template>
 
@@ -61,6 +63,7 @@ import Editor from '../editor/Editor.vue'
 import EditorTabs from '../editor/EditorTabs.vue'
 import EmptyEditor from '../editor/EmptyEditor.vue'
 import FileView from '../editor/FileView.vue'
+import ShortcutsDialog from '../editor/ShortcutsDialog.vue'
 import HeaderButton from './HeaderButton.vue'
 import PanelToggle from './PanelToggle.vue'
 import { useCopyPath } from '@/composables/useCopyPath.js'
@@ -106,10 +109,14 @@ const { copyPath } = useCopyPath(props.storyId)
 const { plainTextItem } = usePlainText(props.storyId)
 const { showsText, fileViewItem } = useFileView(props.storyId)
 
+/** Whether the list of the editor's keys is showing: Mod-/, or a tab's menu. */
+const showingShortcuts = ref(false)
+
 /**
  * What a tab's right-click menu offers: the same address the outline copies,
  * the same switch between plain text and a document, and for a file the same
- * switch between the file and its text.
+ * switch between the file and its text. A document laid out offers the list
+ * of the editor's keys too, the way to it that is not itself a key.
  * @param {string} id
  */
 const tabActions = id =>
@@ -117,6 +124,13 @@ const tabActions = id =>
     { label: 'Copy path', icon: 'pi pi-copy', command: () => copyPath(id) },
     plainTextItem(id),
     fileViewItem(id),
+    api.get(id)?.type === 'text' && !api.isPlain(id)
+      ? {
+          label: 'Keyboard shortcuts',
+          icon: 'pi pi-question-circle',
+          command: () => (showingShortcuts.value = true),
+        }
+      : null,
   ].filter(Boolean)
 
 const activeId = computed(() => api.tabs.value.active)
@@ -140,6 +154,7 @@ const items = computed(() => {
     ...names[at],
     path: api.pathOf(id),
     preview: id === preview,
+    plain: api.get(id)?.type === 'text' && api.isPlain(id),
   }))
 })
 </script>

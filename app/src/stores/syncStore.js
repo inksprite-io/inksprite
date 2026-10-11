@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, toRaw } from 'vue'
 import db from './db'
+import { useApplicationState } from '@/composables/useApplicationState'
 
 /** @typedef {import('../types/models.js').Change} Change */
 
@@ -20,6 +21,9 @@ export const useSyncStore = defineStore('sync', () => {
 
   /** @type {import('vue').Ref<ReturnType<typeof setTimeout>|null>} */
   const syncTimer = ref(null)
+
+  /** Whether the writer has the Debug switch on, which logs every save. */
+  const { debug } = useApplicationState()
 
   /**
    * Track a change for persistence
@@ -104,7 +108,7 @@ export const useSyncStore = defineStore('sync', () => {
       await db.transaction('rw', table, async () => {
         for (const change of entityChanges) {
           if (change.op === 'delete') {
-            console.log(`Deleting ${entityType} row:`, change.id)
+            if (debug.value) console.log(`Deleting ${entityType} row:`, change.id)
             await table.delete(change.id)
             continue
           }
@@ -116,7 +120,9 @@ export const useSyncStore = defineStore('sync', () => {
             ...plainData,
             version: (plainData.version || 0) + 1,
           }
-          console.log(`Saving ${entityType} change:`, dataToSave)
+          // The whole record, keys and all, so only while the writer has asked
+          // to see what the app is doing.
+          if (debug.value) console.log(`Saving ${entityType} change:`, dataToSave)
           await table.put(dataToSave)
         }
       })

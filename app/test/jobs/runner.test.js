@@ -73,6 +73,7 @@ registerJobKind('test', {
   },
   async finish(job) {
     finished.push(job.steps.map(step => step.output))
+    return 'doc_result'
   },
 })
 
@@ -121,6 +122,7 @@ describe('the job runner', () => {
     expect(after.status).toBe('done')
     expect(after.steps.map(step => step.output)).toEqual(['did a', 'did b', 'did c'])
     expect(finished).toEqual([['did a', 'did b', 'did c']])
+    expect(after.resultId).toBe('doc_result')
     expect(rows.get(job.id).status).toBe('done')
     expect(isRunning(job.id)).toBe(false)
   })

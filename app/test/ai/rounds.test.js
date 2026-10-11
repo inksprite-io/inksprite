@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { ROUND_LIMIT, refusedAnswer, trimRound } from '@/ai/rounds.js'
+import {
+  ROUND_LIMIT,
+  refusedAnswer,
+  splitOffered,
+  trimRound,
+  unofferedAnswer,
+} from '@/ai/rounds.js'
 
 const call = (id, name, args = '{}') => ({
   id,
@@ -46,5 +52,36 @@ describe('refusedAnswer', () => {
     expect(answer.tool_call_id).toBe('b')
     expect(JSON.parse(answer.content).error).toMatch(/^Not run, and nor were 252 more calls/)
     expect(JSON.parse(refusedAnswer(call('b', 'x'), 1).content).error).toMatch(/^Not run: /)
+  })
+})
+
+describe('splitOffered', () => {
+  const offering = (...names) => names.map(name => ({ type: 'function', function: { name } }))
+
+  it('runs the calls to tools the request offered, and holds back the rest', () => {
+    const read = call('a', 'read_document')
+    const search = call('b', 'web_search', '{"query":"x"}')
+    const list = call('c', 'list_documents')
+
+    expect(splitOffered([read, search, list], offering('read_document', 'list_documents'))).toEqual(
+      { offered: [read, list], unoffered: [search] }
+    )
+  })
+
+  it('holds back every call when nothing was offered', () => {
+    const search = call('b', 'web_search')
+
+    expect(splitOffered([search], [])).toEqual({ offered: [], unoffered: [search] })
+  })
+})
+
+describe('unofferedAnswer', () => {
+  it('answers the call as an error that names the tool', () => {
+    const answer = unofferedAnswer(call('b', 'web_search'))
+
+    expect(answer).toMatchObject({ role: 'tool', tool_call_id: 'b' })
+    expect(JSON.parse(answer.content).error).toBe(
+      'Not run: web_search is not one of the tools this chat offers now.'
+    )
   })
 })

@@ -19,6 +19,7 @@
       <Button
         v-if="repeatable"
         v-tooltip.top="'Ask again'"
+        aria-label="Ask again"
         icon="pi pi-refresh"
         text
         rounded
@@ -27,6 +28,7 @@
       />
       <Button
         v-tooltip.top="command ? 'Edit command' : 'Edit text'"
+        :aria-label="command ? 'Edit command' : 'Edit text'"
         icon="pi pi-pencil"
         text
         rounded
@@ -35,6 +37,7 @@
       />
       <Button
         v-tooltip.top="command ? 'Delete command' : 'Delete text'"
+        :aria-label="command ? 'Delete command' : 'Delete text'"
         icon="pi pi-trash"
         text
         rounded
@@ -166,6 +169,7 @@
         <span v-else class="flex-1" />
         <Button
           v-tooltip.top="'Cancel'"
+          aria-label="Cancel"
           icon="pi pi-times"
           text
           rounded
@@ -174,6 +178,7 @@
         />
         <Button
           v-tooltip.top="'Save'"
+          aria-label="Save"
           icon="pi pi-check"
           text
           rounded

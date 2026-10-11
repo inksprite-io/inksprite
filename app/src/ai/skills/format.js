@@ -164,6 +164,27 @@ export function joinSkill(front, body) {
   return `---\n${dump(front, { lineWidth: 80, noRefs: true })}---\n\n${body.trim()}\n`
 }
 
+/** What a skill with no description is told. */
+export const NEEDS_DESCRIPTION = 'It needs a `description`: what it does, and when to use it.'
+
+/** What a skill with no instructions is told. */
+export const NEEDS_INSTRUCTIONS = 'It needs instructions, under its frontmatter.'
+
+/**
+ * What is wrong with a skill's name as a name, whatever else has it.
+ *
+ * @param {string} name - Trimmed
+ * @returns {string} Nothing for a good one
+ */
+export function nameError(name) {
+  if (!name) return 'It needs a `name`.'
+  if (name.length > MAX_NAME) return `Its name is longer than ${MAX_NAME} characters.`
+  if (!NAME.test(name)) {
+    return `"${name}" cannot be a name: lowercase letters, digits and single hyphens, starting with a letter.`
+  }
+  return ''
+}
+
 /**
  * Read a SKILL.md.
  *
@@ -202,16 +223,11 @@ export function parseSkill(text) {
   }
 
   const name = textField('name')
-  if (!name) errors.push('It needs a `name`.')
-  else if (name.length > MAX_NAME) errors.push(`Its name is longer than ${MAX_NAME} characters.`)
-  else if (!NAME.test(name)) {
-    errors.push(
-      `"${name}" cannot be a name: lowercase letters, digits and single hyphens, starting with a letter.`
-    )
-  }
+  const badName = nameError(name)
+  if (badName) errors.push(badName)
 
   const described = textField('description')
-  if (!described) errors.push('It needs a `description`: what it does, and when to use it.')
+  if (!described) errors.push(NEEDS_DESCRIPTION)
   else if (described.length > MAX_DESCRIPTION) {
     errors.push(`Its description is longer than ${MAX_DESCRIPTION} characters.`)
   }
@@ -287,7 +303,7 @@ export function parseSkill(text) {
   const compatibility = textField('compatibility')
 
   const body = split.body
-  if (!body) errors.push('It needs instructions, under its frontmatter.')
+  if (!body) errors.push(NEEDS_INSTRUCTIONS)
 
   if (errors.length > 0) return { errors }
 

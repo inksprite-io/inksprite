@@ -1,6 +1,9 @@
 <template>
   <div class="flex flex-col gap-5 px-2 pt-2 pb-1 text-xs text-surface-500 dark:text-surface-400">
     <section class="flex flex-col gap-1">
+      <p v-if="version" class="text-sm text-surface-700 dark:text-surface-200" data-version>
+        inksprite {{ version }}
+      </p>
       <p class="text-sm text-surface-700 dark:text-surface-200">
         inksprite is free software under the
         <a :href="LICENSE_URL" target="_blank" rel="noopener noreferrer" :class="LINK"
@@ -66,6 +69,14 @@
  */
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
 import { FONT_CREDITS, ICON_CREDITS, ICON_LICENSE, iconUrl } from '@/config/credits.js'
+
+defineProps({
+  /**
+   * The release this is, as the desktop build is made with it from its tag
+   * (.github/workflows/release.yml). A build made any other way has none.
+   */
+  version: { type: String, default: import.meta.env.VITE_APP_VERSION || '' },
+})
 
 const LICENSE_URL = 'https://www.gnu.org/licenses/agpl-3.0.html'
 const SOURCE_URL = 'https://github.com/inksprite-io/inksprite'

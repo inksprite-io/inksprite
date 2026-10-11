@@ -19,19 +19,26 @@
       :story-id="storyId"
       :document-id="documentId"
     />
+    <CommentsPanel
+      v-else-if="tab === SIDEBAR_TABS.COMMENTS"
+      :story-id="storyId"
+      :document-id="documentId"
+      @open-document="$emit('open-document', $event)"
+    />
   </div>
 </template>
 
 <script setup>
 import ChatHistory from '../chats/ChatHistory.vue'
+import CommentsPanel from '../comments/CommentsPanel.vue'
 import NarrationPanel from '../narration/NarrationPanel.vue'
 import DocumentTree from '../tree/DocumentTree.vue'
 import { SIDEBAR_TABS } from './layout.js'
 
 /**
  * Where the writer picks what to work on: the project's documents, with
- * the other projects a menu away at the top, or its chats — or hears the
- * document open in the editor read aloud.
+ * the other projects a menu away at the top, its chats, or the comments left
+ * in it — or hears the document open in the editor read aloud.
  * Which is showing is chosen on the rail and kept in the story's layout, so
  * it is asked for here rather than held.
  *

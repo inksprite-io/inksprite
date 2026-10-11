@@ -81,16 +81,17 @@ export function useRepositoryImport(storyId) {
   }
 
   /**
-   * A folder chosen with the folder chooser.
+   * A folder chosen with the folder chooser, or dropped on the tree.
    *
-   * @param {ArrayLike<File>} chosen
+   * @param {import('@/files/batch.js').Gathered[]} listed - Its files, as
+   *   `files/batch.js` lists them
    * @param {ImportOptions & {refresh?: string}} [options] - `refresh`: the
    *   repository folder to bring up to date, rather than making a new one
    * @returns {Promise<RepositoryImported>}
    */
-  async function importFolder(chosen, options = {}) {
+  async function importFolder(listed, options = {}) {
     await api.init()
-    const { name, entries } = entriesOfFolder(chosen)
+    const { name, entries } = entriesOfFolder(listed)
     const gathered = await gatherSource(entries, {
       signal: options.signal,
       onProgress: (done, total) => options.onStep?.('reading', done, total),
@@ -118,7 +119,7 @@ export function useRepositoryImport(storyId) {
    * be chosen again: a page cannot keep hold of one.
    *
    * @param {string} folderId - The repository folder
-   * @param {ImportOptions & {token?: string, chosen?: ArrayLike<File>}} [options]
+   * @param {ImportOptions & {token?: string, listed?: import('@/files/batch.js').Gathered[]}} [options]
    * @returns {Promise<RepositoryImported>}
    */
   async function refresh(folderId, options = {}) {
@@ -126,8 +127,8 @@ export function useRepositoryImport(storyId) {
     const source = api.get(folderId)?.source
     if (!source) throw new Error('This folder is not a repository.')
     if (source.from === 'folder') {
-      if (!options.chosen) throw new Error('Choose the folder to read it again.')
-      return importFolder(options.chosen, { ...options, refresh: folderId })
+      if (!options.listed) throw new Error('Choose the folder to read it again.')
+      return importFolder(options.listed, { ...options, refresh: folderId })
     }
     const [owner, repo] = source.name.split('/')
     return fromGitHub(
@@ -170,10 +171,10 @@ export function useRepositoryImport(storyId) {
 }
 
 /**
- * What to tell the writer when an import or a refresh is done.
+ * What to tell the writer when an import or a refresh is done, in a line.
  *
  * @param {RepositoryImported} result
- * @returns {{summary: string, detail: string, severity: 'success'|'warn'}}
+ * @returns {{detail: string, severity: 'success'|'warn'}}
  */
 export function describeRepositoryImport(result) {
   const count = (/** @type {number} */ n, /** @type {string} */ word) =>
@@ -194,16 +195,20 @@ export function describeRepositoryImport(result) {
       refreshed.removed ? `${refreshed.removed} removed` : '',
     ].filter(Boolean)
     return {
-      summary: `${result.name} refreshed`,
-      detail: [changes.length > 0 ? `${changes.join(', ')}.` : 'Nothing changed.', leftOut]
+      detail: [
+        `${result.name} refreshed:`,
+        changes.length > 0 ? `${changes.join(', ')}.` : 'nothing changed.',
+        leftOut,
+      ]
         .filter(Boolean)
         .join(' '),
       severity: 'success',
     }
   }
   return {
-    summary: `${result.name} imported`,
-    detail: [`${count(result.files, 'file')}.`, leftOut].filter(Boolean).join(' '),
+    detail: [`${result.name} imported: ${count(result.files, 'file')}.`, leftOut]
+      .filter(Boolean)
+      .join(' '),
     severity: result.files > 0 ? 'success' : 'warn',
   }
 }

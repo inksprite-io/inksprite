@@ -98,10 +98,14 @@ describe('useCardChat', () => {
       options
     )
 
+  /** Start a chat on a card the way the dialog does: with a name. */
+  const begin = async (folderId, options = {}) =>
+    cardChats.start(await cardChats.read(folderId), { userName: 'Riley', ...options })
+
   it('starts the chat on the Roleplay profile, named for the card', async () => {
     const written = await imported()
 
-    const chat = await cardChats.start(await cardChats.read(written.folderId))
+    const chat = await begin(written.folderId)
 
     // Not a feature of cards: a profile being applied.
     expect(mockCreateChat).toHaveBeenCalledWith(STORY, 'Elara', null, expect.any(Object))
@@ -113,7 +117,7 @@ describe('useCardChat', () => {
     useApplicationState().setNsfwProfiles(true)
     const written = await imported()
 
-    const chat = await cardChats.start(await cardChats.read(written.folderId))
+    const chat = await begin(written.folderId)
 
     expect(chat.profileId).toBe(ROLEPLAY_NSFW_PROFILE_ID)
     expect(chat.rules).toBe(DEFAULT_ROLEPLAY_NSFW_NOTE)
@@ -126,7 +130,7 @@ describe('useCardChat', () => {
       { useSystemPrompt: true }
     )
 
-    const chat = await cardChats.start(await cardChats.read(written.folderId))
+    const chat = await begin(written.folderId)
 
     const prompt = useProfiles().getProfile(chat.profileId).settings.prompt
     expect(prompt.startsWith(DEFAULT_ROLEPLAY_NSFW_PROMPT.trim())).toBe(true)
@@ -136,7 +140,7 @@ describe('useCardChat', () => {
   it('pins the card so it is in context before anything is said', async () => {
     const written = await imported()
 
-    const chat = await cardChats.start(await cardChats.read(written.folderId))
+    const chat = await begin(written.folderId)
 
     expect(chat.pinnedIds).toEqual(written.pinnedIds)
   })
@@ -145,7 +149,7 @@ describe('useCardChat', () => {
     const shelf = await shelfFor(STORY, 'characters')
     const written = await imported({}, { parentId: shelf })
 
-    const chat = await cardChats.start(await cardChats.read(written.folderId))
+    const chat = await begin(written.folderId)
 
     // The shelf rather than each card on it, so one imported next week is
     // hidden too.
@@ -156,7 +160,7 @@ describe('useCardChat', () => {
   it('hides nothing for a card that is not on the shelf', async () => {
     const written = await imported()
 
-    const chat = await cardChats.start(await cardChats.read(written.folderId))
+    const chat = await begin(written.folderId)
 
     expect(chat.hiddenIds).toBeUndefined()
     expect(chat.shownIds).toBeUndefined()
@@ -165,17 +169,46 @@ describe('useCardChat', () => {
   it('opens with the greeting, as an ordinary message', async () => {
     const written = await imported()
 
-    await cardChats.start(await cardChats.read(written.folderId))
+    await begin(written.folderId)
 
     // The opening turn sets voice and length by example before anything has
     // been asked, and it is a message so the writer can retry or delete it.
     expect(messages).toEqual([expect.objectContaining({ role: 'assistant', content: 'Well?' })])
   })
 
+  it('puts the names its macros become on the chat', async () => {
+    const written = await imported({ nickname: 'The Knight' })
+
+    const chat = await begin(written.folderId, { userName: ' Sam ' })
+
+    // The character's name, not the card's: on a scenario card the two have
+    // nothing to do with each other.
+    expect(chat).toMatchObject({ userName: 'Sam', characterName: 'Elara' })
+  })
+
+  it('opens with the names in the greeting, and leaves the card as it was', async () => {
+    const written = await imported({ first_mes: '{{char}} looks up. "Well, {{user}}?"' })
+
+    await begin(written.folderId)
+
+    expect(messages.at(-1).content).toBe('Elara looks up. "Well, Riley?"')
+    expect((await cardChats.read(written.folderId)).greetings[0].content).toBe(
+      '{{char}} looks up. "Well, {{user}}?"'
+    )
+  })
+
+  it('starts from the name given last', async () => {
+    const written = await imported()
+
+    await begin(written.folderId, { userName: 'Sam' })
+
+    expect(cardChats.lastUserName()).toBe('Sam')
+  })
+
   it('opens with the greeting that was chosen', async () => {
     const written = await imported({ alternate_greetings: ['Second.', 'Third.'] })
 
-    await cardChats.start(await cardChats.read(written.folderId), { greeting: 2 })
+    await begin(written.folderId, { greeting: 2 })
 
     expect(messages.at(-1).content).toBe('Third.')
   })
@@ -183,7 +216,7 @@ describe('useCardChat', () => {
   it('falls back to the first greeting when the choice is gone', async () => {
     const written = await imported()
 
-    await cardChats.start(await cardChats.read(written.folderId), { greeting: 9 })
+    await begin(written.folderId, { greeting: 9 })
 
     expect(messages.at(-1).content).toBe('Well?')
   })
@@ -191,7 +224,7 @@ describe('useCardChat', () => {
   it("takes the card's rules over the profile's", async () => {
     const written = await imported({ post_history_instructions: 'Never write for them.' })
 
-    const chat = await cardChats.start(await cardChats.read(written.folderId))
+    const chat = await begin(written.folderId)
 
     // Both say how a turn is written, and two sets three tokens from
     // generation is an argument the model settles instead of writing.
@@ -203,7 +236,7 @@ describe('useCardChat', () => {
       post_history_instructions: '{{original}}\nThoughts in italics.',
     })
 
-    const chat = await cardChats.start(await cardChats.read(written.folderId))
+    const chat = await begin(written.folderId)
 
     // ST's rule: the card adds to the standing instructions instead of
     // replacing them, and says where.
@@ -224,7 +257,7 @@ describe('useCardChat', () => {
       { useSystemPrompt: true }
     )
 
-    const chat = await cardChats.start(await cardChats.read(written.folderId))
+    const chat = await begin(written.folderId)
 
     const prompt = useProfiles().getProfile(chat.profileId).settings.prompt
     expect(prompt.startsWith(DEFAULT_ROLEPLAY_PROMPT.trim())).toBe(true)
@@ -234,7 +267,7 @@ describe('useCardChat', () => {
   it("keeps the profile's rules when the card brought none", async () => {
     const written = await imported()
 
-    const chat = await cardChats.start(await cardChats.read(written.folderId))
+    const chat = await begin(written.folderId)
 
     expect(chat.rules).toBe(DEFAULT_ROLEPLAY_NOTE)
   })
@@ -242,7 +275,7 @@ describe('useCardChat', () => {
   it("saves a card's system prompt as a profile and points the chat at it", async () => {
     const written = await imported({ system_prompt: 'You are Elara.' }, { useSystemPrompt: true })
 
-    const chat = await cardChats.start(await cardChats.read(written.folderId))
+    const chat = await begin(written.folderId)
 
     // A prompt that exists only on one chat is a prompt nobody can find or
     // edit. As a profile it is in the library beside every other.
@@ -253,7 +286,7 @@ describe('useCardChat', () => {
   it("keeps the Roleplay profile's settings under a card's own prompt", async () => {
     const written = await imported({ system_prompt: 'You are Elara.' }, { useSystemPrompt: true })
 
-    const chat = await cardChats.start(await cardChats.read(written.folderId))
+    const chat = await begin(written.folderId)
 
     // The prompt assumes no tools; a profile made from it has to assume the
     // same or the card is played with the tools it was written without.
@@ -267,7 +300,7 @@ describe('useCardChat', () => {
   it('starts a chat with no opening when the card had no greeting', async () => {
     const written = await imported({ first_mes: '' })
 
-    await cardChats.start(await cardChats.read(written.folderId))
+    await begin(written.folderId)
 
     expect(messages).toEqual([])
   })

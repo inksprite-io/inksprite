@@ -9,13 +9,17 @@
   --shadow-inset-bottom: inset 0 -12px 12px -10px rgba(0, 0, 0, 0.28);
 }
 
-/* The typography plugin wraps every block quote in curly quotes. A writer's
-   block quote is usually dialogue, already quoted, so the editor and the chat
-   show the markdown as written and add no marks of their own. In the
-   components layer so that it also beats the plugin's important variant. */
+/* The typography plugin wraps every block quote in curly quotes, and inline
+   code in backticks. A writer's block quote is usually dialogue, already
+   quoted, and the backticks are markdown's own, which the editor has taken
+   in, so the editor and the chat show the text as written and add no marks of
+   their own. In the components layer so that it also beats the plugin's
+   important variant. */
 @layer components {
   .prose blockquote p::before,
-  .prose blockquote p::after {
+  .prose blockquote p::after,
+  .prose code::before,
+  .prose code::after {
     content: none !important;
   }
 }
@@ -36,9 +40,9 @@
   font-size: 1.125em;
 }
 
-/* The text the link field will link, while the focus is in the field and the
-   selection does not show (see editor/links). */
-.ProseMirror .link-target {
+/* The text the link or comment field is on, while the focus is in the field
+   and the selection does not show (see Editor.vue). */
+.ProseMirror .field-target {
   background-color: color-mix(in srgb, var(--p-primary-color) 20%, transparent);
 }
 
@@ -48,9 +52,28 @@
    styles a header. Selected cells are tinted, as prosemirror-tables marks
    them, and an empty cell is still wide enough to click into. Only a selected
    cell is positioned, for its tint: a positioned element is a layer of its own
-   to paint and hit-test, and a long document has tens of thousands of cells. */
+   to paint and hit-test, and a long document has tens of thousands of cells.
+
+   A table that runs on past an edge has a faint shadow at that edge. The
+   shadows stay where the box is; a cover in the page's colour at either end
+   of the table scrolls with it, and hides the shadow once that end is in
+   view. No script, and nothing drawn for a table that fits. */
 .ProseMirror .table-scroll {
+  --table-page: var(--p-surface-0);
+  --table-edge: rgb(0 0 0 / 0.16);
   overflow-x: auto;
+  background:
+    linear-gradient(to right, var(--table-page) 30%, transparent) left / 2.5rem 100% no-repeat local,
+    linear-gradient(to left, var(--table-page) 30%, transparent) right / 2.5rem 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, var(--table-edge), transparent) left / 0.75rem 100%
+      no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, var(--table-edge), transparent) right / 0.75rem 100%
+      no-repeat scroll;
+}
+
+.dark .ProseMirror .table-scroll {
+  --table-page: var(--p-surface-900);
+  --table-edge: rgb(255 255 255 / 0.14);
 }
 
 .ProseMirror td {
@@ -177,4 +200,9 @@
 
 ::highlight(find-match-current) {
   background-color: rgb(249 115 22 / 0.6);
+}
+
+/* A macro in a plain document, `{{char}}` and the like: see editor/plainMacros. */
+.card-macro {
+  color: var(--p-primary-color);
 }

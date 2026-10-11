@@ -161,33 +161,6 @@ export function readLorebook(value) {
 }
 
 /**
- * Put the character's name and the writer's in, once, so that nothing
- * downstream has to carry a template language.
- *
- * Card text is full of `{{char}}` and `{{user}}`, and the alternative to
- * substituting here is an editor where the writer has to know not to type two
- * braces. The documents become their copy; the sidecar still says what the
- * card said.
- *
- * Case and inner spacing vary between authors, and both are accepted.
- * Nothing else is: `{{date}}`, `{{random::…}}`, `{{roll:d20}}` and the rest are
- * left for the model to read, which says what they are for better than a value
- * frozen at import would — the date would be wrong within a day, and a coin
- * flip that always comes up heads is not one. `{{original}}` is resolved when
- * a chat starts; see `overOriginal`.
- *
- * @param {string} value
- * @param {{char: string, user: string}} names
- * @returns {string}
- */
-export function substitute(value, names) {
-  if (!value) return ''
-  return value
-    .replace(/\{\{\s*char\s*\}\}/gi, names.char)
-    .replace(/\{\{\s*user\s*\}\}/gi, names.user)
-}
-
-/**
  * Take out what a card's author wrote for other people rather than the model.
  *
  * `{{// …}}` is a comment: ST drops it before anything is sent, and authors

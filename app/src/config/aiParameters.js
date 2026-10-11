@@ -48,7 +48,7 @@ export const AI_PARAMETERS = {
 
   // Advanced parameters
   frequencyPenalty: {
-    label: 'Frequency Penalty',
+    label: 'Frequency penalty',
     description: 'Penalize tokens by how often they have appeared.',
     min: -2.0,
     max: 2.0,
@@ -57,7 +57,7 @@ export const AI_PARAMETERS = {
   },
 
   presencePenalty: {
-    label: 'Presence Penalty',
+    label: 'Presence penalty',
     description: 'Penalize tokens that have appeared at all.',
     min: -2.0,
     max: 2.0,
@@ -66,7 +66,7 @@ export const AI_PARAMETERS = {
   },
 
   repetitionPenalty: {
-    label: 'Repetition Penalty',
+    label: 'Repetition penalty',
     description: 'Higher repeats less, but can turn incoherent. 1 disables.',
     min: 0,
     max: 2.0,

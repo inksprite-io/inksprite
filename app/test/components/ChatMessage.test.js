@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { ref, computed, nextTick } from 'vue'
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import ChatMessage from '../../src/components/writer/chats/ChatMessage.vue'
 
@@ -15,6 +15,7 @@ vi.mock('../../src/composables/useChats', () => ({
 const savedDocuments = vi.hoisted(() => ({
   open: vi.fn(),
   createTextDocument: vi.fn((parentId, title) => ({ id: 'd_saved', parentId, title })),
+  present: new Set(['d_saved', 'd_chapter']),
 }))
 vi.mock('../../src/composables/useDocuments.js', () => ({
   useDocuments: () => ({
@@ -22,7 +23,8 @@ vi.mock('../../src/composables/useDocuments.js', () => ({
     childrenOf: () => [],
     uniqueTitle: (parentId, title) => title,
     createTextDocument: savedDocuments.createTextDocument,
-    pathOf: id => (id === 'd_saved' ? 'References/ENG-123' : ''),
+    pathOf: id => ({ d_saved: 'References/ENG-123', d_chapter: 'Manuscript/Chapter 2' })[id] || '',
+    get: id => (savedDocuments.present.has(id) ? { id } : null),
     open: savedDocuments.open,
   }),
 }))
@@ -143,11 +145,55 @@ describe('ChatMessage while its turn runs', () => {
     expect(wrapper.findAll('.typing-dot')).toHaveLength(0)
   })
 
-  it('keeps the empty state for a message with no turn running', () => {
+  it('shows the empty state while the turn has yet to say anything', () => {
+    const wrapper = show({ content: '', reasoningContent: null }, 'writing')
+
+    expect(wrapper.findAll('.typing-dot')).toHaveLength(3)
+  })
+
+  it('shows nothing waiting on an empty message no turn is writing into', () => {
+    // A page reloaded mid-turn has no turn running, and nothing left over
+    // should say it has.
     const wrapper = show({ content: '', reasoningContent: null })
 
     expect(wrapper.find('[data-chat-status]').exists()).toBe(false)
-    expect(wrapper.findAll('.typing-dot')).toHaveLength(3)
+    expect(wrapper.findAll('.typing-dot')).toHaveLength(0)
+  })
+})
+
+describe('ChatMessage whose turn failed', () => {
+  const failed = (fields = {}, phase = null) =>
+    show(
+      { content: '', reasoningContent: null, metadata: { error: 'Server error' }, ...fields },
+      phase
+    )
+
+  it('says why, where the reply would have been, instead of waiting', () => {
+    const wrapper = failed()
+
+    expect(wrapper.find('[data-answer-error]').text()).toContain('No reply: Server error')
+    expect(wrapper.findAll('.typing-dot')).toHaveLength(0)
+  })
+
+  it('says it under what the turn had written before it failed', () => {
+    const wrapper = failed({ content: 'Half a' })
+
+    expect(wrapper.text()).toContain('Half a')
+    expect(wrapper.find('[data-answer-error]').text()).toContain('Cut off: Server error')
+  })
+
+  it('asks again from the message', async () => {
+    const wrapper = failed()
+
+    await wrapper.find('[data-answer-error] button').trigger('click')
+
+    expect(wrapper.emitted('regenerate')).toEqual([[null]])
+  })
+
+  it('says nothing of the old failure while it is being asked again', () => {
+    const wrapper = failed({}, 'waiting')
+
+    expect(wrapper.find('[data-answer-error]').exists()).toBe(false)
   })
 })
 
@@ -334,11 +380,11 @@ describe('ChatMessage with the skills its turn consulted', () => {
 
   it('shows a skill still running by its name, before there is any answer', () => {
     const wrapper = show({
-      pendingToolCalls: [{ id: 'call_d', name: 'director', arguments: '{}' }],
+      pendingToolCalls: [{ id: 'call_i', name: 'interpret', arguments: '{}' }],
     })
 
     expect(blocks(wrapper)).toHaveLength(1)
-    expect(blocks(wrapper)[0].text()).toContain('Director…')
+    expect(blocks(wrapper)[0].text()).toContain('Interpret…')
   })
 
   it('shows the note a turn from before kept for the Director as the same block', () => {
@@ -486,11 +532,154 @@ describe('ChatMessage with a server’s answer to keep', () => {
     await nextTick()
     // The dialog is teleported to the page, outside the message.
     document.body.querySelector('[data-action="save-result"]').click()
-    await nextTick()
+    await flushPromises()
 
     expect(savedDocuments.createTextDocument).toHaveBeenCalled()
     expect(rows(wrapper)[0].text()).toContain('Saved as References/ENG-123')
     await rows(wrapper)[0].find('[data-action="open-saved"]').trigger('click')
     expect(savedDocuments.open).toHaveBeenCalledWith('d_saved')
+  })
+})
+
+describe('ChatMessage with a command of its own', () => {
+  const summary = (command, content = 'They reached the lighthouse.') =>
+    show({
+      content,
+      reasoningContent: null,
+      metadata: { command: { name: 'compact', ...command } },
+    })
+
+  it('shows no box over a summary asked with nothing to favour', () => {
+    expect(summary({ input: '', keep: 2 }).find('[data-command-box]').exists()).toBe(false)
+  })
+
+  it('shows what a summary was told to favour', () => {
+    const wrapper = summary({ input: 'Keep the names', keep: 2 })
+
+    expect(wrapper.find('[data-command-box]').text()).toContain('Keep the names')
+  })
+
+  it('shows the box while the summary has not started', () => {
+    const wrapper = summary({ input: '', pending: true }, '')
+
+    expect(wrapper.find('[data-command-box]').findAll('.typing-dot')).toHaveLength(3)
+  })
+})
+
+describe('ChatMessage with the tools its turn called', () => {
+  /** A round that said something, called a tool, and what the tool said. */
+  const round = (said, name, args, result, id = 'call_1') => [
+    {
+      role: 'assistant',
+      content: said,
+      tool_calls: [{ id, type: 'function', function: { name, arguments: JSON.stringify(args) } }],
+    },
+    { role: 'tool', tool_call_id: id, content: result },
+  ]
+
+  const turn = (content, trajectory, extra = {}) =>
+    show({ content, reasoningContent: null, metadata: { apiTrajectory: trajectory, ...extra } })
+
+  it('shows what it said before its tools above them, and its answer under them', () => {
+    const wrapper = turn('Let me look.\n\nThe keeper is in chapter two.', [
+      ...round('Let me look.', 'search_documents', { query: 'keeper' }, '{"results":[]}'),
+      { role: 'assistant', content: 'The keeper is in chapter two.' },
+    ])
+
+    const html = wrapper.html()
+    const lead = wrapper.find('[data-lead]')
+    expect(lead.text()).toBe('Let me look.')
+    expect(html.indexOf('data-lead')).toBeLessThan(html.indexOf('tool call'))
+    expect(html.indexOf('tool call')).toBeLessThan(html.indexOf('The keeper is in chapter two.'))
+  })
+
+  it("keeps every round's words before its calls together above them", () => {
+    const wrapper = turn('Let me look.\n\nAnd the other one.\n\nBoth agree.', [
+      ...round('Let me look.', 'search_documents', { query: 'a' }, '{}', 'call_1'),
+      ...round('And the other one.', 'search_documents', { query: 'b' }, '{}', 'call_2'),
+      { role: 'assistant', content: 'Both agree.' },
+    ])
+
+    expect(wrapper.find('[data-lead]').text()).toContain('And the other one.')
+    expect(wrapper.find('[data-lead]').text()).not.toContain('Both agree.')
+  })
+
+  it('shows a message edited since whole, under the tools', () => {
+    const wrapper = turn('Something else entirely.', [
+      ...round('Let me look.', 'search_documents', { query: 'keeper' }, '{}'),
+    ])
+
+    expect(wrapper.find('[data-lead]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('Something else entirely.')
+  })
+
+  it('marks a failed call before the block is opened, and the call in it', () => {
+    const wrapper = turn('Done.', [
+      ...round('', 'read_document', { path: 'Gone' }, '{"error":"No document at Gone"}', 'call_1'),
+      ...round('', 'search_documents', { query: 'a' }, '{"results":[]}', 'call_2'),
+    ])
+
+    expect(wrapper.find('[data-failed-calls]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('1 failed')
+    expect(wrapper.findAll('[data-failed]')).toHaveLength(1)
+  })
+
+  it('marks nothing when every call answered', () => {
+    const wrapper = turn('Done.', [
+      ...round('', 'search_documents', { query: 'a' }, '{"results":[]}'),
+    ])
+
+    expect(wrapper.find('[data-failed-calls]').exists()).toBe(false)
+  })
+
+  it('opens the document a call wrote from its row', async () => {
+    savedDocuments.open.mockClear()
+    const wrapper = turn(
+      'Written.',
+      round(
+        '',
+        'create_document',
+        { path: 'Manuscript/Chapter 2', content: 'It rained.' },
+        '{"success":true}'
+      ),
+      {
+        documentEdits: [
+          {
+            id: 'e1',
+            documentId: 'd_chapter',
+            path: 'Manuscript/Chapter 2',
+            tool: 'create_document',
+            old: '',
+            new: 'It rained.',
+          },
+        ],
+      }
+    )
+
+    const link = wrapper.find('[data-action="open-written"]')
+    expect(link.text()).toBe('Manuscript/Chapter 2')
+    await link.trigger('click')
+    expect(savedDocuments.open).toHaveBeenCalledWith('d_chapter')
+  })
+
+  it('offers nothing to open for a document that is gone', () => {
+    const wrapper = turn(
+      'Written.',
+      round('', 'create_document', { path: 'Notes' }, '{"success":true}'),
+      {
+        documentEdits: [
+          {
+            id: 'e1',
+            documentId: 'd_deleted',
+            path: 'Notes',
+            tool: 'create_document',
+            old: '',
+            new: '',
+          },
+        ],
+      }
+    )
+
+    expect(wrapper.find('[data-action="open-written"]').exists()).toBe(false)
   })
 })

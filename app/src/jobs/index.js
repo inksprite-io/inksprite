@@ -138,7 +138,7 @@ registerJobKind('convert', {
       const editor = useEditor()
       if (editor.holds(existing.id)) editor.replaceContent(existing.id, content)
       else documents.updateDocument(existing.id, { content, plain: false })
-      return
+      return existing.id
     }
     const source = documents.getDocument(job.documentId || '')
     const parentId = source?.parentId || rootIdFor(job.storyId)
@@ -150,6 +150,7 @@ registerJobKind('convert', {
       content,
     })
     documents.updateDocument(made.id, { convertedFrom: job.documentId })
+    return made.id
   },
 })
 

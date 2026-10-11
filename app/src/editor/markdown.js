@@ -40,6 +40,7 @@ import {
   defaultMarkdownSerializer,
 } from 'prosemirror-markdown'
 import { schema } from './schema.js'
+import { OPEN_MARKUP, closeMarkup, commentMarkupPlugin } from './comments.js'
 
 /**
  * @typedef {import('prosemirror-model').Node} Node
@@ -70,7 +71,7 @@ function cellsIn(line) {
  * @returns {import('markdown-it').MarkdownIt}
  */
 function tokenizerOf() {
-  const md = new MarkdownIt('default', { html: false }).disable(['image'])
+  const md = new MarkdownIt('default', { html: false }).disable(['image']).use(commentMarkupPlugin)
   const ruler = /** @type {{__rules__: {name: string, fn: Function, alt: string[]}[]}} */ (
     /** @type {unknown} */ (md.block.ruler)
   )
@@ -132,6 +133,10 @@ const parser = new MarkdownParser(schema, tokenizerOf(), {
   tr: { block: 'table_row' },
   th: { block: 'table_cell', getAttrs: alignmentOf },
   td: { block: 'table_cell', getAttrs: alignmentOf },
+  comment: {
+    mark: 'comment',
+    getAttrs: token => ({ id: token.attrGet('id'), text: token.attrGet('text') || '' }),
+  },
 })
 
 /**
@@ -244,6 +249,16 @@ export const serializer = new LinearSerializer(
   {
     ...defaultMarkdownSerializer.marks,
     strikethrough: { open: '~~', close: '~~', mixable: true, expelEnclosingWhitespace: true },
+    // The passage between the delimiters, then the comment, in the form the
+    // parser reads and the plain view shows.
+    comment: {
+      open: OPEN_MARKUP,
+      close: (_state, mark) => closeMarkup(mark.attrs.id, mark.attrs.text),
+      // Kept in place, outermost, so the passage's own marks open and close
+      // inside the comment rather than the comment reopening around each.
+      mixable: false,
+      expelEnclosingWhitespace: true,
+    },
   }
 )
 

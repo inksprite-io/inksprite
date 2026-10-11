@@ -38,7 +38,15 @@ const mockCopyPath = vi.fn()
 vi.mock('@/composables/useCopyPath.js', () => ({ useCopyPath: () => ({ copyPath: mockCopyPath }) }))
 vi.mock('@/composables/useToast.js', () => ({ useToast: () => ({ action: toastAction }) }))
 
-const Editor = { props: ['documentId'], template: '<div data-editor :data-id="documentId" />' }
+const Editor = {
+  props: ['documentId'],
+  emits: ['shortcuts'],
+  template: '<div data-editor :data-id="documentId" @click="$emit(\'shortcuts\')" />',
+}
+const ShortcutsDialog = {
+  props: ['visible'],
+  template: '<div v-if="visible" data-shortcuts />',
+}
 const RawMarkdown = { props: ['documentId'], template: '<div data-raw :data-id="documentId" />' }
 const FileView = { props: ['documentId'], template: '<div data-file :data-id="documentId" />' }
 const EmptyEditor = { template: '<div data-empty />' }
@@ -50,7 +58,7 @@ const mountPanel = (tabs, props = {}) => {
     global: {
       plugins: [PrimeVue],
       directives: { tooltip: {} },
-      stubs: { Editor, RawMarkdown, EmptyEditor, FileView },
+      stubs: { Editor, RawMarkdown, EmptyEditor, FileView, ShortcutsDialog },
     },
   })
 }
@@ -145,21 +153,38 @@ describe('EditorPanel', () => {
     wrapper
       .findComponent({ name: 'EditorTabs' })
       .props('actions')(id)
-      .find(item => item.icon === 'pi pi-code')
+      .find(item => item.label === 'Edit in plain text editor')
 
   it('shows a plain document as text, and a structured one laid out', () => {
     mockApi.plainIds.add('doc_2')
     const asText = mountPanel({ open: ['doc_1', 'doc_2'], active: 'doc_2' })
     expect(asText.find('[data-raw]').attributes('data-id')).toBe('doc_2')
     expect(asText.find('[data-editor]').exists()).toBe(false)
-    expect(plainTextItem(asText, 'doc_2').label).toBe('Edit as a document')
+    expect(plainTextItem(asText, 'doc_2').icon).toBe('pi pi-check')
+    // Its tab says so; the other's does not.
+    const tabs = asText.findComponent({ name: 'EditorTabs' }).props('items')
+    expect(tabs.map(item => item.plain)).toEqual([false, true])
     // Either kind has a find of its own.
     expect(asText.find('[data-action="find"]').exists()).toBe(true)
 
     const laidOut = mountPanel({ open: ['doc_1', 'doc_2'], active: 'doc_1' })
     expect(laidOut.find('[data-editor]').attributes('data-id')).toBe('doc_1')
-    expect(plainTextItem(laidOut, 'doc_1').label).toBe('Edit as plain text')
+    expect(plainTextItem(laidOut, 'doc_1').icon).toBe('pi pi-code')
     expect(laidOut.find('[data-action="find"]').exists()).toBe(true)
+  })
+
+  it('lists the editor’s keys when the editor asks, or from a laid-out tab’s menu', async () => {
+    const wrapper = mountPanel({ open: ['doc_1', 'doc_2'], active: 'doc_1' })
+    expect(wrapper.find('[data-shortcuts]').exists()).toBe(false)
+
+    await wrapper.find('[data-editor]').trigger('click')
+    expect(wrapper.find('[data-shortcuts]').exists()).toBe(true)
+
+    mockApi.plainIds.add('doc_2')
+    const actions = wrapper.findComponent({ name: 'EditorTabs' }).props('actions')
+    expect(actions('doc_1').map(item => item.label)).toContain('Keyboard shortcuts')
+    // The plain text editor has keys of its own.
+    expect(actions('doc_2').map(item => item.label)).not.toContain('Keyboard shortcuts')
   })
 
   it('shows a file as the file, and as its text from the menu', async () => {

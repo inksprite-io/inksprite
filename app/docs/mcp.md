@@ -82,81 +82,94 @@
 - [SIGN_IN_NEEDED][78]
 - [wantsSignIn][79]
   - [Parameters][80]
-- [describeFailure][81]
+- [answeredOtherwise][81]
   - [Parameters][82]
-- [resultForModel][83]
+- [describeFailure][83]
   - [Parameters][84]
-- [mcp/config][85]
-- [ConfiguredServer][86]
-  - [Properties][87]
-- [isObject][88]
-  - [Parameters][89]
-- [readHeaders][90]
+- [resultForModel][85]
+  - [Parameters][86]
+- [mcp/config][87]
+- [ConfiguredServer][88]
+  - [Properties][89]
+- [isObject][90]
   - [Parameters][91]
-- [readEntry][92]
+- [readHeaders][92]
   - [Parameters][93]
-- [parseServerConfig][94]
+- [readEntry][94]
   - [Parameters][95]
-- [servers][96]
-- [servers][97]
+- [parseServerConfig][96]
+  - [Parameters][97]
 - [servers][98]
 - [servers][99]
 - [servers][100]
-- [errors][101]
-- [nameFromUrl][102]
-  - [Parameters][103]
-- [mcp][104]
-- [Files][105]
-  - [Examples][106]
-- [mcp/names][107]
-- [SERVER_GROUP_PREFIX][108]
-- [MAX_NAME][109]
-- [MAX_PREFIX][110]
-- [serverGroup][111]
-  - [Parameters][112]
-- [serverOfGroup][113]
-  - [Parameters][114]
-- [slug][115]
+- [servers][101]
+- [servers][102]
+- [errors][103]
+- [nameFromUrl][104]
+  - [Parameters][105]
+- [isWebAddress][106]
+  - [Parameters][107]
+- [mcp][108]
+- [Files][109]
+  - [Examples][110]
+- [mcp/names][111]
+- [SERVER_GROUP_PREFIX][112]
+- [MAX_NAME][113]
+- [MAX_PREFIX][114]
+- [serverGroup][115]
   - [Parameters][116]
-- [serverPrefix][117]
+- [serverOfGroup][117]
   - [Parameters][118]
-- [exposedNames][119]
+- [slug][119]
   - [Parameters][120]
-- [names][121]
-- [mcp/saved][122]
-- [TITLE_LENGTH][123]
-- [parsed][124]
-  - [Parameters][125]
-- [canSave][126]
-  - [Parameters][127]
-- [NAME_BEFORE_COLON][128]
-- [savedTitle][129]
-  - [Parameters][130]
-- [savedContent][131]
-  - [Parameters][132]
-- [mcp/servers][133]
-- [listeners][134]
-- [setServers][135]
+- [serverPrefix][121]
+  - [Parameters][122]
+- [exposedNames][123]
+  - [Parameters][124]
+- [names][125]
+- [mcp/saved][126]
+- [TITLE_LENGTH][127]
+- [parsed][128]
+  - [Parameters][129]
+- [webPageOf][130]
+  - [Parameters][131]
+- [canSave][132]
+  - [Parameters][133]
+- [NAME_BEFORE_COLON][134]
+- [savedTitle][135]
   - [Parameters][136]
-- [onServersChanged][137]
+- [wholeRead][137]
   - [Parameters][138]
-- [allServers][139]
-- [getServer][140]
-  - [Parameters][141]
-- [reachable][142]
+- [pagePart][139]
+  - [Parameters][140]
+- [][141]
+- [savedContent][142]
   - [Parameters][143]
-- [serverTool][144]
-  - [Parameters][145]
-- [serversForChat][146]
+- [mcp/servers][144]
+- [listeners][145]
+- [setServers][146]
   - [Parameters][147]
-- [requiredArguments][148]
+- [onServersChanged][148]
   - [Parameters][149]
-- [PromptCommand][150]
-  - [Parameters][151]
-  - [Properties][152]
-- [promptCommands][153]
-- [needsApproval][154]
-  - [Parameters][155]
+- [allServers][150]
+- [getServer][151]
+  - [Parameters][152]
+- [reachable][153]
+  - [Parameters][154]
+- [missingHeaders][155]
+  - [Parameters][156]
+- [serverTool][157]
+  - [Parameters][158]
+- [serversForChat][159]
+  - [Parameters][160]
+- [requiredArguments][161]
+  - [Parameters][162]
+- [PromptCommand][163]
+  - [Parameters][164]
+  - [Properties][165]
+- [promptCommands][166]
+- [needsApproval][167]
+  - [Parameters][168]
 
 ## mcp/auth
 
@@ -189,27 +202,27 @@ Settings, with a click, which is also what lets the app open a tab at all.
 
 ## CALLBACK_PATH
 
-Type: [string][156]
+Type: [string][169]
 
 ## CALLBACK_PATH
 
-Type: [string][156]
+Type: [string][169]
 
 ## CALLBACK_PATH
 
-Type: [string][156]
+Type: [string][169]
 
 ## CALLBACK_PATH
 
 Where an authorization server sends the writer back.
 
-Type: [string][156]
+Type: [string][169]
 
 ## PUBLIC_ORIGIN
 
 The site the client ID metadata document is served from.
 
-Type: [string][156]
+Type: [string][169]
 
 ## CLIENT_METADATA_URL
 
@@ -219,19 +232,19 @@ The document, which is the app's client ID wherever it is accepted.
 
 The channel a finished sign-in is announced on, to the tab that asked for it.
 
-Type: [string][156]
+Type: [string][169]
 
 ## AUTH_KEY
 
 What is kept for each server, by its address.
 
-Type: [string][156]
+Type: [string][169]
 
 ## PENDING_KEY
 
 Sign-ins under way, by their state.
 
-Type: [string][156]
+Type: [string][169]
 
 ## SIGN_IN_TTL_MS
 
@@ -241,15 +254,15 @@ How long a sign-in may take before its state is forgotten.
 
 What is kept for one server.
 
-Type: [Object][157]
+Type: [Object][170]
 
 ### Properties
 
-- `clients` **Record<[string][156], any>?** Client information, by issuer
-- `tokens` **Record<[string][156], any>?** Tokens, by issuer
-- `latest` **[string][156]?** The issuer whose tokens were saved last: the
+- `clients` **Record<[string][169], any>?** Client information, by issuer
+- `tokens` **Record<[string][169], any>?** Tokens, by issuer
+- `latest` **[string][169]?** The issuer whose tokens were saved last: the
   ones a request is sent with, when the transport does not say which
-- `verifier` **[string][156]?** The PKCE verifier of the sign-in under way
+- `verifier` **[string][169]?** The PKCE verifier of the sign-in under way
 - `discovery` **OAuthDiscoveryState?** Where its authorization server
   was found, so the way back need not look again
 
@@ -271,13 +284,13 @@ Keep sign-ins somewhere else: for a test, which has no browser.
 
 ## records
 
-Returns **Record<[string][156], [AuthRecord][12]>**&#x20;
+Returns **Record<[string][169], [AuthRecord][12]>**&#x20;
 
 ## recordOf
 
 ### Parameters
 
-- `url` **[string][156]**&#x20;
+- `url` **[string][169]**&#x20;
 
 Returns **[AuthRecord][12]**&#x20;
 
@@ -285,7 +298,7 @@ Returns **[AuthRecord][12]**&#x20;
 
 ### Parameters
 
-- `url` **[string][156]**&#x20;
+- `url` **[string][169]**&#x20;
 - `change` &#x20;
 
 ## issuerKey
@@ -296,7 +309,7 @@ The key credentials are kept under for an authorization server.
 
 - `ctx` &#x20;
 
-Returns **[string][156]**&#x20;
+Returns **[string][169]**&#x20;
 
 ## signedIn
 
@@ -304,9 +317,9 @@ Whether the writer has signed in to the server at this address.
 
 ### Parameters
 
-- `url` **[string][156]**&#x20;
+- `url` **[string][169]**&#x20;
 
-Returns **[boolean][158]**&#x20;
+Returns **[boolean][171]**&#x20;
 
 ## signOut
 
@@ -315,7 +328,7 @@ registered as.
 
 ### Parameters
 
-- `url` **[string][156]**&#x20;
+- `url` **[string][169]**&#x20;
 
 ## appOrigin
 
@@ -333,7 +346,7 @@ with. The same as the metadata document says.
 
 ### Parameters
 
-- `redirect` **[string][156]**&#x20;
+- `redirect` **[string][169]**&#x20;
 
 Returns **OAuthClientMetadata**&#x20;
 
@@ -348,8 +361,8 @@ were started and never finished.
 
 ### Parameters
 
-- `state` **[string][156]**&#x20;
-- `url` **[string][156]**&#x20;
+- `state` **[string][169]**&#x20;
+- `url` **[string][169]**&#x20;
 
 ## takeSignIn
 
@@ -358,9 +371,9 @@ answer it came back with.
 
 ### Parameters
 
-- `state` **[string][156]**&#x20;
+- `state` **[string][169]**&#x20;
 
-Returns **([string][156] | null)**&#x20;
+Returns **([string][169] | null)**&#x20;
 
 ## authProvider
 
@@ -368,8 +381,8 @@ The SDK's view of a server's sign-in.
 
 ### Parameters
 
-- `url` **[string][156]** The server's address
-- `$1` **[Object][157]** (optional, default `{}`)
+- `url` **[string][169]** The server's address
+- `$1` **[Object][170]** (optional, default `{}`)
   - `$1.onRedirect` (optional, default `()=>{}`)
 
 Returns **OAuthClientProvider**&#x20;
@@ -387,10 +400,10 @@ ID, and hand over the address to sign in at.
 
 ### Parameters
 
-- `url` **[string][156]** The server's address
+- `url` **[string][169]** The server's address
 - `onRedirect` &#x20;
 
-Returns **[Promise][159]<(`"AUTHORIZED"` | `"REDIRECT"`)>** AUTHORIZED when it was already
+Returns **[Promise][172]<(`"AUTHORIZED"` | `"REDIRECT"`)>** AUTHORIZED when it was already
 signed in, or a refresh was enough
 
 ## SignInError
@@ -402,8 +415,8 @@ known, so the tab waiting on it can be told.
 
 ### Parameters
 
-- `message` **[string][156]** What the writer should be told
-- `url` **([string][156] | null)** The server, when the state named one
+- `message` **[string][169]** What the writer should be told
+- `url` **([string][169] | null)** The server, when the state named one
 
 ## finishSignIn
 
@@ -421,7 +434,7 @@ the writer cancelled is over too, and the tab waiting on it should hear so.
 
 - Throws **[SignInError][44]** With what the writer should be told
 
-Returns **[Promise][159]<{url: [string][156]}>**&#x20;
+Returns **[Promise][172]<{url: [string][169]}>**&#x20;
 
 ## mcp/client
 
@@ -462,7 +475,7 @@ Who the app says it is, to the server.
 
 How many pages of tools or prompts are read before giving up.
 
-Type: [number][160]
+Type: [number][173]
 
 ## sdk
 
@@ -471,7 +484,7 @@ Type: [number][160]
 Open connections, by server id, with what they were opened with, so a
 server whose address or headers changed gets a new one.
 
-Type: [Map][161]<[string][156], {key: [string][156], client: [Promise][159]\<Client>}>
+Type: [Map][174]<[string][169], {key: [string][169], client: [Promise][172]\<Client>}>
 
 ## connectionKey
 
@@ -481,7 +494,7 @@ What a connection depends on.
 
 - `server` **Pick\<McpServer, (`"url"` | `"headers"`)>**&#x20;
 
-Returns **[string][156]**&#x20;
+Returns **[string][169]**&#x20;
 
 ## statusOf
 
@@ -491,7 +504,7 @@ The HTTP status an SDK error carries, if it carries one.
 
 - `error` **any**&#x20;
 
-Returns **([number][160] | [undefined][162])**&#x20;
+Returns **([number][173] | [undefined][175])**&#x20;
 
 ## open
 
@@ -502,7 +515,7 @@ server says it does not take the newer one.
 
 - `server` **Pick\<McpServer, (`"url"` | `"headers"`)>**&#x20;
 
-Returns **[Promise][159]\<Client>**&#x20;
+Returns **[Promise][172]\<Client>**&#x20;
 
 ## connection
 
@@ -512,7 +525,7 @@ The open connection to a server, opening one if there is none.
 
 - `server` **McpServer**&#x20;
 
-Returns **[Promise][159]\<Client>**&#x20;
+Returns **[Promise][172]\<Client>**&#x20;
 
 ## disconnect
 
@@ -520,7 +533,7 @@ Close a server's connection, if it has one.
 
 ### Parameters
 
-- `serverId` **[string][156]**&#x20;
+- `serverId` **[string][169]**&#x20;
 
 ## everyPage
 
@@ -529,13 +542,13 @@ Every page of a listing.
 ### Parameters
 
 - `list` &#x20;
-- `key` **[string][156]** Which field of a page holds the items
+- `key` **[string][169]** Which field of a page holds the items
 
-Returns **[Promise][159]<[Array][163]\<T>>**&#x20;
+Returns **[Promise][172]<[Array][176]\<T>>**&#x20;
 
 ## items
 
-Type: [Array][163]\<T>
+Type: [Array][176]\<T>
 
 ## listServer
 
@@ -549,7 +562,7 @@ server that may never be saved.
 
 - `server` **Pick\<McpServer, (`"url"` | `"headers"`)>**&#x20;
 
-Returns **[Promise][159]<{serverName: [string][156], instructions: [string][156], tools: [Array][163]\<Omit\<McpTool, `"exposed"`>>, prompts: [Array][163]\<McpPrompt>}>**&#x20;
+Returns **[Promise][172]<{serverName: [string][169], instructions: [string][169], tools: [Array][176]\<Omit\<McpTool, `"exposed"`>>, prompts: [Array][176]\<McpPrompt>}>**&#x20;
 
 ## callServerTool
 
@@ -558,15 +571,15 @@ Call one of a server's tools.
 ### Parameters
 
 - `server` **McpServer**&#x20;
-- `name` **[string][156]** The server's name for the tool
-- `args` **Record<[string][156], any>**&#x20;
-- `options` **[Object][157]?** (optional, default `{}`)
+- `name` **[string][169]** The server's name for the tool
+- `args` **Record<[string][169], any>**&#x20;
+- `options` **[Object][170]?** (optional, default `{}`)
   - `options.signal` **AbortSignal?** Stops the call, and tells the server so
-  - `options.timeout` **[number][160]?** How long to wait, in milliseconds. The
+  - `options.timeout` **[number][173]?** How long to wait, in milliseconds. The
     SDK's own limit is a minute, and gives up on a call the caller is still
     willing to wait for.
 
-Returns **[Promise][159]\<any>** The server's CallToolResult
+Returns **[Promise][172]\<any>** The server's CallToolResult
 
 ## getServerPrompt
 
@@ -575,10 +588,10 @@ Ask a server for one of its prompts, filled in with these arguments.
 ### Parameters
 
 - `server` **McpServer**&#x20;
-- `name` **[string][156]** The server's name for the prompt
-- `args` **Record<[string][156], [string][156]>**&#x20;
+- `name` **[string][169]** The server's name for the prompt
+- `args` **Record<[string][169], [string][169]>**&#x20;
 
-Returns **[Promise][159]\<any>** The server's GetPromptResult
+Returns **[Promise][172]\<any>** The server's GetPromptResult
 
 ## promptText
 
@@ -589,13 +602,13 @@ after another, with a note for anything that is not text.
 
 - `result` **any** A GetPromptResult
 
-Returns **[string][156]**&#x20;
+Returns **[string][169]**&#x20;
 
 ## SIGN_IN_NEEDED
 
 What a failure that wants the writer to sign in says.
 
-Type: [string][156]
+Type: [string][169]
 
 ## wantsSignIn
 
@@ -606,7 +619,19 @@ screen can offer to.
 
 - `error` **any**&#x20;
 
-Returns **[boolean][158]**&#x20;
+Returns **[boolean][171]**&#x20;
+
+## answeredOtherwise
+
+Whether a failure is an answer that was not an MCP server's: a web page, or
+JSON of another shape, which the SDK reports as the content type it did not
+expect or as the whole list of what its schema found wrong.
+
+### Parameters
+
+- `error` **any**&#x20;
+
+Returns **[boolean][171]**&#x20;
 
 ## describeFailure
 
@@ -616,7 +641,7 @@ Why a server could not be reached or listed, for the writer.
 
 - `error` **any**&#x20;
 
-Returns **[string][156]**&#x20;
+Returns **[string][169]**&#x20;
 
 ## resultForModel
 
@@ -628,7 +653,7 @@ server marked as an error goes back as one.
 
 - `result` **any** A CallToolResult
 
-Returns **([string][156] | {error: [string][156]})**&#x20;
+Returns **([string][169] | {error: [string][169]})**&#x20;
 
 ## mcp/config
 
@@ -649,15 +674,15 @@ and is shown as needing one.
 
 One server from a configuration.
 
-Type: [Object][157]
+Type: [Object][170]
 
 ### Properties
 
-- `name` **[string][156]**&#x20;
-- `url` **[string][156]?**&#x20;
-- `headers` **Record<[string][156], [string][156]>?**&#x20;
-- `command` **[string][156]?** For one that runs as a local program
-- `args` **[Array][163]<[string][156]>?**&#x20;
+- `name` **[string][169]**&#x20;
+- `url` **[string][169]?**&#x20;
+- `headers` **Record<[string][169], [string][169]>?**&#x20;
+- `command` **[string][169]?** For one that runs as a local program
+- `args` **[Array][176]<[string][169]>?**&#x20;
 
 ## isObject
 
@@ -673,7 +698,7 @@ Headers as strings, leaving out anything that is not one.
 
 - `headers` **any**&#x20;
 
-Returns **(Record<[string][156], [string][156]> | [undefined][162])**&#x20;
+Returns **(Record<[string][169], [string][169]> | [undefined][175])**&#x20;
 
 ## readEntry
 
@@ -681,10 +706,10 @@ One entry, or why it is not one.
 
 ### Parameters
 
-- `name` **[string][156]**&#x20;
+- `name` **[string][169]**&#x20;
 - `entry` **any**&#x20;
 
-Returns **({server: [ConfiguredServer][86]} | {error: [string][156]})**&#x20;
+Returns **({server: [ConfiguredServer][88]} | {error: [string][169]})**&#x20;
 
 ## parseServerConfig
 
@@ -692,38 +717,50 @@ The servers in a pasted configuration.
 
 ### Parameters
 
-- `text` **[string][156]**&#x20;
+- `text` **[string][169]**&#x20;
 
-Returns **{servers: [Array][163]<[ConfiguredServer][86]>, errors: [Array][163]<[string][156]>}**&#x20;
-
-## servers
-
-Type: [Array][163]<[ConfiguredServer][86]>
+Returns **{servers: [Array][176]<[ConfiguredServer][88]>, errors: [Array][176]<[string][169]>}**&#x20;
 
 ## servers
 
-## servers
+Type: [Array][176]<[ConfiguredServer][88]>
 
 ## servers
 
 ## servers
 
-Type: [Array][163]\<McpServer>
+## servers
+
+## servers
+
+Type: [Array][176]\<McpServer>
 
 ## errors
 
-Type: [Array][163]<[string][156]>
+Type: [Array][176]<[string][169]>
 
 ## nameFromUrl
 
 A name for a server added by its address alone: its host, less the parts
-that say nothing (`mcp.`, `www.`, `api.`).
+that say nothing (`mcp.`, `www.`, `api.`). One on this machine or the
+network, by an IP address or a name of one word, is named by the whole of
+it and its port, which is what tells two of them apart.
 
 ### Parameters
 
-- `url` **[string][156]**&#x20;
+- `url` **[string][169]**&#x20;
 
-Returns **[string][156]**&#x20;
+Returns **[string][169]**&#x20;
+
+## isWebAddress
+
+Whether an address typed for a server is a web address at all.
+
+### Parameters
+
+- `url` **[string][169]**&#x20;
+
+Returns **[boolean][171]**&#x20;
 
 ## mcp
 
@@ -782,19 +819,19 @@ these names, and a rename that changed them would orphan both.
 
 What a server's tool group is keyed by, before the server's id.
 
-Type: [string][156]
+Type: [string][169]
 
 ## MAX_NAME
 
 The longest a function name may be.
 
-Type: [number][160]
+Type: [number][173]
 
 ## MAX_PREFIX
 
 The longest a prefix is made, leaving the tool most of the name.
 
-Type: [number][160]
+Type: [number][173]
 
 ## serverGroup
 
@@ -802,9 +839,9 @@ The group a server's tools are registered under.
 
 ### Parameters
 
-- `serverId` **[string][156]**&#x20;
+- `serverId` **[string][169]**&#x20;
 
-Returns **[string][156]**&#x20;
+Returns **[string][169]**&#x20;
 
 ## serverOfGroup
 
@@ -812,9 +849,9 @@ Whether a group is a server's, and which.
 
 ### Parameters
 
-- `group` **([string][156] | [undefined][162])**&#x20;
+- `group` **([string][169] | [undefined][175])**&#x20;
 
-Returns **([string][156] | null)** The server's id, or null for a group of the app's own
+Returns **([string][169] | null)** The server's id, or null for a group of the app's own
 
 ## slug
 
@@ -823,9 +860,9 @@ run of anything else as one `_`.
 
 ### Parameters
 
-- `text` **[string][156]**&#x20;
+- `text` **[string][169]**&#x20;
 
-Returns **[string][156]**&#x20;
+Returns **[string][169]**&#x20;
 
 ## serverPrefix
 
@@ -834,10 +871,10 @@ server's.
 
 ### Parameters
 
-- `name` **[string][156]** What the writer called it
-- `taken` **[Array][163]<[string][156]>?** The other servers' prefixes (optional, default `[]`)
+- `name` **[string][169]** What the writer called it
+- `taken` **[Array][176]<[string][169]>?** The other servers' prefixes (optional, default `[]`)
 
-Returns **[string][156]**&#x20;
+Returns **[string][169]**&#x20;
 
 ## exposedNames
 
@@ -847,42 +884,55 @@ cut to length, gets a number.
 
 ### Parameters
 
-- `prefix` **[string][156]** The server's
-- `tools` **[Array][163]<[string][156]>** The tools' own names
-- `taken` **[Array][163]<[string][156]>?** Names its other tools already have (optional, default `[]`)
+- `prefix` **[string][169]** The server's
+- `tools` **[Array][176]<[string][169]>** The tools' own names
+- `taken` **[Array][176]<[string][169]>?** Names its other tools already have (optional, default `[]`)
 
-Returns **[Array][163]<[string][156]>**&#x20;
+Returns **[Array][176]<[string][169]>**&#x20;
 
 ## names
 
-Type: [Array][163]<[string][156]>
+Type: [Array][176]<[string][169]>
 
 ## mcp/saved
 
-A server's tool result kept in the project as a document.
+A server's tool result, or a web page the model read, kept in
+the project as a document.
 
-What a tool returns is the model's for one turn: the next turn sends the
-conversation's words and not the calls, so an issue or a page read through
-a server is gone again unless something keeps it. Saving it makes it a
-document like any other, to pin, read again, or write from — the reference
-material a design is written against.
+What a tool returns stays in the conversation until a summary stands in for
+the turn that called it, and then it is gone: an issue, or a page read
+through a server or from the web. Saving it makes it a document like any
+other, to pin, read again, or write from — the reference material a design
+is written against.
 
 A line at the top says where it came from and when, for the writer and the
-model alike: a saved page is a copy, and a copy should say it is one.
+model alike: a saved page is a copy, and a copy should say it is one. A web
+page is saved as its text, under its title, with its address in that line;
+whole, though the model read it a slice at a time (`web/pages.js` has the
+page), and only as the slice when the page can no longer be had.
 
 ## TITLE_LENGTH
 
 The longest a title made from a result's first line runs.
 
-Type: [number][160]
+Type: [number][173]
 
 ## parsed
 
 ### Parameters
 
-- `text` **[string][156]**&#x20;
+- `text` **[string][169]**&#x20;
 
 Returns **any**&#x20;
+
+## webPageOf
+
+The page a `read_web_page` result is, when it is one: its address, title,
+and the text read.
+
+### Parameters
+
+- `result` **[string][169]**&#x20;
 
 ## canSave
 
@@ -891,15 +941,15 @@ tool saying it failed.
 
 ### Parameters
 
-- `result` **([string][156] | null | [undefined][162])** What the tool returned, as the model read it
+- `result` **([string][169] | null | [undefined][175])** What the tool returned, as the model read it
 
-Returns **[boolean][158]**&#x20;
+Returns **[boolean][171]**&#x20;
 
 ## NAME_BEFORE_COLON
 
 How far into a long line a colon still marks off a name: `ENG-123:`, `kenning:`.
 
-Type: [number][160]
+Type: [number][173]
 
 ## savedTitle
 
@@ -911,10 +961,39 @@ reads like a mistake.
 
 ### Parameters
 
-- `result` **[string][156]**&#x20;
-- `fallback` **[string][156]**&#x20;
+- `result` **[string][169]**&#x20;
+- `fallback` **[string][169]**&#x20;
 
-Returns **[string][156]**&#x20;
+Returns **[string][169]**&#x20;
+
+## wholeRead
+
+A read of part of a page as a read of all of it, the page's whole text in
+place of the slice: what saving it keeps.
+
+### Parameters
+
+- `result` **[string][169]** The read, as the model had it
+- `text` **[string][169]** The whole page
+
+Returns **[string][169]**&#x20;
+
+## pagePart
+
+Which part of a page a read was, as a reader counts, or '' for all of it.
+
+### Parameters
+
+- `$0` **[Object][170]**&#x20;
+  - `$0.from` (optional, default `0`)
+  - `$0.to` (optional, default `0`)
+  - `$0.length` (optional, default `0`)
+
+Returns **[string][169]**&#x20;
+
+##
+
+Type: [number][173]
 
 ## savedContent
 
@@ -923,14 +1002,14 @@ result itself — as it read, or as a block of JSON when that is what it is.
 
 ### Parameters
 
-- `$0` **[Object][157]**&#x20;
+- `$0` **[Object][170]**&#x20;
   - `$0.result` &#x20;
   - `$0.server` &#x20;
   - `$0.tool` &#x20;
   - `$0.args` &#x20;
   - `$0.date` (optional, default `new Date()`)
 
-Returns **[string][156]** Markdown
+Returns **[string][169]** Markdown
 
 ## mcp/servers
 
@@ -955,7 +1034,7 @@ Replace the servers with these, and tell everything made from them.
 
 ### Parameters
 
-- `stored` **[Array][163]\<McpServer>**&#x20;
+- `stored` **[Array][176]\<McpServer>**&#x20;
 
 ## onServersChanged
 
@@ -967,15 +1046,15 @@ Be told whenever the servers change.
 
 ## allServers
 
-Returns **[Array][163]\<McpServer>** Every server, in the order they were added
+Returns **[Array][176]\<McpServer>** Every server, in the order they were added
 
 ## getServer
 
 ### Parameters
 
-- `id` **[string][156]**&#x20;
+- `id` **[string][169]**&#x20;
 
-Returns **(McpServer | [undefined][162])**&#x20;
+Returns **(McpServer | [undefined][175])**&#x20;
 
 ## reachable
 
@@ -986,7 +1065,18 @@ as a local program needs a bridge first.
 
 - `server` **McpServer**&#x20;
 
-Returns **[boolean][158]**&#x20;
+Returns **[boolean][171]**&#x20;
+
+## missingHeaders
+
+The headers a server has no value for: its key, left out of the backup it
+was restored from, and not sent until the writer enters it again.
+
+### Parameters
+
+- `server` **Pick\<McpServer, `"headers"`>**&#x20;
+
+Returns **[Array][176]<[string][169]>** Their names
 
 ## serverTool
 
@@ -994,7 +1084,7 @@ The server a tool the model calls belongs to, and the tool.
 
 ### Parameters
 
-- `exposed` **[string][156]** The name the model called
+- `exposed` **[string][169]** The name the model called
 
 Returns **({server: McpServer, tool: McpTool} | null)**&#x20;
 
@@ -1006,10 +1096,10 @@ chooses, the ones that list its profile.
 ### Parameters
 
 - `chat` &#x20;
-- `profileId` **[string][156]** The chat's profile, the default resolved
-- `from` **[Array][163]\<McpServer>?** The servers to choose among; every one by default (optional, default `servers`)
+- `profileId` **[string][169]** The chat's profile, the default resolved
+- `from` **[Array][176]\<McpServer>?** The servers to choose among; every one by default (optional, default `servers`)
 
-Returns **[Array][163]\<McpServer>**&#x20;
+Returns **[Array][176]\<McpServer>**&#x20;
 
 ## requiredArguments
 
@@ -1019,7 +1109,7 @@ How many of a prompt's arguments the writer has to fill in.
 
 - `prompt` **McpPrompt**&#x20;
 
-Returns **[number][160]**&#x20;
+Returns **[number][173]**&#x20;
 
 ## PromptCommand
 
@@ -1031,7 +1121,7 @@ one filled in is listed with its server and not offered. One that needs
 none takes the text, if any, as its first argument, or after it when it
 has none at all.
 
-Type: [Object][157]
+Type: [Object][170]
 
 ### Parameters
 
@@ -1040,18 +1130,18 @@ Type: [Object][157]
 
 ### Properties
 
-- `name` **[string][156]** What the writer types after the slash: `<prefix>:<prompt>`
+- `name` **[string][169]** What the writer types after the slash: `<prefix>:<prompt>`
 - `server` **McpServer**&#x20;
 - `prompt` **McpPrompt**&#x20;
 
-Returns **([PromptCommand][150] | null)**&#x20;
+Returns **([PromptCommand][163] | null)**&#x20;
 
 ## promptCommands
 
 Every server prompt the writer can type, in the order the servers were
 added.
 
-Returns **[Array][163]<[PromptCommand][150]>**&#x20;
+Returns **[Array][176]<[PromptCommand][163]>**&#x20;
 
 ## needsApproval
 
@@ -1063,9 +1153,9 @@ should not be connected at all.
 
 ### Parameters
 
-- `exposed` **[string][156]**&#x20;
+- `exposed` **[string][169]**&#x20;
 
-Returns **[boolean][158]**&#x20;
+Returns **[boolean][171]**&#x20;
 
 [1]: #mcpauth
 [2]: #callback_path
@@ -1147,86 +1237,99 @@ Returns **[boolean][158]**&#x20;
 [78]: #sign_in_needed
 [79]: #wantssignin
 [80]: #parameters-23
-[81]: #describefailure
+[81]: #answeredotherwise
 [82]: #parameters-24
-[83]: #resultformodel
+[83]: #describefailure
 [84]: #parameters-25
-[85]: #mcpconfig
-[86]: #configuredserver
-[87]: #properties-1
-[88]: #isobject
-[89]: #parameters-26
-[90]: #readheaders
+[85]: #resultformodel
+[86]: #parameters-26
+[87]: #mcpconfig
+[88]: #configuredserver
+[89]: #properties-1
+[90]: #isobject
 [91]: #parameters-27
-[92]: #readentry
+[92]: #readheaders
 [93]: #parameters-28
-[94]: #parseserverconfig
+[94]: #readentry
 [95]: #parameters-29
-[96]: #servers
-[97]: #servers-1
-[98]: #servers-2
-[99]: #servers-3
-[100]: #servers-4
-[101]: #errors
-[102]: #namefromurl
-[103]: #parameters-30
-[104]: #mcp
-[105]: #files
-[106]: #examples
-[107]: #mcpnames
-[108]: #server_group_prefix
-[109]: #max_name
-[110]: #max_prefix
-[111]: #servergroup
-[112]: #parameters-31
-[113]: #serverofgroup
-[114]: #parameters-32
-[115]: #slug
+[96]: #parseserverconfig
+[97]: #parameters-30
+[98]: #servers
+[99]: #servers-1
+[100]: #servers-2
+[101]: #servers-3
+[102]: #servers-4
+[103]: #errors
+[104]: #namefromurl
+[105]: #parameters-31
+[106]: #iswebaddress
+[107]: #parameters-32
+[108]: #mcp
+[109]: #files
+[110]: #examples
+[111]: #mcpnames
+[112]: #server_group_prefix
+[113]: #max_name
+[114]: #max_prefix
+[115]: #servergroup
 [116]: #parameters-33
-[117]: #serverprefix
+[117]: #serverofgroup
 [118]: #parameters-34
-[119]: #exposednames
+[119]: #slug
 [120]: #parameters-35
-[121]: #names
-[122]: #mcpsaved
-[123]: #title_length
-[124]: #parsed
-[125]: #parameters-36
-[126]: #cansave
-[127]: #parameters-37
-[128]: #name_before_colon
-[129]: #savedtitle
-[130]: #parameters-38
-[131]: #savedcontent
-[132]: #parameters-39
-[133]: #mcpservers
-[134]: #listeners
-[135]: #setservers
-[136]: #parameters-40
-[137]: #onserverschanged
-[138]: #parameters-41
-[139]: #allservers
-[140]: #getserver
-[141]: #parameters-42
-[142]: #reachable
-[143]: #parameters-43
-[144]: #servertool
-[145]: #parameters-44
-[146]: #serversforchat
+[121]: #serverprefix
+[122]: #parameters-36
+[123]: #exposednames
+[124]: #parameters-37
+[125]: #names
+[126]: #mcpsaved
+[127]: #title_length
+[128]: #parsed
+[129]: #parameters-38
+[130]: #webpageof
+[131]: #parameters-39
+[132]: #cansave
+[133]: #parameters-40
+[134]: #name_before_colon
+[135]: #savedtitle
+[136]: #parameters-41
+[137]: #wholeread
+[138]: #parameters-42
+[139]: #pagepart
+[140]: #parameters-43
+[141]: #
+[142]: #savedcontent
+[143]: #parameters-44
+[144]: #mcpservers
+[145]: #listeners
+[146]: #setservers
 [147]: #parameters-45
-[148]: #requiredarguments
+[148]: #onserverschanged
 [149]: #parameters-46
-[150]: #promptcommand
-[151]: #parameters-47
-[152]: #properties-2
-[153]: #promptcommands
-[154]: #needsapproval
-[155]: #parameters-48
-[156]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[157]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[158]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[159]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[160]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[161]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[162]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[163]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[150]: #allservers
+[151]: #getserver
+[152]: #parameters-47
+[153]: #reachable
+[154]: #parameters-48
+[155]: #missingheaders
+[156]: #parameters-49
+[157]: #servertool
+[158]: #parameters-50
+[159]: #serversforchat
+[160]: #parameters-51
+[161]: #requiredarguments
+[162]: #parameters-52
+[163]: #promptcommand
+[164]: #parameters-53
+[165]: #properties-2
+[166]: #promptcommands
+[167]: #needsapproval
+[168]: #parameters-54
+[169]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[170]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[171]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[172]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[173]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[174]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[175]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[176]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array

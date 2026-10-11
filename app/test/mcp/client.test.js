@@ -127,6 +127,14 @@ describe('describeFailure', () => {
     expect(describeFailure(new TypeError('Failed to fetch'))).toMatch(/CORS/)
     expect(describeFailure(new Error('Something odd'))).toBe('Something odd')
   })
+
+  it('says an answer that is not an MCP server is not one, not what its schema found', () => {
+    const issues = [{ code: 'invalid_type', expected: 'string', path: ['jsonrpc'], message: 'x' }]
+    expect(describeFailure(new Error(JSON.stringify(issues, null, 2)))).toMatch(/not an MCP server/)
+    expect(describeFailure(new Error(`MCP error: ${JSON.stringify(issues)}`))).toMatch(/not an MCP/)
+    expect(describeFailure(Object.assign(new Error('bad'), { issues }))).toMatch(/not an MCP/)
+    expect(describeFailure(new Error('Unexpected content type: text/html'))).toMatch(/not an MCP/)
+  })
 })
 
 describe('resultForModel', () => {

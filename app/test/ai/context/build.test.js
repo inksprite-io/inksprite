@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import { buildContext, renderAuthorsNote } from '@/ai/context/build.js'
-import { AI_DEFAULTS } from '@/ai/defaults.js'
 import { textHash } from '@/ai/context/reads.js'
 
 /**
@@ -444,7 +443,7 @@ describe('buildContext', () => {
       })
     })
 
-    describe('tool calls of recent turns', () => {
+    describe('tool calls of earlier turns', () => {
       /** A call to `name` and its answer, as one iteration of a turn stores them. */
       const called = (id, name, args, answer, extra = {}) => [
         {
@@ -456,17 +455,38 @@ describe('buildContext', () => {
         { role: 'tool', tool_call_id: id, content: answer, ...extra },
       ]
 
-      /** A turn that made the given calls and then said `content`. */
+      /**
+       * A turn that made the given calls and then said `content`, marked as
+       * every turn written now is.
+       */
       const turn = (content, ...calls) => ({
         role: 'assistant',
         content,
-        metadata: { apiTrajectory: [...calls.flat(), { role: 'assistant', content }] },
+        metadata: {
+          callsKept: true,
+          apiTrajectory: [...calls.flat(), { role: 'assistant', content }],
+        },
       })
+
+      /** The same turn, as one written before every call went back. */
+      const olderTurn = (mark, content, ...calls) => {
+        const made = turn(content, ...calls)
+        delete made.metadata.callsKept
+        if (mark) made.metadata[mark] = true
+        return made
+      }
 
       const oracle = (id, answer = '"yes"') =>
         called(id, 'oracle', '{"question":"Is it locked?","likelihood":"likely"}', answer)
 
-      const dice = name => name === 'oracle' || name === 'roll_dice'
+      const read = (id, extra = { _document: 'd_elara' }) =>
+        called(
+          id,
+          'read_document',
+          '{"path":"notes/Elara"}',
+          '{"content":"Elara rides south."}',
+          extra
+        )
 
       const build = async (messages, opts = {}) => {
         const stores = makeStores({ chat: { id: 'c1' }, messages })
@@ -475,11 +495,13 @@ describe('buildContext', () => {
             storyId: 's1',
             chatId: 'c1',
             systemPrompt: 'sys',
-            replays: dice,
+            keeps: name => name === 'read_document',
             ...opts,
           })
         ).messages
       }
+
+      const answered = messages => messages.filter(m => m.role === 'tool').map(m => m.tool_call_id)
 
       it('sends the calls back without their words, and the words as they read now', async () => {
         const messages = await build([
@@ -525,33 +547,44 @@ describe('buildContext', () => {
         expect(JSON.stringify(messages)).not.toContain('It is locked.')
       })
 
-      it('leaves out the calls not worth replaying, result and all', async () => {
-        const read = called(
-          'T2',
-          'read_document',
-          '{"path":"notes/Elara"}',
-          '{"content":"Elara rides south."}',
-          { _document: 'd_elara' }
-        )
+      it('sends every call a turn made, whatever the tool, with our notes left off', async () => {
         const messages = await build([
           { role: 'user', content: 'go' },
-          turn('Said.', oracle('T1'), read),
+          turn(
+            'Said.',
+            oracle('T1'),
+            read('T2'),
+            called('T3', 'example__look_up', '{"term":"litotes"}', 'A figure.'),
+            called('T4', 'web_search', '{"query":"tides"}', 'Title: Tides', { _service: 'exa' })
+          ),
         ])
 
-        const calls = messages.filter(m => m.tool_calls).flatMap(m => m.tool_calls)
-        expect(calls.map(call => call.function.name)).toEqual(['oracle'])
-        expect(messages.filter(m => m.role === 'tool').map(m => m.tool_call_id)).toEqual(['T1'])
-        expect(JSON.stringify(messages)).not.toContain('rides south')
-        expect(JSON.stringify(messages)).not.toContain('_document')
+        expect(answered(messages)).toEqual(['T1', 'T2', 'T3', 'T4'])
+        expect(JSON.stringify(messages)).toContain('Elara rides south.')
+        expect(JSON.stringify(messages)).not.toContain('"_document"')
+        expect(JSON.stringify(messages)).not.toContain('"_service"')
         expect(JSON.stringify(messages)).not.toContain('reasoning')
       })
 
-      it('keeps only the calls worth replaying out of a mixed entry', async () => {
-        // One iteration can call several tools at once. The entry stays, with
-        // the ones asked for; the others go with their results.
+      it('sends every turn’s calls, however old, until a summary stands in for them', async () => {
+        const history = [
+          { role: 'user', content: 'one' },
+          turn('First.', oracle('T1')),
+          { role: 'user', content: 'two' },
+          turn('Second.', oracle('T2')),
+          { role: 'user', content: 'three' },
+          turn('Third.', oracle('T3')),
+          { role: 'user', content: 'four' },
+          turn('Fourth.', oracle('T4')),
+        ]
+
+        expect(answered(await build(history))).toEqual(['T1', 'T2', 'T3', 'T4'])
+      })
+
+      it('sends only the document calls of a turn from when only they went back', async () => {
         const messages = await build([
           { role: 'user', content: 'go' },
-          turn('Said.', [
+          olderTurn('documentCallsKept', 'Said.', [
             {
               role: 'assistant',
               content: null,
@@ -569,63 +602,18 @@ describe('buildContext', () => {
           ]),
         ])
 
+        // One iteration can call several tools at once. The entry stays, with
+        // the ones that go back; the others go with their results.
         const calling = messages.find(m => m.tool_calls)
-        expect(calling.tool_calls.map(call => call.id)).toEqual(['T2'])
-        expect(messages.filter(m => m.role === 'tool').map(m => m.tool_call_id)).toEqual(['T2'])
+        expect(calling.tool_calls.map(call => call.id)).toEqual(['T1'])
+        expect(answered(messages)).toEqual(['T1'])
       })
 
-      it('replays only the latest turns, and every turn when told 0', async () => {
-        const history = [
-          { role: 'user', content: 'one' },
-          turn('First.', oracle('T1')),
-          { role: 'user', content: 'two' },
-          turn('Second.', oracle('T2')),
-          { role: 'user', content: 'three' },
-          turn('Third.', oracle('T3')),
-        ]
-
-        const replayedIn = messages =>
-          messages.filter(m => m.role === 'tool').map(m => m.tool_call_id)
-
-        expect(replayedIn(await build(history, { replayTurns: 2 }))).toEqual(['T2', 'T3'])
-        expect(replayedIn(await build(history, { replayTurns: 0 }))).toEqual(['T1', 'T2', 'T3'])
-        // The older turn still says what it said.
-        expect((await build(history, { replayTurns: 1 })).map(m => m.content)).toContain('First.')
-      })
-
-      it('has a default reach when nothing has said', async () => {
-        const history = []
-        for (let i = 1; i <= AI_DEFAULTS.replayTurns + 2; i++) {
-          history.push({ role: 'user', content: `${i}` }, turn(`Turn ${i}.`, oracle(`T${i}`)))
-        }
-
-        const replayed = (await build(history)).filter(m => m.role === 'tool')
-        expect(replayed).toHaveLength(AI_DEFAULTS.replayTurns)
-        expect(replayed[0].tool_call_id).toBe('T3')
-      })
-
-      it('does not count a consulting command as a turn the assistant took', async () => {
-        const messages = await build(
-          [
-            { role: 'user', content: 'one' },
-            turn('First.', oracle('T1')),
-            {
-              role: 'assistant',
-              content: 'A reading.',
-              metadata: { command: { name: 'interpret', input: 'why?', result: 'A reading.' } },
-            },
-          ],
-          { replayTurns: 1 }
-        )
-
-        expect(messages.filter(m => m.role === 'tool').map(m => m.tool_call_id)).toEqual(['T1'])
-      })
-
-      it('replays nothing when nothing is worth it', async () => {
-        const messages = await build(
-          [{ role: 'user', content: 'go' }, turn('Said.', oracle('T1'))],
-          { replays: undefined }
-        )
+      it('sends no calls from a turn written before any went back', async () => {
+        const messages = await build([
+          { role: 'user', content: 'go' },
+          olderTurn(null, 'Said.', oracle('T1'), read('T2')),
+        ])
 
         expect(messages.some(m => m.tool_calls || m.role === 'tool')).toBe(false)
         expect(messages.at(-1)).toEqual({ role: 'assistant', content: 'Said.' })
@@ -1344,8 +1332,6 @@ describe('buildContext', () => {
             storyId: 's1',
             chatId: 'c1',
             systemPrompt: 'sys',
-            replays: name => name === 'oracle',
-            replayTurns: 1,
             ...opts,
           })
         ).messages
@@ -1363,16 +1349,13 @@ describe('buildContext', () => {
           { role: 'assistant', content: 'Third.' },
         ])
 
-        // Outside the one-turn window the dice are held to.
+        // From a turn that kept none of its other calls.
         expect(results(messages)).toEqual(['L1'])
         expect(messages.findIndex(m => m.role === 'tool')).toBe(3)
       })
 
-      it('sends a load back even when nothing else is replayed', async () => {
-        const messages = await build(
-          [{ role: 'user', content: 'go' }, loaded('L1', 'house-style')],
-          { replays: undefined }
-        )
+      it('sends a load back even from a turn that sends no other call', async () => {
+        const messages = await build([{ role: 'user', content: 'go' }, loaded('L1', 'house-style')])
 
         expect(results(messages)).toEqual(['L1'])
       })
@@ -1620,5 +1603,45 @@ describe('the author’s note', () => {
       '<authors_note>\nStay in the scene.\n</authors_note>'
     )
     expect(renderAuthorsNote(undefined)).toBe('')
+  })
+})
+
+describe('a chat that plays a card', () => {
+  const names = { char: 'Elara', user: 'Riley' }
+  const build = extra =>
+    buildContext(
+      'chat',
+      makeStores({
+        documents: [doc('d_elara', 'Cards', { content: '{{char}} has sworn to guard {{user}}.' })],
+        chat: { id: 'c1' },
+        messages: [{ id: 'm1', role: 'user', content: 'Hello, {{char}}.' }],
+      }),
+      {
+        storyId: 's1',
+        chatId: 'c1',
+        systemPrompt: 'You are {{char}}. Never speak for {{user}}.',
+        project: { project: 'My Story', size: { documents: 1, folders: 0 } },
+        pinned: [{ id: 'd_elara', path: 'Cards/Elara', type: 'text', words: 6 }],
+        note: 'Keep {{user}} on the road.',
+        ...extra,
+      }
+    )
+
+  it('fills its names in to the prompt, the note and what is pinned', async () => {
+    const { messages } = await build({ names })
+    const last = messages.at(-1).content
+
+    expect(messages[0].content).toBe('You are Elara. Never speak for Riley.')
+    expect(last).toContain('"content": "Elara has sworn to guard Riley."')
+    expect(last).toContain('<authors_note>\nKeep Riley on the road.\n</authors_note>')
+    // What was said is the chat's, and goes as it was said.
+    expect(last.endsWith('Hello, {{char}}.')).toBe(true)
+  })
+
+  it('sends the macros as written from a chat with no names', async () => {
+    const { messages } = await build()
+
+    expect(messages[0].content).toBe('You are {{char}}. Never speak for {{user}}.')
+    expect(messages.at(-1).content).toContain('{{char}} has sworn to guard {{user}}.')
   })
 })

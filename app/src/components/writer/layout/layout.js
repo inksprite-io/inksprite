@@ -2,15 +2,16 @@
  * @module components/writer/layout/layout
  * @description The writer's panel arrangement: which of the sidebar, the editor
  * and the chat are showing, and which list the sidebar is on — the outline,
- * the chats, or the narration of the open document. It is kept on the story
+ * the chats, the narration of the open document, or the project's comments. It is kept on the story
  * rather than app-wide, so each project reopens the way it was left:
  * an adventure chat-only, a novel with the editor beside its chat.
  *
  * The rail picks the sidebar's list, and picking the list showing hides the
  * sidebar; the editor and the chat each hide the other from a toggle at the
  * edge of their header. The sidebar's width is its own, and the editor and
- * the chat divide the rest. The rules for all of it are here, as pure
- * functions over the layout.
+ * the chat divide the rest. In a window too narrow for all three, the sidebar
+ * and the chat take turns beside the editor. The rules for all of it are
+ * here, as pure functions over the layout.
  */
 
 /** @typedef {import('@/types/models.js').StoryLayout} StoryLayout */
@@ -26,6 +27,7 @@ export const SIDEBAR_TABS = Object.freeze({
   OUTLINE: /** @type {'outline'} */ ('outline'),
   CHATS: /** @type {'chats'} */ ('chats'),
   NARRATION: /** @type {'narration'} */ ('narration'),
+  COMMENTS: /** @type {'comments'} */ ('comments'),
 })
 
 /** @typedef {typeof SIDEBAR_TABS[keyof typeof SIDEBAR_TABS]} SidebarTab */
@@ -140,8 +142,45 @@ export function togglePanel(layout, panel) {
  * Starting widths, as percentages, for the sidebar against the content and,
  * within the content, for the editor against the chat. A panel hidden leaves
  * the whole of its splitter to the other and comes back to the split as it
- * was; the splitter remembers what the writer drags it to, so these matter
- * only the first time.
+ * was; what the writer drags a splitter to is kept from one session to the
+ * next, so these matter only the first time.
  */
 export const ROW_SIZES = Object.freeze({ sidebar: 20, content: 80 })
 export const CONTENT_SIZES = Object.freeze({ editor: 62, chat: 38 })
+
+/**
+ * The widths a splitter was last dragged to, as kept, or the starting ones
+ * when what is kept is not a width for each of its panels: nothing yet, or
+ * something an older version or another hand left there.
+ *
+ * @param {unknown} kept - What was read back from storage
+ * @param {number[]} starting - The splitter's starting widths, one per panel
+ * @returns {number[]}
+ */
+export function keptSizes(kept, starting) {
+  if (
+    Array.isArray(kept) &&
+    kept.length === starting.length &&
+    kept.every(size => typeof size === 'number' && Number.isFinite(size) && size > 0)
+  ) {
+    return kept
+  }
+  return starting
+}
+
+/**
+ * What of a layout shows in the window. In a narrow one the sidebar and the
+ * chat take turns beside the editor: with all three on, the chat folds away
+ * while the sidebar is open, and comes back when it closes. Only what shows
+ * changes; the layout is left as the writer set it, so a wider window shows
+ * all three again.
+ *
+ * @param {StoryLayout} layout
+ * @param {boolean} narrow - Whether the window is too narrow for all three;
+ *   see useScreenSize
+ * @returns {StoryLayout}
+ */
+export function shownLayout(layout, narrow) {
+  if (narrow && layout.sidebar && layout.editor && layout.chat) return { ...layout, chat: false }
+  return layout
+}

@@ -338,7 +338,7 @@ export function useBackup() {
    * @returns {{chat: Chat, messages: Message[], character: string, note: string}}
    */
   function chatFromTranscript(text, filename) {
-    const { title, character, note, messages } = readTranscript(text, filename)
+    const { title, character, user, note, messages } = readTranscript(text, filename)
     const settings = settingsForNewChat(getBuiltInProfile(ROLEPLAY_PROFILE_ID))
     const rules = [settings.rules, note].filter(Boolean).join('\n\n')
     const last = messages[messages.length - 1].created
@@ -352,6 +352,9 @@ export function useBackup() {
       lastMessageAt: last,
       ...settings,
       ...(rules ? { rules } : {}),
+      // The names it was played under, which a card's macros become in it.
+      ...(user ? { userName: user } : {}),
+      ...(character ? { characterName: character } : {}),
       version: 1,
       created: messages[0].created,
       updated: last,
@@ -462,11 +465,21 @@ export function useBackup() {
    * a project at a time, so they only need telling about the project itself:
    * its record and its root, which carries its name.
    *
+   * A name given goes on its root before it is written, so the project is
+   * never anything else here — renamed after, its old name came back with
+   * the tree the project opened on, until the rename was saved.
+   *
    * @param {ProjectRows} project
+   * @param {object} [options]
+   * @param {string} [options.title] - What to call it, if not what it was called
    * @returns {Promise<Story>} The project as it now exists here
    */
-  async function importProject(project) {
+  async function importProject(project, { title } = {}) {
     const { story, documents, files, chats, messages, profiles } = withFreshIds(project)
+    if (title !== undefined) {
+      const root = documents.find(document => document.id === rootIdFor(story.id))
+      if (root) root.title = title
+    }
 
     await db.transaction(
       'rw',

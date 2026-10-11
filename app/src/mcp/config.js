@@ -54,14 +54,7 @@ function readEntry(name, entry) {
   if (!isObject(entry)) return { error: `${name}: not a server.` }
   const url = typeof entry.url === 'string' ? entry.url : entry.serverUrl
   if (typeof url === 'string' && url.trim()) {
-    try {
-      const parsed = new URL(url.trim())
-      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
-        return { error: `${name}: ${url} is not a web address.` }
-      }
-    } catch {
-      return { error: `${name}: ${url} is not a web address.` }
-    }
+    if (!isWebAddress(url)) return { error: `${name}: ${url} is not a web address.` }
     const headers = readHeaders(entry.headers)
     return { server: { name, url: url.trim(), ...(headers ? { headers } : {}) } }
   }
@@ -85,7 +78,13 @@ export function parseServerConfig(text) {
   try {
     parsed = JSON.parse(text)
   } catch (error) {
-    return { servers: [], errors: [`That isn’t JSON: ${error.message}`] }
+    // Most apps document the block without the braces around it, so a copy
+    // of it often comes without them.
+    try {
+      parsed = JSON.parse(`{${text}}`)
+    } catch {
+      return { servers: [], errors: [`That isn’t JSON: ${error.message}`] }
+    }
   }
   if (!isObject(parsed)) return { servers: [], errors: ['That isn’t a list of servers.'] }
 
@@ -118,17 +117,40 @@ export function parseServerConfig(text) {
 
 /**
  * A name for a server added by its address alone: its host, less the parts
- * that say nothing (`mcp.`, `www.`, `api.`).
+ * that say nothing (`mcp.`, `www.`, `api.`). One on this machine or the
+ * network, by an IP address or a name of one word, is named by the whole of
+ * it and its port, which is what tells two of them apart.
  *
  * @param {string} url
  * @returns {string}
  */
 export function nameFromUrl(url) {
   try {
-    const host = new URL(url).hostname.replace(/^(mcp|www|api)\./, '')
+    const parsed = new URL(url)
+    const local =
+      /^\d+(\.\d+){3}$/.test(parsed.hostname) ||
+      parsed.hostname.startsWith('[') ||
+      !parsed.hostname.includes('.')
+    if (local) return parsed.host
+    const host = parsed.hostname.replace(/^(mcp|www|api)\./, '')
     const [first] = host.split('.')
     return first ? first.charAt(0).toUpperCase() + first.slice(1) : host
   } catch {
     return 'Server'
+  }
+}
+
+/**
+ * Whether an address typed for a server is a web address at all.
+ *
+ * @param {string} url
+ * @returns {boolean}
+ */
+export function isWebAddress(url) {
+  try {
+    const { protocol } = new URL(url.trim())
+    return protocol === 'https:' || protocol === 'http:'
+  } catch {
+    return false
   }
 }

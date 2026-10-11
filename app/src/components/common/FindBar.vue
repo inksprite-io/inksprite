@@ -36,6 +36,30 @@
         @update:model-value="$emit('update:query', $event ?? '')"
         @keydown.enter.prevent="$emit($event.shiftKey ? 'previous' : 'next')"
       />
+      <template v-if="refinable">
+        <button
+          v-tooltip.bottom="'Match case'"
+          type="button"
+          :class="toggleClass(matchCase)"
+          aria-label="Match case"
+          :aria-pressed="matchCase"
+          data-action="match-case"
+          @click="$emit('update:matchCase', !matchCase)"
+        >
+          Aa
+        </button>
+        <button
+          v-tooltip.bottom="'Whole words'"
+          type="button"
+          :class="toggleClass(wholeWord)"
+          aria-label="Whole words"
+          :aria-pressed="wholeWord"
+          data-action="whole-word"
+          @click="$emit('update:wholeWord', !wholeWord)"
+        >
+          <span class="border-x border-b border-current px-px pb-px leading-none">ab</span>
+        </button>
+      </template>
       <span
         class="flex-none min-w-16 text-center text-xs tabular-nums text-surface-500 dark:text-surface-400"
         aria-live="polite"
@@ -124,7 +148,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import { useScreenSize } from '@/composables/useScreenSize'
@@ -136,12 +160,15 @@ import { useScreenSize } from '@/composables/useScreenSize'
  *
  * Enter goes to the next match and Shift-Enter to the one before, as in the
  * browser's own find; Enter in the replacement replaces the match the writer
- * is on.
+ * is on. Replace all says how many it replaced, until the writer moves on.
  *
  * @typedef {Object} Props
  * @property {string} query
  * @property {number} count - How many matches there are
  * @property {number} current - Which of them the writer is on, or -1 for none
+ * @property {boolean} [refinable] - Whether the panel can match case and whole words
+ * @property {boolean} [matchCase]
+ * @property {boolean} [wholeWord]
  * @property {boolean} [replaceable] - Whether the panel can replace
  * @property {string} [replacement]
  */
@@ -149,12 +176,17 @@ const props = defineProps({
   query: { type: String, required: true },
   count: { type: Number, required: true },
   current: { type: Number, required: true },
+  refinable: { type: Boolean, default: false },
+  matchCase: { type: Boolean, default: false },
+  wholeWord: { type: Boolean, default: false },
   replaceable: { type: Boolean, default: false },
   replacement: { type: String, default: '' },
 })
 
 const emit = defineEmits([
   'update:query',
+  'update:matchCase',
+  'update:wholeWord',
   'update:replacement',
   'next',
   'previous',
@@ -171,7 +203,35 @@ const fieldSize = computed(() => (isMobile.value ? undefined : 'small'))
 
 const replacing = ref(false)
 
+/**
+ * @param {boolean} on
+ * @returns {string[]}
+ */
+const toggleClass = on => [
+  'flex-none w-7 h-7 rounded flex items-center justify-center text-xs font-semibold focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500',
+  on
+    ? 'bg-primary-500/15 text-primary-700 dark:text-primary-300'
+    : 'text-surface-500 dark:text-surface-400 hover:bg-surface-200 dark:hover:bg-surface-700',
+]
+
+/**
+ * How many the last Replace all replaced, until the search changes or the
+ * writer is on a match again. Replace all leaves them on none.
+ */
+const replacedAll = ref(/** @type {number|null} */ (null))
+watch(
+  () => [props.query, props.matchCase, props.wholeWord],
+  () => (replacedAll.value = null)
+)
+watch(
+  () => props.current,
+  current => {
+    if (current >= 0) replacedAll.value = null
+  }
+)
+
 const status = computed(() => {
+  if (replacedAll.value !== null) return `Replaced ${replacedAll.value}`
   if (!props.query) return ''
   if (props.count === 0) return 'No results'
   return props.current < 0 ? `${props.count} found` : `${props.current + 1} of ${props.count}`
@@ -198,7 +258,9 @@ const replacementField = ref(null)
  * @param {'replace'|'replace-all'} what
  */
 const afterward = what => {
+  const count = props.count
   emit(what)
+  if (what === 'replace-all') replacedAll.value = count
   nextTick(() => {
     const focused = document.activeElement
     if (!focused || focused === document.body || focused.matches(':disabled')) {

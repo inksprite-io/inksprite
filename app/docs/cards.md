@@ -13,133 +13,145 @@
 - [readLorebook][9]
   - [Parameters][10]
 - [entries][11]
-- [substitute][12]
+- [uncomment][12]
   - [Parameters][13]
-- [uncomment][14]
-  - [Parameters][15]
-- [ORIGINAL][16]
-- [overOriginal][17]
+- [ORIGINAL][14]
+- [overOriginal][15]
+  - [Parameters][16]
+- [undecorate][17]
   - [Parameters][18]
-- [undecorate][19]
-  - [Parameters][20]
-- [KEEP_AT_END][21]
-- [stripEnds][22]
+- [KEEP_AT_END][19]
+- [stripEnds][20]
+  - [Parameters][21]
+- [stripEmptyGroups][22]
   - [Parameters][23]
-- [stripEmptyGroups][24]
+- [unwrap][24]
   - [Parameters][25]
-- [unwrap][26]
+- [text][26]
   - [Parameters][27]
-- [text][28]
+- [list][28]
   - [Parameters][29]
-- [list][30]
-  - [Parameters][31]
-- [cards/chat][32]
-- [Greeting][33]
-  - [Properties][34]
-- [PINNED_KINDS][35]
-- [isCard][36]
+- [cards/chat][30]
+- [Greeting][31]
+  - [Properties][32]
+- [PINNED_KINDS][33]
+- [isCard][34]
+  - [Parameters][35]
+- [characterOf][36]
   - [Parameters][37]
 - [cardsNamed][38]
   - [Parameters][39]
-- [][40]
-- [found][41]
-- [][42]
-- [readCardChat][43]
-  - [Parameters][44]
-- [documents][45]
+- [found][40]
+- [][41]
+- [readCardChat][42]
+  - [Parameters][43]
+- [documents][44]
+- [][45]
 - [][46]
 - [][47]
-- [][48]
-- [cards][49]
-  - [Examples][50]
-- [cards][51]
-- [cards/png][52]
-- [SIGNATURE][53]
-- [KEYWORDS][54]
-- [textChunks][55]
+- [cards][48]
+  - [Examples][49]
+- [cards][50]
+- [cards/macros][51]
+- [MACRO][52]
+- [Names][53]
+  - [Properties][54]
+- [namesOf][55]
   - [Parameters][56]
-- [chunks][57]
-- [cardFromPng][58]
-  - [Parameters][59]
-- [decodeBase64][60]
-  - [Parameters][61]
-- [latin1][62]
-  - [Parameters][63]
-- [cards/transcript][64]
-- [UNUSED][65]
-- [UNUSED][66]
-- [UNUSED][67]
-- [Transcript][68]
-  - [Properties][69]
-- [isTranscript][70]
-  - [Parameters][71]
-- [readTranscript][72]
+- [nameFor][57]
+  - [Parameters][58]
+- [substitute][59]
+  - [Parameters][60]
+- [storedPassage][61]
+  - [Parameters][62]
+- [spans][63]
+- [match][64]
+- [][65]
+- [cards/png][66]
+- [SIGNATURE][67]
+- [KEYWORDS][68]
+- [textChunks][69]
+  - [Parameters][70]
+- [chunks][71]
+- [cardFromPng][72]
   - [Parameters][73]
-- [messageFrom][74]
+- [decodeBase64][74]
   - [Parameters][75]
-- [alternates][76]
-- [answerFrom][77]
-  - [Parameters][78]
-- [noteOf][79]
-  - [Parameters][80]
-- [isMessage][81]
-  - [Parameters][82]
-- [firstLine][83]
-  - [Parameters][84]
-- [parseLine][85]
-  - [Parameters][86]
-- [textOf][87]
-  - [Parameters][88]
-- [named][89]
-  - [Parameters][90]
-- [commonest][91]
+- [latin1][76]
+  - [Parameters][77]
+- [cards/transcript][78]
+- [UNUSED][79]
+- [UNUSED][80]
+- [UNUSED][81]
+- [Transcript][82]
+  - [Properties][83]
+- [isTranscript][84]
+  - [Parameters][85]
+- [readTranscript][86]
+  - [Parameters][87]
+- [messageFrom][88]
+  - [Parameters][89]
+- [alternates][90]
+- [answerFrom][91]
   - [Parameters][92]
-- [counts][93]
-- [when][94]
-  - [Parameters][95]
-- [titleFrom][96]
-  - [Parameters][97]
-- [cards/write][98]
-- [SIDECAR_TITLE][99]
-- [SIDECAR_TITLE][100]
-- [SIDECAR_TITLE][101]
-- [Written][102]
-  - [Properties][103]
-- [writeCard][104]
-  - [Parameters][105]
-- [reimportCard][106]
-  - [Parameters][107]
-- [fillCard][108]
+- [noteOf][93]
+  - [Parameters][94]
+- [isMessage][95]
+  - [Parameters][96]
+- [firstLine][97]
+  - [Parameters][98]
+- [parseLine][99]
+  - [Parameters][100]
+- [textOf][101]
+  - [Parameters][102]
+- [named][103]
+  - [Parameters][104]
+- [commonest][105]
+  - [Parameters][106]
+- [counts][107]
+- [when][108]
   - [Parameters][109]
-- [][110]
-- [pinnedIds][111]
-- [pinnedIds][112]
-- [field][113]
-  - [Parameters][114]
-- [][115]
-- [][116]
-- [greetingIds][117]
-- [writePortrait][118]
+- [titleFrom][110]
+  - [Parameters][111]
+- [cards/write][112]
+- [SIDECAR_TITLE][113]
+- [SIDECAR_TITLE][114]
+- [SIDECAR_TITLE][115]
+- [Written][116]
+  - [Properties][117]
+- [writeCard][118]
   - [Parameters][119]
-- [writeMarkdown][120]
+- [reimportCard][120]
   - [Parameters][121]
-- [writeLorebook][122]
+- [fillCard][122]
   - [Parameters][123]
-- [writeLore][124]
-  - [Parameters][125]
-- [][126]
-- [writeSidecar][127]
-  - [Parameters][128]
-- [SHELF_KINDS][129]
-- [SHELF_TITLES][130]
-- [shelfFor][131]
+- [pinnedIds][124]
+- [pinnedIds][125]
+- [field][126]
+  - [Parameters][127]
+- [][128]
+- [][129]
+- [greetingIds][130]
+- [writePortrait][131]
   - [Parameters][132]
-- [find][133]
+- [writeMarkdown][133]
   - [Parameters][134]
-- [walk][135]
+- [writeLorebook][135]
   - [Parameters][136]
-- [make][137]
+- [writeLore][137]
   - [Parameters][138]
+- [writeSidecar][139]
+  - [Parameters][140]
+- [SHELF_KINDS][141]
+- [SHELF_TITLES][142]
+- [shelfFor][143]
+  - [Parameters][144]
+- [find][145]
+  - [Parameters][146]
+- [walk][147]
+  - [Parameters][148]
+- [make][149]
+  - [Parameters][150]
 
 ## cards/card
 
@@ -164,30 +176,30 @@ original goes to the sidecar whole, and export merges over it.
 
 A card, flattened.
 
-Type: [Object][139]
+Type: [Object][151]
 
 ### Properties
 
-- `name` **[string][140]** The character's, and what `{{char}}` becomes
-- `title` **[string][140]** What to call the folder: the nickname when there
+- `name` **[string][152]** The character's, and what `{{char}}` becomes
+- `title` **[string][152]** What to call the folder: the nickname when there
   is one, because that is what the card is known by where people browse for
   it, and on a scenario card it has nothing to do with the character's name
-- `description` **[string][140]**&#x20;
-- `personality` **[string][140]**&#x20;
-- `scenario` **[string][140]**&#x20;
-- `examples` **[string][140]** `mes_example`
-- `greetings` **[Array][141]<[string][140]>** `first_mes` first, then the alternates
-- `systemPrompt` **[string][140]** Rare, usually an ST preset's scaffolding
-- `rules` **[string][140]** `post_history_instructions`: the card's author's
+- `description` **[string][152]**&#x20;
+- `personality` **[string][152]**&#x20;
+- `scenario` **[string][152]**&#x20;
+- `examples` **[string][152]** `mes_example`
+- `greetings` **[Array][153]<[string][152]>** `first_mes` first, then the alternates
+- `systemPrompt` **[string][152]** Rare, usually an ST preset's scaffolding
+- `rules` **[string][152]** `post_history_instructions`: the card's author's
   note, which a chat on it starts with. See `overOriginal`.
-- `tags` **[Array][141]<[string][140]>**&#x20;
-- `creator` **[string][140]**&#x20;
-- `lore` **[Array][141]<[LoreEntry][2]>**&#x20;
+- `tags` **[Array][153]<[string][152]>**&#x20;
+- `creator` **[string][152]**&#x20;
+- `lore` **[Array][153]<[LoreEntry][2]>**&#x20;
 - `raw` **any** Exactly what arrived, for the sidecar
-- `title` **[string][140]** `comment` or `name`; the memo ST shows in its list
-- `content` **[string][140]**&#x20;
-- `keys` **[Array][141]<[string][140]>**&#x20;
-- `constant` **[boolean][142]** Always in context, rather than looked up
+- `title` **[string][152]** `comment` or `name`; the memo ST shows in its list
+- `content` **[string][152]**&#x20;
+- `keys` **[Array][153]<[string][152]>**&#x20;
+- `constant` **[boolean][154]** Always in context, rather than looked up
 
 ## CHARACTER_FIELDS
 
@@ -236,35 +248,11 @@ as empty documents that say nothing to anyone.
 
 - `value` **any** A `character_book`, a `lorebook`, or a World Info export
 
-Returns **{name: [string][140], entries: [Array][141]<[LoreEntry][2]>, raw: any}**&#x20;
+Returns **{name: [string][152], entries: [Array][153]<[LoreEntry][2]>, raw: any}**&#x20;
 
 ## entries
 
-Type: [Array][141]<[LoreEntry][2]>
-
-## substitute
-
-Put the character's name and the writer's in, once, so that nothing
-downstream has to carry a template language.
-
-Card text is full of `{{char}}` and `{{user}}`, and the alternative to
-substituting here is an editor where the writer has to know not to type two
-braces. The documents become their copy; the sidecar still says what the
-card said.
-
-Case and inner spacing vary between authors, and both are accepted.
-Nothing else is: `{{date}}`, `{{random::…}}`, `{{roll:d20}}` and the rest are
-left for the model to read, which says what they are for better than a value
-frozen at import would — the date would be wrong within a day, and a coin
-flip that always comes up heads is not one. `{{original}}` is resolved when
-a chat starts; see `overOriginal`.
-
-### Parameters
-
-- `value` **[string][140]**&#x20;
-- `names` **{char: [string][140], user: [string][140]}**&#x20;
-
-Returns **[string][140]**&#x20;
+Type: [Array][153]<[LoreEntry][2]>
 
 ## uncomment
 
@@ -277,9 +265,9 @@ a line of its own takes the line with it. The sidecar keeps them.
 
 ### Parameters
 
-- `value` **[string][140]**&#x20;
+- `value` **[string][152]**&#x20;
 
-Returns **[string][140]**&#x20;
+Returns **[string][152]**&#x20;
 
 ## ORIGINAL
 
@@ -300,10 +288,10 @@ a template, and the card's own document keeps saying what the card said.
 
 ### Parameters
 
-- `value` **[string][140]** What the card says, if anything
-- `under` **[string][140]?** What it would otherwise replace (optional, default `''`)
+- `value` **[string][152]** What the card says, if anything
+- `under` **[string][152]?** What it would otherwise replace (optional, default `''`)
 
-Returns **[string][140]** What the chat starts with
+Returns **[string][152]** What the chat starts with
 
 ## undecorate
 
@@ -318,9 +306,9 @@ than becoming empty.
 
 ### Parameters
 
-- `title` **[string][140]**&#x20;
+- `title` **[string][152]**&#x20;
 
-Returns **[string][140]**&#x20;
+Returns **[string][152]**&#x20;
 
 ## KEEP_AT_END
 
@@ -359,7 +347,7 @@ whether the opener's own match is the last character.
 
 - `value` **any**&#x20;
 
-Returns **[string][140]**&#x20;
+Returns **[string][152]**&#x20;
 
 ## list
 
@@ -367,7 +355,7 @@ Returns **[string][140]**&#x20;
 
 - `value` **any**&#x20;
 
-Returns **[Array][141]\<any>**&#x20;
+Returns **[Array][153]\<any>**&#x20;
 
 ## cards/chat
 
@@ -388,23 +376,25 @@ Design: `.llm/character_cards_design.md`.
 
 What a card folder has in it that a chat cares about.
 
-Type: [Object][139]
+Type: [Object][151]
 
 ### Properties
 
-- `title` **[string][140]** The card's, and the chat's
-- `pinnedIds` **[Array][141]<[string][140]>** What rides in the project block from turn one
-- `hiddenIds` **[Array][141]<[string][140]>** What a chat on this card hides: the shelf the
+- `title` **[string][152]** The card's, and the chat's
+- `name` **[string][152]** The character's: what `{{char}}` becomes in a chat
+  on the card. See `characterOf`.
+- `pinnedIds` **[Array][153]<[string][152]>** What rides in the project block from turn one
+- `hiddenIds` **[Array][153]<[string][152]>** What a chat on this card hides: the shelf the
   other characters are on, when the card is on one
-- `shownIds` **[Array][141]<[string][140]>** What it shows under that: the card itself
-- `greetings` **[Array][141]<[Greeting][33]>** In the card's own order; the first is its `first_mes`
-- `rules` **[string][140]** The card's post-history instructions, as written:
+- `shownIds` **[Array][153]<[string][152]>** What it shows under that: the card itself
+- `greetings` **[Array][153]<[Greeting][31]>** In the card's own order; the first is its `first_mes`
+- `rules` **[string][152]** The card's post-history instructions, as written:
   what a chat on it puts in its author's note, `{{original}}` and all
-- `systemPrompt` **[string][140]** Overrides the chat's prompt, when the card had one
+- `systemPrompt` **[string][152]** Overrides the chat's prompt, when the card had one
   and the writer kept it
-- `id` **[string][140]**&#x20;
-- `title` **[string][140]**&#x20;
-- `content` **[string][140]**&#x20;
+- `id` **[string][152]**&#x20;
+- `title` **[string][152]**&#x20;
+- `content` **[string][152]**&#x20;
 
 ## PINNED_KINDS
 
@@ -418,39 +408,49 @@ Whether this folder came from a card, and so has a chat to start.
 
 - `document` **any**&#x20;
 
-Returns **[boolean][142]**&#x20;
+Returns **[boolean][154]**&#x20;
+
+## characterOf
+
+Who a card folder is: the character's name.
+
+The one in the sidecar, which is the character's own, what `{{char}}` meant
+to the card's author, and what ST put on every message they sent. The
+folder's title is the writer's to change, and on a scenario card it never was
+the character's name. A card with no sidecar — deleted, or a card made here
+by hand — goes by its title.
+
+### Parameters
+
+- `api` &#x20;
+- `folder` **any** A card folder
+
+Returns **[string][152]**&#x20;
 
 ## cardsNamed
 
 The card folders in this project that are a character of this name.
 
 For a chat that arrives knowing only who it was with; see `./transcript.js`.
-The name is the one in the sidecar, which is the character's own and what ST
-put on every message they sent. The folder's title is the writer's to change,
-and on a scenario card it never was the character's name. A card with no
-sidecar — deleted, or a card made here by hand — goes by its title.
+By the name in the sidecar; see `characterOf`.
 
 All of them, rather than the first: two cards for one name is a question,
 and which was meant is not something to guess at.
 
 ### Parameters
 
-- `storyId` **[string][140]**&#x20;
-- `name` **[string][140]**&#x20;
+- `storyId` **[string][152]**&#x20;
+- `name` **[string][152]**&#x20;
 
-Returns **[Promise][143]<[Array][141]\<any>>** Card folders, in tree order
-
-##
-
-Type: any
+Returns **[Promise][155]<[Array][153]\<any>>** Card folders, in tree order
 
 ## found
 
-Type: [Array][141]\<any>
+Type: [Array][153]\<any>
 
 ##
 
-Type: [string][140]
+Type: [string][152]
 
 ## readCardChat
 
@@ -463,26 +463,26 @@ through the project block, and this is the route they were hidden for.
 
 ### Parameters
 
-- `storyId` **[string][140]**&#x20;
-- `folderId` **[string][140]**&#x20;
+- `storyId` **[string][152]**&#x20;
+- `folderId` **[string][152]**&#x20;
 
-Returns **[Promise][143]<(CardChat | null)>** Null if that is not a card folder
+Returns **[Promise][155]<(CardChat | null)>** Null if that is not a card folder
 
 ## documents
 
-Type: [Array][141]\<any>
+Type: [Array][153]\<any>
 
 ##
 
-Type: [string][140]
+Type: [string][152]
 
 ##
 
-Type: [string][140]
+Type: [string][152]
 
 ##
 
-Type: [string][140]
+Type: [string][152]
 
 ## cards
 
@@ -497,10 +497,11 @@ dialogue rather than a page of adjectives.
 - **png** - The card hidden in a PNG's text chunks
 - **card** - A card or a book as one shape, whatever version it arrived as
 - **write** - That shape, written into the project as documents
+- **macros** - `{{char}}` and `{{user}}`, filled in for the chat that plays a card
 - **chat** - A card folder read back out of the tree, for a chat to run on
 - **transcript** - A SillyTavern chat file, read into a chat's worth of messages
 
-Reading is pure — `png`, `card` and `transcript` touch no store — and `write`
+Reading is pure — `png`, `card`, `macros` and `transcript` touch no store — and `write`
 is the one part that has the tree in its hands.
 
 Design: `.llm/character_cards_design.md`.
@@ -519,6 +520,117 @@ if (shapeOf(value) === 'card') await writeCard(storyId, readCard(value))
 ## cards
 
 Type: const
+
+## cards/macros
+
+`{{char}}` and `{{user}}`, filled in for the chat that plays a
+card.
+
+A card's documents say what the card says, macros and all. They are the card,
+and a writer building one or changing one works with the macros the way every
+other card tool does. What a macro becomes belongs to the chat: the
+character's name, and the name the writer gave when they started it. So it
+is filled in between the documents and that chat's model — in what its tools
+read, the project block, the prompt and the author's note — and nowhere else.
+
+Only a chat with names fills anything in. A chat on the Default profile,
+where the writer works on the card, has none, and reads and writes the
+macros as they are.
+
+Nothing goes back the other way. What the model writes in a chat that fills
+names in is written as it wrote it: a chat that plays a card is for play,
+and in play a name is a name. `storedPassage` only finds where a passage the
+model quoted is in the document.
+
+Case and inner spacing vary between authors, and both are accepted. Nothing
+else is: `{{date}}`, `{{random::…}}`, `{{roll:d20}}` and the rest are left
+for the model to read, which says what they are for better than a value
+frozen when the chat started would.
+
+## MACRO
+
+The two macros a chat has names for.
+
+## Names
+
+What the macros become in one chat. Either can be empty: a macro with no
+name to become is left as it is.
+
+Type: [Object][151]
+
+### Properties
+
+- `char` **[string][152]** What `{{char}}` becomes: the character's name
+- `user` **[string][152]** What `{{user}}` becomes: the writer's, in this chat
+
+## namesOf
+
+The names a chat fills its macros in with, or null for a chat that reads
+them as written.
+
+### Parameters
+
+- `chat` &#x20;
+
+Returns **([Names][53] | null)**&#x20;
+
+## nameFor
+
+### Parameters
+
+- `which` **[string][152]** `char` or `user`, in any case
+- `names` **[Names][53]**&#x20;
+
+Returns **[string][152]**&#x20;
+
+## substitute
+
+Text with its macros filled in.
+
+### Parameters
+
+- `value` **([string][152] | null | [undefined][156])**&#x20;
+- `names` **([Names][53] | null)?** Nothing is filled in without them
+
+Returns **[string][152]**&#x20;
+
+## storedPassage
+
+A passage the model quoted from the filled text, as the document stores it.
+
+The model reads names where the document has macros, so the passage it
+quotes to `edit_document` is not in the document as written. This finds it
+in the filled text and gives back the stretch of the document that reads
+as it. Where the passage starts or ends partway through a name, the stretch
+takes the whole macro, and the replacement the part of the name the model
+left out, so that what the document says afterwards is what the model asked
+for.
+
+Counted in the filled text, which is the one the model can see: a passage
+that is there twice once the names are in is a quote that says too little,
+even where the document spells the two differently.
+
+### Parameters
+
+- `text` **[string][152]** The document as stored
+- `names` **[Names][53]**&#x20;
+- `passage` **[string][152]** As the model quoted it
+- `replacement` **[string][152]** What it should read instead
+
+Returns **{count: [number][157], old: [string][152], new: [string][152]}** The passage and its
+replacement as they apply to the stored text, when the count is one
+
+## spans
+
+Each macro filled in: where it is in `text`, and where its name is in `filled`.
+
+## match
+
+Type: [number][157]
+
+##
+
+Type: [number][157]
 
 ## cards/png
 
@@ -553,13 +665,13 @@ carrying an inflate for a case nobody has met is a cost with no reader.
 
 ### Parameters
 
-- `data` **([ArrayBuffer][144] | [Uint8Array][145])** The file
+- `data` **([ArrayBuffer][158] | [Uint8Array][159])** The file
 
-Returns **[Map][146]<[string][140], [string][140]>** Keyword to its text
+Returns **[Map][160]<[string][152], [string][152]>** Keyword to its text
 
 ## chunks
 
-Type: [Map][146]<[string][140], [string][140]>
+Type: [Map][160]<[string][152], [string][152]>
 
 ## cardFromPng
 
@@ -567,7 +679,7 @@ The card in a PNG, still in whatever spec version it was written for.
 
 ### Parameters
 
-- `data` **([ArrayBuffer][144] | [Uint8Array][145])** The file
+- `data` **([ArrayBuffer][158] | [Uint8Array][159])** The file
 
 Returns **(any | null)** The parsed card, or null if the image carries none
 
@@ -581,9 +693,9 @@ go back through a UTF-8 decoder to come out as what was written.
 
 ### Parameters
 
-- `value` **[string][140]**&#x20;
+- `value` **[string][152]**&#x20;
 
-Returns **[string][140]**&#x20;
+Returns **[string][152]**&#x20;
 
 ## latin1
 
@@ -596,9 +708,9 @@ on the call, not on the string, so slices of it cost nothing.
 
 ### Parameters
 
-- `bytes` **[Uint8Array][145]**&#x20;
+- `bytes` **[Uint8Array][159]**&#x20;
 
-Returns **[string][140]**&#x20;
+Returns **[string][152]**&#x20;
 
 ## cards/transcript
 
@@ -620,31 +732,32 @@ Design: `.llm/character_cards_design.md`.
 
 ## UNUSED
 
-Type: [string][140]
+Type: [string][152]
 
 ## UNUSED
 
-Type: [string][140]
+Type: [string][152]
 
 ## UNUSED
 
 What ST writes where a name used to go, since it stopped using the header's.
 
-Type: [string][140]
+Type: [string][152]
 
 ## Transcript
 
-Type: [Object][139]
+Type: [Object][151]
 
 ### Properties
 
-- `title` **[string][140]** The file's name, without the timestamp ST puts in it
-- `character` **[string][140]** Who the chat was with, by the name on their
+- `title` **[string][152]** The file's name, without the timestamp ST puts in it
+- `character` **[string][152]** Who the chat was with, by the name on their
   messages. Empty when nobody but the writer spoke.
-- `user` **[string][140]** The writer's name in it, which is their persona's
-- `note` **[string][140]** The Author's Note, the one piece of the prompt a
+- `user` **[string][152]** The writer's name in it, which is their persona's.
+  Empty when the file never says it.
+- `note` **[string][152]** The Author's Note, the one piece of the prompt a
   chat file carries. Empty for most, and when the chat had it switched off.
-- `messages` **[Array][141]\<Message>** In order, under placeholder ids: an import
+- `messages` **[Array][153]\<Message>** In order, under placeholder ids: an import
   gives everything fresh ones
 
 ## isTranscript
@@ -657,9 +770,9 @@ which is an object with ST's header on it or a message's fields.
 
 ### Parameters
 
-- `text` **[string][140]**&#x20;
+- `text` **[string][152]**&#x20;
 
-Returns **[boolean][142]**&#x20;
+Returns **[boolean][154]**&#x20;
 
 ## readTranscript
 
@@ -667,14 +780,14 @@ Read an ST chat.
 
 ### Parameters
 
-- `text` **[string][140]** The file
-- `filename` **[string][140]?** For the title, which the file does not hold (optional, default `''`)
+- `text` **[string][152]** The file
+- `filename` **[string][152]?** For the title, which the file does not hold (optional, default `''`)
 
 <!---->
 
-- Throws **[Error][147]** If there is no message in it
+- Throws **[Error][161]** If there is no message in it
 
-Returns **[Transcript][68]**&#x20;
+Returns **[Transcript][82]**&#x20;
 
 ## messageFrom
 
@@ -688,15 +801,15 @@ than one the writer has to trim.
 ### Parameters
 
 - `row` **any**&#x20;
-- `at` **[number][148]** Where it is in the chat
-- `created` **[number][148]**&#x20;
-- `names` **{char: [string][140], user: [string][140]}**&#x20;
+- `at` **[number][157]** Where it is in the chat
+- `created` **[number][157]**&#x20;
+- `names` **{char: [string][152], user: [string][152]}**&#x20;
 
 Returns **Message**&#x20;
 
 ## alternates
 
-Type: ([Array][141]\<MessageAlternate> | null)
+Type: ([Array][153]\<MessageAlternate> | null)
 
 ## answerFrom
 
@@ -704,9 +817,9 @@ What one generation wrote: a message's own fields, or one of its swipes'.
 
 ### Parameters
 
-- `content` **[string][140]**&#x20;
+- `content` **[string][152]**&#x20;
 - `info` **any** The message, or the swipe's entry in `swipe_info`
-- `names` **{char: [string][140], user: [string][140]}**&#x20;
+- `names` **{char: [string][152], user: [string][152]}**&#x20;
 
 Returns **Required\<MessageAlternate>**&#x20;
 
@@ -723,7 +836,7 @@ sent, so it is not carried either.
 
 - `metadata` **any** The header's `chat_metadata`
 
-Returns **[string][140]**&#x20;
+Returns **[string][152]**&#x20;
 
 ## isMessage
 
@@ -735,13 +848,13 @@ Returns **[string][140]**&#x20;
 
 ### Parameters
 
-- `text` **[string][140]**&#x20;
+- `text` **[string][152]**&#x20;
 
 ## parseLine
 
 ### Parameters
 
-- `line` **[string][140]**&#x20;
+- `line` **[string][152]**&#x20;
 
 Returns **any** The object on it, or null if it does not hold one
 
@@ -765,13 +878,13 @@ the chat was with.
 
 ### Parameters
 
-- `rows` **[Array][141]\<any>**&#x20;
+- `rows` **[Array][153]\<any>**&#x20;
 
-Returns **[string][140]**&#x20;
+Returns **[string][152]**&#x20;
 
 ## counts
 
-Type: [Map][146]<[string][140], [number][148]>
+Type: [Map][160]<[string][152], [number][157]>
 
 ## when
 
@@ -786,7 +899,7 @@ that is not ISO is the browser's business, and this runs in more than one.
 
 - `value` **any**&#x20;
 
-Returns **([number][148] | null)** Null when it says nothing this can read
+Returns **([number][157] | null)** Null when it says nothing this can read
 
 ## titleFrom
 
@@ -796,9 +909,9 @@ The stamp says when the chat was started, which the messages say already.
 
 ### Parameters
 
-- `filename` **[string][140]**&#x20;
+- `filename` **[string][152]**&#x20;
 
-Returns **[string][140]**&#x20;
+Returns **[string][152]**&#x20;
 
 ## cards/write
 
@@ -814,38 +927,43 @@ is invisible to search, uneditable in the editor, and would need a viewer of
 its own. As documents, every tool the app already has works on it, and the
 question of how to edit a card answers itself.
 
+They say what the card says, `{{char}}` and `{{user}}` and all, and are
+plain: edited as the text they are and stored as written, which is the form
+a card is written in everywhere else. A chat that plays the card fills the
+names in for its model; see `./macros.js`.
+
 Design: `.llm/character_cards_design.md`.
 
 ## SIDECAR_TITLE
 
-Type: [string][140]
+Type: [string][152]
 
 ## SIDECAR_TITLE
 
-Type: [string][140]
+Type: [string][152]
 
 ## SIDECAR_TITLE
 
 What the sidecar is called, and what it holds.
 
-Type: [string][140]
+Type: [string][152]
 
 ## Written
 
 What an import left behind.
 
-Type: [Object][139]
+Type: [Object][151]
 
 ### Properties
 
-- `folderId` **[string][140]** The folder the card became, or the one document
+- `folderId` **[string][152]** The folder the card became, or the one document
   an import that had only one to write
-- `title` **[string][140]** What it ended up called
-- `pinnedIds` **[Array][141]<[string][140]>** What a chat on this card should pin: the
+- `title` **[string][152]** What it ended up called
+- `pinnedIds` **[Array][153]<[string][152]>** What a chat on this card should pin: the
   documents that have to be in context from the first turn
-- `greetingIds` **[Array][141]<[string][140]>** The greetings, in the card's own order
-- `documents` **[number][148]** How many were written, sidecar included
-- `note` **[string][140]?** A line about what was written, for the writer,
+- `greetingIds` **[Array][153]<[string][152]>** The greetings, in the card's own order
+- `documents` **[number][157]** How many were written, sidecar included
+- `note` **[string][152]?** A line about what was written, for the writer,
   when a count would not say it: that a PDF had no text in it
 
 ## writeCard
@@ -854,46 +972,43 @@ Write a card into the project.
 
 ### Parameters
 
-- `storyId` **[string][140]**&#x20;
+- `storyId` **[string][152]**&#x20;
 - `card` **Card**&#x20;
-- `options` **[Object][139]?** (optional, default `{}`)
-  - `options.parentId` **[string][140]?** Where to put it; the project root otherwise
-  - `options.userName` **[string][140]?** What `{{user}}` becomes (optional, default `'You'`)
-  - `options.useSystemPrompt` **[boolean][142]?** Keep the card's prompt override as
+- `options` **[Object][151]?** (optional, default `{}`)
+  - `options.parentId` **[string][152]?** Where to put it; the project root otherwise
+  - `options.useSystemPrompt` **[boolean][154]?** Keep the card's prompt override as
     a document of its own. Off by default: most cards that carry one are
     carrying an ST preset's scaffolding rather than anything about the
     character, and it is in the sidecar either way. (optional, default `false`)
-  - `options.portrait` **[Blob][149]?** The image the card came in, kept as a file
+  - `options.portrait` **[Blob][162]?** The image the card came in, kept as a file
     in its folder. It is what the card looks like where people browse for
     them, and a model that can see it may as well.
 
-Returns **[Promise][143]<[Written][102]>**&#x20;
+Returns **[Promise][155]<[Written][116]>**&#x20;
 
 ## reimportCard
 
 Write a card into a folder again, over what was there.
 
-For a card imported once and wanted fresh — under another name for
-`{{user}}`, or with the edits since taken back. The folder stays, with its
+For a card imported once and wanted fresh, with the edits since taken back. The folder stays, with its
 title and its place, so a chat started on it still knows what it was on;
 what is in it goes and is written again from the card. The portrait the
 card arrived in is kept, unless another is given.
 
 ### Parameters
 
-- `storyId` **[string][140]**&#x20;
-- `folderId` **[string][140]** A card folder
+- `storyId` **[string][152]**&#x20;
+- `folderId` **[string][152]** A card folder
 - `card` **Card**&#x20;
-- `options` **[Object][139]?** (optional, default `{}`)
-  - `options.userName` **[string][140]?** What `{{user}}` becomes (optional, default `'You'`)
-  - `options.useSystemPrompt` **[boolean][142]?** (optional, default `false`)
-  - `options.portrait` **[Blob][149]?** The image to keep; the one there already otherwise
+- `options` **[Object][151]?** (optional, default `{}`)
+  - `options.useSystemPrompt` **[boolean][154]?** (optional, default `false`)
+  - `options.portrait` **[Blob][162]?** The image to keep; the one there already otherwise
 
 <!---->
 
-- Throws **[Error][147]** When the folder is not a card's
+- Throws **[Error][161]** When the folder is not a card's
 
-Returns **[Promise][143]<[Written][102]>**&#x20;
+Returns **[Promise][155]<[Written][116]>**&#x20;
 
 ## fillCard
 
@@ -901,28 +1016,23 @@ The documents a card is made of, written into a folder.
 
 ### Parameters
 
-- `storyId` **[string][140]**&#x20;
-- `folderId` **[string][140]**&#x20;
+- `storyId` **[string][152]**&#x20;
+- `folderId` **[string][152]**&#x20;
 - `card` **Card**&#x20;
-- `options` **[Object][139]**&#x20;
-  - `options.userName` **[string][140]**&#x20;
-  - `options.useSystemPrompt` **[boolean][142]**&#x20;
-  - `options.portrait` **[Blob][149]?**&#x20;
+- `options` **[Object][151]**&#x20;
+  - `options.useSystemPrompt` **[boolean][154]**&#x20;
+  - `options.portrait` **[Blob][162]?**&#x20;
 
-Returns **[Promise][143]\<Pick<[Written][102], (`"pinnedIds"` | `"greetingIds"` | `"documents"`)>>** The
+Returns **[Promise][155]\<Pick<[Written][116], (`"pinnedIds"` | `"greetingIds"` | `"documents"`)>>** The
 count is of what this wrote: the folder is not counted here
 
-##
+## pinnedIds
 
-Type: [string][140]
+Type: [Array][153]<[string][152]>
 
 ## pinnedIds
 
-Type: [Array][141]<[string][140]>
-
-## pinnedIds
-
-Type: [Array][141]<[string][140]>
+Type: [Array][153]<[string][152]>
 
 ## field
 
@@ -936,21 +1046,21 @@ model to read past.
 - `title` &#x20;
 - `kind` &#x20;
 - `value` &#x20;
-- `$3` **[Object][139]** (optional, default `{}`)
+- `$3` **[Object][151]** (optional, default `{}`)
   - `$3.pin` (optional, default `true`)
   - `$3.hidden` (optional, default `false`)
 
 ##
 
-Type: [string][140]
+Type: [string][152]
 
 ##
 
-Type: [string][140]
+Type: [string][152]
 
 ## greetingIds
 
-Type: [Array][141]<[string][140]>
+Type: [Array][153]<[string][152]>
 
 ## writePortrait
 
@@ -964,11 +1074,11 @@ holds its pixels; between them the card round-trips.
 ### Parameters
 
 - `store` &#x20;
-- `storyId` **[string][140]**&#x20;
-- `folderId` **[string][140]**&#x20;
-- `portrait` **[Blob][149]**&#x20;
+- `storyId` **[string][152]**&#x20;
+- `folderId` **[string][152]**&#x20;
+- `portrait` **[Blob][162]**&#x20;
 
-Returns **[Promise][143]<[number][148]>** How many documents this wrote
+Returns **[Promise][155]<[number][157]>** How many documents this wrote
 
 ## writeMarkdown
 
@@ -978,17 +1088,18 @@ The plainest import there is, and the reason "Import" is not "Import a card":
 a file of prose is a document, and the tree is made of documents. Titled
 after the file rather than after a heading inside it — a heading is the
 writer's text and eating it to make a name is a decision the importer has no
-business taking.
+business taking. One too long for the editor to lay out comes in plain, as
+the text it is: see editor/size.
 
 ### Parameters
 
-- `storyId` **[string][140]**&#x20;
-- `title` **[string][140]**&#x20;
-- `content` **[string][140]**&#x20;
-- `options` **[Object][139]?** (optional, default `{}`)
-  - `options.parentId` **[string][140]?**&#x20;
+- `storyId` **[string][152]**&#x20;
+- `title` **[string][152]**&#x20;
+- `content` **[string][152]**&#x20;
+- `options` **[Object][151]?** (optional, default `{}`)
+  - `options.parentId` **[string][152]?**&#x20;
 
-Returns **[Promise][143]<[Written][102]>**&#x20;
+Returns **[Promise][155]<[Written][116]>**&#x20;
 
 ## writeLorebook
 
@@ -999,13 +1110,13 @@ The same documents, with no card around them.
 
 ### Parameters
 
-- `storyId` **[string][140]**&#x20;
-- `book` **{name: [string][140], entries: [Array][141]<[LoreEntry][2]>, raw: any}**&#x20;
-- `options` **[Object][139]?** (optional, default `{}`)
-  - `options.parentId` **[string][140]?**&#x20;
-  - `options.title` **[string][140]?** Overrides the book's own name
+- `storyId` **[string][152]**&#x20;
+- `book` **{name: [string][152], entries: [Array][153]<[LoreEntry][2]>, raw: any}**&#x20;
+- `options` **[Object][151]?** (optional, default `{}`)
+  - `options.parentId` **[string][152]?**&#x20;
+  - `options.title` **[string][152]?** Overrides the book's own name
 
-Returns **[Promise][143]<[Written][102]>**&#x20;
+Returns **[Promise][155]<[Written][116]>**&#x20;
 
 ## writeLore
 
@@ -1030,18 +1141,13 @@ words in the entry's mouth.
 ### Parameters
 
 - `store` &#x20;
-- `storyId` **[string][140]**&#x20;
-- `folderId` **[string][140]** The card's folder, or the book's own
-- `entries` **[Array][141]<[LoreEntry][2]>**&#x20;
-- `names` **({char: [string][140], user: [string][140]} | null)** What the macros become, when there are names for them
-- `$5` **[Object][139]** (optional, default `{}`)
-  - `$5.into` &#x20;
+- `storyId` **[string][152]**&#x20;
+- `folderId` **[string][152]** The card's folder, or the book's own
+- `entries` **[Array][153]<[LoreEntry][2]>**&#x20;
+- `$4` **[Object][151]** (optional, default `{}`)
+  - `$4.into` &#x20;
 
-Returns **{pinnedIds: [Array][141]<[string][140]>, documents: [number][148]}**&#x20;
-
-##
-
-Type: [string][140]
+Returns **{pinnedIds: [Array][153]<[string][152]>, documents: [number][157]}**&#x20;
 
 ## writeSidecar
 
@@ -1056,11 +1162,11 @@ file that rots.
 ### Parameters
 
 - `store` &#x20;
-- `storyId` **[string][140]**&#x20;
-- `folderId` **[string][140]**&#x20;
+- `storyId` **[string][152]**&#x20;
+- `folderId` **[string][152]**&#x20;
 - `raw` **any**&#x20;
 
-Returns **[number][148]** How many documents this wrote
+Returns **[number][157]** How many documents this wrote
 
 ## SHELF_KINDS
 
@@ -1085,16 +1191,16 @@ renamed it to.
 
 ### Parameters
 
-- `storyId` **[string][140]**&#x20;
+- `storyId` **[string][152]**&#x20;
 - `which` **(`"characters"` | `"lorebooks"`)**&#x20;
 
-Returns **[Promise][143]<[string][140]>** The folder's id
+Returns **[Promise][155]<[string][152]>** The folder's id
 
 ## find
 
 ### Parameters
 
-- `kind` **[string][140]**&#x20;
+- `kind` **[string][152]**&#x20;
 
 Returns **any**&#x20;
 
@@ -1102,13 +1208,13 @@ Returns **any**&#x20;
 
 ### Parameters
 
-- `id` **[string][140]** @returns {any}
+- `id` **[string][152]** @returns {any}
 
 ## make
 
 ### Parameters
 
-- `parentId` **[string][140]**&#x20;
+- `parentId` **[string][152]**&#x20;
 - `name` &#x20;
 
 [1]: #cardscard
@@ -1122,141 +1228,154 @@ Returns **any**&#x20;
 [9]: #readlorebook
 [10]: #parameters-2
 [11]: #entries
-[12]: #substitute
+[12]: #uncomment
 [13]: #parameters-3
-[14]: #uncomment
-[15]: #parameters-4
-[16]: #original
-[17]: #overoriginal
+[14]: #original
+[15]: #overoriginal
+[16]: #parameters-4
+[17]: #undecorate
 [18]: #parameters-5
-[19]: #undecorate
-[20]: #parameters-6
-[21]: #keep_at_end
-[22]: #stripends
+[19]: #keep_at_end
+[20]: #stripends
+[21]: #parameters-6
+[22]: #stripemptygroups
 [23]: #parameters-7
-[24]: #stripemptygroups
+[24]: #unwrap
 [25]: #parameters-8
-[26]: #unwrap
+[26]: #text
 [27]: #parameters-9
-[28]: #text
+[28]: #list
 [29]: #parameters-10
-[30]: #list
-[31]: #parameters-11
-[32]: #cardschat
-[33]: #greeting
-[34]: #properties-1
-[35]: #pinned_kinds
-[36]: #iscard
+[30]: #cardschat
+[31]: #greeting
+[32]: #properties-1
+[33]: #pinned_kinds
+[34]: #iscard
+[35]: #parameters-11
+[36]: #characterof
 [37]: #parameters-12
 [38]: #cardsnamed
 [39]: #parameters-13
-[40]: #
-[41]: #found
-[42]: #-1
-[43]: #readcardchat
-[44]: #parameters-14
-[45]: #documents
+[40]: #found
+[41]: #
+[42]: #readcardchat
+[43]: #parameters-14
+[44]: #documents
+[45]: #-1
 [46]: #-2
 [47]: #-3
-[48]: #-4
-[49]: #cards
-[50]: #examples
-[51]: #cards-1
-[52]: #cardspng
-[53]: #signature
-[54]: #keywords
-[55]: #textchunks
+[48]: #cards
+[49]: #examples
+[50]: #cards-1
+[51]: #cardsmacros
+[52]: #macro
+[53]: #names
+[54]: #properties-2
+[55]: #namesof
 [56]: #parameters-15
-[57]: #chunks
-[58]: #cardfrompng
-[59]: #parameters-16
-[60]: #decodebase64
-[61]: #parameters-17
-[62]: #latin1
-[63]: #parameters-18
-[64]: #cardstranscript
-[65]: #unused
-[66]: #unused-1
-[67]: #unused-2
-[68]: #transcript
-[69]: #properties-2
-[70]: #istranscript
-[71]: #parameters-19
-[72]: #readtranscript
+[57]: #namefor
+[58]: #parameters-16
+[59]: #substitute
+[60]: #parameters-17
+[61]: #storedpassage
+[62]: #parameters-18
+[63]: #spans
+[64]: #match
+[65]: #-4
+[66]: #cardspng
+[67]: #signature
+[68]: #keywords
+[69]: #textchunks
+[70]: #parameters-19
+[71]: #chunks
+[72]: #cardfrompng
 [73]: #parameters-20
-[74]: #messagefrom
+[74]: #decodebase64
 [75]: #parameters-21
-[76]: #alternates
-[77]: #answerfrom
-[78]: #parameters-22
-[79]: #noteof
-[80]: #parameters-23
-[81]: #ismessage
-[82]: #parameters-24
-[83]: #firstline
-[84]: #parameters-25
-[85]: #parseline
-[86]: #parameters-26
-[87]: #textof
-[88]: #parameters-27
-[89]: #named
-[90]: #parameters-28
-[91]: #commonest
-[92]: #parameters-29
-[93]: #counts
-[94]: #when
-[95]: #parameters-30
-[96]: #titlefrom
-[97]: #parameters-31
-[98]: #cardswrite
-[99]: #sidecar_title
-[100]: #sidecar_title-1
-[101]: #sidecar_title-2
-[102]: #written
-[103]: #properties-3
-[104]: #writecard
-[105]: #parameters-32
-[106]: #reimportcard
-[107]: #parameters-33
-[108]: #fillcard
+[76]: #latin1
+[77]: #parameters-22
+[78]: #cardstranscript
+[79]: #unused
+[80]: #unused-1
+[81]: #unused-2
+[82]: #transcript
+[83]: #properties-3
+[84]: #istranscript
+[85]: #parameters-23
+[86]: #readtranscript
+[87]: #parameters-24
+[88]: #messagefrom
+[89]: #parameters-25
+[90]: #alternates
+[91]: #answerfrom
+[92]: #parameters-26
+[93]: #noteof
+[94]: #parameters-27
+[95]: #ismessage
+[96]: #parameters-28
+[97]: #firstline
+[98]: #parameters-29
+[99]: #parseline
+[100]: #parameters-30
+[101]: #textof
+[102]: #parameters-31
+[103]: #named
+[104]: #parameters-32
+[105]: #commonest
+[106]: #parameters-33
+[107]: #counts
+[108]: #when
 [109]: #parameters-34
-[110]: #-5
-[111]: #pinnedids
-[112]: #pinnedids-1
-[113]: #field
-[114]: #parameters-35
-[115]: #-6
-[116]: #-7
-[117]: #greetingids
-[118]: #writeportrait
+[110]: #titlefrom
+[111]: #parameters-35
+[112]: #cardswrite
+[113]: #sidecar_title
+[114]: #sidecar_title-1
+[115]: #sidecar_title-2
+[116]: #written
+[117]: #properties-4
+[118]: #writecard
 [119]: #parameters-36
-[120]: #writemarkdown
+[120]: #reimportcard
 [121]: #parameters-37
-[122]: #writelorebook
+[122]: #fillcard
 [123]: #parameters-38
-[124]: #writelore
-[125]: #parameters-39
-[126]: #-8
-[127]: #writesidecar
-[128]: #parameters-40
-[129]: #shelf_kinds
-[130]: #shelf_titles
-[131]: #shelffor
-[132]: #parameters-41
-[133]: #find
-[134]: #parameters-42
-[135]: #walk
-[136]: #parameters-43
-[137]: #make
-[138]: #parameters-44
-[139]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[140]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[141]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[142]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[143]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[144]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
-[145]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[146]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[147]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[148]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[149]: https://developer.mozilla.org/docs/Web/API/Blob
+[124]: #pinnedids
+[125]: #pinnedids-1
+[126]: #field
+[127]: #parameters-39
+[128]: #-5
+[129]: #-6
+[130]: #greetingids
+[131]: #writeportrait
+[132]: #parameters-40
+[133]: #writemarkdown
+[134]: #parameters-41
+[135]: #writelorebook
+[136]: #parameters-42
+[137]: #writelore
+[138]: #parameters-43
+[139]: #writesidecar
+[140]: #parameters-44
+[141]: #shelf_kinds
+[142]: #shelf_titles
+[143]: #shelffor
+[144]: #parameters-45
+[145]: #find
+[146]: #parameters-46
+[147]: #walk
+[148]: #parameters-47
+[149]: #make
+[150]: #parameters-48
+[151]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[152]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[153]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[154]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[155]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[156]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[157]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[158]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
+[159]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[160]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[161]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[162]: https://developer.mozilla.org/docs/Web/API/Blob

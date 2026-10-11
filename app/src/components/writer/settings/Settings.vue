@@ -1,9 +1,11 @@
 <template>
   <div class="flex flex-col md:flex-row h-full min-h-0 bg-surface-0 dark:bg-surface-800">
     <!-- The sections, down the side where there is room and across the top
-         where there is not -->
+         where there is not. Across the top it is swiped, as a phone's strips
+         are, and draws no scrollbar. -->
     <nav
-      class="flex md:flex-col md:w-44 shrink-0 gap-1 p-2 overflow-x-auto border-b md:border-b-0 md:border-r border-surface-200 dark:border-surface-700 bg-surface-100 dark:bg-surface-900/40"
+      ref="strip"
+      class="flex md:flex-col md:w-44 shrink-0 gap-1 p-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden border-b md:border-b-0 md:border-r border-surface-200 dark:border-surface-700 bg-surface-100 dark:bg-surface-900/40"
       aria-label="Settings sections"
     >
       <button
@@ -37,7 +39,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import ScrollPanel from 'primevue/scrollpanel'
 import AiConfigSection from './ai/AiConfigSection.vue'
 import NarrationSection from './NarrationSection.vue'
@@ -103,9 +105,28 @@ watch(
   { immediate: true }
 )
 
+/** @type {import('vue').Ref<HTMLElement|null>} */
+const strip = ref(null)
+
+/**
+ * Bring the open section's button into the strip's view. Across the top of a
+ * phone, the one reopened on may be past the edge, and nothing would say
+ * which section this is.
+ */
+const showActive = () => {
+  strip.value
+    ?.querySelector('[aria-current="page"]')
+    ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
+}
+
 onMounted(async () => {
+  showActive()
   await aiConfig.init()
 })
 
-watch(activeId, id => sessionStorage.set(STORAGE_KEY, id))
+watch(activeId, async id => {
+  sessionStorage.set(STORAGE_KEY, id)
+  await nextTick()
+  showActive()
+})
 </script>

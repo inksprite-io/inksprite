@@ -27,7 +27,7 @@
 export const PROVIDER_TYPES = [
   { id: 'openrouter', label: 'OpenRouter', menu: 'OpenRouter' },
   { id: 'llamacpp', label: 'llama.cpp', menu: 'llama.cpp (llama-server)' },
-  { id: 'generic', label: 'Generic', menu: 'Generic (OpenAI Compatible)' },
+  { id: 'generic', label: 'Generic', menu: 'Generic (OpenAI compatible)' },
 ]
 
 /** The type a connection falls back to when it does not say, or says something unknown. */

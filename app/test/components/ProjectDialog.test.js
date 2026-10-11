@@ -27,7 +27,13 @@ vi.mock('@/stores/documentsStore', () => ({
   useDocumentsStore: () => ({ getRoot: () => root, updateDocument, loadRoots: async () => {} }),
 }))
 vi.mock('@/stores/storiesStore', () => ({
-  useStoriesStore: () => ({ getStory: () => story.value, updateStory }),
+  useStoriesStore: () => ({
+    getStory: () => story.value,
+    updateStory,
+    loadNames: async () => {},
+    // Another project goes by "Lighthouse".
+    freeName: title => (title === 'Lighthouse' ? 'Lighthouse (2)' : title),
+  }),
 }))
 vi.mock('@/composables/useProfiles', () => ({
   useProfiles: () => ({ profiles: ref(profiles), getProfile }),
@@ -120,6 +126,18 @@ describe('ProjectDialog', () => {
     expect(updateDocument).toHaveBeenCalledWith(
       'root_story_1',
       expect.objectContaining({ title: 'Renamed' })
+    )
+  })
+
+  it('numbers a name another project has', async () => {
+    const wrapper = await mountDialog()
+    await wrapper.find('input').setValue('Lighthouse')
+    await save(wrapper)
+    await flushPromises()
+
+    expect(updateDocument).toHaveBeenCalledWith(
+      'root_story_1',
+      expect.objectContaining({ title: 'Lighthouse (2)' })
     )
   })
 })

@@ -74,7 +74,7 @@ describe('ProviderRouting', () => {
     const wrapper = await mountPanel()
 
     const labels = wrapper.findAllComponents(SettingLabel).map(label => label.props('label'))
-    expect(labels).not.toContain('Allowed Providers')
+    expect(labels).not.toContain('Allowed providers')
     expect(wrapper.findAllComponents(MultiSelect)).toHaveLength(2)
   })
 
@@ -150,7 +150,7 @@ describe('ProviderRouting', () => {
 
     const label = wrapper
       .findAll('button')
-      .find(b => b.attributes('aria-label') === 'Reset Ignored Providers')
+      .find(b => b.attributes('aria-label') === 'Reset Ignored providers')
     await label.trigger('click')
 
     expect(updateProvider).toHaveBeenCalledWith(PROVIDER_ID, { routing: ROUTING_DEFAULTS })

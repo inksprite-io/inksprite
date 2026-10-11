@@ -47,7 +47,7 @@ describe.skipIf(files.length === 0)('writing the cards people actually share', (
     const written =
       shapeOf(value) === 'lorebook'
         ? await writeLorebook('s1', readLorebook(value))
-        : await writeCard('s1', readCard(value), { userName: 'Riley' })
+        : await writeCard('s1', readCard(value))
 
     // Everything but the project root, which `init` lays down before any of
     // this and which the import did not write.
@@ -58,10 +58,9 @@ describe.skipIf(files.length === 0)('writing the cards people actually share', (
     // Every document is findable and every pin names one of them.
     expect(documents.every(document => document.title.trim())).toBe(true)
     expect(written.pinnedIds.every(id => store.getDocument(id))).toBe(true)
-    // Nothing the writer will open is left as a macro for the editor to
-    // explain. The sidecar is the exception and the point of it: it is the
-    // card as it arrived, macros and all.
-    const theirs = documents.filter(document => document.kind !== 'sidecar')
-    expect(theirs.some(document => /\{\{\s*(char|user)\s*\}\}/i.test(document.content))).toBe(false)
+    // Stored as the card has them, macros and all, and edited as the text
+    // they are rather than settled to what the editor can show.
+    const texts = documents.filter(document => document.type === 'text')
+    expect(texts.every(document => document.plain)).toBe(true)
   })
 })

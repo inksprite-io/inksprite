@@ -17,6 +17,7 @@ import { useChats } from './useChats.js'
 import { useProfiles } from './useProfiles.js'
 import { cardsNamed, readCardChat } from '@/cards/chat.js'
 import { overOriginal } from '@/cards/card.js'
+import { substitute } from '@/cards/macros.js'
 import { ROLEPLAY_PROFILE_ID } from '@/ai/profiles/index.js'
 
 /**
@@ -75,24 +76,36 @@ export function useCardChat(storyId) {
   /**
    * Start a chat on a card.
    *
+   * The names go on the chat, and are what the card's macros become in what
+   * its model reads; the card's documents keep saying `{{char}}` and
+   * `{{user}}`. See `cards/macros.js`.
+   *
    * @param {import('@/cards/chat.js').CardChat} card
-   * @param {Object} [options]
+   * @param {Object} options
+   * @param {string} options.userName - The writer's name in this chat
    * @param {number} [options.greeting] - Which greeting opens it; the first by default
    * @returns {Promise<import('@/types/models.js').Chat>}
    */
-  async function start(card, { greeting = 0 } = {}) {
+  async function start(card, { userName, greeting = 0 }) {
     const chat = chatsApi.createChat(card.title, ROLEPLAY_PROFILE_ID)
     if (!chat) throw new Error('Could not start a chat on this card.')
 
-    const settings = settingsFrom(card, chat.rules)
-    if (Object.keys(settings).length > 0) chatsApi.updateChat(chat.id, settings)
+    const names = { char: card.name, user: userName.trim() }
+    const settings = {
+      ...settingsFrom(card, chat.rules),
+      userName: names.user,
+      characterName: names.char,
+    }
+    chatsApi.updateChat(chat.id, settings)
 
     // The opening turn is most of why cards work: it sets voice, tense, length
     // and formatting by example before anything has been asked. It is an
-    // ordinary message, so the writer can edit it, retry it or delete it.
+    // ordinary message, so the writer can edit it, retry it or delete it — and
+    // it is the chat's, so it reads with the names in, as everything said in
+    // the chat after it will.
     const opening = card.greetings[greeting] ?? card.greetings[0]
     if (opening?.content?.trim()) {
-      chatsApi.addMessage(chat.id, 'assistant', opening.content)
+      chatsApi.addMessage(chat.id, 'assistant', substitute(opening.content, names))
     }
 
     // As stored now, with what the card put on it: an update is a new record,
@@ -138,5 +151,16 @@ export function useCardChat(storyId) {
     return card
   }
 
-  return { read, start, attach }
+  /**
+   * The name the writer went by in the chat they were in most recently that
+   * had one, for the next chat on a card to start from.
+   *
+   * @returns {string} Empty when no chat in this project has one
+   */
+  function lastUserName() {
+    // Most recent first already.
+    return chatsApi.chats.value.find(chat => chat.userName?.trim())?.userName || ''
+  }
+
+  return { read, start, attach, lastUserName }
 }

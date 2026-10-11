@@ -7,6 +7,7 @@ import {
   find,
   findMatches,
   findNext,
+  inCaseOf,
   replaceAll,
   replaceCurrent,
   searchOf,
@@ -200,5 +201,80 @@ describe('replaceAll', () => {
   it('does nothing without a match', () => {
     const state = run(createEditorState(DOC), find('nowhere'))
     expect(replaceAll('x')(state)).toBe(false)
+  })
+})
+
+describe('matching case and whole words', () => {
+  const PROSE = 'He said the keeper was there. She hesitated. THE END, he wrote.'
+  const found = (query, options) => {
+    const state = createEditorState(PROSE)
+    return findMatches(state.doc, query, options).map(m => state.doc.textBetween(m.from, m.to))
+  }
+
+  it('finds the query inside words, in any case, unless asked not to', () => {
+    expect(found('he')).toHaveLength(7)
+    expect(found('he', { wholeWord: true })).toEqual(['He', 'he'])
+    expect(found('he', { matchCase: true })).toHaveLength(5)
+    expect(found('he', { matchCase: true, wholeWord: true })).toEqual(['he'])
+  })
+
+  it('holds a whole word only at the ends of the query that are part of a word', () => {
+    expect(found('he.', { wholeWord: true })).toEqual([])
+    expect(found(' he', { wholeWord: true })).toEqual([' he'])
+    expect(found('the end', { wholeWord: true })).toEqual(['THE END'])
+  })
+
+  it('takes letters with accents as part of a word', () => {
+    const state = createEditorState('café cafés')
+    expect(findMatches(state.doc, 'caf', { wholeWord: true })).toEqual([])
+    expect(findMatches(state.doc, 'café', { wholeWord: true })).toHaveLength(1)
+  })
+
+  it('keeps the options as the text changes', () => {
+    let state = run(createEditorState('he and the'), find('he', { wholeWord: true }))
+    state = state.apply(state.tr.insertText(' he', state.doc.content.size - 1))
+    expect(texts(state)).toEqual(['he', 'he'])
+  })
+
+  it('replaces whole words without touching the words they are part of', () => {
+    let state = run(createEditorState(PROSE), find('he', { wholeWord: true }))
+    state = run(state, replaceAll('she'))
+    expect(serializeMarkdown(state.doc)).toBe(
+      'She said the keeper was there. She hesitated. THE END, she wrote.'
+    )
+  })
+})
+
+describe('inCaseOf', () => {
+  it('gives a replacement typed in lower case the capitals of what it replaces', () => {
+    expect(inCaseOf('he', 'she')).toBe('she')
+    expect(inCaseOf('He', 'she')).toBe('She')
+    expect(inCaseOf('HE', 'she')).toBe('SHE')
+    expect(inCaseOf('The keeper', 'a keeper')).toBe('A keeper')
+    expect(inCaseOf('I', 'we')).toBe('We')
+  })
+
+  it('leaves a replacement with a capital of its own as it was typed', () => {
+    expect(inCaseOf('he', 'Mara')).toBe('Mara')
+    expect(inCaseOf('HE', 'Mara')).toBe('Mara')
+  })
+
+  it('leaves one with no letters, or over none, as it is', () => {
+    expect(inCaseOf('He', '—')).toBe('—')
+    expect(inCaseOf('42', 'forty-two')).toBe('forty-two')
+  })
+})
+
+describe('replacing where case does not count', () => {
+  it('writes the replacement in the capitals of each match', () => {
+    let state = run(createEditorState('The keeper. the keeper.'), find('the keeper'))
+    state = run(state, replaceAll('a lamp'))
+    expect(serializeMarkdown(state.doc)).toBe('A lamp. a lamp.')
+  })
+
+  it('writes it as typed where case counts', () => {
+    let state = run(createEditorState('He and he'), find('he', { matchCase: true }))
+    state = run(state, replaceCurrent('she'))
+    expect(serializeMarkdown(state.doc)).toBe('He and she')
   })
 })

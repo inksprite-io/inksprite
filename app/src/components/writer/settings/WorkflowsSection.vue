@@ -20,9 +20,10 @@
         @update:model-value="pick({ allowedProviders: $event })"
       />
       <div class="flex flex-col gap-1">
-        <SettingLabel label="Reasoning Effort" description="Levels apply on OpenRouter only." />
+        <SettingLabel label="Reasoning effort" description="Levels apply on OpenRouter only." />
         <Select
           input-id="workflow-convert-effort"
+          aria-label="Reasoning effort"
           :model-value="settings.reasoningEffort || AI_DEFAULTS.reasoningEffort"
           :options="REASONING_EFFORT_OPTIONS"
           option-label="label"

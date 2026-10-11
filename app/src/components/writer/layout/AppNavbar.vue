@@ -41,6 +41,7 @@
 
 <script setup>
 import ChatBubbleIcon from '@/components/icons/ChatBubbleIcon.vue'
+import CommentIcon from '@/components/icons/CommentIcon.vue'
 import InProcessIcon from '@/components/icons/InProcessIcon.vue'
 import SettingsIcon from '@/components/icons/SettingsIcon.vue'
 import SpeakerIcon from '@/components/icons/SpeakerIcon.vue'
@@ -52,7 +53,7 @@ import { useJobsToast } from '@/composables/useJobsToast.js'
 
 /**
  * The rail. Top to bottom: what the sidebar can show — the outline, the
- * chats, the narration — then, at the foot, the jobs toast's button and the
+ * chats, the narration, the comments — then, at the foot, the jobs toast's button and the
  * settings. Picking the list showing hides the sidebar, which is how it is
  * hidden; the editor and the chat hide each other from their own headers.
  * The projects are switched from the top of the outline.
@@ -83,5 +84,6 @@ const TABS = [
   { id: SIDEBAR_TABS.OUTLINE, label: 'Outline', icon: StoryboardIcon, needsStory: true },
   { id: SIDEBAR_TABS.CHATS, label: 'Chats', icon: ChatBubbleIcon, needsStory: true },
   { id: SIDEBAR_TABS.NARRATION, label: 'Narration', icon: SpeakerIcon, needsStory: true },
+  { id: SIDEBAR_TABS.COMMENTS, label: 'Comments', icon: CommentIcon, needsStory: true },
 ]
 </script>

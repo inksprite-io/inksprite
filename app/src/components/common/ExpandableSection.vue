@@ -5,16 +5,28 @@
       :class="headerClasses"
       @click="toggleExpanded"
     >
-      <i v-if="subsection" class="pi leading-none!" :class="chevronClasses" />
+      <i v-if="subsection" class="pi leading-none!" :class="chevronClasses" aria-hidden="true" />
       <component
         :is="icon"
         v-if="icon"
         :size="iconSize"
         :class="iconClass"
         class="text-surface-600 dark:text-surface-300"
+        aria-hidden="true"
       />
+      <!-- The whole row opens it to a pointer. The title is the button, for a
+           keyboard to reach and a screen reader to name, and looks as the
+           title always has. -->
       <h3 class="font-semibold leading-tight" :class="titleClasses">
-        {{ title }}
+        <button
+          type="button"
+          class="cursor-pointer text-left rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+          :aria-expanded="isExpanded"
+          :aria-controls="contentId"
+          @click.stop="toggleExpanded"
+        >
+          {{ title }}
+        </button>
       </h3>
       <!-- Controls that act on the whole section, such as a switch for all of
            it. A click on them is theirs, and does not open or close it. -->
@@ -25,6 +37,7 @@
         v-if="!subsection"
         class="pi leading-none!"
         :class="[chevronClasses, { 'ml-auto': !$slots.actions }]"
+        aria-hidden="true"
       />
     </div>
     <Transition
@@ -35,7 +48,7 @@
       leave-active-class="transition-all duration-200 ease-out"
       leave-to-class="max-h-0"
     >
-      <div v-show="isExpanded" class="overflow-hidden" :class="contentClasses">
+      <div v-show="isExpanded" :id="contentId" class="overflow-hidden" :class="contentClasses">
         <slot />
       </div>
     </Transition>
@@ -43,7 +56,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, useId } from 'vue'
 import { sessionStorage } from '@/utils/sessionStorage'
 
 /**
@@ -122,6 +135,9 @@ const contentClasses = computed(() => [
 ])
 
 const expandedState = ref(props.defaultExpanded)
+
+/** What the title's button opens and closes, for a screen reader to follow. */
+const contentId = `expandable_${useId()}`
 
 /**
  * Get the session storage key for this expandable section

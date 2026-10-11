@@ -278,6 +278,41 @@ describe('MessagesStore', () => {
       expect(get()).toMatchObject({ content: 'Second, edited.', edited: true, alternate: 1 })
     })
 
+    it('does not keep an answer that failed before it said anything', () => {
+      const { id, get } = answered('First.')
+      store.beginAlternate(id)
+      store.updateMessage(id, { metadata: { error: 'Server error' } })
+
+      store.beginAlternate(id)
+
+      expect(get()).toMatchObject({ content: '', metadata: null, alternate: 1 })
+      expect(get().alternates.map(answer => answer.content)).toEqual(['First.', ''])
+    })
+
+    it('asks a first answer that failed again as if it never was', () => {
+      const { id } = store.createMessage('chat_123', 'assistant', '')
+      store.updateMessage(id, { metadata: { error: 'Server error' } })
+
+      store.beginAlternate(id)
+
+      const message = store.messages.get(id)
+      expect(message).toMatchObject({ content: '', metadata: null })
+      expect(message.alternates).toBeUndefined()
+      expect(message.alternate).toBeUndefined()
+    })
+
+    it('keeps a failed answer that had begun', () => {
+      const { id, get } = answered('Half a')
+      store.updateMessage(id, { metadata: { error: 'connection lost' } })
+
+      store.beginAlternate(id)
+
+      expect(get().alternates[0]).toMatchObject({
+        content: 'Half a',
+        metadata: { error: 'connection lost' },
+      })
+    })
+
     it('refuses an answer that is not there', () => {
       const { id } = answered('First.')
       expect(() => store.selectAlternate(id, 1)).toThrow(`Message '${id}' has no answer 1`)

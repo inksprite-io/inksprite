@@ -14,11 +14,6 @@
     />
 
     <template v-else>
-      <p class="text-sm text-surface-600 dark:text-surface-300">
-        Instructions the model calls when they fit, or you call as
-        <span class="font-mono">/its-name</span>.
-      </p>
-
       <div class="flex flex-wrap gap-2">
         <Button
           label="New skill"
@@ -148,7 +143,7 @@ import BuiltInSkillEditor from './BuiltInSkillEditor.vue'
 import SkillImportDialog from './SkillImportDialog.vue'
 import { BUILT_IN_SKILLS, skillLabel } from '@/ai/skills/index.js'
 import { parseSkill } from '@/ai/skills/format.js'
-import { describeKind, waitingOn, writerCalls } from '@/ai/skills/runner.js'
+import { describeCallers, waitingOn, writerCalls } from '@/ai/skills/runner.js'
 import { entriesFromFiles, findSkills, zipBlob } from '@/ai/skills/bundle.js'
 import { COMMANDS } from '@/ai/commands.js'
 import { downloadBlob } from '@/files/download.js'
@@ -248,7 +243,7 @@ const yours = computed(() =>
       name: skill.name,
       label: skillLabel(skill),
       command: writerCalls(skill) ? `/${skill.name}` : '',
-      kind: describeKind(skill),
+      kind: describeCallers(skill),
       summary: skill.summary,
       problem: '',
       waiting: waitingOn(skill),
@@ -262,7 +257,7 @@ const builtIn = computed(() =>
     name: skill.name,
     label: skillLabel(skill),
     command: skill.user && skill.name in COMMANDS ? `/${skill.name}` : '',
-    kind: describeKind(skill),
+    kind: describeCallers(skill),
     summary: skill.summary,
     reworded: skillsApi.wordingOf(skill.name) !== null,
   }))

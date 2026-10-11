@@ -143,6 +143,32 @@ describe('DocumentsStore', () => {
 
       expect(store.getChildrenOrdered('part_1').map(d => d.id)).toEqual(['scene_1', 'scene_2'])
     })
+
+    it('puts folders first in a folder sorted by name', () => {
+      folder('zeta', 'part_1')
+      text('alpha', 'part_1')
+
+      expect(store.getChildrenOrdered('part_1').map(d => d.id)).toEqual([
+        'zeta',
+        'alpha',
+        'scene_1',
+        'scene_2',
+      ])
+    })
+
+    it('sorts a document with no name as Untitled, not first', () => {
+      text('blank', 'part_1', { title: '' })
+      text('venue', 'part_1', { title: 'Venue' })
+      text('archive', 'part_1', { title: 'Archive' })
+
+      expect(store.getChildrenOrdered('part_1').map(d => d.id)).toEqual([
+        'archive',
+        'scene_1',
+        'scene_2',
+        'blank',
+        'venue',
+      ])
+    })
   })
 
   describe('updateDocument', () => {

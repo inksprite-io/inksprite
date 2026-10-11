@@ -10,7 +10,8 @@
   >
     <div class="flex flex-col gap-5">
       <!-- Refreshing reads the same source again; only a token can change. -->
-      <template v-if="refreshing">
+      <template v-if="handed" />
+      <template v-else-if="refreshing">
         <p v-if="source?.from === 'folder'" class="text-sm text-surface-600 dark:text-surface-300">
           Choose <strong>{{ source?.name }}</strong> again.
         </p>
@@ -103,7 +104,7 @@
         @click="busy ? stop() : close(false)"
       />
       <Button
-        v-if="!refreshing || source?.from === 'folder'"
+        v-if="!handed && (!refreshing || source?.from === 'folder')"
         label="Choose folder…"
         icon="pi pi-folder-open"
         :severity="refreshing || !desktop ? undefined : 'secondary'"
@@ -112,14 +113,14 @@
         @click="chooseFolder"
       />
       <Button
-        v-if="refreshing && source?.from === 'github'"
+        v-if="!handed && refreshing && source?.from === 'github'"
         label="Refresh"
         icon="pi pi-refresh"
         :disabled="busy"
         @click="refreshGitHub"
       />
       <Button
-        v-if="!refreshing && desktop"
+        v-if="!handed && !refreshing && desktop"
         label="Import"
         icon="pi pi-github"
         :disabled="busy || !url.trim()"
@@ -138,6 +139,7 @@ import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
 import { useDocuments } from '@/composables/useDocuments'
 import { describeRepositoryImport, useRepositoryImport } from '@/composables/useRepositoryImport.js'
+import { folderOf, listFiles } from '@/files/batch.js'
 import { isDesktop } from '@/platform/desktop.js'
 
 /**
@@ -146,7 +148,9 @@ import { isDesktop } from '@/platform/desktop.js'
  *
  * The import runs with the dialog open, saying where it is, and Stop ends it
  * by its own signal. What was written before a stop stays, as the tree shows
- * it. See `.llm/source_code_design.md`.
+ * it. A folder the tree took for a codebase is handed over with
+ * `importListed`, and the dialog only says how its import goes. See
+ * `.llm/source_code_design.md`.
  *
  * @typedef {Object} Props
  * @property {boolean} visible
@@ -176,13 +180,17 @@ const error = ref('')
 const folderInput = ref(null)
 /** @type {AbortController|null} */
 let controller = null
+/** The name of a folder the tree handed over to import, when it did. */
+const handed = ref('')
 
 const refreshing = computed(() => !!props.refreshId)
 const source = computed(() => (props.refreshId ? api.get(props.refreshId)?.source : null))
 const header = computed(() =>
   refreshing.value
     ? `Refresh ${api.displayTitle(api.get(props.refreshId || ''))}`
-    : 'Import repository'
+    : handed.value
+      ? `Import ${handed.value}`
+      : 'Import repository'
 )
 
 watch(
@@ -192,6 +200,7 @@ watch(
     error.value = ''
     status.value = ''
     token.value = ''
+    handed.value = ''
   }
 )
 
@@ -269,15 +278,31 @@ const chooseFolder = () => {
 const readFolder = event => {
   const chosen = /** @type {HTMLInputElement} */ (event.target).files
   if (!chosen || chosen.length === 0) return
-  const files = Array.from(chosen)
+  const listed = listFiles(chosen)
   perform(signal =>
     props.refreshId
-      ? repositories.refresh(props.refreshId, { chosen: files, signal, onStep })
-      : repositories.importFolder(files, {
+      ? repositories.refresh(props.refreshId, { listed, signal, onStep })
+      : repositories.importFolder(listed, {
           parentId: props.parentId || undefined,
           signal,
           onStep,
         })
   )
 }
+
+/**
+ * Import a folder the tree already has, chosen or dropped there and taken for
+ * a codebase.
+ *
+ * @param {import('@/files/batch.js').Gathered[]} listed
+ * @returns {Promise<void>}
+ */
+const importListed = listed => {
+  handed.value = folderOf(listed) || 'repository'
+  return perform(signal =>
+    repositories.importFolder(listed, { parentId: props.parentId || undefined, signal, onStep })
+  )
+}
+
+defineExpose({ importListed })
 </script>

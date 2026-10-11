@@ -2,24 +2,30 @@
   <div v-if="node" data-tree-node>
     <!-- Row. A tree item the keyboard can reach: one row in the tree is in
          the tab order — the document open, or the root — and the arrows move
-         between the rest. See handleKeydown. -->
+         between the rest. See handleKeydown. The buttons on it are the
+         mouse's, and out of the tab order: the arrows twist a folder, and the
+         row is named by its title alone rather than by its buttons too. -->
     <div
-      class="group flex items-center gap-1 py-1 pr-1 rounded cursor-pointer select-none [-webkit-touch-callout:none] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500"
+      class="group relative flex items-center gap-1 py-1 pr-1 rounded cursor-pointer select-none [-webkit-touch-callout:none] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500"
       :class="[
         !isDragging && 'hover:bg-surface-200 dark:hover:bg-surface-700',
         isActive && 'bg-surface-200 dark:bg-surface-600',
+        dropTarget && 'bg-primary-500/15 outline-2 -outline-offset-2 outline-primary-500',
       ]"
       :style="{ paddingLeft: `${depth * 12 + 4}px` }"
       role="treeitem"
       :tabindex="isTabStop ? 0 : -1"
+      :aria-label="api.displayTitle(node)"
       :aria-level="depth + 1"
       :aria-selected="isActive"
       :aria-expanded="isFolder ? expanded : undefined"
       :data-document-id="documentId"
+      :data-folder="isFolder || undefined"
+      :data-drop-target="dropTarget || undefined"
       @click="handleClick"
       @dblclick="handleDoubleClick"
       @keydown="handleKeydown"
-      @contextmenu="contextMenu.show($event)"
+      @contextmenu="showContextMenu"
       @touchstart.passive="press.touchstart"
       @touchmove.passive="press.touchmove"
       @touchend="press.touchend"
@@ -29,6 +35,7 @@
       <button
         v-if="isFolder"
         class="flex-none w-4 h-4 flex items-center justify-center text-surface-500 dark:text-surface-400"
+        tabindex="-1"
         :aria-label="expanded ? 'Collapse' : 'Expand'"
         @click.stop="toggleExpanded"
       >
@@ -76,7 +83,8 @@
         v-else
         class="flex-1 min-w-0 truncate text-sm"
         :class="[titleTone, !seen && 'opacity-60']"
-        :title="carried ? 'In this chat’s context' : undefined"
+        :title="titleHint"
+        @mouseenter="measureTitle"
         >{{ api.displayTitle(node) }}</span
       >
 
@@ -89,12 +97,20 @@
            on them; in the primary colour when on, since a mark is this chat's
            and not the document's. A pin taken from a folder above shows
            faintly, and is let go of here. Not on a phone, which has no hover:
-           the menu has both there. -->
-      <template v-if="toggles && !isMobile">
+           the menu has both there. They float over the end of the title, in
+           the row's own colour, rather than keep room in every row for
+           buttons that are not there at rest; and take no clicks until they
+           show, so the end of a title is the title. -->
+      <div
+        v-if="toggles && !isMobile"
+        class="absolute inset-y-0 right-1 flex items-center gap-1 pl-1 bg-inherit opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto"
+        data-row-toggles
+      >
         <button
           type="button"
-          class="flex-none w-5 h-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-surface-300 dark:hover:bg-surface-600"
+          class="flex-none w-5 h-5 rounded flex items-center justify-center hover:bg-surface-300 dark:hover:bg-surface-600"
           :class="pin.showing ? 'text-primary-500' : 'text-surface-500 dark:text-surface-400'"
+          tabindex="-1"
           :title="pin.hint"
           :aria-label="pin.label"
           :aria-pressed="pin.showing"
@@ -111,8 +127,9 @@
         <button
           v-if="!isRoot"
           type="button"
-          class="flex-none w-5 h-5 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity hover:bg-surface-300 dark:hover:bg-surface-600"
+          class="flex-none w-5 h-5 rounded flex items-center justify-center hover:bg-surface-300 dark:hover:bg-surface-600"
           :class="sight.showing ? 'text-primary-500' : 'text-surface-500 dark:text-surface-400'"
+          tabindex="-1"
           :title="sight.hint"
           :aria-label="sight.label"
           :aria-pressed="sight.showing"
@@ -122,7 +139,7 @@
         >
           <i :class="sight.icon" style="font-size: 0.7rem"></i>
         </button>
-      </template>
+      </div>
 
       <!-- On a phone only. Everywhere else the menu is on right-click and on
            the menu key, and a button for it on every row was a row of them. A
@@ -135,11 +152,12 @@
           text
           rounded
           size="small"
+          aria-label="Actions"
           @click.stop="menu.toggle($event)"
         />
         <TieredMenu ref="menu" :model="menuItems" :popup="true" />
       </template>
-      <ContextMenu ref="contextMenu" :model="menuItems" />
+      <ContextMenu ref="contextMenu" :model="menuItems" @hide="returnFocus" />
     </div>
 
     <p
@@ -160,6 +178,18 @@
       @close="setSummaryVisible(false)"
     />
 
+    <!-- An open folder with nothing in it says so, rather than leave a gap.
+         Its list below takes no room then, and a drop near it still lands
+         in it, as one on the folder's row does. -->
+    <p
+      v-if="isFolder && expanded && childList.length === 0"
+      class="py-0.5 text-xs italic text-surface-400 dark:text-surface-500 select-none"
+      :style="{ paddingLeft: `${(depth + 1) * 12 + 24}px` }"
+      data-empty-folder
+    >
+      Empty
+    </p>
+
     <!-- Children -->
     <Draggable
       v-if="isFolder && expanded"
@@ -167,15 +197,15 @@
       :group="{ name: 'documents' }"
       item-key="id"
       role="group"
-      class="min-h-[0.5rem]"
+      :data-folder-id="documentId"
       :sort="ordered"
       :delay-on-touch-only="true"
       :delay="120"
       :animation="200"
       :empty-insert-threshold="30"
       :move="onMove"
-      @start="emit('dragging', true)"
-      @end="emit('dragging', false)"
+      @start="onDragStart"
+      @end="onDragEnd"
     >
       <template #item="{ element: child }">
         <DocumentNode
@@ -203,7 +233,7 @@
 
 <script setup>
 /* global Blob */
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Draggable from 'vuedraggable'
 import Button from 'primevue/button'
 import ContextMenu from 'primevue/contextmenu'
@@ -222,6 +252,7 @@ import { chatVisibility, markOf, unpinned, withMark } from '@/utils/visibility.j
 import { useDocuments } from '@/composables/useDocuments'
 import { useScreenSize } from '@/composables/useScreenSize'
 import { useLongPress } from '@/composables/useLongPress.js'
+import { OPEN_AFTER, useTreeDrop } from '@/composables/useTreeDrop.js'
 import { useFilesStore } from '@/stores/filesStore'
 import { downloadBlob, filenameFor } from '@/files/download.js'
 import { EPUB_MIME, hasText, isText } from '@/files/inspect.js'
@@ -274,14 +305,46 @@ const menu = ref()
 const contextMenu = ref()
 
 /**
- * Open this node's menu from outside it. The empty space under the tree is the
- * project, and right-clicking it should offer what right-clicking the project
- * offers — the same menu, not a second one built to look like it.
- *
- * @param {Event} event
+ * Whether the menu was opened from the keyboard, which cannot reach the
+ * row's toggles: they are the mouse's, and the menu offers what they do.
  */
-const showContextMenu = event => contextMenu.value?.show(event)
+const fromKeys = ref(false)
+
+/**
+ * Open this node's menu where the pointer is: a right-click, a long press, or
+ * from outside it. The empty space under the tree is the project, and
+ * right-clicking it should offer what right-clicking the project offers — the
+ * same menu, not a second one built to look like it.
+ *
+ * @param {Event|{pageX: number, pageY: number, stopPropagation: () => void, preventDefault: () => void}} event
+ */
+const showContextMenu = event => {
+  fromKeys.value = false
+  openedAt = null
+  contextMenu.value?.show(event)
+}
 defineExpose({ showContextMenu })
+
+/**
+ * The row a keyboard opened the menu from, to go back to when it shuts.
+ * @type {HTMLElement|null}
+ */
+let openedAt = null
+
+/**
+ * A menu shut from the keyboard, by Escape or by an item, gives the focus back
+ * to its row, unless what was picked has taken it somewhere: a name to edit,
+ * a dialog. Left alone, it fell to the page, and the next arrow went nowhere.
+ */
+const returnFocus = () => {
+  const row = openedAt
+  openedAt = null
+  if (!row) return
+  setTimeout(() => {
+    const focused = document.activeElement
+    if (row.isConnected && (!focused || focused === document.body)) row.focus()
+  })
+}
 
 /**
  * Open the menu from the keyboard, at the row: the menu is placed by the
@@ -290,6 +353,8 @@ defineExpose({ showContextMenu })
  */
 const showMenuAtRow = row => {
   const rect = row.getBoundingClientRect()
+  fromKeys.value = true
+  openedAt = row
   contextMenu.value?.show({
     pageX: rect.left + window.scrollX + 24,
     pageY: rect.bottom + window.scrollY,
@@ -305,7 +370,7 @@ const showMenuAtRow = row => {
  */
 const press = useLongPress(
   ({ x, y }) =>
-    contextMenu.value?.show({
+    showContextMenu({
       pageX: x + window.scrollX,
       pageY: y + window.scrollY,
       stopPropagation() {},
@@ -383,6 +448,26 @@ const download = async () => {
   if (blob) downloadBlob(blob, filenameFor(document))
 }
 
+/**
+ * Hand the writer a text document as a markdown file, as it stands: edits not
+ * yet written out are in it.
+ */
+const exportText = () => {
+  const document = node.value
+  if (!document) return
+  const blob = new Blob([api.currentContent(document.id)], { type: 'text/markdown' })
+  downloadBlob(blob, filenameFor({ title: document.title, mime: 'text/markdown' }))
+}
+
+/**
+ * Copy a text document beside itself, and open the copy, as making one does:
+ * it is what the writer is about to work on.
+ */
+const duplicate = () => {
+  const copy = api.duplicate(props.documentId)
+  if (copy) emit('open', copy.id)
+}
+
 /** Whether reading this file's bytes again could change its text. */
 const extractable = computed(
   () => isFile.value && !isInRepository.value && hasText(node.value?.mime || '')
@@ -394,16 +479,15 @@ const reextract = async () => {
     const found = await reextractFile(props.storyId, props.documentId)
     toast.add({
       severity: found ? 'success' : 'warn',
-      summary: found ? 'Text re-extracted' : 'Nothing to read',
       detail: found
         ? found.text
-          ? `${found.text.split(/\s+/).filter(Boolean).length} words.`
-          : 'No text in it.'
-        : 'The file itself is not in this project any more.',
+          ? `Text re-extracted: ${found.text.split(/\s+/).filter(Boolean).length} words.`
+          : 'Text re-extracted, but there is no text in it.'
+        : 'Nothing to read: the file itself is not in this project any more.',
       life: 4000,
     })
   } catch (error) {
-    toast.add({ severity: 'error', summary: 'Nothing changed', detail: error.message, life: 6000 })
+    toast.add({ severity: 'error', detail: `Nothing changed: ${error.message}`, life: 6000 })
   }
 }
 
@@ -523,6 +607,30 @@ const titleTone = computed(() => {
     ? `text-surface-900 dark:text-surface-0${weight}`
     : 'text-surface-700 dark:text-surface-200'
 })
+
+/** Whether the title is cut short in the row, as it was when the pointer last came over it. */
+const truncated = ref(false)
+
+/** @param {MouseEvent} event */
+const measureTitle = event => {
+  const title = /** @type {HTMLElement} */ (event.currentTarget)
+  truncated.value = title.scrollWidth > title.clientWidth
+}
+
+/**
+ * The title's tooltip: the whole title, where the row cuts it short, and
+ * whether the chat carries the document. Nothing for a title shown whole in a
+ * row the chat does not carry.
+ */
+const titleHint = computed(
+  () =>
+    [
+      truncated.value ? api.displayTitle(node.value) : '',
+      carried.value ? 'In this chat’s context' : '',
+    ]
+      .filter(Boolean)
+      .join('\n') || undefined
+)
 
 /** The mark that decides for the folder above, for telling a shown override from a let-go. */
 const aboveMark = computed(() => {
@@ -843,6 +951,14 @@ const menuItems = computed(() => {
       items.push({ label: 'Re-extract text', icon: 'pi pi-refresh', command: confirmReextract })
     }
     if (isFile.value) items.push({ label: 'Download', icon: 'pi pi-download', command: download })
+    // A text document goes out as markdown, which is what it is kept as, and
+    // can be copied to try something on.
+    if (node.value?.type === 'text') {
+      items.push(
+        { label: 'Download', icon: 'pi pi-download', command: exportText },
+        { label: 'Duplicate', icon: 'pi pi-clone', command: duplicate }
+      )
+    }
     // A model puts the structure back into text that lost it — headings,
     // tables, paragraphs — which is a file's text, read out of it. A
     // document written here, or a conversion's own copy, has its structure.
@@ -864,9 +980,10 @@ const menuItems = computed(() => {
   )
 
   if (!isRoot.value) {
-    // From every chat. Just "Hide": the row dims, and that is what it means.
+    // From every chat, which the label says: the row button's hide is this
+    // chat's, and on a phone the two are in this menu together.
     items.push({
-      label: hidden.value ? 'Unhide' : 'Hide',
+      label: hidden.value ? 'Unhide in all chats' : 'Hide from all chats',
       icon: hidden.value ? 'pi pi-eye' : 'pi pi-eye-slash',
       command: () => api.setHidden(props.documentId, !hidden.value),
     })
@@ -897,7 +1014,7 @@ const menuItems = computed(() => {
   if (isFolder.value && !repository.value) {
     items.push({
       label: 'Import',
-      icon: 'pi pi-download',
+      icon: 'pi pi-upload',
       items: [
         {
           label: 'Files…',
@@ -940,9 +1057,9 @@ const menuItems = computed(() => {
   // The open chat's own marks, so there is nothing to offer without one. A
   // document hidden from every chat has none to take: the block a pin would
   // ride in is the one it is being kept out of, and no chat can show it. On a
-  // phone only: everywhere else the row's toggles are these, and a phone has
-  // no hover to find them by.
-  if (props.chatId && !hiddenEverywhere.value && isMobile.value) {
+  // phone, and from the keyboard, only: everywhere else the row's toggles are
+  // these, and a phone has no hover to find them by, nor the keys a Tab.
+  if (props.chatId && !hiddenEverywhere.value && (isMobile.value || fromKeys.value)) {
     items.push({
       label: carried.value ? 'Unpin from chat' : 'Pin to chat',
       icon: 'pi pi-thumbtack',
@@ -977,13 +1094,56 @@ const menuItems = computed(() => {
 })
 
 /**
- * Refuse a drop that would put a folder inside its own subtree.
+ * Refuse a drop the tree won't take: a folder into its own subtree, or
+ * anything into a repository or out of one. Sortable asks the list the drag
+ * started in, so the folder it would land in is read off the list it is over.
+ * Nothing moves in a list while the drag is over a folder's row, which is
+ * where the drop goes instead: see useTreeDrop.
  * @param {any} event
  */
 const onMove = event => {
+  if (!drop.allowsMove()) return false
   const draggedId = event.draggedContext?.element?.id
-  return !draggedId || api.canDropInto(props.documentId, draggedId)
+  const folderId = event.to?.dataset?.folderId
+  return !draggedId || !folderId || api.canDropInto(folderId, draggedId)
 }
+
+const drop = useTreeDrop()
+
+/** Whether a drop now would put what is being dragged into this folder. */
+const dropTarget = computed(() => drop.into.value === props.documentId)
+
+/**
+ * A row of this folder's has started being dragged. The row is the first in
+ * the item Sortable took up.
+ * @param {{item?: HTMLElement}} event
+ */
+const onDragStart = event => {
+  const id = event.item?.querySelector('[role="treeitem"]')?.getAttribute('data-document-id')
+  if (id) drop.start(props.storyId, id)
+  emit('dragging', true)
+}
+
+const onDragEnd = () => {
+  drop.end()
+  emit('dragging', false)
+}
+
+// A shut folder held over for a moment opens, so the drag can go on in.
+/** @type {ReturnType<typeof setTimeout>|null} */
+let opening = null
+watch(dropTarget, over => {
+  if (opening) clearTimeout(opening)
+  opening = null
+  if (!over || expanded.value) return
+  opening = setTimeout(() => {
+    opening = null
+    if (dropTarget.value && !expanded.value) toggleExpanded()
+  }, OPEN_AFTER)
+})
+onBeforeUnmount(() => {
+  if (opening) clearTimeout(opening)
+})
 
 onMounted(() => {
   if (api.claimRename(props.documentId)) {

@@ -5,21 +5,25 @@
     modal
     :closable="true"
     :draggable="false"
-    header="New Project"
-    :pt="{
-      root: { class: 'shadow-xl' },
-      content: { class: 'bg-surface-50 dark:bg-surface-900' },
-    }"
+    header="New project"
+    :pt="{ root: { class: 'shadow-xl' } }"
     @update:visible="$emit('update:visible', $event)"
   >
     <div class="flex flex-col gap-4">
-      <!-- Title input -->
+      <!-- Title input. The dialog puts the focus here as it opens, so the
+           writer can type the name straight away. -->
       <div class="flex flex-col gap-2">
-        <label class="text-sm font-medium text-surface-700 dark:text-surface-300">Title</label>
+        <label
+          for="new-project-title"
+          class="text-sm font-medium text-surface-700 dark:text-surface-300"
+          >Title</label
+        >
         <InputText
+          id="new-project-title"
           v-model="title"
-          placeholder="Untitled Project"
+          placeholder="Untitled project"
           class="w-full"
+          autofocus
           @keydown.enter="handleCreate"
         />
       </div>
@@ -61,7 +65,7 @@ function handleCancel() {
 }
 
 function handleCreate() {
-  emit('create', { title: title.value.trim() || 'Untitled Project' })
+  emit('create', { title: title.value.trim() || 'Untitled project' })
   emit('update:visible', false)
 }
 </script>

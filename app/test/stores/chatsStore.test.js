@@ -77,11 +77,11 @@ describe('ChatsStore', () => {
 
     it('should create chat with default title when title is not provided', () => {
       const chat1 = store.createChat('story_123', '')
-      expect(chat1.title).toBe('Untitled Chat')
+      expect(chat1.title).toBe('Untitled chat')
       expect(chat1.titleSet).toBe(false)
 
       const chat2 = store.createChat('story_123')
-      expect(chat2.title).toBe('Untitled Chat')
+      expect(chat2.title).toBe('Untitled chat')
       expect(chat2.titleSet).toBe(false)
     })
   })
@@ -335,7 +335,7 @@ describe('ChatsStore', () => {
       expect(() => store.createChat(null, 'Title')).toThrow('Story ID is required')
       // Title is now optional, so undefined should create a chat with default title
       const chat = store.createChat('story_123', undefined)
-      expect(chat.title).toBe('Untitled Chat')
+      expect(chat.title).toBe('Untitled chat')
     })
 
     it('should handle concurrent updates correctly', () => {

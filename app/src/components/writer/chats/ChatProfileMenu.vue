@@ -6,7 +6,7 @@
       severity="secondary"
       size="small"
       rounded
-      class="min-w-0 max-w-full !h-7 !py-0 !px-2 !gap-1 !text-xs !bg-transparent !border-transparent hover:!bg-surface-700"
+      class="min-w-0 max-w-full !h-7 !py-0 !px-2 !gap-1 !text-xs !bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700"
       aria-haspopup="true"
       :aria-controls="menuId"
       :aria-label="`Profile: ${selectedProfile?.name ?? ''}`"

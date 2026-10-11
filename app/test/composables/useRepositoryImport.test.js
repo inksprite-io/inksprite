@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { zipSync, strToU8 } from 'fflate'
 import { describeRepositoryImport, useRepositoryImport } from '@/composables/useRepositoryImport.js'
 import { contentsOf } from '@/source/write.js'
+import { listFiles } from '@/files/batch.js'
 import { clearDocumentInstances, useDocuments } from '@/composables/useDocuments'
 
 vi.mock('@/stores/db', () => ({
@@ -28,13 +29,15 @@ vi.mock('@/platform/desktop.js', () => ({ isDesktop: () => true }))
 
 const STORY = 'story_1'
 
-/** Files as a folder chooser hands them over, under `server/`. */
+/** Files listed as a folder chooser hands them over, under `server/`. */
 const chosen = files =>
-  Object.entries(files).map(([path, text]) => {
-    const file = new File([text], path.split('/').pop() || path)
-    Object.defineProperty(file, 'webkitRelativePath', { value: `server/${path}` })
-    return file
-  })
+  listFiles(
+    Object.entries(files).map(([path, text]) => {
+      const file = new File([text], path.split('/').pop() || path)
+      Object.defineProperty(file, 'webkitRelativePath', { value: `server/${path}` })
+      return file
+    })
+  )
 
 describe('useRepositoryImport', () => {
   /** @type {ReturnType<typeof useDocuments>} */
@@ -78,7 +81,7 @@ describe('useRepositoryImport', () => {
     const { folderId } = await repositories.importFolder(chosen({ 'a.ts': 'one', 'b.ts': 'b' }))
 
     const result = await repositories.refresh(folderId, {
-      chosen: chosen({ 'a.ts': 'two', 'c.ts': 'c' }),
+      listed: chosen({ 'a.ts': 'two', 'c.ts': 'c' }),
     })
 
     expect(result.refreshed).toEqual({ added: 1, updated: 1, removed: 1, unchanged: 0 })
@@ -149,8 +152,7 @@ describe('describeRepositoryImport', () => {
     expect(
       describeRepositoryImport({ folderId: 'f', name: 'acme/widgets', files: 120, left })
     ).toEqual({
-      summary: 'acme/widgets imported',
-      detail: '120 files. Left out: 5 files ignored, 1 file not text.',
+      detail: 'acme/widgets imported: 120 files. Left out: 5 files ignored, 1 file not text.',
       severity: 'success',
     })
   })
@@ -165,6 +167,6 @@ describe('describeRepositoryImport', () => {
         left: { never: 0, ignored: 0, binary: [], large: [] },
         refreshed,
       })
-    ).toEqual({ summary: 'server refreshed', detail: '2 added, 1 removed.', severity: 'success' })
+    ).toEqual({ detail: 'server refreshed: 2 added, 1 removed.', severity: 'success' })
   })
 })

@@ -65,8 +65,7 @@ describe('NarrationSection', () => {
     await Promise.resolve()
 
     expect(toast.error).toHaveBeenCalledWith(
-      'Could not reach the speech server at http://localhost:8880/v1.',
-      { title: 'Connection failed' }
+      'Connection failed. Could not reach the speech server at http://localhost:8880/v1.'
     )
   })
 })

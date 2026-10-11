@@ -61,7 +61,6 @@
  * `skillPrompt`.
  */
 
-import { DIRECTOR, executeDirector } from './director/index.js'
 import { INTERPRET, executeInterpret, askInterpret } from './interpret/index.js'
 import { WRITE, askWrite, executeWrite } from './write/index.js'
 import { COMPACT, askCompact } from './compact/index.js'
@@ -123,10 +122,16 @@ export const SKILL_MAX_DEPTH = 2
  * The skills that ship with the app, in the order the settings list them and
  * the model's tools are offered.
  *
+ * The Director is not among them for now: it does not direct well enough yet
+ * to be offered to the model or shown in the settings. Its file and its code
+ * stay in ./director, and putting `{ ...DIRECTOR, builtIn: true, execute:
+ * executeDirector }` back at the head of this list brings it back. The
+ * writer's own `/director`, which asks no model, is a command of its own and
+ * stays.
+ *
  * @type {Skill[]}
  */
 export const BUILT_IN_SKILLS = [
-  { ...DIRECTOR, builtIn: true, execute: executeDirector },
   { ...INTERPRET, builtIn: true, execute: executeInterpret, ask: askInterpret },
   // A tool too, for when the model is offered it; the file says whether it is.
   { ...WRITE, builtIn: true, execute: executeWrite, ask: askWrite },

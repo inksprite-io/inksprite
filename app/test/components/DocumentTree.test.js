@@ -46,9 +46,15 @@ vi.mock('../../src/jobs/index.js', async importOriginal => ({
   dropJobsForStory: storyId => dropJobsForStory(storyId),
 }))
 
-// Every deletion is confirmed.
+// Every deletion is confirmed; anything else asked is answered as the test says.
+const { confirmed } = vi.hoisted(() => ({ confirmed: { answer: 'accept', asked: [] } }))
 vi.mock('primevue/useconfirm', () => ({
-  useConfirm: () => ({ require: options => options.accept() }),
+  useConfirm: () => ({
+    require: options => {
+      confirmed.asked.push(options)
+      return confirmed.answer === 'reject' ? options.reject() : options.accept()
+    },
+  }),
 }))
 vi.mock('../../src/composables/useScreenSize', () => ({
   useScreenSize: () => ({ isMobile: { value: false } }),
@@ -68,6 +74,17 @@ vi.mock('../../src/composables/useBulkImport', async importOriginal => {
   const original = await importOriginal()
   return { ...original, useBulkImport: () => ({ importMany }) }
 })
+
+const importFolder = vi.fn(async () => ({
+  folderId: 'doc_repository',
+  name: 'app',
+  files: 3,
+  left: { never: 0, ignored: 0, binary: [], large: [] },
+}))
+vi.mock('../../src/composables/useRepositoryImport.js', async importOriginal => ({
+  ...(await importOriginal()),
+  useRepositoryImport: () => ({ importFolder, importGitHub: vi.fn(), refresh: vi.fn() }),
+}))
 
 const toastAdd = vi.fn()
 vi.mock('primevue/usetoast', () => ({ useToast: () => ({ add: toastAdd }) }))
@@ -113,6 +130,8 @@ describe('DocumentTree importing', () => {
     clearDocumentInstances()
     clearChatsInstances()
     vi.clearAllMocks()
+    confirmed.answer = 'accept'
+    confirmed.asked = []
     api = useDocuments('story_1')
     await api.init()
   })
@@ -140,7 +159,7 @@ describe('DocumentTree importing', () => {
     expect(gathered.map(g => g.file.name)).toEqual(['a.md', 'b.md'])
     expect(options.parentId).toBe(notes.id)
     expect(toastAdd).toHaveBeenCalledWith(
-      expect.objectContaining({ summary: 'Imported 2 documents, 1 new folder' })
+      expect.objectContaining({ detail: 'Imported 2 documents, 1 new folder.' })
     )
   })
 
@@ -155,6 +174,82 @@ describe('DocumentTree importing', () => {
 
     const [gathered] = importMany.mock.calls[0]
     expect(gathered.map(g => g.folders)).toEqual([['papers'], ['papers', '2011']])
+    // Writing is not asked about.
+    expect(confirmed.asked).toEqual([])
+  })
+
+  /** A codebase as the folder chooser hands it over. */
+  const codebase = () => [
+    chosen('app/src/foo.cpp'),
+    chosen('app/src/foo.h'),
+    chosen('app/Makefile'),
+    chosen('app/.gitignore'),
+  ]
+
+  it('asks about a folder of code, and imports it as files when told to', async () => {
+    confirmed.answer = 'reject'
+    const wrapper = mountTree()
+    wrapper.findComponent({ name: 'DocumentNode' }).vm.$emit('import-folder', api.root.value.id)
+
+    await choose(wrapper.find('input[webkitdirectory]'), codebase())
+
+    expect(confirmed.asked).toHaveLength(1)
+    expect(confirmed.asked[0]).toMatchObject({
+      header: 'Import as a repository?',
+      message: 'app looks like a codebase.',
+    })
+    expect(importFolder).not.toHaveBeenCalled()
+    const [gathered] = importMany.mock.calls[0]
+    expect(gathered.map(g => g.file.name)).toEqual(['foo.cpp', 'foo.h', 'Makefile'])
+  })
+
+  it('hands a folder of code to the repository import, dotfiles and all', async () => {
+    const wrapper = mountTree()
+    wrapper.findComponent({ name: 'DocumentNode' }).vm.$emit('import-folder', api.root.value.id)
+
+    await choose(wrapper.find('input[webkitdirectory]'), codebase())
+
+    expect(importMany).not.toHaveBeenCalled()
+    expect(importFolder).toHaveBeenCalledTimes(1)
+    const [listed, options] = importFolder.mock.calls[0]
+    expect(listed.map(g => g.file.name)).toContain('.gitignore')
+    expect(options.parentId).toBe(api.root.value.id)
+    expect(toastAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'app imported: 3 files.' })
+    )
+  })
+
+  it('asks the same of a folder of code dropped on the tree', async () => {
+    const wrapper = mountTree()
+    const notes = api.createFolder(api.root.value.id, 'Notes')
+    await wrapper.vm.$nextTick()
+    const entry = name => ({
+      isFile: true,
+      isDirectory: false,
+      name,
+      file: resolve => resolve(new File(['x'], name)),
+    })
+    const folder = {
+      isFile: false,
+      isDirectory: true,
+      name: 'app',
+      createReader: () => {
+        const batches = [[entry('a.go'), entry('b.go'), entry('go.mod'), entry('main.go')], []]
+        return { readEntries: resolve => resolve(batches.shift() || []) }
+      },
+    }
+    const dataTransfer = {
+      types: ['Files'],
+      items: [{ kind: 'file', webkitGetAsEntry: () => folder }],
+      files: [],
+      dropEffect: '',
+    }
+
+    await wrapper.find(`[data-document-id="${notes.id}"]`).trigger('drop', { dataTransfer })
+    await flushPromises()
+
+    expect(confirmed.asked).toHaveLength(1)
+    expect(importFolder.mock.calls[0][1].parentId).toBe(notes.id)
   })
 
   it('shows where a drag of files would land, and imports them there on drop', async () => {
@@ -278,7 +373,7 @@ describe('DocumentTree project menu', () => {
     await flushPromises()
 
     expect(toastAdd).toHaveBeenCalledWith(
-      expect.objectContaining({ severity: 'error', detail: 'Quota exceeded' })
+      expect.objectContaining({ severity: 'error', detail: 'Export failed: Quota exceeded' })
     )
   })
 })

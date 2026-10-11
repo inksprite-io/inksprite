@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { undo } from 'prosemirror-history'
+import { undoInputRule } from 'prosemirror-inputrules'
 import { schema } from '../../src/editor/schema.js'
 import { serializeMarkdown } from '../../src/editor/markdown.js'
 import {
@@ -143,5 +144,70 @@ describe('typed shortcuts', () => {
   it('does not mark across a word boundary that is not there', () => {
     const rule = markInputRule(/(?:^|\s)(\*(?!\s+\*)([^*]+)\*(?!\s+\*))$/, schema.marks.em)
     expect(type(typed('a*b'), rule, '*')).toBeNull()
+  })
+})
+
+describe('typography as you type', () => {
+  /**
+   * Type `text` a character at a time through the editor's own input rules,
+   * as a view would hand them its keystrokes.
+   */
+  const typeInto = (start, text) => {
+    let state = start
+    const view = {
+      get state() {
+        return state
+      },
+      dispatch: tr => {
+        state = state.apply(tr)
+      },
+      composing: false,
+    }
+    const plugin = state.plugins.find(each => each.props.handleTextInput)
+    for (const char of text) {
+      const { from, to } = state.selection
+      const handled = plugin.props.handleTextInput(view, from, to, char, () => state.tr)
+      if (!handled) view.dispatch(state.tr.insertText(char, from, to))
+    }
+    return state
+  }
+
+  /** The text of the first block. */
+  const text = state => state.doc.firstChild.textContent
+
+  it('curls quotes and apostrophes', () => {
+    const state = typeInto(createEditorState(''), `"It's late," she said. 'Go.'`)
+    expect(text(state)).toBe('“It’s late,” she said. ‘Go.’')
+  })
+
+  it('makes a dash of two hyphens and an ellipsis of three dots', () => {
+    const state = typeInto(createEditorState(''), 'Wait -- what...')
+    expect(text(state)).toBe('Wait — what…')
+  })
+
+  it('still draws a rule from three dashes on a line of their own', () => {
+    const state = typeInto(createEditorState(''), '---')
+    expect(state.doc.firstChild.type).toBe(schema.nodes.horizontal_rule)
+  })
+
+  it('leaves code as typed', () => {
+    const block = typeInto(createEditorState('```\n\n```'), `"a" -- b...`)
+    expect(block.doc.firstChild.type).toBe(schema.nodes.code_block)
+    expect(block.doc.firstChild.textContent).toBe(`"a" -- b...`)
+
+    const empty = createEditorState('')
+    const inCode = empty.apply(empty.tr.addStoredMark(schema.marks.code.create()))
+    expect(text(typeInto(inCode, `x "q" -- y`))).toBe(`x "q" -- y`)
+  })
+
+  it('takes a conversion back on Backspace straight after', () => {
+    const state = typeInto(createEditorState(''), 'a--')
+    expect(text(state)).toBe('a—')
+
+    let next = state
+    undoInputRule(state, tr => {
+      next = state.apply(tr)
+    })
+    expect(text(next)).toBe('a--')
   })
 })

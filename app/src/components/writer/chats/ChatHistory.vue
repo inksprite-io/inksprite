@@ -19,25 +19,21 @@
       class="hidden"
       @change="handleImportFile"
     />
-    <!-- Search Bar -->
-    <div class="w-full p-2">
+    <!-- Search Bar, once there is something to search -->
+    <div v-if="hasChats" class="w-full p-2" data-chat-search>
       <IconField icon-position="left" class="w-full">
-        <InputIcon
-          class="pi pi-search text-surface-300 dark:text-surface-600"
-          :class="{ '!opacity-70': !isSearchEnabled }"
-        />
+        <InputIcon class="pi pi-search text-surface-300 dark:text-surface-600" />
         <InputText
           v-model="searchQuery"
           type="text"
           class="rounded-full! w-full dark:!bg-surface-900"
-          :class="{ '!opacity-70': !isSearchEnabled }"
           placeholder="Search chats..."
-          :disabled="!isSearchEnabled"
+          aria-label="Search chats"
         />
       </IconField>
     </div>
     <!-- Chat History -->
-    <ScrollPanel class="flex-1 overflow-auto px-2">
+    <ScrollPanel class="flex-1 overflow-auto px-2" :class="{ 'pt-2': !hasChats }">
       <!-- Search Results Info -->
       <div
         v-if="isSearching && chatsApi.chats.value.length > 0"
@@ -80,9 +76,7 @@
       >
         <i class="pi pi-comments text-4xl mb-3 opacity-50"></i>
         <p class="text-sm text-center mb-3">No chats yet</p>
-        <p class="text-xs text-center opacity-75">
-          Start a conversation to brainstorm ideas for your story.
-        </p>
+        <p class="text-xs text-center opacity-75">Start one with the + above.</p>
       </div>
     </ScrollPanel>
   </div>
@@ -157,9 +151,7 @@ const { searchQuery, searchResults, isSearching, hasResults } = useSearch(search
   debounceMs: 300,
 })
 
-const isSearchEnabled = computed(() => {
-  return chatsApi.chats.value.length > 0
-})
+const hasChats = computed(() => chatsApi.chats.value.length > 0)
 
 /** Open the unstarted chat, which becomes a chat when something is sent in it. */
 const handleNewChat = () => emit('select-chat', chatsApi.unstartedChat.value.id)

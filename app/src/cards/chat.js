@@ -24,6 +24,8 @@ import { SHELF_KINDS } from './write.js'
  *
  * @typedef {Object} CardChat
  * @property {string} title - The card's, and the chat's
+ * @property {string} name - The character's: what `{{char}}` becomes in a chat
+ *   on the card. See `characterOf`.
  * @property {string[]} pinnedIds - What rides in the project block from turn one
  * @property {string[]} hiddenIds - What a chat on this card hides: the shelf the
  *   other characters are on, when the card is on one
@@ -60,13 +62,33 @@ export function isCard(document) {
 }
 
 /**
+ * Who a card folder is: the character's name.
+ *
+ * The one in the sidecar, which is the character's own, what `{{char}}` meant
+ * to the card's author, and what ST put on every message they sent. The
+ * folder's title is the writer's to change, and on a scenario card it never was
+ * the character's name. A card with no sidecar — deleted, or a card made here
+ * by hand — goes by its title.
+ *
+ * @param {ReturnType<typeof useDocuments>} api
+ * @param {any} folder - A card folder
+ * @returns {string}
+ */
+function characterOf(api, folder) {
+  const sidecar = api.childrenOf(folder.id).find(child => child.kind === 'sidecar')
+  try {
+    if (sidecar?.content) return readCard(JSON.parse(sidecar.content)).name
+  } catch {
+    // A sidecar the writer has been editing. The title will do.
+  }
+  return folder.title
+}
+
+/**
  * The card folders in this project that are a character of this name.
  *
  * For a chat that arrives knowing only who it was with; see `./transcript.js`.
- * The name is the one in the sidecar, which is the character's own and what ST
- * put on every message they sent. The folder's title is the writer's to change,
- * and on a scenario card it never was the character's name. A card with no
- * sidecar — deleted, or a card made here by hand — goes by its title.
+ * By the name in the sidecar; see `characterOf`.
  *
  * All of them, rather than the first: two cards for one name is a question,
  * and which was meant is not something to guess at.
@@ -82,22 +104,12 @@ export async function cardsNamed(storyId, name) {
   const api = useDocuments(storyId)
   await api.init()
 
-  const nameOf = (/** @type {any} */ folder) => {
-    const sidecar = api.childrenOf(folder.id).find(child => child.kind === 'sidecar')
-    try {
-      if (sidecar?.content) return readCard(JSON.parse(sidecar.content)).name
-    } catch {
-      // A sidecar the writer has been editing. The title will do.
-    }
-    return folder.title
-  }
-
   /** @type {any[]} */
   const found = []
   const walk = (/** @type {string} */ id) => {
     for (const child of api.childrenOf(id)) {
       if (isCard(child)) {
-        if (nameOf(child).trim().toLowerCase() === wanted) found.push(child)
+        if (characterOf(api, child).trim().toLowerCase() === wanted) found.push(child)
       } else if (child.type === 'folder') {
         walk(child.id)
       }
@@ -148,6 +160,7 @@ export async function readCardChat(storyId, folderId) {
 
   return {
     title: folder.title,
+    name: characterOf(api, folder),
     hiddenIds: shelf ? [shelf.id] : [],
     shownIds: shelf ? [folder.id] : [],
     pinnedIds: documents

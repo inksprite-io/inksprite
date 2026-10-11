@@ -44,7 +44,18 @@
     <div v-if="mode === 'form' && form" class="flex flex-col gap-4">
       <div class="flex flex-col gap-1">
         <SettingLabel label="Name" description="Lowercase letters, digits and hyphens." />
-        <InputText v-model="form.name" size="small" class="w-full" data-field="name" />
+        <InputText
+          ref="nameField"
+          v-model="form.name"
+          size="small"
+          class="w-full"
+          :invalid="Boolean(nameIssue)"
+          aria-label="Name"
+          data-field="name"
+        />
+        <p v-if="nameIssue" class="text-xs text-red-600 dark:text-red-400" data-name-problem>
+          {{ nameIssue }}
+        </p>
       </div>
 
       <div class="flex flex-col gap-1">
@@ -58,8 +69,19 @@
           rows="2"
           size="small"
           class="w-full"
+          placeholder="What it does, and when to use it"
+          aria-label="Description"
           data-field="description"
+          :invalid="Boolean(descriptionIssue)"
+          @blur="touched.description = true"
         />
+        <p
+          v-if="descriptionIssue"
+          class="text-xs text-red-600 dark:text-red-400"
+          data-description-problem
+        >
+          {{ descriptionIssue }}
+        </p>
       </div>
 
       <div class="flex flex-col gap-1">
@@ -67,7 +89,13 @@
           label="Summary"
           description="One line for the / menu. Defaults to the description."
         />
-        <InputText v-model="form.summary" size="small" class="w-full" data-field="summary" />
+        <InputText
+          v-model="form.summary"
+          size="small"
+          class="w-full"
+          aria-label="Summary"
+          data-field="summary"
+        />
       </div>
 
       <div class="flex flex-col gap-2">
@@ -96,6 +124,7 @@
           option-value="value"
           size="small"
           class="w-full"
+          aria-label="How it runs"
           data-field="fork"
         />
       </div>
@@ -110,6 +139,7 @@
             option-value="value"
             size="small"
             class="w-full"
+            aria-label="Its answer"
             data-field="output"
           />
         </div>
@@ -126,6 +156,7 @@
             display="chip"
             size="small"
             class="w-full"
+            aria-label="Tools"
             data-field="tools"
           />
         </div>
@@ -139,6 +170,7 @@
             size="small"
             placeholder="none"
             class="w-full"
+            aria-label="Argument"
             data-field="argument"
           />
         </div>
@@ -149,6 +181,7 @@
             size="small"
             placeholder="<what to type>"
             class="w-full"
+            aria-label="Hint"
             data-field="argumentHint"
           />
         </div>
@@ -165,8 +198,15 @@
           rows="8"
           size="small"
           class="w-full font-mono text-sm"
+          :placeholder="`What to do with ${placeholder}`"
+          aria-label="Instructions"
           data-field="body"
+          :invalid="Boolean(bodyIssue)"
+          @blur="touched.body = true"
         />
+        <p v-if="bodyIssue" class="text-xs text-red-600 dark:text-red-400" data-body-problem>
+          {{ bodyIssue }}
+        </p>
       </div>
     </div>
 
@@ -182,6 +222,7 @@
         rows="16"
         size="small"
         class="w-full font-mono text-sm"
+        aria-label="SKILL.md"
         data-field="text"
       />
     </div>
@@ -191,14 +232,14 @@
     </p>
 
     <ul
-      v-if="problems.length"
+      v-if="listed.length"
       class="text-xs text-red-600 dark:text-red-400 list-disc pl-5"
       data-problems
     >
-      <li v-for="problem in problems" :key="problem">{{ problem }}</li>
+      <li v-for="problem in listed" :key="problem">{{ problem }}</li>
     </ul>
     <p
-      v-else-if="waiting"
+      v-else-if="waiting && problems.length === 0"
       class="text-xs italic text-surface-500 dark:text-surface-400"
       data-waiting
     >
@@ -247,7 +288,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -256,7 +297,7 @@ import MultiSelect from 'primevue/multiselect'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { useConfirm } from 'primevue/useconfirm'
 import SettingLabel from '@/components/common/SettingLabel.vue'
-import { parseSkill } from '@/ai/skills/format.js'
+import { NEEDS_DESCRIPTION, NEEDS_INSTRUCTIONS, nameError, parseSkill } from '@/ai/skills/format.js'
 import { formFromText, textFromForm, newSkillText } from '@/ai/skills/form.js'
 import { waitingOn } from '@/ai/skills/runner.js'
 import { zipBlob } from '@/ai/skills/bundle.js'
@@ -389,6 +430,56 @@ const problems = computed(() => {
   const problem = skillsApi.nameProblem(read.skill.name, props.skillId)
   return problem ? [problem] : []
 })
+/** What is wrong with the name, as the file's reading says it. */
+const nameProblem = computed(() => {
+  if (mode.value !== 'form' || !form.value) return ''
+  const name = form.value.name.trim()
+  return nameError(name) || skillsApi.nameProblem(name, props.skillId)
+})
+
+/**
+ * What is wrong with the name, said under it rather than with the rest, and
+ * in the form's words rather than the file's: the form has a Name field, not
+ * a `name` key.
+ */
+const nameIssue = computed(() =>
+  form.value && !form.value.name.trim() && nameProblem.value
+    ? 'It needs a name.'
+    : nameProblem.value
+)
+
+/**
+ * Which of the fields a skill needs have been left by the writer. One not yet
+ * reached is empty because it has not been written, not by mistake, so its
+ * placeholder says what goes there and Save waits without a word.
+ */
+const touched = ref({ description: false, body: false })
+
+/** An empty Description, said under it once the writer has been and gone. */
+const descriptionIssue = computed(() =>
+  mode.value === 'form' && touched.value.description && problems.value.includes(NEEDS_DESCRIPTION)
+    ? 'It needs a description.'
+    : ''
+)
+
+/** Empty Instructions, the same way. */
+const bodyIssue = computed(() =>
+  mode.value === 'form' && touched.value.body && problems.value.includes(NEEDS_INSTRUCTIONS)
+    ? 'It needs instructions.'
+    : ''
+)
+
+/** The problems said under the form: all of them, less what is said by a field. */
+const listed = computed(() => {
+  if (mode.value !== 'form') return problems.value
+  return problems.value.filter(
+    problem =>
+      problem !== nameProblem.value &&
+      problem !== NEEDS_DESCRIPTION &&
+      problem !== NEEDS_INSTRUCTIONS
+  )
+})
+
 const waiting = computed(() => {
   const read = reading.value
   return 'skill' in read ? waitingOn(read.skill) : ''
@@ -413,6 +504,18 @@ const toolOptions = computed(() => {
 })
 
 const saving = ref(false)
+
+/** @type {import('vue').Ref<any>} */
+const nameField = ref(null)
+
+// A new skill is named first, and the name it starts with is there to be
+// typed over.
+onMounted(() => {
+  if (props.skillId) return
+  const field = nameField.value?.$el
+  field?.focus?.()
+  field?.select?.()
+})
 
 const save = async () => {
   saving.value = true

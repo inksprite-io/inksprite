@@ -93,8 +93,9 @@ watch(
   async isVisible => {
     if (!isVisible) return
     // Opened from the projects list, the project may not be the one open,
-    // and only its root is needed here.
-    await documentsStore.loadRoots([props.storyId])
+    // and only the roots are needed here: its own, and the others' for their
+    // names, which a new one is kept clear of.
+    await storiesStore.loadNames()
     const root = documentsStore.getRoot(props.storyId)
     const story = storiesStore.getStory(props.storyId)
     form.value = {
@@ -111,7 +112,6 @@ const save = async () => {
   if (!title) {
     toast.add({
       severity: 'error',
-      summary: 'Validation Error',
       detail: 'Project title cannot be empty',
       life: 3000,
     })
@@ -120,13 +120,13 @@ const save = async () => {
 
   const root = documentsStore.getRoot(props.storyId)
   if (!root) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'Project not found', life: 3000 })
+    toast.add({ severity: 'error', detail: 'Project not found', life: 3000 })
     return
   }
 
   try {
     documentsStore.updateDocument(root.id, {
-      title,
+      title: storiesStore.freeName(title, props.storyId),
       summary: form.value.summary.trim(),
     })
     const story = storiesStore.getStory(props.storyId)
@@ -138,12 +138,11 @@ const save = async () => {
       })
     }
     emit('update:visible', false)
-    toast.add({ severity: 'success', summary: 'Success', detail: 'Project updated', life: 3000 })
+    toast.add({ severity: 'success', detail: 'Project updated', life: 3000 })
   } catch (error) {
     console.error('Failed to update project:', error)
     toast.add({
       severity: 'error',
-      summary: 'Error',
       detail: 'Failed to update project',
       life: 3000,
     })

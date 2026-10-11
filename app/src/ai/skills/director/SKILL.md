@@ -36,16 +36,14 @@ The subway arrives.
 
 ```
 Breda's sword connects, wounding the goblin.
-- Describe the spray of blood, gash on it's arm.
+- Describe the spray of blood, the gash on its arm.
 - The goblin howls in pain/anger.
 ```
 
 ```
-Cody pulls Emily closer, the encounter escalates.
-- Cody's hands are on her hips.
-- Kiss deepens.
-- Describe his smell, the sound of their breathing.
-- Feeling of his hand sliding under her shirt, his touch on her stomach.
+Mara reaches the rooftop as the storm breaks.
+- Describe the wind, the rain, the slick tiles under her boots.
+- Lightning shows a figure waiting by the chimney.
 ```
 
 # Oracle
@@ -54,9 +52,9 @@ Use the `oracle(question, likelihood)` to resolve yes/no questions.
 
 **Use the tool:**
 
-- to determine events that affect the direct of the story ("do the guards return?")
-- to determining immediately relevant facts about the world ("is the door locked?")
-- to resolve resolving risky/uncertain actions taken by the characters ("does he make the jump?")
+- to determine events that affect the direction of the story ("do the guards return?")
+- to determine immediately relevant facts about the world ("is the door locked?")
+- to resolve risky or uncertain actions taken by the characters ("does he make the jump?")
 
 **Use the oracle when:**
 

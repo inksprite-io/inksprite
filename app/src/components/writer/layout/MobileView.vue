@@ -14,24 +14,21 @@
       <DocumentTree
         :story-id="storyId"
         :document-id="documentId"
-        :chat-id="selectedChatId"
+        :chat-id="chatId"
         @open="openDocument"
       />
     </div>
 
-    <!-- Chat -->
+    <!-- Chat: the one open, as beside the editor, with the list behind it -->
     <div v-else-if="activeMobileTab === 'chat'" class="h-full bg-surface-100 dark:bg-surface-800">
-      <ChatHistory v-if="!selectedChatId" :story-id="storyId" @select-chat="handleChatSelect" />
-      <Chat
+      <ChatHistory v-if="listing" :story-id="storyId" @select-chat="pickChat" />
+      <ChatPanel
         v-else
-        :key="selectedChatId"
         :story-id="storyId"
-        :chat-id="selectedChatId"
-        title="Chat Title"
+        :chat-id="chatId"
         show-back
-        @back="handleChatBack"
-        @open-chat="handleOpenChat"
-        @new-chat="handleNewChat"
+        @back="listing = true"
+        @update:chat-id="$emit('update:chatId', $event)"
       />
     </div>
 
@@ -41,6 +38,14 @@
       class="h-full bg-surface-100 dark:bg-surface-800"
     >
       <NarrationPanel :story-id="storyId" :document-id="documentId" />
+    </div>
+
+    <!-- Comments: picking one goes to it in the writing view. -->
+    <div
+      v-else-if="activeMobileTab === 'comments'"
+      class="h-full bg-surface-100 dark:bg-surface-800"
+    >
+      <CommentsPanel :story-id="storyId" :document-id="documentId" @open-document="openDocument" />
     </div>
 
     <!-- Settings -->
@@ -54,22 +59,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { sessionStorage } from '@/utils/sessionStorage'
+import { ref } from 'vue'
 import EditorPanel from './EditorPanel.vue'
+import ChatPanel from './ChatPanel.vue'
 import DocumentTree from '../tree/DocumentTree.vue'
 import ChatHistory from '../chats/ChatHistory.vue'
-import Chat from '../chats/Chat.vue'
 import NarrationPanel from '../narration/NarrationPanel.vue'
+import CommentsPanel from '../comments/CommentsPanel.vue'
 import Settings from '../settings/Settings.vue'
-import { useChats } from '@/composables/useChats'
 import { useDocuments } from '@/composables/useDocuments'
 
 /**
+ * The phone's views, one at a time. The chat tab opens on the chat open,
+ * which is the one the desktop's chat panel would show; the list of chats is
+ * behind it, and once gone back to stays until a chat is picked from it.
+ *
  * @typedef {Object} Props
  * @property {string} activeMobileTab - The currently active mobile tab
  * @property {string} storyId - The ID of the current story
  * @property {string} [documentId] - The ID of the document being shown (optional)
+ * @property {string|null} [chatId] - The chat open, if one has been yet
  */
 /** @type {Props} */
 const props = defineProps({
@@ -85,13 +94,17 @@ const props = defineProps({
     type: String,
     required: false,
   },
+  chatId: {
+    type: String,
+    default: null,
+  },
 })
 
-const emit = defineEmits(['update:activeMobileTab'])
+const emit = defineEmits(['update:activeMobileTab', 'update:chatId'])
 
 /**
- * Open a document picked from the outline, and go to where it shows: on a
- * phone the outline and the editor are different views.
+ * Open a document picked from the outline or the comments, and go to where
+ * it shows: on a phone those and the editor are different views.
  * @param {string} documentId
  */
 const openDocument = documentId => {
@@ -99,52 +112,15 @@ const openDocument = documentId => {
   emit('update:activeMobileTab', 'write')
 }
 
-// Chat-specific state
-const selectedChatId = ref(null)
+/** Whether the chat tab is showing the list rather than a chat. */
+const listing = ref(false)
 
 /**
- * Handle chat selection from ChatHistory
- * @param {string} chatId - The ID of the selected chat
+ * Open a chat picked from the list.
+ * @param {string} chatId
  */
-const handleChatSelect = chatId => {
-  selectedChatId.value = chatId
+const pickChat = chatId => {
+  emit('update:chatId', chatId)
+  listing.value = false
 }
-
-// Remembered for a reload, but not while it is the unstarted chat: that id
-// means nothing to the next page, and would open on a chat that is not
-// there. Once something is sent in it, it is a chat, and remembered then.
-const chatsApi = useChats(props.storyId)
-watch(
-  () => (chatsApi.isUnstarted(selectedChatId.value) ? null : selectedChatId.value),
-  chatId => {
-    if (chatId) sessionStorage.set(`ui.mobile-view.${props.storyId}.selected-chat`, chatId)
-  }
-)
-
-/**
- * Handle back navigation from Chat
- */
-const handleChatBack = () => {
-  selectedChatId.value = null
-  const chatIdKey = `ui.mobile-view.${props.storyId}.selected-chat`
-  sessionStorage.remove(chatIdKey)
-}
-
-/**
- * Handle opening a specific chat (e.g., from fork action)
- * @param {{chatId: string, title: string}} payload - The chat to open
- */
-const handleOpenChat = payload => handleChatSelect(payload.chatId)
-
-/** Open the unstarted chat from inside the one open. */
-const handleNewChat = () => handleChatSelect(chatsApi.unstartedChat.value.id)
-
-// Load saved state on mount
-onMounted(() => {
-  const chatIdKey = `ui.mobile-view.${props.storyId}.selected-chat`
-  const savedChatId = sessionStorage.get(chatIdKey)
-  if (savedChatId) {
-    selectedChatId.value = savedChatId
-  }
-})
 </script>

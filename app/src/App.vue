@@ -3,7 +3,7 @@
   <AppToast />
   <JobsToastHost />
   <RouterView />
-  <ConfirmDialog />
+  <ConfirmDialog :pt="{ root: { class: 'max-w-lg' } }" />
 </template>
 
 <script setup>

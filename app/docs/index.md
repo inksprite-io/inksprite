@@ -97,6 +97,15 @@ Tools from MCP servers the writer connects, offered to the model in their chats:
 - Signing in to a server that wants it, with OAuth and PKCE in a tab of its own, kept in the browser and out of backups
 - What a server's tools are called to the model, and servers from a pasted `mcpServers` block
 
+### 🌐 [Web](./web.md)
+
+The web, for the model, through a search service the writer connects:
+
+- Exa and Kagi through their hosted MCP servers, which answer a page, and Brave on desktop; each one's answers taken apart into one shape
+- A page read straight from its site and made markdown, on desktop, for Brave, which has no reader
+- Which service can search, and which chats search, opted into per profile or per chat
+- A refusal said for the writer, and pages kept for the session so a long one is read on from
+
 ### 🖥️ [Platform](./platform.md)
 
 What differs between the app in a browser and the app in its desktop window (Electron, in `electron/`):
@@ -184,6 +193,13 @@ Frontend (Vue 3 + Vite)
 │   ├── servers - The connected servers, which chats use them, which calls ask first
 │   ├── names - What a server's tools are called to the model
 │   └── config - Servers from a pasted mcpServers block
+├── Web (src/web)
+│   ├── services - The search services, and what each needs
+│   ├── exa, kagi, brave - Each service's search, and its page read where it has one
+│   ├── direct - A page read from its site and made markdown, on desktop
+│   ├── answers - The shape the tools answer in, and a refusal said for the writer
+│   ├── config - Which service can search, and which chats search
+│   └── pages - Pages read lately, kept for the session
 ├── Platform (src/platform)
 │   └── fetch - Requests to servers, from the page or from the desktop app's native side
 ├── Source (src/source)

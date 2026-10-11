@@ -34,14 +34,24 @@
   - [Parameters][30]
 - [openLinkClicked][31]
   - [Parameters][32]
-- [platform/signIn][33]
-- [SIGN_IN_PORT][34]
-- [callbackOrigin][35]
-- [signInInBrowser][36]
-  - [Parameters][37]
-- [platform/updates][38]
-- [downloadUpdate][39]
-- [installUpdate][40]
+- [platform/persistence][33]
+- [asked][34]
+- [askToKeepData][35]
+- [BrowserTraits][36]
+  - [Properties][37]
+- [StorageAdvice][38]
+  - [Properties][39]
+- [currentBrowser][40]
+- [storageAdvice][41]
+  - [Parameters][42]
+- [platform/signIn][43]
+- [SIGN_IN_PORT][44]
+- [callbackOrigin][45]
+- [signInInBrowser][46]
+  - [Parameters][47]
+- [platform/updates][48]
+- [downloadUpdate][49]
+- [installUpdate][50]
 
 ## platform/desktop
 
@@ -53,47 +63,47 @@ bridge to the native side there.
 What the native side is asked for a request: the page's `Request`, read
 out.
 
-Type: [Object][41]
+Type: [Object][51]
 
 ### Properties
 
-- `url` **[string][42]**&#x20;
-- `method` **[string][42]**&#x20;
-- `headers` **[Array][43]<\[[string][42], [string][42]]>**&#x20;
-- `body` **([Uint8Array][44] | null)**&#x20;
+- `url` **[string][52]**&#x20;
+- `method` **[string][52]**&#x20;
+- `headers` **[Array][53]<\[[string][52], [string][52]]>**&#x20;
+- `body` **([Uint8Array][54] | null)**&#x20;
 - `redirect` **RequestRedirect**&#x20;
 
 ## DesktopResponse
 
 A response's status and headers, without its body.
 
-Type: [Object][41]
+Type: [Object][51]
 
 ### Properties
 
-- `status` **[number][45]**&#x20;
-- `statusText` **[string][42]**&#x20;
-- `headers` **[Array][43]<\[[string][42], [string][42]]>**&#x20;
+- `status` **[number][55]**&#x20;
+- `statusText` **[string][52]**&#x20;
+- `headers` **[Array][53]<\[[string][52], [string][52]]>**&#x20;
 
 ## DesktopBodyPart
 
 A piece of a response's body: a chunk of it, or word that it has all come,
 or that it failed.
 
-Type: ({chunk: [Uint8Array][44]} | {done: `true`} | {error: [string][42]})
+Type: ({chunk: [Uint8Array][54]} | {done: `true`} | {error: [string][52]})
 
 ## DesktopBridge
 
 What the desktop app's native side offers the page (`app/electron/src/
 preload.cjs`). Calls that go wrong reject with an Error saying what did.
 
-Type: [Object][41]
+Type: [Object][51]
 
 ## BRIDGE
 
 Where the bridge is, in the page.
 
-Type: [string][42]
+Type: [string][52]
 
 ## isDesktop
 
@@ -102,7 +112,7 @@ Whether the app is running in its desktop window.
 Decided at runtime, not when the app is built: in development the browser
 tab and the window load the same bundle from the same server.
 
-Returns **[boolean][46]**&#x20;
+Returns **[boolean][56]**&#x20;
 
 ## desktop
 
@@ -145,10 +155,10 @@ page's own does, streamed body and abort signal included.
 
 ### Parameters
 
-- `input` **(RequestInfo | [URL][47])**&#x20;
+- `input` **(RequestInfo | [URL][57])**&#x20;
 - `init` **RequestInit?**&#x20;
 
-Returns **[Promise][48]<[Response][49]>**&#x20;
+Returns **[Promise][58]<[Response][59]>**&#x20;
 
 ## fetchNatively
 
@@ -157,13 +167,13 @@ comes.
 
 ### Parameters
 
-- `request` **[Request][50]**&#x20;
+- `request` **[Request][60]**&#x20;
 
-Returns **[Promise][48]<[Response][49]>**&#x20;
+Returns **[Promise][58]<[Response][59]>**&#x20;
 
 ## controller
 
-Type: ReadableStreamDefaultController<[Uint8Array][44]>
+Type: ReadableStreamDefaultController<[Uint8Array][54]>
 
 ## onBody
 
@@ -193,6 +203,8 @@ sign-in rather than for a platform.
   and installed when the writer restarts into it
 - **open** - Links to other sites, opened in a new tab in a browser and in
   the system browser from the desktop window, never in the app's own place
+- **persistence** - Asking the browser to keep the page's data, and what
+  the writer is told about how long it will
 
 Design: `.llm/desktop_design.md`.
 
@@ -225,9 +237,9 @@ The address a link goes to, if it is one that may open.
 
 ### Parameters
 
-- `href` **[string][42]**&#x20;
+- `href` **[string][52]**&#x20;
 
-Returns **([URL][47] | null)**&#x20;
+Returns **([URL][57] | null)**&#x20;
 
 ## openUrl
 
@@ -235,9 +247,9 @@ Open a link outside the app.
 
 ### Parameters
 
-- `href` **[string][42]**&#x20;
+- `href` **[string][52]**&#x20;
 
-Returns **[Promise][48]<[boolean][46]>** Whether it was one that may open
+Returns **[Promise][58]<[boolean][56]>** Whether it was one that may open
 
 ## openLinkClicked
 
@@ -248,7 +260,85 @@ link, or a click with a modifier somewhere other than this tab.
 
 ### Parameters
 
-- `event` **[MouseEvent][51]**&#x20;
+- `event` **[MouseEvent][61]**&#x20;
+
+## platform/persistence
+
+Whether the browser keeps the writer's work: asking it to,
+and what to tell the writer about how long it will.
+
+Everything the writer makes is in the page's own storage, which a browser
+may delete:
+
+- **Short of disk space**, any browser deletes the data of the sites it
+  was not asked to keep, the least recently used first. A site that asks
+  and is granted is kept until the writer clears it themselves. Chrome and
+  Edge decide by how the site has been used, asking no one, so the page
+  asks again on each start. Firefox asks the writer and remembers the
+  answer, so the page asks only once there is a project to keep. In the
+  desktop window the main process grants it.
+- **Safari** deletes a site's data after a week of browsing without a
+  click, tap or key press on it, which asking does not change. A site
+  added to the Home Screen on an iPhone or iPad is exempt.
+
+## asked
+
+Whether this page load has asked: once is enough, whatever the answer.
+
+## askToKeepData
+
+Ask the browser to keep the page's data, once a page load. Never throws.
+
+Returns **[Promise][58]<[boolean][56]>** Whether the data is kept
+
+## BrowserTraits
+
+What the page is in, as far as the advice depends on it.
+
+Type: [Object][51]
+
+### Properties
+
+- `userAgent` **[string][52]**&#x20;
+- `maxTouchPoints` **[number][55]** An iPad sends a Mac's user agent; only
+  its touch screen tells the two apart
+- `standalone` **[boolean][56]** Opened from the Home Screen or the Dock,
+  rather than in a browser tab
+
+## StorageAdvice
+
+What the writer is told about keeping their work, beyond that it is in the
+browser.
+
+Type: [Object][51]
+
+### Properties
+
+- `clearsAfterAWeek` **[boolean][56]** Safari, which deletes site data after a week of inactivity
+- `homeScreen` **[boolean][56]** Safari in a tab on an iPhone or iPad, where the Home Screen is exempt
+- `desktopApp` **[boolean][56]** A computer, which the desktop app runs on
+
+## currentBrowser
+
+The page's browser, as `storageAdvice` reads it.
+
+Returns **[BrowserTraits][36]**&#x20;
+
+## storageAdvice
+
+What to tell the writer about keeping their work in this browser.
+
+Safari is told apart by the `Version/` every Safari sends and the others
+on iOS do not, or send beside a name of their own. Only Safari is warned
+about the week: whether the other browsers on iOS, which run on WebKit,
+clear data the same way is not documented. A Mac's Dock app is still
+warned, since its exemption is not documented either.
+
+### Parameters
+
+- `browser` **[BrowserTraits][36]?** (optional, default `currentBrowser()`)
+
+Returns **[StorageAdvice][38]**&#x20;
 
 ## platform/signIn
 
@@ -269,14 +359,14 @@ some hold it to exactly that address.
 
 Where the desktop app listens for a sign-in to come back.
 
-Type: [number][45]
+Type: [number][55]
 
 ## callbackOrigin
 
 Where a sign-in comes back to: this page's own origin in a browser, the
 desktop app's listener in its window.
 
-Returns **[string][42]**&#x20;
+Returns **[string][52]**&#x20;
 
 ## signInInBrowser
 
@@ -288,13 +378,13 @@ while another is waiting takes its place.
 
 ### Parameters
 
-- `address` **([string][42] | [URL][47])** Where to sign in
-- `path` **[string][42]** Where the service sends the browser back, under
+- `address` **([string][52] | [URL][57])** Where to sign in
+- `path` **[string][52]** Where the service sends the browser back, under
   `callbackOrigin()`: `/connect/mcp`
-- `$2` **[Object][41]** (optional, default `{}`)
+- `$2` **[Object][51]** (optional, default `{}`)
   - `$2.signal` &#x20;
 
-Returns **[Promise][48]\<URLSearchParams>** The query it came back with
+Returns **[Promise][58]\<URLSearchParams>** The query it came back with
 
 ## platform/updates
 
@@ -309,7 +399,7 @@ always the latest.
 
 Look for an update and download it, in the desktop app.
 
-Returns **[Promise][48]<([string][42] | null)>** The version downloaded, ready to install;
+Returns **[Promise][58]<([string][52] | null)>** The version downloaded, ready to install;
 null when the app is up to date, or not the desktop app
 
 ## installUpdate
@@ -317,7 +407,7 @@ null when the app is up to date, or not the desktop app
 Install the update `downloadUpdate` downloaded, and restart into it. Does
 not return, unless the install fails.
 
-Returns **[Promise][48]\<void>**&#x20;
+Returns **[Promise][58]\<void>**&#x20;
 
 [1]: #platformdesktop
 [2]: #desktoprequest
@@ -351,22 +441,32 @@ Returns **[Promise][48]\<void>**&#x20;
 [30]: #parameters-4
 [31]: #openlinkclicked
 [32]: #parameters-5
-[33]: #platformsignin
-[34]: #sign_in_port
-[35]: #callbackorigin
-[36]: #signininbrowser
-[37]: #parameters-6
-[38]: #platformupdates
-[39]: #downloadupdate
-[40]: #installupdate
-[41]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[42]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[43]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[44]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[45]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[46]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[47]: https://developer.mozilla.org/docs/Web/API/URL/URL
-[48]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[49]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[50]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
-[51]: https://developer.mozilla.org/docs/Web/API/MouseEvent
+[33]: #platformpersistence
+[34]: #asked
+[35]: #asktokeepdata
+[36]: #browsertraits
+[37]: #properties-2
+[38]: #storageadvice
+[39]: #properties-3
+[40]: #currentbrowser
+[41]: #storageadvice-1
+[42]: #parameters-6
+[43]: #platformsignin
+[44]: #sign_in_port
+[45]: #callbackorigin
+[46]: #signininbrowser
+[47]: #parameters-7
+[48]: #platformupdates
+[49]: #downloadupdate
+[50]: #installupdate
+[51]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[52]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[53]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[54]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[55]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[56]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[57]: https://developer.mozilla.org/docs/Web/API/URL/URL
+[58]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[59]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[60]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
+[61]: https://developer.mozilla.org/docs/Web/API/MouseEvent

@@ -7,8 +7,9 @@
       :key="`chat:${shownId}`"
       :story-id="storyId"
       :chat-id="shownId"
-      title="Chat"
       class="h-full w-full"
+      :show-back="showBack"
+      @back="$emit('back')"
       @open-chat="$emit('update:chatId', $event.chatId)"
       @new-chat="$emit('update:chatId', chatsApi.unstartedChat.value.id)"
     >
@@ -44,14 +45,17 @@ import { useChats } from '@/composables/useChats'
  *   beside this panel, for the toggle at the start of the chat's header that
  *   hides and shows it. Null where there is no editor beside it to toggle,
  *   and then there is no toggle.
+ * @property {boolean} [showBack] - Whether the header starts with a way back
+ *   to the list of chats, where the list is behind this panel: on a phone.
  */
 const props = defineProps({
   storyId: { type: String, required: true },
   chatId: { type: String, default: null },
   editorShowing: { type: [Boolean, null], default: null },
+  showBack: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['update:chatId', 'toggle-editor'])
+const emit = defineEmits(['update:chatId', 'toggle-editor', 'back'])
 
 const chatsApi = useChats(props.storyId)
 const ready = ref(false)

@@ -20,6 +20,7 @@ import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore'
 import { useDocumentsStore } from './documentsStore'
 import db from './db'
+import { freeProjectName } from '@/utils/titleValidation.js'
 
 /** @typedef {import('../types/models.js').Story} Story */
 
@@ -244,6 +245,35 @@ export const useStoriesStore = defineStore('stories', () => {
     )
   }
 
+  /**
+   * A name no other project goes by: `title`, or a numbered copy of it. See
+   * `freeProjectName`. The names are read off the projects' roots as far as
+   * they are loaded; `loadNames` loads them all, and the outline's project
+   * switcher has done so already.
+   *
+   * @param {string} title
+   * @param {string} [exceptStoryId] - The project being named, which is not in its own way
+   * @returns {string}
+   */
+  function freeName(title, exceptStoryId) {
+    const documentsStore = useDocumentsStore()
+    const taken = []
+    for (const id of stories.value.keys()) {
+      const root = id === exceptStoryId ? null : documentsStore.getRoot(id)
+      if (root) taken.push(root.title?.trim() || 'Untitled')
+    }
+    return freeProjectName(taken, title)
+  }
+
+  /**
+   * Load every project's name, for `freeName` to read.
+   * @returns {Promise<void>}
+   */
+  async function loadNames() {
+    await ensureInitialized()
+    await useDocumentsStore().loadRoots([...stories.value.keys()])
+  }
+
   return {
     // State
     stories,
@@ -258,5 +288,7 @@ export const useStoriesStore = defineStore('stories', () => {
     getAllStories,
     getAllStoriesOrdered,
     ensureInitialized,
+    freeName,
+    loadNames,
   }
 })

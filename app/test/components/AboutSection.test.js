@@ -11,6 +11,13 @@ describe('AboutSection', () => {
     expect(hrefs).toContain('https://github.com/inksprite-io/inksprite')
   })
 
+  it('names the release it is, when it was built as one', () => {
+    expect(mount(AboutSection, { props: { version: '0.1.0-dev.8' } }).text()).toContain(
+      'inksprite 0.1.0-dev.8'
+    )
+    expect(mount(AboutSection).find('[data-version]').exists()).toBe(false)
+  })
+
   it('credits every icon by title and creator, linked to its page', () => {
     const items = mount(AboutSection).findAll('[data-credits="icons"] li')
     expect(items).toHaveLength(ICON_CREDITS.length)

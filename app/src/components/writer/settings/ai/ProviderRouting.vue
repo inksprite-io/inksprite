@@ -1,6 +1,6 @@
 <template>
   <ExpandableSection
-    title="Provider Routing"
+    title="Provider routing"
     storage-key="ui.provider-config.routing"
     subsection
     content-wrapper-class="flex flex-col"
@@ -12,19 +12,20 @@
 
       <div class="flex flex-col gap-1">
         <SettingLabel
-          label="Ignored Providers"
+          label="Ignored providers"
           :overridden="isOverridden('ignore')"
           @reset="setRouting({ ignore: [...ROUTING_DEFAULTS.ignore] })"
         />
         <OpenRouterProviderSelect
           :model-value="routing.ignore"
+          label="Ignored providers"
           @update:model-value="setRouting({ ignore: $event })"
         />
       </div>
 
       <div class="flex flex-col gap-1">
         <SettingLabel
-          label="Data Collection"
+          label="Data collection"
           description="Providers that may train on your prompts."
           :overridden="isOverridden('dataCollection')"
           @reset="setRouting({ dataCollection: ROUTING_DEFAULTS.dataCollection })"
@@ -36,13 +37,14 @@
           option-value="value"
           class="w-full"
           size="small"
+          aria-label="Data collection"
           @update:model-value="setRouting({ dataCollection: $event })"
         />
       </div>
 
       <div class="flex items-center justify-between gap-2">
         <SettingLabel
-          label="Zero Data Retention"
+          label="Zero data retention"
           description="Some models have no such endpoint and need this off."
           :overridden="isOverridden('zdr')"
           @reset="setRouting({ zdr: ROUTING_DEFAULTS.zdr })"
@@ -50,6 +52,7 @@
         <ToggleSwitch
           :model-value="routing.zdr"
           class="flex-none"
+          aria-label="Zero data retention"
           @update:model-value="setRouting({ zdr: $event })"
         />
       </div>
@@ -69,6 +72,7 @@
           show-clear
           display="chip"
           placeholder="Any precision"
+          aria-label="Quantization"
           class="w-full"
           size="small"
           @update:model-value="setRouting({ quantizations: $event || [] })"
@@ -77,7 +81,7 @@
 
       <div class="flex items-center justify-between gap-2">
         <SettingLabel
-          label="Allow Fallbacks"
+          label="Allow fallbacks"
           description="Try the next eligible provider when one is down."
           :overridden="isOverridden('allowFallbacks')"
           @reset="setRouting({ allowFallbacks: ROUTING_DEFAULTS.allowFallbacks })"
@@ -85,6 +89,7 @@
         <ToggleSwitch
           :model-value="routing.allowFallbacks"
           class="flex-none"
+          aria-label="Allow fallbacks"
           @update:model-value="setRouting({ allowFallbacks: $event })"
         />
       </div>

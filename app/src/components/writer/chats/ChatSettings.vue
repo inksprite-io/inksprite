@@ -10,11 +10,11 @@
         severity="secondary"
         size="small"
         rounded
-        class="flex-none !bg-transparent !border-transparent hover:!bg-surface-700"
+        class="flex-none !bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700"
         aria-label="Back to chat"
         @click="emit('back')"
       />
-      <h2 class="text-md font-semibold truncate flex-1 text-center">Chat Settings</h2>
+      <h2 class="text-md font-semibold truncate flex-1 text-center">Chat settings</h2>
       <div class="w-8" />
     </div>
 
@@ -145,9 +145,6 @@
                   @update:model-value="setProjectContextEnabled"
                 />
               </div>
-              <p class="text-xs text-surface-500 dark:text-surface-400">
-                Sends the project overview and your pinned documents with every turn.
-              </p>
             </div>
           </div>
         </ExpandableSection>
@@ -204,7 +201,7 @@
                   :model-value="isGroupEnabled(group.id)"
                   :disabled="!modelToolsEnabled"
                   class="flex-none"
-                  :aria-label="`${group.label} tools`"
+                  :aria-label="toolsOf(group.label)"
                   :data-tool-group="group.id"
                   @update:model-value="setGroupEnabled(group.id, $event)"
                 />
@@ -220,25 +217,65 @@
                     class="text-xs text-surface-700 dark:text-surface-200 truncate"
                     :class="{ 'opacity-50': !isGroupEnabled(group.id) }"
                   >
-                    {{ tool.name }}
+                    {{ tool.label }}
                   </span>
                   <ToggleSwitch
                     :model-value="!disabledTools.includes(tool.name)"
                     :disabled="!isGroupEnabled(group.id)"
                     class="flex-none"
-                    :aria-label="tool.name"
+                    :aria-label="tool.label"
                     @update:model-value="setToolEnabled(tool.name, $event)"
                   />
                 </div>
               </div>
             </ExpandableSection>
 
-            <!-- The writer's servers, each opted into rather than withheld: a
-                 server connected tomorrow reaches no chat that did not ask. -->
-            <template v-if="servers.length > 0">
+            <!-- The web and the writer's servers, each opted into rather than
+                 withheld: one connected tomorrow reaches no chat that did not ask. -->
+            <template v-if="servers.length > 0 || webGroup">
               <p class="text-xs text-surface-500 dark:text-surface-400 pt-2 px-2">
                 From your connections
               </p>
+              <ExpandableSection
+                v-if="webGroup"
+                :title="webGroup.label"
+                storage-key="ui.chat-settings.tools.web"
+                subsection
+                content-wrapper-class="flex flex-col"
+              >
+                <template #actions>
+                  <ToggleSwitch
+                    :model-value="isWebEnabled"
+                    :disabled="!modelToolsEnabled"
+                    class="flex-none"
+                    :aria-label="toolsOf(webGroup.label)"
+                    data-web-tools
+                    @update:model-value="setWebEnabled"
+                  />
+                </template>
+                <div class="flex flex-col gap-1 pt-1 pb-2">
+                  <div
+                    v-for="tool in webGroup.tools"
+                    :key="tool.name"
+                    class="flex items-center justify-between gap-2"
+                  >
+                    <span
+                      v-tooltip.top="{ value: tool.description, showDelay: 400 }"
+                      class="text-xs text-surface-700 dark:text-surface-200 truncate"
+                      :class="{ 'opacity-50': !isWebEnabled }"
+                    >
+                      {{ tool.label }}
+                    </span>
+                    <ToggleSwitch
+                      :model-value="!disabledTools.includes(tool.name)"
+                      :disabled="!isWebEnabled"
+                      class="flex-none"
+                      :aria-label="tool.label"
+                      @update:model-value="setToolEnabled(tool.name, $event)"
+                    />
+                  </div>
+                </div>
+              </ExpandableSection>
               <ExpandableSection
                 v-for="server in servers"
                 :key="server.id"
@@ -252,7 +289,7 @@
                     :model-value="isServerEnabled(server.id)"
                     :disabled="!modelToolsEnabled"
                     class="flex-none"
-                    :aria-label="`${server.name} tools`"
+                    :aria-label="toolsOf(server.name)"
                     :data-server="server.id"
                     @update:model-value="setServerEnabled(server.id, $event)"
                   />
@@ -476,12 +513,15 @@ import { useAIConfig } from '@/composables/useAIConfig'
 import { useNarration } from '@/composables/useNarration'
 import { useProfiles } from '@/composables/useProfiles'
 import { getToolGroups, SKILLS_GROUP } from '@/ai/tools/index.js'
+import { WEB_GROUP } from '@/ai/tools/web.js'
 import { allSkills, skillLabel, skillPrompt } from '@/ai/skills/index.js'
 import { loadedByModel, waitingOn } from '@/ai/skills/runner.js'
 import { useSkills } from '@/composables/useSkills'
 import { useLoadedSkills } from '@/composables/useLoadedSkills.js'
 import { useMcpServers } from '@/composables/useMcpServers.js'
 import { reachable, serversForChat } from '@/mcp/servers.js'
+import { useWebSearch } from '@/composables/useWebSearch.js'
+import { webForChat } from '@/web/config.js'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { COMMANDS } from '@/ai/commands.js'
@@ -520,6 +560,9 @@ const { skills: library, wordingOf } = useSkills()
 // The writer's MCP servers, as the Tools section lists them. See mcp/servers.js.
 const { servers: connectedServers } = useMcpServers()
 
+// Web search, listed with them: only once a service can search. See web/config.js.
+const webSearch = useWebSearch()
+
 const servers = computed(() =>
   connectedServers.value.filter(reachable).map(server => ({
     id: server.id,
@@ -554,6 +597,21 @@ const setServerEnabled = (id, enabled) => {
   update({ mcpServers: enabled ? [...others, id] : others })
 }
 
+/** Whether this chat searches the web: its choice, or its profile's until it makes one. */
+const isWebEnabled = computed(
+  () =>
+    modelToolsEnabled.value &&
+    webForChat(chat.value, selectedProfileId.value, webSearch.setup.value)
+)
+
+/**
+ * Search the web in this chat, or stop. From then on the chat no longer
+ * follows its profile.
+ *
+ * @param {boolean} enabled
+ */
+const setWebEnabled = enabled => update({ web: enabled })
+
 // What this chat has loaded, read off its messages; see ai/skills/loads.js.
 const {
   loaded: loadedSkillNames,
@@ -561,6 +619,25 @@ const {
   drop: dropSkill,
 } = useLoadedSkills(() => props.chatId)
 const settingsPanel = useSettingsPanel()
+
+/**
+ * A tool as the writer reads it: its name in words, as a server's tool is
+ * listed by its title. `read_document` is how the model knows it.
+ * @param {string} name
+ * @returns {string}
+ */
+const readableTool = name => {
+  const words = name.replace(/_/g, ' ').trim()
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
+/**
+ * What a group's switch is called: its tools, said once — a group already
+ * called "RPG Tools" is not "RPG Tools tools".
+ * @param {string} label
+ * @returns {string}
+ */
+const toolsOf = label => (/\btools$/i.test(label) ? label : `${label} tools`)
 
 /**
  * Registered tools by group, in the order the registry declares them. Read
@@ -573,14 +650,23 @@ const allGroups = computed(() => {
     label: group.label,
     tools: group.definitions.map(d => ({
       name: d.function.name,
+      label: readableTool(d.function.name),
       description: d.function.description,
     })),
   }))
 })
 
 // The skills have a section of their own, so they are not also a group in the
-// tool list: one switch per thing, in the place that explains what it is.
-const toolGroups = computed(() => allGroups.value.filter(group => group.id !== SKILLS_GROUP))
+// tool list: one switch per thing, in the place that explains what it is. The
+// web is listed with the connections, since that is where it is set up.
+const toolGroups = computed(() =>
+  allGroups.value.filter(group => group.id !== SKILLS_GROUP && group.id !== WEB_GROUP)
+)
+
+/** The web tools, while a service is set up to search. */
+const webGroup = computed(() =>
+  webSearch.inUse.value ? allGroups.value.find(group => group.id === WEB_GROUP) || null : null
+)
 
 /**
  * The skills the model is offered, by the name each is switched by: its tool,

@@ -86,7 +86,10 @@ describe('DataSection', () => {
   })
 
   it('asks before restoring, then restores', async () => {
-    const parsed = { app: 'inksprite' }
+    const parsed = {
+      app: 'inksprite',
+      tables: { chats: [{ id: 'c1' }], messages: [{ id: 'm1' }, { id: 'm2' }] },
+    }
     backup.readBackupFile.mockResolvedValue({
       backup: parsed,
       summary: [{ table: 'messages', count: 4 }],
@@ -99,7 +102,7 @@ describe('DataSection', () => {
 
     expect(backup.restoreBackup).not.toHaveBeenCalled()
     expect(confirmRequire).toHaveBeenCalledTimes(1)
-    expect(confirmRequire.mock.calls[0][0].message).toContain('4 messages')
+    expect(confirmRequire.mock.calls[0][0].message).toContain('It holds 1 chat.')
 
     await confirmRequire.mock.calls[0][0].accept()
 

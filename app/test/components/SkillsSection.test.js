@@ -171,8 +171,10 @@ describe('SkillsSection', () => {
     const wrapper = mountSection()
     const builtIn = wrapper.find('[data-list="built-in"]')
 
-    expect(builtIn.find('[data-skill="director"]').text()).toContain('Called by the model')
     expect(builtIn.find('[data-skill="interpret"]').text()).toContain('/interpret')
+    expect(builtIn.find('[data-skill="compact"]').text()).toContain('/compact')
+    // Set aside for now.
+    expect(builtIn.find('[data-skill="director"]').exists()).toBe(false)
   })
 
   it('says which built-ins you have reworded', () => {
@@ -180,7 +182,7 @@ describe('SkillsSection', () => {
     const builtIn = mountSection().find('[data-list="built-in"]')
 
     expect(builtIn.find('[data-skill="interpret"] [data-reworded]').exists()).toBe(true)
-    expect(builtIn.find('[data-skill="director"] [data-reworded]').exists()).toBe(false)
+    expect(builtIn.find('[data-skill="compact"] [data-reworded]').exists()).toBe(false)
   })
 
   it('opens a built-in to reword, and comes back', async () => {
@@ -196,7 +198,7 @@ describe('SkillsSection', () => {
     expect(mountSection().find('[data-list="yours"]').text()).toContain('None yet.')
   })
 
-  it('lists yours with what kind each is and what it is waiting on', () => {
+  it('lists yours with who calls each and what it is waiting on', () => {
     library.rows.value = [
       tighten,
       {
@@ -208,11 +210,10 @@ describe('SkillsSection', () => {
     ]
     const yours = mountSection().find('[data-list="yours"]')
 
-    expect(yours.find('[data-skill="tighten"]').text()).toContain('A saved prompt')
+    expect(yours.find('[data-skill="tighten"]').text()).toContain('Called by you')
     // The model loads it, and the writer can call it too.
-    expect(yours.find('[data-skill="house-style"]').text()).toContain(
-      'Joins the conversation · Called by the model or you'
-    )
+    expect(yours.find('[data-skill="house-style"]').text()).toContain('Called by the model or you')
+    expect(yours.text()).not.toMatch(/Runs on its own|Joins the conversation|A saved prompt/)
     expect(yours.find('[data-skill="broken"]').text()).toMatch(/Does not read.*frontmatter/s)
   })
 
@@ -234,9 +235,46 @@ describe('SkillEditor', () => {
     expect(wrapper.find('[data-field="name"]').element.value).toBe('new-skill-2')
   })
 
+  it('puts the focus in a new skill’s name, ready to be typed over', () => {
+    const wrapper = mount(SkillEditor, {
+      props: { skillId: null },
+      global: { plugins: [PrimeVue], directives: { tooltip: {} } },
+      attachTo: document.body,
+    })
+    const name = wrapper.find('[data-field="name"]').element
+
+    expect(document.activeElement).toBe(name)
+    expect([name.selectionStart, name.selectionEnd]).toEqual([0, name.value.length])
+    wrapper.unmount()
+  })
+
+  it('starts with nothing written for it, and waits for it without a word', () => {
+    const wrapper = mountEditor()
+
+    expect(wrapper.find('[data-field="description"]').element.value).toBe('')
+    expect(wrapper.find('[data-field="description"]').attributes('placeholder')).toBeTruthy()
+    expect(wrapper.find('[data-field="body"]').element.value).toBe('')
+    expect(wrapper.find('[data-problems]').exists()).toBe(false)
+    expect(wrapper.find('[data-action="save"]').attributes('disabled')).toBeDefined()
+  })
+
+  it('says a field it needs is empty under it, once the writer has left it', async () => {
+    const wrapper = mountEditor()
+    expect(wrapper.find('[data-description-problem]').exists()).toBe(false)
+
+    await wrapper.find('[data-field="description"]').trigger('blur')
+    await wrapper.find('[data-field="body"]').trigger('blur')
+
+    expect(wrapper.find('[data-description-problem]').text()).toBe('It needs a description.')
+    expect(wrapper.find('[data-body-problem]').text()).toBe('It needs instructions.')
+    expect(wrapper.find('[data-problems]').exists()).toBe(false)
+  })
+
   it('writes the file as the form changes, and saves the file', async () => {
     const wrapper = mountEditor()
     await wrapper.find('[data-field="name"]').setValue('trim')
+    await wrapper.find('[data-field="description"]').setValue('Trims a passage.')
+    await wrapper.find('[data-field="body"]').setValue('Cut $ARGUMENTS down.')
     await wrapper.find('[data-action="save"]').trigger('click')
     await flushPromises()
 
@@ -272,7 +310,10 @@ describe('SkillEditor', () => {
     const wrapper = mountEditor()
     await wrapper.find('[data-field="name"]').setValue('tighten')
 
-    expect(wrapper.find('[data-problems]').text()).toContain('already have a skill called tighten')
+    expect(wrapper.find('[data-name-problem]').text()).toContain(
+      'already have a skill called tighten'
+    )
+    expect(wrapper.find('[data-problems]').exists()).toBe(false)
     expect(wrapper.find('[data-action="save"]').attributes('disabled')).toBeDefined()
   })
 

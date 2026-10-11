@@ -34,6 +34,12 @@
  * title in `update_document` — so that a document is never created or renamed
  * on top of one the model cannot see.
  *
+ * A chat that plays a card reads it with the names in. The documents say
+ * `{{char}}` and `{{user}}`, and `open` hands such a chat a view of the tree in
+ * which titles, summaries and text have them filled in, so every listing,
+ * read, search and offset is of the text its model is shown. What it writes
+ * goes in as written; see cards/macros.js.
+ *
  * A chat can ask the writer before anything changes. Then a writing tool
  * checks what it would do, records it as proposed, and tells the model so;
  * `applyProposal` is what the writer's Accept runs. Title changes
@@ -55,6 +61,14 @@ import { skillWithFile } from './useSkill.js'
 import { describeRepository, isRepository, isSourceFile, repositoryOf } from '@/source/tree.js'
 import { languageOf } from '@/source/language.js'
 import { lineCount } from '@/source/text.js'
+import {
+  countComments,
+  editAroundComments,
+  findComments,
+  quoteWithoutComments,
+  withoutComments,
+} from '@/editor/comments.js'
+import { namesOf, storedPassage, substitute } from '@/cards/macros.js'
 
 /**
  * The answer for a path nothing is at. When the path is one of the files of a
@@ -153,17 +167,71 @@ function recording(context, api, document, tool, write) {
  * Load a story's tree and hand back the pieces the tools need, with how the
  * chat asking reads it.
  *
+ * A chat with names reads the tree through them: `api` is a view whose
+ * documents have the names filled in, and `stored` the tree as it is, for
+ * what has to be said about the text itself rather than read from it.
+ *
  * @param {string} storyId
- * @param {ChatMarks|string|null} [chat] - The chat, or its id. Without one only
- *   what is hidden outright is left out, which is what the writer's own Accept
- *   reads by.
+ * @param {(ChatMarks & {userName?: string, characterName?: string})|string|null} [chat] -
+ *   The chat, or its id. Without one only what is hidden outright is left out,
+ *   which is what the writer's own Accept reads by, and nothing is filled in.
  */
 async function open(storyId, chat) {
   const api = useDocuments(storyId)
   await api.init()
   const marks = typeof chat === 'string' ? useChatsStore().getChatById(chat) : chat
   const { sees, markFor } = chatVisibility(marks, api.get)
-  return { api, store: useDocumentsStore(), sees, markFor, marks }
+  const names = namesOf(marks)
+  return {
+    api: names ? namedView(api, names) : api,
+    stored: api,
+    names,
+    store: useDocumentsStore(),
+    sees,
+    markFor,
+    marks,
+  }
+}
+
+/**
+ * The tree as a chat with names reads it. Documents are what the view hands
+ * out, so a tool walking the tree, building a path or reading a body never
+ * meets a macro; writes go to the tree as it is.
+ *
+ * @param {DocumentsApi} api
+ * @param {import('@/cards/macros.js').Names} names
+ * @returns {DocumentsApi}
+ */
+function namedView(api, names) {
+  const named = (/** @type {Document|undefined} */ document) =>
+    document && withNames(document, names)
+  return {
+    ...api,
+    get: id => named(api.get(id)),
+    childrenOf: id => api.childrenOf(id).map(named),
+  }
+}
+
+/**
+ * A document with the names in its title, summary and text.
+ *
+ * The text only when it is asked for: a path is built from every document
+ * above it, and the tree is walked whole for every listing and search, while
+ * the body of a long file is read rarely.
+ *
+ * @param {Document} document
+ * @param {import('@/cards/macros.js').Names} names
+ * @returns {Document}
+ */
+function withNames(document, names) {
+  /** @type {string|null} */
+  let content = null
+  const named = { ...document, title: substitute(document.title, names) }
+  if (document.summary) named.summary = substitute(document.summary, names)
+  return Object.defineProperty(named, 'content', {
+    enumerable: true,
+    get: () => (content ??= substitute(document.content, names)),
+  })
 }
 
 /**
@@ -285,6 +353,9 @@ function findByPath(api, storyId, path, sees) {
  * the first and no sign that anything went wrong — the same reason this has
  * never invented a parent. `create_folder` is how a folder comes to exist.
  *
+ * Nothing is made inside a repository: its files are what was imported, and
+ * a refresh settles it against where it came from.
+ *
  * A path that is already taken is refused too. When the path is the address,
  * two documents sharing one makes the second unreachable. That includes a
  * path held by a document the model cannot see: a hidden one still holds its
@@ -318,6 +389,9 @@ function resolveNewPath(api, storyId, path, sees) {
     }
   }
   if (parent.type !== 'folder') return { error: `"${parentPath}" is a document, not a folder` }
+  if (repositoryOf(api.get, parent)) {
+    return { error: `"${parentPath}" is in a repository, which is read-only. Put it elsewhere.` }
+  }
 
   const full = [parentPath, title].filter(Boolean).join('/')
   if (findByPath(api, storyId, full, sees)) {
@@ -338,6 +412,7 @@ function resolveNewPath(api, storyId, path, sees) {
  * @property {number} [words] - How long a document is; a folder has no length
  * @property {number} [pages] - A file's pages, for one that has pages
  * @property {number} [lines] - A source file's lines, in place of words
+ * @property {number} [comments] - How many of the writer's comments it holds, when any
  */
 
 /**
@@ -353,19 +428,22 @@ function resolveNewPath(api, storyId, path, sees) {
  *
  * A folder has no length of its own. A file says its pages too, when it has
  * them, since a page is what a paged read will take. A source file says
- * lines instead of words: code is read and cited by line.
+ * lines instead of words: code is read and cited by line. A text document
+ * says how many of the writer's comments it holds, when it holds any.
  *
  * @param {Document} document
  * @param {(id: string) => Document|undefined} [get] - For telling a source
  *   file, which is one by being in a repository
- * @returns {{words?: number, pages?: number, lines?: number}}
+ * @returns {{words?: number, pages?: number, lines?: number, comments?: number}}
  */
 function sizeOf(document, get) {
   if (document.type === 'folder') return {}
   if (get && isSourceFile(get, document)) return { lines: lineCount(document.content || '') }
+  const comments = document.type === 'text' ? countComments(document.content) : 0
   return {
     words: document.wordCount || 0,
     ...(typeof document.pages === 'number' ? { pages: document.pages } : {}),
+    ...(comments > 0 ? { comments } : {}),
   }
 }
 /**
@@ -417,8 +495,7 @@ function entriesBelow(api, parentId, sees) {
  */
 export async function pinnedDocuments(storyId, chat) {
   if (!chat?.pinnedIds?.length) return []
-  const { api } = await open(storyId)
-  const { sees, markFor } = chatVisibility(chat, api.get)
+  const { api, sees, markFor } = await open(storyId, chat)
 
   return allDocuments(api, storyId)
     .filter(document => document.type !== 'folder' && sees(document))
@@ -470,7 +547,7 @@ export const listDocumentsDefinition = {
   function: {
     name: 'list_documents',
     description:
-      'List what the project holds, or what is under one folder: a line for each document and folder, by the full path every tool takes, with how long each document is and whether the user pinned it. A folder ends in "/". Everything under the folder is listed when it fits; in a large project, a folder further down says how many it holds instead, and listing it shows them. A repository (a codebase) is one line until its own path is listed; its files are code, measured in lines.',
+      'List what the project holds, or what is under one folder: a line for each document and folder, by the full path every tool takes, with how long each document is, how many comments the user left on it, and whether they pinned it. A folder ends in "/". Everything under the folder is listed when it fits; in a large project, a folder further down says how many it holds instead, and listing it shows them. A repository (a codebase) is one line until its own path is listed; its files are code, measured in lines.',
     parameters: {
       type: 'object',
       properties: {
@@ -514,6 +591,8 @@ function listingLine(api, document, markFor, hidden) {
         ...(typeof document.pages === 'number' ? [`${counted(document.pages)} pages`] : []),
         `${counted(document.wordCount || 0)} words`,
       ]
+  const comments = document.type === 'text' ? countComments(document.content) : 0
+  if (comments > 0) facts.push(comments === 1 ? '1 comment' : `${counted(comments)} comments`)
   if (markFor(document) === 'pinned') facts.push('pinned')
   return `${path} — ${facts.join(', ')}`
 }
@@ -722,7 +801,7 @@ function readSource(document, base, args) {
 export async function executeReadDocument(args, context) {
   if (!context?.storyId) return { error: 'No story context available' }
   const chat = context.chatId ? useChatsStore().getChatById(context.chatId) : null
-  const { api, sees } = await open(context.storyId, chat)
+  const { api, stored, sees } = await open(context.storyId, chat)
 
   const document = findByPath(api, context.storyId, args.path, sees)
   if (!document) return noDocument(args.path)
@@ -736,8 +815,10 @@ export async function executeReadDocument(args, context) {
   // The same part of the same text, read in a turn still in view, is above
   // already; a second copy would only cost its length again. Only for a caller
   // that sees the conversation's calls: a skill reads a transcript without them.
+  // By the text as stored, which is what the read's note hashed: see readNotes.
   const messages = context.conversation?.()
-  if (messages && readInView(messages, document.id, args, textHash(text))) {
+  const hash = textHash(stored.get(document.id)?.content || '')
+  if (messages && readInView(messages, document.id, args, hash)) {
     return {
       path: pathOf(api, document),
       unchanged: 'Unchanged since you read this earlier in the conversation; that read is above.',
@@ -980,11 +1061,132 @@ export function readNotes(toolName, result) {
  * @returns {Promise<(id: string) => import('@/ai/context/reads.js').Located|null>}
  */
 export async function documentLocator(storyId, chat) {
-  const { api, sees } = await open(storyId, chat)
+  const { api, stored, sees } = await open(storyId, chat)
   return id => {
     const document = api.get(id)
     if (!document || document.type === 'folder' || !sees(document)) return null
-    return { path: pathOf(api, document), text: document.content || '' }
+    // The path the chat reads, and the text as stored, which is what a read's
+    // note hashed: see readNotes.
+    return { path: pathOf(api, document), text: stored.get(id)?.content || '' }
+  }
+}
+
+// ============================================================================
+// list_comments — what the writer has flagged, across the project
+// ============================================================================
+
+/** @type {ToolDefinition} */
+export const listCommentsDefinition = {
+  type: /** @type {const} */ ('function'),
+  function: {
+    name: 'list_comments',
+    description:
+      "The writer's comments: each passage they highlighted and what they said about it, with the document it is in. A comment sits in the text as {==passage==}{>>id: comment<<}; this lists them without reading every document. Then read the document to see the passage in context, and resolve_comment to act on it.",
+    parameters: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: "One document's path, to list only its comments. Every document otherwise.",
+        },
+      },
+    },
+  },
+}
+
+/**
+ * @param {{path?: string}} args
+ * @param {ToolContext} context
+ */
+export async function executeListComments(args, context) {
+  if (!context?.storyId) return { error: 'No story context available' }
+  const { api, sees, names } = await open(context.storyId, context.chatId)
+
+  /** @type {Document[]} */
+  let documents
+  if (args?.path) {
+    const document = findByPath(api, context.storyId, args.path, sees)
+    if (!document) return noDocument(args.path)
+    documents = [document]
+  } else {
+    documents = visibleDocuments(api, context.storyId, sees)
+  }
+
+  const comments = []
+  for (const document of documents) {
+    if (document.type !== 'text') continue
+    for (const found of findComments(api.currentContent(document.id))) {
+      comments.push({
+        id: found.id,
+        path: pathOf(api, document),
+        text: substitute(found.text, names),
+        comment: substitute(found.comment, names),
+      })
+    }
+  }
+  return { comments }
+}
+
+// ============================================================================
+// resolve_comment — take a comment off, by its id
+// ============================================================================
+
+/** @type {ToolDefinition} */
+export const resolveCommentDefinition = {
+  type: /** @type {const} */ ('function'),
+  function: {
+    name: 'resolve_comment',
+    description:
+      "Take one of the writer's comments off, leaving its passage as it is: for a comment that asked something you have answered in the chat, or that needs no change. To change the passage, use edit_document, which resolves a comment whose words it changes. Name the comment by its id, from the markup or from list_comments; there is nothing to quote.",
+    parameters: {
+      type: 'object',
+      properties: {
+        path: { type: 'string', description: "The document's path from the project root." },
+        id: { type: 'string', description: "The comment's id, as in {>>id: …<<}." },
+      },
+      required: ['path', 'id'],
+    },
+  },
+}
+
+/**
+ * @param {{path: string, id: string}} args
+ * @param {ToolContext} context
+ */
+export async function executeResolveComment(args, context) {
+  if (!context?.storyId) return { error: 'No story context available' }
+  const { api, sees } = await open(context.storyId, context.chatId)
+
+  const document = findByPath(api, context.storyId, args.path, sees)
+  if (!document) return noDocument(args.path)
+  if (document.type === 'folder') return { error: 'A folder has no comments' }
+  if (document.type === 'file') return { error: fileIsNotWritten(args.path) }
+
+  const found = findComments(api.currentContent(document.id)).find(c => c.id === args.id)
+  if (!found) {
+    return {
+      error: `No comment "${args.id}" in "${args.path}". list_comments gives the ids that are there.`,
+    }
+  }
+
+  if (context.propose) {
+    return propose(context, {
+      documentId: document.id,
+      path: pathOf(api, document),
+      tool: 'edit_document',
+      old: found.markup,
+      new: found.text,
+    })
+  }
+
+  recording(context, api, document, 'edit_document', () => {
+    api.replaceText(document.id, found.markup, found.text)
+  })
+
+  return {
+    success: true,
+    document: { id: document.id, title: document.title, path: pathOf(api, document) },
+    resolved: args.id,
   }
 }
 
@@ -1587,7 +1789,7 @@ export const editDocumentDefinition = {
   function: {
     name: 'edit_document',
     description:
-      'Change one passage of a document, leaving the rest exactly as it is. Give the passage as it reads now and what it should read instead. This is how to revise: it sends only what changes, so prefer it over update_document for anything short of a rewrite. The passage has to match the document exactly and exactly once, so quote it as read_document gave it and include enough of it to be unique.',
+      "Change one passage of a document, leaving the rest exactly as it is. Give the passage as it reads now and what it should read instead. This is how to revise: it sends only what changes, so prefer it over update_document for anything short of a rewrite. The passage has to match the document exactly and exactly once, so quote it as read_document gave it and include enough of it to be unique. The writer's comment markup can be left out of both. A comment whose highlighted words the edit changes is resolved with it, and the result lists any it resolved; a comment whose words come through unchanged stays on them.",
     parameters: {
       type: 'object',
       properties: {
@@ -1598,7 +1800,7 @@ export const editDocumentDefinition = {
         old: {
           type: 'string',
           description:
-            'The passage to change, exactly as it appears in the document — same words, punctuation, line breaks, and Markdown.',
+            'The passage to change, exactly as it appears in the document — same words, punctuation, line breaks, and Markdown — with or without comment markup.',
         },
         new: {
           type: 'string',
@@ -1657,62 +1859,97 @@ export function nearestContext(content, passage) {
  */
 export async function executeEditDocument(args, context) {
   if (!context?.storyId) return { error: 'No story context available' }
-  const { api, sees } = await open(context.storyId, context.chatId)
+  const { api, sees, names } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
   if (!document) return noDocument(args.path)
   if (document.type === 'folder') return { error: 'A folder has no content to edit' }
   if (document.type === 'file') return { error: fileIsNotWritten(args.path) }
 
-  const old = typeof args.old === 'string' ? args.old : ''
+  const quoted = typeof args.old === 'string' ? args.old : ''
   const replacement = typeof args.new === 'string' ? args.new : ''
-  if (!old)
+  if (!quoted)
     return { error: 'Give the passage to change as "old"; to add text, use append_document.' }
 
+  // The passage is found in the text as it reads without the writer's
+  // comments, so a quote may carry their markup or leave it out, and what
+  // the model writes never makes one.
+  const stored = api.currentContent(document.id)
+  const plain = withoutComments(stored)
+  const plainQuote = quoteWithoutComments(quoted)
+  const plainReplacement = quoteWithoutComments(replacement)
+
+  // A chat with names quotes the text with the names in, which is not what
+  // the document says where it has macros: the passage is found there and
+  // changed where it is in the document. Counted as the model sees it.
+  const found = names ? storedPassage(plain, names, plainQuote, plainReplacement) : null
+  const edit = editAroundComments(stored, found?.old ?? plainQuote, found?.new ?? plainReplacement)
+  const { old, new: written, resolved } = edit
+
+  // Not tried unless it is there once as the model sees it: a quote that is
+  // there twice in what it read could be there once in the document, and be
+  // the wrong one.
   /** @type {{applied: boolean, count: number}} */
   let outcome = { applied: false, count: 0 }
-  if (context.propose) {
+  if ((found && found.count !== 1) || edit.count !== 1) {
+    outcome = { applied: false, count: found && found.count !== 1 ? found.count : edit.count }
+  } else if (context.propose) {
     // Checked as if applied, so a misquote is corrected now rather than when
     // the writer accepts.
     const count = api.currentContent(document.id).split(old).length - 1
     outcome = { applied: count === 1, count }
   } else {
     recording(context, api, document, 'edit_document', () => {
-      outcome = api.replaceText(document.id, old, replacement)
+      outcome = api.replaceText(document.id, old, written)
     })
   }
   const { applied, count } = outcome
   if (!applied) {
-    const content = api.currentContent(document.id)
+    const content = substitute(api.currentContent(document.id), names)
     if (count > 1) {
       return {
         error: `"old" appears ${count} times in "${args.path}". Include more of the surrounding text so it matches once.`,
       }
     }
-    const spacedDifferently = squash(content).includes(squash(old))
+    const spacedDifferently = squash(withoutComments(content)).includes(squash(plainQuote))
     return {
       error: spacedDifferently
         ? `"old" was not found in "${args.path}" as written, though the words are there: the line breaks or spacing differ. Quote the passage exactly as read_document gave it.`
         : `"old" was not found in "${args.path}". Quote the passage exactly as read_document gave it; the nearest lines are in "nearest".`,
-      nearest: nearestContext(content, old),
+      nearest: nearestContext(content, quoted),
     }
   }
 
+  // What the writer said on each comment the edit resolved, for the model to
+  // see what went with the old words.
+  const resolvedComments = resolved.length
+    ? {
+        resolvedComments: resolved.map(comment => ({
+          id: comment.id,
+          comment: substitute(comment.comment, names),
+        })),
+      }
+    : {}
+
   if (context.propose) {
-    return propose(context, {
-      documentId: document.id,
-      path: pathOf(api, document),
-      tool: 'edit_document',
-      old,
-      new: replacement,
-    })
+    return {
+      ...propose(context, {
+        documentId: document.id,
+        path: pathOf(api, document),
+        tool: 'edit_document',
+        old,
+        new: written,
+      }),
+      ...resolvedComments,
+    }
   }
 
   return {
     success: true,
     document: { id: document.id, title: document.title, path: pathOf(api, document) },
-    charactersRemoved: old.length,
+    charactersRemoved: quoted.length,
     charactersWritten: replacement.length,
+    ...resolvedComments,
   }
 }
 

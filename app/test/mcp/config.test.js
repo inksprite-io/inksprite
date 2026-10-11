@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { nameFromUrl, parseServerConfig } from '@/mcp/config.js'
+import { isWebAddress, nameFromUrl, parseServerConfig } from '@/mcp/config.js'
 
 describe('parseServerConfig', () => {
   it('reads the mcpServers block other apps keep', () => {
@@ -49,6 +49,18 @@ describe('parseServerConfig', () => {
     expect(servers).toEqual([{ name: 'files', command: 'npx', args: ['-y', '@x/files'] }])
   })
 
+  it('reads a block copied without the braces around it', () => {
+    const { servers, errors } = parseServerConfig(
+      '"mcpServers": { "wiki": { "url": "https://example.com/mcp" } }'
+    )
+    expect(errors).toEqual([])
+    expect(servers).toEqual([{ name: 'wiki', url: 'https://example.com/mcp' }])
+
+    expect(parseServerConfig('"wiki": { "url": "https://example.com/mcp" }').servers).toHaveLength(
+      1
+    )
+  })
+
   it('says what is wrong with what it cannot read', () => {
     expect(parseServerConfig('not json').errors[0]).toMatch(/isn’t JSON/)
     expect(parseServerConfig('[]').errors).toEqual(['That isn’t a list of servers.'])
@@ -65,5 +77,21 @@ describe('nameFromUrl', () => {
     expect(nameFromUrl('https://mcp.deepwiki.com/mcp')).toBe('Deepwiki')
     expect(nameFromUrl('https://huggingface.co/mcp')).toBe('Huggingface')
     expect(nameFromUrl('nonsense')).toBe('Server')
+  })
+
+  it('names one on this machine or the network by its address and port', () => {
+    expect(nameFromUrl('http://127.0.0.1:8080/mcp')).toBe('127.0.0.1:8080')
+    expect(nameFromUrl('http://192.168.1.20/mcp')).toBe('192.168.1.20')
+    expect(nameFromUrl('http://localhost:3000/mcp')).toBe('localhost:3000')
+    expect(nameFromUrl('http://[::1]:3000/mcp')).toBe('[::1]:3000')
+  })
+})
+
+describe('isWebAddress', () => {
+  it('takes http and https addresses only', () => {
+    expect(isWebAddress('https://example.com/mcp')).toBe(true)
+    expect(isWebAddress(' http://127.0.0.1:8080 ')).toBe(true)
+    expect(isWebAddress('not a url')).toBe(false)
+    expect(isWebAddress('ftp://example.com')).toBe(false)
   })
 })

@@ -38,7 +38,7 @@ describe('AiAllowedProviders', () => {
     const wrapper = await mountAllowed(undefined)
 
     expect(wrapper.findComponent(MultiSelect).props('modelValue')).toEqual([])
-    expect(wrapper.find('button[aria-label="Reset Allowed Providers"]').exists()).toBe(false)
+    expect(wrapper.find('button[aria-label="Reset Allowed providers"]').exists()).toBe(false)
   })
 
   it('emits the chosen slugs', async () => {
@@ -53,7 +53,7 @@ describe('AiAllowedProviders', () => {
     const wrapper = await mountAllowed(['deepinfra'])
 
     wrapper.findComponent(MultiSelect).vm.$emit('update:modelValue', null)
-    await wrapper.find('button[aria-label="Reset Allowed Providers"]').trigger('click')
+    await wrapper.find('button[aria-label="Reset Allowed providers"]').trigger('click')
 
     expect(wrapper.emitted('update:modelValue')).toEqual([[undefined], [undefined]])
   })

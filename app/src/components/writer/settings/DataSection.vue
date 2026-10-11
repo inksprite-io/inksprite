@@ -57,6 +57,7 @@ import Dialog from 'primevue/dialog'
 import { useConfirm } from 'primevue/useconfirm'
 import { useBackup } from '@/composables/useBackup'
 import { useToast } from '@/composables/useToast'
+import { describeBackupContents } from '@/utils/backup.js'
 
 const backup = useBackup()
 const toast = useToast()
@@ -68,21 +69,6 @@ const isExporting = ref(false)
 const isImporting = ref(false)
 /** @type {import('vue').Ref<HTMLInputElement|null>} */
 const fileInput = ref(null)
-
-/**
- * Render row counts as a short phrase for the confirmation prompt.
- * @param {Array<{table: string, count: number}>} summary
- * @returns {string}
- */
-const describeSummary = summary => {
-  if (summary.length === 0) return 'It contains no data.'
-  const head = summary
-    .slice(0, 3)
-    .map(entry => `${entry.count} ${entry.table}`)
-    .join(', ')
-  const rest = summary.length - 3
-  return rest > 0 ? `It contains ${head}, and ${rest} more tables.` : `It contains ${head}.`
-}
 
 const handleExport = async () => {
   exportDialogVisible.value = false
@@ -114,11 +100,11 @@ const handleFileChange = async event => {
 
   isImporting.value = true
   try {
-    const { backup: parsed, summary } = await backup.readBackupFile(file)
+    const { backup: parsed } = await backup.readBackupFile(file)
 
     confirm.require({
       header: 'Replace all data?',
-      message: `${describeSummary(summary)} Everything currently in inksprite will be permanently replaced, and the app will reload.`,
+      message: `${describeBackupContents(parsed)} Everything currently in inksprite will be permanently replaced, and the app will reload.`,
       icon: 'pi pi-exclamation-triangle',
       rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       acceptProps: { label: 'Replace', severity: 'danger' },

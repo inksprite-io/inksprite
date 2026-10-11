@@ -35,4 +35,10 @@ describe('countWords', () => {
     expect(countWords(null)).toBe(0)
     expect(countWords(undefined)).toBe(0)
   })
+
+  it("counts a comment's passage and not what was said about it", () => {
+    expect(
+      countWords('We had a {==cold and narrow==}{>>c7k2m1: reword this phrase<<} attic.')
+    ).toBe(7)
+  })
 })

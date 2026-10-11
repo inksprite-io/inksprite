@@ -37,25 +37,6 @@
         </span>
       </div>
 
-      <div v-if="found.shape === 'card'" class="flex flex-col gap-1">
-        <label
-          for="card-user-name"
-          class="text-xs font-medium text-surface-700 dark:text-surface-200"
-        >
-          Your name in this card
-        </label>
-        <InputText
-          id="card-user-name"
-          v-model="userName"
-          placeholder="You"
-          class="w-full"
-          autofocus
-        />
-        <p class="text-xs text-surface-500 dark:text-surface-400">
-          Replaces <code>{{ USER_MACRO }}</code> in the card.
-        </p>
-      </div>
-
       <div v-if="found.systemPrompt" class="flex flex-col gap-1">
         <div class="flex items-center justify-between gap-2">
           <label class="text-xs font-medium text-surface-700 dark:text-surface-200">
@@ -87,17 +68,13 @@
  * A card is somebody else's work and arrives with more in it than its name —
  * a book of several hundred entries, a dozen greetings, a prompt override.
  * Writing all of that into the writer's tree without saying so first is a
- * surprise, and the two things they may want to decide — what `{{user}}`
- * becomes, and whether to take the system prompt — cannot be asked afterwards.
+ * surprise, and the one thing they may want to decide — whether to take the
+ * system prompt — cannot be asked afterwards.
  */
 import { computed, ref, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
-import InputText from 'primevue/inputtext'
 import ToggleSwitch from 'primevue/toggleswitch'
-
-/** Written out rather than inline: a template cannot hold its own delimiters. */
-const USER_MACRO = ['{{', 'user', '}}'].join('')
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -107,17 +84,13 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'confirm'])
 
-const userName = ref('')
 const useSystemPrompt = ref(false)
 
-// A fresh card is a fresh set of answers, and a name typed for the last one is
-// not an answer about this one.
+// A fresh card is a fresh question, and the answer for the last one is not an
+// answer about this one.
 watch(
   () => props.found,
-  () => {
-    userName.value = ''
-    useSystemPrompt.value = false
-  }
+  () => (useSystemPrompt.value = false)
 )
 
 const header = computed(() => {
@@ -164,9 +137,6 @@ const countLabel = computed(() => {
 const entries = count => (count === 1 ? '1 lore entry' : `${count} lore entries`)
 
 const confirm = () => {
-  emit('confirm', {
-    userName: userName.value.trim() || 'You',
-    useSystemPrompt: useSystemPrompt.value,
-  })
+  emit('confirm', { useSystemPrompt: useSystemPrompt.value })
 }
 </script>

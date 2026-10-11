@@ -72,7 +72,7 @@ import { useDocuments } from '@/composables/useDocuments'
 import { useFilesStore } from '@/stores/filesStore'
 import { downloadBlob, filenameFor } from '@/files/download.js'
 import { extractEpub } from '@/files/epub.js'
-import { EPUB_MIME, isImage, isText, sizeLabel } from '@/files/inspect.js'
+import { EPUB_MIME, isImage, isText, showsAsText, sizeLabel } from '@/files/inspect.js'
 import { renderMarkdown } from '@/utils/markdown.js'
 
 /**
@@ -125,7 +125,7 @@ const kind = computed(() => {
   if (mime.value === 'application/pdf') return 'pdf'
   if (book.value) return 'epub'
   // A web page's text is what was read out of it, not its markup.
-  if (isText(mime.value) && mime.value !== 'text/html') return 'code'
+  if (showsAsText(mime.value)) return 'code'
   return 'none'
 })
 

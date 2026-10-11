@@ -128,16 +128,12 @@ describe('gatherSource', () => {
 })
 
 describe('entriesOfFolder', () => {
-  it("takes the chosen folder's name and gives paths below it", async () => {
-    const file = (path, text) => {
-      const made = new File([text], path.split('/').pop())
-      Object.defineProperty(made, 'webkitRelativePath', { value: path })
-      return made
-    }
+  it("takes the folder's name and gives paths below it", async () => {
+    const file = (name, text) => new File([text], name)
 
     const { name, entries } = entriesOfFolder([
-      file('server/src/index.ts', 'export {}'),
-      file('server/README.md', '# Server'),
+      { file: file('index.ts', 'export {}'), folders: ['server', 'src'] },
+      { file: file('README.md', '# Server'), folders: ['server'] },
     ])
 
     expect(name).toBe('server')

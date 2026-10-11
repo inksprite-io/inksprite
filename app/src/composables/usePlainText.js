@@ -11,6 +11,9 @@ import { changedLines } from '../utils/lineDiff.js'
 import { useDocuments } from './useDocuments.js'
 import { useToast } from './useToast.js'
 
+/** What the switch is called, on the outline's menu and the tab strip's. */
+export const PLAIN_TEXT_LABEL = 'Edit in plain text editor'
+
 /**
  * @param {string} storyId
  * @returns {{ plainTextItem: (documentId: string) => import('primevue/menuitem').MenuItem|null }}
@@ -48,7 +51,8 @@ export function usePlainText(storyId) {
   }
 
   /**
-   * The menu entry for it, worded for the way it would go. Only a text
+   * The menu entry for it: one switch, ticked while the document is plain,
+   * rather than two entries worded for the way each would go. Only a text
    * document has a kind to switch; a folder gets none.
    * @param {string} documentId
    * @returns {import('primevue/menuitem').MenuItem|null}
@@ -56,8 +60,8 @@ export function usePlainText(storyId) {
   const plainTextItem = documentId => {
     if (api.get(documentId)?.type !== 'text') return null
     return {
-      label: api.isPlain(documentId) ? 'Edit as a document' : 'Edit as plain text',
-      icon: 'pi pi-code',
+      label: PLAIN_TEXT_LABEL,
+      icon: api.isPlain(documentId) ? 'pi pi-check' : 'pi pi-code',
       command: () => togglePlain(documentId),
     }
   }

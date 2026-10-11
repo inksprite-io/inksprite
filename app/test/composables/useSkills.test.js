@@ -85,7 +85,7 @@ describe('useSkills', () => {
     await skills.saveSkill({ text: file('tighten') })
 
     expect(skills.nameProblem('tighten')).toMatch(/already have a skill/)
-    expect(skills.nameProblem('director')).toMatch(/built-in skill/)
+    expect(skills.nameProblem('interpret')).toMatch(/built-in skill/)
     expect(skills.nameProblem('roll')).toMatch(/already a \/roll/)
     expect(skills.nameProblem('roll_dice')).toMatch(/tool called roll_dice/)
     expect(skills.nameProblem('trim')).toBe('')
@@ -147,7 +147,7 @@ describe('useSkills', () => {
       const rows = skills.planImport([
         found(file('trim')),
         found(file('tighten')),
-        found(file('director')),
+        found(file('interpret')),
         found(file('trim')),
         found('no frontmatter'),
       ])
@@ -157,7 +157,7 @@ describe('useSkills', () => {
       ).toEqual([
         ['trim', false, '', 0],
         ['tighten', true, '', 0],
-        ['director', false, 'director is a built-in skill.', 0],
+        ['interpret', false, 'interpret is a built-in skill.', 0],
         ['trim', false, 'Another skill here is called trim.', 0],
         ['', false, '', 1],
       ])

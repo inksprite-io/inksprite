@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { useChats, clearChatsInstances } from '@/composables/useChats'
-import { useChatsStore } from '@/stores/chatsStore'
+import { useChats, clearChatsInstances, unsentKey } from '@/composables/useChats'
+import { generateChatId, useChatsStore } from '@/stores/chatsStore'
 import { useMessagesStore } from '@/stores/messagesStore'
 import { setActivePinia, createPinia } from 'pinia'
 
@@ -99,6 +99,9 @@ describe('useChats', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     clearChatsInstances() // Clear singleton instances before each test
+    window.localStorage.clear()
+    let made = 0
+    generateChatId.mockImplementation(() => `chat_made_${++made}`)
 
     // Setup mock store implementations
     chatsStore = {
@@ -637,6 +640,88 @@ describe('useChats', () => {
     })
   })
 
+  describe('what is not sent yet, through a reload', () => {
+    /** A fresh instance, the way a reload makes one. */
+    const reloaded = async () => {
+      clearChatsInstances()
+      const again = useChats(mockStoryId)
+      await again.init()
+      return again
+    }
+
+    beforeEach(async () => {
+      await composable.init()
+    })
+
+    it('keeps a draft', async () => {
+      composable.setDraftMessage(mockChatId, 'Half a thought')
+
+      expect((await reloaded()).getDraftMessage(mockChatId)).toBe('Half a thought')
+    })
+
+    it('forgets a draft once it is cleared', async () => {
+      composable.setDraftMessage(mockChatId, 'Half a thought')
+      composable.clearDraftMessage(mockChatId)
+
+      expect((await reloaded()).getDraftMessage(mockChatId)).toBe('')
+      expect(window.localStorage.getItem(unsentKey(mockStoryId))).toBeNull()
+    })
+
+    it('keeps the unstarted chat, its settings and its draft', async () => {
+      const id = composable.unstartedChat.value.id
+      composable.updateUnstartedChat({ pinnedIds: ['doc_1'], hiddenIds: ['doc_2'] })
+      composable.setDraftMessage(id, 'Where were we')
+
+      const again = await reloaded()
+      expect(again.unstartedChat.value.id).toBe(id)
+      expect(again.unstartedChat.value.pinnedIds).toEqual(['doc_1'])
+      expect(again.unstartedChat.value.hiddenIds).toEqual(['doc_2'])
+      expect(again.getDraftMessage(id)).toBe('Where were we')
+    })
+
+    it('starts afresh once the unstarted chat has started', async () => {
+      composable.updateUnstartedChat({ pinnedIds: ['doc_1'] })
+      composable.startChat()
+
+      const again = await reloaded()
+      expect(again.unstartedChat.value.pinnedIds).toBeUndefined()
+    })
+
+    it('takes a fresh id when the kept one started in another window', async () => {
+      const id = composable.unstartedChat.value.id
+      composable.updateUnstartedChat({ pinnedIds: ['doc_1'] })
+      chatsStore.getChatsForStory.mockReturnValue([...mockChats, { ...mockChats[0], id }])
+
+      const again = await reloaded()
+      expect(again.unstartedChat.value.id).not.toBe(id)
+      expect(again.unstartedChat.value.pinnedIds).toBeUndefined()
+    })
+
+    it('drops the draft of a chat that is gone', async () => {
+      composable.setDraftMessage('chat_gone', 'Lost cause')
+      composable.setDraftMessage(mockChatId, 'Still here')
+
+      const again = await reloaded()
+      expect(again.getDraftMessage('chat_gone')).toBe('')
+      expect(again.getDraftMessage(mockChatId)).toBe('Still here')
+    })
+
+    it('drops the draft of a chat when it is deleted', async () => {
+      composable.setDraftMessage(mockChatId, 'Lost cause')
+      composable.deleteChat(mockChatId)
+
+      expect(composable.getDraftMessage(mockChatId)).toBe('')
+    })
+
+    it('ignores what it cannot read', async () => {
+      window.localStorage.setItem(unsentKey(mockStoryId), '{"drafts": 7, "unstarted": "x"}')
+
+      const again = await reloaded()
+      expect(again.getDraftMessage(mockChatId)).toBe('')
+      expect(again.unstartedChat.value.id).toBeTruthy()
+    })
+  })
+
   describe('importChat', () => {
     const exported = {
       id: 'chat_from_file',
@@ -809,6 +894,21 @@ describe('useChats', () => {
       expect(carried).not.toBe(pinnedIds)
     })
 
+    it("should play the card under the chat's names", () => {
+      chatsStore.chats.set(mockChatId, {
+        ...chatsStore.chats.get(mockChatId),
+        userName: 'Riley',
+        characterName: 'Elara',
+      })
+
+      composable.forkChat(mockChatId, mockMessageId)
+
+      expect(chatsStore.createChat.mock.calls.at(-1)[3]).toMatchObject({
+        userName: 'Riley',
+        characterName: 'Elara',
+      })
+    })
+
     it('should leave a fork of an unpinned chat unpinned', () => {
       composable.forkChat(mockChatId, mockMessageId)
 
@@ -852,16 +952,16 @@ describe('useChats', () => {
       )
     })
 
-    it('should update lastMessageAt on the forked chat', () => {
+    it('should stamp the fork as just made, so it sorts to the top', () => {
+      const before = Date.now()
       composable.forkChat(mockChatId, mockMessageId)
 
-      expect(chatsStore.updateChat).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          lastMessageAt: mockMessages[0].created,
-          messageCount: 1,
-        })
+      const [, stamped] = chatsStore.updateChat.mock.calls.find(
+        ([, updates]) => 'lastMessageAt' in updates
       )
+      expect(stamped.messageCount).toBe(1)
+      expect(stamped.lastMessageAt).toBeGreaterThanOrEqual(before)
+      expect(stamped.lastMessageAt).toBeGreaterThan(mockMessages[0].created)
     })
 
     it('should preserve message timestamps when forking', () => {

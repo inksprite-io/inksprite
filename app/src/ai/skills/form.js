@@ -164,7 +164,9 @@ export function withName(text, name) {
 
 /**
  * The SKILL.md a new skill starts as: one only the writer calls, so it is a
- * saved prompt until they say otherwise, and a name they will change.
+ * saved prompt until they say otherwise, and a name they will change. Its
+ * description and instructions are the writer's to write, so they start empty
+ * and it does not read as a skill until they are written.
  *
  * @param {string} name
  * @returns {string}
@@ -172,7 +174,7 @@ export function withName(text, name) {
 export function newSkillText(name) {
   return textFromForm({
     name,
-    description: 'What it does, and when to use it.',
+    description: '',
     summary: '',
     model: false,
     user: true,
@@ -181,6 +183,6 @@ export function newSkillText(name) {
     argument: '',
     argumentHint: '',
     tools: [],
-    body: 'Your instructions. What is typed after the name goes where $ARGUMENTS is.',
+    body: '',
   })
 }

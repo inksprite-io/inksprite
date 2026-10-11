@@ -11,7 +11,6 @@
  * @property {number} seed - Deterministic seed. 0 = disabled.
  * @property {'disabled'|'enabled'|'low'|'medium'|'high'} reasoningEffort - OpenRouter extended thinking. `enabled` asks for thinking without naming a level, for models whose thinking is a switch rather than a dial.
  * @property {boolean} showModelReasoning - Whether to surface reasoning tokens.
- * @property {number} replayTurns - How many of the assistant's latest turns send their dice and oracle calls back with the conversation. 0 = every turn's. See ai/context/build.js.
  * @property {number} maxToolRounds - How many rounds of tool calls a turn may make before it has to answer. 0 = no limit. See runCompletionLoop in composables/useAIChat.js.
  * @property {AISamplerParameters} parameters - Sampler parameters. Fields with sentinel values are omitted from requests.
  *
@@ -46,9 +45,6 @@ export const AI_DEFAULTS = {
   seed: 0,
   reasoningEffort: 'medium',
   showModelReasoning: true,
-  // Enough to show the model itself rolling; before that, the narration
-  // records what came up.
-  replayTurns: 3,
   // A guard, not a budget: a long job — a folder read through, a server's
   // tools chained — runs well past a dozen rounds, and the turn that reaches
   // this still answers. What it guards against is a model going round.

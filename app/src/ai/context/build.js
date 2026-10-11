@@ -14,23 +14,22 @@
  * it and a compaction that replaces them. Only the writer pins. See
  * pinnedContent.
  *
- * The dice and the oracle are the exception, for recent turns. Their answers
- * are small, and a history in which the model rolled is the one thing that
- * keeps it rolling: shown only its narration, it learns that deciding the
- * outcome is how outcomes get decided. The calls go back without their words —
- * the turn's content is the one copy of what was said, which is what makes it
- * the writer's to edit — and only for the last few turns, since the narration
- * already records what came up. See expandMessage.
+ * Every call a turn made goes back on every later turn, where it was made, with
+ * its result and without its words — the turn's content is the one copy of
+ * what was said, which is what makes it the writer's to edit. A read the model
+ * can no longer see is one it reads again or paraphrases; a history in which
+ * it rolled is the one thing that keeps it rolling; and a history in which
+ * answers came out of nowhere teaches it that they do. A call that stays where
+ * it was made never moves, so the prompt cache keeps it. A summary is where
+ * calls are let go. A read is a record of one moment, so the project block
+ * says which documents read in view have changed since (ai/context/reads.js).
  *
- * A turn's document calls are another, for every turn written since they
- * began to go back (ai/context/reads.js): reading the project is building up
- * what is known of it, and a read the model can no longer see is one it reads
- * again or paraphrases. A read is a record of one moment, so the project block
- * says which documents read in view have changed since. Turns from before keep
- * going back as they did, so that an old chat does not grow by every read it
- * ever made. See .llm/project_context_design.md.
+ * Turns from before keep going back as they did, so that an old chat does not
+ * grow by every call it ever made: one written while only the document calls
+ * went back sends those, and one from before that sends none. See
+ * .llm/web_search_design.md and .llm/project_context_design.md.
  *
- * A skill the model loaded is the other exception, for every turn. What
+ * A skill the model loaded goes back from every turn, however old. What
  * `use_skill` answered is instructions to follow from then on, and they go
  * back where they were loaded on every request, so they are still followed at
  * turn two hundred and the prefix before them is never disturbed. A summary
@@ -47,6 +46,11 @@
  * invalidating a single completed turn — and nobody spends a round trip
  * asking what already exists.
  *
+ * A chat that plays a card has names for its macros, and they are filled in
+ * here in what the chat holds as written: the prompt, the author's note and
+ * the pinned documents. The tools fill in what they read the same way; see
+ * cards/macros.js.
+ *
  * Nothing here is persisted. The block is built per request; the stored
  * conversation holds only what the writer and the model actually said.
  */
@@ -54,8 +58,8 @@
 import { applyCompaction, isCompaction } from '@/ai/compaction.js'
 import { renderCommand } from '@/ai/commands.js'
 import { USE_SKILL, carriedLoads, loadedText } from '@/ai/skills/loads.js'
-import { changedSinceRead, keepsDocumentCalls } from './reads.js'
-import { AI_DEFAULTS } from '@/ai/defaults.js'
+import { changedSinceRead, keepsDocumentCalls, keepsEveryCall } from './reads.js'
+import { substitute } from '@/cards/macros.js'
 
 /**
  * What to call the two voices when the caller has not said.
@@ -100,17 +104,18 @@ export const DEFAULT_TRANSCRIPT_ROLES = { user: 'user', assistant: 'assistant' }
  *   as well. Compaction's. A summary sits above the turns that were kept when
  *   it was asked for, and it read those too — so asked again, it reads the same
  *   conversation, and not the one that has carried on since.
- * @property {(name: string) => boolean} [replays] - Which tools' calls a past
- *   assistant turn sends back with the conversation, by tool name. Absent
- *   means none are. See expandMessage.
- * @property {number} [replayTurns] - How many of the latest assistant turns
- *   send their calls back. 0 means every turn's; absent means AI_DEFAULTS.
  * @property {(name: string) => boolean} [keeps] - Which tools' calls a turn
- *   sends back on every later turn, when it says it does: the document tools.
- *   Absent means none are. See ai/context/reads.js.
+ *   written while only they went back sends: the document tools. Absent means
+ *   such a turn sends none. A turn written since sends every call. See
+ *   ai/context/reads.js.
  * @property {(id: string) => import('./reads.js').Located|null} [locate] -
  *   Where a document is now and what it says, for the block to say which reads
  *   have changed since. Absent means nothing is said.
+ * @property {import('@/cards/macros.js').Names|null} [names] - What `{{char}}`
+ *   and `{{user}}` become in the prompt, the author's note and the pinned
+ *   documents: the chat's, when it plays a card. Absent means they are sent as
+ *   written. The overview, the pins' paths and the changed reads arrive with
+ *   them in already, from the tools that resolved them.
  *
  * @typedef {Object} TranscriptRoles
  * @property {string} user - What to call the writer's turns
@@ -151,10 +156,9 @@ async function buildChat(
     transcript,
     before,
     past,
-    replays,
-    replayTurns,
     keeps,
     locate,
+    names,
   }
 ) {
   if (!storyId) throw new Error('storyId is required')
@@ -164,7 +168,7 @@ async function buildChat(
 
   // The whole system message, and it never changes mid-session, so it hashes
   // the same across turns and the prompt cache hits.
-  const systemContent = (systemPrompt || '').trim()
+  const systemContent = substitute(systemPrompt, names).trim()
   if (systemContent) messages.push({ role: 'system', content: systemContent })
 
   const read = chatId ? chatMessages(stores, chatId, { before, past }) : []
@@ -173,7 +177,7 @@ async function buildChat(
   if (transcript) {
     // A reader of the transcript sees no calls, so there is no read for it
     // to have seen go stale.
-    const block = renderProjectState(project, pinnedContent(stores, pinned))
+    const block = renderProjectState(project, pinnedContent(stores, pinned, names))
     messages.push({
       role: 'user',
       content: [renderTranscript(history, transcript), renderLoads(read, history), block]
@@ -183,25 +187,20 @@ async function buildChat(
     return { messages }
   }
 
-  // Every turn sends its loads back, and its document calls when it says it
-  // keeps them; the recent ones send the rest of what the caller asked for too.
+  // Every turn sends its loads back, and every call it made when it says it
+  // keeps them; a turn from when only the document calls went back sends those.
   const loads = name => name === USE_SKILL
-  const recent = replays ? replayWindow(history, replayTurns ?? AI_DEFAULTS.replayTurns) : new Set()
+  const every = () => true
   const carried = carriedLoads(read)
   for (const msg of history) {
-    const kept = keeps && keepsDocumentCalls(msg) ? keeps : null
-    const asked = recent.has(msg) ? replays : null
-    expandMessage(
-      msg,
-      messages,
-      name => loads(name) || Boolean(kept?.(name)) || Boolean(asked?.(name))
-    )
+    const kept = keepsEveryCall(msg) ? every : keeps && keepsDocumentCalls(msg) ? keeps : null
+    expandMessage(msg, messages, name => loads(name) || Boolean(kept?.(name)))
     if (isCompaction(msg)) messages.push(...carriedMessages(carried))
   }
 
   const changed = locate ? changedSinceRead(read, locate) : []
-  const block = renderProjectState(project, pinnedContent(stores, pinned), changed)
-  const head = [block, renderAuthorsNote(note)].filter(Boolean).join('\n\n')
+  const block = renderProjectState(project, pinnedContent(stores, pinned, names), changed)
+  const head = [block, renderAuthorsNote(substitute(note, names))].filter(Boolean).join('\n\n')
   attachProjectState(mergeAdjacentTurns(messages), head)
 
   return { messages }
@@ -327,13 +326,14 @@ function renderLoads(read, history) {
  *
  * @param {Stores} stores
  * @param {import('@/ai/tools/documents.js').DocumentListing[]} [pinned]
+ * @param {import('@/cards/macros.js').Names|null} [names] - Filled in, when the chat has them
  * @returns {Array<Omit<import('@/ai/tools/documents.js').DocumentListing, 'id'> & {content: string}>}
  */
-function pinnedContent(stores, pinned) {
+function pinnedContent(stores, pinned, names) {
   return (pinned || []).flatMap(({ id, ...entry }) => {
     const document = stores.documentsStore.getDocument(id)
     if (!document || document.type === 'folder') return []
-    return [{ ...entry, content: document.content || '' }]
+    return [{ ...entry, content: substitute(document.content, names) }]
   })
 }
 
@@ -436,34 +436,16 @@ function attachProjectState(messages, block) {
 }
 
 /**
- * The assistant turns whose tool calls go back with the conversation: the
- * last `turns` of them, or every one when `turns` is 0. A consulting command's
- * record is in the assistant's voice but is not a turn it took.
- *
- * @param {any[]} history
- * @param {number} turns
- * @returns {Set<any>}
- */
-function replayWindow(history, turns) {
-  const taken = history.filter(msg => msg.role === 'assistant' && !msg.metadata?.command)
-  return new Set(turns > 0 ? taken.slice(-turns) : taken)
-}
-
-/**
  * Expand a stored message into wire-format ChatMessages.
  *
- * An assistant turn goes out as its content and — when the caller says which,
- * and the turn is recent enough — the tool calls it made on the way, without
- * their words. The rest of the trajectory stays on the message: the tool call
- * panel reads it, and a read counts the reads before it there.
+ * An assistant turn goes out as its content and the tool calls it made on the
+ * way that the caller says go back, without their words. The rest of the
+ * trajectory stays on the message: the tool call panel reads it, and a read
+ * counts the reads before it there.
  *
  * Content rather than the trajectory's own text, because the content is what
  * the writer sees and edits, and what they edit has to be what the model
- * reads. Not every call, because a result is its whole payload on every
- * request until compaction, where a sentence about it is a sentence — and a
- * call's ids belong to the provider that made it, which is not always the
- * provider the chat is pointed at now. What the model wants to keep from the
- * rest, it says.
+ * reads.
  *
  * @param {any} msg
  * @param {ChatMessage[]} out

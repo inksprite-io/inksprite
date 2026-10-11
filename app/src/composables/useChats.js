@@ -5,6 +5,7 @@ import { useDocumentsStore } from '@/stores/documentsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { DEFAULT_PROFILE_ID, settingsForNewChat } from '@/ai/profiles/index.js'
 import { useProfiles } from './useProfiles.js'
+import { localStorage as appStorage } from '@/utils/localStorage.js'
 
 /** @typedef {import('../types/models.js').Chat} Chat */
 /** @typedef {import('../types/models.js').Message} Message */
@@ -12,6 +13,49 @@ import { useProfiles } from './useProfiles.js'
 
 // Singleton instances keyed by storyId
 const instances = new Map()
+
+/**
+ * Where a project keeps what the writer has put into its chats but not sent:
+ * the unstarted chat's id and settings, and each chat's unsent message. They
+ * have no row of their own, and a reload — or the desktop app updating itself
+ * — would take them without a word.
+ *
+ * @param {string} storyId
+ * @returns {string}
+ */
+export const unsentKey = storyId => `chats.unsent.${storyId}`
+
+/**
+ * @typedef {{
+ *   unstarted?: {id: string, changes: Partial<Chat>},
+ *   drafts?: Record<string, string>
+ * }} UnsentChats
+ */
+
+/**
+ * What a project kept of its unsent chats, or nothing for one that kept none
+ * or kept something unreadable.
+ *
+ * @param {string} [storyId]
+ * @returns {UnsentChats}
+ */
+function readUnsent(storyId) {
+  if (!storyId) return {}
+  const kept = appStorage.get(unsentKey(storyId), null)
+  if (!kept || typeof kept !== 'object') return {}
+  const unstarted =
+    typeof kept.unstarted?.id === 'string' &&
+    kept.unstarted.changes &&
+    typeof kept.unstarted.changes === 'object'
+      ? kept.unstarted
+      : undefined
+  const drafts = Object.fromEntries(
+    Object.entries(kept.drafts && typeof kept.drafts === 'object' ? kept.drafts : {}).filter(
+      ([, text]) => typeof text === 'string' && text
+    )
+  )
+  return { unstarted, drafts }
+}
 
 /**
  * Clear all singleton instances (for testing)
@@ -79,9 +123,11 @@ export const useChats = storyId => {
   const ready = ref(false)
   const error = ref(null)
 
-  // Store draft messages for each chat (chatId -> draft content)
+  const kept = readUnsent(storyId)
+
+  // What the writer has typed in each chat and not sent (chatId -> text).
   /** @type {import('vue').Ref<Map<string, string>>} */
-  const draftMessages = ref(new Map())
+  const draftMessages = ref(new Map(Object.entries(kept.drafts || {})))
 
   // prevent duplicate inits (idempotent)
   /** @type {Promise<void>|null} */
@@ -99,6 +145,7 @@ export const useChats = storyId => {
         await chatsStore.loadChatsForStory(storyId)
         const chats = chatsStore.getChatsForStory(storyId)
         await Promise.all(chats.map(c => messagesStore.loadMessagesForChat(c.id)))
+        settleUnsent(chats)
         ready.value = true
       } catch (e) {
         error.value = e
@@ -164,7 +211,7 @@ export const useChats = storyId => {
   // here, so a writer who opens one and leaves has left nothing behind. Its
   // id is fixed ahead, so it can be selected, drafted in, and shown like any
   // other chat, and carries on as the same chat once it has started.
-  const unstartedId = ref(generateChatId())
+  const unstartedId = ref(kept.unstarted?.id || generateChatId())
 
   /**
    * What the writer has changed in the unstarted chat's settings. Only the
@@ -172,7 +219,25 @@ export const useChats = storyId => {
    * starts rather than as it was when it was opened.
    * @type {import('vue').Ref<Partial<Chat>>}
    */
-  const unstartedChanges = ref({})
+  const unstartedChanges = ref(kept.unstarted?.changes || {})
+
+  /**
+   * Keep the unsent drafts and the unstarted chat's settings through a
+   * reload. The unstarted chat's id goes with them, since a draft written in
+   * it is filed under that id.
+   */
+  const keepUnsent = () => {
+    if (!storyId) return
+    const drafts = Object.fromEntries(draftMessages.value)
+    if (Object.keys(drafts).length === 0 && Object.keys(unstartedChanges.value).length === 0) {
+      appStorage.remove(unsentKey(storyId))
+      return
+    }
+    appStorage.set(unsentKey(storyId), {
+      unstarted: { id: unstartedId.value, changes: unstartedChanges.value },
+      drafts,
+    })
+  }
 
   /** The unstarted chat's id and settings, for showing and editing them. */
   const unstartedChat = computed(() => ({
@@ -180,6 +245,24 @@ export const useChats = storyId => {
     ...settingsForNewChat(profilesApi.getProfile(defaultProfileId())),
     ...unstartedChanges.value,
   }))
+
+  /**
+   * Square what was kept with the chats there are. An unstarted chat that
+   * started since — in another window — is a chat now, and a fresh one takes
+   * its place; a draft for a chat that is gone goes with it.
+   * @param {Chat[]} chats - The project's, as loaded
+   */
+  const settleUnsent = chats => {
+    const ids = new Set(chats.map(chat => chat.id))
+    if (ids.has(unstartedId.value)) {
+      unstartedId.value = generateChatId()
+      unstartedChanges.value = {}
+    }
+    for (const chatId of [...draftMessages.value.keys()]) {
+      if (!ids.has(chatId) && chatId !== unstartedId.value) draftMessages.value.delete(chatId)
+    }
+    keepUnsent()
+  }
 
   /**
    * Whether an id is the unstarted chat's.
@@ -194,6 +277,7 @@ export const useChats = storyId => {
    */
   const updateUnstartedChat = updates => {
     unstartedChanges.value = { ...unstartedChanges.value, ...updates }
+    keepUnsent()
   }
 
   /**
@@ -206,6 +290,7 @@ export const useChats = storyId => {
     const chat = chatsStore.createChat(storyId, '', id, settings)
     unstartedId.value = generateChatId()
     unstartedChanges.value = {}
+    keepUnsent()
     return chat
   }
 
@@ -231,6 +316,7 @@ export const useChats = storyId => {
     messagesStore.deleteMessagesForChat(chatId)
     // Then delete the chat
     chatsStore.deleteChat(chatId)
+    if (draftMessages.value.delete(chatId)) keepUnsent()
   }
 
   /**
@@ -432,6 +518,7 @@ export const useChats = storyId => {
     } else {
       draftMessages.value.delete(chatId)
     }
+    keepUnsent()
   }
 
   /**
@@ -441,6 +528,7 @@ export const useChats = storyId => {
    */
   const clearDraftMessage = chatId => {
     draftMessages.value.delete(chatId)
+    keepUnsent()
   }
 
   /**
@@ -465,9 +553,11 @@ export const useChats = storyId => {
    * @param {Chat} source - Whose settings to carry over
    * @param {Message[]} messages - In order; each is duplicated under the new chat
    * @param {string} title
+   * @param {{now?: boolean}} [options] - `now` to sort it as just made, as a
+   *   fork is, rather than where its conversation left off
    * @returns {Chat}
    */
-  const copyChat = (source, messages, title) => {
+  const copyChat = (source, messages, title, { now = false } = {}) => {
     const copy = chatsStore.createChat(storyId, title, null, {
       profileId: source.profileId ?? null,
       disabledTools: [...(source.disabledTools || [])],
@@ -478,6 +568,8 @@ export const useChats = storyId => {
       ...(source.pinnedIds?.length ? { pinnedIds: [...source.pinnedIds] } : {}),
       ...(source.shownIds?.length ? { shownIds: [...source.shownIds] } : {}),
       ...(source.hiddenIds?.length ? { hiddenIds: [...source.hiddenIds] } : {}),
+      ...(source.userName ? { userName: source.userName } : {}),
+      ...(source.characterName ? { characterName: source.characterName } : {}),
       ...(source.voiceId ? { voiceId: source.voiceId } : {}),
       ...(source.userVoiceId ? { userVoiceId: source.userVoiceId } : {}),
     })
@@ -494,11 +586,14 @@ export const useChats = storyId => {
     })
     markEdited()
 
-    // Stamped with the last copied message, so the copy sorts where the
-    // conversation left off rather than at the top as something new.
+    // An import is stamped with its last message, so it sorts where the
+    // conversation left off rather than at the top as something new. A fork
+    // is something new, made from wherever the writer chose — as often a
+    // turn far up as the last — and sorting it by that turn sent it to the
+    // bottom of the list, out of sight of the writer who just made it.
     if (messages.length > 0) {
       updateChat(copy.id, {
-        lastMessageAt: messages[messages.length - 1].created,
+        lastMessageAt: now ? Date.now() : messages[messages.length - 1].created,
         messageCount: messages.length,
       })
     }
@@ -528,7 +623,8 @@ export const useChats = storyId => {
     return copyChat(
       originalChat,
       allMessages.slice(0, messageIndex + 1),
-      `${originalChat.title} - forked`
+      `${originalChat.title} - forked`,
+      { now: true }
     )
   }
 

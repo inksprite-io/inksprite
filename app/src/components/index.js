@@ -13,7 +13,7 @@
  * ### Feature Components
  * - **writer/** - The whole application, once past the OAuth callback
  *   - `layout/` - The writer's frame. A 48px rail (`AppNavbar`) picks what the
- *     sidebar shows (outline, chats, narration), toggles the three panels that
+ *     sidebar shows (outline, chats, narration, comments), toggles the three panels that
  *     `DesktopView` lays side by side (`LeftSidebar`, `EditorPanel`,
  *     `ChatPanel`), and opens the settings. Which are showing is the story's
  *     `layout`, with the rules in `layout.js`: the editor and the chat are never
@@ -27,7 +27,12 @@
  *     projects and starting or importing one, and the new-project dialog
  *   - `editor/` - The editor over a structured document, the field over a
  *     plain one, the strip of tabs above them, and the empty editor for a
- *     project with no documents or no tabs
+ *     project with no documents or no tabs. A comment is written under the
+ *     line in `CommentPopover`, on a selection by Mod-Shift-M or
+ *     `CommentButton`, and shows there while the caret is in its passage
+ *   - `comments/` - `CommentsPanel`, the project's comments in the sidebar:
+ *     picking one opens its document, where `Editor` scrolls to it and marks
+ *     it; Resolve takes it off
  *   - `tree/` - The document tree and its nodes
  *   - `chats/` - A chat, its list, and its settings
  *   - `narration/` - The document in the editor read aloud: `NarrationPanel`

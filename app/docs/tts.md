@@ -613,7 +613,8 @@ A document's blocks, in reading order, as they are to be spoken.
 
 Every node that holds text is one — a paragraph proper, a heading, a list
 item, a quoted line — with the markdown taken off. Code is not read aloud,
-and a rule has nothing to say. Nothing empty is kept.
+nor a table, which is a grid to look along rather than something said; and
+a rule has nothing to say. Nothing empty is kept.
 
 ### Parameters
 

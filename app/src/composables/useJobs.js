@@ -7,6 +7,7 @@
 
 import { computed } from 'vue'
 import { useDocumentsStore } from '@/stores/documentsStore.js'
+import { useDocuments } from '@/composables/useDocuments.js'
 import { useJobsStore } from '@/stores/jobsStore.js'
 import { cancelJob, isRunning, pauseJob, resumeJob, startConversion } from '@/jobs/index.js'
 import { activity } from '@/jobs/live.js'
@@ -83,6 +84,23 @@ export function useJobs() {
    */
   const projectOf = job => documents.getRoot(job.storyId)?.title || 'Untitled'
 
+  /**
+   * Open what a finished job wrote in its project's editor, while it is
+   * still there. The project is read in first, since the job may be for
+   * one not open; going to it is the caller's.
+   *
+   * @param {Job} job
+   * @returns {Promise<boolean>} Whether there was a document to open
+   */
+  async function openResult(job) {
+    if (!job.resultId) return false
+    const api = useDocuments(job.storyId)
+    await api.init()
+    if (!documents.getDocument(job.resultId)) return false
+    api.open(job.resultId)
+    return true
+  }
+
   /** Read the jobs in, and the names of the projects they are for. */
   async function load() {
     await store.loadJobs()
@@ -95,6 +113,7 @@ export function useJobs() {
     runningJobs,
     runningOn,
     projectOf,
+    openResult,
     /** What a running job is doing now, by id. */
     activity,
     load,

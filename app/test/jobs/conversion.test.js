@@ -125,6 +125,7 @@ describe('converting a document, as a job', () => {
 
     const copy = [...documents.documents.values()].find(one => one.convertedFrom === source.id)
     expect(copy.title).toBe('Notes (Markdown)')
+    expect(done.resultId).toBe(copy.id)
     expect(copy.parentId).toBe(rootIdFor(STORY))
     expect(copy.plain).toBeFalsy()
     expect(
@@ -139,6 +140,7 @@ describe('converting a document, as a job', () => {
     await settled(again.id)
     const copies = [...documents.documents.values()].filter(one => one.convertedFrom === source.id)
     expect(copies).toHaveLength(1)
+    expect(useJobsStore().getJob(again.id).resultId).toBe(copy.id)
   })
 
   it("plans a PDF's requests from its bookmarks, with no structure step", async () => {

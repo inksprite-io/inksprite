@@ -114,8 +114,10 @@ export const useDocumentsStore = defineStore('documents', () => {
   /**
    * Get the children of a parent in display order.
    *
-   * An ordered folder sorts by `order`; anything else sorts by title, the way
-   * a file explorer does. `order` is still maintained either way, so switching
+   * An ordered folder sorts by `order`; anything else sorts the way a file
+   * explorer does, folders first and then by title. A document nobody has
+   * named sorts as the "Untitled" it reads as, rather than as an empty title
+   * ahead of everything. `order` is still maintained either way, so switching
    * a folder to ordered restores its original sequence rather than an
    * arbitrary one.
    *
@@ -131,7 +133,11 @@ export const useDocumentsStore = defineStore('documents', () => {
     if (documents.value.get(parentId)?.ordered) {
       return children.sort((a, b) => a.order - b.order || byId(a, b))
     }
-    return children.sort((a, b) => a.title.localeCompare(b.title) || byId(a, b))
+    const named = (/** @type {Document} */ document) => document.title?.trim() || 'Untitled'
+    const folder = (/** @type {Document} */ document) => (document.type === 'folder' ? 0 : 1)
+    return children.sort(
+      (a, b) => folder(a) - folder(b) || named(a).localeCompare(named(b)) || byId(a, b)
+    )
   }
 
   /**

@@ -19,12 +19,14 @@
  * - **focus** - Whether the writer is typing somewhere already
  * - **documentPath** - How a document is addressed: by its titles from the root down
  * - **visibility** - What one chat sees of the project: hidden outright, and each chat's pins, shows and hides
+ * - **chatTitle** - What a chat is called before it has a name, and a title the model wrote, made plain
  *
  * ### Editor
  * - **tabs** - The editor's tabs: open, close, and what a story remembers of them
  *
  * ### Browser
  * - **webkit** - Whether the page is running in WebKit, for what only WebKit does
+ * - **touch** - Whether the writer is typing on a touch screen's keyboard, where Enter starts a new line
  *
  * ### Storage
  * - **localStorage** - LocalStorage wrapper with quota management

@@ -175,11 +175,10 @@ const generate = async () => {
     }
     toast.add({
       severity: 'error',
-      summary: 'Summary Generation Failed',
       detail:
         error.name === 'ProviderNotConfiguredError'
           ? 'Set up a provider in the settings menu to use AI features.'
-          : error.message || 'Failed to generate summary.',
+          : `Failed to write the summary: ${error.message || 'no answer came back'}`,
       life: 5000,
     })
   }

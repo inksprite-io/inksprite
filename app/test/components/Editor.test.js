@@ -3,12 +3,31 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { ref } from 'vue'
 import { mount, flushPromises } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
+import Tooltip from 'primevue/tooltip'
 import Editor from '@/components/writer/editor/Editor.vue'
 import { useEditor, clearEditor } from '@/composables/useEditor.js'
+import {
+  currentComment,
+  goToComment,
+  leaveComment,
+  takeUpComment,
+} from '@/composables/useComments.js'
+import { commentRanges } from '@/editor/comments.js'
+import { TextSelection } from 'prosemirror-state'
 
 const { mockUpdateDocument, mockGetDocument, mockApi } = vi.hoisted(() => {
   const documents = new Map([
     ['doc_1', { id: 'doc_1', title: 'Chapter 1', type: 'text', content: '# One\n\nSnow fell.' }],
+    ['doc_new', { id: 'doc_new', title: '', type: 'text', content: '' }],
+    [
+      'doc_2',
+      {
+        id: 'doc_2',
+        title: 'Chapter 2',
+        type: 'text',
+        content: 'We had a {==cold==}{>>cabcd1: reword<<} attic.',
+      },
+    ],
   ])
   return {
     mockUpdateDocument: vi.fn(),
@@ -35,9 +54,9 @@ vi.mock('@/stores/documentsStore.js', () => ({
 // The view in front of the state. happy-dom carries it far enough to mount
 // and render; the state layer is tested on its own.
 describe('Editor', () => {
-  const mountEditor = () =>
+  const mountEditor = (documentId = 'doc_1') =>
     mount(Editor, {
-      props: { storyId: 'story_1', documentId: 'doc_1' },
+      props: { storyId: 'story_1', documentId },
       global: { stubs: { ScrollPanel: { template: '<div><slot /></div>' } } },
     })
 
@@ -61,6 +80,23 @@ describe('Editor', () => {
     expect(wrapper.find('.ProseMirror').exists()).toBe(true)
     expect(wrapper.find('.ProseMirror h1').text()).toBe('One')
     expect(wrapper.find('.ProseMirror p').text()).toBe('Snow fell.')
+  })
+
+  it('shows where to start in an empty document, until something is written', async () => {
+    const wrapper = mountEditor('doc_new')
+    await flushPromises()
+    expect(wrapper.find('.ProseMirror .placeholder').attributes('data-placeholder')).toBe(
+      'Start writing…'
+    )
+
+    const editor = useEditor()
+    editor.dispatch('doc_new', editor.stateOf('doc_new').tr.insertText('Once'))
+    await flushPromises()
+    expect(wrapper.find('.ProseMirror .placeholder').exists()).toBe(false)
+
+    const full = mountEditor()
+    await flushPromises()
+    expect(full.find('.ProseMirror .placeholder').exists()).toBe(false)
   })
 
   it('leaves the caret in a field the writer is typing in', async () => {
@@ -222,6 +258,20 @@ describe('Editor', () => {
       wrapper.unmount()
     })
 
+    it('asks for the list of keys on Mod-/', async () => {
+      const wrapper = await mountAttached()
+      const page = wrapper.find('.ProseMirror').element
+      page.focus()
+
+      const mod = /Mac/.test(navigator.platform) ? { metaKey: true } : { ctrlKey: true }
+      page.dispatchEvent(
+        new KeyboardEvent('keydown', { key: '/', ...mod, bubbles: true, cancelable: true })
+      )
+
+      expect(wrapper.emitted('shortcuts')).toHaveLength(1)
+      wrapper.unmount()
+    })
+
     it('leaves the key to the browser outside the editor', async () => {
       const wrapper = await mountAttached()
       const elsewhere = document.createElement('input')
@@ -256,6 +306,260 @@ describe('Editor', () => {
       expect(wrapper.find('.ProseMirror p').text()).toBe('Rain fell.')
       expect(wrapper.find('[data-find-status]').text()).toBe('No results')
       expect(mockApi.keep).toHaveBeenCalledWith('doc_1')
+      wrapper.unmount()
+    })
+  })
+
+  describe('comments', () => {
+    const mountAttached = async documentId => {
+      const wrapper = mount(Editor, {
+        props: { storyId: 'story_1', documentId },
+        attachTo: document.body,
+        global: {
+          plugins: [PrimeVue],
+          directives: { tooltip: Tooltip },
+          stubs: { ScrollPanel: { template: '<div><slot /></div>' } },
+        },
+      })
+      await flushPromises()
+      return wrapper
+    }
+
+    /** Select from `from` to `to` in the document, as the writer would. */
+    const select = (documentId, from, to = from) => {
+      const editor = useEditor()
+      const state = editor.stateOf(documentId)
+      editor.dispatch(documentId, state.tr.setSelection(TextSelection.create(state.doc, from, to)))
+    }
+
+    /** The comments on the open document, as its marks have them. */
+    const marked = documentId =>
+      commentRanges(useEditor().stateOf(documentId).doc).map(({ id, text }) => ({ id, text }))
+
+    /** Write in the comment field and press Enter. */
+    const write = async (wrapper, text) => {
+      const field = wrapper.find('[data-comment-field]')
+      await field.setValue(text)
+      await field.trigger('keydown', { key: 'Enter' })
+      await flushPromises()
+    }
+
+    it('offers to comment on selected text, and takes the comment under it', async () => {
+      const wrapper = await mountAttached('doc_1')
+      wrapper.find('.ProseMirror').element.focus()
+      expect(wrapper.find('[data-comment-button]').exists()).toBe(false)
+
+      // "Snow", in the paragraph under the heading.
+      select('doc_1', 6, 10)
+      await flushPromises()
+      await wrapper.find('[data-comment-button]').trigger('click')
+      await flushPromises()
+
+      expect(wrapper.find('[data-comment-button]').exists()).toBe(false)
+      expect(document.activeElement).toBe(wrapper.find('[data-comment-field]').element)
+      // The passage stays marked while the selection does not show.
+      expect(wrapper.find('.ProseMirror .field-target').text()).toBe('Snow')
+
+      await write(wrapper, '  colder?  ')
+
+      expect(marked('doc_1')).toEqual([{ id: expect.any(String), text: 'colder?' }])
+      expect(wrapper.find('[data-comment-field]').exists()).toBe(false)
+      expect(document.activeElement).toBe(wrapper.find('.ProseMirror').element)
+      wrapper.unmount()
+    })
+
+    it('puts the button, the field and the comment in a bar at the bottom on a phone', async () => {
+      const phone = vi.spyOn(window, 'innerWidth', 'get').mockReturnValue(390)
+      const wrapper = await mountAttached('doc_1')
+      const bar = () => wrapper.find('[data-comment-bar]')
+      wrapper.find('.ProseMirror').element.focus()
+      expect(bar().exists()).toBe(false)
+
+      select('doc_1', 6, 10)
+      await flushPromises()
+      // In the bar, and not over the text as well.
+      expect(bar().find('[data-comment-button]').exists()).toBe(true)
+      expect(wrapper.findAll('[data-comment-button]')).toHaveLength(1)
+
+      await bar().find('[data-comment-button]').trigger('click')
+      await flushPromises()
+      expect(bar().find('[data-comment-field]').exists()).toBe(true)
+      expect(wrapper.find('.ProseMirror .field-target').text()).toBe('Snow')
+
+      await write(wrapper, 'colder?')
+
+      expect(marked('doc_1')).toEqual([{ id: expect.any(String), text: 'colder?' }])
+      // The caret, against the end of the passage, is in the comment.
+      expect(bar().find('[data-comment-text]').text()).toBe('colder?')
+      expect(wrapper.findAll('[data-comment-popover]')).toHaveLength(1)
+      wrapper.unmount()
+      phone.mockRestore()
+    })
+
+    it('opens the field on the selection with Mod-Shift-M, and Escape goes back', async () => {
+      const wrapper = await mountAttached('doc_1')
+      const page = wrapper.find('.ProseMirror').element
+      page.focus()
+      select('doc_1', 6, 10)
+
+      page.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'M', metaKey: true, shiftKey: true, bubbles: true })
+      )
+      await flushPromises()
+      const field = wrapper.find('[data-comment-field]')
+      expect(field.exists()).toBe(true)
+
+      await field.trigger('keydown', { key: 'Escape' })
+      await flushPromises()
+
+      expect(wrapper.find('[data-comment-field]').exists()).toBe(false)
+      expect(marked('doc_1')).toEqual([])
+      expect(document.activeElement).toBe(page)
+      wrapper.unmount()
+    })
+
+    it('shows the comment the caret is in, until the writer types', async () => {
+      const wrapper = await mountAttached('doc_2')
+      wrapper.find('.ProseMirror').element.focus()
+
+      // Inside "cold".
+      select('doc_2', 12)
+      await flushPromises()
+      expect(wrapper.find('[data-comment-popover] [data-comment-text]').text()).toBe('reword')
+
+      const editor = useEditor()
+      editor.dispatch('doc_2', editor.stateOf('doc_2').tr.insertText('e'))
+      await flushPromises()
+      expect(wrapper.find('[data-comment-popover]').exists()).toBe(false)
+
+      select('doc_2', 11)
+      await flushPromises()
+      expect(wrapper.find('[data-comment-popover]').exists()).toBe(true)
+      select('doc_2', 3)
+      await flushPromises()
+      expect(wrapper.find('[data-comment-popover]').exists()).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('changes what was said in the comment the caret is in', async () => {
+      const wrapper = await mountAttached('doc_2')
+      wrapper.find('.ProseMirror').element.focus()
+      select('doc_2', 12)
+      await flushPromises()
+
+      await wrapper.find('[data-action="edit-comment"]').trigger('click')
+      await flushPromises()
+      const field = wrapper.find('[data-comment-field]')
+      expect(field.element.value).toBe('reword')
+      expect(wrapper.find('[data-action="save-comment"]').attributes('aria-label')).toBe('Save')
+
+      await write(wrapper, 'colder')
+
+      expect(marked('doc_2')).toEqual([{ id: 'cabcd1', text: 'colder' }])
+      wrapper.unmount()
+    })
+
+    it('resolves the comment the caret is in, leaving the passage', async () => {
+      const wrapper = await mountAttached('doc_2')
+      wrapper.find('.ProseMirror').element.focus()
+      select('doc_2', 12)
+      await flushPromises()
+
+      await wrapper.find('[data-action="resolve-comment"]').trigger('click')
+      await flushPromises()
+
+      expect(marked('doc_2')).toEqual([])
+      expect(wrapper.find('.ProseMirror p').text()).toBe('We had a cold attic.')
+      expect(wrapper.find('[data-comment-popover]').exists()).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('makes the comment the caret is in the current one, until the caret leaves', async () => {
+      const wrapper = await mountAttached('doc_2')
+      wrapper.find('.ProseMirror').element.focus()
+
+      select('doc_2', 12)
+      await flushPromises()
+      expect(currentComment.value).toMatchObject({ documentId: 'doc_2', id: 'cabcd1' })
+      // Already in view: nothing is left for a view to scroll to.
+      expect(takeUpComment('doc_2')).toBe(null)
+
+      select('doc_2', 3)
+      await flushPromises()
+      expect(currentComment.value).toBe(null)
+      wrapper.unmount()
+    })
+
+    it('leaves the comment the list went to current until the writer moves on', async () => {
+      const wrapper = await mountAttached('doc_2')
+      goToComment('doc_2', 'cabcd1')
+      await flushPromises()
+
+      // The model writing before the caret carries it along; the writer has
+      // not moved it.
+      const editor = useEditor()
+      editor.dispatch('doc_2', editor.stateOf('doc_2').tr.insertText('So ', 1))
+      await flushPromises()
+
+      expect(currentComment.value).toMatchObject({ id: 'cabcd1' })
+      leaveComment('doc_2')
+      wrapper.unmount()
+    })
+
+    it('puts the field away when the text changes under it', async () => {
+      const wrapper = await mountAttached('doc_1')
+      wrapper.find('.ProseMirror').element.focus()
+      select('doc_1', 6, 10)
+      await flushPromises()
+      await wrapper.find('[data-comment-button]').trigger('click')
+      await flushPromises()
+
+      // The model writing to the document, say.
+      const editor = useEditor()
+      editor.dispatch('doc_1', editor.stateOf('doc_1').tr.insertText('Deep ', 6))
+      await flushPromises()
+
+      expect(wrapper.find('[data-comment-field]').exists()).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('offers nothing for a caret, or once the editor has lost the focus', async () => {
+      const wrapper = await mountAttached('doc_1')
+      const page = wrapper.find('.ProseMirror').element
+      page.focus()
+
+      select('doc_1', 6, 6)
+      await flushPromises()
+      expect(wrapper.find('[data-comment-button]').exists()).toBe(false)
+
+      select('doc_1', 6, 10)
+      await flushPromises()
+      expect(wrapper.find('[data-comment-button]').exists()).toBe(true)
+      page.blur()
+      await flushPromises()
+      expect(wrapper.find('[data-comment-button]').exists()).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('marks the comment gone to, until the writer moves on', async () => {
+      const wrapper = await mountAttached('doc_2')
+      expect(wrapper.find('.ProseMirror .comment-current').exists()).toBe(false)
+
+      goToComment('doc_2', 'cabcd1')
+      await flushPromises()
+      expect(wrapper.find('.ProseMirror .comment-current').text()).toBe('cold')
+
+      leaveComment('doc_2')
+      await flushPromises()
+      expect(wrapper.find('.ProseMirror .comment-current').exists()).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('takes up a comment gone to before its document opened', async () => {
+      goToComment('doc_2', 'cabcd1')
+      const wrapper = await mountAttached('doc_2')
+      expect(wrapper.find('.ProseMirror .comment-current').text()).toBe('cold')
+      leaveComment('doc_2')
       wrapper.unmount()
     })
   })

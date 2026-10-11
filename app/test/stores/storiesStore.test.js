@@ -200,6 +200,24 @@ describe('StoriesStore', () => {
     })
   })
 
+  describe('freeName', () => {
+    beforeEach(async () => {
+      const { default: db } = await import('../../src/stores/db')
+      db.stories.toArray.mockResolvedValue([])
+      store = useStoriesStore()
+      await store.ensureInitialized()
+    })
+
+    it('numbers a name another project has, and leaves a free one be', async () => {
+      const first = await store.createStory('Lighthouse')
+
+      expect(store.freeName('Lighthouse')).toBe('Lighthouse (2)')
+      expect(store.freeName('Harbour')).toBe('Harbour')
+      // A project is not in the way of its own name.
+      expect(store.freeName('Lighthouse', first.id)).toBe('Lighthouse')
+    })
+  })
+
   describe('updateStory', () => {
     beforeEach(async () => {
       const existingStory = {

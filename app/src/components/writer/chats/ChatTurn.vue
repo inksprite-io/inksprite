@@ -9,8 +9,11 @@
          times. See utils/turns.js.
 
          On a phone the buttons do not fit beside all it says about a reply,
-         so they go under it rather than off the edge of the screen. -->
-    <div class="flex flex-wrap items-center justify-between gap-x-2 min-h-6 mb-2">
+         so they go under it rather than off the edge of the screen. Elsewhere
+         they are hidden until the turn is hovered, and float over the end of
+         the line rather than wrap under it: a line of nothing between the
+         name and the reply, on every turn, is what the room went on. -->
+    <div class="relative flex flex-wrap items-center justify-between gap-x-2 min-h-6 mb-2">
       <div
         class="flex flex-wrap items-center gap-x-2 whitespace-nowrap text-xs text-surface-500 dark:text-surface-400"
       >
@@ -44,6 +47,7 @@
           <span class="inline-flex items-center gap-0.5 tabular-nums">
             <Button
               v-tooltip.top="'Previous answer'"
+              aria-label="Previous answer"
               icon="pi pi-chevron-left"
               text
               rounded
@@ -55,6 +59,7 @@
             <span>{{ answers.at + 1 }} / {{ answers.of }}</span>
             <Button
               v-tooltip.top="'Next answer'"
+              aria-label="Next answer"
               icon="pi pi-chevron-right"
               text
               rounded
@@ -76,8 +81,12 @@
            own buttons over the corner a message's would go in, and a header
            nothing floats over is where "edit turn" is looked for anyway. -->
       <div
+        data-turn-actions
         :class="[
-          'flex flex-none gap-1 ml-auto transition-opacity',
+          'flex flex-none gap-1 transition-opacity',
+          isMobile
+            ? 'ml-auto'
+            : 'absolute -top-1 right-0 z-10 rounded-lg bg-surface-0 dark:bg-surface-800',
           menuOpen
             ? 'opacity-100'
             : isMobile
@@ -96,6 +105,7 @@
         <Button
           v-if="spoken"
           v-tooltip.top="copied ? 'Copied' : 'Copy'"
+          :aria-label="copied ? 'Copied' : 'Copy'"
           :icon="copied ? 'pi pi-check' : 'pi pi-copy'"
           text
           rounded
@@ -104,7 +114,8 @@
         />
         <Button
           v-if="role === 'user'"
-          v-tooltip.top="'Resend turn'"
+          v-tooltip.top="'Regenerate reply'"
+          aria-label="Regenerate reply"
           icon="pi pi-arrow-right"
           text
           rounded
@@ -117,7 +128,8 @@
                whole of their turn is, and its piece shows no buttons here. -->
           <Button
             v-if="role === 'assistant' || lone"
-            v-tooltip.top="command || lone ? 'Ask again' : 'Regenerate message'"
+            v-tooltip.top="command || lone ? 'Ask again' : 'Regenerate reply'"
+            :aria-label="command || lone ? 'Ask again' : 'Regenerate reply'"
             icon="pi pi-refresh"
             text
             rounded
@@ -129,6 +141,7 @@
             v-tooltip.top="
               role === 'user' ? 'Edit turn' : command ? 'Edit command' : 'Edit message'
             "
+            :aria-label="role === 'user' ? 'Edit turn' : command ? 'Edit command' : 'Edit message'"
             icon="pi pi-pencil"
             text
             rounded

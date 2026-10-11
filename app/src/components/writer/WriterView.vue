@@ -19,7 +19,9 @@
           :active-mobile-tab="mobileTab"
           :story-id="currentStoryId"
           :document-id="currentDocumentId"
+          :chat-id="selectedChatId"
           @update:active-mobile-tab="activeMobileTab = $event"
+          @update:chat-id="selectChat"
         />
         <template v-else-if="noProject">
           <Settings v-if="mobileTab === 'settings'" />
@@ -188,8 +190,9 @@ watch(settingsVisible, visible => {
 })
 
 /**
- * The chat the chat panel shows. Remembered for the session per story, so it
- * survives a reload and does not follow the writer to another project.
+ * The chat the chat panel shows, or the phone's chat tab. Remembered for the
+ * session per story, so it survives a reload and does not follow the writer
+ * to another project.
  */
 const selectedChatId = ref(null)
 
@@ -288,8 +291,7 @@ async function handleOAuthMessage(event) {
 
     toast.add({
       severity: 'success',
-      summary: 'Connected!',
-      detail: 'Your OpenRouter account has been connected',
+      detail: 'Connected to your OpenRouter account',
       life: 3000,
     })
   }

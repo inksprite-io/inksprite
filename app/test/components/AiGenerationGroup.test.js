@@ -77,3 +77,36 @@ describe('AiGenerationGroup tool use', () => {
     expect(updatePreset).not.toHaveBeenCalled()
   })
 })
+
+describe('AiGenerationGroup at 0', () => {
+  beforeEach(() => {
+    effective.value = { ...AI_DEFAULTS }
+  })
+
+  it('says what 0 means for Max tokens and Tool rounds, and only at 0', () => {
+    effective.value = { ...AI_DEFAULTS, maxTokens: 0, maxToolRounds: 0 }
+    const wrapper = mountGroup()
+
+    expect(wrapper.find('[data-zero="maxTokens"]').text()).toBe('The provider decides.')
+    expect(wrapper.find('[data-zero="maxToolRounds"]').text()).toBe('No limit.')
+
+    effective.value = { ...AI_DEFAULTS, maxTokens: 500, maxToolRounds: 100 }
+    const set = mountGroup()
+    expect(set.find('[data-zero="maxTokens"]').exists()).toBe(false)
+    expect(set.find('[data-zero="maxToolRounds"]').exists()).toBe(false)
+  })
+})
+
+describe('AiGenerationGroup names', () => {
+  it('names every control after its setting, for a screen reader', () => {
+    const wrapper = mountGroup()
+    const named = label => wrapper.findAll(`[aria-label="${label}"]`).length
+
+    // A slider and the number beside it each carry the name.
+    expect(named('Max tokens')).toBeGreaterThanOrEqual(2)
+    expect(named('Tool rounds per turn')).toBeGreaterThanOrEqual(2)
+    expect(named('Show reasoning')).toBe(1)
+    expect(named('Allow tool use')).toBe(1)
+    expect(named('Reasoning effort')).toBeGreaterThanOrEqual(1)
+  })
+})

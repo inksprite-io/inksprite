@@ -8,18 +8,26 @@
  * - **markdown** - `parseMarkdown` and `serializeMarkdown`, the two directions
  *   of the file format; `settleMarkdown` for text from outside; `appendBlocks`
  *   for joining markdown to markdown
+ * - **comments** - A comment on a passage: the markup, the helpers, the parser rules, and
+ *   the entries a list shows
  * - **state** - `createEditorState`, the keys and typed shortcuts, and the
  *   `replaceContent` and `appendContent` transactions an outside writer asks for
  * - **search** - Find and replace: the matches as a plugin's state, drawn as
  *   decorations, and the commands that move between and replace them
  * - **plainSearch** - The same for a plain document, in the CodeMirror view it
  *   is shown in; loaded with that view, so not exported here
+ * - **plainMacros** - A card's `{{char}}`, `{{user}}` and the rest picked out
+ *   in that view; loaded with it too
  * - **size** - `laysOut`, whether a document is short enough for the editor
  *   to lay out, which decides how a long import comes in
  * - **tables** - A table made by typing its header row, the keys that move
  *   through one, column alignment, and pasting into a cell
  * - **links** - Making, changing, removing and opening links: the commands,
  *   and a view plugin for Mod-K, Mod-click and a pasted link
+ * - **marks** - `markAround`, the run of a mark around a position, for the
+ *   link or the comment the caret is in
+ * - **shortcuts** - The keys and typed shortcuts as the writer is shown them,
+ *   on Mod-/, spelled for their keyboard
  *
  * `Document.content` is markdown. While a document is open — in a tab, with
  * or without a view over it — its `EditorState` is the truth and the store's

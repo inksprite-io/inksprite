@@ -64,6 +64,7 @@
 
     <ProjectDialog v-model:visible="showProjectDialog" :story-id="storyId" />
     <RepositoryDialog
+      ref="repositoryDialog"
       v-model:visible="showRepositoryDialog"
       :story-id="storyId"
       :parent-id="repositoryParentId"
@@ -71,16 +72,17 @@
     />
     <DriveImportDialog v-if="driveOffered" ref="driveDialog" :story-id="storyId" />
     <CardImportDialog v-model:visible="showCardDialog" :found="found" @confirm="importCard" />
-    <GreetingDialog
-      v-model:visible="showGreetingDialog"
-      :greetings="pendingCard?.greetings || []"
+    <CardChatDialog
+      v-model:visible="showCardChatDialog"
+      :card="pendingCard"
+      :last-user-name="lastUserName"
       @confirm="openCardChat"
     />
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ScrollPanel from 'primevue/scrollpanel'
 import { useToast } from 'primevue/usetoast'
@@ -88,7 +90,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import DocumentNode from './DocumentNode.vue'
 import ProjectDialog from './ProjectDialog.vue'
 import CardImportDialog from './CardImportDialog.vue'
-import GreetingDialog from './GreetingDialog.vue'
+import CardChatDialog from './CardChatDialog.vue'
 import RepositoryDialog from './RepositoryDialog.vue'
 import DriveImportDialog from './DriveImportDialog.vue'
 import PanelHeader from '../layout/PanelHeader.vue'
@@ -102,7 +104,16 @@ import { useProjects } from '@/composables/useProjects'
 import { useJobs } from '@/composables/useJobs.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
 import { requestsFor } from '@/jobs/index.js'
-import { carriesFiles, gatherDropped, gatherFiles } from '@/files/batch.js'
+import {
+  carriesFiles,
+  folderOf,
+  gatherFiles,
+  listDropped,
+  listFiles,
+  withoutJunk,
+} from '@/files/batch.js'
+import { entriesOfFolder } from '@/source/gather.js'
+import { looksLikeCodebase } from '@/source/detect.js'
 import { repositoryOf } from '@/source/tree.js'
 import { driveAvailable } from '@/drive/config.js'
 import { useStoriesStore } from '@/stores/storiesStore'
@@ -158,6 +169,8 @@ const showRepositoryDialog = ref(false)
 const repositoryParentId = ref(null)
 /** The repository being refreshed, when that is what the dialog is for. @type {import('vue').Ref<string|null>} */
 const repositoryRefreshId = ref(null)
+/** @type {import('vue').Ref<any>} */
+const repositoryDialog = ref(null)
 
 /**
  * @param {string|null} parentId - The folder to import a repository into
@@ -186,43 +199,40 @@ const found = ref(null)
 /** The folder the card was asked for on, which is where it lands. */
 const importInto = ref(null)
 
-const showGreetingDialog = ref(false)
+const showCardChatDialog = ref(false)
 /** @type {import('vue').Ref<import('@/cards/chat.js').CardChat|null>} */
 const pendingCard = ref(null)
+const lastUserName = ref('')
 
 /**
- * Start a chat on a card. One greeting opens straight away; more than one is a
- * question only askable now, so it is asked.
+ * Start a chat on a card, once the writer has said who they are in it, and
+ * which greeting opens it when there is more than one.
  *
  * @param {string} folderId
  */
 const startCardChat = async folderId => {
-  pendingCard.value = await cardChats.read(folderId)
-  if (!pendingCard.value) return
-
-  if (pendingCard.value.greetings.length > 1) {
-    showGreetingDialog.value = true
-    return
-  }
-  openCardChat(0)
+  const card = await cardChats.read(folderId)
+  if (!card) return
+  lastUserName.value = cardChats.lastUserName()
+  pendingCard.value = card
+  showCardChatDialog.value = true
 }
 
 /**
- * @param {number} greeting - Which one opens it
+ * @param {{userName: string, greeting: number}} answers
  */
-const openCardChat = async greeting => {
+const openCardChat = async ({ userName, greeting }) => {
   const card = pendingCard.value
-  showGreetingDialog.value = false
+  showCardChatDialog.value = false
   if (!card) return
 
   try {
-    const chat = await cardChats.start(card, { greeting })
+    const chat = await cardChats.start(card, { userName, greeting })
     emit('select-chat', chat.id)
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Could not start the chat',
-      detail: error.message,
+      detail: `Could not start the chat: ${error.message}`,
       life: 6000,
     })
   } finally {
@@ -278,8 +288,7 @@ const readChosenCard = async event => {
     // it is worth saying which rather than failing silently.
     toast.add({
       severity: error instanceof NotACardError ? 'warn' : 'error',
-      summary: 'Nothing imported',
-      detail: error.message,
+      detail: `Nothing imported: ${error.message}`,
       life: 6000,
     })
   }
@@ -292,7 +301,44 @@ const readChosenCard = async event => {
 const readChosenFolder = async event => {
   const files = /** @type {HTMLInputElement} */ (event.target).files
   if (!files || files.length === 0) return
-  await importBatch(gatherFiles(files), importInto.value)
+  await importListed(listFiles(files), importInto.value)
+}
+
+/**
+ * Import what was chosen or dropped. A folder that looks like a codebase is
+ * asked about first, since it can come in as a repository instead. Closing
+ * the question imports nothing.
+ *
+ * @param {import('@/files/batch.js').Gathered[]} listed
+ * @param {string|null} parentId - Where it goes; the project's top when null
+ */
+const importListed = async (listed, parentId) => {
+  const folder = folderOf(listed)
+  const paths = entriesOfFolder(listed).entries.map(entry => entry.path)
+  if (!folder || !looksLikeCodebase(paths)) return importBatch(withoutJunk(listed), parentId)
+
+  confirm.require({
+    header: 'Import as a repository?',
+    message: `${folder} looks like a codebase.`,
+    icon: 'pi pi-code',
+    rejectProps: { label: 'Import as files', severity: 'secondary', outlined: true },
+    acceptProps: { label: 'Import as repository' },
+    accept: () => importRepository(listed, parentId),
+    reject: () => importBatch(withoutJunk(listed), parentId),
+  })
+}
+
+/**
+ * Hand a folder to the repository dialog, which imports it saying how it
+ * goes, with a Stop.
+ *
+ * @param {import('@/files/batch.js').Gathered[]} listed
+ * @param {string|null} parentId
+ */
+const importRepository = async (listed, parentId) => {
+  openRepositoryDialog(parentId, null)
+  await nextTick()
+  await repositoryDialog.value?.importListed(listed)
 }
 
 /**
@@ -368,8 +414,7 @@ const onDrop = async event => {
   const target = targetOf(event)
   dropTarget.value = null
   if (!event.dataTransfer || !target) return
-  const gathered = await gatherDropped(event.dataTransfer)
-  await importBatch(gathered, target.id)
+  await importListed(await listDropped(event.dataTransfer), target.id)
 }
 
 const jobs = useJobs()
@@ -398,7 +443,7 @@ const convertDocument = documentId => {
         await jobs.convert(props.storyId, documentId)
         jobsToast.show()
       } catch (error) {
-        toast.add({ severity: 'error', summary: 'Not started', detail: error.message, life: 6000 })
+        toast.add({ severity: 'error', detail: `Not started: ${error.message}`, life: 6000 })
       }
     },
   })
@@ -419,15 +464,14 @@ const reimportCard = async folderId => {
   } catch (error) {
     toast.add({
       severity: error instanceof NotACardError ? 'warn' : 'error',
-      summary: 'Nothing imported',
-      detail: error.message,
+      detail: `Nothing imported: ${error.message}`,
       life: 6000,
     })
   }
 }
 
 /**
- * @param {{userName: string, useSystemPrompt: boolean}} answers
+ * @param {{useSystemPrompt: boolean}} answers
  */
 const importCard = async answers => {
   const card = found.value
@@ -438,19 +482,18 @@ const importCard = async answers => {
     const written = await cards.write(card, { parentId: importInto.value, ...answers })
     toast.add({
       severity: 'success',
-      summary: `${card.replaces ? 'Re-imported' : 'Imported'} ${written.title}`,
       // A file has something to say about itself — that it had no text in it —
       // where a count would say nothing.
-      detail:
+      detail: `${card.replaces ? 'Re-imported' : 'Imported'} ${written.title}: ${
         written.note ||
-        (written.documents === 1 ? '1 document.' : `${written.documents} documents.`),
+        (written.documents === 1 ? '1 document.' : `${written.documents} documents.`)
+      }`,
       life: 4000,
     })
   } catch (error) {
     toast.add({
       severity: 'error',
-      summary: 'Nothing imported',
-      detail: error.message,
+      detail: `Nothing imported: ${error.message}`,
       life: 6000,
     })
   } finally {
@@ -479,7 +522,7 @@ const confirmDeleteProject = () => {
 
   confirm.require({
     message: `Are you sure you want to delete "${api.displayTitle(root.value)}"? This action cannot be undone.`,
-    header: 'Delete Project',
+    header: 'Delete project',
     icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
     acceptProps: { label: 'Delete', severity: 'danger' },
@@ -488,7 +531,6 @@ const confirmDeleteProject = () => {
         await projects.remove(props.storyId)
         toast.add({
           severity: 'success',
-          summary: 'Success',
           detail: 'Project deleted',
           life: 3000,
         })
@@ -497,7 +539,6 @@ const confirmDeleteProject = () => {
         console.error('Failed to delete project:', error)
         toast.add({
           severity: 'error',
-          summary: 'Error',
           detail: 'Failed to delete project',
           life: 3000,
         })
@@ -510,13 +551,12 @@ const confirmDeleteProject = () => {
 const exportProject = async () => {
   try {
     const { filename } = await useBackup().downloadProject(props.storyId)
-    toast.add({ severity: 'success', summary: 'Exported', detail: `Saved ${filename}`, life: 3000 })
+    toast.add({ severity: 'success', detail: `Saved ${filename}`, life: 3000 })
   } catch (error) {
     console.error('Project export failed:', error)
     toast.add({
       severity: 'error',
-      summary: 'Export failed',
-      detail: error.message,
+      detail: `Export failed: ${error.message}`,
       life: 6000,
     })
   }

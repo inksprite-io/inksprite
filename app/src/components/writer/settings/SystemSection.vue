@@ -9,6 +9,7 @@
         option-label="label"
         option-value="value"
         placeholder="Select a theme"
+        aria-label="Theme"
         class="w-full dark:!bg-surface-900"
         size="small"
         @change="handleThemeChange"

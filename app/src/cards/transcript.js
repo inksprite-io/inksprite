@@ -17,7 +17,7 @@
  * Design: `.llm/character_cards_design.md`.
  */
 
-import { substitute } from './card.js'
+import { substitute } from './macros.js'
 
 /** @typedef {import('../types/models.js').Message} Message */
 /** @typedef {import('../types/models.js').MessageAlternate} MessageAlternate */
@@ -27,7 +27,8 @@ import { substitute } from './card.js'
  * @property {string} title - The file's name, without the timestamp ST puts in it
  * @property {string} character - Who the chat was with, by the name on their
  *   messages. Empty when nobody but the writer spoke.
- * @property {string} user - The writer's name in it, which is their persona's
+ * @property {string} user - The writer's name in it, which is their persona's.
+ *   Empty when the file never says it.
  * @property {string} note - The Author's Note, the one piece of the prompt a
  *   chat file carries. Empty for most, and when the chat had it switched off.
  * @property {Message[]} messages - In order, under placeholder ids: an import
@@ -76,7 +77,7 @@ export function readTranscript(text, filename = '') {
 
   const names = {
     char: named(header.character_name) || commonest(said.filter(row => !row.is_user)),
-    user: named(header.user_name) || commonest(said.filter(row => row.is_user)) || 'You',
+    user: named(header.user_name) || commonest(said.filter(row => row.is_user)),
   }
 
   // Messages are ordered by when they were written, so every one needs a time

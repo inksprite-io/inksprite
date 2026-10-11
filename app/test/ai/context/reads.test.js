@@ -5,12 +5,12 @@ import { changedSinceRead, readInView, readsInView, textHash } from '@/ai/contex
  * An assistant turn that read these documents, each `[callId, id, path, text, args]`.
  * Marked as keeping its document calls unless told otherwise.
  */
-const turn = (id, reads, { kept = true } = {}) => ({
+const turn = (id, reads, { kept = true, mark = 'documentCallsKept' } = {}) => ({
   id,
   role: 'assistant',
   content: 'Read.',
   metadata: {
-    ...(kept ? { documentCallsKept: true } : {}),
+    ...(kept ? { [mark]: true } : {}),
     apiTrajectory: reads.flatMap(([callId, doc, path, text, args = {}]) => [
       {
         role: 'assistant',
@@ -66,6 +66,14 @@ describe('readsInView', () => {
         args: { path: 'Notes/Elara', section: 'past' },
       },
     ])
+  })
+
+  it('finds the reads of a turn that keeps every call', () => {
+    const found = readsInView([
+      turn('m1', [['c1', 'd1', 'Notes/Elara', 'x']], { mark: 'callsKept' }),
+    ])
+
+    expect(found.map(one => one.id)).toEqual(['d1'])
   })
 
   it('leaves out a turn from before document calls stayed', () => {

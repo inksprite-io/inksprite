@@ -96,34 +96,16 @@ export function writerCalls(skill) {
 }
 
 /**
- * What kind of skill this is, in a line for the writer: how it runs, where its
- * answer goes, and who calls it. The word "skill" covers two things — one that
- * runs as a model call of its own and reports back, and one whose
- * instructions join the conversation — and this is where the screen says
- * which.
+ * Who calls a skill, in a line for the writer: the one thing about it the list
+ * cannot otherwise show, since a skill the model calls looks like any other.
+ * How it runs and where its answer goes are the editor's to say.
  *
  * @param {SkillDefinition} skill
  * @returns {string}
  */
-export function describeKind(skill) {
-  const who =
-    skill.model && skill.user
-      ? 'Called by the model or you'
-      : skill.model
-        ? 'Called by the model'
-        : 'Called by you'
-
-  if (!skill.fork) {
-    return skill.model ? `Joins the conversation · ${who}` : 'A saved prompt · Called by you'
-  }
-
-  const answer = {
-    result: 'reports back',
-    reply: 'answers as the reply',
-    summary: 'answers with a summary',
-    edit: 'answers with an edit',
-  }[skill.output]
-  return `Runs on its own and ${answer} · ${who}`
+export function describeCallers(skill) {
+  if (skill.model && skill.user) return 'Called by the model or you'
+  return skill.model ? 'Called by the model' : 'Called by you'
 }
 
 /**

@@ -474,7 +474,7 @@ describe('useAIService failure reporting', () => {
     const error = await failureFrom(withReasoning)
 
     expect(error.message).toContain('Invalid signature for thinking block')
-    expect(error.message).toContain('Reasoning Effort')
+    expect(error.message).toContain('Reasoning effort')
   })
 
   it('says where the routing policy lives when it excluded every endpoint', async () => {
@@ -488,8 +488,8 @@ describe('useAIService failure reporting', () => {
     const error = await failureFrom([{ role: 'user', content: 'hi' }])
 
     expect(error.message).toContain('No endpoints found')
-    expect(error.message).toContain('Allowed Providers')
-    expect(error.message).toContain('Provider Routing')
+    expect(error.message).toContain('Allowed providers')
+    expect(error.message).toContain('Provider routing')
   })
 
   it('leaves a no-endpoints error alone when this request carried no routing', async () => {
@@ -541,7 +541,7 @@ describe('useAIService failure reporting', () => {
     const error = await failureFrom(withReasoning)
 
     expect(error.message).toContain('Invalid signature for thinking block')
-    expect(error.message).toContain('Reasoning Effort')
+    expect(error.message).toContain('Reasoning effort')
   })
 })
 

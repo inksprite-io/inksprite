@@ -20,6 +20,7 @@
           :slider-max="spec.sliderMax"
           :step="AI_PARAMETERS[spec.key].step"
           :fractional="spec.fractional !== false"
+          :label="AI_PARAMETERS[spec.key].label"
           @update:model-value="setParameter(spec.key, $event)"
         />
       </div>
@@ -38,6 +39,7 @@
           :min="AI_PARAMETERS.seed.min"
           :max="AI_PARAMETERS.seed.max"
           :use-grouping="false"
+          :aria-label="AI_PARAMETERS.seed.label"
           size="small"
           class="w-full"
           @update:model-value="setSetting('seed', $event ?? 0)"

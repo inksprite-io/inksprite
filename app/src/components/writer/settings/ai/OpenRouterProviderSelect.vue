@@ -10,6 +10,7 @@
       show-clear
       display="chip"
       :placeholder="placeholder"
+      :aria-label="label || undefined"
       class="w-full"
       size="small"
       @update:model-value="emit('update:modelValue', $event || [])"
@@ -60,6 +61,11 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: 'None',
+  },
+  /** What a screen reader calls the list: the setting it is for. */
+  label: {
+    type: String,
+    default: '',
   },
 })
 

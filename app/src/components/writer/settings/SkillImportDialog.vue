@@ -105,7 +105,7 @@ import InputText from 'primevue/inputtext'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { parseSkill } from '@/ai/skills/format.js'
 import { withName } from '@/ai/skills/form.js'
-import { describeKind, waitingOn } from '@/ai/skills/runner.js'
+import { describeCallers, waitingOn } from '@/ai/skills/runner.js'
 import { useSkills } from '@/composables/useSkills'
 import { useToast } from '@/composables/useToast'
 
@@ -174,7 +174,7 @@ const kindOf = row => {
   const read = parseSkill(row.text)
   if ('errors' in read) return ''
   const waiting = waitingOn(read.skill)
-  return waiting ? `${describeKind(read.skill)}. ${waiting}` : describeKind(read.skill)
+  return waiting ? `${describeCallers(read.skill)}. ${waiting}` : describeCallers(read.skill)
 }
 
 const picked = computed(() => rows.value.filter((row, index) => chosen(index)))

@@ -53,12 +53,19 @@ import { formatToolArguments, formatToolResult } from '@/utils/formatters.js'
 const ANSWER_FIELDS = ['direction', 'interpretation', 'answer', 'draft']
 
 /**
+ * Built-ins set aside, whose calls are still in the turns that made them.
+ * See BUILT_IN_SKILLS.
+ */
+const SET_ASIDE = new Set(['director'])
+
+/**
  * Whether a call is to a skill.
  *
  * Answered, its result says: every skill's keeps what it did. A turn from
  * before results kept anything could only have consulted a built-in, so one
- * of those by name counts too. Still running, there is only the name, and a
- * skill the app has by that name is as close as it gets.
+ * of those by name counts too, including one set aside since. Still running,
+ * there is only the name, and a skill the app has by that name is as close as
+ * it gets.
  *
  * @param {string} name
  * @param {ApiMessage|undefined} [result]
@@ -66,7 +73,7 @@ const ANSWER_FIELDS = ['direction', 'interpretation', 'answer', 'draft']
  */
 export function isConsultation(name, result) {
   if (!result) return Boolean(getSkill(name))
-  return Boolean(result._consultation) || Boolean(getSkill(name)?.builtIn)
+  return Boolean(result._consultation) || Boolean(getSkill(name)?.builtIn) || SET_ASIDE.has(name)
 }
 
 /**

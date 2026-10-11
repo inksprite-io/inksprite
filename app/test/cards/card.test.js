@@ -3,7 +3,6 @@ import {
   shapeOf,
   readCard,
   readLorebook,
-  substitute,
   uncomment,
   overOriginal,
   undecorate,
@@ -199,31 +198,6 @@ describe('cards/card', () => {
     it('reads nothing out of nothing', () => {
       expect(readLorebook(null).entries).toEqual([])
       expect(readLorebook({}).entries).toEqual([])
-    })
-  })
-
-  describe('substitute', () => {
-    const names = { char: 'Elara', user: 'Riley' }
-
-    it('puts both names in', () => {
-      expect(substitute('{{char}} looks at {{user}}.', names)).toBe('Elara looks at Riley.')
-    })
-
-    it('accepts the spacing and casing authors actually write', () => {
-      expect(substitute('{{ char }} and {{USER}} and {{Char}}', names)).toBe(
-        'Elara and Riley and Elara'
-      )
-    })
-
-    it('leaves every other macro for the model to read', () => {
-      // A date frozen at import is wrong by tomorrow, and a coin flip fixed at
-      // import always comes up the same.
-      const text = '{{original}} {{date}} {{random::heads::tails}} {{roll:d20}} {{persona}}'
-      expect(substitute(text, names)).toBe(text)
-    })
-
-    it('has nothing to do with an empty string', () => {
-      expect(substitute('', names)).toBe('')
     })
   })
 

@@ -10,6 +10,8 @@
       <Button
         type="button"
         icon="pi pi-ellipsis-v"
+        aria-label="Chat actions"
+        aria-haspopup="true"
         :aria-controls="`chat_menu_${chatId}`"
         class="bg-surface-0/90 dark:bg-surface-900/90 backdrop-blur-md shadow-sm hover:shadow-md"
         severity="secondary"
@@ -34,7 +36,7 @@
     <div class="flex flex-col gap-1 pr-8">
       <!-- Chat Title -->
       <div v-if="!isEditing" class="text-sm font-medium text-surface-900 dark:text-surface-0">
-        {{ chat?.title || 'Untitled Chat' }}
+        {{ shownChatTitle(chat?.title) }}
       </div>
       <InputText
         v-else
@@ -75,6 +77,7 @@ import InputText from 'primevue/inputtext'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useChats } from '@/composables/useChats'
 import { useReactiveTime } from '@/composables/useReactiveTime'
+import { shownChatTitle } from '@/utils/chatTitle.js'
 
 /**
  * @typedef {Object} Props
@@ -150,6 +153,11 @@ const messagePreview = computed(() => {
 
 // Format last message time - now reactive and will update automatically
 const lastMessageTime = computed(() => {
+  // The time the list is sorted by, so a card says why it sits where it does:
+  // a fork's is when it was made, not when the turn it was cut at was written.
+  if (chat.value?.lastMessageAt) {
+    return formatRelativeTime(chat.value.lastMessageAt)
+  }
   const msgs = messages.value
   // Get the last message's timestamp
   if (msgs && msgs.length > 0) {
@@ -170,7 +178,7 @@ const menuItems = computed(() => [
     icon: 'pi pi-pencil',
     command: async () => {
       isEditing.value = true
-      editedTitle.value = chat.value?.title || 'Untitled Chat'
+      editedTitle.value = shownChatTitle(chat.value?.title)
       await nextTick()
       titleInput.value?.$el?.focus()
     },
@@ -257,14 +265,14 @@ const saveTitle = async () => {
       await chatsApi.updateChat(props.chatId, { title: editedTitle.value })
     } catch (e) {
       console.error('Rename failed', e)
-      editedTitle.value = chat.value?.title || 'Untitled Chat'
+      editedTitle.value = shownChatTitle(chat.value?.title)
     }
   }
   isEditing.value = false
 }
 
 const cancelEdit = () => {
-  editedTitle.value = chat.value?.title || 'Untitled Chat'
+  editedTitle.value = shownChatTitle(chat.value?.title)
   isEditing.value = false
 }
 

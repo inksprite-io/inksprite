@@ -5,7 +5,8 @@
  *
  * The matches are a state field, so they follow the text as it changes, and
  * they are drawn as decorations, in the classes `search` draws with. Case
- * does not count. Moving to a match selects it, which is where the caret is
+ * and whole words count as they do there, and so does a replacement taking
+ * the capitals of what it replaces. Moving to a match selects it, which is where the caret is
  * when the find is closed, and where a replace or the next search starts
  * from. Each command takes the view, as CodeMirror's own do, and says whether
  * there was anything to do; `reveal` then brings the match into sight.
@@ -16,15 +17,18 @@
 
 import { EditorSelection, StateEffect, StateField } from '@codemirror/state'
 import { Decoration, EditorView } from '@codemirror/view'
+import { inCaseOf, patternFor } from './search.js'
 
 /**
  * @typedef {import('@codemirror/state').Text} Text
  * @typedef {import('@codemirror/state').ChangeSet} ChangeSet
  * @typedef {import('@codemirror/view').DecorationSet} DecorationSet
  * @typedef {import('./search.js').Match} Match
+ * @typedef {import('./search.js').SearchOptions} SearchOptions
  *
  * @typedef {Object} Found
  * @property {string} query - What is being looked for; empty while nothing is
+ * @property {SearchOptions} options - How it is looked for
  * @property {Match[]} matches - Every match, in order
  * @property {number} current - Which of them the writer is on, or -1 for none
  *
@@ -32,24 +36,22 @@ import { Decoration, EditorView } from '@codemirror/view'
  */
 
 /** @type {PlainSearchState} */
-const NONE = { query: '', matches: [], current: -1, decorations: Decoration.none }
+const NONE = { query: '', options: {}, matches: [], current: -1, decorations: Decoration.none }
 
 const MATCH = Decoration.mark({ class: 'find-match' })
 const CURRENT = Decoration.mark({ class: 'find-match find-match-current' })
-
-/** @param {string} text */
-const escapeRegExp = text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /**
  * Every place the query is found in the text, in order.
  *
  * @param {Text} doc
  * @param {string} query
+ * @param {SearchOptions} [options]
  * @returns {Match[]}
  */
-export function findMatches(doc, query) {
+export function findMatches(doc, query, options = {}) {
   if (!query) return []
-  const pattern = new RegExp(escapeRegExp(query), 'giu')
+  const pattern = patternFor(query, options)
   return [...doc.toString().matchAll(pattern)].map(found => {
     const from = found.index ?? 0
     return { from, to: from + found[0].length }
@@ -73,12 +75,12 @@ const firstFrom = (matches, pos) => {
  * @param {Found} found
  * @returns {PlainSearchState}
  */
-const searchState = ({ query, matches, current }) => {
+const searchState = ({ query, options, matches, current }) => {
   if (!query) return NONE
   const decorations = Decoration.set(
     matches.map((match, index) => (index === current ? CURRENT : MATCH).range(match.from, match.to))
   )
-  return { query, matches, current, decorations }
+  return { query, options, matches, current, decorations }
 }
 
 /** A search set whole, found against the text the transaction leaves. */
@@ -97,9 +99,9 @@ export const plainSearch = StateField.define({
     for (const effect of tr.effects) if (effect.is(setSearch)) return searchState(effect.value)
     if (!tr.docChanged || !value.query) return value
     const was = value.matches[value.current]
-    const matches = findMatches(tr.state.doc, value.query)
+    const matches = findMatches(tr.state.doc, value.query, value.options)
     const current = was ? firstFrom(matches, tr.changes.mapPos(was.from)) : -1
-    return searchState({ query: value.query, matches, current })
+    return searchState({ query: value.query, options: value.options, matches, current })
   },
   provide: field => EditorView.decorations.from(field, value => value.decorations),
 })
@@ -134,13 +136,17 @@ const go = (view, found, changes) => {
  * matches. An empty query is the search put away.
  *
  * @param {string} query
+ * @param {SearchOptions} [options]
  * @returns {(view: EditorView) => boolean}
  */
-export const find = query => view => {
-  const matches = findMatches(view.state.doc, query)
-  go(view, { query, matches, current: firstFrom(matches, view.state.selection.main.from) })
-  return true
-}
+export const find =
+  (query, options = {}) =>
+  view => {
+    const matches = findMatches(view.state.doc, query, options)
+    const current = firstFrom(matches, view.state.selection.main.from)
+    go(view, { query, options, matches, current })
+    return true
+  }
 
 /**
  * Move to the match after the one the writer is on, or before it, going round
@@ -152,13 +158,26 @@ export const find = query => view => {
 export const findNext =
   (step = 1) =>
   view => {
-    const { query, matches, current } = searchOf(view.state)
+    const { query, options, matches, current } = searchOf(view.state)
     if (matches.length === 0) return false
     const next =
       current === -1 ? firstFrom(matches, view.state.selection.main.from) : current + step
-    go(view, { query, matches, current: (next + matches.length) % matches.length })
+    go(view, { query, options, matches, current: (next + matches.length) % matches.length })
     return true
   }
+
+/**
+ * What goes in over a match: the replacement, in the capitals of what it
+ * replaces where case does not count.
+ *
+ * @param {import('@codemirror/state').EditorState} state
+ * @param {Match} match
+ * @param {string} replacement
+ * @param {SearchOptions} options
+ * @returns {string}
+ */
+const written = (state, { from, to }, replacement, options) =>
+  options.matchCase ? replacement : inCaseOf(state.sliceDoc(from, to), replacement)
 
 /**
  * Replace the match the writer is on, and move to the next one after what
@@ -168,16 +187,14 @@ export const findNext =
  * @returns {(view: EditorView) => boolean}
  */
 export const replaceCurrent = replacement => view => {
-  const { query, matches, current } = searchOf(view.state)
+  const { query, options, matches, current } = searchOf(view.state)
   const match = matches[current]
   if (!match) return false
-  const changes = view.state.changes({ from: match.from, to: match.to, insert: replacement })
-  const found = findMatches(changes.apply(view.state.doc), query)
-  go(
-    view,
-    { query, matches: found, current: firstFrom(found, match.from + replacement.length) },
-    changes
-  )
+  const insert = written(view.state, match, replacement, options)
+  const changes = view.state.changes({ from: match.from, to: match.to, insert })
+  const found = findMatches(changes.apply(view.state.doc), query, options)
+  const next = firstFrom(found, match.from + insert.length)
+  go(view, { query, options, matches: found, current: next }, changes)
   return true
 }
 
@@ -189,13 +206,20 @@ export const replaceCurrent = replacement => view => {
  * @returns {(view: EditorView) => boolean}
  */
 export const replaceAll = replacement => view => {
-  const { query, matches } = searchOf(view.state)
+  const { query, options, matches } = searchOf(view.state)
   if (matches.length === 0) return false
   const changes = view.state.changes(
-    matches.map(({ from, to }) => ({ from, to, insert: replacement }))
+    matches.map(match => ({
+      from: match.from,
+      to: match.to,
+      insert: written(view.state, match, replacement, options),
+    }))
   )
-  const found = findMatches(changes.apply(view.state.doc), query)
-  view.dispatch({ changes, effects: setSearch.of({ query, matches: found, current: -1 }) })
+  const found = findMatches(changes.apply(view.state.doc), query, options)
+  view.dispatch({
+    changes,
+    effects: setSearch.of({ query, options, matches: found, current: -1 }),
+  })
   return true
 }
 

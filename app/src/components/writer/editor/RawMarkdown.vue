@@ -9,9 +9,14 @@
       :query="query"
       :count="search.matches.length"
       :current="search.current"
+      refinable
+      :match-case="matchCase"
+      :whole-word="wholeWord"
       replaceable
       :replacement="replacement"
       @update:query="lookFor"
+      @update:match-case="refine({ matchCase: $event })"
+      @update:whole-word="refine({ wholeWord: $event })"
       @update:replacement="replacement = $event"
       @next="run(findNext(1))"
       @previous="run(findNext(-1))"
@@ -45,6 +50,7 @@ import {
   reveal,
   searchOf,
 } from '@/editor/plainSearch.js'
+import { plainMacros } from '@/editor/plainMacros.js'
 import { isTextField } from '@/utils/focus.js'
 
 /**
@@ -136,7 +142,9 @@ const layout = EditorView.theme({
   '&': { height: '100%', backgroundColor: 'transparent' },
   '&.cm-focused': { outline: 'none' },
   '.cm-scroller': { fontFamily: 'inherit', lineHeight: 'inherit' },
-  '.cm-content': { maxWidth: '50rem', margin: '0 auto', padding: '1rem 0 50rem' },
+  // Room under the text for its last line to come up to the middle of the
+  // screen, as in the editor, and no more, so a short one has nothing to scroll.
+  '.cm-content': { maxWidth: '50rem', margin: '0 auto', padding: '1rem 0 50vh' },
   // The base theme's caret is black, or white for a dark theme it is told of.
   '&.cm-editor .cm-content': { caretColor: 'currentColor' },
   '.cm-line': { padding: '0 1rem' },
@@ -144,10 +152,17 @@ const layout = EditorView.theme({
 
 const finding = ref(false)
 const query = ref('')
+const matchCase = ref(false)
+const wholeWord = ref(false)
 const replacement = ref('')
 /** The search the view holds, for the bar to count. */
 const search = shallowRef(
-  /** @type {import('@/editor/plainSearch.js').Found} */ ({ query: '', matches: [], current: -1 })
+  /** @type {import('@/editor/plainSearch.js').Found} */ ({
+    query: '',
+    options: {},
+    matches: [],
+    current: -1,
+  })
 )
 /** @type {import('vue').Ref<{ focus: () => void }|null>} */
 const findBar = ref(null)
@@ -165,7 +180,17 @@ const run = command => {
 /** @param {string} text */
 const lookFor = text => {
   query.value = text
-  run(find(text))
+  run(find(text, { matchCase: matchCase.value, wholeWord: wholeWord.value }))
+}
+
+/**
+ * Look for the same thing another way.
+ * @param {{matchCase?: boolean, wholeWord?: boolean}} change
+ */
+const refine = change => {
+  if ('matchCase' in change) matchCase.value = change.matchCase
+  if ('wholeWord' in change) wholeWord.value = change.wholeWord
+  lookFor(query.value)
 }
 
 /**
@@ -217,6 +242,7 @@ onMounted(async () => {
         EditorView.lineWrapping,
         EditorView.contentAttributes.of({ spellcheck: 'false' }),
         plainSearch,
+        plainMacros,
         EditorView.updateListener.of(update => {
           const found = searchOf(update.state)
           if (found !== search.value) search.value = found

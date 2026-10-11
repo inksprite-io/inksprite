@@ -1,8 +1,15 @@
 <template>
   <div class="flex flex-col gap-4 px-2 pt-2 pb-1" data-connections-section>
-    <p class="text-sm text-surface-600 dark:text-surface-300">
-      Servers must accept connections from web pages. One that runs as a local program needs an HTTP
-      bridge.
+    <WebSearchConnection />
+
+    <h3
+      class="pt-2 text-sm font-semibold text-surface-800 dark:text-surface-100"
+      data-heading="mcp"
+    >
+      MCP servers
+    </h3>
+    <p class="-mt-2 text-sm text-surface-600 dark:text-surface-300">
+      Servers must accept connections from web pages.
     </p>
 
     <!-- Adding: an address, or a pasted block of servers, then a look at what
@@ -35,11 +42,26 @@
         <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
           Address
           <InputText
+            ref="addressField"
             v-model="draft.url"
             size="small"
             placeholder="https://example.com/mcp"
+            :invalid="Boolean(addressProblem)"
+            aria-label="Address"
+            :aria-describedby="addressProblem ? 'mcp-address-problem' : undefined"
             data-field="url"
+            @update:model-value="addressProblem = ''"
           />
+          <!-- Inside the label, so it is named "Address" outright: otherwise
+               what is wrong with it would be read as part of its name. -->
+          <span
+            v-if="addressProblem"
+            id="mcp-address-problem"
+            class="text-red-600 dark:text-red-400"
+            data-address-problem
+          >
+            {{ addressProblem }}
+          </span>
         </label>
         <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
           Name
@@ -206,12 +228,11 @@
         icon="pi pi-plus"
         size="small"
         data-action="add-server"
-        @click="adding = true"
+        @click="openAdding"
       />
     </div>
 
     <section class="flex flex-col gap-2" data-list="servers">
-      <h3 class="text-sm font-semibold text-surface-800 dark:text-surface-100">Your servers</h3>
       <p v-if="servers.length === 0" class="text-sm text-surface-500 dark:text-surface-400">
         None yet.
       </p>
@@ -225,7 +246,7 @@
           type="button"
           class="flex flex-col gap-0.5 text-left"
           :aria-expanded="open === server.id"
-          @click="open = open === server.id ? null : server.id"
+          @click="toggleOpen(server)"
         >
           <span class="flex items-center gap-2 min-w-0">
             <span class="text-sm font-medium truncate">{{ server.name }}</span>
@@ -235,7 +256,14 @@
             {{ server.url || server.command }}
           </span>
           <span v-if="!server.url" class="text-xs italic text-surface-500 dark:text-surface-400">
-            Runs as a program. Add its HTTP bridge as a server instead.
+            Runs as a program, so it needs an HTTP bridge.
+          </span>
+          <span
+            v-else-if="missingHeaders(server).length"
+            class="text-xs text-red-600 dark:text-red-400"
+            data-key-missing
+          >
+            Its key was left out of a backup.
           </span>
           <span v-else-if="server.error" class="text-xs text-red-600 dark:text-red-400">
             {{ server.error }}
@@ -267,6 +295,44 @@
         </div>
 
         <div v-if="open === server.id" class="flex flex-col gap-3 pt-1">
+          <div
+            v-if="server.url && headerDrafts[server.id]"
+            class="flex flex-col gap-1"
+            data-headers
+          >
+            <span class="text-xs font-medium text-surface-700 dark:text-surface-200">
+              {{ headerDrafts[server.id].length > 1 ? 'Headers' : 'Header' }}
+            </span>
+            <div v-for="(row, index) in headerDrafts[server.id]" :key="index" class="flex gap-2">
+              <InputText
+                v-model="row.name"
+                size="small"
+                class="w-2/5"
+                placeholder="Authorization"
+                aria-label="Header name"
+                data-field="server-header-name"
+              />
+              <InputText
+                v-model="row.value"
+                size="small"
+                class="flex-1"
+                type="password"
+                placeholder="Bearer …"
+                aria-label="Header value"
+                data-field="server-header-value"
+              />
+            </div>
+            <div v-if="headersChanged(server)">
+              <Button
+                label="Save"
+                size="small"
+                :loading="refreshing === server.id"
+                data-action="save-headers"
+                @click="saveHeaders(server)"
+              />
+            </div>
+          </div>
+
           <div v-if="server.url" class="flex flex-col gap-1">
             <div class="flex items-center justify-between gap-2">
               <span class="text-xs font-medium text-surface-700 dark:text-surface-200">Tools</span>
@@ -387,16 +453,17 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, nextTick, reactive, ref } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import ToggleSwitch from 'primevue/toggleswitch'
+import WebSearchConnection from './WebSearchConnection.vue'
 import { useMcpServers } from '@/composables/useMcpServers.js'
 import { useProfiles } from '@/composables/useProfiles'
-import { nameFromUrl, parseServerConfig } from '@/mcp/config.js'
+import { isWebAddress, nameFromUrl, parseServerConfig } from '@/mcp/config.js'
 import { SIGN_IN_NEEDED } from '@/mcp/client.js'
-import { promptCommand, requiredArguments } from '@/mcp/servers.js'
+import { missingHeaders, promptCommand, requiredArguments } from '@/mcp/servers.js'
 import { CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
 
 /** @typedef {import('@/types/models.js').McpServer} McpServer */
@@ -404,7 +471,7 @@ import { CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
 /** @typedef {import('@/composables/useMcpServers.js').ServerPreview} ServerPreview */
 
 /**
- * Settings → Connections: the writer's MCP servers, app-wide.
+ * Settings → Connections: web search, then the writer's MCP servers, app-wide.
  */
 
 const {
@@ -430,6 +497,17 @@ const open = ref(null)
 const refreshing = ref(null)
 /** @type {import('vue').Ref<string[]>} */
 const problems = ref([])
+/** What is wrong with the address typed, said under it. */
+const addressProblem = ref('')
+/** @type {import('vue').Ref<any>} */
+const addressField = ref(null)
+
+/** Open the form for a new server, ready to take its address. */
+async function openAdding() {
+  adding.value = true
+  await nextTick()
+  addressField.value?.$el?.focus?.()
+}
 
 const draft = reactive({
   url: '',
@@ -523,6 +601,11 @@ function configured() {
 
 /** Connect to each server named and list what it offers. */
 async function connect() {
+  if (mode.value === 'url' && !isWebAddress(draft.url)) {
+    addressProblem.value = 'That isn’t a web address.'
+    candidates.value = []
+    return
+  }
   const { servers: named, errors } = configured()
   problems.value = errors
   connecting.value = true
@@ -556,13 +639,15 @@ const signingIn = ref(null)
 
 /**
  * Whether a kept server wants the writer to sign in: one that was kept signed
- * in and is not now, or one that last said it wants signing in.
+ * in and is not now, or one that last said it wants signing in. Not one
+ * missing its key, which refuses for want of that and not of a sign-in.
  *
  * @param {McpServer} server
  */
 const needsSignIn = server =>
   Boolean(server.url) &&
   !isSignedIn(/** @type {string} */ (server.url)) &&
+  missingHeaders(server).length === 0 &&
   (server.auth === 'oauth' || server.error === SIGN_IN_NEEDED)
 
 /**
@@ -617,6 +702,7 @@ function closeAdding() {
   adding.value = false
   candidates.value = []
   problems.value = []
+  addressProblem.value = ''
   Object.assign(draft, {
     url: '',
     name: '',
@@ -659,6 +745,56 @@ function setAllowed(server, tool, on) {
   updateServer(server.id, {
     allowed: on ? [...new Set([...current, tool])] : current.filter(name => name !== tool),
   })
+}
+
+/**
+ * A kept server's headers as they are being edited, by server id: made from
+ * what it has each time its row opens.
+ *
+ * @type {Record<string, {name: string, value: string}[]>}
+ */
+const headerDrafts = reactive({})
+
+/**
+ * Open a server's row, or close it.
+ *
+ * @param {McpServer} server
+ */
+function toggleOpen(server) {
+  if (open.value === server.id) {
+    open.value = null
+    return
+  }
+  const rows = Object.entries(server.headers || {}).map(([name, value]) => ({ name, value }))
+  headerDrafts[server.id] = rows.length ? rows : [{ name: '', value: '' }]
+  open.value = server.id
+}
+
+/**
+ * The headers a server's draft makes: those with a name.
+ *
+ * @param {string} id
+ * @returns {Record<string, string>}
+ */
+function draftedHeaders(id) {
+  return Object.fromEntries(
+    (headerDrafts[id] || []).map(row => [row.name.trim(), row.value]).filter(([name]) => name)
+  )
+}
+
+/** @param {McpServer} server */
+const headersChanged = server =>
+  JSON.stringify(draftedHeaders(server.id)) !== JSON.stringify(server.headers || {})
+
+/**
+ * Keep a server's edited headers, and list it again with them.
+ *
+ * @param {McpServer} server
+ */
+async function saveHeaders(server) {
+  const headers = draftedHeaders(server.id)
+  updateServer(server.id, { headers: Object.keys(headers).length ? headers : undefined })
+  await refresh(server.id)
 }
 
 /** @param {string} id */

@@ -162,6 +162,36 @@ const table_cell = {
 }
 
 /**
+ * A comment on a passage: the writer's note, carried on the text it is about
+ * so that it follows the text through every edit. Not inclusive, so typing at
+ * the edge of a commented passage is outside it; two comments cannot share
+ * text, which is the default for marks of one type. The markdown form is in
+ * `comments.js`.
+ *
+ * @type {import('prosemirror-model').MarkSpec}
+ */
+const comment = {
+  attrs: { id: {}, text: { default: '' } },
+  inclusive: false,
+  parseDOM: [
+    {
+      tag: 'mark[data-comment-id]',
+      getAttrs: dom => ({
+        id: /** @type {HTMLElement} */ (dom).getAttribute('data-comment-id'),
+        text: /** @type {HTMLElement} */ (dom).getAttribute('title') || '',
+      }),
+    },
+  ],
+  toDOM(mark) {
+    return [
+      'mark',
+      { class: 'comment', 'data-comment-id': mark.attrs.id, title: mark.attrs.text },
+      0,
+    ]
+  },
+}
+
+/**
  * Every node the schema has. The serializer has an entry for each of these
  * and the parser produces nothing else.
  *
@@ -189,7 +219,14 @@ export const NODE_NAMES = Object.freeze([
  *
  * @type {readonly string[]}
  */
-export const MARK_NAMES = Object.freeze(['link', 'em', 'strong', 'code', 'strikethrough'])
+export const MARK_NAMES = Object.freeze([
+  'comment',
+  'link',
+  'em',
+  'strong',
+  'code',
+  'strikethrough',
+])
 
 /**
  * The schema itself. One instance for the editor, the migration, and the
@@ -215,6 +252,9 @@ export const schema = new Schema({
     table_cell,
   },
   marks: {
+    // First, so it ranks outermost: a comment wraps whatever else is marked
+    // in the passage, and serializes around it rather than inside it.
+    comment,
     link: basicMarks.link,
     em: basicMarks.em,
     strong: basicMarks.strong,

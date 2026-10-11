@@ -59,7 +59,6 @@ describe('the writer’s own skills in the registry', () => {
     setLibrarySkills([critique])
 
     expect(allSkills().map(skill => skill.name)).toEqual([
-      'director',
       'interpret',
       'write',
       'compact',
@@ -71,7 +70,7 @@ describe('the writer’s own skills in the registry', () => {
   it('leaves out a skill whose file does not read, and one with a built-in’s name', () => {
     setLibrarySkills([
       { id: 'broken', text: 'no frontmatter' },
-      stored('taken', 'name: director\ndescription: Mine.'),
+      stored('taken', 'name: interpret\ndescription: Mine.'),
       critique,
     ])
 

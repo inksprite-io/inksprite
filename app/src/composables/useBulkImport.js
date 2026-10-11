@@ -110,10 +110,11 @@ export function useBulkImport(storyId) {
 }
 
 /**
- * What to tell the writer when a batch is done.
+ * What to tell the writer when a batch is done, in a line: what landed, then
+ * anything worth knowing about it.
  *
  * @param {Imported} result
- * @returns {{summary: string, detail: string, severity: 'success'|'warn'|'error'}}
+ * @returns {{detail: string, severity: 'success'|'warn'|'error'}}
  */
 export function describeImport(result) {
   const count = (/** @type {number} */ n, /** @type {string} */ word) =>
@@ -139,7 +140,6 @@ export function describeImport(result) {
   const nothing = result.documents === 0
   return {
     severity: nothing ? 'error' : result.skipped.length > 0 ? 'warn' : 'success',
-    summary: nothing ? 'Nothing imported' : `Imported ${bits.join(', ')}`,
-    detail: notes.join(' '),
+    detail: [nothing ? 'Nothing imported.' : `Imported ${bits.join(', ')}.`, ...notes].join(' '),
   }
 }

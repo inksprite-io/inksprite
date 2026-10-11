@@ -19,12 +19,19 @@ const NarrationPanel = {
   template: '<div data-narration :data-document="documentId" />',
 }
 
+const CommentsPanel = {
+  props: ['storyId', 'documentId'],
+  emits: ['open-document'],
+  template:
+    '<div data-comments :data-document="documentId" @click="$emit(\'open-document\', \'doc_4\')" />',
+}
+
 const mountSidebar = props =>
   mount(LeftSidebar, {
     props: { storyId: 'story_1', documentId: 'doc_1', tab: 'outline', ...props },
     global: {
       plugins: [PrimeVue],
-      stubs: { DocumentTree, ChatHistory, NarrationPanel },
+      stubs: { DocumentTree, ChatHistory, NarrationPanel, CommentsPanel },
     },
   })
 
@@ -41,6 +48,10 @@ describe('LeftSidebar', () => {
     const narration = mountSidebar({ tab: 'narration', documentId: 'doc_7' })
     expect(narration.find('[data-narration]').attributes('data-document')).toBe('doc_7')
     expect(narration.find('[data-tree]').exists()).toBe(false)
+
+    const comments = mountSidebar({ tab: 'comments', documentId: 'doc_7' })
+    expect(comments.find('[data-comments]').attributes('data-document')).toBe('doc_7')
+    expect(comments.find('[data-narration]').exists()).toBe(false)
   })
 
   it('passes on what the writer picked', async () => {
@@ -51,5 +62,9 @@ describe('LeftSidebar', () => {
     const chats = mountSidebar({ tab: 'chats' })
     await chats.find('[data-list]').trigger('click')
     expect(chats.emitted('select-chat')).toEqual([['chat_9']])
+
+    const comments = mountSidebar({ tab: 'comments' })
+    await comments.find('[data-comments]').trigger('click')
+    expect(comments.emitted('open-document')).toEqual([['doc_4']])
   })
 })

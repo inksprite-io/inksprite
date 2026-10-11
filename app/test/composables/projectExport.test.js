@@ -255,6 +255,17 @@ describe('project export and import', () => {
     expect(useDocumentsStore().getRoot(story.id)?.title).toBe('The Salt Road')
   })
 
+  it('writes the project under the name it is given', async () => {
+    const backup = useBackup()
+    const story = await backup.importProject(
+      await backup.readProjectFile(asFile(await backup.createProjectBackup(STORY))),
+      { title: 'The Salt Road (2)' }
+    )
+
+    expect((await db.documents.get(rootIdFor(story.id)))?.title).toBe('The Salt Road (2)')
+    expect(useDocumentsStore().getRoot(story.id)?.title).toBe('The Salt Road (2)')
+  })
+
   it('imports the same file twice without one overwriting the other', async () => {
     const backup = useBackup()
     const file = asFile(await backup.createProjectBackup(STORY))

@@ -8,7 +8,7 @@
     <div class="flex flex-col gap-3 pt-2 pb-1">
       <div class="flex flex-col gap-1">
         <SettingLabel
-          label="Max Tokens"
+          label="Max tokens"
           description="0 lets the provider decide."
           :overridden="isOverridden('maxTokens')"
           @reset="resetSettings(['maxTokens'])"
@@ -20,13 +20,21 @@
           :slider-max="2000"
           :step="50"
           :fractional="false"
+          label="Max tokens"
           @update:model-value="setSetting('maxTokens', $event)"
         />
+        <p
+          v-if="effective.maxTokens === 0"
+          class="text-xs text-surface-500 dark:text-surface-400"
+          data-zero="maxTokens"
+        >
+          The provider decides.
+        </p>
       </div>
 
       <div class="flex flex-col gap-1">
         <SettingLabel
-          label="Reasoning Effort"
+          label="Reasoning effort"
           description="Levels apply on OpenRouter only."
           :overridden="isOverridden('reasoningEffort')"
           @reset="resetSettings(['reasoningEffort'])"
@@ -38,42 +46,40 @@
           option-value="value"
           class="w-full dark:!bg-surface-900"
           size="small"
+          aria-label="Reasoning effort"
           @update:model-value="setSetting('reasoningEffort', $event)"
         />
       </div>
 
       <div class="flex items-center justify-between gap-2">
         <SettingLabel
-          label="Show Reasoning"
+          label="Show reasoning"
           :overridden="isOverridden('showModelReasoning')"
           @reset="resetSettings(['showModelReasoning'])"
         />
         <ToggleSwitch
           :model-value="effective.showModelReasoning"
           class="flex-none"
+          aria-label="Show reasoning"
           @update:model-value="setSetting('showModelReasoning', $event)"
         />
       </div>
 
-      <div class="flex flex-col gap-1">
-        <div class="flex items-center justify-between gap-2">
-          <label class="text-xs font-medium text-surface-700 dark:text-surface-200">
-            Allow Tool Use
-          </label>
-          <ToggleSwitch
-            :model-value="toolsEnabled"
-            class="flex-none"
-            @update:model-value="setToolsEnabled"
-          />
-        </div>
-        <p class="text-xs text-surface-500 dark:text-surface-400">
-          Turn off for models without tool calling.
-        </p>
+      <div class="flex items-center justify-between gap-2">
+        <label class="text-xs font-medium text-surface-700 dark:text-surface-200">
+          Allow tool use
+        </label>
+        <ToggleSwitch
+          :model-value="toolsEnabled"
+          class="flex-none"
+          aria-label="Allow tool use"
+          @update:model-value="setToolsEnabled"
+        />
       </div>
 
       <div class="flex flex-col gap-1">
         <SettingLabel
-          label="Tool Rounds per Turn"
+          label="Tool rounds per turn"
           description="0 means no limit."
           :overridden="isOverridden('maxToolRounds')"
           @reset="resetSettings(['maxToolRounds'])"
@@ -85,8 +91,16 @@
           :slider-max="300"
           :step="10"
           :fractional="false"
+          label="Tool rounds per turn"
           @update:model-value="setSetting('maxToolRounds', $event)"
         />
+        <p
+          v-if="effective.maxToolRounds === 0"
+          class="text-xs text-surface-500 dark:text-surface-400"
+          data-zero="maxToolRounds"
+        >
+          No limit.
+        </p>
       </div>
     </div>
   </ExpandableSection>

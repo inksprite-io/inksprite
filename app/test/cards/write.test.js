@@ -95,13 +95,32 @@ describe('cards/write', () => {
       expect(byTitle(written.folderId, 'Greeting').kind).toBe('greeting')
     })
 
-    it('puts both names in, once, rather than carrying a template language', async () => {
-      const written = await writeCard(STORY, card(), { userName: 'Riley' })
+    it('keeps the macros, for a chat on the card to fill in', async () => {
+      const written = await writeCard(STORY, card())
 
       expect(byTitle(written.folderId, 'Description').content).toBe(
-        'Elara is a knight. Riley met her on the road.'
+        '{{char}} is a knight. {{user}} met her on the road.'
       )
-      expect(byTitle(written.folderId, 'Greeting').content).toBe('Well, Riley?')
+      expect(byTitle(written.folderId, 'Greeting').content).toBe('Well, {{user}}?')
+    })
+
+    it('writes plain documents, stored as the card has them', async () => {
+      const written = await writeCard(
+        STORY,
+        card({
+          description: '*{{char}}* is a knight_errant [sworn].',
+          character_book: {
+            entries: [{ comment: "{{char}}'s Oath", content: '**Never** yield.' }],
+          },
+        })
+      )
+
+      const description = byTitle(written.folderId, 'Description')
+      expect(description).toMatchObject({ plain: true })
+      expect(description.content).toBe('*{{char}}* is a knight_errant [sworn].')
+      expect(byTitle(written.folderId, 'Greeting').plain).toBe(true)
+      const entry = byTitle(byTitle(written.folderId, 'Lore').id, "{{char}}'s Oath")
+      expect(entry).toMatchObject({ plain: true, content: '**Never** yield.' })
     })
 
     it('leaves out what the author wrote for other people, and nothing else', async () => {
@@ -116,7 +135,7 @@ describe('cards/write', () => {
       // A comment is never sent in ST. The other macros say what they are for,
       // and a date frozen at import would be wrong by tomorrow.
       expect(byTitle(written.folderId, 'Description').content).toBe(
-        'Elara guards Ostmark.\nToday is {{date}}.'
+        '{{char}} guards Ostmark.\nToday is {{date}}.'
       )
     })
 
@@ -189,7 +208,7 @@ describe('cards/write', () => {
       expect(store.getDocument(second.folderId).title).toBe('Elara (2)')
     })
 
-    it('takes the folder name from the nickname, and the macro from the name', async () => {
+    it('takes the folder name from the nickname', async () => {
       const written = await writeCard(
         STORY,
         readCard({
@@ -202,7 +221,6 @@ describe('cards/write', () => {
       )
 
       expect(store.getDocument(written.folderId).title).toBe('Hero Academy RPG')
-      expect(byTitle(written.folderId, 'Description').content).toBe('Narrator speaks.')
     })
   })
 
@@ -307,17 +325,17 @@ describe('cards/write', () => {
   })
 
   describe('reimportCard', () => {
-    it('writes the card again into the same folder, for a new name', async () => {
-      const written = await writeCard(STORY, card(), { userName: 'Riley' })
+    it('writes the card again into the same folder, over the edits since', async () => {
+      const written = await writeCard(STORY, card())
       const before = childrenOf(written.folderId).map(document => document.id)
       store.updateDocument(byTitle(written.folderId, 'Description').id, { content: 'edited' })
 
-      const again = await reimportCard(STORY, written.folderId, card(), { userName: 'Sam' })
+      const again = await reimportCard(STORY, written.folderId, card())
 
       expect(again.folderId).toBe(written.folderId)
       expect(store.getDocument(written.folderId)).toMatchObject({ title: 'Elara', kind: 'card' })
-      expect(byTitle(written.folderId, 'Description').content).toContain('Sam met her')
-      expect(byTitle(written.folderId, 'Greeting').content).toBe('Well, Sam?')
+      expect(byTitle(written.folderId, 'Description').content).toContain('{{user}} met her')
+      expect(byTitle(written.folderId, 'Greeting').content).toBe('Well, {{user}}?')
       const now = childrenOf(written.folderId).map(document => document.id)
       for (const id of before) expect(now).not.toContain(id)
       expect(again.documents).toBe(written.documents - 1)
@@ -326,13 +344,13 @@ describe('cards/write', () => {
 
     it('keeps the portrait the card arrived in', async () => {
       const png = new Blob(['png'], { type: 'image/png' })
-      const written = await writeCard(STORY, card(), { userName: 'Riley', portrait: png })
+      const written = await writeCard(STORY, card(), { portrait: png })
       const portrait = byTitle(written.folderId, 'Portrait')
       db.files.get.mockImplementation(async id =>
         id === portrait.id ? { id, storyId: STORY, blob: png } : undefined
       )
 
-      await reimportCard(STORY, written.folderId, card(), { userName: 'Sam' })
+      await reimportCard(STORY, written.folderId, card())
 
       const kept = byTitle(written.folderId, 'Portrait')
       expect(kept).toBeDefined()

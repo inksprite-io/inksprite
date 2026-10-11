@@ -210,3 +210,31 @@ describe('replaceAll', () => {
     expect(replaceAll('x')(view)).toBe(false)
   })
 })
+
+describe('matching case and whole words', () => {
+  it('finds whole words only, in the case asked, and keeps that as the text changes', () => {
+    const view = viewOf('He said the keeper was there. he wrote.')
+    find('he', { wholeWord: true })(view)
+    expect(texts(view)).toEqual(['He', 'he'])
+
+    find('he', { wholeWord: true, matchCase: true })(view)
+    expect(texts(view)).toEqual(['he'])
+
+    view.dispatch({ changes: { from: view.state.doc.length, insert: ' Then he slept.' } })
+    expect(texts(view)).toEqual(['he', 'he'])
+  })
+
+  it('writes a replacement in the capitals of each match where case does not count', () => {
+    const view = viewOf('He said the keeper was there. he wrote.')
+    find('he', { wholeWord: true })(view)
+    replaceAll('she')(view)
+    expect(view.state.doc.toString()).toBe('She said the keeper was there. she wrote.')
+  })
+
+  it('writes it as typed where case counts', () => {
+    const view = viewOf('He and he')
+    find('he', { matchCase: true })(view)
+    replaceCurrent('she')(view)
+    expect(view.state.doc.toString()).toBe('He and she')
+  })
+})

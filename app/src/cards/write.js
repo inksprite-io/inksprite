@@ -12,6 +12,11 @@
  * its own. As documents, every tool the app already has works on it, and the
  * question of how to edit a card answers itself.
  *
+ * They say what the card says, `{{char}}` and `{{user}}` and all, and are
+ * plain: edited as the text they are and stored as written, which is the form
+ * a card is written in everywhere else. A chat that plays the card fills the
+ * names in for its model; see `./macros.js`.
+ *
  * Design: `.llm/character_cards_design.md`.
  */
 
@@ -20,9 +25,9 @@ import { useDocumentsStore } from '@/stores/documentsStore'
 import { useFilesStore } from '@/stores/filesStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { freeTitle } from '@/utils/documentPath.js'
-import { parseMarkdown, serializeMarkdown, settleMarkdown } from '@/editor/markdown.js'
+import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
 import { laysOut } from '@/editor/size.js'
-import { substitute, uncomment, undecorate } from './card.js'
+import { uncomment, undecorate } from './card.js'
 
 /** @typedef {import('./card.js').Card} Card */
 /** @typedef {import('./card.js').LoreEntry} LoreEntry */
@@ -52,7 +57,6 @@ export const SIDECAR_TITLE = '.card.json'
  * @param {Card} card
  * @param {Object} [options]
  * @param {string} [options.parentId] - Where to put it; the project root otherwise
- * @param {string} [options.userName] - What `{{user}}` becomes
  * @param {boolean} [options.useSystemPrompt] - Keep the card's prompt override as
  *   a document of its own. Off by default: most cards that carry one are
  *   carrying an ST preset's scaffolding rather than anything about the
@@ -65,7 +69,7 @@ export const SIDECAR_TITLE = '.card.json'
 export async function writeCard(
   storyId,
   card,
-  { parentId, userName = 'You', useSystemPrompt = false, portrait } = {}
+  { parentId, useSystemPrompt = false, portrait } = {}
 ) {
   const api = useDocuments(storyId)
   await api.init()
@@ -80,15 +84,14 @@ export async function writeCard(
     kind: 'card',
   })
 
-  const filled = await fillCard(storyId, folder.id, card, { userName, useSystemPrompt, portrait })
+  const filled = await fillCard(storyId, folder.id, card, { useSystemPrompt, portrait })
   return { folderId: folder.id, title: folder.title, ...filled, documents: filled.documents + 1 }
 }
 
 /**
  * Write a card into a folder again, over what was there.
  *
- * For a card imported once and wanted fresh — under another name for
- * `{{user}}`, or with the edits since taken back. The folder stays, with its
+ * For a card imported once and wanted fresh, with the edits since taken back. The folder stays, with its
  * title and its place, so a chat started on it still knows what it was on;
  * what is in it goes and is written again from the card. The portrait the
  * card arrived in is kept, unless another is given.
@@ -97,7 +100,6 @@ export async function writeCard(
  * @param {string} folderId - A card folder
  * @param {Card} card
  * @param {Object} [options]
- * @param {string} [options.userName] - What `{{user}}` becomes
  * @param {boolean} [options.useSystemPrompt]
  * @param {Blob} [options.portrait] - The image to keep; the one there already otherwise
  * @returns {Promise<Written>}
@@ -107,7 +109,7 @@ export async function reimportCard(
   storyId,
   folderId,
   card,
-  { userName = 'You', useSystemPrompt = false, portrait } = {}
+  { useSystemPrompt = false, portrait } = {}
 ) {
   const api = useDocuments(storyId)
   await api.init()
@@ -123,11 +125,7 @@ export async function reimportCard(
     undefined
   for (const child of children) api.remove(child.id)
 
-  const filled = await fillCard(storyId, folderId, card, {
-    userName,
-    useSystemPrompt,
-    portrait: kept,
-  })
+  const filled = await fillCard(storyId, folderId, card, { useSystemPrompt, portrait: kept })
   return { folderId, title: folder.title, ...filled, documents: filled.documents }
 }
 
@@ -138,22 +136,14 @@ export async function reimportCard(
  * @param {string} folderId
  * @param {Card} card
  * @param {Object} options
- * @param {string} options.userName
  * @param {boolean} options.useSystemPrompt
  * @param {Blob} [options.portrait]
  * @returns {Promise<Pick<Written, 'pinnedIds'|'greetingIds'|'documents'>>} The
  *   count is of what this wrote: the folder is not counted here
  */
-async function fillCard(storyId, folderId, card, { userName, useSystemPrompt, portrait }) {
+async function fillCard(storyId, folderId, card, { useSystemPrompt, portrait }) {
   const store = useDocumentsStore()
   const folder = { id: folderId }
-
-  const names = { char: card.name, user: userName }
-  // Settled as well as substituted: a card is text written from outside, and
-  // what the editor would serialize is the form everything else in the project
-  // is stored in. Without it the first time the writer opens one of these and
-  // closes it again rewrites the whole document. See `editor/markdown.js`.
-  const say = (/** @type {string} */ value) => settleMarkdown(substitute(uncomment(value), names))
 
   /** @type {string[]} */
   const pinnedIds = []
@@ -171,7 +161,7 @@ async function fillCard(storyId, folderId, card, { userName, useSystemPrompt, po
     value,
     { pin = true, hidden = false } = {}
   ) => {
-    const content = say(value)
+    const content = uncomment(value)
     if (!content) return
     const made = store.createDocument({
       storyId,
@@ -181,6 +171,7 @@ async function fillCard(storyId, folderId, card, { userName, useSystemPrompt, po
       content,
       kind,
       hidden,
+      plain: true,
     })
     documents++
     if (pin) pinnedIds.push(made.id)
@@ -214,15 +205,16 @@ async function fillCard(storyId, folderId, card, { userName, useSystemPrompt, po
       parentId: folder.id,
       type: 'text',
       title: at === 0 ? 'Greeting' : `Greeting ${at + 1}`,
-      content: say(greeting),
+      content: uncomment(greeting),
       kind: 'greeting',
+      plain: true,
     })
     greetingIds.push(made.id)
     documents++
   })
 
   if (card.lore.length > 0) {
-    const written = writeLore(store, storyId, folder.id, card.lore, names)
+    const written = writeLore(store, storyId, folder.id, card.lore)
     pinnedIds.push(...written.pinnedIds)
     documents += written.documents
   }
@@ -331,11 +323,7 @@ export async function writeLorebook(storyId, book, { parentId, title } = {}) {
     kind: 'lore',
   })
 
-  // No names to put in: a book that arrived on its own has no character, so a
-  // macro in one has nothing to become and is left to the writer to see.
-  const written = writeLore(store, storyId, folder.id, book.entries, null, {
-    into: folder.id,
-  })
+  const written = writeLore(store, storyId, folder.id, book.entries, { into: folder.id })
   const sidecar = writeSidecar(store, storyId, folder.id, book.raw)
 
   return {
@@ -370,13 +358,10 @@ export async function writeLorebook(storyId, book, { parentId, title } = {}) {
  * @param {string} storyId
  * @param {string} folderId - The card's folder, or the book's own
  * @param {LoreEntry[]} entries
- * @param {{char: string, user: string}|null} names - What the macros become, when there are names for them
  * @param {{into?: string}} [options] - Write straight into `into` rather than a `Lore` folder
  * @returns {{pinnedIds: string[], documents: number}}
  */
-function writeLore(store, storyId, folderId, entries, names, { into } = {}) {
-  const say = (/** @type {string} */ value) =>
-    names ? substitute(uncomment(value), names) : uncomment(value)
+function writeLore(store, storyId, folderId, entries, { into } = {}) {
   let documents = 0
   let parentId = into
 
@@ -400,11 +385,10 @@ function writeLore(store, storyId, folderId, entries, names, { into } = {}) {
       storyId,
       parentId,
       type: 'text',
-      // A title is a title, not markdown — settling one would escape the
-      // punctuation an author put in it. A book can have two entries of
-      // one name; the second is `Name (2)`.
-      title: freeTitle(store.getChildrenOrdered(parentId), say(undecorate(entry.title))),
-      content: settleMarkdown(say(`${keys}${entry.content}`)),
+      // A book can have two entries of one name; the second is `Name (2)`.
+      title: freeTitle(store.getChildrenOrdered(parentId), uncomment(undecorate(entry.title))),
+      content: uncomment(`${keys}${entry.content}`),
+      plain: true,
       // `constant` is not retrieval at all — it is a statement that this
       // paragraph is always in context, which is what a pin is. It goes in the
       // kind rather than only into what this call returns, because a chat

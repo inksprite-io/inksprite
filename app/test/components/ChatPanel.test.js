@@ -19,10 +19,10 @@ vi.mock('@/stores/syncStore', () => ({
 }))
 
 const Chat = {
-  props: ['chatId'],
-  emits: ['new-chat', 'open-chat'],
+  props: ['chatId', 'showBack'],
+  emits: ['new-chat', 'open-chat', 'back'],
   template:
-    '<div data-chat :data-id="chatId" @click="$emit(\'new-chat\')"><slot name="header-start" /></div>',
+    '<div data-chat :data-id="chatId" :data-back="showBack" @click="$emit(\'new-chat\')"><slot name="header-start" /><button data-back-button @click.stop="$emit(\'back\')" /></div>',
 }
 
 const mountPanel = async (chatId, props = {}) => {
@@ -115,5 +115,17 @@ describe('ChatPanel', () => {
     expect(toggle.attributes('aria-label')).toBe('Hide editor')
     await toggle.trigger('click')
     expect(beside.emitted('toggle-editor')).toHaveLength(1)
+  })
+
+  it('passes the way back to the list on, where the list is behind it', async () => {
+    const chat = store.createChat('story_1', 'One')
+
+    const beside = await mountPanel(chat.id)
+    expect(beside.find('[data-chat]').attributes('data-back')).toBe('false')
+
+    const phone = await mountPanel(chat.id, { showBack: true })
+    expect(phone.find('[data-chat]').attributes('data-back')).toBe('true')
+    await phone.find('[data-back-button]').trigger('click')
+    expect(phone.emitted('back')).toHaveLength(1)
   })
 })

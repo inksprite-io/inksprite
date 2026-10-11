@@ -274,19 +274,19 @@ function explainFailure(reported, { sentReasoning, askedForEffort, routed = fals
 
   if (routed && /no endpoints found/i.test(message)) {
     console.warn('No endpoint passed the routing policy this request carried:', message)
-    return `${message} — this request's routing excludes every endpoint that serves this model. Check the preset's Allowed Providers serve it, or open the connection's Provider Routing settings and lower the precision or zero-data-retention floor to reach it.`
+    return `${message} — this request's routing excludes every endpoint that serves this model. Check the preset's Allowed providers serve it, or open the connection's Provider routing settings and lower the precision or zero-data-retention floor to reach it.`
   }
 
   if (!/signature|thinking|reasoning|effort/i.test(message)) return message
 
   if (askedForEffort && /effort/i.test(message)) {
     console.warn('Provider rejected the reasoning effort this request asked for:', message)
-    return `${message} — this request asked for a reasoning effort level and this model does not take one. Set Reasoning Effort to Enabled for this profile to let the provider choose, or Disabled to turn thinking off.`
+    return `${message} — this request asked for a reasoning effort level and this model does not take one. Set Reasoning effort to Enabled for this profile to let the provider choose, or Disabled to turn thinking off.`
   }
 
   if (sentReasoning) {
     console.warn('Provider rejected the reasoning sent back to continue the turn:', message)
-    return `${message} — this turn sent the model's own reasoning back to continue it, and the provider rejected it. Set Reasoning Effort to Disabled for this connection if it keeps happening.`
+    return `${message} — this turn sent the model's own reasoning back to continue it, and the provider rejected it. Set Reasoning effort to Disabled for this connection if it keeps happening.`
   }
 
   return message

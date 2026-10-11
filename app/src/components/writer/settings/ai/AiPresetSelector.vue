@@ -11,7 +11,7 @@
         class="flex-1 min-w-0 dark:!bg-surface-900"
         aria-label="Preset name"
         @keyup.enter="commitRename"
-        @keyup.escape="renaming = false"
+        @keydown.escape.stop="renaming = false"
         @blur="commitRename"
       />
       <Select
@@ -21,6 +21,7 @@
         option-label="name"
         option-value="id"
         placeholder="Select a preset"
+        aria-label="Preset"
         class="flex-1 min-w-0 dark:!bg-surface-900"
         size="small"
         @update:model-value="aiConfig.setActiveAIPreset($event)"
@@ -98,8 +99,12 @@ const menuItems = computed(() => [
     label: 'New preset',
     icon: 'pi pi-plus',
     // A copy of the one in use rather than a blank: the usual reason for a new
-    // preset is the same setup pointed at another model.
-    command: () => aiConfig.createPreset(`${activePreset.value?.name || 'Preset'} copy`),
+    // preset is the same setup pointed at another model. Its name is the first
+    // thing to change, so it opens for that, as a rename does.
+    command: () => {
+      aiConfig.createPreset(`${activePreset.value?.name || 'Preset'} copy`)
+      return startRename()
+    },
   },
   { label: 'Rename preset', icon: 'pi pi-pencil', command: startRename },
   {

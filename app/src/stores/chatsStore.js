@@ -20,6 +20,7 @@ import { ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore'
 import db from './db'
+import { DEFAULT_CHAT_TITLE } from '@/utils/chatTitle.js'
 
 /** @typedef {import('../types/models.js').Chat} Chat */
 
@@ -57,7 +58,7 @@ export const useChatsStore = defineStore('chats', () => {
     const chat = {
       id: chatId || generateChatId(),
       storyId,
-      title: title || 'Untitled Chat',
+      title: title || DEFAULT_CHAT_TITLE,
       titleSet: title !== '', // Track whether title has been set (auto or manual)
       lastMessageAt: null,
       // Settings seeded at creation (prompt override, story context). Copied

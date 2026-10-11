@@ -287,7 +287,7 @@ describe('useCardImport', () => {
       const store = useDocumentsStore()
       const found = await cards.inspect(file('elara.png', cardPng(CARD)))
 
-      const written = await cards.write(found, { userName: 'Riley' })
+      const written = await cards.write(found)
 
       expect(written.documents).toBe(found.documents)
       expect(store.getDocument(written.folderId).title).toBe('Elara')
@@ -298,7 +298,7 @@ describe('useCardImport', () => {
       const png = file('elara.png', cardPng(CARD))
       const found = await cards.inspect(png)
 
-      const written = await cards.write(found, { userName: 'Riley' })
+      const written = await cards.write(found)
 
       const portrait = store
         .getChildren(written.folderId)
@@ -441,9 +441,7 @@ describe('useCardImport', () => {
   describe('inspectCard', () => {
     it('reads the card back out of its folder, portrait and all', async () => {
       const store = useDocumentsStore()
-      const written = await cards.write(await cards.inspect(file('elara.png', cardPng(CARD))), {
-        userName: 'Riley',
-      })
+      const written = await cards.write(await cards.inspect(file('elara.png', cardPng(CARD))))
       const portrait = store
         .getChildren(written.folderId)
         .find(document => document.kind === 'portrait')
@@ -466,15 +464,14 @@ describe('useCardImport', () => {
       expect(found.portrait).toBeInstanceOf(File)
     })
 
-    it('writes it back over the folder with the new answers', async () => {
+    it('writes it back over the folder', async () => {
       const store = useDocumentsStore()
       const written = await cards.write(
-        await cards.inspect(file('elara.json', JSON.stringify(CARD))),
-        { userName: 'Riley' }
+        await cards.inspect(file('elara.json', JSON.stringify(CARD)))
       )
       const found = await cards.inspectCard(written.folderId)
 
-      const again = await cards.write(found, { userName: 'Sam' })
+      const again = await cards.write(found)
 
       expect(again.folderId).toBe(written.folderId)
       const greeting = store

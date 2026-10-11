@@ -275,6 +275,18 @@ describe('useBackup', () => {
         expect(mockDb.transaction).not.toHaveBeenCalled()
       })
 
+      it('plays the card under the names the chat was played under', async () => {
+        const { chat } = await useBackup().readChatFile(tavernFile(rows))
+
+        expect(chat).toMatchObject({ userName: 'Sam', characterName: 'Elara' })
+      })
+
+      it('gives the writer no name the file does not', async () => {
+        const { chat } = await useBackup().readChatFile(tavernFile(rows.slice(0, 2)))
+
+        expect(chat).not.toHaveProperty('userName')
+      })
+
       it('goes by what is in the file, not what it is called', async () => {
         const read = await useBackup().readChatFile(tavernFile(rows, 'chat.json'))
 

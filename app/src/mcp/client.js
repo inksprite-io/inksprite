@@ -90,7 +90,10 @@ async function open(server) {
     throw new Error('This server runs as a program, and needs a bridge to be reached.')
   const { Client, StreamableHTTPClientTransport, SSEClientTransport } = await loadSdk()
   const url = new URL(server.url)
-  const requestInit = server.headers ? { headers: { ...server.headers } } : undefined
+  // A header with no value is a key a backup left out, waiting to be entered
+  // again: sent empty, it would only be refused.
+  const headers = Object.entries(server.headers || {}).filter(([, value]) => value)
+  const requestInit = headers.length ? { headers: Object.fromEntries(headers) } : undefined
   // Only once the writer has signed in. Before that a 401 is the answer, and
   // the sign-in is theirs to start, with a click, from Settings.
   const options = {
@@ -304,6 +307,31 @@ export function wantsSignIn(error) {
 }
 
 /**
+ * Whether a failure is an answer that was not an MCP server's: a web page, or
+ * JSON of another shape, which the SDK reports as the content type it did not
+ * expect or as the whole list of what its schema found wrong.
+ *
+ * @param {any} error
+ * @returns {boolean}
+ */
+function answeredOtherwise(error) {
+  if (Array.isArray(error?.issues)) return true
+  const message = String(error?.message ?? '')
+  if (/unexpected content type/i.test(message)) return true
+  // The list may come after a prefix of the SDK's own.
+  const start = message.indexOf('[')
+  if (start < 0) return false
+  try {
+    const parsed = JSON.parse(message.slice(start))
+    return (
+      Array.isArray(parsed) && parsed.some(issue => issue && 'code' in issue && 'path' in issue)
+    )
+  } catch {
+    return false
+  }
+}
+
+/**
  * Why a server could not be reached or listed, for the writer.
  *
  * @param {any} error
@@ -315,6 +343,9 @@ export function describeFailure(error) {
   if (status === 403) return 'It refused: the key or account doesn’t have access.'
   if (status === 404) return 'Nothing answers at that address. Check the URL, including its path.'
   if (status && status >= 500) return `The server had an error (${status}). Try again later.`
+  if (answeredOtherwise(error)) {
+    return 'Something answered, but not an MCP server. Check the URL, including its path.'
+  }
   if (error instanceof TypeError || /fetch|network|load failed/i.test(String(error?.message))) {
     return 'It couldn’t be reached from the browser. Either it is down, or it doesn’t let web pages connect (CORS): many servers expect an app with a backend.'
   }

@@ -95,7 +95,7 @@ describe('AppNavbar', () => {
 
   it('has nothing for the panels: the editor and the chat hide each other', () => {
     const wrapper = mountRail(DEFAULT_LAYOUT)
-    expect(wrapper.findAll('button')).toHaveLength(5)
+    expect(wrapper.findAll('button')).toHaveLength(6)
     expect(wrapper.find('[data-panel]').exists()).toBe(false)
   })
 

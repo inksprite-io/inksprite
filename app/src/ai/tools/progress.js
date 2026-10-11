@@ -50,6 +50,8 @@ export function writesProse(name) {
  */
 const NAMED_TOOLS = {
   list_documents: 'Listing',
+  list_comments: 'Listing comments',
+  resolve_comment: 'Resolving a comment in',
 }
 
 /**
@@ -112,6 +114,8 @@ const ROUND_VERBS = {
   describe_document: ['Looking over', 'Looked over'],
   list_documents: ['Listing', 'Listed'],
   search_documents: ['Searching for', 'Searched for'],
+  list_comments: ['Listing comments', 'Listed comments'],
+  resolve_comment: ['Resolving a comment in', 'Resolved a comment in'],
   create_document: ['Creating', 'Created'],
   create_folder: ['Creating', 'Created'],
   update_document: ['Updating', 'Updated'],

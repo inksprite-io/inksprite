@@ -7,11 +7,6 @@ describe('resolveAISettings', () => {
     expect(resolveAISettings(undefined)).toBe(AI_DEFAULTS)
   })
 
-  it('keeps a zero replay window, which means every turn', () => {
-    expect(AI_DEFAULTS.replayTurns).toBeGreaterThan(0)
-    expect(resolveAISettings({ replayTurns: 0 }).replayTurns).toBe(0)
-  })
-
   it('applies top-level overrides without touching the rest', () => {
     const settings = resolveAISettings({ maxTokens: 512 })
 

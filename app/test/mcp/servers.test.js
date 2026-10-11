@@ -1,5 +1,11 @@
 import { describe, it, expect, afterEach } from 'vitest'
-import { needsApproval, serverTool, serversForChat, setServers } from '@/mcp/servers.js'
+import {
+  missingHeaders,
+  needsApproval,
+  serverTool,
+  serversForChat,
+  setServers,
+} from '@/mcp/servers.js'
 
 const server = (id, extra = {}) => ({
   id,
@@ -67,5 +73,18 @@ describe('serverTool', () => {
     expect(found.server.id).toBe('b')
     expect(found.tool.name).toBe('write')
     expect(serverTool('c__write')).toBeNull()
+  })
+})
+
+describe('missingHeaders', () => {
+  it('names the headers a backup left empty', () => {
+    expect(missingHeaders({ headers: { Authorization: '', 'X-Team': 'blue' } })).toEqual([
+      'Authorization',
+    ])
+  })
+
+  it('names none for a server with every value, or no headers', () => {
+    expect(missingHeaders({ headers: { Authorization: 'Bearer k' } })).toEqual([])
+    expect(missingHeaders({})).toEqual([])
   })
 })

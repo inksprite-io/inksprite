@@ -16,7 +16,8 @@
  * nest and lift. In a table they move between cells and rows (see
  * `editor/tables`). The typed shortcuts are markdown's own: `# `, `- `, `1. `,
  * `> `, ```` ``` ````, `---`, `**bold**` as you type, and a table's header
- * row followed by Enter.
+ * row followed by Enter. Quotes, dashes and ellipses are made as they are
+ * typed, as a word processor makes them.
  */
 
 import { EditorState, Selection, TextSelection } from 'prosemirror-state'
@@ -33,7 +34,9 @@ import {
 import { liftListItem, sinkListItem, splitListItem, wrapInList } from 'prosemirror-schema-list'
 import {
   InputRule,
+  ellipsis,
   inputRules,
+  smartQuotes,
   textblockTypeInputRule,
   undoInputRule,
   wrappingInputRule,
@@ -174,6 +177,22 @@ export const horizontalRuleRule = new InputRule(/^(?:---|\*\*\*|___)$/, (state, 
   return tr.setSelection(TextSelection.create(tr.doc, before + 2))
 })
 
+/**
+ * Typography as a writer's word processor does it, as they type: curly quotes
+ * and apostrophes, a dash for two hyphens, and an ellipsis for three dots.
+ * Not in code, and Backspace straight after takes any of them back.
+ *
+ * The dash wants something before it on the line, so that `---` on a line of
+ * its own still draws a rule.
+ *
+ * @type {InputRule[]}
+ */
+export const typography = [
+  ...smartQuotes,
+  new InputRule(/.(--)$/, '—', { inCodeMark: false }),
+  ellipsis,
+]
+
 /** @type {InputRule[]} */
 export const rules = [
   textblockTypeInputRule(/^(#{1,6})\s$/, heading, match => ({ level: match[1].length })),
@@ -193,6 +212,7 @@ export const rules = [
   markInputRule(/(?:^|\s)(_(?!\s+_)([^_]+)_(?!\s+_))$/, em),
   markInputRule(/(?:^|\s)(~~(?!\s+~~)([^~]+)~~(?!\s+~~))$/, strikethrough),
   markInputRule(/(?:^|\s)(`(?!\s+`)([^`]+)`(?!\s+`))$/, code),
+  ...typography,
 ]
 
 /**

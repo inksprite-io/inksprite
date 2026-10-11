@@ -213,6 +213,87 @@ describe('useChatCommands', () => {
     expect(closed.error).toBe('Stopped.')
   })
 
+  describe('a summary that falls short', () => {
+    /** A consult that writes `said` and then fails, or is stopped. */
+    const fallsShort = (said, { stop } = {}) =>
+      vi.fn(async (prompt, tools, options) => {
+        if (said) options.onContent(said)
+        if (stop) {
+          stop.abort()
+          throw stop.signal.reason
+        }
+        throw new Error('Connection reset')
+      })
+
+    beforeEach(() => {
+      chatsApi.addMessage.mockReturnValue({ id: 'msg_c', role: 'assistant' })
+      chatsApi.getMessageById.mockReturnValue({ value: { id: 'msg_c' } })
+    })
+
+    /** What the summary's message was last written with. */
+    const written = () =>
+      chatsApi.updateMessage.mock.calls.filter(call => 'content' in call[1]).at(-1)[1]
+
+    it('keeps what it had written when its request fails, and says it was cut short', async () => {
+      await expect(
+        commands.submit('/compact(4)', { consult: fallsShort('They crossed the') })
+      ).rejects.toThrow('Compacted summary was cut short: Connection reset')
+
+      expect(written().content).toBe('They crossed the')
+      expect(written().metadata.command).toMatchObject({
+        name: 'compact',
+        result: 'They crossed the',
+      })
+      expect(written().metadata.command.error).toBeUndefined()
+      expect(written().metadata.command.pending).toBeUndefined()
+    })
+
+    it('stays, empty, when it failed before writing anything', async () => {
+      await expect(commands.submit('/compact(4)', { consult: fallsShort('') })).rejects.toThrow(
+        'Compacted summary was cut short: Connection reset'
+      )
+
+      expect(written().content).toBe('')
+      expect(written().metadata.command.error).toBeUndefined()
+    })
+
+    it('keeps what it had written when stopped, and says nothing', async () => {
+      const stop = new AbortController()
+
+      await commands.submit('/compact(4)', {
+        consult: fallsShort('They crossed the', { stop }),
+        signal: stop.signal,
+      })
+
+      expect(written().content).toBe('They crossed the')
+      expect(written().metadata.command.error).toBeUndefined()
+    })
+
+    it('stays, empty, when stopped before writing anything', async () => {
+      const stop = new AbortController()
+
+      await commands.submit('/compact(4)', {
+        consult: fallsShort('', { stop }),
+        signal: stop.signal,
+      })
+
+      expect(written().content).toBe('')
+      expect(written().metadata.command).toMatchObject({ name: 'compact', result: '' })
+      expect(written().metadata.command.error).toBeUndefined()
+    })
+
+    it('says it was cut short when asked again, too', async () => {
+      chatsApi.getMessageById.mockReturnValue({
+        value: { id: 'msg_c', metadata: { command: { name: 'compact', input: '', keep: 0 } } },
+      })
+
+      await expect(commands.rerun('msg_c', null, { consult: fallsShort('They') })).rejects.toThrow(
+        'Compacted summary was cut short: Connection reset'
+      )
+      expect(written().content).toBe('They')
+    })
+  })
+
   it('leaves a stopped command alone once its message is gone', async () => {
     const stopped = new AbortController()
     const consult = vi.fn(async () => {

@@ -9,6 +9,8 @@ name: Desktop Release
 # The page is built once, and each system's job wraps that same build with
 # electron-builder (app/electron/electron-builder.yml). The release is made
 # only when every system has built, so it never goes out with one missing.
+# Its notes are CHANGELOG.md's section for the tag, then which file to
+# download; a tag the changelog has no section for is refused.
 #
 # The app updates itself from the latest release (app/electron/src/
 # updates.js): each system's build comes with a latest*.yml that names its
@@ -59,6 +61,24 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      # The release's notes start with CHANGELOG.md's section for the tag,
+      # taken here so that a tag without one stops before anything builds.
+      - name: Take the release notes from the changelog
+        run: |
+          awk -v tag="$TAG" '/^## / { if (found) exit; found = ($2 == tag); next } found' \
+            CHANGELOG.md | sed '/./,$!d' > notes.md
+          if ! grep -q . notes.md; then
+            echo "CHANGELOG.md has no section headed $TAG"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: notes
+          path: notes.md
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -73,10 +93,12 @@ jobs:
 
       # VITE_VERCEL_ANALYTICS is left unset, so the desktop build has none.
       # The desktop Google client is the release environment's; unset, the
-      # build has no import from Google Drive.
+      # build has no import from Google Drive. The version is the one About
+      # shows.
       - name: Build the page
         working-directory: app
         env:
+          VITE_APP_VERSION: ${{ steps.tag.outputs.version }}
           VITE_GOOGLE_DESKTOP_CLIENT_ID: ${{ vars.VITE_GOOGLE_DESKTOP_CLIENT_ID }}
           VITE_GOOGLE_DESKTOP_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_DESKTOP_CLIENT_SECRET }}
         run: npm run build
@@ -197,16 +219,19 @@ jobs:
           path: release
           merge-multiple: true
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: notes
+
+      # The changelog's section, then which file to download.
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$TAG" release/* \
-            --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
-            --latest \
-            --title "inksprite $TAG" \
-            --notes-file - <<'EOF'
+          cat >> notes.md <<'EOF'
+
+          ## Downloads
+
           A development build of the desktop app.
 
           - **macOS**: the `.dmg` ending in `arm64` for Apple silicon, or in `x64` for an Intel Mac. Signed and notarized.
@@ -215,5 +240,11 @@ jobs:
 
           Once installed, the app updates itself: it downloads each new release and offers to restart into it. The `.zip`, `.blockmap` and `.yml` files are for the updater.
 
-          This is the first release built with Electron. An app installed from an earlier release doesn't update to it; install this one over it.
+          An app installed from a release before v0.1.0-dev.8, the first built with Electron, doesn't update to this one; install it over that one.
           EOF
+          gh release create "$TAG" release/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --latest \
+            --title "inksprite $TAG" \
+            --notes-file notes.md

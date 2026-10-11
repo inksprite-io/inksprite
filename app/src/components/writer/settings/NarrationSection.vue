@@ -97,7 +97,7 @@ const test = async () => {
     if (voices.length > 0) toast.success(`Connected. ${voices.length} voices available.`)
     else toast.success('Connected. The server lists no voices; type them by name.')
   } catch (error) {
-    toast.error(describeFailure(error, connection.value), { title: 'Connection failed' })
+    toast.error(`Connection failed. ${describeFailure(error, connection.value)}`)
   } finally {
     testing.value = false
   }

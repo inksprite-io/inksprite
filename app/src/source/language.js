@@ -1,8 +1,11 @@
 /**
  * @module source/language
- * @description What a source file is written in, by its name.
+ * @description What a source file, or any file found to be text, is written
+ * in, by its name.
  *
- * Only for the media type a file is stored with and the word a listing uses.
+ * Only for the media type a file is stored with and the word a listing uses:
+ * by the repository import, and by the file import for text whose type said
+ * nothing (`files/inspect.js`).
  * Whether a file is text at all is decided by reading it (`source/text.js`),
  * so a file this table has never heard of still comes in, as plain text; and
  * the viewer picks its highlighting by filename itself

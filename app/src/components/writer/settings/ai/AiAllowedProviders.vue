@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-1">
     <SettingLabel
-      label="Allowed Providers"
+      label="Allowed providers"
       :overridden="allowed.length > 0"
       reset-tooltip="Allow any provider"
       @reset="emit('update:modelValue', undefined)"
@@ -10,6 +10,7 @@
       :model-value="allowed"
       :model="model"
       placeholder="Any provider"
+      label="Allowed providers"
       @update:model-value="emit('update:modelValue', $event.length > 0 ? $event : undefined)"
     />
   </div>

@@ -3,9 +3,12 @@ import {
   BACKUP_FORMAT,
   buildBackup,
   redactApiKeys,
+  redactServerKeys,
+  redactWebKeys,
   validateBackup,
   upgradeTables,
   summarizeBackup,
+  describeBackupContents,
   backupFilename,
   chatFilename,
   chatFromTables,
@@ -39,17 +42,64 @@ describe('redactApiKeys', () => {
   })
 })
 
+describe('redactServerKeys', () => {
+  it('empties every header but keeps its name, and the rest of the server', () => {
+    const out = redactServerKeys([
+      {
+        id: 'mcp_1',
+        url: 'https://mcp.example.com/mcp',
+        headers: { Authorization: 'Bearer secret', 'X-Team': 'blue' },
+        profiles: ['p'],
+      },
+    ])
+    expect(out[0]).toEqual({
+      id: 'mcp_1',
+      url: 'https://mcp.example.com/mcp',
+      headers: { Authorization: '', 'X-Team': '' },
+      profiles: ['p'],
+    })
+  })
+
+  it('leaves servers with no headers alone', () => {
+    const server = { id: 'mcp_1', url: 'https://mcp.example.com/mcp' }
+    expect(redactServerKeys([server])[0]).toBe(server)
+  })
+})
+
+describe('redactWebKeys', () => {
+  it('empties every key but keeps which services had one', () => {
+    const out = redactWebKeys([
+      { id: 'web', service: 'kagi', keys: { kagi: 'k', exa: 'e' }, profiles: ['p'] },
+    ])
+    expect(out[0]).toEqual({
+      id: 'web',
+      service: 'kagi',
+      keys: { kagi: '', exa: '' },
+      profiles: ['p'],
+    })
+  })
+
+  it('leaves a setup with no keys alone', () => {
+    const row = { id: 'web', service: 'exa', keys: {}, profiles: [] }
+    expect(redactWebKeys([row])[0]).toBe(row)
+  })
+})
+
 describe('buildBackup', () => {
   const tables = {
     stories: [{ id: 's1' }],
     aiProviders: [{ id: 'p1', apiKey: 'sk-secret' }],
+    mcpServers: [{ id: 'mcp_1', headers: { Authorization: 'Bearer secret' } }],
+    webSearch: [{ id: 'web', service: 'kagi', keys: { kagi: 'k' }, profiles: [] }],
   }
 
-  it('redacts provider keys by default', () => {
+  it('redacts provider and server keys by default', () => {
     const backup = buildBackup(tables, { dbVersion: 2, exported: 42 })
 
     expect(backup.includesApiKeys).toBe(false)
     expect(backup.tables.aiProviders[0].apiKey).toBeUndefined()
+    expect(backup.tables.mcpServers[0].headers).toEqual({ Authorization: '' })
+    expect(backup.tables.webSearch[0].keys).toEqual({ kagi: '' })
     // Untouched tables pass through.
     expect(backup.tables.stories).toEqual([{ id: 's1' }])
   })
@@ -59,6 +109,8 @@ describe('buildBackup', () => {
 
     expect(backup.includesApiKeys).toBe(true)
     expect(backup.tables.aiProviders[0].apiKey).toBe('sk-secret')
+    expect(backup.tables.mcpServers[0].headers).toEqual({ Authorization: 'Bearer secret' })
+    expect(backup.tables.webSearch[0].keys).toEqual({ kagi: 'k' })
   })
 
   it('stamps the envelope so an import knows what it is reading', () => {
@@ -185,6 +237,10 @@ describe('upgradeTables', () => {
   it('keeps rows a backup already had for a table the upgrade introduces', () => {
     const out = upgradeTables({ aiPrompts: [{ id: 'prompt_1' }] }, 1, 2)
     expect(out.aiPrompts).toEqual([{ id: 'prompt_1' }])
+  })
+
+  it('adds an empty web search setup to a backup from before it', () => {
+    expect(upgradeTables({ stories: [] }, 25, 26).webSearch).toEqual([])
   })
 
   it('rebuilds documents from a backup taken before the tree migration', () => {
@@ -432,6 +488,45 @@ describe('summarizeBackup', () => {
 
   it('handles a backup with no tables', () => {
     expect(summarizeBackup({ tables: {} })).toEqual([])
+  })
+})
+
+describe('describeBackupContents', () => {
+  it('counts what the writer made, and says it has settings without counting them', () => {
+    const backup = {
+      tables: {
+        stories: [{ id: 's1' }, { id: 's2' }],
+        documents: [
+          { id: 'root_s1', storyId: 's1' },
+          { id: 'root_s2', storyId: 's2' },
+          { id: 'd1', storyId: 's1' },
+          { id: 'd2', storyId: 's1' },
+          { id: 'd3', storyId: 's2' },
+        ],
+        chats: [{ id: 'c1' }],
+        messages: [{ id: 'm1' }, { id: 'm2' }],
+        files: [{ id: 'f1' }],
+        aiProviders: [{ id: 'p1' }, { id: 'p2' }, { id: 'p3' }],
+        aiProfiles: [{ id: 'pr1' }],
+        skills: [],
+      },
+    }
+
+    expect(describeBackupContents(backup)).toBe(
+      'It holds 2 projects, 3 documents, 1 chat and your settings.'
+    )
+  })
+
+  it('says only what there is', () => {
+    expect(describeBackupContents({ tables: { stories: [{ id: 's1' }] } })).toBe(
+      'It holds 1 project.'
+    )
+    expect(describeBackupContents({ tables: { aiProviders: [{ id: 'p1' }] } })).toBe(
+      'It holds your settings.'
+    )
+    expect(describeBackupContents({ tables: { stories: [], messages: [] } })).toBe(
+      'It holds nothing.'
+    )
   })
 })
 

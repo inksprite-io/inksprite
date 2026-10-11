@@ -346,6 +346,8 @@ export const useDocuments = storyId => {
 
   /**
    * Give a document a name, unless something beside it already has that name.
+   * The root's name is the project's, and one another project has is numbered
+   * instead: see `freeName`.
    * @param {string} documentId
    * @param {string} title
    * @returns {boolean} Whether it was renamed
@@ -353,6 +355,12 @@ export const useDocuments = storyId => {
   const rename = (documentId, title) => {
     const document = documentsStore.getDocument(documentId)
     if (!document) return false
+    if (documentId === rootIdFor(storyId)) {
+      documentsStore.updateDocument(documentId, {
+        title: storiesStore.freeName(title, storyId),
+      })
+      return true
+    }
     if (document.parentId && namesakeOf(document.parentId, title, documentId)) return false
     documentsStore.updateDocument(documentId, { title })
     return true
@@ -535,6 +543,44 @@ export const useDocuments = storyId => {
   const editableTitle = documentId => documentsStore.getDocument(documentId)?.title || ''
 
   /**
+   * A copy of a text document, beside it and named as the next of it:
+   * `Title (2)`, and a copy of `Title (2)` is `Title (3)` rather than
+   * `Title (2) (2)`. It has the text as it stands, edits not yet written out
+   * included, and what the document is apart from its place — plain or laid
+   * out, its summary, hidden or not. In a folder kept in order it goes
+   * straight after the original; anywhere else the name places it.
+   * @param {string} documentId
+   * @returns {Document|null} The copy, or null for anything but a text document
+   */
+  const duplicate = documentId => {
+    const document = get(documentId)
+    if (document?.type !== 'text' || !document.parentId) return null
+    const { parentId } = document
+    const name = displayTitle(document)
+    const base = name.replace(/\s*\(\d+\)$/, '') || name
+    let at = 2
+    while (namesakeOf(parentId, `${base} (${at})`)) at++
+    const copy = documentsStore.createDocument({
+      storyId,
+      parentId,
+      type: 'text',
+      title: `${base} (${at})`,
+      content: currentContent(documentId),
+      ...(document.plain ? { plain: true } : {}),
+      ...(document.summary ? { summary: document.summary } : {}),
+      ...(document.hidden ? { hidden: true } : {}),
+    })
+    if (isOrdered(parentId)) {
+      const ids = childrenOf(parentId)
+        .map(child => child.id)
+        .filter(id => id !== copy.id)
+      ids.splice(ids.indexOf(documentId) + 1, 0, copy.id)
+      documentsStore.reorderChildren(parentId, ids)
+    }
+    return copy
+  }
+
+  /**
    * Delete a document and everything under it. A deleted document's editor
    * state has nowhere to go and its tab nothing to show, so both go with it.
    * @param {string} documentId
@@ -561,10 +607,14 @@ export const useDocuments = storyId => {
   /**
    * Commit a drag: reparents anything that moved and renumbers the folder.
    * Something moved in beside a document of its name comes in as `Name (2)`.
+   * A move `canDropInto` refuses changes nothing, whatever let it through.
    * @param {string} parentId
    * @param {string[]} documentIds - Children in their new order
+   * @returns {Document[]} The folder's children, as they now stand
    */
   const reorder = (parentId, documentIds) => {
+    const arriving = documentIds.filter(id => documentsStore.getDocument(id)?.parentId !== parentId)
+    if (arriving.some(id => !canDropInto(parentId, id))) return childrenOf(parentId)
     for (const id of documentIds) {
       const document = documentsStore.getDocument(id)
       if (!document || document.parentId === parentId) continue
@@ -575,6 +625,19 @@ export const useDocuments = storyId => {
       )
     }
     return documentsStore.reorderChildren(parentId, documentIds)
+  }
+
+  /**
+   * Move a document into a folder: at its end, where the folder is kept in
+   * order. One already there stays where it is. Takes a name of its own
+   * there, and refuses what `canDropInto` refuses, as a drag does.
+   * @param {string} folderId
+   * @param {string} documentId
+   * @returns {Document[]} The folder's children, as they now stand
+   */
+  const moveInto = (folderId, documentId) => {
+    if (get(documentId)?.parentId === folderId) return childrenOf(folderId)
+    return reorder(folderId, [...childrenOf(folderId).map(child => child.id), documentId])
   }
 
   /**
@@ -603,16 +666,21 @@ export const useDocuments = storyId => {
 
   /**
    * Whether a document can be dropped into a folder. Nothing goes into a
-   * repository or comes out of one: what is in it is settled against where it
-   * came from, by path, and a refresh would undo the move.
+   * repository, and what it is made of doesn't come out: it is settled
+   * against where it came from, by path, and a refresh would undo the move.
+   * A text document is never the repository's own, so one in there can leave.
    * @param {string} folderId
    * @param {string} documentId
    * @returns {boolean}
    */
-  const canDropInto = (folderId, documentId) =>
-    !documentsStore.containsDocument(documentId, folderId) &&
-    !repositoryOf(get, get(folderId)) &&
-    !inRepository(get, get(documentId))
+  const canDropInto = (folderId, documentId) => {
+    const document = get(documentId)
+    return (
+      !documentsStore.containsDocument(documentId, folderId) &&
+      !repositoryOf(get, get(folderId)) &&
+      (document?.type === 'text' || !inRepository(get, document))
+    )
+  }
 
   /**
    * Ask the node for `documentId` to start renaming as soon as it mounts.
@@ -668,8 +736,10 @@ export const useDocuments = storyId => {
     appendContent,
     revertEdit,
     reapplyEdit,
+    duplicate,
     remove,
     reorder,
+    moveInto,
     setOrdered,
     setHidden,
     canDropInto,

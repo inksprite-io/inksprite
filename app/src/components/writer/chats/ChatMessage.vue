@@ -20,7 +20,8 @@
            direction is the sentence it was given, so there is nothing to ask. -->
       <Button
         v-if="message?.role === 'assistant'"
-        v-tooltip.top="command ? 'Ask again' : 'Regenerate message'"
+        v-tooltip.top="command ? 'Ask again' : 'Regenerate reply'"
+        :aria-label="command ? 'Ask again' : 'Regenerate reply'"
         icon="pi pi-refresh"
         text
         rounded
@@ -30,6 +31,7 @@
       />
       <Button
         v-tooltip.top="showRaw ? 'Show rendered' : 'Show raw'"
+        :aria-label="showRaw ? 'Show rendered' : 'Show raw'"
         icon="pi pi-code"
         text
         rounded
@@ -39,6 +41,7 @@
       />
       <Button
         v-tooltip.top="command ? 'Edit command' : 'Edit message'"
+        :aria-label="command ? 'Edit command' : 'Edit message'"
         icon="pi pi-pencil"
         text
         rounded
@@ -48,6 +51,7 @@
       />
       <Button
         v-tooltip.top="'Delete message'"
+        aria-label="Delete message"
         icon="pi pi-trash"
         text
         rounded
@@ -60,7 +64,8 @@
     <!-- What a consultation was asked. It is named by its turn, which is the
          whole point of giving it one, so nothing here repeats the name. -->
     <div
-      v-if="command && !raw"
+      v-if="commandShown && !raw"
+      data-command-box
       class="rounded-lg bg-rose-500/10 border border-surface-200 dark:border-surface-700/50 px-3 py-2 flex flex-col gap-1 mb-3"
     >
       <div v-if="detail" class="flex items-center gap-2 text-xs">
@@ -146,6 +151,16 @@
         class="px-3 py-2 text-sm text-surface-600 dark:text-surface-300 prose dark:prose-invert prose-sm max-w-none border-t-1 border-violet-500/20"
         v-html="reasoningHtml"
       />
+    </div>
+
+    <!-- What the turn said before it reached for its tools ("Let me look."),
+         above them, where it was said. The answer they led to is under them. -->
+    <div
+      v-if="lead && !isEditing && !raw && !segments.length"
+      class="prose dark:prose-invert prose-sm sm:prose max-w-none mb-3"
+      data-lead
+    >
+      <div data-find-text v-html="leadHtml" />
     </div>
 
     <!-- Each skill the turn consulted, as a block of its own: what it was
@@ -312,16 +327,51 @@
         <span class="text-sm font-medium text-surface-500"
           >{{ toolCalls.length }} tool call{{ toolCalls.length === 1 ? '' : 's' }}</span
         >
+        <template v-if="failedCalls">
+          <i
+            class="pi pi-exclamation-circle text-xs text-red-600 dark:text-red-400"
+            aria-hidden="true"
+            data-failed-calls
+          />
+          <span class="sr-only">{{ failedCalls }} failed</span>
+        </template>
         <span class="text-xs text-surface-400 truncate">{{ toolCallSummary }}</span>
       </button>
       <div
         v-show="expandToolCalls"
         class="px-3 py-2 text-xs text-surface-600 dark:text-surface-300 border-t-1 border-sky-500/20 flex flex-col gap-2"
       >
-        <div v-for="tc in toolCalls" :key="tc.id" class="flex flex-col gap-1">
+        <div
+          v-for="tc in toolCalls"
+          :key="tc.id"
+          class="flex flex-col gap-1"
+          :data-failed="tc.failed || undefined"
+        >
           <div class="font-mono">
-            <span class="font-semibold text-sky-700 dark:text-sky-300">{{ tc.name }}</span>
+            <i
+              v-if="tc.failed"
+              class="pi pi-exclamation-circle text-xs mr-1 text-red-600 dark:text-red-400"
+              aria-hidden="true"
+            />
+            <span
+              class="font-semibold"
+              :class="
+                tc.failed ? 'text-red-700 dark:text-red-400' : 'text-sky-700 dark:text-sky-300'
+              "
+              >{{ tc.name }}</span
+            >
             <span class="text-surface-500">({{ formatToolArguments(tc.arguments) }})</span>
+          </div>
+          <!-- The document the call made or changed, to go and read it. -->
+          <div v-if="tc.wrote" class="pl-3">
+            <button
+              type="button"
+              class="underline text-left break-all text-sky-700 dark:text-sky-300"
+              data-action="open-written"
+              @click="documents().open(tc.wrote.id)"
+            >
+              {{ tc.wrote.path }}
+            </button>
           </div>
           <div
             v-if="tc.result === null"
@@ -331,7 +381,8 @@
           </div>
           <pre
             v-else
-            class="text-surface-600 dark:text-surface-400 whitespace-pre-wrap break-words m-0 pl-3 border-l-2 border-surface-300 dark:border-surface-700"
+            class="text-surface-600 dark:text-surface-400 whitespace-pre-wrap break-words m-0 pl-3 border-l-2"
+            :class="tc.failed ? 'border-red-500/60' : 'border-surface-300 dark:border-surface-700'"
             >{{ tc.resultDisplay }}</pre
           >
           <!-- A server's answer is the model's for this turn only; this keeps
@@ -394,6 +445,7 @@
         <span v-else class="flex-1" />
         <Button
           v-tooltip.top="'Cancel'"
+          aria-label="Cancel"
           icon="pi pi-times"
           text
           rounded
@@ -402,6 +454,7 @@
         />
         <Button
           v-tooltip.top="'Save'"
+          aria-label="Save"
           icon="pi pi-check"
           text
           rounded
@@ -439,22 +492,49 @@
       />
     </div>
 
-    <!-- Content. A consultation has already shown what it was asked. -->
-    <div v-else-if="message?.content" class="prose dark:prose-invert prose-sm sm:prose max-w-none">
+    <!-- Content. A consultation has already shown what it was asked, and
+         what the turn said before its tools is above them. -->
+    <div v-else-if="answer" class="prose dark:prose-invert prose-sm sm:prose max-w-none">
       <div data-find-text v-html="contentHtml" />
     </div>
 
-    <!-- Empty state for new messages. Not for a command: its own block is
-         already saying it is waiting. Not under the thinking box either,
-         which says what the turn is doing: dots that came back with every
-         thought and went with every call made the turn jump. -->
+    <!-- Empty state for new messages, while a turn is writing into them. Not
+         for a command: its own block is already saying it is waiting. Not
+         under the thinking box either, which says what the turn is doing:
+         dots that came back with every thought and went with every call made
+         the turn jump. -->
     <div
-      v-else-if="message && !message.content && !command && !hasThinkingBox"
+      v-else-if="activity && message && !message.content && !command && !hasThinkingBox"
       class="px-2 inline-flex items-center gap-2 text-surface-500"
     >
       <span class="typing-dot"></span>
       <span class="typing-dot"></span>
       <span class="typing-dot"></span>
+    </div>
+
+    <!-- Why the turn failed, under whatever it wrote first. -->
+    <div
+      v-if="failure && !isEditing"
+      class="flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm"
+      :class="{ 'mt-3': message?.content }"
+      data-answer-error
+    >
+      <i
+        class="pi pi-exclamation-circle mt-0.5 flex-none text-red-600 dark:text-red-400"
+        aria-hidden="true"
+      />
+      <p class="m-0 flex-1 min-w-0 break-words text-surface-700 dark:text-surface-200">
+        <span class="font-medium">{{ message?.content ? 'Cut off:' : 'No reply:' }}</span>
+        {{ failure }}
+      </p>
+      <Button
+        label="Retry"
+        icon="pi pi-refresh"
+        size="small"
+        text
+        class="flex-none !py-0.5"
+        @click="$emit('regenerate', null)"
+      />
     </div>
   </div>
 </template>
@@ -478,6 +558,7 @@ import { consultationsIn, fromDirectorNote, isConsultation } from '@/ai/skills/c
 import { useToolApprovals } from '@/composables/useToolApprovals.js'
 import { serverTool } from '@/mcp/servers.js'
 import { canSave } from '@/mcp/saved.js'
+import { READ_WEB_PAGE } from '@/ai/tools/web.js'
 import { useDocuments } from '@/composables/useDocuments.js'
 import SaveToolResultDialog from './SaveToolResultDialog.vue'
 
@@ -586,10 +667,9 @@ const handleEditKeydown = event => {
   }
 }
 
-const contentHtml = computed(() => {
-  if (!message.value?.content) return ''
-  return renderMarkdown(message.value.content)
-})
+const contentHtml = computed(() => (answer.value ? renderMarkdown(answer.value) : ''))
+
+const leadHtml = computed(() => (lead.value ? renderMarkdown(lead.value) : ''))
 
 const reasoningHtml = computed(() => {
   if (!message.value?.reasoningContent) return ''
@@ -668,6 +748,19 @@ const segments = computed(() => message.value?.segments || [])
 const detail = computed(() => (command.value ? commandDetail(command.value) : ''))
 
 /**
+ * Whether the command has anything to show above its answer. One asked with
+ * nothing to add — a summary with no instructions, from Summarize up to
+ * here — has nothing, and an empty box would say something was left out.
+ */
+const commandShown = computed(() => {
+  const asked = command.value
+  if (!asked) return false
+  return Boolean(
+    detail.value || asked.label || asked.error || (asked.pending && !message.value?.content)
+  )
+})
+
+/**
  * Every skill the turn consulted, answered or still running. A turn from when
  * a chat could run the Director ahead of the assistant kept a note of it
  * instead, and that note is the first block.
@@ -702,13 +795,17 @@ const expandToolCalls = useTurnState(`${props.messageId}:tools`, false)
  * @property {string} resultDisplay  - Truncated, prettified version of `result` for display
  * @property {string} server - For a server's tool, the server, as the writer named it
  * @property {string} tool - For a server's tool, the tool, as its server names it
- * @property {boolean} savable - A server's answer that can be kept in the project
+ * @property {boolean} savable - A server's answer, or a web page read, that can be kept in the project
+ * @property {boolean} failed - It came back with an error rather than an answer
+ * @property {{id: string, path: string}|null} wrote - The document it made or changed, there still
  */
 const toolCalls = computed(() => {
   /** @type {ToolCallDisplay[]} */
   const out = []
   const trajectory = message.value?.metadata?.apiTrajectory
   if (!Array.isArray(trajectory) || trajectory.length === 0) return out
+
+  const written = writtenDocuments()
 
   const resultsById = new Map()
   for (const item of trajectory) {
@@ -731,18 +828,21 @@ const toolCalls = computed(() => {
       const result = resultsById.has(tc.id) ? resultsById.get(tc.id).content : null
       const name = tc.function?.name || 'unknown'
       // A server's tool, by the server still connected, or by its name's
-      // prefix for one that has gone since.
+      // prefix for one that has gone since. A web page is kept too.
       const found = serverTool(name)
       const prefixed = name.includes('__') ? name.split('__') : null
+      const page = name === READ_WEB_PAGE
       out.push({
         id: tc.id,
         name,
         arguments: parsedArgs,
         result,
         resultDisplay: result === null ? '' : formatToolResult(result),
-        server: found?.server.name || prefixed?.[0] || '',
+        server: found?.server.name || prefixed?.[0] || (page ? 'Web' : ''),
         tool: found?.tool.title || found?.tool.name || prefixed?.slice(1).join('__') || name,
-        savable: Boolean(found || prefixed) && canSave(result),
+        savable: Boolean(found || prefixed || page) && canSave(result),
+        failed: failedResult(result),
+        wrote: written(name, parsedArgs),
       })
     }
   }
@@ -751,6 +851,93 @@ const toolCalls = computed(() => {
 
 /** The project's documents, reached only once a result has been saved. */
 const documents = () => useDocuments(props.storyId)
+
+/**
+ * Whether a call came back with an error rather than an answer. Every way a
+ * call fails — the tool threw, refused, ran out of time, was not offered —
+ * answers the model with an object holding `error`.
+ *
+ * @param {string|null} result
+ * @returns {boolean}
+ */
+const failedResult = result => {
+  if (!result) return false
+  try {
+    const parsed = JSON.parse(result)
+    return Boolean(parsed) && typeof parsed === 'object' && typeof parsed.error === 'string'
+  } catch {
+    return false
+  }
+}
+
+/** @param {unknown} path */
+const pathKey = path =>
+  typeof path === 'string'
+    ? path
+        .trim()
+        .replace(/^\/+|\/+$/g, '')
+        .toLowerCase()
+    : ''
+
+/**
+ * What the turn's calls wrote, to find each call's document by: its record of
+ * the changes it made names the document, the tool and where it was.
+ *
+ * @returns {(name: string, args: any) => {id: string, path: string}|null}
+ */
+const writtenDocuments = () => {
+  const edits = message.value?.metadata?.documentEdits
+  if (!Array.isArray(edits) || edits.length === 0) return () => null
+
+  const byCall = new Map(
+    edits
+      .filter(edit => edit.documentId && edit.status !== 'proposed' && edit.status !== 'rejected')
+      .map(edit => [`${edit.tool}\n${pathKey(edit.path)}`, edit])
+  )
+  return (name, args) => {
+    const edit = byCall.get(`${name}\n${pathKey(args?.path)}`)
+    if (!edit) return null
+    const shelf = documents()
+    if (!shelf.get(edit.documentId)) return null
+    return { id: edit.documentId, path: shelf.pathOf(edit.documentId) || edit.path }
+  }
+}
+
+/** How many of the turn's calls failed, for its block to say before it is opened. */
+const failedCalls = computed(() => toolCalls.value.filter(tc => tc.failed).length)
+
+/**
+ * The turn's words split where its tools come: what it said before reaching
+ * for them, and the answer they led to.
+ *
+ * Each round's words before its calls are on the record of the round, and the
+ * message holds every round's words in order, so the ones before the calls are
+ * where the message begins. A message the writer has edited since, or one
+ * that does not begin with them, is shown whole under the tools as before.
+ */
+const split = computed(() => {
+  const content = message.value?.content || ''
+  const trajectory = message.value?.metadata?.apiTrajectory
+  if (!content || !Array.isArray(trajectory) || toolCalls.value.length === 0) {
+    return { lead: '', answer: content }
+  }
+
+  let end = 0
+  for (const item of trajectory) {
+    if (item.role !== 'assistant' || !item.tool_calls?.length) continue
+    const said = typeof item.content === 'string' ? item.content.trim() : ''
+    if (!said) continue
+    const at = content.indexOf(said, end)
+    // Words moved off the reply, as a skill's loading is, are not in it.
+    if (at === -1) continue
+    if (content.slice(end, at).trim()) break
+    end = at + said.length
+  }
+  return { lead: content.slice(0, end).trim(), answer: content.slice(end).trim() }
+})
+
+const lead = computed(() => split.value.lead)
+const answer = computed(() => split.value.answer)
 
 /** The tool call whose result is being saved, while the dialog is open. */
 const saving = ref(/** @type {ToolCallDisplay|null} */ (null))
@@ -882,6 +1069,9 @@ const showStatus = computed(() =>
 // Whether the box has thinking to open onto, rather than only a status.
 const canExpand = computed(() => props.showReasoning && hasReasoning.value)
 
+// Why the turn failed, once it is over. See MessageMetadata.error.
+const failure = computed(() => (props.activity ? '' : message.value?.metadata?.error || ''))
+
 // The box at the top: thinking to open, or a status to say.
 const hasThinkingBox = computed(() => canExpand.value || isThinking.value || showStatus.value)
 
@@ -930,6 +1120,13 @@ const formattedThinkingTime = computed(() => {
 .prose :deep(table) {
   display: block;
   overflow-x: auto;
+}
+
+/* The markdown sits in a wrapper, so the prose rule that takes the space off
+   its first block misses it: a reply that opens with a heading started a
+   heading's margin below its header. */
+.prose :deep([data-find-text] > :first-child) {
+  margin-top: 0;
 }
 
 /* Enable line wrapping in code blocks */

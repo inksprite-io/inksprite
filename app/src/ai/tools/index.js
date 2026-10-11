@@ -48,9 +48,16 @@
  *
  * Each server the writer connected is a group of its own, its tools named
  * `<prefix>__<tool>` (see ../../mcp/names.js) and registered from what the
- * server offered when it was last listed. Unlike every other group, a
+ * server offered when it was last listed. Unlike the built-in groups, a
  * server's is opted into: a chat is offered a server's tools only when the
  * selection names the server. See ../../mcp/servers.js.
+ *
+ * ## The web
+ *
+ * `web_search` and `read_web_page` (./web.js) are a group of their own,
+ * opted into the same way: offered only when the selection says the chat
+ * searches, which a service set up and the chat's profile or its own choice
+ * decide. See ../../web/config.js.
  */
 
 import { toolRegistry } from './registry.js'
@@ -73,6 +80,10 @@ import {
   executeEditDocument,
   listDocumentsDefinition,
   executeListDocuments,
+  listCommentsDefinition,
+  executeListComments,
+  resolveCommentDefinition,
+  executeResolveComment,
   appendDocumentDefinition,
   executeAppendDocument,
 } from './documents.js'
@@ -97,6 +108,14 @@ import { USE_SKILL, executeUseSkill, loadableSkills, useSkillDefinition } from '
 import { allServers, getServer, onServersChanged, reachable } from '../../mcp/servers.js'
 import { serverGroup, serverOfGroup } from '../../mcp/names.js'
 import { callServerTool, describeFailure, resultForModel } from '../../mcp/client.js'
+import {
+  WEB_GROUP,
+  WEB_TIMEOUT_MS,
+  executeReadWebPage,
+  executeWebSearch,
+  readWebPageDefinition,
+  webSearchDefinition,
+} from './web.js'
 
 /**
  * The group skills are registered in.
@@ -117,6 +136,7 @@ export const TOOL_GROUP_LABELS = {
   documents: 'Documents',
   rpg: 'RPG Tools',
   [SKILLS_GROUP]: 'Skills',
+  [WEB_GROUP]: 'Web',
 }
 
 /**
@@ -163,12 +183,37 @@ toolRegistry.register(
   executeAppendDocument,
   'documents'
 )
+toolRegistry.register('list_comments', listCommentsDefinition, executeListComments, 'documents')
+toolRegistry.register(
+  'resolve_comment',
+  resolveCommentDefinition,
+  executeResolveComment,
+  'documents'
+)
 
 toolRegistry.register('roll_dice', diceToolDefinition, executeDiceTool, 'rpg')
 toolRegistry.register('oracle', oracleDefinition, executeOracle, 'rpg')
 toolRegistry.register('roll_table', rollTableDefinition, executeRollTable, 'rpg')
 toolRegistry.register('draw_tarot', drawTarotDefinition, executeDrawTarot, 'rpg')
 toolRegistry.register('generate_names', generateNamesDefinition, executeGenerateNames, 'rpg')
+
+// Opted into rather than withheld, as a server's tools are: a search sends
+// words out of the app, so no chat searches that was not asked to. See
+// getEnabledToolDefinitions and web/config.js.
+toolRegistry.register(
+  'web_search',
+  webSearchDefinition,
+  executeWebSearch,
+  WEB_GROUP,
+  WEB_TIMEOUT_MS
+)
+toolRegistry.register(
+  'read_web_page',
+  readWebPageDefinition,
+  executeReadWebPage,
+  WEB_GROUP,
+  WEB_TIMEOUT_MS
+)
 
 // Every built-in skill the model may call, as the tool its SKILL.md describes.
 // `interpret` draws a card of its own out of sight and returns what it made
@@ -307,41 +352,20 @@ registerServerTools()
 onServersChanged(registerServerTools)
 
 /**
- * The group whose calls a recent turn sends back with the conversation, for
- * the last few turns.
- *
- * Its answers are facts the fiction turns on, they are small, and the calls
- * are the behaviour worth showing the model: a history in which it rolled is
- * the strongest reason to roll again rather than decide. Only recent turns,
- * since the narration records what came up. See ai/context/build.js.
- */
-const REPLAYED_GROUP = 'rpg'
-
-/**
- * The group whose calls every turn sends back with the conversation, however
- * old: reading the project is building up what is known of it, and a read the
- * model can no longer see is one it reads again or paraphrases. See
- * .llm/project_context_design.md.
+ * The group whose calls went back with the conversation before every call
+ * did. A turn written then still sends these, and only these; one written
+ * since sends every call it made. See ai/context/build.js.
  */
 const KEPT_GROUP = 'documents'
 
 /**
- * Whether a turn's call to this tool goes back with the conversation on every
- * later turn, until a summary stands in for it.
+ * Whether a call to this tool goes back from a turn written while only the
+ * document calls did, until a summary stands in for it.
  * @param {string} name - Tool name
  * @returns {boolean}
  */
 export function keptInConversation(name) {
   return toolRegistry.groupOf(name) === KEPT_GROUP
-}
-
-/**
- * Whether a past turn's call to this tool is sent back with the conversation.
- * @param {string} name - Tool name
- * @returns {boolean}
- */
-export function replaysAcrossTurns(name) {
-  return toolRegistry.groupOf(name) === REPLAYED_GROUP
 }
 
 /**
@@ -368,9 +392,10 @@ export function getToolDefinitions() {
  * that takes it out of `use_skill`'s list; with none left, `use_skill` goes.
  *
  * A server's tools are offered only when `servers` names the server, and then
- * less any the chat switched off by name.
+ * less any the chat switched off by name. The web tools are the same: offered
+ * only when `web` says the chat searches (web/config.js `webForChat`).
  *
- * @param {{disabledTools?: string[], disabledGroups?: string[], servers?: string[]}} [selection]
+ * @param {{disabledTools?: string[], disabledGroups?: string[], servers?: string[], web?: boolean}} [selection]
  * @returns {import('./registry.js').ToolDefinition[]}
  */
 export function getEnabledToolDefinitions(selection) {
@@ -378,7 +403,9 @@ export function getEnabledToolDefinitions(selection) {
   const servers = new Set(selection?.servers || [])
   return toolRegistry.getEnabledDefinitions(selection).flatMap(definition => {
     const name = definition.function.name
-    const server = serverOfGroup(toolRegistry.groupOf(name))
+    const group = toolRegistry.groupOf(name)
+    if (group === WEB_GROUP) return selection?.web ? [definition] : []
+    const server = serverOfGroup(group)
     if (server !== null) return servers.has(server) ? [definition] : []
     if (name !== USE_SKILL) return [definition]
     const offered = loadableSkills().filter(skill => !off.has(skill.name))

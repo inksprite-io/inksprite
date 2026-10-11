@@ -113,7 +113,21 @@ describe('textOf', () => {
 
   it('is null for bytes with a NUL near the top, or that are not UTF-8', () => {
     expect(textOf(new Uint8Array([0x50, 0x4b, 0x00, 0x03]))).toBeNull()
-    expect(textOf(new Uint8Array([0xff, 0xfe, 0xfd]))).toBeNull()
+    expect(textOf(new Uint8Array([0xc3, 0x28, 0xfd]))).toBeNull()
+  })
+
+  it('is null for bytes full of control characters, but not for tabs and escapes', () => {
+    expect(textOf(new Uint8Array([0x01, 0x02, 0x03]))).toBeNull()
+    expect(textOf(bytes('a\tb\x1b[1mbold\x1b[0m\f\n'))).toBe('a\tb\x1b[1mbold\x1b[0m\f\n')
+  })
+
+  it('reads UTF-16 by its byte-order mark, either way round', () => {
+    const units = [...'Hé\r\n'].map(c => c.charCodeAt(0))
+    const little = new Uint8Array([0xff, 0xfe, ...units.flatMap(u => [u & 0xff, u >> 8])])
+    const big = new Uint8Array([0xfe, 0xff, ...units.flatMap(u => [u >> 8, u & 0xff])])
+
+    expect(textOf(little)).toBe('Hé\n')
+    expect(textOf(big)).toBe('Hé\n')
   })
 })
 

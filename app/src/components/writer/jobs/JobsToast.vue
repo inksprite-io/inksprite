@@ -110,6 +110,15 @@
             @click="cancel(job.id)"
           />
           <Button
+            v-if="job.status === 'done' && job.resultId"
+            label="Open"
+            icon="pi pi-file"
+            size="small"
+            text
+            data-action="open-job-result"
+            @click="openResult(job)"
+          />
+          <Button
             v-if="job.status === 'done' || job.status === 'cancelled'"
             label="Clear"
             icon="pi pi-trash"
@@ -126,21 +135,38 @@
 
 <script setup>
 import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import ProgressBar from 'primevue/progressbar'
 import JobStatus from './JobStatus.vue'
 import InProcessIcon from '@/components/icons/InProcessIcon.vue'
 import { formatElapsed, useJobs } from '@/composables/useJobs.js'
+import { useToast } from '@/composables/useToast'
+import { pushProjectToRoute } from '@/utils/routeHelpers'
 
 /**
  * The long jobs, all of them, whichever project each is for: what each is
  * doing, how far it is and how long it has run, and the ways to pause it,
- * take it up again, stop it, or clear it once it is over. A job interrupted
- * by a reload comes back paused, with its finished steps kept.
+ * take it up again, stop it, or clear it once it is over, and to open what
+ * it wrote once it is done. A job interrupted by a reload comes back paused,
+ * with its finished steps kept.
  */
 defineEmits(['close'])
 
-const { jobs, load, pause, resume, cancel, remove, progressOf, projectOf, activity } = useJobs()
+const jobsApi = useJobs()
+const { jobs, load, pause, resume, cancel, remove, progressOf, projectOf, activity } = jobsApi
+const router = useRouter()
+const toast = useToast()
+
+/**
+ * Open what a finished job wrote, in its project, going there when it is
+ * another one.
+ * @param {import('@/types/models.js').Job} job
+ */
+const openResult = async job => {
+  if (await jobsApi.openResult(job)) pushProjectToRoute(router, job.storyId)
+  else toast.warning('That document has since been deleted.')
+}
 
 onMounted(load)
 
@@ -150,16 +176,16 @@ const runningCount = computed(() => jobs.value.filter(job => job.status === 'run
 const stepOf = job => job.steps.find(step => step.status === 'running')?.label || ''
 
 /**
- * How far a job got and — once it has stopped — how long it ran. A running
- * job's time is on its status line.
+ * How far a job got and — once it has stopped — how long it ran, said the
+ * same way however far that is. A running job's time is on its status line.
  * @param {import('@/types/models.js').Job} job
  */
 const describe = job => {
   const { done, total } = progressOf(job)
   const time = job.status !== 'running' && job.elapsed ? formatElapsed(job.elapsed) : ''
-  return job.status === 'done'
-    ? `${total} ${total === 1 ? 'step' : 'steps'} done${time ? ` in ${time}` : ''}`
-    : `${done} of ${total} done${time ? ` · ${time}` : ''}`
+  const steps = `${done} of ${total} ${total === 1 ? 'step' : 'steps'} done`
+  if (!time) return steps
+  return job.status === 'done' ? `${steps} in ${time}` : `${steps} · ${time}`
 }
 
 /** @param {import('@/types/models.js').Job['status']} status */

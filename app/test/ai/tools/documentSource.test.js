@@ -6,6 +6,8 @@ import {
   executeReadDocument,
   executeDescribeDocument,
   executeSearchDocuments,
+  executeCreateDocument,
+  executeCreateFolder,
 } from '@/ai/tools/documents.js'
 import { writeRepository } from '@/source/write.js'
 import { readInView, textHash } from '@/ai/context/reads.js'
@@ -188,6 +190,19 @@ describe('document tools, on a repository', () => {
       expect(result.content.length).toBeLessThan(2100)
       expect(result.content).toMatch(/… \(3,015 more characters\)$/)
     })
+  })
+
+  it('makes nothing inside a repository, which is read-only', async () => {
+    const note = await executeCreateDocument({ path: 'server/src/Notes', content: 'x' }, context)
+    const folder = await executeCreateFolder({ path: 'server/docs' }, context)
+
+    expect(note.error).toBe(
+      '"server/src" is in a repository, which is read-only. Put it elsewhere.'
+    )
+    expect(folder.error).toMatch(/"server" is in a repository/)
+    expect(
+      (await executeCreateDocument({ path: 'Design/Notes', content: 'x' }, context)).error
+    ).toBeUndefined()
   })
 
   it('describes a source file without sections', async () => {

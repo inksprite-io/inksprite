@@ -110,7 +110,7 @@ describe('useDriveImport', () => {
       expect(doc.content).toContain('The gate.')
       expect(doc.content).not.toContain('base64')
       expect(doc.content).not.toContain('image1')
-      expect(sheet).toMatchObject({ title: 'Mileage', type: 'file', mime: 'text/csv' })
+      expect(sheet).toMatchObject({ title: 'Mileage.csv', type: 'file', mime: 'text/csv' })
       expect(steps).toHaveBeenCalledWith('downloading', 3, 3)
       expect(steps).toHaveBeenLastCalledWith('writing', 2, 2)
     })

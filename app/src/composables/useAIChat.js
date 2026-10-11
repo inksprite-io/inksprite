@@ -32,7 +32,8 @@ import { useSkills } from './useSkills.js'
 import { skillPrompt } from '@/ai/skills/index.js'
 import { useChatCommands } from './useChatCommands.js'
 import { useApplicationState } from './useApplicationState.js'
-import { ProviderNotConfiguredError } from '@/utils/errors.js'
+import { AnswerFailedError, ProviderNotConfiguredError } from '@/utils/errors.js'
+import { isDefaultChatTitle, plainTitle } from '@/utils/chatTitle.js'
 import { connectionGap } from '@/ai/providers.js'
 import { DEFAULT_CHAT_PROMPT } from '@/ai/prompts/index.js'
 import { noteOnProfile } from '@/ai/profiles/index.js'
@@ -47,15 +48,17 @@ import {
   handsOverReply,
 } from '@/ai/tools/index.js'
 import { needsApproval, serversForChat } from '@/mcp/servers.js'
+import { webForChat } from '@/web/config.js'
 import { askApproval, denyWaiting } from './useToolApprovals.js'
 import { useMcpServers } from './useMcpServers.js'
+import { useWebSearch } from './useWebSearch.js'
 import { SKILL_MAX_ROUNDS } from '@/ai/skills/index.js'
 import { USE_SKILL, loadedSkills } from '@/ai/skills/loads.js'
 import { DEFAULT_TRANSCRIPT_ROLES } from '@/ai/context/build.js'
 import { readNotes, applyProposal } from '@/ai/tools/documents.js'
 import { useDocuments } from './useDocuments.js'
 import { keepDecisions } from '@/utils/edits.js'
-import { refusedAnswer, trimRound } from '@/ai/rounds.js'
+import { refusedAnswer, splitOffered, trimRound, unofferedAnswer } from '@/ai/rounds.js'
 
 const TITLE_SYSTEM_PROMPT =
   'You are a helpful assistant that creates short, descriptive titles for chat conversations.'
@@ -84,7 +87,8 @@ function stripThinking(raw) {
  * Pull a usable title out of a completion.
  *
  * Take the first non-empty line: models tend to add a sentence of commentary
- * despite being told not to.
+ * despite being told not to. And take it as text, since that is how a title
+ * is shown.
  *
  * @param {string} raw - Accumulated content
  * @returns {string} A cleaned title, or '' if nothing usable came back
@@ -94,10 +98,7 @@ function extractTitle(raw) {
     stripThinking(raw)
       .split('\n')
       .find(l => l.trim()) || ''
-  return line
-    .trim()
-    .replace(/^["']|["']$/g, '')
-    .trim()
+  return plainTitle(line)
 }
 
 /**
@@ -196,6 +197,7 @@ export function useAIChat(storyId, chatId) {
   const profilesApi = useProfiles()
   const skillsApi = useSkills()
   const mcpApi = useMcpServers()
+  const webApi = useWebSearch()
   const commands = useChatCommands(storyId, chatId)
   const aiConfig = useAIConfig()
   const aiService = useAIService()
@@ -573,15 +575,18 @@ export function useAIChat(storyId, chatId) {
 
       if (!result?.toolCalls?.length) return stripThinking(content).trim()
 
-      // Each distinct call once, and not too many: see ai/rounds.js.
-      const { run, refused, left } = trimRound(result.toolCalls)
-      const calls = refused ? [...run, refused] : run
+      // Each distinct call once, not too many, and only to a tool it was
+      // offered: see ai/rounds.js.
+      const { run: asked, refused, left } = trimRound(result.toolCalls)
+      const { offered: run, unoffered } = splitOffered(asked, tools)
+      const calls = refused ? [...asked, refused] : asked
       const assistantMessage = buildAssistantMessage(content, calls, result.reasoningDetails)
       // Its own thinking goes back to it while it is still deciding, the same
       // way the turn loop does it and for the same reason.
       messages.push(thought ? { ...assistantMessage, _reasoning: thought } : assistantMessage)
       const answered = await executeToolCalls(run, depth, edits, signal)
       signal.throwIfAborted()
+      answered.push(...unoffered.map(unofferedAnswer))
       if (refused) answered.push(refusedAnswer(refused, left))
       messages.push(...answered)
       if (trace) trace.push(...consultedCalls(calls, answered))
@@ -1237,12 +1242,21 @@ export function useAIChat(storyId, chatId) {
 
         // Each distinct call once, and not too many: a response that came
         // apart asked for one listing 253 times, and every answer would stay
-        // in the conversation. See ai/rounds.js.
-        const { run, refused, left } = trimRound(result.toolCalls)
+        // in the conversation. And only to a tool this request offered: the
+        // model reads every call the chat made, to tools since switched off
+        // among them. See ai/rounds.js.
+        const { run: asked, refused, left } = trimRound(result.toolCalls)
         if (refused) {
-          console.warn(`A round asked for ${result.toolCalls.length} calls; ran ${run.length}`)
+          console.warn(`A round asked for ${result.toolCalls.length} calls; ran ${asked.length}`)
         }
-        const calls = refused ? [...run, refused] : run
+        const { offered: run, unoffered } = splitOffered(asked, tools)
+        if (unoffered.length) {
+          console.warn(
+            'Calls to tools not offered:',
+            unoffered.map(call => call.function?.name)
+          )
+        }
+        const calls = refused ? [...asked, refused] : asked
 
         // Assistant entry for this iteration: just this iteration's text + tool calls.
         const assistantMessage = buildAssistantMessage(delta, calls, result.reasoningDetails)
@@ -1262,7 +1276,7 @@ export function useAIChat(storyId, chatId) {
         // what it is about to do ("Let me load the house style first"), not
         // the reply, so they go in with the thinking, as a hand-off's do. Only
         // then: before a read or a search they can be half of an answer.
-        if (delta.trim() && run.every(call => call.function?.name === USE_SKILL)) {
+        if (delta.trim() && asked.every(call => call.function?.name === USE_SKILL)) {
           state.content = state.content.slice(0, state.content.length - delta.length)
           committedLen = state.content.length
           state.reasoning = [state.reasoning, delta.trim()].filter(Boolean).join('\n\n')
@@ -1285,6 +1299,7 @@ export function useAIChat(storyId, chatId) {
         // Stopped while the calls ran: no next round, and the message may be
         // gone.
         signal.throwIfAborted()
+        toolResults.push(...unoffered.map(unofferedAnswer))
         if (refused) toolResults.push(refusedAnswer(refused, left))
         apiTrajectory.push(...toolResults)
         workingMessages.push(...toolResults)
@@ -1347,14 +1362,19 @@ export function useAIChat(storyId, chatId) {
    */
   const generateAIResponse = async (storyId, chatId, into, signal) => {
     const profile = getChatProfileIfValid()
+    // The answer being written, once there is one: where a failure is said.
+    let answerId = into
 
     try {
       isThinking.value = true
+      // Asking again: the message is emptied already, and says it is waiting
+      // while the conversation before it is gathered.
+      if (into) activity.value = { messageId: into, phase: 'waiting', since: Date.now() }
 
       // The writer's own skills are some of the tools about to be offered, and
       // a turn sent the moment the app opens can beat the library to it; so
-      // are their servers'.
-      await Promise.all([skillsApi.ready(), mcpApi.ready()])
+      // are their servers', and the web's.
+      await Promise.all([skillsApi.ready(), mcpApi.ready(), webApi.ready()])
 
       // Build context
       const aiContext = useAIContext(storyId)
@@ -1375,6 +1395,7 @@ export function useAIChat(storyId, chatId) {
       if (!assistantMsg) {
         throw new Error('Failed to create assistant message')
       }
+      answerId = assistantMsg.id
 
       // Who is writing this answer goes on it before a word of it arrives, so
       // that one which fails halfway still says what it was failing on.
@@ -1383,10 +1404,10 @@ export function useAIChat(storyId, chatId) {
       const turnMetadata = {
         model: profile.model,
         provider: aiConfig.getProvider(profile.providerId)?.name,
-        // This turn's document calls go back with the conversation; a turn
+        // Every call this turn makes goes back with the conversation; a turn
         // from before they did keeps going back as it did. See
-        // ai/context/reads.js.
-        documentCallsKept: /** @type {const} */ (true),
+        // ai/context/build.js.
+        callsKept: /** @type {const} */ (true),
         ...(debug.value ? { context: contextResult.messages } : {}),
       }
       chatsApi.updateMessage(assistantMsg.id, { metadata: { ...turnMetadata } })
@@ -1398,15 +1419,14 @@ export function useAIChat(storyId, chatId) {
       // Two gates: the profile says whether the model can call tools at all,
       // the chat says which of them it should be offered.
       const toolsAllowed = profile.toolsEnabled !== false
+      const profileId = profilesApi.getProfile(chat?.profileId)?.id ?? chatsApi.defaultProfileId()
       const tools =
         toolsAllowed && hasTools()
           ? getEnabledToolDefinitions({
               disabledTools: chat?.disabledTools,
               disabledGroups: chat?.disabledToolGroups,
-              servers: serversForChat(
-                chat,
-                profilesApi.getProfile(chat?.profileId)?.id ?? chatsApi.defaultProfileId()
-              ).map(server => server.id),
+              servers: serversForChat(chat, profileId).map(server => server.id),
+              web: webForChat(chat, profileId),
             })
           : []
       const { apiTrajectory, edits, usage } = await runCompletionLoop({
@@ -1437,7 +1457,21 @@ export function useAIChat(storyId, chatId) {
       // message is on it already.
       if (signal.aborted) return null
       console.error('Failed to generate chat response:', error)
-      throw error
+      if (!answerId) throw error
+      // Said on the answer, where the reply would have been, and kept with
+      // the chat: a toast would be gone in seconds and leave an empty turn.
+      // Asking again clears it.
+      if (activity.value?.messageId === answerId) activity.value = null
+      const failed = chatsApi.getMessageById(answerId)?.value
+      if (failed) {
+        chatsApi.updateMessage(answerId, {
+          metadata: unlessForgotten({
+            ...(failed.metadata || {}),
+            error: error?.message || String(error),
+          }),
+        })
+      }
+      throw new AnswerFailedError(error, answerId)
     }
   }
 
@@ -1451,18 +1485,21 @@ export function useAIChat(storyId, chatId) {
       throw new Error("Can't start a new generation while one is in progress.")
     }
 
-    // Check if this is the first message in the chat
+    // A chat is named from its first message. One still waiting for a name
+    // — its first message stopped while the title was being asked for, or
+    // written in by hand, which asks no model anything — is named from its
+    // opening on the next message the writer sends.
     const existingMessagesRef = chatsApi.getMessagesForChat(chatId)
     const existingMessages = existingMessagesRef?.value || []
     const isFirstMessage = existingMessages.length === 0
+    const needsTitle = isFirstMessage || isDefaultChatTitle(chatsApi.getChatById(chatId)?.title)
 
     // What the writer submitted may be prose, commands, or both in whatever
     // order they wrote them. This records all of it; `spoken` is the part
     // there is anything to answer.
-    // Held from here rather than from the start of the reply. A chat's first
-    // message runs title generation first, and that's a full round trip — and
-    // a command may cost one too. On a slow local model the UI would otherwise
-    // offer no way to stop for the whole duration of either.
+    // Held from here rather than from the start of the reply. A command may
+    // cost a full round trip, and on a slow local model the UI would
+    // otherwise offer no way to stop for the whole of it.
     const signal = begin()
     try {
       // A command of the writer's own may be one of their skills.
@@ -1474,28 +1511,53 @@ export function useAIChat(storyId, chatId) {
       // says when they are ready.
       if (!spoken) return null
 
-      // Generate a title if this is the first message
-      if (isFirstMessage) {
-        try {
-          const title = await generateChatTitle(spoken, signal)
-          signal.throwIfAborted()
-          chatsApi.updateChat(chatId, { title })
-          console.log(`Generated chat title: ${title}`)
-        } catch (error) {
-          if (signal.aborted) throw error
-          console.error('Failed to generate chat title, using default:', error)
-          // Don't fail the entire operation if title generation fails
-        }
-      }
+      // The title is asked for alongside the reply rather than ahead of it,
+      // which on a slow model would be a whole round trip before the first
+      // word. It never fails the turn.
+      const titled = needsTitle ? nameChat(openingOf(existingMessages) || spoken, signal) : null
 
-      // Generate AI response with the new user message included
-      return await generateAIResponse(storyId, chatId, '', signal)
+      try {
+        return await generateAIResponse(storyId, chatId, '', signal)
+      } finally {
+        await titled
+      }
     } catch (error) {
       // Stopped while the title or a command was being asked for.
       if (signal.aborted) return null
       throw error
     } finally {
       end(signal)
+    }
+  }
+
+  /**
+   * What the writer opened a chat with, to name it after: its first turn of
+   * theirs with anything said in it.
+   *
+   * @param {Message[]} messages
+   * @returns {string}
+   */
+  const openingOf = messages =>
+    messages.find(message => message.role === 'user' && message.content?.trim())?.content ?? ''
+
+  /**
+   * Name a chat from what it opened with, unless the writer named it while
+   * the name was being asked for. A failed or stopped request leaves the
+   * default, and the next message asks again.
+   *
+   * @param {string} opening
+   * @param {AbortSignal} signal
+   * @returns {Promise<void>}
+   */
+  const nameChat = async (opening, signal) => {
+    const before = chatsApi.getChatById(chatId)?.title
+    try {
+      const title = await generateChatTitle(opening, signal)
+      if (!title || signal.aborted) return
+      if (chatsApi.getChatById(chatId)?.title !== before) return
+      chatsApi.updateChat(chatId, { title })
+    } catch (error) {
+      console.error('Failed to generate chat title, using default:', error)
     }
   }
 
@@ -1813,8 +1875,8 @@ export function useAIChat(storyId, chatId) {
   /**
    * Generate a title for a chat based on the first user message
    * @param {string} userMessage - The first user message
-   * @param {AbortSignal} [signal] - Stops it, and it answers with the default
-   * @returns {Promise<string>} Generated title
+   * @param {AbortSignal} [signal] - Stops it, and it answers with nothing
+   * @returns {Promise<string>} Generated title, or '' when none came back
    */
   const generateChatTitle = async (userMessage, signal) => {
     const profile = getChatProfileIfValid() // Will throw if invalid
@@ -1847,11 +1909,6 @@ export function useAIChat(storyId, chatId) {
 
       title = extractTitle(title)
 
-      // Fallback to a default if title is empty
-      if (!title) {
-        title = 'New Chat'
-      }
-
       // Limit title length
       if (title.length > 100) {
         title = title.substring(0, 97) + '...'
@@ -1860,8 +1917,8 @@ export function useAIChat(storyId, chatId) {
       return title
     } catch (error) {
       if (!signal?.aborted) console.error('Failed to generate chat title:', error)
-      // Return a default title on error
-      return 'New Chat'
+      // The chat keeps the default, and the next message asks again.
+      return ''
     }
   }
 

@@ -121,14 +121,24 @@ describe('textFromForm', () => {
 })
 
 describe('newSkillText', () => {
-  it('starts a new skill as a saved prompt that reads', () => {
-    const read = parseSkill(newSkillText('new-skill'))
+  it('starts a new skill as a saved prompt, with nothing written for it', () => {
+    const read = formFromText(newSkillText('new-skill'))
 
-    expect('skill' in read && read.skill).toMatchObject({
+    expect('form' in read && read.form).toMatchObject({
       name: 'new-skill',
+      description: '',
+      body: '',
       model: false,
       user: true,
       fork: false,
     })
+  })
+
+  it('reads as a skill once its description and instructions are written', () => {
+    const read = formFromText(newSkillText('new-skill'))
+    if (!('form' in read)) throw new Error('no form')
+    const written = textFromForm({ ...read.form, description: 'Tightens.', body: 'Cut it.' })
+
+    expect('skill' in parseSkill(written)).toBe(true)
   })
 })

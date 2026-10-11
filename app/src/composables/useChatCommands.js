@@ -47,8 +47,9 @@ import {
   pendingSegment,
   commandTakesTurn,
   commandSpeaks,
+  commandTag,
 } from '@/ai/commands.js'
-import { CommandError } from '@/utils/errors.js'
+import { CommandError, SummaryCutShortError } from '@/utils/errors.js'
 import { groupTurns } from '@/utils/turns.js'
 import { KEPT_OPENING, compactionCover, isCompaction } from '@/ai/compaction.js'
 
@@ -304,12 +305,21 @@ export function useChatCommands(storyId, chatId) {
    * the question they asked, which is the part worth keeping — they can ask
    * again from the message itself.
    *
+   * A summary is the exception. It keeps what it had written when it failed
+   * or was stopped, even nothing — the writer may finish it by hand, or start
+   * one and stop it at once to write their own — and nothing on it says it
+   * fell short: an error written into it would be read as part of it. A
+   * failure is reported once it is written, which a stop is not, since the
+   * writer stopped it.
+   *
    * @param {string} messageId
    * @param {number|null} index - Which piece of the turn, or null for a message
    *   that is nothing but this command
    * @param {CommandInput} parsed
    * @param {ToolContext} context
    * @returns {Promise<void>}
+   * @throws {SummaryCutShortError} When a summary's request failed, once what
+   *   it had written is kept
    */
   const fill = async (messageId, index, parsed, context) => {
     // What the stream put on the record while the answer was arriving. It
@@ -335,9 +345,16 @@ export function useChatCommands(storyId, chatId) {
     // Stopped by the writer, which is what it says, and only if it is still
     // there to say it: deleted, or asked again from further up, there is
     // nothing left to fill in.
-    if (context.signal?.aborted) {
+    const stopped = Boolean(context.signal?.aborted)
+    const failure = stopped ? '' : command.error || ''
+    if (stopped) {
       if (!chatsApi.getMessageById(messageId)?.value) return
       command = { ...askedCommand(parsed), error: 'Stopped.' }
+    }
+
+    const summary = commandTag(parsed) === 'summary'
+    if (summary && command.error) {
+      command = { ...askedCommand(parsed), result: streamed.result || '' }
     }
 
     const { result: _said, ...thinking } = streamed
@@ -350,6 +367,9 @@ export function useChatCommands(storyId, chatId) {
         streamingFinishTime: Date.now(),
       })
     }
+
+    // Its first line: the command's usage, under it, is no reason.
+    if (summary && failure) throw new SummaryCutShortError(failure.split('\n')[0])
   }
 
   /**

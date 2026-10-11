@@ -387,6 +387,12 @@ db.version(25).stores({
   skillWordings: 'name',
 })
 
+// How the writer set web search up, app-wide: one row, the service in use, a
+// key for each service, and the profiles that search. No existing row changes.
+db.version(26).stores({
+  webSearch: 'id',
+})
+
 // A summary is stored where it is read: above the turns it kept, rather than at
 // the end of the chat with a count of how far to hoist it. What the writer
 // sees, what the model is sent, and what a fork or a rewind cuts by become one

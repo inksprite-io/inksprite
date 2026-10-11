@@ -32,7 +32,7 @@
           severity="secondary"
           size="small"
           rounded
-          class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-700"
+          class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700"
           aria-label="Back"
           @click="handleBack"
         />
@@ -52,7 +52,7 @@
           severity="secondary"
           size="small"
           rounded
-          class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-700"
+          class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700"
           aria-label="Find in chat"
           data-action="find"
           @click="openFind"
@@ -67,7 +67,7 @@
           severity="secondary"
           size="small"
           rounded
-          class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-700"
+          class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700"
           aria-label="New chat"
           @click="emit('new-chat')"
         />
@@ -82,7 +82,7 @@
         @update:query="chatFind.lookFor"
         @next="chatFind.step(1)"
         @previous="chatFind.step(-1)"
-        @close="chatFind.closeFind"
+        @close="closeFind"
       />
       <!-- Messages. The scroll is listened for here, on its way down to the
          element PrimeVue makes for it: a scroll does not bubble. -->
@@ -240,7 +240,7 @@
             aria-autocomplete="list"
             :aria-controls="menuOpen ? menuId : undefined"
             :aria-activedescendant="menuOpen ? activeCommandId : undefined"
-            @keydown.enter.exact.prevent="handleSendMessage"
+            @keydown.enter.exact="submitOnEnter($event, handleSendMessage)"
             @keydown.enter.meta.exact.prevent="handleInsertMessage('user')"
             @keydown.enter.ctrl.exact.prevent="handleInsertMessage('user')"
             @keydown.enter.alt.exact.prevent="handleInsertMessage('assistant')"
@@ -252,7 +252,7 @@
             severity="secondary"
             size="small"
             rounded
-            class="!bg-transparent !border-transparent hover:!bg-surface-700 mb-[0.25rem] !p-2"
+            class="!bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700 mb-[0.25rem] !p-2"
             aria-label="Chat settings"
             @click="openSettings"
           />
@@ -267,7 +267,7 @@
               size="small"
               rounded
               :disabled="!hasInput"
-              class="!bg-transparent !border-transparent hover:!bg-surface-700 !p-2"
+              class="!bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700 !p-2"
               aria-label="Send message"
               @click="handleSendMessage"
             >
@@ -285,7 +285,7 @@
               :disabled="!hasInput"
               aria-haspopup="true"
               aria-controls="chat_send_menu"
-              class="!bg-transparent !border-transparent hover:!bg-surface-700 !p-1 !text-xs"
+              class="!bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700 !p-1 !text-xs"
               aria-label="More ways to add this"
               @click="toggleSendMenu"
             />
@@ -309,7 +309,7 @@
             severity="secondary"
             size="small"
             rounded
-            class="!bg-transparent !border-transparent hover:!bg-surface-700 mb-[0.25rem] !p-2"
+            class="!bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700 mb-[0.25rem] !p-2"
             aria-label="Stop generating"
             @click="handleStopGenerating"
           >
@@ -356,12 +356,13 @@ import {
   isCompacting,
 } from '@/ai/compaction.js'
 import { compactedRuns, groupTurns } from '@/utils/turns.js'
+import { hasTouchKeyboard, submitOnEnter } from '@/utils/touch.js'
+import { shownChatTitle } from '@/utils/chatTitle.js'
 
 const props = defineProps({
   storyId: { type: String, required: true },
   /** The chat, or the story's unstarted one, which starts on its first submission. */
   chatId: { type: String, required: true },
-  title: { type: String, required: true },
   /** Whether the chats list is behind this panel, so a back button leads to it. */
   showBack: {
     type: Boolean,
@@ -420,7 +421,7 @@ const activeCommandId = computed(() => {
 const chat = computed(() => chatsApi.getChatById(props.chatId))
 // Not a chat yet: the one "New chat" opens, until something is sent in it.
 const unstarted = computed(() => chatsApi.isUnstarted(props.chatId))
-const chatTitle = computed(() => chat.value?.title || props.title || 'Chat')
+const chatTitle = computed(() => shownChatTitle(chat.value?.title))
 const messages = chatsApi.getMessagesForChat(props.chatId)
 
 // Use chat generation state
@@ -497,6 +498,17 @@ const openFind = () => {
   chatFind.openFind()
   nextTick(() => findBar.value?.focus())
   return true
+}
+
+/**
+ * Put the find away, and the caret back in the message box, as the editor's
+ * find puts it back in the text: the field it was in has gone, and the page
+ * is no place to type into. Not on a touch screen, where the keyboard would
+ * come up with it.
+ */
+const closeFind = () => {
+  chatFind.closeFind()
+  if (!hasTouchKeyboard()) nextTick(() => fieldElement.value?.focus())
 }
 
 // Which turns are in the page: those near the screen, the newest two, the
@@ -677,17 +689,28 @@ const handleSendMessage = async () => {
       toast.error(error.message)
       return
     }
-    // Check if this is a provider not configured error
-    if (error.name === 'ProviderNotConfiguredError') {
-      if (isProviderSetupDialogEnabled()) {
-        providerSetupDialogVisible.value = true
-      } else {
-        toast.error('Set up a provider in the settings menu to use chat.')
-      }
-    } else {
-      toast.error(error.message || 'Failed to send message')
-    }
+    reportFailure(error, 'Failed to send message')
   }
+}
+
+/**
+ * Say why a reply could not be had. Not when the turn says it already: a
+ * reply that failed once its answer was made has the reason written there.
+ *
+ * @param {Error} error
+ * @param {string} fallback - What to say when the error says nothing
+ */
+const reportFailure = (error, fallback) => {
+  if (error.name === 'AnswerFailedError') return
+  if (error.name === 'ProviderNotConfiguredError') {
+    if (isProviderSetupDialogEnabled()) {
+      providerSetupDialogVisible.value = true
+    } else {
+      toast.error('Set up a provider in the settings menu to use chat.')
+    }
+    return
+  }
+  toast.error(error.message || fallback)
 }
 
 /**
@@ -798,16 +821,7 @@ const handleRegenerateMessage = async (messageId, index = null) => {
     await chatGeneration.regenerateMessage(messageId)
   } catch (error) {
     console.error('Failed to regenerate message:', error)
-    // Check if this is a provider not configured error
-    if (error.name === 'ProviderNotConfiguredError') {
-      if (isProviderSetupDialogEnabled()) {
-        providerSetupDialogVisible.value = true
-      } else {
-        toast.error('Set up a provider in the settings menu to use chat.')
-      }
-    } else {
-      toast.error(error.message || 'Failed to regenerate message')
-    }
+    reportFailure(error, 'Failed to regenerate message')
   }
 }
 
@@ -853,7 +867,9 @@ const handleRevise = async (messageId, at, text, done) => {
   } catch (error) {
     console.error('Failed to edit:', error)
     toast.error(error.message || 'Failed to edit')
-    done(error)
+    // A summary asked for again that fell short was still written: the edit
+    // went in, and only the news is left to give.
+    done(error.name === 'SummaryCutShortError' ? undefined : error)
   }
 }
 
@@ -937,16 +953,7 @@ const handleResendMessage = async messageId => {
     await chatGeneration.resendMessage(messageId)
   } catch (error) {
     console.error('Failed to resend message:', error)
-    // Check if this is a provider not configured error
-    if (error.name === 'ProviderNotConfiguredError') {
-      if (isProviderSetupDialogEnabled()) {
-        providerSetupDialogVisible.value = true
-      } else {
-        toast.error('Set up a provider in the settings menu to use chat.')
-      }
-    } else {
-      toast.error(error.message || 'Failed to resend message')
-    }
+    reportFailure(error, 'Failed to resend message')
   }
 }
 

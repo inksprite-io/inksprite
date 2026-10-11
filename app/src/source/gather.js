@@ -15,6 +15,8 @@ import { createRules } from './rules.js'
 import { isBinaryName } from './language.js'
 import { textOf } from './text.js'
 
+/** @typedef {import('@/files/batch.js').Gathered} Gathered */
+
 /** Larger than this, a file is left out. */
 export const MAX_FILE_BYTES = 512 * 1024
 
@@ -157,26 +159,18 @@ export async function gatherSource(entries, { signal, onProgress, gitignores, pr
 }
 
 /**
- * The entries of a folder chosen with a `webkitdirectory` chooser: every file
- * under it, by the path below the chosen folder, and the chosen folder's name.
+ * The entries of a folder chosen or dropped whole: every file under it, by
+ * the path below the folder, and the folder's name.
  *
- * @param {ArrayLike<File>} chosen
+ * @param {Gathered[]} listed - As `files/batch.js` lists them, dotfiles and all
  * @returns {{name: string, entries: SourceEntry[]}}
  */
-export function entriesOfFolder(chosen) {
-  let name = ''
-  /** @type {SourceEntry[]} */
-  const entries = []
-  for (const file of Array.from(chosen)) {
-    const full = /** @type {any} */ (file).webkitRelativePath || file.name
-    const [top, ...rest] = full.split('/')
-    if (!name && rest.length > 0) name = top
-    const path = rest.length > 0 ? rest.join('/') : top
-    entries.push({
-      path,
-      size: file.size,
-      read: async () => new Uint8Array(await file.arrayBuffer()),
-    })
-  }
-  return { name: name || 'Repository', entries }
+export function entriesOfFolder(listed) {
+  const name = listed.find(({ folders }) => folders.length > 0)?.folders[0] || 'Repository'
+  const entries = listed.map(({ file, folders }) => ({
+    path: [...folders.slice(1), file.name].join('/'),
+    size: file.size,
+    read: async () => new Uint8Array(await file.arrayBuffer()),
+  }))
+  return { name, entries }
 }

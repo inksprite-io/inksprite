@@ -1,6 +1,5 @@
 /**
- * Thin wrapper that wires the Pinia stores and the active profile into
- * buildContext.
+ * Thin wrapper that wires the Pinia stores into buildContext.
  */
 
 import { useDocumentsStore } from '@/stores/documentsStore.js'
@@ -8,10 +7,9 @@ import { useChatsStore } from '@/stores/chatsStore.js'
 import { useMessagesStore } from '@/stores/messagesStore.js'
 import { buildContext } from '@/ai/context/build.js'
 import { documentLocator, projectOverview, pinnedDocuments } from '@/ai/tools/documents.js'
-import { keptInConversation, replaysAcrossTurns } from '@/ai/tools/index.js'
-import { resolveAISettings } from '@/ai/defaults.js'
-import { useAIConfig } from './useAIConfig.js'
+import { keptInConversation } from '@/ai/tools/index.js'
 import { useEditor } from './useEditor.js'
+import { namesOf } from '@/cards/macros.js'
 
 /**
  * @typedef {'chat'|'summarize'} ContextMode
@@ -37,7 +35,6 @@ export function useAIContext(storyId) {
     chatsStore: useChatsStore(),
     messagesStore: useMessagesStore(),
   }
-  const aiConfig = useAIConfig()
 
   /**
    * @param {BuildArgs} opts
@@ -71,21 +68,15 @@ export function useAIContext(storyId) {
     // Where each document the model read is now, for the block to say which
     // have changed since. Only with a block to say it in.
     const locate = project ? await documentLocator(storyId, chat) : undefined
-    // How far back the dice and oracle calls come with the conversation is the
-    // chat's, because it is a fact about this conversation rather than about
-    // the model: a game wants to see itself rolling, and a chat with no dice in
-    // it has nothing to replay. Read from the preset when the chat has not said,
-    // so the setting nobody has moved yet still applies.
-    const settings = resolveAISettings(aiConfig.activeAIPreset.value?.generationOverrides)
     return buildContext(opts.mode, stores, {
       ...opts,
       storyId,
       project,
       pinned,
-      replays: replaysAcrossTurns,
-      replayTurns: settings.replayTurns,
       keeps: keptInConversation,
       locate,
+      // What a card's macros become in this chat, when it plays one.
+      names: namesOf(chat),
     })
   }
 
