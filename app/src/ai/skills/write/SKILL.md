@@ -15,7 +15,7 @@ argument-hint: <what to write>
 allowed-tools: list_documents read_document describe_document search_documents
 metadata:
   inksprite-output: reply
-  inksprite-summary: Have a piece written from the project’s notes, as the reply.
+  inksprite-summary: Write prose from the project’s notes, as the reply.
   inksprite-argument: >-
     The writer's request, in their words: the piece, the point of view, the
     length, and anything else they asked for. Not the notes, which it reads

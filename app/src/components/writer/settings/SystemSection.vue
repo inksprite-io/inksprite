@@ -55,9 +55,6 @@
         >
         <ToggleSwitch v-model="debug" input-id="debug-switch" class="flex-none" data-debug />
       </div>
-      <p class="text-xs text-surface-500 dark:text-surface-400">
-        Keeps the request behind each reply. Long chats get heavy.
-      </p>
     </div>
 
     <h3 class="px-2 pt-4 pb-1 text-sm font-semibold text-surface-700 dark:text-surface-200">

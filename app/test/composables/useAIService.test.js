@@ -510,7 +510,7 @@ describe('useAIService failure reporting', () => {
     const error = await failureFrom([{ role: 'user', content: 'hi' }])
 
     expect(error.message).toContain('thinking mode openai_effort is not supported')
-    expect(error.message).toContain('does not take one')
+    expect(error.message).toContain("doesn't take a reasoning effort")
     expect(error.message).toContain('Enabled')
   })
 

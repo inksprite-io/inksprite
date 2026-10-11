@@ -125,6 +125,6 @@ describe('a server’s tools in the registry', () => {
       function: { name: 'wiki__search', arguments: '{}' },
     })
 
-    expect(JSON.parse(result.content).error).toMatch(/couldn’t be reached/)
+    expect(JSON.parse(result.content).error).toMatch(/Couldn’t connect/)
   })
 })

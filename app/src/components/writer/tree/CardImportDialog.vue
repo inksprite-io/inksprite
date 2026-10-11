@@ -37,16 +37,11 @@
         </span>
       </div>
 
-      <div v-if="found.systemPrompt" class="flex flex-col gap-1">
-        <div class="flex items-center justify-between gap-2">
-          <label class="text-xs font-medium text-surface-700 dark:text-surface-200">
-            Use the card's system prompt
-          </label>
-          <ToggleSwitch v-model="useSystemPrompt" class="flex-none" />
-        </div>
-        <p class="text-xs text-surface-500 dark:text-surface-400">
-          Usually a preset's scaffolding rather than anything about the character.
-        </p>
+      <div v-if="found.systemPrompt" class="flex items-center justify-between gap-2">
+        <label class="text-xs font-medium text-surface-700 dark:text-surface-200">
+          Use the card's system prompt
+        </label>
+        <ToggleSwitch v-model="useSystemPrompt" class="flex-none" />
       </div>
     </div>
 

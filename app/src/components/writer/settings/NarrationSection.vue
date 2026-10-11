@@ -26,7 +26,6 @@
         id="tts-key"
         :model-value="connection.apiKey"
         type="password"
-        placeholder="Not needed for a local server"
         class="w-full dark:!bg-surface-900"
         size="small"
         data-tts-key

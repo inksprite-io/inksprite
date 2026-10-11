@@ -214,7 +214,7 @@ describe('SkillsSection', () => {
     // The model loads it, and the writer can call it too.
     expect(yours.find('[data-skill="house-style"]').text()).toContain('Called by the model or you')
     expect(yours.text()).not.toMatch(/Runs on its own|Joins the conversation|A saved prompt/)
-    expect(yours.find('[data-skill="broken"]').text()).toMatch(/Does not read.*frontmatter/s)
+    expect(yours.find('[data-skill="broken"]').text()).toMatch(/Can’t be read.*frontmatter/s)
   })
 
   it('opens the editor on a new skill, and comes back', async () => {
@@ -404,8 +404,8 @@ describe('BuiltInSkillEditor', () => {
     expect(library.setWording).toHaveBeenLastCalledWith('interpret', INTERPRET_PROMPT)
   })
 
-  it('says it reaches every chat', () => {
-    expect(mountBuiltIn().find('[data-scope]').text()).toBe('Applies to every chat.')
+  it('says nothing of where it reaches when every chat uses it', () => {
+    expect(mountBuiltIn().find('[data-scope]').exists()).toBe(false)
   })
 
   it('names the profiles that word it their own way', () => {
@@ -420,7 +420,7 @@ describe('BuiltInSkillEditor', () => {
     ]
 
     expect(mountBuiltIn('compact').find('[data-scope]').text()).toBe(
-      'Applies to every chat but those on Roleplay, which has its own.'
+      'Chats on Roleplay use their own wording.'
     )
   })
 })

@@ -190,15 +190,13 @@ const picked = async event => {
   try {
     const { skills, stray } = findSkills(await entriesFromFiles(chosen))
     if (skills.length === 0) {
-      toast.error(
-        'There is no skill in that: a skill is a SKILL.md, or a Markdown file with frontmatter.'
-      )
+      toast.error('No skills found. A skill is a SKILL.md, or a Markdown file with frontmatter.')
       return
     }
     importing.value = { key: ++imports, visible: true, found: skills, stray }
   } catch (error) {
     console.error('Failed to read skills to import:', error)
-    toast.error(`That could not be read: ${error.message}`)
+    toast.error(`Couldn’t read that: ${error.message}`)
   }
 }
 
@@ -231,7 +229,7 @@ const yours = computed(() =>
         name: stored.name,
         label: skillLabel(stored),
         command: '',
-        kind: 'Does not read',
+        kind: 'Can’t be read',
         summary: '',
         problem: read.errors[0],
         waiting: '',

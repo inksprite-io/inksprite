@@ -3,19 +3,18 @@
     <div class="callback-content">
       <template v-if="status === 'processing'">
         <div class="spinner"></div>
-        <h2>Connecting to OpenRouter...</h2>
-        <p>Please wait while we complete your connection.</p>
+        <h2>Connecting to OpenRouter…</h2>
       </template>
 
       <template v-else-if="status === 'success'">
         <div class="success-icon">✓</div>
-        <h2>Connected Successfully!</h2>
-        <p class="close-message">You can now close this tab and return to inksprite.</p>
+        <h2>Connected</h2>
+        <p class="close-message">You can close this tab.</p>
       </template>
 
       <template v-else-if="status === 'error'">
         <div class="error-icon">✗</div>
-        <h2>Connection Failed</h2>
+        <h2>Couldn’t connect</h2>
         <p class="error-message">{{ errorMessage }}</p>
         <p class="close-message">You can close this tab and try again.</p>
       </template>
@@ -52,7 +51,7 @@ onMounted(async () => {
   } catch (error) {
     console.error('OAuth callback error:', error)
     status.value = 'error'
-    errorMessage.value = error.message || 'An unexpected error occurred'
+    errorMessage.value = error.message || 'Something went wrong.'
   }
 })
 </script>

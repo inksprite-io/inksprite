@@ -50,7 +50,7 @@
             @keydown.enter="desktop && importGitHub()"
           />
           <p v-if="!desktop" class="text-xs text-surface-500 dark:text-surface-400">
-            Desktop app only. Here, clone it and choose the folder.
+            Desktop app only. Clone it and choose the folder instead.
           </p>
           <template v-else>
             <p class="text-xs text-surface-500 dark:text-surface-400">
@@ -239,7 +239,7 @@ const perform = async run => {
     emit('update:visible', false)
   } catch (failure) {
     error.value = controller.signal.aborted
-      ? 'Stopped. Whatever was written before stays.'
+      ? 'Stopped. Files already imported are kept.'
       : failure instanceof Error
         ? failure.message
         : String(failure)

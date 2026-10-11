@@ -98,7 +98,7 @@ const selectPlaceholder = computed(() => {
     return 'Set an address first'
   }
   if (loading.value) {
-    return 'Loading models...'
+    return 'Loading models…'
   }
   if (failed.value) {
     return "Couldn't load models"

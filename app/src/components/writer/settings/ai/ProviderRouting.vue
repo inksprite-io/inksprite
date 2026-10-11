@@ -6,10 +6,6 @@
     content-wrapper-class="flex flex-col"
   >
     <div class="flex flex-col gap-3 pt-2 pb-1">
-      <p class="text-xs text-surface-500 dark:text-surface-400">
-        Applies to every model on this connection.
-      </p>
-
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Ignored providers"
@@ -26,7 +22,6 @@
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Data collection"
-          description="Providers that may train on your prompts."
           :overridden="isOverridden('dataCollection')"
           @reset="setRouting({ dataCollection: ROUTING_DEFAULTS.dataCollection })"
         />
@@ -60,7 +55,6 @@
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Quantization"
-          description="Clear to accept any, including unreported."
           :overridden="isOverridden('quantizations')"
           @reset="setRouting({ quantizations: ROUTING_DEFAULTS.quantizations })"
         />
@@ -82,7 +76,6 @@
       <div class="flex items-center justify-between gap-2">
         <SettingLabel
           label="Allow fallbacks"
-          description="Try the next eligible provider when one is down."
           :overridden="isOverridden('allowFallbacks')"
           @reset="setRouting({ allowFallbacks: ROUTING_DEFAULTS.allowFallbacks })"
         />

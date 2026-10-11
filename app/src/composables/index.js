@@ -35,6 +35,7 @@
  * - **useJumpToBottom** - When to offer the way back to the end of a long chat: far from it, and heading for it
  * - **useNearTurns** - Which of a chat's turns are in the page: those near the screen, the newest two, and any with an editor open; plus the state a turn keeps while it is away
  * - **useSettingsPanel** - Opening the settings, on a section, from anywhere in the writer
+ * - **useSidebarTab** - Showing a sidebar list, such as the narration, from anywhere in the writer
  * - **useTopmostEscape** - Escape closes the dialog on top, and only that one
  * - **useCopyPath** - Copy a document's path, the address the tools take, to the clipboard
  * - **usePlainText** - Turn a document plain or back, with an undo when that rewrote its text
@@ -84,6 +85,7 @@ export { useToast } from './useToast.js'
 export { useScreenSize } from './useScreenSize.js'
 export { useKeyboardCover } from './useKeyboardCover.js'
 export { useSettingsPanel } from './useSettingsPanel.js'
+export { useSidebarTab } from './useSidebarTab.js'
 export { useTopmostEscape } from './useTopmostEscape.js'
 export { useCopyPath } from './useCopyPath.js'
 export { usePlainText } from './usePlainText.js'

@@ -65,9 +65,6 @@
         class="text-sm text-surface-600 dark:text-surface-300 prose dark:prose-invert prose-sm max-w-none"
         v-html="answerHtml"
       />
-      <p v-if="consultation.reply" class="text-xs text-surface-500 italic m-0">
-        Used as the reply.
-      </p>
       <p v-if="consultation.error" class="text-xs text-surface-500 italic m-0">
         {{ consultation.error }}
       </p>

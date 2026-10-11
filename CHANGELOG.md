@@ -6,6 +6,24 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.12
+
+Less text across the app, and the open chat marked in the chat list.
+
+- The app says less. Notes that repeated their control, or explained how
+  the app works inside, are gone. Welcome, the provider setup, the
+  sign-in pages, confirmations and errors are shorter, and an error
+  that a setting can fix names the place in Settings. Labels are in
+  sentence case.
+- A chat's settings have an Edit voices link, which opens the Narration
+  list where the voices are made.
+- The open chat is shaded in the chat list, as the open document is in
+  the outline, and is easy to read in dark mode as well.
+- An MCP server that can't be reached is said to maybe refuse web pages
+  (CORS) only in the browser. The desktop app has no such limit.
+- Pronunciation hints show two example lines in place of a note on the
+  format.
+
 ## v0.1.0-dev.11
 
 Projects kept in a folder in the desktop app, and a Connect button for

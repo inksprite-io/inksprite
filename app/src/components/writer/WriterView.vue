@@ -91,6 +91,7 @@ import NoProjectView from './layout/NoProjectView.vue'
 import Settings from './settings/Settings.vue'
 import SettingsDialog from './settings/SettingsDialog.vue'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
+import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import {
   NO_PROJECT_LAYOUT,
   PANELS,
@@ -180,6 +181,16 @@ const openDocument = documentId => {
 
 /** @param {import('./layout/layout.js').SidebarTab} tab */
 const selectTab = tab => setLayout(selectSidebarTab(layout.value, tab))
+
+// A list asked for from deeper in the writer is shown, never toggled away as
+// a second click on the rail would: on a phone its tab, here the sidebar.
+const sidebarTab = useSidebarTab()
+watch(sidebarTab.requested, () => {
+  const tab = sidebarTab.take()
+  if (!tab) return
+  if (isMobile.value) activeMobileTab.value = tab
+  else setLayout({ ...layout.value, sidebar: true, sidebarTab: tab })
+})
 
 // Shared with anything that opens the settings from inside the writer. On a
 // phone the settings are a tab, so a request to see them goes there instead.

@@ -513,19 +513,19 @@ describe('describeBackupContents', () => {
     }
 
     expect(describeBackupContents(backup)).toBe(
-      'It holds 2 projects, 3 documents, 1 chat and your settings.'
+      'This backup holds 2 projects, 3 documents, 1 chat and your settings.'
     )
   })
 
   it('says only what there is', () => {
     expect(describeBackupContents({ tables: { stories: [{ id: 's1' }] } })).toBe(
-      'It holds 1 project.'
+      'This backup holds 1 project.'
     )
     expect(describeBackupContents({ tables: { aiProviders: [{ id: 'p1' }] } })).toBe(
-      'It holds your settings.'
+      'This backup holds your settings.'
     )
     expect(describeBackupContents({ tables: { stories: [], messages: [] } })).toBe(
-      'It holds nothing.'
+      'This backup is empty.'
     )
   })
 })

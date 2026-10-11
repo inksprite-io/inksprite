@@ -32,7 +32,6 @@
             <div class="flex flex-col gap-1">
               <SettingLabel
                 label="Profile"
-                description="Editing a built-in profile makes a copy of your own."
                 :overridden="!isDefaultProfile"
                 reset-tooltip="Back to the project's default"
                 @reset="setProfile(defaultProfileId)"
@@ -117,10 +116,7 @@
             </div>
 
             <div class="flex flex-col gap-1">
-              <SettingLabel
-                label="Author's note"
-                description="Sent just ahead of each message you write. Keep it short."
-              />
+              <SettingLabel label="Author's note" description="Sent with each message you write." />
               <Textarea
                 v-model="rules"
                 size="small"
@@ -136,12 +132,12 @@
             <div class="flex flex-col gap-1">
               <div class="flex items-center justify-between gap-2">
                 <label class="text-xs font-medium text-surface-700 dark:text-surface-200">
-                  Project Context
+                  Project context
                 </label>
                 <ToggleSwitch
                   :model-value="projectContextEnabled"
                   class="flex-none"
-                  aria-label="Project Context"
+                  aria-label="Project context"
                   @update:model-value="setProjectContextEnabled"
                 />
               </div>
@@ -161,13 +157,13 @@
                  lines up with theirs and the rows are spaced alike. -->
             <div class="flex items-center justify-between gap-2 h-8 px-2">
               <label class="text-xs font-medium text-surface-700 dark:text-surface-200">
-                Enable Tools
+                Enable tools
               </label>
               <ToggleSwitch
                 :model-value="allToolsEnabled"
                 :disabled="!modelToolsEnabled"
                 class="flex-none"
-                aria-label="Enable Tools"
+                aria-label="Enable tools"
                 @update:model-value="setAllToolsEnabled"
               />
             </div>
@@ -185,9 +181,6 @@
                 aria-label="Apply edits automatically"
               />
             </div>
-            <p class="text-xs text-surface-500 dark:text-surface-400 px-2 pb-1">
-              Applies to every chat.
-            </p>
             <ExpandableSection
               v-for="group in toolGroups"
               :key="group.id"
@@ -233,9 +226,6 @@
             <!-- The web and the writer's servers, each opted into rather than
                  withheld: one connected tomorrow reaches no chat that did not ask. -->
             <template v-if="servers.length > 0 || webGroup">
-              <p class="text-xs text-surface-500 dark:text-surface-400 pt-2 px-2">
-                From your connections
-              </p>
               <ExpandableSection
                 v-if="webGroup"
                 :title="webGroup.label"
@@ -329,10 +319,6 @@
           content-wrapper-class="flex flex-col px-3"
         >
           <div class="flex flex-col gap-1 pt-2 pb-2">
-            <p class="text-xs text-surface-500 dark:text-surface-400 pb-1">
-              Off hides a skill from the model. Its command still works.
-            </p>
-
             <ExpandableSection
               v-for="skill in skills"
               :key="skill.id"
@@ -378,7 +364,7 @@
                   <span v-if="skill.dropped" class="flex-1" data-skill-dropped>
                     Dropped at the next summary.
                   </span>
-                  <span v-else class="flex-1"> Loaded in this chat. </span>
+                  <span v-else class="flex-1" />
                   <Button
                     v-if="!skill.dropped"
                     v-tooltip.top="'Not kept past the next summary'"
@@ -433,7 +419,6 @@
         >
           <div class="flex flex-col gap-3 pt-2 pb-2">
             <AiPresetGroup />
-            <p class="text-xs text-surface-500 dark:text-surface-400">Shared by every chat.</p>
           </div>
         </ExpandableSection>
 
@@ -447,7 +432,7 @@
           <div class="flex flex-col gap-3 pt-2 pb-2">
             <div class="flex flex-col gap-1">
               <SettingLabel
-                label="Assistant Voice"
+                label="Assistant voice"
                 :overridden="!!chatVoice"
                 reset-tooltip="Back to the project's default voice"
                 @reset="setVoice(null)"
@@ -459,7 +444,7 @@
                 option-value="id"
                 class="w-full dark:!bg-surface-900"
                 size="small"
-                aria-label="Assistant Voice"
+                aria-label="Assistant voice"
                 data-chat-voice
                 @update:model-value="setVoice"
               />
@@ -467,7 +452,7 @@
 
             <div class="flex flex-col gap-1">
               <SettingLabel
-                label="Your Voice"
+                label="Your voice"
                 :overridden="!!userVoice"
                 reset-tooltip="Back to the assistant's voice"
                 @reset="setUserVoice(null)"
@@ -479,14 +464,21 @@
                 option-value="id"
                 class="w-full dark:!bg-surface-900"
                 size="small"
-                aria-label="Your Voice"
+                aria-label="Your voice"
                 data-chat-user-voice
                 @update:model-value="setUserVoice"
               />
             </div>
 
             <p class="text-xs text-surface-500 dark:text-surface-400">
-              Voices come from the Narration tab.
+              <button
+                type="button"
+                class="underline hover:text-surface-700 dark:hover:text-surface-200"
+                data-action="edit-voices"
+                @click="sidebarTab.show('narration')"
+              >
+                Edit voices
+              </button>
             </p>
           </div>
         </ExpandableSection>
@@ -523,6 +515,7 @@ import { reachable, serversForChat } from '@/mcp/servers.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
 import { webForChat } from '@/web/config.js'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
+import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { COMMANDS } from '@/ai/commands.js'
 
@@ -619,6 +612,7 @@ const {
   drop: dropSkill,
 } = useLoadedSkills(() => props.chatId)
 const settingsPanel = useSettingsPanel()
+const sidebarTab = useSidebarTab()
 
 /**
  * A tool as the writer reads it: its name in words, as a server's tool is

@@ -100,9 +100,7 @@ export function retrieveOAuthParams() {
 export async function openRouterAuthorizationUrl(callbackUrl) {
   // Check if we're in a secure context
   if (typeof window !== 'undefined' && window.isSecureContext === false) {
-    throw new Error(
-      'OAuth requires a secure context. Please access the application via HTTPS or localhost.'
-    )
+    throw new Error('Signing in needs the app to be served over HTTPS, or from localhost.')
   }
 
   const verifier = generateCodeVerifier()

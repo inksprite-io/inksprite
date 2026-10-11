@@ -62,24 +62,24 @@ export function useAISummarize() {
   const getWriteProfileIfValid = () => {
     const profile = aiConfig.activeAIPreset.value
     if (!profile || !profile.providerId) {
-      throw new ProviderNotConfiguredError('Set up a provider to use AI features.')
+      throw new ProviderNotConfiguredError('No AI provider is connected.')
     }
 
     const provider = aiConfig.getProvider(profile.providerId)
     if (!provider) {
-      throw new ProviderNotConfiguredError('Set up a provider to use AI features.')
+      throw new ProviderNotConfiguredError('No AI provider is connected.')
     }
 
     if (!profile.model) {
-      throw new Error('Select a model in the settings menu.')
+      throw new Error('Pick a model in Settings › AI.')
     }
 
     const gap = connectionGap(provider)
     if (gap === 'key') {
-      throw new ProviderNotConfiguredError('Enter your OpenRouter API key to use AI features.')
+      throw new ProviderNotConfiguredError('Connect OpenRouter in Settings › AI.')
     }
     if (gap === 'endpoint') {
-      throw new Error('You need to provide a provider endpoint in the settings menu.')
+      throw new Error('Add the server address in Settings › AI.')
     }
 
     return profile
@@ -117,7 +117,7 @@ export function useAISummarize() {
     // Get the scene content
     const sceneContent = getSceneContent(documentId)
     if (!sceneContent || sceneContent.trim().length === 0) {
-      throw new Error('No content to summarize. The chapter appears to be empty.')
+      throw new Error('Nothing to summarize: the document is empty.')
     }
 
     const own = new AbortController()

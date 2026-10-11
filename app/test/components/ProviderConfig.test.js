@@ -86,15 +86,15 @@ describe('ProviderConfig name', () => {
     expect(providers.value[0].name).toBe('Local')
   })
 
-  it('falls back to Untitled Provider when the field is left empty', async () => {
+  it('falls back to Untitled provider when the field is left empty', async () => {
     const wrapper = await mountDialog()
     const input = await typeName(wrapper, '')
 
     await input.trigger('blur')
     await flushPromises()
 
-    expect(providers.value[0].name).toBe('Untitled Provider')
-    expect(input.element.value).toBe('Untitled Provider')
+    expect(providers.value[0].name).toBe('Untitled provider')
+    expect(input.element.value).toBe('Untitled provider')
   })
 
   it('trims the name when the field is left', async () => {
@@ -147,7 +147,7 @@ describe('ProviderConfig connect', () => {
     await flushPromises()
 
     expect(validateOpenRouterKey).toHaveBeenCalledWith('sk-or')
-    expect(wrapper.find('[data-action="oauth"]').text()).toBe('Connect with OAuth')
+    expect(wrapper.find('[data-action="oauth"]').text()).toBe('Sign in with OpenRouter')
   })
 
   it('offers no OAuth for other providers', async () => {

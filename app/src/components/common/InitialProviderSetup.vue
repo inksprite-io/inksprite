@@ -2,7 +2,7 @@
   <Dialog
     v-model:visible="localVisible"
     class="w-screen md:w-[45rem]"
-    header="AI Provider Setup"
+    header="Connect an AI provider"
     modal
     :closable="true"
     :draggable="false"
@@ -14,9 +14,8 @@
     <div class="flex flex-col gap-4">
       <!-- Help Text -->
       <div class="text-surface-700 dark:text-surface-200">
-        <p class="mb-3">
-          To use inksprite's AI co-writing or chat features, you'll need to connect to a provider.
-          The quickest way to get started is with
+        <p>
+          Chat and the other AI features need a provider. The quickest to set up is
           <a
             href="https://openrouter.ai/"
             target="_blank"
@@ -24,9 +23,6 @@
             class="text-primary-600 dark:text-primary-400 hover:underline"
             >OpenRouter</a
           >.
-        </p>
-        <p class="mb-3">
-          You can connect to OpenRouter below, or set up another provider in the AI settings.
         </p>
       </div>
     </div>

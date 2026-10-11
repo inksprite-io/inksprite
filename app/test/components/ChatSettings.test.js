@@ -5,6 +5,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import ChatSettings from '@/components/writer/chats/ChatSettings.vue'
 import { useProfiles } from '@/composables/useProfiles'
+import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import { useChatProfileStore } from '@/stores/chatProfileStore'
 import {
   DEFAULT_CHAT_PROMPT,
@@ -354,7 +355,7 @@ describe('ChatSettings voice', () => {
     wrapper
       .findAllComponents({ name: 'Select' })
       .find(select => select.attributes('data-chat-voice') !== undefined)
-  const resetVoice = wrapper => wrapper.find('button[aria-label="Reset Assistant Voice"]')
+  const resetVoice = wrapper => wrapper.find('button[aria-label="Reset Assistant voice"]')
 
   beforeEach(async () => {
     setActivePinia(createPinia())
@@ -387,6 +388,12 @@ describe('ChatSettings voice', () => {
     const wrapper = await mountSettings()
     expect(voiceSelect(wrapper).props('modelValue')).toBe('narrator')
     expect(resetVoice(wrapper).exists()).toBe(false)
+  })
+
+  it('asks for the Narration list, where the voices are made', async () => {
+    const wrapper = await mountSettings()
+    await wrapper.find('[data-action="edit-voices"]').trigger('click')
+    expect(useSidebarTab().take()).toBe('narration')
   })
 })
 
@@ -430,17 +437,17 @@ describe('ChatSettings tools', () => {
   it('switches every group in the list off and on at once', async () => {
     chat.value.disabledTools = ['roll_dice']
     const wrapper = await mountSettings()
-    expect(toggle(wrapper, 'Enable Tools').props('modelValue')).toBe(true)
+    expect(toggle(wrapper, 'Enable tools').props('modelValue')).toBe(true)
 
-    await toggle(wrapper, 'Enable Tools').vm.$emit('update:modelValue', false)
+    await toggle(wrapper, 'Enable tools').vm.$emit('update:modelValue', false)
 
     expect(updateChat).toHaveBeenLastCalledWith('chat_1', {
       disabledToolGroups: ['documents', 'rpg'],
     })
-    expect(toggle(wrapper, 'Enable Tools').props('modelValue')).toBe(false)
+    expect(toggle(wrapper, 'Enable tools').props('modelValue')).toBe(false)
     expect(toggle(wrapper, 'Documents tools').props('modelValue')).toBe(false)
 
-    await toggle(wrapper, 'Enable Tools').vm.$emit('update:modelValue', true)
+    await toggle(wrapper, 'Enable tools').vm.$emit('update:modelValue', true)
 
     // Each tool's own switch is as it was: the groups came back, not the tools.
     expect(updateChat).toHaveBeenLastCalledWith('chat_1', { disabledToolGroups: [] })
@@ -451,8 +458,8 @@ describe('ChatSettings tools', () => {
     chat.value.disabledToolGroups = ['skills']
     const wrapper = await mountSettings()
 
-    await toggle(wrapper, 'Enable Tools').vm.$emit('update:modelValue', false)
-    await toggle(wrapper, 'Enable Tools').vm.$emit('update:modelValue', true)
+    await toggle(wrapper, 'Enable tools').vm.$emit('update:modelValue', false)
+    await toggle(wrapper, 'Enable tools').vm.$emit('update:modelValue', true)
 
     expect(chat.value.disabledToolGroups).toEqual(['skills'])
   })
@@ -478,8 +485,8 @@ describe('ChatSettings tools', () => {
     preset.value = { toolsEnabled: false, generationOverrides: {} }
     const wrapper = await mountSettings()
 
-    expect(toggle(wrapper, 'Enable Tools').props('modelValue')).toBe(false)
-    expect(toggle(wrapper, 'Enable Tools').props('disabled')).toBe(true)
+    expect(toggle(wrapper, 'Enable tools').props('modelValue')).toBe(false)
+    expect(toggle(wrapper, 'Enable tools').props('disabled')).toBe(true)
   })
 
   it('switches one skill off on its own', async () => {
@@ -789,7 +796,7 @@ describe('ChatSettings voices', () => {
     wrapper
       .findAllComponents({ name: 'Select' })
       .find(select => select.attributes('data-chat-user-voice') !== undefined)
-  const resetUserVoice = wrapper => wrapper.find('button[aria-label="Reset Your Voice"]')
+  const resetUserVoice = wrapper => wrapper.find('button[aria-label="Reset Your voice"]')
 
   beforeEach(async () => {
     setActivePinia(createPinia())

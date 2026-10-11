@@ -7,7 +7,7 @@ context: fork
 argument-hint: '[instructions]'
 metadata:
   inksprite-output: summary
-  inksprite-summary: Fold the conversation so far into a summary to carry on from.
+  inksprite-summary: Summarize the conversation so far, to carry on from.
 ---
 
 Summarize this chat so that it can be continued in another session. Summarize it so that it can be continued later without the transcript itself.

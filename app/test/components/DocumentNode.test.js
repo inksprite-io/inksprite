@@ -592,7 +592,7 @@ describe('DocumentNode', () => {
       // only shows on hover, whatever state it is in.
       expect(wrapper.find('[data-row-toggles]').classes()).toContain('opacity-0')
       expect(title().classes()).toContain('text-primary-600')
-      expect(title().attributes('title')).toBe('In this chat’s context')
+      expect(title().attributes('title')).toBe('Pinned to this chat')
 
       await pin().trigger('click')
 

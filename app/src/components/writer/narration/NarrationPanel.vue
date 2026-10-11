@@ -29,11 +29,10 @@
           class="text-sm text-surface-500 dark:text-surface-400"
           data-notice="unconfigured"
         >
-          No speech server is set up.
           <button type="button" class="underline" @click="openSettings('narration')">
-            Set one up
+            Set up a speech server
           </button>
-          to read documents aloud.
+          to read aloud.
         </p>
 
         <!-- The document in the editor -->

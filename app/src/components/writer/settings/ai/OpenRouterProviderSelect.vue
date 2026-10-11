@@ -19,10 +19,10 @@
       {{ notServingText }}
     </Message>
     <Message v-if="loadError" severity="warn" size="small" :closable="false">
-      Couldn't load the provider list. The providers already chosen stay chosen.
+      Couldn't load the provider list.
     </Message>
     <Message v-else-if="servingError" severity="warn" size="small" :closable="false">
-      Couldn't load which providers serve this model, so every provider is listed.
+      Couldn't load which providers serve this model.
     </Message>
   </div>
 </template>

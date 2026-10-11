@@ -150,7 +150,7 @@ describe('DriveImportDialog', () => {
 
     expect(signal?.aborted).toBe(true)
     expect(wrapper.find('[data-drive-error]').text()).toBe(
-      'Stopped. Whatever was written before stays.'
+      'Stopped. Files already imported are kept.'
     )
     expect(shown(wrapper).exists()).toBe(true)
   })

@@ -28,6 +28,7 @@
 /** @typedef {import('@modelcontextprotocol/client').Client} Client */
 
 import { fetch } from '@/platform/fetch.js'
+import { isDesktop } from '@/platform/desktop.js'
 import { authProvider, signedIn } from './auth.js'
 
 /** Who the app says it is, to the server. */
@@ -293,7 +294,7 @@ export function promptText(result) {
 }
 
 /** What a failure that wants the writer to sign in says. */
-export const SIGN_IN_NEEDED = 'It needs you to sign in. Sign in from Settings → Connections.'
+export const SIGN_IN_NEEDED = 'It needs you to sign in. Sign in from Settings › Connections.'
 
 /**
  * Whether a failure is the server wanting the writer to sign in, so the
@@ -346,8 +347,13 @@ export function describeFailure(error) {
   if (answeredOtherwise(error)) {
     return 'Something answered, but not an MCP server. Check the URL, including its path.'
   }
+  // A page is refused by a server that does not allow its origin (CORS), and
+  // told nothing more than if the server were down. The desktop app's
+  // requests have no origin to refuse.
   if (error instanceof TypeError || /fetch|network|load failed/i.test(String(error?.message))) {
-    return 'It couldn’t be reached from the browser. Either it is down, or it doesn’t let web pages connect (CORS): many servers expect an app with a backend.'
+    return isDesktop()
+      ? 'Couldn’t connect. The server may be down.'
+      : 'Couldn’t connect. The server may be down, or not accept connections from web pages (CORS).'
   }
   return String(error?.message || error || 'It failed for a reason it didn’t give.')
 }

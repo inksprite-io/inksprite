@@ -500,7 +500,7 @@ const confirmReextract = () => {
   if (!api.currentContent(props.documentId).trim()) return void reextract()
   confirm.require({
     header: 'Re-extract text',
-    message: `Read the text out of "${api.displayTitle(node.value)}" again? The text as it is now, edits included, is replaced.`,
+    message: `Read the text out of "${api.displayTitle(node.value)}" again? Edits to its text are lost.`,
     icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
     acceptProps: { label: 'Re-extract' },
@@ -626,7 +626,7 @@ const titleHint = computed(
   () =>
     [
       truncated.value ? api.displayTitle(node.value) : '',
-      carried.value ? 'In this chat’s context' : '',
+      carried.value ? 'Pinned to this chat' : '',
     ]
       .filter(Boolean)
       .join('\n') || undefined
@@ -645,7 +645,7 @@ const pin = computed(() => {
       showing: false,
       own: false,
       label: 'Pin to this chat',
-      hint: 'Keep in this chat’s context',
+      hint: 'Pin to this chat',
       toggle: () => markAs('pinned'),
     }
   }
@@ -655,8 +655,8 @@ const pin = computed(() => {
     own,
     label: own ? 'Pinned to this chat' : 'Pinned with the folder above',
     hint: own
-      ? 'In this chat’s context. Click to unpin.'
-      : 'In this chat’s context with its folder. Click to let go.',
+      ? 'Pinned to this chat. Click to unpin.'
+      : 'Pinned with its folder. Click to unpin this one.',
     toggle: () => {
       if (chat.value && node.value) {
         updateChat(unpinned(chat.value, node.value, api.get))
@@ -677,7 +677,7 @@ const sight = computed(() => {
       showing: true,
       icon: 'pi pi-eye-slash',
       label: 'Hidden in this chat',
-      hint: 'Kept from this chat. Click to show.',
+      hint: 'Hidden from this chat. Click to show.',
       toggle: showInChat,
     }
   }
@@ -686,7 +686,7 @@ const sight = computed(() => {
       showing: true,
       icon: 'pi pi-eye',
       label: 'Shown in this chat',
-      hint: 'Shown although its folder is hidden. Click to hide.',
+      hint: 'Shown, though its folder is hidden. Click to hide.',
       toggle: hideInChat,
     }
   }
@@ -695,7 +695,7 @@ const sight = computed(() => {
       showing: false,
       icon: 'pi pi-eye',
       label: 'Unhide in this chat',
-      hint: 'Let this chat see it',
+      hint: 'Show in this chat',
       toggle: showInChat,
     }
   }
@@ -703,7 +703,7 @@ const sight = computed(() => {
     showing: false,
     icon: 'pi pi-eye-slash',
     label: 'Hide from this chat',
-    hint: 'Keep from this chat',
+    hint: 'Hide from this chat',
     toggle: hideInChat,
   }
 })

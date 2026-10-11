@@ -602,12 +602,12 @@ export function describeBackupContents(backup) {
   )
   if (settings) parts.push('your settings')
 
-  if (parts.length === 0) return 'It holds nothing.'
+  if (parts.length === 0) return 'This backup is empty.'
   const listed =
     parts.length === 1
       ? parts[0]
       : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
-  return `It holds ${listed}.`
+  return `This backup holds ${listed}.`
 }
 
 /**

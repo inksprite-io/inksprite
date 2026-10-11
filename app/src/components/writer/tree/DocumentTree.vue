@@ -521,7 +521,7 @@ const confirmDeleteProject = () => {
   if (!storiesStore.getStory(props.storyId)) return
 
   confirm.require({
-    message: `Are you sure you want to delete "${api.displayTitle(root.value)}"? This action cannot be undone.`,
+    message: `Delete "${api.displayTitle(root.value)}" and everything in it? This can’t be undone.`,
     header: 'Delete project',
     icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },

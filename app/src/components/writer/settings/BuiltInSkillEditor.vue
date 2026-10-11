@@ -34,7 +34,9 @@
         data-field="body"
         @input="save"
       />
-      <p class="text-xs text-surface-500 dark:text-surface-400" data-scope>{{ scope }}</p>
+      <p v-if="scope" class="text-xs text-surface-500 dark:text-surface-400" data-scope>
+        {{ scope }}
+      </p>
     </div>
   </div>
 </template>
@@ -90,15 +92,15 @@ const reset = () => {
 }
 
 /**
- * Where this wording reaches: every chat, but those on a profile that words
- * the skill its own way, as Roleplay does Compact.
+ * The profiles this wording does not reach, because they word the skill
+ * their own way, as Roleplay does Compact. Every other chat uses it.
  */
 const scope = computed(() => {
   const own = profiles.value
     .filter(profile => profile.settings?.skills?.[props.name]?.prompt?.trim())
     .map(profile => profile.name)
-  if (own.length === 0) return 'Applies to every chat.'
+  if (own.length === 0) return ''
   const names = own.length === 1 ? own[0] : `${own.slice(0, -1).join(', ')} and ${own.at(-1)}`
-  return `Applies to every chat but those on ${names}, which ${own.length === 1 ? 'has its own' : 'have their own'}.`
+  return `Chats on ${names} use their own wording.`
 })
 </script>

@@ -161,7 +161,7 @@ describe('useAISummarize', () => {
       const composable = useAISummarize()
 
       await expect(composable.handleSummarize(mockStoryId, mockSceneId)).rejects.toThrow(
-        'Set up a provider to use AI features.'
+        'No AI provider is connected.'
       )
     })
 
@@ -170,7 +170,7 @@ describe('useAISummarize', () => {
       const composable = useAISummarize()
 
       await expect(composable.handleSummarize(mockStoryId, mockSceneId)).rejects.toThrow(
-        'Set up a provider to use AI features.'
+        'No AI provider is connected.'
       )
     })
 
@@ -179,7 +179,7 @@ describe('useAISummarize', () => {
       const composable = useAISummarize()
 
       await expect(composable.handleSummarize(mockStoryId, mockSceneId)).rejects.toThrow(
-        'Select a model in the settings menu.'
+        'Pick a model in Settings › AI.'
       )
     })
 
@@ -188,7 +188,7 @@ describe('useAISummarize', () => {
       const composable = useAISummarize()
 
       await expect(composable.handleSummarize(mockStoryId, mockSceneId)).rejects.toThrow(
-        'Enter your OpenRouter API key to use AI features.'
+        'Connect OpenRouter in Settings › AI.'
       )
     })
 
@@ -201,7 +201,7 @@ describe('useAISummarize', () => {
       const composable = useAISummarize()
 
       await expect(composable.handleSummarize(mockStoryId, mockSceneId)).rejects.toThrow(
-        'You need to provide a provider endpoint in the settings menu.'
+        'Add the server address in Settings › AI.'
       )
     })
   })
@@ -215,7 +215,7 @@ describe('useAISummarize', () => {
       const composable = useAISummarize()
 
       await expect(composable.handleSummarize(mockStoryId, mockSceneId)).rejects.toThrow(
-        'No content to summarize. The chapter appears to be empty.'
+        'Nothing to summarize: the document is empty.'
       )
     })
 

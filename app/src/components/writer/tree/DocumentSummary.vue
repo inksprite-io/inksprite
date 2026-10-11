@@ -10,7 +10,7 @@
         rows="3"
         auto-resize
         class="w-full text-sm !bg-transparent !border-0"
-        :placeholder="isGenerating ? 'Summarizing...' : 'Enter a summary...'"
+        :placeholder="isGenerating ? 'Summarizing…' : 'Summary'"
         :disabled="isGenerating"
         @keydown.enter.exact.prevent="save"
         @keydown.escape="handleEscape"
@@ -177,7 +177,7 @@ const generate = async () => {
       severity: 'error',
       detail:
         error.name === 'ProviderNotConfiguredError'
-          ? 'Set up a provider in the settings menu to use AI features.'
+          ? 'Connect an AI provider in Settings › AI.'
           : `Failed to write the summary: ${error.message || 'no answer came back'}`,
       life: 5000,
     })

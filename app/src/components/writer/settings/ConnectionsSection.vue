@@ -8,9 +8,6 @@
     >
       MCP servers
     </h3>
-    <p class="-mt-2 text-sm text-surface-600 dark:text-surface-300">
-      Servers must accept connections from web pages.
-    </p>
 
     <!-- Adding: an address, or a pasted block of servers, then a look at what
          each offers — which is what the model will be told — before keeping it. -->

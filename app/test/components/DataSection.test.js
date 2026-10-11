@@ -108,7 +108,7 @@ describe('DataSection', () => {
 
     expect(backup.restoreBackup).not.toHaveBeenCalled()
     expect(confirmRequire).toHaveBeenCalledTimes(1)
-    expect(confirmRequire.mock.calls[0][0].message).toContain('It holds 1 chat.')
+    expect(confirmRequire.mock.calls[0][0].message).toContain('This backup holds 1 chat.')
 
     await confirmRequire.mock.calls[0][0].accept()
 

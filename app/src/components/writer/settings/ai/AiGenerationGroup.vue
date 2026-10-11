@@ -9,7 +9,6 @@
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Max tokens"
-          description="0 lets the provider decide."
           :overridden="isOverridden('maxTokens')"
           @reset="resetSettings(['maxTokens'])"
         />
@@ -80,7 +79,6 @@
       <div class="flex flex-col gap-1">
         <SettingLabel
           label="Tool rounds per turn"
-          description="0 means no limit."
           :overridden="isOverridden('maxToolRounds')"
           @reset="resetSettings(['maxToolRounds'])"
         />

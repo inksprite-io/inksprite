@@ -1,7 +1,7 @@
 <template>
   <div
-    class="bg-surface-0 dark:bg-surface-900 shadow-sm p-3 rounded-lg flex flex-col gap-2 cursor-pointer hover:shadow-md transition-shadow duration-200 relative"
-    :class="{ 'ring-2 ring-primary-400 dark:ring-primary-500': active }"
+    class="shadow-sm p-3 rounded-lg flex flex-col gap-2 cursor-pointer hover:shadow-md transition-shadow duration-200 relative"
+    :class="active ? 'bg-surface-200 dark:bg-surface-700' : 'bg-surface-0 dark:bg-surface-900'"
     @click="handleClick"
     @contextmenu="openContextMenu"
   >
@@ -14,6 +14,7 @@
         aria-haspopup="true"
         :aria-controls="`chat_menu_${chatId}`"
         class="bg-surface-0/90 dark:bg-surface-900/90 backdrop-blur-md shadow-sm hover:shadow-md"
+        :class="{ 'hover:bg-surface-300! dark:hover:bg-surface-600!': active }"
         severity="secondary"
         text
         rounded
@@ -60,7 +61,7 @@
       </div>
 
       <!-- Last Message Time -->
-      <div class="text-xs text-surface-500 dark:text-surface-500 mt-1">
+      <div class="text-xs text-surface-500 mt-1" :class="{ 'dark:text-surface-400': active }">
         {{ lastMessageTime }}
       </div>
     </div>
@@ -287,8 +288,8 @@ const onMenuHide = which => {
 
 const confirmDelete = () => {
   confirm.require({
-    message: `Are you sure you want to delete "${chat.value?.title || 'this chat'}"?`,
-    header: 'Delete Chat',
+    message: `Delete "${chat.value?.title || 'this chat'}"?`,
+    header: 'Delete chat',
     icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
     acceptProps: { label: 'Delete', severity: 'danger' },

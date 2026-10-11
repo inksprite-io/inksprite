@@ -67,8 +67,8 @@
           Left out: {{ row.dropped.join('; ') }}.
         </span>
         <span v-if="row.files.length" class="text-xs text-surface-500 dark:text-surface-400">
-          Comes with {{ row.files.length }} other {{ row.files.length === 1 ? 'file' : 'files' }},
-          kept for later.
+          {{ row.files.length === 1 ? 'One other file' : `${row.files.length} other files` }}, kept
+          but unused.
         </span>
       </div>
 

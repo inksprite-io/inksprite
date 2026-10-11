@@ -27,7 +27,7 @@
           v-model="searchQuery"
           type="text"
           class="rounded-full! w-full dark:!bg-surface-900"
-          placeholder="Search chats..."
+          placeholder="Search chats…"
           aria-label="Search chats"
         />
       </IconField>
@@ -65,8 +65,7 @@
         class="flex flex-col items-center justify-center h-full text-surface-400 dark:text-surface-500 p-4"
       >
         <i class="pi pi-search text-4xl mb-3 opacity-50"></i>
-        <p class="text-sm text-center mb-3">No chats found</p>
-        <p class="text-xs text-center opacity-75">Try adjusting your search terms</p>
+        <p class="text-sm text-center">No chats found</p>
       </div>
 
       <!-- Empty State (no chats at all) -->
@@ -75,8 +74,7 @@
         class="flex flex-col items-center justify-center h-full text-surface-400 dark:text-surface-500 p-4"
       >
         <i class="pi pi-comments text-4xl mb-3 opacity-50"></i>
-        <p class="text-sm text-center mb-3">No chats yet</p>
-        <p class="text-xs text-center opacity-75">Start one with the + above.</p>
+        <p class="text-sm text-center">No chats yet</p>
       </div>
     </ScrollPanel>
   </div>

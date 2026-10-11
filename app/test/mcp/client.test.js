@@ -128,6 +128,17 @@ describe('describeFailure', () => {
     expect(describeFailure(new Error('Something odd'))).toBe('Something odd')
   })
 
+  it('leaves CORS out in the desktop app, whose requests no server can refuse for it', () => {
+    globalThis.__INKSPRITE_DESKTOP__ = {}
+    try {
+      const said = describeFailure(new TypeError('Failed to fetch'))
+      expect(said).toMatch(/Couldn’t connect/)
+      expect(said).not.toMatch(/CORS|web pages/)
+    } finally {
+      delete globalThis.__INKSPRITE_DESKTOP__
+    }
+  })
+
   it('says an answer that is not an MCP server is not one, not what its schema found', () => {
     const issues = [{ code: 'invalid_type', expected: 'string', path: ['jsonrpc'], message: 'x' }]
     expect(describeFailure(new Error(JSON.stringify(issues, null, 2)))).toMatch(/not an MCP server/)

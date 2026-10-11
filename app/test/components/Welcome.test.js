@@ -36,18 +36,18 @@ describe('Welcome', () => {
 
   it('warns that the work is in the browser, and where backups are', () => {
     const wrapper = mountWelcome()
-    expect(wrapper.text()).toContain('Browser Storage')
+    expect(wrapper.text()).toContain('Browser storage')
     expect(warning(wrapper)).toContain(
-      "Warning: all data is stored in your browser. If this site's data is deleted, your work will be lost."
+      "Warning: your work is stored only in this browser. If this site's data is cleared, it's gone."
     )
-    expect(warning(wrapper)).toContain('Back up regularly from Settings › System.')
+    expect(warning(wrapper)).toContain('Back up from Settings › System.')
     expect(wrapper.find('[data-storage-warning] strong').classes()).toContain('text-red-600')
   })
 
   it('links a computer to the latest desktop release', () => {
     const wrapper = mountWelcome()
     const link = wrapper.find('[data-storage-warning] a')
-    expect(link.text()).toBe('desktop version')
+    expect(link.text()).toBe('desktop app')
     expect(link.attributes('href')).toBe(
       'https://github.com/inksprite-io/inksprite/releases/latest'
     )
@@ -59,7 +59,7 @@ describe('Welcome', () => {
     const wrapper = mountWelcome()
     const line = wrapper.find('[data-safari-warning]')
     expect(line.element.tagName).toBe('P')
-    expect(line.text()).toBe('Safari automatically clears site data after a week of inactivity.')
+    expect(line.text()).toBe("Safari clears a site's data after a week without a visit.")
     expect(line.find('strong').classes()).toContain('text-red-600')
   })
 
@@ -68,24 +68,24 @@ describe('Welcome', () => {
     const wrapper = mountWelcome()
     const line = wrapper.find('[data-safari-warning]')
     expect(line.text().replace(/\s+/g, ' ')).toBe(
-      'Safari automatically clears site data after a week of inactivity. You can avoid this by adding inksprite to your Home Screen.'
+      "Safari clears a site's data after a week without a visit. To keep it, add inksprite to your Home Screen."
     )
     const link = line.find('a')
     expect(link.text()).toBe('Home Screen')
     expect(link.attributes('href')).toMatch(/^https:\/\/support\.apple\.com\/guide\/iphone\//)
-    expect(wrapper.text()).not.toContain('desktop version')
+    expect(wrapper.text()).not.toContain('desktop app')
   })
 
   it('offers a phone neither', () => {
     platform.advice = { clearsAfterAWeek: false, homeScreen: false, desktopApp: false }
     const wrapper = mountWelcome()
-    expect(warning(wrapper)).toMatch(/Back up regularly from Settings › System\.$/)
+    expect(warning(wrapper)).toMatch(/Back up from Settings › System\.$/)
   })
 
   it('says nothing about browser storage in the desktop app', () => {
     platform.desktop = true
     const wrapper = mountWelcome()
-    expect(wrapper.text()).not.toContain('Browser Storage')
+    expect(wrapper.text()).not.toContain('Browser storage')
     expect(warning(wrapper)).toBeNull()
   })
 })

@@ -71,7 +71,7 @@ describe('finish', () => {
   it('refuses a state it did not send', async () => {
     await expect(
       useOpenRouterSignIn().finish(new URLSearchParams('code=c&state=other'))
-    ).rejects.toThrow('Invalid state')
+    ).rejects.toThrow('not started here')
     expect(service.exchangeOAuthCode).not.toHaveBeenCalled()
   })
 })

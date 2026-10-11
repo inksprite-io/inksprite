@@ -51,18 +51,18 @@ export function useOpenRouterSignIn() {
     const state = params.get('state')
 
     if (!code) {
-      throw new Error('No authorization code received')
+      throw new Error('OpenRouter sent no code to sign in with.')
     }
 
     // Retrieve and validate stored OAuth params
     const storedParams = retrieveOAuthParams()
     if (!storedParams) {
-      throw new Error('OAuth session expired. Please try connecting again.')
+      throw new Error('The sign-in expired. Try connecting again.')
     }
 
     // Validate state parameter for security
     if (state !== storedParams.state) {
-      throw new Error('Invalid state parameter. Possible security issue.')
+      throw new Error('This sign-in was not started here. Try connecting again.')
     }
 
     // Exchange code for API key

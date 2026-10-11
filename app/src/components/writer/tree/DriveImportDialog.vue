@@ -135,7 +135,7 @@ const start = async () => {
   } catch (failure) {
     phase.value = 'failed'
     error.value = own.signal.aborted
-      ? 'Stopped. Whatever was written before stays.'
+      ? 'Stopped. Files already imported are kept.'
       : messageOf(failure)
   } finally {
     if (controller === own) controller = null

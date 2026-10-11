@@ -104,11 +104,11 @@ const gap = computed(() => connectionGap(selectedProvider.value))
 const statusText = computed(() => {
   switch (gap.value) {
     case 'key':
-      return 'Not connected. Add an API key or connect your OpenRouter account.'
+      return 'Not connected'
     case 'endpoint':
-      return 'Not connected. Enter the address of the server.'
+      return 'No server address'
     default:
-      return 'Ready to use.'
+      return 'Ready'
   }
 })
 

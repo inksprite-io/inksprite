@@ -277,24 +277,24 @@ export function useAIChat(storyId, chatId) {
   const getChatProfileIfValid = () => {
     const profile = getActiveProfile()
     if (!profile || !profile.providerId) {
-      throw new ProviderNotConfiguredError('Set up a provider to use chat.')
+      throw new ProviderNotConfiguredError('No AI provider is connected.')
     }
 
     const provider = aiConfig.getProvider(profile.providerId)
     if (!provider) {
-      throw new ProviderNotConfiguredError('Set up a provider to use chat.')
+      throw new ProviderNotConfiguredError('No AI provider is connected.')
     }
 
     if (!profile.model) {
-      throw new Error('Select a model for chat in the settings menu.')
+      throw new Error('Pick a model in Settings › AI.')
     }
 
     const gap = connectionGap(provider)
     if (gap === 'key') {
-      throw new ProviderNotConfiguredError('Enter your OpenRouter API key to use chat.')
+      throw new ProviderNotConfiguredError('Connect OpenRouter in Settings › AI.')
     }
     if (gap === 'endpoint') {
-      throw new Error('Enter the endpoint for this connection in the settings menu.')
+      throw new Error('Add the server address in Settings › AI.')
     }
 
     return profile

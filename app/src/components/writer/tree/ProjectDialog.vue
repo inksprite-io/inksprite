@@ -10,17 +10,11 @@
     <div class="flex flex-col gap-3">
       <div class="flex flex-col gap-1">
         <label class="text-xs font-medium text-surface-700 dark:text-surface-200">Title</label>
-        <InputText v-model="form.title" placeholder="Project title" class="w-full" autofocus />
+        <InputText v-model="form.title" class="w-full" autofocus />
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-xs font-medium text-surface-700 dark:text-surface-200">Summary</label>
-        <Textarea
-          v-model="form.summary"
-          placeholder="Brief summary of the project..."
-          :rows="8"
-          :auto-resize="true"
-          class="w-full"
-        />
+        <Textarea v-model="form.summary" :rows="8" :auto-resize="true" class="w-full" />
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-xs font-medium text-surface-700 dark:text-surface-200">

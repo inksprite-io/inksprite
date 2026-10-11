@@ -91,7 +91,7 @@ const turn = on => {
   if (on) {
     confirm.require({
       header: 'Keep projects in a folder?',
-      message: 'inksprite opens again with each project a folder of markdown files.',
+      message: 'Each project is moved into a folder of Markdown files, then inksprite reloads.',
       icon: 'pi pi-folder',
       rejectProps: cancel,
       acceptProps: { label: 'Keep in a folder' },
@@ -104,7 +104,8 @@ const turn = on => {
   }
   confirm.require({
     header: 'Keep projects in the app?',
-    message: 'inksprite opens again with them. The folder’s files stay where they are.',
+    message:
+      'Projects are moved back into the app, then inksprite reloads. The folder is left as it is.',
     icon: 'pi pi-folder',
     rejectProps: cancel,
     acceptProps: { label: 'Keep in the app' },

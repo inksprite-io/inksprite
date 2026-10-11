@@ -59,10 +59,7 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <SettingLabel
-          label="Description"
-          description="The model reads this to decide when to call it."
-        />
+        <SettingLabel label="Description" />
         <Textarea
           v-model="form.description"
           auto-resize
@@ -113,10 +110,7 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <SettingLabel
-          label="How it runs"
-          description="On its own: a separate model call. Joining: its instructions join the turn."
-        />
+        <SettingLabel label="How it runs" />
         <Select
           v-model="form.fork"
           :options="RUNS"
@@ -145,10 +139,7 @@
         </div>
 
         <div class="flex flex-col gap-1">
-          <SettingLabel
-            label="Tools"
-            description="It gets none of the chat’s tools unless listed here."
-          />
+          <SettingLabel label="Tools" />
           <MultiSelect
             v-model="form.tools"
             :options="toolOptions"

@@ -122,11 +122,6 @@ export function describeImport(result) {
   const bits = [count(result.documents, 'document')]
   if (result.folders > 0) bits.push(count(result.folders, 'new folder'))
   const notes = []
-  if (result.cards > 0) {
-    notes.push(
-      `${count(result.cards, 'card')} written with the default name; re-import one to set yours.`
-    )
-  }
   if (result.scans > 0) notes.push(`${count(result.scans, 'PDF')} with no text: a scan.`)
   if (result.images) notes.push(`${count(result.images, 'image')} left out.`)
   if (result.skipped.length > 0) {

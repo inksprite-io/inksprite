@@ -14,7 +14,6 @@
         }}</a
         >.
       </p>
-      <p>The license covers the app. What you write with it is yours.</p>
     </section>
 
     <ExpandableSection title="Credits" subsection content-wrapper-class="flex flex-col gap-5 pt-2">

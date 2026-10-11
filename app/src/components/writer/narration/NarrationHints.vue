@@ -6,14 +6,11 @@
       class="w-full font-mono text-xs dark:!bg-surface-900"
       auto-resize
       rows="3"
-      placeholder="Aelinor:AY-lin-or"
+      :placeholder="EXAMPLE"
       aria-label="Pronunciation hints"
       data-hints
       @update:model-value="$emit('update:hints', $event)"
     />
-    <p class="text-xs text-surface-500 dark:text-surface-400">
-      One per line, <code>word:pronunciation</code>. Whole words only.
-    </p>
   </div>
 </template>
 
@@ -31,4 +28,6 @@ defineProps({
 })
 
 defineEmits(['update:hints'])
+
+const EXAMPLE = 'quinoa:keenwah\nEleanor:ellinore'
 </script>

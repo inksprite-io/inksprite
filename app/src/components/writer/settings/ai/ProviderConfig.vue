@@ -151,7 +151,7 @@
             <div class="flex-1 border-t border-surface-300 dark:border-surface-700"></div>
           </div>
           <Button
-            label="Connect with OAuth"
+            label="Sign in with OpenRouter"
             icon="pi pi-sign-in"
             size="small"
             class="w-full"
@@ -319,7 +319,7 @@ function handleNewProvider() {
 }
 
 /** What a provider is called when the writer leaves its name empty. */
-const UNTITLED_PROVIDER = 'Untitled Provider'
+const UNTITLED_PROVIDER = 'Untitled provider'
 
 /**
  * Update handlers - persist changes immediately (debouncing handled by store)
@@ -489,7 +489,7 @@ async function handleDeleteProvider() {
   }
 
   confirm.require({
-    message: `Are you sure you want to delete "${provider.name}"?`,
+    message: `Delete "${provider.name}"?`,
     header: 'Delete provider',
     icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },

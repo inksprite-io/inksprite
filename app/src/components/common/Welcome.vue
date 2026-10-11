@@ -19,9 +19,7 @@
       >
         <div class="flex gap-4 items-center justify-between">
           <div class="flex-1 max-w-[32rem] flex flex-col">
-            <p>
-              Welcome! No need to make an account or login. Just create a project and start writing.
-            </p>
+            <p>No account needed. Create a project and start writing.</p>
           </div>
           <img
             src="/static/icons/magic-books-light.svg"
@@ -38,35 +36,35 @@
         <div class="flex flex-col gap-4">
           <template v-if="advice">
             <h3 class="text-md font-semibold text-surface-500 dark:text-surface-300">
-              Browser Storage
+              Browser storage
             </h3>
             <div
               data-storage-warning
               class="flex flex-col gap-2 text-surface-700 dark:text-surface-400"
             >
               <p>
-                <strong class="text-red-600 dark:text-red-400">Warning:</strong> all data is stored
-                in your browser. If this site's data is deleted, your work will be lost. Back up
-                regularly from Settings › System.
+                <strong class="text-red-600 dark:text-red-400">Warning:</strong> your work is stored
+                only in this browser. If this site's data is cleared, it's gone. Back up from
+                Settings › System.
               </p>
               <p>
                 <template v-if="advice.desktopApp">
-                  You can also try the
+                  Or use the
                   <a
                     href="https://github.com/inksprite-io/inksprite/releases/latest"
                     target="_blank"
                     rel="noopener noreferrer"
                     class="text-primary-600 dark:text-primary-400 hover:underline font-medium"
-                    >desktop version</a
+                    >desktop app</a
                   >.
                 </template>
               </p>
               <p v-if="advice.clearsAfterAWeek" data-safari-warning>
                 <strong class="text-red-600 dark:text-red-400"
-                  >Safari automatically clears site data after a week of inactivity.</strong
+                  >Safari clears a site's data after a week without a visit.</strong
                 >
                 <template v-if="advice.homeScreen">
-                  You can avoid this by adding inksprite to your
+                  To keep it, add inksprite to your
                   <a
                     href="https://support.apple.com/guide/iphone/bookmark-a-website-iph42ab2f3a7/ios#iph4f9a47bbc"
                     target="_blank"
@@ -79,29 +77,24 @@
             </div>
           </template>
 
-          <h3 class="text-md font-semibold text-surface-500 dark:text-surface-300">Getting Help</h3>
+          <h3 class="text-md font-semibold text-surface-500 dark:text-surface-300">Help</h3>
           <div class="flex flex-col text-surface-700 dark:text-surface-400 gap-3">
             <p>
-              Report bugs and ask questions in the
+              Report bugs and ask questions on
               <a
                 href="https://github.com/inksprite-io/inksprite/issues"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="text-primary-600 dark:text-primary-400 hover:underline font-medium"
-                >GitHub issues</a
+                >GitHub</a
               >.
             </p>
           </div>
 
-          <h3 class="text-md font-semibold text-surface-500 dark:text-surface-300">Open Beta</h3>
+          <h3 class="text-md font-semibold text-surface-500 dark:text-surface-300">Open beta</h3>
           <div class="flex flex-col text-surface-700 dark:text-surface-400 gap-3">
-            <p>
-              inksprite is still in development, so you should expect bugs. Let us know if you run
-              into any issues!
-            </p>
-            <h3 class="text-md font-semibold text-surface-500 dark:text-surface-300">
-              Legal Stuff
-            </h3>
+            <p>inksprite is still in development, so expect bugs.</p>
+            <h3 class="text-md font-semibold text-surface-500 dark:text-surface-300">Legal</h3>
             <p>
               By using inksprite, you agree to our
               <a
@@ -118,7 +111,7 @@
     </div>
     <template #footer>
       <div class="flex justify-end">
-        <Button label="Start Writing!" @click="handleClose" />
+        <Button label="Start writing" @click="handleClose" />
       </div>
     </template>
   </Dialog>

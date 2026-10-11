@@ -435,7 +435,7 @@
         rows="4"
         auto-resize
         class="w-full"
-        :placeholder="command ? 'Edit command...' : 'Edit message...'"
+        :placeholder="command ? 'Edit command…' : 'Edit message…'"
         @keydown="handleEditKeydown"
       />
       <div class="flex items-center gap-2">

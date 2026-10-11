@@ -4,13 +4,12 @@
       <template v-if="status === 'processing'">
         <div class="spinner"></div>
         <h2>Signing in…</h2>
-        <p>Finishing the sign-in to your server.</p>
       </template>
 
       <template v-else-if="status === 'success'">
         <div class="success-icon">✓</div>
         <h2>Signed in</h2>
-        <p class="close-message">You can close this tab and go back to inksprite.</p>
+        <p class="close-message">You can close this tab.</p>
       </template>
 
       <template v-else>

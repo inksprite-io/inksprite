@@ -248,9 +248,7 @@ describe('useAIChat', () => {
       })
       mockChatsApi.getMessagesForChat.mockReturnValue({ value: [{ id: 'msg_1' }] })
 
-      await expect(composable.sendMessage('Hello')).rejects.toThrow(
-        'Set up a provider to use chat.'
-      )
+      await expect(composable.sendMessage('Hello')).rejects.toThrow('No AI provider is connected.')
     })
 
     it('should throw error when provider is not found', async () => {
@@ -264,9 +262,7 @@ describe('useAIChat', () => {
       })
       mockChatsApi.getMessagesForChat.mockReturnValue({ value: [{ id: 'msg_1' }] })
 
-      await expect(composable.sendMessage('Hello')).rejects.toThrow(
-        'Set up a provider to use chat.'
-      )
+      await expect(composable.sendMessage('Hello')).rejects.toThrow('No AI provider is connected.')
     })
 
     it('should throw error when model is not selected', async () => {
@@ -281,7 +277,7 @@ describe('useAIChat', () => {
       mockChatsApi.getMessagesForChat.mockReturnValue({ value: [{ id: 'msg_1' }] })
 
       await expect(composable.sendMessage('Hello')).rejects.toThrow(
-        'Select a model for chat in the settings menu.'
+        'Pick a model in Settings › AI.'
       )
     })
 
@@ -297,7 +293,7 @@ describe('useAIChat', () => {
       mockChatsApi.getMessagesForChat.mockReturnValue({ value: [{ id: 'msg_1' }] })
 
       await expect(composable.sendMessage('Hello')).rejects.toThrow(
-        'Enter your OpenRouter API key to use chat.'
+        'Connect OpenRouter in Settings › AI.'
       )
     })
 
@@ -317,7 +313,7 @@ describe('useAIChat', () => {
       mockChatsApi.getMessagesForChat.mockReturnValue({ value: [{ id: 'msg_1' }] })
 
       await expect(composable.sendMessage('Hello')).rejects.toThrow(
-        'Enter the endpoint for this connection in the settings menu.'
+        'Add the server address in Settings › AI.'
       )
     })
   })
@@ -334,7 +330,7 @@ describe('useAIChat', () => {
 
       const error = composable.configurationError.value
       expect(error?.name).toBe('ProviderNotConfiguredError')
-      expect(error?.message).toBe('Enter your OpenRouter API key to use chat.')
+      expect(error?.message).toBe('Connect OpenRouter in Settings › AI.')
       expect(mockChatsApi.addMessage).not.toHaveBeenCalled()
     })
 
@@ -344,7 +340,7 @@ describe('useAIChat', () => {
 
       const error = composable.configurationError.value
       expect(error?.name).toBe('Error')
-      expect(error?.message).toBe('Select a model for chat in the settings menu.')
+      expect(error?.message).toBe('Pick a model in Settings › AI.')
     })
   })
 

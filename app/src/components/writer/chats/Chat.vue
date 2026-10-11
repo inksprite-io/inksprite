@@ -232,7 +232,7 @@
           <Textarea
             ref="messageField"
             v-model="userInput"
-            placeholder="Let's brainstorm..."
+            placeholder="Let's brainstorm…"
             class="grow min-w-0 !bg-transparent !border-0 resize-none max-h-[20rem] !overflow-y-auto"
             :class="beside ? 'basis-0' : 'basis-full'"
             :disabled="isGenerating"
@@ -601,9 +601,7 @@ const hasInput = computed(() => Boolean(userInput.value?.trim()))
 const setupProblem = computed(() => chatGeneration.configurationError.value)
 const providerMissing = computed(() => setupProblem.value?.name === 'ProviderNotConfiguredError')
 const setupMessage = computed(() =>
-  providerMissing.value
-    ? 'No AI provider is connected, so nothing can reply yet.'
-    : setupProblem.value?.message || ''
+  providerMissing.value ? 'No AI provider is connected.' : setupProblem.value?.message || ''
 )
 const setupAction = computed(() => (providerMissing.value ? 'Connect' : 'AI settings'))
 
@@ -706,7 +704,7 @@ const reportFailure = (error, fallback) => {
     if (isProviderSetupDialogEnabled()) {
       providerSetupDialogVisible.value = true
     } else {
-      toast.error('Set up a provider in the settings menu to use chat.')
+      toast.error('Connect an AI provider in Settings › AI.')
     }
     return
   }
@@ -762,7 +760,7 @@ const handleStopGenerating = async () => {
     const { skipped } = await chatGeneration.stopGeneration()
     if (skipped.length > 0) {
       const kept = [...new Set(skipped.map(edit => edit.path))].join(', ')
-      toast.info(`Left as you edited them: ${kept}`)
+      toast.info(`Kept your edits in ${kept}`)
     }
   } catch (error) {
     console.error('Failed to stop:', error)
@@ -838,7 +836,7 @@ const handleSelectAlternate = async (messageId, index) => {
     const { skipped } = await chatGeneration.selectAlternate(messageId, index)
     if (skipped.length > 0) {
       const kept = [...new Set(skipped.map(edit => edit.path))].join(', ')
-      toast.info(`Left as you edited them: ${kept}`)
+      toast.info(`Kept your edits in ${kept}`)
     }
   } catch (error) {
     console.error('Failed to show another answer:', error)
@@ -890,7 +888,7 @@ const handleRewind = messageId => {
   const message =
     paths.length === 0
       ? `Removes the ${turns} after this one.`
-      : `Removes the ${turns} after this one and puts ${paths.length === 1 ? 'this document' : 'these documents'} back as ${paths.length === 1 ? 'it was' : 'they were'}: ${paths.join(', ')}. A passage you have edited since is left as you have it.`
+      : `Removes the ${turns} after this one and undoes their changes to ${paths.join(', ')}. Passages you’ve edited since are kept.`
 
   confirm.require({
     header: 'Rewind the conversation?',
@@ -903,7 +901,7 @@ const handleRewind = messageId => {
         const { skipped } = chatGeneration.rewindTo(messageId)
         if (skipped.length > 0) {
           const kept = [...new Set(skipped.map(edit => edit.path))].join(', ')
-          toast.info(`Left as you edited them: ${kept}`)
+          toast.info(`Kept your edits in ${kept}`)
         }
       } catch (error) {
         console.error('Failed to rewind:', error)

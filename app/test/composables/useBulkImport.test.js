@@ -181,8 +181,7 @@ describe('describeImport', () => {
       })
     ).toEqual({
       severity: 'warn',
-      detail:
-        'Imported 1 document. 1 card written with the default name; re-import one to set yours. 1 PDF with no text: a scan. Skipped x.pdf (bad).',
+      detail: 'Imported 1 document. 1 PDF with no text: a scan. Skipped x.pdf (bad).',
     })
     expect(describeImport({ documents: 0, folders: 0, cards: 0, scans: 0, skipped: [] })).toEqual({
       severity: 'error',

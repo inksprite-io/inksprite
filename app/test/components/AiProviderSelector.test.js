@@ -35,7 +35,6 @@ describe('AiProviderSelector', () => {
 
     expect(status(wrapper).attributes('data-gap')).toBe('key')
     expect(status(wrapper).text()).toContain('Not connected')
-    expect(status(wrapper).text()).toContain('API key')
 
     await wrapper.find('[data-action="connect-provider"]').trigger('click')
     expect(wrapper.findComponent({ name: 'ProviderConfig' }).props('visible')).toBe(true)
