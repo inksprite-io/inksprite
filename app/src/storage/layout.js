@@ -30,6 +30,7 @@
  * path: ids are in the files, so a document keeps its id however it moves.
  */
 
+import { compareNames } from '@/utils/compareNames.js'
 import { filenameFor } from '@/files/download.js'
 import {
   safeName,
@@ -130,7 +131,7 @@ const byId = (a, b) => (a.id > b.id ? 1 : a.id < b.id ? -1 : 0)
 function shown(children, ordered) {
   const out = children.slice()
   if (ordered) return out.sort((a, b) => a.order - b.order || byId(a, b))
-  return out.sort((a, b) => a.title.localeCompare(b.title) || byId(a, b))
+  return out.sort((a, b) => compareNames(a.title, b.title) || byId(a, b))
 }
 
 /**
@@ -477,11 +478,11 @@ export function readProject({ files, texts, name }, { newId, now }) {
       ? read.sort(
           (a, b) =>
             (a.item.place ?? Infinity) - (b.item.place ?? Infinity) ||
-            a.item.sortName.localeCompare(b.item.sortName)
+            compareNames(a.item.sortName, b.item.sortName)
         )
       : read.sort(
           (a, b) =>
-            a.result.document.title.localeCompare(b.result.document.title) ||
+            compareNames(a.result.document.title, b.result.document.title) ||
             byId(a.result.document, b.result.document)
         )
     sorted.forEach(({ result }, at) => {

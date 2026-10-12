@@ -63,6 +63,7 @@ import NewProjectDialog from './NewProjectDialog.vue'
 import { useProjects } from '@/composables/useProjects'
 import { useReactiveTime } from '@/composables/useReactiveTime'
 import { useToast } from '@/composables/useToast'
+import { compareNames } from '@/utils/compareNames.js'
 
 /**
  * The projects, from the top of the outline: a picker of every one by name,
@@ -95,11 +96,7 @@ const isImporting = ref(false)
  */
 const sorted = computed(() =>
   [...projects.projects.value].sort(
-    (a, b) =>
-      projects
-        .nameOf(a.id)
-        .localeCompare(projects.nameOf(b.id), undefined, { numeric: true, sensitivity: 'base' }) ||
-      a.id.localeCompare(b.id)
+    (a, b) => compareNames(projects.nameOf(a.id), projects.nameOf(b.id)) || a.id.localeCompare(b.id)
   )
 )
 

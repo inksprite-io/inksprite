@@ -125,6 +125,20 @@ describe('useSpeechServer', () => {
     })
   })
 
+  it('mixes voices for a model named Kokoro, wherever it is served, and for no other', () => {
+    const server = useSpeechServer()
+    expect(server.mixes.value).toBe(true)
+
+    choice.model = 'tts-1'
+    expect(server.mixes.value).toBe(false)
+
+    Object.assign(choice, { providerId: OPENROUTER.id, model: 'hexgrad/kokoro-82m' })
+    expect(server.mixes.value).toBe(true)
+
+    choice.model = 'google/gemini-tts'
+    expect(server.mixes.value).toBe(false)
+  })
+
   it('offers no voices when they cannot be asked for, and asks again next time', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     mockClient.listVoices.mockRejectedValueOnce(new TypeError('Failed to fetch'))

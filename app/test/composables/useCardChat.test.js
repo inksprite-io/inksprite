@@ -6,12 +6,7 @@ import { readCard } from '@/cards/card.js'
 import { clearDocumentInstances } from '@/composables/useDocuments'
 import { clearChatsInstances } from '@/composables/useChats'
 import { ROLEPLAY_PROFILE_ID, ROLEPLAY_NSFW_PROFILE_ID } from '@/ai/profiles/index.js'
-import {
-  DEFAULT_ROLEPLAY_NOTE,
-  DEFAULT_ROLEPLAY_PROMPT,
-  DEFAULT_ROLEPLAY_NSFW_NOTE,
-  DEFAULT_ROLEPLAY_NSFW_PROMPT,
-} from '@/ai/prompts/index.js'
+import { DEFAULT_ROLEPLAY_NOTE, DEFAULT_ROLEPLAY_NSFW_NOTE } from '@/ai/prompts/index.js'
 import { useProfiles } from '@/composables/useProfiles'
 import { useApplicationState } from '@/composables/useApplicationState'
 
@@ -123,7 +118,22 @@ describe('useCardChat', () => {
     expect(chat.rules).toBe(DEFAULT_ROLEPLAY_NSFW_NOTE)
   })
 
-  it("starts a card's own prompt from Roleplay (NSFW)'s with them switched on", async () => {
+  it('starts it on the profile chosen for character cards, whichever way the NSFW switch is', async () => {
+    const mine = useProfiles().saveProfile('Roleplay - Custom', {
+      prompt: 'Stay in the scene.',
+      disabledToolGroups: ['skills'],
+    })
+    useApplicationState().setRoleplayProfileId(mine.id)
+    useApplicationState().setNsfwProfiles(true)
+    const written = await imported()
+
+    const chat = await begin(written.folderId)
+
+    expect(chat.profileId).toBe(mine.id)
+    expect(chat.disabledToolGroups).toEqual(['skills'])
+  })
+
+  it("keeps the chat on Roleplay (NSFW) under a card's own prompt, with them switched on", async () => {
     useApplicationState().setNsfwProfiles(true)
     const written = await imported(
       { system_prompt: '{{original}}\n\nElara never lies.' },
@@ -132,9 +142,10 @@ describe('useCardChat', () => {
 
     const chat = await begin(written.folderId)
 
-    const prompt = useProfiles().getProfile(chat.profileId).settings.prompt
-    expect(prompt.startsWith(DEFAULT_ROLEPLAY_NSFW_PROMPT.trim())).toBe(true)
-    expect(prompt.endsWith('Elara never lies.')).toBe(true)
+    // The card's prompt goes after the profile's on each turn, so the profile
+    // is still the one the switch puts in place.
+    expect(chat.profileId).toBe(ROLEPLAY_NSFW_PROFILE_ID)
+    expect(chat.roleplayPrompt).toBe('{{original}}\n\nElara never lies.')
   })
 
   it('pins the card so it is in context before anything is said', async () => {
@@ -221,26 +232,26 @@ describe('useCardChat', () => {
     expect(messages.at(-1).content).toBe('Well?')
   })
 
-  it("takes the card's rules over the profile's", async () => {
+  it("keeps the card's post-history instructions beside the profile's note", async () => {
     const written = await imported({ post_history_instructions: 'Never write for them.' })
 
     const chat = await begin(written.folderId)
 
-    // Both say how a turn is written, and two sets three tokens from
-    // generation is an argument the model settles instead of writing.
-    expect(chat.rules).toBe('Never write for them.')
+    // Apart, so that saving the chat to its profile takes the writer's note
+    // and not the card's, and the NSFW switch still knows the note for the
+    // profile's.
+    expect(chat.rules).toBe(DEFAULT_ROLEPLAY_NOTE)
+    expect(chat.postHistory).toBe('Never write for them.')
   })
 
-  it("puts the profile's note where the card says {{original}}", async () => {
+  it('keeps {{original}} in them, for each turn to fill in', async () => {
     const written = await imported({
       post_history_instructions: '{{original}}\nThoughts in italics.',
     })
 
     const chat = await begin(written.folderId)
 
-    // ST's rule: the card adds to the standing instructions instead of
-    // replacing them, and says where.
-    expect(chat.rules).toBe(`${DEFAULT_ROLEPLAY_NOTE}\nThoughts in italics.`)
+    expect(chat.postHistory).toBe('{{original}}\nThoughts in italics.')
   })
 
   it('keeps {{original}} in the card’s own document', async () => {
@@ -251,36 +262,26 @@ describe('useCardChat', () => {
     expect((await cardChats.read(written.folderId)).rules).toBe('{{original}}\nItalics.')
   })
 
-  it("puts the Roleplay prompt where a card's own prompt says {{original}}", async () => {
-    const written = await imported(
-      { system_prompt: '{{original}}\n\nElara never lies.' },
-      { useSystemPrompt: true }
-    )
-
-    const chat = await begin(written.folderId)
-
-    const prompt = useProfiles().getProfile(chat.profileId).settings.prompt
-    expect(prompt.startsWith(DEFAULT_ROLEPLAY_PROMPT.trim())).toBe(true)
-    expect(prompt.endsWith('Elara never lies.')).toBe(true)
-  })
-
-  it("keeps the profile's rules when the card brought none", async () => {
+  it('takes no instructions from a card that brought none', async () => {
     const written = await imported()
 
     const chat = await begin(written.folderId)
 
     expect(chat.rules).toBe(DEFAULT_ROLEPLAY_NOTE)
+    expect(chat).not.toHaveProperty('roleplayPrompt')
+    expect(chat).not.toHaveProperty('postHistory')
   })
 
-  it("saves a card's system prompt as a profile and points the chat at it", async () => {
+  it("keeps a card's system prompt on the chat, and makes no profile of it", async () => {
     const written = await imported({ system_prompt: 'You are Elara.' }, { useSystemPrompt: true })
 
+    await begin(written.folderId)
     const chat = await begin(written.folderId)
 
-    // A prompt that exists only on one chat is a prompt nobody can find or
-    // edit. As a profile it is in the library beside every other.
-    expect(chat.profileId).not.toBe(ROLEPLAY_PROFILE_ID)
-    expect(chat.profileId).toMatch(/^chatprofile_/)
+    // Every chat on the card used to leave a profile named after it behind.
+    expect(chat.profileId).toBe(ROLEPLAY_PROFILE_ID)
+    expect(chat.roleplayPrompt).toBe('You are Elara.')
+    expect(useProfiles().profiles.value.filter(profile => !profile.readOnly)).toEqual([])
   })
 
   it("keeps the Roleplay profile's settings under a card's own prompt", async () => {
@@ -332,40 +333,21 @@ describe('useCardChat', () => {
       expect(messages).toEqual([])
     })
 
-    it("puts the card's rules in place of the profile's", async () => {
-      await imported({ post_history_instructions: 'Stay in it.' })
-      const chat = arrived()
+    it("puts the card's instructions beside the note the import made", async () => {
+      await imported(
+        { post_history_instructions: 'Stay in it.', system_prompt: 'You are Elara.' },
+        { useSystemPrompt: true }
+      )
+      const chat = arrived({ rules: 'Write one turn.\n\n[Slow burn.]' })
 
       await cardChats.attach(chat.id, 'Elara')
 
-      expect(chat.rules).toBe('Stay in it.')
-    })
-
-    it("keeps the chat's own note after the card's rules", async () => {
-      await imported({ post_history_instructions: 'Stay in it.' })
-      const chat = arrived({ rules: 'Write one turn.\n\n[Slow burn.]' })
-
-      await cardChats.attach(chat.id, 'Elara', { note: '[Slow burn.]' })
-
-      expect(chat.rules).toBe('Stay in it.\n\n[Slow burn.]')
-    })
-
-    it('puts the profile’s note where the card says {{original}}, and the chat’s after', async () => {
-      await imported({ post_history_instructions: '{{original}}\nItalics.' })
-      const chat = arrived({ rules: `${DEFAULT_ROLEPLAY_NOTE}\n\n[Slow burn.]` })
-
-      await cardChats.attach(chat.id, 'Elara', { note: '[Slow burn.]' })
-
-      expect(chat.rules).toBe(`${DEFAULT_ROLEPLAY_NOTE}\nItalics.\n\n[Slow burn.]`)
-    })
-
-    it('leaves the rules alone when the card has none', async () => {
-      await imported()
-      const chat = arrived({ rules: 'Write one turn.\n\n[Slow burn.]' })
-
-      await cardChats.attach(chat.id, 'Elara', { note: '[Slow burn.]' })
-
+      // The Author's Note it brought from ST says where the scene has got to,
+      // and stays where the import put it.
       expect(chat.rules).toBe('Write one turn.\n\n[Slow burn.]')
+      expect(chat.postHistory).toBe('Stay in it.')
+      expect(chat.roleplayPrompt).toBe('You are Elara.')
+      expect(chat.profileId).toBe(ROLEPLAY_PROFILE_ID)
     })
 
     it('does nothing when the character has no card here', async () => {

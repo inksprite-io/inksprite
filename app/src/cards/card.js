@@ -32,8 +32,8 @@
  * @property {string} examples - `mes_example`
  * @property {string[]} greetings - `first_mes` first, then the alternates
  * @property {string} systemPrompt - Rare, usually an ST preset's scaffolding
- * @property {string} rules - `post_history_instructions`: the card's author's
- *   note, which a chat on it starts with. See `overOriginal`.
+ * @property {string} rules - `post_history_instructions`, which a chat on it
+ *   sends after its author's note. See `withOriginal`.
  * @property {string[]} tags
  * @property {string} creator
  * @property {LoreEntry[]} lore
@@ -182,27 +182,30 @@ export function uncomment(value) {
 const ORIGINAL = /\{\{\s*original\s*\}\}/i
 
 /**
- * A card's override over what it overrides.
+ * A chat's roleplay instructions with what they add to: its system prompt
+ * after the profile's, its post-history instructions after its author's note.
  *
- * ST's rule, and the one worth keeping: a card's post-history instructions, or
- * its system prompt, replace the defaults — unless they say `{{original}}`,
- * which is where the defaults go. So a card that wants the writer's standing
- * instructions plus a line of its own says so, and a card whose author wrote a
- * whole set of their own is not read beside a second set that argues with it.
+ * After, unless they say `{{original}}`, which is where the other goes. That
+ * much of ST's rule is kept, so a card that says where the writer's standing
+ * instructions belong still puts them there. The rest of it, that a card's
+ * instructions without the marker replace the writer's, is not: those are what
+ * the writer chose and can see in the chat's settings, and a card that silently
+ * dropped them would drop the Roleplay note's rules of play with them.
  *
- * Resolved once, when a chat starts, into plain text: nothing downstream reads
- * a template, and the card's own document keeps saying what the card said.
+ * Resolved for each turn, so the chat keeps the card's text as the card wrote
+ * it and the profile's part is whatever the profile says now.
  *
- * @param {string} value - What the card says, if anything
- * @param {string} [under] - What it would otherwise replace
- * @returns {string} What the chat starts with
+ * @param {string|null|undefined} value - The chat's roleplay text, if any
+ * @param {string|null|undefined} [original] - What it adds to
+ * @returns {string} What the turn sends
  */
-export function overOriginal(value, under = '') {
-  if (!value?.trim()) return under
-  if (!ORIGINAL.test(value)) return value.trim()
+export function withOriginal(value, original = '') {
+  const under = original?.trim() || ''
+  if (!value?.trim()) return original || ''
+  if (!ORIGINAL.test(value)) return [under, value.trim()].filter(Boolean).join('\n\n')
   return value
     .split(ORIGINAL)
-    .join(under.trim())
+    .join(under)
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 }

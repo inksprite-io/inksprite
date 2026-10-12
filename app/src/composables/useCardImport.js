@@ -7,7 +7,8 @@
  * markdown document, and a file kept as it is: a PDF, an image, anything —
  * told apart by what is in them rather than by what they are called. Cards
  * travel as `.json` as readily as books do, and a PNG is a card only when it
- * has one in it, so an extension is a hint and not an answer.
+ * has one in it, so an extension is a hint and not an answer. A Word file is
+ * a markdown document, read out of it as a Google Doc is (`files/docx.js`).
  *
  * Two steps, for the ones that need it. A card is somebody else's work and
  * arrives with more in it than its name — a book of several hundred entries, a
@@ -25,7 +26,8 @@
 import { cardFromPng } from '@/cards/png.js'
 import { shapeOf, readCard, readLorebook } from '@/cards/card.js'
 import { reimportCard, shelfFor, writeCard, writeLorebook, writeMarkdown } from '@/cards/write.js'
-import { inspectFile, isStructured } from '@/files/inspect.js'
+import { docxToMarkdown, isDocx } from '@/files/docx.js'
+import { inspectFile, isStructured, titleOf } from '@/files/inspect.js'
 import { writeFile } from '@/files/write.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
 import { useApplicationState } from '@/composables/useApplicationState'
@@ -59,6 +61,8 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
  * @property {string} [mime] - A file: what it is
  * @property {number} [pages] - A file: how many pages, for a format that has them
  * @property {boolean} [text] - A file: whether any text could be read out of it
+ * @property {number} [images] - A Word file: the pictures left out of it,
+ *   which documents cannot hold yet
  * @property {File|null} [portrait] - A card that came in a PNG: the PNG, kept
  *   in the card's folder as its picture
  * @property {string} [replaces] - A card read back out of its own folder, to
@@ -121,6 +125,19 @@ export function useCardImport(storyId) {
         documents: 1,
         asks: false,
         value: await file.text(),
+      }
+    }
+
+    if (isDocx(file)) {
+      const { markdown, images } = await docxToMarkdown(await file.arrayBuffer())
+      return {
+        shape: 'markdown',
+        title: titleOf(file.name),
+        ...NOTHING,
+        documents: 1,
+        asks: false,
+        images,
+        value: markdown,
       }
     }
 
@@ -223,7 +240,10 @@ export function useCardImport(storyId) {
       })
     }
     if (found.shape === 'markdown') {
-      return writeMarkdown(storyId, found.title, found.value, { parentId })
+      const written = await writeMarkdown(storyId, found.title, found.value, { parentId })
+      if (!found.images) return written
+      const images = found.images === 1 ? '1 image' : `${found.images} images`
+      return { ...written, note: ` (${images} left out)` }
     }
     if (found.shape === 'file') {
       const written = await writeFile(storyId, found.value, { parentId })

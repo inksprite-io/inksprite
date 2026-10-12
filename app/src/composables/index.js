@@ -41,6 +41,8 @@
  * - **useEditorRequest** - Showing the editor, having opened a tab in it, from anywhere in the writer
  * - **useTopmostEscape** - Escape closes the dialog on top, and only that one
  * - **useCopyPath** - Copy a document's path, the address the tools take, to the clipboard
+ * - **useDocumentLinks** - Links between a project's documents: one opens the document in a tab,
+ *   and the link field makes one from a path or a name
  * - **usePlainText** - Turn a document plain or back, with an undo when that rewrote its text
  * - **useLongPress** - A finger held still on something, for what a right-click opens elsewhere
  * - **useTreeDrop** - A document dragged onto a folder's row goes into the folder, and a shut
@@ -94,4 +96,5 @@ export { useSidebarTab } from './useSidebarTab.js'
 export { useEditorRequest } from './useEditorRequest.js'
 export { useTopmostEscape } from './useTopmostEscape.js'
 export { useCopyPath } from './useCopyPath.js'
+export { useDocumentLinks } from './useDocumentLinks.js'
 export { usePlainText } from './usePlainText.js'

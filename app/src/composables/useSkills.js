@@ -110,8 +110,9 @@ export function useSkills() {
   }
 
   /**
-   * Carry what hangs on a skill's name across a rename: each profile's wording
-   * of it, and every chat and profile that switched its tool off. The records of
+   * Carry what hangs on a skill's name across a rename: each profile's and
+   * chat's wording of it, and every chat and profile that switched its tool
+   * off. The records of
    * old turns keep the name they were run under.
    *
    * @param {string} from
@@ -129,16 +130,15 @@ export function useSkills() {
     // The chats that are open are the store's to change; the rest are only in
     // storage, and are changed there.
     const chats = useChatsStore()
+    // A chat holds both: its own switches, and its own wording of a skill.
     for (const chat of chats.chats.values()) {
       const changes = renamedIn(chat, from, to)
-      if (changes?.disabledTools)
-        chats.updateChat(chat.id, { disabledTools: changes.disabledTools })
+      if (changes) chats.updateChat(chat.id, /** @type {any} */ (changes))
     }
     try {
       await storage.updateEach('chats', chat => {
         if (chats.chats.has(chat.id)) return null
-        const changes = renamedIn(chat, from, to)
-        return changes?.disabledTools ? { disabledTools: changes.disabledTools } : null
+        return renamedIn(chat, from, to)
       })
     } catch (error) {
       console.error('Failed to carry a skill’s rename to chats that are not open:', error)

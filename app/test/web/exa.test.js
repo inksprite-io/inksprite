@@ -122,6 +122,27 @@ describe('reaching Exa', () => {
     await expect(searchExa('tides', {})).rejects.toEqual(new ServiceError(EXA_LIMITED))
   })
 
+  it('says the free limit ran out when Exa answers with its own notice', async () => {
+    callServerTool.mockResolvedValue(
+      answered(
+        "You've hit Exa's free MCP rate limit. To keep going, make a key of your own.\n\nFix: put the key in the server's address."
+      )
+    )
+
+    await expect(searchExa('tides', {})).rejects.toEqual(new ServiceError(EXA_LIMITED))
+    await expect(readExa('https://example.org', {})).rejects.toEqual(new ServiceError(EXA_LIMITED))
+  })
+
+  it('reads results about rate limits as results', async () => {
+    callServerTool.mockResolvedValue(
+      answered(
+        "Title: When you've hit a rate limit\nURL: https://example.org/limits\nHighlights:\nBack off and retry."
+      )
+    )
+
+    expect((await searchExa('rate limits', {})).results).toHaveLength(1)
+  })
+
   it('says there is no page when Exa finds none at the address', async () => {
     const url = 'https://example.org/gone'
     callServerTool.mockResolvedValue(

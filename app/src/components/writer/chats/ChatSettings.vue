@@ -74,6 +74,20 @@
                     </span>
                   </template>
                 </Select>
+                <!-- Only while there is something to save: this chat runs
+                     differently from its profile. -->
+                <Button
+                  v-if="changed"
+                  v-tooltip.top="'Save to profile'"
+                  icon="pi pi-save"
+                  severity="secondary"
+                  text
+                  rounded
+                  size="small"
+                  aria-label="Save to profile"
+                  data-action="save-to-profile"
+                  @click="saveToProfile"
+                />
                 <Button
                   v-tooltip.top="'Profile actions'"
                   icon="pi pi-ellipsis-v"
@@ -104,7 +118,12 @@
                  the panel; either opens in the editor for room to work in. -->
             <div class="flex flex-col gap-1">
               <div class="flex items-center justify-between gap-2">
-                <SettingLabel label="System prompt" />
+                <SettingLabel
+                  label="System prompt"
+                  :overridden="chatPrompt !== profilePrompt"
+                  reset-tooltip="Back to the profile's"
+                  @reset="setPrompt(profilePrompt)"
+                />
                 <HeaderButton
                   icon="pi pi-window-maximize"
                   label="Open in editor"
@@ -119,7 +138,7 @@
                 class="w-full max-h-48 !overflow-y-auto dark:!bg-surface-900"
                 auto-resize
                 rows="3"
-                aria-label="System Prompt"
+                aria-label="System prompt"
                 @input="setPrompt(systemPrompt)"
               />
             </div>
@@ -129,6 +148,9 @@
                 <SettingLabel
                   label="Author's note"
                   description="Sent with each message you write."
+                  :overridden="(note || '') !== (selectedProfile?.settings?.rules || '')"
+                  reset-tooltip="Back to the profile's"
+                  @reset="setNote(selectedProfile?.settings?.rules || '')"
                 />
                 <HeaderButton
                   icon="pi pi-window-maximize"
@@ -166,7 +188,99 @@
           </div>
         </ExpandableSection>
 
-        <!-- 2. Tools: what the model can reach for. -->
+        <!-- 2. Roleplay: who is who in a scene, and what a card asks of every
+             turn, in a roleplay chat. The chat's alone: saving it to its
+             profile leaves these. -->
+        <ExpandableSection
+          v-if="isRoleplay"
+          title="Roleplay"
+          storage-key="ui.chat-settings.roleplay"
+          level="2"
+          content-wrapper-class="flex flex-col px-3"
+        >
+          <div class="flex flex-col gap-3 pt-2 pb-2">
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex flex-col gap-1 min-w-0">
+                <SettingLabel label="User" />
+                <InputText
+                  v-model="userName"
+                  placeholder="{{user}}"
+                  size="small"
+                  class="w-full dark:!bg-surface-900"
+                  aria-label="User"
+                  data-roleplay="user"
+                  @input="setUserName(userName)"
+                />
+              </div>
+              <div class="flex flex-col gap-1 min-w-0">
+                <SettingLabel label="Character" />
+                <InputText
+                  v-model="characterName"
+                  placeholder="{{char}}"
+                  size="small"
+                  class="w-full dark:!bg-surface-900"
+                  aria-label="Character"
+                  data-roleplay="character"
+                  @input="setCharacterName(characterName)"
+                />
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center justify-between gap-2">
+                <SettingLabel
+                  label="System prompt"
+                  description="Sent after the system prompt above, or around it where it says {{original}}."
+                />
+                <HeaderButton
+                  icon="pi pi-window-maximize"
+                  label="Open in editor"
+                  class="-my-1.5"
+                  data-action="open-roleplay-prompt"
+                  @click="openInEditor('roleplay-prompt')"
+                />
+              </div>
+              <Textarea
+                v-model="roleplayPrompt"
+                size="small"
+                class="w-full max-h-48 !overflow-y-auto dark:!bg-surface-900"
+                auto-resize
+                rows="2"
+                aria-label="Roleplay system prompt"
+                data-roleplay="prompt"
+                @input="setRoleplayPrompt(roleplayPrompt)"
+              />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center justify-between gap-2">
+                <SettingLabel
+                  label="Post-history instructions"
+                  description="Sent after the author's note, or around it where they say {{original}}."
+                />
+                <HeaderButton
+                  icon="pi pi-window-maximize"
+                  label="Open in editor"
+                  class="-my-1.5"
+                  data-action="open-post-history"
+                  @click="openInEditor('post-history')"
+                />
+              </div>
+              <Textarea
+                v-model="postHistory"
+                size="small"
+                class="w-full max-h-48 !overflow-y-auto dark:!bg-surface-900"
+                auto-resize
+                rows="2"
+                aria-label="Post-history instructions"
+                data-roleplay="post-history"
+                @input="setPostHistory(postHistory)"
+              />
+            </div>
+          </div>
+        </ExpandableSection>
+
+        <!-- 3. Tools: what the model can reach for. -->
         <ExpandableSection
           title="Tools"
           storage-key="ui.chat-settings.tools"
@@ -189,7 +303,7 @@
               />
             </div>
             <p v-if="!modelToolsEnabled" class="text-xs text-surface-500 dark:text-surface-400">
-              Tool use is off in the AI preset.
+              Allow tool use is off in Settings › AI.
             </p>
             <!-- App-wide, unlike the rest of the section, and it says so. -->
             <div class="flex items-center justify-between gap-2 h-8 px-2">
@@ -332,7 +446,7 @@
           </div>
         </ExpandableSection>
 
-        <!-- 3. Skills: the pieces of work with prompts of their own. -->
+        <!-- 4. Skills: the pieces of work with prompts of their own. -->
         <ExpandableSection
           title="Skills"
           storage-key="ui.chat-settings.skills"
@@ -407,7 +521,7 @@
                 <div class="flex flex-col gap-1">
                   <SettingLabel
                     label="Prompt"
-                    :overridden="isSkillOverridden(skill.id)"
+                    :overridden="isSkillReworded(skill.id)"
                     reset-tooltip="Back to its wording in the skill library"
                     @reset="resetSkill(skill.id)"
                   />
@@ -437,7 +551,7 @@
           </div>
         </ExpandableSection>
 
-        <!-- 4. AI: what the request runs on. App-wide, and says so. -->
+        <!-- 5. AI: what the request runs on. App-wide, and says so. -->
         <ExpandableSection
           title="AI"
           storage-key="ui.chat-settings.ai"
@@ -449,7 +563,7 @@
           </div>
         </ExpandableSection>
 
-        <!-- 5. Voices: how this chat is read aloud. -->
+        <!-- 6. Voices: how this chat is read aloud. -->
         <ExpandableSection
           title="Voices"
           storage-key="ui.chat-settings.voices"
@@ -536,7 +650,7 @@ import { useNarration } from '@/composables/useNarration'
 import { useProfiles } from '@/composables/useProfiles'
 import { EXPERIMENTAL_GROUP, getToolGroups, SKILLS_GROUP, toolGroupOf } from '@/ai/tools/index.js'
 import { WEB_GROUP } from '@/ai/tools/web.js'
-import { allSkills, skillLabel, skillPrompt } from '@/ai/skills/index.js'
+import { allSkills, skillLabel } from '@/ai/skills/index.js'
 import { loadedByModel, waitingOn } from '@/ai/skills/runner.js'
 import { useSkills } from '@/composables/useSkills'
 import { useLoadedSkills } from '@/composables/useLoadedSkills.js'
@@ -551,10 +665,13 @@ import { COMMANDS } from '@/ai/commands.js'
 import { chatTabId } from '@/utils/chatTabs.js'
 
 /**
- * Everything about one chat, in five sections.
+ * Everything about one chat, in six sections.
  *
  * **Profile** is how this chat is run: its prompt, its author's note, and
- * whether the project rides along. **Tools** are what the model can reach for.
+ * whether the project rides along. **Roleplay**, in a roleplay chat, is the
+ * scene's: the names `{{user}}` and `{{char}}` become, and a card's own
+ * instructions, sent after the profile's. **Tools** are what the model can
+ * reach for.
  * **Skills** are the pieces of work with prompts of their own that the model
  * may hand a turn to. **AI** is what the request runs on, which is app-wide and
  * says so. **Voices** is how it is read aloud.
@@ -722,9 +839,23 @@ const {
   isSavedProfile,
   note,
   setNote,
-  prompt: profilePrompt,
+  roleplay,
+  isRoleplay,
+  setUserName,
+  setCharacterName,
+  setRoleplayPrompt,
+  setPostHistory,
+  prompt: chatPrompt,
+  profilePrompt,
   setPrompt,
+  skillPromptOf,
+  setSkillPrompt: writeSkillPrompt,
+  resetSkill,
+  isSkillReworded,
+  changed,
   forkProfile,
+  saveToProfile,
+  resetToProfile,
   setProfile,
   deleteProfile,
 } = useChatSettings(props.storyId, () => props.chatId)
@@ -779,11 +910,33 @@ watch(
   }
 )
 
+/**
+ * One of the roleplay settings as it is being typed, held locally for the
+ * reason the note is. Watched one at a time, so a change to the chat that
+ * leaves this one as it was does not put back what the store trimmed.
+ * @param {'userName'|'characterName'|'prompt'|'postHistory'} key
+ */
+const roleplayDraft = key => {
+  const text = ref(roleplay.value[key])
+  watch(
+    () => roleplay.value[key],
+    next => {
+      if (next !== text.value) text.value = next
+    }
+  )
+  return text
+}
+
+const userName = roleplayDraft('userName')
+const characterName = roleplayDraft('characterName')
+const roleplayPrompt = roleplayDraft('prompt')
+const postHistory = roleplayDraft('postHistory')
+
 const editorRequest = useEditorRequest()
 
 /**
- * Open the system prompt or the author's note in a tab of the editor's own,
- * and the editor with it, for more room than the field here has.
+ * Open one of the chat's texts in a tab of the editor's own, and the editor
+ * with it, for more room than the field here has.
  * @param {import('@/utils/chatTabs.js').ChatText} text
  */
 const openInEditor = text => {
@@ -907,16 +1060,6 @@ const skills = computed(() => {
 })
 
 /**
- * What a skill runs under here, and whether this profile has said so rather
- * than taking the skill's own wording: its file's, or the writer's in the
- * library.
- *
- * @param {string} id
- */
-const skillPromptFor = id => skillPrompt(id, selectedProfile.value?.settings)
-const isSkillOverridden = id => !!selectedProfile.value?.settings?.skills?.[id]?.prompt
-
-/**
  * The text as it is being typed, for the same reason the system prompt is held
  * locally: the store echoes every write back, and a value that arrives
  * mid-keystroke moves the caret.
@@ -924,59 +1067,38 @@ const isSkillOverridden = id => !!selectedProfile.value?.settings?.skills?.[id]?
  * @type {import('vue').Ref<Record<string, string>>}
  */
 const skillDrafts = ref(
-  Object.fromEntries(skills.value.map(skill => [skill.id, skillPromptFor(skill.id)]))
+  Object.fromEntries(skills.value.map(skill => [skill.id, skillPromptOf(skill.id)]))
 )
 
 watch(
   () => [
     selectedProfile.value?.settings,
+    chat.value?.skills,
     skills.value,
     skills.value.map(skill => wordingOf(skill.id)),
   ],
   () => {
     for (const skill of skills.value) {
-      const stored = skillPromptFor(skill.id)
+      const stored = skillPromptOf(skill.id)
       if (stored !== skillDrafts.value[skill.id]) skillDrafts.value[skill.id] = stored
     }
   }
 )
 
 /**
- * Change what a skill runs under, on the profile. Editing a built-in forks it
- * the same way editing the system prompt does — the wording is the profile's,
- * and a built-in is not the writer's to rewrite.
+ * Change what a skill runs under, in this chat. See `setSkillPrompt` in
+ * useChatSettings.
  *
  * @param {string} id
  */
-const setSkillPrompt = id => {
-  const prompt = skillDrafts.value[id]
-  const worded = { ...(selectedProfile.value?.settings?.skills || {}), [id]: { prompt } }
-  if (isSavedProfile.value) {
-    profilesApi.updateProfile(selectedProfileId.value, { settings: { skills: worded } })
-  } else {
-    forkProfile({ skills: worded })
-  }
-}
-
-/**
- * Take the override off, which puts the skill back on its own wording — and
- * keeps it there as that wording changes.
- *
- * @param {string} id
- */
-const resetSkill = id => {
-  if (!isSavedProfile.value) return
-  const worded = { ...(selectedProfile.value?.settings?.skills || {}) }
-  delete worded[id]
-  profilesApi.updateProfile(selectedProfileId.value, { settings: { skills: worded } })
-}
+const setSkillPrompt = id => writeSkillPrompt(id, skillDrafts.value[id])
 
 // Edited locally so typing doesn't fight the value the store echoes back,
 // which would otherwise jump the caret on every keystroke. See `setPrompt`
 // for what an edit does.
-const systemPrompt = ref(profilePrompt.value)
+const systemPrompt = ref(chatPrompt.value)
 
-watch(profilePrompt, next => {
+watch(chatPrompt, next => {
   if (next !== systemPrompt.value) systemPrompt.value = next
 })
 
@@ -1026,9 +1148,15 @@ const profileMenuItems = computed(() => [
   {
     label: 'New profile',
     icon: 'pi pi-plus',
-    // A copy of the one in use, for the same reason a new preset is: the usual
-    // reason to reach for one is a variation on what is already there.
+    // A copy of this chat's settings, for the same reason a new preset is: the
+    // usual reason to reach for one is a variation on what is already there.
     command: () => forkProfile(),
+  },
+  {
+    label: 'Reset to profile',
+    icon: 'pi pi-replay',
+    disabled: !changed.value,
+    command: resetToProfile,
   },
   {
     label: 'Rename profile',

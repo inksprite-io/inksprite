@@ -3,7 +3,7 @@ import { generateChatId, useChatsStore } from '@/stores/chatsStore'
 import { useMessagesStore } from '@/stores/messagesStore'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
-import { DEFAULT_PROFILE_ID, settingsForNewChat } from '@/ai/profiles/index.js'
+import { settingsForNewChat } from '@/ai/profiles/index.js'
 import { useProfiles } from './useProfiles.js'
 import { localStorage as appStorage } from '@/utils/localStorage.js'
 
@@ -185,7 +185,7 @@ export const useChats = storyId => {
    */
   const defaultProfileId = () => {
     const named = useStoriesStore().getStory(storyId)?.options?.profileId
-    return profilesApi.getProfile(named)?.id ?? DEFAULT_PROFILE_ID
+    return profilesApi.getProfile(named)?.id ?? profilesApi.chatDefaultId()
   }
 
   /**
@@ -571,6 +571,8 @@ export const useChats = storyId => {
       ...(source.hiddenIds?.length ? { hiddenIds: [...source.hiddenIds] } : {}),
       ...(source.userName ? { userName: source.userName } : {}),
       ...(source.characterName ? { characterName: source.characterName } : {}),
+      ...(source.roleplayPrompt ? { roleplayPrompt: source.roleplayPrompt } : {}),
+      ...(source.postHistory ? { postHistory: source.postHistory } : {}),
       ...(source.voiceId ? { voiceId: source.voiceId } : {}),
       ...(source.userVoiceId ? { userVoiceId: source.userVoiceId } : {}),
     })

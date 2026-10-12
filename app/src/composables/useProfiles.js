@@ -6,9 +6,10 @@
  * reason: they are what a chat falls back to, and a list whose first entries
  * move as saved ones come and go is a list nobody can point at.
  *
- * A built-in cannot be edited. Editing one makes a copy of the writer's own and
- * moves the chat onto it, which is what the library did with prompts and the
- * behaviour everybody already has in their fingers.
+ * A built-in cannot be edited. Saving a chat's settings to one makes a copy of
+ * the writer's own, `Default - Custom`, and moves the chat onto it; a copy of
+ * one of the writer's own is numbered, `Notes (2)`, as copies are everywhere
+ * else.
  *
  * An NSFW built-in and its general counterpart are one entry, which the
  * settings switch decides between. Off, the general one is offered, and a chat
@@ -21,7 +22,13 @@
 import { computed } from 'vue'
 import { useChatProfileStore } from '@/stores/chatProfileStore'
 import { useApplicationState } from './useApplicationState.js'
-import { BUILT_IN_PROFILES, DEFAULT_PROFILE_ID, getBuiltInProfile } from '@/ai/profiles/index.js'
+import {
+  BUILT_IN_PROFILES,
+  DEFAULT_PROFILE_ID,
+  ROLEPLAY_PROFILE_ID,
+  getBuiltInProfile,
+} from '@/ai/profiles/index.js'
+import { freeName } from '@/utils/titleValidation.js'
 
 /**
  * A profile as the library hands it over: the same shape whether it ships with
@@ -53,7 +60,7 @@ const NSFW_COUNTERPARTS = Object.fromEntries(
 
 export const useProfiles = () => {
   const store = useChatProfileStore()
-  const { nsfwProfiles } = useApplicationState()
+  const { nsfwProfiles, chatProfileId, roleplayProfileId } = useApplicationState()
 
   /**
    * The built-in that runs in place of this one: its counterpart when the
@@ -108,7 +115,20 @@ export const useProfiles = () => {
   }
 
   /**
-   * A copy of a profile under a new name, which is how a built-in is edited.
+   * What a copy of a profile is called: `Default - Custom` for a built-in's,
+   * and the next number for one of the writer's own, `Notes (2)`, either one
+   * numbered on past a name already taken.
+   *
+   * @param {ProfileEntry} source
+   * @returns {string}
+   */
+  function copyName(source) {
+    const taken = [...BUILT_IN_PROFILES, ...store.getAllProfiles()].map(profile => profile.name)
+    return freeName(taken, source.readOnly ? `${source.name} - Custom` : source.name)
+  }
+
+  /**
+   * A copy of a profile under a new name, with changes over its settings.
    *
    * @param {string} id - The profile to copy
    * @param {Partial<import('@/ai/profiles/index.js').ProfileSettings>} [changes]
@@ -117,8 +137,26 @@ export const useProfiles = () => {
   function duplicateProfile(id, changes = {}) {
     const source = getProfile(id)
     if (!source) return null
-    return saveProfile(`${source.name} copy`, { ...source.settings, ...changes })
+    return saveProfile(copyName(source), { ...source.settings, ...changes })
   }
+
+  /**
+   * The profile new chats start on where a project has not chosen one: the
+   * one chosen in the settings, while it is there, and Default otherwise.
+   * @returns {string}
+   */
+  const chatDefaultId = () =>
+    (getProfile(chatProfileId.value) ? chatProfileId.value : null) ?? DEFAULT_PROFILE_ID
+
+  /**
+   * The profile chats on a character card start on: the one chosen in the
+   * settings, while it is there, and Roleplay otherwise — which the NSFW
+   * switch puts its counterpart in place of, as it does for any chat on it.
+   * A profile of the writer's own stays theirs whichever way the switch is.
+   * @returns {string}
+   */
+  const roleplayDefaultId = () =>
+    (getProfile(roleplayProfileId.value) ? roleplayProfileId.value : null) ?? ROLEPLAY_PROFILE_ID
 
   /**
    * @param {string} id
@@ -142,6 +180,9 @@ export const useProfiles = () => {
     ready,
     saveProfile,
     duplicateProfile,
+    copyName,
+    chatDefaultId,
+    roleplayDefaultId,
     updateProfile,
     deleteProfile,
     DEFAULT_PROFILE_ID,

@@ -1,0 +1,145 @@
+---
+title: Projects
+description: Switch between projects, arrange a project's documents, move a project to another computer, and back up everything.
+---
+
+import Screenshot from '../../components/Screenshot.astro';
+
+A project holds one piece of work: its documents, the files you imported, and
+its chats.
+
+## Switch projects
+
+The buttons at the top of the outline:
+
+- **Projects**, the book, lists your projects by name, each with when it was
+  last edited. Click one to open it where you left it.
+- **Import a project**, the arrow, adds a project from a file: see
+  [move a project](#move-a-project).
+- **New project**, the plus, starts one.
+
+A project with a name another already has gets a number: a second
+*Lighthouse* is *Lighthouse (2)*.
+
+<Screenshot name="projects-switcher" alt="The Projects menu, with when each was last edited" />
+
+## Project settings
+
+Right-click the project, the first row of the outline, and choose **Project
+settings**.
+
+- **Title** is the project's name.
+- **Summary** says what the project is. The model reads it with every message,
+  so a few lines on the work and where it stands save explaining it in each
+  chat.
+- **Default profile** is the [profile](/chats/#profiles) new chats here start
+  on. Chats you've already started keep theirs.
+
+Click **Save**.
+
+<Screenshot name="projects-settings" alt="A project's settings, with its summary" />
+
+## Arrange the outline
+
+Right-click a row for its menu, or the space below the last row for the
+project's. On a phone, press and hold a row, or tap its **⋯**.
+
+### Order
+
+A folder lists its folders first, then its documents, each by name, with
+numbers in order: *Chapter 2* comes before *Chapter 10*. Choose **Keep in
+order** from a folder's menu to keep them in the order you drag them into, with
+new ones at the end. **Sort by name** goes back to sorting by name, and
+remembers your order for when you choose **Keep in order** again.
+
+### Move
+
+Drag a document or a folder onto a folder to put it inside; a closed folder
+opens if you hold it there. Drop it between two rows to put it in their
+folder. In a folder kept in order, it stays where you drop it.
+
+### Names
+
+No two documents in a folder share a name, whatever their capitals. A name you
+type that's taken is refused, and the outline says what has it. Something
+moved, imported or copied into a folder that has its name gets a number:
+*Notes (2)*.
+
+### The row's menu
+
+- **Rename** edits the name; so does <kbd>F2</kbd>.
+- **Duplicate** copies a document beside itself and opens the copy.
+- **Download** saves a document as a Markdown file, or an imported file as it
+  came in.
+- **Copy path** copies where the document is, such as `Notes/Characters/Elara`,
+  for naming it in a chat.
+- **Hide from all chats** keeps it out of every chat's sight. Pins and hiding
+  in one chat are in [Chats](/chats/#what-the-model-sees-of-your-project).
+- **Import**, on a folder, brings files in: see
+  [PDFs, Images, and Ebooks](/files/).
+
+From the keyboard, the arrow keys move along the outline and open and close
+folders, and <kbd>Enter</kbd> opens a document.
+
+### Delete
+
+Choose **Delete** from the row's menu. A folder goes with everything in it. To
+delete a whole project and its chats, choose **Delete project** from the
+project's menu.
+
+There's no undo: if you might want it back, [back up](#back-up-everything)
+first. In the desktop app, with
+[Keep projects in a folder](/desktop/#keep-projects-in-a-folder) on, what you
+delete goes to your computer's trash.
+
+## Move a project
+
+A project file carries one project to another browser, to the desktop app, or
+to someone else.
+
+1. Right-click the project and choose **Export project**. inksprite saves a
+   file named after it, with its documents, imported files and chats, and any
+   profiles of yours its chats use.
+2. Where you want it, click **Import a project** at the top of the outline
+   (**Import project** when no project is open) and choose the file.
+
+It comes in as a new project beside the others, and changes nothing that's
+there. Your settings and keys stay behind.
+
+## Back up everything
+
+A backup holds every project, chat and setting.
+
+1. Open **Settings** › **System** and click **Export backup**.
+2. Leave **Include API keys** off unless the file stays with you. It covers the
+   keys for your AI providers, MCP servers and web search.
+3. Click **Export**. inksprite saves a file named with the date.
+
+To restore one, click **Import backup** and choose the file. inksprite says
+what the backup holds and asks before it goes on: **Replace** deletes
+everything inksprite holds now, puts the backup in its place, and reloads.
+
+A backup made without keys comes back without them. Before you restore it,
+inksprite lists the services whose keys were left out, so you know which to
+connect again. Your sign-ins to [MCP servers](/mcp/) and the **Debug** switch
+are never in a backup. A backup from an older version of inksprite restores
+too.
+
+## Where your work is kept
+
+In a browser, your work is in that browser's storage, on that computer. Another
+browser starts empty: bring your work over with a backup or a project file.
+Clearing the site's data deletes it.
+
+When you start a project, inksprite asks the browser to keep its data. Firefox
+asks you first; allow it.
+
+:::caution[Safari deletes it after a week]
+Safari deletes a site's data after a week without a visit. On an iPhone or an
+iPad, add inksprite to your
+[Home Screen](https://support.apple.com/guide/iphone/bookmark-a-website-iph42ab2f3a7/ios#iph4f9a47bbc)
+to keep it. On a Mac, use the desktop app, or back up often.
+:::
+
+The [desktop app](/desktop/) keeps your work where no browser can clear it,
+and can keep each project as a folder of Markdown files.

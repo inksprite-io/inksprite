@@ -305,9 +305,11 @@ describe('project export and import', () => {
     expect(useChatProfileStore().getProfile(PROFILE).settings.prompt).toBe('Cut more.')
   })
 
-  it('sends a whole backup to the Data settings', async () => {
+  it('sends a whole backup to Import backup', async () => {
     const backup = useBackup()
     const file = asFile(await backup.createBackup())
-    await expect(backup.readProjectFile(file)).rejects.toThrow('Restore it from the Data settings')
+    await expect(backup.readProjectFile(file)).rejects.toThrow(
+      'Restore it with Import backup in Settings › System'
+    )
   })
 })

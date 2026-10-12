@@ -7,9 +7,9 @@
  * The steps are `drive/`'s: Google's sign-in with its picker, in a popup or
  * the system browser, then each picked file looked up and fetched. This puts
  * them in order and hands what came back to the bulk importer, as a batch
- * chosen from disk would be, so a Doc is a text document and a PDF a file
- * document. A Doc's pictures are taken out first and counted. See
- * `.llm/google_docs_design.md`.
+ * chosen from disk would be, so a Doc or a Word file is a text document and
+ * a PDF a file document. A Doc's pictures are taken out first and counted,
+ * and the importer counts a Word file's. See `.llm/google_docs_design.md`.
  */
 
 import { useBulkImport } from './useBulkImport.js'
@@ -104,7 +104,11 @@ export function useDriveImport(storyId) {
       signal,
       onProgress: (done, total) => onStep?.('writing', done, total),
     })
-    return { ...result, images, skipped: [...skipped, ...result.skipped] }
+    return {
+      ...result,
+      images: images + (result.images ?? 0),
+      skipped: [...skipped, ...result.skipped],
+    }
   }
 
   return { choose, importPicked }

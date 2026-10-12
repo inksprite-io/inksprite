@@ -312,6 +312,9 @@ Type: [Object][100]
   `tts/hints.js`.
 - `filters` **[string][101]?** What is not read aloud, a regular expression to a
   line. See `tts/filters.js`.
+- `providerId` **[string][101]?** The connection it is read aloud through, which its
+  voices are names in. Absent means the one last chosen in any project.
+- `model` **([string][101] | null)?** The connection's model it is read aloud with
 
 ## Part
 
@@ -373,6 +376,9 @@ Type: [Object][100]
 - `ordered` **[boolean][103]?** Folders only. Ordered folders sort by `order` and
   accept drag-to-position. Unordered folders sort by title. Absent counts as
   unordered.
+- `handOrder` **[Array][104]<[string][101]>?** Folders only, while sorted by name after
+  being kept in order: the ids in the order the writer had, taken up again
+  when the folder is kept in order once more.
 - `kind` **[string][101]?** What this document is, when it came from somewhere
   with a shape of its own: `card` on the folder an imported character card
   became, the field's name on each of its documents, `lore` on a book. Read by
@@ -463,13 +469,16 @@ Type: [Object][100]
 - `web` **[boolean][103]?** Whether this chat searches the web, once the writer has chosen here. Absent means it does when web search is set up for the chat's profile. Opted into, as a server's tools are. See web/config.js.
 - `projectContextEnabled` **[boolean][103]?** Whether the project block rides at the tail of this conversation. Absent means it does, which is what every chat written before the switch had.
 - `voiceId` **([string][101] | null)?** The voice this chat's messages are read aloud in, one of the project's. Absent, or naming a voice since removed, means the project's default.
-- `rules` **[string][101]?** The chat's author's note: standing instructions the writer keeps as they go, sent in their latest message after the project block and ahead of what they said. Starts as the profile's, combined with a card's post-history instructions for a chat on a card. Absent means none.
+- `prompt` **[string][101]?** The chat's own system prompt, once the writer has changed it here. Absent means the profile's, read on every turn. See ai/profiles.
+- `rules` **[string][101]?** The chat's author's note: standing instructions the writer keeps as they go, sent in their latest message after the project block and ahead of what they said. Starts as the profile's. Absent means none.
 - `pinnedIds` **[Array][104]<[string][101]>?** Documents whose text rides in the project block from the first turn, without the model having read them. A folder pins what is under it. Absent means none.
 - `shownIds` **[Array][104]<[string][101]>?** Documents this chat sees although a folder above them is hidden in it: a character's own folder, under the folder all the characters are in. Absent means none.
 - `hiddenIds` **[Array][104]<[string][101]>?** Documents kept from this chat's model, and everything under them unless something nearer is pinned or shown. The document's own `hidden` keeps it from every chat. See `utils/visibility.js`. Absent means none.
 - `userVoiceId` **([string][101] | null)?** The voice this chat's own messages are read aloud in, one of the project's. Absent means the same voice everything else is read in.
 - `userName` **[string][101]?** The writer's name in this chat: what `{{user}}` becomes in what its model reads. Asked for when a chat on a card starts. Absent means the macro is read as written. See `cards/macros.js`.
 - `characterName` **[string][101]?** The name of the character this chat plays: what `{{char}}` becomes in what its model reads. Absent means the macro is read as written.
+- `roleplayPrompt` **[string][101]?** Roleplay instructions sent after the system prompt, or where it says `{{original}}`: a card's system prompt, for a chat on a card. Kept apart from the prompt so that saving the chat to its profile does not take the card with it. Absent means none. See `withOriginal` in cards/card.js.
+- `postHistory` **[string][101]?** Roleplay instructions sent after the author's note, or where they say `{{original}}`: a card's post-history instructions, for a chat on a card. Absent means none.
 - `version` **[number][102]** Version number for conflict resolution
 - `created` **[number][102]** Creation timestamp
 - `updated` **[number][102]** Last update timestamp

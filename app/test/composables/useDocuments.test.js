@@ -202,6 +202,38 @@ describe('useDocuments', () => {
         expect(store.getDocument('sc_1')).not.toBeNull()
       })
 
+      it('removes a folder a tool made once it is empty, and keeps one with something in it', () => {
+        const folder = api.createFolder('manuscript_story_1', 'Design')
+        const made = { ...edit, documentId: folder.id, tool: 'create_folder', old: '', new: '' }
+        const note = api.createTextDocument(folder.id, 'Note')
+
+        expect(api.revertEdit(made)).toBe(false)
+        expect(store.getDocument(folder.id)).not.toBeNull()
+
+        store.deleteDocument(note.id)
+        expect(api.revertEdit(made)).toBe(true)
+        expect(store.getDocument(folder.id)).toBeNull()
+      })
+
+      it('puts a moved document back, while it is where the move left it', () => {
+        const folder = api.createFolder('manuscript_story_1', 'Drafts')
+        const moved = {
+          ...edit,
+          tool: 'move_document',
+          old: 'manuscript/p',
+          new: 'manuscript/Drafts/Q',
+        }
+        store.updateDocument('sc_1', { title: 'p' })
+        api.moveInto(folder.id, 'sc_1')
+        api.rename('sc_1', 'Q')
+
+        expect(api.revertEdit(moved)).toBe(true)
+        expect(api.pathOf('sc_1')).toBe('manuscript/p')
+        // Moved on since, by the writer: left where they put it.
+        api.rename('sc_1', 'Mine')
+        expect(api.revertEdit({ ...moved, new: 'manuscript/p' })).toBe(false)
+      })
+
       it('has nothing to do for a document that is gone', () => {
         expect(api.revertEdit({ ...edit, documentId: 'nobody' })).toBe(false)
       })
@@ -239,6 +271,34 @@ describe('useDocuments', () => {
         const append = { ...edit, tool: 'append_document', old: '', new: '\n\nThen hail.' }
         expect(await api.reapplyEdit(append)).toBe(true)
         expect(store.getDocument('sc_1').content).toBe('Snow fell.\n\nThen hail.')
+      })
+
+      it('makes a folder again under its own id, before the documents that go in it', async () => {
+        const made = {
+          ...edit,
+          documentId: 'folder_design',
+          tool: 'create_folder',
+          path: 'manuscript/Design',
+          old: '',
+          new: '',
+        }
+        const created = {
+          ...edit,
+          documentId: 'doc_plan',
+          tool: 'create_document',
+          path: 'manuscript/Design/Plan',
+          old: '',
+          new: 'A plan.',
+        }
+
+        expect(await api.reapplyEdit(made)).toBe(true)
+        expect(await api.reapplyEdit(created)).toBe(true)
+        expect(store.getDocument('folder_design')).toMatchObject({
+          parentId: 'manuscript_story_1',
+          type: 'folder',
+          title: 'Design',
+        })
+        expect(store.getDocument('doc_plan').parentId).toBe('folder_design')
       })
 
       it('brings back a created document that was undone, at its path and with its id', async () => {
@@ -722,7 +782,7 @@ describe('useDocuments', () => {
       expect(api.get(riley.id).order).toBe(1)
     })
 
-    it('leaves the positions alone when an ordered folder is switched off and on', () => {
+    it('takes up the hand-made order again when a folder is switched off and on', () => {
       const manuscript = 'manuscript_story_1'
       const zebra = api.createFolder(manuscript, 'Zebra')
       const apple = api.createFolder(manuscript, 'Apple')
@@ -730,9 +790,13 @@ describe('useDocuments', () => {
       api.setOrdered(manuscript, false)
       expect(api.childrenOf(manuscript)[0].id).toBe(apple.id)
 
-      // Switching back on takes the order showing, which is now by name.
+      // Moved about while sorted by name, then added to.
+      const mango = api.createFolder(manuscript, 'Mango')
+      api.reorder(manuscript, [mango.id, apple.id, zebra.id])
+
       api.setOrdered(manuscript, true)
-      expect(api.childrenOf(manuscript).map(d => d.id)).toEqual([apple.id, zebra.id])
+      expect(api.childrenOf(manuscript).map(d => d.id)).toEqual([zebra.id, apple.id, mango.id])
+      expect(api.get(manuscript).handOrder).toBeUndefined()
     })
 
     it('reports whether a folder sequences its children', () => {

@@ -1,0 +1,148 @@
+---
+title: Research
+description: Summarize sources, search the web, write a design doc, and revise it with the model through comments and review.
+---
+
+import Clip from '../../components/Clip.astro';
+import Screenshot from '../../components/Screenshot.astro';
+
+The model in a chat can read what you import, search the web, and write and
+edit the documents in your project. This guide follows one piece of research
+from start to finish: a design doc on adding real-time collaboration to a
+Markdown editor, built from two papers and a web search, then commented on,
+reviewed and revised.
+
+It was done with Claude Opus 5.5 through
+[Anthropic](/providers/#anthropic-and-openai). Any model that calls tools well
+works the same way.
+
+## Turn on web search
+
+Open **Settings** › **Connections**, and under **Web search** choose **Exa**.
+Exa searches without a key, up to a limit; to lift it, paste a key from Exa in
+**Key** and click **Connect**. Check that **Default** is on under **Used in
+chats on**, so chats on the Default profile can search.
+
+<Screenshot name="research-web-search" alt="Exa chosen under Web search, and on for chats on Default" />
+
+[Web Search](/web-search/) covers the other services, Kagi and Brave.
+
+## Bring in your sources
+
+Make a project, and a folder in it called **Sources**. Right-click the folder,
+choose **Import** › **Files…**, and choose your PDFs. inksprite takes the text
+out of each one for the model, and shows its pages when you open it.
+
+This guide imports two papers from Ink & Switch:
+[Local-first software](https://www.inkandswitch.com/local-first/static/local-first.pdf)
+and [Peritext](https://www.inkandswitch.com/peritext/static/cscw-publication.pdf).
+
+<Screenshot name="research-sources" alt="Two papers in a Sources folder, one open" />
+
+[PDFs, Images, and Ebooks](/files/) has more on what imports and how.
+
+## Summarize them
+
+Ask in the chat:
+
+> Read the two papers in Sources and summarize each in your own words, in a
+> Notes folder: the problem it takes on, what it proposes, and what matters if
+> we add real-time collaboration to our Markdown editor.
+
+The model looked at each paper's outline, read both in full, a part at a
+time, and wrote a note on each. Asking for its own words keeps it from quoting
+the papers at length.
+
+<Screenshot name="research-summaries" alt="The summary of Peritext, and the model's reply" />
+
+## Search the web
+
+The papers are a few years old. To see where things stand now, ask:
+
+> Our editor is ProseMirror, and documents are saved as Markdown. Search the
+> web for where Yjs and Automerge stand today for rich text: did Automerge take
+> up Peritext, and does either handle blocks like headings and lists? Put what
+> you find in Notes, with links.
+
+It ran five searches, read eight pages, and wrote a note with a link beside
+each finding. Click **14 tool calls** above its reply to see each search and
+page. Two of the searches ran into Exa's free limit, and the model said so in
+its reply.
+
+<Screenshot name="research-web-calls" alt="The note the model wrote from the web, with its links" />
+
+## Write the draft
+
+> Now write a design doc for adding real-time collaboration to the editor, in a
+> Design folder: the problem, the options, a recommendation, and the risks.
+> Base it on the notes, and say which note each point comes from. Keep it under
+> 1,500 words.
+
+It tagged each point with the note it came from and marked its own judgements
+as recommendations, so you can tell what's sourced from what isn't.
+
+<Screenshot name="research-design-doc" alt="The design doc, written into the Design folder" />
+
+## Leave comments
+
+Comment on the draft as you would on a colleague's. Select a passage, click
+**Comment** or press <kbd>⌘</kbd> <kbd>Shift</kbd> <kbd>M</kbd>
+(<kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>M</kbd> on Windows and Linux), type your
+comment, and press <kbd>Enter</kbd>.
+
+<Clip name="research-comment" label="Selecting a passage and commenting on it" />
+
+This guide leaves three: one answering a question the draft left open, one
+asking a question, and one asking for a section to move.
+
+The **Comments** icon at the far left lists every comment in the project.
+Click one to go to its passage.
+
+<Screenshot name="research-comments" alt="The three comments in the Comments tab, one marked in the draft" />
+
+## Have the model work through them
+
+> I left three comments on the design doc. Work through them, and resolve each
+> one when it's done.
+
+The model listed the comments, edited the doc for each, and said what it did.
+An edit to a commented passage resolves its comment, so all three were
+resolved when it finished. It also changed what depended on the first: with
+offline editing required, it now recommended Automerge.
+
+<Screenshot name="research-revised" alt="The draft after the model worked through the comments" />
+
+To approve each change before it's made, switch off **Apply edits
+automatically** under **Tools** in the chat's settings (the gear in the message
+box). [Comments](/comments/#ask-the-model) has more.
+
+## Ask for a review
+
+> Now review the design doc as a sceptical senior engineer would: what's weak,
+> what's missing, and what isn't backed by the notes? Don't change it yet.
+
+The model reread the doc and listed seven weaknesses, among them two places
+where the doc contradicted itself and a requirement the chosen library might
+not meet. A review reads better wide: **Hide editor**, at the left of the
+chat's header, gives the chat the editor's room.
+
+<Screenshot name="research-review" alt="The model's review, with the editor hidden" />
+
+## Revise
+
+Pick what to act on:
+
+> Good points. Fix 1, 2, 4 and 7 in the doc, and leave the rest for now.
+
+The model fixed those four and left everything else as it was.
+
+<Screenshot name="research-fixed" alt="The recommendation after the fixes" />
+
+## Going further
+
+- **Long sessions.** Every turn sends the whole chat so far. Type `/compact` to
+  have the model summarize it; see [Chats](/chats/#compact-a-long-chat).
+- **Keep a brief in front of it.** [Pin](/chats/#pin-documents) a document to
+  the chat, and it goes with every message you send.
+- **A review you run often** can be a [skill](/skills/#example-a-review-skill)
+  of your own, typed as `/review`.

@@ -4,40 +4,35 @@ import starlight from '@astrojs/starlight';
 import starlightImageZoom from 'starlight-image-zoom';
 
 // Every page the old guide had sends its readers somewhere rather than to a
-// 404, since the app and old posts still link to some of them: the ones about
-// starting out and connecting a model to the getting-started guide, the rest
-// to the About page (privacy, terms, credits) until the guide covers them.
-const TO_GUIDE = [
-	'/',
-	'/welcome',
-	'/getting_started',
-	'/ai/chat',
-	'/ai/configuration',
-	'/ai/models',
-	'/ai/overview',
-	'/ai/provider',
-	'/interface/chat',
-	'/interface/editor',
-	'/interface/outline',
-];
-const TO_ABOUT = [
-	'/roadmap',
-	'/ai/context',
-	'/ai/parameters',
-	'/ai/prompts',
-	'/ai/write',
-	'/interface/bookshelf',
-	'/interface/lorebook',
-	'/interface/reader',
-	'/interface/settings',
-];
+// 404, since the app and old posts still link to some of them: each to the
+// page that covers it now, and what none covers to the About page (privacy,
+// terms, credits).
+const MOVED = {
+	'/': '/getting-started',
+	'/welcome': '/getting-started',
+	'/getting_started': '/getting-started',
+	'/ai/overview': '/getting-started',
+	'/ai/configuration': '/providers',
+	'/ai/models': '/providers',
+	'/ai/parameters': '/providers',
+	'/ai/provider': '/providers',
+	'/ai/chat': '/chats',
+	'/ai/context': '/chats',
+	'/ai/prompts': '/chats',
+	'/interface/chat': '/chats',
+	'/ai/write': '/skills',
+	'/interface/editor': '/editor',
+	'/interface/outline': '/projects',
+	'/interface/bookshelf': '/projects',
+	'/interface/lorebook': '/roleplay',
+	'/interface/reader': '/files',
+	'/interface/settings': '/about',
+	'/roadmap': '/about',
+};
 
 // https://astro.build/config
 export default defineConfig({
-	redirects: {
-		...Object.fromEntries(TO_GUIDE.map(page => [page, '/getting-started'])),
-		...Object.fromEntries(TO_ABOUT.map(page => [page, '/about'])),
-	},
+	redirects: MOVED,
 	integrations: [
 		starlight({
 			title: 'inksprite',
@@ -45,9 +40,37 @@ export default defineConfig({
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/inksprite-io/inksprite' }],
 			customCss: ['./src/styles/media.css'],
 			sidebar: [
-				{ label: 'Getting started', link: '/getting-started' },
-				{ label: 'Narration', link: '/narration' },
-				{ label: 'Roleplay', link: '/roleplay' },
+				{ label: 'Getting Started', link: '/getting-started' },
+				{
+					label: 'Guides',
+					items: [
+						{ label: 'Research', link: '/research' },
+						{ label: 'Roleplay', link: '/roleplay' },
+						{ label: 'Narration', link: '/narration' },
+					],
+				},
+				{
+					label: 'Writing',
+					items: [
+						{ label: 'Projects', link: '/projects' },
+						{ label: 'The Editor', link: '/editor' },
+						{ label: 'Comments', link: '/comments' },
+						{ label: 'PDFs, Images, and Ebooks', link: '/files' },
+						{ label: 'Code Repositories', link: '/repositories' },
+						{ label: 'Google Docs', link: '/google-docs' },
+					],
+				},
+				{
+					label: 'AI',
+					items: [
+						{ label: 'Chats', link: '/chats' },
+						{ label: 'AI Providers', link: '/providers' },
+						{ label: 'Skills', link: '/skills' },
+						{ label: 'Web Search', link: '/web-search' },
+						{ label: 'MCP Servers', link: '/mcp' },
+					],
+				},
+				{ label: 'The Desktop App', link: '/desktop' },
 				{ label: 'About', link: '/about' },
 			],
 		}),

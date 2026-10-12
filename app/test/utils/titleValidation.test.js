@@ -4,7 +4,7 @@ import {
   shouldUpdateTitle,
   isCustomTitle,
   getTitlePlaceholder,
-  freeProjectName,
+  freeName,
 } from '@/utils/titleValidation'
 
 describe('titleValidation', () => {
@@ -123,29 +123,27 @@ describe('titleValidation', () => {
     })
   })
 
-  describe('freeProjectName', () => {
+  describe('freeName', () => {
     it('keeps a name nothing else has', () => {
-      expect(freeProjectName(['Harbour'], 'Lighthouse')).toBe('Lighthouse')
-      expect(freeProjectName(['Lighthouse (2)'], 'Lighthouse')).toBe('Lighthouse')
+      expect(freeName(['Harbour'], 'Lighthouse')).toBe('Lighthouse')
+      expect(freeName(['Lighthouse (2)'], 'Lighthouse')).toBe('Lighthouse')
     })
 
     it('numbers a taken name from two, the original being the first', () => {
-      expect(freeProjectName(['Lighthouse'], 'Lighthouse')).toBe('Lighthouse (2)')
+      expect(freeName(['Lighthouse'], 'Lighthouse')).toBe('Lighthouse (2)')
     })
 
     it('counts on past the highest copy there is', () => {
-      expect(freeProjectName(['Lighthouse', 'Lighthouse (2)'], 'Lighthouse')).toBe('Lighthouse (3)')
-      expect(freeProjectName(['Lighthouse', 'Lighthouse (4)'], 'Lighthouse')).toBe('Lighthouse (5)')
+      expect(freeName(['Lighthouse', 'Lighthouse (2)'], 'Lighthouse')).toBe('Lighthouse (3)')
+      expect(freeName(['Lighthouse', 'Lighthouse (4)'], 'Lighthouse')).toBe('Lighthouse (5)')
     })
 
     it('counts a numbered copy on from its own number', () => {
-      expect(freeProjectName(['Lighthouse', 'Lighthouse (2)'], 'Lighthouse (2)')).toBe(
-        'Lighthouse (3)'
-      )
+      expect(freeName(['Lighthouse', 'Lighthouse (2)'], 'Lighthouse (2)')).toBe('Lighthouse (3)')
     })
 
     it('compares names whatever their case and spacing', () => {
-      expect(freeProjectName(['lighthouse '], 'Lighthouse')).toBe('Lighthouse (2)')
+      expect(freeName(['lighthouse '], 'Lighthouse')).toBe('Lighthouse (2)')
     })
   })
 })

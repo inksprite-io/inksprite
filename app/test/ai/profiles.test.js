@@ -184,7 +184,9 @@ describe('chat profiles', () => {
 
       expect(updates.disabledToolGroups).toEqual(roleplay.settings.disabledToolGroups)
       expect(updates.rules).toBe(roleplay.settings.rules)
-      expect(updates).not.toHaveProperty('prompt')
+      // The chat's own wording is taken off, so it reads the profile's.
+      expect(updates.prompt).toBeUndefined()
+      expect(updates.skills).toBeUndefined()
     })
   })
 

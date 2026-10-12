@@ -18,8 +18,8 @@ import { desktop } from './desktop.js'
 export const librarySettings = () => desktop().library.settings()
 
 /**
- * Keep the projects in the library from now on. They are moved into it when
- * the app opens again.
+ * Keep the projects in the library from now on. Until the window's projects
+ * are moved into it, the app opens on them, and moves them in.
  *
  * @returns {Promise<string>} Where it is
  */

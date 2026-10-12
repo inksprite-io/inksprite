@@ -10,6 +10,7 @@
  * - **partialJson** - The strings in JSON that has not finished arriving
  * - **wordCount** - Words in a document's markdown
  * - **lineDiff** - The lines that changed between two versions of a text
+ * - **compareNames** - Names in the order a person expects, numbers by value
  *
  * ### AI Integration
  *
@@ -18,6 +19,8 @@
  * - **obfuscate** - A chat export with its words taken out, for sharing its shape (the Export obfuscated menu item, with Debug on)
  * - **focus** - Whether the writer is typing somewhere already
  * - **documentPath** - How a document is addressed: by its titles from the root down
+ * - **documentLinks** - Links from one document to another, written as Markdown files link to
+ *   the files beside them, and followed back
  * - **visibility** - What one chat sees of the project: hidden outright, and each chat's pins, shows and hides
  * - **chatTitle** - What a chat is called before it has a name, and a title the model wrote, made plain
  *
@@ -55,4 +58,13 @@ export * from './wordCount.js'
 export * from './turns.js'
 export * from './focus.js'
 export * from './documentPath.js'
+export * from './compareNames.js'
+export {
+  isDocumentHref,
+  fileNameOf,
+  resolveLink,
+  documentNamed,
+  readableHref,
+  hrefFor,
+} from './documentLinks.js'
 export * from './visibility.js'

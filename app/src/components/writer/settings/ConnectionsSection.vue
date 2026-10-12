@@ -181,7 +181,7 @@
             >
               <span class="font-mono">{{ tool.name }}</span>
               <span v-if="tool.annotations?.readOnlyHint" class="text-surface-400">
-                · reads only</span
+                · Reads only</span
               >
               <span v-if="tool.description"> — {{ tool.description }}</span>
             </li>

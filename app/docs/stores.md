@@ -1464,11 +1464,10 @@ Returns **[Array][715]<[Document][721]>**&#x20;
 Get the children of a parent in display order.
 
 An ordered folder sorts by `order`; anything else sorts the way a file
-explorer does, folders first and then by title. A document nobody has
+explorer does, folders first and then by title, numbers by value. A document nobody has
 named sorts as the "Untitled" it reads as, rather than as an empty title
-ahead of everything. `order` is still maintained either way, so switching
-a folder to ordered restores its original sequence rather than an
-arbitrary one.
+ahead of everything. A folder switched to names keeps the order it had in
+`handOrder`; see `setOrdered` in `useDocuments`.
 
 ### Parameters
 
@@ -4707,7 +4706,7 @@ Returns **[Array][715]\<Story>** Array of stories
 ## freeName
 
 A name no other project goes by: `title`, or a numbered copy of it. See
-`freeProjectName`. The names are read off the projects' roots as far as
+`freeName` in utils/titleValidation. The names are read off the projects' roots as far as
 they are loaded; `loadNames` loads them all, and the outline's project
 switcher has done so already.
 

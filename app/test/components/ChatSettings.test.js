@@ -137,7 +137,12 @@ describe('ChatSettings profile', () => {
     await useChatProfileStore().ensureInitialized()
   })
 
-  afterEach(() => useApplicationState().setNsfwProfiles(false))
+  afterEach(() => {
+    const app = useApplicationState()
+    app.setNsfwProfiles(false)
+    app.setChatProfileId(null)
+    app.setRoleplayProfileId(null)
+  })
 
   it('shows the prompt of the profile the chat is on', async () => {
     const wrapper = await mountSettings()
@@ -145,78 +150,160 @@ describe('ChatSettings profile', () => {
     expect(promptField(wrapper).element.value).toBe(DEFAULT_CHAT_PROMPT)
   })
 
-  it("saves edits to a profile of the writer's own as they are typed", async () => {
+  it('keeps an edit to the prompt in the chat, leaving the profile as it is', async () => {
     const editor = library.saveProfile('Editor', { prompt: 'Be terse.' })
     chat.value.profileId = editor.id
     const wrapper = await mountSettings()
 
     await promptField(wrapper).setValue('Be very terse.')
 
-    // The prompt lives on the profile, so it changes for every chat on it.
-    expect(library.getProfile(editor.id).settings.prompt).toBe('Be very terse.')
-    expect(updateChat).not.toHaveBeenCalled()
+    // Every change in a chat is the chat's; Save to profile is how one
+    // reaches the profile.
+    expect(chat.value.prompt).toBe('Be very terse.')
+    expect(library.getProfile(editor.id).settings.prompt).toBe('Be terse.')
   })
 
-  it('forks a copy when a built-in is edited, and moves the chat onto it', async () => {
+  it("makes no copy when a built-in's prompt is edited", async () => {
     const wrapper = await mountSettings()
 
     await promptField(wrapper).setValue('Run a heist.')
     await flushPromises()
 
-    const [copy] = saved(library)
-    expect(copy.name).toBe('Default copy')
-    expect(copy.settings.prompt).toBe('Run a heist.')
-    expect(updateChat).toHaveBeenCalledWith('chat_1', { profileId: copy.id })
+    expect(saved(library)).toHaveLength(0)
+    expect(chat.value.profileId).toBe(CHAT_PROFILE_ID)
+    expect(chat.value.prompt).toBe('Run a heist.')
     expect(promptField(wrapper).element.value).toBe('Run a heist.')
   })
 
-  it('keeps editing the copy after the fork', async () => {
+  it("reads the profile's prompt again once it is typed back, or reset", async () => {
     const wrapper = await mountSettings()
+
     await promptField(wrapper).setValue('Run a heist.')
+    await promptField(wrapper).setValue(DEFAULT_CHAT_PROMPT)
+    expect(chat.value.prompt).toBeUndefined()
+
+    await promptField(wrapper).setValue('Run a heist.')
+    await button(wrapper, 'Reset System prompt').trigger('click')
     await flushPromises()
-
-    await promptField(wrapper).setValue('Run a heist in Venice.')
-
-    expect(saved(library)).toHaveLength(1)
-    expect(saved(library)[0].settings.prompt).toBe('Run a heist in Venice.')
+    expect(chat.value.prompt).toBeUndefined()
+    expect(promptField(wrapper).element.value).toBe(DEFAULT_CHAT_PROMPT)
   })
 
-  it('carries the whole profile onto the copy, not just its prompt', async () => {
-    chat.value.profileId = 'builtin_profile_roleplay'
+  it('offers Save to profile only once the chat runs differently from its profile', async () => {
+    // Stamped from Default, as a new chat on it is.
+    chat.value.disabledToolGroups = ['experimental']
+    const wrapper = await mountSettings()
+    expect(button(wrapper, 'Save to profile').exists()).toBe(false)
+
+    await promptField(wrapper).setValue('Run a heist.')
+    await flushPromises()
+    expect(button(wrapper, 'Save to profile').exists()).toBe(true)
+  })
+
+  it("saves the chat's settings to a profile of the writer's own", async () => {
+    const editor = library.saveProfile('Editor', { prompt: 'Be terse.' })
+    chat.value = { ...chat.value, profileId: editor.id, disabledTools: ['create_folder'] }
+    const wrapper = await mountSettings()
+
+    await promptField(wrapper).setValue('Be very terse.')
+    await button(wrapper, 'Save to profile').trigger('click')
+    await flushPromises()
+
+    const profile = library.getProfile(editor.id)
+    expect(profile.settings.prompt).toBe('Be very terse.')
+    expect(profile.settings.disabledTools).toEqual(['create_folder'])
+    expect(chat.value.prompt).toBeUndefined()
+    expect(saved(library)).toHaveLength(1)
+    expect(button(wrapper, 'Save to profile').exists()).toBe(false)
+  })
+
+  it("saves a built-in's settings to Default - Custom, where new chats then start", async () => {
+    const wrapper = await mountSettings()
+
+    await promptField(wrapper).setValue('Run a heist.')
+    await button(wrapper, 'Save to profile').trigger('click')
+    await flushPromises()
+
+    const [copy] = saved(library)
+    expect(copy.name).toBe('Default - Custom')
+    expect(copy.settings.prompt).toBe('Run a heist.')
+    expect(chat.value.profileId).toBe(copy.id)
+    expect(chat.value.prompt).toBeUndefined()
+    expect(useApplicationState().chatProfileId.value).toBe(copy.id)
+    expect(library.getProfile(CHAT_PROFILE_ID).settings.prompt).toBe(DEFAULT_CHAT_PROMPT)
+  })
+
+  it('carries the whole chat onto the copy, not just its prompt', async () => {
+    chat.value = {
+      ...chat.value,
+      profileId: ROLEPLAY_PROFILE_ID,
+      disabledToolGroups: ['rpg', 'skills', 'experimental'],
+    }
     const wrapper = await mountSettings()
 
     await promptField(wrapper).setValue('Play someone else.')
+    await button(wrapper, 'Save to profile').trigger('click')
     await flushPromises()
 
     // A prompt without the tools it was written for is half an answer.
     const [copy] = saved(library)
+    expect(copy.name).toBe('Roleplay - Custom')
     expect(copy.settings.disabledToolGroups).toEqual(['rpg', 'skills', 'experimental'])
+    expect(useApplicationState().roleplayProfileId.value).toBe(copy.id)
   })
 
-  /** Pick New profile from the profile actions menu. */
-  const newProfile = async wrapper => {
+  it('numbers a second copy of a built-in', async () => {
+    library.saveProfile('Default - Custom', { prompt: 'Run a heist.' })
+    const wrapper = await mountSettings()
+
+    await promptField(wrapper).setValue('Run a different heist.')
+    await button(wrapper, 'Save to profile').trigger('click')
+    await flushPromises()
+
+    expect(saved(library).map(one => one.name)).toContain('Default - Custom (2)')
+  })
+
+  /** Pick an item from the profile actions menu. */
+  const pick = async (wrapper, label) => {
     await button(wrapper, 'Profile actions').trigger('click')
     await flushPromises()
     const item = [
       ...document.body.querySelectorAll('#chat_profile_actions [role="menuitem"]'),
-    ].find(one => one.textContent.trim() === 'New profile')
+    ].find(one => one.textContent.trim() === label)
     item.querySelector('a').click()
     await flushPromises()
   }
 
-  it("starts new chats on a New profile with this chat's author's note", async () => {
-    chat.value = { ...chat.value, profileId: ROLEPLAY_PROFILE_ID, rules: 'Keep it to two lines.' }
+  it("starts new chats on a New profile with this chat's settings", async () => {
+    chat.value = {
+      ...chat.value,
+      profileId: ROLEPLAY_PROFILE_ID,
+      rules: 'Keep it to two lines.',
+      disabledToolGroups: ['skills', 'experimental'],
+    }
     const wrapper = await mountSettings('chat_1', { attachTo: document.body })
 
-    await newProfile(wrapper)
+    await pick(wrapper, 'New profile')
 
     const [copy] = saved(library)
+    expect(copy.name).toBe('Roleplay - Custom')
     expect(copy.settings.rules).toBe('Keep it to two lines.')
+    expect(copy.settings.disabledToolGroups).toEqual(['skills', 'experimental'])
     expect(copy.settings.prompt).toBe(library.getProfile(ROLEPLAY_PROFILE_ID).settings.prompt)
-    expect(updateChat).toHaveBeenLastCalledWith('chat_1', {
-      profileId: copy.id,
-      rules: 'Keep it to two lines.',
-    })
+    expect(chat.value.profileId).toBe(copy.id)
+    // A New profile is a variation to try, not where chats start.
+    expect(useApplicationState().roleplayProfileId.value).toBeNull()
+    wrapper.unmount()
+  })
+
+  it("numbers a New profile made from one of the writer's own", async () => {
+    const mine = library.saveProfile('Mine', { prompt: 'Be terse.' })
+    chat.value.profileId = mine.id
+    const wrapper = await mountSettings('chat_1', { attachTo: document.body })
+
+    await pick(wrapper, 'New profile')
+
+    expect(saved(library).map(one => one.name)).toEqual(['Mine', 'Mine (2)'])
     wrapper.unmount()
   })
 
@@ -225,13 +312,27 @@ describe('ChatSettings profile', () => {
     useApplicationState().setNsfwProfiles(true)
     const wrapper = await mountSettings('chat_1', { attachTo: document.body })
 
-    await newProfile(wrapper)
+    await pick(wrapper, 'New profile')
 
     // The copy has no counterpart to read Roleplay's note as the NSFW one's,
     // so the chat moving onto it takes the note it was showing.
     const [copy] = saved(library)
     expect(copy.settings.rules).toBe(DEFAULT_ROLEPLAY_NSFW_NOTE)
     expect(chat.value.rules).toBe(DEFAULT_ROLEPLAY_NSFW_NOTE)
+    wrapper.unmount()
+  })
+
+  it('puts the chat back as its profile has it', async () => {
+    chat.value = { ...chat.value, rules: 'Short.', disabledTools: ['create_folder'] }
+    const wrapper = await mountSettings('chat_1', { attachTo: document.body })
+    await promptField(wrapper).setValue('Run a heist.')
+
+    await pick(wrapper, 'Reset to profile')
+
+    expect(chat.value.prompt).toBeUndefined()
+    expect(chat.value.rules).toBeUndefined()
+    expect(chat.value.disabledTools).toBeUndefined()
+    expect(chat.value.profileId).toBe(CHAT_PROFILE_ID)
     wrapper.unmount()
   })
 
@@ -358,6 +459,168 @@ describe('ChatSettings author’s note', () => {
 
       expect(rulesField(wrapper).element.value).toBe(DEFAULT_ROLEPLAY_NOTE)
     })
+  })
+})
+
+describe('ChatSettings roleplay', () => {
+  /** @type {ReturnType<typeof useProfiles>} */
+  let library
+
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+    // On Roleplay, stamped as a new chat on it is.
+    chat.value = {
+      id: 'chat_1',
+      storyId: 'story_1',
+      profileId: ROLEPLAY_PROFILE_ID,
+      rules: DEFAULT_ROLEPLAY_NOTE,
+      disabledToolGroups: ['rpg', 'skills', 'experimental'],
+    }
+    library = useProfiles()
+    await useChatProfileStore().ensureInitialized()
+    useEditorRequest().take()
+  })
+
+  afterEach(() => useApplicationState().setRoleplayProfileId(null))
+
+  const field = (wrapper, name) => wrapper.find(`[data-roleplay="${name}"]`)
+
+  it('is not shown in a chat that is not a roleplay', async () => {
+    chat.value = { ...chat.value, profileId: CHAT_PROFILE_ID, rules: undefined }
+    const wrapper = await mountSettings()
+
+    expect(field(wrapper, 'user').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('Post-history instructions')
+  })
+
+  it('is shown on Roleplay (NSFW), and on the profile character cards start on', async () => {
+    useApplicationState().setNsfwProfiles(true)
+    chat.value.profileId = ROLEPLAY_NSFW_PROFILE_ID
+    expect(field(await mountSettings(), 'user').exists()).toBe(true)
+    useApplicationState().setNsfwProfiles(false)
+
+    const mine = library.saveProfile('Scenes', { prompt: 'Play it.' })
+    useApplicationState().setRoleplayProfileId(mine.id)
+    chat.value.profileId = mine.id
+    expect(field(await mountSettings(), 'user').exists()).toBe(true)
+  })
+
+  it('stays shown in a card chat moved to another profile', async () => {
+    // Its names are still filled in, so they stay where they can be changed.
+    chat.value = { ...chat.value, profileId: CHAT_PROFILE_ID, userName: 'Tal' }
+    const wrapper = await mountSettings()
+
+    expect(field(wrapper, 'user').element.value).toBe('Tal')
+  })
+
+  it("shows the chat's names and a card's instructions", async () => {
+    chat.value = {
+      ...chat.value,
+      userName: 'Tal',
+      characterName: 'Maren',
+      roleplayPrompt: 'You are {{char}}.',
+      postHistory: 'Thoughts in italics.',
+    }
+    const wrapper = await mountSettings()
+
+    expect(field(wrapper, 'user').element.value).toBe('Tal')
+    expect(field(wrapper, 'character').element.value).toBe('Maren')
+    expect(field(wrapper, 'prompt').element.value).toBe('You are {{char}}.')
+    expect(field(wrapper, 'post-history').element.value).toBe('Thoughts in italics.')
+  })
+
+  it('shows each macro where the chat has no name for it', async () => {
+    const wrapper = await mountSettings()
+
+    // An empty name is a macro read as written, and the field says which.
+    expect(field(wrapper, 'user').attributes('placeholder')).toBe('{{user}}')
+    expect(field(wrapper, 'character').attributes('placeholder')).toBe('{{char}}')
+  })
+
+  it('saves a name trimmed as it is typed, and none once it is cleared', async () => {
+    chat.value.userName = 'Riley'
+    const wrapper = await mountSettings()
+
+    await field(wrapper, 'user').setValue('  Tal ')
+    expect(chat.value.userName).toBe('Tal')
+
+    await field(wrapper, 'user').setValue('  ')
+    expect(chat.value.userName).toBeUndefined()
+  })
+
+  it('keeps a name being typed as it is, while the chat changes around it', async () => {
+    const wrapper = await mountSettings()
+
+    // A letter at a time, as it is typed.
+    await field(wrapper, 'user').setValue('Tal')
+    await field(wrapper, 'user').setValue('Tal ')
+    updateChat('chat_1', { lastMessageAt: 1 })
+    await flushPromises()
+
+    // Stored trimmed, but the space is where the next word goes.
+    expect(field(wrapper, 'user').element.value).toBe('Tal ')
+  })
+
+  it("saves the card's instructions as they are typed", async () => {
+    const wrapper = await mountSettings()
+
+    await field(wrapper, 'prompt').setValue('You are {{char}}.')
+    await field(wrapper, 'post-history').setValue('{{original}}\nThoughts in italics.\n')
+
+    expect(chat.value.roleplayPrompt).toBe('You are {{char}}.')
+    expect(chat.value.postHistory).toBe('{{original}}\nThoughts in italics.')
+  })
+
+  it('offers no Save to profile for what is only the chat’s', async () => {
+    chat.value = {
+      ...chat.value,
+      userName: 'Tal',
+      characterName: 'Maren',
+      roleplayPrompt: 'You are Maren.',
+      postHistory: 'Thoughts in italics.',
+    }
+    const wrapper = await mountSettings()
+
+    expect(button(wrapper, 'Save to profile').exists()).toBe(false)
+  })
+
+  it('leaves them on the chat, and out of the profile, when it is saved to one', async () => {
+    chat.value = { ...chat.value, roleplayPrompt: 'You are Maren.', postHistory: 'Italics.' }
+    const wrapper = await mountSettings()
+
+    await promptField(wrapper).setValue('Play someone else.')
+    await button(wrapper, 'Save to profile').trigger('click')
+    await flushPromises()
+
+    const [copy] = saved(library)
+    expect(copy.settings.prompt).toBe('Play someone else.')
+    expect(copy.settings.rules).toBe(DEFAULT_ROLEPLAY_NOTE)
+    expect(copy.settings).not.toHaveProperty('roleplayPrompt')
+    expect(copy.settings).not.toHaveProperty('postHistory')
+    expect(chat.value).toMatchObject({ roleplayPrompt: 'You are Maren.', postHistory: 'Italics.' })
+  })
+
+  it('keeps them when the chat moves to another profile', async () => {
+    chat.value = { ...chat.value, userName: 'Tal', postHistory: 'Italics.' }
+    const wrapper = await mountSettings()
+
+    await wrapper.findComponent({ name: 'Select' }).vm.$emit('update:modelValue', CHAT_PROFILE_ID)
+    await flushPromises()
+
+    expect(chat.value.profileId).toBe(CHAT_PROFILE_ID)
+    expect(chat.value).toMatchObject({ userName: 'Tal', postHistory: 'Italics.' })
+  })
+
+  it('opens either of the instructions in a tab of the editor', async () => {
+    const wrapper = await mountSettings()
+
+    await wrapper.find('[data-action="open-roleplay-prompt"]').trigger('click')
+    expect(openTab).toHaveBeenCalledWith('chat:chat_1:roleplay-prompt')
+    expect(useEditorRequest().take()).toBe(true)
+
+    await wrapper.find('[data-action="open-post-history"]').trigger('click')
+    expect(openTab).toHaveBeenCalledWith('chat:chat_1:post-history')
   })
 })
 

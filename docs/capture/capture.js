@@ -31,7 +31,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { chromium } from 'playwright'
 import sharp from 'sharp'
+import { features } from './features.js'
 import { narration } from './narration.js'
+import { research } from './research.js'
 import { roleplay } from './roleplay.js'
 import { fetchShim, startStandIn } from './stand-in.js'
 import { walkthrough } from './walkthrough.js'
@@ -48,7 +50,7 @@ const VIEWPORT = { width: 1280, height: 800 }
  * Each guide's walkthrough, by the guide's page. Each starts from a new
  * profile, so none depends on another.
  */
-const GUIDES = { 'getting-started': walkthrough, narration, roleplay }
+const GUIDES = { 'getting-started': walkthrough, narration, roleplay, research, features }
 
 /** @typedef {'light' | 'dark'} Theme */
 
@@ -121,10 +123,12 @@ function pageSetup({ app, font, cursor }) {
 
 /**
  * Runs in every page before anything else: the chance the app's tools draw on
- * (dice, the oracle, cards), kept and handed back. What they draw goes in
- * `window.__toolRandomLog`; while `window.__toolRandomQueue` has values left,
- * they draw those instead, so a game played once can be played again to the
- * same rolls. Everything else in the page draws as it always does.
+ * (dice, the oracle, cards) and a new comment's id, kept and handed back.
+ * What they draw goes in `window.__toolRandomLog`; while
+ * `window.__toolRandomQueue` has values left, they draw those instead, so a
+ * game played once can be played again to the same rolls, and the model's
+ * calls name the same comments. Everything else in the page draws as it
+ * always does.
  */
 function toolRandom() {
   const draw = Math.random
@@ -132,7 +136,9 @@ function toolRandom() {
   page.__toolRandomQueue = []
   page.__toolRandomLog = []
   Math.random = () => {
-    if (!(new Error().stack || '').includes('/src/ai/tools/')) return draw()
+    const stack = new Error().stack || ''
+    if (!stack.includes('/src/ai/tools/') && !stack.includes('/src/editor/comments.js'))
+      return draw()
     const value = page.__toolRandomQueue.length > 0 ? page.__toolRandomQueue.shift() : draw()
     page.__toolRandomLog.push(value)
     return value
@@ -356,17 +362,17 @@ export function helpers(page, url, { videos = false, theme = 'light' } = {}) {
 
     /**
      * Keep what the window shows, or `of` the part of it that holds these
-     * with `pad` pixels around, as `src/assets/guide/<name>.png` (or
-     * `<name>-dark.png`).
+     * with `pad` pixels around, or the `region` given, as
+     * `src/assets/guide/<name>.png` (or `<name>-dark.png`).
      *
      * @param {string} name
-     * @param {{ of?: import('playwright').Locator | import('playwright').Locator[], pad?: number }} [options]
+     * @param {{ of?: import('playwright').Locator | import('playwright').Locator[], pad?: number, region?: { x: number, y: number, width: number, height: number } }} [options]
      */
-    async shot(name, { of, pad = 24 } = {}) {
+    async shot(name, { of, pad = 24, region } = {}) {
       // Out of the way, so nothing shows the controls it would on a hover.
       await moveTo(600, VIEWPORT.height - 20)
       await pause(300)
-      let clip
+      let clip = region
       if (of) {
         const boxes = await Promise.all([of].flat().map(part => part.boundingBox()))
         if (boxes.some(box => !box)) throw new Error(`Nothing to take a picture of for ${name}`)

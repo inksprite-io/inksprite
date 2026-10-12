@@ -52,9 +52,9 @@ letter and chapter, and the EPUB itself at the end.
 
 ## Open the narration panel
 
-Open **Letter 1** and click the speaker icon at the far left. The panel reads
-the document in the editor a **segment** at a time: each paragraph is a
-segment, and so is each heading.
+Open **Letter 1** and click **Narration**, the speaker among the icons at the
+far left. The panel reads the document in the editor a **segment** at a time:
+each paragraph is a segment, and so is each heading.
 
 <Screenshot name="narration-panel" alt="The narration panel beside Letter 1" />
 
@@ -66,14 +66,15 @@ The voice called **Narrator** reads everything. Open **Voices** to change it.
 
 At the top, **Provider** is already **Kokoro**, and with the server running,
 **Model** shows `kokoro`. If your server isn't at `http://localhost:8880/v1`,
-click **⋮** beside **Provider** and change the address. Each project keeps its
-own.
+click **⋮** beside **Provider** and change **Endpoint**. Each project keeps its
+own **Provider** and **Model**.
 
 :::note[Other speech services]
 Narration can also speak through **OpenRouter** or **OpenAI**, with the key you
-connected for the chat. Choose one under **Provider**, then a **Model**. Each
-model has its own voices, listed under **Add a voice to the mix…**; OpenRouter
-has Kokoro too, with most of its voices. Both charge for what they read.
+connected for the chat. Choose one under **Provider**, then a **Model**, and
+pick one of the model's voices under **Voice**. OpenRouter has Kokoro too,
+with most of its voices; only Kokoro mixes them. Both charge for what they
+read.
 :::
 
 Below them is the voice itself:

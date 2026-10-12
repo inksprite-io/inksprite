@@ -78,6 +78,8 @@ import {
   executeUpdateDocument,
   editDocumentDefinition,
   executeEditDocument,
+  moveDocumentDefinition,
+  executeMoveDocument,
   listDocumentsDefinition,
   executeListDocuments,
   listCommentsDefinition,
@@ -189,6 +191,7 @@ toolRegistry.register(
   'documents'
 )
 toolRegistry.register('edit_document', editDocumentDefinition, executeEditDocument, 'documents')
+toolRegistry.register('move_document', moveDocumentDefinition, executeMoveDocument, 'documents')
 toolRegistry.register(
   'append_document',
   appendDocumentDefinition,

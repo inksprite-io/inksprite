@@ -119,6 +119,7 @@ const ROUND_VERBS = {
   create_document: ['Creating', 'Created'],
   create_folder: ['Creating', 'Created'],
   update_document: ['Updating', 'Updated'],
+  move_document: ['Moving', 'Moved'],
   edit_document: ['Editing', 'Edited'],
   append_document: ['Adding to', 'Added to'],
   roll_dice: ['Rolling dice', 'Rolled dice'],

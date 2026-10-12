@@ -31,3 +31,6 @@ capture/sohhf2.json
 capture-failed*.png
 capture-requests.json
 public/guide/.*.recording.webm
+# capture: the papers the research guide imports, someone else's work
+capture/Local-first software.pdf
+capture/Peritext.pdf

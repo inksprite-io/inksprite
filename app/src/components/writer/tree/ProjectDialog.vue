@@ -67,12 +67,13 @@ const profiles = computed(() => profilesApi.profiles.value)
 /**
  * The profile new chats in the project start on, as it stands: the project's
  * own unless that is gone or the settings switch puts its NSFW or general
- * counterpart in its place.
+ * counterpart in its place, and the one the settings start every chat on
+ * when it has none.
  * @param {any} story
  * @returns {string}
  */
 const startingProfileId = story =>
-  profilesApi.getProfile(story?.options?.profileId)?.id ?? DEFAULT_PROFILE_ID
+  profilesApi.getProfile(story?.options?.profileId)?.id ?? profilesApi.chatDefaultId()
 
 // Title and summary live on the root document. Its title is the name the
 // bookshelf and the tree show, and its summary is the project's overview — the

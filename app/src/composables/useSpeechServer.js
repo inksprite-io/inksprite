@@ -2,7 +2,7 @@
  * @module composables/useSpeechServer
  * @description What documents are read aloud through: a project's
  * connection and model (`useNarration` says which), as a request needs them,
- * and the voices the model has, for the narration panel to mix from.
+ * and the voices the model has, for the narration panel to pick from.
  *
  * A model's voices come with its connection's list where the connection says
  * which (OpenRouter, OpenAI). Any other server is asked at `audio/voices`, as
@@ -39,6 +39,7 @@ const askedOfOf = (providerId, server) =>
  *   configured: import('vue').ComputedRef<boolean>,
  *   via: import('vue').ComputedRef<string>,
  *   voices: import('vue').ComputedRef<string[]>,
+ *   mixes: import('vue').ComputedRef<boolean>,
  *   load: () => Promise<string[]>,
  * }}
  */
@@ -87,6 +88,12 @@ export function useSpeechServer(chosen) {
   })
 
   /**
+   * Whether the model takes several voices mixed with `+`: Kokoro, by its
+   * name, wherever it is served.
+   */
+  const mixes = computed(() => /kokoro/i.test(narration.value.model ?? ''))
+
+  /**
    * The voices, asked for if they have not been: the connection's list of
    * models first, then, for a model it says no voices of, the server. A
    * server that cannot be reached offers nothing; the writer can still type
@@ -119,5 +126,5 @@ export function useSpeechServer(chosen) {
     return asked.value
   }
 
-  return { provider, connection, configured, via, voices, load }
+  return { provider, connection, configured, via, voices, mixes, load }
 }

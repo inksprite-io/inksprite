@@ -169,6 +169,18 @@ describe('DocumentsStore', () => {
         'venue',
       ])
     })
+    it('sorts numbers in names by value', () => {
+      text('ten', 'part_1', { title: 'Chapter 10' })
+      text('two', 'part_1', { title: 'Chapter 2' })
+      text('one', 'part_1', { title: 'Chapter 1' })
+
+      expect(
+        store
+          .getChildrenOrdered('part_1')
+          .map(d => d.id)
+          .filter(id => !id.startsWith('scene'))
+      ).toEqual(['one', 'two', 'ten'])
+    })
   })
 
   describe('updateDocument', () => {

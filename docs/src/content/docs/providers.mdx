@@ -1,0 +1,139 @@
+---
+title: AI Providers
+description: Connect OpenRouter, Anthropic, OpenAI, a model on your own computer, or any server that speaks the OpenAI API.
+tableOfContents:
+  maxHeadingLevel: 4
+---
+
+import Clip from '../../components/Clip.astro';
+import Screenshot from '../../components/Screenshot.astro';
+
+The chat needs a model, and a provider serves it. inksprite sends your requests
+straight to the provider you choose; nothing goes through us.
+
+- **[OpenRouter](/getting-started/#connect-an-ai-provider)** gives you one
+  account for hundreds of models, paid as you go. Getting started walks through
+  it.
+- **[Anthropic or OpenAI](#anthropic-and-openai)** take an API key from your
+  account with them.
+- **A [local model](#local-models)** runs on your own computer, free and
+  private, if your computer is up to it.
+
+Each is set up under **Settings** › **AI**: choose it under **Provider**, then
+choose a **Model**. The ⋮ beside **Provider** opens its settings, for a key or
+another address.
+
+## Anthropic and OpenAI
+
+Make a key at [Anthropic](https://platform.claude.com/settings/keys) or at
+[OpenAI](https://platform.openai.com/api-keys). Then in inksprite:
+
+1. Open **Settings** › **AI** and choose **Anthropic** or **OpenAI** under
+   **Provider**. It says *Not connected*: click **Connect** beside that.
+2. Paste the key in **API key** and click **Connect**. inksprite says how
+   many models it found.
+3. Close the window and choose a **Model**.
+
+## Local models
+
+**Provider** lists LM Studio, Ollama, llama.cpp, vLLM and KoboldCpp. For any
+other server that speaks the OpenAI API, see [another server](#another-server).
+
+1. Start your server as its section below says.
+2. Open **Settings** › **AI** and choose the server under **Provider**.
+3. Choose a **Model**. inksprite asks the server what it has.
+
+In a browser, some servers have to be told to let inksprite reach them; their
+sections say how. The [desktop app](/desktop/) doesn't need that.
+
+If no models come, or your server is at another address or asks for a key,
+click the ⋮ beside **Provider**, change the **Endpoint** or paste the
+**API key**, and click **Connect**.
+
+<Clip name="connect-lmstudio" label="Connecting to LM Studio" />
+
+#### LM Studio
+
+Download and load a model, as
+[LM Studio's guide](https://lmstudio.ai/docs/app/basics) shows. Then
+[start the server](https://lmstudio.ai/docs/developer/core/server) on the
+**Developer** tab and turn on **Enable CORS** in its settings.
+
+- **Endpoint**: `http://localhost:1234/v1`
+- **API key**: LM Studio's token, if you turned on **Require Authentication**
+
+#### Ollama
+
+[Install Ollama](https://ollama.com/download) and download a model with
+`ollama pull`. To let inksprite reach it, set `OLLAMA_ORIGINS` to
+`https://inksprite.io` and restart Ollama, as
+[its FAQ](https://docs.ollama.com/faq#how-can-i-allow-additional-web-origins-to-access-ollama)
+shows for each system.
+
+- **Endpoint**: `http://localhost:11434/v1`
+- **API key**: none
+
+#### llama.cpp
+
+[Install llama.cpp](https://github.com/ggml-org/llama.cpp/blob/master/docs/install.md)
+and start its server with a model file, or with `-hf` and a model on Hugging
+Face. [Its guide](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)
+has the other options.
+
+```sh
+llama-server -m model.gguf
+```
+
+- **Endpoint**: `http://localhost:9931/v1`, or the address the server prints as
+  it starts (older versions use port 8080)
+- **API key**: what you gave `--api-key`, if anything
+
+To turn a model's thinking off, set **Reasoning effort** under **Generation**
+to *Disabled*.
+
+#### vLLM
+
+[Install vLLM](https://docs.vllm.ai/en/latest/getting_started/installation/)
+and start its server with tool calls on, which the chat needs, and inksprite
+allowed to reach it:
+
+```sh
+vllm serve Qwen/Qwen3-8B \
+  --enable-auto-tool-choice --tool-call-parser hermes \
+  --allowed-origins '["https://inksprite.io"]'
+```
+
+The parser depends on the model:
+[vLLM's list](https://docs.vllm.ai/en/latest/features/tool_calling/) says which
+to use.
+
+- **Endpoint**: `http://localhost:8000/v1`
+- **API key**: what you gave `--api-key`, if anything
+
+#### KoboldCpp
+
+[Download KoboldCpp](https://github.com/LostRuins/koboldcpp/releases/latest)
+and start it with a model file:
+
+```sh
+koboldcpp --model model.gguf
+```
+
+- **Endpoint**: `http://localhost:5001/v1`
+- **API key**: what you gave `--password`, if anything
+
+## Another server
+
+For a server inksprite doesn't list, click the ⋮ beside **Provider**, then the
+**+** beside the provider list. Give it a **Name**, fill in the **Endpoint**
+and **API key**, and click **Connect**. Then close the window and choose a
+**Model**.
+
+## Presets
+
+A preset is a provider, a model and their settings, kept together. To make
+another, click the ⋮ beside **Preset** in **Settings** › **AI** and choose
+**New preset**. Every chat uses the preset you choose there, or under **AI**
+in a chat's settings (the gear in the message box).
+
+**Generation** and **Sampling** show only the settings the chosen model takes.

@@ -20,7 +20,7 @@ import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore'
 import { useDocumentsStore } from './documentsStore'
 import { storage } from '@/storage/index.js'
-import { freeProjectName } from '@/utils/titleValidation.js'
+import { freeName as freeAmong } from '@/utils/titleValidation.js'
 
 /** @typedef {import('../types/models.js').Story} Story */
 
@@ -246,7 +246,7 @@ export const useStoriesStore = defineStore('stories', () => {
 
   /**
    * A name no other project goes by: `title`, or a numbered copy of it. See
-   * `freeProjectName`. The names are read off the projects' roots as far as
+   * `freeName` in utils/titleValidation. The names are read off the projects' roots as far as
    * they are loaded; `loadNames` loads them all, and the outline's project
    * switcher has done so already.
    *
@@ -261,7 +261,7 @@ export const useStoriesStore = defineStore('stories', () => {
       const root = id === exceptStoryId ? null : documentsStore.getRoot(id)
       if (root) taken.push(root.title?.trim() || 'Untitled')
     }
-    return freeProjectName(taken, title)
+    return freeAmong(taken, title)
   }
 
   /**

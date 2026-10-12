@@ -21,6 +21,15 @@ const { mockUpdateDocument, mockGetDocument, mockApi } = vi.hoisted(() => {
     ['doc_1', { id: 'doc_1', title: 'Chapter 1', type: 'text', content: '# One\n\nSnow fell.' }],
     ['doc_new', { id: 'doc_new', title: '', type: 'text', content: '' }],
     [
+      'doc_link',
+      {
+        id: 'doc_link',
+        title: 'Chapter 3',
+        type: 'text',
+        content: 'See [the cast](../Notes/Cast%20list.md) first.',
+      },
+    ],
+    [
       'doc_2',
       {
         id: 'doc_2',
@@ -37,11 +46,17 @@ const { mockUpdateDocument, mockGetDocument, mockApi } = vi.hoisted(() => {
       init: vi.fn(async () => {}),
       keep: vi.fn(),
       get: vi.fn(id => documents.get(id) || null),
+      displayTitle: vi.fn(document => document.title),
     },
   }
 })
 
 vi.mock('@/composables/useDocuments', () => ({ useDocuments: () => mockApi }))
+
+const { mockLinks } = vi.hoisted(() => ({
+  mockLinks: { open: vi.fn(), target: vi.fn(), addressFor: vi.fn(), onClick: vi.fn() },
+}))
+vi.mock('@/composables/useDocumentLinks.js', () => ({ useDocumentLinks: () => mockLinks }))
 
 const { mockNarration, mockAppState } = vi.hoisted(() => ({ mockNarration: {}, mockAppState: {} }))
 vi.mock('@/composables/useNarration', () => ({ useNarration: () => mockNarration }))
@@ -241,6 +256,38 @@ describe('Editor', () => {
     ])
     // The assistant writing in a preview is not the writer keeping it.
     expect(mockApi.keep).not.toHaveBeenCalled()
+  })
+
+  describe('links', () => {
+    const mountLinked = async () => {
+      const wrapper = mount(Editor, {
+        props: { storyId: 'story_1', documentId: 'doc_link' },
+        attachTo: document.body,
+        global: {
+          plugins: [PrimeVue],
+          stubs: { ScrollPanel: { template: '<div><slot /></div>' } },
+        },
+      })
+      await flushPromises()
+      return wrapper
+    }
+
+    it('names the document a link goes to, in the popover beside the caret', async () => {
+      mockLinks.target.mockReturnValue({ id: 'cast', title: 'Cast list', type: 'text' })
+      const wrapper = await mountLinked()
+      const editor = useEditor()
+      const view = wrapper.find('.ProseMirror').element
+      view.focus()
+      const state = editor.stateOf('doc_link')
+      editor.dispatch('doc_link', state.tr.setSelection(TextSelection.create(state.doc, 8)))
+      await flushPromises()
+
+      expect(mockLinks.target).toHaveBeenCalledWith('../Notes/Cast%20list.md', 'doc_link')
+      expect(wrapper.find('[data-action="open-link"]').text()).toBe('Cast list')
+      await wrapper.find('[data-action="open-link"]').trigger('click')
+      expect(mockLinks.open).toHaveBeenCalledWith('../Notes/Cast%20list.md', 'doc_link')
+      wrapper.unmount()
+    })
   })
 
   describe('find and replace', () => {

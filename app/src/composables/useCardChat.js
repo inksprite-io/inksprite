@@ -10,15 +10,13 @@
  *
  * A chat imported from SillyTavern gets here the other way round: it has its
  * messages already and no idea who it was with beyond a name. `attach` finds
- * that character's card and puts the same pins and author's note on it.
+ * that character's card and puts the same pins and instructions on it.
  */
 
 import { useChats } from './useChats.js'
 import { useProfiles } from './useProfiles.js'
 import { cardsNamed, readCardChat } from '@/cards/chat.js'
-import { overOriginal } from '@/cards/card.js'
 import { substitute } from '@/cards/macros.js'
-import { ROLEPLAY_PROFILE_ID } from '@/ai/profiles/index.js'
 
 /**
  * @param {string} storyId
@@ -39,11 +37,9 @@ export function useCardChat(storyId) {
    * What a card puts on a chat that runs on it.
    *
    * @param {import('@/cards/chat.js').CardChat} card
-   * @param {string} [note] - The author's note the chat would have without the
-   *   card: its profile's
    * @returns {Partial<import('@/types/models.js').Chat>}
    */
-  function settingsFrom(card, note = '') {
+  function settingsFrom(card) {
     /** @type {Partial<import('@/types/models.js').Chat>} */
     const settings = {}
     if (card.pinnedIds.length > 0) settings.pinnedIds = card.pinnedIds
@@ -51,24 +47,13 @@ export function useCardChat(storyId) {
     if (card.hiddenIds.length > 0) settings.hiddenIds = card.hiddenIds
     if (card.shownIds.length > 0) settings.shownIds = card.shownIds
 
-    // The card's post-history instructions over the profile's note: in place
-    // of it, unless they say `{{original}}`, which is where it goes. Two whole
-    // sets of instructions a few lines from generation is an argument the
-    // model has to settle instead of writing.
-    if (card.rules) settings.rules = overOriginal(card.rules, note) || undefined
-
-    // A card's system prompt becomes a profile of the writer's own, named for
-    // the card, so it is in the library beside every other and they can edit
-    // it. The alternative is a prompt that exists on one chat and cannot be
-    // found. It starts from the Roleplay profile, so it is offered the tools
-    // Roleplay is and no others.
-    if (card.systemPrompt) {
-      const roleplay = profilesApi.getProfile(ROLEPLAY_PROFILE_ID)
-      settings.profileId = profilesApi.saveProfile(card.title, {
-        ...roleplay?.settings,
-        prompt: overOriginal(card.systemPrompt, roleplay?.settings?.prompt),
-      }).id
-    }
+    // The card's own instructions, as it wrote them, beside the profile's
+    // rather than mixed into them: the chat sends them after its system prompt
+    // and its author's note, each turn, and saving the chat to its profile
+    // takes the writer's changes and leaves the card's behind. See
+    // `withOriginal`.
+    if (card.systemPrompt) settings.roleplayPrompt = card.systemPrompt
+    if (card.rules) settings.postHistory = card.rules
 
     return settings
   }
@@ -87,12 +72,12 @@ export function useCardChat(storyId) {
    * @returns {Promise<import('@/types/models.js').Chat>}
    */
   async function start(card, { userName, greeting = 0 }) {
-    const chat = chatsApi.createChat(card.title, ROLEPLAY_PROFILE_ID)
+    const chat = chatsApi.createChat(card.title, profilesApi.roleplayDefaultId())
     if (!chat) throw new Error('Could not start a chat on this card.')
 
     const names = { char: card.name, user: userName.trim() }
     const settings = {
-      ...settingsFrom(card, chat.rules),
+      ...settingsFrom(card),
       userName: names.user,
       characterName: names.char,
     }
@@ -124,28 +109,22 @@ export function useCardChat(storyId) {
    * Only when exactly one card in the project is that character. With none
    * there is nothing to pin, and with two there is no telling which.
    *
+   * The Author's Note the chat carried from ST stays in its author's note,
+   * after the profile's, where the import put it.
+   *
    * @param {string} chatId
    * @param {string} character - The name they spoke under
-   * @param {Object} [options]
-   * @param {string} [options.note] - The chat's own Author's Note from ST,
-   *   which goes after what the card puts in the author's note rather than
-   *   being replaced by it: it says where the scene has got to, not how a turn
-   *   is written
    * @returns {Promise<import('@/cards/chat.js').CardChat|null>} The card it
    *   is now on, or null if it is on none
    */
-  async function attach(chatId, character, { note = '' } = {}) {
+  async function attach(chatId, character) {
     const found = await cardsNamed(storyId, character)
     if (found.length !== 1) return null
 
     const card = await readCardChat(storyId, found[0].id)
     if (!card) return null
 
-    // Over the Roleplay profile's note, which is what the import stamped the
-    // chat from; the Author's Note it carried goes back after it.
-    const profileNote = profilesApi.getProfile(ROLEPLAY_PROFILE_ID)?.settings?.rules
-    const settings = settingsFrom(card, profileNote)
-    if (settings.rules && note) settings.rules = `${settings.rules}\n\n${note}`
+    const settings = settingsFrom(card)
     if (Object.keys(settings).length > 0) chatsApi.updateChat(chatId, settings)
 
     return card

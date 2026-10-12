@@ -23,6 +23,7 @@ vi.mock('@/stores/syncStore', () => ({
 }))
 
 const { useBackup } = await import('@/composables/useBackup.js')
+const { useApplicationState } = await import('@/composables/useApplicationState.js')
 const { ROLEPLAY_PROFILE_ID } = await import('@/ai/profiles/index.js')
 const { DEFAULT_ROLEPLAY_NOTE } = await import('@/ai/prompts/index.js')
 
@@ -44,6 +45,7 @@ describe('useBackup', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    useApplicationState().resetState()
     mockDb.verno = 2
     mockDb.tables = [
       fakeTable('stories', [{ id: 's1' }]),
@@ -75,10 +77,16 @@ describe('useBackup', () => {
 
     it('redacts keys unless asked', async () => {
       const redacted = await useBackup().createBackup()
-      expect(redacted.tables.aiProviders[0].apiKey).toBeUndefined()
+      expect(redacted.tables.aiProviders[0].apiKey).toBe('')
 
       const kept = await useBackup().createBackup({ includeApiKeys: true })
       expect(kept.tables.aiProviders[0].apiKey).toBe('sk-secret')
+    })
+
+    it('carries the settings kept outside the database', async () => {
+      useApplicationState().setTheme('dark')
+      const backup = await useBackup().createBackup()
+      expect(backup.settings).toMatchObject({ theme: 'dark' })
     })
   })
 
@@ -237,10 +245,10 @@ describe('useBackup', () => {
       )
     })
 
-    it('sends a whole backup to the Data settings', async () => {
+    it('sends a whole backup to Import backup', async () => {
       await expect(
         useBackup().readChatFile(fileOf(chatFile(2, { scope: 'database' })))
-      ).rejects.toThrow('Restore it from the Data settings')
+      ).rejects.toThrow('Restore it with Import backup in Settings › System')
     })
 
     describe('from SillyTavern', () => {
@@ -308,7 +316,6 @@ describe('useBackup', () => {
 
         const read = await useBackup().readChatFile(tavernFile(noted))
 
-        expect(read.note).toBe('[Slow burn.]')
         expect(read.chat.rules).toBe(`${DEFAULT_ROLEPLAY_NOTE}\n\n[Slow burn.]`)
       })
 
@@ -381,6 +388,22 @@ describe('useBackup', () => {
       await useBackup().restoreBackup(backupAt(2, { stories: [{ id: 's1' }] }))
       expect(mockDb.transaction).toHaveBeenCalledTimes(1)
       expect(mockDb.transaction).toHaveBeenCalledWith('rw', mockDb.tables, expect.any(Function))
+    })
+
+    it('takes the settings the backup carries', async () => {
+      useApplicationState().setTheme('light')
+      await useBackup().restoreBackup({
+        ...backupAt(2, { stories: [{ id: 's1' }] }),
+        settings: { theme: 'dark', applyEdits: 'ask' },
+      })
+      expect(useApplicationState().theme.value).toBe('dark')
+      expect(useApplicationState().applyEdits.value).toBe('ask')
+    })
+
+    it('leaves the settings alone when the backup has none', async () => {
+      useApplicationState().setTheme('light')
+      await useBackup().restoreBackup(backupAt(2, { stories: [{ id: 's1' }] }))
+      expect(useApplicationState().theme.value).toBe('light')
     })
   })
 

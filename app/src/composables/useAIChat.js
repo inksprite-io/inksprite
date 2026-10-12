@@ -37,6 +37,7 @@ import { isDefaultChatTitle, plainTitle } from '@/utils/chatTitle.js'
 import { connectionGap } from '@/ai/providers.js'
 import { DEFAULT_CHAT_PROMPT } from '@/ai/prompts/index.js'
 import { noteOnProfile } from '@/ai/profiles/index.js'
+import { withOriginal } from '@/cards/card.js'
 import { TITLE_DEFAULTS, mergeAISettings, resolveAISettings } from '@/ai/defaults.js'
 import {
   getEnabledToolDefinitions,
@@ -150,6 +151,20 @@ function consultedCalls(calls, answered) {
  */
 
 /**
+ * The reply to the writer's message, which sending it again asks again: the
+ * message after it, when that is the assistant's own answer rather than a
+ * command's.
+ *
+ * @param {Message[]} messages - The chat's, in order
+ * @param {number} index - Where the writer's message is
+ * @returns {Message|null}
+ */
+function replyAfter(messages, index) {
+  const reply = messages[index + 1]
+  return reply?.role === 'assistant' && !reply.metadata?.command ? reply : null
+}
+
+/**
  * What the turn being generated is doing right now. `calling` is the model
  * writing the round's calls, and `running` is those tools at work. `waiting` is a request out with nothing back yet — after a
  * tool result that can be a long time, while the model takes in what the tool
@@ -183,6 +198,7 @@ function consultedCalls(calls, answered) {
  *   selectAlternate: (messageId: string, index: number) => Promise<{skipped: DocumentEdit[]}>,
  *   resendMessage: (messageId: string) => Promise<Message|null>,
  *   rewindPlan: (messageId: string) => RewindPlan,
+ *   regeneratePlan: (messageId: string) => RewindPlan,
  *   rewindTo: (messageId: string) => RewindOutcome,
  *   acceptEdit: (messageId: string, index: number) => Promise<void>,
  *   rejectEdit: (messageId: string, index: number) => void,
@@ -332,11 +348,11 @@ export function useAIChat(storyId, chatId) {
     profilesApi.getProfile(chatsApi.defaultProfileId())
 
   /**
-   * The system prompt for this chat, as the library holds it now.
+   * The system prompt for this chat: its own, once the writer has changed it
+   * here, and its profile's otherwise.
    *
-   * A chat runs on whichever prompt it points at, read fresh each turn, so an
-   * edit in the settings lands on the next request — the way the profile's
-   * parameters do. The profile itself never enters into it: switching models
+   * Read fresh each turn, so an edit in the settings lands on the next
+   * request — the way the profile's parameters do. The profile itself never enters into it: switching models
    * shouldn't change what the assistant was told to be.
    *
    * The prompt replaces the built-in outright, so it owns any tool and oracle
@@ -345,25 +361,34 @@ export function useAIChat(storyId, chatId) {
    * or one whose prompt has since been deleted, falls back to the built-in
    * its story starts chats on.
    *
+   * The chat's roleplay prompt, a card's for a chat on one, goes after it. See
+   * `withOriginal`.
+   *
    * @returns {Promise<string>}
    */
   const resolveSystemPrompt = async () => {
     // Saved profiles load from the database; a lookup before that would find
     // the built-ins alone and quietly send the wrong prompt.
     await profilesApi.ready()
-    return (runningProfile()?.settings?.prompt ?? DEFAULT_CHAT_PROMPT).trim()
+    const chat = chatsApi.getChatById(chatId)
+    const own = chat?.prompt ?? runningProfile()?.settings?.prompt ?? DEFAULT_CHAT_PROMPT
+    return withOriginal(chat?.roleplayPrompt, own).trim()
   }
 
   /**
    * The author's note this turn sends: the chat's, as the profile it runs on
-   * reads it. See `noteOnProfile`.
-   * @returns {string|undefined}
+   * reads it (see `noteOnProfile`), with its post-history instructions after
+   * it (see `withOriginal`).
+   * @returns {string}
    */
-  const resolveNote = () => noteOnProfile(chatsApi.getChatById(chatId)?.rules, runningProfile())
+  const resolveNote = () => {
+    const chat = chatsApi.getChatById(chatId)
+    return withOriginal(chat?.postHistory, noteOnProfile(chat?.rules, runningProfile()))
+  }
 
   /**
-   * What a skill runs under in this chat: the profile's wording for it when it
-   * has one, and the skill's own otherwise.
+   * What a skill runs under in this chat: the chat's wording for it, or the
+   * profile's, when either has one, and the skill's own otherwise.
    *
    * Read at the moment the skill is reached rather than resolved once for the
    * turn, because a turn can take a while and the writer may be editing the
@@ -372,7 +397,13 @@ export function useAIChat(storyId, chatId) {
    * @param {string} name - The skill's
    * @returns {string}
    */
-  const skillPromptFor = name => skillPrompt(name, runningProfile()?.settings)
+  const skillPromptFor = name =>
+    skillPrompt(name, {
+      skills: {
+        ...runningProfile()?.settings?.skills,
+        ...chatsApi.getChatById(chatId)?.skills,
+      },
+    })
 
   /**
    * How many rounds running a turn may make the same calls and get the same
@@ -1510,12 +1541,19 @@ export function useAIChat(storyId, chatId) {
     try {
       // A command of the writer's own may be one of their skills.
       await skillsApi.ready()
-      const { spoken } = await commands.submit(userMessage, commandContext(signal))
+      const { spoken, answered } = await commands.submit(userMessage, commandContext(signal))
 
       // Commands only. They settle things — is the door locked, wrap this
       // scene up — and settling something is not asking for a turn. The writer
-      // says when they are ready.
-      if (!spoken) return null
+      // says when they are ready. One that answered on a turn of its own, a
+      // review or a scene written, is the chat's first reply all the same, and
+      // the chat is named from what asked for it.
+      if (!spoken) {
+        if (answered && needsTitle) {
+          await nameChat(openingOf(existingMessages) || userMessage.trim(), signal)
+        }
+        return null
+      }
 
       // The title is asked for alongside the reply rather than ahead of it,
       // which on a slow model would be a whole round trip before the first
@@ -1825,6 +1863,25 @@ export function useAIChat(storyId, chatId) {
   }
 
   /**
+   * What asking again would take with it, for asking the writer first: the
+   * turns after the answer that is asked again, which go, as on a rewind to
+   * it. The answer itself is kept, to be turned back to. For the writer's
+   * message, that answer is its reply, or the message itself when it has none.
+   *
+   * @param {string} messageId - An answer to regenerate, or the writer's
+   *   message to send again
+   * @returns {RewindPlan}
+   */
+  const regeneratePlan = messageId => {
+    const messages = chatsApi.getMessagesForChat(chatId)?.value || []
+    const index = messages.findIndex(m => m.id === messageId)
+    if (index === -1) throw new Error('Message not found')
+
+    const reply = messages[index].role === 'user' ? replyAfter(messages, index) : null
+    return rewindPlan(reply?.id ?? messageId)
+  }
+
+  /**
    * Rewind the conversation to a message: everything after it goes, and what
    * those turns did to the project is undone, newest first, where the writer
    * has not been since.
@@ -1864,10 +1921,8 @@ export function useAIChat(storyId, chatId) {
       throw new Error('Message not found')
     }
 
-    const reply = messages[messageIndex + 1]
-    if (reply?.role === 'assistant' && !reply.metadata?.command) {
-      return await regenerateMessage(reply.id)
-    }
+    const reply = replyAfter(messages, messageIndex)
+    if (reply) return await regenerateMessage(reply.id)
 
     // The answer being replaced takes its changes with it, as on regenerate.
     const { skipped } = revertMessages(messages.slice(messageIndex + 1))
@@ -2073,6 +2128,7 @@ export function useAIChat(storyId, chatId) {
     selectAlternate,
     resendMessage,
     rewindPlan,
+    regeneratePlan,
     rewindTo,
     acceptEdit,
     rejectEdit,

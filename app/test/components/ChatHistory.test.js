@@ -98,7 +98,6 @@ describe('ChatHistory', () => {
         chat: { title: 'Elara - Branch #4' },
         messages: [],
         character: 'Elara',
-        note: '[Slow burn.]',
       })
     })
 
@@ -108,7 +107,7 @@ describe('ChatHistory', () => {
 
       await pick(wrapper)
 
-      expect(mockAttach).toHaveBeenCalledWith('chat_new', 'Elara', { note: '[Slow burn.]' })
+      expect(mockAttach).toHaveBeenCalledWith('chat_new', 'Elara')
       expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('onto the Elara card'))
       expect(wrapper.emitted('select-chat')).toEqual([['chat_new']])
     })

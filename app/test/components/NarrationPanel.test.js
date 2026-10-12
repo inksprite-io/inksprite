@@ -34,6 +34,7 @@ const narration = {
   filters: computed(() => state.filters),
   filterPatterns: computed(() => parseFilters(state.filters)),
   serverVoices: ref([]),
+  mixes: ref(true),
   watching: ref(0),
   loadServerVoices: vi.fn(async () => []),
   addVoice: vi.fn(),

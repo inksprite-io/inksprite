@@ -117,6 +117,39 @@ describe('DataSection', () => {
     vi.unstubAllGlobals()
   })
 
+  it('names the keys a backup left out before restoring it', async () => {
+    backup.readBackupFile.mockResolvedValue({
+      backup: {
+        app: 'inksprite',
+        includesApiKeys: false,
+        tables: {
+          aiProviders: [{ id: 'p1', name: 'OpenRouter', apiKey: '' }],
+          webSearch: [{ id: 'web', keys: { kagi: '' } }],
+        },
+      },
+      summary: [],
+    })
+    const wrapper = mountSection()
+
+    await pickFile(wrapper, new File(['{}'], 'backup.json'))
+
+    expect(confirmRequire.mock.calls[0][0].message).toBe(
+      'This backup holds your settings. Keys left out: OpenRouter, Kagi. Everything in inksprite now is replaced.'
+    )
+  })
+
+  it('says nothing of keys when none were left out', async () => {
+    backup.readBackupFile.mockResolvedValue({
+      backup: { app: 'inksprite', includesApiKeys: true, tables: { chats: [{ id: 'c1' }] } },
+      summary: [],
+    })
+    const wrapper = mountSection()
+
+    await pickFile(wrapper, new File(['{}'], 'backup.json'))
+
+    expect(confirmRequire.mock.calls[0][0].message).not.toContain('Keys')
+  })
+
   it('reports a file it cannot read', async () => {
     backup.readBackupFile.mockRejectedValue(new Error('Not a backup file.'))
     vi.spyOn(console, 'error').mockImplementation(() => {})

@@ -67,6 +67,7 @@ export const BACKUP_FORMAT = 1
  * @property {boolean} includesApiKeys - Whether provider credentials were kept
  * @property {BackupScope} [scope] - What the file holds: every table, one chat and its messages, or one project and its chats. Files written before there was a choice have none, and hold the database.
  * @property {TableData} tables - Row arrays keyed by table name
+ * @property {import('../composables/useApplicationState.js').BackedUpSettings} [settings] - The settings kept outside the database, in a whole backup. Files written before backups carried them have none, and leave the settings as they are.
  */
 
 /**
@@ -76,9 +77,12 @@ export const BACKUP_FORMAT = 1
  * @type {Record<string, {noun: string, hint: string}>}
  */
 const SCOPES = {
-  database: { noun: 'a whole backup', hint: 'Restore it from the Data settings.' },
+  database: { noun: 'a whole backup', hint: 'Restore it with Import backup in Settings › System.' },
   chat: { noun: 'one chat', hint: 'Import it from the chat list.' },
-  project: { noun: 'one project', hint: 'Import it from the Projects menu atop the outline.' },
+  project: {
+    noun: 'one project',
+    hint: 'Import it with Import a project at the top of the outline.',
+  },
 }
 
 /**
@@ -377,19 +381,21 @@ function replaceById(rows, changed) {
 }
 
 /**
- * Drop persisted credentials from provider rows.
+ * Empty the keys of provider rows, keeping which providers had one, so a
+ * restored backup can say which keys to enter again. A row with no key loses
+ * the field altogether: an empty key only ever means one that was left out.
  *
  * Providers saved with `rememberKey: false` keep their key in sessionStorage
  * and never reach the database, so they are already absent here.
  *
  * @param {any[]} providers
- * @returns {any[]} Providers with `apiKey` removed
+ * @returns {any[]} Providers with every key emptied
  */
 export function redactApiKeys(providers) {
   return providers.map(provider => {
     if (!provider || !('apiKey' in provider)) return provider
-    const { apiKey: _apiKey, ...rest } = provider
-    return rest
+    const { apiKey, ...rest } = provider
+    return apiKey ? { ...rest, apiKey: '' } : rest
   })
 }
 
@@ -413,7 +419,8 @@ export function redactServerKeys(servers) {
 
 /**
  * Empty the keys of the web search setup, keeping which services had one, so
- * a restored setup can say which key it needs entered again.
+ * a restored setup can say which key it needs entered again. A service whose
+ * key was already empty is dropped, as a provider's is.
  *
  * @param {any[]} rows
  * @returns {any[]} Rows with every key emptied
@@ -422,7 +429,8 @@ export function redactWebKeys(rows) {
   return rows.map(row => {
     const services = Object.keys(row?.keys || {})
     if (services.length === 0) return row
-    return { ...row, keys: Object.fromEntries(services.map(service => [service, ''])) }
+    const had = services.filter(service => row.keys[service])
+    return { ...row, keys: Object.fromEntries(had.map(service => [service, ''])) }
   })
 }
 
@@ -446,11 +454,12 @@ const REDACTED = {
  * @param {boolean} [opts.includeApiKeys] - Keep provider, server and web search credentials (default false)
  * @param {number} [opts.exported] - Timestamp, injectable for tests
  * @param {BackupScope} [opts.scope] - What the tables hold (default the whole database)
+ * @param {import('../composables/useApplicationState.js').BackedUpSettings} [opts.settings] - The settings kept outside the database, for a whole backup
  * @returns {Backup}
  */
 export function buildBackup(
   tables,
-  { dbVersion, includeApiKeys = false, exported = Date.now(), scope = 'database' }
+  { dbVersion, includeApiKeys = false, exported = Date.now(), scope = 'database', settings }
 ) {
   /** @type {TableData} */
   const out = {}
@@ -466,6 +475,7 @@ export function buildBackup(
     includesApiKeys: includeApiKeys,
     scope,
     tables: out,
+    ...(settings ? { settings } : {}),
   }
 }
 
@@ -611,9 +621,11 @@ export function describeBackupContents(backup) {
         : rows(table)
     if (made.length > 0) parts.push(`${made.length} ${made.length === 1 ? one : many}`)
   }
-  const settings = Object.keys(tables).some(
-    table => !(table in COUNTED) && !PART_OF_COUNTED.has(table) && rows(table).length > 0
-  )
+  const settings =
+    Boolean(backup.settings) ||
+    Object.keys(tables).some(
+      table => !(table in COUNTED) && !PART_OF_COUNTED.has(table) && rows(table).length > 0
+    )
   if (settings) parts.push('your settings')
 
   if (parts.length === 0) return 'This backup is empty.'
@@ -622,6 +634,35 @@ export function describeBackupContents(backup) {
       ? parts[0]
       : `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
   return `This backup holds ${listed}.`
+}
+
+/**
+ * The services a backup made without keys had a key for, by name: the AI
+ * providers, the web search services and the MCP servers whose keys were
+ * taken out, so the writer knows what to connect again after restoring it.
+ * A backup written before providers kept the mark of a key left out names
+ * the services and servers alone.
+ *
+ * @param {Backup} backup
+ * @param {(id: string) => string} [webName] - What a web search service is called
+ * @returns {string[]} Each name once, providers first
+ */
+export function keysLeftOut(backup, webName = id => id) {
+  if (backup.includesApiKeys) return []
+  const tables = backup.tables || {}
+  const rows = (/** @type {string} */ table) =>
+    Array.isArray(tables[table]) ? tables[table].filter(Boolean) : []
+
+  const names = [
+    ...rows('aiProviders')
+      .filter(provider => provider.apiKey === '')
+      .map(provider => provider.name),
+    ...rows('webSearch').flatMap(setup => Object.keys(setup.keys || {}).map(webName)),
+    ...rows('mcpServers')
+      .filter(server => Object.values(server.headers || {}).some(value => !value))
+      .map(server => server.name),
+  ]
+  return [...new Set(names.filter(name => typeof name === 'string' && name))]
 }
 
 /**

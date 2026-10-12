@@ -2892,6 +2892,42 @@ describe('useAIChat', () => {
       ])
     })
 
+    it('plans asking an answer again: the turns after it go, and the answer stays', () => {
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: conversation() })
+      const chat = useAIChat(mockStoryId, mockChatId)
+
+      const plan = chat.regeneratePlan('msg_2')
+      expect(plan.messages.map(m => m.id)).toEqual(['msg_3', 'msg_4'])
+      expect(plan.documents).toEqual([
+        { documentId: 'doc_2', path: 'notes/doc_2' },
+        { documentId: 'doc_1', path: 'notes/doc_1' },
+      ])
+      expect(chat.regeneratePlan('msg_4').messages).toEqual([])
+    })
+
+    it('plans sending the writer’s message again from the reply it asks again', () => {
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: conversation() })
+      const chat = useAIChat(mockStoryId, mockChatId)
+
+      expect(chat.regeneratePlan('msg_1').messages.map(m => m.id)).toEqual(['msg_3', 'msg_4'])
+      expect(chat.regeneratePlan('msg_3').messages).toEqual([])
+    })
+
+    it('plans sending again from the message itself when no reply follows it', () => {
+      // A command's own turn is not a reply: sending again asks for one after
+      // the writer's message, and everything already there goes.
+      mockChatsApi.getMessagesForChat.mockReturnValue({
+        value: [
+          { id: 'msg_1', role: 'user', content: '/compact' },
+          { id: 'msg_2', role: 'assistant', content: 'So far…', metadata: { command: {} } },
+          { id: 'msg_3', role: 'user', content: 'c' },
+        ],
+      })
+
+      const plan = useAIChat(mockStoryId, mockChatId).regeneratePlan('msg_1')
+      expect(plan.messages.map(m => m.id)).toEqual(['msg_2', 'msg_3'])
+    })
+
     it('rewinds: undoes newest first, drops what came after, and says what it left', () => {
       mockChatsApi.getMessagesForChat.mockReturnValue({ value: conversation() })
       mockDocuments.revertEdit.mockImplementation(e => e.new !== 'new 2')
@@ -3406,6 +3442,35 @@ describe('useAIChat', () => {
       await useAIChat(mockStoryId, mockChatId).sendMessage('Again')
 
       expect(mockAIService.generateChatCompletion).toHaveBeenCalledTimes(1)
+      expect(mockChatsApi.updateChat).not.toHaveBeenCalled()
+    })
+
+    it('names a chat whose first reply is a command answering on a turn of its own', async () => {
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: [] })
+      sends()
+      mockAIService.generateChatCompletion
+        .mockImplementationOnce(async (m, p, callback) => {
+          callback({ content: 'They crossed the pass.' })
+          return {}
+        })
+        .mockImplementationOnce(async (m, p, callback) => {
+          callback({ content: 'The Pass' })
+          return {}
+        })
+
+      await useAIChat(mockStoryId, mockChatId).sendMessage('/compact')
+
+      expect(mockAIService.generateChatCompletion).toHaveBeenCalledTimes(2)
+      expect(mockChatsApi.updateChat).toHaveBeenCalledWith(mockChatId, { title: 'The Pass' })
+    })
+
+    it('leaves a chat of nothing but a roll unnamed', async () => {
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: [] })
+      sends()
+
+      await useAIChat(mockStoryId, mockChatId).sendMessage('/roll 2d6')
+
+      expect(mockAIService.generateChatCompletion).not.toHaveBeenCalled()
       expect(mockChatsApi.updateChat).not.toHaveBeenCalled()
     })
 
@@ -3952,6 +4017,32 @@ describe('useAIChat', () => {
       expect(await capturePromptForActiveProfile()).toBe('You are a terse editor.')
     })
 
+    it("should send the chat's own prompt over its profile's", async () => {
+      withSavedProfile('chatprofile_editor', 'You are a terse editor.')
+      withChatSettings({ profileId: 'chatprofile_editor', prompt: 'Only in this chat.' })
+
+      expect(await capturePromptForActiveProfile()).toBe('Only in this chat.')
+    })
+
+    it("should send the chat's roleplay prompt after its own", async () => {
+      withChatSettings({ prompt: 'Only in this chat.', roleplayPrompt: 'You are Elara.' })
+
+      expect(await capturePromptForActiveProfile()).toBe('Only in this chat.\n\nYou are Elara.')
+    })
+
+    it("should send it around the profile's where it says {{original}}", async () => {
+      withChatSettings({
+        profileId: 'builtin_profile_roleplay',
+        roleplayPrompt: 'You are Elara.\n\n{{original}}',
+      })
+
+      // Read from the profile each turn, so the chat keeps the card's text and
+      // picks up the profile as it is now.
+      expect(await capturePromptForActiveProfile()).toBe(
+        `You are Elara.\n\n${DEFAULT_ROLEPLAY_PROMPT.trim()}`
+      )
+    })
+
     it('should trim the prompt', async () => {
       withSavedProfile('chatprofile_editor', '\n  You are a terse editor.  \n')
       withChatSettings({ profileId: 'chatprofile_editor' })
@@ -4054,6 +4145,36 @@ describe('useAIChat', () => {
       withChatSettings({ profileId: 'builtin_profile_roleplay_nsfw', rules: DEFAULT_ROLEPLAY_NOTE })
 
       expect(await captureNote()).toBe(DEFAULT_ROLEPLAY_NSFW_NOTE)
+    })
+
+    it('should send the post-history instructions after the note', async () => {
+      withChatSettings({ rules: 'Past tense.', postHistory: 'Thoughts in italics.' })
+
+      expect(await captureNote()).toBe('Past tense.\n\nThoughts in italics.')
+    })
+
+    it('should put the note where they say {{original}}', async () => {
+      withChatSettings({ rules: 'Past tense.', postHistory: 'First.\n{{original}}\nLast.' })
+
+      expect(await captureNote()).toBe('First.\nPast tense.\nLast.')
+    })
+
+    it("should still move a card chat's note across with the NSFW switch", async () => {
+      // A card's instructions used to be mixed into the note, which then
+      // matched neither profile's and stayed behind when the switch moved it.
+      withChatSettings({
+        profileId: 'builtin_profile_roleplay_nsfw',
+        rules: DEFAULT_ROLEPLAY_NOTE,
+        postHistory: 'Thoughts in italics.',
+      })
+
+      expect(await captureNote()).toBe(`${DEFAULT_ROLEPLAY_NSFW_NOTE}\n\nThoughts in italics.`)
+    })
+
+    it('should send the post-history instructions alone when there is no note', async () => {
+      withChatSettings({ rules: undefined, postHistory: 'Thoughts in italics.' })
+
+      expect(await captureNote()).toBe('Thoughts in italics.')
     })
   })
 })

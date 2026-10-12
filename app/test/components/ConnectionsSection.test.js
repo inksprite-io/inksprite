@@ -104,7 +104,7 @@ describe('ConnectionsSection', () => {
     const candidate = wrapper.find('[data-candidate]')
     expect(candidate.text()).toContain('Example')
     expect(candidate.text()).toContain('2 tools')
-    expect(candidate.text()).toContain('look_up · reads only — Look up a term.')
+    expect(candidate.text()).toContain('look_up · Reads only — Look up a term.')
     expect(useMcpServerStore().getAllServers()).toEqual([])
   })
 

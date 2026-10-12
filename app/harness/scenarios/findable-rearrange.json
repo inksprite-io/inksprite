@@ -1,0 +1,51 @@
+{
+  "fixture": "findable",
+  "messages": [
+    {
+      "before": {
+        "edit": {
+          "path": "Notes/Open questions",
+          "old": "Needs a spike.",
+          "new": "{==Needs a spike.==}{>>c1rear: Marcus has this for October.<<}"
+        }
+      },
+      "text": "Rewrite Open questions as a table with three columns: the question, why it matters, and who could answer it. Keep every question, and keep the intro line above the table.",
+      "document": {
+        "path": "Notes/Open questions",
+        "contains": ["\\|.*\\|.*\\|", "late chunking", "bi-encoder"]
+      }
+    },
+    {
+      "text": "Rename the reranker spike in the archive to \"Reranker spike (August)\".",
+      "document": {
+        "path": "Archive/Reranker spike (August)",
+        "contains": ["#"]
+      },
+      "gone": ["Archive/Reranker spike"]
+    },
+    {
+      "text": "The API sketch is out of date. Move it into the Archive folder.",
+      "document": {
+        "path": "Archive/API sketch",
+        "contains": ["#"]
+      },
+      "gone": ["Design/API sketch"]
+    },
+    {
+      "text": "Make a folder called Decided under Notes, and move the decisions log into it.",
+      "document": {
+        "path": "Notes/Decided/Decisions log",
+        "contains": ["#"]
+      },
+      "gone": ["Notes/Decisions log"]
+    },
+    {
+      "text": "Move the whole Standups folder into the Archive.",
+      "document": {
+        "path": "Archive/Standups/2026-09-25",
+        "contains": ["\\w"]
+      },
+      "gone": ["Notes/Standups/2026-09-25"]
+    }
+  ]
+}

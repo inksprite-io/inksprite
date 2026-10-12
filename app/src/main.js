@@ -98,11 +98,9 @@ app.directive('styleclass', StyleClass)
 app.directive('tooltip', Tooltip)
 
 // In the desktop app the projects are in a folder, which is opened before
-// anything reads from it; the first time, the window's projects are moved in.
+// anything reads from it.
 const root = /** @type {HTMLElement} */ (document.getElementById('app'))
-openStorage({
-  onMoving: path => (root.textContent = `Moving your projects into ${path}…`),
-}).then(
+openStorage().then(
   () => app.mount('#app'),
   error => {
     console.error('The library could not be opened:', error)

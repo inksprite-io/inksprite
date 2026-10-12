@@ -25,6 +25,7 @@ import { useSyncStore } from './syncStore'
 import { rootNode, rootIdFor } from './migrations/projectTree.js'
 import { storage } from '@/storage/index.js'
 import { countWords } from '@/utils/wordCount.js'
+import { compareNames } from '@/utils/compareNames.js'
 
 /** @typedef {import('../types/models.js').Document} Document */
 /** @typedef {import('../types/models.js').RepositorySource} RepositorySource */
@@ -115,11 +116,10 @@ export const useDocumentsStore = defineStore('documents', () => {
    * Get the children of a parent in display order.
    *
    * An ordered folder sorts by `order`; anything else sorts the way a file
-   * explorer does, folders first and then by title. A document nobody has
+   * explorer does, folders first and then by title, numbers by value. A document nobody has
    * named sorts as the "Untitled" it reads as, rather than as an empty title
-   * ahead of everything. `order` is still maintained either way, so switching
-   * a folder to ordered restores its original sequence rather than an
-   * arbitrary one.
+   * ahead of everything. A folder switched to names keeps the order it had in
+   * `handOrder`; see `setOrdered` in `useDocuments`.
    *
    * @param {string} parentId
    * @returns {Document[]}
@@ -136,7 +136,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     const named = (/** @type {Document} */ document) => document.title?.trim() || 'Untitled'
     const folder = (/** @type {Document} */ document) => (document.type === 'folder' ? 0 : 1)
     return children.sort(
-      (a, b) => folder(a) - folder(b) || named(a).localeCompare(named(b)) || byId(a, b)
+      (a, b) => folder(a) - folder(b) || compareNames(named(a), named(b)) || byId(a, b)
     )
   }
 

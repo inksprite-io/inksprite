@@ -49,6 +49,7 @@ vi.mock('@/composables/useSpeechServer.js', () => ({
     configured: computed(() => true),
     via: computed(() => `provider_kokoro_default\n${connection.model}`),
     voices: computed(() => [...serverVoices]),
+    mixes: computed(() => true),
     load: vi.fn(async () => [...serverVoices]),
   }),
 }))

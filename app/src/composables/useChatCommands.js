@@ -75,7 +75,7 @@ function piecesOf(message) {
  * @param {string} storyId
  * @param {string} chatId
  * @returns {{
- *   submit: (input: string, context?: ToolContext) => Promise<{spoken: string}>,
+ *   submit: (input: string, context?: ToolContext) => Promise<{spoken: string, answered: boolean}>,
  *   rerun: (messageId: string, index?: number|null, context?: ToolContext) => Promise<Message>,
  *   revise: (messageId: string, at: number|null, text: string, context?: ToolContext) => Promise<Message>,
  *   remove: (messageId: string, index?: number|null) => void
@@ -141,7 +141,8 @@ export function useChatCommands(storyId, chatId) {
    * things and asks for no turn.
    *
    * @param {string} input - Everything the writer submitted
-   * @returns {Promise<{spoken: string}>} The prose among it, joined
+   * @returns {Promise<{spoken: string, answered: boolean}>} The prose among
+   *   it, joined, and whether a command answered on a turn of its own
    * @throws {CommandError} If a command cannot run. Nothing has been written.
    */
   const submit = async (input, context = {}) => {
@@ -197,6 +198,7 @@ export function useChatCommands(storyId, chatId) {
     const spoken = []
     /** @type {Array<() => Promise<void>>} */
     const pending = []
+    let tookTurn = false
 
     // What the writer is saying, in the pieces they said it in.
     /** @type {MessageSegment[]} */
@@ -278,6 +280,7 @@ export function useChatCommands(storyId, chatId) {
         })
         if (wanted > 0 && room > 0) chatsApi.moveMessage(message.id, Math.min(wanted, room))
         pending.push(() => fill(message.id, null, asked, context))
+        tookTurn = true
         continue
       }
 
@@ -294,7 +297,7 @@ export function useChatCommands(storyId, chatId) {
     // abort controller.
     for (const call of pending) await call()
 
-    return { spoken: spoken.join('\n\n') }
+    return { spoken: spoken.join('\n\n'), answered: tookTurn }
   }
 
   /**

@@ -43,7 +43,7 @@ runs it on Linux (under Xvfb, with `--no-sandbox`).
 
 The window keeps its own data, apart from any browser's, and a run from here
 keeps its data apart from the installed app's. To bring projects over, export
-a backup in the browser and restore it in the window (Settings → Data). MCP
+a backup in the browser and restore it in the window (Settings → System). MCP
 sign-ins do not come with a backup; sign in again in the window.
 
 ## The library
@@ -56,10 +56,11 @@ Settings → System → Data → Keep projects in a folder switches it on and of
 and shows the folder while it is on. It is off in a release until it has
 been tried more widely, and on for a run from here.
 
-Switched on, the app opens again and writes the projects it kept until then
-into the folder. The app's own copy is left as it was, but a project the
-folder holds already is written over only when the app's copy was changed
-later, and the folder's copy goes to the trash. Switched off, the folder's
+Switched on, the app writes the projects it kept until then into the
+folder, with a toast that says how far it is, and opens again on them. The
+app's own copy is left as it was, but a project the folder holds already is
+written over only when the app's copy was changed later, and the folder's
+copy goes to the trash. Switched off, the folder's
 projects are copied back over the app's, and the folder's files stay where
 they are. The settings and the rest of the app's own tables stay in the app
 either way.
@@ -67,7 +68,7 @@ either way.
 The switch is kept in `library.json` beside the folder: `"enabled"`, unset
 meaning the default above, and `"moved"`, whether the app's projects have
 been written into the folder. With `"moved": false` and the switch on, the
-app writes them in again when it opens.
+app opens on its own projects and writes them in.
 
 The Web Inspector is in the View menu, and a right-click → Inspect Element
 opens it, in a release build as well: its console is where a failure the app

@@ -1,0 +1,9 @@
+{
+  "name": "tide-clock",
+  "version": "0.3.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/clock.js",
+    "test": "node --test"
+  }
+}

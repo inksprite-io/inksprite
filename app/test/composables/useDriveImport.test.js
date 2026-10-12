@@ -7,6 +7,7 @@ import { useDocumentsStore } from '@/stores/documentsStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { SignInLapsedError } from '@/drive/errors.js'
 import { pickInBrowser, pickInPopup } from '@/drive/signIn.js'
+import { barePng, minimalDocx } from '../files/helpers.js'
 
 vi.mock('@/stores/db', () => ({
   default: {
@@ -113,6 +114,41 @@ describe('useDriveImport', () => {
       expect(sheet).toMatchObject({ title: 'Mileage.csv', type: 'file', mime: 'text/csv' })
       expect(steps).toHaveBeenCalledWith('downloading', 3, 3)
       expect(steps).toHaveBeenLastCalledWith('writing', 2, 2)
+    })
+
+    it('writes a Word file as a text document, counting its pictures with a Doc’s', async () => {
+      const picture =
+        '<w:p><w:r><w:drawing><wp:inline><wp:docPr id="1" name="Picture"/><a:graphic>' +
+        '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic>' +
+        '<pic:blipFill><a:blip r:embed="rGull"/></pic:blipFill></pic:pic></a:graphicData></a:graphic>' +
+        '</wp:inline></w:drawing></w:r></w:p>'
+      const docx = minimalDocx(`<w:p><w:r><w:t>Fog at noon.</w:t></w:r></w:p>${picture}`, {
+        images: { rGull: barePng() },
+      })
+      vi.stubGlobal(
+        'fetch',
+        drive({
+          doc: {
+            name: 'Ch. 3',
+            mimeType: DOC,
+            content: () =>
+              new Response(
+                `The gate.\n\n![][image1]\n\n[image1]: <data:image/png;base64,${PNG}>\n`
+              ),
+          },
+          word: {
+            name: 'Log.docx',
+            mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            content: () => new Response(docx),
+          },
+        })
+      )
+
+      const result = await useDriveImport(STORY).importPicked(['doc', 'word'], 'tok')
+
+      expect(result).toMatchObject({ documents: 2, images: 2 })
+      const log = childrenOf(rootIdFor(STORY)).find(child => child.title === 'Log')
+      expect(log).toMatchObject({ type: 'text', content: 'Fog at noon.' })
     })
 
     it('skips a file Drive refuses and goes on, saying which', async () => {

@@ -117,6 +117,16 @@ const PROJECT_TABLES = new Set(PROJECT_TABLE_NAMES)
 /** @param {Document} document */
 const sketch = document => ({ ...document, content: '' })
 
+/**
+ * How much of a new project's folder goes to the disk at once: enough that
+ * it goes quickly, and little enough to say how far it has got, and to hold
+ * no more than a few files' bytes at a time.
+ */
+const BATCH_FILES = 50
+const BATCH_BYTES = 16 * 1024 * 1024
+
+/** @typedef {import('./index.js').Progress} Progress */
+
 /** @param {string} dir @param {string} path */
 const under = (dir, path) => (path ? `${dir}/${path}` : dir)
 
@@ -447,15 +457,17 @@ export function libraryStorage(disk, options = {}) {
 
   /**
    * Write a project for the first time, all of it, through a folder that
-   * becomes the project's only once everything is in it.
+   * becomes the project's only once everything is in it. The files go a
+   * batch at a time, and a file's bytes are read only when its batch goes.
    *
    * @param {Project} project
    * @param {Document[]} documents
    * @param {Chat[]} chats
    * @param {Message[]} messages
    * @param {Map<string, Blob>} bytes
+   * @param {Progress} [progress]
    */
-  const writeNew = async (project, documents, chats, messages, bytes) => {
+  const writeNew = async (project, documents, chats, messages, bytes, progress = () => {}) => {
     const rootId = rootIdFor(project.id)
     const root = documents.find(document => document.id === rootId)
     const dir = folderName(root?.title || 'Untitled', null)
@@ -463,54 +475,62 @@ export function libraryStorage(disk, options = {}) {
     const full = new Map(documents.map(document => [document.id, document]))
     const entries = layoutProject(documents, rootId)
 
-    /** @type {LibraryOp[]} */
-    const ops = []
+    /** @type {Array<{path: string, text?: string, blob?: Blob}>} */
+    const files = []
     for (const [path, text] of projectFiles(
       /** @type {Story} */ (project.story),
       schema,
       entries,
       id => full.get(id)
     )) {
-      ops.push({ op: 'write', path: under(making, path), text, expect: null })
+      files.push({ path, text })
     }
     for (const entry of entries.values()) {
       const blob = entry.kind === 'file' ? bytes.get(entry.id) : undefined
-      if (blob) {
-        const data = new Uint8Array(await blob.arrayBuffer())
-        ops.push({ op: 'write', path: under(making, entry.path), bytes: data, expect: null })
-      }
+      if (blob) files.push({ path: entry.path, blob })
     }
     /** @type {Map<string, MessageLines>} */
     const lines = new Map()
     for (const chat of chats) {
-      ops.push({
-        op: 'write',
-        path: under(making, chatPath(chat.id)),
-        text: chatText(chat),
-        expect: null,
-      })
+      files.push({ path: chatPath(chat.id), text: chatText(chat) })
       const written = messagesText(
         inFileOrder(messages.filter(message => message.chatId === chat.id))
       )
       if (written.lines.ids.length > 0) {
-        ops.push({
-          op: 'write',
-          path: under(making, messagesPath(chat.id)),
-          text: written.text,
-          expect: null,
-        })
+        files.push({ path: messagesPath(chat.id), text: written.text })
       }
       lines.set(chat.id, written.lines)
     }
-    ops.push({ op: 'move', from: making, to: dir })
-    const result = await disk.apply(ops)
+
+    // What a write that never finished left behind goes first.
+    /** @type {Record<string, Seen>} */
+    const seen = {}
+    /** @type {LibraryOp[]} */
+    let batch = [{ op: 'trash', path: making }]
+    let size = 0
+    let done = 0
+    const send = async () => {
+      Object.assign(seen, (await disk.apply(batch)).seen)
+      done += batch.filter(op => op.op === 'write').length
+      progress(done, files.length)
+      batch = []
+      size = 0
+    }
+    for (const { path, text, blob } of files) {
+      const data = blob ? new Uint8Array(await blob.arrayBuffer()) : undefined
+      batch.push({ op: 'write', path: under(making, path), text, bytes: data, expect: null })
+      size += data ? data.length : (text?.length ?? 0)
+      if (batch.length >= BATCH_FILES || size >= BATCH_BYTES) await send()
+    }
+    batch.push({ op: 'move', from: making, to: dir })
+    await send()
 
     project.dir = dir
     project.root = root || null
     project.entries = entries
     project.rows = new Map(documents.map(document => [document.id, sketch(document)]))
     project.seen = new Map(
-      Object.entries(result.seen).map(([path, seen]) => [path.slice(making.length + 1), seen])
+      Object.entries(seen).map(([path, seen]) => [path.slice(making.length + 1), seen])
     )
     project.taken = []
     project.chats = new Map(chats.map(chat => [chat.id, chat]))
@@ -879,8 +899,9 @@ export function libraryStorage(disk, options = {}) {
    * own.
    *
    * @param {import('./index.js').NewProject} rows
+   * @param {Progress} [progress]
    */
-  const add = async ({ story, documents, files, chats, messages }) => {
+  const add = async ({ story, documents, files, chats, messages }, progress) => {
     await list()
     const project = newProject(story.id)
     const own = { ...story }
@@ -891,7 +912,8 @@ export function libraryStorage(disk, options = {}) {
       documents,
       chats,
       messages,
-      new Map(files.map(file => [file.id, file.blob]))
+      new Map(files.map(file => [file.id, file.blob])),
+      progress
     )
     projects.set(story.id, project)
   }
@@ -1071,7 +1093,7 @@ export function libraryStorage(disk, options = {}) {
         return changed
       }),
 
-    addProject: rows => inTurn(() => add(rows)),
+    addProject: (rows, progress) => inTurn(() => add(rows, progress)),
 
     removeProject: storyId =>
       inTurn(async () => {

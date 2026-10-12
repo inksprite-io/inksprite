@@ -99,8 +99,8 @@ export async function markMoved() {
 }
 
 /**
- * Keep the projects in the library from now on. The window's projects are
- * moved into it when the page opens again.
+ * Keep the projects in the library from now on. Until the page says the
+ * window's projects are moved into it, it opens on them, and moves them in.
  *
  * @returns {Promise<string>} Where it is
  */

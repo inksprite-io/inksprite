@@ -173,6 +173,7 @@
             :voices="narration.voices.value"
             :default-voice-id="narration.defaultVoiceId.value"
             :server-voices="narration.serverVoices.value"
+            :mixes="narration.mixes.value"
             :previewing="previewing"
             @add="narration.addVoice()"
             @update="narration.updateVoice"
@@ -448,7 +449,7 @@ const preview = voice => listen(previewing, () => narration.preview(voice))
 
 const previewHints = () => listen(previewingHints, () => narration.previewHints())
 
-// The model's voices, for mixing, asked for again when the model changes.
+// The model's voices, to pick from, asked for again when the model changes.
 watch(
   () => `${narration.choice.value.providerId}\n${narration.choice.value.model}`,
   () => narration.loadServerVoices()

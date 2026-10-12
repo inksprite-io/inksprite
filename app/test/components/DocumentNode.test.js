@@ -69,6 +69,12 @@ vi.mock('../../src/stores/storiesStore', () => ({
 }))
 
 // The summary panel pulls in AI plumbing this suite has no interest in.
+const platform = vi.hoisted(() => ({ desktop: false }))
+vi.mock('../../src/platform/desktop.js', async importOriginal => ({
+  ...(await importOriginal()),
+  isDesktop: () => platform.desktop,
+}))
+
 vi.mock('../../src/components/writer/tree/DocumentSummary.vue', () => ({
   default: { name: 'DocumentSummary', template: '<div class="summary-stub" />' },
 }))
@@ -1240,7 +1246,12 @@ describe('DocumentNode, in a repository', () => {
       .map(item => item.label)
       .filter(Boolean)
 
+  afterEach(() => {
+    platform.desktop = false
+  })
+
   it('offers a refresh on the repository, and nothing that makes or imports inside it', () => {
+    platform.desktop = true
     const labels = labelsOf(mountNode(repository.id))
     expect(labels).toContain('Refresh repository…')
     expect(labels).toContain('Rename')
@@ -1248,6 +1259,15 @@ describe('DocumentNode, in a repository', () => {
     for (const label of ['New document', 'New folder', 'Import']) {
       expect(labels).not.toContain(label)
     }
+  })
+
+  it('offers no refresh of a GitHub repository in a browser, which GitHub does not answer', () => {
+    expect(labelsOf(mountNode(repository.id))).not.toContain('Refresh repository…')
+
+    store.updateDocument(repository.id, {
+      source: { from: 'folder', name: 'widgets', imported: 1 },
+    })
+    expect(labelsOf(mountNode(repository.id))).toContain('Refresh repository…')
   })
 
   it('offers no rename inside it, which a refresh would undo', () => {

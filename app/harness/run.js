@@ -167,6 +167,7 @@ Usage: npm run transcripts -- --scenario <name> [options]
  * @property {string[]} [pinnedAtEnd] - The whole pinned set once the turn is done
  * @property {{path: string, contains: string[]}} [document] - What a document should hold afterwards
  * @property {{path: string, patterns: string[]}} [notContains] - What it should not
+ * @property {string[]} [gone] - Paths that should hold nothing afterwards
  * @property {{path: string, contains: string[]}} [summary] - What its summary should say
  *
  * @typedef {Object} ChatSettings

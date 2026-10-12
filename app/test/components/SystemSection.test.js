@@ -12,6 +12,8 @@ const {
   setNsfwProfiles,
   compactText,
   setCompactText,
+  setChatProfileId,
+  setRoleplayProfileId,
   forgetSavedRequests,
 } = vi.hoisted(() => ({
   debug: { value: false },
@@ -20,6 +22,8 @@ const {
   setNsfwProfiles: vi.fn(),
   compactText: { value: true },
   setCompactText: vi.fn(),
+  setChatProfileId: vi.fn(),
+  setRoleplayProfileId: vi.fn(),
   forgetSavedRequests: vi.fn(),
 }))
 
@@ -36,6 +40,20 @@ vi.mock('@/composables/useApplicationState', () => ({
     setNsfwProfiles,
     compactText,
     setCompactText,
+    setChatProfileId,
+    setRoleplayProfileId,
+  }),
+}))
+vi.mock('@/composables/useProfiles', () => ({
+  useProfiles: () => ({
+    profiles: ref([
+      { id: 'builtin_profile_chat', name: 'Default', readOnly: true },
+      { id: 'builtin_profile_roleplay', name: 'Roleplay', readOnly: true },
+      { id: 'chatprofile_mine', name: 'Default - Custom', readOnly: false },
+    ]),
+    getProfile: id => ({ id }),
+    chatDefaultId: () => 'chatprofile_mine',
+    roleplayDefaultId: () => 'builtin_profile_roleplay',
   }),
 }))
 vi.mock('@/composables/useSystemSettings.js', () => ({ applyTheme: vi.fn() }))
@@ -104,12 +122,12 @@ describe('SystemSection NSFW profiles', () => {
     setNsfwProfiles.mockClear()
   })
 
-  it('sits above the debug switch', () => {
+  it('sits with the chats, after the debug switch', () => {
     const switches = mountSection().findAllComponents(ToggleSwitch)
     expect(switches.map(one => one.props('inputId'))).toEqual([
       'compact-text-switch',
-      'nsfw-switch',
       'debug-switch',
+      'nsfw-switch',
     ])
   })
 
@@ -153,5 +171,29 @@ describe('SystemSection projects folder', () => {
     expect(mountSection().find('[data-library-section]').exists()).toBe(false)
     desktop.isDesktop.mockReturnValueOnce(true)
     expect(mountSection().find('[data-library-section]').exists()).toBe(true)
+  })
+})
+
+describe('SystemSection chats', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  /** The picker whose root carries this attribute. */
+  const picker = (wrapper, attribute) => wrapper.findComponent(`[${attribute}]`)
+
+  it('shows the profiles chats and character cards start on', () => {
+    const wrapper = mountSection()
+    expect(picker(wrapper, 'data-chat-profile').props('modelValue')).toBe('chatprofile_mine')
+    expect(picker(wrapper, 'data-roleplay-profile').props('modelValue')).toBe(
+      'builtin_profile_roleplay'
+    )
+  })
+
+  it('keeps the profile chosen for each', async () => {
+    const wrapper = mountSection()
+    await picker(wrapper, 'data-chat-profile').vm.$emit('update:modelValue', 'builtin_profile_chat')
+    await picker(wrapper, 'data-roleplay-profile').vm.$emit('update:modelValue', 'chatprofile_mine')
+
+    expect(setChatProfileId).toHaveBeenCalledWith('builtin_profile_chat')
+    expect(setRoleplayProfileId).toHaveBeenCalledWith('chatprofile_mine')
   })
 })

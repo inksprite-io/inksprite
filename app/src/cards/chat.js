@@ -31,10 +31,10 @@ import { SHELF_KINDS } from './write.js'
  *   other characters are on, when the card is on one
  * @property {string[]} shownIds - What it shows under that: the card itself
  * @property {Greeting[]} greetings - In the card's own order; the first is its `first_mes`
- * @property {string} rules - The card's post-history instructions, as written:
- *   what a chat on it puts in its author's note, `{{original}}` and all
- * @property {string} systemPrompt - Overrides the chat's prompt, when the card had one
- *   and the writer kept it
+ * @property {string} rules - The card's post-history instructions, as written,
+ *   `{{original}}` and all: what a chat on it sends after its author's note
+ * @property {string} systemPrompt - What a chat on it sends after its profile's
+ *   prompt, when the card had one and the writer kept it
  *
  * @typedef {Object} Greeting
  * @property {string} id

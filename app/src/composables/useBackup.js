@@ -5,7 +5,8 @@
  * and single chats and whole projects in the same envelope.
  *
  * Export flushes anything the sync store is still holding, reads every table,
- * and hands back a JSON file. Import replaces the database wholesale: every
+ * adds the settings kept outside the database (see `BackedUpSettings`), and
+ * hands back a JSON file. Import replaces the database wholesale: every
  * table is cleared and repopulated from the file. There is no merge mode,
  * because reconciling two divergent histories of the same story is guesswork
  * and a recovery tool should not guess.
@@ -37,12 +38,8 @@ import { useDocumentsStore } from '@/stores/documentsStore'
 import { useChatProfileStore } from '@/stores/chatProfileStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { isBuiltInPromptId } from '@/ai/prompts/index.js'
-import {
-  isBuiltInProfileId,
-  getBuiltInProfile,
-  settingsForNewChat,
-  ROLEPLAY_PROFILE_ID,
-} from '@/ai/profiles/index.js'
+import { isBuiltInProfileId, settingsForNewChat } from '@/ai/profiles/index.js'
+import { useProfiles } from './useProfiles.js'
 import { isTranscript, readTranscript } from '@/cards/transcript.js'
 import {
   buildBackup,
@@ -59,6 +56,7 @@ import {
   deserializeFiles,
 } from '@/utils/backup'
 import { useEditor } from './useEditor.js'
+import { useApplicationState } from './useApplicationState.js'
 import { assembleTurn, inspectCommand } from '@/ai/commands.js'
 import { obfuscateBackup } from '@/utils/obfuscate.js'
 
@@ -123,7 +121,11 @@ export function useBackup() {
     await useSyncStore().processSync()
 
     const tables = await readAllTables()
-    return buildBackup(tables, { dbVersion: storage.schemaVersion(), includeApiKeys })
+    return buildBackup(tables, {
+      dbVersion: storage.schemaVersion(),
+      includeApiKeys,
+      settings: useApplicationState().settingsForBackup(),
+    })
   }
 
   /**
@@ -189,7 +191,8 @@ export function useBackup() {
    * Rows are moved forward to the running schema version first, so a backup
    * taken before a migration restores into the shape the app expects. Tables
    * present in the database but absent from the backup are emptied — the
-   * backup is the whole truth, not a patch.
+   * backup is the whole truth, not a patch. The settings kept outside the
+   * database are taken too, when the backup has them.
    *
    * @param {Backup} backup
    * @returns {Promise<{restored: number}>} Total rows written
@@ -201,6 +204,7 @@ export function useBackup() {
       ...tables,
       ...(Array.isArray(files) ? { files: deserializeFiles(files) } : {}),
     })
+    if (backup.settings) useApplicationState().restoreSettings(backup.settings)
     return { restored }
   }
 
@@ -291,12 +295,12 @@ export function useBackup() {
    * one.
    *
    * A SillyTavern chat is told apart by what is in it rather than by its
-   * extension, and comes back as the same rows with two things beside them:
-   * who it was with, which is all it knows about its card, and its Author's
-   * Note. `useCardChat().attach` takes both.
+   * extension, and comes back as the same rows with who it was with beside
+   * them, which is all it knows about its card. `useCardChat().attach` takes
+   * it.
    *
    * @param {File} file
-   * @returns {Promise<{chat: Chat, messages: Message[], prompt?: AIPrompt, character?: string, note?: string}>}
+   * @returns {Promise<{chat: Chat, messages: Message[], prompt?: AIPrompt, character?: string}>}
    * @throws {Error} If the file is not a chat this build can read
    */
   async function readChatFile(file) {
@@ -310,7 +314,7 @@ export function useBackup() {
   /**
    * A SillyTavern chat as a chat of this app's.
    *
-   * On the Roleplay profile, stamped the way a new chat on it would be: a
+   * On the roleplay profile, stamped the way a new chat on it would be: a
    * transcript carries none of what ran it, and a roleplay is what it was. The
    * Author's Note goes after the profile's note rather than instead of it. It
    * is the nearest thing ST has to a chat's standing instructions, but what
@@ -319,11 +323,12 @@ export function useBackup() {
    *
    * @param {string} text
    * @param {string} filename
-   * @returns {{chat: Chat, messages: Message[], character: string, note: string}}
+   * @returns {{chat: Chat, messages: Message[], character: string}}
    */
   function chatFromTranscript(text, filename) {
     const { title, character, user, note, messages } = readTranscript(text, filename)
-    const settings = settingsForNewChat(getBuiltInProfile(ROLEPLAY_PROFILE_ID))
+    const profiles = useProfiles()
+    const settings = settingsForNewChat(profiles.getProfile(profiles.roleplayDefaultId()))
     const rules = [settings.rules, note].filter(Boolean).join('\n\n')
     const last = messages[messages.length - 1].created
 
@@ -344,7 +349,7 @@ export function useBackup() {
       updated: last,
     }
 
-    return { chat, messages, character, note }
+    return { chat, messages, character }
   }
 
   /**

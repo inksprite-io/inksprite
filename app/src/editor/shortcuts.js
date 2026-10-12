@@ -34,7 +34,7 @@ export const SHORTCUTS = [
       { action: 'Bold', keys: 'Mod-b' },
       { action: 'Italic', keys: 'Mod-i' },
       { action: 'Strikethrough', keys: 'Mod-Shift-s' },
-      { action: 'Code', keys: 'Mod-`' },
+      { action: 'Code', keys: 'Mod-e' },
       { action: 'Link', keys: 'Mod-k' },
       { action: 'Comment', keys: 'Mod-Shift-m' },
     ],

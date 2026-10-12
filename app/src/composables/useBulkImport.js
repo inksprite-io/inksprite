@@ -29,7 +29,7 @@ import { titleKey } from '@/utils/documentPath.js'
  * @property {number} scans - PDFs with no text in them
  * @property {Array<{name: string, reason: string}>} skipped - What could not be read, and why
  * @property {number} [images] - Pictures left out of what came in: a Google
- *   Doc's, which documents cannot hold yet
+ *   Doc's or a Word file's, which documents cannot hold yet
  */
 
 /**
@@ -90,6 +90,7 @@ export function useBulkImport(storyId) {
         const written = await cards.write(found, { parentId: folderFor(folders) })
         result.documents += written.documents
         if (found.shape === 'card' || found.shape === 'lorebook') result.cards++
+        if (found.images) result.images = (result.images ?? 0) + found.images
         if (found.shape === 'file' && found.mime === 'application/pdf' && !found.text) {
           result.scans++
         }
@@ -122,7 +123,7 @@ export function describeImport(result) {
   const bits = [count(result.documents, 'document')]
   if (result.folders > 0) bits.push(count(result.folders, 'new folder'))
   const notes = []
-  if (result.scans > 0) notes.push(`${count(result.scans, 'PDF')} with no text: a scan.`)
+  if (result.scans > 0) notes.push(`${count(result.scans, 'PDF')} with no extractable text.`)
   if (result.images) notes.push(`${count(result.images, 'image')} left out.`)
   if (result.skipped.length > 0) {
     const names = result.skipped

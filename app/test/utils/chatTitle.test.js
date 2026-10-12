@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   DEFAULT_CHAT_TITLE,
   isDefaultChatTitle,
+  chatPreview,
   plainTitle,
   shownChatTitle,
 } from '@/utils/chatTitle.js'
@@ -61,5 +62,23 @@ describe('plainTitle', () => {
   it('leaves a plain title as it is', () => {
     expect(plainTitle('  Plot Ideas  ')).toBe('Plot Ideas')
     expect(plainTitle('')).toBe('')
+  })
+})
+
+describe('chatPreview', () => {
+  it('runs the lines together without their markdown', () => {
+    expect(chatPreview('**Pick up** where we left off.\n\n## Notes\n- the *tide* table')).toBe(
+      'Pick up where we left off. Notes the tide table'
+    )
+  })
+
+  it('cuts a long message at a hundred characters', () => {
+    const preview = chatPreview('word '.repeat(40))
+    expect(preview).toHaveLength(101)
+    expect(preview.endsWith('…')).toBe(true)
+  })
+
+  it('leaves out any HTML', () => {
+    expect(chatPreview('<b>Hello</b> there')).toBe('Hello there')
   })
 })

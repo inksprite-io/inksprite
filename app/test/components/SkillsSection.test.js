@@ -295,14 +295,28 @@ describe('SkillEditor', () => {
   it('saves an existing skill under its id, with the files that came with it', async () => {
     library.rows.value = [tighten]
     const wrapper = mountEditor('skill_tighten')
-    await wrapper.find('[data-field="summary"]').setValue('Cut it down.')
+    await wrapper.find('[data-field="argumentDescription"]').setValue('the passage to cut')
     await wrapper.find('[data-action="save"]').trigger('click')
     await flushPromises()
 
     const [saved] = library.saveSkill.mock.calls[0]
     expect(saved.id).toBe('skill_tighten')
     expect(saved.files).toEqual(tighten.files)
-    expect(saved.text).toContain('inksprite-summary: Cut it down.')
+    expect(saved.text).toContain('argument-hint: the passage to cut')
+  })
+
+  it('says who can call a skill with one choice', async () => {
+    library.rows.value = [tighten]
+    const wrapper = mountEditor('skill_tighten')
+    const callers = wrapper.findComponent('[data-field="callers"]')
+
+    await callers.vm.$emit('update:modelValue', 'model')
+    await wrapper.find('[data-action="save"]').trigger('click')
+    await flushPromises()
+
+    const [saved] = library.saveSkill.mock.calls[0]
+    expect(saved.text).toContain('user-invocable: false')
+    expect(saved.text).not.toContain('disable-model-invocation')
   })
 
   it('says what is wrong, and will not save until it is right', async () => {

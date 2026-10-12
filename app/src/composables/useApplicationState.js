@@ -36,6 +36,11 @@ const defaultState = {
     // Off until the writer switches it on, so nobody meets them by opening a
     // menu.
     nsfwProfiles: false,
+    // The profiles chats start on: new chats in a project that hasn't chosen
+    // its own, and chats on a character card. Null for the built-ins, Default
+    // and Roleplay.
+    chatProfileId: null,
+    roleplayProfileId: null,
     // Whether the editor sets its text close, or with the typography plugin's
     // article spacing. For comparing the two while one is chosen.
     compactText: true,
@@ -153,6 +158,52 @@ watch(
  */
 
 /**
+ * The settings a whole backup carries, which are kept here rather than in the
+ * database: what the writer chose and would choose again on another computer.
+ * Not the debug switch, the dialogs already seen, or the temporary Compact
+ * text switch, which are about this one browser.
+ *
+ * @typedef {Object} BackedUpSettings
+ * @property {string|null} aiPreset - The AI preset in use
+ * @property {'auto'|'ask'} applyEdits
+ * @property {boolean} nsfwProfiles
+ * @property {string|null} chatProfileId - The profile new chats start on
+ * @property {string|null} roleplayProfileId - The one chats on a character card start on
+ * @property {Record<string, import('../types/models.js').WorkflowSettings>} workflows
+ * @property {NarrationChoice} narration
+ * @property {'light'|'dark'|'system'} theme
+ * @property {boolean} highlightSpeakers
+ */
+
+/**
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+const isChoice = value => value === null || typeof value === 'string'
+
+/**
+ * A workflow's settings as a backup has them, keeping only what a workflow
+ * holds and in the shape it holds it. A file can say anything.
+ *
+ * @param {any} settings
+ * @returns {Partial<import('../types/models.js').WorkflowSettings>}
+ */
+function workflowFrom(settings) {
+  if (!settings || typeof settings !== 'object') return {}
+  const { allowedProviders, onImport } = settings
+  const choices = ['providerId', 'model', 'reasoningEffort'].filter(field =>
+    isChoice(settings[field])
+  )
+  return {
+    ...Object.fromEntries(choices.map(field => [field, settings[field]])),
+    ...(Array.isArray(allowedProviders) && allowedProviders.every(id => typeof id === 'string')
+      ? { allowedProviders }
+      : {}),
+    ...(typeof onImport === 'boolean' ? { onImport } : {}),
+  }
+}
+
+/**
  * Application state composable
  *
  * @returns {{
@@ -166,6 +217,10 @@ watch(
  *   setApplyEdits: (mode: 'auto'|'ask') => void,
  *   nsfwProfiles: import('vue').ComputedRef<boolean>,
  *   setNsfwProfiles: (on: boolean) => void,
+ *   chatProfileId: import('vue').ComputedRef<string|null>,
+ *   roleplayProfileId: import('vue').ComputedRef<string|null>,
+ *   setChatProfileId: (id: string|null) => void,
+ *   setRoleplayProfileId: (id: string|null) => void,
  *   compactText: import('vue').ComputedRef<boolean>,
  *   setCompactText: (on: boolean) => void,
  *   narration: import('vue').ComputedRef<NarrationChoice>,
@@ -188,6 +243,8 @@ watch(
  *   setShowWelcomeDialog: (show: boolean) => void,
  *   getShowWelcomeDialog: () => boolean,
  *   checkAndShowWelcomeDialog: () => Promise<void>,
+ *   settingsForBackup: () => BackedUpSettings,
+ *   restoreSettings: (settings: Partial<BackedUpSettings>) => void,
  *   getState: (path: string) => any,
  *   setState: (path: string, value: any) => void,
  *   resetState: () => void
@@ -254,6 +311,32 @@ export function useApplicationState() {
   const setNsfwProfiles = on => {
     if (!state.value.system) state.value.system = {}
     state.value.system.nsfwProfiles = on === true
+  }
+
+  /**
+   * The profile new chats start on, where a project has not chosen one, and
+   * the one chats on a character card start on. Null for the built-ins'. See
+   * `chatDefaultId` and `roleplayDefaultId` in useProfiles.
+   * @type {import('vue').ComputedRef<string|null>}
+   */
+  const chatProfileId = computed(() => state.value.system?.chatProfileId || null)
+  /** @type {import('vue').ComputedRef<string|null>} */
+  const roleplayProfileId = computed(() => state.value.system?.roleplayProfileId || null)
+
+  /**
+   * @param {string|null} id
+   */
+  const setChatProfileId = id => {
+    if (!state.value.system) state.value.system = {}
+    state.value.system.chatProfileId = id || null
+  }
+
+  /**
+   * @param {string|null} id
+   */
+  const setRoleplayProfileId = id => {
+    if (!state.value.system) state.value.system = {}
+    state.value.system.roleplayProfileId = id || null
   }
 
   /**
@@ -481,6 +564,50 @@ export function useApplicationState() {
   }
 
   /**
+   * The settings a whole backup carries. See `BackedUpSettings`.
+   * @returns {BackedUpSettings}
+   */
+  const settingsForBackup = () => ({
+    aiPreset: activeAIPresetId.value ?? null,
+    applyEdits: applyEdits.value,
+    nsfwProfiles: nsfwProfiles.value,
+    chatProfileId: chatProfileId.value,
+    roleplayProfileId: roleplayProfileId.value,
+    workflows: workflows.value,
+    narration: narration.value,
+    theme: theme.value,
+    highlightSpeakers: highlightSpeakers.value,
+  })
+
+  /**
+   * Take the settings a restored backup carries. Each is taken only if it is
+   * the kind of value it should be, and one the file does not have stays as
+   * it is. They are written out at once rather than when the state is next
+   * saved, because a restore reloads the page straight after.
+   * @param {Partial<BackedUpSettings>} settings
+   */
+  const restoreSettings = settings => {
+    if (!settings || typeof settings !== 'object') return
+    if (isChoice(settings.aiPreset)) setActiveAIPresetId(settings.aiPreset)
+    if (settings.applyEdits) setApplyEdits(settings.applyEdits)
+    if (typeof settings.nsfwProfiles === 'boolean') setNsfwProfiles(settings.nsfwProfiles)
+    if (isChoice(settings.chatProfileId)) setChatProfileId(settings.chatProfileId)
+    if (isChoice(settings.roleplayProfileId)) setRoleplayProfileId(settings.roleplayProfileId)
+    if (settings.workflows && typeof settings.workflows === 'object') {
+      for (const [name, workflow] of Object.entries(settings.workflows)) {
+        setWorkflow(name, workflowFrom(workflow))
+      }
+    }
+    const { providerId, model } = settings.narration || {}
+    if (isChoice(providerId) && isChoice(model)) setNarration({ providerId, model })
+    if (settings.theme) setTheme(settings.theme)
+    if (typeof settings.highlightSpeakers === 'boolean') {
+      setHighlightSpeakers(settings.highlightSpeakers)
+    }
+    localStorage.set(STORAGE_KEY, state.value)
+  }
+
+  /**
    * Reset state to defaults
    */
   const resetState = () => {
@@ -507,6 +634,10 @@ export function useApplicationState() {
     // Whether the NSFW chat profiles are offered
     nsfwProfiles,
     setNsfwProfiles,
+    chatProfileId,
+    roleplayProfileId,
+    setChatProfileId,
+    setRoleplayProfileId,
 
     // How close the editor sets its text
     compactText,
@@ -541,6 +672,10 @@ export function useApplicationState() {
     setShowWelcomeDialog,
     getShowWelcomeDialog,
     checkAndShowWelcomeDialog,
+
+    // What a whole backup carries, and taking it back
+    settingsForBackup,
+    restoreSettings,
 
     // Generic state access for future use
     getState,

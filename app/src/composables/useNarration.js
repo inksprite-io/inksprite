@@ -105,6 +105,7 @@ export const clearNarrationInstances = () => {
  * @property {(text: string) => void} setHints
  * @property {(text: string) => void} setFilters
  * @property {import('vue').ComputedRef<string[]>} serverVoices - The model's voices, once known
+ * @property {import('vue').ComputedRef<boolean>} mixes - Whether the model takes a mix of voices, as Kokoro does
  * @property {() => Promise<string[]>} loadServerVoices
  * @property {import('vue').Ref<number>} watching - How many narration panels are showing, which is when the editor colours speakers' lines and greys what is skipped
  * @property {(documentId: string) => Block[]} blocksOf - The document's blocks as they stand
@@ -686,6 +687,7 @@ export const useNarration = storyId => {
     setHints,
     setFilters,
     serverVoices: speechServer.voices,
+    mixes: speechServer.mixes,
     loadServerVoices: speechServer.load,
     watching,
     blocksOf,

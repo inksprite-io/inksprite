@@ -34,6 +34,14 @@ describe('LinkPopover', () => {
     )
   })
 
+  it('names the document a link to one goes to, with the link to hover', async () => {
+    const popover = await show({ href: '../Notes/Cast%20list.md', document: 'Cast list' })
+    const open = popover.find('[data-action="open-link"]')
+    expect(open.text()).toBe('Cast list')
+    expect(open.attributes('title')).toBe('../Notes/Cast%20list.md')
+    expect(popover.find('.pi-file').exists()).toBe(true)
+  })
+
   it('keeps the caret in the editor when pressed', async () => {
     const popover = await show({})
     const press = new window.MouseEvent('mousedown', { bubbles: true, cancelable: true })

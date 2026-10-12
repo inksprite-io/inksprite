@@ -1,8 +1,8 @@
 <template>
   <!-- One root, so that a class the chat is given has somewhere to go: Vue
        hands a component's attributes to its root, and two siblings are not
-       one. -->
-  <div ref="root" class="w-full h-full">
+       one. A link in a reply to one of the project's documents opens it. -->
+  <div ref="root" class="w-full h-full" @click="documentLinks.onClick">
     <!-- Settings takes over the chat's container, so this works the same
        wherever the chat is rendered. The chat is only hidden behind it, so
        that it comes back as it was left: its turns at the sizes they had and
@@ -339,6 +339,7 @@ import { useNearTurns } from '@/composables/useNearTurns.js'
 import { useChatFind } from '@/composables/useChatFind.js'
 import { useFindKey } from '@/composables/useFindKey.js'
 import { useToast } from '@/composables/useToast'
+import { useDocumentLinks } from '@/composables/useDocumentLinks.js'
 import { useConfirm } from 'primevue/useconfirm'
 import { useAIChat } from '@/composables/useAIChat'
 import { useProviderSetup } from '@/composables/useProviderSetup.js'
@@ -371,6 +372,7 @@ const emit = defineEmits(['back', 'open-chat', 'new-chat'])
 // Composables
 const chatsApi = useChats(props.storyId)
 const toast = useToast()
+const documentLinks = useDocumentLinks(props.storyId)
 const confirm = useConfirm()
 const chatGeneration = useAIChat(props.storyId, props.chatId)
 const { providerSetupDialogVisible, handleDontShowAgain, isProviderSetupDialogEnabled } =
@@ -810,13 +812,53 @@ const handleRegenerateMessage = async (messageId, index = null) => {
     return
   }
 
-  try {
-    // Regenerate the message
-    await chatGeneration.regenerateMessage(messageId)
-  } catch (error) {
-    console.error('Failed to regenerate message:', error)
-    reportFailure(error, 'Failed to regenerate message')
+  askAgainFirst(
+    messageId,
+    { header: 'Regenerate reply?', label: 'Regenerate', icon: 'pi pi-refresh' },
+    async () => {
+      try {
+        await chatGeneration.regenerateMessage(messageId)
+      } catch (error) {
+        console.error('Failed to regenerate message:', error)
+        reportFailure(error, 'Failed to regenerate message')
+      }
+    }
+  )
+}
+
+/**
+ * Ask again, after saying what that takes with it when it takes anything.
+ * Asking an earlier answer again removes every turn after it, and undoes what
+ * they did to the project, as rewinding to it would. The last answer has
+ * nothing after it, and is asked again at once.
+ *
+ * @param {string} messageId - The answer, or the writer's message
+ * @param {{header: string, label: string, icon: string}} asking - What the
+ *   dialog is headed, the button that goes ahead, and its icon
+ * @param {() => Promise<void>} ask
+ */
+const askAgainFirst = (messageId, asking, ask) => {
+  const plan = chatGeneration.regeneratePlan(messageId)
+  const count = plan.messages.length
+  if (count === 0) {
+    ask()
+    return
   }
+  const later = `${count} later message${count === 1 ? '' : 's'}`
+  const paths = plan.documents.map(document => document.path)
+  const message =
+    paths.length === 0
+      ? `Removes ${later}.`
+      : `Removes ${later} and undoes their changes to ${paths.join(', ')}. Passages you’ve edited since are kept.`
+
+  confirm.require({
+    header: asking.header,
+    message,
+    icon: asking.icon,
+    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+    acceptProps: { label: asking.label, severity: 'danger' },
+    accept: ask,
+  })
 }
 
 /**
@@ -938,17 +980,23 @@ const handleRejectEdit = (messageId, index) => {
 }
 
 /**
- * Handle resending a user message
+ * Send the writer's message again: its reply is asked again, or one is asked
+ * for where it has none. See askAgainFirst.
  * @param {string} messageId
  */
-const handleResendMessage = async messageId => {
-  try {
-    // Resend the message
-    await chatGeneration.resendMessage(messageId)
-  } catch (error) {
-    console.error('Failed to resend message:', error)
-    reportFailure(error, 'Failed to resend message')
-  }
+const handleResendMessage = messageId => {
+  askAgainFirst(
+    messageId,
+    { header: 'Send again?', label: 'Send again', icon: 'pi pi-arrow-right' },
+    async () => {
+      try {
+        await chatGeneration.resendMessage(messageId)
+      } catch (error) {
+        console.error('Failed to resend message:', error)
+        reportFailure(error, 'Failed to resend message')
+      }
+    }
+  )
 }
 
 /**

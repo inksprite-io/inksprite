@@ -10,7 +10,7 @@ import { useChatSettings } from '@/composables/useChatSettings.js'
 
 /**
  * One of a chat's texts in a tab of the editor's: the system prompt it runs
- * under, or its author's note. The same text as in the chat's settings, with
+ * under, its author's note, or one of its roleplay instructions. The same text as in the chat's settings, with
  * room to work in: what is typed here goes where typing there would, and
  * what is typed there shows up here.
  *
@@ -38,13 +38,31 @@ onMounted(async () => {
   ready.value = true
 })
 
-const shown = computed(() =>
-  props.text === 'prompt' ? settings.prompt.value : settings.note.value || ''
+/**
+ * How each text is read and written, as the settings pane does.
+ * @type {Record<import('@/utils/chatTabs.js').ChatText, {read: () => string, write: (typed: string) => void}>}
+ */
+const TEXTS = {
+  prompt: { read: () => settings.prompt.value, write: settings.setPrompt },
+  note: { read: () => settings.note.value || '', write: settings.setNote },
+  'roleplay-prompt': {
+    read: () => settings.roleplay.value.prompt,
+    write: settings.setRoleplayPrompt,
+  },
+  'post-history': {
+    read: () => settings.roleplay.value.postHistory,
+    write: settings.setPostHistory,
+  },
+}
+
+const text = computed(
+  () => TEXTS[/** @type {import('@/utils/chatTabs.js').ChatText} */ (props.text)]
 )
 
+const shown = computed(() => text.value.read())
+
 /** @param {string} typed */
-const write = typed =>
-  props.text === 'prompt' ? settings.setPrompt(typed) : settings.setNote(typed)
+const write = typed => text.value.write(typed)
 
 /** @type {import('vue').Ref<{ openFind: () => boolean }|null>} */
 const field = ref(null)

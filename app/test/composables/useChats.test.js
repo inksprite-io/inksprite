@@ -24,6 +24,7 @@ vi.mock('@/composables/useProfiles', async () => {
     useProfiles: () => ({
       getProfile: id => getBuiltInProfile(id) || mockGetProfile(id),
       saveProfile: mockSaveProfile,
+      chatDefaultId: () => 'builtin_profile_chat',
     }),
   }
 })

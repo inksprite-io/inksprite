@@ -15,6 +15,7 @@ import {
   plainPassage,
   quoteWithoutComments,
   withoutComments,
+  rewriteAroundComments,
 } from '@/editor/comments.js'
 
 const MD = 'We had a {==cold and narrow==}{>>c7k2m1: reword this<<} attic.'
@@ -278,5 +279,32 @@ describe('edits around comments', () => {
     expect(editAroundComments(LINE, 'the', 'a').count).toBe(1)
     expect(editAroundComments(`${LINE} ${LINE}`, 'ferry', 'boat').count).toBe(2)
     expect(editAroundComments(LINE, 'a bus', 'a car').count).toBe(0)
+  })
+})
+
+describe('rewriteAroundComments', () => {
+  const content = 'The {==tide==}{>>c1abcd: Which one?<<} turned at {==noon==}{>>c2abcd: Dawn?<<}.'
+
+  it('puts each comment back where the new body keeps its words', () => {
+    expect(rewriteAroundComments(content, 'By noon the tide had turned.')).toEqual({
+      body: 'By {==noon==}{>>c2abcd: Dawn?<<} the {==tide==}{>>c1abcd: Which one?<<} had turned.',
+      resolved: [],
+    })
+  })
+
+  it('resolves a comment whose words are gone, or there twice', () => {
+    const { body, resolved } = rewriteAroundComments(content, 'The tide, the tide, at dusk.')
+
+    expect(body).toBe('The tide, the tide, at dusk.')
+    expect(resolved.map(comment => comment.id)).toEqual(['c1abcd', 'c2abcd'])
+  })
+
+  it('takes out markup the body brings, so only the writer makes comments', () => {
+    const { body } = rewriteAroundComments(
+      content,
+      'The {==tide==}{>>c1abcd: Which one?<<} turned. {==Gulls==}{>>zz9999: Mine<<} cried.'
+    )
+
+    expect(body).toBe('The {==tide==}{>>c1abcd: Which one?<<} turned. Gulls cried.')
   })
 })

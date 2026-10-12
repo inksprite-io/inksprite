@@ -103,14 +103,16 @@ Vue components for the inksprite application UI.
   - `narration/` - The document in the editor read aloud: `NarrationPanel`
     in the sidebar, with the document's blocks (`NarrationScript`: who
     speaks each, whether it has been read, a selection to read on its own),
-    the project's voices and their colours, its pronunciation hints, its
-    filters for what is not read, and the player. While it shows, `Editor`
+    what the project is read through (`NarrationModel`: a connection that
+    speaks, and its model), its voices and their colours, its pronunciation
+    hints, its filters for what is not read, and the player. While it shows, `Editor`
     colours each speaker's lines and greys what the filters leave out.
     `ReadAloudButton` reads something in one voice then and there; a chat
     turn has one in its header, and the chat's settings choose the voice.
   - `settings/` - App-wide settings: `Settings` is a section list beside a
     pane, shown in `SettingsDialog` on the desktop and as a tab on phones.
-    `NarrationSection` is where the speech server is set.
+    `LibraryMoveToast` shuts the page while the desktop app's projects move
+    into their folder or back, and says how far they are.
 
 ### Icon Components
 

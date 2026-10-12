@@ -264,8 +264,8 @@ projects kept in the window have been moved into it.
 
 ## enableLibrary
 
-Keep the projects in the library from now on. They are moved into it when
-the app opens again.
+Keep the projects in the library from now on. Until the window's projects
+are moved into it, the app opens on them, and moves them in.
 
 Returns **[Promise][70]<[string][64]>** Where it is
 

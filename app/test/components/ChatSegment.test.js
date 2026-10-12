@@ -180,4 +180,28 @@ describe('ChatSegment', () => {
     expect(wrapper.find('[data-actions-room]').exists()).toBe(false)
     expect(wrapper.text()).toContain('Just this.')
   })
+
+  it('keeps the buttons on a command’s box when it is the whole of its turn', async () => {
+    // Asked again and edited from its box wherever it is, as one beside words is.
+    const wrapper = mount(ChatSegment, {
+      props: {
+        segment: ran({ name: 'roll', input: '2d6', label: '2d6', result: '7' }),
+        alone: true,
+      },
+      global: { plugins: [PrimeVue], directives: { tooltip: {} } },
+    })
+    const labels = wrapper.findAll('button').map(each => each.attributes('aria-label'))
+    expect(labels).toEqual(['Ask again', 'Edit command', 'Delete command'])
+
+    await wrapper.find('[aria-label="Ask again"]').trigger('click')
+    expect(wrapper.emitted('regenerate')).toHaveLength(1)
+  })
+
+  it('holds asking again and editing while the answer is on its way', () => {
+    const wrapper = show(ran({ name: 'interpret', input: 'Why?', pending: true }))
+
+    expect(wrapper.find('[aria-label="Ask again"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('[aria-label="Edit command"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('[aria-label="Delete command"]').attributes('disabled')).toBeUndefined()
+  })
 })

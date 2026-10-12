@@ -58,7 +58,13 @@ import { diffAppend, diffEdit } from '@/utils/edits.js'
 import { chatVisibility } from '@/utils/visibility.js'
 import { readInView, textHash } from '@/ai/context/reads.js'
 import { skillWithFile } from './useSkill.js'
-import { describeRepository, isRepository, isSourceFile, repositoryOf } from '@/source/tree.js'
+import {
+  describeRepository,
+  inRepository,
+  isRepository,
+  isSourceFile,
+  repositoryOf,
+} from '@/source/tree.js'
 import { languageOf } from '@/source/language.js'
 import { lineCount } from '@/source/text.js'
 import {
@@ -66,8 +72,10 @@ import {
   editAroundComments,
   findComments,
   quoteWithoutComments,
+  rewriteAroundComments,
   withoutComments,
 } from '@/editor/comments.js'
+import { extensionFor } from '@/files/inspect.js'
 import { namesOf, storedPassage, substitute } from '@/cards/macros.js'
 
 /**
@@ -569,6 +577,18 @@ export const listDocumentsDefinition = {
 const counted = n => n.toLocaleString('en-US')
 
 /**
+ * What kind of file a file document is, for its listing: `file, pdf`. The
+ * title lost its extension at import, and a link to the file needs it.
+ *
+ * @param {Document} document
+ * @returns {string}
+ */
+function fileKind(document) {
+  const extension = extensionFor(document.mime || '')
+  return extension ? `file, ${extension}` : 'file'
+}
+
+/**
  * One entry of a listing, as a line: its path, and what can be said of it.
  *
  * @param {DocumentsApi} api
@@ -587,7 +607,7 @@ function listingLine(api, document, markFor, hidden) {
   const facts = isSourceFile(api.get, document)
     ? ['code', `${counted(lineCount(document.content || ''))} lines`]
     : [
-        ...(document.type === 'file' ? ['file'] : []),
+        ...(document.type === 'file' ? [fileKind(document)] : []),
         ...(typeof document.pages === 'number' ? [`${counted(document.pages)} pages`] : []),
         `${counted(document.wordCount || 0)} words`,
       ]
@@ -1581,7 +1601,8 @@ export const createDocumentDefinition = {
         },
         content: {
           type: 'string',
-          description: 'The body text, in Markdown.',
+          description:
+            'The body text, in Markdown. To link to another document, use its path from this one, ending in .md (or a file\'s own extension, such as .pdf), with %20 for each space: from "Drafts/Chapter 1", [the cast](../Notes/Cast%20list.md).',
         },
       },
       required: ['path', 'content'],
@@ -1669,6 +1690,13 @@ export async function executeCreateFolder(args, context) {
   if ('error' in target) return target
 
   const folder = api.createFolder(target.parentId, target.title)
+  record(context, {
+    documentId: folder.id,
+    path: target.path,
+    tool: 'create_folder',
+    old: '',
+    new: '',
+  })
   return {
     success: true,
     document: {
@@ -1690,7 +1718,7 @@ export const updateDocumentDefinition = {
   function: {
     name: 'update_document',
     description:
-      "Change a document's title, or rewrite its whole body. Content replaces the whole body, so use it only for a rewrite: to change a passage use edit_document, and to add to the end use append_document.",
+      "Rewrite a document's whole body. The content replaces everything, so use it only to reshape a document from end to end: to change a passage use edit_document, to add to the end use append_document, and to rename or move it use move_document. The writer's comments stay on any passage the new body keeps word for word; the result lists the ones that went.",
     parameters: {
       type: 'object',
       properties: {
@@ -1698,84 +1726,142 @@ export const updateDocumentDefinition = {
           type: 'string',
           description: "The document's path from the project root.",
         },
-        updates: {
-          type: 'object',
-          description: 'The fields to change',
-          properties: {
-            title: { type: 'string', description: 'New title' },
-            content: {
-              type: 'string',
-              description: 'New body text in Markdown, replacing the old',
-            },
-          },
+        content: {
+          type: 'string',
+          description:
+            'The whole new body, in Markdown. A link to another document is its path from this one, ending in .md, with %20 for each space.',
         },
       },
-      required: ['path', 'updates'],
+      required: ['path', 'content'],
     },
   },
 }
 
 /**
- * @param {{path: string, updates: {title?: string, content?: string}}} args
+ * @param {{path: string, content?: string, updates?: {title?: string, content?: string}}} args
+ *   `updates` is the shape the tool took before it lost renaming, which a
+ *   model reading an old conversation may still use
  * @param {ToolContext} context
  */
 export async function executeUpdateDocument(args, context) {
   if (!context?.storyId) return { error: 'No story context available' }
-  const { api, store, sees } = await open(context.storyId, context.chatId)
+  const { api, sees, names } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
   if (!document) return noDocument(args.path)
 
-  const updates = args.updates || {}
-  /** @type {Partial<Document>} */
-  const patch = {}
-  if (typeof updates.title === 'string') {
-    // A title something beside it has would be one path for two documents,
-    // refused as a create there would be: see `resolveNewPath`.
-    const title = updates.title.trim()
-    const other = document.parentId ? api.namesakeOf(document.parentId, title, document.id) : null
-    if (other) {
-      const path = pathOf(api, other)
-      return {
-        error: sees(other)
-          ? `"${path}" already exists. Choose a different title.`
-          : `"${path}" is not available. Choose a different title.`,
+  const content = typeof args.content === 'string' ? args.content : args.updates?.content
+  if (typeof args.updates?.title === 'string' && typeof content !== 'string') {
+    return { error: 'To rename or move a document, use move_document.' }
+  }
+  if (typeof content !== 'string') return { error: 'Give the whole new body as "content".' }
+  if (document.type === 'folder') return { error: 'A folder has no content to update' }
+  if (document.type === 'file') return { error: fileIsNotWritten(args.path) }
+
+  // The writer's comments come across where the new body keeps their words.
+  const { body, resolved } = rewriteAroundComments(api.currentContent(document.id), content)
+  const resolvedComments = resolved.length
+    ? {
+        resolvedComments: resolved.map(comment => ({
+          id: comment.id,
+          comment: substitute(comment.comment, names),
+        })),
       }
+    : {}
+
+  if (context.propose) {
+    return {
+      ...propose(context, {
+        documentId: document.id,
+        path: pathOf(api, document),
+        tool: 'update_document',
+        old: api.currentContent(document.id),
+        new: body,
+      }),
+      ...resolvedComments,
     }
-    patch.title = title
   }
+  recording(context, api, document, 'update_document', () => api.setContent(document.id, body))
 
-  const hasContent = typeof updates.content === 'string'
-  if (hasContent && document.type === 'folder') {
-    return { error: 'A folder has no content to update' }
-  }
-  if (hasContent && document.type === 'file') return { error: fileIsNotWritten(args.path) }
-  if (!hasContent && Object.keys(patch).length === 0) {
-    return { error: 'No supported fields to update' }
-  }
-
-  // Content goes through the document API, which knows whether the editor
-  // holds it; the rest is plain metadata the editor does not.
-  if (Object.keys(patch).length > 0) store.updateDocument(document.id, patch)
-  if (hasContent && context.propose) {
-    return propose(context, {
-      documentId: document.id,
-      path: pathOf(api, document),
-      tool: 'update_document',
-      old: api.currentContent(document.id),
-      new: updates.content,
-    })
-  }
-  if (hasContent) {
-    recording(context, api, document, 'update_document', () =>
-      api.setContent(document.id, updates.content)
-    )
-  }
-
-  const updated = api.get(document.id)
   return {
     success: true,
-    document: { id: updated.id, title: updated.title, path: pathOf(api, updated) },
+    document: { id: document.id, title: document.title, path: pathOf(api, document) },
+    ...resolvedComments,
+  }
+}
+
+// ============================================================================
+// move_document
+// ============================================================================
+
+/** @type {ToolDefinition} */
+export const moveDocumentDefinition = {
+  type: /** @type {const} */ ('function'),
+  function: {
+    name: 'move_document',
+    description:
+      'Rename a document or folder, move it into another folder, or both. Give the path it has and the full path it should have. The folder it goes into has to exist already: create_folder adds one. A folder moves with everything in it.',
+    parameters: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Where it is now, from the project root.',
+        },
+        to: {
+          type: 'string',
+          description:
+            'The full path it should have: its folder, then its name (e.g. "notes/Factions/The Ashen Court").',
+        },
+      },
+      required: ['path', 'to'],
+    },
+  },
+}
+
+/**
+ * @param {{path: string, to: string}} args
+ * @param {ToolContext} context
+ */
+export async function executeMoveDocument(args, context) {
+  if (!context?.storyId) return { error: 'No story context available' }
+  const { api, sees } = await open(context.storyId, context.chatId)
+
+  const document = findByPath(api, context.storyId, args.path, sees)
+  if (!document) return noDocument(args.path)
+  if (document.id === rootIdFor(context.storyId))
+    return { error: 'The project itself stays where it is.' }
+  const from = pathOf(api, document)
+  if (document.type !== 'text' && inRepository(api.get, document)) {
+    return { error: `"${from}" is part of a repository, which is read-only.` }
+  }
+
+  const to = (args.to || '')
+    .split('/')
+    .map(segment => segment.trim())
+    .filter(Boolean)
+    .join('/')
+  if (to === from) return { error: `"${from}" is already there.` }
+  const target = resolveNewPath(api, context.storyId, to, sees)
+  if ('error' in target) {
+    return {
+      error: target.error.replace('Use update_document to change it.', 'Choose another name.'),
+    }
+  }
+  if (target.parentId !== document.parentId && !api.canDropInto(target.parentId, document.id)) {
+    return { error: `"${from}" cannot go into a folder inside itself.` }
+  }
+
+  if (target.parentId !== document.parentId) api.moveInto(target.parentId, document.id)
+  if (api.get(document.id)?.title !== target.title) api.rename(document.id, target.title)
+
+  const moved = api.get(document.id)
+  const path = pathOf(api, moved)
+  record(context, { documentId: document.id, path, tool: 'move_document', old: from, new: path })
+  return {
+    success: true,
+    document: { id: moved.id, title: moved.title, type: moved.type, path },
+    from,
   }
 }
 
@@ -1804,7 +1890,8 @@ export const editDocumentDefinition = {
         },
         new: {
           type: 'string',
-          description: 'What the passage becomes, in Markdown. Empty removes it.',
+          description:
+            'What the passage becomes, in Markdown. Empty removes it. A link to another document is its path from this one, ending in .md, with %20 for each space.',
         },
       },
       required: ['path', 'old', 'new'],

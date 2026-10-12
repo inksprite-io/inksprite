@@ -5,7 +5,13 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { dexieStorage } from '@/storage/dexie.js'
 import { libraryStorage } from '@/storage/library.js'
 import { storage, useStorage } from '@/storage/index.js'
-import { keepProjectsInApp, moveProjects, openStorage } from '@/storage/open.js'
+import {
+  keepProjectsInApp,
+  moveIntoLibrary,
+  moveProjects,
+  openStorage,
+  projectsToMove,
+} from '@/storage/open.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { memoryLibrary } from './memoryLibrary.js'
 
@@ -17,6 +23,7 @@ const platform = vi.hoisted(() => ({
 const library = vi.hoisted(() => ({
   librarySettings: vi.fn(async () => platform.settings),
   markProjectsMoved: vi.fn(async () => {}),
+  enableLibrary: vi.fn(async () => '/library'),
   disableLibrary: vi.fn(async () => {}),
   libraryDisk: vi.fn(() => platform.disk),
 }))
@@ -108,17 +115,79 @@ describe('opening the storage', () => {
     expect(await textOf(storage, 'story_a')).toBe('Here.')
   })
 
-  it('moves the app’s projects into the folder once switched on, and opens on it', async () => {
-    const moving = vi.fn()
+  it('opens on the app’s own projects while they are still to be moved into the folder', async () => {
     await dexieStorage.addProject(project('story_a', 'Novel', 'Here.', 5))
 
-    await openStorage({ onMoving: moving })
+    await openStorage()
 
-    expect(moving).toHaveBeenCalledWith('/library')
-    expect(library.markProjectsMoved).toHaveBeenCalled()
-    expect(await platform.disk.projects()).toMatchObject({ projects: ['Novel'] })
-    await dexieStorage.removeProject('story_a')
+    expect(projectsToMove()).toBe(true)
+    expect(library.libraryDisk).not.toHaveBeenCalled()
+    expect(library.markProjectsMoved).not.toHaveBeenCalled()
     expect(await textOf(storage, 'story_a')).toBe('Here.')
+  })
+
+  it('opens on the folder at once when the app has no projects to move', async () => {
+    await libraryStorage(platform.disk).addProject(project('story_a', 'Novel', 'Kept.', 5))
+
+    await openStorage()
+
+    expect(projectsToMove()).toBe(false)
+    expect(library.markProjectsMoved).toHaveBeenCalled()
+    expect(await textOf(storage, 'story_a')).toBe('Kept.')
+  })
+
+  it('opens on the folder once the projects are in it', async () => {
+    platform.settings = { path: '/library', enabled: true, moved: true }
+    await dexieStorage.addProject(project('story_a', 'Novel', 'In the app.', 5))
+    await libraryStorage(platform.disk).addProject(project('story_a', 'Novel', 'Moved.', 5))
+
+    await openStorage()
+
+    expect(projectsToMove()).toBe(false)
+    expect(await textOf(storage, 'story_a')).toBe('Moved.')
+  })
+})
+
+describe('moving the projects into the folder', () => {
+  it('turns the folder on, and moves them in saying how far it has got', async () => {
+    const novel = project('story_a', 'Novel', 'Here.', 5)
+    for (const n of [2, 3, 4]) {
+      novel.documents.push({ ...novel.documents[1], id: `story_a_ch${n}`, title: `Chapter ${n}` })
+    }
+    await dexieStorage.addProject(novel)
+    await dexieStorage.addProject(project('story_b', 'Notes', 'There.', 5))
+    /** @type {any[]} */
+    const told = []
+
+    await moveIntoLibrary(progress => told.push(progress))
+
+    expect(library.enableLibrary.mock.invocationCallOrder[0]).toBeLessThan(
+      library.libraryDisk.mock.invocationCallOrder[0]
+    )
+    expect(library.markProjectsMoved).toHaveBeenCalled()
+    expect(await platform.disk.projects()).toMatchObject({ projects: ['Notes', 'Novel'] })
+    expect(told.map(progress => progress.title)).toEqual(expect.arrayContaining(['Novel', 'Notes']))
+    expect(told.every(progress => progress.count === 2)).toBe(true)
+    const fractions = told.map(progress => progress.fraction)
+    expect(fractions).toEqual([...fractions].sort((a, b) => a - b))
+    expect(fractions.at(-1)).toBe(1)
+    // The novel, of five documents and a chat, is two thirds of the move.
+    expect(told.find(progress => progress.title === 'Notes').fraction).toBeCloseTo(2 / 3)
+    expect(await textOf(dexieStorage, 'story_a')).toBe('Here.')
+  })
+
+  it('keeps them in the app when they cannot be moved', async () => {
+    await dexieStorage.addProject(project('story_a', 'Novel', 'Here.', 5))
+    platform.disk = {
+      ...platform.disk,
+      apply: async () => {
+        throw new Error('disk full')
+      },
+    }
+
+    await expect(moveIntoLibrary()).rejects.toThrow('disk full')
+    expect(library.disableLibrary).toHaveBeenCalled()
+    expect(library.markProjectsMoved).not.toHaveBeenCalled()
   })
 })
 

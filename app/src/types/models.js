@@ -158,6 +158,9 @@
  * @property {boolean} [ordered] - Folders only. Ordered folders sort by `order` and
  *   accept drag-to-position. Unordered folders sort by title. Absent counts as
  *   unordered.
+ * @property {string[]} [handOrder] - Folders only, while sorted by name after
+ *   being kept in order: the ids in the order the writer had, taken up again
+ *   when the folder is kept in order once more.
  * @property {string} [kind] - What this document is, when it came from somewhere
  *   with a shape of its own: `card` on the folder an imported character card
  *   became, the field's name on each of its documents, `lore` on a book. Read by
@@ -239,13 +242,17 @@
  * @property {boolean} [web] - Whether this chat searches the web, once the writer has chosen here. Absent means it does when web search is set up for the chat's profile. Opted into, as a server's tools are. See web/config.js.
  * @property {boolean} [projectContextEnabled] - Whether the project block rides at the tail of this conversation. Absent means it does, which is what every chat written before the switch had.
  * @property {string|null} [voiceId] - The voice this chat's messages are read aloud in, one of the project's. Absent, or naming a voice since removed, means the project's default.
- * @property {string} [rules] - The chat's author's note: standing instructions the writer keeps as they go, sent in their latest message after the project block and ahead of what they said. Starts as the profile's, combined with a card's post-history instructions for a chat on a card. Absent means none.
+ * @property {string} [prompt] - The chat's own system prompt, once the writer has changed it here. Absent means the profile's, read on every turn. See ai/profiles.
+ * @property {Record<string, {prompt?: string}>} [skills] - The chat's own wording of a skill, by the skill's name, over the profile's. An empty prompt is the skill's own wording. Absent means the profile's.
+ * @property {string} [rules] - The chat's author's note: standing instructions the writer keeps as they go, sent in their latest message after the project block and ahead of what they said. Starts as the profile's. Absent means none.
  * @property {string[]} [pinnedIds] - Documents whose text rides in the project block from the first turn, without the model having read them. A folder pins what is under it. Absent means none.
  * @property {string[]} [shownIds] - Documents this chat sees although a folder above them is hidden in it: a character's own folder, under the folder all the characters are in. Absent means none.
  * @property {string[]} [hiddenIds] - Documents kept from this chat's model, and everything under them unless something nearer is pinned or shown. The document's own `hidden` keeps it from every chat. See `utils/visibility.js`. Absent means none.
  * @property {string|null} [userVoiceId] - The voice this chat's own messages are read aloud in, one of the project's. Absent means the same voice everything else is read in.
  * @property {string} [userName] - The writer's name in this chat: what `{{user}}` becomes in what its model reads. Asked for when a chat on a card starts. Absent means the macro is read as written. See `cards/macros.js`.
  * @property {string} [characterName] - The name of the character this chat plays: what `{{char}}` becomes in what its model reads. Absent means the macro is read as written.
+ * @property {string} [roleplayPrompt] - Roleplay instructions sent after the system prompt, or where it says `{{original}}`: a card's system prompt, for a chat on a card. Kept apart from the prompt so that saving the chat to its profile does not take the card with it. Absent means none. See `withOriginal` in cards/card.js.
+ * @property {string} [postHistory] - Roleplay instructions sent after the author's note, or where they say `{{original}}`: a card's post-history instructions, for a chat on a card. Absent means none.
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
  * @property {number} updated - Last update timestamp

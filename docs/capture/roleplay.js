@@ -46,20 +46,6 @@ const LOREBOOK = 'Divided Skies'
 const ANTHROPIC_KEY = 'sk-ant-made-up-for-the-guide'
 
 /**
- * The tools a chat on the card keeps on in the guide: the documents it can
- * read, list and search. The rest of the group writes, and is switched off.
- */
-const WRITING_TOOLS = [
-  'Create document',
-  'Create folder',
-  'Update document',
-  'Edit document',
-  'Append document',
-  'List comments',
-  'Resolve comment',
-]
-
-/**
  * @typedef {{
  *   say: string[],
  *   randoms?: number[],
@@ -267,15 +253,19 @@ export async function roleplay(ui, { standIn, context }) {
   await ui.pause(400)
   await ui.shot('roleplay-pinned')
 
-  // What the model may do
+  // Who is who, and what the card asks of every turn
   await ui.click(button('Chat settings'))
+  await ui.click(button('Roleplay'))
+  const instructions = page.getByRole('textbox', { name: 'Post-history instructions' })
+  // At the top of the pane, so the section fits under it whole.
+  await button('Roleplay').evaluate(header => header.scrollIntoView({ block: 'start' }))
+  await ui.pause(400)
+  await ui.shot('roleplay-settings', { of: [button('Roleplay'), instructions], pad: 12 })
+  await ui.click(button('Roleplay'))
+
+  // What the model may do
   await ui.click(button('Tools'))
-  await ui.click(button('Documents'))
-  for (const tool of WRITING_TOOLS) {
-    await ui.click(page.getByRole('switch', { name: tool, exact: true }))
-  }
   await ui.click(page.getByRole('switch', { name: 'RPG Tools', exact: true }))
-  await button('Documents').scrollIntoViewIfNeeded()
   await ui.shot('roleplay-tools', {
     of: [button('Tools'), page.getByRole('switch', { name: 'RPG Tools', exact: true })],
     pad: 12,

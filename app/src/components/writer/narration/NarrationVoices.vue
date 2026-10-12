@@ -60,12 +60,25 @@
         <label class="text-xs font-medium text-surface-700 dark:text-surface-200" for="voice-id">
           Voice
         </label>
+        <Select
+          v-if="picking"
+          label-id="voice-id"
+          :model-value="selected.voice"
+          :options="serverVoices"
+          size="small"
+          class="w-full dark:!bg-surface-900"
+          filter
+          aria-label="Voice"
+          data-voice-pick
+          @update:model-value="update({ voice: $event })"
+        />
         <InputText
+          v-else
           id="voice-id"
           :model-value="selected.voice"
           size="small"
           class="w-full font-mono dark:!bg-surface-900"
-          placeholder="af_heart+af_nicole(2)"
+          :placeholder="mixes ? 'af_heart+af_nicole(2)' : undefined"
           data-voice-string
           @update:model-value="update({ voice: String($event ?? '').trim() })"
         />
@@ -77,7 +90,7 @@
           Not among this model's voices: {{ unknown.join(', ') }}
         </p>
         <Select
-          v-if="serverVoices.length > 0"
+          v-if="mixes && serverVoices.length > 0"
           :model-value="null"
           :options="serverVoices"
           size="small"
@@ -186,13 +199,16 @@ import { VOICE_COLORS } from '@/tts/voices.js'
  * @typedef {Object} Props
  * @property {import('@/types/models.js').TtsVoice[]} voices
  * @property {string} defaultVoiceId - The default voice
- * @property {string[]} [serverVoices] - The model's voices, to mix from
+ * @property {string[]} [serverVoices] - The model's voices, to pick from
+ * @property {boolean} [mixes] - Whether the model takes several voices mixed
+ *   with `+`, as Kokoro does; any other is given one of its voices
  * @property {boolean} [previewing] - Whether a preview is being fetched
  */
 const props = defineProps({
   voices: { type: Array, required: true },
   defaultVoiceId: { type: String, required: true },
   serverVoices: { type: Array, default: () => [] },
+  mixes: { type: Boolean, default: false },
   previewing: { type: Boolean, default: false },
 })
 
@@ -207,13 +223,22 @@ const selected = computed(() => {
 })
 
 /**
- * The voices in the mix the model doesn't list, once its voices are known: a
- * voice made for another model, kept as written for going back to it.
+ * Whether the voice is picked from the model's list: a model that takes one
+ * voice, once its voices are known. A mix, or a voice no list names, is typed.
+ */
+const picking = computed(() => !props.mixes && props.serverVoices.length > 0)
+
+/**
+ * The voices the model doesn't list, once its voices are known: a voice made
+ * for another model, kept as written for going back to it. A mix is looked at
+ * voice by voice; to a model that takes one voice it is one unknown voice.
  */
 const unknown = computed(() => {
   const known = /** @type {string[]} */ (props.serverVoices)
   if (!selected.value || known.length === 0) return []
-  return selected.value.voice
+  const voice = selected.value.voice.trim()
+  if (!props.mixes) return voice && !known.includes(voice) ? [voice] : []
+  return voice
     .split('+')
     .map(part => part.replace(/\(\s*[\d.]+\s*\)\s*$/, '').trim())
     .filter(part => part && !known.includes(part))
@@ -243,7 +268,7 @@ const settleName = () => {
 }
 
 /**
- * Put one of the server's voices into the mix: on its own for an empty
+ * Put one of the model's voices into the mix: on its own for an empty
  * voice, otherwise joined with `+`.
  * @param {string|null} name
  */

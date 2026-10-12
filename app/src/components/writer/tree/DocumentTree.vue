@@ -482,12 +482,11 @@ const importCard = async answers => {
     const written = await cards.write(card, { parentId: importInto.value, ...answers })
     toast.add({
       severity: 'success',
-      // A file has something to say about itself — that it had no text in it —
-      // where a count would say nothing.
-      detail: `${card.replaces ? 'Re-imported' : 'Imported'} ${written.title}: ${
-        written.note ||
-        (written.documents === 1 ? '1 document.' : `${written.documents} documents.`)
-      }`,
+      // A file says something about itself — its pages, or that it had no
+      // text — where a count of one document would say nothing.
+      detail: `${card.replaces ? 'Re-imported' : 'Imported'} ${written.title}${
+        written.note ?? (written.documents === 1 ? '' : ` (${written.documents} documents)`)
+      }.`,
       life: 4000,
     })
   } catch (error) {

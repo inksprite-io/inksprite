@@ -7,6 +7,7 @@ import {
   executeReadDocument,
   executeSearchDocuments,
   executeUpdateDocument,
+  executeMoveDocument,
   executeAppendDocument,
   executeEditDocument,
 } from '@/ai/tools/documents.js'
@@ -79,7 +80,7 @@ describe('document tools, on files', () => {
 
   it('lists a file as what it is', async () => {
     expect(await executeListDocuments({ path: 'Papers' }, context)).toMatch(
-      /^Papers\/RAG survey — file, 2 pages, \d+ words/m
+      /^Papers\/RAG survey — file, pdf, 2 pages, \d+ words/m
     )
   })
 
@@ -118,9 +119,9 @@ describe('document tools, on files', () => {
     expect(results[0].passages[0].text).toContain('[p.2]')
   })
 
-  it('lets a file’s title change, and leaves its summary to the writer', async () => {
-    const result = await executeUpdateDocument(
-      { path: 'Papers/RAG survey', updates: { title: 'Survey', summary: 'Better.' } },
+  it('lets a file be renamed, and leaves its summary to the writer', async () => {
+    const result = await executeMoveDocument(
+      { path: 'Papers/RAG survey', to: 'Papers/Survey' },
       context
     )
 

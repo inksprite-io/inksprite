@@ -139,3 +139,87 @@ export const minimalEpub = (
   for (const [path, text] of Object.entries(extra)) put(path, text)
   return zipSync(files)
 }
+
+/** The namespaces a Word file's parts are written in. */
+const WORD = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+const RELATIONSHIPS = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
+const PACKAGE = 'http://schemas.openxmlformats.org/package/2006/relationships'
+
+/**
+ * A Word file built by hand: the body given as WordprocessingML, with the
+ * parts it can call on — numbering for a bulleted list (`numId` 1) and a
+ * numbered one (`numId` 2), the links and pictures given by relationship id.
+ * Headings are by style id (`Heading1`), as Word writes them.
+ *
+ * @param {string} body - What goes inside `<w:body>`
+ * @param {Object} [options]
+ * @param {Record<string, string>} [options.links] - Link targets, by relationship id
+ * @param {Record<string, Uint8Array>} [options.images] - PNGs, by relationship id
+ * @param {Record<string, string>} [options.footnotes] - Each footnote's text, by its id
+ * @returns {Uint8Array}
+ */
+export const minimalDocx = (body, { links = {}, images = {}, footnotes = {} } = {}) => {
+  const xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+  const rel = (
+    /** @type {string} */ id,
+    /** @type {string} */ type,
+    /** @type {string} */ target,
+    external = false
+  ) =>
+    `<Relationship Id="${id}" Type="${RELATIONSHIPS}/${type}" Target="${target}"${external ? ' TargetMode="External"' : ''}/>`
+  const level = (/** @type {string} */ format) =>
+    `<w:lvl w:ilvl="0"><w:numFmt w:val="${format}"/><w:lvlText w:val="${format === 'bullet' ? '•' : '%1.'}"/></w:lvl>`
+  /** @type {Record<string, Uint8Array>} */
+  const files = {
+    '[Content_Types].xml': strToU8(
+      `${xml}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+        '<Default Extension="xml" ContentType="application/xml"/>' +
+        '<Default Extension="png" ContentType="image/png"/>' +
+        '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>' +
+        '</Types>'
+    ),
+    '_rels/.rels': strToU8(
+      `${xml}<Relationships xmlns="${PACKAGE}">${rel('rId1', 'officeDocument', 'word/document.xml')}</Relationships>`
+    ),
+    'word/_rels/document.xml.rels': strToU8(
+      `${xml}<Relationships xmlns="${PACKAGE}">` +
+        rel('rNumbering', 'numbering', 'numbering.xml') +
+        rel('rFootnotes', 'footnotes', 'footnotes.xml') +
+        Object.entries(links)
+          .map(([id, url]) => rel(id, 'hyperlink', url, true))
+          .join('') +
+        Object.keys(images)
+          .map(id => rel(id, 'image', `media/${id}.png`))
+          .join('') +
+        '</Relationships>'
+    ),
+    'word/numbering.xml': strToU8(
+      `${xml}<w:numbering xmlns:w="${WORD}">` +
+        `<w:abstractNum w:abstractNumId="0">${level('bullet')}</w:abstractNum>` +
+        `<w:abstractNum w:abstractNumId="1">${level('decimal')}</w:abstractNum>` +
+        '<w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>' +
+        '<w:num w:numId="2"><w:abstractNumId w:val="1"/></w:num>' +
+        '</w:numbering>'
+    ),
+    'word/document.xml': strToU8(
+      `${xml}<w:document xmlns:w="${WORD}" xmlns:r="${RELATIONSHIPS}" ` +
+        'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" ' +
+        'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" ' +
+        'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
+        `<w:body>${body}</w:body></w:document>`
+    ),
+  }
+  files['word/footnotes.xml'] = strToU8(
+    `${xml}<w:footnotes xmlns:w="${WORD}">` +
+      Object.entries(footnotes)
+        .map(
+          ([id, text]) =>
+            `<w:footnote w:id="${id}"><w:p><w:r><w:t>${text}</w:t></w:r></w:p></w:footnote>`
+        )
+        .join('') +
+      '</w:footnotes>'
+  )
+  for (const [id, bytes] of Object.entries(images)) files[`word/media/${id}.png`] = bytes
+  return zipSync(files)
+}

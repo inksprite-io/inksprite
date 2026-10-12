@@ -5,6 +5,7 @@ import {
   redactApiKeys,
   redactServerKeys,
   redactWebKeys,
+  keysLeftOut,
   validateBackup,
   upgradeTables,
   summarizeBackup,
@@ -28,17 +29,21 @@ const validBackup = (overrides = {}) => ({
 })
 
 describe('redactApiKeys', () => {
-  it('removes the key but keeps everything else', () => {
+  it('empties the key but keeps everything else', () => {
     const out = redactApiKeys([
       { id: 'p1', name: 'OpenRouter', apiKey: 'sk-secret', rememberKey: true },
     ])
-    expect(out[0]).toEqual({ id: 'p1', name: 'OpenRouter', rememberKey: true })
-    expect('apiKey' in out[0]).toBe(false)
+    expect(out[0]).toEqual({ id: 'p1', name: 'OpenRouter', apiKey: '', rememberKey: true })
   })
 
   it('leaves providers that never stored one alone', () => {
     const provider = { id: 'p1', name: 'Local', rememberKey: false }
     expect(redactApiKeys([provider])[0]).toBe(provider)
+  })
+
+  it('drops an empty key, so an empty one always means a key left out', () => {
+    const out = redactApiKeys([{ id: 'p1', name: 'LM Studio', apiKey: '' }])
+    expect(out[0]).toEqual({ id: 'p1', name: 'LM Studio' })
   })
 })
 
@@ -83,6 +88,59 @@ describe('redactWebKeys', () => {
     const row = { id: 'web', service: 'exa', keys: {}, profiles: [] }
     expect(redactWebKeys([row])[0]).toBe(row)
   })
+
+  it('drops a service whose key was already empty', () => {
+    const out = redactWebKeys([{ id: 'web', service: 'kagi', keys: { kagi: 'k', exa: '' } }])
+    expect(out[0].keys).toEqual({ kagi: '' })
+  })
+})
+
+describe('keysLeftOut', () => {
+  const tables = {
+    aiProviders: [
+      { id: 'p1', name: 'OpenRouter', apiKey: 'sk-secret' },
+      { id: 'p2', name: 'LM Studio' },
+    ],
+    webSearch: [{ id: 'web', service: 'kagi', keys: { kagi: 'k' }, profiles: [] }],
+    mcpServers: [
+      { id: 'mcp_1', name: 'GitHub', headers: { Authorization: 'Bearer secret' } },
+      { id: 'mcp_2', name: 'DeepWiki' },
+    ],
+  }
+  const kagi = (/** @type {string} */ id) => (id === 'kagi' ? 'Kagi' : id)
+
+  it('names each service whose key a backup left out, providers first', () => {
+    const backup = buildBackup(tables, { dbVersion: 2 })
+    expect(keysLeftOut(backup, kagi)).toEqual(['OpenRouter', 'Kagi', 'GitHub'])
+  })
+
+  it('names nothing when the keys are in the file', () => {
+    const backup = buildBackup(tables, { dbVersion: 2, includeApiKeys: true })
+    expect(keysLeftOut(backup, kagi)).toEqual([])
+  })
+
+  it('names what it can in a backup from before providers kept the mark', () => {
+    const backup = validBackup({
+      tables: {
+        aiProviders: [{ id: 'p1', name: 'OpenRouter' }],
+        webSearch: [{ id: 'web', keys: { kagi: '' } }],
+        mcpServers: [{ id: 'mcp_1', name: 'GitHub', headers: { Authorization: '' } }],
+      },
+    })
+    expect(keysLeftOut(backup, kagi)).toEqual(['Kagi', 'GitHub'])
+  })
+
+  it('names each one once', () => {
+    const backup = validBackup({
+      tables: {
+        aiProviders: [
+          { id: 'p1', name: 'OpenAI', apiKey: '' },
+          { id: 'p2', name: 'OpenAI', apiKey: '' },
+        ],
+      },
+    })
+    expect(keysLeftOut(backup)).toEqual(['OpenAI'])
+  })
 })
 
 describe('buildBackup', () => {
@@ -97,7 +155,7 @@ describe('buildBackup', () => {
     const backup = buildBackup(tables, { dbVersion: 2, exported: 42 })
 
     expect(backup.includesApiKeys).toBe(false)
-    expect(backup.tables.aiProviders[0].apiKey).toBeUndefined()
+    expect(backup.tables.aiProviders[0].apiKey).toBe('')
     expect(backup.tables.mcpServers[0].headers).toEqual({ Authorization: '' })
     expect(backup.tables.webSearch[0].keys).toEqual({ kagi: '' })
     // Untouched tables pass through.
@@ -128,6 +186,12 @@ describe('buildBackup', () => {
     expect(original.aiProviders[0].apiKey).toBe('sk-secret')
   })
 
+  it('carries the settings it is given, and none otherwise', () => {
+    const settings = /** @type {any} */ ({ theme: 'dark' })
+    expect(buildBackup(tables, { dbVersion: 2, settings }).settings).toEqual({ theme: 'dark' })
+    expect('settings' in buildBackup(tables, { dbVersion: 2 })).toBe(false)
+  })
+
   it('says what the file holds', () => {
     expect(buildBackup(tables, { dbVersion: 2 }).scope).toBe('database')
     expect(buildBackup({ chats: [] }, { dbVersion: 2, scope: 'chat' }).scope).toBe('chat')
@@ -151,16 +215,16 @@ describe('validateBackup', () => {
     expect(errors.join(' ')).toContain('Import it from the chat list')
   })
 
-  it('sends a whole backup to the Data settings', () => {
+  it('sends a whole backup to Import backup', () => {
     const { ok, errors } = validateBackup(validBackup(), 2, 'chat')
     expect(ok).toBe(false)
-    expect(errors.join(' ')).toContain('Restore it from the Data settings')
+    expect(errors.join(' ')).toContain('Restore it with Import backup in Settings › System')
   })
 
-  it('sends a project file to the projects menu', () => {
+  it('sends a project file to Import a project', () => {
     const { ok, errors } = validateBackup(validBackup({ scope: 'project' }), 2, 'chat')
     expect(ok).toBe(false)
-    expect(errors.join(' ')).toContain('Import it from the Projects menu atop the outline')
+    expect(errors.join(' ')).toContain('Import it with Import a project at the top of the outline')
   })
 
   it('takes a project file where a project is expected', () => {
@@ -527,6 +591,11 @@ describe('describeBackupContents', () => {
     expect(describeBackupContents({ tables: { stories: [], messages: [] } })).toBe(
       'This backup is empty.'
     )
+  })
+
+  it('counts the settings kept outside the database as settings', () => {
+    const backup = /** @type {any} */ ({ tables: {}, settings: { theme: 'dark' } })
+    expect(describeBackupContents(backup)).toBe('This backup holds your settings.')
   })
 })
 

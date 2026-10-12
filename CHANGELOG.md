@@ -6,6 +6,59 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.14
+
+Chat changes kept in the chat, roleplay settings of their own, links
+between documents, Word imports, and a page for every feature.
+
+- A change to a chat's settings stays in that chat, the system prompt
+  and a skill's wording included. Save to profile, beside the
+  profile's name, appears while the chat differs from its profile.
+  Saving to a built-in profile makes a copy, such as "Default -
+  Custom", and chats that would have started on the built-in start on
+  the copy. New profile copies the chat's settings, and Reset to
+  profile puts the chat back.
+- Settings › System has a Chats group: the profile new chats start on,
+  the profile character cards start on, and the NSFW switch.
+- A roleplay chat's settings have a Roleplay section: the names
+  {{user}} and {{char}} become, and a card's system prompt and
+  post-history instructions. They're sent after the chat's own prompt
+  and note, so a card no longer replaces the profile's rules of play,
+  and no longer makes a profile named after itself.
+- Documents can link to each other with ordinary Markdown links, as
+  files in a folder do. A link opens its document in a tab, and the
+  model links documents in what it writes.
+- The model can rename and move documents and folders, into folders
+  that already exist. Rewind puts them back. When it rewrites a whole
+  document, the writer's comments on passages it kept stay on them.
+  Rewind also removes a folder a turn made.
+- A Word (.docx) file imports as a document you edit, from disk or
+  from Google Drive. An imported web page opens as its article.
+- The code viewer has Find.
+- A command's turn keeps its Ask again, Edit and Delete buttons.
+  Regenerating an earlier reply, or sending an earlier turn again,
+  asks first when later turns would go.
+- A backup carries the settings kept in the browser, such as the
+  theme and the default preset, and restoring one names the keys it
+  left out.
+- Names with numbers sort by value: Chapter 2 before Chapter 10. A
+  folder switched from hand-made order to names and back gets its
+  order back.
+- Inline code is on Command-E (Ctrl-E).
+- Chat previews show plain words, and a chat whose first turn was a
+  command is named after its answer.
+- The skill form asks who can call a skill in one choice, and has one
+  argument description.
+- A Kokoro voice can still be a mix; other speech models offer a list
+  of their own voices.
+- In the desktop app, switching on Keep projects in a folder moves the
+  projects with the app open, with a progress bar.
+- Import messages, backup hints and delete confirmations are shorter
+  and plainer. Refreshing a GitHub repository is offered only in the
+  desktop app, where it works.
+- The docs site has a research guide, a page on AI providers, and a
+  page for each feature.
+
 ## v0.1.0-dev.13
 
 Claude, OpenAI and local servers built in, narration through them, and

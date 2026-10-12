@@ -78,7 +78,7 @@ import InputText from 'primevue/inputtext'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useChats } from '@/composables/useChats'
 import { useReactiveTime } from '@/composables/useReactiveTime'
-import { shownChatTitle } from '@/utils/chatTitle.js'
+import { chatPreview, shownChatTitle } from '@/utils/chatTitle.js'
 
 /**
  * @typedef {Object} Props
@@ -143,14 +143,8 @@ const firstMessage = computed(() => {
   return msgs && msgs.length > 0 ? msgs[0] : null
 })
 
-// Format message preview
-const messagePreview = computed(() => {
-  if (!firstMessage.value) return ''
-  const content = firstMessage.value.content
-  // Strip HTML tags and truncate
-  const text = content.replace(/<[^>]*>/g, '').trim()
-  return text.length > 100 ? text.substring(0, 100) + '...' : text
-})
+// The first message's words, without its markdown.
+const messagePreview = computed(() => chatPreview(firstMessage.value?.content || ''))
 
 // Format last message time - now reactive and will update automatically
 const lastMessageTime = computed(() => {

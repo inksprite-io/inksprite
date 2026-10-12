@@ -1,14 +1,44 @@
 <template>
-  <div ref="host" class="code-view h-full w-full min-h-0 overflow-hidden" data-file-code></div>
+  <!-- Escape in the code puts the find away as well, as it does in the bar. -->
+  <div
+    ref="root"
+    class="h-full w-full min-h-0 flex flex-col"
+    data-file-code
+    @keydown.esc="finding && closeFind()"
+  >
+    <!-- Find, over the code rather than in it. Nothing to replace in code
+         that is only read. See editor/plainSearch. -->
+    <FindBar
+      v-if="finding"
+      ref="findBar"
+      class="w-full"
+      :query="query"
+      :count="search.matches.length"
+      :current="search.current"
+      refinable
+      :match-case="matchCase"
+      :whole-word="wholeWord"
+      @update:query="lookFor"
+      @update:match-case="refine({ matchCase: $event })"
+      @update:whole-word="refine({ wholeWord: $event })"
+      @next="run(findNext(1))"
+      @previous="run(findNext(-1))"
+      @close="closeFind"
+    />
+    <div ref="host" class="code-view flex-1 min-h-0 w-full overflow-hidden"></div>
+  </div>
 </template>
 
 <script setup>
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { Compartment, EditorState } from '@codemirror/state'
 import { EditorView, lineNumbers } from '@codemirror/view'
 import { LanguageDescription, syntaxHighlighting } from '@codemirror/language'
 import { languages } from '@codemirror/language-data'
 import { classHighlighter } from '@lezer/highlight'
+import FindBar from '@/components/common/FindBar.vue'
+import { useFindKey } from '@/composables/useFindKey.js'
+import { find, findNext, plainSearch, reveal, searchOf } from '@/editor/plainSearch.js'
 
 /**
  * A file's text as code: read-only, with line numbers, highlighted for the
@@ -19,6 +49,10 @@ import { classHighlighter } from '@lezer/highlight'
  * below for light and dark, so it follows the app's theme without a second
  * CodeMirror theme to switch. Each language's parser is loaded the first
  * time a file of it is opened.
+ *
+ * For the same reason a long file costs little, the browser's own find sees
+ * only the lines on screen, so the view has a find of its own: the plain
+ * text editor's, without the replace.
  *
  * Loaded on its own, the first time a file of text is opened, so the editor
  * and its languages are not in the app until then.
@@ -32,6 +66,8 @@ const props = defineProps({
   filename: { type: String, default: '' },
 })
 
+/** @type {import('vue').Ref<HTMLElement|null>} */
+const root = ref(null)
 /** @type {import('vue').Ref<HTMLElement|null>} */
 const host = ref(null)
 /** @type {EditorView|null} */
@@ -73,6 +109,75 @@ async function highlight() {
   if (view && props.filename === asked) view.dispatch({ effects: language.reconfigure(support) })
 }
 
+const finding = ref(false)
+const query = ref('')
+const matchCase = ref(false)
+const wholeWord = ref(false)
+/** The search the view holds, for the bar to count. */
+const search = shallowRef(
+  /** @type {import('@/editor/plainSearch.js').Found} */ ({
+    query: '',
+    options: {},
+    matches: [],
+    current: -1,
+  })
+)
+/** @type {import('vue').Ref<{ focus: () => void }|null>} */
+const findBar = ref(null)
+
+/**
+ * Run a search command against the code, then show where it left the writer.
+ * @param {(view: EditorView) => boolean} command
+ */
+const run = command => {
+  if (!view) return
+  command(view)
+  reveal(view)
+}
+
+/** @param {string} text */
+const lookFor = text => {
+  query.value = text
+  run(find(text, { matchCase: matchCase.value, wholeWord: wholeWord.value }))
+}
+
+/**
+ * Look for the same thing another way.
+ * @param {{matchCase?: boolean, wholeWord?: boolean}} change
+ */
+const refine = change => {
+  if ('matchCase' in change) matchCase.value = change.matchCase
+  if ('wholeWord' in change) wholeWord.value = change.wholeWord
+  lookFor(query.value)
+}
+
+/**
+ * Open the find, or go back to it, looking for what is selected if that is a
+ * few words on one line, and otherwise for what was looked for last.
+ *
+ * @returns {boolean}
+ */
+const openFind = () => {
+  if (!view) return false
+  const { from, to } = view.state.selection.main
+  const selected = view.state.sliceDoc(from, to)
+  if (selected && !selected.includes('\n') && selected.length <= 200) query.value = selected
+  finding.value = true
+  lookFor(query.value)
+  nextTick(() => findBar.value?.focus())
+  return true
+}
+
+/** Put the find away, leaving the match the writer was on selected. */
+const closeFind = () => {
+  if (!finding.value) return
+  finding.value = false
+  if (view) find('')(view)
+}
+
+useFindKey(() => root.value, openFind)
+defineExpose({ openFind })
+
 onMounted(() => {
   if (!host.value) return
   view = new EditorView({
@@ -85,6 +190,11 @@ onMounted(() => {
         EditorView.editable.of(false),
         syntaxHighlighting(classHighlighter),
         language.of([]),
+        plainSearch,
+        EditorView.updateListener.of(update => {
+          const found = searchOf(update.state)
+          if (found !== search.value) search.value = found
+        }),
         layout,
       ],
     }),

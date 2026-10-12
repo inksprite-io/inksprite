@@ -4,7 +4,7 @@ import {
   readCard,
   readLorebook,
   uncomment,
-  overOriginal,
+  withOriginal,
   undecorate,
 } from '@/cards/card.js'
 
@@ -223,28 +223,36 @@ describe('cards/card', () => {
     })
   })
 
-  describe('overOriginal', () => {
-    it('puts what it overrides where it says {{original}}', () => {
-      expect(overOriginal('{{original}}\nThoughts in italics.', 'Never speak for them.')).toBe(
+  describe('withOriginal', () => {
+    it('puts what it adds to where it says {{original}}', () => {
+      expect(withOriginal('{{original}}\nThoughts in italics.', 'Never speak for them.')).toBe(
         'Never speak for them.\nThoughts in italics.'
       )
-      expect(overOriginal('Before.\n\n{{ Original }}', 'Defaults.')).toBe('Before.\n\nDefaults.')
+      expect(withOriginal('Before.\n\n{{ Original }}', 'Defaults.')).toBe('Before.\n\nDefaults.')
     })
 
-    it('replaces it when it does not say {{original}}', () => {
-      // A card whose author wrote a whole set is not read beside a second set
-      // that argues with it.
-      expect(overOriginal('Three paragraphs.', 'A paragraph or two.')).toBe('Three paragraphs.')
+    it('goes after it when it does not say {{original}}', () => {
+      // The writer's instructions are theirs, and in sight in the chat's
+      // settings: a card does not drop them by not mentioning them.
+      expect(withOriginal('Three paragraphs.', 'A paragraph or two.')).toBe(
+        'A paragraph or two.\n\nThree paragraphs.'
+      )
     })
 
-    it('leaves what it overrides when it says nothing', () => {
-      expect(overOriginal('', 'Defaults.')).toBe('Defaults.')
-      expect(overOriginal('   ', 'Defaults.')).toBe('Defaults.')
+    it('leaves what it adds to when it says nothing', () => {
+      expect(withOriginal('', 'Defaults.')).toBe('Defaults.')
+      expect(withOriginal('   ', 'Defaults.')).toBe('Defaults.')
+      expect(withOriginal(undefined, undefined)).toBe('')
+    })
+
+    it('stands alone when there is nothing to add to', () => {
+      expect(withOriginal('Italics.', '')).toBe('Italics.')
+      expect(withOriginal('Italics.', undefined)).toBe('Italics.')
     })
 
     it('leaves no gap where there was nothing to put', () => {
-      expect(overOriginal('{{original}}\n\nItalics.', '')).toBe('Italics.')
-      expect(overOriginal('A.\n\n{{original}}\n\nB.')).toBe('A.\n\nB.')
+      expect(withOriginal('{{original}}\n\nItalics.', '')).toBe('Italics.')
+      expect(withOriginal('A.\n\n{{original}}\n\nB.')).toBe('A.\n\nB.')
     })
   })
 

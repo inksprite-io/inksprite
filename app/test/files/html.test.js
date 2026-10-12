@@ -1,6 +1,6 @@
 /* global File */
 import { describe, it, expect } from 'vitest'
-import { textOfHtml } from '@/files/html.js'
+import { markdownOfHtml, textOfHtml } from '@/files/html.js'
 import { inspectFile } from '@/files/inspect.js'
 
 const PAGE = `<!DOCTYPE html><html><head><title>Cycles and Journeys</title>
@@ -43,5 +43,50 @@ describe('inspectFile on a web page', () => {
     expect(found.mime).toBe('text/html')
     expect(found.text).toContain('An arc is not.')
     expect(found.text).not.toContain('<p>')
+  })
+})
+
+describe('markdownOfHtml', () => {
+  const SAVED = `<!DOCTYPE html><html><head><title>Harbour notes</title>
+<link rel="stylesheet" href="https://example.com/site.css"><script src="https://example.com/a.js"></script></head>
+<body><nav><a href="/">Home</a></nav><header>Site name</header>
+<main><h1>Harbour notes</h1>
+<p>The ferry leaves at <strong>six</strong>, <em>weather allowing</em>.</p>
+<p>See <a href="https://example.com/timetable">the timetable</a>, <a href="/fares">the fares</a>
+and <a href="#tides">the tides</a>. Write to <a href="mailto:harbour@example.com">the office</a>.</p>
+<img src="https://example.com/boat.png" alt="A boat"><video src="clip.mp4">No video here.</video>
+<ol><li>Buy a ticket</li><li>Board</li></ol>
+<table><tr><th>Day</th><th>Sailings</th></tr><tr><td>Monday</td><td>3</td></tr></table>
+<script>track()</script><form><input value="Subscribe"></form></main>
+<footer>Small print</footer></body></html>`
+
+  it('keeps the article as markdown and drops the page around it', () => {
+    const markdown = markdownOfHtml(SAVED)
+
+    expect(markdown).toBe(
+      [
+        '# Harbour notes',
+        'The ferry leaves at **six**, *weather allowing*.',
+        'See [the timetable](https://example.com/timetable), the fares and the tides. Write to [the office](mailto:harbour@example.com).',
+        '1. Buy a ticket\n2. Board',
+        '| Day | Sailings |\n| --- | --- |\n| Monday | 3 |',
+      ].join('\n\n')
+    )
+  })
+
+  it('leaves nothing that could run or load', () => {
+    const markdown = markdownOfHtml(SAVED)
+
+    for (const gone of ['track()', 'a.js', 'site.css', 'boat.png', 'No video', 'Subscribe']) {
+      expect(markdown).not.toContain(gone)
+    }
+    expect(markdown).not.toContain('Home')
+    expect(markdown).not.toContain('Small print')
+  })
+
+  it('has nothing to say of a page with no words', () => {
+    expect(markdownOfHtml('<html><body><img src="a.png"><script>x()</script></body></html>')).toBe(
+      ''
+    )
   })
 })

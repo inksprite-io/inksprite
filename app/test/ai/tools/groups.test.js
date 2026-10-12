@@ -35,6 +35,7 @@ describe('tool groups', () => {
       'create_folder',
       'update_document',
       'edit_document',
+      'move_document',
       'append_document',
       'list_comments',
       'resolve_comment',

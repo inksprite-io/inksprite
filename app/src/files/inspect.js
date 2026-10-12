@@ -191,7 +191,8 @@ export function sizeLabel(bytes) {
  * text besides. A web page is its words, without the page around them. A
  * text file is its own text. An image has none — what it shows is for a
  * model that can see it, later — and neither does a slide deck or a Word
- * file, kept as they are until something can open them.
+ * file, kept as they are until something can open them. (An import makes a
+ * `.docx` a document of its own before it gets here: `files/docx.js`.)
  *
  * Text is known by its bytes as well as its type. A file no table knows
  * (`foo.cpp`, a `Makefile`), or one the browser took for something else (a

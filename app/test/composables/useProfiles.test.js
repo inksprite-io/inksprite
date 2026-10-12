@@ -2,7 +2,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useProfiles } from '@/composables/useProfiles'
 import { useApplicationState } from '@/composables/useApplicationState'
-import { ROLEPLAY_PROFILE_ID, ROLEPLAY_NSFW_PROFILE_ID } from '@/ai/profiles/index.js'
+import {
+  CHAT_PROFILE_ID,
+  ROLEPLAY_PROFILE_ID,
+  ROLEPLAY_NSFW_PROFILE_ID,
+} from '@/ai/profiles/index.js'
 import { DEFAULT_ROLEPLAY_PROMPT, DEFAULT_ROLEPLAY_NSFW_PROMPT } from '@/ai/prompts/index.js'
 
 vi.mock('@/stores/db', () => ({ default: {} }))
@@ -44,6 +48,32 @@ describe('useProfiles', () => {
       const profile = useProfiles().getProfile(ROLEPLAY_PROFILE_ID)
       expect(profile?.id).toBe(ROLEPLAY_NSFW_PROFILE_ID)
       expect(profile?.settings.prompt).toBe(DEFAULT_ROLEPLAY_NSFW_PROMPT)
+    })
+  })
+
+  describe('copies', () => {
+    it("names a built-in's copy Custom, and one of the writer's own by number", () => {
+      const profiles = useProfiles()
+      const builtIn = profiles.getProfile(ROLEPLAY_PROFILE_ID)
+      expect(profiles.copyName(builtIn)).toBe('Roleplay - Custom')
+
+      const custom = profiles.saveProfile('Roleplay - Custom', { prompt: 'Stay.' })
+      expect(profiles.copyName(builtIn)).toBe('Roleplay - Custom (2)')
+      expect(profiles.copyName(custom)).toBe('Roleplay - Custom (2)')
+    })
+  })
+
+  describe('where chats start', () => {
+    it('starts chats on the profiles chosen in the settings while they are there', () => {
+      const profiles = useProfiles()
+      const mine = profiles.saveProfile('Default - Custom', { prompt: 'Plan.' })
+      expect(profiles.chatDefaultId()).toBe(CHAT_PROFILE_ID)
+      expect(profiles.roleplayDefaultId()).toBe(ROLEPLAY_PROFILE_ID)
+
+      useApplicationState().setChatProfileId(mine.id)
+      useApplicationState().setRoleplayProfileId('chatprofile_gone')
+      expect(profiles.chatDefaultId()).toBe(mine.id)
+      expect(profiles.roleplayDefaultId()).toBe(ROLEPLAY_PROFILE_ID)
     })
   })
 })

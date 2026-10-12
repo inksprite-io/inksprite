@@ -51,7 +51,15 @@ const ShortcutsDialog = {
   template: '<div v-if="visible" data-shortcuts />',
 }
 const RawMarkdown = { props: ['documentId'], template: '<div data-raw :data-id="documentId" />' }
-const FileView = { props: ['documentId'], template: '<div data-file :data-id="documentId" />' }
+const mockOpenFind = vi.fn(() => true)
+// A file the view shows as code has a find of its own: one here whose id says so.
+const FileView = {
+  props: ['documentId'],
+  template: '<div data-file :data-id="documentId" />',
+  setup(props, { expose }) {
+    expose({ findable: props.documentId.startsWith('code'), openFind: mockOpenFind })
+  },
+}
 const ChatTextView = {
   props: ['chatId', 'text'],
   template: '<div data-chat-text :data-chat="chatId" :data-text="text" />',
@@ -192,6 +200,19 @@ describe('EditorPanel', () => {
     expect(actions('doc_1').map(item => item.label)).toContain('Keyboard shortcuts')
     // The plain text editor has keys of its own.
     expect(actions('doc_2').map(item => item.label)).not.toContain('Keyboard shortcuts')
+  })
+
+  it('offers a find, without the replace, on a file shown as code', async () => {
+    mockApi.get.mockImplementation(id => ({ id, type: 'file', title: id, mime: 'text/javascript' }))
+    mockApi.titlesOf.mockImplementation(() => ['tides.js'])
+    mockApi.pathOf.mockImplementation(() => 'tides.js')
+    const wrapper = mountPanel({ open: ['code_1'], active: 'code_1' })
+    await wrapper.vm.$nextTick()
+
+    const find = wrapper.find('[data-action="find"]')
+    expect(find.attributes('aria-label')).toBe('Find')
+    await find.trigger('click')
+    expect(mockOpenFind).toHaveBeenCalled()
   })
 
   it('shows a file as the file, and as its text from the menu', async () => {

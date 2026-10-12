@@ -1,7 +1,7 @@
 /**
  * @module utils/chatTitle
- * @description What a chat is called before it has a name, and a title the
- * model wrote, made plain.
+ * @description What a chat is called before it has a name, a title the
+ * model wrote, made plain, and the plain words a chat's preview shows.
  */
 
 /** What a chat is called until the model or the writer names it. */
@@ -37,28 +37,55 @@ export function shownChatTitle(title) {
 }
 
 /**
- * A line of the model's as a title: without the markdown it was dressed in,
- * a "Title:" it was introduced with, or the quotes it was put in.
- *
- * A title is shown as text everywhere it appears, so `## Part 1` would be
- * read with its hashes and `**not**` with its stars.
+ * A line of markdown as the words it says: without a heading's hashes, a
+ * quote's or a list's marker, links' addresses, or the marks around bold,
+ * italic, struck and code words. Shown as text, `**not**` would be read with
+ * its stars.
  *
  * @param {string} line
  * @returns {string}
  */
-export function plainTitle(line) {
+export function plainLine(line) {
   return (line || '')
     .trim()
     .replace(/^#{1,6}\s+/, '')
     .replace(/^(?:>\s*)+/, '')
     .replace(/^(?:[-*+]|\d+[.)])\s+/, '')
-    .replace(/^title\s*:\s*/i, '')
     .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replace(/(\*\*|__|~~)(.+?)\1/g, '$2')
     .replace(/\*(\S(?:.*?\S)?)\*/g, '$1')
     .replace(/(^|[^\w])_(\S(?:.*?\S)?)_(?![\w])/g, '$1$2')
     .replace(/`([^`]*)`/g, '$1')
     .trim()
+}
+
+/**
+ * A line of the model's as a title: plain, without a "Title:" it was
+ * introduced with, or the quotes it was put in.
+ *
+ * @param {string} line
+ * @returns {string}
+ */
+export function plainTitle(line) {
+  return plainLine(line)
+    .replace(/^title\s*:\s*/i, '')
     .replace(/^["'“‘]+|["'”’]+$/g, '')
     .trim()
+}
+
+/**
+ * The start of a message as a chat's preview: its lines made plain and run
+ * together, without any HTML, cut at a hundred characters.
+ *
+ * @param {string} content
+ * @returns {string}
+ */
+export function chatPreview(content) {
+  const text = (content || '')
+    .replace(/<[^>]*>/g, '')
+    .split('\n')
+    .map(plainLine)
+    .filter(Boolean)
+    .join(' ')
+  return text.length > 100 ? `${text.slice(0, 100)}…` : text
 }

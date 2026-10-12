@@ -107,4 +107,93 @@ describe('useApplicationState', () => {
       expect(app.state.value.debug.enabled).toBe(false)
     })
   })
+  describe('settings in a backup', () => {
+    it('carries the choices worth taking to another computer', () => {
+      const state = useApplicationState()
+      state.setActiveAIPresetId('preset_mine')
+      state.setApplyEdits('ask')
+      state.setNsfwProfiles(true)
+      state.setChatProfileId('chatprofile_mine')
+      state.setWorkflow('convert', { providerId: 'p1', model: 'strong', onImport: true })
+      state.setNarration({ providerId: 'provider_openai_default', model: 'tts-1' })
+      state.setTheme('dark')
+      state.setHighlightSpeakers(false)
+
+      expect(state.settingsForBackup()).toEqual({
+        aiPreset: 'preset_mine',
+        applyEdits: 'ask',
+        nsfwProfiles: true,
+        chatProfileId: 'chatprofile_mine',
+        roleplayProfileId: null,
+        workflows: {
+          convert: {
+            providerId: 'p1',
+            model: 'strong',
+            reasoningEffort: null,
+            onImport: true,
+          },
+        },
+        narration: { providerId: 'provider_openai_default', model: 'tts-1' },
+        theme: 'dark',
+        highlightSpeakers: false,
+      })
+    })
+
+    it('leaves out what belongs to this browser', () => {
+      const state = useApplicationState()
+      state.setDebug(true)
+      state.setCompactText(false)
+
+      const settings = state.settingsForBackup()
+      expect(JSON.stringify(settings)).not.toMatch(/debug|compact|Dialog/i)
+    })
+
+    it('takes them back, and writes them out at once for the reload', () => {
+      const state = useApplicationState()
+      state.restoreSettings({
+        aiPreset: 'preset_mine',
+        applyEdits: 'ask',
+        nsfwProfiles: true,
+        roleplayProfileId: 'chatprofile_cards',
+        workflows: { convert: { providerId: 'p1', model: 'strong', onImport: true } },
+        narration: { providerId: 'provider_openai_default', model: 'tts-1' },
+        theme: 'dark',
+        highlightSpeakers: false,
+      })
+
+      expect(state.settingsForBackup()).toMatchObject({
+        aiPreset: 'preset_mine',
+        applyEdits: 'ask',
+        nsfwProfiles: true,
+        roleplayProfileId: 'chatprofile_cards',
+        workflows: { convert: { providerId: 'p1', model: 'strong', onImport: true } },
+        theme: 'dark',
+        highlightSpeakers: false,
+      })
+      const saved = JSON.parse(window.localStorage.getItem('inksprite_app_state') || '{}')
+      expect(saved.ui.theme).toBe('dark')
+      expect(saved.system.applyEdits).toBe('ask')
+      expect(saved.narration).toEqual({ providerId: 'provider_openai_default', model: 'tts-1' })
+    })
+
+    it('keeps what the file leaves out or gets wrong', () => {
+      const state = useApplicationState()
+      state.setTheme('light')
+      state.setNsfwProfiles(true)
+
+      state.restoreSettings(
+        /** @type {any} */ ({
+          theme: 'purple',
+          nsfwProfiles: 'yes',
+          applyEdits: 'sometimes',
+          workflows: { convert: { model: 7, onImport: true } },
+        })
+      )
+
+      expect(state.theme.value).toBe('light')
+      expect(state.nsfwProfiles.value).toBe(true)
+      expect(state.applyEdits.value).toBe('auto')
+      expect(state.workflows.value.convert).toMatchObject({ model: null, onImport: true })
+    })
+  })
 })

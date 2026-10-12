@@ -1,0 +1,139 @@
+---
+title: The Desktop App
+description: Install inksprite on macOS, Windows or Linux, bring your work over from the browser, and keep your projects in a folder of Markdown files.
+---
+
+The desktop app is the same inksprite as the one in your browser, in a window
+of its own. No browser can clear your work, and it reaches servers a web page
+can't.
+
+## Install it
+
+Download it from the
+[latest release](https://github.com/inksprite-io/inksprite/releases/latest),
+under **Assets**.
+
+### macOS
+
+Download the `.dmg` ending in `arm64` for a Mac with Apple silicon, or in `x64`
+for an Intel Mac. Open it and drag **inksprite** into **Applications**.
+
+### Windows
+
+Download the `.exe` and run it. It installs for your account, without asking
+for an administrator.
+
+The app isn't signed, so Windows warns that it doesn't recognize it. Click
+**More info**, then **Run anyway**.
+
+### Linux
+
+Download the `.AppImage`, make it executable, and run it:
+
+```sh
+chmod +x inksprite-*.AppImage
+./inksprite-*.AppImage
+```
+
+Or, on Debian or Ubuntu, install the `.deb`:
+
+```sh
+sudo apt install ./inksprite-*.deb
+```
+
+If the AppImage won't start on Ubuntu 24.04 or later, install the `.deb`, or
+start the AppImage with `--no-sandbox`.
+
+## Bring your work over
+
+The desktop app keeps its work apart from your browser's. To move it, use a
+[backup](/projects/#back-up-everything):
+
+1. In the browser, open **Settings** › **System** and click **Export backup**.
+   To bring your API keys too, tick **Include API keys**. Click **Export**.
+2. In the desktop app, open **Settings** › **System**, click
+   **Import backup**, choose the file, and click **Replace**.
+3. Sign in to your [MCP servers](/mcp/) again. A backup doesn't carry
+   sign-ins.
+
+The backup replaces everything in the desktop app, so restore it before you
+start work there, or bring projects over one at a time with a
+[project file](/projects/#move-a-project). If the backup holds your keys,
+delete it once it's restored.
+
+## Updates
+
+The app looks for a new version when it opens and every hour after, and
+downloads it in the background. Then a message says it's ready: click
+**Restart**, and inksprite saves your work, installs the update and opens
+again.
+
+Nothing installs until you click **Restart**, even when you quit. If you close
+the message, it comes back the next time you open inksprite. On Linux,
+updating the `.deb` asks for your password.
+
+**Settings** › **About** shows the version you have.
+
+## Keep projects in a folder
+
+The desktop app can keep your projects as ordinary files: a folder for each
+project, a Markdown file for each document, and imported files as they came.
+You can open them in another editor, or back them up with your own tools.
+
+:::caution[Back up first]
+Keeping projects in a folder is new. Export a backup before you switch it on.
+:::
+
+1. Open **Settings** › **System**.
+2. Under **Data**, switch on **Keep projects in a folder**.
+3. Click **Keep in a folder**. inksprite moves each project into the folder and
+   opens again.
+
+The folder's path shows under the switch. It's the `Projects` folder in
+inksprite's own data folder:
+
+- **macOS**: `~/Library/Application Support/inksprite/Projects`
+- **Windows**: `%APPDATA%\inksprite\Projects`
+- **Linux**: `~/.config/inksprite/Projects`
+
+To open it, click **Show in Finder** (**Show in Explorer** on Windows,
+**Show folder** on Linux), beside the backup buttons.
+
+A project's chats and [narration](/narration/) audio go in its folder too.
+Without the folder, narration audio is gone when the app closes. Your AI
+connections, profiles, skills, MCP servers and settings stay in the app. A
+backup still holds everything but narration audio.
+
+### Editing the files elsewhere
+
+Edit the files while inksprite is closed; it reads your changes when it opens.
+While it's open, it doesn't see changes made elsewhere. If it then saves a
+document you changed elsewhere, it puts your changed file in the Trash (the
+Recycle Bin on Windows) and says so.
+
+Each Markdown file starts with a header between two `---` lines. Leave it as
+it is: inksprite reads a file with a broken header as a new document, and
+chats lose track of it. Leave the files and folders whose names start with a
+dot, such as `.folder.md` and `.inksprite`, alone too.
+
+### Switching it off
+
+Switch off **Keep projects in a folder** and click **Keep in the app**.
+inksprite moves the projects back into the app and opens again. The folder's
+files stay where they are.
+
+## What only the desktop app does
+
+- **No browser can clear your work.** See
+  [where your work is kept](/projects/#where-your-work-is-kept).
+- **Local model servers** need no setup to let inksprite reach them, and a
+  server on another computer on your network works too. See
+  [AI Providers](/providers/#local-models).
+- **[MCP servers](/mcp/)** that don't accept connections from web pages work.
+- **[Web search](/web-search/)** can use Brave.
+- **[Code repositories](/repositories/)** import straight from GitHub.
+- **Sign-ins**, to OpenRouter, MCP servers and [Google Drive](/google-docs/),
+  open in your usual browser. When you're done, close the tab and go back to
+  inksprite.
+- **Links** in documents and chats open in your usual browser, and email
+  addresses in your mail app.

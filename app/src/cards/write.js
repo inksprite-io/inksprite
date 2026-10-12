@@ -46,8 +46,9 @@ export const SIDECAR_TITLE = '.card.json'
  *   documents that have to be in context from the first turn
  * @property {string[]} greetingIds - The greetings, in the card's own order
  * @property {number} documents - How many were written, sidecar included
- * @property {string} [note] - A line about what was written, for the writer,
- *   when a count would not say it: that a PDF had no text in it
+ * @property {string} [note] - What the toast says after the title, when a
+ *   count of documents would not say it: " (3 pages)", or ", a PDF with no
+ *   extractable text"
  */
 
 /**
@@ -181,16 +182,17 @@ async function fillCard(storyId, folderId, card, { useSystemPrompt, portrait }) 
   // character. They are documents like the rest, so the writer can read and
   // edit them and a chat started next week can find them; hidden, because the
   // model is not meant to read them as part of the project. A chat started on
-  // the card takes one as its prompt and the other into its author's note —
-  // see `overOriginal` — and after that they are the chat's to change.
+  // the card copies both into its Roleplay settings, sent after its profile's
+  // prompt and its author's note — see `withOriginal` — and after that they
+  // are the chat's to change.
   if (useSystemPrompt)
-    field('System Prompt', 'system-prompt', card.systemPrompt, { pin: false, hidden: true })
-  field("Author's Note", 'rules', card.rules, { pin: false, hidden: true })
+    field('System prompt', 'system-prompt', card.systemPrompt, { pin: false, hidden: true })
+  field('Post-history instructions', 'rules', card.rules, { pin: false, hidden: true })
 
   field('Description', 'description', card.description)
   field('Personality', 'personality', card.personality)
   field('Scenario', 'scenario', card.scenario)
-  field('Example Dialogue', 'examples', card.examples)
+  field('Example dialogue', 'examples', card.examples)
 
   // The greetings are not context. The first is seeded as the chat's opening
   // message, which is most of why cards work at all, and the rest are what the

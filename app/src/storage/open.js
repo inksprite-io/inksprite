@@ -3,19 +3,24 @@
  * desktop app, when the writer keeps the projects in a folder, the library
  * in the app's data folder, the app's own tables in IndexedDB still.
  *
- * The first time the desktop app opens on a library, the projects it kept
- * in the window until then are written into it, each as a project of its
- * own. The window's copy is left as it was. Keeping them in the app again
- * copies the library's back over it first, so nothing done since is lost.
+ * The projects the app kept until then are moved into the library with the
+ * app open, so that it can say how far they are: when the writer turns the
+ * folder on, and when the app opens on a library its projects have not been
+ * moved into yet — a run from the checkout the first time, or an app closed
+ * during a move. Each is written into it as a project of its own, and the
+ * app's copy is left as it was. Keeping them in the app again copies the
+ * library's back over it first, so nothing done since is lost.
  */
 
 import { isDesktop } from '@/platform/desktop.js'
 import {
   disableLibrary,
+  enableLibrary,
   libraryDisk,
   librarySettings,
   markProjectsMoved,
 } from '@/platform/library.js'
+import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { dexieStorage } from './dexie.js'
 import { libraryStorage } from './library.js'
 import { PROJECT_TABLES, useStorage } from './index.js'
@@ -23,6 +28,15 @@ import { PROJECT_TABLES, useStorage } from './index.js'
 /** @typedef {import('./index.js').Storage} Storage */
 
 /** @typedef {import('./library.js').ChangedElsewhere} ChangedElsewhere */
+
+/**
+ * How far a move of the projects has got.
+ * @typedef {Object} MoveProgress
+ * @property {string} title - The project being moved
+ * @property {number} index - Which of them it is, from 0
+ * @property {number} count - How many there are
+ * @property {number} fraction - How much of the whole move is done, from 0 to 1
+ */
 
 /** @type {Set<(changed: ChangedElsewhere[]) => void>} */
 const listeners = new Set()
@@ -39,29 +53,61 @@ export function onChangedElsewhere(listener) {
   return () => listeners.delete(listener)
 }
 
+/** The library as storage. */
+const openLibrary = () =>
+  libraryStorage(libraryDisk(), {
+    onConflict: changed => listeners.forEach(listener => listener(changed)),
+  })
+
+/** Whether the app opened on its own projects, which are to be moved into the library. */
+let toMove = false
+
 /**
  * Open the app's storage, before anything reads from it.
  *
- * @param {Object} [options]
- * @param {(path: string) => void} [options.onMoving] - Told when the window's projects are
- *   being moved into the library, which takes a moment
  * @returns {Promise<void>}
  */
-export async function openStorage({ onMoving = () => {} } = {}) {
+export async function openStorage() {
+  toMove = false
   if (!isDesktop()) return
   const settings = await librarySettings()
   if (!settings.enabled) return
-  const library = libraryStorage(libraryDisk(), {
-    onConflict: changed => listeners.forEach(listener => listener(changed)),
-  })
   if (!settings.moved) {
     if ((await dexieStorage.stories()).length > 0) {
-      onMoving(settings.path)
-      await moveProjects(dexieStorage, library)
+      toMove = true
+      return
     }
     await markProjectsMoved()
   }
-  useStorage(library)
+  useStorage(openLibrary())
+}
+
+/**
+ * Whether the app opened on projects of its own that are to be moved into
+ * the library, with `moveIntoLibrary`.
+ */
+export const projectsToMove = () => toMove
+
+/**
+ * Keep the projects in the library from now on, and move the app's own into
+ * it. The app is to open again after, on the library. A move that fails
+ * leaves them kept in the app: those moved before it are in the library,
+ * and the next move passes over them unless they have changed since.
+ *
+ * @param {(progress: MoveProgress) => void} [onProgress]
+ * @returns {Promise<void>}
+ */
+export async function moveIntoLibrary(onProgress) {
+  await enableLibrary()
+  try {
+    await moveProjects(dexieStorage, openLibrary(), onProgress)
+    await markProjectsMoved()
+  } catch (error) {
+    // Were even this to fail, the app would open on its own projects again,
+    // and move them in then.
+    await disableLibrary().catch(() => {})
+    throw error
+  }
 }
 
 /**
@@ -72,10 +118,32 @@ export async function openStorage({ onMoving = () => {} } = {}) {
  *
  * @param {Storage} from
  * @param {Storage} to
+ * @param {(progress: MoveProgress) => void} [onProgress]
  */
-export async function moveProjects(from, to) {
+export async function moveProjects(from, to, onProgress = () => {}) {
   const there = new Set((await to.stories()).map(story => story.id))
-  for (const story of await from.stories()) {
+  const stories = await from.stories()
+  // Each project's share of the move is as many documents and chats as it has.
+  const shares = []
+  for (const story of stories) {
+    shares.push((await from.documents(story.id)).length + (await from.chats(story.id)).length)
+  }
+  const whole = shares.reduce((sum, share) => sum + share, 0) || 1
+  let before = 0
+  for (const [index, story] of stories.entries()) {
+    const start = before
+    before += shares[index]
+    const documents = await from.documents(story.id)
+    const root = documents.find(document => document.id === rootIdFor(story.id))
+    /** @param {number} part - How much of this project is done */
+    const told = part =>
+      onProgress({
+        title: root?.title || 'Untitled',
+        index,
+        count: stories.length,
+        fraction: (start + part * shares[index]) / whole,
+      })
+    told(0)
     if (there.has(story.id)) {
       const theirs = await lastChanged(to, story.id)
       if ((await lastChanged(from, story.id)) <= theirs) continue
@@ -85,13 +153,10 @@ export async function moveProjects(from, to) {
     /** @type {import('../types/models.js').Message[]} */
     const messages = []
     for (const chat of chats) messages.push(...(await from.messages(chat.id)))
-    await to.addProject({
-      story,
-      documents: await from.documents(story.id),
-      files: await from.projectFiles(story.id),
-      chats,
-      messages,
-    })
+    await to.addProject(
+      { story, documents, files: await from.projectFiles(story.id), chats, messages },
+      (done, total) => told(total ? done / total : 1)
+    )
   }
 }
 

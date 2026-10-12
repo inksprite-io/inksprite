@@ -248,6 +248,7 @@ import { inRepository, isRepository, repositoryOf } from '@/source/tree.js'
 import { reextractFile } from '@/files/write.js'
 import { sessionStorage } from '@/utils/sessionStorage'
 import { driveAvailable } from '@/drive/config.js'
+import { isDesktop } from '@/platform/desktop.js'
 
 defineOptions({ name: 'DocumentNode' })
 
@@ -905,7 +906,9 @@ const confirmDelete = () => {
 
   confirm.require({
     header: isFolder.value ? 'Delete folder' : 'Delete document',
-    message: hasChildren ? `Delete "${name}" and everything inside it?` : `Delete "${name}"?`,
+    message: hasChildren
+      ? `Delete "${name}" and everything inside it? This can’t be undone.`
+      : `Delete "${name}"? This can’t be undone.`,
     icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
     acceptProps: { label: 'Delete', severity: 'danger' },
@@ -1034,7 +1037,9 @@ const menuItems = computed(() => {
       ],
     })
   }
-  if (isRepositoryFolder.value) {
+  // GitHub only answers the desktop app, so a repository from there can't be
+  // read again in a browser; a folder is chosen again, which works anywhere.
+  if (isRepositoryFolder.value && (isDesktop() || node.value?.source?.from !== 'github')) {
     items.push({
       label: 'Refresh repository…',
       icon: 'pi pi-refresh',

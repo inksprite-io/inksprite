@@ -17,7 +17,7 @@
         <HeaderButton
           v-if="findable"
           icon="pi pi-search"
-          label="Find and replace"
+          :label="file ? 'Find' : 'Find and replace'"
           data-action="find"
           @click="editorView?.openFind()"
         />
@@ -45,6 +45,7 @@
       />
       <FileView
         v-else-if="file"
+        ref="editorView"
         :story-id="storyId"
         :document-id="activeId"
         class="h-full w-full"
@@ -160,10 +161,15 @@ const chatTab = computed(() => chatTabOf(activeId.value))
 /** A file showing as the file. Its text is a plain document like any other. */
 const file = computed(() => api.get(activeId.value)?.type === 'file' && !showsText(activeId.value))
 const plain = computed(() => api.isPlain(activeId.value))
-/** A document laid out or as plain text, either of which has a find of its own. */
-const findable = computed(() => !!activeId.value && !file.value)
+/**
+ * A document laid out or as plain text, either of which has a find of its
+ * own, or a file shown as code, which has one without the replace.
+ */
+const findable = computed(
+  () => !!activeId.value && (!file.value || editorView.value?.findable === true)
+)
 
-/** @type {import('vue').Ref<{ openFind: () => boolean }|null>} */
+/** @type {import('vue').Ref<{ openFind: () => boolean, findable?: boolean }|null>} */
 const editorView = ref(null)
 
 /**

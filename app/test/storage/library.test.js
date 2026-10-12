@@ -386,6 +386,56 @@ describe('the library as storage', () => {
     expect(await (await again.fileBytes('pdf'))?.text()).toBe('%PDF')
   })
 
+  it('adds a big project a batch at a time, saying how far it has got, and names it only at the end', async () => {
+    const library = memoryLibrary()
+    library.outside.write(`.inksprite-new-${STORY}/Left.md`, 'From a write that never finished.')
+    const applied = []
+    const disk = {
+      ...library.disk,
+      apply: async (/** @type {any[]} */ ops) => {
+        applied.push(ops)
+        return library.disk.apply(ops)
+      },
+    }
+    const chapters = Array.from({ length: 120 }, (_, n) =>
+      doc(`ch${n}`, ROOT, { title: `Chapter ${n}`, content: 'Words.' })
+    )
+    const told = []
+
+    await libraryStorage(disk).addProject(
+      {
+        story: story(),
+        documents: [folder(ROOT, STORY, { title: 'Long Book' }), ...chapters],
+        files: [],
+        chats: [],
+        messages: [],
+      },
+      (done, total) => told.push([done, total])
+    )
+
+    expect(applied.length).toBeGreaterThan(2)
+    expect(applied[0][0]).toEqual({ op: 'trash', path: `.inksprite-new-${STORY}` })
+    expect(
+      applied
+        .slice(0, -1)
+        .flat()
+        .some(op => op.op === 'move')
+    ).toBe(false)
+    expect(applied.at(-1).at(-1)).toEqual({
+      op: 'move',
+      from: `.inksprite-new-${STORY}`,
+      to: 'Long Book',
+    })
+    const total = told[0][1]
+    expect(told.map(([done]) => done)).toEqual(
+      [...told.map(([done]) => done)].sort((a, b) => a - b)
+    )
+    expect(told.at(-1)).toEqual([total, total])
+    expect(library.trashed).toEqual([`.inksprite-new-${STORY}`])
+    expect(library.outside.list().some(path => path.startsWith('.inksprite-new'))).toBe(false)
+    expect(await reopened(library).documents(STORY)).toHaveLength(121)
+  })
+
   it('backs up every project and restores them into another library', async () => {
     const library = await withProject()
     await library.storage.chats(STORY)

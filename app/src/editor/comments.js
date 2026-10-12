@@ -241,6 +241,54 @@ export function editAroundComments(content, old, replacement) {
 }
 
 /**
+ * Where a passage is in markdown, outside every comment's markup, when it is
+ * there exactly once; -1 when it is not there, or is there more than once.
+ *
+ * @param {string} markdown
+ * @param {string} passage
+ * @returns {number}
+ */
+function onlyPlace(markdown, passage) {
+  if (!passage) return -1
+  const marked = findComments(markdown)
+  const outside = (/** @type {number} */ at) =>
+    marked.every(comment => at + passage.length <= comment.from || at >= comment.to)
+  let found = -1
+  for (let at = markdown.indexOf(passage); at !== -1; at = markdown.indexOf(passage, at + 1)) {
+    if (!outside(at)) continue
+    if (found !== -1) return -1
+    found = at
+  }
+  return found
+}
+
+/**
+ * A whole new body for a document that has comments, with each comment put
+ * back on its passage where the new body still says it, word for word and
+ * once. The body's own markup is taken out first: what the model writes never
+ * makes a comment, and one it copied comes back the way the rest do. The
+ * others are resolved, and named in what comes back.
+ *
+ * @param {string} content - The document as it is, comments and all
+ * @param {string} body - What it becomes
+ * @returns {{body: string, resolved: FoundComment[]}}
+ */
+export function rewriteAroundComments(content, body) {
+  let written = withoutComments(body)
+  /** @type {FoundComment[]} */
+  const resolved = []
+  for (const comment of findComments(content)) {
+    const at = onlyPlace(written, comment.text)
+    if (at === -1) {
+      resolved.push(comment)
+      continue
+    }
+    written = written.slice(0, at) + comment.markup + written.slice(at + comment.text.length)
+  }
+  return { body: written, resolved }
+}
+
+/**
  * How many comments a piece of markdown holds.
  *
  * @param {string|null|undefined} content

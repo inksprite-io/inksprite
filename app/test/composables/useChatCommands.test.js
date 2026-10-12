@@ -339,6 +339,14 @@ describe('useChatCommands', () => {
     expect(consult).not.toHaveBeenCalled()
   })
 
+  it('says when a command answered on a turn of its own', async () => {
+    const consult = vi.fn().mockResolvedValue('They crossed the pass.')
+    chatsApi.addMessage.mockReturnValue({ id: 'msg_c', role: 'assistant' })
+
+    expect((await commands.submit('/compact(4)', { consult })).answered).toBe(true)
+    expect((await commands.submit('I nod slowly.')).answered).toBe(false)
+  })
+
   it('leaves a summary in the slot of its own, because it is not a turn at all', async () => {
     const consult = vi.fn().mockResolvedValue('They crossed the pass.')
     chatsApi.addMessage.mockReturnValue({ id: 'msg_c', role: 'assistant' })

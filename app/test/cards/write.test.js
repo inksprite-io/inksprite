@@ -91,7 +91,7 @@ describe('cards/write', () => {
       const written = await writeCard(STORY, card({ mes_example: 'Elara: Well?' }))
 
       expect(byTitle(written.folderId, 'Description').kind).toBe('description')
-      expect(byTitle(written.folderId, 'Example Dialogue').kind).toBe('examples')
+      expect(byTitle(written.folderId, 'Example dialogue').kind).toBe('examples')
       expect(byTitle(written.folderId, 'Greeting').kind).toBe('greeting')
     })
 
@@ -139,15 +139,15 @@ describe('cards/write', () => {
       )
     })
 
-    it("keeps the card's post-history instructions as its author's note, hidden", async () => {
+    it("keeps the card's post-history instructions, hidden", async () => {
       const written = await writeCard(
         STORY,
         card({ post_history_instructions: '{{original}}\nThoughts in italics.' })
       )
 
-      const note = byTitle(written.folderId, "Author's Note")
+      const note = byTitle(written.folderId, 'Post-history instructions')
       expect(note).toMatchObject({ kind: 'rules', hidden: true })
-      // Resolved when a chat starts, not here.
+      // Resolved on each turn of a chat on the card, not here.
       expect(note.content).toContain('{{original}}')
       expect(written.pinnedIds).not.toContain(note.id)
     })
@@ -172,7 +172,7 @@ describe('cards/write', () => {
       expect(written.pinnedIds).toEqual([
         byTitle(written.folderId, 'Description').id,
         byTitle(written.folderId, 'Personality').id,
-        byTitle(written.folderId, 'Example Dialogue').id,
+        byTitle(written.folderId, 'Example dialogue').id,
       ])
     })
 

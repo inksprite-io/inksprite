@@ -5,8 +5,8 @@
  * The library keeps a skill as its file, and the file is what is exported, so
  * the form does not own a copy of anything: it reads its fields out of the
  * frontmatter and writes them back into it. Every other field stays where it
- * was — a license, a `model`, a key another tool invented — and so does the
- * order the fields were in. What does not survive a save from the form is a
+ * was — a license, a `model`, a key another tool invented, a summary for the
+ * / menu written by hand — and so does the order the fields were in. What does not survive a save from the form is a
  * comment in the frontmatter, because the frontmatter is written afresh.
  *
  * Settings at their default are taken out rather than written, so a skill
@@ -24,13 +24,13 @@ import { joinSkill, splitSkill } from './format.js'
  * @typedef {Object} SkillForm
  * @property {string} name
  * @property {string} description - What the model reads
- * @property {string} summary - What the writer reads; the description when empty
  * @property {boolean} model - The model may call it
  * @property {boolean} user - The writer may
  * @property {boolean} fork - It runs on its own
  * @property {SkillOutput} output - Where its answer goes, when it runs on its own
  * @property {string} argument - Its argument's name, or empty for none
- * @property {string} argumentHint
+ * @property {string} argumentDescription - What to type for it: shown after
+ *   the name in the / menu, and what the model is told about it
  * @property {string[]} tools - The tools it is given, when it runs on its own
  * @property {string} body - Its instructions
  */
@@ -82,7 +82,6 @@ export function formFromText(text) {
     form: {
       name: textOf(front.name),
       description: textOf(front.description),
-      summary: textOf(metadata['inksprite-summary']),
       model,
       user: front['user-invocable'] !== false,
       fork: front.context === 'fork',
@@ -90,7 +89,7 @@ export function formFromText(text) {
         OUTPUTS.includes(/** @type {SkillOutput} */ (output)) ? output : model ? 'result' : 'reply'
       ),
       argument: listOf(front.arguments)[0] || '',
-      argumentHint: textOf(front['argument-hint']),
+      argumentDescription: textOf(metadata['inksprite-argument']) || textOf(front['argument-hint']),
       tools: listOf(front['allowed-tools']),
       body,
     },
@@ -131,11 +130,14 @@ export function textFromForm(form, front = {}) {
   put(fields, 'user-invocable', false, form.user)
   put(fields, 'context', 'fork', !form.fork)
   put(fields, 'arguments', form.argument.trim(), !form.argument.trim())
-  put(fields, 'argument-hint', form.argumentHint.trim(), !form.argumentHint.trim())
+  // One wording for both readers: the hint the / menu shows is what the
+  // model is told, so a separate one for the model goes.
+  const described = form.argumentDescription.trim()
+  put(fields, 'argument-hint', described, !described)
+  delete metadata['inksprite-argument']
   // A skill that joins the conversation has whatever tools its chat has.
   put(fields, 'allowed-tools', form.tools.join(' '), !form.fork || form.tools.length === 0)
 
-  put(metadata, 'inksprite-summary', form.summary.trim(), !form.summary.trim())
   // Where the answer goes only matters to a skill that runs on its own, and
   // the default — back to whoever asked, or as the reply when only the writer
   // calls it — needs no saying.
@@ -175,13 +177,12 @@ export function newSkillText(name) {
   return textFromForm({
     name,
     description: '',
-    summary: '',
     model: false,
     user: true,
     fork: false,
     output: 'reply',
     argument: '',
-    argumentHint: '',
+    argumentDescription: '',
     tools: [],
     body: '',
   })

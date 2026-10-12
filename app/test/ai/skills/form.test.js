@@ -29,13 +29,12 @@ describe('formFromText', () => {
     expect(formOf(critique).form).toEqual({
       name: 'critique',
       description: 'Notes on a scene.',
-      summary: 'Get notes.',
       model: true,
       user: true,
       fork: true,
       output: 'result',
       argument: 'scene',
-      argumentHint: '',
+      argumentDescription: '',
       tools: ['read_document', 'Read'],
       body: 'Give notes on $scene.',
     })
@@ -64,7 +63,7 @@ describe('textFromForm', () => {
 
   it('keeps the fields in the order they were in', () => {
     const { form, front } = formOf(critique)
-    const keys = textFromForm({ ...form, summary: '' }, front)
+    const keys = textFromForm(form, front)
       .split('\n')
       .filter(line => /^[a-z-]+:/.test(line))
       .map(line => line.split(':')[0])
@@ -82,14 +81,13 @@ describe('textFromForm', () => {
 
   it('takes settings at their default out rather than writing them', () => {
     const { form, front } = formOf(critique)
-    const text = textFromForm(
-      { ...form, fork: false, argument: '', tools: ['oracle'], summary: '' },
-      front
-    )
+    const text = textFromForm({ ...form, fork: false, argument: '', tools: ['oracle'] }, front)
 
-    expect(text).not.toMatch(/context:|arguments:|allowed-tools:|inksprite-summary|user-invocable/)
-    // Metadata that still has something in it stays.
+    expect(text).not.toMatch(/context:|arguments:|allowed-tools:|argument-hint|user-invocable/)
+    // Metadata that still has something in it stays, a summary written by
+    // hand among it.
     expect(text).toContain('author: someone')
+    expect(text).toContain('inksprite-summary: Get notes.')
   })
 
   it('writes where the answer goes only when it runs on its own and it is not the default', () => {
@@ -114,9 +112,27 @@ describe('textFromForm', () => {
 
   it('writes a hint YAML would read as a list as text', () => {
     const { form, front } = formOf(critique)
-    const again = parseSkill(textFromForm({ ...form, argumentHint: '[instructions]' }, front))
+    const again = parseSkill(
+      textFromForm({ ...form, argumentDescription: '[instructions]' }, front)
+    )
 
     expect('skill' in again && again.skill.argumentHint).toBe('[instructions]')
+  })
+
+  it('gives the / menu and the model one description of the argument', () => {
+    const { form, front } = formOf(
+      critique.replace(
+        '  author: someone\n',
+        '  author: someone\n  inksprite-argument: The scene.\n'
+      )
+    )
+    expect(form.argumentDescription).toBe('The scene.')
+
+    const again = parseSkill(textFromForm({ ...form, argumentDescription: 'the scene' }, front))
+    expect('skill' in again && again.skill).toMatchObject({
+      argumentHint: 'the scene',
+      argumentDescription: 'the scene',
+    })
   })
 })
 

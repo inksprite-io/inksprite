@@ -14,6 +14,12 @@
  * changes a setting in one chat has not asked to change it in nine others, and
  * nothing on screen would tell them they had.
  *
+ * The wording is the exception in one direction only. The prompt and the
+ * skills' prompts are read from the profile every turn, so a chat keeps up
+ * with its profile's words, until the writer changes them in the chat: then
+ * the chat keeps its own (`Chat.prompt`, `Chat.skills`). Every change in a
+ * chat is the chat's; Save to profile is how one reaches the profile.
+ *
  * These ship as source rather than data, like the prompts in `ai/prompts`, so
  * an improvement reaches chats that have not been created yet when the app
  * updates. The writer's own profiles will live in the database beside them; see
@@ -203,6 +209,9 @@ export function settingsForNewChat(profile) {
  * wording, which stays on the profile.
  */
 const STAMPED_SETTINGS = [
+  // The chat's own wording, cleared so it reads the profile it moves to.
+  'prompt',
+  'skills',
   'disabledTools',
   'disabledToolGroups',
   'projectContextEnabled',

@@ -5,8 +5,10 @@
          ChatTurn, and what the model is sent belongs to the message. Floating,
          because a strip of buttons reserved above every segment would cost more
          room than a run of them is worth — but the words make way for it (see
-         below), so it never sits on top of them. A piece that is the whole of
-         its turn shows none of its own: the turn's buttons ask for it. -->
+         below), so it never sits on top of them. Words that are the whole of
+         their turn show none of their own: the turn's buttons ask for them. A
+         command's box keeps its own, so it is asked again and edited the same
+         way wherever in the turn it is. -->
     <div
       v-if="showActions"
       :class="[
@@ -24,6 +26,7 @@
         text
         rounded
         size="small"
+        :disabled="pending"
         @click="$emit('regenerate')"
       />
       <Button
@@ -33,6 +36,7 @@
         text
         rounded
         size="small"
+        :disabled="pending"
         @click="startEditing"
       />
       <Button
@@ -228,8 +232,9 @@ const props = defineProps({
   /** @type {import('vue').PropType<import('@/types/models.js').MessageSegment>} */
   segment: { type: Object, required: true },
   /**
-   * Whether this piece is the whole of its turn, in which case the turn's
-   * buttons ask its questions for it and it shows none of its own.
+   * Whether this piece is the whole of its turn. Words alone in a turn show
+   * no buttons of their own, since the turn's ask their questions for them; a
+   * command's box shows its own either way.
    */
   alone: { type: Boolean, default: false },
   /**
@@ -248,9 +253,6 @@ const editValue = ref('')
 const editTextarea = ref()
 holdTurnWhile(isEditing)
 
-/** Whether the piece has buttons of its own to show. */
-const showActions = computed(() => !props.alone && !isEditing.value)
-
 /** The record, when this piece of the turn is a tool the writer ran. */
 const command = computed(() =>
   props.segment.type === 'command' ? props.segment.command : undefined
@@ -267,6 +269,17 @@ const character = computed(() => {
   const { name } = command.value
   return name.charAt(0).toUpperCase() + name.slice(1)
 })
+
+/**
+ * Whether the piece has buttons of its own to show: always on a command's box,
+ * and on words that share their turn with something else.
+ */
+const showActions = computed(
+  () => !isEditing.value && (!props.alone || Boolean(command.value && !character.value))
+)
+
+/** Whether the answer is still on its way, which nothing may change under. */
+const pending = computed(() => command.value?.pending === true)
 
 /** Whether a model answered it, rather than a die or the writer's own words. */
 const consulted = computed(() => Boolean(command.value && commandConsults(command.value)))

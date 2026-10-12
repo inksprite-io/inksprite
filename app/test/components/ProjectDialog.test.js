@@ -36,7 +36,11 @@ vi.mock('@/stores/storiesStore', () => ({
   }),
 }))
 vi.mock('@/composables/useProfiles', () => ({
-  useProfiles: () => ({ profiles: ref(profiles), getProfile }),
+  useProfiles: () => ({
+    profiles: ref(profiles),
+    getProfile,
+    chatDefaultId: () => 'builtin_profile_chat',
+  }),
 }))
 vi.mock('primevue/usetoast', () => ({ useToast: () => ({ add: vi.fn() }) }))
 

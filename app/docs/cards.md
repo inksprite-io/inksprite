@@ -16,7 +16,7 @@
 - [uncomment][12]
   - [Parameters][13]
 - [ORIGINAL][14]
-- [overOriginal][15]
+- [withOriginal][15]
   - [Parameters][16]
 - [undecorate][17]
   - [Parameters][18]
@@ -190,8 +190,8 @@ Type: [Object][151]
 - `examples` **[string][152]** `mes_example`
 - `greetings` **[Array][153]<[string][152]>** `first_mes` first, then the alternates
 - `systemPrompt` **[string][152]** Rare, usually an ST preset's scaffolding
-- `rules` **[string][152]** `post_history_instructions`: the card's author's
-  note, which a chat on it starts with. See `overOriginal`.
+- `rules` **[string][152]** `post_history_instructions`, which a chat on it
+  sends after its author's note. See `withOriginal`.
 - `tags` **[Array][153]<[string][152]>**&#x20;
 - `creator` **[string][152]**&#x20;
 - `lore` **[Array][153]<[LoreEntry][2]>**&#x20;
@@ -273,25 +273,27 @@ Returns **[string][152]**&#x20;
 
 Where what a card overrides goes, as ST writes it.
 
-## overOriginal
+## withOriginal
 
-A card's override over what it overrides.
+A chat's roleplay instructions with what they add to: its system prompt
+after the profile's, its post-history instructions after its author's note.
 
-ST's rule, and the one worth keeping: a card's post-history instructions, or
-its system prompt, replace the defaults — unless they say `{{original}}`,
-which is where the defaults go. So a card that wants the writer's standing
-instructions plus a line of its own says so, and a card whose author wrote a
-whole set of their own is not read beside a second set that argues with it.
+After, unless they say `{{original}}`, which is where the other goes. That
+much of ST's rule is kept, so a card that says where the writer's standing
+instructions belong still puts them there. The rest of it, that a card's
+instructions without the marker replace the writer's, is not: those are what
+the writer chose and can see in the chat's settings, and a card that silently
+dropped them would drop the Roleplay note's rules of play with them.
 
-Resolved once, when a chat starts, into plain text: nothing downstream reads
-a template, and the card's own document keeps saying what the card said.
+Resolved for each turn, so the chat keeps the card's text as the card wrote
+it and the profile's part is whatever the profile says now.
 
 ### Parameters
 
-- `value` **[string][152]** What the card says, if anything
-- `under` **[string][152]?** What it would otherwise replace (optional, default `''`)
+- `value` **([string][152] | null | [undefined][155])** The chat's roleplay text, if any
+- `original` **([string][152] | null | [undefined][155])?** What it adds to (optional, default `''`)
 
-Returns **[string][152]** What the chat starts with
+Returns **[string][152]** What the turn sends
 
 ## undecorate
 
@@ -388,10 +390,10 @@ Type: [Object][151]
   other characters are on, when the card is on one
 - `shownIds` **[Array][153]<[string][152]>** What it shows under that: the card itself
 - `greetings` **[Array][153]<[Greeting][31]>** In the card's own order; the first is its `first_mes`
-- `rules` **[string][152]** The card's post-history instructions, as written:
-  what a chat on it puts in its author's note, `{{original}}` and all
-- `systemPrompt` **[string][152]** Overrides the chat's prompt, when the card had one
-  and the writer kept it
+- `rules` **[string][152]** The card's post-history instructions, as written,
+  `{{original}}` and all: what a chat on it sends after its author's note
+- `systemPrompt` **[string][152]** What a chat on it sends after its profile's
+  prompt, when the card had one and the writer kept it
 - `id` **[string][152]**&#x20;
 - `title` **[string][152]**&#x20;
 - `content` **[string][152]**&#x20;
@@ -442,7 +444,7 @@ and which was meant is not something to guess at.
 - `storyId` **[string][152]**&#x20;
 - `name` **[string][152]**&#x20;
 
-Returns **[Promise][155]<[Array][153]\<any>>** Card folders, in tree order
+Returns **[Promise][156]<[Array][153]\<any>>** Card folders, in tree order
 
 ## found
 
@@ -466,7 +468,7 @@ through the project block, and this is the route they were hidden for.
 - `storyId` **[string][152]**&#x20;
 - `folderId` **[string][152]**&#x20;
 
-Returns **[Promise][155]<(CardChat | null)>** Null if that is not a card folder
+Returns **[Promise][156]<(CardChat | null)>** Null if that is not a card folder
 
 ## documents
 
@@ -589,7 +591,7 @@ Text with its macros filled in.
 
 ### Parameters
 
-- `value` **([string][152] | null | [undefined][156])**&#x20;
+- `value` **([string][152] | null | [undefined][155])**&#x20;
 - `names` **([Names][53] | null)?** Nothing is filled in without them
 
 Returns **[string][152]**&#x20;
@@ -963,8 +965,9 @@ Type: [Object][151]
   documents that have to be in context from the first turn
 - `greetingIds` **[Array][153]<[string][152]>** The greetings, in the card's own order
 - `documents` **[number][157]** How many were written, sidecar included
-- `note` **[string][152]?** A line about what was written, for the writer,
-  when a count would not say it: that a PDF had no text in it
+- `note` **[string][152]?** What the toast says after the title, when a
+  count of documents would not say it: " (3 pages)", or ", a PDF with no
+  extractable text"
 
 ## writeCard
 
@@ -984,7 +987,7 @@ Write a card into the project.
     in its folder. It is what the card looks like where people browse for
     them, and a model that can see it may as well.
 
-Returns **[Promise][155]<[Written][116]>**&#x20;
+Returns **[Promise][156]<[Written][116]>**&#x20;
 
 ## reimportCard
 
@@ -1008,7 +1011,7 @@ card arrived in is kept, unless another is given.
 
 - Throws **[Error][161]** When the folder is not a card's
 
-Returns **[Promise][155]<[Written][116]>**&#x20;
+Returns **[Promise][156]<[Written][116]>**&#x20;
 
 ## fillCard
 
@@ -1023,7 +1026,7 @@ The documents a card is made of, written into a folder.
   - `options.useSystemPrompt` **[boolean][154]**&#x20;
   - `options.portrait` **[Blob][162]?**&#x20;
 
-Returns **[Promise][155]\<Pick<[Written][116], (`"pinnedIds"` | `"greetingIds"` | `"documents"`)>>** The
+Returns **[Promise][156]\<Pick<[Written][116], (`"pinnedIds"` | `"greetingIds"` | `"documents"`)>>** The
 count is of what this wrote: the folder is not counted here
 
 ## pinnedIds
@@ -1078,7 +1081,7 @@ holds its pixels; between them the card round-trips.
 - `folderId` **[string][152]**&#x20;
 - `portrait` **[Blob][162]**&#x20;
 
-Returns **[Promise][155]<[number][157]>** How many documents this wrote
+Returns **[Promise][156]<[number][157]>** How many documents this wrote
 
 ## writeMarkdown
 
@@ -1099,7 +1102,7 @@ the text it is: see editor/size.
 - `options` **[Object][151]?** (optional, default `{}`)
   - `options.parentId` **[string][152]?**&#x20;
 
-Returns **[Promise][155]<[Written][116]>**&#x20;
+Returns **[Promise][156]<[Written][116]>**&#x20;
 
 ## writeLorebook
 
@@ -1116,7 +1119,7 @@ The same documents, with no card around them.
   - `options.parentId` **[string][152]?**&#x20;
   - `options.title` **[string][152]?** Overrides the book's own name
 
-Returns **[Promise][155]<[Written][116]>**&#x20;
+Returns **[Promise][156]<[Written][116]>**&#x20;
 
 ## writeLore
 
@@ -1194,7 +1197,7 @@ renamed it to.
 - `storyId` **[string][152]**&#x20;
 - `which` **(`"characters"` | `"lorebooks"`)**&#x20;
 
-Returns **[Promise][155]<[string][152]>** The folder's id
+Returns **[Promise][156]<[string][152]>** The folder's id
 
 ## find
 
@@ -1231,7 +1234,7 @@ Returns **any**&#x20;
 [12]: #uncomment
 [13]: #parameters-3
 [14]: #original
-[15]: #overoriginal
+[15]: #withoriginal
 [16]: #parameters-4
 [17]: #undecorate
 [18]: #parameters-5
@@ -1371,8 +1374,8 @@ Returns **any**&#x20;
 [152]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
 [153]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
 [154]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[155]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[156]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[155]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[156]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
 [157]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
 [158]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
 [159]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array

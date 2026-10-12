@@ -84,6 +84,11 @@ export const PROJECT_TABLES = ['stories', 'documents', 'files', 'chats', 'messag
  */
 
 /**
+ * Told how far a long piece of work has got: how much of it is done, of how much.
+ * @typedef {(done: number, total: number) => void} Progress
+ */
+
+/**
  * @typedef {Object} Storage
  * @property {() => number} schemaVersion - The version the rows are in, which a backup records
  * @property {() => Promise<Story[]>} stories - Every project's record
@@ -109,7 +114,8 @@ export const PROJECT_TABLES = ['stories', 'documents', 'files', 'chats', 'messag
  * @property {(table: 'chats'|'messages', change: (row: any) => object|null) => Promise<number>} updateEach -
  *   Change every row of a table, in every project, open or not: `change` returns the fields
  *   to set, or null to leave the row. Resolves to how many changed.
- * @property {(project: NewProject) => Promise<void>} addProject - Add a project's rows, all or none
+ * @property {(project: NewProject, progress?: Progress) => Promise<void>} addProject - Add a
+ *   project's rows, all or none, saying how far it has got where it takes a while
  * @property {(storyId: string) => Promise<void>} removeProject - Take a project away whole: its
  *   rows, or in the library its folder, to the trash
  * @property {(table: AppTable) => Promise<any[]>} all - Every row of an app table

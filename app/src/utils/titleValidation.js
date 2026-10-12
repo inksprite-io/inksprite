@@ -54,19 +54,20 @@ export const getTitlePlaceholder = (type, position) => {
 }
 
 /**
- * A project name no other project has: `name` itself when it is free, and
- * otherwise numbered past the copies already there — `Lighthouse (2)`, then
- * `Lighthouse (3)`, the original being the first, as a document's copies are
- * (see `freeTitle` in utils/documentPath.js). A name that is already a
- * numbered copy counts on from its own number rather than gaining a second
- * one, so importing `Lighthouse (2)` beside itself gives `Lighthouse (3)`.
- * Names are compared without the spaces round them and whatever their case.
+ * A name nothing else in a list has, for a project or a profile: `name`
+ * itself when it is free, and otherwise numbered past the copies already
+ * there — `Lighthouse (2)`, then `Lighthouse (3)`, the original being the
+ * first, as a document's copies are (see `freeTitle` in utils/documentPath.js).
+ * A name that is already a numbered copy counts on from its own number rather
+ * than gaining a second one, so importing `Lighthouse (2)` beside itself gives
+ * `Lighthouse (3)`. Names are compared without the spaces round them and
+ * whatever their case.
  *
- * @param {string[]} taken - The names of the other projects
+ * @param {string[]} taken - The names of the others
  * @param {string} name
  * @returns {string}
  */
-export const freeProjectName = (taken, name) => {
+export const freeName = (taken, name) => {
   const key = (/** @type {string} */ value) => value.trim().toLowerCase()
   const keys = new Set(taken.map(key))
   if (!keys.has(key(name))) return name

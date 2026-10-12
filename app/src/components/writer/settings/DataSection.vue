@@ -67,7 +67,8 @@ import Dialog from 'primevue/dialog'
 import { useConfirm } from 'primevue/useconfirm'
 import { useBackup } from '@/composables/useBackup'
 import { useToast } from '@/composables/useToast'
-import { describeBackupContents } from '@/utils/backup.js'
+import { describeBackupContents, keysLeftOut } from '@/utils/backup.js'
+import { getWebService } from '@/web/services.js'
 import { isDesktop } from '@/platform/desktop.js'
 import { librarySettings, revealInLibrary } from '@/platform/library.js'
 
@@ -140,10 +141,14 @@ const handleFileChange = async event => {
   isImporting.value = true
   try {
     const { backup: parsed } = await backup.readBackupFile(file)
+    // The keys to enter again afterwards, named while the writer can still
+    // go and find them: otherwise a chat or a search is how they find out.
+    const leftOut = keysLeftOut(parsed, id => getWebService(id)?.name ?? id)
+    const keys = leftOut.length > 0 ? ` Keys left out: ${leftOut.join(', ')}.` : ''
 
     confirm.require({
       header: 'Replace all data?',
-      message: `${describeBackupContents(parsed)} Everything in inksprite now is replaced.`,
+      message: `${describeBackupContents(parsed)}${keys} Everything in inksprite now is replaced.`,
       icon: 'pi pi-exclamation-triangle',
       rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       acceptProps: { label: 'Replace', severity: 'danger' },

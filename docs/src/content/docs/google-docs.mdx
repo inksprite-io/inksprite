@@ -1,0 +1,61 @@
+---
+title: Google Docs
+description: Import Google Docs from your Drive into a project as Markdown documents you can edit, along with other files you keep there.
+---
+
+Bring a draft you started in Google Docs into a project. Each Doc becomes a
+document of its own, with its headings, lists and tables, ready to edit and
+for the model to read.
+
+## Import from Drive
+
+1. Right-click the project, or the folder to put the Docs in, and choose
+   **Import** › **Google Drive…**.
+2. Google's sign-in opens in a window of its own (in the desktop app, in your
+   usual browser). Choose your Google account and allow inksprite to see the
+   files you choose.
+3. Google's file picker opens. Choose the Docs or other files to import; you
+   can choose several at once.
+
+inksprite puts them in the folder, and a message says how many it imported
+and names any it couldn't. In the desktop app, the browser tab says you can
+close it and go back to inksprite.
+
+Google asks you to sign in and allow access each time you import. inksprite
+can open only the files you choose, and forgets the sign-in once the import is
+done.
+
+:::tip
+If your browser blocks Google's window, inksprite says so. Click
+**Try again**. If you close Google's window without choosing anything, click
+**Cancel** in inksprite.
+:::
+
+Google's picker lets you open folders to find files, but choose the files
+themselves: a folder chosen whole is skipped.
+
+## What comes across
+
+- **Google Docs** and **Word files** (`.docx`) become text documents, in
+  Markdown: headings, lists, bold and italic, links and tables. Pictures are
+  left out, and the message says how many.
+- **Google Sheets** come as a CSV file of the first sheet.
+- **Google Slides** come as a PDF, and **Google Drawings** as a PNG image.
+- **Other files**, such as PDFs, images and Markdown files, import as they
+  would from your computer. See [PDFs, Images, and Ebooks](/files/).
+- **Forms**, **Sites** and other Google files that can't be exported are
+  skipped, and so is a Doc over Drive's 10 MB export limit.
+
+Files on shared drives import too.
+
+## It's a copy
+
+An imported Doc is a copy of the Doc as it was. Edits in inksprite stay in
+inksprite, and edits in Google Docs stay there. To bring in a newer version,
+import the Doc again: it arrives beside the first as **Name (2)**.
+
+:::note
+**Google Drive…** is on the menu at [inksprite.io](https://inksprite.io) and in
+the [desktop app](/desktop/). A copy of inksprite you run yourself has it only
+if it's set up with a Google project of its own.
+:::

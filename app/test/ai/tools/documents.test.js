@@ -9,6 +9,7 @@ import {
   executeSearchDocuments,
   executeCreateDocument,
   executeCreateFolder,
+  executeMoveDocument,
   executeUpdateDocument,
   executeAppendDocument,
   executeEditDocument,
@@ -303,8 +304,8 @@ describe('document tools', () => {
       })
       markChat({ hiddenIds: ['lore_2'] })
 
-      const renamed = await executeUpdateDocument(
-        { path: 'notes/Characters/Elara', updates: { title: 'Riley' } },
+      const renamed = await executeMoveDocument(
+        { path: 'notes/Characters/Elara', to: 'notes/Characters/Riley' },
         { ...inChat, edits: [] }
       )
       expect(renamed).toEqual({
@@ -712,7 +713,7 @@ describe('document tools', () => {
         context
       )
 
-      expect(result.error).toContain('No supported fields')
+      expect(result.error).toContain('Give the whole new body')
       expect(store.getDocument(rootIdFor(STORY)).summary).toBe(before)
     })
   })
@@ -914,46 +915,44 @@ describe('document tools', () => {
       expect(store.getDocument('lore_1').content).toContain('A knight of the south.')
     })
 
-    it('renames, and leaves the summary alone', async () => {
-      await seed()
-      await executeUpdateDocument(
-        { path: 'notes/Characters/Elara', updates: { title: 'Elara Vance', summary: 'A knight' } },
-        context
-      )
-
-      expect(store.getDocument('lore_1')).toMatchObject({
-        title: 'Elara Vance',
-        summary: 'A knight.',
-      })
-    })
-
-    it('refuses a title something beside it has, in any case', async () => {
-      await seed()
-      await executeCreateDocument({ path: 'notes/Characters/Riley', content: 'x' }, context)
-
-      const result = await executeUpdateDocument(
-        { path: 'notes/Characters/Elara', updates: { title: ' riley ', content: 'y' } },
-        context
-      )
-
-      // Two of one name would be one path for two documents.
-      expect(result).toEqual({
-        error: '"notes/Characters/Riley" already exists. Choose a different title.',
-      })
-      expect(store.getDocument('lore_1')).toMatchObject({
-        title: 'Elara',
-        content: 'A knight of the north.',
-      })
-    })
-
-    it('takes a title without the spaces round it', async () => {
+    it('takes the body on its own, as it is now offered', async () => {
       await seed()
       const result = await executeUpdateDocument(
-        { path: 'notes/Characters/Elara', updates: { title: ' Elara Vance ' } },
+        { path: 'notes/Characters/Elara', content: 'A knight of the east.' },
         context
       )
 
-      expect(result.document.path).toBe('notes/Characters/Elara Vance')
+      expect(result.success).toBe(true)
+      expect(store.getDocument('lore_1').content).toBe('A knight of the east.')
+    })
+
+    it('sends a rename to move_document', async () => {
+      await seed()
+      const result = await executeUpdateDocument(
+        { path: 'notes/Characters/Elara', updates: { title: 'Elara Vance' } },
+        context
+      )
+
+      expect(result.error).toContain('move_document')
+      expect(store.getDocument('lore_1').title).toBe('Elara')
+    })
+
+    it("keeps the writer's comments on what the new body still says, and names the rest", async () => {
+      await seed()
+      store.updateDocument('lore_1', {
+        content:
+          '{==A knight==}{>>c1abcd: Which order?<<} of the {==north==}{>>c2abcd: Too cold?<<}.',
+      })
+
+      const result = await executeUpdateDocument(
+        { path: 'notes/Characters/Elara', content: 'A knight of the south, and proud of it.' },
+        context
+      )
+
+      expect(store.getDocument('lore_1').content).toBe(
+        '{==A knight==}{>>c1abcd: Which order?<<} of the south, and proud of it.'
+      )
+      expect(result.resolvedComments).toEqual([{ id: 'c2abcd', comment: 'Too cold?' }])
     })
 
     it('refuses to put content in a folder', async () => {
@@ -971,7 +970,88 @@ describe('document tools', () => {
         { path: 'notes/Characters/Elara', updates: { nonsense: true } },
         context
       )
-      expect(result.error).toContain('No supported fields')
+      expect(result.error).toContain('Give the whole new body')
+    })
+  })
+
+  describe('move_document', () => {
+    it('renames a document where it is', async () => {
+      await seed()
+      const result = await executeMoveDocument(
+        { path: 'notes/Characters/Elara', to: 'notes/Characters/Elara Vance' },
+        context
+      )
+
+      expect(result).toMatchObject({
+        success: true,
+        from: 'notes/Characters/Elara',
+        document: { path: 'notes/Characters/Elara Vance' },
+      })
+      expect(store.getDocument('lore_1').parentId).toBe('cat_1')
+    })
+
+    it('moves a document into another folder, and renames it on the way', async () => {
+      await seed()
+      const result = await executeMoveDocument(
+        { path: 'notes/Characters/Elara', to: 'manuscript/Elara notes' },
+        context
+      )
+
+      expect(result.document.path).toBe('manuscript/Elara notes')
+      expect(store.getDocument('lore_1').parentId).toBe('manuscript_story_1')
+    })
+
+    it('moves a folder with everything in it', async () => {
+      await seed()
+      await executeMoveDocument({ path: 'notes/Characters', to: 'manuscript/Cast' }, context)
+
+      expect(
+        (await executeReadDocument({ path: 'manuscript/Cast/Elara' }, context)).content
+      ).toContain('A knight')
+    })
+
+    it('makes no folder for a path it was not given', async () => {
+      await seed()
+      const result = await executeMoveDocument(
+        { path: 'notes/Characters/Elara', to: 'notes/People/Elara' },
+        context
+      )
+
+      expect(result.error).toContain('No folder at "notes/People"')
+      expect(store.getDocument('lore_1').parentId).toBe('cat_1')
+    })
+
+    it('refuses a name something there has, and a folder inside itself', async () => {
+      await seed()
+      await executeCreateDocument({ path: 'manuscript/Elara', content: 'x' }, context)
+
+      expect(
+        (
+          await executeMoveDocument(
+            { path: 'notes/Characters/Elara', to: 'manuscript/Elara' },
+            context
+          )
+        ).error
+      ).toContain('already exists. Choose another name.')
+      expect(
+        (await executeMoveDocument({ path: 'notes', to: 'notes/Characters/Notes' }, context)).error
+      ).toContain('inside itself')
+    })
+
+    it('records the move, so a rewind can put it back', async () => {
+      await seed()
+      const ctx = { ...context, edits: [] }
+      await executeMoveDocument({ path: 'notes/Characters/Elara', to: 'manuscript/Elara' }, ctx)
+
+      expect(recorded(ctx)).toEqual([
+        {
+          documentId: 'lore_1',
+          path: 'manuscript/Elara',
+          tool: 'move_document',
+          old: 'notes/Characters/Elara',
+          new: 'manuscript/Elara',
+        },
+      ])
     })
   })
 
@@ -1225,6 +1305,21 @@ describe('document tools', () => {
       const ids = ctx.edits.map(edit => edit.id)
       expect(ids.every(id => typeof id === 'string' && id.length > 0)).toBe(true)
       expect(new Set(ids).size).toBe(2)
+    })
+
+    it('records a folder it made, so a rewind can take it away', async () => {
+      await seed()
+      const ctx = recording()
+      const made = await executeCreateFolder({ path: 'notes/Factions' }, ctx)
+      expect(recorded(ctx)).toEqual([
+        {
+          documentId: made.document.id,
+          path: 'notes/Factions',
+          tool: 'create_folder',
+          old: '',
+          new: '',
+        },
+      ])
     })
 
     it('records a rewrite as the smallest pair the two bodies allow', async () => {

@@ -47,7 +47,7 @@
           <LinkPopover
             v-if="linkPopover"
             v-bind="linkPopover"
-            @open="openUrl(linkPopover.href)"
+            @open="documentLinks.open(linkPopover.href, props.documentId)"
             @edit="editLink"
             @remove="unlink"
             @apply="applyLink"
@@ -134,8 +134,8 @@ import {
   takeUpComment,
 } from '@/composables/useComments.js'
 import { TINT, skippedRanges, speakerRanges } from '@/tts/highlight.js'
-import { linkAround, links, normalizeHref, removeLink, setLink } from '@/editor/links.js'
-import { openUrl } from '@/platform/open.js'
+import { linkAround, links, removeLink, setLink } from '@/editor/links.js'
+import { useDocumentLinks } from '@/composables/useDocumentLinks.js'
 import { isTextField } from '@/utils/focus.js'
 
 /**
@@ -159,6 +159,9 @@ const editor = useEditor()
 // The story's document tree
 const api = useDocuments(props.storyId)
 
+// Links to its other documents, followed and made from this one.
+const documentLinks = useDocumentLinks(props.storyId)
+
 const currentDocument = computed(() => api.get(props.documentId))
 
 /** What the popovers are placed in. @type {import('vue').Ref<HTMLElement|null>} */
@@ -174,7 +177,7 @@ let view = null
  * The link the caret is in, shown under it, or the field for making or
  * changing one. See `editor/links`.
  *
- * @type {import('vue').Ref<{ href: string, left: number, top: number, editing: boolean, withText: boolean }|null>}
+ * @type {import('vue').Ref<{ href: string, document?: string, left: number, top: number, editing: boolean, withText: boolean }|null>}
  */
 const linkPopover = ref(null)
 
@@ -677,9 +680,12 @@ const showLink = editorView => {
   if (linkPopover.value?.editing) return
   const { selection } = editorView.state
   const around = selection.empty && editorView.hasFocus() ? linkAround(selection.$from) : null
+  // A link to another document reads as the document's name.
+  const linked = around ? documentLinks.target(around.href, props.documentId) : null
   linkPopover.value = around
     ? {
         href: around.href,
+        document: linked ? api.displayTitle(linked) : '',
         editing: false,
         withText: false,
         ...below(editorView, selection.head, around.from),
@@ -708,7 +714,7 @@ const editLink = () => {
 const applyLink = ({ href, text }) => {
   linkPopover.value = null
   if (!view) return
-  const address = normalizeHref(href)
+  const address = documentLinks.addressFor(href, props.documentId)
   if (address) setLink(address, text.trim())(view.state, view.dispatch)
   else removeLink(view.state, view.dispatch)
   view.focus()
@@ -741,7 +747,11 @@ onMounted(async () => {
   view = new EditorView(page.value, {
     state,
     plugins: [
-      links({ edit: editLink, open: openUrl, update: showLink }),
+      links({
+        edit: editLink,
+        open: href => documentLinks.open(href, props.documentId),
+        update: showLink,
+      }),
       new Plugin({
         view: () => ({
           update: (editorView, prevState) => {

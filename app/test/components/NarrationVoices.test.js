@@ -65,7 +65,10 @@ describe('NarrationVoices', () => {
   })
 
   it('offers what the server has, to mix in', async () => {
-    const wrapper = mountVoices({ serverVoices: ['af_heart', 'af_nicole'] })
+    const wrapper = mountVoices({ serverVoices: ['af_heart', 'af_nicole'], mixes: true })
+    expect(wrapper.find('[data-voice-string]').attributes('placeholder')).toBe(
+      'af_heart+af_nicole(2)'
+    )
     expect(wrapper.find('[data-voice-mix]').exists()).toBe(true)
     // The select's own picker is PrimeVue's; what matters is the join.
     wrapper.findComponent({ name: 'Select', props: { placeholder: 'Add a voice to the mix…' } })
@@ -76,7 +79,7 @@ describe('NarrationVoices', () => {
 
   it("marks the voices in a mix the model doesn't list, once its voices are known", async () => {
     const mixed = { ...narrator, voice: 'af_heart+af_nicole(2)+Kore' }
-    const wrapper = mountVoices({ voices: [mixed, riley] })
+    const wrapper = mountVoices({ voices: [mixed, riley], mixes: true })
     expect(wrapper.find('[data-voice-unknown]').exists()).toBe(false)
 
     await wrapper.setProps({ serverVoices: ['af_heart', 'af_nicole'] })
@@ -84,6 +87,34 @@ describe('NarrationVoices', () => {
 
     await wrapper.setProps({ serverVoices: ['af_heart', 'af_nicole', 'Kore'] })
     expect(wrapper.find('[data-voice-unknown]').exists()).toBe(false)
+  })
+
+  it('gives a model that takes one voice its voices to pick from, and nothing to mix', async () => {
+    const wrapper = mountVoices({ serverVoices: ['alloy', 'nova'] })
+    expect(wrapper.find('[data-voice-string]').exists()).toBe(false)
+    expect(wrapper.find('[data-voice-mix]').exists()).toBe(false)
+    expect(wrapper.find('[data-voice-unknown]').text()).toBe(
+      "Not among this model's voices: af_heart"
+    )
+
+    const pick = wrapper.findAllComponents({ name: 'Select' }).at(-1)
+    expect(pick.attributes('data-voice-pick')).toBeDefined()
+    await pick.vm.$emit('update:modelValue', 'nova')
+    expect(wrapper.emitted('update')).toEqual([['narrator', { voice: 'nova' }]])
+  })
+
+  it('calls a mix one unknown voice to a model that takes one', () => {
+    const mixed = { ...narrator, voice: 'alloy+nova' }
+    const wrapper = mountVoices({ voices: [mixed, riley], serverVoices: ['alloy', 'nova'] })
+    expect(wrapper.find('[data-voice-unknown]').text()).toBe(
+      "Not among this model's voices: alloy+nova"
+    )
+  })
+
+  it('has a voice typed for a model whose voices are not known', () => {
+    const wrapper = mountVoices()
+    expect(wrapper.find('[data-voice-string]').attributes('placeholder')).toBeUndefined()
+    expect(wrapper.find('[data-voice-pick]').exists()).toBe(false)
   })
 
   it('calls the voice that reads the rest the default', async () => {

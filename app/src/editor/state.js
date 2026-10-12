@@ -100,7 +100,7 @@ export const keys = {
 
   'Mod-b': toggleMark(strong),
   'Mod-i': toggleMark(em),
-  'Mod-`': toggleMark(code),
+  'Mod-e': toggleMark(code),
   'Mod-Shift-s': toggleMark(strikethrough),
 
   'Shift-Enter': chainCommands(exitCode, exitTable, insertHardBreak),

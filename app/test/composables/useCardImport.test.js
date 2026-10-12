@@ -29,7 +29,7 @@ vi.mock('@/stores/syncStore', () => ({
   useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
 }))
 import db from '@/stores/db'
-import { minimalPdf } from '../files/helpers.js'
+import { barePng, minimalDocx, minimalPdf } from '../files/helpers.js'
 
 const STORY = 'story_1'
 const SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]
@@ -267,6 +267,63 @@ describe('useCardImport', () => {
     })
   })
 
+  describe('a Word file', () => {
+    const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    const paragraph = text => `<w:p><w:r><w:t>${text}</w:t></w:r></w:p>`
+    const picture =
+      '<w:p><w:r><w:drawing><wp:inline><wp:docPr id="1" name="Picture"/><a:graphic>' +
+      '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic>' +
+      '<pic:blipFill><a:blip r:embed="rGull"/></pic:blipFill></pic:pic></a:graphicData></a:graphic>' +
+      '</wp:inline></w:drawing></w:r></w:p>'
+    const word = (name, body, options) =>
+      new File([minimalDocx(body, options)], name, { type: DOCX })
+
+    it('is a markdown document, titled after the file, and asks nothing', async () => {
+      const found = await cards.inspect(
+        word(
+          'Keeper notes.docx',
+          '<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>The Lamp</w:t></w:r></w:p>' +
+            paragraph('Trimmed at dusk.')
+        )
+      )
+
+      expect(found).toMatchObject({
+        shape: 'markdown',
+        title: 'Keeper notes',
+        documents: 1,
+        asks: false,
+        images: 0,
+      })
+      expect(found.value).toBe('# The Lamp\n\nTrimmed at dusk.')
+    })
+
+    it('writes a text document, and says how many pictures it left out', async () => {
+      const store = useDocumentsStore()
+      const found = await cards.inspect(
+        word('Log.docx', paragraph('Fog.') + picture, { images: { rGull: barePng() } })
+      )
+
+      const written = await cards.write(found)
+
+      const document = store.getDocument(written.folderId)
+      expect(document).toMatchObject({ title: 'Log', type: 'text', content: 'Fog.' })
+      expect(written.note).toBe(' (1 image left out)')
+    })
+
+    it('is known by its name when the browser gives it no type', async () => {
+      const bytes = minimalDocx(paragraph('Fog.'))
+      const found = await cards.inspect(new File([bytes], 'Log.docx'))
+
+      expect(found).toMatchObject({ shape: 'markdown', value: 'Fog.' })
+    })
+
+    it('says plainly when it cannot be read', async () => {
+      await expect(cards.inspect(new File(['not a zip'], 'Log.docx'))).rejects.toThrow(
+        'Couldn’t read the Word file'
+      )
+    })
+  })
+
   describe('write', () => {
     it('starts a conversion for a file with text when the Convert role says so on import', async () => {
       startConversion.mockClear()
@@ -330,7 +387,7 @@ describe('useCardImport', () => {
         pages: 1,
         content: '[p.1]\nAbstract',
       })
-      expect(written.note).toBe('1 page of text.')
+      expect(written.note).toBe(' (1 page)')
       expect(db.files.put).toHaveBeenCalledWith(
         expect.objectContaining({ id: document.id, storyId: STORY })
       )

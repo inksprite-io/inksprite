@@ -7,7 +7,10 @@
   >
     <!-- Pressing here leaves the caret in the editor, in the link. -->
     <div v-if="!editing" class="flex items-center gap-1 min-w-0" @mousedown.prevent>
-      <i class="pi pi-link flex-none text-surface-500 dark:text-surface-400" />
+      <i
+        class="pi flex-none text-surface-500 dark:text-surface-400"
+        :class="document ? 'pi-file' : 'pi-link'"
+      />
       <button
         type="button"
         class="min-w-0 max-w-80 truncate text-primary-600 dark:text-primary-400 hover:underline"
@@ -15,7 +18,7 @@
         data-action="open-link"
         @click="$emit('open')"
       >
-        {{ href }}
+        {{ document || href }}
       </button>
       <Button
         type="button"
@@ -84,6 +87,7 @@ import InputText from 'primevue/inputtext'
  *
  * @typedef {Object} Props
  * @property {string} href - Where the link goes, or the address to start the field with
+ * @property {string} [document] - The name of the document it goes to, when it goes to one
  * @property {number} left - From the left of the page, in pixels
  * @property {number} top - From the top of the page, in pixels
  * @property {boolean} [editing] - The field rather than the link
@@ -91,6 +95,7 @@ import InputText from 'primevue/inputtext'
  */
 const props = defineProps({
   href: { type: String, required: true },
+  document: { type: String, default: '' },
   left: { type: Number, required: true },
   top: { type: Number, required: true },
   editing: { type: Boolean, default: false },

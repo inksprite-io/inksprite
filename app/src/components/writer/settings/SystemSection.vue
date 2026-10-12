@@ -35,6 +35,54 @@
 
     <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
       <div class="flex items-center justify-between gap-2">
+        <label for="debug-switch" class="text-xs font-medium text-surface-700 dark:text-surface-200"
+          >Debug</label
+        >
+        <ToggleSwitch v-model="debug" input-id="debug-switch" class="flex-none" data-debug />
+      </div>
+    </div>
+
+    <h3 class="px-2 pt-4 pb-1 text-sm font-semibold text-surface-700 dark:text-surface-200">
+      Chats
+    </h3>
+    <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
+      <label for="chat-profile" class="text-xs font-medium text-surface-700 dark:text-surface-200"
+        >Profile for new chats</label
+      >
+      <Select
+        input-id="chat-profile"
+        :model-value="chatProfile"
+        :options="profiles"
+        option-label="name"
+        option-value="id"
+        aria-label="Profile for new chats"
+        class="w-full dark:!bg-surface-900"
+        size="small"
+        data-chat-profile
+        @update:model-value="applicationState.setChatProfileId"
+      />
+    </div>
+    <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
+      <label
+        for="roleplay-profile"
+        class="text-xs font-medium text-surface-700 dark:text-surface-200"
+        >Profile for character cards</label
+      >
+      <Select
+        input-id="roleplay-profile"
+        :model-value="roleplayProfile"
+        :options="profiles"
+        option-label="name"
+        option-value="id"
+        aria-label="Profile for character cards"
+        class="w-full dark:!bg-surface-900"
+        size="small"
+        data-roleplay-profile
+        @update:model-value="applicationState.setRoleplayProfileId"
+      />
+    </div>
+    <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
+      <div class="flex items-center justify-between gap-2">
         <label for="nsfw-switch" class="text-xs font-medium text-surface-700 dark:text-surface-200"
           >Enable NSFW chat profiles</label
         >
@@ -45,15 +93,6 @@
           data-nsfw-profiles
           @update:model-value="applicationState.setNsfwProfiles"
         />
-      </div>
-    </div>
-
-    <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
-      <div class="flex items-center justify-between gap-2">
-        <label for="debug-switch" class="text-xs font-medium text-surface-700 dark:text-surface-200"
-          >Debug</label
-        >
-        <ToggleSwitch v-model="debug" input-id="debug-switch" class="flex-none" data-debug />
       </div>
     </div>
 
@@ -73,6 +112,7 @@ import DataSection from './DataSection.vue'
 import LibrarySection from './LibrarySection.vue'
 import { isDesktop } from '@/platform/desktop.js'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { useProfiles } from '@/composables/useProfiles'
 import { applyTheme } from '@/composables/useSystemSettings.js'
 import { useMessagesStore } from '@/stores/messagesStore'
 
@@ -80,6 +120,13 @@ const applicationState = useApplicationState()
 const desktop = isDesktop()
 const { theme, setTheme } = applicationState
 const messagesStore = useMessagesStore()
+const profilesApi = useProfiles()
+const { profiles } = profilesApi
+
+// The profiles chats start on, as the pickers show them: the NSFW switch puts
+// a built-in's counterpart in its place, as it does in a chat.
+const chatProfile = computed(() => profilesApi.getProfile(profilesApi.chatDefaultId())?.id)
+const roleplayProfile = computed(() => profilesApi.getProfile(profilesApi.roleplayDefaultId())?.id)
 
 // Switched off, it forgets what it kept. A saved request is as large as the
 // conversation behind it, and in a long chat kept with it on they came to most

@@ -82,31 +82,17 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <SettingLabel
-          label="Summary"
-          description="One line for the / menu. Defaults to the description."
-        />
-        <InputText
-          v-model="form.summary"
+        <SettingLabel label="Who can call it" />
+        <Select
+          v-model="callers"
+          :options="callerOptions"
+          option-label="label"
+          option-value="value"
           size="small"
           class="w-full"
-          aria-label="Summary"
-          data-field="summary"
+          aria-label="Who can call it"
+          data-field="callers"
         />
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <SettingLabel label="Who can call it" />
-        <div class="flex items-center justify-between gap-2">
-          <label for="skill-model" class="text-sm">The model, when its description fits</label>
-          <ToggleSwitch v-model="form.model" input-id="skill-model" data-field="model" />
-        </div>
-        <div class="flex items-center justify-between gap-2">
-          <label for="skill-user" class="text-sm">
-            You, as <span class="font-mono">/{{ form.name || 'name' }}</span>
-          </label>
-          <ToggleSwitch v-model="form.user" input-id="skill-user" data-field="user" />
-        </div>
       </div>
 
       <div class="flex flex-col gap-1">
@@ -153,7 +139,7 @@
         </div>
       </template>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-3">
         <div class="flex flex-col gap-1">
           <SettingLabel label="Argument" description="Naming it makes it required." />
           <InputText
@@ -166,14 +152,17 @@
           />
         </div>
         <div class="flex flex-col gap-1">
-          <SettingLabel label="Hint" description="Shown after its name in the / menu." />
+          <SettingLabel
+            label="Argument description"
+            description="Shown after its name in the / menu, and told to the model."
+          />
           <InputText
-            v-model="form.argumentHint"
+            v-model="form.argumentDescription"
             size="small"
-            placeholder="<what to type>"
+            placeholder="e.g. the chapter to review"
             class="w-full"
-            aria-label="Hint"
-            data-field="argumentHint"
+            aria-label="Argument description"
+            data-field="argumentDescription"
           />
         </div>
       </div>
@@ -285,7 +274,6 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
-import ToggleSwitch from 'primevue/toggleswitch'
 import { useConfirm } from 'primevue/useconfirm'
 import SettingLabel from '@/components/common/SettingLabel.vue'
 import { NEEDS_DESCRIPTION, NEEDS_INSTRUCTIONS, nameError, parseSkill } from '@/ai/skills/format.js'
@@ -318,6 +306,26 @@ const MODES = [
   { id: 'form', label: 'Form' },
   { id: 'file', label: 'File' },
 ]
+
+/** Who can call a skill, as the form's one choice over the file's two switches. */
+const CALLERS = {
+  both: { model: true, user: true },
+  user: { model: false, user: true },
+  model: { model: true, user: false },
+}
+
+const callerOptions = computed(() => [
+  { value: 'both', label: 'You and the model' },
+  { value: 'user', label: `Only you, as /${form.value?.name || 'name'}` },
+  { value: 'model', label: 'Only the model, when its description fits' },
+])
+
+const callers = computed({
+  get: () => (!form.value?.model ? 'user' : !form.value?.user ? 'model' : 'both'),
+  set: value => {
+    if (form.value) Object.assign(form.value, CALLERS[/** @type {keyof CALLERS} */ (value)])
+  },
+})
 
 const RUNS = [
   { value: true, label: 'On its own, reporting back' },

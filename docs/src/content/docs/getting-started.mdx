@@ -1,8 +1,6 @@
 ---
-title: Getting started
+title: Getting Started
 description: Start a project in inksprite, connect an AI provider, and have your first chat.
-tableOfContents:
-  maxHeadingLevel: 4
 ---
 
 import Clip from '../../components/Clip.astro';
@@ -10,21 +8,22 @@ import Screenshot from '../../components/Screenshot.astro';
 
 inksprite is a writing app with an AI you can brainstorm with. It runs in your
 browser at [inksprite.io](https://inksprite.io), or as a
-[desktop app](https://github.com/inksprite-io/inksprite/releases/latest) for
-macOS, Windows and Linux. There's no account to make.
+[desktop app](/desktop/) for macOS, Windows and Linux. There's no account to
+make.
 
 ## Open inksprite
 
-The first time you open inksprite, a welcome window opens. Connect an AI
-provider on its **AI** tab now, or [later](#connect-an-ai-provider).
+The first time you open inksprite, a welcome window opens. You can connect an
+AI provider on its **AI** tab now, or [later](#connect-an-ai-provider). Click
+**Start writing** to close it.
 
-<Screenshot name="welcome" alt="The welcome dialog" />
+<Screenshot name="welcome" alt="The welcome window" />
 
 :::caution[Your work stays on your computer]
-In a browser, your projects are kept in that browser's storage and nowhere
-else. Clearing the site's data deletes them, and Safari clears it after a week
-without a visit. [Back up](#back-up-your-work) now and then, or use the desktop
-app, which no browser can clear.
+In a browser, your projects live only in that browser's storage. Clearing the
+site's data deletes them, and Safari clears it after a week without a visit.
+[Back up](#back-up-your-work) now and then, or use the desktop app, which no
+browser can clear.
 :::
 
 ## Start a project
@@ -38,44 +37,36 @@ A project is a set of documents, kept in folders the way you like.
 3. Write. Everything saves as you type.
 
 The editor formats Markdown as you type: `#` and a space starts a heading,
-`**bold**` and `*italic*` format when you close them, `-` or `1.` and a space
-start a list, and `>` a quote. Press <kbd>⌘</kbd> <kbd>/</kbd>
-(<kbd>Ctrl</kbd> <kbd>/</kbd> on Windows and Linux) for every shortcut.
+`**bold**` and `*italic*` format when you close them, and `-` or `1.` and a
+space start a list. Press <kbd>⌘</kbd> <kbd>/</kbd> (<kbd>Ctrl</kbd>
+<kbd>/</kbd> on Windows and Linux) for every shortcut, or see
+[the editor](/editor/).
 
 <Screenshot name="workspace" alt="The outline, the editor and the chat" />
 
 The **outline** on the left lists the project's documents, the **editor** in
 the middle has a tab for each open one, and the **chat** is on the right. The
 icons at the far left switch the sidebar between the outline, your chats,
-[narration](/narration/) and comments. **Settings** is at the bottom.
+[narration](/narration/) and comments. **Settings** is the gear at the bottom.
 
 ### Folders
 
-Right-click the project, or any folder in it, to add a document or a folder.
-Drag documents to move them.
-
-A folder sorts its documents by title. To put them in your own order, choose
-**Keep in order** from the folder's menu, then drag them into place.
+Right-click the project, or a folder in it, to add a document or a folder.
+Drag documents to move them. A folder sorts its documents by name; to order
+them yourself, choose **Keep in order** from its menu and drag them into
+place. See [Projects](/projects/#arrange-the-outline) for more.
 
 <Screenshot name="outline-menu" alt="The menu for a folder" />
 
 ## Connect an AI provider
 
-The chat needs a model to talk to. inksprite sends your requests straight from
-your computer to the provider you choose; nothing goes through us.
+The chat needs a model to talk to. This guide uses OpenRouter, which gives you
+one account for hundreds of models, paid as you go. For Anthropic, OpenAI, or a
+model on your own computer, see [AI Providers](/providers/).
 
-- **OpenRouter** gives you one account for hundreds of models, paid as you go.
-  It's the quickest to set up.
-- **[Anthropic or OpenAI](#anthropic-and-openai)** take an API key from your
-  account with them.
-- **A [local model](#local-models)** runs on your own computer, free and
-  private, if your computer is up to it.
+Click **Connect** above the chat's message box, then **Connect to OpenRouter**.
 
-### OpenRouter
-
-Click **Connect** in the chat panel, then **Connect to OpenRouter**.
-
-<Screenshot name="connect-provider" alt="Connect an AI provider" />
+<Screenshot name="connect-provider" alt="The Connect an AI provider dialog" />
 
 A tab opens at OpenRouter. Make an account there, or click **Sign in** at the
 bottom if you have one.
@@ -94,113 +85,13 @@ A new connection starts on a paid model. Add
 
 ### Choose a model
 
-Open **Settings** (the gear at the bottom left) and choose **AI**. The model
-you pick here is the one your chats use.
+Open **Settings** › **AI**. The model you pick here is the one your chats use.
 
 <Screenshot name="ai-settings" alt="The AI settings" />
 
 Click **Model** to see what the provider offers, and type to search the list.
 
 <Screenshot name="choose-model" alt="Choosing a model" />
-
-**Generation** and **Sampling** show only the settings the chosen model takes.
-
-### Anthropic and OpenAI
-
-Make a key at [Anthropic](https://platform.claude.com/settings/keys) or at
-[OpenAI](https://platform.openai.com/api-keys). Then in inksprite:
-
-1. Open **Settings** › **AI**, choose **Anthropic** or **OpenAI** under
-   **Provider**, and click the **⋮** beside it.
-2. Paste the key in **API key** and click **Connect**. inksprite says how
-   many models it found.
-3. Close the provider's window and [choose a **Model**](#choose-a-model).
-
-### Local models
-
-inksprite knows LM Studio, Ollama, llama.cpp, vLLM and KoboldCpp, and works
-with any other server that speaks the OpenAI API.
-
-1. Start your server as its section below says.
-2. Open **Settings** › **AI** and choose the server under **Provider**.
-3. Choose a **Model**. inksprite asks the server what it has.
-
-In a browser, some servers have to be told to let inksprite reach them; their
-sections say how. The desktop app doesn't need that.
-
-If no models come, or your server is at another address or asks for a key,
-click the **⋮** beside **Provider**, change the **Endpoint** or paste the
-**API key**, and click **Connect**.
-
-<Clip name="connect-lmstudio" label="Connecting to LM Studio" />
-
-#### LM Studio
-
-Download and load a model, as
-[LM Studio's guide](https://lmstudio.ai/docs/app/basics) shows. Then
-[start the server](https://lmstudio.ai/docs/developer/core/server) on the
-**Developer** tab and turn on **Enable CORS** in its settings.
-
-- **Endpoint**: `http://localhost:1234/v1`
-- **API key**: LM Studio's token, if you turned on **Require Authentication**
-
-#### Ollama
-
-[Install Ollama](https://ollama.com/download) and download a model with
-`ollama pull`. To let inksprite reach it, set `OLLAMA_ORIGINS` to
-`https://inksprite.io` and restart Ollama, as
-[its FAQ](https://docs.ollama.com/faq#how-can-i-allow-additional-web-origins-to-access-ollama)
-shows for each system.
-
-- **Endpoint**: `http://localhost:11434/v1`
-- **API key**: none
-
-#### llama.cpp
-
-[Install llama.cpp](https://github.com/ggml-org/llama.cpp/blob/master/docs/install.md)
-and start its server with a model file, or with `-hf` and a model on Hugging
-Face. [Its guide](https://github.com/ggml-org/llama.cpp/tree/master/tools/server)
-has the other options.
-
-```sh
-llama-server -m model.gguf
-```
-
-- **Endpoint**: `http://localhost:9931/v1`, or the address the server prints as
-  it starts (older versions use port 8080)
-- **API key**: what you gave `--api-key`, if anything
-
-To turn a model's thinking off, set **Reasoning effort** to *Disabled*.
-
-#### vLLM
-
-[Install vLLM](https://docs.vllm.ai/en/latest/getting_started/installation/)
-and start its server with tool calls on, which the chat needs, and inksprite
-allowed to reach it:
-
-```sh
-vllm serve Qwen/Qwen3-8B \
-  --enable-auto-tool-choice --tool-call-parser hermes \
-  --allowed-origins '["https://inksprite.io"]'
-```
-
-The parser depends on the model: [vLLM's list](https://docs.vllm.ai/en/latest/features/tool_calling/)
-says which to use.
-
-- **Endpoint**: `http://localhost:8000/v1`
-- **API key**: what you gave `--api-key`, if anything
-
-#### KoboldCpp
-
-[Download KoboldCpp](https://github.com/LostRuins/koboldcpp/releases/latest)
-and start it with a model file:
-
-```sh
-koboldcpp --model model.gguf
-```
-
-- **Endpoint**: `http://localhost:5001/v1`
-- **API key**: what you gave `--password`, if anything
 
 ## Your first chat
 
@@ -217,17 +108,22 @@ document it writes shows in the outline at once.
 
 ## Back up your work
 
-Open **Settings** › **System** and click **Export backup**. The file holds
-every project, chat and setting. Leave **Include API keys** off unless the file
-stays with you.
+Open **Settings** › **System** and click **Export backup**. Leave **Include
+API keys** off unless the file stays with you, and click **Export**. The file
+holds every project, chat and setting.
 
-To restore a backup, or move to another browser or the desktop app, click
-**Import backup** there. It replaces everything inksprite holds with the
-backup.
+<Screenshot name="backup" alt="The Export backup dialog" />
 
-<Screenshot name="backup" alt="Exporting a backup" />
+To restore it, or move to another browser or the desktop app, see
+[Projects](/projects/#back-up-everything).
 
-## Questions
+## Where next
+
+- [Research](/research/): sources, web search, a design doc, and comments.
+- [Roleplay](/roleplay/): play a character card with the model.
+- [Narration](/narration/): have a document read aloud.
+- [Chats](/chats/), [the editor](/editor/) and [projects](/projects/) cover
+  the rest of the app.
 
 Report bugs and ask questions on
 [GitHub](https://github.com/inksprite-io/inksprite/issues).

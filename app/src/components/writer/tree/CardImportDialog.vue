@@ -118,7 +118,7 @@ const parts = computed(() => {
   if (card.greetings > 0)
     found.push(card.greetings === 1 ? '1 greeting' : `${card.greetings} greetings`)
   if (card.lore > 0) found.push(entries(card.lore))
-  if (card.rules) found.push("an author's note")
+  if (card.rules) found.push('post-history instructions')
   return found
 })
 

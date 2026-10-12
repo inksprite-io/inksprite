@@ -62,42 +62,42 @@
 - [EXA_URL][58]
 - [EXA_URL][59]
 - [EXA_LIMITED][60]
-- [server][61]
-  - [Parameters][62]
-- [server][63]
-  - [Parameters][64]
-- [id][65]
+- [LIMIT_NOTICE][61]
+- [server][62]
+  - [Parameters][63]
+- [server][64]
+  - [Parameters][65]
 - [id][66]
-- [answerText][67]
-  - [Parameters][68]
-- [answerText][69]
-  - [Parameters][70]
-- [field][71]
-  - [Parameters][72]
-- [exaResults][73]
-  - [Parameters][74]
-- [exaPage][75]
-  - [Parameters][76]
-- [searchExa][77]
-  - [Parameters][78]
-- [readExa][79]
-  - [Parameters][80]
-- [checkExa][81]
-  - [Parameters][82]
-- [web][83]
-- [Files][84]
-  - [Examples][85]
-- [web/kagi][86]
-- [KAGI_URL][87]
+- [id][67]
+- [answerText][68]
+  - [Parameters][69]
+- [answerText][70]
+  - [Parameters][71]
+- [field][72]
+  - [Parameters][73]
+- [exaResults][74]
+  - [Parameters][75]
+- [exaPage][76]
+  - [Parameters][77]
+- [searchExa][78]
+  - [Parameters][79]
+- [readExa][80]
+  - [Parameters][81]
+- [checkExa][82]
+  - [Parameters][83]
+- [web][84]
+- [Files][85]
+  - [Examples][86]
+- [web/kagi][87]
 - [KAGI_URL][88]
 - [KAGI_URL][89]
-- [kagiPage][90]
-  - [Parameters][91]
-- [searchKagi][92]
+- [KAGI_URL][90]
+- [KEY_REFUSED][91]
+- [kagiPage][92]
   - [Parameters][93]
-- [readKagi][94]
+- [searchKagi][94]
   - [Parameters][95]
-- [checkKagi][96]
+- [readKagi][96]
   - [Parameters][97]
 - [web/pages][98]
 - [KEPT][99]
@@ -467,6 +467,12 @@ Type: [string][120]
 
 What a run-out free limit means for the writer.
 
+## LIMIT_NOTICE
+
+Exa's own word that the free limit has run out, which comes as an answer
+rather than as a refusal, and tells the reader to put a key in the server's
+address: advice for someone who set the server up, not for the writer.
+
 ## server
 
 Exa's server as the MCP client reaches it: with the key, when there is one.
@@ -504,7 +510,8 @@ Returns **[string][120]**&#x20;
 
 ## answerText
 
-An answer's text, or the refusal it is.
+An answer's text, or the refusal it is. A key Kagi doesn't know is refused
+as a 401 would be, so it is told as the other services' are.
 
 ### Parameters
 
@@ -649,6 +656,10 @@ Where Kagi's server answers.
 
 Type: [string][120]
 
+## KEY_REFUSED
+
+How Kagi's API says it doesn't know a key, through the server's tool error.
+
 ## kagiPage
 
 A page as Kagi reads it.
@@ -686,17 +697,6 @@ Read a page with Kagi.
   - `$1.timeout` &#x20;
 
 Returns **[Promise][123]<[Page][2]>**&#x20;
-
-## checkKagi
-
-Whether Kagi takes this key: its tools listed, which it answers only with a
-key, and which costs nothing.
-
-### Parameters
-
-- `key` **[string][120]?** (optional, default `''`)
-
-Returns **[Promise][123]\<void>**&#x20;
 
 ## web/pages
 
@@ -872,43 +872,43 @@ Returns **([WebService][115] | [undefined][122])**&#x20;
 [58]: #exa_url-2
 [59]: #exa_url-3
 [60]: #exa_limited
-[61]: #server
-[62]: #parameters-13
-[63]: #server-1
-[64]: #parameters-14
-[65]: #id
-[66]: #id-1
-[67]: #answertext
-[68]: #parameters-15
-[69]: #answertext-1
-[70]: #parameters-16
-[71]: #field
-[72]: #parameters-17
-[73]: #exaresults
-[74]: #parameters-18
-[75]: #exapage
-[76]: #parameters-19
-[77]: #searchexa
-[78]: #parameters-20
-[79]: #readexa
-[80]: #parameters-21
-[81]: #checkexa
-[82]: #parameters-22
-[83]: #web
-[84]: #files
-[85]: #examples
-[86]: #webkagi
-[87]: #kagi_url
-[88]: #kagi_url-1
-[89]: #kagi_url-2
-[90]: #kagipage
-[91]: #parameters-23
-[92]: #searchkagi
-[93]: #parameters-24
-[94]: #readkagi
-[95]: #parameters-25
-[96]: #checkkagi
-[97]: #parameters-26
+[61]: #limit_notice
+[62]: #server
+[63]: #parameters-13
+[64]: #server-1
+[65]: #parameters-14
+[66]: #id
+[67]: #id-1
+[68]: #answertext
+[69]: #parameters-15
+[70]: #answertext-1
+[71]: #parameters-16
+[72]: #field
+[73]: #parameters-17
+[74]: #exaresults
+[75]: #parameters-18
+[76]: #exapage
+[77]: #parameters-19
+[78]: #searchexa
+[79]: #parameters-20
+[80]: #readexa
+[81]: #parameters-21
+[82]: #checkexa
+[83]: #parameters-22
+[84]: #web
+[85]: #files
+[86]: #examples
+[87]: #webkagi
+[88]: #kagi_url
+[89]: #kagi_url-1
+[90]: #kagi_url-2
+[91]: #key_refused
+[92]: #kagipage
+[93]: #parameters-23
+[94]: #searchkagi
+[95]: #parameters-24
+[96]: #readkagi
+[97]: #parameters-25
 [98]: #webpages
 [99]: #kept
 [100]: #kept-1
@@ -917,9 +917,9 @@ Returns **([WebService][115] | [undefined][122])**&#x20;
 [103]: #next
 [104]: #pages
 [105]: #readpage
-[106]: #parameters-27
+[106]: #parameters-26
 [107]: #wholepage
-[108]: #parameters-28
+[108]: #parameters-27
 [109]: #forgetpages
 [110]: #webservices
 [111]: #web_services
@@ -929,7 +929,7 @@ Returns **([WebService][115] | [undefined][122])**&#x20;
 [115]: #webservice
 [116]: #properties-1
 [117]: #getwebservice
-[118]: #parameters-29
+[118]: #parameters-28
 [119]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 [120]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
 [121]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number

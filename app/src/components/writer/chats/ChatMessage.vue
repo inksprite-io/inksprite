@@ -323,19 +323,20 @@
         class="w-full text-left text-sm px-3 py-2 flex items-center gap-2 hover:bg-sky-400/10"
         @click="expandToolCalls = !expandToolCalls"
       >
-        <i class="pi pi-wrench text-xs text-sky-600 dark:text-sky-300" />
-        <span class="text-sm font-medium text-surface-500"
+        <!-- One line, however many tools: the names give way first. -->
+        <i class="pi pi-wrench flex-none text-xs text-sky-600 dark:text-sky-300" />
+        <span class="flex-none whitespace-nowrap text-sm font-medium text-surface-500"
           >{{ toolCalls.length }} tool call{{ toolCalls.length === 1 ? '' : 's' }}</span
         >
         <template v-if="failedCalls">
           <i
-            class="pi pi-exclamation-circle text-xs text-red-600 dark:text-red-400"
+            class="pi pi-exclamation-circle flex-none text-xs text-red-600 dark:text-red-400"
             aria-hidden="true"
             data-failed-calls
           />
           <span class="sr-only">{{ failedCalls }} failed</span>
         </template>
-        <span class="text-xs text-surface-400 truncate">{{ toolCallSummary }}</span>
+        <span class="min-w-0 text-xs text-surface-400 truncate">{{ toolCallSummary }}</span>
       </button>
       <div
         v-show="expandToolCalls"
@@ -891,7 +892,13 @@ const writtenDocuments = () => {
 
   const byCall = new Map(
     edits
-      .filter(edit => edit.documentId && edit.status !== 'proposed' && edit.status !== 'rejected')
+      .filter(
+        edit =>
+          edit.documentId &&
+          edit.tool !== 'create_folder' &&
+          edit.status !== 'proposed' &&
+          edit.status !== 'rejected'
+      )
       .map(edit => [`${edit.tool}\n${pathKey(edit.path)}`, edit])
   )
   return (name, args) => {

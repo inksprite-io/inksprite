@@ -46,6 +46,8 @@ const norm = path => (path || '').trim().toLowerCase().replace(/^\/+/, '')
  * @property {string[]} [pinnedAtEnd] - The whole pinned set after the turn
  * @property {{path: string, contains: string[]}} [document] - Passages the document should hold
  * @property {{path: string, patterns: string[]}} [notContains] - Passages it should not
+ * @property {string[]} [gone] - Paths that should hold nothing after the turn: what a
+ *   move or rename took away
  * @property {{path: string, contains: string[]}} [summary] - What its summary should say
  */
 
@@ -128,7 +130,14 @@ function measure({ turn, expect, holding, pinnedBefore, state }) {
     for (const hit of search.result?.results || []) found.add(norm(hit.path))
   }
   const writes = calls.filter(call =>
-    ['create_document', 'edit_document', 'append_document', 'update_document'].includes(call.name)
+    [
+      'create_document',
+      'create_folder',
+      'edit_document',
+      'append_document',
+      'update_document',
+      'move_document',
+    ].includes(call.name)
   )
   // A read answered as unchanged cost nothing: its text was above already.
   const unchanged = reads.filter(call => call.result?.unchanged)
@@ -193,6 +202,10 @@ function measure({ turn, expect, holding, pinnedBefore, state }) {
       if (doc && new RegExp(pattern, 'i').test(doc.content))
         failures.push(`document still has ${pattern}`)
     }
+  }
+  // A move leaves nothing behind: a copy at the new path is not one.
+  for (const path of expect.gone || []) {
+    if (docAt(path)) failures.push(`${path} still there`)
   }
   if (expect.summary) {
     const doc = docAt(expect.summary.path)

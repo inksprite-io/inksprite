@@ -8,7 +8,6 @@
         :model-value="enabled"
         input-id="library-switch"
         class="flex-none"
-        :disabled="busy"
         data-library-switch
         @update:model-value="turn"
       />
@@ -27,26 +26,21 @@
 import { onMounted, ref } from 'vue'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { useConfirm } from 'primevue/useconfirm'
-import { enableLibrary, librarySettings } from '@/platform/library.js'
-import { keepProjectsInApp } from '@/storage/open.js'
-import { storage } from '@/storage/index.js'
-import { useEditor } from '@/composables/useEditor.js'
-import { useSyncStore } from '@/stores/syncStore.js'
-import { useToast } from '@/composables/useToast.js'
+import { librarySettings } from '@/platform/library.js'
+import { useLibraryMove } from '@/composables/useLibraryMove.js'
 
 /**
  * The desktop app's library: whether the projects are kept in a folder of
  * markdown files, in the app's data folder, and where that is. Either way
- * the switch goes, the app opens again with the projects moved into the
- * folder or back into the app. The button that shows the folder sits with
- * the backup buttons, in DataSection.
+ * the switch goes, the projects are moved, with a toast that says how far
+ * they are (`useLibraryMove`), and the app opens again on them. The button
+ * that shows the folder sits with the backup buttons, in DataSection.
  */
 
-const toast = useToast()
 const confirm = useConfirm()
+const { moveIn, moveOut } = useLibraryMove()
 const enabled = ref(false)
 const path = ref('')
-const busy = ref(false)
 
 onMounted(async () => {
   try {
@@ -58,31 +52,15 @@ onMounted(async () => {
   }
 })
 
-// Everything still on its way to be saved is saved first: the app opens
-// again on the projects where they are moved to, and anything unsaved would
-// be in neither.
-const saveAll = async () => {
-  useEditor().flush()
-  await useSyncStore().processSync()
-}
-
 /**
- * Move the projects, then open the app again on them, saying what went
- * wrong if it does not get that far.
- * @param {() => Promise<void>} work
- * @param {string} failed - What could not be done
+ * Show the switch the way it is going while the projects move, and put it
+ * back if they could not be.
+ * @param {boolean} on
+ * @param {() => Promise<boolean>} move
  */
-const reopenAfter = async (work, failed) => {
-  busy.value = true
-  try {
-    await saveAll()
-    await work()
-    window.location.reload()
-  } catch (error) {
-    toast.error(`${failed}: ${error.message}`)
-  } finally {
-    busy.value = false
-  }
+const turnTo = async (on, move) => {
+  enabled.value = on
+  if (!(await move())) enabled.value = !on
 }
 
 /** @param {boolean} on */
@@ -95,10 +73,7 @@ const turn = on => {
       icon: 'pi pi-folder',
       rejectProps: cancel,
       acceptProps: { label: 'Keep in a folder' },
-      accept: () =>
-        reopenAfter(async () => {
-          await enableLibrary()
-        }, "The projects couldn't be moved into a folder"),
+      accept: () => turnTo(true, moveIn),
     })
     return
   }
@@ -109,11 +84,7 @@ const turn = on => {
     icon: 'pi pi-folder',
     rejectProps: cancel,
     acceptProps: { label: 'Keep in the app' },
-    accept: () =>
-      reopenAfter(
-        () => keepProjectsInApp(storage),
-        "The projects couldn't be moved back into the app"
-      ),
+    accept: () => turnTo(false, moveOut),
   })
 }
 </script>

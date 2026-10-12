@@ -28,6 +28,13 @@ export const EXA_URL = 'https://mcp.exa.ai/mcp'
 export const EXA_LIMITED = `Exa’s free searches have run out for now. An Exa key, added in ${WHERE}, lifts the limit.`
 
 /**
+ * Exa's own word that the free limit has run out, which comes as an answer
+ * rather than as a refusal, and tells the reader to put a key in the server's
+ * address: advice for someone who set the server up, not for the writer.
+ */
+const LIMIT_NOTICE = /^\s*You['’]ve hit Exa['’]s free\b[^\n]*\blimit\b/i
+
+/**
  * Exa's server as the MCP client reaches it: with the key, when there is one.
  *
  * @param {string} [key]
@@ -50,7 +57,10 @@ function server(key) {
  */
 function answerText(result, url) {
   const read = resultForModel(result)
-  if (typeof read === 'string') return read
+  if (typeof read === 'string') {
+    if (LIMIT_NOTICE.test(read)) throw new ServiceError(EXA_LIMITED)
+    return read
+  }
   if (/\b429\b|rate.?limit/i.test(read.error)) throw new ServiceError(EXA_LIMITED)
   // Said as a read from the page's own site says it (./direct.js).
   if (url && /\bCRAWL_NOT_FOUND\b/.test(read.error)) {

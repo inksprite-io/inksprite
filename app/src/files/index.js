@@ -14,6 +14,10 @@
  * - **pdf** - A PDF's text, page by page, extracted with pdf.js on demand
  * - **epub** - An epub's parts and chapters, split where its table of contents
  *   points, as markdown
+ * - **html** - A web page's words for the model, and its article as markdown
+ *   for the viewer
+ * - **docx** - A Word file as markdown, which an import makes a document of,
+ *   as it does a Google Doc
  * - **inspect** - A file looked at: what it is, and what text is in it
  * - **write** - A file written into the project as a document, bytes and all,
  *   and its text read out again on request
@@ -22,8 +26,9 @@
  *   folder chosen whole, or a drop from the desktop
  *
  * The editor panel shows a file as the file (`FileView.vue`: the picture,
- * the PDF, or "No preview available") and its text on request, in the plain
- * field, where it can be corrected.
+ * the PDF, an epub's chapters or a web page's article, or "No preview
+ * available") and its text on request, in the plain field, where it can be
+ * corrected.
  *
  * Design: `.llm/files_design.md`.
  *
@@ -38,7 +43,8 @@
 export { extractPdf, pageMarker, pageText, joinPages } from './pdf.js'
 export { extractEpub } from './epub.js'
 export { inspectFile, mimeOf, titleOf, hasText, isStructured, sizeLabel } from './inspect.js'
-export { textOfHtml } from './html.js'
+export { textOfHtml, markdownOfHtml } from './html.js'
+export { docxToMarkdown, isDocx, DOCX_MIME } from './docx.js'
 export {
   gatherFiles,
   gatherDropped,

@@ -22,17 +22,19 @@
     <!-- The pages, and only the pages. -->
     <PdfView v-else-if="kind === 'pdf' && blob" :blob="blob" data-file-pdf class="flex-1 min-h-0" />
 
-    <!-- A book, chapter after chapter, read out of the file. -->
-    <div v-else-if="kind === 'epub'" class="flex-1 min-h-0 overflow-auto" data-file-epub>
+    <!-- A book, chapter after chapter, or a web page's article, read out of
+         the file. -->
+    <div v-else-if="kind === 'reader'" class="flex-1 min-h-0 overflow-auto" data-file-reader>
       <article
         class="prose dark:prose-invert max-w-prose mx-auto px-6 py-8"
-        v-html="book"
+        v-html="reading"
       ></article>
     </div>
 
     <!-- Text: source code, data, anything that reads as it is. -->
     <CodeView
       v-else-if="kind === 'code'"
+      ref="codeView"
       :content="document?.content || ''"
       :filename="document?.title || ''"
       class="flex-1 min-h-0"
@@ -72,13 +74,14 @@ import { useDocuments } from '@/composables/useDocuments'
 import { useFilesStore } from '@/stores/filesStore'
 import { downloadBlob, filenameFor } from '@/files/download.js'
 import { extractEpub } from '@/files/epub.js'
+import { markdownOfHtml } from '@/files/html.js'
 import { EPUB_MIME, isImage, isText, showsAsText, sizeLabel } from '@/files/inspect.js'
 import { renderMarkdown } from '@/utils/markdown.js'
 
 /**
  * A file document, shown as the file: the picture, the PDF's pages
- * (`PdfView`), an epub's chapters read out of it again, a file of text as
- * code (`CodeView`) — a repository's files, which keep no bytes since their
+ * (`PdfView`), an epub's chapters or a web page's article read out of it
+ * again, a file of text as code (`CodeView`) — a repository's files, which keep no bytes since their
  * text is the file, and a JSON or CSV imported on its own — or a line saying
  * there is no preview of this kind and the way to download it instead. Its text is a different view, `RawMarkdown` on its
  * `content`, reached from the tab's menu; this shows the bytes.
@@ -111,9 +114,9 @@ const url = ref(null)
 const loaded = ref(false)
 /** A picture at its own size rather than fit to the panel. */
 const natural = ref(false)
-/** An epub's chapters as HTML, or null when it could not be read. @type {import('vue').Ref<string|null>} */
-const book = ref(null)
-/** Why an epub could not be shown, when it could not. */
+/** An epub's chapters or a web page's article as HTML, or null when there is none. @type {import('vue').Ref<string|null>} */
+const reading = ref(null)
+/** Why an epub or a page could not be shown, when it could not. */
 const unreadable = ref('')
 
 /** Which view this file gets: nothing until the bytes are known. */
@@ -123,8 +126,7 @@ const kind = computed(() => {
   if (!blob.value) return isText(mime.value) ? 'code' : 'none'
   if (isImage(mime.value)) return 'image'
   if (mime.value === 'application/pdf') return 'pdf'
-  if (book.value) return 'epub'
-  // A web page's text is what was read out of it, not its markup.
+  if (reading.value) return 'reader'
   if (showsAsText(mime.value)) return 'code'
   return 'none'
 })
@@ -150,12 +152,13 @@ const load = async () => {
   release()
   loaded.value = false
   natural.value = false
-  book.value = null
+  reading.value = null
   unreadable.value = ''
   const found = await files.getFile(props.documentId)
   blob.value = found
   if (found && isImage(mime.value)) url.value = URL.createObjectURL(found)
   if (found && mime.value === EPUB_MIME) await readBook(found)
+  if (found && mime.value === 'text/html') await readPage(found)
   loaded.value = true
 }
 
@@ -169,11 +172,24 @@ const load = async () => {
 const readBook = async file => {
   try {
     const { text } = extractEpub(await file.arrayBuffer())
-    if (text) book.value = renderMarkdown(text)
+    if (text) reading.value = renderMarkdown(text)
     else unreadable.value = 'There is no text in this epub to show.'
   } catch (error) {
     unreadable.value = error instanceof Error ? error.message : String(error)
   }
+}
+
+/**
+ * Read a web page's article out of its bytes: what `markdownOfHtml` keeps
+ * of it, rendered as any markdown is, so nothing of the page itself runs or
+ * loads. Its markup is not what anyone saved it for.
+ *
+ * @param {Blob} file
+ */
+const readPage = async file => {
+  const text = markdownOfHtml(await file.text())
+  if (text) reading.value = renderMarkdown(text)
+  else unreadable.value = 'This page has no text to show.'
 }
 
 watch(() => props.documentId, load, { immediate: true })
@@ -183,4 +199,15 @@ onBeforeUnmount(release)
 const download = () => {
   if (blob.value && document.value) downloadBlob(blob.value, filenameFor(document.value))
 }
+
+/** @type {import('vue').Ref<{ openFind: () => boolean }|null>} */
+const codeView = ref(null)
+
+/** Whether there is a find to open: in code, which has one of its own. */
+const findable = computed(() => kind.value === 'code')
+
+/** Open the code's find, where the file is shown as code. */
+const openFind = () => codeView.value?.openFind() ?? false
+
+defineExpose({ findable, openFind })
 </script>

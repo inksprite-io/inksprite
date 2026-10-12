@@ -8,8 +8,11 @@ const { settings, chats } = vi.hoisted(() => ({
   settings: {
     prompt: /** @type {any} */ (null),
     note: /** @type {any} */ (null),
+    roleplay: /** @type {any} */ (null),
     setPrompt: vi.fn(),
     setNote: vi.fn(),
+    setRoleplayPrompt: vi.fn(),
+    setPostHistory: vi.fn(),
   },
   chats: { init: vi.fn(async () => {}) },
 }))
@@ -47,6 +50,7 @@ describe('ChatTextView', () => {
     vi.clearAllMocks()
     settings.prompt = ref('You are a heist planner.')
     settings.note = ref(undefined)
+    settings.roleplay = ref({ prompt: 'You are {{char}}.', postHistory: '' })
   })
 
   afterEach(() => {
@@ -86,6 +90,26 @@ describe('ChatTextView', () => {
 
     expect(settings.setNote).toHaveBeenCalledWith('Past tense.')
     expect(settings.setPrompt).not.toHaveBeenCalled()
+  })
+
+  it('shows the roleplay prompt, and puts what is typed into it', async () => {
+    const wrapper = await mountView('roleplay-prompt')
+    expect(shown(wrapper)).toBe('You are {{char}}.')
+
+    await typeAtEnd(wrapper, ' Never lie.')
+
+    expect(settings.setRoleplayPrompt).toHaveBeenCalledWith('You are {{char}}. Never lie.')
+    expect(settings.setPrompt).not.toHaveBeenCalled()
+  })
+
+  it('shows the post-history instructions, and puts what is typed into them', async () => {
+    const wrapper = await mountView('post-history')
+    expect(shown(wrapper)).toBe('')
+
+    await typeAtEnd(wrapper, 'Italics.')
+
+    expect(settings.setPostHistory).toHaveBeenCalledWith('Italics.')
+    expect(settings.setNote).not.toHaveBeenCalled()
   })
 
   it('follows the text as it is changed elsewhere, in the chat’s settings', async () => {

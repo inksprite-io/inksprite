@@ -101,9 +101,45 @@ describe('FileView', () => {
     const wrapper = mountView('epub')
     await flushPromises()
 
-    const book = wrapper.find('[data-file-epub]')
+    const book = wrapper.find('[data-file-reader]')
     expect(book.find('h1').text()).toBe('One')
     expect(book.find('em').text()).toBe('tide')
+  })
+
+  it("shows a web page as its article, with nothing of the page's own", async () => {
+    documents.set('page', { id: 'page', type: 'file', title: 'Ferries', mime: 'text/html' })
+    getFile.mockResolvedValue(
+      new Blob(
+        [
+          '<html><head><script src="https://example.com/a.js"></script></head><body>' +
+            '<nav>Home</nav><h1>Ferries</h1><p>One leaves at <em>six</em>.</p>' +
+            '<img src="https://example.com/boat.png" onerror="alert(1)"><script>alert(2)</script>' +
+            '</body></html>',
+        ],
+        { type: 'text/html' }
+      )
+    )
+    const wrapper = mountView('page')
+    await flushPromises()
+
+    const page = wrapper.find('[data-file-reader]')
+    expect(page.find('h1').text()).toBe('Ferries')
+    expect(page.find('em').text()).toBe('six')
+    expect(page.html()).not.toContain('Home')
+    expect(page.find('img').exists()).toBe(false)
+    expect(page.find('script').exists()).toBe(false)
+    expect(wrapper.find('[data-file-none]').exists()).toBe(false)
+  })
+
+  it('says so when a web page has no words to show', async () => {
+    documents.set('page', { id: 'page', type: 'file', title: 'Blank', mime: 'text/html' })
+    getFile.mockResolvedValue(new Blob(['<p><img src="a.png"></p>'], { type: 'text/html' }))
+    const wrapper = mountView('page')
+    await flushPromises()
+
+    const none = wrapper.find('[data-file-none]')
+    expect(none.text()).toContain('No preview available')
+    expect(none.text()).toContain('This page has no text to show.')
   })
 
   it('says why an epub that cannot be read is not shown', async () => {
@@ -167,7 +203,7 @@ describe('FileView', () => {
       expect(wrapper.find('[data-file-none]').exists()).toBe(false)
     })
 
-    it('shows a JSON file imported on its own as code, and a web page still as no preview', async () => {
+    it('shows a JSON file imported on its own as code, and a web page not as its markup', async () => {
       documents.set('json', {
         id: 'json',
         type: 'file',
@@ -184,7 +220,7 @@ describe('FileView', () => {
       const html = mountView('html')
       await flushPromises()
       expect(html.find('[data-code-stub]').exists()).toBe(false)
-      expect(html.find('[data-file-none]').exists()).toBe(true)
+      expect(html.find('[data-file-reader]').exists()).toBe(true)
     })
 
     it('still shows a picture as a picture', async () => {

@@ -148,7 +148,7 @@ async function writeBook(storyId, file, sections, parent) {
     pinnedIds: [],
     greetingIds: [],
     documents: chapters + 1,
-    note: chapters === 1 ? '1 chapter, and the epub.' : `${chapters} chapters, and the epub.`,
+    note: chapters === 1 ? ' (1 chapter)' : ` (${chapters} chapters)`,
   }
 }
 
@@ -186,22 +186,15 @@ export async function reextractFile(storyId, documentId) {
 }
 
 /**
- * What to tell the writer about what came in.
- *
- * The one thing worth saying is whether there is any text: a PDF with none
- * is a scan, and a model that cannot see the file has nothing of it to read.
- * A PDF says how many pages it read.
+ * What the toast says about a file after its title. A PDF says how many pages
+ * it read, or that it had no text at all, which is a scan the model can't
+ * read. Anything else needs nothing said.
  *
  * @param {InspectedFile} file
  * @returns {string}
  */
 function noteFor(file) {
-  if (file.mime === 'application/pdf') {
-    const pages = file.pages === 1 ? '1 page' : `${file.pages ?? 0} pages`
-    return file.text
-      ? `${pages} of text.`
-      : `${pages}, and no text in them: a scan. A model that can see the file can read it; the rest cannot.`
-  }
-  if (file.text) return 'Its text is the document.'
-  return 'Kept as it is.'
+  if (file.mime !== 'application/pdf') return ''
+  if (!file.text) return ', a PDF with no extractable text'
+  return file.pages === 1 ? ' (1 page)' : ` (${file.pages ?? 0} pages)`
 }

@@ -490,6 +490,34 @@ export const useDocuments = storyId => {
   }
 
   /**
+   * Put a document at a path: into the folder the path names, under its last
+   * name. Only into a folder that is there, and only under a name nothing
+   * beside it has, so an undone move never makes a folder or a copy.
+   * @param {string} documentId
+   * @param {string} path
+   * @returns {boolean} Whether it is there now
+   */
+  const moveToPath = (documentId, path) => {
+    const segments = path.split('/').filter(Boolean)
+    const title = segments.pop()
+    if (!title) return false
+    let parentId = rootIdFor(storyId)
+    for (const name of segments) {
+      const folder = childrenOf(parentId).find(
+        child => child.type === 'folder' && child.title === name
+      )
+      if (!folder) return false
+      parentId = folder.id
+    }
+    if (namesakeOf(parentId, title, documentId)) return false
+    if (get(documentId)?.parentId !== parentId) {
+      if (!canDropInto(parentId, documentId)) return false
+      moveInto(parentId, documentId)
+    }
+    return get(documentId)?.title === title || rename(documentId, title)
+  }
+
+  /**
    * Undo a change a tool made, if the document still says what the tool
    * left. A created document is removed if its body is still what was
    * created. Otherwise the writer has been there since, and their version
@@ -501,6 +529,17 @@ export const useDocuments = storyId => {
   const revertEdit = edit => {
     const document = documentsStore.getDocument(edit.documentId)
     if (!document) return false
+    // A folder goes only while it is empty: the turn's own documents in it
+    // are undone first, and anything else in it is the writer's.
+    if (edit.tool === 'create_folder') {
+      if (childrenOf(edit.documentId).length > 0) return false
+      remove(edit.documentId)
+      return true
+    }
+    // Back where it was, while it is still where the move left it.
+    if (edit.tool === 'move_document') {
+      return pathOf(edit.documentId) === edit.new && moveToPath(edit.documentId, edit.old)
+    }
     const content = currentContent(edit.documentId)
     if (edit.tool === 'create_document') {
       if (content !== edit.new) return false
@@ -511,6 +550,26 @@ export const useDocuments = storyId => {
     if (reverted === null) return false
     setContent(edit.documentId, reverted)
     return true
+  }
+
+  /**
+   * Where a document recorded at a path goes when it is made again: in the
+   * deepest of its folders that is still there, under its own name.
+   * @param {string} path
+   * @returns {{parentId: string, title: string}}
+   */
+  const placeOf = path => {
+    const segments = (path || '').split('/').filter(Boolean)
+    const title = segments.pop() || 'Untitled'
+    let parentId = rootIdFor(storyId)
+    for (const name of segments) {
+      const folder = childrenOf(parentId).find(
+        child => child.type === 'folder' && child.title === name
+      )
+      if (!folder) break
+      parentId = folder.id
+    }
+    return { parentId, title }
   }
 
   /**
@@ -525,20 +584,27 @@ export const useDocuments = storyId => {
    * @returns {Promise<boolean>} Whether it was made
    */
   const reapplyEdit = async edit => {
+    if (edit.tool === 'create_folder') {
+      if (documentsStore.getDocument(edit.documentId)) return true
+      const { parentId, title } = placeOf(edit.path)
+      documentsStore.createDocument({
+        id: edit.documentId,
+        storyId,
+        parentId,
+        type: 'folder',
+        title: uniqueTitle(parentId, title),
+      })
+      return true
+    }
+    if (edit.tool === 'move_document') {
+      const at = pathOf(edit.documentId)
+      return at === edit.new || (at === edit.old && moveToPath(edit.documentId, edit.new))
+    }
     if (edit.tool === 'create_document') {
       if (documentsStore.getDocument(edit.documentId)) {
         return currentContent(edit.documentId) === edit.new
       }
-      const segments = (edit.path || '').split('/').filter(Boolean)
-      const title = segments.pop() || 'Untitled'
-      let parentId = rootIdFor(storyId)
-      for (const name of segments) {
-        const folder = childrenOf(parentId).find(
-          child => child.type === 'folder' && child.title === name
-        )
-        if (!folder) break
-        parentId = folder.id
-      }
+      const { parentId, title } = placeOf(edit.path)
       documentsStore.createDocument({
         id: edit.documentId,
         storyId,
@@ -664,20 +730,27 @@ export const useDocuments = storyId => {
 
   /**
    * Switch a folder between keeping its children in order and sorting them
-   * by name. Turned on, the order it starts from is the one showing: the
-   * writer asked to keep what they were looking at, not to go back to the
-   * sequence things were made in.
+   * by name. Switched to names, the folder remembers the order the writer
+   * had; switched back, it takes that order up again, with anything added
+   * since at the end. A folder never kept in order starts from the order
+   * showing: the writer asked to keep what they were looking at, not to go
+   * back to the sequence things were made in.
    * @param {string} documentId
    * @param {boolean} ordered
    */
   const setOrdered = (documentId, ordered) => {
-    if (ordered && !isOrdered(documentId)) {
-      documentsStore.reorderChildren(
-        documentId,
-        childrenOf(documentId).map(child => child.id)
-      )
+    const was = isOrdered(documentId)
+    const shown = childrenOf(documentId).map(child => child.id)
+    if (ordered && !was) {
+      const kept = (get(documentId)?.handOrder ?? []).filter(id => shown.includes(id))
+      documentsStore.reorderChildren(documentId, [
+        ...kept,
+        ...shown.filter(id => !kept.includes(id)),
+      ])
+      documentsStore.updateDocument(documentId, { ordered, handOrder: undefined })
+    } else if (!ordered && was) {
+      documentsStore.updateDocument(documentId, { ordered, handOrder: shown })
     }
-    documentsStore.updateDocument(documentId, { ordered })
   }
 
   /**

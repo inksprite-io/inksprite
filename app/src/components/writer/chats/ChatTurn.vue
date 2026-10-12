@@ -104,23 +104,23 @@
         />
       </span>
       <!-- Asking again is only offered where it could answer differently. The
-           writer's own words are not going to, but a roll that is the whole of
-           their turn is, and its piece shows no buttons here. -->
+           writer's own words are not going to; a roll of theirs is, and is
+           asked again from its own box, wherever in the turn it is. -->
       <Button
-        v-if="only && (role === 'assistant' || lone)"
-        v-tooltip.top="command || lone ? 'Ask again' : 'Regenerate reply'"
-        :aria-label="command || lone ? 'Ask again' : 'Regenerate reply'"
+        v-if="only && role === 'assistant'"
+        v-tooltip.top="command ? 'Ask again' : 'Regenerate reply'"
+        :aria-label="command ? 'Ask again' : 'Regenerate reply'"
         icon="pi pi-refresh"
         text
         rounded
         size="small"
         :disabled="pending"
-        @click="$emit('regenerate', only.id, lone ? 0 : null)"
+        @click="$emit('regenerate', only.id, null)"
       />
       <Button
         v-if="role === 'user'"
-        v-tooltip.top="'Regenerate reply'"
-        aria-label="Regenerate reply"
+        v-tooltip.top="'Send again'"
+        aria-label="Send again"
         icon="pi pi-arrow-right"
         text
         rounded
@@ -182,7 +182,7 @@ import ChatMessage from './ChatMessage.vue'
 import ReadAloudButton from '../narration/ReadAloudButton.vue'
 import { useToast } from '@/composables/useToast.js'
 import { useTurnHolder, useTurnState } from '@/composables/useNearTurns.js'
-import { commandRepeatable, commandTag } from '@/ai/commands.js'
+import { commandTag } from '@/ai/commands.js'
 
 const props = defineProps({
   /** @type {import('vue').PropType<import('@/types/models.js').Message[]>} */
@@ -321,20 +321,14 @@ const copy = async () => {
 }
 
 /**
- * The writer's command, when it is the whole of their turn and could answer
- * differently if asked again. Its piece is alone in the turn, so it floats no
- * buttons of its own and the turn has to offer the retry for it.
+ * Whether the one message is still being answered, which nothing may change
+ * under: a summary still being written, or a command of the writer's still
+ * waiting on its answer.
  */
-const lone = computed(() => {
-  const segments = only.value?.segments
-  if (props.role !== 'user' || segments?.length !== 1) return null
-  const [segment] = segments
-  return segment.type === 'command' && commandRepeatable(segment.command) ? segment.command : null
-})
-
-/** Whether the one message is still being answered, which nothing may change under. */
 const pending = computed(
-  () => only.value?.metadata?.command?.pending === true || lone.value?.pending === true
+  () =>
+    only.value?.metadata?.command?.pending === true ||
+    only.value?.segments?.some(segment => segment.command?.pending === true) === true
 )
 
 /**

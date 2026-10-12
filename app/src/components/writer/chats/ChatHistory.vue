@@ -198,7 +198,7 @@ const handleImportFile = async event => {
 
   isImporting.value = true
   try {
-    const { chat, messages, prompt, character, note } = await backup.readChatFile(file)
+    const { chat, messages, prompt, character } = await backup.readChatFile(file)
     const imported = chatsApi.importChat(chat, messages, prompt)
 
     // A chat from SillyTavern knows who it was with and nothing else about
@@ -206,7 +206,7 @@ const handleImportFile = async event => {
     // if not, the writer is told, since the chat will answer as nobody until
     // the card is imported and pinned.
     if (character) {
-      const card = await cardChat.attach(imported.id, character, { note })
+      const card = await cardChat.attach(imported.id, character)
       if (card) toast.success(`Imported "${imported.title}" onto the ${card.title} card`)
       else toast.warning(`Imported "${imported.title}", but found no one card for ${character}`)
     } else {

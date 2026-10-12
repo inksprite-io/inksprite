@@ -46,6 +46,8 @@
  *     turn has one in its header, and the chat's settings choose the voice.
  *   - `settings/` - App-wide settings: `Settings` is a section list beside a
  *     pane, shown in `SettingsDialog` on the desktop and as a tab on phones.
+ *     `LibraryMoveToast` shuts the page while the desktop app's projects move
+ *     into their folder or back, and says how far they are.
  *
  * ### Icon Components
  * - **icons/** - SVG icon components

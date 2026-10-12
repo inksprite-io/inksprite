@@ -220,16 +220,36 @@ describe('ChatTurn', () => {
     expect(wrapper.emitted('regenerate')).toEqual([['m1', null]])
   })
 
-  it('asks again for a roll that is the whole of the writer’s turn', async () => {
-    // The piece is alone in its turn, so it floats no buttons of its own.
+  it('leaves asking again to a roll’s own box, even when it is the whole turn', () => {
+    // The box keeps its buttons wherever it is. See ChatSegment.
     const asked = { name: 'name', input: '', param: 'female', result: 'Ada Byrne' }
     const wrapper = show([
       message('m1', 'user', { segments: [{ type: 'command', command: asked }] }),
     ])
 
-    await button(wrapper, 'refresh').trigger('click')
+    expect(button(wrapper, 'refresh')).toBeUndefined()
+  })
 
-    expect(wrapper.emitted('regenerate')).toEqual([['m1', 0]])
+  it('holds editing the turn while a command in it is still being answered', () => {
+    const asked = { name: 'interpret', input: 'Why?', pending: true }
+    const wrapper = show([
+      message('m1', 'user', {
+        segments: [
+          { type: 'text', content: 'I wait.' },
+          { type: 'command', command: asked },
+        ],
+      }),
+    ])
+
+    expect(button(wrapper, 'pencil').attributes('disabled')).toBeDefined()
+  })
+
+  it('sends the writer’s turn again', async () => {
+    const wrapper = show([message('m1', 'user')])
+
+    await wrapper.find('[aria-label="Send again"]').trigger('click')
+
+    expect(wrapper.emitted('resend')).toEqual([['m1']])
   })
 
   it('has nothing to ask again of a direction that is the whole turn', () => {
@@ -379,14 +399,8 @@ describe('ChatTurn buttons', () => {
     const said = show([message('m1', 'user')])
     const pieces = show([message('m1', 'assistant'), message('m2', 'assistant')])
 
-    expect(labels(roll)).toEqual([
-      'Ask again',
-      'Regenerate reply',
-      'Edit turn',
-      'Copy',
-      'More actions',
-    ])
-    expect(labels(said)).toEqual(['Regenerate reply', 'Edit turn', 'Copy', 'More actions'])
+    expect(labels(roll)).toEqual(['Send again', 'Edit turn', 'Copy', 'More actions'])
+    expect(labels(said)).toEqual(['Send again', 'Edit turn', 'Copy', 'More actions'])
     expect(labels(pieces)).toEqual(['Copy', 'More actions'])
   })
 })
