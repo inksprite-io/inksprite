@@ -1,0 +1,37 @@
+---
+// A screenshot from `src/assets/guide/`, by name, in the reader's theme: the
+// capture takes each in the light theme and the dark (`<name>-dark.png`).
+// It takes them at twice the size they are shown, for screens that have the
+// pixels; this shows each at its own size with the sharp one in the srcset,
+// and a click shows it whole.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { Zoom } from 'starlight-image-zoom/components';
+
+interface Props {
+	name: string;
+	alt: string;
+}
+
+const { name, alt } = Astro.props;
+const images = import.meta.glob<{ default: ImageMetadata }>('../assets/guide/*.png');
+const load = async (file: string) => {
+	const image = images[`../assets/guide/${file}.png`];
+	if (!image) throw new Error(`No screenshot called ${file}: run npm run capture`);
+	return (await image()).default;
+};
+const themes = [
+	{ theme: 'light', src: await load(name) },
+	{ theme: 'dark', src: await load(`${name}-dark`) },
+];
+---
+
+{
+	themes.map(({ theme, src }) => (
+		<div class={`only-${theme}`}>
+			<Zoom label={alt}>
+				<Image src={src} alt={alt} width={Math.round(src.width / 2)} densities={[1, 2]} />
+			</Zoom>
+		</div>
+	))
+}

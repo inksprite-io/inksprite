@@ -103,6 +103,7 @@ vi.mock('@/ai/tools/index.js', () => ({
   // A tool of the connected server's, in the approval tests.
   // A skill of the writer's that answers as the reply.
   handsOverReply: vi.fn(name => name === 'scene'),
+  drawsByChance: vi.fn(name => name === 'roll_dice'),
 }))
 
 const mockAllowTool = vi.hoisted(() => vi.fn())
@@ -295,6 +296,21 @@ describe('useAIChat', () => {
       await expect(composable.sendMessage('Hello')).rejects.toThrow(
         'Connect OpenRouter in Settings › AI.'
       )
+    })
+
+    it('asks for the key of a hosted service other than OpenRouter in its settings', () => {
+      mockAIConfig.getProvider.mockReturnValue({
+        id: 'provider_openai_default',
+        name: 'OpenAI',
+        type: 'openai',
+        apiKey: null,
+      })
+      const composable = useAIChat(mockStoryId, mockChatId)
+
+      // Not OpenRouter's connect dialog: the key goes in the provider's own.
+      const error = composable.configurationError.value
+      expect(error?.name).not.toBe('ProviderNotConfiguredError')
+      expect(error?.message).toBe('Add your OpenAI key in Settings › AI.')
     })
 
     it('should throw error when a self-hosted provider has no endpoint', async () => {
@@ -3189,6 +3205,55 @@ describe('useAIChat', () => {
     })
   })
 
+  describe('resendMessage', () => {
+    const answering = () =>
+      mockAIService.generateChatCompletion.mockImplementation(async (m, p, callback) => {
+        callback({ content: 'New response' })
+        return {}
+      })
+
+    it("asks the turn's reply again in its place, keeping what it said", async () => {
+      const composable = useAIChat(mockStoryId, mockChatId)
+      const messages = [
+        { id: 'msg_1', role: 'user', content: 'Hello' },
+        { id: 'msg_2', role: 'assistant', content: 'Hi there' },
+        { id: 'msg_3', role: 'user', content: 'How are you?' },
+      ]
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: messages })
+      mockChatsApi.getMessageById.mockReturnValue({ value: messages[1] })
+      answering()
+
+      const answered = await composable.resendMessage('msg_1')
+
+      expect(mockChatsApi.truncateMessagesForChat).toHaveBeenCalledWith(mockChatId, 2)
+      expect(mockChatsApi.beginAlternate).toHaveBeenCalledWith('msg_2')
+      expect(mockChatsApi.addMessage).not.toHaveBeenCalled()
+      expect(answered).toBe(messages[1])
+    })
+
+    it('answers anew a turn a command answered', async () => {
+      const composable = useAIChat(mockStoryId, mockChatId)
+      const messages = [
+        { id: 'msg_1', role: 'user', content: 'Hello' },
+        {
+          id: 'msg_2',
+          role: 'assistant',
+          content: 'A summary.',
+          metadata: { command: { name: 'compact' } },
+        },
+      ]
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: messages })
+      mockChatsApi.addMessage.mockReturnValueOnce({ id: 'msg_3', role: 'assistant', content: '' })
+      answering()
+
+      await composable.resendMessage('msg_1')
+
+      expect(mockChatsApi.truncateMessagesForChat).toHaveBeenCalledWith(mockChatId, 1)
+      expect(mockChatsApi.beginAlternate).not.toHaveBeenCalled()
+      expect(mockChatsApi.addMessage).toHaveBeenCalledWith(mockChatId, 'assistant', '', null)
+    })
+  })
+
   describe('generateChatTitle', () => {
     it('should generate a short title', async () => {
       const composable = useAIChat(mockStoryId, mockChatId)
@@ -3578,7 +3643,9 @@ describe('useAIChat', () => {
 
     /**
      * A turn writing into `msg_a` that has said nothing yet, held until its
-     * signal aborts it, with the message as the store has it.
+     * signal aborts it, with the message as the store has it. A first answer
+     * joins the chat when the turn adds it; one that has had others is there
+     * already, to be asked again.
      * @param {Object} [message] - What else is on the message
      */
     const silentTurn = (message = {}) => {
@@ -3590,10 +3657,13 @@ describe('useAIChat', () => {
         metadata: {},
         ...message,
       }
-      mockChatsApi.getMessagesForChat.mockReturnValue({
-        value: [{ id: 'msg_u', role: 'user', content: 'Hello' }, answer],
+      const messages = [{ id: 'msg_u', role: 'user', content: 'Hello' }]
+      if (answer.alternates) messages.push(answer)
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: messages })
+      mockChatsApi.addMessage.mockImplementationOnce(() => {
+        messages.push(answer)
+        return answer
       })
-      mockChatsApi.addMessage.mockReturnValueOnce(answer)
       mockChatsApi.getMessageById.mockReturnValue({ value: answer })
       mockChatsApi.deleteMessage = vi.fn()
       mockChatsApi.dropAlternate = vi.fn()
@@ -3700,10 +3770,12 @@ describe('useAIChat', () => {
       const tools = await import('@/ai/tools/index.js')
       const composable = useAIChat(mockStoryId, mockChatId)
       const answer = { id: 'msg_a', role: 'assistant', content: '', metadata: {} }
-      mockChatsApi.getMessagesForChat.mockReturnValue({
-        value: [{ id: 'msg_u', role: 'user', content: 'Hello' }, answer],
+      const messages = [{ id: 'msg_u', role: 'user', content: 'Hello' }]
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: messages })
+      mockChatsApi.addMessage.mockImplementationOnce(() => {
+        messages.push(answer)
+        return answer
       })
-      mockChatsApi.addMessage.mockReturnValueOnce(answer)
       mockChatsApi.getMessageById.mockReturnValue({ value: answer })
       mockChatsApi.updateMessage.mockImplementation((id, updates) => Object.assign(answer, updates))
       mockChatsApi.deleteMessage = vi.fn()

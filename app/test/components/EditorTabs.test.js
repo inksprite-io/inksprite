@@ -63,6 +63,17 @@ describe('EditorTabs', () => {
     expect(tab(wrapper, 'doc_2').find('[data-plain]').exists()).toBe(true)
   })
 
+  it("marks a chat's text as the chat's, and names it with the chat", () => {
+    const wrapper = mountStrip({
+      items: [items[0], { id: 'chat:chat_1:prompt', title: 'System prompt', chat: 'Heist' }],
+    })
+    const chatTab = tab(wrapper, 'chat:chat_1:prompt')
+    expect(chatTab.find('[data-chat]').exists()).toBe(true)
+    expect(chatTab.find('[data-plain]').exists()).toBe(false)
+    expect(tab(wrapper, 'doc_1').find('[data-chat]').exists()).toBe(false)
+    expect(chatTab.attributes('aria-label')).toBe('System prompt, Heist')
+  })
+
   it('is named by its title, and not by its close button', () => {
     const wrapper = mountStrip({ items: [items[0], { ...items[1], plain: true }] })
     expect(tab(wrapper, 'doc_1').attributes('aria-label')).toBe(items[0].title)
@@ -112,6 +123,15 @@ describe('EditorTabs', () => {
     expect(menu.emitted('before-show')).toHaveLength(1)
     expect(actions).toHaveBeenCalledWith('doc_2')
     expect(menu.props('model').map(item => item.label)).toEqual(['Copy doc_2'])
+  })
+
+  it('opens no menu on a tab the panel offers nothing for', async () => {
+    const wrapper = mountStrip({ actions: id => (id === 'doc_1' ? [{ label: 'Copy' }] : []) })
+    const menu = wrapper.findComponent({ name: 'ContextMenu' })
+
+    await tab(wrapper, 'doc_2').trigger('contextmenu')
+
+    expect(menu.emitted('before-show')).toBeUndefined()
   })
 
   it('has no menu when the panel offers nothing', () => {

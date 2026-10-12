@@ -7,11 +7,20 @@
   >
     <div class="flex flex-col gap-3 pt-2 pb-1">
       <div class="flex flex-col gap-1">
-        <SettingLabel
-          label="Max tokens"
-          :overridden="isOverridden('maxTokens')"
-          @reset="resetSettings(['maxTokens'])"
-        />
+        <div class="flex items-center justify-between gap-2">
+          <SettingLabel
+            label="Max tokens"
+            :overridden="isOverridden('maxTokens')"
+            @reset="resetSettings(['maxTokens'])"
+          />
+          <span
+            v-if="effective.maxTokens === 0"
+            class="text-xs text-surface-500 dark:text-surface-400"
+            data-zero="maxTokens"
+          >
+            Unlimited
+          </span>
+        </div>
         <CustomSlider
           :model-value="effective.maxTokens"
           :min="0"
@@ -22,25 +31,17 @@
           label="Max tokens"
           @update:model-value="setSetting('maxTokens', $event)"
         />
-        <p
-          v-if="effective.maxTokens === 0"
-          class="text-xs text-surface-500 dark:text-surface-400"
-          data-zero="maxTokens"
-        >
-          The provider decides.
-        </p>
       </div>
 
-      <div class="flex flex-col gap-1">
+      <div v-if="effortOptions.length > 1" class="flex flex-col gap-1">
         <SettingLabel
           label="Reasoning effort"
-          description="Levels apply on OpenRouter only."
           :overridden="isOverridden('reasoningEffort')"
           @reset="resetSettings(['reasoningEffort'])"
         />
         <Select
-          :model-value="effective.reasoningEffort"
-          :options="REASONING_EFFORT_OPTIONS"
+          :model-value="effort"
+          :options="effortOptions"
           option-label="label"
           option-value="value"
           class="w-full dark:!bg-surface-900"
@@ -50,7 +51,10 @@
         />
       </div>
 
-      <div class="flex items-center justify-between gap-2">
+      <div
+        v-if="capabilities.reasons && capabilities.reasoningDisplay"
+        class="flex items-center justify-between gap-2"
+      >
         <SettingLabel
           label="Show reasoning"
           :overridden="isOverridden('showModelReasoning')"
@@ -77,11 +81,20 @@
       </div>
 
       <div class="flex flex-col gap-1">
-        <SettingLabel
-          label="Tool rounds per turn"
-          :overridden="isOverridden('maxToolRounds')"
-          @reset="resetSettings(['maxToolRounds'])"
-        />
+        <div class="flex items-center justify-between gap-2">
+          <SettingLabel
+            label="Tool rounds per turn"
+            :overridden="isOverridden('maxToolRounds')"
+            @reset="resetSettings(['maxToolRounds'])"
+          />
+          <span
+            v-if="effective.maxToolRounds === 0"
+            class="text-xs text-surface-500 dark:text-surface-400"
+            data-zero="maxToolRounds"
+          >
+            Unlimited
+          </span>
+        </div>
         <CustomSlider
           :model-value="effective.maxToolRounds"
           :min="0"
@@ -92,13 +105,6 @@
           label="Tool rounds per turn"
           @update:model-value="setSetting('maxToolRounds', $event)"
         />
-        <p
-          v-if="effective.maxToolRounds === 0"
-          class="text-xs text-surface-500 dark:text-surface-400"
-          data-zero="maxToolRounds"
-        >
-          No limit.
-        </p>
       </div>
     </div>
   </ExpandableSection>
@@ -113,11 +119,24 @@ import CustomSlider from './CustomSlider.vue'
 import SettingLabel from '@/components/common/SettingLabel.vue'
 import { useGenerationSettings } from '@/composables/useGenerationSettings'
 import { REASONING_EFFORT_OPTIONS } from '@/ai/defaults.js'
+import { fitEffort } from '@/ai/capabilities.js'
 import { useAIConfig } from '@/composables/useAIConfig'
+import { useModelCapabilities } from '@/composables/useModelCapabilities'
 
 const { effective, isOverridden, setSetting, resetSettings } = useGenerationSettings()
 
 const aiConfig = useAIConfig()
+
+// Only what the preset's model takes, and the effort it would be sent: a
+// level it lacks reads as the nearest it has, and stays stored as chosen.
+const capabilities = useModelCapabilities(
+  () => aiConfig.activeAIPreset.value?.providerId,
+  () => aiConfig.activeAIPreset.value?.model
+)
+const effortOptions = computed(() =>
+  REASONING_EFFORT_OPTIONS.filter(option => capabilities.value.efforts.includes(option.value))
+)
+const effort = computed(() => fitEffort(effective.value.reasoningEffort, capabilities.value))
 
 // Presets saved before this setting existed have no flag; treat them as
 // allowing tools, which is what they did.

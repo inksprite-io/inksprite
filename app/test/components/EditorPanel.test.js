@@ -37,6 +37,9 @@ vi.mock('@/composables/useDocuments', () => ({ useDocuments: () => mockApi }))
 const mockCopyPath = vi.fn()
 vi.mock('@/composables/useCopyPath.js', () => ({ useCopyPath: () => ({ copyPath: mockCopyPath }) }))
 vi.mock('@/composables/useToast.js', () => ({ useToast: () => ({ action: toastAction }) }))
+vi.mock('@/composables/useChats.js', () => ({
+  useChats: () => ({ getChatById: id => (id === 'chat_1' ? { id, title: 'Heist' } : null) }),
+}))
 
 const Editor = {
   props: ['documentId'],
@@ -49,6 +52,10 @@ const ShortcutsDialog = {
 }
 const RawMarkdown = { props: ['documentId'], template: '<div data-raw :data-id="documentId" />' }
 const FileView = { props: ['documentId'], template: '<div data-file :data-id="documentId" />' }
+const ChatTextView = {
+  props: ['chatId', 'text'],
+  template: '<div data-chat-text :data-chat="chatId" :data-text="text" />',
+}
 const EmptyEditor = { template: '<div data-empty />' }
 
 const mountPanel = (tabs, props = {}) => {
@@ -58,7 +65,7 @@ const mountPanel = (tabs, props = {}) => {
     global: {
       plugins: [PrimeVue],
       directives: { tooltip: {} },
-      stubs: { Editor, RawMarkdown, EmptyEditor, FileView, ShortcutsDialog },
+      stubs: { Editor, RawMarkdown, EmptyEditor, FileView, ChatTextView, ShortcutsDialog },
     },
   })
 }
@@ -250,6 +257,50 @@ describe('EditorPanel', () => {
     const wrapper = mountPanel({ open: ['doc_1'], active: 'doc_1' })
 
     expect(plainTextItem(wrapper, 'doc_1')).toBeUndefined()
+  })
+
+  describe("a chat's text", () => {
+    beforeEach(() => {
+      mockApi.get.mockImplementation(id =>
+        id.startsWith('chat:') ? null : { id, type: 'text', title: id === 'doc_2' ? 'Two' : '' }
+      )
+    })
+
+    it('shows in a tab named for it, as text with a find of its own', () => {
+      const wrapper = mountPanel({
+        open: ['doc_2', 'chat:chat_1:prompt'],
+        active: 'chat:chat_1:prompt',
+      })
+
+      expect(wrapper.findAll('[role="tab"]').map(t => t.text())).toEqual(['Two', 'System prompt'])
+      expect(wrapper.find('[data-tab-id="chat:chat_1:prompt"]').attributes('title')).toBe(
+        'Heist/System prompt'
+      )
+      const view = wrapper.find('[data-chat-text]')
+      expect(view.attributes('data-chat')).toBe('chat_1')
+      expect(view.attributes('data-text')).toBe('prompt')
+      expect(wrapper.find('[data-editor]').exists()).toBe(false)
+      expect(wrapper.find('[data-action="find"]').exists()).toBe(true)
+    })
+
+    it('is told apart from another chat’s by the chat', () => {
+      const wrapper = mountPanel({
+        open: ['chat:chat_1:note', 'chat:chat_new:note'],
+        active: 'chat:chat_1:note',
+      })
+
+      expect(wrapper.findAll('[role="tab"]').map(t => t.text())).toEqual([
+        "Heist/Author's note",
+        "Untitled chat/Author's note",
+      ])
+    })
+
+    it('has nothing on its menu', () => {
+      const wrapper = mountPanel({ open: ['chat:chat_1:prompt'], active: 'chat:chat_1:prompt' })
+      const actions = wrapper.findComponent({ name: 'EditorTabs' }).props('actions')
+
+      expect(actions('chat:chat_1:prompt')).toEqual([])
+    })
   })
 
   it('follows the tab that comes forward', async () => {

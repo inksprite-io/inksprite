@@ -6,12 +6,10 @@ import { DEFAULT_VOICES, VOICE_COLORS } from '@/tts/voices.js'
 
 const mockClient = vi.hoisted(() => ({
   synthesize: vi.fn(),
-  listVoices: vi.fn(),
 }))
 vi.mock('@/tts/client.js', async importOriginal => ({
   ...(await importOriginal()),
   synthesize: mockClient.synthesize,
-  listVoices: mockClient.listVoices,
 }))
 
 const mockStory = reactive({ id: 'story_1' })
@@ -42,11 +40,16 @@ vi.mock('@/composables/useDocuments', () => ({
   }),
 }))
 
-const connection = reactive({ endpoint: 'http://localhost:8880/v1', apiKey: '', model: 'kokoro' })
-vi.mock('@/composables/useApplicationState', () => ({
-  useApplicationState: () => ({
-    narration: computed(() => ({ ...connection })),
-    setNarration: patch => Object.assign(connection, patch),
+const KOKORO = { endpoint: 'http://localhost:8880/v1', model: 'kokoro', type: 'generic' }
+const connection = reactive({ ...KOKORO })
+const serverVoices = reactive([])
+vi.mock('@/composables/useSpeechServer.js', () => ({
+  useSpeechServer: () => ({
+    connection: computed(() => ({ ...connection })),
+    configured: computed(() => true),
+    via: computed(() => `provider_kokoro_default\n${connection.model}`),
+    voices: computed(() => [...serverVoices]),
+    load: vi.fn(async () => [...serverVoices]),
   }),
 }))
 
@@ -61,7 +64,30 @@ vi.mock('@/tts/player.js', async importOriginal => ({
   playClip: mockPlayer.playClip,
 }))
 
+// Where audio is kept: a library, or none in a browser.
+const kept = vi.hoisted(() => ({ on: false, files: new Map() }))
+vi.mock('@/storage/index.js', () => ({
+  storage: {
+    audioKept: () => kept.on,
+    audioKeys: vi.fn(async (_story, doc) =>
+      [...kept.files.keys()]
+        .filter(path => path.startsWith(`${doc}/`))
+        .map(path => path.slice(doc.length + 1))
+    ),
+    readAudio: vi.fn(async (_story, doc, key) => kept.files.get(`${doc}/${key}`) ?? null),
+    writeAudio: vi.fn(async (_story, doc, key, audio) => {
+      kept.files.set(`${doc}/${key}`, audio)
+    }),
+    removeAudio: vi.fn(async (_story, doc, keys) => {
+      for (const key of keys) kept.files.delete(`${doc}/${key}`)
+    }),
+  },
+}))
+
 import { useNarration, clearNarrationInstances } from '@/composables/useNarration'
+import { useApplicationState } from '@/composables/useApplicationState'
+import { storage } from '@/storage/index.js'
+import { audioKeyOf } from '@/tts/reading.js'
 
 /** What a block nobody was given is asked for in: the default voice, whatever it is. */
 const READER = { voice: DEFAULT_VOICES[0].voice, speed: DEFAULT_VOICES[0].speed }
@@ -91,9 +117,106 @@ describe('useNarration', () => {
       title: 'Dinner',
       content: CONTENT,
     }
-    Object.assign(connection, { endpoint: 'http://localhost:8880/v1', apiKey: '', model: 'kokoro' })
+    Object.assign(connection, KOKORO)
     mockClient.synthesize.mockImplementation(async () => clip(1))
+    kept.on = false
+    kept.files.clear()
+    useApplicationState().resetState()
     api = useNarration('story_1')
+  })
+
+  describe('what it is read through', () => {
+    it("is the project's own connection and model, else the one last chosen", () => {
+      useApplicationState().setNarration({ providerId: 'provider_or', model: 'acme/voice' })
+      expect(api.choice.value).toEqual({ providerId: 'provider_or', model: 'acme/voice' })
+
+      mockStory.narration = { providerId: 'provider_openai_default', model: 'tts-1' }
+      expect(api.choice.value).toEqual({ providerId: 'provider_openai_default', model: 'tts-1' })
+    })
+
+    it('is kept on the project when chosen, and as the one last chosen', () => {
+      api.choose({ providerId: 'provider_openai_default', model: null })
+      api.choose({ model: 'tts-1' })
+
+      expect(mockStory.narration).toEqual({ providerId: 'provider_openai_default', model: 'tts-1' })
+      expect(useApplicationState().narration.value).toEqual({
+        providerId: 'provider_openai_default',
+        model: 'tts-1',
+      })
+    })
+
+    it('stays what the project was first read through when another project chooses', async () => {
+      await api.narrate('doc_1')
+      expect(mockStory.narration).toMatchObject({
+        providerId: 'provider_kokoro_default',
+        model: 'kokoro',
+      })
+
+      useApplicationState().setNarration({ providerId: 'provider_or', model: 'acme/voice' })
+      expect(api.choice.value.providerId).toBe('provider_kokoro_default')
+    })
+  })
+
+  describe('kept audio', () => {
+    beforeEach(() => {
+      kept.on = true
+    })
+
+    it('keeps each clip with the project, under a hash of what was asked for', async () => {
+      await api.narrate('doc_1')
+      await settled()
+
+      const keys = await Promise.all(api.utterancesOf('doc_1').map(u => audioKeyOf(u.signature)))
+      expect([...kept.files.keys()].sort()).toEqual(keys.map(key => `doc_1/${key}`).sort())
+      expect(keys.every(key => /^[0-9a-f]{64}$/.test(key))).toBe(true)
+    })
+
+    it('reads back what was kept, joins it, and reads only what is missing', async () => {
+      const [first, second] = api.utterancesOf('doc_1')
+      kept.files.set(`doc_1/${await audioKeyOf(first.signature)}`, clip(1))
+      kept.files.set(`doc_1/${await audioKeyOf(second.signature)}`, clip(2))
+
+      await api.restore('doc_1')
+      const reading = api.readingOf('doc_1')
+      expect(reading.clips.size).toBe(2)
+      expect(reading.track.duration).toBeCloseTo(3.4)
+
+      await api.narrate('doc_1')
+      expect(mockClient.synthesize).toHaveBeenCalledTimes(1)
+      expect(mockClient.synthesize.mock.calls[0][1].input).toBe('"You pick."')
+    })
+
+    it('reads back once for each model', async () => {
+      await api.restore('doc_1')
+      await api.restore('doc_1')
+      expect(storage.audioKeys).toHaveBeenCalledTimes(1)
+
+      connection.model = 'other'
+      await api.restore('doc_1')
+      expect(storage.audioKeys).toHaveBeenCalledTimes(2)
+    })
+
+    it('lets go of kept audio the document no longer asks for, when a run starts', async () => {
+      kept.files.set('doc_1/stale', clip(1))
+      kept.files.set('doc_2/other', clip(1))
+
+      await api.narrate('doc_1')
+      await settled()
+
+      expect(storage.removeAudio).toHaveBeenCalledWith('story_1', 'doc_1', ['stale'])
+      expect(kept.files.has('doc_1/stale')).toBe(false)
+      expect(kept.files.has('doc_2/other')).toBe(true)
+    })
+
+    it('keeps nothing where audio is not kept', async () => {
+      kept.on = false
+      await api.restore('doc_1')
+      await api.narrate('doc_1')
+      await settled()
+
+      expect(storage.audioKeys).not.toHaveBeenCalled()
+      expect(storage.writeAudio).not.toHaveBeenCalled()
+    })
   })
 
   describe('voices', () => {
@@ -161,6 +284,14 @@ describe('useNarration', () => {
       expect(api.hints.value).toBe('Aelinor:AY-lin-or')
       expect(mockStory.narration).toEqual({ hints: 'Aelinor:AY-lin-or' })
     })
+
+    it('keep the filters beside them, and read them as regular expressions', () => {
+      expect(api.filters.value).toBe('')
+      api.setFilters('^Page \\d+$\n[broken')
+      expect(api.filters.value).toBe('^Page \\d+$\n[broken')
+      expect(mockStory.narration).toEqual({ filters: '^Page \\d+$\n[broken' })
+      expect(api.filterPatterns.value.map(pattern => pattern.source)).toEqual(['^Page \\d+$'])
+    })
   })
 
   describe('speakers', () => {
@@ -223,11 +354,7 @@ describe('useNarration', () => {
         { input: '"What do you want to eat?" she asked.', voice: 'af_nicole', speed: 1.2 },
         { input: '"You pick."', ...READER },
       ])
-      expect(mockClient.synthesize.mock.calls[0][0]).toEqual({
-        endpoint: 'http://localhost:8880/v1',
-        apiKey: '',
-        model: 'kokoro',
-      })
+      expect(mockClient.synthesize.mock.calls[0][0]).toEqual(KOKORO)
 
       const reading = api.readingOf('doc_1')
       expect(reading.status).toBe('done')
@@ -245,6 +372,23 @@ describe('useNarration', () => {
         [2.8, 2],
       ])
       expect(api.inStep('doc_1')).toBe(true)
+    })
+
+    it('leaves out what the filters match, and skips a block they take all of', async () => {
+      docs.doc_1.content = 'Riley walked in [1].\n\nPage 12\n\n"You pick."'
+      api.setFilters('\\s*\\[\\d+\\]\n^Page \\d+$')
+
+      await api.narrate('doc_1')
+
+      expect(requests().map(request => request.input)).toEqual(['Riley walked in.', '"You pick."'])
+      const reading = api.readingOf('doc_1')
+      expect([reading.done, reading.total]).toEqual([2, 2])
+      expect(reading.track.segments.map(segment => segment.index)).toEqual([0, 2])
+      expect(api.inStep('doc_1')).toBe(true)
+
+      // With nothing left without audio, there is nothing to do.
+      await api.narrate('doc_1')
+      expect(requests()).toHaveLength(2)
     })
 
     it('reports as it goes, and which utterance it is on', async () => {
@@ -290,9 +434,33 @@ describe('useNarration', () => {
       ])
     })
 
-    it('reads everything again when nothing lacks audio', async () => {
+    it('has no audio in another model until it reads there, and has it back on going back', async () => {
+      mockClient.synthesize.mockImplementation(async () => clip(1))
+      await api.narrate('doc_1')
+      const has = () =>
+        api.utterancesOf('doc_1').filter(u => api.readingOf('doc_1').clips.has(u.signature)).length
+
+      connection.model = 'other'
+      expect(has()).toBe(0)
+      connection.model = 'kokoro'
+      expect(has()).toBe(3)
+
+      connection.model = 'other'
+      await api.narrate('doc_1')
+      expect(mockClient.synthesize).toHaveBeenCalledTimes(6)
+      expect(mockClient.synthesize.mock.calls[5][0]).toMatchObject({ model: 'other' })
+    })
+
+    it('reads nothing when nothing lacks audio, and leaves the last run as it was', async () => {
       await api.narrate('doc_1')
       await api.narrate('doc_1')
+      expect(mockClient.synthesize).toHaveBeenCalledTimes(3)
+      expect(api.readingOf('doc_1')).toMatchObject({ status: 'done', done: 3, total: 3 })
+    })
+
+    it('reads everything again when every block is asked for', async () => {
+      await api.narrate('doc_1')
+      await api.narrate('doc_1', { blocks: [0, 1, 2] })
       expect(mockClient.synthesize).toHaveBeenCalledTimes(6)
     })
 
@@ -449,10 +617,19 @@ describe('useNarration', () => {
       api.readAloud('turn:m1', MESSAGE)
 
       expect(mockSpeech.speak).toHaveBeenCalledWith('turn:m1', {
-        connection: { endpoint: 'http://localhost:8880/v1', apiKey: '', model: 'kokoro' },
+        connection: KOKORO,
         voice: DEFAULT_VOICES[0],
         lines: ['The Door', 'Rye-lee knocked. Nobody answered.', '"Hello?" she called.'],
       })
+    })
+
+    it('leaves out what the filters match, and a paragraph they take all of', () => {
+      api.setFilters('\\s*\\[\\d+\\]\n^The Door$')
+      api.readAloud('turn:m1', `${MESSAGE} [1]`)
+      expect(mockSpeech.speak.mock.calls[0][1].lines).toEqual([
+        'Riley knocked. Nobody answered.',
+        '"Hello?" she called.',
+      ])
     })
 
     it('reads in the voice asked for, and the default when that voice is gone', () => {
@@ -485,30 +662,22 @@ describe('useNarration', () => {
     })
   })
 
-  describe('the server', () => {
-    it('is asked for its voices once per endpoint', async () => {
-      mockClient.listVoices.mockResolvedValue(['af_heart', 'af_nicole'])
-      expect(await api.loadServerVoices()).toEqual(['af_heart', 'af_nicole'])
-      await api.loadServerVoices()
-      expect(mockClient.listVoices).toHaveBeenCalledTimes(1)
+  describe('previewing the hints', () => {
+    it('says each hinted word as it will be sent, in the default voice', async () => {
+      mockStory.narration = { hints: 'quinoa:keenwah\n# not this\nEleanor:ellinore' }
 
-      connection.endpoint = 'http://elsewhere:8880/v1'
-      await api.loadServerVoices()
-      expect(mockClient.listVoices).toHaveBeenCalledTimes(2)
+      await api.previewHints()
+
+      expect(mockClient.synthesize.mock.calls[0][1]).toMatchObject({
+        input: 'keenwah. ellinore',
+        voice: 'af_heart+af_nicole(2)+af_jadzia',
+      })
+      expect(mockPlayer.playClip).toHaveBeenCalledTimes(1)
     })
 
-    it('offers no voices when it cannot be asked', async () => {
-      vi.spyOn(console, 'warn').mockImplementation(() => {})
-      mockClient.listVoices.mockRejectedValue(new TypeError('Failed to fetch'))
-      expect(await api.loadServerVoices()).toEqual([])
-      expect(api.serverVoices.value).toEqual([])
-    })
-
-    it('is not asked when there is none', async () => {
-      connection.endpoint = ''
-      expect(api.configured.value).toBe(false)
-      expect(await api.loadServerVoices()).toEqual([])
-      expect(mockClient.listVoices).not.toHaveBeenCalled()
+    it('asks for nothing with no hints', async () => {
+      await api.previewHints()
+      expect(mockClient.synthesize).not.toHaveBeenCalled()
     })
   })
 })

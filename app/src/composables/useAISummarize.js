@@ -75,8 +75,13 @@ export function useAISummarize() {
     }
 
     const gap = connectionGap(provider)
-    if (gap === 'key') {
+    // OpenRouter has its own way in, the connect dialog; a key for anything
+    // else is pasted in the provider's settings.
+    if (gap === 'key' && provider.type === 'openrouter') {
       throw new ProviderNotConfiguredError('Connect OpenRouter in Settings › AI.')
+    }
+    if (gap === 'key') {
+      throw new Error(`Add your ${provider.name} key in Settings › AI.`)
     }
     if (gap === 'endpoint') {
       throw new Error('Add the server address in Settings › AI.')

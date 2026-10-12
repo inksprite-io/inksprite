@@ -1,55 +1,14 @@
 /**
  * @typedef {import('../types/models.js').AIProvider} AIProvider
- * @typedef {{id: string, name: string}} AIModel
+ * @typedef {import('../ai/models.js').AIModel} AIModel
  */
 
 import { useAIConfig } from '@/composables/useAIConfig'
 import { fetch } from '@/platform/fetch.js'
 import { resolveAISettings } from '@/ai/defaults.js'
-import {
-  ATTRIBUTION_HEADERS,
-  buildCompletionBody,
-  chatCompletionsUrl,
-  modelsUrl,
-} from '@/ai/wire.js'
-
-/**
- * Parse models response from API
- * @param {Response} response - Fetch response
- * @param {string} providerName - Provider name for logging
- * @returns {Promise<AIModel[]>} Parsed and sorted models
- * @throws {Error} When response is invalid
- */
-async function parseModelsResponse(response, providerName) {
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Connection failed' }))
-    throw new Error(error.error?.message || error.error || `HTTP ${response.status}`)
-  }
-
-  const data = await response.json()
-
-  // Verify we got models back
-  if (!data.data || !Array.isArray(data.data)) {
-    throw new Error('Invalid response format from provider')
-  }
-
-  // Log models to console for debugging
-  console.log(`Found ${data.data.length} models from ${providerName}:`, data.data)
-
-  // Sort models alphabetically and return simplified format
-  const models = data.data
-    .map(model => ({
-      id: model.id,
-      name: model.name || model.id,
-    }))
-    .sort((a, b) => {
-      const nameA = a.name.toLowerCase()
-      const nameB = b.name.toLowerCase()
-      return nameA.localeCompare(nameB)
-    })
-
-  return models
-}
+import { attributionHeaders, buildCompletionBody, chatCompletionsUrl } from '@/ai/wire.js'
+import { listModels as listProviderModels, listSpeechModels, traitsOf } from '@/ai/models.js'
+import { streamAnthropic } from '@/ai/anthropic.js'
 
 /**
  * @typedef {import('../types/models.js').AIPreset} AIPreset
@@ -113,6 +72,7 @@ function accumulateToolCalls(accumulated, deltas) {
  * @property {string} type - Type of reasoning (e.g., 'reasoning.text')
  * @property {string} [text] - Reasoning text content
  * @property {string} [signature] - Cryptographic signature for continuation
+ * @property {string} [data] - Encrypted reasoning, for a block the provider doesn't show
  * @property {string} [format] - Format identifier (e.g., 'anthropic-claude-v1')
  * @property {number} index - Index in the reasoning chain
  */
@@ -296,7 +256,7 @@ function explainFailure(reported, { sentReasoning, askedForEffort, routed = fals
  * Composable for AI service operations (model listing, completions, chat)
  *
  * @returns {{
- *   listModels: (providerId: string) => Promise<AIModel[]>,
+ *   listModels: (providerId: string, kind?: import('@/ai/providers.js').ProviderKind) => Promise<AIModel[]>,
  *   listOpenRouterProviders: () => Promise<OpenRouterProvider[]>,
  *   listModelProviders: (model: string) => Promise<OpenRouterProvider[]>,
  *   generateChatCompletion: (messages: Array<{role: string, content: string|null, tool_call_id?: string, tool_calls?: ToolCall[], reasoning_details?: ReasoningDetail[]}>, config: AIConfig, onChunk: (chunk: StreamChunk) => void, options?: {tools?: ToolDefinition[], toolChoice?: 'auto'|'none', overrides?: AISettingsOverrides, signal?: AbortSignal}) => Promise<{usage?: {prompt_tokens: number, completion_tokens: number, total_tokens: number}, toolCalls?: ToolCall[], reasoningDetails?: ReasoningDetail[], finishReason?: string|null}>,
@@ -310,32 +270,20 @@ export const useAIService = () => {
   /**
    * List available models for a specific provider
    * @param {string} providerId - The provider ID
+   * @param {import('@/ai/providers.js').ProviderKind} [kind] - For a chat, or to read aloud with
    * @returns {Promise<AIModel[]>} Array of available models
    * @throws {Error} When provider not found or API call fails
    */
-  async function listModels(providerId) {
+  async function listModels(providerId, kind = 'chat') {
     const provider = aiConfig.getProvider(providerId)
     if (!provider) {
       throw new Error(`Provider ${providerId} not found`)
     }
 
     try {
-      const url = modelsUrl(provider)
-
-      // Build headers
-      /** @type {Record<string, string>} */
-      const headers = { 'Content-Type': 'application/json', ...ATTRIBUTION_HEADERS }
-      if (provider.apiKey) {
-        headers.Authorization = `Bearer ${provider.apiKey}`
-      }
-
-      // Make the API request
-      const response = await fetch(url, {
-        method: 'GET',
-        headers,
-      })
-
-      return await parseModelsResponse(response, provider.name)
+      return kind === 'speech'
+        ? await listSpeechModels(provider)
+        : await listProviderModels(provider)
     } catch (error) {
       console.error(`Failed to list models for provider ${provider.name}:`, error)
       throw error
@@ -370,13 +318,29 @@ export const useAIService = () => {
       throw new Error(`Provider ${config.providerId} not found`)
     }
 
+    if (provider.type === 'anthropic') {
+      return streamAnthropic({
+        provider,
+        model: config.model,
+        messages,
+        settings: resolveAISettings(options.overrides),
+        tools: options.tools,
+        toolChoice: options.toolChoice,
+        signal: options.signal,
+        onChunk,
+      }).catch(error => {
+        if (!options.signal?.aborted) console.error('Failed to generate chat completion:', error)
+        throw error
+      })
+    }
+
     try {
       const url = chatCompletionsUrl(provider)
 
       /** @type {Record<string, string>} */
       const headers = {
         'Content-Type': 'application/json',
-        ...ATTRIBUTION_HEADERS,
+        ...attributionHeaders(provider),
         Accept: 'text/event-stream',
       }
       if (provider.apiKey) {
@@ -391,6 +355,7 @@ export const useAIService = () => {
         provider,
         allowedProviders: config.allowedProviders,
         settings: resolveAISettings(options.overrides),
+        traits: await traitsOf(provider, config.model),
         tools: options.tools,
         toolChoice: options.toolChoice,
       })

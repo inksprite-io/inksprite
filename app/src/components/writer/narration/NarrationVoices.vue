@@ -69,6 +69,13 @@
           data-voice-string
           @update:model-value="update({ voice: String($event ?? '').trim() })"
         />
+        <p
+          v-if="unknown.length > 0"
+          class="text-xs text-amber-600 dark:text-amber-400"
+          data-voice-unknown
+        >
+          Not among this model's voices: {{ unknown.join(', ') }}
+        </p>
         <Select
           v-if="serverVoices.length > 0"
           :model-value="null"
@@ -179,7 +186,7 @@ import { VOICE_COLORS } from '@/tts/voices.js'
  * @typedef {Object} Props
  * @property {import('@/types/models.js').TtsVoice[]} voices
  * @property {string} defaultVoiceId - The default voice
- * @property {string[]} [serverVoices] - What the server offers, to mix from
+ * @property {string[]} [serverVoices] - The model's voices, to mix from
  * @property {boolean} [previewing] - Whether a preview is being fetched
  */
 const props = defineProps({
@@ -197,6 +204,19 @@ const selectedId = ref('')
 const selected = computed(() => {
   const voices = /** @type {import('@/types/models.js').TtsVoice[]} */ (props.voices)
   return voices.find(voice => voice.id === selectedId.value) ?? null
+})
+
+/**
+ * The voices in the mix the model doesn't list, once its voices are known: a
+ * voice made for another model, kept as written for going back to it.
+ */
+const unknown = computed(() => {
+  const known = /** @type {string[]} */ (props.serverVoices)
+  if (!selected.value || known.length === 0) return []
+  return selected.value.voice
+    .split('+')
+    .map(part => part.replace(/\(\s*[\d.]+\s*\)\s*$/, '').trim())
+    .filter(part => part && !known.includes(part))
 })
 
 // A voice removed, or a list that has not been looked at yet, settles on

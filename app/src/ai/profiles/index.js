@@ -5,7 +5,7 @@
  *
  * The prompt belongs to the profile rather than to a library of its own. A
  * prompt without the tools and skills it was written for is half an answer — the
- * Roleplay prompt assumes no tools, the Adventure prompt assumes dice — and two
+ * Roleplay prompt asks for none, the Adventure prompt assumes dice — and two
  * lists to keep in step is one list too many.
  *
  * A profile is a template, not a binding. `createChat` copies its settings onto
@@ -75,21 +75,33 @@ export const BLANK_PROFILE_ID = 'builtin_profile_blank'
  * being loaded. A server's tools are not among them; a server reaches only the
  * profiles it lists.
  */
-const ALL_TOOL_GROUPS = ['documents', 'rpg', 'skills']
+const ALL_TOOL_GROUPS = ['documents', 'rpg', 'skills', 'experimental']
+
+/**
+ * The skills still being tuned, Interpret and Write, which no built-in offers
+ * the model. A chat switches one on for itself; the writer's own `/interpret`
+ * and `/write` work either way. See ai/tools.
+ */
+const EXPERIMENTAL = 'experimental'
 
 /**
  * What both roleplay profiles run with besides their words.
  *
- * Cards are written for a model with no tools, and a tool schema in context
- * pulls the voice toward the assistant register it was written to get away
- * from. A starting position, not a principle — the oracle is the first one
- * worth trying again.
+ * The documents, so the model can look up what a card's lorebook says rather
+ * than have all of it in context: a world's worth of entries is more than a
+ * turn can carry, and a lorebook is pulled from, not pushed. Nothing in the
+ * prompt asks for them; the tools' own descriptions are enough, and a card
+ * written for a model with no tools reads the same.
+ *
+ * Nothing else. A tool schema in context pulls the voice toward the assistant
+ * register a card was written to get away from, so the dice and the skills
+ * are the writer's to switch on.
  *
  * And what a played-out scene is made of is the scenes and the lines, not what
  * was decided and what is left to do. See ai/skills/compact.
  */
 const ROLEPLAY_SETTINGS = {
-  disabledToolGroups: [...ALL_TOOL_GROUPS],
+  disabledToolGroups: ['rpg', 'skills', EXPERIMENTAL],
   skills: { compact: { prompt: ROLEPLAY_COMPACTION_PROMPT } },
 }
 
@@ -99,12 +111,12 @@ export const BUILT_IN_PROFILES = [
     id: CHAT_PROFILE_ID,
     name: 'Default',
     description: 'Brainstorm and revise, with the run of the project.',
-    settings: { prompt: DEFAULT_CHAT_PROMPT },
+    settings: { prompt: DEFAULT_CHAT_PROMPT, disabledToolGroups: [EXPERIMENTAL] },
   },
   {
     id: ROLEPLAY_PROFILE_ID,
     name: 'Roleplay',
-    description: 'A scene with one character, in their voice. No tools.',
+    description: 'A scene with one character, in their voice.',
     settings: {
       ...ROLEPLAY_SETTINGS,
       prompt: DEFAULT_ROLEPLAY_PROMPT,

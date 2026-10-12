@@ -19,13 +19,13 @@
         :model="settings.model || ''"
         @update:model-value="pick({ allowedProviders: $event })"
       />
-      <div class="flex flex-col gap-1">
-        <SettingLabel label="Reasoning effort" description="Levels apply on OpenRouter only." />
+      <div v-if="effortOptions.length > 1" class="flex flex-col gap-1">
+        <SettingLabel label="Reasoning effort" />
         <Select
           input-id="workflow-convert-effort"
           aria-label="Reasoning effort"
-          :model-value="settings.reasoningEffort || AI_DEFAULTS.reasoningEffort"
-          :options="REASONING_EFFORT_OPTIONS"
+          :model-value="effort"
+          :options="effortOptions"
           option-label="label"
           option-value="value"
           class="w-full dark:!bg-surface-900"
@@ -60,8 +60,10 @@ import AiModelSelector from './ai/AiModelSelector.vue'
 import AiProviderSelector from './ai/AiProviderSelector.vue'
 import AiAllowedProviders from './ai/AiAllowedProviders.vue'
 import { AI_DEFAULTS, REASONING_EFFORT_OPTIONS, resolveAISettings } from '@/ai/defaults.js'
+import { fitEffort } from '@/ai/capabilities.js'
 import { useAIConfig } from '@/composables/useAIConfig'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { useModelCapabilities } from '@/composables/useModelCapabilities'
 
 /**
  * Which provider, model, allowed providers and reasoning effort each workflow
@@ -77,6 +79,18 @@ const { workflows, setWorkflow } = useApplicationState()
 const settings = computed(() => workflows.value.convert || {})
 const routesProviders = computed(
   () => aiConfig.getProvider(settings.value.providerId)?.type === 'openrouter'
+)
+
+// Only the efforts the workflow's model takes, showing the one it is sent.
+const capabilities = useModelCapabilities(
+  () => settings.value.providerId,
+  () => settings.value.model
+)
+const effortOptions = computed(() =>
+  REASONING_EFFORT_OPTIONS.filter(option => capabilities.value.efforts.includes(option.value))
+)
+const effort = computed(() =>
+  fitEffort(settings.value.reasoningEffort || AI_DEFAULTS.reasoningEffort, capabilities.value)
 )
 
 /** @param {Partial<import('@/types/models.js').WorkflowSettings>} patch */

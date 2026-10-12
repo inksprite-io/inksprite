@@ -96,7 +96,7 @@
           </Select>
         </div>
 
-        <!-- Endpoint field (every type but OpenRouter is a server someone runs) -->
+        <!-- Endpoint field (a type with no known address is a server someone runs) -->
         <div v-if="needsEndpoint(localType)" class="flex flex-col gap-1">
           <label
             for="provider-endpoint"
@@ -119,7 +119,7 @@
             for="provider-key"
             class="text-xs font-medium text-surface-700 dark:text-surface-200"
           >
-            {{ needsEndpoint(localType) ? 'API key (optional)' : 'API key' }}
+            {{ needsKey(localType) ? 'API key' : 'API key (optional)' }}
           </label>
           <InputText
             id="provider-key"
@@ -181,8 +181,15 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useAIConfig } from '@/composables/useAIConfig'
 import { useTopmostEscape } from '@/composables/useTopmostEscape.js'
 import { useAIService } from '@/composables/useAIService'
+import { useModelLists } from '@/composables/useModelLists'
 import { useOpenRouterSignIn } from '@/composables/useOpenRouterSignIn'
-import { PROVIDER_TYPES, needsEndpoint } from '@/ai/providers.js'
+import {
+  PROVIDER_TYPES,
+  needsEndpoint,
+  needsKey,
+  providerDoes,
+  providerLabel,
+} from '@/ai/providers.js'
 import ProviderRouting from './ProviderRouting.vue'
 
 /**
@@ -217,6 +224,7 @@ const openRouter = useOpenRouterSignIn()
 const confirm = useConfirm()
 const aiConfig = useAIConfig()
 const aiService = useAIService()
+const modelLists = useModelLists()
 
 // Dialog visibility
 const localVisible = ref(props.visible)
@@ -299,7 +307,10 @@ watch(
 
 // Provider type menu items, from the one list that defines them
 const providerTypeItems = ref(
-  PROVIDER_TYPES.map(entry => ({ displayName: entry.menu, providerType: entry.id }))
+  PROVIDER_TYPES.filter(entry => !entry.hidden).map(entry => ({
+    displayName: entry.menu,
+    providerType: entry.id,
+  }))
 )
 
 const providers = computed(() => aiConfig.providers.value)
@@ -338,25 +349,35 @@ function handleNameBlur() {
   aiConfig.updateProvider(localSelectedProviderId.value, { name: localName.value })
 }
 
+/**
+ * Save what the provider is asked with: its type, address or key. A change
+ * lets its model list go, since that was the old server's answer; Connect
+ * asks again.
+ * @param {Partial<import('@/types/models.js').AIProvider>} changes
+ */
+function updateConnection(changes) {
+  const id = localSelectedProviderId.value
+  if (!id) return
+  const provider = providersById.value.get(id)
+  if (!provider) return
+  const changed = Object.entries(changes).some(
+    ([field, value]) => provider[/** @type {keyof typeof provider} */ (field)] !== value
+  )
+  if (!changed) return
+  aiConfig.updateProvider(id, changes)
+  modelLists.forget(id)
+}
+
 function handleTypeChange() {
-  if (!localSelectedProviderId.value) return
-  aiConfig.updateProvider(localSelectedProviderId.value, {
-    type: localType.value,
-  })
+  updateConnection({ type: localType.value })
 }
 
 function handleEndpointChange() {
-  if (!localSelectedProviderId.value) return
-  aiConfig.updateProvider(localSelectedProviderId.value, {
-    endpoint: localEndpoint.value.trim(),
-  })
+  updateConnection({ endpoint: localEndpoint.value.trim() })
 }
 
 function handleApiKeyChange() {
-  if (!localSelectedProviderId.value) return
-  aiConfig.updateProvider(localSelectedProviderId.value, {
-    apiKey: localApiKey.value.trim() || undefined,
-  })
+  updateConnection({ apiKey: localApiKey.value.trim() || undefined })
 }
 
 /**
@@ -379,8 +400,8 @@ function validateProvider() {
     throw new ValidationError('Endpoint is required for this provider type')
   }
 
-  if (localType.value === 'openrouter' && !localApiKey.value?.trim()) {
-    throw new ValidationError('API key is required for OpenRouter')
+  if (needsKey(localType.value) && !localApiKey.value?.trim()) {
+    throw new ValidationError(`API key is required for ${providerLabel(localType.value)}`)
   }
 }
 
@@ -415,13 +436,15 @@ async function handleTestConnection() {
       return
     }
 
-    // Anything else is a server someone is running: ask it what it serves
-    const models = await aiService.listModels(localSelectedProviderId.value)
+    // Anything else is asked what it serves, for the model pickers too: a
+    // connection that only speaks, what it reads aloud with
+    const kind = providerDoes(selectedProvider.value, 'chat') ? 'chat' : 'speech'
+    const models = await modelLists.load(localSelectedProviderId.value, kind)
 
     if (models && models.length > 0) {
       toast.add({
         severity: 'success',
-        detail: `Connected: ${models.length} models available`,
+        detail: `Connected: ${models.length} ${models.length === 1 ? 'model' : 'models'} available`,
         life: 3000,
       })
     } else {

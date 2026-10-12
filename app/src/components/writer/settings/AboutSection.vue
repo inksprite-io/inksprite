@@ -1,18 +1,23 @@
 <template>
   <div class="flex flex-col gap-5 px-2 pt-2 pb-1 text-xs text-surface-500 dark:text-surface-400">
-    <section class="flex flex-col gap-1">
-      <p v-if="version" class="text-sm text-surface-700 dark:text-surface-200" data-version>
-        inksprite {{ version }}
-      </p>
-      <p class="text-sm text-surface-700 dark:text-surface-200">
+    <section class="flex flex-col gap-2 text-sm text-surface-700 dark:text-surface-200">
+      <p v-if="version" data-version>inksprite {{ version }}</p>
+      <p>Copyright © 2025–2026 The inksprite Authors.</p>
+      <p>
         inksprite is free software under the
         <a :href="LICENSE_URL" target="_blank" rel="noopener noreferrer" :class="LINK"
           >GNU Affero General Public License, version 3 or later</a
-        >. Its source is at
-        <a :href="SOURCE_URL" target="_blank" rel="noopener noreferrer" :class="LINK">{{
-          SOURCE_URL.replace('https://', '')
-        }}</a
-        >.
+        >, and comes with no warranty.
+      </p>
+      <p>
+        <a :href="SOURCE_URL" target="_blank" rel="noopener noreferrer" :class="LINK"
+          >Source code</a
+        >
+      </p>
+      <p>
+        <a :href="ISSUES_URL" target="_blank" rel="noopener noreferrer" :class="LINK"
+          >Report an issue</a
+        >
       </p>
     </section>
 
@@ -42,42 +47,32 @@
           </li>
         </ul>
       </section>
-
-      <section class="flex flex-col gap-1" data-credits="fonts">
-        <h3 class="font-medium text-surface-700 dark:text-surface-200">Font</h3>
-        <p v-for="font in FONT_CREDITS" :key="font.name">
-          <a :href="font.url" target="_blank" rel="noopener noreferrer" :class="LINK">{{
-            font.name
-          }}</a>
-          by {{ font.creator }}, under the
-          <a :href="font.license.url" target="_blank" rel="noopener noreferrer" :class="LINK">{{
-            font.license.name
-          }}</a
-          >.
-        </p>
-      </section>
     </ExpandableSection>
   </div>
 </template>
 
 <script setup>
 /**
- * What inksprite is released under, where its source is, and the credit the
- * icons and the font ask for wherever they are used — which, for a build
+ * The notices the AGPL asks an interactive program to show (copyright, no
+ * warranty, the license), where the source and the issues are, and the
+ * credit the icons ask for wherever they are used — which, for a build
  * someone paid for, means inside the app.
  */
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
-import { FONT_CREDITS, ICON_CREDITS, ICON_LICENSE, iconUrl } from '@/config/credits.js'
+import { ICON_CREDITS, ICON_LICENSE, iconUrl } from '@/config/credits.js'
 
 defineProps({
   /**
-   * The release this is, as the desktop build is made with it from its tag
-   * (.github/workflows/release.yml). A build made any other way has none.
+   * The release this is: a release build's from its tag
+   * (.github/workflows/release.yml), any other build's the newest release in
+   * the changelog (vite.config.js). A build that can't read the changelog,
+   * such as the test server's, has none.
    */
   version: { type: String, default: import.meta.env.VITE_APP_VERSION || '' },
 })
 
 const LICENSE_URL = 'https://www.gnu.org/licenses/agpl-3.0.html'
 const SOURCE_URL = 'https://github.com/inksprite-io/inksprite'
+const ISSUES_URL = `${SOURCE_URL}/issues`
 const LINK = 'text-primary-600 dark:text-primary-400 hover:underline'
 </script>

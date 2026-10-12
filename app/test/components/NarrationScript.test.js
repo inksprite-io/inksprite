@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import NarrationScript from '@/components/writer/narration/NarrationScript.vue'
 import { blocksOf } from '@/tts/script.js'
+import { parseFilters } from '@/tts/filters.js'
 
 // The menu, laid flat: every item a button, so a pick is a click.
 const Menu = {
@@ -45,14 +46,16 @@ describe('NarrationScript', () => {
     expect(action(wrapper, 1, 'select').text()).toBe('"Hello," she said.')
     expect(action(wrapper, 1, 'speaker').text()).toBe('Riley')
     expect(action(wrapper, 3, 'speaker').text()).toBe('Cody')
-    expect(action(wrapper, 3, 'speaker').attributes('aria-label')).toBe('Speaker for block 4: Cody')
+    expect(action(wrapper, 3, 'speaker').attributes('aria-label')).toBe(
+      'Speaker for segment 4: Cody'
+    )
   })
 
   it('leaves the room to the words where the default voice reads', () => {
     const wrapper = mountScript()
     const speaker = action(wrapper, 0, 'speaker')
     expect(speaker.text()).toBe('')
-    expect(speaker.attributes('aria-label')).toBe('Speaker for block 1: Narrator, the default')
+    expect(speaker.attributes('aria-label')).toBe('Speaker for segment 1: Narrator, the default')
   })
 
   it('colours a block for the speaker it was given, and leaves the rest plain', () => {
@@ -67,7 +70,7 @@ describe('NarrationScript', () => {
   it('names the default voice for a speaker no longer among the voices', () => {
     const wrapper = mountScript({ speakers: ['gone', null, null, null] })
     expect(action(wrapper, 0, 'speaker').attributes('aria-label')).toBe(
-      'Speaker for block 1: Narrator, the default'
+      'Speaker for segment 1: Narrator, the default'
     )
   })
 
@@ -109,10 +112,14 @@ describe('NarrationScript', () => {
   it('says where each block stands in the reading', () => {
     const wrapper = mountScript({ states: ['ready', 'running', 'failed', 'missing'] })
     expect(row(wrapper, 0).attributes('data-state')).toBe('ready')
-    expect(action(wrapper, 0, 'play').attributes('aria-label')).toBe('Play from block 1')
-    expect(action(wrapper, 1, 'play').attributes('aria-label')).toBe('Block 2 is being read')
-    expect(action(wrapper, 2, 'play').attributes('aria-label')).toBe('Block 3 could not be read')
-    expect(action(wrapper, 3, 'play').attributes('aria-label')).toBe('Block 4 has not been read')
+    expect(action(wrapper, 0, 'play').attributes('aria-label')).toBe('Play from segment 1')
+    expect(action(wrapper, 1, 'play').attributes('aria-label')).toBe('Segment 2 is being generated')
+    expect(action(wrapper, 2, 'play').attributes('aria-label')).toBe(
+      'Segment 3 could not be generated'
+    )
+    expect(action(wrapper, 3, 'play').attributes('aria-label')).toBe(
+      'Segment 4 has not been generated'
+    )
   })
 
   it('plays from a block that has been read, once there is a track to play', async () => {
@@ -126,18 +133,42 @@ describe('NarrationScript', () => {
     expect(action(wrapper, 2, 'play').attributes('disabled')).toBeDefined()
   })
 
-  it('reads one block on its own, again if it has been read', async () => {
+  it('generates one segment on its own, again if it has audio', async () => {
     const wrapper = mountScript()
-    expect(action(wrapper, 0, 'generate').attributes('aria-label')).toBe('Read block 1 again')
-    expect(action(wrapper, 2, 'generate').attributes('aria-label')).toBe('Read block 3')
+    expect(action(wrapper, 0, 'generate-segment').attributes('aria-label')).toBe(
+      'Regenerate segment 1'
+    )
+    expect(action(wrapper, 2, 'generate-segment').attributes('aria-label')).toBe(
+      'Generate segment 3'
+    )
 
-    await action(wrapper, 2, 'generate').trigger('click')
+    await action(wrapper, 2, 'generate-segment').trigger('click')
     expect(wrapper.emitted('generate')).toEqual([[2]])
+  })
+
+  it('greys what the filters leave out, and does not generate a block they take all of', () => {
+    const wrapper = mountScript({
+      blocks: blocksOf('Riley looked up [1].\n\nPage 12'),
+      speakers: [null, null],
+      states: ['missing', 'skipped'],
+      filters: parseFilters('\\[\\d+\\]\n^Page \\d+$'),
+    })
+    const filtered = index =>
+      row(wrapper, index)
+        .findAll('[data-filtered]')
+        .map(piece => piece.text())
+    expect(action(wrapper, 0, 'select').text()).toBe('Riley looked up [1].')
+    expect(filtered(0)).toEqual(['[1]'])
+    expect(filtered(1)).toEqual(['Page 12'])
+
+    expect(action(wrapper, 0, 'generate-segment').attributes('disabled')).toBeUndefined()
+    expect(action(wrapper, 1, 'generate-segment').attributes('disabled')).toBeDefined()
+    expect(action(wrapper, 1, 'play').attributes('aria-label')).toBe('Segment 2 is skipped')
   })
 
   it('starts no run while one is under way', () => {
     const wrapper = mountScript({ busy: true })
-    expect(action(wrapper, 0, 'generate').attributes('disabled')).toBeDefined()
+    expect(action(wrapper, 0, 'generate-segment').attributes('disabled')).toBeDefined()
   })
 
   it('selects a block, and lets it go when clicked again', async () => {
@@ -192,7 +223,7 @@ describe('NarrationScript', () => {
     // The menu says it is for both.
     const menu = wrapper.findComponent(Menu).props('model')
     expect(menu).toHaveLength(1)
-    expect(menu[0].label).toBe('Speaker for 2 blocks')
+    expect(menu[0].label).toBe('Speaker for 2 segments')
     expect(menu[0].items.map(item => item.label)).toEqual(['Narrator (default)', 'Riley', 'Cody'])
 
     menu[0].items[2].command()

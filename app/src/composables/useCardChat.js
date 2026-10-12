@@ -60,8 +60,8 @@ export function useCardChat(storyId) {
     // A card's system prompt becomes a profile of the writer's own, named for
     // the card, so it is in the library beside every other and they can edit
     // it. The alternative is a prompt that exists on one chat and cannot be
-    // found. It starts from the Roleplay profile, so the tools it assumes are
-    // off stay off.
+    // found. It starts from the Roleplay profile, so it is offered the tools
+    // Roleplay is and no others.
     if (card.systemPrompt) {
       const roleplay = profilesApi.getProfile(ROLEPLAY_PROFILE_ID)
       settings.profileId = profilesApi.saveProfile(card.title, {

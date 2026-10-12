@@ -13,6 +13,7 @@ import {
   takeUpComment,
 } from '@/composables/useComments.js'
 import { commentRanges } from '@/editor/comments.js'
+import { parseFilters } from '@/tts/filters.js'
 import { TextSelection } from 'prosemirror-state'
 
 const { mockUpdateDocument, mockGetDocument, mockApi } = vi.hoisted(() => {
@@ -67,6 +68,7 @@ describe('Editor', () => {
     mockNarration.voices = ref([
       { id: 'riley', name: 'Riley', voice: 'af_nicole', color: '#3b82f6' },
     ])
+    mockNarration.filterPatterns = ref([])
     mockAppState.highlightSpeakers = ref(true)
     mockAppState.compactText = ref(true)
   })
@@ -176,6 +178,37 @@ describe('Editor', () => {
     mockAppState.highlightSpeakers.value = false
     await flushPromises()
     expect(wrapper.find('[data-speaker]').exists()).toBe(false)
+
+    wrapper.unmount()
+    mockApi.get.mockImplementation(original)
+  })
+
+  it('greys what the filters leave out while the narration is showing', async () => {
+    const original = mockApi.get.getMockImplementation()
+    mockApi.get.mockImplementation(id => ({
+      id,
+      title: 'Chapter 1',
+      type: 'text',
+      content: 'Snow fell [1].\n\nPage 12',
+    }))
+    mockNarration.filterPatterns.value = parseFilters('\\s*\\[\\d+\\]\n^Page \\d+$')
+    // The speakers' colouring is the writer's to turn off; the greying is not.
+    mockAppState.highlightSpeakers.value = false
+
+    const wrapper = mountEditor()
+    await flushPromises()
+    expect(wrapper.find('[data-skipped]').exists()).toBe(false)
+
+    mockNarration.watching.value = 1
+    await flushPromises()
+    expect(wrapper.findAll('[data-skipped]').map(mark => mark.element.textContent)).toEqual([
+      ' [1]',
+      'Page 12',
+    ])
+
+    mockNarration.filterPatterns.value = []
+    await flushPromises()
+    expect(wrapper.find('[data-skipped]').exists()).toBe(false)
 
     wrapper.unmount()
     mockApi.get.mockImplementation(original)

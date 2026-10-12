@@ -7,6 +7,7 @@
  * ### AI
  * - **useAIChat** - A chat turn: context, request, tool calls, and streaming into a message
  * - **useAIConfig** - AI configuration (provider + model)
+ * - **useModelLists** - The models each provider serves, app-wide: asked for on Connect or Refresh, never as an address is typed
  * - **useAISummarize** - Summarize a document
  * - **useProfiles** - The chat profiles: how a chat is run, built-in and saved
  * - **useSkills** - The writer's own skills: the library, and when it has been read
@@ -24,6 +25,7 @@
  * - **useNarration** - A project read aloud: its voices and hints, a document's speakers, and the readings
  * - **useComments** - The writer's comments in a project, by document, kept up as they are typed; going to one, and resolving it
  * - **useSpeech** - Something read aloud then and there, a line at a time: a chat message. One thing at a time, app-wide
+ * - **useSpeechServer** - What documents are read aloud through: a project's connection and model, as a request needs them, and the model's voices
  *
  * ### UI
  * - **useEditor** - The open documents: an editor state each, and their projection into the store
@@ -36,6 +38,7 @@
  * - **useNearTurns** - Which of a chat's turns are in the page: those near the screen, the newest two, and any with an editor open; plus the state a turn keeps while it is away
  * - **useSettingsPanel** - Opening the settings, on a section, from anywhere in the writer
  * - **useSidebarTab** - Showing a sidebar list, such as the narration, from anywhere in the writer
+ * - **useEditorRequest** - Showing the editor, having opened a tab in it, from anywhere in the writer
  * - **useTopmostEscape** - Escape closes the dialog on top, and only that one
  * - **useCopyPath** - Copy a document's path, the address the tools take, to the clipboard
  * - **usePlainText** - Turn a document plain or back, with an undo when that rewrote its text
@@ -67,6 +70,7 @@
  */
 
 export { useAIConfig } from './useAIConfig.js'
+export { useModelLists } from './useModelLists.js'
 export { useBackup } from './useBackup.js'
 export { useProfiles } from './useProfiles.js'
 export { useSkills } from './useSkills.js'
@@ -80,12 +84,14 @@ export { useDocuments } from './useDocuments.js'
 export { useNarration } from './useNarration.js'
 export { useComments } from './useComments.js'
 export { useSpeech } from './useSpeech.js'
+export { useSpeechServer } from './useSpeechServer.js'
 export { useEditor } from './useEditor.js'
 export { useToast } from './useToast.js'
 export { useScreenSize } from './useScreenSize.js'
 export { useKeyboardCover } from './useKeyboardCover.js'
 export { useSettingsPanel } from './useSettingsPanel.js'
 export { useSidebarTab } from './useSidebarTab.js'
+export { useEditorRequest } from './useEditorRequest.js'
 export { useTopmostEscape } from './useTopmostEscape.js'
 export { useCopyPath } from './useCopyPath.js'
 export { usePlainText } from './usePlainText.js'

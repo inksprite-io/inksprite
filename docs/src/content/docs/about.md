@@ -18,6 +18,8 @@ If you use inksprite's AI tools, requests will go directly from your browser to 
 
 Practically, this means that you might get banned from a service like OpenAI if your work is particularly spicy. For this reason, we suggest using a service like OpenRouter. You can also run your own model locally if you have suitable hardware.
 
+If you connect to one of the built-in web search providers or a third party MCP server, requests go straight from your device to that service.
+
 #### Google Drive
 
 Nothing goes to Google until you import from Google Drive. Then Google's own sign-in opens, in a window of its own (in the desktop app, in your browser), and you choose the files there. inksprite can open those files and no others. They go straight from Google to your device, so we never see them, and the sign-in is used for that one import and never saved. Google's [privacy policy](https://policies.google.com/privacy) covers its side.
@@ -34,7 +36,7 @@ We make no promises that inksprite will be free of bugs or security vulnerabilit
 
 ## Credits
 
-The app's icons and illustrations are from the [Noun Project](https://thenounproject.com), each under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) by its creator. The app lists them all under Settings › About, and so does [CREDITS.md](https://github.com/inksprite-io/inksprite/blob/main/CREDITS.md).
+The app's icons are from the [Noun Project](https://thenounproject.com), each under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) by its creator. The app lists them all under Settings › About, and so does [CREDITS.md](https://github.com/inksprite-io/inksprite/blob/main/CREDITS.md).
 
 ## Terms of Service
 
@@ -56,11 +58,9 @@ We specifically disclaim all warranties of merchantability, fitness for a partic
 
 We make no guarantees about:
 
-The reliability, availability, or performance of the Service,
-
-The accuracy or security of any content generated or stored,
-
-The preservation of your data.
+- The reliability, availability, or performance of the Service,
+- The accuracy or security of any content generated or stored,
+- The preservation of your data.
 
 You use inksprite at your own risk.
 
@@ -68,13 +68,10 @@ You use inksprite at your own risk.
 
 To the fullest extent permitted by law, inksprite and its contributors shall not be liable for any indirect, incidental, consequential, special, exemplary, or punitive damages, including but not limited to:
 
-Data loss,
-
-Downtime or service interruptions,
-
-Lost profits or opportunities,
-
-Damage to devices or systems.
+- Data loss,
+- Downtime or service interruptions,
+- Lost profits or opportunities,
+- Damage to devices or systems.
 
 Our total liability to you for any claim arising out of or relating to the Service is limited to zero dollars ($0.00).
 
@@ -82,11 +79,9 @@ Our total liability to you for any claim arising out of or relating to the Servi
 
 You are responsible for:
 
-Backing up any content or data you create or store using inksprite.
-
-Complying with all applicable laws while using the Service.
-
-Not misusing the Service in ways that could harm others, disrupt the system, or violate intellectual property.
+- Backing up any content or data you create or store using inksprite.
+- Complying with all applicable laws while using the Service.
+- Not misusing the Service in ways that could harm others, disrupt the system, or violate intellectual property.
 
 ### Intellectual Property
 

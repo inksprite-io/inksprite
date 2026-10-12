@@ -33,7 +33,7 @@
         text
         rounded
         size="small"
-        :disabled="!selectedProviderId || !hasAddress || loading"
+        :disabled="!selectedProviderId || !canList || loading"
         @click="handleRefreshModels"
       />
     </div>
@@ -45,13 +45,16 @@ import { computed, ref, watch } from 'vue'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
-import { useAIService } from '@/composables/useAIService'
 import { useAIConfig } from '@/composables/useAIConfig'
+import { useModelLists } from '@/composables/useModelLists'
+import { canListModels } from '@/ai/providers.js'
 
 /**
  * @typedef {Object} Props
  * @property {string} selectedModelId - Currently selected model ID
  * @property {string} selectedProviderId - Currently selected provider ID
+ * @property {import('@/ai/providers.js').ProviderKind} [kind] - Which of the
+ *   provider's lists: its chat models, or those it reads aloud with
  */
 const props = defineProps({
   selectedModelId: {
@@ -62,45 +65,51 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  kind: {
+    type: String,
+    default: 'chat',
+  },
 })
 
 const emit = defineEmits(['update:selectedModelId'])
 
 const toast = useToast()
-const aiService = useAIService()
 const aiConfig = useAIConfig()
+const modelLists = useModelLists()
+const kind = computed(() => /** @type {import('@/ai/providers.js').ProviderKind} */ (props.kind))
 
 // Local state
 const localSelectedModelId = ref(props.selectedModelId)
-const models = ref([])
-const loading = ref(false)
 
-// The provider as it is now, so that an address or key set after the provider
-// was picked loads its models without a press of Refresh.
 const provider = computed(() =>
   props.selectedProviderId ? aiConfig.getProvider(props.selectedProviderId) : null
 )
 
-// A connection other than OpenRouter has no address until the writer gives
-// it one, and asking an empty address for models only fails.
-const hasAddress = computed(
-  () => provider.value?.type === 'openrouter' || !!provider.value?.endpoint?.trim()
-)
+// A server with no address, or a service with no key, has nothing to ask:
+// asking only fails. OpenRouter's list is public.
+const canList = computed(() => canListModels(provider.value))
 
-const failed = ref(false)
+// The provider's list, shared with every other picker and its Connect button.
+const list = computed(() =>
+  props.selectedProviderId && canList.value
+    ? modelLists.listOf(props.selectedProviderId, kind.value)
+    : undefined
+)
+const models = computed(() => list.value?.models ?? [])
+const loading = computed(() => !!list.value?.loading)
 
 // Computed placeholder
 const selectPlaceholder = computed(() => {
   if (!props.selectedProviderId) {
     return 'Select a provider first'
   }
-  if (!hasAddress.value) {
-    return 'Set an address first'
+  if (!canList.value || !list.value) {
+    return 'Provider not connected'
   }
   if (loading.value) {
     return 'Loading models…'
   }
-  if (failed.value) {
+  if (list.value.failed) {
     return "Couldn't load models"
   }
   if (models.value.length === 0) {
@@ -122,67 +131,35 @@ watch(localSelectedModelId, newVal => {
   emit('update:selectedModelId', newVal)
 })
 
-// Which load is the latest, so a slow answer for an address since changed
-// does not overwrite the list for the new one.
-let loadCount = 0
-
-/**
- * Load models for the selected provider
- * @returns {Promise<void>}
- */
-const loadModels = async () => {
-  const load = ++loadCount
-  if (!hasAddress.value) {
-    models.value = []
-    failed.value = false
-    loading.value = false
-    return
-  }
-
-  loading.value = true
-  try {
-    const modelList = await aiService.listModels(props.selectedProviderId)
-    if (load !== loadCount) return
-    models.value = modelList || []
-    failed.value = false
-
-    // If current model is not in the list, clear selection
-    if (
-      localSelectedModelId.value &&
-      !models.value.find(m => m.id === localSelectedModelId.value)
-    ) {
-      localSelectedModelId.value = null
-    }
-  } catch (error) {
-    if (load !== loadCount) return
-    models.value = []
-    failed.value = true
-    throw error
-  } finally {
-    if (load === loadCount) loading.value = false
-  }
-}
-
-// Load the list for the provider, and again whenever what it is asked with
-// changes: its type, address or key.
+// A provider shown for the first time is asked what it serves. Its address
+// and key are not watched: they save as they are typed, and the list is
+// asked for again on Connect or Refresh.
 watch(
-  () => [
-    props.selectedProviderId,
-    provider.value?.type,
-    provider.value?.endpoint,
-    provider.value?.apiKey,
-  ],
-  async (now, before) => {
-    if (!props.selectedProviderId) {
-      models.value = []
-      failed.value = false
-      if (before?.[0]) localSelectedModelId.value = null
+  () => props.selectedProviderId,
+  (id, before) => {
+    if (!id) {
+      if (before) localSelectedModelId.value = null
       return
     }
-    try {
-      await loadModels()
-    } catch (error) {
-      console.warn('Error loading models for selected provider:', error)
+    if (canList.value && !modelLists.listOf(id, kind.value)) {
+      modelLists.load(id, kind.value).catch(error => {
+        console.warn('Error loading models for selected provider:', error)
+      })
+    }
+  },
+  { immediate: true }
+)
+
+// A model the provider no longer serves is let go, once it has answered.
+watch(
+  () => list.value?.loading === false && !list.value.failed && list.value.models,
+  served => {
+    if (
+      served &&
+      localSelectedModelId.value &&
+      !served.some(m => m.id === localSelectedModelId.value)
+    ) {
+      localSelectedModelId.value = null
     }
   },
   { immediate: true }
@@ -194,7 +171,7 @@ watch(
 const handleRefreshModels = async () => {
   if (props.selectedProviderId) {
     try {
-      await loadModels()
+      await modelLists.load(props.selectedProviderId, kind.value)
       toast.add({
         severity: 'success',
         detail: 'Models refreshed',

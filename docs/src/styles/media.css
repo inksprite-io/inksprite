@@ -1,0 +1,20 @@
+/* Screenshots and videos of the app: its background is much like the page's,
+   in either theme, so each gets an edge to sit inside. A screenshot keeps its
+   own size where it fits. */
+.sl-markdown-content :is(img, video) {
+	display: block;
+	max-width: 100%;
+	height: auto;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.5rem;
+}
+
+.sl-markdown-content :is(video, audio) {
+	width: 100%;
+}
+
+/* A screenshot is taken in both themes, and the reader's shows. */
+:root[data-theme='dark'] .only-light,
+:root[data-theme='light'] .only-dark {
+	display: none;
+}

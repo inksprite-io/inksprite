@@ -11,10 +11,9 @@ From the [Noun Project](https://thenounproject.com), each under
 named. The SVGs as downloaded are in `app/public/static/icons/`, named for
 the icon's number on the site. Most are drawn in the app by a component in
 `app/src/components/icons/` with the same paths and a fill of the app's
-choosing; `magic-books-light.svg` and `magic-books-dark.svg`, the welcome
-dialog's art, are adapted from "magic books", the dark one filled white. The data behind this table is
-`app/src/config/credits.js`, and a test checks that every downloaded icon
-and every icon component is accounted for there.
+choosing. The data behind this table is `app/src/config/credits.js`, and a
+test checks that every downloaded icon and every icon component is accounted
+for there.
 
 `DatabaseIcon`, `RetryIcon`, `SendIcon` and `SpeakerIcon` were drawn for
 inksprite and are under the AGPL with the rest of the code.
@@ -32,14 +31,15 @@ inksprite and are under the AGPL with the rest of the code.
 | [Clapperboard](https://thenounproject.com/icon/7940133/)    | Anamika singh        | not used yet                                    |
 | [dock bottom](https://thenounproject.com/icon/5498091/)     | Gregor Cresnar       | not used yet                                    |
 | [Electronics](https://thenounproject.com/icon/3010895/)     | Fauzan Adiima        | `ChipIcon`                                      |
-| [Electronics](https://thenounproject.com/icon/381125/)      | Marie Van den Broeck | `ElectronicsIcon`                               |
+| [Electronics](https://thenounproject.com/icon/381125/)      | Marie Van den Broeck | not used yet                                    |
 | [Full Screen](https://thenounproject.com/icon/446783/)      | Ruben Semedo         | `FullScreenIcon`                                |
 | [in process](https://thenounproject.com/icon/3674578/)      | Laura                | `InProcessIcon`                                 |
 | [Library](https://thenounproject.com/icon/1554694/)         | Rich Paul            | `LibraryIcon`                                   |
 | [Magic Book](https://thenounproject.com/icon/4243101/)      | Juicy Fish           | `MagicBookIcon`                                 |
 | [Magic Book](https://thenounproject.com/icon/7640296/)      | Icon Set             | `MagicBookAltIcon`                              |
-| [magic books](https://thenounproject.com/icon/4420245/)     | Alice Noir           | `magic-books-light.svg`, `magic-books-dark.svg` |
+| [magic books](https://thenounproject.com/icon/4420245/)     | Alice Noir           | not used yet                                    |
 | [navigation menu](https://thenounproject.com/icon/5498011/) | Gregor Cresnar       | `NavigationMenuIcon`                            |
+| [Network](https://thenounproject.com/icon/1571006/)         | Three Six Five       | `NetworkIcon`                                   |
 | [open book](https://thenounproject.com/icon/2762314/)       | b farias             | not used yet                                    |
 | [open book](https://thenounproject.com/icon/2762478/)       | b farias             | `BookIcon`                                      |
 | [Pen](https://thenounproject.com/icon/6871999/)             | LAFS                 | `PenIcon`                                       |
@@ -55,9 +55,3 @@ inksprite and are under the AGPL with the rest of the code.
 | [storyboard](https://thenounproject.com/icon/7655500/)      | Fahrul Saputra       | `StoryboardIcon`                                |
 | [write](https://thenounproject.com/icon/8002193/)           | Vector Place         | `WriteIcon`                                     |
 | [write book](https://thenounproject.com/icon/6152090/)      | Ayub Irawan          | `WriteBookIcon`                                 |
-
-## Font
-
-[X Typewriter](https://ggbot.net) by GGBotNet, under the
-[SIL Open Font License 1.1](https://openfontlicense.org). The license is
-beside the font files, in `app/public/static/fonts/License.txt`.

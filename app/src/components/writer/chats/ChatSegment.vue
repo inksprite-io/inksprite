@@ -6,7 +6,7 @@
          because a strip of buttons reserved above every segment would cost more
          room than a run of them is worth — but the words make way for it (see
          below), so it never sits on top of them. A piece that is the whole of
-         its turn shows none of its own: the turn's header asks for it. -->
+         its turn shows none of its own: the turn's buttons ask for it. -->
     <div
       v-if="showActions"
       :class="[
@@ -229,7 +229,7 @@ const props = defineProps({
   segment: { type: Object, required: true },
   /**
    * Whether this piece is the whole of its turn, in which case the turn's
-   * header asks its questions for it and it shows no buttons of its own.
+   * buttons ask its questions for it and it shows none of its own.
    */
   alone: { type: Boolean, default: false },
   /**
@@ -345,6 +345,18 @@ const handleEditKeydown = event => {
 .prose :deep(table) {
   display: block;
   overflow-x: auto;
+}
+
+/* The markdown sits in a wrapper, so the prose rules that take the space off
+   its first and last blocks miss it: what the writer said started a
+   paragraph's margin below their name, and the turn's buttons sat one below
+   their last line. See ChatMessage, which has the same. */
+.prose :deep([data-find-text] > :first-child) {
+  margin-top: 0;
+}
+
+.prose :deep([data-find-text] > :last-child) {
+  margin-bottom: 0;
 }
 
 .typing-dot {

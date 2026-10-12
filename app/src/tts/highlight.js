@@ -1,11 +1,13 @@
 /**
  * @module tts/highlight
  * @description Where in a document each speaker's lines are, for the editor
- * to colour. The same reading of the document the narration makes — blocks,
- * and the speakers overlay resolved against them — kept to the blocks
- * somebody has been given, in a voice that has a colour.
+ * to colour, and what the filters leave out, for it to grey. The same
+ * reading of the document the narration makes — blocks, and the speakers
+ * overlay resolved against them — kept to the blocks somebody has been
+ * given, in a voice that has a colour.
  */
 
+import { filteredRanges } from './filters.js'
 import { blocksOfDoc, resolveSpeakers } from './script.js'
 
 /** @typedef {import('@/types/models.js').TtsVoice} TtsVoice */
@@ -45,4 +47,21 @@ export function speakerRanges(doc, assignments, voices) {
     }
   })
   return ranges
+}
+
+/**
+ * Where the filters match in a document, block by block.
+ *
+ * @param {import('prosemirror-model').Node} doc
+ * @param {RegExp[]} filters
+ * @returns {import('./filters.js').Range[]} Document positions
+ */
+export function skippedRanges(doc, filters) {
+  if (filters.length === 0) return []
+  return blocksOfDoc(doc).flatMap(block =>
+    filteredRanges(block.text, filters).map(({ from, to }) => ({
+      from: block.from + from,
+      to: block.from + to,
+    }))
+  )
 }

@@ -11,7 +11,9 @@
 
 import { fetch } from '@/platform/fetch.js'
 import { resolveAISettings } from './defaults.js'
-import { ATTRIBUTION_HEADERS, buildCompletionBody, chatCompletionsUrl } from './wire.js'
+import { attributionHeaders, buildCompletionBody, chatCompletionsUrl } from './wire.js'
+import { streamAnthropic } from './anthropic.js'
+import { traitsOf } from './models.js'
 
 /** @typedef {import('@/types/models.js').AIProvider} AIProvider */
 
@@ -47,10 +49,27 @@ export async function complete({
   signal,
   onChunk,
 }) {
+  if (provider.type === 'anthropic') {
+    let content = ''
+    const { usage, finishReason } = await streamAnthropic({
+      provider,
+      model,
+      messages,
+      settings: resolveAISettings(overrides),
+      signal,
+      onChunk: chunk => {
+        if (!chunk.content) return
+        content += chunk.content
+        onChunk?.(chunk.content)
+      },
+    })
+    return { content, usage, finishReason }
+  }
+
   /** @type {Record<string, string>} */
   const headers = {
     'Content-Type': 'application/json',
-    ...ATTRIBUTION_HEADERS,
+    ...attributionHeaders(provider),
     Accept: 'text/event-stream',
   }
   if (provider.apiKey) headers.Authorization = `Bearer ${provider.apiKey}`
@@ -61,6 +80,7 @@ export async function complete({
     provider,
     allowedProviders,
     settings: resolveAISettings(overrides),
+    traits: await traitsOf(provider, model),
   })
 
   const response = await fetch(chatCompletionsUrl(provider), {

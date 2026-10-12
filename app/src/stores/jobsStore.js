@@ -12,7 +12,8 @@
  * Written straight to storage rather than through `syncStore`: a step's
  * output is written once, when the step is done, and the jobs are read back
  * whole when the jobs toast first opens. The sync store's debounce would only add a
- * window in which a finished step was not yet safe.
+ * window in which a finished step was not yet safe. Until the toast opens they
+ * are only counted, which is all the Jobs button needs to know.
  */
 
 import { defineStore } from 'pinia'
@@ -28,6 +29,8 @@ export const useJobsStore = defineStore('jobs', () => {
   const jobs = shallowRef(new Map())
   /** Whether the jobs have been read in. */
   const loaded = ref(false)
+  /** How many jobs storage held when last counted, while they are not read in. */
+  const counted = ref(0)
 
   /**
    * Read every job in, whichever project it is for. A job found still
@@ -56,6 +59,21 @@ export const useJobsStore = defineStore('jobs', () => {
       triggerRef(jobs)
     } catch (error) {
       console.error('Failed to load jobs:', error)
+    }
+  }
+
+  /**
+   * Count the jobs kept from before, without reading them: a job's row holds
+   * the text it works through, which can wait for the toast.
+   *
+   * @returns {Promise<void>}
+   */
+  async function countJobs() {
+    if (loaded.value) return
+    try {
+      counted.value = await storage.count('jobs')
+    } catch (error) {
+      console.error('Failed to count jobs:', error)
     }
   }
 
@@ -137,6 +155,9 @@ export const useJobsStore = defineStore('jobs', () => {
     () => Array.from(jobs.value.values()).filter(job => job.status === 'running').length
   )
 
+  /** Whether there is a job, read in or not: the Jobs button shows only then. */
+  const hasJobs = computed(() => jobs.value.size > 0 || (!loaded.value && counted.value > 0))
+
   /**
    * Forget a project's jobs, read in or not: the project is being deleted.
    * A job still running is the runner's to stop first.
@@ -152,12 +173,14 @@ export const useJobsStore = defineStore('jobs', () => {
     for (const id of ids) jobs.value.delete(id)
     triggerRef(jobs)
     await storage.remove('jobs', [...ids])
+    await countJobs()
     return [...ids]
   }
 
   return {
     jobs,
     loadJobs,
+    countJobs,
     createJob,
     updateJob,
     updateStep,
@@ -166,5 +189,6 @@ export const useJobsStore = defineStore('jobs', () => {
     getJob,
     getJobs,
     runningCount,
+    hasJobs,
   }
 })

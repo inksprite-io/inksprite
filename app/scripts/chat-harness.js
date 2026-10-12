@@ -31,7 +31,7 @@ import { createInterface } from 'node:readline/promises'
 import { loadEndpoints } from '../harness/endpoints.js'
 import { AI_DEFAULTS, resolveAISettings } from '@/ai/defaults.js'
 import {
-  ATTRIBUTION_HEADERS,
+  attributionHeaders,
   buildCompletionBody,
   baseUrl,
   chatCompletionsUrl,
@@ -222,7 +222,7 @@ function headersFor(provider) {
   /** @type {Record<string, string>} */
   const headers = {
     'Content-Type': 'application/json',
-    ...ATTRIBUTION_HEADERS,
+    ...attributionHeaders(provider),
     Accept: 'text/event-stream',
   }
   if (provider.apiKey) headers.Authorization = `Bearer ${provider.apiKey}`

@@ -406,6 +406,76 @@ describe('the library as storage', () => {
     expect(byIdSorted(await again.documents(STORY))).toEqual(asRead(sample()))
   })
 
+  it("keeps a document's narration in its project's folder, and finds it when reopened", async () => {
+    const library = await withProject()
+    await library.storage.documents(STORY)
+    const clip = new TextEncoder().encode('RIFF one').buffer
+
+    await library.storage.writeAudio(STORY, 'ch1', 'abc', clip)
+    await library.storage.writeAudio(STORY, 'ch1', 'def', clip)
+
+    expect(library.outside.read('My Novel/.inksprite/audio/ch1/abc.wav')).toBe('RIFF one')
+    const again = reopened(library)
+    expect(await again.audioKeys(STORY, 'ch1')).toEqual(['abc', 'def'])
+    expect(new Uint8Array(await again.readAudio(STORY, 'ch1', 'abc'))).toEqual(new Uint8Array(clip))
+    expect(await again.readAudio(STORY, 'ch1', 'nope')).toBeNull()
+    expect(await again.audioKeys(STORY, 'ch2')).toEqual([])
+    // What a project is read from leaves its narration out.
+    expect(byIdSorted(await again.documents(STORY))).toEqual(asRead(sample()))
+  })
+
+  it('moves the narration with a renamed project, and leaves it out of a backup', async () => {
+    const library = await withProject()
+    await library.storage.documents(STORY)
+    await library.storage.writeAudio(STORY, 'ch1', 'abc', new TextEncoder().encode('RIFF').buffer)
+    const root = sample().find(row => row.id === ROOT)
+
+    await library.storage.write('documents', [put('documents', { ...root, title: 'The Door' })])
+
+    expect(await library.storage.audioKeys(STORY, 'ch1')).toEqual(['abc'])
+    const tables = await reopened(library).dump()
+    expect(JSON.stringify(tables)).not.toContain('RIFF')
+  })
+
+  it('deletes narration for good: clips asked for, a document gone, a project gone', async () => {
+    const library = await withProject()
+    await library.storage.documents(STORY)
+    const clip = new TextEncoder().encode('RIFF').buffer
+    for (const [id, key] of [
+      ['ch1', 'a'],
+      ['ch1', 'b'],
+      ['ch1', 'c'],
+      ['ch2', 'd'],
+      ['elara', 'e'],
+    ]) {
+      await library.storage.writeAudio(STORY, id, key, clip)
+    }
+
+    await library.storage.removeAudio(STORY, 'ch1', ['a', 'b'])
+    expect(await library.storage.audioKeys(STORY, 'ch1')).toEqual(['c'])
+    await library.storage.removeAudio(STORY, 'ch1')
+    expect(await library.storage.audioKeys(STORY, 'ch1')).toEqual([])
+
+    await library.storage.write('documents', [gone('documents', 'ch2')])
+    expect(await library.storage.audioKeys(STORY, 'ch2')).toEqual([])
+
+    await library.storage.write(
+      'documents',
+      sample().map(row => gone('documents', row.id))
+    )
+    expect(library.trashed.filter(path => path.includes('audio'))).toEqual([])
+    expect(library.trash.flatMap(item => [...item.files.keys()])).not.toContainEqual(
+      expect.stringContaining('/audio/')
+    )
+  })
+
+  it('keeps no narration in IndexedDB', async () => {
+    expect(dexieStorage.audioKept()).toBe(false)
+    await dexieStorage.writeAudio(STORY, 'ch1', 'abc', new ArrayBuffer(4))
+    expect(await dexieStorage.audioKeys(STORY, 'ch1')).toEqual([])
+    expect(await dexieStorage.readAudio(STORY, 'ch1', 'abc')).toBeNull()
+  })
+
   it('keeps the app’s own tables in IndexedDB', async () => {
     const library = memoryLibrary()
     const storage = libraryStorage(library.disk)

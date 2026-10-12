@@ -16,7 +16,7 @@ const mountSettings = () =>
       stubs: {
         SystemSection: section('system'),
         AiConfigSection: section('ai'),
-        NarrationSection: section('narration'),
+        WorkflowsSection: section('workflows'),
         AboutSection: section('about'),
         ScrollPanel: { template: '<div><slot /></div>' },
       },
@@ -40,11 +40,12 @@ describe('Settings', () => {
     expect(wrapper.find('h2').text()).toBe('AI')
   })
 
-  it('has a section for the speech server', async () => {
+  it('leaves what a project is read aloud through to the narration panel', () => {
+    window.sessionStorage.setItem('ui.settings.section', JSON.stringify('narration'))
     const wrapper = mountSettings()
-    await wrapper.find('[data-section="narration"]').trigger('click')
-    expect(wrapper.find('[data-section-pane="narration"]').exists()).toBe(true)
-    expect(wrapper.find('h2').text()).toBe('Narration')
+    expect(wrapper.find('[data-section="narration"]').exists()).toBe(false)
+    // A section looked at before it went opens on the first.
+    expect(wrapper.find('[data-section-pane="system"]').exists()).toBe(true)
   })
 
   it('keeps data and debug under System rather than sections of their own', () => {
@@ -62,10 +63,10 @@ describe('Settings', () => {
 
   it('reopens on the section last looked at', async () => {
     const first = mountSettings()
-    await first.find('[data-section="narration"]').trigger('click')
+    await first.find('[data-section="workflows"]').trigger('click')
 
     const second = mountSettings()
-    expect(second.find('[data-section-pane="narration"]').exists()).toBe(true)
+    expect(second.find('[data-section-pane="workflows"]').exists()).toBe(true)
   })
 
   it('brings the section it opens on into view, wherever the strip is scrolled', async () => {

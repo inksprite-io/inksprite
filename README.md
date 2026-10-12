@@ -26,13 +26,12 @@ inksprite is free software under the
 [GNU Affero General Public License, version 3 or later](LICENSE).
 Copyright © 2025–2026 The inksprite Authors.
 
-### Icons and the font
+### Icons
 
 The icons are from the [Noun Project](https://thenounproject.com), each
 under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) by its
-creator, and the X Typewriter font is under the SIL Open Font License 1.1.
-Neither is covered by the AGPL. [CREDITS.md](CREDITS.md) lists them, and the
-app credits them under Settings › About.
+creator, and are not covered by the AGPL. [CREDITS.md](CREDITS.md) lists
+them, and the app credits them under Settings › About.
 
 ### The name and the logo
 

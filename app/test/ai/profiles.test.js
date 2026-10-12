@@ -67,13 +67,28 @@ describe('chat profiles', () => {
       expect(isBuiltInProfileId(null)).toBe(false)
     })
 
-    it('withholds every tool group from Roleplay', () => {
+    it('offers Roleplay the documents and withholds every other tool group', () => {
       const roleplay = getBuiltInProfile(ROLEPLAY_PROFILE_ID)
 
       // The ids are written out in the profile rather than imported, so this is
       // what keeps them honest: a renamed group would otherwise turn into a
       // profile that quietly offers the tools it means to withhold.
-      expect(roleplay.settings.disabledToolGroups.sort()).toEqual([...WITHHELD_GROUPS].sort())
+      expect([...roleplay.settings.disabledToolGroups].sort()).toEqual(
+        WITHHELD_GROUPS.filter(id => id !== 'documents').sort()
+      )
+    })
+
+    it('withholds the experimental skills from every built-in', () => {
+      expect(WITHHELD_GROUPS).toContain('experimental')
+      for (const profile of BUILT_IN_PROFILES) {
+        expect(profile.settings.disabledToolGroups, profile.name).toContain('experimental')
+      }
+    })
+
+    it('offers Default every other group', () => {
+      expect(getBuiltInProfile(CHAT_PROFILE_ID).settings.disabledToolGroups).toEqual([
+        'experimental',
+      ])
     })
 
     it('gives the roleplay profiles standing rules and Default none', () => {
@@ -154,7 +169,7 @@ describe('chat profiles', () => {
       expect(updates).toEqual({
         profileId: CHAT_PROFILE_ID,
         disabledTools: undefined,
-        disabledToolGroups: undefined,
+        disabledToolGroups: ['experimental'],
         projectContextEnabled: undefined,
         rules: undefined,
         // The chat's own choice of servers goes, so it follows the ones the

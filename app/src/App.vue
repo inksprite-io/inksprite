@@ -17,6 +17,7 @@ import { useApplicationState } from './composables/useApplicationState'
 import { useSkills } from './composables/useSkills'
 import { useUpdates } from './composables/useUpdates'
 import { useLibraryNotices } from './composables/useLibraryNotices'
+import { useJobsStore } from './stores/jobsStore.js'
 import { openLinkClicked } from './platform/open.js'
 
 // Page views go to Vercel Web Analytics only from a build that asks for them
@@ -32,6 +33,10 @@ const Analytics =
 // every chat, so the library is read as the app opens rather than when a
 // screen that lists it first does.
 useSkills()
+
+// The jobs left from before are counted as the app opens, so the Jobs button
+// is there for them; they are read in when the jobs toast first opens.
+useJobsStore().countJobs()
 
 // In the desktop app, an update is looked for as it opens, and offered once
 // it is downloaded.

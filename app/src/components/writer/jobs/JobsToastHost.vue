@@ -21,6 +21,7 @@ import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import JobsToast from './JobsToast.vue'
 import { useJobsToast } from '@/composables/useJobsToast.js'
+import { useJobsStore } from '@/stores/jobsStore.js'
 
 /**
  * Shows the jobs toast when it is opened — a job started, the rail's Jobs
@@ -29,6 +30,7 @@ import { useJobsToast } from '@/composables/useJobsToast.js'
  */
 const toast = useToast()
 const jobsToast = useJobsToast()
+const jobsStore = useJobsStore()
 
 watch(
   () => jobsToast.state.open,
@@ -44,6 +46,14 @@ watch(
       summary: 'Jobs',
       styleClass: '!bg-transparent !border-0 !shadow-none !outline-none',
     })
+  }
+)
+
+// The last job cleared, the toast goes with the button that opens it.
+watch(
+  () => jobsStore.hasJobs,
+  has => {
+    if (!has) jobsToast.closed()
   }
 )
 

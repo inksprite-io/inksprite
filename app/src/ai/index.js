@@ -2,7 +2,10 @@
  * AI Module
  *
  * Provides the AI context builder, the request format providers are spoken to
- * in, prompt defaults, provider routing, compaction (what a conversation reads
+ * in (OpenAI's chat completions, and Anthropic's own API for Claude — see
+ * ./anthropic.js), what each connection and model takes of the generation
+ * settings (./capabilities.js, from the model lists in ./models.js), prompt
+ * defaults, provider routing, compaction (what a conversation reads
  * as once it has outgrown its window — see ./compaction.js), what the model
  * has read of the project and what of it has changed since (./context/reads.js),
  * and the tool registry for the inksprite chat and summarize features.

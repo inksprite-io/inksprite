@@ -192,6 +192,15 @@ describe('useAISummarize', () => {
       )
     })
 
+    it('asks for the key of a hosted service other than OpenRouter in its settings', async () => {
+      mockAIConfig.getProvider.mockReturnValue({ name: 'Google Gemini', type: 'gemini' })
+      const composable = useAISummarize()
+
+      await expect(composable.handleSummarize(mockStoryId, mockSceneId)).rejects.toThrow(
+        'Add your Google Gemini key in Settings › AI.'
+      )
+    })
+
     it('should throw error when generic provider endpoint is missing', async () => {
       mockAIConfig.getProvider.mockReturnValue({
         ...mockProvider,

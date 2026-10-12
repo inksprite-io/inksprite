@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col" role="list" aria-label="Blocks">
+  <div class="flex flex-col" role="list" aria-label="Segments">
     <div
       v-for="(block, index) in blocks"
       :key="index"
@@ -29,12 +29,18 @@
         type="button"
         class="flex-1 min-w-0 text-left line-clamp-2 break-words text-surface-700 dark:text-surface-300"
         :title="block.text"
-        :aria-label="`Select block ${index + 1}: ${block.text}`"
+        :aria-label="`Select segment ${index + 1}: ${block.text}`"
         :aria-pressed="selected.has(index)"
         data-action="select"
         @click="select($event, index)"
       >
-        {{ block.text }}
+        <span
+          v-for="(piece, at) in pieces[index]"
+          :key="at"
+          :class="{ 'text-surface-400 dark:text-surface-500': piece.filtered }"
+          :data-filtered="piece.filtered || undefined"
+          >{{ piece.text }}</span
+        >
       </button>
 
       <!-- Who speaks it. Named where somebody was given the block; most are
@@ -76,8 +82,8 @@
         class="shrink-0 w-5 h-5 flex items-center justify-center rounded-full text-surface-500 disabled:opacity-40 disabled:cursor-default enabled:hover:bg-surface-300 enabled:dark:hover:bg-surface-600"
         :aria-label="generateLabel(index)"
         :title="generateLabel(index)"
-        :disabled="busy"
-        data-action="generate"
+        :disabled="busy || states[index] === 'skipped'"
+        data-action="generate-segment"
         @click="$emit('generate', index)"
       >
         <i class="pi pi-refresh text-[10px]" />
@@ -90,17 +96,20 @@
 <script setup>
 import { computed, ref } from 'vue'
 import Menu from 'primevue/menu'
+import { piecesOf } from '@/tts/filters.js'
 import { TINT } from '@/tts/highlight.js'
 
 /**
- * The document as it will be read: its blocks, each with who speaks it and
- * whether it has been read. A block's words select it: with Shift a run of
- * blocks, with Cmd or Ctrl one more or one fewer. A speaker is changed from a
- * menu on a block's chip, and on a selected block the pick is for all of the
- * selection: every paragraph one character speaks, given to their voice at
- * once. The selection is also what Narrate reads, when there is one. The
- * button before a block's words plays from there once there is audio, and the
- * one after reads that block on its own, again if it has been read.
+ * The document as it will be read: its blocks, which the writer sees as
+ * segments, each with who speaks it and whether it has been generated. A
+ * block's words select it: with Shift a run of blocks, with Cmd or Ctrl one
+ * more or one fewer. A speaker is changed from a menu on a block's chip, and
+ * on a selected block the pick is for all of the selection: every paragraph
+ * one character speaks, given to their voice at once. The selection is also
+ * what Generate reads, when there is one. The button before a block's words
+ * plays from there once there is audio, and the one after reads that block on
+ * its own, again if it has been read. What the filters leave out is greyed,
+ * and a block they take all of is not read.
  *
  * @typedef {Object} Props
  * @property {import('@/tts/script.js').Block[]} blocks
@@ -112,6 +121,7 @@ import { TINT } from '@/tts/highlight.js'
  * @property {number|null} [playing] - The block the track is at
  * @property {boolean} [playable] - Whether the track can be played from a block
  * @property {boolean} [busy] - Whether a run is under way, and no other can start
+ * @property {RegExp[]} [filters] - What is not read
  */
 const props = defineProps({
   blocks: { type: Array, required: true },
@@ -123,6 +133,7 @@ const props = defineProps({
   playing: { type: Number, default: null },
   playable: { type: Boolean, default: false },
   busy: { type: Boolean, default: false },
+  filters: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['assign', 'play', 'generate', 'update:selection'])
@@ -132,10 +143,18 @@ const STATE_ICONS = {
   missing: 'pi-circle',
   running: 'pi-spinner pi-spin',
   failed: 'pi-exclamation-circle',
+  skipped: 'pi-minus',
 }
 
 const voices = computed(() => /** @type {import('@/types/models.js').TtsVoice[]} */ (props.voices))
 const selected = computed(() => new Set(/** @type {number[]} */ (props.selection)))
+
+/** Each block's words, in what the filters take and what they leave. */
+const pieces = computed(() =>
+  /** @type {import('@/tts/script.js').Block[]} */ (props.blocks).map(block =>
+    piecesOf(block.text, /** @type {RegExp[]} */ (props.filters))
+  )
+)
 
 /**
  * The voice a block was given, if it was given one that is still there.
@@ -151,8 +170,8 @@ const nameOf = index =>
 /** @param {number} index */
 const speakerLabel = index =>
   speakerOf(index)
-    ? `Speaker for block ${index + 1}: ${nameOf(index)}`
-    : `Speaker for block ${index + 1}: ${nameOf(index)}, the default`
+    ? `Speaker for segment ${index + 1}: ${nameOf(index)}`
+    : `Speaker for segment ${index + 1}: ${nameOf(index)}, the default`
 
 /**
  * A block is coloured for the speaker it was given. What the default voice
@@ -180,15 +199,18 @@ const canPlay = index => props.playable && props.states[index] === 'ready'
 /** @param {number} index */
 const playLabel = index => {
   const state = props.states[index]
-  if (state === 'running') return `Block ${index + 1} is being read`
-  if (state === 'failed') return `Block ${index + 1} could not be read`
-  if (state === 'ready') return `Play from block ${index + 1}`
-  return `Block ${index + 1} has not been read`
+  if (state === 'running') return `Segment ${index + 1} is being generated`
+  if (state === 'failed') return `Segment ${index + 1} could not be generated`
+  if (state === 'ready') return `Play from segment ${index + 1}`
+  if (state === 'skipped') return `Segment ${index + 1} is skipped`
+  return `Segment ${index + 1} has not been generated`
 }
 
 /** @param {number} index */
 const generateLabel = index =>
-  props.states[index] === 'ready' ? `Read block ${index + 1} again` : `Read block ${index + 1}`
+  props.states[index] === 'ready'
+    ? `Regenerate segment ${index + 1}`
+    : `Generate segment ${index + 1}`
 
 /** Where a run of selected blocks starts from: the last block clicked alone. */
 const anchor = ref(-1)
@@ -264,7 +286,7 @@ const items = computed(() => {
     ...others.map(voice => ({ label: voice.name, command: () => pick(voice.id) })),
   ]
   return targets.value.length > 1
-    ? [{ label: `Speaker for ${targets.value.length} blocks`, items: choices }]
+    ? [{ label: `Speaker for ${targets.value.length} segments`, items: choices }]
     : choices
 })
 

@@ -53,6 +53,7 @@ export function libraryDisk() {
   return {
     projects: () => library.projects(),
     walk: dir => library.walk(dir),
+    list: dir => library.list(dir),
     read: paths => library.read(paths),
     readBytes: path => library.readBytes(path),
     apply: ops => library.apply(ops),

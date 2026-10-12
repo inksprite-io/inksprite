@@ -12,7 +12,14 @@ import {
   toolDefinitionFor,
 } from '@/ai/skills/index.js'
 import { getBuiltInProfile, ROLEPLAY_PROFILE_ID, CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
-import { getToolDefinitions, getToolDefinitionsFor } from '@/ai/tools/index.js'
+import {
+  EXPERIMENTAL_GROUP,
+  TOOL_GROUP_LABELS,
+  getToolDefinitions,
+  getToolDefinitionsFor,
+  isSkill,
+  toolGroupOf,
+} from '@/ai/tools/index.js'
 import { COMMANDS } from '@/ai/commands.js'
 
 describe('the skills registry', () => {
@@ -39,9 +46,16 @@ describe('the skills registry', () => {
       expect(registered.includes(skill.name), skill.name).toBe(skill.model)
     }
     expect(BUILT_IN_SKILLS.filter(skill => !skill.model).map(skill => skill.name)).toEqual([
-      'write',
       'compact',
     ])
+  })
+
+  it('offers Interpret and Write in the experimental group, as skills', () => {
+    for (const name of ['interpret', 'write']) {
+      expect(toolGroupOf(name), name).toBe(EXPERIMENTAL_GROUP)
+      expect(isSkill(name), name).toBe(true)
+    }
+    expect(TOOL_GROUP_LABELS[EXPERIMENTAL_GROUP]).toBe('Experimental')
   })
 
   it('offers each tool as its SKILL.md describes it', () => {

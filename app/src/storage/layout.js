@@ -8,6 +8,7 @@
  *   .inksprite/
  *     story.json              the project's own row, and the schema it is in
  *     narration/<id>.json     who speaks which block of a document
+ *     audio/<id>/<key>.wav    a document's narration, a clip to a block
  *     chats/                  see chats.js
  *     moving/                 where a move puts something out of the way
  *   Manuscript/               an ordered folder
@@ -64,6 +65,22 @@ export const MOVING = `${META}/moving`
 
 /** @param {string} id */
 export const narrationPath = id => `${META}/narration/${id}.json`
+
+/**
+ * Where a document's narration audio is kept: made again on asking, so
+ * deleted rather than trashed, and left out of a backup.
+ *
+ * @param {string} id - The document's
+ */
+export const audioDir = id => `${META}/audio/${id}`
+
+/**
+ * One clip of a document's narration.
+ *
+ * @param {string} id - The document's
+ * @param {string} key - What was said, hashed; see `tts/reading.js`
+ */
+export const audioPath = (id, key) => `${audioDir(id)}/${key}.wav`
 
 /**
  * What a document is on disk.

@@ -22,9 +22,25 @@ vi.mock('@/composables/useGenerationSettings', () => ({
 
 const preset = ref({ id: 'profile_1', toolsEnabled: true })
 const updatePreset = vi.fn()
+const providers = {
+  openrouter: { id: 'openrouter', type: 'openrouter' },
+  local: { id: 'local', type: 'generic', endpoint: 'http://box:1234/v1' },
+}
 
 vi.mock('@/composables/useAIConfig', () => ({
-  useAIConfig: () => ({ activeAIPreset: preset, updatePreset }),
+  useAIConfig: () => ({
+    activeAIPreset: preset,
+    updatePreset,
+    getProvider: id => providers[id] || null,
+  }),
+}))
+
+// The models each connection's list describes, by connection.
+const listed = ref({})
+vi.mock('@/composables/useModelLists', () => ({
+  useModelLists: () => ({
+    listOf: id => (listed.value[id] ? { models: listed.value[id] } : undefined),
+  }),
 }))
 
 /** Mount the group with the collapsible wrapper stubbed open. */
@@ -45,7 +61,7 @@ describe('AiGenerationGroup tool use', () => {
     vi.clearAllMocks()
     effective.value = { ...AI_DEFAULTS }
     overridden.value = new Set()
-    preset.value = { id: 'profile_1', toolsEnabled: true }
+    preset.value = { id: 'profile_1', toolsEnabled: true, providerId: 'openrouter' }
   })
 
   it('shows whether the preset allows tools at all', () => {
@@ -87,8 +103,8 @@ describe('AiGenerationGroup at 0', () => {
     effective.value = { ...AI_DEFAULTS, maxTokens: 0, maxToolRounds: 0 }
     const wrapper = mountGroup()
 
-    expect(wrapper.find('[data-zero="maxTokens"]').text()).toBe('The provider decides.')
-    expect(wrapper.find('[data-zero="maxToolRounds"]').text()).toBe('No limit.')
+    expect(wrapper.find('[data-zero="maxTokens"]').text()).toBe('Unlimited')
+    expect(wrapper.find('[data-zero="maxToolRounds"]').text()).toBe('Unlimited')
 
     effective.value = { ...AI_DEFAULTS, maxTokens: 500, maxToolRounds: 100 }
     const set = mountGroup()
@@ -98,6 +114,11 @@ describe('AiGenerationGroup at 0', () => {
 })
 
 describe('AiGenerationGroup names', () => {
+  beforeEach(() => {
+    preset.value = { id: 'profile_1', providerId: 'openrouter', model: 'some/model' }
+    listed.value = {}
+  })
+
   it('names every control after its setting, for a screen reader', () => {
     const wrapper = mountGroup()
     const named = label => wrapper.findAll(`[aria-label="${label}"]`).length
@@ -108,5 +129,73 @@ describe('AiGenerationGroup names', () => {
     expect(named('Show reasoning')).toBe(1)
     expect(named('Allow tool use')).toBe(1)
     expect(named('Reasoning effort')).toBeGreaterThanOrEqual(1)
+  })
+})
+
+describe('AiGenerationGroup reasoning', () => {
+  const effortSelect = wrapper => wrapper.findComponent({ name: 'Select' })
+  const showSwitch = wrapper => wrapper.find('[aria-label="Show reasoning"]')
+
+  beforeEach(() => {
+    effective.value = { ...AI_DEFAULTS }
+    preset.value = { id: 'profile_1', providerId: 'openrouter', model: 'some/model' }
+    listed.value = {}
+  })
+
+  it('offers a model only the efforts it takes, and shows the one it would be sent', () => {
+    // Always thinks, at two levels: no Disabled, and Medium is sent as High.
+    listed.value = {
+      openrouter: [
+        {
+          id: 'some/model',
+          traits: {
+            reasoning: { optional: false, levels: ['high', 'xhigh'], defaultLevel: 'high' },
+          },
+        },
+      ],
+    }
+    effective.value = { ...AI_DEFAULTS, reasoningEffort: 'medium' }
+    const select = effortSelect(mountGroup())
+
+    expect(select.props('options').map(option => option.value)).toEqual(['high', 'xhigh'])
+    expect(select.props('modelValue')).toBe('high')
+  })
+
+  it('offers what there always was while the model is not described', () => {
+    const select = effortSelect(mountGroup())
+
+    expect(select.props('options').map(option => option.value)).toEqual([
+      'disabled',
+      'enabled',
+      'low',
+      'medium',
+      'high',
+    ])
+  })
+
+  it('asks nothing of reasoning for a model that does not reason', () => {
+    listed.value = { openrouter: [{ id: 'some/model', traits: { reasoning: null } }] }
+    const wrapper = mountGroup()
+
+    expect(effortSelect(wrapper).exists()).toBe(false)
+    expect(showSwitch(wrapper).exists()).toBe(false)
+  })
+
+  it('keeps Show reasoning for a model with nothing to choose but that it reasons', () => {
+    listed.value = {
+      openrouter: [{ id: 'some/model', traits: { reasoning: { optional: false, levels: [] } } }],
+    }
+    const wrapper = mountGroup()
+
+    expect(effortSelect(wrapper).exists()).toBe(false)
+    expect(showSwitch(wrapper).exists()).toBe(true)
+  })
+
+  it('shows neither on a server that is told nothing of reasoning', () => {
+    preset.value = { id: 'profile_1', providerId: 'local', model: 'qwen' }
+    const wrapper = mountGroup()
+
+    expect(effortSelect(wrapper).exists()).toBe(false)
+    expect(showSwitch(wrapper).exists()).toBe(false)
   })
 })

@@ -18,7 +18,15 @@
 
 import { nanoid } from 'nanoid'
 import { dexieStorage } from './dexie.js'
-import { layoutProject, readProject, wantedTexts, STORY_FILE } from './layout.js'
+import {
+  audioDir,
+  audioPath,
+  layoutProject,
+  readProject,
+  wantedTexts,
+  META,
+  STORY_FILE,
+} from './layout.js'
 import { planProject, projectFiles, storyText } from './plan.js'
 import {
   chatPath,
@@ -60,11 +68,13 @@ import { PROJECT_TABLES as PROJECT_TABLE_NAMES } from './index.js'
  * @typedef {{op: 'write', path: string, text?: string, bytes?: Uint8Array, expect?: Seen|null}
  *   | {op: 'append', path: string, at: number, text: string, size: number}
  *   | {op: 'move', from: string, to: string}
- *   | {op: 'trash', path: string}} LibraryOp
+ *   | {op: 'trash', path: string}
+ *   | {op: 'delete', path: string}} LibraryOp
  *
  * @typedef {Object} LibraryDisk
  * @property {() => Promise<{projects: string[], taken: string[]}>} projects
  * @property {(dir: string) => Promise<{files: Array<{path: string} & Seen>, closed: string[]}>} walk
+ * @property {(dir: string) => Promise<string[]>} list - The names of the files in a folder
  * @property {(paths: string[]) => Promise<Record<string, string>>} read
  * @property {(path: string) => Promise<Uint8Array|null>} readBytes
  * @property {(ops: LibraryOp[]) => Promise<{seen: Record<string, Seen>, conflicts: string[]}>} apply
@@ -535,7 +545,11 @@ export function libraryStorage(disk, options = {}) {
    */
   const trashProject = async project => {
     if (project.dir) {
-      await disk.apply([{ op: 'trash', path: project.dir }])
+      // Its narration is made again on asking, and would fill the trash.
+      await disk.apply([
+        { op: 'delete', path: under(project.dir, `${META}/audio`) },
+        { op: 'trash', path: project.dir },
+      ])
       libraryTaken.delete(nameKey(project.dir))
     }
     projects.delete(project.id)
@@ -603,6 +617,11 @@ export function libraryStorage(disk, options = {}) {
         project.bytes.delete(id)
       }
       await apply(project, ops)
+      const gone = own.filter(change => change.op === 'delete').map(change => change.id)
+      if (gone.length > 0) {
+        const dir = /** @type {string} */ (project.dir)
+        await disk.apply(gone.map(id => ({ op: 'delete', path: under(dir, audioDir(id)) })))
+      }
       project.entries = entries
       project.rows = new Map([...next].map(([id, document]) => [id, sketch(document)]))
       if (root) project.root = sketch(root)
@@ -877,9 +896,53 @@ export function libraryStorage(disk, options = {}) {
     projects.set(story.id, project)
   }
 
+  /**
+   * A project's folder below the library, once it has one.
+   *
+   * @param {string} storyId
+   */
+  const dirOf = async storyId => {
+    await list()
+    return projects.get(storyId)?.dir ?? null
+  }
+
   /** @type {Storage} */
   const storage = {
     ...dexieStorage,
+
+    audioKept: () => true,
+
+    audioKeys: (storyId, documentId) =>
+      inTurn(async () => {
+        const dir = await dirOf(storyId)
+        if (!dir) return []
+        const names = await disk.list(under(dir, audioDir(documentId)))
+        return names.filter(name => name.endsWith('.wav')).map(name => name.slice(0, -4))
+      }),
+
+    readAudio: (storyId, documentId, key) =>
+      inTurn(async () => {
+        const dir = await dirOf(storyId)
+        const bytes = dir ? await disk.readBytes(under(dir, audioPath(documentId, key))) : null
+        return bytes ? bytes.slice().buffer : null
+      }),
+
+    writeAudio: (storyId, documentId, key, audio) =>
+      inTurn(async () => {
+        const dir = await dirOf(storyId)
+        if (!dir) return
+        const path = under(dir, audioPath(documentId, key))
+        await disk.apply([{ op: 'write', path, bytes: new Uint8Array(audio) }])
+      }),
+
+    removeAudio: (storyId, documentId, keys) =>
+      inTurn(async () => {
+        const dir = await dirOf(storyId)
+        if (!dir) return
+        const paths = keys ? keys.map(key => audioPath(documentId, key)) : [audioDir(documentId)]
+        if (paths.length === 0) return
+        await disk.apply(paths.map(path => ({ op: 'delete', path: under(dir, path) })))
+      }),
 
     stories: () =>
       inTurn(async () => {

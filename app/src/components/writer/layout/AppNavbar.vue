@@ -21,8 +21,9 @@
     <div class="flex flex-col items-center">
       <div class="border-t border-surface-0 dark:border-surface-600 my-2 w-[80%]" />
       <!-- The jobs are not a list of the sidebar's but a toast of their own,
-           which this opens and closes -->
+           which this opens and closes, there while there are any -->
       <RailButton
+        v-if="jobsStore.hasJobs"
         tooltip="Jobs"
         toggle
         :active="jobsToast.state.open"
@@ -53,8 +54,8 @@ import { useJobsToast } from '@/composables/useJobsToast.js'
 
 /**
  * The rail. Top to bottom: what the sidebar can show — the outline, the
- * chats, the narration, the comments — then, at the foot, the jobs toast's button and the
- * settings. Picking the list showing hides the sidebar, which is how it is
+ * chats, the narration, the comments — then, at the foot, the jobs toast's button, while
+ * there are jobs, and the settings. Picking the list showing hides the sidebar, which is how it is
  * hidden; the editor and the chat hide each other from their own headers.
  * The projects are switched from the top of the outline.
  *

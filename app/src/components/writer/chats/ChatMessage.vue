@@ -3,8 +3,8 @@
        useChatFind. -->
   <div class="group/message relative" :data-message-id="messageId">
     <!-- What is asked of this message rather than of its turn, only when the
-         two differ: a turn that is one message has these asked in its header
-         (see ChatTurn), and every turn the writer takes is one message however
+         two differ: a turn that is one message has these asked by its own
+         buttons (see ChatTurn), and every turn the writer takes is one message however
          it was taken (see useChatCommands). So this only ever floats over
          narration, where a strip reserved above it would cost more room than
          it is worth — never over segments, whose own buttons float in this
@@ -566,10 +566,10 @@ const props = defineProps({
   messageId: { type: String, required: true },
   storyId: { type: String, required: true },
   showReasoning: { type: Boolean, default: true },
-  // Whether this message is its whole turn, in which case the turn's header
-  // asks its questions for it and it shows no buttons of its own.
+  // Whether this message is its whole turn, in which case the turn's buttons
+  // ask its questions for it and it shows none of its own.
   alone: { type: Boolean, default: false },
-  // Shown as the model is sent it, when the turn's header asked for that.
+  // Shown as the model is sent it, when the turn's menu asked for that.
   raw: { type: Boolean, default: false },
   // What the turn being generated into this message is doing right now, or
   // null when none is. Live, not stored: see TurnActivity in useAIChat.js.
@@ -647,7 +647,7 @@ const cancelEdit = () => {
 }
 
 // Opening the editor is this message's own business, and the one thing the
-// turn's header reaches into it for.
+// turn's buttons reach into it for.
 defineExpose({ startEditing })
 
 /**
@@ -1122,11 +1122,16 @@ const formattedThinkingTime = computed(() => {
   overflow-x: auto;
 }
 
-/* The markdown sits in a wrapper, so the prose rule that takes the space off
-   its first block misses it: a reply that opens with a heading started a
-   heading's margin below its header. */
+/* The markdown sits in a wrapper, so the prose rules that take the space off
+   its first and last blocks miss it: a reply that opens with a heading started
+   a heading's margin below its header, and every reply ended a paragraph's
+   margin above its turn's buttons. */
 .prose :deep([data-find-text] > :first-child) {
   margin-top: 0;
+}
+
+.prose :deep([data-find-text] > :last-child) {
+  margin-bottom: 0;
 }
 
 /* Enable line wrapping in code blocks */

@@ -35,7 +35,7 @@
           role="tab"
           :tabindex="item.id === tabStop ? 0 : -1"
           :aria-selected="item.id === activeId"
-          :aria-label="item.plain ? `${item.title}, plain text` : item.title"
+          :aria-label="tabLabel(item)"
           :title="item.path || item.title"
           :data-tab-id="item.id"
           :data-preview="item.preview || undefined"
@@ -54,13 +54,21 @@
         >
           <!-- The path gives way before the title does, which is the part that
            says what the tab is. A preview reads in italics until it is kept.
-           A document in the plain text editor is marked so before it. -->
+           A document in the plain text editor is marked so before it, and a
+           chat's text as the chat's. -->
           <i
             v-if="item.plain"
             class="pi pi-code flex-none text-surface-500 dark:text-surface-400"
             style="font-size: 0.7rem"
             aria-hidden="true"
             data-plain
+          ></i>
+          <i
+            v-else-if="item.chat"
+            class="pi pi-comment flex-none text-surface-500 dark:text-surface-400"
+            style="font-size: 0.7rem"
+            aria-hidden="true"
+            data-chat
           ></i>
           <span class="flex-1 min-w-0 flex items-baseline" :class="{ italic: item.preview }">
             <span
@@ -119,6 +127,8 @@ import ContextMenu from 'primevue/contextmenu'
  * @property {string} [path] - The whole path, for the tooltip
  * @property {boolean} [preview] - Only being looked at, and not yet kept
  * @property {boolean} [plain] - In the plain text editor rather than laid out
+ * @property {string} [chat] - The chat whose text the tab holds, by its
+ *   title, for a tab that holds a chat's text rather than a document
  *
  * @typedef {Object} Props
  * @property {TabItem[]} items - The open documents, in strip order
@@ -134,6 +144,14 @@ const props = defineProps({
 
 const emit = defineEmits(['activate', 'close', 'keep'])
 
+/**
+ * What a tab is called to a screen reader: its title, and what the mark
+ * before it says to the eye.
+ * @param {TabItem} item
+ */
+const tabLabel = item =>
+  item.plain ? `${item.title}, plain text` : item.chat ? `${item.title}, ${item.chat}` : item.title
+
 const menu = ref()
 /** The tab the menu was opened on. @type {import('vue').Ref<string|null>} */
 const menuFor = ref(null)
@@ -146,7 +164,7 @@ const menuItems = computed(() =>
  * @param {MouseEvent} event
  */
 const openMenu = (id, event) => {
-  if (!props.actions) return
+  if (!props.actions || props.actions(id).length === 0) return
   menuFor.value = id
   menu.value?.show(event)
 }

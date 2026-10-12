@@ -67,6 +67,7 @@ export const clearChatsInstances = () => {
 /**
  * @typedef {{
  *   init: () => Promise<void>,
+ *   ready: import('vue').Ref<boolean>,
  *   chats: import('vue').ComputedRef<Chat[]>,
  *   chatMessages: import('vue').Ref<Map<string, Message[]>>,
  *   createChat: (title?: string, profileId?: string) => Chat|null,
@@ -657,6 +658,7 @@ export const useChats = storyId => {
   const instance = {
     // init
     init,
+    ready,
 
     // State
     chats, // Computed property for current story's chats

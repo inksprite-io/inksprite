@@ -85,7 +85,7 @@ describe('ChatProfileMenu', () => {
 
     const now = chats.getChatById(chat.id)
     expect(now.profileId).toBe(CHAT_PROFILE_ID)
-    expect(now.disabledToolGroups).toBeUndefined()
+    expect(now.disabledToolGroups).toEqual(['experimental'])
     expect(now.rules).toBeUndefined()
     expect(now.projectContextEnabled).toBeUndefined()
   })

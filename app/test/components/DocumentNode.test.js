@@ -487,16 +487,6 @@ describe('DocumentNode', () => {
     })
   })
 
-  it('says an open folder is empty, and not once something is in it', async () => {
-    const act = api.createFolder('manuscript_story_1', 'First Act')
-    const wrapper = mountNode(act.id)
-    expect(wrapper.find('[data-empty-folder]').text()).toBe('Empty')
-
-    api.createTextDocument(act.id, 'Opening')
-    await wrapper.vm.$nextTick()
-    expect(wrapper.find('[data-empty-folder]').exists()).toBe(false)
-  })
-
   it('dims everything under a hidden folder', () => {
     const act = api.createFolder('manuscript_story_1', 'First Act')
     api.createTextDocument(act.id, 'Opening')

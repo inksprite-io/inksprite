@@ -39,6 +39,28 @@ describe('ExpandableSection', () => {
     expect(wrapper.find('h3 button').attributes('aria-expanded')).toBe('true')
   })
 
+  it('comes back as it was left, from its first render', async () => {
+    window.sessionStorage.setItem('expandable-section-segments', 'false')
+    const closed = show({ storageKey: 'segments', defaultExpanded: true })
+    // Not drawn open and then folded away.
+    expect(closed.find('h3 button').attributes('aria-expanded')).toBe('false')
+    expect(closed.find('[data-content]').element.parentElement.style.display).toBe('none')
+
+    await closed.find('h3 button').trigger('click')
+    expect(window.sessionStorage.getItem('expandable-section-segments')).toBe('true')
+    expect(show({ storageKey: 'segments' }).find('h3 button').attributes('aria-expanded')).toBe(
+      'true'
+    )
+  })
+
+  it('opens as it is told to when it has not been opened or closed', () => {
+    expect(
+      show({ storageKey: 'segments', defaultExpanded: true })
+        .find('h3 button')
+        .attributes('aria-expanded')
+    ).toBe('true')
+  })
+
   it('leaves a click on its actions to them', async () => {
     const wrapper = show({}, { actions: '<input type="checkbox" data-switch />' })
 

@@ -178,18 +178,6 @@
       @close="setSummaryVisible(false)"
     />
 
-    <!-- An open folder with nothing in it says so, rather than leave a gap.
-         Its list below takes no room then, and a drop near it still lands
-         in it, as one on the folder's row does. -->
-    <p
-      v-if="isFolder && expanded && childList.length === 0"
-      class="py-0.5 text-xs italic text-surface-400 dark:text-surface-500 select-none"
-      :style="{ paddingLeft: `${(depth + 1) * 12 + 24}px` }"
-      data-empty-folder
-    >
-      Empty
-    </p>
-
     <!-- Children -->
     <Draggable
       v-if="isFolder && expanded"

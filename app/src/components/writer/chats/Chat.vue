@@ -17,30 +17,25 @@
       v-show="!showSettings"
       class="w-full h-full flex flex-col bg-surface-0 dark:bg-surface-800"
     >
-      <!-- Header, the height of the editor's tab strip, since the two sit
-         side by side. -->
-      <div
-        class="w-full h-9 flex-none flex items-center gap-1 px-1 bg-surface-100 dark:bg-surface-800 border-b border-surface-200 dark:border-surface-700"
-      >
+      <!-- The chat's title, and the profile it runs on beside it. -->
+      <PanelHeader :title="chatTitle">
         <!-- Back to the list, where the list is behind this panel; otherwise
            whatever the panel puts here, which beside the editor is the
            toggle for it. -->
-        <Button
-          v-if="showBack"
-          type="button"
-          icon="pi pi-chevron-left"
-          severity="secondary"
-          size="small"
-          rounded
-          class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700"
-          aria-label="Back"
-          @click="handleBack"
-        />
-        <slot v-else name="header-start"><div class="w-7" /></slot>
-        <!-- Chat title, and the profile the chat runs on beside it -->
-        <h2 class="text-sm font-semibold truncate flex-1 min-w-0 px-1">
-          {{ chatTitle }}
-        </h2>
+        <template #start>
+          <Button
+            v-if="showBack"
+            type="button"
+            icon="pi pi-chevron-left"
+            severity="secondary"
+            size="small"
+            rounded
+            class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700"
+            aria-label="Back"
+            @click="handleBack"
+          />
+          <slot v-else name="header-start"><div class="w-7" /></slot>
+        </template>
         <ChatProfileMenu :story-id="props.storyId" :chat-id="props.chatId" />
         <!-- Finding in the chat, which the browser's find cannot do for the
            turns not in the page. Here for a phone, which has no key for it. -->
@@ -71,7 +66,7 @@
           aria-label="New chat"
           @click="emit('new-chat')"
         />
-      </div>
+      </PanelHeader>
       <!-- Finding in the chat. See useChatFind. -->
       <FindBar
         v-if="finding"
@@ -335,6 +330,7 @@ import ChatTurn from './ChatTurn.vue'
 import ChatSettings from './ChatSettings.vue'
 import ChatCommandMenu from './ChatCommandMenu.vue'
 import ChatProfileMenu from './ChatProfileMenu.vue'
+import PanelHeader from '../layout/PanelHeader.vue'
 import FindBar from '@/components/common/FindBar.vue'
 import InitialProviderSetup from '@/components/common/InitialProviderSetup.vue'
 import { useChats } from '@/composables/useChats'

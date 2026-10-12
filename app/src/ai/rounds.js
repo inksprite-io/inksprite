@@ -15,6 +15,12 @@
  * which tells the model, and the rest are taken off the record: nothing was
  * run for them, and the request that follows has no call without an answer.
  *
+ * A draw is the exception to running a call once. Two shots are two rolls of
+ * `1d20`, written the same: on 12 Oct 2026 Claude Sonnet 5.5 rolled for each
+ * of a gunman's two shots in one round, and the second was refused. A call to
+ * a tool that draws by chance runs each time it is asked for, up to the limit
+ * like any other.
+ *
  * Nor does a round run a call to a tool its request did not offer. Every call
  * a chat made goes back with it, so a model sees the tools it was offered once
  * and can reach for one after the writer has switched it off: on 10 Oct 2026
@@ -55,10 +61,14 @@ function asked(call) {
  * leaves out in all.
  *
  * @param {ToolCall[]} calls - What the model asked for, in order
- * @param {number} [limit]
+ * @param {Object} [options]
+ * @param {number} [options.limit]
+ * @param {(name: string) => boolean} [options.draws] - Whether a tool draws
+ *   by chance, so that asking for it again is another draw rather than a
+ *   repeat. See `drawsByChance` in ai/tools.
  * @returns {{run: ToolCall[], refused: ToolCall|null, left: number}}
  */
-export function trimRound(calls, limit = ROUND_LIMIT) {
+export function trimRound(calls, { limit = ROUND_LIMIT, draws = () => false } = {}) {
   const seen = new Set()
   /** @type {ToolCall[]} */
   const run = []
@@ -66,7 +76,8 @@ export function trimRound(calls, limit = ROUND_LIMIT) {
   const over = []
   for (const call of calls || []) {
     const key = asked(call)
-    if (seen.has(key) || run.length >= limit) {
+    const repeat = seen.has(key) && !draws(call.function?.name || '')
+    if (repeat || run.length >= limit) {
       over.push(call)
       continue
     }

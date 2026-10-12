@@ -33,6 +33,22 @@ describe('trimRound', () => {
     expect(left).toBe(2)
   })
 
+  it('runs a draw asked for again as another draw, up to the limit', () => {
+    const draws = name => name === 'roll_dice'
+    const shots = [
+      call('a', 'roll_dice', '{"dice":"1d20"}'),
+      call('b', 'roll_dice', '{"dice":"1d20"}'),
+    ]
+
+    expect(trimRound(shots, { draws })).toEqual({ run: shots, refused: null, left: 0 })
+    expect(trimRound(shots).refused?.id).toBe('b')
+
+    const many = Array.from({ length: ROUND_LIMIT + 1 }, (_, i) =>
+      call(`d${i}`, 'roll_dice', '{"dice":"1d20"}')
+    )
+    expect(trimRound(many, { draws }).refused?.id).toBe(`d${ROUND_LIMIT}`)
+  })
+
   it('runs no more than the limit of distinct calls', () => {
     const calls = Array.from({ length: ROUND_LIMIT + 5 }, (_, i) =>
       call(`c${i}`, 'read_document', JSON.stringify({ path: `doc ${i}` }))

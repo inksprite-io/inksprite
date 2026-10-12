@@ -17,6 +17,7 @@ import { rolesToSkills } from './migrations/profileSkills.js'
 import { rolesToWorkflows } from './migrations/jobWorkflows.js'
 import { withoutModelKeeps } from './migrations/modelKeeps.js'
 import { allowedProvidersToPresets } from './migrations/allowedProviders.js'
+import { experimentalOffChats, experimentalOffProfiles } from './migrations/experimentalSkills.js'
 import { viewsOffStories } from './migrations/projectViews.js'
 
 /**
@@ -409,6 +410,19 @@ db.version(27)
     }
     console.log(`Moved where ${moved} projects were left off their stories`)
   })
+
+// Interpret and Write are in a group of their own, which every built-in profile
+// starts with off; a chat or a profile from before has it off too, rather than
+// being offered both.
+db.version(28).upgrade(async tx => {
+  const { chats, moved } = experimentalOffChats(await tx.table('chats').toArray())
+  if (moved > 0) await tx.table('chats').bulkPut(chats)
+  const stamped = experimentalOffProfiles(await tx.table('chatProfiles').toArray())
+  if (stamped.moved > 0) await tx.table('chatProfiles').bulkPut(stamped.profiles)
+  console.log(
+    `Switched the experimental skills off on ${moved} chats and ${stamped.moved} profiles`
+  )
+})
 
 // A summary is stored where it is read: above the turns it kept, rather than at
 // the end of the chat with a count of how far to hoist it. What the writer

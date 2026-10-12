@@ -1,14 +1,67 @@
 # docs.inksprite.io
 
-The documentation site, built with [Starlight](https://starlight.astro.build).
-
-The guide is being rewritten. Until it is, the site is a single page,
-`src/content/docs/about.md`: privacy, the terms of service and the credits.
-Every page the old guide had redirects there (see `astro.config.mjs`), since
-the app and old posts still link to some of them.
+The documentation site, built with [Starlight](https://starlight.astro.build):
+the getting-started guide, and the About page (privacy, the terms of service
+and the credits). Every page the old guide had redirects to one of the two (see
+`astro.config.mjs`), since the app and old posts still link to some of them.
 
 ```bash
 npm install
 npm run dev      # http://localhost:4321
 npm run build    # the static site, in dist/
 ```
+
+## Screenshots and videos
+
+The guides' pictures are taken from the app by a script, so they can be taken
+again whenever the UI changes:
+
+```bash
+npm run capture
+```
+
+It needs the app's dependencies installed (`npm install` in `app/`). It starts
+the app on a port of its own and, for each guide, opens it in a new browser
+profile and does what the guide says: getting started in
+`capture/walkthrough.js`, narration in `capture/narration.js`. It does each
+once in the light theme and once in the dark, whose pictures' names end in
+`-dark`. The guide shows the ones in
+the reader's theme, and a click on a screenshot shows it whole. Screenshots go
+to `src/assets/guide/` and videos to `public/guide/`; `git status` then shows
+which ones changed. A step that no longer works stops the run, with what the
+page showed in `capture-failed.png`. `npm run capture -- --theme dark` takes
+one theme only, and `npm run capture -- --guide narration` one guide.
+
+OpenRouter, LM Studio and Kokoro are a stand-in (`capture/stand-in.js`), with
+replies written for the guide and silence for speech, so a run needs no
+account or model and comes out the same every time. The narration guide reads
+Project Gutenberg's EPUB of *Frankenstein*, which the first run downloads into
+`capture/`. Its recording
+of the letter, `public/guide/frankenstein-letter-1.mp3`, was made by hand with
+a real Kokoro. Videos are only replaced when what they show changes (their
+fingerprints are in `public/guide/fingerprints.json`); a change that only
+restyles a step in the middle of one shows in the screenshots, and
+`npm run capture -- --videos` records them all again.
+
+To add a picture, take it in the guide's walkthrough with `ui.shot(name)` or
+`ui.record(name, steps)`, and put it in the guide with
+`<Screenshot name="…" alt="…" />` or `<Clip name="…" label="…" />`, which
+find both themes' copies by the name.
+
+### OpenRouter's own pages
+
+The sign-up and authorize pages are OpenRouter's, and need an account, so they
+have a script of their own, to run when OpenRouter changes them. It takes them
+in both themes too:
+
+```bash
+npm run capture:openrouter
+```
+
+It signs in with an account made for the docs (never your own: its name shows
+on the authorize page). The email and password go on two lines in
+`.claude/openrouter-docs-key` at the repository root, which is gitignored; the
+session is kept in `capture/.openrouter-session.json` for the next run. If
+OpenRouter emails a code to confirm the sign-in, the run waits for it in
+`capture/.openrouter-code`. Without the account it takes the sign-up page
+alone.

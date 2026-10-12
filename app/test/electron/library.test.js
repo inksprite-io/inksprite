@@ -176,6 +176,28 @@ describe('writing in the library', () => {
     expect(await there('Novel/Old')).toBe(false)
   })
 
+  it('deletes narration audio for good, and refuses to delete anything else', async () => {
+    await put('Novel/.inksprite/audio/doc_1/a.wav', 'a')
+    await put('Novel/.inksprite/audio/doc_2/b.wav', 'b')
+    await put('Novel/Notes/c.md', 'c')
+
+    await library.apply([
+      { op: 'delete', path: 'Novel/.inksprite/audio/doc_1/a.wav' },
+      { op: 'delete', path: 'Novel/.inksprite/audio/doc_2' },
+      { op: 'delete', path: 'Novel/.inksprite/audio/doc_3' },
+    ])
+    expect(await there('Novel/.inksprite/audio/doc_1/a.wav')).toBe(false)
+    expect(await there('Novel/.inksprite/audio/doc_2')).toBe(false)
+    expect(trashed).toEqual([])
+
+    for (const path of ['Novel/Notes/c.md', 'Novel/.inksprite', 'Novel/.inksprite/audio-x/d']) {
+      await expect(library.apply([{ op: 'delete', path }])).rejects.toThrow(
+        'Only narration audio is deleted'
+      )
+    }
+    expect(await there('Novel/Notes/c.md')).toBe(true)
+  })
+
   it('keeps what goes in a trash of its own where the system has none', async () => {
     electron.shell.trashItem.mockRejectedValueOnce(new Error('no trash here'))
     await put('x.md', 'x')
@@ -203,6 +225,7 @@ describe('reading the library', () => {
     await put('Novel/.folder.md', 'root')
     await put('Novel/.inksprite/story.json', '{}')
     await put('Novel/.inksprite/chats/chat_1.jsonl', '')
+    await put('Novel/.inksprite/audio/doc_1/a.wav', 'a')
     await put('Novel/Notes/.folder.md', 'notes')
     await put('Novel/Notes/Elara.md', 'Tall.')
     await put('Novel/Notes/tool/.repository.json', '{}')
@@ -223,6 +246,15 @@ describe('reading the library', () => {
     ])
     expect(closed.sort()).toEqual(['Photos', 'away'])
     expect(files.find(file => file.path === 'Notes/Elara.md')).toMatchObject({ size: 5 })
+  })
+
+  it('lists the files in a folder, and none in one not there', async () => {
+    await put('Novel/.inksprite/audio/doc_1/b.wav', 'b')
+    await put('Novel/.inksprite/audio/doc_1/a.wav', 'a')
+    await put('Novel/.inksprite/audio/doc_1/deeper/c.wav', 'c')
+    expect(await library.list('Novel/.inksprite/audio/doc_1')).toEqual(['a.wav', 'b.wav'])
+    expect(await library.list('Novel/.inksprite/audio/doc_2')).toEqual([])
+    await expect(library.list('../outside')).rejects.toThrow('Not a path in the library')
   })
 
   it('reads the texts there are, and the bytes of one file', async () => {

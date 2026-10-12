@@ -94,5 +94,22 @@ export async function askCompact(instructions, context = {}, { past } = {}) {
     return { error: 'Nothing came back to stand in for the conversation.' }
   }
 
-  return { answer: summary }
+  return { answer: unwrapSummary(summary) }
+}
+
+/**
+ * A summary without a `<summary>` tag around the whole of it.
+ *
+ * That is the tag a summary goes to the model under (`renderCommand` in
+ * ai/commands.js), and the oracle's answers and the rest go under tags like
+ * it, so a model asked for one may write the tag itself: Claude Sonnet 5.5 did
+ * on 12 Oct 2026. Left in, the writer reads the tags, and the model reads the
+ * summary wrapped twice.
+ *
+ * @param {string} summary
+ * @returns {string}
+ */
+export function unwrapSummary(summary) {
+  const wrapped = /^\s*<summary>\s*([\s\S]*?)\s*<\/summary>\s*$/.exec(summary)
+  return wrapped ? wrapped[1] : summary
 }

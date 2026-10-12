@@ -192,6 +192,7 @@ describe('storage in IndexedDB', () => {
     await storage.put('chatProfiles', { id: 'p1', name: 'Mine' })
 
     expect((await storage.all('jobs')).map(row => row.id).sort()).toEqual(['j1', 'j2'])
+    expect(await storage.count('jobs')).toBe(2)
     expect((await storage.ofStory('jobs', STORY)).map(row => row.id)).toEqual(['j1'])
     expect(await storage.get('chatProfiles', 'p1')).toMatchObject({ name: 'Mine' })
     expect((await storage.getMany('chatProfiles', ['p1', 'none'])).map(row => row.id)).toEqual([
@@ -200,6 +201,7 @@ describe('storage in IndexedDB', () => {
 
     await storage.remove('jobs', ['j1', 'j2'])
     expect(await storage.all('jobs')).toEqual([])
+    expect(await storage.count('jobs')).toBe(0)
   })
 
   it('dumps every table, empty ones too', async () => {

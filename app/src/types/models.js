@@ -35,8 +35,8 @@
  *   kept so stored rows written before that still parse.
  * @property {string} overview - Legacy synopsis. Migrated to the root document's `summary` at schema v7 and no longer read; the column stays as the way back.
  * @property {number} wordCount - Total word count across all scenes
- * @property {StoryNarration} [narration] - The project's voices and pronunciation
- *   hints, for reading it aloud. Absent means one default voice and no hints; see
+ * @property {StoryNarration} [narration] - The project's voices, pronunciation hints
+ *   and filters, for reading it aloud. Absent means one default voice and no hints; see
  *   `tts/voices.js`.
  * @property {StoryOptions} [options] - Story-specific options and overrides
  * @property {number} version - Version number for conflict resolution
@@ -101,6 +101,11 @@
  *   first few days; read when that is absent, never written.
  * @property {string} [hints] - Pronunciation hints, `word:say` one to a line. See
  *   `tts/hints.js`.
+ * @property {string} [filters] - What is not read aloud, a regular expression to a
+ *   line. See `tts/filters.js`.
+ * @property {string} [providerId] - The connection it is read aloud through, which its
+ *   voices are names in. Absent means the one last chosen in any project.
+ * @property {string|null} [model] - The connection's model it is read aloud with
  */
 
 /**
@@ -510,8 +515,8 @@
  * @typedef {Object} AIProvider
  * @property {string} id - Unique provider identifier (provider_xxx)
  * @property {string} name - User-friendly name for the provider
- * @property {'openrouter'|'llamacpp'|'generic'} type - Provider type. See ai/providers.js.
- * @property {string} [endpoint] - API endpoint URL, for every type but OpenRouter
+ * @property {'openrouter'|'anthropic'|'openai'|'gemini'|'llamacpp'|'generic'} type - Provider type. See ai/providers.js.
+ * @property {string} [endpoint] - API endpoint URL, for a type without a known address (see ai/providers.js)
  * @property {string} [apiKey] - API key for authentication
  * @property {boolean} [rememberKey] - Whether to persist API key in IndexedDB (default true). If false, key is stored in sessionStorage only
  * @property {import('../ai/routing.js').OpenRouterRouting} [routing] - OpenRouter provider routing policy, for every model on this connection. Absent means the defaults: no data collection, zero-data-retention endpoints only. Which providers may serve a model is the preset's `allowedProviders`.
@@ -715,7 +720,7 @@
  * @property {string|null} providerId - The provider the workflow runs on; null for the active preset's
  * @property {string|null} model - The model; null for the active preset's
  * @property {string[]} [allowedProviders] - OpenRouter only: the upstreams allowed to serve the model, like a preset's. Read only when the workflow names its own provider; one that runs on the active preset runs on the preset's list.
- * @property {string|null} [reasoningEffort] - How hard the model thinks: `disabled`, `enabled`, `low`, `medium`, `high`;
+ * @property {string|null} [reasoningEffort] - How hard the model thinks: one of `REASONING_EFFORT_OPTIONS`, fitted to the model as it is sent;
  *   null for the app's default (`AI_DEFAULTS.reasoningEffort`)
  * @property {boolean} [onImport] - Convert only: convert every file with text as it is imported
  */

@@ -1,4 +1,4 @@
-/* global TextEncoder */
+/* global TextEncoder, AbortController */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
@@ -12,8 +12,26 @@ const provider = {
   apiKey: null,
 }
 
+/** Who getProvider answers with, when a test is about another one. */
+let asked = provider
+
 vi.mock('@/composables/useAIConfig', () => ({
-  useAIConfig: () => ({ getProvider: () => provider }),
+  useAIConfig: () => ({ getProvider: () => asked }),
+}))
+
+const streamAnthropic = vi.fn()
+const listAnthropicModels = vi.fn()
+vi.mock('@/ai/anthropic.js', () => ({
+  streamAnthropic: (...args) => streamAnthropic(...args),
+  listAnthropicModels: (...args) => listAnthropicModels(...args),
+}))
+
+// What OpenRouter's list says of a model, which a request asks for before it
+// is built; nothing, unless a test says.
+const traitsOf = vi.fn()
+vi.mock('@/ai/models.js', async importOriginal => ({
+  ...(await importOriginal()),
+  traitsOf: (...args) => traitsOf(...args),
 }))
 
 /**
@@ -217,6 +235,27 @@ describe('useAIService reasoning request', () => {
     )
     return JSON.parse(fetch.mock.calls[0][1].body).reasoning
   }
+
+  it('fits the request to what the list says the model takes', async () => {
+    // A model that always thinks, at two levels, and takes a temperature only.
+    traitsOf.mockResolvedValueOnce({
+      samplers: ['temperature'],
+      reasoning: { optional: false, levels: ['high', 'xhigh'], defaultLevel: 'high' },
+    })
+    streamDeltas([{ content: 'ok' }])
+    await useAIService().generateChatCompletion(
+      [{ role: 'user', content: 'hi' }],
+      { providerId: provider.id, model: 'some-model' },
+      () => {},
+      { overrides: { reasoningEffort: 'disabled', parameters: { temperature: 0.7, topK: 40 } } }
+    )
+
+    expect(traitsOf).toHaveBeenCalledWith(provider, 'some-model')
+    const body = JSON.parse(fetch.mock.calls[0][1].body)
+    expect(body.reasoning).toEqual({ effort: 'high', exclude: false })
+    expect(body.temperature).toBe(0.7)
+    expect(body).not.toHaveProperty('top_k')
+  })
 
   it('asks for the effort level it was given', async () => {
     expect(await reasoningFor({ reasoningEffort: 'high' })).toEqual({
@@ -601,5 +640,107 @@ describe('useAIService providers serving a model', () => {
     await useAIService().listModelProviders('z-ai/three-model')
 
     expect(fetch).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('useAIService model lists', () => {
+  afterEach(() => {
+    asked = provider
+    vi.unstubAllGlobals()
+  })
+
+  /** @param {string[]} ids */
+  const listing = ids =>
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        json: async () => ({ data: ids.map(id => ({ id })) }),
+      })
+    )
+
+  it('lists the models a chat can use, by the id a request names them by', async () => {
+    asked = { id: 'provider_gemini_default', name: 'Google Gemini', type: 'gemini', apiKey: 'k' }
+    listing(['models/gemini-2.5-pro', 'models/gemini-embedding-001', 'models/gemini-2.5-flash'])
+
+    const models = await useAIService().listModels(asked.id)
+
+    expect(models.map(m => m.id)).toEqual(['gemini-2.5-flash', 'gemini-2.5-pro'])
+    expect(fetch.mock.calls[0][0]).toBe(
+      'https://generativelanguage.googleapis.com/v1beta/openai/models'
+    )
+  })
+
+  it('asks a service for its list with the key, and nothing OpenRouter-only', async () => {
+    asked = { id: 'provider_openai_default', name: 'OpenAI', type: 'openai', apiKey: 'sk-1' }
+    listing(['gpt-5', 'text-embedding-3-small'])
+
+    const models = await useAIService().listModels(asked.id)
+
+    expect(models.map(m => m.id)).toEqual(['gpt-5'])
+    const { headers } = fetch.mock.calls[0][1]
+    expect(headers.Authorization).toBe('Bearer sk-1')
+    expect(headers).not.toHaveProperty('X-Title')
+  })
+
+  it('takes every model a server someone runs lists', async () => {
+    listing(['qwen/qwen3-14b', 'nomic-embed-text'])
+
+    const models = await useAIService().listModels(provider.id)
+
+    expect(models.map(m => m.id)).toEqual(['nomic-embed-text', 'qwen/qwen3-14b'])
+  })
+})
+
+describe('useAIService on Anthropic', () => {
+  const anthropic = {
+    id: 'provider_anthropic_default',
+    name: 'Anthropic',
+    type: 'anthropic',
+    apiKey: 'k',
+  }
+
+  afterEach(() => {
+    asked = provider
+    vi.unstubAllGlobals()
+  })
+
+  it('speaks Anthropic’s own API, with the settings resolved and the stop signal', async () => {
+    asked = anthropic
+    vi.stubGlobal('fetch', vi.fn())
+    streamAnthropic.mockResolvedValue({ finishReason: 'stop' })
+    const signal = new AbortController().signal
+    const onChunk = vi.fn()
+
+    const result = await useAIService().generateChatCompletion(
+      [{ role: 'user', content: 'hi' }],
+      { providerId: anthropic.id, model: 'claude-haiku-5-5' },
+      onChunk,
+      { overrides: { maxTokens: 300 }, toolChoice: 'none', signal }
+    )
+
+    expect(result).toEqual({ finishReason: 'stop' })
+    expect(fetch).not.toHaveBeenCalled()
+    expect(streamAnthropic).toHaveBeenCalledWith(
+      expect.objectContaining({
+        provider: anthropic,
+        model: 'claude-haiku-5-5',
+        toolChoice: 'none',
+        signal,
+        onChunk,
+        settings: expect.objectContaining({ maxTokens: 300 }),
+      })
+    )
+  })
+
+  it('asks Anthropic for its models its own way', async () => {
+    asked = anthropic
+    listAnthropicModels.mockResolvedValue([{ id: 'claude-haiku-5-5', name: 'Claude Haiku 5.5' }])
+
+    const models = await useAIService().listModels(anthropic.id)
+
+    expect(models).toEqual([{ id: 'claude-haiku-5-5', name: 'Claude Haiku 5.5' }])
+    expect(listAnthropicModels).toHaveBeenCalledWith(anthropic)
   })
 })

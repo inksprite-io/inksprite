@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
+  drawsByChance,
   getToolGroups,
   getToolDefinitions,
   getToolDefinitionsFor,
@@ -39,7 +40,9 @@ describe('tool groups', () => {
       'resolve_comment',
     ])
     expect(byId.rpg).toEqual(['roll_dice', 'oracle', 'roll_table', 'draw_tarot', 'generate_names'])
-    expect(byId.skills).toEqual(['interpret'])
+    // The skills group holds the writer's own, and they have none here.
+    expect(byId.skills).toBeUndefined()
+    expect(byId.experimental).toEqual(['interpret', 'write'])
     expect(byId.web).toEqual(['web_search', 'read_web_page'])
   })
 
@@ -64,9 +67,19 @@ describe('tool groups', () => {
     }
   })
 
-  it('exposes groups in declared order with their labels', () => {
-    expect(getToolGroups().map(g => g.id)).toEqual(Object.keys(TOOL_GROUP_LABELS))
-    expect(getToolGroups().map(g => g.label)).toEqual(Object.values(TOOL_GROUP_LABELS))
+  it('says which tools draw by chance', () => {
+    for (const name of ['roll_dice', 'oracle', 'roll_table', 'draw_tarot', 'generate_names']) {
+      expect(drawsByChance(name), name).toBe(true)
+    }
+    expect(drawsByChance('read_document')).toBe(false)
+    expect(drawsByChance('interpret')).toBe(false)
+  })
+
+  it('exposes groups in declared order with their labels, less any with no tools', () => {
+    const declared = Object.entries(TOOL_GROUP_LABELS).filter(([id]) => id !== 'skills')
+
+    expect(getToolGroups().map(g => g.id)).toEqual(declared.map(([id]) => id))
+    expect(getToolGroups().map(g => g.label)).toEqual(declared.map(([, label]) => label))
   })
 })
 

@@ -4,7 +4,7 @@ dist/
 .astro/
 
 # dependencies
-node_modules/
+node_modules
 
 # logs
 npm-debug.log*
@@ -19,3 +19,15 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+
+# capture: OpenRouter's session and the code it emails, and what a failed run leaves
+capture/.openrouter-session.json
+capture/.openrouter-code
+# capture: the book the narration guide reads, downloaded from Project Gutenberg
+capture/pg84-images-3.epub
+# capture: the card and lorebook the roleplay guide imports, someone else's work
+capture/pif.png
+capture/sohhf2.json
+capture-failed*.png
+capture-requests.json
+public/guide/.*.recording.webm

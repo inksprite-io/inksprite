@@ -2,43 +2,64 @@
 
 ### Table of Contents
 
-- [components][1]
-- [Component Structure][2]
-  - [Layout Components][3]
-  - [Feature Components][4]
-  - [Icon Components][5]
-- [Component Patterns][6]
-  - [Examples][7]
-- [components/writer/layout/layout][8]
-- [PANELS][9]
-  - [][10]
-  - [][11]
-  - [][12]
-- [Panel][13]
-- [][14]
-- [][15]
-- [][16]
+- [GUIDE_URL][1]
+- [LINK][2]
+- [HEADING][3]
+- [components][4]
+- [Component Structure][5]
+  - [Layout Components][6]
+  - [Feature Components][7]
+  - [Icon Components][8]
+- [Component Patterns][9]
+  - [Examples][10]
+- [components/writer/layout/layout][11]
+- [PANELS][12]
+  - [][13]
+  - [][14]
+  - [][15]
+- [Panel][16]
 - [][17]
-- [DEFAULT_LAYOUT][18]
-- [DEFAULT_LAYOUT][19]
-- [NO_PROJECT_LAYOUT][20]
-- [CONTENT_PANELS][21]
-- [normalizeLayout][22]
-  - [Parameters][23]
-- [isSidebarTab][24]
-  - [Parameters][25]
-- [][26]
-- [selectSidebarTab][27]
+- [][18]
+- [][19]
+- [][20]
+- [DEFAULT_LAYOUT][21]
+- [DEFAULT_LAYOUT][22]
+- [NO_PROJECT_LAYOUT][23]
+- [CONTENT_PANELS][24]
+- [normalizeLayout][25]
+  - [Parameters][26]
+- [isSidebarTab][27]
   - [Parameters][28]
-- [canHide][29]
-  - [Parameters][30]
-- [togglePanel][31]
-  - [Parameters][32]
-- [ROW_SIZES][33]
-- [keptSizes][34]
+- [][29]
+- [selectSidebarTab][30]
+  - [Parameters][31]
+- [canHide][32]
+  - [Parameters][33]
+- [togglePanel][34]
   - [Parameters][35]
-- [shownLayout][36]
-  - [Parameters][37]
+- [ROW_SIZES][36]
+- [keptSizes][37]
+  - [Parameters][38]
+- [shownLayout][39]
+  - [Parameters][40]
+
+## GUIDE_URL
+
+Where the welcome points, and how its words look.
+
+Type: [string][41]
+
+## LINK
+
+A link, or a button that reads as one.
+
+Type: [string][41]
+
+## HEADING
+
+A heading inside a section.
+
+Type: [string][41]
 
 ## components
 
@@ -82,8 +103,9 @@ Vue components for the inksprite application UI.
   - `narration/` - The document in the editor read aloud: `NarrationPanel`
     in the sidebar, with the document's blocks (`NarrationScript`: who
     speaks each, whether it has been read, a selection to read on its own),
-    the project's voices and their colours, its pronunciation hints, and
-    the player. While it shows, `Editor` colours each speaker's lines.
+    the project's voices and their colours, its pronunciation hints, its
+    filters for what is not read, and the player. While it shows, `Editor`
+    colours each speaker's lines and greys what the filters leave out.
     `ReadAloudButton` reads something in one voice then and there; a chat
     turn has one in its header, and the chat's settings choose the voice.
   - `settings/` - App-wide settings: `Settings` is a section list beside a
@@ -134,15 +156,15 @@ here, as pure functions over the layout.
 
 ###
 
-Type: [Panel][13]
+Type: [Panel][16]
 
 ###
 
-Type: [Panel][13]
+Type: [Panel][16]
 
 ###
 
-Type: [Panel][13]
+Type: [Panel][16]
 
 ## Panel
 
@@ -190,7 +212,7 @@ so nothing that was saved can open onto an empty screen.
 
 ### Parameters
 
-- `stored` **(Partial\<StoryLayout> | null | [undefined][38])**&#x20;
+- `stored` **(Partial\<StoryLayout> | null | [undefined][42])**&#x20;
 
 Returns **StoryLayout**&#x20;
 
@@ -226,9 +248,9 @@ both hidden: the last one showing stays.
 ### Parameters
 
 - `layout` **StoryLayout**&#x20;
-- `panel` **[Panel][13]**&#x20;
+- `panel` **[Panel][16]**&#x20;
 
-Returns **[boolean][39]**&#x20;
+Returns **[boolean][43]**&#x20;
 
 ## togglePanel
 
@@ -243,7 +265,7 @@ last content panel changes nothing.
 ### Parameters
 
 - `layout` **StoryLayout**&#x20;
-- `panel` **[Panel][13]**&#x20;
+- `panel` **[Panel][16]**&#x20;
 
 Returns **StoryLayout**&#x20;
 
@@ -264,9 +286,9 @@ something an older version or another hand left there.
 ### Parameters
 
 - `kept` **unknown** What was read back from storage
-- `starting` **[Array][40]<[number][41]>** The splitter's starting widths, one per panel
+- `starting` **[Array][44]<[number][45]>** The splitter's starting widths, one per panel
 
-Returns **[Array][40]<[number][41]>**&#x20;
+Returns **[Array][44]<[number][45]>**&#x20;
 
 ## shownLayout
 
@@ -279,49 +301,53 @@ all three again.
 ### Parameters
 
 - `layout` **StoryLayout**&#x20;
-- `narrow` **[boolean][39]** Whether the window is too narrow for all three;
+- `narrow` **[boolean][43]** Whether the window is too narrow for all three;
   see useScreenSize
 
 Returns **StoryLayout**&#x20;
 
-[1]: #components
-[2]: #component-structure
-[3]: #layout-components
-[4]: #feature-components
-[5]: #icon-components
-[6]: #component-patterns
-[7]: #examples
-[8]: #componentswriterlayoutlayout
-[9]: #panels
-[10]: #
-[11]: #-1
-[12]: #-2
-[13]: #panel
-[14]: #-3
-[15]: #-4
-[16]: #-5
-[17]: #-6
-[18]: #default_layout
-[19]: #default_layout-1
-[20]: #no_project_layout
-[21]: #content_panels
-[22]: #normalizelayout
-[23]: #parameters
-[24]: #issidebartab
-[25]: #parameters-1
-[26]: #-7
-[27]: #selectsidebartab
-[28]: #parameters-2
-[29]: #canhide
-[30]: #parameters-3
-[31]: #togglepanel
-[32]: #parameters-4
-[33]: #row_sizes
-[34]: #keptsizes
-[35]: #parameters-5
-[36]: #shownlayout
-[37]: #parameters-6
-[38]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[39]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[40]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[41]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[1]: #guide_url
+[2]: #link
+[3]: #heading
+[4]: #components
+[5]: #component-structure
+[6]: #layout-components
+[7]: #feature-components
+[8]: #icon-components
+[9]: #component-patterns
+[10]: #examples
+[11]: #componentswriterlayoutlayout
+[12]: #panels
+[13]: #
+[14]: #-1
+[15]: #-2
+[16]: #panel
+[17]: #-3
+[18]: #-4
+[19]: #-5
+[20]: #-6
+[21]: #default_layout
+[22]: #default_layout-1
+[23]: #no_project_layout
+[24]: #content_panels
+[25]: #normalizelayout
+[26]: #parameters
+[27]: #issidebartab
+[28]: #parameters-1
+[29]: #-7
+[30]: #selectsidebartab
+[31]: #parameters-2
+[32]: #canhide
+[33]: #parameters-3
+[34]: #togglepanel
+[35]: #parameters-4
+[36]: #row_sizes
+[37]: #keptsizes
+[38]: #parameters-5
+[39]: #shownlayout
+[40]: #parameters-6
+[41]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[42]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[43]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[44]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[45]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number

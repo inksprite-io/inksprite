@@ -96,6 +96,16 @@ export const PROJECT_TABLES = ['stories', 'documents', 'files', 'chats', 'messag
  * @property {(id: string) => Promise<Blob|null>} fileBytes - A file document's bytes
  * @property {(storyId: string) => Promise<StoredFile[]>} projectFiles - The bytes of every file in a project
  * @property {(id: string, storyId: string, blob: Blob) => Promise<void>} putFileBytes - Keep a file document's bytes
+ * @property {() => boolean} audioKept - Whether narration audio is kept past the session: in the
+ *   library, not in a browser
+ * @property {(storyId: string, documentId: string) => Promise<string[]>} audioKeys - The keys of
+ *   the clips kept of a document's narration
+ * @property {(storyId: string, documentId: string, key: string) => Promise<ArrayBuffer|null>} readAudio -
+ *   One clip of a document's narration
+ * @property {(storyId: string, documentId: string, key: string, audio: ArrayBuffer) => Promise<void>} writeAudio -
+ *   Keep a clip of a document's narration
+ * @property {(storyId: string, documentId: string, keys?: string[]) => Promise<void>} removeAudio -
+ *   Delete these clips of a document's narration, or with no keys all of it
  * @property {(table: 'chats'|'messages', change: (row: any) => object|null) => Promise<number>} updateEach -
  *   Change every row of a table, in every project, open or not: `change` returns the fields
  *   to set, or null to leave the row. Resolves to how many changed.
@@ -103,6 +113,7 @@ export const PROJECT_TABLES = ['stories', 'documents', 'files', 'chats', 'messag
  * @property {(storyId: string) => Promise<void>} removeProject - Take a project away whole: its
  *   rows, or in the library its folder, to the trash
  * @property {(table: AppTable) => Promise<any[]>} all - Every row of an app table
+ * @property {(table: AppTable) => Promise<number>} count - How many rows an app table holds, none of them read
  * @property {(table: AppTable, id: string) => Promise<any>} get - One row of an app table
  * @property {(table: AppTable, ids: string[]) => Promise<any[]>} getMany - These rows of an app table, those there are
  * @property {(table: AppTable, row: object) => Promise<void>} put - Write a row of an app table

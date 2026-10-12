@@ -56,7 +56,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, useId } from 'vue'
+import { computed, ref, useId } from 'vue'
 import { sessionStorage } from '@/utils/sessionStorage'
 
 /**
@@ -134,8 +134,6 @@ const contentClasses = computed(() => [
   props.subsection && 'ml-3.5 pl-3 pr-2 border-l border-surface-300 dark:border-surface-600',
 ])
 
-const expandedState = ref(props.defaultExpanded)
-
 /** What the title's button opens and closes, for a screen reader to follow. */
 const contentId = `expandable_${useId()}`
 
@@ -149,6 +147,14 @@ const getStorageKey = () => {
   }
   return `expandable-section-${props.storageKey}`
 }
+
+// Opened or closed as it was left, from the first render: read once mounted,
+// a section left closed would show open and then fold away.
+const storedState = () => {
+  const key = getStorageKey()
+  return key ? sessionStorage.get(key) : null
+}
+const expandedState = ref(storedState() ?? props.defaultExpanded)
 
 /**
  * Computed property for expanded state with session storage persistence
@@ -175,17 +181,12 @@ const toggleExpanded = () => {
   isExpanded.value = !isExpanded.value
 }
 
-onMounted(() => {
-  const key = getStorageKey()
-  if (!key) {
-    return
-  }
+/** Open it, for something elsewhere that points into it. */
+const expand = () => {
+  isExpanded.value = true
+}
 
-  const stored = sessionStorage.get(key)
-  if (stored !== null) {
-    expandedState.value = stored
-  }
-})
+defineExpose({ expand })
 
 const headerClasses = computed(() => {
   const baseClasses = 'hover:bg-surface-300 hover:dark:bg-surface-700'

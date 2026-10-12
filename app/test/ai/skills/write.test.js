@@ -6,7 +6,7 @@ import {
   WRITE_TOOLS,
   WRITE_SETTINGS,
 } from '@/ai/skills/write/index.js'
-import { getToolDefinitions } from '@/ai/tools/index.js'
+import { getEnabledToolDefinitions, getToolDefinitions } from '@/ai/tools/index.js'
 
 /**
  * The tools a prompt tells the model to call, out of everything registered.
@@ -105,13 +105,16 @@ describe('write skill', () => {
   })
 
   describe('as a tool', () => {
-    it('has one to be called by, and is not offered while its file says not', async () => {
+    it('has one to be called by, offered with the experimental skills', async () => {
       const { getSkill } = await import('@/ai/skills/index.js')
       const write = getSkill('write')
 
       expect(typeof write.execute).toBe('function')
-      expect(write.model).toBe(false)
-      expect(getToolDefinitions().map(d => d.function.name)).not.toContain('write')
+      expect(write.model).toBe(true)
+      expect(getToolDefinitions().map(d => d.function.name)).toContain('write')
+      expect(
+        getEnabledToolDefinitions({ disabledGroups: ['experimental'] }).map(d => d.function.name)
+      ).not.toContain('write')
     })
 
     it('tells the model to pass the request on and leave the notes to it', async () => {

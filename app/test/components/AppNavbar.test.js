@@ -7,7 +7,28 @@ import PrimeVue from 'primevue/config'
 import AppNavbar from '@/components/writer/layout/AppNavbar.vue'
 import { DEFAULT_LAYOUT, NO_PROJECT_LAYOUT } from '@/components/writer/layout/layout.js'
 
-vi.mock('@/stores/db', () => ({ default: { jobs: { put: vi.fn(async () => undefined) } } }))
+let storedJobs = 0
+vi.mock('@/stores/db', () => ({
+  default: {
+    jobs: {
+      put: vi.fn(async () => undefined),
+      bulkDelete: vi.fn(async () => undefined),
+      count: vi.fn(async () => storedJobs),
+    },
+  },
+}))
+
+const STEPS = [{ id: 'a', label: 'a', status: 'running' }]
+
+/** @param {string} title */
+const addJob = title =>
+  useJobsStore().createJob({
+    storyId: 's1',
+    kind: 'convert',
+    workflow: 'convert',
+    title,
+    steps: STEPS,
+  })
 
 const mountRail = (layout, props = {}) =>
   mount(AppNavbar, {
@@ -18,25 +39,15 @@ const mountRail = (layout, props = {}) =>
 const tab = (wrapper, id) => wrapper.find(`[data-tab="${id}"]`)
 
 describe('AppNavbar', () => {
-  beforeEach(() => setActivePinia(createPinia()))
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    storedJobs = 0
+  })
 
   it('counts the jobs running on the Jobs button, and shows nothing when none are', async () => {
     const store = useJobsStore()
-    const steps = [{ id: 'a', label: 'a', status: 'running' }]
-    await store.createJob({
-      storyId: 's1',
-      kind: 'convert',
-      workflow: 'convert',
-      title: 'One',
-      steps,
-    })
-    const job = await store.createJob({
-      storyId: 's1',
-      kind: 'convert',
-      workflow: 'convert',
-      title: 'Two',
-      steps,
-    })
+    await addJob('One')
+    const job = await addJob('Two')
     await store.updateJob(job.id, { status: 'running' })
 
     const wrapper = mountRail(DEFAULT_LAYOUT)
@@ -45,9 +56,30 @@ describe('AppNavbar', () => {
     expect(wrapper.find('[data-tab="outline"] [data-rail-badge]').exists()).toBe(false)
   })
 
+  it('has a Jobs button only while there are jobs', async () => {
+    const wrapper = mountRail(DEFAULT_LAYOUT)
+    expect(wrapper.find('[data-action="jobs"]').exists()).toBe(false)
+
+    const job = await addJob('One')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[data-action="jobs"]').exists()).toBe(true)
+
+    await useJobsStore().deleteJob(job.id)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[data-action="jobs"]').exists()).toBe(false)
+  })
+
+  it('has the Jobs button for jobs kept from before, before they are read in', async () => {
+    storedJobs = 2
+    await useJobsStore().countJobs()
+    const wrapper = mountRail(DEFAULT_LAYOUT)
+    expect(wrapper.find('[data-action="jobs"]').exists()).toBe(true)
+  })
+
   it('opens and closes the jobs toast from the Jobs button, with or without a project', async () => {
     const { state, closed } = useJobsToast()
     closed()
+    await addJob('One')
     const wrapper = mountRail(NO_PROJECT_LAYOUT, { hasStory: false })
     const jobs = wrapper.find('[data-action="jobs"]')
     expect(jobs.attributes('disabled')).toBeUndefined()
@@ -93,7 +125,8 @@ describe('AppNavbar', () => {
     expect(tab(hidden, 'chats').attributes('aria-pressed')).toBe('false')
   })
 
-  it('has nothing for the panels: the editor and the chat hide each other', () => {
+  it('has nothing for the panels: the editor and the chat hide each other', async () => {
+    await addJob('One')
     const wrapper = mountRail(DEFAULT_LAYOUT)
     expect(wrapper.findAll('button')).toHaveLength(6)
     expect(wrapper.find('[data-panel]').exists()).toBe(false)

@@ -36,6 +36,14 @@ export const dexieStorage = {
 
   projectFiles: storyId => db.files.where('storyId').equals(storyId).toArray(),
 
+  // Narration audio is kept only in the library: in a browser it would be
+  // gigabytes in storage the browser may clear.
+  audioKept: () => false,
+  audioKeys: async () => [],
+  readAudio: async () => null,
+  writeAudio: async () => {},
+  removeAudio: async () => {},
+
   async putFileBytes(id, storyId, blob) {
     await db.files.put({ id, storyId, blob })
   },
@@ -81,6 +89,8 @@ export const dexieStorage = {
   },
 
   all: table => db[table].toArray(),
+
+  count: table => db[table].count(),
 
   get: (table, id) => db[table].get(id),
 

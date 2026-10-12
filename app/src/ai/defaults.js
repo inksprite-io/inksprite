@@ -9,7 +9,7 @@
  * @typedef {Object} AIDefaults
  * @property {number} maxTokens - Max response tokens. 0 = let provider decide.
  * @property {number} seed - Deterministic seed. 0 = disabled.
- * @property {'disabled'|'enabled'|'low'|'medium'|'high'} reasoningEffort - OpenRouter extended thinking. `enabled` asks for thinking without naming a level, for models whose thinking is a switch rather than a dial.
+ * @property {'disabled'|'enabled'|'minimal'|'low'|'medium'|'high'|'xhigh'|'max'} reasoningEffort - How hard the model thinks. `enabled` asks for thinking without naming a level, for models whose thinking is a switch rather than a dial. A model is sent the nearest it takes (see ai/capabilities.js).
  * @property {boolean} showModelReasoning - Whether to surface reasoning tokens.
  * @property {number} maxToolRounds - How many rounds of tool calls a turn may make before it has to answer. 0 = no limit. See runCompletionLoop in composables/useAIChat.js.
  * @property {AISamplerParameters} parameters - Sampler parameters. Fields with sentinel values are omitted from requests.
@@ -27,16 +27,20 @@
 
 /**
  * The reasoning efforts a request can ask for, as a settings menu lists them.
- * One list for every menu that offers them, so they read the same.
+ * One list for every menu, so they read the same; each shows those its model
+ * takes (see ai/capabilities.js).
  */
 export const REASONING_EFFORT_OPTIONS = [
   { value: 'disabled', label: 'Disabled' },
   // For a model whose thinking is a switch, not a dial. Naming a level to one
   // of those is refused outright.
   { value: 'enabled', label: 'Enabled' },
+  { value: 'minimal', label: 'Minimal' },
   { value: 'low', label: 'Low' },
   { value: 'medium', label: 'Medium' },
   { value: 'high', label: 'High' },
+  { value: 'xhigh', label: 'Extra high' },
+  { value: 'max', label: 'Max' },
 ]
 
 /** @type {AIDefaults} */

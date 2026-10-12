@@ -54,11 +54,14 @@ const defaultState = {
     convert: { providerId: null, model: null, reasoningEffort: null, onImport: false },
   },
   narration: {
-    // The speech server documents are read aloud by. Where Kokoro-FastAPI
-    // listens when run the way its docker-compose runs it, so a writer with
-    // that running has nothing to set up.
-    endpoint: 'http://localhost:8880/v1',
-    apiKey: '',
+    // The connection and model last chosen to read aloud through, which a
+    // project that has not chosen its own reads through: the built-in
+    // Kokoro to start with, so a writer with Kokoro-FastAPI running has
+    // nothing to set up.
+    // A state saved before speech went through the connections has the
+    // server's `endpoint` and `apiKey` here instead, which `useAIConfig`
+    // moves onto a connection once.
+    providerId: 'provider_kokoro_default',
     model: 'kokoro',
   },
   ui: {
@@ -140,13 +143,13 @@ watch(
 )
 
 /**
- * Where documents are read aloud: a speech server's address, a key if it
- * wants one, and the model to ask for. See `tts/client.js`.
+ * What documents are read aloud through: one of the AI connections that
+ * speaks, and its model. Each project keeps its own (`StoryNarration`); this
+ * is the one last chosen, for a project that has none. See `useSpeechServer`.
  *
- * @typedef {Object} NarrationConnection
- * @property {string} endpoint
- * @property {string} apiKey
- * @property {string} model
+ * @typedef {Object} NarrationChoice
+ * @property {string|null} providerId
+ * @property {string|null} model
  */
 
 /**
@@ -165,10 +168,10 @@ watch(
  *   setNsfwProfiles: (on: boolean) => void,
  *   compactText: import('vue').ComputedRef<boolean>,
  *   setCompactText: (on: boolean) => void,
- *   narration: import('vue').ComputedRef<NarrationConnection>,
+ *   narration: import('vue').ComputedRef<NarrationChoice>,
  *   workflows: import('vue').ComputedRef<Record<string, import('../types/models.js').WorkflowSettings>>,
  *   setWorkflow: (name: string, patch: Partial<import('../types/models.js').WorkflowSettings>) => void,
- *   setNarration: (patch: Partial<NarrationConnection>) => void,
+ *   setNarration: (patch: Partial<NarrationChoice>) => void,
  *   highlightSpeakers: import('vue').ComputedRef<boolean>,
  *   setHighlightSpeakers: (highlight: boolean) => void,
  *   theme: import('vue').ComputedRef<'light'|'dark'|'system'>,
@@ -269,19 +272,18 @@ export function useApplicationState() {
   }
 
   /**
-   * The speech server, as far as it is set. Fields a stored state lacks are
-   * the defaults, so a state written before there was a speech server has
-   * Kokoro's usual address.
-   * @type {import('vue').ComputedRef<NarrationConnection>}
+   * What documents are read aloud through, as far as it is chosen. A state
+   * written before there was a choice has the built-in Kokoro.
+   * @type {import('vue').ComputedRef<NarrationChoice>}
    */
-  const narration = computed(() => ({
-    ...defaultState.narration,
-    ...(state.value.narration || {}),
-  }))
+  const narration = computed(() => {
+    const { providerId, model } = { ...defaultState.narration, ...(state.value.narration || {}) }
+    return { providerId, model }
+  })
 
   /**
-   * Change some of the speech server's details, leaving the rest.
-   * @param {Partial<NarrationConnection>} patch
+   * Change the connection or the model, leaving the other.
+   * @param {Partial<NarrationChoice>} patch
    */
   const setNarration = patch => {
     state.value.narration = { ...narration.value, ...patch }
@@ -510,7 +512,7 @@ export function useApplicationState() {
     compactText,
     setCompactText,
 
-    // The speech server, and whether speakers' lines are coloured
+    // What documents are read aloud through, and whether speakers' lines are coloured
     narration,
     workflows,
     setWorkflow,

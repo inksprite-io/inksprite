@@ -109,6 +109,15 @@ describe('ChatTurn', () => {
       expect(button(last, 'chevron-right').attributes('disabled')).toBeDefined()
     })
 
+    it('puts the arrows beside asking again, and fades them with the rest', () => {
+      const wrapper = show([answered(1, 3)], '', { isLast: true })
+
+      const row = wrapper.find('[data-turn-actions]')
+      const labels = row.findAll('button').map(each => each.attributes('aria-label'))
+      expect(labels.slice(0, 3)).toEqual(['Previous answer', 'Next answer', 'Regenerate reply'])
+      expect(row.classes()).toContain('opacity-50')
+    })
+
     it('offers them only on the last turn, and only when there are any', () => {
       // Everything after a message was written to the answer it was showing.
       expect(button(show([answered(0, 2)]), 'chevron-right')).toBeUndefined()
@@ -154,9 +163,9 @@ describe('ChatTurn', () => {
     })
   })
 
-  it('asks the message’s questions in its header when the turn is one message', () => {
+  it('asks the message’s questions under the turn when the turn is one message', () => {
     // A message's pieces float their own buttons over its corner, so the
-    // message's cannot go there. The header is where "edit turn" is looked for.
+    // message's cannot go there.
     const wrapper = show([message('m1', 'user')])
 
     expect(item(wrapper, 'code')).toBeDefined()
@@ -334,26 +343,51 @@ describe('ChatTurn', () => {
   })
 })
 
-describe('ChatTurn header', () => {
+describe('ChatTurn buttons', () => {
   const actions = wrapper => wrapper.find('[data-turn-actions]')
+  const labels = wrapper =>
+    actions(wrapper)
+      .findAll('button')
+      .map(each => each.attributes('aria-label'))
 
-  it('floats its hidden buttons over the end of the line on a wide screen', async () => {
-    window.innerWidth = 1280
+  it('puts them under the turn and to the right, faint until it is hovered', () => {
     const wrapper = show([message('m1', 'assistant')])
-    await wrapper.vm.$nextTick()
 
-    // In the line, they wrapped under a long one and left a line of nothing.
-    expect(actions(wrapper).classes()).toContain('absolute')
-    expect(actions(wrapper).classes()).toContain('opacity-0')
+    const reply = wrapper.find('.message').element
+    const { DOCUMENT_POSITION_FOLLOWING } = window.Node
+    expect(reply.compareDocumentPosition(actions(wrapper).element)).toBe(
+      DOCUMENT_POSITION_FOLLOWING
+    )
+    expect(actions(wrapper).classes()).toEqual(
+      expect.arrayContaining(['justify-end', 'opacity-50', 'group-hover/turn:opacity-100'])
+    )
   })
 
-  it('keeps them in the line on a phone, where they are always shown', async () => {
-    window.innerWidth = 400
+  it('shows them in full while the menu is open', async () => {
     const wrapper = show([message('m1', 'assistant')])
+
+    wrapper.findComponent(Menu).vm.$emit('show')
     await wrapper.vm.$nextTick()
 
-    expect(actions(wrapper).classes()).not.toContain('absolute')
-    window.innerWidth = 1024
+    expect(actions(wrapper).classes()).toContain('opacity-100')
+    expect(actions(wrapper).classes()).not.toContain('opacity-50')
+  })
+
+  it('keeps what every turn has nearest the edge, and what only some have further in', () => {
+    const asked = { name: 'name', input: '', param: 'female', result: 'Ada Byrne' }
+    const roll = show([message('m1', 'user', { segments: [{ type: 'command', command: asked }] })])
+    const said = show([message('m1', 'user')])
+    const pieces = show([message('m1', 'assistant'), message('m2', 'assistant')])
+
+    expect(labels(roll)).toEqual([
+      'Ask again',
+      'Regenerate reply',
+      'Edit turn',
+      'Copy',
+      'More actions',
+    ])
+    expect(labels(said)).toEqual(['Regenerate reply', 'Edit turn', 'Copy', 'More actions'])
+    expect(labels(pieces)).toEqual(['Copy', 'More actions'])
   })
 })
 

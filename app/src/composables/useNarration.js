@@ -3,11 +3,14 @@
  * @module composables/useNarration
  * @description A project read aloud, one document at a time.
  *
- * Over the stores and the `tts` module: the project's voices and hints, read
- * off the story and written back to it; a document's speakers, read off the
- * document and written back; and the readings themselves, which live here
- * and nowhere else — a reading is a session's worth of audio, cheap to make
- * again and too big to keep.
+ * Over the stores and the `tts` module: the project's voices, hints and
+ * filters, and the connection and model it is read through, read off the
+ * story and written back to it; a document's speakers, read off the document
+ * and written back; and the readings themselves, which live here. In the
+ * desktop app's library each clip is kept with the project too, and read
+ * back when the document is next read aloud (`restore`); in a browser a
+ * reading is a session's worth of audio, cheap to make again on Kokoro and
+ * too big to keep.
  *
  * One instance per story, so the panel and anything else that asks share
  * the readings in progress rather than starting their own.
@@ -27,14 +30,23 @@ import { useStoriesStore } from '@/stores/storiesStore'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { useDocuments } from '@/composables/useDocuments'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { storage } from '@/storage/index.js'
 import { assignSpeaker, blocksOf as readBlocks, resolveSpeakers } from '@/tts/script.js'
 import { applyHints, parseHints } from '@/tts/hints.js'
-import { BLOCK_GAP, targetsOf, trackKeyOf, utterancesOf as plan } from '@/tts/reading.js'
+import { applyFilters, parseFilters } from '@/tts/filters.js'
+import {
+  BLOCK_GAP,
+  audioKeyOf,
+  targetsOf,
+  trackKeyOf,
+  utterancesOf as plan,
+} from '@/tts/reading.js'
 import { joinClips } from '@/tts/wav.js'
-import { describeFailure, listVoices, synthesize } from '@/tts/client.js'
+import { describeFailure, synthesize } from '@/tts/client.js'
 import { objectUrl, playClip, release } from '@/tts/player.js'
 import { SAMPLE_TEXT, defaultVoiceOf, nextColor, voiceFor, voicesOf } from '@/tts/voices.js'
 import { useSpeech } from '@/composables/useSpeech.js'
+import { useSpeechServer } from '@/composables/useSpeechServer.js'
 
 /** @typedef {import('@/types/models.js').TtsVoice} TtsVoice */
 /** @typedef {import('@/types/models.js').StoryNarration} StoryNarration */
@@ -76,31 +88,38 @@ export const clearNarrationInstances = () => {
 
 /**
  * @typedef {Object} NarrationApi
- * @property {import('vue').ComputedRef<import('./useApplicationState.js').NarrationConnection>} connection
+ * @property {import('vue').ComputedRef<import('./useApplicationState.js').NarrationChoice>} choice - The connection and model the project is read through
+ * @property {(patch: Partial<import('./useApplicationState.js').NarrationChoice>) => void} choose - Read it through another
+ * @property {import('vue').ComputedRef<import('@/tts/client.js').SpeechConnection|null>} connection - What a request is sent through, when there is anything
  * @property {import('vue').ComputedRef<boolean>} configured - Whether there is a server to ask
  * @property {import('vue').ComputedRef<TtsVoice[]>} voices
  * @property {import('vue').ComputedRef<string>} defaultVoiceId
  * @property {import('vue').ComputedRef<string>} hints
+ * @property {import('vue').ComputedRef<string>} filters - What is not read, as the text it is kept as
+ * @property {import('vue').ComputedRef<RegExp[]>} filterPatterns - The filters as regular expressions
  * @property {(id: string) => TtsVoice|null} voiceById
  * @property {(fields?: Partial<TtsVoice>) => TtsVoice} addVoice
  * @property {(id: string, updates: Partial<TtsVoice>) => void} updateVoice
  * @property {(id: string) => void} removeVoice
  * @property {(id: string) => void} setDefaultVoice
  * @property {(text: string) => void} setHints
- * @property {import('vue').Ref<string[]>} serverVoices - What the server offers, once asked
+ * @property {(text: string) => void} setFilters
+ * @property {import('vue').ComputedRef<string[]>} serverVoices - The model's voices, once known
  * @property {() => Promise<string[]>} loadServerVoices
- * @property {import('vue').Ref<number>} watching - How many narration panels are showing, which is when the editor colours speakers' lines
+ * @property {import('vue').Ref<number>} watching - How many narration panels are showing, which is when the editor colours speakers' lines and greys what is skipped
  * @property {(documentId: string) => Block[]} blocksOf - The document's blocks as they stand
  * @property {(documentId: string, blocks?: Block[]) => (string|null)[]} speakersOf
  * @property {(documentId: string, indices: number[], voiceId: string|null) => void} setSpeaker
  * @property {(documentId: string, blocks?: Block[], speakers?: (string|null)[]) => Utterance[]} utterancesOf - What the server would be asked for now
  * @property {(documentId: string) => Reading|null} readingOf
  * @property {(documentId: string, utterances?: Utterance[]) => boolean} inStep - Whether the track is what the document's audio would join to now
+ * @property {(documentId: string) => Promise<void>} restore - Read back the audio kept of the document, where any is
  * @property {(documentId: string, options?: {blocks?: number[]}) => Promise<void>} narrate
  * @property {(documentId: string, options?: {fresh?: boolean}) => void} refreshTrack
  * @property {(documentId: string) => void} stop
  * @property {(documentId: string) => void} download
  * @property {(voice: TtsVoice) => Promise<void>} preview
+ * @property {() => Promise<void>} previewHints - Hear the hinted words, respelled
  * @property {(key: string, markdown: string, voiceId?: string|null) => Promise<void>} readAloud
  * @property {() => void} dispose
  */
@@ -119,34 +138,22 @@ export const useNarration = storyId => {
 
   // --- The server ---------------------------------------------------------
 
-  const connection = appState.narration
-  const configured = computed(() => !!connection.value.endpoint)
-
-  /** @type {import('vue').Ref<string[]>} */
-  const serverVoices = ref([])
-  /** The endpoint the list was fetched from, so a changed one is asked again. */
-  let serverVoicesFrom = ''
-
   /**
-   * What the server offers, fetched once per endpoint. A server that cannot
-   * be reached, or lists nothing, offers nothing; the writer can still type
-   * a voice.
+   * The connection and model the project is read through: its own, once it
+   * has been read aloud or one has been picked for it, and until then the
+   * one last picked anywhere.
+   * @type {import('vue').ComputedRef<import('./useApplicationState.js').NarrationChoice>}
    */
-  const loadServerVoices = async () => {
-    const endpoint = connection.value.endpoint
-    if (!endpoint) return []
-    if (serverVoicesFrom === endpoint && serverVoices.value.length) return serverVoices.value
-    try {
-      serverVoices.value = await listVoices(connection.value)
-      serverVoicesFrom = endpoint
-    } catch (error) {
-      console.warn('Could not list the speech server voices:', error)
-      serverVoices.value = []
-    }
-    return serverVoices.value
-  }
+  const choice = computed(() => {
+    const own = storiesStore.getStory(storyId)?.narration
+    if (!own?.providerId) return appState.narration.value
+    return { providerId: own.providerId, model: own.model ?? null }
+  })
 
-  // --- The project's voices and hints ------------------------------------
+  const speechServer = useSpeechServer(() => choice.value)
+  const { connection, configured } = speechServer
+
+  // --- The project's voices, hints and filters ---------------------------
 
   /** @type {import('vue').ComputedRef<StoryNarration>} */
   const settings = computed(() => storiesStore.getStory(storyId)?.narration ?? {})
@@ -154,6 +161,8 @@ export const useNarration = storyId => {
   const defaultVoiceId = computed(() => defaultVoiceOf(settings.value, voices.value))
   const hints = computed(() => settings.value.hints ?? '')
   const parsedHints = computed(() => parseHints(hints.value))
+  const filters = computed(() => settings.value.filters ?? '')
+  const filterPatterns = computed(() => parseFilters(filters.value))
 
   /**
    * Written whole, under the names in use now: a default voice chosen while
@@ -218,6 +227,20 @@ export const useNarration = storyId => {
   /** @param {string} text */
   const setHints = text => write({ hints: text })
 
+  /** @param {string} text */
+  const setFilters = text => write({ filters: text })
+
+  /**
+   * Read the project through another connection or model, and make it the
+   * one a project that has not chosen reads through.
+   * @param {Partial<import('./useApplicationState.js').NarrationChoice>} patch
+   */
+  const choose = patch => {
+    const next = { ...choice.value, ...patch }
+    write({ providerId: next.providerId ?? undefined, model: next.model ?? null })
+    appState.setNarration(next)
+  }
+
   // --- A document's speakers ---------------------------------------------
 
   /**
@@ -259,7 +282,7 @@ export const useNarration = storyId => {
 
   /**
    * What the server would be asked to say for the document as it stands:
-   * its blocks, in their speakers' voices, hints applied.
+   * its blocks, in their speakers' voices, filters and hints applied.
    * @param {string} documentId
    * @param {Block[]} [blocks]
    * @param {(string|null)[]} [speakers]
@@ -268,7 +291,16 @@ export const useNarration = storyId => {
     documentId,
     blocks = blocksOf(documentId),
     speakers = speakersOf(documentId, blocks)
-  ) => plan(blocks, speakers, voices.value, defaultVoiceId.value, parsedHints.value)
+  ) =>
+    plan(
+      blocks,
+      speakers,
+      voices.value,
+      defaultVoiceId.value,
+      parsedHints.value,
+      filterPatterns.value,
+      speechServer.via.value
+    )
 
   // --- Readings -----------------------------------------------------------
 
@@ -367,6 +399,95 @@ export const useNarration = storyId => {
     }
   }
 
+  // --- Audio kept past the session ----------------------------------------
+
+  /** Each signature's key on disk, worked out once. @type {Map<string, Promise<string>>} */
+  const keys = new Map()
+
+  /** @param {string} signature */
+  const keyOf = signature => {
+    let key = keys.get(signature)
+    if (!key) keys.set(signature, (key = audioKeyOf(signature)))
+    return key
+  }
+
+  /**
+   * The documents whose kept audio has been read back, or is being, by
+   * document and what it was read through: another model finds none, and
+   * going back to the first finds its audio again.
+   * @type {Map<string, Promise<void>>}
+   */
+  const restoring = new Map()
+
+  /**
+   * Read back what is kept of a document's narration, for the blocks that
+   * would be read the same way now, and join it into a track. Once a
+   * session for each model; kept audio a block no longer asks for is left
+   * for the next run to let go.
+   * @param {string} documentId
+   */
+  const restore = documentId => {
+    if (!storage.audioKept()) return Promise.resolve()
+    const asked = `${documentId}\n${speechServer.via.value}`
+    let done = restoring.get(asked)
+    if (!done) {
+      const utterances = utterancesOf(documentId)
+      // A document whose words have not come yet is looked at again when they have.
+      if (utterances.length === 0) return Promise.resolve()
+      done = (async () => {
+        const kept = new Set(await storage.audioKeys(storyId, documentId))
+        if (kept.size === 0) return
+        const reading = ensureReading(documentId)
+        let found = 0
+        for (const utterance of utterances) {
+          if (utterance.skipped || reading.clips.has(utterance.signature)) continue
+          const key = await keyOf(utterance.signature)
+          if (!kept.has(key)) continue
+          const clip = await storage.readAudio(storyId, documentId, key)
+          if (!clip) continue
+          reading.clips.set(utterance.signature, clip)
+          found += 1
+        }
+        if (found > 0 && reading.status !== 'running') refreshTrack(documentId, { fresh: true })
+      })().catch(error => console.warn('Could not read back the narration kept:', error))
+      restoring.set(asked, done)
+    }
+    return done
+  }
+
+  /**
+   * Keep a clip with the project, where audio is kept. A clip that can't be
+   * kept is still heard: it is only made again next time.
+   * @param {string} documentId
+   * @param {string} signature
+   * @param {ArrayBuffer} clip
+   */
+  const keep = (documentId, signature, clip) => {
+    if (!storage.audioKept()) return
+    keyOf(signature)
+      .then(key => storage.writeAudio(storyId, documentId, key, clip))
+      .catch(error => console.warn('Could not keep the narration:', error))
+  }
+
+  /**
+   * Delete the kept audio nothing in the document asks for any more.
+   * @param {string} documentId
+   * @param {Utterance[]} utterances - As the document stands
+   */
+  const prune = (documentId, utterances) => {
+    if (!storage.audioKept()) return
+    const said = utterances.filter(utterance => !utterance.skipped)
+    Promise.all([
+      Promise.all(said.map(u => keyOf(u.signature))),
+      storage.audioKeys(storyId, documentId),
+    ])
+      .then(([wanted, kept]) => {
+        const unwanted = kept.filter(key => !wanted.includes(key))
+        if (unwanted.length > 0) return storage.removeAudio(storyId, documentId, unwanted)
+      })
+      .catch(error => console.warn('Could not let go of the narration kept:', error))
+  }
+
   /**
    * Stop a run. What was read stays.
    * @param {string} documentId
@@ -380,66 +501,81 @@ export const useNarration = storyId => {
    *
    * With no blocks named, whatever has no audio is read — everything, the
    * first time; after an edit, only what changed — and when nothing lacks
-   * audio, all of it again. With blocks named, those are read, again if
-   * they have been. One run at a time for a document: asked again while one
-   * is under way, this does nothing.
+   * audio, nothing. With blocks named, those are read, again if they have
+   * been. One run at a time for a document: asked again while one is under
+   * way, this does nothing.
    *
    * @param {string} documentId
    * @param {{blocks?: number[]}} [options]
    */
   const narrate = async (documentId, { blocks } = {}) => {
     if (controllers.has(documentId)) return
-
-    const reading = ensureReading(documentId)
-    const utterances = utterancesOf(documentId)
     const server = connection.value
-
-    // Audio nothing in the document asks for any more has had its chance
-    // to be wanted again; a run is when it goes.
-    const wanted = new Set(utterances.map(utterance => utterance.signature))
-    for (const signature of [...reading.clips.keys()]) {
-      if (!wanted.has(signature)) reading.clips.delete(signature)
-    }
-
-    const targets = targetsOf(utterances, signature => reading.clips.has(signature), blocks)
-    Object.assign(reading, {
-      status: 'running',
-      done: 0,
-      total: targets.length,
-      current: null,
-      failed: null,
-      error: null,
-    })
-
+    if (!server) return
     const controller = new AbortController()
     controllers.set(documentId, controller)
 
+    /** @type {Reading|null} */
+    let reading = null
     try {
-      for (const utterance of targets) {
-        reading.current = utterance.signature
-        const clip = await synthesize(
-          server,
-          {
-            input: utterance.text,
-            voice: utterance.voice.voice,
-            speed: utterance.voice.speed ?? 1,
-          },
-          controller.signal
-        )
-        reading.clips.set(utterance.signature, clip)
-        reading.done += 1
+      // What was kept from before is found first, and not asked for again.
+      await restore(documentId)
+      // The project keeps what it was first read through.
+      if (!settings.value.providerId) choose({})
+
+      reading = ensureReading(documentId)
+      const utterances = utterancesOf(documentId)
+
+      // Audio nothing in the document asks for any more has had its chance
+      // to be wanted again; a run is when it goes, here and where it is kept.
+      const wanted = new Set(utterances.map(utterance => utterance.signature))
+      for (const signature of [...reading.clips.keys()]) {
+        if (!wanted.has(signature)) reading.clips.delete(signature)
       }
-      reading.status = 'done'
-    } catch (error) {
-      if (controller.signal.aborted) {
-        reading.status = 'stopped'
-      } else {
-        reading.status = 'failed'
-        reading.failed = reading.current
-        reading.error = describeFailure(error, server)
+      prune(documentId, utterances)
+
+      const has = (/** @type {string} */ signature) =>
+        /** @type {Reading} */ (reading).clips.has(signature)
+      const targets = targetsOf(utterances, has, blocks)
+      if (targets.length === 0) return
+      Object.assign(reading, {
+        status: 'running',
+        done: 0,
+        total: targets.length,
+        current: null,
+        failed: null,
+        error: null,
+      })
+
+      try {
+        for (const utterance of targets) {
+          reading.current = utterance.signature
+          const clip = await synthesize(
+            server,
+            {
+              input: utterance.text,
+              voice: utterance.voice.voice,
+              speed: utterance.voice.speed ?? 1,
+            },
+            controller.signal
+          )
+          reading.clips.set(utterance.signature, clip)
+          keep(documentId, utterance.signature, clip)
+          reading.done += 1
+        }
+        reading.status = 'done'
+      } catch (error) {
+        if (controller.signal.aborted) {
+          reading.status = 'stopped'
+        } else {
+          reading.status = 'failed'
+          reading.failed = reading.current
+          reading.error = describeFailure(error, server)
+        }
+      } finally {
+        reading.current = null
       }
     } finally {
-      reading.current = null
       controllers.delete(documentId)
     }
 
@@ -469,13 +605,16 @@ export const useNarration = storyId => {
   }
 
   /**
-   * Hear a voice say a line, without touching any document's reading.
-   * Resolves once the line is back and playing, not when it ends.
+   * Hear a voice say something, without touching any document's reading.
+   * Resolves once it is back and playing, not when it ends.
    * @param {TtsVoice} voice
+   * @param {string} text
    */
-  const preview = async voice => {
-    const clip = await synthesize(connection.value, {
-      input: SAMPLE_TEXT,
+  const say = async (voice, text) => {
+    const server = connection.value
+    if (!server) return
+    const clip = await synthesize(server, {
+      input: text,
       voice: voice.voice,
       speed: voice.speed ?? 1,
     })
@@ -483,10 +622,26 @@ export const useNarration = storyId => {
   }
 
   /**
+   * Hear a voice say a line.
+   * @param {TtsVoice} voice
+   */
+  const preview = voice => say(voice, SAMPLE_TEXT)
+
+  /**
+   * Hear the hinted words, each as the server will be asked to say it, one
+   * after another in the default voice.
+   */
+  const previewHints = async () => {
+    const words = parsedHints.value.map(hint => applyHints(hint.word, parsedHints.value))
+    if (words.length === 0) return
+    await say(voiceFor(voices.value, null, defaultVoiceId.value), words.join('. '))
+  }
+
+  /**
    * Read some markdown aloud then and there, in one voice: a chat message.
-   * A block at a time, markdown taken off and the hints applied, as a
-   * document would be; but in one voice, and nothing is kept. See
-   * `useSpeech`.
+   * A block at a time, markdown taken off and the filters and hints
+   * applied, as a document would be; but in one voice, and nothing is kept.
+   * See `useSpeech`.
    *
    * @param {string} key - Names what is read, for `useSpeech().current`
    * @param {string} markdown
@@ -494,33 +649,44 @@ export const useNarration = storyId => {
    * @returns {Promise<void>} When it has been read, or stopped
    */
   const readAloud = (key, markdown, voiceId) => {
+    const server = connection.value
+    if (!server) return Promise.resolve()
     const voice = voiceFor(voices.value, voiceId, defaultVoiceId.value)
-    const lines = readBlocks(markdown).map(block => applyHints(block.text, parsedHints.value))
-    return useSpeech().speak(key, { connection: connection.value, voice, lines })
+    const lines = readBlocks(markdown)
+      .map(block => applyFilters(block.text, filterPatterns.value))
+      .filter(Boolean)
+      .map(text => applyHints(text, parsedHints.value))
+    return useSpeech().speak(key, { connection: server, voice, lines })
   }
 
   /** Stop every reading and let go of their audio. */
   const dispose = () => {
     for (const controller of controllers.values()) controller.abort()
     controllers.clear()
+    restoring.clear()
     for (const documentId of [...readings.keys()]) forget(documentId)
   }
 
   /** @type {NarrationApi} */
   const api = {
+    choice,
+    choose,
     connection,
     configured,
     voices,
     defaultVoiceId,
     hints,
+    filters,
+    filterPatterns,
     voiceById,
     addVoice,
     updateVoice,
     removeVoice,
     setDefaultVoice,
     setHints,
-    serverVoices,
-    loadServerVoices,
+    setFilters,
+    serverVoices: speechServer.voices,
+    loadServerVoices: speechServer.load,
     watching,
     blocksOf,
     speakersOf,
@@ -528,11 +694,13 @@ export const useNarration = storyId => {
     utterancesOf,
     readingOf,
     inStep,
+    restore,
     narrate,
     refreshTrack,
     stop,
     download,
     preview,
+    previewHints,
     readAloud,
     dispose,
   }

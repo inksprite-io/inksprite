@@ -8,7 +8,6 @@ description: >-
   they gave it: what happens, whose point of view, how long, and anything else
   they said about it. Don't summarise or quote the notes in the brief. Not for
   notes, outlines, feedback, or talking a scene through; answer those yourself.
-disable-model-invocation: true
 context: fork
 arguments: brief
 argument-hint: <what to write>

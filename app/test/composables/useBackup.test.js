@@ -297,7 +297,7 @@ describe('useBackup', () => {
         const { chat } = await useBackup().readChatFile(tavernFile(rows))
 
         expect(chat.profileId).toBe(ROLEPLAY_PROFILE_ID)
-        expect(chat.disabledToolGroups).toEqual(['documents', 'rpg', 'skills'])
+        expect(chat.disabledToolGroups).toEqual(['rpg', 'skills', 'experimental'])
         expect(chat.rules).toBe(DEFAULT_ROLEPLAY_NOTE)
         // A profile's prompt is read from the profile every turn, never copied.
         expect(chat).not.toHaveProperty('prompt')

@@ -13,8 +13,10 @@
  * the library. A path that would lead anywhere else, through `..` or a link,
  * is refused, so a page gone wrong can harm the library and nothing else.
  *
- * Nothing is deleted. What goes goes to the system's trash, or to the
- * library's own `.inksprite-trash/` where there is none. A file is written
+ * Nothing is deleted but a project's narration audio, which is made again
+ * on asking and would fill the trash: what else goes goes to the system's
+ * trash, or to the library's own `.inksprite-trash/` where there is none. A
+ * file is written
  * whole or not at all: to a file beside it, made safe on the disk, then
  * renamed over it. A file changed since the page last saw it goes to the
  * trash before it is written over or moved onto, and the page is told.
@@ -36,6 +38,12 @@ const STORY_FILE = '.inksprite/story.json'
 
 /** Where what goes is kept when the system has no trash. */
 const OWN_TRASH = '.inksprite-trash'
+
+/**
+ * A project's narration audio, the one thing deleted rather than trashed,
+ * and not walked: the app asks for a document's when it reads it aloud.
+ */
+const AUDIO = /^[^/]+\/\.inksprite\/audio(\/|$)/
 
 /** How many files are read at once. */
 const READ_AT_ONCE = 64
@@ -140,11 +148,14 @@ export async function ensureLibrary() {
  * - `move` - A file or folder with all in it; one already where it goes,
  *   that is not itself in another case, is trashed first
  * - `trash` - A file or folder, if it is there
+ * - `delete` - A file or folder of a project's narration audio, for good;
+ *   refused anywhere else
  *
  * @typedef {{op: 'write', path: string, text?: string, bytes?: Uint8Array, expect?: Seen|null}
  *   | {op: 'append', path: string, at: number, text: string, size: number}
  *   | {op: 'move', from: string, to: string}
- *   | {op: 'trash', path: string}} LibraryOp
+ *   | {op: 'trash', path: string}
+ *   | {op: 'delete', path: string}} LibraryOp
  */
 
 /**
@@ -246,9 +257,10 @@ export function libraryFolder(root) {
 
     /**
      * Every file a project's folder holds as far as the app reads it, by
-     * path below the folder: its own `.inksprite/`, and each folder in it
-     * that is a folder of the project's or is in a repository. Any other
-     * folder, and any link, is named but not gone into.
+     * path below the folder: its own `.inksprite/` but for its narration
+     * audio, and each folder in it that is a folder of the project's or is
+     * in a repository. Any other folder, and any link, is named but not gone
+     * into.
      *
      * @param {string} dir - The project's folder, below the library
      * @returns {Promise<{files: Array<{path: string} & Seen>, closed: string[]}>}
@@ -277,6 +289,7 @@ export function libraryFolder(root) {
             const found = await fs.stat(full)
             files.push({ path: at, mtime: found.mtimeMs, size: found.size })
           } else if (item.isDirectory()) {
+            if (at === '.inksprite/audio') continue
             const ours =
               repository ||
               (relative === '' && item.name === '.inksprite') ||
@@ -310,6 +323,23 @@ export function libraryFolder(root) {
         )
       }
       return texts
+    },
+
+    /**
+     * The names of the files in a folder, not those in folders within it:
+     * none when it is not there.
+     *
+     * @param {string} relative
+     * @returns {Promise<string[]>}
+     */
+    async list(relative) {
+      const items = await fs
+        .readdir(await inside(relative), { withFileTypes: true })
+        .catch(() => [])
+      return items
+        .filter(item => item.isFile())
+        .map(item => item.name)
+        .sort()
     },
 
     /**
@@ -370,6 +400,9 @@ export function libraryFolder(root) {
         } else if (op.op === 'trash') {
           const target = await inside(op.path)
           if (await fs.lstat(target).catch(() => null)) await trash(target)
+        } else if (op.op === 'delete') {
+          if (!AUDIO.test(op.path)) throw new Error(`Only narration audio is deleted: ${op.path}`)
+          await fs.rm(await inside(op.path), { recursive: true, force: true })
         } else {
           throw new Error(`Not something to do in the library: ${/** @type {any} */ (op).op}`)
         }

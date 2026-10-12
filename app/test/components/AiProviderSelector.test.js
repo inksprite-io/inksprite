@@ -8,6 +8,13 @@ const providers = [
   { id: 'p_keyed', name: 'OpenRouter', type: 'openrouter', apiKey: 'sk-1' },
   { id: 'p_local', name: 'Laptop', type: 'llamacpp', endpoint: '' },
   { id: 'p_server', name: 'Server', type: 'generic', endpoint: 'http://localhost:1234/v1' },
+  { id: 'p_anthropic', name: 'Anthropic', type: 'anthropic', apiKey: 'sk-ant' },
+  {
+    id: 'provider_kokoro_default',
+    name: 'Kokoro',
+    type: 'generic',
+    endpoint: 'http://localhost:8880/v1',
+  },
 ]
 
 vi.mock('@/composables/useAIConfig', () => ({
@@ -21,9 +28,9 @@ vi.mock('@/components/writer/settings/ai/ProviderConfig.vue', () => ({
   default: { name: 'ProviderConfig', props: ['visible'], template: '<div :data-open="visible" />' },
 }))
 
-const mountSelector = selectedProviderId =>
+const mountSelector = (selectedProviderId, kind) =>
   mount(AiProviderSelector, {
-    props: { selectedProviderId },
+    props: { selectedProviderId, ...(kind ? { kind } : {}) },
     global: { plugins: [PrimeVue], directives: { tooltip: {} } },
   })
 
@@ -57,5 +64,21 @@ describe('AiProviderSelector', () => {
 
   it('shows no status with no connection picked', () => {
     expect(status(mountSelector(null)).exists()).toBe(false)
+  })
+
+  it('lists the connections that can do the job', () => {
+    const listed = kind =>
+      mountSelector(null, kind)
+        .findComponent({ name: 'Select' })
+        .props('options')
+        .map(provider => provider.id)
+
+    expect(listed()).toEqual(['p_openrouter', 'p_keyed', 'p_local', 'p_server', 'p_anthropic'])
+    expect(listed('speech')).toEqual([
+      'p_openrouter',
+      'p_keyed',
+      'p_server',
+      'provider_kokoro_default',
+    ])
   })
 })

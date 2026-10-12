@@ -114,7 +114,7 @@ export const ICON_CREDITS = Object.freeze([
     title: 'Electronics',
     creator: 'Marie Van den Broeck',
     file: 'noun-electronics-381125.svg',
-    usedAs: ['ElectronicsIcon'],
+    usedAs: [],
   },
   {
     id: 446783,
@@ -156,7 +156,7 @@ export const ICON_CREDITS = Object.freeze([
     title: 'magic books',
     creator: 'Alice Noir',
     file: 'noun-magic-books-4420245.svg',
-    usedAs: ['magic-books-light.svg', 'magic-books-dark.svg'],
+    usedAs: [],
   },
   {
     id: 5498011,
@@ -164,6 +164,13 @@ export const ICON_CREDITS = Object.freeze([
     creator: 'Gregor Cresnar',
     file: 'noun-navigation-menu-5498011.svg',
     usedAs: ['NavigationMenuIcon'],
+  },
+  {
+    id: 1571006,
+    title: 'Network',
+    creator: 'Three Six Five',
+    file: 'noun_Network_1571006.svg',
+    usedAs: ['NetworkIcon'],
   },
   {
     id: 2762314,
@@ -279,24 +286,6 @@ export const OWN_ICONS = Object.freeze([
   'RetryIcon',
   'SendIcon',
   'SpeakerIcon',
-])
-
-/**
- * @typedef {Object} FontCredit
- * @property {string} name
- * @property {string} creator
- * @property {string} url - Where the font comes from
- * @property {License} license
- */
-
-/** @type {readonly FontCredit[]} */
-export const FONT_CREDITS = Object.freeze([
-  {
-    name: 'X Typewriter',
-    creator: 'GGBotNet',
-    url: 'https://ggbot.net',
-    license: { name: 'SIL Open Font License 1.1', url: 'https://openfontlicense.org' },
-  },
 ])
 
 /**

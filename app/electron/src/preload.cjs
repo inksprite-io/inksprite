@@ -78,6 +78,7 @@ contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', {
     projects: () => call('library:projects'),
     walk: dir => call('library:walk', dir),
     read: paths => call('library:read', paths),
+    list: dir => call('library:list', dir),
     readBytes: path => call('library:readBytes', path),
     apply: ops => call('library:apply', ops),
     reveal: path => call('library:reveal', path),

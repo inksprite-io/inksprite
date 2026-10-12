@@ -92,6 +92,7 @@ import Settings from './settings/Settings.vue'
 import SettingsDialog from './settings/SettingsDialog.vue'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useSidebarTab } from '@/composables/useSidebarTab.js'
+import { useEditorRequest } from '@/composables/useEditorRequest.js'
 import {
   NO_PROJECT_LAYOUT,
   PANELS,
@@ -190,6 +191,15 @@ watch(sidebarTab.requested, () => {
   if (!tab) return
   if (isMobile.value) activeMobileTab.value = tab
   else setLayout({ ...layout.value, sidebar: true, sidebarTab: tab })
+})
+
+// The editor asked for from deeper in the writer, having had a tab opened in
+// it: on a phone its tab, here its panel.
+const editorRequest = useEditorRequest()
+watch(editorRequest.requested, () => {
+  if (!editorRequest.take()) return
+  if (isMobile.value) activeMobileTab.value = 'write'
+  else showPanel(PANELS.EDITOR)
 })
 
 // Shared with anything that opens the settings from inside the writer. On a

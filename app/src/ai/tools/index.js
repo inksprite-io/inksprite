@@ -126,6 +126,17 @@ import {
 export const SKILLS_GROUP = 'skills'
 
 /**
+ * The group the built-in skills still being tuned are registered in:
+ * Interpret and Write. Every built-in profile starts with it off, so the
+ * model is offered them only in a chat that switches one on; the writer's
+ * `/interpret` and `/write` work either way. See ai/profiles.
+ */
+export const EXPERIMENTAL_GROUP = 'experimental'
+
+/** The groups whose tools are skills. */
+const SKILL_GROUPS = new Set([SKILLS_GROUP, EXPERIMENTAL_GROUP])
+
+/**
  * Tool groups, in display order. The keys are stored on chats that switch a
  * group off, so renaming one orphans that setting — change the label, not the
  * key.
@@ -136,6 +147,7 @@ export const TOOL_GROUP_LABELS = {
   documents: 'Documents',
   rpg: 'RPG Tools',
   [SKILLS_GROUP]: 'Skills',
+  [EXPERIMENTAL_GROUP]: 'Experimental',
   [WEB_GROUP]: 'Web',
 }
 
@@ -215,18 +227,18 @@ toolRegistry.register(
   WEB_TIMEOUT_MS
 )
 
-// Every built-in skill the model may call, as the tool its SKILL.md describes.
-// `interpret` draws a card of its own out of sight and returns what it made
-// of it, for a Game Master that wants an idea rather than a card to read;
-// `draw_tarot`, above, is for one that wants the cards. See
-// ../skills/interpret.
+// Every built-in skill the model may call, as the tool its SKILL.md describes,
+// in the experimental group while it is still being tuned. `interpret` draws
+// a card of its own out of sight and returns what it made of it, for a Game
+// Master that wants an idea rather than a card to read; `draw_tarot`, above,
+// is for one that wants the cards. See ../skills/interpret.
 for (const skill of BUILT_IN_SKILLS) {
   if (!skill.model || !skill.execute) continue
   toolRegistry.register(
     skill.name,
     toolDefinitionFor(skill),
     skill.execute,
-    SKILLS_GROUP,
+    skill.experimental ? EXPERIMENTAL_GROUP : SKILLS_GROUP,
     SKILL_TIMEOUT_MS
   )
 }
@@ -455,7 +467,29 @@ export function getToolDefinitionsFor(names, depth = 1) {
  * @returns {boolean}
  */
 export function isSkill(name) {
-  return name !== USE_SKILL && toolRegistry.groupOf(name) === SKILLS_GROUP
+  return name !== USE_SKILL && SKILL_GROUPS.has(toolRegistry.groupOf(name) ?? '')
+}
+
+/**
+ * Whether a call to this tool is a draw: dice, the oracle, a table, tarot or
+ * names, every tool in the RPG group. Asked for twice in one round, such a
+ * call is two draws rather than a repeat. See ai/rounds.js.
+ *
+ * @param {string} name - Tool name
+ * @returns {boolean}
+ */
+export function drawsByChance(name) {
+  return toolRegistry.groupOf(name) === 'rpg'
+}
+
+/**
+ * The group a tool is in: for the switch over a skill, which is its group's.
+ *
+ * @param {string} name - Tool name
+ * @returns {string|undefined} Undefined if no tool has that name
+ */
+export function toolGroupOf(name) {
+  return toolRegistry.groupOf(name)
 }
 
 /**

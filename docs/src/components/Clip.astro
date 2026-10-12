@@ -1,0 +1,38 @@
+---
+// A video from `public/guide/`, by name: short and silent, so it plays and
+// loops by itself, like a GIF that can be paused. The capture records each in
+// the light theme and the dark (`<name>-dark.webm`), and the page plays the
+// one in the reader's theme, changing it when they do.
+interface Props {
+	name: string;
+	label: string;
+}
+
+const { name, label } = Astro.props;
+---
+
+<video
+	data-light={`/guide/${name}.webm`}
+	data-dark={`/guide/${name}-dark.webm`}
+	width="1280"
+	height="800"
+	aria-label={label}
+	autoplay
+	loop
+	muted
+	playsinline
+	controls
+></video>
+
+<script>
+	// The page holds no src, so only the video in the reader's theme is fetched.
+	const show = () => {
+		const theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+		for (const video of document.querySelectorAll<HTMLVideoElement>('video[data-light]')) {
+			const src = video.dataset[theme];
+			if (src && video.getAttribute('src') !== src) video.src = src;
+		}
+	};
+	show();
+	new MutationObserver(show).observe(document.documentElement, { attributeFilter: ['data-theme'] });
+</script>

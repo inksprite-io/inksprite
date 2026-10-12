@@ -24,6 +24,7 @@ vi.mock('@/stores/db', () => ({
         rows.delete(id)
       }),
       toArray: vi.fn(async () => [...rows.values()]),
+      count: vi.fn(async () => rows.size),
       bulkDelete: vi.fn(async ids => {
         for (const id of ids) rows.delete(id)
       }),

@@ -1,0 +1,181 @@
+---
+title: Roleplay with character cards
+description: Import a character card and its lorebook, play your own character, and steer the story with the oracle and out-of-character notes.
+---
+
+import Clip from '../../components/Clip.astro';
+import Screenshot from '../../components/Screenshot.astro';
+
+A character card is a character packaged to share: who they are, the scene
+they open with, and often a lorebook, the world they live in. inksprite imports
+the cards made for SillyTavern and the sites that share them, and plays them as
+cooperative storytelling: you play your character, the model plays everyone
+else and the world, and either of you can steer.
+
+This guide plays [Pif](https://chub.ai/characters/bipbop/pif-2b066033), by
+bipbop: an orphan mechanic in a world of flying islands who takes odd jobs
+from the underworld. The game below was played with Claude Sonnet 5.5, through
+[Anthropic](/getting-started/#anthropic-and-openai).
+
+## Get the card
+
+On [Pif's page](https://chub.ai/characters/bipbop/pif-2b066033), download the
+card as a PNG: the picture carries the card inside it. The notes under it link
+two lorebooks; download the first, for SillyTavern
+([sohhf2.json](https://files.catbox.moe/sohhf2.json)).
+
+A card can come as JSON instead of a PNG, and imports the same way.
+
+## Import them
+
+Make a project for the game. Right-click it, choose **Import** › **Files…**,
+and choose the PNG. inksprite says what's in the card before it writes
+anything:
+
+<Screenshot name="roleplay-import-card" alt="Importing Pif: a description, a greeting and an author's note" />
+
+Click the **Import** button, then do the same with the lorebook.
+
+Both go in a **Cards** folder: the card in **Characters**, a document for each
+part of it, and the lorebook in **Lorebooks**, a document for each of its 246
+entries.
+
+The lorebook's folder is named after its file, and the model reads folder names
+too. Right-click it, choose **Rename**, and call it **Divided Skies**, the name
+of Pif's world.
+
+<Screenshot name="roleplay-outline" alt="The card and the lorebook in the outline" />
+
+## Make a persona
+
+Your character is a document, like everything else the model reads.
+Right-click the project, choose **New folder**, and call it **Personas**.
+Right-click that, choose **New document**, call it by your character's name,
+and describe them. This guide plays Tal:
+
+> A tall, lean man who looks to be in his late 30s. He speaks little and wears
+> a pair of revolvers at his hip.
+
+<Clip name="roleplay-persona" label="Making a Personas folder and Tal's document" />
+
+## Start the chat
+
+Right-click the card's folder, **Pif**, and choose **Chat with Pif…**. Type
+your character's name: the card says `{{user}}` where it means you, and this
+is what the model reads there instead. A card with more than one greeting
+shows them here to choose from; Pif has one.
+
+<Screenshot name="roleplay-start-chat" alt="Starting a chat with Pif as Tal" />
+
+The chat opens on the **Roleplay** profile, with Pif's greeting as its first
+message.
+
+### Pin your persona
+
+Hover over **Tal** in the outline and click the pin. A pinned document goes to
+the model whole with every message you send, so it always knows who you are
+playing, however long the game runs. The card's description is pinned already;
+pinned documents show in colour. A pin belongs to the chat it was made in.
+
+<Screenshot name="roleplay-pinned" alt="Tal pinned to the chat, and Pif's greeting" />
+
+## Choose the tools
+
+Click the gear in the message box for the chat's settings, and open **Tools**.
+
+- **Documents** is how the model reads the project. The lorebook is nearly
+  13,000 words, more than is worth sending with every message, so the model
+  looks entries up when the story needs them. Leave **Read**, **Describe**,
+  **List** and **Search** on, and switch off the rest, which write, so the game
+  can't change the lorebook.
+- **RPG Tools** are dice, the oracle, tables, tarot and names. Switch them on.
+  A model like Claude Sonnet 5.5 rolls on its own when an outcome is in doubt.
+
+<Screenshot name="roleplay-tools" alt="The chat's tools: reading the documents, and the RPG tools" />
+
+## Let the model read up
+
+Before the first move, tell the model what to do. A line that starts with
+`OOC:`, out of character, is from you as the player rather than from Tal:
+
+> OOC: Before we start, explore the lorebook in Cards/Lorebooks/Divided Skies
+> and gather whatever context you need to run this world. Let me know when
+> you're ready.
+
+<Clip name="roleplay-explore" label="The model lists the lorebook, reads the entries it wants, and says what it found" />
+
+It listed the lorebook, read ten entries (the world, Pif's island, her slum,
+her rival, the crew that keeps foiling her) and answered out of character with
+what it took from them. Click **11 tool calls** to see each call and what came
+back. It reads more as the story goes somewhere new.
+
+## Play
+
+Write short turns, the way you'd talk at a table: what Tal says and does.
+
+> "Doesn't seem like much of a choice to me." I draw my revolver and fire.
+
+The model narrates what happens, plays Pif and everyone else, and leaves Tal
+to you. When the outcome is in doubt, it rolls: here a d20 for the shot, which
+came up 13, a hit that only dents the war-golem.
+
+<Screenshot name="roleplay-dice" alt="A turn, and the d20 the model rolled for it" />
+
+## Steer the story
+
+The model doesn't decide the story alone. Two ways to take a hand in it:
+
+### Ask the oracle
+
+The oracle answers a yes-or-no question at the odds you give it. Type it on a
+line of its own, then your move on the next (<kbd>Shift</kbd> <kbd>Enter</kbd>
+starts a new line):
+
+```
+/oracle(likely) Is the boiler vent open when it raises the hammer?
+I wait for the hammer to come up and put two rounds in the vent.
+```
+
+The odds are `nearly_impossible`, `very_unlikely`, `unlikely`, `fifty_fifty`,
+`likely`, `very_likely` or `nearly_certain`; leave them off for 50/50. The
+answer is part of your turn, and the model takes it as fact. Here it was no, at
+likely odds, so the vent was shuttered:
+
+<Screenshot name="roleplay-oracle" alt="The oracle's answer in Tal's turn, and the reply built on it" />
+
+`/roll` rolls dice the same way, as `/roll 2d6+1`. Type `/` for the rest.
+
+### Say what you'd like
+
+An out-of-character note can ask for anything: a twist, a character, a change
+of pace, or less of something.
+
+```
+I step in close and empty the cylinder into the open vent.
+
+OOC: While we're busy with the golem, have Ridge slip in and make off with the crate.
+```
+
+Ridge, Pif's rival, came down from the rafters in the same reply. The dice
+still had their say: a 6, and the shots went wide.
+
+<Screenshot name="roleplay-ooc" alt="An action and an out-of-character note in one turn" />
+
+## Compact the chat
+
+Every turn sends the whole chat so far, so a long game gets slower and costs
+more, and can grow past what the model can read at once. Type `/compact` and
+the model writes a summary of the game to stand in for the turns before it: who
+is who, each scene, and a few lines from each, word for word.
+
+<Screenshot name="roleplay-summary" alt="The summary at the top of the chat" />
+
+The turns stay in the chat for you to read back; the model reads the summary
+instead. Here the next turn went to the model at 7.8k tokens (**ctx** in its
+header), where the one before the summary was 22k.
+
+<Screenshot name="roleplay-after-summary" alt="The first turn after the summary, at a third of the size" />
+
+`/compact(2)` keeps the last two turns as they are, under the summary. To
+compact from an earlier turn, choose **Summarize up to here** from its **⋯**
+menu.

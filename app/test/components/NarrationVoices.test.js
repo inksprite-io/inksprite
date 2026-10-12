@@ -74,6 +74,18 @@ describe('NarrationVoices', () => {
     expect(wrapper.emitted('update')).toEqual([['narrator', { voice: 'af_heart+af_nicole' }]])
   })
 
+  it("marks the voices in a mix the model doesn't list, once its voices are known", async () => {
+    const mixed = { ...narrator, voice: 'af_heart+af_nicole(2)+Kore' }
+    const wrapper = mountVoices({ voices: [mixed, riley] })
+    expect(wrapper.find('[data-voice-unknown]').exists()).toBe(false)
+
+    await wrapper.setProps({ serverVoices: ['af_heart', 'af_nicole'] })
+    expect(wrapper.find('[data-voice-unknown]').text()).toBe("Not among this model's voices: Kore")
+
+    await wrapper.setProps({ serverVoices: ['af_heart', 'af_nicole', 'Kore'] })
+    expect(wrapper.find('[data-voice-unknown]').exists()).toBe(false)
+  })
+
   it('calls the voice that reads the rest the default', async () => {
     const wrapper = mountVoices()
     expect(wrapper.text()).toContain('Default')

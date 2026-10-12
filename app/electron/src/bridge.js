@@ -166,6 +166,7 @@ export function handleBridge(origin) {
   handle('library:projects', () => inTurn(folder => folder.projects()))
   handle('library:walk', (_, dir) => inTurn(folder => folder.walk(dir)))
   handle('library:read', (_, paths) => inTurn(folder => folder.readTexts(paths)))
+  handle('library:list', (_, dir) => inTurn(folder => folder.list(dir)))
   handle('library:readBytes', (_, path) => inTurn(folder => folder.readBytes(path)))
   handle('library:apply', (_, ops) => inTurn(folder => folder.apply(ops)))
   handle('library:reveal', (_, path) => inTurn(folder => folder.reveal(path)))

@@ -12,6 +12,7 @@
 import { computed, toValue } from 'vue'
 import { useChats } from './useChats.js'
 import { useProfiles } from './useProfiles.js'
+import { DEFAULT_CHAT_PROMPT } from '@/ai/prompts/index.js'
 import { noteOnProfile, settingsForProfileSwitch } from '@/ai/profiles/index.js'
 
 /** @typedef {import('../types/models.js').Chat} Chat */
@@ -53,6 +54,52 @@ export function useChatSettings(storyId, chatId) {
   // The author's note as the turn reads it. See `noteOnProfile`.
   const note = computed(() => noteOnProfile(chat.value?.rules, selectedProfile.value))
 
+  /** The system prompt as the profile holds it, which is what the next request sends. */
+  const prompt = computed(() => selectedProfile.value?.settings?.prompt ?? DEFAULT_CHAT_PROMPT)
+
+  // Only the writer's own can be renamed or removed; the built-ins ship with
+  // the app, and editing one makes a copy to edit instead.
+  const isSavedProfile = computed(() => !!selectedProfile.value && !selectedProfile.value.readOnly)
+
+  /**
+   * Copy the selected profile and switch the chat to the copy. The copy starts
+   * new chats with this chat's author's note rather than the profile's: an
+   * edited list of opt-ins, or rules worked out here, is as often as not why
+   * the writer wants one. The chat is given its note as it reads it, which a
+   * copy, having no counterpart, would otherwise read differently. See
+   * `noteOnProfile`.
+   * @param {Partial<import('@/ai/profiles/index.js').ProfileSettings>} [changes]
+   */
+  const forkProfile = (changes = {}) => {
+    const rules = note.value
+    const copy = profilesApi.duplicateProfile(selectedProfileId.value, { rules, ...changes })
+    if (copy) update({ profileId: copy.id, rules })
+  }
+
+  /**
+   * Change the system prompt, as it is typed. A saved profile takes the edit
+   * itself. A built-in is read-only, so the first keystroke makes a copy of
+   * the writer's own and moves the chat onto it: the text stays where it is,
+   * and the copy's name appears in place of the built-in's.
+   * @param {string} text
+   */
+  const setPrompt = text => {
+    if (isSavedProfile.value) {
+      profilesApi.updateProfile(selectedProfileId.value, { settings: { prompt: text } })
+    } else {
+      forkProfile({ prompt: text })
+    }
+  }
+
+  /**
+   * Change the author's note, as it is typed. Stored trimmed, and stored as
+   * absent when there is nothing left: an empty string and no note at all
+   * mean the same thing to the turn, and only one of them should reach the
+   * row.
+   * @param {string} text
+   */
+  const setNote = text => update({ rules: text.trim() || undefined })
+
   /**
    * Point the chat at a profile.
    *
@@ -91,7 +138,12 @@ export function useChatSettings(storyId, chatId) {
     defaultProfileId,
     selectedProfileId,
     selectedProfile,
+    isSavedProfile,
     note,
+    setNote,
+    prompt,
+    setPrompt,
+    forkProfile,
     setProfile,
     deleteProfile,
   }

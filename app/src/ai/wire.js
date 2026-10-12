@@ -15,12 +15,14 @@
  */
 
 import { buildProviderRouting } from '@/ai/routing.js'
-import { takesChatTemplateKwargs } from '@/ai/providers.js'
+import { knownAddress, takesChatTemplateKwargs, takesReasoningEffort } from '@/ai/providers.js'
+import { capabilitiesOf, fitSettings } from '@/ai/capabilities.js'
 
 /**
  * @typedef {import('@/types/models.js').AIProvider} AIProvider
  * @typedef {import('@/ai/defaults.js').AIDefaults} AISettings
  * @typedef {import('@/ai/tools/registry.js').ToolDefinition} ToolDefinition
+ * @typedef {import('@/ai/capabilities.js').ModelTraits} ModelTraits
  */
 
 /**
@@ -34,17 +36,14 @@ function joinUrl(base, path) {
 }
 
 /**
- * Where this provider's API lives. OpenRouter is the one connection whose
- * address we know without being told.
+ * Where this provider's API lives: a hosted service's known address, or the
+ * one a server someone runs was given.
  *
  * @param {AIProvider} provider
  * @returns {string}
  */
 export function baseUrl(provider) {
-  if (provider.type === 'openrouter') {
-    return 'https://openrouter.ai/api/v1/'
-  }
-  return provider.endpoint
+  return knownAddress(provider.type) ?? provider.endpoint
 }
 
 /**
@@ -64,19 +63,21 @@ export function chatCompletionsUrl(provider) {
 }
 
 /**
- * Who is asking, for the provider's records.
+ * Who is asking, for OpenRouter's records.
  *
  * OpenRouter reads these two headers to attribute a request to an app — its
- * public rankings are built from them — and every other server ignores them.
- * On every request the app or a harness makes, so that a batch run from the
- * terminal counts the same as a turn in the browser.
+ * public rankings are built from them. On every request the app or a harness
+ * makes to it, so that a batch run from the terminal counts the same as a turn
+ * in the browser. Nobody else reads them, and Gemini turns a browser away for
+ * sending headers it has not heard of, so they go to OpenRouter alone.
  *
- * @type {Readonly<Record<string, string>>}
+ * @param {{ type?: string }} provider
+ * @returns {Record<string, string>}
  */
-export const ATTRIBUTION_HEADERS = Object.freeze({
-  'HTTP-Referer': 'https://inksprite.io',
-  'X-Title': 'inksprite',
-})
+export function attributionHeaders(provider) {
+  if (provider.type !== 'openrouter') return {}
+  return { 'HTTP-Referer': 'https://inksprite.io', 'X-Title': 'inksprite' }
+}
 
 /**
  * Mark cache breakpoints so Anthropic (via OpenRouter) can reuse the
@@ -209,7 +210,52 @@ export function toWireMessages(messages, provider) {
 }
 
 /**
+ * How a request asks for the reasoning the settings chose, in the words this
+ * backend has for it.
+ *
+ * Saying nothing is not saying no: a model that thinks by default goes on
+ * thinking, and `disabled` reads on the settings panel like a switch that did
+ * something. So OpenRouter is told so, explicitly. There is no `exclude` on
+ * that branch because there is nothing to exclude.
+ *
+ * @param {{ type: string }} provider
+ * @param {AISettings} settings - Fitted to the model
+ * @param {boolean} askedForEffort - Whether a level is named
+ * @returns {Record<string, any>}
+ */
+function reasoningFields(provider, settings, askedForEffort) {
+  if (provider.type === 'openrouter') {
+    return {
+      reasoning:
+        settings.reasoningEffort === 'disabled'
+          ? { enabled: false }
+          : {
+              ...(askedForEffort ? { effort: settings.reasoningEffort } : { enabled: true }),
+              exclude: !settings.showModelReasoning,
+            },
+    }
+  }
+  if (takesReasoningEffort(provider.type)) {
+    // A level, when one is chosen. There is no word for off that every model
+    // takes: Gemini's `none` is refused by the models that always think, so
+    // it has no Disabled, and Enabled leaves it to the model.
+    return askedForEffort ? { reasoning_effort: settings.reasoningEffort } : {}
+  }
+  if (takesChatTemplateKwargs(provider.type) && settings.reasoningEffort === 'disabled') {
+    // The same intent, said in the only way this server can hear it. Nothing
+    // goes out at the other settings: asking for thinking is the template's
+    // default, and a level is OpenRouter's word, not one llama-server has.
+    return { chat_template_kwargs: { enable_thinking: false } }
+  }
+  return {}
+}
+
+/**
  * The whole request body for a streamed chat completion.
+ *
+ * The settings are fitted to what this connection and model take first (see
+ * ai/capabilities.js): a sampler it doesn't take goes back to neutral, and the
+ * effort becomes one it knows.
  *
  * Sampler values at their neutral value — 1.0 for temperature, top-p and a
  * penalty that multiplies, 0 for the rest — are left out rather than sent,
@@ -229,6 +275,8 @@ export function toWireMessages(messages, provider) {
  * @param {string[]} [args.allowedProviders] - The preset's: the only upstreams
  *   OpenRouter may route this model to. Empty or absent allows any.
  * @param {AISettings} args.settings - Already resolved over AI_DEFAULTS
+ * @param {ModelTraits} [args.traits] - What the provider's list says of the
+ *   model (ai/models.js), where it says anything
  * @param {ToolDefinition[]} [args.tools]
  * @param {'auto'|'none'} [args.toolChoice] - `none` for a request that must
  *   answer without calling anything, with the tools still declared: a
@@ -241,10 +289,13 @@ export function buildCompletionBody({
   model,
   provider,
   allowedProviders,
-  settings,
+  settings: chosen,
+  traits,
   tools,
   toolChoice,
 }) {
+  const capabilities = capabilitiesOf(provider, model, traits)
+  const settings = fitSettings(chosen, capabilities)
   const params = settings.parameters
 
   /** @type {Record<string, any>} */
@@ -258,13 +309,19 @@ export function buildCompletionBody({
     stream_options: { include_usage: true },
   }
 
-  if (settings.maxTokens > 0) body.max_tokens = settings.maxTokens
+  // OpenAI's reasoning models refuse `max_tokens`; every model there takes
+  // the newer name.
+  if (settings.maxTokens > 0) {
+    body[provider.type === 'openai' ? 'max_completion_tokens' : 'max_tokens'] = settings.maxTokens
+  }
   if (params.temperature !== 1.0) body.temperature = params.temperature
   if (params.topP !== 1.0) body.top_p = params.topP
   if (params.frequencyPenalty !== 0) body.frequency_penalty = params.frequencyPenalty
   if (params.presencePenalty !== 0) body.presence_penalty = params.presencePenalty
   if (params.minP > 0) body.min_p = params.minP
-  if (params.repetitionPenalty !== 1.0) body.repetition_penalty = params.repetitionPenalty
+  if (params.repetitionPenalty !== 1.0) {
+    body[capabilities.names.repetitionPenalty ?? 'repetition_penalty'] = params.repetitionPenalty
+  }
   if (params.topK > 0) body.top_k = params.topK
   if (params.topA > 0) body.top_a = params.topA
   if (settings.seed > 0) body.seed = settings.seed
@@ -276,30 +333,16 @@ export function buildCompletionBody({
 
   // Not every thinking model takes an effort level. Some only have a switch,
   // and answer an effort with a refusal — so `enabled` asks for thinking
-  // without saying how much and lets the provider decide.
+  // without saying how much and lets the provider decide. A model that
+  // doesn't reason is told nothing of it.
+  const speaksOfReasoning = capabilities.efforts.length > 0
   const askedForEffort =
-    provider.type === 'openrouter' &&
+    speaksOfReasoning &&
+    (provider.type === 'openrouter' || takesReasoningEffort(provider.type)) &&
     settings.reasoningEffort !== 'disabled' &&
     settings.reasoningEffort !== 'enabled'
 
-  // Saying nothing is not saying no: a model that thinks by default goes on
-  // thinking, and `disabled` reads on the settings panel like a switch that
-  // did something. So it says so, explicitly. There is no `exclude` on that
-  // branch because there is nothing to exclude.
-  if (provider.type === 'openrouter') {
-    body.reasoning =
-      settings.reasoningEffort === 'disabled'
-        ? { enabled: false }
-        : {
-            ...(askedForEffort ? { effort: settings.reasoningEffort } : { enabled: true }),
-            exclude: !settings.showModelReasoning,
-          }
-  } else if (takesChatTemplateKwargs(provider.type) && settings.reasoningEffort === 'disabled') {
-    // The same intent, said in the only way this server can hear it. Nothing
-    // goes out at the other settings: asking for thinking is the template's
-    // default, and a level is OpenRouter's word, not one llama-server has.
-    body.chat_template_kwargs = { enable_thinking: false }
-  }
+  if (speaksOfReasoning) Object.assign(body, reasoningFields(provider, settings, askedForEffort))
 
   // Provider routing: the connection's policy, and the providers the preset
   // allows for this model.

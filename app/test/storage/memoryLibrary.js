@@ -4,7 +4,7 @@
  * A library in memory, doing what `electron/src/library.js` does on a disk:
  * a write expects the file as it was seen and trashes one that is not, an
  * append refuses a file not the length expected, a move trashes what is in
- * its way, and nothing is deleted outright. Every write moves a clock on, so
+ * its way, and nothing is deleted outright but narration audio. Every write moves a clock on, so
  * a file written again is not as it was seen.
  */
 
@@ -119,6 +119,14 @@ export function memoryLibrary() {
       return texts
     },
 
+    async list(dir) {
+      const prefix = `${dir}/`
+      return [...files.keys()]
+        .filter(path => path.startsWith(prefix) && !path.slice(prefix.length).includes('/'))
+        .map(path => path.slice(prefix.length))
+        .sort()
+    },
+
     async readBytes(path) {
       return files.get(path)?.bytes.slice() ?? null
     },
@@ -167,6 +175,11 @@ export function memoryLibrary() {
           }
         } else if (op.op === 'trash') {
           if (exists(op.path)) takeAway(op.path)
+        } else if (op.op === 'delete') {
+          if (!/^[^/]+\/\.inksprite\/audio(\/|$)/.test(op.path)) {
+            throw new Error(`Only narration audio is deleted: ${op.path}`)
+          }
+          for (const file of below(op.path)) files.delete(file)
         }
       }
       return { seen, conflicts }

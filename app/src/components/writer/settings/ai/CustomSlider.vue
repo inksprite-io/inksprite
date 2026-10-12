@@ -6,6 +6,7 @@
       :min="props.sliderMin ?? props.min"
       :max="props.sliderMax ?? props.max"
       :step="props.step"
+      :disabled="props.disabled"
       :aria-label="props.label || undefined"
       class="custom-slider flex-1 m-1 ml-3"
       :pt="{
@@ -33,6 +34,7 @@
       :max="props.max"
       :min-fraction-digits="0"
       :max-fraction-digits="props.fractional ? 2 : 0"
+      :disabled="props.disabled"
       :aria-label="props.label || undefined"
       size="small"
       class="flex-none"
@@ -63,6 +65,7 @@ const props = defineProps({
   fractional: { type: Boolean, required: false, default: true },
   /** What a screen reader calls the slider and its number: the setting's name. */
   label: { type: String, required: false, default: '' },
+  disabled: { type: Boolean, required: false, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])

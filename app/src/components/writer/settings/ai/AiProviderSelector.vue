@@ -68,16 +68,22 @@ import Button from 'primevue/button'
 import { useAIConfig } from '@/composables/useAIConfig'
 import ProviderConfig from './ProviderConfig.vue'
 import 'primeicons/primeicons.css'
-import { connectionGap } from '@/ai/providers.js'
+import { connectionGap, providerDoes } from '@/ai/providers.js'
 
 /**
  * @typedef {Object} Props
  * @property {string} selectedProviderId - Currently selected provider ID
+ * @property {import('@/ai/providers.js').ProviderKind} [kind] - What the
+ *   connection is picked for; only those that can do it are listed
  */
 const props = defineProps({
   selectedProviderId: {
     type: String,
     default: null,
+  },
+  kind: {
+    type: String,
+    default: 'chat',
   },
 })
 
@@ -91,8 +97,12 @@ const showProviderConfig = ref(false)
 // Local state for the selected provider
 const localSelectedProviderId = ref(props.selectedProviderId)
 
-// Get all providers
-const providers = computed(() => aiConfig.providers.value)
+// The connections that can do the job
+const providers = computed(() =>
+  aiConfig.providers.value.filter(provider =>
+    providerDoes(provider, /** @type {import('@/ai/providers.js').ProviderKind} */ (props.kind))
+  )
+)
 
 const selectedProvider = computed(() =>
   localSelectedProviderId.value ? aiConfig.getProvider(localSelectedProviderId.value) : null

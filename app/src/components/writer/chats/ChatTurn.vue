@@ -1,175 +1,37 @@
 <template>
   <div
-    class="group/turn pb-4 border-b border-surface-200 dark:border-surface-700 transition-opacity"
+    class="group/turn pb-2 border-b border-surface-200 dark:border-surface-700 transition-opacity"
     :class="{ 'border-none': isLast, 'opacity-40 hover:opacity-100': compacted }"
   >
     <!-- One header for the whole turn. A run of messages from one side is one
          turn taken in pieces — it reaches the model as a single message — and a
          name and a time repeated over each piece says the writer spoke three
-         times. See utils/turns.js.
-
-         On a phone the buttons do not fit beside all it says about a reply,
-         so they go under it rather than off the edge of the screen. Elsewhere
-         they are hidden until the turn is hovered, and float over the end of
-         the line rather than wrap under it: a line of nothing between the
-         name and the reply, on every turn, is what the room went on. -->
-    <div class="relative flex flex-wrap items-center justify-between gap-x-2 min-h-6 mb-2">
-      <div
-        class="flex flex-wrap items-center gap-x-2 whitespace-nowrap text-xs text-surface-500 dark:text-surface-400"
-      >
-        <span class="font-semibold" :class="authorClass">
-          {{ author }}
-        </span>
-        <span v-if="formattedTime" aria-hidden>•</span>
-        <span v-if="formattedTime">{{ formattedTime }}</span>
-        <Tag
-          v-if="edited"
-          value="edited"
-          severity="secondary"
-          rounded
-          class="!text-[10px] !px-2 !py-0"
-        />
-        <!-- Which model wrote it. A chat changes presets as it goes, and one
-             brought in from elsewhere never ran on any of them. -->
-        <span v-if="writtenBy" aria-hidden>•</span>
-        <span v-if="writtenBy" v-tooltip.top="writtenBy.tooltip" data-test="turn-model">
-          {{ writtenBy.name }}
-        </span>
-        <span v-if="formattedContextSize" aria-hidden>•</span>
-        <span v-if="formattedContextSize" v-tooltip.top="usageTooltip" class="tabular-nums">
-          {{ formattedContextSize }}
-        </span>
-        <!-- Where the answer stands among the others the message has had,
-             when it has had any: asking again keeps what was said, and this
-             is the way back to it. -->
-        <template v-if="answers">
-          <span aria-hidden>•</span>
-          <span class="inline-flex items-center gap-0.5 tabular-nums">
-            <Button
-              v-tooltip.top="'Previous answer'"
-              aria-label="Previous answer"
-              icon="pi pi-chevron-left"
-              text
-              rounded
-              size="small"
-              class="!w-5 !h-5 !p-0"
-              :disabled="answers.at === 0"
-              @click="$emit('alternate', lastId, answers.at - 1)"
-            />
-            <span>{{ answers.at + 1 }} / {{ answers.of }}</span>
-            <Button
-              v-tooltip.top="'Next answer'"
-              aria-label="Next answer"
-              icon="pi pi-chevron-right"
-              text
-              rounded
-              size="small"
-              class="!w-5 !h-5 !p-0"
-              :disabled="answers.at === answers.of - 1"
-              @click="$emit('alternate', lastId, answers.at + 1)"
-            />
-          </span>
-        </template>
-      </div>
-
-      <!-- What is asked of the turn rather than of one message in it. A reply
-           answers all of it and a fork takes everything up to the end of it, so
-           both reach for its last message.
-
-           A turn that is one message — which is every turn the writer takes —
-           is asked the message's questions here as well. Its pieces float their
-           own buttons over the corner a message's would go in, and a header
-           nothing floats over is where "edit turn" is looked for anyway. -->
-      <div
-        data-turn-actions
-        :class="[
-          'flex flex-none gap-1 transition-opacity',
-          isMobile
-            ? 'ml-auto'
-            : 'absolute -top-1 right-0 z-10 rounded-lg bg-surface-0 dark:bg-surface-800',
-          menuOpen
-            ? 'opacity-100'
-            : isMobile
-              ? 'opacity-50'
-              : 'opacity-0 group-hover/turn:opacity-100',
-        ]"
-      >
-        <!-- Heard rather than read. The whole turn, in the chat's voice. -->
-        <ReadAloudButton
-          v-if="spoken"
-          :story-id="storyId"
-          :speech-key="`turn:${messages[0].id}`"
-          :text="spoken"
-          :voice-id="voiceId"
-        />
-        <Button
-          v-if="spoken"
-          v-tooltip.top="copied ? 'Copied' : 'Copy'"
-          :aria-label="copied ? 'Copied' : 'Copy'"
-          :icon="copied ? 'pi pi-check' : 'pi pi-copy'"
-          text
-          rounded
-          size="small"
-          @click="copy"
-        />
-        <Button
-          v-if="role === 'user'"
-          v-tooltip.top="'Regenerate reply'"
-          aria-label="Regenerate reply"
-          icon="pi pi-arrow-right"
-          text
-          rounded
-          size="small"
-          @click="$emit('resend', lastId)"
-        />
-        <template v-if="only">
-          <!-- Asking again is only offered where it could answer differently.
-               The writer's own words are not going to, but a roll that is the
-               whole of their turn is, and its piece shows no buttons here. -->
-          <Button
-            v-if="role === 'assistant' || lone"
-            v-tooltip.top="command || lone ? 'Ask again' : 'Regenerate reply'"
-            :aria-label="command || lone ? 'Ask again' : 'Regenerate reply'"
-            icon="pi pi-refresh"
-            text
-            rounded
-            size="small"
-            :disabled="pending"
-            @click="$emit('regenerate', only.id, lone ? 0 : null)"
-          />
-          <Button
-            v-tooltip.top="
-              role === 'user' ? 'Edit turn' : command ? 'Edit command' : 'Edit message'
-            "
-            :aria-label="role === 'user' ? 'Edit turn' : command ? 'Edit command' : 'Edit message'"
-            icon="pi pi-pencil"
-            text
-            rounded
-            size="small"
-            :disabled="pending"
-            @click="body[0]?.startEditing()"
-          />
-        </template>
-        <!-- The rest, asked of a turn less often: how it is shown, where the
-             conversation goes from it, and taking it out. -->
-        <Button
-          v-tooltip.top="'More'"
-          icon="pi pi-ellipsis-h"
-          text
-          rounded
-          size="small"
-          aria-label="More actions"
-          aria-haspopup="true"
-          @click="menu?.toggle($event)"
-        />
-        <Menu
-          ref="menu"
-          :model="menuItems"
-          popup
-          @show="menuOpen = true"
-          @hide="menuOpen = false"
-        />
-      </div>
+         times. See utils/turns.js. -->
+    <div
+      class="flex flex-wrap items-center gap-x-2 min-h-6 mb-2 whitespace-nowrap text-xs text-surface-500 dark:text-surface-400"
+    >
+      <span class="font-semibold" :class="authorClass">
+        {{ author }}
+      </span>
+      <span v-if="formattedTime" aria-hidden>•</span>
+      <span v-if="formattedTime">{{ formattedTime }}</span>
+      <Tag
+        v-if="edited"
+        value="edited"
+        severity="secondary"
+        rounded
+        class="!text-[10px] !px-2 !py-0"
+      />
+      <!-- Which model wrote it. A chat changes presets as it goes, and one
+           brought in from elsewhere never ran on any of them. -->
+      <span v-if="writtenBy" aria-hidden>•</span>
+      <span v-if="writtenBy" v-tooltip.top="writtenBy.tooltip" data-test="turn-model">
+        {{ writtenBy.name }}
+      </span>
+      <span v-if="formattedContextSize" aria-hidden>•</span>
+      <span v-if="formattedContextSize" v-tooltip.top="usageTooltip" class="tabular-nums">
+        {{ formattedContextSize }}
+      </span>
     </div>
 
     <div class="flex flex-col gap-2">
@@ -189,6 +51,125 @@
         @reject="index => $emit('reject', message.id, index)"
       />
     </div>
+
+    <!-- What is asked of the turn rather than of one message in it, under the
+         end of it and over to the right, away from what it says. A reply
+         answers all of it and a fork takes everything up to the end of it, so
+         both reach for its last message.
+
+         A turn that is one message — which is every turn the writer takes — is
+         asked the message's questions here as well. Its pieces float their own
+         buttons over the corner a message's would go in.
+
+         What every turn has is nearest the edge, so it is in the same place on
+         each, and what only some turns have is further in. Faint until the
+         turn is hovered, or its menu is open. -->
+    <div
+      data-turn-actions
+      :class="[
+        'flex flex-wrap items-center justify-end gap-1 transition-opacity',
+        menuOpen ? 'opacity-100' : 'opacity-50 group-hover/turn:opacity-100',
+      ]"
+    >
+      <!-- Where the answer stands among the others the message has had, when
+           it has had any: asking again keeps what was said, and this is the
+           way back to it. -->
+      <span
+        v-if="answers"
+        data-answers
+        class="inline-flex items-center gap-0.5 text-xs text-surface-500 dark:text-surface-400 tabular-nums"
+      >
+        <Button
+          v-tooltip.top="'Previous answer'"
+          aria-label="Previous answer"
+          icon="pi pi-chevron-left"
+          text
+          rounded
+          size="small"
+          class="!w-6 !h-6 !p-0"
+          :disabled="answers.at === 0"
+          @click="$emit('alternate', lastId, answers.at - 1)"
+        />
+        <span>{{ answers.at + 1 }} / {{ answers.of }}</span>
+        <Button
+          v-tooltip.top="'Next answer'"
+          aria-label="Next answer"
+          icon="pi pi-chevron-right"
+          text
+          rounded
+          size="small"
+          class="!w-6 !h-6 !p-0"
+          :disabled="answers.at === answers.of - 1"
+          @click="$emit('alternate', lastId, answers.at + 1)"
+        />
+      </span>
+      <!-- Asking again is only offered where it could answer differently. The
+           writer's own words are not going to, but a roll that is the whole of
+           their turn is, and its piece shows no buttons here. -->
+      <Button
+        v-if="only && (role === 'assistant' || lone)"
+        v-tooltip.top="command || lone ? 'Ask again' : 'Regenerate reply'"
+        :aria-label="command || lone ? 'Ask again' : 'Regenerate reply'"
+        icon="pi pi-refresh"
+        text
+        rounded
+        size="small"
+        :disabled="pending"
+        @click="$emit('regenerate', only.id, lone ? 0 : null)"
+      />
+      <Button
+        v-if="role === 'user'"
+        v-tooltip.top="'Regenerate reply'"
+        aria-label="Regenerate reply"
+        icon="pi pi-arrow-right"
+        text
+        rounded
+        size="small"
+        @click="$emit('resend', lastId)"
+      />
+      <Button
+        v-if="only"
+        v-tooltip.top="role === 'user' ? 'Edit turn' : command ? 'Edit command' : 'Edit message'"
+        :aria-label="role === 'user' ? 'Edit turn' : command ? 'Edit command' : 'Edit message'"
+        icon="pi pi-pencil"
+        text
+        rounded
+        size="small"
+        :disabled="pending"
+        @click="body[0]?.startEditing()"
+      />
+      <!-- Heard rather than read. The whole turn, in the chat's voice. -->
+      <ReadAloudButton
+        v-if="spoken"
+        :story-id="storyId"
+        :speech-key="`turn:${messages[0].id}`"
+        :text="spoken"
+        :voice-id="voiceId"
+      />
+      <Button
+        v-if="spoken"
+        v-tooltip.top="copied ? 'Copied' : 'Copy'"
+        :aria-label="copied ? 'Copied' : 'Copy'"
+        :icon="copied ? 'pi pi-check' : 'pi pi-copy'"
+        text
+        rounded
+        size="small"
+        @click="copy"
+      />
+      <!-- The rest, asked of a turn less often: how it is shown, where the
+           conversation goes from it, and taking it out. -->
+      <Button
+        v-tooltip.top="'More'"
+        icon="pi pi-ellipsis-h"
+        text
+        rounded
+        size="small"
+        aria-label="More actions"
+        aria-haspopup="true"
+        @click="menu?.toggle($event)"
+      />
+      <Menu ref="menu" :model="menuItems" popup @show="menuOpen = true" @hide="menuOpen = false" />
+    </div>
   </div>
 </template>
 
@@ -199,7 +180,6 @@ import Menu from 'primevue/menu'
 import Tag from 'primevue/tag'
 import ChatMessage from './ChatMessage.vue'
 import ReadAloudButton from '../narration/ReadAloudButton.vue'
-import { useScreenSize } from '@/composables/useScreenSize'
 import { useToast } from '@/composables/useToast.js'
 import { useTurnHolder, useTurnState } from '@/composables/useNearTurns.js'
 import { commandRepeatable, commandTag } from '@/ai/commands.js'
@@ -240,17 +220,16 @@ const emit = defineEmits([
   'summarize',
 ])
 
-const { isMobile } = useScreenSize()
 const toast = useToast()
 
 /**
  * The message, when the turn is one — which is every turn the writer takes and
- * most of the assistant's. The header then asks its questions for it.
+ * most of the assistant's. The turn's buttons then ask its questions for it.
  */
 const only = computed(() => (props.messages.length === 1 ? props.messages[0] : null))
 
 /**
- * The messages as rendered, for the header's Edit to reach into. Opening the
+ * The messages as rendered, for the turn's Edit to reach into. Opening the
  * editor is the message's own business, and it exposes exactly that.
  *
  * @type {import('vue').Ref<Array<{startEditing: () => void}>>}
@@ -269,7 +248,7 @@ const spoken = computed(() =>
     .join('\n\n')
 )
 
-/** The ⋯ menu, and whether it is open: the header stays up while it is. */
+/** The ⋯ menu, and whether it is open: the buttons stay up while it is. */
 const menu = ref()
 const menuOpen = ref(false)
 
@@ -344,7 +323,7 @@ const copy = async () => {
 /**
  * The writer's command, when it is the whole of their turn and could answer
  * differently if asked again. Its piece is alone in the turn, so it floats no
- * buttons of its own and the header has to offer the retry for it.
+ * buttons of its own and the turn has to offer the retry for it.
  */
 const lone = computed(() => {
   const segments = only.value?.segments

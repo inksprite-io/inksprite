@@ -6,6 +6,7 @@ import PrimeVue from 'primevue/config'
 import ChatSettings from '@/components/writer/chats/ChatSettings.vue'
 import { useProfiles } from '@/composables/useProfiles'
 import { useSidebarTab } from '@/composables/useSidebarTab.js'
+import { useEditorRequest } from '@/composables/useEditorRequest.js'
 import { useChatProfileStore } from '@/stores/chatProfileStore'
 import {
   DEFAULT_CHAT_PROMPT,
@@ -79,6 +80,10 @@ vi.mock('@/composables/useChats', () => ({
 vi.mock('@/composables/useAIConfig', () => ({
   useAIConfig: () => ({ activeAIPreset: preset }),
 }))
+
+/** Where a tab is opened in the editor. */
+const openTab = vi.fn()
+vi.mock('@/composables/useDocuments', () => ({ useDocuments: () => ({ open: openTab }) }))
 
 /** The project's voices, as the mocked narration holds them. */
 const voices = ref([
@@ -185,7 +190,7 @@ describe('ChatSettings profile', () => {
 
     // A prompt without the tools it was written for is half an answer.
     const [copy] = saved(library)
-    expect(copy.settings.disabledToolGroups).toEqual(['documents', 'rpg', 'skills'])
+    expect(copy.settings.disabledToolGroups).toEqual(['rpg', 'skills', 'experimental'])
   })
 
   /** Pick New profile from the profile actions menu. */
@@ -251,7 +256,10 @@ describe('ChatSettings profile', () => {
     // A chat that silently retooled itself when its profile changed would be
     // a chat whose settings nobody could trust — so they are stamped, not
     // followed.
-    expect(updateChat).toHaveBeenLastCalledWith('chat_1', { profileId: CHAT_PROFILE_ID })
+    expect(updateChat).toHaveBeenLastCalledWith('chat_1', {
+      profileId: CHAT_PROFILE_ID,
+      disabledToolGroups: ['experimental'],
+    })
   })
   it("deletes one of the writer's own from its right-click menu in the picker", async () => {
     const mine = library.saveProfile('Mine', { prompt: 'Be terse.' })
@@ -275,7 +283,10 @@ describe('ChatSettings profile', () => {
     await flushPromises()
 
     expect(library.getProfile(mine.id)).toBeNull()
-    expect(updateChat).toHaveBeenLastCalledWith('chat_1', { profileId: CHAT_PROFILE_ID })
+    expect(updateChat).toHaveBeenLastCalledWith('chat_1', {
+      profileId: CHAT_PROFILE_ID,
+      disabledToolGroups: ['experimental'],
+    })
     wrapper.unmount()
   })
 
@@ -347,6 +358,43 @@ describe('ChatSettings author’s note', () => {
 
       expect(rulesField(wrapper).element.value).toBe(DEFAULT_ROLEPLAY_NOTE)
     })
+  })
+})
+
+describe('ChatSettings texts in the editor', () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+    chat.value = { id: 'chat_1', storyId: 'story_1', profileId: CHAT_PROFILE_ID }
+    await useChatProfileStore().ensureInitialized()
+    useEditorRequest().take()
+  })
+
+  it('sizes the system prompt as the author’s note', async () => {
+    const wrapper = await mountSettings()
+    const [prompt, note] = wrapper.findAll('textarea')
+
+    expect(note.attributes('aria-label')).toBe("Author's note")
+    expect(prompt.attributes('rows')).toBe(note.attributes('rows'))
+    expect(prompt.classes()).toContain('max-h-48')
+    expect(note.classes()).toContain('max-h-48')
+  })
+
+  it('opens the system prompt in a tab of the editor, and asks for the editor', async () => {
+    const wrapper = await mountSettings()
+
+    await wrapper.find('[data-action="open-prompt"]').trigger('click')
+
+    expect(openTab).toHaveBeenCalledWith('chat:chat_1:prompt')
+    expect(useEditorRequest().take()).toBe(true)
+  })
+
+  it('opens the author’s note in a tab of its own', async () => {
+    const wrapper = await mountSettings()
+
+    await wrapper.find('[data-action="open-note"]').trigger('click')
+
+    expect(openTab).toHaveBeenCalledWith('chat:chat_1:note')
   })
 })
 
@@ -497,7 +545,7 @@ describe('ChatSettings tools', () => {
     expect(updateChat).toHaveBeenLastCalledWith('chat_1', { disabledTools: ['interpret'] })
   })
 
-  it('switches on only the skill asked for when a profile shipped them all off', async () => {
+  it('switches on only the skill asked for when a profile shipped its group off', async () => {
     // A second skill in the group, to be left off: one of the writer's.
     storedSkills.splice(0, storedSkills.length, {
       id: 'skill_critique',
@@ -507,21 +555,45 @@ describe('ChatSettings tools', () => {
     chat.value.disabledToolGroups = ['documents', 'rpg', 'skills']
     try {
       const wrapper = await mountSettings()
-      const interpret = () => toggle(wrapper, 'Interpret available to the model')
-      expect(interpret().props('modelValue')).toBe(false)
+      const critique = () => toggle(wrapper, 'Critique available to the model')
+      expect(critique().props('modelValue')).toBe(false)
       // Not a dead switch: nothing else in the panel can lift the group.
-      expect(interpret().props('disabled')).toBe(false)
+      expect(critique().props('disabled')).toBe(false)
 
-      await interpret().vm.$emit('update:modelValue', true)
+      await critique().vm.$emit('update:modelValue', true)
 
       expect(chat.value.disabledToolGroups).toEqual(['documents', 'rpg'])
-      expect(chat.value.disabledTools).toEqual(['critique'])
-      expect(interpret().props('modelValue')).toBe(true)
-      expect(toggle(wrapper, 'Critique available to the model').props('modelValue')).toBe(false)
+      // The experimental skills are in a group of their own, which is on here.
+      expect(chat.value.disabledTools).toEqual([])
+      expect(critique().props('modelValue')).toBe(true)
     } finally {
       storedSkills.splice(0, storedSkills.length)
       setLibrarySkills([])
     }
+  })
+
+  it('switches on one experimental skill, and only that one', async () => {
+    chat.value.disabledToolGroups = ['rpg', 'skills', 'experimental']
+    const wrapper = await mountSettings()
+    const interpret = () => toggle(wrapper, 'Interpret available to the model')
+    const write = () => toggle(wrapper, 'Write available to the model')
+    expect(interpret().props('modelValue')).toBe(false)
+    expect(write().props('modelValue')).toBe(false)
+    expect(interpret().props('disabled')).toBe(false)
+
+    await interpret().vm.$emit('update:modelValue', true)
+
+    expect(chat.value.disabledToolGroups).toEqual(['rpg', 'skills'])
+    expect(chat.value.disabledTools).toEqual(['write'])
+    expect(interpret().props('modelValue')).toBe(true)
+    expect(write().props('modelValue')).toBe(false)
+  })
+
+  it('marks the experimental skills, and lists them as skills rather than tools', async () => {
+    const wrapper = await mountSettings()
+
+    expect(wrapper.findAll('[data-skill-experimental]')).toHaveLength(2)
+    expect(toggle(wrapper, 'Experimental tools')).toBeUndefined()
   })
 })
 

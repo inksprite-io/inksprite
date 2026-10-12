@@ -120,14 +120,24 @@ describe('WorkflowsSection', () => {
   })
 
   it('calls it Reasoning effort and offers what the AI section offers', () => {
-    state.value = { convert: { providerId: 'p2', model: 'sonnet', reasoningEffort: 'high' } }
+    state.value = { convert: { providerId: 'p1', model: 'glm', reasoningEffort: 'high' } }
     const wrapper = mountSection()
 
     expect(wrapper.text()).toContain('Reasoning effort')
     expect(wrapper.text()).not.toContain('Thinking')
     const select = wrapper.findComponent({ name: 'Select' })
-    expect(select.props('options')).toBe(REASONING_EFFORT_OPTIONS)
+    // OpenRouter's model, before its list has said what it takes.
+    const offered = ['disabled', 'enabled', 'low', 'medium', 'high']
+    expect(select.props('options')).toEqual(
+      REASONING_EFFORT_OPTIONS.filter(option => offered.includes(option.value))
+    )
     expect(select.props('modelValue')).toBe('high')
     expect(select.props('size')).toBe('small')
+  })
+
+  it('offers no effort on a server that is told nothing of reasoning', () => {
+    state.value = { convert: { providerId: 'p2', model: 'sonnet', reasoningEffort: 'high' } }
+
+    expect(mountSection().findComponent({ name: 'Select' }).exists()).toBe(false)
   })
 })

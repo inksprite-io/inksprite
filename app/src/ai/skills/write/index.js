@@ -13,15 +13,15 @@
  * change the same way: a sentence at a time, against five runs.
  *
  * It is a skill by the same contract as the others — its own prompt over the
- * conversation it is asked in, reached through `consult` — but the model is
- * not offered it yet. A tool's answer is consumed by the model that called
- * it, and a scene handed back that way would be relayed by a second model
- * pass: twice the tokens, and a rewrite by exactly the prompt this one exists
- * to get away from. A turn can hand its reply to a skill outright now, which
- * is the way round that (handOverReply in composables/useAIChat.js); whether
- * a chat that does reads well is the harness's to say before Write is offered.
- * Until then the writer reaches it themselves, as `/write`, and what it writes
- * is the reply. See ai/commands.js.
+ * conversation it is asked in, reached through `consult`. A tool's answer is
+ * consumed by the model that called it, and a scene handed back that way would
+ * be relayed by a second model pass: twice the tokens, and a rewrite by
+ * exactly the prompt this one exists to get away from. So a turn hands its
+ * reply to Write outright (handOverReply in composables/useAIChat.js).
+ * Whether a chat that does reads well is the harness's to say, and until it
+ * has, the model is offered Write only in a chat that switches the
+ * experimental group on. The writer reaches it themselves as `/write`, and
+ * what it writes is the reply. See ai/commands.js.
  *
  * It reads the project and never writes to it. Where a piece goes is the
  * writer's decision, made after they have read it.

@@ -300,6 +300,7 @@ describe('useChats', () => {
 
       expect(chatsStore.createChat).toHaveBeenCalledWith(mockStoryId, 'New Discussion', null, {
         profileId: 'builtin_profile_chat',
+        disabledToolGroups: ['experimental'],
       })
       expect(result.title).toBe('New Discussion')
       expect(result.storyId).toBe(mockStoryId)
@@ -369,6 +370,7 @@ describe('useChats', () => {
 
       expect(chatsStore.createChat).toHaveBeenCalledWith(mockStoryId, undefined, null, {
         profileId: 'builtin_profile_chat',
+        disabledToolGroups: ['experimental'],
       })
       expect(result.title).toBe('New Chat')
     })

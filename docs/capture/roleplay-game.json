@@ -1,0 +1,338 @@
+{
+  "turns": [
+    {
+      "say": [
+        "OOC: Before we start, explore the lorebook in Cards/Lorebooks/Divided Skies and gather whatever context you need to run this world. Let me know when you're ready."
+      ],
+      "randoms": [],
+      "steps": [
+        {
+          "calls": [
+            {
+              "tool": "list_documents",
+              "args": {
+                "path": "Cards/Lorebooks/Divided Skies"
+              }
+            }
+          ],
+          "usage": {
+            "input": 17295,
+            "output": 508
+          }
+        },
+        {
+          "calls": [
+            {
+              "tool": "read_document",
+              "args": {
+                "path": "Cards/Lorebooks/Divided Skies/WORLD INFO"
+              }
+            },
+            {
+              "tool": "read_document",
+              "args": {
+                "path": "Cards/Lorebooks/Divided Skies/STYLE MODIFIER"
+              }
+            },
+            {
+              "tool": "read_document",
+              "args": {
+                "path": "Cards/Lorebooks/Divided Skies/RANDOMIZER"
+              }
+            },
+            {
+              "tool": "read_document",
+              "args": {
+                "path": "Cards/Lorebooks/Divided Skies/Pif"
+              }
+            },
+            {
+              "tool": "read_document",
+              "args": {
+                "path": "Cards/Lorebooks/Divided Skies/Ersilia"
+              }
+            },
+            {
+              "tool": "read_document",
+              "args": {
+                "path": "Cards/Lorebooks/Divided Skies/Spinneret Slums"
+              }
+            },
+            {
+              "tool": "read_document",
+              "args": {
+                "path": "Cards/Lorebooks/Divided Skies/Ridge"
+              }
+            },
+            {
+              "tool": "read_document",
+              "args": {
+                "path": "Cards/Lorebooks/Divided Skies/The A. A. Mistress"
+              }
+            },
+            {
+              "tool": "read_document",
+              "args": {
+                "path": "Cards/Lorebooks/Divided Skies/Webway Bazaar"
+              }
+            },
+            {
+              "tool": "read_document",
+              "args": {
+                "path": "Cards/Lorebooks/Divided Skies/Cloud Unknowing"
+              }
+            }
+          ],
+          "usage": {
+            "input": 17295,
+            "output": 508
+          }
+        },
+        {
+          "text": "I've read the core of the lorebook and I'm ready to run it.\n\n**What I took from it**\n- **Setting:** Divided Skies is steampunk crossed with high fantasy. The floating islands hold the power and stay aloft on Elerium, and the Elerium is running out. The Lands Below pay for it. Catfolk, wizards, dragons and airships are all part of the mix.\n- **Ersilia:** Once a great island, now slowly breaking up, with the rich up in the spires and everyone else down on the fragments. It lives on its silk. Of its two faiths, Seraphion looks back to the island's best days and Arachneia welcomes the fall.\n- **Spinneret Slums:** The bottom fragment, hanging on by one shaky bridge: packed, filthy, and home to laborers and crooks. The Webway Bazaar, a black market that never stays put, shifts around the lower fragments, and the Silk Shadows, the thieves' guild, have a hand in it.\n- **Cast:**\n  - Ridge is a fellow thief, Pif's friend and rival at once: tall, thin, red-haired and dry.\n  - The A. A. Mistress flies as a privateer for the Green Clovers. Clio does the shouting, Thalia the patching up and Isadora the shooting, and between them they keep wrecking Pif's schemes.\n- **Cloud of Unknowing:** A vast fog over the far north where engines die and nobody can find their way. Pif dreams of getting there.\n- **Tone:** Lean on the world's own words, machines and places. Pif swears a lot, talks like the street, and chats with her machines like they can hear her.\n\nI'll play Pif as a cocky, greedy, impulsive hustler. Tal, your tall, lean, quiet gunslinger, will be the one she's just recruited off a flyer. I'll never speak or act for him. I'll keep turns short.\n\nI can read specific entries in more depth if the job takes us somewhere, such as the underworld clients, Elerium or other islands. Say the word and I'll start the scene.",
+          "usage": {
+            "input": 17295,
+            "output": 508
+          }
+        }
+      ]
+    },
+    {
+      "say": [
+        "\"What's the job, and who's paying?\""
+      ],
+      "randoms": [
+        0.8582580007938678
+      ],
+      "steps": [
+        {
+          "calls": [
+            {
+              "tool": "roll_table",
+              "args": {
+                "table_name": "story direction",
+                "options": [
+                  "let the scene unfold at an easy pace",
+                  "spring a surprise on them"
+                ]
+              }
+            }
+          ],
+          "usage": {
+            "input": 18102,
+            "output": 336
+          }
+        },
+        {
+          "text": "*Pif's grin goes wide, like you just asked the one question she'd been dying to answer. She hops up on a busted crate and wipes her greasy hands on her cargo pants, which only makes them dirtier.*\n\n\"Straight to business, huh? I like that. Don't see many guys with a pair o' irons *and* a brain.\" *She holds up three fingers.* \"Job's simple. The Silk Shadows lost a crate of sparkly Elerium crystals. Stolen, right off a freight skiff, and some nobles from the Orbweaver Spires want it back real quiet-like. The Shadows pay me, I pay you. A fat cut, honest!\"\n\n*She winks. It looks a lot like lying.*\n\n\"Me, I do the fixin' and the flyin'. You do the pointin' of the guns at folks who get grabby. My girl Chorizo's parked out back, and she's the fastest piece o' junk in the Spinneret, I swear.\"\n\n*A deep metallic* **CLANG** *rings out from somewhere in the factory. Then another. Slow footsteps, too heavy to belong to anybody who isn't made of steel. Pif's smile drops, and she hops off the crate and ducks behind it.*\n\n\"...Okay, so, funny story. The crate's *here*. And I might've borrowed it before the Shadows could ask. Real quick-like.\" *She peeks over the crate at the dark far end of the factory, where two red lenses blink awake.* \"Tal, right? Real quick question: how good are those revolvers against a dwarven war-golem?\"",
+          "usage": {
+            "input": 18102,
+            "output": 336
+          }
+        }
+      ]
+    },
+    {
+      "say": [
+        "\"Doesn't seem like much of a choice to me.\" I draw my revolver and fire."
+      ],
+      "randoms": [
+        0.6265861178435825
+      ],
+      "steps": [
+        {
+          "calls": [
+            {
+              "tool": "roll_dice",
+              "args": {
+                "dice": "1d20"
+              }
+            }
+          ],
+          "usage": {
+            "input": 18754,
+            "output": 330
+          }
+        },
+        {
+          "text": "*BANG! The shot cracks through the factory. The slug hits true and punches into the golem's chest plate with a bright spark. It leaves a dent the size of a coin and doesn't slow the thing down.*\n\n*The war-golem steps out of the shadows. It's eight feet of riveted dwarven steel, with a boiler glowing orange in its gut and a rune-etched hammer-fist dragging sparks along the floor. Its red lenses swivel and lock onto you.*\n\n\"**GRAAAH!** Did you just *tickle* it?!\" *Pif yelps, ducking as the golem's voice grinds out of its chest.* **\"THIEVES. RETURN. PROPERTY.\"**\n\n\"Okay, okay, so it's *not* gonna bleed!\" *She scrambles out from behind the crate and grabs your sleeve, yanking hard.* \"Listen, big guy, aim for the joints! Neck, elbows, that glowin' boiler vent! If I can get my paws on its plating, I can hijack it, but I gotta *touch* it first. So keep that tin bastard busy!\"\n\n*The golem raises its hammer-fist and brings it down on the crate where Pif was hiding. The wood explodes into splinters, and the floor shudders under your boots.*\n\n\"Oh, you son of a *bitch*, that was a good crate!\" *Pif shouts, then backs away and points at the drifting dust.* \"Chorizo's out back if this goes sideways! Now shoot it, Tal, SHOOT IT!\"\n\n*The golem turns toward you, steam hissing from its joints as it advances.*",
+          "usage": {
+            "input": 18754,
+            "output": 330
+          }
+        }
+      ]
+    },
+    {
+      "say": [
+        "/oracle(likely) Is the boiler vent open when it raises the hammer?",
+        "I wait for the hammer to come up and put two rounds in the vent."
+      ],
+      "randoms": [
+        0.7893354147937265
+      ],
+      "steps": [
+        {
+          "text": "*The hammer goes up and you squeeze off two rounds. **PANG! PANG!** Both slugs ricochet off a slatted iron shutter clamped over the boiler vent, and sparks fly. The dwarves built this thing smarter than you hoped. The vent only cracks open when the golem vents steam, and it's sealed tight right now.*\n\n\"Shutters! The bastard's got *shutters!*\" *Pif shrieks from behind a rusted generator. She's gnawing her thumbnail, her eyes darting over the golem's frame.* \"Okay, okay, okay! Watch the hiss! When it hisses, the vent flaps open! That's your window, Tal!\"\n\n*The hammer comes down in a wide, brutal arc. You're not where you were standing a heartbeat ago, but the swing still gouges a trench in the floor and sends scrap spinning past your ears. The golem's joints groan. A thick plume of steam bursts from its shoulder seams, and the shutter on its chest clatters half open. Behind it, the boiler glows like an angry sun.*\n\n*The golem is overextended and its hammer is buried in the floor. Pif sees the chance too, and she's already creeping around its flank with a wrench in her fist.*\n\n\"Gimme three seconds and a *touch*, big guy! Just keep it lookin' at *you!*\"",
+          "usage": {
+            "input": 19267,
+            "output": 603
+          }
+        }
+      ]
+    },
+    {
+      "say": [
+        "I step in close and empty the cylinder into the open vent.\n\nOOC: While we're busy with the golem, have Ridge slip in and make off with the crate."
+      ],
+      "randoms": [
+        0.25943574746864406
+      ],
+      "steps": [
+        {
+          "calls": [
+            {
+              "tool": "roll_dice",
+              "args": {
+                "dice": "1d20"
+              }
+            }
+          ],
+          "usage": {
+            "input": 19969,
+            "output": 365
+          }
+        },
+        {
+          "text": "*You close the distance and the heat off that boiler hits your face like an oven door. You fire anyway. **BANG-BANG-BANG!** Three rounds go wide and spang off the inside of the vent housing. The fourth catches the rim and whines away into the dark. By the fifth, the golem's gut-shutter is already slamming shut with a clang. Your last shot dents it, and that's all.*\n\n*The golem swivels its head toward you. You're close enough to see your own reflection in its red lenses.*\n\n**\"THIEF. CLOSE. PROXIMITY. CRUSH.\"**\n\n*It rips its hammer out of the floor in a spray of concrete and backhands you with a steel forearm. You get an arm up in time, but it still hits like a runaway freight skiff. You skid across the floor and plow into a heap of junk electronics, and a rib sends up a bright flare of pain. Your revolver is empty, and it's probably cooked, too.*\n\n\"TAL! Ah, *shit!*\" *Pif yelps, still creeping along the golem's flank with her wrench. She's a few feet short of the plating.* \"Hang on, hang on, I'm almost there! Just, uh, don't die yet!\"\n\n*Behind her, a lanky shadow peels away from a rafter. A man with red hair drops soundlessly to the floor, a coil of silk rope over one shoulder. He doesn't look at the golem. He's looking at the one crate that's still in one piece, half buried under a collapsed catwalk. He tests the lid with a crowbar, and a hint of sickly Elerium-blue light leaks out from under it. He grins to himself.*\n\n*The golem lumbers toward you, hammer raised.*",
+          "usage": {
+            "input": 19969,
+            "output": 365
+          }
+        }
+      ]
+    },
+    {
+      "say": [
+        "I roll out from under the hammer and draw the other gun. \"Pif. Now.\""
+      ],
+      "randoms": [
+        0.3604835833141181
+      ],
+      "steps": [
+        {
+          "calls": [
+            {
+              "tool": "roll_dice",
+              "args": {
+                "dice": "1d20"
+              }
+            }
+          ],
+          "usage": {
+            "input": 20662,
+            "output": 404
+          }
+        },
+        {
+          "text": "*You roll. The hammer comes down where your ribs were a second ago and the floor cracks under it. Chunks of concrete rattle off your back. You come up on one knee with the second revolver in your fist, and the golem's head swings round to follow you.*\n\n\"Now, he says! *NOW!*\" *Pif yelps, and she throws herself across the last few feet and slaps a greasy palm flat against the golem's hip plating.* \"Hey there, big fella, listen to me, you're a *good* boy, you wanna take a nap, yeah?\"\n\n*A thin blue-green glow crawls out from under her fingers and spreads across the rivets. The golem stutters mid-step. Its lenses flicker from red to amber and back to red, and the hammer arm jerks like a puppet on a tangled string.*\n\n\"Oh no. Oh *no*, it's got a dwarven lockrune on it, it's fightin' me!\" *Pif's teeth are gritted and her braids are whipping as the whole frame shudders.* \"I can't hold it, Tal! Ten seconds, maybe five! It's gonna snap outta this and I'm *right here!*\"\n\n*The golem's free arm swings round blindly and catches Pif's shoulder. It isn't a full blow, but it's enough to knock her off her feet. She hits the floor hard and her hand slides off the plating. The glow dies. The golem's lenses go red and settle on the nearest thing it can crush. That's her.*\n\n*Over by the catwalk, Ridge has the crate lid pried halfway up. He glances at the fight, and at Pif sprawled on the floor, and then back at the glowing crystals.*\n\n\"Ridge, you *rat!*\" *Pif wheezes, scrabbling backward on her elbows.* \"I see ya! Tal, shoot the damn robot, don't let it squish me!\"\n\n*The golem's hammer rises over her.*",
+          "usage": {
+            "input": 20662,
+            "output": 404
+          }
+        }
+      ]
+    },
+    {
+      "say": [
+        "I put a round through each red lens. \"Ridge! Help her, or you're next.\""
+      ],
+      "randoms": [
+        0.7034907683319933,
+        0.8679124008628656
+      ],
+      "steps": [
+        {
+          "calls": [
+            {
+              "tool": "roll_dice",
+              "args": {
+                "dice": "1d20"
+              }
+            },
+            {
+              "tool": "oracle",
+              "args": {
+                "question": "Does Ridge step in to help Pif rather than bolt with the crate?",
+                "likelihood": "unlikely"
+              }
+            }
+          ],
+          "usage": {
+            "input": 21480,
+            "output": 426
+          }
+        },
+        {
+          "text": "*You level the revolver and fire twice, fast. **CRACK-CRACK!** The first slug shatters the left lens in a spray of red glass. The second takes the right one a heartbeat later. The golem's head snaps back and it roars out a grinding, off-key shriek, and the hammer stops mid-swing, a foot above Pif's skull.*\n\n**\"VISION. LOST. VISION. LOST.\"**\n\n*It flails blind. The hammer slams into the floor an arm's length from Pif, and she rolls clear with a screech. The golem lurches in a slow circle, steam jetting from its joints and its fists pounding at nothing.*\n\n\"HA! Eyes! Why didn't *I* think of that!\" *Pif scrambles up, clutching her shoulder, and shoots you a ragged grin.* \"Don't go gettin' a big head, though. That's my job.\"\n\n*Across the factory, Ridge has heard you. He looks at you, and at the crate, and at the blind eight-foot monster stomping around between you. He gives a lazy, two-fingered salute.*\n\n\"Sorry, handsome. Charity ain't my line.\" *He hoists the crate onto his shoulder with a grunt, the blue Elerium glow washing over his face, and sprints for the broken window at the back of the factory.* \"Tell Pif I said she's *adorable!*\"\n\n\"RIDGE, YOU THIEVING SON OF A BITCH!\" *Pif bellows, hopping on one foot. Then she catches herself, glances at the golem, and drops to a hiss.* \"Okay, okay. Golem's blind, so it's gonna go by sound. I can ride it if I get on its back, and that thing's got a lockrune, but maybe I can use it. Or we can run after Ridge and Chorizo can catch him. Your call, big guy. Tin man or crate?\"\n\n*The golem's head swivels toward the sound of her voice. Its fist is already drawing back.*",
+          "usage": {
+            "input": 21480,
+            "output": 426
+          }
+        }
+      ]
+    },
+    {
+      "say": [
+        "\"Crate.\" I grab her good arm and run for Chorizo."
+      ],
+      "randoms": [],
+      "steps": [
+        {
+          "text": "*The golem's fist smashes down where Pif was standing a second ago. She doesn't get to finish her yelp, because you've already hauled her off her feet and she's running with you.*\n\n\"Lemme go, I got legs! I got *great* legs!\" *She's laughing now, high and giddy, boots skidding through puddles of oil as you both hurtle through a gap in the back wall.* \"Left! LEFT! Past the busted crane!\"\n\n*Behind you the golem goes through the factory like a drunk in a china shop, blind and swinging. Pipes burst and a wall comes down. Its voice rings out over the wreckage.* **\"THIEVES. THIEVES.\"**\n\n*Out back, under a sagging tarp, sits Chorizo. She's a squat, ugly, rust-colored two-seater, a patchwork of dwarven plating, mismatched rivets and one fat, wheezing elerium coil bolted to her belly. A faded painted sausage grins on her nose. Pif slaps the hull as she vaults into the pilot's seat.*\n\n\"Hey, beautiful, miss me? Course ya did.\" *She jams a fist into the dash and the engine coughs, sputters, and catches with a rattling roar. She jerks her chin at the cockpit's second seat.* \"In, in, IN! Ridge ain't gettin' far with that crate. It's too heavy and he's too lazy!\"\n\n*Chorizo lurches off the ground in a cloud of dust and scrap paper. Below you the Spinneret Slums fall away in a tangle of laundry lines, rope bridges and crooked rooftops. Far ahead, a lanky figure is picking his way across a rooftop, a glowing crate balanced on his shoulder. He looks back, sees you, and breaks into a run.*\n\n\"There he is, there he is, that rat-faced *bastard!*\" *Pif cackles and shoves the throttle forward. The rusty little craft shudders, whines, and surges ahead.* \"Tal, grab that rope launcher under your seat! We're gonna snag him like a sky-trout!\"",
+          "usage": {
+            "input": 22078,
+            "output": 861
+          }
+        }
+      ]
+    },
+    {
+      "say": [
+        "/compact"
+      ],
+      "summary": "<summary>\n## Session Summary (for continuation)\n\n### Setup / Roles\n- **Roleplay:** *Divided Skies*, a steampunk high-fantasy setting. I play **Pif** (and all NPCs). The user plays **Tal**, a tall, lean, quiet man in his late 30s with a pair of revolvers. I must never speak or act for Tal. Keep turns short.\n- **Style:** Italicized actions, quoted dialogue, bold for shouts and sound effects. Pif is brash, grabby and rash, hates losing, swears like a dockhand, speaks street slang and chats with machines like old friends. A touch is enough for her to take control of one. Her ship **Chorizo** is a squat, rust-colored two-seater with a painted sausage on its nose.\n- **User conventions:** The user sometimes inserts `<oracle likelihood=\"...\">` blocks with a yes/no result. Treat the result as canon. OOC notes are marked \"OOC:\".\n- **Lorebook (already read):**\n  - Elerium keeps the islands in the air, and there isn't much left.\n  - Ersilia is breaking up. The rich live high in the Orbweaver Spires, everyone else on the fragments below, and it lives on silk.\n  - The Spinneret Slums are the bottom fragment, reached by one shaky bridge.\n  - The Webway Bazaar is a black market the Silk Shadows thieves' guild has a hand in.\n  - Ridge is a thief, Pif's friend and rival: tall, thin, red-haired, dry-witted.\n  - The A. A. Mistress flies as a privateer for the Green Clovers. Clio (loud), Thalia (medic) and Isadora (guns) keep foiling Pif.\n  - The Cloud of Unknowing, a fog in the far north that kills engines, is where Pif dreams of going.\n  - I offered to read more lorebook entries on request.\n\n### Pif's character (from the pinned card)\n- An eighteen-year-old orphan raised in the Spinneret Slums: braided black hair, green eyes, grease on her face, oil-stained work clothes.\n- She builds things out of scrap, hustles, bets more than she should, and slips money to orphans.\n- Chorizo has parts from a dwarven robot she once stole.\n- Her loyalty goes to her friends, to orphans, and to whoever pays well. She and the A. A. Mistress crew are rivals.\n\n### Story so far\n1. **Opening:** Tal answered a flyer promising glamorous company and easy money, and found a run-down factory in the Spinneret Slums instead. There he met the grubby Pif, who was hiring help with a simple job for underworld types.\n2. **The job:** Tal asked what the job was and who was paying. Pif said the Silk Shadows lost a stolen crate of Elerium crystals, and nobles from the Orbweaver Spires want it back quietly. The Shadows pay her, and she pays Tal \"a fat cut\". She admitted she'd \"borrowed\" the crate herself, and it was in the factory. A **dwarven war-golem** woke up in the factory (8 ft tall, red lenses, a boiler in its gut, a rune-etched hammer-fist). It said: **\"THIEVES. RETURN. PROPERTY.\"**\n3. **Golem fight:**\n   - Tal's first shot only dented the golem. A slatted shutter covers its boiler vent, and the vent opens only briefly when it vents steam.\n   - Tal's shots at the vent mostly missed, and the golem backhanded him into a junk pile. He has a hurt rib and an empty, possibly cooked first revolver, so he is now using his second one.\n   - Pif touched the golem and tried to hijack it, but a dwarven lockrune resisted her and the golem knocked her down. Her shoulder is hurt.\n   - Tal shot out both red lenses, so the golem is blind and tracks by sound. It shrieked **\"VISION. LOST.\"**\n4. **Ridge's theft:** Ridge slipped in during the fight and pried open the one intact crate, which was glowing sickly Elerium-blue. Tal shouted at him to help Pif or be next, and Ridge refused. He grabbed the crate and fled through a back window, saying: \"Sorry, handsome. Charity ain't my line... Tell Pif I said she's *adorable!*\" Pif screamed curses at him.\n5. **Chase (current scene):** Tal chose \"Crate\", grabbed Pif's good arm, and ran for Chorizo. The blind golem is wrecking the factory behind them. Pif started Chorizo's coughing engine, and they lifted off over the Spinneret Slums (laundry lines, rope bridges, crooked rooftops). Ridge is on a rooftop ahead, carrying the glowing crate and breaking into a run. Pif cackled and shoved the throttle forward, then said: \"Tal, grab that rope launcher under your seat! We're gonna snag him like a sky-trout!\"\n\n### Open threads\n- Tal needs to use the rope launcher to catch Ridge and the Elerium crate.\n- The Silk Shadows and the Orbweaver nobles want the crate back, and Pif secretly took it first. This will cause trouble.\n- The blinded war-golem may still be hunting them, and its owners (the dwarves) may come looking for it.\n- Tal's rib injury and his revolver's condition (possibly cooked) carry over.\n- The A. A. Mistress crew may turn up to interfere.\n</summary>"
+    },
+    {
+      "say": [
+        "I brace a boot on the dash and fire the launcher at his legs."
+      ],
+      "randoms": [
+        0.4596823452656005
+      ],
+      "steps": [
+        {
+          "calls": [
+            {
+              "tool": "roll_dice",
+              "args": {
+                "dice": "1d20"
+              }
+            }
+          ],
+          "usage": {
+            "input": 7812,
+            "output": 302
+          }
+        },
+        {
+          "text": "*The launcher gives a fat **THUNK** and the weighted rope shoots out, whistling over the laundry lines. Your rib screams as the recoil slams into it.*\n\n*Ridge hears it coming and leaps. The rope doesn't wrap his legs. It tangles round the crate instead, and for a second he's yanked sideways, crate in one hand and the rope in the other. He doesn't let go.*\n\n\"**Hell yeah, it's got 'im!**\" *Pif whoops, then her grin drops.* \"Wait. No. He's... he's *hangin' on*. Tal, he's gonna drag us into a chimney!\"\n\n*Chorizo lurches as the rope goes taut. The nose dips and the engine wheezes. Ridge skids across the tiles on his ass, boots scrabbling, and he's shouting up at you.*\n\n\"**You absolute lunatics! Cut the line, I'll split it, I swear!**\"\n\n*He's hauled toward the roof's edge, and below him is a long drop into the slum alleys. Behind you, over the rooftops, a huge shape in the factory is smashing through the wall, and the blind golem lets out a steam-shriek that rattles the laundry lines.*\n\n\"**Tal, pick!**\" *Pif yells, wrestling the stick with her good arm.* \"Reel him in and risk the crash, or cut the rope and lose the crate. Hurry up, **the damn golem's comin'!**\"",
+          "usage": {
+            "input": 7812,
+            "output": 302
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -26,119 +26,145 @@
   - [Parameters][22]
 - [describeFailure][23]
   - [Parameters][24]
-- [tts/highlight][25]
-- [TINT][26]
-- [TINT][27]
-- [TINT][28]
-- [SpeakerRange][29]
-  - [Properties][30]
-- [speakerRanges][31]
-  - [Parameters][32]
-- [ranges][33]
-- [tts/hints][34]
-- [Hint][35]
-- [parseHints][36]
+- [tts/filters][25]
+- [Range][26]
+- [Piece][27]
+- [linesOf][28]
+  - [Parameters][29]
+- [compile][30]
+  - [Parameters][31]
+- [parseFilters][32]
+  - [Parameters][33]
+- [filtersValid][34]
+  - [Parameters][35]
+- [filteredRanges][36]
   - [Parameters][37]
-- [hints][38]
-- [escapeRegExp][39]
-  - [Parameters][40]
-- [applyHints][41]
+- [found][38]
+- [ranges][39]
+- [ranges][40]
+- [piecesOf][41]
   - [Parameters][42]
-- [tts][43]
-  - [Examples][44]
-- [tts/player][45]
-- [objectUrl][46]
-  - [Parameters][47]
-- [release][48]
-  - [Parameters][49]
-- [playClip][50]
-  - [Parameters][51]
-- [finish][52]
+- [pieces][43]
+- [applyFilters][44]
+  - [Parameters][45]
+- [tts/highlight][46]
+- [TINT][47]
+- [TINT][48]
+- [TINT][49]
+- [SpeakerRange][50]
+  - [Properties][51]
+- [speakerRanges][52]
   - [Parameters][53]
-- [tts/reading][54]
-- [BLOCK_GAP][55]
-- [BLOCK_GAP][56]
-- [BLOCK_GAP][57]
-- [BLOCK_GAP][58]
-- [Utterance][59]
-  - [Properties][60]
-- [BlockState][61]
-- [signatureOf][62]
-  - [Parameters][63]
-- [utterancesOf][64]
-  - [Parameters][65]
-- [targetsOf][66]
-  - [Parameters][67]
-- [trackKeyOf][68]
+- [skippedRanges][54]
+  - [Parameters][55]
+- [tts/hints][56]
+- [Hint][57]
+- [parseHints][58]
+  - [Parameters][59]
+- [hints][60]
+- [escapeRegExp][61]
+  - [Parameters][62]
+- [applyHints][63]
+  - [Parameters][64]
+- [tts][65]
+  - [Examples][66]
+- [tts/player][67]
+- [objectUrl][68]
   - [Parameters][69]
-- [blockStatesOf][70]
+- [release][70]
   - [Parameters][71]
-- [tts/script][72]
-- [spoken][73]
-  - [Parameters][74]
-- [spoken][75]
-  - [Parameters][76]
-- [Block][77]
-  - [Properties][78]
-- [blocksOfDoc][79]
-  - [Parameters][80]
-- [blocks][81]
-- [blocksOf][82]
-  - [Parameters][83]
-- [keyOf][84]
+- [playClip][72]
+  - [Parameters][73]
+- [finish][74]
+  - [Parameters][75]
+- [tts/reading][76]
+- [BLOCK_GAP][77]
+- [BLOCK_GAP][78]
+- [BLOCK_GAP][79]
+- [BLOCK_GAP][80]
+- [Utterance][81]
+  - [Properties][82]
+- [BlockState][83]
+- [signatureOf][84]
   - [Parameters][85]
-- [resolveSpeakers][86]
+- [utterancesOf][86]
   - [Parameters][87]
-- [speakers][88]
-- [positions][89]
-- [assignSpeaker][90]
-  - [Parameters][91]
-- [kept][92]
-- [tts/voices][93]
-- [DEFAULT_VOICES][94]
-- [DEFAULT_VOICES][95]
-- [DEFAULT_VOICES][96]
-- [VOICE_COLORS][97]
-- [nextColor][98]
-  - [Parameters][99]
-- [SAMPLE_TEXT][100]
-- [voicesOf][101]
+- [targetsOf][88]
+  - [Parameters][89]
+- [SAMPLE_LENGTH][90]
+- [sampleOf][91]
+  - [Parameters][92]
+- [indices][93]
+- [trackKeyOf][94]
+  - [Parameters][95]
+- [blockStatesOf][96]
+  - [Parameters][97]
+- [tts/script][98]
+- [spoken][99]
+  - [Parameters][100]
+- [spoken][101]
   - [Parameters][102]
-- [defaultVoiceOf][103]
-  - [Parameters][104]
-- [][105]
-- [voiceFor][106]
-  - [Parameters][107]
-- [tts/wav][108]
-- [WavFormat][109]
-  - [Properties][110]
-- [tag][111]
-  - [Parameters][112]
-- [tag][113]
-  - [Parameters][114]
-- [Track][115]
-  - [Properties][116]
-- [parseWav][117]
-  - [Parameters][118]
-- [format][119]
-- [bytesPerSecond][120]
-  - [Parameters][121]
-- [durationOf][122]
-  - [Parameters][123]
-- [wavHeader][124]
+- [Block][103]
+  - [Properties][104]
+- [blocksOfDoc][105]
+  - [Parameters][106]
+- [blocks][107]
+- [blocksOf][108]
+  - [Parameters][109]
+- [keyOf][110]
+  - [Parameters][111]
+- [resolveSpeakers][112]
+  - [Parameters][113]
+- [speakers][114]
+- [positions][115]
+- [assignSpeaker][116]
+  - [Parameters][117]
+- [kept][118]
+- [tts/voices][119]
+- [DEFAULT_VOICES][120]
+- [DEFAULT_VOICES][121]
+- [DEFAULT_VOICES][122]
+- [VOICE_COLORS][123]
+- [nextColor][124]
   - [Parameters][125]
-- [write][126]
-  - [Parameters][127]
-- [concatParts][128]
-  - [Parameters][129]
-- [encodeWav][130]
-  - [Parameters][131]
-- [joinClips][132]
+- [SAMPLE_TEXT][126]
+- [voicesOf][127]
+  - [Parameters][128]
+- [defaultVoiceOf][129]
+  - [Parameters][130]
+- [][131]
+- [voiceFor][132]
   - [Parameters][133]
-- [data][134]
-- [segments][135]
-- [segmentAt][136]
-  - [Parameters][137]
+- [tts/wav][134]
+- [WavFormat][135]
+  - [Properties][136]
+- [tag][137]
+  - [Parameters][138]
+- [tag][139]
+  - [Parameters][140]
+- [Track][141]
+  - [Properties][142]
+- [parseWav][143]
+  - [Parameters][144]
+- [format][145]
+- [bytesPerSecond][146]
+  - [Parameters][147]
+- [durationOf][148]
+  - [Parameters][149]
+- [wavHeader][150]
+  - [Parameters][151]
+- [write][152]
+  - [Parameters][153]
+- [concatParts][154]
+  - [Parameters][155]
+- [encodeWav][156]
+  - [Parameters][157]
+- [joinClips][158]
+  - [Parameters][159]
+- [data][160]
+- [segments][161]
+- [segmentAt][162]
+  - [Parameters][163]
 
 ## tts/client
 
@@ -152,46 +178,46 @@ which is not an error.
 
 Where the server is, and how to talk to it.
 
-Type: [Object][138]
+Type: [Object][164]
 
 ### Properties
 
-- `endpoint` **[string][139]** The API's base, e.g. `http://localhost:8880/v1`
-- `apiKey` **[string][139]?** Sent as a bearer token when present
-- `model` **[string][139]?** `kokoro` when absent; OpenAI wants `tts-1`
+- `endpoint` **[string][165]** The API's base, e.g. `http://localhost:8880/v1`
+- `apiKey` **[string][165]?** Sent as a bearer token when present
+- `model` **[string][165]?** `kokoro` when absent; OpenAI wants `tts-1`
 
 ## SpeechRequest
 
 What to say, and how.
 
-Type: [Object][138]
+Type: [Object][164]
 
 ### Properties
 
-- `input` **[string][139]**&#x20;
-- `voice` **[string][139]** Passed through as written: a name, or a Kokoro mix
-- `speed` **[number][140]?** 1 when absent
+- `input` **[string][165]**&#x20;
+- `voice` **[string][165]** Passed through as written: a name, or a Kokoro mix
+- `speed` **[number][166]?** 1 when absent
 
 ## DEFAULT_MODEL
 
 The model asked for when the connection names none.
 
-Type: [string][139]
+Type: [string][165]
 
 ## DEFAULT_ENDPOINT
 
 Where Kokoro-FastAPI listens when run as its docker-compose runs it.
 
-Type: [string][139]
+Type: [string][165]
 
 ## joinUrl
 
 ### Parameters
 
-- `base` **[string][139]**&#x20;
-- `path` **[string][139]**&#x20;
+- `base` **[string][165]**&#x20;
+- `path` **[string][165]**&#x20;
 
-Returns **[string][139]**&#x20;
+Returns **[string][165]**&#x20;
 
 ## speechUrl
 
@@ -199,7 +225,7 @@ Returns **[string][139]**&#x20;
 
 - `connection` **[SpeechConnection][2]**&#x20;
 
-Returns **[string][139]**&#x20;
+Returns **[string][165]**&#x20;
 
 ## voicesUrl
 
@@ -207,20 +233,20 @@ Returns **[string][139]**&#x20;
 
 - `connection` **[SpeechConnection][2]**&#x20;
 
-Returns **[string][139]**&#x20;
+Returns **[string][165]**&#x20;
 
 ## headers
 
 ### Parameters
 
 - `connection` **[SpeechConnection][2]**&#x20;
-- `json` **[boolean][141]** Whether a JSON body follows
+- `json` **[boolean][167]** Whether a JSON body follows
 
-Returns **Record<[string][139], [string][139]>**&#x20;
+Returns **Record<[string][165], [string][165]>**&#x20;
 
 ## out
 
-Type: Record<[string][139], [string][139]>
+Type: Record<[string][165], [string][165]>
 
 ## refusal
 
@@ -228,9 +254,9 @@ What a refusal said, in the server's words where it used any.
 
 ### Parameters
 
-- `response` **[Response][142]**&#x20;
+- `response` **[Response][168]**&#x20;
 
-Returns **[Promise][143]<[string][139]>**&#x20;
+Returns **[Promise][169]<[string][165]>**&#x20;
 
 ## synthesize
 
@@ -248,9 +274,9 @@ Say something. Resolves to a WAV file.
 
 <!---->
 
-- Throws **[Error][144]** When the server refuses, in its words
+- Throws **[Error][170]** When the server refuses, in its words
 
-Returns **[Promise][143]<[ArrayBuffer][145]>**&#x20;
+Returns **[Promise][169]<[ArrayBuffer][171]>**&#x20;
 
 ## listVoices
 
@@ -265,9 +291,9 @@ none this way.
 
 <!---->
 
-- Throws **[Error][144]** When the server is there and refuses
+- Throws **[Error][170]** When the server is there and refuses
 
-Returns **[Promise][143]<[Array][146]<[string][139]>>**&#x20;
+Returns **[Promise][169]<[Array][172]<[string][165]>>**&#x20;
 
 ## describeFailure
 
@@ -280,53 +306,162 @@ instead.
 - `error` **unknown**&#x20;
 - `connection` **[SpeechConnection][2]**&#x20;
 
-Returns **[string][139]**&#x20;
+Returns **[string][165]**&#x20;
+
+## tts/filters
+
+Text that is not read aloud: page numbers, running heads,
+reference marks. Regular expressions, one to a line, matched against each
+block's words; what they match is left out of what the server is sent, and
+a block they take all of is not read. The document keeps it all.
+
+## Range
+
+Type: {from: [number][166], to: [number][166]}
+
+## Piece
+
+Type: {text: [string][165], filtered: [boolean][167]}
+
+## linesOf
+
+### Parameters
+
+- `text` **([string][165] | null | [undefined][173])**&#x20;
+
+## compile
+
+A line as a regular expression, or null when it is not one. `^` and `$`
+are the ends of a line, for a block the writer broke into lines.
+
+### Parameters
+
+- `line` **[string][165]**&#x20;
+
+## parseFilters
+
+Read filters from their text: a regular expression to a line. Blank lines
+are skipped, and so is a line that is not a regular expression.
+
+### Parameters
+
+- `text` **([string][165] | null | [undefined][173])**&#x20;
+
+Returns **[Array][172]<[RegExp][174]>**&#x20;
+
+## filtersValid
+
+Whether every line of the text is a regular expression.
+
+### Parameters
+
+- `text` **([string][165] | null | [undefined][173])**&#x20;
+
+Returns **[boolean][167]**&#x20;
+
+## filteredRanges
+
+Where the filters match in some text, in order, joined where they touch
+or overlap.
+
+### Parameters
+
+- `text` **[string][165]**&#x20;
+- `filters` **[Array][172]<[RegExp][174]>**&#x20;
+
+Returns **[Array][172]<[Range][26]>**&#x20;
+
+## found
+
+Type: [Array][172]<[Range][26]>
+
+## ranges
+
+Type: [Array][172]<[Range][26]>
+
+## ranges
+
+Type: [Array][172]<[SpeakerRange][50]>
+
+## piecesOf
+
+The text in pieces, in order: what the filters match and what they leave,
+to show the one apart from the other.
+
+### Parameters
+
+- `text` **[string][165]**&#x20;
+- `filters` **[Array][172]<[RegExp][174]>**&#x20;
+
+Returns **[Array][172]<[Piece][27]>**&#x20;
+
+## pieces
+
+Type: [Array][172]<[Piece][27]>
+
+## applyFilters
+
+The text with whatever the filters match taken out. Empty when they match
+all of it, or all of it but space.
+
+### Parameters
+
+- `text` **[string][165]**&#x20;
+- `filters` **[Array][172]<[RegExp][174]>**&#x20;
+
+Returns **[string][165]**&#x20;
 
 ## tts/highlight
 
 Where in a document each speaker's lines are, for the editor
-to colour. The same reading of the document the narration makes — blocks,
-and the speakers overlay resolved against them — kept to the blocks
-somebody has been given, in a voice that has a colour.
+to colour, and what the filters leave out, for it to grey. The same
+reading of the document the narration makes — blocks, and the speakers
+overlay resolved against them — kept to the blocks somebody has been
+given, in a voice that has a colour.
 
 ## TINT
 
-Type: [string][139]
+Type: [string][165]
 
 ## TINT
 
-Type: [string][139]
+Type: [string][165]
 
 ## TINT
 
 How strongly a voice's colour shows behind text: the alpha, as hex.
 
-Type: [string][139]
+Type: [string][165]
 
 ## SpeakerRange
 
-Type: [Object][138]
+Type: [Object][164]
 
 ### Properties
 
-- `from` **[number][140]** Document position
-- `to` **[number][140]**&#x20;
-- `color` **[string][139]** The voice's colour
-- `name` **[string][139]** The voice's name
+- `from` **[number][166]** Document position
+- `to` **[number][166]**&#x20;
+- `color` **[string][165]** The voice's colour
+- `name` **[string][165]** The voice's name
 
 ## speakerRanges
 
 ### Parameters
 
 - `doc` &#x20;
-- `assignments` **([Array][146]\<SpeakerAssignment> | null | [undefined][147])**&#x20;
-- `voices` **[Array][146]\<TtsVoice>**&#x20;
+- `assignments` **([Array][172]\<SpeakerAssignment> | null | [undefined][173])**&#x20;
+- `voices` **[Array][172]\<TtsVoice>**&#x20;
 
-Returns **[Array][146]<[SpeakerRange][29]>**&#x20;
+Returns **[Array][172]<[SpeakerRange][50]>**&#x20;
 
-## ranges
+## skippedRanges
 
-Type: [Array][146]<[SpeakerRange][29]>
+Where the filters match in a document, block by block.
+
+### Parameters
+
+- `doc` &#x20;
+- `filters` **[Array][172]<[RegExp][174]>**&#x20;
 
 ## tts/hints
 
@@ -337,7 +472,7 @@ keeps its spelling.
 
 ## Hint
 
-Type: {word: [string][139], say: [string][139]}
+Type: {word: [string][165], say: [string][165]}
 
 ## parseHints
 
@@ -346,19 +481,19 @@ lines starting with `#` are skipped, as is anything without both halves.
 
 ### Parameters
 
-- `text` **([string][139] | null | [undefined][147])**&#x20;
+- `text` **([string][165] | null | [undefined][173])**&#x20;
 
-Returns **[Array][146]<[Hint][35]>**&#x20;
+Returns **[Array][172]<[Hint][57]>**&#x20;
 
 ## hints
 
-Type: [Array][146]<[Hint][35]>
+Type: [Array][172]<[Hint][57]>
 
 ## escapeRegExp
 
 ### Parameters
 
-- `text` **[string][139]**&#x20;
+- `text` **[string][165]**&#x20;
 
 ## applyHints
 
@@ -368,10 +503,10 @@ a letter or a digit, in any script.
 
 ### Parameters
 
-- `text` **[string][139]**&#x20;
-- `hints` **[Array][146]<[Hint][35]>**&#x20;
+- `text` **[string][165]**&#x20;
+- `hints` **[Array][172]<[Hint][57]>**&#x20;
 
-Returns **[string][139]**&#x20;
+Returns **[string][165]**&#x20;
 
 ## tts
 
@@ -384,8 +519,9 @@ voices. Pure: nothing here holds state or touches a store. The
 - **reading** - What the server is asked for: each block in its voice, known
   by a signature its audio is kept under
 - **hints** - Pronunciation hints, `word:say`, applied to what is sent
+- **filters** - Regular expressions for what is not read: page numbers, reference marks
 - **voices** - The project's voices, their colours, and the default
-- **highlight** - Where each speaker's lines are in a document, to colour
+- **highlight** - Where each speaker's lines are in a document, to colour, and what is skipped
 - **client** - The speech server, spoken to in the OpenAI shape
 - **wav** - Clips joined into one track, and where in it each plays
 - **player** - Audio handed to the page: an object URL, or a clip played to its end
@@ -415,9 +551,9 @@ where the page can make one; a test runner cannot, and gets null.
 
 ### Parameters
 
-- `parts` **[Array][146]\<BlobPart>**&#x20;
+- `parts` **[Array][172]\<BlobPart>**&#x20;
 
-Returns **([string][139] | null)**&#x20;
+Returns **([string][165] | null)**&#x20;
 
 ## release
 
@@ -425,7 +561,7 @@ Let go of an object URL, and the audio behind it.
 
 ### Parameters
 
-- `url` **([string][139] | null)**&#x20;
+- `url` **([string][165] | null)**&#x20;
 
 ## playClip
 
@@ -435,10 +571,10 @@ play the clip at all.
 
 ### Parameters
 
-- `clip` **[ArrayBuffer][145]** A WAV file
+- `clip` **[ArrayBuffer][171]** A WAV file
 - `signal` **AbortSignal?** Stops the playing
 
-Returns **[Promise][143]\<void>**&#x20;
+Returns **[Promise][169]\<void>**&#x20;
 
 ## finish
 
@@ -450,86 +586,113 @@ Returns **[Promise][143]\<void>**&#x20;
 
 What a reading asks the speech server for, and what it has.
 
-Each block is one utterance: its words after the hints, in its speaker's
-voice. An utterance is known by its signature — the voice as the server is
-asked for it, the speed, and the words — and audio is kept by signature.
-So whatever changes what would be said — an edit, a new speaker, a voice
-remixed, a hint — leaves that block without audio and every other with the
-audio it had. Putting the words back brings it back.
+Each block is one utterance: its words after the filters and the hints,
+in its speaker's voice. An utterance is known by its signature — the voice
+as the server is asked for it, the speed, and the words — and audio is kept
+by signature. So whatever changes what would be said — an edit, a new
+speaker, a voice remixed, a hint, a filter — leaves that block without
+audio and every other with the audio it had. Putting the words back brings
+it back. A block the filters take all of is skipped: nothing is asked for.
 
 ## BLOCK_GAP
 
-Type: [number][140]
+Type: [number][166]
 
 ## BLOCK_GAP
 
-Type: [number][140]
+Type: [number][166]
 
 ## BLOCK_GAP
 
-Type: [number][140]
+Type: [number][166]
 
 ## BLOCK_GAP
 
 The pause between blocks in a track, in seconds.
 
-Type: [number][140]
+Type: [number][166]
 
 ## Utterance
 
 One request to the speech server: a block, in a voice.
 
-Type: [Object][138]
+Type: [Object][164]
 
 ### Properties
 
-- `index` **[number][140]** The block it is
-- `text` **[string][139]** What is sent, hints applied
+- `index` **[number][166]** The block it is
+- `text` **[string][165]** What is sent, filters and hints applied
 - `voice` **TtsVoice**&#x20;
-- `signature` **[string][139]** What the audio for it is kept under
+- `signature` **[string][165]** What the audio for it is kept under
+- `skipped` **[boolean][167]?** The filters took all of it, and it is not read
 
 ## BlockState
 
 Where each block of a document stands in a reading.
 
-Type: (`"ready"` | `"missing"` | `"running"` | `"failed"`)
+Type: (`"ready"` | `"missing"` | `"running"` | `"failed"` | `"skipped"`)
 
 ## signatureOf
 
 ### Parameters
 
 - `voice` **TtsVoice**&#x20;
-- `text` **[string][139]** As sent
+- `text` **[string][165]** As sent
 
-Returns **[string][139]**&#x20;
+Returns **[string][165]**&#x20;
 
 ## utterancesOf
 
-What the server is asked to say, in order: one utterance to a block.
+What the server is asked to say, in order: one utterance to a block, the
+skipped ones among them.
 
 ### Parameters
 
-- `blocks` **[Array][146]<[Block][77]>**&#x20;
-- `speakers` **[Array][146]<([string][139] | null)>** A voice id per block, as resolved
-- `voices` **[Array][146]\<TtsVoice>**&#x20;
-- `defaultId` **[string][139]** The voice for blocks with no speaker
-- `hints` **[Array][146]<[Hint][35]>**&#x20;
+- `blocks` **[Array][172]<[Block][103]>**&#x20;
+- `speakers` **[Array][172]<([string][165] | null)>** A voice id per block, as resolved
+- `voices` **[Array][172]\<TtsVoice>**&#x20;
+- `defaultId` **[string][165]** The voice for blocks with no speaker
+- `hints` **[Array][172]<[Hint][57]>**&#x20;
+- `filters` **[Array][172]<[RegExp][174]>?** (optional, default `[]`)
 
-Returns **[Array][146]<[Utterance][59]>**&#x20;
+Returns **[Array][172]<[Utterance][81]>**&#x20;
 
 ## targetsOf
 
 What a run should ask for. Asked for some blocks, it reads those, again if
 they have been read. Asked for the document, it reads what has no audio,
-and when nothing lacks any, all of it again.
+which once everything has some is nothing. A skipped block is never read.
 
 ### Parameters
 
-- `utterances` **[Array][146]<[Utterance][59]>**&#x20;
+- `utterances` **[Array][172]<[Utterance][81]>**&#x20;
 - `has` &#x20;
-- `blocks` **[Array][146]<[number][140]>?** The blocks asked for; none means the document
+- `blocks` **[Array][172]<[number][166]>?** The blocks asked for; none means the document
 
-Returns **[Array][146]<[Utterance][59]>**&#x20;
+Returns **[Array][172]<[Utterance][81]>**&#x20;
+
+## SAMPLE_LENGTH
+
+About how much a sample says, in characters: half a minute or so.
+
+Type: [number][166]
+
+## sampleOf
+
+The blocks a sample of the document is read from: its opening, as many
+blocks as it takes to say `length` characters, and at least one. Skipped
+blocks say nothing, and are passed over.
+
+### Parameters
+
+- `utterances` **[Array][172]<[Utterance][81]>**&#x20;
+- `length` **[number][166]?** (optional, default `SAMPLE_LENGTH`)
+
+Returns **[Array][172]<[number][166]>**&#x20;
+
+## indices
+
+Type: [Array][172]<[number][166]>
 
 ## trackKeyOf
 
@@ -539,21 +702,21 @@ this is what the document would join.
 
 ### Parameters
 
-- `included` **[Array][146]<[Utterance][59]>**&#x20;
+- `included` **[Array][172]<[Utterance][81]>**&#x20;
 
-Returns **[string][139]**&#x20;
+Returns **[string][165]**&#x20;
 
 ## blockStatesOf
 
-Where each block stands: read, not read, being read now, or where the
-last run failed.
+Where each block stands: read, not read, being read now, where the last
+run failed, or not to be read at all.
 
 ### Parameters
 
-- `utterances` **[Array][146]<[Utterance][59]>** One to a block, in order
+- `utterances` **[Array][172]<[Utterance][81]>** One to a block, in order
 - `reading` &#x20;
 
-Returns **[Array][146]<[BlockState][61]>**&#x20;
+Returns **[Array][172]<[BlockState][83]>**&#x20;
 
 ## tts/script
 
@@ -593,19 +756,19 @@ document position, so an offset into it is an offset into the node.
 
 - `node` &#x20;
 
-Returns **[string][139]**&#x20;
+Returns **[string][165]**&#x20;
 
 ## Block
 
 One paragraph, as it is spoken.
 
-Type: [Object][138]
+Type: [Object][164]
 
 ### Properties
 
-- `text` **[string][139]** Its words
-- `from` **[number][140]** Where they start in the document, as the editor counts
-- `to` **[number][140]** Where they end
+- `text` **[string][165]** Its words
+- `from` **[number][166]** Where they start in the document, as the editor counts
+- `to` **[number][166]** Where they end
 
 ## blocksOfDoc
 
@@ -620,19 +783,19 @@ a rule has nothing to say. Nothing empty is kept.
 
 - `doc` &#x20;
 
-Returns **[Array][146]<[Block][77]>**&#x20;
+Returns **[Array][172]<[Block][103]>**&#x20;
 
 ## blocks
 
-Type: [Array][146]<[Block][77]>
+Type: [Array][172]<[Block][103]>
 
 ## blocksOf
 
 ### Parameters
 
-- `markdown` **([string][139] | null | [undefined][147])**&#x20;
+- `markdown` **([string][165] | null | [undefined][173])**&#x20;
 
-Returns **[Array][146]<[Block][77]>**&#x20;
+Returns **[Array][172]<[Block][103]>**&#x20;
 
 ## keyOf
 
@@ -640,9 +803,9 @@ A block as an assignment remembers it: its words, one space apart.
 
 ### Parameters
 
-- `text` **[string][139]**&#x20;
+- `text` **[string][165]**&#x20;
 
-Returns **[string][139]**&#x20;
+Returns **[string][165]**&#x20;
 
 ## resolveSpeakers
 
@@ -652,18 +815,18 @@ to where it was, in the order the assignments were made.
 
 ### Parameters
 
-- `texts` **[Array][146]<[string][139]>** The blocks' texts
-- `assignments` **([Array][146]\<SpeakerAssignment> | null | [undefined][147])**&#x20;
+- `texts` **[Array][172]<[string][165]>** The blocks' texts
+- `assignments` **([Array][172]\<SpeakerAssignment> | null | [undefined][173])**&#x20;
 
-Returns **[Array][146]<([string][139] | null)>** A voice id per block; null is the default voice's
+Returns **[Array][172]<([string][165] | null)>** A voice id per block; null is the default voice's
 
 ## speakers
 
-Type: [Array][146]<([string][139] | null)>
+Type: [Array][172]<([string][165] | null)>
 
 ## positions
 
-Type: [Map][148]<[string][139], [Array][146]<[number][140]>>
+Type: [Map][175]<[string][165], [Array][172]<[number][166]>>
 
 ## assignSpeaker
 
@@ -673,16 +836,16 @@ assignment whose block is gone goes with it rather than piling up.
 
 ### Parameters
 
-- `texts` **[Array][146]<[string][139]>** The blocks' texts
-- `speakers` **[Array][146]<([string][139] | null)>** As resolved for these blocks
-- `indices` **[Array][146]<[number][140]>** The blocks changing hands
-- `voiceId` **([string][139] | null)** Their speaker, or null for the default voice
+- `texts` **[Array][172]<[string][165]>** The blocks' texts
+- `speakers` **[Array][172]<([string][165] | null)>** As resolved for these blocks
+- `indices` **[Array][172]<[number][166]>** The blocks changing hands
+- `voiceId` **([string][165] | null)** Their speaker, or null for the default voice
 
-Returns **[Array][146]\<SpeakerAssignment>**&#x20;
+Returns **[Array][172]\<SpeakerAssignment>**&#x20;
 
 ## kept
 
-Type: [Array][146]\<SpeakerAssignment>
+Type: [Array][172]\<SpeakerAssignment>
 
 ## tts/voices
 
@@ -717,15 +880,15 @@ one, the next around.
 
 ### Parameters
 
-- `voices` **[Array][146]\<TtsVoice>**&#x20;
+- `voices` **[Array][172]\<TtsVoice>**&#x20;
 
-Returns **[string][139]**&#x20;
+Returns **[string][165]**&#x20;
 
 ## SAMPLE_TEXT
 
 What a voice says when the writer wants to hear it.
 
-Type: [string][139]
+Type: [string][165]
 
 ## voicesOf
 
@@ -733,9 +896,9 @@ The project's voices: its own, or the default while it has none.
 
 ### Parameters
 
-- `narration` **(StoryNarration | null | [undefined][147])**&#x20;
+- `narration` **(StoryNarration | null | [undefined][173])**&#x20;
 
-Returns **[Array][146]\<TtsVoice>**&#x20;
+Returns **[Array][172]\<TtsVoice>**&#x20;
 
 ## defaultVoiceOf
 
@@ -745,14 +908,14 @@ one while the choice was called the narrator still has it.
 
 ### Parameters
 
-- `narration` **(StoryNarration | null | [undefined][147])**&#x20;
-- `voices` **[Array][146]\<TtsVoice>?** As `voicesOf` gives them (optional, default `voicesOf(narration)`)
+- `narration` **(StoryNarration | null | [undefined][173])**&#x20;
+- `voices` **[Array][172]\<TtsVoice>?** As `voicesOf` gives them (optional, default `voicesOf(narration)`)
 
-Returns **[string][139]** A voice id
+Returns **[string][165]** A voice id
 
 ##
 
-Type: [string][139]
+Type: [string][165]
 
 ## voiceFor
 
@@ -761,9 +924,9 @@ there, else the default.
 
 ### Parameters
 
-- `voices` **[Array][146]\<TtsVoice>**&#x20;
-- `voiceId` **([string][139] | null | [undefined][147])** The block's speaker, if any
-- `defaultVoiceId` **[string][139]**&#x20;
+- `voices` **[Array][172]\<TtsVoice>**&#x20;
+- `voiceId` **([string][165] | null | [undefined][173])** The block's speaker, if any
+- `defaultVoiceId` **[string][165]**&#x20;
 
 Returns **TtsVoice**&#x20;
 
@@ -776,13 +939,13 @@ audio context and runs the same under test as on the page.
 
 ## WavFormat
 
-Type: [Object][138]
+Type: [Object][164]
 
 ### Properties
 
-- `channels` **[number][140]**&#x20;
-- `sampleRate` **[number][140]**&#x20;
-- `bitsPerSample` **[number][140]**&#x20;
+- `channels` **[number][166]**&#x20;
+- `sampleRate` **[number][166]**&#x20;
+- `bitsPerSample` **[number][166]**&#x20;
 
 ## tag
 
@@ -797,8 +960,8 @@ Four ASCII bytes as the chunk id they spell.
 
 ### Parameters
 
-- `view` **[DataView][149]**&#x20;
-- `at` **[number][140]**&#x20;
+- `view` **[DataView][176]**&#x20;
+- `at` **[number][166]**&#x20;
 
 ## Track
 
@@ -809,13 +972,13 @@ silences between as they already stand in memory — for a `Blob` to be
 made of. A chapter is tens of megabytes, and joining it into one buffer
 first would hold it all twice.
 
-Type: [Object][138]
+Type: [Object][164]
 
 ### Properties
 
-- `parts` **[Array][146]<[Uint8Array][150]>** One WAV file, in order
-- `segments` **[Array][146]<{start: [number][140], end: [number][140]}>** Each clip's place in the track, in seconds
-- `duration` **[number][140]** The whole track, in seconds
+- `parts` **[Array][172]<[Uint8Array][177]>** One WAV file, in order
+- `segments` **[Array][172]<{start: [number][166], end: [number][166]}>** Each clip's place in the track, in seconds
+- `duration` **[number][166]** The whole track, in seconds
 
 ## parseWav
 
@@ -828,25 +991,25 @@ to the end of the file.
 
 ### Parameters
 
-- `buffer` **[ArrayBuffer][145]**&#x20;
+- `buffer` **[ArrayBuffer][171]**&#x20;
 
 <!---->
 
-- Throws **[Error][144]** When it is not a WAV file, or has no data
+- Throws **[Error][170]** When it is not a WAV file, or has no data
 
 Returns **Wav**&#x20;
 
 ## format
 
-Type: ([WavFormat][109] | null)
+Type: ([WavFormat][135] | null)
 
 ## bytesPerSecond
 
 ### Parameters
 
-- `format` **[WavFormat][109]**&#x20;
+- `format` **[WavFormat][135]**&#x20;
 
-Returns **[number][140]** Bytes per second of audio
+Returns **[number][166]** Bytes per second of audio
 
 ## durationOf
 
@@ -856,7 +1019,7 @@ How long a clip plays.
 
 - `wav` **Wav**&#x20;
 
-Returns **[number][140]** Seconds
+Returns **[number][166]** Seconds
 
 ## wavHeader
 
@@ -864,16 +1027,16 @@ The 44 bytes that open a PCM WAV file holding so much data.
 
 ### Parameters
 
-- `format` **[WavFormat][109]**&#x20;
-- `dataLength` **[number][140]** Bytes of samples to follow
+- `format` **[WavFormat][135]**&#x20;
+- `dataLength` **[number][166]** Bytes of samples to follow
 
-Returns **[Uint8Array][150]**&#x20;
+Returns **[Uint8Array][177]**&#x20;
 
 ## write
 
 ### Parameters
 
-- `at` **[number][140]** @param {string} text
+- `at` **[number][166]** @param {string} text
 - `text` &#x20;
 
 ## concatParts
@@ -882,9 +1045,9 @@ Parts as one buffer.
 
 ### Parameters
 
-- `parts` **[Array][146]<[Uint8Array][150]>**&#x20;
+- `parts` **[Array][172]<[Uint8Array][177]>**&#x20;
 
-Returns **[ArrayBuffer][145]**&#x20;
+Returns **[ArrayBuffer][171]**&#x20;
 
 ## encodeWav
 
@@ -892,10 +1055,10 @@ Write a WAV file: a header, then the parts as given, PCM.
 
 ### Parameters
 
-- `format` **[WavFormat][109]**&#x20;
-- `parts` **[Array][146]<[Uint8Array][150]>**&#x20;
+- `format` **[WavFormat][135]**&#x20;
+- `parts` **[Array][172]<[Uint8Array][177]>**&#x20;
 
-Returns **[ArrayBuffer][145]**&#x20;
+Returns **[ArrayBuffer][171]**&#x20;
 
 ## joinClips
 
@@ -908,23 +1071,23 @@ sends; 8-bit WAV puts silence at 128, and would get a faint click.
 
 ### Parameters
 
-- `clips` **[Array][146]<[ArrayBuffer][145]>**&#x20;
-- `$1` **[Object][138]** (optional, default `{}`)
+- `clips` **[Array][172]<[ArrayBuffer][171]>**&#x20;
+- `$1` **[Object][164]** (optional, default `{}`)
   - `$1.gap` (optional, default `0.4`)
 
 <!---->
 
-- Throws **[Error][144]** With no clips, or clips that differ in format
+- Throws **[Error][170]** With no clips, or clips that differ in format
 
-Returns **[Track][115]**&#x20;
+Returns **[Track][141]**&#x20;
 
 ## data
 
-Type: [Array][146]<[Uint8Array][150]>
+Type: [Array][172]<[Uint8Array][177]>
 
 ## segments
 
-Type: [Array][146]<{start: [number][140], end: [number][140]}>
+Type: [Array][172]<{start: [number][166], end: [number][166]}>
 
 ## segmentAt
 
@@ -933,10 +1096,10 @@ about to start during the pause before it.
 
 ### Parameters
 
-- `track` **{segments: [Array][146]<{start: [number][140], end: [number][140]}>}**&#x20;
-- `time` **[number][140]** Seconds into the track
+- `track` **{segments: [Array][172]<{start: [number][166], end: [number][166]}>}**&#x20;
+- `time` **[number][166]** Seconds into the track
 
-Returns **([number][140] | null)** A segment index, or null past the end
+Returns **([number][166] | null)** A segment index, or null past the end
 
 [1]: #ttsclient
 [2]: #speechconnection
@@ -962,129 +1125,156 @@ Returns **([number][140] | null)** A segment index, or null past the end
 [22]: #parameters-6
 [23]: #describefailure
 [24]: #parameters-7
-[25]: #ttshighlight
-[26]: #tint
-[27]: #tint-1
-[28]: #tint-2
-[29]: #speakerrange
-[30]: #properties-2
-[31]: #speakerranges
-[32]: #parameters-8
-[33]: #ranges
-[34]: #ttshints
-[35]: #hint
-[36]: #parsehints
-[37]: #parameters-9
-[38]: #hints
-[39]: #escaperegexp
-[40]: #parameters-10
-[41]: #applyhints
-[42]: #parameters-11
-[43]: #tts
-[44]: #examples
-[45]: #ttsplayer
-[46]: #objecturl
-[47]: #parameters-12
-[48]: #release
-[49]: #parameters-13
-[50]: #playclip
-[51]: #parameters-14
-[52]: #finish
+[25]: #ttsfilters
+[26]: #range
+[27]: #piece
+[28]: #linesof
+[29]: #parameters-8
+[30]: #compile
+[31]: #parameters-9
+[32]: #parsefilters
+[33]: #parameters-10
+[34]: #filtersvalid
+[35]: #parameters-11
+[36]: #filteredranges
+[37]: #parameters-12
+[38]: #found
+[39]: #ranges
+[40]: #ranges-1
+[41]: #piecesof
+[42]: #parameters-13
+[43]: #pieces
+[44]: #applyfilters
+[45]: #parameters-14
+[46]: #ttshighlight
+[47]: #tint
+[48]: #tint-1
+[49]: #tint-2
+[50]: #speakerrange
+[51]: #properties-2
+[52]: #speakerranges
 [53]: #parameters-15
-[54]: #ttsreading
-[55]: #block_gap
-[56]: #block_gap-1
-[57]: #block_gap-2
-[58]: #block_gap-3
-[59]: #utterance
-[60]: #properties-3
-[61]: #blockstate
-[62]: #signatureof
-[63]: #parameters-16
-[64]: #utterancesof
-[65]: #parameters-17
-[66]: #targetsof
-[67]: #parameters-18
-[68]: #trackkeyof
-[69]: #parameters-19
-[70]: #blockstatesof
-[71]: #parameters-20
-[72]: #ttsscript
-[73]: #spoken
-[74]: #parameters-21
-[75]: #spoken-1
-[76]: #parameters-22
-[77]: #block
-[78]: #properties-4
-[79]: #blocksofdoc
-[80]: #parameters-23
-[81]: #blocks
-[82]: #blocksof
-[83]: #parameters-24
-[84]: #keyof
-[85]: #parameters-25
-[86]: #resolvespeakers
-[87]: #parameters-26
-[88]: #speakers
-[89]: #positions
-[90]: #assignspeaker
-[91]: #parameters-27
-[92]: #kept
-[93]: #ttsvoices
-[94]: #default_voices
-[95]: #default_voices-1
-[96]: #default_voices-2
-[97]: #voice_colors
-[98]: #nextcolor
-[99]: #parameters-28
-[100]: #sample_text
-[101]: #voicesof
-[102]: #parameters-29
-[103]: #defaultvoiceof
-[104]: #parameters-30
-[105]: #
-[106]: #voicefor
-[107]: #parameters-31
-[108]: #ttswav
-[109]: #wavformat
-[110]: #properties-5
-[111]: #tag
-[112]: #parameters-32
-[113]: #tag-1
-[114]: #parameters-33
-[115]: #track
-[116]: #properties-6
-[117]: #parsewav
-[118]: #parameters-34
-[119]: #format
-[120]: #bytespersecond
-[121]: #parameters-35
-[122]: #durationof
-[123]: #parameters-36
-[124]: #wavheader
+[54]: #skippedranges
+[55]: #parameters-16
+[56]: #ttshints
+[57]: #hint
+[58]: #parsehints
+[59]: #parameters-17
+[60]: #hints
+[61]: #escaperegexp
+[62]: #parameters-18
+[63]: #applyhints
+[64]: #parameters-19
+[65]: #tts
+[66]: #examples
+[67]: #ttsplayer
+[68]: #objecturl
+[69]: #parameters-20
+[70]: #release
+[71]: #parameters-21
+[72]: #playclip
+[73]: #parameters-22
+[74]: #finish
+[75]: #parameters-23
+[76]: #ttsreading
+[77]: #block_gap
+[78]: #block_gap-1
+[79]: #block_gap-2
+[80]: #block_gap-3
+[81]: #utterance
+[82]: #properties-3
+[83]: #blockstate
+[84]: #signatureof
+[85]: #parameters-24
+[86]: #utterancesof
+[87]: #parameters-25
+[88]: #targetsof
+[89]: #parameters-26
+[90]: #sample_length
+[91]: #sampleof
+[92]: #parameters-27
+[93]: #indices
+[94]: #trackkeyof
+[95]: #parameters-28
+[96]: #blockstatesof
+[97]: #parameters-29
+[98]: #ttsscript
+[99]: #spoken
+[100]: #parameters-30
+[101]: #spoken-1
+[102]: #parameters-31
+[103]: #block
+[104]: #properties-4
+[105]: #blocksofdoc
+[106]: #parameters-32
+[107]: #blocks
+[108]: #blocksof
+[109]: #parameters-33
+[110]: #keyof
+[111]: #parameters-34
+[112]: #resolvespeakers
+[113]: #parameters-35
+[114]: #speakers
+[115]: #positions
+[116]: #assignspeaker
+[117]: #parameters-36
+[118]: #kept
+[119]: #ttsvoices
+[120]: #default_voices
+[121]: #default_voices-1
+[122]: #default_voices-2
+[123]: #voice_colors
+[124]: #nextcolor
 [125]: #parameters-37
-[126]: #write
-[127]: #parameters-38
-[128]: #concatparts
-[129]: #parameters-39
-[130]: #encodewav
-[131]: #parameters-40
-[132]: #joinclips
-[133]: #parameters-41
-[134]: #data
-[135]: #segments
-[136]: #segmentat
-[137]: #parameters-42
-[138]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[139]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[140]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[141]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[142]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[143]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[144]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[145]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
-[146]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[147]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[148]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[149]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/DataView
-[150]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[126]: #sample_text
+[127]: #voicesof
+[128]: #parameters-38
+[129]: #defaultvoiceof
+[130]: #parameters-39
+[131]: #
+[132]: #voicefor
+[133]: #parameters-40
+[134]: #ttswav
+[135]: #wavformat
+[136]: #properties-5
+[137]: #tag
+[138]: #parameters-41
+[139]: #tag-1
+[140]: #parameters-42
+[141]: #track
+[142]: #properties-6
+[143]: #parsewav
+[144]: #parameters-43
+[145]: #format
+[146]: #bytespersecond
+[147]: #parameters-44
+[148]: #durationof
+[149]: #parameters-45
+[150]: #wavheader
+[151]: #parameters-46
+[152]: #write
+[153]: #parameters-47
+[154]: #concatparts
+[155]: #parameters-48
+[156]: #encodewav
+[157]: #parameters-49
+[158]: #joinclips
+[159]: #parameters-50
+[160]: #data
+[161]: #segments
+[162]: #segmentat
+[163]: #parameters-51
+[164]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[165]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[166]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[167]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[168]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[169]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[170]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[171]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
+[172]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[173]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[174]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp
+[175]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[176]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/DataView
+[177]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array

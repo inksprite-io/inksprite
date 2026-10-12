@@ -28,7 +28,7 @@
  * compare with anything.
  */
 
-import { ATTRIBUTION_HEADERS, chatCompletionsUrl } from '@/ai/wire.js'
+import { attributionHeaders, chatCompletionsUrl } from '@/ai/wire.js'
 import { resolveAISettings } from '@/ai/defaults.js'
 import { buildProviderRouting } from '@/ai/routing.js'
 
@@ -96,7 +96,7 @@ export async function complete({
   }
 
   /** @type {Record<string, string>} */
-  const headers = { 'Content-Type': 'application/json', ...ATTRIBUTION_HEADERS }
+  const headers = { 'Content-Type': 'application/json', ...attributionHeaders(endpoint) }
   if (endpoint.apiKey) headers.Authorization = `Bearer ${endpoint.apiKey}`
 
   const started = Date.now()

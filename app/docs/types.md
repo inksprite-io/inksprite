@@ -232,8 +232,8 @@ Type: [Object][100]
   kept so stored rows written before that still parse.
 - `overview` **[string][101]** Legacy synopsis. Migrated to the root document's `summary` at schema v7 and no longer read; the column stays as the way back.
 - `wordCount` **[number][102]** Total word count across all scenes
-- `narration` **[StoryNarration][24]?** The project's voices and pronunciation
-  hints, for reading it aloud. Absent means one default voice and no hints; see
+- `narration` **[StoryNarration][24]?** The project's voices, pronunciation hints
+  and filters, for reading it aloud. Absent means one default voice and no hints; see
   `tts/voices.js`.
 - `options` **[StoryOptions][12]?** Story-specific options and overrides
 - `version` **[number][102]** Version number for conflict resolution
@@ -310,6 +310,8 @@ Type: [Object][100]
   first few days; read when that is absent, never written.
 - `hints` **[string][101]?** Pronunciation hints, `word:say` one to a line. See
   `tts/hints.js`.
+- `filters` **[string][101]?** What is not read aloud, a regular expression to a
+  line. See `tts/filters.js`.
 
 ## Part
 
@@ -791,8 +793,8 @@ Type: [Object][100]
 
 - `id` **[string][101]** Unique provider identifier (provider_xxx)
 - `name` **[string][101]** User-friendly name for the provider
-- `type` **(`"openrouter"` | `"llamacpp"` | `"generic"`)** Provider type. See ai/providers.js.
-- `endpoint` **[string][101]?** API endpoint URL, for every type but OpenRouter
+- `type` **(`"openrouter"` | `"anthropic"` | `"openai"` | `"gemini"` | `"llamacpp"` | `"generic"`)** Provider type. See ai/providers.js.
+- `endpoint` **[string][101]?** API endpoint URL, for a type without a known address (see ai/providers.js)
 - `apiKey` **[string][101]?** API key for authentication
 - `rememberKey` **[boolean][103]?** Whether to persist API key in IndexedDB (default true). If false, key is stored in sessionStorage only
 - `isDefault` **[boolean][103]?** Whether this is a default provider (cannot be deleted)
@@ -1025,7 +1027,7 @@ Type: [Object][100]
 - `providerId` **([string][101] | null)** The provider the workflow runs on; null for the active preset's
 - `model` **([string][101] | null)** The model; null for the active preset's
 - `allowedProviders` **[Array][104]<[string][101]>?** OpenRouter only: the upstreams allowed to serve the model, like a preset's. Read only when the workflow names its own provider; one that runs on the active preset runs on the preset's list.
-- `reasoningEffort` **([string][101] | null)?** How hard the model thinks: `disabled`, `enabled`, `low`, `medium`, `high`;
+- `reasoningEffort` **([string][101] | null)?** How hard the model thinks: one of `REASONING_EFFORT_OPTIONS`, fitted to the model as it is sent;
   null for the app's default (`AI_DEFAULTS.reasoningEffort`)
 - `onImport` **[boolean][103]?** Convert only: convert every file with text as it is imported
 

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { parseMarkdown } from '@/editor/markdown.js'
-import { speakerRanges } from '@/tts/highlight.js'
+import { parseFilters } from '@/tts/filters.js'
+import { skippedRanges, speakerRanges } from '@/tts/highlight.js'
 
 const voices = [
   { id: 'narrator', name: 'Narrator', voice: 'af_heart' },
@@ -33,5 +34,17 @@ describe('speakerRanges', () => {
   it('has nothing to colour with no speakers', () => {
     expect(speakerRanges(doc, [], voices)).toEqual([])
     expect(speakerRanges(doc, undefined, voices)).toEqual([])
+  })
+})
+
+describe('skippedRanges', () => {
+  it('finds where the filters match in the document', () => {
+    const cited = parseMarkdown('# Chapter 1\n\nA fact [1].\n\nPage 12')
+    const ranges = skippedRanges(cited, parseFilters('\\s*\\[\\d+\\]\n^Page \\d+$'))
+    expect(ranges.map(({ from, to }) => cited.textBetween(from, to))).toEqual([' [1]', 'Page 12'])
+  })
+
+  it('has nothing to grey with no filters', () => {
+    expect(skippedRanges(doc, [])).toEqual([])
   })
 })

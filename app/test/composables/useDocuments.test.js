@@ -30,6 +30,19 @@ const mockEditor = vi.hoisted(() => ({
 }))
 vi.mock('@/composables/useEditor.js', () => ({ useEditor: () => mockEditor }))
 
+/** The project's chats, for the tabs that hold a chat's text. */
+const mockChats = vi.hoisted(() => ({
+  ready: { value: true },
+  ids: new Set(['chat_1']),
+}))
+vi.mock('@/composables/useChats.js', () => ({
+  useChats: () => ({
+    ready: mockChats.ready,
+    isUnstarted: id => id === 'chat_new',
+    getChatById: id => (mockChats.ids.has(id) ? { id } : null),
+  }),
+}))
+
 const mockStory = { id: 'story_1', title: 'My Novel' }
 vi.mock('@/stores/storiesStore', () => ({
   useStoriesStore: () => ({
@@ -453,6 +466,47 @@ describe('useDocuments', () => {
       api.open('doc_1')
 
       expect(api.tabs.value).toEqual({ open: ['doc_1', 'doc_2'], active: 'doc_1', preview: null })
+    })
+
+    describe("a chat's text", () => {
+      beforeEach(() => {
+        mockChats.ready.value = true
+        mockChats.ids = new Set(['chat_1'])
+      })
+
+      it('opens in a tab beside the documents', () => {
+        api.open('doc_1')
+        api.open('chat:chat_1:prompt')
+
+        expect(api.tabs.value).toEqual({
+          open: ['doc_1', 'chat:chat_1:prompt'],
+          active: 'chat:chat_1:prompt',
+          preview: null,
+        })
+      })
+
+      it('is left out once its chat is gone, and kept for the chat not yet started', () => {
+        rememberView({
+          openDocumentIds: ['chat:chat_gone:prompt', 'chat:chat_1:note', 'chat:chat_new:prompt'],
+          lastDocumentId: 'chat:chat_gone:prompt',
+        })
+
+        expect(api.tabs.value).toEqual({
+          open: ['chat:chat_1:note', 'chat:chat_new:prompt'],
+          active: 'chat:chat_1:note',
+          preview: null,
+        })
+      })
+
+      it('is kept until the chats are loaded', () => {
+        mockChats.ready.value = false
+        rememberView({
+          openDocumentIds: ['chat:chat_gone:prompt'],
+          lastDocumentId: 'chat:chat_gone:prompt',
+        })
+
+        expect(api.tabs.value.open).toEqual(['chat:chat_gone:prompt'])
+      })
     })
 
     it('gives a view from before tabs one, its last document', () => {

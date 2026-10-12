@@ -6,6 +6,54 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.13
+
+Claude, OpenAI and local servers built in, narration through them, and
+three guides.
+
+- Anthropic, OpenAI, LM Studio, Ollama, llama.cpp, vLLM and KoboldCpp
+  are built in beside OpenRouter, each local server at the address it
+  listens on unless told otherwise, so connecting one is choosing it
+  and a model. A hosted service needs only its key. Claude is spoken to
+  through Anthropic's own API, its thinking shown and handed back on
+  later rounds, and its prompts cached.
+- The generation settings show only what the connection and model
+  take, and only those are sent; a stored choice a model can't take is
+  sent as the nearest it can. The reasoning effort menu gains Minimal,
+  Extra high and Max for the models that have them. Max tokens and
+  Tool rounds say Unlimited at 0.
+- A server is asked for its models on Connect and Refresh, not as its
+  address is typed. A chat on a service with no key says where to add
+  it.
+- Narration speaks through the AI connections: Kokoro is built in, and
+  OpenRouter and OpenAI speak too. A project picks its connection and
+  speech model at the top of the narration panel's Voices, and
+  Settings › Narration is gone. In the desktop app, a project kept in
+  a folder keeps its audio there.
+- The narration panel has a player of its own and lists its segments
+  in a Segments section, with Generate, Generate a sample and
+  Regenerate all as buttons. Filters take regular expressions for what
+  to leave unread, such as page numbers and reference marks.
+  Pronunciation has a Preview, and the panel shows whole with no
+  document open. A current Kokoro-FastAPI's voices are listed again.
+- A turn's buttons are in a row under it, on the right, with a reply's
+  other answers beside Regenerate. Sending the writer's turn again
+  keeps the reply as another answer.
+- A chat's system prompt and author's note open in a tab of the
+  editor, from their fields in the chat's settings.
+- Interpret and Write are in an Experimental group, off on every
+  built-in profile and on existing chats and profiles; switched on,
+  the model can call Write. Roleplay profiles start with the document
+  tools on, so a card's lorebook is looked up rather than carried
+  whole. Two dice rolls in one round both roll.
+- The welcome is laid out as the settings are, with the AI settings
+  and the Terms of Service, which are agreed to beside Start writing.
+  About has the copyright, and the version on every build.
+- The Jobs button shows only while there are jobs, and an empty
+  folder no longer says "Empty".
+- The docs site has guides to getting started, narration, and
+  roleplay with a character card.
+
 ## v0.1.0-dev.12
 
 Less text across the app, and the open chat marked in the chat list.

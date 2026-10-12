@@ -133,7 +133,7 @@ import {
   leaveComment,
   takeUpComment,
 } from '@/composables/useComments.js'
-import { TINT, speakerRanges } from '@/tts/highlight.js'
+import { TINT, skippedRanges, speakerRanges } from '@/tts/highlight.js'
 import { linkAround, links, normalizeHref, removeLink, setLink } from '@/editor/links.js'
 import { openUrl } from '@/platform/open.js'
 import { isTextField } from '@/utils/focus.js'
@@ -381,54 +381,61 @@ const onMouseUp = () => {
 }
 
 // While the narration is showing beside the editor, each speaker's lines are
-// coloured in the text. Decorations, so nothing is written into the document:
-// the speakers are an overlay here as they are everywhere.
+// coloured in the text, and what the filters leave out is greyed.
+// Decorations, so nothing is written into the document: the speakers are an
+// overlay here as they are everywhere.
 const narration = useNarration(props.storyId)
 const { highlightSpeakers, compactText } = useApplicationState()
 
 /** What the colouring is made from, or null while there is none to do. */
 const highlight = computed(() => {
-  if (narration.watching.value === 0 || !highlightSpeakers.value) return null
-  const speakers = currentDocument.value?.speakers
-  return speakers?.length ? { speakers, voices: narration.voices.value } : null
+  if (narration.watching.value === 0) return null
+  const speakers = (highlightSpeakers.value && currentDocument.value?.speakers) || []
+  const filters = narration.filterPatterns.value
+  if (speakers.length === 0 && filters.length === 0) return null
+  return { speakers, voices: narration.voices.value, filters }
 })
 
 /** The last colouring, kept while neither the text nor its sources change. */
 let drawn = { doc: null, source: null, set: DecorationSet.empty }
 
 /** @param {import('prosemirror-state').EditorState} state */
-const speakerColouring = state => {
+const narrationColouring = state => {
   const source = highlight.value
   if (!source) return DecorationSet.empty
   if (drawn.doc !== state.doc || drawn.source !== source) {
     const ranges = speakerRanges(state.doc, source.speakers, source.voices)
+    const skipped = skippedRanges(state.doc, source.filters)
     drawn = {
       doc: state.doc,
       source,
-      set: DecorationSet.create(
-        state.doc,
-        ranges.map(({ from, to, color, name }) =>
+      set: DecorationSet.create(state.doc, [
+        ...ranges.map(({ from, to, color, name }) =>
           Decoration.inline(from, to, {
             style: `background-color: ${color}${TINT}; border-radius: 0.2em;`,
             title: name,
             'data-speaker': name,
           })
-        )
-      ),
+        ),
+        ...skipped.map(({ from, to }) =>
+          Decoration.inline(from, to, { style: 'opacity: 0.4;', 'data-skipped': '' })
+        ),
+      ]),
     }
   }
   return drawn.set
 }
 
 /**
- * The speakers' colouring, and while the link or comment field is open, the
- * text it is on: the focus is in the field, and the selection would not show.
- * A document with nothing in it shows where to start.
+ * The speakers' colouring and the skipped text greyed, and while the link or
+ * comment field is open, the text it is on: the focus is in the field, and
+ * the selection would not show. A document with nothing in it shows where to
+ * start.
  *
  * @param {import('prosemirror-state').EditorState} state
  */
 const decorations = state => {
-  let set = currentMarking(state, speakerColouring(state))
+  let set = currentMarking(state, narrationColouring(state))
   if (isEmptyDocument(state.doc)) {
     set = set.add(state.doc, [
       Decoration.node(0, state.doc.firstChild.nodeSize, {

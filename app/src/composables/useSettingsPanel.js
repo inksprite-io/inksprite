@@ -12,7 +12,7 @@
 
 import { ref } from 'vue'
 
-/** @typedef {'system'|'data'|'ai'|'narration'|'workflows'|'skills'|'connections'|'debug'} SettingsSection */
+/** @typedef {'system'|'data'|'ai'|'workflows'|'skills'|'connections'|'debug'} SettingsSection */
 
 const visible = ref(false)
 

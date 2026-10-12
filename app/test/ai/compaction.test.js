@@ -9,7 +9,7 @@ import {
   isCompaction,
   parseKeep,
 } from '@/ai/compaction.js'
-import { buildCompactPrompt } from '@/ai/skills/compact/index.js'
+import { askCompact, buildCompactPrompt, unwrapSummary } from '@/ai/skills/compact/index.js'
 
 /** A message that is a finished summary. */
 const summary = (id, content = 'They crossed the pass.') => ({
@@ -244,5 +244,25 @@ describe('buildCompactPrompt', () => {
 
     expect(prompt).toContain('## What this one is for')
     expect(prompt).toContain('favour the mystery')
+  })
+})
+
+describe('unwrapSummary', () => {
+  it('takes off a summary tag the model put around the whole of it', () => {
+    expect(unwrapSummary('<summary>\n## So far\n\nThey ran.\n</summary>\n')).toBe(
+      '## So far\n\nThey ran.'
+    )
+  })
+
+  it('leaves a summary that only mentions the tag', () => {
+    const said = 'The <summary> tag is how a summary is sent.\n\nThey ran.'
+    expect(unwrapSummary(said)).toBe(said)
+    expect(unwrapSummary('They ran.')).toBe('They ran.')
+  })
+
+  it('is what Compact answers with', async () => {
+    const consult = async () => '<summary>They ran.</summary>'
+
+    expect(await askCompact('', { consult })).toEqual({ answer: 'They ran.' })
   })
 })

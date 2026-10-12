@@ -7,7 +7,23 @@ import MobileTopBar from '@/components/writer/layout/MobileTopBar.vue'
 import { useJobsStore } from '@/stores/jobsStore.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
 
-vi.mock('@/stores/db', () => ({ default: { jobs: { put: vi.fn(async () => undefined) } } }))
+vi.mock('@/stores/db', () => ({
+  default: {
+    jobs: { put: vi.fn(async () => undefined), bulkDelete: vi.fn(async () => undefined) },
+  },
+}))
+
+const STEPS = [{ id: 'a', label: 'a', status: 'running' }]
+
+/** @param {string} title */
+const addJob = title =>
+  useJobsStore().createJob({
+    storyId: 's1',
+    kind: 'convert',
+    workflow: 'convert',
+    title,
+    steps: STEPS,
+  })
 
 const mountBar = props =>
   mount(MobileTopBar, {
@@ -38,14 +54,25 @@ describe('MobileTopBar', () => {
       'More',
     ])
     expect(buttons.every(button => button.text() === '')).toBe(true)
+    expect(items(wrapper).map(entry => entry.label)).toEqual(['Narration', 'Comments', 'Settings'])
+    expect(wrapper.find('[data-tab="write"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.find('[data-tab="chat"]').attributes('aria-pressed')).toBe('false')
+  })
+
+  it('has the jobs in the menu, before the settings, only while there are jobs', async () => {
+    const wrapper = mountBar({ hasStory: true })
+    const job = await addJob('One')
+    await wrapper.vm.$nextTick()
     expect(items(wrapper).map(entry => entry.label)).toEqual([
       'Narration',
       'Comments',
       'Jobs',
       'Settings',
     ])
-    expect(wrapper.find('[data-tab="write"]').attributes('aria-pressed')).toBe('true')
-    expect(wrapper.find('[data-tab="chat"]').attributes('aria-pressed')).toBe('false')
+
+    await useJobsStore().deleteJob(job.id)
+    await wrapper.vm.$nextTick()
+    expect(item(wrapper, 'jobs')).toBeUndefined()
   })
 
   it('asks for the view picked, from the bar or the menu', async () => {
@@ -87,14 +114,7 @@ describe('MobileTopBar', () => {
     const { state, closed } = useJobsToast()
     closed()
     const store = useJobsStore()
-    const steps = [{ id: 'a', label: 'a', status: 'running' }]
-    const job = await store.createJob({
-      storyId: 's1',
-      kind: 'convert',
-      workflow: 'convert',
-      title: 'One',
-      steps,
-    })
+    const job = await addJob('One')
     const wrapper = mountBar({ hasStory: false, activeMobileTab: 'write' })
     const more = wrapper.find('[data-action="more"]')
     expect(more.find('[data-rail-badge]').exists()).toBe(false)

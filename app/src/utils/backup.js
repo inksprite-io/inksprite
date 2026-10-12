@@ -45,6 +45,10 @@ import { rolesToSkills } from '../stores/migrations/profileSkills.js'
 import { rolesToWorkflows } from '../stores/migrations/jobWorkflows.js'
 import { withoutModelKeeps } from '../stores/migrations/modelKeeps.js'
 import { allowedProvidersToPresets } from '../stores/migrations/allowedProviders.js'
+import {
+  experimentalOffChats,
+  experimentalOffProfiles,
+} from '../stores/migrations/experimentalSkills.js'
 import { viewsOffStories } from '../stores/migrations/projectViews.js'
 
 /** Format of the backup envelope itself, independent of the database schema. */
@@ -275,6 +279,16 @@ const UPGRADES = {
     const { stories, views } = viewsOffStories(tables.stories)
     return { ...tables, stories, projectViews: [...(tables.projectViews || []), ...views] }
   },
+
+  // v28 switched the experimental group, Interpret and Write, off on every
+  // chat and every profile of the writer's. Idempotent.
+  28: tables => ({
+    ...tables,
+    ...(tables.chats ? { chats: experimentalOffChats(tables.chats).chats } : {}),
+    ...(tables.chatProfiles
+      ? { chatProfiles: experimentalOffProfiles(tables.chatProfiles).profiles }
+      : {}),
+  }),
 }
 
 /**

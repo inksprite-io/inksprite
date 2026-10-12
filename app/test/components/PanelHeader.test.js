@@ -16,6 +16,19 @@ describe('PanelHeader', () => {
     expect(wrapper.find('[data-end]').exists()).toBe(true)
   })
 
+  it('puts a way back before the title', () => {
+    const wrapper = mount(PanelHeader, {
+      props: { title: 'Chat settings' },
+      slots: { start: '<button data-back />', default: '<button data-end />' },
+      global,
+    })
+    const strip = wrapper.find('h2').element.parentElement
+    const order = [...strip.children].map(each =>
+      each.hasAttribute('data-back') ? 'back' : each.hasAttribute('data-end') ? 'end' : each.tagName
+    )
+    expect(order).toEqual(['back', 'H2', 'end'])
+  })
+
   it('leaves the strip to the buttons without a title', () => {
     const wrapper = mount(PanelHeader, { slots: { default: '<button data-end />' }, global })
     expect(wrapper.find('h2').exists()).toBe(false)

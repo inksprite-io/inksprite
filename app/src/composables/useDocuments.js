@@ -14,7 +14,9 @@
  * so the project reopens as it was left, and read back checked against the tree, so a document deleted since
  * is not among them. `open` and `closeTab` write them; `remove` drops the
  * tabs of what it deletes, and `keep` makes a preview tab stay. See
- * `utils/tabs.js` for the rules.
+ * `utils/tabs.js` for the rules. A tab can hold a chat's system prompt or
+ * author's note instead of a document, and stays while the chat is there;
+ * see `utils/chatTabs.js`.
  *
  * It also owns the one rule about where a document's content lives: while a
  * document is open in the editor, the editor's state is the truth and a write
@@ -37,9 +39,11 @@ import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { useEditor } from '@/composables/useEditor.js'
+import { useChats } from '@/composables/useChats.js'
 import { appendBlocks, settleMarkdown } from '@/editor/markdown.js'
 import { documentPath, documentTitles, freeTitle, namesake } from '@/utils/documentPath.js'
 import { applyEdit, reverseEdit } from '@/utils/edits.js'
+import { chatTabOf } from '@/utils/chatTabs.js'
 import {
   closeTab as closed,
   dropTabs,
@@ -112,16 +116,29 @@ export const useDocuments = storyId => {
   const root = computed(() => documentsStore.getDocument(rootIdFor(storyId)))
 
   /**
+   * Whether a chat whose text a tab holds is there: one of the project's, or
+   * the one not yet started. Until the chats are loaded any is.
+   * @param {string} chatId
+   */
+  const hasChat = chatId => {
+    const chats = useChats(storyId)
+    return !chats.ready.value || chats.isUnstarted(chatId) || !!chats.getChatById(chatId)
+  }
+
+  /**
    * The editor's tabs, as the project's view remembers them and the tree allows: only
    * a document still in the tree with something to show — text, or a file —
-   * can be open, so anything else has been dropped by the time they are
-   * read. Before the tree is loaded they are taken as stored.
+   * or the text of a chat still there can be open, so anything else has been
+   * dropped by the time they are read. Before the tree is loaded they are
+   * taken as stored.
    * @type {import('vue').ComputedRef<Tabs>}
    */
   const tabs = computed(() => {
     const stored = tabsOf(projectViewsStore.getView(storyId))
     if (!ready.value) return stored
     return normalizeTabs(stored, id => {
+      const chatTab = chatTabOf(id)
+      if (chatTab) return hasChat(chatTab.chatId)
       const type = documentsStore.getDocument(id)?.type
       return type === 'text' || type === 'file'
     })

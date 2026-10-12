@@ -1,22 +1,21 @@
 <template>
   <div class="w-full h-full flex flex-col bg-surface-0 dark:bg-surface-800">
-    <!-- Header -->
-    <div
-      class="w-full flex-none flex items-center justify-between py-2 px-2 bg-surface-100 dark:bg-surface-900/40 shadow-sm"
-    >
-      <Button
-        type="button"
-        icon="pi pi-chevron-left"
-        severity="secondary"
-        size="small"
-        rounded
-        class="flex-none !bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700"
-        aria-label="Back to chat"
-        @click="emit('back')"
-      />
-      <h2 class="text-md font-semibold truncate flex-1 text-center">Chat settings</h2>
-      <div class="w-8" />
-    </div>
+    <!-- Headed as the chat it stands in for is, with the way back to it where
+         the chat has its own. -->
+    <PanelHeader title="Chat settings">
+      <template #start>
+        <Button
+          type="button"
+          icon="pi pi-chevron-left"
+          severity="secondary"
+          size="small"
+          rounded
+          class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700"
+          aria-label="Back to chat"
+          @click="emit('back')"
+        />
+      </template>
+    </PanelHeader>
 
     <ScrollPanel class="flex-1 overflow-auto">
       <div class="mx-auto w-full max-w-3xl flex flex-col gap-1 p-4">
@@ -101,22 +100,44 @@
               </div>
             </div>
 
-            <!-- Capped: a long prompt otherwise fills the panel. -->
+            <!-- The two texts are capped alike, since a long one otherwise fills
+                 the panel; either opens in the editor for room to work in. -->
             <div class="flex flex-col gap-1">
-              <SettingLabel label="System prompt" />
+              <div class="flex items-center justify-between gap-2">
+                <SettingLabel label="System prompt" />
+                <HeaderButton
+                  icon="pi pi-window-maximize"
+                  label="Open in editor"
+                  class="-my-1.5"
+                  data-action="open-prompt"
+                  @click="openInEditor('prompt')"
+                />
+              </div>
               <Textarea
                 v-model="systemPrompt"
                 size="small"
-                class="w-full max-h-80 !overflow-y-auto dark:!bg-surface-900"
+                class="w-full max-h-48 !overflow-y-auto dark:!bg-surface-900"
                 auto-resize
-                rows="6"
+                rows="3"
                 aria-label="System Prompt"
-                @input="handleSystemPromptInput"
+                @input="setPrompt(systemPrompt)"
               />
             </div>
 
             <div class="flex flex-col gap-1">
-              <SettingLabel label="Author's note" description="Sent with each message you write." />
+              <div class="flex items-center justify-between gap-2">
+                <SettingLabel
+                  label="Author's note"
+                  description="Sent with each message you write."
+                />
+                <HeaderButton
+                  icon="pi pi-window-maximize"
+                  label="Open in editor"
+                  class="-my-1.5"
+                  data-action="open-note"
+                  @click="openInEditor('note')"
+                />
+              </div>
               <Textarea
                 v-model="rules"
                 size="small"
@@ -125,7 +146,7 @@
                 rows="3"
                 aria-label="Author's note"
                 placeholder="e.g. Past tense, third person. Never end on a question."
-                @input="handleRulesInput"
+                @input="setNote(rules)"
               />
             </div>
 
@@ -334,6 +355,12 @@
                   data-skill-loaded
                   >Loaded</span
                 >
+                <span
+                  v-else-if="skill.experimental"
+                  class="text-xs text-surface-500 dark:text-surface-400 flex-none"
+                  data-skill-experimental
+                  >Experimental</span
+                >
                 <ToggleSwitch
                   v-if="skill.tool"
                   :model-value="isSkillEnabled(skill.tool)"
@@ -397,7 +424,7 @@
               </div>
             </ExpandableSection>
 
-            <p class="text-xs text-surface-500 dark:text-surface-400 pt-1">
+            <p class="text-xs text-surface-500 dark:text-surface-400 text-right pt-1">
               <button
                 type="button"
                 class="underline hover:text-surface-700 dark:hover:text-surface-200"
@@ -470,14 +497,14 @@
               />
             </div>
 
-            <p class="text-xs text-surface-500 dark:text-surface-400">
+            <p class="text-xs text-surface-500 dark:text-surface-400 text-right">
               <button
                 type="button"
                 class="underline hover:text-surface-700 dark:hover:text-surface-200"
                 data-action="edit-voices"
                 @click="sidebarTab.show('narration')"
               >
-                Edit voices
+                Manage voices and pronunciation hints
               </button>
             </p>
           </div>
@@ -498,13 +525,16 @@ import ScrollPanel from 'primevue/scrollpanel'
 import SettingLabel from '@/components/common/SettingLabel.vue'
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
 import ProfileContextMenu from './ProfileContextMenu.vue'
+import PanelHeader from '../layout/PanelHeader.vue'
+import HeaderButton from '../layout/HeaderButton.vue'
 import AiPresetGroup from '@/components/writer/settings/ai/AiPresetGroup.vue'
-import { DEFAULT_CHAT_PROMPT } from '@/ai/prompts/index.js'
 import { useChatSettings } from '@/composables/useChatSettings'
+import { useDocuments } from '@/composables/useDocuments'
+import { useEditorRequest } from '@/composables/useEditorRequest.js'
 import { useAIConfig } from '@/composables/useAIConfig'
 import { useNarration } from '@/composables/useNarration'
 import { useProfiles } from '@/composables/useProfiles'
-import { getToolGroups, SKILLS_GROUP } from '@/ai/tools/index.js'
+import { EXPERIMENTAL_GROUP, getToolGroups, SKILLS_GROUP, toolGroupOf } from '@/ai/tools/index.js'
 import { WEB_GROUP } from '@/ai/tools/web.js'
 import { allSkills, skillLabel, skillPrompt } from '@/ai/skills/index.js'
 import { loadedByModel, waitingOn } from '@/ai/skills/runner.js'
@@ -518,6 +548,7 @@ import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { COMMANDS } from '@/ai/commands.js'
+import { chatTabId } from '@/utils/chatTabs.js'
 
 /**
  * Everything about one chat, in five sections.
@@ -653,9 +684,8 @@ const allGroups = computed(() => {
 // The skills have a section of their own, so they are not also a group in the
 // tool list: one switch per thing, in the place that explains what it is. The
 // web is listed with the connections, since that is where it is set up.
-const toolGroups = computed(() =>
-  allGroups.value.filter(group => group.id !== SKILLS_GROUP && group.id !== WEB_GROUP)
-)
+const NOT_LISTED = new Set([SKILLS_GROUP, EXPERIMENTAL_GROUP, WEB_GROUP])
+const toolGroups = computed(() => allGroups.value.filter(group => !NOT_LISTED.has(group.id)))
 
 /** The web tools, while a service is set up to search. */
 const webGroup = computed(() =>
@@ -689,7 +719,12 @@ const {
   defaultProfileId,
   selectedProfileId,
   selectedProfile,
+  isSavedProfile,
   note,
+  setNote,
+  prompt: profilePrompt,
+  setPrompt,
+  forkProfile,
   setProfile,
   deleteProfile,
 } = useChatSettings(props.storyId, () => props.chatId)
@@ -744,10 +779,17 @@ watch(
   }
 )
 
-// Stored trimmed, and stored as absent when there is nothing left: an empty
-// string and no note at all mean the same thing to the turn, and only one of
-// them should reach the row.
-const handleRulesInput = () => update({ rules: rules.value.trim() || undefined })
+const editorRequest = useEditorRequest()
+
+/**
+ * Open the system prompt or the author's note in a tab of the editor's own,
+ * and the editor with it, for more room than the field here has.
+ * @param {import('@/utils/chatTabs.js').ChatText} text
+ */
+const openInEditor = text => {
+  useDocuments(props.storyId).open(chatTabId(props.chatId, text))
+  editorRequest.show()
+}
 
 /**
  * Store the withheld tools rather than the allowed ones, so a tool added to
@@ -796,39 +838,47 @@ const setAllToolsEnabled = enabled => {
 }
 
 /**
- * Whether the model is offered a skill. Skills are tools, so the preset's
- * switch and the skills group's gate them as well as their own.
+ * The group a skill's switch is under: the experimental one for a built-in
+ * still being tuned, the skills group for the rest. A skill the model loads
+ * is no tool of its own, and is under `use_skill`'s group, the skills group.
  *
  * @param {string} tool
  */
-const isSkillEnabled = tool => isGroupEnabled(SKILLS_GROUP) && !disabledTools.value.includes(tool)
+const groupOfSkill = tool => toolGroupOf(tool) ?? SKILLS_GROUP
 
 /**
- * A skill's switch. The group has no switch of its own here — a control that
- * empties a section from somewhere else looks broken — but a profile can ship
- * with it off, as Roleplay does. Switching one skill on under it lifts the
- * group and holds back the others, so what comes on is the one asked for.
+ * Whether the model is offered a skill. Skills are tools, so the preset's
+ * switch and the skill's group gate them as well as their own.
+ *
+ * @param {string} tool
+ */
+const isSkillEnabled = tool =>
+  isGroupEnabled(groupOfSkill(tool)) && !disabledTools.value.includes(tool)
+
+/**
+ * A skill's switch. The groups have no switch of their own here — a control
+ * that empties a section from somewhere else looks broken — but a profile can
+ * ship with one off, as every built-in does the experimental group. Switching
+ * one skill on under it lifts the group and holds back the others in it, so
+ * what comes on is the one asked for.
  *
  * @param {string} tool
  * @param {boolean} enabled
  */
 const setSkillEnabled = (tool, enabled) => {
-  if (!enabled || !disabledToolGroups.value.includes(SKILLS_GROUP)) {
+  const group = groupOfSkill(tool)
+  if (!enabled || !disabledToolGroups.value.includes(group)) {
     setToolEnabled(tool, enabled)
     return
   }
-  const others = skillTools.value.filter(name => name !== tool)
+  const others = skillTools.value.filter(name => name !== tool && groupOfSkill(name) === group)
   update({
-    disabledToolGroups: disabledToolGroups.value.filter(g => g !== SKILLS_GROUP),
+    disabledToolGroups: disabledToolGroups.value.filter(g => g !== group),
     disabledTools: [...new Set([...disabledTools.value.filter(t => t !== tool), ...others])],
   })
 }
 
 const isDefaultProfile = computed(() => selectedProfileId.value === defaultProfileId.value)
-
-// Only the writer's own can be renamed or removed; the built-ins ship with the
-// app, and editing one makes a copy to edit instead.
-const isSavedProfile = computed(() => !!selectedProfile.value && !selectedProfile.value.readOnly)
 
 /**
  * Every skill there is — the built-ins and the writer's own — from the
@@ -846,9 +896,9 @@ const skills = computed(() => {
     id: skill.name,
     label: skillLabel(skill),
     description: skill.summary,
-    // Only what the model is offered has a switch: Write has a tool to be
-    // called by, and is the writer's until its file says otherwise.
+    // Only what the model can be offered has a switch: Compact is the writer's.
     tool: (skill.model && skill.execute) || loadedByModel(skill) ? skill.name : undefined,
+    experimental: !!skill.experimental,
     command: skill.name in COMMANDS ? `/${skill.name}` : undefined,
     waiting: skill.builtIn ? '' : waitingOn(skill),
     loaded: loadedSkillNames.value.includes(skill.name),
@@ -921,44 +971,14 @@ const resetSkill = id => {
   profilesApi.updateProfile(selectedProfileId.value, { settings: { skills: worded } })
 }
 
-/** The text as the library holds it, which is what the next request sends. */
-const profilePrompt = computed(() => selectedProfile.value?.settings?.prompt ?? DEFAULT_CHAT_PROMPT)
-
 // Edited locally so typing doesn't fight the value the store echoes back,
-// which would otherwise jump the caret on every keystroke.
+// which would otherwise jump the caret on every keystroke. See `setPrompt`
+// for what an edit does.
 const systemPrompt = ref(profilePrompt.value)
 
 watch(profilePrompt, next => {
   if (next !== systemPrompt.value) systemPrompt.value = next
 })
-
-/**
- * Save the text as it is typed. A saved profile takes the edit itself. A
- * built-in is read-only, so the first keystroke makes a copy of the writer's
- * own and moves the chat onto it: the text stays where it is, and the copy's
- * name appears above it.
- */
-const handleSystemPromptInput = () => {
-  if (isSavedProfile.value) {
-    profilesApi.updateProfile(selectedProfileId.value, { settings: { prompt: systemPrompt.value } })
-  } else {
-    forkProfile({ prompt: systemPrompt.value })
-  }
-}
-
-/**
- * Copy the selected profile and switch this chat to the copy. The copy starts
- * new chats with this chat's author's note rather than the profile's: an edited
- * list of opt-ins, or rules worked out here, is as often as not why the writer
- * wants one. The chat is given its note as it reads it, which a copy, having
- * no counterpart, would otherwise read differently. See `noteOnProfile`.
- * @param {Partial<import('@/ai/profiles/index.js').ProfileSettings>} [changes]
- */
-const forkProfile = (changes = {}) => {
-  const rules = note.value
-  const copy = profilesApi.duplicateProfile(selectedProfileId.value, { rules, ...changes })
-  if (copy) update({ profileId: copy.id, rules })
-}
 
 /** @type {import('vue').Ref<any>} */
 const profileMenu = ref(null)

@@ -96,7 +96,7 @@ import { useJobsToast } from '@/composables/useJobsToast.js'
 /**
  * The phone's tab bar: the writing, the outline and the chat, one view at a
  * time, and a menu of everything else — the narration, the comments, the
- * jobs toast and the settings.
+ * jobs toast while there are jobs, and the settings.
  *
  * @typedef {Object} Props
  * @property {string} activeMobileTab
@@ -155,19 +155,23 @@ const viewItem = tab => ({
   command: () => emit('update:activeMobileTab', tab.id),
 })
 
-// The jobs just before the settings, as on the rail: not a view but the jobs
-// toast, which this opens and closes.
+// The jobs just before the settings, as on the rail, and only while there are
+// any: not a view but the jobs toast, which this opens and closes.
 const items = computed(() => [
   viewItem(NARRATION),
   viewItem(COMMENTS),
-  {
-    id: 'jobs',
-    label: 'Jobs',
-    iconComponent: InProcessIcon,
-    current: jobsToast.state.open,
-    count: jobsStore.runningCount,
-    command: () => jobsToast.toggle(),
-  },
+  ...(jobsStore.hasJobs
+    ? [
+        {
+          id: 'jobs',
+          label: 'Jobs',
+          iconComponent: InProcessIcon,
+          current: jobsToast.state.open,
+          count: jobsStore.runningCount,
+          command: () => jobsToast.toggle(),
+        },
+      ]
+    : []),
   viewItem(SETTINGS),
 ])
 </script>

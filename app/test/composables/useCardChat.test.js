@@ -110,7 +110,7 @@ describe('useCardChat', () => {
     // Not a feature of cards: a profile being applied.
     expect(mockCreateChat).toHaveBeenCalledWith(STORY, 'Elara', null, expect.any(Object))
     expect(chat.profileId).toBe(ROLEPLAY_PROFILE_ID)
-    expect(chat.disabledToolGroups).toEqual(['documents', 'rpg', 'skills'])
+    expect(chat.disabledToolGroups).toEqual(['rpg', 'skills', 'experimental'])
   })
 
   it('starts it on Roleplay (NSFW) with NSFW profiles switched on', async () => {
@@ -288,9 +288,9 @@ describe('useCardChat', () => {
 
     const chat = await begin(written.folderId)
 
-    // The prompt assumes no tools; a profile made from it has to assume the
-    // same or the card is played with the tools it was written without.
-    expect(chat.disabledToolGroups).toEqual(['documents', 'rpg', 'skills'])
+    // A profile made from it runs as Roleplay does, or the card is played with
+    // tools Roleplay leaves off.
+    expect(chat.disabledToolGroups).toEqual(['rpg', 'skills', 'experimental'])
   })
 
   it('says nothing about a folder that did not come from a card', async () => {

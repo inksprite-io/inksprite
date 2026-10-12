@@ -46,6 +46,7 @@ import {
   hasTools,
   isSkill,
   handsOverReply,
+  drawsByChance,
 } from '@/ai/tools/index.js'
 import { needsApproval, serversForChat } from '@/mcp/servers.js'
 import { webForChat } from '@/web/config.js'
@@ -290,8 +291,13 @@ export function useAIChat(storyId, chatId) {
     }
 
     const gap = connectionGap(provider)
-    if (gap === 'key') {
+    // OpenRouter has its own way in, the connect dialog; a key for anything
+    // else is pasted in the provider's settings.
+    if (gap === 'key' && provider.type === 'openrouter') {
       throw new ProviderNotConfiguredError('Connect OpenRouter in Settings › AI.')
+    }
+    if (gap === 'key') {
+      throw new Error(`Add your ${provider.name} key in Settings › AI.`)
     }
     if (gap === 'endpoint') {
       throw new Error('Add the server address in Settings › AI.')
@@ -577,7 +583,7 @@ export function useAIChat(storyId, chatId) {
 
       // Each distinct call once, not too many, and only to a tool it was
       // offered: see ai/rounds.js.
-      const { run: asked, refused, left } = trimRound(result.toolCalls)
+      const { run: asked, refused, left } = trimRound(result.toolCalls, { draws: drawsByChance })
       const { offered: run, unoffered } = splitOffered(asked, tools)
       const calls = refused ? [...asked, refused] : asked
       const assistantMessage = buildAssistantMessage(content, calls, result.reasoningDetails)
@@ -1245,7 +1251,7 @@ export function useAIChat(storyId, chatId) {
         // in the conversation. And only to a tool this request offered: the
         // model reads every call the chat made, to tools since switched off
         // among them. See ai/rounds.js.
-        const { run: asked, refused, left } = trimRound(result.toolCalls)
+        const { run: asked, refused, left } = trimRound(result.toolCalls, { draws: drawsByChance })
         if (refused) {
           console.warn(`A round asked for ${result.toolCalls.length} calls; ran ${asked.length}`)
         }
@@ -1839,22 +1845,28 @@ export function useAIChat(storyId, chatId) {
   }
 
   /**
-   * Resend a user message (truncate everything after it and generate new response)
-   * @param {string} messageId - The user message ID to resend
-   * @returns {Promise<Message|null>} The new assistant message or null
+   * Ask for the reply to the writer's turn again.
+   *
+   * The reply it has is asked again in its place, the way regenerating it
+   * would, so what it said is kept to turn back to. A turn with no reply to
+   * ask, because it is the last or a command answered it, gets a new one,
+   * and everything after it goes.
+   *
+   * @param {string} messageId - The last message of the writer's turn
+   * @returns {Promise<Message|null>} The reply, or null if it was stopped
    */
   const resendMessage = async messageId => {
-    // Stop any ongoing generation first
     if (isGenerating.value) halt()
 
-    // Get all messages for the chat
-    const messagesRef = chatsApi.getMessagesForChat(chatId)
-    const messages = messagesRef?.value || []
-
-    // Find the index of the message to resend
+    const messages = chatsApi.getMessagesForChat(chatId)?.value || []
     const messageIndex = messages.findIndex(m => m.id === messageId)
     if (messageIndex === -1) {
       throw new Error('Message not found')
+    }
+
+    const reply = messages[messageIndex + 1]
+    if (reply?.role === 'assistant' && !reply.metadata?.command) {
+      return await regenerateMessage(reply.id)
     }
 
     // The answer being replaced takes its changes with it, as on regenerate.

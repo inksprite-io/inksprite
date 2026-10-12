@@ -47,11 +47,12 @@
  * writer tuned rather than replacing it, so it should name only what it
  * actually means to change: every field left out is one they keep.
  *
- * Write and Compact are the writer's alone. A summary is not an answer at
- * all. A scene is, and a turn can hand its reply to a skill now, so what it
- * writes is the reply rather than relayed and written twice (see
- * handOverReply in composables/useAIChat.js); Write is offered to the model
- * once the harness says a chat that hands off its writing still reads well.
+ * Compact is the writer's alone: a summary is not an answer at all. A scene
+ * is, and a turn can hand its reply to a skill, so what Write writes is the
+ * reply rather than relayed and written twice (see handOverReply in
+ * composables/useAIChat.js). Whether a chat that hands off its writing still
+ * reads well is the harness's to say, so Write is offered to the model, with
+ * Interpret, only in a chat that switches the experimental group on.
  *
  * The wording is the writer's to change, in two places: a built-in's for every
  * chat, in the library, and any skill's for the chats on one profile. Each is
@@ -79,6 +80,7 @@ import { offeredToModel, runOnItsOwn, writerCalls } from './runner.js'
  *   files?: import('../../types/models.js').SkillFile[],
  *   execute?: (args: Object, context?: ToolContext) => Promise<Object>,
  *   ask?: (argument: string, context?: ToolContext, options?: {past?: number}) => Promise<{answer: string}|{error: string}>,
+ *   experimental?: boolean,
  * }} Skill
  *
  * `builtIn` says whether it ships with the app; one of the writer's has the
@@ -90,6 +92,10 @@ import { offeredToModel, runOnItsOwn, writerCalls } from './runner.js'
  * text: a record in their turn, the reply, or a summary, as the skill's output
  * says. A skill with neither is one the model or the writer cannot call yet,
  * or one the writer calls as a saved prompt; see ./runner.js.
+ *
+ * `experimental` puts a built-in's tool in the experimental group, which
+ * every built-in profile starts with off, while it is still being tuned. It
+ * says nothing about the writer's command.
  */
 
 /**
@@ -132,9 +138,8 @@ export const SKILL_MAX_DEPTH = 2
  * @type {Skill[]}
  */
 export const BUILT_IN_SKILLS = [
-  { ...INTERPRET, builtIn: true, execute: executeInterpret, ask: askInterpret },
-  // A tool too, for when the model is offered it; the file says whether it is.
-  { ...WRITE, builtIn: true, execute: executeWrite, ask: askWrite },
+  { ...INTERPRET, builtIn: true, experimental: true, execute: executeInterpret, ask: askInterpret },
+  { ...WRITE, builtIn: true, experimental: true, execute: executeWrite, ask: askWrite },
   { ...COMPACT, builtIn: true, ask: askCompact },
 ]
 

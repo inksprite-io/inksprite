@@ -136,7 +136,7 @@ export const useAIProvidersStore = defineStore('aiProviders', () => {
    * @param {object} opts
    * @param {string} [opts.id] - Optional ID (for default providers)
    * @param {string} opts.name - Provider name
-   * @param {'openrouter'|'llamacpp'|'generic'} opts.type - Provider type. See ai/providers.js.
+   * @param {'openrouter'|'anthropic'|'openai'|'gemini'|'llamacpp'|'generic'} opts.type - Provider type. See ai/providers.js.
    * @param {string} [opts.endpoint] - API endpoint
    * @param {string} [opts.apiKey] - API key
    * @param {boolean} [opts.rememberKey] - Whether to persist API key in IndexedDB (default true)

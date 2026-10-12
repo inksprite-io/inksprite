@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { buildCompletionBody, toWireMessages, chatCompletionsUrl, modelsUrl } from '@/ai/wire.js'
+import {
+  attributionHeaders,
+  buildCompletionBody,
+  toWireMessages,
+  chatCompletionsUrl,
+  modelsUrl,
+} from '@/ai/wire.js'
 import { AI_DEFAULTS, TITLE_DEFAULTS, resolveAISettings } from '@/ai/defaults.js'
 
 const SAMPLER_KEYS = [
@@ -16,6 +22,8 @@ const SAMPLER_KEYS = [
 const local = { type: 'generic', endpoint: 'http://localhost:1234/v1' }
 const openrouter = { type: 'openrouter', endpoint: 'ignored' }
 const llamacpp = { type: 'llamacpp', endpoint: 'http://localhost:8080/v1' }
+const openai = { type: 'openai' }
+const gemini = { type: 'gemini' }
 
 describe('endpoint addressing', () => {
   it('joins a base URL whether or not it ends in a slash', () => {
@@ -26,8 +34,22 @@ describe('endpoint addressing', () => {
     expect(modelsUrl(local)).toBe('http://localhost:1234/v1/models')
   })
 
-  it('knows where OpenRouter is without being told', () => {
+  it('knows where the hosted services are without being told', () => {
     expect(chatCompletionsUrl(openrouter)).toBe('https://openrouter.ai/api/v1/chat/completions')
+    expect(chatCompletionsUrl(openai)).toBe('https://api.openai.com/v1/chat/completions')
+    expect(modelsUrl(gemini)).toBe('https://generativelanguage.googleapis.com/v1beta/openai/models')
+  })
+})
+
+describe('attributionHeaders', () => {
+  it('names the app to OpenRouter, which ranks apps by it, and to nobody else', () => {
+    expect(attributionHeaders(openrouter)).toEqual({
+      'HTTP-Referer': 'https://inksprite.io',
+      'X-Title': 'inksprite',
+    })
+    // Gemini turns a browser away over a header it has not heard of.
+    expect(attributionHeaders(gemini)).toEqual({})
+    expect(attributionHeaders(local)).toEqual({})
   })
 })
 
@@ -92,6 +114,81 @@ describe('buildCompletionBody', () => {
     expect(body).not.toHaveProperty('top_p')
   })
 
+  const tuned = resolveAISettings({
+    seed: 7,
+    parameters: { temperature: 0.7, topK: 40, minP: 0.1, repetitionPenalty: 1.1 },
+  })
+
+  it('sends a server only the samplers it reads', () => {
+    const ollama = { id: 'provider_ollama_default', type: 'generic', endpoint: 'http://x/v1' }
+
+    const { body } = buildCompletionBody({ ...base, provider: ollama, settings: tuned })
+
+    expect(body).toMatchObject({ temperature: 0.7, seed: 7 })
+    for (const key of ['top_k', 'min_p', 'repetition_penalty']) expect(body).not.toHaveProperty(key)
+  })
+
+  it('names the repetition penalty the way llama-server and LM Studio read it', () => {
+    const lmstudio = { id: 'provider_lmstudio_default', type: 'generic', endpoint: 'http://x/v1' }
+
+    for (const provider of [llamacpp, lmstudio]) {
+      const { body } = buildCompletionBody({ ...base, provider, settings: tuned })
+      expect(body.repeat_penalty).toBe(1.1)
+      expect(body).not.toHaveProperty('repetition_penalty')
+    }
+    expect(buildCompletionBody({ ...base, settings: tuned }).body.repetition_penalty).toBe(1.1)
+  })
+
+  it('sends OpenAI no sampler it refuses', () => {
+    // top-k and min-p are refused by every model there, a temperature by the
+    // ones that always reason.
+    const older = buildCompletionBody({
+      ...base,
+      provider: openai,
+      model: 'gpt-4.1',
+      settings: tuned,
+    })
+    const newer = buildCompletionBody({
+      ...base,
+      provider: openai,
+      model: 'gpt-5.5',
+      settings: tuned,
+    })
+
+    expect(older.body).toMatchObject({ temperature: 0.7, seed: 7 })
+    expect(older.body).not.toHaveProperty('top_k')
+    expect(newer.body).not.toHaveProperty('temperature')
+    expect(newer.body.seed).toBe(7)
+  })
+
+  it('fits an OpenRouter request to what the list says of its model', () => {
+    const { body } = buildCompletionBody({
+      ...base,
+      provider: openrouter,
+      settings: resolveAISettings({ ...tuned, reasoningEffort: 'medium' }),
+      traits: {
+        samplers: ['temperature'],
+        reasoning: { optional: true, levels: ['high', 'xhigh'], defaultLevel: 'high' },
+      },
+    })
+
+    expect(body.temperature).toBe(0.7)
+    expect(body).not.toHaveProperty('top_k')
+    expect(body.reasoning).toEqual({ effort: 'high', exclude: false })
+  })
+
+  it('says nothing of reasoning to an OpenRouter model that does not reason', () => {
+    const { body, askedForEffort } = buildCompletionBody({
+      ...base,
+      provider: openrouter,
+      settings: resolveAISettings({ reasoningEffort: 'high' }),
+      traits: { reasoning: null },
+    })
+
+    expect(body).not.toHaveProperty('reasoning')
+    expect(askedForEffort).toBe(false)
+  })
+
   it('says not to call the tools when asked, and keeps them declared', () => {
     const tools = [{ type: 'function', function: { name: 'roll_dice' } }]
 
@@ -110,6 +207,60 @@ describe('buildCompletionBody', () => {
     ).not.toHaveProperty('tool_choice')
   })
 
+  it('caps an OpenAI reply under the name its reasoning models take', () => {
+    const settings = resolveAISettings({ maxTokens: 100 })
+
+    const { body } = buildCompletionBody({ ...base, provider: openai, settings })
+
+    expect(body.max_completion_tokens).toBe(100)
+    expect(body).not.toHaveProperty('max_tokens')
+    expect(buildCompletionBody({ ...base, provider: gemini, settings }).body.max_tokens).toBe(100)
+  })
+
+  it('names no level to OpenAI, which refuses one on some models and beside tools on others', () => {
+    const { body, askedForEffort } = buildCompletionBody({
+      ...base,
+      provider: openai,
+      settings: resolveAISettings({ reasoningEffort: 'high' }),
+      tools: [{ type: 'function', function: { name: 'roll_dice' } }],
+    })
+
+    expect(body).not.toHaveProperty('reasoning_effort')
+    expect(body).not.toHaveProperty('reasoning')
+    expect(askedForEffort).toBe(false)
+  })
+
+  it('names a level to Gemini as reasoning_effort, and only a level', () => {
+    for (const provider of [gemini]) {
+      const asked = buildCompletionBody({
+        ...base,
+        provider,
+        settings: resolveAISettings({ reasoningEffort: 'low' }),
+      })
+      expect(asked.body.reasoning_effort).toBe('low')
+      expect(asked.askedForEffort).toBe(true)
+      expect(asked.body).not.toHaveProperty('reasoning')
+
+      // Enabled leaves it to the model.
+      const enabled = buildCompletionBody({
+        ...base,
+        provider,
+        settings: resolveAISettings({ reasoningEffort: 'enabled' }),
+      })
+      expect(enabled.body).not.toHaveProperty('reasoning_effort')
+      expect(enabled.askedForEffort).toBe(false)
+
+      // Their word for off is refused by the models that always think, so
+      // there is no Disabled, and one stored is as little as it can.
+      const disabled = buildCompletionBody({
+        ...base,
+        provider,
+        settings: resolveAISettings({ reasoningEffort: 'disabled' }),
+      })
+      expect(disabled.body.reasoning_effort).toBe('low')
+    }
+  })
+
   it('asks a generic provider for no reasoning level at all', () => {
     const { body, askedForEffort } = buildCompletionBody({
       ...base,
@@ -118,6 +269,7 @@ describe('buildCompletionBody', () => {
 
     // `reasoning` is OpenRouter's; a local server answers a stray key with a 400.
     expect(body).not.toHaveProperty('reasoning')
+    expect(body).not.toHaveProperty('reasoning_effort')
     expect(askedForEffort).toBe(false)
   })
 

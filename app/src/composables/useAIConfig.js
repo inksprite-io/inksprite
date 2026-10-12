@@ -7,11 +7,13 @@ import { computed } from 'vue'
 import { useAIProvidersStore } from '@/stores/aiProvidersStore'
 import { useAIPresetStore } from '@/stores/aiPresetStore'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { BUILT_IN_PROVIDERS, DEFAULT_SPEECH_PROVIDER_ID, inMenuOrder } from '@/ai/providers.js'
 
 // The single AI preset is stored under the legacy "chat" ID so existing
 // installs keep their config across the collapse from per-mode presets.
 const DEFAULT_AI_PROFILE_ID = 'profile_default_chat'
 const DEFAULT_OPENROUTER_PROVIDER_ID = 'provider_openrouter_default'
+const OPENAI_PROVIDER_ID = 'provider_openai_default'
 
 /**
  * Default settings for the AI preset. Sampler params, max tokens, and
@@ -29,7 +31,7 @@ const aiPresetDefaults = {
  *   init: () => Promise<void>,
  *   providers: import('vue').ComputedRef<AIProvider[]>,
  *   getProvider: (id: string) => AIProvider | null,
- *   createProvider: (provider: {id?: string, name: string, type: 'openrouter'|'llamacpp'|'generic', endpoint?: string, apiKey?: string, rememberKey?: boolean, routing?: import('../ai/routing.js').OpenRouterRouting, isDefault?: boolean}) => AIProvider,
+ *   createProvider: (provider: {id?: string, name: string, type: 'openrouter'|'anthropic'|'openai'|'gemini'|'llamacpp'|'generic', endpoint?: string, apiKey?: string, rememberKey?: boolean, routing?: import('../ai/routing.js').OpenRouterRouting, isDefault?: boolean}) => AIProvider,
  *   updateProvider: (id: string, updates: Partial<AIProvider>) => AIProvider | null,
  *   deleteProvider: (id: string) => void,
  *   reloadProvider: (id: string) => Promise<AIProvider>,
@@ -59,7 +61,8 @@ export const useAIConfig = () => {
   async function init() {
     await Promise.all([providersStore.ensureInitialized(), presetsStore.ensureInitialized()])
 
-    await ensureDefaultProvider()
+    ensureBuiltInProviders()
+    moveSpeechServer()
     await ensureDefaultProfile()
 
     if (!activeAIPresetId.value || !getPreset(activeAIPresetId.value)) {
@@ -67,17 +70,44 @@ export const useAIConfig = () => {
     }
   }
 
-  async function ensureDefaultProvider() {
-    if (getProvider(DEFAULT_OPENROUTER_PROVIDER_ID)) return
-    providersStore.createProvider({
-      id: DEFAULT_OPENROUTER_PROVIDER_ID,
-      name: 'OpenRouter',
-      type: 'openrouter',
-      endpoint: undefined,
-      apiKey: undefined,
-      isDefault: true,
-    })
-    console.log('Created default OpenRouter provider')
+  /**
+   * Create each built-in connection that is missing: all of them on a first
+   * start, and the ones added since on an install that had only OpenRouter.
+   * One that is there is left as it is, its address and key the writer's.
+   */
+  function ensureBuiltInProviders() {
+    for (const { id, name, type, endpoint } of BUILT_IN_PROVIDERS) {
+      if (getProvider(id)) continue
+      providersStore.createProvider({ id, name, type, endpoint, isDefault: true })
+      console.log(`Created the built-in ${name} provider`)
+    }
+  }
+
+  /**
+   * The speech server Settings › Narration had fields of its own for, before
+   * speech went through the connections, moved onto one, once: OpenAI's
+   * address onto the OpenAI connection, any other onto Kokoro's. A key goes
+   * with it where the connection has none.
+   */
+  function moveSpeechServer() {
+    const old = appState.state.value.narration
+    if (!old || typeof old.endpoint !== 'string') return
+    const endpoint = old.endpoint.trim()
+    const apiKey = typeof old.apiKey === 'string' ? old.apiKey.trim() : ''
+    const openAI = /^https:\/\/api\.openai\.com\//.test(endpoint)
+    const providerId = openAI ? OPENAI_PROVIDER_ID : DEFAULT_SPEECH_PROVIDER_ID
+    const provider = getProvider(providerId)
+    if (provider) {
+      /** @type {Partial<AIProvider>} */
+      const updates = {}
+      if (!openAI && endpoint && endpoint !== provider.endpoint) updates.endpoint = endpoint
+      if (apiKey && !provider.apiKey) updates.apiKey = apiKey
+      if (Object.keys(updates).length > 0) updateProvider(providerId, updates)
+    }
+    const model =
+      (typeof old.model === 'string' && old.model.trim()) || (openAI ? 'tts-1' : 'kokoro')
+    appState.state.value.narration = { providerId, model }
+    console.log(`Moved the speech server onto the ${provider?.name ?? providerId} connection`)
   }
 
   async function ensureDefaultProfile() {
@@ -93,7 +123,7 @@ export const useAIConfig = () => {
     console.log('Created default AI preset')
   }
 
-  const providers = computed(() => providersStore.getAllProvidersOrdered())
+  const providers = computed(() => inMenuOrder(providersStore.getAllProvidersOrdered()))
   const getProvider = id => providersStore.getProvider(id)
   const createProvider = provider => providersStore.createProvider(provider)
   const updateProvider = (id, updates) => providersStore.updateProvider(id, updates)
