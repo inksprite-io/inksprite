@@ -6,6 +6,31 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.15
+
+Settings files, and Export and Import in one place.
+
+- A settings file carries your setup without your projects: AI
+  connections, presets, chat profiles, MCP servers, skills, web search,
+  and the choices made in Settings. Use one to set up another browser
+  or the desktop app, or to share your setup.
+- Export backup and Import backup in Settings › System are now Export
+  and Import. Export asks what to save: Everything, as a backup did, or
+  Settings, with a list to untick from. Keys stay out unless you
+  include them. Import knows which kind of file it was given.
+- Importing a settings file says what it adds and changes, and asks
+  before going on. Nothing you have is removed, and a key the file
+  left out keeps yours, unless the file moves that connection or
+  server to another address.
+- In the desktop app, a settings file copied to
+  inksprite-settings.json in the app's data folder is imported as the
+  app opens. Each time, only what the file changed since is imported,
+  so a script can set up the app for a team while each person's own
+  changes stay.
+- The welcome has no AI tab once the AI is set up.
+- Connecting an MCP server shows its name and how many tools it has,
+  and opens to list them. Keep it takes Connect's place.
+
 ## v0.1.0-dev.14
 
 Chat changes kept in the chat, roleplay settings of their own, links

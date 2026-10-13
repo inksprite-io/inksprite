@@ -17,6 +17,8 @@
  * only in where they look.
  */
 
+import { ProviderNotConfiguredError } from '@/utils/errors.js'
+
 /**
  * @typedef {Object} ProviderType
  * @property {string} id - Stored on providers, so renaming one orphans every
@@ -289,6 +291,32 @@ export function connectionGap(provider) {
   if (!provider) return null
   if (needsKey(provider.type) && !provider.apiKey) return 'key'
   if (needsEndpoint(provider.type) && !provider.endpoint) return 'endpoint'
+  return null
+}
+
+/**
+ * What stands between a preset and a request through it, as the error the
+ * request would fail with, or null when nothing does: no connection, no
+ * model, or a connection still missing its key or address. What a chat says
+ * above its box, and what the welcome reads to know the AI is set up.
+ *
+ * @param {{ providerId?: string, model?: string } | null | undefined} preset
+ * @param {(id: string) => { name?: string, type?: string, apiKey?: string, endpoint?: string } | null | undefined} findProvider
+ * @returns {Error|null}
+ */
+export function presetProblem(preset, findProvider) {
+  const provider = preset?.providerId ? findProvider(preset.providerId) : null
+  if (!preset || !provider) return new ProviderNotConfiguredError('No AI provider is connected.')
+  if (!preset.model) return new Error('Pick a model in Settings › AI.')
+
+  const gap = connectionGap(provider)
+  // OpenRouter has its own way in, the connect dialog; a key for anything
+  // else is pasted in the provider's settings.
+  if (gap === 'key' && provider.type === 'openrouter') {
+    return new ProviderNotConfiguredError('Connect OpenRouter in Settings › AI.')
+  }
+  if (gap === 'key') return new Error(`Add your ${provider.name} key in Settings › AI.`)
+  if (gap === 'endpoint') return new Error('Add the server address in Settings › AI.')
   return null
 }
 

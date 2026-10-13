@@ -24,6 +24,8 @@
  *   its files, for `storage/library.js`
  * - **persistence** - Asking the browser to keep the page's data, and what
  *   the writer is told about how long it will
+ * - **settingsFile** - In the desktop app, the settings file a script may
+ *   leave in the app's data folder for it to import as it opens
  *
  * Design: `.llm/desktop_design.md`.
  *
@@ -40,3 +42,4 @@ export { downloadUpdate, installUpdate } from './updates.js'
 export { openUrl, openLinkClicked } from './open.js'
 export { librarySettings, enableLibrary, disableLibrary, revealInLibrary } from './library.js'
 export { askToKeepData, storageAdvice } from './persistence.js'
+export { settingsFileText } from './settingsFile.js'

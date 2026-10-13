@@ -27,7 +27,7 @@
         <li>Research and brainstorm</li>
         <li>Generate audio narrations</li>
       </ul>
-      <p>
+      <p v-if="!aiReady" data-connect-ai>
         To use these tools,
         <button type="button" :class="LINK" @click="$emit('show', 'ai')">
           connect an AI provider
@@ -68,12 +68,17 @@
 
 <script setup>
 /**
- * The welcome's first section: what inksprite is, what its AI can do, and
- * where the work is kept and what can take it away.
+ * The welcome's first section: what inksprite is, what its AI can do and
+ * where to connect it, and where the work is kept and what can take it away.
  */
 import { isDesktop } from '@/platform/desktop.js'
 import { storageAdvice } from '@/platform/persistence.js'
 import { DESKTOP_URL, GUIDE_URL, HEADING, ISSUES_URL, LINK } from './links.js'
+
+defineProps({
+  /** Whether the AI is set up already, so there is nothing to connect. */
+  aiReady: { type: Boolean, default: false },
+})
 
 defineEmits({
   /** Open another of the welcome's sections. */

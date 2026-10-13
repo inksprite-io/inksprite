@@ -49,16 +49,17 @@ start the AppImage with `--no-sandbox`.
 The desktop app keeps its work apart from your browser's. To move it, use a
 [backup](/projects/#back-up-everything):
 
-1. In the browser, open **Settings** › **System** and click **Export backup**.
-   To bring your API keys too, tick **Include API keys**. Click **Export**.
-2. In the desktop app, open **Settings** › **System**, click
-   **Import backup**, choose the file, and click **Replace**.
+1. In the browser, open **Settings** › **System** and click **Export**. To
+   bring your API keys too, tick **Include API keys**. Click **Export**.
+2. In the desktop app, open **Settings** › **System**, click **Import**,
+   choose the file, and click **Replace**.
 3. Sign in to your [MCP servers](/mcp/) again. A backup doesn't carry
    sign-ins.
 
 The backup replaces everything in the desktop app, so restore it before you
 start work there, or bring projects over one at a time with a
-[project file](/projects/#move-a-project). If the backup holds your keys,
+[project file](/projects/#move-a-project), and your setup with a
+[settings file](/projects/#move-your-settings). If the backup holds your keys,
 delete it once it's restored.
 
 ## Updates
@@ -97,7 +98,7 @@ inksprite's own data folder:
 - **Linux**: `~/.config/inksprite/Projects`
 
 To open it, click **Show in Finder** (**Show in Explorer** on Windows,
-**Show folder** on Linux), beside the backup buttons.
+**Show folder** on Linux), beside **Export** and **Import**.
 
 A project's chats and [narration](/narration/) audio go in its folder too.
 Without the folder, narration audio is gone when the app closes. Your AI
@@ -121,6 +122,24 @@ dot, such as `.folder.md` and `.inksprite`, alone too.
 Switch off **Keep projects in a folder** and click **Keep in the app**.
 inksprite moves the projects back into the app and opens again. The folder's
 files stay where they are.
+
+## Set it up for someone else
+
+A script that installs inksprite for other people, a team say, can set it up
+for them too. Have it copy a [settings file](/projects/#move-your-settings) to
+`inksprite-settings.json` in inksprite's data folder:
+
+- **macOS**: `~/Library/Application Support/inksprite/inksprite-settings.json`
+- **Windows**: `%APPDATA%\inksprite\inksprite-settings.json`
+- **Linux**: `~/.config/inksprite/inksprite-settings.json`
+
+inksprite imports it as it opens, without asking, and says what it changed.
+If the file sets up the AI, the welcome window has no **AI** tab. Leave the
+file where it is. Each time inksprite opens, it imports only what the
+file changed since it last looked, so a server added to the file reaches
+everyone, while each person's own changes stay until the file changes the same
+thing. To change the setup, write a new file over it. Unlike a file you import
+yourself, it can let an MCP server's tools run without asking.
 
 ## What only the desktop app does
 

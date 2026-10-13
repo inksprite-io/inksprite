@@ -7,6 +7,8 @@ const loopback = vi.hoisted(() => ({ listen: vi.fn() }))
 vi.mock('../../electron/src/loopback.js', () => loopback)
 const updates = vi.hoisted(() => ({ downloadUpdate: vi.fn(), installUpdate: vi.fn() }))
 vi.mock('../../electron/src/updates.js', () => updates)
+const settingsFile = vi.hoisted(() => ({ readSettingsFile: vi.fn() }))
+vi.mock('../../electron/src/settingsFile.js', () => settingsFile)
 
 import { handleBridge } from '../../electron/src/bridge.js'
 
@@ -68,6 +70,23 @@ describe('handleBridge', () => {
     expect(await handlers['update:install'](page())).toEqual({
       error: 'No update has been downloaded.',
     })
+  })
+})
+
+describe('settings:file', () => {
+  it('hands the page the settings file a script left, or null', async () => {
+    settingsFile.readSettingsFile.mockResolvedValue('{"scope":"settings"}')
+    expect(await handlers['settings:file'](page())).toEqual({ value: '{"scope":"settings"}' })
+
+    settingsFile.readSettingsFile.mockResolvedValue(null)
+    expect(await handlers['settings:file'](page())).toEqual({ value: null })
+  })
+
+  it("answers the app's page only", async () => {
+    expect(await handlers['settings:file'](page({ url: 'https://elsewhere.example/' }))).toEqual({
+      error: expect.stringContaining('Only the app'),
+    })
+    expect(settingsFile.readSettingsFile).not.toHaveBeenCalled()
   })
 })
 

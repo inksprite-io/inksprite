@@ -8,10 +8,7 @@ import { useAIProvidersStore } from '@/stores/aiProvidersStore'
 import { useAIPresetStore } from '@/stores/aiPresetStore'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { BUILT_IN_PROVIDERS, DEFAULT_SPEECH_PROVIDER_ID, inMenuOrder } from '@/ai/providers.js'
-
-// The single AI preset is stored under the legacy "chat" ID so existing
-// installs keep their config across the collapse from per-mode presets.
-const DEFAULT_AI_PROFILE_ID = 'profile_default_chat'
+import { DEFAULT_PRESET_ID } from '@/ai/defaults.js'
 const DEFAULT_OPENROUTER_PROVIDER_ID = 'provider_openrouter_default'
 const OPENAI_PROVIDER_ID = 'provider_openai_default'
 
@@ -66,7 +63,7 @@ export const useAIConfig = () => {
     await ensureDefaultProfile()
 
     if (!activeAIPresetId.value || !getPreset(activeAIPresetId.value)) {
-      setActiveAIPreset(DEFAULT_AI_PROFILE_ID)
+      setActiveAIPreset(DEFAULT_PRESET_ID)
     }
   }
 
@@ -111,10 +108,10 @@ export const useAIConfig = () => {
   }
 
   async function ensureDefaultProfile() {
-    if (getPreset(DEFAULT_AI_PROFILE_ID)) return
+    if (getPreset(DEFAULT_PRESET_ID)) return
     presetsStore.createPreset({
       ...aiPresetDefaults,
-      id: DEFAULT_AI_PROFILE_ID,
+      id: DEFAULT_PRESET_ID,
       name: 'Default',
       providerId: DEFAULT_OPENROUTER_PROVIDER_ID,
       model: '~anthropic/claude-sonnet-latest',

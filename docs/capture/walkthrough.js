@@ -142,11 +142,11 @@ export async function walkthrough(ui, { standIn, context }) {
   // Backing up
   await ui.click(button('Settings'))
   await ui.click(button('System'))
-  await ui.click(button('Export backup'))
-  await dialog('Export backup').waitFor()
+  await ui.click(button('Export'))
+  await dialog('Export').waitFor()
   await ui.shot('backup', { of: dialog('Settings'), pad: 0 })
   const download = page.waitForEvent('download')
-  await ui.click(dialog('Export backup').getByRole('button', { name: 'Export' }))
+  await ui.click(dialog('Export').getByRole('button', { name: 'Export', exact: true }))
   if (!(await download).suggestedFilename().endsWith('.json'))
     throw new Error('The backup is not a .json file')
 

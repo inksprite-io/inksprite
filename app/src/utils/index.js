@@ -33,7 +33,8 @@
  *
  * ### Storage
  * - **localStorage** - LocalStorage wrapper with quota management
- * - **backup** - Build and validate export files: the whole database, a chat, a project
+ * - **backup** - Build and validate export files: the whole database, a chat, a project, settings
+ * - **settingsFile** - What a settings file holds, which of it the writer picked, and what importing one changes
  *
  * ## Usage Examples
  *

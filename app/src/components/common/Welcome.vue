@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import SectionLayout from '@/components/common/SectionLayout.vue'
@@ -42,12 +42,16 @@ import MagicBookAltIcon from '@/components/icons/MagicBookAltIcon.vue'
 import AiNetworkIcon from '@/components/icons/AiNetworkIcon.vue'
 import BookIcon from '@/components/icons/BookIcon.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { useAIConfig } from '@/composables/useAIConfig'
+import { presetProblem } from '@/ai/providers.js'
 import { LINK } from './welcome/links.js'
 
 /**
  * What a first visit opens on, laid out as the settings are: what inksprite
  * is and where it keeps the work, the AI settings to connect a provider now,
- * and the terms, which the footer says using it agrees to.
+ * and the terms, which the footer says using it agrees to. The AI settings
+ * aren't offered when the AI is set up already, as a settings file left by
+ * a script sets it up before the first visit.
  *
  * @typedef {Object} Props
  * @property {boolean} visible - Whether the dialog is visible
@@ -62,24 +66,32 @@ defineProps({
 defineEmits(['update:visible'])
 
 const appState = useApplicationState()
+const aiConfig = useAIConfig()
+
+/** Whether the preset in use can be asked something as it stands. */
+const aiReady = computed(
+  () => !presetProblem(aiConfig.activeAIPreset.value, id => aiConfig.getProvider(id))
+)
 
 const activeId = ref('welcome')
 
 /** @param {string} id */
 const show = id => (activeId.value = id)
 
-const sections = [
+const sections = computed(() => [
   {
     id: 'welcome',
     label: 'Welcome',
     title: 'Welcome to inksprite',
     icon: MagicBookAltIcon,
     component: WelcomeSection,
-    props: { onShow: show },
+    props: { onShow: show, aiReady: aiReady.value },
   },
-  { id: 'ai', label: 'AI', icon: AiNetworkIcon, component: AiConfigSection },
+  ...(aiReady.value
+    ? []
+    : [{ id: 'ai', label: 'AI', icon: AiNetworkIcon, component: AiConfigSection }]),
   { id: 'terms', label: 'Terms of Service', icon: BookIcon, component: TermsSection },
-]
+])
 
 /**
  * Handle close button click

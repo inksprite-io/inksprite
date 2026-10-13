@@ -106,16 +106,40 @@ to someone else.
 It comes in as a new project beside the others, and changes nothing that's
 there. Your settings and keys stay behind.
 
+## Move your settings
+
+A settings file carries your setup without your projects: your AI connections,
+presets, chat profiles, MCP servers, skills, web search, and the choices you
+made in **Settings**. Use one to set up another browser or the desktop app, or
+to share your setup with someone.
+
+1. Open **Settings** › **System**, click **Export** and choose **Settings**.
+2. Untick anything you don't want in it. Ticking a preset ticks the connection
+   it runs on. Your preferences (theme, how edits are applied, NSFW profiles
+   and speaker colours) stay out unless you tick them.
+3. Leave **Include API keys** off unless the file stays with you, and click
+   **Export**.
+
+To bring one in, click **Import** and choose the file. inksprite says
+what the file adds and what it changes, and asks before it goes on, then
+reloads. Nothing else changes: anything you have that the file doesn't is
+kept, a key the file left out keeps yours, and your projects aren't touched.
+If the file moves a connection or an MCP server to another address, your key
+for it is left out, so you'd add it again. An MCP server you already have
+keeps the tools you allowed; one the file adds asks before it runs a tool, as
+any new server does.
+
 ## Back up everything
 
 A backup holds every project, chat and setting.
 
-1. Open **Settings** › **System** and click **Export backup**.
+1. Open **Settings** › **System** and click **Export**. Leave **Everything**
+   chosen.
 2. Leave **Include API keys** off unless the file stays with you. It covers the
    keys for your AI providers, MCP servers and web search.
 3. Click **Export**. inksprite saves a file named with the date.
 
-To restore one, click **Import backup** and choose the file. inksprite says
+To restore one, click **Import** and choose the file. inksprite says
 what the backup holds and asks before it goes on: **Replace** deletes
 everything inksprite holds now, puts the backup in its place, and reloads.
 

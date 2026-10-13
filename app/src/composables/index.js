@@ -21,7 +21,7 @@
  * - **useDocuments** - A story's document tree, shaped for the tree UI, and the editor's tabs
  * - **useChats** - Chat session management
  * - **useChatSettings** - One chat's settings and profile, started or not
- * - **useBackup** - Whole-database export and restore, and single chats and projects as files
+ * - **useBackup** - Whole-database export and restore, and single chats, projects and settings as files
  * - **useNarration** - A project read aloud: its voices and hints, a document's speakers, and the readings
  * - **useComments** - The writer's comments in a project, by document, kept up as they are typed; going to one, and resolving it
  * - **useSpeech** - Something read aloud then and there, a line at a time: a chat message. One thing at a time, app-wide
@@ -50,6 +50,7 @@
  * - **useFindKey** - Command-F (Control-F off a Mac) opens the find of the panel the writer is in
  * - **useChatFind** - Finding in a chat, most of which is not in the page: counted in the messages, gone to and highlighted in the page
  * - **useUpdates** - In the desktop app, an update downloaded as soon as there is one, and a toast to restart into it
+ * - **useSettingsFile** - In the desktop app, the settings file a script left in the data folder, imported as the app opens
  *
  * ## Patterns
  *

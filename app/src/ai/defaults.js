@@ -43,6 +43,14 @@ export const REASONING_EFFORT_OPTIONS = [
   { value: 'max', label: 'Max' },
 ]
 
+/**
+ * The AI preset every install has, made on the first start and never
+ * deleted: the one in use until the writer picks another. Stored under the
+ * legacy "chat" id, so installs from before presets collapsed into one keep
+ * theirs.
+ */
+export const DEFAULT_PRESET_ID = 'profile_default_chat'
+
 /** @type {AIDefaults} */
 export const AI_DEFAULTS = {
   maxTokens: 0,

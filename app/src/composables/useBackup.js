@@ -29,6 +29,15 @@
  * `importProject`, under new ids, so it never replaces anything either. Its
  * jobs stay behind: what a finished one made is already in the tree, and one
  * still running is work on this database, not the project's.
+ *
+ * A settings file carries the writer's setup without their projects: the
+ * connections, presets, profiles, servers and skills they picked, and the
+ * settings kept outside the database. It is read back by `readDataFile`,
+ * which takes a whole backup too, and merged into the setup here by
+ * `importSettings`, item by item; see
+ * `utils/settingsFile.js`. A file left in the desktop app's data folder by a
+ * script arrives by the same way, as the app opens
+ * (`composables/useSettingsFile.js`).
  */
 
 import { storage } from '@/storage/index.js'
@@ -55,6 +64,15 @@ import {
   serializeFiles,
   deserializeFiles,
 } from '@/utils/backup'
+import {
+  SETTINGS_TABLES,
+  rowId,
+  settingsItems,
+  pickSettings,
+  planImport,
+  settingsFilename,
+} from '@/utils/settingsFile.js'
+import { localStorage } from '@/utils/localStorage.js'
 import { useEditor } from './useEditor.js'
 import { useApplicationState } from './useApplicationState.js'
 import { assembleTurn, inspectCommand } from '@/ai/commands.js'
@@ -68,6 +86,8 @@ import { obfuscateBackup } from '@/utils/obfuscate.js'
 /** @typedef {import('@/types/models.js').Chat} Chat */
 /** @typedef {import('@/types/models.js').Message} Message */
 /** @typedef {import('@/types/models.js').AIPrompt} AIPrompt */
+/** @typedef {import('@/utils/settingsFile.js').SettingsItem} SettingsItem */
+/** @typedef {import('@/utils/settingsFile.js').SettingsImport} SettingsImport */
 
 /**
  * Hand the user a JSON file.
@@ -89,6 +109,12 @@ function downloadJson(filename, data) {
 
   return { filename, bytes: json.length }
 }
+
+/**
+ * Where the fingerprint of each item a settings file brought in is kept: in
+ * this copy of the app, beside the settings it was imported into.
+ */
+const IMPORTED_KEY = 'inksprite.settings-imported'
 
 export function useBackup() {
   /**
@@ -159,30 +185,56 @@ export function useBackup() {
    * @throws {Error} If it is not, saying why
    */
   function parseBackup(text, scope) {
-    /** @type {any} */
-    let parsed
+    return checkBackup(parseJson(text), scope)
+  }
+
+  /**
+   * @param {string} text
+   * @returns {any}
+   * @throws {Error} If it is not JSON
+   */
+  function parseJson(text) {
     try {
-      parsed = JSON.parse(text)
+      return JSON.parse(text)
     } catch {
       throw new Error('That file is not valid JSON.')
     }
+  }
 
+  /**
+   * Check that parsed JSON holds what is expected, in a shape this build can
+   * read.
+   *
+   * @param {any} parsed
+   * @param {BackupScope} scope
+   * @returns {Backup}
+   * @throws {Error} If it does not, saying why
+   */
+  function checkBackup(parsed, scope) {
     const { ok, errors } = validateBackup(parsed, storage.schemaVersion(), scope)
     if (!ok) throw new Error(errors.join(' '))
-
     return parsed
   }
 
   /**
-   * Parse and validate an uploaded file without touching the database.
+   * Read a file picked to import from the settings: a whole backup or a
+   * settings file, which says which it is. Nothing is written. A backup
+   * comes back with what it holds; settings with what importing them would
+   * change here.
    *
    * @param {File} file
-   * @returns {Promise<{backup: Backup, summary: Array<{table: string, count: number}>}>}
-   * @throws {Error} If the file is not readable as a backup for this build
+   * @returns {Promise<{kind: 'backup', backup: Backup, summary: Array<{table: string, count: number}>}
+   *   | {kind: 'settings', backup: Backup, plan: SettingsImport}>}
+   * @throws {Error} If the file is neither, saying why
    */
-  async function readBackupFile(file) {
-    const backup = await parseBackupFile(file, 'database')
-    return { backup, summary: summarizeBackup(backup) }
+  async function readDataFile(file) {
+    const parsed = parseJson(await file.text())
+    if (parsed?.scope === 'settings') {
+      const backup = checkBackup(parsed, 'settings')
+      return { kind: 'settings', backup, plan: await planSettings(backup, { byHand: true }) }
+    }
+    const backup = checkBackup(parsed, 'database')
+    return { kind: 'backup', backup, summary: summarizeBackup(backup) }
   }
 
   /**
@@ -488,11 +540,131 @@ export function useBackup() {
     return story
   }
 
+  /**
+   * The rows and outside settings a setup is made of, as they are here.
+   *
+   * @param {{flush?: boolean}} [options] - Save what the stores hold first
+   *   (default true); nothing has been read yet as the app opens
+   * @returns {Promise<{tables: Record<string, any[]>, settings: import('./useApplicationState.js').BackedUpSettings}>}
+   */
+  async function readSetup({ flush = true } = {}) {
+    if (flush) await useSyncStore().processSync()
+    const tables = await Promise.all(
+      SETTINGS_TABLES.map(async table => [table, await storage.all(table)])
+    )
+    return {
+      tables: Object.fromEntries(tables),
+      settings: useApplicationState().settingsForBackup(),
+    }
+  }
+
+  /**
+   * Everything the writer could put in a settings file.
+   *
+   * @returns {Promise<SettingsItem[]>}
+   */
+  async function listSettings() {
+    const { tables, settings } = await readSetup()
+    return settingsItems(tables, settings)
+  }
+
+  /**
+   * Snapshot the items picked of the writer's setup.
+   *
+   * @param {{picked: Set<string>, includeApiKeys?: boolean}} options - The
+   *   keys of the items to put in (`SettingsItem.key`)
+   * @returns {Promise<Backup>}
+   */
+  async function createSettingsBackup({ picked, includeApiKeys = false }) {
+    const setup = await readSetup()
+    const { tables, settings } = pickSettings(setup.tables, setup.settings, picked)
+    return buildBackup(tables, {
+      dbVersion: storage.schemaVersion(),
+      includeApiKeys,
+      scope: 'settings',
+      settings,
+    })
+  }
+
+  /**
+   * Snapshot the items picked and hand the writer a file.
+   *
+   * @param {{picked: Set<string>, includeApiKeys?: boolean}} options
+   * @returns {Promise<{filename: string, bytes: number}>}
+   */
+  async function downloadSettings(options) {
+    return downloadJson(settingsFilename(new Date()), await createSettingsBackup(options))
+  }
+
+  /**
+   * Work out what a settings file changes here, writing nothing.
+   *
+   * @param {Backup} backup - Checked already
+   * @param {{byHand: boolean}} options - Picked by the writer, or left by a
+   *   script; see `planImport`
+   * @returns {Promise<SettingsImport>}
+   */
+  async function planSettings(backup, { byHand }) {
+    const tables = upgradeTables(backup.tables, backup.dbVersion, storage.schemaVersion())
+    return planImport({ tables, settings: backup.settings }, await readSetup({ flush: byHand }), {
+      byHand,
+      fingerprints: localStorage.get(IMPORTED_KEY, {}),
+    })
+  }
+
+  /**
+   * What a settings file's text left by a script changes here, writing
+   * nothing. It is merged without the writer being asked: only what the file
+   * changed since it, or one like it, was last imported.
+   *
+   * @param {string} text
+   * @returns {Promise<SettingsImport>}
+   * @throws {Error} If the text is not settings this build can read
+   */
+  async function planLeftSettings(text) {
+    return planSettings(parseBackup(text, 'settings'), { byHand: false })
+  }
+
+  /**
+   * Write what a settings file changes, and remember each item as it came.
+   *
+   * The rows go straight to storage, so a caller whose stores have already
+   * read theirs must reload the page afterwards, as for a restore. As the app
+   * opens, nothing has been read yet.
+   *
+   * @param {SettingsImport} plan
+   * @returns {Promise<void>}
+   */
+  async function importSettings(plan) {
+    const now = Date.now()
+    for (const [table, rows] of Object.entries(plan.rows)) {
+      await storage.write(
+        table,
+        rows.map(row => ({
+          entityType: table,
+          id: /** @type {string} */ (rowId(table, row)),
+          op: 'put',
+          data: row,
+          timestamp: now,
+        }))
+      )
+    }
+    if (Object.keys(plan.settings).length > 0) {
+      useApplicationState().restoreSettings(plan.settings)
+    }
+    localStorage.set(IMPORTED_KEY, plan.fingerprints)
+  }
+
   return {
     createBackup,
     downloadBackup,
-    readBackupFile,
+    readDataFile,
     restoreBackup,
+    listSettings,
+    createSettingsBackup,
+    downloadSettings,
+    planLeftSettings,
+    importSettings,
     createChatBackup,
     downloadChat,
     readChatFile,

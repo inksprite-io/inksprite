@@ -32,9 +32,9 @@ import { useSkills } from './useSkills.js'
 import { skillPrompt } from '@/ai/skills/index.js'
 import { useChatCommands } from './useChatCommands.js'
 import { useApplicationState } from './useApplicationState.js'
-import { AnswerFailedError, ProviderNotConfiguredError } from '@/utils/errors.js'
+import { AnswerFailedError } from '@/utils/errors.js'
 import { isDefaultChatTitle, plainTitle } from '@/utils/chatTitle.js'
-import { connectionGap } from '@/ai/providers.js'
+import { presetProblem } from '@/ai/providers.js'
 import { DEFAULT_CHAT_PROMPT } from '@/ai/prompts/index.js'
 import { noteOnProfile } from '@/ai/profiles/index.js'
 import { withOriginal } from '@/cards/card.js'
@@ -293,33 +293,9 @@ export function useAIChat(storyId, chatId) {
    */
   const getChatProfileIfValid = () => {
     const profile = getActiveProfile()
-    if (!profile || !profile.providerId) {
-      throw new ProviderNotConfiguredError('No AI provider is connected.')
-    }
-
-    const provider = aiConfig.getProvider(profile.providerId)
-    if (!provider) {
-      throw new ProviderNotConfiguredError('No AI provider is connected.')
-    }
-
-    if (!profile.model) {
-      throw new Error('Pick a model in Settings › AI.')
-    }
-
-    const gap = connectionGap(provider)
-    // OpenRouter has its own way in, the connect dialog; a key for anything
-    // else is pasted in the provider's settings.
-    if (gap === 'key' && provider.type === 'openrouter') {
-      throw new ProviderNotConfiguredError('Connect OpenRouter in Settings › AI.')
-    }
-    if (gap === 'key') {
-      throw new Error(`Add your ${provider.name} key in Settings › AI.`)
-    }
-    if (gap === 'endpoint') {
-      throw new Error('Add the server address in Settings › AI.')
-    }
-
-    return profile
+    const problem = presetProblem(profile, id => aiConfig.getProvider(id))
+    if (problem) throw problem
+    return /** @type {AIPreset} */ (profile)
   }
 
   /**

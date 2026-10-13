@@ -215,10 +215,10 @@ describe('validateBackup', () => {
     expect(errors.join(' ')).toContain('Import it from the chat list')
   })
 
-  it('sends a whole backup to Import backup', () => {
+  it('sends a whole backup to Import in the settings', () => {
     const { ok, errors } = validateBackup(validBackup(), 2, 'chat')
     expect(ok).toBe(false)
-    expect(errors.join(' ')).toContain('Restore it with Import backup in Settings › System')
+    expect(errors.join(' ')).toContain('Restore it with Import in Settings › System')
   })
 
   it('sends a project file to Import a project', () => {

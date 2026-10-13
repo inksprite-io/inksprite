@@ -70,6 +70,8 @@ contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', {
   downloadUpdate: () => call('update:download'),
   installUpdate: () => call('update:install'),
 
+  settingsFile: () => call('settings:file'),
+
   library: {
     settings: () => call('library:settings'),
     markMoved: () => call('library:moved'),

@@ -108,36 +108,32 @@
         {{ problem }}
       </p>
 
-      <div class="flex gap-2">
-        <Button
-          label="Connect"
-          size="small"
-          :loading="connecting"
-          :disabled="!canConnect"
-          data-action="connect"
-          @click="connect"
-        />
-        <Button
-          label="Cancel"
-          size="small"
-          text
-          severity="secondary"
-          data-action="cancel"
-          @click="closeAdding"
-        />
-      </div>
-
-      <!-- What each server offered, read before it is kept. -->
+      <!-- What each server offered, counted; its tools, what the model will be
+           told, are a click away. -->
       <div
         v-for="candidate in candidates"
         :key="candidate.key"
         class="flex flex-col gap-1 rounded-lg bg-surface-50 dark:bg-surface-900/40 px-3 py-2"
         data-candidate
       >
-        <span class="text-sm font-medium">{{ candidate.server.name }}</span>
-        <span class="text-xs text-surface-500 font-mono truncate">
-          {{ candidate.server.url || candidate.server.command }}
-        </span>
+        <component
+          :is="hasTools(candidate) ? 'button' : 'div'"
+          :type="hasTools(candidate) ? 'button' : undefined"
+          :aria-expanded="hasTools(candidate) ? shown === candidate.key : undefined"
+          class="flex flex-col gap-0.5 text-left"
+          data-candidate-summary
+          @click="hasTools(candidate) && toggleShown(candidate.key)"
+        >
+          <span class="flex items-center gap-2 min-w-0">
+            <span class="text-sm font-medium truncate">{{ candidate.server.name }}</span>
+            <span v-if="candidate.preview" class="text-xs text-surface-500">
+              {{ offers(candidate.preview) }}
+            </span>
+          </span>
+          <span class="text-xs text-surface-500 font-mono truncate">
+            {{ candidate.server.url || candidate.server.command }}
+          </span>
+        </component>
         <template v-if="candidate.error">
           <span v-if="!candidate.signIn" class="text-xs text-red-600 dark:text-red-400">
             {{ candidate.error }}
@@ -169,54 +165,70 @@
         >
           Runs as a program, so it needs an HTTP bridge.
         </span>
-        <template v-else-if="candidate.preview">
-          <span class="text-xs text-surface-500 dark:text-surface-400">
-            {{ offers(candidate.preview) }}:
-          </span>
-          <ul class="flex flex-col gap-1 pl-3">
-            <li
-              v-for="tool in candidate.preview.tools"
-              :key="tool.name"
-              class="text-xs text-surface-600 dark:text-surface-300"
+        <ul
+          v-else-if="hasTools(candidate) && shown === candidate.key"
+          class="flex flex-col gap-1 pt-1"
+        >
+          <li
+            v-for="tool in candidate.preview.tools"
+            :key="tool.name"
+            class="text-xs text-surface-600 dark:text-surface-300"
+          >
+            <span class="font-mono">{{ tool.name }}</span>
+            <span v-if="tool.annotations?.readOnlyHint" class="text-surface-400">
+              · Reads only</span
             >
-              <span class="font-mono">{{ tool.name }}</span>
-              <span v-if="tool.annotations?.readOnlyHint" class="text-surface-400">
-                · Reads only</span
-              >
-              <span v-if="tool.description"> — {{ tool.description }}</span>
-            </li>
-          </ul>
-        </template>
+            <span v-if="tool.description"> — {{ tool.description }}</span>
+          </li>
+        </ul>
       </div>
 
-      <template v-if="candidates.length > 0">
-        <div class="flex flex-col gap-1">
-          <span class="text-xs text-surface-600 dark:text-surface-300"> Used in chats on </span>
-          <div class="flex flex-wrap gap-x-4 gap-y-1">
-            <label
-              v-for="profile in profiles"
-              :key="profile.id"
-              class="flex items-center gap-2 text-xs"
-            >
-              <ToggleSwitch
-                :model-value="draft.profiles.includes(profile.id)"
-                :aria-label="`Use in chats on ${profile.name}`"
-                @update:model-value="toggleDraftProfile(profile.id, $event)"
-              />
-              {{ profile.name }}
-            </label>
-          </div>
+      <div v-if="keepable.length > 0" class="flex flex-col gap-1">
+        <span class="text-xs text-surface-600 dark:text-surface-300"> Used in chats on </span>
+        <div class="flex flex-wrap gap-x-4 gap-y-1">
+          <label
+            v-for="profile in profiles"
+            :key="profile.id"
+            class="flex items-center gap-2 text-xs"
+          >
+            <ToggleSwitch
+              :model-value="draft.profiles.includes(profile.id)"
+              :aria-label="`Use in chats on ${profile.name}`"
+              @update:model-value="toggleDraftProfile(profile.id, $event)"
+            />
+            {{ profile.name }}
+          </label>
         </div>
-        <div class="flex gap-2">
-          <Button
-            :label="keepable.length === 1 ? 'Keep it' : `Keep ${keepable.length}`"
-            size="small"
-            :disabled="keepable.length === 0"
-            data-action="keep"
-            @click="keep"
-          />
-        </div>
-      </template>
+      </div>
+
+      <!-- Keep takes Connect's place once something can be kept; an edit
+           above clears what was listed and brings Connect back. -->
+      <div class="flex gap-2">
+        <Button
+          v-if="keepable.length > 0"
+          :label="keepable.length === 1 ? 'Keep it' : `Keep ${keepable.length}`"
+          size="small"
+          data-action="keep"
+          @click="keep"
+        />
+        <Button
+          v-else
+          label="Connect"
+          size="small"
+          :loading="connecting"
+          :disabled="!canConnect"
+          data-action="connect"
+          @click="connect"
+        />
+        <Button
+          label="Cancel"
+          size="small"
+          text
+          severity="secondary"
+          data-action="cancel"
+          @click="closeAdding"
+        />
+      </div>
     </section>
 
     <div v-else class="flex flex-wrap gap-2">
@@ -450,7 +462,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, reactive, ref } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -527,6 +539,31 @@ const draft = reactive({
 
 /** @type {import('vue').Ref<Candidate[]>} */
 const candidates = ref([])
+
+/**
+ * The candidate whose tools are shown, by key.
+ *
+ * @type {import('vue').Ref<string|null>}
+ */
+const shown = ref(null)
+
+/** @param {Candidate} candidate */
+const hasTools = candidate => Boolean(candidate.preview?.tools.length)
+
+/** @param {string} key */
+const toggleShown = key => {
+  shown.value = shown.value === key ? null : key
+}
+
+// What was listed was for what was typed then: a change to it means
+// connecting again, so Keep never keeps a server other than the one shown.
+watch(
+  () => [mode.value, draft.url, draft.name, draft.headerName, draft.headerValue, draft.json],
+  () => {
+    candidates.value = []
+    shown.value = null
+  }
+)
 
 const canConnect = computed(() =>
   mode.value === 'url' ? Boolean(draft.url.trim()) : Boolean(draft.json.trim())

@@ -14,11 +14,12 @@
  * it into a newer database has to move those rows forward first. That is what
  * `UPGRADES` is for.
  *
- * A single chat, or a project with its chats, is exported in the same
- * envelope, marked by `scope`, so the same transforms carry it forward. Each
- * is read back in its own place and never interchangeably: a chat file is
- * added to a story, a project file is added beside the others, a whole backup
- * replaces everything.
+ * A single chat, a project with its chats, or the writer's settings, is
+ * exported in the same envelope, marked by `scope`, so the same transforms
+ * carry it forward. Each is read back in its own place and never
+ * interchangeably: a chat file is added to a story, a project file is added
+ * beside the others, a settings file is merged into the setup here
+ * (`utils/settingsFile.js`), a whole backup replaces everything.
  */
 
 import { nanoid } from 'nanoid'
@@ -55,7 +56,7 @@ import { viewsOffStories } from '../stores/migrations/projectViews.js'
 export const BACKUP_FORMAT = 1
 
 /**
- * @typedef {'database'|'chat'|'project'} BackupScope
+ * @typedef {'database'|'chat'|'project'|'settings'} BackupScope
  *
  * @typedef {Record<string, any[]>} TableData
  *
@@ -65,9 +66,9 @@ export const BACKUP_FORMAT = 1
  * @property {number} dbVersion - Dexie schema version the rows were written at
  * @property {number} exported - Timestamp
  * @property {boolean} includesApiKeys - Whether provider credentials were kept
- * @property {BackupScope} [scope] - What the file holds: every table, one chat and its messages, or one project and its chats. Files written before there was a choice have none, and hold the database.
+ * @property {BackupScope} [scope] - What the file holds: every table, one chat and its messages, one project and its chats, or the writer's settings. Files written before there was a choice have none, and hold the database.
  * @property {TableData} tables - Row arrays keyed by table name
- * @property {import('../composables/useApplicationState.js').BackedUpSettings} [settings] - The settings kept outside the database, in a whole backup. Files written before backups carried them have none, and leave the settings as they are.
+ * @property {Partial<import('../composables/useApplicationState.js').BackedUpSettings>} [settings] - The settings kept outside the database: all of them in a whole backup, those the writer picked in a settings file. Files written before backups carried them have none, and leave the settings as they are.
  */
 
 /**
@@ -77,12 +78,13 @@ export const BACKUP_FORMAT = 1
  * @type {Record<string, {noun: string, hint: string}>}
  */
 const SCOPES = {
-  database: { noun: 'a whole backup', hint: 'Restore it with Import backup in Settings › System.' },
+  database: { noun: 'a whole backup', hint: 'Restore it with Import in Settings › System.' },
   chat: { noun: 'one chat', hint: 'Import it from the chat list.' },
   project: {
     noun: 'one project',
     hint: 'Import it with Import a project at the top of the outline.',
   },
+  settings: { noun: 'settings', hint: 'Import it with Import in Settings › System.' },
 }
 
 /**
@@ -454,7 +456,7 @@ const REDACTED = {
  * @param {boolean} [opts.includeApiKeys] - Keep provider, server and web search credentials (default false)
  * @param {number} [opts.exported] - Timestamp, injectable for tests
  * @param {BackupScope} [opts.scope] - What the tables hold (default the whole database)
- * @param {import('../composables/useApplicationState.js').BackedUpSettings} [opts.settings] - The settings kept outside the database, for a whole backup
+ * @param {Partial<import('../composables/useApplicationState.js').BackedUpSettings>} [opts.settings] - The settings kept outside the database, for a whole backup or a settings file
  * @returns {Backup}
  */
 export function buildBackup(

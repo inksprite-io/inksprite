@@ -1,7 +1,8 @@
 /**
  * What the page may ask of the native side, answered here: requests to
  * servers, sign-ins in the system browser, links opened outside the app,
- * updates, and the library its projects are kept in. `preload.cjs` is the page's end of it, and `src/platform/` in the
+ * updates, the settings file a script left, and the library its projects are
+ * kept in. `preload.cjs` is the page's end of it, and `src/platform/` in the
  * page is what calls it.
  *
  * Only the app's own page is answered: each call is checked for where it came
@@ -13,6 +14,7 @@ import { realpath } from 'node:fs/promises'
 import { openable, originOf, webAddress } from './links.js'
 import { listen } from './loopback.js'
 import { downloadUpdate, installUpdate } from './updates.js'
+import { readSettingsFile } from './settingsFile.js'
 import {
   disableLibrary,
   enableLibrary,
@@ -139,6 +141,10 @@ export function handleBridge(origin) {
   // Updates from the public repository's releases (`updates.js`).
   handle('update:download', () => downloadUpdate())
   handle('update:install', () => installUpdate())
+
+  // The settings file a script left in the app's data folder, read as the
+  // page opens (`settingsFile.js`).
+  handle('settings:file', () => readSettingsFile())
 
   // The library the projects are kept in (`library.js`, and
   // `src/storage/library.js` in the page). What is done there is done one

@@ -10,6 +10,7 @@ import {
   takesChatTemplateKwargs,
   takesReasoningEffort,
   connectionGap,
+  presetProblem,
   canListModels,
   servesChat,
   inMenuOrder,
@@ -196,6 +197,52 @@ describe('connectionGap', () => {
   it('has nothing to say about no connection at all', () => {
     expect(connectionGap(null)).toBeNull()
     expect(connectionGap(undefined)).toBeNull()
+  })
+})
+
+describe('presetProblem', () => {
+  const proxy = {
+    id: 'p',
+    name: 'Team proxy',
+    type: 'generic',
+    endpoint: 'http://127.0.0.1:4100/v1',
+  }
+  const find = connections => id => connections.find(connection => connection.id === id)
+
+  it('is nothing for a preset on a connection that has what it needs', () => {
+    expect(presetProblem({ providerId: 'p', model: 'house-large' }, find([proxy]))).toBeNull()
+  })
+
+  it('says no provider is connected without a preset or its connection', () => {
+    for (const [preset, connections] of [
+      [null, [proxy]],
+      [{ model: 'm' }, [proxy]],
+      [{ providerId: 'gone', model: 'm' }, [proxy]],
+    ]) {
+      const problem = presetProblem(preset, find(connections))
+      expect(problem?.name).toBe('ProviderNotConfiguredError')
+      expect(problem?.message).toBe('No AI provider is connected.')
+    }
+  })
+
+  it('says what the preset or its connection still lacks', () => {
+    const openRouter = { id: 'o', name: 'OpenRouter', type: 'openrouter' }
+    const anthropic = { id: 'a', name: 'Anthropic', type: 'anthropic' }
+    const server = { id: 's', name: 'Box', type: 'generic' }
+    const all = find([proxy, openRouter, anthropic, server])
+
+    expect(presetProblem({ providerId: 'p', model: '' }, all)?.message).toBe(
+      'Pick a model in Settings › AI.'
+    )
+    const connect = presetProblem({ providerId: 'o', model: 'm' }, all)
+    expect(connect?.name).toBe('ProviderNotConfiguredError')
+    expect(connect?.message).toBe('Connect OpenRouter in Settings › AI.')
+    expect(presetProblem({ providerId: 'a', model: 'm' }, all)?.message).toBe(
+      'Add your Anthropic key in Settings › AI.'
+    )
+    expect(presetProblem({ providerId: 's', model: 'm' }, all)?.message).toBe(
+      'Add the server address in Settings › AI.'
+    )
   })
 })
 

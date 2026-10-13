@@ -10,6 +10,7 @@ import ToastService from 'primevue/toastservice'
 import App from './App.vue'
 import router from './router'
 import { openStorage } from './storage/open.js'
+import { importSettingsFile } from './composables/useSettingsFile.js'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -98,10 +99,14 @@ app.directive('styleclass', StyleClass)
 app.directive('tooltip', Tooltip)
 
 // In the desktop app the projects are in a folder, which is opened before
-// anything reads from it.
+// anything reads from it, and a settings file a script left there is
+// imported before any store reads the settings.
 const root = /** @type {HTMLElement} */ (document.getElementById('app'))
 openStorage().then(
-  () => app.mount('#app'),
+  async () => {
+    await importSettingsFile()
+    app.mount('#app')
+  },
   error => {
     console.error('The library could not be opened:', error)
     root.textContent = `inksprite couldn't open the folder your projects are kept in: ${error.message}`

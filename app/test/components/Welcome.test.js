@@ -3,12 +3,15 @@ import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import Welcome from '@/components/common/Welcome.vue'
 
-const { platform, setShowWelcomeDialog } = vi.hoisted(() => ({
+const { platform, setShowWelcomeDialog, ai } = vi.hoisted(() => ({
   platform: {
     desktop: false,
     advice: { clearsAfterAWeek: false, homeScreen: false, desktopApp: true },
   },
   setShowWelcomeDialog: vi.fn(),
+  // The preset in use and its connection: OpenRouter with no key yet, as on
+  // a first visit.
+  ai: { preset: null, connections: [] },
 }))
 
 vi.mock('@/platform/desktop.js', () => ({ isDesktop: () => platform.desktop }))
@@ -16,6 +19,18 @@ vi.mock('@/platform/persistence.js', () => ({ storageAdvice: () => platform.advi
 vi.mock('@/composables/useApplicationState', () => ({
   useApplicationState: () => ({ setShowWelcomeDialog }),
 }))
+vi.mock('@/composables/useAIConfig', () => ({
+  useAIConfig: () => ({
+    activeAIPreset: { value: ai.preset },
+    getProvider: id => ai.connections.find(connection => connection.id === id) || null,
+  }),
+}))
+
+/** The AI as a first visit finds it: the default preset on OpenRouter, not connected. */
+const notSetUp = () => {
+  ai.preset = { id: 'profile_default_chat', providerId: 'provider_openrouter_default', model: 'm' }
+  ai.connections = [{ id: 'provider_openrouter_default', name: 'OpenRouter', type: 'openrouter' }]
+}
 
 const mountWelcome = () =>
   mount(Welcome, {
@@ -45,6 +60,7 @@ describe('Welcome', () => {
     platform.desktop = false
     platform.advice = { clearsAfterAWeek: false, homeScreen: false, desktopApp: true }
     setShowWelcomeDialog.mockClear()
+    notSetUp()
   })
 
   it('opens on the welcome, laid out as the settings are', () => {
@@ -71,6 +87,21 @@ describe('Welcome', () => {
     await inlineButton(wrapper, 'connect an AI provider').trigger('click')
     expect(wrapper.find('h2').text()).toBe('AI')
     expect(wrapper.find('[data-ai-settings]').exists()).toBe(true)
+  })
+
+  it('offers neither the AI settings nor connecting when the AI is set up already', () => {
+    ai.preset = { id: 'profile_team', providerId: 'provider_team', model: 'house-large' }
+    ai.connections = [
+      { id: 'provider_team', name: 'Team proxy', type: 'generic', endpoint: 'http://h/v1' },
+    ]
+    const wrapper = mountWelcome()
+
+    expect(wrapper.findAll('[data-section]').map(button => button.text())).toEqual([
+      'Welcome',
+      'Terms of Service',
+    ])
+    expect(wrapper.find('[data-connect-ai]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('Write and edit documents')
   })
 
   it('has the terms, and the footer points to them from any section', async () => {

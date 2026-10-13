@@ -90,14 +90,14 @@ describe('useBackup', () => {
     })
   })
 
-  describe('readBackupFile', () => {
+  describe('readDataFile', () => {
     /** @param {any} contents */
     const fileOf = contents => ({
       text: async () => (typeof contents === 'string' ? contents : JSON.stringify(contents)),
     })
 
     it('parses and summarizes without touching the database', async () => {
-      const { backup, summary } = await useBackup().readBackupFile(
+      const { kind, backup, summary } = await useBackup().readDataFile(
         fileOf({
           app: 'inksprite',
           format: 1,
@@ -106,6 +106,7 @@ describe('useBackup', () => {
         })
       )
 
+      expect(kind).toBe('backup')
       expect(backup.dbVersion).toBe(2)
       expect(summary).toEqual([{ table: 'stories', count: 2 }])
       expect(mockDb.transaction).not.toHaveBeenCalled()
@@ -113,20 +114,20 @@ describe('useBackup', () => {
     })
 
     it('rejects a file that is not JSON', async () => {
-      await expect(useBackup().readBackupFile(fileOf('not json at all'))).rejects.toThrow(
+      await expect(useBackup().readDataFile(fileOf('not json at all'))).rejects.toThrow(
         'not valid JSON'
       )
     })
 
     it('rejects JSON from another app', async () => {
-      await expect(useBackup().readBackupFile(fileOf({ hello: 'world' }))).rejects.toThrow(
+      await expect(useBackup().readDataFile(fileOf({ hello: 'world' }))).rejects.toThrow(
         'not exported from inksprite'
       )
     })
 
     it('sends a single-chat file to the chat list', async () => {
       await expect(
-        useBackup().readBackupFile(
+        useBackup().readDataFile(
           fileOf({ app: 'inksprite', format: 1, dbVersion: 2, scope: 'chat', tables: {} })
         )
       ).rejects.toThrow('Import it from the chat list')
@@ -245,10 +246,10 @@ describe('useBackup', () => {
       )
     })
 
-    it('sends a whole backup to Import backup', async () => {
+    it('sends a whole backup to Import in the settings', async () => {
       await expect(
         useBackup().readChatFile(fileOf(chatFile(2, { scope: 'database' })))
-      ).rejects.toThrow('Restore it with Import backup in Settings › System')
+      ).rejects.toThrow('Restore it with Import in Settings › System')
     })
 
     describe('from SillyTavern', () => {

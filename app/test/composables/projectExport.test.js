@@ -305,11 +305,11 @@ describe('project export and import', () => {
     expect(useChatProfileStore().getProfile(PROFILE).settings.prompt).toBe('Cut more.')
   })
 
-  it('sends a whole backup to Import backup', async () => {
+  it('sends a whole backup to Import in the settings', async () => {
     const backup = useBackup()
     const file = asFile(await backup.createBackup())
     await expect(backup.readProjectFile(file)).rejects.toThrow(
-      'Restore it with Import backup in Settings › System'
+      'Restore it with Import in Settings › System'
     )
   })
 })

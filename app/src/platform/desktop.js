@@ -47,6 +47,8 @@
  * @property {(url: string) => Promise<void>} openInBrowser
  * @property {() => Promise<string|null>} downloadUpdate
  * @property {() => Promise<void>} installUpdate
+ * @property {() => Promise<string|null>} settingsFile - The text of the settings
+ *   file a script left in the app's data folder, or null when there is none
  * @property {DesktopLibrary} library - The folder the projects are kept in
  */
 

@@ -20,6 +20,7 @@ import { useSkills } from './composables/useSkills'
 import { useUpdates } from './composables/useUpdates'
 import { useLibraryNotices } from './composables/useLibraryNotices'
 import { useLibraryMove } from './composables/useLibraryMove'
+import { useSettingsFileNotice } from './composables/useSettingsFile'
 import { projectsToMove } from './storage/open.js'
 import { useJobsStore } from './stores/jobsStore.js'
 import { openLinkClicked } from './platform/open.js'
@@ -49,6 +50,10 @@ useUpdates()
 // In the desktop app, a file changed elsewhere and saved over goes to the
 // trash first, and the writer is told.
 useLibraryNotices()
+
+// In the desktop app, what the settings file a script left changed as the app
+// opened, or why it couldn't be imported.
+useSettingsFileNotice()
 
 // In the desktop app, projects the app kept that are still to be moved into
 // the folder are moved as it opens: the first time a run from the checkout

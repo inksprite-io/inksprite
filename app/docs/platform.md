@@ -56,14 +56,16 @@
 - [currentBrowser][52]
 - [storageAdvice][53]
   - [Parameters][54]
-- [platform/signIn][55]
-- [SIGN_IN_PORT][56]
-- [callbackOrigin][57]
-- [signInInBrowser][58]
-  - [Parameters][59]
-- [platform/updates][60]
-- [downloadUpdate][61]
-- [installUpdate][62]
+- [platform/settingsFile][55]
+- [settingsFileText][56]
+- [platform/signIn][57]
+- [SIGN_IN_PORT][58]
+- [callbackOrigin][59]
+- [signInInBrowser][60]
+  - [Parameters][61]
+- [platform/updates][62]
+- [downloadUpdate][63]
+- [installUpdate][64]
 
 ## platform/desktop
 
@@ -75,41 +77,41 @@ bridge to the native side there.
 What the native side is asked for a request: the page's `Request`, read
 out.
 
-Type: [Object][63]
+Type: [Object][65]
 
 ### Properties
 
-- `url` **[string][64]**&#x20;
-- `method` **[string][64]**&#x20;
-- `headers` **[Array][65]<\[[string][64], [string][64]]>**&#x20;
-- `body` **([Uint8Array][66] | null)**&#x20;
+- `url` **[string][66]**&#x20;
+- `method` **[string][66]**&#x20;
+- `headers` **[Array][67]<\[[string][66], [string][66]]>**&#x20;
+- `body` **([Uint8Array][68] | null)**&#x20;
 - `redirect` **RequestRedirect**&#x20;
 
 ## DesktopResponse
 
 A response's status and headers, without its body.
 
-Type: [Object][63]
+Type: [Object][65]
 
 ### Properties
 
-- `status` **[number][67]**&#x20;
-- `statusText` **[string][64]**&#x20;
-- `headers` **[Array][65]<\[[string][64], [string][64]]>**&#x20;
+- `status` **[number][69]**&#x20;
+- `statusText` **[string][66]**&#x20;
+- `headers` **[Array][67]<\[[string][66], [string][66]]>**&#x20;
 
 ## DesktopBodyPart
 
 A piece of a response's body: a chunk of it, or word that it has all come,
 or that it failed.
 
-Type: ({chunk: [Uint8Array][66]} | {done: `true`} | {error: [string][64]})
+Type: ({chunk: [Uint8Array][68]} | {done: `true`} | {error: [string][66]})
 
 ## DesktopBridge
 
 What the desktop app's native side offers the page (`app/electron/src/
 preload.cjs`). Calls that go wrong reject with an Error saying what did.
 
-Type: [Object][63]
+Type: [Object][65]
 
 ### Properties
 
@@ -120,7 +122,7 @@ Type: [Object][63]
 Whether the projects are kept in the library, where it is, and whether
 the window's own have been moved into it.
 
-Type: {path: [string][64], enabled: [boolean][68], moved: [boolean][68]}
+Type: {path: [string][66], enabled: [boolean][70], moved: [boolean][70]}
 
 ## BRIDGE
 
@@ -128,13 +130,13 @@ The library: whether the projects are kept in it, where it is, and the
 files in it, by paths below it. What is done there is `LibraryDisk` in
 `storage/library.js`.
 
-Type: [string][64]
+Type: [string][66]
 
 ## BRIDGE
 
 Where the bridge is, in the page.
 
-Type: [string][64]
+Type: [string][66]
 
 ## isDesktop
 
@@ -143,7 +145,7 @@ Whether the app is running in its desktop window.
 Decided at runtime, not when the app is built: in development the browser
 tab and the window load the same bundle from the same server.
 
-Returns **[boolean][68]**&#x20;
+Returns **[boolean][70]**&#x20;
 
 ## desktop
 
@@ -186,10 +188,10 @@ page's own does, streamed body and abort signal included.
 
 ### Parameters
 
-- `input` **(RequestInfo | [URL][69])**&#x20;
+- `input` **(RequestInfo | [URL][71])**&#x20;
 - `init` **RequestInit?**&#x20;
 
-Returns **[Promise][70]<[Response][71]>**&#x20;
+Returns **[Promise][72]<[Response][73]>**&#x20;
 
 ## fetchNatively
 
@@ -198,13 +200,13 @@ comes.
 
 ### Parameters
 
-- `request` **[Request][72]**&#x20;
+- `request` **[Request][74]**&#x20;
 
-Returns **[Promise][70]<[Response][71]>**&#x20;
+Returns **[Promise][72]<[Response][73]>**&#x20;
 
 ## controller
 
-Type: ReadableStreamDefaultController<[Uint8Array][66]>
+Type: ReadableStreamDefaultController<[Uint8Array][68]>
 
 ## onBody
 
@@ -238,6 +240,8 @@ sign-in rather than for a platform.
   its files, for `storage/library.js`
 - **persistence** - Asking the browser to keep the page's data, and what
   the writer is told about how long it will
+- **settingsFile** - In the desktop app, the settings file a script may
+  leave in the app's data folder for it to import as it opens
 
 Design: `.llm/desktop_design.md`.
 
@@ -267,14 +271,14 @@ projects kept in the window have been moved into it.
 Keep the projects in the library from now on. Until the window's projects
 are moved into it, the app opens on them, and moves them in.
 
-Returns **[Promise][70]<[string][64]>** Where it is
+Returns **[Promise][72]<[string][66]>** Where it is
 
 ## disableLibrary
 
 Keep the projects in the app again, once they have been copied back into
 it. The folder's files stay where they are.
 
-Returns **[Promise][70]\<void>**&#x20;
+Returns **[Promise][72]\<void>**&#x20;
 
 ## markProjectsMoved
 
@@ -286,7 +290,7 @@ Show the library, or a file in it, in the system's file manager.
 
 ### Parameters
 
-- `path` **[string][64]?** Below the library
+- `path` **[string][66]?** Below the library
 
 ## libraryDisk
 
@@ -315,9 +319,9 @@ The address a link goes to, if it is one that may open.
 
 ### Parameters
 
-- `href` **[string][64]**&#x20;
+- `href` **[string][66]**&#x20;
 
-Returns **([URL][69] | null)**&#x20;
+Returns **([URL][71] | null)**&#x20;
 
 ## openUrl
 
@@ -325,9 +329,9 @@ Open a link outside the app.
 
 ### Parameters
 
-- `href` **[string][64]**&#x20;
+- `href` **[string][66]**&#x20;
 
-Returns **[Promise][70]<[boolean][68]>** Whether it was one that may open
+Returns **[Promise][72]<[boolean][70]>** Whether it was one that may open
 
 ## openLinkClicked
 
@@ -338,7 +342,7 @@ link, or a click with a modifier somewhere other than this tab.
 
 ### Parameters
 
-- `event` **[MouseEvent][73]**&#x20;
+- `event` **[MouseEvent][75]**&#x20;
 
 ## platform/persistence
 
@@ -367,20 +371,20 @@ Whether this page load has asked: once is enough, whatever the answer.
 
 Ask the browser to keep the page's data, once a page load. Never throws.
 
-Returns **[Promise][70]<[boolean][68]>** Whether the data is kept
+Returns **[Promise][72]<[boolean][70]>** Whether the data is kept
 
 ## BrowserTraits
 
 What the page is in, as far as the advice depends on it.
 
-Type: [Object][63]
+Type: [Object][65]
 
 ### Properties
 
-- `userAgent` **[string][64]**&#x20;
-- `maxTouchPoints` **[number][67]** An iPad sends a Mac's user agent; only
+- `userAgent` **[string][66]**&#x20;
+- `maxTouchPoints` **[number][69]** An iPad sends a Mac's user agent; only
   its touch screen tells the two apart
-- `standalone` **[boolean][68]** Opened from the Home Screen or the Dock,
+- `standalone` **[boolean][70]** Opened from the Home Screen or the Dock,
   rather than in a browser tab
 
 ## StorageAdvice
@@ -388,13 +392,13 @@ Type: [Object][63]
 What the writer is told about keeping their work, beyond that it is in the
 browser.
 
-Type: [Object][63]
+Type: [Object][65]
 
 ### Properties
 
-- `clearsAfterAWeek` **[boolean][68]** Safari, which deletes site data after a week of inactivity
-- `homeScreen` **[boolean][68]** Safari in a tab on an iPhone or iPad, where the Home Screen is exempt
-- `desktopApp` **[boolean][68]** A computer, which the desktop app runs on
+- `clearsAfterAWeek` **[boolean][70]** Safari, which deletes site data after a week of inactivity
+- `homeScreen` **[boolean][70]** Safari in a tab on an iPhone or iPad, where the Home Screen is exempt
+- `desktopApp` **[boolean][70]** A computer, which the desktop app runs on
 
 ## currentBrowser
 
@@ -418,6 +422,19 @@ warned, since its exemption is not documented either.
 
 Returns **[StorageAdvice][50]**&#x20;
 
+## platform/settingsFile
+
+In the desktop app, the settings file a script may leave in
+the app's data folder for it to import as it opens. See
+`composables/useSettingsFile.js`.
+
+## settingsFileText
+
+The settings file's text, or null when there is none, or no folder to
+leave one in: in a browser.
+
+Returns **[Promise][72]<([string][66] | null)>**&#x20;
+
 ## platform/signIn
 
 Signing in to a service in the writer's own browser.
@@ -437,14 +454,14 @@ some hold it to exactly that address.
 
 Where the desktop app listens for a sign-in to come back.
 
-Type: [number][67]
+Type: [number][69]
 
 ## callbackOrigin
 
 Where a sign-in comes back to: this page's own origin in a browser, the
 desktop app's listener in its window.
 
-Returns **[string][64]**&#x20;
+Returns **[string][66]**&#x20;
 
 ## signInInBrowser
 
@@ -456,13 +473,13 @@ while another is waiting takes its place.
 
 ### Parameters
 
-- `address` **([string][64] | [URL][69])** Where to sign in
-- `path` **[string][64]** Where the service sends the browser back, under
+- `address` **([string][66] | [URL][71])** Where to sign in
+- `path` **[string][66]** Where the service sends the browser back, under
   `callbackOrigin()`: `/connect/mcp`
-- `$2` **[Object][63]** (optional, default `{}`)
+- `$2` **[Object][65]** (optional, default `{}`)
   - `$2.signal` &#x20;
 
-Returns **[Promise][70]\<URLSearchParams>** The query it came back with
+Returns **[Promise][72]\<URLSearchParams>** The query it came back with
 
 ## platform/updates
 
@@ -477,7 +494,7 @@ always the latest.
 
 Look for an update and download it, in the desktop app.
 
-Returns **[Promise][70]<([string][64] | null)>** The version downloaded, ready to install;
+Returns **[Promise][72]<([string][66] | null)>** The version downloaded, ready to install;
 null when the app is up to date, or not the desktop app
 
 ## installUpdate
@@ -485,7 +502,7 @@ null when the app is up to date, or not the desktop app
 Install the update `downloadUpdate` downloaded, and restart into it. Does
 not return, unless the install fails.
 
-Returns **[Promise][70]\<void>**&#x20;
+Returns **[Promise][72]\<void>**&#x20;
 
 [1]: #platformdesktop
 [2]: #desktoprequest
@@ -541,22 +558,24 @@ Returns **[Promise][70]\<void>**&#x20;
 [52]: #currentbrowser
 [53]: #storageadvice-1
 [54]: #parameters-7
-[55]: #platformsignin
-[56]: #sign_in_port
-[57]: #callbackorigin
-[58]: #signininbrowser
-[59]: #parameters-8
-[60]: #platformupdates
-[61]: #downloadupdate
-[62]: #installupdate
-[63]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[64]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[65]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[66]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[67]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[68]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[69]: https://developer.mozilla.org/docs/Web/API/URL/URL
-[70]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[71]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[72]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
-[73]: https://developer.mozilla.org/docs/Web/API/MouseEvent
+[55]: #platformsettingsfile
+[56]: #settingsfiletext
+[57]: #platformsignin
+[58]: #sign_in_port
+[59]: #callbackorigin
+[60]: #signininbrowser
+[61]: #parameters-8
+[62]: #platformupdates
+[63]: #downloadupdate
+[64]: #installupdate
+[65]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[66]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[67]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[68]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[69]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[70]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[71]: https://developer.mozilla.org/docs/Web/API/URL/URL
+[72]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[73]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[74]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
+[75]: https://developer.mozilla.org/docs/Web/API/MouseEvent

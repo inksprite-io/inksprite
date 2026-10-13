@@ -22,10 +22,9 @@ import { useAIService } from './useAIService.js'
 import { useAIContext } from './useAIContext.js'
 import { stripMarkdown } from '../utils/markdown.js'
 import { useDocumentsStore } from '../stores/documentsStore.js'
-import { ProviderNotConfiguredError } from '@/utils/errors.js'
 import summarizePrompt from '@/ai/prompts/summarize.md?raw'
 import summarizeUserPrompt from '@/ai/prompts/summarize-user.md?raw'
-import { connectionGap } from '@/ai/providers.js'
+import { presetProblem } from '@/ai/providers.js'
 
 const DEFAULT_SUMMARIZE_PROMPT = summarizePrompt.trim()
 const DEFAULT_SUMMARIZE_USER_PROMPT = summarizeUserPrompt.trim()
@@ -61,33 +60,9 @@ export function useAISummarize() {
    */
   const getWriteProfileIfValid = () => {
     const profile = aiConfig.activeAIPreset.value
-    if (!profile || !profile.providerId) {
-      throw new ProviderNotConfiguredError('No AI provider is connected.')
-    }
-
-    const provider = aiConfig.getProvider(profile.providerId)
-    if (!provider) {
-      throw new ProviderNotConfiguredError('No AI provider is connected.')
-    }
-
-    if (!profile.model) {
-      throw new Error('Pick a model in Settings › AI.')
-    }
-
-    const gap = connectionGap(provider)
-    // OpenRouter has its own way in, the connect dialog; a key for anything
-    // else is pasted in the provider's settings.
-    if (gap === 'key' && provider.type === 'openrouter') {
-      throw new ProviderNotConfiguredError('Connect OpenRouter in Settings › AI.')
-    }
-    if (gap === 'key') {
-      throw new Error(`Add your ${provider.name} key in Settings › AI.`)
-    }
-    if (gap === 'endpoint') {
-      throw new Error('Add the server address in Settings › AI.')
-    }
-
-    return profile
+    const problem = presetProblem(profile, id => aiConfig.getProvider(id))
+    if (problem) throw problem
+    return /** @type {AIPreset} */ (profile)
   }
 
   /**

@@ -101,11 +101,32 @@ describe('ConnectionsSection', () => {
 
     await connectTo(wrapper, 'https://mcp.example.com/mcp')
 
-    const candidate = wrapper.find('[data-candidate]')
-    expect(candidate.text()).toContain('Example')
-    expect(candidate.text()).toContain('2 tools')
-    expect(candidate.text()).toContain('look_up · Reads only — Look up a term.')
+    const candidate = () => wrapper.find('[data-candidate]')
+    expect(candidate().text()).toContain('Example')
+    expect(candidate().text()).toContain('2 tools')
+    expect(candidate().text()).not.toContain('look_up')
+    expect(wrapper.find('[data-action="keep"]').text()).toBe('Keep it')
+    expect(wrapper.find('[data-action="connect"]').exists()).toBe(false)
+
+    await candidate().find('[data-candidate-summary]').trigger('click')
+    expect(candidate().text()).toContain('look_up · Reads only — Look up a term.')
     expect(useMcpServerStore().getAllServers()).toEqual([])
+  })
+
+  it('lists it again after the address changes, so Keep keeps what was shown', async () => {
+    listServer.mockResolvedValue(offered)
+    const wrapper = await mountSection()
+
+    await connectTo(wrapper, 'https://mcp.example.com/mcp')
+    await wrapper.find('[data-field="url"]').setValue('https://mcp.example.org/mcp')
+
+    expect(wrapper.find('[data-candidate]').exists()).toBe(false)
+    expect(wrapper.find('[data-action="keep"]').exists()).toBe(false)
+    await wrapper.find('[data-action="connect"]').trigger('click')
+    await flushPromises()
+    await wrapper.find('[data-action="keep"]').trigger('click')
+
+    expect(useMcpServerStore().getAllServers()[0].url).toBe('https://mcp.example.org/mcp')
   })
 
   it('keeps it, named for the model, and used in chats on the default profile', async () => {
@@ -207,7 +228,9 @@ describe('ConnectionsSection', () => {
     await connectTo(wrapper, 'https://mcp.example.com/mcp')
 
     expect(wrapper.find('[data-candidate]').text()).toMatch(/CORS/)
-    expect(wrapper.find('[data-action="keep"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('[data-action="keep"]').exists()).toBe(false)
+    expect(wrapper.find('[data-action="connect"]').exists()).toBe(true)
+    expect(wrapper.text()).not.toContain('Used in chats on')
   })
 
   it('opens a new server ready to take its address', async () => {
@@ -297,7 +320,7 @@ describe('ConnectionsSection', () => {
 
     await connectTo(wrapper, 'https://mcp.linear.app/mcp')
     expect(wrapper.find('[data-candidate]').text()).toContain('Sign in to see what it offers')
-    expect(wrapper.find('[data-action="keep"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('[data-action="keep"]').exists()).toBe(false)
 
     await wrapper.find('[data-action="sign-in"]').trigger('click')
     await flushPromises()

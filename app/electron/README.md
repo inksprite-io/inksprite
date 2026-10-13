@@ -70,6 +70,16 @@ meaning the default above, and `"moved"`, whether the app's projects have
 been written into the folder. With `"moved": false` and the switch on, the
 app opens on its own projects and writes them in.
 
+## A settings file left by a script
+
+A script that installs the app for a team can leave a settings file (Settings
+› System › Export, then Settings) as `inksprite-settings.json` in the app's data
+folder: `~/Library/Application Support/inksprite/` on a Mac, `inksprite-dev/`
+for a run from here. `src/settingsFile.js` reads it when the page asks, as it
+opens, and leaves it there; the page imports what changed since it last did,
+without asking (`src/composables/useSettingsFile.js` in the page). The design
+is `.llm/settings_import_design.md`.
+
 The Web Inspector is in the View menu, and a right-click → Inspect Element
 opens it, in a release build as well: its console is where a failure the app
 doesn't show is logged, a chat title the provider refused among them.

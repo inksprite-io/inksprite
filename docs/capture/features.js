@@ -447,7 +447,7 @@ export async function features(ui, { standIn, context }) {
   await ui.paste(settings.getByRole('textbox', { name: 'Address' }), 'https://mcp.deepwiki.com/mcp')
   await ui.paste(settings.locator('[data-field="name"]'), 'DeepWiki')
   await ui.click(settings.getByRole('button', { name: 'Connect', exact: true }))
-  await settings.getByText('ask_wiki_question').first().waitFor({ timeout: 30_000 })
+  await settings.getByRole('button', { name: 'Keep it' }).waitFor({ timeout: 30_000 })
   await settings.getByRole('button', { name: 'Keep it' }).scrollIntoViewIfNeeded()
   await quiet()
   await ui.shot('mcp-add-server', { of: settings, pad: 0 })
