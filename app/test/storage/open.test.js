@@ -5,26 +5,18 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { dexieStorage } from '@/storage/dexie.js'
 import { libraryStorage } from '@/storage/library.js'
 import { storage, useStorage } from '@/storage/index.js'
-import {
-  keepProjectsInApp,
-  moveIntoLibrary,
-  moveProjects,
-  openStorage,
-  projectsToMove,
-} from '@/storage/open.js'
+import { moveIntoLibrary, moveProjects, openStorage, projectsToMove } from '@/storage/open.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { memoryLibrary } from './memoryLibrary.js'
 
 const platform = vi.hoisted(() => ({
   desktop: true,
-  settings: { path: '/library', enabled: true, moved: false },
+  settings: { path: '/library', moved: false },
   disk: /** @type {any} */ (null),
 }))
 const library = vi.hoisted(() => ({
   librarySettings: vi.fn(async () => platform.settings),
   markProjectsMoved: vi.fn(async () => {}),
-  enableLibrary: vi.fn(async () => '/library'),
-  disableLibrary: vi.fn(async () => {}),
   libraryDisk: vi.fn(() => platform.disk),
 }))
 vi.mock('@/platform/desktop.js', () => ({ isDesktop: () => platform.desktop }))
@@ -89,7 +81,7 @@ beforeEach(async () => {
   await dexieStorage.replaceAll({})
   useStorage(dexieStorage)
   platform.desktop = true
-  platform.settings = { path: '/library', enabled: true, moved: false }
+  platform.settings = { path: '/library', moved: false }
   platform.disk = memoryLibrary().disk
 })
 
@@ -102,17 +94,6 @@ describe('opening the storage', () => {
 
     expect(library.librarySettings).not.toHaveBeenCalled()
     expect((await storage.stories()).map(row => row.id)).toEqual(['story_a'])
-  })
-
-  it('keeps the projects in the app while the folder is switched off', async () => {
-    platform.settings = { path: '/library', enabled: false, moved: false }
-    await dexieStorage.addProject(project('story_a', 'Novel', 'Here.', 5))
-
-    await openStorage()
-
-    expect(library.libraryDisk).not.toHaveBeenCalled()
-    expect(library.markProjectsMoved).not.toHaveBeenCalled()
-    expect(await textOf(storage, 'story_a')).toBe('Here.')
   })
 
   it('opens on the app’s own projects while they are still to be moved into the folder', async () => {
@@ -137,7 +118,7 @@ describe('opening the storage', () => {
   })
 
   it('opens on the folder once the projects are in it', async () => {
-    platform.settings = { path: '/library', enabled: true, moved: true }
+    platform.settings = { path: '/library', moved: true }
     await dexieStorage.addProject(project('story_a', 'Novel', 'In the app.', 5))
     await libraryStorage(platform.disk).addProject(project('story_a', 'Novel', 'Moved.', 5))
 
@@ -149,7 +130,7 @@ describe('opening the storage', () => {
 })
 
 describe('moving the projects into the folder', () => {
-  it('turns the folder on, and moves them in saying how far it has got', async () => {
+  it('moves them in saying how far it has got', async () => {
     const novel = project('story_a', 'Novel', 'Here.', 5)
     for (const n of [2, 3, 4]) {
       novel.documents.push({ ...novel.documents[1], id: `story_a_ch${n}`, title: `Chapter ${n}` })
@@ -161,9 +142,6 @@ describe('moving the projects into the folder', () => {
 
     await moveIntoLibrary(progress => told.push(progress))
 
-    expect(library.enableLibrary.mock.invocationCallOrder[0]).toBeLessThan(
-      library.libraryDisk.mock.invocationCallOrder[0]
-    )
     expect(library.markProjectsMoved).toHaveBeenCalled()
     expect(await platform.disk.projects()).toMatchObject({ projects: ['Notes', 'Novel'] })
     expect(told.map(progress => progress.title)).toEqual(expect.arrayContaining(['Novel', 'Notes']))
@@ -176,7 +154,7 @@ describe('moving the projects into the folder', () => {
     expect(await textOf(dexieStorage, 'story_a')).toBe('Here.')
   })
 
-  it('keeps them in the app when they cannot be moved', async () => {
+  it('keeps them in the app, to be moved again, when they cannot be moved', async () => {
     await dexieStorage.addProject(project('story_a', 'Novel', 'Here.', 5))
     platform.disk = {
       ...platform.disk,
@@ -186,7 +164,6 @@ describe('moving the projects into the folder', () => {
     }
 
     await expect(moveIntoLibrary()).rejects.toThrow('disk full')
-    expect(library.disableLibrary).toHaveBeenCalled()
     expect(library.markProjectsMoved).not.toHaveBeenCalled()
   })
 })
@@ -207,43 +184,19 @@ describe('moving projects', () => {
     expect(await textOf(again, 'story_b')).toBe('Newer in the folder.')
     expect(memory.trashed).toEqual(['Novel'])
   })
-})
 
-describe('keeping the projects in the app again', () => {
-  it('copies the folder’s projects over the app’s, and leaves the app’s own tables', async () => {
+  it('puts a project only the folder holds in the trash, deleted in the app since', async () => {
     const memory = memoryLibrary()
     const folder = libraryStorage(memory.disk)
-    await dexieStorage.addProject(project('story_a', 'Novel', 'Before the move.', 5))
-    await dexieStorage.addProject(project('story_gone', 'Gone', 'Deleted since.', 5))
-    await dexieStorage.put('projectViews', {
-      id: 'story_a',
-      lastDocumentId: 'story_a_ch1',
-      version: 1,
-      updated: 5,
-    })
-    await folder.addProject(project('story_a', 'Novel', 'Written in the folder.', 20))
+    await folder.addProject(project('story_a', 'Novel', 'Here.', 5))
+    await folder.addProject(project('story_gone', 'Gone', 'Deleted in the app.', 5))
+    await dexieStorage.addProject(project('story_a', 'Novel', 'Here.', 5))
 
-    await keepProjectsInApp(folder)
+    await moveProjects(dexieStorage, folder)
 
-    expect((await dexieStorage.stories()).map(row => row.id)).toEqual(['story_a'])
-    expect(await textOf(dexieStorage, 'story_a')).toBe('Written in the folder.')
-    expect((await dexieStorage.messages('story_a_chat')).map(row => row.content)).toEqual(['Next?'])
-    expect(await dexieStorage.get('projectViews', 'story_a')).toMatchObject({
-      lastDocumentId: 'story_a_ch1',
-    })
-    expect(library.disableLibrary).toHaveBeenCalled()
-    expect(memory.outside.list()).toContain('Novel/Chapter.md')
-  })
-
-  it('stays on the folder when the copy fails', async () => {
-    const folder = {
-      dump: vi.fn(async () => {
-        throw new Error('unreadable')
-      }),
-    }
-
-    await expect(keepProjectsInApp(/** @type {any} */ (folder))).rejects.toThrow('unreadable')
-    expect(library.disableLibrary).not.toHaveBeenCalled()
+    const again = libraryStorage(memory.disk)
+    expect((await again.stories()).map(row => row.id)).toEqual(['story_a'])
+    expect(memory.trashed).toEqual(['Gone'])
   })
 })
 

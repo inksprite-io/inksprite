@@ -11,6 +11,8 @@ design is `.llm/desktop_design.md`.
   opened outside, updates, and the library (`src/platform/` in the page asks).
 - `src/library.js` is the library: the folder the projects are kept in, and
   the files in it, held to it.
+- `src/closing.js` has the window wait for the page to save before it
+  closes or the app quits.
 - `electron-builder.yml` is how it is packaged for each system.
 
 Its tests run with the page's (`app/test/electron/`), and `npm run typecheck`
@@ -48,27 +50,23 @@ sign-ins do not come with a backup; sign in again in the window.
 
 ## The library
 
-The projects can be kept in a folder, a folder of markdown files each (the
+The projects are kept in a folder, a folder of markdown files each (the
 layout is step 3 of `.llm/markdown_library_design.md`): `Projects` in the
 app's data folder, `~/Library/Application Support/inksprite/Projects` on a
-Mac, and `inksprite-dev/Projects` for a run from here. It isn't asked for.
-Settings → System → Data → Keep projects in a folder switches it on and off,
-and shows the folder while it is on. It is off in a release until it has
-been tried more widely, and on for a run from here.
+Mac, and `inksprite-dev/Projects` for a run from here. It isn't asked for,
+and Settings → System → Data shows it in Finder.
 
-Switched on, the app writes the projects it kept until then into the
-folder, with a toast that says how far it is, and opens again on them. The
-app's own copy is left as it was, but a project the folder holds already is
-written over only when the app's copy was changed later, and the folder's
-copy goes to the trash. Switched off, the folder's
-projects are copied back over the app's, and the folder's files stay where
-they are. The settings and the rest of the app's own tables stay in the app
-either way.
+The first time the app opens with it, the app writes the projects it kept
+in IndexedDB until then into the folder, with a toast that says how far it
+is, and opens again on them. The app's own copy is left as it was, but a
+project the folder holds already is written over only when the app's copy
+was changed later, and the folder's copy goes to the trash, as does a
+project only the folder holds. The settings and the rest of the app's own
+tables stay in the app.
 
-The switch is kept in `library.json` beside the folder: `"enabled"`, unset
-meaning the default above, and `"moved"`, whether the app's projects have
-been written into the folder. With `"moved": false` and the switch on, the
-app opens on its own projects and writes them in.
+`library.json` beside the folder says, as `"moved"`, whether the app's
+projects have been written into it. Until they have, the app opens on its
+own projects and writes them in.
 
 ## A settings file left by a script
 

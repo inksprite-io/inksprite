@@ -97,10 +97,7 @@ const GROUP_NAMES = {
   startingProfiles: { label: 'Profiles chats start on', phrase: 'the profiles chats start on' },
   narration: { label: 'Narration', phrase: 'the narration connection' },
   workflows: { label: 'Workflows', phrase: 'the workflows' },
-  preferences: {
-    label: 'Preferences: theme, edits, NSFW profiles, speaker colours',
-    phrase: 'your preferences',
-  },
+  preferences: { label: 'Preferences', phrase: 'your preferences' },
 }
 
 /**

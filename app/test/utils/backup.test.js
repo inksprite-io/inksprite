@@ -221,10 +221,12 @@ describe('validateBackup', () => {
     expect(errors.join(' ')).toContain('Restore it with Import in Settings › System')
   })
 
-  it('sends a project file to Import a project', () => {
+  it('sends a project file to Import project', () => {
     const { ok, errors } = validateBackup(validBackup({ scope: 'project' }), 2, 'chat')
     expect(ok).toBe(false)
-    expect(errors.join(' ')).toContain('Import it with Import a project at the top of the outline')
+    expect(errors.join(' ')).toContain(
+      'Import it with Import project, in the projects menu at the top of the outline'
+    )
   })
 
   it('takes a project file where a project is expected', () => {

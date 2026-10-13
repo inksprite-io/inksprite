@@ -7,8 +7,27 @@
     @dragleave="onDragLeave"
     @drop="onDrop"
   >
+    <!-- The projects behind a menu at the start, out of the way: switching is
+         rare. The buttons at the end are this project's, at its top. -->
     <PanelHeader title="Outline">
-      <ProjectMenu :story-id="storyId" />
+      <template #start>
+        <ProjectMenu :story-id="storyId" :project-items="projectMenuItems" />
+      </template>
+      <HeaderButton
+        icon="pi pi-upload"
+        label="Import"
+        aria-haspopup="true"
+        aria-controls="outline_import_menu"
+        data-action="import"
+        @click="importMenu?.toggle($event)"
+      />
+      <HeaderButton
+        icon="pi pi-plus"
+        label="New document"
+        data-action="new-document"
+        @click="rootNode?.createChild('text')"
+      />
+      <Menu id="outline_import_menu" ref="importMenu" :model="importMenuItems" :popup="true" />
     </PanelHeader>
 
     <ScrollPanel class="flex-1 min-h-0 overflow-auto overflow-x-hidden">
@@ -84,6 +103,7 @@
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import Menu from 'primevue/menu'
 import ScrollPanel from 'primevue/scrollpanel'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
@@ -93,6 +113,8 @@ import CardImportDialog from './CardImportDialog.vue'
 import CardChatDialog from './CardChatDialog.vue'
 import RepositoryDialog from './RepositoryDialog.vue'
 import DriveImportDialog from './DriveImportDialog.vue'
+import { importItems } from './importItems.js'
+import HeaderButton from '../layout/HeaderButton.vue'
 import PanelHeader from '../layout/PanelHeader.vue'
 import ProjectMenu from '../projects/ProjectMenu.vue'
 import { useBackup } from '@/composables/useBackup'
@@ -508,6 +530,21 @@ const importCard = async answers => {
  */
 const root = computed(() => api.root.value)
 
+/** @type {import('vue').Ref<any>} */
+const importMenu = ref(null)
+
+/** The Import at the top of the outline: what the project's own Import offers. */
+const importMenuItems = computed(() => {
+  const id = root.value?.id
+  if (!id) return []
+  return importItems({
+    files: () => chooseCard(id),
+    folder: () => chooseFolder(id),
+    drive: () => openDriveDialog(id),
+    repository: () => openRepositoryDialog(id, null),
+  })
+})
+
 /**
  * Opening is the layout's to handle: it makes the document the one the story
  * remembers, and shows the editor if it was hidden.
@@ -561,7 +598,7 @@ const exportProject = async () => {
   }
 }
 
-/** Project-level actions, which hang off the root node rather than a header. */
+/** What can be done to the project: on the root's menu, and under Projects in the header. */
 const projectMenuItems = computed(() => [
   {
     label: 'Project settings',

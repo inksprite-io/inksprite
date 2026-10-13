@@ -121,7 +121,7 @@ describe('useBackup, settings files', () => {
       await expect(
         useBackup().readDataFile(fileOf({ ...settingsFile({}), scope: 'project' }))
       ).rejects.toThrow(
-        'This file holds one project, not a whole backup. Import it with Import a project'
+        'This file holds one project, not a whole backup. Import it with Import project, in the projects menu'
       )
     })
 

@@ -99,7 +99,6 @@
     <h3 class="px-2 pt-4 pb-1 text-sm font-semibold text-surface-700 dark:text-surface-200">
       Data
     </h3>
-    <LibrarySection v-if="desktop" />
     <DataSection />
   </div>
 </template>
@@ -109,15 +108,12 @@ import { computed, ref, watch, onMounted } from 'vue'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import DataSection from './DataSection.vue'
-import LibrarySection from './LibrarySection.vue'
-import { isDesktop } from '@/platform/desktop.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useProfiles } from '@/composables/useProfiles'
 import { applyTheme } from '@/composables/useSystemSettings.js'
 import { useMessagesStore } from '@/stores/messagesStore'
 
 const applicationState = useApplicationState()
-const desktop = isDesktop()
 const { theme, setTheme } = applicationState
 const messagesStore = useMessagesStore()
 const profilesApi = useProfiles()

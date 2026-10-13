@@ -266,64 +266,44 @@ describe('reading the library', () => {
 })
 
 describe('where the library is', () => {
-  it('is Projects in the app’s data folder, made when a checkout run opens', async () => {
+  it('is Projects in the app’s data folder, made as the app opens', async () => {
     const { librarySettings, ensureLibrary, markMoved } = await load()
     const library = path.join(place, 'userData', 'Projects')
-    expect(await librarySettings()).toEqual({ path: library, enabled: true, moved: false })
+    expect(await librarySettings()).toEqual({ path: library, moved: false })
 
     expect(await ensureLibrary()).toBe(library)
     await markMoved()
 
     expect((await fs.stat(library)).isDirectory()).toBe(true)
     const again = await load()
-    expect(await again.librarySettings()).toEqual({ path: library, enabled: true, moved: true })
+    expect(await again.librarySettings()).toEqual({ path: library, moved: true })
     expect(electron.dialog.showMessageBox).not.toHaveBeenCalled()
   })
 
-  it('is off in a release until switched on, and not made till then', async () => {
-    const { librarySettings, ensureLibrary } = await load()
-    electron.app.isPackaged = true
-    try {
-      expect(await librarySettings()).toMatchObject({ enabled: false, moved: false })
-      expect(await ensureLibrary()).toBeNull()
-      expect(await fs.stat(path.join(place, 'userData', 'Projects')).catch(() => null)).toBeNull()
-    } finally {
-      electron.app.isPackaged = false
-    }
-  })
-
-  it('is made when switched on, its projects to be moved in', async () => {
-    const { enableLibrary } = await load()
-    electron.app.isPackaged = true
-    try {
-      const library = await enableLibrary()
-
-      expect(library).toBe(path.join(place, 'userData', 'Projects'))
-      expect((await fs.stat(library)).isDirectory()).toBe(true)
-      const again = await load()
-      expect(await again.librarySettings()).toEqual({ path: library, enabled: true, moved: false })
-    } finally {
-      electron.app.isPackaged = false
-    }
-  })
-
-  it('is switched off with its files left, nothing to move back in', async () => {
-    const { ensureLibrary, markMoved, disableLibrary } = await load()
-    const library = /** @type {string} */ (await ensureLibrary())
-    await fs.writeFile(path.join(library, 'kept.md'), 'Still here.')
-    await markMoved()
-
-    await disableLibrary()
-
-    const again = await load()
-    expect(await again.librarySettings()).toEqual({ path: library, enabled: false, moved: false })
-    expect(await again.ensureLibrary()).toBeNull()
-    expect(await fs.readFile(path.join(library, 'kept.md'), 'utf8')).toBe('Still here.')
-  })
-
-  it('is made again when it was taken away while switched on', async () => {
+  it('is made in a release too', async () => {
     const { ensureLibrary } = await load()
-    const library = /** @type {string} */ (await ensureLibrary())
+    electron.app.isPackaged = true
+    try {
+      const library = await ensureLibrary()
+      expect((await fs.stat(library)).isDirectory()).toBe(true)
+    } finally {
+      electron.app.isPackaged = false
+    }
+  })
+
+  it('has the projects moved in again when they were switched back into the app', async () => {
+    const { librarySettings } = await load()
+    await fs.mkdir(path.join(place, 'userData'), { recursive: true })
+    await fs.writeFile(
+      path.join(place, 'userData', 'library.json'),
+      JSON.stringify({ enabled: false, moved: false })
+    )
+    expect(await librarySettings()).toMatchObject({ moved: false })
+  })
+
+  it('is made again when it was taken away', async () => {
+    const { ensureLibrary } = await load()
+    const library = await ensureLibrary()
     await fs.rm(library, { recursive: true })
 
     expect(await ensureLibrary()).toBe(library)

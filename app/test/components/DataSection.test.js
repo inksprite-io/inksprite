@@ -23,7 +23,7 @@ vi.mock('@/composables/useToast', () => ({ useToast: () => toast }))
 vi.mock('primevue/useconfirm', () => ({ useConfirm: () => ({ require: confirmRequire }) }))
 
 const desktop = vi.hoisted(() => ({ on: false }))
-const library = vi.hoisted(() => ({ librarySettings: vi.fn(), revealInLibrary: vi.fn() }))
+const library = vi.hoisted(() => ({ revealInLibrary: vi.fn() }))
 vi.mock('@/platform/desktop.js', () => ({ isDesktop: () => desktop.on }))
 vi.mock('@/platform/library.js', () => library)
 
@@ -231,28 +231,15 @@ describe('DataSection', () => {
   })
 
   describe('the projects folder', () => {
-    const settings = enabled => ({ path: '/Projects', enabled, moved: true })
-
     it('is not offered in a browser', async () => {
       const wrapper = mountSection()
       await flushPromises()
 
-      expect(library.librarySettings).not.toHaveBeenCalled()
       expect(wrapper.find('[data-action="reveal"]').exists()).toBe(false)
     })
 
-    it('is not offered while the projects are kept in the app', async () => {
+    it('is shown beside Export and Import in the desktop app', async () => {
       desktop.on = true
-      library.librarySettings.mockResolvedValue(settings(false))
-      const wrapper = mountSection()
-      await flushPromises()
-
-      expect(wrapper.find('[data-action="reveal"]').exists()).toBe(false)
-    })
-
-    it('is shown beside Export and Import while they are kept in it', async () => {
-      desktop.on = true
-      library.librarySettings.mockResolvedValue(settings(true))
       const wrapper = mountSection()
       await flushPromises()
 
@@ -262,7 +249,6 @@ describe('DataSection', () => {
 
     it('says so when it cannot be shown', async () => {
       desktop.on = true
-      library.librarySettings.mockResolvedValue(settings(true))
       library.revealInLibrary.mockRejectedValue(new Error('gone'))
       const wrapper = mountSection()
       await flushPromises()

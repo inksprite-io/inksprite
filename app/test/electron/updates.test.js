@@ -73,4 +73,17 @@ describe('installUpdate', () => {
     installUpdate()
     expect(autoUpdater.quitAndInstall).toHaveBeenCalledWith(true, true)
   })
+
+  it('says the app is quitting for the update only once it is', async () => {
+    const { downloadUpdate, installUpdate, installingUpdate } = await load()
+    autoUpdater.checkForUpdates.mockResolvedValue({
+      isUpdateAvailable: true,
+      updateInfo: { version: '0.1.0-dev.7' },
+    })
+    await downloadUpdate()
+
+    expect(installingUpdate()).toBe(false)
+    installUpdate()
+    expect(installingUpdate()).toBe(true)
+  })
 })

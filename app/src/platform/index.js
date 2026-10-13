@@ -26,6 +26,8 @@
  *   the writer is told about how long it will
  * - **settingsFile** - In the desktop app, the settings file a script may
  *   leave in the app's data folder for it to import as it opens
+ * - **closing** - In the desktop app, saving before the window closes or the
+ *   app quits
  *
  * Design: `.llm/desktop_design.md`.
  *
@@ -40,6 +42,7 @@ export { fetch } from './fetch.js'
 export { SIGN_IN_PORT, callbackOrigin, signInInBrowser } from './signIn.js'
 export { downloadUpdate, installUpdate } from './updates.js'
 export { openUrl, openLinkClicked } from './open.js'
-export { librarySettings, enableLibrary, disableLibrary, revealInLibrary } from './library.js'
+export { librarySettings, revealInLibrary } from './library.js'
 export { askToKeepData, storageAdvice } from './persistence.js'
 export { settingsFileText } from './settingsFile.js'
+export { beforeClosing } from './closing.js'

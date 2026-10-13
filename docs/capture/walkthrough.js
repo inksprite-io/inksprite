@@ -76,7 +76,8 @@ export async function walkthrough(ui, { standIn, context }) {
     await ui.type(PROJECT)
     await ui.click(button('Create'))
     await page.getByRole('treeitem', { name: PROJECT }).waitFor()
-    await ui.click(button('New document'))
+    // The empty editor's, which says so; the outline's plus is named the same.
+    await ui.click(button('New document').filter({ hasText: 'New document' }))
     await ui.type('Chapter 1')
     await ui.press('Enter')
     await ui.click(page.locator('.ProseMirror'))
@@ -96,7 +97,7 @@ export async function walkthrough(ui, { standIn, context }) {
   })
   await page.getByRole('menuitem', { name: 'New folder' }).waitFor()
   await ui.shot('outline-menu', {
-    of: [page.getByRole('heading', { name: 'Outline' }), page.getByRole('menubar')],
+    of: [button('Projects'), page.getByRole('menubar')],
     pad: 12,
   })
   await ui.press('Escape')

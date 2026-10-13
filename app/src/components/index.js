@@ -23,8 +23,10 @@
  *     sidebar's lists head themselves with `PanelHeader`, the height of the
  *     editor's tab strip and the chat's header, and the small icon buttons in
  *     all of them are `HeaderButton`.
- *   - `projects/` - `ProjectMenu`, at the top of the outline, for switching
- *     projects and starting or importing one, and the new-project dialog
+ *   - `projects/` - `ProjectMenu`, the menu at the start of the outline's
+ *     header, for switching projects (in a submenu, which scrolls), starting
+ *     or importing one, and the open one's settings, export and delete; and
+ *     the new-project dialog
  *   - `editor/` - The editor over a structured document, the field over a
  *     plain one, the strip of tabs above them, and the empty editor for a
  *     project with no documents or no tabs. A comment is written under the
@@ -33,7 +35,8 @@
  *   - `comments/` - `CommentsPanel`, the project's comments in the sidebar:
  *     picking one opens its document, where `Editor` scrolls to it and marks
  *     it; Resolve takes it off
- *   - `tree/` - The document tree and its nodes
+ *   - `tree/` - The document tree and its nodes. Its header's Import and New
+ *     document act on the project's top, as the root's menu does
  *   - `chats/` - A chat, its list, and its settings
  *   - `narration/` - The document in the editor read aloud: `NarrationPanel`
  *     in the sidebar, with the document's blocks (`NarrationScript`: who

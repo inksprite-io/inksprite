@@ -21,9 +21,24 @@ function appVersion() {
   }
 }
 
+/**
+ * vuedraggable's bundle finds the global object with `new Function`, which
+ * the page's Content-Security-Policy (index.html) refuses. It falls back to
+ * `window`, so nothing breaks, but every load logs the refusal as an error.
+ * `globalThis` is what it means.
+ * @type {import('vite').Plugin}
+ */
+const draggableWithoutEval = {
+  name: 'draggable-without-eval',
+  transform(code, id) {
+    if (!id.includes('vuedraggable')) return null
+    return code.replace(/new Function\(\s*["']return this["']\s*\)\(\)/g, 'globalThis')
+  },
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), tailwindcss()],
+  plugins: [vue(), tailwindcss(), draggableWithoutEval],
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion()),
   },

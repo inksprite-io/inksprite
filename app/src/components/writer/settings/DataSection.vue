@@ -18,7 +18,7 @@
       @click="handleImportClick"
     />
     <Button
-      v-if="inFolder"
+      v-if="desktop"
       :label="revealLabel"
       icon="pi pi-folder-open"
       size="small"
@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import Button from 'primevue/button'
 import { useConfirm } from 'primevue/useconfirm'
 import { useBackup } from '@/composables/useBackup'
@@ -49,7 +49,7 @@ import { changesAnything, describeImport } from '@/utils/settingsFile.js'
 import ExportDialog from './ExportDialog.vue'
 import { getWebService } from '@/web/services.js'
 import { isDesktop } from '@/platform/desktop.js'
-import { librarySettings, revealInLibrary } from '@/platform/library.js'
+import { revealInLibrary } from '@/platform/library.js'
 
 /** @typedef {import('@/utils/backup.js').Backup} Backup */
 /** @typedef {import('@/utils/settingsFile.js').SettingsImport} SettingsImport */
@@ -67,24 +67,15 @@ const fileInput = ref(null)
 /** What a web search service is called, for naming the keys a file left out. */
 const webName = (/** @type {string} */ id) => getWebService(id)?.name ?? id
 
-// In the desktop app with the projects kept in a folder, the folder can be
-// shown in the system's file manager.
-const inFolder = ref(false)
+// In the desktop app, the folder the projects are kept in can be shown in
+// the system's file manager.
+const desktop = isDesktop()
 const platform = typeof navigator === 'undefined' ? '' : navigator.userAgent
 const revealLabel = /Mac/.test(platform)
   ? 'Show in Finder'
   : /Windows/.test(platform)
     ? 'Show in Explorer'
     : 'Show folder'
-
-onMounted(async () => {
-  if (!isDesktop()) return
-  try {
-    inFolder.value = (await librarySettings()).enabled
-  } catch (error) {
-    console.error('Where the library is could not be read:', error)
-  }
-})
 
 const reveal = async () => {
   try {

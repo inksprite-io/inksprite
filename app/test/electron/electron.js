@@ -5,8 +5,8 @@
  */
 import { vi } from 'vitest'
 
-export const app = { isPackaged: false, getPath: vi.fn() }
-export const ipcMain = { handle: vi.fn(), on: vi.fn() }
+export const app = { isPackaged: false, getPath: vi.fn(), on: vi.fn(), quit: vi.fn() }
+export const ipcMain = { handle: vi.fn(), on: vi.fn(), removeListener: vi.fn() }
 export const net = { fetch: vi.fn() }
 export const protocol = { handle: vi.fn(), registerSchemesAsPrivileged: vi.fn() }
 export const shell = { openExternal: vi.fn(), trashItem: vi.fn(), showItemInFolder: vi.fn() }

@@ -220,7 +220,9 @@ Type: [string][169]
 
 ## PUBLIC_ORIGIN
 
-The site the client ID metadata document is served from.
+The site the app and its client ID metadata document are served from. Not
+inksprite.io, which only redirects here: a page can offer the document only
+on the origin the document sends the writer back to.
 
 Type: [string][169]
 

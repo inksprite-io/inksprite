@@ -3937,6 +3937,10 @@ and `javascript:` is a URL. They are checked against a list of what a link in
 a story could reasonably be, after being decoded — `java&#09;script:` is the
 same URL once the browser has read the attribute.
 
+An image is a link to it. Shown, it would be fetched the moment it was on the
+screen, with whatever the model put in its address. The page's
+Content-Security-Policy (`index.html`) refuses images from elsewhere too.
+
 A lone newline is a line break, not CommonMark's soft wrap. What is rendered
 here is shown where it was typed — a chat message, a model's reply, a
 document — and a writer who ended a line meant it to end there.

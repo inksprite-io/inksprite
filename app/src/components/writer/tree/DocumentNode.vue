@@ -230,6 +230,7 @@ import TieredMenu from 'primevue/tieredmenu'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import DocumentSummary from './DocumentSummary.vue'
+import { importItems } from './importItems.js'
 import { useCopyPath } from '@/composables/useCopyPath.js'
 import { usePlainText } from '@/composables/usePlainText.js'
 import { useFileView } from '@/composables/useFileView.js'
@@ -247,7 +248,6 @@ import { EPUB_MIME, hasText, isText } from '@/files/inspect.js'
 import { inRepository, isRepository, repositoryOf } from '@/source/tree.js'
 import { reextractFile } from '@/files/write.js'
 import { sessionStorage } from '@/utils/sessionStorage'
-import { driveAvailable } from '@/drive/config.js'
 import { isDesktop } from '@/platform/desktop.js'
 
 defineOptions({ name: 'DocumentNode' })
@@ -312,7 +312,6 @@ const showContextMenu = event => {
   openedAt = null
   contextMenu.value?.show(event)
 }
-defineExpose({ showContextMenu })
 
 /**
  * The row a keyboard opened the menu from, to go back to when it shuts.
@@ -900,6 +899,10 @@ const createChild = type => {
   api.requestRename(created.id)
 }
 
+// The outline asks the root for both: a right-click on the space below the
+// tree, and New document at the top of it.
+defineExpose({ showContextMenu, createChild })
+
 const confirmDelete = () => {
   const name = node.value?.title?.trim() || 'Untitled'
   const hasChildren = childList.value.length > 0
@@ -1006,35 +1009,12 @@ const menuItems = computed(() => {
     items.push({
       label: 'Import',
       icon: 'pi pi-upload',
-      items: [
-        {
-          label: 'Files…',
-          icon: 'pi pi-file',
-          command: () => emit('import', props.documentId),
-        },
-        {
-          label: 'Folder…',
-          icon: 'pi pi-folder-open',
-          command: () => emit('import-folder', props.documentId),
-        },
-        // Picked in Google's picker; only where the build has a Google project
-        // and the page can sign in to it.
-        ...(driveAvailable()
-          ? [
-              {
-                label: 'Google Drive…',
-                icon: 'pi pi-google',
-                command: () => emit('import-drive', props.documentId),
-              },
-            ]
-          : []),
-        // A codebase, to write about: from GitHub or a folder, read-only.
-        {
-          label: 'Repository…',
-          icon: 'pi pi-code',
-          command: () => emit('import-repository', props.documentId),
-        },
-      ],
+      items: importItems({
+        files: () => emit('import', props.documentId),
+        folder: () => emit('import-folder', props.documentId),
+        drive: () => emit('import-drive', props.documentId),
+        repository: () => emit('import-repository', props.documentId),
+      }),
     })
   }
   // GitHub only answers the desktop app, so a repository from there can't be

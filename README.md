@@ -1,6 +1,31 @@
 # inksprite
 
-inksprite is a writing app that runs locally, either in your browser or as a desktop application.
+inksprite is a writing app that runs locally in your browser or as a standalone
+desktop application. You do not need to make an account to use inksprite. Your
+work stays on your device.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/src/assets/guide/first-chat-dark.png">
+  <img alt="A project's outline, a document of ideas, and the chat in which the AI read Chapter 1 and wrote them" src="docs/src/assets/guide/first-chat.png">
+</picture>
+
+**[Open it in your browser](https://app.inksprite.io)** ·
+[Download the desktop app](https://github.com/inksprite-io/inksprite/releases/latest) ·
+[Getting Started guide](https://docs.inksprite.io/getting-started)
+
+## AI tools
+
+You can use the built-in AI tools to:
+
+- Write and edit documents
+- Research and brainstorm
+- Generate audio narrations
+
+They work with OpenRouter, Anthropic, OpenAI, or a model on your own machine.
+Requests go straight from your device to the provider.
+
+inksprite is still in development. Please report bugs and issues
+[here](https://github.com/inksprite-io/inksprite/issues).
 
 ## Running it
 

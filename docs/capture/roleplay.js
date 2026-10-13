@@ -213,7 +213,7 @@ export async function roleplay(ui, { standIn, context }) {
   await row(LOREBOOK).waitFor()
   await ui.click(row(LOREBOOK).getByRole('button', { name: 'Collapse' }))
   await ui.shot('roleplay-outline', {
-    of: [page.getByRole('heading', { name: 'Outline' }), row(LOREBOOK)],
+    of: [button('Projects'), row(LOREBOOK)],
     pad: 12,
   })
 

@@ -82,9 +82,6 @@ describe('renderMarkdown', () => {
       expect(renderMarkdown('[note](/notes/elara)')).toContain('href="/notes/elara"')
       expect(renderMarkdown('[top](#top)')).toContain('href="#top"')
       expect(renderMarkdown('[write](mailto:a@b.com)')).toContain('href="mailto:a@b.com"')
-      expect(renderMarkdown('![art](https://example.com/a.png)')).toContain(
-        '<img src="https://example.com/a.png"'
-      )
     })
 
     it('keeps the words and drops a destination that is not one', () => {
@@ -115,6 +112,33 @@ describe('renderMarkdown', () => {
 
     it('leaves an image with nowhere to point as its own caption', () => {
       expect(renderMarkdown('![a knight](javascript:boom())')).toBe('<p>a knight</p>\n')
+    })
+  })
+
+  describe('images', () => {
+    // An image is fetched as soon as it is shown, so an address a model was
+    // talked into writing would carry the writer's words off unasked.
+    it('links to an image rather than showing it', () => {
+      expect(renderMarkdown('![a *map*](https://example.com/map.png)')).toBe(
+        '<p><a href="https://example.com/map.png">a <em>map</em></a></p>\n'
+      )
+      expect(renderMarkdown('![](https://example.com/x.png?d=the%20secret)')).toBe(
+        '<p><a href="https://example.com/x.png?d=the%20secret">https://example.com/x.png?d=the%20secret</a></p>\n'
+      )
+    })
+
+    it('links to an image with no scheme, which may still be somewhere else', () => {
+      const rendered = renderMarkdown('![](//example.com/x.png) ![](/a.png)')
+
+      expect(rendered).not.toContain('<img')
+      expect(rendered).toContain('<a href="//example.com/x.png">')
+      expect(rendered).toContain('<a href="/a.png">')
+    })
+
+    it('keeps an image’s title on its link', () => {
+      expect(renderMarkdown('![map](https://example.com/m.png "The coast")')).toContain(
+        'title="The coast"'
+      )
     })
   })
 })

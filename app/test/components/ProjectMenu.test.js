@@ -3,7 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import PrimeVue from 'primevue/config'
-import Menu from 'primevue/menu'
+import TieredMenu from 'primevue/tieredmenu'
 import ProjectMenu from '@/components/writer/projects/ProjectMenu.vue'
 import NewProjectDialog from '@/components/writer/projects/NewProjectDialog.vue'
 import { useDocumentsStore } from '@/stores/documentsStore'
@@ -77,9 +77,9 @@ describe('ProjectMenu', () => {
     })
   })
 
-  const mountMenu = async storyId => {
+  const mountMenu = async (storyId, projectItems) => {
     const wrapper = mount(ProjectMenu, {
-      props: { storyId },
+      props: { storyId, ...(projectItems && { projectItems }) },
       global: {
         plugins: [router, PrimeVue],
         directives: { tooltip: {} },
@@ -90,15 +90,51 @@ describe('ProjectMenu', () => {
     return { wrapper, push: vi.spyOn(router, 'push') }
   }
 
-  /** The projects the picker offers, in order. */
-  const items = wrapper => wrapper.findComponent(Menu).props('model')
+  /** What the menu offers, in order. */
+  const items = wrapper => wrapper.findComponent(TieredMenu).props('model')
 
-  const titles = wrapper => items(wrapper).map(item => item.label)
+  /** The projects, under Switch project. */
+  const listed = wrapper => items(wrapper).find(item => item.label === 'Switch project').items
 
+  const titles = wrapper => listed(wrapper).map(item => item.label)
+
+  /** Choose something in the menu, or a project under Switch project. */
   const pick = (wrapper, label) =>
-    items(wrapper)
-      .find(item => item.label === label)
-      .command()
+    [...items(wrapper), ...listed(wrapper)].find(item => item.label === label).command()
+
+  const shape = wrapper => items(wrapper).map(item => (item.separator ? '—' : item.label))
+
+  it('is one button, for a menu with the projects beside it, then a new one or an import', async () => {
+    await storiesStore.createStory('Mine')
+
+    const { wrapper } = await mountMenu('')
+    expect(wrapper.findAll('button').map(button => button.attributes('aria-label'))).toEqual([
+      'Projects',
+    ])
+    expect(shape(wrapper)).toEqual(['Switch project', 'New project…', 'Import project…'])
+    expect(titles(wrapper)).toEqual(['Mine'])
+  })
+
+  it('ends with what can be done to the project open, as it is given', async () => {
+    const story = await storiesStore.createStory('Mine')
+    const settings = vi.fn()
+    const projectItems = [
+      { label: 'Project settings', icon: 'pi pi-cog', command: settings },
+      { label: 'Delete project', icon: 'pi pi-trash', command: vi.fn() },
+    ]
+
+    const { wrapper } = await mountMenu(story.id, projectItems)
+    expect(shape(wrapper)).toEqual([
+      'Switch project',
+      'New project…',
+      'Import project…',
+      '—',
+      'Project settings',
+      'Delete project',
+    ])
+    pick(wrapper, 'Project settings')
+    expect(settings).toHaveBeenCalled()
+  })
 
   it('lists projects by name, numbers as numbers and case aside, named from their roots', async () => {
     for (const title of ['Zebra', 'Draft 10', 'apple', 'Draft 2']) {
@@ -123,7 +159,7 @@ describe('ProjectMenu', () => {
     await storiesStore.createStory('Other')
 
     const { wrapper } = await mountMenu(story.id)
-    expect(items(wrapper).map(item => item.open)).toEqual([true, false])
+    expect(listed(wrapper).map(item => item.open)).toEqual([true, false])
   })
 
   it('switches to another project, and stays on the one open', async () => {
@@ -144,7 +180,7 @@ describe('ProjectMenu', () => {
     documentsStore.documents.set(root.id, { ...root, edited: Date.now() - 3 * 3600000 })
 
     const { wrapper } = await mountMenu(story.id)
-    expect(items(wrapper)[0].edited).toBe('3h ago')
+    expect(listed(wrapper)[0].edited).toBe('3h ago')
   })
 
   it('works out when an older project was last edited, from its documents and chats, once', async () => {
@@ -163,7 +199,7 @@ describe('ProjectMenu', () => {
     const { wrapper } = await mountMenu(story.id)
 
     expect(documentsStore.getRoot(story.id).edited).toBe(now - 2 * 86400000)
-    expect(items(wrapper)[0].edited).toBe('2d ago')
+    expect(listed(wrapper)[0].edited).toBe('2d ago')
 
     // Kept: a second list reads nothing.
     const { default: db } = await import('@/stores/db')
@@ -177,7 +213,8 @@ describe('ProjectMenu', () => {
 
     const dialog = wrapper.findComponent(NewProjectDialog)
     expect(dialog.props('visible')).toBe(false)
-    await wrapper.find('[data-action="new-project"]').trigger('click')
+    pick(wrapper, 'New project…')
+    await flushPromises()
     expect(dialog.props('visible')).toBe(true)
 
     dialog.vm.$emit('create', { title: 'My Novel' })
@@ -205,7 +242,7 @@ describe('ProjectMenu', () => {
     const { wrapper } = await mountMenu('')
     const click = vi.spyOn(wrapper.find('input[type="file"]').element, 'click')
 
-    await wrapper.find('[data-action="import-project"]').trigger('click')
+    pick(wrapper, 'Import project…')
     expect(click).toHaveBeenCalled()
   })
 
@@ -226,6 +263,21 @@ describe('ProjectMenu', () => {
     const storyId = [...storiesStore.stories.keys()][0]
     expect(toast.success).toHaveBeenCalledWith('Imported "Imported"')
     expect(push).toHaveBeenCalledWith(`/project/${storyId}`)
+  })
+
+  it('spins while a project file is read', async () => {
+    let finish
+    backup.readProjectFile.mockReturnValue(new Promise(resolve => (finish = resolve)))
+    backup.importProject.mockImplementation(() => storiesStore.createStory('Imported'))
+    const { wrapper } = await mountMenu('')
+    const button = wrapper.find('[data-action="projects"]')
+
+    await pickFile(wrapper, new window.File(['{}'], 'inksprite-project-draft.json'))
+    expect(button.find('i').classes()).toContain('pi-spinner')
+
+    finish({ story: { id: 'story_from_file' }, documents: [] })
+    await flushPromises()
+    expect(button.find('i').classes()).toContain('pi-bars')
   })
 
   it('says why a file could not be imported, and opens nothing', async () => {

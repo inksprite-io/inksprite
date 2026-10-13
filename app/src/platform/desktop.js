@@ -49,26 +49,25 @@
  * @property {() => Promise<void>} installUpdate
  * @property {() => Promise<string|null>} settingsFile - The text of the settings
  *   file a script left in the app's data folder, or null when there is none
+ * @property {(save: () => Promise<void>) => void} beforeClosing - What to do
+ *   before the window closes or the app quits, which waits for it a while
  * @property {DesktopLibrary} library - The folder the projects are kept in
  */
 
 /**
- * Whether the projects are kept in the library, where it is, and whether
- * the window's own have been moved into it.
+ * Where the library is, and whether the window's own projects have been
+ * moved into it.
  *
- * @typedef {{path: string, enabled: boolean, moved: boolean}} LibrarySettings
+ * @typedef {{path: string, moved: boolean}} LibrarySettings
  */
 
 /**
- * The library: whether the projects are kept in it, where it is, and the
- * files in it, by paths below it. What is done there is `LibraryDisk` in
- * `storage/library.js`.
+ * The library: where it is, and the files in it, by paths below it. What is
+ * done there is `LibraryDisk` in `storage/library.js`.
  *
  * @typedef {import('../storage/library.js').LibraryDisk & {
  *   settings: () => Promise<LibrarySettings>,
  *   markMoved: () => Promise<void>,
- *   enable: () => Promise<string>,
- *   disable: () => Promise<void>,
  *   reveal: (path?: string) => Promise<void>,
  * }} DesktopLibrary
  */

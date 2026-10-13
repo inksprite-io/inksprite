@@ -1,49 +1,40 @@
 <template>
-  <div class="flex items-center gap-1">
+  <div class="flex items-center">
     <HeaderButton
-      icon="pi pi-book"
+      icon="pi pi-bars"
       label="Projects"
+      :loading="isImporting"
       aria-haspopup="true"
       aria-controls="project_menu"
       data-action="projects"
       @click="menu?.toggle($event)"
     />
-    <HeaderButton
-      icon="pi pi-upload"
-      label="Import a project"
-      :loading="isImporting"
-      data-action="import-project"
-      @click="fileInput?.click()"
-    />
-    <HeaderButton
-      icon="pi pi-plus"
-      label="New project"
-      data-action="new-project"
-      @click="showCreateDialog = true"
-    />
 
-    <Menu
+    <!-- The projects in a list of their own beside the menu, which scrolls
+         when there are many, so what comes after them is never below it. -->
+    <TieredMenu
       id="project_menu"
       ref="menu"
       :model="items"
       :popup="true"
-      :pt="{
-        root: { class: 'w-72 max-w-[calc(100vw-2rem)]' },
-        list: { class: 'max-h-[60vh] overflow-y-auto' },
-      }"
+      :pt="{ submenu: { class: 'w-72 max-w-[calc(100vw-2rem)] max-h-[50vh] overflow-y-auto' } }"
     >
-      <template #item="{ item, props: link }">
+      <template #item="{ item, hasSubmenu, props: link }">
         <a v-bind="link.action" :aria-current="item.open || undefined">
-          <span class="pi pi-fw shrink-0 self-start mt-0.5" :class="{ 'pi-check': item.open }" />
+          <span
+            class="pi pi-fw shrink-0 self-start mt-0.5"
+            :class="item.icon || (item.open && 'pi-check')"
+          />
           <span class="flex flex-col min-w-0">
             <span class="truncate" :class="{ 'font-semibold': item.open }">{{ item.label }}</span>
             <span v-if="item.edited" class="text-xs text-surface-500 dark:text-surface-400">
               {{ item.edited }}
             </span>
           </span>
+          <i v-if="hasSubmenu" class="pi pi-angle-right" v-bind="link.submenuicon" />
         </a>
       </template>
-    </Menu>
+    </TieredMenu>
     <input
       ref="fileInput"
       type="file"
@@ -57,7 +48,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import Menu from 'primevue/menu'
+import TieredMenu from 'primevue/tieredmenu'
 import HeaderButton from '../layout/HeaderButton.vue'
 import NewProjectDialog from './NewProjectDialog.vue'
 import { useProjects } from '@/composables/useProjects'
@@ -66,15 +57,18 @@ import { useToast } from '@/composables/useToast'
 import { compareNames } from '@/utils/compareNames.js'
 
 /**
- * The projects, from the top of the outline: a picker of every one by name,
- * the one open checked and each with when it was last edited, and buttons to
- * start one or import one from a file.
+ * The projects, from a menu at the top of the outline: Switch project for every
+ * one by name, the one open checked and each with when it was last edited; a
+ * new one or one imported from a file; then what the outline does to the one
+ * open.
  *
  * @typedef {Object} Props
  * @property {string} storyId - The project open
+ * @property {Array<Object>} [projectItems] - Menu items for the project open: its settings, an export, a delete
  */
 const props = defineProps({
   storyId: { type: String, required: true },
+  projectItems: { type: Array, default: () => [] },
 })
 
 const projects = useProjects()
@@ -100,7 +94,7 @@ const sorted = computed(() =>
   )
 )
 
-const items = computed(() =>
+const listed = computed(() =>
   sorted.value.map(story => {
     const open = story.id === props.storyId
     const edited = projects.editedOf(story.id)
@@ -114,6 +108,19 @@ const items = computed(() =>
     }
   })
 )
+
+const items = computed(() => [
+  { label: 'Switch project', icon: 'pi pi-book', items: listed.value },
+  {
+    label: 'New project…',
+    icon: 'pi pi-plus',
+    command: () => {
+      showCreateDialog.value = true
+    },
+  },
+  { label: 'Import project…', icon: 'pi pi-upload', command: () => fileInput.value?.click() },
+  ...(props.projectItems.length > 0 ? [{ separator: true }, ...props.projectItems] : []),
+])
 
 /** @param {{ title: string }} options */
 const create = async ({ title }) => {

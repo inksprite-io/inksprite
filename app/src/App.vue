@@ -18,6 +18,7 @@ import { applyTheme } from './composables/useSystemSettings'
 import { useApplicationState } from './composables/useApplicationState'
 import { useSkills } from './composables/useSkills'
 import { useUpdates } from './composables/useUpdates'
+import { useSaveBeforeClosing } from './composables/useSaveBeforeClosing'
 import { useLibraryNotices } from './composables/useLibraryNotices'
 import { useLibraryMove } from './composables/useLibraryMove'
 import { useSettingsFileNotice } from './composables/useSettingsFile'
@@ -47,6 +48,10 @@ useJobsStore().countJobs()
 // it is downloaded.
 useUpdates()
 
+// In the desktop app, what the writer just did is saved before the window
+// closes or the app quits.
+useSaveBeforeClosing()
+
 // In the desktop app, a file changed elsewhere and saved over goes to the
 // trash first, and the writer is told.
 useLibraryNotices()
@@ -56,8 +61,8 @@ useLibraryNotices()
 useSettingsFileNotice()
 
 // In the desktop app, projects the app kept that are still to be moved into
-// the folder are moved as it opens: the first time a run from the checkout
-// opens, or after it was closed during a move.
+// the folder are moved as it opens: the first time it opens with one, or
+// after it was closed during a move.
 const libraryMove = useLibraryMove()
 
 onMounted(() => {

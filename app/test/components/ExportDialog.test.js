@@ -26,7 +26,7 @@ const ITEMS = [
   {
     key: 'settings/preferences',
     kind: 'settings',
-    name: 'Preferences: theme, edits, NSFW profiles, speaker colours',
+    name: 'Preferences',
     picked: false,
   },
 ]

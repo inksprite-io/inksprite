@@ -241,17 +241,17 @@
 - [libraryStorage][237]
   - [Parameters][238]
 - [projects][239]
-- [projects][240]
-- [libraryTaken][241]
-- [listing][242]
-- [waiting][243]
-- [doing][244]
-- [inTurn][245]
-  - [Parameters][246]
-- [newProject][247]
-  - [Parameters][248]
-- [load][249]
-  - [Parameters][250]
+- [libraryTaken][240]
+- [listing][241]
+- [waiting][242]
+- [doing][243]
+- [inTurn][244]
+  - [Parameters][245]
+- [newProject][246]
+  - [Parameters][247]
+- [load][248]
+  - [Parameters][249]
+- [project][250]
 - [project][251]
 - [project][252]
 - [project][253]
@@ -261,159 +261,155 @@
 - [project][257]
 - [project][258]
 - [project][259]
-- [project][260]
-- [upgrade][261]
-  - [Parameters][262]
+- [upgrade][260]
+  - [Parameters][261]
+- [ops][262]
 - [ops][263]
-- [ops][264]
+- [byChat][264]
 - [byChat][265]
-- [byChat][266]
-- [ensureLoaded][267]
-  - [Parameters][268]
-- [apply][269]
-  - [Parameters][270]
-- [expected][271]
+- [ensureLoaded][266]
+  - [Parameters][267]
+- [apply][268]
+  - [Parameters][269]
+- [expected][270]
+- [][271]
 - [][272]
-- [][273]
-- [toDo][274]
-- [titleAt][275]
-  - [Parameters][276]
-- [length][277]
-- [projectOfDocument][278]
-  - [Parameters][279]
-- [projectOf][280]
-  - [Parameters][281]
-- [folderName][282]
-  - [Parameters][283]
-- [writeNew][284]
-  - [Parameters][285]
+- [toDo][273]
+- [titleAt][274]
+  - [Parameters][275]
+- [length][276]
+- [projectOfDocument][277]
+  - [Parameters][278]
+- [projectOf][279]
+  - [Parameters][280]
+- [folderName][281]
+  - [Parameters][282]
+- [writeNew][283]
+  - [Parameters][284]
+- [files][285]
 - [files][286]
 - [files][287]
-- [files][288]
-- [lines][289]
-- [seen][290]
-- [batch][291]
-- [writeIfReady][292]
-  - [Parameters][293]
-- [trashProject][294]
-  - [Parameters][295]
-- [writeDocuments][296]
-  - [Parameters][297]
-- [byProject][298]
-- [full][299]
-- [][300]
+- [lines][288]
+- [seen][289]
+- [batch][290]
+- [writeIfReady][291]
+  - [Parameters][292]
+- [trashProject][293]
+  - [Parameters][294]
+- [writeDocuments][295]
+  - [Parameters][296]
+- [byProject][297]
+- [full][298]
+- [][299]
+- [planProject][300]
 - [planProject][301]
-- [planProject][302]
-  - [Parameters][303]
-- [writeStories][304]
-  - [Parameters][305]
-- [readChats][306]
-  - [Parameters][307]
-- [chats][308]
-- [projectOfChat][309]
-  - [Parameters][310]
-- [findChat][311]
-  - [Parameters][312]
-- [readChatMessages][313]
-  - [Parameters][314]
-- [writeChats][315]
-  - [Parameters][316]
-- [writeChatMessages][317]
-  - [Parameters][318]
-- [writeMessages][319]
-  - [Parameters][320]
-- [chatOfMessage][321]
-  - [Parameters][322]
-- [bytesOf][323]
-  - [Parameters][324]
-- [][325]
-- [everything][326]
-- [add][327]
-  - [Parameters][328]
-- [dirOf][329]
-  - [Parameters][330]
-- [][331]
-- [puts][332]
+  - [Parameters][302]
+- [writeStories][303]
+  - [Parameters][304]
+- [readChats][305]
+  - [Parameters][306]
+- [chats][307]
+- [projectOfChat][308]
+  - [Parameters][309]
+- [findChat][310]
+  - [Parameters][311]
+- [readChatMessages][312]
+  - [Parameters][313]
+- [writeChats][314]
+  - [Parameters][315]
+- [writeChatMessages][316]
+  - [Parameters][317]
+- [writeMessages][318]
+  - [Parameters][319]
+- [chatOfMessage][320]
+  - [Parameters][321]
+- [bytesOf][322]
+  - [Parameters][323]
+- [][324]
+- [everything][325]
+- [add][326]
+  - [Parameters][327]
+- [dirOf][328]
+  - [Parameters][329]
+- [][330]
+- [puts][331]
+- [][332]
 - [][333]
 - [][334]
 - [][335]
-- [][336]
+- [UNSAFE][336]
 - [UNSAFE][337]
-- [UNSAFE][338]
-- [RESERVED][339]
-- [MAX_BYTES][340]
-- [PREFIX][341]
-- [clip][342]
-  - [Parameters][343]
-- [safeName][344]
-  - [Parameters][345]
-- [][346]
-- [nameKey][347]
-  - [Parameters][348]
-- [nameKey][349]
-- [splitExtension][350]
-  - [Parameters][351]
-- [claimName][352]
-  - [Parameters][353]
-- [prefixWidth][354]
-  - [Parameters][355]
-- [withPrefix][356]
-  - [Parameters][357]
-- [readPrefix][358]
-  - [Parameters][359]
-- [stemFits][360]
-  - [Parameters][361]
-- [isDesktop][362]
+- [RESERVED][338]
+- [MAX_BYTES][339]
+- [PREFIX][340]
+- [clip][341]
+  - [Parameters][342]
+- [safeName][343]
+  - [Parameters][344]
+- [][345]
+- [nameKey][346]
+  - [Parameters][347]
+- [nameKey][348]
+- [splitExtension][349]
+  - [Parameters][350]
+- [claimName][351]
+  - [Parameters][352]
+- [prefixWidth][353]
+  - [Parameters][354]
+- [withPrefix][355]
+  - [Parameters][356]
+- [readPrefix][357]
+  - [Parameters][358]
+- [stemFits][359]
+  - [Parameters][360]
+- [isDesktop][361]
+- [listeners][362]
 - [listeners][363]
 - [listeners][364]
-- [listeners][365]
-- [MoveProgress][366]
-  - [Properties][367]
-- [onChangedElsewhere][368]
-  - [Parameters][369]
-- [openLibrary][370]
-- [toMove][371]
-- [openStorage][372]
-- [projectsToMove][373]
-- [moveIntoLibrary][374]
-  - [Parameters][375]
-- [moveProjects][376]
-  - [Parameters][377]
-- [told][378]
-  - [Parameters][379]
-- [lastChanged][380]
-  - [Parameters][381]
-- [keepProjectsInApp][382]
+- [MoveProgress][365]
+  - [Properties][366]
+- [onChangedElsewhere][367]
+  - [Parameters][368]
+- [openLibrary][369]
+- [toMove][370]
+- [openStorage][371]
+- [projectsToMove][372]
+- [moveIntoLibrary][373]
+  - [Parameters][374]
+- [moveProjects][375]
+  - [Parameters][376]
+- [told][377]
+  - [Parameters][378]
+- [lastChanged][379]
+  - [Parameters][380]
+- [Op][381]
+- [depthOf][382]
   - [Parameters][383]
-- [][384]
-- [Op][385]
-- [depthOf][386]
+- [isBelow][384]
+  - [Parameters][385]
+- [isFolder][386]
   - [Parameters][387]
-- [isBelow][388]
+- [filesOf][388]
   - [Parameters][389]
-- [isFolder][390]
+- [repositoryText][390]
   - [Parameters][391]
-- [filesOf][392]
-  - [Parameters][393]
-- [repositoryText][394]
+- [below][392]
+- [documentOf][393]
+- [narrationText][394]
   - [Parameters][395]
-- [below][396]
-- [documentOf][397]
-- [narrationText][398]
+- [projectFiles][396]
+  - [Parameters][397]
+- [storyText][398]
   - [Parameters][399]
-- [projectFiles][400]
-  - [Parameters][401]
-- [storyText][402]
-  - [Parameters][403]
+- [][400]
+- [at][401]
+- [][402]
+- [][403]
 - [][404]
-- [at][405]
+- [][405]
 - [][406]
-- [][407]
-- [][408]
-- [][409]
-- [][410]
-- [trashed][411]
-- [repositories][412]
+- [trashed][407]
+- [repositories][408]
 
 ## META
 
@@ -431,17 +427,17 @@ own and small.
 
 ## META
 
-Type: [string][413]
+Type: [string][409]
 
 ## META
 
-Type: [string][413]
+Type: [string][409]
 
 ## META
 
 The project's own folder, beside its documents.
 
-Type: [string][413]
+Type: [string][409]
 
 ## encoder
 
@@ -451,13 +447,13 @@ Type: [string][413]
 
 ### Parameters
 
-- `id` **[string][413]**&#x20;
+- `id` **[string][409]**&#x20;
 
 ## messagesPath
 
 ### Parameters
 
-- `id` **[string][413]**&#x20;
+- `id` **[string][409]**&#x20;
 
 ## chatText
 
@@ -465,7 +461,7 @@ Type: [string][413]
 
 - `chat` **Chat**&#x20;
 
-Returns **[string][413]**&#x20;
+Returns **[string][409]**&#x20;
 
 ## readChat
 
@@ -473,7 +469,7 @@ A chat's row from its file, or null when it cannot be read.
 
 ### Parameters
 
-- `text` **[string][413]**&#x20;
+- `text` **[string][409]**&#x20;
 
 Returns **(Chat | null)**&#x20;
 
@@ -484,9 +480,9 @@ two were made in the same millisecond.
 
 ### Parameters
 
-- `messages` **[Array][414]\<Message>**&#x20;
+- `messages` **[Array][410]\<Message>**&#x20;
 
-Returns **[Array][414]\<Message>**&#x20;
+Returns **[Array][410]\<Message>**&#x20;
 
 ## messageLine
 
@@ -494,20 +490,20 @@ Returns **[Array][414]\<Message>**&#x20;
 
 - `message` **Message**&#x20;
 
-Returns **[string][413]** Its line, ending with its newline
+Returns **[string][409]** Its line, ending with its newline
 
 ## MessageLines
 
 What is in a chat's messages file, as far as writing it again goes: whose
 each line is, when it was made, and how long it is, in bytes.
 
-Type: [Object][415]
+Type: [Object][411]
 
 ### Properties
 
-- `ids` **[Array][414]<[string][413]>**&#x20;
-- `created` **[Array][414]<[number][416]>**&#x20;
-- `sizes` **[Array][414]<[number][416]>**&#x20;
+- `ids` **[Array][410]<[string][409]>**&#x20;
+- `created` **[Array][410]<[number][412]>**&#x20;
+- `sizes` **[Array][410]<[number][412]>**&#x20;
 
 ## noLines
 
@@ -519,9 +515,9 @@ The lines these messages make, in file order.
 
 ### Parameters
 
-- `messages` **[Array][414]\<Message>** In file order
+- `messages` **[Array][410]\<Message>** In file order
 
-Returns **{text: [string][413], lines: [MessageLines][19]}**&#x20;
+Returns **{text: [string][409], lines: [MessageLines][19]}**&#x20;
 
 ## readMessages
 
@@ -530,17 +526,17 @@ line that cannot be read, the end of one a stop cut short, is passed over.
 
 ### Parameters
 
-- `text` **[string][413]**&#x20;
+- `text` **[string][409]**&#x20;
 
-Returns **{messages: [Array][414]\<Message>, lines: [MessageLines][19]}**&#x20;
-
-## messages
-
-Type: [Array][414]\<Message>
+Returns **{messages: [Array][410]\<Message>, lines: [MessageLines][19]}**&#x20;
 
 ## messages
 
-Type: [Array][414]\<Message>
+Type: [Array][410]\<Message>
+
+## messages
+
+Type: [Array][410]\<Message>
 
 ## messages
 
@@ -548,7 +544,7 @@ Type: [Array][414]\<Message>
 
 ### Parameters
 
-- `a` **{id: [string][413], created: [number][416]}** @param {{id: string, created: number}} b
+- `a` **{id: [string][409], created: [number][412]}** @param {{id: string, created: number}} b
 - `b` &#x20;
 
 ## planMessages
@@ -568,30 +564,30 @@ at all.
 ### Parameters
 
 - `previous` **([MessageLines][19] | null)** What the file holds; null when there is no file
-- `puts` **[Array][414]\<Message>** Messages new or changed
-- `deleted` **Iterable<[string][413]>** Messages gone
+- `puts` **[Array][410]\<Message>** Messages new or changed
+- `deleted` **Iterable<[string][409]>** Messages gone
 
-Returns **({op: `"append"`, at: [number][416], text: [string][413], lines: [MessageLines][19]} | {op: `"rewrite"`} | null)** Null when nothing changed
-
-## get
-
-Type: [number][416]
+Returns **({op: `"append"`, at: [number][412], text: [string][409], lines: [MessageLines][19]} | {op: `"rewrite"`} | null)** Null when nothing changed
 
 ## get
 
-Type: [number][416]
+Type: [number][412]
 
 ## get
 
-Type: [boolean][417]
+Type: [number][412]
 
 ## get
 
-Type: {puts: [Array][414]\<Message>, deleted: [Array][414]<[string][413]>}
+Type: [boolean][413]
 
 ## get
 
-Type: [string][413]
+Type: {puts: [Array][410]\<Message>, deleted: [Array][410]<[string][409]>}
+
+## get
+
+Type: [string][409]
 
 ## get
 
@@ -599,23 +595,23 @@ Type: [Entry][155]
 
 ## get
 
-Type: [string][413]
+Type: [string][409]
 
 ## get
 
-Type: [string][413]
+Type: [string][409]
 
 ## get
 
-Type: [string][413]
+Type: [string][409]
 
 ## get
 
-Type: [string][413]
+Type: [string][409]
 
 ## get
 
-Type: [string][413]
+Type: [string][409]
 
 ## mergeMessages
 
@@ -623,21 +619,21 @@ A chat's messages with these changes made, in file order.
 
 ### Parameters
 
-- `messages` **[Array][414]\<Message>**&#x20;
-- `puts` **[Array][414]\<Message>**&#x20;
-- `deleted` **Iterable<[string][413]>**&#x20;
+- `messages` **[Array][410]\<Message>**&#x20;
+- `puts` **[Array][410]\<Message>**&#x20;
+- `deleted` **Iterable<[string][409]>**&#x20;
 
-Returns **[Array][414]\<Message>**&#x20;
+Returns **[Array][410]\<Message>**&#x20;
 
 ## byId
 
-Type: [Map][418]<[string][413], Message>
+Type: [Map][414]<[string][409], Message>
 
 ## byId
 
 ### Parameters
 
-- `a` **[Document][419]** @param {Document} b
+- `a` **[Document][415]** @param {Document} b
 - `b` &#x20;
 
 ## db
@@ -663,11 +659,11 @@ Type: any
 
 ## tables
 
-Type: Record<[string][413], [Array][414]\<any>>
+Type: Record<[string][409], [Array][410]\<any>>
 
 ## tables
 
-Type: Record<[string][413], [Array][414]\<any>>
+Type: Record<[string][409], [Array][410]\<any>>
 
 ##
 
@@ -697,10 +693,10 @@ and nothing after the body: what is read back is what was written.
 
 ### Parameters
 
-- `fields` **Record<[string][413], [unknown][211]>**&#x20;
-- `body` **[string][413]**&#x20;
+- `fields` **Record<[string][409], [unknown][211]>**&#x20;
+- `body` **[string][409]**&#x20;
 
-Returns **[string][413]**&#x20;
+Returns **[string][409]**&#x20;
 
 ## TIMES
 
@@ -717,25 +713,25 @@ is, worked out, or written somewhere of their own.
 
 The hidden file a folder's row is kept in.
 
-Type: [string][413]
+Type: [string][409]
 
 ## REPOSITORY_FILE
 
 The file a repository's rows are kept in, inside it.
 
-Type: [string][413]
+Type: [string][409]
 
 ## Place
 
 Where a document is, for reading it back: what the file cannot say.
 
-Type: [Object][415]
+Type: [Object][411]
 
 ### Properties
 
-- `storyId` **[string][413]**&#x20;
-- `parentId` **[string][413]**&#x20;
-- `order` **[number][416]**&#x20;
+- `storyId` **[string][409]**&#x20;
+- `parentId` **[string][409]**&#x20;
+- `order` **[number][412]**&#x20;
 
 ## fieldsOf
 
@@ -745,18 +741,18 @@ worth saying, the rest by name, and the times last.
 
 ### Parameters
 
-- `document` **[Document][419]**&#x20;
+- `document` **[Document][415]**&#x20;
 - `carry` &#x20;
 
-Returns **Record<[string][413], [unknown][211]>**&#x20;
+Returns **Record<[string][409], [unknown][211]>**&#x20;
 
 ## doc
 
-Type: Record<[string][413], any>
+Type: Record<[string][409], any>
 
 ## fields
 
-Type: Record<[string][413], [unknown][211]>
+Type: Record<[string][409], [unknown][211]>
 
 ## fields
 
@@ -768,37 +764,37 @@ A row from a file's fields, with the times back in milliseconds.
 
 ### Parameters
 
-- `fields` **Record<[string][413], any>**&#x20;
+- `fields` **Record<[string][409], any>**&#x20;
 
-Returns **Record<[string][413], any>**&#x20;
+Returns **Record<[string][409], any>**&#x20;
 
 ## row
 
-Type: Record<[string][413], any>
+Type: Record<[string][409], any>
 
 ## textFile
 
 ### Parameters
 
-- `document` **[Document][419]** A text document
+- `document` **[Document][415]** A text document
 
-Returns **[string][413]** Its markdown file
+Returns **[string][409]** Its markdown file
 
 ## folderFile
 
 ### Parameters
 
-- `document` **[Document][419]** A folder, the root among them
+- `document` **[Document][415]** A folder, the root among them
 
-Returns **[string][413]** Its `.folder.md`
+Returns **[string][409]** Its `.folder.md`
 
 ## fileSidecar
 
 ### Parameters
 
-- `document` **[Document][419]** An imported file
+- `document` **[Document][415]** An imported file
 
-Returns **[string][413]** The hidden markdown file beside it
+Returns **[string][409]** The hidden markdown file beside it
 
 ## sidecarPath
 
@@ -807,21 +803,21 @@ The hidden file beside an imported file: `.Rulebook.pdf.md` beside
 
 ### Parameters
 
-- `path` **[string][413]**&#x20;
+- `path` **[string][409]**&#x20;
 
-Returns **[string][413]**&#x20;
+Returns **[string][409]**&#x20;
 
 ## ReadDocument
 
 What a read gives back: the row, or nothing when the file has no id and
 so is no document of ours yet.
 
-Type: [Object][415]
+Type: [Object][411]
 
 ### Properties
 
-- `document` **[Document][419]**&#x20;
-- `adopted` **[boolean][417]** It had no id and was given one, so its file wants writing
+- `document` **[Document][415]**&#x20;
+- `adopted` **[boolean][413]** It had no id and was given one, so its file wants writing
 
 ## readTextFile
 
@@ -829,9 +825,9 @@ A text document from its file.
 
 ### Parameters
 
-- `text` **[string][413]**&#x20;
+- `text` **[string][409]**&#x20;
 - `place` **[Place][67]**&#x20;
-- `name` **[string][413]** The file's name less its order prefix and `.md`
+- `name` **[string][409]** The file's name less its order prefix and `.md`
 - `fits` &#x20;
 - `newId` &#x20;
 
@@ -839,19 +835,19 @@ Returns **[ReadDocument][85]**&#x20;
 
 ## document
 
-Type: [Document][419]
+Type: [Document][415]
 
 ## document
 
-Type: [Document][419]
+Type: [Document][415]
 
 ## document
 
-Type: [Document][419]
+Type: [Document][415]
 
 ## document
 
-Type: [Document][419]
+Type: [Document][415]
 
 ## readFolderFile
 
@@ -859,9 +855,9 @@ A folder from its `.folder.md`.
 
 ### Parameters
 
-- `text` **[string][413]**&#x20;
+- `text` **[string][409]**&#x20;
 - `place` **[Place][67]**&#x20;
-- `name` **[string][413]** The folder's name less its order prefix
+- `name` **[string][409]** The folder's name less its order prefix
 - `fits` &#x20;
 - `newId` &#x20;
 
@@ -873,9 +869,9 @@ An imported file from the hidden file beside it.
 
 ### Parameters
 
-- `text` **[string][413]**&#x20;
+- `text` **[string][409]**&#x20;
 - `place` **[Place][67]**&#x20;
-- `name` **[string][413]** The file's name less its order prefix and extension
+- `name` **[string][409]** The file's name less its order prefix and extension
 - `fits` &#x20;
 - `newId` &#x20;
 
@@ -886,12 +882,12 @@ Returns **[ReadDocument][85]**&#x20;
 A row as a repository keeps it: what its file cannot say, by path below
 the repository. The text is the file itself.
 
-Type: [Object][415]
+Type: [Object][411]
 
 ### Properties
 
-- `path` **[string][413]**&#x20;
-- `id` **[string][413]**&#x20;
+- `path` **[string][409]**&#x20;
+- `id` **[string][409]**&#x20;
 - `type` **(`"folder"` | `"file"`)**&#x20;
 
 ## repositoryFile
@@ -901,18 +897,18 @@ path. Kept as rows rather than frontmatter: nobody reads it but the app.
 
 ### Parameters
 
-- `repository` **[Document][419]**&#x20;
-- `below` **[Array][414]<{path: [string][413], document: [Document][419]}>**&#x20;
+- `repository` **[Document][415]**&#x20;
+- `below` **[Array][410]<{path: [string][409], document: [Document][415]}>**&#x20;
 
-Returns **[string][413]**&#x20;
+Returns **[string][409]**&#x20;
 
 ##
 
-Type: [Document][419]
+Type: [Document][415]
 
 ## out
 
-Type: Record<[string][413], any>
+Type: Record<[string][409], any>
 
 ## readRepositoryFile
 
@@ -921,11 +917,11 @@ its files, which `textOf` reads from where the file is.
 
 ### Parameters
 
-- `text` **[string][413]**&#x20;
+- `text` **[string][409]**&#x20;
 - `place` **[Place][67]** The repository's own
 - `textOf` &#x20;
 
-Returns **([Array][414]<{path: [string][413], document: [Document][419]}> | null)** The repository first, at '',
+Returns **([Array][410]<{path: [string][409], document: [Document][415]}> | null)** The repository first, at '',
 then what is in it; null when the file cannot be read
 
 ## parsed
@@ -934,15 +930,15 @@ Type: any
 
 ## repository
 
-Type: [Document][419]
+Type: [Document][415]
 
 ## ids
 
-Type: [Map][418]<[string][413], [string][413]>
+Type: [Map][414]<[string][409], [string][409]>
 
 ## counts
 
-Type: [Map][418]<[string][413], [number][416]>
+Type: [Map][414]<[string][409], [number][412]>
 
 ##
 
@@ -954,7 +950,7 @@ Type: any
 
 ## path
 
-Type: [Array][414]<[string][413]>
+Type: [Array][410]<[string][409]>
 
 ## dump
 
@@ -972,11 +968,11 @@ that cannot be read, has no fields and is all body.
 
 ### Parameters
 
-- `text` **[string][413]**&#x20;
+- `text` **[string][409]**&#x20;
 
 ##
 
-Type: Record<[string][413], any>
+Type: Record<[string][409], any>
 
 ## storage
 
@@ -1048,7 +1044,7 @@ Type: [Storage][117]
 The tables a project is made of, which the desktop app keeps in its
 library; the rest are the app's own, kept in IndexedDB everywhere.
 
-Type: [Array][414]<[ProjectTable][134]>
+Type: [Array][410]<[ProjectTable][134]>
 
 ## PROJECT_TABLES
 
@@ -1074,7 +1070,7 @@ Type: [Array][414]<[ProjectTable][134]>
 
 The tables a project is made of; the rest stay in IndexedDB.
 
-Type: [Set][420]<[string][413]>
+Type: [Set][416]<[string][409]>
 
 ## ProjectTable
 
@@ -1092,19 +1088,19 @@ Type: (`"aiProviders"` | `"aiProfiles"` | `"aiPrompts"` | `"chatProfiles"` | `"s
 
 A project's rows, ready to be added beside the others.
 
-Type: [Object][415]
+Type: [Object][411]
 
 ### Properties
 
 - `story` **Story**&#x20;
-- `documents` **[Array][414]<[Document][419]>**&#x20;
-- `files` **[Array][414]\<StoredFile>**&#x20;
-- `chats` **[Array][414]\<Chat>**&#x20;
-- `messages` **[Array][414]\<Message>**&#x20;
+- `documents` **[Array][410]<[Document][415]>**&#x20;
+- `files` **[Array][410]\<StoredFile>**&#x20;
+- `chats` **[Array][410]\<Chat>**&#x20;
+- `messages` **[Array][410]\<Message>**&#x20;
 
 ## Storage
 
-Type: [Object][415]
+Type: [Object][411]
 
 ## current
 
@@ -1116,7 +1112,7 @@ Type: [Storage][117]
 
 ## args
 
-Type: [Array][414]\<any>
+Type: [Array][410]\<any>
 
 ## name
 
@@ -1173,7 +1169,7 @@ Where a move puts what stands in its way, until it can go where it goes.
 
 ### Parameters
 
-- `id` **[string][413]**&#x20;
+- `id` **[string][409]**&#x20;
 
 ## audioDir
 
@@ -1182,7 +1178,7 @@ deleted rather than trashed, and left out of a backup.
 
 ### Parameters
 
-- `id` **[string][413]** The document's
+- `id` **[string][409]** The document's
 
 ## audioPath
 
@@ -1190,8 +1186,8 @@ One clip of a document's narration.
 
 ### Parameters
 
-- `id` **[string][413]** The document's
-- `key` **[string][413]** What was said, hashed; see `tts/reading.js`
+- `id` **[string][409]** The document's
+- `key` **[string][409]** What was said, hashed; see `tts/reading.js`
 
 ## EntryKind
 
@@ -1210,14 +1206,14 @@ Type: (`"root"` | `"folder"` | `"text"` | `"file"` | `"repository"` | `"repoFold
 
 Where a document is.
 
-Type: [Object][415]
+Type: [Object][411]
 
 ### Properties
 
-- `id` **[string][413]**&#x20;
+- `id` **[string][409]**&#x20;
 - `kind` **[EntryKind][154]**&#x20;
-- `path` **[string][413]** Below the project folder: a folder's directory, a document's file; '' for the root
-- `repository` **[string][413]?** The id of the repository it is in
+- `path` **[string][409]** Below the project folder: a folder's directory, a document's file; '' for the root
+- `repository` **[string][409]?** The id of the repository it is in
 - `narration` **`true`?** It has a narration file
 - `missing` **`true`?** An imported file whose row is there and whose bytes are not
 
@@ -1225,7 +1221,7 @@ Type: [Object][415]
 
 ### Parameters
 
-- `dir` **[string][413]** @param {string} name
+- `dir` **[string][409]** @param {string} name
 - `name` &#x20;
 
 ## join
@@ -1260,26 +1256,26 @@ Type: [Object][415]
 
 ### Parameters
 
-- `dir` **[string][413]** @param {string} name
+- `dir` **[string][409]** @param {string} name
 - `name` &#x20;
 
 ## parentOf
 
 ### Parameters
 
-- `path` **[string][413]**&#x20;
+- `path` **[string][409]**&#x20;
 
 ## baseOf
 
 ### Parameters
 
-- `path` **[string][413]**&#x20;
+- `path` **[string][409]**&#x20;
 
 ## baseOf
 
 ### Parameters
 
-- `path` **[string][413]**&#x20;
+- `path` **[string][409]**&#x20;
 
 ## shown
 
@@ -1288,10 +1284,10 @@ ordered folder, by title in any other (as `getChildrenOrdered` has it).
 
 ### Parameters
 
-- `children` **[Array][414]<[Document][419]>**&#x20;
-- `ordered` **[boolean][417]**&#x20;
+- `children` **[Array][410]<[Document][415]>**&#x20;
+- `ordered` **[boolean][413]**&#x20;
 
-Returns **[Array][414]<[Document][419]>**&#x20;
+Returns **[Array][410]<[Document][415]>**&#x20;
 
 ## nameOf
 
@@ -1299,9 +1295,9 @@ The name a document's file or folder takes, before any prefix or `(2)`.
 
 ### Parameters
 
-- `document` **[Document][419]**&#x20;
+- `document` **[Document][415]**&#x20;
 
-Returns **{stem: [string][413], extension: [string][413]}**&#x20;
+Returns **{stem: [string][409], extension: [string][409]}**&#x20;
 
 ## kindOf
 
@@ -1309,8 +1305,8 @@ What a document is on disk.
 
 ### Parameters
 
-- `document` **[Document][419]**&#x20;
-- `inRepository` **[boolean][417]**&#x20;
+- `document` **[Document][415]**&#x20;
+- `inRepository` **[boolean][413]**&#x20;
 
 Returns **[EntryKind][154]**&#x20;
 
@@ -1323,51 +1319,51 @@ at the top: it would otherwise not be written at all.
 
 ### Parameters
 
-- `documents` **[Array][414]<[Document][419]>** The project's, its root among them
-- `rootId` **[string][413]**&#x20;
-- `taken` **Iterable<[string][413]>?** Paths in use by what is not a document, which no name takes (optional, default `[]`)
+- `documents` **[Array][410]<[Document][415]>** The project's, its root among them
+- `rootId` **[string][409]**&#x20;
+- `taken` **Iterable<[string][409]>?** Paths in use by what is not a document, which no name takes (optional, default `[]`)
 
-Returns **[Map][418]<[string][413], [Entry][155]>**&#x20;
+Returns **[Map][414]<[string][409], [Entry][155]>**&#x20;
 
 ## byIdMap
 
-Type: [Map][418]<[string][413], [Document][419]>
+Type: [Map][414]<[string][409], [Document][415]>
 
 ## entries
 
-Type: [Map][418]<[string][413], [Entry][155]>
+Type: [Map][414]<[string][409], [Entry][155]>
 
 ## entries
 
-Type: [Map][418]<[string][413], [Entry][155]>
+Type: [Map][414]<[string][409], [Entry][155]>
 
 ## takenIn
 
-Type: [Map][418]<[string][413], [Set][420]<[string][413]>>
+Type: [Map][414]<[string][409], [Set][416]<[string][409]>>
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ## reaches
 
-Type: [Map][418]<[string][413], [boolean][417]>
+Type: [Map][414]<[string][409], [boolean][413]>
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ## children
 
-Type: [Map][418]<[string][413], [Array][414]<[Document][419]>>
+Type: [Map][414]<[string][409], [Array][410]<[Document][415]>>
 
 ## visit
 
 ### Parameters
 
-- `folder` **[Document][419]**&#x20;
-- `dir` **[string][413]**&#x20;
-- `repository` **[string][413]?**&#x20;
+- `folder` **[Document][415]**&#x20;
+- `dir` **[string][409]**&#x20;
+- `repository` **[string][409]?**&#x20;
 
 ## entry
 
@@ -1386,13 +1382,13 @@ the chats, which are read a chat at a time.
 
 ### Parameters
 
-- `files` **[Array][414]<[string][413]>** Every file below the project folder
+- `files` **[Array][410]<[string][409]>** Every file below the project folder
 
-Returns **[Array][414]<[string][413]>**&#x20;
+Returns **[Array][410]<[string][409]>**&#x20;
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ## inMeta
 
@@ -1400,22 +1396,22 @@ In the project's own folder, and not something a move left there.
 
 ### Parameters
 
-- `path` **[string][413]**&#x20;
+- `path` **[string][409]**&#x20;
 
 ## ReadProject
 
 A project read back from its folder.
 
-Type: [Object][415]
+Type: [Object][411]
 
 ### Properties
 
 - `story` **Story**&#x20;
-- `schema` **[number][416]** The schema version its rows are in
-- `documents` **[Array][414]<[Document][419]>**&#x20;
-- `entries` **[Map][418]<[string][413], [Entry][155]>** Where each one was found
-- `adopted` **[Array][414]<[string][413]>** Ids given to files that had none, whose files want writing
-- `unknown` **[Array][414]<[string][413]>** Files that are no document: neither read nor ever written over
+- `schema` **[number][412]** The schema version its rows are in
+- `documents` **[Array][410]<[Document][415]>**&#x20;
+- `entries` **[Map][414]<[string][409], [Entry][155]>** Where each one was found
+- `adopted` **[Array][410]<[string][409]>** Ids given to files that had none, whose files want writing
+- `unknown` **[Array][410]<[string][409]>** Files that are no document: neither read nor ever written over
 
 ## readProject
 
@@ -1432,13 +1428,13 @@ back at the top of the project.
 
 ### Parameters
 
-- `found` **[Object][415]**&#x20;
-  - `found.files` **[Array][414]<[string][413]>** Every file below the project folder
-  - `found.texts` **[Map][418]<[string][413], [string][413]>** The text of each file `wantedTexts` named
-  - `found.name` **[string][413]** The project folder's own name
+- `found` **[Object][411]**&#x20;
+  - `found.files` **[Array][410]<[string][409]>** Every file below the project folder
+  - `found.texts` **[Map][414]<[string][409], [string][409]>** The text of each file `wantedTexts` named
+  - `found.name` **[string][409]** The project folder's own name
 
-- `make` **[Object][415]**&#x20;
-  - `make.now` **[number][416]** When a document given an id is made
+- `make` **[Object][411]**&#x20;
+  - `make.now` **[number][412]** When a document given an id is made
   - `make.newId` &#x20;
 
 Returns **([ReadProject][200] | null)** Null when the folder holds no project
@@ -1453,37 +1449,37 @@ Type: any
 
 ## contents
 
-Type: [Map][418]<[string][413], {files: [Array][414]<[string][413]>, dirs: [Array][414]<[string][413]>}>
+Type: [Map][414]<[string][409], {files: [Array][410]<[string][409]>, dirs: [Array][410]<[string][409]>}>
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ## documents
 
-Type: [Array][414]<[Document][419]>
+Type: [Array][410]<[Document][415]>
 
 ## documents
 
-Type: [Array][414]<[Document][419]>
+Type: [Array][410]<[Document][415]>
 
 ## adopted
 
-Type: [Array][414]<[string][413]>
+Type: [Array][410]<[string][409]>
 
 ## unknown
 
-Type: [Array][414]<[string][413]>
+Type: [Array][410]<[string][409]>
 
 ## keep
 
 ### Parameters
 
-- `read` **{document: [Document][419], adopted: [boolean][417]}**&#x20;
+- `read` **{document: [Document][415], adopted: [boolean][413]}**&#x20;
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ## readChildren
 
@@ -1491,9 +1487,9 @@ Read a folder's children into the documents.
 
 ### Parameters
 
-- `dir` **[string][413]**&#x20;
-- `parent` **[Document][419]**&#x20;
-- `after` **[number][416]?** Places taken in the parent already (optional, default `0`)
+- `dir` **[string][409]**&#x20;
+- `parent` **[Document][415]**&#x20;
+- `after` **[number][412]?** Places taken in the parent already (optional, default `0`)
 
 ## found
 
@@ -1503,11 +1499,11 @@ A repository, from its `.repository.json` and its files.
 
 ### Parameters
 
-- `path` **[string][413]**&#x20;
-- `parent` **[Document][419]**&#x20;
-- `folderName` **[string][413]**&#x20;
+- `path` **[string][409]**&#x20;
+- `parent` **[Document][415]**&#x20;
+- `folderName` **[string][409]**&#x20;
 
-Returns **({document: [Document][419], entry: [Entry][155]} | null)**&#x20;
+Returns **({document: [Document][415], entry: [Entry][155]} | null)**&#x20;
 
 ##
 
@@ -1533,54 +1529,54 @@ again. Everything is done one call at a time, in the order asked.
 
 When a file was last written and how long it is.
 
-Type: {mtime: [number][416], size: [number][416]}
+Type: {mtime: [number][412], size: [number][412]}
 
 ## LibraryDisk
 
 What may be done in the library, by paths below it. See
 `electron/src/library.js`, which this is the page's view of.
 
-Type: [Object][415]
+Type: [Object][411]
 
 ## ChangedElsewhere
 
 A file changed somewhere else since the app last saw it, which went to the
 trash before the app's version was written.
 
-Type: [Object][415]
+Type: [Object][411]
 
 ### Properties
 
-- `path` **[string][413]** Below the library
-- `title` **[string][413]** The document it is, or its name when it is none
+- `path` **[string][409]** Below the library
+- `title` **[string][409]** The document it is, or its name when it is none
 
 ## Project
 
 What the library keeps of a project.
 
-Type: [Object][415]
+Type: [Object][411]
 
 ### Properties
 
-- `id` **[string][413]** Its story's
-- `dir` **([string][413] | null)** Its folder below the library; null until first written
+- `id` **[string][409]** Its story's
+- `dir` **([string][409] | null)** Its folder below the library; null until first written
 - `story` **(Story | null)**&#x20;
-- `root` **([Document][419] | null)**&#x20;
-- `loaded` **[boolean][417]** Its folder walked and read, and what follows kept
-- `rows` **[Map][418]<[string][413], [Document][419]>** Its documents, without their text
-- `entries` **[Map][418]<[string][413], [Entry][155]>** Where each is
-- `seen` **[Map][418]<[string][413], [Seen][222]>** Its files as last read or written, by path below its folder
-- `taken` **[Array][414]<[string][413]>** Paths in its folder that are no document
-- `chats` **([Map][418]<[string][413], Chat> | null)** Read when first asked for
-- `lines` **[Map][418]<[string][413], [MessageLines][19]>** Each chat's messages file, as last read or written
-- `bytes` **[Map][418]<[string][413], [Blob][421]>** Imported files' bytes that came before their rows
-- `freshChats` **[Map][418]<[string][413], Chat>** Chats of a project not written yet
+- `root` **([Document][415] | null)**&#x20;
+- `loaded` **[boolean][413]** Its folder walked and read, and what follows kept
+- `rows` **[Map][414]<[string][409], [Document][415]>** Its documents, without their text
+- `entries` **[Map][414]<[string][409], [Entry][155]>** Where each is
+- `seen` **[Map][414]<[string][409], [Seen][222]>** Its files as last read or written, by path below its folder
+- `taken` **[Array][410]<[string][409]>** Paths in its folder that are no document
+- `chats` **([Map][414]<[string][409], Chat> | null)** Read when first asked for
+- `lines` **[Map][414]<[string][409], [MessageLines][19]>** Each chat's messages file, as last read or written
+- `bytes` **[Map][414]<[string][409], [Blob][417]>** Imported files' bytes that came before their rows
+- `freshChats` **[Map][414]<[string][409], Chat>** Chats of a project not written yet
 
 ## sketch
 
 ### Parameters
 
-- `document` **[Document][419]**&#x20;
+- `document` **[Document][415]**&#x20;
 
 ## BATCH_FILES
 
@@ -1588,7 +1584,7 @@ How much of a new project's folder goes to the disk at once: enough that
 it goes quickly, and little enough to say how far it has got, and to hold
 no more than a few files' bytes at a time.
 
-Type: [number][416]
+Type: [number][412]
 
 ## under
 
@@ -1601,14 +1597,14 @@ Type: [number][416]
 
 ### Parameters
 
-- `dir` **[string][413]** @param {string} path
+- `dir` **[string][409]** @param {string} path
 - `path` &#x20;
 
 ## atOrBelow
 
 ### Parameters
 
-- `path` **[string][413]** @param {string} dir
+- `path` **[string][409]** @param {string} dir
 - `dir` &#x20;
 
 ## libraryStorage
@@ -1618,33 +1614,29 @@ The library as storage.
 ### Parameters
 
 - `disk` **[LibraryDisk][223]**&#x20;
-- `options` **[Object][415]?** (optional, default `{}`)
+- `options` **[Object][411]?** (optional, default `{}`)
 
 Returns **[Storage][117]**&#x20;
 
 ## projects
 
-Type: [Map][418]<[string][413], [Project][226]>
-
-## projects
-
-Type: Record<[string][413], [Array][414]\<any>>
+Type: [Map][414]<[string][409], [Project][226]>
 
 ## libraryTaken
 
-Type: [Set][420]<[string][413]>
+Type: [Set][416]<[string][409]>
 
 ## listing
 
-Type: ([Promise][422]\<void> | null)
+Type: ([Promise][418]\<void> | null)
 
 ## waiting
 
-Type: [Map][418]<[string][413], {puts: [Array][414]\<Message>, deleted: [Array][414]<[string][413]>}>
+Type: [Map][414]<[string][409], {puts: [Array][410]\<Message>, deleted: [Array][410]<[string][409]>}>
 
 ## doing
 
-Type: [Promise][422]<[unknown][211]>
+Type: [Promise][418]<[unknown][211]>
 
 ## inTurn
 
@@ -1652,13 +1644,13 @@ Type: [Promise][422]<[unknown][211]>
 
 - `work` &#x20;
 
-Returns **[Promise][422]\<T>**&#x20;
+Returns **[Promise][418]\<T>**&#x20;
 
 ## newProject
 
 ### Parameters
 
-- `id` **[string][413]** @returns {Project}
+- `id` **[string][409]** @returns {Project}
 
 ## load
 
@@ -1675,15 +1667,15 @@ disk in an order the app does not show.
 
 - `project` **[Project][226]**&#x20;
 
-Returns **[Promise][422]<[Array][414]<[Document][419]>>**&#x20;
+Returns **[Promise][418]<[Array][410]<[Document][415]>>**&#x20;
 
 ## project
 
-Type: [string][413]
+Type: [string][409]
 
 ## project
 
-Type: [string][413]
+Type: [string][409]
 
 ## project
 
@@ -1691,27 +1683,27 @@ Type: Story
 
 ## project
 
-Type: [string][413]
+Type: [string][409]
 
 ## project
 
-Type: [string][413]
+Type: [string][409]
 
 ## project
 
-Type: [string][413]
+Type: [string][409]
 
 ## project
 
-Type: [string][413]
+Type: [string][409]
 
 ## project
 
-Type: [string][413]
+Type: [string][409]
 
 ## project
 
-Type: [string][413]
+Type: [string][409]
 
 ## project
 
@@ -1725,26 +1717,26 @@ and write it all again.
 ### Parameters
 
 - `project` **[Project][226]**&#x20;
-- `documents` **[Array][414]<[Document][419]>**&#x20;
-- `from` **[number][416]**&#x20;
+- `documents` **[Array][410]<[Document][415]>**&#x20;
+- `from` **[number][412]**&#x20;
 
-Returns **[Promise][422]<[Array][414]<[Document][419]>>**&#x20;
-
-## ops
-
-Type: [Array][414]<[Op][385]>
+Returns **[Promise][418]<[Array][410]<[Document][415]>>**&#x20;
 
 ## ops
 
-Type: [Array][414]<[Op][385]>
+Type: [Array][410]<[Op][381]>
+
+## ops
+
+Type: [Array][410]<[Op][381]>
 
 ## byChat
 
-Type: [Map][418]<[string][413], [Array][414]\<Message>>
+Type: [Map][414]<[string][409], [Array][410]\<Message>>
 
 ## byChat
 
-Type: [Map][418]<[string][413], {puts: [Array][414]\<Message>, deleted: [Array][414]<[string][413]>}>
+Type: [Map][414]<[string][409], {puts: [Array][410]\<Message>, deleted: [Array][410]<[string][409]>}>
 
 ## ensureLoaded
 
@@ -1760,23 +1752,23 @@ how each written one was left, and which were changed elsewhere.
 ### Parameters
 
 - `project` **[Project][226]**&#x20;
-- `ops` **[Array][414]<([Op][385] | {op: `"write"`, path: [string][413], bytes: [Uint8Array][423]} | {op: `"append"`, path: [string][413], at: [number][416], text: [string][413]})>**&#x20;
+- `ops` **[Array][410]<([Op][381] | {op: `"write"`, path: [string][409], bytes: [Uint8Array][419]} | {op: `"append"`, path: [string][409], at: [number][412], text: [string][409]})>**&#x20;
 
 ## expected
 
-Type: [Map][418]<[string][413], ([Seen][222] | `"written"`)>
+Type: [Map][414]<[string][409], ([Seen][222] | `"written"`)>
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ##
 
-Type: ([string][413] | null)
+Type: ([string][409] | null)
 
 ## toDo
 
-Type: [Array][414]\<LibraryOp>
+Type: [Array][410]\<LibraryOp>
 
 ## titleAt
 
@@ -1785,11 +1777,11 @@ The title of the document a file is, or the file's name.
 ### Parameters
 
 - `project` **[Project][226]**&#x20;
-- `path` **[string][413]** Below the library
+- `path` **[string][409]** Below the library
 
 ## length
 
-Type: [string][413]
+Type: [string][409]
 
 ## projectOfDocument
 
@@ -1797,9 +1789,9 @@ The project a document is in, of those read.
 
 ### Parameters
 
-- `id` **[string][413]**&#x20;
+- `id` **[string][409]**&#x20;
 
-Returns **([Project][226] | [undefined][424])**&#x20;
+Returns **([Project][226] | [undefined][420])**&#x20;
 
 ## projectOf
 
@@ -1808,7 +1800,7 @@ when its story and its root have both come.
 
 ### Parameters
 
-- `storyId` **[string][413]**&#x20;
+- `storyId` **[string][409]**&#x20;
 
 ## folderName
 
@@ -1816,8 +1808,8 @@ The name a project's folder takes from its root's title.
 
 ### Parameters
 
-- `title` **[string][413]**&#x20;
-- `own` **([string][413] | null)** The name it has now, which it may keep
+- `title` **[string][409]**&#x20;
+- `own` **([string][409] | null)** The name it has now, which it may keep
 
 ## writeNew
 
@@ -1828,33 +1820,33 @@ batch at a time, and a file's bytes are read only when its batch goes.
 ### Parameters
 
 - `project` **[Project][226]**&#x20;
-- `documents` **[Array][414]<[Document][419]>**&#x20;
-- `chats` **[Array][414]\<Chat>**&#x20;
-- `messages` **[Array][414]\<Message>**&#x20;
-- `bytes` **[Map][418]<[string][413], [Blob][421]>**&#x20;
+- `documents` **[Array][410]<[Document][415]>**&#x20;
+- `chats` **[Array][410]\<Chat>**&#x20;
+- `messages` **[Array][410]\<Message>**&#x20;
+- `bytes` **[Map][414]<[string][409], [Blob][417]>**&#x20;
 - `progress` **Progress?** (optional, default `()=>{}`)
 
 ## files
 
 ## files
 
-Type: [Array][414]\<StoredFile>
+Type: [Array][410]\<StoredFile>
 
 ## files
 
-Type: [Map][418]<[string][413], [string][413]>
+Type: [Map][414]<[string][409], [string][409]>
 
 ## lines
 
-Type: [Map][418]<[string][413], [MessageLines][19]>
+Type: [Map][414]<[string][409], [MessageLines][19]>
 
 ## seen
 
-Type: Record<[string][413], [Seen][222]>
+Type: Record<[string][409], [Seen][222]>
 
 ## batch
 
-Type: [Array][414]\<LibraryOp>
+Type: [Array][410]\<LibraryOp>
 
 ## writeIfReady
 
@@ -1877,23 +1869,23 @@ Send a project's folder to the trash, and forget it.
 
 ### Parameters
 
-- `changes` **[Array][414]\<Change>**&#x20;
+- `changes` **[Array][410]\<Change>**&#x20;
 
 ## byProject
 
-Type: [Map][418]<[Project][226], [Array][414]\<Change>>
+Type: [Map][414]<[Project][226], [Array][410]\<Change>>
 
 ## full
 
-Type: [Map][418]<[string][413], [Document][419]>
+Type: [Map][414]<[string][409], [Document][415]>
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ## planProject
 
-Type: [Array][414]<([Op][385] | {op: `"write"`, path: [string][413], bytes: [Uint8Array][423]})>
+Type: [Array][410]<([Op][381] | {op: `"write"`, path: [string][409], bytes: [Uint8Array][419]})>
 
 ## planProject
 
@@ -1906,18 +1898,18 @@ whether named or not.
 
 ### Parameters
 
-- `previous` **[Map][418]<[string][413], [Entry][155]>** The layout the folder is in
-- `next` **[Map][418]<[string][413], [Entry][155]>** The layout it is to be in
+- `previous` **[Map][414]<[string][409], [Entry][155]>** The layout the folder is in
+- `next` **[Map][414]<[string][409], [Entry][155]>** The layout it is to be in
 - `documentOf` &#x20;
-- `changed` **Iterable<[string][413]>**&#x20;
+- `changed` **Iterable<[string][409]>**&#x20;
 
-Returns **[Array][414]<[Op][385]>**&#x20;
+Returns **[Array][410]<[Op][381]>**&#x20;
 
 ## writeStories
 
 ### Parameters
 
-- `changes` **[Array][414]\<Change>**&#x20;
+- `changes` **[Array][410]\<Change>**&#x20;
 
 ## readChats
 
@@ -1927,11 +1919,11 @@ A project's chats, read the first time they are asked for.
 
 - `project` **[Project][226]**&#x20;
 
-Returns **[Promise][422]<[Map][418]<[string][413], Chat>>**&#x20;
+Returns **[Promise][418]<[Map][414]<[string][409], Chat>>**&#x20;
 
 ## chats
 
-Type: [Map][418]<[string][413], Chat>
+Type: [Map][414]<[string][409], Chat>
 
 ## projectOfChat
 
@@ -1939,7 +1931,7 @@ The project a chat is in, of those whose chats were read.
 
 ### Parameters
 
-- `chatId` **[string][413]**&#x20;
+- `chatId` **[string][409]**&#x20;
 
 ## findChat
 
@@ -1948,9 +1940,9 @@ yet when it is in none of those that were.
 
 ### Parameters
 
-- `chatId` **[string][413]**&#x20;
+- `chatId` **[string][409]**&#x20;
 
-Returns **[Promise][422]<([Project][226] | [undefined][424])>**&#x20;
+Returns **[Promise][418]<([Project][226] | [undefined][420])>**&#x20;
 
 ## readChatMessages
 
@@ -1960,15 +1952,15 @@ write.
 ### Parameters
 
 - `project` **[Project][226]**&#x20;
-- `chatId` **[string][413]**&#x20;
+- `chatId` **[string][409]**&#x20;
 
-Returns **[Promise][422]<[Array][414]\<Message>>**&#x20;
+Returns **[Promise][418]<[Array][410]\<Message>>**&#x20;
 
 ## writeChats
 
 ### Parameters
 
-- `changes` **[Array][414]\<Change>**&#x20;
+- `changes` **[Array][410]\<Change>**&#x20;
 
 ## writeChatMessages
 
@@ -1978,15 +1970,15 @@ end, and the file read, changed and written whole when it is not.
 ### Parameters
 
 - `project` **[Project][226]**&#x20;
-- `chatId` **[string][413]**&#x20;
-- `puts` **[Array][414]\<Message>**&#x20;
-- `deleted` **[Array][414]<[string][413]>**&#x20;
+- `chatId` **[string][409]**&#x20;
+- `puts` **[Array][410]\<Message>**&#x20;
+- `deleted` **[Array][410]<[string][409]>**&#x20;
 
 ## writeMessages
 
 ### Parameters
 
-- `changes` **[Array][414]\<Change>**&#x20;
+- `changes` **[Array][410]\<Change>**&#x20;
 
 ## chatOfMessage
 
@@ -1994,7 +1986,7 @@ The chat a message is in, of the chats whose messages were read.
 
 ### Parameters
 
-- `messageId` **[string][413]**&#x20;
+- `messageId` **[string][409]**&#x20;
 
 ## bytesOf
 
@@ -2003,9 +1995,9 @@ The bytes of an imported file.
 ### Parameters
 
 - `project` **[Project][226]**&#x20;
-- `id` **[string][413]**&#x20;
+- `id` **[string][409]**&#x20;
 
-Returns **[Promise][422]<([Blob][421] | null)>**&#x20;
+Returns **[Promise][418]<([Blob][417] | null)>**&#x20;
 
 ##
 
@@ -2022,7 +2014,7 @@ own.
 
 ### Parameters
 
-- `$0` **[Object][415]**&#x20;
+- `$0` **[Object][411]**&#x20;
   - `$0.story` &#x20;
   - `$0.documents` &#x20;
   - `$0.files` &#x20;
@@ -2037,19 +2029,19 @@ A project's folder below the library, once it has one.
 
 ### Parameters
 
-- `storyId` **[string][413]**&#x20;
+- `storyId` **[string][409]**&#x20;
 
 ##
 
-Type: [Document][419]
+Type: [Document][415]
 
 ## puts
 
-Type: [Array][414]\<Message>
+Type: [Array][410]\<Message>
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ##
 
@@ -2086,7 +2078,7 @@ The most a name made from a title takes, in UTF-8 bytes. Disks allow 255;
 this leaves room for an order prefix, a `(2)`, and a hidden file's `.` and
 `.md` beside an imported file.
 
-Type: [number][416]
+Type: [number][412]
 
 ## PREFIX
 
@@ -2098,9 +2090,9 @@ A name cut to fit, on a character's edge.
 
 ### Parameters
 
-- `name` **[string][413]**&#x20;
+- `name` **[string][409]**&#x20;
 
-Returns **[string][413]**&#x20;
+Returns **[string][409]**&#x20;
 
 ## safeName
 
@@ -2110,13 +2102,13 @@ Windows drops, nothing Windows keeps for a device, and not too long.
 
 ### Parameters
 
-- `title` **[string][413]**&#x20;
+- `title` **[string][409]**&#x20;
 
-Returns **[string][413]**&#x20;
+Returns **[string][409]**&#x20;
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ## nameKey
 
@@ -2125,9 +2117,9 @@ for one file.
 
 ### Parameters
 
-- `name` **[string][413]**&#x20;
+- `name` **[string][409]**&#x20;
 
-Returns **[string][413]**&#x20;
+Returns **[string][409]**&#x20;
 
 ## nameKey
 
@@ -2152,9 +2144,9 @@ A name split at its extension, where it has one: `Map.png` is `Map` and
 
 ### Parameters
 
-- `name` **[string][413]**&#x20;
+- `name` **[string][409]**&#x20;
 
-Returns **{stem: [string][413], extension: [string][413]}**&#x20;
+Returns **{stem: [string][409], extension: [string][409]}**&#x20;
 
 ## claimName
 
@@ -2163,11 +2155,11 @@ is not taken, and takes it.
 
 ### Parameters
 
-- `taken` **[Set][420]<[string][413]>** Keys of the names in use; the one chosen is added
-- `stem` **[string][413]**&#x20;
-- `extension` **[string][413]**&#x20;
+- `taken` **[Set][416]<[string][409]>** Keys of the names in use; the one chosen is added
+- `stem` **[string][409]**&#x20;
+- `extension` **[string][409]**&#x20;
 
-Returns **[string][413]**&#x20;
+Returns **[string][409]**&#x20;
 
 ## prefixWidth
 
@@ -2176,9 +2168,9 @@ folder of a hundred or more.
 
 ### Parameters
 
-- `count` **[number][416]**&#x20;
+- `count` **[number][412]**&#x20;
 
-Returns **[number][416]**&#x20;
+Returns **[number][412]**&#x20;
 
 ## withPrefix
 
@@ -2186,11 +2178,11 @@ A name with its place in an ordered folder before it: `03 - Chapter 3`.
 
 ### Parameters
 
-- `place` **[number][416]** From 1
-- `width` **[number][416]** See `prefixWidth`
-- `name` **[string][413]**&#x20;
+- `place` **[number][412]** From 1
+- `width` **[number][412]** See `prefixWidth`
+- `name` **[string][409]**&#x20;
 
-Returns **[string][413]**&#x20;
+Returns **[string][409]**&#x20;
 
 ## readPrefix
 
@@ -2198,7 +2190,7 @@ A name's order prefix and the rest of it.
 
 ### Parameters
 
-- `name` **[string][413]**&#x20;
+- `name` **[string][409]**&#x20;
 
 ## stemFits
 
@@ -2208,24 +2200,22 @@ name is the title now.
 
 ### Parameters
 
-- `title` **[string][413]**&#x20;
-- `stem` **[string][413]** The name less its order prefix and its extension
+- `title` **[string][409]**&#x20;
+- `stem` **[string][409]** The name less its order prefix and its extension
 
-Returns **[boolean][417]**&#x20;
+Returns **[boolean][413]**&#x20;
 
 ## isDesktop
 
 Which storage the app opens with: IndexedDB in a browser, and in the
-desktop app, when the writer keeps the projects in a folder, the library
-in the app's data folder, the app's own tables in IndexedDB still.
+desktop app the library in the app's data folder for the projects, the
+app's own tables in IndexedDB still.
 
-The projects the app kept until then are moved into the library with the
-app open, so that it can say how far they are: when the writer turns the
-folder on, and when the app opens on a library its projects have not been
-moved into yet — a run from the checkout the first time, or an app closed
-during a move. Each is written into it as a project of its own, and the
-app's copy is left as it was. Keeping them in the app again copies the
-library's back over it first, so nothing done since is lost.
+The projects the desktop app kept in IndexedDB before it had a library
+are moved into it with the app open, so that it can say how far they are:
+the first time it opens with one, and again if it was closed during the
+move. Each is written into the library as a project of its own, and
+IndexedDB's copy is left as it was.
 
 ## listeners
 
@@ -2237,14 +2227,14 @@ library's back over it first, so nothing done since is lost.
 
 How far a move of the projects has got.
 
-Type: [Object][415]
+Type: [Object][411]
 
 ### Properties
 
-- `title` **[string][413]** The project being moved
-- `index` **[number][416]** Which of them it is, from 0
-- `count` **[number][416]** How many there are
-- `fraction` **[number][416]** How much of the whole move is done, from 0 to 1
+- `title` **[string][409]** The project being moved
+- `index` **[number][412]** Which of them it is, from 0
+- `count` **[number][412]** How many there are
+- `fraction` **[number][412]** How much of the whole move is done, from 0 to 1
 
 ## onChangedElsewhere
 
@@ -2267,7 +2257,7 @@ Whether the app opened on its own projects, which are to be moved into the libra
 
 Open the app's storage, before anything reads from it.
 
-Returns **[Promise][422]\<void>**&#x20;
+Returns **[Promise][418]\<void>**&#x20;
 
 ## projectsToMove
 
@@ -2276,23 +2266,25 @@ the library, with `moveIntoLibrary`.
 
 ## moveIntoLibrary
 
-Keep the projects in the library from now on, and move the app's own into
-it. The app is to open again after, on the library. A move that fails
-leaves them kept in the app: those moved before it are in the library,
-and the next move passes over them unless they have changed since.
+Move the app's own projects into the library. The app is to open again
+after, on the library. A move that fails leaves them kept in the app,
+which moves them in again the next time it opens: those moved before it
+are in the library, and are passed over unless they have changed since.
 
 ### Parameters
 
 - `onProgress` &#x20;
 
-Returns **[Promise][422]\<void>**&#x20;
+Returns **[Promise][418]\<void>**&#x20;
 
 ## moveProjects
 
 Write every project one storage holds into another. One the other holds
-already is written over only when this copy was changed later: the app's
-copy of a project kept in the app again for a while, say, and then put
-back in the folder it was in. The copy written over goes to the trash.
+already is written over only when this copy was changed later: a project
+moved back into the app while the desktop app had a switch for the folder,
+and changed there since. The copy written over goes to the trash, and so
+does one only the other holds, which was deleted here since it was moved
+back.
 
 ### Parameters
 
@@ -2304,7 +2296,7 @@ back in the folder it was in. The copy written over goes to the trash.
 
 ### Parameters
 
-- `part` **[number][416]** How much of this project is done
+- `part` **[number][412]** How much of this project is done
 
 ## lastChanged
 
@@ -2314,24 +2306,9 @@ a message in one.
 ### Parameters
 
 - `storage` **[Storage][117]**&#x20;
-- `storyId` **[string][413]**&#x20;
+- `storyId` **[string][409]**&#x20;
 
-Returns **[Promise][422]<[number][416]>**&#x20;
-
-## keepProjectsInApp
-
-Keep the projects in the app again: the library's copy of every project,
-as it is now, takes the place of the app's own, and the library is let go
-of. Its files stay where they are. The app is to open again after; until
-then the library is still the storage, and a copy that fails leaves it so.
-
-### Parameters
-
-- `library` **[Storage][117]** The storage open on the library
-
-##
-
-Type: any
+Returns **[Promise][418]<[number][412]>**&#x20;
 
 ## Op
 
@@ -2341,19 +2318,19 @@ One thing to do to the folder. Paths are below the project folder.
 - `trash` - A file or a folder to the system's trash
 - `write` - A file's whole text, made whole or not at all
 
-Type: ({op: `"move"`, from: [string][413], to: [string][413]} | {op: `"trash"`, path: [string][413]} | {op: `"write"`, path: [string][413], text: [string][413]})
+Type: ({op: `"move"`, from: [string][409], to: [string][409]} | {op: `"trash"`, path: [string][409]} | {op: `"write"`, path: [string][409], text: [string][409]})
 
 ## depthOf
 
 ### Parameters
 
-- `path` **[string][413]**&#x20;
+- `path` **[string][409]**&#x20;
 
 ## isBelow
 
 ### Parameters
 
-- `path` **[string][413]** @param {string} dir
+- `path` **[string][409]** @param {string} dir
 - `dir` &#x20;
 
 ## isFolder
@@ -2371,9 +2348,9 @@ are written when they come.
 ### Parameters
 
 - `entry` **[Entry][155]**&#x20;
-- `document` **[Document][419]**&#x20;
+- `document` **[Document][415]**&#x20;
 
-Returns **[Array][414]<{path: [string][413], text: [string][413]}>**&#x20;
+Returns **[Array][410]<{path: [string][409], text: [string][409]}>**&#x20;
 
 ## repositoryText
 
@@ -2382,18 +2359,18 @@ A repository's `.repository.json`, from where everything in it is.
 ### Parameters
 
 - `repository` **[Entry][155]**&#x20;
-- `entries` **[Map][418]<[string][413], [Entry][155]>**&#x20;
+- `entries` **[Map][414]<[string][409], [Entry][155]>**&#x20;
 - `documentOf` &#x20;
 
-Returns **{path: [string][413], text: [string][413]}**&#x20;
+Returns **{path: [string][409], text: [string][409]}**&#x20;
 
 ## below
 
-Type: [Array][414]<{path: [string][413], document: [Document][419]}>
+Type: [Array][410]<{path: [string][409], document: [Document][415]}>
 
 ## documentOf
 
-Type: [Document][419]
+Type: [Document][415]
 
 ## narrationText
 
@@ -2401,7 +2378,7 @@ A narration file's text.
 
 ### Parameters
 
-- `document` **[Document][419]**&#x20;
+- `document` **[Document][415]**&#x20;
 
 ## projectFiles
 
@@ -2411,11 +2388,11 @@ what writing it into an empty folder writes.
 ### Parameters
 
 - `story` **Story**&#x20;
-- `schema` **[number][416]** The schema version its rows are in
-- `entries` **[Map][418]<[string][413], [Entry][155]>** Its layout
+- `schema` **[number][412]** The schema version its rows are in
+- `entries` **[Map][414]<[string][409], [Entry][155]>** Its layout
 - `documentOf` &#x20;
 
-Returns **[Map][418]<[string][413], [string][413]>** Text by path below the project folder
+Returns **[Map][414]<[string][409], [string][409]>** Text by path below the project folder
 
 ## storyText
 
@@ -2424,33 +2401,33 @@ The project's own file: its row, and the schema the rows are in.
 ### Parameters
 
 - `story` **Story**&#x20;
-- `schema` **[number][416]**&#x20;
+- `schema` **[number][412]**&#x20;
 
-Returns **[string][413]**&#x20;
+Returns **[string][409]**&#x20;
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ## at
 
-Type: [Map][418]<[string][413], [string][413]>
+Type: [Map][414]<[string][409], [string][409]>
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ##
 
-Type: [string][413]
+Type: [string][409]
 
 ##
 
@@ -2458,11 +2435,11 @@ Type: [Entry][155]
 
 ## trashed
 
-Type: [Array][414]<[string][413]>
+Type: [Array][410]<[string][409]>
 
 ## repositories
 
-Type: [Set][420]<[string][413]>
+Type: [Set][416]<[string][409]>
 
 [1]: #meta
 [2]: #meta-1
@@ -2703,188 +2680,184 @@ Type: [Set][420]<[string][413]>
 [237]: #librarystorage
 [238]: #parameters-53
 [239]: #projects
-[240]: #projects-1
-[241]: #librarytaken
-[242]: #listing
-[243]: #waiting
-[244]: #doing
-[245]: #inturn
-[246]: #parameters-54
-[247]: #newproject-1
-[248]: #parameters-55
-[249]: #load
-[250]: #parameters-56
-[251]: #project-1
-[252]: #project-2
-[253]: #project-3
-[254]: #project-4
-[255]: #project-5
-[256]: #project-6
-[257]: #project-7
-[258]: #project-8
-[259]: #project-9
-[260]: #project-10
-[261]: #upgrade
-[262]: #parameters-57
-[263]: #ops
-[264]: #ops-1
-[265]: #bychat
-[266]: #bychat-1
-[267]: #ensureloaded
-[268]: #parameters-58
-[269]: #apply
-[270]: #parameters-59
-[271]: #expected
-[272]: #-12
-[273]: #-13
-[274]: #todo
-[275]: #titleat
-[276]: #parameters-60
-[277]: #length
-[278]: #projectofdocument
-[279]: #parameters-61
-[280]: #projectof
-[281]: #parameters-62
-[282]: #foldername
-[283]: #parameters-63
-[284]: #writenew
-[285]: #parameters-64
-[286]: #files
-[287]: #files-1
-[288]: #files-2
-[289]: #lines
-[290]: #seen-1
-[291]: #batch
-[292]: #writeifready
-[293]: #parameters-65
-[294]: #trashproject
-[295]: #parameters-66
-[296]: #writedocuments
-[297]: #parameters-67
-[298]: #byproject
-[299]: #full
-[300]: #-14
-[301]: #planproject
-[302]: #planproject-1
-[303]: #parameters-68
-[304]: #writestories
-[305]: #parameters-69
-[306]: #readchats
-[307]: #parameters-70
-[308]: #chats
-[309]: #projectofchat
-[310]: #parameters-71
-[311]: #findchat
-[312]: #parameters-72
-[313]: #readchatmessages
-[314]: #parameters-73
-[315]: #writechats
-[316]: #parameters-74
-[317]: #writechatmessages
-[318]: #parameters-75
-[319]: #writemessages
-[320]: #parameters-76
-[321]: #chatofmessage
-[322]: #parameters-77
-[323]: #bytesof
-[324]: #parameters-78
-[325]: #-15
-[326]: #everything
-[327]: #add
-[328]: #parameters-79
-[329]: #dirof
-[330]: #parameters-80
-[331]: #-16
-[332]: #puts
-[333]: #-17
-[334]: #-18
-[335]: #-19
-[336]: #-20
-[337]: #unsafe
-[338]: #unsafe-1
-[339]: #reserved
-[340]: #max_bytes
-[341]: #prefix
-[342]: #clip
-[343]: #parameters-81
-[344]: #safename
-[345]: #parameters-82
-[346]: #-21
-[347]: #namekey
-[348]: #parameters-83
-[349]: #namekey-1
-[350]: #splitextension
-[351]: #parameters-84
-[352]: #claimname
-[353]: #parameters-85
-[354]: #prefixwidth
-[355]: #parameters-86
-[356]: #withprefix
-[357]: #parameters-87
-[358]: #readprefix
-[359]: #parameters-88
-[360]: #stemfits
-[361]: #parameters-89
-[362]: #isdesktop
-[363]: #listeners
-[364]: #listeners-1
-[365]: #listeners-2
-[366]: #moveprogress
-[367]: #properties-9
-[368]: #onchangedelsewhere
-[369]: #parameters-90
-[370]: #openlibrary
-[371]: #tomove
-[372]: #openstorage
-[373]: #projectstomove
-[374]: #moveintolibrary
-[375]: #parameters-91
-[376]: #moveprojects
-[377]: #parameters-92
-[378]: #told
-[379]: #parameters-93
-[380]: #lastchanged
-[381]: #parameters-94
-[382]: #keepprojectsinapp
+[240]: #librarytaken
+[241]: #listing
+[242]: #waiting
+[243]: #doing
+[244]: #inturn
+[245]: #parameters-54
+[246]: #newproject-1
+[247]: #parameters-55
+[248]: #load
+[249]: #parameters-56
+[250]: #project-1
+[251]: #project-2
+[252]: #project-3
+[253]: #project-4
+[254]: #project-5
+[255]: #project-6
+[256]: #project-7
+[257]: #project-8
+[258]: #project-9
+[259]: #project-10
+[260]: #upgrade
+[261]: #parameters-57
+[262]: #ops
+[263]: #ops-1
+[264]: #bychat
+[265]: #bychat-1
+[266]: #ensureloaded
+[267]: #parameters-58
+[268]: #apply
+[269]: #parameters-59
+[270]: #expected
+[271]: #-12
+[272]: #-13
+[273]: #todo
+[274]: #titleat
+[275]: #parameters-60
+[276]: #length
+[277]: #projectofdocument
+[278]: #parameters-61
+[279]: #projectof
+[280]: #parameters-62
+[281]: #foldername
+[282]: #parameters-63
+[283]: #writenew
+[284]: #parameters-64
+[285]: #files
+[286]: #files-1
+[287]: #files-2
+[288]: #lines
+[289]: #seen-1
+[290]: #batch
+[291]: #writeifready
+[292]: #parameters-65
+[293]: #trashproject
+[294]: #parameters-66
+[295]: #writedocuments
+[296]: #parameters-67
+[297]: #byproject
+[298]: #full
+[299]: #-14
+[300]: #planproject
+[301]: #planproject-1
+[302]: #parameters-68
+[303]: #writestories
+[304]: #parameters-69
+[305]: #readchats
+[306]: #parameters-70
+[307]: #chats
+[308]: #projectofchat
+[309]: #parameters-71
+[310]: #findchat
+[311]: #parameters-72
+[312]: #readchatmessages
+[313]: #parameters-73
+[314]: #writechats
+[315]: #parameters-74
+[316]: #writechatmessages
+[317]: #parameters-75
+[318]: #writemessages
+[319]: #parameters-76
+[320]: #chatofmessage
+[321]: #parameters-77
+[322]: #bytesof
+[323]: #parameters-78
+[324]: #-15
+[325]: #everything
+[326]: #add
+[327]: #parameters-79
+[328]: #dirof
+[329]: #parameters-80
+[330]: #-16
+[331]: #puts
+[332]: #-17
+[333]: #-18
+[334]: #-19
+[335]: #-20
+[336]: #unsafe
+[337]: #unsafe-1
+[338]: #reserved
+[339]: #max_bytes
+[340]: #prefix
+[341]: #clip
+[342]: #parameters-81
+[343]: #safename
+[344]: #parameters-82
+[345]: #-21
+[346]: #namekey
+[347]: #parameters-83
+[348]: #namekey-1
+[349]: #splitextension
+[350]: #parameters-84
+[351]: #claimname
+[352]: #parameters-85
+[353]: #prefixwidth
+[354]: #parameters-86
+[355]: #withprefix
+[356]: #parameters-87
+[357]: #readprefix
+[358]: #parameters-88
+[359]: #stemfits
+[360]: #parameters-89
+[361]: #isdesktop
+[362]: #listeners
+[363]: #listeners-1
+[364]: #listeners-2
+[365]: #moveprogress
+[366]: #properties-9
+[367]: #onchangedelsewhere
+[368]: #parameters-90
+[369]: #openlibrary
+[370]: #tomove
+[371]: #openstorage
+[372]: #projectstomove
+[373]: #moveintolibrary
+[374]: #parameters-91
+[375]: #moveprojects
+[376]: #parameters-92
+[377]: #told
+[378]: #parameters-93
+[379]: #lastchanged
+[380]: #parameters-94
+[381]: #op
+[382]: #depthof
 [383]: #parameters-95
-[384]: #-22
-[385]: #op
-[386]: #depthof
-[387]: #parameters-96
-[388]: #isbelow
-[389]: #parameters-97
-[390]: #isfolder
-[391]: #parameters-98
-[392]: #filesof
-[393]: #parameters-99
-[394]: #repositorytext
+[384]: #isbelow
+[385]: #parameters-96
+[386]: #isfolder
+[387]: #parameters-97
+[388]: #filesof
+[389]: #parameters-98
+[390]: #repositorytext
+[391]: #parameters-99
+[392]: #below
+[393]: #documentof
+[394]: #narrationtext
 [395]: #parameters-100
-[396]: #below
-[397]: #documentof
-[398]: #narrationtext
-[399]: #parameters-101
-[400]: #projectfiles
-[401]: #parameters-102
-[402]: #storytext
-[403]: #parameters-103
-[404]: #-23
-[405]: #at
-[406]: #-24
-[407]: #-25
-[408]: #-26
-[409]: #-27
-[410]: #-28
-[411]: #trashed
-[412]: #repositories
-[413]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[414]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[415]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[416]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[417]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[418]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[419]: https://developer.mozilla.org/docs/Web/API/Document
-[420]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
-[421]: https://developer.mozilla.org/docs/Web/API/Blob
-[422]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[423]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[424]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[396]: #projectfiles
+[397]: #parameters-101
+[398]: #storytext
+[399]: #parameters-102
+[400]: #-22
+[401]: #at
+[402]: #-23
+[403]: #-24
+[404]: #-25
+[405]: #-26
+[406]: #-27
+[407]: #trashed
+[408]: #repositories
+[409]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[410]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[411]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[412]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[413]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[414]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[415]: https://developer.mozilla.org/docs/Web/API/Document
+[416]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
+[417]: https://developer.mozilla.org/docs/Web/API/Blob
+[418]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[419]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[420]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined

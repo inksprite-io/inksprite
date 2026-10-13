@@ -58,8 +58,6 @@ vi.mock('@/composables/useProfiles', () => ({
 }))
 vi.mock('@/composables/useSystemSettings.js', () => ({ applyTheme: vi.fn() }))
 vi.mock('@/stores/messagesStore', () => ({ useMessagesStore: () => ({ forgetSavedRequests }) }))
-const desktop = vi.hoisted(() => ({ isDesktop: vi.fn(() => false) }))
-vi.mock('@/platform/desktop.js', () => desktop)
 
 /** The switch whose root carries this attribute. */
 const toggle = (wrapper, attribute) => wrapper.findComponent(`[${attribute}]`)
@@ -70,7 +68,6 @@ const mountSection = () =>
       plugins: [PrimeVue],
       stubs: {
         DataSection: { template: '<div data-data-section />' },
-        LibrarySection: { template: '<div data-library-section />' },
       },
     },
   })
@@ -162,15 +159,6 @@ describe('SystemSection compact text', () => {
 describe('SystemSection data', () => {
   it('holds backup and restore', () => {
     expect(mountSection().find('[data-data-section]').exists()).toBe(true)
-  })
-})
-
-describe('SystemSection projects folder', () => {
-  it('is shown in the desktop app, and nowhere else', () => {
-    desktop.isDesktop.mockReturnValueOnce(false)
-    expect(mountSection().find('[data-library-section]').exists()).toBe(false)
-    desktop.isDesktop.mockReturnValueOnce(true)
-    expect(mountSection().find('[data-library-section]').exists()).toBe(true)
   })
 })
 

@@ -15,13 +15,7 @@ import { openable, originOf, webAddress } from './links.js'
 import { listen } from './loopback.js'
 import { downloadUpdate, installUpdate } from './updates.js'
 import { readSettingsFile } from './settingsFile.js'
-import {
-  disableLibrary,
-  enableLibrary,
-  libraryFolder,
-  librarySettings,
-  markMoved,
-} from './library.js'
+import { libraryFolder, librarySettings, markMoved } from './library.js'
 
 /** Statuses whose response has no body. */
 const NO_BODY = new Set([101, 103, 204, 205, 304])
@@ -152,8 +146,7 @@ export function handleBridge(origin) {
   /** @type {{at: string, folder: ReturnType<typeof libraryFolder>}|null} */
   let open = null
   const library = async () => {
-    const { path, enabled } = await librarySettings()
-    if (!enabled) throw new Error('The projects are not kept in a folder.')
+    const { path } = await librarySettings()
     if (open?.at !== path) open = { at: path, folder: libraryFolder(await realpath(path)) }
     return open.folder
   }
@@ -167,8 +160,6 @@ export function handleBridge(origin) {
   }
   handle('library:settings', () => librarySettings())
   handle('library:moved', () => markMoved())
-  handle('library:enable', () => enableLibrary())
-  handle('library:disable', () => disableLibrary())
   handle('library:projects', () => inTurn(folder => folder.projects()))
   handle('library:walk', (_, dir) => inTurn(folder => folder.walk(dir)))
   handle('library:read', (_, paths) => inTurn(folder => folder.readTexts(paths)))

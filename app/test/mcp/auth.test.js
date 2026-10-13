@@ -5,6 +5,7 @@
 // endpoint, a listed server once signed in, and a refresh when a token lapses.
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 import { spawn } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 
 /** A stand-in for local storage, which Node does not have. */
 const kept = new Map()
@@ -16,9 +17,16 @@ const memory = {
 
 vi.stubGlobal('location', { origin: 'http://app.test' })
 
-const { useAuthStorage, signedIn, signOut, startSignIn, finishSignIn, authProvider } = await import(
-  '@/mcp/auth.js'
-)
+const {
+  useAuthStorage,
+  signedIn,
+  signOut,
+  startSignIn,
+  finishSignIn,
+  authProvider,
+  PUBLIC_ORIGIN,
+  CLIENT_METADATA_URL,
+} = await import('@/mcp/auth.js')
 const { callServerTool, disconnect, listServer, describeFailure } = await import('@/mcp/client.js')
 
 /**
@@ -167,5 +175,25 @@ describe('signing in to a server', () => {
       token_type: 'Bearer',
     })
     expect(provider.tokens({ issuer: 'https://two' })).toBeUndefined()
+  })
+})
+
+describe('the client ID metadata document', () => {
+  const document = JSON.parse(
+    readFileSync(new URL('../../public/oauth/mcp-client.json', import.meta.url), 'utf8')
+  )
+
+  it('is offered only on the site it names, and says what the app says', () => {
+    expect(authProvider('https://mcp.example/mcp').clientMetadataUrl).toBeUndefined()
+
+    vi.stubGlobal('location', { origin: PUBLIC_ORIGIN })
+    try {
+      const provider = authProvider('https://mcp.example/mcp')
+
+      expect(provider.clientMetadataUrl).toBe(CLIENT_METADATA_URL)
+      expect(document).toEqual({ client_id: CLIENT_METADATA_URL, ...provider.clientMetadata })
+    } finally {
+      vi.stubGlobal('location', { origin: 'http://app.test' })
+    }
   })
 })

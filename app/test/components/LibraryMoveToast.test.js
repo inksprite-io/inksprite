@@ -15,7 +15,7 @@ const dialogOf = wrapper => /** @type {HTMLDialogElement} */ (wrapper.find('dial
 
 describe('LibraryMoveToast', () => {
   beforeEach(() => {
-    move.state = reactive({ moving: null, progress: null })
+    move.state = reactive({ moving: false, progress: null })
   })
 
   it('is not there while nothing is moving', () => {
@@ -28,7 +28,7 @@ describe('LibraryMoveToast', () => {
   it('shuts the page while the projects go into the folder, and says how far they are', async () => {
     const wrapper = mountToast()
 
-    move.state.moving = 'in'
+    move.state.moving = true
     await nextTick()
     expect(dialogOf(wrapper).open).toBe(true)
     expect(wrapper.text()).toContain('Moving projects into a folder')
@@ -42,14 +42,14 @@ describe('LibraryMoveToast', () => {
       value: 50,
     })
 
-    move.state.moving = null
+    move.state.moving = false
     await nextTick()
     expect(dialogOf(wrapper).open).toBe(false)
     wrapper.unmount()
   })
 
   it('names only the project when it is the one there is', async () => {
-    move.state.moving = 'in'
+    move.state.moving = true
     move.state.progress = { title: 'Novel', index: 0, count: 1, fraction: 0.2 }
     const wrapper = mountToast()
     await nextTick()
@@ -59,20 +59,9 @@ describe('LibraryMoveToast', () => {
     wrapper.unmount()
   })
 
-  it('says the projects are going back into the app', async () => {
-    const wrapper = mountToast()
-
-    move.state.moving = 'out'
-    await nextTick()
-
-    expect(wrapper.text()).toContain('Moving projects back into the app')
-    expect(wrapper.find('[data-library-move-project]').exists()).toBe(false)
-    wrapper.unmount()
-  })
-
   it('opens again if it is closed while the projects are moving', async () => {
     const wrapper = mountToast()
-    move.state.moving = 'in'
+    move.state.moving = true
     await nextTick()
 
     dialogOf(wrapper).close()

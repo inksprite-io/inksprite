@@ -32,6 +32,22 @@ ipcRenderer.on('signIn:back', (_, id, query) => {
 })
 
 /**
+ * What the page does before its window closes: saves. Done or not, the
+ * window is told, and goes (`closing.js`).
+ * @type {(() => Promise<void>)|null}
+ */
+let beforeClosing = null
+
+ipcRenderer.on('window:save', async () => {
+  try {
+    await beforeClosing?.()
+  } catch {
+    // The window closes all the same.
+  }
+  ipcRenderer.send('window:saved')
+})
+
+/**
  * Ask the native side, and throw what went wrong there as an Error.
  *
  * @param {string} channel
@@ -72,11 +88,13 @@ contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', {
 
   settingsFile: () => call('settings:file'),
 
+  beforeClosing: save => {
+    beforeClosing = save
+  },
+
   library: {
     settings: () => call('library:settings'),
     markMoved: () => call('library:moved'),
-    enable: () => call('library:enable'),
-    disable: () => call('library:disable'),
     projects: () => call('library:projects'),
     walk: dir => call('library:walk', dir),
     read: paths => call('library:read', paths),

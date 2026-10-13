@@ -164,6 +164,16 @@ export async function features(ui, { standIn, context }) {
     await page.getByRole('heading', { name: 'Outline' }).waitFor()
   }
 
+  /** A project of this name: from the invitation, or with one open, from the projects menu. */
+  const newProject = async (/** @type {string} */ name) => {
+    if (await button('Projects').isVisible()) {
+      await ui.click(button('Projects'))
+      await ui.click(menu('New project…'))
+    } else await ui.click(button('New project'))
+    await ui.type(name)
+    await ui.click(button('Create'))
+  }
+
   /**
    * A document with these lines, in the folder the row is, or the project.
    *
@@ -250,17 +260,13 @@ export async function features(ui, { standIn, context }) {
     [20, 'Letters home'],
   ]) {
     await at(/** @type {number} */ (minute))
-    await ui.click(button('New project'))
-    await ui.type(/** @type {string} */ (name))
-    await ui.click(button('Create'))
+    await newProject(/** @type {string} */ (name))
     await page.getByRole('treeitem', { name: /** @type {string} */ (name) }).waitFor()
   }
 
   // The project the pages use
   await at(40)
-  await ui.click(button('New project'))
-  await ui.type(PROJECT)
-  await ui.click(button('Create'))
+  await newProject(PROJECT)
   const project = page.locator(`[role="treeitem"][aria-level="1"][aria-label="${PROJECT}"]`)
   await project.waitFor()
   const top = project.getByText(PROJECT).first()
@@ -283,6 +289,7 @@ export async function features(ui, { standIn, context }) {
   // The switcher
   await at(55)
   await ui.click(button('Projects'))
+  await ui.click(menu('Switch project'))
   await page.getByRole('menuitem', { name: /Field notes/ }).waitFor()
   await ui.shot('projects-switcher', { region: { x: 0, y: 0, width: 640, height: 400 } })
   await ui.press('Escape')
@@ -361,7 +368,7 @@ export async function features(ui, { standIn, context }) {
   await ui.click(row('Outline').getByRole('button', { name: 'Pin to this chat' }))
   await row('Outline').getByRole('button', { name: 'Pinned to this chat' }).waitFor()
   await ui.shot('chat-pinned', {
-    of: [page.getByRole('heading', { name: 'Outline' }), row('Outline')],
+    of: [button('Projects'), row('Outline')],
     pad: 12,
   })
 

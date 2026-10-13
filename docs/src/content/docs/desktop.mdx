@@ -1,6 +1,6 @@
 ---
 title: The Desktop App
-description: Install inksprite on macOS, Windows or Linux, bring your work over from the browser, and keep your projects in a folder of Markdown files.
+description: Install inksprite on macOS, Windows or Linux, bring your work over from the browser, and find your projects as a folder of Markdown files.
 ---
 
 The desktop app is the same inksprite as the one in your browser, in a window
@@ -75,35 +75,28 @@ updating the `.deb` asks for your password.
 
 **Settings** › **About** shows the version you have.
 
-## Keep projects in a folder
+## Your projects folder
 
-The desktop app can keep your projects as ordinary files: a folder for each
+The desktop app keeps your projects as ordinary files: a folder for each
 project, a Markdown file for each document, and imported files as they came.
 You can open them in another editor, or back them up with your own tools.
 
-:::caution[Back up first]
-Keeping projects in a folder is new. Export a backup before you switch it on.
-:::
-
-1. Open **Settings** › **System**.
-2. Under **Data**, switch on **Keep projects in a folder**.
-3. Click **Keep in a folder**. inksprite moves each project into the folder and
-   opens again.
-
-The folder's path shows under the switch. It's the `Projects` folder in
-inksprite's own data folder:
+They're in the `Projects` folder in inksprite's own data folder:
 
 - **macOS**: `~/Library/Application Support/inksprite/Projects`
 - **Windows**: `%APPDATA%\inksprite\Projects`
 - **Linux**: `~/.config/inksprite/Projects`
 
 To open it, click **Show in Finder** (**Show in Explorer** on Windows,
-**Show folder** on Linux), beside **Export** and **Import**.
+**Show folder** on Linux) in **Settings** › **System**, beside **Export** and
+**Import**.
 
 A project's chats and [narration](/narration/) audio go in its folder too.
-Without the folder, narration audio is gone when the app closes. Your AI
-connections, profiles, skills, MCP servers and settings stay in the app. A
-backup still holds everything but narration audio.
+Your AI connections, profiles, skills, MCP servers and settings stay in the
+app. A backup holds everything but narration audio.
+
+If you had projects in the desktop app before it kept them in a folder, it
+moves them in the first time it opens, and opens again.
 
 ### Editing the files elsewhere
 
@@ -116,12 +109,6 @@ Each Markdown file starts with a header between two `---` lines. Leave it as
 it is: inksprite reads a file with a broken header as a new document, and
 chats lose track of it. Leave the files and folders whose names start with a
 dot, such as `.folder.md` and `.inksprite`, alone too.
-
-### Switching it off
-
-Switch off **Keep projects in a folder** and click **Keep in the app**.
-inksprite moves the projects back into the app and opens again. The folder's
-files stay where they are.
 
 ## Set it up for someone else
 

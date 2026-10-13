@@ -42,24 +42,26 @@
   - [Parameters][38]
 - [shownLayout][39]
   - [Parameters][40]
+- [importItems][41]
+  - [Parameters][42]
 
 ## GUIDE_URL
 
 Where the welcome points, and how its words look.
 
-Type: [string][41]
+Type: [string][43]
 
 ## LINK
 
 A link, or a button that reads as one.
 
-Type: [string][41]
+Type: [string][43]
 
 ## HEADING
 
 A heading inside a section.
 
-Type: [string][41]
+Type: [string][43]
 
 ## components
 
@@ -88,8 +90,10 @@ Vue components for the inksprite application UI.
     sidebar's lists head themselves with `PanelHeader`, the height of the
     editor's tab strip and the chat's header, and the small icon buttons in
     all of them are `HeaderButton`.
-  - `projects/` - `ProjectMenu`, at the top of the outline, for switching
-    projects and starting or importing one, and the new-project dialog
+  - `projects/` - `ProjectMenu`, the menu at the start of the outline's
+    header, for switching projects (in a submenu, which scrolls), starting
+    or importing one, and the open one's settings, export and delete; and
+    the new-project dialog
   - `editor/` - The editor over a structured document, the field over a
     plain one, the strip of tabs above them, and the empty editor for a
     project with no documents or no tabs. A comment is written under the
@@ -98,7 +102,8 @@ Vue components for the inksprite application UI.
   - `comments/` - `CommentsPanel`, the project's comments in the sidebar:
     picking one opens its document, where `Editor` scrolls to it and marks
     it; Resolve takes it off
-  - `tree/` - The document tree and its nodes
+  - `tree/` - The document tree and its nodes. Its header's Import and New
+    document act on the project's top, as the root's menu does
   - `chats/` - A chat, its list, and its settings
   - `narration/` - The document in the editor read aloud: `NarrationPanel`
     in the sidebar, with the document's blocks (`NarrationScript`: who
@@ -214,7 +219,7 @@ so nothing that was saved can open onto an empty screen.
 
 ### Parameters
 
-- `stored` **(Partial\<StoryLayout> | null | [undefined][42])**&#x20;
+- `stored` **(Partial\<StoryLayout> | null | [undefined][44])**&#x20;
 
 Returns **StoryLayout**&#x20;
 
@@ -252,7 +257,7 @@ both hidden: the last one showing stays.
 - `layout` **StoryLayout**&#x20;
 - `panel` **[Panel][16]**&#x20;
 
-Returns **[boolean][43]**&#x20;
+Returns **[boolean][45]**&#x20;
 
 ## togglePanel
 
@@ -288,9 +293,9 @@ something an older version or another hand left there.
 ### Parameters
 
 - `kept` **unknown** What was read back from storage
-- `starting` **[Array][44]<[number][45]>** The splitter's starting widths, one per panel
+- `starting` **[Array][46]<[number][47]>** The splitter's starting widths, one per panel
 
-Returns **[Array][44]<[number][45]>**&#x20;
+Returns **[Array][46]<[number][47]>**&#x20;
 
 ## shownLayout
 
@@ -303,10 +308,21 @@ all three again.
 ### Parameters
 
 - `layout` **StoryLayout**&#x20;
-- `narrow` **[boolean][43]** Whether the window is too narrow for all three;
+- `narrow` **[boolean][45]** Whether the window is too narrow for all three;
   see useScreenSize
 
 Returns **StoryLayout**&#x20;
+
+## importItems
+
+The ways into a folder, as menu items: files chosen together, a folder whole
+with the folders inside it, Google Drive, and a codebase. A folder's Import
+submenu offers them, and so does the Import button at the top of the
+outline, for the project's top; one list, so the two can't drift apart.
+
+### Parameters
+
+- `on` **[Object][48]** What each does
 
 [1]: #guide_url
 [2]: #link
@@ -348,8 +364,11 @@ Returns **StoryLayout**&#x20;
 [38]: #parameters-5
 [39]: #shownlayout
 [40]: #parameters-6
-[41]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[42]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[43]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[44]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[45]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[41]: #importitems
+[42]: #parameters-7
+[43]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[44]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[45]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[46]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[47]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[48]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object

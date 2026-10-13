@@ -39,8 +39,12 @@ import { localStorage as appStorage } from '@/utils/localStorage.js'
 /** Where an authorization server sends the writer back. */
 export const CALLBACK_PATH = '/connect/mcp'
 
-/** The site the client ID metadata document is served from. */
-export const PUBLIC_ORIGIN = 'https://inksprite.io'
+/**
+ * The site the app and its client ID metadata document are served from. Not
+ * inksprite.io, which only redirects here: a page can offer the document only
+ * on the origin the document sends the writer back to.
+ */
+export const PUBLIC_ORIGIN = 'https://app.inksprite.io'
 
 /** The document, which is the app's client ID wherever it is accepted. */
 export const CLIENT_METADATA_URL = `${PUBLIC_ORIGIN}/oauth/mcp-client.json`

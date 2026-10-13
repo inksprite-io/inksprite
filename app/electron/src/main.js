@@ -8,6 +8,7 @@ import { BrowserWindow, app, session, shell } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { handleBridge } from './bridge.js'
+import { saveBeforeClosing } from './closing.js'
 import { ensureLibrary } from './library.js'
 import { openable, originOf } from './links.js'
 import { setMenu, showContextMenu } from './menu.js'
@@ -61,8 +62,7 @@ if (app.requestSingleInstanceLock()) {
 }
 
 async function start() {
-  // The projects' folder, when they are kept in one, is there before the
-  // window that keeps them.
+  // The projects' folder is there before the window that keeps them.
   await ensureLibrary()
   servePage(pageRoot)
   handleBridge(origin)
@@ -98,6 +98,7 @@ function openWindow() {
     },
   })
   window.once('ready-to-show', () => window.show())
+  saveBeforeClosing(window)
 
   const { webContents } = window
   // A link followed in the window would take the app's place, and a window

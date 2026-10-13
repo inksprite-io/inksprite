@@ -23,6 +23,9 @@ let downloaded = null
 /** The look under way, if any. @type {Promise<string|null>|null} */
 let looking = null
 
+/** Whether the app is quitting to install an update. */
+let installing = false
+
 /**
  * Look for an update and download it.
  *
@@ -47,9 +50,14 @@ async function look() {
 
 /**
  * Install the update downloaded, and restart into it: silently, on Windows,
- * where the installer would otherwise show its pages.
+ * where the installer would otherwise show its pages. The page saves before
+ * it asks, so the window is not to wait for it again (`closing.js`).
  */
 export function installUpdate() {
   if (!downloaded) throw new Error('No update has been downloaded.')
+  installing = true
   autoUpdater.quitAndInstall(true, true)
 }
+
+/** Whether the app is quitting to install an update. */
+export const installingUpdate = () => installing

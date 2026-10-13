@@ -2,6 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!--
+      The keys are in this page's database, so script that gets in runs with
+      them: only the app's own scripts run. Images only from here, since one
+      from elsewhere is a request that carries whatever its address says.
+      Requests aren't limited, because the writer's servers can be anywhere.
+      Here rather than in a header so that the desktop app has it too;
+      vercel.json adds what only a header can say.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="script-src 'self'; object-src 'none'; base-uri 'none'; img-src 'self' data: blob:"
+    />
     <link rel="icon" type="image/svg+xml" href="/static/icons/inksprite_i.svg" />
     <link rel="shortcut icon" href="/static/icons/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/apple-touch-icon.png" />

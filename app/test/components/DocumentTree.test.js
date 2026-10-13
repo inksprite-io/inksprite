@@ -6,6 +6,8 @@ import PrimeVue from 'primevue/config'
 import ConfirmationService from 'primevue/confirmationservice'
 import ToastService from 'primevue/toastservice'
 import Tooltip from 'primevue/tooltip'
+import ContextMenu from 'primevue/contextmenu'
+import Menu from 'primevue/menu'
 import DocumentTree from '../../src/components/writer/tree/DocumentTree.vue'
 import { useDocuments, clearDocumentInstances } from '../../src/composables/useDocuments'
 import { clearChatsInstances } from '../../src/composables/useChats'
@@ -93,7 +95,8 @@ const downloadProject = vi.fn()
 vi.mock('../../src/composables/useBackup', () => ({ useBackup: () => ({ downloadProject }) }))
 
 const ProjectMenu = {
-  props: ['storyId'],
+  name: 'ProjectMenu',
+  props: ['storyId', 'projectItems'],
   template: '<div data-project-menu :data-story="storyId" />',
 }
 
@@ -299,6 +302,68 @@ describe('DocumentTree importing', () => {
   })
 })
 
+describe('DocumentTree header', () => {
+  /** @type {ReturnType<typeof useDocuments>} */
+  let api
+
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    clearDocumentInstances()
+    clearChatsInstances()
+    vi.clearAllMocks()
+    confirmed.answer = 'accept'
+    confirmed.asked = []
+    api = useDocuments('story_1')
+    await api.init()
+  })
+
+  /** What the header's Import offers. */
+  const importOffered = wrapper =>
+    wrapper.findComponent({ name: 'PanelHeader' }).findComponent(Menu).props('model')
+
+  it("offers at Import what the project's own Import offers", async () => {
+    const wrapper = mountTree()
+    await flushPromises()
+
+    const own = wrapper
+      .findComponent({ name: 'DocumentNode' })
+      .findComponent(ContextMenu)
+      .props('model')
+      .find(item => item.label === 'Import')
+    expect(importOffered(wrapper).map(item => item.label)).toEqual(
+      own.items.map(item => item.label)
+    )
+  })
+
+  it('imports files chosen from the header into the top of the project', async () => {
+    const wrapper = mountTree()
+    await flushPromises()
+    const input = wrapper.find('input[multiple]')
+    const click = vi.spyOn(input.element, 'click')
+
+    importOffered(wrapper)
+      .find(item => item.label === 'Files…')
+      .command()
+    expect(click).toHaveBeenCalled()
+    await choose(input, [chosen('a.md'), chosen('b.md')])
+
+    expect(importMany.mock.calls[0][1].parentId).toBe(api.root.value.id)
+  })
+
+  it('starts a document at the top of the project, open and waiting for its name', async () => {
+    const wrapper = mountTree()
+    await flushPromises()
+
+    await wrapper.find('[data-action="new-document"]').trigger('click')
+    await flushPromises()
+
+    const [created] = api.childrenOf(api.root.value.id)
+    expect(created.type).toBe('text')
+    expect(api.activeDocumentId.value).toBe(created.id)
+    expect(wrapper.find(`[data-document-id="${created.id}"] input`).exists()).toBe(true)
+  })
+})
+
 describe('DocumentTree project menu', () => {
   beforeEach(async () => {
     setActivePinia(createPinia())
@@ -327,12 +392,22 @@ describe('DocumentTree project menu', () => {
     expect(labels).toEqual(['Project settings', 'Export project', 'Delete project'])
   })
 
-  it('has the projects menu at the top, for the project open, under the Outline title', () => {
+  it('has the projects menu at the start of the header, for the project open, before the Outline title', () => {
     const wrapper = mountTree()
     const header = wrapper.findComponent({ name: 'PanelHeader' })
     expect(header.props('title')).toBe('Outline')
     expect(header.find('h2').text()).toBe('Outline')
-    expect(header.find('[data-project-menu]').attributes('data-story')).toBe('story_1')
+    const menu = header.find('[data-project-menu]')
+    expect(menu.attributes('data-story')).toBe('story_1')
+    expect(menu.element.nextElementSibling?.textContent?.trim()).toBe('Outline')
+  })
+
+  it('offers the same under Projects in the header', async () => {
+    const wrapper = mountTree()
+    await flushPromises()
+
+    const own = wrapper.findComponent({ name: 'DocumentNode' }).props('extraMenuItems')
+    expect(wrapper.findComponent(ProjectMenu).props('projectItems')).toBe(own)
   })
 
   it('deletes the project with its jobs, and leaves it', async () => {

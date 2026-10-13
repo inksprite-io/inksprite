@@ -2,70 +2,87 @@
 
 ### Table of Contents
 
-- [platform/desktop][1]
-- [DesktopRequest][2]
-  - [Properties][3]
-- [DesktopResponse][4]
-  - [Properties][5]
-- [DesktopBodyPart][6]
-- [DesktopBridge][7]
+- [platform/closing][1]
+- [beforeClosing][2]
+  - [Parameters][3]
+- [platform/desktop][4]
+- [DesktopRequest][5]
+  - [Properties][6]
+- [DesktopResponse][7]
   - [Properties][8]
-- [LibrarySettings][9]
-- [BRIDGE][10]
-- [BRIDGE][11]
-- [isDesktop][12]
-- [desktop][13]
-- [platform/fetch][14]
-- [NO_BODY][15]
-- [READERS][16]
-- [last][17]
-- [last][18]
-- [fetch][19]
-  - [Parameters][20]
-- [fetchNatively][21]
-  - [Parameters][22]
-- [controller][23]
-- [onBody][24]
+- [DesktopBodyPart][9]
+- [DesktopBridge][10]
+  - [Properties][11]
+- [LibrarySettings][12]
+- [BRIDGE][13]
+- [BRIDGE][14]
+- [isDesktop][15]
+- [desktop][16]
+- [platform/fetch][17]
+- [NO_BODY][18]
+- [READERS][19]
+- [last][20]
+- [last][21]
+- [fetch][22]
+  - [Parameters][23]
+- [fetchNatively][24]
   - [Parameters][25]
-- [platform][26]
-  - [Examples][27]
-- [platform/library][28]
-- [librarySettings][29]
-- [librarySettings][30]
-- [enableLibrary][31]
-- [disableLibrary][32]
-- [markProjectsMoved][33]
-- [revealInLibrary][34]
-  - [Parameters][35]
-- [libraryDisk][36]
-- [platform/open][37]
-- [SCHEMES][38]
-- [openable][39]
-  - [Parameters][40]
-- [openUrl][41]
-  - [Parameters][42]
-- [openLinkClicked][43]
-  - [Parameters][44]
-- [platform/persistence][45]
-- [asked][46]
-- [askToKeepData][47]
-- [BrowserTraits][48]
-  - [Properties][49]
-- [StorageAdvice][50]
-  - [Properties][51]
-- [currentBrowser][52]
-- [storageAdvice][53]
-  - [Parameters][54]
-- [platform/settingsFile][55]
-- [settingsFileText][56]
-- [platform/signIn][57]
-- [SIGN_IN_PORT][58]
-- [callbackOrigin][59]
-- [signInInBrowser][60]
-  - [Parameters][61]
-- [platform/updates][62]
-- [downloadUpdate][63]
-- [installUpdate][64]
+- [controller][26]
+- [onBody][27]
+  - [Parameters][28]
+- [platform][29]
+  - [Examples][30]
+- [platform/library][31]
+- [librarySettings][32]
+- [librarySettings][33]
+- [markProjectsMoved][34]
+- [revealInLibrary][35]
+  - [Parameters][36]
+- [libraryDisk][37]
+- [platform/open][38]
+- [SCHEMES][39]
+- [openable][40]
+  - [Parameters][41]
+- [openUrl][42]
+  - [Parameters][43]
+- [openLinkClicked][44]
+  - [Parameters][45]
+- [platform/persistence][46]
+- [asked][47]
+- [askToKeepData][48]
+- [BrowserTraits][49]
+  - [Properties][50]
+- [StorageAdvice][51]
+  - [Properties][52]
+- [currentBrowser][53]
+- [storageAdvice][54]
+  - [Parameters][55]
+- [platform/settingsFile][56]
+- [settingsFileText][57]
+- [platform/signIn][58]
+- [SIGN_IN_PORT][59]
+- [callbackOrigin][60]
+- [signInInBrowser][61]
+  - [Parameters][62]
+- [platform/updates][63]
+- [downloadUpdate][64]
+- [installUpdate][65]
+
+## platform/closing
+
+In the desktop app, saving before the window closes or the
+app quits: the window waits for the page to say it has saved, or for long
+enough (`app/electron/src/closing.js`). A browser closes a tab without
+waiting.
+
+## beforeClosing
+
+Have the desktop app wait for `save` before its window closes or it quits.
+Nothing in a browser.
+
+### Parameters
+
+- `save` &#x20;
 
 ## platform/desktop
 
@@ -77,41 +94,41 @@ bridge to the native side there.
 What the native side is asked for a request: the page's `Request`, read
 out.
 
-Type: [Object][65]
+Type: [Object][66]
 
 ### Properties
 
-- `url` **[string][66]**&#x20;
-- `method` **[string][66]**&#x20;
-- `headers` **[Array][67]<\[[string][66], [string][66]]>**&#x20;
-- `body` **([Uint8Array][68] | null)**&#x20;
+- `url` **[string][67]**&#x20;
+- `method` **[string][67]**&#x20;
+- `headers` **[Array][68]<\[[string][67], [string][67]]>**&#x20;
+- `body` **([Uint8Array][69] | null)**&#x20;
 - `redirect` **RequestRedirect**&#x20;
 
 ## DesktopResponse
 
 A response's status and headers, without its body.
 
-Type: [Object][65]
+Type: [Object][66]
 
 ### Properties
 
-- `status` **[number][69]**&#x20;
-- `statusText` **[string][66]**&#x20;
-- `headers` **[Array][67]<\[[string][66], [string][66]]>**&#x20;
+- `status` **[number][70]**&#x20;
+- `statusText` **[string][67]**&#x20;
+- `headers` **[Array][68]<\[[string][67], [string][67]]>**&#x20;
 
 ## DesktopBodyPart
 
 A piece of a response's body: a chunk of it, or word that it has all come,
 or that it failed.
 
-Type: ({chunk: [Uint8Array][68]} | {done: `true`} | {error: [string][66]})
+Type: ({chunk: [Uint8Array][69]} | {done: `true`} | {error: [string][67]})
 
 ## DesktopBridge
 
 What the desktop app's native side offers the page (`app/electron/src/
 preload.cjs`). Calls that go wrong reject with an Error saying what did.
 
-Type: [Object][65]
+Type: [Object][66]
 
 ### Properties
 
@@ -119,24 +136,23 @@ Type: [Object][65]
 
 ## LibrarySettings
 
-Whether the projects are kept in the library, where it is, and whether
-the window's own have been moved into it.
+Where the library is, and whether the window's own projects have been
+moved into it.
 
-Type: {path: [string][66], enabled: [boolean][70], moved: [boolean][70]}
+Type: {path: [string][67], moved: [boolean][71]}
 
 ## BRIDGE
 
-The library: whether the projects are kept in it, where it is, and the
-files in it, by paths below it. What is done there is `LibraryDisk` in
-`storage/library.js`.
+The library: where it is, and the files in it, by paths below it. What is
+done there is `LibraryDisk` in `storage/library.js`.
 
-Type: [string][66]
+Type: [string][67]
 
 ## BRIDGE
 
 Where the bridge is, in the page.
 
-Type: [string][66]
+Type: [string][67]
 
 ## isDesktop
 
@@ -145,13 +161,13 @@ Whether the app is running in its desktop window.
 Decided at runtime, not when the app is built: in development the browser
 tab and the window load the same bundle from the same server.
 
-Returns **[boolean][70]**&#x20;
+Returns **[boolean][71]**&#x20;
 
 ## desktop
 
 The bridge to the native side, in the desktop window.
 
-Returns **[DesktopBridge][7]**&#x20;
+Returns **[DesktopBridge][10]**&#x20;
 
 ## platform/fetch
 
@@ -188,10 +204,10 @@ page's own does, streamed body and abort signal included.
 
 ### Parameters
 
-- `input` **(RequestInfo | [URL][71])**&#x20;
+- `input` **(RequestInfo | [URL][72])**&#x20;
 - `init` **RequestInit?**&#x20;
 
-Returns **[Promise][72]<[Response][73]>**&#x20;
+Returns **[Promise][73]<[Response][74]>**&#x20;
 
 ## fetchNatively
 
@@ -200,13 +216,13 @@ comes.
 
 ### Parameters
 
-- `request` **[Request][74]**&#x20;
+- `request` **[Request][75]**&#x20;
 
-Returns **[Promise][72]<[Response][73]>**&#x20;
+Returns **[Promise][73]<[Response][74]>**&#x20;
 
 ## controller
 
-Type: ReadableStreamDefaultController<[Uint8Array][68]>
+Type: ReadableStreamDefaultController<[Uint8Array][69]>
 
 ## onBody
 
@@ -242,6 +258,8 @@ sign-in rather than for a platform.
   the writer is told about how long it will
 - **settingsFile** - In the desktop app, the settings file a script may
   leave in the app's data folder for it to import as it opens
+- **closing** - In the desktop app, saving before the window closes or the
+  app quits
 
 Design: `.llm/desktop_design.md`.
 
@@ -256,29 +274,15 @@ const response = await fetch(`${endpoint}/models`, { signal })
 ## platform/library
 
 In the desktop app, the folder the projects are kept in:
-whether they are kept in it, where it is, and its files, for
-`storage/library.js`.
+where it is, whether the app's projects are moved into it yet, and its
+files, for `storage/library.js`.
 
 ## librarySettings
 
 ## librarySettings
 
-Whether the projects are kept in a library, where it is, and whether the
-projects kept in the window have been moved into it.
-
-## enableLibrary
-
-Keep the projects in the library from now on. Until the window's projects
-are moved into it, the app opens on them, and moves them in.
-
-Returns **[Promise][72]<[string][66]>** Where it is
-
-## disableLibrary
-
-Keep the projects in the app again, once they have been copied back into
-it. The folder's files stay where they are.
-
-Returns **[Promise][72]\<void>**&#x20;
+Where the library is, and whether the projects kept in the window have
+been moved into it.
 
 ## markProjectsMoved
 
@@ -290,7 +294,7 @@ Show the library, or a file in it, in the system's file manager.
 
 ### Parameters
 
-- `path` **[string][66]?** Below the library
+- `path` **[string][67]?** Below the library
 
 ## libraryDisk
 
@@ -319,9 +323,9 @@ The address a link goes to, if it is one that may open.
 
 ### Parameters
 
-- `href` **[string][66]**&#x20;
+- `href` **[string][67]**&#x20;
 
-Returns **([URL][71] | null)**&#x20;
+Returns **([URL][72] | null)**&#x20;
 
 ## openUrl
 
@@ -329,9 +333,9 @@ Open a link outside the app.
 
 ### Parameters
 
-- `href` **[string][66]**&#x20;
+- `href` **[string][67]**&#x20;
 
-Returns **[Promise][72]<[boolean][70]>** Whether it was one that may open
+Returns **[Promise][73]<[boolean][71]>** Whether it was one that may open
 
 ## openLinkClicked
 
@@ -342,7 +346,7 @@ link, or a click with a modifier somewhere other than this tab.
 
 ### Parameters
 
-- `event` **[MouseEvent][75]**&#x20;
+- `event` **[MouseEvent][76]**&#x20;
 
 ## platform/persistence
 
@@ -371,20 +375,20 @@ Whether this page load has asked: once is enough, whatever the answer.
 
 Ask the browser to keep the page's data, once a page load. Never throws.
 
-Returns **[Promise][72]<[boolean][70]>** Whether the data is kept
+Returns **[Promise][73]<[boolean][71]>** Whether the data is kept
 
 ## BrowserTraits
 
 What the page is in, as far as the advice depends on it.
 
-Type: [Object][65]
+Type: [Object][66]
 
 ### Properties
 
-- `userAgent` **[string][66]**&#x20;
-- `maxTouchPoints` **[number][69]** An iPad sends a Mac's user agent; only
+- `userAgent` **[string][67]**&#x20;
+- `maxTouchPoints` **[number][70]** An iPad sends a Mac's user agent; only
   its touch screen tells the two apart
-- `standalone` **[boolean][70]** Opened from the Home Screen or the Dock,
+- `standalone` **[boolean][71]** Opened from the Home Screen or the Dock,
   rather than in a browser tab
 
 ## StorageAdvice
@@ -392,19 +396,19 @@ Type: [Object][65]
 What the writer is told about keeping their work, beyond that it is in the
 browser.
 
-Type: [Object][65]
+Type: [Object][66]
 
 ### Properties
 
-- `clearsAfterAWeek` **[boolean][70]** Safari, which deletes site data after a week of inactivity
-- `homeScreen` **[boolean][70]** Safari in a tab on an iPhone or iPad, where the Home Screen is exempt
-- `desktopApp` **[boolean][70]** A computer, which the desktop app runs on
+- `clearsAfterAWeek` **[boolean][71]** Safari, which deletes site data after a week of inactivity
+- `homeScreen` **[boolean][71]** Safari in a tab on an iPhone or iPad, where the Home Screen is exempt
+- `desktopApp` **[boolean][71]** A computer, which the desktop app runs on
 
 ## currentBrowser
 
 The page's browser, as `storageAdvice` reads it.
 
-Returns **[BrowserTraits][48]**&#x20;
+Returns **[BrowserTraits][49]**&#x20;
 
 ## storageAdvice
 
@@ -418,9 +422,9 @@ warned, since its exemption is not documented either.
 
 ### Parameters
 
-- `browser` **[BrowserTraits][48]?** (optional, default `currentBrowser()`)
+- `browser` **[BrowserTraits][49]?** (optional, default `currentBrowser()`)
 
-Returns **[StorageAdvice][50]**&#x20;
+Returns **[StorageAdvice][51]**&#x20;
 
 ## platform/settingsFile
 
@@ -433,7 +437,7 @@ the app's data folder for it to import as it opens. See
 The settings file's text, or null when there is none, or no folder to
 leave one in: in a browser.
 
-Returns **[Promise][72]<([string][66] | null)>**&#x20;
+Returns **[Promise][73]<([string][67] | null)>**&#x20;
 
 ## platform/signIn
 
@@ -454,14 +458,14 @@ some hold it to exactly that address.
 
 Where the desktop app listens for a sign-in to come back.
 
-Type: [number][69]
+Type: [number][70]
 
 ## callbackOrigin
 
 Where a sign-in comes back to: this page's own origin in a browser, the
 desktop app's listener in its window.
 
-Returns **[string][66]**&#x20;
+Returns **[string][67]**&#x20;
 
 ## signInInBrowser
 
@@ -473,13 +477,13 @@ while another is waiting takes its place.
 
 ### Parameters
 
-- `address` **([string][66] | [URL][71])** Where to sign in
-- `path` **[string][66]** Where the service sends the browser back, under
+- `address` **([string][67] | [URL][72])** Where to sign in
+- `path` **[string][67]** Where the service sends the browser back, under
   `callbackOrigin()`: `/connect/mcp`
-- `$2` **[Object][65]** (optional, default `{}`)
+- `$2` **[Object][66]** (optional, default `{}`)
   - `$2.signal` &#x20;
 
-Returns **[Promise][72]\<URLSearchParams>** The query it came back with
+Returns **[Promise][73]\<URLSearchParams>** The query it came back with
 
 ## platform/updates
 
@@ -494,7 +498,7 @@ always the latest.
 
 Look for an update and download it, in the desktop app.
 
-Returns **[Promise][72]<([string][66] | null)>** The version downloaded, ready to install;
+Returns **[Promise][73]<([string][67] | null)>** The version downloaded, ready to install;
 null when the app is up to date, or not the desktop app
 
 ## installUpdate
@@ -502,80 +506,81 @@ null when the app is up to date, or not the desktop app
 Install the update `downloadUpdate` downloaded, and restart into it. Does
 not return, unless the install fails.
 
-Returns **[Promise][72]\<void>**&#x20;
+Returns **[Promise][73]\<void>**&#x20;
 
-[1]: #platformdesktop
-[2]: #desktoprequest
-[3]: #properties
-[4]: #desktopresponse
-[5]: #properties-1
-[6]: #desktopbodypart
-[7]: #desktopbridge
-[8]: #properties-2
-[9]: #librarysettings
-[10]: #bridge
-[11]: #bridge-1
-[12]: #isdesktop
-[13]: #desktop
-[14]: #platformfetch
-[15]: #no_body
-[16]: #readers
-[17]: #last
-[18]: #last-1
-[19]: #fetch
-[20]: #parameters
-[21]: #fetchnatively
-[22]: #parameters-1
-[23]: #controller
-[24]: #onbody
+[1]: #platformclosing
+[2]: #beforeclosing
+[3]: #parameters
+[4]: #platformdesktop
+[5]: #desktoprequest
+[6]: #properties
+[7]: #desktopresponse
+[8]: #properties-1
+[9]: #desktopbodypart
+[10]: #desktopbridge
+[11]: #properties-2
+[12]: #librarysettings
+[13]: #bridge
+[14]: #bridge-1
+[15]: #isdesktop
+[16]: #desktop
+[17]: #platformfetch
+[18]: #no_body
+[19]: #readers
+[20]: #last
+[21]: #last-1
+[22]: #fetch
+[23]: #parameters-1
+[24]: #fetchnatively
 [25]: #parameters-2
-[26]: #platform
-[27]: #examples
-[28]: #platformlibrary
-[29]: #librarysettings-1
-[30]: #librarysettings-2
-[31]: #enablelibrary
-[32]: #disablelibrary
-[33]: #markprojectsmoved
-[34]: #revealinlibrary
-[35]: #parameters-3
-[36]: #librarydisk
-[37]: #platformopen
-[38]: #schemes
-[39]: #openable
-[40]: #parameters-4
-[41]: #openurl
-[42]: #parameters-5
-[43]: #openlinkclicked
-[44]: #parameters-6
-[45]: #platformpersistence
-[46]: #asked
-[47]: #asktokeepdata
-[48]: #browsertraits
-[49]: #properties-3
-[50]: #storageadvice
-[51]: #properties-4
-[52]: #currentbrowser
-[53]: #storageadvice-1
-[54]: #parameters-7
-[55]: #platformsettingsfile
-[56]: #settingsfiletext
-[57]: #platformsignin
-[58]: #sign_in_port
-[59]: #callbackorigin
-[60]: #signininbrowser
-[61]: #parameters-8
-[62]: #platformupdates
-[63]: #downloadupdate
-[64]: #installupdate
-[65]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[66]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[67]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[68]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[69]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[70]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[71]: https://developer.mozilla.org/docs/Web/API/URL/URL
-[72]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[73]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[74]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
-[75]: https://developer.mozilla.org/docs/Web/API/MouseEvent
+[26]: #controller
+[27]: #onbody
+[28]: #parameters-3
+[29]: #platform
+[30]: #examples
+[31]: #platformlibrary
+[32]: #librarysettings-1
+[33]: #librarysettings-2
+[34]: #markprojectsmoved
+[35]: #revealinlibrary
+[36]: #parameters-4
+[37]: #librarydisk
+[38]: #platformopen
+[39]: #schemes
+[40]: #openable
+[41]: #parameters-5
+[42]: #openurl
+[43]: #parameters-6
+[44]: #openlinkclicked
+[45]: #parameters-7
+[46]: #platformpersistence
+[47]: #asked
+[48]: #asktokeepdata
+[49]: #browsertraits
+[50]: #properties-3
+[51]: #storageadvice
+[52]: #properties-4
+[53]: #currentbrowser
+[54]: #storageadvice-1
+[55]: #parameters-8
+[56]: #platformsettingsfile
+[57]: #settingsfiletext
+[58]: #platformsignin
+[59]: #sign_in_port
+[60]: #callbackorigin
+[61]: #signininbrowser
+[62]: #parameters-9
+[63]: #platformupdates
+[64]: #downloadupdate
+[65]: #installupdate
+[66]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[67]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[68]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[69]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[70]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[71]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[72]: https://developer.mozilla.org/docs/Web/API/URL/URL
+[73]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[74]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[75]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
+[76]: https://developer.mozilla.org/docs/Web/API/MouseEvent

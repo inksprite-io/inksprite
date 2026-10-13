@@ -4,10 +4,9 @@
  *
  * It is `Projects` in the app's data folder, beside the rest of what the app
  * keeps, and not asked for: there is nothing to give permission to, and it
- * is in no folder a sync service keeps in step already. Whether the
- * projects are kept in it at all is a switch in the page's settings, kept in
- * `library.json` there: off in a release until it has been tried more
- * widely, on in a run from the checkout. The page names files by their path
+ * is in no folder a sync service keeps in step already. The projects the
+ * app kept before it had one are moved into it as it opens, once, and
+ * `library.json` there says they have been. The page names files by their path
  * below the library, `/` between the parts, and the layout of a project is
  * the page's to know (`src/storage/` there): here is only the disk, held to
  * the library. A path that would lead anywhere else, through `..` or a link,
@@ -27,7 +26,7 @@ import { randomBytes } from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
-/** Whether the projects are kept in the library, and whether they are in it yet. */
+/** Whether the projects the app kept before the library are in it yet. */
 const SETTINGS_FILE = 'library.json'
 
 /** The library, in the app's data folder. */
@@ -51,8 +50,6 @@ const READ_AT_ONCE = 64
 /**
  * @typedef {Object} LibrarySettings
  * @property {string} path - The library
- * @property {boolean} enabled - Whether the projects are kept in it. Unset means
- *   off in a release and on in a run from the checkout.
  * @property {boolean} moved - Whether the projects kept in the window were moved into it
  */
 
@@ -75,58 +72,26 @@ export async function librarySettings() {
   try {
     read = JSON.parse(await fs.readFile(settingsPath(), 'utf8'))
   } catch {
-    // Never switched: the default.
+    // Not moved in yet.
   }
-  settings = {
-    path: libraryPath(),
-    enabled: typeof read.enabled === 'boolean' ? read.enabled : !app.isPackaged,
-    moved: read.moved === true,
-  }
+  settings = { path: libraryPath(), moved: read.moved === true }
   return settings
-}
-
-/** @param {LibrarySettings} next */
-async function saveSettings(next) {
-  await fs.mkdir(path.dirname(settingsPath()), { recursive: true })
-  const { enabled, moved } = next
-  await writeWhole(settingsPath(), `${JSON.stringify({ enabled, moved }, null, 2)}\n`)
-  settings = next
 }
 
 /** Say the projects kept in the window are in the library now. */
 export async function markMoved() {
-  await saveSettings({ ...(await librarySettings()), moved: true })
+  await fs.mkdir(path.dirname(settingsPath()), { recursive: true })
+  await writeWhole(settingsPath(), `${JSON.stringify({ moved: true }, null, 2)}\n`)
+  settings = { ...(await librarySettings()), moved: true }
 }
 
 /**
- * Keep the projects in the library from now on. Until the page says the
- * window's projects are moved into it, it opens on them, and moves them in.
+ * Make the library when it is not there: the first time the app opens, or
+ * after it was taken away.
  *
  * @returns {Promise<string>} Where it is
  */
-export async function enableLibrary() {
-  await fs.mkdir(libraryPath(), { recursive: true })
-  await saveSettings({ ...(await librarySettings()), enabled: true, moved: false })
-  return libraryPath()
-}
-
-/**
- * Keep the projects in the window again, once the page has copied them back
- * there. The library's files are left where they are.
- */
-export async function disableLibrary() {
-  await saveSettings({ ...(await librarySettings()), enabled: false, moved: false })
-}
-
-/**
- * Make the library, when the projects are kept in it and it is not there:
- * the first time a run from the checkout opens, or after it was taken away.
- *
- * @returns {Promise<string|null>} Where it is, or null when the projects are kept in the window
- */
 export async function ensureLibrary() {
-  const { enabled } = await librarySettings()
-  if (!enabled) return null
   await fs.mkdir(libraryPath(), { recursive: true })
   return libraryPath()
 }

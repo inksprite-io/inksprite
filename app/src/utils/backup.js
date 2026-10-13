@@ -82,7 +82,7 @@ const SCOPES = {
   chat: { noun: 'one chat', hint: 'Import it from the chat list.' },
   project: {
     noun: 'one project',
-    hint: 'Import it with Import a project at the top of the outline.',
+    hint: 'Import it with Import project, in the projects menu at the top of the outline.',
   },
   settings: { noun: 'settings', hint: 'Import it with Import in Settings › System.' },
 }

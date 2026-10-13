@@ -107,7 +107,7 @@ describe('settingsItems', () => {
       ['settings', 'Profiles chats start on'],
       ['settings', 'Narration'],
       ['settings', 'Workflows'],
-      ['settings', 'Preferences: theme, edits, NSFW profiles, speaker colours'],
+      ['settings', 'Preferences'],
     ])
     expect(items.find(item => item.kind === 'skillWordings')?.key).toBe('skillWordings/write')
   })

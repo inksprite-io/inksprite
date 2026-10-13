@@ -14,11 +14,7 @@
       <div class="flex items-center gap-2">
         <i class="pi pi-folder text-surface-500 dark:text-surface-400" />
         <span id="library-move-title" class="text-sm font-semibold">
-          {{
-            state.moving === 'out'
-              ? 'Moving projects back into the app'
-              : 'Moving projects into a folder'
-          }}
+          Moving projects into a folder
         </span>
       </div>
       <div
@@ -47,10 +43,8 @@ import ProgressBar from 'primevue/progressbar'
 import { useLibraryMove } from '@/composables/useLibraryMove.js'
 
 /**
- * How far the projects are, on their way into the folder they are kept in
- * or back into the app. Going into the folder, it names the project going
- * and how much of them all is there; going back, it says only that they are
- * going.
+ * How far the projects are, on their way into the folder they are kept in:
+ * the project going, and how much of them all is there.
  */
 
 const { state } = useLibraryMove()
@@ -66,8 +60,8 @@ const show = moving => {
 
 // Escape is not let close it. A browser closes it all the same at the
 // second Escape, so it opens again for as long as the projects are moving.
-const keepOpen = () => show(Boolean(state.moving))
+const keepOpen = () => show(state.moving)
 
-onMounted(() => show(Boolean(state.moving)))
-watch(() => Boolean(state.moving), show)
+onMounted(() => show(state.moving))
+watch(() => state.moving, show)
 </script>

@@ -7,10 +7,16 @@ import Aura from '@primeuix/themes/aura'
 import StyleClass from 'primevue/styleclass'
 import Tooltip from 'primevue/tooltip'
 import ToastService from 'primevue/toastservice'
+import { config as zodConfig } from 'zod'
 import App from './App.vue'
 import router from './router'
 import { openStorage } from './storage/open.js'
 import { importSettingsFile } from './composables/useSettingsFile.js'
+
+// Zod, under the MCP and Anthropic clients, tries `new Function` to see
+// whether it can compile its checks. The page's Content-Security-Policy
+// (index.html) refuses, and every load would log the refusal as an error.
+zodConfig({ jitless: true })
 
 const app = createApp(App)
 const pinia = createPinia()

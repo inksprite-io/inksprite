@@ -6,6 +6,30 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.16
+
+Projects always in a folder in the desktop app, and a Projects menu atop
+the outline.
+
+- The desktop app keeps every project in its folder, and the switch for
+  it is gone. Projects the app kept inside itself move into the folder
+  the first time it opens, with a toast that shows how far they've got.
+  Show in Finder (Show in Explorer, Show folder) is always beside Export
+  and Import in Settings › System.
+- Closing the desktop app just after typing no longer loses the last
+  few words. The window waits for them to be saved.
+- Projects, a menu at the top left of the outline, has Switch project,
+  New project and Import project, and the open project's settings,
+  export and delete. The plus at the top of the outline now starts a
+  document, and Import beside it brings files into the project.
+- An image in a reply is shown as a link to it. A page the model read
+  could otherwise have it show an image whose address carries your
+  words away, without a click.
+- The app runs only its own scripts, in the browser and in the desktop
+  app.
+- Some MCP servers couldn't be signed in to on app.inksprite.io. They
+  can now.
+
 ## v0.1.0-dev.15
 
 Settings files, and Export and Import in one place.

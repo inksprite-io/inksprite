@@ -66,7 +66,7 @@ Download and load a model, as
 
 [Install Ollama](https://ollama.com/download) and download a model with
 `ollama pull`. To let inksprite reach it, set `OLLAMA_ORIGINS` to
-`https://inksprite.io` and restart Ollama, as
+`https://app.inksprite.io` and restart Ollama, as
 [its FAQ](https://docs.ollama.com/faq#how-can-i-allow-additional-web-origins-to-access-ollama)
 shows for each system.
 
@@ -100,7 +100,7 @@ allowed to reach it:
 ```sh
 vllm serve Qwen/Qwen3-8B \
   --enable-auto-tool-choice --tool-call-parser hermes \
-  --allowed-origins '["https://inksprite.io"]'
+  --allowed-origins '["https://app.inksprite.io"]'
 ```
 
 The parser depends on the model:
