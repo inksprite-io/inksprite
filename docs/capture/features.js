@@ -1,9 +1,9 @@
 /**
  * The pictures the feature pages show: projects, the editor, chats, skills,
  * workflows, a code repository and an MCP server, taken in one profile in the
- * order below. Every text a reader sees here is made up for the pages, as is
- * the codebase in `fixtures/feast-days`; the prologue is a draft by inksprite's
- * author.
+ * order below. Every text a reader sees here is made up for the pages; the
+ * prologue is a draft by inksprite's author, and the codebase is inksprite's
+ * own, as committed.
  *
  * The model is Anthropic's stand-in, with replies written for the pages. The
  * MCP server is the real DeepWiki, the one the MCP page has readers try: the
@@ -11,6 +11,10 @@
  * denied, so nothing is asked of it but its tools.
  */
 
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 /** A made-up key: the stand-in takes any. */
@@ -18,8 +22,11 @@ const ANTHROPIC_KEY = 'sk-ant-made-up-for-the-guide'
 
 const PROJECT = 'Thief'
 
-/** The codebase the repository pages import. */
-const CODEBASE = fileURLToPath(new URL('fixtures/feast-days', import.meta.url))
+/** The repository this runs in, whose code the repository pages import. */
+const REPOSITORY = fileURLToPath(new URL('../..', import.meta.url))
+
+/** What the public repository leaves out, so no picture shows it. */
+const PRIVATE = ['.llm', 'docs/capture/pg84-images-3.epub']
 
 /** A first draft, faults and all: the review picks at them. */
 const PROLOGUE = [
@@ -106,19 +113,64 @@ const REVIEW = {
   ],
 }
 
-/** A question about the codebase. */
-const EASTER = {
-  match: 'How does the calendar work out the date of Easter',
-  title: 'The date of Easter',
-  steps: [
-    { tool: 'search_documents', args: { query: 'easter' } },
-    { tool: 'read_document', args: { path: 'feast-days/src/easter.js' } },
-    {
-      text:
-        '`easter` in **feast-days/src/easter.js:12** does it, by the Julian calendar the city keeps. `paschalMoon` (line 7) puts the paschal full moon so many days after 21 March, from where the year falls in the moon’s 19-year cycle, and line 14 counts on from the full moon to the Sunday.\n\n' +
-        '**src/feasts.js:15** dates the feasts that move with Easter, from Ash Wednesday 46 days before it to Corpus Christi 60 days after, and **src/calendar.js:5** prints them for a year.',
-    },
-  ],
+/**
+ * inksprite's own code as committed, in a folder named `inksprite` in a new
+ * temporary one: the files git tracks at HEAD, without the private ones. The
+ * checkout itself also holds node_modules and the rest, which the browser
+ * would be handed whole.
+ *
+ * @returns {{ folder: string, remove: () => void }}
+ */
+function copyOfInksprite() {
+  const parent = mkdtempSync(join(tmpdir(), 'inksprite-capture-'))
+  const folder = join(parent, 'inksprite')
+  mkdirSync(folder)
+  const tar = execFileSync(
+    'git',
+    ['-C', REPOSITORY, 'archive', '--format=tar', 'HEAD', '--', '.'].concat(
+      PRIVATE.map(path => `:(exclude)${path}`)
+    ),
+    { maxBuffer: 1 << 30 }
+  )
+  execFileSync('tar', ['-x', '-C', folder], { input: tar })
+  return { folder, remove: () => rmSync(parent, { recursive: true, force: true }) }
+}
+
+/**
+ * A question about inksprite's code, and the answer the page shows. Its line
+ * numbers are looked up in the copy, so they follow the code; a change that
+ * makes the answer wrong stops the run, for it to be written again.
+ *
+ * @param {string} folder - The copy
+ */
+function countingWords(folder) {
+  /** @param {string} path @param {RegExp} pattern */
+  const lineOf = (path, pattern) => {
+    const at = readFileSync(join(folder, path), 'utf8')
+      .split('\n')
+      .findIndex(line => pattern.test(line))
+    if (at < 0) throw new Error(`${path} no longer matches ${pattern}: write the answer again`)
+    return at + 1
+  }
+  const file = 'app/src/utils/wordCount.js'
+  const counts = lineOf(file, /^export function countWords\(/)
+  lineOf(file, /stripMarkdown\(withoutComments\(content\)\)/)
+  const keeps = lineOf(file, /\.filter\(word => \/\[\\p\{L\}\\p\{N\}\]\/u/)
+  const strips = lineOf('app/src/utils/markdown.js', /^export function stripMarkdown\(/)
+  const comments = lineOf('app/src/editor/comments.js', /^export function withoutComments\(/)
+  return {
+    match: 'How does inksprite count the words',
+    title: 'Counting words',
+    steps: [
+      { tool: 'search_documents', args: { query: 'countWords' } },
+      { tool: 'read_document', args: { path: `inksprite/${file}` } },
+      {
+        text:
+          `\`countWords\` in **inksprite/${file}:${counts}** does it. It takes out your comments with \`withoutComments\` (**app/src/editor/comments.js:${comments}**) and the Markdown with \`stripMarkdown\` (**app/src/utils/markdown.js:${strips}**), splits what is left on whitespace, and keeps the runs with a letter or a digit in them (line ${keeps}).\n\n` +
+          'So a rule, a bare dash or a stray `|` from a table isn’t a word, and nor is anything you wrote in a comment.',
+      },
+    ],
+  }
 }
 
 /** The model reaching for DeepWiki, which the page has the reader allow. */
@@ -140,7 +192,9 @@ const DEEPWIKI = {
  */
 export async function features(ui, { standIn, context }) {
   const { page } = ui
-  for (const script of [HOW_IT_ENDS, REVIEW, EASTER, DEEPWIKI]) standIn.script(script)
+  const code = copyOfInksprite()
+  for (const script of [HOW_IT_ENDS, REVIEW, countingWords(code.folder), DEEPWIKI])
+    standIn.script(script)
   // DeepWiki, for real: the one place outside the page may reach.
   await context.route('https://mcp.deepwiki.com/**', route => route.continue())
 
@@ -459,24 +513,29 @@ export async function features(ui, { standIn, context }) {
   await ui.click(button('Show editor'))
   await outline()
 
-  // A codebase
-  await ui.click(top, { button: 'right' })
+  // A codebase, inksprite's own, in a project for writing about it
+  await at(48)
+  await newProject('Release notes')
+  const notes = page.locator('[role="treeitem"][aria-level="1"][aria-label="Release notes"]')
+  await notes.waitFor()
+  await ui.click(notes.getByText('Release notes').first(), { button: 'right' })
   await ui.hover(menu('Import'))
   const chooser = page.waitForEvent('filechooser')
   await ui.click(menu('Folder…'))
-  await (await chooser).setFiles(CODEBASE)
+  await (await chooser).setFiles(code.folder)
   await ui.click(page.getByRole('button', { name: 'Import as repository' }))
-  await row('feast-days').waitFor({ timeout: 60_000 })
+  await page.getByText(/inksprite imported:/).waitFor({ timeout: 300_000 })
+  code.remove()
   await quiet()
-  await ui.click(row('src'))
-  await ui.click(row('easter.js'))
+  for (const name of ['app', 'src', 'utils']) await ui.click(row(name))
+  await ui.click(row('wordCount.js'))
   await page.locator('.cm-content').first().waitFor()
   await ui.pause(600)
   await ui.shot('repository-code-view')
 
+  // The new project's chat, still empty
   await at(50)
-  await ui.click(button('New chat').last())
-  await send('How does the calendar work out the date of Easter?')
+  await send('How does inksprite count the words in a document?')
   await ui.shot('repository-chat')
 
   // An MCP server: DeepWiki, as the page adds it

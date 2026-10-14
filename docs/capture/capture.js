@@ -18,6 +18,9 @@
  * picture's name ends in `-dark`: the guide shows the one in the reader's
  * theme.
  *
+ * The clips the repository's README shows are made again as animated WebP
+ * when they change: see `readme.js`.
+ *
  * OpenRouter's own pages are the exception, since they need an account: see
  * `openrouter.js`. This run leaves the media that one makes alone.
  */
@@ -33,6 +36,7 @@ import { chromium } from 'playwright'
 import sharp from 'sharp'
 import { features } from './features.js'
 import { narration } from './narration.js'
+import { animate, README_CLIPS } from './readme.js'
 import { research } from './research.js'
 import { roleplay } from './roleplay.js'
 import { fetchShim, startStandIn } from './stand-in.js'
@@ -414,6 +418,7 @@ export function helpers(page, url, { videos = false, theme = 'light' } = {}) {
      * @param {() => Promise<void>} steps
      */
     async record(name, steps) {
+      const clip = name
       name += suffix
       await mkdir(VIDEOS, { recursive: true })
       const video = join(VIDEOS, `${name}.webm`)
@@ -449,6 +454,10 @@ export function helpers(page, url, { videos = false, theme = 'light' } = {}) {
       fingerprints[name] = fingerprint
       await writeFile(FINGERPRINTS, `${JSON.stringify(fingerprints, null, 2)}\n`)
       console.log(`  ${name}.webm`)
+      if (README_CLIPS.includes(clip)) {
+        await animate(name)
+        console.log(`  readme/${name}.webp`)
+      }
     },
   }
 }

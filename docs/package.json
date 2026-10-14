@@ -10,7 +10,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "capture": "node capture/capture.js",
-    "capture:openrouter": "node capture/openrouter.js"
+    "capture:openrouter": "node capture/openrouter.js",
+    "capture:readme": "node capture/readme.js"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.36.0",

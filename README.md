@@ -27,6 +27,45 @@ Requests go straight from your device to the provider.
 inksprite is still in development. Please report bugs and issues
 [here](https://github.com/inksprite-io/inksprite/issues).
 
+## Examples
+
+### Research
+
+The model summarizes the papers you import, searches the web, and writes a
+design doc from what it found. You comment on the draft as you would on a
+colleague's, and the model works through the comments.
+[The research guide](https://docs.inksprite.io/research) follows it from
+start to finish.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/research-comment-dark.webp">
+  <img alt="Selecting a passage in a design doc and commenting on it" src="docs/readme/research-comment.webp">
+</picture>
+
+### Narration
+
+inksprite reads your documents aloud in the voices you choose, with Kokoro on
+your own computer or a voice from OpenAI or OpenRouter, and you can download
+the audio. [The narration guide](https://docs.inksprite.io/narration) reads
+the first letter of *Frankenstein*, and you can listen to it there.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/narration-generate-dark.webp">
+  <img alt="Narration of the letter being generated, a segment at a time" src="docs/readme/narration-generate.webp">
+</picture>
+
+### Roleplay
+
+Import a character card and its lorebook, play your own character, and the
+model plays everyone else. You steer the story with dice, the oracle and
+out-of-character notes. [The roleplay guide](https://docs.inksprite.io/roleplay)
+plays one through.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/src/assets/guide/roleplay-oracle-dark.png">
+  <img alt="The oracle's answer in the player's turn, and the reply built on it" src="docs/src/assets/guide/roleplay-oracle.png">
+</picture>
+
 ## Running it
 
 ```bash

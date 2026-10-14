@@ -46,7 +46,9 @@ searches are answered from its recording with titles and addresses only.
 Other people's files are downloaded on the first run into `capture/`, and
 never committed: the narration guide's EPUB of *Frankenstein* from Project
 Gutenberg, the roleplay guide's card and lorebook, and the research guide's
-two papers. The feature pages' codebase is made up, in `capture/fixtures/`.
+two papers. The feature pages' codebase is inksprite's own, as committed:
+`git archive` copies what HEAD holds, without what stays private, so those
+pictures change when the code they show does.
 The MCP page's pictures connect to the real DeepWiki server for its tools,
 the one thing a run reaches outside the app. Its recording
 of the letter, `public/guide/frankenstein-letter-1.mp3`, was made by hand with
@@ -54,6 +56,11 @@ a real Kokoro. Videos are only replaced when what they show changes (their
 fingerprints are in `public/guide/fingerprints.json`); a change that only
 restyles a step in the middle of one shows in the screenshots, and
 `npm run capture -- --videos` records them all again.
+
+The repository's README shows two of the clips, as animated WebP in
+`readme/`, since GitHub plays no video kept in a repository. A run makes one
+again whenever it records its clip anew, and `npm run capture:readme` makes
+them all again from the clips (`capture/readme.js` lists them).
 
 To add a picture, take it in the guide's walkthrough with `ui.shot(name)` or
 `ui.record(name, steps)`, and put it in the guide with
