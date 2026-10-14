@@ -1,7 +1,7 @@
 {
   "name": "docs",
   "type": "module",
-  "license": "AGPL-3.0-or-later",
+  "license": "GPL-3.0-or-later",
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",

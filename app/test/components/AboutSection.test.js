@@ -8,7 +8,7 @@ describe('AboutSection', () => {
     const wrapper = mount(AboutSection)
     const hrefs = wrapper.findAll('a').map(link => link.attributes('href'))
     expect(wrapper.text()).toContain('Copyright © 2025–2026 The inksprite Authors.')
-    expect(wrapper.text()).toContain('GNU Affero General Public License')
+    expect(wrapper.text()).toContain('GNU General Public License')
     expect(wrapper.text()).toContain('no warranty')
     expect(hrefs).toContain('https://github.com/inksprite-io/inksprite')
     expect(hrefs).toContain('https://github.com/inksprite-io/inksprite/issues')

@@ -1,8 +1,8 @@
 # Credits
 
-inksprite's own code is under the AGPL (see [LICENSE](LICENSE)). What is
+inksprite's own code is under the GPL (see [LICENSE](LICENSE)). What is
 listed here is other people's work, shipped under its own license, and the
-AGPL does not cover it. The same list is in the app, under Settings › About.
+GPL does not cover it. The same list is in the app, under Settings › About.
 
 ## Icons
 
@@ -16,7 +16,7 @@ test checks that every downloaded icon and every icon component is accounted
 for there.
 
 `DatabaseIcon`, `RetryIcon`, `SendIcon` and `SpeakerIcon` were drawn for
-inksprite and are under the AGPL with the rest of the code.
+inksprite and are under the GPL with the rest of the code.
 
 | Icon                                                        | Creator              | Used as                                         |
 | ----------------------------------------------------------- | -------------------- | ----------------------------------------------- |

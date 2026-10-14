@@ -45,7 +45,7 @@ You are responsible for:
 
 You retain full ownership of any original content you create using inksprite. Since your stories are stored locally in your browser, we do not access, host, or process your content, except where explicitly necessary to operate optional cloud or AI features you choose to use.
 
-inksprite's code is free software under the [GNU Affero General Public License, version 3 or later](https://github.com/inksprite-io/inksprite/blob/main/LICENSE). The inksprite name and logo are not covered by that license, and all rights to them remain with its creators.
+inksprite's code is free software under the [GNU General Public License, version 3 or later](https://github.com/inksprite-io/inksprite/blob/main/LICENSE). The inksprite name and logo are not covered by that license, and all rights to them remain with its creators.
 
 ### Changes to These Terms
 

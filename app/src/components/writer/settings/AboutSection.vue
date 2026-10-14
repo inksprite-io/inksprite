@@ -6,7 +6,7 @@
       <p>
         inksprite is free software under the
         <a :href="LICENSE_URL" target="_blank" rel="noopener noreferrer" :class="LINK"
-          >GNU Affero General Public License, version 3 or later</a
+          >GNU General Public License, version 3 or later</a
         >, and comes with no warranty.
       </p>
       <p>
@@ -53,7 +53,7 @@
 
 <script setup>
 /**
- * The notices the AGPL asks an interactive program to show (copyright, no
+ * The notices the GPL asks an interactive program to show (copyright, no
  * warranty, the license), where the source and the issues are, and the
  * credit the icons ask for wherever they are used — which, for a build
  * someone paid for, means inside the app.
@@ -71,7 +71,7 @@ defineProps({
   version: { type: String, default: import.meta.env.VITE_APP_VERSION || '' },
 })
 
-const LICENSE_URL = 'https://www.gnu.org/licenses/agpl-3.0.html'
+const LICENSE_URL = 'https://www.gnu.org/licenses/gpl-3.0.html'
 const SOURCE_URL = 'https://github.com/inksprite-io/inksprite'
 const ISSUES_URL = `${SOURCE_URL}/issues`
 const LINK = 'text-primary-600 dark:text-primary-400 hover:underline'

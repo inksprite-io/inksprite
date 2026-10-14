@@ -27,7 +27,7 @@ covers it the same way.
 
 ## The license of a contribution
 
-inksprite is released under the GNU Affero General Public License,
+inksprite is released under the GNU General Public License,
 version 3 or later (`LICENSE`). Contributions come in under different
 terms, and you should know what they are and why before you send one.
 
@@ -35,7 +35,7 @@ terms, and you should know what they are and why before you send one.
 Version 2.0.** You keep the copyright. The grant is non-exclusive, so you
 can use your own work anywhere else, under any terms you like. The
 project combines it with the rest of inksprite and releases the whole
-under the AGPL.
+under the GPL.
 
 The reason is to keep the project's options open without having to
 find and ask every past contributor. Apache-2.0 allows sublicensing, so
@@ -45,11 +45,12 @@ possible, are not the same thing, so here is the intent in plain terms:
 
 - inksprite stays free to use and its source stays public and
   modifiable.
-- A version released under the AGPL stays under the AGPL. Nothing can
-  be taken back.
+- A version released under the GPL stays under the GPL, as the earlier
+  ones released under the AGPL stay under the AGPL. Nothing can be taken
+  back.
 
 If you are not comfortable with that, keep your change on a fork under
-the AGPL, which the license fully allows.
+the GPL, which the license fully allows.
 
 ## Sign-off
 
