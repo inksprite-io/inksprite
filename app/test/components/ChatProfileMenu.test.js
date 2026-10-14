@@ -78,7 +78,7 @@ describe('ChatProfileMenu', () => {
 
   it('replaces a started chat’s settings with the profile’s, even ones it does not set', async () => {
     const chat = chats.createChat(undefined, ROLEPLAY_PROFILE_ID)
-    chats.updateChat(chat.id, { projectContextEnabled: false })
+    chats.updateChat(chat.id, { mcpServers: ['server_1'] })
     const wrapper = mountMenu(chat.id)
 
     await pick(wrapper, 'Default')
@@ -87,7 +87,7 @@ describe('ChatProfileMenu', () => {
     expect(now.profileId).toBe(CHAT_PROFILE_ID)
     expect(now.disabledToolGroups).toEqual(['experimental'])
     expect(now.rules).toBeUndefined()
-    expect(now.projectContextEnabled).toBeUndefined()
+    expect(now.mcpServers).toBeUndefined()
   })
 
   it('has no way into the settings of its own, the cog being there', async () => {

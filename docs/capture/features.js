@@ -1,8 +1,9 @@
 /**
  * The pictures the feature pages show: projects, the editor, chats, skills,
  * workflows, a code repository and an MCP server, taken in one profile in the
- * order below. Every text a reader sees here is made up for the pages, and so
- * is the codebase in `fixtures/tide-clock`.
+ * order below. Every text a reader sees here is made up for the pages, as is
+ * the codebase in `fixtures/feast-days`; the prologue is a draft by inksprite's
+ * author.
  *
  * The model is Anthropic's stand-in, with replies written for the pages. The
  * MCP server is the real DeepWiki, the one the MCP page has readers try: the
@@ -15,49 +16,53 @@ import { fileURLToPath } from 'node:url'
 /** A made-up key: the stand-in takes any. */
 const ANTHROPIC_KEY = 'sk-ant-made-up-for-the-guide'
 
-const PROJECT = 'The Lighthouse'
+const PROJECT = 'Thief'
 
 /** The codebase the repository pages import. */
-const CODEBASE = fileURLToPath(new URL('fixtures/tide-clock', import.meta.url))
+const CODEBASE = fileURLToPath(new URL('fixtures/feast-days', import.meta.url))
+
+/** A first draft, faults and all: the review picks at them. */
+const PROLOGUE = [
+  '# Burglary',
+  'The thief slipped quietly through the window, its broken latch dangling uselessly from the sash. She listened intently for a moment, then stepped lightly to the floor, her soft-soled boots making almost no sound on the boards. Satisfied that she was still undetected, she turned and pushed the shutters closed, being careful to avoid making any noise.',
+  'She turned her attention to the shop itself, scanning the shadows of the cluttered room for any sign of movement. It took a few moments for her eyes to adjust to the darkness, the only light being thin slivers of moonlight that shone in between the slats of the shuttered window behind her.',
+  'She could just make out the shape of the counter against the far wall, and she approached it slowly, maneuvering around cluttered shelves, display cases, and other miscellany that littered the floor of the shop. She cringed at the soft creak of a loose board and froze in place for a moment, holding her breath as she listened. Hearing nothing, she let out a soft sigh of relief, and resumed her slow, careful journey across the room.',
+  'When she finally reached the counter, she hoisted herself up and climbed over it, lowering herself silently down onto the floor on the other side. She felt for the lock on the drawer below the counter and slid a thin metal pick into the mechanism. It was too dark to see, but her practiced fingers deftly worked the pick against the pins while she applied gentle tension to the lock with a small metal shim in her other hand. One by one, she felt the pins set into place, and finally the lock released and rotated with a soft click.',
+  'She eased the drawer open slowly and reached inside, her fingers gliding over a small pile of copper and silver coins. Not as much as she had hoped for, but it would be enough to keep her fed for a few more weeks. Slowly and carefully, she extracted the coins from the drawer, wrapping each in a strip of cotton before placing it in the small bag slung over her shoulder.',
+]
 
 const CHAPTER_1 = [
-  '# The lamp',
-  'The lamp had not gone out in forty years. Tonight it flickered.',
-  'Mara counted the beats between the flashes the way her father had taught her: one for the rocks, two for the shoals, three for come home. It was none of those.',
-  'She climbed the stairs with the lantern in one hand. At the top, Mara found the logbook open at a page she had never seen, in a hand that was not her father’s.',
-  'Read the tide tables, it said, and nothing else. Mara read them twice.',
+  '# Fulke',
+  'Fulke kept his shop behind the tannery, where nobody came by accident. He was at his table when she came in, walking a coin across his knuckles the way he did when he wanted to look busy.',
+  'She tipped the bag out in front of him: the coppers, the silver, and the thing she had taken for a coin until she saw it by daylight. It was too heavy for its size, and there was no king on it, only a key on both sides.',
+  'Fulke counted the coppers. He counted the silver. He did not touch the third thing, and when she pushed it towards him he took his hands off the table.',
+  '“Take it back,” he said. “Tonight.”',
 ]
 
-const CHAPTER_3 = [
-  '# The boat',
-  'The supply boat came a day early, which it had never done. Mara watched it from the gallery until she could read the name on its bow, and then she went down to meet it.',
-  'The man at the oars did not tie up. He held the boat off the rocks with one oar and called up to her that he had a barrel for the lighthouse, and that nobody had paid for it.',
-  'She told him to take it back. He said he could not, and rolled it onto the landing, and was gone before the tide turned.',
-]
-
+/** A list: the first line starts it, and Enter makes each next item. */
 const OUTLINE = [
-  '- Chapter 1: the lamp flickers, and Mara finds the logbook.',
-  '- Chapter 2: the tide tables are wrong by an hour.',
-  '- Chapter 3: a barrel nobody ordered.',
-  '- Chapter 4: Mara answers the light.',
+  '- Prologue: a thief robs a pawnshop in the Merchant’s Quarter. One of the coins isn’t a coin.',
+  'Chapter 1: Yvette takes the token to Fulke, who won’t buy it or touch it.',
+  'Chapter 2: the Watch comes to the pawnshop, and someone comes after the Watch.',
+  'Chapter 3: Nicola finds Yvette in the cistern before they do.',
 ]
 
 const SUMMARY =
-  'A novel about a lighthouse keeper’s daughter who finds a message in the flicker of the lamp. Draft one: three chapters of six.'
+  'A dark fantasy in a walled city around 1500. A thief robs a pawnshop to eat, and takes something that isn’t a coin. Draft one: the prologue and a chapter.'
 
 /** A question in the chat, and the answer the pages show. */
 const HOW_IT_ENDS = {
   match: 'How could the book end',
   title: 'Endings',
   steps: [
-    { tool: 'read_document', args: { path: 'Notes/Outline' } },
+    { tool: 'read_document', args: { path: 'Notes/Plot Outline' } },
     {
       text:
         'Three ways it could end, from the outline:\n\n' +
-        '1. **Mara answers the light** and the ship that has been signalling turns for home.\n' +
-        '2. **Nobody is signalling.** The flicker is the lamp failing, and the last chapter is her keeping it lit by hand.\n' +
-        '3. **The message was for her father.** She answers it in his place.\n\n' +
-        'The third pays off the logbook best.',
+        '1. **Yvette takes the token back.** The pawnbroker was keeping it for someone, and she meets them on her way out.\n' +
+        '2. **She spends it.** It opens a door under the city, and the last chapter is what she owes for going through.\n' +
+        '3. **It was Nicola’s all along.** Nicola hid it in the drawer to be stolen, and Yvette did her a favour she never meant to.\n\n' +
+        'The third pays off the prologue best.',
     },
   ],
 }
@@ -91,27 +96,27 @@ Don't rewrite the draft, and don't praise what doesn't earn it.
 const REVIEW = {
   system: 'You are an editor reading a draft for its writer',
   steps: [
-    { tool: 'read_document', args: { path: 'Drafts/Chapter 3' } },
+    { tool: 'read_document', args: { path: 'Manuscript/Prologue' } },
     {
       text:
-        '**What works.** The boat arriving a day early is a good jolt: the rhythm of the island breaks, and we feel it before Mara says anything.\n\n' +
-        '**Where it drags.** “She told him to take it back. He said he could not” reports an argument we would rather hear. Two lines of dialogue would do more.\n\n' +
-        '**The one change.** End on the barrel, not the tide. Cut the last clause and the chapter closes on the thing nobody paid for.',
+        '**What works.** The order is always clear, and the creaking board is the best moment: something happens, she freezes, and we hold our breath with her. Wrapping each coin in cotton says more about her than any adverb.\n\n' +
+        '**Where it drags.** It keeps telling us she is quiet: “slipped quietly”, “stepped lightly”, “almost no sound”, “being careful to avoid making any noise”. After the second the reader has it, and the rest drains the tension.\n\n' +
+        '**The one change.** Give it a turn. She gets in, takes the coins and nothing goes wrong. One thing in the drawer she didn’t expect would earn the prologue its place.',
     },
   ],
 }
 
 /** A question about the codebase. */
-const TIDES = {
-  match: 'How does the clock work out the next high tide',
-  title: 'Next high tide',
+const EASTER = {
+  match: 'How does the calendar work out the date of Easter',
+  title: 'The date of Easter',
   steps: [
-    { tool: 'search_documents', args: { query: 'nextHighTide' } },
-    { tool: 'read_document', args: { path: 'tide-clock/src/tides.js' } },
+    { tool: 'search_documents', args: { query: 'easter' } },
+    { tool: 'read_document', args: { path: 'feast-days/src/easter.js' } },
     {
       text:
-        '`nextHighTide` in **tide-clock/src/tides.js:13** does it. It takes the hours since 1 January, counts how many tides of `TIDE_HOURS` (12.42 hours, line 4) have passed since the station’s first high tide, and rounds up to the next one.\n\n' +
-        'The station’s first high tide comes from **src/stations.js:2**, and **src/clock.js:6** asks for the next one once a minute.',
+        '`easter` in **feast-days/src/easter.js:12** does it, by the Julian calendar the city keeps. `paschalMoon` (line 7) puts the paschal full moon so many days after 21 March, from where the year falls in the moon’s 19-year cycle, and line 14 counts on from the full moon to the Sunday.\n\n' +
+        '**src/feasts.js:15** dates the feasts that move with Easter, from Ash Wednesday 46 days before it to Corpus Christi 60 days after, and **src/calendar.js:5** prints them for a year.',
     },
   ],
 }
@@ -135,7 +140,7 @@ const DEEPWIKI = {
  */
 export async function features(ui, { standIn, context }) {
   const { page } = ui
-  for (const script of [HOW_IT_ENDS, REVIEW, TIDES, DEEPWIKI]) standIn.script(script)
+  for (const script of [HOW_IT_ENDS, REVIEW, EASTER, DEEPWIKI]) standIn.script(script)
   // DeepWiki, for real: the one place outside the page may reach.
   await context.route('https://mcp.deepwiki.com/**', route => route.continue())
 
@@ -195,6 +200,22 @@ export async function features(ui, { standIn, context }) {
     await ui.pause(300)
   }
 
+  /**
+   * An empty document, a placeholder, with its tab closed again so the tabs
+   * keep to what is written.
+   *
+   * @param {import('playwright').Locator} parent
+   * @param {string} name
+   */
+  async function placeholder(parent, name) {
+    await ui.click(parent, { button: 'right' })
+    await ui.click(menu('New document'))
+    await ui.type(name)
+    await ui.press('Enter')
+    await row(name).waitFor()
+    await ui.click(button(`Close ${name}`))
+  }
+
   /** @param {string} name */
   async function folder(parent, name) {
     await ui.click(parent, { button: 'right' })
@@ -202,6 +223,12 @@ export async function features(ui, { standIn, context }) {
     await ui.type(name)
     await ui.press('Enter')
     await row(name).waitFor()
+  }
+
+  /** Have a folder, or the project, keep its documents in the order they're put in. */
+  async function keepInOrder(/** @type {import('playwright').Locator} */ parent) {
+    await ui.click(parent, { button: 'right' })
+    await ui.click(menu('Keep in order'))
   }
 
   /** Send a turn, and wait for its reply. */
@@ -264,17 +291,28 @@ export async function features(ui, { standIn, context }) {
     await page.getByRole('treeitem', { name: /** @type {string} */ (name) }).waitFor()
   }
 
-  // The project the pages use
+  // The project the pages use, laid out as a novel's might be
   await at(40)
   await newProject(PROJECT)
   const project = page.locator(`[role="treeitem"][aria-level="1"][aria-label="${PROJECT}"]`)
   await project.waitFor()
   const top = project.getByText(PROJECT).first()
-  await folder(top, 'Drafts')
-  await write(row('Drafts').getByText('Drafts'), 'Chapter 1', CHAPTER_1)
-  await write(row('Drafts').getByText('Drafts'), 'Chapter 3', CHAPTER_3)
+  /** A folder's row, to right-click. */
+  const inside = (/** @type {string} */ name) => row(name).getByText(name, { exact: true })
+  await keepInOrder(top)
+  await folder(top, 'Manuscript')
+  await keepInOrder(inside('Manuscript'))
+  await write(inside('Manuscript'), 'Prologue', PROLOGUE)
+  await write(inside('Manuscript'), 'Chapter 1', CHAPTER_1)
+  await folder(top, 'Characters')
+  for (const name of ['Yvette', 'Nicola', 'Fulke']) await placeholder(inside('Characters'), name)
+  await folder(top, 'Places')
+  for (const name of ['Basilica Cistern', "Merchant's Quarter"])
+    await placeholder(inside('Places'), name)
+  await folder(top, 'World')
+  await placeholder(inside('World'), 'Crime and Punishment')
   await folder(top, 'Notes')
-  await write(row('Notes').getByText('Notes'), 'Outline', OUTLINE)
+  await write(inside('Notes'), 'Plot Outline', OUTLINE)
 
   // The project's settings
   await ui.click(top, { button: 'right' })
@@ -295,14 +333,14 @@ export async function features(ui, { standIn, context }) {
   await ui.press('Escape')
 
   // Find and replace
-  await ui.click(row('Chapter 1'))
+  await ui.click(row('Prologue'))
   await ui.click(editor)
   await ui.press('ControlOrMeta+f')
   await page.getByRole('textbox', { name: 'Find' }).waitFor()
-  await ui.type('Mara')
+  await ui.type('counter')
   await ui.click(page.getByRole('button', { name: 'Show replace' }))
   await ui.click(page.getByRole('textbox', { name: 'Replace with' }))
-  await ui.type('Ilse')
+  await ui.type('counting table')
   await quiet()
   await ui.shot('editor-find')
   await ui.press('Escape')
@@ -314,11 +352,11 @@ export async function features(ui, { standIn, context }) {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
     let node
     while ((node = /** @type {Text|null} */ (walker.nextNode()))) {
-      const at = node.data.indexOf('tide tables')
+      const at = node.data.indexOf('thin metal pick')
       if (at < 0) continue
       const range = document.createRange()
       range.setStart(node, at)
-      range.setEnd(node, at + 'tide tables'.length)
+      range.setEnd(node, at + 'thin metal pick'.length)
       const selection = getSelection()
       selection?.removeAllRanges()
       selection?.addRange(range)
@@ -327,7 +365,7 @@ export async function features(ui, { standIn, context }) {
   })
   await ui.pause(300)
   await ui.press('ControlOrMeta+k')
-  await ui.type('https://example.com/tide-tables')
+  await ui.type('https://example.com/lock-picks')
   await ui.press('Enter')
   await ui.pause(300)
   await ui.click(page.locator('.ProseMirror a').first())
@@ -339,21 +377,14 @@ export async function features(ui, { standIn, context }) {
   await ui.press('Escape')
 
   // A table
-  await write(row('Notes').getByText('Notes'), 'Characters', ['| Name | Role | First seen |'])
+  await write(inside('World'), 'Coinage and Trade', ['| Coin | Metal | Worth |'])
   await page.keyboard.press('Enter')
-  for (const cell of [
-    'Mara',
-    'Keeper’s daughter',
-    'Chapter 1',
-    'The boatman',
-    'Brings the barrel',
-    'Chapter 3',
-  ]) {
+  for (const cell of ['Crown', 'Gold', 'Five shillings', 'Groat', 'Silver', 'Four pence']) {
     await page.keyboard.insertText(cell)
     await page.keyboard.press('Tab')
   }
   await page.keyboard.press('Backspace')
-  await ui.click(page.locator('.ProseMirror td').filter({ hasText: 'Brings the barrel' }), {
+  await ui.click(page.locator('.ProseMirror td').filter({ hasText: 'Four pence' }), {
     button: 'right',
   })
   await ui.hover(menu('Align column'))
@@ -363,12 +394,12 @@ export async function features(ui, { standIn, context }) {
   await ui.press('Escape')
 
   // A pin, and what a row offers
-  await ui.click(row('Outline'))
-  await row('Outline').hover()
-  await ui.click(row('Outline').getByRole('button', { name: 'Pin to this chat' }))
-  await row('Outline').getByRole('button', { name: 'Pinned to this chat' }).waitFor()
+  await ui.click(row('Plot Outline'))
+  await row('Plot Outline').hover()
+  await ui.click(row('Plot Outline').getByRole('button', { name: 'Pin to this chat' }))
+  await row('Plot Outline').getByRole('button', { name: 'Pinned to this chat' }).waitFor()
   await ui.shot('chat-pinned', {
-    of: [button('Projects'), row('Outline')],
+    of: [button('Projects'), row('Plot Outline')],
     pad: 12,
   })
 
@@ -380,7 +411,7 @@ export async function features(ui, { standIn, context }) {
   await button('Stop generating').waitFor()
   await button('Send message').waitFor()
   await ui.pause(500)
-  const reply = page.getByText('The third pays off the logbook best.').last()
+  const reply = page.getByText('The third pays off the prologue best.').last()
   const turn = reply.locator('xpath=ancestor::*[.//button[@aria-label="More actions"]][1]')
   await turn.hover()
   const more = turn.getByRole('button', { name: 'More actions' }).first()
@@ -419,7 +450,7 @@ export async function features(ui, { standIn, context }) {
   await at(46)
   await ui.click(button('New chat').last())
   await ui.click(message)
-  await ui.type('/review Drafts/Chapter 3')
+  await ui.type('/review Manuscript/Prologue')
   await ui.press('Enter')
   await page.getByText('The one change.').waitFor({ timeout: 60_000 })
   await button('Send message').waitFor()
@@ -435,17 +466,17 @@ export async function features(ui, { standIn, context }) {
   await ui.click(menu('Folder…'))
   await (await chooser).setFiles(CODEBASE)
   await ui.click(page.getByRole('button', { name: 'Import as repository' }))
-  await row('tide-clock').waitFor({ timeout: 60_000 })
+  await row('feast-days').waitFor({ timeout: 60_000 })
   await quiet()
   await ui.click(row('src'))
-  await ui.click(row('tides.js'))
+  await ui.click(row('easter.js'))
   await page.locator('.cm-content').first().waitFor()
   await ui.pause(600)
   await ui.shot('repository-code-view')
 
   await at(50)
   await ui.click(button('New chat').last())
-  await send('How does the clock work out the next high tide?')
+  await send('How does the calendar work out the date of Easter?')
   await ui.shot('repository-chat')
 
   // An MCP server: DeepWiki, as the page adds it

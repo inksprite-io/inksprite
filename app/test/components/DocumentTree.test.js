@@ -88,6 +88,18 @@ vi.mock('../../src/composables/useRepositoryImport.js', async importOriginal => 
   useRepositoryImport: () => ({ importFolder, importGitHub: vi.fn(), refresh: vi.fn() }),
 }))
 
+const writeProject = vi.fn(async () => ({
+  documents: 5,
+  folders: 2,
+  cards: 0,
+  scans: 0,
+  skipped: [],
+}))
+vi.mock('../../src/scrivener/project.js', async importOriginal => ({
+  ...(await importOriginal()),
+  writeProject: (...args) => writeProject(...args),
+}))
+
 const toastAdd = vi.fn()
 vi.mock('primevue/usetoast', () => ({ useToast: () => ({ add: toastAdd }) }))
 
@@ -113,6 +125,21 @@ const mountTree = () =>
 /** A file as a folder chooser hands it over. */
 const chosen = path => {
   const file = new File(['x'], path.split('/').pop(), { type: 'text/markdown' })
+  Object.defineProperty(file, 'webkitRelativePath', { value: path })
+  return file
+}
+
+/** A binder with nothing in it but its Draft folder. */
+const BINDER =
+  '<ScrivenerProject><Binder><BinderItem UUID="D" Type="DraftFolder"><Title>Draft</Title></BinderItem></Binder></ScrivenerProject>'
+
+/**
+ * A file with something in it, as a folder chooser hands it over.
+ * @param {string} path
+ * @param {string} text
+ */
+const chosenWith = (path, text) => {
+  const file = new File([text], path.split('/').pop())
   Object.defineProperty(file, 'webkitRelativePath', { value: path })
   return file
 }
@@ -253,6 +280,67 @@ describe('DocumentTree importing', () => {
 
     expect(confirmed.asked).toHaveLength(1)
     expect(importFolder.mock.calls[0][1].parentId).toBe(notes.id)
+  })
+
+  it('imports a Scrivener project chosen as a folder into a folder of its own, asking nothing', async () => {
+    const wrapper = mountTree()
+    wrapper.findComponent({ name: 'DocumentNode' }).vm.$emit('import-folder', api.root.value.id)
+
+    await choose(wrapper.find('input[webkitdirectory]'), [
+      chosenWith('Harbour.scriv/Harbour.scrivx', BINDER),
+      chosenWith('Harbour.scriv/Files/version.txt', '23'),
+    ])
+
+    expect(importMany).not.toHaveBeenCalled()
+    expect(confirmed.asked).toEqual([])
+    expect(writeProject).toHaveBeenCalledWith(
+      'story_1',
+      expect.objectContaining({ name: 'Harbour' }),
+      { parentId: api.root.value.id, asFolder: true }
+    )
+    expect(toastAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Imported 5 documents, 2 new folders.' })
+    )
+  })
+
+  it('imports a zipped Scrivener project chosen on its own', async () => {
+    const { strToU8, zipSync } = await import('fflate')
+    const wrapper = mountTree()
+    const notes = api.createFolder(api.root.value.id, 'Notes')
+    await wrapper.vm.$nextTick()
+    wrapper.findComponent({ name: 'DocumentNode' }).vm.$emit('import', notes.id)
+    const zip = new File(
+      [zipSync({ 'Harbour.scriv/Harbour.scrivx': strToU8(BINDER) })],
+      'Harbour.zip'
+    )
+
+    await choose(wrapper.find('input[multiple]'), [zip])
+
+    expect(writeProject).toHaveBeenCalledWith(
+      'story_1',
+      expect.objectContaining({ name: 'Harbour' }),
+      { parentId: notes.id, asFolder: true }
+    )
+  })
+
+  it('says why a Scrivener project cannot be imported, and writes nothing', async () => {
+    const wrapper = mountTree()
+    wrapper.findComponent({ name: 'DocumentNode' }).vm.$emit('import-folder', api.root.value.id)
+
+    await choose(wrapper.find('input[webkitdirectory]'), [
+      chosenWith('Old.scriv/Old.scrivx', BINDER),
+      chosenWith('Old.scriv/Files/Docs/3.rtf', '{\\rtf1 x}'),
+    ])
+
+    expect(writeProject).not.toHaveBeenCalled()
+    expect(importMany).not.toHaveBeenCalled()
+    expect(toastAdd).toHaveBeenCalledWith(
+      expect.objectContaining({
+        severity: 'error',
+        detail:
+          'Nothing imported: This project is from an older Scrivener. Open it in Scrivener 3, then import it again.',
+      })
+    )
   })
 
   it('shows where a drag of files would land, and imports them there on drop', async () => {

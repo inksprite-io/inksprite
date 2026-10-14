@@ -77,7 +77,7 @@ language. To find in it, press <kbd>⌘</kbd> <kbd>F</kbd> (<kbd>Ctrl</kbd>
 <kbd>F</kbd> on Windows and Linux), or click **Find**, the magnifier at the top
 of the editor.
 
-<Screenshot name="repository-code-view" alt="The tide-clock repository in the outline, with src/tides.js open" />
+<Screenshot name="repository-code-view" alt="The feast-days repository in the outline, with src/easter.js open" />
 
 The repository is read-only: there's no **New document**, **New folder** or
 **Rename** inside it, and nothing can be dragged in or out. You can rename the
@@ -95,16 +95,16 @@ the repository, searches its files, and reads them a range of lines at a time,
 so it can cite the lines it means. To point it at a file, choose
 **Copy path** from the file's menu and paste the path in your message.
 
-For example, with a tide-clock app imported as `tide-clock`:
+For example, with a feast-day calendar imported as `feast-days`:
 
-> How does the clock work out the next high tide?
+> How does the calendar work out the date of Easter?
 
 The model searches the code, reads the file it finds, and cites lines in its
-answer, such as `tide-clock/src/tides.js:13`. Click the tool calls above its
+answer, such as `feast-days/src/easter.js:12`. Click the tool calls above its
 reply to see what it read. To keep what it found, ask it to write it into one
 of your documents; the repository itself takes no writing.
 
-<Screenshot name="repository-chat" alt="An answer about the tide clock, citing tide-clock/src/tides.js:13 and the lines it relies on" />
+<Screenshot name="repository-chat" alt="An answer about the calendar, citing feast-days/src/easter.js:12 and the lines it relies on" />
 
 ## Bring it up to date
 

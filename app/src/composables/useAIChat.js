@@ -539,6 +539,7 @@ export function useAIChat(storyId, chatId) {
       transcript: roles,
       before,
       past,
+      toolsAllowed: profile.toolsEnabled !== false,
     })
     signal.throwIfAborted()
 
@@ -1389,6 +1390,11 @@ export function useAIChat(storyId, chatId) {
       // are their servers', and the web's.
       await Promise.all([skillsApi.ready(), mcpApi.ready(), webApi.ready()])
 
+      // Two gates: the profile says whether the model can call tools at all,
+      // the chat says which of them it should be offered. The context reads
+      // both, for whether the project block goes with the turn.
+      const toolsAllowed = profile.toolsEnabled !== false
+
       // Build context
       const aiContext = useAIContext(storyId)
       const contextResult = await aiContext.build({
@@ -1397,6 +1403,7 @@ export function useAIChat(storyId, chatId) {
         note: resolveNote(),
         chatId,
         ...(into ? { before: into } : {}),
+        toolsAllowed,
       })
       // Stopped before there was an answer to write into: none is made.
       signal.throwIfAborted()
@@ -1429,9 +1436,6 @@ export function useAIChat(storyId, chatId) {
 
       // Run the completion loop with tool support. Profiles pointed at models
       // that can't handle tool calls opt out via toolsEnabled.
-      // Two gates: the profile says whether the model can call tools at all,
-      // the chat says which of them it should be offered.
-      const toolsAllowed = profile.toolsEnabled !== false
       const profileId = profilesApi.getProfile(chat?.profileId)?.id ?? chatsApi.defaultProfileId()
       const tools =
         toolsAllowed && hasTools()

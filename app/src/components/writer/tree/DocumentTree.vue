@@ -138,6 +138,8 @@ import { entriesOfFolder } from '@/source/gather.js'
 import { looksLikeCodebase } from '@/source/detect.js'
 import { repositoryOf } from '@/source/tree.js'
 import { driveAvailable } from '@/drive/config.js'
+import { mayHoldProject, packageOfFolder, packageOfZip } from '@/scrivener/package.js'
+import { openProject, writeProject } from '@/scrivener/project.js'
 import { useStoriesStore } from '@/stores/storiesStore'
 
 const props = defineProps({
@@ -293,6 +295,8 @@ const readChosenCard = async event => {
   if (!files || files.length === 0) return
   if (files.length > 1) return importBatch(gatherFiles(files), importInto.value)
   const file = files[0]
+  const scrivener = await scrivenerIn([{ file, folders: [] }])
+  if (scrivener) return importScrivener(scrivener, importInto.value)
 
   try {
     const it = await cards.inspect(file)
@@ -327,14 +331,17 @@ const readChosenFolder = async event => {
 }
 
 /**
- * Import what was chosen or dropped. A folder that looks like a codebase is
- * asked about first, since it can come in as a repository instead. Closing
- * the question imports nothing.
+ * Import what was chosen or dropped. A Scrivener project comes in as one. A
+ * folder that looks like a codebase is asked about first, since it can come
+ * in as a repository instead. Closing the question imports nothing.
  *
  * @param {import('@/files/batch.js').Gathered[]} listed
  * @param {string|null} parentId - Where it goes; the project's top when null
  */
 const importListed = async (listed, parentId) => {
+  const scrivener = await scrivenerIn(listed)
+  if (scrivener) return importScrivener(scrivener, parentId)
+
   const folder = folderOf(listed)
   const paths = entriesOfFolder(listed).entries.map(entry => entry.path)
   if (!folder || !looksLikeCodebase(paths)) return importBatch(withoutJunk(listed), parentId)
@@ -348,6 +355,43 @@ const importListed = async (listed, parentId) => {
     accept: () => importRepository(listed, parentId),
     reject: () => importBatch(withoutJunk(listed), parentId),
   })
+}
+
+/**
+ * The Scrivener project in what was chosen or dropped, when there is one: a
+ * `.scriv` folder, or a file on its own that holds one, such as a `.scriv`
+ * the browser zipped when it was chosen.
+ *
+ * @param {import('@/files/batch.js').Gathered[]} listed
+ * @returns {Promise<import('@/scrivener/package.js').ScrivenerPackage|null>}
+ */
+const scrivenerIn = async listed => {
+  const folder = packageOfFolder(listed)
+  if (folder) return folder
+  const [only] = listed
+  return listed.length === 1 && mayHoldProject(only.file) ? packageOfZip(only.file) : null
+}
+
+/**
+ * Write a Scrivener project into a folder named after it, and say how it
+ * went. One that cannot be read writes nothing, and says why.
+ *
+ * @param {import('@/scrivener/package.js').ScrivenerPackage} pack
+ * @param {string|null} parentId - Where it goes; the project's top when null
+ */
+const importScrivener = async (pack, parentId) => {
+  let project
+  try {
+    project = await openProject(pack)
+  } catch (error) {
+    toast.add({ severity: 'error', detail: `Nothing imported: ${error.message}`, life: 6000 })
+    return
+  }
+  const result = await writeProject(props.storyId, project, {
+    parentId: parentId || undefined,
+    asFolder: true,
+  })
+  toast.add({ ...describeImport(result), life: 5000 })
 }
 
 /**

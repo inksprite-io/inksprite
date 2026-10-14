@@ -88,6 +88,15 @@ Files picked in the writer's Google Drive, brought into a folder of the project:
 - A Doc's pictures taken out before the importer sees it, and counted
 - Offered only when the build names a Google client for where it runs
 
+### 🖋️ [Scrivener](./scrivener.md)
+
+A Scrivener 3 project brought in whole, as a new project or as a folder of one:
+
+- From a zip, or a `.scriv` folder dropped or chosen, read and checked before anything is written
+- The binder as the tree, every folder in the binder's order, the Trash left out
+- Each text's RTF read for what markdown holds: headings from Scrivener's styles, lists, bold, italic and tables
+- Synopses and notes as documents of their own, and the files in Research as file documents
+
 ### 🔌 [MCP](./mcp.md)
 
 Tools from MCP servers the writer connects, offered to the model in their chats:
@@ -233,6 +242,12 @@ Frontend (Vue 3 + Vite)
 │   ├── fetch - A picked file looked up and fetched as a File: exported or downloaded
 │   ├── images - A Doc's pictures taken out of its markdown
 │   └── errors - What stops an import, said for the writer
+├── Scrivener (src/scrivener)
+│   ├── package - A project's files by their path inside it, from a folder or a zip
+│   ├── binder - The binder read from the .scrivx, without the Trash, and the styles' names
+│   ├── rtf - A text's RTF read into paragraphs and tables
+│   ├── markdown - Those written as markdown, through the editor's schema and serializer
+│   └── project - A project opened, then written into the tree
 ├── Cards (src/cards)
 │   ├── png - The character card hidden in a PNG's text chunks
 │   ├── card - A card or a lorebook as one shape, whatever version it arrived as

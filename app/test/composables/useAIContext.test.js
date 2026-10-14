@@ -1,10 +1,21 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-const { buildContext, chat } = vi.hoisted(() => ({
-  buildContext: vi.fn(async () => ({ messages: [] })),
-  /** The chat being built for, as the mocked store holds it. */
-  chat: { value: /** @type {any} */ (null) },
-}))
+const { buildContext, chat, projectOverview, pinnedDocuments, documentLocator } = vi.hoisted(
+  () => ({
+    buildContext: vi.fn(async () => ({ messages: [] })),
+    /** The chat being built for, as the mocked store holds it. */
+    chat: { value: /** @type {any} */ (null) },
+    projectOverview: vi.fn(async (_storyId, _chat, { size = true } = {}) => ({
+      project: 'Harbour',
+      ...(size ? { size: { documents: 3, folders: 1 } } : {}),
+    })),
+    /** What the chat pins, as the documents its `pinnedIds` name. */
+    pinnedDocuments: vi.fn(async (_storyId, chat) =>
+      (chat?.pinnedIds || []).map(id => ({ id, path: `/${id}`, type: 'text' }))
+    ),
+    documentLocator: vi.fn(async () => () => null),
+  })
+)
 
 vi.mock('@/stores/documentsStore.js', () => ({ useDocumentsStore: () => ({}) }))
 vi.mock('@/stores/chatsStore.js', () => ({
@@ -12,9 +23,12 @@ vi.mock('@/stores/chatsStore.js', () => ({
 }))
 vi.mock('@/stores/messagesStore.js', () => ({ useMessagesStore: () => ({}) }))
 vi.mock('@/ai/context/build.js', () => ({ buildContext }))
-vi.mock('@/ai/tools/documents.js', () => ({ projectOverview: vi.fn(async () => null) }))
+vi.mock('@/ai/tools/documents.js', () => ({ projectOverview, pinnedDocuments, documentLocator }))
 vi.mock('@/ai/tools/index.js', () => ({
   keptInConversation: name => name === 'read_document',
+  // The group's switch stands for the document tools; tools/groups.test.js
+  // has the rest of what turns them off.
+  offersDocuments: selection => !(selection?.disabledGroups || []).includes('documents'),
 }))
 
 const { useAIContext } = await import('@/composables/useAIContext')
@@ -58,5 +72,61 @@ describe('useAIContext', () => {
     chat.value = { id: 'chat_1', rules: 'Never write for the player.' }
 
     expect((await optionsGiven()).note).toBeUndefined()
+  })
+
+  describe('the project block', () => {
+    it('goes with a chat offered the document tools, with its size and its stale reads', async () => {
+      chat.value = { id: 'chat_1' }
+
+      const { project, pinned, locate } = await optionsGiven()
+
+      expect(project).toEqual({ project: 'Harbour', size: { documents: 3, folders: 1 } })
+      expect(pinned).toEqual([])
+      expect(locate).toBeTypeOf('function')
+    })
+
+    it('stays out of a chat with the document tools off and nothing pinned', async () => {
+      chat.value = { id: 'chat_1', disabledToolGroups: ['documents'] }
+
+      const { project, locate } = await optionsGiven()
+
+      expect(project).toBeNull()
+      expect(locate).toBeUndefined()
+      expect(projectOverview).not.toHaveBeenCalled()
+    })
+
+    it('goes with what a chat with no document tools pinned, and nothing it cannot reach', async () => {
+      chat.value = { id: 'chat_1', disabledToolGroups: ['documents'], pinnedIds: ['doc_1'] }
+
+      const { project, pinned, locate } = await optionsGiven()
+
+      expect(project).toEqual({ project: 'Harbour' })
+      expect(pinned.map(document => document.id)).toEqual(['doc_1'])
+      expect(locate).toBeUndefined()
+    })
+
+    it('stays out when the model may call no tools, whatever the chat offers', async () => {
+      chat.value = { id: 'chat_1' }
+
+      expect((await optionsGiven({ toolsAllowed: false })).project).toBeNull()
+    })
+
+    it('goes with a pin when the model may call no tools', async () => {
+      chat.value = { id: 'chat_1', pinnedIds: ['doc_1'] }
+
+      const { project, pinned } = await optionsGiven({ toolsAllowed: false })
+
+      expect(project).toEqual({ project: 'Harbour' })
+      expect(pinned).toHaveLength(1)
+    })
+
+    it('stays out of a summary', async () => {
+      chat.value = { id: 'chat_1', pinnedIds: ['doc_1'] }
+
+      const { project, pinned } = await optionsGiven({ mode: 'summarize' })
+
+      expect(project).toBeNull()
+      expect(pinned).toEqual([])
+    })
   })
 })

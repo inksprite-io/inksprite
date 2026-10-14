@@ -185,8 +185,8 @@ export function useChatSettings(storyId, chatId) {
 
   /**
    * Whether this chat runs differently from its profile: its prompt, a skill's
-   * wording, its tools, the web or a server, its project context or its
-   * author's note. What Save to profile would write.
+   * wording, its tools, the web or a server, or its author's note. What Save
+   * to profile would write.
    */
   const changed = computed(() => {
     const own = chat.value
@@ -200,7 +200,6 @@ export function useChatSettings(storyId, chatId) {
       ) ||
       !sameSet(own.disabledTools, settings.disabledTools) ||
       !sameSet(own.disabledToolGroups, settings.disabledToolGroups) ||
-      (own.projectContextEnabled !== false) !== (settings.projectContextEnabled !== false) ||
       (note.value || '') !== (settings.rules || '') ||
       webForChat(own, id) !== webForChat(null, id) ||
       (Array.isArray(own.mcpServers) && !sameSet(own.mcpServers, listedServers()))
@@ -224,7 +223,6 @@ export function useChatSettings(storyId, chatId) {
       prompt: prompt.value,
       disabledTools: [...(own.disabledTools || [])],
       disabledToolGroups: [...(own.disabledToolGroups || [])],
-      projectContextEnabled: own.projectContextEnabled !== false,
       rules: note.value || undefined,
       skills,
     }

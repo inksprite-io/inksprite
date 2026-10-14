@@ -171,20 +171,6 @@
                 @input="setNote(rules)"
               />
             </div>
-
-            <div class="flex flex-col gap-1">
-              <div class="flex items-center justify-between gap-2">
-                <label class="text-xs font-medium text-surface-700 dark:text-surface-200">
-                  Project context
-                </label>
-                <ToggleSwitch
-                  :model-value="projectContextEnabled"
-                  class="flex-none"
-                  aria-label="Project context"
-                  @update:model-value="setProjectContextEnabled"
-                />
-              </div>
-            </div>
           </div>
         </ExpandableSection>
 
@@ -866,15 +852,6 @@ const disabledToolGroups = computed(() => chat.value?.disabledToolGroups || [])
 /** A group's own switch, and the preset's switch above it, both have to be on. */
 const isGroupEnabled = groupId =>
   modelToolsEnabled.value && !disabledToolGroups.value.includes(groupId)
-
-/**
- * Whether the project rides at the tail of every turn. Chats saved before this
- * existed carried it, so an absent flag means on — the opposite of the
- * Director's, which nothing had.
- */
-const projectContextEnabled = computed(() => chat.value?.projectContextEnabled !== false)
-
-const setProjectContextEnabled = enabled => update({ projectContextEnabled: enabled })
 
 // The voice the chat is read aloud in: one of the project's. A chat that has
 // picked none, or one since removed, reads in the project's default, and

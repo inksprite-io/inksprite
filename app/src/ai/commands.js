@@ -742,7 +742,7 @@ onSkillsChanged(makeSkillCommands)
 
 /**
  * A prompt a connected server offers, as a command: `/glossary:outline the
- * lighthouse`. Like a saved prompt, its text goes into the writer's turn
+ * Watch`. Like a saved prompt, its text goes into the writer's turn
  * under its name, and the model answers it. Unlike one, the server writes the
  * text when it is asked, and can put its own things in it — an issue's
  * description, a template it keeps — so it is fetched afresh every time, an

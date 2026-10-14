@@ -3,7 +3,7 @@
 Patches are welcome, and a change sent here is worth more than the same
 change kept on a fork: it gets maintained, and everyone gets it. Small
 fixes can go straight to a pull request. For anything larger, open an
-issue first so the design is agreed before the work is done.
+issue first.
 
 ## Working on the code
 
@@ -40,18 +40,13 @@ under the AGPL.
 The reason is to keep the project's options open without having to
 find and ask every past contributor. Apache-2.0 allows sublicensing, so
 the maintainers can do with the whole what they can already do with
-their own part of it: sell builds, and change the license of a future
-version if that ever becomes necessary. What is intended, and what the
-inbound license makes possible, are not the same thing, so here is the
-intent in plain terms:
+their own part of it. What is intended, and what the inbound license makes
+possible, are not the same thing, so here is the intent in plain terms:
 
 - inksprite stays free to use and its source stays public and
-  modifiable. If the license ever changes, it will be to keep that true
-  while stopping something specific, not to close the code.
+  modifiable.
 - A version released under the AGPL stays under the AGPL. Nothing can
   be taken back.
-- Paid builds are the same code. Paying is for the packaged build and
-  to support the work, not for features withheld from the source.
 
 If you are not comfortable with that, keep your change on a fork under
 the AGPL, which the license fully allows.
@@ -72,5 +67,3 @@ every commit and fails the pull request if one is missing.
 ## What the license does not cover
 
 The inksprite name and logo are not part of the license; see the README.
-Your own writing is never part of it: what you write, generate or import
-with inksprite is yours.

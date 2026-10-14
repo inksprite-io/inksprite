@@ -427,8 +427,9 @@ function resolveNewPath(api, storyId, path, sees) {
  * @typedef {Object} ProjectOverview
  * @property {string} project - The project's name
  * @property {string} [summary] - The story's overview, when someone wrote one
- * @property {{documents: number, folders: number}} size - How much of it the
- *   chat can see, so the model knows there is more than the block shows
+ * @property {{documents: number, folders: number}} [size] - How much of it the
+ *   chat can see, so the model knows there is more than the block shows. Not
+ *   for a model that can't reach the rest.
  */
 
 /**
@@ -526,20 +527,23 @@ export async function pinnedDocuments(storyId, chat) {
  *
  * @param {string} storyId
  * @param {ChatMarks|null} [chat] - The chat it is for, whose marks say what it sees
+ * @param {{size?: boolean}} [options] - `size: false` leaves out how much is
+ *   in it, for a chat offered no tool to reach any of it
  * @returns {Promise<ProjectOverview|null>}
  */
-export async function projectOverview(storyId, chat) {
+export async function projectOverview(storyId, chat, { size = true } = {}) {
   const { api, sees } = await open(storyId, chat)
   const root = api.get(rootIdFor(storyId))
   if (!root) return null
   const summary = root.summary?.trim()
-  const seen = visibleDocuments(api, storyId, sees).filter(document => document.id !== root.id)
-  const folders = seen.filter(document => document.type === 'folder').length
-  return {
+  const overview = {
     project: root.title || 'Untitled',
     ...(summary ? { summary } : {}),
-    size: { documents: seen.length - folders, folders },
   }
+  if (!size) return overview
+  const seen = visibleDocuments(api, storyId, sees).filter(document => document.id !== root.id)
+  const folders = seen.filter(document => document.type === 'folder').length
+  return { ...overview, size: { documents: seen.length - folders, folders } }
 }
 
 // ============================================================================

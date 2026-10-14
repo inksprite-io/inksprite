@@ -56,11 +56,11 @@ export const getTitlePlaceholder = (type, position) => {
 /**
  * A name nothing else in a list has, for a project or a profile: `name`
  * itself when it is free, and otherwise numbered past the copies already
- * there — `Lighthouse (2)`, then `Lighthouse (3)`, the original being the
+ * there — `Thief (2)`, then `Thief (3)`, the original being the
  * first, as a document's copies are (see `freeTitle` in utils/documentPath.js).
  * A name that is already a numbered copy counts on from its own number rather
- * than gaining a second one, so importing `Lighthouse (2)` beside itself gives
- * `Lighthouse (3)`. Names are compared without the spaces round them and
+ * than gaining a second one, so importing `Thief (2)` beside itself gives
+ * `Thief (3)`. Names are compared without the spaces round them and
  * whatever their case.
  *
  * @param {string[]} taken - The names of the others

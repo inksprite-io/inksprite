@@ -1,9 +1,9 @@
 {
-  "name": "tide-clock",
+  "name": "feast-days",
   "version": "0.3.0",
   "type": "module",
   "scripts": {
-    "start": "node src/clock.js",
+    "start": "node src/calendar.js",
     "test": "node --test"
   }
 }

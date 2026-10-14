@@ -350,6 +350,15 @@ describe('document tools', () => {
       })
     })
 
+    it('says nothing of how much is in it when asked not to', async () => {
+      await seed()
+
+      expect(await projectOverview(STORY, null, { size: false })).toEqual({
+        project: 'My Story',
+        summary: 'A knight rides north.',
+      })
+    })
+
     it('omits an overview nobody wrote rather than sending it empty', async () => {
       await seed()
       store.updateDocument(rootIdFor(STORY), { summary: '' })

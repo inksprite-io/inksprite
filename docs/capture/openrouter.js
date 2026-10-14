@@ -112,7 +112,7 @@ async function inTab({ url, headed, theme, storageState }, then) {
     await ui.goto('/')
     await ui.click(button('Start writing'))
     await ui.click(button('New project'))
-    await ui.type('The Lighthouse')
+    await ui.type('Thief')
     await ui.click(button('Create'))
     await ui.click(button('Connect'))
 

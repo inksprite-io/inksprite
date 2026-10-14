@@ -564,7 +564,6 @@ export const useChats = storyId => {
       disabledTools: [...(source.disabledTools || [])],
       disabledToolGroups: [...(source.disabledToolGroups || [])],
       ...(source.mcpServers ? { mcpServers: [...source.mcpServers] } : {}),
-      projectContextEnabled: source.projectContextEnabled !== false,
       ...(source.rules ? { rules: source.rules } : {}),
       ...(source.pinnedIds?.length ? { pinnedIds: [...source.pinnedIds] } : {}),
       ...(source.shownIds?.length ? { shownIds: [...source.shownIds] } : {}),

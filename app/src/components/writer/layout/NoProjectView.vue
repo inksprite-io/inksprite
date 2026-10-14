@@ -26,7 +26,7 @@
     <input
       ref="fileInput"
       type="file"
-      accept="application/json,.json"
+      accept="application/json,.json,application/zip,.zip,.scriv"
       class="hidden"
       @change="importChosen"
     />

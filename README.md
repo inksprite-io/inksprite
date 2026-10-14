@@ -40,10 +40,10 @@ analytics unless it is built with `VITE_VERCEL_ANALYTICS=true`.
 
 ## Contributing
 
-Patches are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) has the setup, the
-sign-off rule, and the terms a contribution comes in under: you keep your
-copyright and license it under Apache-2.0, and the project releases the whole
-under the AGPL. Read that section before your first pull request.
+[CONTRIBUTING.md](CONTRIBUTING.md) has the setup, the sign-off rule, and the
+terms a contribution comes in under: you keep your copyright and license it
+under Apache-2.0, and the project releases the whole under the AGPL. Read that
+section before your first pull request.
 
 ## License
 

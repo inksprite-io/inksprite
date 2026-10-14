@@ -7,7 +7,7 @@ import { useChatsStore } from '@/stores/chatsStore.js'
 import { useMessagesStore } from '@/stores/messagesStore.js'
 import { buildContext } from '@/ai/context/build.js'
 import { documentLocator, projectOverview, pinnedDocuments } from '@/ai/tools/documents.js'
-import { keptInConversation } from '@/ai/tools/index.js'
+import { keptInConversation, offersDocuments } from '@/ai/tools/index.js'
 import { useEditor } from './useEditor.js'
 import { namesOf } from '@/cards/macros.js'
 
@@ -27,6 +27,8 @@ import { namesOf } from '@/cards/macros.js'
  * @property {import('@/ai/context/build.js').TranscriptRoles} [transcript]
  * @property {string} [before]
  * @property {number} [past]
+ * @property {boolean} [toolsAllowed] - Whether the model may call tools at
+ *   all: the preset's switch, over the chat's. Absent means it may.
  */
 
 export function useAIContext(storyId) {
@@ -48,26 +50,32 @@ export function useAIContext(storyId) {
     // Read here rather than in the builder, which takes everything it needs as
     // an argument and touches no store of its own.
     //
-    // A chat can turn the project off and be a plain conversation. Absent
-    // means on, because every chat written before the switch existed had it.
-    // The gate is here rather than in the builder so a chat that wants none of
-    // it does not pay for the overview either, and so every reader of this
-    // conversation agrees — a skill consulted inside a plain chat is in the
-    // same plain chat.
+    // The project block is for a model that can reach the project: a chat
+    // offered the document tools sends it on every turn. One that is not sends
+    // it only for what the writer pinned, since a pin asks for those documents
+    // whatever the tools are, and then without how much else there is or which
+    // reads have gone stale, which a model with no tools can do nothing about.
+    // Blank, with no tools and no pins, sends none. The chat's switches decide
+    // rather than the reader's tools, so every reader of this conversation
+    // agrees — a skill consulted inside a plain chat is in the same plain chat.
     const chat = opts.chatId ? stores.chatsStore.getChatById(opts.chatId) : null
-    const wantsProject = chat?.projectContextEnabled !== false
-
-    const project =
-      opts.mode === 'chat' && storyId && wantsProject ? await projectOverview(storyId, chat) : null
+    const inChat = opts.mode === 'chat' && Boolean(storyId)
+    const reaches =
+      inChat &&
+      opts.toolsAllowed !== false &&
+      offersDocuments({
+        disabledTools: chat?.disabledTools,
+        disabledGroups: chat?.disabledToolGroups,
+      })
 
     // What the chat pinned, resolved to documents here for the same reason the
-    // overview is: the builder takes what it needs as an argument. Only when
-    // there is a block for it to ride in — a pin is a claim about the project
-    // block, and a chat that sends none has nowhere to put one.
-    const pinned = project ? await pinnedDocuments(storyId, chat) : []
+    // overview is: the builder takes what it needs as an argument.
+    const pinned = inChat ? await pinnedDocuments(storyId, chat) : []
+    const project =
+      reaches || pinned.length > 0 ? await projectOverview(storyId, chat, { size: reaches }) : null
     // Where each document the model read is now, for the block to say which
-    // have changed since. Only with a block to say it in.
-    const locate = project ? await documentLocator(storyId, chat) : undefined
+    // have changed since.
+    const locate = reaches ? await documentLocator(storyId, chat) : undefined
     return buildContext(opts.mode, stores, {
       ...opts,
       storyId,

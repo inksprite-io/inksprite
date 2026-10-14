@@ -384,6 +384,20 @@ export function keptInConversation(name) {
 }
 
 /**
+ * Whether a chat is offered any of the document tools, by its own switches.
+ * One that is reaches the project, and every turn of it carries the project
+ * block; see composables/useAIContext.js.
+ *
+ * @param {{disabledTools?: string[], disabledGroups?: string[]}} [selection]
+ * @returns {boolean}
+ */
+export function offersDocuments(selection) {
+  return toolRegistry
+    .getEnabledDefinitions(selection)
+    .some(definition => toolRegistry.groupOf(definition.function.name) === 'documents')
+}
+
+/**
  * The time limit a tool has asked for, if it has asked for one.
  * @param {string} name - Tool name
  * @returns {number|undefined} Milliseconds, or undefined to use the caller's default

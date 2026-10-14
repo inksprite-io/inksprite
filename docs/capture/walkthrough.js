@@ -11,34 +11,34 @@
  */
 
 /** The project the guide writes. */
-const PROJECT = 'The Lighthouse'
+const PROJECT = 'Thief'
 
 /** What the reader asks in their first chat, and what the model does with it. */
 const FIRST_CHAT = {
-  match: 'three reasons the lamp might flicker',
-  title: 'Why the lamp flickers',
+  match: 'three ways it could go wrong for her',
+  title: 'What goes wrong',
   steps: [
-    { tool: 'read_document', args: { path: 'Chapter 1' } },
+    { tool: 'read_document', args: { path: 'Prologue' } },
     {
       tool: 'create_document',
       args: {
         path: 'Ideas',
         content: [
-          '## Why the lamp flickers',
+          '## What goes wrong',
           '',
-          '1. **Someone is signalling.** The flicker is a pattern, and Mara is the only one awake to read it.',
-          '2. **The oil is wrong.** The last supply boat brought a barrel nobody ordered.',
-          '3. **The lamp is tired.** Forty years without a night off, and it has started to keep its own hours.',
+          '1. **Someone is awake.** The shopkeeper sleeps above the shop, and he heard the shutters close.',
+          '2. **The drawer is a trap.** The lock was easy because someone wanted it opened.',
+          '3. **One coin isn’t a coin.** It’s heavier than the rest, with a key on both sides, and someone will come for it.',
         ].join('\n'),
       },
     },
     {
       text:
-        'I read Chapter 1 and put three ideas in **Ideas**:\n\n' +
-        '1. **Someone is signalling**: the flicker is a message, and only Mara is awake to read it.\n' +
-        '2. **The oil is wrong**: a barrel nobody ordered came on the last boat.\n' +
-        '3. **The lamp is tired**: after forty years it keeps its own hours.\n\n' +
-        'The first gives Mara something to do tonight. Want me to sketch the scene where she answers?',
+        'I read the Prologue and put three ideas in **Ideas**:\n\n' +
+        '1. **Someone is awake**: the shopkeeper heard the shutters.\n' +
+        '2. **The drawer is a trap**: the lock was easy because someone wanted it opened.\n' +
+        '3. **One coin isn’t a coin**: a token with a key on both sides, which someone will want back.\n\n' +
+        'The third carries the story past tonight. Want me to sketch the scene where she finds it?',
     },
   ],
 }
@@ -78,18 +78,18 @@ export async function walkthrough(ui, { standIn, context }) {
     await page.getByRole('treeitem', { name: PROJECT }).waitFor()
     // The empty editor's, which says so; the outline's plus is named the same.
     await ui.click(button('New document').filter({ hasText: 'New document' }))
-    await ui.type('Chapter 1')
+    await ui.type('Prologue')
     await ui.press('Enter')
     await ui.click(page.locator('.ProseMirror'))
-    await ui.type('# The lamp\n')
-    await ui.type('The lamp had not gone out in forty years. Tonight it **flickered**.')
+    await ui.type('# Burglary\n')
+    await ui.type('The thief slipped *quietly* through the window.')
   })
   await ui.type(
-    '\nMara counted the beats between the flashes the way her father had taught her: ' +
-      'one for the rocks, two for the shoals, three for come home. ' +
-      'It was none of those. It was four, and then nothing, and then four again.'
+    ' Its broken latch dangled from the sash. ' +
+      'She listened for a moment, then stepped down onto the boards ' +
+      'and pulled the shutters closed behind her.'
   )
-  await ui.click(page.getByRole('treeitem', { name: 'Chapter 1' }))
+  await ui.click(page.getByRole('treeitem', { name: 'Prologue' }))
   await ui.shot('workspace')
 
   await ui.click(page.getByRole('treeitem', { name: PROJECT }).getByText(PROJECT), {
@@ -131,7 +131,7 @@ export async function walkthrough(ui, { standIn, context }) {
   await ui.record('first-chat', async () => {
     await ui.click(message)
     await ui.type(
-      'Read Chapter 1 and give me three reasons the lamp might flicker. Put them in a new document called Ideas.'
+      'Read the Prologue and give me three ways it could go wrong for her. Put them in a new document called Ideas.'
     )
     await ui.press('Enter')
     await page.getByRole('treeitem', { name: 'Ideas' }).waitFor()

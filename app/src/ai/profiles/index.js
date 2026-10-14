@@ -48,7 +48,6 @@ import {
  * @property {string} prompt - The system prompt, sent ahead of the conversation
  * @property {string[]} [disabledTools]
  * @property {string[]} [disabledToolGroups]
- * @property {boolean} [projectContextEnabled]
  * @property {string} [rules] - The author's note a chat on this profile starts
  *   with: standing instructions, sent in the writer's latest message ahead of
  *   what they said. See `renderAuthorsNote` in ai/context/build.js.
@@ -146,11 +145,11 @@ export const BUILT_IN_PROFILES = [
     name: 'Blank',
     description: 'No system prompt, no tools, no project: the model as it comes.',
     // Nothing between the writer and the model: no system message is sent for
-    // an empty prompt, no tool is offered, and the project block stays out.
+    // an empty prompt, no tool is offered, and with no document tools the
+    // project block stays out until the writer pins something.
     settings: {
       prompt: '',
       disabledToolGroups: [...ALL_TOOL_GROUPS],
-      projectContextEnabled: false,
     },
   },
 ]
@@ -214,7 +213,6 @@ const STAMPED_SETTINGS = [
   'skills',
   'disabledTools',
   'disabledToolGroups',
-  'projectContextEnabled',
   'rules',
   // Not a profile's setting: a chat's choice of servers, cleared so the chat
   // follows the servers that list the profile it moves to.

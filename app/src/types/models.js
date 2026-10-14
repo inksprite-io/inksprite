@@ -240,7 +240,6 @@
  * @property {string[]} [disabledToolGroups] - Group ids withheld from this chat, which also withholds tools added to those groups later.
  * @property {string[]} [mcpServers] - The MCP servers whose tools this chat is offered, by id, once the writer has chosen here. Absent means the servers that list the chat's profile. A server's tools are opted into rather than withheld, so a server connected later reaches no chat that did not ask for it. See mcp/servers.js.
  * @property {boolean} [web] - Whether this chat searches the web, once the writer has chosen here. Absent means it does when web search is set up for the chat's profile. Opted into, as a server's tools are. See web/config.js.
- * @property {boolean} [projectContextEnabled] - Whether the project block rides at the tail of this conversation. Absent means it does, which is what every chat written before the switch had.
  * @property {string|null} [voiceId] - The voice this chat's messages are read aloud in, one of the project's. Absent, or naming a voice since removed, means the project's default.
  * @property {string} [prompt] - The chat's own system prompt, once the writer has changed it here. Absent means the profile's, read on every turn. See ai/profiles.
  * @property {Record<string, {prompt?: string}>} [skills] - The chat's own wording of a skill, by the skill's name, over the profile's. An empty prompt is the skill's own wording. Absent means the profile's.

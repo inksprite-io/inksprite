@@ -676,208 +676,211 @@
   - [Parameters][672]
 - [mergeRow][673]
   - [Parameters][674]
-- [SettingsImport][675]
-  - [Properties][676]
-- [planImport][677]
-  - [Parameters][678]
-- [plan][679]
-- [changesAnything][680]
-  - [Parameters][681]
-- [listed][682]
-  - [Parameters][683]
-- [NAMED][684]
-- [itemsInWords][685]
-  - [Parameters][686]
-- [phrases][687]
-- [slice][688]
-- [][689]
-- [describeImport][690]
-  - [Parameters][691]
-- [sentences][692]
-- [ai/providers][693]
-- [ProviderType][694]
-  - [Properties][695]
-- [ProviderKind][696]
-- [PROVIDER_TYPES][697]
-- [BUILT_IN_PROVIDERS][698]
-- [DEFAULT_SPEECH_PROVIDER_ID][699]
-- [inMenuOrder][700]
-  - [Parameters][701]
-- [typeOf][702]
-  - [Parameters][703]
-- [providerDoes][704]
-  - [Parameters][705]
-- [DEFAULT_PROVIDER_TYPE][706]
-- [providerLabel][707]
-  - [Parameters][708]
-- [knownAddress][709]
-  - [Parameters][710]
-- [needsEndpoint][711]
-  - [Parameters][712]
-- [needsKey][713]
-  - [Parameters][714]
-- [connectionGap][715]
-  - [Parameters][716]
-- [canListModels][717]
-  - [Parameters][718]
-- [servesChat][719]
-  - [Parameters][720]
-- [takesReasoningEffort][721]
-  - [Parameters][722]
-- [takesChatTemplateKwargs][723]
-  - [Parameters][724]
-- [AISamplerParameters][725]
-  - [Properties][726]
-- [REASONING_EFFORT_OPTIONS][727]
-- [DEFAULT_PRESET_ID][728]
-- [AI_DEFAULTS][729]
-- [resolveAISettings][730]
-  - [Parameters][731]
-- [resolveAISettings][732]
-  - [Parameters][733]
-- [mergeAISettings][734]
-  - [Parameters][735]
-- [TITLE_DEFAULTS][736]
-- [utils/tabs][737]
-- [Tabs][738]
-  - [Properties][739]
-- [NO_TABS][740]
-- [settled][741]
-  - [Parameters][742]
-- [tabsOf][743]
-  - [Parameters][744]
-- [tabsPatch][745]
-  - [Parameters][746]
-- [normalizeTabs][747]
-  - [Parameters][748]
-- [openTab][749]
-  - [Parameters][750]
-- [keepTab][751]
-  - [Parameters][752]
-- [closeTab][753]
-  - [Parameters][754]
-- [dropTabs][755]
-  - [Parameters][756]
-- [tabNames][757]
-  - [Parameters][758]
-- [tail][759]
-  - [Parameters][760]
-- [utils/titleValidation][761]
-- [normalizeTitle][762]
+- [][675]
+- [SettingsImport][676]
+  - [Properties][677]
+- [planImport][678]
+  - [Parameters][679]
+- [plan][680]
+- [changesAnything][681]
+  - [Parameters][682]
+- [listed][683]
+  - [Parameters][684]
+- [NAMED][685]
+- [itemsInWords][686]
+  - [Parameters][687]
+- [phrases][688]
+- [slice][689]
+- [][690]
+- [describeImport][691]
+  - [Parameters][692]
+- [sentences][693]
+- [ai/providers][694]
+- [ProviderType][695]
+  - [Properties][696]
+- [ProviderKind][697]
+- [PROVIDER_TYPES][698]
+- [BUILT_IN_PROVIDERS][699]
+- [DEFAULT_SPEECH_PROVIDER_ID][700]
+- [inMenuOrder][701]
+  - [Parameters][702]
+- [typeOf][703]
+  - [Parameters][704]
+- [providerDoes][705]
+  - [Parameters][706]
+- [DEFAULT_PROVIDER_TYPE][707]
+- [providerLabel][708]
+  - [Parameters][709]
+- [knownAddress][710]
+  - [Parameters][711]
+- [needsEndpoint][712]
+  - [Parameters][713]
+- [needsKey][714]
+  - [Parameters][715]
+- [connectionGap][716]
+  - [Parameters][717]
+- [presetProblem][718]
+  - [Parameters][719]
+- [canListModels][720]
+  - [Parameters][721]
+- [servesChat][722]
+  - [Parameters][723]
+- [takesReasoningEffort][724]
+  - [Parameters][725]
+- [takesChatTemplateKwargs][726]
+  - [Parameters][727]
+- [AISamplerParameters][728]
+  - [Properties][729]
+- [REASONING_EFFORT_OPTIONS][730]
+- [DEFAULT_PRESET_ID][731]
+- [AI_DEFAULTS][732]
+- [resolveAISettings][733]
+  - [Parameters][734]
+- [resolveAISettings][735]
+  - [Parameters][736]
+- [mergeAISettings][737]
+  - [Parameters][738]
+- [TITLE_DEFAULTS][739]
+- [utils/tabs][740]
+- [Tabs][741]
+  - [Properties][742]
+- [NO_TABS][743]
+- [settled][744]
+  - [Parameters][745]
+- [tabsOf][746]
+  - [Parameters][747]
+- [tabsPatch][748]
+  - [Parameters][749]
+- [normalizeTabs][750]
+  - [Parameters][751]
+- [openTab][752]
+  - [Parameters][753]
+- [keepTab][754]
+  - [Parameters][755]
+- [closeTab][756]
+  - [Parameters][757]
+- [dropTabs][758]
+  - [Parameters][759]
+- [tabNames][760]
+  - [Parameters][761]
+- [tail][762]
   - [Parameters][763]
-- [shouldUpdateTitle][764]
-  - [Parameters][765]
-- [isCustomTitle][766]
-  - [Parameters][767]
-- [getTitlePlaceholder][768]
-  - [Parameters][769]
-- [freeName][770]
-  - [Parameters][771]
-- [][772]
-- [utils/touch][773]
-- [hasTouchKeyboard][774]
-- [submitOnEnter][775]
-  - [Parameters][776]
-- [utils/turns][777]
-- [Turn][778]
-  - [Properties][779]
-- [commandOf][780]
-  - [Parameters][781]
-- [groupTurns][782]
-  - [Parameters][783]
-- [turns][784]
-- [compactedRuns][785]
+- [utils/titleValidation][764]
+- [normalizeTitle][765]
+  - [Parameters][766]
+- [shouldUpdateTitle][767]
+  - [Parameters][768]
+- [isCustomTitle][769]
+  - [Parameters][770]
+- [getTitlePlaceholder][771]
+  - [Parameters][772]
+- [freeName][773]
+  - [Parameters][774]
+- [][775]
+- [utils/touch][776]
+- [hasTouchKeyboard][777]
+- [submitOnEnter][778]
+  - [Parameters][779]
+- [utils/turns][780]
+- [Turn][781]
+  - [Properties][782]
+- [commandOf][783]
+  - [Parameters][784]
+- [groupTurns][785]
   - [Parameters][786]
-- [runs][787]
-- [textLines][788]
+- [turns][787]
+- [compactedRuns][788]
   - [Parameters][789]
-- [utils/visibility][790]
-- [FIELDS][791]
-- [FIELDS][792]
-- [FIELDS][793]
-- [ChatMark][794]
-- [ChatMarks][795]
-- [pinned][796]
-- [markOf][797]
-  - [Parameters][798]
-- [][799]
-- [withMark][800]
+- [runs][790]
+- [textLines][791]
+  - [Parameters][792]
+- [utils/visibility][793]
+- [FIELDS][794]
+- [FIELDS][795]
+- [FIELDS][796]
+- [ChatMark][797]
+- [ChatMarks][798]
+- [pinned][799]
+- [markOf][800]
   - [Parameters][801]
-- [next][802]
-- [unpinned][803]
+- [][802]
+- [withMark][803]
   - [Parameters][804]
-- [chatVisibility][805]
-  - [Parameters][806]
-- [known][807]
-- [settle][808]
+- [next][805]
+- [unpinned][806]
+  - [Parameters][807]
+- [chatVisibility][808]
   - [Parameters][809]
-- [sees][810]
-  - [Parameters][811]
-- [hiddenEverywhere][812]
-  - [Parameters][813]
-- [markFor][814]
-  - [Parameters][815]
-- [utils/webkit][816]
-- [isWebKit][817]
+- [known][810]
+- [settle][811]
+  - [Parameters][812]
+- [sees][813]
+  - [Parameters][814]
+- [hiddenEverywhere][815]
+  - [Parameters][816]
+- [markFor][817]
   - [Parameters][818]
-- [utils/wordCount][819]
-- [editor/comments][820]
-- [COMMENT_PATTERN][821]
-- [COMMENT_PATTERN][822]
-- [FoundComment][823]
-  - [Properties][824]
-- [CLOSE_PATTERN][825]
-- [OPEN_MARKUP][826]
-- [newCommentId][827]
-- [BREAK_MARKUP][828]
-- [closeMarkup][829]
-  - [Parameters][830]
-- [cleanComment][831]
-  - [Parameters][832]
-- [commentOf][833]
-  - [Parameters][834]
-- [findComments][835]
-  - [Parameters][836]
-- [unmarked][837]
-  - [Parameters][838]
-- [comments][839]
-- [withoutComments][840]
+- [utils/webkit][819]
+- [isWebKit][820]
+  - [Parameters][821]
+- [utils/wordCount][822]
+- [editor/comments][823]
+- [COMMENT_PATTERN][824]
+- [COMMENT_PATTERN][825]
+- [FoundComment][826]
+  - [Properties][827]
+- [CLOSE_PATTERN][828]
+- [OPEN_MARKUP][829]
+- [newCommentId][830]
+- [BREAK_MARKUP][831]
+- [closeMarkup][832]
+  - [Parameters][833]
+- [cleanComment][834]
+  - [Parameters][835]
+- [commentOf][836]
+  - [Parameters][837]
+- [findComments][838]
+  - [Parameters][839]
+- [unmarked][840]
   - [Parameters][841]
-- [HALF_PATTERN][842]
-- [quoteWithoutComments][843]
+- [comments][842]
+- [withoutComments][843]
   - [Parameters][844]
-- [editAroundComments][845]
-  - [Parameters][846]
-- [resolved][847]
-- [resolved][848]
-- [][849]
-- [onlyPlace][850]
-  - [Parameters][851]
+- [HALF_PATTERN][845]
+- [quoteWithoutComments][846]
+  - [Parameters][847]
+- [editAroundComments][848]
+  - [Parameters][849]
+- [resolved][850]
+- [resolved][851]
 - [][852]
-- [rewriteAroundComments][853]
+- [onlyPlace][853]
   - [Parameters][854]
-- [countComments][855]
-  - [Parameters][856]
-- [commentRanges][857]
-  - [Parameters][858]
-- [ranges][859]
-- [commentAround][860]
+- [][855]
+- [rewriteAroundComments][856]
+  - [Parameters][857]
+- [countComments][858]
+  - [Parameters][859]
+- [commentRanges][860]
   - [Parameters][861]
-- [CommentEntry][862]
-  - [Properties][863]
-- [entriesOf][864]
-  - [Parameters][865]
-- [commentsInDoc][866]
-  - [Parameters][867]
-- [commentsInMarkdown][868]
-  - [Parameters][869]
-- [plainPassage][870]
-  - [Parameters][871]
-- [commentMarkupPlugin][872]
-  - [Parameters][873]
-- [editor/marks][874]
-- [markAround][875]
+- [ranges][862]
+- [commentAround][863]
+  - [Parameters][864]
+- [CommentEntry][865]
+  - [Properties][866]
+- [entriesOf][867]
+  - [Parameters][868]
+- [commentsInDoc][869]
+  - [Parameters][870]
+- [commentsInMarkdown][871]
+  - [Parameters][872]
+- [plainPassage][873]
+  - [Parameters][874]
+- [commentMarkupPlugin][875]
   - [Parameters][876]
+- [editor/marks][877]
+- [markAround][878]
+  - [Parameters][879]
 
 ## utils/backup
 
@@ -905,19 +908,19 @@ beside the others, a settings file is merged into the setup here
 
 Format of the backup envelope itself, independent of the database schema.
 
-Type: [number][877]
+Type: [number][880]
 
 ## Backup
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `app` **[string][879]** Always 'inksprite'; guards against importing a stray JSON file
-- `format` **[number][877]** Envelope format, see BACKUP_FORMAT
-- `dbVersion` **[number][877]** Dexie schema version the rows were written at
-- `exported` **[number][877]** Timestamp
-- `includesApiKeys` **[boolean][880]** Whether provider credentials were kept
+- `app` **[string][882]** Always 'inksprite'; guards against importing a stray JSON file
+- `format` **[number][880]** Envelope format, see BACKUP_FORMAT
+- `dbVersion` **[number][880]** Dexie schema version the rows were written at
+- `exported` **[number][880]** Timestamp
+- `includesApiKeys` **[boolean][883]** Whether provider credentials were kept
 - `scope` **BackupScope?** What the file holds: every table, one chat and its messages, one project and its chats, or the writer's settings. Files written before there was a choice have none, and hold the database.
 - `tables` **TableData** Row arrays keyed by table name
 
@@ -926,7 +929,7 @@ Type: [Object][878]
 What a file can hold, and where in the app each kind is read back — for
 telling a writer who picked the right file in the wrong place.
 
-Type: Record<[string][879], {noun: [string][879], hint: [string][879]}>
+Type: Record<[string][882], {noun: [string][882], hint: [string][882]}>
 
 ## UPGRADES
 
@@ -946,17 +949,17 @@ megabytes; the limit is on the call, so slices of it cost nothing.
 
 ### Parameters
 
-- `bytes` **[Uint8Array][881]**&#x20;
+- `bytes` **[Uint8Array][884]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## fromBase64
 
 ### Parameters
 
-- `base64` **[string][879]**&#x20;
+- `base64` **[string][882]**&#x20;
 
-Returns **[Uint8Array][881]<[ArrayBuffer][882]>**&#x20;
+Returns **[Uint8Array][884]<[ArrayBuffer][885]>**&#x20;
 
 ## SerializedFile
 
@@ -967,16 +970,16 @@ hold every file's name and none of its bytes, and say nothing about it. The
 bytes go out as base64 with the media type beside them; the file grows by a
 third, which is what base64 costs.
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `id` **[string][879]**&#x20;
-- `storyId` **[string][879]**&#x20;
-- `mime` **[string][879]** The blob's type
-- `data` **[string][879]** Its bytes, base64
+- `id` **[string][882]**&#x20;
+- `storyId` **[string][882]**&#x20;
+- `mime` **[string][882]** The blob's type
+- `data` **[string][882]** Its bytes, base64
 
-Returns **[Promise][883]<[Array][884]<[SerializedFile][11]>>**&#x20;
+Returns **[Promise][886]<[Array][887]<[SerializedFile][11]>>**&#x20;
 
 ## deserializeFiles
 
@@ -984,7 +987,7 @@ The rows back as the database holds them.
 
 ### Parameters
 
-- `rows` **[Array][884]<[SerializedFile][11]>**&#x20;
+- `rows` **[Array][887]<[SerializedFile][11]>**&#x20;
 
 ## replaceById
 
@@ -992,10 +995,10 @@ Overlay changed rows onto a table, matching by id.
 
 ### Parameters
 
-- `rows` **[Array][884]\<any>**&#x20;
-- `changed` **[Array][884]\<any>**&#x20;
+- `rows` **[Array][887]\<any>**&#x20;
+- `changed` **[Array][887]\<any>**&#x20;
 
-Returns **[Array][884]\<any>**&#x20;
+Returns **[Array][887]\<any>**&#x20;
 
 ## redactApiKeys
 
@@ -1008,9 +1011,9 @@ and never reach the database, so they are already absent here.
 
 ### Parameters
 
-- `providers` **[Array][884]\<any>**&#x20;
+- `providers` **[Array][887]\<any>**&#x20;
 
-Returns **[Array][884]\<any>** Providers with every key emptied
+Returns **[Array][887]\<any>** Providers with every key emptied
 
 ## redactServerKeys
 
@@ -1022,9 +1025,9 @@ entered again; the client sends none that is empty.
 
 ### Parameters
 
-- `servers` **[Array][884]\<any>**&#x20;
+- `servers` **[Array][887]\<any>**&#x20;
 
-Returns **[Array][884]\<any>** Servers with every header's value emptied
+Returns **[Array][887]\<any>** Servers with every header's value emptied
 
 ## redactWebKeys
 
@@ -1034,9 +1037,9 @@ key was already empty is dropped, as a provider's is.
 
 ### Parameters
 
-- `rows` **[Array][884]\<any>**&#x20;
+- `rows` **[Array][887]\<any>**&#x20;
 
-Returns **[Array][884]\<any>** Rows with every key emptied
+Returns **[Array][887]\<any>** Rows with every key emptied
 
 ## REDACTED
 
@@ -1049,10 +1052,10 @@ Assemble a backup envelope from raw table contents.
 ### Parameters
 
 - `tables` **TableData** Every table, keyed by name
-- `opts` **[object][878]**&#x20;
-  - `opts.dbVersion` **[number][877]** Schema version the rows came from
-  - `opts.includeApiKeys` **[boolean][880]?** Keep provider, server and web search credentials (default false) (optional, default `false`)
-  - `opts.exported` **[number][877]?** Timestamp, injectable for tests (optional, default `Date.now()`)
+- `opts` **[object][881]**&#x20;
+  - `opts.dbVersion` **[number][880]** Schema version the rows came from
+  - `opts.includeApiKeys` **[boolean][883]?** Keep provider, server and web search credentials (default false) (optional, default `false`)
+  - `opts.exported` **[number][880]?** Timestamp, injectable for tests (optional, default `Date.now()`)
   - `opts.scope` **BackupScope?** What the tables hold (default the whole database) (optional, default `'database'`)
   - `opts.settings` &#x20;
 
@@ -1064,39 +1067,39 @@ Type: TableData
 
 ## out
 
-Type: [Array][884]<[Document][885]>
+Type: [Array][887]<[Document][888]>
 
 ## out
 
-Type: [Array][884]<[Document][885]>
+Type: [Array][887]<[Document][888]>
 
 ## out
 
-Type: [Array][884]<[Document][885]>
+Type: [Array][887]<[Document][888]>
 
 ## out
 
-Type: [Array][884]\<Message>
+Type: [Array][887]\<Message>
 
 ## out
 
-Type: [Array][884]\<Message>
+Type: [Array][887]\<Message>
 
 ## out
 
-Type: [Array][884]<[Document][885]>
+Type: [Array][887]<[Document][888]>
 
 ## out
 
-Type: Record<[string][879], [Array][884]\<any>>
+Type: Record<[string][882], [Array][887]\<any>>
 
 ## out
 
-Type: [Array][884]<[Document][885]>
+Type: [Array][887]<[Document][888]>
 
 ## out
 
-Type: Record<[string][879], [string][879]>
+Type: Record<[string][882], [string][882]>
 
 ## out
 
@@ -1109,14 +1112,14 @@ Check that parsed JSON is a backup this build can read.
 ### Parameters
 
 - `data` **any** Result of JSON.parse on an uploaded file
-- `currentDbVersion` **[number][877]** Schema version of the running database
+- `currentDbVersion` **[number][880]** Schema version of the running database
 - `scope` **BackupScope?** What the caller is expecting the file to hold (optional, default `'database'`)
 
-Returns **{ok: [boolean][880], errors: [Array][884]<[string][879]>}**&#x20;
+Returns **{ok: [boolean][883], errors: [Array][887]<[string][882]>}**&#x20;
 
 ## errors
 
-Type: [Array][884]<[string][879]>
+Type: [Array][887]<[string][882]>
 
 ## upgradeTables
 
@@ -1125,12 +1128,12 @@ Move table data forward to the running schema version.
 ### Parameters
 
 - `tables` **TableData**&#x20;
-- `fromVersion` **[number][877]** Schema version the rows were written at
-- `toVersion` **[number][877]** Schema version of the running database
+- `fromVersion` **[number][880]** Schema version the rows were written at
+- `toVersion` **[number][880]** Schema version of the running database
 
 <!---->
 
-- Throws **[Error][886]** If a version in the range has no registered transform
+- Throws **[Error][889]** If a version in the range has no registered transform
 
 Returns **TableData**&#x20;
 
@@ -1143,7 +1146,7 @@ Tables with no rows are omitted — an empty list is noise in a summary.
 
 - `backup` **[Backup][3]**&#x20;
 
-Returns **[Array][884]<{table: [string][879], count: [number][877]}>** Largest first
+Returns **[Array][887]<{table: [string][882], count: [number][880]}>** Largest first
 
 ## COUNTED
 
@@ -1166,21 +1169,21 @@ profiles, skills, servers — which are not worth counting one by one.
 
 - `backup` **[Backup][3]**&#x20;
 
-Returns **[string][879]** A sentence
+Returns **[string][882]** A sentence
 
 ## rows
 
 ### Parameters
 
-- `table` **[string][879]**&#x20;
+- `table` **[string][882]**&#x20;
 
 ## rows
 
-Type: [Array][884]\<Message>
+Type: [Array][887]\<Message>
 
 ## parts
 
-Type: [Array][884]<[string][879]>
+Type: [Array][887]<[string][882]>
 
 ## keysLeftOut
 
@@ -1195,11 +1198,11 @@ the services and servers alone.
 - `backup` **[Backup][3]**&#x20;
 - `webName` (optional, default `id=>id`)
 
-Returns **[Array][884]<[string][879]>** Each name once, providers first
+Returns **[Array][887]<[string][882]>** Each name once, providers first
 
 ##
 
-Type: [string][879]
+Type: [string][882]
 
 ## backupFilename
 
@@ -1207,13 +1210,13 @@ Filename for a downloaded backup, e.g. `inksprite-backup-2026-08-23.json`.
 
 ### Parameters
 
-- `date` **[Date][887]**&#x20;
+- `date` **[Date][890]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ##
 
-Type: [number][877]
+Type: [number][880]
 
 ## slugOf
 
@@ -1222,9 +1225,9 @@ hyphens, cut to a length a file browser shows.
 
 ### Parameters
 
-- `title` **[string][879]**&#x20;
+- `title` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## slugOf
 
@@ -1232,9 +1235,9 @@ The link a heading's title makes, before it is made unique.
 
 ### Parameters
 
-- `title` **[string][879]**&#x20;
+- `title` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## chatFilename
 
@@ -1242,9 +1245,9 @@ Filename for a downloaded chat, e.g. `inksprite-chat-plot-holes-in-act-two.json`
 
 ### Parameters
 
-- `title` **[string][879]**&#x20;
+- `title` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## projectFilename
 
@@ -1252,9 +1255,9 @@ Filename for a downloaded project, e.g. `inksprite-project-the-salt-road.json`.
 
 ### Parameters
 
-- `title` **[string][879]** The project's name
+- `title` **[string][882]** The project's name
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## chatFromTables
 
@@ -1272,17 +1275,17 @@ the user's own, which the importing library may not hold.
 
 <!---->
 
-- Throws **[Error][886]** If there is no chat in the file
+- Throws **[Error][889]** If there is no chat in the file
 
 ## ProjectRows
 
 One project's rows, as a project file holds them.
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `files` **[Array][884]<[SerializedFile][11]>** The bytes behind its file documents, still as the file carries them
+- `files` **[Array][887]<[SerializedFile][11]>** The bytes behind its file documents, still as the file carries them
 
 ## projectFromTables
 
@@ -1299,7 +1302,7 @@ id nothing else uses.
 
 <!---->
 
-- Throws **[Error][886]** If there is no project in the file
+- Throws **[Error][889]** If there is no project in the file
 
 Returns **[ProjectRows][68]**&#x20;
 
@@ -1307,7 +1310,7 @@ Returns **[ProjectRows][68]**&#x20;
 
 ### Parameters
 
-- `rows` **[Array][884]\<any>?**&#x20;
+- `rows` **[Array][887]\<any>?**&#x20;
 
 ## withFreshIds
 
@@ -1337,14 +1340,14 @@ Returns **[ProjectRows][68]**&#x20;
 
 ## ids
 
-Type: [Map][888]<[string][879], [string][879]>
+Type: [Map][891]<[string][882], [string][882]>
 
 ## renew
 
 ### Parameters
 
-- `rows` **[Array][884]<{id: [string][879]}>**&#x20;
-- `prefix` **[string][879]**&#x20;
+- `rows` **[Array][887]<{id: [string][882]}>**&#x20;
+- `prefix` **[string][882]**&#x20;
 
 ## rewriteRows
 
@@ -1365,13 +1368,13 @@ one wins.
 
 ### Parameters
 
-- `ids` **[Map][888]<[string][879], [string][879]>** Old id to new
+- `ids` **[Map][891]<[string][882], [string][882]>** Old id to new
 
 ## rewriteRun
 
 ### Parameters
 
-- `run` **[string][879]**&#x20;
+- `run` **[string][882]**&#x20;
 
 ## rewriteIds
 
@@ -1429,26 +1432,26 @@ to be skipped rather than guessed at.
 
 ### Parameters
 
-- `parts` **[Array][884]\<Part>**&#x20;
-- `scenes` **[Array][884]\<Scene>**&#x20;
+- `parts` **[Array][887]\<Part>**&#x20;
+- `scenes` **[Array][887]\<Scene>**&#x20;
 
-Returns **{documents: [Array][884]<[Document][885]>, skipped: [Array][884]<{id: [string][879], reason: [string][879]}>}**&#x20;
+Returns **{documents: [Array][887]<[Document][888]>, skipped: [Array][887]<{id: [string][882], reason: [string][882]}>}**&#x20;
 
 ## documents
 
-Type: [Array][884]<[Document][885]>
+Type: [Array][887]<[Document][888]>
 
 ## skipped
 
-Type: [Array][884]<{id: [string][879], reason: [string][879]}>
+Type: [Array][887]<{id: [string][882], reason: [string][882]}>
 
 ## skipped
 
-Type: [Array][884]<{id: [string][879], reason: [string][879]}>
+Type: [Array][887]<{id: [string][882], reason: [string][882]}>
 
 ## storyIdByPart
 
-Type: [Map][888]<[string][879], [string][879]>
+Type: [Map][891]<[string][882], [string][882]>
 
 ## deleted
 
@@ -1496,25 +1499,25 @@ and shared between the Dexie upgrade hook and backup restore.
 
 ### Parameters
 
-- `storyId` **[string][879]**&#x20;
+- `storyId` **[string][882]**&#x20;
 
 ## manuscriptIdFor
 
 ### Parameters
 
-- `storyId` **[string][879]**&#x20;
+- `storyId` **[string][882]**&#x20;
 
 ## notesIdFor
 
 ### Parameters
 
-- `storyId` **[string][879]**&#x20;
+- `storyId` **[string][882]**&#x20;
 
 ## draftsIdFor
 
 ### Parameters
 
-- `storyId` **[string][879]**&#x20;
+- `storyId` **[string][882]**&#x20;
 
 ## folder
 
@@ -1522,16 +1525,16 @@ Build one of the fixed structural folders.
 
 ### Parameters
 
-- `opts` **[object][878]**&#x20;
-  - `opts.id` **[string][879]**&#x20;
-  - `opts.storyId` **[string][879]**&#x20;
-  - `opts.parentId` **[string][879]**&#x20;
-  - `opts.title` **[string][879]**&#x20;
-  - `opts.order` **[number][877]**&#x20;
-  - `opts.ordered` **[boolean][880]**&#x20;
-  - `opts.now` **[number][877]**&#x20;
+- `opts` **[object][881]**&#x20;
+  - `opts.id` **[string][882]**&#x20;
+  - `opts.storyId` **[string][882]**&#x20;
+  - `opts.parentId` **[string][882]**&#x20;
+  - `opts.title` **[string][882]**&#x20;
+  - `opts.order` **[number][880]**&#x20;
+  - `opts.ordered` **[boolean][883]**&#x20;
+  - `opts.now` **[number][880]**&#x20;
 
-Returns **[Document][885]**&#x20;
+Returns **[Document][888]**&#x20;
 
 ## folder
 
@@ -1539,15 +1542,15 @@ Build a folder document.
 
 ### Parameters
 
-- `opts` **[object][878]**&#x20;
-  - `opts.id` **[string][879]**&#x20;
-  - `opts.storyId` **[string][879]**&#x20;
-  - `opts.parentId` **[string][879]**&#x20;
-  - `opts.title` **[string][879]**&#x20;
-  - `opts.order` **[number][877]**&#x20;
-  - `opts.now` **[number][877]**&#x20;
+- `opts` **[object][881]**&#x20;
+  - `opts.id` **[string][882]**&#x20;
+  - `opts.storyId` **[string][882]**&#x20;
+  - `opts.parentId` **[string][882]**&#x20;
+  - `opts.title` **[string][882]**&#x20;
+  - `opts.order` **[number][880]**&#x20;
+  - `opts.now` **[number][880]**&#x20;
 
-Returns **[Document][885]**&#x20;
+Returns **[Document][888]**&#x20;
 
 ## rootNode
 
@@ -1560,11 +1563,11 @@ root without searching.
 
 ### Parameters
 
-- `storyId` **[string][879]**&#x20;
-- `storyTitle` **[string][879]?** Copied once; the root node's title is its own from then on
-- `now` **[number][877]?** (optional, default `Date.now()`)
+- `storyId` **[string][882]**&#x20;
+- `storyTitle` **[string][882]?** Copied once; the root node's title is its own from then on
+- `now` **[number][880]?** (optional, default `Date.now()`)
 
-Returns **[Document][885]**&#x20;
+Returns **[Document][888]**&#x20;
 
 ## defaultProjectFolders
 
@@ -1577,11 +1580,11 @@ nothing under its root.
 
 ### Parameters
 
-- `storyId` **[string][879]**&#x20;
-- `storyTitle` **[string][879]** Copied once; the root node's title is its own from then on
-- `now` **[number][877]?** (optional, default `Date.now()`)
+- `storyId` **[string][882]**&#x20;
+- `storyTitle` **[string][882]** Copied once; the root node's title is its own from then on
+- `now` **[number][880]?** (optional, default `Date.now()`)
 
-Returns **[Array][884]<[Document][885]>** root, manuscript, notes
+Returns **[Array][887]<[Document][888]>** root, manuscript, notes
 
 ## actTitle
 
@@ -1589,9 +1592,9 @@ The title the old outline would have displayed for an untitled act.
 
 ### Parameters
 
-- `act` **[Document][885]**&#x20;
+- `act` **[Document][888]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## byOrder
 
@@ -1599,8 +1602,8 @@ Sort helper matching the store's stable ordering.
 
 ### Parameters
 
-- `a` **[Document][885]**&#x20;
-- `b` **[Document][885]**&#x20;
+- `a` **[Document][888]**&#x20;
+- `b` **[Document][888]**&#x20;
 
 ## documentsToProjectTree
 
@@ -1615,19 +1618,19 @@ retried upgrade or a re-imported backup cannot double-nest.
 
 ### Parameters
 
-- `documents` **[Array][884]<[Document][885]>** Every document, across all stories
+- `documents` **[Array][887]<[Document][888]>** Every document, across all stories
 - `stories` &#x20;
-- `now` **[number][877]?** (optional, default `Date.now()`)
+- `now` **[number][880]?** (optional, default `Date.now()`)
 
-Returns **{documents: [Array][884]<[Document][885]>, restructured: [Array][884]<[string][879]>}** Full document set, and the stories touched
+Returns **{documents: [Array][887]<[Document][888]>, restructured: [Array][887]<[string][882]>}** Full document set, and the stories touched
 
 ## byStory
 
-Type: [Map][888]<[string][879], [Array][884]<[Document][885]>>
+Type: [Map][891]<[string][882], [Array][887]<[Document][888]>>
 
 ## restructured
 
-Type: [Array][884]<[string][879]>
+Type: [Array][887]<[string][882]>
 
 ## stores/migrations/lore
 
@@ -1658,9 +1661,9 @@ land in one folder rather than two that look identical in the tree.
 
 ### Parameters
 
-- `category` **[string][879]**&#x20;
+- `category` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## categoryFolderIdFor
 
@@ -1669,10 +1672,10 @@ the folder it made last time instead of building a second one.
 
 ### Parameters
 
-- `storyId` **[string][879]**&#x20;
-- `category` **[string][879]**&#x20;
+- `storyId` **[string][882]**&#x20;
+- `category` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## archiveFolderIdFor
 
@@ -1680,9 +1683,9 @@ Where entries the writer had switched off end up.
 
 ### Parameters
 
-- `storyId` **[string][879]**&#x20;
+- `storyId` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## plainTextToHtml
 
@@ -1694,17 +1697,17 @@ dropping them would run a character sheet into one block of prose.
 
 ### Parameters
 
-- `text` **[string][879]**&#x20;
+- `text` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## countWords
 
 ### Parameters
 
-- `text` **[string][879]**&#x20;
+- `text` **[string][882]**&#x20;
 
-Returns **[number][877]**&#x20;
+Returns **[number][880]**&#x20;
 
 ## countWords
 
@@ -1715,9 +1718,9 @@ text, so what they said is left out and only their passages count.
 
 ### Parameters
 
-- `content` **([string][879] | null | [undefined][889])** Markdown
+- `content` **([string][882] | null | [undefined][892])** Markdown
 
-Returns **[number][877]**&#x20;
+Returns **[number][880]**&#x20;
 
 ## loreToDocuments
 
@@ -1736,39 +1739,39 @@ upgrade or a re-imported backup cannot migrate it twice.
 
 ### Parameters
 
-- `lorebooks` **[Array][884]\<Lorebook>**&#x20;
-- `loreEntries` **[Array][884]\<LoreEntry>**&#x20;
-- `documents` **[Array][884]<[Document][885]>** Every existing document, across all stories
-- `now` **[number][877]?** (optional, default `Date.now()`)
+- `lorebooks` **[Array][887]\<Lorebook>**&#x20;
+- `loreEntries` **[Array][887]\<LoreEntry>**&#x20;
+- `documents` **[Array][887]<[Document][888]>** Every existing document, across all stories
+- `now` **[number][880]?** (optional, default `Date.now()`)
 
-Returns **{documents: [Array][884]<[Document][885]>, skipped: [Array][884]<{id: [string][879], reason: [string][879]}>}** New documents only
+Returns **{documents: [Array][887]<[Document][888]>, skipped: [Array][887]<{id: [string][882], reason: [string][882]}>}** New documents only
 
 ## storyIdByLorebook
 
-Type: [Map][888]<[string][879], [string][879]>
+Type: [Map][891]<[string][882], [string][882]>
 
 ## emittedFolders
 
-Type: [Set][890]<[string][879]>
+Type: [Set][893]<[string][882]>
 
 ## folderCount
 
-Type: [Map][888]<[string][879], [number][877]>
+Type: [Map][891]<[string][882], [number][880]>
 
 ## entryCount
 
-Type: [Map][888]<[string][879], [number][877]>
+Type: [Map][891]<[string][882], [number][880]>
 
 ## nextOrder
 
 ### Parameters
 
 - `counter` &#x20;
-- `parentId` **[string][879]**&#x20;
+- `parentId` **[string][882]**&#x20;
 
 ##
 
-Type: [Map][888]<[string][879], [number][877]>
+Type: [Map][891]<[string][882], [number][880]>
 
 ## entry
 
@@ -1849,18 +1852,18 @@ since edited back to the overview it was copied from.
 
 ### Parameters
 
-- `stories` **[Array][884]\<Story>**&#x20;
-- `documents` **[Array][884]<[Document][885]>**&#x20;
+- `stories` **[Array][887]\<Story>**&#x20;
+- `documents` **[Array][887]<[Document][888]>**&#x20;
 
-Returns **{documents: [Array][884]<[Document][885]>, moved: [number][877]}**&#x20;
-
-## byId
-
-Type: [Map][888]<[string][879], [Document][885]>
+Returns **{documents: [Array][887]<[Document][888]>, moved: [number][880]}**&#x20;
 
 ## byId
 
-Type: [Map][888]<[string][879], [CommentEntry][862]>
+Type: [Map][891]<[string][882], [Document][888]>
+
+## byId
+
+Type: [Map][891]<[string][882], [CommentEntry][865]>
 
 ## root
 
@@ -1907,13 +1910,13 @@ message that never held a command, which is nearly all of them.
 
 ### Parameters
 
-- `messages` **[Array][884]\<Message>**&#x20;
+- `messages` **[Array][887]\<Message>**&#x20;
 
-Returns **{messages: [Array][884]\<Message>, converted: [number][877]}**&#x20;
+Returns **{messages: [Array][887]\<Message>, converted: [number][880]}**&#x20;
 
 ## message
 
-Type: (StoredCommand | [undefined][889])
+Type: (StoredCommand | [undefined][892])
 
 ### message
 
@@ -1967,9 +1970,9 @@ assistant turn that said nothing looks like anyway.
 
 ### Parameters
 
-- `messages` **[Array][884]\<Message>**&#x20;
+- `messages` **[Array][887]\<Message>**&#x20;
 
-Returns **{messages: [Array][884]\<Message>, moved: [number][877]}**&#x20;
+Returns **{messages: [Array][887]\<Message>, moved: [number][880]}**&#x20;
 
 ## stores/migrations/characterSigil
 
@@ -2006,9 +2009,9 @@ retried upgrade or a backup taken after this one restores unchanged.
 
 ### Parameters
 
-- `messages` **[Array][884]\<Message>**&#x20;
+- `messages` **[Array][887]\<Message>**&#x20;
 
-Returns **{messages: [Array][884]\<Message>, marked: [number][877]}**&#x20;
+Returns **{messages: [Array][887]\<Message>, marked: [number][880]}**&#x20;
 
 ##
 
@@ -2051,7 +2054,7 @@ The block a command was already being sent as. See ai/commands.js.
 
 - `command` **any**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## segmentOf
 
@@ -2076,29 +2079,29 @@ being read as a single run anyway.
 
 ### Parameters
 
-- `messages` **[Array][884]\<Message>**&#x20;
+- `messages` **[Array][887]\<Message>**&#x20;
 
-Returns **{messages: [Array][884]\<Message>, folded: [number][877]}**&#x20;
-
-## byChat
-
-Type: [Map][888]<[string][879], [Array][884]\<Message>>
+Returns **{messages: [Array][887]\<Message>, folded: [number][880]}**&#x20;
 
 ## byChat
 
-Type: [Map][888]<[string][879], [Array][884]\<Message>>
+Type: [Map][891]<[string][882], [Array][887]\<Message>>
+
+## byChat
+
+Type: [Map][891]<[string][882], [Array][887]\<Message>>
 
 ## untouched
 
-Type: [Array][884]\<Message>
+Type: [Array][887]\<Message>
 
 ## run
 
-Type: [Array][884]\<Message>
+Type: [Array][887]\<Message>
 
 ## run
 
-Type: [Array][884]<{message: Message, at: [number][877]}>
+Type: [Array][887]<{message: Message, at: [number][880]}>
 
 ## run
 
@@ -2137,9 +2140,9 @@ ai/compaction.js.
 
 ### Parameters
 
-- `history` **[Array][884]\<Message>** The chat in order
+- `history` **[Array][887]\<Message>** The chat in order
 
-Returns **({index: [number][877], cut: [number][877]} | null)** Where the summary sits, and how
+Returns **({index: [number][880], cut: [number][880]} | null)** Where the summary sits, and how
 many messages from the start it stands for
 
 ## piecesOf
@@ -2151,7 +2154,7 @@ since schema 11; one that somehow does not is its content, as one piece.
 
 - `message` **any**&#x20;
 
-Returns **[Array][884]\<any>**&#x20;
+Returns **[Array][887]\<any>**&#x20;
 
 ## foldChat
 
@@ -2159,9 +2162,9 @@ Fold every run of the writer's messages in a chat into one message each.
 
 ### Parameters
 
-- `history` **[Array][884]\<Message>** The chat in order
+- `history` **[Array][887]\<Message>** The chat in order
 
-Returns **{rows: [Array][884]\<Message>, folded: [number][877]}** The chat with its runs folded,
+Returns **{rows: [Array][887]\<Message>, folded: [number][880]}** The chat with its runs folded,
 and how many were
 
 ## foldRuns
@@ -2174,9 +2177,9 @@ being read as a single run anyway.
 
 ### Parameters
 
-- `messages` **[Array][884]\<Message>**&#x20;
+- `messages` **[Array][887]\<Message>**&#x20;
 
-Returns **{messages: [Array][884]\<Message>, folded: [number][877]}**&#x20;
+Returns **{messages: [Array][887]\<Message>, folded: [number][880]}**&#x20;
 
 ## stores/migrations/markdown
 
@@ -2215,9 +2218,9 @@ The markdown a piece of editor HTML held.
 
 ### Parameters
 
-- `html` **[string][879]**&#x20;
+- `html` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## documentsToMarkdown
 
@@ -2227,9 +2230,9 @@ reads the same either way.
 
 ### Parameters
 
-- `documents` **[Array][884]<[Document][885]>**&#x20;
+- `documents` **[Array][887]<[Document][888]>**&#x20;
 
-Returns **{documents: [Array][884]<[Document][885]>, converted: [number][877]}** Only the documents that changed
+Returns **{documents: [Array][887]<[Document][888]>, converted: [number][880]}** Only the documents that changed
 
 ## editor/schema
 
@@ -2263,15 +2266,15 @@ A code block's language, from the info string kept on `data-params` or the
 
 ### Parameters
 
-- `dom` **[HTMLElement][891]**&#x20;
+- `dom` **[HTMLElement][894]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## code_block
 
 ##
 
-Type: [HTMLElement][891]
+Type: [HTMLElement][894]
 
 ## strikethrough
 
@@ -2285,9 +2288,9 @@ A pasted cell's alignment, from its style or the attribute older pages use.
 
 ### Parameters
 
-- `dom` **[HTMLElement][891]**&#x20;
+- `dom` **[HTMLElement][894]**&#x20;
 
-Returns **([string][879] | null)**&#x20;
+Returns **([string][882] | null)**&#x20;
 
 ## alignmentOf
 
@@ -2301,13 +2304,13 @@ A cell's alignment, from the style markdown-it gives it.
 
 ### Parameters
 
-- `dom` **[HTMLElement][891]**&#x20;
+- `dom` **[HTMLElement][894]**&#x20;
 
 ## BREAKS
 
 Where one block, or one line, of a pasted cell ends.
 
-Type: [string][879]
+Type: [string][882]
 
 ## cellContent
 
@@ -2319,12 +2322,12 @@ words to go, and a space after each keeps two blocks' words apart.
 
 ### Parameters
 
-- `dom` **[Node][892]**&#x20;
+- `dom` **[Node][895]**&#x20;
 - `schema` **Schema**&#x20;
 
 ## cloneNode
 
-Type: [HTMLElement][891]
+Type: [HTMLElement][894]
 
 ## table
 
@@ -2342,11 +2345,11 @@ text, which is the default for marks of one type. The markdown form is in
 
 ## getAttribute
 
-Type: [HTMLElement][891]
+Type: [HTMLElement][894]
 
 ## getAttribute
 
-Type: [HTMLElement][891]
+Type: [HTMLElement][894]
 
 ## NODE_NAMES
 
@@ -2409,9 +2412,9 @@ escaped, less the empty ends a leading and a trailing pipe leave.
 
 ### Parameters
 
-- `line` **[string][879]**&#x20;
+- `line` **[string][882]**&#x20;
 
-Returns **[number][877]**&#x20;
+Returns **[number][880]**&#x20;
 
 ## tokenizerOf
 
@@ -2422,7 +2425,7 @@ which must be answered the same way without leaving anything behind.
 
 ## block
 
-Type: {\_\_rules\_\_: [Array][884]<{name: [string][879], fn: [Function][893], alt: [Array][884]<[string][879]>}>}
+Type: {\_\_rules\_\_: [Array][887]<{name: [string][882], fn: [Function][896], alt: [Array][887]<[string][882]>}>}
 
 ## block
 
@@ -2433,9 +2436,9 @@ Type: unknown
 ### Parameters
 
 - `state` **StateBlock**&#x20;
-- `startLine` **[number][877]**&#x20;
-- `endLine` **[number][877]**&#x20;
-- `silent` **[boolean][880]**&#x20;
+- `startLine` **[number][880]**&#x20;
+- `endLine` **[number][880]**&#x20;
+- `silent` **[boolean][883]**&#x20;
 
 ### state
 
@@ -2494,13 +2497,13 @@ Type: unknown
 How much of the output the state keeps to look back on. Two characters would
 do: whether a line has ended, and whether a `!` before a link is escaped.
 
-Type: [number][877]
+Type: [number][880]
 
 ## ROOM
 
 How long the state's output grows before all but its tail is moved out.
 
-Type: [number][877]
+Type: [number][880]
 
 ## LinearSerializer
 
@@ -2520,10 +2523,10 @@ it answers the same, at once, at any depth.
 
 #### Parameters
 
-- `content` **[Node][892]**&#x20;
+- `content` **[Node][895]**&#x20;
 - `options` (optional, default `{}`)
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ##
 
@@ -2548,9 +2551,9 @@ One row of a table, as a line.
 
 ### Parameters
 
-- `row` **[Node][892]**&#x20;
+- `row` **[Node][895]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## ruleOf
 
@@ -2558,9 +2561,9 @@ A column's cell in the line under the header.
 
 ### Parameters
 
-- `align` **([string][879] | null)**&#x20;
+- `align` **([string][882] | null)**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## parseMarkdown
 
@@ -2569,9 +2572,9 @@ cannot hold is read as the text it was written as.
 
 ### Parameters
 
-- `markdown` **([string][879] | null | [undefined][889])**&#x20;
+- `markdown` **([string][882] | null | [undefined][892])**&#x20;
 
-Returns **[Node][892]** A document in the editor's schema
+Returns **[Node][895]** A document in the editor's schema
 
 ## serializeMarkdown
 
@@ -2579,9 +2582,9 @@ Write a document as markdown.
 
 ### Parameters
 
-- `doc` **[Node][892]**&#x20;
+- `doc` **[Node][895]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## settleMarkdown
 
@@ -2594,9 +2597,9 @@ is byte-identical.
 
 ### Parameters
 
-- `markdown` **([string][879] | null | [undefined][889])**&#x20;
+- `markdown` **([string][882] | null | [undefined][892])**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## appendBlocks
 
@@ -2605,10 +2608,10 @@ block of its own rather than running on from the last one.
 
 ### Parameters
 
-- `content` **([string][879] | null | [undefined][889])**&#x20;
-- `text` **[string][879]**&#x20;
+- `content` **([string][882] | null | [undefined][892])**&#x20;
+- `text` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## stores/migrations/profiles
 
@@ -2636,9 +2639,9 @@ as `builtin_adventure`'s, gets the default.
 
 ### Parameters
 
-- `promptId` **[string][879]**&#x20;
+- `promptId` **[string][882]**&#x20;
 
-Returns **([string][879] | null)**&#x20;
+Returns **([string][882] | null)**&#x20;
 
 ## profileFrom
 
@@ -2656,9 +2659,9 @@ The profiles a library of saved prompts becomes.
 
 ### Parameters
 
-- `prompts` **[Array][884]\<any>** `aiPrompts` rows
+- `prompts` **[Array][887]\<any>** `aiPrompts` rows
 
-Returns **{profiles: [Array][884]\<any>}**&#x20;
+Returns **{profiles: [Array][887]\<any>}**&#x20;
 
 ## chatsToProfiles
 
@@ -2674,9 +2677,9 @@ what the chat was pointed at before this ran.
 
 ### Parameters
 
-- `chats` **[Array][884]\<any>**&#x20;
+- `chats` **[Array][887]\<any>**&#x20;
 
-Returns **{chats: [Array][884]\<any>, converted: [number][877]}**&#x20;
+Returns **{chats: [Array][887]\<any>, converted: [number][880]}**&#x20;
 
 ## storiesToProfiles
 
@@ -2684,9 +2687,9 @@ The project's default, which named a prompt for the same reason a chat did.
 
 ### Parameters
 
-- `stories` **[Array][884]\<any>**&#x20;
+- `stories` **[Array][887]\<any>**&#x20;
 
-Returns **{stories: [Array][884]\<any>, converted: [number][877]}**&#x20;
+Returns **{stories: [Array][887]\<any>, converted: [number][880]}**&#x20;
 
 ## stores/migrations/summariesInPlace
 
@@ -2727,7 +2730,7 @@ Whether this was a summary that stood in for anything, as of schema 14.
 
 - `message` **Message**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## placeChat
 
@@ -2735,21 +2738,21 @@ One chat's messages, with its summaries where they are read.
 
 ### Parameters
 
-- `history` **[Array][884]\<Message>** The chat in order
+- `history` **[Array][887]\<Message>** The chat in order
 
-Returns **{rows: [Array][884]\<Message>, moved: [number][877]}**&#x20;
+Returns **{rows: [Array][887]\<Message>, moved: [number][880]}**&#x20;
 
 ## targets
 
-Type: [Map][888]<[string][879], [number][877]>
+Type: [Map][891]<[string][882], [number][880]>
 
 ## order
 
-Type: [Array][884]\<Message>
+Type: [Array][887]\<Message>
 
 ## moved
 
-Type: [Set][890]<[string][879]>
+Type: [Set][893]<[string][882]>
 
 ## summariesIntoPlace
 
@@ -2761,18 +2764,18 @@ counting.
 
 ### Parameters
 
-- `messages` **[Array][884]\<Message>** Every message, in any order
+- `messages` **[Array][887]\<Message>** Every message, in any order
 
-Returns **{messages: [Array][884]\<Message>, moved: [number][877]}** The rows that changed, and
+Returns **{messages: [Array][887]\<Message>, moved: [number][880]}** The rows that changed, and
 how many summaries moved
 
 ## chats
 
-Type: [Map][888]<[string][879], [Array][884]\<Message>>
+Type: [Map][891]<[string][882], [Array][887]\<Message>>
 
 ## changed
 
-Type: [Array][884]\<Message>
+Type: [Array][887]\<Message>
 
 ## stores/migrations/purgeDeleted
 
@@ -2790,12 +2793,12 @@ The tables that carried the flag.
 
 ## Purged
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `tables` **Record<[string][879], [Array][884]\<any>>** The same tables, without the rows marked deleted
-- `removed` **[number][877]** How many rows went, file rows included
+- `tables` **Record<[string][882], [Array][887]\<any>>** The same tables, without the rows marked deleted
+- `removed` **[number][880]** How many rows went, file rows included
 
 ## withoutDeleted
 
@@ -2803,13 +2806,13 @@ Drop every row marked deleted, and the bytes of any file document among them.
 
 ### Parameters
 
-- `tables` **Record<[string][879], [Array][884]\<any>>** Rows by table name
+- `tables` **Record<[string][882], [Array][887]\<any>>** Rows by table name
 
 Returns **[Purged][333]**&#x20;
 
 ## goneFiles
 
-Type: [Set][890]<[string][879]>
+Type: [Set][893]<[string][882]>
 
 ## deletedIds
 
@@ -2819,9 +2822,9 @@ For the Dexie upgrade, which deletes by id rather than rewriting tables.
 
 ### Parameters
 
-- `rows` **[Array][884]\<any>**&#x20;
+- `rows` **[Array][887]\<any>**&#x20;
 
-Returns **[Array][884]<[string][879]>**&#x20;
+Returns **[Array][887]<[string][882]>**&#x20;
 
 ## stores/migrations/profileSkills
 
@@ -2856,9 +2859,9 @@ somehow has both, what is already under `skills` wins.
 
 ### Parameters
 
-- `profiles` **[Array][884]\<any>** `chatProfiles` rows
+- `profiles` **[Array][887]\<any>** `chatProfiles` rows
 
-Returns **{profiles: [Array][884]\<any>, moved: [number][877]}**&#x20;
+Returns **{profiles: [Array][887]\<any>, moved: [number][880]}**&#x20;
 
 ## skills
 
@@ -2887,9 +2890,9 @@ keeps its `workflow`.
 
 ### Parameters
 
-- `jobs` **[Array][884]\<any>** `jobs` rows
+- `jobs` **[Array][887]\<any>** `jobs` rows
 
-Returns **{jobs: [Array][884]\<any>, moved: [number][877]}**&#x20;
+Returns **{jobs: [Array][887]\<any>, moved: [number][880]}**&#x20;
 
 ## stores/migrations/modelKeeps
 
@@ -2914,9 +2917,9 @@ or a backup taken after this one restores unchanged.
 
 ### Parameters
 
-- `chats` **[Array][884]\<any>** `chats` rows
+- `chats` **[Array][887]\<any>** `chats` rows
 
-Returns **{chats: [Array][884]\<any>, moved: [number][877]}**&#x20;
+Returns **{chats: [Array][887]\<any>, moved: [number][880]}**&#x20;
 
 ## stores/migrations/allowedProviders
 
@@ -2946,10 +2949,10 @@ taken after this one restores unchanged.
 
 ### Parameters
 
-- `providers` **[Array][884]\<any>** `aiProviders` rows
-- `presets` **[Array][884]\<any>** `aiProfiles` rows
+- `providers` **[Array][887]\<any>** `aiProviders` rows
+- `presets` **[Array][887]\<any>** `aiProfiles` rows
 
-Returns **{providers: [Array][884]\<any>, presets: [Array][884]\<any>, moved: [number][877]}** `moved` counts
+Returns **{providers: [Array][887]\<any>, presets: [Array][887]\<any>, moved: [number][880]}** `moved` counts
 the connections whose list came off
 
 ## stores/migrations/experimentalSkills
@@ -2977,9 +2980,9 @@ Withheld groups with the experimental one among them.
 
 ### Parameters
 
-- `groups` **([Array][884]<[string][879]> | [undefined][889])**&#x20;
+- `groups` **([Array][887]<[string][882]> | [undefined][892])**&#x20;
 
-Returns **([Array][884]<[string][879]> | null)** Null when it is there already
+Returns **([Array][887]<[string][882]> | null)** Null when it is there already
 
 ## experimentalOffChats
 
@@ -2990,9 +2993,9 @@ retried upgrade or a backup taken after this one restores unchanged.
 
 ### Parameters
 
-- `chats` **[Array][884]\<any>** `chats` rows
+- `chats` **[Array][887]\<any>** `chats` rows
 
-Returns **{chats: [Array][884]\<any>, moved: [number][877]}**&#x20;
+Returns **{chats: [Array][887]\<any>, moved: [number][880]}**&#x20;
 
 ## experimentalOffProfiles
 
@@ -3003,9 +3006,9 @@ Idempotent, as `experimentalOffChats` is.
 
 ### Parameters
 
-- `profiles` **[Array][884]\<any>** `chatProfiles` rows
+- `profiles` **[Array][887]\<any>** `chatProfiles` rows
 
-Returns **{profiles: [Array][884]\<any>, moved: [number][877]}**&#x20;
+Returns **{profiles: [Array][887]\<any>, moved: [number][880]}**&#x20;
 
 ## stores/migrations/projectViews
 
@@ -3037,17 +3040,17 @@ view made for it.
 
 ### Parameters
 
-- `stories` **[Array][884]\<any>** `stories` rows
+- `stories` **[Array][887]\<any>** `stories` rows
 
-Returns **{stories: [Array][884]\<any>, views: [Array][884]\<any>, moved: [number][877]}**&#x20;
+Returns **{stories: [Array][887]\<any>, views: [Array][887]\<any>, moved: [number][880]}**&#x20;
 
 ## views
 
-Type: [Array][884]\<any>
+Type: [Array][887]\<any>
 
 ## view
 
-Type: Record<[string][879], any>
+Type: Record<[string][882], any>
 
 ## utils/chatTabs
 
@@ -3072,7 +3075,7 @@ Type: (`"prompt"` | `"note"` | `"roleplay-prompt"` | `"post-history"`)
 What each tab is called. The roleplay prompt says whose it is, since the
 chat has a system prompt of its own and the tab may sit beside it.
 
-Type: Record<[ChatText][369], [string][879]>
+Type: Record<[ChatText][369], [string][882]>
 
 ## chatTabId
 
@@ -3080,10 +3083,10 @@ The tab for one of a chat's texts.
 
 ### Parameters
 
-- `chatId` **[string][879]**&#x20;
+- `chatId` **[string][882]**&#x20;
 - `text` **[ChatText][369]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## chatTabOf
 
@@ -3091,9 +3094,9 @@ The chat and the text a tab holds, or null for a document's tab.
 
 ### Parameters
 
-- `tabId` **([string][879] | null | [undefined][889])**&#x20;
+- `tabId` **([string][882] | null | [undefined][892])**&#x20;
 
-Returns **({chatId: [string][879], text: [ChatText][369]} | null)**&#x20;
+Returns **({chatId: [string][882], text: [ChatText][369]} | null)**&#x20;
 
 ## match
 
@@ -3108,7 +3111,7 @@ model wrote, made plain, and the plain words a chat's preview shows.
 
 What a chat is called until the model or the writer names it.
 
-Type: [string][879]
+Type: [string][882]
 
 ## EARLIER_DEFAULTS
 
@@ -3122,9 +3125,9 @@ was saved with before this one, or nothing at all.
 
 ### Parameters
 
-- `title` **([string][879] | null | [undefined][889])**&#x20;
+- `title` **([string][882] | null | [undefined][892])**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## shownChatTitle
 
@@ -3133,13 +3136,13 @@ its own.
 
 ### Parameters
 
-- `title` **([string][879] | null | [undefined][889])**&#x20;
+- `title` **([string][882] | null | [undefined][892])**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ##
 
-Type: [string][879]
+Type: [string][882]
 
 ## plainLine
 
@@ -3150,9 +3153,9 @@ its stars.
 
 ### Parameters
 
-- `line` **[string][879]**&#x20;
+- `line` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## plainTitle
 
@@ -3161,9 +3164,9 @@ introduced with, or the quotes it was put in.
 
 ### Parameters
 
-- `line` **[string][879]**&#x20;
+- `line` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## plainTitle
 
@@ -3171,7 +3174,7 @@ A heading's text without the marks that dress it: `**Rules**` is Rules.
 
 ### Parameters
 
-- `text` **[string][879]**&#x20;
+- `text` **[string][882]**&#x20;
 
 ## chatPreview
 
@@ -3180,9 +3183,9 @@ together, without any HTML, cut at a hundred characters.
 
 ### Parameters
 
-- `content` **[string][879]**&#x20;
+- `content` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## utils/compareNames
 
@@ -3196,10 +3199,10 @@ Compare two names, reading runs of digits as numbers.
 
 ### Parameters
 
-- `a` **[string][879]**&#x20;
-- `b` **[string][879]**&#x20;
+- `a` **[string][882]**&#x20;
+- `b` **[string][882]**&#x20;
 
-Returns **[number][877]**&#x20;
+Returns **[number][880]**&#x20;
 
 ## utils/documentLinks
 
@@ -3236,11 +3239,11 @@ A scheme, or the `//` of an address on another host.
 
 The tree a link is resolved in.
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `rootId` **[string][879]** The project's own row
+- `rootId` **[string][882]** The project's own row
 
 ## ORDER_PREFIX
 
@@ -3260,9 +3263,9 @@ else: it has no scheme.
 
 ### Parameters
 
-- `href` **([string][879] | null | [undefined][889])**&#x20;
+- `href` **([string][882] | null | [undefined][892])**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## unwrap
 
@@ -3270,9 +3273,9 @@ A destination without the `<…>` CommonMark lets it be written in.
 
 ### Parameters
 
-- `href` **([string][879] | null | [undefined][889])**&#x20;
+- `href` **([string][882] | null | [undefined][892])**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## pathOf
 
@@ -3281,9 +3284,9 @@ name stays in it. What follows a `#` or a `?` is not part of the path.
 
 ### Parameters
 
-- `href` **[string][879]**&#x20;
+- `href` **[string][882]**&#x20;
 
-Returns **{names: [Array][884]<[string][879]>, fromTop: [boolean][880]}**&#x20;
+Returns **{names: [Array][887]<[string][882]>, fromTop: [boolean][883]}**&#x20;
 
 ## fileNameOf
 
@@ -3292,9 +3295,9 @@ ordered folder puts in front of it.
 
 ### Parameters
 
-- `document` **[Document][885]**&#x20;
+- `document` **[Document][888]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## namesOf
 
@@ -3302,9 +3305,9 @@ Every name a document answers to in a link, as names are compared.
 
 ### Parameters
 
-- `document` **[Document][885]**&#x20;
+- `document` **[Document][888]**&#x20;
 
-Returns **[Set][890]<[string][879]>**&#x20;
+Returns **[Set][893]<[string][882]>**&#x20;
 
 ## childNamed
 
@@ -3316,15 +3319,15 @@ file whose kind the writer did not know may have wrong.
 ### Parameters
 
 - `tree` **[LinkTree][398]**&#x20;
-- `folderId` **[string][879]**&#x20;
-- `name` **[string][879]**&#x20;
-- `last` **[boolean][880]**&#x20;
+- `folderId` **[string][882]**&#x20;
+- `name` **[string][882]**&#x20;
+- `last` **[boolean][883]**&#x20;
 
-Returns **([Document][885] | null)**&#x20;
+Returns **([Document][888] | null)**&#x20;
 
 ##
 
-Type: [string][879]
+Type: [string][882]
 
 ## walk
 
@@ -3335,10 +3338,10 @@ meant the folder it got to.
 ### Parameters
 
 - `tree` **[LinkTree][398]**&#x20;
-- `folderId` **[string][879]**&#x20;
-- `names` **[Array][884]<[string][879]>**&#x20;
+- `folderId` **[string][882]**&#x20;
+- `names` **[Array][887]<[string][882]>**&#x20;
 
-Returns **([Document][885] | null)**&#x20;
+Returns **([Document][888] | null)**&#x20;
 
 ## resolveLink
 
@@ -3349,11 +3352,11 @@ document it is in.
 ### Parameters
 
 - `tree` **[LinkTree][398]**&#x20;
-- `href` **[string][879]**&#x20;
-- `fromId` **([string][879] | null)?** The document the link is in. Without one,
+- `href` **[string][882]**&#x20;
+- `fromId` **([string][882] | null)?** The document the link is in. Without one,
   as in a chat, a link is read from the top of the project.
 
-Returns **([Document][885] | null)**&#x20;
+Returns **([Document][888] | null)**&#x20;
 
 ## documentNamed
 
@@ -3364,25 +3367,25 @@ one: a link has to go to one document.
 ### Parameters
 
 - `tree` **[LinkTree][398]**&#x20;
-- `name` **[string][879]**&#x20;
+- `name` **[string][882]**&#x20;
 
-Returns **([Document][885] | null)**&#x20;
-
-## found
-
-Type: [Array][884]<[Document][885]>
+Returns **([Document][888] | null)**&#x20;
 
 ## found
 
-Type: [Array][884]<{title: [string][879], level: [number][877], link: [string][879], offset: [number][877]}>
+Type: [Array][887]<[Document][888]>
 
 ## found
 
-Type: [Array][884]<[FoundComment][823]>
+Type: [Array][887]<{title: [string][882], level: [number][880], link: [string][882], offset: [number][880]}>
+
+## found
+
+Type: [Array][887]<[FoundComment][826]>
 
 ##
 
-Type: [string][879]
+Type: [string][882]
 
 ## readableHref
 
@@ -3390,9 +3393,9 @@ A link as the writer should read it: its path, decoded, without `<…>`.
 
 ### Parameters
 
-- `href` **[string][879]**&#x20;
+- `href` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## lineage
 
@@ -3402,9 +3405,9 @@ itself left out.
 ### Parameters
 
 - `tree` **[LinkTree][398]**&#x20;
-- `id` **[string][879]**&#x20;
+- `id` **[string][882]**&#x20;
 
-Returns **[Array][884]<[Document][885]>**&#x20;
+Returns **[Array][887]<[Document][888]>**&#x20;
 
 ## encodeName
 
@@ -3414,9 +3417,9 @@ the rest as it is.
 
 ### Parameters
 
-- `name` **[string][879]**&#x20;
+- `name` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## hrefFor
 
@@ -3425,10 +3428,10 @@ The link from one document to another, as it is written in the first.
 ### Parameters
 
 - `tree` **[LinkTree][398]**&#x20;
-- `fromId` **[string][879]** The document the link goes in
-- `toId` **[string][879]** The document it goes to
+- `fromId` **[string][882]** The document the link goes in
+- `toId` **[string][882]** The document it goes to
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## utils/documentPath
 
@@ -3458,9 +3461,9 @@ Empty for no document and for the project itself.
 ### Parameters
 
 - `get` &#x20;
-- `document` **([Document][885] | null | [undefined][889])**&#x20;
+- `document` **([Document][888] | null | [undefined][892])**&#x20;
 
-Returns **[Array][884]<[string][879]>**&#x20;
+Returns **[Array][887]<[string][882]>**&#x20;
 
 ## documentPath
 
@@ -3472,9 +3475,9 @@ a change can name the document as it was when the change was made.
 ### Parameters
 
 - `get` &#x20;
-- `document` **([Document][885] | null | [undefined][889])**&#x20;
+- `document` **([Document][888] | null | [undefined][892])**&#x20;
 
-Returns **[string][879]** The path, or '' for no document
+Returns **[string][882]** The path, or '' for no document
 
 ## titleKey
 
@@ -3482,9 +3485,9 @@ A title as names in one folder are compared.
 
 ### Parameters
 
-- `title` **([string][879] | null | [undefined][889])**&#x20;
+- `title` **([string][882] | null | [undefined][892])**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## namesake
 
@@ -3492,12 +3495,12 @@ The document among `siblings` that already goes by `title`.
 
 ### Parameters
 
-- `siblings` **[Array][884]<[Document][885]>** A folder's children
-- `title` **[string][879]**&#x20;
-- `exceptId` **[string][879]?** The document being renamed or moved, which
+- `siblings` **[Array][887]<[Document][888]>** A folder's children
+- `title` **[string][882]**&#x20;
+- `exceptId` **[string][882]?** The document being renamed or moved, which
   does not stand in its own way
 
-Returns **([Document][885] | null)**&#x20;
+Returns **([Document][888] | null)**&#x20;
 
 ## freeTitle
 
@@ -3506,11 +3509,11 @@ Returns **([Document][885] | null)**&#x20;
 
 ### Parameters
 
-- `siblings` **[Array][884]<[Document][885]>** A folder's children
-- `title` **[string][879]**&#x20;
-- `exceptId` **[string][879]?** The document being renamed or moved
+- `siblings` **[Array][887]<[Document][888]>** A folder's children
+- `title` **[string][882]**&#x20;
+- `exceptId` **[string][882]?** The document being renamed or moved
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## utils/edits
 
@@ -3528,13 +3531,13 @@ being switched to has to put back what it did.
 
 ## CONTEXT_STEP
 
-Type: [number][877]
+Type: [number][880]
 
 ## CONTEXT_STEP
 
 How much more context to take in when a pair needs to be findable.
 
-Type: [number][877]
+Type: [number][880]
 
 ## occurrences
 
@@ -3542,10 +3545,10 @@ How many times `needle` occurs in `text`.
 
 ### Parameters
 
-- `text` **[string][879]**&#x20;
-- `needle` **[string][879]**&#x20;
+- `text` **[string][882]**&#x20;
+- `needle` **[string][882]**&#x20;
 
-Returns **[number][877]**&#x20;
+Returns **[number][880]**&#x20;
 
 ## diffEdit
 
@@ -3560,10 +3563,10 @@ which is one place too many to put the other text.
 
 ### Parameters
 
-- `before` **[string][879]**&#x20;
-- `after` **[string][879]**&#x20;
+- `before` **[string][882]**&#x20;
+- `after` **[string][882]**&#x20;
 
-Returns **({old: [string][879], new: [string][879]} | null)** Null when nothing changed
+Returns **({old: [string][882], new: [string][882]} | null)** Null when nothing changed
 
 ## diffAppend
 
@@ -3577,10 +3580,10 @@ any other.
 
 ### Parameters
 
-- `before` **[string][879]**&#x20;
-- `after` **[string][879]**&#x20;
+- `before` **[string][882]**&#x20;
+- `after` **[string][882]**&#x20;
 
-Returns **({old: [string][879], new: [string][879]} | null)** Null when nothing changed
+Returns **({old: [string][882], new: [string][882]} | null)** Null when nothing changed
 
 ## narrowEdit
 
@@ -3589,9 +3592,9 @@ with is what finds it in a document, and is not the change.
 
 ### Parameters
 
-- `pair` **{old: [string][879], new: [string][879]}**&#x20;
+- `pair` **{old: [string][882], new: [string][882]}**&#x20;
 
-Returns **{old: [string][879], new: [string][879]}**&#x20;
+Returns **{old: [string][882], new: [string][882]}**&#x20;
 
 ## reverseEdit
 
@@ -3604,10 +3607,10 @@ what it wrote, which has to be there exactly once.
 
 ### Parameters
 
-- `content` **[string][879]** The document now
+- `content` **[string][882]** The document now
 - `edit` **DocumentEdit**&#x20;
 
-Returns **([string][879] | null)**&#x20;
+Returns **([string][882] | null)**&#x20;
 
 ## applyEdit
 
@@ -3621,10 +3624,10 @@ empty document, and goes back onto one.
 
 ### Parameters
 
-- `content` **[string][879]** The document now
+- `content` **[string][882]** The document now
 - `edit` **DocumentEdit**&#x20;
 
-Returns **([string][879] | null)**&#x20;
+Returns **([string][882] | null)**&#x20;
 
 ## keepDecisions
 
@@ -3638,10 +3641,10 @@ they left it, applied pair and all.
 
 ### Parameters
 
-- `fresh` **[Array][884]\<DocumentEdit>** The turn's own record
-- `stored` **([Array][884]\<DocumentEdit> | [undefined][889])** The message's record as it stands
+- `fresh` **[Array][887]\<DocumentEdit>** The turn's own record
+- `stored` **([Array][887]\<DocumentEdit> | [undefined][892])** The message's record as it stands
 
-Returns **[Array][884]\<DocumentEdit>**&#x20;
+Returns **[Array][887]\<DocumentEdit>**&#x20;
 
 ## utils/errors
 
@@ -3657,7 +3660,7 @@ before they can use AI features
 
 ### Parameters
 
-- `message` **[string][879]** Error message (optional, default `'AI provider not configured'`)
+- `message` **[string][882]** Error message (optional, default `'AI provider not configured'`)
 
 ## CommandError
 
@@ -3672,7 +3675,7 @@ unchanged, which it cannot assume of a failure any later than this.
 
 ### Parameters
 
-- `message` **[string][879]** Error message
+- `message` **[string][882]** Error message
 
 ## AnswerFailedError
 
@@ -3687,8 +3690,8 @@ so the caller has nothing left to report.
 
 ### Parameters
 
-- `cause` **[Error][886]** What went wrong
-- `messageId` **[string][879]** The answer it is recorded on
+- `cause` **[Error][889]** What went wrong
+- `messageId` **[string][882]** The answer it is recorded on
 
 ## SummaryCutShortError
 
@@ -3702,7 +3705,7 @@ on.
 
 ### Parameters
 
-- `reason` **[string][879]** Why its request failed
+- `reason` **[string][882]** Why its request failed
 
 ## utils/focus
 
@@ -3719,9 +3722,9 @@ Whether the element with the focus is a field the writer types into.
 
 ### Parameters
 
-- `element` **([Element][894] | null)?** Defaults to whatever has the focus (optional, default `document.activeElement`)
+- `element` **([Element][897] | null)?** Defaults to whatever has the focus (optional, default `document.activeElement`)
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## formatThinkingTime
 
@@ -3729,9 +3732,9 @@ Format thinking/reasoning time duration
 
 ### Parameters
 
-- `milliseconds` **[number][877]** Duration in milliseconds
+- `milliseconds` **[number][880]** Duration in milliseconds
 
-Returns **[string][879]** Formatted duration string (e.g., "2.5s", "1.2s")
+Returns **[string][882]** Formatted duration string (e.g., "2.5s", "1.2s")
 
 ## formatRelativeTime
 
@@ -3739,15 +3742,15 @@ Format a date as relative time (e.g., "2 hours ago", "3 days ago")
 
 ### Parameters
 
-- `timestamp` **[number][877]** Unix timestamp in milliseconds
+- `timestamp` **[number][880]** Unix timestamp in milliseconds
 
-Returns **[string][879]** Formatted relative time string
+Returns **[string][882]** Formatted relative time string
 
 ## TOOL_RESULT_PREVIEW_LIMIT
 
 How much of a tool's result is shown before it is cut short.
 
-Type: [number][877]
+Type: [number][880]
 
 ## formatToolArguments
 
@@ -3759,7 +3762,7 @@ stay quoted; other values stringify; an object shows its fields as
 
 - `args` **any** Parsed, or the raw text when it did not parse
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## formatToolResult
 
@@ -3768,9 +3771,9 @@ when it is long.
 
 ### Parameters
 
-- `content` **[string][879]**&#x20;
+- `content` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## utils
 
@@ -3842,12 +3845,12 @@ a bullet here and an escape there, and a run per place is what reads.
 
 ## LineChange
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `removed` **[Array][884]<[string][879]>** The lines that went, in order
-- `added` **[Array][884]<[string][879]>** The lines in their place, in order
+- `removed` **[Array][887]<[string][882]>** The lines that went, in order
+- `added` **[Array][887]<[string][882]>** The lines in their place, in order
 
 ## MAX_MATCHED
 
@@ -3855,7 +3858,7 @@ Past this many lines on each side of the part that differs, the lines are
 not matched up one by one: the table that matches them grows with the
 square, and a change that big is one run anyway.
 
-Type: [number][877]
+Type: [number][880]
 
 ## changedLines
 
@@ -3868,14 +3871,14 @@ kept lines is a change.
 
 ### Parameters
 
-- `before` **[string][879]**&#x20;
-- `after` **[string][879]**&#x20;
+- `before` **[string][882]**&#x20;
+- `after` **[string][882]**&#x20;
 
-Returns **[Array][884]<[LineChange][495]>** Empty when nothing changed
+Returns **[Array][887]<[LineChange][495]>** Empty when nothing changed
 
 ## changes
 
-Type: [Array][884]<[LineChange][495]>
+Type: [Array][887]<[LineChange][495]>
 
 ## utils/localStorage
 
@@ -3891,7 +3894,7 @@ Get a value from localStorage
 
 #### Parameters
 
-- `key` **[string][879]** The storage key
+- `key` **[string][882]** The storage key
 - `defaultValue` **T** Default value if key doesn't exist (optional, default `null`)
 
 Returns **T** The stored value or defaultValue
@@ -3902,10 +3905,10 @@ Set a value in localStorage
 
 #### Parameters
 
-- `key` **[string][879]** The storage key
+- `key` **[string][882]** The storage key
 - `value` **any** The value to store (will be JSON stringified)
 
-Returns **[boolean][880]** Success status
+Returns **[boolean][883]** Success status
 
 ### remove
 
@@ -3913,9 +3916,9 @@ Remove an item from localStorage
 
 #### Parameters
 
-- `key` **[string][879]** The storage key
+- `key` **[string][882]** The storage key
 
-Returns **[boolean][880]** Success status
+Returns **[boolean][883]** Success status
 
 ## utils/markdown
 
@@ -3953,9 +3956,9 @@ What a link in a story is allowed to be. Everything else is not a link.
 
 ### Parameters
 
-- `text` **[string][879]**&#x20;
+- `text` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## isSafeUrl
 
@@ -3968,9 +3971,9 @@ is this app.
 
 ### Parameters
 
-- `href` **[string][879]**&#x20;
+- `href` **[string][882]**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## reader
 
@@ -3986,9 +3989,9 @@ Render markdown to HTML
 
 ### Parameters
 
-- `markdown` **[string][879]** Markdown text to render
+- `markdown` **[string][882]** Markdown text to render
 
-Returns **[string][879]** Rendered HTML
+Returns **[string][882]** Rendered HTML
 
 ## stripMarkdown
 
@@ -3996,9 +3999,9 @@ Strip markdown formatting from text for immediate display
 
 ### Parameters
 
-- `text` **[string][879]** Text with markdown formatting
+- `text` **[string][882]** Text with markdown formatting
 
-Returns **[string][879]** Plain text with markdown symbols removed
+Returns **[string][882]** Plain text with markdown symbols removed
 
 ## utils/oauth
 
@@ -4008,7 +4011,7 @@ OAuth PKCE utilities for secure authentication flows
 
 Generates a cryptographically random code verifier for PKCE
 
-Returns **[string][879]** A random string suitable for use as a code verifier
+Returns **[string][882]** A random string suitable for use as a code verifier
 
 ## generateCodeChallenge
 
@@ -4016,19 +4019,19 @@ Generates a code challenge from a code verifier using SHA-256
 
 ### Parameters
 
-- `verifier` **[string][879]** The code verifier
+- `verifier` **[string][882]** The code verifier
 
 <!---->
 
-- Throws **[Error][886]** If Web Crypto API is not available (insecure context)
+- Throws **[Error][889]** If Web Crypto API is not available (insecure context)
 
-Returns **[Promise][883]<[string][879]>** The base64url-encoded SHA-256 hash of the verifier
+Returns **[Promise][886]<[string][882]>** The base64url-encoded SHA-256 hash of the verifier
 
 ## generateState
 
 Generates a random state parameter for OAuth security
 
-Returns **[string][879]** A random state string
+Returns **[string][882]** A random state string
 
 ## base64URLEncode
 
@@ -4036,9 +4039,9 @@ Encodes a byte array to base64url format (without padding)
 
 ### Parameters
 
-- `buffer` **[Uint8Array][881]** The byte array to encode
+- `buffer` **[Uint8Array][884]** The byte array to encode
 
-Returns **[string][879]** Base64url-encoded string
+Returns **[string][882]** Base64url-encoded string
 
 ## storeOAuthParams
 
@@ -4049,9 +4052,9 @@ These values are immediately deleted after the callback completes.
 
 ### Parameters
 
-- `params` **[Object][878]** OAuth parameters
-  - `params.verifier` **[string][879]** Code verifier
-  - `params.state` **[string][879]** State parameter
+- `params` **[Object][881]** OAuth parameters
+  - `params.verifier` **[string][882]** Code verifier
+  - `params.state` **[string][882]** State parameter
 
 ## retrieveOAuthParams
 
@@ -4059,10 +4062,10 @@ Retrieves and clears OAuth flow parameters from local storage
 
 ### Properties
 
-- `verifier` **[string][879]** Code verifier
-- `state` **[string][879]** State parameter
+- `verifier` **[string][882]** Code verifier
+- `state` **[string][882]** State parameter
 
-Returns **([Object][878] | null)** OAuth parameters or null if not found
+Returns **([Object][881] | null)** OAuth parameters or null if not found
 
 ## openRouterAuthorizationUrl
 
@@ -4072,13 +4075,13 @@ writer back
 
 ### Parameters
 
-- `callbackUrl` **[string][879]** The callback URL to redirect to after authorization
+- `callbackUrl` **[string][882]** The callback URL to redirect to after authorization
 
 <!---->
 
-- Throws **[Error][886]** If not in a secure context or Web Crypto API unavailable
+- Throws **[Error][889]** If not in a secure context or Web Crypto API unavailable
 
-Returns **[Promise][883]<[string][879]>**&#x20;
+Returns **[Promise][886]<[string][882]>**&#x20;
 
 ## initiateOpenRouterOAuth
 
@@ -4086,13 +4089,13 @@ Initiates OpenRouter OAuth flow by opening authorization URL in new tab
 
 ### Parameters
 
-- `callbackUrl` **[string][879]** The callback URL to redirect to after authorization
+- `callbackUrl` **[string][882]** The callback URL to redirect to after authorization
 
 <!---->
 
-- Throws **[Error][886]** If not in a secure context or Web Crypto API unavailable
+- Throws **[Error][889]** If not in a secure context or Web Crypto API unavailable
 
-Returns **[Promise][883]\<void>**&#x20;
+Returns **[Promise][886]\<void>**&#x20;
 
 ## utils/obfuscate
 
@@ -4122,19 +4125,19 @@ agree.
 
 ## UPPER
 
-Type: [string][879]
+Type: [string][882]
 
 ## UPPER
 
-Type: [string][879]
+Type: [string][882]
 
 ## UPPER
 
-Type: [string][879]
+Type: [string][882]
 
 ## ObfuscateOptions
 
-Type: [Object][878]
+Type: [Object][881]
 
 ## KEPT_KEYS
 
@@ -4146,9 +4149,9 @@ A key ending in Id or Ids is an identifier by convention.
 
 ### Parameters
 
-- `key` **[string][879]**&#x20;
+- `key` **[string][882]**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## scrambleText
 
@@ -4158,10 +4161,10 @@ is not a letter is left where it is.
 
 ### Parameters
 
-- `text` **[string][879]**&#x20;
+- `text` **[string][882]**&#x20;
 - `random` (optional, default `Math.random`)
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## scrambleValue
 
@@ -4173,7 +4176,7 @@ one rule everything else here starts from.
 
 - `value` **any**&#x20;
 - `random` &#x20;
-- `key` **[string][879]?** The key this value sits under, if any (optional, default `''`)
+- `key` **[string][882]?** The key this value sits under, if any (optional, default `''`)
 
 Returns **any**&#x20;
 
@@ -4189,10 +4192,10 @@ JSON is scrambled as text.
 
 ### Parameters
 
-- `text` **[string][879]**&#x20;
+- `text` **[string][882]**&#x20;
 - `random` &#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## scrambleCommand
 
@@ -4300,9 +4303,9 @@ Decode a JSON string body, tolerating an escape cut off at the end.
 
 ### Parameters
 
-- `body` **[string][879]**&#x20;
+- `body` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## partialStrings
 
@@ -4312,9 +4315,9 @@ keys. A later field with the same key wins.
 
 ### Parameters
 
-- `text` **([string][879] | null | [undefined][889])** JSON, or the front part of some
+- `text` **([string][882] | null | [undefined][892])** JSON, or the front part of some
 
-Returns **Record<[string][879], [string][879]>**&#x20;
+Returns **Record<[string][882], [string][882]>**&#x20;
 
 ## utils/routeHelpers
 
@@ -4332,9 +4335,9 @@ Resolve a route parameter to a story ID
 
 ### Parameters
 
-- `routeParam` **([string][879] | [Array][884]<[string][879]>)** The story ID from route params
+- `routeParam` **([string][882] | [Array][887]<[string][882]>)** The story ID from route params
 
-Returns **[string][879]** The story ID, or '' if absent
+Returns **[string][882]** The story ID, or '' if absent
 
 ## pushProjectToRoute
 
@@ -4343,7 +4346,7 @@ Navigate to a project
 ### Parameters
 
 - `router` &#x20;
-- `storyId` **[string][879]** The project to open
+- `storyId` **[string][882]** The project to open
 
 ## replaceProjectInRoute
 
@@ -4353,7 +4356,7 @@ leave a step in the history
 ### Parameters
 
 - `router` &#x20;
-- `storyId` **[string][879]** The project to open
+- `storyId` **[string][882]** The project to open
 
 ## utils/sections
 
@@ -4377,33 +4380,33 @@ A fence opening or closing a code block.
 
 One section of a Markdown text.
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `title` **[string][879]** The heading's text, emphasis marks aside
-- `level` **[number][877]** 1 for `#`
-- `link` **[string][879]** Unique within the text
-- `offset` **[number][877]** Where the heading line starts
-- `end` **[number][877]** Where the next heading of any level starts: the section's own text ends
-- `until` **[number][877]** Where the next heading at its level or above starts: the section and its subsections end
-- `words` **[number][877]** In the section and its subsections
+- `title` **[string][882]** The heading's text, emphasis marks aside
+- `level` **[number][880]** 1 for `#`
+- `link` **[string][882]** Unique within the text
+- `offset` **[number][880]** Where the heading line starts
+- `end` **[number][880]** Where the next heading of any level starts: the section's own text ends
+- `until` **[number][880]** Where the next heading at its level or above starts: the section and its subsections end
+- `words` **[number][880]** In the section and its subsections
 
 ## SectionNode
 
 A node of the section tree, as the model is shown it.
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `link` **[string][879]**&#x20;
-- `title` **[string][879]**&#x20;
-- `words` **[number][877]**&#x20;
-- `sections` **[Array][884]<[SectionNode][582]>?**&#x20;
-- `entries` **[number][877]?** How many subsections a long run has, not listed here
-- `range` **[string][879]?** The first and last of that run
-- `more` **[number][877]?** Subsections left out of this tree for its size
+- `link` **[string][882]**&#x20;
+- `title` **[string][882]**&#x20;
+- `words` **[number][880]**&#x20;
+- `sections` **[Array][887]<[SectionNode][582]>?**&#x20;
+- `entries` **[number][880]?** How many subsections a long run has, not listed here
+- `range` **[string][882]?** The first and last of that run
+- `more` **[number][880]?** Subsections left out of this tree for its size
 
 ## linker
 
@@ -4411,7 +4414,7 @@ A maker of unique links for one text: the first `intro`, then `intro-1`.
 
 ## seen
 
-Type: [Map][888]<[string][879], [number][877]>
+Type: [Map][891]<[string][882], [number][880]>
 
 ## wordsOf
 
@@ -4419,7 +4422,7 @@ How many words a stretch of text has.
 
 ### Parameters
 
-- `text` **[string][879]**&#x20;
+- `text` **[string][882]**&#x20;
 
 ## markdownSections
 
@@ -4428,21 +4431,21 @@ block is code, not a heading.
 
 ### Parameters
 
-- `markdown` **[string][879]**&#x20;
+- `markdown` **[string][882]**&#x20;
 
-Returns **[Array][884]<[MarkdownSection][580]>**&#x20;
+Returns **[Array][887]<[MarkdownSection][580]>**&#x20;
 
 ## TREE_LIMIT
 
 How many nodes the tree shows at most; a long map is its own cost.
 
-Type: [number][877]
+Type: [number][880]
 
 ## LIST_LIMIT
 
 How many subsections a node lists before it says how many instead.
 
-Type: [number][877]
+Type: [number][880]
 
 ## sectionTree
 
@@ -4458,19 +4461,19 @@ one section, asked for by name, that list is the answer.
 
 ### Parameters
 
-- `sections` **[Array][884]<[MarkdownSection][580]>**&#x20;
-- `limit` **[number][877]?** (optional, default `TREE_LIMIT`)
-- `list` **[number][877]?** How many subsections a node lists before it counts them instead (optional, default `LIST_LIMIT`)
+- `sections` **[Array][887]<[MarkdownSection][580]>**&#x20;
+- `limit` **[number][880]?** (optional, default `TREE_LIMIT`)
+- `list` **[number][880]?** How many subsections a node lists before it counts them instead (optional, default `LIST_LIMIT`)
 
-Returns **[Array][884]<[SectionNode][582]>**&#x20;
+Returns **[Array][887]<[SectionNode][582]>**&#x20;
 
 ## stack
 
-Type: [Array][884]<{node: [SectionNode][582], level: [number][877], depth: [number][877]}>
+Type: [Array][887]<{node: [SectionNode][582], level: [number][880], depth: [number][880]}>
 
 ## roots
 
-Type: [Array][884]<[SectionNode][582]>
+Type: [Array][887]<[SectionNode][582]>
 
 ## node
 
@@ -4484,22 +4487,22 @@ Type: [SectionNode][582]
 
 ## all
 
-Type: [Array][884]<{depth: [number][877]}>
+Type: [Array][887]<{depth: [number][880]}>
 
 ##
 
-Type: [Array][884]<[SectionNode][582]>
+Type: [Array][887]<[SectionNode][582]>
 
 ##
 
-Type: [number][877]
+Type: [number][880]
 
 ## cut
 
 ### Parameters
 
 - `node` **[SectionNode][582]**&#x20;
-- `at` **[number][877]**&#x20;
+- `at` **[number][880]**&#x20;
 
 ## countOf
 
@@ -4507,9 +4510,9 @@ How many nodes a list of subtrees holds.
 
 ### Parameters
 
-- `nodes` **[Array][884]<[SectionNode][582]>**&#x20;
+- `nodes` **[Array][887]<[SectionNode][582]>**&#x20;
 
-Returns **[number][877]**&#x20;
+Returns **[number][880]**&#x20;
 
 ## findSection
 
@@ -4518,8 +4521,8 @@ failing both, the first whose title contains the reference.
 
 ### Parameters
 
-- `sections` **[Array][884]<[MarkdownSection][580]>**&#x20;
-- `reference` **[string][879]**&#x20;
+- `sections` **[Array][887]<[MarkdownSection][580]>**&#x20;
+- `reference` **[string][882]**&#x20;
 
 Returns **([MarkdownSection][580] | null)**&#x20;
 
@@ -4530,18 +4533,18 @@ depth below the text's top level.
 
 ### Parameters
 
-- `sections` **[Array][884]<[MarkdownSection][580]>**&#x20;
-- `depth` **[number][877]?** How many levels, counting the top (optional, default `3`)
+- `sections` **[Array][887]<[MarkdownSection][580]>**&#x20;
+- `depth` **[number][880]?** How many levels, counting the top (optional, default `3`)
 
-Returns **[string][879]** '' for a text with no headings
+Returns **[string][882]** '' for a text with no headings
 
 ## open
 
-Type: [Array][884]<[number][877]>
+Type: [Array][887]<[number][880]>
 
 ## lines
 
-Type: [Array][884]<[string][879]>
+Type: [Array][887]<[string][882]>
 
 ## sectionIndexAt
 
@@ -4549,10 +4552,10 @@ The section an offset falls in: the last heading at or before it.
 
 ### Parameters
 
-- `sections` **[Array][884]<[MarkdownSection][580]>**&#x20;
-- `offset` **[number][877]**&#x20;
+- `sections` **[Array][887]<[MarkdownSection][580]>**&#x20;
+- `offset` **[number][880]**&#x20;
 
-Returns **[number][877]** Its index, or -1 before the first heading
+Returns **[number][880]** Its index, or -1 before the first heading
 
 ## sectionPath
 
@@ -4561,10 +4564,10 @@ would say it — `Spells / Spell Descriptions / Fire Burst`.
 
 ### Parameters
 
-- `sections` **[Array][884]<[MarkdownSection][580]>**&#x20;
-- `index` **[number][877]**&#x20;
+- `sections` **[Array][887]<[MarkdownSection][580]>**&#x20;
+- `index` **[number][880]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## utils/sessionStorage
 
@@ -4580,7 +4583,7 @@ Get a value from sessionStorage
 
 #### Parameters
 
-- `key` **[string][879]** The storage key
+- `key` **[string][882]** The storage key
 - `defaultValue` **T** Default value if key doesn't exist (optional, default `null`)
 
 Returns **T** The stored value or defaultValue
@@ -4591,10 +4594,10 @@ Set a value in sessionStorage
 
 #### Parameters
 
-- `key` **[string][879]** The storage key
+- `key` **[string][882]** The storage key
 - `value` **any** The value to store (will be JSON stringified)
 
-Returns **[boolean][880]** Success status
+Returns **[boolean][883]** Success status
 
 ### remove
 
@@ -4602,9 +4605,9 @@ Remove an item from sessionStorage
 
 #### Parameters
 
-- `key` **[string][879]** The storage key
+- `key` **[string][882]** The storage key
 
-Returns **[boolean][880]** Success status
+Returns **[boolean][883]** Success status
 
 ## utils/settingsFile
 
@@ -4638,7 +4641,7 @@ Design: `.llm/settings_import_design.md`.
 
 The app tables a setup is made of, in the order the export lists them.
 
-Type: [Array][884]<[SettingsTable][627]>
+Type: [Array][887]<[SettingsTable][627]>
 
 ## SettingsGroup
 
@@ -4659,28 +4662,28 @@ Type: ReadonlySet<[SettingsGroup][628]>
 What each kind of item is called: as a heading, and in a sentence about
 one of them or several.
 
-Type: Record<([SettingsTable][627] | `"settings"`), {heading: [string][879], one: [string][879], many: [string][879]}>
+Type: Record<([SettingsTable][627] | `"settings"`), {heading: [string][882], one: [string][882], many: [string][882]}>
 
 ## GROUP_NAMES
 
 Each group of settings by name, as a heading's item and in a sentence.
 
-Type: Record<[SettingsGroup][628], {label: [string][879], phrase: [string][879]}>
+Type: Record<[SettingsGroup][628], {label: [string][882], phrase: [string][882]}>
 
 ## SettingsItem
 
 One thing a settings file can hold: a row of a table, or a group of the
 outside settings.
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `key` **[string][879]** `table/id`, or `settings/group`
+- `key` **[string][882]** `table/id`, or `settings/group`
 - `kind` **([SettingsTable][627] | `"settings"`)**&#x20;
-- `name` **[string][879]** What the writer calls it
-- `picked` **[boolean][880]?** Whether the export starts with it picked
-- `needs` **[Array][884]<[string][879]>?** The keys of the items it is no use without
+- `name` **[string][882]** What the writer calls it
+- `picked` **[boolean][883]?** Whether the export starts with it picked
+- `needs` **[Array][887]<[string][882]>?** The keys of the items it is no use without
 
 ## rowId
 
@@ -4689,23 +4692,23 @@ is keyed by the skill's, and its id for the rest.
 
 ### Parameters
 
-- `table` **[string][879]**&#x20;
+- `table` **[string][882]**&#x20;
 - `row` **any**&#x20;
 
-Returns **([string][879] | [undefined][889])**&#x20;
+Returns **([string][882] | [undefined][892])**&#x20;
 
 ## rowId
 
-Type: [string][879]
+Type: [string][882]
 
 ## itemKey
 
 ### Parameters
 
-- `table` **[string][879]**&#x20;
-- `id` **[string][879]**&#x20;
+- `table` **[string][882]**&#x20;
+- `id` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## everyInstallHas
 
@@ -4715,10 +4718,10 @@ even where the app hasn't made it yet, as it opens for the first time.
 
 ### Parameters
 
-- `table` **[string][879]**&#x20;
-- `id` **[string][879]**&#x20;
+- `table` **[string][882]**&#x20;
+- `id` **[string][882]**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## untouchedBuiltIn
 
@@ -4729,7 +4732,7 @@ of the writer's in it to carry: no key, no routing, its own address.
 
 - `provider` **any**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## rowName
 
@@ -4740,7 +4743,7 @@ What a row is called in the export's list and in a sentence.
 - `table` **[SettingsTable][627]**&#x20;
 - `row` **any**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## settingsItems
 
@@ -4749,14 +4752,14 @@ export lists it.
 
 ### Parameters
 
-- `tables` **Partial\<Record<[SettingsTable][627], [Array][884]\<any>>>** The rows here
+- `tables` **Partial\<Record<[SettingsTable][627], [Array][887]\<any>>>** The rows here
 - `settings` **BackedUpSettings** The outside settings here
 
-Returns **[Array][884]<[SettingsItem][632]>**&#x20;
+Returns **[Array][887]<[SettingsItem][632]>**&#x20;
 
 ## items
 
-Type: [Array][884]<[SettingsItem][632]>
+Type: [Array][887]<[SettingsItem][632]>
 
 ## item
 
@@ -4768,11 +4771,11 @@ Type: [SettingsItem][632]
 
 ## keys
 
-Type: [Array][884]<[SettingsGroup][628]>
+Type: [Array][887]<[SettingsGroup][628]>
 
 ## keys
 
-Type: [Array][884]<[SettingsGroup][628]>
+Type: [Array][887]<[SettingsGroup][628]>
 
 ## settingsNeeds
 
@@ -4783,17 +4786,17 @@ The rows a group of settings names, which it is no use without.
 - `group` **[SettingsGroup][628]**&#x20;
 - `settings` **BackedUpSettings**&#x20;
 
-Returns **[Array][884]<[string][879]>**&#x20;
+Returns **[Array][887]<[string][882]>**&#x20;
 
 ## needs
 
-Type: [Array][884]<[string][879]>
+Type: [Array][887]<[string][882]>
 
 ## add
 
 ### Parameters
 
-- `table` **[string][879]**&#x20;
+- `table` **[string][882]**&#x20;
 - `id` **unknown**&#x20;
 
 ## pickWithNeeds
@@ -4803,15 +4806,15 @@ of the items there are.
 
 ### Parameters
 
-- `picked` **[Set][890]<[string][879]>**&#x20;
-- `items` **[Array][884]<[SettingsItem][632]>**&#x20;
-- `key` **[string][879]** The item just picked
+- `picked` **[Set][893]<[string][882]>**&#x20;
+- `items` **[Array][887]<[SettingsItem][632]>**&#x20;
+- `key` **[string][882]** The item just picked
 
-Returns **[Set][890]<[string][879]>** A new set
+Returns **[Set][893]<[string][882]>** A new set
 
 ## pop
 
-Type: [string][879]
+Type: [string][882]
 
 ## pickSettings
 
@@ -4820,9 +4823,9 @@ backup envelope.
 
 ### Parameters
 
-- `tables` **Partial\<Record<[SettingsTable][627], [Array][884]\<any>>>** The rows here
+- `tables` **Partial\<Record<[SettingsTable][627], [Array][887]\<any>>>** The rows here
 - `settings` **BackedUpSettings** The outside settings here
-- `picked` **[Set][890]<[string][879]>** The keys of the items to put in
+- `picked` **[Set][893]<[string][882]>** The keys of the items to put in
 
 Returns **{tables: TableData, settings: Partial\<BackedUpSettings>}**&#x20;
 
@@ -4836,13 +4839,13 @@ Filename for a downloaded settings file, e.g. `inksprite-settings-2026-10-13.jso
 
 ### Parameters
 
-- `date` **[Date][887]**&#x20;
+- `date` **[Date][890]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ##
 
-Type: [number][877]
+Type: [number][880]
 
 ## LISTING
 
@@ -4856,10 +4859,10 @@ same as none.
 
 ### Parameters
 
-- `table` **[string][879]**&#x20;
+- `table` **[string][882]**&#x20;
 - `row` **any**&#x20;
 
-Returns **[object][878]**&#x20;
+Returns **[object][881]**&#x20;
 
 ## stableJson
 
@@ -4870,7 +4873,7 @@ same text.
 
 - `value` **unknown**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## fingerprint
 
@@ -4881,7 +4884,7 @@ item from the next, and no more.
 
 - `value` **unknown**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## mergeRow
 
@@ -4889,32 +4892,39 @@ A row of the file's as it goes in here, over the row here with its id.
 
 The keys the file left out are this row's; so is when it was made. A
 server's allowances are this row's too, unless the file was left by a
-script, and its listing is whichever is newer.
+script, and its listing is whichever is newer. A file brought in by hand
+that sends a connection or a server somewhere else takes this row's keys
+no further: they're left out, and said to be, so a file can't make the
+writer's key go to an address of its choosing.
 
 ### Parameters
 
 - `table` **[SettingsTable][627]**&#x20;
 - `row` **any** The file's
 - `here` **any** The row here, if there is one
-- `options` **{byHand: [boolean][880], now: [number][877]}**&#x20;
+- `options` **{byHand: [boolean][883], now: [number][880]}**&#x20;
   - `options.byHand` &#x20;
   - `options.now` &#x20;
 
 Returns **any**&#x20;
 
+##
+
+Type: [string][882]
+
 ## SettingsImport
 
 What importing a settings file does here.
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
 - `rows` **TableData** The rows to write, by table
 - `settings` **Partial\<BackedUpSettings>** The outside settings to take
-- `added` **[Array][884]<[SettingsItem][632]>** Items not here before
-- `changed` **[Array][884]<[SettingsItem][632]>** Items here that the file's copies replace
-- `fingerprints` **Record<[string][879], [string][879]>** Every item's fingerprint once this is done
+- `added` **[Array][887]<[SettingsItem][632]>** Items not here before
+- `changed` **[Array][887]<[SettingsItem][632]>** Items here that the file's copies replace
+- `fingerprints` **Record<[string][882], [string][882]>** Every item's fingerprint once this is done
 
 ## planImport
 
@@ -4923,23 +4933,23 @@ Work out what a settings file changes here, writing nothing.
 ### Parameters
 
 - `file` &#x20;
-- `here` **{tables: Partial\<Record<[SettingsTable][627], [Array][884]\<any>>>, settings: BackedUpSettings}**&#x20;
-- `$2` **[Object][878]**&#x20;
+- `here` **{tables: Partial\<Record<[SettingsTable][627], [Array][887]\<any>>>, settings: BackedUpSettings}**&#x20;
+- `$2` **[Object][881]**&#x20;
   - `$2.byHand` &#x20;
   - `$2.fingerprints` (optional, default `{}`)
   - `$2.now` (optional, default `Date.now()`)
 
-- `options` **[object][878]**&#x20;
-  - `options.byHand` **[boolean][880]** Picked by the writer, who is shown what it
+- `options` **[object][881]**&#x20;
+  - `options.byHand` **[boolean][883]** Picked by the writer, who is shown what it
     changes, rather than left by a script and imported as the app opens
-  - `options.fingerprints` **Record<[string][879], [string][879]>?** Each item's as last imported
-  - `options.now` **[number][877]?** Timestamp, injectable for tests
+  - `options.fingerprints` **Record<[string][882], [string][882]>?** Each item's as last imported
+  - `options.now` **[number][880]?** Timestamp, injectable for tests
 
-Returns **[SettingsImport][675]**&#x20;
+Returns **[SettingsImport][676]**&#x20;
 
 ## plan
 
-Type: [SettingsImport][675]
+Type: [SettingsImport][676]
 
 ## changesAnything
 
@@ -4947,9 +4957,9 @@ Whether importing would change anything here.
 
 ### Parameters
 
-- `plan` **[SettingsImport][675]**&#x20;
+- `plan` **[SettingsImport][676]**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## listed
 
@@ -4957,15 +4967,15 @@ Words joined as a list is in a sentence: `a`, `a and b`, `a, b and c`.
 
 ### Parameters
 
-- `words` **[Array][884]<[string][879]>**&#x20;
+- `words` **[Array][887]<[string][882]>**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## NAMED
 
 How many of a kind are named in a sentence before they are counted instead.
 
-Type: [number][877]
+Type: [number][880]
 
 ## itemsInWords
 
@@ -4974,13 +4984,13 @@ name when there are few and by count when there are more.
 
 ### Parameters
 
-- `items` **[Array][884]<[SettingsItem][632]>**&#x20;
+- `items` **[Array][887]<[SettingsItem][632]>**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## phrases
 
-Type: [Array][884]<[string][879]>
+Type: [Array][887]<[string][882]>
 
 ## slice
 
@@ -4997,15 +5007,15 @@ connection Work proxy and the preset Work. Changes the preset in use."
 
 ### Parameters
 
-- `plan` **[SettingsImport][675]**&#x20;
-- `$1` **[Object][878]** (optional, default `{}`)
+- `plan` **[SettingsImport][676]**&#x20;
+- `$1` **[Object][881]** (optional, default `{}`)
   - `$1.done` (optional, default `false`)
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## sentences
 
-Type: [Array][884]<[string][879]>
+Type: [Array][887]<[string][882]>
 
 ## ai/providers
 
@@ -5027,25 +5037,25 @@ only in where they look.
 
 ## ProviderType
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `id` **[string][879]** Stored on providers, so renaming one orphans every
+- `id` **[string][882]** Stored on providers, so renaming one orphans every
   connection saved under it
-- `label` **[string][879]** The short name, for a line that already says
+- `label` **[string][882]** The short name, for a line that already says
   what it is naming
-- `menu` **[string][879]** The name in the type menu, which has room to say more
-- `address` **[string][879]?** Where the API lives, for a hosted service
+- `menu` **[string][882]** The name in the type menu, which has room to say more
+- `address` **[string][882]?** Where the API lives, for a hosted service
   whose address is known without asking. A type without one is a server
   someone runs, and is told where it is.
-- `key` **[boolean][880]?** Whether nothing gets through without an API key
-- `hidden` **[boolean][880]?** Left out of the type menu and the built-in
+- `key` **[boolean][883]?** Whether nothing gets through without an API key
+- `hidden` **[boolean][883]?** Left out of the type menu and the built-in
   connections: known here, but not offered yet
-- `notChat` **[RegExp][895]?** The models in the service's list that a chat
+- `notChat` **[RegExp][898]?** The models in the service's list that a chat
   cannot use (embeddings, speech, pictures, and OpenAI's that answer only its
   Responses API), which a model picker leaves out
-- `does` **ReadonlyArray<[ProviderKind][696]>?** What a connection of this
+- `does` **ReadonlyArray<[ProviderKind][697]>?** What a connection of this
   type can be asked for; a chat alone when absent
 
 ## ProviderKind
@@ -5059,7 +5069,7 @@ Type: (`"chat"` | `"speech"`)
 
 Every connection type, in the order the settings menu offers them.
 
-Type: [Array][884]<[ProviderType][694]>
+Type: [Array][887]<[ProviderType][695]>
 
 ## BUILT_IN_PROVIDERS
 
@@ -5077,7 +5087,7 @@ and `does` what it can be asked for, where that is less than its type's.
 
 The connection narration speaks through until the writer picks another.
 
-Type: [string][879]
+Type: [string][882]
 
 ## inMenuOrder
 
@@ -5088,17 +5098,17 @@ install that made it then can't delete it.
 
 ### Parameters
 
-- `providers` **[Array][884]\<T>**&#x20;
+- `providers` **[Array][887]\<T>**&#x20;
 
-Returns **[Array][884]\<T>**&#x20;
+Returns **[Array][887]\<T>**&#x20;
 
 ## typeOf
 
 ### Parameters
 
-- `type` **[string][879]?**&#x20;
+- `type` **[string][882]?**&#x20;
 
-Returns **([ProviderType][694] | [undefined][889])**&#x20;
+Returns **([ProviderType][695] | [undefined][892])**&#x20;
 
 ## providerDoes
 
@@ -5109,15 +5119,15 @@ narration.
 ### Parameters
 
 - `provider` &#x20;
-- `kind` **[ProviderKind][696]**&#x20;
+- `kind` **[ProviderKind][697]**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## DEFAULT_PROVIDER_TYPE
 
 The type a connection falls back to when it does not say, or says something unknown.
 
-Type: [string][879]
+Type: [string][882]
 
 ## providerLabel
 
@@ -5129,9 +5139,9 @@ front of it looks broken when it is merely unfamiliar.
 
 ### Parameters
 
-- `type` **[string][879]?**&#x20;
+- `type` **[string][882]?**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## knownAddress
 
@@ -5140,9 +5150,9 @@ whose address is on the connection.
 
 ### Parameters
 
-- `type` **[string][879]?**&#x20;
+- `type` **[string][882]?**&#x20;
 
-Returns **([string][879] | [undefined][889])**&#x20;
+Returns **([string][882] | [undefined][892])**&#x20;
 
 ## needsEndpoint
 
@@ -5155,9 +5165,9 @@ types one at a time and forgetting the next one.
 
 ### Parameters
 
-- `type` **[string][879]?**&#x20;
+- `type` **[string][882]?**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## needsKey
 
@@ -5167,9 +5177,9 @@ default.
 
 ### Parameters
 
-- `type` **[string][879]?**&#x20;
+- `type` **[string][882]?**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## connectionGap
 
@@ -5184,6 +5194,20 @@ connection, so nothing looks ready that is not.
 
 Returns **(`"key"` | `"endpoint"` | null)**&#x20;
 
+## presetProblem
+
+What stands between a preset and a request through it, as the error the
+request would fail with, or null when nothing does: no connection, no
+model, or a connection still missing its key or address. What a chat says
+above its box, and what the welcome reads to know the AI is set up.
+
+### Parameters
+
+- `preset` &#x20;
+- `findProvider` &#x20;
+
+Returns **([Error][889] | null)**&#x20;
+
 ## canListModels
 
 Whether the connection can be asked what it serves. A server needs its
@@ -5194,7 +5218,7 @@ public.
 
 - `provider` &#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## servesChat
 
@@ -5204,10 +5228,10 @@ and picture models too, which answer a chat with an error.
 
 ### Parameters
 
-- `type` **([string][879] | [undefined][889])**&#x20;
-- `id` **[string][879]** The model's id, as the service lists it
+- `type` **([string][882] | [undefined][892])**&#x20;
+- `id` **[string][882]** The model's id, as the service lists it
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## takesReasoningEffort
 
@@ -5221,9 +5245,9 @@ its own default instead, which works on every one of them.
 
 ### Parameters
 
-- `type` **[string][879]?**&#x20;
+- `type` **[string][882]?**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## takesChatTemplateKwargs
 
@@ -5238,9 +5262,9 @@ not a field the server has to recognise, so nothing 400s over it.
 
 ### Parameters
 
-- `type` **[string][879]?**&#x20;
+- `type` **[string][882]?**&#x20;
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## AISamplerParameters
 
@@ -5251,24 +5275,24 @@ presets, profile overrides). The UI is gone; values are now defined
 here. Edit this file to tune them. Future advanced settings could
 re-expose a subset.
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `maxTokens` **[number][877]** Max response tokens. 0 = let provider decide.
-- `seed` **[number][877]** Deterministic seed. 0 = disabled.
+- `maxTokens` **[number][880]** Max response tokens. 0 = let provider decide.
+- `seed` **[number][880]** Deterministic seed. 0 = disabled.
 - `reasoningEffort` **(`"disabled"` | `"enabled"` | `"minimal"` | `"low"` | `"medium"` | `"high"` | `"xhigh"` | `"max"`)** How hard the model thinks. `enabled` asks for thinking without naming a level, for models whose thinking is a switch rather than a dial. A model is sent the nearest it takes (see ai/capabilities.js).
-- `showModelReasoning` **[boolean][880]** Whether to surface reasoning tokens.
-- `maxToolRounds` **[number][877]** How many rounds of tool calls a turn may make before it has to answer. 0 = no limit. See runCompletionLoop in composables/useAIChat.js.
-- `parameters` **[AISamplerParameters][725]** Sampler parameters. Fields with sentinel values are omitted from requests.
-- `temperature` **[number][877]** 1.0 = omitted.
-- `topP` **[number][877]** 1.0 = omitted.
-- `minP` **[number][877]** 0 = omitted.
-- `topA` **[number][877]** 0 = omitted.
-- `topK` **[number][877]** 0 = omitted.
-- `frequencyPenalty` **[number][877]** 0 = omitted.
-- `presencePenalty` **[number][877]** 0 = omitted.
-- `repetitionPenalty` **[number][877]** 1.0 = omitted.
+- `showModelReasoning` **[boolean][883]** Whether to surface reasoning tokens.
+- `maxToolRounds` **[number][880]** How many rounds of tool calls a turn may make before it has to answer. 0 = no limit. See runCompletionLoop in composables/useAIChat.js.
+- `parameters` **[AISamplerParameters][728]** Sampler parameters. Fields with sentinel values are omitted from requests.
+- `temperature` **[number][880]** 1.0 = omitted.
+- `topP` **[number][880]** 1.0 = omitted.
+- `minP` **[number][880]** 0 = omitted.
+- `topA` **[number][880]** 0 = omitted.
+- `topK` **[number][880]** 0 = omitted.
+- `frequencyPenalty` **[number][880]** 0 = omitted.
+- `presencePenalty` **[number][880]** 0 = omitted.
+- `repetitionPenalty` **[number][880]** 1.0 = omitted.
 
 ## REASONING_EFFORT_OPTIONS
 
@@ -5283,7 +5307,7 @@ deleted: the one in use until the writer picks another. Stored under the
 legacy "chat" id, so installs from before presets collapsed into one keep
 theirs.
 
-Type: [string][879]
+Type: [string][882]
 
 ## AI_DEFAULTS
 
@@ -5328,7 +5352,7 @@ saying something about temperature, not about top-k.
 - `base` **AISettingsOverrides?**&#x20;
 - `over` **AISettingsOverrides?** Wins where the two overlap
 
-Returns **(AISettingsOverrides | [undefined][889])**&#x20;
+Returns **(AISettingsOverrides | [undefined][892])**&#x20;
 
 ## TITLE_DEFAULTS
 
@@ -5356,18 +5380,18 @@ like any other.
 
 ## Tabs
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `open` **[Array][884]<[string][879]>** Document ids in strip order
-- `active` **([string][879] | null)** The one showing; null with nothing open
-- `preview` **([string][879] | null)** The one only being looked at, which the
+- `open` **[Array][887]<[string][882]>** Document ids in strip order
+- `active` **([string][882] | null)** The one showing; null with nothing open
+- `preview` **([string][882] | null)** The one only being looked at, which the
   next preview replaces; null when every tab is kept
 
 ## NO_TABS
 
-Type: [Tabs][738]
+Type: [Tabs][741]
 
 ## settled
 
@@ -5378,11 +5402,11 @@ no preview.
 
 ### Parameters
 
-- `open` **[Array][884]<[string][879]>**&#x20;
-- `active` **([string][879] | null)**&#x20;
-- `preview` **([string][879] | null)?** (optional, default `null`)
+- `open` **[Array][887]<[string][882]>**&#x20;
+- `active` **([string][882] | null)**&#x20;
+- `preview` **([string][882] | null)?** (optional, default `null`)
 
-Returns **[Tabs][738]**&#x20;
+Returns **[Tabs][741]**&#x20;
 
 ## tabsOf
 
@@ -5395,7 +5419,7 @@ before previews has every tab kept.
 
 - `view` &#x20;
 
-Returns **[Tabs][738]**&#x20;
+Returns **[Tabs][741]**&#x20;
 
 ## tabsPatch
 
@@ -5403,7 +5427,7 @@ The view's fields a set of tabs is written to.
 
 ### Parameters
 
-- `tabs` **[Tabs][738]**&#x20;
+- `tabs` **[Tabs][741]**&#x20;
 
 ## normalizeTabs
 
@@ -5413,10 +5437,10 @@ order; a dropped active tab gives way as a close does.
 
 ### Parameters
 
-- `tabs` **[Tabs][738]**&#x20;
+- `tabs` **[Tabs][741]**&#x20;
 - `canShow` &#x20;
 
-Returns **[Tabs][738]**&#x20;
+Returns **[Tabs][741]**&#x20;
 
 ## openTab
 
@@ -5427,12 +5451,12 @@ it takes that tab's place.
 
 ### Parameters
 
-- `tabs` **[Tabs][738]**&#x20;
-- `id` **[string][879]**&#x20;
-- `$2` **[Object][878]** (optional, default `{}`)
+- `tabs` **[Tabs][741]**&#x20;
+- `id` **[string][882]**&#x20;
+- `$2` **[Object][881]** (optional, default `{}`)
   - `$2.preview` (optional, default `false`)
 
-Returns **[Tabs][738]**&#x20;
+Returns **[Tabs][741]**&#x20;
 
 ## keepTab
 
@@ -5441,10 +5465,10 @@ elsewhere. Any other tab is kept already.
 
 ### Parameters
 
-- `tabs` **[Tabs][738]**&#x20;
-- `id` **[string][879]**&#x20;
+- `tabs` **[Tabs][741]**&#x20;
+- `id` **[string][882]**&#x20;
 
-Returns **[Tabs][738]**&#x20;
+Returns **[Tabs][741]**&#x20;
 
 ## closeTab
 
@@ -5455,10 +5479,10 @@ nothing else.
 
 ### Parameters
 
-- `tabs` **[Tabs][738]**&#x20;
-- `id` **[string][879]**&#x20;
+- `tabs` **[Tabs][741]**&#x20;
+- `id` **[string][882]**&#x20;
 
-Returns **[Tabs][738]**&#x20;
+Returns **[Tabs][741]**&#x20;
 
 ## dropTabs
 
@@ -5468,10 +5492,10 @@ to the right of the one that was, else to its left.
 
 ### Parameters
 
-- `tabs` **[Tabs][738]**&#x20;
-- `ids` **[Array][884]<[string][879]>**&#x20;
+- `tabs` **[Tabs][741]**&#x20;
+- `ids` **[Array][887]<[string][882]>**&#x20;
 
-Returns **[Tabs][738]**&#x20;
+Returns **[Tabs][741]**&#x20;
 
 ## tabNames
 
@@ -5485,7 +5509,7 @@ apart by path, and show all of it.
 
 - `paths` &#x20;
 
-Returns **[Array][884]<{prefix: [string][879], title: [string][879]}>** The path shown above each
+Returns **[Array][887]<{prefix: [string][882], title: [string][882]}>** The path shown above each
 title, ending in `/`, or '' for none
 
 ## tail
@@ -5494,8 +5518,8 @@ The last `n` titles of a path, as one key.
 
 ### Parameters
 
-- `path` **[Array][884]<[string][879]>**&#x20;
-- `n` **[number][877]**&#x20;
+- `path` **[Array][887]<[string][882]>**&#x20;
+- `n` **[number][880]**&#x20;
 
 ## utils/titleValidation
 
@@ -5507,9 +5531,9 @@ Normalize a title by trimming whitespace
 
 ### Parameters
 
-- `title` **([string][879] | null | [undefined][889])** The title to normalize
+- `title` **([string][882] | null | [undefined][892])** The title to normalize
 
-Returns **[string][879]** The normalized title (empty string if null/undefined)
+Returns **[string][882]** The normalized title (empty string if null/undefined)
 
 ## shouldUpdateTitle
 
@@ -5517,10 +5541,10 @@ Check if a title should be updated
 
 ### Parameters
 
-- `newTitle` **([string][879] | null | [undefined][889])** The new title value
-- `currentTitle` **([string][879] | null | [undefined][889])** The current title value
+- `newTitle` **([string][882] | null | [undefined][892])** The new title value
+- `currentTitle` **([string][882] | null | [undefined][892])** The current title value
 
-Returns **[boolean][880]** True if the title should be updated
+Returns **[boolean][883]** True if the title should be updated
 
 ## isCustomTitle
 
@@ -5528,9 +5552,9 @@ Check if a title is considered custom (non-empty after trimming)
 
 ### Parameters
 
-- `title` **([string][879] | null | [undefined][889])** The title to check
+- `title` **([string][882] | null | [undefined][892])** The title to check
 
-Returns **[boolean][880]** True if the title is custom
+Returns **[boolean][883]** True if the title is custom
 
 ## getTitlePlaceholder
 
@@ -5538,32 +5562,32 @@ Get placeholder text for title inputs
 
 ### Parameters
 
-- `type` **[string][879]** The type of item ('part', 'scene', 'draft')
-- `position` **[number][877]** The position/index of the item
+- `type` **[string][882]** The type of item ('part', 'scene', 'draft')
+- `position` **[number][880]** The position/index of the item
 
-Returns **[string][879]** Placeholder text
+Returns **[string][882]** Placeholder text
 
 ## freeName
 
 A name nothing else in a list has, for a project or a profile: `name`
 itself when it is free, and otherwise numbered past the copies already
-there — `Lighthouse (2)`, then `Lighthouse (3)`, the original being the
+there — `Thief (2)`, then `Thief (3)`, the original being the
 first, as a document's copies are (see `freeTitle` in utils/documentPath.js).
 A name that is already a numbered copy counts on from its own number rather
-than gaining a second one, so importing `Lighthouse (2)` beside itself gives
-`Lighthouse (3)`. Names are compared without the spaces round them and
+than gaining a second one, so importing `Thief (2)` beside itself gives
+`Thief (3)`. Names are compared without the spaces round them and
 whatever their case.
 
 ### Parameters
 
-- `taken` **[Array][884]<[string][879]>** The names of the others
-- `name` **[string][879]**&#x20;
+- `taken` **[Array][887]<[string][882]>** The names of the others
+- `name` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ##
 
-Type: [string][879]
+Type: [string][882]
 
 ## utils/touch
 
@@ -5577,7 +5601,7 @@ does not.
 
 ## hasTouchKeyboard
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## submitOnEnter
 
@@ -5586,7 +5610,7 @@ Enter is left to start a new line.
 
 ### Parameters
 
-- `event` **[KeyboardEvent][896]**&#x20;
+- `event` **[KeyboardEvent][899]**&#x20;
 - `action` &#x20;
 
 ## utils/turns
@@ -5606,16 +5630,16 @@ matches what the model is being told.
 
 ## Turn
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `id` **[string][879]** The first message's id, which is stable enough to key on
+- `id` **[string][882]** The first message's id, which is stable enough to key on
 - `role` **(`"user"` | `"assistant"`)** Whose turn it is
-- `command` **[string][879]?** The command that answered, when the turn is one
+- `command` **[string][882]?** The command that answered, when the turn is one
   rather than something anybody said
-- `messages` **[Array][884]\<Message>** What it was taken in, in order
-- `compacted` **[boolean][880]** Whether a summary now stands in for it
+- `messages` **[Array][887]\<Message>** What it was taken in, in order
+- `compacted` **[boolean][883]** Whether a summary now stands in for it
 
 ## commandOf
 
@@ -5632,7 +5656,7 @@ piece of that message.
 
 - `message` **Message**&#x20;
 
-Returns **([string][879] | [undefined][889])**&#x20;
+Returns **([string][882] | [undefined][892])**&#x20;
 
 ## groupTurns
 
@@ -5644,15 +5668,15 @@ turns and the opening a summary kept is not folded into what came after it.
 
 ### Parameters
 
-- `messages` **[Array][884]\<Message>** The conversation in order
-- `covered` **[Set][890]<[number][877]>?** Which of them a summary stands in for, by
+- `messages` **[Array][887]\<Message>** The conversation in order
+- `covered` **[Set][893]<[number][880]>?** Which of them a summary stands in for, by
   position. See `compactionCover` in ai/compaction.js. (optional, default `new Set()`)
 
-Returns **[Array][884]<[Turn][778]>**&#x20;
+Returns **[Array][887]<[Turn][781]>**&#x20;
 
 ## turns
 
-Type: [Array][884]<[Turn][778]>
+Type: [Array][887]<[Turn][781]>
 
 ## compactedRuns
 
@@ -5665,14 +5689,14 @@ included, so they are in the run rather than closing runs of their own.
 
 ### Parameters
 
-- `turns` **[Array][884]<[Turn][778]>**&#x20;
+- `turns` **[Array][887]<[Turn][781]>**&#x20;
 
-Returns **[Map][888]<[number][877], [number][877]>** For each turn a line goes above, how many
+Returns **[Map][891]<[number][880], [number][880]>** For each turn a line goes above, how many
 messages were in the run it closes
 
 ## runs
 
-Type: [Map][888]<[number][877], [number][877]>
+Type: [Map][891]<[number][880], [number][880]>
 
 ## textLines
 
@@ -5683,10 +5707,10 @@ guessed from until it has had one; see composables/useNearTurns.js.
 
 ### Parameters
 
-- `text` **[string][879]**&#x20;
-- `perLine` **[number][877]** Characters that fit across the column
+- `text` **[string][882]**&#x20;
+- `perLine` **[number][880]** Characters that fit across the column
 
-Returns **[number][877]**&#x20;
+Returns **[number][880]**&#x20;
 
 ## utils/visibility
 
@@ -5739,14 +5763,14 @@ The mark a chat put on this document itself, not on a folder above it.
 
 ### Parameters
 
-- `chat` **([ChatMarks][795] | null | [undefined][889])**&#x20;
-- `id` **[string][879]**&#x20;
+- `chat` **([ChatMarks][798] | null | [undefined][892])**&#x20;
+- `id` **[string][882]**&#x20;
 
-Returns **([ChatMark][794] | null)**&#x20;
+Returns **([ChatMark][797] | null)**&#x20;
 
 ##
 
-Type: [ChatMark][794]
+Type: [ChatMark][797]
 
 ## withMark
 
@@ -5759,15 +5783,15 @@ model has none of its own.
 
 ### Parameters
 
-- `chat` **([ChatMarks][795] | null | [undefined][889])**&#x20;
-- `id` **[string][879]**&#x20;
-- `mark` **([ChatMark][794] | null)** Null to leave it to the folders above
+- `chat` **([ChatMarks][798] | null | [undefined][892])**&#x20;
+- `id` **[string][882]**&#x20;
+- `mark` **([ChatMark][797] | null)** Null to leave it to the folders above
 
-Returns **[ChatMarks][795]** The lists, to update the chat with
+Returns **[ChatMarks][798]** The lists, to update the chat with
 
 ## next
 
-Type: [ChatMarks][795]
+Type: [ChatMarks][798]
 
 ## unpinned
 
@@ -5780,11 +5804,11 @@ hiding.
 
 ### Parameters
 
-- `chat` **([ChatMarks][795] | null | [undefined][889])**&#x20;
+- `chat` **([ChatMarks][798] | null | [undefined][892])**&#x20;
 - `document` **TreeDocument**&#x20;
 - `get` &#x20;
 
-Returns **[ChatMarks][795]** The three lists, to update the chat with
+Returns **[ChatMarks][798]** The three lists, to update the chat with
 
 ## chatVisibility
 
@@ -5796,7 +5820,7 @@ when the tree or the chat changes.
 
 ### Parameters
 
-- `chat` **([ChatMarks][795] | null | [undefined][889])** Null reads with no marks at all
+- `chat` **([ChatMarks][798] | null | [undefined][892])** Null reads with no marks at all
 - `get` &#x20;
 
 ## known
@@ -5815,7 +5839,7 @@ Whether the model in this chat may see a document.
 
 ### Parameters
 
-- `document` **(TreeDocument | null | [undefined][889])**&#x20;
+- `document` **(TreeDocument | null | [undefined][892])**&#x20;
 
 ## hiddenEverywhere
 
@@ -5835,7 +5859,7 @@ nearest folder's. Null when nothing above it is marked.
 
 - `document` **TreeDocument**&#x20;
 
-Returns **([ChatMark][794] | null)**&#x20;
+Returns **([ChatMark][797] | null)**&#x20;
 
 ## utils/webkit
 
@@ -5851,9 +5875,9 @@ than `Chrome/` or `Edg/`.
 
 ### Parameters
 
-- `userAgent` **[string][879]?** (optional, default `globalThis.navigator?.userAgent||''`)
+- `userAgent` **[string][882]?** (optional, default `globalThis.navigator?.userAgent||''`)
 
-Returns **[boolean][880]**&#x20;
+Returns **[boolean][883]**&#x20;
 
 ## utils/wordCount
 
@@ -5900,16 +5924,16 @@ Global, for finding every one; the source of a fresh instance for anchoring.
 
 A comment, found in text.
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `id` **[string][879]**&#x20;
-- `text` **[string][879]** The passage it is on
-- `comment` **[string][879]** What was said about it
-- `from` **[number][877]** Where the markup starts in the string
-- `to` **[number][877]** Where it ends
-- `markup` **[string][879]** The whole `{==…==}{>>…<<}` span, as written
+- `id` **[string][882]**&#x20;
+- `text` **[string][882]** The passage it is on
+- `comment` **[string][882]** What was said about it
+- `from` **[number][880]** Where the markup starts in the string
+- `to` **[number][880]** Where it ends
+- `markup` **[string][882]** The whole `{==…==}{>>…<<}` span, as written
 
 ## CLOSE_PATTERN
 
@@ -5919,20 +5943,20 @@ The close half alone, for the parser's closing rule.
 
 How the two halves are written around a passage.
 
-Type: [string][879]
+Type: [string][882]
 
 ## newCommentId
 
 A fresh comment id: short, lower-case, and unlike a word, so it reads as a
 handle in the markup and in a tool call.
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## BREAK_MARKUP
 
 A break in a comment, as the markup writes it and as it may be read.
 
-Type: [string][879]
+Type: [string][882]
 
 ## closeMarkup
 
@@ -5940,10 +5964,10 @@ The closing markup for a comment: the end of the passage, then the comment.
 
 ### Parameters
 
-- `id` **[string][879]**&#x20;
-- `comment` **[string][879]**&#x20;
+- `id` **[string][882]**&#x20;
+- `comment` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## cleanComment
 
@@ -5953,9 +5977,9 @@ markup early.
 
 ### Parameters
 
-- `comment` **[string][879]**&#x20;
+- `comment` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## commentOf
 
@@ -5963,9 +5987,9 @@ What was said, from the markup: its breaks as new lines.
 
 ### Parameters
 
-- `markup` **[string][879]**&#x20;
+- `markup` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## findComments
 
@@ -5973,9 +5997,9 @@ Every comment in a piece of markdown, in order.
 
 ### Parameters
 
-- `content` **([string][879] | null | [undefined][889])**&#x20;
+- `content` **([string][882] | null | [undefined][892])**&#x20;
 
-Returns **[Array][884]<[FoundComment][823]>**&#x20;
+Returns **[Array][887]<[FoundComment][826]>**&#x20;
 
 ## unmarked
 
@@ -5984,7 +6008,7 @@ reads, and where each comment's passage starts and ends in what is left.
 
 ### Parameters
 
-- `content` **[string][879]**&#x20;
+- `content` **[string][882]**&#x20;
 
 ## comments
 
@@ -5995,9 +6019,9 @@ said about it gone.
 
 ### Parameters
 
-- `content` **([string][879] | null | [undefined][889])**&#x20;
+- `content` **([string][882] | null | [undefined][892])**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## HALF_PATTERN
 
@@ -6010,9 +6034,9 @@ cut from the middle of a comment has half of its markup, which goes too.
 
 ### Parameters
 
-- `quote` **[string][879]**&#x20;
+- `quote` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## editAroundComments
 
@@ -6024,23 +6048,23 @@ its markup gone with the old words, and is named in what comes back.
 
 ### Parameters
 
-- `content` **[string][879]** The markdown, comments and all
-- `old` **[string][879]** The passage to change, as it reads without them
-- `replacement` **[string][879]** What it becomes, without them
+- `content` **[string][882]** The markdown, comments and all
+- `old` **[string][882]** The passage to change, as it reads without them
+- `replacement` **[string][882]** What it becomes, without them
 
-Returns **{count: [number][877], old: [string][879], new: [string][879], resolved: [Array][884]<[FoundComment][823]>}** How many times `old` is in the text, and when once, the edit to make
-
-## resolved
-
-Type: [Array][884]<[FoundComment][823]>
+Returns **{count: [number][880], old: [string][882], new: [string][882], resolved: [Array][887]<[FoundComment][826]>}** How many times `old` is in the text, and when once, the edit to make
 
 ## resolved
 
-Type: [Array][884]<[FoundComment][823]>
+Type: [Array][887]<[FoundComment][826]>
+
+## resolved
+
+Type: [Array][887]<[FoundComment][826]>
 
 ##
 
-Type: [number][877]
+Type: [number][880]
 
 ## onlyPlace
 
@@ -6049,14 +6073,14 @@ there exactly once; -1 when it is not there, or is there more than once.
 
 ### Parameters
 
-- `markdown` **[string][879]**&#x20;
-- `passage` **[string][879]**&#x20;
+- `markdown` **[string][882]**&#x20;
+- `passage` **[string][882]**&#x20;
 
-Returns **[number][877]**&#x20;
+Returns **[number][880]**&#x20;
 
 ##
 
-Type: [number][877]
+Type: [number][880]
 
 ## rewriteAroundComments
 
@@ -6068,10 +6092,10 @@ others are resolved, and named in what comes back.
 
 ### Parameters
 
-- `content` **[string][879]** The document as it is, comments and all
-- `body` **[string][879]** What it becomes
+- `content` **[string][882]** The document as it is, comments and all
+- `body` **[string][882]** What it becomes
 
-Returns **{body: [string][879], resolved: [Array][884]<[FoundComment][823]>}**&#x20;
+Returns **{body: [string][882], resolved: [Array][887]<[FoundComment][826]>}**&#x20;
 
 ## countComments
 
@@ -6079,9 +6103,9 @@ How many comments a piece of markdown holds.
 
 ### Parameters
 
-- `content` **([string][879] | null | [undefined][889])**&#x20;
+- `content` **([string][882] | null | [undefined][892])**&#x20;
 
-Returns **[number][877]**&#x20;
+Returns **[number][880]**&#x20;
 
 ## commentRanges
 
@@ -6092,13 +6116,13 @@ each run is a range here, so a click on either finds the comment.
 
 ### Parameters
 
-- `doc` **[Node][892]**&#x20;
+- `doc` **[Node][895]**&#x20;
 
-Returns **[Array][884]<{id: [string][879], text: [string][879], from: [number][877], to: [number][877]}>**&#x20;
+Returns **[Array][887]<{id: [string][882], text: [string][882], from: [number][880], to: [number][880]}>**&#x20;
 
 ## ranges
 
-Type: [Array][884]<{id: [string][879], text: [string][879], from: [number][877], to: [number][877]}>
+Type: [Array][887]<{id: [string][882], text: [string][882], from: [number][880], to: [number][880]}>
 
 ## commentAround
 
@@ -6109,20 +6133,20 @@ said, and the run of it in this textblock.
 
 - `$pos` **ResolvedPos**&#x20;
 
-Returns **({id: [string][879], text: [string][879], from: [number][877], to: [number][877]} | null)**&#x20;
+Returns **({id: [string][882], text: [string][882], from: [number][880], to: [number][880]} | null)**&#x20;
 
 ## CommentEntry
 
 A comment as a list shows it: once, however many runs its mark has, with
 the passage as it reads rather than as markdown.
 
-Type: [Object][878]
+Type: [Object][881]
 
 ### Properties
 
-- `id` **[string][879]**&#x20;
-- `passage` **[string][879]** The text it is on, its runs joined with a space
-- `comment` **[string][879]** What was said about it
+- `id` **[string][882]**&#x20;
+- `passage` **[string][882]** The text it is on, its runs joined with a space
+- `comment` **[string][882]** What was said about it
 
 ## entriesOf
 
@@ -6130,9 +6154,9 @@ Entries in the order their comments start, the runs of one id joined.
 
 ### Parameters
 
-- `runs` **[Array][884]<{id: [string][879], passage: [string][879], comment: [string][879]}>**&#x20;
+- `runs` **[Array][887]<{id: [string][882], passage: [string][882], comment: [string][882]}>**&#x20;
 
-Returns **[Array][884]<[CommentEntry][862]>**&#x20;
+Returns **[Array][887]<[CommentEntry][865]>**&#x20;
 
 ## commentsInDoc
 
@@ -6140,9 +6164,9 @@ The comments in an editor document, one entry each.
 
 ### Parameters
 
-- `doc` **[Node][892]**&#x20;
+- `doc` **[Node][895]**&#x20;
 
-Returns **[Array][884]<[CommentEntry][862]>**&#x20;
+Returns **[Array][887]<[CommentEntry][865]>**&#x20;
 
 ## commentsInMarkdown
 
@@ -6151,9 +6175,9 @@ gives for the same text, without parsing it.
 
 ### Parameters
 
-- `content` **([string][879] | null | [undefined][889])**&#x20;
+- `content` **([string][882] | null | [undefined][892])**&#x20;
 
-Returns **[Array][884]<[CommentEntry][862]>**&#x20;
+Returns **[Array][887]<[CommentEntry][865]>**&#x20;
 
 ## plainPassage
 
@@ -6163,9 +6187,9 @@ markdown the serializer writes inside a comment.
 
 ### Parameters
 
-- `markdown` **[string][879]**&#x20;
+- `markdown` **[string][882]**&#x20;
 
-Returns **[string][879]**&#x20;
+Returns **[string][882]**&#x20;
 
 ## commentMarkupPlugin
 
@@ -6874,225 +6898,228 @@ within its textblock.
 [672]: #parameters-207
 [673]: #mergerow
 [674]: #parameters-208
-[675]: #settingsimport
-[676]: #properties-10
-[677]: #planimport
-[678]: #parameters-209
-[679]: #plan
-[680]: #changesanything
-[681]: #parameters-210
-[682]: #listed
-[683]: #parameters-211
-[684]: #named
-[685]: #itemsinwords
-[686]: #parameters-212
-[687]: #phrases
-[688]: #slice
-[689]: #-14
-[690]: #describeimport
-[691]: #parameters-213
-[692]: #sentences
-[693]: #aiproviders
-[694]: #providertype
-[695]: #properties-11
-[696]: #providerkind
-[697]: #provider_types
-[698]: #built_in_providers
-[699]: #default_speech_provider_id
-[700]: #inmenuorder
-[701]: #parameters-214
-[702]: #typeof
-[703]: #parameters-215
-[704]: #providerdoes
-[705]: #parameters-216
-[706]: #default_provider_type
-[707]: #providerlabel
-[708]: #parameters-217
-[709]: #knownaddress
-[710]: #parameters-218
-[711]: #needsendpoint
-[712]: #parameters-219
-[713]: #needskey
-[714]: #parameters-220
-[715]: #connectiongap
-[716]: #parameters-221
-[717]: #canlistmodels
-[718]: #parameters-222
-[719]: #serveschat
-[720]: #parameters-223
-[721]: #takesreasoningeffort
-[722]: #parameters-224
-[723]: #takeschattemplatekwargs
-[724]: #parameters-225
-[725]: #aisamplerparameters
-[726]: #properties-12
-[727]: #reasoning_effort_options
-[728]: #default_preset_id
-[729]: #ai_defaults
-[730]: #resolveaisettings
-[731]: #parameters-226
-[732]: #resolveaisettings-1
-[733]: #parameters-227
-[734]: #mergeaisettings
-[735]: #parameters-228
-[736]: #title_defaults
-[737]: #utilstabs
-[738]: #tabs
-[739]: #properties-13
-[740]: #no_tabs
-[741]: #settled
-[742]: #parameters-229
-[743]: #tabsof
-[744]: #parameters-230
-[745]: #tabspatch
-[746]: #parameters-231
-[747]: #normalizetabs
-[748]: #parameters-232
-[749]: #opentab
-[750]: #parameters-233
-[751]: #keeptab
-[752]: #parameters-234
-[753]: #closetab
-[754]: #parameters-235
-[755]: #droptabs
-[756]: #parameters-236
-[757]: #tabnames
-[758]: #parameters-237
-[759]: #tail-1
-[760]: #parameters-238
-[761]: #utilstitlevalidation
-[762]: #normalizetitle
+[675]: #-14
+[676]: #settingsimport
+[677]: #properties-10
+[678]: #planimport
+[679]: #parameters-209
+[680]: #plan
+[681]: #changesanything
+[682]: #parameters-210
+[683]: #listed
+[684]: #parameters-211
+[685]: #named
+[686]: #itemsinwords
+[687]: #parameters-212
+[688]: #phrases
+[689]: #slice
+[690]: #-15
+[691]: #describeimport
+[692]: #parameters-213
+[693]: #sentences
+[694]: #aiproviders
+[695]: #providertype
+[696]: #properties-11
+[697]: #providerkind
+[698]: #provider_types
+[699]: #built_in_providers
+[700]: #default_speech_provider_id
+[701]: #inmenuorder
+[702]: #parameters-214
+[703]: #typeof
+[704]: #parameters-215
+[705]: #providerdoes
+[706]: #parameters-216
+[707]: #default_provider_type
+[708]: #providerlabel
+[709]: #parameters-217
+[710]: #knownaddress
+[711]: #parameters-218
+[712]: #needsendpoint
+[713]: #parameters-219
+[714]: #needskey
+[715]: #parameters-220
+[716]: #connectiongap
+[717]: #parameters-221
+[718]: #presetproblem
+[719]: #parameters-222
+[720]: #canlistmodels
+[721]: #parameters-223
+[722]: #serveschat
+[723]: #parameters-224
+[724]: #takesreasoningeffort
+[725]: #parameters-225
+[726]: #takeschattemplatekwargs
+[727]: #parameters-226
+[728]: #aisamplerparameters
+[729]: #properties-12
+[730]: #reasoning_effort_options
+[731]: #default_preset_id
+[732]: #ai_defaults
+[733]: #resolveaisettings
+[734]: #parameters-227
+[735]: #resolveaisettings-1
+[736]: #parameters-228
+[737]: #mergeaisettings
+[738]: #parameters-229
+[739]: #title_defaults
+[740]: #utilstabs
+[741]: #tabs
+[742]: #properties-13
+[743]: #no_tabs
+[744]: #settled
+[745]: #parameters-230
+[746]: #tabsof
+[747]: #parameters-231
+[748]: #tabspatch
+[749]: #parameters-232
+[750]: #normalizetabs
+[751]: #parameters-233
+[752]: #opentab
+[753]: #parameters-234
+[754]: #keeptab
+[755]: #parameters-235
+[756]: #closetab
+[757]: #parameters-236
+[758]: #droptabs
+[759]: #parameters-237
+[760]: #tabnames
+[761]: #parameters-238
+[762]: #tail-1
 [763]: #parameters-239
-[764]: #shouldupdatetitle
-[765]: #parameters-240
-[766]: #iscustomtitle
-[767]: #parameters-241
-[768]: #gettitleplaceholder
-[769]: #parameters-242
-[770]: #freename
-[771]: #parameters-243
-[772]: #-15
-[773]: #utilstouch
-[774]: #hastouchkeyboard
-[775]: #submitonenter
-[776]: #parameters-244
-[777]: #utilsturns
-[778]: #turn
-[779]: #properties-14
-[780]: #commandof
-[781]: #parameters-245
-[782]: #groupturns
-[783]: #parameters-246
-[784]: #turns
-[785]: #compactedruns
+[764]: #utilstitlevalidation
+[765]: #normalizetitle
+[766]: #parameters-240
+[767]: #shouldupdatetitle
+[768]: #parameters-241
+[769]: #iscustomtitle
+[770]: #parameters-242
+[771]: #gettitleplaceholder
+[772]: #parameters-243
+[773]: #freename
+[774]: #parameters-244
+[775]: #-16
+[776]: #utilstouch
+[777]: #hastouchkeyboard
+[778]: #submitonenter
+[779]: #parameters-245
+[780]: #utilsturns
+[781]: #turn
+[782]: #properties-14
+[783]: #commandof
+[784]: #parameters-246
+[785]: #groupturns
 [786]: #parameters-247
-[787]: #runs
-[788]: #textlines
+[787]: #turns
+[788]: #compactedruns
 [789]: #parameters-248
-[790]: #utilsvisibility
-[791]: #fields
-[792]: #fields-1
-[793]: #fields-2
-[794]: #chatmark
-[795]: #chatmarks
-[796]: #pinned
-[797]: #markof
-[798]: #parameters-249
-[799]: #-16
-[800]: #withmark
+[790]: #runs
+[791]: #textlines
+[792]: #parameters-249
+[793]: #utilsvisibility
+[794]: #fields
+[795]: #fields-1
+[796]: #fields-2
+[797]: #chatmark
+[798]: #chatmarks
+[799]: #pinned
+[800]: #markof
 [801]: #parameters-250
-[802]: #next
-[803]: #unpinned
+[802]: #-17
+[803]: #withmark
 [804]: #parameters-251
-[805]: #chatvisibility
-[806]: #parameters-252
-[807]: #known
-[808]: #settle
+[805]: #next
+[806]: #unpinned
+[807]: #parameters-252
+[808]: #chatvisibility
 [809]: #parameters-253
-[810]: #sees
-[811]: #parameters-254
-[812]: #hiddeneverywhere
-[813]: #parameters-255
-[814]: #markfor
-[815]: #parameters-256
-[816]: #utilswebkit
-[817]: #iswebkit
+[810]: #known
+[811]: #settle
+[812]: #parameters-254
+[813]: #sees
+[814]: #parameters-255
+[815]: #hiddeneverywhere
+[816]: #parameters-256
+[817]: #markfor
 [818]: #parameters-257
-[819]: #utilswordcount
-[820]: #editorcomments
-[821]: #comment_pattern
-[822]: #comment_pattern-1
-[823]: #foundcomment
-[824]: #properties-15
-[825]: #close_pattern
-[826]: #open_markup
-[827]: #newcommentid
-[828]: #break_markup
-[829]: #closemarkup
-[830]: #parameters-258
-[831]: #cleancomment
-[832]: #parameters-259
-[833]: #commentof
-[834]: #parameters-260
-[835]: #findcomments
-[836]: #parameters-261
-[837]: #unmarked
-[838]: #parameters-262
-[839]: #comments
-[840]: #withoutcomments
+[819]: #utilswebkit
+[820]: #iswebkit
+[821]: #parameters-258
+[822]: #utilswordcount
+[823]: #editorcomments
+[824]: #comment_pattern
+[825]: #comment_pattern-1
+[826]: #foundcomment
+[827]: #properties-15
+[828]: #close_pattern
+[829]: #open_markup
+[830]: #newcommentid
+[831]: #break_markup
+[832]: #closemarkup
+[833]: #parameters-259
+[834]: #cleancomment
+[835]: #parameters-260
+[836]: #commentof
+[837]: #parameters-261
+[838]: #findcomments
+[839]: #parameters-262
+[840]: #unmarked
 [841]: #parameters-263
-[842]: #half_pattern
-[843]: #quotewithoutcomments
+[842]: #comments
+[843]: #withoutcomments
 [844]: #parameters-264
-[845]: #editaroundcomments
-[846]: #parameters-265
-[847]: #resolved
-[848]: #resolved-1
-[849]: #-17
-[850]: #onlyplace
-[851]: #parameters-266
+[845]: #half_pattern
+[846]: #quotewithoutcomments
+[847]: #parameters-265
+[848]: #editaroundcomments
+[849]: #parameters-266
+[850]: #resolved
+[851]: #resolved-1
 [852]: #-18
-[853]: #rewritearoundcomments
+[853]: #onlyplace
 [854]: #parameters-267
-[855]: #countcomments
-[856]: #parameters-268
-[857]: #commentranges
-[858]: #parameters-269
-[859]: #ranges
-[860]: #commentaround
+[855]: #-19
+[856]: #rewritearoundcomments
+[857]: #parameters-268
+[858]: #countcomments
+[859]: #parameters-269
+[860]: #commentranges
 [861]: #parameters-270
-[862]: #commententry
-[863]: #properties-16
-[864]: #entriesof
-[865]: #parameters-271
-[866]: #commentsindoc
-[867]: #parameters-272
-[868]: #commentsinmarkdown
-[869]: #parameters-273
-[870]: #plainpassage
-[871]: #parameters-274
-[872]: #commentmarkupplugin
-[873]: #parameters-275
-[874]: #editormarks
-[875]: #markaround
+[862]: #ranges
+[863]: #commentaround
+[864]: #parameters-271
+[865]: #commententry
+[866]: #properties-16
+[867]: #entriesof
+[868]: #parameters-272
+[869]: #commentsindoc
+[870]: #parameters-273
+[871]: #commentsinmarkdown
+[872]: #parameters-274
+[873]: #plainpassage
+[874]: #parameters-275
+[875]: #commentmarkupplugin
 [876]: #parameters-276
-[877]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[878]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[879]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[880]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[881]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[882]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
-[883]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[884]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[885]: https://developer.mozilla.org/docs/Web/API/Document
-[886]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[887]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Date
-[888]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[889]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[890]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
-[891]: https://developer.mozilla.org/docs/Web/HTML/Element
-[892]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
-[893]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
-[894]: https://developer.mozilla.org/docs/Web/API/Element
-[895]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp
-[896]: https://developer.mozilla.org/docs/Web/API/KeyboardEvent
+[877]: #editormarks
+[878]: #markaround
+[879]: #parameters-277
+[880]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[881]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[882]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[883]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[884]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[885]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
+[886]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[887]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[888]: https://developer.mozilla.org/docs/Web/API/Document
+[889]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[890]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Date
+[891]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[892]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[893]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
+[894]: https://developer.mozilla.org/docs/Web/HTML/Element
+[895]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
+[896]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[897]: https://developer.mozilla.org/docs/Web/API/Element
+[898]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp
+[899]: https://developer.mozilla.org/docs/Web/API/KeyboardEvent

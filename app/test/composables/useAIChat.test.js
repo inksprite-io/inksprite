@@ -934,6 +934,17 @@ describe('useAIChat', () => {
 
       expect(await captureTools()).toBeUndefined()
     })
+
+    it('tells the context when the profile has tool use off, for the project block', async () => {
+      mockAIConfig.activeAIPreset.value = { ...mockProfile, toolsEnabled: false }
+
+      await captureTools()
+
+      const { useAIContext } = await import('@/composables/useAIContext')
+      expect(useAIContext().build).toHaveBeenCalledWith(
+        expect.objectContaining({ toolsAllowed: false })
+      )
+    })
   })
 
   describe('generation overrides', () => {
@@ -1380,6 +1391,8 @@ describe('useAIChat', () => {
         // As a transcript, so there is no assistant turn to continue. A skill
         // that named no roles gets the API's own names for them.
         transcript: { user: 'user', assistant: 'assistant' },
+        // The chat's preset, which says whether the project block goes too.
+        toolsAllowed: true,
       })
       expect(said).toBe('The scene has what it needs.')
     })

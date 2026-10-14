@@ -43,17 +43,15 @@ describe('chat profiles', () => {
 
       expect(blank.prompt).toBe('')
       expect([...blank.disabledToolGroups].sort()).toEqual([...WITHHELD_GROUPS].sort())
-      expect(blank.projectContextEnabled).toBe(false)
       expect(blank.rules).toBeUndefined()
     })
 
-    it('stamps Blank onto a new chat with every tool and the project off', () => {
+    it('stamps Blank onto a new chat with every tool off', () => {
       const stamped = settingsForNewChat(getBuiltInProfile(BLANK_PROFILE_ID))
 
       expect(stamped).toMatchObject({
         profileId: BLANK_PROFILE_ID,
         disabledToolGroups: expect.arrayContaining(WITHHELD_GROUPS),
-        projectContextEnabled: false,
       })
       expect(stamped).not.toHaveProperty('prompt')
     })
@@ -170,7 +168,6 @@ describe('chat profiles', () => {
         profileId: CHAT_PROFILE_ID,
         disabledTools: undefined,
         disabledToolGroups: ['experimental'],
-        projectContextEnabled: undefined,
         rules: undefined,
         // The chat's own choice of servers goes, so it follows the ones the
         // new profile is used with.

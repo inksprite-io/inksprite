@@ -843,7 +843,6 @@ describe('useChats', () => {
           profileId: null,
           disabledTools: [],
           disabledToolGroups: [],
-          projectContextEnabled: true,
         }
       )
       expect(forkedChat.title).toContain('- forked')
@@ -855,7 +854,6 @@ describe('useChats', () => {
         profileId: 'chatprofile_editor',
         disabledTools: ['oracle'],
         disabledToolGroups: ['lore'],
-        projectContextEnabled: false,
         pinnedIds: ['doc_description', 'doc_scenario'],
         shownIds: ['doc_vivi'],
         hiddenIds: ['doc_characters'],
@@ -873,7 +871,6 @@ describe('useChats', () => {
         profileId: 'chatprofile_editor',
         disabledTools: ['oracle'],
         disabledToolGroups: ['lore'],
-        projectContextEnabled: false,
         pinnedIds: ['doc_description', 'doc_scenario'],
         shownIds: ['doc_vivi'],
         hiddenIds: ['doc_characters'],

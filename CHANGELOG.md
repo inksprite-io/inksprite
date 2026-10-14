@@ -6,6 +6,23 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.17
+
+Scrivener projects, and a new example project in the docs.
+
+- A Scrivener 3 project can be imported. Choose the `.scriv`, or a zip
+  of it, under Projects › Import project, and it comes in as a new
+  project with the binder as the outline, in the same order. Each text
+  is a document, with its headings, lists, bold, italic and tables, and
+  the PDFs and pictures in Research are files. A text's synopsis and
+  notes come in as documents beside it. To bring one into the open
+  project, choose it with Import › Files on a folder, or drop it there.
+- Chat settings no longer have a Project context switch. A chat that
+  can use the document tools tells the model about the project on every
+  turn; one that can't sends only the documents you pinned.
+- The docs' pictures show a new example project, a thief's story set in
+  a walled city.
+
 ## v0.1.0-dev.16
 
 Projects always in a folder in the desktop app, and a Projects menu atop

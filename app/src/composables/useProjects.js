@@ -21,6 +21,8 @@ import { pushProjectToRoute } from '@/utils/routeHelpers'
 import { dropJobsForStory } from '@/jobs/index.js'
 import { askToKeepData } from '@/platform/persistence.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
+import { mayHoldProject, packageOfZip } from '@/scrivener/package.js'
+import { openProject, writeProject } from '@/scrivener/project.js'
 
 /** @typedef {import('@/types/models.js').Story} Story */
 
@@ -135,16 +137,41 @@ export function useProjects() {
   /**
    * Add a project file, exported from a project's menu, beside the others
    * with ids of its own, and open it. A project brought back beside the one
-   * it was exported from is numbered, so the two can be told apart.
+   * it was exported from is numbered, so the two can be told apart. A `.scriv`,
+   * or a zip, is a Scrivener project.
    * @param {File} file
    * @returns {Promise<Story>}
    */
   async function importFile(file) {
+    if (mayHoldProject(file)) return importScrivener(file)
     const project = await backup.readProjectFile(file)
     await storiesStore.loadNames()
     const story = await backup.importProject(project, {
       title: storiesStore.freeName(nameInFile(project)),
     })
+    askToKeepData()
+    open(story.id)
+    return story
+  }
+
+  /**
+   * Make a project of a Scrivener project, named after it, and open it. A
+   * `.scriv` chosen as a file comes zipped by the browser; one that came as
+   * the folder it is cannot be read, and the writer can zip it themselves.
+   * The project is read and checked before anything is made.
+   * @param {File} file
+   * @returns {Promise<Story>}
+   */
+  async function importScrivener(file) {
+    const pack = await packageOfZip(file)
+    if (!pack && /\.scriv$/i.test(file.name)) {
+      throw new Error('This project could not be read. Compress it in Finder, then import the zip.')
+    }
+    if (!pack) throw new Error('There is no Scrivener project in this zip.')
+    const project = await openProject(pack)
+    await storiesStore.loadNames()
+    const story = await storiesStore.createStory(storiesStore.freeName(project.name))
+    await writeProject(story.id, project)
     askToKeepData()
     open(story.id)
     return story

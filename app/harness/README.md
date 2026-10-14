@@ -187,6 +187,17 @@ real papers, books and saved pages go; it is gitignored, being other
 people's work. A PDF with no words is a scan; a page whose first words are
 its menu is a reader to fix.
 
+## Scrivener import checks
+
+    npm run scrivener -- harness/test-scriv/Novel.scriv
+    npm run scrivener -- harness/test-scriv/Novel.zip --show "Chapter One"
+
+Runs the Scrivener import (`src/scrivener/`) over a `.scriv` folder or a
+zip of one, writing into a database in memory, and prints the tree it makes
+with each document's words, to set beside Scrivener's binder. `--show TITLE`
+prints the markdown of every document with that title. `harness/test-scriv/`
+is gitignored.
+
 ## The loop
 
 1. Run the scenario five or so times.

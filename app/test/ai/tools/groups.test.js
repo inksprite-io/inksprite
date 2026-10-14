@@ -6,6 +6,7 @@ import {
   getToolDefinitionsFor,
   getEnabledToolDefinitions,
   keptInConversation,
+  offersDocuments,
   TOOL_GROUP_LABELS,
 } from '@/ai/tools/index.js'
 import { DIRECTOR_TOOLS, SKILL_MAX_DEPTH } from '@/ai/skills/index.js'
@@ -66,6 +67,18 @@ describe('tool groups', () => {
     for (const name of ['roll_dice', 'oracle', 'director', 'nope']) {
       expect(keptInConversation(name)).toBe(false)
     }
+  })
+
+  it('says whether a chat is offered any of the document tools', () => {
+    const documents = getToolGroups()
+      .find(group => group.id === 'documents')
+      .definitions.map(definition => definition.function.name)
+
+    expect(offersDocuments({})).toBe(true)
+    expect(offersDocuments({ disabledGroups: ['rpg', 'web'] })).toBe(true)
+    expect(offersDocuments({ disabledTools: documents.slice(1) })).toBe(true)
+    expect(offersDocuments({ disabledGroups: ['documents'] })).toBe(false)
+    expect(offersDocuments({ disabledTools: documents })).toBe(false)
   })
 
   it('says which tools draw by chance', () => {
