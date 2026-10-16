@@ -32,7 +32,8 @@ import { traitsOf } from './models.js'
  * @param {Object} args
  * @param {AIProvider} args.provider
  * @param {string} args.model
- * @param {string[]} [args.allowedProviders] - The only upstreams OpenRouter may route to
+ * @param {import('./routing.js').ModelUpstreams} [args.upstreams] - The preset's allowed and
+ *   ignored providers for the model, on OpenRouter
  * @param {Array<{role: string, content: string}>} args.messages
  * @param {import('./defaults.js').AISettingsOverrides} [args.overrides] - On top of AI_DEFAULTS
  * @param {AbortSignal} [args.signal]
@@ -43,7 +44,7 @@ import { traitsOf } from './models.js'
 export async function complete({
   provider,
   model,
-  allowedProviders,
+  upstreams,
   messages,
   overrides,
   signal,
@@ -78,7 +79,7 @@ export async function complete({
     messages,
     model,
     provider,
-    allowedProviders,
+    upstreams,
     settings: resolveAISettings(overrides),
     traits: await traitsOf(provider, model),
   })

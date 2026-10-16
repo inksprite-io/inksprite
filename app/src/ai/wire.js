@@ -272,8 +272,8 @@ function reasoningFields(provider, settings, askedForEffort) {
  * @param {Array<any>} args.messages - The conversation, before wire translation
  * @param {string} args.model
  * @param {AIProvider} args.provider
- * @param {string[]} [args.allowedProviders] - The preset's: the only upstreams
- *   OpenRouter may route this model to. Empty or absent allows any.
+ * @param {import('./routing.js').ModelUpstreams} [args.upstreams] - The
+ *   preset's allowed and ignored providers for this model, on OpenRouter
  * @param {AISettings} args.settings - Already resolved over AI_DEFAULTS
  * @param {ModelTraits} [args.traits] - What the provider's list says of the
  *   model (ai/models.js), where it says anything
@@ -288,7 +288,7 @@ export function buildCompletionBody({
   messages,
   model,
   provider,
-  allowedProviders,
+  upstreams,
   settings: chosen,
   traits,
   tools,
@@ -345,8 +345,8 @@ export function buildCompletionBody({
   if (speaksOfReasoning) Object.assign(body, reasoningFields(provider, settings, askedForEffort))
 
   // Provider routing: the connection's policy, and the providers the preset
-  // allows for this model.
-  const routing = buildProviderRouting(provider, model, allowedProviders)
+  // allows and ignores for this model.
+  const routing = buildProviderRouting(provider, model, upstreams)
   if (routing) body.provider = routing
 
   return {

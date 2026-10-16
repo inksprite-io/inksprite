@@ -6,6 +6,55 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.18
+
+Spelling and grammar in the editor, focus mode, a switch for the AI, a
+library of character cards, and Export as a tree.
+
+- The editor checks spelling and grammar as you write, the same in
+  every browser and the desktop app: misspellings are underlined in
+  red, grammar in blue. Right-click a flagged word for its suggestions,
+  or to add it to your dictionary or the project's. Nothing is
+  corrected for you, and the names in the project's titles are known
+  already. Settings › System › Spelling has the language (five kinds
+  of English), grammar, and your dictionaries. Phones keep their
+  keyboard's checker.
+- The editor has a right-click menu of its own: Cut, Copy, Copy as
+  Markdown, Paste, Paste without formatting, Paste from Markdown, the
+  link and the comment, and Insert, with Table, Horizontal rule and
+  Code block. In a table, rows and columns are added from its Table
+  items; Tab and Enter only move between cells now.
+- Focus mode shows the document alone, full screen where it can. Press
+  Option-Command-F (Control-Alt-F on Windows and Linux), or the button
+  at the end of the editor's tabs; the same key or Escape brings the
+  rest back.
+- The AI can be switched off, with Enable AI in Settings › System or
+  from the welcome. The chat, narration and the AI's settings go, and
+  come back as they were when it's switched on again.
+- Character cards, the card library and the Roleplay profiles are now
+  an extension, Roleplay, switched on in Settings › Extensions. It is
+  on where they were already in use, and off in new installs. Switching
+  it off hides them and deletes nothing.
+- The card library keeps your character cards outside any project: a
+  grid of portraits to search by name, creator or tag. Add cards as
+  PNG or JSON, dropped on it, or from a link to a Chub page, a
+  botbooru page (in the desktop app) or the card itself. A card can
+  start a project of its own, opening on a chat with the character, or
+  go into the open project; it lists the projects it went into, and
+  downloads as the file it came in. Cards tagged nsfw or nsfl have
+  their pictures blurred until you click the eye beside the search.
+- Export is a tree of your projects, with their documents and chats,
+  the character cards and the settings. Everything ticked is a whole
+  backup, as before, and the settings alone a settings file. Anything
+  else makes a file whose projects and cards Import adds beside yours,
+  merging its settings. Import also takes a project's own export.
+  Export and Import are under Settings › System › Data.
+- An OpenRouter preset can ignore providers for its model, as well as
+  name the ones allowed.
+- inksprite is now free software under the GNU General Public License,
+  version 3 or later, in place of the GNU Affero General Public
+  License. Settings › About, the terms and the README say so.
+
 ## v0.1.0-dev.17
 
 Scrivener projects, and a new example project in the docs.

@@ -149,7 +149,7 @@ describe('buildProviderRouting', () => {
         allowFallbacks: false,
       }),
       'z-ai/glm-5.2',
-      ['anthropic']
+      { allowedProviders: ['anthropic'] }
     )
 
     expect(field).toEqual({
@@ -172,7 +172,7 @@ describe('buildProviderRouting', () => {
           ignore: [],
         }),
         'z-ai/glm-5.2',
-        ['anthropic']
+        { allowedProviders: ['anthropic'] }
       )
     ).toEqual({ zdr: true, only: ['anthropic'] })
   })
@@ -181,23 +181,62 @@ describe('buildProviderRouting', () => {
     const connection = openRouter({ only: ['together'] })
 
     expect(buildProviderRouting(connection, 'z-ai/glm-5.2').only).toBeUndefined()
-    expect(buildProviderRouting(connection, 'z-ai/glm-5.2', ['deepinfra']).only).toEqual([
-      'deepinfra',
-    ])
+    expect(
+      buildProviderRouting(connection, 'z-ai/glm-5.2', { allowedProviders: ['deepinfra'] }).only
+    ).toEqual(['deepinfra'])
   })
 
   it('drops junk out of the allowed list rather than narrow routing to nothing', () => {
     // The list crosses the backup boundary on the preset.
+    const junk = ['deepinfra', '', null, 7]
     expect(
-      buildProviderRouting(openRouter(undefined), 'z-ai/glm-5.2', ['deepinfra', '', null, 7]).only
+      buildProviderRouting(openRouter(undefined), 'z-ai/glm-5.2', { allowedProviders: junk }).only
     ).toEqual(['deepinfra'])
     expect(
-      buildProviderRouting(openRouter(undefined), 'z-ai/glm-5.2', 'deepinfra')
+      buildProviderRouting(openRouter(undefined), 'z-ai/glm-5.2', {
+        allowedProviders: /** @type {any} */ ('deepinfra'),
+      })
     ).not.toHaveProperty('only')
   })
 
   it('sends no allowed list to anything but OpenRouter', () => {
-    expect(buildProviderRouting({ type: 'generic' }, 'gemma', ['deepinfra'])).toBeUndefined()
+    expect(
+      buildProviderRouting({ type: 'generic' }, 'gemma', { allowedProviders: ['deepinfra'] })
+    ).toBeUndefined()
+  })
+
+  it('ignores the preset’s ignored providers as well as the connection’s', () => {
+    const field = buildProviderRouting(openRouter({ ignore: ['morph', 'together'] }), 'glm', {
+      ignoredProviders: ['novita', 'together'],
+    })
+
+    expect(field.ignore).toEqual(['morph', 'together', 'novita'])
+  })
+
+  it('sends the preset’s ignored providers from a connection that ignores none', () => {
+    const connection = openRouter({ ignore: [], zdr: false, dataCollection: 'allow' })
+
+    expect(
+      buildProviderRouting(connection, 'anthropic/claude-sonnet-5', {
+        ignoredProviders: ['bedrock'],
+      })
+    ).toEqual({ ignore: ['bedrock'] })
+    expect(
+      buildProviderRouting(connection, 'anthropic/claude-sonnet-5', { ignoredProviders: [] })
+    ).toBeUndefined()
+  })
+
+  it('drops junk out of the preset’s ignored list', () => {
+    expect(
+      buildProviderRouting(openRouter(undefined), 'glm', {
+        ignoredProviders: /** @type {any} */ (['novita', '', null, 'morph']),
+      }).ignore
+    ).toEqual(['morph', 'novita'])
+    expect(
+      buildProviderRouting(openRouter(undefined), 'glm', {
+        ignoredProviders: /** @type {any} */ ('novita'),
+      }).ignore
+    ).toEqual(['morph'])
   })
 
   it("doesn't send the permissive values of the boolean knobs", () => {

@@ -24,6 +24,8 @@ import { useLibraryMove } from './composables/useLibraryMove'
 import { useSettingsFileNotice } from './composables/useSettingsFile'
 import { projectsToMove } from './storage/open.js'
 import { useJobsStore } from './stores/jobsStore.js'
+import { useCardLibraryStore } from './stores/cardLibraryStore.js'
+import { decideExtensions } from './extensions/index.js'
 import { openLinkClicked } from './platform/open.js'
 
 // Page views go to Vercel Web Analytics only from a build that asks for them
@@ -43,6 +45,14 @@ useSkills()
 // The jobs left from before are counted as the app opens, so the Jobs button
 // is there for them; they are read in when the jobs toast first opens.
 useJobsStore().countJobs()
+
+// The card library is counted the same way, so its button is there once it
+// has cards in it; they are read in when it first opens.
+useCardLibraryStore().countCards()
+
+// An extension never decided is decided once, from whether what it holds is
+// already in use: roleplay stays on for a writer who roleplays.
+decideExtensions()
 
 // In the desktop app, an update is looked for as it opens, and offered once
 // it is downloaded.

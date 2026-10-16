@@ -49,6 +49,11 @@ export default defineConfig({
     // The desktop app's main process, and its packages, which are large.
     watch: { ignored: ['**/electron/**'] },
   },
+  // Harper, the spelling checker, finds its WebAssembly next to its own
+  // module (`new URL(…, import.meta.url)`), which bundling it beforehand
+  // would move away from. Its worker is a module, and built as one.
+  optimizeDeps: { exclude: ['harper.js'] },
+  worker: { format: 'es' },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

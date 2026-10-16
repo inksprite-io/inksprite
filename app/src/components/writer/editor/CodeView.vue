@@ -1,10 +1,11 @@
 <template>
-  <!-- Escape in the code puts the find away as well, as it does in the bar. -->
+  <!-- Escape in the code puts the find away as well, as it does in the bar,
+       and goes no further: focus mode, which Escape also leaves, stays. -->
   <div
     ref="root"
     class="h-full w-full min-h-0 flex flex-col"
     data-file-code
-    @keydown.esc="finding && closeFind()"
+    @keydown.esc="finding && ($event.stopPropagation(), closeFind())"
   >
     <!-- Find, over the code rather than in it. Nothing to replace in code
          that is only read. See editor/plainSearch. -->

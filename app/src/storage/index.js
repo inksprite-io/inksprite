@@ -70,7 +70,7 @@ export const PROJECT_TABLES = ['stories', 'documents', 'files', 'chats', 'messag
 
 /**
  * The tables that belong to the app rather than to a project.
- * @typedef {'aiProviders'|'aiProfiles'|'aiPrompts'|'chatProfiles'|'skills'|'skillWordings'|'mcpServers'|'webSearch'|'jobs'|'projectViews'} AppTable
+ * @typedef {'aiProviders'|'aiProfiles'|'aiPrompts'|'chatProfiles'|'skills'|'skillWordings'|'mcpServers'|'webSearch'|'jobs'|'projectViews'|'cards'|'cardFiles'} AppTable
  */
 
 /**

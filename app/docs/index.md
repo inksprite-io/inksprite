@@ -61,6 +61,14 @@ Character cards and lorebooks, read into the project as documents:
 - The card hidden in a PNG's text chunks, and the JSON a card or a book arrives as
 - V1, V2, V3 and SillyTavern's own World Info export flattened to one shape
 - That shape written into the tree: a folder of documents, with the card kept whole in a hidden sidecar
+- The writer's card library: a card described for browsing, searched by name and tag, and a thumbnail of its picture
+
+### 🧩 [Extensions](./extensions.md)
+
+Parts of the app not every writer wants, switched on in Settings › Extensions:
+
+- Roleplay: character cards, the card library and the roleplay profiles
+- Each decided once, from whether what it holds is already in use
 
 ### 📎 [Files](./files.md)
 
@@ -114,6 +122,14 @@ The web, for the model, through a search service the writer connects:
 - A page read straight from its site and made markdown, on desktop, for Brave, which has no reader
 - Which service can search, and which chats search, opted into per profile or per chat
 - A refusal said for the writer, and pages kept for the session so a long one is read on from
+
+### 🔤 [Spelling](./spelling.md)
+
+The editor's spelling and grammar, checked by Harper on the writer's machine:
+
+- Harper in a worker of the app's own, told the dialect and the words the writer and the project know
+- What it finds cached by paragraph text, and only what is near the screen checked
+- English in five dialects; another language, or a phone, keeps the browser's checker
 
 ### 🗄️ [Storage](./storage.md)
 
@@ -251,7 +267,11 @@ Frontend (Vue 3 + Vite)
 ├── Cards (src/cards)
 │   ├── png - The character card hidden in a PNG's text chunks
 │   ├── card - A card or a lorebook as one shape, whatever version it arrived as
-│   └── write - That shape, written into the project as documents
+│   ├── write - That shape, written into the project as documents
+│   ├── library - A card as the library keeps it: described, searched, found by tag
+│   └── thumbnail - A small copy of a card's picture, for the library's grid
+├── Extensions (src/extensions)
+│   └── index - The extensions there are, and each decided once from what is in use
 ├── Utils (Pure Functions)
 │   ├── Text: formatters, markdown, wordCount, storyParser
 │   ├── Data: backup, routeHelpers

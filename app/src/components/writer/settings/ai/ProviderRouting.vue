@@ -110,7 +110,8 @@ import {
  * Routing policy for one OpenRouter connection. Lives on the provider rather
  * than the AI preset because it describes the connection — a privacy floor set
  * here holds for every request made through this account. Which providers may
- * serve is the exception, and is the preset's: see AiAllowedProviders.vue.
+ * serve is the exception, and is the preset's, and a preset may ignore more
+ * providers than these for its model: see AiModelUpstreams.vue.
  *
  * @typedef {Object} Props
  * @property {string} providerId - The OpenRouter provider to configure

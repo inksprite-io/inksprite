@@ -17,10 +17,10 @@ import { useStoriesStore } from '@/stores/storiesStore'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { storage } from '@/storage/index.js'
 import { useBackup } from '@/composables/useBackup'
+import { projectName } from '@/utils/backup.js'
 import { pushProjectToRoute } from '@/utils/routeHelpers'
 import { dropJobsForStory } from '@/jobs/index.js'
 import { askToKeepData } from '@/platform/persistence.js'
-import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { mayHoldProject, packageOfZip } from '@/scrivener/package.js'
 import { openProject, writeProject } from '@/scrivener/project.js'
 
@@ -33,7 +33,7 @@ import { openProject, writeProject } from '@/scrivener/project.js'
  *   nameOf: (storyId: string) => string,
  *   editedOf: (storyId: string) => number|undefined,
  *   open: (storyId: string) => void,
- *   create: (title: string) => Promise<Story>,
+ *   create: (title: string, options?: {open?: boolean}) => Promise<Story>,
  *   importFile: (file: File) => Promise<Story>,
  *   remove: (storyId: string) => Promise<void>,
  * }}
@@ -114,25 +114,19 @@ export function useProjects() {
    * Start a project and open it. A new project is empty, so the writer lands
    * on the invitation to make a first document. Two projects of one name are
    * two rows nobody can tell apart, so a name already taken is numbered.
+   * One with something to be put in it first is opened by the caller once
+   * it has been.
    * @param {string} title
+   * @param {{open?: boolean}} [options]
    * @returns {Promise<Story>}
    */
-  async function create(title) {
+  async function create(title, { open: opening = true } = {}) {
     await storiesStore.loadNames()
     const story = await storiesStore.createStory(storiesStore.freeName(title))
     askToKeepData()
-    open(story.id)
+    if (opening) open(story.id)
     return story
   }
-
-  /**
-   * What a project file calls its project: the title on its root.
-   * @param {import('@/utils/backup.js').ProjectRows} project
-   * @returns {string}
-   */
-  const nameInFile = project =>
-    project.documents.find(document => document.id === rootIdFor(project.story.id))?.title ||
-    'Untitled'
 
   /**
    * Add a project file, exported from a project's menu, beside the others
@@ -147,7 +141,7 @@ export function useProjects() {
     const project = await backup.readProjectFile(file)
     await storiesStore.loadNames()
     const story = await backup.importProject(project, {
-      title: storiesStore.freeName(nameInFile(project)),
+      title: storiesStore.freeName(projectName(project)),
     })
     askToKeepData()
     open(story.id)

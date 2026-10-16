@@ -1943,6 +1943,7 @@ export function useAIChat(storyId, chatId) {
           providerId: profile.providerId,
           model: profile.model,
           allowedProviders: profile.allowedProviders,
+          ignoredProviders: profile.ignoredProviders,
         },
         chunkData => {
           if (chunkData.content) {

@@ -249,7 +249,7 @@ describe('useBackup', () => {
     it('sends a whole backup to Import in the settings', async () => {
       await expect(
         useBackup().readChatFile(fileOf(chatFile(2, { scope: 'database' })))
-      ).rejects.toThrow('Restore it with Import in Settings › System')
+      ).rejects.toThrow('Restore it with Import in Settings › System › Data')
     })
 
     describe('from SillyTavern', () => {

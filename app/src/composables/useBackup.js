@@ -38,6 +38,15 @@
  * `utils/settingsFile.js`. A file left in the desktop app's data folder by a
  * script arrives by the same way, as the app opens
  * (`composables/useSettingsFile.js`).
+ *
+ * Export in the settings offers all of it as a tree of boxes
+ * (`utils/exportTree.js`). Every box ticked is a whole backup, and settings
+ * alone are a settings file. Anything else is a selection: the projects
+ * ticked, whole or the documents and chats ticked of them, the character
+ * cards ticked, and the settings ticked. It is read back by `readDataFile`
+ * too, and taken by `importSelection`, which adds the projects beside the
+ * others and the cards to the library, and merges the settings, replacing
+ * nothing else.
  */
 
 import { storage } from '@/storage/index.js'
@@ -60,9 +69,14 @@ import {
   chatFromTables,
   projectFilename,
   projectFromTables,
+  projectsFromTables,
+  projectName,
+  selectionFilename,
   withFreshIds,
   serializeFiles,
+  serializeCardFiles,
   deserializeFiles,
+  deserializeCardFiles,
 } from '@/utils/backup'
 import {
   SETTINGS_TABLES,
@@ -71,7 +85,10 @@ import {
   pickSettings,
   planImport,
   settingsFilename,
+  changesAnything,
 } from '@/utils/settingsFile.js'
+import { documentsWith } from '@/utils/exportTree.js'
+import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
 import { localStorage } from '@/utils/localStorage.js'
 import { useEditor } from './useEditor.js'
 import { useApplicationState } from './useApplicationState.js'
@@ -88,6 +105,21 @@ import { obfuscateBackup } from '@/utils/obfuscate.js'
 /** @typedef {import('@/types/models.js').AIPrompt} AIPrompt */
 /** @typedef {import('@/utils/settingsFile.js').SettingsItem} SettingsItem */
 /** @typedef {import('@/utils/settingsFile.js').SettingsImport} SettingsImport */
+/** @typedef {import('@/utils/exportTree.js').Exportable} Exportable */
+/** @typedef {import('@/utils/exportTree.js').ExportPick} ExportPick */
+/** @typedef {import('@/types/models.js').Document} Document */
+/** @typedef {import('@/types/models.js').LibraryCard} LibraryCard */
+/** @typedef {import('@/types/models.js').CardFile} CardFile */
+
+/**
+ * What a selection file holds, read and ready to take. Nothing is written
+ * until it is taken.
+ *
+ * @typedef {Object} SelectionImport
+ * @property {ProjectRows[]} projects
+ * @property {{rows: LibraryCard[], files: CardFile[]}} cards
+ * @property {SettingsImport} plan - What its settings change here
+ */
 
 /**
  * Hand the user a JSON file.
@@ -121,15 +153,17 @@ export function useBackup() {
    * Read every table there is.
    *
    * Every table storage has rather than a hardcoded list, so a table added
-   * later is backed up without anyone remembering to update this. The one
-   * table that cannot go into JSON as read is `files`, whose rows hold a
-   * Blob; those are written out as base64 and read back the same way.
+   * later is backed up without anyone remembering to update this. The two
+   * tables that cannot go into JSON as read are `files` and `cardFiles`,
+   * whose rows hold Blobs; those are written out as base64 and read back the
+   * same way.
    *
    * @returns {Promise<Record<string, any[]>>}
    */
   async function readAllTables() {
     const tables = await storage.dump()
     if (tables.files) tables.files = await serializeFiles(tables.files)
+    if (tables.cardFiles) tables.cardFiles = await serializeCardFiles(tables.cardFiles)
     return tables
   }
 
@@ -217,21 +251,27 @@ export function useBackup() {
   }
 
   /**
-   * Read a file picked to import from the settings: a whole backup or a
-   * settings file, which says which it is. Nothing is written. A backup
-   * comes back with what it holds; settings with what importing them would
-   * change here.
+   * Read a file picked to import from the settings: a whole backup, a
+   * settings file, or a selection, which says which it is; a project file is
+   * taken as a selection of one project. Nothing is written. A backup comes
+   * back with what it holds; settings with what importing them would change
+   * here; a selection with its projects and cards as well.
    *
    * @param {File} file
    * @returns {Promise<{kind: 'backup', backup: Backup, summary: Array<{table: string, count: number}>}
-   *   | {kind: 'settings', backup: Backup, plan: SettingsImport}>}
-   * @throws {Error} If the file is neither, saying why
+   *   | {kind: 'settings', backup: Backup, plan: SettingsImport}
+   *   | {kind: 'selection', backup: Backup, selection: SelectionImport}>}
+   * @throws {Error} If the file is none of them, saying why
    */
   async function readDataFile(file) {
     const parsed = parseJson(await file.text())
     if (parsed?.scope === 'settings') {
       const backup = checkBackup(parsed, 'settings')
       return { kind: 'settings', backup, plan: await planSettings(backup, { byHand: true }) }
+    }
+    if (parsed?.scope === 'selection' || parsed?.scope === 'project') {
+      const backup = checkBackup(parsed, parsed.scope)
+      return { kind: 'selection', backup, selection: await readSelection(backup) }
     }
     const backup = checkBackup(parsed, 'database')
     return { kind: 'backup', backup, summary: summarizeBackup(backup) }
@@ -251,10 +291,11 @@ export function useBackup() {
    */
   async function restoreBackup(backup) {
     const tables = upgradeTables(backup.tables, backup.dbVersion, storage.schemaVersion())
-    const { files } = tables
+    const { files, cardFiles } = tables
     const restored = await storage.replaceAll({
       ...tables,
       ...(Array.isArray(files) ? { files: deserializeFiles(files) } : {}),
+      ...(Array.isArray(cardFiles) ? { cardFiles: deserializeCardFiles(cardFiles) } : {}),
     })
     if (backup.settings) useApplicationState().restoreSettings(backup.settings)
     return { restored }
@@ -597,6 +638,196 @@ export function useBackup() {
   }
 
   /**
+   * What Export can offer: every project by name, the cards in the library,
+   * and the settings. A project's documents and chats are read when it is
+   * opened in the tree (`readProjectContents`).
+   *
+   * @returns {Promise<Exportable>}
+   */
+  async function listExportable() {
+    useEditor().flush()
+    await useSyncStore().processSync()
+    const stories = await storage.stories()
+    const roots = new Map(
+      (await storage.roots(stories.map(story => story.id))).map(root => [root.storyId, root])
+    )
+    const [cards, settings] = await Promise.all([storage.all('cards'), listSettings()])
+    return {
+      projects: stories.map(story => ({
+        id: story.id,
+        title: roots.get(story.id)?.title?.trim() || 'Untitled',
+      })),
+      cards: cards.map(card => ({ id: card.id, title: card.title || card.name || 'Untitled' })),
+      settings,
+    }
+  }
+
+  /**
+   * A project's documents and chats, for its boxes in Export.
+   *
+   * @param {string} storyId
+   * @returns {Promise<{documents: Document[], chats: Chat[]}>}
+   */
+  async function readProjectContents(storyId) {
+    const [documents, chats] = await Promise.all([
+      storage.documents(storyId),
+      storage.chats(storyId),
+    ])
+    return { documents, chats }
+  }
+
+  /**
+   * Snapshot what was ticked in Export: everything as a whole backup,
+   * settings alone as a settings file, and anything else as a selection.
+   *
+   * A project goes whole, or as the documents ticked with the folders above
+   * them, and the chats ticked with their messages; either way with the
+   * writer's own profiles it and those chats run on, which travel with the
+   * settings and are merged with them when the file is taken.
+   *
+   * @param {ExportPick} pick
+   * @param {{includeApiKeys?: boolean}} [opts]
+   * @returns {Promise<Backup>}
+   */
+  async function createSelectionBackup(pick, { includeApiKeys = false } = {}) {
+    if (pick.everything) return createBackup({ includeApiKeys })
+    if (pick.projects.length === 0 && pick.cardIds.length === 0) {
+      return createSettingsBackup({ picked: pick.settings, includeApiKeys })
+    }
+
+    useEditor().flush()
+    await useSyncStore().processSync()
+
+    /** @type {Record<string, any[]>} */
+    const tables = { stories: [], documents: [], files: [], chats: [], messages: [] }
+    /** @type {Map<string, StoredChatProfile>} */
+    const profiles = new Map()
+    for (const picked of pick.projects) {
+      const story = await storage.story(picked.id)
+      if (!story) continue
+      const [allDocuments, allFiles, allChats] = await Promise.all([
+        storage.documents(story.id),
+        storage.projectFiles(story.id),
+        storage.chats(story.id),
+      ])
+      const documents = picked.whole
+        ? allDocuments
+        : documentsWith(allDocuments, story.id, picked.documentIds)
+      const kept = new Set(documents.map(document => document.id))
+      const chatIds = new Set(picked.chatIds)
+      const chats = picked.whole ? allChats : allChats.filter(chat => chatIds.has(chat.id))
+      const messages = (await Promise.all(chats.map(chat => storage.messages(chat.id))))
+        .flat()
+        .sort((a, b) => a.created - b.created)
+
+      tables.stories.push(story)
+      tables.documents.push(...documents)
+      tables.files.push(...(await serializeFiles(allFiles.filter(file => kept.has(file.id)))))
+      tables.chats.push(...chats)
+      tables.messages.push(...messages)
+      const own = await savedProfilesOf([
+        story.options?.profileId,
+        ...chats.map(chat => chat.profileId || chat.promptId),
+      ])
+      for (const profile of own) profiles.set(profile.id, profile)
+    }
+
+    if (pick.cardIds.length > 0) {
+      tables.cards = await storage.getMany('cards', pick.cardIds)
+      tables.cardFiles = await serializeCardFiles(await storage.getMany('cardFiles', pick.cardIds))
+    }
+
+    const setup = await readSetup({ flush: false })
+    const { tables: settingsTables, settings } = pickSettings(
+      setup.tables,
+      setup.settings,
+      pick.settings
+    )
+    for (const profile of settingsTables.chatProfiles || []) profiles.set(profile.id, profile)
+    Object.assign(tables, settingsTables)
+    if (profiles.size > 0) tables.chatProfiles = [...profiles.values()]
+
+    return buildBackup(tables, {
+      dbVersion: storage.schemaVersion(),
+      includeApiKeys,
+      scope: 'selection',
+      settings,
+    })
+  }
+
+  /**
+   * Snapshot what was ticked in Export and hand the writer a file named for
+   * what it is.
+   *
+   * @param {ExportPick} pick
+   * @param {{includeApiKeys?: boolean}} [opts]
+   * @returns {Promise<{filename: string, bytes: number}>}
+   */
+  async function downloadSelection(pick, opts = {}) {
+    const backup = await createSelectionBackup(pick, opts)
+    const now = new Date()
+    const filename =
+      backup.scope === 'settings'
+        ? settingsFilename(now)
+        : backup.scope === 'selection'
+          ? selectionFilename(now)
+          : backupFilename(now)
+    return downloadJson(filename, backup)
+  }
+
+  /**
+   * What a selection file brings: its projects and cards, and what its
+   * settings change here.
+   *
+   * @param {Backup} backup - Checked already
+   * @returns {Promise<SelectionImport>}
+   */
+  async function readSelection(backup) {
+    const tables = upgradeTables(backup.tables, backup.dbVersion, storage.schemaVersion())
+    return {
+      projects: projectsFromTables(tables),
+      cards: {
+        rows: (tables.cards || []).filter(Boolean),
+        files: deserializeCardFiles((tables.cardFiles || []).filter(Boolean)),
+      },
+      plan: await planSettings(backup, { byHand: true }),
+    }
+  }
+
+  /**
+   * Take a selection: its projects beside the others under ids of their own,
+   * each numbered when its name is taken; its cards into the library, but
+   * those already there; and its settings merged into those here.
+   *
+   * Its profiles come with its settings, so the projects bring none of their
+   * own. The settings go straight to storage, so a caller must reload the
+   * page afterwards when they changed anything, as for a settings file.
+   *
+   * @param {SelectionImport} selection
+   * @returns {Promise<{projects: string[], cards: string[], settingsChanged: boolean}>} The
+   *   names the projects were given, those of the cards added, and whether
+   *   the settings changed
+   */
+  async function importSelection({ projects, cards, plan }) {
+    const storiesStore = useStoriesStore()
+    await storiesStore.loadNames()
+    /** @type {string[]} */
+    const names = []
+    for (const project of projects) {
+      const title = storiesStore.freeName(projectName(project))
+      await importProject({ ...project, profiles: [] }, { title })
+      names.push(title)
+    }
+    const added =
+      cards.rows.length > 0
+        ? (await useCardLibraryStore().addRows(cards.rows, cards.files)).added
+        : []
+    const settingsChanged = changesAnything(plan)
+    if (settingsChanged) await importSettings(plan)
+    return { projects: names, cards: added.map(card => card.title), settingsChanged }
+  }
+
+  /**
    * Work out what a settings file changes here, writing nothing.
    *
    * @param {Backup} backup - Checked already
@@ -663,6 +894,11 @@ export function useBackup() {
     listSettings,
     createSettingsBackup,
     downloadSettings,
+    listExportable,
+    readProjectContents,
+    createSelectionBackup,
+    downloadSelection,
+    importSelection,
     planLeftSettings,
     importSettings,
     createChatBackup,

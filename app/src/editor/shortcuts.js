@@ -4,9 +4,10 @@
  * them: what each does, and the keys for it spelled the way their keyboard
  * prints them.
  *
- * The bindings themselves are `editor/state`'s and `editor/links`'s; this is
- * the list a person reads, in the order they would look for things, and its
- * test holds it to those.
+ * The bindings themselves are `editor/state`'s and `editor/links`'s, and
+ * focus mode's is `composables/useFocusMode`'s; this is the list a person
+ * reads, in the order they would look for things, and its test holds it to
+ * those.
  */
 
 const isMac = /Mac|iP(hone|ad|od)/.test(
@@ -58,6 +59,7 @@ export const SHORTCUTS = [
       { action: 'Undo', keys: 'Mod-z' },
       { action: 'Redo', keys: 'Mod-Shift-z' },
       { action: 'Find and replace', keys: 'Mod-f' },
+      { action: 'Focus mode', keys: 'Mod-Alt-f' },
       { action: 'Keyboard shortcuts', keys: 'Mod-/' },
     ],
   },

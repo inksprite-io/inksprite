@@ -15,6 +15,23 @@ describe('useProfiles', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     useApplicationState().resetState()
+    useApplicationState().setExtension('roleplay', true)
+  })
+
+  describe('with roleplay switched off', () => {
+    beforeEach(() => useApplicationState().setExtension('roleplay', false))
+
+    it('leaves the roleplay profiles out of the list', () => {
+      const ids = useProfiles().profiles.value.map(profile => profile.id)
+      expect(ids).not.toContain(ROLEPLAY_PROFILE_ID)
+      expect(ids).not.toContain(ROLEPLAY_NSFW_PROFILE_ID)
+    })
+
+    it('still reads a chat on one as that one', () => {
+      expect(useProfiles().getProfile(ROLEPLAY_PROFILE_ID)?.settings.prompt).toBe(
+        DEFAULT_ROLEPLAY_PROMPT
+      )
+    })
   })
 
   describe('with NSFW profiles switched off', () => {

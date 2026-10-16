@@ -211,6 +211,18 @@ describe('useAIService provider routing', () => {
 
     expect(JSON.parse(fetch.mock.calls[0][1].body).provider.only).toEqual(['deepinfra'])
   })
+
+  it('leaves out the providers the preset ignores, with the connection’s', async () => {
+    provider.routing = { ignore: ['together'] }
+    streamDeltas([{ content: 'ok' }])
+    await useAIService().generateChatCompletion(
+      [{ role: 'user', content: 'hi' }],
+      { providerId: provider.id, model: 'some-model', ignoredProviders: ['novita'] },
+      () => {}
+    )
+
+    expect(JSON.parse(fetch.mock.calls[0][1].body).provider.ignore).toEqual(['together', 'novita'])
+  })
 })
 
 describe('useAIService reasoning request', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { ICON_CREDITS, OWN_ICONS, iconUrl } from '@/config/credits.js'
+import { ICON_CREDITS, OWN_ICONS, PROGRAM_CREDITS, iconUrl } from '@/config/credits.js'
 
 /**
  * The credits are a promise to the people whose icons the app draws: every
@@ -53,6 +53,16 @@ describe('icon credits', () => {
       const row = markdown.split('\n').find(line => line.includes(iconUrl(credit.id)))
       expect(row, credit.file).toBeDefined()
       expect(row).toContain(credit.creator)
+    }
+  })
+})
+
+describe('program credits', () => {
+  it('lists the same programs in CREDITS.md, with their licenses', () => {
+    const markdown = readFileSync(CREDITS_MD, 'utf8')
+    for (const program of PROGRAM_CREDITS) {
+      expect(markdown).toContain(`[${program.name}](${program.url}), by ${program.by}`)
+      expect(markdown).toContain(`[${program.license.name}](${program.license.url})`)
     }
   })
 })

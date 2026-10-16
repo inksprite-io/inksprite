@@ -939,6 +939,15 @@ describe('useDocuments', () => {
     it('returns null when the project holds no documents', () => {
       expect(api.firstTextDocument()).toBeNull()
     })
+
+    it("passes over what is hidden, as a card folder's raw JSON is", () => {
+      const card = api.createFolder('manuscript_story_1', 'Bram')
+      const json = api.createTextDocument(card.id, '.card.json')
+      api.setHidden(json.id, true)
+      const description = api.createTextDocument(card.id, 'Description')
+
+      expect(api.firstTextDocument().id).toBe(description.id)
+    })
   })
 
   describe('duplicate', () => {

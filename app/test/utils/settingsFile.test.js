@@ -7,6 +7,7 @@ import {
   planImport,
   changesAnything,
   describeImport,
+  describeSelection,
   fingerprint,
   settingsFilename,
   rowId,
@@ -108,6 +109,7 @@ describe('settingsItems', () => {
       ['settings', 'Narration'],
       ['settings', 'Workflows'],
       ['settings', 'Preferences'],
+      ['settings', 'Spelling'],
     ])
     expect(items.find(item => item.kind === 'skillWordings')?.key).toBe('skillWordings/write')
   })
@@ -134,10 +136,11 @@ describe('settingsItems', () => {
     ])
   })
 
-  it('starts with everything picked but the preferences', () => {
+  it('starts with everything picked but the preferences and spelling', () => {
     const items = settingsItems({ aiProviders: [proxy] }, SETTINGS)
     expect(items.filter(item => !item.picked).map(item => item.key)).toEqual([
       'settings/preferences',
+      'settings/spelling',
     ])
   })
 
@@ -576,5 +579,39 @@ describe('rowId', () => {
     expect(rowId('aiProviders', { id: 'p', name: 'P' })).toBe('p')
     expect(rowId('aiProviders', { id: '' })).toBeUndefined()
     expect(SETTINGS_TABLES).toContain('skillWordings')
+  })
+})
+
+describe('describeSelection', () => {
+  const nothing = { added: [], changed: [] }
+  const preset = { key: 'aiProfiles/profile_team', kind: 'aiProfiles', name: 'Team' }
+  const inUse = { key: 'settings/aiPreset', kind: 'settings', name: 'Preset in use' }
+
+  it('adds the projects and cards with the settings, and says what it changes', () => {
+    expect(
+      describeSelection({
+        projects: ['Thief'],
+        cards: ['Wren', 'Tal'],
+        plan: { added: [preset], changed: [inUse] },
+      })
+    ).toBe(
+      'Adds the project Thief, the character cards Wren and Tal and the preset Team. Changes the preset in use.'
+    )
+  })
+
+  it('counts them when there are many', () => {
+    expect(describeSelection({ projects: ['A', 'B', 'C', 'D'], cards: [], plan: nothing })).toBe(
+      'Adds 4 projects.'
+    )
+  })
+
+  it('says it of an import that has happened', () => {
+    expect(
+      describeSelection({ projects: ['Thief (2)'], cards: [], plan: nothing }, { done: true })
+    ).toBe('Added the project Thief (2).')
+  })
+
+  it('says nothing of a file that adds and changes nothing', () => {
+    expect(describeSelection({ projects: [], cards: [], plan: nothing })).toBe('')
   })
 })

@@ -64,6 +64,8 @@ import {
  * @property {boolean} [nsfw] - Written for explicit content: offered, in place
  *   of its general counterpart, only once the writer switches NSFW profiles on
  *   in the settings. See composables/useProfiles.js.
+ * @property {boolean} [roleplay] - Part of the Roleplay extension: offered only
+ *   while it is on. A chat already on one runs on it either way. See extensions/.
  * @property {string} [generalId] - For an NSFW one, that counterpart: the same
  *   thing without the opt-ins
  */
@@ -122,6 +124,7 @@ export const BUILT_IN_PROFILES = [
     id: ROLEPLAY_PROFILE_ID,
     name: 'Roleplay',
     description: 'A scene with one character, in their voice.',
+    roleplay: true,
     settings: {
       ...ROLEPLAY_SETTINGS,
       prompt: DEFAULT_ROLEPLAY_PROMPT,
@@ -132,6 +135,7 @@ export const BUILT_IN_PROFILES = [
     id: ROLEPLAY_NSFW_PROFILE_ID,
     name: 'Roleplay (NSFW)',
     description: 'Roleplay, with the explicit themes you opt into.',
+    roleplay: true,
     nsfw: true,
     generalId: ROLEPLAY_PROFILE_ID,
     settings: {

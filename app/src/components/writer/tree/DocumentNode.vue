@@ -82,7 +82,7 @@
       <span
         v-else
         class="flex-1 min-w-0 truncate text-sm"
-        :class="[titleTone, !seen && 'opacity-60']"
+        :class="[titleTone, dimmed && 'opacity-60']"
         :title="titleHint"
         @mouseenter="measureTitle"
         >{{ api.displayTitle(node) }}</span
@@ -236,6 +236,8 @@ import { usePlainText } from '@/composables/usePlainText.js'
 import { useFileView } from '@/composables/useFileView.js'
 import { useJobs } from '@/composables/useJobs.js'
 import { useChatSettings } from '@/composables/useChatSettings'
+import { useApplicationState } from '@/composables/useApplicationState'
+import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
 import { isCard } from '@/cards/chat.js'
 import { chatVisibility, markOf, unpinned, withMark } from '@/utils/visibility.js'
 import { useDocuments } from '@/composables/useDocuments'
@@ -502,9 +504,18 @@ const hidden = computed(() => api.isHidden(props.documentId))
 const isRoot = computed(() => props.documentId === api.root.value?.id)
 const isActive = computed(() => props.activeDocumentId === props.documentId)
 
+const { aiEnabled, roleplay } = useApplicationState()
+const { open: openCardLibrary } = useCardLibraryPanel()
+
+/**
+ * The open chat, which the row's marks are for. None with the AI switched
+ * off, when what the chats see is not the writer's concern.
+ */
+const chatId = computed(() => (aiEnabled.value ? props.chatId : null))
+
 // The open chat can be the unstarted one, which has no row yet: its marks are
 // kept with its other settings and go into the chat it becomes.
-const { chat, update: updateChat } = useChatSettings(props.storyId, () => props.chatId || '')
+const { chat, update: updateChat } = useChatSettings(props.storyId, () => chatId.value || '')
 
 /**
  * How the open chat reads the tree, or how every chat does when none is open.
@@ -523,6 +534,9 @@ const visibility = computed(() => {
 
 /** Whether the model in the open chat can see this, whatever the reason. */
 const seen = computed(() => !!node.value && visibility.value.sees(node.value))
+
+/** Dimmed where the chat cannot see it, and never with the AI switched off. */
+const dimmed = computed(() => aiEnabled.value && !seen.value)
 
 /** Out of sight for every chat: its own flag, or a folder's above it. */
 const hiddenEverywhere = computed(
@@ -956,7 +970,12 @@ const menuItems = computed(() => {
     // A model puts the structure back into text that lost it — headings,
     // tables, paragraphs — which is a file's text, read out of it. A
     // document written here, or a conversion's own copy, has its structure.
-    if (isFile.value && !isInRepository.value && (node.value?.content || '').trim()) {
+    if (
+      aiEnabled.value &&
+      isFile.value &&
+      !isInRepository.value &&
+      (node.value?.content || '').trim()
+    ) {
       items.push({
         label: 'Convert to Markdown…',
         icon: 'pi pi-sparkles',
@@ -973,9 +992,10 @@ const menuItems = computed(() => {
     { label: 'Copy path', icon: 'pi pi-copy', command: () => copyPath(props.documentId) }
   )
 
-  if (!isRoot.value) {
+  if (aiEnabled.value && !isRoot.value) {
     // From every chat, which the label says: the row button's hide is this
-    // chat's, and on a phone the two are in this menu together.
+    // chat's, and on a phone the two are in this menu together. With the AI
+    // switched off there are no chats to hide anything from.
     items.push({
       label: hidden.value ? 'Unhide in all chats' : 'Hide from all chats',
       icon: hidden.value ? 'pi pi-eye' : 'pi pi-eye-slash',
@@ -984,8 +1004,9 @@ const menuItems = computed(() => {
   }
 
   // A folder that came from a card has somebody in it to talk to. First,
-  // because on a card folder it is the thing the writer came to do.
-  if (isCardFolder.value) {
+  // because on a card folder it is the thing the writer came to do. With
+  // roleplay switched off it is an ordinary folder.
+  if (isCardFolder.value && roleplay.value) {
     items.push({
       label: `Chat with ${api.displayTitle(node.value)}…`,
       icon: 'pi pi-comments',
@@ -1012,6 +1033,7 @@ const menuItems = computed(() => {
       items: importItems({
         files: () => emit('import', props.documentId),
         folder: () => emit('import-folder', props.documentId),
+        card: roleplay.value ? () => openCardLibrary({ into: props.documentId }) : null,
         drive: () => emit('import-drive', props.documentId),
         repository: () => emit('import-repository', props.documentId),
       }),
@@ -1032,7 +1054,7 @@ const menuItems = computed(() => {
   // ride in is the one it is being kept out of, and no chat can show it. On a
   // phone, and from the keyboard, only: everywhere else the row's toggles are
   // these, and a phone has no hover to find them by, nor the keys a Tab.
-  if (props.chatId && !hiddenEverywhere.value && (isMobile.value || fromKeys.value)) {
+  if (chatId.value && !hiddenEverywhere.value && (isMobile.value || fromKeys.value)) {
     items.push({
       label: carried.value ? 'Unpin from chat' : 'Pin to chat',
       icon: 'pi pi-thumbtack',

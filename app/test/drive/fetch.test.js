@@ -1,6 +1,6 @@
 /* global Response, AbortController, DOMException */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { describePicked, fetchPicked, requestFor } from '@/drive/fetch.js'
+import { describePicked, fetchPicked, linkFor, requestFor } from '@/drive/fetch.js'
 import { DriveError, SignInLapsedError } from '@/drive/errors.js'
 
 const FILES = 'https://www.googleapis.com/drive/v3/files'
@@ -48,6 +48,23 @@ describe('requestFor', () => {
 
   it('encodes the id', () => {
     expect(requestFor(picked('text/plain', 'a.txt', 'a/b')).url).toContain('/a%2Fb?')
+  })
+})
+
+describe('linkFor', () => {
+  it('links a Doc by its id', () => {
+    expect(linkFor(picked('application/vnd.google-apps.document'))).toEqual({ id: 'abc123' })
+  })
+
+  it('links nothing else, Word files and markdown included', () => {
+    for (const mime of [
+      'application/vnd.google-apps.spreadsheet',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/markdown',
+      'application/pdf',
+    ]) {
+      expect(linkFor(picked(mime))).toBeUndefined()
+    }
   })
 })
 

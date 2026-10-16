@@ -22,46 +22,52 @@
 - [][18]
 - [][19]
 - [][20]
-- [DEFAULT_LAYOUT][21]
-- [DEFAULT_LAYOUT][22]
-- [NO_PROJECT_LAYOUT][23]
-- [CONTENT_PANELS][24]
-- [normalizeLayout][25]
-  - [Parameters][26]
-- [isSidebarTab][27]
+- [AI_SIDEBAR_TABS][21]
+- [AI_SIDEBAR_TABS][22]
+- [CHATS][23]
+- [DEFAULT_LAYOUT][24]
+- [NO_PROJECT_LAYOUT][25]
+- [CONTENT_PANELS][26]
+- [normalizeLayout][27]
   - [Parameters][28]
-- [][29]
-- [selectSidebarTab][30]
-  - [Parameters][31]
-- [canHide][32]
+- [isSidebarTab][29]
+  - [Parameters][30]
+- [][31]
+- [selectSidebarTab][32]
   - [Parameters][33]
-- [togglePanel][34]
+- [canHide][34]
   - [Parameters][35]
-- [ROW_SIZES][36]
-- [keptSizes][37]
-  - [Parameters][38]
-- [shownLayout][39]
-  - [Parameters][40]
-- [importItems][41]
-  - [Parameters][42]
+- [togglePanel][36]
+  - [Parameters][37]
+- [withoutAI][38]
+  - [Parameters][39]
+- [keptWithoutAI][40]
+  - [Parameters][41]
+- [ROW_SIZES][42]
+- [keptSizes][43]
+  - [Parameters][44]
+- [shownLayout][45]
+  - [Parameters][46]
+- [importItems][47]
+  - [Parameters][48]
 
 ## GUIDE_URL
 
 Where the welcome points, and how its words look.
 
-Type: [string][43]
+Type: [string][49]
 
 ## LINK
 
 A link, or a button that reads as one.
 
-Type: [string][43]
+Type: [string][49]
 
 ## HEADING
 
 A heading inside a section.
 
-Type: [string][43]
+Type: [string][49]
 
 ## components
 
@@ -118,6 +124,11 @@ Vue components for the inksprite application UI.
     pane, shown in `SettingsDialog` on the desktop and as a tab on phones.
     `LibraryMoveToast` shuts the page while the desktop app's projects move
     into their folder or back, and says how far they are.
+  - `cards/` - The card library, app-wide like the settings:
+    `CardLibraryDialog` over the writer, opened from the rail or from a
+    folder's Import › Character card…, holding `CardLibrary`, a grid of
+    `CardTile`s with a search and the library's tags, and `CardDetail`, one
+    card in full. Putting a card into the project is the dialog's.
 
 ### Icon Components
 
@@ -156,8 +167,9 @@ The rail picks the sidebar's list, and picking the list showing hides the
 sidebar; the editor and the chat each hide the other from a toggle at the
 edge of their header. The sidebar's width is its own, and the editor and
 the chat divide the rest. In a window too narrow for all three, the sidebar
-and the chat take turns beside the editor. The rules for all of it are
-here, as pure functions over the layout.
+and the chat take turns beside the editor. With the AI switched off there
+is no chat and no narration, and the editor is the one panel. The rules for
+all of it are here, as pure functions over the layout.
 
 ## PANELS
 
@@ -193,7 +205,15 @@ Type: `"narration"`
 
 Type: `"comments"`
 
-## DEFAULT_LAYOUT
+## AI_SIDEBAR_TABS
+
+## AI_SIDEBAR_TABS
+
+The lists that are the AI's, which go when it is switched off.
+
+## CHATS
+
+Type: [Array][50]\<SidebarTab>
 
 ## DEFAULT_LAYOUT
 
@@ -219,7 +239,7 @@ so nothing that was saved can open onto an empty screen.
 
 ### Parameters
 
-- `stored` **(Partial\<StoryLayout> | null | [undefined][44])**&#x20;
+- `stored` **(Partial\<StoryLayout> | null | [undefined][51])**&#x20;
 
 Returns **StoryLayout**&#x20;
 
@@ -257,7 +277,7 @@ both hidden: the last one showing stays.
 - `layout` **StoryLayout**&#x20;
 - `panel` **[Panel][16]**&#x20;
 
-Returns **[boolean][45]**&#x20;
+Returns **[boolean][52]**&#x20;
 
 ## togglePanel
 
@@ -273,6 +293,32 @@ last content panel changes nothing.
 
 - `layout` **StoryLayout**&#x20;
 - `panel` **[Panel][16]**&#x20;
+
+Returns **StoryLayout**&#x20;
+
+## withoutAI
+
+What of a layout there is with the AI switched off: the editor, alone
+beside the sidebar, and the sidebar on the outline where it was on a list
+of the AI's. The project's own layout is not changed by it, so switching
+the AI back on brings its chat back as it was.
+
+### Parameters
+
+- `layout` **StoryLayout**&#x20;
+
+Returns **StoryLayout**&#x20;
+
+## keptWithoutAI
+
+What to keep of a change made to the layout while the AI is switched off:
+the sidebar as the writer left it, and the chat and the editor as they were
+before, since they were not the writer's to change then.
+
+### Parameters
+
+- `next` **StoryLayout** The change, made to what showed
+- `kept` **StoryLayout** The project's layout as it was
 
 Returns **StoryLayout**&#x20;
 
@@ -293,9 +339,9 @@ something an older version or another hand left there.
 ### Parameters
 
 - `kept` **unknown** What was read back from storage
-- `starting` **[Array][46]<[number][47]>** The splitter's starting widths, one per panel
+- `starting` **[Array][50]<[number][53]>** The splitter's starting widths, one per panel
 
-Returns **[Array][46]<[number][47]>**&#x20;
+Returns **[Array][50]<[number][53]>**&#x20;
 
 ## shownLayout
 
@@ -308,7 +354,7 @@ all three again.
 ### Parameters
 
 - `layout` **StoryLayout**&#x20;
-- `narrow` **[boolean][45]** Whether the window is too narrow for all three;
+- `narrow` **[boolean][52]** Whether the window is too narrow for all three;
   see useScreenSize
 
 Returns **StoryLayout**&#x20;
@@ -316,13 +362,14 @@ Returns **StoryLayout**&#x20;
 ## importItems
 
 The ways into a folder, as menu items: files chosen together, a folder whole
-with the folders inside it, Google Drive, and a codebase. A folder's Import
-submenu offers them, and so does the Import button at the top of the
-outline, for the project's top; one list, so the two can't drift apart.
+with the folders inside it, a character card from the library, Google
+Drive, and a codebase. A folder's Import submenu offers them, and so does
+the Import button at the top of the outline, for the project's top; one
+list, so the two can't drift apart.
 
 ### Parameters
 
-- `on` **[Object][48]** What each does
+- `on` **[Object][54]** What each does
 
 [1]: #guide_url
 [2]: #link
@@ -344,31 +391,37 @@ outline, for the project's top; one list, so the two can't drift apart.
 [18]: #-4
 [19]: #-5
 [20]: #-6
-[21]: #default_layout
-[22]: #default_layout-1
-[23]: #no_project_layout
-[24]: #content_panels
-[25]: #normalizelayout
-[26]: #parameters
-[27]: #issidebartab
-[28]: #parameters-1
-[29]: #-7
-[30]: #selectsidebartab
-[31]: #parameters-2
-[32]: #canhide
-[33]: #parameters-3
-[34]: #togglepanel
-[35]: #parameters-4
-[36]: #row_sizes
-[37]: #keptsizes
-[38]: #parameters-5
-[39]: #shownlayout
-[40]: #parameters-6
-[41]: #importitems
-[42]: #parameters-7
-[43]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[44]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[45]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[46]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[47]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[48]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[21]: #ai_sidebar_tabs
+[22]: #ai_sidebar_tabs-1
+[23]: #chats
+[24]: #default_layout
+[25]: #no_project_layout
+[26]: #content_panels
+[27]: #normalizelayout
+[28]: #parameters
+[29]: #issidebartab
+[30]: #parameters-1
+[31]: #-7
+[32]: #selectsidebartab
+[33]: #parameters-2
+[34]: #canhide
+[35]: #parameters-3
+[36]: #togglepanel
+[37]: #parameters-4
+[38]: #withoutai
+[39]: #parameters-5
+[40]: #keptwithoutai
+[41]: #parameters-6
+[42]: #row_sizes
+[43]: #keptsizes
+[44]: #parameters-7
+[45]: #shownlayout
+[46]: #parameters-8
+[47]: #importitems
+[48]: #parameters-9
+[49]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[50]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[51]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[52]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[53]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[54]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object

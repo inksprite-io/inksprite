@@ -34,5 +34,8 @@
     "source=inksprite-shell-history,target=/commandhistory,type=volume",
     "source=inksprite-pw-browsers,target=/home/node/.cache/ms-playwright,type=volume"
   ],
-  "postCreateCommand": "bash .devcontainer/post-create.sh"
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  // Claude sessions run here from the host's terminals, so closing the VS Code
+  // window must not stop the container under them.
+  "shutdownAction": "none"
 }

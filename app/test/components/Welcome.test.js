@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import Welcome from '@/components/common/Welcome.vue'
@@ -14,10 +15,14 @@ const { platform, setShowWelcomeDialog, ai } = vi.hoisted(() => ({
   ai: { preset: null, connections: [] },
 }))
 
+/** Whether the AI is switched on. */
+const aiEnabled = ref(true)
+const setAiEnabled = (/** @type {boolean} */ on) => (aiEnabled.value = on)
+
 vi.mock('@/platform/desktop.js', () => ({ isDesktop: () => platform.desktop }))
 vi.mock('@/platform/persistence.js', () => ({ storageAdvice: () => platform.advice }))
 vi.mock('@/composables/useApplicationState', () => ({
-  useApplicationState: () => ({ setShowWelcomeDialog }),
+  useApplicationState: () => ({ setShowWelcomeDialog, aiEnabled, setAiEnabled }),
 }))
 vi.mock('@/composables/useAIConfig', () => ({
   useAIConfig: () => ({
@@ -60,6 +65,7 @@ describe('Welcome', () => {
     platform.desktop = false
     platform.advice = { clearsAfterAWeek: false, homeScreen: false, desktopApp: true }
     setShowWelcomeDialog.mockClear()
+    aiEnabled.value = true
     notSetUp()
   })
 
@@ -87,6 +93,32 @@ describe('Welcome', () => {
     await inlineButton(wrapper, 'connect an AI provider').trigger('click')
     expect(wrapper.find('h2').text()).toBe('AI')
     expect(wrapper.find('[data-ai-settings]').exists()).toBe(true)
+  })
+
+  it('turns the AI off, and the AI settings go with it', async () => {
+    const wrapper = mountWelcome()
+    await inlineButton(wrapper, 'turn them off').trigger('click')
+
+    expect(aiEnabled.value).toBe(false)
+    expect(wrapper.find('h2').text()).toBe('Welcome to inksprite')
+    expect(wrapper.find('[data-section="ai"]').exists()).toBe(false)
+    expect(wrapper.find('[data-ai-off]').exists()).toBe(true)
+  })
+
+  it('says the AI is off, and turns it back on', async () => {
+    aiEnabled.value = false
+    const wrapper = mountWelcome()
+
+    expect(wrapper.find('[data-connect-ai]').exists()).toBe(false)
+    expect(wrapper.find('[data-section="ai"]').exists()).toBe(false)
+    expect(wrapper.find('[data-ai-off]').text().replace(/\s+/g, ' ')).toBe(
+      'The AI tools are off. You can turn them on now or later in Settings.'
+    )
+    await inlineButton(wrapper, 'turn them on').trigger('click')
+
+    expect(aiEnabled.value).toBe(true)
+    expect(wrapper.find('[data-section="ai"]').exists()).toBe(true)
+    expect(wrapper.find('[data-connect-ai]').exists()).toBe(true)
   })
 
   it('offers neither the AI settings nor connecting when the AI is set up already', () => {
@@ -134,7 +166,7 @@ describe('Welcome', () => {
     expect(warning(wrapper)).toContain(
       "Warning: your work is stored only in this browser. If this site's data is cleared, it's gone."
     )
-    expect(warning(wrapper)).toContain('You can back up your data from Settings › System.')
+    expect(warning(wrapper)).toContain('You can back up your data from Settings › System › Data.')
     expect(wrapper.find('[data-storage-warning] strong').classes()).toContain('text-red-600')
   })
 
@@ -173,7 +205,7 @@ describe('Welcome', () => {
   it('offers a phone neither', () => {
     platform.advice = { clearsAfterAWeek: false, homeScreen: false, desktopApp: false }
     const wrapper = mountWelcome()
-    expect(warning(wrapper)).toMatch(/back up your data from Settings › System\.$/)
+    expect(warning(wrapper)).toMatch(/back up your data from Settings › System › Data\.$/)
   })
 
   it('says nothing about browser storage in the desktop app', () => {

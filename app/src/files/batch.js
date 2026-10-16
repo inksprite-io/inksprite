@@ -21,6 +21,8 @@
  * @property {File} file
  * @property {string[]} folders - The folders above it, outermost first; empty
  *   for a file chosen or dropped on its own
+ * @property {import('../types/models.js').DriveLink} [drive] - The Google Doc it
+ *   was exported from, which the document it becomes keeps
  */
 
 /**

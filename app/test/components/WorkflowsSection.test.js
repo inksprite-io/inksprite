@@ -36,10 +36,10 @@ const mountSection = () =>
         AiProviderSelector: stub('AiProviderSelector'),
         AiModelSelector: stub('AiModelSelector'),
         // Fetches OpenRouter's directory; what matters is what it holds.
-        AiAllowedProviders: {
-          name: 'AiAllowedProviders',
-          props: ['modelValue', 'model'],
-          emits: ['update:modelValue'],
+        AiModelUpstreams: {
+          name: 'AiModelUpstreams',
+          props: ['upstreams', 'model'],
+          emits: ['update'],
           template: '<div />',
         },
       },
@@ -69,32 +69,45 @@ describe('WorkflowsSection', () => {
     expect(wrapper.findComponent({ name: 'AiModelSelector' }).props('selectedModelId')).toBe('glm')
   })
 
-  it('takes the providers allowed for the preset’s model with it', () => {
-    preset.value = { ...preset.value, allowedProviders: ['deepinfra'] }
+  it('takes the providers allowed and ignored for the preset’s model with it', () => {
+    preset.value = {
+      ...preset.value,
+      allowedProviders: ['deepinfra'],
+      ignoredProviders: ['novita'],
+    }
     mountSection()
 
     expect(setWorkflow).toHaveBeenCalledWith(
       'convert',
-      expect.objectContaining({ model: 'glm', allowedProviders: ['deepinfra'] })
+      expect.objectContaining({
+        model: 'glm',
+        allowedProviders: ['deepinfra'],
+        ignoredProviders: ['novita'],
+      })
     )
   })
 
-  it('offers allowed providers for an OpenRouter model, and keeps them the workflow’s', () => {
-    state.value = { convert: { providerId: 'p1', model: 'glm', reasoningEffort: 'high' } }
+  it('offers provider lists for an OpenRouter model, and keeps them the workflow’s', () => {
+    state.value = {
+      convert: { providerId: 'p1', model: 'glm', reasoningEffort: 'high', ignoredProviders: ['a'] },
+    }
     const wrapper = mountSection()
-    const allowed = wrapper.findComponent({ name: 'AiAllowedProviders' })
-    expect(allowed.props('model')).toBe('glm')
+    const lists = wrapper.findComponent({ name: 'AiModelUpstreams' })
+    expect(lists.props('model')).toBe('glm')
+    expect(lists.props('upstreams').ignoredProviders).toEqual(['a'])
 
-    allowed.vm.$emit('update:modelValue', ['deepinfra'])
+    lists.vm.$emit('update', { allowedProviders: ['deepinfra'] })
+    lists.vm.$emit('update', { ignoredProviders: ['novita'] })
 
     expect(setWorkflow).toHaveBeenCalledWith('convert', { allowedProviders: ['deepinfra'] })
+    expect(setWorkflow).toHaveBeenCalledWith('convert', { ignoredProviders: ['novita'] })
   })
 
-  it('offers no allowed providers off OpenRouter, where nothing routes', () => {
+  it('offers no provider lists off OpenRouter, where nothing routes', () => {
     state.value = { convert: { providerId: 'p2', model: 'gemma', reasoningEffort: 'high' } }
     const wrapper = mountSection()
 
-    expect(wrapper.findComponent({ name: 'AiAllowedProviders' }).exists()).toBe(false)
+    expect(wrapper.findComponent({ name: 'AiModelUpstreams' }).exists()).toBe(false)
   })
 
   it('takes the app default effort from a preset that sets none', () => {

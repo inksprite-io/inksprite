@@ -2,7 +2,23 @@
 
 inksprite's own code is under the GPL (see [LICENSE](LICENSE)). What is
 listed here is other people's work, shipped under its own license, and the
-GPL does not cover it. The same list is in the app, under Settings › About.
+GPL does not cover it. The app lists the programs and icons as well, under
+Settings › About.
+
+## Spelling and grammar
+
+[Harper](https://writewithharper.com), by Automattic, under the
+[Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). The app
+loads its WebAssembly build from the `harper.js` package, unchanged.
+
+## Hashing
+
+[cyrb53](https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js),
+by bryc, in the public domain (or under the MIT License where that is
+needed), with attribution appreciated. Two functions copy it: `fingerprint`
+in `app/src/utils/settingsFile.js`, which tells one copy of a setting from
+the next, and `lintHash` in `app/src/spelling/engine.js`, which names a
+flagged word where it stands.
 
 ## Icons
 

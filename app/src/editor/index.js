@@ -14,6 +14,12 @@
  *   `replaceContent` and `appendContent` transactions an outside writer asks for
  * - **search** - Find and replace: the matches as a plugin's state, drawn as
  *   decorations, and the commands that move between and replace them
+ * - **spelling** - What the spelling checker found, drawn under the text, and
+ *   the commands its menu runs; see `spelling/`
+ * - **clipboard** - The selection as markdown, markdown pasted as what it
+ *   stands for, and the clipboard read for a Paste from the editor's menu
+ * - **insert** - A table, a horizontal rule or a code block put in from the
+ *   editor's menu, where it is otherwise only typed
  * - **plainSearch** - The same for a plain document, in the CodeMirror view it
  *   is shown in; loaded with that view, so not exported here
  * - **plainMacros** - A card's `{{char}}`, `{{user}}` and the rest picked out
@@ -21,7 +27,8 @@
  * - **size** - `laysOut`, whether a document is short enough for the editor
  *   to lay out, which decides how a long import comes in
  * - **tables** - A table made by typing its header row, the keys that move
- *   through one, column alignment, and pasting into a cell
+ *   through one, rows and columns inserted from the menu, column alignment,
+ *   and pasting into a cell
  * - **links** - Making, changing, removing and opening links: the commands,
  *   and a view plugin for Mod-K, Mod-click and a pasted link
  * - **marks** - `markAround`, the run of a mark around a position, for the
@@ -49,4 +56,7 @@ export { schema, NODE_NAMES, MARK_NAMES } from './schema.js'
 export { parseMarkdown, serializeMarkdown, settleMarkdown, appendBlocks } from './markdown.js'
 export { createEditorState, replaceContent, appendContent, isEmptyDocument } from './state.js'
 export { find, findNext, replaceCurrent, replaceAll, searchOf } from './search.js'
+export { spellingKey, lintAt, replaceWith, forgetWord } from './spelling.js'
+export { selectionMarkdown, markdownSlice, pasteMarkdown, readClipboard } from './clipboard.js'
+export { insertTable, insertRule, insertCodeBlock } from './insert.js'
 export { LAYOUT_LIMIT, laysOut } from './size.js'

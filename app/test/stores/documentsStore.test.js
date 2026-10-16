@@ -108,6 +108,17 @@ describe('DocumentsStore', () => {
       expect(act.wordCount).toBe(0)
     })
 
+    it('keeps the Google Doc a text document came from, and on nothing else', () => {
+      const drive = { id: 'gdoc_1' }
+      const scene = text('scene_1', 'part_1', { drive })
+      const act = folder('part_2', 'story_1', { drive })
+
+      expect(scene.drive).toEqual(drive)
+      expect('drive' in act).toBe(false)
+      // Absent, not undefined, on the documents that never had one.
+      expect('drive' in text('scene_2', 'part_1')).toBe(false)
+    })
+
     it('requires a story and a parent', () => {
       expect(() =>
         store.createDocument({ parentId: 'story_1', type: 'folder', title: 'x' })

@@ -39,9 +39,21 @@
  *   and filters, for reading it aloud. Absent means one default voice and no hints; see
  *   `tts/voices.js`.
  * @property {StoryOptions} [options] - Story-specific options and overrides
+ * @property {StorySpelling} [spelling] - The project's own dictionary, and the
+ *   grammar it has ignored. Absent means neither; see `composables/useSpelling`.
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
  * @property {number} updated - Last update timestamp
+ */
+
+/**
+ * What a project's spelling knows besides the writer's dictionary.
+ *
+ * @typedef {Object} StorySpelling
+ * @property {string[]} [words] - Words this project knows: its names, its
+ *   invented words
+ * @property {string[]} [ignored] - Hashes of the grammar lints ignored
+ *   here, each one lint in the words around it (`spelling/engine` `lintHash`)
  */
 
 /**
@@ -167,9 +179,11 @@
  *   the importer and the exporter and nothing else — the titles belong to the
  *   writer, so a renamed document is still found by this. Absent on an ordinary
  *   document, which is most of them.
- * @property {RepositorySource} [source] - Repository folders only (`kind:
- *   'repository'`): where the code under it was read from, which a refresh
- *   reads again. See `source/`.
+ * @property {RepositorySource} [source] - Repository folders only
+ *   (`kind: 'repository'`): where the code under it was read from, which a
+ *   refresh reads again. See `source/`.
+ * @property {DriveLink} [drive] - Text documents only: the Google Doc it was
+ *   imported from. Absent on any other document, and on a copy of one.
  * @property {number} [edited] - Roots only: when something in the project last
  *   changed, a document in it or a message in one of its chats, to the minute.
  *   What the project picker shows. Absent on a root written before it was kept,
@@ -212,6 +226,15 @@
  * @property {string} [subpath] - The folder of the repository imported, when
  *   not all of it
  * @property {number} imported - When it was last read
+ */
+
+/**
+ * The Google Doc a text document came from. Kept so that syncing the two, when
+ * it comes, can reach the Doc again without the writer picking it a second
+ * time; nothing reads it yet. See `.llm/google_docs_design.md`, part 3.
+ *
+ * @typedef {Object} DriveLink
+ * @property {string} id - The Doc's file id in Drive
  */
 
 /**
@@ -525,7 +548,7 @@
  * @property {string} [endpoint] - API endpoint URL, for a type without a known address (see ai/providers.js)
  * @property {string} [apiKey] - API key for authentication
  * @property {boolean} [rememberKey] - Whether to persist API key in IndexedDB (default true). If false, key is stored in sessionStorage only
- * @property {import('../ai/routing.js').OpenRouterRouting} [routing] - OpenRouter provider routing policy, for every model on this connection. Absent means the defaults: no data collection, zero-data-retention endpoints only. Which providers may serve a model is the preset's `allowedProviders`.
+ * @property {import('../ai/routing.js').OpenRouterRouting} [routing] - OpenRouter provider routing policy, for every model on this connection. Absent means the defaults: no data collection, zero-data-retention endpoints only. Which providers may serve a model is the preset's `allowedProviders`, and a preset's `ignoredProviders` add to the ignored ones here.
  * @property {boolean} [isDefault] - Whether this is a default provider (cannot be deleted)
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
@@ -540,6 +563,7 @@
  * @property {string} providerId - ID of the AI provider to use
  * @property {string} model - Model identifier
  * @property {string[]} [allowedProviders] - OpenRouter only: the upstream providers allowed to serve this model, by slug. Absent or empty allows any the connection's routing does. Here rather than on the connection because it is a choice about the model. See ai/routing.js.
+ * @property {string[]} [ignoredProviders] - OpenRouter only: upstream providers never routed to for this model, by slug, on top of the connection's ignored ones. Absent or empty adds none.
  * @property {boolean} [toolsEnabled] - Whether the model may call tools. Undefined is treated as enabled.
  * @property {import('../ai/defaults.js').AISettingsOverrides} [generationOverrides] - Sparse overrides on AI_DEFAULTS (sampler params, seed, max tokens, reasoning). Absent keys fall back to the defaults.
  * @property {boolean} isDefault - Whether this is a default profile
@@ -615,6 +639,55 @@
  * @property {string[]} profiles - The chat profiles whose chats search the
  *   web, unless a chat chooses otherwise
  * @property {number} [updated]
+ */
+
+/**
+ * A character card in the writer's library: what the grid, the search and the
+ * hover need, and no more, so the whole library can be read when it opens.
+ * The card itself is beside it, in a `CardFile` by the same id.
+ *
+ * @typedef {Object} LibraryCard
+ * @property {string} id - libcard_xxx
+ * @property {string} name - The character's, as the card gives it
+ * @property {string} title - What the card is known by: its nickname, when it
+ *   has one, and its name otherwise
+ * @property {string} creator
+ * @property {string[]} tags
+ * @property {string} notes - The creator's notes for people browsing, as plain
+ *   text; the start of the description when there are none
+ * @property {number} greetings
+ * @property {number} lore - How many entries its lorebook has
+ * @property {boolean} systemPrompt - Whether it overrides the system prompt,
+ *   which is the one thing asked when it goes into a project
+ * @property {string} hash - A fingerprint of the card's JSON, which tells a
+ *   card added twice
+ * @property {number} added - When it came into the library
+ * @property {number} [used] - When it last went into a project
+ * @property {CardUse[]} [projects] - The projects it went into from the
+ *   library, the newest last. One deleted since is left for whoever reads
+ *   them to pass over.
+ */
+
+/**
+ * A project a library card went into, and the folder it was written to there.
+ *
+ * @typedef {Object} CardUse
+ * @property {string} storyId
+ * @property {string} folderId
+ * @property {boolean} [made] - The project was made for the card, by New project
+ * @property {number} at - When
+ */
+
+/**
+ * A library card's own data, read one at a time: the card as it arrived, the
+ * PNG it came in, and a small copy of the picture for the grid.
+ *
+ * @typedef {Object} CardFile
+ * @property {string} id - The library card's id
+ * @property {any} card - The card's JSON, in whatever spec it was written to
+ * @property {Blob|null} image - The PNG it came in, whole; none for a JSON card
+ * @property {Blob|null} [thumbnail] - Made from the image; a cache, left out of
+ *   backups and made again when missing
  */
 
 /**
@@ -726,6 +799,7 @@
  * @property {string|null} providerId - The provider the workflow runs on; null for the active preset's
  * @property {string|null} model - The model; null for the active preset's
  * @property {string[]} [allowedProviders] - OpenRouter only: the upstreams allowed to serve the model, like a preset's. Read only when the workflow names its own provider; one that runs on the active preset runs on the preset's list.
+ * @property {string[]} [ignoredProviders] - OpenRouter only: the upstreams never routed to for the model, like a preset's, and read the same way as `allowedProviders`.
  * @property {string|null} [reasoningEffort] - How hard the model thinks: one of `REASONING_EFFORT_OPTIONS`, fitted to the model as it is sent;
  *   null for the app's default (`AI_DEFAULTS.reasoningEffort`)
  * @property {boolean} [onImport] - Convert only: convert every file with text as it is imported

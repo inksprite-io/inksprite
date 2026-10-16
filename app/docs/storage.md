@@ -1082,7 +1082,7 @@ Type: (`"stories"` | `"documents"` | `"files"` | `"chats"` | `"messages"`)
 
 The tables that belong to the app rather than to a project.
 
-Type: (`"aiProviders"` | `"aiProfiles"` | `"aiPrompts"` | `"chatProfiles"` | `"skills"` | `"skillWordings"` | `"mcpServers"` | `"webSearch"` | `"jobs"` | `"projectViews"`)
+Type: (`"aiProviders"` | `"aiProfiles"` | `"aiPrompts"` | `"chatProfiles"` | `"skills"` | `"skillWordings"` | `"mcpServers"` | `"webSearch"` | `"jobs"` | `"projectViews"` | `"cards"` | `"cardFiles"`)
 
 ## NewProject
 

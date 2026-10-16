@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { computed, ref } from 'vue'
-import { mount, flushPromises, enableAutoUnmount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import AiPresetSelector from '@/components/writer/settings/ai/AiPresetSelector.vue'
 
@@ -23,8 +23,6 @@ vi.mock('@/composables/useAIConfig', () => ({
     setActiveAIPreset: id => (activeId.value = id),
   }),
 }))
-
-enableAutoUnmount(afterEach)
 
 describe('AiPresetSelector', () => {
   it('opens a new preset’s name to be changed, with the focus in it', async () => {

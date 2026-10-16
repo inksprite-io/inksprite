@@ -126,6 +126,23 @@ function pageSetup({ app, font, cursor }) {
 }
 
 /**
+ * Runs in every page before anything else: in the app's, its spelling checker
+ * switched off, as the writer can in Settings › System, so the pictures don't
+ * underline the made-up names and the jargon in them. The browser's own
+ * checking, which it falls back to, draws nothing in a headless browser.
+ *
+ * @param {{ app: string }} setup - The app's origin
+ */
+function noSpelling({ app }) {
+  if (location.origin !== app) return
+  const key = 'inksprite_app_state'
+  const state = JSON.parse(localStorage.getItem(key) || '{}')
+  if (state.spelling?.enabled === false) return
+  const spelling = { ...state.spelling, enabled: false }
+  localStorage.setItem(key, JSON.stringify({ ...state, spelling }))
+}
+
+/**
  * Runs in every page before anything else: the chance the app's tools draw on
  * (dice, the oracle, cards) and a new comment's id, kept and handed back.
  * What they draw goes in `window.__toolRandomLog`; while
@@ -232,6 +249,7 @@ export async function openBrowser({
   })
   await context.addInitScript(fetchShim, { app: new URL(url).origin, origin: standIn.origin })
   await context.addInitScript(toolRandom)
+  await context.addInitScript(noSpelling, { app: new URL(url).origin })
 
   const local = [new URL(url).origin, standIn.origin]
   if (!outside) {

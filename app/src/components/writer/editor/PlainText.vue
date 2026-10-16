@@ -1,6 +1,11 @@
 <template>
-  <!-- Escape in the page puts the find away as well, as it does in the bar. -->
-  <div ref="root" class="h-full w-full flex flex-col min-w-0" @keydown.esc="finding && closeFind()">
+  <!-- Escape in the page puts the find away as well, as it does in the bar,
+       and goes no further: focus mode, which Escape also leaves, stays. -->
+  <div
+    ref="root"
+    class="h-full w-full flex flex-col min-w-0"
+    @keydown.esc="finding && ($event.stopPropagation(), closeFind())"
+  >
     <!-- Find and replace, over the text rather than in it. See editor/plainSearch. -->
     <FindBar
       v-if="finding"
@@ -135,7 +140,8 @@ const layout = EditorView.theme({
   '.cm-scroller': { fontFamily: 'inherit', lineHeight: 'inherit' },
   // Room under the text for its last line to come up to the middle of the
   // screen, as in the editor, and no more, so a short one has nothing to scroll.
-  '.cm-content': { maxWidth: '50rem', margin: '0 auto', padding: '1rem 0 50vh' },
+  // The room above is the panel's to set, as it is the editor's.
+  '.cm-content': { maxWidth: '50rem', margin: '0 auto', padding: 'var(--page-top, 1rem) 0 50vh' },
   // The base theme's caret is black, or white for a dark theme it is told of.
   '&.cm-editor .cm-content': { caretColor: 'currentColor' },
   '.cm-line': { padding: '0 1rem' },

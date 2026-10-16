@@ -174,6 +174,19 @@ export async function roleplay(ui, { standIn, context }) {
   await provider.waitFor({ state: 'hidden' })
   await ui.click(page.getByRole('combobox', { name: 'Model' }))
   await ui.click(page.getByRole('option', { name: 'Claude Sonnet 5.5' }))
+
+  // Roleplay, which is off until the writer turns it on
+  await ui.click(settings.getByRole('button', { name: 'Extensions', exact: true }))
+  await ui.click(settings.getByRole('switch', { name: 'Roleplay' }))
+  await ui.click(settings.getByRole('button', { name: 'Roleplay', exact: true }))
+  await settings.getByText('Enable NSFW chat profiles').waitFor()
+  // The connection's toast gone first, from over the dialog's corner.
+  await page
+    .locator('.p-toast-message')
+    .first()
+    .waitFor({ state: 'detached', timeout: 15_000 })
+    .catch(() => {})
+  await ui.shot('roleplay-extension', { of: settings, pad: 0 })
   await ui.click(settings.getByRole('button', { name: 'Close' }))
   await settings.waitFor({ state: 'hidden' })
 

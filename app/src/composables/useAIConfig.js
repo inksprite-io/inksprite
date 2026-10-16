@@ -151,8 +151,9 @@ export const useAIConfig = () => {
       name,
       providerId: source?.providerId || DEFAULT_OPENROUTER_PROVIDER_ID,
       model: source?.model || '',
-      // The same model, so the same providers serve it.
+      // The same model, so the same providers serve it, and serve it badly.
       allowedProviders: source?.allowedProviders ? [...source.allowedProviders] : undefined,
+      ignoredProviders: source?.ignoredProviders ? [...source.ignoredProviders] : undefined,
       toolsEnabled: source?.toolsEnabled !== false,
       generationOverrides: { ...(source?.generationOverrides || {}) },
     })

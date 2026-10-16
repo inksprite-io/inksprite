@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { mount, flushPromises, enableAutoUnmount } from '@vue/test-utils'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
 import { reactive } from 'vue'
 import PrimeVue from 'primevue/config'
 import Select from 'primevue/select'
@@ -38,8 +38,6 @@ function provider(fields) {
   providers[id] = { id, type: 'generic', endpoint: 'http://localhost:8080/v1', ...fields }
   return id
 }
-
-enableAutoUnmount(afterEach)
 
 describe('AiModelSelector', () => {
   beforeEach(() => {

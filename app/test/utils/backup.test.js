@@ -15,6 +15,9 @@ import {
   chatFromTables,
   projectFilename,
   projectFromTables,
+  projectsFromTables,
+  projectName,
+  selectionFilename,
   withFreshIds,
 } from '@/utils/backup.js'
 
@@ -218,7 +221,7 @@ describe('validateBackup', () => {
   it('sends a whole backup to Import in the settings', () => {
     const { ok, errors } = validateBackup(validBackup(), 2, 'chat')
     expect(ok).toBe(false)
-    expect(errors.join(' ')).toContain('Restore it with Import in Settings › System')
+    expect(errors.join(' ')).toContain('Restore it with Import in Settings › System › Data')
   })
 
   it('sends a project file to Import project', () => {
@@ -583,6 +586,16 @@ describe('describeBackupContents', () => {
     )
   })
 
+  it('counts the character cards in the library', () => {
+    const backup = {
+      tables: {
+        cards: [{ id: 'libcard_1' }, { id: 'libcard_2' }],
+        cardFiles: [{ id: 'libcard_1' }, { id: 'libcard_2' }],
+      },
+    }
+    expect(describeBackupContents(backup)).toBe('This backup holds 2 character cards.')
+  })
+
   it('says only what there is', () => {
     expect(describeBackupContents({ tables: { stories: [{ id: 's1' }] } })).toBe(
       'This backup holds 1 project.'
@@ -881,5 +894,53 @@ describe('withFreshIds', () => {
     rows.documents[1].content = 'snake_case and doc_q8L2 are not ids.'
     const fresh = withFreshIds(rows)
     expect(fresh.documents[1].content).toBe('snake_case and doc_q8L2 are not ids.')
+  })
+})
+
+describe('a selection', () => {
+  const tables = {
+    stories: [{ id: 'story_a' }, { id: 'story_b' }],
+    documents: [
+      { id: 'root_story_a', storyId: 'story_a', title: 'Thief' },
+      { id: 'root_story_b', storyId: 'story_b', title: '' },
+      { id: 'doc_one', storyId: 'story_b', title: 'Notes' },
+    ],
+    chats: [{ id: 'chat_one', storyId: 'story_a' }],
+    messages: [{ id: 'message_one', chatId: 'chat_one' }],
+  }
+
+  it('holds each of its projects with what is theirs', () => {
+    const [thief, other] = projectsFromTables(tables)
+    expect(thief.documents.map(row => row.id)).toEqual(['root_story_a'])
+    expect(thief.chats.map(row => row.id)).toEqual(['chat_one'])
+    expect(thief.messages.map(row => row.id)).toEqual(['message_one'])
+    expect(other.documents.map(row => row.id)).toEqual(['root_story_b', 'doc_one'])
+    expect(other.chats).toEqual([])
+  })
+
+  it('names each project by its root, and one with no name Untitled', () => {
+    expect(projectsFromTables(tables).map(projectName)).toEqual(['Thief', 'Untitled'])
+  })
+
+  it('picks the project asked for out of several', () => {
+    expect(projectFromTables(tables, 'story_b').story.id).toBe('story_b')
+    expect(() => projectFromTables(tables, 'story_missing')).toThrow('There is no project')
+  })
+
+  it('is named for the day it was saved', () => {
+    expect(selectionFilename(new Date(2026, 9, 15))).toBe('inksprite-export-2026-10-15.json')
+  })
+
+  it('is refused where a project is expected, saying where it goes', () => {
+    const file = {
+      app: 'inksprite',
+      format: BACKUP_FORMAT,
+      dbVersion: 1,
+      scope: 'selection',
+      tables: {},
+    }
+    expect(validateBackup(file, 1, 'project').errors).toEqual([
+      'This file holds projects and settings, not one project. Import it with Import in Settings › System › Data.',
+    ])
   })
 })

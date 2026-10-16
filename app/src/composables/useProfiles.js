@@ -17,6 +17,9 @@
  * way round, so card chats, which start on Roleplay, start on Roleplay (NSFW).
  * Either way the chat keeps the id it names, and flipping the switch back puts
  * it where it was.
+ *
+ * The roleplay built-ins are offered only while the Roleplay extension is on.
+ * A chat or a project already on one runs on it all the same.
  */
 
 import { computed } from 'vue'
@@ -60,7 +63,7 @@ const NSFW_COUNTERPARTS = Object.fromEntries(
 
 export const useProfiles = () => {
   const store = useChatProfileStore()
-  const { nsfwProfiles, chatProfileId, roleplayProfileId } = useApplicationState()
+  const { nsfwProfiles, chatProfileId, roleplayProfileId, roleplay } = useApplicationState()
 
   /**
    * The built-in that runs in place of this one: its counterpart when the
@@ -75,9 +78,15 @@ export const useProfiles = () => {
     return (counterpart && getBuiltInProfile(counterpart)) || profile
   }
 
-  /** @type {import('vue').ComputedRef<ProfileEntry[]>} */
+  /**
+   * The profiles offered: a built-in in its own place, and a roleplay one only
+   * while roleplay is on.
+   * @type {import('vue').ComputedRef<ProfileEntry[]>}
+   */
   const profiles = computed(() => [
-    ...BUILT_IN_PROFILES.filter(profile => inPlaceOf(profile) === profile).map(builtInEntry),
+    ...BUILT_IN_PROFILES.filter(
+      profile => inPlaceOf(profile) === profile && (roleplay.value || !profile.roleplay)
+    ).map(builtInEntry),
     ...store.getAllProfiles().map(storedEntry),
   ])
 

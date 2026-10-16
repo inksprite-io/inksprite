@@ -1,6 +1,6 @@
 ---
 title: The Editor
-description: Write and format documents in inksprite's editor, with Markdown as you type, tables, links, find and replace, and a plain text editor.
+description: Write and format documents in inksprite's editor, with Markdown as you type, tables, links, find and replace, spelling and grammar, and a plain text editor.
 ---
 
 import Screenshot from '../../components/Screenshot.astro';
@@ -70,17 +70,19 @@ press <kbd>Enter</kbd>:
 ```
 
 It becomes a table with an empty row under the header, and the caret in it.
+Or right-click and choose **Insert** › **Table** for one of two columns.
 
-- <kbd>Tab</kbd> goes to the next cell, and from the last cell adds a row.
-  <kbd>Shift</kbd> <kbd>Tab</kbd> goes back.
-- <kbd>Enter</kbd> goes down a row, adding one at the bottom. On an empty last
-  row it ends the table.
-- <kbd>Shift</kbd> <kbd>Enter</kbd> leaves the table for a paragraph after it.
+- <kbd>Tab</kbd> goes to the next cell, and <kbd>Shift</kbd> <kbd>Tab</kbd>
+  back.
+- <kbd>Enter</kbd> goes down a row. From the last row, it leaves the table for
+  a paragraph after it.
+- <kbd>Shift</kbd> <kbd>Enter</kbd> leaves the table from any cell.
 
 A cell holds one line of text: several lines pasted into it are joined.
 
-Right-click a cell to insert rows and columns, delete them, align a column's
-text, or **Delete table**.
+To add a row or a column, right-click a cell and point to **Table**. The same
+menu deletes rows and columns, aligns a column's text, and has **Delete
+table**.
 
 <Screenshot name="editor-table-menu" alt="A table's menu, with Align column open" />
 
@@ -140,6 +142,68 @@ capitals of each match: *she* over *He* is *She*.
 
 <kbd>Esc</kbd> closes the bar, with the caret on the match you were on.
 
+## The right-click menu
+
+Right-click in a document for:
+
+- **Cut**, **Copy** and **Paste**, as their keys do.
+- **Copy as Markdown**, for an app that takes Markdown, such as GitHub.
+- **Paste without formatting**, which keeps only the text.
+- **Paste from Markdown**, which turns Markdown copied from elsewhere into
+  headings, bold and the rest.
+- **Insert link…**, or **Edit link…** and **Remove link** in a link.
+- **Comment…** on selected text, or **Edit comment…** and **Resolve comment**
+  in one: see [Comments](/comments/).
+- **Insert**: a **Table**, a **Horizontal rule** or a **Code block**. On an
+  empty line it takes the line's place; otherwise it goes after the paragraph
+  you're in.
+- **Table**, in a table.
+
+On a misspelled word, its corrections come first: see
+[Spelling and grammar](#spelling-and-grammar). The menu key opens the menu at
+the caret.
+
+The first time you paste from the menu, your browser may ask to let inksprite
+see what you copied. Safari asks every time. Shift-right-click opens your
+browser's own menu instead.
+
+## Spelling and grammar
+
+inksprite checks your spelling and grammar on your own computer: nothing you
+write is sent anywhere to be checked. A moment after you stop typing,
+misspelled words are underlined in red and grammar in blue. A word you're
+still typing isn't underlined until you move on from it, and nothing is
+corrected for you.
+
+Right-click an underlined word to see what it could be, and click one to put
+it in place. For a misspelling:
+
+- **Add to dictionary** stops the word being flagged in every project.
+- **Add to project** stops it being flagged in this project.
+
+On part of a hyphenated word, like the *Wi* in *Wi-Fi*, these add the whole
+word, and say which.
+
+The names in your documents' titles are known already: a character sheet
+called *Marisol Vey* teaches inksprite both names.
+
+For grammar, the menu says what's wrong. **Ignore** stops that one being
+flagged where it is; change the words around it and it can come back.
+
+Under **Spelling** in **Settings** › **System**:
+
+- **Spell checker** turns inksprite's checker off, and leaves spelling to
+  your browser, which checks other languages too. It starts off if your
+  browser's language isn't English.
+- **Language** is the English it checks: US, UK, Australia, Canada or India.
+  It starts on your browser's.
+- **Grammar** turns the blue underlines off, and leaves spelling.
+- **Manage dictionary** lists the words you've added: **All projects** for
+  every project, **This project** for the one that's open. Type a word and
+  press <kbd>Enter</kbd> to add it, or click a word's **×** to take it out.
+
+Only English is checked.
+
 ## Keyboard shortcuts
 
 Press <kbd>⌘</kbd> <kbd>/</kbd> (<kbd>Ctrl</kbd> <kbd>/</kbd> on Windows and
@@ -163,6 +227,7 @@ Linux) in a document for the whole list, or right-click its tab and choose
 | Undo | <kbd>⌘</kbd> <kbd>Z</kbd> | <kbd>Ctrl</kbd> <kbd>Z</kbd> |
 | Redo | <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>Z</kbd> | <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>Z</kbd> or <kbd>Ctrl</kbd> <kbd>Y</kbd> |
 | Find and replace | <kbd>⌘</kbd> <kbd>F</kbd> | <kbd>Ctrl</kbd> <kbd>F</kbd> |
+| Focus mode | <kbd>⌘</kbd> <kbd>⌥</kbd> <kbd>F</kbd> | <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>F</kbd> |
 
 Select text and press the Comment keys to leave a note on it: see
 [Comments](/comments/).
@@ -201,9 +266,19 @@ Right-click a document in the outline:
 Each project remembers how you left it. In a narrow window, the sidebar and
 the chat take turns beside the editor.
 
+## Focus mode
+
+Press <kbd>⌘</kbd> <kbd>⌥</kbd> <kbd>F</kbd> (<kbd>Ctrl</kbd> <kbd>Alt</kbd>
+<kbd>F</kbd> on Windows and Linux), or click the four arrows at the right end
+of the tabs, to see only the document you're writing. The sidebar, the chat
+and the tabs go away, and the window goes full screen.
+
+Press the same keys or <kbd>Esc</kbd> to come back.
+
 ## On a phone
 
 The editor is the **Write** view, the pen at the top. The tabs show while a
 document is open, and the magnifier at their right end opens find and replace.
+Your keyboard checks your spelling, as it does everywhere else.
 The outline's menu, with **Download** and the rest, is the **⋯** on each
 row.

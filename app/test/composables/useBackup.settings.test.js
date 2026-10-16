@@ -117,12 +117,9 @@ describe('useBackup, settings files', () => {
       expect(read.summary).toEqual([{ table: 'aiProfiles', count: 1 }])
     })
 
-    it('sends a project file to the outline', async () => {
-      await expect(
-        useBackup().readDataFile(fileOf({ ...settingsFile({}), scope: 'project' }))
-      ).rejects.toThrow(
-        'This file holds one project, not a whole backup. Import it with Import project, in the projects menu'
-      )
+    it('takes a project file as a selection of one project', async () => {
+      const read = await useBackup().readDataFile(fileOf({ ...settingsFile({}), scope: 'project' }))
+      expect(read.kind).toBe('selection')
     })
 
     it('checks a settings file as settings', async () => {
@@ -134,7 +131,7 @@ describe('useBackup, settings files', () => {
 
   it('is refused where a project is expected, saying where it goes', async () => {
     await expect(useBackup().readProjectFile(fileOf(settingsFile({})))).rejects.toThrow(
-      'This file holds settings, not one project. Import it with Import in Settings › System.'
+      'This file holds settings, not one project. Import it with Import in Settings › System › Data.'
     )
   })
 

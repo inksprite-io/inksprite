@@ -1,5 +1,5 @@
 /* global TextEncoder, btoa, File, Blob */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useCardImport } from '@/composables/useCardImport'
 import { useApplicationState } from '@/composables/useApplicationState'
@@ -22,6 +22,7 @@ vi.mock('@/stores/db', () => ({
       get: vi.fn(async () => undefined),
     },
     files: { put: vi.fn(async () => undefined), get: vi.fn(async () => undefined) },
+    cardFiles: { get: vi.fn(async () => undefined) },
     stories: { toArray: vi.fn(async () => []) },
   },
 }))
@@ -76,8 +77,12 @@ describe('useCardImport', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     clearDocumentInstances()
+    // Cards are read as cards while roleplay is on; see 'with roleplay off'.
+    useApplicationState().setExtension('roleplay', true)
     cards = useCardImport(STORY)
   })
+
+  afterEach(() => useApplicationState().resetState())
 
   const CARD = {
     spec: 'chara_card_v2',
@@ -340,6 +345,20 @@ describe('useCardImport', () => {
       useApplicationState().setWorkflow('convert', { onImport: false })
     })
 
+    it('starts no conversion with the AI switched off, whatever the Convert role says', async () => {
+      startConversion.mockClear()
+      const found = await cards.inspect(file('paper.pdf', minimalPdf([['Hello there']])))
+      useApplicationState().setWorkflow('convert', { onImport: true })
+      useApplicationState().setAiEnabled(false)
+      try {
+        await cards.write(found, {})
+        expect(startConversion).not.toHaveBeenCalled()
+      } finally {
+        useApplicationState().setWorkflow('convert', { onImport: false })
+        useApplicationState().setAiEnabled(true)
+      }
+    })
+
     it('writes what was found, where it was asked to', async () => {
       const store = useDocumentsStore()
       const found = await cards.inspect(file('elara.png', cardPng(CARD)))
@@ -549,6 +568,55 @@ describe('useCardImport', () => {
         kind: 'card',
       })
       await expect(cards.inspectCard(folder.id)).rejects.toThrow('no card in it')
+    })
+  })
+
+  describe('with roleplay off', () => {
+    beforeEach(() => useApplicationState().setExtension('roleplay', false))
+
+    it('reads a card in a PNG as a picture, and says what it holds', async () => {
+      const found = await cards.inspect(file('elara.png', cardPng(CARD)))
+      expect(found).toMatchObject({ shape: 'file', holds: 'card' })
+    })
+
+    it('reads a card or a lorebook as JSON as a file', async () => {
+      const book = { name: 'A World', entries: { 0: { comment: 'Crowns', content: 'The coin.' } } }
+      expect(await cards.inspect(file('elara.json', JSON.stringify(CARD)))).toMatchObject({
+        shape: 'file',
+        holds: 'card',
+      })
+      expect(await cards.inspect(file('world.json', JSON.stringify(book)))).toMatchObject({
+        shape: 'file',
+        holds: 'lorebook',
+      })
+    })
+
+    it('reads a card as one when asked to', async () => {
+      const found = await cards.inspect(file('elara.png', cardPng(CARD)), { cards: true })
+      expect(found.shape).toBe('card')
+    })
+  })
+
+  describe('fromLibrary', () => {
+    it("reads a card out of the writer's library, its PNG as the portrait", async () => {
+      db.cardFiles.get.mockImplementation(async id =>
+        id === 'libcard_1'
+          ? { id, card: CARD, image: new Blob(['png'], { type: 'image/png' }), thumbnail: null }
+          : undefined
+      )
+
+      const found = await cards.fromLibrary('libcard_1')
+      expect(found).toMatchObject({ shape: 'card', title: 'Elara', greetings: 2, lore: 1 })
+      expect(found.portrait).toBeInstanceOf(File)
+
+      const written = await cards.write(found)
+      const children = useDocumentsStore().getChildren(written.folderId)
+      expect(children.some(document => document.kind === 'portrait')).toBe(true)
+      expect(useDocumentsStore().getDocument(written.folderId).parentId).not.toBe(rootIdFor(STORY))
+    })
+
+    it('has nothing to import from a card no longer in the library', async () => {
+      await expect(cards.fromLibrary('libcard_gone')).rejects.toThrow('no longer in the library')
     })
   })
 })

@@ -17,7 +17,8 @@
  * - **signIn** - Google's sign-in with its picker, in a popup or the system
  *   browser, and what it came back with
  * - **fetch** - A picked file looked up and fetched as a `File`: Google's own
- *   types exported, anything else downloaded
+ *   types exported, anything else downloaded; and the link a Doc's document
+ *   keeps to it
  * - **images** - The pictures in a Doc's markdown taken out before the
  *   importer sees it
  * - **errors** - What stops an import, said for the writer
@@ -41,5 +42,5 @@
 export { driveConfig, driveAvailable } from './config.js'
 export { DriveError, PopupBlockedError, SignInLapsedError } from './errors.js'
 export { pickInBrowser, pickInPopup, readReturn, relayReturn } from './signIn.js'
-export { describePicked, fetchPicked, requestFor } from './fetch.js'
+export { describePicked, fetchPicked, linkFor, requestFor } from './fetch.js'
 export { takeImages } from './images.js'

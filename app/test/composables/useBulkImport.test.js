@@ -1,10 +1,11 @@
 /* global File, AbortController */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useBulkImport, describeImport } from '@/composables/useBulkImport.js'
 import { useDocuments, clearDocumentInstances } from '@/composables/useDocuments'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
+import { useApplicationState } from '@/composables/useApplicationState'
 
 vi.mock('@/stores/db', () => ({
   default: {
@@ -36,9 +37,12 @@ describe('useBulkImport', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     clearDocumentInstances()
+    useApplicationState().setExtension('roleplay', true)
     store = useDocumentsStore()
     api = useDocuments(STORY)
   })
+
+  afterEach(() => useApplicationState().resetState())
 
   const titlesUnder = id => api.childrenOf(id).map(child => child.title)
   const folderUnder = (id, title) =>

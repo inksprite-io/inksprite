@@ -141,7 +141,7 @@ const ask = messages =>
         return await complete({
           provider,
           model,
-          allowedProviders: endpoint.allowedProviders,
+          upstreams: { allowedProviders: endpoint.allowedProviders },
           messages,
           overrides,
         })

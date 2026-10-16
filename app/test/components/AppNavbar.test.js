@@ -3,6 +3,8 @@ import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import { useJobsStore } from '@/stores/jobsStore.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
+import { useApplicationState } from '@/composables/useApplicationState'
+import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
 import PrimeVue from 'primevue/config'
 import AppNavbar from '@/components/writer/layout/AppNavbar.vue'
 import { DEFAULT_LAYOUT, NO_PROJECT_LAYOUT } from '@/components/writer/layout/layout.js'
@@ -42,6 +44,8 @@ describe('AppNavbar', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     storedJobs = 0
+    useApplicationState().resetState()
+    useCardLibraryPanel().close()
   })
 
   it('counts the jobs running on the Jobs button, and shows nothing when none are', async () => {
@@ -67,6 +71,28 @@ describe('AppNavbar', () => {
     await useJobsStore().deleteJob(job.id)
     await wrapper.vm.$nextTick()
     expect(wrapper.find('[data-action="jobs"]').exists()).toBe(false)
+  })
+
+  it('has the card library under the chats while roleplay is on, which opens it', async () => {
+    expect(mountRail(DEFAULT_LAYOUT).find('[data-action="cards"]').exists()).toBe(false)
+
+    // An empty library too: the button is how the first card comes in.
+    useApplicationState().setExtension('roleplay', true)
+    const wrapper = mountRail(DEFAULT_LAYOUT)
+    const order = wrapper
+      .findAll('[data-tab], [data-action="cards"]')
+      .map(button => button.attributes('data-tab') || button.attributes('data-action'))
+    expect(order.slice(0, 3)).toEqual(['outline', 'chats', 'cards'])
+
+    await wrapper.find('[data-action="cards"]').trigger('click')
+    expect(useCardLibraryPanel().visible.value).toBe(true)
+    expect(useCardLibraryPanel().into.value).toBeNull()
+  })
+
+  it('has no card library with the AI off', () => {
+    useApplicationState().setExtension('roleplay', true)
+    useApplicationState().setAiEnabled(false)
+    expect(mountRail(DEFAULT_LAYOUT).find('[data-action="cards"]').exists()).toBe(false)
   })
 
   it('has the Jobs button for jobs kept from before, before they are read in', async () => {
@@ -130,6 +156,16 @@ describe('AppNavbar', () => {
     const wrapper = mountRail(DEFAULT_LAYOUT)
     expect(wrapper.findAll('button')).toHaveLength(6)
     expect(wrapper.find('[data-panel]').exists()).toBe(false)
+  })
+
+  it('has no chats and no narration with the AI switched off', () => {
+    useApplicationState().setAiEnabled(false)
+    const wrapper = mountRail(DEFAULT_LAYOUT)
+
+    expect(wrapper.findAll('[data-tab]').map(button => button.attributes('data-tab'))).toEqual([
+      'outline',
+      'comments',
+    ])
   })
 
   it('has no projects list: they are switched from the outline', () => {

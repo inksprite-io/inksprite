@@ -6,7 +6,7 @@
  *
  * Google's own types have no bytes of their own and are exported: a Doc as
  * markdown, a Sheet as CSV (its first sheet), Slides as a PDF, a Drawing as
- * a PNG. Anything else is downloaded as it is.
+ * a PNG. Anything else is downloaded as it is. A Doc's document keeps its id.
  */
 
 import { fetch } from '@/platform/fetch.js'
@@ -88,6 +88,18 @@ export function requestFor(picked) {
     name: `${picked.name}.${exported.extension}`,
     mime: exported.mime,
   }
+}
+
+/**
+ * What the document a picked file becomes keeps of it: a Google Doc's id,
+ * so it can be synced with its Doc later without another pick. Anything else
+ * comes in as a copy, linked to nothing.
+ *
+ * @param {PickedFile} picked
+ * @returns {import('../types/models.js').DriveLink|undefined}
+ */
+export function linkFor(picked) {
+  return picked.mimeType === `${GOOGLE_TYPE}document` ? { id: picked.id } : undefined
 }
 
 /**

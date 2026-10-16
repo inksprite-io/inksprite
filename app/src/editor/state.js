@@ -47,6 +47,7 @@ import { tableEditing } from 'prosemirror-tables'
 import { schema } from './schema.js'
 import { parseMarkdown } from './markdown.js'
 import { searchPlugin } from './search.js'
+import { spellingPlugin } from './spelling.js'
 import {
   cellPaste,
   deleteEmptyTable,
@@ -232,6 +233,7 @@ export function plugins() {
     gapCursor(),
     history(),
     searchPlugin(),
+    spellingPlugin(),
   ]
 }
 

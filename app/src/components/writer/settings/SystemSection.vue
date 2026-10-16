@@ -18,6 +18,21 @@
 
     <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
       <div class="flex items-center justify-between gap-2">
+        <label for="ai-switch" class="text-xs font-medium text-surface-700 dark:text-surface-200"
+          >Enable AI</label
+        >
+        <ToggleSwitch
+          :model-value="applicationState.aiEnabled.value"
+          input-id="ai-switch"
+          class="flex-none"
+          data-ai-enabled
+          @update:model-value="applicationState.setAiEnabled"
+        />
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
+      <div class="flex items-center justify-between gap-2">
         <label
           for="compact-text-switch"
           class="text-xs font-medium text-surface-700 dark:text-surface-200"
@@ -42,64 +57,120 @@
       </div>
     </div>
 
-    <h3 class="px-2 pt-4 pb-1 text-sm font-semibold text-surface-700 dark:text-surface-200">
-      Chats
-    </h3>
-    <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
-      <label for="chat-profile" class="text-xs font-medium text-surface-700 dark:text-surface-200"
-        >Profile for new chats</label
-      >
-      <Select
-        input-id="chat-profile"
-        :model-value="chatProfile"
-        :options="profiles"
-        option-label="name"
-        option-value="id"
-        aria-label="Profile for new chats"
-        class="w-full dark:!bg-surface-900"
-        size="small"
-        data-chat-profile
-        @update:model-value="applicationState.setChatProfileId"
-      />
-    </div>
-    <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
-      <label
-        for="roleplay-profile"
-        class="text-xs font-medium text-surface-700 dark:text-surface-200"
-        >Profile for character cards</label
-      >
-      <Select
-        input-id="roleplay-profile"
-        :model-value="roleplayProfile"
-        :options="profiles"
-        option-label="name"
-        option-value="id"
-        aria-label="Profile for character cards"
-        class="w-full dark:!bg-surface-900"
-        size="small"
-        data-roleplay-profile
-        @update:model-value="applicationState.setRoleplayProfileId"
-      />
-    </div>
-    <div class="flex flex-col gap-1 px-2 pt-1 pb-2">
-      <div class="flex items-center justify-between gap-2">
-        <label for="nsfw-switch" class="text-xs font-medium text-surface-700 dark:text-surface-200"
-          >Enable NSFW chat profiles</label
-        >
-        <ToggleSwitch
-          :model-value="applicationState.nsfwProfiles.value"
-          input-id="nsfw-switch"
-          class="flex-none"
-          data-nsfw-profiles
-          @update:model-value="applicationState.setNsfwProfiles"
-        />
+    <!-- A phone keeps its keyboard's checker, so the app's isn't offered there. -->
+    <ExpandableSection
+      v-if="!touch"
+      title="Spelling"
+      storage-key="ui.settings.spelling"
+      subsection
+      container-class="pt-2"
+      content-wrapper-class="flex flex-col"
+    >
+      <div class="flex flex-col gap-3 pt-2 pb-1">
+        <div class="flex items-center justify-between gap-2">
+          <label
+            for="spelling-switch"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Spell checker</label
+          >
+          <ToggleSwitch
+            :model-value="spelling.enabled"
+            input-id="spelling-switch"
+            class="flex-none"
+            data-spelling-enabled
+            @update:model-value="applicationState.setSpellingEnabled"
+          />
+        </div>
+        <template v-if="spelling.enabled">
+          <div class="flex flex-col gap-1">
+            <label
+              for="spelling-language"
+              class="text-xs font-medium text-surface-700 dark:text-surface-200"
+              >Language</label
+            >
+            <Select
+              :model-value="spelling.dialect"
+              :options="DIALECTS"
+              option-label="label"
+              option-value="value"
+              input-id="spelling-language"
+              class="w-full dark:!bg-surface-900"
+              size="small"
+              data-spelling-language
+              @update:model-value="applicationState.setSpellingDialect"
+            />
+          </div>
+          <div class="flex items-center justify-between gap-2">
+            <label
+              for="grammar-switch"
+              class="text-xs font-medium text-surface-700 dark:text-surface-200"
+              >Grammar</label
+            >
+            <ToggleSwitch
+              :model-value="spelling.grammar"
+              input-id="grammar-switch"
+              class="flex-none"
+              data-grammar
+              @update:model-value="applicationState.setGrammar"
+            />
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <Button
+              label="Manage dictionary"
+              icon="pi pi-book"
+              size="small"
+              outlined
+              severity="secondary"
+              data-manage-dictionary
+              @click="dictionaryVisible = true"
+            />
+          </div>
+          <DictionaryDialog v-model:visible="dictionaryVisible" />
+        </template>
       </div>
-    </div>
+    </ExpandableSection>
 
-    <h3 class="px-2 pt-4 pb-1 text-sm font-semibold text-surface-700 dark:text-surface-200">
-      Data
-    </h3>
-    <DataSection />
+    <!-- The chats are the AI's, and go with it. -->
+    <ExpandableSection
+      v-if="applicationState.aiEnabled.value"
+      title="Chats"
+      storage-key="ui.settings.chats"
+      subsection
+      container-class="pt-2"
+      content-wrapper-class="flex flex-col"
+    >
+      <div class="flex flex-col gap-3 pt-2 pb-1">
+        <div class="flex flex-col gap-1">
+          <label
+            for="chat-profile"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Profile for new chats</label
+          >
+          <Select
+            input-id="chat-profile"
+            :model-value="chatProfile"
+            :options="profiles"
+            option-label="name"
+            option-value="id"
+            aria-label="Profile for new chats"
+            class="w-full dark:!bg-surface-900"
+            size="small"
+            data-chat-profile
+            @update:model-value="applicationState.setChatProfileId"
+          />
+        </div>
+      </div>
+    </ExpandableSection>
+
+    <ExpandableSection
+      title="Data"
+      storage-key="ui.settings.data"
+      subsection
+      container-class="pt-2"
+      content-wrapper-class="flex flex-col"
+    >
+      <DataSection />
+    </ExpandableSection>
   </div>
 </template>
 
@@ -108,21 +179,28 @@ import { computed, ref, watch, onMounted } from 'vue'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import DataSection from './DataSection.vue'
+import ExpandableSection from '@/components/common/ExpandableSection.vue'
+import Button from 'primevue/button'
+import DictionaryDialog from './DictionaryDialog.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useProfiles } from '@/composables/useProfiles'
 import { applyTheme } from '@/composables/useSystemSettings.js'
 import { useMessagesStore } from '@/stores/messagesStore'
+import { DIALECTS } from '@/spelling/dialects.js'
+import { hasTouchKeyboard } from '@/utils/touch.js'
 
 const applicationState = useApplicationState()
-const { theme, setTheme } = applicationState
+const { theme, setTheme, spelling } = applicationState
+// A phone keeps its keyboard's checker, so the editor's isn't offered there.
+const touch = hasTouchKeyboard()
+const dictionaryVisible = ref(false)
 const messagesStore = useMessagesStore()
 const profilesApi = useProfiles()
 const { profiles } = profilesApi
 
-// The profiles chats start on, as the pickers show them: the NSFW switch puts
+// The profile new chats start on, as the picker shows it: the NSFW switch puts
 // a built-in's counterpart in its place, as it does in a chat.
 const chatProfile = computed(() => profilesApi.getProfile(profilesApi.chatDefaultId())?.id)
-const roleplayProfile = computed(() => profilesApi.getProfile(profilesApi.roleplayDefaultId())?.id)
 
 // Switched off, it forgets what it kept. A saved request is as large as the
 // conversation behind it, and in a long chat kept with it on they came to most

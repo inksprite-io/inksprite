@@ -424,6 +424,15 @@ db.version(28).upgrade(async tx => {
   )
 })
 
+// The writer's character cards, kept as cards rather than in any project: a
+// lean row each for browsing, and beside it, by the same id, the card as it
+// arrived, the PNG it came in and a thumbnail. Blobs, so written straight to
+// storage as `files` is. No existing row changes.
+db.version(29).stores({
+  cards: 'id, hash',
+  cardFiles: 'id',
+})
+
 // A summary is stored where it is read: above the turns it kept, rather than at
 // the end of the chat with a count of how far to hoist it. What the writer
 // sees, what the model is sent, and what a fork or a rewind cuts by become one

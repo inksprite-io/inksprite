@@ -3,8 +3,8 @@ title: Roleplay with Character Cards
 description: Import a character card and its lorebook, play your own character, and steer the story with the oracle and out-of-character notes.
 ---
 
-import Clip from '../../components/Clip.astro';
-import Screenshot from '../../components/Screenshot.astro';
+import Clip from "../../components/Clip.astro";
+import Screenshot from "../../components/Screenshot.astro";
 
 A character card is a character packaged to share: who they are, the scene
 they open with, and often a lorebook, the world they live in. inksprite imports
@@ -16,6 +16,18 @@ This guide plays [Pif](https://chub.ai/characters/bipbop/pif-2b066033), by
 bipbop: an orphan mechanic in a world of flying islands who takes odd jobs
 from the underworld. The game was played with Claude Sonnet 5.5, through
 [Anthropic](/providers/#anthropic-and-openai).
+
+## Turn on Roleplay
+
+Roleplay is an extension, off until you turn it on, so someone using
+inksprite only to write never sees it. Open **Settings** › **Extensions** and
+switch on **Roleplay**. That brings the card library, character cards in
+**Import**, and the Roleplay profiles.
+
+<Screenshot
+  name="roleplay-extension"
+  alt="Roleplay switched on in Settings › Extensions"
+/>
 
 ## Get the card and its lorebook
 
@@ -31,7 +43,10 @@ Make a project for the game. Right-click it, choose **Import** › **Files…**,
 and choose the PNG. inksprite says what's in the card before it writes
 anything. Click **Import**, then do the same with the lorebook.
 
-<Screenshot name="roleplay-import-card" alt="Importing Pif: a description, a greeting and post-history instructions" />
+<Screenshot
+  name="roleplay-import-card"
+  alt="Importing Pif: a description, a greeting and post-history instructions"
+/>
 
 Both go in a **Cards** folder: the card in **Characters**, a document for each
 part of it, and the lorebook in **Lorebooks**, a document for each of its 246
@@ -39,7 +54,10 @@ entries. The model reads folder names too, so right-click the lorebook's
 folder, named after its file, choose **Rename**, and call it
 **Divided Skies**, the name of Pif's world.
 
-<Screenshot name="roleplay-outline" alt="The card and the lorebook in the outline" />
+<Screenshot
+  name="roleplay-outline"
+  alt="The card and the lorebook in the outline"
+/>
 
 ## Make a persona
 
@@ -50,7 +68,10 @@ with a description. This guide plays Tal:
 > A tall, lean man who looks to be in his late 30s. He speaks little and wears
 > a pair of revolvers at his hip.
 
-<Clip name="roleplay-persona" label="Making a Personas folder and Tal's document" />
+<Clip
+  name="roleplay-persona"
+  label="Making a Personas folder and Tal's document"
+/>
 
 ## Start the chat
 
@@ -62,15 +83,18 @@ card with more than one greeting lets you choose one here.
 <Screenshot name="roleplay-start-chat" alt="Starting a chat with Pif as Tal" />
 
 The chat opens on the **Roleplay** profile (or the one chosen as **Profile for
-character cards** in **Settings** › **System**), with Pif's greeting as its
-first message.
+character cards** in **Settings** › **Extensions** › **Roleplay**), with Pif's
+greeting as its first message.
 
 Now hover over **Tal** in the outline and click the pin. A pinned document
 goes to the model with every message you send, so it always knows who you are
 playing. The card's description is pinned already; pinned documents show in
 colour. [Pins](/chats/#pin-documents) belong to the chat they were made in.
 
-<Screenshot name="roleplay-pinned" alt="Tal pinned to the chat, and Pif's greeting" />
+<Screenshot
+  name="roleplay-pinned"
+  alt="Tal pinned to the chat, and Pif's greeting"
+/>
 
 ## Turn on the dice
 
@@ -79,7 +103,10 @@ Click the gear in the message box for the chat's settings. Under
 instructions, which go with every message after the author's note. Change
 either here.
 
-<Screenshot name="roleplay-settings" alt="The chat's Roleplay settings: Tal, Pif, and the card's post-history instructions" />
+<Screenshot
+  name="roleplay-settings"
+  alt="The chat's Roleplay settings: Tal, Pif, and the card's post-history instructions"
+/>
 
 Open **Tools**, and switch on **RPG Tools**: dice, the oracle, tables, tarot
 and names. A model like Claude Sonnet 5.5 rolls on its own when an outcome is
@@ -88,7 +115,10 @@ in doubt.
 **Documents** is on already, so the model looks entries up in the lorebook as
 the story needs them, rather than reading all 13,000 words with every message.
 
-<Screenshot name="roleplay-tools" alt="The chat's tools, with RPG Tools switched on" />
+<Screenshot
+  name="roleplay-tools"
+  alt="The chat's tools, with RPG Tools switched on"
+/>
 
 ## Let the model read up
 
@@ -99,7 +129,10 @@ Before the first move, tell the model what to do. A line that starts with
 > and gather whatever context you need to run this world. Let me know when
 > you're ready.
 
-<Clip name="roleplay-explore" label="The model lists the lorebook, reads the entries it wants, and says what it found" />
+<Clip
+  name="roleplay-explore"
+  label="The model lists the lorebook, reads the entries it wants, and says what it found"
+/>
 
 It read ten entries (the world, Pif's island, her slum, her rival, the crew
 that keeps foiling her) and answered out of character. Click **11 tool calls**
@@ -115,7 +148,10 @@ The model narrates, plays Pif and everyone else, and leaves Tal to you. When
 the outcome is in doubt, it rolls: here a d20 for the shot, which came up 13,
 a hit that only dents the war-golem.
 
-<Screenshot name="roleplay-dice" alt="A turn, and the d20 the model rolled for it" />
+<Screenshot
+  name="roleplay-dice"
+  alt="A turn, and the d20 the model rolled for it"
+/>
 
 ## Steer the story
 
@@ -134,7 +170,10 @@ The odds are `nearly_impossible`, `very_unlikely`, `unlikely`, `fifty_fifty`,
 `likely`, `very_likely` or `nearly_certain`; leave them off for 50/50. The
 model takes the answer as fact. Here it was no, so the vent was shuttered:
 
-<Screenshot name="roleplay-oracle" alt="The oracle's answer in Tal's turn, and the reply built on it" />
+<Screenshot
+  name="roleplay-oracle"
+  alt="The oracle's answer in Tal's turn, and the reply built on it"
+/>
 
 `/roll 2d6+1` rolls dice the same way. Type `/` for the rest.
 
@@ -152,7 +191,10 @@ OOC: While we're busy with the golem, have Ridge slip in and make off with the c
 Ridge, Pif's rival, came down from the rafters in the same reply. The dice
 still had their say: a 6, and the shots went wide.
 
-<Screenshot name="roleplay-ooc" alt="An action and an out-of-character note in one turn" />
+<Screenshot
+  name="roleplay-ooc"
+  alt="An action and an out-of-character note in one turn"
+/>
 
 ## Compact the chat
 
@@ -166,7 +208,48 @@ The turns stay in the chat for you to read back. Here the next turn went to
 the model at 7.8k tokens (**ctx** in its header), where the one before the
 summary was 22k.
 
-<Screenshot name="roleplay-after-summary" alt="The first turn after the summary, at a third of the size" />
+<Screenshot
+  name="roleplay-after-summary"
+  alt="The first turn after the summary, at a third of the size"
+/>
 
 `/compact(2)` keeps the last two turns as they are, under the summary.
 [Compact a long chat](/chats/#compact-a-long-chat) has the other ways.
+
+## Keep your cards in the library
+
+The card library keeps the cards you play outside any project, so you can find
+one again and see which is which. Open it with the cards button on the left,
+under the chats, and click **+** to add PNG or JSON cards, or drop them in.
+Several can go in at once, and a card already there is skipped.
+
+To add a card from the web, click the link button beside **+** and paste a
+link: a card's page on botbooru or Chub, Chub's `creator/name`, or a link
+straight to a PNG or JSON card. Dragging a link from another tab onto the
+library does the same. Links to botbooru only work in the
+[desktop app](/desktop/); in a browser, download the card and drop it in.
+
+Search by name or creator, or click the tags under the search to show only the
+cards that have them. Type the start of a tag, like `fem`, and the search
+offers `tag:female`; pick it to filter by it. Point at a card to read its
+creator's notes, and click it to see the whole card.
+
+**New project** makes a project named for the card, puts the card in it, and
+asks the questions **Chat with** asks, so you land in a chat with the
+character. Once a card has a project of its own, its button opens that project
+instead; **New project** is still in the menu beside it, for a fresh start.
+**Add to** puts the card in the project open, the same as importing the file.
+A card's details say which projects it's in, and open any of them.
+
+**Download** saves the card as a file to share or keep. Right-click a card, or
+hold a finger on it, for all of these and **Delete**. **Import** ›
+**Character card…** on a folder opens the library to pick one for that
+folder.
+
+Cards tagged NSFW or NSFL show their pictures blurred. Click a blurred picture
+in a card's details to see it. The eye beside the search turns the blurring off,
+and on again.
+
+Deleting a card from the library leaves the projects it went into as they are.
+**Delete card library** in **Settings** › **Extensions** › **Roleplay** empties
+it, and turning Roleplay off asks whether to.

@@ -22,6 +22,8 @@ import { streamAnthropic } from '@/ai/anthropic.js'
  * @property {string} model - Model identifier
  * @property {string[]} [allowedProviders] - OpenRouter only: the upstreams
  *   allowed to serve this model. Empty or absent allows any.
+ * @property {string[]} [ignoredProviders] - OpenRouter only: upstreams never
+ *   routed to for this model, besides the connection's ignored ones.
  */
 
 /**
@@ -294,12 +296,13 @@ export const useAIService = () => {
    * Generate chat completion with streaming.
    *
    * `config` needs `providerId` and `model`, and carries the preset's
-   * `allowedProviders` when it has any — a preset passed whole does. Sampler,
-   * reasoning and maxTokens come from AI_DEFAULTS, optionally adjusted by
-   * `options.overrides` (used for short auxiliary calls like title generation).
+   * `allowedProviders` and `ignoredProviders` when it has any — a preset
+   * passed whole does. Sampler, reasoning and maxTokens come from
+   * AI_DEFAULTS, optionally adjusted by `options.overrides` (used for short
+   * auxiliary calls like title generation).
    *
    * @param {Array<{role: string, content: string|null, tool_call_id?: string, tool_calls?: ToolCall[], reasoning_details?: ReasoningDetail[]}>} messages - Chat messages
-   * @param {AIConfig} config - Active AI configuration (providerId, model, allowed providers)
+   * @param {AIConfig} config - Active AI configuration (providerId, model, allowed and ignored providers)
    * @param {(chunk: StreamChunk) => void} onChunk - Callback for each streamed chunk
    * @param {Object} [options] - Additional options
    * @param {ToolDefinition[]} [options.tools] - Tool definitions to include
@@ -353,7 +356,7 @@ export const useAIService = () => {
         messages,
         model: config.model,
         provider,
-        allowedProviders: config.allowedProviders,
+        upstreams: config,
         settings: resolveAISettings(options.overrides),
         traits: await traitsOf(provider, config.model),
         tools: options.tools,

@@ -27,12 +27,18 @@
         <li>Research and brainstorm</li>
         <li>Generate audio narrations</li>
       </ul>
-      <p v-if="!aiReady" data-connect-ai>
+      <p v-if="!aiEnabled" data-ai-off>
+        The AI tools are off. You can
+        <button type="button" :class="LINK" @click="setAiEnabled(true)">turn them on</button>
+        now or later in Settings.
+      </p>
+      <p v-else-if="!aiReady" data-connect-ai>
         To use these tools,
         <button type="button" :class="LINK" @click="$emit('show', 'ai')">
           connect an AI provider
         </button>
-        now or later in Settings.
+        now or later in Settings. If you'd rather write without them, you can
+        <button type="button" :class="LINK" @click="setAiEnabled(false)">turn them off</button>.
       </p>
     </section>
 
@@ -43,7 +49,7 @@
           <strong class="text-red-600 dark:text-red-400">Warning:</strong> your work is stored only
           in this browser. If this site's data is cleared, it's gone.
         </p>
-        <p>You can back up your data from Settings › System.</p>
+        <p>You can back up your data from Settings › System › Data.</p>
         <p v-if="advice.desktopApp">
           Alternatively, you can use the standalone
           <a :href="DESKTOP_URL" target="_blank" rel="noopener noreferrer" :class="LINK"
@@ -68,10 +74,12 @@
 
 <script setup>
 /**
- * The welcome's first section: what inksprite is, what its AI can do and
- * where to connect it, and where the work is kept and what can take it away.
+ * The welcome's first section: what inksprite is, what its AI can do, where
+ * to connect it and a link to switch it off or on again, and where the work
+ * is kept and what can take it away.
  */
 import { isDesktop } from '@/platform/desktop.js'
+import { useApplicationState } from '@/composables/useApplicationState'
 import { storageAdvice } from '@/platform/persistence.js'
 import { DESKTOP_URL, GUIDE_URL, HEADING, ISSUES_URL, LINK } from './links.js'
 
@@ -84,6 +92,8 @@ defineEmits({
   /** Open another of the welcome's sections. */
   show: (/** @type {string} */ id) => typeof id === 'string',
 })
+
+const { aiEnabled, setAiEnabled } = useApplicationState()
 
 const HOME_SCREEN_URL =
   'https://support.apple.com/guide/iphone/bookmark-a-website-iph42ab2f3a7/ios#iph4f9a47bbc'

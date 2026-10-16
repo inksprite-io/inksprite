@@ -36,8 +36,8 @@ import { useAIService } from '@/composables/useAIService'
 /**
  * A list of OpenRouter's upstream providers, picked by name and stored by
  * slug. One for each list that names providers — the connection's ignored
- * ones, the allowed ones beside a model — so they offer the same names and
- * keep what they hold the same way.
+ * ones, the allowed and ignored ones beside a model — so they offer the same
+ * names and keep what they hold the same way.
  *
  * Given a model, it offers the providers that serve that model rather than
  * all of them, and says which of the chosen ones don't: the list was chosen

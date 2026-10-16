@@ -21,8 +21,9 @@
         <button
           type="button"
           class="cursor-pointer text-left rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
-          :aria-expanded="isExpanded"
+          :aria-expanded="isOpen"
           :aria-controls="contentId"
+          :aria-disabled="disabled || undefined"
           @click.stop="toggleExpanded"
         >
           {{ title }}
@@ -48,7 +49,7 @@
       leave-active-class="transition-all duration-200 ease-out"
       leave-to-class="max-h-0"
     >
-      <div v-show="isExpanded" :id="contentId" class="overflow-hidden" :class="contentClasses">
+      <div v-show="isOpen" :id="contentId" class="overflow-hidden" :class="contentClasses">
         <slot />
       </div>
     </Transition>
@@ -75,6 +76,9 @@ import { sessionStorage } from '@/utils/sessionStorage'
  *   chevron ahead of a small title, as a tree has it, so that its `actions`
  *   line up with the rows under it; and the content hung from it by a line
  *   down from the chevron, so what is inside it is plainly its own.
+ * @property {boolean} [disabled=false] - Shut, and not to be opened: a
+ *   section whose switch in its actions is off. Whether it was left open is
+ *   kept, for when it can open again.
  *
  * Slots: the default slot is the content; `actions` sits in the header, ahead
  * of the chevron, for controls over the whole section.
@@ -122,6 +126,10 @@ const props = defineProps({
     default: '',
   },
   subsection: {
+    type: Boolean,
+    default: false,
+  },
+  disabled: {
     type: Boolean,
     default: false,
   },
@@ -174,10 +182,14 @@ const isExpanded = computed({
   },
 })
 
+/** Whether it shows open: as it was left, unless it can't be opened now. */
+const isOpen = computed(() => !props.disabled && isExpanded.value)
+
 /**
  * Toggle the expanded state
  */
 const toggleExpanded = () => {
+  if (props.disabled) return
   isExpanded.value = !isExpanded.value
 }
 
@@ -189,7 +201,9 @@ const expand = () => {
 defineExpose({ expand })
 
 const headerClasses = computed(() => {
-  const baseClasses = 'hover:bg-surface-300 hover:dark:bg-surface-700'
+  const baseClasses = props.disabled
+    ? 'cursor-default!'
+    : 'hover:bg-surface-300 hover:dark:bg-surface-700'
 
   switch (props.level) {
     case '1':
@@ -236,7 +250,8 @@ const titleClasses = computed(() => {
 const chevronClasses = computed(() => [
   'text-surface-600 dark:text-surface-300 transition-transform duration-200',
   iconClasses.value,
-  isExpanded.value ? 'pi-angle-down' : 'pi-angle-right',
+  isOpen.value ? 'pi-angle-down' : 'pi-angle-right',
+  props.disabled && 'opacity-40',
 ])
 
 const iconClasses = computed(() => {

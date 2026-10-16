@@ -3,46 +3,35 @@
     :visible="visible"
     modal
     header="Export"
-    :style="{ width: '24rem', maxWidth: '95vw' }"
+    :style="{ width: '28rem', maxWidth: '95vw' }"
     @update:visible="emit('update:visible', $event)"
-    @show="reset"
+    @show="open"
   >
-    <div class="flex flex-col gap-2 pb-3">
-      <div class="flex items-center gap-2">
-        <RadioButton v-model="kind" input-id="export-everything" value="backup" />
-        <label for="export-everything" class="text-sm">Everything</label>
-      </div>
-      <div class="flex items-center gap-2">
-        <RadioButton v-model="kind" input-id="export-settings" value="settings" />
-        <label for="export-settings" class="text-sm">Settings</label>
-      </div>
-    </div>
-    <div
-      v-if="kind === 'settings'"
-      class="max-h-[45vh] overflow-y-auto pl-7 pr-1"
-      data-settings-items
-    >
-      <section v-for="group in groups" :key="group.kind" class="pb-3">
-        <h4 class="pb-1 text-xs font-semibold text-surface-700 dark:text-surface-200">
-          {{ group.heading }}
-        </h4>
-        <div
-          v-for="item in group.items"
-          :key="item.key"
-          class="flex items-center gap-2 py-0.5"
-          :data-item="item.key"
-        >
-          <Checkbox
-            :model-value="picked.has(item.key)"
-            :input-id="`settings-item-${item.key}`"
-            binary
-            @update:model-value="toggle(item.key, $event)"
-          />
-          <label :for="`settings-item-${item.key}`" class="text-sm leading-snug">{{
-            item.name
-          }}</label>
-        </div>
-      </section>
+    <div class="h-[min(22rem,50vh)] overflow-y-auto pb-3" data-export-tree>
+      <Tree
+        v-if="nodes"
+        v-model:expanded-keys="expanded"
+        :value="nodes"
+        selection-mode="checkbox"
+        :selection-keys="keys"
+        loading-mode="icon"
+        :pt="{
+          root: { class: '!p-0 !bg-transparent' },
+          node: { class: '!outline-none' },
+          nodeContent: { class: '!py-0.5 !px-1' },
+          nodeLabel: { class: 'text-sm leading-snug' },
+        }"
+        @update:selection-keys="tick"
+        @node-expand="read"
+      >
+        <template #default="{ node }">
+          <span
+            :class="node.selectable === false && 'text-surface-500 dark:text-surface-400'"
+            :data-empty="node.selectable === false || undefined"
+            >{{ node.label }}</span
+          >
+        </template>
+      </Tree>
     </div>
     <div class="flex items-center gap-2 border-t border-surface-200 pt-3 dark:border-surface-700">
       <Checkbox v-model="includeApiKeys" input-id="export-include-api-keys" binary />
@@ -60,8 +49,8 @@
         label="Export"
         size="small"
         data-action="export"
-        :disabled="kind === 'settings' && picked.size === 0"
-        @click="exportChosen"
+        :disabled="!nodes || ticked.size === 0"
+        @click="exportTicked"
       />
     </template>
   </Dialog>
@@ -69,28 +58,37 @@
 
 <script setup>
 /**
- * What Export saves: everything, as a backup, or the writer's settings. For
- * settings, their connections, presets, profiles, servers, skills and app
- * settings are listed with a box each, under a heading per kind, and picking
- * an item picks what it is no use without, such as a preset's connection.
- * See `utils/settingsFile.js`.
+ * What Export saves, as a tree of boxes: the projects, each with its
+ * documents and chats, the character cards, and the settings, all ticked as
+ * it opens. Everything ticked is a whole backup; settings alone, a settings
+ * file; anything else, a selection of what was ticked. A project's documents
+ * and chats are read when it is opened, and picking a setting picks what it
+ * is no use without, such as a preset's connection. See
+ * `utils/exportTree.js`.
  */
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
-import RadioButton from 'primevue/radiobutton'
+import Tree from 'primevue/tree'
 import { useBackup } from '@/composables/useBackup'
 import { useToast } from '@/composables/useToast'
-import { KINDS, SETTINGS_TABLES, pickWithNeeds } from '@/utils/settingsFile.js'
+import {
+  afterReading,
+  exportPick,
+  exportTree,
+  leavesOf,
+  selectionKeys,
+  tickedLeaves,
+} from '@/utils/exportTree.js'
 
-/** @typedef {import('@/utils/settingsFile.js').SettingsItem} SettingsItem */
+/** @typedef {import('@/utils/exportTree.js').Exportable} Exportable */
+/** @typedef {import('@/utils/exportTree.js').ExportNode} ExportNode */
 
 /**
  * What the writer chose to export.
  *
- * @typedef {{kind: 'backup', includeApiKeys: boolean}
- *   | {kind: 'settings', picked: Set<string>, includeApiKeys: boolean}} ExportChoice
+ * @typedef {{pick: import('@/utils/exportTree.js').ExportPick, includeApiKeys: boolean}} ExportChoice
  */
 
 defineProps({
@@ -99,75 +97,97 @@ defineProps({
 
 const emit = defineEmits({
   'update:visible': (/** @type {boolean} */ visible) => typeof visible === 'boolean',
-  export: (/** @type {ExportChoice} */ choice) =>
-    choice.kind === 'backup' || choice.kind === 'settings',
+  export: (/** @type {ExportChoice} */ choice) => Boolean(choice?.pick),
 })
 
 const backup = useBackup()
 const toast = useToast()
 
-/** @type {import('vue').Ref<'backup'|'settings'>} */
-const kind = ref('backup')
+/** @type {import('vue').Ref<Exportable|null>} */
+const exportable = ref(null)
+/** The leaves ticked. @type {import('vue').Ref<Set<string>>} */
+const ticked = ref(new Set())
+/** @type {import('vue').Ref<Record<string, boolean>>} */
+const expanded = ref({})
+/** The projects whose documents and chats are being read. @type {import('vue').Ref<Set<string>>} */
+const reading = ref(new Set())
 const includeApiKeys = ref(false)
-/** @type {import('vue').Ref<SettingsItem[]|null>} */
-const items = ref(null)
-/** @type {import('vue').Ref<Set<string>>} */
-const picked = ref(new Set())
 
-/** The settings under their headings, in the order the kinds are listed. */
-const groups = computed(() =>
-  [...SETTINGS_TABLES, /** @type {const} */ ('settings')]
-    .map(kind => ({
-      kind,
-      heading: KINDS[kind].heading,
-      items: (items.value || []).filter(item => item.kind === kind),
-    }))
-    .filter(group => group.items.length > 0)
-)
-
-/** As it opens: everything, without keys, the settings to be read again. */
-function reset() {
-  kind.value = 'backup'
-  includeApiKeys.value = false
-  items.value = null
-}
-
-// The settings are read the first time they are asked for, each item picked
-// or not as it starts.
-watch(kind, async chosen => {
-  if (chosen !== 'settings' || items.value) return
-  try {
-    const listed = await backup.listSettings()
-    items.value = listed
-    picked.value = new Set(listed.filter(item => item.picked).map(item => item.key))
-  } catch (error) {
-    console.error('The settings could not be read:', error)
-    toast.error(`The settings couldn't be read: ${error.message}`)
-    kind.value = 'backup'
-  }
+/** The tree, with a project being read showing so. */
+const nodes = computed(() => {
+  if (!exportable.value) return null
+  const tree = exportTree(exportable.value)
+  if (reading.value.size === 0) return tree
+  return tree.map(top =>
+    top.key === 'projects'
+      ? {
+          ...top,
+          children: top.children?.map(node =>
+            reading.value.has(node.key) ? { ...node, loading: true } : node
+          ),
+        }
+      : top
+  )
 })
 
-/**
- * @param {string} key
- * @param {boolean} on
- */
-function toggle(key, on) {
-  if (on) {
-    picked.value = pickWithNeeds(picked.value, items.value || [], key)
-    return
+const keys = computed(() => (nodes.value ? selectionKeys(nodes.value, ticked.value) : {}))
+
+/** As it opens: everything there is, all of it ticked, and no keys. */
+async function open() {
+  exportable.value = null
+  expanded.value = {}
+  reading.value = new Set()
+  includeApiKeys.value = false
+  try {
+    exportable.value = await backup.listExportable()
+    ticked.value = new Set(leavesOf(/** @type {ExportNode[]} */ (nodes.value)))
+  } catch (error) {
+    console.error('What there is to export could not be read:', error)
+    toast.error(`What there is to export couldn't be read: ${error.message}`)
   }
-  const next = new Set(picked.value)
-  next.delete(key)
-  picked.value = next
 }
 
-function exportChosen() {
-  emit(
-    'export',
-    kind.value === 'settings'
-      ? { kind: 'settings', picked: new Set(picked.value), includeApiKeys: includeApiKeys.value }
-      : { kind: 'backup', includeApiKeys: includeApiKeys.value }
-  )
+/** @param {import('primevue/tree').TreeSelectionKeys} next */
+function tick(next) {
+  if (!nodes.value || !exportable.value) return
+  ticked.value = tickedLeaves(nodes.value, next, ticked.value, exportable.value.settings)
+}
+
+/**
+ * Read a project's documents and chats the first time it is opened.
+ *
+ * @param {import('primevue/treenode').TreeNode} node
+ */
+async function read(node) {
+  const id = node.key.startsWith('project:') ? node.key.slice('project:'.length) : null
+  const project = exportable.value?.projects.find(one => one.id === id)
+  if (!id || !project || project.contents || reading.value.has(node.key)) return
+
+  reading.value = new Set([...reading.value, node.key])
+  try {
+    const contents = await backup.readProjectContents(id)
+    if (!exportable.value) return
+    exportable.value = {
+      ...exportable.value,
+      projects: exportable.value.projects.map(one => (one.id === id ? { ...one, contents } : one)),
+    }
+    ticked.value = afterReading(ticked.value, /** @type {ExportNode[]} */ (nodes.value), id)
+  } catch (error) {
+    console.error(`Project ${id} could not be read:`, error)
+    toast.error(`The project couldn't be read: ${error.message}`)
+  } finally {
+    const still = new Set(reading.value)
+    still.delete(node.key)
+    reading.value = still
+  }
+}
+
+function exportTicked() {
+  if (!nodes.value) return
+  emit('export', {
+    pick: exportPick(nodes.value, ticked.value),
+    includeApiKeys: includeApiKeys.value,
+  })
   emit('update:visible', false)
 }
 </script>

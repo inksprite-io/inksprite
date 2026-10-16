@@ -50,7 +50,7 @@ export const SETTINGS_TABLES = [
  * The settings kept outside the database, in the groups the export offers
  * them: each group is one item.
  *
- * @typedef {'aiPreset'|'startingProfiles'|'narration'|'workflows'|'preferences'} SettingsGroup
+ * @typedef {'aiPreset'|'startingProfiles'|'narration'|'workflows'|'preferences'|'spelling'} SettingsGroup
  *
  * @type {Record<SettingsGroup, Array<keyof BackedUpSettings>>}
  */
@@ -59,7 +59,16 @@ export const SETTINGS_GROUPS = {
   startingProfiles: ['chatProfileId', 'roleplayProfileId'],
   narration: ['narration'],
   workflows: ['workflows'],
-  preferences: ['theme', 'applyEdits', 'nsfwProfiles', 'highlightSpeakers'],
+  preferences: [
+    'aiEnabled',
+    'theme',
+    'applyEdits',
+    'roleplay',
+    'nsfwProfiles',
+    'blurNsfw',
+    'highlightSpeakers',
+  ],
+  spelling: ['spelling'],
 }
 
 /**
@@ -68,7 +77,7 @@ export const SETTINGS_GROUPS = {
  *
  * @type {ReadonlySet<SettingsGroup>}
  */
-const UNPICKED = new Set(['preferences'])
+const UNPICKED = new Set(['preferences', 'spelling'])
 
 /**
  * What each kind of item is called: as a heading, and in a sentence about
@@ -98,6 +107,7 @@ const GROUP_NAMES = {
   narration: { label: 'Narration', phrase: 'the narration connection' },
   workflows: { label: 'Workflows', phrase: 'the workflows' },
   preferences: { label: 'Preferences', phrase: 'your preferences' },
+  spelling: { label: 'Spelling', phrase: 'your spelling settings' },
 }
 
 /**
@@ -528,6 +538,22 @@ function listed(words) {
 const NAMED = 3
 
 /**
+ * Things of one kind as a phrase: by name when there are few, by count when
+ * there are more, and none when there are none.
+ *
+ * @param {string[]} names
+ * @param {string} one - The kind, said of one
+ * @param {string} many - Said of several
+ * @returns {string[]}
+ */
+function named(names, one, many) {
+  if (names.length === 0) return []
+  if (names.length === 1) return [`the ${one} ${names[0]}`]
+  if (names.length <= NAMED) return [`the ${many} ${listed(names)}`]
+  return [`${names.length} ${many}`]
+}
+
+/**
  * Items as a sentence's list: by kind, in the export's order, each kind by
  * name when there are few and by count when there are more.
  *
@@ -535,6 +561,16 @@ const NAMED = 3
  * @returns {string}
  */
 function itemsInWords(items) {
+  return listed(itemPhrases(items))
+}
+
+/**
+ * Items as the phrases of a sentence's list, a kind each; see `itemsInWords`.
+ *
+ * @param {SettingsItem[]} items
+ * @returns {string[]}
+ */
+function itemPhrases(items) {
   /** @type {string[]} */
   const phrases = []
   for (const kind of [...SETTINGS_TABLES, 'settings']) {
@@ -552,12 +588,15 @@ function itemsInWords(items) {
       continue
     }
     const { one, many } = KINDS[/** @type {SettingsTable} */ (kind)]
-    const names = ofKind.map(item => item.name)
-    if (names.length === 1) phrases.push(`the ${one} ${names[0]}`)
-    else if (names.length <= NAMED) phrases.push(`the ${many} ${listed(names)}`)
-    else phrases.push(`${names.length} ${many}`)
+    phrases.push(
+      ...named(
+        ofKind.map(item => item.name),
+        one,
+        many
+      )
+    )
   }
-  return listed(phrases)
+  return phrases
 }
 
 /**
@@ -574,6 +613,30 @@ export function describeImport(plan, { done = false } = {}) {
   if (plan.added.length > 0) {
     sentences.push(`${done ? 'Added' : 'Adds'} ${itemsInWords(plan.added)}.`)
   }
+  if (plan.changed.length > 0) {
+    sentences.push(`${done ? 'Changed' : 'Changes'} ${itemsInWords(plan.changed)}.`)
+  }
+  return sentences.join(' ')
+}
+
+/**
+ * What taking a selection adds and changes, in a sentence or two: "Adds the
+ * project Thief and the connection Work proxy. Changes the preset in use."
+ *
+ * @param {{projects: string[], cards: string[], plan: Pick<SettingsImport, 'added'|'changed'>}} selection -
+ *   The names of its projects and cards, and what its settings change here
+ * @param {{done?: boolean}} [options] - Said of an import that has happened
+ * @returns {string}
+ */
+export function describeSelection({ projects, cards, plan }, { done = false } = {}) {
+  const added = [
+    ...named(projects, 'project', 'projects'),
+    ...named(cards, 'character card', 'character cards'),
+    ...itemPhrases(plan.added),
+  ]
+  /** @type {string[]} */
+  const sentences = []
+  if (added.length > 0) sentences.push(`${done ? 'Added' : 'Adds'} ${listed(added)}.`)
   if (plan.changed.length > 0) {
     sentences.push(`${done ? 'Changed' : 'Changes'} ${itemsInWords(plan.changed)}.`)
   }

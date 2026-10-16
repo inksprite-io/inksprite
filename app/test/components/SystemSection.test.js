@@ -6,26 +6,33 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import SystemSection from '@/components/writer/settings/SystemSection.vue'
 
 const {
+  aiEnabled,
+  setAiEnabled,
   debug,
   setDebug,
-  nsfwProfiles,
-  setNsfwProfiles,
   compactText,
   setCompactText,
   setChatProfileId,
-  setRoleplayProfileId,
   forgetSavedRequests,
+  setSpellingEnabled,
+  setSpellingDialect,
+  setGrammar,
 } = vi.hoisted(() => ({
+  aiEnabled: { value: true },
+  setAiEnabled: vi.fn(),
   debug: { value: false },
   setDebug: vi.fn(),
-  nsfwProfiles: { value: false },
-  setNsfwProfiles: vi.fn(),
   compactText: { value: true },
   setCompactText: vi.fn(),
   setChatProfileId: vi.fn(),
-  setRoleplayProfileId: vi.fn(),
   forgetSavedRequests: vi.fn(),
+  setSpellingEnabled: vi.fn(),
+  setSpellingDialect: vi.fn(),
+  setGrammar: vi.fn(),
 }))
+
+const SPELLING = { enabled: true, dialect: 'american', grammar: true, words: [] }
+const spelling = ref({ ...SPELLING })
 
 const theme = ref('system')
 const setTheme = vi.fn()
@@ -34,14 +41,17 @@ vi.mock('@/composables/useApplicationState', () => ({
   useApplicationState: () => ({
     theme,
     setTheme,
+    aiEnabled,
+    setAiEnabled,
     debug,
     setDebug,
-    nsfwProfiles,
-    setNsfwProfiles,
     compactText,
     setCompactText,
     setChatProfileId,
-    setRoleplayProfileId,
+    spelling,
+    setSpellingEnabled,
+    setSpellingDialect,
+    setGrammar,
   }),
 }))
 vi.mock('@/composables/useProfiles', () => ({
@@ -68,6 +78,10 @@ const mountSection = () =>
       plugins: [PrimeVue],
       stubs: {
         DataSection: { template: '<div data-data-section />' },
+        DictionaryDialog: {
+          props: ['visible'],
+          template: '<div v-if="visible" data-dictionary-dialog />',
+        },
       },
     },
   })
@@ -113,34 +127,68 @@ describe('SystemSection debug', () => {
   })
 })
 
-describe('SystemSection NSFW profiles', () => {
-  beforeEach(() => {
-    nsfwProfiles.value = false
-    setNsfwProfiles.mockClear()
-  })
-
-  it('sits with the chats, after the debug switch', () => {
+describe('SystemSection switches', () => {
+  it("has no roleplay switches: they are the Roleplay extension's", () => {
     const switches = mountSection().findAllComponents(ToggleSwitch)
     expect(switches.map(one => one.props('inputId'))).toEqual([
+      'ai-switch',
       'compact-text-switch',
       'debug-switch',
-      'nsfw-switch',
+      'spelling-switch',
+      'grammar-switch',
     ])
   })
+})
 
-  it('shows whether they are on', () => {
-    nsfwProfiles.value = true
-    expect(toggle(mountSection(), 'data-nsfw-profiles').props('modelValue')).toBe(true)
+describe('SystemSection AI', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    aiEnabled.value = true
   })
 
-  it('switches them on and off', async () => {
+  it('shows whether it is on, and switches it off and on', async () => {
     const wrapper = mountSection()
+    const ai = toggle(wrapper, 'data-ai-enabled')
+    expect(wrapper.find('label[for="ai-switch"]').text()).toBe('Enable AI')
+    expect(ai.props('modelValue')).toBe(true)
 
-    await toggle(wrapper, 'data-nsfw-profiles').vm.$emit('update:modelValue', true)
-    expect(setNsfwProfiles).toHaveBeenLastCalledWith(true)
+    await ai.vm.$emit('update:modelValue', false)
+    expect(setAiEnabled).toHaveBeenLastCalledWith(false)
 
-    await toggle(wrapper, 'data-nsfw-profiles').vm.$emit('update:modelValue', false)
-    expect(setNsfwProfiles).toHaveBeenLastCalledWith(false)
+    await ai.vm.$emit('update:modelValue', true)
+    expect(setAiEnabled).toHaveBeenLastCalledWith(true)
+  })
+
+  it('stays with the AI switched off, to switch it back on', () => {
+    aiEnabled.value = false
+    expect(toggle(mountSection(), 'data-ai-enabled').props('modelValue')).toBe(false)
+  })
+})
+
+describe('SystemSection folds', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    aiEnabled.value = true
+  })
+
+  /** The button that opens and closes the section with this title. */
+  const fold = (wrapper, title) =>
+    wrapper.findAll('button[aria-expanded]').find(button => button.text() === title)
+
+  it('has spelling, the chats and the data folded away, and opens them', async () => {
+    const wrapper = mountSection()
+    for (const title of ['Spelling', 'Chats', 'Data']) {
+      expect(fold(wrapper, title).attributes('aria-expanded')).toBe('false')
+      await fold(wrapper, title).trigger('click')
+      expect(fold(wrapper, title).attributes('aria-expanded')).toBe('true')
+    }
+  })
+
+  it('opens them as they were left', async () => {
+    await fold(mountSection(), 'Chats').trigger('click')
+    const wrapper = mountSection()
+    expect(fold(wrapper, 'Chats').attributes('aria-expanded')).toBe('true')
+    expect(fold(wrapper, 'Spelling').attributes('aria-expanded')).toBe('false')
   })
 })
 
@@ -156,6 +204,50 @@ describe('SystemSection compact text', () => {
   })
 })
 
+describe('SystemSection spelling', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    spelling.value = { ...SPELLING }
+  })
+
+  it('switches the spell checker off and on', async () => {
+    const wrapper = mountSection()
+    const checker = toggle(wrapper, 'data-spelling-enabled')
+    expect(checker.props('modelValue')).toBe(true)
+    await checker.vm.$emit('update:modelValue', false)
+    expect(setSpellingEnabled).toHaveBeenCalledWith(false)
+  })
+
+  it('shows the language and grammar, and changes them', async () => {
+    const wrapper = mountSection()
+    const language = wrapper.findComponent('[data-spelling-language]')
+    expect(language.props('modelValue')).toBe('american')
+    await language.vm.$emit('update:modelValue', 'british')
+    expect(setSpellingDialect).toHaveBeenCalledWith('british')
+
+    const grammar = toggle(wrapper, 'data-grammar')
+    expect(grammar.props('modelValue')).toBe(true)
+    await grammar.vm.$emit('update:modelValue', false)
+    expect(setGrammar).toHaveBeenCalledWith(false)
+  })
+
+  it('opens the dictionary from its button', async () => {
+    const wrapper = mountSection()
+    expect(wrapper.find('[data-dictionary-dialog]').exists()).toBe(false)
+    await wrapper.find('[data-manage-dictionary]').trigger('click')
+    expect(wrapper.find('[data-dictionary-dialog]').exists()).toBe(true)
+  })
+
+  it('offers nothing more with the checker off', () => {
+    spelling.value = { ...SPELLING, enabled: false }
+    const wrapper = mountSection()
+    expect(wrapper.find('[data-spelling-enabled]').exists()).toBe(true)
+    for (const attribute of ['data-spelling-language', 'data-grammar', 'data-manage-dictionary']) {
+      expect(wrapper.find(`[${attribute}]`).exists()).toBe(false)
+    }
+  })
+})
+
 describe('SystemSection data', () => {
   it('holds backup and restore', () => {
     expect(mountSection().find('[data-data-section]').exists()).toBe(true)
@@ -163,25 +255,30 @@ describe('SystemSection data', () => {
 })
 
 describe('SystemSection chats', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    aiEnabled.value = true
+  })
 
   /** The picker whose root carries this attribute. */
   const picker = (wrapper, attribute) => wrapper.findComponent(`[${attribute}]`)
 
-  it('shows the profiles chats and character cards start on', () => {
+  it('shows the profile new chats start on, and keeps the one chosen', async () => {
     const wrapper = mountSection()
     expect(picker(wrapper, 'data-chat-profile').props('modelValue')).toBe('chatprofile_mine')
-    expect(picker(wrapper, 'data-roleplay-profile').props('modelValue')).toBe(
-      'builtin_profile_roleplay'
-    )
+    expect(picker(wrapper, 'data-roleplay-profile').exists()).toBe(false)
+
+    await picker(wrapper, 'data-chat-profile').vm.$emit('update:modelValue', 'builtin_profile_chat')
+    expect(setChatProfileId).toHaveBeenCalledWith('builtin_profile_chat')
   })
 
-  it('keeps the profile chosen for each', async () => {
+  it('goes with the AI switched off, and the rest stays', () => {
+    aiEnabled.value = false
     const wrapper = mountSection()
-    await picker(wrapper, 'data-chat-profile').vm.$emit('update:modelValue', 'builtin_profile_chat')
-    await picker(wrapper, 'data-roleplay-profile').vm.$emit('update:modelValue', 'chatprofile_mine')
 
-    expect(setChatProfileId).toHaveBeenCalledWith('builtin_profile_chat')
-    expect(setRoleplayProfileId).toHaveBeenCalledWith('chatprofile_mine')
+    expect(picker(wrapper, 'data-chat-profile').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('Chats')
+    expect(toggle(wrapper, 'data-debug').exists()).toBe(true)
+    expect(wrapper.find('[data-data-section]').exists()).toBe(true)
   })
 })

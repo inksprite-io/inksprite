@@ -10,6 +10,9 @@
  * component under `components/icons/` draws one of them, except the few
  * drawn for inksprite itself (`OWN_ICONS`); the SVG it came from is kept
  * under `public/static/icons/`, named for its number on the site.
+ *
+ * The spelling and grammar checker is Harper, under the Apache License 2.0,
+ * which asks that a copy of the license go with it.
  */
 
 /**
@@ -23,6 +26,28 @@
  */
 
 /** @typedef {{ name: string, url: string }} License */
+
+/**
+ * A program the app runs, by whom, and under what license.
+ *
+ * @typedef {Object} ProgramCredit
+ * @property {string} name
+ * @property {string} url - Its home
+ * @property {string} by
+ * @property {string} use - What the app does with it
+ * @property {License} license
+ */
+
+/** @type {readonly ProgramCredit[]} */
+export const PROGRAM_CREDITS = Object.freeze([
+  {
+    name: 'Harper',
+    url: 'https://writewithharper.com',
+    by: 'Automattic',
+    use: 'Spelling and grammar',
+    license: { name: 'Apache License 2.0', url: 'https://www.apache.org/licenses/LICENSE-2.0' },
+  },
+])
 
 /** @type {License} */
 export const ICON_LICENSE = {
@@ -281,8 +306,10 @@ export const ICON_CREDITS = Object.freeze([
 
 /** Icon components drawn for inksprite itself, which credit nobody. */
 export const OWN_ICONS = Object.freeze([
+  'CardsIcon',
   'CommentIcon',
   'DatabaseIcon',
+  'ExtensionsIcon',
   'RetryIcon',
   'SendIcon',
   'SpeakerIcon',

@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { ref } from 'vue'
 import PrimeVue from 'primevue/config'
 import EditorPanel from '@/components/writer/layout/EditorPanel.vue'
 import { clearFileViews } from '@/composables/useFileView.js'
+import { useFocusMode } from '@/composables/useFocusMode.js'
 
 const { mockApi, toastAction } = await vi.hoisted(async () => {
   // Imports land after hoisted code runs, so vue is fetched here. The set is
@@ -34,6 +35,10 @@ const { mockApi, toastAction } = await vi.hoisted(async () => {
   }
 })
 vi.mock('@/composables/useDocuments', () => ({ useDocuments: () => mockApi }))
+const isMobile = ref(false)
+vi.mock('@/composables/useScreenSize.js', () => ({
+  useScreenSize: () => ({ isMobile, isNarrow: ref(false) }),
+}))
 const mockCopyPath = vi.fn()
 vi.mock('@/composables/useCopyPath.js', () => ({ useCopyPath: () => ({ copyPath: mockCopyPath }) }))
 vi.mock('@/composables/useToast.js', () => ({ useToast: () => ({ action: toastAction }) }))
@@ -86,6 +91,11 @@ describe('EditorPanel', () => {
     mockApi.plainIds.clear()
     mockApi.wouldSettle.mockReturnValue(false)
     mockApi.get.mockImplementation(id => ({ id, type: 'text', title: id === 'doc_2' ? 'Two' : '' }))
+  })
+
+  afterEach(() => {
+    useFocusMode().leave()
+    isMobile.value = false
   })
 
   it('shows the strip and the editor on the tab showing', () => {
@@ -152,6 +162,49 @@ describe('EditorPanel', () => {
 
     await wrapper.setProps({ chatShowing: false })
     expect(toggle().attributes('aria-label')).toBe('Show chat')
+  })
+
+  it('shows the document alone in focus mode, further down, and the strip again after', async () => {
+    const wrapper = mountPanel({ open: ['doc_1', 'doc_2'], active: 'doc_2' }, { chatShowing: true })
+    const pageTop = () =>
+      wrapper.find('[data-editor]').element.parentElement.style.getPropertyValue('--page-top')
+
+    useFocusMode().enter()
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[role="tablist"]').exists()).toBe(false)
+    expect(wrapper.find('[data-editor]').attributes('data-id')).toBe('doc_2')
+    expect(pageTop()).toBe('15vh')
+
+    useFocusMode().leave()
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[role="tablist"]').exists()).toBe(true)
+    expect(pageTop()).toBe('')
+  })
+
+  it('offers focus mode between the find and the chat’s toggle, and goes in on a click', async () => {
+    const wrapper = mountPanel({ open: ['doc_1'], active: 'doc_1' }, { chatShowing: true })
+    const ends = wrapper
+      .findAll('[data-action], [data-panel-toggle]')
+      .map(button => button.attributes('data-action') || button.attributes('data-panel-toggle'))
+    expect(ends).toEqual(['find', 'focus', 'chat'])
+    expect(wrapper.find('[data-action="focus"]').attributes('aria-label')).toBe('Focus mode')
+
+    await wrapper.find('[data-action="focus"]').trigger('click')
+
+    expect(useFocusMode().focused.value).toBe(true)
+  })
+
+  it('offers no focus mode with nothing open, or on a phone, which has no key to leave it by', () => {
+    expect(
+      mountPanel({ open: [], active: null }, { chatShowing: true })
+        .find('[data-action="focus"]')
+        .exists()
+    ).toBe(false)
+
+    isMobile.value = true
+    const phone = mountPanel({ open: ['doc_1'], active: 'doc_1' })
+    expect(phone.find('[role="tablist"]').exists()).toBe(true)
+    expect(phone.find('[data-action="focus"]').exists()).toBe(false)
   })
 
   it('brings a tab forward and closes one through the document API', async () => {

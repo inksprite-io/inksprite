@@ -270,9 +270,11 @@ async function writePortrait(store, storyId, folderId, portrait) {
  * @param {string} content
  * @param {Object} [options]
  * @param {string} [options.parentId]
+ * @param {import('../types/models.js').DriveLink} [options.drive] - The Google
+ *   Doc it was exported from
  * @returns {Promise<Written>}
  */
-export async function writeMarkdown(storyId, title, content, { parentId } = {}) {
+export async function writeMarkdown(storyId, title, content, { parentId, drive } = {}) {
   const api = useDocuments(storyId)
   await api.init()
   const store = useDocumentsStore()
@@ -287,6 +289,7 @@ export async function writeMarkdown(storyId, title, content, { parentId } = {}) 
     title: api.uniqueTitle(parent, title || 'Untitled'),
     plain,
     content: plain ? content : serializeMarkdown(doc),
+    drive,
   })
 
   return {

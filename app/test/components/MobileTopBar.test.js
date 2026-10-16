@@ -6,6 +6,8 @@ import Menu from 'primevue/menu'
 import MobileTopBar from '@/components/writer/layout/MobileTopBar.vue'
 import { useJobsStore } from '@/stores/jobsStore.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
+import { useApplicationState } from '@/composables/useApplicationState'
+import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
 
 vi.mock('@/stores/db', () => ({
   default: {
@@ -41,7 +43,10 @@ const items = wrapper => wrapper.findComponent(Menu).props('model')
 const item = (wrapper, id) => items(wrapper).find(entry => entry.id === id)
 
 describe('MobileTopBar', () => {
-  beforeEach(() => setActivePinia(createPinia()))
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useApplicationState().resetState()
+  })
 
   it('is the writing, the outline and the chat, and a menu of the rest', () => {
     const wrapper = mountBar({ hasStory: true })
@@ -57,6 +62,33 @@ describe('MobileTopBar', () => {
     expect(items(wrapper).map(entry => entry.label)).toEqual(['Narration', 'Comments', 'Settings'])
     expect(wrapper.find('[data-tab="write"]').attributes('aria-pressed')).toBe('true')
     expect(wrapper.find('[data-tab="chat"]').attributes('aria-pressed')).toBe('false')
+  })
+
+  it('has no chat and no narration with the AI switched off', () => {
+    useApplicationState().setAiEnabled(false)
+    const wrapper = mountBar({ hasStory: true })
+
+    expect(wrapper.findAll('button').map(button => button.attributes('aria-label'))).toEqual([
+      'Write',
+      'Outline',
+      'More',
+    ])
+    expect(items(wrapper).map(entry => entry.label)).toEqual(['Comments', 'Settings'])
+  })
+
+  it('has the card library first in the menu while roleplay is on, which opens it', async () => {
+    useApplicationState().setExtension('roleplay', true)
+    const wrapper = mountBar({ hasStory: true })
+    expect(items(wrapper).map(entry => entry.label)).toEqual([
+      'Character cards',
+      'Narration',
+      'Comments',
+      'Settings',
+    ])
+
+    item(wrapper, 'cards').command()
+    expect(useCardLibraryPanel().visible.value).toBe(true)
+    useCardLibraryPanel().close()
   })
 
   it('has the jobs in the menu, before the settings, only while there are jobs', async () => {

@@ -82,12 +82,12 @@ export function useBulkImport(storyId) {
     }
 
     let done = 0
-    for (const { file, folders } of gathered) {
+    for (const { file, folders, drive } of gathered) {
       signal?.throwIfAborted()
       try {
         const found = await cards.inspect(file)
         signal?.throwIfAborted()
-        const written = await cards.write(found, { parentId: folderFor(folders) })
+        const written = await cards.write(found, { parentId: folderFor(folders), drive })
         result.documents += written.documents
         if (found.shape === 'card' || found.shape === 'lorebook') result.cards++
         if (found.images) result.images = (result.images ?? 0) + found.images

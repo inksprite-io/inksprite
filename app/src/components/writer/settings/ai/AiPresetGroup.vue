@@ -10,11 +10,11 @@
       :selected-provider-id="selectedProviderId"
       @update:selected-model-id="handleModelChange"
     />
-    <AiAllowedProviders
+    <AiModelUpstreams
       v-if="routesProviders"
-      :model-value="activePreset?.allowedProviders"
+      :upstreams="activePreset"
       :model="selectedModelId || ''"
-      @update:model-value="handleAllowedChange"
+      @update="handleUpstreamsChange"
     />
     <AiGenerationGroup />
     <AiSamplingGroup />
@@ -38,7 +38,7 @@ import { computed } from 'vue'
 import AiPresetSelector from './AiPresetSelector.vue'
 import AiProviderSelector from './AiProviderSelector.vue'
 import AiModelSelector from './AiModelSelector.vue'
-import AiAllowedProviders from './AiAllowedProviders.vue'
+import AiModelUpstreams from './AiModelUpstreams.vue'
 import AiGenerationGroup from './AiGenerationGroup.vue'
 import AiSamplingGroup from './AiSamplingGroup.vue'
 import { useAIConfig } from '@/composables/useAIConfig'
@@ -62,9 +62,9 @@ const handleModelChange = modelId => {
   aiConfig.updatePreset(activePreset.value.id, { model: modelId })
 }
 
-/** @param {string[]|undefined} allowedProviders */
-const handleAllowedChange = allowedProviders => {
+/** @param {import('@/ai/routing.js').ModelUpstreams} patch - The list that changed */
+const handleUpstreamsChange = patch => {
   if (!activePreset.value) return
-  aiConfig.updatePreset(activePreset.value.id, { allowedProviders })
+  aiConfig.updatePreset(activePreset.value.id, patch)
 }
 </script>

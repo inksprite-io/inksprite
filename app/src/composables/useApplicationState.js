@@ -17,6 +17,7 @@
 
 import { ref, computed, watch } from 'vue'
 import { localStorage } from '@/utils/localStorage'
+import { checksByDefault, defaultDialect, isDialect } from '@/spelling/dialects.js'
 
 const STORAGE_KEY = 'inksprite_app_state'
 
@@ -28,6 +29,10 @@ const defaultState = {
     activeChatProfileId: null,
   },
   system: {
+    // Whether the AI is there at all. Off, the app is a writing app alone:
+    // no chat, no narration, nothing that asks a model or a speech server.
+    // What the AI kept stays, for when it is switched back on.
+    aiEnabled: true,
     // Whether the assistant's changes to documents go straight in, or wait in
     // the chat for the writer to accept them. App-wide: how the writer wants
     // to work with the assistant, not a property of any one conversation.
@@ -36,6 +41,10 @@ const defaultState = {
     // Off until the writer switches it on, so nobody meets them by opening a
     // menu.
     nsfwProfiles: false,
+    // Whether the library blurs the pictures of cards tagged NSFW or NSFL,
+    // switched in the library. On until the writer switches it off, as the
+    // NSFW profiles are off.
+    blurNsfw: true,
     // The profiles chats start on: new chats in a project that hasn't chosen
     // its own, and chats on a character card. Null for the built-ins, Default
     // and Roleplay.
@@ -45,6 +54,10 @@ const defaultState = {
     // article spacing. For comparing the two while one is chosen.
     compactText: true,
   },
+  // The extensions switched on, by id: parts of the app not every writer
+  // wants. Roleplay is missing until the app first decides it, from whether
+  // roleplay was already in use; see extensions/.
+  extensions: {},
   debug: {
     // Keeps a copy of the request that opened each assistant turn. Off by
     // default: a saved context is as large as the conversation it was built
@@ -69,6 +82,20 @@ const defaultState = {
     providerId: 'provider_kokoro_default',
     model: 'kokoro',
   },
+  spelling: {
+    // Whether the app checks the editor's spelling; off, the browser does.
+    // Null until the writer chooses, which leaves it to the browser's
+    // language: on for English, off for a language the checker doesn't know.
+    enabled: null,
+    // The dialect of English it checks. Null until the writer chooses, which
+    // leaves it to the browser's language too. A state saved before the
+    // switch has 'browser' here for the checker off.
+    dialect: null,
+    // Whether grammar is underlined as well as spelling.
+    grammar: true,
+    // The writer's dictionary: words every project knows.
+    words: [],
+  },
   ui: {
     theme: 'system', // 'light', 'dark', or 'system'
     showProviderSetupDialog: true, // Show or hide the provider setup dialog
@@ -89,7 +116,8 @@ const defaultState = {
  */
 const loadState = () => {
   const stored = localStorage.get(STORAGE_KEY)
-  if (!stored) return defaultState
+  // A copy, so that changing the settings never changes their defaults.
+  if (!stored) return JSON.parse(JSON.stringify(defaultState))
 
   // Deep merge to preserve default structure
   const merged = JSON.parse(JSON.stringify(defaultState))
@@ -114,6 +142,9 @@ const loadState = () => {
   }
   if (stored.narration) {
     Object.assign(merged.narration, stored.narration)
+  }
+  if (stored.spelling) {
+    Object.assign(merged.spelling, stored.spelling)
   }
   if (stored.ui) {
     Object.assign(merged.ui, stored.ui)
@@ -164,16 +195,51 @@ watch(
  * text switch, which are about this one browser.
  *
  * @typedef {Object} BackedUpSettings
+ * @property {boolean} aiEnabled
  * @property {string|null} aiPreset - The AI preset in use
  * @property {'auto'|'ask'} applyEdits
  * @property {boolean} nsfwProfiles
+ * @property {boolean} blurNsfw - Whether the card library blurs NSFW pictures
+ * @property {boolean} roleplay - Whether the Roleplay extension is on
  * @property {string|null} chatProfileId - The profile new chats start on
  * @property {string|null} roleplayProfileId - The one chats on a character card start on
  * @property {Record<string, import('../types/models.js').WorkflowSettings>} workflows
  * @property {NarrationChoice} narration
  * @property {'light'|'dark'|'system'} theme
  * @property {boolean} highlightSpeakers
+ * @property {SpellingSettings} spelling - As chosen: what was left to the
+ *   browser's language stays so on another computer
  */
+
+/**
+ * How the editor's spelling is checked, as it is kept. See `spelling/` and
+ * `editor/spelling`.
+ *
+ * @typedef {Object} SpellingSettings
+ * @property {boolean|null} enabled - Whether the app checks; null where the
+ *   writer hasn't chosen
+ * @property {import('../spelling/engine.js').Dialect|null} dialect - Null where
+ *   the writer hasn't chosen
+ * @property {boolean} grammar
+ * @property {string[]} words - The writer's dictionary
+ */
+
+/**
+ * The spelling settings a stored value holds, with an old 'browser' dialect
+ * read as the checker off. What isn't there or isn't valid is null.
+ *
+ * @param {any} stored
+ * @returns {{ enabled: boolean|null, dialect: import('../spelling/engine.js').Dialect|null }}
+ */
+const spellingChoices = stored => ({
+  enabled:
+    typeof stored?.enabled === 'boolean'
+      ? stored.enabled
+      : stored?.dialect === 'browser'
+        ? false
+        : null,
+  dialect: isDialect(stored?.dialect) ? stored.dialect : null,
+})
 
 /**
  * @param {unknown} value
@@ -190,15 +256,16 @@ const isChoice = value => value === null || typeof value === 'string'
  */
 function workflowFrom(settings) {
   if (!settings || typeof settings !== 'object') return {}
-  const { allowedProviders, onImport } = settings
+  const { onImport } = settings
   const choices = ['providerId', 'model', 'reasoningEffort'].filter(field =>
     isChoice(settings[field])
   )
+  const lists = ['allowedProviders', 'ignoredProviders'].filter(
+    field => Array.isArray(settings[field]) && settings[field].every(id => typeof id === 'string')
+  )
   return {
     ...Object.fromEntries(choices.map(field => [field, settings[field]])),
-    ...(Array.isArray(allowedProviders) && allowedProviders.every(id => typeof id === 'string')
-      ? { allowedProviders }
-      : {}),
+    ...Object.fromEntries(lists.map(field => [field, settings[field]])),
     ...(typeof onImport === 'boolean' ? { onImport } : {}),
   }
 }
@@ -213,10 +280,17 @@ function workflowFrom(settings) {
  *   getActiveAIPresetId: () => string,
  *   debug: import('vue').ComputedRef<boolean>,
  *   setDebug: (on: boolean) => void,
+ *   aiEnabled: import('vue').ComputedRef<boolean>,
+ *   setAiEnabled: (on: boolean) => void,
  *   applyEdits: import('vue').ComputedRef<'auto'|'ask'>,
  *   setApplyEdits: (mode: 'auto'|'ask') => void,
  *   nsfwProfiles: import('vue').ComputedRef<boolean>,
  *   setNsfwProfiles: (on: boolean) => void,
+ *   blurNsfw: import('vue').ComputedRef<boolean>,
+ *   setBlurNsfw: (on: boolean) => void,
+ *   extensionOn: (id: string) => boolean|undefined,
+ *   setExtension: (id: string, on: boolean) => void,
+ *   roleplay: import('vue').ComputedRef<boolean>,
  *   chatProfileId: import('vue').ComputedRef<string|null>,
  *   roleplayProfileId: import('vue').ComputedRef<string|null>,
  *   setChatProfileId: (id: string|null) => void,
@@ -229,6 +303,12 @@ function workflowFrom(settings) {
  *   setNarration: (patch: Partial<NarrationChoice>) => void,
  *   highlightSpeakers: import('vue').ComputedRef<boolean>,
  *   setHighlightSpeakers: (highlight: boolean) => void,
+ *   spelling: import('vue').ComputedRef<{ enabled: boolean, dialect: import('../spelling/engine.js').Dialect, grammar: boolean, words: string[] }>,
+ *   setSpellingEnabled: (on: boolean) => void,
+ *   setSpellingDialect: (dialect: import('../spelling/engine.js').Dialect) => void,
+ *   setGrammar: (on: boolean) => void,
+ *   addWord: (word: string) => void,
+ *   removeWord: (word: string) => void,
  *   theme: import('vue').ComputedRef<'light'|'dark'|'system'>,
  *   setTheme: (theme: 'light'|'dark'|'system') => void,
  *   getTheme: () => 'light'|'dark'|'system',
@@ -283,6 +363,21 @@ export function useApplicationState() {
   }
 
   /**
+   * Whether the AI is there at all: the chat, the narration and everything
+   * else that asks a model. On unless switched off.
+   * @type {import('vue').ComputedRef<boolean>}
+   */
+  const aiEnabled = computed(() => state.value.system?.aiEnabled !== false)
+
+  /**
+   * @param {boolean} on
+   */
+  const setAiEnabled = on => {
+    if (!state.value.system) state.value.system = {}
+    state.value.system.aiEnabled = on !== false
+  }
+
+  /**
    * Whether the assistant's changes to documents wait on the writer. Anything
    * but an explicit ask means they go in, as they always did.
    * @type {import('vue').ComputedRef<'auto'|'ask'>}
@@ -312,6 +407,49 @@ export function useApplicationState() {
     if (!state.value.system) state.value.system = {}
     state.value.system.nsfwProfiles = on === true
   }
+
+  /**
+   * Whether the card library blurs the pictures of cards tagged NSFW or NSFL.
+   * On unless switched off.
+   * @type {import('vue').ComputedRef<boolean>}
+   */
+  const blurNsfw = computed(() => state.value.system?.blurNsfw !== false)
+
+  /**
+   * @param {boolean} on
+   */
+  const setBlurNsfw = on => {
+    if (!state.value.system) state.value.system = {}
+    state.value.system.blurNsfw = on !== false
+  }
+
+  /**
+   * Whether an extension is switched on, or undefined for one never decided.
+   * See extensions/.
+   * @param {string} id
+   * @returns {boolean|undefined}
+   */
+  const extensionOn = id => {
+    const on = state.value.extensions?.[id]
+    return typeof on === 'boolean' ? on : undefined
+  }
+
+  /**
+   * @param {string} id
+   * @param {boolean} on
+   */
+  const setExtension = (id, on) => {
+    if (!state.value.extensions) state.value.extensions = {}
+    state.value.extensions[id] = on === true
+  }
+
+  /**
+   * Whether roleplay is there: character cards, the card library and the
+   * roleplay profiles. Its extension switched on, and the AI with it, since
+   * all of it is for chats.
+   * @type {import('vue').ComputedRef<boolean>}
+   */
+  const roleplay = computed(() => aiEnabled.value && state.value.extensions?.roleplay === true)
 
   /**
    * The profile new chats start on, where a project has not chosen one, and
@@ -410,6 +548,59 @@ export function useApplicationState() {
   /** @param {boolean} highlight */
   const setHighlightSpeakers = highlight => {
     state.value.ui.highlightSpeakers = highlight === true
+  }
+
+  /**
+   * How the editor's spelling is checked, with what the browser's language
+   * gives where the writer hasn't chosen.
+   */
+  const spelling = computed(() => {
+    const stored = state.value.spelling || {}
+    const { enabled, dialect } = spellingChoices(stored)
+    return {
+      enabled: enabled ?? checksByDefault(),
+      dialect: dialect ?? defaultDialect(),
+      grammar: stored.grammar !== false,
+      words: Array.isArray(stored.words) ? stored.words : [],
+    }
+  })
+
+  /** @param {Partial<SpellingSettings>} patch */
+  const setSpelling = patch => {
+    state.value.spelling = { ...defaultState.spelling, ...(state.value.spelling || {}), ...patch }
+  }
+
+  /**
+   * Whether the app checks the editor's spelling; off, the browser does.
+   * @param {boolean} on
+   */
+  const setSpellingEnabled = on => {
+    const { dialect } = spellingChoices(state.value.spelling)
+    setSpelling({ enabled: on === true, dialect })
+  }
+
+  /** @param {import('../spelling/engine.js').Dialect} dialect */
+  const setSpellingDialect = dialect => {
+    if (!isDialect(dialect)) return
+    const { enabled } = spellingChoices(state.value.spelling)
+    setSpelling({ enabled, dialect })
+  }
+
+  /** @param {boolean} on */
+  const setGrammar = on => setSpelling({ grammar: on === true })
+
+  /**
+   * Put a word in the writer's dictionary, where every project knows it.
+   * @param {string} word
+   */
+  const addWord = word => {
+    const words = spelling.value.words
+    if (word && !words.includes(word)) setSpelling({ words: [...words, word] })
+  }
+
+  /** @param {string} word */
+  const removeWord = word => {
+    setSpelling({ words: spelling.value.words.filter(known => known !== word) })
   }
 
   /**
@@ -568,15 +759,23 @@ export function useApplicationState() {
    * @returns {BackedUpSettings}
    */
   const settingsForBackup = () => ({
+    aiEnabled: aiEnabled.value,
     aiPreset: activeAIPresetId.value ?? null,
     applyEdits: applyEdits.value,
     nsfwProfiles: nsfwProfiles.value,
+    blurNsfw: blurNsfw.value,
+    roleplay: extensionOn('roleplay') === true,
     chatProfileId: chatProfileId.value,
     roleplayProfileId: roleplayProfileId.value,
     workflows: workflows.value,
     narration: narration.value,
     theme: theme.value,
     highlightSpeakers: highlightSpeakers.value,
+    spelling: {
+      ...spellingChoices(state.value.spelling),
+      grammar: spelling.value.grammar,
+      words: [...spelling.value.words],
+    },
   })
 
   /**
@@ -588,9 +787,12 @@ export function useApplicationState() {
    */
   const restoreSettings = settings => {
     if (!settings || typeof settings !== 'object') return
+    if (typeof settings.aiEnabled === 'boolean') setAiEnabled(settings.aiEnabled)
     if (isChoice(settings.aiPreset)) setActiveAIPresetId(settings.aiPreset)
     if (settings.applyEdits) setApplyEdits(settings.applyEdits)
     if (typeof settings.nsfwProfiles === 'boolean') setNsfwProfiles(settings.nsfwProfiles)
+    if (typeof settings.blurNsfw === 'boolean') setBlurNsfw(settings.blurNsfw)
+    if (typeof settings.roleplay === 'boolean') setExtension('roleplay', settings.roleplay)
     if (isChoice(settings.chatProfileId)) setChatProfileId(settings.chatProfileId)
     if (isChoice(settings.roleplayProfileId)) setRoleplayProfileId(settings.roleplayProfileId)
     if (settings.workflows && typeof settings.workflows === 'object') {
@@ -603,6 +805,26 @@ export function useApplicationState() {
     if (settings.theme) setTheme(settings.theme)
     if (typeof settings.highlightSpeakers === 'boolean') {
       setHighlightSpeakers(settings.highlightSpeakers)
+    }
+    // A choice the file makes is taken, null (left to the browser's language)
+    // included; one it lacks or gets wrong stays as it is. A file from before
+    // the switch says 'browser' for off.
+    /** @type {any} */
+    const given = settings.spelling || {}
+    const here = spellingChoices(state.value.spelling)
+    setSpelling({
+      enabled:
+        typeof given.enabled === 'boolean' || given.enabled === null
+          ? given.enabled
+          : given.dialect === 'browser'
+            ? false
+            : here.enabled,
+      dialect: isDialect(given.dialect) || given.dialect === null ? given.dialect : here.dialect,
+    })
+    const { grammar, words } = given
+    if (typeof grammar === 'boolean') setGrammar(grammar)
+    if (Array.isArray(words) && words.every(word => typeof word === 'string')) {
+      setSpelling({ words: [...new Set(words)] })
     }
     localStorage.set(STORAGE_KEY, state.value)
   }
@@ -627,6 +849,10 @@ export function useApplicationState() {
     debug,
     setDebug,
 
+    // Whether the AI is there at all
+    aiEnabled,
+    setAiEnabled,
+
     // How the assistant's document changes are applied
     applyEdits,
     setApplyEdits,
@@ -634,6 +860,16 @@ export function useApplicationState() {
     // Whether the NSFW chat profiles are offered
     nsfwProfiles,
     setNsfwProfiles,
+
+    // Whether the card library blurs NSFW pictures
+    blurNsfw,
+    setBlurNsfw,
+
+    // Extensions, and whether roleplay is there
+    extensionOn,
+    setExtension,
+    roleplay,
+
     chatProfileId,
     roleplayProfileId,
     setChatProfileId,
@@ -650,6 +886,14 @@ export function useApplicationState() {
     setNarration,
     highlightSpeakers,
     setHighlightSpeakers,
+
+    // How the editor's spelling is checked
+    spelling,
+    setSpellingEnabled,
+    setSpellingDialect,
+    setGrammar,
+    addWord,
+    removeWord,
 
     // Theme specific
     theme,

@@ -88,7 +88,7 @@ export async function complete({
     const routing = buildProviderRouting(
       { type: endpoint.type, routing: endpoint.routing },
       model,
-      endpoint.allowedProviders
+      { allowedProviders: endpoint.allowedProviders }
     )
     if (routing) body.provider = routing
   } else if (!thinking) {

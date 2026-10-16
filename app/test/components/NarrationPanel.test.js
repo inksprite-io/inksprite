@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { enableAutoUnmount, mount } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import { computed, reactive, ref } from 'vue'
 import PrimeVue from 'primevue/config'
 import NarrationPanel from '@/components/writer/narration/NarrationPanel.vue'
@@ -124,9 +124,6 @@ const Model = {
   emits: ['choose'],
   template: '<div data-model />',
 }
-
-// A panel left mounted would go on following the state the next test sets.
-enableAutoUnmount(afterEach)
 
 const mountPanel = props =>
   mount(NarrationPanel, {

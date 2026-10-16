@@ -20,55 +20,57 @@
 - [DriveRequest][16]
 - [requestFor][17]
   - [Parameters][18]
-- [refusal][19]
+- [linkFor][19]
   - [Parameters][20]
-- [body][21]
-- [body][22]
+- [refusal][21]
+  - [Parameters][22]
 - [body][23]
-- [fetchPicked][24]
-  - [Parameters][25]
-- [describePicked][26]
+- [body][24]
+- [body][25]
+- [fetchPicked][26]
   - [Parameters][27]
-- [ask][28]
+- [describePicked][28]
   - [Parameters][29]
-- [drive/images][30]
-- [TakenImage][31]
-  - [Properties][32]
-- [REFERENCE][33]
-- [INLINE][34]
-- [DEFINITION][35]
-- [unescape][36]
-  - [Parameters][37]
-- [bytesOf][38]
+- [ask][30]
+  - [Parameters][31]
+- [drive/images][32]
+- [TakenImage][33]
+  - [Properties][34]
+- [REFERENCE][35]
+- [INLINE][36]
+- [DEFINITION][37]
+- [unescape][38]
   - [Parameters][39]
-- [takeImages][40]
+- [bytesOf][40]
   - [Parameters][41]
-- [defined][42]
-- [definitions][43]
-- [inline][44]
-- [used][45]
-- [drive][46]
-  - [Examples][47]
-- [drive/signIn][48]
-- [CALLBACK_PATH][49]
-- [SIGN_IN_CHANNEL][50]
-- [DRIVE_SCOPE][51]
-- [Picked][52]
-  - [Properties][53]
-- [authorizationUrl][54]
-  - [Parameters][55]
-- [readReturn][56]
+- [takeImages][42]
+  - [Parameters][43]
+- [defined][44]
+- [definitions][45]
+- [inline][46]
+- [used][47]
+- [drive][48]
+  - [Examples][49]
+- [drive/signIn][50]
+- [CALLBACK_PATH][51]
+- [SIGN_IN_CHANNEL][52]
+- [DRIVE_SCOPE][53]
+- [Picked][54]
+  - [Properties][55]
+- [authorizationUrl][56]
   - [Parameters][57]
-- [popupFeatures][58]
-- [pickInPopup][59]
-  - [Parameters][60]
-- [read][61]
-- [relayReturn][62]
-  - [Parameters][63]
-- [exchangeCode][64]
+- [readReturn][58]
+  - [Parameters][59]
+- [popupFeatures][60]
+- [pickInPopup][61]
+  - [Parameters][62]
+- [read][63]
+- [relayReturn][64]
   - [Parameters][65]
-- [pickInBrowser][66]
+- [exchangeCode][66]
   - [Parameters][67]
+- [pickInBrowser][68]
+  - [Parameters][69]
 
 ## drive/config
 
@@ -85,7 +87,7 @@ the desktop window, a desktop client: its sign-in comes back to the app's
 listener on localhost, and its secret finishes it. Google expects a
 desktop app to ship that secret, and does not count it as one.
 
-Type: ({kind: `"web"`, clientId: [string][68]} | {kind: `"desktop"`, clientId: [string][68], clientSecret: [string][68]})
+Type: ({kind: `"web"`, clientId: [string][70]} | {kind: `"desktop"`, clientId: [string][70], clientSecret: [string][70]})
 
 ## driveConfig
 
@@ -99,7 +101,7 @@ Returns **([DriveConfig][1] | null)**&#x20;
 
 Whether the tree offers an import from Drive.
 
-Returns **[boolean][69]**&#x20;
+Returns **[boolean][71]**&#x20;
 
 ## drive/errors
 
@@ -113,7 +115,7 @@ Something about Google's side that stops an import.
 
 ### Parameters
 
-- `message` **[string][68]**&#x20;
+- `message` **[string][70]**&#x20;
 
 ## SignInLapsedError
 
@@ -136,43 +138,43 @@ importer to take as it takes one from disk.
 
 Google's own types have no bytes of their own and are exported: a Doc as
 markdown, a Sheet as CSV (its first sheet), Slides as a PDF, a Drawing as
-a PNG. Anything else is downloaded as it is.
+a PNG. Anything else is downloaded as it is. A Doc's document keeps its id.
 
 ## PickedFile
 
 A picked file, as Drive describes it.
 
-Type: [Object][70]
+Type: [Object][72]
 
 ### Properties
 
-- `id` **[string][68]**&#x20;
-- `name` **[string][68]** As Drive shows it; a Google Doc's has no extension
-- `mimeType` **[string][68]** A Google type (`application/vnd.google-apps.document`) or the file's own
+- `id` **[string][70]**&#x20;
+- `name` **[string][70]** As Drive shows it; a Google Doc's has no extension
+- `mimeType` **[string][70]** A Google type (`application/vnd.google-apps.document`) or the file's own
 
 ## GOOGLE_TYPE
 
 What Google's own types are prefixed with.
 
-Type: [string][68]
+Type: [string][70]
 
 ## EXPORTS
 
 Google's types that export, and as what.
 
-Type: Record<[string][68], {mime: [string][68], extension: [string][68]}>
+Type: Record<[string][70], {mime: [string][70], extension: [string][70]}>
 
 ## UNEXPORTABLE
 
 Google's types that do not, by what the writer would call them.
 
-Type: Record<[string][68], [string][68]>
+Type: Record<[string][70], [string][70]>
 
 ## DriveRequest
 
 How a picked file is fetched, or why it cannot be.
 
-Type: ({url: [string][68], name: [string][68], mime: [string][68]} | {skip: [string][68]})
+Type: ({url: [string][70], name: [string][70], mime: [string][70]} | {skip: [string][70]})
 
 ## requestFor
 
@@ -188,15 +190,25 @@ and titles without the `.md`, so a Doc named `Ch. 3` keeps its name.
 
 Returns **[DriveRequest][16]**&#x20;
 
+## linkFor
+
+What the document a picked file becomes keeps of it: a Google Doc's id,
+so it can be synced with its Doc later without another pick. Anything else
+comes in as a copy, linked to nothing.
+
+### Parameters
+
+- `picked` **[PickedFile][11]**&#x20;
+
 ## refusal
 
 Drive's refusal, said for the writer.
 
 ### Parameters
 
-- `response` **[Response][71]**&#x20;
+- `response` **[Response][73]**&#x20;
 
-Returns **[Promise][72]<[DriveError][6]>**&#x20;
+Returns **[Promise][74]<[DriveError][6]>**&#x20;
 
 ## body
 
@@ -217,8 +229,8 @@ Fetch a picked file from Drive.
 ### Parameters
 
 - `picked` **[PickedFile][11]**&#x20;
-- `token` **[string][68]**&#x20;
-- `options` **[Object][70]?** (optional, default `{}`)
+- `token` **[string][70]**&#x20;
+- `options` **[Object][72]?** (optional, default `{}`)
   - `options.signal` **AbortSignal?**&#x20;
 
 <!---->
@@ -226,7 +238,7 @@ Fetch a picked file from Drive.
 - Throws **[DriveError][6]** When it cannot be exported or Drive refuses it
 - Throws **[SignInLapsedError][8]** When Drive no longer takes the token
 
-Returns **[Promise][72]\<File>**&#x20;
+Returns **[Promise][74]\<File>**&#x20;
 
 ## describePicked
 
@@ -235,9 +247,9 @@ the ids come back from Google's sign-in.
 
 ### Parameters
 
-- `id` **[string][68]**&#x20;
-- `token` **[string][68]**&#x20;
-- `options` **[Object][70]?** (optional, default `{}`)
+- `id` **[string][70]**&#x20;
+- `token` **[string][70]**&#x20;
+- `options` **[Object][72]?** (optional, default `{}`)
   - `options.signal` **AbortSignal?**&#x20;
 
 <!---->
@@ -245,7 +257,7 @@ the ids come back from Google's sign-in.
 - Throws **[DriveError][6]** When Drive refuses it
 - Throws **[SignInLapsedError][8]** When Drive no longer takes the token
 
-Returns **[Promise][72]<[PickedFile][11]>**&#x20;
+Returns **[Promise][74]<[PickedFile][11]>**&#x20;
 
 ## ask
 
@@ -253,11 +265,11 @@ A request to Drive with the token, answered or refused.
 
 ### Parameters
 
-- `url` **[string][68]**&#x20;
-- `token` **[string][68]**&#x20;
+- `url` **[string][70]**&#x20;
+- `token` **[string][70]**&#x20;
 - `signal` **AbortSignal?**&#x20;
 
-Returns **[Promise][72]<[Response][71]>**&#x20;
+Returns **[Promise][74]<[Response][73]>**&#x20;
 
 ## drive/images
 
@@ -275,14 +287,14 @@ when documents hold images, the same pictures go into the project.
 
 A picture taken out of the markdown.
 
-Type: [Object][70]
+Type: [Object][72]
 
 ### Properties
 
-- `ref` **[string][68]** Its label, lower-cased (`image1`); empty for one written inline
-- `alt` **[string][68]** Its alt text, as the first use gave it
-- `mime` **[string][68]** Its media type
-- `bytes` **[Uint8Array][73]** The picture
+- `ref` **[string][70]** Its label, lower-cased (`image1`); empty for one written inline
+- `alt` **[string][70]** Its alt text, as the first use gave it
+- `mime` **[string][70]** Its media type
+- `bytes` **[Uint8Array][75]** The picture
 
 ## REFERENCE
 
@@ -301,9 +313,9 @@ A definition holding a picture: `[label]: <data:…>`, on a line of its own.
 
 ### Parameters
 
-- `text` **[string][68]**&#x20;
+- `text` **[string][70]**&#x20;
 
-Returns **[string][68]**&#x20;
+Returns **[string][70]**&#x20;
 
 ## bytesOf
 
@@ -311,10 +323,10 @@ The bytes of a data URI's payload.
 
 ### Parameters
 
-- `params` **[string][68]** What followed the media type, `;base64` among them
-- `data` **[string][68]**&#x20;
+- `params` **[string][70]** What followed the media type, `;base64` among them
+- `data` **[string][70]**&#x20;
 
-Returns **[Uint8Array][73]**&#x20;
+Returns **[Uint8Array][75]**&#x20;
 
 ## takeImages
 
@@ -324,25 +336,25 @@ else, a link or a picture on the web, is left where it is.
 
 ### Parameters
 
-- `markdown` **[string][68]**&#x20;
+- `markdown` **[string][70]**&#x20;
 
-Returns **{markdown: [string][68], images: [Array][74]<[TakenImage][31]>}**&#x20;
+Returns **{markdown: [string][70], images: [Array][76]<[TakenImage][33]>}**&#x20;
 
 ## defined
 
-Type: [Map][75]<[string][68], [TakenImage][31]>
+Type: [Map][77]<[string][70], [TakenImage][33]>
 
 ## definitions
 
-Type: [Set][76]<[number][77]>
+Type: [Set][78]<[number][79]>
 
 ## inline
 
-Type: [Array][74]<[TakenImage][31]>
+Type: [Array][76]<[TakenImage][33]>
 
 ## used
 
-Type: [Set][76]<[string][68]>
+Type: [Set][78]<[string][70]>
 
 ## drive
 
@@ -363,7 +375,8 @@ folder grants nothing inside it.
 - **signIn** - Google's sign-in with its picker, in a popup or the system
   browser, and what it came back with
 - **fetch** - A picked file looked up and fetched as a `File`: Google's own
-  types exported, anything else downloaded
+  types exported, anything else downloaded; and the link a Doc's document
+  keeps to it
 - **images** - The pictures in a Doc's markdown taken out before the
   importer sees it
 - **errors** - What stops an import, said for the writer
@@ -413,30 +426,30 @@ this picker, and the token is used for the one import and not kept.
 
 Where Google sends a sign-in back to, on the page's origin or the desktop app's listener.
 
-Type: [string][68]
+Type: [string][70]
 
 ## SIGN_IN_CHANNEL
 
 The channel the page at `CALLBACK_PATH` hands a sign-in back on.
 
-Type: [string][68]
+Type: [string][70]
 
 ## DRIVE_SCOPE
 
 The files the writer picks, and nothing else in their Drive.
 
-Type: [string][68]
+Type: [string][70]
 
 ## Picked
 
 A finished sign-in: the token, and the files picked with it.
 
-Type: [Object][70]
+Type: [Object][72]
 
 ### Properties
 
-- `token` **[string][68]**&#x20;
-- `ids` **[Array][74]<[string][68]>** The picked files' Drive ids
+- `token` **[string][70]**&#x20;
+- `ids` **[Array][76]<[string][70]>** The picked files' Drive ids
 
 ## authorizationUrl
 
@@ -444,14 +457,14 @@ The address of Google's sign-in, with its picker.
 
 ### Parameters
 
-- `options` **[Object][70]**&#x20;
-  - `options.clientId` **[string][68]**&#x20;
-  - `options.redirectUri` **[string][68]**&#x20;
+- `options` **[Object][72]**&#x20;
+  - `options.clientId` **[string][70]**&#x20;
+  - `options.redirectUri` **[string][70]**&#x20;
   - `options.responseType` **(`"token"` | `"code"`)**&#x20;
-  - `options.state` **[string][68]**&#x20;
-  - `options.codeChallenge` **[string][68]?** PKCE, for a code
+  - `options.state` **[string][70]**&#x20;
+  - `options.codeChallenge` **[string][70]?** PKCE, for a code
 
-Returns **[string][68]**&#x20;
+Returns **[string][70]**&#x20;
 
 ## readReturn
 
@@ -460,7 +473,7 @@ What a sign-in came back with.
 ### Parameters
 
 - `params` **URLSearchParams** The fragment or the query it came back with
-- `state` **[string][68]** What this sign-in was asked with
+- `state` **[string][70]** What this sign-in was asked with
 
 <!---->
 
@@ -471,7 +484,7 @@ What a sign-in came back with.
 
 Where a popup of this size sits centred over the window.
 
-Returns **[string][68]**&#x20;
+Returns **[string][70]**&#x20;
 
 ## pickInPopup
 
@@ -484,15 +497,15 @@ the popup if it still can.
 
 ### Parameters
 
-- `clientId` **[string][68]** The web client
-- `options` **[Object][70]?** (optional, default `{}`)
+- `clientId` **[string][70]** The web client
+- `options` **[Object][72]?** (optional, default `{}`)
   - `options.signal` **AbortSignal?**&#x20;
 
-Returns **[Promise][72]<([Picked][52] | null)>** Null when the writer cancelled or picked nothing
+Returns **[Promise][74]<([Picked][54] | null)>** Null when the writer cancelled or picked nothing
 
 ## read
 
-Type: [string][68]
+Type: [string][70]
 
 ## relayReturn
 
@@ -501,7 +514,7 @@ the window that asked.
 
 ### Parameters
 
-- `fragment` **[string][68]** The page's fragment, without its `#`
+- `fragment` **[string][70]** The page's fragment, without its `#`
 
 ## exchangeCode
 
@@ -509,15 +522,15 @@ Trade a desktop sign-in's code for a token.
 
 ### Parameters
 
-- `options` **[Object][70]**&#x20;
-  - `options.clientId` **[string][68]**&#x20;
-  - `options.clientSecret` **[string][68]**&#x20;
-  - `options.code` **[string][68]**&#x20;
-  - `options.verifier` **[string][68]** The PKCE verifier the sign-in was asked with
-  - `options.redirectUri` **[string][68]**&#x20;
+- `options` **[Object][72]**&#x20;
+  - `options.clientId` **[string][70]**&#x20;
+  - `options.clientSecret` **[string][70]**&#x20;
+  - `options.code` **[string][70]**&#x20;
+  - `options.verifier` **[string][70]** The PKCE verifier the sign-in was asked with
+  - `options.redirectUri` **[string][70]**&#x20;
   - `options.signal` **AbortSignal?**&#x20;
 
-Returns **[Promise][72]<[string][68]>** The access token
+Returns **[Promise][74]<[string][70]>** The access token
 
 ## pickInBrowser
 
@@ -526,14 +539,14 @@ for it to come back to the app.
 
 ### Parameters
 
-- `client` **{clientId: [string][68], clientSecret: [string][68]}** The desktop client
+- `client` **{clientId: [string][70], clientSecret: [string][70]}** The desktop client
   - `client.clientId` &#x20;
   - `client.clientSecret` &#x20;
 
-- `options` **[Object][70]?** (optional, default `{}`)
+- `options` **[Object][72]?** (optional, default `{}`)
   - `options.signal` **AbortSignal?**&#x20;
 
-Returns **[Promise][72]<([Picked][52] | null)>** Null when the writer cancelled or picked nothing
+Returns **[Promise][74]<([Picked][54] | null)>** Null when the writer cancelled or picked nothing
 
 [1]: #driveconfig
 [2]: #driveconfig-1
@@ -553,62 +566,64 @@ Returns **[Promise][72]<([Picked][52] | null)>** Null when the writer cancelled 
 [16]: #driverequest
 [17]: #requestfor
 [18]: #parameters-1
-[19]: #refusal
+[19]: #linkfor
 [20]: #parameters-2
-[21]: #body
-[22]: #body-1
-[23]: #body-2
-[24]: #fetchpicked
-[25]: #parameters-3
-[26]: #describepicked
+[21]: #refusal
+[22]: #parameters-3
+[23]: #body
+[24]: #body-1
+[25]: #body-2
+[26]: #fetchpicked
 [27]: #parameters-4
-[28]: #ask
+[28]: #describepicked
 [29]: #parameters-5
-[30]: #driveimages
-[31]: #takenimage
-[32]: #properties-1
-[33]: #reference
-[34]: #inline
-[35]: #definition
-[36]: #unescape
-[37]: #parameters-6
-[38]: #bytesof
+[30]: #ask
+[31]: #parameters-6
+[32]: #driveimages
+[33]: #takenimage
+[34]: #properties-1
+[35]: #reference
+[36]: #inline
+[37]: #definition
+[38]: #unescape
 [39]: #parameters-7
-[40]: #takeimages
+[40]: #bytesof
 [41]: #parameters-8
-[42]: #defined
-[43]: #definitions
-[44]: #inline-1
-[45]: #used
-[46]: #drive
-[47]: #examples
-[48]: #drivesignin
-[49]: #callback_path
-[50]: #sign_in_channel
-[51]: #drive_scope
-[52]: #picked
-[53]: #properties-2
-[54]: #authorizationurl
-[55]: #parameters-9
-[56]: #readreturn
+[42]: #takeimages
+[43]: #parameters-9
+[44]: #defined
+[45]: #definitions
+[46]: #inline-1
+[47]: #used
+[48]: #drive
+[49]: #examples
+[50]: #drivesignin
+[51]: #callback_path
+[52]: #sign_in_channel
+[53]: #drive_scope
+[54]: #picked
+[55]: #properties-2
+[56]: #authorizationurl
 [57]: #parameters-10
-[58]: #popupfeatures
-[59]: #pickinpopup
-[60]: #parameters-11
-[61]: #read
-[62]: #relayreturn
-[63]: #parameters-12
-[64]: #exchangecode
+[58]: #readreturn
+[59]: #parameters-11
+[60]: #popupfeatures
+[61]: #pickinpopup
+[62]: #parameters-12
+[63]: #read
+[64]: #relayreturn
 [65]: #parameters-13
-[66]: #pickinbrowser
+[66]: #exchangecode
 [67]: #parameters-14
-[68]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[69]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[70]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[71]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[72]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[73]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[74]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[75]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[76]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
-[77]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[68]: #pickinbrowser
+[69]: #parameters-15
+[70]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[71]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[72]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[73]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[74]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[75]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[76]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[77]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[78]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
+[79]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number

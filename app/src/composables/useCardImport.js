@@ -6,6 +6,8 @@
  * Four kinds — a character card in a PNG, a card or a lorebook as JSON, a
  * markdown document, and a file kept as it is: a PDF, an image, anything —
  * told apart by what is in them rather than by what they are called. Cards
+ * and lorebooks are read as such only while roleplay is on; otherwise they
+ * are files like any other, and say what they hold. Cards
  * travel as `.json` as readily as books do, and a PNG is a card only when it
  * has one in it, so an extension is a hint and not an answer. A Word file is
  * a markdown document, read out of it as a Google Doc is (`files/docx.js`).
@@ -20,7 +22,8 @@
  *
  * A card already in the tree can be read back out of its sidecar and written
  * again over its own folder, with the question asked afresh — `inspectCard`,
- * and then `write` as for anything else.
+ * and then `write` as for anything else. A card in the writer's library comes
+ * the same way, by `fromLibrary`.
  */
 
 import { cardFromPng } from '@/cards/png.js'
@@ -34,6 +37,7 @@ import { useApplicationState } from '@/composables/useApplicationState'
 import { useDocuments } from '@/composables/useDocuments'
 import { startConversion } from '@/jobs/index.js'
 import { useFilesStore } from '@/stores/filesStore'
+import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
 /**
@@ -67,6 +71,8 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
  *   in the card's folder as its picture
  * @property {string} [replaces] - A card read back out of its own folder, to
  *   be written there again over what is in it
+ * @property {'card'|'lorebook'} [holds] - A file read with roleplay off that
+ *   has a card or a lorebook in it, which with roleplay on would be read as one
  * @property {any} value - The card, the book, the text, or the inspected file
  */
 
@@ -112,11 +118,14 @@ export function useCardImport(storyId) {
    * Read a file and say what is in it, writing nothing.
    *
    * @param {File} file
+   * @param {Object} [options]
+   * @param {boolean} [options.cards] - Read a card or a lorebook as one: while
+   *   roleplay is on, unless asked otherwise
    * @returns {Promise<Found>}
    * @throws {NotACardError} If the file is a lorebook with nothing in it
    * @throws {Error} If the file cannot be read at all
    */
-  async function inspect(file) {
+  async function inspect(file, { cards = useApplicationState().roleplay.value } = {}) {
     if (MARKDOWN.test(file.name) || file.type === 'text/markdown') {
       return {
         shape: 'markdown',
@@ -149,7 +158,7 @@ export function useCardImport(storyId) {
         : null
     const shape = value === null ? null : shapeOf(value)
 
-    if (shape === 'lorebook') {
+    if (shape === 'lorebook' && cards) {
       const book = readLorebook(value)
       if (book.entries.length === 0) {
         throw new NotACardError(`"${file.name}" is a lorebook with nothing in it.`)
@@ -167,11 +176,11 @@ export function useCardImport(storyId) {
       }
     }
 
-    if (shape === 'card') return foundCard(readCard(value), isPng ? file : null)
+    if (shape === 'card' && cards) return foundCard(readCard(value), isPng ? file : null)
 
     // Anything else is a file to keep: the PNG with no card in it, the JSON
-    // that is neither a card nor a book, and everything that is not one of
-    // those at all.
+    // that is neither a card nor a book, everything that is not one of those
+    // at all, and with roleplay off a card or a book as well.
     const found = await inspectFile(file)
     return {
       shape: 'file',
@@ -182,6 +191,7 @@ export function useCardImport(storyId) {
       mime: found.mime,
       pages: found.pages ?? 0,
       text: found.text.length > 0,
+      ...(shape ? { holds: shape } : {}),
       value: found,
     }
   }
@@ -215,6 +225,26 @@ export function useCardImport(storyId) {
   }
 
   /**
+   * A card in the writer's library, described for writing into the project as
+   * if it had been chosen as a file: the card as it arrived, and the PNG it
+   * came in as its portrait.
+   *
+   * @param {string} id - The library card's
+   * @returns {Promise<Found>}
+   * @throws {NotACardError} When the card is no longer in the library
+   */
+  async function fromLibrary(id) {
+    const file = await useCardLibraryStore().cardFile(id)
+    if (!file || shapeOf(file.card) !== 'card') {
+      throw new NotACardError('That card is no longer in the library.')
+    }
+    const portrait = file.image
+      ? new File([file.image], 'Portrait.png', { type: file.image.type || 'image/png' })
+      : null
+    return foundCard(readCard(file.card), portrait)
+  }
+
+  /**
    * Write what was found.
    *
    * A card or a lorebook asked for on the project itself goes on its shelf,
@@ -230,9 +260,11 @@ export function useCardImport(storyId) {
    * @param {Object} [options]
    * @param {string} [options.parentId] - The folder it was asked for on
    * @param {boolean} [options.useSystemPrompt] - Keep the card's prompt override
+   * @param {import('@/types/models.js').DriveLink} [options.drive] - The Google
+   *   Doc a markdown document was exported from; nothing else keeps one
    * @returns {Promise<import('@/cards/write.js').Written>}
    */
-  async function write(found, { parentId, useSystemPrompt } = {}) {
+  async function write(found, { parentId, useSystemPrompt, drive } = {}) {
     if (found.replaces) {
       return reimportCard(storyId, found.replaces, found.value, {
         useSystemPrompt,
@@ -240,18 +272,20 @@ export function useCardImport(storyId) {
       })
     }
     if (found.shape === 'markdown') {
-      const written = await writeMarkdown(storyId, found.title, found.value, { parentId })
+      const written = await writeMarkdown(storyId, found.title, found.value, { parentId, drive })
       if (!found.images) return written
       const images = found.images === 1 ? '1 image' : `${found.images} images`
       return { ...written, note: ` (${images} left out)` }
     }
     if (found.shape === 'file') {
       const written = await writeFile(storyId, found.value, { parentId })
-      // Converted as it lands, when the Convert role says so and there is
-      // text to convert that lacks its structure. The job runs on its own;
-      // the import does not wait.
+      // Converted as it lands, when the Convert role says so, the AI is
+      // switched on, and there is text to convert that lacks its structure.
+      // The job runs on its own; the import does not wait.
+      const appState = useApplicationState()
       if (
-        useApplicationState().workflows.value.convert?.onImport &&
+        appState.aiEnabled.value &&
+        appState.workflows.value.convert?.onImport &&
         found.value.text &&
         !isStructured(found.value.mime)
       ) {
@@ -275,7 +309,7 @@ export function useCardImport(storyId) {
     })
   }
 
-  return { inspect, inspectCard, write }
+  return { inspect, inspectCard, fromLibrary, write }
 }
 
 /**

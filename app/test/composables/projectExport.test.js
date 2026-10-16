@@ -309,7 +309,89 @@ describe('project export and import', () => {
     const backup = useBackup()
     const file = asFile(await backup.createBackup())
     await expect(backup.readProjectFile(file)).rejects.toThrow(
-      'Restore it with Import in Settings › System'
+      'Restore it with Import in Settings › System › Data'
     )
+  })
+})
+
+describe('a selection', () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    await Promise.all(db.tables.map((/** @type {import('dexie').Table} */ table) => table.clear()))
+    await seed()
+  })
+
+  /** What Export hands over with these ticked. */
+  const pick = (overrides = {}) => ({
+    everything: false,
+    projects: [],
+    cardIds: [],
+    settings: new Set(),
+    ...overrides,
+  })
+
+  it('holds the documents ticked with the folders above them, the chats ticked, and their profile', async () => {
+    const backup = await useBackup().createSelectionBackup(
+      pick({ projects: [{ id: STORY, whole: false, documentIds: [CHAPTER], chatIds: [CHAT] }] })
+    )
+
+    expect(backup.scope).toBe('selection')
+    expect(backup.tables.stories.map(row => row.id)).toEqual([STORY])
+    expect(backup.tables.documents.map(row => row.id).sort()).toEqual([CHAPTER, ROOT].sort())
+    // The PDF wasn't ticked, so its bytes stay behind with it.
+    expect(backup.tables.files).toEqual([])
+    expect(backup.tables.chats.map(row => row.id)).toEqual([CHAT])
+    expect(backup.tables.messages).toHaveLength(2)
+    expect(backup.tables.chatProfiles.map(row => row.id)).toEqual([PROFILE])
+  })
+
+  it('leaves the chats behind when none were ticked', async () => {
+    const backup = await useBackup().createSelectionBackup(
+      pick({ projects: [{ id: STORY, whole: false, documentIds: [PDF], chatIds: [] }] })
+    )
+
+    expect(backup.tables.documents.map(row => row.id).sort()).toEqual([PDF, ROOT].sort())
+    expect(backup.tables.files.map(row => row.id)).toEqual([PDF])
+    expect(backup.tables.chats).toEqual([])
+    expect(backup.tables.messages).toEqual([])
+  })
+
+  it('is a whole backup with everything ticked, and a settings file with settings alone', async () => {
+    expect((await useBackup().createSelectionBackup(pick({ everything: true }))).scope).toBe(
+      'database'
+    )
+    const settings = await useBackup().createSelectionBackup(
+      pick({ settings: new Set([`chatProfiles/${PROFILE}`]) })
+    )
+    expect(settings.scope).toBe('settings')
+    expect(settings.tables.chatProfiles.map(row => row.id)).toEqual([PROFILE])
+  })
+
+  it('adds its project beside the one it came from, numbered, with only what was ticked', async () => {
+    const backup = await useBackup().createSelectionBackup(
+      pick({ projects: [{ id: STORY, whole: false, documentIds: [CHAPTER], chatIds: [] }] })
+    )
+    await useStoriesStore().loadNames()
+    const read = await useBackup().readDataFile(asFile(backup))
+    expect(read.kind).toBe('selection')
+
+    const done = await useBackup().importSelection(read.selection)
+
+    expect(done).toEqual({ projects: ['The Salt Road (2)'], cards: [], settingsChanged: false })
+    const stories = await db.stories.toArray()
+    expect(stories).toHaveLength(3)
+    const added = stories.find(story => ![STORY, OTHER].includes(story.id))
+    const documents = await db.documents.where('storyId').equals(added.id).toArray()
+    expect(documents.map(row => row.title).sort()).toEqual(['Chapter One', 'The Salt Road (2)'])
+    // The project it came from is as it was.
+    expect(await db.documents.where('storyId').equals(STORY).count()).toBe(3)
+  })
+
+  it('takes a project file through the same door', async () => {
+    const read = await useBackup().readDataFile(
+      asFile(await useBackup().createProjectBackup(STORY))
+    )
+    expect(read.kind).toBe('selection')
+    expect(read.selection.projects.map(project => project.story.id)).toEqual([STORY])
   })
 })

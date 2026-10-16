@@ -5,7 +5,8 @@
          not taken down: the splitter lays its panels out once, and a chat of
          any length is not something to build twice. The panel left takes the
          room, and one coming back finds the split where it was. In a narrow
-         window the sidebar and the chat take turns; see shownLayout. -->
+         window the sidebar and the chat take turns; see shownLayout. In focus
+         mode the editor is alone. -->
     <Splitter class="flex-1 min-w-0" @resizeend="keep(ROW_KEY, $event)">
       <!-- At least wide enough for the outline's titles, whatever share of
            the window that is. -->
@@ -45,7 +46,7 @@
               :key="`editor-panel:${storyId}`"
               class="h-full w-full"
               :story-id="storyId"
-              :chat-showing="shown.chat"
+              :chat-showing="aiEnabled ? shown.chat : null"
               @toggle-chat="toggleChat"
             />
           </SplitterPanel>
@@ -56,7 +57,10 @@
             :min-size="20"
             class="min-w-0 grow overflow-hidden"
           >
+            <!-- No chat with the AI switched off, rather than a hidden one,
+                 which would still load its messages. -->
             <ChatPanel
+              v-if="aiEnabled"
               :key="`chat-panel:${storyId}`"
               class="h-full w-full"
               :story-id="storyId"
@@ -81,6 +85,8 @@ import EditorPanel from './EditorPanel.vue'
 import ChatPanel from './ChatPanel.vue'
 import { CONTENT_SIZES, PANELS, ROW_SIZES, keptSizes, shownLayout } from './layout.js'
 import { useScreenSize } from '@/composables/useScreenSize'
+import { useApplicationState } from '@/composables/useApplicationState'
+import { useFocusMode } from '@/composables/useFocusMode.js'
 import { localStorage } from '@/utils/localStorage'
 
 /**
@@ -90,7 +96,9 @@ import { localStorage } from '@/utils/localStorage'
  * for the other at the edge of their header, and asking for one is passed up
  * as `toggle` with the panel's name. In a window too narrow for all three,
  * the chat folds away while the sidebar is open, and asking for it — its
- * toggle, or a chat picked from the list — closes the sidebar instead.
+ * toggle, or a chat picked from the list — closes the sidebar instead. With
+ * the AI switched off there is no chat, nor a toggle for one; the layout
+ * given has the chat hidden already. In focus mode the editor is alone.
  *
  * @typedef {Object} Props
  * @property {import('@/types/models.js').StoryLayout} layout
@@ -122,9 +130,18 @@ const emit = defineEmits(['update:chatId', 'select-chat', 'open-document', 'togg
 const layout = computed(() => /** @type {import('@/types/models.js').StoryLayout} */ (props.layout))
 
 const { isNarrow } = useScreenSize()
+const { aiEnabled } = useApplicationState()
+const { focused } = useFocusMode()
 
-/** What shows, which in a narrow window is less than the layout has on. */
-const shown = computed(() => shownLayout(layout.value, isNarrow.value))
+/**
+ * What shows, which in a narrow window is less than the layout has on, and in
+ * focus mode the editor alone.
+ */
+const shown = computed(() =>
+  focused.value
+    ? { ...layout.value, sidebar: false, editor: true, chat: false }
+    : shownLayout(layout.value, isNarrow.value)
+)
 
 // What each splitter was last dragged to, kept for every session after:
 // sessionStorage put them back to the starting widths with each new window

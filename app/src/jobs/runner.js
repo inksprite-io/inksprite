@@ -97,11 +97,11 @@ export const isRunning = jobId => running.has(jobId)
 /**
  * The way to ask the model a workflow names, or an error saying what is not set.
  *
- * The allowed providers come with the model they were chosen for: the
- * preset's with the preset's, the workflow's own with its own.
+ * The allowed and ignored providers come with the model they were chosen
+ * for: the preset's with the preset's, the workflow's own with its own.
  *
  * @param {string} name - A workflow in the application state's `workflows`
- * @returns {{provider: import('@/types/models.js').AIProvider, model: string, allowedProviders?: string[], overrides?: any}}
+ * @returns {{provider: import('@/types/models.js').AIProvider, model: string, upstreams?: import('@/ai/routing.js').ModelUpstreams, overrides?: any}}
  * @throws {ProviderNotConfiguredError|Error}
  */
 export function resolveWorkflow(name) {
@@ -126,10 +126,8 @@ export function resolveWorkflow(name) {
       ? { reasoningEffort: settings.reasoningEffort }
       : undefined
     : preset?.generationOverrides
-  const allowedProviders = settings.providerId
-    ? settings.allowedProviders
-    : preset?.allowedProviders
-  return { provider, model, allowedProviders, overrides }
+  const upstreams = settings.providerId ? settings : preset
+  return { provider, model, upstreams, overrides }
 }
 
 /**
@@ -187,7 +185,7 @@ export async function startJob(jobId) {
       await store.updateStep(jobId, step.id, { status: 'running', error: undefined })
       setActivity(jobId, 'asking')
       try {
-        const { provider, model, allowedProviders, overrides } = resolveWorkflow(current.workflow)
+        const { provider, model, upstreams, overrides } = resolveWorkflow(current.workflow)
         const { output, usage } = await kind.runStep(current, step, {
           signal: controller.signal,
           note: (phase, detail) => setActivity(jobId, phase, detail),
@@ -205,7 +203,7 @@ export async function startJob(jobId) {
                 return await complete({
                   provider,
                   model,
-                  allowedProviders,
+                  upstreams,
                   messages,
                   overrides,
                   signal: controller.signal,

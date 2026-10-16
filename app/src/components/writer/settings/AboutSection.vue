@@ -22,6 +22,24 @@
     </section>
 
     <ExpandableSection title="Credits" subsection content-wrapper-class="flex flex-col gap-5 pt-2">
+      <section
+        v-for="program in PROGRAM_CREDITS"
+        :key="program.name"
+        class="flex flex-col gap-1"
+        :data-credits="program.name"
+      >
+        <h3 class="font-medium text-surface-700 dark:text-surface-200">{{ program.use }}</h3>
+        <p>
+          <a :href="program.url" target="_blank" rel="noopener noreferrer" :class="LINK">{{
+            program.name
+          }}</a>
+          by {{ program.by }}, under the
+          <a :href="program.license.url" target="_blank" rel="noopener noreferrer" :class="LINK">{{
+            program.license.name
+          }}</a
+          >.
+        </p>
+      </section>
       <section class="flex flex-col gap-1" data-credits="icons">
         <h3 class="font-medium text-surface-700 dark:text-surface-200">Icons</h3>
         <p>
@@ -59,7 +77,7 @@
  * someone paid for, means inside the app.
  */
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
-import { ICON_CREDITS, ICON_LICENSE, iconUrl } from '@/config/credits.js'
+import { ICON_CREDITS, ICON_LICENSE, PROGRAM_CREDITS, iconUrl } from '@/config/credits.js'
 
 defineProps({
   /**

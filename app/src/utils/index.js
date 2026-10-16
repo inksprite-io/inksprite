@@ -11,6 +11,7 @@
  * - **wordCount** - Words in a document's markdown
  * - **lineDiff** - The lines that changed between two versions of a text
  * - **compareNames** - Names in the order a person expects, numbers by value
+ * - **siblingOrder** - The order a folder's children are shown in
  *
  * ### AI Integration
  *
@@ -35,6 +36,7 @@
  * - **localStorage** - LocalStorage wrapper with quota management
  * - **backup** - Build and validate export files: the whole database, a chat, a project, settings
  * - **settingsFile** - What a settings file holds, which of it the writer picked, and what importing one changes
+ * - **exportTree** - What Export offers, as a tree of boxes, and what the boxes ticked choose
  *
  * ## Usage Examples
  *
@@ -60,6 +62,7 @@ export * from './turns.js'
 export * from './focus.js'
 export * from './documentPath.js'
 export * from './compareNames.js'
+export * from './siblingOrder.js'
 export {
   isDocumentHref,
   fileNameOf,

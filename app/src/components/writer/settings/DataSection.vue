@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-wrap gap-2 px-2 pt-1 pb-2">
+  <div class="flex flex-wrap justify-end gap-2 pt-2 pb-1">
     <Button
       label="Export"
       icon="pi pi-download"
@@ -44,8 +44,8 @@ import Button from 'primevue/button'
 import { useConfirm } from 'primevue/useconfirm'
 import { useBackup } from '@/composables/useBackup'
 import { useToast } from '@/composables/useToast'
-import { describeBackupContents, keysLeftOut } from '@/utils/backup.js'
-import { changesAnything, describeImport } from '@/utils/settingsFile.js'
+import { describeBackupContents, keysLeftOut, projectName } from '@/utils/backup.js'
+import { changesAnything, describeImport, describeSelection } from '@/utils/settingsFile.js'
 import ExportDialog from './ExportDialog.vue'
 import { getWebService } from '@/web/services.js'
 import { isDesktop } from '@/platform/desktop.js'
@@ -86,20 +86,16 @@ const reveal = async () => {
 }
 
 /**
- * Save what was chosen: everything, or the settings picked.
+ * Save what was ticked.
  *
  * @param {import('./ExportDialog.vue').ExportChoice} choice
  */
 const handleExport = async choice => {
   isExporting.value = true
   try {
-    const { filename } =
-      choice.kind === 'settings'
-        ? await backup.downloadSettings({
-            picked: choice.picked,
-            includeApiKeys: choice.includeApiKeys,
-          })
-        : await backup.downloadBackup({ includeApiKeys: choice.includeApiKeys })
+    const { filename } = await backup.downloadSelection(choice.pick, {
+      includeApiKeys: choice.includeApiKeys,
+    })
     toast.success(`Saved ${filename}`)
   } catch (error) {
     console.error('Export failed:', error)
@@ -115,7 +111,8 @@ const handleImportClick = () => {
 
 /**
  * Read the file picked, and ask before taking it: a backup replaces
- * everything, settings are merged into what is here.
+ * everything, settings are merged into what is here, and a selection adds
+ * its projects and cards and merges its settings.
  *
  * @param {Event} event
  */
@@ -130,6 +127,7 @@ const handleFileChange = async event => {
   try {
     const read = await backup.readDataFile(file)
     if (read.kind === 'settings') askToImportSettings(read.backup, read.plan)
+    else if (read.kind === 'selection') askToImportSelection(read.backup, read.selection)
     else askToRestore(read.backup)
   } catch (error) {
     console.error('Import failed:', error)
@@ -211,6 +209,61 @@ function askToImportSettings(parsed, plan) {
       } catch (error) {
         console.error('Settings import failed:', error)
         toast.error(`Import failed: ${error.message}`)
+        isImporting.value = false
+      }
+    },
+    reject: () => {
+      isImporting.value = false
+    },
+    onHide: () => {
+      isImporting.value = false
+    },
+  })
+}
+
+/**
+ * Ask before a selection is taken, saying what it adds and changes.
+ *
+ * @param {Backup} parsed
+ * @param {import('@/composables/useBackup').SelectionImport} selection
+ */
+function askToImportSelection(parsed, selection) {
+  const projects = selection.projects.map(projectName)
+  const cards = selection.cards.rows.map(card => card.title || 'Untitled')
+  const description = describeSelection({ projects, cards, plan: selection.plan })
+  if (!description) {
+    toast.info('Everything in this file is here already.')
+    isImporting.value = false
+    return
+  }
+  const leftOut = keysLeftOut({ ...parsed, tables: selection.plan.rows }, webName)
+  const keys = leftOut.length > 0 ? ` Keys left out: ${leftOut.join(', ')}.` : ''
+
+  confirm.require({
+    header: 'Import?',
+    message: `${description}${keys}`,
+    icon: 'pi pi-upload',
+    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+    acceptProps: { label: 'Import' },
+    accept: async () => {
+      isImporting.value = true
+      try {
+        const done = await backup.importSelection(selection)
+        // Settings went straight to storage, past the stores that hold them.
+        if (done.settingsChanged) {
+          window.location.reload()
+          return
+        }
+        const added = describeSelection(
+          { ...done, plan: { added: [], changed: [] } },
+          { done: true }
+        )
+        if (added) toast.success(added)
+        else toast.info('Everything in this file is here already.')
+      } catch (error) {
+        console.error('Import failed:', error)
+        toast.error(`Import failed: ${error.message}`)
+      } finally {
         isImporting.value = false
       }
     },

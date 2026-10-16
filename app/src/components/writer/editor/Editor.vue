@@ -1,10 +1,11 @@
 <template>
-  <!-- Escape in the page puts the find away as well, as it does in the bar. -->
+  <!-- Escape in the page puts the find away as well, as it does in the bar,
+       and goes no further: focus mode, which Escape also leaves, stays. -->
   <div
     ref="root"
     class="h-full w-full flex flex-col items-center min-w-0"
     :style="{ paddingBottom: barShown && covered ? `${covered}px` : undefined }"
-    @keydown.esc="finding && closeFind()"
+    @keydown.esc="finding && ($event.stopPropagation(), closeFind())"
   >
     <!-- Find and replace, over the page rather than in it. See editor/search. -->
     <FindBar
@@ -39,7 +40,7 @@
         <div
           ref="host"
           class="relative flex-1 w-full max-w-[50rem] min-w-0 px-4"
-          @contextmenu="openTableMenu"
+          @contextmenu="openMenu"
         >
           <!-- The view's own element, so that Vue, which adds and removes
                the popovers beside it, finds no node here it did not make. -->
@@ -99,7 +100,17 @@
         @close="closeComment"
       />
     </div>
-    <TableMenu ref="tableMenu" />
+    <EditorMenu
+      ref="editorMenu"
+      @add-word="spelling.addWord"
+      @add-to-project="spelling.addProjectWord"
+      @ignore="spelling.ignore"
+      @link="editLink"
+      @remove-link="unlink"
+      @comment="commentOnSelection"
+      @edit-comment="editComment"
+      @resolve-comment="resolveComment"
+    />
   </div>
 </template>
 
@@ -112,13 +123,14 @@ import 'prosemirror-gapcursor/style/gapcursor.css'
 import ScrollPanel from 'primevue/scrollpanel'
 
 import FindBar from '@/components/common/FindBar.vue'
-import TableMenu from './TableMenu.vue'
+import EditorMenu from './EditorMenu.vue'
 import LinkPopover from './LinkPopover.vue'
 import CommentButton from './CommentButton.vue'
 import CommentPopover from './CommentPopover.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useKeyboardCover } from '@/composables/useKeyboardCover.js'
 import { useScreenSize } from '@/composables/useScreenSize.js'
+import { useSpelling } from '@/composables/useSpelling.js'
 import { useEditor } from '@/composables/useEditor.js'
 import { useFindKey } from '@/composables/useFindKey.js'
 import { find, findNext, replaceAll, replaceCurrent, searchOf } from '@/editor/search.js'
@@ -268,15 +280,20 @@ const saveComment = text => {
   view.focus()
 }
 
-/** Take the comment off; the passage stays as it is. */
-const resolveComment = () => {
-  const comment = commentPopover.value
+/**
+ * Take a comment off; the passage stays as it is. The one showing, unless
+ * the menu names another.
+ *
+ * @param {string} [id]
+ */
+const resolveComment = id => {
+  const resolved = typeof id === 'string' ? id : commentPopover.value?.id
   commentPopover.value = null
-  if (!view || !comment?.id) return
+  if (!view || !resolved) return
   const type = view.state.schema.marks.comment
   const tr = view.state.tr
   for (const range of commentRanges(view.state.doc)) {
-    if (range.id === comment.id) tr.removeMark(range.from, range.to, type)
+    if (range.id === resolved) tr.removeMark(range.from, range.to, type)
   }
   leaveComment(props.documentId)
   view.dispatch(tr)
@@ -511,15 +528,23 @@ watch([() => !!linkPopover.value?.editing, () => !!commentPopover.value?.editing
   view?.setProps({ decorations })
 )
 
+// The checker's underlines, where it is on; the browser's own where it is
+// not. See `editor/spelling`.
+const spelling = useSpelling(props.storyId)
+
 /**
  * The editor's own element's, read again whenever the view updates. The room
- * under the text lets its last line come up to the middle of the screen, and
- * no further, so a short document has nothing to scroll.
+ * above the text is the panel's to set, more of it in focus mode; the room
+ * under it lets its last line come up to the middle of the screen, and no
+ * further, so a short document has nothing to scroll. With the checker on,
+ * the browser neither underlines nor corrects: Safari would correct as the
+ * writer types.
  */
 const attributes = () => ({
-  class: `flex-1 prose font-sans dark:prose-invert sm:prose lg:prose-lg focus:outline-none pt-[1rem] pb-[50vh] ${compactText.value ? COMPACT : ''}`,
+  class: `flex-1 prose font-sans dark:prose-invert sm:prose lg:prose-lg focus:outline-none pt-[var(--page-top,1rem)] pb-[50vh] ${compactText.value ? COMPACT : ''}`,
+  ...(spelling.on.value ? { spellcheck: 'false', autocorrect: 'off' } : {}),
 })
-watch(compactText, () => view?.setProps({ attributes }))
+watch([compactText, spelling.on], () => view?.setProps({ attributes }))
 
 /** @type {import('vue').Ref<HTMLElement|null>} */
 const root = ref(null)
@@ -642,16 +667,21 @@ const closeFind = () => {
 useFindKey(() => root.value, openFind)
 defineExpose({ openFind })
 
-/** @type {import('vue').Ref<InstanceType<typeof TableMenu>|null>} */
-const tableMenu = ref(null)
+/** @type {import('vue').Ref<InstanceType<typeof EditorMenu>|null>} */
+const editorMenu = ref(null)
 
 /**
- * A right-click in a table opens its menu; anywhere else, the browser's.
+ * A right-click opens the editor's menu; with Shift, the browser's.
  *
  * @param {MouseEvent} event
  */
-const openTableMenu = event => {
-  if (view && tableMenu.value?.open(view, event)) event.preventDefault()
+const openMenu = event => {
+  if (view) editorMenu.value?.open(view, event)
+}
+
+/** The comment field for what is selected, from the menu. */
+const commentOnSelection = () => {
+  if (view) commentOn(view.state.selection.from, view.state.selection.to)
 }
 
 /**
@@ -859,6 +889,22 @@ onBeforeUnmount(() => {
 .ProseMirror mark.comment:hover {
   background-color: rgb(250 204 21 / 0.45);
 }
+/* What the spelling checker found: a misspelling, and grammar. */
+.ProseMirror .spelling-error,
+.ProseMirror .grammar-error {
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-thickness: 1px;
+  text-decoration-skip-ink: none;
+  text-underline-offset: 0.2em;
+}
+.ProseMirror .spelling-error {
+  text-decoration-color: rgb(239 68 68);
+}
+.ProseMirror .grammar-error {
+  text-decoration-color: rgb(59 130 246);
+}
+
 /* The comment gone to last, from the comments list or the caret: drawn over
    its highlight, inside the mark. */
 .ProseMirror .comment-current {

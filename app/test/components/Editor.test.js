@@ -58,7 +58,13 @@ const { mockLinks } = vi.hoisted(() => ({
 }))
 vi.mock('@/composables/useDocumentLinks.js', () => ({ useDocumentLinks: () => mockLinks }))
 
-const { mockNarration, mockAppState } = vi.hoisted(() => ({ mockNarration: {}, mockAppState: {} }))
+const { mockNarration, mockAppState, mockSpelling } = vi.hoisted(() => ({
+  mockNarration: {},
+  mockAppState: {},
+  mockSpelling: {},
+}))
+vi.mock('@/composables/useSpelling.js', () => ({ useSpelling: () => mockSpelling }))
+vi.mock('@/composables/useToast', () => ({ useToast: () => ({ error: vi.fn() }) }))
 vi.mock('@/composables/useNarration', () => ({ useNarration: () => mockNarration }))
 vi.mock('@/composables/useApplicationState', () => ({
   useApplicationState: () => mockAppState,
@@ -86,6 +92,10 @@ describe('Editor', () => {
     mockNarration.filterPatterns = ref([])
     mockAppState.highlightSpeakers = ref(true)
     mockAppState.compactText = ref(true)
+    mockSpelling.on = ref(false)
+    mockSpelling.addWord = vi.fn()
+    mockSpelling.addProjectWord = vi.fn()
+    mockSpelling.ignore = vi.fn()
   })
 
   it('opens the document into the editor on mount and renders it', async () => {
@@ -239,6 +249,20 @@ describe('Editor', () => {
     await flushPromises()
     expect(classes()).not.toContain('leading-normal!')
     expect(classes()).toContain('prose')
+
+    wrapper.unmount()
+  })
+
+  it('leaves spelling to the browser until the checker is on, and then to the checker', async () => {
+    const wrapper = mountEditor()
+    await flushPromises()
+    const attributes = () => wrapper.find('.ProseMirror').attributes()
+
+    expect(attributes().spellcheck).toBeUndefined()
+    expect(attributes().autocorrect).toBeUndefined()
+    mockSpelling.on.value = true
+    await flushPromises()
+    expect(attributes()).toMatchObject({ spellcheck: 'false', autocorrect: 'off' })
 
     wrapper.unmount()
   })
@@ -551,6 +575,28 @@ describe('Editor', () => {
       expect(marked('doc_2')).toEqual([])
       expect(wrapper.find('.ProseMirror p').text()).toBe('We had a cold attic.')
       expect(wrapper.find('[data-comment-popover]').exists()).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('resolves the comment the right-click menu names', async () => {
+      const wrapper = await mountAttached('doc_2')
+      wrapper.findComponent({ name: 'EditorMenu' }).vm.$emit('resolve-comment', 'cabcd1')
+      await flushPromises()
+
+      expect(marked('doc_2')).toEqual([])
+      expect(wrapper.find('.ProseMirror p').text()).toBe('We had a cold attic.')
+      wrapper.unmount()
+    })
+
+    it('opens the comment field for the selection from the right-click menu', async () => {
+      const wrapper = await mountAttached('doc_2')
+      wrapper.find('.ProseMirror').element.focus()
+      select('doc_2', 2, 4)
+      await flushPromises()
+      wrapper.findComponent({ name: 'EditorMenu' }).vm.$emit('comment')
+      await flushPromises()
+
+      expect(wrapper.find('[data-comment-popover]').exists()).toBe(true)
       wrapper.unmount()
     })
 

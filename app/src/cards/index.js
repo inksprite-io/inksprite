@@ -14,11 +14,17 @@
  * - **macros** - `{{char}}` and `{{user}}`, filled in for the chat that plays a card
  * - **chat** - A card folder read back out of the tree, for a chat to run on
  * - **transcript** - A SillyTavern chat file, read into a chat's worth of messages
+ * - **library** - A card as the writer's library keeps it, outside any project:
+ *   read from a file, described for browsing, and found by name or tag
+ * - **thumbnail** - A small copy of a card's picture, for the library's grid
+ * - **sources** - Where a card is downloaded from, given a link to its page on
+ *   botbooru or Chub, or to the card itself
  *
- * Reading is pure — `png`, `card`, `macros` and `transcript` touch no store — and `write`
- * is the one part that has the tree in its hands.
+ * Reading is pure — `png`, `card`, `macros`, `transcript` and `library` touch no store — and
+ * `write` is the one part that has the tree in its hands.
  *
- * Design: `.llm/character_cards_design.md`.
+ * Design: `.llm/character_cards_design.md`, and `.llm/card_library_design.md`
+ * for the library.
  *
  * @example
  * import { cardFromPng } from '@/cards/png.js'

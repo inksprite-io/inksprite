@@ -13,6 +13,8 @@ import { useChatsStore } from '../../src/stores/chatsStore'
 import { clearChatsInstances, useChats } from '../../src/composables/useChats'
 import { LONG_PRESS_MS } from '../../src/composables/useLongPress.js'
 import { OPEN_AFTER, useTreeDrop } from '../../src/composables/useTreeDrop.js'
+import { useApplicationState } from '../../src/composables/useApplicationState'
+import { useCardLibraryPanel } from '../../src/composables/useCardLibraryPanel.js'
 
 const reextractFile = vi.fn()
 vi.mock('../../src/files/write.js', () => ({ reextractFile: (...args) => reextractFile(...args) }))
@@ -1087,6 +1089,40 @@ describe('DocumentNode', () => {
   })
 
   describe('a card folder', () => {
+    beforeEach(() => useApplicationState().setExtension('roleplay', true))
+    afterEach(() => useApplicationState().resetState())
+
+    /** A card folder with its sidecar in it. */
+    const cardFolder = () => {
+      const store = useDocumentsStore()
+      const folder = store.createDocument({
+        storyId: 'story_1',
+        parentId: 'notes_story_1',
+        type: 'folder',
+        title: 'Elara',
+        kind: 'card',
+      })
+      store.createDocument({
+        storyId: 'story_1',
+        parentId: folder.id,
+        type: 'text',
+        title: '.card.json',
+        kind: 'sidecar',
+        content: '{}',
+      })
+      return folder
+    }
+
+    it('is an ordinary folder with roleplay off', () => {
+      useApplicationState().setExtension('roleplay', false)
+      const labels = mountNode(cardFolder().id)
+        .findComponent({ name: 'ContextMenu' })
+        .props('model')
+        .map(item => item.label)
+      expect(labels).not.toContain('Chat with Elara…')
+      expect(labels).not.toContain('Re-import card…')
+    })
+
     it('offers to import the card again when its sidecar is there', () => {
       const store = useDocumentsStore()
       const folder = store.createDocument({
@@ -1131,6 +1167,9 @@ describe('DocumentNode', () => {
   })
 
   describe('importing', () => {
+    beforeEach(() => useApplicationState().setExtension('roleplay', true))
+    afterEach(() => useApplicationState().resetState())
+
     /** The Import submenu's items, or undefined when the menu has none. */
     const importsOf = wrapper =>
       wrapper
@@ -1142,15 +1181,36 @@ describe('DocumentNode', () => {
       const act = api.createFolder('manuscript_story_1', 'First Act')
       const wrapper = mountNode(act.id)
       const imports = importsOf(wrapper)
-      expect(imports.map(item => item.label)).toEqual(['Files…', 'Folder…', 'Repository…'])
+      expect(imports.map(item => item.label)).toEqual([
+        'Files…',
+        'Folder…',
+        'Character card…',
+        'Repository…',
+      ])
 
       for (const item of imports) item.command()
       expect(wrapper.emitted('import')).toEqual([[act.id]])
       expect(wrapper.emitted('import-folder')).toEqual([[act.id]])
       expect(wrapper.emitted('import-repository')).toEqual([[act.id]])
 
+      // A character card is picked in the library, opened to pick for here.
+      const panel = useCardLibraryPanel()
+      expect(panel.visible.value).toBe(true)
+      expect(panel.into.value).toBe(act.id)
+      panel.close()
+
       const doc = api.createTextDocument('notes_story_1', 'Loose')
       expect(importsOf(mountNode(doc.id))).toBeUndefined()
+    })
+
+    it('offers no character card with roleplay off, or the AI', () => {
+      const act = api.createFolder('manuscript_story_1', 'First Act')
+      useApplicationState().setExtension('roleplay', false)
+      expect(importsOf(mountNode(act.id)).map(item => item.label)).not.toContain('Character card…')
+
+      useApplicationState().setExtension('roleplay', true)
+      useApplicationState().setAiEnabled(false)
+      expect(importsOf(mountNode(act.id)).map(item => item.label)).not.toContain('Character card…')
     })
 
     it('offers Google Drive in it only when the build names a Google client', () => {
@@ -1164,6 +1224,7 @@ describe('DocumentNode', () => {
         expect(imports.map(item => item.label)).toEqual([
           'Files…',
           'Folder…',
+          'Character card…',
           'Google Drive…',
           'Repository…',
         ])
@@ -1198,6 +1259,72 @@ describe('DocumentNode', () => {
       await store.updateJob(job.id, { status: 'done' })
       await wrapper.vm.$nextTick()
       expect(wrapper.find('[data-node-icon]').classes()).not.toContain('pi-spinner')
+    })
+  })
+
+  describe('with the AI switched off', () => {
+    const CHAT = 'chat_1'
+
+    beforeEach(() => {
+      clearChatsInstances()
+      useChatsStore().chats.set(CHAT, { id: CHAT, storyId: 'story_1', title: 'Chat' })
+      useApplicationState().setAiEnabled(false)
+    })
+
+    afterEach(() => useApplicationState().resetState())
+
+    const labelsOf = wrapper =>
+      wrapper
+        .findComponent({ name: 'ContextMenu' })
+        .props('model')
+        .map(item => item.label)
+        .filter(Boolean)
+
+    it('says nothing about what a chat sees, even with one open', () =>
+      onPhone(async () => {
+        const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+        useChatsStore().updateChat(CHAT, { hiddenIds: [chapter.id] })
+        const notes = api.createTextDocument('manuscript_story_1', 'Notes')
+        api.setHidden(notes.id, true)
+
+        const hidden = mountNode(chapter.id, { chatId: CHAT })
+        expect(hidden.find('span.truncate').classes()).not.toContain('opacity-60')
+        expect(labelsOf(hidden)).not.toContain('Unhide in this chat')
+        expect(labelsOf(hidden)).not.toContain('Pin to chat')
+        expect(labelsOf(hidden)).not.toContain('Hide from all chats')
+
+        const everywhere = mountNode(notes.id, { chatId: CHAT })
+        expect(everywhere.find('span.truncate').classes()).not.toContain('opacity-60')
+        expect(labelsOf(everywhere)).not.toContain('Unhide in all chats')
+      }))
+
+    it('has no toggles for the chat open', () => {
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      expect(mountNode(chapter.id, { chatId: CHAT }).find('[data-toggle]').exists()).toBe(false)
+    })
+
+    it('offers no chat with a card, and no conversion of a file', () => {
+      const store = useDocumentsStore()
+      const card = store.createDocument({
+        storyId: 'story_1',
+        parentId: 'notes_story_1',
+        type: 'folder',
+        title: 'Elara',
+        kind: 'card',
+      })
+      const file = store.createDocument({
+        storyId: 'story_1',
+        parentId: 'notes_story_1',
+        type: 'file',
+        title: 'Paper',
+        mime: 'application/pdf',
+        size: 10,
+        content: 'Some text',
+      })
+
+      expect(labelsOf(mountNode(card.id))).not.toContain('Chat with Elara…')
+      expect(labelsOf(mountNode(file.id))).not.toContain('Convert to Markdown…')
+      expect(labelsOf(mountNode(file.id))).toContain('Re-extract text')
     })
   })
 })

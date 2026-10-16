@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import Settings from '@/components/writer/settings/Settings.vue'
+import { useApplicationState } from '@/composables/useApplicationState'
 
 vi.mock('@/composables/useAIConfig', () => ({
   useAIConfig: () => ({ init: vi.fn(async () => {}) }),
@@ -17,6 +18,8 @@ const mountSettings = () =>
         SystemSection: section('system'),
         AiConfigSection: section('ai'),
         WorkflowsSection: section('workflows'),
+        SkillsSection: section('skills'),
+        ConnectionsSection: section('connections'),
         AboutSection: section('about'),
         ScrollPanel: { template: '<div><slot /></div>' },
       },
@@ -24,7 +27,10 @@ const mountSettings = () =>
   })
 
 describe('Settings', () => {
-  beforeEach(() => window.sessionStorage.clear())
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    useApplicationState().resetState()
+  })
 
   it('opens on the first section', () => {
     const wrapper = mountSettings()
@@ -46,6 +52,22 @@ describe('Settings', () => {
     expect(wrapper.find('[data-section="narration"]').exists()).toBe(false)
     // A section looked at before it went opens on the first.
     expect(wrapper.find('[data-section-pane="system"]').exists()).toBe(true)
+  })
+
+  it("has none of the AI's sections with the AI switched off, the AI settings among them", async () => {
+    window.sessionStorage.setItem('ui.settings.section', JSON.stringify('skills'))
+    useApplicationState().setAiEnabled(false)
+    const wrapper = mountSettings()
+
+    expect(
+      wrapper.findAll('[data-section]').map(button => button.attributes('data-section'))
+    ).toEqual(['system', 'about'])
+    // A section looked at before it went opens on the first.
+    expect(wrapper.find('[data-section-pane="system"]').exists()).toBe(true)
+
+    useApplicationState().setAiEnabled(true)
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[data-section-pane="skills"]').exists()).toBe(true)
   })
 
   it('keeps data and debug under System rather than sections of their own', () => {

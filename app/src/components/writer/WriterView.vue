@@ -3,6 +3,7 @@
     <!-- Mobile Layout (small screens) -->
     <div v-if="isMobile" class="flex flex-col h-full w-full">
       <MobileTopBar
+        v-if="!focused"
         :active-mobile-tab="mobileTab"
         :has-story="Boolean(currentStoryId)"
         @update:active-mobile-tab="activeMobileTab = $event"
@@ -33,7 +34,7 @@
     <!-- Desktop Layout (medium+ screens) -->
     <div v-else class="flex flex-row h-full w-full">
       <!-- Navbar -->
-      <div class="flex shrink-0">
+      <div v-if="!focused" class="flex shrink-0">
         <AppNavbar
           :layout="layout"
           :has-story="Boolean(currentStoryId)"
@@ -59,6 +60,10 @@
 
       <SettingsDialog v-model:visible="settingsVisible" />
     </div>
+
+    <!-- App-wide, over whichever layout is showing; a card picked in it goes
+         into the project open. -->
+    <CardLibraryDialog :story-id="currentStoryId" />
 
     <Welcome
       :visible="appState.showWelcomeDialog.value"
@@ -90,15 +95,20 @@ import DesktopView from './layout/DesktopView.vue'
 import NoProjectView from './layout/NoProjectView.vue'
 import Settings from './settings/Settings.vue'
 import SettingsDialog from './settings/SettingsDialog.vue'
+import CardLibraryDialog from './cards/CardLibraryDialog.vue'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import { useEditorRequest } from '@/composables/useEditorRequest.js'
+import { useChatRequest } from '@/composables/useChatRequest.js'
+import { useFocusMode, useFocusModeKeys } from '@/composables/useFocusMode.js'
 import {
   NO_PROJECT_LAYOUT,
   PANELS,
   normalizeLayout,
   selectSidebarTab,
+  keptWithoutAI,
   togglePanel as toggled,
+  withoutAI,
 } from './layout/layout.js'
 
 const route = useRoute()
@@ -132,29 +142,54 @@ const currentDocumentId = computed(() =>
   currentStoryId.value ? useDocuments(currentStoryId.value).activeDocumentId.value : ''
 )
 
+// Focus mode is the document alone, so there is nothing to be in it with no
+// project open. See useFocusMode.
+useFocusModeKeys()
+const focusMode = useFocusMode()
+const focused = computed(() => focusMode.focused.value && Boolean(currentStoryId.value))
+
 const activeMobileTab = ref('write')
+
+/** The phone's views that are the AI's, which go when it is switched off. */
+const AI_MOBILE_TABS = ['chat', 'narration']
 
 /**
  * The phone shows one thing at a time, and with no project open only the
- * settings and the writing view, which says so, are things.
+ * settings and the writing view, which says so, are things. With the AI
+ * switched off its views are not things either, and in focus mode only the
+ * writing view is.
  */
-const mobileTab = computed(() =>
-  currentStoryId.value || activeMobileTab.value === 'settings' ? activeMobileTab.value : 'write'
+const mobileTab = computed(() => {
+  const tab = activeMobileTab.value
+  if (focused.value) return 'write'
+  if (!appState.aiEnabled.value && AI_MOBILE_TABS.includes(tab)) return 'write'
+  return currentStoryId.value || tab === 'settings' ? tab : 'write'
+})
+
+/** The project's layout as it keeps it, which the AI switched off leaves alone. */
+const storedLayout = computed(() =>
+  normalizeLayout(projectViewsStore.getView(currentStoryId.value)?.layout)
 )
 
 /**
  * Which panels are showing. Read off the project's view, so each project
  * reopens the way it was left; see layout.js for the rules.
  */
-const layout = computed(() =>
-  currentStoryId.value
-    ? normalizeLayout(projectViewsStore.getView(currentStoryId.value)?.layout)
-    : NO_PROJECT_LAYOUT
-)
+const layout = computed(() => {
+  if (!currentStoryId.value) return NO_PROJECT_LAYOUT
+  return appState.aiEnabled.value ? storedLayout.value : withoutAI(storedLayout.value)
+})
 
-/** @param {import('@/types/models.js').StoryLayout} next */
+/**
+ * Keep a change to the layout in the project's view. With the AI switched
+ * off, the chat and the editor are kept as they were rather than as they
+ * show, so switching it back on brings the chat back.
+ * @param {import('@/types/models.js').StoryLayout} next
+ */
 const setLayout = next => {
-  if (currentStoryId.value) projectViewsStore.updateView(currentStoryId.value, { layout: next })
+  if (!currentStoryId.value) return
+  const kept = appState.aiEnabled.value ? next : keptWithoutAI(next, storedLayout.value)
+  projectViewsStore.updateView(currentStoryId.value, { layout: kept })
 }
 
 /** @param {import('./layout/layout.js').Panel} panel */
@@ -295,6 +330,18 @@ watch(routeStoryId, openRouteProject, { immediate: true })
 watch(currentStoryId, (storyId, previous) => {
   if (previous) useDocuments(previous).releaseTabs()
   selectedChatId.value = storyId ? sessionStorage.get(chatStorageKey()) : null
+})
+
+// A chat asked for from elsewhere, in the project it is in, shown once that
+// project is the one open: on a phone its tab, here the chat panel.
+const chatRequest = useChatRequest()
+watch([chatRequest.requested, currentStoryId], () => {
+  const chatId = currentStoryId.value && chatRequest.take(currentStoryId.value)
+  if (!chatId) return
+  if (isMobile.value) {
+    selectChat(chatId)
+    activeMobileTab.value = 'chat'
+  } else openChat(chatId)
 })
 
 /**

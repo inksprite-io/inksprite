@@ -58,6 +58,7 @@ describe('ChatProfileMenu', () => {
     clearChatsInstances()
     document.body.innerHTML = ''
     useApplicationState().resetState()
+    useApplicationState().setExtension('roleplay', true)
     chats = useChats('story_1')
   })
 

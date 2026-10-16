@@ -292,6 +292,9 @@ export const useDocuments = storyId => {
     /** @param {string} parentId */
     const walk = parentId => {
       for (const child of childrenOf(parentId)) {
+        // What is hidden from the model is no place to start either: a
+        // card's raw JSON beside its description, its prompt overrides.
+        if (child.hidden) continue
         if (child.type === 'text') return child
         const found = walk(child.id)
         if (found) return found

@@ -10,6 +10,8 @@ import {
   cellsOfRow,
   deleteEmptyTable,
   exitTable,
+  insertColumn,
+  insertRow,
   nextCell,
   nextRow,
   previousCell,
@@ -98,24 +100,17 @@ describe('Enter in a table', () => {
     expect(serializeMarkdown(state.doc)).toBe(TABLE)
   })
 
-  it('adds a row from the last', () => {
+  it('leaves the table from the last row, adding none, for a paragraph after', () => {
     const state = run(at(createEditorState(TABLE), '2'), nextRow)
-    expect(serializeMarkdown(state.doc)).toBe(`${TABLE}\n|  |  |`)
-    expect(state.selection.$head.parent.type.name).toBe('table_cell')
-    expect(state.selection.$head.index(-1)).toBe(1)
-  })
-
-  it('ends the table on an empty last row, for a paragraph after', () => {
-    const grown = run(at(createEditorState(TABLE), '2'), nextRow)
-    const state = run(grown, nextRow)
     expect(serializeMarkdown(state.doc)).toBe(TABLE)
     expect(state.doc.lastChild.type.name).toBe('paragraph')
     expect(state.selection.$head.parent).toBe(state.doc.lastChild)
   })
 
-  it('adds a row under a header with none, rather than ending the table', () => {
-    const state = run(createEditorState('|  |\n| --- |'), nextRow)
-    expect(state.doc.firstChild.childCount).toBe(2)
+  it('leaves a table that is only its header the same way', () => {
+    const state = run(createEditorState('| a |\n| --- |'), nextRow)
+    expect(state.doc.firstChild.childCount).toBe(1)
+    expect(state.selection.$head.parent).toBe(state.doc.lastChild)
   })
 
   it('is left alone outside a table', () => {
@@ -149,15 +144,45 @@ describe('Tab in a table', () => {
     expect(caretIn(run(at(createEditorState(TABLE), '1'), previousCell))).toBe('b')
   })
 
-  it('adds a row from the last cell', () => {
-    const state = run(at(createEditorState(TABLE), '2'), nextCell)
-    expect(serializeMarkdown(state.doc)).toBe(`${TABLE}\n|  |  |`)
-    expect(state.selection.$head.index(-1)).toBe(0)
+  it('stays in the last cell, adding no row', () => {
+    const state = at(createEditorState(TABLE), '2')
+    let changed = false
+    // Taken, so the key doesn't leave the editor, and nothing done with it.
+    expect(nextCell(state, () => (changed = true))).toBe(true)
+    expect(changed).toBe(false)
   })
 
   it('stays in the table from the first cell with Shift', () => {
     const state = at(createEditorState(TABLE), 'a')
     expect(previousCell(state)).toBe(true)
+  })
+})
+
+describe('inserting rows and columns', () => {
+  /** Which row and column the caret is in. */
+  const cellOf = state => [state.selection.$head.index(-2), state.selection.$head.index(-1)]
+
+  it('adds a row below or above, with the caret in it, in the same column', () => {
+    const below = run(at(createEditorState(TABLE), 'b'), insertRow('below'))
+    expect(serializeMarkdown(below.doc)).toBe('| a | b |\n| --- | --- |\n|  |  |\n| 1 | 2 |')
+    expect(cellOf(below)).toEqual([1, 1])
+    const above = run(at(createEditorState(TABLE), '2'), insertRow('above'))
+    expect(serializeMarkdown(above.doc)).toBe('| a | b |\n| --- | --- |\n|  |  |\n| 1 | 2 |')
+    expect(cellOf(above)).toEqual([1, 1])
+  })
+
+  it('adds a column right or left, with the caret in it, in the same row', () => {
+    const right = run(at(createEditorState(TABLE), '1'), insertColumn('right'))
+    expect(serializeMarkdown(right.doc)).toBe('| a |  | b |\n| --- | --- | --- |\n| 1 |  | 2 |')
+    expect(cellOf(right)).toEqual([1, 1])
+    const left = run(at(createEditorState(TABLE), 'a'), insertColumn('left'))
+    expect(serializeMarkdown(left.doc)).toBe('|  | a | b |\n| --- | --- | --- |\n|  | 1 | 2 |')
+    expect(cellOf(left)).toEqual([0, 0])
+  })
+
+  it('is left alone outside a table', () => {
+    expect(run(createEditorState('Text'), insertRow('below'))).toBeNull()
+    expect(run(createEditorState('Text'), insertColumn('left'))).toBeNull()
   })
 })
 

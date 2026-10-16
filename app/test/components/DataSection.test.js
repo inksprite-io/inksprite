@@ -8,11 +8,11 @@ import ExportDialog from '../../src/components/writer/settings/ExportDialog.vue'
 
 const { backup, confirmRequire, toast } = vi.hoisted(() => ({
   backup: {
-    downloadBackup: vi.fn(),
-    downloadSettings: vi.fn(),
+    downloadSelection: vi.fn(),
     readDataFile: vi.fn(),
     restoreBackup: vi.fn(),
     importSettings: vi.fn(),
+    importSelection: vi.fn(),
   },
   confirmRequire: vi.fn(),
   toast: { success: vi.fn(), info: vi.fn(), error: vi.fn() },
@@ -81,35 +81,29 @@ describe('DataSection', () => {
   })
 
   describe('Export', () => {
-    it('saves everything as a backup, and says where it went', async () => {
-      backup.downloadBackup.mockResolvedValue({ filename: 'inksprite-backup-2026-09-26.json' })
+    const pick = {
+      everything: false,
+      projects: [],
+      cardIds: [],
+      settings: new Set(['aiProfiles/profile_team']),
+    }
+
+    it('saves what was ticked, with keys when asked, and says where it went', async () => {
+      backup.downloadSelection.mockResolvedValue({ filename: 'inksprite-settings-2026-10-13.json' })
       const wrapper = mountSection()
 
-      await exportChosen(wrapper, { kind: 'backup', includeApiKeys: false })
+      await exportChosen(wrapper, { pick, includeApiKeys: true })
 
-      expect(backup.downloadBackup).toHaveBeenCalledWith({ includeApiKeys: false })
-      expect(backup.downloadSettings).not.toHaveBeenCalled()
-      expect(toast.success).toHaveBeenCalledWith('Saved inksprite-backup-2026-09-26.json')
-    })
-
-    it('saves the settings picked, with keys when asked', async () => {
-      backup.downloadSettings.mockResolvedValue({ filename: 'inksprite-settings-2026-10-13.json' })
-      const wrapper = mountSection()
-      const picked = new Set(['aiProfiles/profile_team'])
-
-      await exportChosen(wrapper, { kind: 'settings', picked, includeApiKeys: true })
-
-      expect(backup.downloadSettings).toHaveBeenCalledWith({ picked, includeApiKeys: true })
-      expect(backup.downloadBackup).not.toHaveBeenCalled()
+      expect(backup.downloadSelection).toHaveBeenCalledWith(pick, { includeApiKeys: true })
       expect(toast.success).toHaveBeenCalledWith('Saved inksprite-settings-2026-10-13.json')
     })
 
     it('reports an export that failed', async () => {
-      backup.downloadBackup.mockRejectedValue(new Error('quota'))
+      backup.downloadSelection.mockRejectedValue(new Error('quota'))
       vi.spyOn(console, 'error').mockImplementation(() => {})
       const wrapper = mountSection()
 
-      await exportChosen(wrapper, { kind: 'backup', includeApiKeys: false })
+      await exportChosen(wrapper, { pick, includeApiKeys: false })
 
       expect(toast.error).toHaveBeenCalledWith('Export failed: quota')
     })
@@ -216,6 +210,71 @@ describe('DataSection', () => {
 
       expect(confirmRequire).not.toHaveBeenCalled()
       expect(toast.info).toHaveBeenCalledWith('Everything in this file is here already.')
+    })
+  })
+
+  describe('Import of a selection', () => {
+    /** A selection of one project and one card, and the settings it changes. */
+    const readSelection = (changes = plan()) =>
+      backup.readDataFile.mockResolvedValue({
+        kind: 'selection',
+        backup: { app: 'inksprite', includesApiKeys: false, tables: {} },
+        selection: {
+          projects: [
+            {
+              story: { id: 'story_a' },
+              documents: [{ id: 'root_story_a', title: 'Thief' }],
+            },
+          ],
+          cards: { rows: [{ id: 'libcard_wren', title: 'Wren' }], files: [] },
+          plan: changes,
+        },
+      })
+
+    it('says what it adds and changes before importing', async () => {
+      readSelection(
+        plan({ changed: [{ key: 'settings/aiPreset', kind: 'settings', name: 'Preset in use' }] })
+      )
+      backup.importSelection.mockResolvedValue({
+        projects: ['Thief (2)'],
+        cards: [],
+        settingsChanged: true,
+      })
+      vi.stubGlobal('location', { reload: vi.fn() })
+      const wrapper = mountSection()
+
+      await pickFile(wrapper, new File(['{}'], 'inksprite-export.json'))
+
+      const asked = confirmRequire.mock.calls[0][0]
+      expect(asked.header).toBe('Import?')
+      expect(asked.message).toBe(
+        'Adds the project Thief and the character card Wren. Changes the preset in use.'
+      )
+      expect(backup.importSelection).not.toHaveBeenCalled()
+
+      await asked.accept()
+      expect(backup.importSelection).toHaveBeenCalledTimes(1)
+      // Settings went past the stores, so the page reads them again.
+      expect(window.location.reload).toHaveBeenCalled()
+      vi.unstubAllGlobals()
+    })
+
+    it('says what it added, by the names it was given, when no settings changed', async () => {
+      readSelection()
+      backup.importSelection.mockResolvedValue({
+        projects: ['Thief (2)'],
+        cards: [],
+        settingsChanged: false,
+      })
+      vi.stubGlobal('location', { reload: vi.fn() })
+      const wrapper = mountSection()
+
+      await pickFile(wrapper, new File(['{}'], 'inksprite-export.json'))
+      await confirmRequire.mock.calls[0][0].accept()
+
+      expect(window.location.reload).not.toHaveBeenCalled()
+      expect(toast.success).toHaveBeenCalledWith('Added the project Thief (2).')
+      vi.unstubAllGlobals()
     })
   })
 

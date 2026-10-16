@@ -51,6 +51,11 @@
  *     pane, shown in `SettingsDialog` on the desktop and as a tab on phones.
  *     `LibraryMoveToast` shuts the page while the desktop app's projects move
  *     into their folder or back, and says how far they are.
+ *   - `cards/` - The card library, app-wide like the settings:
+ *     `CardLibraryDialog` over the writer, opened from the rail or from a
+ *     folder's Import › Character card…, holding `CardLibrary`, a grid of
+ *     `CardTile`s with a search and the library's tags, and `CardDetail`, one
+ *     card in full. Putting a card into the project is the dialog's.
  *
  * ### Icon Components
  * - **icons/** - SVG icon components

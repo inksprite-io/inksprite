@@ -133,6 +133,7 @@ describe('ChatSettings profile', () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
     chat.value = { id: 'chat_1', storyId: 'story_1', profileId: CHAT_PROFILE_ID }
+    useApplicationState().setExtension('roleplay', true)
     library = useProfiles()
     await useChatProfileStore().ensureInitialized()
   })
@@ -142,6 +143,7 @@ describe('ChatSettings profile', () => {
     app.setNsfwProfiles(false)
     app.setChatProfileId(null)
     app.setRoleplayProfileId(null)
+    app.setExtension('roleplay', false)
   })
 
   it('shows the prompt of the profile the chat is on', async () => {

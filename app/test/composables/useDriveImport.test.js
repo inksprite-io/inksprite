@@ -107,11 +107,12 @@ describe('useDriveImport', () => {
       expect(result).toMatchObject({ documents: 2, images: 1 })
       expect(result.skipped).toEqual([{ name: 'Survey', reason: 'Google Forms can’t be exported' }])
       const [doc, sheet] = childrenOf(into.id)
-      expect(doc).toMatchObject({ title: 'Ch. 3', type: 'text' })
+      expect(doc).toMatchObject({ title: 'Ch. 3', type: 'text', drive: { id: 'doc' } })
       expect(doc.content).toContain('The gate.')
       expect(doc.content).not.toContain('base64')
       expect(doc.content).not.toContain('image1')
       expect(sheet).toMatchObject({ title: 'Mileage.csv', type: 'file', mime: 'text/csv' })
+      expect(sheet.drive).toBeUndefined()
       expect(steps).toHaveBeenCalledWith('downloading', 3, 3)
       expect(steps).toHaveBeenLastCalledWith('writing', 2, 2)
     })
@@ -149,6 +150,8 @@ describe('useDriveImport', () => {
       expect(result).toMatchObject({ documents: 2, images: 2 })
       const log = childrenOf(rootIdFor(STORY)).find(child => child.title === 'Log')
       expect(log).toMatchObject({ type: 'text', content: 'Fog at noon.' })
+      // A copy of a Word file, linked to nothing: only a Doc can be synced.
+      expect(log.drive).toBeUndefined()
     })
 
     it('skips a file Drive refuses and goes on, saying which', async () => {

@@ -50,8 +50,8 @@ import { LINK } from './welcome/links.js'
  * What a first visit opens on, laid out as the settings are: what inksprite
  * is and where it keeps the work, the AI settings to connect a provider now,
  * and the terms, which the footer says using it agrees to. The AI settings
- * aren't offered when the AI is set up already, as a settings file left by
- * a script sets it up before the first visit.
+ * aren't offered with the AI switched off, or when it is set up already, as
+ * a settings file left by a script sets it up before the first visit.
  *
  * @typedef {Object} Props
  * @property {boolean} visible - Whether the dialog is visible
@@ -87,9 +87,9 @@ const sections = computed(() => [
     component: WelcomeSection,
     props: { onShow: show, aiReady: aiReady.value },
   },
-  ...(aiReady.value
-    ? []
-    : [{ id: 'ai', label: 'AI', icon: AiNetworkIcon, component: AiConfigSection }]),
+  ...(appState.aiEnabled.value && !aiReady.value
+    ? [{ id: 'ai', label: 'AI', icon: AiNetworkIcon, component: AiConfigSection }]
+    : []),
   { id: 'terms', label: 'Terms of Service', icon: BookIcon, component: TermsSection },
 ])
 

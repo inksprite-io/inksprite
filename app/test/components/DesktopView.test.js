@@ -1,11 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import DesktopView from '@/components/writer/layout/DesktopView.vue'
-import { DEFAULT_LAYOUT } from '@/components/writer/layout/layout.js'
+import { DEFAULT_LAYOUT, withoutAI } from '@/components/writer/layout/layout.js'
+import { useApplicationState } from '@/composables/useApplicationState'
+import { useFocusMode } from '@/composables/useFocusMode.js'
 
 const isNarrow = ref(false)
 vi.mock('@/composables/useScreenSize', () => ({
@@ -41,7 +43,10 @@ describe('DesktopView', () => {
   beforeEach(() => {
     isNarrow.value = false
     window.localStorage.clear()
+    useApplicationState().resetState()
   })
+
+  afterEach(() => useFocusMode().leave())
 
   it('keeps the widths a splitter is dragged to for the next session', () => {
     const wrapper = mountView('story_a')
@@ -118,6 +123,70 @@ describe('DesktopView', () => {
     expect(wrapper.find('[data-chat]').element).toBe(chat)
     expect(panelOf('[data-chat]').style.display).toBe('')
     expect(panelOf('[data-sidebar]').style.display).toBe('none')
+  })
+
+  describe('with the AI switched off', () => {
+    const editor = {
+      props: ['storyId', 'chatShowing'],
+      template: `<div data-editor :data-chat-showing="String(chatShowing)" />`,
+    }
+    const mountWithoutAI = () => {
+      useApplicationState().setAiEnabled(false)
+      return mount(DesktopView, {
+        props: { layout: withoutAI(DEFAULT_LAYOUT), storyId: 'story_a' },
+        global: {
+          plugins: [PrimeVue],
+          stubs: { ...stubs, EditorPanel: editor },
+        },
+      })
+    }
+
+    it('has no chat at all, rather than a hidden one', () => {
+      const wrapper = mountWithoutAI()
+      expect(wrapper.find('[data-chat]').exists()).toBe(false)
+      expect(wrapper.find('[data-sidebar]').element.parentElement.style.display).toBe('')
+    })
+
+    it('gives the editor no toggle for a chat', () => {
+      const wrapper = mountWithoutAI()
+      expect(wrapper.find('[data-editor]').attributes('data-chat-showing')).toBe('null')
+    })
+  })
+
+  describe('in focus mode', () => {
+    const panelOf = (wrapper, attr) => wrapper.find(attr).element.parentElement
+
+    it('shows the editor alone, and keeps the rest for after', async () => {
+      const wrapper = mountView('story_a')
+      const chat = wrapper.find('[data-chat]').element
+
+      useFocusMode().enter()
+      await wrapper.vm.$nextTick()
+
+      expect(panelOf(wrapper, '[data-editor]').style.display).toBe('')
+      expect(panelOf(wrapper, '[data-sidebar]').style.display).toBe('none')
+      expect(panelOf(wrapper, '[data-chat]').style.display).toBe('none')
+      expect(wrapper.find('[data-chat]').element).toBe(chat)
+
+      useFocusMode().leave()
+      await wrapper.vm.$nextTick()
+
+      expect(panelOf(wrapper, '[data-sidebar]').style.display).toBe('')
+      expect(panelOf(wrapper, '[data-chat]').style.display).toBe('')
+    })
+
+    it('shows the editor in a project left on the chat alone', async () => {
+      const wrapper = mount(DesktopView, {
+        props: { layout: { ...DEFAULT_LAYOUT, editor: false }, storyId: 'story_a' },
+        global: { plugins: [PrimeVue], stubs },
+      })
+
+      useFocusMode().enter()
+      await wrapper.vm.$nextTick()
+
+      expect(panelOf(wrapper, '[data-editor]').style.display).toBe('')
+      expect(panelOf(wrapper, '[data-chat]').style.display).toBe('none')
+    })
   })
 
   describe('in a narrow window', () => {

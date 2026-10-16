@@ -11,8 +11,9 @@
  * sidebar; the editor and the chat each hide the other from a toggle at the
  * edge of their header. The sidebar's width is its own, and the editor and
  * the chat divide the rest. In a window too narrow for all three, the sidebar
- * and the chat take turns beside the editor. The rules for all of it are
- * here, as pure functions over the layout.
+ * and the chat take turns beside the editor. With the AI switched off there
+ * is no chat and no narration, and the editor is the one panel. The rules for
+ * all of it are here, as pure functions over the layout.
  */
 
 /** @typedef {import('@/types/models.js').StoryLayout} StoryLayout */
@@ -32,6 +33,11 @@ export const SIDEBAR_TABS = Object.freeze({
 })
 
 /** @typedef {typeof SIDEBAR_TABS[keyof typeof SIDEBAR_TABS]} SidebarTab */
+
+/** The lists that are the AI's, which go when it is switched off. */
+export const AI_SIDEBAR_TABS = Object.freeze(
+  /** @type {SidebarTab[]} */ ([SIDEBAR_TABS.CHATS, SIDEBAR_TABS.NARRATION])
+)
 
 /** @type {StoryLayout} */
 export const DEFAULT_LAYOUT = Object.freeze({
@@ -137,6 +143,35 @@ export function togglePanel(layout, panel) {
     next.sidebarTab = SIDEBAR_TABS.OUTLINE
   }
   return next
+}
+
+/**
+ * What of a layout there is with the AI switched off: the editor, alone
+ * beside the sidebar, and the sidebar on the outline where it was on a list
+ * of the AI's. The project's own layout is not changed by it, so switching
+ * the AI back on brings its chat back as it was.
+ *
+ * @param {StoryLayout} layout
+ * @returns {StoryLayout}
+ */
+export function withoutAI(layout) {
+  const sidebarTab = AI_SIDEBAR_TABS.includes(layout.sidebarTab)
+    ? SIDEBAR_TABS.OUTLINE
+    : layout.sidebarTab
+  return { ...layout, editor: true, chat: false, sidebarTab }
+}
+
+/**
+ * What to keep of a change made to the layout while the AI is switched off:
+ * the sidebar as the writer left it, and the chat and the editor as they were
+ * before, since they were not the writer's to change then.
+ *
+ * @param {StoryLayout} next - The change, made to what showed
+ * @param {StoryLayout} kept - The project's layout as it was
+ * @returns {StoryLayout}
+ */
+export function keptWithoutAI(next, kept) {
+  return { ...next, chat: kept.chat, editor: kept.editor }
 }
 
 /**

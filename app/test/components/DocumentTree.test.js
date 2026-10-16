@@ -1,5 +1,5 @@
 /* global File */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
@@ -11,6 +11,7 @@ import Menu from 'primevue/menu'
 import DocumentTree from '../../src/components/writer/tree/DocumentTree.vue'
 import { useDocuments, clearDocumentInstances } from '../../src/composables/useDocuments'
 import { clearChatsInstances } from '../../src/composables/useChats'
+import { useApplicationState } from '../../src/composables/useApplicationState'
 
 vi.mock('../../src/stores/db', () => ({
   default: {
@@ -164,6 +165,53 @@ describe('DocumentTree importing', () => {
     confirmed.asked = []
     api = useDocuments('story_1')
     await api.init()
+  })
+
+  describe('a character card chosen with roleplay off', () => {
+    const CARD = { spec: 'chara_card_v2', data: { name: 'Elara', first_mes: 'Well?' } }
+    const cardFile = () =>
+      new File([JSON.stringify(CARD)], 'elara.json', { type: 'application/json' })
+
+    afterEach(() => useApplicationState().resetState())
+
+    it('asks first, and imports it as a file when told to', async () => {
+      confirmed.answer = 'reject'
+      const wrapper = mountTree()
+      wrapper.findComponent({ name: 'DocumentNode' }).vm.$emit('import', api.root.value.id)
+
+      await choose(wrapper.find('input[multiple]'), [cardFile()])
+
+      expect(confirmed.asked.map(asked => asked.message)).toEqual([
+        'elara.json is a character card. Turn on Roleplay to import it as one, or import it as a file.',
+      ])
+      expect(api.childrenOf(api.root.value.id).map(child => [child.title, child.type])).toEqual([
+        ['elara.json', 'file'],
+      ])
+      expect(useApplicationState().roleplay.value).toBe(false)
+    })
+
+    it("switches roleplay on and asks the card's questions when told to", async () => {
+      const wrapper = mountTree()
+      wrapper.findComponent({ name: 'DocumentNode' }).vm.$emit('import', api.root.value.id)
+
+      await choose(wrapper.find('input[multiple]'), [cardFile()])
+
+      expect(useApplicationState().roleplay.value).toBe(true)
+      const dialog = wrapper.findComponent({ name: 'CardImportDialog' })
+      expect(dialog.props('visible')).toBe(true)
+      expect(dialog.props('found')).toMatchObject({ shape: 'card', title: 'Elara' })
+    })
+
+    it('asks nothing with the AI off, and imports it as a file', async () => {
+      useApplicationState().setAiEnabled(false)
+      const wrapper = mountTree()
+      wrapper.findComponent({ name: 'DocumentNode' }).vm.$emit('import', api.root.value.id)
+
+      await choose(wrapper.find('input[multiple]'), [cardFile()])
+
+      expect(confirmed.asked).toEqual([])
+      expect(api.childrenOf(api.root.value.id).map(child => child.type)).toEqual(['file'])
+    })
   })
 
   it('has one chooser for files together and one for a folder whole', () => {

@@ -27,6 +27,7 @@
  * - `aiPromptStore.js` - Saved system prompts, shared app-wide
  * - `skillStore.js` - The writer's own skills, each a SKILL.md and its files, handed to the skills registry as they change
  * - `mcpServerStore.js` - The writer's MCP servers: where each answers and what it offered, handed to `mcp/servers.js` as they change
+ * - `cardLibraryStore.js` - The writer's character cards, app-wide: a lean row each for browsing, and the card and its PNG beside it
  * - `syncStore.js` - Saves the stores' changes, a moment after they are made
  * - `db.js` - The Dexie (IndexedDB) schema and its migrations, read and written
  *   only through `storage/`

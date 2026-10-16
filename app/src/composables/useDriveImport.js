@@ -9,13 +9,14 @@
  * them in order and hands what came back to the bulk importer, as a batch
  * chosen from disk would be, so a Doc or a Word file is a text document and
  * a PDF a file document. A Doc's pictures are taken out first and counted,
- * and the importer counts a Word file's. See `.llm/google_docs_design.md`.
+ * and the importer counts a Word file's. A Doc's document keeps the Doc's id
+ * (`drive`), for syncing the two later. See `.llm/google_docs_design.md`.
  */
 
 import { useBulkImport } from './useBulkImport.js'
 import { driveConfig } from '@/drive/config.js'
 import { SignInLapsedError } from '@/drive/errors.js'
-import { describePicked, fetchPicked } from '@/drive/fetch.js'
+import { describePicked, fetchPicked, linkFor } from '@/drive/fetch.js'
 import { takeImages } from '@/drive/images.js'
 import { pickInBrowser, pickInPopup } from '@/drive/signIn.js'
 
@@ -89,7 +90,7 @@ export function useDriveImport(storyId) {
             file = new File([taken.markdown], file.name, { type: file.type })
           }
         }
-        gathered.push({ file, folders: [] })
+        gathered.push({ file, folders: [], drive: linkFor(picked) })
       } catch (error) {
         if (signal?.aborted || error instanceof SignInLapsedError) throw error
         skipped.push({

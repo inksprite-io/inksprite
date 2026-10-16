@@ -10,7 +10,9 @@
  * providers may serve is the other way round: it is a choice about a model —
  * the one upstream that serves it well, or the few that serve it at all — so
  * it is the preset's `allowedProviders`, beside the model it was chosen for,
- * and handed in with the request.
+ * and handed in with the request. So is the one upstream that serves this
+ * model badly: the preset's `ignoredProviders` are left out as well as the
+ * connection's, which still hold for every model.
  *
  * @see https://openrouter.ai/docs/guides/routing/provider-selection
  */
@@ -22,6 +24,16 @@
  * @property {boolean} zdr - Restrict routing to zero-data-retention endpoints.
  * @property {string[]} quantizations - Quantization levels eligible to serve. Empty = any.
  * @property {boolean} allowFallbacks - Whether OpenRouter may fall back past the allowed set.
+ */
+
+/**
+ * What a preset says of the upstreams for its model, on top of the
+ * connection's policy. A preset is one, and so is a workflow on a model of its
+ * own. Either list may come from a backup, so junk in them is dropped.
+ *
+ * @typedef {Object} ModelUpstreams
+ * @property {string[]} [allowedProviders] - The only ones that may serve the model; empty or absent allows any
+ * @property {string[]} [ignoredProviders] - Never routed to for the model, besides the connection's `ignore`
  */
 
 /**
@@ -164,7 +176,8 @@ export function isClosedWeights(model) {
  * omitted. A connection at the defaults sends the floor, because the floor is
  * not OpenRouter's default. Every filter sent is a hard one — `allow_fallbacks` lets
  * OpenRouter try the next eligible provider when the cheapest is down, never
- * one outside the filters.
+ * one outside the filters. The preset's ignored providers join the
+ * connection's in one `ignore`; neither takes the other's away.
  *
  * The quantization floor is for open weights, which any provider may serve at
  * any precision. A vendor serving its own closed model — Anthropic, OpenAI,
@@ -173,20 +186,20 @@ export function isClosedWeights(model) {
  *
  * @param {{type?: string, routing?: Partial<OpenRouterRouting>}} provider
  * @param {string} [model] - The model asked for, to tell closed weights from open
- * @param {unknown} [allowed] - The preset's `allowedProviders`: the only
- *   providers that may serve this model. Empty or absent allows any.
+ * @param {ModelUpstreams} [upstreams] - The preset's allowed and ignored providers
  * @returns {Object|undefined} The `provider` field, or undefined to omit it
  */
-export function buildProviderRouting(provider, model, allowed) {
+export function buildProviderRouting(provider, model, upstreams) {
   if (provider?.type !== 'openrouter') return undefined
 
   const routing = resolveRouting(provider.routing)
-  const only = toSlugList(allowed)
+  const only = toSlugList(upstreams?.allowedProviders)
+  const ignore = [...new Set([...routing.ignore, ...toSlugList(upstreams?.ignoredProviders)])]
 
   /** @type {Record<string, any>} */
   const field = {}
   if (only.length > 0) field.only = only
-  if (routing.ignore.length > 0) field.ignore = routing.ignore
+  if (ignore.length > 0) field.ignore = ignore
   if (routing.quantizations.length > 0 && !isClosedWeights(model)) {
     field.quantizations = routing.quantizations
   }

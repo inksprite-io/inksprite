@@ -25,7 +25,7 @@ import { useSyncStore } from './syncStore'
 import { rootNode, rootIdFor } from './migrations/projectTree.js'
 import { storage } from '@/storage/index.js'
 import { countWords } from '@/utils/wordCount.js'
-import { compareNames } from '@/utils/compareNames.js'
+import { orderSiblings } from '@/utils/siblingOrder.js'
 
 /** @typedef {import('../types/models.js').Document} Document */
 /** @typedef {import('../types/models.js').RepositorySource} RepositorySource */
@@ -113,31 +113,15 @@ export const useDocumentsStore = defineStore('documents', () => {
   }
 
   /**
-   * Get the children of a parent in display order.
-   *
-   * An ordered folder sorts by `order`; anything else sorts the way a file
-   * explorer does, folders first and then by title, numbers by value. A document nobody has
-   * named sorts as the "Untitled" it reads as, rather than as an empty title
-   * ahead of everything. A folder switched to names keeps the order it had in
-   * `handOrder`; see `setOrdered` in `useDocuments`.
+   * Get the children of a parent in display order: see `orderSiblings`. A
+   * folder switched to names keeps the order it had in `handOrder`; see
+   * `setOrdered` in `useDocuments`.
    *
    * @param {string} parentId
    * @returns {Document[]}
    */
   function getChildrenOrdered(parentId) {
-    const children = getChildren(parentId).slice()
-    // Stable tiebreak so equal keys don't shuffle between renders.
-    const byId = (/** @type {Document} */ a, /** @type {Document} */ b) =>
-      a.id > b.id ? 1 : a.id < b.id ? -1 : 0
-
-    if (documents.value.get(parentId)?.ordered) {
-      return children.sort((a, b) => a.order - b.order || byId(a, b))
-    }
-    const named = (/** @type {Document} */ document) => document.title?.trim() || 'Untitled'
-    const folder = (/** @type {Document} */ document) => (document.type === 'folder' ? 0 : 1)
-    return children.sort(
-      (a, b) => folder(a) - folder(b) || compareNames(named(a), named(b)) || byId(a, b)
-    )
+    return orderSiblings(getChildren(parentId).slice(), documents.value.get(parentId)?.ordered)
   }
 
   /**
@@ -181,6 +165,8 @@ export const useDocumentsStore = defineStore('documents', () => {
    * @param {number} [opts.size] - Files only: bytes
    * @param {number} [opts.pages] - Files only: how many pages, when the format has them
    * @param {RepositorySource} [opts.source] - Repository folders only: where its code was read from
+   * @param {import('../types/models.js').DriveLink} [opts.drive] - Text documents only: the
+   *   Google Doc it was imported from
    * @returns {Document}
    * @throws {Error} If storyId or parentId is missing
    */
@@ -201,6 +187,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     size,
     pages,
     source,
+    drive,
   }) {
     if (!storyId) throw new Error('Story ID is required to create a document')
     if (!parentId) throw new Error('Parent ID is required to create a document')
@@ -230,6 +217,7 @@ export const useDocumentsStore = defineStore('documents', () => {
       ...(isFile && typeof size === 'number' ? { size } : {}),
       ...(isFile && typeof pages === 'number' ? { pages } : {}),
       ...(isFolder && source ? { source } : {}),
+      ...(type === 'text' && drive ? { drive } : {}),
       version: 1,
       created: Date.now(),
       updated: Date.now(),

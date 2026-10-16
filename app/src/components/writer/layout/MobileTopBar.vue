@@ -3,7 +3,7 @@
     class="flex bg-surface-200 dark:bg-surface-700 shrink-0 select-none border-b border-surface-300 dark:border-surface-600"
   >
     <button
-      v-for="tab in TABS"
+      v-for="tab in tabs"
       :key="tab.id"
       type="button"
       :class="[
@@ -90,13 +90,18 @@ import CommentIcon from '@/components/icons/CommentIcon.vue'
 import SettingsIcon from '@/components/icons/SettingsIcon.vue'
 import SpeakerIcon from '@/components/icons/SpeakerIcon.vue'
 import InProcessIcon from '@/components/icons/InProcessIcon.vue'
+import CardsIcon from '@/components/icons/CardsIcon.vue'
 import { useJobsStore } from '@/stores/jobsStore.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
+import { useApplicationState } from '@/composables/useApplicationState'
+import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
 
 /**
  * The phone's tab bar: the writing, the outline and the chat, one view at a
- * time, and a menu of everything else — the narration, the comments, the
- * jobs toast while there are jobs, and the settings.
+ * time, and a menu of everything else — the card library while roleplay is
+ * on, the narration, the comments, the jobs toast while there are jobs, and
+ * the settings. With the AI switched off, the chat, the narration and the
+ * cards are not there.
  *
  * @typedef {Object} Props
  * @property {string} activeMobileTab
@@ -118,6 +123,8 @@ const emit = defineEmits(['update:activeMobileTab'])
 
 const jobsStore = useJobsStore()
 const jobsToast = useJobsToast()
+const { aiEnabled, roleplay } = useApplicationState()
+const { open: openCardLibrary } = useCardLibraryPanel()
 
 /** @type {import('vue').Ref<{toggle: (event: Event) => void}|null>} */
 const menu = ref(null)
@@ -129,11 +136,11 @@ const BUTTON =
 
 const PRESSED = 'bg-surface-300 dark:bg-surface-500'
 
-const TABS = [
-  { id: 'write', label: 'Write', icon: PenIcon, needsStory: false },
-  { id: 'outline', label: 'Outline', icon: StoryboardIcon, needsStory: true },
-  { id: 'chat', label: 'Chat', icon: ChatBubbleIcon, needsStory: true },
-]
+const WRITE = { id: 'write', label: 'Write', icon: PenIcon, needsStory: false }
+const OUTLINE = { id: 'outline', label: 'Outline', icon: StoryboardIcon, needsStory: true }
+const CHAT = { id: 'chat', label: 'Chat', icon: ChatBubbleIcon, needsStory: true }
+
+const tabs = computed(() => (aiEnabled.value ? [WRITE, OUTLINE, CHAT] : [WRITE, OUTLINE]))
 
 const NARRATION = { id: 'narration', label: 'Narration', icon: SpeakerIcon, needsStory: true }
 const COMMENTS = { id: 'comments', label: 'Comments', icon: CommentIcon, needsStory: true }
@@ -158,7 +165,19 @@ const viewItem = tab => ({
 // The jobs just before the settings, as on the rail, and only while there are
 // any: not a view but the jobs toast, which this opens and closes.
 const items = computed(() => [
-  viewItem(NARRATION),
+  // The card library, a window of its own, first: it is under the chats on
+  // the rail.
+  ...(roleplay.value
+    ? [
+        {
+          id: 'cards',
+          label: 'Character cards',
+          iconComponent: CardsIcon,
+          command: () => openCardLibrary(),
+        },
+      ]
+    : []),
+  ...(aiEnabled.value ? [viewItem(NARRATION)] : []),
   viewItem(COMMENTS),
   ...(jobsStore.hasJobs
     ? [

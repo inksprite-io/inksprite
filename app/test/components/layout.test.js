@@ -11,7 +11,9 @@ import {
   normalizeLayout,
   selectSidebarTab,
   shownLayout,
+  keptWithoutAI,
   togglePanel,
+  withoutAI,
 } from '@/components/writer/layout/layout.js'
 
 describe('normalizeLayout', () => {
@@ -126,6 +128,38 @@ describe('with no project open', () => {
   it('shows no list and nothing to chat in', () => {
     expect(NO_PROJECT_LAYOUT.sidebar).toBe(false)
     expect(NO_PROJECT_LAYOUT.chat).toBe(false)
+  })
+})
+
+describe('with the AI switched off', () => {
+  it('shows the editor alone beside the sidebar', () => {
+    expect(withoutAI(DEFAULT_LAYOUT)).toEqual({ ...DEFAULT_LAYOUT, chat: false })
+    expect(withoutAI({ ...DEFAULT_LAYOUT, editor: false })).toEqual({
+      ...DEFAULT_LAYOUT,
+      chat: false,
+    })
+  })
+
+  it("puts the sidebar on the outline in place of the AI's lists", () => {
+    expect(withoutAI({ ...DEFAULT_LAYOUT, sidebarTab: 'chats' }).sidebarTab).toBe('outline')
+    expect(withoutAI({ ...DEFAULT_LAYOUT, sidebarTab: 'narration' }).sidebarTab).toBe('outline')
+    expect(withoutAI({ ...DEFAULT_LAYOUT, sidebarTab: 'comments' }).sidebarTab).toBe('comments')
+  })
+
+  it('leaves the sidebar shown or hidden, and the layout given as it was', () => {
+    const hidden = { ...DEFAULT_LAYOUT, sidebar: false, sidebarTab: 'chats' }
+    expect(withoutAI(hidden).sidebar).toBe(false)
+    expect(hidden).toEqual({ ...DEFAULT_LAYOUT, sidebar: false, sidebarTab: 'chats' })
+  })
+
+  it('keeps the sidebar as the writer leaves it, and the chat and the editor as they were', () => {
+    const chatAlone = { ...DEFAULT_LAYOUT, editor: false, sidebarTab: 'chats' }
+    const shown = withoutAI(chatAlone)
+
+    // The outline picked again, which hides the sidebar.
+    const kept = keptWithoutAI(selectSidebarTab(shown, 'outline'), chatAlone)
+
+    expect(kept).toEqual({ ...chatAlone, sidebar: false, sidebarTab: 'outline' })
   })
 })
 

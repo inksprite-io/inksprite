@@ -6,14 +6,15 @@
  *
  * A table is made the way the rest of the document is, by typing its
  * markdown: `| Name | Age |` and Enter becomes a table with that header and an
- * empty row under it. Inside one, Tab and Shift-Tab go from cell to cell, and
- * Tab from the last cell adds a row. Enter goes down a row, adding one at the
- * bottom; on an empty last row it ends the table there, as Enter on an empty
- * list item ends the list. Shift-Enter and Mod-Enter leave the table for a
- * paragraph after it, as they leave a code block. Backspace on the whole
- * table empties its cells, and on an empty one deletes it. Rows, columns, and
- * the table itself are added and taken away from a menu, with
- * `prosemirror-tables`' own commands, and a column is aligned with
+ * empty row under it; or from the editor's menu (`editor/insert`). Inside one,
+ * Tab and Shift-Tab go from cell to cell, stopping at the first and the last.
+ * Enter goes down a row, and from the last row leaves the table for a
+ * paragraph after it, as Shift-Enter and Mod-Enter do from any cell, and as
+ * they leave a code block. No key adds a row or a column: the editor's menu
+ * does, with `insertRow` and `insertColumn`, which put the caret in what they
+ * add. Backspace on the whole table empties its cells, and on an empty one
+ * deletes it. Rows, columns, and the table itself are taken away from the
+ * menu with `prosemirror-tables`' own commands, and a column is aligned with
  * `alignColumn`.
  *
  * The rest is `prosemirror-tables` too: selecting cells, pasting cells, and
@@ -26,6 +27,7 @@ import { Slice } from 'prosemirror-model'
 import {
   CellSelection,
   TableMap,
+  addColumn,
   addRow,
   findTable,
   goToNextCell,
@@ -135,32 +137,61 @@ export const tableFromRow = (state, dispatch) => {
 }
 
 /**
- * Enter in a table: down a row, keeping the column, with a row added at the
- * bottom. An empty last row, below the header, ends the table: it goes, and
- * the caret goes to a paragraph after.
+ * Enter in a table: down a row, keeping the column. From the last row it
+ * leaves the table for a paragraph after it.
  *
  * @type {Command}
  */
 export const nextRow = (state, dispatch) => {
   if (!isInTable(state)) return false
   const rect = selectedRect(state)
-  const { map, table: grid, tableStart } = rect
-
+  const { map, tableStart } = rect
+  if (rect.bottom >= map.height) return exitTable(state, dispatch)
   if (dispatch) {
-    const tr = state.tr
-    const last = grid.child(map.height - 1)
-    if (rect.bottom < map.height) {
-      intoCell(tr, tableStart + map.map[rect.bottom * map.width + rect.left])
-    } else if (map.height > 1 && rect.top === map.height - 1 && last.textContent === '') {
-      const end = tableStart + grid.content.size
-      tr.delete(end - last.nodeSize, end)
-      paragraphAfter(tr, tableStart - 1 + grid.nodeSize - last.nodeSize)
-    } else {
-      addRow(tr, rect, map.height)
-      const grown = TableMap.get(tr.doc.nodeAt(tableStart - 1))
-      intoCell(tr, tableStart + grown.map[(grown.height - 1) * grown.width + rect.left])
-    }
-    dispatch(tr.scrollIntoView())
+    const below = tableStart + map.map[rect.bottom * map.width + rect.left]
+    dispatch(intoCell(state.tr, below).scrollIntoView())
+  }
+  return true
+}
+
+/**
+ * A row added above or below the caret's, with the caret in it, in the same
+ * column.
+ *
+ * @param {'above'|'below'} side
+ * @returns {Command}
+ */
+export const insertRow = side => (state, dispatch) => {
+  if (!isInTable(state)) return false
+  if (dispatch) {
+    const rect = selectedRect(state)
+    const row = side === 'above' ? rect.top : rect.bottom
+    const tr = addRow(state.tr, rect, row)
+    const grown = TableMap.get(tr.doc.nodeAt(rect.tableStart - 1))
+    dispatch(
+      intoCell(tr, rect.tableStart + grown.map[row * grown.width + rect.left]).scrollIntoView()
+    )
+  }
+  return true
+}
+
+/**
+ * A column added left or right of the caret's, with the caret in it, in the
+ * same row.
+ *
+ * @param {'left'|'right'} side
+ * @returns {Command}
+ */
+export const insertColumn = side => (state, dispatch) => {
+  if (!isInTable(state)) return false
+  if (dispatch) {
+    const rect = selectedRect(state)
+    const column = side === 'left' ? rect.left : rect.right
+    const tr = addColumn(state.tr, rect, column)
+    const grown = TableMap.get(tr.doc.nodeAt(rect.tableStart - 1))
+    dispatch(
+      intoCell(tr, rect.tableStart + grown.map[rect.top * grown.width + column]).scrollIntoView()
+    )
   }
   return true
 }
@@ -208,21 +239,14 @@ export const deleteEmptyTable = (state, dispatch) => {
 }
 
 /**
- * Tab in a table: the next cell, or a new row from the last.
+ * Tab in a table: the next cell, and nowhere from the last, so that the key
+ * does not take the caret out of the editor.
  *
  * @type {Command}
  */
 export const nextCell = (state, dispatch) => {
   if (!isInTable(state)) return false
-  if (goToNextCell(1)(state, dispatch)) return true
-  if (dispatch) {
-    const rect = selectedRect(state)
-    const tr = addRow(state.tr, rect, rect.map.height)
-    const grown = TableMap.get(tr.doc.nodeAt(rect.tableStart - 1))
-    dispatch(
-      intoCell(tr, rect.tableStart + grown.map[(grown.height - 1) * grown.width]).scrollIntoView()
-    )
-  }
+  goToNextCell(1)(state, dispatch)
   return true
 }
 

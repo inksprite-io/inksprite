@@ -207,19 +207,26 @@ describe('useAIConfig presets', () => {
       expect(aiConfig.getPreset(source.id).generationOverrides).toEqual({ maxTokens: 512 })
     })
 
-    it('copies the providers allowed for the model, and keeps them its own', () => {
+    it('copies the providers allowed and ignored for the model, and keeps them its own', () => {
       const source = aiConfig.activeAIPreset.value
-      aiConfig.updatePreset(source.id, { allowedProviders: ['deepinfra'] })
+      aiConfig.updatePreset(source.id, {
+        allowedProviders: ['deepinfra'],
+        ignoredProviders: ['novita'],
+      })
 
       const made = aiConfig.createPreset('Another')
       expect(made.allowedProviders).toEqual(['deepinfra'])
+      expect(made.ignoredProviders).toEqual(['novita'])
 
-      aiConfig.updatePreset(made.id, { allowedProviders: undefined })
+      aiConfig.updatePreset(made.id, { allowedProviders: undefined, ignoredProviders: undefined })
       expect(aiConfig.getPreset(source.id).allowedProviders).toEqual(['deepinfra'])
+      expect(aiConfig.getPreset(source.id).ignoredProviders).toEqual(['novita'])
     })
 
-    it('leaves the field off a copy of a preset that allows any provider', () => {
-      expect(aiConfig.createPreset('Another')).not.toHaveProperty('allowedProviders')
+    it('leaves the fields off a copy of a preset that allows any provider and ignores none', () => {
+      const made = aiConfig.createPreset('Another')
+      expect(made).not.toHaveProperty('allowedProviders')
+      expect(made).not.toHaveProperty('ignoredProviders')
     })
   })
 

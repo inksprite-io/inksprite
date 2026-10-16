@@ -141,6 +141,8 @@ import { driveAvailable } from '@/drive/config.js'
 import { mayHoldProject, packageOfFolder, packageOfZip } from '@/scrivener/package.js'
 import { openProject, writeProject } from '@/scrivener/project.js'
 import { useStoriesStore } from '@/stores/storiesStore'
+import { useApplicationState } from '@/composables/useApplicationState'
+import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
 
 const props = defineProps({
   storyId: { type: String, required: true },
@@ -181,6 +183,8 @@ const isDragging = ref(false)
 const showProjectDialog = ref(false)
 
 const cards = useCardImport(props.storyId)
+const { aiEnabled, roleplay, setExtension } = useApplicationState()
+const { open: openCardLibrary } = useCardLibraryPanel()
 const bulk = useBulkImport(props.storyId)
 const cardChats = useCardChat(props.storyId)
 /** @type {import('vue').Ref<any>} */
@@ -297,9 +301,20 @@ const readChosenCard = async event => {
   const file = files[0]
   const scrivener = await scrivenerIn([{ file, folders: [] }])
   if (scrivener) return importScrivener(scrivener, importInto.value)
+  await readOne(file)
+}
 
+/**
+ * One file chosen alone: looked at, and asked about when there is something
+ * to ask.
+ *
+ * @param {File} file
+ */
+const readOne = async file => {
   try {
     const it = await cards.inspect(file)
+    // With the AI off there is no roleplay to switch on, and a card is a file.
+    if (it.holds && aiEnabled.value) return offerRoleplay(file, it)
     // A card has questions only askable now; a document has none, and a dialog
     // that asks nothing is a click for its own sake.
     if (it.asks) {
@@ -318,6 +333,33 @@ const readChosenCard = async event => {
       life: 6000,
     })
   }
+}
+
+/**
+ * A card or a lorebook chosen with roleplay off, which would be read as a
+ * file: imported as one, or, with roleplay switched on, as what it is.
+ * Closing the question imports it as a file, as declining does.
+ *
+ * @param {File} file
+ * @param {import('@/composables/useCardImport.js').Found} asFile - It, read as a file
+ */
+const offerRoleplay = (file, asFile) => {
+  const what = asFile.holds === 'card' ? 'a character card' : 'a lorebook'
+  confirm.require({
+    header: 'Turn on Roleplay?',
+    message: `${file.name} is ${what}. Turn on Roleplay to import it as one, or import it as a file.`,
+    icon: 'pi pi-id-card',
+    rejectProps: { label: 'Import as a file', severity: 'secondary', outlined: true },
+    acceptProps: { label: 'Turn on Roleplay' },
+    accept: () => {
+      setExtension('roleplay', true)
+      readOne(file)
+    },
+    reject: () => {
+      found.value = asFile
+      importCard({})
+    },
+  })
 }
 
 /**
@@ -584,6 +626,7 @@ const importMenuItems = computed(() => {
   return importItems({
     files: () => chooseCard(id),
     folder: () => chooseFolder(id),
+    card: roleplay.value ? () => openCardLibrary({ into: id }) : null,
     drive: () => openDriveDialog(id),
     repository: () => openRepositoryDialog(id, null),
   })

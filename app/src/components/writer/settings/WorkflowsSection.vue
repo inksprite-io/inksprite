@@ -13,11 +13,11 @@
         :selected-model-id="settings.model"
         @update:selected-model-id="pick({ model: $event })"
       />
-      <AiAllowedProviders
+      <AiModelUpstreams
         v-if="routesProviders"
-        :model-value="settings.allowedProviders"
+        :upstreams="settings"
         :model="settings.model || ''"
-        @update:model-value="pick({ allowedProviders: $event })"
+        @update="pick"
       />
       <div v-if="effortOptions.length > 1" class="flex flex-col gap-1">
         <SettingLabel label="Reasoning effort" />
@@ -58,7 +58,7 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import SettingLabel from '@/components/common/SettingLabel.vue'
 import AiModelSelector from './ai/AiModelSelector.vue'
 import AiProviderSelector from './ai/AiProviderSelector.vue'
-import AiAllowedProviders from './ai/AiAllowedProviders.vue'
+import AiModelUpstreams from './ai/AiModelUpstreams.vue'
 import { AI_DEFAULTS, REASONING_EFFORT_OPTIONS, resolveAISettings } from '@/ai/defaults.js'
 import { fitEffort } from '@/ai/capabilities.js'
 import { useAIConfig } from '@/composables/useAIConfig'
@@ -66,11 +66,12 @@ import { useApplicationState } from '@/composables/useApplicationState'
 import { useModelCapabilities } from '@/composables/useModelCapabilities'
 
 /**
- * Which provider, model, allowed providers and reasoning effort each workflow
- * runs on, apart from the chat's. Laid out like the AI section, with the same controls, so the
- * two read alike. A workflow takes what it has not been given from the active
- * preset the first time this opens — provider and model with the providers
- * allowed to serve it, and the preset's effort — and is its own from then on.
+ * Which provider, model, allowed and ignored providers and reasoning effort
+ * each workflow runs on, apart from the chat's. Laid out like the AI section,
+ * with the same controls, so the two read alike. A workflow takes what it has
+ * not been given from the active preset the first time this opens — provider
+ * and model with the providers allowed and ignored for it, and the preset's
+ * effort — and is its own from then on.
  */
 
 const aiConfig = useAIConfig()
@@ -104,8 +105,9 @@ onMounted(() => {
   if (!settings.value.providerId && preset.providerId) {
     patch.providerId = preset.providerId
     patch.model = preset.model || null
-    // The providers allowed to serve that model come with it.
+    // The providers allowed and ignored for that model come with it.
     if (preset.allowedProviders?.length) patch.allowedProviders = [...preset.allowedProviders]
+    if (preset.ignoredProviders?.length) patch.ignoredProviders = [...preset.ignoredProviders]
   }
   // Unset, a request asks for the app's default effort; the preset's is what
   // the writer chose, and what the menu should start from.

@@ -433,14 +433,26 @@ export async function features(ui, { standIn, context }) {
   // A table
   await write(inside('World'), 'Coinage and Trade', ['| Coin | Metal | Worth |'])
   await page.keyboard.press('Enter')
-  for (const cell of ['Crown', 'Gold', 'Five shillings', 'Groat', 'Silver', 'Four pence']) {
-    await page.keyboard.insertText(cell)
-    await page.keyboard.press('Tab')
+  /** @param {string[]} cells */
+  const fill = async cells => {
+    for (const [i, cell] of cells.entries()) {
+      if (i > 0) await page.keyboard.press('Tab')
+      await page.keyboard.insertText(cell)
+    }
   }
-  await page.keyboard.press('Backspace')
+  await fill(['Crown', 'Gold', 'Five shillings'])
+  // No key adds a row: the menu does, and leaves the caret in it.
+  await ui.click(page.locator('.ProseMirror td').filter({ hasText: 'Crown' }), { button: 'right' })
+  await ui.hover(page.getByRole('menuitem', { name: 'Table', exact: true }))
+  await ui.pause(300)
+  await ui.click(menu('Insert row below'))
+  await fill(['Groat', 'Silver', 'Four pence'])
   await ui.click(page.locator('.ProseMirror td').filter({ hasText: 'Four pence' }), {
     button: 'right',
   })
+  // Exactly, or Delete table in its submenu is a Table too.
+  await ui.hover(page.getByRole('menuitem', { name: 'Table', exact: true }))
+  await ui.pause(300)
   await ui.hover(menu('Align column'))
   await ui.pause(300)
   await ui.shot('editor-table-menu')
