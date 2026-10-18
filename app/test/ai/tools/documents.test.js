@@ -948,9 +948,13 @@ describe('document tools', () => {
 
     it("keeps the writer's comments on what the new body still says, and names the rest", async () => {
       await seed()
+      const post = text => ({ author: 'writer', text, created: 1 })
       store.updateDocument('lore_1', {
-        content:
-          '{==A knight==}{>>c1abcd: Which order?<<} of the {==north==}{>>c2abcd: Too cold?<<}.',
+        content: '{==A knight==}{>>c1abcd<<} of the {==north==}{>>c2abcd<<}.',
+        comments: {
+          c1abcd: { status: 'open', quote: 'A knight', posts: [post('Which order?')] },
+          c2abcd: { status: 'open', quote: 'north', posts: [post('Too cold?')] },
+        },
       })
 
       const result = await executeUpdateDocument(
@@ -959,9 +963,10 @@ describe('document tools', () => {
       )
 
       expect(store.getDocument('lore_1').content).toBe(
-        '{==A knight==}{>>c1abcd: Which order?<<} of the south, and proud of it.'
+        '{==A knight==}{>>c1abcd<<} of the south, and proud of it.'
       )
       expect(result.resolvedComments).toEqual([{ id: 'c2abcd', comment: 'Too cold?' }])
+      expect(store.getDocument('lore_1').comments.c2abcd.status).toBe('resolved')
     })
 
     it('refuses to put content in a folder', async () => {

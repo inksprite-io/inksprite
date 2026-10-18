@@ -7,8 +7,8 @@ import Clip from '../../components/Clip.astro';
 import Screenshot from '../../components/Screenshot.astro';
 
 A comment is a note on a passage: a reminder to yourself, or something for the
-model to fix. The model sees your comments in the text, and can work through
-them for you.
+model to fix. The model sees your comments, can work through them for you,
+answer them, and leave comments of its own.
 
 ## Leave a comment
 
@@ -16,61 +16,92 @@ them for you.
 2. Click **Comment** under the selection, right-click it and choose
    **Comment…**, or press <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>M</kbd>
    (<kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>M</kbd> on Windows and Linux).
-3. Type the comment and press <kbd>Enter</kbd>.
+3. The **Comments** tab opens beside the text, with a new comment in its
+   place among the document's, by where the passage is. Type it and press
+   <kbd>Enter</kbd>.
 
-<kbd>Shift</kbd> <kbd>Enter</kbd> starts a new line in the comment.
-<kbd>Esc</kbd> or the cross (**Cancel**) puts it away unsaved.
+The passage stays tinted while you write. <kbd>Shift</kbd> <kbd>Enter</kbd>
+starts a new line in the comment, and <kbd>Esc</kbd> or the cross
+(**Cancel**) puts it away unsaved.
 
 The passage is highlighted in yellow. Hover over it to read the comment.
 
+Comments can overlap. Where they do, the yellow is deeper, hovering shows
+each comment, and clicking picks the one on fewer words.
+
 <Clip name="research-comment" label="Selecting a passage and commenting on it" />
 
-## Edit or resolve one
+## Reply, edit or resolve
 
-Click in a highlighted passage. The comment shows under the line, with two
-buttons:
+A comment is read and answered in the **Comments** tab: the passage at the
+top with the tick (**Resolve**), then everything said on it, each under the
+name of who wrote it, **You** or **Assistant**. Click in a highlighted passage
+and its comment is picked in the tab, ringed, with a field to reply.
+<kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>M</kbd> in the passage, or **Reply to
+comment…** in its right-click menu, opens the tab there with the field
+ready.
 
-- The pencil (**Edit comment**) opens it to change. <kbd>⌘</kbd> <kbd>⇧</kbd>
-  <kbd>M</kbd> in the passage does the same. Press <kbd>Enter</kbd> or click
-  the tick (**Save**) to keep the change.
-- The tick (**Resolve**) takes the comment off and leaves the passage as it
-  is. That's also how you delete one.
+- Type in the field and press <kbd>Enter</kbd> to reply.
+- Hover over something said and click its dots for **Edit** (anything you
+  said) and **Delete**. Deleting the first one deletes the comment; deleting
+  a reply deletes just that reply.
+- The tick (**Resolve**) takes the comment off the passage and leaves the
+  passage as it is. The comment is kept with the resolved ones in the
+  Comments tab.
 
 <kbd>⌘</kbd> <kbd>Z</kbd> (<kbd>Ctrl</kbd> <kbd>Z</kbd> on Windows and Linux)
-brings back a comment you resolved in the editor.
-Delete a commented passage and its comment goes with it.
+brings back a comment you resolved in the editor. It doesn't take back a
+comment you've just made, or one you deleted.
+
+Delete a commented passage and its comment stays in the Comments tab, struck
+through, until you resolve it. <kbd>⌘</kbd> <kbd>Z</kbd> brings the passage
+back with its comment on it.
 
 A comment hides while you type in its passage, and shows again when you move
 the caret.
 
 ## The Comments tab
 
-Click **Comments** among the icons at the far left. It lists every comment in
-the project, under the document each is in, in the outline's order. Each shows
-the passage and the comment, a long one cut to a few lines.
+Click **Comments** among the icons at the far left. It lists every open
+comment in the project, under the document each is in, in the outline's order.
+Each shows the passage and everything that's been said on it. A comment whose passage was deleted comes after the others, its
+passage struck through.
 
-- Click a comment to open its document at the passage and see all of it.
+- Click a comment to open its document at the passage and reply under it.
+  Putting the caret in a commented passage picks its comment in the list the
+  same way.
 - Click a document's name to open it.
-- Click the tick on a comment to resolve it. In a document that isn't open in
-  a tab, that can't be undone.
+- Click the tick on a comment to resolve it, or the dots on something said to
+  edit or delete it.
 
 The comment you picked, or the one the caret is in, is ringed in the list.
+
+The clock at the top (**Show resolved comments**) lists the resolved ones too.
+The circular arrow (**Reopen**) in place of the tick puts one back on its
+passage, if its words are still in the text, and **Delete** on its first
+post's dots deletes it for good.
 
 <Screenshot name="research-comments" alt="The Comments tab with three comments on a design doc, one of them marked in the text" />
 
 ## In the text
 
-A comment is kept in the document's text, in a form called CriticMarkup. You
-see it in the [plain text editor](/editor/#the-plain-text-editor) and in a
-downloaded document:
+Where a comment is on the passage is kept in the document's text, in a form
+called CriticMarkup. You see it in the
+[plain text editor](/editor/#the-plain-text-editor) and in a downloaded
+document:
 
 ```
-{==Make incoming changes visible.==}{>>k7m2qa: Out of scope for the first version. Move it to a Later section at the end.<<}
+{==Make incoming changes visible.==}{>>k7m2qa<<}
 ```
 
-`{==…==}` holds the passage and `{>>…<<}` the comment, after the id the model
-names it by. A new line in a comment is written `<br>`. The plain text editor
-has no **Comment** button: there, a comment is its markup.
+`{==…==}` holds the passage and `{>>…<<}` the comment's id. A comment on
+words inside another's sits inside its markup. Where two only partly overlap,
+one of them is written in two pieces with the same id.
+
+What was said, by
+whom, and the replies are kept with the document, apart from its text: in the
+desktop app, at the top of the document's file. The plain text editor has no
+**Comment** button: there, a comment is its markup.
 
 ## On a phone
 
@@ -78,8 +109,8 @@ Select some text, and a **Comment** button comes up in a bar at the bottom of
 the screen. Tap it, type the comment and tap the tick. On a touch screen,
 Return starts a new line.
 
-Tap in a highlighted passage to see its comment in the same bar, with the
-pencil and the tick.
+Tap in a highlighted passage to see its comment in the same bar, and tap the
+comment to reply.
 
 **Comments** is in the **⋯** menu on the top bar. Pick a comment there to go
 to it in the editor.
@@ -87,16 +118,24 @@ to it in the editor.
 ## Ask the model
 
 In a chat with the **Documents** tools on, as on the **Default** profile, the
-model sees your comments when it reads a document, and a listing of the
-project says how many each document has. Ask it to deal with them, and it:
+model sees the open comments when it reads a document, after the text, and a
+listing of the project says how many each document has. Ask it to deal with
+them, and it:
 
 - lists them, to find them all
 - rewrites a passage to answer its comment, which resolves the comment
-- resolves a comment that needs no change, or that it answered in the chat
+- replies to a comment, under it, to say what it did or to ask what you meant
+- resolves a comment that needs no change, or that it has answered
 
 Any change to a passage's words resolves its comment. When the model rewrites
-a whole document, a comment stays if its words are still there unchanged. If some comments are notes to yourself, say
-which ones are for the model.
+a whole document, a comment stays if its words are still there unchanged. A
+resolved comment is kept, so **Reopen** brings back a note to yourself that
+the model rewrote. If some comments are notes to yourself, say which ones are
+for the model.
+
+The model also leaves comments of its own: ask for notes on a chapter and it
+puts each where it belongs, and it marks a gap it couldn't fill in what it
+writes.
 
 ### An example
 
@@ -107,7 +146,7 @@ design doc, the ones in the Comments tab above, then asks in the chat:
 > one when it's done.
 
 The model lists the comments, edits the doc for each, and says what it did.
-All three are resolved, and the Comments tab is empty. Click the tool calls
+All three are resolved, and the Comments tab has none open. Click the tool calls
 above its reply to see each change it made.
 
 <Screenshot name="research-revised" alt="The design doc after the model worked through the comments, with its reply in the chat" />

@@ -238,6 +238,9 @@ export async function openBrowser({
     locale: 'en-US',
     timezoneId: 'UTC',
     storageState,
+    // A built app's service worker would answer requests that the routes
+    // below never see.
+    serviceWorkers: 'block',
   })
   // The clock runs, from a morning of our choosing; a walkthrough sets it
   // again before a step whose time shows, so it reads the same on every run.

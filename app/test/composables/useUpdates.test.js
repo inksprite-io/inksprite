@@ -5,6 +5,13 @@ import { mount } from '@vue/test-utils'
 const updates = vi.hoisted(() => ({ downloadUpdate: vi.fn(), installUpdate: vi.fn() }))
 vi.mock('@/platform/updates.js', () => updates)
 
+const serviceWorker = vi.hoisted(() => ({
+  registerServiceWorker: vi.fn(),
+  lookForBuild: vi.fn(),
+  reloadIntoBuild: vi.fn(),
+}))
+vi.mock('@/platform/serviceWorker.js', () => serviceWorker)
+
 const toast = vi.hoisted(() => ({ action: vi.fn(), error: vi.fn() }))
 vi.mock('@/composables/useToast.js', () => ({ useToast: () => toast }))
 
@@ -30,7 +37,7 @@ const mountApp = () =>
     })
   )
 
-/** The toast's Restart, clicked. */
+/** The toast's Restart, or Reload, clicked. */
 const restart = () => toast.action.mock.calls.at(-1)[1].command()
 
 describe('useUpdates', () => {
@@ -49,15 +56,24 @@ describe('useUpdates', () => {
     vi.useRealTimers()
     vi.clearAllMocks()
     vi.restoreAllMocks()
+    vi.unstubAllGlobals()
     delete globalThis.__INKSPRITE_DESKTOP__
   })
 
-  it('looks for nothing in a browser', async () => {
+  it('looks for no release in a browser', async () => {
     delete globalThis.__INKSPRITE_DESKTOP__
     app = mountApp()
     await vi.advanceTimersByTimeAsync(UPDATE_CHECK_MS)
 
     expect(updates.downloadUpdate).not.toHaveBeenCalled()
+  })
+
+  it('registers no service worker in the desktop app', async () => {
+    updates.downloadUpdate.mockResolvedValue(null)
+    app = mountApp()
+    await vi.advanceTimersByTimeAsync(UPDATE_CHECK_MS)
+
+    expect(serviceWorker.registerServiceWorker).not.toHaveBeenCalled()
   })
 
   it('offers a downloaded update with a toast that stays', async () => {
@@ -135,5 +151,102 @@ describe('useUpdates', () => {
 
     await restart()
     expect(toast.error).toHaveBeenCalledWith("The update couldn't be installed: Permission denied")
+  })
+
+  describe('in a browser', () => {
+    beforeEach(() => {
+      delete globalThis.__INKSPRITE_DESKTOP__
+      serviceWorker.registerServiceWorker.mockResolvedValue({})
+      serviceWorker.lookForBuild.mockResolvedValue(undefined)
+    })
+
+    /** The service worker's word that a new build is waiting. */
+    const buildWaiting = () => serviceWorker.registerServiceWorker.mock.calls.at(-1)[0]()
+
+    it('offers a new build with a toast that stays', async () => {
+      app = mountApp()
+      await vi.waitFor(() => expect(serviceWorker.registerServiceWorker).toHaveBeenCalled())
+      expect(toast.action).not.toHaveBeenCalled()
+
+      buildWaiting()
+      expect(toast.action).toHaveBeenCalledWith(
+        'A new version of inksprite is ready.',
+        { label: 'Reload', command: expect.any(Function) },
+        { duration: 0 }
+      )
+    })
+
+    it('saves the open document and the store before it reloads', async () => {
+      serviceWorker.reloadIntoBuild.mockImplementation(() => saved.push('reload'))
+      app = mountApp()
+      await vi.waitFor(() => expect(serviceWorker.registerServiceWorker).toHaveBeenCalled())
+      buildWaiting()
+
+      await restart()
+      expect(saved).toEqual(['editor', 'store', 'reload'])
+    })
+
+    it('saves and reloads when the service worker has taken itself away', async () => {
+      vi.stubGlobal('location', { reload: vi.fn(() => saved.push('reload')) })
+      app = mountApp()
+      await vi.waitFor(() => expect(serviceWorker.registerServiceWorker).toHaveBeenCalled())
+
+      await serviceWorker.registerServiceWorker.mock.calls.at(-1)[1]()
+      expect(saved).toEqual(['editor', 'store', 'reload'])
+      expect(toast.action).not.toHaveBeenCalled()
+    })
+
+    it('looks for a new build every hour', async () => {
+      app = mountApp()
+      await vi.waitFor(() => expect(serviceWorker.registerServiceWorker).toHaveBeenCalled())
+      expect(serviceWorker.lookForBuild).not.toHaveBeenCalled()
+
+      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_MS)
+      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_MS)
+      expect(serviceWorker.lookForBuild).toHaveBeenCalledTimes(2)
+    })
+
+    it('keeps quiet when a look fails, and looks again later', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
+      serviceWorker.lookForBuild.mockRejectedValueOnce(new Error('offline'))
+      app = mountApp()
+      await vi.waitFor(() => expect(serviceWorker.registerServiceWorker).toHaveBeenCalled())
+
+      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_MS)
+      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_MS)
+      expect(serviceWorker.lookForBuild).toHaveBeenCalledTimes(2)
+      expect(toast.error).not.toHaveBeenCalled()
+    })
+
+    it('looks for nothing where there is no service worker', async () => {
+      serviceWorker.registerServiceWorker.mockResolvedValue(null)
+      app = mountApp()
+      await vi.waitFor(() => expect(serviceWorker.registerServiceWorker).toHaveBeenCalled())
+
+      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_MS)
+      expect(serviceWorker.lookForBuild).not.toHaveBeenCalled()
+    })
+
+    it('keeps quiet when the service worker cannot be registered', async () => {
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
+      serviceWorker.registerServiceWorker.mockRejectedValue(new Error('SecurityError'))
+      app = mountApp()
+      await vi.waitFor(() => expect(console.warn).toHaveBeenCalled())
+
+      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_MS)
+      expect(serviceWorker.lookForBuild).not.toHaveBeenCalled()
+      expect(toast.error).not.toHaveBeenCalled()
+    })
+
+    it('stops looking once the app is gone', async () => {
+      app = mountApp()
+      await vi.waitFor(() => expect(serviceWorker.registerServiceWorker).toHaveBeenCalled())
+      await Promise.resolve()
+      app.unmount()
+      app = undefined
+
+      await vi.advanceTimersByTimeAsync(UPDATE_CHECK_MS)
+      expect(serviceWorker.lookForBuild).not.toHaveBeenCalled()
+    })
   })
 })

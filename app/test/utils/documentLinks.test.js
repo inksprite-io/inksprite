@@ -4,6 +4,7 @@ import {
   documentNamed,
   fileNameOf,
   hrefFor,
+  projectHref,
   isDocumentHref,
   readableHref,
   resolveLink,
@@ -171,5 +172,16 @@ describe('readableHref', () => {
     expect(readableHref('../Notes/Cast%20list.md')).toBe('../Notes/Cast list.md')
     expect(readableHref('<a b.md>')).toBe('a b.md')
     expect(readableHref('100%.md')).toBe('100%.md')
+  })
+})
+
+describe('projectHref', () => {
+  it('writes a link from the top of the project, which reads back to the same document', () => {
+    expect(projectHref(tree, 'cast')).toBe('/Notes/Cast%20list.md')
+    expect(projectHref(tree, 'harbour')).toBe('/Notes/Places/The%20harbour.md')
+    expect(projectHref(tree, 'paper')).toBe('/Notes/Tide%20tables.pdf')
+    for (const id of ['cast', 'harbour', 'paper', 'top']) {
+      expect(resolveLink(tree, projectHref(tree, id), 'harbour')?.id).toBe(id)
+    }
   })
 })

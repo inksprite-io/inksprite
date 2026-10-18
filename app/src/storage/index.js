@@ -54,6 +54,7 @@
  * @typedef {import('../types/models.js').Message} Message
  * @typedef {import('../types/models.js').StoredFile} StoredFile
  * @typedef {import('../types/models.js').Change} Change
+ * @typedef {import('../types/models.js').DocBase} DocBase
  */
 
 /**
@@ -111,6 +112,11 @@ export const PROJECT_TABLES = ['stories', 'documents', 'files', 'chats', 'messag
  *   Keep a clip of a document's narration
  * @property {(storyId: string, documentId: string, keys?: string[]) => Promise<void>} removeAudio -
  *   Delete these clips of a document's narration, or with no keys all of it
+ * @property {(storyId: string, documentId: string) => Promise<DocBase|null>} readBase - A
+ *   linked document's base, if it has one
+ * @property {(base: DocBase) => Promise<void>} writeBase - Keep a linked document's base
+ * @property {(storyId: string, documentId: string) => Promise<void>} removeBase - Forget a
+ *   document's base
  * @property {(table: 'chats'|'messages', change: (row: any) => object|null) => Promise<number>} updateEach -
  *   Change every row of a table, in every project, open or not: `change` returns the fields
  *   to set, or null to leave the row. Resolves to how many changed.
@@ -128,7 +134,8 @@ export const PROJECT_TABLES = ['stories', 'documents', 'files', 'chats', 'messag
  * @property {(table: string) => boolean} has - Whether there is such a table
  * @property {(table: string, changes: Change[]) => Promise<void>} write -
  *   Write and remove rows of one table, of either kind, together: what `syncStore` saves
- * @property {() => Promise<Record<string, any[]>>} dump - Every row of every table, for a backup
+ * @property {() => Promise<Record<string, any[]>>} dump - Every row of every table, for a
+ *   backup, but the linked documents' bases
  * @property {(tables: Record<string, any[]>, keep?: string[]) => Promise<number>} replaceAll -
  *   Replace every table but those in `keep` with a backup's rows, all or none, emptying those
  *   it has none for. Resolves to how many rows were written.

@@ -1,0 +1,58 @@
+{
+  "fixture": "findable",
+  "messages": [
+    {
+      "before": {
+        "comments": [
+          {
+            "path": "Design/Retrieval design",
+            "id": "cbudg1",
+            "passage": "The budget is 200 ms end to end from query to results shown.",
+            "text": "Is this still the budget? Fix it if it changed."
+          },
+          {
+            "path": "Design/Retrieval design",
+            "id": "crrf01",
+            "passage": "fused by reciprocal rank fusion with k = 60",
+            "text": "Where does k = 60 come from? Just tell me; leave the sentence as it is."
+          },
+          {
+            "path": "Design/Retrieval design",
+            "id": "clind1",
+            "passage": "Deferred until the Lindqvist numbers are in.",
+            "text": "Ask Lindqvist's team when the numbers land."
+          }
+        ]
+      },
+      "text": "I left three comments on the retrieval design. Work through them: fix the text where a comment asks for a change, answer the questions with a reply, and resolve each one once it's dealt with. The one about Lindqvist is a note to myself; leave it.",
+      "finds": ["Notes/Decisions log"],
+      "document": {
+        "path": "Design/Retrieval design",
+        "contains": ["150 ms", "k = 60", "Deferred until the Lindqvist numbers are in"]
+      },
+      "comments": {
+        "path": "Design/Retrieval design",
+        "resolved": ["cbudg1", "crrf01"],
+        "replied": ["crrf01"],
+        "open": ["clind1"],
+        "untouched": ["clind1"]
+      }
+    },
+    {
+      "text": "Now write the Evaluation section from what was decided, in place of its TODO. If you have to guess anything, leave me a comment on it rather than asking in the chat.",
+      "document": {
+        "path": "Design/Retrieval design",
+        "contains": ["200 (regression )?queries", "Deferred until the Lindqvist numbers are in"]
+      },
+      "notContains": {
+        "path": "Design/Retrieval design",
+        "patterns": ["TODO: how a change is judged"]
+      },
+      "comments": {
+        "path": "Design/Retrieval design",
+        "open": ["clind1"],
+        "untouched": ["clind1"]
+      }
+    }
+  ]
+}

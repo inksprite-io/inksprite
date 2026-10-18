@@ -13,6 +13,15 @@
       @keep="api.keep"
     >
       <template v-if="chatShowing !== null || findable || focusable" #end>
+        <!-- A document linked to a Google Doc syncs with it from here. -->
+        <HeaderButton
+          v-if="syncable"
+          icon="pi pi-sync"
+          label="Sync with Google Doc"
+          :loading="driveSync.isSyncing(activeId)"
+          data-action="sync"
+          @click="driveSync.sync(activeId)"
+        />
         <!-- The way to the find where there is no key for it, as on a phone. -->
         <HeaderButton
           v-if="findable"
@@ -99,6 +108,7 @@ import PanelToggle from './PanelToggle.vue'
 import { useChats } from '@/composables/useChats.js'
 import { useCopyPath } from '@/composables/useCopyPath.js'
 import { useDocuments } from '@/composables/useDocuments'
+import { useDriveSync } from '@/composables/useDriveSync.js'
 import { useFileView } from '@/composables/useFileView.js'
 import { useFocusMode } from '@/composables/useFocusMode.js'
 import { useScreenSize } from '@/composables/useScreenSize.js'
@@ -147,6 +157,7 @@ const { copyPath } = useCopyPath(props.storyId)
 const { plainTextItem } = usePlainText(props.storyId)
 const { showsText, fileViewItem } = useFileView(props.storyId)
 const { focused, enter: enterFocus } = useFocusMode()
+const driveSync = useDriveSync(props.storyId)
 const { isMobile } = useScreenSize()
 
 /** How far down the screen the text starts in focus mode. */
@@ -192,6 +203,9 @@ const plain = computed(() => api.isPlain(activeId.value))
 const findable = computed(
   () => !!activeId.value && (!file.value || editorView.value?.findable === true)
 )
+
+/** Whether the document showing is linked to a Google Doc, and so syncs with it. */
+const syncable = computed(() => !chatTab.value && driveSync.canSync(activeId.value))
 
 /** Whether focus mode is offered: there is a document to focus on, and a way back out. */
 const focusable = computed(() => !!activeId.value && !isMobile.value)

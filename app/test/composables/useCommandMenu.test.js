@@ -244,9 +244,9 @@ describe('useCommandMenu', () => {
   it('finishes whichever entry is picked with the mouse', async () => {
     const chat = await setup()
     await chat.type('/')
-    await chat.pick(chat.names().indexOf('write'))
+    await chat.pick(chat.names().indexOf('roll'))
 
-    expect(chat.draft()).toBe('/write ')
+    expect(chat.draft()).toBe('/roll ')
   })
 
   it('lets every key through while it is shut', async () => {

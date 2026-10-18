@@ -42,6 +42,14 @@ vi.mock('@/composables/useScreenSize.js', () => ({
 const mockCopyPath = vi.fn()
 vi.mock('@/composables/useCopyPath.js', () => ({ useCopyPath: () => ({ copyPath: mockCopyPath }) }))
 vi.mock('@/composables/useToast.js', () => ({ useToast: () => ({ action: toastAction }) }))
+const mockSync = vi.hoisted(() => ({ linked: new Set(), busy: new Set(), sync: vi.fn() }))
+vi.mock('@/composables/useDriveSync.js', () => ({
+  useDriveSync: () => ({
+    canSync: id => mockSync.linked.has(id),
+    isSyncing: id => mockSync.busy.has(id),
+    sync: mockSync.sync,
+  }),
+}))
 vi.mock('@/composables/useChats.js', () => ({
   useChats: () => ({ getChatById: id => (id === 'chat_1' ? { id, title: 'Heist' } : null) }),
 }))
@@ -96,6 +104,8 @@ describe('EditorPanel', () => {
   afterEach(() => {
     useFocusMode().leave()
     isMobile.value = false
+    mockSync.linked.clear()
+    mockSync.busy.clear()
   })
 
   it('shows the strip and the editor on the tab showing', () => {
@@ -192,6 +202,35 @@ describe('EditorPanel', () => {
     await wrapper.find('[data-action="focus"]').trigger('click')
 
     expect(useFocusMode().focused.value).toBe(true)
+  })
+
+  it('offers Sync first on a document linked to a Google Doc, and syncs it on the click', async () => {
+    mockSync.linked.add('doc_1')
+    const wrapper = mountPanel({ open: ['doc_1', 'doc_2'], active: 'doc_1' }, { chatShowing: true })
+    const ends = wrapper
+      .findAll('[data-action], [data-panel-toggle]')
+      .map(button => button.attributes('data-action') || button.attributes('data-panel-toggle'))
+    expect(ends).toEqual(['sync', 'find', 'focus', 'chat'])
+    expect(wrapper.find('[data-action="sync"]').attributes('aria-label')).toBe(
+      'Sync with Google Doc'
+    )
+
+    await wrapper.find('[data-action="sync"]').trigger('click')
+    expect(mockSync.sync).toHaveBeenCalledWith('doc_1')
+  })
+
+  it('offers no Sync on a document with no Doc, and spins while one syncs', () => {
+    expect(
+      mountPanel({ open: ['doc_2'], active: 'doc_2' })
+        .find('[data-action="sync"]')
+        .exists()
+    ).toBe(false)
+
+    mockSync.linked.add('doc_1')
+    mockSync.busy.add('doc_1')
+    const busy = mountPanel({ open: ['doc_1'], active: 'doc_1' }).find('[data-action="sync"]')
+    expect(busy.attributes('disabled')).toBeDefined()
+    expect(busy.find('.pi-spinner').exists()).toBe(true)
   })
 
   it('offers no focus mode with nothing open, or on a phone, which has no key to leave it by', () => {

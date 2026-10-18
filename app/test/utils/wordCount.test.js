@@ -17,6 +17,15 @@ describe('countWords', () => {
     expect(countWords('```\nsome code here\n```')).toBe(3)
   })
 
+  it('counts no words for a picture, its alt text included', () => {
+    expect(countWords('The gate ![A map of the north gate](.images/doc_a1/gate.png) stood.')).toBe(
+      3
+    )
+    expect(countWords('![](<.images/doc_a1/market map.png> "The market")')).toBe(0)
+    expect(countWords('![a \\] b](x.png)')).toBe(0)
+    expect(countWords('Not \\![a picture](x.png)')).toBe(3)
+  })
+
   it('does not count a rule or a dash as a word', () => {
     expect(countWords('one\n\n---\n\ntwo')).toBe(2)
     expect(countWords('one — two')).toBe(2)

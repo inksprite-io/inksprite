@@ -75,7 +75,10 @@ npm run dev
 ```
 
 `npm run build` writes a static site to `app/dist/`. A build sends no
-analytics unless it is built with `VITE_VERCEL_ANALYTICS=true`.
+analytics unless it is built with `VITE_VERCEL_ANALYTICS=true`. Its service
+worker keeps the app's files, so that it opens offline and installs; should
+that ever have to go from browsers that have it, build with
+`VITE_REMOVE_SERVICE_WORKER=true` (`app/sw-remove.js`).
 
 ## Contributing
 

@@ -1,3 +1,4 @@
+/* global Blob */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { reactive } from 'vue'
 import { setActivePinia, createPinia } from 'pinia'
@@ -17,6 +18,19 @@ vi.mock('@/stores/db', () => ({
 vi.mock('@/stores/syncStore', () => ({
   useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
 }))
+
+// A picture's bytes, by key, as the files table keeps them.
+const mockFiles = vi.hoisted(() => {
+  const kept = new Map()
+  return {
+    kept,
+    getFile: vi.fn(async key => kept.get(key) ?? null),
+    putFile: vi.fn(async (key, _storyId, blob) => {
+      kept.set(key, blob)
+    }),
+  }
+})
+vi.mock('@/stores/filesStore', () => ({ useFilesStore: () => mockFiles }))
 
 const mockEditor = vi.hoisted(() => ({
   holds: vi.fn(() => false),
@@ -967,6 +981,40 @@ describe('useDocuments', () => {
         hidden: true,
       })
       expect(api.duplicate(copy.id).title).toBe('Riley (3)')
+    })
+
+    it('copies the comments with the text that has their markers', () => {
+      const chapter = api.createTextDocument('notes_story_1', 'Riley', 'She {==ran==}{>>cabcd1<<}.')
+      const thread = {
+        status: 'open',
+        quote: 'ran',
+        posts: [{ author: 'writer', text: 'Faster?', created: 1 }],
+      }
+      api.setThreads(chapter.id, { cabcd1: thread })
+
+      const copy = api.duplicate(chapter.id)
+
+      expect(copy.content).toBe('She {==ran==}{>>cabcd1<<}.')
+      expect(copy.comments.cabcd1).toMatchObject({ status: 'open', posts: thread.posts })
+    })
+
+    it('copies its pictures as its own, its text pointed at them', async () => {
+      const chapter = api.createTextDocument('notes_story_1', 'Riley')
+      const text = `The gate ![](.images/${chapter.id}/gate.png) stood.`
+      store.updateDocument(chapter.id, {
+        content: text,
+        pictures: { 'gate.png': { mime: 'image/png', width: 4, height: 3 } },
+      })
+      const bytes = new Blob(['png'], { type: 'image/png' })
+      mockFiles.kept.set(`${chapter.id}/gate.png`, bytes)
+
+      const copy = api.duplicate(chapter.id)
+
+      expect(copy.content).toBe(`The gate ![](.images/${copy.id}/gate.png) stood.`)
+      expect(copy.pictures).toEqual({ 'gate.png': { mime: 'image/png', width: 4, height: 3 } })
+      await vi.waitFor(() =>
+        expect(mockFiles.putFile).toHaveBeenCalledWith(`${copy.id}/gate.png`, 'story_1', bytes)
+      )
     })
 
     it('goes straight after the original in a folder kept in order', () => {

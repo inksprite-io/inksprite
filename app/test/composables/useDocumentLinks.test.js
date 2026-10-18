@@ -1,10 +1,17 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { useDocumentLinks } from '@/composables/useDocumentLinks.js'
+import { usePictureViewer } from '@/composables/usePictureViewer.js'
 
 const docs = [
   { id: 'root_s', parentId: 's', type: 'folder', title: 'Novel' },
   { id: 'notes', parentId: 'root_s', type: 'folder', title: 'Notes' },
-  { id: 'cast', parentId: 'notes', type: 'text', title: 'Cast list' },
+  {
+    id: 'cast',
+    parentId: 'notes',
+    type: 'text',
+    title: 'Cast list',
+    pictures: { 'gate.png': { mime: 'image/png' } },
+  },
   { id: 'drafts', parentId: 'root_s', type: 'folder', title: 'Drafts' },
   { id: 'one', parentId: 'drafts', type: 'text', title: 'Chapter 1' },
 ]
@@ -52,6 +59,15 @@ describe('useDocumentLinks', () => {
       expect(openUrl).not.toHaveBeenCalled()
     })
 
+    it("shows a document's own picture at its own size, from a chat as from a document", () => {
+      const viewer = usePictureViewer()
+      useDocumentLinks('s').open('.images/cast/gate.png')
+      expect(viewer.shown.value).toMatchObject({ key: 'cast/gate.png' })
+      expect(toast.warning).not.toHaveBeenCalled()
+      expect(mockApi.open).not.toHaveBeenCalled()
+      viewer.close()
+    })
+
     it('says a link to a folder goes to a folder', () => {
       useDocumentLinks('s').open('../Notes', 'one')
       expect(toast.info).toHaveBeenCalledWith('This link goes to a folder.')
@@ -74,6 +90,38 @@ describe('useDocumentLinks', () => {
       expect(links.addressFor('example.com', 'one')).toBe('https://example.com')
       expect(links.addressFor('mailto:a@example.com', 'one')).toBe('mailto:a@example.com')
       expect(links.addressFor('  ', 'one')).toBe('')
+    })
+  })
+
+  describe('copy and paste', () => {
+    it('carries a link as a path from the top, and writes it from where it is pasted', () => {
+      const links = useDocumentLinks('s')
+      const copied = links.copiedHref('../Notes/Cast%20list.md', 'one')
+      expect(copied).toBe('/Notes/Cast%20list.md')
+      // Into a document beside it, and into one in the folder it links to.
+      expect(links.pastedHref(copied, 'one')).toBe('../Notes/Cast%20list.md')
+      expect(links.pastedHref(copied, 'cast')).toBe('Cast%20list.md')
+    })
+
+    it('keeps a link into the document itself as its place in it', () => {
+      const links = useDocumentLinks('s')
+      const copied = links.copiedHref('#who', 'cast')
+      expect(copied).toBe('/Notes/Cast%20list.md#who')
+      expect(links.pastedHref(copied, 'cast')).toBe('#who')
+      expect(links.pastedHref(copied, 'one')).toBe('../Notes/Cast%20list.md#who')
+    })
+
+    it("leaves web addresses, a document's own pictures and what names nothing as they are", () => {
+      const links = useDocumentLinks('s')
+      for (const href of [
+        'https://example.com',
+        '.images/cast/gate.png',
+        '../Later/Not%20yet.md',
+      ]) {
+        expect(links.copiedHref(href, 'one')).toBe(href)
+      }
+      expect(links.pastedHref('/Nowhere/at%20all.md', 'one')).toBe('/Nowhere/at%20all.md')
+      expect(links.pastedHref('mailto:a@example.com', 'one')).toBe('mailto:a@example.com')
     })
   })
 

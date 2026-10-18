@@ -1,10 +1,12 @@
 /* global KeyboardEvent, MouseEvent */
 import { describe, it, expect, vi, afterEach } from 'vitest'
+import { Slice } from 'prosemirror-model'
 import { TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import { serializeMarkdown } from '../../src/editor/markdown.js'
 import { createEditorState } from '../../src/editor/state.js'
 import {
+  mapHrefs,
   canLink,
   linkAround,
   links,
@@ -231,5 +233,24 @@ describe('links', () => {
     calls.update.mockClear()
     view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, 3)))
     expect(calls.update).toHaveBeenCalledWith(view, expect.anything())
+  })
+})
+
+describe('mapHrefs', () => {
+  it("changes every link's address and every picture's path in a slice, and nothing else", () => {
+    const state = createEditorState(
+      'See [the cast](Cast%20list.md) and ![a map](Maps/Quarter.png) and [the web](https://example.com).'
+    )
+    const slice = new Slice(state.doc.content, 0, 0)
+    const changed = mapHrefs(slice, href => (href.startsWith('http') ? href : `/Notes/${href}`))
+    const doc = state.schema.topNodeType.create(null, changed.content)
+    expect(serializeMarkdown(doc)).toBe(
+      'See [the cast](/Notes/Cast%20list.md) and ![a map](/Notes/Maps/Quarter.png) and [the web](https://example.com).'
+    )
+  })
+
+  it('hands back the slice itself when nothing changes', () => {
+    const slice = new Slice(createEditorState('Only [a link](a.md).').doc.content, 0, 0)
+    expect(mapHrefs(slice, href => href)).toBe(slice)
   })
 })

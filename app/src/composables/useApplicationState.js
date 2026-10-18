@@ -45,6 +45,10 @@ const defaultState = {
     // switched in the library. On until the writer switches it off, as the
     // NSFW profiles are off.
     blurNsfw: true,
+    // The built-in skills still being tuned that are there at all, by name: as
+    // tools, as commands, and in a chat's settings. Each is off until the
+    // writer switches it on in Settings › Skills.
+    experimentalSkills: [],
     // The profiles chats start on: new chats in a project that hasn't chosen
     // its own, and chats on a character card. Null for the built-ins, Default
     // and Roleplay.
@@ -200,6 +204,7 @@ watch(
  * @property {'auto'|'ask'} applyEdits
  * @property {boolean} nsfwProfiles
  * @property {boolean} blurNsfw - Whether the card library blurs NSFW pictures
+ * @property {string[]} experimentalSkills - The ones switched on
  * @property {boolean} roleplay - Whether the Roleplay extension is on
  * @property {string|null} chatProfileId - The profile new chats start on
  * @property {string|null} roleplayProfileId - The one chats on a character card start on
@@ -248,6 +253,15 @@ const spellingChoices = stored => ({
 const isChoice = value => value === null || typeof value === 'string'
 
 /**
+ * The names a stored list holds, and nothing else it might.
+ *
+ * @param {unknown} value
+ * @returns {string[]}
+ */
+const namesIn = value =>
+  Array.isArray(value) ? value.filter(name => typeof name === 'string') : []
+
+/**
  * A workflow's settings as a backup has them, keeping only what a workflow
  * holds and in the shape it holds it. A file can say anything.
  *
@@ -288,6 +302,8 @@ function workflowFrom(settings) {
  *   setNsfwProfiles: (on: boolean) => void,
  *   blurNsfw: import('vue').ComputedRef<boolean>,
  *   setBlurNsfw: (on: boolean) => void,
+ *   experimentalSkills: import('vue').ComputedRef<string[]>,
+ *   setExperimentalSkill: (name: string, on: boolean) => void,
  *   extensionOn: (id: string) => boolean|undefined,
  *   setExtension: (id: string, on: boolean) => void,
  *   roleplay: import('vue').ComputedRef<boolean>,
@@ -421,6 +437,30 @@ export function useApplicationState() {
   const setBlurNsfw = on => {
     if (!state.value.system) state.value.system = {}
     state.value.system.blurNsfw = on !== false
+  }
+
+  /**
+   * The experimental skills switched on, by name. None unless switched on.
+   * See `setExperimentalSkills` in ai/skills, which App.vue tells.
+   * @type {import('vue').ComputedRef<string[]>}
+   */
+  const experimentalSkills = computed(() => namesIn(state.value.system?.experimentalSkills))
+
+  /**
+   * @param {string[]} names
+   */
+  const setExperimentalSkills = names => {
+    if (!state.value.system) state.value.system = {}
+    state.value.system.experimentalSkills = [...new Set(names)]
+  }
+
+  /**
+   * @param {string} name - An experimental skill's
+   * @param {boolean} on
+   */
+  const setExperimentalSkill = (name, on) => {
+    const others = experimentalSkills.value.filter(one => one !== name)
+    setExperimentalSkills(on === true ? [...others, name] : others)
   }
 
   /**
@@ -764,6 +804,7 @@ export function useApplicationState() {
     applyEdits: applyEdits.value,
     nsfwProfiles: nsfwProfiles.value,
     blurNsfw: blurNsfw.value,
+    experimentalSkills: experimentalSkills.value,
     roleplay: extensionOn('roleplay') === true,
     chatProfileId: chatProfileId.value,
     roleplayProfileId: roleplayProfileId.value,
@@ -792,6 +833,9 @@ export function useApplicationState() {
     if (settings.applyEdits) setApplyEdits(settings.applyEdits)
     if (typeof settings.nsfwProfiles === 'boolean') setNsfwProfiles(settings.nsfwProfiles)
     if (typeof settings.blurNsfw === 'boolean') setBlurNsfw(settings.blurNsfw)
+    if (Array.isArray(settings.experimentalSkills)) {
+      setExperimentalSkills(namesIn(settings.experimentalSkills))
+    }
     if (typeof settings.roleplay === 'boolean') setExtension('roleplay', settings.roleplay)
     if (isChoice(settings.chatProfileId)) setChatProfileId(settings.chatProfileId)
     if (isChoice(settings.roleplayProfileId)) setRoleplayProfileId(settings.roleplayProfileId)
@@ -864,6 +908,10 @@ export function useApplicationState() {
     // Whether the card library blurs NSFW pictures
     blurNsfw,
     setBlurNsfw,
+
+    // The experimental skills switched on
+    experimentalSkills,
+    setExperimentalSkill,
 
     // Extensions, and whether roleplay is there
     extensionOn,

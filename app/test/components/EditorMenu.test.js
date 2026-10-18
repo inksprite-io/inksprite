@@ -1,3 +1,4 @@
+/* global Blob */
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { nextTick, ref } from 'vue'
@@ -264,6 +265,19 @@ describe('EditorMenu', () => {
       expect(await pasted('Paste from Markdown')).toBe('**Plain**End.')
     })
 
+    it('pastes a picture copied alone as pictures, for the editor to take', async () => {
+      clipboard.read.mockResolvedValue([
+        { types: ['image/png'], getType: async () => new Blob(['png'], { type: 'image/png' }) },
+      ])
+      const view = viewOf('End.', [])
+      const { wrapper } = mountMenu()
+      await openAt(wrapper, view, 1)
+      await item(wrapper, 'Paste').command()
+      const [[pictures]] = /** @type {any} */ (wrapper.emitted('paste-pictures'))
+      expect(pictures).toHaveLength(1)
+      expect(pictures[0].type).toBe('image/png')
+    })
+
     it('says to use the keys when the clipboard can’t be read', async () => {
       const view = viewOf('End.', [])
       const { wrapper } = mountMenu()
@@ -304,23 +318,50 @@ describe('EditorMenu', () => {
       const view = viewOf('It was a {==dark==}{>>c7k2m1: reword<<} night.', [])
       const { wrapper } = mountMenu()
       await openAt(wrapper, view, 11)
-      expect(labels(model(wrapper)).slice(-4, -2)).toEqual(['Edit comment…', 'Resolve comment'])
-      await item(wrapper, 'Edit comment…').command()
+      expect(labels(model(wrapper)).slice(-4, -2)).toEqual(['Reply to comment…', 'Resolve comment'])
+      await item(wrapper, 'Reply to comment…').command()
       await item(wrapper, 'Resolve comment').command()
-      expect(wrapper.emitted('edit-comment')).toEqual([['c7k2m1']])
+      expect(wrapper.emitted('reply-comment')).toEqual([['c7k2m1']])
       expect(wrapper.emitted('resolve-comment')).toEqual([['c7k2m1']])
     })
   })
 
-  it('inserts a table, a rule or a code block', async () => {
+  it('inserts a picture, a table, a rule or a code block', async () => {
     const view = viewOf('Nothing flagged here.', [])
     const { wrapper } = mountMenu()
     await openAt(wrapper, view, 3)
     const insert = item(wrapper, 'Insert')
-    expect(labels(insert.items)).toEqual(['Table', 'Horizontal rule', 'Code block'])
-    await insert.items[0].command()
+    expect(labels(insert.items)).toEqual(['Picture…', 'Table', 'Horizontal rule', 'Code block'])
+    insert.items[0].command()
+    expect(wrapper.emitted('insert-picture')).toHaveLength(1)
+    await insert.items[1].command()
     expect(view.state.doc.child(1).type.name).toBe('table')
     expect(view.state.selection.$head.parent.type.name).toBe('table_cell')
+  })
+
+  it('selects a picture right-clicked, and offers its alt text, a look and a copy', async () => {
+    const view = viewOf('The gate ![](gate.png) stood.', [])
+    const { wrapper } = mountMenu()
+    const menu = /** @type {any} */ (wrapper.vm)
+    // The picture is after 'The gate ', which starts at 1.
+    view.posAtCoords = () => ({ pos: 11, inside: 10 })
+    menu.open(view, click())
+    await nextTick()
+
+    expect(view.state.selection.from).toBe(10)
+    expect(view.state.selection.to).toBe(11)
+    expect(labels(model(wrapper)).slice(0, 4)).toEqual([
+      'Alt text…',
+      'View picture',
+      'Save picture…',
+      '—',
+    ])
+    item(wrapper, 'Alt text…').command()
+    await item(wrapper, 'View picture').command()
+    await item(wrapper, 'Save picture…').command()
+    expect(Object.keys(wrapper.emitted())).toEqual(
+      expect.arrayContaining(['picture-alt', 'view-picture', 'save-picture'])
+    )
   })
 
   it("puts a table's items in a submenu, in a table", async () => {

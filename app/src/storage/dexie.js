@@ -44,6 +44,16 @@ export const dexieStorage = {
   writeAudio: async () => {},
   removeAudio: async () => {},
 
+  readBase: async (storyId, documentId) => (await db.docBases.get(documentId)) ?? null,
+
+  async writeBase(base) {
+    await db.docBases.put(base)
+  },
+
+  async removeBase(storyId, documentId) {
+    await db.docBases.delete(documentId)
+  },
+
   async putFileBytes(id, storyId, blob) {
     await db.files.put({ id, storyId, blob })
   },
@@ -76,12 +86,13 @@ export const dexieStorage = {
   async removeProject(storyId) {
     await db.transaction(
       'rw',
-      [db.stories, db.documents, db.files, db.chats, db.messages],
+      [db.stories, db.documents, db.files, db.chats, db.messages, db.docBases],
       async () => {
         const chatIds = await db.chats.where('storyId').equals(storyId).primaryKeys()
         await db.messages.where('chatId').anyOf(chatIds).delete()
         await db.chats.bulkDelete(chatIds)
         await db.files.where('storyId').equals(storyId).delete()
+        await db.docBases.where('storyId').equals(storyId).delete()
         await db.documents.where('storyId').equals(storyId).delete()
         await db.stories.delete(storyId)
       }
@@ -114,10 +125,14 @@ export const dexieStorage = {
   async write(table, changes) {
     /** @type {import('dexie').Table} */
     const rows = db[table]
-    await db.transaction('rw', rows, async () => {
+    // A document's base goes with it.
+    const bases = table === 'documents' ? [db.docBases] : []
+    await db.transaction('rw', [rows, ...bases], async () => {
       for (const change of changes) {
-        if (change.op === 'delete') await rows.delete(change.id)
-        else await rows.put(change.data)
+        if (change.op === 'delete') {
+          await rows.delete(change.id)
+          if (bases.length > 0) await db.docBases.delete(change.id)
+        } else await rows.put(change.data)
       }
     })
   },
@@ -126,9 +141,11 @@ export const dexieStorage = {
     /** @type {Record<string, any[]>} */
     const tables = {}
     await Promise.all(
-      db.tables.map(async (/** @type {import('dexie').Table} */ table) => {
-        tables[table.name] = await table.toArray()
-      })
+      db.tables
+        .filter((/** @type {import('dexie').Table} */ table) => table.name !== 'docBases')
+        .map(async (/** @type {import('dexie').Table} */ table) => {
+          tables[table.name] = await table.toArray()
+        })
     )
     return tables
   },

@@ -6,6 +6,72 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.19
+
+Pictures in documents, comment threads, Sync with Google Docs, and
+inksprite installed from the browser.
+
+- Documents can have pictures. Paste one, drop it on the page, or
+  right-click and choose Insert › Picture…. Click a picture to give it
+  alt text, which is all the model knows of it; double-click it to see
+  it over the whole window, and right-click it to save it. A picture
+  belongs to its document and isn't in the outline: copied into another
+  document, it's that one's own. A picture from a web address isn't
+  loaded, so the site can't see you open the document. Word files and
+  Google Docs keep their pictures when they're imported. In the desktop
+  app they're in a hidden `.images` folder beside the document's file.
+- Export, on a document in the outline, saves a document with pictures
+  as a zip of the Markdown file and an `images` folder. It was called
+  Download before.
+- A comment is a thread now. Comments are read, answered and resolved
+  in the Comments tab, which opens beside the text when you comment;
+  each reply is under the name of who wrote it, You or Assistant, and
+  anything you said can be edited. The model replies to comments, says
+  what it did, and leaves comments of its own, as notes on a chapter or
+  on a gap it couldn't fill. Comments can overlap. A resolved comment
+  is kept: the clock in the Comments tab shows the resolved ones, and
+  Reopen puts one back on its passage. A comment whose passage was
+  deleted stays in the tab, struck through, until it's resolved.
+- A Google Doc you import stays linked to its document, and Sync sends
+  your edits to the Doc and brings in the ones made there. It's at the
+  end of the editor's tabs and in the document's Google Doc submenu.
+  Edits on both sides are merged, and where both changed the same words
+  you choose which to keep. Tables go across too; some changes, such as
+  a footnote added, can't yet, and Sync says so before it sends
+  anything. A Doc imported before this release asks at its first sync
+  which side to keep whole.
+- Google Docs come in with more of what they hold: horizontal lines,
+  pictures, footnotes, and smart chips as words (a person as their
+  name, linked to their email address). A Doc with suggested edits
+  still open comes in as it was before them, and the message names it.
+- inksprite can be installed from Chrome or Edge, or added to the Home
+  Screen on an iPhone, an iPad or Android, as an app of its own that
+  opens without a connection. When there's a new version, it says so,
+  and Reload starts it. On an iPhone or iPad, Safari doesn't clear the
+  Home Screen app's data after a week, though it starts empty: bring
+  your projects over with a backup.
+- `/roll 2d6 How does the monster react?` rolls and has the model read
+  the roll for the question. A roll shows a line for each kind of die
+  above its total. Edit the turn to change a die, and the total is
+  worked out again.
+- Interpret and Write, the skills still being tuned, each have a switch
+  under Experimental in Settings › Skills, and are off until it's on.
+  Until then, `/interpret` and `/write` aren't in the list.
+- The model's document search finds `k = 60` when asked for `k=60`,
+  and when no document has every word asked for, it gets the ones that
+  have all but one.
+- A link copied into a document in another folder still goes to the
+  same document.
+- With the theme on System, inksprite follows the system's light and
+  dark from the start, not only once Settings has been opened. The
+  installed app's title bar takes the page's colour.
+- Text that Markdown would read back as something else is kept as
+  written: an `&amp;`, an address in angle brackets, a line starting
+  with `1)` or `+`, and bold or italic that ends in a space.
+- This release moves your data to a new version of its database. Once
+  a browser or the desktop app has opened it, an earlier release can't
+  open that data, so there's no going back to one.
+
 ## v0.1.0-dev.18
 
 Spelling and grammar in the editor, focus mode, a switch for the AI, a

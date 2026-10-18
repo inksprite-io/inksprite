@@ -31,6 +31,15 @@ import { useChats } from '@/composables/useChats.js'
 import { useChatsStore } from '@/stores/chatsStore.js'
 import { useDocuments } from '@/composables/useDocuments.js'
 import { useDocumentsStore } from '@/stores/documentsStore.js'
+import {
+  commentOn,
+  liftThreads,
+  newPost,
+  newThread,
+  placedIds,
+  threadState,
+  withoutComments,
+} from '@/editor/comments.js'
 import { useProfiles } from '@/composables/useProfiles.js'
 import { useAIChat } from '@/composables/useAIChat.js'
 import { CHAT_PROMPT_ID, DEFAULT_CHAT_PROMPT, isBuiltInPromptId } from '@/ai/prompts/index.js'
@@ -38,8 +47,14 @@ import { isBuiltInProfileId } from '@/ai/profiles/index.js'
 import { resolveRouting } from '@/ai/routing.js'
 import '@/ai/tools/index.js'
 import { toolRegistry } from '@/ai/tools/registry.js'
+import { BUILT_IN_SKILLS, setExperimentalSkills } from '@/ai/skills/index.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
+
+// The harness is where the experimental skills are tuned, so they are all
+// there, as in an app that has switched each on. Whether a scenario's model is
+// offered them is its chat's to say, by its tool groups.
+setExperimentalSkills(BUILT_IN_SKILLS.filter(skill => skill.experimental).map(skill => skill.name))
 
 /**
  * @typedef {Object} Options
@@ -150,10 +165,11 @@ Usage: npm run transcripts -- --scenario <name> [options]
  *
  * @typedef {Object} Turn
  * @property {string} text - What the writer says
- * @property {{edit?: {path: string, old: string, new: string}, pin?: string[]}} [before] - What
+ * @property {{edit?: {path: string, old: string, new: string}, pin?: string[], comments?: WriterComment[]}} [before] - What
  *   the writer does before saying it: `edit`, one passage of a document
  *   replaced as if typed in the editor, which has to be there to replace; `pin`,
- *   documents pinned for the chat from the outline
+ *   documents pinned for the chat from the outline; `comments`, comments the
+ *   writer leaves
  * @property {boolean} [noWrites] - The turn should change nothing
  * @property {string[]} [findsAny] - At least one of these should be read or found
  * @property {string[]} [mentions] - Regex sources the reply should match
@@ -169,6 +185,18 @@ Usage: npm run transcripts -- --scenario <name> [options]
  * @property {{path: string, patterns: string[]}} [notContains] - What it should not
  * @property {string[]} [gone] - Paths that should hold nothing afterwards
  * @property {{path: string, contains: string[]}} [summary] - What its summary should say
+ * @property {CommentCheck|CommentCheck[]} [comments] - What should have become of a
+ *   document's comments; see `tools.js`
+ *
+ * @typedef {Object} WriterComment
+ * @property {string} path - The document
+ * @property {string} id - The comment's id, for the checks to name it by
+ * @property {string} passage - The words it is on, as the text reads, there once
+ * @property {string} text - What the writer says
+ * @property {Array<{author: 'writer'|'model', text: string}>} [replies] - What was
+ *   said on it since, in order
+ *
+ * @typedef {Object<string, any>} CommentCheck
  *
  * @typedef {Object} ChatSettings
  * @property {boolean} [directorEnabled] - Consult the Director before the assistant writes
@@ -353,6 +381,95 @@ function currentCommit() {
 }
 
 /**
+ * A document of the project by its path.
+ *
+ * @param {string} storyId
+ * @param {string} path
+ */
+function documentAt(storyId, path) {
+  const api = useDocuments(storyId)
+  const target = [...useDocumentsStore().documents.values()].find(
+    document => document.storyId === storyId && api.pathOf(document.id) === path
+  )
+  if (!target) throw new Error(`No document at ${path}`)
+  return target
+}
+
+/**
+ * A comment of the writer's, left on a passage before the turn: its marker
+ * where the words are, and its thread with whatever was said on it since.
+ *
+ * @param {string} storyId
+ * @param {WriterComment} comment
+ */
+function leaveComment(storyId, comment) {
+  const api = useDocuments(storyId)
+  const target = documentAt(storyId, comment.path)
+  const content = api.currentContent(target.id)
+  const text = withoutComments(content)
+  const at = text.indexOf(comment.passage)
+  if (at === -1 || text.indexOf(comment.passage, at + 1) !== -1) {
+    throw new Error(`"${comment.passage}" is not in ${comment.path} once`)
+  }
+  const thread = newThread(newPost('writer', comment.text), comment.passage)
+  for (const reply of comment.replies || []) thread.posts.push(newPost(reply.author, reply.text))
+  // The thread first, so the text's save finds a thread it places.
+  api.setThreads(target.id, { ...api.threadsOf(target.id), [comment.id]: thread })
+  api.setContent(
+    target.id,
+    /** @type {string} */ (commentOn(content, at, at + comment.passage.length, comment.id))
+  )
+}
+
+/**
+ * Every document's comments as they stand: how each stands, its passage, and
+ * who said what. Documents with none are left out.
+ *
+ * @param {string} storyId
+ * @returns {Record<string, Record<string, {status: string, quote: string, posts: Array<{author: string, text: string}>}>>}
+ */
+function commentsOf(storyId) {
+  const api = useDocuments(storyId)
+  /** @type {Record<string, any>} */
+  const out = {}
+  for (const document of useDocumentsStore().documents.values()) {
+    if (document.storyId !== storyId || !document.comments) continue
+    const placed = placedIds(document.content)
+    const threads = Object.entries(document.comments)
+    if (threads.length === 0) continue
+    out[api.pathOf(document.id)] = Object.fromEntries(
+      threads.map(([id, thread]) => [
+        id,
+        {
+          status: threadState(thread, placed.has(id)),
+          quote: thread.quote,
+          posts: thread.posts.map(post => ({ author: post.author, text: post.text })),
+        },
+      ])
+    )
+  }
+  return out
+}
+
+/**
+ * Every text document's words as they read without comments, for a check
+ * that a turn left the words alone.
+ *
+ * @param {string} storyId
+ * @returns {Record<string, string>}
+ */
+function wordsOf(storyId) {
+  const api = useDocuments(storyId)
+  /** @type {Record<string, string>} */
+  const out = {}
+  for (const document of useDocumentsStore().documents.values()) {
+    if (document.storyId !== storyId || document.type !== 'text') continue
+    out[api.pathOf(document.id)] = withoutComments(document.content)
+  }
+  return out
+}
+
+/**
  * The project and the chat's pins as they stand, for `tools.js` to check
  * what a turn did to them. Every text document, by path.
  *
@@ -375,6 +492,7 @@ function snapshot(storyId, chatId) {
   return {
     pinned: (chat?.pinnedIds || []).map(id => api.pathOf(id)).filter(Boolean),
     documents,
+    comments: commentsOf(storyId),
   }
 }
 
@@ -459,29 +577,32 @@ async function main() {
         const edit = typeof message === 'string' ? undefined : message.before?.edit
         if (edit) {
           const api = useDocuments(storyId)
-          const target = [...useDocumentsStore().documents.values()].find(
-            document => document.storyId === storyId && api.pathOf(document.id) === edit.path
-          )
-          if (!target) throw new Error(`No document at ${edit.path} to edit before the turn`)
+          const target = documentAt(storyId, edit.path)
           const { applied } = api.replaceText(target.id, edit.old, edit.new)
           if (!applied) throw new Error(`The writer's edit to ${edit.path} did not apply`)
+          // A comment the scenario writes as `{>>id: what was said<<}` is the
+          // writer's, on a thread of its own, as the app keeps one.
+          const lifted = liftThreads(api.currentContent(target.id), api.threadsOf(target.id))
+          if (lifted.lifted > 0) {
+            api.setThreads(target.id, lifted.threads)
+            api.setContent(target.id, lifted.content)
+          }
         }
+        // The writer's comments, left in the editor before saying it.
+        const comments = typeof message === 'string' ? undefined : message.before?.comments
+        for (const comment of comments || []) leaveComment(storyId, comment)
         // The writer's pins, made from the outline before saying it.
         const pins = typeof message === 'string' ? undefined : message.before?.pin
         if (pins?.length) {
-          const api = useDocuments(storyId)
-          const ids = pins.map(path => {
-            const target = [...useDocumentsStore().documents.values()].find(
-              document => document.storyId === storyId && api.pathOf(document.id) === path
-            )
-            if (!target) throw new Error(`No document at ${path} to pin before the turn`)
-            return target.id
-          })
+          const ids = pins.map(path => documentAt(storyId, path).id)
           const current = chatsApi.getChatById(chat.id)?.pinnedIds || []
           chatsApi.updateChat(chat.id, { pinnedIds: [...new Set([...current, ...ids])] })
         }
+        // What the comments and the words were as the turn began, for the
+        // checks of what it did to them.
+        const before = { comments: commentsOf(storyId), words: wordsOf(storyId) }
         await ai.sendMessage(typeof message === 'string' ? message : message.text)
-        states.push(snapshot(storyId, chat.id))
+        states.push({ ...snapshot(storyId, chat.id), before })
       }
       await writeFile(join(outDir, `state-${n}.json`), JSON.stringify(states, null, 2))
       await requestsSettled()

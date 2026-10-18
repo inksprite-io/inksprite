@@ -1,10 +1,11 @@
 /**
  * @module drive/errors
- * @description What stops an import from Drive, said for the writer.
+ * @description What stops an import from Drive, or a sync with a Doc, said
+ * for the writer.
  */
 
 /**
- * Something about Google's side that stops an import.
+ * Something about Google's side that stops an import or a sync.
  */
 export class DriveError extends Error {
   /** @param {string} message */
@@ -33,5 +34,27 @@ export class PopupBlockedError extends DriveError {
   constructor() {
     super('The browser blocked Google’s window.')
     this.name = 'PopupBlockedError'
+  }
+}
+
+/**
+ * Drive does not give the account this file: it was never picked with it,
+ * or the access was taken back.
+ */
+export class NotGrantedError extends DriveError {
+  constructor() {
+    super('Drive didn’t give inksprite this file')
+    this.name = 'NotGrantedError'
+  }
+}
+
+/**
+ * A write was refused because the revision it was made against is too old
+ * for Google to merge it in: read the Doc again and write against that.
+ */
+export class StaleRevisionError extends DriveError {
+  constructor() {
+    super('The Doc changed too much while Sync was writing to it.')
+    this.name = 'StaleRevisionError'
   }
 }

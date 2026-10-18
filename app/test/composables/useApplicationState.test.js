@@ -184,6 +184,27 @@ describe('useApplicationState', () => {
     })
   })
 
+  describe('experimentalSkills', () => {
+    it('has each off until switched on, and app-wide', () => {
+      const a = useApplicationState()
+      const b = useApplicationState()
+      expect(a.experimentalSkills.value).toEqual([])
+      a.setExperimentalSkill('write', true)
+      a.setExperimentalSkill('interpret', true)
+      a.setExperimentalSkill('write', true)
+      expect(b.experimentalSkills.value).toEqual(['interpret', 'write'])
+      a.setExperimentalSkill('write', false)
+      expect(b.experimentalSkills.value).toEqual(['interpret'])
+    })
+
+    it('reads anything but a list of names as none on', () => {
+      const state = useApplicationState()
+      state.state.value.system.experimentalSkills = true
+
+      expect(state.experimentalSkills.value).toEqual([])
+    })
+  })
+
   describe('aiEnabled', () => {
     it('is on until switched off, and app-wide', () => {
       const a = useApplicationState()
@@ -266,6 +287,7 @@ describe('useApplicationState', () => {
       state.setActiveAIPresetId('preset_mine')
       state.setApplyEdits('ask')
       state.setNsfwProfiles(true)
+      state.setExperimentalSkill('write', true)
       state.setExtension('roleplay', true)
       state.setChatProfileId('chatprofile_mine')
       state.setWorkflow('convert', { providerId: 'p1', model: 'strong', onImport: true })
@@ -279,6 +301,7 @@ describe('useApplicationState', () => {
         applyEdits: 'ask',
         nsfwProfiles: true,
         blurNsfw: true,
+        experimentalSkills: ['write'],
         roleplay: true,
         chatProfileId: 'chatprofile_mine',
         roleplayProfileId: null,
@@ -313,6 +336,7 @@ describe('useApplicationState', () => {
         aiPreset: 'preset_mine',
         applyEdits: 'ask',
         nsfwProfiles: true,
+        experimentalSkills: ['interpret', 7],
         roleplayProfileId: 'chatprofile_cards',
         workflows: {
           convert: {
@@ -332,6 +356,7 @@ describe('useApplicationState', () => {
         aiPreset: 'preset_mine',
         applyEdits: 'ask',
         nsfwProfiles: true,
+        experimentalSkills: ['interpret'],
         roleplayProfileId: 'chatprofile_cards',
         workflows: {
           convert: {

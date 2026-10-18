@@ -25,7 +25,9 @@ import { useSyncStore } from './syncStore'
 import { rootNode, rootIdFor } from './migrations/projectTree.js'
 import { storage } from '@/storage/index.js'
 import { countWords } from '@/utils/wordCount.js'
+import { settleThreads } from '@/editor/comments.js'
 import { orderSiblings } from '@/utils/siblingOrder.js'
+import { pictureKey, picturesIn, unreferencedPictures } from '@/utils/pictures.js'
 
 /** @typedef {import('../types/models.js').Document} Document */
 /** @typedef {import('../types/models.js').RepositorySource} RepositorySource */
@@ -34,9 +36,18 @@ import { orderSiblings } from '@/utils/siblingOrder.js'
  * Generate a unique document ID
  * @returns {string} Document ID in format doc_xxx
  */
-function generateDocumentId() {
+export function generateDocumentId() {
   return `doc_${nanoid()}`
 }
+
+/**
+ * The projects whose pictures have been looked over this session. Once, as a
+ * project first loads, before any editor has an undo history that could put
+ * back a picture taken out of the text.
+ *
+ * @type {Set<string>}
+ */
+const swept = new Set()
 
 /** How finely a project's last edit is kept: a minute, in milliseconds. */
 const EDITED_GRAIN = 60_000
@@ -167,6 +178,10 @@ export const useDocumentsStore = defineStore('documents', () => {
    * @param {RepositorySource} [opts.source] - Repository folders only: where its code was read from
    * @param {import('../types/models.js').DriveLink} [opts.drive] - Text documents only: the
    *   Google Doc it was imported from
+   * @param {Record<string, import('../types/models.js').CommentThread>} [opts.comments] - Text
+   *   documents only: the threads its comments' markers name
+   * @param {Record<string, import('../types/models.js').PictureInfo>} [opts.pictures] - Text
+   *   documents only: its own pictures, whose bytes the caller keeps
    * @returns {Document}
    * @throws {Error} If storyId or parentId is missing
    */
@@ -188,6 +203,8 @@ export const useDocumentsStore = defineStore('documents', () => {
     pages,
     source,
     drive,
+    comments,
+    pictures,
   }) {
     if (!storyId) throw new Error('Story ID is required to create a document')
     if (!parentId) throw new Error('Parent ID is required to create a document')
@@ -218,6 +235,10 @@ export const useDocumentsStore = defineStore('documents', () => {
       ...(isFile && typeof pages === 'number' ? { pages } : {}),
       ...(isFolder && source ? { source } : {}),
       ...(type === 'text' && drive ? { drive } : {}),
+      ...(type === 'text' && comments && Object.keys(comments).length > 0
+        ? { comments: settleThreads(content, comments) }
+        : {}),
+      ...(type === 'text' && pictures && Object.keys(pictures).length > 0 ? { pictures } : {}),
       version: 1,
       created: Date.now(),
       updated: Date.now(),
@@ -273,6 +294,9 @@ export const useDocumentsStore = defineStore('documents', () => {
     }
     if ('content' in updates && hasBody) {
       next.wordCount = countWords(next.content)
+      // Each placed thread keeps its passage as it reads now, so that one
+      // whose passage goes knows what it was on.
+      if (next.comments) next.comments = settleThreads(next.content, next.comments)
     }
 
     documents.value.set(documentId, next)
@@ -306,10 +330,14 @@ export const useDocumentsStore = defineStore('documents', () => {
     unindexChild(document.parentId, documentId)
     triggerRef(childrenByParent)
 
-    // The row goes, and a file's bytes with it. Queued behind any edit still
-    // waiting to be written, so nothing puts the row back after.
+    // The row goes, and a file's bytes with it, or a text's pictures. Queued
+    // behind any edit still waiting to be written, so nothing puts the row
+    // back after.
     syncStore.trackDelete('documents', documentId)
     if (document.type === 'file') syncStore.trackDelete('files', documentId)
+    for (const name of Object.keys(document.pictures || {})) {
+      syncStore.trackDelete('files', pictureKey(documentId, name))
+    }
 
     documents.value.delete(documentId)
     triggerRef(documents)
@@ -420,6 +448,10 @@ export const useDocumentsStore = defineStore('documents', () => {
 
         triggerRef(documents)
         triggerRef(childrenByParent)
+        if (!swept.has(storyId)) {
+          swept.add(storyId)
+          sweepPictures(rows)
+        }
 
         console.log(`Loaded ${rows.length} documents for story ${storyId}`)
       } catch (error) {
@@ -432,6 +464,35 @@ export const useDocumentsStore = defineStore('documents', () => {
 
     _loadingByStory.value.set(storyId, promise)
     return promise
+  }
+
+  /**
+   * Let go of the pictures that no document's text refers to any more, taken
+   * out of the text since the project was last opened. A picture another
+   * document refers to stays, whoever's it is. Housekeeping, so the documents
+   * keep their last-edited times.
+   *
+   * @param {Document[]} rows - A project's, as they were read
+   */
+  function sweepPictures(rows) {
+    if (!rows.some(row => row.pictures)) return
+    /** @type {Set<string>} */
+    const referred = new Set()
+    for (const row of rows) for (const key of picturesIn(row.content)) referred.add(key)
+    for (const row of rows) {
+      const gone = unreferencedPictures(row.id, row.pictures, referred)
+      if (gone.length === 0) continue
+      const pictures = { ...row.pictures }
+      for (const name of gone) delete pictures[name]
+      /** @type {Document} */
+      const next = { ...row }
+      if (Object.keys(pictures).length > 0) next.pictures = pictures
+      else delete next.pictures
+      documents.value.set(row.id, next)
+      syncStore.trackChange('documents', row.id, next)
+      for (const name of gone) syncStore.trackDelete('files', pictureKey(row.id, name))
+    }
+    triggerRef(documents)
   }
 
   /**

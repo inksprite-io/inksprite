@@ -14,6 +14,10 @@
  * Only a sketch of each project is kept here, its rows without their text:
  * the stores hold the text, and what is asked for is read from the disk
  * again. Everything is done one call at a time, in the order asked.
+ *
+ * A file's bytes are asked for by its document's id, and a text document's
+ * picture's by its key (`utils/pictures.js`), which names the document; the
+ * picture is in the `.images` beside it (`picturePath`).
  */
 
 import { nanoid } from 'nanoid'
@@ -21,7 +25,9 @@ import { dexieStorage } from './dexie.js'
 import {
   audioDir,
   audioPath,
+  basePath,
   layoutProject,
+  picturePath,
   readProject,
   wantedTexts,
   META,
@@ -43,6 +49,7 @@ import { FOLDER_FILE, readFolderFile, sidecarPath } from './documents.js'
 import { safeName, claimName, nameKey, stemFits } from './names.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { upgradeTables } from '@/utils/backup.js'
+import { pictureKey, pictureOfKey } from '@/utils/pictures.js'
 import { PROJECT_TABLES as PROJECT_TABLE_NAMES } from './index.js'
 
 /** @typedef {import('./index.js').Storage} Storage */
@@ -104,7 +111,7 @@ import { PROJECT_TABLES as PROJECT_TABLE_NAMES } from './index.js'
  * @property {string[]} taken - Paths in its folder that are no document
  * @property {Map<string, Chat>|null} chats - Read when first asked for
  * @property {Map<string, MessageLines>} lines - Each chat's messages file, as last read or written
- * @property {Map<string, Blob>} bytes - Imported files' bytes that came before their rows
+ * @property {Map<string, Blob>} bytes - Imported files' and pictures' bytes that came before their rows
  * @property {Map<string, Chat>} freshChats - Chats of a project not written yet
  */
 
@@ -132,6 +139,44 @@ const under = (dir, path) => (path ? `${dir}/${path}` : dir)
 
 /** @param {string} path @param {string} dir */
 const atOrBelow = (path, dir) => path === dir || path.startsWith(`${dir}/`)
+
+/**
+ * The document a file's bytes belong to: a file document's own id, or the
+ * text a picture is of.
+ *
+ * @param {string} id
+ */
+const ownerOf = id => pictureOfKey(id)?.documentId ?? id
+
+/**
+ * Where the bytes asked for by this id are in a project's folder: an
+ * imported file's, or a text document's picture's. Null for a document that
+ * has none there.
+ *
+ * @param {Map<string, Entry>} entries
+ * @param {string} id
+ * @returns {string|null}
+ */
+const bytesPath = (entries, id) => {
+  const picture = pictureOfKey(id)
+  if (!picture) {
+    const entry = entries.get(id)
+    return entry?.kind === 'file' ? entry.path : null
+  }
+  const entry = entries.get(picture.documentId)
+  return entry?.kind === 'text' ? picturePath(entry.path, picture.documentId, picture.name) : null
+}
+
+/**
+ * The keys of every picture a project's documents have.
+ *
+ * @param {Map<string, Entry>} entries
+ * @returns {string[]}
+ */
+const pictureKeys = entries =>
+  [...entries.values()].flatMap(entry =>
+    (entry.pictures || []).map(name => pictureKey(entry.id, name))
+  )
 
 /**
  * The library as storage.
@@ -340,10 +385,10 @@ export function libraryStorage(disk, options = {}) {
    * how each written one was left, and which were changed elsewhere.
    *
    * @param {Project} project
-   * @param {Array<Op | {op: 'write', path: string, bytes: Uint8Array} | {op: 'append', path: string, at: number, text: string}>} ops
+   * @param {Array<Op | {op: 'write', path: string, bytes: Uint8Array} | {op: 'append', path: string, at: number, text: string}>} planned
    */
-  const apply = async (project, ops) => {
-    if (ops.length === 0) return
+  const apply = async (project, planned) => {
+    if (planned.length === 0) return
     const dir = /** @type {string} */ (project.dir)
     // What each file is expected to be when its op comes, followed through
     // the plan's own moves: a file moved and then written is expected where
@@ -357,25 +402,34 @@ export function libraryStorage(disk, options = {}) {
         if (to !== null) expected.set(to + path.slice(from.length), seen)
       }
     }
+    const there = (/** @type {string} */ path) =>
+      [...expected.keys()].some(seen => atOrBelow(seen, path))
+    /** @type {typeof planned} The ops sent, which is what was done */
+    const ops = []
     /** @type {LibraryOp[]} */
-    const toDo = ops.map(op => {
+    const toDo = []
+    for (const op of planned) {
       if (op.op === 'move') {
+        // A document's pictures move only when there are some to move: their
+        // bytes may not have come yet.
+        if (op.optional && !there(op.from)) continue
         follow(op.from, op.to)
-        return { op: 'move', from: under(dir, op.from), to: under(dir, op.to) }
-      }
-      if (op.op === 'trash') {
+        toDo.push({ op: 'move', from: under(dir, op.from), to: under(dir, op.to) })
+      } else if (op.op === 'trash') {
         follow(op.path, null)
-        return { op: 'trash', path: under(dir, op.path) }
+        toDo.push({ op: 'trash', path: under(dir, op.path) })
+      } else {
+        const was = expected.get(op.path)
+        expected.set(op.path, 'written')
+        if (op.op === 'append') {
+          if (was === 'written') throw new Error(`Written twice in one plan: ${op.path}`)
+          toDo.push({ ...op, path: under(dir, op.path), size: was?.size ?? 0 })
+        } else if (was === 'written') toDo.push({ ...op, path: under(dir, op.path) })
+        else toDo.push({ ...op, path: under(dir, op.path), expect: was ?? null })
       }
-      const was = expected.get(op.path)
-      expected.set(op.path, 'written')
-      if (op.op === 'append') {
-        if (was === 'written') throw new Error(`Written twice in one plan: ${op.path}`)
-        return { ...op, path: under(dir, op.path), size: was?.size ?? 0 }
-      }
-      if (was === 'written') return { ...op, path: under(dir, op.path) }
-      return { ...op, path: under(dir, op.path), expect: was ?? null }
-    })
+      ops.push(op)
+    }
+    if (toDo.length === 0) return
     let result
     try {
       result = await disk.apply(toDo)
@@ -485,9 +539,10 @@ export function libraryStorage(disk, options = {}) {
     )) {
       files.push({ path, text })
     }
-    for (const entry of entries.values()) {
-      const blob = entry.kind === 'file' ? bytes.get(entry.id) : undefined
-      if (blob) files.push({ path: entry.path, blob })
+    for (const id of [...entries.keys(), ...pictureKeys(entries)]) {
+      const blob = bytes.get(id)
+      const path = blob && bytesPath(entries, id)
+      if (path) files.push({ path, blob })
     }
     /** @type {Map<string, MessageLines>} */
     const lines = new Map()
@@ -631,9 +686,9 @@ export function libraryStorage(disk, options = {}) {
         planProject(project.entries, entries, documentOf, full.keys())
       )
       for (const [id, blob] of project.bytes) {
-        const entry = entries.get(id)
-        if (entry?.kind !== 'file') continue
-        ops.push({ op: 'write', path: entry.path, bytes: new Uint8Array(await blob.arrayBuffer()) })
+        const path = bytesPath(entries, id)
+        if (!path) continue
+        ops.push({ op: 'write', path, bytes: new Uint8Array(await blob.arrayBuffer()) })
         project.bytes.delete(id)
       }
       await apply(project, ops)
@@ -641,6 +696,11 @@ export function libraryStorage(disk, options = {}) {
       if (gone.length > 0) {
         const dir = /** @type {string} */ (project.dir)
         await disk.apply(gone.map(id => ({ op: 'delete', path: under(dir, audioDir(id)) })))
+        // A linked document's base goes to the trash with it.
+        const linked = gone.filter(id => project.rows.get(id)?.drive)
+        if (linked.length > 0) {
+          await disk.apply(linked.map(id => ({ op: 'trash', path: under(dir, basePath(id)) })))
+        }
       }
       project.entries = entries
       project.rows = new Map([...next].map(([id, document]) => [id, sketch(document)]))
@@ -855,20 +915,43 @@ export function libraryStorage(disk, options = {}) {
   }
 
   /**
-   * The bytes of an imported file.
+   * The bytes of an imported file, or of a text document's picture.
    *
    * @param {Project} project
-   * @param {string} id
+   * @param {string} id - The file document's, or the picture's key
    * @returns {Promise<Blob|null>}
    */
   const bytesOf = async (project, id) => {
     const waitingBytes = project.bytes.get(id)
     if (waitingBytes) return waitingBytes
-    const entry = project.entries.get(id)
-    if (entry?.kind !== 'file' || entry.missing) return null
-    const bytes = await disk.readBytes(under(/** @type {string} */ (project.dir), entry.path))
+    const path = bytesPath(project.entries, id)
+    if (!path || project.entries.get(id)?.missing) return null
+    const bytes = await disk.readBytes(under(/** @type {string} */ (project.dir), path))
     if (!bytes) return null
-    return new Blob([/** @type {BlobPart} */ (bytes)], { type: project.rows.get(id)?.mime || '' })
+    const picture = pictureOfKey(id)
+    const mime = picture
+      ? project.rows.get(picture.documentId)?.pictures?.[picture.name]?.mime
+      : project.rows.get(id)?.mime
+    return new Blob([/** @type {BlobPart} */ (bytes)], { type: mime || '' })
+  }
+
+  /**
+   * The bytes of every imported file and every picture in a project.
+   *
+   * @param {Project} project
+   * @returns {Promise<StoredFile[]>}
+   */
+  const bytesOfAll = async project => {
+    /** @type {StoredFile[]} */
+    const files = []
+    const ids = [...project.entries.values()]
+      .filter(entry => entry.kind === 'file')
+      .map(entry => entry.id)
+    for (const id of [...ids, ...pictureKeys(project.entries)]) {
+      const blob = await bytesOf(project, id)
+      if (blob) files.push({ id, storyId: project.id, blob })
+    }
+    return files
   }
 
   /** Every project, read whole: what a backup holds. */
@@ -881,11 +964,7 @@ export function libraryStorage(disk, options = {}) {
       const documents = await load(project)
       tables.stories.push(project.story)
       tables.documents.push(...documents)
-      for (const [id, entry] of project.entries) {
-        if (entry.kind !== 'file') continue
-        const blob = await bytesOf(project, id)
-        if (blob) tables.files.push({ id, storyId: project.id, blob })
-      }
+      tables.files.push(...(await bytesOfAll(project)))
       for (const chat of (await readChats(project)).values()) {
         tables.chats.push(chat)
         tables.messages.push(...(await readChatMessages(project, chat.id)))
@@ -966,6 +1045,34 @@ export function libraryStorage(disk, options = {}) {
         await disk.apply(paths.map(path => ({ op: 'delete', path: under(dir, path) })))
       }),
 
+    readBase: (storyId, documentId) =>
+      inTurn(async () => {
+        const dir = await dirOf(storyId)
+        if (!dir) return null
+        const path = under(dir, basePath(documentId))
+        const text = (await disk.read([path]))[path]
+        if (!text) return null
+        try {
+          return JSON.parse(text)
+        } catch {
+          return null
+        }
+      }),
+
+    writeBase: base =>
+      inTurn(async () => {
+        const dir = await dirOf(base.storyId)
+        if (!dir) return
+        const text = `${JSON.stringify(base, null, 2)}\n`
+        await disk.apply([{ op: 'write', path: under(dir, basePath(base.id)), text }])
+      }),
+
+    removeBase: (storyId, documentId) =>
+      inTurn(async () => {
+        const dir = await dirOf(storyId)
+        if (dir) await disk.apply([{ op: 'trash', path: under(dir, basePath(documentId)) }])
+      }),
+
     stories: () =>
       inTurn(async () => {
         await list()
@@ -1024,7 +1131,7 @@ export function libraryStorage(disk, options = {}) {
 
     fileBytes: id =>
       inTurn(async () => {
-        const project = projectOfDocument(id)
+        const project = projectOfDocument(ownerOf(id))
         return project ? bytesOf(project, id) : null
       }),
 
@@ -1034,14 +1141,7 @@ export function libraryStorage(disk, options = {}) {
         const project = projects.get(storyId)
         if (!project?.dir) return []
         await ensureLoaded(project)
-        /** @type {StoredFile[]} */
-        const files = []
-        for (const [id, entry] of project.entries) {
-          if (entry.kind !== 'file') continue
-          const blob = await bytesOf(project, id)
-          if (blob) files.push({ id, storyId, blob })
-        }
-        return files
+        return bytesOfAll(project)
       }),
 
     putFileBytes: (id, storyId, blob) =>
@@ -1049,13 +1149,14 @@ export function libraryStorage(disk, options = {}) {
         await list()
         const project = projectOf(storyId)
         await ensureLoaded(project)
-        const entry = project.entries.get(id)
-        if (!project.dir || entry?.kind !== 'file') {
+        // Kept until its document is written, when that is still to come.
+        const path = project.dir ? bytesPath(project.entries, id) : null
+        if (!path) {
           project.bytes.set(id, blob)
           return
         }
         await apply(project, [
-          { op: 'write', path: entry.path, bytes: new Uint8Array(await blob.arrayBuffer()) },
+          { op: 'write', path, bytes: new Uint8Array(await blob.arrayBuffer()) },
         ])
       }),
 

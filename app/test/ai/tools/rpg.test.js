@@ -14,6 +14,7 @@ import {
   TAROT_DECKS,
 } from '@/ai/tools/rpg.js'
 import { getToolDefinitions } from '@/ai/tools/index.js'
+import { setExperimentalSkills } from '@/ai/skills/index.js'
 import { MAJOR_ARCANA, MINOR_ARCANA, TAROT_DECK } from '@/ai/tools/data/tarot.js'
 
 describe('oracle and cards', () => {
@@ -178,7 +179,9 @@ describe('oracle and cards', () => {
     it('is not a tool any model is offered', () => {
       // The card is a prompt, not an answer, and whoever is handed it reads it
       // at the front of their next paragraph. `interpret` draws it out of
-      // sight and hands back what it made of it.
+      // sight and hands back what it made of it, while the experimental
+      // skills are switched on.
+      setExperimentalSkills(['interpret', 'write'])
       const names = getToolDefinitions().map(d => d.function.name)
 
       expect(names).not.toContain('draw_card')

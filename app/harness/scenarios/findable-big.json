@@ -15,7 +15,7 @@
     {
       "text": "What did I find on 14 September?",
       "reads": ["Notes/Journal/2026-09-14"],
-      "mentions": ["cache warming|loaded before the model|loading the model first", "210 ?ms"]
+      "mentions": ["cache.warming|loaded before the model|loading the model first", "210 ?ms"]
     },
     {
       "text": "Which meeting decided the index cap, and what was it?",

@@ -1046,6 +1046,9 @@ Type: [Object][210]
 - `url` **[string][211]**&#x20;
 - `name` **[string][211]** A filename for it, without an extension: what
   the response's type says the file is decides that
+- `site` **[string][211]** The site as the writer knows it, for saying
+  what could not be reached: `chub.ai` for a Chub card, though its PNG is
+  elsewhere
 
 ## CHUB_HOSTS
 
@@ -1499,14 +1502,21 @@ writer's text and eating it to make a name is a decision the importer has no
 business taking. One too long for the editor to lay out comes in plain, as
 the text it is: see editor/size.
 
+The pictures taken out of it (`files/pictures.js`) become its own, their
+bytes kept before its row is, so it never shows one as missing. A Google
+Doc read through the converter keeps its text as the base its first sync
+merges against.
+
 ### Parameters
 
 - `storyId` **[string][211]**&#x20;
 - `title` **[string][211]**&#x20;
-- `content` **[string][211]**&#x20;
+- `content` **[string][211]** With a marker where each of `pictures` was
 - `options` **[Object][210]?** (optional, default `{}`)
   - `options.parentId` **[string][211]?**&#x20;
   - `options.drive` &#x20;
+  - `options.base` &#x20;
+  - `options.pictures` &#x20;
 
 Returns **[Promise][215]<[Written][175]>**&#x20;
 

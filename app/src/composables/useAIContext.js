@@ -7,7 +7,7 @@ import { useChatsStore } from '@/stores/chatsStore.js'
 import { useMessagesStore } from '@/stores/messagesStore.js'
 import { buildContext } from '@/ai/context/build.js'
 import { documentLocator, projectOverview, pinnedDocuments } from '@/ai/tools/documents.js'
-import { keptInConversation, offersDocuments } from '@/ai/tools/index.js'
+import { keptInConversation, offersComments, offersDocuments } from '@/ai/tools/index.js'
 import { useEditor } from './useEditor.js'
 import { namesOf } from '@/cards/macros.js'
 
@@ -76,11 +76,20 @@ export function useAIContext(storyId) {
     // Where each document the model read is now, for the block to say which
     // have changed since.
     const locate = reaches ? await documentLocator(storyId, chat) : undefined
+    // A pinned document's comments go with it to a model that can answer them.
+    const comments =
+      inChat &&
+      opts.toolsAllowed !== false &&
+      offersComments({
+        disabledTools: chat?.disabledTools,
+        disabledGroups: chat?.disabledToolGroups,
+      })
     return buildContext(opts.mode, stores, {
       ...opts,
       storyId,
       project,
       pinned,
+      comments,
       keeps: keptInConversation,
       locate,
       // What a card's macros become in this chat, when it plays one.

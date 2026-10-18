@@ -44,8 +44,8 @@ describe('selectionMarkdown', () => {
   })
 
   it('keeps a comment as its markup', () => {
-    const state = selecting('It was a {==dark==}{>>c7k2m1: reword<<} night.', 'It', 'night.')
-    expect(selectionMarkdown(state)).toBe('It was a {==dark==}{>>c7k2m1: reword<<} night.')
+    const state = selecting('It was a {==dark==}{>>c7k2m1<<} night.', 'It', 'night.')
+    expect(selectionMarkdown(state)).toBe('It was a {==dark==}{>>c7k2m1<<} night.')
   })
 })
 
@@ -96,12 +96,24 @@ describe('readClipboard', () => {
     expect(await readClipboard(/** @type {any} */ (clipboard))).toEqual({
       html: '<p><strong>late</strong></p>',
       text: 'late',
+      pictures: [],
     })
     expect(clipboard.asked).toEqual([{ unsanitized: ['text/html'] }])
   })
 
   it('has no HTML for plain text', async () => {
     const clipboard = holding({ 'text/plain': 'late' })
-    expect(await readClipboard(/** @type {any} */ (clipboard))).toEqual({ html: '', text: 'late' })
+    expect(await readClipboard(/** @type {any} */ (clipboard))).toEqual({
+      html: '',
+      text: 'late',
+      pictures: [],
+    })
+  })
+
+  it('reads a picture, as a screenshot leaves one', async () => {
+    const clipboard = holding({ 'image/png': 'pixels' })
+    const read = await readClipboard(/** @type {any} */ (clipboard))
+    expect(read.pictures).toHaveLength(1)
+    expect(await read.pictures[0].text()).toBe('pixels')
   })
 })

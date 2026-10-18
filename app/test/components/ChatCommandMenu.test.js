@@ -22,7 +22,7 @@ describe('ChatCommandMenu', () => {
   it('marks the commands that call the model, and only those', () => {
     const wrapper = mountMenu()
 
-    expect(wrapper.find('[data-command="write"] [data-consults]').exists()).toBe(true)
+    expect(wrapper.find('[data-command="compact"] [data-consults]').exists()).toBe(true)
     expect(wrapper.find('[data-command="roll"] [data-consults]').exists()).toBe(false)
   })
 

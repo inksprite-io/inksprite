@@ -35,6 +35,7 @@ import { markCharacters } from '../stores/migrations/characterSigil.js'
 import { foldTurns } from '../stores/migrations/turnSegments.js'
 import { foldRuns } from '../stores/migrations/turnRuns.js'
 import { documentsToMarkdown } from '../stores/migrations/markdown.js'
+import { threadsOffText } from '../stores/migrations/commentThreads.js'
 import {
   promptsToProfiles,
   chatsToProfiles,
@@ -303,6 +304,17 @@ const UPGRADES = {
   // v29 added the card library, `cards` and `cardFiles`. No existing row
   // changed, so both start empty.
   29: tables => ({ cards: [], cardFiles: [], ...tables }),
+
+  // v30 moved what each comment says out of its markup onto a thread on its
+  // document's row. Idempotent.
+  30: tables =>
+    tables.documents
+      ? { ...tables, documents: threadsOffText(tables.documents).documents }
+      : tables,
+
+  // v31 added `docBases`, the linked documents' Google Docs as last synced,
+  // which backups leave out: a restored document's next sync is a first one.
+  31: tables => tables,
 }
 
 /**

@@ -58,9 +58,32 @@ describe('parseMarkdown', () => {
     expect(doc.firstChild.firstChild.marks).toEqual([])
   })
 
-  it('reads an image as text rather than throwing', () => {
-    const image = parseMarkdown('![alt](http://x/y.png)')
-    expect(image.textContent).toContain('alt')
+  it('reads a picture as a picture, its path and alt text kept', () => {
+    const picture = parseMarkdown('![A map](.images/doc_a1/market%20map.png "The quarter")')
+      .firstChild.firstChild
+    expect(picture.type.name).toBe('image')
+    expect(picture.attrs).toEqual({
+      src: '.images/doc_a1/market%20map.png',
+      alt: 'A map',
+      title: 'The quarter',
+    })
+  })
+
+  it("reads a picture's alt text as its words alone", () => {
+    const picture = parseMarkdown('![a *walled* `city`](x.png)').firstChild.firstChild
+    expect(picture.attrs.alt).toBe('a walled city')
+  })
+
+  it('reads a path written in <…> with its spaces encoded', () => {
+    const picture = parseMarkdown('![](<.images/doc_a1/market map.png>)').firstChild.firstChild
+    expect(picture.attrs.src).toBe('.images/doc_a1/market%20map.png')
+    expect(picture.attrs.alt).toBe(null)
+  })
+
+  it('keeps an escaped ! before a link as words and a link', () => {
+    const paragraph = parseMarkdown('\\![not a picture](x.png)').firstChild
+    expect(paragraph.firstChild.text).toBe('!')
+    expect(paragraph.child(1).marks[0].type.name).toBe('link')
   })
 
   it('reads every block and mark into its node', () => {
@@ -244,6 +267,110 @@ describe('serializeMarkdown', () => {
     const { markdown, doc: back } = roundTrip(doc)
     expect(markdown).toBe('Once\n\\# not a heading\n\\- not a list\n1\\. not a list either')
     expect(back.eq(doc)).toBe(true)
+  })
+
+  it('escapes what the reference leaves to come back as something else', () => {
+    const paragraph = text => ({ type: 'paragraph', content: [{ type: 'text', text }] })
+    const doc = schema.nodeFromJSON({
+      type: 'doc',
+      content: [
+        paragraph('1) not a list'),
+        paragraph('2.'),
+        paragraph('+'),
+        paragraph('Fish &amp; chips, &#42; and &#x2A;, but & alone'),
+        paragraph('Write to <ada@example.com> or <https://example.com>, not <b>'),
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Not a heading' },
+            { type: 'hard_break' },
+            { type: 'text', text: '===' },
+            { type: 'hard_break' },
+            { type: 'text', text: '3) nor a list' },
+          ],
+        },
+        { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Take #' }] },
+        { type: 'heading', attrs: { level: 3 }, content: [{ type: 'text', text: 'Part ##' }] },
+        { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'C# and #1' }] },
+      ],
+    })
+    const { markdown, doc: back } = roundTrip(doc)
+    expect(markdown).toBe(
+      [
+        '1\\) not a list',
+        '2\\.',
+        '\\+',
+        'Fish \\&amp; chips, \\&#42; and \\&#x2A;, but & alone',
+        'Write to \\<ada@example.com> or \\<https://example.com>, not <b>',
+        'Not a heading\n\\===\n3\\) nor a list',
+        '## Take \\#',
+        '### Part \\##',
+        '## C# and #1',
+      ].join('\n\n')
+    )
+    expect(back.eq(doc)).toBe(true)
+
+    // A break after it is dropped, so the `#` still ends the line.
+    const broken = schema.nodeFromJSON({
+      type: 'doc',
+      content: [
+        {
+          type: 'heading',
+          attrs: { level: 2 },
+          content: [{ type: 'text', text: 'Take #' }, { type: 'hard_break' }],
+        },
+      ],
+    })
+    expect(serializeMarkdown(broken)).toBe('## Take \\#')
+  })
+
+  it('writes a space without the bold or italic the text after it lacks', () => {
+    const strong = schema.marks.strong.create()
+    const em = schema.marks.em.create()
+    const link = schema.marks.link.create({ href: 'https://example.com' })
+    const paragraph = (/** @type {import('prosemirror-model').Node[]} */ ...content) =>
+      schema.node('paragraph', null, content)
+    const doc = schema.node('doc', null, [
+      // As Docs bolds a double-clicked word's space with it.
+      paragraph(
+        schema.text('Kept '),
+        schema.text('bold italic.', [strong, em]),
+        schema.text(' ', [strong]),
+        schema.text('Plain.')
+      ),
+      // Between two bold words, a bold space stays bold, and a link keeps its own.
+      paragraph(
+        schema.text('one', [strong]),
+        schema.text(' ', [strong]),
+        schema.text('two', [strong, em]),
+        schema.text(' and '),
+        schema.text('a', [link]),
+        schema.text(' ', [link, em]),
+        schema.text('link', [link])
+      ),
+      schema.node('table', null, [
+        schema.node('table_row', null, [
+          schema.node('table_cell', null, [
+            schema.text('cell', [strong, em]),
+            schema.text(' ', [strong]),
+            schema.text('text'),
+          ]),
+        ]),
+      ]),
+    ])
+
+    const { markdown, doc: back } = roundTrip(doc)
+
+    expect(markdown).toBe(
+      [
+        'Kept ***bold italic.*** Plain.',
+        '**one *two*** and [a link](https://example.com)',
+        '| ***cell*** text |\n| --- |',
+      ].join('\n\n')
+    )
+    expect(back.textBetween(0, back.content.size, '|')).toBe(
+      'Kept bold italic. Plain.|one two and a link|cell text'
+    )
   })
 
   it('keeps a run of breaks a run rather than a paragraph break', () => {
@@ -438,6 +565,13 @@ describe('round trip', () => {
     code: '`code`',
     strike: '~~gone~~',
     link: '[link](https://example.com)',
+    'picture alone': '![A map of the quarter](.images/doc_a1/market%20map.png)',
+    'picture in a sentence': 'The gate ![](Maps/gate.png) stood open.',
+    'picture with a title': '![Gate](gate.png "The north gate")',
+    'picture with spaces in its path': '![](.images/doc_a1/a%20b%20c.png)',
+    'picture from the web': '![](https://example.com/gate.png)',
+    'linked picture': '[![Gate](gate.png)](https://example.com)',
+    'picture in a comment': '{==the gate ![](gate.png) stood==}{>>c_a1<<}',
     table: '| Name | Age |\n| --- | --- |\n| Ada | 36 |',
     'aligned table': '| a | b | c | d |\n| --- | :--- | :---: | ---: |\n| 1 | 2 | 3 | 4 |',
     'table with marks and an empty cell':

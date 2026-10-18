@@ -21,12 +21,14 @@
  */
 
 import { useDocuments } from '@/composables/useDocuments'
-import { useDocumentsStore } from '@/stores/documentsStore'
+import { generateDocumentId, useDocumentsStore } from '@/stores/documentsStore'
 import { useFilesStore } from '@/stores/filesStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { freeTitle } from '@/utils/documentPath.js'
 import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
 import { laysOut } from '@/editor/size.js'
+import { placePictures } from '@/files/pictures.js'
+import { storage } from '@/storage/index.js'
 import { uncomment, undecorate } from './card.js'
 
 /** @typedef {import('./card.js').Card} Card */
@@ -265,32 +267,70 @@ async function writePortrait(store, storyId, folderId, portrait) {
  * business taking. One too long for the editor to lay out comes in plain, as
  * the text it is: see editor/size.
  *
+ * The pictures taken out of it (`files/pictures.js`) become its own, their
+ * bytes kept before its row is, so it never shows one as missing. A Google
+ * Doc read through the converter keeps its text as the base its first sync
+ * merges against.
+ *
  * @param {string} storyId
  * @param {string} title
- * @param {string} content
+ * @param {string} content - With a marker where each of `pictures` was
  * @param {Object} [options]
  * @param {string} [options.parentId]
  * @param {import('../types/models.js').DriveLink} [options.drive] - The Google
  *   Doc it was exported from
+ * @param {import('@/files/batch.js').BaseRead} [options.base] - Where the Doc
+ *   was read, when it was read through the converter
+ * @param {import('@/files/pictures.js').TakenPicture[]} [options.pictures]
  * @returns {Promise<Written>}
  */
-export async function writeMarkdown(storyId, title, content, { parentId, drive } = {}) {
+export async function writeMarkdown(
+  storyId,
+  title,
+  content,
+  { parentId, drive, base, pictures } = {}
+) {
   const api = useDocuments(storyId)
   await api.init()
   const store = useDocumentsStore()
 
+  const id = generateDocumentId()
+  const placed = pictures?.length ? await placePictures(content, pictures, id) : null
+  for (const { key, blob } of placed?.files || []) {
+    await useFilesStore().putFile(key, storyId, blob)
+  }
+  const text = placed?.markdown ?? content
+
   const parent = parentId || rootIdFor(storyId)
-  const doc = parseMarkdown(content)
+  const doc = parseMarkdown(text)
   const plain = !laysOut(doc)
+  const markdown = plain ? text : serializeMarkdown(doc)
   const made = store.createDocument({
+    id,
     storyId,
     parentId: parent,
     type: 'text',
     title: api.uniqueTitle(parent, title || 'Untitled'),
     plain,
-    content: plain ? content : serializeMarkdown(doc),
+    content: markdown,
     drive,
+    pictures: placed?.pictures,
   })
+  if (drive && base) {
+    // The names its pictures go by, by the Doc's ids, which a sync knows them by.
+    const names = Object.entries(placed?.pictures ?? {}).flatMap(([name, info]) =>
+      info.docsId ? [[info.docsId, name]] : []
+    )
+    await storage.writeBase({
+      id,
+      storyId,
+      docId: drive.id,
+      ...base,
+      markdown,
+      ...(names.length > 0 && { pictures: Object.fromEntries(names) }),
+      at: Date.now(),
+    })
+  }
 
   return {
     folderId: made.id,

@@ -18,7 +18,12 @@ import {
   ROLEPLAY_PROFILE_ID,
   ROLEPLAY_NSFW_PROFILE_ID,
 } from '@/ai/profiles/index.js'
-import { INTERPRET_PROMPT, setLibrarySkills, setSkillWordings } from '@/ai/skills/index.js'
+import {
+  INTERPRET_PROMPT,
+  setExperimentalSkills,
+  setLibrarySkills,
+  setSkillWordings,
+} from '@/ai/skills/index.js'
 import { useSkillStore } from '@/stores/skillStore'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { setWebSearch } from '@/web/config.js'
@@ -121,6 +126,18 @@ async function mountSettings(chatId = 'chat_1', options = {}) {
 
 const promptField = wrapper => wrapper.find('textarea')
 const button = (wrapper, label) => wrapper.find(`button[aria-label="${label}"]`)
+
+/**
+ * Switch the experimental skills as the writer's switches do: in the app's
+ * settings, and in the registry, which App.vue tells.
+ *
+ * @param {string[]} names - The ones on
+ */
+const switchExperimental = names => {
+  const app = useApplicationState()
+  for (const name of ['interpret', 'write']) app.setExperimentalSkill(name, names.includes(name))
+  setExperimentalSkills(names)
+}
 
 /** The profiles of the writer's own, as the library lists them. */
 const saved = library => library.profiles.value.filter(one => !one.readOnly)
@@ -721,7 +738,10 @@ describe('ChatSettings tools', () => {
     chat.value = {}
     updateChat.mockClear()
     preset.value = { toolsEnabled: true, generationOverrides: {} }
+    switchExperimental(['interpret', 'write'])
   })
+
+  afterEach(() => switchExperimental([]))
 
   it('leaves the skills out of the tool list, since they have a section', async () => {
     const wrapper = await mountSettings()
@@ -860,6 +880,54 @@ describe('ChatSettings tools', () => {
     expect(wrapper.findAll('[data-skill-experimental]')).toHaveLength(2)
     expect(toggle(wrapper, 'Experimental tools')).toBeUndefined()
   })
+
+  /** The skills listed, in order, by the prompt each has. */
+  const listed = wrapper =>
+    wrapper
+      .findAll('textarea')
+      .map(field => field.attributes('aria-label') || '')
+      .filter(label => label.endsWith(' prompt') && !/system prompt$/i.test(label))
+      .map(label => label.replace(/ prompt$/, ''))
+
+  it('lists yours, then the built-ins, then the experimental ones, each by name', async () => {
+    const fork = name =>
+      `---\nname: ${name}\ndescription: The ${name}.\ncontext: fork\n---\n\nDo it.\n`
+    storedSkills.splice(
+      0,
+      storedSkills.length,
+      { id: 'skill_zest', name: 'zest', text: fork('zest') },
+      { id: 'skill_aside', name: 'aside', text: fork('aside') }
+    )
+    try {
+      const wrapper = await mountSettings()
+
+      expect(listed(wrapper)).toEqual(['Aside', 'Zest', 'Compact', 'Interpret', 'Write'])
+    } finally {
+      storedSkills.splice(0, storedSkills.length)
+      setLibrarySkills([])
+    }
+  })
+
+  it('leaves out the experimental skills switched off', async () => {
+    switchExperimental([])
+    const wrapper = await mountSettings()
+
+    expect(listed(wrapper)).toEqual(['Compact'])
+    expect(toggle(wrapper, 'Interpret available to the model')).toBeUndefined()
+    expect(wrapper.find('[data-skill-experimental]').exists()).toBe(false)
+  })
+
+  it('brings one in when it is switched on while it is open', async () => {
+    switchExperimental([])
+    const wrapper = await mountSettings()
+
+    switchExperimental(['write'])
+    await flushPromises()
+
+    expect(listed(wrapper)).toEqual(['Compact', 'Write'])
+    expect(toggle(wrapper, 'Write available to the model')).toBeDefined()
+    expect(toggle(wrapper, 'Interpret available to the model')).toBeUndefined()
+  })
 })
 
 describe('ChatSettings skill prompts', () => {
@@ -870,12 +938,14 @@ describe('ChatSettings skill prompts', () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
     chat.value = { id: 'chat_1', storyId: 'story_1', profileId: CHAT_PROFILE_ID }
+    switchExperimental(['interpret', 'write'])
     await useChatProfileStore().ensureInitialized()
   })
 
   afterEach(() => {
     storedWordings.splice(0, storedWordings.length)
     setSkillWordings([])
+    switchExperimental([])
   })
 
   it('shows the wording a skill has in the library, on a profile with none of its own', async () => {

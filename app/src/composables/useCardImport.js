@@ -30,6 +30,7 @@ import { cardFromPng } from '@/cards/png.js'
 import { shapeOf, readCard, readLorebook } from '@/cards/card.js'
 import { reimportCard, shelfFor, writeCard, writeLorebook, writeMarkdown } from '@/cards/write.js'
 import { docxToMarkdown, isDocx } from '@/files/docx.js'
+import { takePictures } from '@/files/pictures.js'
 import { inspectFile, isStructured, titleOf } from '@/files/inspect.js'
 import { writeFile } from '@/files/write.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
@@ -65,8 +66,9 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
  * @property {string} [mime] - A file: what it is
  * @property {number} [pages] - A file: how many pages, for a format that has them
  * @property {boolean} [text] - A file: whether any text could be read out of it
- * @property {number} [images] - A Word file: the pictures left out of it,
- *   which documents cannot hold yet
+ * @property {import('@/files/pictures.js').TakenPicture[]} [pictures] - Markdown or
+ *   a Word file: the pictures taken out of it, a marker in the text where each
+ *   was, to be the document's own
  * @property {File|null} [portrait] - A card that came in a PNG: the PNG, kept
  *   in the card's folder as its picture
  * @property {string} [replaces] - A card read back out of its own folder, to
@@ -127,25 +129,28 @@ export function useCardImport(storyId) {
    */
   async function inspect(file, { cards = useApplicationState().roleplay.value } = {}) {
     if (MARKDOWN.test(file.name) || file.type === 'text/markdown') {
+      // A Google Doc's pictures come written into its markdown.
+      const { markdown, pictures } = takePictures(await file.text())
       return {
         shape: 'markdown',
         title: file.name.replace(/\.[^.]+$/, ''),
         ...NOTHING,
         documents: 1,
         asks: false,
-        value: await file.text(),
+        ...(pictures.length > 0 && { pictures }),
+        value: markdown,
       }
     }
 
     if (isDocx(file)) {
-      const { markdown, images } = await docxToMarkdown(await file.arrayBuffer())
+      const { markdown, pictures } = await docxToMarkdown(await file.arrayBuffer())
       return {
         shape: 'markdown',
         title: titleOf(file.name),
         ...NOTHING,
         documents: 1,
         asks: false,
-        images,
+        ...(pictures.length > 0 && { pictures }),
         value: markdown,
       }
     }
@@ -262,9 +267,11 @@ export function useCardImport(storyId) {
    * @param {boolean} [options.useSystemPrompt] - Keep the card's prompt override
    * @param {import('@/types/models.js').DriveLink} [options.drive] - The Google
    *   Doc a markdown document was exported from; nothing else keeps one
+   * @param {import('@/files/batch.js').BaseRead} [options.base] - Where the Doc
+   *   was read, when it was read through the converter
    * @returns {Promise<import('@/cards/write.js').Written>}
    */
-  async function write(found, { parentId, useSystemPrompt, drive } = {}) {
+  async function write(found, { parentId, useSystemPrompt, drive, base } = {}) {
     if (found.replaces) {
       return reimportCard(storyId, found.replaces, found.value, {
         useSystemPrompt,
@@ -272,10 +279,12 @@ export function useCardImport(storyId) {
       })
     }
     if (found.shape === 'markdown') {
-      const written = await writeMarkdown(storyId, found.title, found.value, { parentId, drive })
-      if (!found.images) return written
-      const images = found.images === 1 ? '1 image' : `${found.images} images`
-      return { ...written, note: ` (${images} left out)` }
+      return writeMarkdown(storyId, found.title, found.value, {
+        parentId,
+        drive,
+        base,
+        pictures: found.pictures,
+      })
     }
     if (found.shape === 'file') {
       const written = await writeFile(storyId, found.value, { parentId })

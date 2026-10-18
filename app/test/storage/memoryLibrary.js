@@ -90,7 +90,11 @@ export function memoryLibrary() {
         let inside = false
         for (let depth = 1; depth < parts.length; depth++) {
           const folder = parts.slice(0, depth).join('/')
-          if (inside || (depth === 1 && parts[0] === '.inksprite')) {
+          if (
+            inside ||
+            (depth === 1 && parts[0] === '.inksprite') ||
+            parts[depth - 1] === '.images'
+          ) {
             inside = true
             continue
           }

@@ -356,6 +356,22 @@ describe('a selection', () => {
     expect(backup.tables.messages).toEqual([])
   })
 
+  it("carries a ticked text's pictures, and no one else's", async () => {
+    const picture = id => ({
+      id,
+      storyId: STORY,
+      blob: new Blob([new Uint8Array([0x89, 0x50])], { type: 'image/png' }),
+    })
+    await db.files.add(picture(`${CHAPTER}/gate.png`))
+    await db.files.add(picture(`${PDF}x/well.png`))
+
+    const backup = await useBackup().createSelectionBackup(
+      pick({ projects: [{ id: STORY, whole: false, documentIds: [CHAPTER], chatIds: [] }] })
+    )
+
+    expect(backup.tables.files.map(row => row.id)).toEqual([`${CHAPTER}/gate.png`])
+  })
+
   it('is a whole backup with everything ticked, and a settings file with settings alone', async () => {
     expect((await useBackup().createSelectionBackup(pick({ everything: true }))).scope).toBe(
       'database'

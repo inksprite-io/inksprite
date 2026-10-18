@@ -11,9 +11,11 @@
  *
  * The commands are the state's; the keys, the clicks and the paste are a view
  * plugin's, since what they do next — show a field, open a page — is the
- * editor component's to do.
+ * editor component's to do. So is how a link is carried from one document to
+ * another, which `mapHrefs` changes in a copied or pasted slice.
  */
 
+import { Fragment, Slice } from 'prosemirror-model'
 import { Plugin, TextSelection } from 'prosemirror-state'
 import { keydownHandler } from 'prosemirror-keymap'
 import { schema } from './schema.js'
@@ -125,6 +127,48 @@ export function normalizeHref(input) {
   if (!href || /^[a-z][a-z0-9+.-]*:(?!\d)/i.test(href) || /^[#/]/.test(href)) return href
   if (/^[^\s@/]+@[^\s@/]+\.[^\s@/]+$/.test(href)) return `mailto:${href}`
   return `https://${href}`
+}
+
+/**
+ * A slice with every link's address, and every picture's path, made what
+ * `change` makes it: how links are carried on the clipboard from one
+ * document to another (see `useDocumentLinks`).
+ *
+ * @param {Slice} slice
+ * @param {(href: string) => string} change
+ * @returns {Slice}
+ */
+export function mapHrefs(slice, change) {
+  let changed = false
+  /** @param {import('prosemirror-model').Node} node */
+  const relinked = node => {
+    const marks = node.marks.map(mark => {
+      if (mark.type !== link) return mark
+      const href = change(mark.attrs.href)
+      if (href === mark.attrs.href) return mark
+      changed = true
+      return link.create({ ...mark.attrs, href })
+    })
+    if (node.type.name === 'image') {
+      const src = change(node.attrs.src)
+      if (src !== node.attrs.src) {
+        changed = true
+        return node.type.create({ ...node.attrs, src }, null, marks)
+      }
+    }
+    return marks.some((mark, i) => mark !== node.marks[i]) ? node.mark(marks) : node
+  }
+  /** @param {Fragment} fragment @returns {Fragment} */
+  const map = fragment => {
+    /** @type {import('prosemirror-model').Node[]} */
+    const nodes = []
+    fragment.forEach(node => {
+      nodes.push(node.isLeaf ? relinked(node) : node.copy(map(node.content)))
+    })
+    return Fragment.from(nodes)
+  }
+  const content = map(slice.content)
+  return changed ? new Slice(content, slice.openStart, slice.openEnd) : slice
 }
 
 /**

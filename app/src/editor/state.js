@@ -48,6 +48,9 @@ import { schema } from './schema.js'
 import { parseMarkdown } from './markdown.js'
 import { searchPlugin } from './search.js'
 import { spellingPlugin } from './spelling.js'
+import { commentDraftPlugin } from './commentDraft.js'
+import { figuresPlugin } from './pictures.js'
+import { diffSequences } from '@/utils/diff.js'
 import {
   cellPaste,
   deleteEmptyTable,
@@ -234,6 +237,8 @@ export function plugins() {
     history(),
     searchPlugin(),
     spellingPlugin(),
+    commentDraftPlugin(),
+    figuresPlugin(),
   ]
 }
 
@@ -270,6 +275,106 @@ export function isEmptyDocument(doc) {
 export function replaceContent(state, markdown) {
   const tr = state.tr.replaceWith(0, state.doc.content.size, parseMarkdown(markdown).content)
   return closeHistory(tr.setSelection(Selection.atEnd(tr.doc)).scrollIntoView())
+}
+
+/**
+ * The document made to say this markdown by replacing only what differs, so
+ * the caret and what is around the change stay as they are: for a change made
+ * to the markdown, a comment put back on its passage, that the writer did
+ * not make in the text. Null when the two say the same.
+ *
+ * @param {EditorState} state
+ * @param {string} markdown
+ * @returns {Transaction|null}
+ */
+export function replaceChanged(state, markdown) {
+  const next = parseMarkdown(markdown)
+  const start = state.doc.content.findDiffStart(next.content)
+  if (start === null) return null
+  const end = state.doc.content.findDiffEnd(next.content)
+  if (!end) return null
+  let { a: endA, b: endB } = end
+  const overlap = start - Math.min(endA, endB)
+  if (overlap > 0) {
+    endA += overlap
+    endB += overlap
+  }
+  return state.tr.replace(start, endA, next.slice(start, endB))
+}
+
+/**
+ * The document made into another by replacing only the blocks that differ,
+ * and inside a block still of its kind only what differs in it, so the
+ * caret, and the text around each change, stay where they are: for edits
+ * that come from outside the editor, a sync's from its Doc, as one undo
+ * step of their own. Null when the two say the same.
+ *
+ * @param {EditorState} state
+ * @param {Node} next - The document it is to be
+ * @returns {Transaction|null}
+ */
+export function editsTo(state, next) {
+  /** @type {Node[]} */
+  const before = []
+  /** @type {number[]} Where each block of `before` starts, and the end after them. */
+  const starts = []
+  state.doc.forEach((node, offset) => {
+    before.push(node)
+    starts.push(offset)
+  })
+  starts.push(state.doc.content.size)
+  /** @type {Node[]} */
+  const after = []
+  next.forEach(node => after.push(node))
+  /** @param {Node} node */
+  const key = node => JSON.stringify(node.toJSON())
+  const steps = diffSequences(before.map(key), after.map(key))
+  if (!steps || steps.every(step => step.op === 'equal')) return null
+
+  /** @type {Array<{a: [number, number], b: [number, number]}>} Each stretch that differs. */
+  const changes = []
+  let a = 0
+  let b = 0
+  for (const step of steps) {
+    if (step.op === 'equal') {
+      a = step.a + 1
+      b = step.b + 1
+      continue
+    }
+    const last = changes.at(-1)
+    const change = last && last.a[1] === a && last.b[1] === b ? last : { a: [a, a], b: [b, b] }
+    if (change !== last) changes.push(/** @type {any} */ (change))
+    if (step.op === 'delete') change.a[1] = a = step.a + 1
+    else change.b[1] = b = step.b + 1
+  }
+
+  const tr = state.tr
+  for (const change of changes.reverse()) {
+    const from = starts[change.a[0]]
+    const to = starts[change.a[1]]
+    const old = before[change.a[0]]
+    const made = after[change.b[0]]
+    if (
+      change.a[1] - change.a[0] === 1 &&
+      change.b[1] - change.b[0] === 1 &&
+      old.sameMarkup(made)
+    ) {
+      const start = old.content.findDiffStart(made.content)
+      const end = old.content.findDiffEnd(made.content)
+      if (start !== null && end) {
+        let { a: endA, b: endB } = end
+        const overlap = start - Math.min(endA, endB)
+        if (overlap > 0) {
+          endA += overlap
+          endB += overlap
+        }
+        tr.replace(from + 1 + start, from + 1 + endA, made.slice(start, endB))
+        continue
+      }
+    }
+    tr.replaceWith(from, to, after.slice(change.b[0], change.b[1]))
+  }
+  return closeHistory(tr)
 }
 
 /**

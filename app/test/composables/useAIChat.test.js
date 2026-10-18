@@ -8,7 +8,7 @@ import {
   DEFAULT_ROLEPLAY_NOTE,
   DEFAULT_ROLEPLAY_NSFW_NOTE,
 } from '@/ai/prompts/index.js'
-import { SKILL_MAX_ROUNDS } from '@/ai/skills/index.js'
+import { SKILL_MAX_ROUNDS, setExperimentalSkills } from '@/ai/skills/index.js'
 import { setWebSearch } from '@/web/config.js'
 
 // Mock stores
@@ -2763,6 +2763,7 @@ describe('useAIChat', () => {
     })
 
     it('should refuse an edit that asks the model while a reply is being written', async () => {
+      setExperimentalSkills(['interpret', 'write'])
       const composable = useAIChat(mockStoryId, mockChatId)
       composable.isGenerating.value = true
       mockChatsApi.getMessageById.mockReturnValue({

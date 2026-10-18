@@ -29,7 +29,9 @@ import { titleKey } from '@/utils/documentPath.js'
  * @property {number} scans - PDFs with no text in them
  * @property {Array<{name: string, reason: string}>} skipped - What could not be read, and why
  * @property {number} [images] - Pictures left out of what came in: a Google
- *   Doc's or a Word file's, which documents cannot hold yet
+ *   Doc's read through the Docs API, whose pictures stay in the Doc for now
+ * @property {string[]} [suggested] - Google Docs that had suggested edits
+ *   still open, by name: they came in as they were before them
  */
 
 /**
@@ -82,15 +84,15 @@ export function useBulkImport(storyId) {
     }
 
     let done = 0
-    for (const { file, folders, drive } of gathered) {
+    for (const { file, folders, drive, pictures, base } of gathered) {
       signal?.throwIfAborted()
       try {
         const found = await cards.inspect(file)
+        if (pictures?.length) found.pictures = [...(found.pictures ?? []), ...pictures]
         signal?.throwIfAborted()
-        const written = await cards.write(found, { parentId: folderFor(folders), drive })
+        const written = await cards.write(found, { parentId: folderFor(folders), drive, base })
         result.documents += written.documents
         if (found.shape === 'card' || found.shape === 'lorebook') result.cards++
-        if (found.images) result.images = (result.images ?? 0) + found.images
         if (found.shape === 'file' && found.mime === 'application/pdf' && !found.text) {
           result.scans++
         }
@@ -120,11 +122,20 @@ export function useBulkImport(storyId) {
 export function describeImport(result) {
   const count = (/** @type {number} */ n, /** @type {string} */ word) =>
     `${n} ${word}${n === 1 ? '' : 's'}`
+  // Up to three names, as a sentence would list them.
+  const listed = (/** @type {string[]} */ names) => {
+    const shown = names.slice(0, 3)
+    if (names.length > shown.length) return `${shown.join(', ')} and ${names.length - 3} more`
+    return shown.length > 1 ? `${shown.slice(0, -1).join(', ')} and ${shown.at(-1)}` : shown[0]
+  }
   const bits = [count(result.documents, 'document')]
   if (result.folders > 0) bits.push(count(result.folders, 'new folder'))
   const notes = []
   if (result.scans > 0) notes.push(`${count(result.scans, 'PDF')} with no extractable text.`)
   if (result.images) notes.push(`${count(result.images, 'image')} left out.`)
+  if (result.suggested?.length) {
+    notes.push(`${listed(result.suggested)} had suggested edits still open. They were left out.`)
+  }
   if (result.skipped.length > 0) {
     const names = result.skipped
       .slice(0, 3)
@@ -134,8 +145,9 @@ export function describeImport(result) {
     notes.push(`Skipped ${names}${more}.`)
   }
   const nothing = result.documents === 0
+  const flawed = result.skipped.length > 0 || Boolean(result.suggested?.length)
   return {
-    severity: nothing ? 'error' : result.skipped.length > 0 ? 'warn' : 'success',
+    severity: nothing ? 'error' : flawed ? 'warn' : 'success',
     detail: [nothing ? 'Nothing imported.' : `Imported ${bits.join(', ')}.`, ...notes].join(' '),
   }
 }

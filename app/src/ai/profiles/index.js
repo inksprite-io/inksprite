@@ -86,8 +86,9 @@ const ALL_TOOL_GROUPS = ['documents', 'rpg', 'skills', 'experimental']
 
 /**
  * The skills still being tuned, Interpret and Write, which no built-in offers
- * the model. A chat switches one on for itself; the writer's own `/interpret`
- * and `/write` work either way. See ai/tools.
+ * the model. While the writer has one switched on for the app, a chat
+ * switches it on for itself; the writer's own `/interpret` or `/write` works
+ * in any chat then. See ai/tools.
  */
 const EXPERIMENTAL = 'experimental'
 

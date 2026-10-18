@@ -36,6 +36,7 @@
  *
  *     /director This scene needs more tension.
  *     /roll 3d6+2
+ *     /roll 2d6 How does the monster react?
  *     /oracle(likely) Is the door locked?
  *     /compact(20) Keep the heist, drop the tavern.
  *     /name(female, 3)
@@ -95,7 +96,7 @@ import {
   TAROT_SPREAD,
 } from './tools/rpg.js'
 import { executeGenerateNames, GENDERS, MAX_NAMES } from './tools/names.js'
-import { allSkills, onSkillsChanged } from './skills/index.js'
+import { allSkills, onSkillsChanged, skillIsOn } from './skills/index.js'
 import { fillArgument, loadedByModel } from './skills/runner.js'
 import { parseKeep } from './compaction.js'
 import { getServer, onServersChanged, promptCommands } from '../mcp/servers.js'
@@ -103,6 +104,7 @@ import { describeFailure, getServerPrompt, promptText } from '../mcp/client.js'
 
 /** @typedef {import('../types/models.js').ChatCommand} ChatCommand */
 /** @typedef {import('./tools/registry.js').ToolContext} ToolContext */
+/** @typedef {import('./tools/rpg.js').DiceRoll} DiceRoll */
 
 /**
  * A command as the writer asked it: which one, what they said, and the setting
@@ -199,7 +201,20 @@ function likelihoodLabel(value) {
  *   what the writer sees while a consulting command runs — a box that does not
  *   say what it is asking is a worse wait than one that does — and what an
  *   edited command is rebuilt from.
- * @property {(asked: CommandInput, context?: ToolContext) => Promise<{label?: string, detail?: string, keep?: number, result: string}|{error: string}>} run
+ * @property {(asked: CommandInput, context?: ToolContext) => Promise<{label?: string, detail?: string, keep?: number, roll?: DiceRoll, result: string}|{error: string}>} run
+ * @property {(command: ChatCommand) => {detail: string, label: string}} [shown] -
+ *   How its record reads in the chat, when that is not its label and detail as
+ *   stored: a roll puts its dice up beside its name and leaves the question
+ *   under it. The model still reads the label.
+ * @property {{write: (command: ChatCommand) => string, read: (asked: CommandInput, written: string, before?: ChatCommand) => {result: string, roll?: DiceRoll}}} [answer] -
+ *   How its answer is written under its line for the writer to edit, and read
+ *   back, when there is more to it than the result: a roll's dice. Given the
+ *   record the line had before the edit, when there was one, so a change can be
+ *   told from what it changed.
+ * @property {boolean} [experimental] - Whether it is an experimental skill's,
+ *   which runs only while the writer has that skill switched on. It is kept
+ *   while the skill is off, so the records it left read as they did. See
+ *   `commandSwitchedOff`.
  */
 
 /**
@@ -262,20 +277,141 @@ function describeNameAsk(param) {
 }
 
 /**
- * The dice themselves, for the writer.
- *
- * Nothing when there is one die and nothing added to it: the total already is
- * the die, and repeating it reads as though something else happened.
- *
- * @param {{dice: number[], modifier: number}} rolled
- * @returns {string|undefined}
+ * Dice at the start of a line, and whatever follows them after a space: the
+ * terms `parseDice` reads, joined by signs.
  */
-function diceWorking({ dice, modifier }) {
-  if (dice.length === 1 && !modifier) return undefined
+const DICE_THEN_QUESTION = /^([+-]?\s*\d*d?\d+(?:\s*[+-]\s*\d*d?\d+)*)(?:\s+(.*))?$/is
 
-  const thrown = dice.join(' + ')
-  if (!modifier) return thrown
-  return `${thrown} ${modifier > 0 ? '+' : '-'} ${Math.abs(modifier)}`
+/**
+ * What a `/roll` was asked for: the dice, and the question they answer if the
+ * writer gave one — `2d6 How does the monster react?`.
+ *
+ * The whole line is tried as dice first, so spaced-out notation (`3d6 + 2`)
+ * reads as it always did. A line that is no dice at all reports what is wrong
+ * with it as a whole.
+ *
+ * @param {string} input
+ * @returns {{notation: string, question: string}|{error: string}}
+ */
+function parseRoll(input) {
+  const written = (input || '').trim()
+  const whole = parseDice(written)
+  if (!('error' in whole)) return { notation: written, question: '' }
+
+  const split = DICE_THEN_QUESTION.exec(written)
+  if (!split) return whole
+
+  const dice = parseDice(split[1])
+  if ('error' in dice) return dice
+  return { notation: split[1], question: (split[2] || '').trim() }
+}
+
+/** A line of dice under a roll, as the writer edits it: `d6: 3, 6, 5`. */
+const DICE_LINE = /^(d\d+):\s*(\d+(?:\s*,\s*\d+)*)$/i
+
+/**
+ * A roll's dice as the writer reads them, a line for each kind. Nothing for one
+ * die with nothing added, which the total already is.
+ *
+ * @param {DiceRoll} roll
+ * @returns {string[]}
+ */
+function diceLines(roll) {
+  const kinds = Object.entries(roll.dice)
+  if (kinds.length === 1 && kinds[0][1].length === 1 && !roll.modifier) return []
+  return kinds.map(([kind, faces]) => `${kind}: ${faces.join(', ')}`)
+}
+
+/**
+ * What the writer wrote under a `/roll`, read back: the dice, and the total
+ * they make.
+ *
+ * Dice the writer changed make a new total, worked out again whatever the
+ * total line says. A total changed under the same dice is a fudge: the
+ * writer's number stands, and the dice, which no longer make it, go. Dice that
+ * are not the ones the notation throws go too, leaving the total. A total left
+ * off is worked out from the dice. Anything that is not dice and a total is
+ * taken as written.
+ *
+ * @param {string} input - What followed `/roll`
+ * @param {string} written - The answer under it, out of its quotes
+ * @param {ChatCommand} [before] - The record the line had before this edit
+ * @returns {{result: string, roll?: DiceRoll}}
+ */
+function readRoll(input, written, before) {
+  const lines = written
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean)
+
+  /** @type {Record<string, number[]>} */
+  const thrown = {}
+  /** @type {number|undefined} */
+  let total
+  for (const [at, line] of lines.entries()) {
+    const kind = DICE_LINE.exec(line)
+    if (kind) {
+      const key = kind[1].toLowerCase()
+      thrown[key] = [...(thrown[key] || []), ...kind[2].split(',').map(Number)]
+    } else if (at === lines.length - 1 && /^-?\d+$/.test(line)) {
+      total = Number(line)
+    } else {
+      return { result: written.trim() }
+    }
+  }
+
+  const asked = parseRoll(input)
+  const notation = 'error' in asked ? null : parseDice(asked.notation)
+  const dice = notation && !('error' in notation) ? diceAsThrown(notation, thrown) : null
+  if (!dice || !notation || 'error' in notation || 'error' in asked) {
+    return { result: total === undefined ? written.trim() : String(total) }
+  }
+
+  const made = Object.values(dice)
+    .flat()
+    .reduce((sum, face) => sum + face, notation.modifier)
+  const was = before ? rollOf(before) : null
+  const fudged =
+    total !== undefined && total !== made && JSON.stringify(was?.dice) === JSON.stringify(dice)
+  if (fudged) return { result: String(total) }
+
+  return {
+    result: String(made),
+    roll: { roll: asked.notation, dice, modifier: notation.modifier, total: made },
+  }
+}
+
+/**
+ * The dice the writer wrote, if they are the ones the notation throws: as many
+ * of each kind, each a face that kind has. In the notation's order, so the
+ * record reads the same as one rolled.
+ *
+ * @param {{dice: Array<{count: number, sides: number}>}} notation
+ * @param {Record<string, number[]>} thrown
+ * @returns {Record<string, number[]>|null}
+ */
+function diceAsThrown(notation, thrown) {
+  /** @type {Record<string, number>} */
+  const sides = {}
+  /** @type {Record<string, number>} */
+  const counts = {}
+  for (const { count, sides: faces } of notation.dice) {
+    sides[`d${faces}`] = faces
+    counts[`d${faces}`] = (counts[`d${faces}`] || 0) + count
+  }
+
+  const kinds = Object.keys(counts)
+  if (Object.keys(thrown).some(kind => !(kind in counts))) return null
+
+  /** @type {Record<string, number[]>} */
+  const dice = {}
+  for (const kind of kinds) {
+    const faces = thrown[kind] || []
+    if (faces.length !== counts[kind]) return null
+    if (faces.some(face => !Number.isInteger(face) || face < 1 || face > sides[kind])) return null
+    dice[kind] = faces
+  }
+  return dice
 }
 
 /** The decks `/tarot` can draw from, for the error when it is asked for another. */
@@ -472,22 +608,40 @@ const WRITTEN = {
   },
 
   roll: {
-    usage: '/roll <dice>',
-    description: 'Roll dice, like 3d6+2.',
+    usage: '/roll <dice> [question]',
+    description: 'Roll dice, like 3d6+2, with a question if you have one.',
     repeatable: true,
     check({ input }) {
-      const notation = parseDice(input)
-      if ('error' in notation) return notation.error
+      const asked = parseRoll(input)
+      if ('error' in asked) return asked.error
     },
-    preview: ({ input }) => ({ label: input }),
+    preview: ({ input }) => ({ label: input.trim() }),
+    // The notation up beside the name and the question under it, so the dice
+    // and their total read as the body of the box.
+    shown(command) {
+      const asked = parseRoll(command.input)
+      if ('error' in asked) return { detail: '', label: command.label || '' }
+      return { detail: asked.notation, label: asked.question }
+    },
+    answer: {
+      write: command => {
+        const roll = rollOf(command)
+        return [...(roll ? diceLines(roll) : []), command.result].join('\n')
+      },
+      read: (asked, written, before) => readRoll(asked.input, written, before),
+    },
     async run({ input }) {
-      const rolled = rollDice(input)
+      const asked = parseRoll(input)
+      if ('error' in asked) return asked
+
+      const rolled = rollDice(asked.notation)
       if ('error' in rolled) return rolled
 
-      // The total is the answer and the dice are the working, split the way the
-      // oracle splits its own: the fiction can use "13", and a model shown the
-      // three dice that made it narrates the three dice.
-      return { label: rolled.notation, detail: diceWorking(rolled), result: String(rolled.total) }
+      // The total is the answer, as the writer would say it, and the dice go
+      // with it to the model as well as the writer: a model that is only told
+      // "22" cannot tell disadvantage from a good throw. See DiceRoll.
+      const label = [rolled.roll, asked.question].filter(Boolean).join(' ')
+      return { label, roll: rolled, result: String(rolled.total) }
     },
   },
 
@@ -715,7 +869,9 @@ function savedPrompt(skill) {
  * the model's to ask.
  *
  * The skills' part is made again whenever the writer's library changes, in
- * place, so everything holding this table sees the change.
+ * place, so everything holding this table sees the change. An experimental
+ * skill's is here whether or not it is switched on, since its records are
+ * read through it; the menu and running it ask `commandSwitchedOff`.
  *
  * @type {Record<string, CommandDefinition>}
  */
@@ -732,7 +888,7 @@ function makeSkillCommands() {
     if (!skill.user || skill.name in COMMANDS) continue
     const command = skillCommand(skill)
     if (!command) continue
-    COMMANDS[skill.name] = command
+    COMMANDS[skill.name] = skill.experimental ? { ...command, experimental: true } : command
     fromSkills.push(skill.name)
   }
 }
@@ -866,6 +1022,7 @@ function unknownCommand(name) {
  */
 export function listCommands() {
   return Object.entries(COMMANDS)
+    .filter(([name]) => !commandSwitchedOff({ name }))
     .map(([name, command]) => ({
       name,
       usage: command.usage,
@@ -1041,7 +1198,42 @@ export function formatSegment(segment) {
   // edit fills it in again from what the line says now.
   if (!command.character && definitionFor(command)?.derived) return line
 
-  return [line, ...command.result.split('\n').map(said => `> ${said}`)].join('\n')
+  return [
+    line,
+    ...answerText(command)
+      .split('\n')
+      .map(said => `> ${said}`),
+  ].join('\n')
+}
+
+/**
+ * A command's answer as it is written under its line, out of its quotes: the
+ * result, and for a roll the dice above it.
+ *
+ * Also what an edit compares against to tell whether an answer came through
+ * untouched, so a die changed and the total left alone is still a change.
+ *
+ * @param {ChatCommand} command
+ * @returns {string}
+ */
+export function answerText(command) {
+  return definitionFor(command)?.answer?.write(command) ?? (command.result || '')
+}
+
+/**
+ * A command the writer answered themselves, from what they wrote under it.
+ *
+ * The answer as written, or as the command reads it back: a roll's dice and
+ * the total they make.
+ *
+ * @param {CommandInput & {result: string}} parsed
+ * @param {ChatCommand} [before] - The record the line had before an edit
+ * @returns {ChatCommand}
+ */
+export function answeredCommand(parsed, before) {
+  const asked = askedCommand(parsed)
+  const read = definitionFor(parsed)?.answer?.read
+  return { ...asked, ...(read ? read(asked, parsed.result, before) : { result: parsed.result }) }
 }
 
 /**
@@ -1192,6 +1384,20 @@ function checkParam(command, { name, param }) {
 }
 
 /**
+ * Why a command can't run now, though the records it left still read: it is
+ * an experimental skill's, and that skill is switched off. Nothing when it
+ * can.
+ *
+ * @param {{name: string, character?: boolean}} command
+ * @returns {string}
+ */
+export function commandSwitchedOff(command) {
+  const name = command.name.toLowerCase()
+  if (!definitionFor(command)?.experimental || skillIsOn(name)) return ''
+  return `/${name} is an experimental skill, and it's off. Switch it on in Settings › Skills.`
+}
+
+/**
  * Run a parsed command and return the record of it.
  *
  * What was asked is kept as the writer put it rather than as the command made
@@ -1208,6 +1414,8 @@ function checkParam(command, { name, param }) {
 export async function runCommand(parsed, context = {}) {
   const { asked, error } = inspectCommand(parsed)
   if (error) return { error }
+  const off = commandSwitchedOff(parsed)
+  if (off) return { error: off }
 
   const command = definitionFor(asked)
   const outcome = await command.run(asked, context)
@@ -1227,9 +1435,45 @@ export async function runCommand(parsed, context = {}) {
  * @returns {string}
  */
 export function renderCommand(command) {
-  const body = [command.label, command.result].filter(Boolean).join('\n')
+  // The answer as the writer reads and edits it, a roll's dice and all: this
+  // is also the turn's text for its preview, a copy and reading it aloud.
+  const body = [command.label, answerText(command)].filter(Boolean).join('\n')
   const tag = commandTag(command)
   return `<${tag}${saidUnder(command)}>\n${body}\n</${tag}>`
+}
+
+/**
+ * The dice behind a roll's answer, while they are still behind it.
+ *
+ * A total the writer changed is their number, not the dice's: a fudged roll
+ * keeps what they wrote and loses the dice, which no longer add up to it. An
+ * edit drops them as it is saved; this holds wherever a record is read.
+ *
+ * @param {ChatCommand} command
+ * @returns {DiceRoll|null}
+ */
+export function rollOf(command) {
+  const roll = command.roll
+  if (!roll || String(roll.total) !== command.result) return null
+  return roll
+}
+
+/**
+ * A roll's dice as the writer reads them, a line for each kind, above the
+ * total. Not what was added: that is in the notation beside the name.
+ *
+ * A roll from before the dice were kept has its working written out instead,
+ * and that is what it shows.
+ *
+ * @param {ChatCommand} command
+ * @returns {string[]}
+ */
+export function rollLines(command) {
+  if (definitionFor(command) !== COMMANDS.roll) return []
+
+  const roll = rollOf(command)
+  if (roll) return diceLines(roll)
+  return command.detail ? [command.detail] : []
 }
 
 /**
@@ -1273,8 +1517,8 @@ export function commandTag(command) {
  *
  * A parameter that says how to name its values is the truth about what was
  * asked — the record keeps the value the tool wanted, and this is what to put
- * on screen. A compaction shows what it was told to favour. Everything else has
- * already written its own note: the dice a roll threw.
+ * on screen. A compaction shows what it was told to favour, and a roll its
+ * notation. Everything else has already written its own note.
  *
  * @param {ChatCommand} command
  * @returns {string}
@@ -1284,9 +1528,22 @@ export function commandDetail(command) {
   // What it was told to favour, and nothing about how much it kept: records
   // from before say that in their detail too.
   if (definition?.tag === 'summary') return (command.input || '').trim()
+  if (definition?.shown) return definition.shown(command).detail
   const spec = definition?.param
   if (spec?.label && command.param) return spec.label(command.param)
   return command.detail || ''
+}
+
+/**
+ * What a record shows under its name: what it was asked, which is its label,
+ * less what `commandDetail` already put up beside the name.
+ *
+ * @param {ChatCommand} command
+ * @returns {string}
+ */
+export function commandLabel(command) {
+  const shown = definitionFor(command)?.shown
+  return shown ? shown(command).label : command.label || ''
 }
 
 /**

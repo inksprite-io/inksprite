@@ -165,6 +165,80 @@ describe('finding things in a project', () => {
       expect(result.results[0].passages[0].text).toContain('17 ms')
     })
 
+    it('finds the phrase with other punctuation between its words, or none', async () => {
+      text('Paper', 'Hybrid: reciprocal rank fusion of the two lists, k = 60.')
+      text('Other', 'The letter k, and 60 of them.')
+      text('Budget', 'An end-to-end budget, and a rerank pass.')
+
+      const search = query => executeSearchDocuments({ query }, { storyId: STORY })
+      const k = await search('k=60')
+      expect(k.matchedBy).toBeUndefined()
+      expect(k.results.map(hit => hit.path)).toEqual(['Paper'])
+      expect(k.results[0].passages[0].text).toContain('k = 60')
+      expect((await search('end to end')).results.map(hit => hit.path)).toEqual(['Budget'])
+      expect((await search('re-rank')).results.map(hit => hit.path)).toEqual(['Budget'])
+      expect((await search('"budget"')).results.map(hit => hit.path)).toEqual(['Budget'])
+    })
+
+    it('matches each word loosely when it falls back, a date staying one word', async () => {
+      text('Design', 'The lists are fused by reciprocal rank fusion with k = 60.')
+      text('Standup 1', 'Notes from 2026-09-09: the rerank spike.')
+      text('Standup 2', 'Notes from 2026-08-09, in 2026, on the 09 build.')
+
+      const fusion = await executeSearchDocuments(
+        { query: 'reciprocal rank fusion k=60' },
+        { storyId: STORY }
+      )
+      expect(fusion.matchedBy).toBe('words')
+      expect(fusion.results.map(hit => hit.path)).toEqual(['Design'])
+
+      const dated = await executeSearchDocuments({ query: 'notes 2026-09-09' }, { storyId: STORY })
+      expect(dated.results.map(hit => hit.path)).toEqual(['Standup 1'])
+    })
+
+    it('falls back to all but one word, and says which each lacks', async () => {
+      text('Open questions', 'What happens to the cap at 80,000 chunks? A fallback to BM25 only.')
+      text('Glossary', 'BM25: a ranking function. The cap: 50,000 chunks.')
+      text('Design', 'The cap is 50,000 chunks.')
+
+      const result = await executeSearchDocuments(
+        { query: 'cap 80000 chunks fallback BM25' },
+        { storyId: STORY }
+      )
+
+      expect(result.matchedBy).toBe('most words')
+      expect(result.note).toMatch(/all but one/)
+      expect(result.results.map(hit => [hit.path, hit.missing])).toEqual([
+        ['Open questions', '80000'],
+      ])
+      expect(result.results[0]).not.toHaveProperty('rank')
+    })
+
+    it('puts first the ones lacking a word most documents have', async () => {
+      text('Scored', 'The regression set is scored by a judge model.')
+      text('Picked', 'The owner of the regression set picks the judge.')
+      text('Both', 'A model owner.')
+      text('Away', 'The owner is away.')
+
+      const result = await executeSearchDocuments(
+        { query: 'owner regression judge model' },
+        { storyId: STORY }
+      )
+
+      expect(result.results.map(hit => [hit.path, hit.missing])).toEqual([
+        ['Scored', 'owner'],
+        ['Picked', 'model'],
+      ])
+    })
+
+    it('wants every word of two', async () => {
+      text('Note', 'The reranker was slow.')
+
+      const result = await executeSearchDocuments({ query: 'reranker spike' }, { storyId: STORY })
+
+      expect(result.results).toEqual([])
+    })
+
     it('keeps to the phrase when a document has it as written', async () => {
       text('Exact', 'The reranker measured well.')
       text('Words', 'Measured once. The reranker twice.')

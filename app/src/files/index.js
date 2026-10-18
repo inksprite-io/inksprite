@@ -18,10 +18,15 @@
  *   for the viewer
  * - **docx** - A Word file as markdown, which an import makes a document of,
  *   as it does a Google Doc
+ * - **pictures** - Pictures that come inside what is imported, written into
+ *   markdown as data URIs or held in a Word file: taken out with a marker
+ *   where each was, then made the new document's own
  * - **inspect** - A file looked at: what it is, and what text is in it
  * - **write** - A file written into the project as a document, bytes and all,
  *   and its text read out again on request
  * - **download** - The file handed back, named as it came in
+ * - **exportDocument** - A text document handed out: its markdown, and with
+ *   its pictures, a `.zip` with an `images` folder
  * - **batch** - Many files at once, each with the folders it came in: a
  *   folder chosen whole, or a drop from the desktop
  *
@@ -45,6 +50,8 @@ export { extractEpub } from './epub.js'
 export { inspectFile, mimeOf, titleOf, hasText, isStructured, sizeLabel } from './inspect.js'
 export { textOfHtml, markdownOfHtml } from './html.js'
 export { docxToMarkdown, isDocx, DOCX_MIME } from './docx.js'
+export { takePictures, placePictures, measurePicture, markerFor } from './pictures.js'
+export { exportDocument } from './exportDocument.js'
 export {
   gatherFiles,
   gatherDropped,

@@ -1714,3 +1714,84 @@ happened is worth watching for.
 **The assistant turns held, a little better.** Critiques still specific and
 honest; two brainstorms in three now come down on one option (one in three
 before), at 665–738 words; the count came back as "Three."
+
+## Comments: working through them, reviewing in them, overlap and stale (17 Oct 2026, GLM 5.2)
+
+The first batches on the comment tools since threads left the text (16 Oct)
+and comments could overlap (17 Oct). Three scenarios on the findable design,
+three runs each, on dev 0b34ead9 with the harness's comment checks (1788f015).
+
+| Scenario                    | Runs | Checks | Prompt tokens a turn |
+| --------------------------- | ---- | ------ | -------------------- |
+| `findable-comments-work`    | 3    | 18/18  | 11.5k                |
+| `findable-comments-review`  | 3    | 15/15  | 8.8k                 |
+| `findable-comments-overlap` | 3    | 11/12  | 7.0k                 |
+
+**Working through the writer's comments held.** The budget fixed to 150 ms
+from the 9 Sep meeting each time; the question answered with
+`reply_comment` and resolved, its sentence left as asked; the note to self
+on the Lindqvist line never touched, in this turn or the next, which rewrote
+the section beside it. Asked to write the Evaluation section and to comment
+where it guessed, every run left one or two comments on the parts the
+decisions did not settle (which local model judges, what counts as a drop).
+
+**One ungrounded answer, and it was the search.** Asked where k = 60 comes
+from, two runs searched "k = 60" or "k 60" and cited the project's paper.
+The third searched "reciprocal rank fusion k=60", got nothing, said no
+project document covered it, and cited the original fusion paper from
+memory. The words fallback splits a query on spaces only and wants every
+word, so a token joined by punctuation, `k=60`, matches nothing, and the
+whole query with it: the design itself says "reciprocal rank fusion with
+k = 60".
+
+**Reviewing in comments was the best of the three.** Every run found the
+four places the design is behind the decisions log (budget, reranking,
+Evaluation, the second character) and one also the query-rewriting line;
+each comment quoted the decision it rested on, and the text was untouched.
+Asked to fix them, each run edited every place, and the edits resolved its
+comments.
+
+**Overlap needed nothing.** All three put a comment on the whole Ranking
+paragraph over the writer's comment on four of its words, with no error and
+the writer's untouched; the markup nested.
+
+**A stale comment is invisible to a read.** After the writer cut a commented
+sentence, two runs called `list_comments` to look for comments a read would
+not show, and resolved it; the third read the document, saw two comments
+whose passages were there, and said there was nothing to resolve. A read
+lists the open threads placed in what it read, and a stale one is placed
+nowhere. The writer decided to leave stale comments out of reads for now
+(17 Oct); the check stays, to see how often a model thinks to list them.
+
+## Search past punctuation, and all but one word (17 Oct 2026, GLM 5.2)
+
+Of 290 searches in the batches kept since late September, 16 came back
+empty: about five over punctuation (`k=60` where the text has `k = 60`,
+`3rd-level`, `practice-based`) and about six over one stray word or a
+number written differently (`cap 80000 chunks fallback BM25` where the notes
+have 80,000). And 124 of the 290 were answered by the every-word fallback,
+so that is search as the model mostly meets it. Now the phrase is also
+looked for with other punctuation between its words, or none; each word of
+the fallback is matched the same way, so a date stays one word; and when no
+document has every word of three or more, those with all but one come back,
+each naming the word it lacks. Replayed on the fixture, the `k=60` and
+`80000` queries find the paper and the open questions; the vague "who …"
+queries still find nothing, as they should.
+
+| Scenario                    | Runs | Checks | Before                 |
+| --------------------------- | ---- | ------ | ---------------------- |
+| `findable-comments-work`    | 3    | 18/18  | 18/18 (this morning)   |
+| `findable-comments-review`  | 3    | 15/15  | 15/15                  |
+| `findable-comments-overlap` | 3    | 12/12  | 11/12                  |
+| `findable-design`           | 2    | 30/30  | 45/45 (3 runs, 12 Oct) |
+| `findable-explore`          | 3    | 49/51  | 50/51 (5 Oct)          |
+| `findable-big`              | 3    | 23/24  | 24/24 (5 Oct)          |
+
+Neither miss was the search. In `findable-explore` one run answered the
+cap question from its first read of a meeting note the writer had changed
+since (the trap the scenario sets; 5 Oct's runs all read it again). In
+`findable-big` the answer was right and the check was not: "cache-warming"
+with a hyphen. Of 43 searches, 17 matched the phrase, 22 every word, one all
+but one ("dense sparse hybrid recall comparison", the paper, lacking
+"comparison"), and the three empties were right: a word neither the papers
+nor the decisions log use, and a folder that is not there.

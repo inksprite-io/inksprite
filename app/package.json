@@ -127,6 +127,7 @@
     "prettier": "^3.5.3",
     "typescript": "^5.9.2",
     "vite": "^6.3.5",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "workbox-build": "^7.4.1"
   }
 }

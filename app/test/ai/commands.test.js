@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import {
   parseCommand,
   formatCommand,
@@ -9,6 +9,10 @@ import {
   splitInput,
   runCommand,
   renderCommand,
+  rollLines,
+  rollOf,
+  answeredCommand,
+  commandLabel,
   inspectCommand,
   assembleTurn,
   askedCommand,
@@ -20,10 +24,18 @@ import {
   listCommands,
   matchCommands,
   commandAtCaret,
+  commandSwitchedOff,
   COMMANDS,
   LIKELIHOODS,
 } from '@/ai/commands.js'
 import { MAJOR_ARCANA, MINOR_ARCANA } from '@/ai/tools/data/tarot.js'
+import { setExperimentalSkills } from '@/ai/skills/index.js'
+
+// Interpret and Write are here as they are in an app that has switched each
+// on; 'with an experimental skill switched off' is the rest.
+beforeEach(() => {
+  setExperimentalSkills(['interpret', 'write'])
+})
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -281,10 +293,28 @@ describe('runCommand', () => {
     ).toBe('favour the heist')
   })
 
-  it('leaves the working of everything else as it was written', () => {
+  it('puts a roll’s notation beside its name, and leaves the question under it', () => {
+    const roll = { name: 'roll', input: '3d6+1 for strength', label: '3d6+1 for strength' }
+
+    expect(commandDetail({ ...roll, result: '12' })).toBe('3d6+1')
+    expect(commandLabel({ ...roll, result: '12' })).toBe('for strength')
+    expect(commandLabel({ name: 'roll', input: '3d6', label: '3d6', result: '9' })).toBe('')
+  })
+
+  it('shows the dice a roll from before wrote down, under it', () => {
     // A roll's dice are not derivable from anything — they are what happened,
     // and they were written down at the time.
-    expect(commandDetail({ name: 'roll', input: '3d6', detail: '4 + 1 + 6' })).toBe('4 + 1 + 6')
+    const before = { name: 'roll', input: '3d6', label: '3d6', detail: '4 + 1 + 6', result: '11' }
+
+    expect(commandDetail(before)).toBe('3d6')
+    expect(rollLines(before)).toEqual(['4 + 1 + 6'])
+  })
+
+  it('leaves the working of everything else as it was written', () => {
+    expect(commandDetail({ name: 'tighten', input: 'the fight', detail: 'the fight' })).toBe(
+      'the fight'
+    )
+    expect(rollLines({ name: 'tighten', input: 'the fight', detail: 'the fight' })).toEqual([])
     expect(commandDetail({ name: 'cody', character: true, input: 'I hide.' })).toBe('')
   })
 
@@ -701,7 +731,7 @@ describe('a character', () => {
 })
 
 describe('/roll', () => {
-  it('answers with the total, and keeps the dice for the writer', async () => {
+  it('answers with the total, and keeps the dice by kind', async () => {
     // 0.5 of every side, so each die lands mid-range and the arithmetic is
     // the only thing under test.
     vi.spyOn(Math, 'random').mockReturnValue(0.5)
@@ -713,25 +743,149 @@ describe('/roll', () => {
       input: '3d6+2',
       label: '3d6+2',
       result: '14',
-      detail: '4 + 4 + 4 + 2',
+      roll: { roll: '3d6+2', dice: { d6: [4, 4, 4] }, modifier: 2, total: 14 },
+    })
+    expect(command.detail).toBeUndefined()
+  })
+
+  it('sends the model the dice as the writer reads them, above the total', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5)
+
+    const command = await runCommand({ name: 'roll', input: '3d6+2d4-1' })
+
+    expect(renderCommand(command)).toBe('<roll>\n3d6+2d4-1\nd6: 4, 4, 4\nd4: 3, 3\n17\n</roll>')
+  })
+
+  it('takes a question after the dice, and keeps the dice to read it by', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5)
+
+    const command = await runCommand({ name: 'roll', input: '2d20 rolling with disadvantage' })
+
+    expect(command).toMatchObject({
+      label: '2d20 rolling with disadvantage',
+      result: '22',
+      roll: { dice: { d20: [11, 11] } },
+    })
+    expect(renderCommand(command)).toBe(
+      '<roll>\n2d20 rolling with disadvantage\nd20: 11, 11\n22\n</roll>'
+    )
+  })
+
+  it('shows the writer a line for each kind of die, and not what was added', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5)
+
+    expect(rollLines(await runCommand({ name: 'roll', input: '3d6+2d4-1' }))).toEqual([
+      'd6: 4, 4, 4',
+      'd4: 3, 3',
+    ])
+    expect(rollLines(await runCommand({ name: 'roll', input: 'd20+3' }))).toEqual(['d20: 11'])
+  })
+
+  it('writes the dice above the total in the text of the turn', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5)
+    const command = await runCommand({ name: 'roll', input: '3d6+1 for strength' })
+
+    expect(formatSegment({ type: 'command', command })).toBe(
+      '/roll 3d6+1 for strength\n> d6: 4, 4, 4\n> 13'
+    )
+    const die = await runCommand({ name: 'roll', input: 'd20' })
+    expect(formatSegment({ type: 'command', command: die })).toBe('/roll d20\n> 11')
+  })
+
+  describe('read back from the text', () => {
+    const read = result => answeredCommand({ name: 'roll', input: '3d6+1', result })
+
+    it('keeps dice that are the notation’s and make the total', () => {
+      expect(read('d6: 3, 6, 5\n15')).toMatchObject({
+        result: '15',
+        roll: { roll: '3d6+1', dice: { d6: [3, 6, 5] }, modifier: 1, total: 15 },
+      })
+      // A line a die, the way it might be typed.
+      expect(read('d6: 3\nd6: 6\nd6: 5\n15').roll?.dice).toEqual({ d6: [3, 6, 5] })
+    })
+
+    it('works the total out when it is left off', () => {
+      expect(read('d6: 6, 6, 6')).toMatchObject({ result: '19', roll: { total: 19 } })
+    })
+
+    it('works the total out again from dice the writer changed', () => {
+      const before = answeredCommand({ name: 'roll', input: '3d6+1', result: 'd6: 3, 6, 5\n15' })
+
+      expect(
+        answeredCommand({ name: 'roll', input: '3d6+1', result: 'd6: 3, 6, 6\n15' }, before)
+      ).toMatchObject({ result: '16', roll: { dice: { d6: [3, 6, 6] }, total: 16 } })
+      // Nothing to say which changed without a record from before: the dice
+      // are what happened, so they make the total.
+      expect(read('d6: 3, 6, 6\n15')).toMatchObject({ result: '16', roll: { total: 16 } })
+    })
+
+    it('keeps a total the writer changed under the same dice, and drops the dice', () => {
+      const before = answeredCommand({ name: 'roll', input: '3d6+1', result: 'd6: 3, 6, 5\n15' })
+      const fudged = answeredCommand(
+        { name: 'roll', input: '3d6+1', result: 'd6: 3, 6, 5\n18' },
+        before
+      )
+
+      expect(fudged.result).toBe('18')
+      expect(fudged.roll).toBeUndefined()
+      expect(read('18').roll).toBeUndefined()
+      expect(read('18').result).toBe('18')
+    })
+
+    it('drops dice the notation does not throw', () => {
+      expect(read('d6: 3, 6\n10').roll).toBeUndefined()
+      expect(read('d8: 3, 6, 4\n14').roll).toBeUndefined()
+      expect(read('d6: 3, 6, 9\n19').roll).toBeUndefined()
+      expect(read('d6: 3, 6, 9\n19').result).toBe('19')
+    })
+
+    it('takes anything else as written', () => {
+      expect(read('a lot')).toEqual(expect.objectContaining({ result: 'a lot' }))
+      expect(read('a lot').roll).toBeUndefined()
     })
   })
 
-  it('says nothing about the dice when the die is the answer', async () => {
+  it('shows no dice when the die is the answer', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.5)
 
     const command = await runCommand({ name: 'roll', input: 'd20' })
 
     expect(command.result).toBe('11')
-    expect(command.detail).toBeUndefined()
+    expect(rollLines(command)).toEqual([])
   })
 
-  it('sends the total and not the throw', async () => {
+  it('drops the dice once the total is not theirs', async () => {
+    // A fudged roll: the writer's number stands, and dice that do not add up
+    // to it are neither shown nor sent.
+    vi.spyOn(Math, 'random').mockReturnValue(0.5)
+    const fudged = { ...(await runCommand({ name: 'roll', input: '3d6' })), result: '18' }
+
+    expect(rollOf(fudged)).toBeNull()
+    expect(rollLines(fudged)).toEqual([])
+    expect(renderCommand(fudged)).toBe('<roll>\n3d6\n18\n</roll>')
+  })
+
+  it('answers a question on one die with the die', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.5)
 
-    const command = await runCommand({ name: 'roll', input: '3d6+2' })
+    const command = await runCommand({ name: 'roll', input: 'd20 Does the bridge hold?' })
 
-    expect(renderCommand(command)).toBe('<roll>\n3d6+2\n14\n</roll>')
+    expect(command).toMatchObject({ label: 'd20 Does the bridge hold?', result: '11' })
+  })
+
+  it('tells the dice from the question, spaces and modifiers and all', () => {
+    expect(
+      inspectCommand({ name: 'roll', input: '2d6 How does the monster react?' })
+    ).toMatchObject({
+      label: '2d6 How does the monster react?',
+    })
+    expect(
+      inspectCommand({ name: 'roll', input: '3d6 + 2 rolling for strength' }).error
+    ).toBeUndefined()
+    expect(inspectCommand({ name: 'roll', input: '3d6 + 2' }).error).toBeUndefined()
+    expect(inspectCommand({ name: 'roll', input: '5000d6 for luck' }).error).toMatch(
+      /between 1 and/i
+    )
   })
 
   it('refuses notation that is not dice, before anything is written', () => {
@@ -1268,6 +1422,55 @@ describe('/write', () => {
     expect(formatCommand({ name: 'write', input: 'The scene where Riley turns up.' })).toBe(
       '/write The scene where Riley turns up.'
     )
+  })
+})
+
+describe('with an experimental skill switched off', () => {
+  beforeEach(() => {
+    setExperimentalSkills([])
+  })
+
+  it('leaves their commands out of the menu', () => {
+    const names = listCommands().map(entry => entry.name)
+
+    expect(names).not.toContain('interpret')
+    expect(names).not.toContain('write')
+    expect(names).toContain('compact')
+    expect(matchCommands('wr')).toEqual([])
+  })
+
+  it('refuses to run one, and says where it is switched on', async () => {
+    const consult = vi.fn()
+
+    const outcome = await runCommand({ name: 'interpret', input: 'Who knocks?' }, { consult })
+
+    expect(outcome.error).toMatch(/experimental/)
+    expect(outcome.error).toContain('Settings › Skills')
+    expect(consult).not.toHaveBeenCalled()
+    expect(commandSwitchedOff({ name: 'Write' })).toMatch(/^\/write is/)
+    expect(commandSwitchedOff({ name: 'compact' })).toBe('')
+    expect(commandSwitchedOff({ name: 'write', character: true })).toBe('')
+  })
+
+  it('reads the records they left as it did', () => {
+    const draft = { name: 'write', input: 'A scene.', detail: 'A scene.', result: 'Prose.' }
+
+    expect(commandTakesTurn(draft)).toBe(true)
+    expect(renderCommand(draft)).toBe('<draft>\nProse.\n</draft>')
+    expect(inspectCommand({ name: 'interpret', input: 'Who knocks?' })).toMatchObject({
+      consults: true,
+      label: 'Who knocks?',
+    })
+  })
+
+  it('takes back only the one switched on', () => {
+    setExperimentalSkills(['write'])
+    const names = listCommands().map(entry => entry.name)
+
+    expect(names).toContain('write')
+    expect(names).not.toContain('interpret')
+    expect(commandSwitchedOff({ name: 'write' })).toBe('')
+    expect(commandSwitchedOff({ name: 'interpret' })).toMatch(/^\/interpret is/)
   })
 })
 

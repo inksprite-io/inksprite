@@ -66,6 +66,7 @@ export const SETTINGS_GROUPS = {
     'roleplay',
     'nsfwProfiles',
     'blurNsfw',
+    'experimentalSkills',
     'highlightSpeakers',
   ],
   spelling: ['spelling'],

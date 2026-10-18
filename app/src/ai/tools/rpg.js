@@ -21,10 +21,10 @@
  * - `roll_table(options)` picks one entry from a table the model supplies, for
  *   the ad-hoc tables a GM improvises at the table.
  *
- * - `rollDice(notation)` rolls what the writer wrote down — `3d6+2`. Also not a
- *   tool: a model asked to roll dice is being asked to invent a number, and the
- *   writer reaching for dice is reaching for the one thing at the table that
- *   nobody gets to choose. It is `/roll`, and nothing else calls it.
+ * - `rollDice(notation)` rolls dice notation — `3d6+2` — and says what each
+ *   die came up as well as the total. The one roll behind both `/roll` and the
+ *   model's `roll_dice` (see ./dice.js), so the writer and the model read their
+ *   dice the same way.
  *
  * - `draw_tarot(count, deck)` turns over cards from a shuffled deck — three
  *   from the Major Arcana unless asked otherwise. The same draw the writer
@@ -139,31 +139,44 @@ export function parseDice(notation) {
 }
 
 /**
+ * A roll as `roll_dice` answers it, and as `/roll` keeps it.
+ *
+ * The dice go with the total, kept apart by kind, because how a roll reads is
+ * often in the dice rather than the sum: the lower of two d20s, doubles, the
+ * highest of three. A flat list of numbers cannot say which were the d4s, and
+ * a sum written out cannot say which number was the modifier.
+ *
+ * @typedef {Object} DiceRoll
+ * @property {string} roll - The notation, as written
+ * @property {Record<string, number[]>} dice - What each die came up, by kind:
+ *   `{d6: [4, 2, 5], d4: [3]}`
+ * @property {number} modifier - Everything added or taken away, summed
+ * @property {number} total
+ */
+
+/**
  * Roll what the notation asks for.
  *
- * The dice come back individually as well as summed, because which of them is
- * the answer depends on who is asking: the writer wants to see the 6 and the
- * two 1s, and the fiction only ever needed the total.
- *
  * @param {string} notation - What the writer typed
- * @returns {{notation: string, dice: number[], modifier: number, total: number}|{error: string}}
+ * @returns {DiceRoll|{error: string}}
  */
 export function rollDice(notation) {
   const asked = parseDice(notation)
   if ('error' in asked) return asked
 
-  /** @type {number[]} */
-  const dice = []
+  /** @type {Record<string, number[]>} */
+  const dice = {}
+  let total = asked.modifier
   for (const { count, sides } of asked.dice) {
-    for (let i = 0; i < count; i++) dice.push(rollDie(sides))
+    const kind = (dice[`d${sides}`] ??= [])
+    for (let i = 0; i < count; i++) {
+      const rolled = rollDie(sides)
+      kind.push(rolled)
+      total += rolled
+    }
   }
 
-  return {
-    notation: asked.notation,
-    dice,
-    modifier: asked.modifier,
-    total: dice.reduce((sum, die) => sum + die, 0) + asked.modifier,
-  }
+  return { roll: asked.notation, dice, modifier: asked.modifier, total }
 }
 
 /**

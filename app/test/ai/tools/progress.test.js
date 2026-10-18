@@ -52,6 +52,34 @@ describe('describeProgress', () => {
 })
 
 describe('describeEdit', () => {
+  it('says what a comment it makes or resolves says, not its markup', () => {
+    const thread = {
+      status: 'open',
+      quote: 'door',
+      posts: [{ author: 'model', text: 'Which door?', created: 1 }],
+    }
+    expect(
+      describeEdit({
+        documentId: 'd',
+        path: 'Chapter 1',
+        tool: 'edit_document',
+        old: 'the door',
+        new: 'the {==door==}{>>cabcd1<<}',
+        comments: [{ id: 'cabcd1', before: null, after: thread }],
+      })
+    ).toEqual({ verb: 'Commenting on', path: 'Chapter 1', prose: 'Which door?' })
+    expect(
+      describeEdit({
+        documentId: 'd',
+        path: 'Chapter 1',
+        tool: 'edit_document',
+        old: 'the {==door==}{>>cabcd1<<}',
+        new: 'the door',
+        comments: [{ id: 'cabcd1', before: thread, after: { ...thread, status: 'resolved' } }],
+      })
+    ).toEqual({ verb: 'Resolving a comment in', path: 'Chapter 1', prose: 'Which door?' })
+  })
+
   it('says a listing as what it does', () => {
     expect(describeProgress('list_documents', '{"path":"notes"}')).toEqual({
       verb: 'Listing',

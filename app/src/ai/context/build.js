@@ -60,6 +60,7 @@ import { renderCommand } from '@/ai/commands.js'
 import { USE_SKILL, carriedLoads, loadedText } from '@/ai/skills/loads.js'
 import { changedSinceRead, keepsDocumentCalls, keepsEveryCall } from './reads.js'
 import { substitute } from '@/cards/macros.js'
+import { commentsBetween, placedAsRead } from '@/ai/tools/commentReads.js'
 
 /**
  * What to call the two voices when the caller has not said.
@@ -111,6 +112,9 @@ export const DEFAULT_TRANSCRIPT_ROLES = { user: 'user', assistant: 'assistant' }
  * @property {(id: string) => import('./reads.js').Located|null} [locate] -
  *   Where a document is now and what it says, for the block to say which reads
  *   have changed since. Absent means nothing is said.
+ * @property {boolean} [comments] - Whether the pinned documents' open comments
+ *   go after their text: for a chat offered the comment tools. Absent means
+ *   the text alone.
  * @property {import('@/cards/macros.js').Names|null} [names] - What `{{char}}`
  *   and `{{user}}` become in the prompt, the author's note and the pinned
  *   documents: the chat's, when it plays a card. Absent means they are sent as
@@ -159,6 +163,7 @@ async function buildChat(
     keeps,
     locate,
     names,
+    comments,
   }
 ) {
   if (!storyId) throw new Error('storyId is required')
@@ -177,7 +182,7 @@ async function buildChat(
   if (transcript) {
     // A reader of the transcript sees no calls, so there is no read for it
     // to have seen go stale.
-    const block = renderProjectState(project, pinnedContent(stores, pinned, names))
+    const block = renderProjectState(project, pinnedContent(stores, pinned, names, comments))
     messages.push({
       role: 'user',
       content: [renderTranscript(history, transcript), renderLoads(read, history), block]
@@ -199,7 +204,7 @@ async function buildChat(
   }
 
   const changed = locate ? changedSinceRead(read, locate) : []
-  const block = renderProjectState(project, pinnedContent(stores, pinned, names), changed)
+  const block = renderProjectState(project, pinnedContent(stores, pinned, names, comments), changed)
   const head = [block, renderAuthorsNote(substitute(note, names))].filter(Boolean).join('\n\n')
   attachProjectState(mergeAdjacentTurns(messages), head)
 
@@ -327,13 +332,20 @@ function renderLoads(read, history) {
  * @param {Stores} stores
  * @param {import('@/ai/tools/documents.js').DocumentListing[]} [pinned]
  * @param {import('@/cards/macros.js').Names|null} [names] - Filled in, when the chat has them
- * @returns {Array<Omit<import('@/ai/tools/documents.js').DocumentListing, 'id'> & {content: string}>}
+ * @param {boolean} [comments] - Whether a text document's open comments go after its text
+ * @returns {Array<Omit<import('@/ai/tools/documents.js').DocumentListing, 'id'|'comments'> & {content: string, comments?: object[]}>}
  */
-function pinnedContent(stores, pinned, names) {
-  return (pinned || []).flatMap(({ id, ...entry }) => {
+function pinnedContent(stores, pinned, names, comments) {
+  return (pinned || []).flatMap(({ id, comments: _count, ...entry }) => {
     const document = stores.documentsStore.getDocument(id)
     if (!document || document.type === 'folder') return []
-    return [{ ...entry, content: substitute(document.content, names) }]
+    if (document.type !== 'text')
+      return [{ ...entry, content: substitute(document.content, names) }]
+    // Read as read_document reads it: the text without the markup, and the
+    // open comments after it for a chat that can answer them.
+    const read = placedAsRead(document, names)
+    const listed = comments ? commentsBetween(read, names, 0, read.text.length) : []
+    return [{ ...entry, content: read.text, ...(listed.length > 0 ? { comments: listed } : {}) }]
   })
 }
 

@@ -210,7 +210,7 @@ describe('buildContext', () => {
       const pin = (id, path, extra = {}) => ({ id, path, type: 'text', words: 3, ...extra })
 
       /** Build a chat with these pins, and hand back the pieces. */
-      const build = async ({ documents = [], history, pinned }) => {
+      const build = async ({ documents = [], history, pinned, comments }) => {
         const stores = makeStores({ documents, chat: { id: 'c1' }, messages: history })
         const { messages } = await buildContext('chat', stores, {
           storyId: 's1',
@@ -218,6 +218,7 @@ describe('buildContext', () => {
           systemPrompt: 'sys',
           project,
           pinned,
+          comments,
           keeps: name => name === 'read_document',
         })
         const match = messages.at(-1).content.match(/```json\n([\s\S]*?)\n```/)
@@ -263,6 +264,36 @@ describe('buildContext', () => {
         })
 
         expect(block.pinned[0].content).toBe('Elara turned back.')
+      })
+
+      it('reads a pinned document without its markup, and its comments after it in a chat that can answer them', async () => {
+        const commented = doc('d_elara', 'notes', {
+          content: 'Elara {==rides north==}{>>cabcd1<<}.',
+          comments: {
+            cabcd1: {
+              status: 'open',
+              quote: 'rides north',
+              posts: [{ author: 'writer', text: 'Why north?', created: 1 }],
+            },
+          },
+        })
+        const pinned = [pin('d_elara', 'notes/Elara', { comments: 1 })]
+        const history = [{ role: 'user', content: 'begin' }]
+
+        const plain = await build({ documents: [commented], history, pinned })
+        expect(plain.block.pinned).toEqual([
+          { path: 'notes/Elara', type: 'text', words: 3, content: 'Elara rides north.' },
+        ])
+
+        const answering = await build({ documents: [commented], history, pinned, comments: true })
+        expect(answering.block.pinned[0].content).toBe('Elara rides north.')
+        expect(answering.block.pinned[0].comments).toEqual([
+          {
+            id: 'cabcd1',
+            passage: 'rides north',
+            posts: [{ author: 'writer', text: 'Why north?' }],
+          },
+        ])
       })
 
       it('ignores a pin on a folder, or on a document that is gone', async () => {

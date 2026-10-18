@@ -84,6 +84,10 @@ import {
   executeListDocuments,
   listCommentsDefinition,
   executeListComments,
+  addCommentDefinition,
+  executeAddComment,
+  replyCommentDefinition,
+  executeReplyComment,
   resolveCommentDefinition,
   executeResolveComment,
   appendDocumentDefinition,
@@ -96,6 +100,7 @@ import {
   getSkill,
   librarySkills,
   onSkillsChanged,
+  skillIsOn,
   toolDefinitionFor,
 } from '../skills/index.js'
 import {
@@ -129,9 +134,10 @@ export const SKILLS_GROUP = 'skills'
 
 /**
  * The group the built-in skills still being tuned are registered in:
- * Interpret and Write. Every built-in profile starts with it off, so the
- * model is offered them only in a chat that switches one on; the writer's
- * `/interpret` and `/write` work either way. See ai/profiles.
+ * Interpret and Write, each while the writer has it switched on. Every
+ * built-in profile starts with the group off, so the model is offered them
+ * only in a chat that switches one on; the writer's `/interpret` and `/write`
+ * work in any chat while they are on. See ai/profiles.
  */
 export const EXPERIMENTAL_GROUP = 'experimental'
 
@@ -199,6 +205,8 @@ toolRegistry.register(
   'documents'
 )
 toolRegistry.register('list_comments', listCommentsDefinition, executeListComments, 'documents')
+toolRegistry.register('add_comment', addCommentDefinition, executeAddComment, 'documents')
+toolRegistry.register('reply_comment', replyCommentDefinition, executeReplyComment, 'documents')
 toolRegistry.register(
   'resolve_comment',
   resolveCommentDefinition,
@@ -230,21 +238,37 @@ toolRegistry.register(
   WEB_TIMEOUT_MS
 )
 
-// Every built-in skill the model may call, as the tool its SKILL.md describes,
-// in the experimental group while it is still being tuned. `interpret` draws
-// a card of its own out of sight and returns what it made of it, for a Game
-// Master that wants an idea rather than a card to read; `draw_tarot`, above,
-// is for one that wants the cards. See ../skills/interpret.
-for (const skill of BUILT_IN_SKILLS) {
-  if (!skill.model || !skill.execute) continue
-  toolRegistry.register(
-    skill.name,
-    toolDefinitionFor(skill),
-    skill.execute,
-    skill.experimental ? EXPERIMENTAL_GROUP : SKILLS_GROUP,
-    SKILL_TIMEOUT_MS
-  )
+/**
+ * Register every built-in skill the model may call, as the tool its SKILL.md
+ * describes, in the experimental group while it is still being tuned, and
+ * then only while the writer has it switched on. `interpret` draws a card of
+ * its own out of sight and returns what it made of it, for a Game Master that
+ * wants an idea rather than a card to read; `draw_tarot`, above, is for one
+ * that wants the cards. See ../skills/interpret.
+ *
+ * One already registered is left where it is, so a change to the library does
+ * not move the built-ins in the list the model is offered.
+ */
+function registerBuiltInTools() {
+  for (const skill of BUILT_IN_SKILLS) {
+    if (!skill.model || !skill.execute) continue
+    if (!skillIsOn(skill.name)) {
+      toolRegistry.unregister(skill.name)
+      continue
+    }
+    if (toolRegistry.has(skill.name)) continue
+    toolRegistry.register(
+      skill.name,
+      toolDefinitionFor(skill),
+      skill.execute,
+      skill.experimental ? EXPERIMENTAL_GROUP : SKILLS_GROUP,
+      SKILL_TIMEOUT_MS
+    )
+  }
 }
+
+registerBuiltInTools()
+onSkillsChanged(registerBuiltInTools)
 
 /** The tools the writer's own skills are registered under, as last made. */
 let libraryTools = /** @type {string[]} */ ([])
@@ -396,6 +420,21 @@ export function offersDocuments(selection) {
     .getEnabledDefinitions(selection)
     .some(definition => toolRegistry.groupOf(definition.function.name) === 'documents')
 }
+
+/**
+ * Whether a chat is offered any of the comment tools: what decides whether
+ * its pinned documents come with their comments.
+ * @param {{disabledTools?: string[], disabledGroups?: string[]}} selection
+ * @returns {boolean}
+ */
+export function offersComments(selection) {
+  return toolRegistry
+    .getEnabledDefinitions(selection)
+    .some(definition => COMMENT_TOOLS.has(definition.function.name))
+}
+
+/** The tools that work on comments. */
+const COMMENT_TOOLS = new Set(['list_comments', 'add_comment', 'reply_comment', 'resolve_comment'])
 
 /**
  * The time limit a tool has asked for, if it has asked for one.

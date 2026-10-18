@@ -94,6 +94,7 @@ import { useEditor } from './useEditor.js'
 import { useApplicationState } from './useApplicationState.js'
 import { assembleTurn, inspectCommand } from '@/ai/commands.js'
 import { obfuscateBackup } from '@/utils/obfuscate.js'
+import { pictureOfKey } from '@/utils/pictures.js'
 
 /** @typedef {import('@/utils/backup.js').Backup} Backup */
 /** @typedef {import('@/utils/backup.js').BackupScope} BackupScope */
@@ -722,7 +723,11 @@ export function useBackup() {
 
       tables.stories.push(story)
       tables.documents.push(...documents)
-      tables.files.push(...(await serializeFiles(allFiles.filter(file => kept.has(file.id)))))
+      // A file document's bytes, or a text's pictures', by the document they are.
+      const ownerOf = (/** @type {string} */ id) => pictureOfKey(id)?.documentId ?? id
+      tables.files.push(
+        ...(await serializeFiles(allFiles.filter(file => kept.has(ownerOf(file.id)))))
+      )
       tables.chats.push(...chats)
       tables.messages.push(...messages)
       const own = await savedProfilesOf([

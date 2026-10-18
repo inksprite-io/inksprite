@@ -8,7 +8,9 @@
  * one is the editor's Mod-click and its link popover, and a click on a link
  * in a chat. Making one is the link field: a path, a link as it is written,
  * or the name of a document, becomes the link from the document it goes in.
- * See `utils/documentLinks.js` for how a link is written and read.
+ * Copied, a link goes as a path from the top of the project, and pasted it
+ * is written from the document it lands in. See `utils/documentLinks.js`
+ * for how a link is written and read.
  */
 
 import { openUrl } from '@/platform/open.js'
@@ -18,10 +20,13 @@ import {
   documentNamed,
   hrefFor,
   isDocumentHref,
+  projectHref,
   readableHref,
   resolveLink,
 } from '@/utils/documentLinks.js'
+import { pictureOf } from '@/utils/pictures.js'
 import { useDocuments } from './useDocuments.js'
+import { usePictures } from './usePictures.js'
 import { useEditorRequest } from './useEditorRequest.js'
 import { useToast } from './useToast.js'
 
@@ -33,6 +38,8 @@ import { useToast } from './useToast.js'
  *   open: (href: string, fromId?: string|null) => void,
  *   target: (href: string, fromId?: string|null) => Document|null,
  *   addressFor: (input: string, fromId: string) => string,
+ *   copiedHref: (href: string, fromId: string) => string,
+ *   pastedHref: (href: string, toId: string) => string,
  *   onClick: (event: MouseEvent) => void,
  * }}
  */
@@ -52,15 +59,23 @@ export function useDocumentLinks(storyId) {
    */
   const target = (href, fromId) => resolveLink(tree, href, fromId)
 
+  /** @param {string} href @returns {string} Its `#…`, or nothing */
+  const fragmentOf = href => /#.*$/s.exec(href)?.[0] ?? ''
+
   /**
-   * Follow a link: a document opens in a tab, and the editor with it; a web
-   * or mail address opens outside the app.
+   * Follow a link: a document opens in a tab, and the editor with it, and a
+   * document's own picture at its own size; a web or mail address opens
+   * outside the app.
    * @param {string} href
    * @param {string|null} [fromId] - The document the link is in
    */
   const open = (href, fromId) => {
     if (!isDocumentHref(href)) {
       openUrl(href)
+      return
+    }
+    if (pictureOf(href)) {
+      usePictures(storyId).open(href, fromId)
       return
     }
     const document = target(href, fromId)
@@ -89,9 +104,42 @@ export function useDocumentLinks(storyId) {
     const text = input.trim()
     if (!isDocumentHref(text)) return normalizeHref(text)
     const found = target(text, fromId) || (text.includes('/') ? null : documentNamed(tree, text))
-    if (found) return hrefFor(tree, fromId, found.id) + (/#.*$/s.exec(text)?.[0] ?? '')
+    if (found) return hrefFor(tree, fromId, found.id) + fragmentOf(text)
     if (/^\.{0,2}\//.test(text)) return text.replace(/\s/g, '%20')
     return normalizeHref(text)
+  }
+
+  /**
+   * A link as the clipboard carries it: to a document, from the top of the
+   * project, so that it goes to the same one pasted anywhere; anything else,
+   * and a document's own picture, which is found by its id, as it is.
+   *
+   * @param {string} href
+   * @param {string} fromId - The document it is copied from
+   * @returns {string}
+   */
+  const copiedHref = (href, fromId) => {
+    if (!isDocumentHref(href) || pictureOf(href)) return href
+    const document = target(href, fromId)
+    return document ? projectHref(tree, document.id) + fragmentOf(href) : href
+  }
+
+  /**
+   * A link from the clipboard, written from the document it is pasted into.
+   * One that names no document stays as it came, and still goes to it from
+   * the top.
+   *
+   * @param {string} href
+   * @param {string} toId - The document it is pasted into
+   * @returns {string}
+   */
+  const pastedHref = (href, toId) => {
+    if (!href.trim().startsWith('/') || !isDocumentHref(href)) return href
+    const document = target(href, toId)
+    if (!document) return href
+    // A link to the document it is in is its place in it, as it was written.
+    if (document.id === toId && fragmentOf(href)) return fragmentOf(href)
+    return hrefFor(tree, toId, document.id) + fragmentOf(href)
   }
 
   /**
@@ -110,5 +158,5 @@ export function useDocumentLinks(storyId) {
     open(href)
   }
 
-  return { open, target, addressFor, onClick }
+  return { open, target, addressFor, copiedHref, pastedHref, onClick }
 }

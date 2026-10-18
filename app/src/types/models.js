@@ -201,6 +201,13 @@
  *   the text extracted from it at import, a PDF's page by page under `[p.N]`
  *   markers — what the model reads and searches, and what a scan has none of.
  *   Stored as typed, like a plain document.
+ * @property {Record<string, CommentThread>} [comments] - Text documents only:
+ *   the threads on its passages, by the id each one's marker has in the text
+ *   (see `editor/comments.js`). Absent on a document no one has commented on.
+ * @property {Record<string, PictureInfo>} [pictures] - Text documents only: its
+ *   own pictures, by name, which its text refers to as `.images/<id>/<name>`
+ *   and whose bytes are kept apart (see `utils/pictures.js`). Absent on a
+ *   document with none.
  * @property {SpeakerAssignment[]} [speakers] - Who speaks which block when the
  *   document is read aloud. An overlay on the blocks, found again by their text
  *   when the document changes; see `tts/script.js`. Absent means the default voice
@@ -210,6 +217,20 @@
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
  * @property {number} updated - Last update timestamp
+ */
+
+/**
+ * One of a text document's own pictures, as its row knows it. The size is
+ * what it was measured at when it came, so the editor keeps its room before
+ * the bytes are read; absent when it could not be measured.
+ *
+ * @typedef {Object} PictureInfo
+ * @property {string} mime - Its media type, `image/png`
+ * @property {number} [width] - In pixels
+ * @property {number} [height] - In pixels
+ * @property {string} [docsId] - The Google Doc's id for it, its inline
+ *   object's, when it came from the Doc the document is linked to: what a sync
+ *   knows it by. Absent on any other.
  */
 
 /**
@@ -229,12 +250,40 @@
  */
 
 /**
- * The Google Doc a text document came from. Kept so that syncing the two, when
- * it comes, can reach the Doc again without the writer picking it a second
- * time; nothing reads it yet. See `.llm/google_docs_design.md`, part 3.
+ * The Google Doc a text document is linked to, which Sync makes the two one
+ * with, reaching the Doc again without the writer picking it a second time.
+ * See `.llm/google_docs_design.md`, part 3.
  *
  * @typedef {Object} DriveLink
  * @property {string} id - The Doc's file id in Drive
+ * @property {string} [tabId] - Which of the Doc's tabs; the first when absent
+ * @property {string} [account] - The address of the Google account that
+ *   picked it, which a sync's sign-in is hinted with
+ * @property {number} [syncedAt] - When it was last synced
+ */
+
+/**
+ * A linked document's Google Doc as the two last agreed: what a sync merges
+ * the document and the Doc against. Kept apart from the document's row,
+ * since it is as long as the document, and out of backups, since it is a
+ * copy of Google's: a document without one makes its next sync a first
+ * sync. Keyed by the document's id.
+ *
+ * @typedef {Object} DocBase
+ * @property {string} id - The document's
+ * @property {string} storyId
+ * @property {string} docId - The Doc's file id in Drive
+ * @property {string} tabId - The tab of the Doc it is
+ * @property {string} revisionId - Google's revision of the Doc it was read at
+ * @property {string} markdown - The Doc as the converter read it, with its
+ *   pictures the document's own
+ * @property {Record<string, string>} [pictures] - The names its pictures go
+ *   by, by the Doc's ids for them: a sync knows them by these even once the
+ *   document has let one go
+ * @property {string[]} [held] - The Doc's pictures the document turned down,
+ *   by the Doc's ids, keeping its own words over the Doc's around them: left
+ *   in the Doc and out of the document from then on
+ * @property {number} at - When it was kept
  */
 
 /**
@@ -243,7 +292,8 @@
  * purged with it. See `stores/filesStore.js`.
  *
  * @typedef {Object} StoredFile
- * @property {string} id - The file document's id
+ * @property {string} id - The file document's id, or a text document's
+ *   picture's key (`<document id>/<name>`, see `utils/pictures.js`)
  * @property {string} storyId - Its story
  * @property {Blob} blob - The file, carrying its media type
  */
@@ -367,6 +417,7 @@
  * @property {string} [label] - The question, as the model reads it, when there was one. A direction the writer simply gave asked nothing.
  * @property {string} [detail] - The working, for the writer only, when it is something that happened rather than something derivable. What to show is `commandDetail` — the oracle's odds are read back off `param`.
  * @property {string} result - What came back, empty while a consulting command is still asking
+ * @property {import('../ai/tools/rpg.js').DiceRoll} [roll] - `/roll` only: the dice behind the total, shown and sent while they still add up to `result`. See `rollOf` in ai/commands.js.
  * @property {boolean} [pending] - Set while a command that costs a model call is running
  * @property {string} [reasoning] - What it thought on the way to the answer, for the reader. Streamed in as it arrives.
  * @property {number} [thought] - How long it thought, in milliseconds, measured to the first word of the answer
@@ -424,6 +475,41 @@
  */
 
 /**
+ * One thing said in a comment thread.
+ *
+ * @typedef {Object} CommentPost
+ * @property {string} author - `writer` or `model`
+ * @property {string} text - What was said; its lines as typed
+ * @property {number} created - When it was said
+ * @property {number} [edited] - When it was last changed, if it was
+ */
+
+/**
+ * A comment on a passage: its posts, and how it stands. Its place is a marker
+ * in the document's text holding its id; this is the rest, on the row.
+ *
+ * @typedef {Object} CommentThread
+ * @property {'open'|'resolved'} status - Resolved by the writer or the model.
+ *   An open thread whose marker has left the text is stale: its passage was
+ *   deleted. A marker in the text makes its thread open, whatever this says.
+ * @property {string} quote - The passage as markdown, as it last read: what it
+ *   was on, once it is gone, and what Reopen looks for
+ * @property {string} [before] - The words just before the passage, as they last read
+ * @property {string} [after] - The words just after it
+ * @property {CommentPost[]} posts - The first is the comment; the rest replies
+ */
+
+/**
+ * A thread a turn's tool changed, as it was and as it left it, so the turn can
+ * be undone and made again.
+ *
+ * @typedef {Object} CommentChange
+ * @property {string} id - The thread's id
+ * @property {CommentThread|null} before - Null when the change made it
+ * @property {CommentThread|null} after - Null when the change removed it
+ */
+
+/**
  * A change a turn's tool made to a document, kept so the turn can be undone.
  *
  * The pair is the smallest cut the two versions allow (see utils/edits.js):
@@ -441,6 +527,7 @@
  * @property {string} new - The passage as the tool left it; the whole body for a creation
  * @property {'proposed'|'accepted'|'rejected'} [status] - Set when the chat asks the writer first: proposed until they decide. Absent means the change went straight in. While proposed, `old` and `new` are the tool's own arguments, since they are what applies it; accepted, they become the pair that was applied.
  * @property {string} [summary] - A proposed creation's summary, to give the document when it is created
+ * @property {CommentChange[]} [comments] - The threads the change made, answered or resolved, which undoing it takes back
  */
 
 /**

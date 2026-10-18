@@ -309,10 +309,11 @@ export async function research(ui, { standIn, context }) {
     await setDraws(comment.randoms)
     await select(comment.passage)
     await ui.click(page.locator('[data-comment-button]'))
-    await page.locator('[data-comment-field]').waitFor()
+    // A card for it in the Comments tab, beside the text.
+    await page.locator('[data-draft-field]').waitFor()
     await ui.type(comment.comment)
     await ui.press('Enter')
-    await page.locator('[data-comment-field]').waitFor({ state: 'hidden' })
+    await page.locator('[data-draft-field]').waitFor({ state: 'hidden' })
   }
 
   /** No toast over what a picture shows. */
@@ -437,7 +438,8 @@ export async function research(ui, { standIn, context }) {
     await leave(first)
   })
   for (const comment of others) await leave(comment)
-  await ui.click(button('Comments'))
+  // Commenting opened the Comments tab.
+  await page.getByRole('heading', { name: 'Comments' }).waitFor()
   await page.getByText(first.comment).first().waitFor()
   await ui.shot('research-comments')
   await outline()

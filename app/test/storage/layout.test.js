@@ -185,6 +185,36 @@ describe('a project written and read back', () => {
     expect(byIdSorted(readBack(disk).documents)).toEqual(asRead(documents))
   })
 
+  it("keeps a document's comment threads in its frontmatter, lines and all", () => {
+    const documents = [
+      folder(ROOT, STORY, { title: 'My Novel' }),
+      doc('ch', ROOT, {
+        title: 'Chapter',
+        content: 'The {==ferry==}{>>cabcd1<<} left.\n',
+        comments: {
+          cabcd1: {
+            status: 'open',
+            quote: 'ferry',
+            before: 'The ',
+            after: ' left.',
+            posts: [
+              { author: 'writer', text: 'Which one?\n- the old one: no', created: 1760000000000 },
+              {
+                author: 'model',
+                text: "The night ferry: it's the one in chapter 2.",
+                created: 1760000001000,
+              },
+            ],
+          },
+        },
+      }),
+    ]
+    const disk = memoryDisk()
+    writeFresh(disk, documents)
+
+    expect(byIdSorted(readBack(disk).documents)).toEqual(asRead(documents))
+  })
+
   it('takes a file renamed somewhere else as retitled', () => {
     const disk = memoryDisk()
     writeFresh(disk, sample())

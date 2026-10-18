@@ -636,7 +636,7 @@ import { useNarration } from '@/composables/useNarration'
 import { useProfiles } from '@/composables/useProfiles'
 import { EXPERIMENTAL_GROUP, getToolGroups, SKILLS_GROUP, toolGroupOf } from '@/ai/tools/index.js'
 import { WEB_GROUP } from '@/ai/tools/web.js'
-import { allSkills, skillLabel } from '@/ai/skills/index.js'
+import { availableSkills, skillLabel } from '@/ai/skills/index.js'
 import { loadedByModel, waitingOn } from '@/ai/skills/runner.js'
 import { useSkills } from '@/composables/useSkills'
 import { useLoadedSkills } from '@/composables/useLoadedSkills.js'
@@ -769,10 +769,12 @@ const toolsOf = label => (/\btools$/i.test(label) ? label : `${label} tools`)
 
 /**
  * Registered tools by group, in the order the registry declares them. Read
- * again when the writer's library changes, since their skills are tools too.
+ * again when the writer's library changes, since their skills are tools too,
+ * and when an experimental skill is switched.
  */
 const allGroups = computed(() => {
   void library.value
+  void experimentalSkills.value
   return getToolGroups().map(group => ({
     id: group.id,
     label: group.label,
@@ -809,7 +811,7 @@ const modelToolsEnabled = computed(() => activePreset.value?.toolsEnabled !== fa
 // Whether the assistant's changes to documents go straight in, or wait in the
 // chat for the writer. App-wide; it sits here because this is where the writer
 // looks when deciding what the assistant may do.
-const { applyEdits, setApplyEdits } = useApplicationState()
+const { applyEdits, setApplyEdits, experimentalSkills } = useApplicationState()
 const applyEditsAutomatically = computed({
   get: () => applyEdits.value === 'auto',
   set: value => setApplyEdits(value ? 'auto' : 'ask'),
@@ -1011,29 +1013,36 @@ const setSkillEnabled = (tool, enabled) => {
 const isDefaultProfile = computed(() => selectedProfileId.value === defaultProfileId.value)
 
 /**
- * Every skill there is — the built-ins and the writer's own — from the
+ * Every skill there is to use — the writer's own, the built-ins, and the
+ * experimental ones the writer has switched on, each by name — from the
  * registry rather than named one at a time, as the panel lists them: what it
  * is called, what it does, the tool the model reaches it by when it is offered
  * one, the command the writer can type for it when there is one, and what a
  * skill of theirs is still waiting on.
  *
- * Made again when the library changes: the registry is not reactive, and the
- * library it is made from is.
+ * Made again when the library changes or an experimental skill is switched:
+ * the registry is not reactive, and what it is made from is.
  */
 const skills = computed(() => {
   void library.value
-  return allSkills().map(skill => ({
-    id: skill.name,
-    label: skillLabel(skill),
-    description: skill.summary,
-    // Only what the model can be offered has a switch: Compact is the writer's.
-    tool: (skill.model && skill.execute) || loadedByModel(skill) ? skill.name : undefined,
-    experimental: !!skill.experimental,
-    command: skill.name in COMMANDS ? `/${skill.name}` : undefined,
-    waiting: skill.builtIn ? '' : waitingOn(skill),
-    loaded: loadedSkillNames.value.includes(skill.name),
-    dropped: droppedSkillNames.value.includes(skill.name),
-  }))
+  void experimentalSkills.value
+  /** @param {import('@/ai/skills/index.js').Skill} skill */
+  const rank = skill => (!skill.builtIn ? 0 : skill.experimental ? 2 : 1)
+  return availableSkills()
+    .map(skill => ({ skill, label: skillLabel(skill) }))
+    .sort((a, b) => rank(a.skill) - rank(b.skill) || a.label.localeCompare(b.label))
+    .map(({ skill, label }) => ({
+      id: skill.name,
+      label,
+      description: skill.summary,
+      // Only what the model can be offered has a switch: Compact is the writer's.
+      tool: (skill.model && skill.execute) || loadedByModel(skill) ? skill.name : undefined,
+      experimental: !!skill.experimental,
+      command: skill.name in COMMANDS ? `/${skill.name}` : undefined,
+      waiting: skill.builtIn ? '' : waitingOn(skill),
+      loaded: loadedSkillNames.value.includes(skill.name),
+      dropped: droppedSkillNames.value.includes(skill.name),
+    }))
 })
 
 /**

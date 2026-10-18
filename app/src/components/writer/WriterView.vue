@@ -65,6 +65,12 @@
          into the project open. -->
     <CardLibraryDialog :story-id="currentStoryId" />
 
+    <!-- A picture in a document at its own size, from the editor or a chat. -->
+    <PictureViewer />
+
+    <!-- What a sync with a Google Doc asks, from the tree or the editor. -->
+    <DriveSyncDialog />
+
     <Welcome
       :visible="appState.showWelcomeDialog.value"
       @update:visible="appState.setShowWelcomeDialog($event)"
@@ -96,6 +102,8 @@ import NoProjectView from './layout/NoProjectView.vue'
 import Settings from './settings/Settings.vue'
 import SettingsDialog from './settings/SettingsDialog.vue'
 import CardLibraryDialog from './cards/CardLibraryDialog.vue'
+import PictureViewer from './editor/PictureViewer.vue'
+import DriveSyncDialog from './editor/DriveSyncDialog.vue'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import { useEditorRequest } from '@/composables/useEditorRequest.js'

@@ -10,8 +10,7 @@
  * inherited from whatever a starter kit ships with this year.
  *
  * The specs are `prosemirror-schema-basic`'s and `prosemirror-schema-list`'s,
- * minus the image, plus strikethrough, a code block that keeps its language,
- * and GFM's table. Their `parseDOM` rules are what the v13 migration read the
+ * plus strikethrough, a code block that keeps its language, and GFM's table. Their `parseDOM` rules are what the v13 migration read the
  * old HTML through, so `<b>`, `<i>`, and `<s>` are covered as well as the tags
  * the editor writes.
  *
@@ -22,6 +21,14 @@
  * anywhere markdown could not. The cells carry `colspan` and `rowspan` only
  * because `prosemirror-tables` reads them; nothing sets them, and they are
  * always 1.
+ *
+ * A picture is markdown's image, inline, since markdown has no picture as a
+ * block. Its `src` is a path: to one of the document's own pictures, to a file
+ * document, or an address on the web, which is never fetched (see
+ * `editor/pictures.js`). Pasted HTML keeps an `img` whose source is one of
+ * those, or the picture itself (`data:image/…`), which the paste makes one
+ * of the document's own; one held by the page it came from (`blob:`) or on
+ * the disk it came from (`file:`) is no picture to keep.
  */
 
 import { DOMParser, Schema } from 'prosemirror-model'
@@ -58,6 +65,28 @@ const code_block = {
   toDOM(node) {
     return ['pre', node.attrs.params ? { 'data-params': node.attrs.params } : {}, ['code', 0]]
   },
+}
+
+/** The sources a pasted picture keeps: a path, an address on the web, or the picture. */
+const KEPT_SOURCE = /^(?![a-z][a-z0-9+.-]*:)|^https?:|^data:image\//i
+
+/** @type {import('prosemirror-model').NodeSpec} */
+const image = {
+  ...basic.image,
+  parseDOM: [
+    {
+      tag: 'img[src]',
+      getAttrs: dom => {
+        const src = /** @type {HTMLElement} */ (dom).getAttribute('src') || ''
+        if (!KEPT_SOURCE.test(src.trim())) return false
+        return {
+          src,
+          title: /** @type {HTMLElement} */ (dom).getAttribute('title'),
+          alt: /** @type {HTMLElement} */ (dom).getAttribute('alt'),
+        }
+      },
+    },
+  ],
 }
 
 /** @type {import('prosemirror-model').MarkSpec} */
@@ -162,32 +191,27 @@ const table_cell = {
 }
 
 /**
- * A comment on a passage: the writer's note, carried on the text it is about
- * so that it follows the text through every edit. Not inclusive, so typing at
- * the edge of a commented passage is outside it; two comments cannot share
- * text, which is the default for marks of one type. The markdown form is in
- * `comments.js`.
+ * A comment's place: its id, carried on the passage it is about so that it
+ * follows the text through every edit. What was said is the comment's
+ * thread, on the document's row. Not inclusive, so typing at the edge of a
+ * commented passage is outside it. It excludes nothing, itself included, so
+ * comments with other ids can be on the same text: overlapping comments are
+ * several marks. The markdown form is in `comments.js`.
  *
  * @type {import('prosemirror-model').MarkSpec}
  */
 const comment = {
-  attrs: { id: {}, text: { default: '' } },
+  attrs: { id: {} },
   inclusive: false,
+  excludes: '',
   parseDOM: [
     {
       tag: 'mark[data-comment-id]',
-      getAttrs: dom => ({
-        id: /** @type {HTMLElement} */ (dom).getAttribute('data-comment-id'),
-        text: /** @type {HTMLElement} */ (dom).getAttribute('title') || '',
-      }),
+      getAttrs: dom => ({ id: /** @type {HTMLElement} */ (dom).getAttribute('data-comment-id') }),
     },
   ],
   toDOM(mark) {
-    return [
-      'mark',
-      { class: 'comment', 'data-comment-id': mark.attrs.id, title: mark.attrs.text },
-      0,
-    ]
+    return ['mark', { class: 'comment', 'data-comment-id': mark.attrs.id }, 0]
   },
 }
 
@@ -209,6 +233,7 @@ export const NODE_NAMES = Object.freeze([
   'code_block',
   'horizontal_rule',
   'hard_break',
+  'image',
   'table',
   'table_row',
   'table_cell',
@@ -247,6 +272,7 @@ export const schema = new Schema({
     code_block,
     horizontal_rule: basic.horizontal_rule,
     hard_break: basic.hard_break,
+    image,
     table,
     table_row,
     table_cell,

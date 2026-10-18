@@ -228,6 +228,7 @@ describe('reading the library', () => {
     await put('Novel/.inksprite/audio/doc_1/a.wav', 'a')
     await put('Novel/Notes/.folder.md', 'notes')
     await put('Novel/Notes/Elara.md', 'Tall.')
+    await put('Novel/Notes/.images/doc_1/map.png', 'pixels')
     await put('Novel/Notes/tool/.repository.json', '{}')
     await put('Novel/Notes/tool/src/main.js', 'x')
     await put('Novel/Photos/cat.jpg', 'pixels')
@@ -240,6 +241,7 @@ describe('reading the library', () => {
       '.inksprite/chats/chat_1.jsonl',
       '.inksprite/story.json',
       'Notes/.folder.md',
+      'Notes/.images/doc_1/map.png',
       'Notes/Elara.md',
       'Notes/tool/.repository.json',
       'Notes/tool/src/main.js',

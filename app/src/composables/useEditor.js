@@ -28,9 +28,10 @@ import { shallowReactive } from 'vue'
 import {
   createEditorState,
   appendContent as appendTo,
+  editsTo,
   replaceContent as replaceIn,
 } from '@/editor/state.js'
-import { appendBlocks, serializeMarkdown } from '@/editor/markdown.js'
+import { appendBlocks, parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
 import { useDocumentsStore } from '@/stores/documentsStore.js'
 
 /**
@@ -159,6 +160,7 @@ const makeEntry = (markdown, plain, scrollTop = 0) =>
  *   setText: (id: string, text: string) => void,
  *   flush: (id?: string) => void,
  *   replaceContent: (id: string, markdown: string) => void,
+ *   editContent: (id: string, markdown: string) => void,
  *   appendContent: (id: string, markdown: string) => void,
  *   markdown: (id: string) => string,
  *   focus: (id: string) => void,
@@ -354,6 +356,28 @@ export function useEditor() {
   }
 
   /**
+   * Make an open document say this, changing only what differs: for edits
+   * from outside it, a sync's from its Doc. A structured document keeps its
+   * caret where its text is, and undoes them as one step. A plain document
+   * takes the text as it is. Written through at once.
+   * @param {string} id
+   * @param {string} markdown
+   */
+  const editContent = (id, markdown) => {
+    const entry = entries.get(id)
+    if (!entry) return
+    if (entry.kind === 'text') {
+      if (entry.text === markdown) return
+      entry.text = markdown
+      entry.dirty = true
+    } else {
+      const tr = editsTo(entry.state, parseMarkdown(markdown))
+      if (tr) dispatch(id, tr)
+    }
+    flush(id)
+  }
+
+  /**
    * Add blocks at the end of an open document. Written through at once.
    * @param {string} id
    * @param {string} markdown
@@ -402,6 +426,7 @@ export function useEditor() {
     setText,
     flush,
     replaceContent,
+    editContent,
     appendContent,
     markdown,
     focus,

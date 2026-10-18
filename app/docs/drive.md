@@ -2,75 +2,1253 @@
 
 ### Table of Contents
 
-- [drive/config][1]
-- [DriveConfig][2]
-- [driveConfig][3]
-- [driveAvailable][4]
-- [drive/errors][5]
-- [DriveError][6]
-  - [Parameters][7]
-- [SignInLapsedError][8]
-- [PopupBlockedError][9]
-- [drive/fetch][10]
-- [PickedFile][11]
-  - [Properties][12]
-- [GOOGLE_TYPE][13]
-- [EXPORTS][14]
-- [UNEXPORTABLE][15]
-- [DriveRequest][16]
-- [requestFor][17]
-  - [Parameters][18]
-- [linkFor][19]
-  - [Parameters][20]
-- [refusal][21]
-  - [Parameters][22]
-- [body][23]
-- [body][24]
-- [body][25]
-- [fetchPicked][26]
+- [drive/api][1]
+- [refusal][2]
+  - [Parameters][3]
+- [body][4]
+- [body][5]
+- [body][6]
+- [body][7]
+- [ask][8]
+  - [Parameters][9]
+- [ask][10]
+  - [Parameters][11]
+- [headers][12]
+- [init][13]
+- [readDocument][14]
+  - [Parameters][15]
+- [writeDocument][16]
+  - [Parameters][17]
+- [accountOf][18]
+  - [Parameters][19]
+- [drive/apply][20]
+- [STRIPPED][21]
+- [PRESETS][22]
+- [PRESETS][23]
+- [atomsOf][24]
+  - [Parameters][25]
+- [blocksOf][26]
   - [Parameters][27]
-- [describePicked][28]
+- [blocksOf][28]
   - [Parameters][29]
-- [ask][30]
+- [blocksOf][30]
   - [Parameters][31]
-- [drive/images][32]
-- [TakenImage][33]
-  - [Properties][34]
-- [REFERENCE][35]
-- [INLINE][36]
-- [DEFINITION][37]
-- [unescape][38]
-  - [Parameters][39]
-- [bytesOf][40]
-  - [Parameters][41]
-- [takeImages][42]
-  - [Parameters][43]
-- [defined][44]
-- [definitions][45]
-- [inline][46]
-- [used][47]
-- [drive][48]
-  - [Examples][49]
-- [drive/signIn][50]
-- [CALLBACK_PATH][51]
-- [SIGN_IN_CHANNEL][52]
-- [DRIVE_SCOPE][53]
-- [Picked][54]
-  - [Properties][55]
-- [authorizationUrl][56]
-  - [Parameters][57]
-- [readReturn][58]
-  - [Parameters][59]
-- [popupFeatures][60]
-- [pickInPopup][61]
-  - [Parameters][62]
-- [read][63]
-- [relayReturn][64]
-  - [Parameters][65]
-- [exchangeCode][66]
-  - [Parameters][67]
-- [pickInBrowser][68]
-  - [Parameters][69]
+- [elementsOf][32]
+  - [Parameters][33]
+- [out][34]
+- [out][35]
+- [out][36]
+- [out][37]
+- [out][38]
+- [out][39]
+- [out][40]
+- [out][41]
+- [out][42]
+- [out][43]
+- [out][44]
+- [out][45]
+- [out][46]
+- [out][47]
+- [out][48]
+- [out][49]
+- [out][50]
+- [out][51]
+- [out][52]
+- [out][53]
+- [out][54]
+- [out][55]
+- [out][56]
+- [out][57]
+- [out][58]
+- [out][59]
+- [out][60]
+- [out][61]
+- [out][62]
+- [out][63]
+- [out][64]
+- [contentOf][65]
+  - [Parameters][66]
+- [layout][67]
+  - [Parameters][68]
+- [locate][69]
+  - [Parameters][70]
+- [splitAtNewlines][71]
+  - [Parameters][72]
+- [segmentOf][73]
+  - [Parameters][74]
+- [segmentOf][75]
+  - [Parameters][76]
+- [emptyCell][77]
+- [tableOf][78]
+  - [Parameters][79]
+- [spans][80]
+  - [Parameters][81]
+- [spans][82]
+- [dropIfEmpty][83]
+  - [Parameters][84]
+- [applyRequests][85]
+  - [Parameters][86]
+- [footnoteId][87]
+- [drive/config][88]
+- [DriveConfig][89]
+- [driveConfig][90]
+- [driveAvailable][91]
+- [drive/convert][92]
+- [nodes][93]
+- [nodes][94]
+- [nodes][95]
+  - [Parameters][96]
+- [Span][97]
+  - [Properties][98]
+- [ReadDoc][99]
+  - [Properties][100]
+- [Piece][101]
+  - [Properties][102]
+- [Piece][103]
+- [Line][104]
+  - [Properties][105]
+- [LocalSpan][106]
+- [HEADINGS][107]
+- [TITLE][108]
+- [ORDERED][109]
+- [MONOSPACED][110]
+- [SCENE_BREAK][111]
+- [tabsOf][112]
+  - [Parameters][113]
+- [][114]
+- [readDoc][115]
+  - [Parameters][116]
+- [skeletonOf][117]
+  - [Parameters][118]
+- [parts][119]
+- [parts][120]
+- [indentedAsQuote][121]
+  - [Parameters][122]
+- [shows][123]
+  - [Parameters][124]
+- [shows][125]
+  - [Parameters][126]
+- [heldPiece][127]
+  - [Parameters][128]
+- [suggestionsOn][129]
+  - [Parameters][130]
+- [Reader][131]
+  - [Parameters][132]
+  - [pictures][133]
+  - [images][134]
+  - [suggestions][135]
+  - [local][136]
+  - [pending][137]
+  - [segment][138]
+  - [footnotes][139]
+  - [counted][140]
+  - [named][141]
+  - [read][142]
+  - [spansIn][143]
+    - [Parameters][144]
+- [label][145]
+- [monospacedThroughout][146]
+- [count][147]
+  - [Parameters][148]
+- [fontOf][149]
+  - [Parameters][150]
+- [marksOf][151]
+  - [Parameters][152]
+- [noteSuggestions][153]
+  - [Parameters][154]
+- [readParagraph][155]
+  - [Parameters][156]
+- [pieces][157]
+- [pieces][158]
+- [pieces][159]
+- [pieces][160]
+- [readInline][161]
+  - [Parameters][162]
+- [find][163]
+- [find][164]
+- [words][165]
+- [words][166]
+- [kindOf][167]
+  - [Parameters][168]
+- [blocks][169]
+  - [Parameters][170]
+- [blocks][171]
+- [items][172]
+- [items][173]
+- [holdBlock][174]
+  - [Parameters][175]
+- [split][176]
+  - [Parameters][177]
+- [split][178]
+- [lists][179]
+  - [Parameters][180]
+- [open][181]
+- [open][182]
+- [open][183]
+- [at][184]
+  - [][185]
+- [at][186]
+  - [][187]
+- [at][188]
+  - [][189]
+- [at][190]
+  - [Parameters][191]
+  - [][192]
+- [at][193]
+  - [][194]
+- [build][195]
+  - [Parameters][196]
+- [children][197]
+- [children][198]
+- [nested][199]
+- [quote][200]
+  - [Parameters][201]
+- [paragraphs][202]
+- [code][203]
+  - [Parameters][204]
+- [map][205]
+- [map][206]
+- [table][207]
+  - [Parameters][208]
+- [flatten][209]
+  - [Parameters][210]
+- [lines][211]
+- [lines][212]
+- [gather][213]
+  - [Parameters][214]
+- [gather][215]
+  - [Parameters][216]
+- [previous][217]
+- [previous][218]
+- [textblock][219]
+  - [Parameters][220]
+- [content][221]
+- [content][222]
+- [content][223]
+- [content][224]
+- [register][225]
+  - [Parameters][226]
+- [trimLines][227]
+  - [Parameters][228]
+- [breaks][229]
+- [breaks][230]
+- [trimEdges][231]
+  - [Parameters][232]
+- [codeWithoutEdges][233]
+  - [Parameters][234]
+- [GIVEN_UP][235]
+- [settleMarks][236]
+  - [Parameters][237]
+- [comesBack][238]
+  - [Parameters][239]
+- [withoutMark][240]
+  - [Parameters][241]
+- [joinSpans][242]
+  - [Parameters][243]
+- [drive/docsTypes][244]
+- [Dimension][245]
+  - [Properties][246]
+- [TextStyle][247]
+  - [Properties][248]
+- [Suggested][249]
+  - [Properties][250]
+- [][251]
+- [][252]
+- [ParagraphElement][253]
+  - [Properties][254]
+- [ParagraphStyle][255]
+  - [Properties][256]
+- [Bullet][257]
+  - [Properties][258]
+- [Paragraph][259]
+  - [Properties][260]
+- [TableCell][261]
+  - [Properties][262]
+- [TableRow][263]
+  - [Properties][264]
+- [Table][265]
+  - [Properties][266]
+- [StructuralElement][267]
+  - [Properties][268]
+- [NestingLevel][269]
+  - [Properties][270]
+- [List][271]
+- [NamedStyle][272]
+  - [Properties][273]
+- [DocumentTab][274]
+  - [Properties][275]
+- [InlineObject][276]
+- [Tab][277]
+  - [Properties][278]
+- [][279]
+- [drive/errors][280]
+- [DriveError][281]
+  - [Parameters][282]
+- [SignInLapsedError][283]
+- [PopupBlockedError][284]
+- [NotGrantedError][285]
+- [StaleRevisionError][286]
+- [drive/export][287]
+- [UNDERLINED][288]
+- [mendExport][289]
+  - [Parameters][290]
+- [drive/fetch][291]
+- [PickedFile][292]
+  - [Properties][293]
+- [GOOGLE_TYPE][294]
+- [DOC_TYPE][295]
+- [EXPORTS][296]
+- [UNEXPORTABLE][297]
+- [DriveRequest][298]
+- [requestFor][299]
+  - [Parameters][300]
+- [linkFor][301]
+  - [Parameters][302]
+- [fetchPicked][303]
+  - [Parameters][304]
+- [convertPicked][305]
+  - [Parameters][306]
+- [document][307]
+- [get][308]
+- [get][309]
+- [get][310]
+- [get][311]
+- [get][312]
+- [get][313]
+- [get][314]
+- [FetchedPicture][315]
+- [fetchDocPictures][316]
+  - [Parameters][317]
+- [got][318]
+- [fetchPicture][319]
+  - [Parameters][320]
+- [plain][321]
+- [plain][322]
+  - [Parameters][323]
+- [retryAfter][324]
+  - [Parameters][325]
+- [wait][326]
+  - [Parameters][327]
+- [exportedPictures][328]
+  - [Parameters][329]
+- [objectsOf][330]
+  - [Parameters][331]
+- [walk][332]
+  - [Parameters][333]
+- [walk][334]
+  - [Parameters][335]
+- [describePicked][336]
+  - [Parameters][337]
+- [drive][338]
+  - [Examples][339]
+- [drive/merge][340]
+- [MAX_EDITS][341]
+- [MAX_EDITS][342]
+- [MAX_EDITS][343]
+- [MAX_EDITS][344]
+- [MAX_EDITS][345]
+- [MAX_EDITS][346]
+- [MAX_EDITS][347]
+- [MAX_EDITS][348]
+- [Clash][349]
+  - [Properties][350]
+- [Merged][351]
+  - [Properties][352]
+- [Both][353]
+- [Part][354]
+- [MAX_BLOCK_EDITS][355]
+- [PIECES][356]
+- [mergeDocs][357]
+  - [Parameters][358]
+- [clashes][359]
+- [settle][360]
+  - [Parameters][361]
+- [settle][362]
+  - [Parameters][363]
+- [sameDocs][364]
+  - [Parameters][365]
+- [mergeSequence][366]
+  - [Parameters][367]
+- [mergeStretch][368]
+  - [Parameters][369]
+- [Hunk][370]
+- [mergeApart][371]
+  - [Parameters][372]
+- [][373]
+- [][374]
+- [hunksOf][375]
+  - [Parameters][376]
+- [a][377]
+- [keptBy][378]
+  - [Parameters][379]
+- [mergeParts][380]
+  - [Parameters][381]
+- [partsOf][382]
+  - [Parameters][383]
+- [mergeWithin][384]
+  - [Parameters][385]
+- [mergeHolder][386]
+  - [Parameters][387]
+- [mergeTable][388]
+  - [Parameters][389]
+- [mergeTable][390]
+  - [Parameters][391]
+- [column][392]
+  - [Parameters][393]
+- [width][394]
+  - [Parameters][395]
+- [columnsOf][396]
+  - [Parameters][397]
+- [rowsOf][398]
+  - [Parameters][399]
+- [changed][400]
+  - [Parameters][401]
+- [cellOf][402]
+  - [Parameters][403]
+- [made][404]
+  - [Parameters][405]
+- [made][406]
+- [mergeLines][407]
+  - [Parameters][408]
+- [putIn][409]
+  - [Parameters][410]
+- [add][411]
+  - [Parameters][412]
+- [add][413]
+  - [Parameters][414]
+- [mergeWords][415]
+  - [Parameters][416]
+- [laid][417]
+  - [Parameters][418]
+- [laid][419]
+  - [Parameters][420]
+- [mergeTokens][421]
+  - [Parameters][422]
+- [asMine][423]
+- [asTheirs][424]
+- [tokensOf][425]
+  - [Parameters][426]
+- [match][427]
+- [inline][428]
+- [token][429]
+- [commented][430]
+  - [Parameters][431]
+- [commentsOf][432]
+  - [Parameters][433]
+- [pick][434]
+  - [Parameters][435]
+- [remade][436]
+  - [Parameters][437]
+- [agreed][438]
+  - [Parameters][439]
+- [childrenOf][440]
+  - [Parameters][441]
+- [holdsBlocks][442]
+  - [Parameters][443]
+- [sameBlocks][444]
+  - [Parameters][445]
+- [sameTokens][446]
+  - [Parameters][447]
+- [keys][448]
+- [keyOf][449]
+  - [Parameters][450]
+- [child][451]
+- [markupKey][452]
+  - [Parameters][453]
+- [marksKey][454]
+  - [Parameters][455]
+- [drive/session][456]
+- [REFRESH_KEY][457]
+- [REFRESH_KEY][458]
+- [refreshTokens][459]
+- [MARGIN_MS][460]
+- [held][461]
+- [keepSession][462]
+  - [Parameters][463]
+- [keepSession][464]
+  - [Parameters][465]
+- [forgetSession][466]
+  - [Parameters][467]
+- [clearSessions][468]
+- [signInFor][469]
+  - [Parameters][470]
+- [inDesktop][471]
+  - [Parameters][472]
+- [error][473]
+- [][474]
+- [remember][475]
+  - [Parameters][476]
+- [drive/shape][477]
+- [SPACING][478]
+- [SPACING][479]
+- [BodyParagraph][480]
+  - [Properties][481]
+- [Laid][482]
+  - [Properties][483]
+- [Change][484]
+  - [Properties][485]
+- [NOTE][486]
+- [NOTE][487]
+- [shapeTables][488]
+  - [Parameters][489]
+- [Shaper][490]
+  - [Parameters][491]
+  - [tables][492]
+  - [paragraphs][493]
+  - [unsent][494]
+  - [changes][495]
+  - [shape][496]
+    - [Parameters][497]
+- [firsts][498]
+- [stretchesOf][499]
+  - [Parameters][500]
+- [block][501]
+  - [block][502]
+  - [block][503]
+- [spansIn][504]
+  - [Parameters][505]
+- [stretch][506]
+  - [Parameters][507]
+- [][508]
+- [wordsWhere][509]
+  - [Parameters][510]
+- [reshape][511]
+  - [Parameters][512]
+- [requests][513]
+- [requests][514]
+- [requests][515]
+- [cellAt][516]
+  - [Parameters][517]
+- [holds][518]
+  - [Parameters][519]
+- [delete][520]
+  - [Parameters][521]
+- [insert][522]
+  - [Parameters][523]
+- [insert][524]
+- [][525]
+- [endOf][526]
+  - [Parameters][527]
+- [lastIndexOf][528]
+  - [Parameters][529]
+- [range][530]
+  - [Parameters][531]
+- [range][532]
+  - [Parameters][533]
+- [location][534]
+  - [Parameters][535]
+- [location][536]
+  - [Parameters][537]
+- [gridOf][538]
+  - [Parameters][539]
+- [cells][540]
+- [cells][541]
+- [wordsOf][542]
+  - [Parameters][543]
+- [wordsOf][544]
+  - [Parameters][545]
+- [tableLikeness][546]
+  - [Parameters][547]
+- [drive/signIn][548]
+- [CALLBACK_PATH][549]
+- [SIGN_IN_CHANNEL][550]
+- [DRIVE_SCOPE][551]
+- [Session][552]
+  - [Properties][553]
+- [LIFETIME][554]
+- [LIFETIME][555]
+- [expiryOf][556]
+  - [Parameters][557]
+- [authorizationUrl][558]
+  - [Parameters][559]
+- [params][560]
+- [readReturn][561]
+  - [Parameters][562]
+- [popupFeatures][563]
+- [pickInPopup][564]
+  - [Parameters][565]
+- [signInInPopup][566]
+  - [Parameters][567]
+- [inPopup][568]
+  - [Parameters][569]
+- [read][570]
+- [relayReturn][571]
+  - [Parameters][572]
+- [grant][573]
+  - [Parameters][574]
+- [exchangeCode][575]
+  - [Parameters][576]
+- [refreshSession][577]
+  - [Parameters][578]
+- [pickInBrowser][579]
+  - [Parameters][580]
+- [signInInBrowser][581]
+  - [Parameters][582]
+- [inBrowser][583]
+  - [Parameters][584]
+- [drive/sync][585]
+- [Side][586]
+- [Linked][587]
+  - [Properties][588]
+- [Questions][589]
+- [NewPicture][590]
+  - [Properties][591]
+- [NewBase][592]
+  - [Properties][593]
+- [Synced][594]
+  - [Properties][595]
+- [SEVERAL_TABS][596]
+- [ORDER][597]
+- [TRIES][598]
+- [UNSENT][599]
+- [syncDoc][600]
+  - [Parameters][601]
+- [chosen][602]
+- [whole][603]
+- [whole][604]
+- [target][605]
+- [isEmpty][606]
+  - [Parameters][607]
+- [clashKey][608]
+  - [Parameters][609]
+- [DocForm][610]
+  - [Properties][611]
+- [Pictures][612]
+  - [Parameters][613]
+  - [base][614]
+  - [names][615]
+  - [owned][616]
+  - [taken][617]
+  - [fetched][618]
+  - [missing][619]
+  - [held][620]
+  - [seen][621]
+  - [fetchNew][622]
+    - [Parameters][623]
+  - [read][624]
+    - [Parameters][625]
+  - [holdUnused][626]
+    - [Parameters][627]
+  - [known][628]
+    - [Parameters][629]
+  - [newIn][630]
+    - [Parameters][631]
+  - [namesIn][632]
+    - [Parameters][633]
+  - [onlyIn][634]
+    - [Parameters][635]
+  - [stillHeld][636]
+- [namesUsed][637]
+  - [Parameters][638]
+- [drive/write][639]
+- [Unsent][640]
+- [Written][641]
+  - [Properties][642]
+- [Look][643]
+- [Unit][644]
+  - [Properties][645]
+- [Block][646]
+  - [Properties][647]
+- [DocParagraph][648]
+  - [Properties][649]
+- [Move][650]
+- [Ending][651]
+  - [Properties][652]
+- [RunOn][653]
+  - [Properties][654]
+- [Insert][655]
+  - [Properties][656]
+- [CODE_FONT][657]
+- [QUOTE_INDENT][658]
+- [TRIMMABLE][659]
+- [bold][660]
+- [writeDoc][661]
+  - [Parameters][662]
+- [tabOf][663]
+  - [Parameters][664]
+- [withoutComments][665]
+  - [Parameters][666]
+- [strip][667]
+  - [Parameters][668]
+- [lookOf][669]
+  - [Parameters][670]
+- [look][671]
+- [sameLook][672]
+  - [Parameters][673]
+- [sameKind][674]
+  - [Parameters][675]
+- [kindKey][676]
+  - [Parameters][677]
+- [paragraphsOf][678]
+  - [Parameters][679]
+- [runs][680]
+- [Writer][681]
+  - [Parameters][682]
+  - [pictures][683]
+  - [known][684]
+  - [paragraphs][685]
+  - [named][686]
+  - [tableStarts][687]
+  - [tables][688]
+  - [unsent][689]
+  - [deletes][690]
+  - [inserts][691]
+  - [restyled][692]
+  - [endings][693]
+  - [write][694]
+    - [Parameters][695]
+- [visit][696]
+  - [Parameters][697]
+- [kind][698]
+- [spansWithin][699]
+  - [Parameters][700]
+- [paragraphAt][701]
+  - [Parameters][702]
+- [charAt][703]
+  - [Parameters][704]
+- [lookBefore][705]
+  - [Parameters][706]
+- [units][707]
+  - [Parameters][708]
+- [units][709]
+- [unit][710]
+  - [unit][711]
+  - [unit][712]
+- [unit][713]
+  - [unit][714]
+  - [unit][715]
+- [spanAt][716]
+  - [Parameters][717]
+- [push][718]
+  - [Parameters][719]
+- [close][720]
+- [picture][721]
+  - [Parameters][722]
+- [compare][723]
+  - [Parameters][724]
+- [changes][725]
+- [left][726]
+- [right][727]
+- [around][728]
+  - [Parameters][729]
+- [][730]
+- [steps][731]
+  - [Parameters][732]
+- [tables][733]
+  - [Parameters][734]
+- [compared][735]
+  - [Parameters][736]
+- [compareTable][737]
+  - [Parameters][738]
+- [cellsOf][739]
+  - [Parameters][740]
+- [rows][741]
+- [broken][742]
+- [reach][743]
+- [linkedAgainst][744]
+  - [Parameters][745]
+- [wholly][746]
+  - [Parameters][747]
+- [carried][748]
+- [][749]
+- [deleting][750]
+- [removed][751]
+- [running][752]
+- [joining][753]
+- [remove][754]
+  - [Parameters][755]
+- [check][756]
+  - [Parameters][757]
+- [slice][758]
+- [b][759]
+- [joinReach][760]
+  - [Parameters][761]
+- [a][762]
+- [kept][763]
+  - [Parameters][764]
+- [shown][765]
+- [take][766]
+  - [Parameters][767]
+- [textBetween][768]
+  - [Parameters][769]
+- [insertRun][770]
+  - [Parameters][771]
+- [sent][772]
+- [anchor][773]
+- [from][774]
+- [index][775]
+- [moved][776]
+- [edits][777]
+- [restyle][778]
+  - [Parameters][779]
+- [styleInserted][780]
+  - [Parameters][781]
+- [b][782]
+- [textStyle][783]
+  - [Parameters][784]
+- [textStyle][785]
+- [styleParagraphs][786]
+  - [Parameters][787]
+- [bullets][788]
+- [wordMoves][789]
+  - [Parameters][790]
+- [WORD][791]
+- [overlapsJoined][792]
+  - [Parameters][793]
+- [presetOf][794]
+  - [Parameters][795]
+- [shifts][796]
+  - [Parameters][797]
+- [deletedBefore][798]
+  - [Parameters][799]
+- [][800]
+- [][801]
+- [inserted][802]
+  - [Parameters][803]
+- [][804]
+- [][805]
+- [fieldsChanged][806]
+  - [Parameters][807]
+- [tableStartsOf][808]
+  - [Parameters][809]
+
+## drive/api
+
+Asking Google, with the token, and its refusals said for
+the writer. And the requests a sync makes of it: a Doc read whole, edits
+written against the revision read, and whose Drive the token is for.
+
+## refusal
+
+Google's refusal, said for the writer.
+
+### Parameters
+
+- `response` **[Response][810]**&#x20;
+
+Returns **[Promise][811]<[DriveError][281]>**&#x20;
+
+## body
+
+Type: any
+
+## body
+
+Type: any
+
+## body
+
+Type: any
+
+## body
+
+Type: any
+
+## ask
+
+A request to Google with the token, answered or refused.
+
+### Parameters
+
+- `url` **[string][812]**&#x20;
+- `token` **[string][812]**&#x20;
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.signal` **AbortSignal?**&#x20;
+  - `options.body` **[object][813]?** Sent as JSON, by POST
+
+<!---->
+
+- Throws **[DriveError][281]** When Google refuses it, or cannot be reached
+- Throws **[SignInLapsedError][283]** When Google no longer takes the token
+
+Returns **[Promise][811]<[Response][810]>**&#x20;
+
+## ask
+
+### Parameters
+
+- `init` **RequestInit**&#x20;
+- `how` **[string][812]**&#x20;
+
+Returns **[Promise][811]<([Response][810] | null)>**&#x20;
+
+## headers
+
+Type: Record<[string][812], [string][812]>
+
+## init
+
+Type: RequestInit
+
+## readDocument
+
+A Doc as the converter reads it: every tab, and suggested edits inline,
+as the only view that shows them.
+
+### Parameters
+
+- `id` **[string][812]**&#x20;
+- `token` **[string][812]**&#x20;
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.signal` **AbortSignal?**&#x20;
+
+## writeDocument
+
+Edits sent to a Doc, worked out against the revision named. Google
+applies them over whatever was done to the Doc since, for a few minutes
+after that revision was read.
+
+### Parameters
+
+- `id` **[string][812]**&#x20;
+- `requests` **[Array][814]<[object][813]>** As the writer made them
+- `revisionId` **[string][812]** The revision they were made against
+- `token` **[string][812]**&#x20;
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.signal` **AbortSignal?**&#x20;
+
+<!---->
+
+- Throws **[StaleRevisionError][286]** When the revision is too old to write against
+
+Returns **[Promise][811]\<void>**&#x20;
+
+## accountOf
+
+The address of the account a token is for, which Drive tells the app
+under `drive.file`: what a later sign-in is hinted with.
+
+### Parameters
+
+- `token` **[string][812]**&#x20;
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.signal` **AbortSignal?**&#x20;
+
+Returns **[Promise][811]<([string][812] | null)>** Null when Drive will not say
+
+## drive/apply
+
+A batch of the Docs API's requests applied to a Doc as Docs
+applies them, and the Doc as it would read after: what a sync expects its
+write to leave, so that whatever else the Doc reads as afterwards is what
+Google merged in from a collaborator. The writer's tests apply its
+requests with it too, and it was checked against Google's own in the
+writer's live run (17 Oct 2026), which found nowhere the two part.
+
+- Text goes in only inside a paragraph, never at a table's start; the
+  control characters Docs strips are stripped. Inserted text takes the
+  style of the character before it, or the one after at a paragraph's
+  start. A newline makes a paragraph, which copies the style and bullet
+  of the one it was typed into.
+- A deletion may not take a segment's last newline, a newline before a
+  table or a section break, or any part of a table or a section break.
+  Two paragraphs a deletion joins keep the second's style.
+- A text or paragraph style update sets the fields given and resets those
+  named but left out.
+- Bullets: a paragraph's leading tabs are its nesting, and are removed; a
+  paragraph after a list made with the same preset joins it.
+- A table goes in inside a paragraph, which it parts: a newline is put in
+  before it, and what followed in the paragraph follows the table. Each of
+  its cells, and each cell of a row or column put in, is one empty
+  paragraph. A table goes whole, by its range or by its last row or column.
+
+Only what the writer sends is here; anything else is refused, as Docs
+would refuse what is refused here. The Doc is held as atoms, one per
+index, and written back in the API's shape after each batch, adjacent
+runs of one style as one.
+
+## STRIPPED
+
+What Docs strips from inserted text.
+
+## PRESETS
+
+The bullet presets the writer uses, as a list's levels.
+
+## PRESETS
+
+The bullets a new list item is given.
+
+## atomsOf
+
+A paragraph's elements as atoms.
+
+### Parameters
+
+- `paragraph` **[object][813]**&#x20;
+
+## blocksOf
+
+A body's, a cell's or a footnote's blocks, as atoms.
+
+### Parameters
+
+- `content` &#x20;
+
+## blocksOf
+
+Tokens made blocks again, each ended by its end's kind. Null when the
+words would not go in a block of that kind, or some have no end.
+
+### Parameters
+
+- `tokens` **[Array][814]\<Token>**&#x20;
+
+Returns **([Array][814]<[Node][815]> | null)**&#x20;
+
+## blocksOf
+
+A document's blocks, in order: each paragraph, heading, list item, quoted
+paragraph and code block, each rule and each table.
+
+### Parameters
+
+- `doc` **[Node][815]**&#x20;
+- `read` **[boolean][816]** Whether it is the Doc as read, whose notes are
+  known by their spans
+
+Returns **[Array][814]<[Block][501]>**&#x20;
+
+## elementsOf
+
+The atoms back as elements, a run for each stretch of one style.
+
+### Parameters
+
+- `atoms` &#x20;
+- `start` &#x20;
+
+## out
+
+Type: [Array][814]\<any>
+
+## out
+
+Type: [Array][814]<[Tab][277]>
+
+## out
+
+Type: [Array][814]<[Span][97]>
+
+## out
+
+Type: [Array][814]<[Node][815]>
+
+## out
+
+Type: [Array][814]<[Node][815]>
+
+## out
+
+Type: [Array][814]<[Piece][101]>
+
+## out
+
+Type: [Array][814]<[Piece][101]>
+
+## out
+
+Type: [Array][814]<[Span][97]>
+
+## out
+
+Type: [Map][817]<[string][812], {mime: [string][812], bytes: [Uint8Array][818]}>
+
+## out
+
+Type: [Array][814]<[string][812]>
+
+## out
+
+Type: [Array][814]\<Stretch>
+
+## out
+
+Type: [Array][814]<[Hunk][370]>
+
+## out
+
+Type: [Array][814]<[Part][354]>
+
+## out
+
+Type: [Map][817]<[number][819], [Array][814]<[number][819]>>
+
+## out
+
+Type: {mine: [Array][814]<[Line][104]>, theirs: [Array][814]<[Line][104]>, clashed: [boolean][816]}
+
+## out
+
+Type: [Array][814]\<Token>
+
+## out
+
+Type: [Array][814]<[Node][815]>
+
+## out
+
+Type: [Array][814]<[Node][815]>
+
+## out
+
+Type: [Array][814]<{a: [Array][814]<[number][819]>, b: [Array][814]<[number][819]>, before: [number][819]}>
+
+## out
+
+Type: [Array][814]<[Laid][417]>
+
+## out
+
+Type: [Array][814]<[object][813]>
+
+## out
+
+## out
+
+Type: Record<[string][812], PictureInfo>
+
+## out
+
+Type: Record<[string][812], [string][812]>
+
+## out
+
+Type: [Set][820]<[string][812]>
+
+## out
+
+Type: [Array][814]<[DocParagraph][648]>
+
+## out
+
+Type: [Array][814]<[Block][501]>
+
+## out
+
+## out
+
+Type: [Array][814]<\[[number][819], [number][819]]>
+
+## out
+
+Type: [Array][814]<{key: [string][812], units: [Array][814]<[Unit][644]>}>
+
+## out
+
+Type: [Array][814]<{segment: [string][812], start: [number][819], end: [number][819]}>
+
+## contentOf
+
+Blocks back in the API's shape, indexed from `start`.
+
+### Parameters
+
+- `blocks` &#x20;
+- `start` &#x20;
+
+## layout
+
+Every paragraph of a segment with its first index, in order, tables'
+cells included, and the indices of tables' and other blocks' starts.
+
+### Parameters
+
+- `blocks` &#x20;
+- `start` (optional, default `0`)
+
+## locate
+
+The paragraph an index is in, and how far into it.
+
+### Parameters
+
+- `segment` &#x20;
+- `index` &#x20;
+
+## splitAtNewlines
+
+Rebuild a paragraph split at each newline but its last, each part its own copy.
+
+### Parameters
+
+- `entry` &#x20;
+
+## segmentOf
+
+### Parameters
+
+- `model` **[object][813]**&#x20;
+- `where` &#x20;
+
+## segmentOf
+
+The footnote a block of the Doc is in, if it is in one.
+
+### Parameters
+
+- `block` **[Laid][417]**&#x20;
+
+Returns **[string][812]**&#x20;
+
+## emptyCell
+
+A table's empty cell, as Docs makes one.
+
+## tableOf
+
+The table a cell location's table starts at, and the cell's row and column.
+
+### Parameters
+
+- `model` &#x20;
+- `$1` **[Object][813]**&#x20;
+  - `$1.tableStartLocation` &#x20;
+  - `$1.rowIndex` (optional, default `0`)
+  - `$1.columnIndex` (optional, default `0`)
+
+## spans
+
+Whether a cell spans more than itself.
+
+### Parameters
+
+- `cell` &#x20;
+
+## spans
+
+Type: [Array][814]<[LocalSpan][106]>
+
+## dropIfEmpty
+
+A table left with no rows or columns, gone.
+
+### Parameters
+
+- `table` &#x20;
+
+## applyRequests
+
+Apply a batch to a tab of a Doc, as Docs would, and hand back the Doc as
+it would read after, its revision the one it had with a `+`.
+
+### Parameters
+
+- `document` &#x20;
+- `requests` **[Array][814]<[object][813]>**&#x20;
+- `$2` **[Object][813]** (optional, default `{}`)
+  - `$2.tabId` &#x20;
+
+- `options` **[Object][813]?**&#x20;
+  - `options.tabId` **[string][812]?** The tab they are for; the first otherwise
+
+<!---->
+
+- Throws **[Error][821]** Where Docs would refuse the batch
+
+## footnoteId
+
+Type: any
 
 ## drive/config
 
@@ -87,7 +1265,7 @@ the desktop window, a desktop client: its sign-in comes back to the app's
 listener on localhost, and its secret finishes it. Google expects a
 desktop app to ship that secret, and does not count it as one.
 
-Type: ({kind: `"web"`, clientId: [string][70]} | {kind: `"desktop"`, clientId: [string][70], clientSecret: [string][70]})
+Type: ({kind: `"web"`, clientId: [string][812]} | {kind: `"desktop"`, clientId: [string][812], clientSecret: [string][812]})
 
 ## driveConfig
 
@@ -95,27 +1273,1006 @@ The build's Google client for where the app is running, or null when it
 has none: a fork or a self-hosted copy works without one, and one that
 wants Drive registers its own (`.env.example`).
 
-Returns **([DriveConfig][1] | null)**&#x20;
+Returns **([DriveConfig][88] | null)**&#x20;
 
 ## driveAvailable
 
 Whether the tree offers an import from Drive.
 
-Returns **[boolean][71]**&#x20;
+Returns **[boolean][816]**&#x20;
+
+## drive/convert
+
+A Google Doc read into a document, from the structure the
+Docs API gives rather than Google's markdown export, with where each part
+of the document is in the Doc.
+
+The export gets a Doc wrong where its structure is plain (part 1 of
+`.llm/google_docs_design.md`): a page break joins two paragraphs, a word
+in Courier New loses its font, an open suggestion's old words and new run
+together. Read here, a page break parts the paragraphs, a monospaced run is
+code, and a Doc with suggested edits comes in as it was before them: a
+suggested insertion left out, a suggested deletion kept.
+
+A picture comes in as one, with a marker where it was, for the import to
+fetch it from the address the Docs API gives and make it the document's
+own (`files/pictures.js`). What the editor has no node for is **held**:
+left out of the document, and listed with its index so that a sync never
+deletes it. A drawing, a picture in a table's cell or in code, a page
+break, a table of contents, the empty paragraphs a Doc is spaced with, and
+the whitespace markdown would drop at a line's ends are held. A smart chip
+comes in as its words: a person's name linked to their address, a date as
+it shows, a rich link as a link. A footnote's number comes in as `[^1]`,
+its note at the end of the document as `[^1]: …`, as markdown writes one. A table's cells hold one line here, so a cell's
+paragraphs are joined by spaces. A Title and a Subtitle are Heading 1 and
+2; a paragraph indented at its start and its first line alike, which is
+what a quote pasted into Docs becomes, is a quote; a paragraph holding
+only a horizontal line, or only `* * *`, is a rule.
+
+Where a document is in the Doc is a list of spans, in the document's order.
+A span of text is the same characters at both ends, a hard break being a
+line break in the Doc. A chip's words are its one index, and a picture is
+the Doc's. A block's end is its newline. A held part takes no room in the document. Positions and
+indices both count UTF-16 code units, so a span of text is as long at each
+end. The document is the one its own markdown reads back as, so the spans
+hold for the document an import writes; one that would not come back the
+same (which the tests keep from happening) has none.
+
+## nodes
+
+## nodes
+
+A span whose `pos` is from its block's place, before the block has one.
+
+## nodes
+
+### Parameters
+
+- `parts` **[Array][814]<[Part][354]>** @param {\[number, number]} range
+- `range` &#x20;
+
+## Span
+
+Where a stretch of the document is in the Doc.
+
+Type: [Object][813]
+
+### Properties
+
+- `kind` **(`"text"` | `"chip"` | `"picture"` | `"end"` | `"rule"` | `"held"`)** Text is the
+  same at both ends; a chip is words for one index; a picture is one, for
+  the Doc's; an end is a block's newline; a rule is a horizontal rule for
+  its paragraph; held is in the Doc only
+- `pos` **[number][819]** Where it starts in the document
+- `length` **[number][819]** Positions it takes there: none for an end or
+  for what is held
+- `index` **[number][819]** Where it starts in the Doc
+- `size` **[number][819]** Indices it takes there
+- `segment` **[string][812]?** The footnote it is in, by id; the body
+  otherwise
+- `held` **[string][812]?** What is held: `image`, `pageBreak`, `space`,
+  `suggestion`, `paragraph`, …
+- `object` **[string][812]?** A picture's inline object, by id
+
+## ReadDoc
+
+A picture of the Doc's that came into the document.
+
+Type: [Object][813]
+
+### Properties
+
+- `object` **[string][812]** Its inline object's id, which a sync knows it by
+- `marker` **[string][812]** The source its image node has, until it is the
+  document's own
+- `uri` **[string][812]** Where the Docs API says it can be fetched from:
+  for half an hour after the read, by anyone with the address
+- `alt` **[string][812]** /\*\*
+  A Doc's tab read into a document.
+- `doc` **[Node][815]** In the editor's schema
+- `markdown` **[string][812]** The document as the editor writes it
+- `spans` **([Array][814]<[Span][97]> | null)** Where the document is in the Doc; null if
+  it would not come back the same from its markdown
+- `revisionId` **[string][812]** The Doc's revision as read
+- `tabId` **[string][812]** The tab read; empty for a Doc read without tabs
+- `pictures` **[Array][814]\<DocPicture>** Its pictures that came in, in order
+- `images` **[number][819]** Its pictures that did not: a drawing, one placed
+  beside a paragraph, one in a table or in code, one left out when asked
+- `suggestions` **[number][819]** Suggested edits still open in it
+
+## Piece
+
+A piece of a paragraph as read, before it is written into the document.
+
+Type: [Object][813]
+
+### Properties
+
+- `kind` **(`"text"` | `"break"` | `"chip"` | `"picture"` | `"held"` | `"fixed"`)** Fixed
+  text is the converter's own, as a footnote's `[^1]: `, and nowhere in
+  the Doc
+- `text` **[string][812]?**&#x20;
+- `index` **[number][819]**&#x20;
+- `size` **[number][819]**&#x20;
+- `held` **[string][812]?**&#x20;
+- `object` **[string][812]?** A picture's inline object
+- `uri` **[string][812]?** Where a picture can be fetched from
+- `alt` **[string][812]?** A picture's alt text
+
+## Piece
+
+Type: ({blocks: [Array][814]<[Node][815]>} | {clash: [Clash][349]})
+
+## Line
+
+A paragraph as read.
+
+Type: [Object][813]
+
+### Properties
+
+- `pieces` **[Array][814]<[Piece][101]>**&#x20;
+- `start` **[number][819]** Its first index
+- `end` **[number][819]** Its newline's index
+- `runsOn` **[boolean][816]** Its newline is a suggested insertion, so it
+  runs on into the next paragraph
+- `named` **[string][812]** Its named style
+- `paragraph` **[Paragraph][259]**&#x20;
+
+## LocalSpan
+
+Type: [Span][97]
+
+## HEADINGS
+
+The named styles read as headings, and at what level.
+
+## TITLE
+
+Type: Record<[string][812], [number][819]>
+
+## ORDERED
+
+A list level's glyphs that count. Any other is a bullet.
+
+## MONOSPACED
+
+A font every character of which is as wide as the next.
+
+## SCENE_BREAK
+
+A paragraph's words that read as a scene break, and so as a rule.
+
+## tabsOf
+
+Every tab in a Doc, a tab's children after it. A Doc read without its tabs
+is one tab, with no id.
+
+### Parameters
+
+- `document` **[Document][822]**&#x20;
+
+Returns **[Array][814]<[Tab][277]>**&#x20;
+
+##
+
+Type: [Array][814]<[Tab][277]>
+
+## readDoc
+
+Read a tab of a Doc into a document.
+
+### Parameters
+
+- `document` **[Document][822]** As `documents.get` returns it, with
+  `suggestionsViewMode=SUGGESTIONS_INLINE`
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.tabId` **[string][812]?** The tab; the first otherwise
+  - `options.leaveOut` **[Set][820]<[string][812]>?** Pictures to hold, by their inline
+    objects' ids: those the import could not fetch
+
+<!---->
+
+- Throws **[Error][821]** When the Doc has no such tab
+
+Returns **[ReadDoc][99]**&#x20;
+
+## skeletonOf
+
+Each block's place, kind and text: what has to match for two documents'
+positions to be the same, whatever their marks.
+
+### Parameters
+
+- `doc` **[Node][815]**&#x20;
+
+Returns **[string][812]**&#x20;
+
+## parts
+
+Type: [Array][814]<[string][812]>
+
+## parts
+
+## indentedAsQuote
+
+The newline's half of an indent: whether the paragraph is indented at its
+start, and its first line as far.
+
+### Parameters
+
+- `style` &#x20;
+
+Returns **[boolean][816]**&#x20;
+
+## shows
+
+Whether a piece shows anything: text that is not all whitespace, or a chip.
+
+### Parameters
+
+- `piece` **[Piece][101]**&#x20;
+
+Returns **[boolean][816]**&#x20;
+
+## shows
+
+### Parameters
+
+- `cell` **([Node][815] | [undefined][823])**&#x20;
+
+## heldPiece
+
+A piece held as it stands.
+
+### Parameters
+
+- `index` **[number][819]**&#x20;
+- `size` **[number][819]**&#x20;
+- `held` **[string][812]**&#x20;
+
+Returns **[Piece][101]**&#x20;
+
+## suggestionsOn
+
+The ids of the suggested edits an element is part of.
+
+### Parameters
+
+- `element` &#x20;
+
+Returns **[Array][814]<[string][812]>**&#x20;
+
+## Reader
+
+One tab, read once: the document, then where each part of it is.
+
+### Parameters
+
+- `tab` **[DocumentTab][274]**&#x20;
+- `leaveOut` **[Set][820]<[string][812]>?** Pictures to hold (optional, default `new Set()`)
+
+### pictures
+
+Type: [Array][814]\<DocPicture>
+
+### images
+
+Pictures that did not, and those placed beside paragraphs.
+
+### suggestions
+
+Type: [Set][820]<[string][812]>
+
+### local
+
+Type: [Map][817]<[Node][815], [Array][814]<[LocalSpan][106]>>
+
+### pending
+
+Type: [Array][814]<[LocalSpan][106]>
+
+### segment
+
+The footnote being read, by id; the body while empty.
+
+### footnotes
+
+Type: [Map][817]<[string][812], [string][812]>
+
+### counted
+
+Type: [Map][817]<[string][812], [Array][814]<[number][819]>>
+
+### named
+
+Type: [Map][817]<[string][812], [TextStyle][247]>
+
+### read
+
+The document: the body, then the footnotes it refers to.
+
+Returns **[Node][815]**&#x20;
+
+### spansIn
+
+Where each part of the document is in the Doc, in order.
+
+#### Parameters
+
+- `doc` **[Node][815]** As `read` made it
+
+Returns **[Array][814]<[Span][97]>**&#x20;
+
+## label
+
+Type: [Piece][101]
+
+## monospacedThroughout
+
+Whether the Doc is written in a monospaced font, as a manuscript in
+Courier is: then no word of it is code for being in one.
+
+Returns **[boolean][816]**&#x20;
+
+## count
+
+### Parameters
+
+- `content` **[Array][814]<[StructuralElement][267]>**&#x20;
+
+## fontOf
+
+### Parameters
+
+- `style` **[TextStyle][247]**&#x20;
+- `named` **[string][812]**&#x20;
+
+Returns **[string][812]**&#x20;
+
+## marksOf
+
+The marks a run of text has here: what it sets apart from its named
+style, so a heading's own bold is not marked.
+
+### Parameters
+
+- `style` **[TextStyle][247]**&#x20;
+- `named` **[string][812]**&#x20;
+
+## noteSuggestions
+
+### Parameters
+
+- `element` &#x20;
+
+## readParagraph
+
+A paragraph's pieces, its newline, and its style.
+
+### Parameters
+
+- `element` **[StructuralElement][267]**&#x20;
+
+Returns **[Line][104]**&#x20;
+
+## pieces
+
+Type: [Array][814]<[Piece][101]>
+
+## pieces
+
+Type: [Array][814]<[Piece][101]>
+
+## pieces
+
+Type: [Array][814]<[Piece][101]>
+
+## pieces
+
+Type: [Array][814]<[Piece][101]>
+
+## readInline
+
+Anything in a paragraph that is not text: a chip as its words, a
+footnote's number as markdown writes it, the rest held.
+
+### Parameters
+
+- `part` **[ParagraphElement][253]**&#x20;
+- `index` **[number][819]**&#x20;
+- `size` **[number][819]**&#x20;
+- `named` **[string][812]**&#x20;
+
+Returns **[Piece][101]**&#x20;
+
+## find
+
+## find
+
+Type: \[[string][812], any]
+
+## words
+
+Type: [string][812]
+
+## words
+
+Type: [Array][814]<[Move][650]>
+
+## kindOf
+
+What a paragraph is here.
+
+### Parameters
+
+- `line` **[Line][104]**&#x20;
+
+Returns **(`"blank"` | `"heading"` | `"list"` | `"rule"` | `"quote"` | `"code"` | `"paragraph"`)**&#x20;
+
+## blocks
+
+A body's, a cell's or a footnote's blocks, in order.
+
+### Parameters
+
+- `content` **[Array][814]<[StructuralElement][267]>**&#x20;
+
+Returns **[Array][814]<[Node][815]>**&#x20;
+
+## blocks
+
+Type: [Array][814]<[Node][815]>
+
+## items
+
+## items
+
+Type: [Array][814]<{line: [Line][104], depth: [number][819], ordered: [boolean][816], number: [number][819]}>
+
+## holdBlock
+
+A whole block held: an empty paragraph, a section break, a table of
+contents.
+
+### Parameters
+
+- `element` **[StructuralElement][267]**&#x20;
+- `held` **[string][812]**&#x20;
+
+## split
+
+A paragraph or a heading, parted where a page break has words on both
+sides of it: Docs shows what follows one on a page of its own.
+
+### Parameters
+
+- `type` **NodeType**&#x20;
+- `attrs` **(Record<[string][812], unknown> | null)**&#x20;
+- `line` **[Line][104]**&#x20;
+
+Returns **[Array][814]<[Node][815]>**&#x20;
+
+## split
+
+Type: [Array][814]<[Move][650]>
+
+## lists
+
+Bulleted and numbered lists from a run of their paragraphs, nested as
+deep as each paragraph is in its list.
+
+### Parameters
+
+- `run` &#x20;
+
+Returns **[Array][814]<[Node][815]>**&#x20;
+
+## open
+
+Type: [Array][814]<[number][819]>
+
+## open
+
+Type: ([Hunk][370] | null)
+
+## open
+
+Type: ({a: [Array][814]<[number][819]>, b: [Array][814]<[number][819]>, before: [number][819]} | null)
+
+## at
+
+Type: [number][819]
+
+###
+
+Type: [number][819]
+
+## at
+
+Type: [number][819]
+
+###
+
+Type: [number][819]
+
+## at
+
+Type: [Line][104]
+
+###
+
+Type: [number][819]
+
+## at
+
+### Parameters
+
+- `grid` &#x20;
+- `side` &#x20;
+
+###
+
+Type: [number][819]
+
+## at
+
+Type: [Block][501]
+
+###
+
+Type: [number][819]
+
+## build
+
+### Parameters
+
+- `from` **[number][819]**&#x20;
+- `depth` **[number][819]**&#x20;
+
+Returns **{node: [Node][815], next: [number][819]}**&#x20;
+
+## children
+
+Type: [Array][814]<[Node][815]>
+
+## children
+
+Type: [Both][353]
+
+## nested
+
+Type: [Array][814]<[Node][815]>
+
+## quote
+
+A quote from a run of its paragraphs.
+
+### Parameters
+
+- `run` &#x20;
+
+Returns **[Node][815]**&#x20;
+
+## paragraphs
+
+Type: [Array][814]<[Node][815]>
+
+## code
+
+A code block from a run of monospaced paragraphs, a line each, the blank
+ones between them blank lines.
+
+### Parameters
+
+- `run` &#x20;
+
+Returns **[Node][815]**&#x20;
+
+## map
+
+Type: [Array][814]<[Line][104]>
+
+## map
+
+## table
+
+A table, its cells each one line.
+
+### Parameters
+
+- `element` **[StructuralElement][267]**&#x20;
+
+Returns **[Node][815]**&#x20;
+
+## flatten
+
+A cell's or a footnote's paragraphs as one line, a space for each
+newline between two that show anything. A table inside is read the same
+way, cell by cell.
+
+### Parameters
+
+- `content` **[Array][814]<[StructuralElement][267]>**&#x20;
+
+## lines
+
+Type: [Array][814]<[Line][104]>
+
+## lines
+
+## gather
+
+### Parameters
+
+- `blocks` **[Array][814]<[StructuralElement][267]>**&#x20;
+
+## gather
+
+Walk the moves and gather the deletions, insertions, restylings and
+paragraphs they make.
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `moves` **[Array][814]<[Move][650]>**&#x20;
+
+## previous
+
+Type: ([number][819] | [undefined][823])
+
+## previous
+
+Type: ([Unit][644] | null)
+
+## textblock
+
+A block of text, from its pieces: whitespace markdown would drop held,
+and its spans kept for when it has its place.
+
+### Parameters
+
+- `type` **NodeType**&#x20;
+- `attrs` **(Record<[string][812], unknown> | null)**&#x20;
+- `pieces` **[Array][814]<[Piece][101]>**&#x20;
+- `end` **([number][819] | [undefined][823])** Its newline's index, if it has one of its own
+- `$4` **[Object][813]** (optional, default `{}`)
+  - `$4.code` (optional, default `false`)
+
+Returns **[Node][815]**&#x20;
+
+## content
+
+Type: [Array][814]<[Node][815]>
+
+## content
+
+Type: [Array][814]<[Node][815]>
+
+## content
+
+Type: [Array][814]<([string][812] | {text: [string][812], marks: [string][812]})>
+
+## content
+
+Type: [Array][814]<[Node][815]>
+
+## register
+
+Keep a block's spans for when it has its place, with whatever was held
+before it.
+
+### Parameters
+
+- `node` **[Node][815]**&#x20;
+- `spans` **[Array][814]<[LocalSpan][106]>**&#x20;
+
+## trimLines
+
+Hold what markdown would drop at each line's ends: spaces and tabs, and
+the breaks before the first line that shows anything and after the last.
+
+### Parameters
+
+- `pieces` **[Array][814]<[Piece][101]>**&#x20;
+
+Returns **[Array][814]<[Piece][101]>**&#x20;
+
+## breaks
+
+Type: [Array][814]<[Piece][101]>
+
+## breaks
+
+Type: [Array][814]<[number][819]>
+
+## trimEdges
+
+One line with the spaces and tabs at its ends held.
+
+### Parameters
+
+- `line` **[Array][814]<[Piece][101]>**&#x20;
+
+Returns **[Array][814]<[Piece][101]>**&#x20;
+
+## codeWithoutEdges
+
+Code with no whitespace at its ends: markdown takes a space off each end
+of code that has one at both.
+
+### Parameters
+
+- `pieces` **[Array][814]<[Piece][101]>**&#x20;
+
+Returns **[Array][814]<[Piece][101]>**&#x20;
+
+## GIVEN_UP
+
+Marks given up, in turn, by a block whose marks markdown cannot write.
+
+## settleMarks
+
+A paragraph or a heading whose markdown reads back as its own words. Marks
+that cross with no space between, bold running into italic, come back as
+stray asterisks; such a block gives up its marks, a kind at a time, until
+its words are its own.
+
+### Parameters
+
+- `node` **[Node][815]**&#x20;
+
+Returns **[Node][815]**&#x20;
+
+## comesBack
+
+### Parameters
+
+- `block` **[Node][815]**&#x20;
+
+Returns **[boolean][816]**&#x20;
+
+## withoutMark
+
+### Parameters
+
+- `block` **[Node][815]**&#x20;
+- `name` **[string][812]**&#x20;
+
+Returns **[Node][815]**&#x20;
+
+## joinSpans
+
+Spans of text that follow on at both ends, as one.
+
+### Parameters
+
+- `spans` **[Array][814]<[Span][97]>**&#x20;
+
+Returns **[Array][814]<[Span][97]>**&#x20;
+
+## drive/docsTypes
+
+A Google Doc as the Docs API's `documents.get` returns it:
+the parts of it the converter reads, and no more.
+
+Everything is optional, as the API leaves out whatever is empty or zero:
+an index of 0, a run with no style, a list nested at level 0. Indices
+count UTF-16 code units, as a JavaScript string does, and each element
+holds `[startIndex, endIndex)`. The body's indices and each footnote's
+are counted apart, each from 0.
+
+## Dimension
+
+A length, such as an indent.
+
+Type: [Object][813]
+
+### Properties
+
+- `magnitude` **[number][819]?**&#x20;
+- `unit` **[string][812]?**&#x20;
+
+## TextStyle
+
+How a run of text looks: what it sets apart from its paragraph's named
+style, which `NamedStyle` holds.
+
+Type: [Object][813]
+
+### Properties
+
+- `bold` **[boolean][816]?**&#x20;
+- `italic` **[boolean][816]?**&#x20;
+- `strikethrough` **[boolean][816]?**&#x20;
+
+## Suggested
+
+What a suggestion touching an element carries: the ids of the suggested
+edits it is part of.
+
+Type: [Object][813]
+
+### Properties
+
+- `suggestedInsertionIds` **[Array][814]<[string][812]>?**&#x20;
+- `suggestedDeletionIds` **[Array][814]<[string][812]>?**&#x20;
+- `suggestedTextStyleChanges` **Record<[string][812], unknown>?**&#x20;
+
+##
+
+##
+
+A smart chip, a footnote's number, a picture or a break: anything in a
+paragraph that is not text. Each is one index wide.
+
+## ParagraphElement
+
+Type: [Object][813]
+
+### Properties
+
+- `startIndex` **[number][819]?**&#x20;
+- `endIndex` **[number][819]?**&#x20;
+- `textRun` **TextRun?**&#x20;
+- `person` **InlineElement?** `personProperties: {name, email}`
+- `richLink` **InlineElement?** `richLinkProperties: {title, uri}`
+- `dateElement` **InlineElement?** `dateElementProperties: {displayText}`
+- `footnoteReference` **InlineElement?** `footnoteId`, `footnoteNumber`
+- `inlineObjectElement` **InlineElement?** A picture or a drawing
+- `horizontalRule` **InlineElement?**&#x20;
+- `pageBreak` **InlineElement?**&#x20;
+- `columnBreak` **InlineElement?**&#x20;
+- `equation` **InlineElement?**&#x20;
+- `autoText` **InlineElement?**&#x20;
+
+## ParagraphStyle
+
+Type: [Object][813]
+
+### Properties
+
+- `namedStyleType` **[string][812]?** `NORMAL_TEXT`, `TITLE`, `SUBTITLE`,
+  `HEADING_1` to `HEADING_6`
+- `indentStart` **[Dimension][245]?**&#x20;
+- `indentFirstLine` **[Dimension][245]?**&#x20;
+
+## Bullet
+
+Type: [Object][813]
+
+### Properties
+
+- `listId` **[string][812]?**&#x20;
+- `nestingLevel` **[number][819]?**&#x20;
+
+## Paragraph
+
+Type: [Object][813]
+
+### Properties
+
+- `elements` **[Array][814]<[ParagraphElement][253]>?** The last run's text ends with
+  the paragraph's newline
+- `paragraphStyle` **[ParagraphStyle][255]?**&#x20;
+- `bullet` **[Bullet][257]?** Present on a list's paragraphs
+- `positionedObjectIds` **[Array][814]<[string][812]>?** Pictures placed beside it
+- `suggestedParagraphStyleChanges` **Record<[string][812], unknown>?**&#x20;
+- `suggestedBulletChanges` **Record<[string][812], unknown>?**&#x20;
+
+## TableCell
+
+Type: [Object][813]
+
+### Properties
+
+- `startIndex` **[number][819]?**&#x20;
+- `endIndex` **[number][819]?**&#x20;
+- `content` **[Array][814]<[StructuralElement][267]>?**&#x20;
+
+## TableRow
+
+Type: [Object][813]
+
+### Properties
+
+- `startIndex` **[number][819]?**&#x20;
+- `endIndex` **[number][819]?**&#x20;
+- `tableCells` **[Array][814]<[TableCell][261]>?**&#x20;
+
+## Table
+
+Type: [Object][813]
+
+### Properties
+
+- `tableRows` **[Array][814]<[TableRow][263]>?**&#x20;
+
+## StructuralElement
+
+A block of a body, a cell, or a footnote.
+
+Type: [Object][813]
+
+### Properties
+
+- `startIndex` **[number][819]?**&#x20;
+- `endIndex` **[number][819]?**&#x20;
+- `paragraph` **[Paragraph][259]?**&#x20;
+- `table` **[Table][207]?**&#x20;
+- `sectionBreak` **[Object][813]?**&#x20;
+- `tableOfContents` **[Object][813]?**&#x20;
+
+## NestingLevel
+
+How one level of a list is numbered: an ordered list's `glyphType` says
+how (`DECIMAL`, `ALPHA`, `ROMAN`, …); a bulleted one has a `glyphSymbol`.
+
+Type: [Object][813]
+
+### Properties
+
+- `glyphType` **[string][812]?**&#x20;
+- `glyphSymbol` **[string][812]?**&#x20;
+- `startNumber` **[number][819]?**&#x20;
+
+## List
+
+Type: [Object][813]
+
+## NamedStyle
+
+Type: [Object][813]
+
+### Properties
+
+- `namedStyleType` **[string][812]?**&#x20;
+- `textStyle` **[TextStyle][247]?**&#x20;
+
+## DocumentTab
+
+What a tab holds; a Doc read without its tabs holds the same at its top.
+
+Type: [Object][813]
+
+### Properties
+
+- `lists` **Record<[string][812], [List][271]>?**&#x20;
+- `inlineObjects` **Record<[string][812], [InlineObject][276]>?** By id: what an
+  `inlineObjectElement` shows
+
+## InlineObject
+
+A picture or a drawing in a paragraph. A picture has the address it can
+be fetched from, for half an hour after the read; a drawing has none.
+
+Type: [Object][813]
+
+## Tab
+
+Type: [Object][813]
+
+### Properties
+
+- `documentTab` **[DocumentTab][274]?**&#x20;
+- `childTabs` **[Array][814]<[Tab][277]>?**&#x20;
+
+##
 
 ## drive/errors
 
-What stops an import from Drive, said for the writer.
+What stops an import from Drive, or a sync with a Doc, said
+for the writer.
 
 ## DriveError
 
 **Extends Error**
 
-Something about Google's side that stops an import.
+Something about Google's side that stops an import or a sync.
 
 ### Parameters
 
-- `message` **[string][70]**&#x20;
+- `message` **[string][812]**&#x20;
 
 ## SignInLapsedError
 
@@ -131,50 +2288,98 @@ it stops the batch rather than skipping a file.
 The browser would not open Google's window: it was not opened straight
 from a click.
 
+## NotGrantedError
+
+**Extends DriveError**
+
+Drive does not give the account this file: it was never picked with it,
+or the access was taken back.
+
+## StaleRevisionError
+
+**Extends DriveError**
+
+A write was refused because the revision it was made against is too old
+for Google to merge it in: read the Doc again and write against that.
+
+## drive/export
+
+What Google's markdown export of a Doc gets wrong, put right
+before the importer reads it.
+
+Checked against a real Doc on 16 Oct 2026 (`.llm/google_docs_design.md`,
+part 1, Testing). A horizontal line is written as `---` straight under the
+paragraph before it, after a hard break, and markdown reads a `---` under
+text as that text's underline: the paragraph would become a heading and
+the line be lost. Google writes its headings with `#`, never underlined,
+so a `---` under text from Google is always a line.
+
+## UNDERLINED
+
+A line of text with a line of `---` under it, the text's hard break and all.
+
+## mendExport
+
+A Doc's markdown, as Google meant it.
+
+### Parameters
+
+- `markdown` **[string][812]** Google's export of a Doc
+
+Returns **[string][812]**&#x20;
+
 ## drive/fetch
 
 A picked file fetched from Drive as a `File`, for the
 importer to take as it takes one from disk.
 
-Google's own types have no bytes of their own and are exported: a Doc as
-markdown, a Sheet as CSV (its first sheet), Slides as a PDF, a Drawing as
-a PNG. Anything else is downloaded as it is. A Doc's document keeps its id.
+A Doc is read through the Docs API and converted (`drive/convert`), its
+pictures fetched from the addresses the Docs API gives them. Where
+it cannot be, and for Google's other types, which have no bytes of their
+own, Drive exports it: a Doc as markdown, mended where Google's markdown
+is wrong (`drive/export`), a Sheet as CSV (its first sheet), Slides as a
+PDF, a Drawing as a PNG. Anything else is downloaded as it is. A Doc's
+document keeps its id.
 
 ## PickedFile
 
 A picked file, as Drive describes it.
 
-Type: [Object][72]
+Type: [Object][813]
 
 ### Properties
 
-- `id` **[string][70]**&#x20;
-- `name` **[string][70]** As Drive shows it; a Google Doc's has no extension
-- `mimeType` **[string][70]** A Google type (`application/vnd.google-apps.document`) or the file's own
+- `id` **[string][812]**&#x20;
+- `name` **[string][812]** As Drive shows it; a Google Doc's has no extension
+- `mimeType` **[string][812]** A Google type (`application/vnd.google-apps.document`) or the file's own
 
 ## GOOGLE_TYPE
 
 What Google's own types are prefixed with.
 
-Type: [string][70]
+Type: [string][812]
+
+## DOC_TYPE
+
+A Google Doc's type.
 
 ## EXPORTS
 
 Google's types that export, and as what.
 
-Type: Record<[string][70], {mime: [string][70], extension: [string][70]}>
+Type: Record<[string][812], {mime: [string][812], extension: [string][812]}>
 
 ## UNEXPORTABLE
 
 Google's types that do not, by what the writer would call them.
 
-Type: Record<[string][70], [string][70]>
+Type: Record<[string][812], [string][812]>
 
 ## DriveRequest
 
 How a picked file is fetched, or why it cannot be.
 
-Type: ({url: [string][70], name: [string][70], mime: [string][70]} | {skip: [string][70]})
+Type: ({url: [string][812], name: [string][812], mime: [string][812]} | {skip: [string][812]})
 
 ## requestFor
 
@@ -186,9 +2391,9 @@ and titles without the `.md`, so a Doc named `Ch. 3` keeps its name.
 
 ### Parameters
 
-- `picked` **[PickedFile][11]**&#x20;
+- `picked` **[PickedFile][292]**&#x20;
 
-Returns **[DriveRequest][16]**&#x20;
+Returns **[DriveRequest][298]**&#x20;
 
 ## linkFor
 
@@ -198,29 +2403,7 @@ comes in as a copy, linked to nothing.
 
 ### Parameters
 
-- `picked` **[PickedFile][11]**&#x20;
-
-## refusal
-
-Drive's refusal, said for the writer.
-
-### Parameters
-
-- `response` **[Response][73]**&#x20;
-
-Returns **[Promise][74]<[DriveError][6]>**&#x20;
-
-## body
-
-Type: any
-
-## body
-
-Type: any
-
-## body
-
-Type: any
+- `picked` **[PickedFile][292]**&#x20;
 
 ## fetchPicked
 
@@ -228,17 +2411,206 @@ Fetch a picked file from Drive.
 
 ### Parameters
 
-- `picked` **[PickedFile][11]**&#x20;
-- `token` **[string][70]**&#x20;
-- `options` **[Object][72]?** (optional, default `{}`)
+- `picked` **[PickedFile][292]**&#x20;
+- `token` **[string][812]**&#x20;
+- `options` **[Object][813]?** (optional, default `{}`)
   - `options.signal` **AbortSignal?**&#x20;
 
 <!---->
 
-- Throws **[DriveError][6]** When it cannot be exported or Drive refuses it
-- Throws **[SignInLapsedError][8]** When Drive no longer takes the token
+- Throws **[DriveError][281]** When it cannot be exported or Drive refuses it
+- Throws **[SignInLapsedError][283]** When Drive no longer takes the token
 
-Returns **[Promise][74]\<File>**&#x20;
+Returns **[Promise][811]\<File>**&#x20;
+
+## convertPicked
+
+A Doc read through the Docs API and converted, as the markdown `File` its
+export would be, with what the converter found in it. Suggested edits
+still open are read as if rejected, so it comes in as it was before them.
+Its pictures come with the file, a marker in its text where each was. In
+the desktop app they are fetched from the addresses the Docs API gives
+them. A page cannot have them from there: Google answers a page's plain
+request with 429 and its request with the token with no CORS (seen 17 Oct
+2026\). So in a browser, and for any the desktop could not fetch, they are
+taken from Google's export, where every picture is written in, if they can
+be matched to the Doc's. One that will not come either way is left out,
+and counted.
+
+Null when the export is to be used instead: the Docs API refused (a Cloud
+project without it), the Doc has more than one tab, which the export may
+hold all of, or the converter could not read it.
+
+### Parameters
+
+- `picked` **[PickedFile][292]** A Doc
+- `token` **[string][812]**&#x20;
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.signal` **AbortSignal?**&#x20;
+
+<!---->
+
+- Throws **[SignInLapsedError][283]** When Drive no longer takes the token
+
+## document
+
+## get
+
+Type: [FetchedPicture][315]
+
+## get
+
+Type: [number][819]
+
+## get
+
+Type: [number][819]
+
+## get
+
+Type: [Side][586]
+
+## get
+
+Type: [string][812]
+
+## get
+
+Type: [Block][501]
+
+## get
+
+## FetchedPicture
+
+A picture's bytes, and what they are.
+
+Type: {mime: [string][812], bytes: [Uint8Array][818]}
+
+## fetchDocPictures
+
+A Doc's pictures, by their inline objects' ids: those the read brought in,
+or of those the ones asked for. In the desktop app they are fetched from
+the addresses the Docs API gives them, one at a time, since the addresses
+answer a crowd of requests with 429. A page cannot have them from there,
+so in a browser, and for any the desktop could not fetch, they are taken
+from Google's export. One that will not come either way is not in the map.
+
+### Parameters
+
+- `picked` **[PickedFile][292]** The Doc
+- `token` **[string][812]**&#x20;
+- `document` &#x20;
+- `read` &#x20;
+- `$4` **[Object][813]** (optional, default `{}`)
+  - `$4.wanted` &#x20;
+  - `$4.signal` &#x20;
+
+- `options` **[Object][813]?**&#x20;
+  - `options.wanted` **[Set][820]<[string][812]>?** Those to fetch, by id; all otherwise
+  - `options.signal` **AbortSignal?**&#x20;
+
+<!---->
+
+- Throws **[SignInLapsedError][283]** When Drive no longer takes the token
+
+Returns **[Promise][811]<[Map][817]<[string][812], [FetchedPicture][315]>>**&#x20;
+
+## got
+
+Type: [Map][817]<[string][812], [FetchedPicture][315]>
+
+## fetchPicture
+
+A Doc's picture, from the address the Docs API gave it: for half an hour
+after the read, to anyone with it, but not to a page. Asked for plainly,
+again after the wait a 429 asks for, then with the token.
+
+### Parameters
+
+- `uri` **[string][812]**&#x20;
+- `token` **[string][812]**&#x20;
+- `signal` **AbortSignal?**&#x20;
+
+Returns **[Promise][811]<({mime: [string][812], bytes: [Uint8Array][818]} | null)>** Null when it will not come
+
+## plain
+
+Type: RequestInit
+
+## plain
+
+An empty paragraph left beside a table put in, made plain text: no
+heading, no bullet.
+
+### Parameters
+
+- `index` **[number][819]** Its newline's
+- `like` **[BodyParagraph][480]** The paragraph whose style it took
+
+Returns **[Array][814]<[object][813]>**&#x20;
+
+## retryAfter
+
+How long a 429 asks to wait, in milliseconds: its `Retry-After`, a second
+when it says nothing, three at most.
+
+### Parameters
+
+- `response` **[Response][810]**&#x20;
+
+Returns **[number][819]**&#x20;
+
+## wait
+
+### Parameters
+
+- `ms` **[number][819]**&#x20;
+- `signal` **AbortSignal?**&#x20;
+
+Returns **[Promise][811]\<void>**&#x20;
+
+## exportedPictures
+
+A Doc's pictures from Google's markdown export, where each is written in
+whole, by the inline object it is. The export has them in the Doc's order,
+with no ids, so they are matched by place: one for each of the Doc's inline
+objects, drawings and pictures in tables among them, or one for each
+picture the converter brought in. Any other count matches none.
+
+### Parameters
+
+- `picked` **[PickedFile][292]**&#x20;
+- `token` **[string][812]**&#x20;
+- `document` &#x20;
+- `read` &#x20;
+- `signal` **AbortSignal?**&#x20;
+
+Returns **[Promise][811]<[Map][817]<[string][812], {mime: [string][812], bytes: [Uint8Array][818]}>>**&#x20;
+
+## objectsOf
+
+A tab's inline objects, by id, in the order its body has them, tables'
+cells included.
+
+### Parameters
+
+- `document` &#x20;
+- `tabId` **[string][812]**&#x20;
+
+Returns **[Array][814]<[string][812]>**&#x20;
+
+## walk
+
+### Parameters
+
+- `content` &#x20;
+
+## walk
+
+### Parameters
+
+- `blocks` **[Array][814]<[StructuralElement][267]>** @param {boolean} inCell
+- `inCell` &#x20;
 
 ## describePicked
 
@@ -247,114 +2619,17 @@ the ids come back from Google's sign-in.
 
 ### Parameters
 
-- `id` **[string][70]**&#x20;
-- `token` **[string][70]**&#x20;
-- `options` **[Object][72]?** (optional, default `{}`)
+- `id` **[string][812]**&#x20;
+- `token` **[string][812]**&#x20;
+- `options` **[Object][813]?** (optional, default `{}`)
   - `options.signal` **AbortSignal?**&#x20;
 
 <!---->
 
-- Throws **[DriveError][6]** When Drive refuses it
-- Throws **[SignInLapsedError][8]** When Drive no longer takes the token
+- Throws **[DriveError][281]** When Drive refuses it
+- Throws **[SignInLapsedError][283]** When Drive no longer takes the token
 
-Returns **[Promise][74]<[PickedFile][11]>**&#x20;
-
-## ask
-
-A request to Drive with the token, answered or refused.
-
-### Parameters
-
-- `url` **[string][70]**&#x20;
-- `token` **[string][70]**&#x20;
-- `signal` **AbortSignal?**&#x20;
-
-Returns **[Promise][74]<[Response][73]>**&#x20;
-
-## drive/images
-
-The pictures in a Google Doc's markdown, taken out of it.
-
-Google's export writes a picture reference-style: `![][image1]` or
-`![alt][image2]` where it was, and at the end a definition for each,
-`[image1]: <data:image/png;base64,…>`, holding the whole picture. The
-editor has no images, and what it makes of these leaves the base64 in the
-document, megabytes of it in front of the model. So they come out before
-the importer sees the markdown: for now they are counted and left out;
-when documents hold images, the same pictures go into the project.
-
-## TakenImage
-
-A picture taken out of the markdown.
-
-Type: [Object][72]
-
-### Properties
-
-- `ref` **[string][70]** Its label, lower-cased (`image1`); empty for one written inline
-- `alt` **[string][70]** Its alt text, as the first use gave it
-- `mime` **[string][70]** Its media type
-- `bytes` **[Uint8Array][75]** The picture
-
-## REFERENCE
-
-A use of a picture: `![alt][label]`, `![label][]` or `![label]`, the last
-not followed by a link of its own.
-
-## INLINE
-
-A picture written inline as a data URI: `![alt](data:…)`.
-
-## DEFINITION
-
-A definition holding a picture: `[label]: <data:…>`, on a line of its own.
-
-## unescape
-
-### Parameters
-
-- `text` **[string][70]**&#x20;
-
-Returns **[string][70]**&#x20;
-
-## bytesOf
-
-The bytes of a data URI's payload.
-
-### Parameters
-
-- `params` **[string][70]** What followed the media type, `;base64` among them
-- `data` **[string][70]**&#x20;
-
-Returns **[Uint8Array][75]**&#x20;
-
-## takeImages
-
-Take the pictures out of a Doc's markdown: each definition that holds one,
-each use of those, and each one written inline. A reference to anything
-else, a link or a picture on the web, is left where it is.
-
-### Parameters
-
-- `markdown` **[string][70]**&#x20;
-
-Returns **{markdown: [string][70], images: [Array][76]<[TakenImage][33]>}**&#x20;
-
-## defined
-
-Type: [Map][77]<[string][70], [TakenImage][33]>
-
-## definitions
-
-Type: [Set][78]<[number][79]>
-
-## inline
-
-Type: [Array][76]<[TakenImage][33]>
-
-## used
-
-Type: [Set][78]<[string][70]>
+Returns **[Promise][811]<[PickedFile][292]>**&#x20;
 
 ## drive
 
@@ -374,16 +2649,41 @@ folder grants nothing inside it.
   whether the import is offered
 - **signIn** - Google's sign-in with its picker, in a popup or the system
   browser, and what it came back with
-- **fetch** - A picked file looked up and fetched as a `File`: Google's own
-  types exported, anything else downloaded; and the link a Doc's document
-  keeps to it
-- **images** - The pictures in a Doc's markdown taken out before the
-  importer sees it
+- **fetch** - A picked file looked up and fetched as a `File`: a Doc read
+  through the Docs API and converted, Google's other types exported,
+  anything else downloaded; and the link a Doc's document keeps to it
+- **convert** - A Doc's structure, as the Docs API gives it, read into a
+  document, with where each part of the document is in the Doc
+- **write** - A document written back to its Doc: the Docs API requests
+  that change only what differs, and what they cannot send yet
+- **shape** - The writing's first pass: the Doc's tables made the
+  document's shape, rows and columns put in and taken out, tables put in
+  and deleted
+- **merge** - A document and its Doc merged three ways against the base,
+  the Doc as the two last agreed, with where both changed the same words
+- **sync** - A linked document and its Doc made one: read, merged,
+  written and read again, with what the writer is asked on the way
+- **apply** - The Docs API's requests applied as Docs applies them: what
+  a sync expects its write to leave
+- **session** - The sign-in a sync works with, kept between syncs: a
+  token for the hour, and a refresh token in the desktop app
+- **api** - Asking Google with the token: a Doc read, edits written
+  against a revision, whose Drive it is, and refusals said for the writer
+- **docsTypes** - The parts of a Doc the converter reads, as types
+- **export** - What Google's markdown export of a Doc gets wrong, put
+  right, for a Doc the converter is not given
 - **errors** - What stops an import, said for the writer
+
+A Doc's document stays linked to it, and **Sync**, on its menu or over it
+in the editor, makes the two one through the Docs API: what each side
+changed since they last agreed goes into the Doc, edited in place so its
+comments and pictures stay, and what the Doc then holds comes back into
+the document as edits.
 
 The importing itself is `useDriveImport`, the dialog the tree opens is
 `DriveImportDialog.vue`, and the page the popup comes back to is
-`GoogleCallback.vue`. Design: `.llm/google_docs_design.md`.
+`GoogleCallback.vue`. Syncing is `useDriveSync`, and what it asks the
+writer `DriveSyncDialog.vue`. Design: `.llm/google_docs_design.md`.
 
 ### Examples
 
@@ -398,6 +2698,1119 @@ for (const id of picked.ids) {
   const file = await fetchPicked(await describePicked(id, picked.token), picked.token)
 }
 ```
+
+## drive/merge
+
+A document and its Google Doc merged three ways: each
+against the base, the Doc as the two last agreed, so that what either
+side changed since is kept.
+
+Block by block first. A block changed on one side takes that side's; one
+changed alike on both takes it once; blocks both put in at one place go
+in both, the Doc's first. Where both sides changed a stretch differently,
+it is merged within: a list or a quote item by item, a table by its
+columns and rows and then cell by cell, and paragraphs, headings and code
+word by word, the end of each block a word of its own, so a paragraph
+parted on one side and a word changed in it on the other take both. Changes with nothing kept between them clash, as two
+people rewriting one sentence do, and the stretch is given both ways,
+each with everything else merged into it, for the writer to choose: the
+block as the document would have it, or as the Doc would.
+
+Comments are the document's alone, and the Doc never has their marks. So
+they are left out of every comparison, and what the document kept keeps
+them. Words the Doc put in between words of one comment are in it too.
+
+Design: `.llm/google_docs_design.md`, part 3, Sync.
+
+## MAX_EDITS
+
+Type: [number][819]
+
+## MAX_EDITS
+
+Type: [number][819]
+
+## MAX_EDITS
+
+A stretch merged, with the blocks it was.
+
+Type: [number][819]
+
+## MAX_EDITS
+
+A piece of a stretch of blocks, for merging word by word: a word, a
+character, an inline node, or the end of a block, which holds the block
+for its kind.
+
+Type: [number][819]
+
+## MAX_EDITS
+
+Past this many changes on a side, a stretch is not merged word by word.
+
+Type: [number][819]
+
+## MAX_EDITS
+
+Type: [number][819]
+
+## MAX_EDITS
+
+What kind of paragraph a block is.
+
+Type: [number][819]
+
+## MAX_EDITS
+
+Past this many characters changed in one stretch, the stretch goes whole.
+
+Type: [number][819]
+
+## Clash
+
+Where both sides changed the same words: the blocks as they were, and as
+each side would have them, with every change that does not clash merged
+into both.
+
+Type: [Object][813]
+
+### Properties
+
+- `base` **[Array][814]<[Node][815]>**&#x20;
+- `mine` **[Array][814]<[Node][815]>** As the document would have them
+- `theirs` **[Array][814]<[Node][815]>** As the Doc would have them
+
+## Merged
+
+Type: [Object][813]
+
+### Properties
+
+- `pieces` **[Array][814]<[Piece][101]>** The merged document's blocks, in order, a
+  clash where both sides changed the same words
+- `clashes` **[Array][814]<[Clash][349]>** Those, in order
+
+## Both
+
+A stretch merged: as each side would have it, which are the same unless
+it clashed.
+
+Type: {mine: [Array][814]<[Node][815]>, theirs: [Array][814]<[Node][815]>, clashed: [boolean][816]}
+
+## Part
+
+A run of blocks of words, or another block, for laying a stretch out in
+its parts.
+
+Type: {key: [string][812], nodes: [Array][814]<[Node][815]>}
+
+## MAX_BLOCK_EDITS
+
+Past this many blocks changed on a side, the blocks are one stretch.
+
+Type: [number][819]
+
+## PIECES
+
+A word, or any other character.
+
+## mergeDocs
+
+The document and the Doc merged.
+
+### Parameters
+
+- `base` **[Node][815]** The Doc as the two last agreed
+- `mine` **[Node][815]** The document now
+- `theirs` **[Node][815]** The Doc now
+
+Returns **[Merged][351]**&#x20;
+
+## clashes
+
+Type: [Array][814]<[Clash][349]>
+
+## settle
+
+The merged document, each clash taken as chosen.
+
+### Parameters
+
+- `merged` **[Merged][351]**&#x20;
+- `choices` **[Array][814]<(`"mine"` | `"theirs"`)>?** One for each clash, in order (optional, default `[]`)
+
+Returns **[Node][815]**&#x20;
+
+## settle
+
+The moves made sendable: a chip whose words changed is replaced whole; a
+page break's end is kept; a newline that cannot go is kept, or traded
+for the one before it.
+
+### Parameters
+
+- `moves` **[Array][814]<[Move][650]>**&#x20;
+
+Returns **[Array][814]<[Move][650]>**&#x20;
+
+## sameDocs
+
+Whether two documents say the same, their comments aside.
+
+### Parameters
+
+- `a` **[Node][815]**&#x20;
+- `b` **[Node][815]**&#x20;
+
+Returns **[boolean][816]**&#x20;
+
+## mergeSequence
+
+Sibling blocks merged, as stretches.
+
+### Parameters
+
+- `base` **[Array][814]<[Node][815]>**&#x20;
+- `mine` **[Array][814]<[Node][815]>**&#x20;
+- `theirs` **[Array][814]<[Node][815]>**&#x20;
+
+Returns **[Array][814]\<Stretch>**&#x20;
+
+## mergeStretch
+
+A stretch of blocks one side or both changed.
+
+### Parameters
+
+- `base` **[Array][814]<[Node][815]>**&#x20;
+- `mine` **[Array][814]<[Node][815]>**&#x20;
+- `theirs` **[Array][814]<[Node][815]>**&#x20;
+
+Returns **[Array][814]\<Stretch>**&#x20;
+
+## Hunk
+
+A change one side made to a stretch: the base's blocks from `from` to
+`to` made `blocks`.
+
+Type: {from: [number][819], to: [number][819], blocks: [Array][814]<[Node][815]>}
+
+## mergeApart
+
+A stretch both sides changed, but each in blocks of its own, with no
+block both kept between: each side's changes made to the base, the Doc's
+merged into the document's blocks for their comments. Null when two
+changes reach the same block, or both sides put blocks in at one place.
+
+### Parameters
+
+- `base` **[Array][814]<[Node][815]>**&#x20;
+- `mine` **[Array][814]<[Node][815]>**&#x20;
+- `theirs` **[Array][814]<[Node][815]>**&#x20;
+
+Returns **([Array][814]\<Stretch> | null)**&#x20;
+
+##
+
+Type: [Hunk][370]
+
+##
+
+Type: [Hunk][370]
+
+## hunksOf
+
+A side's changes to a stretch, block by block: where it kept the base's
+blocks, and what it made of those between.
+
+### Parameters
+
+- `base` **[Array][814]<[Node][815]>**&#x20;
+- `side` **[Array][814]<[Node][815]>**&#x20;
+
+Returns **([Array][814]<[Hunk][370]> | null)**&#x20;
+
+## a
+
+Where in the base the next change would start.
+
+## keptBy
+
+The base's blocks, each as a side has it where it kept it: the same but
+for comments. The base's own where it did not.
+
+### Parameters
+
+- `base` **[Array][814]<[Node][815]>**&#x20;
+- `side` **[Array][814]<[Node][815]>**&#x20;
+
+Returns **[Array][814]<[Node][815]>**&#x20;
+
+## mergeParts
+
+A stretch of blocks of several sorts in its parts: each run of blocks of
+words, and each list, quote or table, laid against the same on the other
+sides and merged with it. Null when they lay out as one part.
+
+### Parameters
+
+- `base` **[Array][814]<[Node][815]>**&#x20;
+- `mine` **[Array][814]<[Node][815]>**&#x20;
+- `theirs` **[Array][814]<[Node][815]>**&#x20;
+
+Returns **([Array][814]\<Stretch> | null)**&#x20;
+
+## partsOf
+
+Blocks as parts: each run of blocks of words one, and each other block.
+
+### Parameters
+
+- `blocks` **[Array][814]<[Node][815]>**&#x20;
+
+Returns **[Array][814]<[Part][354]>**&#x20;
+
+## mergeWithin
+
+A stretch merged inside its blocks: one block of the same sort on each
+side merged child by child, or blocks of words merged word by word. Null
+when they are neither.
+
+### Parameters
+
+- `base` **[Array][814]<[Node][815]>**&#x20;
+- `mine` **[Array][814]<[Node][815]>**&#x20;
+- `theirs` **[Array][814]<[Node][815]>**&#x20;
+
+Returns **([Both][353] | null)**&#x20;
+
+## mergeHolder
+
+A list, a quote, an item or a table on each side, merged child by child.
+
+### Parameters
+
+- `base` **[Node][815]**&#x20;
+- `mine` **[Node][815]**&#x20;
+- `theirs` **[Node][815]**&#x20;
+
+Returns **([Both][353] | null)**&#x20;
+
+## mergeTable
+
+A row or a column of a merged table, by where each side has it.
+
+### Parameters
+
+- `base` &#x20;
+- `mine` &#x20;
+- `theirs` &#x20;
+
+## mergeTable
+
+Three tables merged by their columns and rows, then cell by cell. Each
+side's columns are paired with the base's by the cells they share, and
+then its rows by the cells they share in those columns. A row or column
+one side took out goes, unless the other changed it, when the two clash;
+those either side put in go in where they stand, the Doc's first where
+both put some in at one place; and each cell of the base's both kept is
+merged word by word.
+
+### Parameters
+
+- `base` **[Node][815]**&#x20;
+- `mine` **[Node][815]**&#x20;
+- `theirs` **[Node][815]**&#x20;
+
+Returns **[Both][353]**&#x20;
+
+## column
+
+### Parameters
+
+- `grid` &#x20;
+- `k` &#x20;
+
+## width
+
+### Parameters
+
+- `grid` &#x20;
+
+## columnsOf
+
+### Parameters
+
+- `side` &#x20;
+
+## rowsOf
+
+### Parameters
+
+- `side` &#x20;
+- `columns` &#x20;
+
+## changed
+
+Whether a side changed a row or a column of the base's it kept: a cell
+of it changed, or one put in it with words.
+
+### Parameters
+
+- `side` &#x20;
+- `rows` **[Array][814]<\[[number][819], [number][819]]>**&#x20;
+- `columns` **[Array][814]<\[[number][819], [number][819]]>**&#x20;
+- `axis` **(`"row"` | `"column"`)**&#x20;
+- `at` **[number][819]** The base's
+
+## cellOf
+
+### Parameters
+
+- `row` **[Line][104]**&#x20;
+- `col` **[Line][104]**&#x20;
+- `version` **(`"mine"` | `"theirs"`)**&#x20;
+
+Returns **[Node][815]**&#x20;
+
+## made
+
+### Parameters
+
+- `version` **(`"mine"` | `"theirs"`)**&#x20;
+
+## made
+
+Type: [Array][814]<{op: `"insert"`, b: [Unit][644]}>
+
+## mergeLines
+
+The rows or the columns of a merged table, in order, as each side's
+version of the merge would have them: they differ only where they clash.
+
+### Parameters
+
+- `count` **[number][819]** The base's
+- `mineSide` &#x20;
+- `theirsSide` &#x20;
+
+Returns **{mine: [Array][814]<[Line][104]>, theirs: [Array][814]<[Line][104]>, clashed: [boolean][816]}**&#x20;
+
+## putIn
+
+Those a side put in, by the base's line before them.
+
+### Parameters
+
+- `total` **[number][819]**&#x20;
+- `pairs` **[Array][814]<\[[number][819], [number][819]]>**&#x20;
+
+## add
+
+### Parameters
+
+- `line` **[Line][104]** @param {boolean} \[inMineVersion] @param {boolean} \[inTheirsVersion]
+- `inMineVersion` (optional, default `true`)
+- `inTheirsVersion` (optional, default `true`)
+
+## add
+
+### Parameters
+
+- `type` &#x20;
+- `kind` &#x20;
+- `odd` &#x20;
+
+## mergeWords
+
+Blocks of words merged word by word, the end of each block one of them.
+
+### Parameters
+
+- `base` **[Array][814]<[Node][815]>**&#x20;
+- `mine` **[Array][814]<[Node][815]>**&#x20;
+- `theirs` **[Array][814]<[Node][815]>**&#x20;
+
+Returns **([Both][353] | null)**&#x20;
+
+## laid
+
+### Parameters
+
+- `startFirst` **[boolean][816]**&#x20;
+
+## laid
+
+A document's blocks at its top, those of its notes aside: a table in a
+list or a quote is one block with it, which the writer cannot send.
+
+### Parameters
+
+- `doc` **[Node][815]**&#x20;
+- `read` **[boolean][816]** Whether it is the Doc as read
+
+Returns **[Array][814]<[Laid][417]>**&#x20;
+
+## mergeTokens
+
+Tokens laid out in chunks, merged: each side's that changed, the Doc's
+words put among the document's in the comments around them, and both
+where both changed differently.
+
+### Parameters
+
+- `chunks` &#x20;
+- `b` **[Array][814]\<Token>**&#x20;
+- `m` **[Array][814]\<Token>**&#x20;
+- `t` **[Array][814]\<Token>**&#x20;
+
+Returns **{asMine: [Array][814]\<Token>, asTheirs: [Array][814]\<Token>, clashed: [boolean][816]}**&#x20;
+
+## asMine
+
+Type: [Array][814]\<Token>
+
+## asTheirs
+
+Type: [Array][814]\<Token>
+
+## tokensOf
+
+Blocks as tokens: each word, each other character and each inline node,
+and after them the block's end.
+
+### Parameters
+
+- `blocks` **[Array][814]<[Node][815]>**&#x20;
+
+Returns **[Array][814]\<Token>**&#x20;
+
+## match
+
+Type: [string][812]
+
+## inline
+
+Type: [Array][814]<[Node][815]>
+
+## token
+
+Type: [Node][815]
+
+## commented
+
+The Doc's words put in among the document's, with any comment that runs
+on both sides of where they go.
+
+### Parameters
+
+- `tokens` **[Array][814]\<Token>** The Doc's
+- `before` **(Token | [undefined][823])** The document's, before where they go
+- `after` **(Token | [undefined][823])** And after
+
+Returns **[Array][814]\<Token>**&#x20;
+
+## commentsOf
+
+### Parameters
+
+- `token` **(Token | [undefined][823])**&#x20;
+
+Returns **[Array][814]\<Mark>**&#x20;
+
+## pick
+
+Each side's choice of what one thing is, by `key`: the side that changed
+it, or both where both did, alike or not.
+
+### Parameters
+
+- `base` **T**&#x20;
+- `mine` **T**&#x20;
+- `theirs` **T**&#x20;
+- `key` &#x20;
+
+Returns **{mine: T, theirs: T, clashed: [boolean][816]}**&#x20;
+
+## remade
+
+A node of the kind `like` is, holding `content`. Null when it cannot
+hold it.
+
+### Parameters
+
+- `like` **[Node][815]**&#x20;
+- `content` **[Array][814]<[Node][815]>**&#x20;
+
+Returns **([Node][815] | null)**&#x20;
+
+## agreed
+
+### Parameters
+
+- `base` **[Array][814]<[Node][815]>**&#x20;
+- `blocks` **[Array][814]<[Node][815]>**&#x20;
+
+Returns **Stretch**&#x20;
+
+## childrenOf
+
+### Parameters
+
+- `node` **[Node][815]**&#x20;
+
+Returns **[Array][814]<[Node][815]>**&#x20;
+
+## holdsBlocks
+
+Whether a node holds blocks: a list, an item, a quote, a table or a row.
+
+### Parameters
+
+- `node` **[Node][815]**&#x20;
+
+## sameBlocks
+
+### Parameters
+
+- `a` **[Array][814]<[Node][815]>**&#x20;
+- `b` **[Array][814]<[Node][815]>**&#x20;
+
+## sameTokens
+
+### Parameters
+
+- `a` **[Array][814]\<Token>**&#x20;
+- `b` **[Array][814]\<Token>**&#x20;
+
+## keys
+
+Type: [WeakMap][824]<[Node][815], [string][812]>
+
+## keyOf
+
+What a node is, for comparing: all of it but the comments' marks, its
+text joined where only a comment parted it.
+
+### Parameters
+
+- `node` **[Node][815]**&#x20;
+
+Returns **[string][812]**&#x20;
+
+## child
+
+Type: [string][812]
+
+## markupKey
+
+What kind of node one is, its contents aside.
+
+### Parameters
+
+- `node` **[Node][815]**&#x20;
+
+Returns **[string][812]**&#x20;
+
+## marksKey
+
+Marks, the comments' left out.
+
+### Parameters
+
+- `marks` &#x20;
+
+Returns **[string][812]**&#x20;
+
+## drive/session
+
+The Google sign-in a sync works with, kept so that one sync
+after another shows nothing.
+
+A sync signs in plainly, without the picker: Drive gave the app the Doc
+at its pick, and an account that has consented once is signed in by a
+window that closes by itself, hinted with the account the Doc was linked
+from. In a browser the token is then held in memory, by account, for the
+hour it lasts: a page cannot keep a refresh token, since trading one needs
+the client's secret. An import's token is held the same way, so a sync
+straight after it needs no window at all. In the desktop window the
+refresh token every sign-in comes with is kept, by account, in this
+machine's local storage, as an MCP server's tokens are, and never in the
+database: a backup handed around would hand the sign-in around with it.
+Syncs there are silent until the writer takes the app's access back in
+their Google account.
+
+## REFRESH_KEY
+
+Type: [string][812]
+
+## REFRESH_KEY
+
+Where the desktop app keeps refresh tokens, by account.
+
+Type: [string][812]
+
+## refreshTokens
+
+The refresh tokens kept, by account.
+
+Returns **Record<[string][812], [string][812]>**&#x20;
+
+## MARGIN_MS
+
+A token this close to its end is let go: a sync takes a few calls.
+
+## held
+
+Tokens held, by account; under '' for one whose account is not known.
+
+Type: [Map][817]<[string][812], {token: [string][812], expiresAt: [number][819]}>
+
+## keepSession
+
+A sign-in, with the account it is for.
+
+### Parameters
+
+- `account` &#x20;
+- `$1` **[Object][813]**&#x20;
+  - `$1.token` &#x20;
+  - `$1.expiresAt` &#x20;
+  - `$1.refreshToken` &#x20;
+
+## keepSession
+
+Keep a sign-in for the syncs after it: its token for as long as it
+lasts, and in the desktop window its refresh token.
+
+### Parameters
+
+- `account` **([string][812] | null | [undefined][823])** By address
+- `session` **[Session][552]**&#x20;
+  - `session.token` &#x20;
+  - `session.expiresAt` &#x20;
+  - `session.refreshToken` &#x20;
+
+## forgetSession
+
+Let go of the token held for an account, which Google stopped taking.
+
+### Parameters
+
+- `account` **([string][812] | null | [undefined][823])**&#x20;
+
+## clearSessions
+
+Forget every token held. For tests.
+
+## signInFor
+
+A token for an account: one held, a fresh one from a kept refresh token,
+or a plain sign-in. In a browser, call it straight from a click, with
+nothing awaited first: when no token is held, it opens Google's window
+before it returns.
+
+### Parameters
+
+- `account` **([string][812] | null | [undefined][823])** The address the Doc was linked
+  from; when not known, whoever signs in, and then their address is asked
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.signal` **AbortSignal?**&#x20;
+
+Returns **[Promise][811]<(Signed | null)>** Null when the writer cancelled
+
+## inDesktop
+
+In the desktop window: a token from the refresh token kept for the
+account, or a sign-in in the system browser when there is none, or
+Google no longer takes it.
+
+### Parameters
+
+- `client` **{clientId: [string][812], clientSecret: [string][812]}**&#x20;
+- `account` **([string][812] | null | [undefined][823])**&#x20;
+- `signal` **AbortSignal?**&#x20;
+
+Returns **[Promise][811]<(Signed | null)>**&#x20;
+
+## error
+
+Type: any
+
+##
+
+Type: [string][812]
+
+## remember
+
+Keep a fresh sign-in, under its account, asked of Drive when not known.
+
+### Parameters
+
+- `account` **([string][812] | null | [undefined][823])**&#x20;
+- `session` **[Session][552]**&#x20;
+- `signal` **AbortSignal?**&#x20;
+
+Returns **[Promise][811]\<Signed>**&#x20;
+
+## drive/shape
+
+The tables of a Google Doc made the shape of a document's,
+before a word of them is written: the writing half's first pass.
+
+The Doc's blocks and the document's are laid against each other as the
+writer lays them (`drive/write`). A table the same on both sides is left
+as it is. Where a stretch of blocks changed, its tables are paired in
+order, each with the one most like it, by the cells they share: a table
+of the Doc's left over is deleted whole, and one of the document's left
+over is put in, empty, where it stands among the blocks around it. A
+table paired with one of another shape has its columns, then its rows,
+paired the same way: those of the Doc's left over are taken out, and the
+document's put in, empty, beside the ones they stand beside. The words
+then go in as any words do, into tables now the document's shape, cell
+by cell.
+
+Docs puts a table in inside a paragraph, a newline of its own before it,
+and what followed in the paragraph after it. Put in at the end of the
+paragraph before it, then, the newline that followed is left as an empty
+paragraph, and taken out where Docs allows; put in at the start of the
+paragraph after it, as one that has no paragraph before it is, the empty
+paragraph before it stays, styled as plain text.
+
+The requests come last first, as the writer's do, so each one's indices
+are still the Doc's as read; a table's own from its last column and row.
+What cannot be done is said rather than half done: a table with merged
+cells changes shape here never; a row, column or table deleted that holds
+what the document cannot show, as a picture, is not deleted; and a change
+in a cell that holds a table of its own is not sent.
+
+## SPACING
+
+## SPACING
+
+What a cell may hold, beside its words, and lose with no harm done.
+
+## BodyParagraph
+
+A top-level paragraph of the Doc's body.
+
+Type: [Object][813]
+
+### Properties
+
+- `start` **[number][819]**&#x20;
+- `end` **[number][819]** Its newline's index
+- `named` **[string][812]** Its named style
+- `bullet` **[boolean][816]**&#x20;
+- `last` **[boolean][816]** Its newline is the body's last
+- `beforeBlock` **[boolean][816]** A table or a section break follows it
+
+## Laid
+
+A block laid out for the pairing.
+
+Type: [Object][813]
+
+### Properties
+
+- `node` **[Node][815]**&#x20;
+- `pos` **[number][819]** Where it is in its document
+- `key` **[string][812]**&#x20;
+- `element` **[StructuralElement][267]?** The Doc's table, for one of its
+
+## Change
+
+A change, and where in the Doc it is made: the requests go last first.
+
+Type: [Object][813]
+
+### Properties
+
+- `at` **[number][819]**&#x20;
+- `order` **[number][819]** Among those at one place, the later first
+- `requests` **[Array][814]<[object][813]>**&#x20;
+- `left` **{index: [number][819], like: [BodyParagraph][480]}?** The paragraph a
+  table put in leaves after it, its newline, and the paragraph it was
+
+## NOTE
+
+A footnote's note, as the converter writes it.
+
+## NOTE
+
+A footnote's note, as the converter writes it.
+
+## shapeTables
+
+The requests that make a Doc's tables the shape of a document's.
+
+### Parameters
+
+- `tab` **[DocumentTab][274]** The tab read
+- `read` **[ReadDoc][99]** As `readDoc` read it, with its spans
+- `target` **[Node][815]** The document, settled, its comments taken off
+- `tabId` **[string][812]**&#x20;
+
+Returns **{requests: [Array][814]<[object][813]>, unsent: [Array][814]<[Unsent][494]>}**&#x20;
+
+## Shaper
+
+The shaping, for one tab.
+
+### Parameters
+
+- `tab` **[DocumentTab][274]**&#x20;
+- `read` **[ReadDoc][99]**&#x20;
+- `tabId` **[string][812]**&#x20;
+
+### tables
+
+Type: [Array][814]<[StructuralElement][267]>
+
+### paragraphs
+
+Type: [Array][814]<[BodyParagraph][480]>
+
+### unsent
+
+Type: [Set][820]<[Unsent][494]>
+
+### changes
+
+Type: [Array][814]<[Change][484]>
+
+### shape
+
+#### Parameters
+
+- `target` **[Node][815]**&#x20;
+
+Returns **{requests: [Array][814]<[object][813]>, unsent: [Array][814]<[Unsent][494]>}**&#x20;
+
+## firsts
+
+Type: [Map][817]<[number][819], [Change][484]>
+
+## stretchesOf
+
+The stretches the comparison changed, each the Doc's blocks and the
+document's in it, and the last block of the Doc's before it.
+
+### Parameters
+
+- `steps` &#x20;
+
+Returns **[Array][814]<{a: [Array][814]<[number][819]>, b: [Array][814]<[number][819]>, before: [number][819]}>**&#x20;
+
+## block
+
+Type: [Laid][417]
+
+### block
+
+Type: [StructuralElement][267]
+
+### block
+
+Type: [StructuralElement][267]
+
+## spansIn
+
+The spans of a block of the Doc.
+
+### Parameters
+
+- `block` **[Laid][417]**&#x20;
+
+Returns **[Array][814]<[Span][97]>**&#x20;
+
+## stretch
+
+One stretch: its tables paired, each pair shaped alike, those left
+deleted or put in.
+
+### Parameters
+
+- `stretch` **{a: [Array][814]<[number][819]>, b: [Array][814]<[number][819]>, before: [number][819]}**&#x20;
+- `theirs` **[Array][814]<[Laid][417]>**&#x20;
+- `ours` **[Array][814]<[Laid][417]>**&#x20;
+
+##
+
+Type: [Laid][417]
+
+## wordsWhere
+
+### Parameters
+
+- `wanted` &#x20;
+
+## reshape
+
+The Doc's table made the document's shape: columns and rows taken out,
+then put in.
+
+### Parameters
+
+- `block` **[Laid][417]** The Doc's
+- `wanted` **[Node][815]** The document's
+
+## requests
+
+Type: [Array][814]<[object][813]>
+
+## requests
+
+The requests: the insertions and deletions, last first, then the styles
+at the indices they leave.
+
+Returns **[Array][814]<[object][813]>**&#x20;
+
+## requests
+
+Type: [Array][814]<[object][813]>
+
+## cellAt
+
+### Parameters
+
+- `rowIndex` **[number][819]** @param {number} columnIndex
+- `columnIndex` &#x20;
+
+## holds
+
+Whether what a cell holds may go with it: words, and the spacing the
+document drops. A picture or anything else the document cannot show
+stays, and so the cell does.
+
+### Parameters
+
+- `cell` &#x20;
+
+## delete
+
+A table of the Doc's the document no longer has, deleted whole.
+
+### Parameters
+
+- `block` **[Laid][417]**&#x20;
+
+## insert
+
+A table of the document's the Doc has none of, put in empty after a
+block of the Doc's: at the end of its paragraph, or at the start of the
+paragraph after it.
+
+### Parameters
+
+- `table` **[Node][815]**&#x20;
+- `order` **[number][819]** Its place among the document's blocks
+- `after` **([Laid][417] | null)** The Doc's block it goes after; none at the start
+
+## insert
+
+Type: [Insert][522]
+
+##
+
+Type: [number][819]
+
+## endOf
+
+The Doc's paragraph a block of words ends with, if its end is a newline.
+
+### Parameters
+
+- `block` **[Laid][417]**&#x20;
+
+Returns **([BodyParagraph][480] | [undefined][823])**&#x20;
+
+## lastIndexOf
+
+The last index of the Doc's a block takes.
+
+### Parameters
+
+- `block` **[Laid][417]**&#x20;
+
+Returns **[number][819]**&#x20;
+
+## range
+
+### Parameters
+
+- `start` **[number][819]**&#x20;
+- `end` **[number][819]**&#x20;
+
+## range
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `start` **[number][819]**&#x20;
+- `end` **[number][819]**&#x20;
+
+## location
+
+### Parameters
+
+- `index` **[number][819]**&#x20;
+
+## location
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `index` **[number][819]**&#x20;
+
+## gridOf
+
+A table's cells' words, row by row.
+
+### Parameters
+
+- `table` **[Node][815]**&#x20;
+
+## cells
+
+Type: [Array][814]<[string][812]>
+
+## cells
+
+Type: [Array][814]<[Block][501]>
+
+## wordsOf
+
+A block's words.
+
+### Parameters
+
+- `node` **[Node][815]**&#x20;
+
+Returns **[Array][814]<[string][812]>**&#x20;
+
+## wordsOf
+
+Units as words, for the comparison: a run of letters and digits is one,
+anything else one each. A word changed goes whole, as a writer would see
+it, and as a collaborator's edit beside it merges best.
+
+### Parameters
+
+- `units` **[Array][814]<[Unit][644]>**&#x20;
+
+Returns **[Array][814]<{key: [string][812], units: [Array][814]<[Unit][644]>}>**&#x20;
+
+## tableLikeness
+
+How alike two tables are: the cells' words they share.
+
+### Parameters
+
+- `a` **[Node][815]**&#x20;
+- `b` **[Node][815]**&#x20;
+
+Returns **[number][819]**&#x20;
 
 ## drive/signIn
 
@@ -416,55 +3829,87 @@ Google's loads in the app's page for it, before or after.
   Google's pages can cut the popup's tie to the window that opened it.
 - **In the desktop window**, the system browser asks for a code, with
   PKCE. Google sends it back to the app's listener on localhost, and the
-  code is traded for a token with the desktop client's secret. The refresh
-  token Google adds for a desktop app is let go.
+  code is traded for a token with the desktop client's secret, which
+  comes with a refresh token, for signing in again without the browser.
 
 Every import signs in afresh: Google asks for consent each time it shows
-this picker, and the token is used for the one import and not kept.
+this picker. A sync signs in plainly, without it: Drive gave the app the
+Doc at its pick, and an account that has consented once is signed in
+without a word (`drive/session.js` keeps what it comes back with).
 
 ## CALLBACK_PATH
 
 Where Google sends a sign-in back to, on the page's origin or the desktop app's listener.
 
-Type: [string][70]
+Type: [string][812]
 
 ## SIGN_IN_CHANNEL
 
 The channel the page at `CALLBACK_PATH` hands a sign-in back on.
 
-Type: [string][70]
+Type: [string][812]
 
 ## DRIVE_SCOPE
 
 The files the writer picks, and nothing else in their Drive.
 
-Type: [string][70]
+Type: [string][812]
 
-## Picked
+## Session
 
-A finished sign-in: the token, and the files picked with it.
+A finished sign-in: the token, until when it lasts, and in the desktop
+window the refresh token that comes with it.
 
-Type: [Object][72]
+Type: [Object][813]
 
 ### Properties
 
-- `token` **[string][70]**&#x20;
-- `ids` **[Array][76]<[string][70]>** The picked files' Drive ids
+- `token` **[string][812]**&#x20;
+- `expiresAt` **[number][819]** When the token stops being taken, in ms
+- `refreshToken` **[string][812]?**&#x20;
 
-## authorizationUrl
+## LIFETIME
 
-The address of Google's sign-in, with its picker.
+A finished sign-in with the picker: the files picked with it too.
+
+Type: [number][819]
+
+## LIFETIME
+
+How long a token lasts when Google does not say: its usual hour.
+
+Type: [number][819]
+
+## expiryOf
+
+When a token Google says lasts this many seconds stops being taken.
 
 ### Parameters
 
-- `options` **[Object][72]**&#x20;
-  - `options.clientId` **[string][70]**&#x20;
-  - `options.redirectUri` **[string][70]**&#x20;
-  - `options.responseType` **(`"token"` | `"code"`)**&#x20;
-  - `options.state` **[string][70]**&#x20;
-  - `options.codeChallenge` **[string][70]?** PKCE, for a code
+- `seconds` **([string][812] | [number][819] | null | [undefined][823])**&#x20;
 
-Returns **[string][70]**&#x20;
+Returns **[number][819]**&#x20;
+
+## authorizationUrl
+
+The address of Google's sign-in, with its picker or without.
+
+### Parameters
+
+- `options` **[Object][813]**&#x20;
+  - `options.clientId` **[string][812]**&#x20;
+  - `options.redirectUri` **[string][812]**&#x20;
+  - `options.responseType` **(`"token"` | `"code"`)**&#x20;
+  - `options.state` **[string][812]**&#x20;
+  - `options.codeChallenge` **[string][812]?** PKCE, for a code
+  - `options.pick` **[boolean][816]?** Show the picker; true unless false (optional, default `true`)
+  - `options.loginHint` **[string][812]?** The account to sign in, by address
+
+Returns **[string][812]**&#x20;
+
+## params
+
+Type: Record<[string][812], [string][812]>
 
 ## readReturn
 
@@ -473,18 +3918,20 @@ What a sign-in came back with.
 ### Parameters
 
 - `params` **URLSearchParams** The fragment or the query it came back with
-- `state` **[string][70]** What this sign-in was asked with
+- `state` **[string][812]** What this sign-in was asked with
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.pick` **[boolean][816]?** It showed the picker; true unless false (optional, default `true`)
 
 <!---->
 
-- Throws **[DriveError][6]** When it is not this sign-in's, Google refused, or
+- Throws **[DriveError][281]** When it is not this sign-in's, Google refused, or
   access to Drive was not allowed
 
 ## popupFeatures
 
 Where a popup of this size sits centred over the window.
 
-Returns **[string][70]**&#x20;
+Returns **[string][812]**&#x20;
 
 ## pickInPopup
 
@@ -497,15 +3944,44 @@ the popup if it still can.
 
 ### Parameters
 
-- `clientId` **[string][70]** The web client
-- `options` **[Object][72]?** (optional, default `{}`)
+- `clientId` **[string][812]** The web client
+- `options` **[Object][813]?** (optional, default `{}`)
   - `options.signal` **AbortSignal?**&#x20;
 
-Returns **[Promise][74]<([Picked][54] | null)>** Null when the writer cancelled or picked nothing
+Returns **[Promise][811]<(Picked | null)>** Null when the writer cancelled or picked nothing
+
+## signInInPopup
+
+In a browser: sign in without the picker, in a popup that closes by
+itself for an account that has consented. Call it straight from a click,
+as `pickInPopup`.
+
+### Parameters
+
+- `clientId` **[string][812]** The web client
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.loginHint` **[string][812]?** The account, by address
+  - `options.signal` **AbortSignal?**&#x20;
+
+Returns **[Promise][811]<([Session][552] | null)>** Null when the writer cancelled
+
+## inPopup
+
+A sign-in in a popup, with the picker or without.
+
+### Parameters
+
+- `clientId` **[string][812]**&#x20;
+- `options` **[Object][813]**&#x20;
+  - `options.pick` **[boolean][816]**&#x20;
+  - `options.loginHint` **[string][812]?**&#x20;
+  - `options.signal` **AbortSignal?**&#x20;
+
+Returns **[Promise][811]<(Picked | null)>**&#x20;
 
 ## read
 
-Type: [string][70]
+Type: [string][812]
 
 ## relayReturn
 
@@ -514,23 +3990,61 @@ the window that asked.
 
 ### Parameters
 
-- `fragment` **[string][70]** The page's fragment, without its `#`
+- `fragment` **[string][812]** The page's fragment, without its `#`
 
-## exchangeCode
+## grant
 
-Trade a desktop sign-in's code for a token.
+Ask Google's token endpoint for a token, as the desktop client.
 
 ### Parameters
 
-- `options` **[Object][72]**&#x20;
-  - `options.clientId` **[string][70]**&#x20;
-  - `options.clientSecret` **[string][70]**&#x20;
-  - `options.code` **[string][70]**&#x20;
-  - `options.verifier` **[string][70]** The PKCE verifier the sign-in was asked with
-  - `options.redirectUri` **[string][70]**&#x20;
+- `client` **{clientId: [string][812], clientSecret: [string][812]}**&#x20;
+  - `client.clientId` &#x20;
+  - `client.clientSecret` &#x20;
+
+- `fields` **Record<[string][812], [string][812]>** The grant
+- `signal` **AbortSignal?**&#x20;
+
+<!---->
+
+- Throws **[DriveError][281]** When Google refuses, with its reason
+
+Returns **[Promise][811]<[Session][552]>**&#x20;
+
+## exchangeCode
+
+Trade a desktop sign-in's code for a token, and the refresh token that
+comes with it.
+
+### Parameters
+
+- `options` **[Object][813]**&#x20;
+  - `options.clientId` **[string][812]**&#x20;
+  - `options.clientSecret` **[string][812]**&#x20;
+  - `options.code` **[string][812]**&#x20;
+  - `options.verifier` **[string][812]** The PKCE verifier the sign-in was asked with
+  - `options.redirectUri` **[string][812]**&#x20;
   - `options.signal` **AbortSignal?**&#x20;
 
-Returns **[Promise][74]<[string][70]>** The access token
+Returns **[Promise][811]<[Session][552]>**&#x20;
+
+## refreshSession
+
+A fresh token from a refresh token, with no browser: the desktop client's,
+until the writer takes the app's access back in their Google account.
+
+### Parameters
+
+- `client` **{clientId: [string][812], clientSecret: [string][812]}** The desktop client
+- `refreshToken` **[string][812]**&#x20;
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.signal` **AbortSignal?**&#x20;
+
+<!---->
+
+- Throws **[DriveError][281]** With `refused` set when Google no longer takes the refresh token
+
+Returns **[Promise][811]<[Session][552]>**&#x20;
 
 ## pickInBrowser
 
@@ -539,91 +4053,2054 @@ for it to come back to the app.
 
 ### Parameters
 
-- `client` **{clientId: [string][70], clientSecret: [string][70]}** The desktop client
+- `client` **{clientId: [string][812], clientSecret: [string][812]}** The desktop client
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.signal` **AbortSignal?**&#x20;
+
+Returns **[Promise][811]<(Picked | null)>** Null when the writer cancelled or picked nothing
+
+## signInInBrowser
+
+In the desktop window: sign in without the picker, in the system browser.
+
+### Parameters
+
+- `client` **{clientId: [string][812], clientSecret: [string][812]}** The desktop client
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.loginHint` **[string][812]?** The account, by address
+  - `options.signal` **AbortSignal?**&#x20;
+
+Returns **[Promise][811]<([Session][552] | null)>** Null when the writer cancelled
+
+## inBrowser
+
+A sign-in in the system browser, with the picker or without.
+
+### Parameters
+
+- `client` **{clientId: [string][812], clientSecret: [string][812]}**&#x20;
   - `client.clientId` &#x20;
   - `client.clientSecret` &#x20;
 
-- `options` **[Object][72]?** (optional, default `{}`)
+- `options` **[Object][813]**&#x20;
+  - `options.pick` **[boolean][816]**&#x20;
+  - `options.loginHint` **[string][812]?**&#x20;
   - `options.signal` **AbortSignal?**&#x20;
 
-Returns **[Promise][74]<([Picked][54] | null)>** Null when the writer cancelled or picked nothing
+Returns **[Promise][811]<(Picked | null)>**&#x20;
 
-[1]: #driveconfig
-[2]: #driveconfig-1
-[3]: #driveconfig-2
-[4]: #driveavailable
-[5]: #driveerrors
-[6]: #driveerror
-[7]: #parameters
-[8]: #signinlapsederror
-[9]: #popupblockederror
-[10]: #drivefetch
-[11]: #pickedfile
-[12]: #properties
-[13]: #google_type
-[14]: #exports
-[15]: #unexportable
-[16]: #driverequest
-[17]: #requestfor
-[18]: #parameters-1
-[19]: #linkfor
-[20]: #parameters-2
-[21]: #refusal
-[22]: #parameters-3
-[23]: #body
-[24]: #body-1
-[25]: #body-2
-[26]: #fetchpicked
-[27]: #parameters-4
-[28]: #describepicked
-[29]: #parameters-5
-[30]: #ask
-[31]: #parameters-6
-[32]: #driveimages
-[33]: #takenimage
-[34]: #properties-1
-[35]: #reference
-[36]: #inline
-[37]: #definition
-[38]: #unescape
-[39]: #parameters-7
-[40]: #bytesof
-[41]: #parameters-8
-[42]: #takeimages
-[43]: #parameters-9
-[44]: #defined
-[45]: #definitions
-[46]: #inline-1
-[47]: #used
-[48]: #drive
-[49]: #examples
-[50]: #drivesignin
-[51]: #callback_path
-[52]: #sign_in_channel
-[53]: #drive_scope
-[54]: #picked
-[55]: #properties-2
-[56]: #authorizationurl
-[57]: #parameters-10
-[58]: #readreturn
-[59]: #parameters-11
-[60]: #popupfeatures
-[61]: #pickinpopup
-[62]: #parameters-12
-[63]: #read
-[64]: #relayreturn
-[65]: #parameters-13
-[66]: #exchangecode
-[67]: #parameters-14
-[68]: #pickinbrowser
-[69]: #parameters-15
-[70]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[71]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[72]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[73]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[74]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[75]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[76]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[77]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[78]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
-[79]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+## drive/sync
+
+A linked document and its Google Doc made one: what each
+side changed since the two last agreed goes into the Doc, and what the
+Doc then holds comes back into the document.
+
+A sync reads, merges, writes, and reads again. The Doc is read through
+the Docs API and put in the document's form, each of its pictures by the
+name the document knows it by; one new to the document is fetched and
+named, and one that will not come is left out, as the converter leaves
+out what it holds. The document and the Doc are merged three ways against
+the base, the Doc as the two last agreed (`drive/merge`). Where both
+changed the same words, the writer chooses, and the Doc is read again
+after, since a revision is written against only for minutes. With no
+base, the writer chooses a side for the whole document, unless it is
+empty or the two already say the same. What the Doc lacks of the merge
+is written to it at once (`drive/write`), against the revision just read,
+so that Google merges in whatever a collaborator typed since; a write
+refused as too late starts again from the read.
+
+The Doc is read once more after the write, as the new base. The document
+becomes the merge, with what was typed in it while the sync ran kept, and
+with whatever the Doc then holds that the write did not put there: what
+Google merged in from a collaborator, which the Doc as read with the
+write applied to it (`drive/apply`) tells from what the write sent. So
+nothing the Doc cannot hold, a picture added here among it, is taken
+back out of the document.
+
+Design: `.llm/google_docs_design.md`, part 3, Sync.
+
+## Side
+
+Type: (`"mine"` | `"theirs"`)
+
+## Linked
+
+The document to sync, and what is known of it.
+
+Type: [Object][813]
+
+### Properties
+
+- `documentId` **[string][812]**&#x20;
+- `pictures` **Record<[string][812], PictureInfo>** Its pictures, as its row has them
+
+## Questions
+
+What the sync asks the writer.
+
+Type: [Object][813]
+
+## NewPicture
+
+A picture of the Doc's that is new to the document, named for it.
+
+Type: [Object][813]
+
+### Properties
+
+- `name` **[string][812]**&#x20;
+- `docsId` **[string][812]** Its inline object's id
+- `mime` **[string][812]**&#x20;
+- `bytes` **[Uint8Array][818]**&#x20;
+
+## NewBase
+
+The base a sync leaves: the Doc as the two now agree.
+
+Type: [Object][813]
+
+### Properties
+
+- `revisionId` **[string][812]**&#x20;
+- `tabId` **[string][812]**&#x20;
+- `markdown` **[string][812]**&#x20;
+- `pictures` **Record<[string][812], [string][812]>** The names its pictures go by, by the Doc's ids
+- `held` **[Array][814]<[string][812]>** The Doc's pictures the document turned down, by id
+
+## Synced
+
+A sync done.
+
+Type: [Object][813]
+
+### Properties
+
+- `doc` **[Node][815]** The document as it is to be now, to be put in
+  place before anything else is typed in it
+- `base` **[NewBase][592]**&#x20;
+- `sent` **[number][819]** The edits written to the Doc
+- `changed` **[boolean][816]** Whether `doc` differs from the document
+- `unsent` **[number][819]** The document's own pictures the Doc lacks:
+  added here, as nothing can send one yet
+
+## SEVERAL_TABS
+
+Why a Doc of several tabs, linked to none of them, is not synced.
+
+Type: [string][812]
+
+## ORDER
+
+What the writer could not send, the most telling first.
+
+## TRIES
+
+How many writes refused as too late a sync makes before it stops.
+
+Type: [number][819]
+
+## UNSENT
+
+What the writer could not send, said for the writer.
+
+## syncDoc
+
+Sync a linked document with its Doc.
+
+### Parameters
+
+- `linked` **[Linked][587]**&#x20;
+- `token` **[string][812]**&#x20;
+- `options` **[Object][813]**&#x20;
+  - `options.ask` **[Questions][589]**&#x20;
+  - `options.signal` **AbortSignal?**&#x20;
+
+<!---->
+
+- Throws **[DriveError][281]** When Google refuses, or the Doc cannot take the
+  document's changes; nothing is written then
+
+Returns **[Promise][811]<([Synced][594] | null)>** Null when the writer cancelled
+
+## chosen
+
+Type: [Map][817]<[string][812], [Side][586]>
+
+## whole
+
+Type: ([Side][586] | null)
+
+## whole
+
+Type: [Set][820]<[DocParagraph][648]>
+
+## target
+
+Type: [Node][815]
+
+## isEmpty
+
+Whether a document holds nothing: one empty textblock.
+
+### Parameters
+
+- `doc` **[Node][815]**&#x20;
+
+## clashKey
+
+A clash, known again when a fresh read gives the same one.
+
+### Parameters
+
+- `clash` **[Clash][349]**&#x20;
+
+Returns **[string][812]**&#x20;
+
+## DocForm
+
+A Doc in the document's form.
+
+Type: [Object][813]
+
+### Properties
+
+- `doc` **[Node][815]**&#x20;
+- `markdown` **[string][812]**&#x20;
+- `revisionId` **[string][812]**&#x20;
+- `tabId` **[string][812]**&#x20;
+
+## Pictures
+
+The Doc's pictures as the document knows them, for one sync: each by the
+name its row has for the Doc's id, or the base's, or one given it when it
+is fetched, new to the document. One the document turned down, keeping
+its own words over the Doc's around it, is held from then on, as one the
+document never had: it stays in the Doc and out of the document.
+
+### Parameters
+
+- `documentId` **[string][812]**&#x20;
+- `row` **Record<[string][812], PictureInfo>** The document's, by name
+- `base` &#x20;
+
+### base
+
+Type: Record<[string][812], [string][812]>
+
+### names
+
+Type: [Map][817]<[string][812], [string][812]>
+
+### owned
+
+The Doc's ids the document has bytes for.
+
+### taken
+
+Type: [Set][820]<[string][812]>
+
+### fetched
+
+Type: [Map][817]<[string][812], [NewPicture][590]>
+
+### missing
+
+Type: [Set][820]<[string][812]>
+
+### held
+
+Type: [Set][820]<[string][812]>
+
+### seen
+
+Type: [Set][820]<[string][812]>
+
+### fetchNew
+
+Fetch the Doc's pictures the document has no bytes for, and name them:
+by the base's name for one the base had, which keeps them the same
+picture to the merge.
+
+#### Parameters
+
+- `docId` **[string][812]**&#x20;
+- `token` **[string][812]**&#x20;
+- `document` **[Document][822]**&#x20;
+- `tabId` **([string][812] | [undefined][823])**&#x20;
+- `signal` **AbortSignal?**&#x20;
+
+### read
+
+A Doc read into the document's form: its pictures by their names, those
+with none, or held, left out.
+
+#### Parameters
+
+- `document` **[Document][822]**&#x20;
+- `tabId` **([string][812] | [undefined][823])**&#x20;
+
+Returns **[DocForm][610]**&#x20;
+
+### holdUnused
+
+Hold those fetched that the document is not to have: from here on they
+are the Doc's alone.
+
+#### Parameters
+
+- `target` **[Node][815]** The document as it is to be
+
+### known
+
+The pictures the writer knows the Doc's ids of: the row's, the base's,
+and those fetched that the document is to have. One fetched that it is
+not to have stays in the Doc, as one the document never had does.
+
+#### Parameters
+
+- `target` **[Node][815]**&#x20;
+
+Returns **Record<[string][812], PictureInfo>**&#x20;
+
+### newIn
+
+The pictures fetched that a document has.
+
+#### Parameters
+
+- `doc` **[Node][815]**&#x20;
+
+Returns **[Array][814]<[NewPicture][590]>**&#x20;
+
+### namesIn
+
+The names a document's pictures from the Doc go by, by the Doc's ids.
+
+#### Parameters
+
+- `doc` **[Node][815]**&#x20;
+
+Returns **Record<[string][812], [string][812]>**&#x20;
+
+### onlyIn
+
+How many of the document's own pictures one document has that another,
+the Doc in the document's form, does not.
+
+#### Parameters
+
+- `doc` **[Node][815]**&#x20;
+- `theirs` **[Node][815]**&#x20;
+
+### stillHeld
+
+Those held that the Doc read last still has.
+
+Returns **[Array][814]<[string][812]>**&#x20;
+
+## namesUsed
+
+The names of the document's own pictures a document refers to.
+
+### Parameters
+
+- `doc` **[Node][815]**&#x20;
+
+Returns **[Set][820]<[string][812]>**&#x20;
+
+## drive/write
+
+What a Google Doc lacks of a document, as the Docs API
+requests that would make it so: the writing half of the converter.
+
+The Doc is read (`drive/convert`), and its document compared with the one
+to send, block by block and then, within the blocks that differ, a
+character at a time. Only what differs is written, at the Doc's own
+indices, so the rest of the Doc stays as it is: its comments, its fonts,
+and whatever the converter holds (pictures, page breaks, the empty
+paragraphs a Doc is spaced with), none of which is ever deleted. A chip
+stays a chip while its words do; words changed in one, or added against
+it in its link, replace it with plain text. A picture is known by the
+Doc's id for it, which its entry on the document's row keeps: one deleted
+here is deleted in the Doc, and one added here stays here, as nothing yet
+can send one. Only a picture the row knows the Doc's id for is deleted
+when its text no longer has it; one the document never had, as one
+imported before pictures came in, stays.
+
+The requests come in two passes. The first inserts and deletes, from the
+end of each segment back, so each request's indices are still the Doc's
+as read. The second styles, at the indices the first left: text bold,
+italic, struck, linked or in a monospaced font, and paragraphs as
+headings, quotes (indented 30 pt either side, as Docs makes a pasted one)
+and list items. A rule goes up as a paragraph of `* * *`, which reads back
+as one.
+
+A table is made the document's shape first (`drive/shape`): rows and
+columns put in and taken out, tables put in empty and deleted. The Doc as
+those requests leave it is what the words are then written against, each
+table laid against the document's in the same place, cell by cell, its
+words as any paragraph's.
+
+What it cannot send yet it says, rather than sending part of it: a table
+with merged cells changing shape, or a row, column or table deleted that
+holds what the document cannot show; a list item's kind or nesting
+changed; a footnote added or removed; an edit in a paragraph with a
+suggested edit still open; a block inside a list or a quote that a Doc's
+paragraphs cannot be. See `.llm/google_docs_design.md`, part 3.
+
+## Unsent
+
+What the writer could not send.
+
+Type: (`"table"` | `"merged"` | `"held"` | `"list"` | `"footnote"` | `"suggestion"` | `"layout"`)
+
+## Written
+
+Type: [Object][813]
+
+### Properties
+
+- `requests` **[Array][814]<[object][813]>** For `documents.batchUpdate`, in order
+- `unsent` **[Array][814]<[Unsent][494]>** What the requests leave out; send none of
+  them unless this is empty
+- `revisionId` **[string][812]** The revision they were made against
+
+## Look
+
+How a character looks, in the terms a Doc sets it.
+
+Type: {bold: [boolean][816], italic: [boolean][816], strike: [boolean][816], link: [string][812], code: [boolean][816]}
+
+## Unit
+
+A piece of a document, for the comparison: a character, a line break, a
+block's end, a rule, a table, or the converter's own text. Those read
+from the Doc know where they are in it.
+
+Type: [Object][813]
+
+### Properties
+
+- `type` **(`"char"` | `"break"` | `"end"` | `"rule"` | `"table"` | `"fixed"` | `"picture"`)**&#x20;
+- `key` **[string][812]** What the comparison compares
+- `segment` **[string][812]** The footnote it is in; the body when empty
+- `kind` **Kind** The block it is in
+- `char` **[string][812]?**&#x20;
+- `look` **[Look][643]?**&#x20;
+- `index` **[number][819]?**&#x20;
+- `size` **[number][819]?**&#x20;
+- `chip` **[number][819]?** The index of the chip whose words it is one of
+- `object` **[string][812]?** A picture's inline object, by id
+- `virtual` **[boolean][816]?** An end that is a page break, which goes
+  only when the paragraphs either side of it are joined
+- `paragraph` **[DocParagraph][648]?** The Doc's paragraph it is in
+
+## Block
+
+Type: [Object][813]
+
+### Properties
+
+- `type` **(`"text"` | `"code"` | `"rule"` | `"table"`)**&#x20;
+- `key` **[string][812]**&#x20;
+- `node` **[Node][815]**&#x20;
+- `pos` **[number][819]**&#x20;
+- `kind` **Kind**&#x20;
+- `odd` **[boolean][816]** Nothing a Doc's paragraphs can be
+- `segment` **[string][812]**&#x20;
+- `label` **[string][812]?** A footnote's number, on its note
+- `labelLength` **[number][819]?**&#x20;
+- `ordinal` **[number][819]?** A table's place among the tables, which
+  the shaping has made the same on both sides
+
+## DocParagraph
+
+A paragraph of the Doc as read.
+
+Type: [Object][813]
+
+### Properties
+
+- `start` **[number][819]**&#x20;
+- `end` **[number][819]** Its newline's index
+- `named` **[string][812]** Its named style
+- `bullet` **[boolean][816]**&#x20;
+- `suggested` **[boolean][816]** A suggested edit touches it
+- `protects` **[boolean][816]** It holds what a deletion leaves: a picture,
+  a break, an equation
+- `beforeBlock` **[boolean][816]** A table, a table of contents or a
+  section break follows it, so its newline cannot go
+- `last` **[boolean][816]** Its newline is its segment's last
+- `runs` **[Array][814]<{start: [number][819], text: [string][812], style: [TextStyle][247]}>**&#x20;
+- `breaks` **[Array][814]<[number][819]>** Where its page and column breaks are
+
+## Move
+
+Type: ({op: `"equal"`, a: [Unit][644], b: [Unit][644]} | {op: `"delete"`, a: [Unit][644]} | {op: `"insert"`, b: [Unit][644]} | {op: `"keep"`, a: [Unit][644]})
+
+## Ending
+
+A paragraph of the document sent, and where it ends up.
+
+Type: [Object][813]
+
+### Properties
+
+- `b` **[Unit][644]** Its end, or its rule
+- `segment` **[string][812]**&#x20;
+- `at` **({index: [number][819]} | {insert: [Insert][522], offset: [number][819]})**&#x20;
+- `base` **Kind** What it is in the Doc before it is styled
+- `named` **[string][812]** Its named style there
+- `bullet` **[boolean][816]** Whether it has a bullet there
+- `joined` **[boolean][816]** Paragraphs of the Doc were joined into it
+- `involved` **[Array][814]\<Kind>** What those were
+
+## RunOn
+
+What a paragraph of the Doc whose newline a join takes runs on into.
+
+Type: [Object][813]
+
+### Properties
+
+- `involved` **[Array][814]\<Kind>** It and the paragraphs after it, to the one
+  whose newline stays
+- `bullet` **[boolean][816]** Whether any of them has a bullet
+
+## Insert
+
+Type: [Object][813]
+
+### Properties
+
+- `segment` **[string][812]**&#x20;
+- `anchor` **[number][819]**&#x20;
+- `seq` **[number][819]** Its place among the insertions, in the document's order
+- `text` **[string][812]**&#x20;
+- `chars` **[Array][814]<{b: [Unit][644], offset: [number][819]}>**&#x20;
+- `inherited` **([Look][643] | null)** How the character before it looks, from
+  which Docs styles it
+
+## CODE_FONT
+
+The font monospaced words go up in.
+
+Type: [string][812]
+
+## QUOTE_INDENT
+
+How far in a quote is indented, either side, as Docs indents one pasted.
+
+## TRIMMABLE
+
+What a join may take beside the newline it deletes: the spaces and line
+breaks markdown drops anyway, and a page or column break (read as `\f`),
+which left between the words joined would part them again.
+
+## bold
+
+Type: [Look][643]
+
+## writeDoc
+
+The requests that make a Doc's tab read as `target`.
+
+### Parameters
+
+- `document` **[Document][822]** As `documents.get` returned it, with
+  `suggestionsViewMode=SUGGESTIONS_INLINE`
+- `target` **[Node][815]** The document, in the editor's schema
+- `options` **[Object][813]?** (optional, default `{}`)
+  - `options.tabId` **[string][812]?**&#x20;
+  - `options.pictures` (optional, default `{}`)
+
+Returns **[Written][641]**&#x20;
+
+## tabOf
+
+A Doc's tab, by its id.
+
+### Parameters
+
+- `document` **[Document][822]**&#x20;
+- `tabId` **[string][812]**&#x20;
+
+## withoutComments
+
+A document with its comments' marks taken off: they cross apart.
+
+### Parameters
+
+- `doc` **[Node][815]**&#x20;
+
+Returns **[Node][815]**&#x20;
+
+## strip
+
+### Parameters
+
+- `node` **[Node][815]** @returns {Node}
+
+## lookOf
+
+How a run of text looks here.
+
+### Parameters
+
+- `marks` &#x20;
+
+Returns **[Look][643]**&#x20;
+
+## look
+
+Type: [Look][643]
+
+## sameLook
+
+### Parameters
+
+- `a` **([Look][643] | [undefined][823])**&#x20;
+- `b` **([Look][643] | [undefined][823])**&#x20;
+
+Returns **[boolean][816]**&#x20;
+
+## sameKind
+
+### Parameters
+
+- `a` **Kind**&#x20;
+- `b` **Kind**&#x20;
+
+Returns **[boolean][816]**&#x20;
+
+## kindKey
+
+### Parameters
+
+- `kind` **Kind**&#x20;
+
+## paragraphsOf
+
+Every paragraph of a body, a footnote or a table's cells, in order.
+
+### Parameters
+
+- `content` **[Array][814]<[StructuralElement][267]>**&#x20;
+- `tab` **[DocumentTab][274]** For which of its inline objects are pictures
+
+Returns **[Array][814]<[DocParagraph][648]>**&#x20;
+
+## runs
+
+## Writer
+
+The writing, for one tab: the Doc's paragraphs and spans looked up, the
+documents compared, and the requests made.
+
+### Parameters
+
+- `tab` **[DocumentTab][274]**&#x20;
+- `doc` **[Node][815]** The Doc as read
+- `spans` **[Array][814]<[Span][97]>**&#x20;
+- `tabId` **[string][812]**&#x20;
+- `pictures` (optional, default `{}`)
+
+### pictures
+
+### known
+
+Type: [Set][820]<[string][812]>
+
+### paragraphs
+
+Type: [Map][817]<[string][812], [Array][814]<[DocParagraph][648]>>
+
+### named
+
+Type: [Map][817]<[string][812], [TextStyle][247]>
+
+### tableStarts
+
+Type: [Map][817]<[string][812], [Set][820]<[number][819]>>
+
+### tables
+
+Type: [Array][814]<[StructuralElement][267]>
+
+### unsent
+
+Type: [Set][820]<[Unsent][494]>
+
+### deletes
+
+Type: [Array][814]<{segment: [string][812], start: [number][819], end: [number][819]}>
+
+### inserts
+
+Type: [Array][814]<[Insert][522]>
+
+### restyled
+
+Type: [Array][814]<{segment: [string][812], index: [number][819], from: [Look][643], to: [Look][643]}>
+
+### endings
+
+Type: [Array][814]<[Ending][651]>
+
+### write
+
+#### Parameters
+
+- `target` **[Node][815]** Settled, its comments taken off
+
+Returns **{requests: [Array][814]<[object][813]>, unsent: [Array][814]<[Unsent][494]>}**&#x20;
+
+## visit
+
+### Parameters
+
+- `node` **[Node][815]**&#x20;
+- `pos` **[number][819]**&#x20;
+- `context` &#x20;
+
+## kind
+
+Type: Kind
+
+## spansWithin
+
+The spans whose place is in `[from, to]`.
+
+### Parameters
+
+- `from` **[number][819]**&#x20;
+- `to` **[number][819]**&#x20;
+
+Returns **[Array][814]<[Span][97]>**&#x20;
+
+## paragraphAt
+
+The Doc's paragraph an index is in.
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `index` **[number][819]**&#x20;
+
+Returns **([DocParagraph][648] | [undefined][823])**&#x20;
+
+## charAt
+
+The character of the Doc at an index, if it is text; a page or column
+break as `\f`.
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `index` **[number][819]**&#x20;
+
+Returns **[string][812]**&#x20;
+
+## lookBefore
+
+How the Doc's character before an index looks, which text inserted
+there takes: the one after it at a paragraph's start.
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `index` **[number][819]**&#x20;
+
+Returns **([Look][643] | null)**&#x20;
+
+## units
+
+A block as units: the Doc's, with where each is, or the document's.
+
+### Parameters
+
+- `block` **[Block][501]**&#x20;
+- `read` **[boolean][816]**&#x20;
+
+Returns **[Array][814]<[Unit][644]>**&#x20;
+
+## units
+
+Type: [Array][814]<[Unit][644]>
+
+## unit
+
+Type: [Unit][644]
+
+### unit
+
+Type: [Look][643]
+
+### unit
+
+Type: [number][819]
+
+## unit
+
+Type: [Unit][644]
+
+### unit
+
+Type: [Look][643]
+
+### unit
+
+Type: [number][819]
+
+## spanAt
+
+### Parameters
+
+- `pos` **[number][819]** @returns {Span|null}
+
+## push
+
+### Parameters
+
+- `unit` **[Unit][644]**&#x20;
+
+## close
+
+Type: [Unit][644]
+
+## picture
+
+A picture as a unit, known by the Doc's id for it: the converter's span
+says it for the Doc's, the row for the document's. A picture with no id
+is one the Doc does not have.
+
+### Parameters
+
+- `node` **[Node][815]**&#x20;
+- `pos` **[number][819]**&#x20;
+- `spans` **[Array][814]<[Span][97]>**&#x20;
+- `read` **[boolean][816]**&#x20;
+- `segment` **[string][812]**&#x20;
+- `kind` **Kind**&#x20;
+
+Returns **[Unit][644]**&#x20;
+
+## compare
+
+Compare one segment's blocks and gather what to write.
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `theirs` **[Array][814]<[Block][501]>**&#x20;
+- `ours` **[Array][814]<[Block][501]>**&#x20;
+
+## changes
+
+Type: [Array][814]<{from: [number][819], to: [number][819]}>
+
+## left
+
+Type: [Array][814]<[Block][501]>
+
+## right
+
+Type: [Array][814]<[Block][501]>
+
+## around
+
+### Parameters
+
+- `step` **{a: [number][819], b: [number][819]}** @returns {Move\[]}
+
+##
+
+Type: const
+
+## steps
+
+Two documents' blocks laid against each other: the tables, which the
+shaping has made the same in number and shape, each against the one in
+its place, and the blocks between them compared.
+
+### Parameters
+
+- `theirs` **[Array][814]<[Block][501]>**&#x20;
+- `ours` **[Array][814]<[Block][501]>**&#x20;
+
+## tables
+
+### Parameters
+
+- `blocks` **[Array][814]<[Block][501]>**&#x20;
+
+## compared
+
+### Parameters
+
+- `a` **[Array][814]<[Block][501]>** @param {Block\[]} b
+- `b` &#x20;
+
+## compareTable
+
+A table of the Doc's and the document's in its place, of one shape,
+compared cell by cell: each cell's words as a paragraph's.
+
+### Parameters
+
+- `theirs` **[Block][501]**&#x20;
+- `ours` **[Block][501]**&#x20;
+
+## cellsOf
+
+### Parameters
+
+- `block` **[Block][501]** @returns {Block\[]\[]}
+
+## rows
+
+## broken
+
+Type: [Set][820]<[number][819]>
+
+## reach
+
+Type: [Map][817]<[number][819], {first: [number][819], last: [number][819], link: [string][812]}>
+
+## linkedAgainst
+
+Whether what will be against a chip on one side of it, past what is
+deleted there, is newly in its link.
+
+### Parameters
+
+- `from` **[number][819]** The move beside the chip
+- `step` **[number][819]** Away from it
+- `link` **[string][812]**&#x20;
+
+## wholly
+
+Whether every unit of a paragraph of the Doc goes.
+
+### Parameters
+
+- `moves` **[Array][814]<[Move][650]>**&#x20;
+- `paragraph` **[DocParagraph][648]**&#x20;
+
+Returns **[boolean][816]**&#x20;
+
+## carried
+
+Joins since the last paragraph's end, and what was joined.
+
+##
+
+Type: [Array][814]\<Kind>
+
+## deleting
+
+Type: ({start: [number][819], end: [number][819]} | null)
+
+## removed
+
+Type: [Set][820]<[DocParagraph][648]>
+
+## running
+
+Type: [Map][817]<[DocParagraph][648], [RunOn][653]>
+
+## joining
+
+Type: [Array][814]<{paragraph: [DocParagraph][648], kind: Kind}>
+
+## remove
+
+### Parameters
+
+- `start` **[number][819]** @param {number} end
+- `end` &#x20;
+
+## check
+
+### Parameters
+
+- `unit` **[Unit][644]**&#x20;
+
+## slice
+
+Type: [Array][814]<{op: `"insert"`, b: [Unit][644]}>
+
+## b
+
+Type: [Look][643]
+
+## joinReach
+
+Where a join's deletion reaches: its newline, and the spaces markdown
+held either side of it.
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `unit` **[Unit][644]** The newline going
+- `previous` **([Unit][644] | null)** The Doc's unit before it
+- `rest` **[Array][814]<[Move][650]>** The moves after it
+
+Returns **[Array][814]<\[[number][819], [number][819]]>**&#x20;
+
+## a
+
+Type: [number][819]
+
+## kept
+
+Where an index of the Doc that stays ends up: after all inserted at it.
+
+### Parameters
+
+- `index` &#x20;
+
+## shown
+
+Type: [Set][820]<[number][819]>
+
+## take
+
+### Parameters
+
+- `at` **[number][819]**&#x20;
+
+## textBetween
+
+The Doc's text between two indices, an element as a character that is
+not whitespace.
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `from` **[number][819]**&#x20;
+- `to` **[number][819]**&#x20;
+
+Returns **[string][812]**&#x20;
+
+## insertRun
+
+One run of insertions: where it goes in, as what text, and the
+paragraphs it makes.
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `run` **[Array][814]<{op: `"insert"`, b: [Unit][644]}>**&#x20;
+- `before` **([Move][650] | [undefined][823])** The move before the run
+- `previous` **([Unit][644] | null)** The Doc's last unit before it
+- `next` **([Unit][644] | null)** The Doc's next unit after it
+- `carried` **{joined: [boolean][816], involved: [Array][814]\<Kind>}** Joins since the
+  last paragraph's end
+- `running` **[Map][817]<[DocParagraph][648], [RunOn][653]>** The Doc's paragraphs a join
+  takes the newline of
+
+Returns **{joined: [boolean][816], involved: [Array][814]\<Kind>}** What it carries on to the
+next paragraph's end
+
+## sent
+
+Type: [Array][814]<{op: `"insert"`, b: [Unit][644]}>
+
+## anchor
+
+Type: ([number][819] | [undefined][823])
+
+## from
+
+Type: ([Unit][644] | null)
+
+## index
+
+Type: [number][819]
+
+## moved
+
+## edits
+
+Type: [Array][814]<{at: [number][819], order: [number][819], seq: [number][819], request: [object][813]}>
+
+## restyle
+
+The Doc's own words restyled, a request for each stretch.
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `map` &#x20;
+
+Returns **[Array][814]<[object][813]>**&#x20;
+
+## styleInserted
+
+Inserted words styled as the document has them, from whatever Docs gave
+them from the text before.
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `map` &#x20;
+
+Returns **[Array][814]<[object][813]>**&#x20;
+
+## b
+
+Type: [Look][643]
+
+## textStyle
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `start` **[number][819]**&#x20;
+- `end` **[number][819]**&#x20;
+- `look` **[Look][643]**&#x20;
+- `fields` **[Array][814]<[string][812]>**&#x20;
+
+## textStyle
+
+## styleParagraphs
+
+Each paragraph made, joined or changed, styled as the document has it:
+its named style, a quote's indent, a list item's bullet.
+
+### Parameters
+
+- `segment` **[string][812]**&#x20;
+- `map` &#x20;
+
+Returns **[Array][814]<[object][813]>**&#x20;
+
+## bullets
+
+Type: [Array][814]<[object][813]>
+
+## wordMoves
+
+The moves that make one run of units another, word by word: deletions
+before insertions where they meet.
+
+### Parameters
+
+- `from` **[Array][814]<[Unit][644]>**&#x20;
+- `to` **[Array][814]<[Unit][644]>**&#x20;
+
+Returns **[Array][814]<[Move][650]>**&#x20;
+
+## WORD
+
+A character that is part of a word.
+
+## overlapsJoined
+
+Deletions in order, those that overlap made one. Those that only meet stay
+apart: an insertion may go in where they meet.
+
+### Parameters
+
+- `deletes` **[Array][814]<{segment: [string][812], start: [number][819], end: [number][819]}>**&#x20;
+
+Returns **[Array][814]<{segment: [string][812], start: [number][819], end: [number][819]}>**&#x20;
+
+## presetOf
+
+The bullets a new list item of a kind is given.
+
+### Parameters
+
+- `kind` **Kind**&#x20;
+
+Returns **[string][812]**&#x20;
+
+## shifts
+
+Where the Doc's indices end up once the insertions and deletions are made.
+
+### Parameters
+
+- `inserts` **[Array][814]<[Insert][522]>**&#x20;
+- `deletes` **[Array][814]<{start: [number][819], end: [number][819]}>**&#x20;
+
+## deletedBefore
+
+Deleted before `index`.
+
+### Parameters
+
+- `index` &#x20;
+
+##
+
+Type: [number][819]
+
+##
+
+Type: [number][819]
+
+## inserted
+
+Where a character of an insertion ends up: after those before it.
+
+### Parameters
+
+- `insert` &#x20;
+- `offset` &#x20;
+
+##
+
+Type: [Insert][522]
+
+##
+
+Type: [number][819]
+
+## fieldsChanged
+
+The style fields that differ between two looks.
+
+### Parameters
+
+- `from` **[Look][643]**&#x20;
+- `to` **[Look][643]**&#x20;
+
+Returns **[Array][814]<[string][812]>**&#x20;
+
+## tableStartsOf
+
+Where each table in a body starts.
+
+### Parameters
+
+- `content` **[Array][814]<[StructuralElement][267]>**&#x20;
+
+Returns **[Set][820]<[number][819]>**&#x20;
+
+[1]: #driveapi
+[2]: #refusal
+[3]: #parameters
+[4]: #body
+[5]: #body-1
+[6]: #body-2
+[7]: #body-3
+[8]: #ask
+[9]: #parameters-1
+[10]: #ask-1
+[11]: #parameters-2
+[12]: #headers
+[13]: #init
+[14]: #readdocument
+[15]: #parameters-3
+[16]: #writedocument
+[17]: #parameters-4
+[18]: #accountof
+[19]: #parameters-5
+[20]: #driveapply
+[21]: #stripped
+[22]: #presets
+[23]: #presets-1
+[24]: #atomsof
+[25]: #parameters-6
+[26]: #blocksof
+[27]: #parameters-7
+[28]: #blocksof-1
+[29]: #parameters-8
+[30]: #blocksof-2
+[31]: #parameters-9
+[32]: #elementsof
+[33]: #parameters-10
+[34]: #out
+[35]: #out-1
+[36]: #out-2
+[37]: #out-3
+[38]: #out-4
+[39]: #out-5
+[40]: #out-6
+[41]: #out-7
+[42]: #out-8
+[43]: #out-9
+[44]: #out-10
+[45]: #out-11
+[46]: #out-12
+[47]: #out-13
+[48]: #out-14
+[49]: #out-15
+[50]: #out-16
+[51]: #out-17
+[52]: #out-18
+[53]: #out-19
+[54]: #out-20
+[55]: #out-21
+[56]: #out-22
+[57]: #out-23
+[58]: #out-24
+[59]: #out-25
+[60]: #out-26
+[61]: #out-27
+[62]: #out-28
+[63]: #out-29
+[64]: #out-30
+[65]: #contentof
+[66]: #parameters-11
+[67]: #layout
+[68]: #parameters-12
+[69]: #locate
+[70]: #parameters-13
+[71]: #splitatnewlines
+[72]: #parameters-14
+[73]: #segmentof
+[74]: #parameters-15
+[75]: #segmentof-1
+[76]: #parameters-16
+[77]: #emptycell
+[78]: #tableof
+[79]: #parameters-17
+[80]: #spans
+[81]: #parameters-18
+[82]: #spans-1
+[83]: #dropifempty
+[84]: #parameters-19
+[85]: #applyrequests
+[86]: #parameters-20
+[87]: #footnoteid
+[88]: #driveconfig
+[89]: #driveconfig-1
+[90]: #driveconfig-2
+[91]: #driveavailable
+[92]: #driveconvert
+[93]: #nodes
+[94]: #nodes-1
+[95]: #nodes-2
+[96]: #parameters-21
+[97]: #span
+[98]: #properties
+[99]: #readdoc
+[100]: #properties-1
+[101]: #piece
+[102]: #properties-2
+[103]: #piece-1
+[104]: #line
+[105]: #properties-3
+[106]: #localspan
+[107]: #headings
+[108]: #title
+[109]: #ordered
+[110]: #monospaced
+[111]: #scene_break
+[112]: #tabsof
+[113]: #parameters-22
+[114]: #
+[115]: #readdoc-1
+[116]: #parameters-23
+[117]: #skeletonof
+[118]: #parameters-24
+[119]: #parts
+[120]: #parts-1
+[121]: #indentedasquote
+[122]: #parameters-25
+[123]: #shows
+[124]: #parameters-26
+[125]: #shows-1
+[126]: #parameters-27
+[127]: #heldpiece
+[128]: #parameters-28
+[129]: #suggestionson
+[130]: #parameters-29
+[131]: #reader
+[132]: #parameters-30
+[133]: #pictures
+[134]: #images
+[135]: #suggestions
+[136]: #local
+[137]: #pending
+[138]: #segment
+[139]: #footnotes
+[140]: #counted
+[141]: #named
+[142]: #read
+[143]: #spansin
+[144]: #parameters-31
+[145]: #label
+[146]: #monospacedthroughout
+[147]: #count
+[148]: #parameters-32
+[149]: #fontof
+[150]: #parameters-33
+[151]: #marksof
+[152]: #parameters-34
+[153]: #notesuggestions
+[154]: #parameters-35
+[155]: #readparagraph
+[156]: #parameters-36
+[157]: #pieces
+[158]: #pieces-1
+[159]: #pieces-2
+[160]: #pieces-3
+[161]: #readinline
+[162]: #parameters-37
+[163]: #find
+[164]: #find-1
+[165]: #words
+[166]: #words-1
+[167]: #kindof
+[168]: #parameters-38
+[169]: #blocks
+[170]: #parameters-39
+[171]: #blocks-1
+[172]: #items
+[173]: #items-1
+[174]: #holdblock
+[175]: #parameters-40
+[176]: #split
+[177]: #parameters-41
+[178]: #split-1
+[179]: #lists
+[180]: #parameters-42
+[181]: #open
+[182]: #open-1
+[183]: #open-2
+[184]: #at
+[185]: #-1
+[186]: #at-1
+[187]: #-2
+[188]: #at-2
+[189]: #-3
+[190]: #at-3
+[191]: #parameters-43
+[192]: #-4
+[193]: #at-4
+[194]: #-5
+[195]: #build
+[196]: #parameters-44
+[197]: #children
+[198]: #children-1
+[199]: #nested
+[200]: #quote
+[201]: #parameters-45
+[202]: #paragraphs
+[203]: #code
+[204]: #parameters-46
+[205]: #map
+[206]: #map-1
+[207]: #table
+[208]: #parameters-47
+[209]: #flatten
+[210]: #parameters-48
+[211]: #lines
+[212]: #lines-1
+[213]: #gather
+[214]: #parameters-49
+[215]: #gather-1
+[216]: #parameters-50
+[217]: #previous
+[218]: #previous-1
+[219]: #textblock
+[220]: #parameters-51
+[221]: #content
+[222]: #content-1
+[223]: #content-2
+[224]: #content-3
+[225]: #register
+[226]: #parameters-52
+[227]: #trimlines
+[228]: #parameters-53
+[229]: #breaks
+[230]: #breaks-1
+[231]: #trimedges
+[232]: #parameters-54
+[233]: #codewithoutedges
+[234]: #parameters-55
+[235]: #given_up
+[236]: #settlemarks
+[237]: #parameters-56
+[238]: #comesback
+[239]: #parameters-57
+[240]: #withoutmark
+[241]: #parameters-58
+[242]: #joinspans
+[243]: #parameters-59
+[244]: #drivedocstypes
+[245]: #dimension
+[246]: #properties-4
+[247]: #textstyle
+[248]: #properties-5
+[249]: #suggested
+[250]: #properties-6
+[251]: #-6
+[252]: #-7
+[253]: #paragraphelement
+[254]: #properties-7
+[255]: #paragraphstyle
+[256]: #properties-8
+[257]: #bullet
+[258]: #properties-9
+[259]: #paragraph
+[260]: #properties-10
+[261]: #tablecell
+[262]: #properties-11
+[263]: #tablerow
+[264]: #properties-12
+[265]: #table-1
+[266]: #properties-13
+[267]: #structuralelement
+[268]: #properties-14
+[269]: #nestinglevel
+[270]: #properties-15
+[271]: #list
+[272]: #namedstyle
+[273]: #properties-16
+[274]: #documenttab
+[275]: #properties-17
+[276]: #inlineobject
+[277]: #tab
+[278]: #properties-18
+[279]: #-8
+[280]: #driveerrors
+[281]: #driveerror
+[282]: #parameters-60
+[283]: #signinlapsederror
+[284]: #popupblockederror
+[285]: #notgrantederror
+[286]: #stalerevisionerror
+[287]: #driveexport
+[288]: #underlined
+[289]: #mendexport
+[290]: #parameters-61
+[291]: #drivefetch
+[292]: #pickedfile
+[293]: #properties-19
+[294]: #google_type
+[295]: #doc_type
+[296]: #exports
+[297]: #unexportable
+[298]: #driverequest
+[299]: #requestfor
+[300]: #parameters-62
+[301]: #linkfor
+[302]: #parameters-63
+[303]: #fetchpicked
+[304]: #parameters-64
+[305]: #convertpicked
+[306]: #parameters-65
+[307]: #document
+[308]: #get
+[309]: #get-1
+[310]: #get-2
+[311]: #get-3
+[312]: #get-4
+[313]: #get-5
+[314]: #get-6
+[315]: #fetchedpicture
+[316]: #fetchdocpictures
+[317]: #parameters-66
+[318]: #got
+[319]: #fetchpicture
+[320]: #parameters-67
+[321]: #plain
+[322]: #plain-1
+[323]: #parameters-68
+[324]: #retryafter
+[325]: #parameters-69
+[326]: #wait
+[327]: #parameters-70
+[328]: #exportedpictures
+[329]: #parameters-71
+[330]: #objectsof
+[331]: #parameters-72
+[332]: #walk
+[333]: #parameters-73
+[334]: #walk-1
+[335]: #parameters-74
+[336]: #describepicked
+[337]: #parameters-75
+[338]: #drive
+[339]: #examples
+[340]: #drivemerge
+[341]: #max_edits
+[342]: #max_edits-1
+[343]: #max_edits-2
+[344]: #max_edits-3
+[345]: #max_edits-4
+[346]: #max_edits-5
+[347]: #max_edits-6
+[348]: #max_edits-7
+[349]: #clash
+[350]: #properties-20
+[351]: #merged
+[352]: #properties-21
+[353]: #both
+[354]: #part
+[355]: #max_block_edits
+[356]: #pieces-4
+[357]: #mergedocs
+[358]: #parameters-76
+[359]: #clashes
+[360]: #settle
+[361]: #parameters-77
+[362]: #settle-1
+[363]: #parameters-78
+[364]: #samedocs
+[365]: #parameters-79
+[366]: #mergesequence
+[367]: #parameters-80
+[368]: #mergestretch
+[369]: #parameters-81
+[370]: #hunk
+[371]: #mergeapart
+[372]: #parameters-82
+[373]: #-9
+[374]: #-10
+[375]: #hunksof
+[376]: #parameters-83
+[377]: #a
+[378]: #keptby
+[379]: #parameters-84
+[380]: #mergeparts
+[381]: #parameters-85
+[382]: #partsof
+[383]: #parameters-86
+[384]: #mergewithin
+[385]: #parameters-87
+[386]: #mergeholder
+[387]: #parameters-88
+[388]: #mergetable
+[389]: #parameters-89
+[390]: #mergetable-1
+[391]: #parameters-90
+[392]: #column
+[393]: #parameters-91
+[394]: #width
+[395]: #parameters-92
+[396]: #columnsof
+[397]: #parameters-93
+[398]: #rowsof
+[399]: #parameters-94
+[400]: #changed
+[401]: #parameters-95
+[402]: #cellof
+[403]: #parameters-96
+[404]: #made
+[405]: #parameters-97
+[406]: #made-1
+[407]: #mergelines
+[408]: #parameters-98
+[409]: #putin
+[410]: #parameters-99
+[411]: #add
+[412]: #parameters-100
+[413]: #add-1
+[414]: #parameters-101
+[415]: #mergewords
+[416]: #parameters-102
+[417]: #laid
+[418]: #parameters-103
+[419]: #laid-1
+[420]: #parameters-104
+[421]: #mergetokens
+[422]: #parameters-105
+[423]: #asmine
+[424]: #astheirs
+[425]: #tokensof
+[426]: #parameters-106
+[427]: #match
+[428]: #inline
+[429]: #token
+[430]: #commented
+[431]: #parameters-107
+[432]: #commentsof
+[433]: #parameters-108
+[434]: #pick
+[435]: #parameters-109
+[436]: #remade
+[437]: #parameters-110
+[438]: #agreed
+[439]: #parameters-111
+[440]: #childrenof
+[441]: #parameters-112
+[442]: #holdsblocks
+[443]: #parameters-113
+[444]: #sameblocks
+[445]: #parameters-114
+[446]: #sametokens
+[447]: #parameters-115
+[448]: #keys
+[449]: #keyof
+[450]: #parameters-116
+[451]: #child
+[452]: #markupkey
+[453]: #parameters-117
+[454]: #markskey
+[455]: #parameters-118
+[456]: #drivesession
+[457]: #refresh_key
+[458]: #refresh_key-1
+[459]: #refreshtokens
+[460]: #margin_ms
+[461]: #held
+[462]: #keepsession
+[463]: #parameters-119
+[464]: #keepsession-1
+[465]: #parameters-120
+[466]: #forgetsession
+[467]: #parameters-121
+[468]: #clearsessions
+[469]: #signinfor
+[470]: #parameters-122
+[471]: #indesktop
+[472]: #parameters-123
+[473]: #error
+[474]: #-11
+[475]: #remember
+[476]: #parameters-124
+[477]: #driveshape
+[478]: #spacing
+[479]: #spacing-1
+[480]: #bodyparagraph
+[481]: #properties-22
+[482]: #laid-2
+[483]: #properties-23
+[484]: #change
+[485]: #properties-24
+[486]: #note
+[487]: #note-1
+[488]: #shapetables
+[489]: #parameters-125
+[490]: #shaper
+[491]: #parameters-126
+[492]: #tables
+[493]: #paragraphs-1
+[494]: #unsent
+[495]: #changes
+[496]: #shape
+[497]: #parameters-127
+[498]: #firsts
+[499]: #stretchesof
+[500]: #parameters-128
+[501]: #block
+[502]: #block-1
+[503]: #block-2
+[504]: #spansin-1
+[505]: #parameters-129
+[506]: #stretch
+[507]: #parameters-130
+[508]: #-12
+[509]: #wordswhere
+[510]: #parameters-131
+[511]: #reshape
+[512]: #parameters-132
+[513]: #requests
+[514]: #requests-1
+[515]: #requests-2
+[516]: #cellat
+[517]: #parameters-133
+[518]: #holds
+[519]: #parameters-134
+[520]: #delete
+[521]: #parameters-135
+[522]: #insert
+[523]: #parameters-136
+[524]: #insert-1
+[525]: #-13
+[526]: #endof
+[527]: #parameters-137
+[528]: #lastindexof
+[529]: #parameters-138
+[530]: #range
+[531]: #parameters-139
+[532]: #range-1
+[533]: #parameters-140
+[534]: #location
+[535]: #parameters-141
+[536]: #location-1
+[537]: #parameters-142
+[538]: #gridof
+[539]: #parameters-143
+[540]: #cells
+[541]: #cells-1
+[542]: #wordsof
+[543]: #parameters-144
+[544]: #wordsof-1
+[545]: #parameters-145
+[546]: #tablelikeness
+[547]: #parameters-146
+[548]: #drivesignin
+[549]: #callback_path
+[550]: #sign_in_channel
+[551]: #drive_scope
+[552]: #session
+[553]: #properties-25
+[554]: #lifetime
+[555]: #lifetime-1
+[556]: #expiryof
+[557]: #parameters-147
+[558]: #authorizationurl
+[559]: #parameters-148
+[560]: #params
+[561]: #readreturn
+[562]: #parameters-149
+[563]: #popupfeatures
+[564]: #pickinpopup
+[565]: #parameters-150
+[566]: #signininpopup
+[567]: #parameters-151
+[568]: #inpopup
+[569]: #parameters-152
+[570]: #read-1
+[571]: #relayreturn
+[572]: #parameters-153
+[573]: #grant
+[574]: #parameters-154
+[575]: #exchangecode
+[576]: #parameters-155
+[577]: #refreshsession
+[578]: #parameters-156
+[579]: #pickinbrowser
+[580]: #parameters-157
+[581]: #signininbrowser
+[582]: #parameters-158
+[583]: #inbrowser
+[584]: #parameters-159
+[585]: #drivesync
+[586]: #side
+[587]: #linked
+[588]: #properties-26
+[589]: #questions
+[590]: #newpicture
+[591]: #properties-27
+[592]: #newbase
+[593]: #properties-28
+[594]: #synced
+[595]: #properties-29
+[596]: #several_tabs
+[597]: #order
+[598]: #tries
+[599]: #unsent-1
+[600]: #syncdoc
+[601]: #parameters-160
+[602]: #chosen
+[603]: #whole
+[604]: #whole-1
+[605]: #target
+[606]: #isempty
+[607]: #parameters-161
+[608]: #clashkey
+[609]: #parameters-162
+[610]: #docform
+[611]: #properties-30
+[612]: #pictures-1
+[613]: #parameters-163
+[614]: #base
+[615]: #names
+[616]: #owned
+[617]: #taken
+[618]: #fetched
+[619]: #missing
+[620]: #held-1
+[621]: #seen
+[622]: #fetchnew
+[623]: #parameters-164
+[624]: #read-2
+[625]: #parameters-165
+[626]: #holdunused
+[627]: #parameters-166
+[628]: #known
+[629]: #parameters-167
+[630]: #newin
+[631]: #parameters-168
+[632]: #namesin
+[633]: #parameters-169
+[634]: #onlyin
+[635]: #parameters-170
+[636]: #stillheld
+[637]: #namesused
+[638]: #parameters-171
+[639]: #drivewrite
+[640]: #unsent-2
+[641]: #written
+[642]: #properties-31
+[643]: #look
+[644]: #unit
+[645]: #properties-32
+[646]: #block-3
+[647]: #properties-33
+[648]: #docparagraph
+[649]: #properties-34
+[650]: #move
+[651]: #ending
+[652]: #properties-35
+[653]: #runon
+[654]: #properties-36
+[655]: #insert-2
+[656]: #properties-37
+[657]: #code_font
+[658]: #quote_indent
+[659]: #trimmable
+[660]: #bold
+[661]: #writedoc
+[662]: #parameters-172
+[663]: #tabof
+[664]: #parameters-173
+[665]: #withoutcomments
+[666]: #parameters-174
+[667]: #strip
+[668]: #parameters-175
+[669]: #lookof
+[670]: #parameters-176
+[671]: #look-1
+[672]: #samelook
+[673]: #parameters-177
+[674]: #samekind
+[675]: #parameters-178
+[676]: #kindkey
+[677]: #parameters-179
+[678]: #paragraphsof
+[679]: #parameters-180
+[680]: #runs
+[681]: #writer
+[682]: #parameters-181
+[683]: #pictures-2
+[684]: #known-1
+[685]: #paragraphs-2
+[686]: #named-1
+[687]: #tablestarts
+[688]: #tables-1
+[689]: #unsent-3
+[690]: #deletes
+[691]: #inserts
+[692]: #restyled
+[693]: #endings
+[694]: #write
+[695]: #parameters-182
+[696]: #visit
+[697]: #parameters-183
+[698]: #kind
+[699]: #spanswithin
+[700]: #parameters-184
+[701]: #paragraphat
+[702]: #parameters-185
+[703]: #charat
+[704]: #parameters-186
+[705]: #lookbefore
+[706]: #parameters-187
+[707]: #units
+[708]: #parameters-188
+[709]: #units-1
+[710]: #unit-1
+[711]: #unit-2
+[712]: #unit-3
+[713]: #unit-4
+[714]: #unit-5
+[715]: #unit-6
+[716]: #spanat
+[717]: #parameters-189
+[718]: #push
+[719]: #parameters-190
+[720]: #close
+[721]: #picture
+[722]: #parameters-191
+[723]: #compare
+[724]: #parameters-192
+[725]: #changes-1
+[726]: #left
+[727]: #right
+[728]: #around
+[729]: #parameters-193
+[730]: #-14
+[731]: #steps
+[732]: #parameters-194
+[733]: #tables-2
+[734]: #parameters-195
+[735]: #compared
+[736]: #parameters-196
+[737]: #comparetable
+[738]: #parameters-197
+[739]: #cellsof
+[740]: #parameters-198
+[741]: #rows
+[742]: #broken
+[743]: #reach
+[744]: #linkedagainst
+[745]: #parameters-199
+[746]: #wholly
+[747]: #parameters-200
+[748]: #carried
+[749]: #-15
+[750]: #deleting
+[751]: #removed
+[752]: #running
+[753]: #joining
+[754]: #remove
+[755]: #parameters-201
+[756]: #check
+[757]: #parameters-202
+[758]: #slice
+[759]: #b
+[760]: #joinreach
+[761]: #parameters-203
+[762]: #a-1
+[763]: #kept
+[764]: #parameters-204
+[765]: #shown
+[766]: #take
+[767]: #parameters-205
+[768]: #textbetween
+[769]: #parameters-206
+[770]: #insertrun
+[771]: #parameters-207
+[772]: #sent
+[773]: #anchor
+[774]: #from
+[775]: #index
+[776]: #moved
+[777]: #edits
+[778]: #restyle
+[779]: #parameters-208
+[780]: #styleinserted
+[781]: #parameters-209
+[782]: #b-1
+[783]: #textstyle-1
+[784]: #parameters-210
+[785]: #textstyle-2
+[786]: #styleparagraphs
+[787]: #parameters-211
+[788]: #bullets
+[789]: #wordmoves
+[790]: #parameters-212
+[791]: #word
+[792]: #overlapsjoined
+[793]: #parameters-213
+[794]: #presetof
+[795]: #parameters-214
+[796]: #shifts
+[797]: #parameters-215
+[798]: #deletedbefore
+[799]: #parameters-216
+[800]: #-16
+[801]: #-17
+[802]: #inserted
+[803]: #parameters-217
+[804]: #-18
+[805]: #-19
+[806]: #fieldschanged
+[807]: #parameters-218
+[808]: #tablestartsof
+[809]: #parameters-219
+[810]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[811]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[812]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[813]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[814]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[815]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
+[816]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[817]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[818]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[819]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[820]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
+[821]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[822]: https://developer.mozilla.org/docs/Web/API/Document
+[823]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[824]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/WeakMap

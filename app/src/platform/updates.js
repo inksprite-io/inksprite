@@ -4,8 +4,8 @@
  *
  * The native side looks for one in the public repository's releases,
  * downloads it and checks it (`app/electron/src/updates.js`); the page only
- * asks, and says when to install. A browser has none: the page it loads is
- * always the latest.
+ * asks, and says when to install. In a browser, an update is a new build of
+ * the page, which the service worker fetches (`serviceWorker.js`).
  */
 
 import { desktop, isDesktop } from './desktop.js'

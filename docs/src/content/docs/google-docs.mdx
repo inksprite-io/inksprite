@@ -1,11 +1,12 @@
 ---
 title: Google Docs
-description: Import Google Docs from your Drive into a project as Markdown documents you can edit, along with other files you keep there.
+description: Import Google Docs from your Drive into a project as Markdown documents you can edit, sync them with their Docs, and bring in other files you keep there.
 ---
 
 Bring a draft you started in Google Docs into a project. Each Doc becomes a
 document of its own, with its headings, lists and tables, ready to edit and
-for the model to read.
+for the model to read. Sync it, and your edits go to the Doc and the Doc's
+come back.
 
 ## Import from Drive
 
@@ -21,9 +22,8 @@ inksprite puts them in the folder, and a message says how many it imported
 and names any it couldn't. In the desktop app, the browser tab says you can
 close it and go back to inksprite.
 
-Google asks you to sign in and allow access each time you import. inksprite
-can open only the files you choose, and forgets the sign-in once the import is
-done.
+Google's picker opens each time you import, and inksprite can open only the
+files you choose.
 
 :::tip
 If your browser blocks Google's window, inksprite says so. Click
@@ -37,8 +37,15 @@ themselves: a folder chosen whole is skipped.
 ## What comes across
 
 - **Google Docs** and **Word files** (`.docx`) become text documents, in
-  Markdown: headings, lists, bold and italic, links and tables. Pictures are
-  left out, and the message says how many.
+  Markdown: headings, lists, bold and italic, links, tables, horizontal
+  lines and pictures. A drawing, or a picture in a table, is left out, and
+  the message says how many.
+- A Doc's **footnotes** come in at its end. Its **smart chips** come in as
+  words: a person as their name, linked to their email address, and a date
+  as it shows.
+- A Doc with **suggested edits** still open comes in as it was before them,
+  and the message names it. Accept them in Google Docs first to bring them
+  in.
 - **Google Sheets** come as a CSV file of the first sheet.
 - **Google Slides** come as a PDF, and **Google Drawings** as a PNG image.
 - **Other files**, such as PDFs, images and Markdown files, import as they
@@ -48,11 +55,44 @@ themselves: a folder chosen whole is skipped.
 
 Files on shared drives import too.
 
-## It's a copy
+## Sync with the Doc
 
-An imported Doc is a copy of the Doc as it was. Edits in inksprite stay in
-inksprite, and edits in Google Docs stay there. To bring in a newer version,
-import the Doc again: it arrives beside the first as **Name (2)**.
+An imported Google Doc stays linked to its document. Sync it to send your
+edits to the Doc and bring in the ones made there, by you or anyone you share
+it with.
+
+1. Click the sync button at the end of the editor's tabs, or right-click the
+   document and choose **Google Doc** › **Sync**.
+2. If inksprite isn't signed in to Google, Google's sign-in opens for the
+   account the Doc came from, as it does for an import.
+
+A message says when it's done. Edits on both sides come together, and in an
+open document **Undo** takes back what the sync changed, in one step. Where
+both sides changed the same words, inksprite shows the two side by side, with
+the words that differ marked. Click the one to keep for each, then **Sync**.
+
+A document imported before inksprite could sync, or brought back from a
+backup, doesn't know how the Doc was when they last agreed. Its first sync asks
+which to take as it is: **Keep mine** puts this document in the Doc, undoing
+the edits made there since the import, and **Use the Doc's** takes the Doc,
+losing the edits made here. A Doc with several tabs imported then can't sync:
+import it again. A Word file from Drive isn't linked.
+
+Some changes can't go to the Doc yet: footnotes added or taken out, a list
+item's new kind or nesting, a heading inside a list, and rows or columns of a
+table with merged cells. Sync says which and sends nothing; change it back, or
+make the change in Google Docs. If the Doc has suggested edits open where the
+document changed, accept or reject them in Google Docs first. Pictures you add
+here stay here, and inksprite says so; pictures added in the Doc come in.
+Comments stay where they were made.
+
+The **Google Doc** submenu also has **Open in Google Docs**, and **Unlink…**,
+which leaves the Doc as it is. To link it again, import the Doc again: it
+arrives beside the first as **Name (2)**.
+
+In a browser, a sign-in lasts an hour, and syncs within it don't ask again.
+The desktop app stays signed in until you take its access away in your Google
+account.
 
 :::note
 **Google Drive…** is on the menu at [inksprite.io](https://inksprite.io) and in

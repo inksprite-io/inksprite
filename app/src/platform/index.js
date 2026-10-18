@@ -18,6 +18,9 @@
  *   a sign-in in the system browser, waited for on localhost
  * - **updates** - In the desktop app, an update looked for and downloaded,
  *   and installed when the writer restarts into it
+ * - **serviceWorker** - In a browser, the service worker that keeps the
+ *   app's files, so that it opens offline, and the new builds it fetches,
+ *   which the page reloads into
  * - **open** - Links to other sites, opened in a new tab in a browser and in
  *   the system browser from the desktop window, never in the app's own place
  * - **library** - In the desktop app, the folder the projects are kept in, and
@@ -41,6 +44,12 @@ export { isDesktop } from './desktop.js'
 export { fetch } from './fetch.js'
 export { SIGN_IN_PORT, callbackOrigin, signInInBrowser } from './signIn.js'
 export { downloadUpdate, installUpdate } from './updates.js'
+export {
+  hasServiceWorker,
+  lookForBuild,
+  registerServiceWorker,
+  reloadIntoBuild,
+} from './serviceWorker.js'
 export { openUrl, openLinkClicked } from './open.js'
 export { librarySettings, revealInLibrary } from './library.js'
 export { askToKeepData, storageAdvice } from './persistence.js'

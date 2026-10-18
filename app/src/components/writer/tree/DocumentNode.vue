@@ -155,9 +155,9 @@
           aria-label="Actions"
           @click.stop="menu.toggle($event)"
         />
-        <TieredMenu ref="menu" :model="menuItems" :popup="true" />
+        <TieredMenu ref="menu" :model="menuItems" :popup="true" :pt="submenuWidth" />
       </template>
-      <ContextMenu ref="contextMenu" :model="menuItems" @hide="returnFocus" />
+      <ContextMenu ref="contextMenu" :model="menuItems" :pt="submenuWidth" @hide="returnFocus" />
     </div>
 
     <p
@@ -241,16 +241,19 @@ import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
 import { isCard } from '@/cards/chat.js'
 import { chatVisibility, markOf, unpinned, withMark } from '@/utils/visibility.js'
 import { useDocuments } from '@/composables/useDocuments'
+import { useDriveSync } from '@/composables/useDriveSync.js'
 import { useScreenSize } from '@/composables/useScreenSize'
 import { useLongPress } from '@/composables/useLongPress.js'
 import { OPEN_AFTER, useTreeDrop } from '@/composables/useTreeDrop.js'
 import { useFilesStore } from '@/stores/filesStore'
 import { downloadBlob, filenameFor } from '@/files/download.js'
+import { exportDocument } from '@/files/exportDocument.js'
 import { EPUB_MIME, hasText, isText } from '@/files/inspect.js'
 import { inRepository, isRepository, repositoryOf } from '@/source/tree.js'
 import { reextractFile } from '@/files/write.js'
 import { sessionStorage } from '@/utils/sessionStorage'
 import { isDesktop } from '@/platform/desktop.js'
+import { openUrl } from '@/platform/open.js'
 
 defineOptions({ name: 'DocumentNode' })
 
@@ -285,6 +288,7 @@ const api = useDocuments(props.storyId)
 const { copyPath } = useCopyPath(props.storyId)
 const { plainTextItem } = usePlainText(props.storyId)
 const { fileViewItem } = useFileView(props.storyId)
+const driveSync = useDriveSync(props.storyId)
 const jobs = useJobs()
 /** Whether a job is working on this document now: the row spins while it does. */
 const converting = computed(() => jobs.runningOn(props.documentId) !== null)
@@ -294,6 +298,9 @@ const { isMobile } = useScreenSize()
 
 const menu = ref()
 const contextMenu = ref()
+// A submenu is as wide as the item it opens from, unless it is wider: its
+// labels on one line each, not wrapped to the item's width.
+const submenuWidth = { submenu: { class: 'w-max' } }
 
 /**
  * Whether the menu was opened from the keyboard, which cannot reach the
@@ -439,14 +446,17 @@ const download = async () => {
 }
 
 /**
- * Hand the writer a text document as a markdown file, as it stands: edits not
- * yet written out are in it.
+ * Hand the writer a text document as it stands, edits not yet written out
+ * and all: its markdown file, or with its pictures a `.zip` of the two.
  */
-const exportText = () => {
+const exportText = async () => {
   const document = node.value
   if (!document) return
-  const blob = new Blob([api.currentContent(document.id)], { type: 'text/markdown' })
-  downloadBlob(blob, filenameFor({ title: document.title, mime: 'text/markdown' }))
+  const files = useFilesStore()
+  const { blob, filename } = await exportDocument(document, api.currentContent(document.id), key =>
+    files.getFile(key)
+  )
+  downloadBlob(blob, filename)
 }
 
 /**
@@ -933,6 +943,19 @@ const confirmDelete = () => {
   })
 }
 
+/** Ask before taking a document's link to its Doc away: nothing links it again yet. */
+const confirmUnlink = () => {
+  const name = api.displayTitle(node.value)
+  confirm.require({
+    header: 'Unlink from Google Doc',
+    message: `Unlink "${name}" from its Google Doc? Syncing it again will need the Doc imported again.`,
+    icon: 'pi pi-exclamation-triangle',
+    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+    acceptProps: { label: 'Unlink' },
+    accept: () => driveSync.unlink(props.documentId),
+  })
+}
+
 const menuItems = computed(() => {
   /** @type {any[]} */
   const items = []
@@ -959,13 +982,35 @@ const menuItems = computed(() => {
       items.push({ label: 'Re-extract text', icon: 'pi pi-refresh', command: confirmReextract })
     }
     if (isFile.value) items.push({ label: 'Download', icon: 'pi pi-download', command: download })
-    // A text document goes out as markdown, which is what it is kept as, and
-    // can be copied to try something on.
+    // A text document goes out as markdown, which is what it is kept as, its
+    // pictures with it, and can be copied to try something on.
     if (node.value?.type === 'text') {
       items.push(
-        { label: 'Download', icon: 'pi pi-download', command: exportText },
+        { label: 'Export', icon: 'pi pi-download', command: exportText },
         { label: 'Duplicate', icon: 'pi pi-clone', command: duplicate }
       )
+    }
+    // One linked to a Google Doc syncs with it, from the click, which in a
+    // browser is what lets Google's window open.
+    if (driveSync.canSync(props.documentId)) {
+      items.push({
+        label: 'Google Doc',
+        icon: 'pi pi-google',
+        items: [
+          {
+            label: 'Sync',
+            icon: 'pi pi-sync',
+            disabled: driveSync.isSyncing(props.documentId),
+            command: () => driveSync.sync(props.documentId),
+          },
+          {
+            label: 'Open in Google Docs',
+            icon: 'pi pi-external-link',
+            command: () => openUrl(driveSync.docAddress(props.documentId) ?? ''),
+          },
+          { label: 'Unlink…', icon: 'pi pi-times', command: confirmUnlink },
+        ],
+      })
     }
     // A model puts the structure back into text that lost it — headings,
     // tables, paragraphs — which is a file's text, read out of it. A

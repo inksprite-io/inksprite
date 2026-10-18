@@ -22,7 +22,7 @@ If you connect to one of the built-in web search providers or a third party MCP 
 
 #### Google Drive
 
-Nothing goes to Google until you import from Google Drive. Then Google's own sign-in opens, in a window of its own (in the desktop app, in your browser), and you choose the files there. inksprite can open those files and no others. They go straight from Google to your device, so we never see them, and the sign-in is used for that one import and never saved. Google's [privacy policy](https://policies.google.com/privacy) covers its side.
+Nothing goes to Google until you import from Google Drive. Then Google's own sign-in opens, in a window of its own (in the desktop app, in your browser), and you choose the files there. inksprite can open those files and no others. They go straight from Google to your device, and a sync sends your edits straight back to the Doc, so we never see them. In a browser the sign-in is kept in memory for the hour it lasts. The desktop app keeps it on your device until you take its access away in your Google account, and never in a backup. Google's [privacy policy](https://policies.google.com/privacy) covers its side.
 
 #### Browser Storage
 

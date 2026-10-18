@@ -223,9 +223,9 @@ export function libraryFolder(root) {
     /**
      * Every file a project's folder holds as far as the app reads it, by
      * path below the folder: its own `.inksprite/` but for its narration
-     * audio, and each folder in it that is a folder of the project's or is
-     * in a repository. Any other folder, and any link, is named but not gone
-     * into.
+     * audio, each folder in it that is a folder of the project's or is in a
+     * repository, and the documents' pictures in an `.images` beside them.
+     * Any other folder, and any link, is named but not gone into.
      *
      * @param {string} dir - The project's folder, below the library
      * @returns {Promise<{files: Array<{path: string} & Seen>, closed: string[]}>}
@@ -239,7 +239,8 @@ export function libraryFolder(root) {
       /**
        * @param {string} absolute
        * @param {string} relative
-       * @param {boolean} open - Everything below is the app's: a repository, or `.inksprite/`
+       * @param {boolean} open - Everything below is the app's: a repository,
+       *   `.inksprite/`, or an `.images`
        */
       const visit = async (absolute, relative, open) => {
         const items = await fs.readdir(absolute, { withFileTypes: true })
@@ -255,13 +256,15 @@ export function libraryFolder(root) {
             files.push({ path: at, mtime: found.mtimeMs, size: found.size })
           } else if (item.isDirectory()) {
             if (at === '.inksprite/audio') continue
-            const ours =
+            const whole =
               repository ||
               (relative === '' && item.name === '.inksprite') ||
+              item.name === '.images'
+            const ours =
+              whole ||
               (await fs.stat(path.join(full, '.folder.md')).catch(() => null)) !== null ||
               (await fs.stat(path.join(full, '.repository.json')).catch(() => null)) !== null
-            if (ours)
-              await visit(full, at, repository || (relative === '' && item.name === '.inksprite'))
+            if (ours) await visit(full, at, whole)
             else closed.push(at)
           }
         }

@@ -61,7 +61,7 @@ describe('docxToMarkdown', () => {
       { links: { rTides: 'https://example.com/tides' } }
     )
 
-    const { markdown, images } = await docxToMarkdown(bufferOf(docx))
+    const { markdown, pictures } = await docxToMarkdown(bufferOf(docx))
 
     expect(markdown).toBe(
       [
@@ -74,10 +74,10 @@ describe('docxToMarkdown', () => {
         '| Night | Hours |\n| --- | --- |\n| Monday | 9 |',
       ].join('\n\n')
     )
-    expect(images).toBe(0)
+    expect(pictures).toEqual([])
   })
 
-  it('counts the pictures and leaves them out', async () => {
+  it('takes each picture out, its bytes kept and a marker left where it was', async () => {
     const docx = minimalDocx(
       paragraph(run('Before.')) +
         picture('rGull', 'A gull') +
@@ -86,10 +86,16 @@ describe('docxToMarkdown', () => {
       { images: { rGull: barePng(), rBoat: barePng() } }
     )
 
-    const { markdown, images } = await docxToMarkdown(bufferOf(docx))
+    const { markdown, pictures } = await docxToMarkdown(bufferOf(docx))
 
-    expect(markdown).toBe('Before.\n\nAfter.')
-    expect(images).toBe(2)
+    expect(markdown).toBe(
+      'Before.\n\n![A gull](inksprite-picture-1)\n\n![A boat](inksprite-picture-2)\n\nAfter.'
+    )
+    expect(pictures.map(({ marker, mime }) => ({ marker, mime }))).toEqual([
+      { marker: 'inksprite-picture-1', mime: 'image/png' },
+      { marker: 'inksprite-picture-2', mime: 'image/png' },
+    ])
+    expect(Array.from(pictures[0].bytes)).toEqual(Array.from(barePng()))
   })
 
   it('keeps footnotes at the end, without the links back up', async () => {

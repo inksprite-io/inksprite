@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest'
 import { undo } from 'prosemirror-history'
 import { undoInputRule } from 'prosemirror-inputrules'
 import { schema } from '../../src/editor/schema.js'
-import { serializeMarkdown } from '../../src/editor/markdown.js'
+import { parseMarkdown, serializeMarkdown } from '../../src/editor/markdown.js'
 import {
   createEditorState,
   replaceContent,
+  editsTo,
   appendContent,
   isEmptyDocument,
   rules,
@@ -69,6 +70,59 @@ describe('replaceContent', () => {
     const replaced = typed.apply(replaceContent(typed, 'New.'))
 
     expect(serializeMarkdown(undone(replaced).doc)).toBe('Old.')
+  })
+})
+
+describe('editsTo', () => {
+  /** A state with the caret just after `before`, in the text. */
+  const caretAfter = (markdown, before) => {
+    const state = createEditorState(markdown)
+    let at = -1
+    state.doc.descendants((node, pos) => {
+      if (at < 0 && node.isText && node.text.includes(before)) {
+        at = pos + node.text.indexOf(before) + before.length
+      }
+    })
+    return state.apply(state.tr.setSelection(state.selection.constructor.create(state.doc, at)))
+  }
+  /** The text either side of the caret, a few characters each way. */
+  const around = state => {
+    const { from } = state.selection
+    return (
+      state.doc.textBetween(Math.max(0, from - 4), from) +
+      '|' +
+      state.doc.textBetween(from, Math.min(state.doc.content.size, from + 4))
+    )
+  }
+
+  it('changes only what differs, the caret kept on its words, as one undo step', () => {
+    const before = 'The ferry left at six.\n\nIt rained.\n\nShe kept to the rail.'
+    const state = caretAfter(before, 'It rai')
+    const next = parseMarkdown(
+      '# Monday\n\nThe ferry left at seven.\n\nIt rained.\n\nShe kept to the rail, cold.\n\nThe end.'
+    )
+    const edited = state.apply(editsTo(state, next))
+
+    expect(serializeMarkdown(edited.doc)).toBe(serializeMarkdown(next))
+    expect(around(edited)).toBe(around(state))
+    expect(serializeMarkdown(undone(edited).doc)).toBe(before)
+  })
+
+  it('keeps the caret in a paragraph changed elsewhere in it', () => {
+    const state = caretAfter('The ferry left at six, late.', 'The fer')
+    const edited = state.apply(editsTo(state, parseMarkdown('The ferry left at seven, late.')))
+    expect(around(edited)).toBe(' fer|ry l')
+  })
+
+  it('replaces a block whose kind changed whole, and leaves comments as they are', () => {
+    const state = createEditorState('A {==quiet==}{>>c7k2m1<<} harbour.\n\nIt rained.')
+    const next = parseMarkdown('A {==quiet==}{>>c7k2m1<<} harbour.\n\n## It rained.')
+    expect(serializeMarkdown(state.apply(editsTo(state, next)).doc)).toBe(serializeMarkdown(next))
+  })
+
+  it('is nothing when the two say the same', () => {
+    const state = createEditorState('One.\n\nTwo.')
+    expect(editsTo(state, parseMarkdown('One.\n\nTwo.'))).toBeNull()
   })
 })
 

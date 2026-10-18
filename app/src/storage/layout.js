@@ -8,6 +8,7 @@
  *   .inksprite/
  *     story.json              the project's own row, and the schema it is in
  *     narration/<id>.json     who speaks which block of a document
+     bases/<id>.json         a linked document's Google Doc as last synced
  *     audio/<id>/<key>.wav    a document's narration, a clip to a block
  *     chats/                  see chats.js
  *     moving/                 where a move puts something out of the way
@@ -17,6 +18,8 @@
  *       01 - Chapter 1.md
  *   Notes/
  *     Elara.md
+ *     .images/                the pictures of the documents beside it
+ *       doc_x7Kp…/map.png     Elara.md's own, by its id
  *     Rulebook.pdf            an imported file, as it was imported
  *     .Rulebook.pdf.md        its row and the text read out of it
  *     tool/                   a repository: its files as they are
@@ -31,6 +34,7 @@
  */
 
 import { compareNames } from '@/utils/compareNames.js'
+import { PICTURES_DIR } from '@/utils/pictures.js'
 import { filenameFor } from '@/files/download.js'
 import {
   safeName,
@@ -66,6 +70,14 @@ export const MOVING = `${META}/moving`
 
 /** @param {string} id */
 export const narrationPath = id => `${META}/narration/${id}.json`
+
+/**
+ * Where a linked document's base is kept: a copy of Google's, trashed with
+ * the document, and left out of a backup.
+ *
+ * @param {string} id - The document's
+ */
+export const basePath = id => `${META}/bases/${id}.json`
 
 /**
  * Where a document's narration audio is kept: made again on asking, so
@@ -106,6 +118,8 @@ export const audioPath = (id, key) => `${audioDir(id)}/${key}.wav`
  * @property {string} [repository] - The id of the repository it is in
  * @property {true} [narration] - It has a narration file
  * @property {true} [missing] - An imported file whose row is there and whose bytes are not
+ * @property {string[]} [pictures] - A text document's own pictures, by name, in
+ *   `picturesDir` beside it
  */
 
 /** @param {string} dir @param {string} name */
@@ -119,6 +133,43 @@ const baseOf = path => path.slice(path.lastIndexOf('/') + 1)
 
 /** @param {Document} a @param {Document} b */
 const byId = (a, b) => (a.id > b.id ? 1 : a.id < b.id ? -1 : 0)
+
+/**
+ * Where a text document's own pictures are: a folder of its id's in the
+ * `.images` beside it, as its text refers to them. The same path whatever
+ * the document is called, and moved with it when it changes folders.
+ *
+ * @param {string} path - The document's file
+ * @param {string} id - The document's
+ */
+export const picturesDir = (path, id) => join(parentOf(path), `${PICTURES_DIR}/${id}`)
+
+/**
+ * One of a text document's own pictures.
+ *
+ * @param {string} path - The document's file
+ * @param {string} id - The document's
+ * @param {string} name - The picture's
+ */
+export const picturePath = (path, id, name) => `${picturesDir(path, id)}/${name}`
+
+/**
+ * Whether a path is in a folder of pictures, which holds no document.
+ *
+ * @param {string} path
+ */
+const inPictures = path => path.split('/').includes(PICTURES_DIR)
+
+/**
+ * The names of a text document's own pictures, for its entry, or nothing.
+ *
+ * @param {Document} document
+ * @returns {{pictures?: string[]}}
+ */
+const picturesOf = document => {
+  const names = document.type === 'text' ? Object.keys(document.pictures || {}) : []
+  return names.length > 0 ? { pictures: names.sort() } : {}
+}
 
 /**
  * A folder's children in the order the tree shows them: by place in an
@@ -238,6 +289,7 @@ export function layoutProject(documents, rootId, taken = []) {
       const entry = { id: kid.id, kind, path }
       if (repository) entry.repository = repository
       if (kid.speakers?.length) entry.narration = true
+      if (kind === 'text') Object.assign(entry, picturesOf(kid))
       entries.set(kid.id, entry)
       if (kid.type === 'folder')
         visit(kid, path, repository || (kind === 'repository' ? kid.id : undefined))
@@ -266,7 +318,9 @@ export function wantedTexts(files) {
     if (path === STORY_FILE) return true
     if (path.startsWith(`${META}/narration/`)) return path.endsWith('.json')
     if (inMeta(path)) return false
-    return path.endsWith('.md') || baseOf(path) === REPOSITORY_FILE || inRepository(path)
+    if (inRepository(path)) return true
+    if (inPictures(path)) return false
+    return path.endsWith('.md') || baseOf(path) === REPOSITORY_FILE
   })
 }
 
@@ -433,12 +487,17 @@ export function readProject({ files, texts, name }, { newId, now }) {
             newId
           )
           const document = keep(read)
-          return { document, entry: { id: document.id, kind: 'text', path } }
+          return {
+            document,
+            entry: { id: document.id, kind: 'text', path, ...picturesOf(document) },
+          }
         },
       })
     }
     for (const sub of here.dirs) {
       if (dir === '' && sub === META) continue
+      // The pictures of the documents beside it, which are read as they are shown.
+      if (sub === PICTURES_DIR) continue
       const path = join(dir, sub)
       const inside = contents.get(path)?.files || []
       const { place, rest } = readPrefix(sub)

@@ -54,6 +54,10 @@
  * reads well is the harness's to say, so Write is offered to the model, with
  * Interpret, only in a chat that switches the experimental group on.
  *
+ * Each is there at all only while the writer has switched it on, for the
+ * whole app (`setExperimentalSkills`). Off, it is no tool, no command, and no
+ * row in a chat's settings; the records it left in chats read as they did.
+ *
  * The wording is the writer's to change, in two places: a built-in's for every
  * chat, in the library, and any skill's for the chats on one profile. Each is
  * an override, never a copy: a skill whose prompt the writer has not touched
@@ -93,9 +97,10 @@ import { offeredToModel, runOnItsOwn, writerCalls } from './runner.js'
  * says. A skill with neither is one the model or the writer cannot call yet,
  * or one the writer calls as a saved prompt; see ./runner.js.
  *
- * `experimental` puts a built-in's tool in the experimental group, which
- * every built-in profile starts with off, while it is still being tuned. It
- * says nothing about the writer's command.
+ * `experimental` marks a built-in still being tuned. Its tool is in the
+ * experimental group, which every built-in profile starts with off, and it is
+ * there at all only while the writer has it switched on, its command with it.
+ * See `availableSkills`.
  */
 
 /**
@@ -167,6 +172,17 @@ let library = []
  */
 let wordings = new Map()
 
+/**
+ * The experimental built-ins the writer has switched on, by name, as their
+ * switches last said. None until they say otherwise, as the switches start.
+ *
+ * Set from the switches (`setExperimentalSkills`) rather than read from them,
+ * for the reason the library is.
+ *
+ * @type {Set<string>}
+ */
+let switchedOn = new Set()
+
 /** @type {Set<() => void>} */
 const listeners = new Set()
 
@@ -235,7 +251,33 @@ export function setSkillWordings(stored) {
 }
 
 /**
- * Be told whenever the library changes.
+ * Have these experimental built-ins switched on and the rest off, and tell
+ * everything made from the list to make itself again, as a change to the
+ * library does.
+ *
+ * @param {string[]} names - The ones switched on
+ */
+export function setExperimentalSkills(names) {
+  const next = new Set(Array.isArray(names) ? names : [])
+  if (next.size === switchedOn.size && [...next].every(name => switchedOn.has(name))) return
+  switchedOn = next
+  for (const listener of listeners) listener()
+}
+
+/**
+ * Whether a skill is there to use: any but an experimental built-in, and one
+ * of those while the writer has it switched on.
+ *
+ * @param {string} name
+ * @returns {boolean}
+ */
+export function skillIsOn(name) {
+  return !getSkill(name)?.experimental || switchedOn.has(name)
+}
+
+/**
+ * Be told whenever the library changes, or an experimental skill is
+ * switched.
  *
  * @param {() => void} listener
  * @returns {() => void} What to call to stop being told
@@ -252,6 +294,18 @@ export function onSkillsChanged(listener) {
  */
 export function allSkills() {
   return [...BUILT_IN_SKILLS, ...library]
+}
+
+/**
+ * Every skill there is to use: all of them, less the experimental built-ins
+ * the writer has not switched on. What the model is offered, what the writer
+ * can type, and what a chat's settings list are made from this. A record a
+ * skill left in a chat is read through `getSkill`, which finds it either way.
+ *
+ * @returns {Skill[]}
+ */
+export function availableSkills() {
+  return allSkills().filter(skill => !skill.experimental || switchedOn.has(skill.name))
 }
 
 /**

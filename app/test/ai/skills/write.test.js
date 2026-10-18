@@ -106,7 +106,8 @@ describe('write skill', () => {
 
   describe('as a tool', () => {
     it('has one to be called by, offered with the experimental skills', async () => {
-      const { getSkill } = await import('@/ai/skills/index.js')
+      const { getSkill, setExperimentalSkills } = await import('@/ai/skills/index.js')
+      setExperimentalSkills(['interpret', 'write'])
       const write = getSkill('write')
 
       expect(typeof write.execute).toBe('function')

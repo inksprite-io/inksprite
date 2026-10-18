@@ -140,10 +140,12 @@ in **Settings** › **AI**.
 
 ### Skills
 
-**Skills** lists every [skill](/skills/), with a switch for each one the model
-can call. **Interpret** and **Write**, marked **Experimental**, start off.
-**Compact** has no switch, as only you call it. Open a skill to change its
-**Prompt** for this chat ([more](/skills/#for-one-chat)). A skill the
+**Skills** lists every [skill](/skills/): yours, then the built-in ones, each
+in alphabetical order. Each one the model can call has a switch. **Compact**
+has no switch, as only you call it. **Interpret** and **Write**, marked
+**Experimental**, are listed last, each only while it's switched on in
+**Settings** › **Skills**; they start off in each chat. Open a skill to change
+its **Prompt** for this chat ([more](/skills/#for-one-chat)). A skill the
 model has loaded says **Loaded**; **Drop** lets it go at the next
 [summary](#compact-a-long-chat).
 
@@ -212,15 +214,15 @@ closes the list. The sparkles mark the ones that call the model.
 
 | Type | And |
 | --- | --- |
-| `/roll 3d6+2` | It rolls the dice. |
+| `/roll 3d6+2` | It rolls the dice. Add a question after them, as in `/roll 2d6 How does the monster react?`, and the model reads the roll for it. |
 | `/oracle(likely) Is the door locked?` | It answers yes or no at the odds you give, from `nearly_impossible`, `very_unlikely`, `unlikely`, `fifty_fifty`, `likely`, `very_likely` and `nearly_certain`. Leave them off for 50/50. |
 | `/roll-table "a knife" "a letter" "nothing"` | It picks one of the options. |
 | `/tarot(1, full) Will she forgive him?` | It draws cards: 3 from the major arcana unless you say how many (up to 10) or `full` for the whole deck. The question is optional. |
 | `/name(female, 3)` | It makes up names, `female` or `male`, up to 25. |
 | `/director Wrap this scene up.` | It tells the model what the next reply needs. |
 | `@cody I hide in the closet.` | It says what someone in the scene says or does. |
-| `/interpret What is the innkeeper afraid of?` | The model draws a tarot card and reads it against the story, for an idea. |
-| `/write Yvette goes down into the cistern.` | The model writes the prose from the project's notes, as its reply. |
+| `/interpret What is the innkeeper afraid of?` | The model draws a tarot card and reads it against the story, for an idea. [Experimental](/skills/#the-built-in-skills). |
+| `/write Yvette goes down into the cistern.` | The model writes the prose from the project's notes, as its reply. [Experimental](/skills/#the-built-in-skills). |
 | `/compact` | The model summarizes the chat; [see below](#compact-a-long-chat). |
 
 A command's answer goes into your turn, and the model takes it as settled;
@@ -228,7 +230,9 @@ A command's answer goes into your turn, and the model takes it as settled;
 commands gets no reply, so you can settle things before you say what you do;
 `@` lines and your [saved prompts](/skills/#saved-prompts) do ask for one.
 **Ask again** on an answer asks again, and **Edit command** changes the
-question but keeps the answer. Your own [skills](/skills/), and the prompts of
+question but keeps the answer. A roll shows a line for each kind of die above
+its total. **Edit turn** has them as text: change a die and the total is
+worked out again, or change only the total to keep your own number. Your own [skills](/skills/), and the prompts of
 [MCP servers](/mcp/) you've connected, are in the list too.
 
 <Screenshot name="chat-command-menu" alt="The commands, listed as / is typed" />

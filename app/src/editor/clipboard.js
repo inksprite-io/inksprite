@@ -53,17 +53,19 @@ export const pasteMarkdown = markdown => (state, dispatch) => {
 }
 
 /**
- * What the clipboard holds: its HTML, if any, and its text.
+ * What the clipboard holds: its HTML, if any, its text, and its pictures, a
+ * screenshot's say.
  *
  * @typedef {Object} ClipboardContents
  * @property {string} html
  * @property {string} text
+ * @property {Blob[]} pictures
  */
 
 /**
- * Read the clipboard, HTML and text. Chrome cleans HTML read this way unless
- * asked not to, which would take the marks the editor reads its own copies
- * by; a browser that doesn't know the option ignores it.
+ * Read the clipboard, HTML, text and pictures. Chrome cleans HTML read this
+ * way unless asked not to, which would take the marks the editor reads its
+ * own copies by; a browser that doesn't know the option ignores it.
  *
  * @param {{ read: (options?: { unsanitized?: string[] }) => Promise<ClipboardItem[]> }} [clipboard]
  * @returns {Promise<ClipboardContents>}
@@ -75,5 +77,11 @@ export async function readClipboard(clipboard = navigator.clipboard) {
     const item = items.find(one => one.types.includes(type))
     return item ? (await item.getType(type)).text() : ''
   }
-  return { html: await read('text/html'), text: await read('text/plain') }
+  /** @type {Blob[]} */
+  const pictures = []
+  for (const item of items) {
+    const type = item.types.find(one => one.startsWith('image/'))
+    if (type) pictures.push(await item.getType(type))
+  }
+  return { html: await read('text/html'), text: await read('text/plain'), pictures }
 }

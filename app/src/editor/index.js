@@ -10,6 +10,8 @@
  *   for joining markdown to markdown
  * - **comments** - A comment on a passage: the markup, the helpers, the parser rules, and
  *   the entries a list shows
+ * - **commentDraft** - The passage a new comment is being written on in the
+ *   Comments tab: a range in the state, mapped through every change and tinted
  * - **state** - `createEditorState`, the keys and typed shortcuts, and the
  *   `replaceContent` and `appendContent` transactions an outside writer asks for
  * - **search** - Find and replace: the matches as a plugin's state, drawn as
@@ -31,6 +33,10 @@
  *   and pasting into a cell
  * - **links** - Making, changing, removing and opening links: the commands,
  *   and a view plugin for Mod-K, Mod-click and a pasted link
+ * - **pictures** - Pictures in the text: a node view that draws one from
+ *   what the editor component says its path is, a picture from the web as a
+ *   placeholder that fetches nothing, figures, and the object URLs the bytes
+ *   are shown on
  * - **marks** - `markAround`, the run of a mark around a position, for the
  *   link or the comment the caret is in
  * - **shortcuts** - The keys and typed shortcuts as the writer is shown them,
@@ -54,9 +60,23 @@
 
 export { schema, NODE_NAMES, MARK_NAMES } from './schema.js'
 export { parseMarkdown, serializeMarkdown, settleMarkdown, appendBlocks } from './markdown.js'
-export { createEditorState, replaceContent, appendContent, isEmptyDocument } from './state.js'
+export {
+  createEditorState,
+  replaceContent,
+  replaceChanged,
+  editsTo,
+  appendContent,
+  isEmptyDocument,
+} from './state.js'
 export { find, findNext, replaceCurrent, replaceAll, searchOf } from './search.js'
 export { spellingKey, lintAt, replaceWith, forgetWord } from './spelling.js'
 export { selectionMarkdown, markdownSlice, pasteMarkdown, readClipboard } from './clipboard.js'
 export { insertTable, insertRule, insertCodeBlock } from './insert.js'
 export { LAYOUT_LIMIT, laysOut } from './size.js'
+export {
+  pictures,
+  figuresPlugin,
+  insertPictures,
+  takePictureUrl,
+  givePictureUrl,
+} from './pictures.js'

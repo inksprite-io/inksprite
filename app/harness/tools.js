@@ -21,6 +21,7 @@
 
 import { readFile, readdir } from 'node:fs/promises'
 import { basename, join, resolve } from 'node:path'
+import { withoutComments as stripComments } from '../src/editor/comments.js'
 
 /** @param {string} path */
 const norm = path => (path || '').trim().toLowerCase().replace(/^\/+/, '')
@@ -49,7 +50,97 @@ const norm = path => (path || '').trim().toLowerCase().replace(/^\/+/, '')
  * @property {string[]} [gone] - Paths that should hold nothing after the turn: what a
  *   move or rename took away
  * @property {{path: string, contains: string[]}} [summary] - What its summary should say
+ * @property {CommentCheck|CommentCheck[]} [comments] - What should have become of a
+ *   document's comments
  */
+
+/**
+ * What a turn should have done to one document's comments, by the ids the
+ * scenario gave the writer's.
+ *
+ * @typedef {Object} CommentCheck
+ * @property {string} path
+ * @property {string[]} [resolved] - Comments resolved once the turn is done
+ * @property {string[]} [open] - Comments still open, on their passages
+ * @property {string[]} [untouched] - Comments the turn left as they were: the same
+ *   standing, and nothing said on them
+ * @property {string[]} [replied] - Comments the model said something on this turn
+ * @property {number} [added] - At least this many comments of the model's own, new this turn
+ * @property {string[]} [addedOn] - Regex sources, each matching the passage of a new one
+ * @property {boolean} [textUnchanged] - The words, without comments, as they were
+ * @property {boolean} [noneOpenByModel] - No comment the model began is open afterwards
+ */
+
+/** The tools that read, make, answer and resolve comments. */
+const COMMENT_TOOLS = new Map([
+  ['list_comments', 'list'],
+  ['add_comment', 'add'],
+  ['reply_comment', 'reply'],
+  ['resolve_comment', 'resolve'],
+])
+
+/**
+ * Where one document's comments fall short of the check.
+ *
+ * @param {CommentCheck} check
+ * @param {any} state - The snapshot after the turn, with `before` as it began
+ * @returns {string[]}
+ */
+function commentFailures(check, state) {
+  const find = (/** @type {Record<string, any>|undefined} */ byPath) =>
+    Object.entries(byPath || {}).find(([key]) => norm(key) === norm(check.path))?.[1]
+  const after = find(state?.comments) || {}
+  const before = find(state?.before?.comments) || {}
+  const modelPosts = (/** @type {any} */ thread) =>
+    (thread?.posts || []).filter((/** @type {any} */ post) => post.author === 'model').length
+  /** @type {string[]} */
+  const failures = []
+  for (const id of check.resolved || []) {
+    if (after[id]?.status !== 'resolved')
+      failures.push(`${id} ${after[id]?.status || 'gone'}, not resolved`)
+  }
+  for (const id of check.open || []) {
+    if (after[id]?.status !== 'open')
+      failures.push(`${id} ${after[id]?.status || 'gone'}, not open`)
+  }
+  for (const id of check.untouched || []) {
+    const same =
+      after[id] &&
+      after[id].status === before[id]?.status &&
+      JSON.stringify(after[id].posts) === JSON.stringify(before[id]?.posts)
+    if (!same) failures.push(`${id} touched`)
+  }
+  for (const id of check.replied || []) {
+    if (modelPosts(after[id]) <= modelPosts(before[id])) failures.push(`${id} not replied`)
+  }
+  const added = Object.entries(after)
+    .filter(([id, thread]) => !before[id] && thread.posts[0]?.author === 'model')
+    .map(([, thread]) => thread)
+  if (check.added !== undefined && added.length < check.added) {
+    failures.push(`added ${added.length} < ${check.added}`)
+  }
+  for (const source of check.addedOn || []) {
+    const pattern = new RegExp(source, 'i')
+    if (!added.some(thread => pattern.test(thread.quote))) failures.push(`none added on ${source}`)
+  }
+  if (check.textUnchanged) {
+    const words = (/** @type {Record<string, string>|undefined} */ byPath) =>
+      Object.entries(byPath || {}).find(([key]) => norm(key) === norm(check.path))?.[1]
+    const was = words(state?.before?.words)
+    const now = state?.documents
+      ? Object.entries(state.documents).find(([key]) => norm(key) === norm(check.path))?.[1]
+      : undefined
+    if (was !== undefined && now && was !== stripComments(now.content))
+      failures.push('text changed')
+  }
+  if (check.noneOpenByModel) {
+    const open = Object.entries(after).filter(
+      ([, thread]) => thread.status === 'open' && thread.posts[0]?.author === 'model'
+    )
+    if (open.length) failures.push(`model's ${open.map(([id]) => id).join(', ')} open`)
+  }
+  return failures.map(failure => `${check.path}: ${failure}`)
+}
 
 /**
  * @typedef {Object} Call
@@ -212,6 +303,10 @@ function measure({ turn, expect, holding, pinnedBefore, state }) {
     for (const pattern of missing(expect.summary.contains, doc?.summary || ''))
       failures.push(`summary lacks ${pattern}`)
   }
+  for (const check of [expect.comments || []].flat()) {
+    failures.push(...commentFailures(check, state))
+  }
+  const notes = calls.filter(call => COMMENT_TOOLS.has(call.name))
 
   const usage = turn.metadata?.usage || {}
   return {
@@ -219,6 +314,7 @@ function measure({ turn, expect, holding, pinnedBefore, state }) {
     reads: readPaths,
     searches: searches.length,
     writes: writes.map(call => `${call.name.replace('_document', '')}${call.error ? '!' : ''}`),
+    notes: notes.map(call => `${COMMENT_TOOLS.get(call.name)}${call.error ? '!' : ''}`),
     written: writes.filter(call => !call.error).map(call => norm(call.args.path)),
     misses: misses.length,
     unchanged: unchanged.length,
@@ -311,6 +407,7 @@ async function report(dir) {
         m.misses ? `misses=${m.misses}` : '',
         m.searches ? `search=${m.searches}` : '',
         m.writes.length ? `writes=${m.writes.join(',')}` : '',
+        m.notes.length ? `comments=${m.notes.join(',')}` : '',
         m.unchanged || m.lists ? `unchanged=${m.unchanged} lists=${m.lists}` : '',
         `req=${m.requests}`,
         `tok=${(m.promptTokens / 1000).toFixed(1)}k`,

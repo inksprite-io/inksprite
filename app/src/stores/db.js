@@ -19,6 +19,7 @@ import { withoutModelKeeps } from './migrations/modelKeeps.js'
 import { allowedProvidersToPresets } from './migrations/allowedProviders.js'
 import { experimentalOffChats, experimentalOffProfiles } from './migrations/experimentalSkills.js'
 import { viewsOffStories } from './migrations/projectViews.js'
+import { threadsOffText } from './migrations/commentThreads.js'
 
 /**
  * @typedef {import('../types/models.js').Story} Story
@@ -431,6 +432,22 @@ db.version(28).upgrade(async tx => {
 db.version(29).stores({
   cards: 'id, hash',
   cardFiles: 'id',
+})
+
+// What each comment says moves out of its markup onto a thread on its
+// document's row, the markup left holding the id: a comment can have replies,
+// and say who wrote it.
+db.version(30).upgrade(async tx => {
+  const { documents, moved } = threadsOffText(await tx.table('documents').toArray())
+  if (moved > 0) await tx.table('documents').bulkPut(documents)
+  console.log(`Moved ${moved} comments onto threads`)
+})
+
+// A linked document's Google Doc as the two last agreed, which a sync merges
+// against: by the document's id, apart from its row, and left out of backups.
+// No existing row changes.
+db.version(31).stores({
+  docBases: 'id, storyId',
 })
 
 // A summary is stored where it is read: above the turns it kept, rather than at

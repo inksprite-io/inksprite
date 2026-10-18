@@ -8,15 +8,16 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent, onBeforeUnmount, onMounted } from 'vue'
+import { defineAsyncComponent, onBeforeUnmount, onMounted, watch } from 'vue'
 import { RouterView } from 'vue-router'
 import ConfirmDialog from 'primevue/confirmdialog'
 import AppToast from './components/common/AppToast.vue'
 import JobsToastHost from './components/writer/jobs/JobsToastHost.vue'
 import LibraryMoveToast from './components/writer/settings/LibraryMoveToast.vue'
-import { applyTheme } from './composables/useSystemSettings'
-import { useApplicationState } from './composables/useApplicationState'
+import { useTheme } from './composables/useSystemSettings'
 import { useSkills } from './composables/useSkills'
+import { useApplicationState } from './composables/useApplicationState'
+import { setExperimentalSkills } from './ai/skills/index.js'
 import { useUpdates } from './composables/useUpdates'
 import { useSaveBeforeClosing } from './composables/useSaveBeforeClosing'
 import { useLibraryNotices } from './composables/useLibraryNotices'
@@ -42,6 +43,14 @@ const Analytics =
 // screen that lists it first does.
 useSkills()
 
+// The experimental skills come and go with the writer's switches for them, in
+// the same moment, so nothing made from the skills reads a switch as it was.
+const { experimentalSkills } = useApplicationState()
+watch(experimentalSkills, names => setExperimentalSkills(names), {
+  immediate: true,
+  flush: 'sync',
+})
+
 // The jobs left from before are counted as the app opens, so the Jobs button
 // is there for them; they are read in when the jobs toast first opens.
 useJobsStore().countJobs()
@@ -53,6 +62,10 @@ useCardLibraryStore().countCards()
 // An extension never decided is decided once, from whether what it holds is
 // already in use: roleplay stays on for a writer who roleplays.
 decideExtensions()
+
+// The page is in the writer's theme, and follows the system's while that is
+// the theme chosen.
+useTheme()
 
 // In the desktop app, an update is looked for as it opens, and offered once
 // it is downloaded.
@@ -77,8 +90,6 @@ const libraryMove = useLibraryMove()
 
 onMounted(() => {
   if (projectsToMove()) libraryMove.moveIn()
-  const { theme } = useApplicationState()
-  applyTheme(theme.value)
   // A link to another site, in a chat or anywhere else, opens outside the
   // app rather than in its place.
   document.addEventListener('click', openLinkClicked)

@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useChatCommands } from '@/composables/useChatCommands'
-import { setLibrarySkills } from '@/ai/skills/index.js'
+import { setExperimentalSkills, setLibrarySkills } from '@/ai/skills/index.js'
 
 vi.mock('@/composables/useChats', () => ({ useChats: vi.fn() }))
 
@@ -15,6 +15,8 @@ describe('useChatCommands', () => {
   beforeEach(async () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    // Interpret and Write are here, as in an app with them switched on.
+    setExperimentalSkills(['interpret', 'write'])
 
     chatsApi = {
       addMessage: vi.fn().mockReturnValue({ id: 'msg_1', role: 'user', content: '' }),
@@ -817,6 +819,71 @@ describe('useChatCommands', () => {
     })
   })
 
+  describe('with the experimental skills off', () => {
+    beforeEach(() => {
+      setExperimentalSkills([])
+    })
+
+    /** A turn holding an interpretation, as one asked before they were switched off. */
+    const interpreted = () => {
+      chatsApi.getMessageById.mockReturnValue({
+        value: {
+          id: 'msg_1',
+          segments: [
+            { type: 'text', content: 'I wait.' },
+            {
+              type: 'command',
+              command: {
+                name: 'interpret',
+                input: 'Who knocks?',
+                label: 'Who knocks?',
+                result: 'A friend.',
+              },
+            },
+          ],
+        },
+      })
+    }
+
+    it('refuses one before a word is written', async () => {
+      await expect(commands.submit('/interpret Who knocks?')).rejects.toThrow(/experimental/)
+      expect(chatsApi.addMessage).not.toHaveBeenCalled()
+    })
+
+    it('keeps the answer one has rather than asking it again', async () => {
+      const consult = vi.fn()
+      interpreted()
+
+      await expect(commands.rerun('msg_1', 1, { consult })).rejects.toThrow(/experimental/)
+
+      expect(consult).not.toHaveBeenCalled()
+      expect(chatsApi.writeSegment).not.toHaveBeenCalled()
+    })
+
+    it('lets a turn holding one be edited, while its line is left alone', async () => {
+      interpreted()
+
+      await commands.revise(
+        'msg_1',
+        null,
+        'I wait by the door.\n/interpret Who knocks?\n> A friend.'
+      )
+
+      const [, updates] = chatsApi.updateMessage.mock.calls[0]
+      expect(updates.segments[0].content).toBe('I wait by the door.')
+      expect(updates.segments[1].command.result).toBe('A friend.')
+    })
+
+    it('refuses an edit that asks one a new question', async () => {
+      interpreted()
+
+      await expect(
+        commands.revise('msg_1', null, 'I wait.\n/interpret Who is it?')
+      ).rejects.toThrow(/experimental/)
+      expect(chatsApi.updateMessage).not.toHaveBeenCalled()
+    })
+  })
+
   describe('revise', () => {
     /** A turn sitting in the chat, ready to be edited as text. */
     const standing = (...segments) => {
@@ -857,7 +924,68 @@ describe('useChatCommands', () => {
 
       await commands.revise('msg_1', null, '/roll 2d6')
 
-      expect(chatsApi.updateMessage.mock.calls[0][1].segments[0].command.result).toBe('8')
+      expect(chatsApi.updateMessage.mock.calls[0][1].segments[0].command).toMatchObject({
+        result: '8',
+        roll: { dice: { d6: [4, 4] } },
+      })
+    })
+
+    it('keeps a fudged roll at the writer’s number, without the dice', async () => {
+      const roll = { roll: '2d6', dice: { d6: [4, 4] }, modifier: 0, total: 8 }
+      standing(ran({ name: 'roll', input: '2d6', label: '2d6', roll, result: '8' }))
+
+      await commands.revise('msg_1', null, '/roll 2d6\n> 12')
+
+      const [, updates] = chatsApi.updateMessage.mock.calls[0]
+      expect(updates.segments[0].command.result).toBe('12')
+      expect(updates.segments[0].command.roll).toBeUndefined()
+      expect(updates.content).toBe('<roll>\n2d6\n12\n</roll>')
+    })
+
+    it('keeps the dice of a roll that came through unchanged', async () => {
+      const roll = { roll: '2d6', dice: { d6: [4, 4] }, modifier: 0, total: 8 }
+      standing(ran({ name: 'roll', input: '2d6', label: '2d6', roll, result: '8' }))
+
+      await commands.revise('msg_1', null, '/roll 2d6\n> d6: 4, 4\n> 8')
+
+      expect(chatsApi.updateMessage.mock.calls[0][1].segments[0].command.roll).toEqual(roll)
+    })
+
+    it('takes dice the writer changed, when the total goes with them', async () => {
+      const roll = { roll: '2d6', dice: { d6: [4, 4] }, modifier: 0, total: 8 }
+      standing(ran({ name: 'roll', input: '2d6', label: '2d6', roll, result: '8' }))
+
+      await commands.revise('msg_1', null, '/roll 2d6\n> d6: 6, 6\n> 12')
+
+      expect(chatsApi.updateMessage.mock.calls[0][1].segments[0].command).toMatchObject({
+        result: '12',
+        roll: { dice: { d6: [6, 6] }, total: 12 },
+      })
+    })
+
+    it('works the total out again when a die is changed and the total is not', async () => {
+      const roll = { roll: '2d6', dice: { d6: [4, 4] }, modifier: 0, total: 8 }
+      standing(ran({ name: 'roll', input: '2d6', label: '2d6', roll, result: '8' }))
+
+      await commands.revise('msg_1', null, '/roll 2d6\n> d6: 6, 4\n> 8')
+
+      const [, updates] = chatsApi.updateMessage.mock.calls[0]
+      expect(updates.segments[0].command).toMatchObject({
+        result: '10',
+        roll: { dice: { d6: [6, 4] }, total: 10 },
+      })
+      expect(updates.content).toBe('<roll>\n2d6\nd6: 6, 4\n10\n</roll>')
+    })
+
+    it('keeps a total changed under dice left as they were, without the dice', async () => {
+      const roll = { roll: '2d6', dice: { d6: [4, 4] }, modifier: 0, total: 8 }
+      standing(ran({ name: 'roll', input: '2d6', label: '2d6', roll, result: '8' }))
+
+      await commands.revise('msg_1', null, '/roll 2d6\n> d6: 4, 4\n> 12')
+
+      const [, updates] = chatsApi.updateMessage.mock.calls[0]
+      expect(updates.segments[0].command.result).toBe('12')
+      expect(updates.segments[0].command.roll).toBeUndefined()
     })
 
     it('takes the turn apart and puts back what was written', async () => {

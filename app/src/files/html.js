@@ -19,10 +19,10 @@ import { serializeMarkdown } from '@/editor/markdown.js'
 export const DROPPED = 'script, style, noscript, template, svg, iframe, nav, header, footer, form'
 
 /**
- * What is dropped besides, for reading: anything that would load or play,
- * and pictures, which a document has nowhere to put.
+ * What is dropped besides, for reading: anything that would load or play.
+ * A page's pictures (`img`) go too, unless they were made from the file.
  */
-const UNSHOWN = 'img, picture, video, audio, object, embed, canvas, math'
+const UNSHOWN = 'picture, video, audio, object, embed, canvas, math'
 
 /** Where a link to another site may point. */
 const LINKED = /^(https?|mailto):/i
@@ -125,13 +125,19 @@ function walk(node, parts) {
  * another site stays a link. One within the page or its own site is its
  * words: there is no site here for it to go to.
  *
+ * Pictures go too, but where they were made from the file itself, as a Word
+ * file's are, and say so (`pictures`): each `img` then stands for one of the
+ * file's own, and is kept as a picture.
+ *
  * @param {string} source - The HTML
+ * @param {{pictures?: boolean}} [options]
  * @returns {string}
  */
-export function markdownOfHtml(source) {
+export function markdownOfHtml(source, { pictures = false } = {}) {
   const body = source.replace(/<head\b[\s\S]*?<\/head>/i, '')
   const page = new DOMParser().parseFromString(body, 'text/html')
-  for (const node of page.querySelectorAll(`${DROPPED}, ${UNSHOWN}`)) node.remove()
+  const dropped = pictures ? `${DROPPED}, ${UNSHOWN}` : `${DROPPED}, ${UNSHOWN}, img`
+  for (const node of page.querySelectorAll(dropped)) node.remove()
   for (const link of page.querySelectorAll('a')) {
     if (!LINKED.test(link.getAttribute('href')?.trim() || '')) link.replaceWith(...link.childNodes)
   }

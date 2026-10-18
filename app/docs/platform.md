@@ -57,16 +57,23 @@
 - [currentBrowser][53]
 - [storageAdvice][54]
   - [Parameters][55]
-- [platform/settingsFile][56]
-- [settingsFileText][57]
-- [platform/signIn][58]
-- [SIGN_IN_PORT][59]
-- [callbackOrigin][60]
-- [signInInBrowser][61]
-  - [Parameters][62]
-- [platform/updates][63]
-- [downloadUpdate][64]
-- [installUpdate][65]
+- [platform/serviceWorker][56]
+- [registration][57]
+- [hasServiceWorker][58]
+- [registerServiceWorker][59]
+  - [Parameters][60]
+- [lookForBuild][61]
+- [reloadIntoBuild][62]
+- [platform/settingsFile][63]
+- [settingsFileText][64]
+- [platform/signIn][65]
+- [SIGN_IN_PORT][66]
+- [callbackOrigin][67]
+- [signInInBrowser][68]
+  - [Parameters][69]
+- [platform/updates][70]
+- [downloadUpdate][71]
+- [installUpdate][72]
 
 ## platform/closing
 
@@ -94,41 +101,41 @@ bridge to the native side there.
 What the native side is asked for a request: the page's `Request`, read
 out.
 
-Type: [Object][66]
+Type: [Object][73]
 
 ### Properties
 
-- `url` **[string][67]**&#x20;
-- `method` **[string][67]**&#x20;
-- `headers` **[Array][68]<\[[string][67], [string][67]]>**&#x20;
-- `body` **([Uint8Array][69] | null)**&#x20;
+- `url` **[string][74]**&#x20;
+- `method` **[string][74]**&#x20;
+- `headers` **[Array][75]<\[[string][74], [string][74]]>**&#x20;
+- `body` **([Uint8Array][76] | null)**&#x20;
 - `redirect` **RequestRedirect**&#x20;
 
 ## DesktopResponse
 
 A response's status and headers, without its body.
 
-Type: [Object][66]
+Type: [Object][73]
 
 ### Properties
 
-- `status` **[number][70]**&#x20;
-- `statusText` **[string][67]**&#x20;
-- `headers` **[Array][68]<\[[string][67], [string][67]]>**&#x20;
+- `status` **[number][77]**&#x20;
+- `statusText` **[string][74]**&#x20;
+- `headers` **[Array][75]<\[[string][74], [string][74]]>**&#x20;
 
 ## DesktopBodyPart
 
 A piece of a response's body: a chunk of it, or word that it has all come,
 or that it failed.
 
-Type: ({chunk: [Uint8Array][69]} | {done: `true`} | {error: [string][67]})
+Type: ({chunk: [Uint8Array][76]} | {done: `true`} | {error: [string][74]})
 
 ## DesktopBridge
 
 What the desktop app's native side offers the page (`app/electron/src/
 preload.cjs`). Calls that go wrong reject with an Error saying what did.
 
-Type: [Object][66]
+Type: [Object][73]
 
 ### Properties
 
@@ -139,20 +146,20 @@ Type: [Object][66]
 Where the library is, and whether the window's own projects have been
 moved into it.
 
-Type: {path: [string][67], moved: [boolean][71]}
+Type: {path: [string][74], moved: [boolean][78]}
 
 ## BRIDGE
 
 The library: where it is, and the files in it, by paths below it. What is
 done there is `LibraryDisk` in `storage/library.js`.
 
-Type: [string][67]
+Type: [string][74]
 
 ## BRIDGE
 
 Where the bridge is, in the page.
 
-Type: [string][67]
+Type: [string][74]
 
 ## isDesktop
 
@@ -161,7 +168,7 @@ Whether the app is running in its desktop window.
 Decided at runtime, not when the app is built: in development the browser
 tab and the window load the same bundle from the same server.
 
-Returns **[boolean][71]**&#x20;
+Returns **[boolean][78]**&#x20;
 
 ## desktop
 
@@ -204,10 +211,10 @@ page's own does, streamed body and abort signal included.
 
 ### Parameters
 
-- `input` **(RequestInfo | [URL][72])**&#x20;
+- `input` **(RequestInfo | [URL][79])**&#x20;
 - `init` **RequestInit?**&#x20;
 
-Returns **[Promise][73]<[Response][74]>**&#x20;
+Returns **[Promise][80]<[Response][81]>**&#x20;
 
 ## fetchNatively
 
@@ -216,13 +223,13 @@ comes.
 
 ### Parameters
 
-- `request` **[Request][75]**&#x20;
+- `request` **[Request][82]**&#x20;
 
-Returns **[Promise][73]<[Response][74]>**&#x20;
+Returns **[Promise][80]<[Response][81]>**&#x20;
 
 ## controller
 
-Type: ReadableStreamDefaultController<[Uint8Array][69]>
+Type: ReadableStreamDefaultController<[Uint8Array][76]>
 
 ## onBody
 
@@ -250,6 +257,9 @@ sign-in rather than for a platform.
   a sign-in in the system browser, waited for on localhost
 - **updates** - In the desktop app, an update looked for and downloaded,
   and installed when the writer restarts into it
+- **serviceWorker** - In a browser, the service worker that keeps the
+  app's files, so that it opens offline, and the new builds it fetches,
+  which the page reloads into
 - **open** - Links to other sites, opened in a new tab in a browser and in
   the system browser from the desktop window, never in the app's own place
 - **library** - In the desktop app, the folder the projects are kept in, and
@@ -294,7 +304,7 @@ Show the library, or a file in it, in the system's file manager.
 
 ### Parameters
 
-- `path` **[string][67]?** Below the library
+- `path` **[string][74]?** Below the library
 
 ## libraryDisk
 
@@ -323,9 +333,9 @@ The address a link goes to, if it is one that may open.
 
 ### Parameters
 
-- `href` **[string][67]**&#x20;
+- `href` **[string][74]**&#x20;
 
-Returns **([URL][72] | null)**&#x20;
+Returns **([URL][79] | null)**&#x20;
 
 ## openUrl
 
@@ -333,9 +343,9 @@ Open a link outside the app.
 
 ### Parameters
 
-- `href` **[string][67]**&#x20;
+- `href` **[string][74]**&#x20;
 
-Returns **[Promise][73]<[boolean][71]>** Whether it was one that may open
+Returns **[Promise][80]<[boolean][78]>** Whether it was one that may open
 
 ## openLinkClicked
 
@@ -346,7 +356,7 @@ link, or a click with a modifier somewhere other than this tab.
 
 ### Parameters
 
-- `event` **[MouseEvent][76]**&#x20;
+- `event` **[MouseEvent][83]**&#x20;
 
 ## platform/persistence
 
@@ -375,20 +385,20 @@ Whether this page load has asked: once is enough, whatever the answer.
 
 Ask the browser to keep the page's data, once a page load. Never throws.
 
-Returns **[Promise][73]<[boolean][71]>** Whether the data is kept
+Returns **[Promise][80]<[boolean][78]>** Whether the data is kept
 
 ## BrowserTraits
 
 What the page is in, as far as the advice depends on it.
 
-Type: [Object][66]
+Type: [Object][73]
 
 ### Properties
 
-- `userAgent` **[string][67]**&#x20;
-- `maxTouchPoints` **[number][70]** An iPad sends a Mac's user agent; only
+- `userAgent` **[string][74]**&#x20;
+- `maxTouchPoints` **[number][77]** An iPad sends a Mac's user agent; only
   its touch screen tells the two apart
-- `standalone` **[boolean][71]** Opened from the Home Screen or the Dock,
+- `standalone` **[boolean][78]** Opened from the Home Screen or the Dock,
   rather than in a browser tab
 
 ## StorageAdvice
@@ -396,13 +406,13 @@ Type: [Object][66]
 What the writer is told about keeping their work, beyond that it is in the
 browser.
 
-Type: [Object][66]
+Type: [Object][73]
 
 ### Properties
 
-- `clearsAfterAWeek` **[boolean][71]** Safari, which deletes site data after a week of inactivity
-- `homeScreen` **[boolean][71]** Safari in a tab on an iPhone or iPad, where the Home Screen is exempt
-- `desktopApp` **[boolean][71]** A computer, which the desktop app runs on
+- `clearsAfterAWeek` **[boolean][78]** Safari, which deletes site data after a week of inactivity
+- `homeScreen` **[boolean][78]** Safari in a tab on an iPhone or iPad, where the Home Screen is exempt
+- `desktopApp` **[boolean][78]** A computer, which the desktop app runs on
 
 ## currentBrowser
 
@@ -426,6 +436,65 @@ warned, since its exemption is not documented either.
 
 Returns **[StorageAdvice][51]**&#x20;
 
+## platform/serviceWorker
+
+In a browser, the service worker: it keeps the build's files
+(`sw.js`, written by the build in `vite.config.js`), so that the app opens
+offline and can be installed, and fetches each new build in the
+background.
+
+A new build waits until the writer reloads into it: the page in front of
+them is never swapped for another under their hands. One that is waiting
+when the app opens is offered again. Only built web apps have one: the
+desktop app's files are its own, and the dev server's change as they are
+edited.
+
+Should the service worker ever have to go, the way out is a build made
+with VITE_REMOVE_SERVICE_WORKER=true, whose `sw.js` unregisters itself
+(`sw-remove.js`) and whose page registers none. Leaving `sw.js` out would
+not do: a browser keeps the worker it has until the address answers with
+another, and a missing file comes back as the app's page. Building without
+the variable again brings the worker back.
+
+## registration
+
+Type: (ServiceWorkerRegistration | null)
+
+## hasServiceWorker
+
+Whether the app keeps its files with a service worker here.
+
+Returns **[boolean][78]**&#x20;
+
+## registerServiceWorker
+
+Register the service worker, and call `onBuild` each time a new build is
+waiting for the page to reload into it, and `onRemoved` if the worker that
+took over has taken itself away: the files the page loads as it goes are
+no longer kept, and it has to reload from the network. Does nothing where
+there is no service worker.
+
+### Parameters
+
+- `onBuild` &#x20;
+- `onRemoved` &#x20;
+
+Returns **[Promise][80]<(ServiceWorkerRegistration | null)>** Null where there is none
+
+## lookForBuild
+
+Ask whether there is a new build, which `onBuild` hears of once it has
+been fetched. Browsers ask on their own as the app opens, and only now and
+then after, which leaves a page that stays open behind.
+
+Returns **[Promise][80]\<void>**&#x20;
+
+## reloadIntoBuild
+
+Reload the page into the build that is waiting. Another tab may have
+reloaded into it already, which leaves nothing waiting: the page reloads
+all the same, into the build that took over.
+
 ## platform/settingsFile
 
 In the desktop app, the settings file a script may leave in
@@ -437,7 +506,7 @@ the app's data folder for it to import as it opens. See
 The settings file's text, or null when there is none, or no folder to
 leave one in: in a browser.
 
-Returns **[Promise][73]<([string][67] | null)>**&#x20;
+Returns **[Promise][80]<([string][74] | null)>**&#x20;
 
 ## platform/signIn
 
@@ -458,14 +527,14 @@ some hold it to exactly that address.
 
 Where the desktop app listens for a sign-in to come back.
 
-Type: [number][70]
+Type: [number][77]
 
 ## callbackOrigin
 
 Where a sign-in comes back to: this page's own origin in a browser, the
 desktop app's listener in its window.
 
-Returns **[string][67]**&#x20;
+Returns **[string][74]**&#x20;
 
 ## signInInBrowser
 
@@ -477,13 +546,13 @@ while another is waiting takes its place.
 
 ### Parameters
 
-- `address` **([string][67] | [URL][72])** Where to sign in
-- `path` **[string][67]** Where the service sends the browser back, under
+- `address` **([string][74] | [URL][79])** Where to sign in
+- `path` **[string][74]** Where the service sends the browser back, under
   `callbackOrigin()`: `/connect/mcp`
-- `$2` **[Object][66]** (optional, default `{}`)
+- `$2` **[Object][73]** (optional, default `{}`)
   - `$2.signal` &#x20;
 
-Returns **[Promise][73]\<URLSearchParams>** The query it came back with
+Returns **[Promise][80]\<URLSearchParams>** The query it came back with
 
 ## platform/updates
 
@@ -491,14 +560,14 @@ Updates to the desktop app.
 
 The native side looks for one in the public repository's releases,
 downloads it and checks it (`app/electron/src/updates.js`); the page only
-asks, and says when to install. A browser has none: the page it loads is
-always the latest.
+asks, and says when to install. In a browser, an update is a new build of
+the page, which the service worker fetches (`serviceWorker.js`).
 
 ## downloadUpdate
 
 Look for an update and download it, in the desktop app.
 
-Returns **[Promise][73]<([string][67] | null)>** The version downloaded, ready to install;
+Returns **[Promise][80]<([string][74] | null)>** The version downloaded, ready to install;
 null when the app is up to date, or not the desktop app
 
 ## installUpdate
@@ -506,7 +575,7 @@ null when the app is up to date, or not the desktop app
 Install the update `downloadUpdate` downloaded, and restart into it. Does
 not return, unless the install fails.
 
-Returns **[Promise][73]\<void>**&#x20;
+Returns **[Promise][80]\<void>**&#x20;
 
 [1]: #platformclosing
 [2]: #beforeclosing
@@ -563,24 +632,31 @@ Returns **[Promise][73]\<void>**&#x20;
 [53]: #currentbrowser
 [54]: #storageadvice-1
 [55]: #parameters-8
-[56]: #platformsettingsfile
-[57]: #settingsfiletext
-[58]: #platformsignin
-[59]: #sign_in_port
-[60]: #callbackorigin
-[61]: #signininbrowser
-[62]: #parameters-9
-[63]: #platformupdates
-[64]: #downloadupdate
-[65]: #installupdate
-[66]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[67]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[68]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[69]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[70]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[71]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[72]: https://developer.mozilla.org/docs/Web/API/URL/URL
-[73]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[74]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[75]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
-[76]: https://developer.mozilla.org/docs/Web/API/MouseEvent
+[56]: #platformserviceworker
+[57]: #registration
+[58]: #hasserviceworker
+[59]: #registerserviceworker
+[60]: #parameters-9
+[61]: #lookforbuild
+[62]: #reloadintobuild
+[63]: #platformsettingsfile
+[64]: #settingsfiletext
+[65]: #platformsignin
+[66]: #sign_in_port
+[67]: #callbackorigin
+[68]: #signininbrowser
+[69]: #parameters-10
+[70]: #platformupdates
+[71]: #downloadupdate
+[72]: #installupdate
+[73]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[74]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[75]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[76]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[77]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[78]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[79]: https://developer.mozilla.org/docs/Web/API/URL/URL
+[80]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[81]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[82]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
+[83]: https://developer.mozilla.org/docs/Web/API/MouseEvent

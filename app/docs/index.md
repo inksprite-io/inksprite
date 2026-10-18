@@ -92,8 +92,8 @@ A codebase in a project, to write about rather than edit:
 Files picked in the writer's Google Drive, brought into a folder of the project:
 
 - Google's sign-in with its picker and `drive.file`, so only what the writer picks is reachable: a popup in a browser, the system browser in the desktop app, and nothing of Google's loaded in the page
-- A Doc exported as markdown, a Sheet as CSV, Slides as a PDF, a Drawing as a PNG, and anything else downloaded as it is, then imported as from disk
-- A Doc's pictures taken out before the importer sees it, and counted
+- A Doc read through the Docs API by a converter of our own, its pictures the document's own; a Sheet exported as CSV, Slides as a PDF, a Drawing as a PNG, and anything else downloaded as it is, then imported as from disk
+- A Doc's document linked to it, and synced with it: merged three ways against the Doc as the two last agreed, written into the Doc in place, and the Doc's changes brought back as edits
 - Offered only when the build names a Google client for where it runs
 
 ### 🖋️ [Scrivener](./scrivener.md)
@@ -202,7 +202,7 @@ Frontend (Vue 3 + Vite)
 ├── Composables (Composition API)
 │   ├── AI: useAIChat, useAIConfig, useProfiles, useAISummarize
 │   ├── Cards: useCardImport, useCardChat
-│   ├── Import: useBulkImport, useRepositoryImport, useDriveImport
+│   ├── Import: useBulkImport, useRepositoryImport, useDriveImport, useDriveSync
 │   ├── Data: useDocuments, useChats, useBackup, useNarration, useSpeech
 │   └── UI: useEditor, useToast
 ├── TTS (src/tts)
@@ -254,10 +254,17 @@ Frontend (Vue 3 + Vite)
 │   └── write - The repository written into the tree, and refreshed by path
 ├── Drive (src/drive)
 │   ├── config - The build's Google client, and whether the import is offered
-│   ├── signIn - Google's sign-in with its picker, in a popup or the system browser
-│   ├── fetch - A picked file looked up and fetched as a File: exported or downloaded
-│   ├── images - A Doc's pictures taken out of its markdown
-│   └── errors - What stops an import, said for the writer
+│   ├── signIn - Google's sign-in, with its picker or plainly, in a popup or the system browser
+│   ├── session - The sign-in a sync works with, kept between syncs
+│   ├── api - Asking Google with the token: a Doc read, edits written against a revision
+│   ├── fetch - A picked file looked up and fetched as a File: converted, exported or downloaded
+│   ├── convert - A Doc's structure read into a document, with where each part is in the Doc
+│   ├── write - A document written back to its Doc as the Docs API's requests
+│   ├── apply - Those requests applied as Docs applies them
+│   ├── merge - A document and its Doc merged three ways against the base
+│   ├── sync - A linked document and its Doc made one
+│   ├── export - What Google's markdown export gets wrong, put right
+│   └── errors - What stops an import or a sync, said for the writer
 ├── Scrivener (src/scrivener)
 │   ├── package - A project's files by their path inside it, from a folder or a zip
 │   ├── binder - The binder read from the .scrivx, without the Trash, and the styles' names

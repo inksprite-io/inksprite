@@ -82,8 +82,16 @@
       </div>
       <!-- What it was asked. The answer on its own is half a record: "no" is
            not worth reading without the question it answers. -->
-      <div v-if="command.label" class="text-sm text-surface-600 dark:text-surface-300">
-        {{ command.label }}
+      <div v-if="label" class="text-sm text-surface-600 dark:text-surface-300">
+        {{ label }}
+      </div>
+      <!-- A roll's dice, above the total they make. -->
+      <div
+        v-if="diceLines.length"
+        class="text-sm text-surface-600 dark:text-surface-300 flex flex-col"
+        data-dice
+      >
+        <span v-for="(line, i) in diceLines" :key="i">{{ line }}</span>
       </div>
       <!-- Only until the first words arrive: the answer streams in below, and
            dots beside prose already being written say it has not started. -->
@@ -223,6 +231,8 @@ import {
   commandConsults,
   commandIsPrompt,
   commandDetail,
+  commandLabel,
+  rollLines,
   formatSegment,
   segmentProse,
 } from '@/ai/commands.js'
@@ -289,6 +299,12 @@ const repeatable = computed(() => Boolean(command.value && commandRepeatable(com
 
 /** The working beside the answer: the odds a question was asked at. */
 const detail = computed(() => (command.value ? commandDetail(command.value) : ''))
+
+/** What it was asked, less what the header already says. */
+const label = computed(() => (command.value ? commandLabel(command.value) : ''))
+
+/** The dice a roll threw, while they still add up to its answer. */
+const diceLines = computed(() => (command.value ? rollLines(command.value) : []))
 
 /**
  * Whether this answer wants the room a paragraph needs: a character's line, or

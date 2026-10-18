@@ -297,12 +297,12 @@ describe('useCardImport', () => {
         title: 'Keeper notes',
         documents: 1,
         asks: false,
-        images: 0,
       })
+      expect(found.pictures).toBeUndefined()
       expect(found.value).toBe('# The Lamp\n\nTrimmed at dusk.')
     })
 
-    it('writes a text document, and says how many pictures it left out', async () => {
+    it('writes a text document with its pictures as its own', async () => {
       const store = useDocumentsStore()
       const found = await cards.inspect(
         word('Log.docx', paragraph('Fog.') + picture, { images: { rGull: barePng() } })
@@ -311,8 +311,31 @@ describe('useCardImport', () => {
       const written = await cards.write(found)
 
       const document = store.getDocument(written.folderId)
-      expect(document).toMatchObject({ title: 'Log', type: 'text', content: 'Fog.' })
-      expect(written.note).toBe(' (1 image left out)')
+      expect(document).toMatchObject({
+        title: 'Log',
+        type: 'text',
+        content: `Fog.\n\n![](.images/${document.id}/image.png)`,
+        pictures: { 'image.png': expect.objectContaining({ mime: 'image/png' }) },
+      })
+      expect(written.note).toBeUndefined()
+      expect(db.files.put).toHaveBeenCalledWith(
+        expect.objectContaining({ id: `${document.id}/image.png`, storyId: STORY })
+      )
+    })
+
+    it("keeps a Google Doc's pictures, written into its markdown, under its labels", async () => {
+      const store = useDocumentsStore()
+      const png = btoa(String.fromCharCode(...barePng()))
+      const doc = `The gate.\n\n![The north gate][image1]\n\n[image1]: <data:image/png;base64,${png}>\n`
+      const found = await cards.inspect(new File([doc], 'Prologue.md', { type: 'text/markdown' }))
+
+      expect(found.value).toBe('The gate.\n\n![The north gate](inksprite-picture-1)\n')
+      const written = await cards.write(found)
+      const document = store.getDocument(written.folderId)
+      expect(document.content).toBe(
+        `The gate.\n\n![The north gate](.images/${document.id}/image1.png)`
+      )
+      expect(Object.keys(document.pictures)).toEqual(['image1.png'])
     })
 
     it('is known by its name when the browser gives it no type', async () => {

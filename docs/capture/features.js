@@ -154,7 +154,7 @@ function countingWords(folder) {
   }
   const file = 'app/src/utils/wordCount.js'
   const counts = lineOf(file, /^export function countWords\(/)
-  lineOf(file, /stripMarkdown\(withoutComments\(content\)\)/)
+  lineOf(file, /stripMarkdown\(withoutComments\(content\)\.replace\(PICTURE, ' '\)\)/)
   const keeps = lineOf(file, /\.filter\(word => \/\[\\p\{L\}\\p\{N\}\]\/u/)
   const strips = lineOf('app/src/utils/markdown.js', /^export function stripMarkdown\(/)
   const comments = lineOf('app/src/editor/comments.js', /^export function withoutComments\(/)
@@ -166,8 +166,8 @@ function countingWords(folder) {
       { tool: 'read_document', args: { path: `inksprite/${file}` } },
       {
         text:
-          `\`countWords\` in **inksprite/${file}:${counts}** does it. It takes out your comments with \`withoutComments\` (**app/src/editor/comments.js:${comments}**) and the Markdown with \`stripMarkdown\` (**app/src/utils/markdown.js:${strips}**), splits what is left on whitespace, and keeps the runs with a letter or a digit in them (line ${keeps}).\n\n` +
-          'So a rule, a bare dash or a stray `|` from a table isn’t a word, and nor is anything you wrote in a comment.',
+          `\`countWords\` in **inksprite/${file}:${counts}** does it. It takes out your comments with \`withoutComments\` (**app/src/editor/comments.js:${comments}**), then any pictures, and the Markdown with \`stripMarkdown\` (**app/src/utils/markdown.js:${strips}**). It splits what is left on whitespace and keeps the runs with a letter or a digit in them (line ${keeps}).\n\n` +
+          'So a rule, a bare dash or a stray `|` from a table isn’t a word, and nor is anything you wrote in a comment or a picture’s alt text.',
       },
     ],
   }
@@ -429,6 +429,78 @@ export async function features(ui, { standIn, context }) {
     pad: 120,
   })
   await ui.press('Escape')
+
+  // A picture: a map drawn for the guide, pasted as a screenshot would be,
+  // on a line of its own, and given its alt text, in the place it maps.
+  await ui.click(row("Merchant's Quarter"))
+  await ui.click(editor)
+  await ui.type('Stalls from the north gate down to the cistern.')
+  await page.keyboard.press('Enter')
+  await ui.pause(300)
+  await page.evaluate(async () => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 960
+    canvas.height = 540
+    const c = /** @type {CanvasRenderingContext2D} */ (canvas.getContext('2d'))
+    c.fillStyle = '#efe4c8'
+    c.fillRect(0, 0, 960, 540)
+    c.fillStyle = '#b9d3e0'
+    c.fillRect(0, 430, 960, 110)
+    c.strokeStyle = '#8a7a5c'
+    c.lineWidth = 14
+    for (const [x1, y1, x2, y2] of [
+      [480, 40, 480, 430],
+      [120, 220, 840, 220],
+      [220, 360, 760, 120],
+    ]) {
+      c.beginPath()
+      c.moveTo(x1, y1)
+      c.lineTo(x2, y2)
+      c.stroke()
+    }
+    c.fillStyle = '#c9b27f'
+    for (const [x, y, w, h] of [
+      [300, 250, 120, 70],
+      [540, 250, 140, 80],
+      [560, 130, 110, 60],
+    ])
+      c.fillRect(x, y, w, h)
+    c.fillStyle = '#9fc0d0'
+    c.beginPath()
+    c.arc(250, 330, 26, 0, Math.PI * 2)
+    c.fill()
+    c.fillStyle = '#4a3f2c'
+    c.font = '600 28px Inter, sans-serif'
+    c.fillText('North gate', 500, 70)
+    c.fillText("Merchant's Quarter", 130, 190)
+    c.fillText('Cistern', 140, 390)
+    c.fillText('River', 820, 490)
+    const blob = await new Promise(done => canvas.toBlob(done, 'image/png'))
+    const clipboard = new DataTransfer()
+    clipboard.items.add(new File([/** @type {Blob} */ (blob)], 'image.png', { type: 'image/png' }))
+    document
+      .querySelector('.ProseMirror')
+      ?.dispatchEvent(new ClipboardEvent('paste', { clipboardData: clipboard, bubbles: true }))
+  })
+  const picture = page.locator('.ProseMirror .picture').first()
+  await picture.locator('img').waitFor()
+  await ui.click(picture)
+  await ui.click(page.getByRole('textbox', { name: 'Alt text' }))
+  await ui.type("A map of the Merchant's Quarter")
+  await ui.press('Enter')
+  await ui.click(picture)
+  await page.locator('[data-picture-popover]').waitFor()
+  await quiet()
+  await ui.shot('editor-picture', {
+    of: [
+      page.locator('.ProseMirror p').filter({ hasText: 'Stalls from the north gate' }),
+      picture,
+      page.locator('[data-picture-popover]'),
+    ],
+  })
+  await ui.press('Escape')
+  // Its tab closed again, so the tabs keep to the ones the guide shows.
+  await ui.click(button("Close Merchant's Quarter"))
 
   // A table
   await write(inside('World'), 'Coinage and Trade', ['| Coin | Metal | Worth |'])

@@ -29,12 +29,13 @@
  *     the new-project dialog
  *   - `editor/` - The editor over a structured document, the field over a
  *     plain one, the strip of tabs above them, and the empty editor for a
- *     project with no documents or no tabs. A comment is written under the
- *     line in `CommentPopover`, on a selection by Mod-Shift-M or
- *     `CommentButton`, and shows there while the caret is in its passage
- *   - `comments/` - `CommentsPanel`, the project's comments in the sidebar:
- *     picking one opens its document, where `Editor` scrolls to it and marks
- *     it; Resolve takes it off
+ *     project with no documents or no tabs. A comment is begun on a selection
+ *     by `CommentButton` or Mod-Shift-M; on a phone it is written and shown
+ *     in `CommentBar`, at the bottom, while the caret is in its passage
+ *   - `comments/` - `CommentsPanel`, the project's comments in the sidebar,
+ *     each a `CommentThread`, and on the desktop where a comment is written
+ *     (`CommentDraft`) and answered: picking one opens its document, where
+ *     `Editor` scrolls to it and marks it; Resolve takes it off
  *   - `tree/` - The document tree and its nodes. Its header's Import and New
  *     document act on the project's top, as the root's menu does
  *   - `chats/` - A chat, its list, and its settings

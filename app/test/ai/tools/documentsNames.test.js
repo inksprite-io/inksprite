@@ -150,7 +150,14 @@ describe('a chat that plays a card', () => {
 
   it("lists the writer's comments with the names in", async () => {
     store.updateDocument(description.id, {
-      content: '{=={{char}} is a knight.==}{>>cabcd3: Does {{user}} know?<<}',
+      content: '{=={{char}} is a knight.==}{>>cabcd3<<}',
+      comments: {
+        cabcd3: {
+          status: 'open',
+          quote: '{{char}} is a knight.',
+          posts: [{ author: 'writer', text: 'Does {{user}} know?', created: 1 }],
+        },
+      },
     })
 
     const { comments } = await executeListComments({ path: 'Elara/Description' }, as(playing))
@@ -159,8 +166,8 @@ describe('a chat that plays a card', () => {
       {
         id: 'cabcd3',
         path: 'Elara/Description',
-        text: 'Elara is a knight.',
-        comment: 'Does Riley know?',
+        passage: 'Elara is a knight.',
+        posts: [{ author: 'writer', text: 'Does Riley know?' }],
       },
     ])
   })

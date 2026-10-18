@@ -256,7 +256,7 @@ function lineage(tree, id) {
  * @param {string} name
  * @returns {string}
  */
-function encodeName(name) {
+export function encodeName(name) {
   return name.replace(UNSAFE_IN_LINK, character =>
     character === '(' || character === ')'
       ? `%${character.charCodeAt(0).toString(16).toUpperCase()}`
@@ -286,4 +286,20 @@ export function hrefFor(tree, fromId, toId) {
     ...to.slice(shared).map(document => encodeName(fileNameOf(document))),
   ]
   return names.join('/') || '.'
+}
+
+/**
+ * A document's link from the top of the project, `/Notes/Cast%20list.md`,
+ * which `resolveLink` reads from the top wherever it is written. What a link
+ * is carried as on the clipboard: the document it is pasted into may be in
+ * another folder, where the link as written would go somewhere else.
+ *
+ * @param {LinkTree} tree
+ * @param {string} id
+ * @returns {string}
+ */
+export function projectHref(tree, id) {
+  return `/${lineage(tree, id)
+    .map(document => encodeName(fileNameOf(document)))
+    .join('/')}`
 }

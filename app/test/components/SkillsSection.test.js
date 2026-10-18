@@ -8,6 +8,7 @@ import SkillEditor from '@/components/writer/settings/SkillEditor.vue'
 import SkillImportDialog from '@/components/writer/settings/SkillImportDialog.vue'
 import BuiltInSkillEditor from '@/components/writer/settings/BuiltInSkillEditor.vue'
 import { INTERPRET_PROMPT } from '@/ai/skills/index.js'
+import { useApplicationState } from '@/composables/useApplicationState'
 
 const library = vi.hoisted(() => ({
   rows: null,
@@ -98,6 +99,9 @@ beforeEach(() => {
   library.setWording = vi.fn(() => true)
   library.profiles = ref([{ id: 'chat', name: 'Default', settings: {} }])
   confirmed.last = null
+  const app = useApplicationState()
+  app.setExperimentalSkill('interpret', false)
+  app.setExperimentalSkill('write', false)
 })
 
 describe('importing skills', () => {
@@ -171,23 +175,55 @@ describe('SkillsSection', () => {
     const wrapper = mountSection()
     const builtIn = wrapper.find('[data-list="built-in"]')
 
-    expect(builtIn.find('[data-skill="interpret"]').text()).toContain('/interpret')
     expect(builtIn.find('[data-skill="compact"]').text()).toContain('/compact')
+    expect(builtIn.find('[data-skill="interpret"]').exists()).toBe(false)
     // Set aside for now.
-    expect(builtIn.find('[data-skill="director"]').exists()).toBe(false)
+    expect(wrapper.find('[data-skill="director"]').exists()).toBe(false)
+  })
+
+  it('lists the experimental skills under the built-ins, by name', () => {
+    const wrapper = mountSection()
+    const lists = wrapper.findAll('[data-list]').map(list => list.attributes('data-list'))
+    const experimental = wrapper.find('[data-list="experimental"]')
+
+    expect(lists).toEqual(['yours', 'built-in', 'experimental'])
+    expect(experimental.findAll('[data-skill]').map(row => row.attributes('data-skill'))).toEqual([
+      'interpret',
+      'write',
+    ])
+    expect(experimental.find('[data-skill="interpret"]').text()).toContain('/interpret')
+  })
+
+  it('switches each experimental skill for the whole app, and dims it while off', async () => {
+    const wrapper = mountSection()
+    const row = name => wrapper.find(`[data-list="experimental"] [data-skill="${name}"]`)
+    const toggle = name => wrapper.findComponent(`[data-skill-switch="${name}"]`)
+    expect(toggle('write').props('modelValue')).toBe(false)
+    expect(row('write').classes()).toContain('opacity-60')
+
+    await toggle('write').vm.$emit('update:modelValue', true)
+
+    expect(useApplicationState().experimentalSkills.value).toEqual(['write'])
+    expect(toggle('write').props('modelValue')).toBe(true)
+    expect(row('write').classes()).not.toContain('opacity-60')
+    // The other stays as it was.
+    expect(toggle('interpret').props('modelValue')).toBe(false)
+    expect(row('interpret').classes()).toContain('opacity-60')
+    // The built-ins are always there, and have none.
+    expect(wrapper.find('[data-list="built-in"] [data-skill-switch]').exists()).toBe(false)
   })
 
   it('says which built-ins you have reworded', () => {
     library.wordings.value = { interpret: 'Read darkly.' }
-    const builtIn = mountSection().find('[data-list="built-in"]')
+    const wrapper = mountSection()
 
-    expect(builtIn.find('[data-skill="interpret"] [data-reworded]').exists()).toBe(true)
-    expect(builtIn.find('[data-skill="compact"] [data-reworded]').exists()).toBe(false)
+    expect(wrapper.find('[data-skill="interpret"] [data-reworded]').exists()).toBe(true)
+    expect(wrapper.find('[data-skill="compact"] [data-reworded]').exists()).toBe(false)
   })
 
-  it('opens a built-in to reword, and comes back', async () => {
+  it('opens a built-in to reword, even an experimental one while it is off', async () => {
     const wrapper = mountSection()
-    await wrapper.find('[data-list="built-in"] [data-skill="interpret"]').trigger('click')
+    await wrapper.find('[data-list="experimental"] [data-skill="interpret"]').trigger('click')
 
     expect(wrapper.findComponent(BuiltInSkillEditor).props('name')).toBe('interpret')
     await wrapper.find('[data-action="back"]').trigger('click')

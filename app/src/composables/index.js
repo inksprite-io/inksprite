@@ -46,13 +46,17 @@
  * - **useCopyPath** - Copy a document's path, the address the tools take, to the clipboard
  * - **useDocumentLinks** - Links between a project's documents: one opens the document in a tab,
  *   and the link field makes one from a path or a name
+ * - **usePictures** - What a picture's path in a document is (its own, a file document, or the
+ *   web), and opening one
+ * - **usePictureViewer** - The picture shown at its own size over the whole window, from anywhere
  * - **usePlainText** - Turn a document plain or back, with an undo when that rewrote its text
  * - **useLongPress** - A finger held still on something, for what a right-click opens elsewhere
  * - **useTreeDrop** - A document dragged onto a folder's row goes into the folder, and a shut
  *   one held over opens
  * - **useFindKey** - Command-F (Control-F off a Mac) opens the find of the panel the writer is in
  * - **useChatFind** - Finding in a chat, most of which is not in the page: counted in the messages, gone to and highlighted in the page
- * - **useUpdates** - In the desktop app, an update downloaded as soon as there is one, and a toast to restart into it
+ * - **useTheme** - The page in the writer's theme, following the system's while that is the one chosen (`useSystemSettings.js`)
+ * - **useUpdates** - In the desktop app, an update downloaded as soon as there is one, and a toast to restart into it; in a browser, a toast to reload into a new build
  * - **useSaveBeforeClosing** - In the desktop app, edits saved before the window closes or the app quits
  * - **useSettingsFile** - In the desktop app, the settings file a script left in the data folder, imported as the app opens
  *
@@ -105,4 +109,6 @@ export { useFocusMode, useFocusModeKeys } from './useFocusMode.js'
 export { useTopmostEscape } from './useTopmostEscape.js'
 export { useCopyPath } from './useCopyPath.js'
 export { useDocumentLinks } from './useDocumentLinks.js'
+export { usePictures } from './usePictures.js'
+export { usePictureViewer } from './usePictureViewer.js'
 export { usePlainText } from './usePlainText.js'

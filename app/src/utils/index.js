@@ -22,6 +22,9 @@
  * - **documentPath** - How a document is addressed: by its titles from the root down
  * - **documentLinks** - Links from one document to another, written as Markdown files link to
  *   the files beside them, and followed back
+ * - **pictures** - A document's own pictures as its text refers to them, `.images/<id>/<name>`,
+ *   and where their bytes are kept
+ * - **dataUrl** - What a `data:` address holds, as bytes
  * - **visibility** - What one chat sees of the project: hidden outright, and each chat's pins, shows and hides
  * - **chatTitle** - What a chat is called before it has a name, and a title the model wrote, made plain
  *
@@ -71,4 +74,6 @@ export {
   readableHref,
   hrefFor,
 } from './documentLinks.js'
+export * from './pictures.js'
+export * from './dataUrl.js'
 export * from './visibility.js'

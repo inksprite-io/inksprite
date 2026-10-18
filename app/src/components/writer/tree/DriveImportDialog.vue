@@ -126,6 +126,7 @@ const start = async () => {
   try {
     const result = await drive.importPicked(picked.ids, picked.token, {
       parentId: into.value || undefined,
+      account: picked.account,
       signal: own.signal,
       onStep,
     })

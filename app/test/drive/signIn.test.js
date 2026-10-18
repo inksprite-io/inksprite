@@ -8,14 +8,17 @@ import {
   pickInBrowser,
   pickInPopup,
   readReturn,
+  refreshSession,
   relayReturn,
+  signInInBrowser,
+  signInInPopup,
 } from '@/drive/signIn.js'
 import { DriveError, PopupBlockedError } from '@/drive/errors.js'
 
-const signInInBrowser = vi.hoisted(() => vi.fn())
+const signInInBrowserMock = vi.hoisted(() => vi.fn())
 vi.mock('@/platform/signIn.js', () => ({
   callbackOrigin: () => 'http://localhost:41721',
-  signInInBrowser,
+  signInInBrowser: signInInBrowserMock,
 }))
 
 /** BroadcastChannel, standing in: channels of one name hear each other. */
@@ -67,6 +70,27 @@ describe('authorizationUrl', () => {
     })
   })
 
+  it('signs in plainly for a sync: no picker, no prompt, hinted with the account', () => {
+    const url = new URL(
+      authorizationUrl({
+        clientId: 'web-1',
+        redirectUri: 'https://inksprite.io/connect/google',
+        responseType: 'token',
+        state: 's1',
+        pick: false,
+        loginHint: 'writer@example.com',
+      })
+    )
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      client_id: 'web-1',
+      redirect_uri: 'https://inksprite.io/connect/google',
+      response_type: 'token',
+      scope: DRIVE_SCOPE,
+      state: 's1',
+      login_hint: 'writer@example.com',
+    })
+  })
+
   it('carries a PKCE challenge when given one', () => {
     const url = new URL(
       authorizationUrl({
@@ -97,6 +121,23 @@ describe('readReturn', () => {
         's1'
       )
     ).toEqual({ token: 'tok', code: null, ids: ['a', 'b'] })
+  })
+
+  it('takes a sign-in without the picker with no ids, and how long its token lasts', () => {
+    expect(
+      readReturn(
+        new URLSearchParams(
+          back({ state: 's1', access_token: 'tok', expires_in: '3599', scope: DRIVE_SCOPE })
+        ),
+        's1',
+        { pick: false }
+      )
+    ).toEqual({ token: 'tok', code: null, ids: [], expiresIn: '3599' })
+    expect(
+      readReturn(new URLSearchParams(back({ state: 's1', error: 'access_denied' })), 's1', {
+        pick: false,
+      })
+    ).toBe(null)
   })
 
   it('answers null when the writer cancelled, or picked nothing', () => {
@@ -152,9 +193,18 @@ describe('pickInPopup', () => {
     const picking = pickInPopup('web-1')
     relayReturn(back({ state: 'someone-else', access_token: 'x', picked_file_ids: 'z' }))
     relayReturn(
-      back({ state: stateOf(), access_token: 'tok', picked_file_ids: 'a,b', scope: DRIVE_SCOPE })
+      back({
+        state: stateOf(),
+        access_token: 'tok',
+        expires_in: '3599',
+        picked_file_ids: 'a,b',
+        scope: DRIVE_SCOPE,
+      })
     )
-    await expect(picking).resolves.toEqual({ token: 'tok', ids: ['a', 'b'] })
+    const picked = await picking
+    expect(picked).toMatchObject({ token: 'tok', ids: ['a', 'b'] })
+    expect(picked.expiresAt).toBeGreaterThan(Date.now() + 3500_000)
+    expect(picked.expiresAt).toBeLessThanOrEqual(Date.now() + 3599_000)
     expect(Channel.open.size).toBe(0)
   })
 
@@ -179,18 +229,41 @@ describe('pickInPopup', () => {
   })
 })
 
+describe('signInInPopup', () => {
+  beforeEach(() => {
+    Channel.open.clear()
+    vi.stubGlobal('BroadcastChannel', Channel)
+    vi.spyOn(window, 'open').mockImplementation(() => /** @type {any} */ ({ close: vi.fn() }))
+  })
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it('opens a plain sign-in within the call, and comes back with the token alone', async () => {
+    const signing = signInInPopup('web-1', { loginHint: 'writer@example.com' })
+    const url = new URL(vi.mocked(window.open).mock.calls[0][0])
+    expect(url.searchParams.get('login_hint')).toBe('writer@example.com')
+    expect(url.searchParams.has('trigger_onepick')).toBe(false)
+    relayReturn(
+      back({ state: url.searchParams.get('state'), access_token: 'tok', scope: DRIVE_SCOPE })
+    )
+    await expect(signing).resolves.toMatchObject({ token: 'tok', ids: [] })
+  })
+})
+
 describe('in the desktop window', () => {
   const fetchMock = vi.fn()
   beforeEach(() => {
     vi.stubGlobal('fetch', fetchMock)
     fetchMock.mockReset()
-    signInInBrowser.mockReset()
+    signInInBrowserMock.mockReset()
   })
   afterEach(() => vi.unstubAllGlobals())
 
   /** Google, sending the browser back with what is given, under the state it was asked with. */
   const comesBack = (/** @type {Record<string, string>} */ fields) =>
-    signInInBrowser.mockImplementation(async address => {
+    signInInBrowserMock.mockImplementation(async address => {
       const state = new URL(address).searchParams.get('state')
       return new URLSearchParams(back({ state, ...fields }))
     })
@@ -198,14 +271,16 @@ describe('in the desktop window', () => {
   it('signs in and picks in the browser, then trades the code for a token with the secret', async () => {
     comesBack({ code: 'c1', picked_file_ids: 'a', scope: DRIVE_SCOPE })
     fetchMock.mockResolvedValue(
-      new Response(JSON.stringify({ access_token: 'tok', refresh_token: 'kept-nowhere' }))
+      new Response(
+        JSON.stringify({ access_token: 'tok', refresh_token: 'again', expires_in: 3599 })
+      )
     )
 
     await expect(
       pickInBrowser({ clientId: 'desktop-1', clientSecret: 'secret-1' })
-    ).resolves.toEqual({ token: 'tok', ids: ['a'] })
+    ).resolves.toMatchObject({ token: 'tok', refreshToken: 'again', ids: ['a'] })
 
-    const [address, path] = signInInBrowser.mock.calls[0]
+    const [address, path] = signInInBrowserMock.mock.calls[0]
     const asked = new URL(address).searchParams
     expect(path).toBe(CALLBACK_PATH)
     expect(asked.get('response_type')).toBe('code')
@@ -231,6 +306,42 @@ describe('in the desktop window', () => {
       null
     )
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('signs in plainly in the browser, and keeps the refresh token that comes back', async () => {
+    comesBack({ code: 'c1', scope: DRIVE_SCOPE })
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ access_token: 'tok', refresh_token: 'again' }))
+    )
+    await expect(
+      signInInBrowser(
+        { clientId: 'desktop-1', clientSecret: 'secret-1' },
+        { loginHint: 'writer@example.com' }
+      )
+    ).resolves.toMatchObject({ token: 'tok', refreshToken: 'again', ids: [] })
+    const asked = new URL(signInInBrowserMock.mock.calls[0][0]).searchParams
+    expect(asked.get('login_hint')).toBe('writer@example.com')
+    expect(asked.has('prompt')).toBe(false)
+  })
+
+  it('trades a refresh token for a fresh token, and says when Google no longer takes it', async () => {
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ access_token: 'fresh' })))
+    await expect(
+      refreshSession({ clientId: 'desktop-1', clientSecret: 'secret-1' }, 'again')
+    ).resolves.toMatchObject({ token: 'fresh' })
+    expect(Object.fromEntries(new URLSearchParams(fetchMock.mock.calls[0][1].body))).toEqual({
+      client_id: 'desktop-1',
+      client_secret: 'secret-1',
+      refresh_token: 'again',
+      grant_type: 'refresh_token',
+    })
+
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: 'invalid_grant' }), { status: 400 })
+    )
+    await expect(
+      refreshSession({ clientId: 'desktop-1', clientSecret: 'secret-1' }, 'revoked')
+    ).rejects.toMatchObject({ refused: true })
   })
 
   it('says why Google would not trade the code', async () => {

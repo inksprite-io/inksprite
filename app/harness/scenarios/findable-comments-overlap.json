@@ -1,0 +1,50 @@
+{
+  "fixture": "findable",
+  "messages": [
+    {
+      "before": {
+        "comments": [
+          {
+            "path": "Design/Retrieval design",
+            "id": "cwrit1",
+            "passage": "with recency as a tiebreak",
+            "text": "Is recency right for notes that are years old?"
+          },
+          {
+            "path": "Design/Retrieval design",
+            "id": "cidx01",
+            "passage": "Notes beyond the cap are not searchable in the first version.",
+            "text": "Too harsh? See the open questions."
+          }
+        ]
+      },
+      "text": "Leave a comment on the whole first paragraph of the Ranking section, saying the API sketch returns twenty results by default and the design should say so too. Don't change the text.",
+      "noWrites": true,
+      "comments": {
+        "path": "Design/Retrieval design",
+        "added": 1,
+        "addedOn": ["^The fused list is the result list.*best chunk\\.$"],
+        "open": ["cwrit1", "cidx01"],
+        "untouched": ["cwrit1", "cidx01"],
+        "textUnchanged": true
+      }
+    },
+    {
+      "before": {
+        "edit": {
+          "path": "Design/Retrieval design",
+          "old": " {==Notes beyond the cap are not searchable in the first version.==}{>>cidx01<<}",
+          "new": ""
+        }
+      },
+      "text": "I cut a sentence from the Indexing section. Tidy up the retrieval design's comments: resolve any whose passage is gone, and leave the rest alone.",
+      "noWrites": true,
+      "comments": {
+        "path": "Design/Retrieval design",
+        "resolved": ["cidx01"],
+        "open": ["cwrit1"],
+        "untouched": ["cwrit1"]
+      }
+    }
+  ]
+}

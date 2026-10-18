@@ -1,0 +1,27 @@
+{
+  "fixture": "findable",
+  "messages": [
+    {
+      "text": "Check the retrieval design against the decisions log, and leave a comment on each place where the design is out of date. Don't change the text yet.",
+      "finds": ["Notes/Decisions log"],
+      "noWrites": true,
+      "comments": {
+        "path": "Design/Retrieval design",
+        "added": 2,
+        "addedOn": ["200 ms|budget", "rerank|Lindqvist", "Evaluation|how a change is judged|judge"],
+        "textUnchanged": true
+      }
+    },
+    {
+      "text": "Good. Now fix each place you commented on, and resolve your comments as you go.",
+      "document": {
+        "path": "Design/Retrieval design",
+        "contains": ["150 ms"]
+      },
+      "comments": {
+        "path": "Design/Retrieval design",
+        "noneOpenByModel": true
+      }
+    }
+  ]
+}

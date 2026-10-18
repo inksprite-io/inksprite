@@ -1,6 +1,6 @@
 ---
 title: The Editor
-description: Write and format documents in inksprite's editor, with Markdown as you type, tables, links, find and replace, spelling and grammar, and a plain text editor.
+description: Write and format documents in inksprite's editor, with Markdown as you type, tables, links, pictures, find and replace, spelling and grammar, and a plain text editor.
 ---
 
 import Screenshot from '../../components/Screenshot.astro';
@@ -119,7 +119,33 @@ to the other one: `../Notes/Cast%20list.md`. Click in it to see the
 document's name, and click the name or <kbd>⌘</kbd>-click the link to open the
 document in a tab. If the document isn't there, inksprite says so.
 
-Renaming or moving a document doesn't change the links to it yet.
+Copied into a document in another folder, a link still goes to the same
+document. Renaming or moving a document doesn't change the links to it yet.
+
+## Pictures
+
+Paste a picture, drop one onto the page from your computer, or right-click and
+choose **Insert** › **Picture…**. It goes in where the caret is. On a line of
+its own, it's centred.
+
+<Screenshot name="editor-picture" alt="A map in the document on a place, selected, with its alt text in a field under it" />
+
+Click a picture to select it. The field under it is its alt text: a few words
+on what it shows, which is all the model knows of the picture. Type them and
+press <kbd>Enter</kbd>.
+
+- Double-click a picture, or <kbd>⌘</kbd>-click it (<kbd>Ctrl</kbd>-click on
+  Windows and Linux), to see it over the whole window. Click it there for its
+  own size, and press <kbd>Esc</kbd> to close it.
+- Right-click a picture for **Alt text…**, **View picture** and **Save
+  picture…**.
+- A picture belongs to its document and isn't in the outline. Copied into
+  another document, it's that document's own copy.
+- Delete a picture as you would a word. **Undo** brings it back until you next
+  open the project.
+- A picture from a web address isn't loaded, so that the page you got it from
+  can't see you open the document. It shows as a box naming the site.
+- A Word file or a Google Doc you import keeps its pictures.
 
 ## Find and replace
 
@@ -154,13 +180,14 @@ Right-click in a document for:
 - **Insert link…**, or **Edit link…** and **Remove link** in a link.
 - **Comment…** on selected text, or **Edit comment…** and **Resolve comment**
   in one: see [Comments](/comments/).
-- **Insert**: a **Table**, a **Horizontal rule** or a **Code block**. On an
-  empty line it takes the line's place; otherwise it goes after the paragraph
-  you're in.
+- **Insert**: a **Picture…** from your computer, at the caret; or a **Table**,
+  a **Horizontal rule** or a **Code block**. These take an empty line's place,
+  or go after the paragraph you're in.
 - **Table**, in a table.
 
 On a misspelled word, its corrections come first: see
-[Spelling and grammar](#spelling-and-grammar). The menu key opens the menu at
+[Spelling and grammar](#spelling-and-grammar). On a picture, its own items
+come first: see [Pictures](#pictures). The menu key opens the menu at
 the caret.
 
 The first time you paste from the menu, your browser may ask to let inksprite
@@ -245,11 +272,13 @@ the lines, and **Undo** puts back what you typed, as plain text.
 Find and replace works here too. A document imported from outside that's too
 long for the editor to keep up with comes in as plain text.
 
-## Download or copy a document
+## Export or copy a document
 
 Right-click a document in the outline:
 
-- **Download** saves it as a Markdown file (`.md`).
+- **Export** saves it as a Markdown file (`.md`). A document with pictures
+  comes as a `.zip` of the Markdown file and an `images` folder beside it,
+  which any Markdown app can open.
 - **Duplicate** makes a copy beside it, named with **(2)**, and opens it: try
   something there without touching the original.
 
@@ -280,5 +309,5 @@ Press the same keys or <kbd>Esc</kbd> to come back.
 The editor is the **Write** view, the pen at the top. The tabs show while a
 document is open, and the magnifier at their right end opens find and replace.
 Your keyboard checks your spelling, as it does everywhere else.
-The outline's menu, with **Download** and the rest, is the **⋯** on each
-row.
+To put a picture in, paste it. The outline's menu, with **Export** and the
+rest, is the **⋯** on each row.

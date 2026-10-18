@@ -519,6 +519,41 @@ describe('the library as storage', () => {
     )
   })
 
+  it('keeps a linked document’s base in its folder, out of a backup, gone with the document', async () => {
+    const library = await withProject()
+    await library.storage.documents(STORY)
+    const base = {
+      id: 'ch1',
+      storyId: STORY,
+      docId: 'doc_1',
+      tabId: 't.0',
+      revisionId: 'rev_1',
+      markdown: 'The base of it.',
+      at: 1,
+    }
+
+    await library.storage.writeBase(base)
+
+    expect(JSON.parse(library.outside.read('My Novel/.inksprite/bases/ch1.json'))).toEqual(base)
+    const again = reopened(library)
+    expect(await again.readBase(STORY, 'ch1')).toEqual(base)
+    expect(await again.readBase(STORY, 'ch2')).toBeNull()
+    expect(byIdSorted(await again.documents(STORY))).toEqual(asRead(sample()))
+    expect(JSON.stringify(await again.dump())).not.toContain('The base of it.')
+
+    // It goes to the trash with its document, the document being linked.
+    const ch1 = sample().find(row => row.id === 'ch1')
+    await library.storage.write('documents', [put('documents', { ...ch1, drive: { id: 'doc_1' } })])
+    await library.storage.write('documents', [gone('documents', 'ch1')])
+    expect(await library.storage.readBase(STORY, 'ch1')).toBeNull()
+    expect(library.outside.list()).not.toContainEqual(expect.stringContaining('/bases/'))
+    expect(library.trashed).toContain('My Novel/.inksprite/bases/ch1.json')
+
+    await library.storage.writeBase({ ...base, id: 'ch2' })
+    await library.storage.removeBase(STORY, 'ch2')
+    expect(await library.storage.readBase(STORY, 'ch2')).toBeNull()
+  })
+
   it('keeps no narration in IndexedDB', async () => {
     expect(dexieStorage.audioKept()).toBe(false)
     await dexieStorage.writeAudio(STORY, 'ch1', 'abc', new ArrayBuffer(4))

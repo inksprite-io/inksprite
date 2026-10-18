@@ -1,8 +1,12 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import {
   BUILT_IN_SKILLS,
   DIRECTOR,
+  availableSkills,
   getSkill,
+  onSkillsChanged,
+  setExperimentalSkills,
+  skillIsOn,
   skillLabel,
   skillPrompt,
   ownPrompt,
@@ -15,14 +19,20 @@ import { getBuiltInProfile, ROLEPLAY_PROFILE_ID, CHAT_PROFILE_ID } from '@/ai/pr
 import {
   EXPERIMENTAL_GROUP,
   TOOL_GROUP_LABELS,
+  getEnabledToolDefinitions,
   getToolDefinitions,
   getToolDefinitionsFor,
+  getToolGroups,
   isSkill,
   toolGroupOf,
 } from '@/ai/tools/index.js'
 import { COMMANDS } from '@/ai/commands.js'
 
 describe('the skills registry', () => {
+  beforeEach(() => {
+    setExperimentalSkills(['interpret', 'write'])
+  })
+
   it('has the three that ship, each read from its own SKILL.md', () => {
     expect(BUILT_IN_SKILLS.map(skill => skill.name)).toEqual(['interpret', 'write', 'compact'])
     for (const skill of BUILT_IN_SKILLS) {
@@ -90,6 +100,58 @@ describe('the skills registry', () => {
   it('calls a skill by its name, as a word', () => {
     expect(skillLabel({ name: 'director' })).toBe('Director')
     expect(skillLabel({ name: 'house-style' })).toBe('House style')
+  })
+})
+
+describe('the experimental switches', () => {
+  beforeEach(() => {
+    setExperimentalSkills([])
+  })
+
+  it('start off', async () => {
+    vi.resetModules()
+    const fresh = await import('@/ai/skills/index.js')
+
+    expect(fresh.skillIsOn('interpret')).toBe(false)
+    expect(fresh.skillIsOn('write')).toBe(false)
+    expect(fresh.skillIsOn('compact')).toBe(true)
+  })
+
+  it('leave Interpret and Write out of what can be used while they are off', () => {
+    expect(availableSkills().map(skill => skill.name)).toEqual(['compact'])
+    // Still found by name, for the records they left in chats.
+    expect(getSkill('interpret')?.builtIn).toBe(true)
+    expect(getSkill('write')?.builtIn).toBe(true)
+  })
+
+  it('take their tools away while they are off, wherever a tool is asked for', () => {
+    const offered = getEnabledToolDefinitions({}).map(d => d.function.name)
+
+    expect(offered).not.toContain('interpret')
+    expect(offered).not.toContain('write')
+    expect(getToolDefinitions().map(d => d.function.name)).not.toContain('write')
+    expect(getToolDefinitionsFor(['interpret', 'roll_dice'], 0).map(d => d.function.name)).toEqual([
+      'roll_dice',
+    ])
+    expect(getToolGroups().map(group => group.id)).not.toContain(EXPERIMENTAL_GROUP)
+  })
+
+  it('bring back only the one switched on, and say so once', () => {
+    const told = vi.fn()
+    const stop = onSkillsChanged(told)
+
+    setExperimentalSkills(['interpret'])
+    setExperimentalSkills(['interpret'])
+    stop()
+
+    expect(told).toHaveBeenCalledTimes(1)
+    expect(skillIsOn('interpret')).toBe(true)
+    expect(skillIsOn('write')).toBe(false)
+    expect(availableSkills().map(skill => skill.name)).toEqual(['interpret', 'compact'])
+    expect(toolGroupOf('interpret')).toBe(EXPERIMENTAL_GROUP)
+    const offered = getEnabledToolDefinitions({}).map(d => d.function.name)
+    expect(offered).toContain('interpret')
+    expect(offered).not.toContain('write')
   })
 })
 

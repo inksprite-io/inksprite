@@ -12,7 +12,6 @@
         aria-label="Theme"
         class="w-full dark:!bg-surface-900"
         size="small"
-        @change="handleThemeChange"
       />
     </div>
 
@@ -175,7 +174,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch, onMounted } from 'vue'
+import { computed, ref } from 'vue'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import DataSection from './DataSection.vue'
@@ -184,7 +183,6 @@ import Button from 'primevue/button'
 import DictionaryDialog from './DictionaryDialog.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useProfiles } from '@/composables/useProfiles'
-import { applyTheme } from '@/composables/useSystemSettings.js'
 import { useMessagesStore } from '@/stores/messagesStore'
 import { DIALECTS } from '@/spelling/dialects.js'
 import { hasTouchKeyboard } from '@/utils/touch.js'
@@ -223,35 +221,6 @@ const themeOptions = [
   { label: 'System', value: 'system' },
 ]
 
-const selectedTheme = ref(theme.value || 'system')
-
-watch(
-  selectedTheme,
-  newTheme => {
-    setTheme(newTheme)
-    applyTheme(newTheme)
-  },
-  { immediate: false }
-)
-
-watch(theme, newValue => {
-  selectedTheme.value = newValue
-})
-
-const handleThemeChange = event => {
-  const newTheme = event.value || selectedTheme.value
-  setTheme(newTheme)
-  applyTheme(newTheme)
-}
-
-onMounted(() => {
-  applyTheme(theme.value)
-
-  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-  mediaQuery.addEventListener('change', () => {
-    if (theme.value === 'system') {
-      applyTheme('system')
-    }
-  })
-})
+// Choosing one is enough: useTheme, in App.vue, puts the page in it.
+const selectedTheme = computed({ get: () => theme.value, set: setTheme })
 </script>

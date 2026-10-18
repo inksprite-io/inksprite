@@ -17,7 +17,7 @@ const Dialog = {
   template: '<div v-if="visible" data-stub-dialog><slot /><slot name="footer" /></div>',
 }
 
-const IMPORTED = { documents: 1, folders: 0, cards: 0, scans: 0, images: 2, skipped: [] }
+const IMPORTED = { documents: 1, folders: 0, cards: 0, scans: 0, skipped: [] }
 
 /** A promise and the means to settle it, for a step the test holds open. */
 function held() {
@@ -78,7 +78,7 @@ describe('DriveImportDialog', () => {
     expect(toast.add).toHaveBeenCalledWith(
       expect.objectContaining({
         severity: 'success',
-        detail: 'Imported 1 document. 2 images left out.',
+        detail: 'Imported 1 document.',
       })
     )
     expect(shown(wrapper).exists()).toBe(false)

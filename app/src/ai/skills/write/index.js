@@ -19,7 +19,8 @@
  * exactly the prompt this one exists to get away from. So a turn hands its
  * reply to Write outright (handOverReply in composables/useAIChat.js).
  * Whether a chat that does reads well is the harness's to say, and until it
- * has, the model is offered Write only in a chat that switches the
+ * has, it is there only while the writer has it switched on, and the model is
+ * offered it only in a chat that switches the
  * experimental group on. The writer reaches it themselves as `/write`, and
  * what it writes is the reply. See ai/commands.js.
  *

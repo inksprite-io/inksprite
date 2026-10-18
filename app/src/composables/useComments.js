@@ -1,10 +1,17 @@
 /**
  * @module composables/useComments
- * @description The writer's comments in a project, for the list in the
- * sidebar: each document that holds any, in outline order, with its comments
- * as they stand — the editor's, for a document open in it, so the list keeps
- * up with typing — and the two things the list does with one: go to it, and
- * resolve it.
+ * @description The comments in a project, for the list in the sidebar and
+ * the comment under the line: each document that has any, in outline order,
+ * with its open comments where its text has them — the editor's, for a
+ * document open in it, so the list keeps up with typing — its stale ones,
+ * whose passages were deleted, and its resolved ones; and what the writer
+ * does with one: go to it, write it, answer it, change what they said,
+ * resolve it, open it again, and delete it or one of its replies. On the
+ * desktop a new comment is written in the list too, on a passage the editor
+ * holds for it (`commentDraft`), in its place among its document's comments.
+ *
+ * A comment is a marker in the text and a thread on the document's row (see
+ * `editor/comments.js`). A thread is placed while its marker is in the text.
  *
  * Going to a comment makes it the current one, which is app-wide so that the
  * list and the editor agree on it: the editor scrolls to it and marks it, and
@@ -19,12 +26,21 @@ import {
   commentRanges,
   commentsInDoc,
   commentsInMarkdown,
-  findComments,
+  newCommentId,
+  newPost,
+  newThread,
+  placeThread,
+  plainPassage,
+  threadState,
+  withoutComment,
 } from '@/editor/comments.js'
+import { replaceChanged } from '@/editor/state.js'
+import { draftRange, withDraft } from '@/editor/commentDraft.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { isRepository } from '@/source/tree.js'
 
 /** @typedef {import('@/editor/comments.js').CommentEntry} CommentEntry */
+/** @typedef {import('@/types/models.js').CommentThread} CommentThread */
 /** @typedef {import('prosemirror-model').Node} Node */
 
 /**
@@ -82,6 +98,61 @@ export const leaveComment = documentId => {
 }
 
 /**
+ * A new comment being written in the Comments tab, on a passage of a
+ * document open in the editor: which document, and the words, for the list
+ * to show. Where the passage is stays in the editor's state, which follows
+ * the text (see `editor/commentDraft.js`). One at a time, app-wide.
+ *
+ * @typedef {{documentId: string, passage: string}} CommentDraft
+ */
+
+/** @type {import('vue').Ref<CommentDraft|null>} */
+const draft = ref(null)
+
+/** The new comment being written, for the list and the editor to read. */
+export const commentDraft = readonly(draft)
+
+/**
+ * Begin a new comment on a passage, to be written in the list. The editor
+ * has put the range in its state.
+ *
+ * @param {string} documentId
+ * @param {string} passage - The words, as they read
+ */
+export const startDraft = (documentId, passage) => {
+  draft.value = { documentId, passage }
+}
+
+/**
+ * Forget the new comment, as the editor does once its passage is gone. The
+ * range in the editor's state goes with it there.
+ */
+export const dropDraft = () => {
+  draft.value = null
+}
+
+/**
+ * Asked to answer a comment, from the text: counted, so that the list gives
+ * the current comment's reply field the focus each time it is asked.
+ */
+const replyAsked = ref(0)
+
+/** How many times a reply has been asked for: the list watches it. */
+export const replyRequest = readonly(replyAsked)
+
+/**
+ * Answer a comment in the list: it is made current, and its reply field asked
+ * to take the focus.
+ *
+ * @param {string} documentId
+ * @param {string} id
+ */
+export const askReply = (documentId, id) => {
+  goToComment(documentId, id)
+  replyAsked.value++
+}
+
+/**
  * A document's comments, worked out once for each version of it: an editor
  * document is immutable, and markdown is kept beside what it was read from.
  * Most keystrokes change one document, and the list asks after them all.
@@ -111,12 +182,27 @@ const ofText = (documentId, content) => {
 }
 
 /**
- * One document's comments, for the list.
+ * A comment as the list shows it: its passage, its thread, and how it stands.
+ *
+ * @typedef {Object} ListedComment
+ * @property {string} id
+ * @property {string} passage - As it reads now, or as it last read
+ * @property {CommentThread} thread
+ * @property {'open'|'stale'|'resolved'} state
+ */
+
+/**
+ * One document's comments, for the list: those on its text in the order the
+ * text has them, then the stale ones, then the resolved ones.
  *
  * @typedef {Object} CommentGroup
  * @property {string} documentId
  * @property {string} path
- * @property {CommentEntry[]} comments
+ * @property {ListedComment[]} comments - The open ones, on the text
+ * @property {ListedComment[]} stale - Open, with their passages gone
+ * @property {ListedComment[]} resolved
+ * @property {number|null} draftAt - Where among `comments` a new comment being
+ *   written on this document goes, by where its passage is; null for none
  */
 
 /**
@@ -141,13 +227,13 @@ export function useComments(storyId) {
   })
 
   /**
-   * A document's comments as it stands: the editor's state, or the text the
-   * editor holds for a plain one, or the store's.
+   * Where a document's comments are in its text as it stands: the editor's
+   * state, or the text the editor holds for a plain one, or the store's.
    *
    * @param {string} documentId
    * @returns {CommentEntry[]}
    */
-  const commentsOf = documentId => {
+  const placesOf = documentId => {
     const state = editor.stateOf(documentId)
     if (state) return ofDoc(state.doc)
     const content = editor.holds(documentId)
@@ -156,66 +242,301 @@ export function useComments(storyId) {
     return ofText(documentId, content)
   }
 
+  /**
+   * A document's comments, by how they stand. A marker with no thread is
+   * not a comment: pasted from elsewhere, or typed.
+   *
+   * @param {string} documentId
+   * @returns {CommentGroup|null} Null for a document with none
+   */
+  const groupOf = documentId => {
+    const drafting = draft.value?.documentId === documentId
+    const threads = api.threadsOf(documentId) || (drafting ? {} : null)
+    if (!threads) return null
+    const placed = placesOf(documentId).filter(entry => threads[entry.id])
+    const on = new Set(placed.map(entry => entry.id))
+    /** @type {CommentGroup} */
+    const group = {
+      documentId,
+      path: api.pathOf(documentId),
+      comments: placed.map(entry => ({
+        id: entry.id,
+        passage: entry.passage,
+        thread: threads[entry.id],
+        state: 'open',
+      })),
+      stale: [],
+      resolved: [],
+      draftAt: drafting ? draftPlace(documentId, placed) : null,
+    }
+    for (const [id, thread] of Object.entries(threads)) {
+      if (on.has(id)) continue
+      const state = threadState(thread, false)
+      const listed = { id, passage: plainPassage(thread.quote), thread, state }
+      if (state === 'stale') group.stale.push(listed)
+      else if (state === 'resolved') group.resolved.push(listed)
+    }
+    return group
+  }
+
+  /**
+   * Where a new comment goes among a document's open comments, in the order
+   * of the text: after those whose passages start before its passage does.
+   *
+   * @param {string} documentId
+   * @param {CommentEntry[]} placed - The open comments, in the text's order
+   * @returns {number}
+   */
+  const draftPlace = (documentId, placed) => {
+    const state = editor.stateOf(documentId)
+    const range = state ? draftRange(state) : null
+    if (!state || !range) return 0
+    const before = new Set(
+      commentRanges(state.doc)
+        .filter(run => run.from < range.from)
+        .map(run => run.id)
+    )
+    return placed.filter(entry => before.has(entry.id)).length
+  }
+
   /** @type {import('vue').ComputedRef<CommentGroup[]>} */
   const groups = computed(() =>
     textIds.value.flatMap(documentId => {
-      const comments = commentsOf(documentId)
-      return comments.length ? [{ documentId, path: api.pathOf(documentId), comments }] : []
+      const group = groupOf(documentId)
+      return group ? [group] : []
     })
   )
 
   /**
-   * Take a comment off and leave its passage.
+   * Change a document open in the editor from here. Changing a preview's text
+   * is keeping it, as writing in it is.
    *
-   * In a document open in the editor this is a change to its state, which
-   * leaves the caret and the scroll where they are and is undone in the
-   * editor as well. Elsewhere it is the markup taken out of the text.
+   * @param {string} documentId
+   * @param {import('prosemirror-state').Transaction} tr
+   */
+  const change = (documentId, tr) => {
+    editor.dispatch(documentId, tr)
+    api.keep(documentId)
+  }
+
+  /**
+   * Make the new comment: its thread, with what was said, and its marker on
+   * the passage where the editor has it now. Outside the undo history, as a
+   * comment made under the line was: undone, it would leave its thread with
+   * nothing to be on. The comment is current once made.
+   *
+   * @param {string} text
+   * @returns {string|null} Its id; null when there was nothing to make it on
+   */
+  const addDraft = text => {
+    const held = draft.value
+    const state = held ? editor.stateOf(held.documentId) : null
+    const range = state ? draftRange(state) : null
+    draft.value = null
+    if (!held || !state || !range || !text.trim()) return null
+    const id = newCommentId()
+    begin(held.documentId, id, text, state.doc.textBetween(range.from, range.to))
+    const type = state.schema.marks.comment
+    const tr = withDraft(state.tr.addMark(range.from, range.to, type.create({ id })), null)
+    change(held.documentId, tr.setMeta('addToHistory', false))
+    goToComment(held.documentId, id)
+    return id
+  }
+
+  /** Drop the new comment, and its passage's tint in the editor. */
+  const cancelDraft = () => {
+    const held = draft.value
+    draft.value = null
+    const state = held ? editor.stateOf(held.documentId) : null
+    if (state && draftRange(state)) editor.dispatch(held.documentId, withDraft(state.tr, null))
+  }
+
+  /**
+   * A comment's thread, as the row has it.
+   *
+   * @param {string} documentId
+   * @param {string} id
+   * @returns {CommentThread|null}
+   */
+  const threadOf = (documentId, id) => api.threadsOf(documentId)?.[id] || null
+
+  /**
+   * Put one thread in place of the one there, or take it away.
+   *
+   * @param {string} documentId
+   * @param {string} id
+   * @param {CommentThread|null} thread
+   */
+  const putThread = (documentId, id, thread) => {
+    const threads = { ...api.threadsOf(documentId) }
+    if (thread) threads[id] = thread
+    else delete threads[id]
+    api.setThreads(documentId, threads)
+  }
+
+  /**
+   * The thread for a comment the writer has just made on a passage, whose
+   * marker the editor puts on the text.
+   *
+   * @param {string} documentId
+   * @param {string} id
+   * @param {string} text - What they said
+   * @param {string} quote - The passage
+   */
+  const begin = (documentId, id, text, quote) =>
+    putThread(documentId, id, newThread(newPost('writer', text), quote))
+
+  /**
+   * The writer's answer, after what has been said.
+   *
+   * @param {string} documentId
+   * @param {string} id
+   * @param {string} text
+   */
+  const reply = (documentId, id, text) => {
+    const thread = threadOf(documentId, id)
+    if (!thread || !text.trim()) return
+    putThread(documentId, id, { ...thread, posts: [...thread.posts, newPost('writer', text)] })
+  }
+
+  /**
+   * Change what the writer said in one of their posts, any of them: the
+   * model reads what it says now, and a rewind of a reply that came after it
+   * leaves the thread as the writer has it.
+   *
+   * @param {string} documentId
+   * @param {string} id
+   * @param {number} index - Which post
+   * @param {string} text
+   */
+  const editPost = (documentId, id, index, text) => {
+    const thread = threadOf(documentId, id)
+    const post = thread?.posts[index]
+    if (!thread || post?.author !== 'writer' || !text.trim()) return
+    const edited = { ...newPost('writer', text), created: post.created, edited: Date.now() }
+    const posts = thread.posts.map((each, at) => (at === index ? edited : each))
+    putThread(documentId, id, { ...thread, posts })
+  }
+
+  /**
+   * Resolve a comment: its marker off the text, its passage left, its thread
+   * kept, resolved. In a document open in the editor the marker comes off in
+   * a change to its state, which leaves the caret and the scroll where they
+   * are, and undoing it there opens the comment again.
    *
    * @param {string} documentId
    * @param {string} id
    */
   const resolve = (documentId, id) => {
-    const resolved = editor.stateOf(documentId)
-      ? resolveInEditor(documentId, id)
-      : resolveInText(documentId, id)
-    if (resolved) leaveComment(documentId)
+    const thread = threadOf(documentId, id)
+    if (!thread) return
+    // The thread first, so the text's save finds it resolved and leaves it.
+    putThread(documentId, id, { ...thread, status: 'resolved' })
+    if (editor.stateOf(documentId)) offInEditor(documentId, id)
+    else {
+      const before = api.currentContent(documentId)
+      const after = withoutComment(before, id)
+      if (after !== before) api.setContent(documentId, after)
+    }
+    leaveComment(documentId)
   }
 
   /**
    * @param {string} documentId
    * @param {string} id
-   * @returns {boolean} Whether the comment was there
+   * @param {boolean} [undoable] - Whether undoing in the editor puts it back
    */
-  const resolveInEditor = (documentId, id) => {
+  const offInEditor = (documentId, id, undoable = true) => {
     const state = /** @type {import('prosemirror-state').EditorState} */ (
       editor.stateOf(documentId)
     )
-    const type = state.schema.marks.comment
+    // This comment's mark alone: another comment on the same words stays.
+    const mark = state.schema.marks.comment.create({ id })
     const ranges = commentRanges(state.doc).filter(range => range.id === id)
-    if (ranges.length === 0) return false
-
+    if (ranges.length === 0) return
     const tr = state.tr
-    for (const range of ranges) tr.removeMark(range.from, range.to, type)
-    editor.dispatch(documentId, tr)
+    for (const range of ranges) tr.removeMark(range.from, range.to, mark)
+    change(documentId, undoable ? tr : tr.setMeta('addToHistory', false))
+  }
+
+  /**
+   * Open a resolved comment again, on its passage: where its words are once,
+   * or once among repeats by the words that were around them.
+   *
+   * @param {string} documentId
+   * @param {string} id
+   * @returns {boolean} Whether it found its passage; it stays resolved otherwise
+   */
+  const reopen = (documentId, id) => {
+    const thread = threadOf(documentId, id)
+    if (!thread) return false
+    const placed = placeThread(api.currentContent(documentId), id, thread)
+    if (placed === null) return false
+    putThread(documentId, id, { ...thread, status: 'open' })
+    const state = editor.stateOf(documentId)
+    if (state) {
+      // Outside the undo history, as a new comment's marker is: undone, the
+      // thread would be left open with nothing to be on.
+      const tr = replaceChanged(state, placed)
+      if (tr) change(documentId, tr.setMeta('addToHistory', false))
+    } else api.setContent(documentId, placed)
     return true
   }
 
   /**
+   * Delete a comment for good, thread and marker: open, stale or resolved.
+   * In a document open in the editor the marker comes off outside the undo
+   * history, since undone it would come back with no thread to show.
+   *
    * @param {string} documentId
    * @param {string} id
-   * @returns {boolean} Whether the comment was there
    */
-  const resolveInText = (documentId, id) => {
-    const before = api.currentContent(documentId)
-    let after = before
-    for (const found of findComments(before)) {
-      if (found.id === id) after = after.replace(found.markup, () => found.text)
+  const remove = (documentId, id) => {
+    if (!threadOf(documentId, id)) return
+    putThread(documentId, id, null)
+    if (editor.stateOf(documentId)) offInEditor(documentId, id, false)
+    else {
+      const before = api.currentContent(documentId)
+      const after = withoutComment(before, id)
+      if (after !== before) api.setContent(documentId, after)
     }
-    if (after === before) return false
-
-    api.setContent(documentId, after)
-    return true
+    leaveComment(documentId)
   }
 
-  return { groups, current: currentComment, goTo: goToComment, resolve }
+  /**
+   * Delete one post: the first is the comment, and deletes it whole; any
+   * other is a reply, and goes alone.
+   *
+   * @param {string} documentId
+   * @param {string} id
+   * @param {number} index
+   */
+  const deletePost = (documentId, id, index) => {
+    const thread = threadOf(documentId, id)
+    if (!thread || !thread.posts[index]) return
+    if (index === 0) {
+      remove(documentId, id)
+      return
+    }
+    putThread(documentId, id, { ...thread, posts: thread.posts.filter((_, at) => at !== index) })
+  }
+
+  return {
+    groups,
+    current: currentComment,
+    goTo: goToComment,
+    leave: leaveComment,
+    threadOf,
+    begin,
+    reply,
+    editPost,
+    resolve,
+    reopen,
+    remove,
+    deletePost,
+    draft: commentDraft,
+    addDraft,
+    cancelDraft,
+    replyRequest,
+  }
 }

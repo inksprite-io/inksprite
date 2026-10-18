@@ -29,6 +29,7 @@ vi.mock('@/ai/tools/index.js', () => ({
   // The group's switch stands for the document tools; tools/groups.test.js
   // has the rest of what turns them off.
   offersDocuments: selection => !(selection?.disabledGroups || []).includes('documents'),
+  offersComments: selection => !(selection?.disabledGroups || []).includes('documents'),
 }))
 
 const { useAIContext } = await import('@/composables/useAIContext')

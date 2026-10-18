@@ -430,11 +430,11 @@ describe('DocumentNode', () => {
     expect(title.attributes('title')).toBeUndefined()
   })
 
-  it('downloads a text document as markdown, as it stands', async () => {
+  it('exports a text document with no pictures as markdown, as it stands', async () => {
     const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1', 'She *ran*.')
     const items = mountNode(chapter.id).findComponent({ name: 'ContextMenu' }).props('model')
 
-    items.find(item => item.label === 'Download').command()
+    await items.find(item => item.label === 'Export').command()
 
     const [blob, filename] = downloadBlob.mock.calls.at(-1)
     expect(filename).toBe('Chapter 1.md')

@@ -14,7 +14,7 @@
 <script setup>
 import { ref, shallowRef } from 'vue'
 import ContextMenu from 'primevue/contextmenu'
-import { TextSelection } from 'prosemirror-state'
+import { NodeSelection, TextSelection } from 'prosemirror-state'
 import { cellAround, deleteColumn, deleteRow, deleteTable } from 'prosemirror-tables'
 import { alignColumn, alignmentAt, insertColumn, insertRow } from '@/editor/tables.js'
 import { insertCodeBlock, insertRule, insertTable } from '@/editor/insert.js'
@@ -29,10 +29,11 @@ import { useToast } from '@/composables/useToast'
 
 /**
  * The editor's right-click menu: on a flagged word, the spelling checker's
- * suggestions and dictionaries first; then the clipboard, with Markdown both
- * ways and a paste without formatting; links and comments; a table, a rule
- * or a code block to insert; and in a table, the table's own items, the only
- * way to add a row or a column.
+ * suggestions and dictionaries first, and on a picture its alt text, a look
+ * at its own size and a copy saved; then the clipboard, with Markdown both
+ * ways and a paste without formatting; links and comments; a picture, a
+ * table, a rule or a code block to insert; and in a table, the table's own
+ * items, the only way to add a row or a column.
  *
  * Shift with the right button opens the browser's own menu instead, and a
  * touch screen's long press is left to the phone, where it selects. The menu
@@ -51,7 +52,9 @@ import { useToast } from '@/composables/useToast'
  * `add-word`, `add-to-project`: a word for the writer's dictionary or the
  * project's. `ignore`: a grammar lint's hash. `link`: the link field for the
  * selection; `remove-link`. `comment`: the comment field for the selection;
- * `edit-comment` and `resolve-comment`: a comment's id.
+ * `reply-comment` and `resolve-comment`: a comment's id. `insert-picture`:
+ * pictures to choose from the disk; `paste-pictures`: the clipboard's.
+ * `picture-alt`, `view-picture` and `save-picture`: for the picture selected.
  */
 const emit = defineEmits([
   'add-word',
@@ -60,8 +63,13 @@ const emit = defineEmits([
   'link',
   'remove-link',
   'comment',
-  'edit-comment',
+  'reply-comment',
   'resolve-comment',
+  'insert-picture',
+  'paste-pictures',
+  'picture-alt',
+  'view-picture',
+  'save-picture',
 ])
 
 /** How many spelling suggestions are offered. */
@@ -146,6 +154,24 @@ function spellingItems(view, pos) {
 }
 
 /**
+ * What the menu offers on a picture, when it was opened on one.
+ *
+ * @param {EditorView} view
+ * @param {boolean} onPicture
+ * @returns {MenuItem[]}
+ */
+function pictureItems(view, onPicture) {
+  if (!onPicture) return []
+  /** @param {'picture-alt'|'view-picture'|'save-picture'} event */
+  const asks = event => then(view, () => emit(event))
+  return [
+    { label: 'Alt text\u2026', command: () => emit('picture-alt') },
+    { label: 'View picture', command: asks('view-picture') },
+    { label: 'Save picture\u2026', command: asks('save-picture') },
+  ]
+}
+
+/**
  * Cut, copy and paste, and Markdown both ways.
  *
  * @param {EditorView} view
@@ -186,8 +212,10 @@ function clipboardItems(view) {
     {
       label: 'Paste',
       shortcut: keyLabel('Mod-v'),
-      command: reading(({ html, text }) => {
-        if (html) view.pasteHTML(html)
+      // A picture copied alone has no words with it.
+      command: reading(({ html, text, pictures }) => {
+        if (pictures.length > 0 && !text.trim()) emit('paste-pictures', pictures)
+        else if (html) view.pasteHTML(html)
         else view.pasteText(text)
       }),
     },
@@ -234,9 +262,9 @@ function markItems(view) {
     ...(comment
       ? [
           {
-            label: 'Edit comment\u2026',
+            label: 'Reply to comment\u2026',
             shortcut: keyLabel('Mod-Shift-m'),
-            command: asks('edit-comment', comment.id),
+            command: asks('reply-comment', comment.id),
           },
           { label: 'Resolve comment', command: asks('resolve-comment', comment.id) },
         ]
@@ -279,6 +307,11 @@ function blockItems(view) {
     {
       label: 'Insert',
       items: [
+        {
+          label: 'Picture\u2026',
+          disabled: !!view.state.selection.$from.parent.type.spec.code,
+          command: () => emit('insert-picture'),
+        },
         commandItem(view, 'Table', insertTable),
         commandItem(view, 'Horizontal rule', insertRule),
         commandItem(view, 'Code block', insertCodeBlock),
@@ -346,7 +379,14 @@ const open = (view, event) => {
 
   const at = pointer ? view.posAtCoords({ left: event.clientX, top: event.clientY }) : null
   if (pointer && !at) return false
-  if (at) {
+  // On a picture, the menu is for it, selected.
+  const picture =
+    at && at.inside >= 0 && view.state.doc.nodeAt(at.inside)?.type.name === 'image'
+      ? at.inside
+      : null
+  if (picture !== null) {
+    view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, picture)))
+  } else if (at) {
     const { selection } = view.state
     const inside = selection.ranges.some(
       ({ $from, $to }) => $from.pos <= at.pos && at.pos <= $to.pos
@@ -355,8 +395,11 @@ const open = (view, event) => {
       view.dispatch(view.state.tr.setSelection(TextSelection.near(view.state.doc.resolve(at.pos))))
     }
   }
+  const onPicture =
+    view.state.selection instanceof NodeSelection && view.state.selection.node.type.name === 'image'
 
   const sections = [
+    pictureItems(view, onPicture),
     spellingItems(view, at ? at.pos : view.state.selection.head),
     clipboardItems(view),
     markItems(view),

@@ -6,13 +6,15 @@
  * paragraphs, lists, tables, emphasis and links. That HTML is then read as
  * any page is for reading (`markdownOfHtml`), so the editor's schema decides
  * what comes through, and what it has no place for, such as underline or a
- * font, is left out as it would be from a paste. Pictures are counted and
- * left out, as a Google Doc's are: documents cannot hold them yet.
+ * font, is left out as it would be from a paste. Each picture is taken out
+ * as it is read, its bytes kept and a marker left where it was, as a Google
+ * Doc's are (`files/pictures.js`), to be made the document's own.
  *
  * mammoth is loaded with the first Word file, not with the app.
  */
 
 import { markdownOfHtml } from './html.js'
+import { markerFor } from './pictures.js'
 
 /** A Word file's media type. */
 export const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -35,18 +37,25 @@ export const isDocx = file => file.type === DOCX_MIME || DOCX.test(file.name)
 const BACK_LINK = /\s*<a href="#(?:foot|end)note-ref-[^"]*">↑<\/a>/g
 
 /**
- * A Word file's text as markdown, and how many pictures were left out of it.
+ * A Word file's text as markdown, and the pictures taken out of it.
  *
  * @param {ArrayBuffer} data - The file's bytes
- * @returns {Promise<{markdown: string, images: number}>}
+ * @returns {Promise<{markdown: string, pictures: import('./pictures.js').TakenPicture[]}>}
  * @throws {Error} When it cannot be read as a Word file
  */
 export async function docxToMarkdown(data) {
   const { default: mammoth } = await import('mammoth')
-  let images = 0
-  const counted = mammoth.images.imgElement(async () => {
-    images++
-    return { src: '' }
+  /** @type {import('./pictures.js').TakenPicture[]} */
+  const pictures = []
+  const counted = mammoth.images.imgElement(async image => {
+    const marker = markerFor(pictures.length + 1)
+    const read = /** @type {ArrayBuffer|Uint8Array} */ (await image.read())
+    pictures.push({
+      marker,
+      mime: image.contentType || 'application/octet-stream',
+      bytes: new Uint8Array(read),
+    })
+    return { src: marker }
   })
   let converted
   try {
@@ -57,5 +66,7 @@ export async function docxToMarkdown(data) {
   } catch {
     throw new Error('Couldn’t read the Word file')
   }
-  return { markdown: markdownOfHtml(converted.value.replace(BACK_LINK, '')), images }
+  const markdown = markdownOfHtml(converted.value.replace(BACK_LINK, ''), { pictures: true })
+  // A picture the reading left out, in a place markdown has none, is no picture.
+  return { markdown, pictures: pictures.filter(({ marker }) => markdown.includes(`](${marker})`)) }
 }

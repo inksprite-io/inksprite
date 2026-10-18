@@ -48,6 +48,36 @@ keeps its data apart from the installed app's. To bring projects over, export
 a backup in the browser and restore it in the window (Settings → System). MCP
 sign-ins do not come with a backup; sign in again in the window.
 
+## Dev's build as the installed app
+
+To run dev as the installed app, on the installed app's data, build it in
+the container:
+
+```sh
+app/electron/build-for-mac.sh
+```
+
+Then, on the Mac:
+
+```sh
+app/electron/install-on-mac.sh
+```
+
+The first builds the app for Apple silicon (`x64` for an Intel Mac) into
+`dist/for-mac`, unsigned, since a Mac app is signed only on a Mac. The second
+signs it with the Developer ID in the Mac's keychain, quits inksprite, puts it
+in place of `/Applications/inksprite.app`, and opens it again. It is not
+notarized: macOS asks that only of an app downloaded from the internet.
+
+Its version is the newest release in `CHANGELOG.md` with the commit count
+after it, `0.1.0-dev.18.1759`, so the updater never offers it an older
+release, and takes the next one from GitHub. Don't install an older release by
+hand after a build of dev: it may not open a database dev has moved on.
+
+The first time, macOS asks to let `codesign` use the key (Always Allow) and
+the terminal control inksprite, and may keep the terminal from replacing the
+app until it is allowed under Privacy & Security › App Management.
+
 ## The library
 
 The projects are kept in a folder, a folder of markdown files each (the

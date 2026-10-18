@@ -107,28 +107,50 @@
         </button>
       </section>
 
-      <section class="flex flex-col gap-2" data-list="built-in">
-        <h3 class="text-sm font-semibold text-surface-800 dark:text-surface-100">Built-in</h3>
-        <button
-          v-for="skill in builtIn"
+      <!-- The built-ins, and under them the ones still being tuned, each with
+           the switch that decides whether it is there at all. -->
+      <section
+        v-for="group in shipped"
+        :key="group.id"
+        class="flex flex-col gap-2"
+        :data-list="group.id"
+      >
+        <h3 class="text-sm font-semibold text-surface-800 dark:text-surface-100">
+          {{ group.heading }}
+        </h3>
+        <div
+          v-for="skill in group.skills"
           :key="skill.name"
-          type="button"
-          class="flex flex-col gap-0.5 rounded-lg px-3 py-2 text-left bg-surface-50 dark:bg-surface-900/40 hover:bg-surface-100 dark:hover:bg-surface-800"
-          :data-skill="skill.name"
-          @click="openBuiltIn(skill.name)"
+          class="flex items-center gap-2 rounded-lg bg-surface-50 dark:bg-surface-900/40 hover:bg-surface-100 dark:hover:bg-surface-800"
         >
-          <span class="flex items-center gap-2 min-w-0">
-            <span class="text-sm font-medium truncate">{{ skill.label }}</span>
-            <span v-if="skill.command" class="text-xs font-mono text-surface-500">
-              {{ skill.command }}
+          <button
+            type="button"
+            class="flex flex-1 min-w-0 flex-col gap-0.5 px-3 py-2 text-left"
+            :class="{ 'opacity-60': skill.off }"
+            :data-skill="skill.name"
+            @click="openBuiltIn(skill.name)"
+          >
+            <span class="flex items-center gap-2 min-w-0">
+              <span class="text-sm font-medium truncate">{{ skill.label }}</span>
+              <span v-if="skill.command" class="text-xs font-mono text-surface-500">
+                {{ skill.command }}
+              </span>
+              <span v-if="skill.reworded" class="text-xs text-surface-400" data-reworded>
+                reworded
+              </span>
             </span>
-            <span v-if="skill.reworded" class="text-xs text-surface-400" data-reworded>
-              reworded
-            </span>
-          </span>
-          <span class="text-xs text-surface-500 dark:text-surface-400">{{ skill.kind }}</span>
-          <span class="text-xs text-surface-600 dark:text-surface-300">{{ skill.summary }}</span>
-        </button>
+            <span class="text-xs text-surface-500 dark:text-surface-400">{{ skill.kind }}</span>
+            <span class="text-xs text-surface-600 dark:text-surface-300">{{ skill.summary }}</span>
+          </button>
+          <ToggleSwitch
+            v-if="skill.experimental"
+            :model-value="!skill.off"
+            class="flex-none mr-3"
+            :aria-label="skill.label"
+            :data-skill-switch="skill.name"
+            @update:model-value="appState.setExperimentalSkill(skill.name, $event)"
+          />
+        </div>
       </section>
     </template>
   </div>
@@ -138,6 +160,7 @@
 import { computed, ref } from 'vue'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
+import ToggleSwitch from 'primevue/toggleswitch'
 import SkillEditor from './SkillEditor.vue'
 import BuiltInSkillEditor from './BuiltInSkillEditor.vue'
 import SkillImportDialog from './SkillImportDialog.vue'
@@ -149,15 +172,21 @@ import { COMMANDS } from '@/ai/commands.js'
 import { downloadBlob } from '@/files/download.js'
 import { useSkills } from '@/composables/useSkills'
 import { useToast } from '@/composables/useToast'
+import { useApplicationState } from '@/composables/useApplicationState'
 
 /**
  * The library: the writer's own skills, to write and change, and the ones that
  * ship with the app, to reword. App-wide, beside Workflows — a skill is not any
  * one project's. See `.llm/skills_design.md`, part 3.
+ *
+ * The built-ins still being tuned are listed under the rest, each with the
+ * switch that decides whether it is there at all. Off, it can still be
+ * reworded.
  */
 
 const skillsApi = useSkills()
 const toast = useToast()
+const appState = useApplicationState()
 
 const importMenu = ref(/** @type {InstanceType<typeof Menu>|null} */ (null))
 const filePicker = ref(/** @type {HTMLInputElement|null} */ (null))
@@ -249,17 +278,28 @@ const yours = computed(() =>
   })
 )
 
-/** The skills that ship with the app, and whether the writer has reworded each. */
-const builtIn = computed(() =>
-  BUILT_IN_SKILLS.map(skill => ({
+/**
+ * The skills that ship with the app, whether the writer has reworded each, and
+ * whether an experimental one is switched off: the built-ins, then the
+ * experimental ones, each by name.
+ */
+const shipped = computed(() => {
+  const on = appState.experimentalSkills.value
+  const listed = BUILT_IN_SKILLS.map(skill => ({
     name: skill.name,
     label: skillLabel(skill),
     command: skill.user && skill.name in COMMANDS ? `/${skill.name}` : '',
     kind: describeCallers(skill),
     summary: skill.summary,
     reworded: skillsApi.wordingOf(skill.name) !== null,
-  }))
-)
+    experimental: Boolean(skill.experimental),
+    off: Boolean(skill.experimental) && !on.includes(skill.name),
+  })).sort((a, b) => a.label.localeCompare(b.label))
+  return [
+    { id: 'built-in', heading: 'Built-in', skills: listed.filter(s => !s.experimental) },
+    { id: 'experimental', heading: 'Experimental', skills: listed.filter(s => s.experimental) },
+  ]
+})
 
 defineExpose({ open })
 </script>

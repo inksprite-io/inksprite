@@ -66,7 +66,6 @@ vi.mock('@/composables/useProfiles', () => ({
     roleplayDefaultId: () => 'builtin_profile_roleplay',
   }),
 }))
-vi.mock('@/composables/useSystemSettings.js', () => ({ applyTheme: vi.fn() }))
 vi.mock('@/stores/messagesStore', () => ({ useMessagesStore: () => ({ forgetSavedRequests }) }))
 
 /** The switch whose root carries this attribute. */
@@ -85,6 +84,24 @@ const mountSection = () =>
       },
     },
   })
+
+describe('SystemSection theme', () => {
+  beforeEach(() => {
+    theme.value = 'system'
+    setTheme.mockClear()
+  })
+
+  it('shows the theme chosen, and keeps the one picked', async () => {
+    theme.value = 'dark'
+    const wrapper = mountSection()
+    const select = wrapper.findComponent('#theme-select')
+    expect(select.props('modelValue')).toBe('dark')
+
+    await select.vm.$emit('update:modelValue', 'light')
+
+    expect(setTheme).toHaveBeenCalledWith('light')
+  })
+})
 
 describe('SystemSection debug', () => {
   beforeEach(() => {

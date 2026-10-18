@@ -54,30 +54,31 @@
             @apply="applyLink"
             @close="closeLink"
           />
+          <PicturePopover
+            v-if="picturePopover"
+            :key="picturePopover.pos"
+            :alt="picturePopover.alt"
+            :left="picturePopover.left"
+            :top="picturePopover.top"
+            :editing="picturePopover.editing"
+            @apply="applyAlt"
+            @edit="picturePopover.editing = true"
+            @view="viewPicture"
+            @close="closePicture"
+          />
           <CommentButton
             v-if="commentButton && !isMobile"
             :left="commentButton.left"
             :top="commentButton.top"
             @comment="commentOn(commentButton.from, commentButton.to)"
           />
-          <CommentPopover
-            v-if="commentPopover && !isMobile"
-            :text="commentPopover.text"
-            :left="commentPopover.left"
-            :top="commentPopover.top"
-            :editing="commentPopover.editing"
-            :existing="!!commentPopover.id"
-            @edit="commentPopover.id && editComment(commentPopover.id)"
-            @resolve="resolveComment"
-            @save="saveComment"
-            @close="closeComment"
-          />
         </div>
       </div>
     </ScrollPanel>
     <!-- On a phone the button, the comment and the field are in a bar at the
-         bottom instead, clear of the menu iOS keeps beside a selection, and
-         lifted over the keyboard where iOS lets it cover the page. -->
+         bottom, clear of the menu iOS keeps beside a selection, and lifted
+         over the keyboard where iOS lets it cover the page. On the desktop a
+         comment is read and written in the Comments tab, beside the text. -->
     <div
       v-if="barShown"
       class="w-full flex-none border-t border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 px-2 py-1"
@@ -88,14 +89,17 @@
         docked
         @comment="commentOn(commentButton.from, commentButton.to)"
       />
-      <CommentPopover
+      <CommentBar
         v-else-if="commentPopover"
-        docked
-        :text="commentPopover.text"
+        :thread="!!commentPopover.id"
+        :passage="popoverPassage"
+        :posts="popoverPosts"
         :editing="commentPopover.editing"
-        :existing="!!commentPopover.id"
-        @edit="commentPopover.id && editComment(commentPopover.id)"
+        @activate="commentPopover.id && pickComment(commentPopover.id)"
         @resolve="resolveComment"
+        @reply="replyToComment"
+        @edit="editPost"
+        @delete="deletePost"
         @save="saveComment"
         @close="closeComment"
       />
@@ -108,8 +112,23 @@
       @link="editLink"
       @remove-link="unlink"
       @comment="commentOnSelection"
-      @edit-comment="editComment"
+      @reply-comment="pickComment"
       @resolve-comment="resolveComment"
+      @insert-picture="pictureInput?.click()"
+      @paste-pictures="pastePictures"
+      @picture-alt="askAlt"
+      @view-picture="viewPicture"
+      @save-picture="savePicture"
+    />
+    <!-- Insert › Picture…: pictures chosen from the disk. -->
+    <input
+      ref="pictureInput"
+      type="file"
+      accept="image/*"
+      multiple
+      class="hidden"
+      data-picture-input
+      @change="insertChosen"
     />
   </div>
 </template>
@@ -117,7 +136,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted, nextTick, computed, ref, watch } from 'vue'
 import { Decoration, DecorationSet, EditorView } from 'prosemirror-view'
-import { Plugin, TextSelection } from 'prosemirror-state'
+import { NodeSelection, Plugin, TextSelection } from 'prosemirror-state'
 import 'prosemirror-view/style/prosemirror.css'
 import 'prosemirror-gapcursor/style/gapcursor.css'
 import ScrollPanel from 'primevue/scrollpanel'
@@ -125,8 +144,9 @@ import ScrollPanel from 'primevue/scrollpanel'
 import FindBar from '@/components/common/FindBar.vue'
 import EditorMenu from './EditorMenu.vue'
 import LinkPopover from './LinkPopover.vue'
+import PicturePopover from './PicturePopover.vue'
 import CommentButton from './CommentButton.vue'
-import CommentPopover from './CommentPopover.vue'
+import CommentBar from './CommentBar.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useKeyboardCover } from '@/composables/useKeyboardCover.js'
 import { useScreenSize } from '@/composables/useScreenSize.js'
@@ -138,17 +158,37 @@ import { isEmptyDocument } from '@/editor/state.js'
 import { isShortcutsKey } from '@/editor/shortcuts.js'
 import { useDocuments } from '@/composables/useDocuments'
 import { useNarration } from '@/composables/useNarration'
-import { cleanComment, commentAround, commentRanges, newCommentId } from '@/editor/comments.js'
 import {
+  commentAround,
+  commentRanges,
+  keepComments,
+  newCommentId,
+  withThreadsOnly,
+} from '@/editor/comments.js'
+import {
+  askReply,
+  commentDraft,
   currentComment,
+  dropDraft,
   goToComment,
   leaveComment,
+  startDraft,
   takeUpComment,
+  useComments,
 } from '@/composables/useComments.js'
+import { draftRange, withDraft } from '@/editor/commentDraft.js'
+import { useSidebarTab } from '@/composables/useSidebarTab.js'
+import { useFocusMode } from '@/composables/useFocusMode.js'
 import { TINT, skippedRanges, speakerRanges } from '@/tts/highlight.js'
-import { linkAround, links, removeLink, setLink } from '@/editor/links.js'
+import { linkAround, links, mapHrefs, removeLink, setLink } from '@/editor/links.js'
+import { insertPictures, pictures } from '@/editor/pictures.js'
+import { downloadBlob } from '@/files/download.js'
+import { useToast } from '@/composables/useToast'
 import { useDocumentLinks } from '@/composables/useDocumentLinks.js'
+import { usePictures } from '@/composables/usePictures.js'
 import { isTextField } from '@/utils/focus.js'
+
+/** @typedef {import('@/types/models.js').CommentThread} CommentThread */
 
 /**
  * @typedef {Object} Props
@@ -173,6 +213,11 @@ const api = useDocuments(props.storyId)
 
 // Links to its other documents, followed and made from this one.
 const documentLinks = useDocumentLinks(props.storyId)
+
+// Its pictures, its own and the project's, drawn, opened and taken in.
+const documentPictures = usePictures(props.storyId)
+
+const toast = useToast()
 
 const currentDocument = computed(() => api.get(props.documentId))
 
@@ -214,15 +259,32 @@ const COMPACT = [
 const scroller = () => scrollPanel.value?.$el?.querySelector?.('.p-scrollpanel-content') ?? null
 
 /**
- * The comment the caret is in, shown under it, or the field for writing one
- * on a passage or changing what was said: `id` is null for a new one, and
- * `from` and `to` are the passage the field is on. A change to the document
- * from elsewhere while the field is open puts it away, since the range may
- * no longer be the passage.
+ * On a phone, the comment the caret is in, shown in the bar as its thread, or
+ * the field for writing a new one on a passage: `id` is null for a new one. `editing` is
+ * the field, or the thread picked to be answered, which then holds the focus.
+ * `from` and `to` are the passage. A change to the document from elsewhere
+ * while it is picked puts it away, since the range may no longer be the
+ * passage.
  *
- * @type {import('vue').Ref<{ id: string|null, text: string, from: number, to: number, left: number, top: number, editing: boolean }|null>}
+ * @type {import('vue').Ref<{ id: string|null, from: number, to: number, left: number, top: number, editing: boolean }|null>}
  */
 const commentPopover = ref(null)
+
+/** What the comments do, on the document's row: see useComments. */
+const comments = useComments(props.storyId)
+
+/** The thread of the comment showing, as the row has it now. */
+const popoverThread = computed(() =>
+  commentPopover.value?.id ? comments.threadOf(props.documentId, commentPopover.value.id) : null
+)
+const popoverPosts = computed(() => popoverThread.value?.posts || [])
+
+/** The words the comment showing is on, as they read. */
+const popoverPassage = computed(() => {
+  const shown = commentPopover.value
+  if (!view || !shown?.id) return ''
+  return view.state.doc.textBetween(shown.from, shown.to, ' ', ' ')
+})
 
 /**
  * The field for a new comment on a run of text: the selection, or the one
@@ -235,49 +297,117 @@ const commentOn = (from, to) => {
   if (!view || from === to) return false
   commentButton.value = null
   linkPopover.value = null
-  commentPopover.value = { id: null, text: '', from, to, editing: true, ...below(view, to, from) }
+  if (isMobile.value) {
+    commentPopover.value = { id: null, from, to, editing: true, ...below(view, to, from) }
+    return true
+  }
+  // On the desktop it is written in the Comments tab, on a passage the text
+  // keeps tinted for it meanwhile. One at a time: one begun elsewhere goes.
+  // The caret after the passage, so what is selected is not offered again.
+  comments.cancelDraft()
+  const tr = view.state.tr.setSelection(TextSelection.create(view.state.doc, to))
+  view.dispatch(withDraft(tr, { from, to }))
+  startDraft(props.documentId, view.state.doc.textBetween(from, to, ' ', ' '))
+  showCommentsTab()
   return true
 }
 
+/** The Comments tab beside the text, out of focus mode, which has no sidebar. */
+const showCommentsTab = () => {
+  if (focusMode.focused.value) focusMode.leave()
+  sidebarTab.show('comments')
+}
+
+const sidebarTab = useSidebarTab()
+const focusMode = useFocusMode()
+
 /**
- * The field for changing a comment already on the text, where the comment
- * was showing or else under the caret.
+ * Pick a comment on the text to answer it: on a phone its thread in the bar,
+ * where it was showing, with the field to reply; on the desktop in the
+ * Comments tab.
  *
  * @param {string} id
  */
-const editComment = id => {
+const pickComment = id => {
   if (!view) return false
   const ranges = commentRanges(view.state.doc).filter(range => range.id === id)
-  if (ranges.length === 0) return false
-  const shown = commentPopover.value
+  if (ranges.length === 0 || !comments.threadOf(props.documentId, id)) return false
+  // On the desktop the thread is answered in the Comments tab.
+  if (!isMobile.value) {
+    askReply(props.documentId, id)
+    showCommentsTab()
+    return true
+  }
+  const shown = commentPopover.value?.id === id ? commentPopover.value : null
   const place = shown
     ? { left: shown.left, top: shown.top }
     : below(view, view.state.selection.head)
   commentPopover.value = {
     id,
-    text: ranges[0].text,
-    from: ranges[0].from,
-    to: ranges[ranges.length - 1].to,
+    from: shown ? shown.from : ranges[0].from,
+    to: shown ? shown.to : ranges[ranges.length - 1].to,
     editing: true,
     ...place,
   }
   return true
 }
 
-/** @param {string} text */
+/**
+ * A new comment on the field's passage. Its marker goes on outside the undo
+ * history: undone, it would leave its thread behind with nothing to be on,
+ * and Resolve or Delete takes it off.
+ *
+ * @param {string} text
+ */
 const saveComment = text => {
   const comment = commentPopover.value
   commentPopover.value = null
-  if (!view || !comment) return
+  if (!view || !comment || comment.id) return
   const type = view.state.schema.marks.comment
-  const id = comment.id || newCommentId()
-  const tr = view.state.tr
-    .removeMark(comment.from, comment.to, type)
-    .addMark(comment.from, comment.to, type.create({ id, text: cleanComment(text) }))
+  const id = newCommentId()
+  comments.begin(props.documentId, id, text, view.state.doc.textBetween(comment.from, comment.to))
+  const tr = view.state.tr.addMark(comment.from, comment.to, type.create({ id }))
   // The caret after the passage, so what is selected is not offered again.
-  tr.setSelection(TextSelection.create(tr.doc, comment.to))
+  tr.setSelection(TextSelection.create(tr.doc, comment.to)).setMeta('addToHistory', false)
   view.dispatch(tr)
   view.focus()
+}
+
+/**
+ * The writer's answer to the comment showing; the thread stays picked.
+ *
+ * @param {string} text
+ */
+const replyToComment = text => {
+  const id = commentPopover.value?.id
+  if (id) comments.reply(props.documentId, id, text)
+}
+
+/**
+ * One of the writer's posts on the comment showing, changed.
+ *
+ * @param {number} index
+ * @param {string} text
+ */
+const editPost = (index, text) => {
+  const id = commentPopover.value?.id
+  if (id) comments.editPost(props.documentId, id, index, text)
+}
+
+/**
+ * A post on the comment showing, deleted: the first deletes the comment, its
+ * marker with it, and the rest just themselves.
+ *
+ * @param {number} index
+ */
+const deletePost = index => {
+  const id = commentPopover.value?.id
+  if (!id) return
+  if (index === 0) {
+    commentPopover.value = null
+    comments.remove(props.documentId, id)
+    view?.focus()
+  } else comments.deletePost(props.documentId, id, index)
 }
 
 /**
@@ -290,13 +420,7 @@ const resolveComment = id => {
   const resolved = typeof id === 'string' ? id : commentPopover.value?.id
   commentPopover.value = null
   if (!view || !resolved) return
-  const type = view.state.schema.marks.comment
-  const tr = view.state.tr
-  for (const range of commentRanges(view.state.doc)) {
-    if (range.id === resolved) tr.removeMark(range.from, range.to, type)
-  }
-  leaveComment(props.documentId)
-  view.dispatch(tr)
+  comments.resolve(props.documentId, resolved)
 }
 
 /** @param {boolean} refocus - Back to the text, as Escape goes */
@@ -312,14 +436,19 @@ const closeComment = refocus => {
 let typing = false
 
 /**
- * Show the comment the caret is in, while the editor has the focus and the
- * writer is not typing; in a link, the link shows there instead. A field
+ * On a phone, show the comment the caret is in, while the editor has the
+ * focus and the writer is not typing; in a link, the link shows there
+ * instead. On the desktop the Comments tab shows it. A field
  * being typed in stays, unless the text changed under it.
  *
  * @param {EditorView} editorView
  * @param {import('prosemirror-state').EditorState} [prevState] - None for the focus coming or going
  */
 const showComment = (editorView, prevState) => {
+  if (!isMobile.value) {
+    commentPopover.value = null
+    return
+  }
   const { state } = editorView
   const changed = !!prevState && state.doc !== prevState.doc
   if (changed) typing = true
@@ -333,6 +462,11 @@ const showComment = (editorView, prevState) => {
     selection.empty && editorView.hasFocus() && !typing && !linkAround(selection.$from)
       ? commentAround(selection.$from)
       : null
+  // A marker with no thread is no comment: there is nothing to show.
+  if (around && !comments.threadOf(props.documentId, around.id)) {
+    commentPopover.value = null
+    return
+  }
   commentPopover.value = around
     ? { ...around, editing: false, ...below(editorView, selection.head, around.from) }
     : null
@@ -456,6 +590,9 @@ const narrationColouring = state => {
  */
 const decorations = state => {
   let set = currentMarking(state, narrationColouring(state))
+  // A copy: adding them to a set takes the array apart.
+  const titles = commentTitles(state)
+  if (titles.length > 0) set = set.add(state.doc, [...titles])
   if (isEmptyDocument(state.doc)) {
     set = set.add(state.doc, [
       Decoration.node(0, state.doc.firstChild.nodeSize, {
@@ -502,6 +639,63 @@ const currentMarking = (state, set) => {
     ranges.map(range => Decoration.inline(range.from, range.to, { class: 'comment-current' }))
   )
 }
+
+/** The comments' hover text, kept while neither the text nor the threads change. */
+let titled = {
+  doc: /** @type {any} */ (null),
+  threads: /** @type {any} */ (null),
+  decorations: /** @type {Decoration[]} */ ([]),
+}
+
+/**
+ * What has been said on each comment, shown on hovering over its passage:
+ * the thread is on the document's row, not in the mark, so it is laid over
+ * the text as the narration's colours are. Where comments overlap, the
+ * words show every thread they are under, in the order their passages
+ * start: one title would hide the others.
+ *
+ * @param {import('prosemirror-state').EditorState} state
+ * @returns {Decoration[]}
+ */
+const commentTitles = state => {
+  const threads = currentDocument.value?.comments
+  if (titled.doc === state.doc && titled.threads === threads) return titled.decorations
+  const ranges = threads ? commentRanges(state.doc).filter(range => threads[range.id]) : []
+  const cuts = [...new Set(ranges.flatMap(range => [range.from, range.to]))].sort((a, b) => a - b)
+  /** @type {Decoration[]} */
+  const decorations = []
+  for (let i = 0; i + 1 < cuts.length; i++) {
+    const [from, to] = [cuts[i], cuts[i + 1]]
+    const over = ranges.filter(range => range.from <= from && range.to >= to)
+    if (over.length === 0) continue
+    const title = over
+      .map(range => titleOf(/** @type {CommentThread} */ (threads?.[range.id])))
+      .join('\n\n―\n\n')
+    decorations.push(Decoration.inline(from, to, { title }))
+  }
+  titled = { doc: state.doc, threads, decorations }
+  return decorations
+}
+
+/**
+ * A thread as hover text: each post, named once anyone but the writer is in it.
+ *
+ * @param {CommentThread} thread
+ * @returns {string}
+ */
+const titleOf = thread => {
+  const named = thread.posts.length > 1 || thread.posts.some(post => post.author !== 'writer')
+  return thread.posts
+    .map(post => (named ? `${post.author === 'writer' ? 'You' : 'Assistant'}: ` : '') + post.text)
+    .join('\n\n')
+}
+
+// A reply or an edit to what was said changes the hover text, and the text
+// does not change with it.
+watch(
+  () => currentDocument.value?.comments,
+  () => view?.setProps({ decorations })
+)
 
 /**
  * Bring the current comment into view when it was gone to in this document
@@ -679,6 +873,124 @@ const openMenu = event => {
   if (view) editorMenu.value?.open(view, event)
 }
 
+/**
+ * The picture selected, shown under it with its alt text, which the field
+ * changes. `editing` while the field has the focus, when the editor has not.
+ * See `editor/pictures`.
+ *
+ * @type {import('vue').Ref<{ pos: number, alt: string, left: number, top: number, editing: boolean }|null>}
+ */
+const picturePopover = ref(null)
+
+/** @type {import('vue').Ref<HTMLInputElement|null>} */
+const pictureInput = ref(null)
+
+/**
+ * The picture the selection is, if it is one.
+ *
+ * @param {EditorView} editorView
+ * @returns {{ pos: number, node: import('prosemirror-model').Node }|null}
+ */
+const selectedPicture = editorView => {
+  const { selection } = editorView.state
+  if (!(selection instanceof NodeSelection) || selection.node.type.name !== 'image') return null
+  return { pos: selection.from, node: selection.node }
+}
+
+/**
+ * Show the picture selected, while the editor has the focus or the field is
+ * asked for. A field being typed in stays.
+ *
+ * @param {EditorView} editorView
+ * @param {boolean} [editing] - With the field taking the focus
+ */
+const showPicture = (editorView, editing = false) => {
+  if (picturePopover.value?.editing && !editing) return
+  const picked = editing || editorView.hasFocus() ? selectedPicture(editorView) : null
+  const dom = picked && /** @type {HTMLElement|null} */ (editorView.nodeDOM(picked.pos))
+  if (!picked || !dom || !host.value) {
+    picturePopover.value = null
+    return
+  }
+  const box = host.value.getBoundingClientRect()
+  const rect = dom.getBoundingClientRect()
+  picturePopover.value = {
+    pos: picked.pos,
+    alt: picked.node.attrs.alt || '',
+    left: rect.left - box.left,
+    top: rect.bottom - box.top + 4,
+    editing,
+  }
+}
+
+/**
+ * Give the picture the field's alt text; none takes it off.
+ *
+ * @param {string} alt
+ * @param {boolean} back - To the text, as Enter goes
+ */
+const applyAlt = (alt, back) => {
+  const shown = picturePopover.value
+  picturePopover.value = null
+  if (!view || !shown) return
+  const node = view.state.doc.nodeAt(shown.pos)
+  if (node?.type.name === 'image' && (node.attrs.alt || '') !== alt) {
+    // Selected still: a new node in its place would otherwise leave the caret beside it.
+    const tr = view.state.tr.setNodeMarkup(shown.pos, null, { ...node.attrs, alt: alt || null })
+    view.dispatch(tr.setSelection(NodeSelection.create(tr.doc, shown.pos)))
+  }
+  if (back) view.focus()
+}
+
+/** @param {boolean} back - To the text, as Escape goes */
+const closePicture = back => {
+  picturePopover.value = null
+  if (back) view?.focus()
+}
+
+/** The picture selected at its own size, from the popover or the menu. */
+const viewPicture = () => {
+  const picked = view && selectedPicture(view)
+  if (picked) documentPictures.open(picked.node.attrs.src, props.documentId, picked.node.attrs.alt)
+}
+
+/** The picture selected, downloaded under its name, from the menu. */
+const savePicture = async () => {
+  const picked = view && selectedPicture(view)
+  if (!picked) return
+  const found = await documentPictures.bytesOf(picked.node.attrs.src, props.documentId)
+  if (found) downloadBlob(found.blob, found.name)
+  else toast.warning('This picture is missing.')
+}
+
+/** Make a picture this document's own, and say its path. */
+const takePicture = (/** @type {Blob} */ blob, /** @type {string|undefined} */ name) =>
+  documentPictures.take(props.documentId, blob, name)
+
+/** The field for the selected picture's alt text, from the menu. */
+const askAlt = () => {
+  if (view) showPicture(view, true)
+}
+
+/**
+ * Pictures from the clipboard, from the menu's Paste, put in at the selection.
+ *
+ * @param {Blob[]} pictures
+ */
+const pastePictures = pictures => {
+  if (view) insertPictures(view, pictures, takePicture)
+}
+
+/** Pictures chosen from the disk with Insert › Picture…, put in at the selection. */
+const insertChosen = () => {
+  const input = pictureInput.value
+  const files = [...(input?.files || [])].filter(file => file.type.startsWith('image/'))
+  if (input) input.value = ''
+  if (!view || files.length === 0) return
+  insertPictures(view, files, takePicture)
+  view.focus()
+}
+
 /** The comment field for what is selected, from the menu. */
 const commentOnSelection = () => {
   if (view) commentOn(view.state.selection.from, view.state.selection.to)
@@ -773,7 +1085,11 @@ onMounted(async () => {
   if (!alive || !page.value) return
 
   const id = props.documentId
-  const state = editor.open(id, currentDocument.value?.content || '')
+  // A marker with no thread is no comment, and opens as its passage alone.
+  const state = editor.open(
+    id,
+    withThreadsOnly(currentDocument.value?.content || '', currentDocument.value?.comments)
+  )
   view = new EditorView(page.value, {
     state,
     plugins: [
@@ -782,17 +1098,47 @@ onMounted(async () => {
         open: href => documentLinks.open(href, props.documentId),
         update: showLink,
       }),
+      pictures({
+        describe: src => documentPictures.describe(src, props.documentId),
+        open: node => documentPictures.open(node.attrs.src, props.documentId, node.attrs.alt),
+        take: takePicture,
+        adopt: src => documentPictures.adopt(props.documentId, src),
+      }),
       new Plugin({
         view: () => ({
           update: (editorView, prevState) => {
+            showPicture(editorView)
             showCommentButton(editorView)
             showComment(editorView, prevState)
             followCaret(editorView, prevState)
+            // A new comment whose passage has been deleted has nothing to be on.
+            if (commentDraft.value?.documentId === id && !draftRange(editorView.state)) dropDraft()
           },
         }),
       }),
     ],
     decorations,
+    // A pasted comment comes with its marker while its thread is this
+    // document's and its passage is not here already: a cut and paste moves
+    // it, and a copy, or text from another document, comes as words alone.
+    // A drag that moves its passage moves it too.
+    //
+    // A link goes on the clipboard as a path from the top of the project, and
+    // comes off it written from the document it is pasted into, which may be
+    // in another folder. A picture another document has comes as a copy of
+    // its own (`pictures` above).
+    transformPasted: (slice, editorView) => {
+      const threads = currentDocument.value?.comments
+      const moving = !!editorView.dragging?.move
+      const here = new Set(commentRanges(editorView.state.doc).map(range => range.id))
+      const kept = keepComments(
+        slice,
+        commentId => !!threads?.[commentId] && (moving || !here.has(commentId))
+      )
+      return mapHrefs(kept, href => documentLinks.pastedHref(href, props.documentId))
+    },
+    transformCopied: slice =>
+      mapHrefs(slice, href => documentLinks.copiedHref(href, props.documentId)),
     dispatchTransaction: tr => {
       editor.dispatch(id, tr)
       // Writing in a preview is keeping it.
@@ -800,13 +1146,18 @@ onMounted(async () => {
     },
     attributes,
     handleDOMEvents: {
-      blur: editorView => {
+      blur: (editorView, event) => {
         editor.flush(id)
         commentButton.value = null
         showComment(editorView)
+        // Into the picture's field, the picture stays shown, to be named.
+        const into = /** @type {Element|null} */ (event.relatedTarget)
+        if (into?.closest?.('[data-picture-popover]')) showPicture(editorView, true)
+        else showPicture(editorView)
         return false
       },
       focus: editorView => {
+        showPicture(editorView)
         showCommentButton(editorView)
         showComment(editorView)
         return false
@@ -817,8 +1168,8 @@ onMounted(async () => {
         return false
       },
     },
-    // Mod-Shift-M comments on the selection, or changes the comment the caret
-    // is in. The editor's to catch, since the mark and the selection live in
+    // Mod-Shift-M comments on the selection, or picks the comment the caret
+    // is in, to answer it. The editor's to catch, since the mark and the selection live in
     // the view's state. Mod-/ asks for the list of keys.
     handleKeyDown: (editorView, event) => {
       if (isShortcutsKey(event)) {
@@ -830,7 +1181,7 @@ onMounted(async () => {
       if (!mod || !event.shiftKey || event.key.toLowerCase() !== 'm') return false
       const { selection } = editorView.state
       const around = selection.empty ? commentAround(selection.$from) : null
-      const opened = around ? editComment(around.id) : commentOn(selection.from, selection.to)
+      const opened = around ? pickComment(around.id) : commentOn(selection.from, selection.to)
       if (opened) event.preventDefault()
       return opened
     },
@@ -886,6 +1237,11 @@ onBeforeUnmount(() => {
   cursor: pointer;
   padding: 0 0.05em;
 }
+/* A comment inside another: the tints add up, and the edges are the outer's. */
+.ProseMirror mark.comment mark.comment {
+  border-radius: 0;
+  padding: 0;
+}
 .ProseMirror mark.comment:hover {
   background-color: rgb(250 204 21 / 0.45);
 }
@@ -903,6 +1259,52 @@ onBeforeUnmount(() => {
 }
 .ProseMirror .grammar-error {
   text-decoration-color: rgb(59 130 246);
+}
+
+/* A picture: as wide as the column at most and not taller than most of the
+   window, its room kept from its size while it loads. Not the typography's
+   margins, which are for a picture between paragraphs. */
+.ProseMirror .picture {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: bottom;
+  border-radius: 0.25rem;
+}
+.ProseMirror .picture img {
+  display: block;
+  margin: 0;
+  max-width: 100%;
+  max-height: 70vh;
+  width: auto;
+  height: auto;
+  border-radius: inherit;
+}
+.ProseMirror .picture[style] img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.ProseMirror .picture.picture-loading {
+  min-width: 4em;
+  min-height: 3em;
+  background-color: color-mix(in srgb, currentColor 6%, transparent);
+}
+.ProseMirror .picture.ProseMirror-selectednode {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
+}
+/* A paragraph that is only a picture is a figure. */
+.ProseMirror .figure {
+  text-align: center;
+}
+/* Where a picture is not shown: one not there, or one on the web. */
+.ProseMirror .picture-placeholder {
+  display: inline-block;
+  padding: 0.1em 0.5em;
+  border: 1px dashed color-mix(in srgb, currentColor 35%, transparent);
+  border-radius: 0.25rem;
+  color: color-mix(in srgb, currentColor 60%, transparent);
+  font-size: 0.875em;
 }
 
 /* The comment gone to last, from the comments list or the caret: drawn over

@@ -12,6 +12,10 @@
  * A move whose way is blocked, by something itself still to move (two
  * documents trading names) or by something on its way out, first moves what
  * is there out of the way, into `.inksprite/moving/`, and on from there.
+ *
+ * A text document's own pictures (`picturesDir`) go where it goes: moved when
+ * it changes folders, trashed with it, and one by one as its row lets them
+ * go. Their bytes are written as they come, as an imported file's are.
  */
 
 import { nameKey } from './names.js'
@@ -24,7 +28,7 @@ import {
   repositoryFile,
   sidecarPath,
 } from './documents.js'
-import { MOVING, STORY_FILE, narrationPath } from './layout.js'
+import { MOVING, STORY_FILE, narrationPath, picturePath, picturesDir } from './layout.js'
 
 /** @typedef {import('../types/models.js').Document} Document */
 /** @typedef {import('../types/models.js').Story} Story */
@@ -34,11 +38,13 @@ import { MOVING, STORY_FILE, narrationPath } from './layout.js'
 /**
  * One thing to do to the folder. Paths are below the project folder.
  *
- * - `move` - A file or a folder, with all that is in it, to where nothing is
+ * - `move` - A file or a folder, with all that is in it, to where nothing is;
+ *   with `optional`, only if it is there: a document's pictures, whose bytes
+ *   may not have come yet
  * - `trash` - A file or a folder to the system's trash
  * - `write` - A file's whole text, made whole or not at all
  *
- * @typedef {{op: 'move', from: string, to: string}
+ * @typedef {{op: 'move', from: string, to: string, optional?: true}
  *   | {op: 'trash', path: string}
  *   | {op: 'write', path: string, text: string}} Op
  */
@@ -190,6 +196,10 @@ export function planProject(previous, next, documentOf, changed) {
     if (entry.kind === 'file') {
       ops.push({ op: 'move', from: sidecarPath(from), to: sidecarPath(to) })
     }
+    // Its pictures, when it changes folders; a folder takes its own along.
+    if (entry.pictures && picturesDir(from, id) !== picturesDir(to, id)) {
+      ops.push({ op: 'move', from: picturesDir(from, id), to: picturesDir(to, id), optional: true })
+    }
     for (const [other, where] of at) {
       if (where === from) at.set(other, to)
       else if (isBelow(where, from)) at.set(other, to + where.slice(from.length))
@@ -254,6 +264,7 @@ export function planProject(previous, next, documentOf, changed) {
     }
     if (!entry.missing) ops.push({ op: 'trash', path })
     if (entry.kind === 'file') ops.push({ op: 'trash', path: sidecarPath(path) })
+    if (entry.pictures) ops.push({ op: 'trash', path: picturesDir(path, entry.id) })
   }
 
   // The writes, and every repository something in it changed in.
@@ -274,6 +285,17 @@ export function planProject(previous, next, documentOf, changed) {
       ops.push({ op: 'write', path: narrationPath(entry.id), text: narrationText(document) })
     } else if (!entry.narration && !fresh && previous.get(entry.id)?.narration) {
       ops.push({ op: 'trash', path: narrationPath(entry.id) })
+    }
+    // The pictures its row let go of, where they are now it has moved.
+    const had = fresh ? undefined : previous.get(entry.id)?.pictures
+    if (had && !entry.pictures) {
+      ops.push({ op: 'trash', path: picturesDir(entry.path, entry.id) })
+    } else if (had) {
+      const keeps = new Set(entry.pictures)
+      for (const name of had) {
+        if (!keeps.has(name))
+          ops.push({ op: 'trash', path: picturePath(entry.path, entry.id, name) })
+      }
     }
   }
   for (const id of repositories) {

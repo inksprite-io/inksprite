@@ -23,6 +23,17 @@
  *   for a file chosen or dropped on its own
  * @property {import('../types/models.js').DriveLink} [drive] - The Google Doc it
  *   was exported from, which the document it becomes keeps
+ * @property {import('./pictures.js').TakenPicture[]} [pictures] - Pictures that
+ *   come with a markdown file rather than in it, a marker in its text where
+ *   each goes: a Google Doc's, fetched apart
+ * @property {BaseRead} [base] - Where a Google Doc read through the converter
+ *   was read, which with its text is the base the document it becomes keeps
+ */
+
+/**
+ * The revision and the tab a Google Doc was read at.
+ *
+ * @typedef {{revisionId: string, tabId: string}} BaseRead
  */
 
 /**

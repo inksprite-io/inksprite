@@ -80,7 +80,34 @@ describe('ChatSegment', () => {
     expect(text).toContain('Likely')
   })
 
-  it('shows a roll as its notation and its total', () => {
+  it('shows a roll’s notation by its name, and its dice by kind above the total', () => {
+    const roll = { roll: '3d6+2', dice: { d6: [4, 2, 5] }, modifier: 2, total: 13 }
+    const wrapper = show(
+      ran({
+        name: 'roll',
+        input: '3d6+2 for strength',
+        label: '3d6+2 for strength',
+        roll,
+        result: '13',
+      })
+    )
+
+    const lines = wrapper.findAll('[data-dice] span').map(line => line.text())
+    expect(lines).toEqual(['d6: 4, 2, 5'])
+    expect(wrapper.text()).toContain('roll3d6+2')
+    expect(wrapper.text()).toContain('for strength')
+    expect(wrapper.text()).not.toContain('3d6+2 for strength')
+    expect(wrapper.text()).toContain('13')
+  })
+
+  it('shows no dice under a total the writer changed', () => {
+    const roll = { roll: '3d6+2', dice: { d6: [4, 2, 5] }, modifier: 2, total: 13 }
+    const wrapper = show(ran({ name: 'roll', input: '3d6+2', label: '3d6+2', roll, result: '18' }))
+
+    expect(wrapper.find('[data-dice]').exists()).toBe(false)
+  })
+
+  it('shows a roll from before as its notation and its total', () => {
     const text = show(
       ran({ name: 'roll', input: '3d6+2', label: '3d6+2', detail: '4 + 4 + 4 + 2', result: '14' })
     ).text()

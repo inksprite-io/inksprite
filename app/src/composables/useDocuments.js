@@ -36,14 +36,17 @@ import { computed, ref } from 'vue'
 import { inRepository, repositoryOf } from '@/source/tree.js'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
-import { useDocumentsStore } from '@/stores/documentsStore'
+import { generateDocumentId, useDocumentsStore } from '@/stores/documentsStore'
+import { useFilesStore } from '@/stores/filesStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { useEditor } from '@/composables/useEditor.js'
 import { useChats } from '@/composables/useChats.js'
 import { appendBlocks, settleMarkdown } from '@/editor/markdown.js'
 import { documentPath, documentTitles, freeTitle, namesake } from '@/utils/documentPath.js'
 import { applyEdit, reverseEdit } from '@/utils/edits.js'
+import { sameThread } from '@/editor/comments.js'
 import { chatTabOf } from '@/utils/chatTabs.js'
+import { pictureKey, repointPictures } from '@/utils/pictures.js'
 import {
   closeTab as closed,
   dropTabs,
@@ -418,6 +421,18 @@ export const useDocuments = storyId => {
   }
 
   /**
+   * Make a document's body say this, changing only what differs: for edits
+   * from outside the editor, a sync's from its Doc, which keep the caret of
+   * a document open where its text is.
+   * @param {string} documentId
+   * @param {string} content - Markdown
+   */
+  const editContent = (documentId, content) => {
+    if (editor.holds(documentId)) editor.editContent(documentId, content)
+    else documentsStore.updateDocument(documentId, { content: stored(documentId, content) })
+  }
+
+  /**
    * A document's body as it stands: the editor's, when the editor holds the
    * document, since the store hears about typing only after a pause.
    * @param {string} documentId
@@ -521,6 +536,58 @@ export const useDocuments = storyId => {
   }
 
   /**
+   * A document's comment threads, as its row has them.
+   * @param {string} documentId
+   * @returns {Record<string, import('@/types/models.js').CommentThread>|undefined}
+   */
+  const threadsOf = documentId => documentsStore.getDocument(documentId)?.comments
+
+  /**
+   * Put a document's comment threads in place of the ones it has. With none
+   * left, the field goes from the row.
+   * @param {string} documentId
+   * @param {Record<string, import('@/types/models.js').CommentThread>|undefined} threads
+   */
+  const setThreads = (documentId, threads) => {
+    if (!documentsStore.getDocument(documentId)) return
+    const kept = threads && Object.keys(threads).length > 0 ? threads : undefined
+    documentsStore.updateDocument(documentId, { comments: kept })
+  }
+
+  /**
+   * Make a turn's changes to threads again, or take them back: each only
+   * while the thread still says what the change left it saying (made again,
+   * what it found), so a reply the writer added since keeps the thread as
+   * it is.
+   * @param {string} documentId
+   * @param {import('@/types/models.js').CommentChange[]} changes
+   * @param {boolean} undo
+   * @returns {boolean} Whether every change was made
+   */
+  const changeThreads = (documentId, changes, undo) => {
+    const threads = { ...threadsOf(documentId) }
+    let all = true
+    for (const change of changes) {
+      const [from, to] = undo ? [change.after, change.before] : [change.before, change.after]
+      if (!sameThread(threads[change.id], from)) {
+        all = false
+        continue
+      }
+      if (to) threads[change.id] = to
+      else delete threads[change.id]
+    }
+    setThreads(documentId, threads)
+    return all
+  }
+
+  /**
+   * Whether a change was to comments alone: a reply, or a resolve of one
+   * whose passage was already gone.
+   * @param {import('@/types/models.js').DocumentEdit} edit
+   */
+  const threadsOnly = edit => !edit.old && !edit.new && !!edit.comments?.length
+
+  /**
    * Undo a change a tool made, if the document still says what the tool
    * left. A created document is removed if its body is still what was
    * created. Otherwise the writer has been there since, and their version
@@ -549,9 +616,11 @@ export const useDocuments = storyId => {
       remove(edit.documentId)
       return true
     }
+    if (threadsOnly(edit)) return changeThreads(edit.documentId, edit.comments || [], true)
     const reverted = reverseEdit(content, edit)
     if (reverted === null) return false
     setContent(edit.documentId, reverted)
+    if (edit.comments) changeThreads(edit.documentId, edit.comments, true)
     return true
   }
 
@@ -620,8 +689,11 @@ export const useDocuments = storyId => {
       return true
     }
     if (!documentsStore.getDocument(edit.documentId)) return false
+    if (threadsOnly(edit)) return changeThreads(edit.documentId, edit.comments || [], false)
     const applied = applyEdit(currentContent(edit.documentId), edit)
     if (applied === null) return false
+    // The threads first, so the text's save finds a thread it places.
+    if (edit.comments) changeThreads(edit.documentId, edit.comments, false)
     setContent(edit.documentId, applied)
     return true
   }
@@ -639,7 +711,9 @@ export const useDocuments = storyId => {
    * `Title (2) (2)`. It has the text as it stands, edits not yet written out
    * included, and what the document is apart from its place — plain or laid
    * out, its summary, hidden or not. In a folder kept in order it goes
-   * straight after the original; anywhere else the name places it.
+   * straight after the original; anywhere else the name places it. Its
+   * pictures are copied as its own, so that it keeps them whatever becomes
+   * of the original.
    * @param {string} documentId
    * @returns {Document|null} The copy, or null for anything but a text document
    */
@@ -651,16 +725,22 @@ export const useDocuments = storyId => {
     const base = name.replace(/\s*\(\d+\)$/, '') || name
     let at = 2
     while (namesakeOf(parentId, `${base} (${at})`)) at++
+    const id = generateDocumentId()
     const copy = documentsStore.createDocument({
+      id,
       storyId,
       parentId,
       type: 'text',
       title: `${base} (${at})`,
-      content: currentContent(documentId),
+      content: repointPictures(currentContent(documentId), documentId, id),
       ...(document.plain ? { plain: true } : {}),
       ...(document.summary ? { summary: document.summary } : {}),
       ...(document.hidden ? { hidden: true } : {}),
+      // Its comments with it, as its text has their markers.
+      ...(document.comments ? { comments: document.comments } : {}),
+      ...(document.pictures ? { pictures: document.pictures } : {}),
     })
+    copyPictures(documentId, id, Object.keys(document.pictures || {}))
     if (isOrdered(parentId)) {
       const ids = childrenOf(parentId)
         .map(child => child.id)
@@ -669,6 +749,28 @@ export const useDocuments = storyId => {
       documentsStore.reorderChildren(parentId, ids)
     }
     return copy
+  }
+
+  /**
+   * Copy a document's pictures' bytes to another's, under the same names.
+   * The rows are the caller's; a picture whose bytes cannot be read is left
+   * out, and shows as missing.
+   *
+   * @param {string} fromId
+   * @param {string} toId
+   * @param {string[]} names
+   * @returns {Promise<void>}
+   */
+  const copyPictures = async (fromId, toId, names) => {
+    const files = useFilesStore()
+    for (const name of names) {
+      try {
+        const blob = await files.getFile(pictureKey(fromId, name))
+        if (blob) await files.putFile(pictureKey(toId, name), storyId, blob)
+      } catch (error) {
+        console.error(`Failed to copy the picture ${name}:`, error)
+      }
+    }
   }
 
   /**
@@ -829,8 +931,12 @@ export const useDocuments = storyId => {
     wouldSettle,
     setPlain,
     setContent,
+    editContent,
     currentContent,
     replaceText,
+    threadsOf,
+    setThreads,
+    changeThreads,
     appendContent,
     revertEdit,
     reapplyEdit,

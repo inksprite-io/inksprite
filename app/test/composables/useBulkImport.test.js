@@ -193,12 +193,26 @@ describe('describeImport', () => {
     })
   })
 
-  it('counts the pictures a Doc came with and lost', () => {
+  it('counts the pictures a Doc read through the Docs API left in the Doc', () => {
     expect(
       describeImport({ documents: 2, folders: 0, cards: 0, scans: 0, images: 3, skipped: [] })
     ).toEqual({
       severity: 'success',
       detail: 'Imported 2 documents. 3 images left out.',
     })
+  })
+
+  it('names the Docs that came with suggested edits still open', () => {
+    const result = { documents: 2, folders: 0, cards: 0, scans: 0, skipped: [] }
+    expect(describeImport({ ...result, suggested: ['Ch. 3'] })).toEqual({
+      severity: 'warn',
+      detail: 'Imported 2 documents. Ch. 3 had suggested edits still open. They were left out.',
+    })
+    expect(describeImport({ ...result, suggested: ['Ch. 3', 'Ch. 4'] }).detail).toContain(
+      'Ch. 3 and Ch. 4 had'
+    )
+    expect(
+      describeImport({ ...result, suggested: ['Ch. 1', 'Ch. 2', 'Ch. 3', 'Ch. 4', 'Ch. 5'] }).detail
+    ).toContain('Ch. 1, Ch. 2, Ch. 3 and 2 more had')
   })
 })

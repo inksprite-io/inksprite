@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import {
   drawsByChance,
   getToolGroups,
@@ -9,7 +9,13 @@ import {
   offersDocuments,
   TOOL_GROUP_LABELS,
 } from '@/ai/tools/index.js'
-import { DIRECTOR_TOOLS, SKILL_MAX_DEPTH } from '@/ai/skills/index.js'
+import { DIRECTOR_TOOLS, SKILL_MAX_DEPTH, setExperimentalSkills } from '@/ai/skills/index.js'
+
+// Every tool there is, Interpret and Write among them, as in an app that has
+// switched the experimental skills on.
+beforeAll(() => {
+  setExperimentalSkills(['interpret', 'write'])
+})
 
 describe('tool groups', () => {
   it('assigns every registered tool to exactly one group', () => {
@@ -39,6 +45,8 @@ describe('tool groups', () => {
       'move_document',
       'append_document',
       'list_comments',
+      'add_comment',
+      'reply_comment',
       'resolve_comment',
     ])
     expect(byId.rpg).toEqual(['roll_dice', 'oracle', 'roll_table', 'draw_tarot', 'generate_names'])

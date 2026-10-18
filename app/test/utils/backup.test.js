@@ -877,6 +877,25 @@ describe('withFreshIds', () => {
     ])
   })
 
+  it("moves a text's pictures with it, in its text and in the files", () => {
+    const rows = project()
+    rows.documents[1].content = `The gate ![](.images/${DOC}/gate%20(2).png) stood.`
+    rows.documents[1].pictures = { 'gate (2).png': { mime: 'image/png', width: 4, height: 3 } }
+    rows.files.push({ id: `${DOC}/gate (2).png`, storyId: STORY, mime: 'image/png', data: 'iVBO' })
+
+    const fresh = withFreshIds(rows)
+    const doc = fresh.documents[1]
+
+    expect(doc.content).toBe(`The gate ![](.images/${doc.id}/gate%20(2).png) stood.`)
+    expect(doc.pictures).toEqual({ 'gate (2).png': { mime: 'image/png', width: 4, height: 3 } })
+    expect(fresh.files[1]).toEqual({
+      id: `${doc.id}/gate (2).png`,
+      storyId: fresh.story.id,
+      mime: 'image/png',
+      data: 'iVBO',
+    })
+  })
+
   it("keeps the writer's profiles, and what runs on them, as they are", () => {
     const fresh = withFreshIds(project())
     expect(fresh.profiles).toEqual(project().profiles)

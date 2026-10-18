@@ -41,6 +41,8 @@ import {
   splitAnswered,
   inspectCommand,
   askedCommand,
+  answeredCommand,
+  answerText,
   pendingCommand,
   runCommand,
   assembleTurn,
@@ -48,6 +50,7 @@ import {
   commandTakesTurn,
   commandSpeaks,
   commandTag,
+  commandSwitchedOff,
 } from '@/ai/commands.js'
 import { CommandError, SummaryCutShortError } from '@/utils/errors.js'
 import { groupTurns } from '@/utils/turns.js'
@@ -149,8 +152,9 @@ export function useChatCommands(storyId, chatId) {
     const segments = splitInput(input)
 
     // Everything that can be refused for free is refused here, before a word
-    // is written: an unknown command, a question nobody asked. Past this point
-    // a consulting command has a message of its own and a failure lands in it.
+    // is written: an unknown command, a question nobody asked, an experimental
+    // skill that is switched off. Past this point a consulting command has a
+    // message of its own and a failure lands in it.
     //
     // A command that answers on a turn of its own is the last thing a
     // submission can hold, because the writer's words cannot be on both sides
@@ -168,6 +172,8 @@ export function useChatCommands(storyId, chatId) {
 
       const { error } = inspectCommand(segment)
       if (error) throw new CommandError(error)
+      const off = commandSwitchedOff(segment)
+      if (off) throw new CommandError(off)
       if (commandTakesTurn(segment)) apart = segment.name
     }
 
@@ -181,7 +187,7 @@ export function useChatCommands(storyId, chatId) {
       if (segment.type !== 'command') continue
 
       if (segment.result !== undefined) {
-        answers.set(index, { ...askedCommand(segment), result: segment.result })
+        answers.set(index, answeredCommand({ ...segment, result: segment.result }))
         continue
       }
 
@@ -572,8 +578,13 @@ export function useChatCommands(storyId, chatId) {
    * @param {CommandInput} parsed
    * @param {ToolContext} context
    * @returns {Promise<Message>}
+   * @throws {CommandError} If it can't run now. Nothing has changed.
    */
   const ask = async (messageId, index, parsed, context) => {
+    // One that can't run now keeps the answer it has.
+    const off = commandSwitchedOff(parsed)
+    if (off) throw new CommandError(off)
+
     // One that costs a model call goes back to pending first, so the writer can
     // see it is being asked again rather than watching a stale answer sit there
     // — the old one included, since the answer is the content now.
@@ -616,6 +627,7 @@ export function useChatCommands(storyId, chatId) {
    * @param {string} messageId - A message carrying a command
    * @param {ToolContext} [context] - What a consulting command needs to run
    * @returns {Promise<Message>}
+   * @throws {CommandError} If it can't run now. Nothing has changed.
    */
   const rerun = async (messageId, index = null, context = {}) => {
     const { name, input, param, character } = commandOf(messageId, index)
@@ -647,12 +659,34 @@ export function useChatCommands(storyId, chatId) {
         segment.command.name === asked.name &&
         segment.command.input === asked.input &&
         segment.command.param === asked.param &&
-        (segment.command.result || '') === (parsed.result || '')
+        answerText(segment.command) === (parsed.result || '')
     )
     if (at === -1) return null
 
     const [survivor] = spare.splice(at, 1)
     return survivor.type === 'command' ? survivor.command : null
+  }
+
+  /**
+   * The record a line had before its answer was edited: the first left over
+   * with the same command and question. Left where it is, since its answer no
+   * longer matches anything; it is only asked what the answer used to be, so a
+   * roll can tell a changed die from a changed total.
+   *
+   * @param {import('../types/models.js').MessageSegment[]} spare
+   * @param {CommandInput} parsed
+   * @returns {ChatCommand|undefined}
+   */
+  const formerRecord = (spare, parsed) => {
+    const { asked } = inspectCommand(parsed)
+    const former = spare.find(
+      segment =>
+        segment.type === 'command' &&
+        segment.command.name === asked.name &&
+        segment.command.input === asked.input &&
+        segment.command.param === asked.param
+    )
+    return former?.type === 'command' ? former.command : undefined
   }
 
   /**
@@ -754,10 +788,18 @@ export function useChatCommands(storyId, chatId) {
       if (segment.result !== undefined) {
         next.push({
           type: 'command',
-          command: { ...askedCommand(segment), result: segment.result },
+          command: answeredCommand(
+            { ...segment, result: segment.result },
+            formerRecord(spare, segment)
+          ),
         })
         continue
       }
+
+      // Only a line that has to be asked: one that came through untouched, or
+      // with its answer written, reads the same with the skill switched off.
+      const off = commandSwitchedOff(segment)
+      if (off) throw new CommandError(off)
 
       if (inspectCommand(segment).consults) {
         waiting.push({ at: next.length, asked: segment })

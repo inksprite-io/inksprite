@@ -12,6 +12,7 @@
 
 import { partialStrings } from '@/utils/partialJson.js'
 import { narrowEdit } from '@/utils/edits.js'
+import { withoutComments } from '@/editor/comments.js'
 
 /**
  * @typedef {Object} ToolProgress
@@ -51,6 +52,8 @@ export function writesProse(name) {
 const NAMED_TOOLS = {
   list_documents: 'Listing',
   list_comments: 'Listing comments',
+  add_comment: 'Commenting on',
+  reply_comment: 'Replying to a comment in',
   resolve_comment: 'Resolving a comment in',
 }
 
@@ -66,6 +69,18 @@ const NAMED_TOOLS = {
  * @returns {ToolProgress}
  */
 export function describeEdit(edit) {
+  // A comment made or resolved changes only markup in the text: what is said
+  // on it is the change.
+  const changes = edit.comments || []
+  if (changes.length > 0 && withoutComments(edit.old) === withoutComments(edit.new)) {
+    const made = changes.find(change => !change.before && change.after)
+    const thread = made ? made.after : changes[0].before
+    return {
+      verb: made ? 'Commenting on' : 'Resolving a comment in',
+      path: edit.path,
+      ...(thread?.posts[0] ? { prose: thread.posts[0].text } : {}),
+    }
+  }
   const writing = WRITING_TOOLS[edit.tool]
   const pair = edit.status === 'accepted' ? narrowEdit(edit) : edit
   return {
@@ -115,6 +130,8 @@ const ROUND_VERBS = {
   list_documents: ['Listing', 'Listed'],
   search_documents: ['Searching for', 'Searched for'],
   list_comments: ['Listing comments', 'Listed comments'],
+  add_comment: ['Commenting on', 'Commented on'],
+  reply_comment: ['Replying to a comment in', 'Replied to a comment in'],
   resolve_comment: ['Resolving a comment in', 'Resolved a comment in'],
   create_document: ['Creating', 'Created'],
   create_folder: ['Creating', 'Created'],

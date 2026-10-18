@@ -204,14 +204,47 @@ describe('storage in IndexedDB', () => {
     expect(await storage.count('jobs')).toBe(0)
   })
 
-  it('dumps every table, empty ones too', async () => {
+  it('dumps every table, empty ones too, but the linked documents’ bases', async () => {
     await db.stories.put(story(STORY))
 
     const tables = await storage.dump()
 
-    expect(Object.keys(tables).sort()).toEqual(db.tables.map(table => table.name).sort())
+    expect(Object.keys(tables).sort()).toEqual(
+      db.tables
+        .map(table => table.name)
+        .filter(name => name !== 'docBases')
+        .sort()
+    )
     expect(tables.stories).toHaveLength(1)
     expect(tables.messages).toEqual([])
+  })
+
+  it('keeps a linked document’s base, and lets it go with its document or its project', async () => {
+    const base = id => ({
+      id,
+      storyId: STORY,
+      docId: 'doc_1',
+      tabId: 't.0',
+      revisionId: 'rev_1',
+      markdown: 'Rain came.',
+      at: 1,
+    })
+    await storage.writeBase(base('a'))
+    await storage.writeBase(base('b'))
+    await storage.writeBase(base('c'))
+    expect(await storage.readBase(STORY, 'a')).toEqual(base('a'))
+    expect(await storage.readBase(STORY, 'none')).toBeNull()
+
+    await storage.removeBase(STORY, 'a')
+    expect(await storage.readBase(STORY, 'a')).toBeNull()
+
+    await db.documents.bulkPut([doc('b', STORY), doc('c', STORY)])
+    await storage.write('documents', [{ op: 'delete', id: 'b' }])
+    expect(await storage.readBase(STORY, 'b')).toBeNull()
+    expect(await storage.readBase(STORY, 'c')).toEqual(base('c'))
+
+    await storage.removeProject(STORY)
+    expect(await storage.readBase(STORY, 'c')).toBeNull()
   })
 
   it('replaces every table with a backup’s rows, emptying those it leaves out', async () => {
@@ -226,5 +259,7 @@ describe('storage in IndexedDB', () => {
     expect(restored).toBe(3)
     expect((await db.stories.toArray()).map(row => row.id)).toEqual([STORY])
     expect(await db.jobs.toArray()).toEqual([])
+    // A restored document has no base: its next sync is a first sync.
+    expect(await db.docBases.toArray()).toEqual([])
   })
 })
