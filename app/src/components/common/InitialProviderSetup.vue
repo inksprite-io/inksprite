@@ -102,7 +102,7 @@ async function handleOAuthConnect() {
     console.error('Failed to initiate OAuth:', error)
     toast.add({
       severity: 'error',
-      detail: `Connection failed: ${error.message || 'the sign-in could not start'}`,
+      detail: `The sign-in couldn't start. ${error.message || ''}`.trim(),
       life: 5000,
     })
   }

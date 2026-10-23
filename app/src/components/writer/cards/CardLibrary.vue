@@ -214,7 +214,7 @@ import {
   cardDownload,
   cardMatches,
   commonTags,
-  describeAdded,
+  describeSkipped,
   sortCards,
   suggestTags,
   tagKey,
@@ -400,21 +400,17 @@ const readChosen = event => {
 const linkDialogVisible = ref(false)
 
 /**
- * Say what adding came to. One card added is opened, since it is the one the
- * writer is about to look at; several are left to the order the writer chose.
+ * Show what adding came to. One card added, or one already here, is opened,
+ * since it is the one the writer is about to look at; several are left to
+ * the order the writer chose. Only files with no card in them are said.
  *
  * @param {import('@/stores/cardLibraryStore.js').Added} result
  */
 const report = result => {
-  const detail = describeAdded(result)
-  if (detail) {
-    toast.add({
-      severity: result.added.length > 0 ? 'success' : result.skipped.length > 0 ? 'warn' : 'info',
-      detail,
-      life: 5000,
-    })
-  }
-  if (result.added.length === 1) selectedId.value = result.added[0].id
+  const skipped = describeSkipped(result.skipped)
+  if (skipped) toast.add({ severity: 'warn', detail: skipped, life: 5000 })
+  const [one] = result.added.length > 0 ? result.added : result.duplicates
+  if (result.added.length + result.duplicates.length === 1) selectedId.value = one.id
 }
 
 /**
@@ -475,10 +471,7 @@ const menuItems = computed(() => {
 const download = async id => {
   const card = library.getCard(id)
   const file = await library.cardFile(id)
-  if (!card || !file) {
-    toast.add({ severity: 'warn', detail: 'That card is no longer in the library.', life: 5000 })
-    return
-  }
+  if (!card || !file) return
   const { blob, filename } = cardDownload(card, file)
   downloadBlob(blob, filename)
 }
@@ -489,7 +482,7 @@ const confirmRemove = id => {
   if (!card) return
   confirm.require({
     header: 'Delete card?',
-    message: `Delete ${card.title} from the library? Projects it went into keep their copy.`,
+    message: `Delete ${card.title} from the library?`,
     icon: 'pi pi-trash',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
     acceptProps: { label: 'Delete', severity: 'danger' },

@@ -1,16 +1,23 @@
 <template>
-  <div v-if="node" data-tree-node>
+  <div
+    v-if="node"
+    ref="nodeEl"
+    class="rounded"
+    :class="isDestination && 'bg-primary-500/10 dark:bg-primary-400/15'"
+    :data-drop-target="isDestination || undefined"
+    data-tree-node
+  >
     <!-- Row. A tree item the keyboard can reach: one row in the tree is in
          the tab order — the document open, or the root — and the arrows move
          between the rest. See handleKeydown. The buttons on it are the
          mouse's, and out of the tab order: the arrows twist a folder, and the
          row is named by its title alone rather than by its buttons too. -->
     <div
+      ref="rowEl"
       class="group relative flex items-center gap-1 py-1 pr-1 rounded cursor-pointer select-none [-webkit-touch-callout:none] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500"
       :class="[
         !isDragging && 'hover:bg-surface-200 dark:hover:bg-surface-700',
         isActive && 'bg-surface-200 dark:bg-surface-600',
-        dropTarget && 'bg-primary-500/15 outline-2 -outline-offset-2 outline-primary-500',
       ]"
       :style="{ paddingLeft: `${depth * 12 + 4}px` }"
       role="treeitem"
@@ -21,7 +28,7 @@
       :aria-expanded="isFolder ? expanded : undefined"
       :data-document-id="documentId"
       :data-folder="isFolder || undefined"
-      :data-drop-target="dropTarget || undefined"
+      @pointerdown="notePointer"
       @click="handleClick"
       @dblclick="handleDoubleClick"
       @keydown="handleKeydown"
@@ -31,7 +38,10 @@
       @touchend="press.touchend"
       @touchcancel="press.touchend"
     >
-      <!-- Twisty. Text documents get an equivalent gap so titles line up. -->
+      <!-- Twisty. A document has none, and no gap in its place: its icon is
+           where a folder beside it has its twisty, so the two read as side
+           by side. With a gap, a document lined up with the folder's icon
+           instead, and looked to be inside the folder. -->
       <button
         v-if="isFolder"
         class="flex-none w-4 h-4 flex items-center justify-center text-surface-500 dark:text-surface-400"
@@ -44,12 +54,11 @@
           style="font-size: 0.6rem"
         />
       </button>
-      <span v-else class="flex-none w-4" />
 
       <i
         class="flex-none text-surface-500 dark:text-surface-400"
         :class="
-          converting
+          working
             ? 'pi pi-spin pi-spinner'
             : isRepositoryFolder
               ? repositoryIcon
@@ -60,7 +69,7 @@
                 : leafIcon
         "
         style="font-size: 0.75rem"
-        :title="converting ? 'Converting to Markdown' : undefined"
+        :title="working || undefined"
         data-node-icon
       />
 
@@ -84,6 +93,7 @@
         class="flex-1 min-w-0 truncate text-sm"
         :class="[titleTone, dimmed && 'opacity-60']"
         :title="titleHint"
+        data-title
         @mouseenter="measureTitle"
         >{{ api.displayTitle(node) }}</span
       >
@@ -100,9 +110,10 @@
            the menu has both there. They float over the end of the title, in
            the row's own colour, rather than keep room in every row for
            buttons that are not there at rest; and take no clicks until they
-           show, so the end of a title is the title. -->
+           show, so the end of a title is the title. Not during a drag, which
+           WebKit leaves the hover on every row it crossed. -->
       <div
-        v-if="toggles && !isMobile"
+        v-if="toggles && !isMobile && !isDragging"
         class="absolute inset-y-0 right-1 flex items-center gap-1 pl-1 bg-inherit opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto"
         data-row-toggles
       >
@@ -164,19 +175,11 @@
       v-if="refusal"
       :id="`clash-${documentId}`"
       class="py-0.5 pr-1 text-xs text-red-600 dark:text-red-400"
-      :style="{ paddingLeft: `${depth * 12 + 40}px` }"
+      :style="{ paddingLeft: `${depth * 12 + (isFolder ? 40 : 20)}px` }"
       data-rename-clash
     >
       {{ refusal }}
     </p>
-
-    <!-- Summary, for text documents that asked for it -->
-    <DocumentSummary
-      v-if="!isFolder && showSummary"
-      :document-id="documentId"
-      :style="{ marginLeft: `${depth * 12 + 24}px` }"
-      @close="setSummaryVisible(false)"
-    />
 
     <!-- Children -->
     <Draggable
@@ -186,6 +189,7 @@
       item-key="id"
       role="group"
       :data-folder-id="documentId"
+      :style="{ '--tree-indent': `${(depth + 1) * 12 + 4}px` }"
       :sort="ordered"
       :delay-on-touch-only="true"
       :delay="120"
@@ -212,6 +216,7 @@
           @chat-with="emit('chat-with', $event)"
           @reimport="emit('reimport', $event)"
           @convert="emit('convert', $event)"
+          @explore="emit('explore', $event)"
           @dragging="emit('dragging', $event)"
         />
       </template>
@@ -229,12 +234,12 @@ import InputText from 'primevue/inputtext'
 import TieredMenu from 'primevue/tieredmenu'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
-import DocumentSummary from './DocumentSummary.vue'
 import { importItems } from './importItems.js'
 import { useCopyPath } from '@/composables/useCopyPath.js'
 import { usePlainText } from '@/composables/usePlainText.js'
 import { useFileView } from '@/composables/useFileView.js'
 import { useJobs } from '@/composables/useJobs.js'
+import { useVersionsPanel } from '@/composables/useVersions.js'
 import { useChatSettings } from '@/composables/useChatSettings'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
@@ -245,6 +250,7 @@ import { useDriveSync } from '@/composables/useDriveSync.js'
 import { useScreenSize } from '@/composables/useScreenSize'
 import { useLongPress } from '@/composables/useLongPress.js'
 import { OPEN_AFTER, useTreeDrop } from '@/composables/useTreeDrop.js'
+import { useTreeHistory } from '@/composables/useTreeHistory.js'
 import { useFilesStore } from '@/stores/filesStore'
 import { downloadBlob, filenameFor } from '@/files/download.js'
 import { exportDocument } from '@/files/exportDocument.js'
@@ -281,23 +287,36 @@ const emit = defineEmits([
   'chat-with',
   'reimport',
   'convert',
+  'explore',
   'dragging',
 ])
 
 const api = useDocuments(props.storyId)
+// What the writer does here, to take back with Command-Z: see DocumentTree.
+const history = useTreeHistory(props.storyId)
 const { copyPath } = useCopyPath(props.storyId)
 const { plainTextItem } = usePlainText(props.storyId)
 const { fileViewItem } = useFileView(props.storyId)
 const driveSync = useDriveSync(props.storyId)
 const jobs = useJobs()
-/** Whether a job is working on this document now: the row spins while it does. */
-const converting = computed(() => jobs.runningOn(props.documentId) !== null)
+/** What a job running on this document is doing: the row spins while it does. */
+const working = computed(() => {
+  const job = jobs.runningOn(props.documentId)
+  if (job) return job.kind === 'explore' ? 'Exploring' : 'Converting to Markdown'
+  // A sync says nothing when it's done, so the row shows it running.
+  return driveSync.isSyncing(props.documentId) ? 'Syncing with Google Docs' : ''
+})
 const confirm = useConfirm()
+const versionsPanel = useVersionsPanel()
 const toast = useToast()
 const { isMobile } = useScreenSize()
 
 const menu = ref()
 const contextMenu = ref()
+/** @type {import('vue').Ref<HTMLElement|null>} */
+const nodeEl = ref(null)
+/** @type {import('vue').Ref<HTMLElement|null>} */
+const rowEl = ref(null)
 // A submenu is as wide as the item it opens from, unless it is wider: its
 // labels on one line each, not wrapped to the item's width.
 const submenuWidth = { submenu: { class: 'w-max' } }
@@ -318,20 +337,22 @@ const fromKeys = ref(false)
  */
 const showContextMenu = event => {
   fromKeys.value = false
-  openedAt = null
+  openedAt = rowEl.value
   contextMenu.value?.show(event)
 }
 
 /**
- * The row a keyboard opened the menu from, to go back to when it shuts.
+ * The row the menu was opened from, to go back to when it shuts.
  * @type {HTMLElement|null}
  */
 let openedAt = null
 
 /**
- * A menu shut from the keyboard, by Escape or by an item, gives the focus back
+ * A menu shut, by Escape, by an item or by a click away, gives the focus back
  * to its row, unless what was picked has taken it somewhere: a name to edit,
- * a dialog. Left alone, it fell to the page, and the next arrow went nowhere.
+ * a dialog. Left alone, it fell to the page, and the next arrow went nowhere,
+ * and the editor kept the caret it had before the right-click, and with it
+ * Command-Z for the outline's last change.
  */
 const returnFocus = () => {
   const row = openedAt
@@ -465,7 +486,9 @@ const exportText = async () => {
  */
 const duplicate = () => {
   const copy = api.duplicate(props.documentId)
-  if (copy) emit('open', copy.id)
+  if (!copy) return
+  history.created(copy.id, 'Duplicate')
+  emit('open', copy.id)
 }
 
 /** Whether reading this file's bytes again could change its text. */
@@ -473,21 +496,19 @@ const extractable = computed(
   () => isFile.value && !isInRepository.value && hasText(node.value?.mime || '')
 )
 
-/** Read the file's text out of its bytes again, in place of what is there. */
+/**
+ * Read the file's text out of its bytes again, in place of what is there. A
+ * file whose bytes are gone is left as it is.
+ */
 const reextract = async () => {
   try {
-    const found = await reextractFile(props.storyId, props.documentId)
-    toast.add({
-      severity: found ? 'success' : 'warn',
-      detail: found
-        ? found.text
-          ? `Text re-extracted: ${found.text.split(/\s+/).filter(Boolean).length} words.`
-          : 'Text re-extracted, but there is no text in it.'
-        : 'Nothing to read: the file itself is not in this project any more.',
-      life: 4000,
-    })
+    await reextractFile(props.storyId, props.documentId)
   } catch (error) {
-    toast.add({ severity: 'error', detail: `Nothing changed: ${error.message}`, life: 6000 })
+    toast.add({
+      severity: 'error',
+      detail: `The text couldn't be read again. ${error.message}`,
+      life: 6000,
+    })
   }
 }
 
@@ -741,18 +762,9 @@ const expandedKey = computed(() => `ui.tree.${props.documentId}.expanded`)
 // there a folder opens when it is asked to.
 const expanded = ref(sessionStorage.get(expandedKey.value, !isInRepository.value))
 
-const summaryKey = computed(() => `ui.tree.${props.documentId}.summary`)
-const showSummary = ref(sessionStorage.get(summaryKey.value, false))
-
 const toggleExpanded = () => {
   expanded.value = !expanded.value
   sessionStorage.set(expandedKey.value, expanded.value)
-}
-
-/** @param {boolean} visible */
-const setSummaryVisible = visible => {
-  showSummary.value = visible
-  sessionStorage.set(summaryKey.value, visible)
 }
 
 const startRename = async () => {
@@ -783,7 +795,11 @@ const commitRename = deliberate => {
   isRenaming.value = false
 
   const next = draftTitle.value.trim()
-  if (next && next !== api.editableTitle(props.documentId)) api.rename(props.documentId, next)
+  // A new document's first name is part of making it, and goes back with it.
+  if (next && next !== api.editableTitle(props.documentId)) {
+    if (namingNew.value) api.rename(props.documentId, next)
+    else history.rename(props.documentId, next)
+  }
   settleNew(deliberate)
 }
 
@@ -794,24 +810,83 @@ const cancelRename = deliberate => {
 }
 
 /**
- * Where a new document goes once it has been named: into the editor, in
- * front of the writer. Deliberately ending the rename means the writer is
- * still here; a blur means they have moved on.
+ * Where the writer goes once a name is settled. A new document is written
+ * in, in the editor. Anything else was renamed where it is, and the keys
+ * go back to its row, for the arrows and for Command-Z. Deliberately ending
+ * the rename means the writer is still here; a blur means they have moved
+ * on.
  * @param {boolean} deliberate
  */
 const settleNew = deliberate => {
-  if (!namingNew.value) return
+  if (!namingNew.value) {
+    if (deliberate) nextTick(() => rowEl.value?.focus())
+    return
+  }
   namingNew.value = false
   if (!deliberate || isFolder.value) return
   emit('open', props.documentId)
   api.focus(props.documentId)
 }
 
-const handleClick = () => {
+/** How long a click on the open document's title waits to be a rename, in milliseconds. */
+const RENAME_AFTER = 500
+
+/** What last pressed on the row: a mouse, a pen, or a finger. */
+let pointer = ''
+
+/** @param {PointerEvent} event */
+const notePointer = event => {
+  pointer = event.pointerType
+}
+
+/** @type {ReturnType<typeof setTimeout>|null} */
+let renaming = null
+
+/** A rename a click was waiting to start is not wanted after all. */
+const keepName = () => {
+  if (renaming) clearTimeout(renaming)
+  renaming = null
+  document.removeEventListener('pointerdown', keepName, true)
+  document.removeEventListener('keydown', keepName, true)
+}
+
+/**
+ * Rename after a moment, as Finder does a click on the name of what is
+ * already selected. Anything pressed in the meantime, the second click of a
+ * double click among them, means something else was meant.
+ */
+const renameSoon = () => {
+  keepName()
+  renaming = setTimeout(() => {
+    keepName()
+    if (isActive.value && !isRenaming.value) startRename()
+  }, RENAME_AFTER)
+  document.addEventListener('pointerdown', keepName, true)
+  document.addEventListener('keydown', keepName, true)
+}
+
+/**
+ * Whether a click renames rather than opens: a single click with a mouse on
+ * the title of the document already open. A finger on the open document has
+ * only gone back to it.
+ * @param {MouseEvent} event
+ */
+const renamesOnClick = event =>
+  isActive.value &&
+  !isInRepository.value &&
+  pointer !== 'touch' &&
+  event.detail === 1 &&
+  event.button === 0 &&
+  !(event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) &&
+  !!(/** @type {HTMLElement} */ (event.target).closest?.('[data-title]'))
+
+/** @param {MouseEvent} [event] - None from the keyboard */
+const handleClick = event => {
   if (isRenaming.value) return
-  // Clicking a folder twists it; clicking a document opens it. The old outline
-  // toggled a summary here, which is the one deliberate behaviour change.
+  // Clicking a folder twists it; clicking a document opens it, or names the
+  // one already open.
   if (isFolder.value) toggleExpanded()
+  else if (event && renamesOnClick(event)) renameSoon()
   else emit('open', props.documentId)
 }
 
@@ -820,6 +895,7 @@ const handleClick = () => {
  * rather than leaving it a preview for the next click to replace.
  */
 const handleDoubleClick = () => {
+  keepName()
   if (isRenaming.value || isFolder.value) return
   api.keep(props.documentId)
 }
@@ -916,6 +992,8 @@ const createChild = type => {
       ? api.createFolder(props.documentId, '')
       : api.createTextDocument(props.documentId, '')
 
+  history.created(created.id)
+
   // A document is opened as it is made — creating one and then having to find
   // it is the worst of both — and the new node opens its own rename once it
   // mounts. The rename takes the focus; it goes back to the document after.
@@ -927,20 +1005,27 @@ const createChild = type => {
 // tree, and New document at the top of it.
 defineExpose({ showContextMenu, createChild })
 
-const confirmDelete = () => {
-  const name = node.value?.title?.trim() || 'Untitled'
-  const hasChildren = childList.value.length > 0
+/**
+ * The row the keys go to once this one is gone: the next one on screen that
+ * is not inside it, or else the one before.
+ * @returns {HTMLElement|undefined}
+ */
+const rowAfter = () => {
+  const row = rowEl.value
+  if (!row) return undefined
+  const rows = visibleRows(row)
+  const at = rows.indexOf(row)
+  return (
+    rows.slice(at + 1).find(other => !nodeEl.value?.contains(other)) ?? rows.slice(0, at).at(-1)
+  )
+}
 
-  confirm.require({
-    header: isFolder.value ? 'Delete folder' : 'Delete document',
-    message: hasChildren
-      ? `Delete "${name}" and everything inside it? This can’t be undone.`
-      : `Delete "${name}"? This can’t be undone.`,
-    icon: 'pi pi-exclamation-triangle',
-    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-    acceptProps: { label: 'Delete', severity: 'danger' },
-    accept: () => api.remove(props.documentId),
-  })
+const moveToTrash = () => {
+  // Without asking: it can be restored from there, and taken back with
+  // Command-Z.
+  const next = rowAfter()
+  history.trash(props.documentId)
+  nextTick(() => next?.focus())
 }
 
 /** Ask before taking a document's link to its Doc away: nothing links it again yet. */
@@ -989,9 +1074,15 @@ const menuItems = computed(() => {
         { label: 'Export', icon: 'pi pi-download', command: exportText },
         { label: 'Duplicate', icon: 'pi pi-clone', command: duplicate }
       )
+      items.push({
+        label: 'Versions…',
+        icon: 'pi pi-history',
+        command: () => versionsPanel.open(props.documentId),
+      })
     }
-    // One linked to a Google Doc syncs with it, from the click, which in a
-    // browser is what lets Google's window open.
+    // One linked to a Google Doc syncs with it, and one linked to none can
+    // go into a new one, from the click, which in a browser is what lets
+    // Google's window open.
     if (driveSync.canSync(props.documentId)) {
       items.push({
         label: 'Google Doc',
@@ -1010,6 +1101,13 @@ const menuItems = computed(() => {
           },
           { label: 'Unlink…', icon: 'pi pi-times', command: confirmUnlink },
         ],
+      })
+    } else if (driveSync.canSyncToNew(props.documentId)) {
+      items.push({
+        label: 'Sync to a new Google Doc',
+        icon: 'pi pi-google',
+        disabled: driveSync.isSyncing(props.documentId),
+        command: () => driveSync.syncToNew(props.documentId),
       })
     }
     // A model puts the structure back into text that lost it — headings,
@@ -1084,6 +1182,16 @@ const menuItems = computed(() => {
       }),
     })
   }
+  // A model describes what is in it, for the chats to find it by. Not a
+  // codebase, which wants a description of its own, and not what is hidden
+  // from the AI.
+  if (aiEnabled.value && isFolder.value && !repository.value && !hiddenEverywhere.value) {
+    items.push({
+      label: 'Explore…',
+      icon: 'pi pi-compass',
+      command: () => emit('explore', props.documentId),
+    })
+  }
   // GitHub only answers the desktop app, so a repository from there can't be
   // read again in a browser; a folder is chosen again, which works anywhere.
   if (isRepositoryFolder.value && (isDesktop() || node.value?.source?.from !== 'github')) {
@@ -1125,7 +1233,7 @@ const menuItems = computed(() => {
       {
         label: 'Delete',
         icon: 'pi pi-trash',
-        command: () => confirmDelete(),
+        command: () => moveToTrash(),
       }
     )
   }
@@ -1150,8 +1258,11 @@ const onMove = event => {
 
 const drop = useTreeDrop()
 
-/** Whether a drop now would put what is being dragged into this folder. */
+/** Whether this folder's row is being held over, to drop into it. */
 const dropTarget = computed(() => drop.into.value === props.documentId)
+
+/** Whether a drop now would put what is being dragged in this folder: its row and all in it show it. */
+const isDestination = computed(() => drop.destination.value === props.documentId)
 
 /**
  * A row of this folder's has started being dragged. The row is the first in
@@ -1159,14 +1270,31 @@ const dropTarget = computed(() => drop.into.value === props.documentId)
  * @param {{item?: HTMLElement}} event
  */
 const onDragStart = event => {
+  keepName()
   const id = event.item?.querySelector('[role="treeitem"]')?.getAttribute('data-document-id')
-  if (id) drop.start(props.storyId, id)
+  if (id) {
+    history.beginMove(id)
+    drop.start(props.storyId, id, event.item)
+  }
   emit('dragging', true)
 }
 
-const onDragEnd = () => {
+/**
+ * The drag is over, and what it moved is one step to take back. The row it
+ * moved is drawn afresh where it landed, and the keys go to it there.
+ * @param {{item?: HTMLElement}} event
+ */
+const onDragEnd = event => {
+  const id = event.item?.querySelector('[role="treeitem"]')?.getAttribute('data-document-id')
   drop.end()
+  history.endMove()
   emit('dragging', false)
+  if (!id) return
+  nextTick(() =>
+    /** @type {HTMLElement|null} */ (
+      document.querySelector(`[role="treeitem"][data-document-id="${id}"]`)
+    )?.focus()
+  )
 }
 
 // A shut folder held over for a moment opens, so the drag can go on in.
@@ -1183,6 +1311,7 @@ watch(dropTarget, over => {
 })
 onBeforeUnmount(() => {
   if (opening) clearTimeout(opening)
+  keepName()
 })
 
 onMounted(() => {
@@ -1192,3 +1321,18 @@ onMounted(() => {
   }
 })
 </script>
+
+<style scoped>
+/* Where the row being dragged would land: at the depth of the folder whose
+   list it is in now, set on the list, rather than the depth it came from.
+   What is in it, when it is a folder, stays behind at the old depth. */
+.sortable-ghost > [role='treeitem'] {
+  padding-left: var(--tree-indent) !important;
+  opacity: 0.5;
+}
+
+.sortable-ghost > [role='group'],
+.sortable-ghost > [data-rename-clash] {
+  display: none;
+}
+</style>

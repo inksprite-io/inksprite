@@ -66,42 +66,44 @@
 - [EngineConfig][62]
   - [Properties][63]
 - [RULES_OFF][64]
-- [SPELLING_KINDS][65]
-- [POSSESSIVE][66]
-- [baseWord][67]
-  - [Parameters][68]
-- [PART][69]
-- [HYPHEN][70]
-- [isHyphenated][71]
-  - [Parameters][72]
-- [][73]
-- [wordAround][74]
-  - [Parameters][75]
-- [harperWords][76]
+- [isOff][65]
+  - [Parameters][66]
+- [SPELLING_KINDS][67]
+- [POSSESSIVE][68]
+- [baseWord][69]
+  - [Parameters][70]
+- [PART][71]
+- [HYPHEN][72]
+- [isHyphenated][73]
+  - [Parameters][74]
+- [][75]
+- [wordAround][76]
   - [Parameters][77]
-- [hyphenatedIn][78]
+- [harperWords][78]
   - [Parameters][79]
-- [replacementFor][80]
+- [hyphenatedIn][80]
   - [Parameters][81]
-- [plainMessage][82]
+- [replacementFor][82]
   - [Parameters][83]
-- [][84]
-- [AROUND][85]
-- [lintHash][86]
-  - [Parameters][87]
-- [lintTexts][88]
+- [plainMessage][84]
+  - [Parameters][85]
+- [][86]
+- [AROUND][87]
+- [lintHash][88]
   - [Parameters][89]
-- [results][90]
-- [infos][91]
-- [info][92]
-- [spelling][93]
-  - [Examples][94]
-- [spelling/worker][95]
-- [linter][96]
-- [hyphenated][97]
-- [queue][98]
-- [handle][99]
-  - [Parameters][100]
+- [lintTexts][90]
+  - [Parameters][91]
+- [results][92]
+- [infos][93]
+- [info][94]
+- [spelling][95]
+  - [Examples][96]
+- [spelling/worker][97]
+- [linter][98]
+- [hyphenated][99]
+- [queue][100]
+- [handle][101]
+  - [Parameters][102]
 
 ## spelling/checker
 
@@ -121,38 +123,38 @@ told, and draws again.
 
 ## CACHE_SIZE
 
-Type: [number][101]
+Type: [number][103]
 
 ## CACHE_SIZE
 
-Type: [number][101]
+Type: [number][103]
 
 ## CACHE_SIZE
 
 How many paragraphs' answers are kept: a long novel's, several times over.
 
-Type: [number][101]
+Type: [number][103]
 
 ## CheckerConfig
 
 What the checker runs on.
 
-Type: [Object][102]
+Type: [Object][104]
 
 ### Properties
 
 - `dialect` **([Dialect][59] | null)** Null for off: the browser's own checker
   instead
-- `words` **[Array][103]<[string][104]>** Words it knows besides its own: the writer's,
+- `words` **[Array][105]<[string][106]>** Words it knows besides its own: the writer's,
   the project's, and the project's names
-- `grammar` **[boolean][105]** Whether grammar is drawn as well as spelling
-- `ignored` **[Array][103]<[string][104]>** Hashes of the lints ignored in the project
+- `grammar` **[boolean][107]** Whether grammar is drawn as well as spelling
+- `ignored` **[Array][105]<[string][106]>** Hashes of the lints ignored in the project
 
 ## WorkerLike
 
 The part of a `Worker` the checker uses, so a test can hand it another.
 
-Type: [Object][102]
+Type: [Object][104]
 
 ## CheckerStatus
 
@@ -187,7 +189,7 @@ Type: [CheckerConfig][5]
 
 ## ignored
 
-Type: [Set][106]<[string][104]>
+Type: [Set][108]<[string][106]>
 
 ## generation
 
@@ -200,7 +202,7 @@ The generation the worker was last told about, or -1 for none yet.
 
 ## cache
 
-Type: [Map][107]<[string][104], [Array][103]<[LintInfo][60]>>
+Type: [Map][109]<[string][106], [Array][105]<[LintInfo][60]>>
 
 ## listeners
 
@@ -222,7 +224,7 @@ Type: ([WorkerLike][7] | null)
 
 - `message` **any**&#x20;
 
-Returns **[Promise][108]\<any>**&#x20;
+Returns **[Promise][110]\<any>**&#x20;
 
 ## active
 
@@ -248,7 +250,7 @@ Set Harper to a dialect and a list of words, in place of the last.
   - `config.dialect` &#x20;
   - `config.words` &#x20;
 
-Returns **[Promise][108]<[Set][106]<[string][104]>>** The hyphenated words, which `lintTexts` is
+Returns **[Promise][110]<[Set][108]<[string][106]>>** The hyphenated words, which `lintTexts` is
 to be given: Harper isn't
 
 ## cached
@@ -257,16 +259,16 @@ What was found in a paragraph, if it has been checked as it now reads.
 
 ### Parameters
 
-- `text` **[string][104]**&#x20;
+- `text` **[string][106]**&#x20;
 
-Returns **([Array][103]<[LintInfo][60]> | [undefined][109])**&#x20;
+Returns **([Array][105]<[LintInfo][60]> | [undefined][111])**&#x20;
 
 ## remember
 
 ### Parameters
 
-- `text` **[string][104]**&#x20;
-- `lints` **[Array][103]<[LintInfo][60]>**&#x20;
+- `text` **[string][106]**&#x20;
+- `lints` **[Array][105]<[LintInfo][60]>**&#x20;
 
 ## lint
 
@@ -276,9 +278,9 @@ were being checked, or the checker failed.
 
 ### Parameters
 
-- `texts` **[Array][103]<[string][104]>**&#x20;
+- `texts` **[Array][105]<[string][106]>**&#x20;
 
-Returns **[Promise][108]\<void>**&#x20;
+Returns **[Promise][110]\<void>**&#x20;
 
 ## shows
 
@@ -289,7 +291,7 @@ and neither once ignored.
 
 - `lint` **[LintInfo][60]**&#x20;
 
-Returns **[boolean][105]**&#x20;
+Returns **[boolean][107]**&#x20;
 
 ## subscribe
 
@@ -322,7 +324,7 @@ The dialects by the region of a language tag. The rest of the English
 speaking world spells as Britain does, nearer than as America does, except
 where it has a dialect of its own here.
 
-Type: Record<[string][104], [Dialect][59]>
+Type: Record<[string][106], [Dialect][59]>
 
 ## isDialect
 
@@ -340,7 +342,7 @@ has none.
 
 ### Parameters
 
-- `language` **([string][104] | [undefined][109])**&#x20;
+- `language` **([string][106] | [undefined][111])**&#x20;
 
 Returns **([Dialect][59] | null)**&#x20;
 
@@ -360,7 +362,7 @@ Returns **[Dialect][59]**&#x20;
 Whether the checker starts on, for this browser: for English, not for a
 language Harper doesn't check.
 
-Returns **[boolean][105]**&#x20;
+Returns **[boolean][107]**&#x20;
 
 ## spelling/engine
 
@@ -401,22 +403,22 @@ Type: (`"american"` | `"british"` | `"australian"` | `"canadian"` | `"indian"`)
 
 One thing Harper found in a paragraph.
 
-Type: [Object][102]
+Type: [Object][104]
 
 ### Properties
 
-- `from` **[number][101]** Where it starts in the text: a position in the
+- `from` **[number][103]** Where it starts in the text: a position in the
   JavaScript string, which Harper's spans already are
-- `to` **[number][101]** Where it ends
-- `kind` **[string][104]** Harper's kind of lint: `Spelling`, `Typo`,
+- `to` **[number][103]** Where it ends
+- `kind` **[string][106]** Harper's kind of lint: `Spelling`, `Typo`,
   `Grammar`, `Agreement` and so on
-- `text` **[string][104]** The text it is about
-- `word` **[string][104]?** For a misspelling in part of a hyphenated word,
+- `text` **[string][106]** The text it is about
+- `word` **[string][106]?** For a misspelling in part of a hyphenated word,
   the whole word: "Wi-Fi" for "Wi". It is what goes into a dictionary.
-- `message` **[string][104]** Harper's account of it, its markdown quotes made
+- `message` **[string][106]** Harper's account of it, its markdown quotes made
   curly
-- `suggestions` **[Array][103]<[string][104]>** What the text could become, best first
-- `hash` **[string][104]?** What Ignore keeps: a hash of the lint and the
+- `suggestions` **[Array][105]<[string][106]>** What the text could become, best first
+- `hash` **[string][106]?** What Ignore keeps: a hash of the lint and the
   text either side of it (`lintHash`). Grammar only, since a word is added
   to a dictionary rather than ignored.
 
@@ -424,18 +426,33 @@ Type: [Object][102]
 
 The checker's settings, as far as Harper is concerned.
 
-Type: [Object][102]
+Type: [Object][104]
 
 ### Properties
 
 - `dialect` **[Dialect][59]**&#x20;
-- `words` **[Array][103]<[string][104]>** Words it is to know besides its own
+- `words` **[Array][105]<[string][106]>** Words it is to know besides its own
 
 ## RULES_OFF
 
 Harper's rules that are off. A long sentence is flagged by its length
-alone, which in fiction is noise. Which others go is for a run over a real
+alone, which in fiction is noise. The rest are style a writer chooses, and
+a character speaks in: swearing, hedging ("I would argue that"), a list
+without the Oxford comma. Which others go is for a run over a real
 manuscript to settle.
+
+## isOff
+
+Whether one of Harper's rules is off: one of `RULES_OFF`, or one that spells
+out a shortened word ("tho", "legit", "cuz"), whose rules are all named
+`Expand…`. A shortening Harper doesn't know is then a misspelling, which
+the writer adds to a dictionary once rather than ignoring each time.
+
+### Parameters
+
+- `rule` **[string][106]**&#x20;
+
+Returns **[boolean][107]**&#x20;
 
 ## SPELLING_KINDS
 
@@ -452,9 +469,9 @@ with. "Tavrek’s" is added as "Tavrek".
 
 ### Parameters
 
-- `word` **[string][104]**&#x20;
+- `word` **[string][106]**&#x20;
 
-Returns **[string][104]**&#x20;
+Returns **[string][106]**&#x20;
 
 ## PART
 
@@ -474,7 +491,7 @@ Whether a word is hyphenated: parts with a hyphen between.
 
 ##
 
-Type: [string][104]
+Type: [string][106]
 
 ## wordAround
 
@@ -484,11 +501,11 @@ written as two hyphens still ends a word.
 
 ### Parameters
 
-- `paragraph` **[string][104]**&#x20;
-- `from` **[number][101]**&#x20;
-- `to` **[number][101]**&#x20;
+- `paragraph` **[string][106]**&#x20;
+- `from` **[number][103]**&#x20;
+- `to` **[number][103]**&#x20;
 
-Returns **[string][104]**&#x20;
+Returns **[string][106]**&#x20;
 
 ## harperWords
 
@@ -499,9 +516,9 @@ as Harper would never match it (`hyphenatedIn`).
 
 ### Parameters
 
-- `words` **[Array][103]<[string][104]>**&#x20;
+- `words` **[Array][105]<[string][106]>**&#x20;
 
-Returns **[Array][103]<[string][104]>**&#x20;
+Returns **[Array][105]<[string][106]>**&#x20;
 
 ## hyphenatedIn
 
@@ -509,9 +526,9 @@ The hyphenated words in a dictionary, without their possessives.
 
 ### Parameters
 
-- `words` **[Array][103]<[string][104]>**&#x20;
+- `words` **[Array][105]<[string][106]>**&#x20;
 
-Returns **[Set][106]<[string][104]>**&#x20;
+Returns **[Set][108]<[string][106]>**&#x20;
 
 ## replacementFor
 
@@ -521,9 +538,9 @@ with something after it. Harper's `SuggestionKind`: 0, 1 and 2.
 ### Parameters
 
 - `suggestion` &#x20;
-- `text` **[string][104]**&#x20;
+- `text` **[string][106]**&#x20;
 
-Returns **[string][104]**&#x20;
+Returns **[string][106]**&#x20;
 
 ## plainMessage
 
@@ -535,13 +552,13 @@ Harper quotes a word in backticks, as markdown; the menu shows it in quotes.
 
 ##
 
-Type: [string][104]
+Type: [string][106]
 
 ## AROUND
 
 How much of the paragraph either side of a lint its hash takes in.
 
-Type: [number][101]
+Type: [number][103]
 
 ## lintHash
 
@@ -554,12 +571,12 @@ cyrb53, a 53-bit string hash, written in base 36.
 
 ### Parameters
 
-- `kind` **[string][104]**&#x20;
-- `paragraph` **[string][104]**&#x20;
-- `from` **[number][101]**&#x20;
-- `to` **[number][101]**&#x20;
+- `kind` **[string][106]**&#x20;
+- `paragraph` **[string][106]**&#x20;
+- `from` **[number][103]**&#x20;
+- `to` **[number][103]**&#x20;
 
-Returns **[string][104]**&#x20;
+Returns **[string][106]**&#x20;
 
 ## lintTexts
 
@@ -568,15 +585,15 @@ Check paragraphs, each on its own.
 ### Parameters
 
 - `linter` **Linter**&#x20;
-- `texts` **[Array][103]<[string][104]>**&#x20;
-- `hyphenated` **[Set][106]<[string][104]>?** Hyphenated words known besides Harper's,
+- `texts` **[Array][105]<[string][106]>**&#x20;
+- `hyphenated` **[Set][108]<[string][106]>?** Hyphenated words known besides Harper's,
   as `configure` gives them (optional, default `new Set()`)
 
 ## results
 
 ## infos
 
-Type: [Array][103]<[LintInfo][60]>
+Type: [Array][105]<[LintInfo][60]>
 
 ## info
 
@@ -651,7 +668,7 @@ The messages so far, handled one after another.
 
 ### Parameters
 
-- `$0` **[Object][102]**&#x20;
+- `$0` **[Object][104]**&#x20;
   - `$0.id` &#x20;
   - `$0.type` &#x20;
   - `$0.rest` **...any**&#x20;
@@ -720,48 +737,50 @@ The messages so far, handled one after another.
 [62]: #engineconfig
 [63]: #properties-2
 [64]: #rules_off
-[65]: #spelling_kinds
-[66]: #possessive
-[67]: #baseword
-[68]: #parameters-12
-[69]: #part
-[70]: #hyphen
-[71]: #ishyphenated
-[72]: #parameters-13
-[73]: #
-[74]: #wordaround
-[75]: #parameters-14
-[76]: #harperwords
+[65]: #isoff
+[66]: #parameters-12
+[67]: #spelling_kinds
+[68]: #possessive
+[69]: #baseword
+[70]: #parameters-13
+[71]: #part
+[72]: #hyphen
+[73]: #ishyphenated
+[74]: #parameters-14
+[75]: #
+[76]: #wordaround
 [77]: #parameters-15
-[78]: #hyphenatedin
+[78]: #harperwords
 [79]: #parameters-16
-[80]: #replacementfor
+[80]: #hyphenatedin
 [81]: #parameters-17
-[82]: #plainmessage
+[82]: #replacementfor
 [83]: #parameters-18
-[84]: #-1
-[85]: #around
-[86]: #linthash
-[87]: #parameters-19
-[88]: #linttexts
+[84]: #plainmessage
+[85]: #parameters-19
+[86]: #-1
+[87]: #around
+[88]: #linthash
 [89]: #parameters-20
-[90]: #results
-[91]: #infos
-[92]: #info
-[93]: #spelling
-[94]: #examples
-[95]: #spellingworker
-[96]: #linter
-[97]: #hyphenated
-[98]: #queue
-[99]: #handle
-[100]: #parameters-21
-[101]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[102]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[103]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[104]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[105]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[106]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
-[107]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[108]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[109]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[90]: #linttexts
+[91]: #parameters-21
+[92]: #results
+[93]: #infos
+[94]: #info
+[95]: #spelling
+[96]: #examples
+[97]: #spellingworker
+[98]: #linter
+[99]: #hyphenated
+[100]: #queue
+[101]: #handle
+[102]: #parameters-22
+[103]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[104]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[105]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[106]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[107]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[108]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
+[109]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[110]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[111]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined

@@ -18,6 +18,7 @@ import { ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
 import { storage } from '@/storage/index.js'
+import { onTablesWritten } from '@/platform/windows.js'
 
 /** @typedef {import('../types/models.js').StoredChatProfile} StoredChatProfile */
 
@@ -46,6 +47,13 @@ export const useChatProfileStore = defineStore('chatProfiles', () => {
       console.error('Failed to load chat profiles from database:', error)
     }
   }
+
+  // Another window wrote them: read again.
+  onTablesWritten(['chatProfiles'], async () => {
+    if (!initializePromise.value) return
+    const rows = await storage.all('chatProfiles')
+    profiles.value = new Map(rows.map(profile => [profile.id, profile]))
+  })
 
   /** @returns {Promise<void>} */
   function ensureInitialized() {

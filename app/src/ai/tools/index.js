@@ -52,6 +52,12 @@
  * server's is opted into: a chat is offered a server's tools only when the
  * selection names the server. See ../../mcp/servers.js.
  *
+ * ## Explore
+ *
+ * `explore_documents` (./explore.js) is a document tool, in the documents
+ * group. It is the one that runs a
+ * job, and the turn waits on it; see jobs/explore.js.
+ *
  * ## The web
  *
  * `web_search` and `read_web_page` (./web.js) are a group of their own,
@@ -79,6 +85,8 @@ import {
   editDocumentDefinition,
   executeEditDocument,
   moveDocumentDefinition,
+  deleteDocumentDefinition,
+  executeDeleteDocument,
   executeMoveDocument,
   listDocumentsDefinition,
   executeListDocuments,
@@ -112,15 +120,25 @@ import {
   executeDrawTarot,
 } from './rpg.js'
 import { USE_SKILL, executeUseSkill, loadableSkills, useSkillDefinition } from './useSkill.js'
+import {
+  EXPLORE_DOCUMENTS,
+  EXPLORE_TIMEOUT_MS,
+  executeExploreDocuments,
+  exploreDocumentsDefinition,
+} from './explore.js'
 import { allServers, getServer, onServersChanged, reachable } from '../../mcp/servers.js'
 import { serverGroup, serverOfGroup } from '../../mcp/names.js'
 import { callServerTool, describeFailure, resultForModel } from '../../mcp/client.js'
 import {
+  SAVE_TIMEOUT_MS,
+  SAVE_WEB_PAGE,
   WEB_GROUP,
   WEB_TIMEOUT_MS,
   executeReadWebPage,
+  executeSaveWebPage,
   executeWebSearch,
   readWebPageDefinition,
+  saveWebPageDefinition,
   webSearchDefinition,
 } from './web.js'
 
@@ -198,6 +216,13 @@ toolRegistry.register(
 )
 toolRegistry.register('edit_document', editDocumentDefinition, executeEditDocument, 'documents')
 toolRegistry.register('move_document', moveDocumentDefinition, executeMoveDocument, 'documents')
+// With a trash to restore from, the model may delete.
+toolRegistry.register(
+  'delete_document',
+  deleteDocumentDefinition,
+  executeDeleteDocument,
+  'documents'
+)
 toolRegistry.register(
   'append_document',
   appendDocumentDefinition,
@@ -212,6 +237,14 @@ toolRegistry.register(
   resolveCommentDefinition,
   executeResolveComment,
   'documents'
+)
+
+toolRegistry.register(
+  EXPLORE_DOCUMENTS,
+  exploreDocumentsDefinition,
+  executeExploreDocuments,
+  'documents',
+  EXPLORE_TIMEOUT_MS
 )
 
 toolRegistry.register('roll_dice', diceToolDefinition, executeDiceTool, 'rpg')
@@ -236,6 +269,13 @@ toolRegistry.register(
   executeReadWebPage,
   WEB_GROUP,
   WEB_TIMEOUT_MS
+)
+toolRegistry.register(
+  SAVE_WEB_PAGE,
+  saveWebPageDefinition,
+  executeSaveWebPage,
+  WEB_GROUP,
+  SAVE_TIMEOUT_MS
 )
 
 /**

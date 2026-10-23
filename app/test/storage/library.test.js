@@ -158,6 +158,29 @@ describe('the library as storage', () => {
     expect(await reopened(library).stories()).toEqual([])
   })
 
+  it('keeps a document in the trash where it was, marked, and lets a new one take its name', async () => {
+    const library = await withProject()
+    await library.storage.documents(STORY)
+    const elara = sample().find(row => row.id === 'elara')
+
+    await library.storage.write('documents', [put('documents', { ...elara, trashed: 5000 })])
+    expect(library.trashed).toEqual([])
+    expect(library.outside.read('My Novel/Notes/Elara.md')).toContain(
+      'trashed: 1970-01-01T00:00:05'
+    )
+
+    const fresh = doc('fresh', 'notes', { title: elara.title, content: 'Another.' })
+    await library.storage.write('documents', [put('documents', fresh)])
+    expect(library.outside.read('My Novel/Notes/Elara.md')).toContain('Another.')
+    expect(library.outside.read('My Novel/Notes/Elara (2).md')).toContain('trashed:')
+
+    const read = await reopened(library).documents(STORY)
+    expect(read.find(row => row.id === 'elara')?.trashed).toBe(5000)
+
+    await library.storage.write('documents', [gone('documents', 'elara')])
+    expect(library.trashed).toEqual(['My Novel/Notes/Elara (2).md'])
+  })
+
   it('writes an imported file’s bytes when its row comes, and trashes both with it', async () => {
     const library = await withProject()
     await library.storage.documents(STORY)
@@ -454,6 +477,24 @@ describe('the library as storage', () => {
     expect(other.trashed).toEqual(['Old'])
     const again = reopened(other)
     expect(byIdSorted(await again.documents(STORY))).toEqual(asRead(sample()))
+  })
+
+  it('keeps a digest out of the frontmatter, and in a backup', async () => {
+    const library = await withProject()
+    await library.storage.documents(STORY)
+    const elara = sample().find(row => row.id === 'elara')
+    const digest = { line: 'Who Elara is.', text: 'Her history.', of: 'x', made: 1 }
+
+    await library.storage.write('documents', [put('documents', { ...elara, digest })])
+
+    expect(library.outside.read('My Novel/Notes/Elara.md')).not.toContain('Who Elara is.')
+    expect(library.outside.read('My Novel/.inksprite/digests/elara.json')).toContain(
+      'Who Elara is.'
+    )
+    const again = reopened(library)
+    expect((await again.documents(STORY)).find(row => row.id === 'elara')?.digest).toEqual(digest)
+    const tables = await again.dump()
+    expect(tables.documents.find(row => row.id === 'elara')?.digest).toEqual(digest)
   })
 
   it("keeps a document's narration in its project's folder, and finds it when reopened", async () => {

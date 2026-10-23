@@ -4,6 +4,7 @@
     ref="field"
     :text="held"
     :start-at="startAt"
+    :caret="api.takesCaret(documentId)"
     class="h-full w-full"
     @input="type"
     @blur="flush"
@@ -11,10 +12,11 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import PlainText from './PlainText.vue'
 import { useDocuments } from '@/composables/useDocuments'
 import { useEditor } from '@/composables/useEditor.js'
+import { goneTo, takeUpMatch } from '@/composables/useProjectSearch.js'
 
 /**
  * A plain document, as the text it is: what the file holds and what the
@@ -52,8 +54,26 @@ const held = computed(() => editor.markdown(props.documentId))
  */
 let startAt = null
 
-/** @type {import('vue').Ref<{ openFind: () => boolean, scroll: () => import('./PlainText.vue').Scroll }|null>} */
+/**
+ * @type {import('vue').Ref<{
+ *   openFind: () => boolean,
+ *   showMatch: (text: string, options: import('@/editor/search.js').SearchOptions, index: number) => void,
+ *   scroll: () => import('./PlainText.vue').Scroll,
+ * }|null>}
+ */
 const field = ref(null)
+
+// A match the project's search picked in this document opens the find on it,
+// once the field is there to show it.
+watch(
+  [field, goneTo],
+  () => {
+    if (!field.value) return
+    const match = takeUpMatch(props.documentId)
+    if (match) field.value.showMatch(match.query, match.options, match.index)
+  },
+  { flush: 'post' }
+)
 
 /**
  * What was typed, into the document.

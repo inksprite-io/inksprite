@@ -33,6 +33,11 @@
  * left touching when the reply between them goes are folded back into one. It
  * was always sent as one — see `mergeAdjacentTurns` — and one message is what
  * lets it be edited, deleted and read as the thing it is. See utils/turns.js.
+ *
+ * An aside is never part of a turn. It is a message of its own however the
+ * writer's turn stands, and nothing is folded into it or it into anything,
+ * because the model reads the turns around it and not the aside. See
+ * ai/asides.js.
  */
 
 import { useChats } from './useChats.js'
@@ -51,7 +56,9 @@ import {
   commandSpeaks,
   commandTag,
   commandSwitchedOff,
+  commandIsAside,
 } from '@/ai/commands.js'
+import { isAside } from '@/ai/asides.js'
 import { CommandError, SummaryCutShortError } from '@/utils/errors.js'
 import { groupTurns } from '@/utils/turns.js'
 import { KEPT_OPENING, compactionCover, isCompaction } from '@/ai/compaction.js'
@@ -61,6 +68,9 @@ import { KEPT_OPENING, compactionCover, isCompaction } from '@/ai/compaction.js'
 /** @typedef {import('../ai/tools/registry.js').ToolContext} ToolContext */
 /** @typedef {import('../ai/commands.js').CommandInput} CommandInput */
 /** @typedef {import('../types/models.js').MessageSegment} MessageSegment */
+
+/** Why an aside can't be part of anything else. See ai/asides.js. */
+const ASIDE_ALONE = '/aside goes in a message of its own.'
 
 /**
  * What a message of the writer's is made of. Every one has carried its pieces
@@ -122,11 +132,14 @@ export function useChatCommands(storyId, chatId) {
    * The turn the writer is still taking, when the last thing in the chat is
    * theirs. See the module note: it is one turn, so it is one message.
    *
+   * Never an aside, which is a message of its own: what is said after one is
+   * part of the conversation, and the aside is not. See ai/asides.js.
+   *
    * @returns {Message|null}
    */
   const openTurn = () => {
     const last = history().at(-1)
-    return last?.role === 'user' && Array.isArray(last.segments) ? last : null
+    return last?.role === 'user' && Array.isArray(last.segments) && !isAside(last) ? last : null
   }
 
   /**
@@ -175,7 +188,14 @@ export function useChatCommands(storyId, chatId) {
       const off = commandSwitchedOff(segment)
       if (off) throw new CommandError(off)
       if (commandTakesTurn(segment)) apart = segment.name
+      // Everything after it is its question already, so only something before
+      // it can be in the way.
+      if (commandIsAside(segment) && segments.length > 1) throw new CommandError(ASIDE_ALONE)
     }
+
+    // An aside is a message of its own, whatever the writer was in the middle
+    // of, and says what it is. See ai/asides.js.
+    const aside = segments.some(segment => segment.type === 'command' && commandIsAside(segment))
 
     // The instant ones run before anything is written, so a chat that is about
     // to be refused is left exactly as it was. One the writer answered for
@@ -219,7 +239,7 @@ export function useChatCommands(storyId, chatId) {
     const closeTurn = () => {
       if (turn.length === 0) return
 
-      const open = openTurn()
+      const open = aside ? null : openTurn()
       let id
       let offset = 0
       if (open) {
@@ -231,7 +251,9 @@ export function useChatCommands(storyId, chatId) {
         chatsApi.writeTurn(open.id, segments, assembleTurn(segments))
         id = open.id
       } else {
-        const written = chatsApi.addMessage(chatId, 'user', assembleTurn(turn), null, turn)
+        const written = aside
+          ? chatsApi.addMessage(chatId, 'user', assembleTurn(turn), null, turn, { aside: true })
+          : chatsApi.addMessage(chatId, 'user', assembleTurn(turn), null, turn)
         if (!written) throw new Error('Failed to add user message')
         id = written.id
       }
@@ -334,7 +356,7 @@ export function useChatCommands(storyId, chatId) {
     // What the stream put on the record while the answer was arriving. It
     // belongs to the answer, and the answer is about to be replaced by the
     // finished one, so it is carried across rather than left behind.
-    /** @type {{result?: string, reasoning?: string, thought?: number}} */
+    /** @type {{result?: string, reasoning?: string, thought?: number, progress?: string}} */
     const streamed = {}
 
     let command
@@ -366,7 +388,8 @@ export function useChatCommands(storyId, chatId) {
       command = { ...askedCommand(parsed), result: streamed.result || '' }
     }
 
-    const { result: _said, ...thinking } = streamed
+    // How far it had got is over once it has answered.
+    const { result: _said, progress: _got, ...thinking } = streamed
     writeCommand(messageId, index, { ...command, ...thinking }, { streamed: true })
 
     if (index === null || index === undefined) {
@@ -404,8 +427,6 @@ export function useChatCommands(storyId, chatId) {
    * @returns {ToolContext}
    */
   const watched = ({ messageId, index, parsed, streamed }, context) => {
-    if (typeof context.consult !== 'function') return context
-
     const started = Date.now()
 
     const show = () => {
@@ -427,8 +448,19 @@ export function useChatCommands(storyId, chatId) {
       writeCommand(messageId, index, command, { streamed: true })
     }
 
+    // One whose answer does not stream says how far it has got instead, on
+    // its record while it runs: `/explore`, a request at a time.
+    /** @param {string} said */
+    const progress = said => {
+      streamed.progress = said
+      show()
+    }
+
+    if (typeof context.consult !== 'function') return { ...context, progress }
+
     return {
       ...context,
+      progress,
       consult: (systemPrompt, toolNames, options) =>
         context.consult(systemPrompt, toolNames, {
           ...options,
@@ -727,6 +759,16 @@ export function useChatCommands(storyId, chatId) {
       ? [{ type: /** @type {const} */ ('command'), command: message.metadata.command }]
       : message?.segments || []
 
+    // An aside stays the one thing it is, and nothing else becomes one: the
+    // message says which it is, and what it says has to agree.
+    const aside = isAside(message)
+    if (
+      aside &&
+      (parsed.length !== 1 || parsed[0].type !== 'command' || !commandIsAside(parsed[0]))
+    ) {
+      throw new CommandError('An aside stays an aside, with /aside at its start.')
+    }
+
     // Everything refusable is refused before a word changes, the same as a
     // submission — and for the same reason.
     for (const segment of parsed) {
@@ -734,6 +776,7 @@ export function useChatCommands(storyId, chatId) {
 
       const { error } = inspectCommand(segment)
       if (error) throw new CommandError(error)
+      if (!aside && commandIsAside(segment)) throw new CommandError(ASIDE_ALONE)
 
       // A turn holds what answers into it, and a message that answers alone
       // holds only itself. Neither can become the other in place.

@@ -1,6 +1,6 @@
 ---
 title: Web Search
-description: Let the model search the web and read pages through Exa, Kagi or Brave, and keep the pages it read in your project.
+description: Let the model search the web and read pages through Exa, Kagi or Brave, and keep the pages and documents it finds in your project.
 ---
 
 import Screenshot from '../../components/Screenshot.astro';
@@ -47,8 +47,8 @@ a key again; paste it under **Key**.
 
 A chat searches when its profile is on under **Used in chats on**. To change
 one chat, click the gear in the message box, open **Tools**, and switch **Web**
-on or off. Its two tools, **Web search** and **Read web page**, can be switched
-off one at a time. The chat keeps your choice until you move it to another
+on or off. Its three tools, **Web search**, **Read web page** and **Save web
+page**, can be switched off one at a time. The chat keeps your choice until you move it to another
 profile; then it follows that profile.
 
 **Web** is listed only while a service is chosen, with its key if it needs one.
@@ -69,6 +69,28 @@ its reply to see what it searched for, which pages it read, and what came back.
 The pages the model read stay in the conversation until a summary takes the
 place of the turns that read them, so a follow-up about one doesn't read it
 again. The [research guide](/research/) has this example in full.
+
+The model reads PDFs and Word files on the web as well as pages. Exa and Kagi
+read them for it; with Brave, the desktop app does.
+
+## The model keeps what it finds
+
+When the model finds a page or a document worth keeping, a source you'll want
+or one it will come back to, it saves it to the project. It asks first: the
+turn shows **Save** with the address and the folder it goes in.
+
+- **Allow** saves this one.
+- **Always allow** saves this one and every one after it without asking.
+- **Deny** leaves it out, and the model is told so.
+
+To be asked again after **Always allow**, switch on **Ask before saving
+pages** in **Settings** › **Connections**, under **Web search**.
+
+In the desktop app, a PDF or another file is saved as the file itself, as if
+you had imported it. In a browser, most sites won't hand the file to the page,
+so it's saved as its text. A page is saved as its text either way, with its
+address and the day in its first line. The model doesn't save the same address
+twice.
 
 ## Save a page to the project
 

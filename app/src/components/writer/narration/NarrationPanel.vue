@@ -142,15 +142,6 @@
           >
             {{ reading.error }}
           </Message>
-          <Message
-            v-else-if="reading?.status === 'stopped'"
-            severity="secondary"
-            size="small"
-            :closable="false"
-            data-notice="stopped"
-          >
-            Stopped after {{ reading.done }} of {{ reading.total }}.
-          </Message>
 
           <NarrationPlayer ref="player" :url="reading?.url ?? ''" @time="time = $event" />
         </section>

@@ -13,11 +13,19 @@ import { useChatsStore } from '../../src/stores/chatsStore'
 import { clearChatsInstances, useChats } from '../../src/composables/useChats'
 import { LONG_PRESS_MS } from '../../src/composables/useLongPress.js'
 import { OPEN_AFTER, useTreeDrop } from '../../src/composables/useTreeDrop.js'
+import { useTreeHistory } from '../../src/composables/useTreeHistory.js'
 import { useApplicationState } from '../../src/composables/useApplicationState'
 import { useCardLibraryPanel } from '../../src/composables/useCardLibraryPanel.js'
 
 const reextractFile = vi.fn()
 vi.mock('../../src/files/write.js', () => ({ reextractFile: (...args) => reextractFile(...args) }))
+
+/** @type {() => Promise<any>} */
+let signIn = () => Promise.resolve(null)
+vi.mock('../../src/drive/session.js', async importOriginal => ({
+  ...(await importOriginal()),
+  signInFor: () => signIn(),
+}))
 
 const downloadBlob = vi.fn()
 vi.mock('../../src/files/download.js', async importOriginal => ({
@@ -70,15 +78,10 @@ vi.mock('../../src/stores/storiesStore', () => ({
   }),
 }))
 
-// The summary panel pulls in AI plumbing this suite has no interest in.
 const platform = vi.hoisted(() => ({ desktop: false }))
 vi.mock('../../src/platform/desktop.js', async importOriginal => ({
   ...(await importOriginal()),
   isDesktop: () => platform.desktop,
-}))
-
-vi.mock('../../src/components/writer/tree/DocumentSummary.vue', () => ({
-  default: { name: 'DocumentSummary', template: '<div class="summary-stub" />' },
 }))
 
 const mountNode = (documentId, props = {}) =>
@@ -184,6 +187,152 @@ describe('DocumentNode', () => {
     await wrapper.find('.group').trigger('dblclick')
 
     expect(api.tabs.value.preview).toBeNull()
+  })
+
+  describe('clicked on its title while it is open', () => {
+    afterEach(() => vi.useRealTimers())
+
+    /** Click a row's title, as a mouse does. */
+    const clickTitle = async (wrapper, detail = 1) => {
+      await wrapper.find('.group').trigger('pointerdown', { pointerType: 'mouse' })
+      await wrapper.find('[data-title]').trigger('click', { detail })
+    }
+
+    it('renames after a moment, as Finder does', async () => {
+      vi.useFakeTimers()
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      const wrapper = mountNode(chapter.id, { activeDocumentId: chapter.id })
+
+      await clickTitle(wrapper)
+      expect(wrapper.find('input').exists()).toBe(false)
+      vi.advanceTimersByTime(1000)
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.find('input').exists()).toBe(true)
+      expect(wrapper.emitted('open')).toBeUndefined()
+    })
+
+    it('does not rename on a double-click, which keeps the tab', async () => {
+      vi.useFakeTimers()
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      const wrapper = mountNode(chapter.id, { activeDocumentId: chapter.id })
+
+      await clickTitle(wrapper)
+      await clickTitle(wrapper, 2)
+      await wrapper.find('.group').trigger('dblclick')
+      vi.advanceTimersByTime(1000)
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.find('input').exists()).toBe(false)
+    })
+
+    it('does not rename once something else is pressed, or under a finger', async () => {
+      vi.useFakeTimers()
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      const wrapper = mountNode(chapter.id, { activeDocumentId: chapter.id })
+
+      await clickTitle(wrapper)
+      document.dispatchEvent(new Event('pointerdown'))
+      vi.advanceTimersByTime(1000)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('input').exists()).toBe(false)
+
+      await wrapper.find('.group').trigger('pointerdown', { pointerType: 'touch' })
+      await wrapper.find('[data-title]').trigger('click', { detail: 1 })
+      vi.advanceTimersByTime(1000)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('input').exists()).toBe(false)
+    })
+
+    it('opens a document that is not open, and does not rename it', async () => {
+      vi.useFakeTimers()
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      const wrapper = mountNode(chapter.id, { activeDocumentId: 'something_else' })
+
+      await clickTitle(wrapper)
+      vi.advanceTimersByTime(1000)
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.emitted('open')).toEqual([[chapter.id]])
+      expect(wrapper.find('input').exists()).toBe(false)
+    })
+  })
+
+  it('gives the keys back to the row once a name is settled, for the arrows and Command-Z', async () => {
+    const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+    const wrapper = mountInTree(chapter.id)
+    await row(wrapper, chapter.id).trigger('keydown', { key: 'F2' })
+
+    const input = wrapper.find('input')
+    await input.setValue('Chapter One')
+    await input.trigger('keyup.enter')
+    await wrapper.vm.$nextTick()
+
+    expect(document.activeElement).toBe(row(wrapper, chapter.id).element)
+    wrapper.unmount()
+  })
+
+  it('lines a document up with the twisty of a folder beside it, with no gap kept for one', () => {
+    const act = api.createFolder('manuscript_story_1', 'First Act')
+    const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+
+    const first = id => mountNode(id).find('.group').element.firstElementChild
+    expect(first(act.id).tagName).toBe('BUTTON')
+    expect(first(chapter.id).hasAttribute('data-node-icon')).toBe(true)
+  })
+
+  it('keeps a rename, a delete and a drag to take back', async () => {
+    const act = api.createFolder('manuscript_story_1', 'First Act')
+    const chapter = api.createTextDocument(act.id, 'Chapter 1')
+    const loose = api.createTextDocument('notes_story_1', 'Loose')
+    const history = useTreeHistory('story_1')
+    const wrapper = mountNode(act.id)
+    const menu = () => wrapper.findComponent({ name: 'ContextMenu' }).props('model')
+
+    menu()
+      .find(item => item.label === 'Rename')
+      .command()
+    await wrapper.vm.$nextTick()
+    await wrapper.find('input').setValue('Act One')
+    await wrapper.find('input').trigger('keyup.enter')
+    expect(history.labelOf(history.nextUndo())).toBe('Rename “Act One”')
+
+    // A drag out of the folder, as the lists report it.
+    const lists = wrapper.findComponent({ name: 'Draggable' })
+    const item = wrapper.find(`[data-document-id="${chapter.id}"]`).element.parentElement
+    lists.vm.$emit('start', { item })
+    api.moveInto('notes_story_1', chapter.id)
+    lists.vm.$emit('end', { item })
+    expect(history.labelOf(history.nextUndo())).toBe('Move “Chapter 1”')
+
+    mountNode(loose.id)
+      .findComponent({ name: 'ContextMenu' })
+      .props('model')
+      .find(item => item.label === 'Delete')
+      .command()
+    expect(history.labelOf(history.nextUndo())).toBe('Delete “Loose”')
+
+    history.undo()
+    history.undo()
+    expect(api.get(chapter.id).parentId).toBe(act.id)
+    expect(api.get(loose.id).parentId).toBe('notes_story_1')
+  })
+
+  it('keeps a document made, or copied, to take back', () => {
+    const act = api.createFolder('manuscript_story_1', 'First Act')
+    const chapter = api.createTextDocument(act.id, 'Chapter 1')
+    const history = useTreeHistory('story_1')
+    const menu = id => mountNode(id).findComponent({ name: 'ContextMenu' }).props('model')
+
+    menu(act.id)
+      .find(item => item.label === 'New folder')
+      .command()
+    expect(history.nextUndo().verb).toBe('Create')
+
+    menu(chapter.id)
+      .find(item => item.label === 'Duplicate')
+      .command()
+    expect(history.labelOf(history.nextUndo())).toBe('Duplicate “Chapter 1 (2)”')
   })
 
   it('twists a folder open and shut instead of opening it', async () => {
@@ -473,7 +622,7 @@ describe('DocumentNode', () => {
       document.dispatchEvent(over)
     }
 
-    it('marks a folder’s row as where the drop goes, and opens a shut one after a moment', async () => {
+    it('marks a folder as where the drop goes, and opens a shut one after a moment', async () => {
       vi.useFakeTimers()
       const act = api.createFolder('manuscript_story_1', 'First Act')
       api.createTextDocument(act.id, 'Opening')
@@ -484,7 +633,8 @@ describe('DocumentNode', () => {
 
       holdOver(row(wrapper, act.id), loose.id)
       await wrapper.vm.$nextTick()
-      expect(row(wrapper, act.id).attributes('data-drop-target')).toBe('true')
+      // The folder whole, its row and what is in it.
+      expect(wrapper.attributes('data-drop-target')).toBe('true')
 
       vi.advanceTimersByTime(OPEN_AFTER)
       await wrapper.vm.$nextTick()
@@ -1213,6 +1363,28 @@ describe('DocumentNode', () => {
       expect(importsOf(mountNode(act.id)).map(item => item.label)).not.toContain('Character card…')
     })
 
+    it('offers a text document linked to no Doc a new one, and a linked one its Doc', () => {
+      const store = useDocumentsStore()
+      const doc = api.createTextDocument('notes_story_1', 'Loose')
+      const top = wrapper =>
+        wrapper
+          .findComponent({ name: 'ContextMenu' })
+          .props('model')
+          .map(item => item.label)
+      expect(top(mountNode(doc.id))).not.toContain('Sync to a new Google Doc')
+
+      vi.stubEnv('VITE_GOOGLE_CLIENT_ID', 'client-1')
+      try {
+        expect(top(mountNode(doc.id))).toContain('Sync to a new Google Doc')
+        store.updateDocument(doc.id, { drive: { id: 'doc-1' } })
+        const linked = top(mountNode(doc.id))
+        expect(linked).toContain('Google Doc')
+        expect(linked).not.toContain('Sync to a new Google Doc')
+      } finally {
+        vi.unstubAllEnvs()
+      }
+    })
+
     it('offers Google Drive in it only when the build names a Google client', () => {
       const act = api.createFolder('manuscript_story_1', 'First Act')
       expect(importsOf(mountNode(act.id)).map(item => item.label)).not.toContain('Google Drive…')
@@ -1259,6 +1431,105 @@ describe('DocumentNode', () => {
       await store.updateJob(job.id, { status: 'done' })
       await wrapper.vm.$nextTick()
       expect(wrapper.find('[data-node-icon]').classes()).not.toContain('pi-spinner')
+    })
+  })
+
+  describe('a document syncing with its Google Doc', () => {
+    it('spins its icon until the sync is done', async () => {
+      const made = api.createTextDocument('notes_story_1', 'Rules')
+      useDocumentsStore().updateDocument(made.id, { drive: { id: 'doc-1' } })
+      /** @type {(value: null) => void} */
+      let finish = () => {}
+      signIn = () => new Promise(resolve => (finish = resolve))
+      vi.stubEnv('VITE_GOOGLE_CLIENT_ID', 'client-1')
+
+      const wrapper = mountNode(made.id)
+      const doc = wrapper
+        .findComponent({ name: 'ContextMenu' })
+        .props('model')
+        .find(item => item.label === 'Google Doc')
+      const done = doc.items.find(item => item.label === 'Sync').command()
+      await wrapper.vm.$nextTick()
+
+      const icon = () => wrapper.find('[data-node-icon]')
+      expect(icon().classes()).toContain('pi-spinner')
+      expect(icon().attributes('title')).toBe('Syncing with Google Docs')
+
+      finish(null)
+      await done
+      await wrapper.vm.$nextTick()
+      expect(icon().classes()).not.toContain('pi-spinner')
+      signIn = () => Promise.resolve(null)
+      vi.unstubAllEnvs()
+    })
+  })
+
+  describe('deleted', () => {
+    it('goes to the trash without asking, and what is in it with it', () => {
+      const folder = api.createFolder('notes_story_1', 'Places')
+      const inside = api.createTextDocument(folder.id, 'Harbor')
+      const wrapper = mountNode(folder.id)
+
+      wrapper
+        .findComponent({ name: 'ContextMenu' })
+        .props('model')
+        .find(item => item.label === 'Delete')
+        .command()
+
+      expect(document.querySelector('.p-confirmdialog')).toBeNull()
+      expect(api.get(folder.id)).toBeNull()
+      expect(api.get(inside.id)).toBeNull()
+      expect(api.trashed.value.map(doc => doc.id)).toEqual([folder.id])
+    })
+  })
+
+  describe('explored', () => {
+    const labelsOf = wrapper =>
+      wrapper
+        .findComponent({ name: 'ContextMenu' })
+        .props('model')
+        .map(item => item.label)
+        .filter(Boolean)
+
+    it('offers Explore on a folder and on the project, and on nothing else', () => {
+      const folder = api.createFolder('notes_story_1', 'Places')
+      const text = api.createTextDocument('notes_story_1', 'Elara')
+
+      expect(labelsOf(mountNode(folder.id))).toContain('Explore…')
+      expect(labelsOf(mountNode('root_story_1', { canDelete: false }))).toContain('Explore…')
+      expect(labelsOf(mountNode(text.id))).not.toContain('Explore…')
+
+      api.setHidden(folder.id, true)
+      expect(labelsOf(mountNode(folder.id))).not.toContain('Explore…')
+    })
+
+    it('asks its tree to explore it', () => {
+      const wrapper = mountNode('notes_story_1')
+      wrapper
+        .findComponent({ name: 'ContextMenu' })
+        .props('model')
+        .find(item => item.label === 'Explore…')
+        .command()
+      expect(wrapper.emitted('explore')).toEqual([['notes_story_1']])
+    })
+
+    it('says so on the spinner while it is being explored', async () => {
+      const { useJobsStore } = await import('../../src/stores/jobsStore.js')
+      const store = useJobsStore()
+      const job = await store.createJob({
+        storyId: 'story_1',
+        kind: 'explore',
+        runsOn: { providerId: 'provider_1', model: 'chat-model' },
+        documentId: 'notes_story_1',
+        title: 'Explore notes',
+        steps: [{ id: 'a', label: 'a', status: 'running' }],
+      })
+      await store.updateJob(job.id, { status: 'running' })
+
+      const wrapper = mountNode('notes_story_1')
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.find('[data-node-icon]').attributes('title')).toBe('Exploring')
     })
   })
 

@@ -162,10 +162,12 @@ async function save() {
     saving.value = false
   }
   const parentId = folderId.value || rootId
+  // A page keeps its address, so the model does not save it a second time.
   const document = documents.createTextDocument(
     parentId,
     documents.uniqueTitle(parentId, title.value.trim()),
-    savedContent({ result, server: props.server, tool: props.tool, args: props.args })
+    savedContent({ result, server: props.server, tool: props.tool, args: props.args }),
+    page.value ? { url: page.value.url } : {}
   )
   localStorage.set(lastFolderKey, parentId)
   emit('saved', document)

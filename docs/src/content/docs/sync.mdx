@@ -1,0 +1,214 @@
+---
+title: Sync Between Devices
+description: Keep your projects and setup on every device you use, and share a project with friends, encrypted so that the server can't read them.
+---
+
+:::note[Private preview]
+Sync is open to a few testers for now, by invitation.
+:::
+
+Sync keeps your work on every device you sign in on: the desktop app on two
+computers, say, and a browser on your phone. Each device keeps a whole copy and
+works offline, and the sync server at `sync.inksprite.io` passes the changes
+between them. Everything is encrypted on your device before it's sent, so the
+server can't read it.
+
+Sync is optional. Without it, your work stays on the device it's on. With it,
+you can also [share a project](#share-a-project) with friends who have
+accounts.
+
+## Make an account
+
+For now, an account takes an invitation. Open the link in it, and inksprite
+opens **Settings** › **System** › **Sync** on **Create account**, with the
+**Sign-up code** filled in. The desktop app doesn't open the link: choose
+**Create account** there, and type the code, the part of the link after
+`invite=`.
+
+1. Type a **Name**. It's 3 to 30 of the letters a to z, digits and hyphens,
+   with each hyphen between two of the others: `sam-k`, not `-sam` or
+   `sam--k`. Capitals don't make it another name.
+2. Type a **Passphrase** of 12 characters or more.
+3. Click **Create account**.
+
+inksprite shows your **Recovery code**. If you forget the passphrase, it's the
+only way back into the account: no one can reset a passphrase, us included.
+Click **Copy**, keep the code where you keep the passphrase, and click
+**Done**. It isn't shown again.
+
+The device then sends up everything it has.
+
+## Sign in on another device
+
+Open **Settings** › **System** › **Sync** there, type your **Name** and
+**Passphrase**, and click **Sign in**. Each device asks for the passphrase
+once.
+
+The device takes your projects and setup from the account, and adds what only
+it had: a project made there goes to your other devices too. An imported file,
+such as a PDF, comes down the first time you open it, so a phone doesn't fetch
+every one at once. Its text is there from the start, for you and the model to
+search. Opened offline before then, it says **Not on this device yet**, with
+**Try again**.
+
+## What syncs
+
+- Every project: its documents and folders, imported files, chats, the trash,
+  and each document's [versions](/editor/#versions).
+- Your setup: your AI connections with their keys, presets, chat profiles,
+  skills, MCP servers and web search, your
+  [card library](/roleplay/#keep-your-cards-in-the-library), and the choices
+  in **Settings** that a [settings file](/projects/#move-your-settings)
+  carries, your dictionary among them.
+
+What stays with each device:
+
+- Sign-ins to [MCP servers](/mcp/) and [Google Drive](/google-docs/): sign in
+  on each device.
+- A few settings that belong to the device, such as **Debug** and whether the
+  spell checker is on.
+- Where you left each project: its tabs and panels.
+- [Narration](/narration/) audio, which can be made again.
+- A job under way, such as a [conversion](/files/#convert-to-markdown). It
+  runs on the device that started it, and what it makes syncs.
+
+## While you work
+
+A change goes to your other devices a few seconds after you make it, and shows
+there even in a document that's open. Offline, changes wait on the device, and
+go when it's back online.
+
+Edits to one document on two devices come together: edits to different
+paragraphs, or to different words of one, both stand. Where both changed the
+same words, the device that synced last wins, and the other words are kept as a
+[version](/editor/#versions) of the document, to restore or copy from.
+
+A delete on one device goes to the [trash](/projects/#delete-and-the-trash) on
+all of them, and can be restored from any.
+
+Under **Sync**, a line says what's happening: **Up to date**, how many changes
+are waiting, or what went wrong. **Sync now** syncs at once.
+
+If another device, or someone you share a project with, has synced from a
+newer version of inksprite, this one says *Some changes can't sync until
+inksprite is updated*, with **Update** once the update is ready. What came from
+the newer version waits on the server until you update, and your own changes
+to anything it touched wait on this device.
+
+## Keep a project on this device only
+
+While you're signed in, choose **Keep on this device only…** from
+**Projects**, or from the project's menu, and confirm. The project leaves the
+sync server, and your other devices move it to their trash. Its files that are
+only on the server are downloaded first.
+
+**Sync this project**, in the same place, sends it up again.
+**Settings** › **System** › **Sync** names the projects you keep this way.
+
+## Share a project
+
+You can share a project with friends who have accounts too. Everyone you share
+it with can write in it, comment, and change its documents and folders, and
+their changes reach you as yours reach them. Chats aren't shared: each
+person's chats in the project stay theirs, on their own devices.
+
+Before you share, update inksprite on every device you sync. One that hasn't
+been updated can't sync a shared project, and says it waits for an update.
+
+### Your friend code
+
+In **Settings** › **System** › **Sync**, type a name under **Name others see**.
+It's the name the people you share with see, and it can be different from your
+account's name, which stays yours. Your **Friend code** then shows below it.
+Click the copy button beside it, and send the code to whoever wants to share a
+project with you.
+
+Your friend code doesn't sign in to anything. It only tells their device who
+you are, and lets it check that the server hasn't swapped in someone else.
+
+### Share yours
+
+1. Choose **Share…** from **Projects**, or from the project's menu.
+2. If you haven't given a name for others to see, type one.
+3. Paste your friend's **Friend code**, and click **Share**.
+
+The project appears in your friend's projects the next time their devices
+sync. **Share…** lists who has it, and the cross beside someone (**Remove**)
+takes them out. A removed friend keeps what they already had, in their trash.
+
+Sharing first sends your chats in the project again, encrypted so that only you
+can read them. If a reply is still being written in one of them, let it finish
+and try again.
+
+A shared project counts toward your account's storage, with everything your
+friends add to it.
+
+### A project shared with you
+
+It's in your projects like your own. Its menu has **People…**, which lists who
+has it, and **Leave project…** in place of **Delete project**. Leaving moves it
+to your trash and stops it syncing. Only its owner can share it with you again.
+
+If its owner deletes it, it moves to your trash as it does to theirs, and
+restoring it there restores it for everyone. Once it's gone from their trash,
+it goes from your devices too, unless you were changing it then: then it stays
+in your trash with your changes.
+
+### Working together
+
+Comments show who wrote them, by the name each person shows, and you can only
+edit your own. When two of you change the same words, the one who synced last
+wins, and the other's words are kept as a [version](/editor/#versions) of the
+document, as between your own devices.
+
+## Your account
+
+In **Settings** › **System** › **Sync**, once you're signed in:
+
+- A line says how much the account holds, as in *120 MB of 2 GB used*. An
+  account has 2 GB unless its invitation says otherwise, and imported files
+  are most of what it holds. When it's full, the status line says so, and
+  changes that don't fit wait on the device.
+- **Devices** lists the devices signed in, this one first. The arrow beside
+  another (**Sign out**) signs it out. What it has stays on it, keys included,
+  so if it's lost, change your AI providers' keys too.
+- **Send diagnostics** sends the server counts of what sync did on this
+  device, such as how many changes went each way and how many rounds failed.
+  Never your text, titles or names. See [About](/about/#sync).
+- **Make a recovery code…**, or **New recovery code…**, asks for your
+  passphrase and shows a new code. The old one stops working.
+- **Change passphrase…** asks for the passphrase you have and a new one. Your
+  other devices stay signed in.
+- **Sign out** signs this device out. Its projects stay on it.
+
+Restoring a whole [backup](/projects/#back-up-everything) signs the device out
+too. Sign in again, and what the backup brought syncs as it would from a new
+device.
+
+## Forgot your passphrase
+
+Choose **Recover**, type your **Name**, your **Recovery code** and a **New
+passphrase**, and click **Recover account**. inksprite shows a new recovery
+code, since each one works once.
+
+Without the passphrase or the recovery code, no one can open the account. Your
+devices still have everything on them; only the copy on the server is lost.
+
+## What the server sees
+
+Your passphrase never leaves your device. The keys made from it encrypt your
+projects and setup, so the server keeps them but can't read them. It does see
+your account's name, what your devices call themselves (such as *Safari on
+iPhone*), how many records you sync and how large they are, when they change,
+and the addresses your devices connect from.
+
+Your keys sync too, encrypted like the rest. So someone who has your
+passphrase has your AI providers' keys as well as your writing: use a
+passphrase you don't use anywhere else.
+
+If you share a project, the people you share it with can read it, but the
+server still can't. It does see who each project is shared with, and keeps
+the name others see as it keeps your account's name, unencrypted. Your friend
+code is made from a key your devices create for sharing. The server keeps its
+public half for others to find you by, and its private half encrypted like the
+rest.

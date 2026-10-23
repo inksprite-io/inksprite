@@ -81,7 +81,19 @@ const MAX_SIDES = 1000
 
 /** Terms of `XdY`, split off the modifiers between them. */
 const DIE_TERM = /^\+?(\d*)d(\d+)$/i
+/** `min(2d20)`, `max(2d20)`: dice of which only one counts. */
+const KEPT_TERM = /^\+?(min|max)\((.*)\)$/i
 const CONSTANT_TERM = /^([+-]?\d+)$/
+
+/**
+ * Dice of one kind in the notation, and which of them count: all of them, or
+ * only the lowest or the highest.
+ *
+ * @typedef {Object} DiceTerm
+ * @property {number} count
+ * @property {number} sides
+ * @property {'min'|'max'} [keep]
+ */
 
 /**
  * Read dice notation without rolling it.
@@ -96,21 +108,31 @@ const CONSTANT_TERM = /^([+-]?\d+)$/
  * writer meant to subtract is rare enough that reading it wrong is worse than
  * refusing it.
  *
+ * `min(2d20)+1` and `max(2d20)+1` count only the lowest or the highest of the
+ * dice in them: disadvantage and advantage. Dice of one kind, because the
+ * higher of a d20 and a d4 is not a roll anyone makes.
+ *
  * @param {string} notation - What the writer typed
- * @returns {{notation: string, dice: Array<{count: number, sides: number}>, modifier: number}|{error: string}}
+ * @returns {{notation: string, dice: DiceTerm[], modifier: number}|{error: string}}
  */
 export function parseDice(notation) {
   const written = (notation || '').trim()
   if (!written) return { error: 'Say what to roll, like 3d6+2.' }
 
-  /** @type {Array<{count: number, sides: number}>} */
+  /** @type {DiceTerm[]} */
   const dice = []
   let modifier = 0
 
   // Split before each sign rather than on it, so the sign stays with the term
-  // it belongs to and a leading one does not leave an empty first term.
-  for (const term of written.replace(/\s+/g, '').split(/(?=[+-])/)) {
-    const die = DIE_TERM.exec(term)
+  // it belongs to and a leading one does not leave an empty first term; and
+  // not inside parentheses, so `min(2d20+1)` is one term to say is wrong.
+  for (const term of written.replace(/\s+/g, '').split(/(?=[+-])(?![^(]*\))/)) {
+    const kept = KEPT_TERM.exec(term)
+    const die = DIE_TERM.exec(kept ? kept[2] : term)
+    if (kept && !die) {
+      const keep = kept[1].toLowerCase()
+      return { error: `Put dice of one kind in ${keep}(), like ${keep}(2d20).` }
+    }
     if (die) {
       const count = die[1] === '' ? 1 : Number(die[1])
       const sides = Number(die[2])
@@ -120,7 +142,8 @@ export function parseDice(notation) {
       if (sides < 2 || sides > MAX_SIDES) {
         return { error: `A die has between 2 and ${MAX_SIDES} sides, not ${sides}.` }
       }
-      dice.push({ count, sides })
+      const keep = /** @type {'min'|'max'|undefined} */ (kept?.[1].toLowerCase())
+      dice.push(keep ? { count, sides, keep } : { count, sides })
       continue
     }
 
@@ -149,10 +172,41 @@ export function parseDice(notation) {
  * @typedef {Object} DiceRoll
  * @property {string} roll - The notation, as written
  * @property {Record<string, number[]>} dice - What each die came up, by kind:
- *   `{d6: [4, 2, 5], d4: [3]}`
+ *   `{d6: [4, 2, 5], d4: [3]}`. Every die thrown, the ones `min` and `max`
+ *   passed over too, in the notation's order.
  * @property {number} modifier - Everything added or taken away, summed
  * @property {number} total
  */
+
+/**
+ * The total the notation makes of the dice: each term's dice taken in turn
+ * from their kind, and added up, or the lowest or highest of them, with the
+ * modifier on top.
+ *
+ * Apart from the roll because a roll the writer edits is worked out again from
+ * the dice they wrote. See ../commands.js.
+ *
+ * @param {{dice: DiceTerm[], modifier: number}} asked - The notation, read
+ * @param {Record<string, number[]>} dice - What the dice came up, by kind, as
+ *   many of each as the notation throws
+ * @returns {number}
+ */
+export function diceTotal(asked, dice) {
+  /** @type {Record<string, number>} */
+  const taken = {}
+  let total = asked.modifier
+  for (const { count, sides, keep } of asked.dice) {
+    const kind = `d${sides}`
+    const from = taken[kind] ?? 0
+    const faces = dice[kind].slice(from, from + count)
+    taken[kind] = from + count
+
+    if (keep === 'min') total += Math.min(...faces)
+    else if (keep === 'max') total += Math.max(...faces)
+    else total += faces.reduce((sum, face) => sum + face, 0)
+  }
+  return total
+}
 
 /**
  * Roll what the notation asks for.
@@ -166,17 +220,12 @@ export function rollDice(notation) {
 
   /** @type {Record<string, number[]>} */
   const dice = {}
-  let total = asked.modifier
   for (const { count, sides } of asked.dice) {
     const kind = (dice[`d${sides}`] ??= [])
-    for (let i = 0; i < count; i++) {
-      const rolled = rollDie(sides)
-      kind.push(rolled)
-      total += rolled
-    }
+    for (let i = 0; i < count; i++) kind.push(rollDie(sides))
   }
 
-  return { roll: asked.notation, dice, modifier: asked.modifier, total }
+  return { roll: asked.notation, dice, modifier: asked.modifier, total: diceTotal(asked, dice) }
 }
 
 /**

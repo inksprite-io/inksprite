@@ -258,7 +258,7 @@
   - [Parameters][254]
 - [reextractFile][255]
   - [Parameters][256]
-- [noteFor][257]
+- [isScan][257]
   - [Parameters][258]
 
 ## files/batch
@@ -1016,6 +1016,10 @@ Type: [Array][260]<{key: [string][261], blob: [Blob][271]}>
 A text document handed out as a file: its markdown, and with
 its pictures, a `.zip`.
 
+It goes as its text stands: a suggestion waiting on the writer has changed
+nothing yet, and its markup would read as both versions of each word in
+any other app. Comments go with it, in their markup.
+
 A document with no pictures goes as the markdown file it is kept as. One
 with pictures goes as a `.zip` of that file and an `images` folder beside
 it, holding each picture its text shows, its paths written to them: a
@@ -1036,8 +1040,8 @@ A text document as the file to hand out.
 
 ### Parameters
 
-- `document` **{title: [string][261]}**&#x20;
-- `content` **[string][261]** Its markdown as it stands
+- `document` &#x20;
+- `markdown` **[string][261]** Its markdown, the editor's where it is open
 - `read` &#x20;
 
 Returns **[Promise][263]<{blob: [Blob][271], filename: [string][261]}>**&#x20;
@@ -1260,7 +1264,7 @@ Returns **[boolean][262]**&#x20;
 
 ## sizeLabel
 
-A size as a person reads one: `1.2 MB`, `640 KB`, `12 bytes`.
+A size as a person reads one: `2 GB`, `1.2 MB`, `640 KB`, `12 bytes`.
 
 ### Parameters
 
@@ -1711,7 +1715,8 @@ the media type, the size, and the text that was read out of the file as
 its `content`. The bytes go to the files table under the document's id.
 Two writes, and the row is written first: a document without its file is
 a document the tree can still show and the model can still read, whereas
-bytes without a document are bytes nothing will ever find.
+bytes without a document are bytes nothing will ever find. The file opened
+in between waits for its bytes (`filesStore`).
 
 The text can be read out again later, from the same bytes, when the first
 reading was not good enough — `reextractFile`.
@@ -1821,17 +1826,16 @@ is.
 Returns **[Promise][263]<([InspectedFile][171] | null)>** What was read, or null when there
 were no bytes to read it from
 
-## noteFor
+## isScan
 
-What the toast says about a file after its title. A PDF says how many pages
-it read, or that it had no text at all, which is a scan the model can't
-read. Anything else needs nothing said.
+Whether a file is a PDF with no text in it: a scan, which a model that
+can't see the file has nothing of to read.
 
 ### Parameters
 
 - `file` **[InspectedFile][171]**&#x20;
 
-Returns **[string][261]**&#x20;
+Returns **[boolean][262]**&#x20;
 
 [1]: #filesbatch
 [2]: #gathered
@@ -2089,7 +2093,7 @@ Returns **[string][261]**&#x20;
 [254]: #parameters-69
 [255]: #reextractfile
 [256]: #parameters-70
-[257]: #notefor
+[257]: #isscan
 [258]: #parameters-71
 [259]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
 [260]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array

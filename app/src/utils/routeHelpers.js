@@ -9,6 +9,8 @@
  * being one when the story started remembering it.
  */
 
+import { askForProject, projectsElsewhere } from '@/platform/windows.js'
+
 /**
  * Resolve a route parameter to a story ID
  * @param {string|string[]} routeParam - The story ID from route params
@@ -28,6 +30,19 @@ export function storyIdFromRoute(routeParam) {
 export function pushProjectToRoute(router, storyId) {
   if (!storyId) return
   router.push(`/project/${storyId}`)
+}
+
+/**
+ * Go to a project, as the writer asked for it. In the desktop app, one open
+ * in another window is shown there instead (`platform/windows.js`).
+ * @param {import('vue-router').Router} router - Vue Router instance
+ * @param {string} storyId - The project to open
+ * @returns {Promise<void>}
+ */
+export async function goToProject(router, storyId) {
+  if (!storyId) return
+  if ((await projectsElsewhere()).has(storyId)) askForProject(storyId)
+  else pushProjectToRoute(router, storyId)
 }
 
 /**

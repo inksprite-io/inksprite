@@ -98,6 +98,42 @@ describe('useTreeDrop', () => {
     expect(drop.into.value).toBeNull()
   })
 
+  describe('where the drop goes', () => {
+    /** A folder's list on the page, holding the items given. */
+    const list = (id, ...items) => {
+      const element = document.createElement('div')
+      element.setAttribute('data-folder-id', id)
+      element.append(...items)
+      document.body.appendChild(element)
+      return element
+    }
+    const frame = () => new Promise(resolve => requestAnimationFrame(resolve))
+
+    it('is the folder whose list the item is in, as the lists move it, or the folder held over', async () => {
+      const item = document.createElement('div')
+      const from = list('folder_from', item)
+      const to = list('folder_to')
+      const drop = useTreeDrop()
+
+      drop.start('story_1', 'doc_1', item)
+      expect(drop.destination.value).toBe('folder_from')
+
+      // Over the edge of a row, where the lists sort: they move the item.
+      dragOver(38)
+      to.appendChild(item)
+      await frame()
+      expect(drop.destination.value).toBe('folder_to')
+
+      dragOver(20)
+      expect(drop.destination.value).toBe('folder_1')
+
+      drop.end()
+      expect(drop.destination.value).toBeNull()
+      from.remove()
+      to.remove()
+    })
+  })
+
   it('stops following once the drag is over', () => {
     const drop = useTreeDrop()
     drop.start('story_1', 'doc_1')

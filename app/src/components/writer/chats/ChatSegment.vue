@@ -26,7 +26,7 @@
         text
         rounded
         size="small"
-        :disabled="pending"
+        :disabled="pending || busy"
         @click="$emit('regenerate')"
       />
       <Button
@@ -102,6 +102,10 @@
         <span class="typing-dot"></span>
         <span class="typing-dot"></span>
         <span class="typing-dot"></span>
+        <!-- How far one that does not stream has got. -->
+        <span v-if="command.progress" class="ml-1 text-xs" data-progress>{{
+          command.progress
+        }}</span>
       </div>
       <!-- A saved prompt: what the writer typed is in the header, and the
            instructions it was filled into fold away under it. They are what
@@ -252,6 +256,8 @@ const props = defineProps({
    * message and where in it the piece is. See useTurnState.
    */
   stateKey: { type: String, default: '' },
+  /** Whether an answer is being written in the chat, which no command can be asked again under. */
+  busy: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['regenerate', 'delete', 'revise'])

@@ -14,7 +14,8 @@ vi.mock('@/composables/useDocuments', () => ({
 }))
 
 const getFile = vi.fn()
-vi.mock('@/stores/filesStore', () => ({ useFilesStore: () => ({ getFile }) }))
+const isElsewhere = vi.fn(async () => false)
+vi.mock('@/stores/filesStore', () => ({ useFilesStore: () => ({ getFile, isElsewhere }) }))
 
 const downloadBlob = vi.fn()
 vi.mock('@/files/download.js', () => ({
@@ -173,6 +174,41 @@ describe('FileView', () => {
     expect(none.text()).toContain('No preview available')
     expect(none.text()).toContain('not in this project any more')
     expect(none.find('button').exists()).toBe(false)
+  })
+
+  it('says how far a file from the sync server has come while it comes', async () => {
+    /** @type {(blob: Blob) => void} */
+    let finish = () => {}
+    getFile.mockImplementation(
+      (id, { progress }) =>
+        new Promise(resolve => {
+          progress(0, 4)
+          progress(1, 4)
+          finish = resolve
+        })
+    )
+    const wrapper = mountView('pdf')
+    await flushPromises()
+    expect(wrapper.find('[data-file-downloading]').text()).toContain('Downloading… 25%')
+
+    finish(new Blob(['%PDF'], { type: 'application/pdf' }))
+    await flushPromises()
+    expect(wrapper.find('[data-file-downloading]').exists()).toBe(false)
+    expect(wrapper.find('[data-pdf-stub]').exists()).toBe(true)
+  })
+
+  it('offers to try again when a file on the sync server could not be fetched', async () => {
+    getFile.mockResolvedValueOnce(null)
+    isElsewhere.mockResolvedValueOnce(true)
+    const wrapper = mountView('pdf')
+    await flushPromises()
+
+    const elsewhere = wrapper.find('[data-file-elsewhere]')
+    expect(elsewhere.text()).toContain('Not on this device yet')
+    await elsewhere.find('[data-action="fetch-file"]').trigger('click')
+    await flushPromises()
+    expect(getFile).toHaveBeenCalledTimes(2)
+    expect(wrapper.find('[data-pdf-stub]').exists()).toBe(true)
   })
 
   it('lets the object URL go when the view does', async () => {

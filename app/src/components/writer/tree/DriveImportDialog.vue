@@ -130,7 +130,8 @@ const start = async () => {
       signal: own.signal,
       onStep,
     })
-    toast.add({ ...describeImport(result), life: result.skipped.length > 0 ? 10000 : 5000 })
+    const said = describeImport(result)
+    if (said) toast.add({ ...said, life: said.severity === 'info' ? 5000 : 10000 })
     visible.value = false
     phase.value = null
   } catch (failure) {

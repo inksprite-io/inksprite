@@ -204,7 +204,7 @@ describe('ExportDialog', () => {
     backup.listExportable.mockRejectedValue(new Error('closed'))
     const wrapper = await mountDialog()
 
-    expect(toast.error).toHaveBeenCalledWith("What there is to export couldn't be read: closed")
+    expect(toast.error).toHaveBeenCalledWith("The projects and settings couldn't be read. closed")
     expect(tree(wrapper).exists()).toBe(false)
     expect(exportButton(wrapper).attributes('disabled')).toBeDefined()
   })

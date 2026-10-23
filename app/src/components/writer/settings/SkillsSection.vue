@@ -225,7 +225,7 @@ const picked = async event => {
     importing.value = { key: ++imports, visible: true, found: skills, stray }
   } catch (error) {
     console.error('Failed to read skills to import:', error)
-    toast.error(`Couldn’t read that: ${error.message}`)
+    toast.error(`The file couldn’t be read. ${error.message}`)
   }
 }
 

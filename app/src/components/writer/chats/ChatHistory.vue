@@ -163,27 +163,39 @@ const handleChatSelect = chatId => {
 }
 
 /**
- * Handle chat deletion
+ * Handle chat deletion: to the trash
  * @param {string} chatId - The ID of the chat to delete
  */
 const handleChatDelete = chatId => {
-  chatsApi.deleteChat(chatId)
+  chatsApi.trashChat(chatId)
 }
 
 /**
  * Save a chat to a file of its own — with its words taken out, when asked.
+ * The download says it is saved.
  * @param {string} chatId
  * @param {{obfuscated?: boolean}} [options]
  */
 const handleChatExport = async (chatId, options) => {
   try {
-    const { filename } = await backup.downloadChat(chatId, options)
-    toast.success(`Saved ${filename}`)
+    await backup.downloadChat(chatId, options)
   } catch (error) {
     console.error('Chat export failed:', error)
-    toast.error(`Export failed: ${error.message}`)
+    toast.error(`The chat couldn't be exported. ${error.message}`)
   }
 }
+
+/**
+ * Why a chat from SillyTavern came in on no card.
+ *
+ * @param {string} character - Who it was with
+ * @param {number} named - How many cards in the project are them
+ * @returns {string}
+ */
+const notOnCard = (character, named) =>
+  named > 1
+    ? `This project has more than one card for ${character}, so the chat isn't linked to either.`
+    : `This project has no card for ${character}, so the chat isn't linked to one.`
 
 /**
  * Bring a chat file into this story and open it.
@@ -204,18 +216,16 @@ const handleImportFile = async event => {
     // A chat from SillyTavern knows who it was with and nothing else about
     // them. If that character's card is in the project the chat goes onto it;
     // if not, the writer is told, since the chat will answer as nobody until
-    // the card is imported and pinned.
+    // the card is imported and pinned. The chat opens either way, which says
+    // it came in.
     if (character) {
-      const card = await cardChat.attach(imported.id, character)
-      if (card) toast.success(`Imported "${imported.title}" onto the ${card.title} card`)
-      else toast.warning(`Imported "${imported.title}", but found no one card for ${character}`)
-    } else {
-      toast.success(`Imported "${imported.title}"`)
+      const { card, named } = await cardChat.attach(imported.id, character)
+      if (!card) toast.warning(notOnCard(character, named))
     }
     emit('select-chat', imported.id)
   } catch (error) {
     console.error('Chat import failed:', error)
-    toast.error(error.message)
+    toast.error(`The chat couldn't be imported. ${error.message}`)
   } finally {
     isImporting.value = false
   }

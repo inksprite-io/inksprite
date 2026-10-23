@@ -24,6 +24,7 @@ import { computed, ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
 import { storage } from '@/storage/index.js'
+import { onTablesWritten } from '@/platform/windows.js'
 import { describeCard, readCardFile } from '@/cards/library.js'
 import { cardLink } from '@/cards/sources.js'
 import { makeThumbnail } from '@/cards/thumbnail.js'
@@ -105,6 +106,17 @@ export const useCardLibraryStore = defineStore('cardLibrary', () => {
       console.error('Failed to count library cards:', error)
     }
   }
+
+  // Another window changed the library: read it again, or count it again
+  // while it is not read in.
+  onTablesWritten(['cards'], async () => {
+    if (!loaded.value) {
+      counted.value = await storage.count('cards')
+      return
+    }
+    const rows = await storage.all('cards')
+    cards.value = new Map(rows.map(card => [card.id, card]))
+  })
 
   /** @returns {Promise<void>} */
   function ensureLoaded() {

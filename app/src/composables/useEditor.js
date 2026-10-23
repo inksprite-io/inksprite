@@ -161,6 +161,7 @@ const makeEntry = (markdown, plain, scrollTop = 0) =>
  *   flush: (id?: string) => void,
  *   replaceContent: (id: string, markdown: string) => void,
  *   editContent: (id: string, markdown: string) => void,
+ *   takeStored: (id: string, markdown: string, stored: string) => void,
  *   appendContent: (id: string, markdown: string) => void,
  *   markdown: (id: string) => string,
  *   focus: (id: string) => void,
@@ -378,6 +379,33 @@ export function useEditor() {
   }
 
   /**
+   * Make an open document say this, changing only what differs, as
+   * `editContent` does, for text the store has already taken as it came:
+   * another device's, synced. Not written back unless it says something
+   * else once the editor has it, as when typing was merged in.
+   * @param {string} id
+   * @param {string} markdown
+   * @param {string} stored - What the store has
+   */
+  const takeStored = (id, markdown, stored) => {
+    const entry = entries.get(id)
+    if (!entry) return
+    if (entry.kind === 'text') entry.text = markdown
+    else {
+      const tr = editsTo(entry.state, parseMarkdown(markdown))
+      if (tr) dispatch(id, tr)
+    }
+    if (contentOf(entry) !== stored) {
+      markDirty(id, entry)
+      flush(id)
+      return
+    }
+    if (entry.timer) clearTimeout(entry.timer)
+    entry.timer = null
+    entry.dirty = false
+  }
+
+  /**
    * Add blocks at the end of an open document. Written through at once.
    * @param {string} id
    * @param {string} markdown
@@ -427,6 +455,7 @@ export function useEditor() {
     flush,
     replaceContent,
     editContent,
+    takeStored,
     appendContent,
     markdown,
     focus,

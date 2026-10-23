@@ -268,6 +268,28 @@ describe('a plan for a project’s folder', () => {
       path: '.inksprite/narration/elara.json',
     })
   })
+
+  it('writes and trashes a digest as it comes and goes, the root’s too', () => {
+    const disk = memoryDisk()
+    writeFresh(disk, sample())
+    const digest = { line: 'Who Elara is.', text: 'Her history.', of: 'x', made: 1 }
+
+    const added = change(change(sample(), 'elara', { digest }), ROOT, { digest })
+    const written = step(disk, sample(), added)
+    for (const id of ['elara', ROOT]) {
+      expect(written).toContainEqual({
+        op: 'write',
+        path: `.inksprite/digests/${id}.json`,
+        text: `${JSON.stringify(digest)}\n`,
+      })
+    }
+
+    const cleared = change(added, 'elara', { digest: undefined })
+    expect(step(disk, added, cleared)).toContainEqual({
+      op: 'trash',
+      path: '.inksprite/digests/elara.json',
+    })
+  })
 })
 
 describe('plans for any run of changes', () => {

@@ -180,9 +180,7 @@ describe('CardLibraryDialog', () => {
       storyId: 'story_open',
       folderId: 'folder_1',
     })
-    expect(add).toHaveBeenCalledWith(
-      expect.objectContaining({ severity: 'success', detail: 'Imported Maren (6 documents).' })
-    )
+    expect(add).not.toHaveBeenCalled()
     expect(useCardLibraryPanel().visible.value).toBe(false)
   })
 
@@ -288,7 +286,9 @@ describe('CardLibraryDialog', () => {
     run(wrapper, card(), 'Add to Thief')
     await flushPromises()
 
-    expect(add).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Nothing imported: gone' }))
+    expect(add).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Nothing was imported. gone' })
+    )
     expect(useCardLibraryPanel().visible.value).toBe(true)
     expect(markUsed).not.toHaveBeenCalled()
   })

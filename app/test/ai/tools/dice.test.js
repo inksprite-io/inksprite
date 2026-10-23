@@ -58,6 +58,23 @@ describe('dice tool', () => {
       expect(await executeDiceTool({ dice: '1d6+1d6' })).toMatchObject({ dice: { d6: [4, 4] } })
     })
 
+    it('counts only the lowest or highest of the dice in min() and max()', async () => {
+      // A 3, a 15 and a 9 on a d20.
+      const random = vi.spyOn(Math, 'random')
+      for (const value of [0.1, 0.7, 0.4]) random.mockReturnValueOnce(value)
+
+      expect(await executeDiceTool({ dice: 'max(2d20)+d20-2' })).toEqual({
+        roll: 'max(2d20)+d20-2',
+        dice: { d20: [3, 15, 9] },
+        modifier: -2,
+        total: 22,
+      })
+      expect(await executeDiceTool({ dice: 'min(3d6)+max(2d4)' })).toMatchObject({
+        dice: { d6: [4, 4, 4], d4: [3, 3] },
+        total: 7,
+      })
+    })
+
     it('says what is wrong with notation that is not dice', async () => {
       expect(await executeDiceTool({ dice: 'invalid' })).toEqual({
         error: expect.stringMatching(/not dice/i),

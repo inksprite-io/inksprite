@@ -4,6 +4,10 @@
  * @description A text document handed out as a file: its markdown, and with
  * its pictures, a `.zip`.
  *
+ * It goes as its text stands: a suggestion waiting on the writer has changed
+ * nothing yet, and its markup would read as both versions of each word in
+ * any other app. Comments go with it, in their markup.
+ *
  * A document with no pictures goes as the markdown file it is kept as. One
  * with pictures goes as a `.zip` of that file and an `images` folder beside
  * it, holding each picture its text shows, its paths written to them: a
@@ -17,6 +21,7 @@ import { zipSync } from 'fflate'
 import { filenameFor } from './download.js'
 import { encodeName } from '@/utils/documentLinks.js'
 import { pictureHref, pictureName, pictureOfKey, picturesIn } from '@/utils/pictures.js'
+import { seenMarkdown } from '@/editor/suggestionText.js'
 
 /** The folder an export's pictures go in, beside the markdown. */
 const IMAGES = 'images'
@@ -24,12 +29,13 @@ const IMAGES = 'images'
 /**
  * A text document as the file to hand out.
  *
- * @param {{title: string}} document
- * @param {string} content - Its markdown as it stands
+ * @param {{title: string, plain?: boolean}} document
+ * @param {string} markdown - Its markdown, the editor's where it is open
  * @param {(key: string) => Promise<Blob|null>} read - A picture's bytes, by its key
  * @returns {Promise<{blob: Blob, filename: string}>}
  */
-export async function exportDocument(document, content, read) {
+export async function exportDocument(document, markdown, read) {
+  const content = document.plain ? markdown : seenMarkdown(markdown)
   const markdownName = filenameFor({ title: document.title, mime: 'text/markdown' })
   /** @type {Record<string, Uint8Array>} */
   const pictures = {}

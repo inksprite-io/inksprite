@@ -16,6 +16,7 @@ import { setWebSearch } from '@/web/config.js'
 import { disconnect } from '@/mcp/client.js'
 import { CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
 import { storage } from '@/storage/index.js'
+import { onTablesWritten } from '@/platform/windows.js'
 
 /** @typedef {import('../types/models.js').WebSearchSetup} WebSearchSetup */
 
@@ -45,6 +46,13 @@ export const useWebSearchStore = defineStore('webSearch', () => {
     }
     setWebSearch(setup.value)
   }
+
+  // Another window wrote it: read again.
+  onTablesWritten(['webSearch'], async () => {
+    if (!initializePromise.value) return
+    setup.value = { ...emptySetup(), ...(await storage.get('webSearch', ROW)) }
+    setWebSearch(setup.value)
+  })
 
   /** @returns {Promise<void>} */
   function ensureInitialized() {

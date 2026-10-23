@@ -19,14 +19,6 @@
         </p>
       </div>
 
-      <p
-        v-if="found.replaces"
-        class="text-xs text-surface-600 dark:text-surface-300"
-        data-replaces-note
-      >
-        Overwrites this card's documents. Edits made to them since are lost.
-      </p>
-
       <div class="flex flex-wrap gap-1.5">
         <span
           v-for="part in parts"

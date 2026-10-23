@@ -44,6 +44,8 @@
         :alone="only !== null"
         :raw="showRaw"
         :activity="activity?.messageId === message.id ? activity : null"
+        :busy="busy"
+        :writing="writing && message.id === lastId"
         @regenerate="index => $emit('regenerate', message.id, index)"
         @delete="index => $emit('delete', message.id, index)"
         @revise="(index, text, done) => $emit('revise', message.id, index, text, done)"
@@ -114,7 +116,7 @@
         text
         rounded
         size="small"
-        :disabled="pending"
+        :disabled="pending || (busy && asksCommand)"
         @click="$emit('regenerate', only.id, null)"
       />
       <Button
@@ -135,7 +137,7 @@
         text
         rounded
         size="small"
-        :disabled="pending"
+        :disabled="pending || writing"
         @click="body[0]?.startEditing()"
       />
       <!-- Heard rather than read. The whole turn, in the chat's voice. -->
@@ -192,6 +194,9 @@ const props = defineProps({
   // The command this turn is the answer of, when it is one rather than
   // something anybody said. See utils/turns.js.
   command: { type: String, default: '' },
+  // Whether it was said on the side: an aside, or the answer to one, which
+  // the model reads only while answering it. See ai/asides.js.
+  aside: { type: Boolean, default: false },
   isLast: { type: Boolean, default: false },
   // The voice the chat is read aloud in; the project's default when it names none.
   voiceId: { type: String, default: null },
@@ -205,6 +210,11 @@ const props = defineProps({
   // these messages. See TurnActivity in composables/useAIChat.js.
   /** @type {import('vue').PropType<import('@/composables/useAIChat.js').TurnActivity|null>} */
   activity: { type: Object, default: null },
+  // Whether an answer is being written anywhere in the chat, which no command
+  // can be asked again under.
+  busy: { type: Boolean, default: false },
+  // Whether it is being written into this turn, which can't be edited under it.
+  writing: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -331,6 +341,9 @@ const pending = computed(
     only.value?.segments?.some(segment => segment.command?.pending === true) === true
 )
 
+/** Whether asking the one message again asks its command again. */
+const asksCommand = computed(() => Boolean(only.value?.metadata?.command))
+
 /**
  * Whether the one message is shown as the model is sent it. Kept by the chat,
  * so that it is still how the writer left it when the turn comes back.
@@ -368,6 +381,9 @@ const answers = computed(() => {
  * explanation.
  */
 const author = computed(() => {
+  // The question is in its box, under the writer's name; the answer is the
+  // aside's, which says why it is not the next line of the conversation.
+  if (props.aside && props.role === 'assistant') return 'Aside'
   if (props.command) {
     // The record, not the name: what a command's answer is called is the
     // command's to say, and `/compact` produces a summary.
@@ -380,7 +396,9 @@ const author = computed(() => {
 
 /** Named in the colour its own block is drawn in, so the two read as one thing. */
 const authorClass = computed(() => {
-  if (props.command) return 'text-rose-700 dark:text-rose-300'
+  if (props.command || (props.aside && props.role === 'assistant')) {
+    return 'text-rose-700 dark:text-rose-300'
+  }
   return props.role === 'user' ? 'text-primary-600 dark:text-primary-400' : ''
 })
 

@@ -2,10 +2,11 @@
  * @module composables/useUpdates
  * @description In the desktop app, updates downloaded as soon as there are
  * any, and a toast to restart into one; in a browser, a toast to reload into
- * a new build once the service worker has it.
+ * a new build once the service worker has it. Sync, waiting for an update,
+ * looks for one at once, and its settings offer the one ready.
  */
 
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, readonly, shallowRef } from 'vue'
 import { isDesktop } from '@/platform/desktop.js'
 import { downloadUpdate, installUpdate } from '@/platform/updates.js'
 import { lookForBuild, registerServiceWorker, reloadIntoBuild } from '@/platform/serviceWorker.js'
@@ -15,6 +16,26 @@ import { useToast } from './useToast.js'
 
 /** How often the app looks for an update again, after it opens. */
 export const UPDATE_CHECK_MS = 60 * 60 * 1000
+
+/**
+ * @typedef {Object} ReadyUpdate
+ * @property {string|null} version - A release's; none for a browser's build
+ * @property {() => Promise<void>} apply - Restart or reload into it, edits saved first
+ */
+
+/** @type {import('vue').ShallowRef<ReadyUpdate|null>} */
+const ready = shallowRef(null)
+
+/** The look the app makes every hour, once it has made its first. */
+let lookNow = () => {}
+
+/** The update ready to restart or reload into, if there is one. */
+export const updateReady = readonly(ready)
+
+/** Look for an update now rather than at the next hour: sync waits for one. */
+export function lookForUpdate() {
+  lookNow()
+}
 
 /**
  * Look for an update as the app opens, and every hour after, and offer it
@@ -63,6 +84,7 @@ function offerReleases() {
       const version = await downloadUpdate()
       if (!version || version === offered) return
       offered = version
+      ready.value = { version, apply: restart }
       toast.action(
         `inksprite ${version} is ready.`,
         { label: 'Restart', command: restart },
@@ -76,9 +98,14 @@ function offerReleases() {
 
   onMounted(() => {
     look()
+    lookNow = look
     timer = window.setInterval(look, UPDATE_CHECK_MS)
   })
-  onUnmounted(() => window.clearInterval(timer))
+  onUnmounted(() => {
+    window.clearInterval(timer)
+    lookNow = () => {}
+    ready.value = null
+  })
 }
 
 /**
@@ -103,12 +130,14 @@ function offerBuilds() {
     window.location.reload()
   }
 
-  const offer = () =>
+  const offer = () => {
+    ready.value = { version: null, apply: reload }
     toast.action(
       'A new version of inksprite is ready.',
       { label: 'Reload', command: reload },
       { duration: 0 }
     )
+  }
 
   const look = () =>
     lookForBuild().catch(error => {
@@ -123,7 +152,12 @@ function offerBuilds() {
       console.warn('The service worker could not be registered:', error)
       return
     }
+    lookNow = look
     timer = window.setInterval(look, UPDATE_CHECK_MS)
   })
-  onUnmounted(() => window.clearInterval(timer))
+  onUnmounted(() => {
+    window.clearInterval(timer)
+    lookNow = () => {}
+    ready.value = null
+  })
 }

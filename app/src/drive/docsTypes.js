@@ -158,6 +158,63 @@
  * @property {{styles?: NamedStyle[]}} [namedStyles]
  * @property {Record<string, InlineObject>} [inlineObjects] - By id: what an
  *   `inlineObjectElement` shows
+ * @property {Record<string, CommentAnchor>} [commentAnchors] - By id: where
+ *   the Doc's comment threads are in this tab
+ */
+
+/**
+ * Where a comment thread is: the stretches of a tab it is on.
+ *
+ * @typedef {Object} CommentAnchor
+ * @property {string} [anchorId]
+ * @property {Array<{startIndex?: number, endIndex?: number, segmentId?: string, tabId?: string}>} [ranges]
+ */
+
+/**
+ * Someone who said something in a comment thread. `me` is the account the
+ * token is for; Google gives no address.
+ *
+ * @typedef {Object} CommentAuthor
+ * @property {string} [displayName]
+ * @property {string} [user] - Google's id for them
+ * @property {boolean} [me]
+ */
+
+/**
+ * One thing said in a comment thread, or a resolve or reopen with nothing said.
+ *
+ * @typedef {Object} DocPost
+ * @property {string} [postId]
+ * @property {CommentAuthor} [author]
+ * @property {string} [content]
+ * @property {string} [createTime]
+ * @property {string} [updateTime]
+ * @property {string} [commentAction] - `RESOLVE`, `REOPEN`, or none
+ */
+
+/**
+ * A comment thread of the Doc's.
+ *
+ * @typedef {Object} DocComment
+ * @property {string} commentId
+ * @property {string} [anchorId] - Its place, in a tab's `commentAnchors`
+ * @property {string} [status] - `OPEN` or `RESOLVED`
+ * @property {DocPost} [headPost]
+ * @property {DocPost[]} [replies]
+ * @property {string} [plainTextQuote] - The words it was on
+ */
+
+/**
+ * A suggested edit's thread in the Doc. Its head post is the change, said by
+ * whoever suggested it, with no words; its replies are what was said on it.
+ *
+ * @typedef {Object} DocSuggestion
+ * @property {string} suggestionId - As the text's suggested runs name it
+ * @property {'OPEN'|'ACCEPTED'|'REJECTED'} [status] - Listed still once it is
+ *   accepted or rejected, and not once its author deletes it
+ * @property {DocPost} [headPost]
+ * @property {DocPost[]} [replies]
+ * @property {string} [summaryText] - What it changes, in Docs' words
  */
 
 /**
@@ -180,7 +237,7 @@
  */
 
 /**
- * @typedef {DocumentTab & {documentId?: string, title?: string, revisionId?: string, tabs?: Tab[]}} Document
+ * @typedef {DocumentTab & {documentId?: string, title?: string, revisionId?: string, tabs?: Tab[], comments?: DocComment[], suggestions?: DocSuggestion[]}} Document
  */
 
 export {}

@@ -1,4 +1,4 @@
-/* global TextEncoder, AbortController */
+/* global TextEncoder, AbortController, Headers */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
@@ -593,6 +593,35 @@ describe('useAIService failure reporting', () => {
 
     expect(error.message).toContain('Invalid signature for thinking block')
     expect(error.message).toContain('Reasoning effort')
+  })
+})
+
+describe('useAIService when the service says too many', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('asks again after the wait the service asks for, and answers', async () => {
+    streamDeltas([{ content: 'Here.' }])
+    const answering = /** @type {any} */ (globalThis.fetch).getMockImplementation()
+    const fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        headers: new Headers({ 'retry-after': '0' }),
+        json: async () => ({}),
+      })
+      .mockImplementation(answering)
+    vi.stubGlobal('fetch', fetch)
+
+    const seen = []
+    await useAIService().generateChatCompletion(
+      [{ role: 'user', content: 'hi' }],
+      { providerId: provider.id, model: 'local-model' },
+      chunk => seen.push(chunk.content)
+    )
+
+    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(seen.join('')).toBe('Here.')
   })
 })
 

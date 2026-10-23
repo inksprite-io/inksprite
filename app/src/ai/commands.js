@@ -53,6 +53,9 @@
  *
  *     /roll-table "a knife" "a letter" "nothing at all"
  *
+ * And one is a whole message rather than a line: `/aside`, a question asked on
+ * the side, which runs to the end of what was typed. See ai/asides.js.
+ *
  * A slash at the start of a line opens a menu of them in the message field,
  * each with its usage and a line saying what it does. The menu only finishes
  * the name: everything after it is typed the same way with the menu or
@@ -86,6 +89,7 @@ import {
   executeOracle,
   executeRollTable,
   executeDrawTarot,
+  diceTotal,
   parseDice,
   rollDice,
   DEFAULT_TAROT_DECK,
@@ -101,6 +105,8 @@ import { fillArgument, loadedByModel } from './skills/runner.js'
 import { parseKeep } from './compaction.js'
 import { getServer, onServersChanged, promptCommands } from '../mcp/servers.js'
 import { describeFailure, getServerPrompt, promptText } from '../mcp/client.js'
+import { confirmExploring } from '../composables/useExplore.js'
+import { exploreFor, exploredText } from './tools/explore.js'
 
 /** @typedef {import('../types/models.js').ChatCommand} ChatCommand */
 /** @typedef {import('./tools/registry.js').ToolContext} ToolContext */
@@ -201,7 +207,9 @@ function likelihoodLabel(value) {
  *   what the writer sees while a consulting command runs — a box that does not
  *   say what it is asking is a worse wait than one that does — and what an
  *   edited command is rebuilt from.
- * @property {(asked: CommandInput, context?: ToolContext) => Promise<{label?: string, detail?: string, keep?: number, roll?: DiceRoll, result: string}|{error: string}>} run
+ * @property {(asked: CommandInput, context?: ToolContext) => Promise<{label?: string, detail?: string, keep?: number, roll?: DiceRoll, result: string}|{error: string, declined?: true}>} run -
+ *   Its answer, or why there is none: `declined` when the writer said no to
+ *   something it asked them, which needs no usage under it
  * @property {(command: ChatCommand) => {detail: string, label: string}} [shown] -
  *   How its record reads in the chat, when that is not its label and detail as
  *   stored: a roll puts its dice up beside its name and leaves the question
@@ -211,6 +219,9 @@ function likelihoodLabel(value) {
  *   back, when there is more to it than the result: a roll's dice. Given the
  *   record the line had before the edit, when there was one, so a change can be
  *   told from what it changed.
+ * @property {boolean} [aside] - Whether it is asked on the side: a message of
+ *   its own, the whole of it after the name, which the model answers and then
+ *   forgets along with the answer. See ai/asides.js.
  * @property {boolean} [experimental] - Whether it is an experimental skill's,
  *   which runs only while the writer has that skill switched on. It is kept
  *   while the skill is off, so the records it left read as they did. See
@@ -277,10 +288,20 @@ function describeNameAsk(param) {
 }
 
 /**
+ * A term `parseDice` reads: dice, `min(…)` or `max(…)` of them, or a number.
+ * Anything up to the bracket in `min(…)`, so what is wrong in there is what
+ * `parseDice` says.
+ */
+const DICE_TERM = String.raw`(?:(?:min|max)\s*\([^)]*\)|\d*d?\d+)`
+
+/**
  * Dice at the start of a line, and whatever follows them after a space: the
  * terms `parseDice` reads, joined by signs.
  */
-const DICE_THEN_QUESTION = /^([+-]?\s*\d*d?\d+(?:\s*[+-]\s*\d*d?\d+)*)(?:\s+(.*))?$/is
+const DICE_THEN_QUESTION = new RegExp(
+  String.raw`^([+-]?\s*${DICE_TERM}(?:\s*[+-]\s*${DICE_TERM})*)(?:\s+(.*))?$`,
+  'is'
+)
 
 /**
  * What a `/roll` was asked for: the dice, and the question they answer if the
@@ -367,9 +388,7 @@ function readRoll(input, written, before) {
     return { result: total === undefined ? written.trim() : String(total) }
   }
 
-  const made = Object.values(dice)
-    .flat()
-    .reduce((sum, face) => sum + face, notation.modifier)
+  const made = diceTotal(notation, dice)
   const was = before ? rollOf(before) : null
   const fudged =
     total !== undefined && total !== made && JSON.stringify(was?.dice) === JSON.stringify(dice)
@@ -386,7 +405,7 @@ function readRoll(input, written, before) {
  * of each kind, each a face that kind has. In the notation's order, so the
  * record reads the same as one rolled.
  *
- * @param {{dice: Array<{count: number, sides: number}>}} notation
+ * @param {{dice: import('./tools/rpg.js').DiceTerm[]}} notation
  * @param {Record<string, number[]>} thrown
  * @returns {Record<string, number[]>|null}
  */
@@ -530,6 +549,35 @@ function tableLabel(input) {
 }
 
 /**
+ * `/explore`, `/explore Research`, `/explore Research/Field guide`: the
+ * writer exploring a folder, a document, or the whole project from the
+ * chat, as the model's `explore_documents` does. Written into their turn as
+ * it runs, saying how far it has got, and filled with what came of it: the
+ * paragraph, and what a folder holds with each document's line, which the
+ * model reads too. One that reads a lot asks first, in a dialog, since there
+ * is no call to ask beside.
+ *
+ * @type {CommandDefinition}
+ */
+const EXPLORE = {
+  usage: '/explore [path]',
+  description:
+    'Say what a folder, a document, or the whole project holds, and what each document in it is about.',
+  consults: true,
+  repeatable: true,
+  preview: ({ input }) => ({ label: input.trim() || 'The whole project' }),
+  async run({ input }, context = {}) {
+    const outcome = await exploreFor(input, { ...context, approve: confirmExploring })
+    if ('declined' in outcome) return { error: 'Not explored.', declined: true }
+    if ('error' in outcome) return outcome
+    return {
+      label: outcome.path === '/' ? 'The whole project' : outcome.path,
+      result: exploredText(outcome),
+    }
+  },
+}
+
+/**
  * The commands written here: everything the writer can type that is not a
  * skill — the ones that run a tool and no model, and `/director`, which runs
  * nothing at all. The skills' commands are made from the skills; see
@@ -538,6 +586,21 @@ function tableLabel(input) {
  * @type {Record<string, CommandDefinition>}
  */
 const WRITTEN = {
+  aside: {
+    usage: '/aside <question>',
+    description: 'Ask something the model forgets once it has answered.',
+    aside: true,
+    // Asked like anything else the writer says. What it is about is theirs to
+    // say in it; see ai/asides.js.
+    speaks: true,
+    check({ input }) {
+      if (!input) return 'Ask something: /aside What should happen next?'
+    },
+    async run({ input }) {
+      return { result: input }
+    },
+  },
+
   director: {
     usage: '/director <direction>',
     description: 'Say what the next reply needs, as a direction to follow.',
@@ -701,6 +764,7 @@ const WRITTEN = {
       }
     },
   },
+  explore: EXPLORE,
 }
 
 /**
@@ -1325,7 +1389,8 @@ export function splitInput(input) {
     said = []
   }
 
-  for (const line of (input || '').split('\n')) {
+  const lines = (input || '').split('\n')
+  for (const [at, line] of lines.entries()) {
     // An answer belongs to the command directly above it. Anywhere else a line
     // opening with `>` is a blockquote, which is prose.
     const answer = ANSWER_LINE.exec(line)
@@ -1341,6 +1406,19 @@ export function splitInput(input) {
       continue
     }
     flush()
+
+    // An aside is the whole of its message, so its question runs to the end
+    // of it, lines and all.
+    if (commandIsAside(parsed)) {
+      const rest = lines.slice(at + 1).join('\n')
+      segments.push({
+        type: /** @type {const} */ ('command'),
+        ...parsed,
+        input: [parsed.input, rest].join('\n').trim(),
+      })
+      return segments
+    }
+
     segments.push({ type: /** @type {const} */ ('command'), ...parsed })
   }
 
@@ -1419,7 +1497,10 @@ export async function runCommand(parsed, context = {}) {
 
   const command = definitionFor(asked)
   const outcome = await command.run(asked, context)
-  if ('error' in outcome) return { error: `${outcome.error}\n${command.usage}` }
+  // How to type it is no help to a writer who said no to what it asked.
+  if ('error' in outcome) {
+    return { error: outcome.declined ? outcome.error : `${outcome.error}\n${command.usage}` }
+  }
 
   return { ...asked, ...outcome }
 }
@@ -1586,6 +1667,17 @@ export function commandSpeaks(command) {
  */
 export function commandIsPrompt(command) {
   return command.prompt === true
+}
+
+/**
+ * Whether this is asked on the side, and left out of the conversation once it
+ * is answered. See ai/asides.js.
+ *
+ * @param {{name: string, character?: boolean}} command
+ * @returns {boolean}
+ */
+export function commandIsAside(command) {
+  return definitionFor(command)?.aside === true
 }
 
 /**

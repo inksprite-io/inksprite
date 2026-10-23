@@ -32,7 +32,7 @@ import { useSkills } from './useSkills.js'
 import { skillPrompt } from '@/ai/skills/index.js'
 import { useChatCommands } from './useChatCommands.js'
 import { useApplicationState } from './useApplicationState.js'
-import { AnswerFailedError } from '@/utils/errors.js'
+import { AnswerFailedError, CannotApplyError } from '@/utils/errors.js'
 import { isDefaultChatTitle, plainTitle } from '@/utils/chatTitle.js'
 import { presetProblem } from '@/ai/providers.js'
 import { DEFAULT_CHAT_PROMPT } from '@/ai/prompts/index.js'
@@ -49,14 +49,17 @@ import {
   handsOverReply,
   drawsByChance,
 } from '@/ai/tools/index.js'
-import { needsApproval, serversForChat } from '@/mcp/servers.js'
+import { SAVE_WEB_PAGE } from '@/ai/tools/web.js'
+import { inTurn, roomFor } from '@/ai/gate.js'
+import { serversForChat } from '@/mcp/servers.js'
 import { webForChat } from '@/web/config.js'
-import { askApproval, denyWaiting } from './useToolApprovals.js'
+import { askApproval, asksFirst, denyWaiting } from './useToolApprovals.js'
 import { useMcpServers } from './useMcpServers.js'
 import { useWebSearch } from './useWebSearch.js'
 import { SKILL_MAX_ROUNDS } from '@/ai/skills/index.js'
 import { USE_SKILL, loadedSkills } from '@/ai/skills/loads.js'
 import { DEFAULT_TRANSCRIPT_ROLES } from '@/ai/context/build.js'
+import { isAside, withoutAsides } from '@/ai/asides.js'
 import { readNotes, applyProposal } from '@/ai/tools/documents.js'
 import { useDocuments } from './useDocuments.js'
 import { keepDecisions } from '@/utils/edits.js'
@@ -180,6 +183,8 @@ function replyAfter(messages, index) {
  * @property {import('../ai/tools/progress.js').RoundCall[]} [calls] - The calls
  *   being written or run, or the ones whose results the model is waited on
  *   for; absent before the turn's first round of them
+ * @property {string} [progress] - While they run: how far a long one has got,
+ *   as it said ("3 of 7 requests")
  */
 
 /**
@@ -264,12 +269,16 @@ export function useAIChat(storyId, chatId) {
   }
 
   /**
-   * What a submission's commands run with: a `consult` that stops with the
-   * work, and the signal itself, for a command to tell stopped from failed.
+   * What a submission's commands run with: the project and the chat, the
+   * preset the chat runs on, a `consult` that stops with the work, and the
+   * signal itself, for a command to tell stopped from failed.
    * @param {AbortSignal} signal
    * @returns {import('../ai/tools/registry.js').ToolContext}
    */
   const commandContext = signal => ({
+    storyId,
+    chatId,
+    preset: getActiveProfile(),
     consult: (systemPrompt, toolNames, options = {}) =>
       consult(systemPrompt, toolNames, { ...options, signal }),
     promptFor: skillPromptFor,
@@ -530,7 +539,6 @@ export function useAIChat(storyId, chatId) {
         : []
 
     const { messages } = await useAIContext(storyId).build({
-      mode: 'chat',
       systemPrompt,
       chatId,
       // As a transcript, not as messages. A skill asked for the next assistant
@@ -670,6 +678,11 @@ export function useAIChat(storyId, chatId) {
    * round trip it did not need, for a rule the prompt can state: ask the
    * Director first, and don't re-ask what it tells you it already asked.
    *
+   * Skills run as many at a time as the chat's connection takes requests
+   * (ai/gate.js): on a server at home, one after another, so each keeps the
+   * server's slot, and the prompt it holds, through all its rounds rather
+   * than taking turns with the others request by request.
+   *
    * @param {ToolCall[]} toolCalls
    * @param {number} depth - How many skills deep these calls are being made.
    *   The turn's own are 0; a skill reached from here consults one deeper.
@@ -680,7 +693,16 @@ export function useAIChat(storyId, chatId) {
    * @returns {Promise<ApiMessage[]>}
    */
   async function executeToolCalls(toolCalls, depth, edits, signal) {
-    return Promise.all(toolCalls.map(call => runToolCall(call, depth, edits, signal)))
+    const skills = toolCalls.filter(call => isSkill(call.function.name)).length
+    const provider = skills > 1 ? aiConfig.getProvider(getActiveProfile()?.providerId) : null
+    const inLine = inTurn(provider ? await roomFor(provider) : Infinity)
+    return Promise.all(
+      toolCalls.map(call =>
+        isSkill(call.function.name)
+          ? inLine(() => runToolCall(call, depth, edits, signal))
+          : runToolCall(call, depth, edits, signal)
+      )
+    )
   }
 
   /**
@@ -705,9 +727,10 @@ export function useAIChat(storyId, chatId) {
    * @returns {Promise<ApiMessage>}
    */
   async function runToolCall(toolCall, depth, edits, signal, stream = {}) {
-    // A server's tool that may change something asks first, and waits as long
-    // as the writer takes: the wait is not the tool's, so it is not timed.
-    if (needsApproval(toolCall.function.name)) {
+    // A server's tool that may change something asks first, and so does a page
+    // kept in the project. The wait is as long as the writer takes, and it is
+    // not the tool's, so it is not timed.
+    if (asksFirst(toolCall.function.name)) {
       const decision = await askApproval(turn.messageId, toolCall)
       if (decision === 'deny') {
         return {
@@ -716,14 +739,16 @@ export function useAIChat(storyId, chatId) {
           content: JSON.stringify({ error: 'The writer did not allow this call.' }),
         }
       }
-      if (decision === 'always') mcpApi.allowTool(toolCall.function.name)
+      if (decision === 'always' && toolCall.function.name === SAVE_WEB_PAGE) {
+        webApi.setAskBeforeSaving(false)
+      } else if (decision === 'always') mcpApi.allowTool(toolCall.function.name)
       if (decision === 'always-server') mcpApi.allowServer(toolCall.function.name)
     }
 
     // Whether the writer is asked before a document changes is theirs to
     // set, app-wide; read here so the tools need not know where it lives.
     const propose = applyEdits.value === 'ask'
-    /** @type {{thinking: string, calls: import('../types/models.js').ConsultedCall[]}} */
+    /** @type {{thinking: string, calls: import('../types/models.js').ConsultedCall[], shown?: import('../types/models.js').ShownResult}} */
     const record = { thinking: '', calls: [] }
 
     // Timed from here, after any wait on the writer, which is not the tool's.
@@ -740,6 +765,9 @@ export function useAIChat(storyId, chatId) {
     const context = {
       storyId,
       chatId,
+      // What the chat runs on, for a tool that asks a model of its own on
+      // its behalf to ask the same one.
+      preset: getActiveProfile(),
       ...(propose ? { propose: true } : {}),
       ...(edits ? { edits } : {}),
       // What each skill runs under here, which is the profile's business and
@@ -749,14 +777,28 @@ export function useAIChat(storyId, chatId) {
       // What this chat has loaded, for `use_skill` to say so rather than send
       // a skill twice. Read when asked: a load earlier in this same turn is on
       // the message by then.
-      loadedSkills: () => loadedSkills(chatsApi.getMessagesForChat(chatId)?.value || []),
+      loadedSkills: () => loadedSkills(conversationRead()),
       // The conversation whose document calls this caller sees: the turn's own
       // calls only. A skill reads a transcript without them, so a read above
       // is not in front of it, and it is never told one is.
-      ...(depth === 0
-        ? { conversation: () => chatsApi.getMessagesForChat(chatId)?.value || [] }
-        : {}),
+      ...(depth === 0 ? { conversation: conversationRead } : {}),
       signal: callSignal,
+      // Asked beside the call, like a server's tool, and answered no when the
+      // turn stops. What always means is the tool's to keep.
+      approve: async question => {
+        const decision = await askApproval(turn.messageId, toolCall, question)
+        return decision === 'always-server' ? 'always' : decision
+      },
+      // In the turn's status line while its calls run.
+      progress: said => {
+        const now = activity.value
+        if (now?.phase === 'running' && now.messageId === turn.messageId) {
+          activity.value = { ...now, progress: said }
+        }
+      },
+      show: shown => {
+        record.shown = shown
+      },
       // A skill gets a `consult` that knows where it is standing, so the depth
       // is counted here rather than trusted to whoever passes it on.
       consult: (systemPrompt, toolNames, options = {}) =>
@@ -784,6 +826,7 @@ export function useAIChat(storyId, chatId) {
     } finally {
       clearTimeout(handle)
     }
+    if (record.shown) message._shown = record.shown
     if (isSkill(name)) {
       message._consultation = {
         ...(record.thinking ? { thinking: record.thinking } : {}),
@@ -1398,7 +1441,6 @@ export function useAIChat(storyId, chatId) {
       // Build context
       const aiContext = useAIContext(storyId)
       const contextResult = await aiContext.build({
-        mode: 'chat',
         systemPrompt: await resolveSystemPrompt(),
         note: resolveNote(),
         chatId,
@@ -1421,7 +1463,9 @@ export function useAIChat(storyId, chatId) {
       // that one which fails halfway still says what it was failing on.
       // Everything written to this message's metadata from here on carries it,
       // and the debug context, because updateMessage replaces metadata whole.
+      // So does whether it answers an aside, which makes it one.
       const turnMetadata = {
+        ...(answersAside(assistantMsg.id) ? { aside: /** @type {const} */ (true) } : {}),
         model: profile.model,
         provider: aiConfig.getProvider(profile.providerId)?.name,
         // Every call this turn makes goes back with the conversation; a turn
@@ -1493,13 +1537,36 @@ export function useAIChat(storyId, chatId) {
   }
 
   /**
+   * The chat as the turn being answered reads it: without the asides before
+   * it, which it was never shown. See ai/asides.js.
+   *
+   * @returns {Message[]}
+   */
+  const conversationRead = () =>
+    withoutAsides(chatsApi.getMessagesForChat(chatId)?.value || [], { answering: true })
+
+  /**
+   * Whether an answer is to a question asked on the side, and so is left out
+   * of the conversation with it: whether the message before it is an aside of
+   * the writer's. See ai/asides.js.
+   *
+   * @param {string} messageId - The answer
+   * @returns {boolean}
+   */
+  const answersAside = messageId => {
+    const messages = chatsApi.getMessagesForChat(chatId)?.value || []
+    const asked = messages[messages.findIndex(message => message.id === messageId) - 1]
+    return asked?.role === 'user' && isAside(asked)
+  }
+
+  /**
    * Send a message and get AI response
    * @param {string} userMessage - The user's message
    * @returns {Promise<Message|null>} The generated assistant message or null
    */
   const sendMessage = async userMessage => {
     if (isGenerating.value) {
-      throw new Error("Can't start a new generation while one is in progress.")
+      throw new CannotApplyError("Can't start a new generation while one is in progress.")
     }
 
     // A chat is named from its first message. One still waiting for a name
@@ -1606,7 +1673,7 @@ export function useAIChat(storyId, chatId) {
    */
   const insertMessage = async (text, role = 'user') => {
     if (isGenerating.value) {
-      throw new Error("Can't add a message while a generation is in progress.")
+      throw new CannotApplyError("Can't add a message while a generation is in progress.")
     }
 
     const said = (text || '').trim()
@@ -1649,9 +1716,9 @@ export function useAIChat(storyId, chatId) {
 
     const messages = chatsApi.getMessagesForChat(chatId)?.value || []
     const messageIndex = messages.findIndex(m => m.id === messageId)
-    if (messageIndex === -1) throw new Error('Message not found')
+    if (messageIndex === -1) throw new CannotApplyError('Message not found')
     if (messages[messageIndex].role !== 'assistant') {
-      throw new Error('Only an answer can be asked again')
+      throw new CannotApplyError('Only an answer can be asked again')
     }
 
     const { skipped } = revertMessages(messages.slice(messageIndex))
@@ -1681,16 +1748,17 @@ export function useAIChat(storyId, chatId) {
    * @param {number} index - Which answer, in the order they were asked for
    * @returns {Promise<{skipped: DocumentEdit[]}>} The changes left as the
    *   writer has them, in either direction
-   * @throws {Error} While an answer is being written, when the message is
-   *   not the last, or when there is no such answer
+   * @throws {CannotApplyError} While an answer is being written, or when the
+   *   message is not the last
+   * @throws {Error} When there is no such answer
    */
   const selectAlternate = async (messageId, index) => {
-    if (isGenerating.value) throw new Error('Wait for the answer being written')
+    if (isGenerating.value) throw new CannotApplyError('Wait for the answer being written')
 
     const messages = chatsApi.getMessagesForChat(chatId)?.value || []
     const message = messages[messages.length - 1]
     if (!message || message.id !== messageId) {
-      throw new Error('Only the last message can show another answer')
+      throw new CannotApplyError('Only the last message can show another answer')
     }
     if (index === (message.alternate ?? 0)) return { skipped: [] }
 
@@ -1776,7 +1844,8 @@ export function useAIChat(storyId, chatId) {
     const message = chatsApi.getMessageById(messageId)?.value
     const edits = message?.metadata?.documentEdits
     const edit = edits?.[index]
-    if (!edit || edit.status !== 'proposed') throw new Error('Nothing is waiting to be decided')
+    if (!edit || edit.status !== 'proposed')
+      throw new CannotApplyError('Nothing is waiting to be decided')
     const documentEdits = edits.map((e, i) => (i === index ? change(e) : e))
     chatsApi.updateMessage(messageId, { metadata: { ...message.metadata, documentEdits } })
   }
@@ -1787,12 +1856,14 @@ export function useAIChat(storyId, chatId) {
    *
    * @param {string} messageId
    * @param {number} index - Which of the turn's recorded changes
-   * @throws {Error} When the document has changed since, or nothing is waiting
+   * @throws {Error} When the document has changed since
+   * @throws {CannotApplyError} When nothing is waiting
    */
   const acceptEdit = async (messageId, index) => {
     const message = chatsApi.getMessageById(messageId)?.value
     const edit = message?.metadata?.documentEdits?.[index]
-    if (!edit || edit.status !== 'proposed') throw new Error('Nothing is waiting to be decided')
+    if (!edit || edit.status !== 'proposed')
+      throw new CannotApplyError('Nothing is waiting to be decided')
 
     const applied = await applyProposal(storyId, edit)
     if ('error' in applied) throw new Error(applied.error)
@@ -1828,7 +1899,7 @@ export function useAIChat(storyId, chatId) {
   const rewindPlan = messageId => {
     const messages = chatsApi.getMessagesForChat(chatId)?.value || []
     const index = messages.findIndex(m => m.id === messageId)
-    if (index === -1) throw new Error('Message not found')
+    if (index === -1) throw new CannotApplyError('Message not found')
 
     const removed = messages.slice(index + 1)
     const edits = editsOf(removed)
@@ -1855,7 +1926,7 @@ export function useAIChat(storyId, chatId) {
   const regeneratePlan = messageId => {
     const messages = chatsApi.getMessagesForChat(chatId)?.value || []
     const index = messages.findIndex(m => m.id === messageId)
-    if (index === -1) throw new Error('Message not found')
+    if (index === -1) throw new CannotApplyError('Message not found')
 
     const reply = messages[index].role === 'user' ? replyAfter(messages, index) : null
     return rewindPlan(reply?.id ?? messageId)
@@ -1874,7 +1945,7 @@ export function useAIChat(storyId, chatId) {
 
     const messages = chatsApi.getMessagesForChat(chatId)?.value || []
     const index = messages.findIndex(m => m.id === messageId)
-    if (index === -1) throw new Error('Message not found')
+    if (index === -1) throw new CannotApplyError('Message not found')
 
     const outcome = revertMessages(messages.slice(index + 1))
     chatsApi.truncateMessagesForChat(chatId, index + 1)
@@ -1898,7 +1969,7 @@ export function useAIChat(storyId, chatId) {
     const messages = chatsApi.getMessagesForChat(chatId)?.value || []
     const messageIndex = messages.findIndex(m => m.id === messageId)
     if (messageIndex === -1) {
-      throw new Error('Message not found')
+      throw new CannotApplyError('Message not found')
     }
 
     const reply = replyAfter(messages, messageIndex)
@@ -1982,7 +2053,7 @@ export function useAIChat(storyId, chatId) {
    */
   const rerunCommand = async (messageId, index = null) => {
     if (isGenerating.value) {
-      throw new Error("Can't start a new generation while one is in progress.")
+      throw new CannotApplyError("Can't start a new generation while one is in progress.")
     }
 
     const signal = begin()
@@ -2016,9 +2087,13 @@ export function useAIChat(storyId, chatId) {
     if (isGenerating.value) {
       const messages = chatsApi.getMessagesForChat(chatId)?.value || []
       if (messages.at(-1)?.id === messageId) {
-        throw new Error("That message is still being written. Edit it once it's done.")
+        throw new CannotApplyError("That message is still being written. Edit it once it's done.")
       }
-      return await commands.revise(messageId, index, text, { promptFor: skillPromptFor })
+      return await commands.revise(messageId, index, text, {
+        storyId,
+        chatId,
+        promptFor: skillPromptFor,
+      })
     }
 
     const signal = begin()

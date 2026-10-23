@@ -1,3 +1,4 @@
+/* global File */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 
@@ -42,7 +43,8 @@ const preset = {
 }
 
 /** A file the writer picked. */
-const fileOf = (/** @type {any} */ contents) => ({ text: async () => JSON.stringify(contents) })
+const fileOf = (/** @type {any} */ contents) =>
+  new File([JSON.stringify(contents)], 'inksprite-export.json')
 
 /** A settings file as Export settings writes it. */
 const settingsFile = (/** @type {Record<string, any[]>} */ rows, settings = {}) => ({

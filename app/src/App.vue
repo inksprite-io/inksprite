@@ -3,6 +3,7 @@
   <AppToast />
   <JobsToastHost />
   <LibraryMoveToast />
+  <SyncUpdateDialog />
   <RouterView />
   <ConfirmDialog :pt="{ root: { class: 'max-w-lg' } }" />
 </template>
@@ -14,13 +15,13 @@ import ConfirmDialog from 'primevue/confirmdialog'
 import AppToast from './components/common/AppToast.vue'
 import JobsToastHost from './components/writer/jobs/JobsToastHost.vue'
 import LibraryMoveToast from './components/writer/settings/LibraryMoveToast.vue'
+import SyncUpdateDialog from './components/writer/settings/SyncUpdateDialog.vue'
 import { useTheme } from './composables/useSystemSettings'
 import { useSkills } from './composables/useSkills'
 import { useApplicationState } from './composables/useApplicationState'
 import { setExperimentalSkills } from './ai/skills/index.js'
 import { useUpdates } from './composables/useUpdates'
 import { useSaveBeforeClosing } from './composables/useSaveBeforeClosing'
-import { useLibraryNotices } from './composables/useLibraryNotices'
 import { useLibraryMove } from './composables/useLibraryMove'
 import { useSettingsFileNotice } from './composables/useSettingsFile'
 import { projectsToMove } from './storage/open.js'
@@ -28,6 +29,9 @@ import { useJobsStore } from './stores/jobsStore.js'
 import { useCardLibraryStore } from './stores/cardLibraryStore.js'
 import { decideExtensions } from './extensions/index.js'
 import { openLinkClicked } from './platform/open.js'
+import { onNotice } from './platform/windows.js'
+import { useSyncStore } from './stores/syncStore.js'
+import { useCloudSync } from './composables/useCloudSync.js'
 
 // Page views go to Vercel Web Analytics only from a build that asks for them
 // with VITE_VERCEL_ANALYTICS=true, as the project's own site does. The value
@@ -75,9 +79,16 @@ useUpdates()
 // closes or the app quits.
 useSaveBeforeClosing()
 
-// In the desktop app, a file changed elsewhere and saved over goes to the
-// trash first, and the writer is told.
-useLibraryNotices()
+// Another window replaced everything with a backup: this one reads it all
+// again, and drops what it had still to save, which was of what is gone.
+onNotice('reload', () => {
+  useSyncStore().pendingChanges.clear()
+  window.location.reload()
+})
+
+// Signed in to sync, the projects keep in step with the writer's other
+// devices from as the app opens.
+useCloudSync().start()
 
 // In the desktop app, what the settings file a script left changed as the app
 // opened, or why it couldn't be imported.

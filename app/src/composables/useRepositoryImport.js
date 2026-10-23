@@ -171,44 +171,35 @@ export function useRepositoryImport(storyId) {
 }
 
 /**
- * What to tell the writer when an import or a refresh is done, in a line.
+ * What to tell the writer when an import or a refresh is done, if anything:
+ * the files left out that they might have wanted, which the outline doesn't
+ * show. Ignored files are what a codebase leaves out of itself, and go
+ * unsaid, as what came in does: the outline shows it.
  *
  * @param {RepositoryImported} result
- * @returns {{detail: string, severity: 'success'|'warn'}}
+ * @returns {{detail: string, severity: 'info'|'warn'}|null}
  */
 export function describeRepositoryImport(result) {
   const count = (/** @type {number} */ n, /** @type {string} */ word) =>
     `${n.toLocaleString('en-US')} ${word}${n === 1 ? '' : 's'}`
-  const { left, refreshed } = result
-
-  const out = [
-    left.ignored + left.never > 0 ? `${count(left.ignored + left.never, 'file')} ignored` : '',
-    left.binary.length > 0 ? `${count(left.binary.length, 'file')} not text` : '',
-    left.large.length > 0 ? `${count(left.large.length, 'file')} too large` : '',
-  ].filter(Boolean)
-  const leftOut = out.length > 0 ? `Left out: ${out.join(', ')}.` : ''
-
-  if (refreshed) {
-    const changes = [
-      refreshed.added ? `${refreshed.added} added` : '',
-      refreshed.updated ? `${refreshed.updated} changed` : '',
-      refreshed.removed ? `${refreshed.removed} removed` : '',
-    ].filter(Boolean)
+  const { left } = result
+  const binary = left.binary.length
+  const large = left.large.length
+  const notText = `that ${binary === 1 ? "isn't" : "aren't"} text`
+  const tooLarge = `that ${large === 1 ? 'is' : 'are'} too large`
+  const leftOut =
+    binary > 0 && large > 0
+      ? `${count(binary, 'file')} ${notText} and ${large.toLocaleString('en-US')} ${tooLarge} were left out.`
+      : binary > 0
+        ? `${count(binary, 'file')} ${notText} ${binary === 1 ? 'was' : 'were'} left out.`
+        : large > 0
+          ? `${count(large, 'file')} ${tooLarge} ${large === 1 ? 'was' : 'were'} left out.`
+          : ''
+  if (result.files === 0 && !result.refreshed) {
     return {
-      detail: [
-        `${result.name} refreshed:`,
-        changes.length > 0 ? `${changes.join(', ')}.` : 'nothing changed.',
-        leftOut,
-      ]
-        .filter(Boolean)
-        .join(' '),
-      severity: 'success',
+      detail: ['Nothing was imported.', leftOut].filter(Boolean).join(' '),
+      severity: 'warn',
     }
   }
-  return {
-    detail: [`${result.name} imported: ${count(result.files, 'file')}.`, leftOut]
-      .filter(Boolean)
-      .join(' '),
-    severity: result.files > 0 ? 'success' : 'warn',
-  }
+  return leftOut ? { detail: leftOut, severity: 'info' } : null
 }

@@ -77,6 +77,14 @@
           </label>
         </div>
       </div>
+
+      <label class="flex items-center gap-2 text-xs mt-2" data-field="web-ask-before-saving">
+        <ToggleSwitch
+          :model-value="!setup.saveWithoutAsking"
+          @update:model-value="setAskBeforeSaving($event)"
+        />
+        Ask before saving pages
+      </label>
     </template>
   </section>
 </template>
@@ -93,12 +101,23 @@ import { getWebService } from '@/web/services.js'
 
 /**
  * Settings → Connections → Web search: the service the model searches the
- * web through, its key, and the profiles whose chats search. See
+ * web through, its key, the profiles whose chats search, and whether the
+ * model asks before it keeps a page in the project. See
  * composables/useWebSearch.js.
  */
 
-const { setup, services, reachable, checks, checking, choose, setKey, connect, setProfile } =
-  useWebSearch()
+const {
+  setup,
+  services,
+  reachable,
+  checks,
+  checking,
+  choose,
+  setKey,
+  connect,
+  setProfile,
+  setAskBeforeSaving,
+} = useWebSearch()
 const { profiles } = useProfiles()
 
 /**

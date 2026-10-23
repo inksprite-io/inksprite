@@ -30,6 +30,10 @@
  * edit was recorded against would no longer be found, and rewinding would
  * skip it as if the writer had changed it. A plain document is the
  * exception: it is never opened as a document, so it is stored as typed.
+ *
+ * A rename or a move keeps the project's links going where they went: a link
+ * it leaves going nowhere is written again to where its document is now. See
+ * `utils/linkUpdates.js`.
  */
 
 import { computed, ref } from 'vue'
@@ -38,6 +42,7 @@ import { useStoriesStore } from '@/stores/storiesStore'
 import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
 import { generateDocumentId, useDocumentsStore } from '@/stores/documentsStore'
 import { useFilesStore } from '@/stores/filesStore'
+import { useVersionsStore } from '@/stores/versionsStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { useEditor } from '@/composables/useEditor.js'
 import { useChats } from '@/composables/useChats.js'
@@ -47,6 +52,7 @@ import { applyEdit, reverseEdit } from '@/utils/edits.js'
 import { sameThread } from '@/editor/comments.js'
 import { chatTabOf } from '@/utils/chatTabs.js'
 import { pictureKey, repointPictures } from '@/utils/pictures.js'
+import { linkTargets, relinked } from '@/utils/linkUpdates.js'
 import {
   closeTab as closed,
   dropTabs,
@@ -77,6 +83,7 @@ export const useDocuments = storyId => {
   const storiesStore = useStoriesStore()
   const projectViewsStore = useProjectViewsStore()
   const documentsStore = useDocumentsStore()
+  const versionsStore = useVersionsStore()
   const editor = useEditor()
 
   const ready = ref(false)
@@ -162,6 +169,35 @@ export const useDocuments = storyId => {
   }
 
   /**
+   * The document that came forward because the one showing was deleted,
+   * rather than because the writer opened it. It leaves the caret where it
+   * is: the writer was deleting in the outline, where Command-Z takes the
+   * delete back, and not choosing what to write in next. Opening anything,
+   * or closing a tab, ends that.
+   */
+  let unasked = ''
+
+  /**
+   * Whether a document coming forward takes the caret. See `unasked`.
+   * @param {string} documentId
+   * @returns {boolean}
+   */
+  const takesCaret = documentId => documentId !== unasked
+
+  /**
+   * Record the tabs left when documents are deleted. What comes forward in
+   * place of the one showing came unasked.
+   * @param {Tabs} before
+   * @param {string[]} gone
+   */
+  const dropDeleted = (before, gone) => {
+    const after = dropTabs(before, gone)
+    if (after === before) return
+    if (after.active && after.active !== before.active) unasked = after.active
+    writeTabs(after)
+  }
+
+  /**
    * Open a document: make it the one the writer is in, in a tab of its own
    * if it was not open already. A preview takes the preview tab's place, and
    * the document that was there is written out and let go of, as a close
@@ -170,6 +206,7 @@ export const useDocuments = storyId => {
    * @param {{ preview?: boolean }} [options]
    */
   const open = (documentId, options) => {
+    unasked = ''
     const before = tabs.value
     const after = openTab(before, documentId, options)
     for (const id of before.open) if (!after.open.includes(id)) editor.close(id)
@@ -203,6 +240,7 @@ export const useDocuments = storyId => {
    * @param {string} documentId
    */
   const closeTab = documentId => {
+    unasked = ''
     editor.close(documentId)
     writeTabs(closed(tabs.value, documentId))
   }
@@ -330,10 +368,12 @@ export const useDocuments = storyId => {
    * @param {string} parentId
    * @param {string} title
    * @param {string} [content] - Markdown, for callers creating a document with a body
+   * @param {Partial<Document>} [fields] - Anything else it is made with: where it came from
    * @returns {Document}
    */
-  const createTextDocument = (parentId, title, content = '') =>
+  const createTextDocument = (parentId, title, content = '', fields = {}) =>
     documentsStore.createDocument({
+      ...fields,
       storyId,
       parentId,
       type: 'text',
@@ -375,7 +415,8 @@ export const useDocuments = storyId => {
   /**
    * Give a document a name, unless something beside it already has that name.
    * The root's name is the project's, and one another project has is numbered
-   * instead: see `freeName`.
+   * instead: see `freeName`. Links to the document, or to anything in a
+   * folder renamed, are written again to its new name.
    * @param {string} documentId
    * @param {string} title
    * @returns {boolean} Whether it was renamed
@@ -390,8 +431,59 @@ export const useDocuments = storyId => {
       return true
     }
     if (document.parentId && namesakeOf(document.parentId, title, documentId)) return false
-    documentsStore.updateDocument(documentId, { title })
+    keepingLinks(() => documentsStore.updateDocument(documentId, { title }))
     return true
+  }
+
+  /**
+   * The project's text documents, each with its text as it stands, for the
+   * links in them to be read and kept.
+   * @returns {import('@/utils/linkUpdates.js').LinkedText[]}
+   */
+  const linkedTexts = () => {
+    /** @type {import('@/utils/linkUpdates.js').LinkedText[]} */
+    const texts = []
+    const walk = (/** @type {string} */ parentId) => {
+      for (const child of childrenOf(parentId)) {
+        if (child.type === 'folder') walk(child.id)
+        else if (child.type === 'text')
+          texts.push({ id: child.id, content: currentContent(child.id) })
+      }
+    }
+    walk(rootIdFor(storyId))
+    return texts
+  }
+
+  /** How deep in changes to the tree this project is: links are kept around the outermost. */
+  let changing = 0
+
+  /**
+   * Make a change to the tree, keeping the project's links going where they
+   * went: one the change leaves going nowhere, or to another document, is
+   * written again to where its document is now (`utils/linkUpdates.js`).
+   * Inside another such change, only the change: the outer one keeps the
+   * links, once.
+   *
+   * @template T
+   * @param {() => T} change
+   * @returns {{value: T, relinked: string[]}} What the change returned, and
+   *   the documents whose links were written again
+   */
+  const keepingLinks = change => {
+    if (changing > 0) return { value: change(), relinked: [] }
+    const tree = { get, childrenOf, rootId: rootIdFor(storyId) }
+    const targets = linkTargets(tree, linkedTexts())
+    changing++
+    /** @type {T} */
+    let value
+    try {
+      value = change()
+    } finally {
+      changing--
+    }
+    const changed = targets.size > 0 ? relinked(tree, linkedTexts(), targets) : []
+    for (const { id, content } of changed) editContent(id, content)
+    return { value, relinked: changed.map(({ id }) => id) }
   }
 
   /**
@@ -409,6 +501,22 @@ export const useDocuments = storyId => {
    * @returns {string}
    */
   const stored = (documentId, content) => (isPlain(documentId) ? content : settleMarkdown(content))
+
+  /**
+   * Change a document's text from outside the editor: the model's, a Google
+   * Docs sync's, a version restored. What was typed is written out first,
+   * and the text kept as a version when one is due (`versionsStore`).
+   *
+   * @template T
+   * @param {string} documentId
+   * @param {import('@/types/models.js').VersionBy} by
+   * @param {() => T} write - The change, made through this API
+   * @returns {T}
+   */
+  const fromOutside = (documentId, by, write) => {
+    editor.flush(documentId)
+    return versionsStore.around(documentsStore.getDocument(documentId), by, write)
+  }
 
   /**
    * Replace a document's body. Word count follows from it.
@@ -510,30 +618,32 @@ export const useDocuments = storyId => {
   /**
    * Put a document at a path: into the folder the path names, under its last
    * name. Only into a folder that is there, and only under a name nothing
-   * beside it has, so an undone move never makes a folder or a copy.
+   * beside it has, so an undone move never makes a folder or a copy. The
+   * links are kept once, around the move and the rename together.
    * @param {string} documentId
    * @param {string} path
    * @returns {boolean} Whether it is there now
    */
-  const moveToPath = (documentId, path) => {
-    const segments = path.split('/').filter(Boolean)
-    const title = segments.pop()
-    if (!title) return false
-    let parentId = rootIdFor(storyId)
-    for (const name of segments) {
-      const folder = childrenOf(parentId).find(
-        child => child.type === 'folder' && child.title === name
-      )
-      if (!folder) return false
-      parentId = folder.id
-    }
-    if (namesakeOf(parentId, title, documentId)) return false
-    if (get(documentId)?.parentId !== parentId) {
-      if (!canDropInto(parentId, documentId)) return false
-      moveInto(parentId, documentId)
-    }
-    return get(documentId)?.title === title || rename(documentId, title)
-  }
+  const moveToPath = (documentId, path) =>
+    keepingLinks(() => {
+      const segments = path.split('/').filter(Boolean)
+      const title = segments.pop()
+      if (!title) return false
+      let parentId = rootIdFor(storyId)
+      for (const name of segments) {
+        const folder = childrenOf(parentId).find(
+          child => child.type === 'folder' && child.title === name
+        )
+        if (!folder) return false
+        parentId = folder.id
+      }
+      if (namesakeOf(parentId, title, documentId)) return false
+      if (get(documentId)?.parentId !== parentId) {
+        if (!canDropInto(parentId, documentId)) return false
+        moveInto(parentId, documentId)
+      }
+      return get(documentId)?.title === title || rename(documentId, title)
+    }).value
 
   /**
    * A document's comment threads, as its row has them.
@@ -597,6 +707,12 @@ export const useDocuments = storyId => {
    * @returns {boolean} Whether it was undone
    */
   const revertEdit = edit => {
+    // What a turn deleted comes back from the trash, while it is there.
+    if (edit.tool === 'delete_document') {
+      if (!documentsStore.getTrashedDocument(edit.documentId)?.trashed) return false
+      restore(edit.documentId)
+      return true
+    }
     const document = documentsStore.getDocument(edit.documentId)
     if (!document) return false
     // A folder goes only while it is empty: the turn's own documents in it
@@ -619,7 +735,7 @@ export const useDocuments = storyId => {
     if (threadsOnly(edit)) return changeThreads(edit.documentId, edit.comments || [], true)
     const reverted = reverseEdit(content, edit)
     if (reverted === null) return false
-    setContent(edit.documentId, reverted)
+    fromOutside(edit.documentId, 'model', () => setContent(edit.documentId, reverted))
     if (edit.comments) changeThreads(edit.documentId, edit.comments, true)
     return true
   }
@@ -656,6 +772,12 @@ export const useDocuments = storyId => {
    * @returns {Promise<boolean>} Whether it was made
    */
   const reapplyEdit = async edit => {
+    if (edit.tool === 'delete_document') {
+      if (documentsStore.getTrashedDocument(edit.documentId)) return true
+      if (!documentsStore.getDocument(edit.documentId)) return false
+      trash(edit.documentId)
+      return true
+    }
     if (edit.tool === 'create_folder') {
       if (documentsStore.getDocument(edit.documentId)) return true
       const { parentId, title } = placeOf(edit.path)
@@ -694,7 +816,7 @@ export const useDocuments = storyId => {
     if (applied === null) return false
     // The threads first, so the text's save finds a thread it places.
     if (edit.comments) changeThreads(edit.documentId, edit.comments, false)
-    setContent(edit.documentId, applied)
+    fromOutside(edit.documentId, 'model', () => setContent(edit.documentId, applied))
     return true
   }
 
@@ -791,16 +913,78 @@ export const useDocuments = storyId => {
     walk(documentId)
 
     for (const id of removed) editor.discard(id)
-    const after = dropTabs(before, removed)
-    if (after !== before) writeTabs(after)
+    dropDeleted(before, removed)
 
     return removed.length
   }
 
   /**
+   * Move a document to the trash, and everything under it. What is open of it
+   * is written out first, so the trash has it as it was left, and its tabs
+   * close. See `utils/trash.js`.
+   * @param {string} documentId
+   * @returns {number} How many documents went, itself among them
+   */
+  const trash = documentId => {
+    const before = tabs.value
+    /** @type {string[]} */
+    const going = []
+    const walk = (/** @type {string} */ id) => {
+      going.push(id)
+      for (const child of documentsStore.getChildren(id)) walk(child.id)
+    }
+    walk(documentId)
+
+    for (const id of going) editor.close(id)
+    documentsStore.trashDocument(documentId)
+    dropDeleted(before, going)
+
+    return going.length
+  }
+
+  /**
+   * Bring a document back from the trash, with what went with it: into the
+   * folder it was in, or to the top of the project when that folder is gone
+   * or in the trash itself, under a name nothing there has taken since.
+   * @param {string} documentId - One that was trashed, not one under it
+   * @returns {Document}
+   */
+  const restore = documentId => {
+    const trashed = documentsStore.getTrashedDocument(documentId)
+    if (!trashed?.trashed) {
+      throw new Error(`Failed to restore document, '${documentId}' is not in the trash`)
+    }
+    const folder = documentsStore.getDocument(trashed.parentId)
+    const parentId = folder?.type === 'folder' ? folder.id : rootIdFor(storyId)
+    const title = uniqueTitle(parentId, trashed.title, documentId)
+    /** @type {{parentId?: string, title?: string, order?: number}} */
+    const changes = {}
+    if (parentId !== trashed.parentId) {
+      changes.parentId = parentId
+      changes.order = childrenOf(parentId).length
+    }
+    if (title !== trashed.title) changes.title = title
+    return documentsStore.restoreDocument(documentId, changes)
+  }
+
+  /**
+   * Delete a document in the trash for good, and everything under it.
+   * @param {string} documentId
+   * @returns {number} How many went
+   */
+  const deleteTrashed = documentId => documentsStore.deleteTrashed(documentId)
+
+  /**
+   * What this project's trash holds of its documents, the most recent first.
+   * @type {import('vue').ComputedRef<Document[]>}
+   */
+  const trashed = computed(() => documentsStore.trashedOf(storyId))
+
+  /**
    * Commit a drag: reparents anything that moved and renumbers the folder.
    * Something moved in beside a document of its name comes in as `Name (2)`.
    * A move `canDropInto` refuses changes nothing, whatever let it through.
+   * Links to what moved, and from it, are kept going where they went.
    * @param {string} parentId
    * @param {string[]} documentIds - Children in their new order
    * @returns {Document[]} The folder's children, as they now stand
@@ -808,16 +992,20 @@ export const useDocuments = storyId => {
   const reorder = (parentId, documentIds) => {
     const arriving = documentIds.filter(id => documentsStore.getDocument(id)?.parentId !== parentId)
     if (arriving.some(id => !canDropInto(parentId, id))) return childrenOf(parentId)
-    for (const id of documentIds) {
-      const document = documentsStore.getDocument(id)
-      if (!document || document.parentId === parentId) continue
-      const title = uniqueTitle(parentId, document.title, id)
-      documentsStore.updateDocument(
-        id,
-        title === document.title ? { parentId } : { parentId, title }
-      )
+    const move = () => {
+      for (const id of arriving) {
+        const document = documentsStore.getDocument(id)
+        if (!document) continue
+        const title = uniqueTitle(parentId, document.title, id)
+        documentsStore.updateDocument(
+          id,
+          title === document.title ? { parentId } : { parentId, title }
+        )
+      }
+      return documentsStore.reorderChildren(parentId, documentIds)
     }
-    return documentsStore.reorderChildren(parentId, documentIds)
+    // A new order alone changes no link: an ordered folder's places are not in them.
+    return arriving.length > 0 ? keepingLinks(move).value : move()
   }
 
   /**
@@ -910,6 +1098,7 @@ export const useDocuments = storyId => {
     open,
     keep,
     focus,
+    takesCaret,
     closeTab,
     releaseTabs,
     get,
@@ -927,11 +1116,13 @@ export const useDocuments = storyId => {
     uniqueTitle,
     namesakeOf,
     rename,
+    keepingLinks,
     isPlain,
     wouldSettle,
     setPlain,
     setContent,
     editContent,
+    fromOutside,
     currentContent,
     replaceText,
     threadsOf,
@@ -942,6 +1133,10 @@ export const useDocuments = storyId => {
     reapplyEdit,
     duplicate,
     remove,
+    trash,
+    restore,
+    deleteTrashed,
+    trashed,
     reorder,
     moveInto,
     setOrdered,

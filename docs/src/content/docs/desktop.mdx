@@ -3,7 +3,7 @@ title: The Desktop App
 description: Install inksprite on macOS, Windows or Linux, bring your work over from the browser, and find your projects as a folder of Markdown files.
 ---
 
-The desktop app is the same inksprite as the one in your browser, in a window
+The desktop app is the same inksprite as the one in your browser, in windows
 of its own. No browser can clear your work, and it reaches servers a web page
 can't.
 
@@ -63,6 +63,10 @@ start work there, or bring projects over one at a time with a
 [settings file](/projects/#move-your-settings). If the backup holds your keys,
 delete it once it's restored.
 
+Or [sync](/sync/): sign in to the same account in the browser and in the
+desktop app, and your projects and setup come over, keys included. Sign in to
+your MCP servers again there.
+
 ## Updates
 
 The app looks for a new version when it opens and every hour after, and
@@ -75,6 +79,22 @@ the message, it comes back the next time you open inksprite. On Linux,
 updating the `.deb` asks for your password.
 
 **Settings** › **About** shows the version you have.
+
+## More than one window
+
+To work on two projects side by side, choose **File** › **New Window**
+(<kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>N</kbd>, or <kbd>Ctrl</kbd> <kbd>Shift</kbd>
+<kbd>N</kbd> on Windows and Linux), or **New window** in the
+[projects menu](/projects/#switch-projects). On a Mac the Dock icon's menu has
+**New Window** too. A new window opens the last project you worked on that
+isn't open in another, or none when they all are. Hold <kbd>⌘</kbd> (<kbd>Ctrl</kbd>) as you pick a
+project in the projects menu to open it in a window of its own.
+
+A project is open in one window at a time. The projects menu says which are
+open in another window, and picking one brings that window to the front. A
+job, such as a [conversion](/files/#convert-to-markdown), keeps its project in
+its window until it finishes. Your settings and connections are the same in
+every window.
 
 ## Your projects folder
 
@@ -95,7 +115,12 @@ To open it, click **Show in Finder** (**Show in Explorer** on Windows,
 
 A project's chats and [narration](/narration/) audio go in its folder too.
 Your AI connections, profiles, skills, MCP servers and settings stay in the
-app. A backup holds everything but narration audio.
+app, as do your documents' [versions](/editor/#versions). A backup holds
+everything but narration audio.
+
+A document in inksprite's [trash](/projects/#delete-and-the-trash) keeps its
+file where it was until it's deleted for good. Then the file goes to your
+computer's Trash (the Recycle Bin on Windows).
 
 If you had projects in the desktop app before it kept them in a folder, it
 moves them in the first time it opens, and opens again.
@@ -122,7 +147,7 @@ for them too. Have it copy a [settings file](/projects/#move-your-settings) to
 - **Windows**: `%APPDATA%\inksprite\inksprite-settings.json`
 - **Linux**: `~/.config/inksprite/inksprite-settings.json`
 
-inksprite imports it as it opens, without asking, and says what it changed.
+inksprite imports it as it opens, without asking.
 If the file sets up the AI, the welcome window has no **AI** tab. Leave the
 file where it is. Each time inksprite opens, it imports only what the
 file changed since it last looked, so a server added to the file reaches

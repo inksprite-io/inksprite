@@ -9,7 +9,9 @@
  * in Courier New loses its font, an open suggestion's old words and new run
  * together. Read here, a page break parts the paragraphs, a monospaced run is
  * code, and a Doc with suggested edits comes in as it was before them: a
- * suggested insertion left out, a suggested deletion kept.
+ * suggested insertion left out, a suggested deletion kept. Read with some of
+ * them accepted, it comes in as it would be with those made, which is how a
+ * sync finds what each one changes (`drive/suggestions.js`).
  *
  * A picture comes in as one, with a marker where it was, for the import to
  * fetch it from the address the Docs API gives and make it the document's
@@ -99,6 +101,9 @@ import { markerFor } from '@/files/pictures.js'
  * @property {number} images - Its pictures that did not: a drawing, one placed
  *   beside a paragraph, one in a table or in code, one left out when asked
  * @property {number} suggestions - Suggested edits still open in it
+ * @property {string[]} suggested - Those that put words in or take them out,
+ *   by the Doc's ids, in the order they first come; a change of style alone
+ *   is not among them
  */
 
 /**
@@ -125,8 +130,9 @@ import { markerFor } from '@/files/pictures.js'
  * @property {Piece[]} pieces
  * @property {number} start - Its first index
  * @property {number} end - Its newline's index
- * @property {boolean} runsOn - Its newline is a suggested insertion, so it
- *   runs on into the next paragraph
+ * @property {boolean} runsOn - Its newline is out as read, put in by a
+ *   suggestion not accepted or taken out by one that is, so it runs on into
+ *   the next paragraph
  * @property {string} named - Its named style
  * @property {Paragraph} paragraph
  */
@@ -189,14 +195,16 @@ export function tabsOf(document) {
  * @param {string} [options.tabId] - The tab; the first otherwise
  * @param {Set<string>} [options.leaveOut] - Pictures to hold, by their inline
  *   objects' ids: those the import could not fetch
+ * @param {Set<string>} [options.accepted] - Suggested edits to read as made,
+ *   by the Doc's ids; every other is read as it was before it
  * @returns {ReadDoc}
  * @throws {Error} When the Doc has no such tab
  */
-export function readDoc(document, { tabId, leaveOut } = {}) {
+export function readDoc(document, { tabId, leaveOut, accepted } = {}) {
   const tabs = tabsOf(document)
   const tab = tabId === undefined ? tabs[0] : tabs.find(each => each.tabProperties?.tabId === tabId)
   if (!tab?.documentTab) throw new Error('The Doc has no such tab')
-  const reader = new Reader(tab.documentTab, leaveOut)
+  const reader = new Reader(tab.documentTab, leaveOut, accepted)
   const built = reader.read()
   const markdown = serializeMarkdown(built)
   const doc = parseMarkdown(markdown)
@@ -209,6 +217,7 @@ export function readDoc(document, { tabId, leaveOut } = {}) {
     pictures: reader.pictures,
     images: reader.images,
     suggestions: reader.suggestions.size,
+    suggested: [...reader.suggested],
   }
 }
 
@@ -290,16 +299,20 @@ class Reader {
   /**
    * @param {DocumentTab} tab
    * @param {Set<string>} [leaveOut] - Pictures to hold
+   * @param {Set<string>} [accepted] - Suggested edits read as made
    */
-  constructor(tab, leaveOut = new Set()) {
+  constructor(tab, leaveOut = new Set(), accepted = new Set()) {
     this.tab = tab
     this.leaveOut = leaveOut
+    this.accepted = accepted
     /** @type {DocPicture[]} The pictures that came in, in order. */
     this.pictures = []
     /** Pictures that did not, and those placed beside paragraphs. */
     this.images = 0
     /** @type {Set<string>} */
     this.suggestions = new Set()
+    /** @type {Set<string>} Those that put words in or take them out, in order. */
+    this.suggested = new Set()
     /** @type {Map<Node, LocalSpan[]>} Each block's spans, by the block itself. */
     this.local = new Map()
     /** @type {LocalSpan[]} Held between blocks, waiting for the next one. */
@@ -432,6 +445,21 @@ class Reader {
   }
 
   /**
+   * Whether a run or an inline element is out of the document as read: put
+   * in by a suggestion not accepted, or taken out by one that is.
+   *
+   * @param {Suggested} element
+   * @returns {boolean}
+   */
+  #suggestedAway(element) {
+    const inserted = element.suggestedInsertionIds ?? []
+    const deleted = element.suggestedDeletionIds ?? []
+    for (const id of [...inserted, ...deleted]) this.suggested.add(id)
+    if (inserted.length > 0 && !inserted.some(id => this.accepted.has(id))) return true
+    return deleted.some(id => this.accepted.has(id))
+  }
+
+  /**
    * A paragraph's pieces, its newline, and its style.
    *
    * @param {StructuralElement} element
@@ -459,7 +487,7 @@ class Reader {
           text = text.slice(0, -1)
           end = index + text.length
         }
-        if (run.suggestedInsertionIds?.length) {
+        if (this.#suggestedAway(run)) {
           if (text) pieces.push(heldPiece(index, text.length, 'suggestion'))
           runsOn ||= ends
           continue
@@ -494,7 +522,7 @@ class Reader {
       Object.entries(part).find(([key]) => key !== 'startIndex' && key !== 'endIndex') ?? ['', {}]
     )
     this.#noteSuggestions(inline)
-    if (inline.suggestedInsertionIds?.length) return heldPiece(index, size, 'suggestion')
+    if (this.#suggestedAway(inline)) return heldPiece(index, size, 'suggestion')
     const style = inline.textStyle ?? {}
 
     /** @type {string} */
@@ -592,10 +620,17 @@ class Reader {
       const line = this.#readParagraph(element)
       const before = items.at(-1)?.line
       // A paragraph a suggested newline split off is read as one with the
-      // paragraph before it, the newline held.
+      // paragraph before it, the newline held. Joined, the two take the
+      // second's style, as Docs joins two paragraphs: its newline is the
+      // one they keep.
       if (before?.runsOn) {
         before.pieces.push(heldPiece(before.end, 1, 'suggestion'), ...line.pieces)
-        Object.assign(before, { end: line.end, runsOn: line.runsOn })
+        Object.assign(before, {
+          end: line.end,
+          runsOn: line.runsOn,
+          named: line.named,
+          paragraph: line.paragraph,
+        })
         continue
       }
       items.push({ line, element })

@@ -22,12 +22,14 @@ import { defineStore } from 'pinia'
 import { shallowRef, triggerRef } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore'
+import { useVersionsStore } from './versionsStore'
 import { rootNode, rootIdFor } from './migrations/projectTree.js'
 import { storage } from '@/storage/index.js'
 import { countWords } from '@/utils/wordCount.js'
 import { settleThreads } from '@/editor/comments.js'
 import { orderSiblings } from '@/utils/siblingOrder.js'
 import { pictureKey, picturesIn, unreferencedPictures } from '@/utils/pictures.js'
+import { expired, trashedIds } from '@/utils/trash.js'
 
 /** @typedef {import('../types/models.js').Document} Document */
 /** @typedef {import('../types/models.js').RepositorySource} RepositorySource */
@@ -54,14 +56,25 @@ const EDITED_GRAIN = 60_000
 
 export const useDocumentsStore = defineStore('documents', () => {
   /**
-   * Live documents by id. A deleted document is dropped from here as its row
+   * Documents by id, those in the trash aside: what the tree, the tools and
+   * everything else read. A deleted document is dropped from here as its row
    * is queued for removal.
    * @type {import('vue').ShallowRef<Map<string, Document>>}
    */
   const documents = shallowRef(new Map())
 
   /**
-   * parentId -> set of child document ids
+   * Documents in the trash by id: each one trashed, and everything under a
+   * trashed folder. Kept out of `documents`, so that nothing reading the tree
+   * meets them; see `utils/trash.js`.
+   * @type {import('vue').ShallowRef<Map<string, Document>>}
+   */
+  const trash = shallowRef(new Map())
+
+  /**
+   * parentId -> set of child document ids, in the tree and in the trash
+   * alike. Only `documents` answers for them, so the trash's stay out of
+   * every listing.
    * @type {import('vue').ShallowRef<Map<string, Set<string>>>}
    */
   const childrenByParent = shallowRef(new Map())
@@ -73,6 +86,7 @@ export const useDocumentsStore = defineStore('documents', () => {
   const _loadingByStory = shallowRef(new Map())
 
   const syncStore = useSyncStore()
+  const versionsStore = useVersionsStore()
 
   /**
    * Add a document id to its parent's child set.
@@ -104,6 +118,95 @@ export const useDocumentsStore = defineStore('documents', () => {
    */
   function getDocument(documentId) {
     return documents.value.get(documentId) || null
+  }
+
+  /**
+   * A document wherever it is, in the tree or in the trash.
+   * @param {string} documentId
+   * @returns {Document|undefined}
+   */
+  const stored = documentId => documents.value.get(documentId) ?? trash.value.get(documentId)
+
+  /**
+   * Keep a document's row in whichever map holds it.
+   * @param {Document} row
+   */
+  function keepRow(row) {
+    ;(trash.value.has(row.id) ? trash.value : documents.value).set(row.id, row)
+  }
+
+  /**
+   * Put a document, and everything under it, where it belongs: in the trash
+   * when it or a folder above it was trashed, in the tree otherwise.
+   *
+   * @param {string} documentId
+   */
+  function settle(documentId) {
+    const row = stored(documentId)
+    if (!row) return
+    /** @type {Set<string>} */
+    const seen = new Set()
+    const visit = (/** @type {Document} */ document, /** @type {boolean} */ above) => {
+      if (seen.has(document.id)) return
+      seen.add(document.id)
+      const inTrash = above || Boolean(document.trashed)
+      ;(inTrash ? documents : trash).value.delete(document.id)
+      ;(inTrash ? trash : documents).value.set(document.id, document)
+      for (const childId of childrenByParent.value.get(document.id) ?? []) {
+        const child = stored(childId)
+        if (child) visit(child, inTrash)
+      }
+    }
+    visit(row, trash.value.has(row.parentId))
+    triggerRef(documents)
+    triggerRef(trash)
+  }
+
+  /**
+   * A document in the trash, by id: one trashed, or one under it.
+   * @param {string} documentId
+   * @returns {Document|null}
+   */
+  function getTrashedDocument(documentId) {
+    return trash.value.get(documentId) || null
+  }
+
+  /**
+   * What a project's trash holds of its documents: each one deleted, the
+   * most recent first. What is under a trashed folder goes with the folder,
+   * and isn't among them.
+   *
+   * @param {string} storyId
+   * @returns {Document[]}
+   */
+  function trashedOf(storyId) {
+    return [...trash.value.values()]
+      .filter(doc => doc.storyId === storyId && doc.trashed && !trash.value.has(doc.parentId))
+      .sort((a, b) => (b.trashed ?? 0) - (a.trashed ?? 0))
+  }
+
+  /**
+   * Everything under a document in the trash, its folders' folders included.
+   *
+   * @param {string} documentId
+   * @returns {Document[]}
+   */
+  function trashedUnder(documentId) {
+    /** @type {Document[]} */
+    const out = []
+    /** @type {Set<string>} */
+    const seen = new Set([documentId])
+    const visit = (/** @type {string} */ id) => {
+      for (const childId of childrenByParent.value.get(id) ?? []) {
+        const child = trash.value.get(childId)
+        if (!child || seen.has(childId)) continue
+        seen.add(childId)
+        out.push(child)
+        visit(childId)
+      }
+    }
+    visit(documentId)
+    return out
   }
 
   /**
@@ -178,6 +281,7 @@ export const useDocumentsStore = defineStore('documents', () => {
    * @param {RepositorySource} [opts.source] - Repository folders only: where its code was read from
    * @param {import('../types/models.js').DriveLink} [opts.drive] - Text documents only: the
    *   Google Doc it was imported from
+   * @param {string} [opts.url] - Not folders: the address on the web it was kept from
    * @param {Record<string, import('../types/models.js').CommentThread>} [opts.comments] - Text
    *   documents only: the threads its comments' markers name
    * @param {Record<string, import('../types/models.js').PictureInfo>} [opts.pictures] - Text
@@ -203,6 +307,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     pages,
     source,
     drive,
+    url,
     comments,
     pictures,
   }) {
@@ -235,6 +340,7 @@ export const useDocumentsStore = defineStore('documents', () => {
       ...(isFile && typeof pages === 'number' ? { pages } : {}),
       ...(isFolder && source ? { source } : {}),
       ...(type === 'text' && drive ? { drive } : {}),
+      ...(!isFolder && url ? { url } : {}),
       ...(type === 'text' && comments && Object.keys(comments).length > 0
         ? { comments: settleThreads(content, comments) }
         : {}),
@@ -246,6 +352,8 @@ export const useDocumentsStore = defineStore('documents', () => {
 
     documents.value.set(document.id, document)
     indexChild(parentId, document.id)
+    // Made in a folder in the trash, by sync, it is in the trash with it.
+    if (trash.value.has(parentId)) settle(document.id)
 
     triggerRef(documents)
     triggerRef(childrenByParent)
@@ -293,6 +401,8 @@ export const useDocumentsStore = defineStore('documents', () => {
       updated: Date.now(),
     }
     if ('content' in updates && hasBody) {
+      // The text it had may be due to be kept as a version first.
+      if (next.content !== previous.content) versionsStore.changing(previous)
       next.wordCount = countWords(next.content)
       // Each placed thread keeps its passage as it reads now, so that one
       // whose passage goes knows what it was on.
@@ -315,14 +425,70 @@ export const useDocumentsStore = defineStore('documents', () => {
   }
 
   /**
-   * Delete a document. Children are left alone — cascading is the
-   * caller's decision, as it was with parts and scenes.
+   * Move a document to the trash, and everything under it with it. Its row
+   * keeps everything it had, and only says when it went.
+   *
+   * @param {string} documentId
+   * @param {number} [at] - When, if not now
+   * @returns {Document}
+   * @throws {Error} If the document is not in the tree, or is a project's root
+   */
+  function trashDocument(documentId, at = Date.now()) {
+    const previous = documents.value.get(documentId)
+    if (!previous) {
+      throw new Error(`Failed to trash document, '${documentId}' not found`)
+    }
+    if (previous.id === rootIdFor(previous.storyId)) {
+      throw new Error('A project goes to the trash whole, not by its root')
+    }
+    /** @type {Document} */
+    const next = { ...previous, trashed: at }
+    documents.value.set(documentId, next)
+    settle(documentId)
+    syncStore.trackChange('documents', documentId, next)
+    markEdited(next.storyId)
+    return next
+  }
+
+  /**
+   * Bring a document back from the trash, and what went with it. Where it
+   * goes is the caller's to say when the folder it was in is gone, and what
+   * it is called when its name has been taken since.
+   *
+   * @param {string} documentId - One trashed, not one under it
+   * @param {{parentId?: string, title?: string, order?: number}} [changes]
+   * @returns {Document}
+   * @throws {Error} If the document was not trashed
+   */
+  function restoreDocument(documentId, changes = {}) {
+    const previous = trash.value.get(documentId)
+    if (!previous?.trashed) {
+      throw new Error(`Failed to restore document, '${documentId}' is not in the trash`)
+    }
+    /** @type {Document} */
+    const next = { ...previous, ...changes }
+    delete next.trashed
+    if (next.parentId !== previous.parentId) {
+      unindexChild(previous.parentId, documentId)
+      indexChild(next.parentId, documentId)
+      triggerRef(childrenByParent)
+    }
+    trash.value.set(documentId, next)
+    settle(documentId)
+    syncStore.trackChange('documents', documentId, next)
+    markEdited(next.storyId)
+    return next
+  }
+
+  /**
+   * Delete a document, in the tree or in the trash. Children are left alone —
+   * cascading is the caller's decision, as it was with parts and scenes.
    *
    * @param {string} documentId
    * @throws {Error} If the document is not found
    */
   function deleteDocument(documentId) {
-    const document = documents.value.get(documentId)
+    const document = stored(documentId)
     if (!document) {
       throw new Error(`Failed to delete document, '${documentId}' not found`)
     }
@@ -335,13 +501,29 @@ export const useDocumentsStore = defineStore('documents', () => {
     // back after.
     syncStore.trackDelete('documents', documentId)
     if (document.type === 'file') syncStore.trackDelete('files', documentId)
+    if (document.type === 'text') versionsStore.dropFor(documentId)
     for (const name of Object.keys(document.pictures || {})) {
       syncStore.trackDelete('files', pictureKey(documentId, name))
     }
 
     documents.value.delete(documentId)
+    trash.value.delete(documentId)
     triggerRef(documents)
+    triggerRef(trash)
     markEdited(document.storyId)
+  }
+
+  /**
+   * Delete a document in the trash for good, and everything under it.
+   *
+   * @param {string} documentId
+   * @returns {number} How many went
+   */
+  function deleteTrashed(documentId) {
+    if (!trash.value.has(documentId)) return 0
+    const ids = [...trashedUnder(documentId).map(doc => doc.id), documentId]
+    for (const id of ids) deleteDocument(id)
+    return ids.length
   }
 
   /**
@@ -361,6 +543,26 @@ export const useDocumentsStore = defineStore('documents', () => {
     documents.value.set(root.id, next)
     triggerRef(documents)
     syncStore.trackChange('documents', root.id, next)
+  }
+
+  /**
+   * Keep what explore made of a document, or let it go. Not an edit: the
+   * document's time and the project's "last edited" stay as they were, since
+   * nothing the writer wrote changed.
+   *
+   * @param {string} documentId
+   * @param {import('../types/models.js').Digest|null} digest
+   */
+  function setDigest(documentId, digest) {
+    const previous = documents.value.get(documentId)
+    if (!previous) return
+    /** @type {Document} */
+    const next = { ...previous }
+    if (digest) next.digest = digest
+    else delete next.digest
+    documents.value.set(documentId, next)
+    triggerRef(documents)
+    syncStore.trackChange('documents', documentId, next)
   }
 
   /**
@@ -416,6 +618,32 @@ export const useDocumentsStore = defineStore('documents', () => {
   }
 
   /**
+   * Take a document as another device left it, synced (`cloud/`): kept as it
+   * came, its times and all, and saved; null removes it. Not a change of
+   * the writer's here, so the project's last edit stays as the row says.
+   *
+   * @param {string} id
+   * @param {Document|null} row
+   */
+  function receive(id, row) {
+    const previous = stored(id)
+    if (previous) unindexChild(previous.parentId, id)
+    if (row) {
+      keepRow(row)
+      indexChild(row.parentId, id)
+      settle(id)
+      syncStore.trackChange('documents', id, row)
+    } else if (previous) {
+      documents.value.delete(id)
+      trash.value.delete(id)
+      syncStore.trackDelete('documents', id)
+    }
+    triggerRef(documents)
+    triggerRef(trash)
+    triggerRef(childrenByParent)
+  }
+
+  /**
    * Load a story's whole tree in one query.
    *
    * Parts and scenes needed a query per part; a story is on the order of a
@@ -435,9 +663,10 @@ export const useDocumentsStore = defineStore('documents', () => {
     const promise = (async () => {
       try {
         const rows = await storage.documents(storyId)
+        const inTrash = trashedIds(rows)
 
         for (const row of rows) {
-          documents.value.set(row.id, row)
+          ;(inTrash.has(row.id) ? trash : documents).value.set(row.id, row)
           indexChild(row.parentId, row.id)
         }
         // A story with no documents still counts as loaded, so make sure the
@@ -447,10 +676,12 @@ export const useDocumentsStore = defineStore('documents', () => {
         }
 
         triggerRef(documents)
+        triggerRef(trash)
         triggerRef(childrenByParent)
         if (!swept.has(storyId)) {
           swept.add(storyId)
-          sweepPictures(rows)
+          emptyExpired(storyId)
+          await sweepPictures(rows.filter(row => stored(row.id)))
         }
 
         console.log(`Loaded ${rows.length} documents for story ${storyId}`)
@@ -469,30 +700,55 @@ export const useDocumentsStore = defineStore('documents', () => {
   /**
    * Let go of the pictures that no document's text refers to any more, taken
    * out of the text since the project was last opened. A picture another
-   * document refers to stays, whoever's it is. Housekeeping, so the documents
-   * keep their last-edited times.
+   * document refers to stays, whoever's it is, and so does one a version
+   * refers to. Housekeeping, so the documents keep their last-edited times.
    *
    * @param {Document[]} rows - A project's, as they were read
+   * @returns {Promise<void>}
    */
-  function sweepPictures(rows) {
+  async function sweepPictures(rows) {
     if (!rows.some(row => row.pictures)) return
     /** @type {Set<string>} */
     const referred = new Set()
     for (const row of rows) for (const key of picturesIn(row.content)) referred.add(key)
     for (const row of rows) {
-      const gone = unreferencedPictures(row.id, row.pictures, referred)
+      if (unreferencedPictures(row.id, row.pictures, referred).length === 0) continue
+      // A picture one of its versions refers to stays, so that the version
+      // restored has it; when they can't be read, every one does.
+      const inVersions = await versionsStore.picturesOf(row.id)
+      const current = stored(row.id)
+      if (!inVersions || !current) continue
+      const gone = unreferencedPictures(row.id, current.pictures, referred).filter(
+        name => !inVersions.has(pictureKey(row.id, name))
+      )
       if (gone.length === 0) continue
-      const pictures = { ...row.pictures }
+      const pictures = { ...current.pictures }
       for (const name of gone) delete pictures[name]
       /** @type {Document} */
-      const next = { ...row }
+      const next = { ...current }
       if (Object.keys(pictures).length > 0) next.pictures = pictures
       else delete next.pictures
-      documents.value.set(row.id, next)
+      keepRow(next)
       syncStore.trackChange('documents', row.id, next)
       for (const name of gone) syncStore.trackDelete('files', pictureKey(row.id, name))
     }
     triggerRef(documents)
+    triggerRef(trash)
+  }
+
+  /**
+   * Let go of what has been in a project's trash for 30 days, for good.
+   *
+   * @param {string} storyId
+   * @param {number} [now]
+   * @returns {number} How many documents went
+   */
+  function emptyExpired(storyId, now = Date.now()) {
+    let gone = 0
+    for (const document of trashedOf(storyId)) {
+      if (expired(document, now)) gone += deleteTrashed(document.id)
+    }
+    return gone
   }
 
   /**
@@ -543,9 +799,9 @@ export const useDocumentsStore = defineStore('documents', () => {
   async function deleteStoryDocuments(storyId) {
     await loadStory(storyId)
 
-    // Snapshot first: deleteDocument drops entries from the map it iterates.
+    // Snapshot first: deleteDocument drops entries from the maps it iterates.
     const ids = []
-    for (const document of documents.value.values()) {
+    for (const document of [...documents.value.values(), ...trash.value.values()]) {
       if (document.storyId === storyId) ids.push(document.id)
     }
 
@@ -596,6 +852,23 @@ export const useDocumentsStore = defineStore('documents', () => {
   }
 
   /**
+   * Read these projects' roots again, as another window left them: their
+   * names, and when each was last edited.
+   *
+   * @param {string[]} storyIds
+   * @returns {Promise<void>}
+   */
+  async function refreshRoots(storyIds) {
+    if (storyIds.length === 0) return
+    try {
+      for (const row of await storage.roots(storyIds)) documents.value.set(row.id, row)
+      triggerRef(documents)
+    } catch (error) {
+      console.error('Failed to read project roots again:', error)
+    }
+  }
+
+  /**
    * Rename a project.
    *
    * The name lives on the root node, which the caller may not have loaded —
@@ -627,21 +900,32 @@ export const useDocumentsStore = defineStore('documents', () => {
   return {
     // State
     documents,
+    trash,
     childrenByParent,
 
     // Actions
     getDocument,
+    getTrashedDocument,
+    trashedOf,
+    trashedUnder,
     containsDocument,
     getChildren,
     getChildrenOrdered,
     createDocument,
     updateDocument,
+    trashDocument,
+    restoreDocument,
     deleteDocument,
+    deleteTrashed,
+    emptyExpired,
     deleteChildren,
     deleteStoryDocuments,
     reorderChildren,
     markEdited,
+    setDigest,
+    receive,
     loadStory,
+    refreshRoots,
     loadRoots,
     getRoot,
     renameProject,

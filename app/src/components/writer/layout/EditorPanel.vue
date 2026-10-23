@@ -108,6 +108,7 @@ import PanelToggle from './PanelToggle.vue'
 import { useChats } from '@/composables/useChats.js'
 import { useCopyPath } from '@/composables/useCopyPath.js'
 import { useDocuments } from '@/composables/useDocuments'
+import { useVersionsPanel } from '@/composables/useVersions.js'
 import { useDriveSync } from '@/composables/useDriveSync.js'
 import { useFileView } from '@/composables/useFileView.js'
 import { useFocusMode } from '@/composables/useFocusMode.js'
@@ -153,6 +154,7 @@ const props = defineProps({
 defineEmits(['toggle-chat'])
 
 const api = useDocuments(props.storyId)
+const versionsPanel = useVersionsPanel()
 const { copyPath } = useCopyPath(props.storyId)
 const { plainTextItem } = usePlainText(props.storyId)
 const { showsText, fileViewItem } = useFileView(props.storyId)
@@ -181,6 +183,13 @@ const tabActions = id =>
         { label: 'Copy path', icon: 'pi pi-copy', command: () => copyPath(id) },
         plainTextItem(id),
         fileViewItem(id),
+        api.get(id)?.type === 'text'
+          ? {
+              label: 'Versions…',
+              icon: 'pi pi-history',
+              command: () => versionsPanel.open(id),
+            }
+          : null,
         api.get(id)?.type === 'text' && !api.isPlain(id)
           ? {
               label: 'Keyboard shortcuts',

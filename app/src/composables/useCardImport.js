@@ -73,8 +73,6 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
  *   in the card's folder as its picture
  * @property {string} [replaces] - A card read back out of its own folder, to
  *   be written there again over what is in it
- * @property {'card'|'lorebook'} [holds] - A file read with roleplay off that
- *   has a card or a lorebook in it, which with roleplay on would be read as one
  * @property {any} value - The card, the book, the text, or the inspected file
  */
 
@@ -196,7 +194,6 @@ export function useCardImport(storyId) {
       mime: found.mime,
       pages: found.pages ?? 0,
       text: found.text.length > 0,
-      ...(shape ? { holds: shape } : {}),
       value: found,
     }
   }

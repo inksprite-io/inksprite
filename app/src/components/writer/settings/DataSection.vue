@@ -30,7 +30,7 @@
     <input
       ref="fileInput"
       type="file"
-      accept="application/json,.json"
+      accept="application/json,.json,application/zip,.zip"
       class="hidden"
       @change="handleFileChange"
     />
@@ -81,7 +81,7 @@ const reveal = async () => {
   try {
     await revealInLibrary()
   } catch (error) {
-    toast.error(`The folder couldn't be shown: ${error.message}`)
+    toast.error(`The folder couldn't be shown. ${error.message}`)
   }
 }
 
@@ -93,13 +93,10 @@ const reveal = async () => {
 const handleExport = async choice => {
   isExporting.value = true
   try {
-    const { filename } = await backup.downloadSelection(choice.pick, {
-      includeApiKeys: choice.includeApiKeys,
-    })
-    toast.success(`Saved ${filename}`)
+    await backup.downloadSelection(choice.pick, { includeApiKeys: choice.includeApiKeys })
   } catch (error) {
     console.error('Export failed:', error)
-    toast.error(`Export failed: ${error.message}`)
+    toast.error(`The file couldn't be saved. ${error.message}`)
   } finally {
     isExporting.value = false
   }
@@ -110,9 +107,10 @@ const handleImportClick = () => {
 }
 
 /**
- * Read the file picked, and ask before taking it: a backup replaces
- * everything, settings are merged into what is here, and a selection adds
- * its projects and cards and merges its settings.
+ * Read the file picked, and ask before taking anything that replaces or
+ * changes what is here: a backup replaces everything, and settings are
+ * merged into what is here. A selection that only adds projects and cards
+ * is taken at once.
  *
  * @param {Event} event
  */
@@ -164,7 +162,7 @@ function askToRestore(parsed) {
         window.location.reload()
       } catch (error) {
         console.error('Backup restore failed:', error)
-        toast.error(`Restore failed: ${error.message}`)
+        toast.error(`The backup couldn't be restored. ${error.message}`)
       }
     },
     reject: () => {
@@ -178,14 +176,13 @@ function askToRestore(parsed) {
 
 /**
  * Ask before a settings file is merged into the setup here, saying what it
- * adds and changes; one that changes nothing asks nothing.
+ * adds and changes; one that changes nothing does nothing.
  *
  * @param {Backup} parsed
  * @param {SettingsImport} plan
  */
 function askToImportSettings(parsed, plan) {
   if (!changesAnything(plan)) {
-    toast.info('Everything in this file is here already.')
     isImporting.value = false
     return
   }
@@ -208,7 +205,7 @@ function askToImportSettings(parsed, plan) {
         window.location.reload()
       } catch (error) {
         console.error('Settings import failed:', error)
-        toast.error(`Import failed: ${error.message}`)
+        toast.error(`The settings couldn't be imported. ${error.message}`)
         isImporting.value = false
       }
     },
@@ -222,7 +219,9 @@ function askToImportSettings(parsed, plan) {
 }
 
 /**
- * Ask before a selection is taken, saying what it adds and changes.
+ * Take a selection: its projects and cards are added beside what is here,
+ * which the trash can take back, so only one that changes settings asks
+ * first. Nothing new in it does nothing.
  *
  * @param {Backup} parsed
  * @param {import('@/composables/useBackup').SelectionImport} selection
@@ -232,8 +231,11 @@ function askToImportSelection(parsed, selection) {
   const cards = selection.cards.rows.map(card => card.title || 'Untitled')
   const description = describeSelection({ projects, cards, plan: selection.plan })
   if (!description) {
-    toast.info('Everything in this file is here already.')
     isImporting.value = false
+    return
+  }
+  if (!changesAnything(selection.plan)) {
+    importSelection(selection)
     return
   }
   const leftOut = keysLeftOut({ ...parsed, tables: selection.plan.rows }, webName)
@@ -245,28 +247,7 @@ function askToImportSelection(parsed, selection) {
     icon: 'pi pi-upload',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
     acceptProps: { label: 'Import' },
-    accept: async () => {
-      isImporting.value = true
-      try {
-        const done = await backup.importSelection(selection)
-        // Settings went straight to storage, past the stores that hold them.
-        if (done.settingsChanged) {
-          window.location.reload()
-          return
-        }
-        const added = describeSelection(
-          { ...done, plan: { added: [], changed: [] } },
-          { done: true }
-        )
-        if (added) toast.success(added)
-        else toast.info('Everything in this file is here already.')
-      } catch (error) {
-        console.error('Import failed:', error)
-        toast.error(`Import failed: ${error.message}`)
-      } finally {
-        isImporting.value = false
-      }
-    },
+    accept: () => importSelection(selection),
     reject: () => {
       isImporting.value = false
     },
@@ -274,5 +255,31 @@ function askToImportSelection(parsed, selection) {
       isImporting.value = false
     },
   })
+}
+
+/**
+ * Add a selection's projects and cards, and merge its settings. What was
+ * added is said, since none of it shows from here; settings changed reload
+ * the page instead.
+ *
+ * @param {import('@/composables/useBackup').SelectionImport} selection
+ */
+async function importSelection(selection) {
+  isImporting.value = true
+  try {
+    const done = await backup.importSelection(selection)
+    // Settings went straight to storage, past the stores that hold them.
+    if (done.settingsChanged) {
+      window.location.reload()
+      return
+    }
+    const added = describeSelection({ ...done, plan: { added: [], changed: [] } }, { done: true })
+    if (added) toast.success(added)
+  } catch (error) {
+    console.error('Import failed:', error)
+    toast.error(`Nothing was imported. ${error.message}`)
+  } finally {
+    isImporting.value = false
+  }
 }
 </script>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { canSave, savedContent, savedTitle, wholeRead } from '@/mcp/saved.js'
+import { canSave, savedContent, savedPage, savedTitle, wholeRead } from '@/mcp/saved.js'
 
 describe('canSave', () => {
   it('keeps an answer, and not a failure or nothing', () => {
@@ -27,6 +27,20 @@ describe('savedTitle', () => {
 
   it('falls back to the tool for JSON, which has no line worth naming it by', () => {
     expect(savedTitle('{"id":"ENG-123"}', 'Linear get_issue')).toBe('Linear get_issue')
+  })
+})
+
+describe('savedPage', () => {
+  it('says where a page came from and when, then gives its text', () => {
+    const date = new Date(2026, 9, 18)
+    expect(savedPage('https://example.org/games', '  Count in pairs.  ', { date })).toBe(
+      '*From https://example.org/games, saved 18 October 2026.*\n\nCount in pairs.\n'
+    )
+    expect(
+      savedPage('https://example.org/games', 'Part.', { part: 'characters 1–5 of 9', date })
+    ).toBe(
+      '*From https://example.org/games (characters 1–5 of 9), saved 18 October 2026.*\n\nPart.\n'
+    )
   })
 })
 

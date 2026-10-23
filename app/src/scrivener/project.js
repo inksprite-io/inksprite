@@ -215,7 +215,8 @@ export async function writeProject(storyId, project, { parentId, asFolder = fals
    */
   const asides = async (item, title, parent) => {
     // TODO: a synopsis is what a document's summary is for. Once summaries
-    // are shown to the writer, write it there and leave this document out.
+    // are shown to the writer (inksprite-io/inksprite#24), write it there and
+    // leave this document out.
     const synopsis = fileOf(item.id, 'synopsis.txt')
     const summary = synopsis ? markdownOfText(await synopsis.text()) : ''
     if (summary) await text(parent, `${title} synopsis`, summary)

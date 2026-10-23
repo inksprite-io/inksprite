@@ -26,7 +26,7 @@
         text
         rounded
         size="small"
-        :disabled="command?.pending === true"
+        :disabled="command?.pending === true || (busy && !!command)"
         @click="$emit('regenerate', null)"
       />
       <Button
@@ -46,7 +46,7 @@
         text
         rounded
         size="small"
-        :disabled="command?.pending === true"
+        :disabled="command?.pending === true || writing"
         @click="startEditing"
       />
       <Button
@@ -174,6 +174,17 @@
       />
     </div>
 
+    <!-- What a tool put in front of the writer as it is, which the model was
+         told not to repeat: explore's paragraph and listing. -->
+    <div v-if="shownResults.length > 0" class="flex flex-col gap-2 mb-3">
+      <ChatShown
+        v-for="shown in shownResults"
+        :key="shown.id"
+        :shown="shown"
+        :state-key="`${messageId}:shown:${shown.id}`"
+      />
+    </div>
+
     <!-- What the model is writing into a tool call, as it writes it. The
          prose of a chapter goes into the call rather than the message, and a
          writer waiting minutes on a spinner does not know it is being written. -->
@@ -207,7 +218,9 @@
     </div>
 
     <!-- A server's tool the model wants to call, waiting on the writer: it
-         does not say it only reads, so it runs only when they allow it. -->
+         does not say it only reads, so it runs only when they allow it. Or a
+         page the model wants to keep in the project, or a tool asking as it
+         runs: explore, with how much it would read. -->
     <div
       v-for="approval in approvals"
       :key="approval.id"
@@ -216,7 +229,23 @@
     >
       <div class="text-sm px-3 pt-2 flex items-start gap-2">
         <i class="pi pi-question-circle text-xs text-amber-600 dark:text-amber-300 mt-1" />
-        <span class="text-sm text-surface-600 dark:text-surface-300 min-w-0">
+        <span
+          v-if="approval.save"
+          class="text-sm text-surface-600 dark:text-surface-300 min-w-0 break-words"
+        >
+          Save <span class="font-mono break-all">{{ approval.save.url }}</span> to
+          <span class="font-medium">{{ approval.save.folder || 'the project' }}</span
+          ><template v-if="approval.save.title">
+            as <span class="font-medium">{{ approval.save.title }}</span></template
+          >
+        </span>
+        <span
+          v-else-if="approval.question"
+          class="text-sm text-surface-600 dark:text-surface-300 min-w-0 break-words"
+          data-question
+          >{{ approval.question }}</span
+        >
+        <span v-else class="text-sm text-surface-600 dark:text-surface-300 min-w-0">
           <span class="font-medium">{{ approval.server }}</span> wants to run
           <span class="font-mono">{{ approval.tool }}</span>
         </span>
@@ -230,9 +259,19 @@
           data-action="deny"
           @click="answerApproval(approval.id, 'deny')"
         />
+        <!-- Every page from now on, or what the tool asking says it means. -->
+        <Button
+          v-if="approval.save || approval.question"
+          label="Always allow"
+          size="small"
+          text
+          data-action="always"
+          @click="answerApproval(approval.id, 'always')"
+        />
         <!-- The tool, or the whole server: a server whose every tool asks,
              one at a time, interrupts every turn. -->
         <Button
+          v-else
           label="Always allow"
           icon="pi pi-angle-down"
           icon-pos="right"
@@ -487,6 +526,7 @@
         :segment="segment"
         :state-key="`${messageId}:${index}`"
         :alone="alone && segments.length === 1"
+        :busy="busy"
         @regenerate="$emit('regenerate', index)"
         @delete="$emit('delete', index)"
         @revise="(text, done) => $emit('revise', index, text, done)"
@@ -525,7 +565,9 @@
         aria-hidden="true"
       />
       <p class="m-0 flex-1 min-w-0 break-words text-surface-700 dark:text-surface-200">
-        <span class="font-medium">{{ message?.content ? 'Cut off:' : 'No reply:' }}</span>
+        <span class="font-medium">{{
+          message?.content ? 'The reply was cut off.' : 'No reply came.'
+        }}</span>
         {{ failure }}
       </p>
       <Button
@@ -548,6 +590,7 @@ import Textarea from 'primevue/textarea'
 import ChatSegment from './ChatSegment.vue'
 import ChatStatus from './ChatStatus.vue'
 import ChatConsultation from './ChatConsultation.vue'
+import ChatShown from './ChatShown.vue'
 import { useChats } from '@/composables/useChats'
 import { useScreenSize } from '@/composables/useScreenSize'
 import { holdTurnWhile, useTurnState } from '@/composables/useNearTurns.js'
@@ -559,9 +602,10 @@ import { consultationsIn, fromDirectorNote, isConsultation } from '@/ai/skills/c
 import { useToolApprovals } from '@/composables/useToolApprovals.js'
 import { serverTool } from '@/mcp/servers.js'
 import { canSave } from '@/mcp/saved.js'
-import { READ_WEB_PAGE } from '@/ai/tools/web.js'
+import { READ_WEB_PAGE, SAVE_WEB_PAGE } from '@/ai/tools/web.js'
 import { useDocuments } from '@/composables/useDocuments.js'
 import SaveToolResultDialog from './SaveToolResultDialog.vue'
+import { useApplicationState } from '@/composables/useApplicationState'
 
 const props = defineProps({
   messageId: { type: String, required: true },
@@ -576,6 +620,11 @@ const props = defineProps({
   // null when none is. Live, not stored: see TurnActivity in useAIChat.js.
   /** @type {import('vue').PropType<import('@/composables/useAIChat.js').TurnActivity|null>} */
   activity: { type: Object, default: null },
+  // Whether an answer is being written anywhere in the chat, which no command
+  // can be asked again under.
+  busy: { type: Boolean, default: false },
+  // Whether it is being written into this message, which can't be edited under it.
+  writing: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['regenerate', 'delete', 'revise', 'accept', 'reject'])
@@ -587,6 +636,12 @@ const { isMobile } = useScreenSize()
 // Get message data
 /** @type {import('vue').ComputedRef<import('@/types/models.js').Message|null>} */
 const message = chatsApi.getMessageById(props.messageId)
+
+const { applyEdits } = useApplicationState()
+/** Whether the chat suggests its edits to the text, for how its calls read. */
+const wording = computed(() => ({
+  suggesting: applyEdits.value === 'ask',
+}))
 
 // Edit mode state. The turn stays in the page while it is open, so scrolling
 // away does not lose what was typed. See useNearTurns.
@@ -772,6 +827,18 @@ const consultations = computed(() => {
     ...(note ? [fromDirectorNote(note)] : []),
     ...consultationsIn(message.value?.metadata?.apiTrajectory, message.value?.pendingToolCalls),
   ]
+})
+
+/**
+ * What the turn's tools put in front of the writer as it is, in the order
+ * they answered. See `ToolContext.show`.
+ */
+const shownResults = computed(() => {
+  const trajectory = message.value?.metadata?.apiTrajectory
+  if (!Array.isArray(trajectory)) return []
+  return trajectory
+    .filter(item => item?.role === 'tool' && item._shown)
+    .map(item => ({ id: item.tool_call_id || '', ...item._shown }))
 })
 
 // Reasoning expansion state
@@ -980,7 +1047,7 @@ const inFlight = computed(() => {
     .filter(call => !done.has(call.id) && writesProse(call.name))
     .map((call, index) => ({
       id: call.id || `pending_${index}`,
-      ...describeProgress(call.name, call.arguments),
+      ...describeProgress(call.name, call.arguments, wording.value),
     }))
 })
 
@@ -1014,11 +1081,46 @@ const openAlwaysAllow = (event, approval) => {
 }
 
 /**
+ * What a page the model asks to keep is, for asking: its address, the folder
+ * it goes in, and what it is to be called, as the model asked.
+ *
+ * @param {string} written - The call's arguments, as the model wrote them
+ * @returns {{url: string, folder: string, title: string}}
+ */
+const saveAsked = written => {
+  let asked = {}
+  try {
+    asked = JSON.parse(written || '{}') || {}
+  } catch {
+    // Not JSON: the call will say so when it runs.
+  }
+  const text = (/** @type {unknown} */ value) => (typeof value === 'string' ? value.trim() : '')
+  return {
+    url: text(asked.url),
+    folder: text(asked.folder).replace(/^\/+|\/+$/g, ''),
+    title: text(asked.title),
+  }
+}
+
+/**
  * The calls this turn is waiting on the writer to allow, named the way they
  * were named when the server was added: the server, and the tool's own name.
+ * A page to keep is said by its address and where it goes.
  */
 const approvals = computed(() =>
   pendingApprovals.value.map(approval => {
+    if (approval.name === SAVE_WEB_PAGE) {
+      return {
+        id: approval.id,
+        save: saveAsked(approval.arguments),
+        server: '',
+        tool: '',
+        args: '',
+      }
+    }
+    if (approval.question) {
+      return { id: approval.id, question: approval.question, server: '', tool: '', args: '' }
+    }
     const found = serverTool(approval.name)
     let args = approval.arguments
     try {

@@ -13,6 +13,8 @@ const {
   compactText,
   setCompactText,
   setChatProfileId,
+  askBeforeExploring,
+  setAskBeforeExploring,
   forgetSavedRequests,
   setSpellingEnabled,
   setSpellingDialect,
@@ -25,6 +27,8 @@ const {
   compactText: { value: true },
   setCompactText: vi.fn(),
   setChatProfileId: vi.fn(),
+  askBeforeExploring: { value: true },
+  setAskBeforeExploring: vi.fn(),
   forgetSavedRequests: vi.fn(),
   setSpellingEnabled: vi.fn(),
   setSpellingDialect: vi.fn(),
@@ -48,6 +52,8 @@ vi.mock('@/composables/useApplicationState', () => ({
     compactText,
     setCompactText,
     setChatProfileId,
+    askBeforeExploring,
+    setAskBeforeExploring,
     spelling,
     setSpellingEnabled,
     setSpellingDialect,
@@ -77,6 +83,7 @@ const mountSection = () =>
       plugins: [PrimeVue],
       stubs: {
         DataSection: { template: '<div data-data-section />' },
+        SyncSection: { template: '<div data-sync-section />' },
         DictionaryDialog: {
           props: ['visible'],
           template: '<div v-if="visible" data-dictionary-dialog />',
@@ -153,6 +160,7 @@ describe('SystemSection switches', () => {
       'debug-switch',
       'spelling-switch',
       'grammar-switch',
+      'ask-before-exploring',
     ])
   })
 })
@@ -289,11 +297,24 @@ describe('SystemSection chats', () => {
     expect(setChatProfileId).toHaveBeenCalledWith('builtin_profile_chat')
   })
 
+  it('asks before exploring a lot until switched off', async () => {
+    const wrapper = mountSection()
+
+    expect(wrapper.find('[for="ask-before-exploring"]').text()).toBe(
+      'Ask before exploring large folders'
+    )
+    const ask = toggle(wrapper, 'data-ask-before-exploring')
+    expect(ask.props('modelValue')).toBe(true)
+    await ask.vm.$emit('update:modelValue', false)
+    expect(setAskBeforeExploring).toHaveBeenCalledWith(false)
+  })
+
   it('goes with the AI switched off, and the rest stays', () => {
     aiEnabled.value = false
     const wrapper = mountSection()
 
     expect(picker(wrapper, 'data-chat-profile').exists()).toBe(false)
+    expect(toggle(wrapper, 'data-ask-before-exploring').exists()).toBe(false)
     expect(wrapper.text()).not.toContain('Chats')
     expect(toggle(wrapper, 'data-debug').exists()).toBe(true)
     expect(wrapper.find('[data-data-section]').exists()).toBe(true)

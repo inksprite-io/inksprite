@@ -184,10 +184,8 @@ const importing = ref(false)
 const bringIn = async () => {
   importing.value = true
   try {
-    const { imported, failed } = await skillsApi.importSkills(picked.value)
-    if (imported > 0) {
-      toast.success(imported === 1 ? 'Imported 1 skill.' : `Imported ${imported} skills.`)
-    }
+    // What came in shows in the list; only what didn't is said.
+    const { failed } = await skillsApi.importSkills(picked.value)
     if (failed.length > 0) toast.error(failed.join(' '))
     emit('imported')
     emit('update:visible', false)

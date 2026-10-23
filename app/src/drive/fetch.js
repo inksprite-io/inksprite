@@ -15,7 +15,7 @@
 
 import { fetch } from '@/platform/fetch.js'
 import { isDesktop } from '@/platform/desktop.js'
-import { FILES, ask, readDocument } from './api.js'
+import { DOC_TYPE, FILES, ask, readDocument } from './api.js'
 import { readDoc, tabsOf } from './convert.js'
 import { DriveError, SignInLapsedError } from './errors.js'
 import { mendExport } from './export.js'
@@ -33,8 +33,7 @@ import { takePictures } from '@/files/pictures.js'
 /** What Google's own types are prefixed with. */
 const GOOGLE_TYPE = 'application/vnd.google-apps.'
 
-/** A Google Doc's type. */
-export const DOC_TYPE = `${GOOGLE_TYPE}document`
+export { DOC_TYPE }
 
 /**
  * Google's types that export, and as what.

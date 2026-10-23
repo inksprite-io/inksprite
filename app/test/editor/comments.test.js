@@ -2,10 +2,13 @@ import { describe, it, expect } from 'vitest'
 import { parseMarkdown, serializeMarkdown, settleMarkdown } from '@/editor/markdown.js'
 import { schema } from '@/editor/schema.js'
 import {
+  authorOf,
+  suggesterOf,
   cleanComment,
   closeMarkup,
   commentAround,
   commentRanges,
+  commentsGone,
   commentsInDoc,
   commentsInMarkdown,
   countComments,
@@ -385,6 +388,34 @@ describe('threads', () => {
     expect(settled.cgone1).toBe(stale)
   })
 
+  it("reopens a settled suggestion's thread whose marks are back, and only that", () => {
+    const md = 'A {--cold--}{>>sabcd1<<}{++warm++}{>>sabcd1<<} night.'
+    const settled = {
+      status: 'resolved',
+      quote: 'cold',
+      posts: [],
+      suggestion: { text: 'warm', created: 1, chat: 'chat_1', settled: 'accepted', settledAt: 2 },
+    }
+    const gone = { ...settled, suggestion: { ...settled.suggestion, settled: 'rejected' } }
+    const back = settleThreads(md, { sabcd1: settled, sgone1: gone })
+    expect(back.sabcd1).toEqual({
+      status: 'open',
+      quote: 'cold',
+      posts: [],
+      suggestion: { text: 'warm', created: 1, chat: 'chat_1' },
+    })
+    expect(back.sgone1).toBe(gone)
+    // Open already, nothing to change.
+    expect(settleThreads(md, back)).toBe(back)
+  })
+
+  it('names the comments a change took the passages of', () => {
+    const before = parseMarkdown('A {==cold==}{>>cabcd1<<} night, {==wet==}{>>cabcd2<<} too.')
+    const after = parseMarkdown('A night, {==wet==}{>>cabcd2<<} too.')
+    expect(commentsGone(before, after)).toEqual(['cabcd1'])
+    expect(commentsGone(before, before)).toEqual([])
+  })
+
   it('lifts what the old form said onto threads, the markup left holding the id', () => {
     const md = 'A {==b==}{>>cabcd: one<br>two<<} c and {==d==}{>>cabce<<} e.'
     const { content, threads, lifted } = liftThreads(md, { cabce: thread('kept', 'd') }, 5)
@@ -423,6 +454,13 @@ describe('threads', () => {
     )
     expect(sameThread(null, undefined)).toBe(true)
     expect(sameThread(one, null)).toBe(false)
+    // What a sync keeps of a linked Doc's is not what anyone said.
+    const linked = {
+      ...one,
+      google: { doc: 'd', id: 'x', status: 'open' },
+      posts: one.posts.map(post => ({ ...post, google: { id: 'p', text: post.text } })),
+    }
+    expect(sameThread(one, linked)).toBe(true)
   })
 })
 
@@ -605,5 +643,25 @@ describe('keepComments', () => {
     expect(kept.openStart).toBe(slice.openStart)
     // Nothing to take off: the slice as it was.
     expect(keepComments(slice, () => true)).toBe(slice)
+  })
+})
+
+describe('authorOf', () => {
+  it('names the writer You, the model the Assistant, and a person by their name', () => {
+    expect(authorOf({ author: 'writer' })).toBe('You')
+    expect(authorOf({ author: 'model' })).toBe('Assistant')
+    expect(authorOf({ author: 'person', name: 'Ana Marsh' })).toBe('Ana Marsh')
+    expect(authorOf({ author: 'person' })).toBe('Someone')
+  })
+})
+
+describe('suggesterOf', () => {
+  it('names who suggested a change in a linked Doc, and no one for the model', () => {
+    expect(suggesterOf({ text: 'x', created: 1, author: 'person', name: 'Ana Marsh' })).toBe(
+      'Ana Marsh'
+    )
+    expect(suggesterOf({ text: 'x', created: 1, author: 'writer' })).toBe('You')
+    expect(suggesterOf({ text: 'x', created: 1, chat: 'chat_1' })).toBe('')
+    expect(suggesterOf(undefined)).toBe('')
   })
 })

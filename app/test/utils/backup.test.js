@@ -539,7 +539,7 @@ describe('upgradeTables', () => {
   })
 
   it('refuses to downgrade', () => {
-    expect(() => upgradeTables({}, 3, 2)).toThrow('Cannot downgrade')
+    expect(() => upgradeTables({}, 3, 2)).toThrow('This backup is from a newer inksprite.')
   })
 })
 

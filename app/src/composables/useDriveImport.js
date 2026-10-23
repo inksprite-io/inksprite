@@ -11,8 +11,10 @@
  * (`drive/convert.js`), its pictures fetched and handed on with it; a Doc the
  * converter is not given comes as Google's markdown export, its pictures
  * written into it. Either way, as a Word file's, they are its document's own
- * (see `files/pictures.js`), and those that could not come are counted. A Doc with suggested edits still open is named,
- * since it comes in as it was before them. A Doc's document is linked to
+ * (see `files/pictures.js`), and those that could not come are counted. A
+ * Doc with suggested edits still open is named, since it comes in as it was
+ * before them, and its first sync brings them in as its comments come in
+ * (`drive/suggestions.js`). A Doc's document is linked to
  * the Doc (`drive`): its id, its tab, and the account that picked it, for
  * syncing the two later, and the sign-in is kept for the syncs after it
  * (`drive/session.js`). See `.llm/google_docs_design.md`.

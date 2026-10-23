@@ -17,14 +17,14 @@ export const diceToolDefinition = {
   function: {
     name: 'roll_dice',
     description:
-      'Roll dice using standard dice notation. Use this when asked to roll dice, make random checks, or determine random outcomes. Examples: "1d20" (roll one 20-sided die), "2d6+3" (roll two 6-sided dice and add 3), "4d6-1" (roll four 6-sided dice and subtract 1). Answers with each die by kind, the modifier, and the total.',
+      'Roll dice using standard dice notation. Use this when asked to roll dice, make random checks, or determine random outcomes. Examples: "1d20" (roll one 20-sided die), "2d6+3" (roll two 6-sided dice and add 3), "4d6-1" (roll four 6-sided dice and subtract 1), "max(2d20)+5" (roll two 20-sided dice and keep the higher, for advantage; "min" keeps the lower, for disadvantage). Answers with each die by kind, the modifier, and the total.',
     parameters: {
       type: 'object',
       properties: {
         dice: {
           type: 'string',
           description:
-            'Dice notation like "1d20", "2d6+3", "4d6-1", "2d6+1d4". Dice and whole numbers, added or subtracted.',
+            'Dice notation like "1d20", "2d6+3", "4d6-1", "2d6+1d4", "min(2d20)+1". Dice and whole numbers, added or subtracted; min(…) or max(…) around dice of one kind keeps only the lowest or highest.',
         },
       },
       required: ['dice'],

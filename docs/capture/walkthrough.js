@@ -149,8 +149,8 @@ export async function walkthrough(ui, { standIn, context }) {
   await ui.shot('backup', { of: dialog('Settings'), pad: 0 })
   const download = page.waitForEvent('download')
   await ui.click(dialog('Export').getByRole('button', { name: 'Export', exact: true }))
-  if (!(await download).suggestedFilename().endsWith('.json'))
-    throw new Error('The backup is not a .json file')
+  if (!(await download).suggestedFilename().endsWith('.zip'))
+    throw new Error('The backup is not a .zip file')
 
   // LM Studio instead of OpenRouter
   await ui.click(button('AI'))

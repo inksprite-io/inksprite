@@ -49,7 +49,7 @@ describe('importSettingsFile', () => {
     expect(toast.showToast).not.toHaveBeenCalled()
   })
 
-  it('imports the file and says what it changed once the app is up', async () => {
+  it('imports the file without a word', async () => {
     settingsFileText.mockResolvedValue('{"the":"file"}')
     const changes = plan({
       added: [{ key: 'aiProfiles/profile_team', kind: 'aiProfiles', name: 'Team' }],
@@ -59,18 +59,9 @@ describe('importSettingsFile', () => {
     await importSettingsFile()
     expect(backup.planLeftSettings).toHaveBeenCalledWith('{"the":"file"}')
     expect(backup.importSettings).toHaveBeenCalledWith(changes)
+
+    mountApp()
     expect(toast.showToast).not.toHaveBeenCalled()
-
-    mountApp()
-    expect(toast.showToast).toHaveBeenCalledWith({
-      type: 'success',
-      message: 'Settings imported. Added the preset Team.',
-      duration: 10000,
-    })
-
-    // Said once.
-    mountApp()
-    expect(toast.showToast).toHaveBeenCalledTimes(1)
   })
 
   it('records a file that changed nothing, and says nothing', async () => {
@@ -98,5 +89,9 @@ describe('importSettingsFile', () => {
       message: "The settings file couldn't be imported. That file is not valid JSON.",
       duration: 0,
     })
+
+    // Said once.
+    mountApp()
+    expect(toast.showToast).toHaveBeenCalledTimes(1)
   })
 })

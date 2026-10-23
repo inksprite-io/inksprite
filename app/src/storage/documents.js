@@ -21,7 +21,7 @@ import { countWords } from '@/utils/wordCount.js'
 /** @typedef {import('../types/models.js').Document} Document */
 
 /** Fields that are times, kept as milliseconds and written as dates. */
-const TIMES = ['created', 'updated', 'edited']
+const TIMES = ['created', 'updated', 'edited', 'trashed']
 
 /**
  * Fields no file writes as they are: said by where the file is and what it
@@ -41,6 +41,7 @@ const LEFT_OUT = new Set([
   'wordCount',
   'version',
   'speakers',
+  'digest',
   ...TIMES,
 ])
 

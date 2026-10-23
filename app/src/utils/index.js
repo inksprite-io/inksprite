@@ -12,6 +12,10 @@
  * - **lineDiff** - The lines that changed between two versions of a text
  * - **compareNames** - Names in the order a person expects, numbers by value
  * - **siblingOrder** - The order a folder's children are shown in
+ * - **trash** - How long the trash keeps what is in it, and which of a project's documents are there
+ * - **versions** - When a document's version is due, and which go as they age
+ * - **wordDiff** - Two texts as one, word by word: what both have and what only one has,
+ *   for a plain document's versions
  *
  * ### AI Integration
  *
@@ -22,6 +26,8 @@
  * - **documentPath** - How a document is addressed: by its titles from the root down
  * - **documentLinks** - Links from one document to another, written as Markdown files link to
  *   the files beside them, and followed back
+ * - **linkUpdates** - The links a rename or a move would break, written again to where their
+ *   documents are
  * - **pictures** - A document's own pictures as its text refers to them, `.images/<id>/<name>`,
  *   and where their bytes are kept
  * - **dataUrl** - What a `data:` address holds, as bytes
@@ -74,6 +80,7 @@ export {
   readableHref,
   hrefFor,
 } from './documentLinks.js'
+export { linkTargets, relinked } from './linkUpdates.js'
 export * from './pictures.js'
 export * from './dataUrl.js'
 export * from './visibility.js'

@@ -6,7 +6,13 @@
  *
  * Export flushes anything the sync store is still holding, reads every table,
  * adds the settings kept outside the database (see `BackedUpSettings`), and
- * hands back a JSON file. Import replaces the database wholesale: every
+ * hands back a zip: the rows as JSON, each file's bytes as they are
+ * (`utils/backupArchive.js`). What holds no files, a chat or a settings
+ * file, is still one JSON file. Import takes either, and the JSON backups
+ * written before. On a device that syncs, the files whose bytes are
+ * still on the sync server are fetched first (`cloud/onDemand.js`), and an
+ * export that can't fetch them stops and says so rather than leave them out.
+ * Import replaces the database wholesale: every
  * table is cleared and repopulated from the file. There is no merge mode,
  * because reconciling two divergent histories of the same story is guesswork
  * and a recovery tool should not guess.
@@ -50,6 +56,7 @@
  */
 
 import { storage } from '@/storage/index.js'
+import { fetchProjectFiles } from '@/cloud/onDemand.js'
 import { useSyncStore } from '@/stores/syncStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { useDocumentsStore } from '@/stores/documentsStore'
@@ -94,7 +101,9 @@ import { useEditor } from './useEditor.js'
 import { useApplicationState } from './useApplicationState.js'
 import { assembleTurn, inspectCommand } from '@/ai/commands.js'
 import { obfuscateBackup } from '@/utils/obfuscate.js'
+import { isArchive, readArchive, writeArchive } from '@/utils/backupArchive.js'
 import { pictureOfKey } from '@/utils/pictures.js'
+import { outOfTrash } from '@/utils/trash.js'
 
 /** @typedef {import('@/utils/backup.js').Backup} Backup */
 /** @typedef {import('@/utils/backup.js').BackupScope} BackupScope */
@@ -144,6 +153,53 @@ function downloadJson(filename, data) {
 }
 
 /**
+ * Hand the user a backup as a zip, named as its JSON would be but `.zip`.
+ *
+ * @param {string} filename - As for a JSON file
+ * @param {Backup} backup - Its byte-carrying rows holding Blobs
+ * @returns {Promise<{filename: string, bytes: number}>}
+ */
+async function downloadArchive(filename, backup) {
+  const blob = await writeArchive(backup)
+  const named = filename.replace(/\.json$/, '.zip')
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = named
+  link.click()
+  // Revoking at once can cancel the download in some browsers; a large
+  // backup takes a while to be saved.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
+  return { filename: named, bytes: blob.size }
+}
+
+/**
+ * What a picked file holds: a backup's zip read as its envelope, or JSON
+ * parsed, unchecked.
+ *
+ * @param {File} file
+ * @returns {Promise<any>}
+ * @throws {Error} If it is neither
+ */
+async function readBackupFile(file) {
+  if (await isArchive(file)) return readArchive(file)
+  return parseJson(await file.text())
+}
+
+/**
+ * @param {string} text
+ * @returns {any}
+ * @throws {Error} If it is not JSON
+ */
+function parseJson(text) {
+  try {
+    return JSON.parse(text)
+  } catch {
+    throw new Error('That file is not valid JSON.')
+  }
+}
+
+/**
  * Where the fingerprint of each item a settings file brought in is kept: in
  * this copy of the app, beside the settings it was imported into.
  */
@@ -157,31 +213,37 @@ export function useBackup() {
    * later is backed up without anyone remembering to update this. The two
    * tables that cannot go into JSON as read are `files` and `cardFiles`,
    * whose rows hold Blobs; those are written out as base64 and read back the
-   * same way.
+   * same way, or kept as Blobs for a zip.
    *
+   * @param {{asBlobs?: boolean}} [options]
    * @returns {Promise<Record<string, any[]>>}
    */
-  async function readAllTables() {
+  async function readAllTables({ asBlobs = false } = {}) {
     const tables = await storage.dump()
-    if (tables.files) tables.files = await serializeFiles(tables.files)
-    if (tables.cardFiles) tables.cardFiles = await serializeCardFiles(tables.cardFiles)
+    if (tables.files) tables.files = await serializeFiles(tables.files, { asBlobs })
+    if (tables.cardFiles) {
+      tables.cardFiles = await serializeCardFiles(tables.cardFiles, { asBlobs })
+    }
     return tables
   }
 
   /**
    * Snapshot the database.
    *
-   * @param {{includeApiKeys?: boolean}} [opts]
+   * @param {{includeApiKeys?: boolean, asBlobs?: boolean}} [opts] - `asBlobs`
+   *   keeps files' bytes as Blobs, for a zip, rather than base64
    * @returns {Promise<Backup>}
    */
-  async function createBackup({ includeApiKeys = false } = {}) {
+  async function createBackup({ includeApiKeys = false, asBlobs = false } = {}) {
     // Edits are debounced twice on the way to the database — the open
     // document into the store, the store into Dexie — so flush both before
     // reading, or the backup silently misses the last thing the user typed.
     useEditor().flush()
     await useSyncStore().processSync()
+    // Files whose bytes are still on the sync server alone come first.
+    await fetchProjectFiles()
 
-    const tables = await readAllTables()
+    const tables = await readAllTables({ asBlobs })
     return buildBackup(tables, {
       dbVersion: storage.schemaVersion(),
       includeApiKeys,
@@ -196,7 +258,10 @@ export function useBackup() {
    * @returns {Promise<{filename: string, bytes: number}>}
    */
   async function downloadBackup(opts = {}) {
-    return downloadJson(backupFilename(new Date()), await createBackup(opts))
+    return downloadArchive(
+      backupFilename(new Date()),
+      await createBackup({ ...opts, asBlobs: true })
+    )
   }
 
   /**
@@ -208,7 +273,7 @@ export function useBackup() {
    * @throws {Error} If it is not, saying why
    */
   async function parseBackupFile(file, scope) {
-    return parseBackup(await file.text(), scope)
+    return checkBackup(await readBackupFile(file), scope)
   }
 
   /**
@@ -221,19 +286,6 @@ export function useBackup() {
    */
   function parseBackup(text, scope) {
     return checkBackup(parseJson(text), scope)
-  }
-
-  /**
-   * @param {string} text
-   * @returns {any}
-   * @throws {Error} If it is not JSON
-   */
-  function parseJson(text) {
-    try {
-      return JSON.parse(text)
-    } catch {
-      throw new Error('That file is not valid JSON.')
-    }
   }
 
   /**
@@ -265,7 +317,7 @@ export function useBackup() {
    * @throws {Error} If the file is none of them, saying why
    */
   async function readDataFile(file) {
-    const parsed = parseJson(await file.text())
+    const parsed = await readBackupFile(file)
     if (parsed?.scope === 'settings') {
       const backup = checkBackup(parsed, 'settings')
       return { kind: 'settings', backup, plan: await planSettings(backup, { byHand: true }) }
@@ -451,10 +503,11 @@ export function useBackup() {
    * with their messages, and the writer's own profiles it and they run on.
    *
    * @param {string} storyId
+   * @param {{asBlobs?: boolean}} [opts] - Keep files' bytes as Blobs, for a zip
    * @returns {Promise<Backup>}
    * @throws {Error} If there is no such project
    */
-  async function createProjectBackup(storyId) {
+  async function createProjectBackup(storyId, { asBlobs = false } = {}) {
     // Flushed both ways, as for a whole backup: the open document may be the
     // one in this project.
     useEditor().flush()
@@ -462,12 +515,17 @@ export function useBackup() {
 
     const story = await storage.story(storyId)
     if (!story) throw new Error(`Project '${storyId}' not found`)
+    await fetchProjectFiles([storyId])
 
+    // What is in the project's trash stays behind: its import makes a new
+    // project, which starts with nothing in it.
     const [documents, files, chats] = await Promise.all([
-      storage.documents(storyId),
+      storage.documents(storyId).then(outOfTrash),
       storage.projectFiles(storyId),
-      storage.chats(storyId),
+      storage.chats(storyId).then(chats => chats.filter(chat => !chat.trashed)),
     ])
+    const kept = new Set(documents.map(document => document.id))
+    const ownerOf = (/** @type {string} */ id) => pictureOfKey(id)?.documentId ?? id
     const messages = (await Promise.all(chats.map(chat => storage.messages(chat.id))))
       .flat()
       .sort((a, b) => a.created - b.created)
@@ -481,7 +539,10 @@ export function useBackup() {
       {
         stories: [story],
         documents,
-        files: await serializeFiles(files),
+        files: await serializeFiles(
+          files.filter(file => kept.has(ownerOf(file.id))),
+          { asBlobs }
+        ),
         chats,
         messages,
         chatProfiles: profiles,
@@ -512,9 +573,9 @@ export function useBackup() {
    * @returns {Promise<{filename: string, bytes: number}>}
    */
   async function downloadProject(storyId) {
-    const backup = await createProjectBackup(storyId)
+    const backup = await createProjectBackup(storyId, { asBlobs: true })
     const root = backup.tables.documents.find(document => document.id === rootIdFor(storyId))
-    return downloadJson(projectFilename(root?.title || ''), backup)
+    return downloadArchive(projectFilename(root?.title || ''), backup)
   }
 
   /**
@@ -648,7 +709,9 @@ export function useBackup() {
   async function listExportable() {
     useEditor().flush()
     await useSyncStore().processSync()
-    const stories = await storage.stories()
+    // A whole backup takes the trash with it; a project in it isn't offered on
+    // its own.
+    const stories = (await storage.stories()).filter(story => !story.trashed)
     const roots = new Map(
       (await storage.roots(stories.map(story => story.id))).map(root => [root.storyId, root])
     )
@@ -671,8 +734,8 @@ export function useBackup() {
    */
   async function readProjectContents(storyId) {
     const [documents, chats] = await Promise.all([
-      storage.documents(storyId),
-      storage.chats(storyId),
+      storage.documents(storyId).then(outOfTrash),
+      storage.chats(storyId).then(chats => chats.filter(chat => !chat.trashed)),
     ])
     return { documents, chats }
   }
@@ -687,17 +750,19 @@ export function useBackup() {
    * settings and are merged with them when the file is taken.
    *
    * @param {ExportPick} pick
-   * @param {{includeApiKeys?: boolean}} [opts]
+   * @param {{includeApiKeys?: boolean, asBlobs?: boolean}} [opts] - `asBlobs`
+   *   keeps files' bytes as Blobs, for a zip
    * @returns {Promise<Backup>}
    */
-  async function createSelectionBackup(pick, { includeApiKeys = false } = {}) {
-    if (pick.everything) return createBackup({ includeApiKeys })
+  async function createSelectionBackup(pick, { includeApiKeys = false, asBlobs = false } = {}) {
+    if (pick.everything) return createBackup({ includeApiKeys, asBlobs })
     if (pick.projects.length === 0 && pick.cardIds.length === 0) {
       return createSettingsBackup({ picked: pick.settings, includeApiKeys })
     }
 
     useEditor().flush()
     await useSyncStore().processSync()
+    await fetchProjectFiles(pick.projects.map(picked => picked.id))
 
     /** @type {Record<string, any[]>} */
     const tables = { stories: [], documents: [], files: [], chats: [], messages: [] }
@@ -707,9 +772,9 @@ export function useBackup() {
       const story = await storage.story(picked.id)
       if (!story) continue
       const [allDocuments, allFiles, allChats] = await Promise.all([
-        storage.documents(story.id),
+        storage.documents(story.id).then(outOfTrash),
         storage.projectFiles(story.id),
-        storage.chats(story.id),
+        storage.chats(story.id).then(chats => chats.filter(chat => !chat.trashed)),
       ])
       const documents = picked.whole
         ? allDocuments
@@ -726,7 +791,10 @@ export function useBackup() {
       // A file document's bytes, or a text's pictures', by the document they are.
       const ownerOf = (/** @type {string} */ id) => pictureOfKey(id)?.documentId ?? id
       tables.files.push(
-        ...(await serializeFiles(allFiles.filter(file => kept.has(ownerOf(file.id)))))
+        ...(await serializeFiles(
+          allFiles.filter(file => kept.has(ownerOf(file.id))),
+          { asBlobs }
+        ))
       )
       tables.chats.push(...chats)
       tables.messages.push(...messages)
@@ -739,7 +807,12 @@ export function useBackup() {
 
     if (pick.cardIds.length > 0) {
       tables.cards = await storage.getMany('cards', pick.cardIds)
-      tables.cardFiles = await serializeCardFiles(await storage.getMany('cardFiles', pick.cardIds))
+      tables.cardFiles = await serializeCardFiles(
+        await storage.getMany('cardFiles', pick.cardIds),
+        {
+          asBlobs,
+        }
+      )
     }
 
     const setup = await readSetup({ flush: false })
@@ -769,7 +842,7 @@ export function useBackup() {
    * @returns {Promise<{filename: string, bytes: number}>}
    */
   async function downloadSelection(pick, opts = {}) {
-    const backup = await createSelectionBackup(pick, opts)
+    const backup = await createSelectionBackup(pick, { ...opts, asBlobs: true })
     const now = new Date()
     const filename =
       backup.scope === 'settings'
@@ -777,7 +850,10 @@ export function useBackup() {
         : backup.scope === 'selection'
           ? selectionFilename(now)
           : backupFilename(now)
-    return downloadJson(filename, backup)
+    // A settings file holds no files, and stays the JSON a script can leave.
+    return backup.scope === 'settings'
+      ? downloadJson(filename, backup)
+      : downloadArchive(filename, backup)
   }
 
   /**

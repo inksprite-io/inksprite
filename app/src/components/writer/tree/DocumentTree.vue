@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="treeEl"
     class="w-full h-full flex flex-col relative"
     data-document-tree
     @dragenter="onDragEnter"
@@ -51,6 +52,7 @@
           @chat-with="startCardChat"
           @reimport="reimportCard"
           @convert="convertDocument"
+          @explore="exploreFolder"
           @dragging="isDragging = $event"
         />
       </div>
@@ -82,6 +84,13 @@
     />
 
     <ProjectDialog v-model:visible="showProjectDialog" :story-id="storyId" />
+    <TrashDialog v-model:visible="showTrash" :story-id="storyId" />
+    <ShareDialog
+      v-if="cloud.account.value"
+      v-model:visible="showShare"
+      :story-id="storyId"
+      :title="api.displayTitle(root)"
+    />
     <RepositoryDialog
       ref="repositoryDialog"
       v-model:visible="showRepositoryDialog"
@@ -101,7 +110,7 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import Menu from 'primevue/menu'
 import ScrollPanel from 'primevue/scrollpanel'
@@ -117,14 +126,21 @@ import { importItems } from './importItems.js'
 import HeaderButton from '../layout/HeaderButton.vue'
 import PanelHeader from '../layout/PanelHeader.vue'
 import ProjectMenu from '../projects/ProjectMenu.vue'
+import TrashDialog from '../projects/TrashDialog.vue'
+import ShareDialog from './ShareDialog.vue'
+import { useTrash } from '@/composables/useTrash.js'
 import { useBackup } from '@/composables/useBackup'
 import { useCardChat } from '@/composables/useCardChat'
 import { useBulkImport, describeImport } from '@/composables/useBulkImport'
 import { useCardImport, NotACardError } from '@/composables/useCardImport'
 import { useDocuments } from '@/composables/useDocuments'
+import { undoKeyOf, useTreeHistory } from '@/composables/useTreeHistory.js'
 import { useProjects } from '@/composables/useProjects'
+import { useCloudSync } from '@/composables/useCloudSync.js'
+import { sharing } from '@/cloud/people.js'
 import { useJobs } from '@/composables/useJobs.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
+import { askToExplore } from '@/composables/useExplore.js'
 import { requestsFor } from '@/jobs/index.js'
 import {
   carriesFiles,
@@ -182,8 +198,17 @@ const openRootMenu = event => {
 const isDragging = ref(false)
 const showProjectDialog = ref(false)
 
+const trash = useTrash(props.storyId)
+/** Sync, where a project can be kept on this device only, or shared. */
+const cloud = useCloudSync()
+const showTrash = ref(false)
+const showShare = ref(false)
+
+/** Whether the project was shared with this account, by someone else. */
+const sharedWithMe = computed(() => sharing.value.projects[props.storyId]?.role === 'member')
+
 const cards = useCardImport(props.storyId)
-const { aiEnabled, roleplay, setExtension } = useApplicationState()
+const { roleplay } = useApplicationState()
 const { open: openCardLibrary } = useCardLibraryPanel()
 const bulk = useBulkImport(props.storyId)
 const cardChats = useCardChat(props.storyId)
@@ -260,7 +285,7 @@ const openCardChat = async ({ userName, greeting }) => {
   } catch (error) {
     toast.add({
       severity: 'error',
-      detail: `Could not start the chat: ${error.message}`,
+      detail: `The chat couldn't start. ${error.message}`,
       life: 6000,
     })
   } finally {
@@ -312,9 +337,8 @@ const readChosenCard = async event => {
  */
 const readOne = async file => {
   try {
+    // With Roleplay off a card is read as a file, and imports as one.
     const it = await cards.inspect(file)
-    // With the AI off there is no roleplay to switch on, and a card is a file.
-    if (it.holds && aiEnabled.value) return offerRoleplay(file, it)
     // A card has questions only askable now; a document has none, and a dialog
     // that asks nothing is a click for its own sake.
     if (it.asks) {
@@ -329,37 +353,10 @@ const readOne = async file => {
     // it is worth saying which rather than failing silently.
     toast.add({
       severity: error instanceof NotACardError ? 'warn' : 'error',
-      detail: `Nothing imported: ${error.message}`,
+      detail: `Nothing was imported. ${error.message}`,
       life: 6000,
     })
   }
-}
-
-/**
- * A card or a lorebook chosen with roleplay off, which would be read as a
- * file: imported as one, or, with roleplay switched on, as what it is.
- * Closing the question imports it as a file, as declining does.
- *
- * @param {File} file
- * @param {import('@/composables/useCardImport.js').Found} asFile - It, read as a file
- */
-const offerRoleplay = (file, asFile) => {
-  const what = asFile.holds === 'card' ? 'a character card' : 'a lorebook'
-  confirm.require({
-    header: 'Turn on Roleplay?',
-    message: `${file.name} is ${what}. Turn on Roleplay to import it as one, or import it as a file.`,
-    icon: 'pi pi-id-card',
-    rejectProps: { label: 'Import as a file', severity: 'secondary', outlined: true },
-    acceptProps: { label: 'Turn on Roleplay' },
-    accept: () => {
-      setExtension('roleplay', true)
-      readOne(file)
-    },
-    reject: () => {
-      found.value = asFile
-      importCard({})
-    },
-  })
 }
 
 /**
@@ -415,8 +412,8 @@ const scrivenerIn = async listed => {
 }
 
 /**
- * Write a Scrivener project into a folder named after it, and say how it
- * went. One that cannot be read writes nothing, and says why.
+ * Write a Scrivener project into a folder named after it, saying what didn't
+ * come in. One that cannot be read writes nothing, and says why.
  *
  * @param {import('@/scrivener/package.js').ScrivenerPackage} pack
  * @param {string|null} parentId - Where it goes; the project's top when null
@@ -426,14 +423,14 @@ const importScrivener = async (pack, parentId) => {
   try {
     project = await openProject(pack)
   } catch (error) {
-    toast.add({ severity: 'error', detail: `Nothing imported: ${error.message}`, life: 6000 })
+    toast.add({ severity: 'error', detail: `Nothing was imported. ${error.message}`, life: 6000 })
     return
   }
   const result = await writeProject(props.storyId, project, {
     parentId: parentId || undefined,
     asFolder: true,
   })
-  toast.add({ ...describeImport(result), life: 5000 })
+  tellImport(result)
 }
 
 /**
@@ -450,16 +447,26 @@ const importRepository = async (listed, parentId) => {
 }
 
 /**
- * Write a batch and say how it went. The tree fills in as the files land,
- * which is the progress bar; the toast at the end is the tally.
+ * Write a batch. The tree fills in as the files land, which is the progress
+ * bar; what didn't come in is said at the end.
  *
  * @param {import('@/files/batch.js').Gathered[]} gathered
  * @param {string|null} parentId - Where it goes; the project's top when null
  */
 const importBatch = async (gathered, parentId) => {
   if (gathered.length === 0) return
-  const result = await bulk.importMany(gathered, { parentId: parentId || undefined })
-  toast.add({ ...describeImport(result), life: result.skipped.length > 0 ? 10000 : 5000 })
+  tellImport(await bulk.importMany(gathered, { parentId: parentId || undefined }))
+}
+
+/**
+ * Say what a batch left out, or brought in that the outline doesn't show.
+ * One that all came in says nothing.
+ *
+ * @param {import('@/composables/useBulkImport.js').Imported} result
+ */
+const tellImport = result => {
+  const said = describeImport(result)
+  if (said) toast.add({ ...said, life: said.severity === 'info' ? 5000 : 10000 })
 }
 
 /**
@@ -551,10 +558,33 @@ const convertDocument = documentId => {
         await jobs.convert(props.storyId, documentId)
         jobsToast.show()
       } catch (error) {
-        toast.add({ severity: 'error', detail: `Not started: ${error.message}`, life: 6000 })
+        toast.add({
+          severity: 'error',
+          detail: `The conversion couldn't start. ${error.message}`,
+          life: 6000,
+        })
       }
     },
   })
+}
+
+/**
+ * Describe what a folder holds for the model, or the whole project, as a
+ * long job, on the model a new chat would run on. One that reads a lot is
+ * asked about first, with how much.
+ *
+ * @param {string} folderId
+ */
+const exploreFolder = async folderId => {
+  try {
+    await askToExplore(props.storyId, folderId, { require: confirm.require })
+  } catch (error) {
+    toast.add({
+      severity: 'error',
+      detail: `Exploring couldn't start. ${error.message}`,
+      life: 6000,
+    })
+  }
 }
 
 /**
@@ -572,7 +602,7 @@ const reimportCard = async folderId => {
   } catch (error) {
     toast.add({
       severity: error instanceof NotACardError ? 'warn' : 'error',
-      detail: `Nothing imported: ${error.message}`,
+      detail: `Nothing was imported. ${error.message}`,
       life: 6000,
     })
   }
@@ -588,19 +618,19 @@ const importCard = async answers => {
 
   try {
     const written = await cards.write(card, { parentId: importInto.value, ...answers })
-    toast.add({
-      severity: 'success',
-      // A file says something about itself — its pages, or that it had no
-      // text — where a count of one document would say nothing.
-      detail: `${card.replaces ? 'Re-imported' : 'Imported'} ${written.title}${
-        written.note ?? (written.documents === 1 ? '' : ` (${written.documents} documents)`)
-      }.`,
-      life: 4000,
-    })
+    // The outline shows what came in. A scan it doesn't show: a model can't
+    // read one.
+    if (written.scan) {
+      toast.add({
+        severity: 'info',
+        detail: `${written.title} is a PDF with no extractable text.`,
+        life: 5000,
+      })
+    }
   } catch (error) {
     toast.add({
       severity: 'error',
-      detail: `Nothing imported: ${error.message}`,
+      detail: `Nothing was imported. ${error.message}`,
       life: 6000,
     })
   } finally {
@@ -640,46 +670,84 @@ const importMenuItems = computed(() => {
  */
 const openDocument = documentId => emit('open', documentId)
 
-const confirmDeleteProject = () => {
+/** Move the project to the trash, without asking: it can be restored from there. */
+const trashProject = async () => {
   if (!storiesStore.getStory(props.storyId)) return
+  try {
+    await projects.trash(props.storyId)
+    router.push('/')
+  } catch (error) {
+    console.error('Failed to move the project to the trash:', error)
+    toast.add({
+      severity: 'error',
+      detail: "The project couldn't be moved to the trash.",
+      life: 6000,
+    })
+  }
+}
 
+/**
+ * Whether a project is out of sync here: kept on this device by the writer,
+ * or by another device to itself and then brought back out of the trash here.
+ * @param {any} story
+ */
+const keptOffSync = story => Boolean(story?.syncOff || story?.keptElsewhere)
+
+/** Keep the project on this device only, once the writer has said so. */
+const confirmKeepHere = () => {
+  const name = api.displayTitle(root.value)
   confirm.require({
-    message: `Delete "${api.displayTitle(root.value)}" and everything in it? This can’t be undone.`,
-    header: 'Delete project',
-    icon: 'pi pi-exclamation-triangle',
+    message: `Keep “${name}” on this device only? It leaves the sync server, and your other devices move it to their trash.`,
+    header: 'Keep on this device only',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-    acceptProps: { label: 'Delete', severity: 'danger' },
+    acceptProps: { label: 'Keep here only' },
     accept: async () => {
       try {
-        await projects.remove(props.storyId)
-        toast.add({
-          severity: 'success',
-          detail: 'Project deleted',
-          life: 3000,
-        })
-        router.push('/')
+        await cloud.keepOnThisDevice(props.storyId)
       } catch (error) {
-        console.error('Failed to delete project:', error)
-        toast.add({
-          severity: 'error',
-          detail: 'Failed to delete project',
-          life: 3000,
-        })
+        toast.add({ severity: 'error', detail: error.message, life: 6000 })
       }
     },
   })
 }
 
+/** Leave a project shared with this account, once the writer has said so. */
+const confirmLeave = () => {
+  const name = api.displayTitle(root.value)
+  confirm.require({
+    message: `Leave “${name}”? It goes to your trash and stops syncing. Only its owner can share it with you again.`,
+    header: 'Leave project',
+    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
+    acceptProps: { label: 'Leave', severity: 'danger' },
+    accept: async () => {
+      try {
+        await cloud.leaveProject(props.storyId)
+        router.push('/')
+      } catch (error) {
+        toast.add({ severity: 'error', detail: error.message, life: 6000 })
+      }
+    },
+  })
+}
+
+/** Sync the project again, having kept it on this device only. */
+const syncAgain = async () => {
+  try {
+    await cloud.syncProjectAgain(props.storyId)
+  } catch (error) {
+    toast.add({ severity: 'error', detail: error.message, life: 6000 })
+  }
+}
+
 /** Save the project, with its chats, to a file of its own. */
 const exportProject = async () => {
   try {
-    const { filename } = await useBackup().downloadProject(props.storyId)
-    toast.add({ severity: 'success', detail: `Saved ${filename}`, life: 3000 })
+    await useBackup().downloadProject(props.storyId)
   } catch (error) {
     console.error('Project export failed:', error)
     toast.add({
       severity: 'error',
-      detail: `Export failed: ${error.message}`,
+      detail: `The project couldn't be exported. ${error.message}`,
       life: 6000,
     })
   }
@@ -695,8 +763,112 @@ const projectMenuItems = computed(() => [
     },
   },
   { label: 'Export project', icon: 'pi pi-download', command: () => exportProject() },
-  { label: 'Delete project', icon: 'pi pi-trash', command: () => confirmDeleteProject() },
+  // Signed in to sync: shared, kept on this device, or synced again. One
+  // shared with this account is its owner's to keep off.
+  ...(cloud.account.value
+    ? keptOffSync(storiesStore.getStory(props.storyId))
+      ? [{ label: 'Sync this project', icon: 'pi pi-cloud-upload', command: () => syncAgain() }]
+      : [
+          {
+            label: sharedWithMe.value ? 'People…' : 'Share…',
+            icon: 'pi pi-users',
+            command: () => {
+              showShare.value = true
+            },
+          },
+          ...(sharedWithMe.value
+            ? []
+            : [
+                {
+                  label: 'Keep on this device only…',
+                  icon: 'pi pi-cloud',
+                  command: () => confirmKeepHere(),
+                },
+              ]),
+        ]
+    : []),
+  ...(trash.count.value > 0
+    ? [
+        {
+          label: 'Trash',
+          icon: 'pi pi-trash',
+          command: () => {
+            showTrash.value = true
+          },
+        },
+      ]
+    : []),
+  // Only its owner deletes a project shared; the others leave it.
+  sharedWithMe.value
+    ? { label: 'Leave project…', icon: 'pi pi-sign-out', command: () => confirmLeave() }
+    : { label: 'Delete project', icon: 'pi pi-trash', command: () => trashProject() },
 ])
 
-onMounted(() => api.init())
+const history = useTreeHistory(props.storyId)
+/** @type {import('vue').Ref<HTMLElement|null>} */
+const treeEl = ref(null)
+
+/**
+ * Show the writer the document a step was taken on, and give its row the
+ * keys, when it is on screen.
+ * @param {string} documentId
+ */
+const focusRow = documentId =>
+  nextTick(() =>
+    /** @type {HTMLElement|null|undefined} */ (
+      treeEl.value?.querySelector(`[role="treeitem"][data-document-id="${documentId}"]`)
+    )?.focus()
+  )
+
+/**
+ * Take a step back, or do it again. One whose document has changed since
+ * does nothing.
+ * @param {'undo'|'redo'} way
+ */
+const take = way => {
+  const taken = history[way]()
+  if (taken?.done) focusRow(taken.documentId)
+}
+
+/**
+ * Undo the last thing done in the outline. A document made goes to the
+ * trash, with whatever has been written in it since, and a redo brings it
+ * back.
+ * @returns {boolean} Whether there was anything to undo
+ */
+const undo = () => {
+  if (!history.nextUndo()) return false
+  take('undo')
+  return true
+}
+
+/** @returns {boolean} Whether there was anything to redo */
+const redo = () => {
+  if (!history.nextRedo()) return false
+  take('redo')
+  return true
+}
+
+/**
+ * Command-Z and Shift-Command-Z, while the writer is in the outline, or on
+ * nothing else: a delete takes away the row that had the focus, and a click
+ * on the space under the rows focuses the split the outline is in. A field
+ * keeps the keys for its own text, the editor and the rename among them.
+ * @param {KeyboardEvent} event
+ */
+const onKeyDown = event => {
+  const key = undoKeyOf(event)
+  const tree = treeEl.value
+  if (!key || event.defaultPrevented || !tree || tree.getClientRects().length === 0) return
+  const focused = /** @type {HTMLElement|null} */ (document.activeElement)
+  const here = !focused || focused.contains(tree) || tree.contains(focused)
+  if (!here || focused?.closest?.('input, textarea, select, [contenteditable="true"]')) return
+  if (key === 'undo' ? undo() : redo()) event.preventDefault()
+}
+
+onMounted(() => {
+  api.init()
+  document.addEventListener('keydown', onKeyDown)
+})
+onBeforeUnmount(() => document.removeEventListener('keydown', onKeyDown))
 </script>

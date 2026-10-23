@@ -45,81 +45,102 @@
   - [Parameters][41]
 - [serviceInUse][42]
   - [Parameters][43]
-- [webForChat][44]
+- [savesWithoutAsking][44]
   - [Parameters][45]
-- [web/direct][46]
-- [SOURCE_LENGTH][47]
-- [SOURCE_LENGTH][48]
-- [ARTICLE_LENGTH][49]
-- [pageOfHtml][50]
-  - [Parameters][51]
-- [readDirect][52]
-  - [Parameters][53]
-- [][54]
-- [web/exa][55]
-- [EXA_URL][56]
-- [EXA_URL][57]
-- [EXA_URL][58]
-- [EXA_URL][59]
-- [EXA_LIMITED][60]
-- [LIMIT_NOTICE][61]
-- [server][62]
-  - [Parameters][63]
-- [server][64]
-  - [Parameters][65]
-- [id][66]
-- [id][67]
-- [answerText][68]
-  - [Parameters][69]
-- [answerText][70]
-  - [Parameters][71]
-- [field][72]
-  - [Parameters][73]
-- [exaResults][74]
+- [webForChat][46]
+  - [Parameters][47]
+- [web/direct][48]
+- [SOURCE_LENGTH][49]
+- [SOURCE_LENGTH][50]
+- [FILE_BYTES][51]
+- [ARTICLE_LENGTH][52]
+- [Fetched][53]
+- [pageOfHtml][54]
+  - [Parameters][55]
+- [fileNameOf][56]
+  - [Parameters][57]
+- [askSite][58]
+  - [Parameters][59]
+- [][60]
+- [fetchDirect][61]
+  - [Parameters][62]
+- [pageOfFile][63]
+  - [Parameters][64]
+- [readDirect][65]
+  - [Parameters][66]
+- [web/exa][67]
+- [EXA_URL][68]
+- [EXA_URL][69]
+- [EXA_URL][70]
+- [EXA_URL][71]
+- [EXA_LIMITED][72]
+- [LIMIT_NOTICE][73]
+- [server][74]
   - [Parameters][75]
-- [exaPage][76]
+- [server][76]
   - [Parameters][77]
-- [searchExa][78]
-  - [Parameters][79]
-- [readExa][80]
+- [id][78]
+- [id][79]
+- [answerText][80]
   - [Parameters][81]
-- [checkExa][82]
+- [answerText][82]
   - [Parameters][83]
-- [web][84]
-- [Files][85]
-  - [Examples][86]
-- [web/kagi][87]
-- [KAGI_URL][88]
-- [KAGI_URL][89]
-- [KAGI_URL][90]
-- [KEY_REFUSED][91]
-- [kagiPage][92]
+- [field][84]
+  - [Parameters][85]
+- [exaResults][86]
+  - [Parameters][87]
+- [exaPage][88]
+  - [Parameters][89]
+- [searchExa][90]
+  - [Parameters][91]
+- [readExa][92]
   - [Parameters][93]
-- [searchKagi][94]
+- [checkExa][94]
   - [Parameters][95]
-- [readKagi][96]
-  - [Parameters][97]
-- [web/pages][98]
-- [KEPT][99]
-- [KEPT][100]
-- [KEPT][101]
-- [KEPT][102]
-- [next][103]
-- [pages][104]
-- [readPage][105]
-  - [Parameters][106]
-- [wholePage][107]
-  - [Parameters][108]
-- [forgetPages][109]
-- [web/services][110]
-- [WEB_SERVICES][111]
-- [WEB_SERVICES][112]
-- [WEB_SERVICES][113]
-- [WEB_SERVICES][114]
-- [WebService][115]
-  - [Properties][116]
-- [getWebService][117]
-  - [Parameters][118]
+- [web][96]
+- [Files][97]
+  - [Examples][98]
+- [web/kagi][99]
+- [KAGI_URL][100]
+- [KAGI_URL][101]
+- [KAGI_URL][102]
+- [KEY_REFUSED][103]
+- [kagiPage][104]
+  - [Parameters][105]
+- [searchKagi][106]
+  - [Parameters][107]
+- [readKagi][108]
+  - [Parameters][109]
+- [web/keep][110]
+- [fetchToKeep][111]
+  - [Parameters][112]
+- [fetchToKeep][113]
+  - [Parameters][114]
+- [Keepable][115]
+- [refused][116]
+- [web/pages][117]
+- [KEPT][118]
+- [KEPT][119]
+- [KEPT][120]
+- [KEPT][121]
+- [next][122]
+- [pages][123]
+- [readPage][124]
+  - [Parameters][125]
+- [wholePage][126]
+  - [Parameters][127]
+- [keptRead][128]
+  - [Parameters][129]
+- [forgetPages][130]
+- [web/services][131]
+- [WEB_SERVICES][132]
+- [WEB_SERVICES][133]
+- [WEB_SERVICES][134]
+- [WEB_SERVICES][135]
+- [WebService][136]
+  - [Properties][137]
+- [getWebService][138]
+  - [Parameters][139]
 
 ## web/answers
 
@@ -137,30 +158,32 @@ model passes it on: what happened, and where to change it.
 
 ## Page
 
-Type: [Object][119]
+Type: [Object][140]
 
 ### Properties
 
-- `title` **[string][120]**&#x20;
-- `url` **[string][120]**&#x20;
-- `published` **[string][120]?** When the service says the page was
+- `title` **[string][141]**&#x20;
+- `url` **[string][141]**&#x20;
+- `published` **[string][141]?** When the service says the page was
   published or last changed
-- `text` **[string][120]** The passage that matched, clipped
-- `title` **[string][120]?**&#x20;
-- `published` **[string][120]?** When, as the service gave it
-- `text` **[string][120]** Markdown
+- `text` **[string][141]** The passage that matched, clipped
+- `title` **[string][141]?**&#x20;
+- `published` **[string][141]?** When, as the service gave it
+- `text` **[string][141]** Markdown
+- `file` **File?** The file itself, when the address was one (a PDF,
+  say) and it was fetched from its site: what saving it keeps
 
 ## RESULTS
 
 How many results a search answers with.
 
-Type: [number][121]
+Type: [number][142]
 
 ## PASSAGE_LENGTH
 
 The longest a result's passage runs, in characters: a few hundred words.
 
-Type: [number][121]
+Type: [number][142]
 
 ## SEARCH_TEXT_LENGTH
 
@@ -172,13 +195,13 @@ How much of a page a service is asked for, in characters. More than one
 read returns, so a long page can be read on from where the last read
 stopped without asking again.
 
-Type: [number][121]
+Type: [number][142]
 
 ## WHERE
 
 Where the writer sets the service up, as a refusal names it.
 
-Type: [string][120]
+Type: [string][141]
 
 ## clip
 
@@ -186,10 +209,10 @@ Text cut to a length, between words where it can be, marked as cut.
 
 ### Parameters
 
-- `text` **[string][120]**&#x20;
-- `length` **[number][121]**&#x20;
+- `text` **[string][141]**&#x20;
+- `length` **[number][142]**&#x20;
 
-Returns **[string][120]**&#x20;
+Returns **[string][141]**&#x20;
 
 ## ServiceError
 
@@ -200,7 +223,7 @@ words.
 
 ### Parameters
 
-- `message` **[string][120]**&#x20;
+- `message` **[string][141]**&#x20;
 
 ## statusOf
 
@@ -210,7 +233,7 @@ The HTTP status an error carries, if it carries one.
 
 - `error` **any**&#x20;
 
-Returns **([number][121] | [undefined][122])**&#x20;
+Returns **([number][142] | [undefined][143])**&#x20;
 
 ## describeRefusal
 
@@ -218,11 +241,11 @@ Why a service failed, for the writer.
 
 ### Parameters
 
-- `name` **[string][120]** The service, as the writer knows it
+- `name` **[string][141]** The service, as the writer knows it
 - `error` **any**&#x20;
 - `says` (optional, default `{}`)
 
-Returns **[string][120]**&#x20;
+Returns **[string][141]**&#x20;
 
 ## web/brave
 
@@ -238,29 +261,29 @@ for five addresses and about two thousand tokens. Its dates are in
 
 ## BRAVE_URL
 
-Type: [string][120]
+Type: [string][141]
 
 ## BRAVE_URL
 
-Type: [string][120]
+Type: [string][141]
 
 ## BRAVE_URL
 
 Where LLM Context answers.
 
-Type: [string][120]
+Type: [string][141]
 
 ## QUERY_LENGTH
 
 The longest query Brave takes, in characters.
 
-Type: [number][121]
+Type: [number][142]
 
 ## TOKENS
 
 About how many tokens of passages a search asks for.
 
-Type: [number][121]
+Type: [number][142]
 
 ## searchBrave
 
@@ -268,17 +291,17 @@ Search with Brave.
 
 ### Parameters
 
-- `query` **[string][120]**&#x20;
-- `$1` **[Object][119]**&#x20;
+- `query` **[string][141]**&#x20;
+- `$1` **[Object][140]**&#x20;
   - `$1.key` (optional, default `''`)
   - `$1.signal` &#x20;
   - `$1.timeout` &#x20;
 
-Returns **[Promise][123]\<SearchAnswer>**&#x20;
+Returns **[Promise][144]\<SearchAnswer>**&#x20;
 
 ##
 
-Type: [Array][124]\<AbortSignal>
+Type: [Array][145]\<AbortSignal>
 
 ## braveResults
 
@@ -292,11 +315,11 @@ Returns **SearchAnswer**&#x20;
 
 ## results
 
-Type: [Array][124]\<SearchResult>
+Type: [Array][145]\<SearchResult>
 
 ## results
 
-Type: [Array][124]\<SearchResult>
+Type: [Array][145]\<SearchResult>
 
 ## web/config
 
@@ -345,9 +368,9 @@ Whether a service can be reached from here.
 
 ### Parameters
 
-- `service` **[WebService][115]**&#x20;
+- `service` **[WebService][136]**&#x20;
 
-Returns **[boolean][125]**&#x20;
+Returns **[boolean][146]**&#x20;
 
 ## serviceInUse
 
@@ -358,7 +381,19 @@ reachable from here, and with a key if it needs one.
 
 - `from` **(WebSearchSetup | null)?** (optional, default `setup`)
 
-Returns **({service: [WebService][115], key: [string][120]} | null)**&#x20;
+Returns **({service: [WebService][136], key: [string][141]} | null)**&#x20;
+
+## savesWithoutAsking
+
+Whether the model keeps a page in the project without asking the writer
+first: only once they said so, with Always allow or in Settings ›
+Connections.
+
+### Parameters
+
+- `from` **(WebSearchSetup | null)?** (optional, default `setup`)
+
+Returns **[boolean][146]**&#x20;
 
 ## webForChat
 
@@ -368,39 +403,55 @@ it, or, until it chooses, its profile is one the setup lists.
 ### Parameters
 
 - `chat` &#x20;
-- `profileId` **[string][120]** The chat's profile, the default resolved
+- `profileId` **[string][141]** The chat's profile, the default resolved
 - `from` **(WebSearchSetup | null)?** (optional, default `setup`)
 
-Returns **[boolean][125]**&#x20;
+Returns **[boolean][146]**&#x20;
 
 ## web/direct
 
-A page read straight from its site, for a service with no
-reader of its own: Brave's. Only the desktop app can, since a page in a
+A page or a file read straight from its site: for a service
+with no reader of its own (Brave's), and for keeping what is at an address
+in the project. Only the desktop app can count on it, since a page in a
 browser is refused by almost every other site; the request goes out from
 Electron's main process (`platform/fetch.js`).
 
-The page is made markdown the way an editor document would be: the
+A page is made markdown the way an editor document would be: the
 clean-up `files/html.js` does (scripts, navigation, headers, footers and
 forms out), the article where the page marks one, links made whole, and
 then the editor's own parser and serialiser, so headings, lists and links
 survive and nothing the editor cannot show comes through.
 
+Anything else at the address is a file: a PDF, a Word file, an epub, plain
+text. Its text is read out the way an import reads it, and the read keeps
+the file itself, so that saving it keeps the file rather than its words and
+does not fetch it a second time.
+
 ## SOURCE_LENGTH
 
-Type: [number][121]
+Type: [number][142]
 
 ## SOURCE_LENGTH
 
 The most of a page read, in characters, before it is made markdown.
 
-Type: [number][121]
+Type: [number][142]
+
+## FILE_BYTES
+
+The largest file fetched, in bytes.
 
 ## ARTICLE_LENGTH
 
 An article shorter than this is taken for a teaser, and the whole page read instead.
 
-Type: [number][121]
+Type: [number][142]
+
+## Fetched
+
+What is at an address, fetched from its site: a page, or the file it is.
+
+Type: ({page: [Page][2]} | {file: File})
 
 ## pageOfHtml
 
@@ -408,27 +459,92 @@ The markdown of a page's HTML.
 
 ### Parameters
 
-- `source` **[string][120]**&#x20;
-- `url` **[string][120]** Where it was read, for its links
+- `source` **[string][141]**&#x20;
+- `url` **[string][141]** Where it was read, for its links
 
 Returns **[Page][2]**&#x20;
 
-## readDirect
+## fileNameOf
 
-Read a page from its site.
+The name a file at an address goes by: the one its site gives it, or else
+the last part of the address, with the extension its type has when the
+name has none.
 
 ### Parameters
 
-- `url` **[string][120]**&#x20;
-- `$1` **[Object][119]**&#x20;
+- `url` **[string][141]** Where it was fetched from, after any redirect
+- `disposition` **([string][141] | null)** The site's Content-Disposition
+- `type` **[string][141]** The site's media type for it, '' when it gave none
+
+Returns **[string][141]**&#x20;
+
+## askSite
+
+Ask a site for what is at an address.
+
+### Parameters
+
+- `url` **[string][141]**&#x20;
+- `$1` **[Object][140]**&#x20;
   - `$1.signal` &#x20;
   - `$1.timeout` &#x20;
 
-Returns **[Promise][123]<[Page][2]>**&#x20;
+<!---->
+
+- Throws **[ServiceError][11]** When the site cannot be reached, or will not answer
+
+Returns **[Promise][144]<[Response][147]>**&#x20;
 
 ##
 
-Type: [Array][124]\<AbortSignal>
+Type: [Array][145]\<AbortSignal>
+
+## fetchDirect
+
+Fetch what is at an address from its site: a page as markdown, anything
+else as the file it is.
+
+A type the site did not give is the address's to say, by its extension; an
+address that says nothing either is a page if it reads like one.
+
+### Parameters
+
+- `url` **[string][141]**&#x20;
+- `options` &#x20;
+
+<!---->
+
+- Throws **[ServiceError][11]** When the site cannot be reached or will not answer,
+  or the file is too big to fetch
+
+Returns **[Promise][144]<[Fetched][53]>**&#x20;
+
+## pageOfFile
+
+A file as a page to read: its text, read out the way an import reads it,
+and the file itself.
+
+### Parameters
+
+- `file` **File**&#x20;
+- `url` **[string][141]** Where it came from, for saying what could not be read
+
+<!---->
+
+- Throws **[ServiceError][11]** When it has no text to read
+
+Returns **[Promise][144]<[Page][2]>**&#x20;
+
+## readDirect
+
+Read a page from its site, or the text of the file there.
+
+### Parameters
+
+- `url` **[string][141]**&#x20;
+- `options` &#x20;
+
+Returns **[Promise][144]<[Page][2]>**&#x20;
 
 ## web/exa
 
@@ -447,21 +563,21 @@ one says nothing. See .llm/web_search_design.md.
 
 ## EXA_URL
 
-Type: [string][120]
+Type: [string][141]
 
 ## EXA_URL
 
-Type: [string][120]
+Type: [string][141]
 
 ## EXA_URL
 
-Type: [string][120]
+Type: [string][141]
 
 ## EXA_URL
 
 Where Exa's server answers.
 
-Type: [string][120]
+Type: [string][141]
 
 ## EXA_LIMITED
 
@@ -479,7 +595,7 @@ Exa's server as the MCP client reaches it: with the key, when there is one.
 
 ### Parameters
 
-- `key` **[string][120]?**&#x20;
+- `key` **[string][141]?**&#x20;
 
 ## server
 
@@ -487,7 +603,7 @@ Kagi's server as the MCP client reaches it.
 
 ### Parameters
 
-- `key` **[string][120]**&#x20;
+- `key` **[string][141]**&#x20;
 
 ## id
 
@@ -504,9 +620,9 @@ An answer's text, or the refusal it is.
 ### Parameters
 
 - `result` **any** A CallToolResult
-- `url` **[string][120]?** The page it was asked to read
+- `url` **[string][141]?** The page it was asked to read
 
-Returns **[string][120]**&#x20;
+Returns **[string][141]**&#x20;
 
 ## answerText
 
@@ -517,7 +633,7 @@ as a 401 would be, so it is told as the other services' are.
 
 - `result` **any** A CallToolResult
 
-Returns **[string][120]**&#x20;
+Returns **[string][141]**&#x20;
 
 ## field
 
@@ -525,10 +641,10 @@ One of a result's fields, by its label.
 
 ### Parameters
 
-- `block` **[string][120]**&#x20;
-- `label` **[string][120]**&#x20;
+- `block` **[string][141]**&#x20;
+- `label` **[string][141]**&#x20;
 
-Returns **([string][120] | [undefined][122])**&#x20;
+Returns **([string][141] | [undefined][143])**&#x20;
 
 ## exaResults
 
@@ -537,7 +653,7 @@ usual goes on as text rather than as nothing.
 
 ### Parameters
 
-- `text` **[string][120]**&#x20;
+- `text` **[string][141]**&#x20;
 
 Returns **SearchAnswer**&#x20;
 
@@ -548,7 +664,7 @@ text, without the lines they came on.
 
 ### Parameters
 
-- `text` **[string][120]**&#x20;
+- `text` **[string][141]**&#x20;
 
 Returns **[Page][2]**&#x20;
 
@@ -558,13 +674,13 @@ Search with Exa.
 
 ### Parameters
 
-- `query` **[string][120]**&#x20;
-- `$1` **[Object][119]**&#x20;
+- `query` **[string][141]**&#x20;
+- `$1` **[Object][140]**&#x20;
   - `$1.key` &#x20;
   - `$1.signal` &#x20;
   - `$1.timeout` &#x20;
 
-Returns **[Promise][123]\<SearchAnswer>**&#x20;
+Returns **[Promise][144]\<SearchAnswer>**&#x20;
 
 ## readExa
 
@@ -572,13 +688,13 @@ Read a page with Exa.
 
 ### Parameters
 
-- `url` **[string][120]**&#x20;
-- `$1` **[Object][119]**&#x20;
+- `url` **[string][141]**&#x20;
+- `$1` **[Object][140]**&#x20;
   - `$1.key` &#x20;
   - `$1.signal` &#x20;
   - `$1.timeout` &#x20;
 
-Returns **[Promise][123]<[Page][2]>**&#x20;
+Returns **[Promise][144]<[Page][2]>**&#x20;
 
 ## checkExa
 
@@ -587,9 +703,9 @@ costs nothing.
 
 ### Parameters
 
-- `key` **[string][120]?**&#x20;
+- `key` **[string][141]?**&#x20;
 
-Returns **[Promise][123]\<void>**&#x20;
+Returns **[Promise][144]\<void>**&#x20;
 
 ## web
 
@@ -610,8 +726,10 @@ straight from its site for it, Brave having no reader.
 - `exa.js`, `kagi.js`, `brave.js` - Each service's search, and its page
   read and free check where it has them, its answers taken apart into the
   shape the tools answer in
-- `direct.js` - A page read straight from its site and made markdown, on
-  desktop, for a service with no reader
+- `direct.js` - A page read straight from its site and made markdown, or a
+  file there and its text, on desktop, for a service with no reader
+- `keep.js` - What is at an address, to keep in the project: the file where
+  it can be fetched, the page's text otherwise
 - `answers.js` - That shape, its limits, and a refusal said for the writer
 - `config.js` - The setup as the rest of the app reads it, which service
   can search, and which chats search
@@ -619,10 +737,10 @@ straight from its site for it, Brave having no reader.
   asking for it again
 
 The setup is kept in `stores/webSearchStore.js` and set up in Settings ›
-Connections (`useWebSearch`). The tools, `web_search` and `read_web_page`,
-are in `ai/tools/web.js`, in a group of their own that is opted into, as a
-server's tools are: a chat searches when its profile is one the setup lists,
-or when the chat itself says so.
+Connections (`useWebSearch`). The tools, `web_search`, `read_web_page` and
+`save_web_page`, are in `ai/tools/web.js`, in a group of their own that is
+opted into, as a server's tools are: a chat searches when its profile is one
+the setup lists, or when the chat itself says so.
 
 ### Examples
 
@@ -644,17 +762,17 @@ change. A page is markdown, its title the first heading when it has one.
 
 ## KAGI_URL
 
-Type: [string][120]
+Type: [string][141]
 
 ## KAGI_URL
 
-Type: [string][120]
+Type: [string][141]
 
 ## KAGI_URL
 
 Where Kagi's server answers.
 
-Type: [string][120]
+Type: [string][141]
 
 ## KEY_REFUSED
 
@@ -666,7 +784,7 @@ A page as Kagi reads it.
 
 ### Parameters
 
-- `text` **[string][120]** Markdown
+- `text` **[string][141]** Markdown
 
 Returns **[Page][2]**&#x20;
 
@@ -676,13 +794,13 @@ Search with Kagi.
 
 ### Parameters
 
-- `query` **[string][120]**&#x20;
-- `$1` **[Object][119]**&#x20;
+- `query` **[string][141]**&#x20;
+- `$1` **[Object][140]**&#x20;
   - `$1.key` (optional, default `''`)
   - `$1.signal` &#x20;
   - `$1.timeout` &#x20;
 
-Returns **[Promise][123]\<SearchAnswer>**&#x20;
+Returns **[Promise][144]\<SearchAnswer>**&#x20;
 
 ## readKagi
 
@@ -690,13 +808,60 @@ Read a page with Kagi.
 
 ### Parameters
 
-- `url` **[string][120]**&#x20;
-- `$1` **[Object][119]**&#x20;
+- `url` **[string][141]**&#x20;
+- `$1` **[Object][140]**&#x20;
   - `$1.key` (optional, default `''`)
   - `$1.signal` &#x20;
   - `$1.timeout` &#x20;
 
-Returns **[Promise][123]<[Page][2]>**&#x20;
+Returns **[Promise][144]<[Page][2]>**&#x20;
+
+## web/keep
+
+What is at an address, to keep in the project: the file
+itself where the app can fetch it, or else the page as its text.
+
+The desktop app can fetch anything from its site. A page in a browser is
+refused by almost every site, so there it is tried once, and what is kept
+otherwise is the page as a service read it: its text, even for a PDF.
+
+A page the model read is kept as it read it, since that is what it chose
+to keep; a file it read from its site is kept from the same read, not
+fetched again.
+
+## fetchToKeep
+
+### Parameters
+
+- `url` &#x20;
+- `options` (optional, default `{}`)
+
+## fetchToKeep
+
+What to keep of an address.
+
+### Parameters
+
+- `url` **[string][141]**&#x20;
+- `options` (optional, default `{}`)
+
+<!---->
+
+- Throws **any** When neither the site nor a service gives anything: the site's
+  refusal, in the writer's words
+
+Returns **[Promise][144]<[Keepable][115]>**&#x20;
+
+## Keepable
+
+What there is to keep: the file, or a page's text, and whether the page
+came from a service rather than from its site.
+
+Type: ({file: File} | {page: [Page][2], read: [boolean][146]})
+
+## refused
+
+Type: unknown
 
 ## web/pages
 
@@ -712,29 +877,29 @@ project: the whole page, not the part the model happened to be reading.
 
 ## KEPT
 
-Type: [number][121]
+Type: [number][142]
 
 ## KEPT
 
-Type: [number][121]
+Type: [number][142]
 
 ## KEPT
 
-Type: [number][121]
+Type: [number][142]
 
 ## KEPT
 
 How many pages are kept.
 
-Type: [number][121]
+Type: [number][142]
 
 ## next
 
-Type: [string][120]
+Type: [string][141]
 
 ## pages
 
-Type: [Map][126]<[string][120], [Promise][123]<[Page][2]>>
+Type: [Map][148]<[string][141], [Promise][144]<[Page][2]>>
 
 ## readPage
 
@@ -742,11 +907,11 @@ A page, from the copy kept of it or from the service.
 
 ### Parameters
 
-- `service` **[WebService][115]**&#x20;
-- `url` **[string][120]**&#x20;
+- `service` **[WebService][136]**&#x20;
+- `url` **[string][141]**&#x20;
 - `options` **CallOptions**&#x20;
 
-Returns **[Promise][123]<[Page][2]>**&#x20;
+Returns **[Promise][144]<[Page][2]>**&#x20;
 
 ## wholePage
 
@@ -755,15 +920,25 @@ service read it, or else a read by the service in use.
 
 ### Parameters
 
-- `url` **[string][120]**&#x20;
+- `url` **[string][141]**&#x20;
 - `options` **CallOptions?** (optional, default `{}`)
 
 <!---->
 
 - Throws **any** When the service fails to read it
 
-Returns **[Promise][123]<([Page][2] | null)>** null when no copy is kept and no service is
+Returns **[Promise][144]<([Page][2] | null)>** null when no copy is kept and no service is
 set up to read one
+
+## keptRead
+
+The read kept of a page, whichever service read it, without reading it.
+
+### Parameters
+
+- `url` **[string][141]**&#x20;
+
+Returns **([Promise][144]<[Page][2]> | null)**&#x20;
 
 ## forgetPages
 
@@ -786,31 +961,31 @@ refuses a page, so it is the desktop app's alone.
 
 ## WEB_SERVICES
 
-Type: [Array][124]<[WebService][115]>
+Type: [Array][145]<[WebService][136]>
 
 ## WebService
 
-Type: [Object][119]
+Type: [Object][140]
 
 ### Properties
 
-- `key` **[string][120]?** The writer's key for the service
+- `key` **[string][141]?** The writer's key for the service
 - `signal` **AbortSignal?** The call's, which stops it
-- `timeout` **[number][121]?** How long the call may take, in milliseconds
+- `timeout` **[number][142]?** How long the call may take, in milliseconds
 - `id` **WebServiceId**&#x20;
-- `name` **[string][120]** As the writer knows it
-- `needsKey` **[boolean][125]** Whether it answers at all without a key
-- `desktopOnly` **[boolean][125]** Whether only the desktop app can reach it
-- `note` **[string][120]?** The one line Connections shows under it
-- `limited` **[string][120]?** What its own limit running out means for the writer
+- `name` **[string][141]** As the writer knows it
+- `needsKey` **[boolean][146]** Whether it answers at all without a key
+- `desktopOnly` **[boolean][146]** Whether only the desktop app can reach it
+- `note` **[string][141]?** The one line Connections shows under it
+- `limited` **[string][141]?** What its own limit running out means for the writer
 
 ## getWebService
 
 ### Parameters
 
-- `id` **([string][120] | [undefined][122])**&#x20;
+- `id` **([string][141] | [undefined][143])**&#x20;
 
-Returns **([WebService][115] | [undefined][122])**&#x20;
+Returns **([WebService][136] | [undefined][143])**&#x20;
 
 [1]: #webanswers
 [2]: #page
@@ -855,86 +1030,108 @@ Returns **([WebService][115] | [undefined][122])**&#x20;
 [41]: #parameters-8
 [42]: #serviceinuse
 [43]: #parameters-9
-[44]: #webforchat
+[44]: #saveswithoutasking
 [45]: #parameters-10
-[46]: #webdirect
-[47]: #source_length
-[48]: #source_length-1
-[49]: #article_length
-[50]: #pageofhtml
-[51]: #parameters-11
-[52]: #readdirect
-[53]: #parameters-12
-[54]: #-1
-[55]: #webexa
-[56]: #exa_url
-[57]: #exa_url-1
-[58]: #exa_url-2
-[59]: #exa_url-3
-[60]: #exa_limited
-[61]: #limit_notice
-[62]: #server
-[63]: #parameters-13
-[64]: #server-1
-[65]: #parameters-14
-[66]: #id
-[67]: #id-1
-[68]: #answertext
-[69]: #parameters-15
-[70]: #answertext-1
-[71]: #parameters-16
-[72]: #field
-[73]: #parameters-17
-[74]: #exaresults
+[46]: #webforchat
+[47]: #parameters-11
+[48]: #webdirect
+[49]: #source_length
+[50]: #source_length-1
+[51]: #file_bytes
+[52]: #article_length
+[53]: #fetched
+[54]: #pageofhtml
+[55]: #parameters-12
+[56]: #filenameof
+[57]: #parameters-13
+[58]: #asksite
+[59]: #parameters-14
+[60]: #-1
+[61]: #fetchdirect
+[62]: #parameters-15
+[63]: #pageoffile
+[64]: #parameters-16
+[65]: #readdirect
+[66]: #parameters-17
+[67]: #webexa
+[68]: #exa_url
+[69]: #exa_url-1
+[70]: #exa_url-2
+[71]: #exa_url-3
+[72]: #exa_limited
+[73]: #limit_notice
+[74]: #server
 [75]: #parameters-18
-[76]: #exapage
+[76]: #server-1
 [77]: #parameters-19
-[78]: #searchexa
-[79]: #parameters-20
-[80]: #readexa
-[81]: #parameters-21
-[82]: #checkexa
-[83]: #parameters-22
-[84]: #web
-[85]: #files
-[86]: #examples
-[87]: #webkagi
-[88]: #kagi_url
-[89]: #kagi_url-1
-[90]: #kagi_url-2
-[91]: #key_refused
-[92]: #kagipage
-[93]: #parameters-23
-[94]: #searchkagi
-[95]: #parameters-24
-[96]: #readkagi
-[97]: #parameters-25
-[98]: #webpages
-[99]: #kept
-[100]: #kept-1
-[101]: #kept-2
-[102]: #kept-3
-[103]: #next
-[104]: #pages
-[105]: #readpage
-[106]: #parameters-26
-[107]: #wholepage
-[108]: #parameters-27
-[109]: #forgetpages
-[110]: #webservices
-[111]: #web_services
-[112]: #web_services-1
-[113]: #web_services-2
-[114]: #web_services-3
-[115]: #webservice
-[116]: #properties-1
-[117]: #getwebservice
-[118]: #parameters-28
-[119]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[120]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[121]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[122]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[123]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[124]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[125]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[126]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[78]: #id
+[79]: #id-1
+[80]: #answertext
+[81]: #parameters-20
+[82]: #answertext-1
+[83]: #parameters-21
+[84]: #field
+[85]: #parameters-22
+[86]: #exaresults
+[87]: #parameters-23
+[88]: #exapage
+[89]: #parameters-24
+[90]: #searchexa
+[91]: #parameters-25
+[92]: #readexa
+[93]: #parameters-26
+[94]: #checkexa
+[95]: #parameters-27
+[96]: #web
+[97]: #files
+[98]: #examples
+[99]: #webkagi
+[100]: #kagi_url
+[101]: #kagi_url-1
+[102]: #kagi_url-2
+[103]: #key_refused
+[104]: #kagipage
+[105]: #parameters-28
+[106]: #searchkagi
+[107]: #parameters-29
+[108]: #readkagi
+[109]: #parameters-30
+[110]: #webkeep
+[111]: #fetchtokeep
+[112]: #parameters-31
+[113]: #fetchtokeep-1
+[114]: #parameters-32
+[115]: #keepable
+[116]: #refused
+[117]: #webpages
+[118]: #kept
+[119]: #kept-1
+[120]: #kept-2
+[121]: #kept-3
+[122]: #next
+[123]: #pages
+[124]: #readpage
+[125]: #parameters-33
+[126]: #wholepage
+[127]: #parameters-34
+[128]: #keptread
+[129]: #parameters-35
+[130]: #forgetpages
+[131]: #webservices
+[132]: #web_services
+[133]: #web_services-1
+[134]: #web_services-2
+[135]: #web_services-3
+[136]: #webservice
+[137]: #properties-1
+[138]: #getwebservice
+[139]: #parameters-36
+[140]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[141]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[142]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[143]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[144]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[145]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[146]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[147]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[148]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map

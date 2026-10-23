@@ -19,6 +19,11 @@
       />
     </div>
 
+    <!-- Search: picking a match goes to it in the writing view. -->
+    <div v-else-if="activeMobileTab === 'search'" class="h-full bg-surface-100 dark:bg-surface-800">
+      <SearchPanel :story-id="storyId" :document-id="documentId" @open-document="openDocument" />
+    </div>
+
     <!-- Chat: the one open, as beside the editor, with the list behind it -->
     <div v-else-if="activeMobileTab === 'chat'" class="h-full bg-surface-100 dark:bg-surface-800">
       <ChatHistory v-if="listing" :story-id="storyId" @select-chat="pickChat" />
@@ -66,6 +71,7 @@ import DocumentTree from '../tree/DocumentTree.vue'
 import ChatHistory from '../chats/ChatHistory.vue'
 import NarrationPanel from '../narration/NarrationPanel.vue'
 import CommentsPanel from '../comments/CommentsPanel.vue'
+import SearchPanel from '../search/SearchPanel.vue'
 import Settings from '../settings/Settings.vue'
 import { useDocuments } from '@/composables/useDocuments'
 
@@ -103,8 +109,8 @@ const props = defineProps({
 const emit = defineEmits(['update:activeMobileTab', 'update:chatId'])
 
 /**
- * Open a document picked from the outline or the comments, and go to where
- * it shows: on a phone those and the editor are different views.
+ * Open a document picked from the outline, the search or the comments, and
+ * go to where it shows: on a phone those and the editor are different views.
  * @param {string} documentId
  */
 const openDocument = documentId => {

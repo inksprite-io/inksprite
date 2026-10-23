@@ -21,6 +21,7 @@ import { attributionHeaders, modelsUrl } from '@/ai/wire.js'
 import { BUILT_IN_PROVIDERS, providerDoes, servesChat } from '@/ai/providers.js'
 import { LEVELS } from '@/ai/capabilities.js'
 import { listAnthropicModels } from '@/ai/anthropic.js'
+import { askProps } from '@/ai/llamacpp.js'
 
 /**
  * @typedef {import('@/types/models.js').AIProvider} AIProvider
@@ -88,6 +89,7 @@ export function openRouterTraits(model) {
   } else if (parameters && !parameters.includes('reasoning')) {
     traits.reasoning = null
   }
+  if (model.context_length > 0) traits.contextLength = model.context_length
   return traits
 }
 
@@ -209,6 +211,21 @@ export async function traitsOf(provider, model) {
     console.warn(`Could not ask ${provider.name} what ${model} takes:`, error)
     return undefined
   }
+}
+
+/**
+ * How many tokens a model reads and writes in one request, where its
+ * connection says: OpenRouter's list, or what a llama.cpp server says each of
+ * its slots holds. Nothing for any other.
+ *
+ * @param {AIProvider} provider
+ * @param {string} [model]
+ * @returns {Promise<number|undefined>}
+ */
+export async function contextOf(provider, model) {
+  if (provider.type === 'openrouter') return (await traitsOf(provider, model))?.contextLength
+  if (provider.type === 'llamacpp') return (await askProps(provider)).context
+  return undefined
 }
 
 /**

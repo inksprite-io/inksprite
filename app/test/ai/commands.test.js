@@ -25,6 +25,8 @@ import {
   matchCommands,
   commandAtCaret,
   commandSwitchedOff,
+  commandIsAside,
+  commandSpeaks,
   COMMANDS,
   LIKELIHOODS,
 } from '@/ai/commands.js'
@@ -149,7 +151,7 @@ describe('listCommands', () => {
       .filter(entry => entry.consults)
       .map(entry => entry.name)
 
-    expect(consulting).toEqual(['compact', 'interpret', 'write'])
+    expect(consulting).toEqual(['compact', 'explore', 'interpret', 'write'])
   })
 
   it('marks the ones that take a setting in parentheses', () => {
@@ -668,6 +670,53 @@ describe('/director', () => {
   })
 })
 
+describe('/aside', () => {
+  it('is asked as the writer asking, under its own tag and nothing more', async () => {
+    const command = await runCommand({ name: 'aside', input: 'What should Mara do next?' })
+
+    expect(command).toMatchObject({ name: 'aside', result: 'What should Mara do next?' })
+    expect(renderCommand(command)).toBe('<aside>\nWhat should Mara do next?\n</aside>')
+    // It wants an answer, as anything the writer says does.
+    expect(commandSpeaks(command)).toBe(true)
+    expect(commandIsAside(command)).toBe(true)
+    expect(commandIsAside({ name: 'director' })).toBe(false)
+  })
+
+  it('asks for a question rather than asking nothing', async () => {
+    const outcome = await runCommand({ name: 'aside', input: '' })
+
+    expect(outcome.error).toMatch(/ask something/i)
+    expect(outcome.error).toContain(COMMANDS.aside.usage)
+  })
+
+  it('takes everything after it as its question, lines and all', () => {
+    expect(splitInput('/aside Is this scene dragging?\nThe fight has gone on a while.')).toEqual([
+      {
+        type: 'command',
+        name: 'aside',
+        input: 'Is this scene dragging?\nThe fight has gone on a while.',
+      },
+    ])
+    // Even what would be a command, or an answer, on a line of its own.
+    expect(splitInput('/aside Should I\n/roll 2d6\n> 7').at(0).input).toBe(
+      'Should I\n/roll 2d6\n> 7'
+    )
+  })
+
+  it('leaves what came before it to be refused, rather than taking it in', () => {
+    expect(splitInput('I look around.\n/aside What is here?')).toEqual([
+      { type: 'text', content: 'I look around.' },
+      { type: 'command', name: 'aside', input: 'What is here?' },
+    ])
+  })
+
+  it('is written back as it was typed, with no answer under it', async () => {
+    const command = await runCommand({ name: 'aside', input: 'One thing.\nAnd another.' })
+
+    expect(formatSegment({ type: 'command', command })).toBe('/aside One thing.\nAnd another.')
+  })
+})
+
 describe('a character', () => {
   it('takes the line as given, under their own name', async () => {
     const command = await runCommand({
@@ -771,6 +820,25 @@ describe('/roll', () => {
     )
   })
 
+  it('counts the lower or the higher die for min() and max(), and keeps both', async () => {
+    // A 3 and then a 15, for each roll.
+    const random = vi.spyOn(Math, 'random')
+    for (const value of [0.1, 0.7, 0.1, 0.7]) random.mockReturnValueOnce(value)
+
+    const worse = await runCommand({ name: 'roll', input: 'min(2d20)+1 to sneak past' })
+    const better = await runCommand({ name: 'roll', input: 'max(2d20)+1' })
+
+    expect(worse).toMatchObject({
+      label: 'min(2d20)+1 to sneak past',
+      result: '4',
+      roll: { roll: 'min(2d20)+1', dice: { d20: [3, 15] }, modifier: 1, total: 4 },
+    })
+    expect(better).toMatchObject({ result: '16', roll: { dice: { d20: [3, 15] }, total: 16 } })
+    expect(commandDetail(worse)).toBe('min(2d20)+1')
+    expect(commandLabel(worse)).toBe('to sneak past')
+    expect(renderCommand(worse)).toBe('<roll>\nmin(2d20)+1 to sneak past\nd20: 3, 15\n4\n</roll>')
+  })
+
   it('shows the writer a line for each kind of die, and not what was added', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.5)
 
@@ -839,6 +907,15 @@ describe('/roll', () => {
       expect(read('d6: 3, 6, 9\n19').result).toBe('19')
     })
 
+    it('works the total out by min() and max()', () => {
+      expect(
+        answeredCommand({ name: 'roll', input: 'max(2d20)+1', result: 'd20: 3, 15\n16' })
+      ).toMatchObject({ result: '16', roll: { dice: { d20: [3, 15] }, total: 16 } })
+      expect(
+        answeredCommand({ name: 'roll', input: 'min(2d20)+1', result: 'd20: 12, 15' })
+      ).toMatchObject({ result: '13', roll: { total: 13 } })
+    })
+
     it('takes anything else as written', () => {
       expect(read('a lot')).toEqual(expect.objectContaining({ result: 'a lot' }))
       expect(read('a lot').roll).toBeUndefined()
@@ -883,9 +960,23 @@ describe('/roll', () => {
       inspectCommand({ name: 'roll', input: '3d6 + 2 rolling for strength' }).error
     ).toBeUndefined()
     expect(inspectCommand({ name: 'roll', input: '3d6 + 2' }).error).toBeUndefined()
+    expect(
+      inspectCommand({ name: 'roll', input: 'MAX( 2d20 ) + 1 for the climb' }).error
+    ).toBeUndefined()
     expect(inspectCommand({ name: 'roll', input: '5000d6 for luck' }).error).toMatch(
       /between 1 and/i
     )
+  })
+
+  it('takes dice of one kind in min() and max()', () => {
+    expect(inspectCommand({ name: 'roll', input: 'min(2d20+1)' }).error).toMatch(
+      /dice of one kind in min\(\)/
+    )
+    expect(inspectCommand({ name: 'roll', input: 'max(d20+d4) for luck' }).error).toMatch(
+      /dice of one kind in max\(\)/
+    )
+    expect(inspectCommand({ name: 'roll', input: 'max()' }).error).toMatch(/one kind/)
+    expect(inspectCommand({ name: 'roll', input: 'min(2d1)' }).error).toMatch(/sides/i)
   })
 
   it('refuses notation that is not dice, before anything is written', () => {

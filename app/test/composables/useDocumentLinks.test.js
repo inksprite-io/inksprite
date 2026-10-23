@@ -16,18 +16,16 @@ const docs = [
   { id: 'one', parentId: 'drafts', type: 'text', title: 'Chapter 1' },
 ]
 
-const { mockApi, toast, openUrl, editorRequest } = vi.hoisted(() => ({
+const { mockApi, openUrl, editorRequest } = vi.hoisted(() => ({
   mockApi: {
     get: vi.fn(),
     childrenOf: vi.fn(),
     open: vi.fn(),
   },
-  toast: { warning: vi.fn(), info: vi.fn() },
   openUrl: vi.fn(),
   editorRequest: { show: vi.fn() },
 }))
 vi.mock('@/composables/useDocuments.js', () => ({ useDocuments: () => mockApi }))
-vi.mock('@/composables/useToast.js', () => ({ useToast: () => toast }))
 vi.mock('@/composables/useEditorRequest.js', () => ({ useEditorRequest: () => editorRequest }))
 vi.mock('@/platform/open.js', () => ({ openUrl }))
 
@@ -52,9 +50,8 @@ describe('useDocumentLinks', () => {
       expect(mockApi.open).not.toHaveBeenCalled()
     })
 
-    it('says so when there is no such document, and goes nowhere', () => {
+    it('goes nowhere when there is no such document', () => {
       useDocumentLinks('s').open('../Notes/Nobody%20here.md', 'one')
-      expect(toast.warning).toHaveBeenCalledWith('There is no document at ../Notes/Nobody here.md.')
       expect(mockApi.open).not.toHaveBeenCalled()
       expect(openUrl).not.toHaveBeenCalled()
     })
@@ -63,14 +60,12 @@ describe('useDocumentLinks', () => {
       const viewer = usePictureViewer()
       useDocumentLinks('s').open('.images/cast/gate.png')
       expect(viewer.shown.value).toMatchObject({ key: 'cast/gate.png' })
-      expect(toast.warning).not.toHaveBeenCalled()
       expect(mockApi.open).not.toHaveBeenCalled()
       viewer.close()
     })
 
-    it('says a link to a folder goes to a folder', () => {
+    it('opens nothing for a link to a folder', () => {
       useDocumentLinks('s').open('../Notes', 'one')
-      expect(toast.info).toHaveBeenCalledWith('This link goes to a folder.')
       expect(mockApi.open).not.toHaveBeenCalled()
     })
   })

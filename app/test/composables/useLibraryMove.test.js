@@ -3,14 +3,12 @@ import { useLibraryMove } from '@/composables/useLibraryMove.js'
 
 const open = vi.hoisted(() => ({ moveIntoLibrary: vi.fn() }))
 const saved = vi.hoisted(() => ({ flush: vi.fn(), processSync: vi.fn() }))
-const toast = vi.hoisted(() => ({ error: vi.fn() }))
 
 vi.mock('@/storage/open.js', () => open)
 vi.mock('@/composables/useEditor.js', () => ({ useEditor: () => ({ flush: saved.flush }) }))
 vi.mock('@/stores/syncStore.js', () => ({
   useSyncStore: () => ({ processSync: saved.processSync }),
 }))
-vi.mock('@/composables/useToast.js', () => ({ useToast: () => toast }))
 
 describe('useLibraryMove', () => {
   const reload = vi.fn()
@@ -44,15 +42,15 @@ describe('useLibraryMove', () => {
     expect(state.moving).toBe(true)
   })
 
-  it('says so, and lets the page go, when the projects cannot be moved', async () => {
+  it('lets the page go, to try again at the next start, when the projects cannot be moved', async () => {
     open.moveIntoLibrary.mockRejectedValue(new Error('disk full'))
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const { state, moveIn } = useLibraryMove()
 
     expect(await moveIn()).toBe(false)
 
-    expect(toast.error).toHaveBeenCalledWith(
-      "The projects couldn't be moved into their folder: disk full. inksprite tries again the next time it opens."
-    )
+    expect(warn).toHaveBeenCalled()
+    warn.mockRestore()
     expect(state.moving).toBe(false)
     expect(reload).not.toHaveBeenCalled()
   })

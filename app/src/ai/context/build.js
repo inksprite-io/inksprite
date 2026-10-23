@@ -56,11 +56,13 @@
  */
 
 import { applyCompaction, isCompaction } from '@/ai/compaction.js'
+import { withoutAsides } from '@/ai/asides.js'
 import { renderCommand } from '@/ai/commands.js'
 import { USE_SKILL, carriedLoads, loadedText } from '@/ai/skills/loads.js'
 import { changedSinceRead, keepsDocumentCalls, keepsEveryCall } from './reads.js'
 import { substitute } from '@/cards/macros.js'
 import { commentsBetween, placedAsRead } from '@/ai/tools/commentReads.js'
+import { peopleOf } from '@/cloud/people.js'
 
 /**
  * What to call the two voices when the caller has not said.
@@ -78,10 +80,8 @@ export const DEFAULT_TRANSCRIPT_ROLES = { user: 'user', assistant: 'assistant' }
  *
  * @typedef {Object} BuildOptions
  * @property {string} storyId
- * @property {string} [documentId] - Summarize mode only; the document to summarize
- * @property {string} [chatId] - For chat mode
+ * @property {string} [chatId]
  * @property {string} systemPrompt
- * @property {string} [userPrompt] - Summarize mode only
  * @property {import('@/ai/tools/documents.js').ProjectOverview|null} [project] -
  *   The project's name, overview and size, for the block. Supplied by the
  *   caller, so this module keeps taking everything it reads as an argument
@@ -115,6 +115,10 @@ export const DEFAULT_TRANSCRIPT_ROLES = { user: 'user', assistant: 'assistant' }
  * @property {boolean} [comments] - Whether the pinned documents' open comments
  *   go after their text: for a chat offered the comment tools. Absent means
  *   the text alone.
+ * @property {Array<{suggestion: string, path: string, accepted: boolean, at: number}>} [settled] -
+ *   The chat's suggestions the writer has accepted or rejected, when. The
+ *   block says those settled since the model's last answer began, so it is
+ *   told of each once. See `settledSuggestions`.
  * @property {import('@/cards/macros.js').Names|null} [names] - What `{{char}}`
  *   and `{{user}}` become in the prompt, the author's note and the pinned
  *   documents: the chat's, when it plays a card. Absent means they are sent as
@@ -132,23 +136,11 @@ export const DEFAULT_TRANSCRIPT_ROLES = { user: 'user', assistant: 'assistant' }
  */
 
 /**
- * @param {'chat'|'summarize'} mode
  * @param {Stores} stores
  * @param {BuildOptions} opts
  * @returns {Promise<{ messages: ChatMessage[] }>}
  */
-export async function buildContext(mode, stores, opts) {
-  if (mode === 'chat') return buildChat(stores, opts)
-  if (mode === 'summarize') return buildSummarize(stores, opts)
-  throw new Error(`Unknown context mode: ${mode}`)
-}
-
-/**
- * @param {Stores} stores
- * @param {BuildOptions} opts
- * @returns {Promise<{ messages: ChatMessage[] }>}
- */
-async function buildChat(
+export async function buildContext(
   stores,
   {
     storyId,
@@ -164,6 +156,7 @@ async function buildChat(
     locate,
     names,
     comments,
+    settled = [],
   }
 ) {
   if (!storyId) throw new Error('storyId is required')
@@ -176,13 +169,20 @@ async function buildChat(
   const systemContent = substitute(systemPrompt, names).trim()
   if (systemContent) messages.push({ role: 'system', content: systemContent })
 
-  const read = chatId ? chatMessages(stores, chatId, { before, past }) : []
+  // What was asked on the side is not part of the conversation, except the
+  // question this request may be answering. See ai/asides.js.
+  const read = withoutAsides(chatId ? chatMessages(stores, chatId, { before, past }) : [], {
+    answering: !transcript,
+  })
   const history = applyCompaction(read)
 
   if (transcript) {
     // A reader of the transcript sees no calls, so there is no read for it
     // to have seen go stale.
-    const block = renderProjectState(project, pinnedContent(stores, pinned, names, comments))
+    const block = renderProjectState(
+      project,
+      pinnedContent(stores, pinned, names, comments, chatId)
+    )
     messages.push({
       role: 'user',
       content: [renderTranscript(history, transcript), renderLoads(read, history), block]
@@ -204,7 +204,12 @@ async function buildChat(
   }
 
   const changed = locate ? changedSinceRead(read, locate) : []
-  const block = renderProjectState(project, pinnedContent(stores, pinned, names, comments), changed)
+  const block = renderProjectState(
+    project,
+    pinnedContent(stores, pinned, names, comments, chatId),
+    changed,
+    settledSince(settled, read)
+  )
   const head = [block, renderAuthorsNote(substitute(note, names))].filter(Boolean).join('\n\n')
   attachProjectState(mergeAdjacentTurns(messages), head)
 
@@ -333,9 +338,10 @@ function renderLoads(read, history) {
  * @param {import('@/ai/tools/documents.js').DocumentListing[]} [pinned]
  * @param {import('@/cards/macros.js').Names|null} [names] - Filled in, when the chat has them
  * @param {boolean} [comments] - Whether a text document's open comments go after its text
+ * @param {string} [chatId] - Whose suggestions it sees made
  * @returns {Array<Omit<import('@/ai/tools/documents.js').DocumentListing, 'id'|'comments'> & {content: string, comments?: object[]}>}
  */
-function pinnedContent(stores, pinned, names, comments) {
+function pinnedContent(stores, pinned, names, comments, chatId) {
   return (pinned || []).flatMap(({ id, comments: _count, ...entry }) => {
     const document = stores.documentsStore.getDocument(id)
     if (!document || document.type === 'folder') return []
@@ -343,8 +349,10 @@ function pinnedContent(stores, pinned, names, comments) {
       return [{ ...entry, content: substitute(document.content, names) }]
     // Read as read_document reads it: the text without the markup, and the
     // open comments after it for a chat that can answer them.
-    const read = placedAsRead(document, names)
-    const listed = comments ? commentsBetween(read, names, 0, read.text.length) : []
+    const read = placedAsRead(document, names, chatId)
+    const listed = comments
+      ? commentsBetween(read, names, 0, read.text.length, peopleOf(document.storyId))
+      : []
     return [{ ...entry, content: read.text, ...(listed.length > 0 ? { comments: listed } : {}) }]
   })
 }
@@ -374,16 +382,38 @@ function pinnedContent(stores, pinned, names, comments) {
  *   documents, with their text now
  * @param {Array<{path: string, since: string}>} [changed] - Documents read in
  *   view that have changed since, by the path they were read at
+ * @param {Array<{suggestion: string, path: string, accepted: boolean}>} [settled] -
+ *   The model's suggestions the writer accepted or rejected since it last
+ *   answered
  * @returns {string}
  */
-function renderProjectState(project, pinned = [], changed = []) {
+function renderProjectState(project, pinned = [], changed = [], settled = []) {
   if (!project) return ''
   const body = {
     ...project,
     ...(pinned.length > 0 ? { pinned } : {}),
     ...(changed.length > 0 ? { changed } : {}),
+    ...(settled.length > 0 ? { settled } : {}),
   }
   return `<project>\n\`\`\`json\n${JSON.stringify(body, null, 2)}\n\`\`\`\n</project>`
+}
+
+/**
+ * The suggestions settled since the model's last answer began, which is
+ * after the conversation it read was gathered: a suggestion settled while it
+ * was answering is told of on the next turn, and one told of is not again.
+ *
+ * @param {NonNullable<BuildOptions['settled']>} settled
+ * @param {any[]} read - The conversation, without the answer being written
+ * @returns {Array<{suggestion: string, path: string, accepted: boolean}>}
+ */
+function settledSince(settled, read) {
+  const last = [...read].reverse().find(message => message.role === 'assistant')
+  const since = last?.created ?? 0
+  return settled
+    .filter(each => each.at > since)
+    .sort((a, b) => a.at - b.at)
+    .map(({ suggestion, path, accepted }) => ({ suggestion, path, accepted }))
 }
 
 /**
@@ -539,27 +569,6 @@ function replayedCalls(trajectory, replays) {
   }
 
   return out
-}
-
-/**
- * @param {Stores} stores
- * @param {BuildOptions} opts
- * @returns {{ messages: ChatMessage[] }}
- */
-function buildSummarize(stores, { documentId, systemPrompt, userPrompt }) {
-  const scene = documentId ? stores.documentsStore.getDocument(documentId) : null
-  const sceneText = scene ? scene.content || '' : ''
-  const sceneTitle = scene?.title || ''
-
-  /** @type {ChatMessage[]} */
-  const messages = [
-    { role: 'system', content: (systemPrompt || '').trim() },
-    {
-      role: 'user',
-      content: `${(userPrompt || '').trim()}${sceneTitle ? `\n\n# ${sceneTitle}` : ''}\n\n${sceneText}`,
-    },
-  ]
-  return { messages }
 }
 
 /**

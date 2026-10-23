@@ -68,10 +68,23 @@ const DIALECT_NUMBERS = {
 
 /**
  * Harper's rules that are off. A long sentence is flagged by its length
- * alone, which in fiction is noise. Which others go is for a run over a real
+ * alone, which in fiction is noise. The rest are style a writer chooses, and
+ * a character speaks in: swearing, hedging ("I would argue that"), a list
+ * without the Oxford comma. Which others go is for a run over a real
  * manuscript to settle.
  */
-const RULES_OFF = ['LongSentences']
+const RULES_OFF = ['LongSentences', 'AvoidCurses', 'Hedging', 'OxfordComma']
+
+/**
+ * Whether one of Harper's rules is off: one of `RULES_OFF`, or one that spells
+ * out a shortened word ("tho", "legit", "cuz"), whose rules are all named
+ * `Expand…`. A shortening Harper doesn't know is then a misspelling, which
+ * the writer adds to a dictionary once rather than ignoring each time.
+ *
+ * @param {string} rule
+ * @returns {boolean}
+ */
+const isOff = rule => RULES_OFF.includes(rule) || rule.startsWith('Expand')
 
 /** The kinds a misspelt word comes as; every other kind is grammar. */
 export const SPELLING_KINDS = new Set(['Spelling', 'Typo'])
@@ -167,7 +180,11 @@ export async function configure(linter, { dialect, words }) {
   const rules = await linter.getLintConfig()
   await linter.setLintConfig({
     ...rules,
-    ...Object.fromEntries(RULES_OFF.map(rule => [rule, false])),
+    ...Object.fromEntries(
+      Object.keys(rules)
+        .filter(isOff)
+        .map(rule => [rule, false])
+    ),
   })
   await linter.clearWords()
   const given = harperWords(words)

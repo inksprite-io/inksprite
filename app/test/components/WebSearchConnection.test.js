@@ -6,7 +6,7 @@ import PrimeVue from 'primevue/config'
 import WebSearchConnection from '@/components/writer/settings/WebSearchConnection.vue'
 import { useWebSearchStore } from '@/stores/webSearchStore.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
-import { setWebSearch } from '@/web/config.js'
+import { savesWithoutAsking, setWebSearch } from '@/web/config.js'
 import { CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
 
 vi.mock('@/stores/db', () => ({
@@ -235,6 +235,22 @@ describe('WebSearchConnection', () => {
     await pick(wrapper, 'kagi')
 
     expect(wrapper.find('[data-field="web-key"]').element.value).toBe('kk')
+  })
+
+  it('asks before the model saves a page, until switched off', async () => {
+    const wrapper = await mountSection()
+    await pick(wrapper, 'exa')
+    const ask = wrapper.find('[data-field="web-ask-before-saving"]').findComponent({
+      name: 'ToggleSwitch',
+    })
+
+    expect(ask.props('modelValue')).toBe(true)
+    expect(savesWithoutAsking()).toBe(false)
+
+    await ask.vm.$emit('update:modelValue', false)
+
+    expect(useWebSearchStore().setup.saveWithoutAsking).toBe(true)
+    expect(savesWithoutAsking()).toBe(true)
   })
 
   it('searches in chats on Default to start with, and on another profile once asked', async () => {

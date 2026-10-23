@@ -20,6 +20,7 @@ import { useSyncStore } from './syncStore.js'
 import { setServers } from '@/mcp/servers.js'
 import { disconnect } from '@/mcp/client.js'
 import { storage } from '@/storage/index.js'
+import { onTablesWritten } from '@/platform/windows.js'
 
 /** @typedef {import('../types/models.js').McpServer} McpServer */
 
@@ -57,6 +58,14 @@ export const useMcpServerStore = defineStore('mcpServers', () => {
     }
     publish()
   }
+
+  // Another window wrote them: read again.
+  onTablesWritten(['mcpServers'], async () => {
+    if (!initializePromise.value) return
+    const rows = await storage.all('mcpServers')
+    servers.value = new Map(rows.map(server => [server.id, server]))
+    publish()
+  })
 
   /** @returns {Promise<void>} */
   function ensureInitialized() {

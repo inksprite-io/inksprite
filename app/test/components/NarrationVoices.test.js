@@ -83,7 +83,7 @@ describe('NarrationVoices', () => {
     expect(wrapper.find('[data-voice-unknown]').exists()).toBe(false)
 
     await wrapper.setProps({ serverVoices: ['af_heart', 'af_nicole'] })
-    expect(wrapper.find('[data-voice-unknown]').text()).toBe("Not among this model's voices: Kore")
+    expect(wrapper.find('[data-voice-unknown]').text()).toBe('This model has no voice called Kore.')
 
     await wrapper.setProps({ serverVoices: ['af_heart', 'af_nicole', 'Kore'] })
     expect(wrapper.find('[data-voice-unknown]').exists()).toBe(false)
@@ -94,7 +94,7 @@ describe('NarrationVoices', () => {
     expect(wrapper.find('[data-voice-string]').exists()).toBe(false)
     expect(wrapper.find('[data-voice-mix]').exists()).toBe(false)
     expect(wrapper.find('[data-voice-unknown]').text()).toBe(
-      "Not among this model's voices: af_heart"
+      'This model has no voice called af_heart.'
     )
 
     const pick = wrapper.findAllComponents({ name: 'Select' }).at(-1)
@@ -107,7 +107,7 @@ describe('NarrationVoices', () => {
     const mixed = { ...narrator, voice: 'alloy+nova' }
     const wrapper = mountVoices({ voices: [mixed, riley], serverVoices: ['alloy', 'nova'] })
     expect(wrapper.find('[data-voice-unknown]').text()).toBe(
-      "Not among this model's voices: alloy+nova"
+      'This model has no voice called alloy+nova.'
     )
   })
 

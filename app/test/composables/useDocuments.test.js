@@ -39,6 +39,7 @@ const mockEditor = vi.hoisted(() => ({
   appendContent: vi.fn(),
   close: vi.fn(),
   discard: vi.fn(),
+  flush: vi.fn(),
   convert: vi.fn(),
   focus: vi.fn(),
 }))
@@ -1050,6 +1051,81 @@ describe('useDocuments', () => {
     })
   })
 
+  describe('trash', () => {
+    it('moves a folder to the trash with what is in it, writing out and closing what was open', () => {
+      const act = api.createFolder('manuscript_story_1', 'Act 1')
+      const chapter = api.createTextDocument(act.id, 'Chapter 1')
+      const other = api.createTextDocument('notes_story_1', 'Elara')
+      api.open(chapter.id)
+      api.open(other.id)
+
+      expect(api.trash(act.id)).toBe(2)
+
+      expect(mockEditor.close).toHaveBeenCalledWith(act.id)
+      expect(mockEditor.close).toHaveBeenCalledWith(chapter.id)
+      expect(api.tabs.value.open).toEqual([other.id])
+      expect(api.get(chapter.id)).toBeNull()
+      expect(api.trashed.value.map(d => d.id)).toEqual([act.id])
+    })
+
+    it('brings the next tab forward without the caret, until the writer opens something', () => {
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      const other = api.createTextDocument('notes_story_1', 'Elara')
+      api.open(other.id)
+      api.open(chapter.id)
+      expect(api.takesCaret(other.id)).toBe(true)
+
+      api.trash(chapter.id)
+
+      expect(api.activeDocumentId.value).toBe(other.id)
+      expect(api.takesCaret(other.id)).toBe(false)
+      api.open(other.id)
+      expect(api.takesCaret(other.id)).toBe(true)
+    })
+
+    it('restores a document into the folder it was in', () => {
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      api.trash(chapter.id)
+
+      api.restore(chapter.id)
+
+      expect(api.get(chapter.id)?.parentId).toBe('manuscript_story_1')
+      expect(api.trashed.value).toEqual([])
+    })
+
+    it('restores to the top of the project when the folder it was in is in the trash too', () => {
+      const act = api.createFolder('manuscript_story_1', 'Act 1')
+      const chapter = api.createTextDocument(act.id, 'Chapter 1')
+      api.trash(chapter.id)
+      api.trash(act.id)
+
+      api.restore(chapter.id)
+
+      expect(api.get(chapter.id)?.parentId).toBe('root_story_1')
+      expect(api.trashed.value.map(d => d.id)).toEqual([act.id])
+    })
+
+    it("lets a new document take a trashed one's name, and numbers the trashed one back", () => {
+      const old = api.createTextDocument('notes_story_1', 'Elara')
+      api.trash(old.id)
+      const fresh = api.createTextDocument('notes_story_1', 'Elara')
+
+      api.restore(old.id)
+
+      expect(fresh.title).toBe('Elara')
+      expect(api.get(old.id)?.title).toBe('Elara (2)')
+    })
+
+    it('deletes what is in the trash for good', () => {
+      const act = api.createFolder('manuscript_story_1', 'Act 1')
+      api.createTextDocument(act.id, 'Chapter 1')
+      api.trash(act.id)
+
+      expect(api.deleteTrashed(act.id)).toBe(2)
+      expect(api.trashed.value).toEqual([])
+    })
+  })
+
   describe('canDropInto', () => {
     it('refuses a folder dropped into its own subtree', () => {
       const act = api.createFolder('manuscript_story_1', 'Act 1')
@@ -1100,6 +1176,89 @@ describe('useDocuments', () => {
 
       api.moveInto(nested.id, act.id)
       expect(api.get(act.id).parentId).toBe('manuscript_story_1')
+    })
+  })
+
+  describe('links kept', () => {
+    /** @type {Record<string, any>} */
+    let made
+
+    beforeEach(() => {
+      const plan = api.createFolder('notes_story_1', 'Plan')
+      made = {
+        plan,
+        gate: api.createTextDocument(plan.id, 'The Gate', 'Iron, and old.'),
+        one: api.createTextDocument(
+          'manuscript_story_1',
+          'Chapter One',
+          'See [the gate](../notes/Plan/The%20Gate.md#iron) and [the plan](/notes/Plan).'
+        ),
+        cast: api.createTextDocument(
+          'notes_story_1',
+          'Cast',
+          'Back to [one](../manuscript/Chapter%20One.md).'
+        ),
+      }
+    })
+
+    const text = id => api.get(id).content
+
+    it('writes a link again when what it goes to is renamed, keeping what follows its path', () => {
+      api.rename(made.gate.id, 'The North Gate')
+      expect(text(made.one.id)).toBe(
+        'See [the gate](../notes/Plan/The%20North%20Gate.md#iron) and [the plan](/notes/Plan).'
+      )
+    })
+
+    it('writes the links into a folder again when the folder is renamed, a project path as one', () => {
+      api.rename(made.plan.id, 'Plans')
+      expect(text(made.one.id)).toBe(
+        'See [the gate](../notes/Plans/The%20Gate.md#iron) and [the plan](/notes/Plans).'
+      )
+    })
+
+    it('writes a moved document’s own links again, and the links to it', () => {
+      api.moveInto(made.plan.id, made.cast.id)
+      expect(text(made.cast.id)).toBe('Back to [one](../../manuscript/Chapter%20One.md).')
+
+      api.moveInto('manuscript_story_1', made.gate.id)
+      expect(text(made.one.id)).toBe(
+        'See [the gate](The%20Gate.md#iron) and [the plan](/notes/Plan).'
+      )
+    })
+
+    it('leaves a link that still goes where it went as it was written', () => {
+      const loose = api.createTextDocument('notes_story_1', 'Loose', 'The [gate](<Plan/the gate>).')
+      api.rename(made.one.id, 'Chapter 1')
+      expect(text(loose.id)).toBe(settleMarkdown('The [gate](<Plan/the gate>).'))
+      expect(text(made.cast.id)).toBe('Back to [one](../manuscript/Chapter%201.md).')
+    })
+
+    it('moves and renames as one, and says which documents it wrote again', () => {
+      const { relinked } = api.keepingLinks(() => {
+        api.moveInto('manuscript_story_1', made.gate.id)
+        api.rename(made.gate.id, 'Gate')
+      })
+      expect(relinked).toEqual([made.one.id])
+      expect(text(made.one.id)).toBe('See [the gate](Gate.md#iron) and [the plan](/notes/Plan).')
+    })
+
+    it('leaves the links alone when a folder is only put in another order', () => {
+      api.setOrdered(made.plan.id, true)
+      const other = api.createTextDocument(made.plan.id, 'Another')
+      const before = text(made.one.id)
+      expect(
+        api.keepingLinks(() => api.reorder(made.plan.id, [other.id, made.gate.id])).relinked
+      ).toEqual([])
+      expect(text(made.one.id)).toBe(before)
+    })
+
+    it('leaves a link to a document in the trash alone', () => {
+      api.trash(made.gate.id)
+      api.rename(made.plan.id, 'Plans')
+      expect(text(made.one.id)).toBe(
+        'See [the gate](../notes/Plan/The%20Gate.md#iron) and [the plan](/notes/Plans).'
+      )
     })
   })
 

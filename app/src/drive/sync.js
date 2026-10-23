@@ -10,10 +10,11 @@
  * named, and one that will not come is left out, as the converter leaves
  * out what it holds. The document and the Doc are merged three ways against
  * the base, the Doc as the two last agreed (`drive/merge`). Where both
- * changed the same words, the writer chooses, and the Doc is read again
- * after, since a revision is written against only for minutes. With no
- * base, the writer chooses a side for the whole document, unless it is
- * empty or the two already say the same. What the Doc lacks of the merge
+ * changed the same words, the document's win, as the device that syncs last
+ * wins in sync between devices, and the Doc's text as it was read is handed
+ * back to be kept as a version. With no base, the document is taken whole,
+ * unless it is empty, and the Doc's text is handed back the same way if it
+ * said something else. What the Doc lacks of the merge
  * is written to it at once (`drive/write`), against the revision just read,
  * so that Google merges in whatever a collaborator typed since; a write
  * refused as too late starts again from the read.
@@ -26,26 +27,58 @@
  * nothing the Doc cannot hold, a picture added here among it, is taken
  * back out of the document.
  *
+ * The comments cross once the words have (`drive/comments`): the document's
+ * new comments, replies, resolves and reopens to the Doc, against the Doc as
+ * the words left it, then the Doc's into the document as it is to be, with
+ * nothing awaited between its last read and the result.
+ *
+ * The Doc's suggested edits are the document's suggestions too
+ * (`drive/suggestions`). Those settled here are settled in the Doc first,
+ * and those whose words were changed here are changed there to match; the
+ * words are synced as they stand on both sides, every suggestion rejected;
+ * then the Doc's are laid into the document again from the Doc as the words
+ * left it. The base keeps them, so that one accepted here is made
+ * in it as it is in the Doc. The model's go to the Doc as suggestions after
+ * the words, one at a time, and come back as the Doc's; one the Doc can't
+ * take stays here.
+ *
+ * A document not linked to a Doc goes into a new one: an empty Doc made in
+ * the writer's Drive, then synced, the first sync taking the document whole.
+ * Whether the writer can send all of it is asked of an empty Doc first, so
+ * no Doc is made for a document that could not go into it.
+ *
  * Design: `.llm/google_docs_design.md`, part 3, Sync.
  */
 
 import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
+import { seeing } from '@/editor/suggestions.js'
 import { nameKey } from '@/storage/names.js'
 import { pictureHref, pictureName, pictureOf } from '@/utils/pictures.js'
 import { readDocument, writeDocument } from './api.js'
-import { applyRequests } from './apply.js'
+import { applyBatch, applyRequests } from './apply.js'
+import { answersToSend, commentsIn, commentsToMake, withMade } from './comments.js'
 import { readDoc, tabsOf } from './convert.js'
 import { DriveError, StaleRevisionError } from './errors.js'
 import { DOC_TYPE, fetchDocPictures } from './fetch.js'
 import { mergeDocs, sameDocs, settle } from './merge.js'
-import { writeDoc } from './write.js'
+import {
+  besideRequests,
+  layOwn,
+  laySuggestions,
+  ownSuggestions,
+  rewriteRequests,
+  rewritesOf,
+  settlesToSend,
+  suggestionIds,
+  suggestionThreads,
+  wholeBlock,
+} from './suggestions.js'
+import { withoutIdleStyles, writeDoc } from './write.js'
 
 /**
  * @typedef {import('prosemirror-model').Node} Node
  * @typedef {import('./docsTypes.js').Document} Document
- * @typedef {import('./merge.js').Clash} Clash
  * @typedef {import('@/types/models.js').PictureInfo} PictureInfo
- * @typedef {'mine'|'theirs'} Side
  */
 
 /**
@@ -62,17 +95,11 @@ import { writeDoc } from './write.js'
  * @property {(pictures: NewPicture[]) => Promise<void>} keep - Make the Doc's
  *   pictures new to the document its own, before the document is read at
  *   the end, so that nothing typed is waited past
+ * @property {() => Threads} threads - Its comment threads as they stand: read
+ *   with the document, as it is
  */
 
-/**
- * What the sync asks the writer.
- *
- * @typedef {Object} Questions
- * @property {() => Promise<Side|null>} first - With no base: which side's
- *   text the two are to have. Null cancels the sync
- * @property {(clashes: Clash[]) => Promise<Side[]|null>} clashes - Where both
- *   changed the same words: which side's, for each. Null cancels the sync
- */
+/** @typedef {Record<string, import('@/types/models.js').CommentThread>} Threads */
 
 /**
  * A picture of the Doc's that is new to the document, named for it.
@@ -102,14 +129,33 @@ import { writeDoc } from './write.js'
  * @property {Node} doc - The document as it is to be now, to be put in
  *   place before anything else is typed in it
  * @property {NewBase} base
+ * @property {Threads} threads - The document's comment threads, to go on its
+ *   row with `doc`
+ * @property {{came: number, tooLong: number, sent: number, changed: number}} comments -
+ *   The Doc's posts that came in; the document's comments too long for
+ *   Docs, not sent; what of the comments went to the Doc; and what of them
+ *   the Doc changed here
+ * @property {{came: number, settled: number, changed: number, sent: number}} suggestions -
+ *   The Doc's suggestions new here; those settled here that were settled in
+ *   the Doc; what of them the Doc changed here, replies among it; and the
+ *   model's sent to the Doc as suggestions
  * @property {number} sent - The edits written to the Doc
  * @property {boolean} changed - Whether `doc` differs from the document
  * @property {number} unsent - The document's own pictures the Doc lacks:
  *   added here, as nothing can send one yet
+ * @property {string|null} lost - The Doc's text as it was read, Markdown,
+ *   when words of it gave way to the document's: to keep as a version
  */
 
 /** Why a Doc of several tabs, linked to none of them, is not synced. */
 const SEVERAL_TABS = 'This Doc has several tabs, and Sync can’t choose between them yet.'
+
+/**
+ * Why a document whose words of a Doc's suggestion changed here, in a way
+ * the Doc can't be given, is not synced.
+ */
+const SUGGESTION_CHANGED =
+  'A suggested edit from the Doc was changed here. Accept or reject it, then sync.'
 
 /**
  * What the writer could not send, the most telling first.
@@ -134,8 +180,162 @@ const UNSENT = {
   list: 'Sync can’t send a list item’s new kind or nesting to Google Docs yet.',
   footnote: 'Sync can’t add or remove footnotes in Google Docs yet.',
   suggestion:
-    'The Doc has suggested edits open where this document changed. Accept or reject them in Google Docs, then sync again.',
+    'The Doc has suggested edits open where this document changed. Accept or reject them, then sync again.',
   layout: 'Sync can’t send part of this document to Google Docs yet, such as a heading in a list.',
+}
+
+/**
+ * The Doc's suggestions changed as they were here: the words going in beside
+ * one of a letter put in as the writer's suggestion first, then each
+ * rewritten in place against the Doc as read after.
+ *
+ * @param {string} docId
+ * @param {Document} document - The Doc as read
+ * @param {string|undefined} tabId
+ * @param {import('./suggestions.js').Rewrite[]} rewrites
+ * @param {string} token
+ * @param {AbortSignal|undefined} signal
+ * @returns {Promise<Document>} The Doc as read after
+ */
+async function rewriteSuggestions(docId, document, tabId, rewrites, token, signal) {
+  let read = document
+  const beside = besideRequests(read, tabId, rewrites)
+  if (beside.length > 0) {
+    await writeDocument(docId, beside, read.revisionId ?? null, token, { signal, suggest: true })
+    read = await readDocument(docId, token, { signal })
+  }
+  const requests = rewriteRequests(read, tabId, rewrites)
+  if (requests.length > 0) {
+    await writeDocument(docId, requests, read.revisionId ?? null, token, { signal })
+    read = await readDocument(docId, token, { signal })
+  }
+  return read
+}
+
+/**
+ * The model's suggestions written to the Doc as suggestions, one at a time:
+ * the Doc as it stands with that one made, against the Doc as read last,
+ * sent in Suggesting mode, then read again for the suggestion Docs made of
+ * it. One the Doc can't take (`writeDoc`'s unsent), whose words the Doc
+ * changed meanwhile, or that changes style or puts in or takes out a
+ * paragraph's end, stays here; so does any after a write that failed, which
+ * the next sync tries again. A change of style would be a suggestion of
+ * style in the Doc, which no sync lays in here, so it would be sent again
+ * each time; a newline suggested holds the writer off its paragraphs.
+ *
+ * @param {string} docId
+ * @param {Document} document - The Doc as read last
+ * @param {Object} given
+ * @param {Node} given.shown - The document, its suggestions in it
+ * @param {Node} given.mine - The document as it stands
+ * @param {string[]} given.ids - The model's suggestions, by their ids here
+ * @param {string|undefined} given.tabId
+ * @param {Pictures} given.pictures
+ * @param {string} given.token
+ * @param {AbortSignal|undefined} given.signal
+ * @returns {Promise<{document: Document, links: Record<string, string>}>} The
+ *   Doc as read last, and the Doc's id for each sent, by its id here
+ */
+async function suggestOwn(docId, document, { shown, mine, ids, tabId, pictures, token, signal }) {
+  let read = document
+  /** @type {Record<string, string>} */
+  const links = {}
+  for (const id of ids) {
+    if (wholeBlock(shown, id)) {
+      console.warn('A suggestion of the model’s stays here, a paragraph put in or taken out:', id)
+      continue
+    }
+    const merged = mergeDocs(mine, seeing(shown, [id]).doc, pictures.read(read, tabId).doc)
+    if (merged.clashes.length > 0) continue
+    const target = settle(merged)
+    pictures.holdUnused(target)
+    const written = writeDoc(read, target, { tabId, pictures: pictures.known(target) })
+    if (written.unsent.length > 0 || written.requests.length === 0) {
+      console.warn('A suggestion of the model’s stays here:', id, written.unsent)
+      continue
+    }
+    const requests = withoutIdleStyles(read, written.requests, tabId)
+    if (!changesWords(read, requests, tabId)) {
+      console.warn(
+        'A suggestion of the model’s stays here, a change of style or of paragraphs:',
+        id
+      )
+      continue
+    }
+    const before = new Set(readDoc(read, { tabId }).suggested)
+    try {
+      await writeDocument(docId, requests, written.revisionId, token, { signal, suggest: true })
+      read = await readDocument(docId, token, { signal })
+    } catch (error) {
+      if (signal?.aborted) throw error
+      console.warn('The model’s suggestions stay here from', id, error)
+      break
+    }
+    const made = readDoc(read, { tabId }).suggested.find(each => !before.has(each))
+    if (made) links[id] = made
+  }
+  return { document: read, links }
+}
+
+/**
+ * Whether requests, made as a suggestion, only put words in and take them
+ * out within paragraphs, styling none but those they put in: as the Doc
+ * standing in makes a suggestion, which refuses anything else. A newline
+ * suggested keeps the writer from the paragraphs either side of it until it
+ * is settled, so one isn't sent.
+ *
+ * @param {Document} document
+ * @param {object[]} requests
+ * @param {string|undefined} tabId
+ * @returns {boolean}
+ */
+function changesWords(document, requests, tabId) {
+  if (!requests.some(request => 'insertText' in request || 'deleteContentRange' in request)) {
+    return false
+  }
+  const probe = 'suggest.probe'
+  let made
+  try {
+    made = applyBatch(document, requests, { tabId, suggest: probe }).document
+  } catch {
+    return false
+  }
+  const tab = tabsOf(made).find(each => !tabId || each.tabProperties?.tabId === tabId)
+  /** @param {import('./docsTypes.js').StructuralElement[]} content @returns {boolean} */
+  const newline = content =>
+    content.some(
+      element =>
+        element.paragraph?.elements?.some(
+          part =>
+            part.textRun?.content?.includes('\n') &&
+            [
+              ...(part.textRun.suggestedInsertionIds ?? []),
+              ...(part.textRun.suggestedDeletionIds ?? []),
+            ].includes(probe)
+        ) ||
+        element.table?.tableRows?.some(row =>
+          row.tableCells?.some(cell => newline(cell.content ?? []))
+        )
+    )
+  return !newline(tab?.documentTab?.body?.content ?? [])
+}
+
+/**
+ * Threads with the links to the Doc's suggestions the model's became.
+ *
+ * @param {Threads} threads
+ * @param {Record<string, string>} links - The Doc's ids, by the ids here
+ * @param {string} docId
+ * @returns {Threads}
+ */
+function linkedTo(threads, links, docId) {
+  if (Object.keys(links).length === 0) return threads
+  return Object.fromEntries(
+    Object.entries(threads).map(([id, thread]) => [
+      id,
+      links[id] ? { ...thread, google: { doc: docId, id: links[id], status: 'open' } } : thread,
+    ])
+  )
 }
 
 /**
@@ -143,29 +343,59 @@ const UNSENT = {
  *
  * @param {Linked} linked
  * @param {string} token
- * @param {Object} options
- * @param {Questions} options.ask
- * @param {AbortSignal} [options.signal]
- * @returns {Promise<Synced|null>} Null when the writer cancelled
+ * @param {{signal?: AbortSignal}} [options]
+ * @returns {Promise<Synced>}
  * @throws {DriveError} When Google refuses, or the Doc cannot take the
  *   document's changes; nothing is written then
  */
-export async function syncDoc(linked, token, { ask, signal }) {
+export async function syncDoc(linked, token, { signal } = {}) {
   const { link } = linked
   const base = linked.base?.docId === link.id ? linked.base : null
   const tabId = link.tabId ?? base?.tabId
-  const agreed = base ? parseMarkdown(base.markdown) : null
   const pictures = new Pictures(linked.documentId, linked.pictures, base)
-  /** @type {Map<string, Side>} The writer's choices, by the clash. */
-  const chosen = new Map()
-  /** @type {Side|null} */
-  let whole = null
   let tries = 0
+
+  const laidBefore = base ? parseMarkdown(base.markdown) : null
+  /** @type {Document|null} */
+  let fresh = await readDocument(link.id, token, { signal })
+  // The Doc's suggestions changed here, to be changed there to match; one
+  // that can't be stops the sync before anything is written.
+  const { rewrites, stuck } = laidBefore
+    ? rewritesOf({
+        doc: linked.current(),
+        agreed: laidBefore,
+        threads: linked.threads(),
+        docId: link.id,
+        document: fresh,
+        tabId,
+      })
+    : { rewrites: [], stuck: [] }
+  if (stuck.length > 0) throw new DriveError(SUGGESTION_CHANGED)
+  // The Doc's suggestions settled here, settled there first, so that the
+  // words compare as both now have them.
+  const settles = settlesToSend({
+    open: new Set(readDoc(fresh, { tabId }).suggested),
+    threads: linked.threads(),
+    docId: link.id,
+  })
+  if (settles.requests.length > 0) {
+    await writeDocument(link.id, settles.requests, null, token, { signal })
+    fresh = await readDocument(link.id, token, { signal })
+  }
+  if (rewrites.length > 0) {
+    fresh = await rewriteSuggestions(link.id, fresh, tabId, rewrites, token, signal)
+  }
+  // As the two agree now: the suggestions accepted here made in it, as they
+  // now are in the Doc, and every other rejected.
+  const agreed = laidBefore ? seeing(laidBefore, settles.accepted).doc : null
 
   for (;;) {
     signal?.throwIfAborted()
-    const mine = linked.current()
-    const document = await readDocument(link.id, token, { signal })
+    const shown = linked.current()
+    // The words as they stand: the Doc's suggestions are laid in again after.
+    const mine = seeing(shown, []).doc
+    const document = fresh ?? (await readDocument(link.id, token, { signal }))
+    fresh = null
     // One imported by its export may have been all its tabs at once.
     if (tabId === undefined && tabsOf(document).length > 1) throw new DriveError(SEVERAL_TABS)
     await pictures.fetchNew(link.id, token, document, tabId, signal)
@@ -173,29 +403,16 @@ export async function syncDoc(linked, token, { ask, signal }) {
 
     /** @type {Node} */
     let target
+    /** Whether words of the Doc's gave way to the document's. */
+    let gave
     if (!agreed) {
-      whole ??= isEmpty(mine) ? 'theirs' : sameDocs(mine, theirs.doc) ? 'mine' : null
-      if (!whole) {
-        whole = await ask.first()
-        if (!whole) return null
-        // Read again: the answer may have taken longer than a revision lasts.
-        continue
-      }
-      // The Doc's text, with the document's comments kept where their words are.
-      target = whole === 'mine' ? mine : settle(mergeDocs(mine, mine, theirs.doc))
+      // An empty document takes the Doc's text, and any other is the Doc's now.
+      target = isEmpty(mine) ? settle(mergeDocs(mine, mine, theirs.doc)) : mine
+      gave = !isEmpty(mine) && !isEmpty(theirs.doc) && !sameDocs(mine, theirs.doc)
     } else {
       const merged = mergeDocs(agreed, mine, theirs.doc)
-      const keys = merged.clashes.map(clashKey)
-      if (keys.some(key => !chosen.has(key))) {
-        const choices = await ask.clashes(merged.clashes)
-        if (!choices) return null
-        keys.forEach((key, i) => chosen.set(key, choices[i] ?? 'mine'))
-        continue
-      }
-      target = settle(
-        merged,
-        keys.map(key => /** @type {Side} */ (chosen.get(key)))
-      )
+      target = settle(merged)
+      gave = merged.clashes.length > 0
     }
 
     pictures.holdUnused(target)
@@ -208,6 +425,7 @@ export async function syncDoc(linked, token, { ask, signal }) {
     if (unsent) throw new DriveError(UNSENT[unsent])
     let expected = theirs.doc
     let after = theirs
+    let afterDocument = document
     if (written.requests.length > 0) {
       expected = pictures.read(
         applyRequests(document, written.requests, { tabId: theirs.tabId }),
@@ -219,28 +437,269 @@ export async function syncDoc(linked, token, { ask, signal }) {
         if (error instanceof StaleRevisionError && ++tries < TRIES) continue
         throw error
       }
-      after = pictures.read(await readDocument(link.id, token, { signal }), tabId)
+      afterDocument = await readDocument(link.id, token, { signal })
+      after = pictures.read(afterDocument, tabId)
     }
+
+    // The model's suggestions, each one of the Doc's now, in the writer's
+    // name, as its comments are; their replies go with the comments'.
+    const own = await suggestOwn(link.id, afterDocument, {
+      shown,
+      mine,
+      ids: ownSuggestions(shown, linked.threads(), link.id),
+      tabId,
+      pictures,
+      token,
+      signal,
+    })
+    if (own.document !== afterDocument) {
+      afterDocument = own.document
+      after = pictures.read(afterDocument, tabId)
+    }
+
+    const crossed = await sendComments(
+      link.id,
+      afterDocument,
+      target,
+      linkedTo(carried(linked.threads(), settles.threads), own.links, link.id),
+      token,
+      { tabId, signal }
+    )
 
     await linked.keep(pictures.newIn(target))
     // What was typed while the sync ran, and what Google merged in between
     // the read and the write, each kept.
     const now = linked.current()
-    let doc = now.eq(mine) ? target : settle(mergeDocs(mine, now, target))
+    const standing = seeing(now, []).doc
+    let doc = standing.eq(mine) ? target : settle(mergeDocs(mine, standing, target))
     if (!sameDocs(after.doc, expected)) doc = settle(mergeDocs(expected, doc, after.doc))
+    // The Doc's comments into the document as it is to be, with what was
+    // said or resolved here while the sync ran.
+    const brought = commentsIn({
+      document: crossed.document,
+      read: readDoc(crossed.document, { tabId }),
+      doc,
+      threads: carried(linked.threads(), crossed.threads),
+      docId: link.id,
+      tabId: after.tabId || tabId,
+    })
+    // The Doc's suggestions laid in again, from the Doc as the words left
+    // it, and the base with them by the same ids.
+    const formOf = formsOf(pictures, afterDocument, tabId)
+    const open = readDoc(afterDocument, { tabId }).suggested
+    // As the document is kept, markdown, which drops what the Doc's read
+    // drops too: a paragraph's leading space, say. Two the same then lie
+    // alike in the document and the base.
+    const kept = parseMarkdown(serializeMarkdown(brought.doc))
+    const laid = laySuggestions({
+      formOf,
+      suggested: open,
+      doc: kept,
+      ids: suggestionIds(brought.threads, link.id),
+    })
+    const threaded = suggestionThreads({
+      document: crossed.document,
+      doc: laid.doc,
+      threads: brought.threads,
+      laid: laid.laid,
+      open: new Set(open),
+      docId: link.id,
+    })
+    // In the order they were laid in the document, so that two put in at
+    // one place lie in the base as they lie there.
+    const agreedNow = laySuggestions({
+      formOf,
+      suggested: [...laid.laid.keys()],
+      doc: after.doc,
+      ids: laid.laid,
+    })
+    // The model's the Doc couldn't take, or made here while the sync ran,
+    // laid in again as they were.
+    doc = layOwn({
+      shown: now,
+      formOf,
+      doc: kept,
+      marked: laid.doc,
+      ids: ownSuggestions(now, threaded.threads, link.id),
+    })
     return {
       doc,
+      threads: threaded.threads,
+      comments: {
+        came: brought.came + threaded.posts,
+        tooLong: crossed.tooLong,
+        sent: crossed.sent,
+        changed: brought.changed,
+      },
+      suggestions: {
+        came: threaded.came,
+        settled: settles.requests.length,
+        changed: threaded.changed,
+        sent: Object.keys(own.links).length,
+      },
       base: {
         revisionId: after.revisionId,
         tabId: after.tabId,
-        markdown: after.markdown,
+        markdown: serializeMarkdown(agreedNow.doc),
         pictures: pictures.namesIn(after.doc),
         held: pictures.stillHeld(),
       },
       sent: written.requests.length,
       changed: !doc.eq(now),
       unsent: pictures.onlyIn(doc, after.doc),
+      lost: gave ? theirs.markdown : null,
     }
+  }
+}
+
+/** A new Doc, as the Docs API reads one: its section break and an empty paragraph. */
+const NEW_DOC = /** @type {Document} */ ({
+  revisionId: '',
+  tabs: [
+    {
+      tabProperties: { tabId: 't.0' },
+      documentTab: {
+        body: {
+          content: [
+            { endIndex: 1, sectionBreak: {} },
+            {
+              startIndex: 1,
+              endIndex: 2,
+              paragraph: {
+                elements: [{ startIndex: 1, endIndex: 2, textRun: { content: '\n' } }],
+                paragraphStyle: { namedStyleType: 'NORMAL_TEXT' },
+              },
+            },
+          ],
+        },
+      },
+    },
+  ],
+})
+
+/**
+ * Throw why a document cannot go into a new Doc, if the writer cannot send
+ * all of it yet: before the Doc is made. Its text as it stands is asked
+ * after; its suggestions go after it, and one the Doc can't take stays here.
+ *
+ * @param {Node} doc
+ * @throws {DriveError}
+ */
+export function checkSendable(doc) {
+  const written = writeDoc(NEW_DOC, seeing(doc, []).doc)
+  const unsent = ORDER.find(kind => written.unsent.includes(kind))
+  if (unsent) throw new DriveError(UNSENT[unsent])
+}
+
+/**
+ * The document's comments to the Doc: those it does not have made on their
+ * words, against the Doc as read (again, should it change before they go),
+ * then replies, edits, resolves and reopens, which name no place in it. The
+ * Doc is read once more after, for what comes back.
+ *
+ * @param {string} docId
+ * @param {Document} document - The Doc as the words left it
+ * @param {Node} target - The document as written, its comments on it
+ * @param {Threads} threads
+ * @param {string} token
+ * @param {{tabId?: string, signal?: AbortSignal}} options
+ * @returns {Promise<{document: Document, threads: Threads, tooLong: number, sent: number}>}
+ */
+async function sendComments(docId, document, target, threads, token, { tabId, signal }) {
+  let latest = document
+  let next = threads
+  /** @type {Set<string>} */
+  const long = new Set()
+  let sent = 0
+  for (let tries = 1; ; tries++) {
+    const read = readDoc(latest, { tabId })
+    const made = commentsToMake({
+      document: latest,
+      read,
+      doc: target,
+      threads,
+      docId,
+      tabId: read.tabId,
+    })
+    next = made.threads
+    made.tooLong.forEach(id => long.add(id))
+    if (made.made.length === 0) break
+    try {
+      const requests = made.made.map(each => each.request)
+      const answer = await writeDocument(docId, requests, latest.revisionId ?? '', token, {
+        signal,
+      })
+      next = withMade(next, made.made, answer, docId)
+      sent += requests.length
+      break
+    } catch (error) {
+      if (!(error instanceof StaleRevisionError) || tries >= TRIES) throw error
+      latest = await readDocument(docId, token, { signal })
+    }
+  }
+  const answers = answersToSend({ document: latest, threads: next, docId })
+  next = answers.threads
+  answers.tooLong.forEach(id => long.add(id))
+  if (answers.requests.length > 0) {
+    await writeDocument(docId, answers.requests, null, token, { signal })
+    sent += answers.requests.length
+  }
+  if (sent > 0) latest = await readDocument(docId, token, { signal })
+  return { document: latest, threads: next, tooLong: long.size, sent }
+}
+
+/**
+ * The threads as they stand, with what sending them learned: the Doc's ids
+ * for them and their posts, and how each stood when the two agreed. A
+ * thread taken off here meanwhile stays off; what was said or resolved here
+ * meanwhile stays, to go next time.
+ *
+ * @param {Threads} now
+ * @param {Threads} sent
+ * @returns {Threads}
+ */
+function carried(now, sent) {
+  /** @type {Threads} */
+  const out = {}
+  for (const [id, thread] of Object.entries(now)) {
+    const known = sent[id]
+    if (!known) {
+      out[id] = thread
+      continue
+    }
+    const posts = thread.posts.map(post => {
+      const same = known.posts.find(
+        each => each.created === post.created && each.author === post.author && each.google
+      )
+      if (!same?.google) return post
+      // Edited again here meanwhile: what the two agreed on stays as it was.
+      return { ...post, google: same.google }
+    })
+    out[id] = { ...thread, posts, ...(known.google && { google: known.google }) }
+  }
+  return out
+}
+
+/**
+ * A Doc in the document's form, as it stands or with suggestions read as
+ * made, each read once.
+ *
+ * @param {Pictures} pictures
+ * @param {Document} document
+ * @param {string|undefined} tabId
+ * @returns {import('./suggestions.js').FormOf}
+ */
+function formsOf(pictures, document, tabId) {
+  /** @type {Map<string, Node>} */
+  const read = new Map()
+  return (accepted = new Set()) => {
+    const key = [...accepted].sort().join('\n')
+    let doc = read.get(key)
+    if (!doc) {
+      doc = pictures.formOf(document, tabId, accepted)
+      read.set(key, doc)
+    }
+    return doc
   }
 }
 
@@ -251,15 +710,6 @@ export async function syncDoc(linked, token, { ask, signal }) {
  */
 const isEmpty = doc =>
   doc.childCount === 1 && !!doc.firstChild?.isTextblock && doc.firstChild.content.size === 0
-
-/**
- * A clash, known again when a fresh read gives the same one.
- *
- * @param {Clash} clash
- * @returns {string}
- */
-const clashKey = clash =>
-  JSON.stringify([clash.base, clash.mine, clash.theirs].map(blocks => blocks.map(b => b.toJSON())))
 
 /**
  * A Doc in the document's form.
@@ -359,17 +809,41 @@ class Pictures {
    * @returns {DocForm}
    */
   read(document, tabId) {
-    let read = readDoc(document, { tabId })
-    this.seen = new Set(read.pictures.map(each => each.object))
-    const out = [...this.seen].filter(id => !this.names.has(id) || this.held.has(id))
-    if (out.length > 0) read = readDoc(document, { tabId, leaveOut: new Set(out) })
+    const { read, doc, all } = this.#form(document, tabId)
+    this.seen = all
+    return { doc, markdown: serializeMarkdown(doc), revisionId: read.revisionId, tabId: read.tabId }
+  }
+
+  /**
+   * A Doc read into the document's form with suggestions read as made.
+   *
+   * @param {Document} document
+   * @param {string|undefined} tabId
+   * @param {Set<string>} accepted - The Doc's suggestions read as made, by its ids
+   * @returns {Node}
+   */
+  formOf(document, tabId, accepted) {
+    return this.#form(document, tabId, accepted).doc
+  }
+
+  /**
+   * @param {Document} document
+   * @param {string|undefined} tabId
+   * @param {Set<string>} [accepted]
+   * @returns {{read: import('./convert.js').ReadDoc, doc: Node, all: Set<string>}} With
+   *   every picture of the Doc's read, by id, those left out among them
+   */
+  #form(document, tabId, accepted) {
+    let read = readDoc(document, { tabId, accepted })
+    const all = new Set(read.pictures.map(each => each.object))
+    const out = [...all].filter(id => !this.names.has(id) || this.held.has(id))
+    if (out.length > 0) read = readDoc(document, { tabId, leaveOut: new Set(out), accepted })
     let text = read.markdown
     for (const each of read.pictures) {
       const href = pictureHref(this.documentId, /** @type {string} */ (this.names.get(each.object)))
       text = text.split(`](${each.marker})`).join(`](${href})`)
     }
-    const doc = parseMarkdown(text)
-    return { doc, markdown: serializeMarkdown(doc), revisionId: read.revisionId, tabId: read.tabId }
+    return { read, doc: parseMarkdown(text), all }
   }
 
   /**

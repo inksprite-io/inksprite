@@ -21,14 +21,12 @@ import {
   hrefFor,
   isDocumentHref,
   projectHref,
-  readableHref,
   resolveLink,
 } from '@/utils/documentLinks.js'
 import { pictureOf } from '@/utils/pictures.js'
 import { useDocuments } from './useDocuments.js'
 import { usePictures } from './usePictures.js'
 import { useEditorRequest } from './useEditorRequest.js'
-import { useToast } from './useToast.js'
 
 /** @typedef {import('@/types/models.js').Document} Document */
 
@@ -45,7 +43,6 @@ import { useToast } from './useToast.js'
  */
 export function useDocumentLinks(storyId) {
   const api = useDocuments(storyId)
-  const toast = useToast()
   const editorRequest = useEditorRequest()
 
   /** @type {import('@/utils/documentLinks.js').LinkTree} */
@@ -65,7 +62,7 @@ export function useDocumentLinks(storyId) {
   /**
    * Follow a link: a document opens in a tab, and the editor with it, and a
    * document's own picture at its own size; a web or mail address opens
-   * outside the app.
+   * outside the app. A link to a folder, or to nothing, does nothing.
    * @param {string} href
    * @param {string|null} [fromId] - The document the link is in
    */
@@ -79,14 +76,7 @@ export function useDocumentLinks(storyId) {
       return
     }
     const document = target(href, fromId)
-    if (!document) {
-      toast.warning(`There is no document at ${readableHref(href)}.`)
-      return
-    }
-    if (document.type === 'folder') {
-      toast.info('This link goes to a folder.')
-      return
-    }
+    if (!document || document.type === 'folder') return
     api.open(document.id, { preview: true })
     editorRequest.show()
   }

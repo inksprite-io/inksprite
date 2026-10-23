@@ -1,0 +1,25 @@
+{
+  "fixture": "findable",
+  "applyEdits": "ask",
+  "rewind": true,
+  "messages": [
+    {
+      "text": "The embedding vendor comparison in the archive is no use to anyone now. Delete it.",
+      "accept": true,
+      "calls": ["delete_document"],
+      "gone": ["Archive/Embedding vendor comparison"],
+      "trashed": ["Archive/Embedding vendor comparison"],
+      "kept": ["Archive/Retrieval design v0", "Archive/Reranker spike"],
+      "mentions": ["propos|accept|approv|confirm"]
+    },
+    {
+      "text": "Delete the Standups folder too. The meeting notes have what matters.",
+      "accept": true,
+      "calls": ["delete_document"],
+      "gone": ["Notes/Standups/2026-08-14", "Notes/Standups/2026-09-25"],
+      "trashed": ["Notes/Standups"],
+      "kept": ["Notes/Meeting 2026-09-09", "Notes/Decisions log"],
+      "mentions": ["propos|accept|approv|confirm"]
+    }
+  ]
+}

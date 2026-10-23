@@ -127,8 +127,11 @@
                   :story-id="props.storyId"
                   :role="turn.role"
                   :command="turn.command || ''"
+                  :aside="turn.aside"
                   :is-last="index === turns.length - 1 && !isGenerating"
                   :activity="chatGeneration.activity.value"
+                  :busy="isGenerating"
+                  :writing="isGenerating && index === turns.length - 1"
                   :compacted="turn.compacted"
                   :summarizable="!isGenerating && summarizable.has(turn.id)"
                   :voice-id="chat?.voiceId ?? null"
@@ -355,6 +358,7 @@ import {
 import { compactedRuns, groupTurns } from '@/utils/turns.js'
 import { hasTouchKeyboard, submitOnEnter } from '@/utils/touch.js'
 import { shownChatTitle } from '@/utils/chatTitle.js'
+import { failureNotice } from '@/utils/errors.js'
 
 const props = defineProps({
   storyId: { type: String, required: true },
@@ -685,7 +689,7 @@ const handleSendMessage = async () => {
       toast.error(error.message)
       return
     }
-    reportFailure(error, 'Failed to send message')
+    reportFailure(error, "The message couldn't be sent.")
   }
 }
 
@@ -694,10 +698,9 @@ const handleSendMessage = async () => {
  * reply that failed once its answer was made has the reason written there.
  *
  * @param {Error} error
- * @param {string} fallback - What to say when the error says nothing
+ * @param {string} said - What didn't happen
  */
-const reportFailure = (error, fallback) => {
-  if (error.name === 'AnswerFailedError') return
+const reportFailure = (error, said) => {
   if (error.name === 'ProviderNotConfiguredError') {
     if (isProviderSetupDialogEnabled()) {
       providerSetupDialogVisible.value = true
@@ -706,7 +709,20 @@ const reportFailure = (error, fallback) => {
     }
     return
   }
-  toast.error(error.message || fallback)
+  report(error, said, { why: true })
+}
+
+/**
+ * Say what didn't happen, and why when the error's words are the writer's to
+ * read. Nothing for an action that couldn't apply. See failureNotice.
+ *
+ * @param {Error} error
+ * @param {string} said - What didn't happen
+ * @param {{why?: boolean}} [options]
+ */
+const report = (error, said, options) => {
+  const notice = failureNotice(error, said, options)
+  if (notice) toast.error(notice)
 }
 
 /**
@@ -735,8 +751,10 @@ const handleInsertMessage = async role => {
     // the text goes back in the box rather than being retyped.
     if (error.name === 'CommandError') {
       userInput.value = messageContent
+      toast.error(error.message)
+      return
     }
-    toast.error(error.message || 'Failed to add message')
+    report(error, "The message couldn't be added.", { why: true })
   }
 }
 
@@ -755,14 +773,10 @@ const startIfUnstarted = () => {
  */
 const handleStopGenerating = async () => {
   try {
-    const { skipped } = await chatGeneration.stopGeneration()
-    if (skipped.length > 0) {
-      const kept = [...new Set(skipped.map(edit => edit.path))].join(', ')
-      toast.info(`Kept your edits in ${kept}`)
-    }
+    await chatGeneration.stopGeneration()
   } catch (error) {
     console.error('Failed to stop:', error)
-    toast.error(error.message || 'Failed to stop')
+    report(error, "The answer couldn't be stopped.")
   }
 }
 
@@ -807,7 +821,8 @@ const handleRegenerateMessage = async (messageId, index = null) => {
     try {
       await chatGeneration.rerunCommand(messageId, index)
     } catch (error) {
-      toast.error(error.message)
+      console.error('Failed to ask again:', error)
+      report(error, "The command couldn't be asked again.", { why: true })
     }
     return
   }
@@ -820,7 +835,7 @@ const handleRegenerateMessage = async (messageId, index = null) => {
         await chatGeneration.regenerateMessage(messageId)
       } catch (error) {
         console.error('Failed to regenerate message:', error)
-        reportFailure(error, 'Failed to regenerate message')
+        reportFailure(error, "The reply couldn't be asked again.")
       }
     }
   )
@@ -863,22 +878,17 @@ const askAgainFirst = (messageId, asking, ask) => {
 
 /**
  * Turn the last message to another of its answers. What the two answers did
- * to the project follows, and what could not be put back is said, the way a
- * rewind says it.
+ * to the project follows, where the writer has not been since.
  *
  * @param {string} messageId
  * @param {number} index - Which answer
  */
 const handleSelectAlternate = async (messageId, index) => {
   try {
-    const { skipped } = await chatGeneration.selectAlternate(messageId, index)
-    if (skipped.length > 0) {
-      const kept = [...new Set(skipped.map(edit => edit.path))].join(', ')
-      toast.info(`Kept your edits in ${kept}`)
-    }
+    await chatGeneration.selectAlternate(messageId, index)
   } catch (error) {
     console.error('Failed to show another answer:', error)
-    toast.error(error.message || 'Failed to show another answer')
+    report(error, "The other answer couldn't be shown.")
   }
 }
 
@@ -902,10 +912,15 @@ const handleRevise = async (messageId, at, text, done) => {
     done()
   } catch (error) {
     console.error('Failed to edit:', error)
-    toast.error(error.message || 'Failed to edit')
     // A summary asked for again that fell short was still written: the edit
     // went in, and only the news is left to give.
-    done(error.name === 'SummaryCutShortError' ? undefined : error)
+    if (error.name === 'SummaryCutShortError') {
+      toast.error(error.message)
+      done()
+      return
+    }
+    report(error, "The edit couldn't be made.", { why: true })
+    done(error)
   }
 }
 
@@ -913,8 +928,8 @@ const handleRevise = async (messageId, at, text, done) => {
  * Rewind the conversation to a message, after saying what that undoes.
  *
  * The turns after it go, and what their tools did to the project is undone
- * where the writer has not been since — a passage they have edited stands,
- * and they are told which.
+ * where the writer has not been since. A passage they have edited stands, as
+ * the dialog said it would.
  *
  * @param {string} messageId
  */
@@ -936,14 +951,10 @@ const handleRewind = messageId => {
     acceptProps: { label: 'Rewind', severity: 'danger' },
     accept: () => {
       try {
-        const { skipped } = chatGeneration.rewindTo(messageId)
-        if (skipped.length > 0) {
-          const kept = [...new Set(skipped.map(edit => edit.path))].join(', ')
-          toast.info(`Kept your edits in ${kept}`)
-        }
+        chatGeneration.rewindTo(messageId)
       } catch (error) {
         console.error('Failed to rewind:', error)
-        toast.error(error.message || 'Failed to rewind')
+        report(error, "The conversation couldn't be rewound.")
       }
     },
   })
@@ -962,7 +973,7 @@ const handleAcceptEdit = async (messageId, index) => {
     await chatGeneration.acceptEdit(messageId, index)
   } catch (error) {
     console.error('Failed to accept edit:', error)
-    toast.error(error.message || 'Failed to accept edit')
+    report(error, "The change couldn't be made.", { why: true })
   }
 }
 
@@ -975,7 +986,7 @@ const handleRejectEdit = (messageId, index) => {
     chatGeneration.rejectEdit(messageId, index)
   } catch (error) {
     console.error('Failed to reject edit:', error)
-    toast.error(error.message || 'Failed to reject edit')
+    report(error, "The change couldn't be rejected.")
   }
 }
 
@@ -993,7 +1004,7 @@ const handleResendMessage = messageId => {
         await chatGeneration.resendMessage(messageId)
       } catch (error) {
         console.error('Failed to resend message:', error)
-        reportFailure(error, 'Failed to resend message')
+        reportFailure(error, "The message couldn't be sent again.")
       }
     }
   )
@@ -1010,7 +1021,7 @@ const handleDeleteMessage = (messageId, index = null) => {
     chatGeneration.removeCommand(messageId, index)
   } catch (error) {
     console.error('Failed to delete message:', error)
-    toast.error('Failed to delete message')
+    report(error, "The message couldn't be deleted.")
   }
 }
 
@@ -1033,7 +1044,9 @@ const handleSummarize = async messageId => {
     await seeIn(() => chatGeneration.sendMessage(`/${COMPACT_COMMAND}(${keep})`))
   } catch (error) {
     console.error('Failed to summarize:', error)
-    toast.error(error.message || 'Failed to summarize')
+    // Cut short is still a summary, written as far as it got: the news alone.
+    if (error.name === 'SummaryCutShortError') toast.error(error.message)
+    else report(error, "The conversation couldn't be summarized.", { why: true })
   }
 }
 
@@ -1048,7 +1061,7 @@ const handleForkMessage = messageId => {
     emit('open-chat', { chatId: forkedChat.id, title: forkedChat.title })
   } catch (error) {
     console.error('Failed to fork conversation:', error)
-    toast.error('Failed to fork conversation')
+    report(error, "The conversation couldn't be forked.")
   }
 }
 

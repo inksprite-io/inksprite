@@ -382,6 +382,47 @@ describe('readDoc', () => {
     expect(heldIn(result).filter(held => held === 'suggestion')).toHaveLength(2)
   })
 
+  it('comes in with the suggested edits named made, and lists those that change words', () => {
+    const document = docOf([
+      para([
+        run('The ferry left at '),
+        run('seven', {}, { suggestedInsertionIds: ['suggest.a'] }),
+        run('six', {}, { suggestedDeletionIds: ['suggest.a'] }),
+        run('.', {}, { suggestedTextStyleChanges: { 'suggest.c': {} } }),
+      ]),
+      para([run('One half'), run('', {}, { suggestedInsertionIds: ['suggest.b'] })]),
+      para(' and the other.'),
+      // Its newline suggested out: joined to the next once that is taken.
+      para([run('Two'), run('', {}, { suggestedDeletionIds: ['suggest.d'] })]),
+      para(' together.'),
+    ])
+    const plain = read(document)
+    expect(plain.markdown).toBe(
+      'The ferry left at six.\n\nOne half and the other.\n\nTwo\n\ntogether.'
+    )
+    expect(plain.suggested).toEqual(['suggest.a', 'suggest.b', 'suggest.d'])
+    expect(plain.suggestions).toBe(4)
+
+    const accepted = (/** @type {string[]} */ ...ids) =>
+      readDoc(document, { accepted: new Set(ids) }).markdown
+    expect(accepted('suggest.a')).toBe(
+      'The ferry left at seven.\n\nOne half and the other.\n\nTwo\n\ntogether.'
+    )
+    expect(accepted('suggest.b')).toBe(
+      'The ferry left at six.\n\nOne half\n\nand the other.\n\nTwo\n\ntogether.'
+    )
+    expect(accepted('suggest.d')).toBe(
+      'The ferry left at six.\n\nOne half and the other.\n\nTwo together.'
+    )
+    // A style changed alone reads the same either way.
+    expect(accepted('suggest.c')).toBe(plain.markdown)
+    // Every index still in one span, whatever is read as made.
+    for (const ids of [['suggest.a'], ['suggest.b', 'suggest.d']]) {
+      const result = readDoc(document, { accepted: new Set(ids) })
+      expect(result.spans).not.toBeNull()
+    }
+  })
+
   it('holds pictures and counts them, in the text and beside it', () => {
     const result = read(
       docOf([

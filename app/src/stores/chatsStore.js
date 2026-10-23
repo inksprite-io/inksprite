@@ -34,9 +34,20 @@ export function generateChatId() {
 
 export const useChatsStore = defineStore('chats', () => {
   /**
+   * Chats by id, those in the trash aside: what the chat list, the panel and
+   * everything else read.
    * @type {import('vue').Ref<Map<string, Chat>>}
    */
   const chats = ref(new Map())
+
+  /**
+   * Chats in the trash by id, kept out of `chats`; see `utils/trash.js`.
+   * @type {import('vue').Ref<Map<string, Chat>>}
+   */
+  const trash = ref(new Map())
+
+  /** The stories whose chats have been read. @type {Set<string>} */
+  const loadedStories = new Set()
 
   // Get sync store instance
   const syncStore = useSyncStore()
@@ -111,21 +122,75 @@ export const useChatsStore = defineStore('chats', () => {
   }
 
   /**
-   * Delete a chat
+   * Move a chat to the trash. Its messages stay as they are, and come back
+   * with it.
+   *
+   * @param {string} chatId
+   * @param {number} [at] - When, if not now
+   * @returns {Chat}
+   * @throws {Error} If the chat is not found
+   */
+  function trashChat(chatId, at = Date.now()) {
+    const chat = chats.value.get(chatId)
+    if (!chat) {
+      throw new Error(`Failed to trash chat, '${chatId}' not found`)
+    }
+    /** @type {Chat} */
+    const next = { ...chat, trashed: at }
+    chats.value.delete(chatId)
+    trash.value.set(chatId, next)
+    syncStore.trackChange('chats', chatId, next)
+    return next
+  }
+
+  /**
+   * Bring a chat back from the trash.
+   *
+   * @param {string} chatId
+   * @returns {Chat}
+   * @throws {Error} If the chat is not in the trash
+   */
+  function restoreChat(chatId) {
+    const chat = trash.value.get(chatId)
+    if (!chat) {
+      throw new Error(`Failed to restore chat, '${chatId}' is not in the trash`)
+    }
+    /** @type {Chat} */
+    const next = { ...chat }
+    delete next.trashed
+    trash.value.delete(chatId)
+    chats.value.set(chatId, next)
+    syncStore.trackChange('chats', chatId, next)
+    return next
+  }
+
+  /**
+   * Delete a chat, in the list or in the trash
    * @param {string} chatId - Chat ID to delete
    * @returns {boolean} True if deleted
    * @throws {Error} If chat not found
    */
   function deleteChat(chatId) {
-    const chat = chats.value.get(chatId)
-    if (!chat) {
+    if (!chats.value.has(chatId) && !trash.value.has(chatId)) {
       throw new Error(`Failed to delete chat, '${chatId}' not found`)
     }
 
     syncStore.trackDelete('chats', chatId)
     chats.value.delete(chatId)
+    trash.value.delete(chatId)
 
     return true
+  }
+
+  /**
+   * What a project's trash holds of its chats, the most recent first.
+   * @param {string} storyId
+   * @returns {Chat[]}
+   */
+  function trashedOf(storyId) {
+    return Array.from(trash.value.values())
+      .filter(chat => chat.storyId === storyId)
+      .sort((a, b) => (b.trashed ?? 0) - (a.trashed ?? 0))
   }
 
   /**
@@ -147,13 +212,40 @@ export const useChatsStore = defineStore('chats', () => {
       const storyChats = await storage.chats(storyId)
 
       storyChats.forEach(chat => {
-        chats.value.set(chat.id, chat)
+        ;(chat.trashed ? chats : trash).value.delete(chat.id)
+        ;(chat.trashed ? trash : chats).value.set(chat.id, chat)
       })
+      loadedStories.add(storyId)
 
       console.log(`Loaded ${storyChats.length} chats for story ${storyId}`)
     } catch (error) {
       console.error(`Failed to load chats for story ${storyId}:`, error)
       throw new Error(`Failed to load chats for story: ${error.message}`)
+    }
+  }
+
+  /**
+   * Whether a story's chats have been read.
+   * @param {string} storyId
+   */
+  const isStoryLoaded = storyId => loadedStories.has(storyId)
+
+  /**
+   * Take a chat as another device left it, synced (`cloud/`): kept as it
+   * came, and saved; null removes it.
+   *
+   * @param {string} id
+   * @param {Chat|null} row
+   */
+  function receive(id, row) {
+    if (row) {
+      ;(row.trashed ? chats : trash).value.delete(id)
+      ;(row.trashed ? trash : chats).value.set(id, row)
+      syncStore.trackChange('chats', id, row)
+    } else if (chats.value.has(id) || trash.value.has(id)) {
+      chats.value.delete(id)
+      trash.value.delete(id)
+      syncStore.trackDelete('chats', id)
     }
   }
 
@@ -187,13 +279,19 @@ export const useChatsStore = defineStore('chats', () => {
   return {
     // State
     chats,
+    trash,
 
     // Actions
     createChat,
     updateChat,
+    trashChat,
+    restoreChat,
     deleteChat,
+    trashedOf,
     getChatsForStory,
     loadChatsForStory,
+    isStoryLoaded,
+    receive,
     updateLastMessageTime,
 
     // Getters

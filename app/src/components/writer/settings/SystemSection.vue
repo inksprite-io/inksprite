@@ -158,6 +158,20 @@
             @update:model-value="applicationState.setChatProfileId"
           />
         </div>
+        <div class="flex items-center justify-between gap-2">
+          <label
+            for="ask-before-exploring"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Ask before exploring large folders</label
+          >
+          <ToggleSwitch
+            :model-value="applicationState.askBeforeExploring.value"
+            input-id="ask-before-exploring"
+            class="flex-none"
+            data-ask-before-exploring
+            @update:model-value="applicationState.setAskBeforeExploring"
+          />
+        </div>
       </div>
     </ExpandableSection>
 
@@ -170,6 +184,16 @@
     >
       <DataSection />
     </ExpandableSection>
+
+    <ExpandableSection
+      title="Sync"
+      storage-key="ui.settings.sync"
+      subsection
+      container-class="pt-2"
+      content-wrapper-class="flex flex-col"
+    >
+      <SyncSection />
+    </ExpandableSection>
   </div>
 </template>
 
@@ -178,6 +202,7 @@ import { computed, ref } from 'vue'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import DataSection from './DataSection.vue'
+import SyncSection from './SyncSection.vue'
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
 import Button from 'primevue/button'
 import DictionaryDialog from './DictionaryDialog.vue'

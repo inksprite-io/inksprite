@@ -299,4 +299,64 @@ describe('ChatsStore', () => {
       expect(store.chats.get('chat_test-id-123').title).toBe('Title 2')
     })
   })
+
+  describe('trash', () => {
+    let store
+    beforeEach(() => {
+      setActivePinia(createPinia())
+      store = useChatsStore()
+      vi.clearAllMocks()
+    })
+
+    it('takes a chat out of the list into the trash, and back', () => {
+      const chat = store.createChat('story_1', 'Plot', 'chat_1')
+
+      const trashed = store.trashChat('chat_1', 1000)
+
+      expect(trashed.trashed).toBe(1000)
+      expect(store.getChatsForStory('story_1')).toEqual([])
+      expect(store.getChatById('chat_1')).toBeUndefined()
+      expect(store.trashedOf('story_1').map(c => c.id)).toEqual(['chat_1'])
+      expect(trackChange).toHaveBeenLastCalledWith('chats', 'chat_1', trashed)
+
+      const back = store.restoreChat('chat_1')
+
+      expect('trashed' in back).toBe(false)
+      expect(back.title).toBe(chat.title)
+      expect(store.getChatById('chat_1')).toEqual(back)
+      expect(store.trashedOf('story_1')).toEqual([])
+    })
+
+    it('deletes a chat in the trash for good', () => {
+      store.createChat('story_1', 'Plot', 'chat_1')
+      store.trashChat('chat_1')
+
+      store.deleteChat('chat_1')
+
+      expect(store.trashedOf('story_1')).toEqual([])
+      expect(trackDelete).toHaveBeenCalledWith('chats', 'chat_1')
+    })
+
+    it('reads a trashed chat into the trash, and one trashed elsewhere too', async () => {
+      const { default: db } = await import('../../src/stores/db')
+      db.chats.where.mockReturnValue({
+        equals: vi.fn().mockReturnValue({
+          toArray: vi.fn().mockResolvedValue([
+            { id: 'chat_1', storyId: 'story_1', title: 'Kept' },
+            { id: 'chat_2', storyId: 'story_1', title: 'Gone', trashed: 1000 },
+          ]),
+        }),
+      })
+
+      await store.loadChatsForStory('story_1')
+
+      expect(store.getChatsForStory('story_1').map(c => c.id)).toEqual(['chat_1'])
+      expect(store.trashedOf('story_1').map(c => c.id)).toEqual(['chat_2'])
+
+      store.receive('chat_1', { id: 'chat_1', storyId: 'story_1', title: 'Kept', trashed: 2000 })
+
+      expect(store.getChatsForStory('story_1')).toEqual([])
+      expect(store.trashedOf('story_1').map(c => c.id)).toEqual(['chat_1', 'chat_2'])
+    })
+  })
 })

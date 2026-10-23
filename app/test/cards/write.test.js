@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { reimportCard, writeCard, writeLorebook, SIDECAR_TITLE } from '@/cards/write.js'
 import { readCard, readLorebook } from '@/cards/card.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
+import { useVersionsStore } from '@/stores/versionsStore'
 import { clearDocumentInstances } from '@/composables/useDocuments'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
@@ -325,7 +326,7 @@ describe('cards/write', () => {
   })
 
   describe('reimportCard', () => {
-    it('writes the card again into the same folder, over the edits since', async () => {
+    it('puts the card back in the documents it was written as, keeping their ids', async () => {
       const written = await writeCard(STORY, card())
       const before = childrenOf(written.folderId).map(document => document.id)
       store.updateDocument(byTitle(written.folderId, 'Description').id, { content: 'edited' })
@@ -336,26 +337,113 @@ describe('cards/write', () => {
       expect(store.getDocument(written.folderId)).toMatchObject({ title: 'Elara', kind: 'card' })
       expect(byTitle(written.folderId, 'Description').content).toContain('{{user}} met her')
       expect(byTitle(written.folderId, 'Greeting').content).toBe('Well, {{user}}?')
-      const now = childrenOf(written.folderId).map(document => document.id)
-      for (const id of before) expect(now).not.toContain(id)
-      expect(again.documents).toBe(written.documents - 1)
-      expect(again.greetingIds).toHaveLength(1)
+      expect(childrenOf(written.folderId).map(document => document.id)).toEqual(before)
+      // So a chat that pins the card's documents still pins them.
+      expect(again.pinnedIds).toEqual(written.pinnedIds)
+      expect(again.greetingIds).toEqual(written.greetingIds)
     })
 
-    it('keeps the portrait the card arrived in', async () => {
-      const png = new Blob(['png'], { type: 'image/png' })
-      const written = await writeCard(STORY, card(), { portrait: png })
-      const portrait = byTitle(written.folderId, 'Portrait')
-      db.files.get.mockImplementation(async id =>
-        id === portrait.id ? { id, storyId: STORY, blob: png } : undefined
-      )
+    it('keeps the text it takes back as a version first', async () => {
+      const written = await writeCard(STORY, card())
+      const description = byTitle(written.folderId, 'Description')
+      store.updateDocument(description.id, { content: 'edited' })
+      const around = vi.spyOn(useVersionsStore(), 'around')
 
       await reimportCard(STORY, written.folderId, card())
 
-      const kept = byTitle(written.folderId, 'Portrait')
-      expect(kept).toBeDefined()
-      expect(kept.id).not.toBe(portrait.id)
-      expect(db.files.put).toHaveBeenLastCalledWith({ id: kept.id, storyId: STORY, blob: png })
+      expect(around).toHaveBeenCalledTimes(1)
+      expect(around).toHaveBeenCalledWith(
+        expect.objectContaining({ id: description.id, content: 'edited' }),
+        'import',
+        expect.any(Function)
+      )
+    })
+
+    it('puts back a title and a hidden switch the writer changed', async () => {
+      const written = await writeCard(STORY, card({ post_history_instructions: 'Stay terse.' }))
+      const rules = byTitle(written.folderId, 'Post-history instructions')
+      store.updateDocument(rules.id, { title: 'My rules', hidden: false })
+
+      await reimportCard(
+        STORY,
+        written.folderId,
+        card({ post_history_instructions: 'Stay terse.' })
+      )
+
+      expect(store.getDocument(rules.id)).toMatchObject({
+        title: 'Post-history instructions',
+        hidden: true,
+      })
+    })
+
+    it('matches the greetings in order, and the lore by name, then in order', async () => {
+      const lore = {
+        character_book: {
+          entries: [
+            { comment: 'Crowns', content: 'The coin.' },
+            { comment: 'Roads', content: 'They wind.' },
+          ],
+        },
+      }
+      const written = await writeCard(
+        STORY,
+        card({ alternate_greetings: ['Second.', 'Third.'], ...lore })
+      )
+      const book = byTitle(written.folderId, 'Lore')
+      const roads = byTitle(book.id, 'Roads')
+      store.updateDocument(roads.id, { title: 'Highways', content: 'Mine.' })
+      const crowns = byTitle(book.id, 'Crowns')
+
+      await reimportCard(
+        STORY,
+        written.folderId,
+        card({ alternate_greetings: ['Second.'], ...lore })
+      )
+
+      expect(store.getDocument(roads.id)).toMatchObject({ title: 'Roads', content: 'They wind.' })
+      expect(byTitle(book.id, 'Crowns').id).toBe(crowns.id)
+      const greetings = childrenOf(written.folderId).filter(doc => doc.kind === 'greeting')
+      expect(greetings.map(doc => doc.id)).toEqual(written.greetingIds.slice(0, 2))
+      expect(store.getDocument(written.greetingIds[2])).toBeNull()
+    })
+
+    it("lets go of a field the card no longer has, makes one it has now, and leaves the writer's own", async () => {
+      const written = await writeCard(STORY, card({ personality: 'Blunt.' }))
+      const personality = byTitle(written.folderId, 'Personality')
+      const mine = store.createDocument({
+        storyId: STORY,
+        parentId: written.folderId,
+        type: 'text',
+        title: 'My notes',
+        content: 'Hers to keep.',
+      })
+
+      await reimportCard(STORY, written.folderId, card({ scenario: 'The road.' }))
+
+      expect(store.getDocument(personality.id)).toBeNull()
+      expect(byTitle(written.folderId, 'Scenario')?.content).toBe('The road.')
+      expect(store.getDocument(mine.id)?.content).toBe('Hers to keep.')
+    })
+
+    it('puts a field it lets go of in the trash', async () => {
+      const written = await writeCard(STORY, card({ personality: 'Blunt.' }))
+      const personality = byTitle(written.folderId, 'Personality')
+
+      await reimportCard(STORY, written.folderId, card())
+
+      expect(store.getTrashedDocument(personality.id)?.trashed).toBeTypeOf('number')
+    })
+
+    it('keeps the portrait the card arrived in, as it is', async () => {
+      const png = new Blob(['png'], { type: 'image/png' })
+      const written = await writeCard(STORY, card(), { portrait: png })
+      const portrait = byTitle(written.folderId, 'Portrait')
+      vi.mocked(db.files.put).mockClear()
+
+      await reimportCard(STORY, written.folderId, card(), { portrait: png })
+
+      expect(byTitle(written.folderId, 'Portrait').id).toBe(portrait.id)
+      expect(db.files.put).not.toHaveBeenCalled()
     })
 
     it('refuses a folder that is not a card', async () => {

@@ -102,14 +102,12 @@ describe('writeFile', () => {
     expect('pages' in store.getDocument(written.folderId)).toBe(false)
   })
 
-  it('tells the writer how much text came out, and when none did', async () => {
-    expect((await writeFile(STORY, inspected())).note).toBe(' (3 pages)')
-    expect((await writeFile(STORY, inspected({ pages: 1 }))).note).toBe(' (1 page)')
-    expect((await writeFile(STORY, inspected({ text: '' }))).note).toBe(
-      ', a PDF with no extractable text'
-    )
-    expect((await writeFile(STORY, inspected({ mime: 'image/png', text: '' }))).note).toBe('')
-    expect((await writeFile(STORY, inspected({ mime: 'text/csv', text: 'a,b' }))).note).toBe('')
+  it('says when a PDF came in with no text', async () => {
+    expect((await writeFile(STORY, inspected())).scan).toBeUndefined()
+    expect((await writeFile(STORY, inspected({ text: '' }))).scan).toBe(true)
+    expect(
+      (await writeFile(STORY, inspected({ mime: 'image/png', text: '' }))).scan
+    ).toBeUndefined()
   })
 
   describe('an epub', () => {
@@ -154,7 +152,6 @@ describe('writeFile', () => {
       expect(written).toMatchObject({
         title: 'Tides',
         documents: 6,
-        note: ' (5 chapters)',
       })
     })
 

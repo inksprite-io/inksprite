@@ -22,52 +22,53 @@
 - [][18]
 - [][19]
 - [][20]
-- [AI_SIDEBAR_TABS][21]
+- [][21]
 - [AI_SIDEBAR_TABS][22]
-- [CHATS][23]
-- [DEFAULT_LAYOUT][24]
-- [NO_PROJECT_LAYOUT][25]
-- [CONTENT_PANELS][26]
-- [normalizeLayout][27]
-  - [Parameters][28]
-- [isSidebarTab][29]
-  - [Parameters][30]
-- [][31]
-- [selectSidebarTab][32]
-  - [Parameters][33]
-- [canHide][34]
-  - [Parameters][35]
-- [togglePanel][36]
-  - [Parameters][37]
-- [withoutAI][38]
-  - [Parameters][39]
-- [keptWithoutAI][40]
-  - [Parameters][41]
-- [ROW_SIZES][42]
-- [keptSizes][43]
-  - [Parameters][44]
-- [shownLayout][45]
-  - [Parameters][46]
-- [importItems][47]
-  - [Parameters][48]
+- [AI_SIDEBAR_TABS][23]
+- [CHATS][24]
+- [DEFAULT_LAYOUT][25]
+- [NO_PROJECT_LAYOUT][26]
+- [CONTENT_PANELS][27]
+- [normalizeLayout][28]
+  - [Parameters][29]
+- [isSidebarTab][30]
+  - [Parameters][31]
+- [][32]
+- [selectSidebarTab][33]
+  - [Parameters][34]
+- [canHide][35]
+  - [Parameters][36]
+- [togglePanel][37]
+  - [Parameters][38]
+- [withoutAI][39]
+  - [Parameters][40]
+- [keptWithoutAI][41]
+  - [Parameters][42]
+- [ROW_SIZES][43]
+- [keptSizes][44]
+  - [Parameters][45]
+- [shownLayout][46]
+  - [Parameters][47]
+- [importItems][48]
+  - [Parameters][49]
 
 ## GUIDE_URL
 
 Where the welcome points, and how its words look.
 
-Type: [string][49]
+Type: [string][50]
 
 ## LINK
 
 A link, or a button that reads as one.
 
-Type: [string][49]
+Type: [string][50]
 
 ## HEADING
 
 A heading inside a section.
 
-Type: [string][49]
+Type: [string][50]
 
 ## components
 
@@ -102,13 +103,17 @@ Vue components for the inksprite application UI.
     the new-project dialog
   - `editor/` - The editor over a structured document, the field over a
     plain one, the strip of tabs above them, and the empty editor for a
-    project with no documents or no tabs. A comment is begun on a selection
-    by `CommentButton` or Mod-Shift-M; on a phone it is written and shown
-    in `CommentBar`, at the bottom, while the caret is in its passage
+    project with no documents or no tabs. `TextBar`, under a selection or
+    the caret, comments on what is selected (Mod-Shift-M too) and accepts or
+    rejects the suggestion the caret is in; on a phone it is in a bar at
+    the bottom, where a comment is written and shown in `CommentBar` while
+    the caret is in its passage
   - `comments/` - `CommentsPanel`, the project's comments in the sidebar,
     each a `CommentThread`, and on the desktop where a comment is written
     (`CommentDraft`) and answered: picking one opens its document, where
-    `Editor` scrolls to it and marks it; Resolve takes it off
+    `Editor` scrolls to it and marks it; Resolve takes it off. A suggested
+    change is a card among them, accepted or rejected there. Mod-Z there
+    takes back what was done to one
   - `tree/` - The document tree and its nodes. Its header's Import and New
     document act on the project's top, as the root's menu does
   - `chats/` - A chat, its list, and its settings
@@ -159,7 +164,8 @@ All components follow Vue 3 Composition API patterns:
 
 The writer's panel arrangement: which of the sidebar, the editor
 and the chat are showing, and which list the sidebar is on — the outline,
-the chats, the narration of the open document, or the project's comments.
+the search, the chats, the narration of the open document, or the
+project's comments.
 It is kept in each project's view rather than app-wide, so each project
 reopens the way it was left: an adventure chat-only, a novel with the
 editor beside its chat.
@@ -196,6 +202,10 @@ Type: `"outline"`
 
 ##
 
+Type: `"search"`
+
+##
+
 Type: `"chats"`
 
 ##
@@ -214,7 +224,7 @@ The lists that are the AI's, which go when it is switched off.
 
 ## CHATS
 
-Type: [Array][50]\<SidebarTab>
+Type: [Array][51]\<SidebarTab>
 
 ## DEFAULT_LAYOUT
 
@@ -240,7 +250,7 @@ so nothing that was saved can open onto an empty screen.
 
 ### Parameters
 
-- `stored` **(Partial\<StoryLayout> | null | [undefined][51])**&#x20;
+- `stored` **(Partial\<StoryLayout> | null | [undefined][52])**&#x20;
 
 Returns **StoryLayout**&#x20;
 
@@ -278,7 +288,7 @@ both hidden: the last one showing stays.
 - `layout` **StoryLayout**&#x20;
 - `panel` **[Panel][16]**&#x20;
 
-Returns **[boolean][52]**&#x20;
+Returns **[boolean][53]**&#x20;
 
 ## togglePanel
 
@@ -340,9 +350,9 @@ something an older version or another hand left there.
 ### Parameters
 
 - `kept` **unknown** What was read back from storage
-- `starting` **[Array][50]<[number][53]>** The splitter's starting widths, one per panel
+- `starting` **[Array][51]<[number][54]>** The splitter's starting widths, one per panel
 
-Returns **[Array][50]<[number][53]>**&#x20;
+Returns **[Array][51]<[number][54]>**&#x20;
 
 ## shownLayout
 
@@ -355,7 +365,7 @@ all three again.
 ### Parameters
 
 - `layout` **StoryLayout**&#x20;
-- `narrow` **[boolean][52]** Whether the window is too narrow for all three;
+- `narrow` **[boolean][53]** Whether the window is too narrow for all three;
   see useScreenSize
 
 Returns **StoryLayout**&#x20;
@@ -370,7 +380,7 @@ list, so the two can't drift apart.
 
 ### Parameters
 
-- `on` **[Object][54]** What each does
+- `on` **[Object][55]** What each does
 
 [1]: #guide_url
 [2]: #link
@@ -392,37 +402,38 @@ list, so the two can't drift apart.
 [18]: #-4
 [19]: #-5
 [20]: #-6
-[21]: #ai_sidebar_tabs
-[22]: #ai_sidebar_tabs-1
-[23]: #chats
-[24]: #default_layout
-[25]: #no_project_layout
-[26]: #content_panels
-[27]: #normalizelayout
-[28]: #parameters
-[29]: #issidebartab
-[30]: #parameters-1
-[31]: #-7
-[32]: #selectsidebartab
-[33]: #parameters-2
-[34]: #canhide
-[35]: #parameters-3
-[36]: #togglepanel
-[37]: #parameters-4
-[38]: #withoutai
-[39]: #parameters-5
-[40]: #keptwithoutai
-[41]: #parameters-6
-[42]: #row_sizes
-[43]: #keptsizes
-[44]: #parameters-7
-[45]: #shownlayout
-[46]: #parameters-8
-[47]: #importitems
-[48]: #parameters-9
-[49]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[50]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[51]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[52]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[53]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[54]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[21]: #-7
+[22]: #ai_sidebar_tabs
+[23]: #ai_sidebar_tabs-1
+[24]: #chats
+[25]: #default_layout
+[26]: #no_project_layout
+[27]: #content_panels
+[28]: #normalizelayout
+[29]: #parameters
+[30]: #issidebartab
+[31]: #parameters-1
+[32]: #-8
+[33]: #selectsidebartab
+[34]: #parameters-2
+[35]: #canhide
+[36]: #parameters-3
+[37]: #togglepanel
+[38]: #parameters-4
+[39]: #withoutai
+[40]: #parameters-5
+[41]: #keptwithoutai
+[42]: #parameters-6
+[43]: #row_sizes
+[44]: #keptsizes
+[45]: #parameters-7
+[46]: #shownlayout
+[47]: #parameters-8
+[48]: #importitems
+[49]: #parameters-9
+[50]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[51]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[52]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[53]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[54]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[55]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object

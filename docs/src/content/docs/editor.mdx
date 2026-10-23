@@ -1,6 +1,6 @@
 ---
 title: The Editor
-description: Write and format documents in inksprite's editor, with Markdown as you type, tables, links, pictures, find and replace, spelling and grammar, and a plain text editor.
+description: Write and format documents in inksprite's editor, with Markdown as you type, tables, links, pictures, find and replace, spelling and grammar, a plain text editor, and earlier versions to go back to.
 ---
 
 import Screenshot from '../../components/Screenshot.astro';
@@ -14,8 +14,8 @@ italics: a preview, which the next document you click replaces. Type in it, or
 double-click the document or its tab, to keep it open.
 
 - Close a tab with its **×**, or click it with the middle button.
-- Right-click a tab for **Copy path**, **Edit in plain text editor** and
-  **Keyboard shortcuts**.
+- Right-click a tab for **Copy path**, **Edit in plain text editor**,
+  **Versions…** and **Keyboard shortcuts**.
 - Each project remembers its tabs, and a tab you come back to is where you
   left it.
 
@@ -120,7 +120,7 @@ document's name, and click the name or <kbd>⌘</kbd>-click the link to open the
 document in a tab. If the document isn't there, inksprite says so.
 
 Copied into a document in another folder, a link still goes to the same
-document. Renaming or moving a document doesn't change the links to it yet.
+document. Renaming or moving a document changes the links to it to match.
 
 ## Pictures
 
@@ -281,6 +281,39 @@ Right-click a document in the outline:
   which any Markdown app can open.
 - **Duplicate** makes a copy beside it, named with **(2)**, and opens it: try
   something there without touching the original.
+
+## Versions
+
+inksprite keeps earlier versions of each document, to compare with the text
+now and restore. Right-click the document in the outline, or its tab, and
+choose **Versions…**.
+
+A version is kept:
+
+- when you change a document you'd left for 10 minutes or more: the text as
+  you left it;
+- every hour through a long stretch of writing;
+- before anything else changes the text: the model's edits, a
+  [conversion](/files/#convert-to-markdown) run again, a
+  [Google Docs](/google-docs/) sync, edits [synced](/sync/) from another
+  device, a card imported again, or restoring a version.
+
+On the left are the versions, newest first and by day, each with its time,
+what it was kept before, and its word count. Pick one to see it on the right as
+the editor shows it, with what a restore would change marked: what it would
+take out of the text now is struck through in red, and what it would bring
+back is green. Copy from it, or:
+
+- **Restore** puts the version in place of the text, and keeps the text it
+  replaces as a version first, so a restore can be taken back.
+- **Name**, the pencil, names the version. A named version is kept until you
+  delete it; the bin (**Delete version**) deletes it.
+- **Keep a version…** keeps the text as it is now, under a name.
+
+Versions thin out as they age: every one from the last day, then one a day
+for 30 days, then one a week. A document in the
+[plain text editor](#the-plain-text-editor) shows its versions as written,
+Markdown and all. Only text documents have versions, not imported files.
 
 ## Arrange the panels
 

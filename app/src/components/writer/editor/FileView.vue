@@ -20,7 +20,13 @@
     </div>
 
     <!-- The pages, and only the pages. -->
-    <PdfView v-else-if="kind === 'pdf' && blob" :blob="blob" data-file-pdf class="flex-1 min-h-0" />
+    <PdfView
+      v-else-if="kind === 'pdf' && blob"
+      ref="pdfView"
+      :blob="blob"
+      data-file-pdf
+      class="flex-1 min-h-0"
+    />
 
     <!-- A book, chapter after chapter, or a web page's article, read out of
          the file. -->
@@ -39,6 +45,40 @@
       :filename="document?.title || ''"
       class="flex-1 min-h-0"
     />
+
+    <!-- A file another device imported, coming from the sync server. -->
+    <div
+      v-else-if="kind === 'downloading'"
+      class="flex-1 min-h-0 flex items-center justify-center"
+      data-file-downloading
+    >
+      <p class="text-surface-500 dark:text-surface-400">
+        <i class="pi pi-spin pi-spinner mr-2"></i>Downloading… {{ percent }}%
+      </p>
+    </div>
+
+    <!-- One that is there and couldn't be fetched: offline, most likely. -->
+    <div v-else-if="kind === 'elsewhere'" class="flex-1 min-h-0 flex items-center justify-center">
+      <div class="flex flex-col items-center gap-4 text-center px-4" data-file-elsewhere>
+        <i class="pi pi-cloud-download text-6xl text-surface-400"></i>
+        <div>
+          <h2 class="text-xl font-semibold text-surface-700 dark:text-surface-200">
+            Not on this device yet
+          </h2>
+          <p class="text-surface-500 dark:text-surface-400 mt-2">
+            It couldn't be downloaded. Check your connection and try again.
+          </p>
+        </div>
+        <Button
+          label="Try again"
+          icon="pi pi-refresh"
+          severity="secondary"
+          outlined
+          data-action="fetch-file"
+          @click="load"
+        />
+      </div>
+    </div>
 
     <!-- Anything the panel cannot show, and a file whose bytes are gone. -->
     <div v-else-if="kind === 'none'" class="flex-1 min-h-0 flex items-center justify-center">
@@ -77,6 +117,8 @@ import { extractEpub } from '@/files/epub.js'
 import { markdownOfHtml } from '@/files/html.js'
 import { EPUB_MIME, isImage, isText, showsAsText, sizeLabel } from '@/files/inspect.js'
 import { renderMarkdown } from '@/utils/markdown.js'
+import { goneTo, takeUpMatch } from '@/composables/useProjectSearch.js'
+import { pageAt } from '@/ai/tools/slices.js'
 
 /**
  * A file document, shown as the file: the picture, the PDF's pages
@@ -112,6 +154,10 @@ const blob = ref(null)
 const url = ref(null)
 /** Whether the bytes have been asked for and answered, so nothing is said before then. */
 const loaded = ref(false)
+/** How far a download from the sync server has got, while there is one. @type {import('vue').Ref<{done: number, total: number}|null>} */
+const downloading = ref(null)
+/** Whether the bytes are on the sync server, and couldn't be fetched. */
+const elsewhere = ref(false)
 /** A picture at its own size rather than fit to the panel. */
 const natural = ref(false)
 /** An epub's chapters or a web page's article as HTML, or null when there is none. @type {import('vue').Ref<string|null>} */
@@ -121,7 +167,8 @@ const unreadable = ref('')
 
 /** Which view this file gets: nothing until the bytes are known. */
 const kind = computed(() => {
-  if (!loaded.value) return 'loading'
+  if (!loaded.value) return downloading.value ? 'downloading' : 'loading'
+  if (!blob.value && elsewhere.value) return 'elsewhere'
   // A repository's file keeps no bytes: its text is the file.
   if (!blob.value) return isText(mime.value) ? 'code' : 'none'
   if (isImage(mime.value)) return 'image'
@@ -142,6 +189,12 @@ const detail = computed(() => {
   return bits.join(' · ')
 })
 
+/** How much of a download is done, out of a hundred. */
+const percent = computed(() => {
+  const { done = 0, total = 1 } = downloading.value ?? {}
+  return Math.floor((100 * done) / Math.max(total, 1))
+})
+
 const release = () => {
   if (url.value) URL.revokeObjectURL(url.value)
   url.value = null
@@ -154,7 +207,18 @@ const load = async () => {
   natural.value = false
   reading.value = null
   unreadable.value = ''
-  const found = await files.getFile(props.documentId)
+  downloading.value = null
+  elsewhere.value = false
+  const id = props.documentId
+  const found = await files.getFile(id, {
+    progress: (done, total) => {
+      if (props.documentId === id) downloading.value = { done, total }
+    },
+  })
+  // Moved on to another file while this one came.
+  if (props.documentId !== id) return
+  downloading.value = null
+  if (!found) elsewhere.value = await files.isElsewhere(id)
   blob.value = found
   if (found && isImage(mime.value)) url.value = URL.createObjectURL(found)
   if (found && mime.value === EPUB_MIME) await readBook(found)
@@ -200,8 +264,31 @@ const download = () => {
   if (blob.value && document.value) downloadBlob(blob.value, filenameFor(document.value))
 }
 
-/** @type {import('vue').Ref<{ openFind: () => boolean }|null>} */
+/**
+ * @type {import('vue').Ref<{
+ *   openFind: () => boolean,
+ *   showMatch: (text: string, options: import('@/editor/search.js').SearchOptions, index: number) => void,
+ * }|null>}
+ */
 const codeView = ref(null)
+
+/** @type {import('vue').Ref<{ showPage: (number: number) => void }|null>} */
+const pdfView = ref(null)
+
+// A match the project's search picked in this file, once there is a view to
+// show it: code opens its find on it, and a PDF shows the page its text has
+// it on. Anything else leaves it for the file's text, if that is opened.
+watch(
+  [kind, codeView, pdfView, goneTo],
+  () => {
+    const shows = kind.value === 'code' ? codeView.value : kind.value === 'pdf' && pdfView.value
+    const match = shows ? takeUpMatch(props.documentId) : null
+    if (!match) return
+    if (kind.value === 'code') codeView.value?.showMatch(match.query, match.options, match.index)
+    else pdfView.value?.showPage(pageAt(document.value?.content || '', match.at ?? 0) ?? 1)
+  },
+  { flush: 'post' }
+)
 
 /** Whether there is a find to open: in code, which has one of its own. */
 const findable = computed(() => kind.value === 'code')

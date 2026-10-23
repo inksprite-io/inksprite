@@ -46,8 +46,10 @@
       <h3 :class="HEADING">Browser storage</h3>
       <div data-storage-warning class="flex flex-col gap-2">
         <p>
-          <strong class="text-red-600 dark:text-red-400">Warning:</strong> your work is stored only
-          in this browser. If this site's data is cleared, it's gone.
+          <strong class="text-red-600 dark:text-red-400"
+            >Your work is stored only in this browser.</strong
+          >
+          If this site's data is cleared, it's gone.
         </p>
         <p>You can back up your data from Settings › System › Data.</p>
         <p v-if="advice.desktopApp">

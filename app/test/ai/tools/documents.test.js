@@ -14,6 +14,9 @@ import {
   executeAppendDocument,
   executeEditDocument,
   executeListDocuments,
+  executeDescribeDocument,
+  digestAbout,
+  listDocumentsDefinition,
   LISTING_LIMIT,
   nearestContext,
   applyProposal,
@@ -26,6 +29,9 @@ import { clearDocumentInstances } from '@/composables/useDocuments'
 import { notesIdFor, manuscriptIdFor, rootIdFor } from '@/stores/migrations/projectTree.js'
 import { setLibrarySkills } from '@/ai/skills/index.js'
 import { textHash } from '@/ai/context/reads.js'
+import { exploreNode } from '@/jobs/index.js'
+import { sectionsOfText } from '@/ai/tools/slices.js'
+import { basisOf } from '@/jobs/explore.js'
 
 vi.mock('@/stores/db', () => ({
   default: {
@@ -56,7 +62,10 @@ const context = { storyId: STORY }
 const listedPaths = async chatId => {
   const listing = await executeListDocuments({}, { storyId: STORY, ...(chatId ? { chatId } : {}) })
   if (typeof listing !== 'string' || listing.endsWith('is empty.')) return []
-  return listing.split('\n').map(line => line.split(' — ')[0].replace(/\/$/, ''))
+  return listing
+    .split('\n')
+    .filter(line => !line.startsWith(' '))
+    .map(line => line.split(' — ')[0].replace(/\/$/, ''))
 }
 
 /** The ids of what a chat has pinned. */
@@ -434,6 +443,115 @@ describe('document tools', () => {
     })
   })
 
+  describe('what explore made of the project', () => {
+    /**
+     * Give a document or folder the digest explore would make of it now.
+     * @param {string} id
+     * @param {string} line
+     */
+    const explored = (id, line) =>
+      store.setDigest(id, {
+        line,
+        text: `${line} More.`,
+        of: basisOf(/** @type {any} */ (exploreNode(id))),
+        made: 1,
+      })
+
+    it('lists what each entry is about under it: the writer’s summary, else the digest', async () => {
+      await seed()
+      explored('lore_1', 'An entry on Elara.')
+      explored('sc_1', 'The ride north begins.')
+      explored('cat_1', 'The characters, one entry each.')
+
+      expect(await executeListDocuments({}, context)).toBe(
+        [
+          'manuscript/',
+          'manuscript/Chapter 1 — 5 words',
+          '  The ride north begins.',
+          'notes/',
+          'notes/Characters/',
+          '  The characters, one entry each.',
+          'notes/Characters/Elara — 5 words',
+          '  A knight.',
+        ].join('\n')
+      )
+      expect(listDocumentsDefinition.function.description).toContain('what it is about')
+    })
+
+    it('shows a digest only while what it was made from is unchanged', async () => {
+      await seed()
+      explored('sc_1', 'The ride north begins.')
+      explored('cat_1', 'The characters, one entry each.')
+
+      store.updateDocument('sc_1', { content: 'They ride south instead, at dawn.' })
+      store.updateDocument('lore_1', { content: 'A knight, and a liar.' })
+
+      const listing = await executeListDocuments({}, context)
+      expect(listing).not.toContain('ride north')
+      // Something under it changed, so the folder's is not current either.
+      expect(listing).not.toContain('one entry each')
+      expect(
+        await executeDescribeDocument({ path: 'manuscript/Chapter 1' }, context)
+      ).not.toHaveProperty('about')
+    })
+
+    it('puts the line on each long section it described, where describe_document lists them', async () => {
+      await seed()
+      store.updateDocument('sc_1', { content: '# The ride\n\nNorth.\n\n# The inn\n\nWarm.' })
+      explored('sc_1', 'Two scenes.')
+      const { digest } = store.getDocument('sc_1')
+      const inn = sectionsOfText('# The ride\n\nNorth.\n\n# The inn\n\nWarm.')[1].link
+      store.setDigest('sc_1', {
+        ...digest,
+        sections: [{ link: inn, line: 'They stop at an inn.' }],
+      })
+
+      const described = await executeDescribeDocument({ path: 'manuscript/Chapter 1' }, context)
+      expect(described.sections.map(section => section.about)).toEqual([
+        undefined,
+        'They stop at an inn.',
+      ])
+      const one = await executeDescribeDocument(
+        { path: 'manuscript/Chapter 1', section: inn },
+        context
+      )
+      expect(one.section.about).toBe('They stop at an inn.')
+
+      // Not once the text has moved on.
+      store.updateDocument('sc_1', { content: '# The ride\n\nSouth.\n\n# The inn\n\nWarm.' })
+      const after = await executeDescribeDocument({ path: 'manuscript/Chapter 1' }, context)
+      expect(after.sections.map(section => section.about)).toEqual([undefined, undefined])
+    })
+
+    it('describes a document with its digest, and a folder that has one', async () => {
+      await seed()
+      explored('sc_1', 'The ride north begins.')
+      explored('cat_1', 'The characters.')
+
+      expect(
+        await executeDescribeDocument({ path: 'manuscript/Chapter 1' }, context)
+      ).toMatchObject({
+        path: 'manuscript/Chapter 1',
+        about: 'The ride north begins. More.',
+      })
+      expect(await executeDescribeDocument({ path: 'notes/Characters' }, context)).toEqual({
+        path: 'notes/Characters/',
+        about: 'The characters. More.',
+        note: 'list_documents lists what is in it.',
+      })
+      expect(await executeDescribeDocument({ path: 'notes' }, context)).toHaveProperty('error')
+    })
+
+    it('gives the project’s line in the block where the writer wrote no overview', async () => {
+      await seed()
+      explored(rootIdFor(STORY), 'A novel and its notes.')
+      expect(await projectOverview(STORY)).not.toHaveProperty('about')
+
+      store.updateDocument(rootIdFor(STORY), { summary: '' })
+      expect(await projectOverview(STORY)).toMatchObject({ about: 'A novel and its notes.' })
+    })
+  })
+
   describe('list_documents', () => {
     it('lists the whole project by full path, with lengths and pins', async () => {
       await seed()
@@ -449,6 +567,7 @@ describe('document tools', () => {
           'notes/',
           'notes/Characters/',
           'notes/Characters/Elara — 5 words, pinned',
+          '  A knight.',
         ].join('\n')
       )
     })
@@ -457,7 +576,7 @@ describe('document tools', () => {
       await seed()
 
       expect(await executeListDocuments({ path: 'notes' }, context)).toBe(
-        'notes/Characters/\nnotes/Characters/Elara — 5 words'
+        'notes/Characters/\nnotes/Characters/Elara — 5 words\n  A knight.'
       )
       expect(await executeListDocuments({ path: '/', depth: 1 }, context)).toBe(
         'manuscript/ — 1 inside, not listed\nnotes/ — 2 inside, not listed'
@@ -509,6 +628,18 @@ describe('document tools', () => {
     it('reports a folder that is not there', async () => {
       await seed()
       expect((await executeListDocuments({ path: 'nowhere' }, context)).error).toContain('nowhere')
+    })
+
+    it('says where a folder by the name asked for is, when it is not at the top', async () => {
+      await seed()
+
+      expect((await executeListDocuments({ path: 'Characters' }, context)).error).toBe(
+        'No folder at "Characters". "notes/Characters" goes by that name.'
+      )
+      // Only a folder: a document by the name is not what a listing wants.
+      expect((await executeListDocuments({ path: 'Elara' }, context)).error).toBe(
+        'No folder at "Elara". list_documents with no path lists the whole project.'
+      )
     })
 
     it('says an empty folder is empty', async () => {
@@ -1052,6 +1183,28 @@ describe('document tools', () => {
       ).toContain('inside itself')
     })
 
+    it('keeps the links to it going there, and says which documents it wrote again', async () => {
+      await seed()
+      store.updateDocument('sc_1', {
+        content: 'Snow fell on [Elara](../notes/Characters/Elara.md).',
+      })
+      const result = await executeMoveDocument(
+        { path: 'notes/Characters/Elara', to: 'notes/Elara Vance' },
+        context
+      )
+
+      expect(store.getDocument('sc_1').content).toBe(
+        'Snow fell on [Elara](../notes/Elara%20Vance.md).'
+      )
+      expect(result.linksUpdated).toEqual(['manuscript/Chapter 1'])
+      // A move that changes no link says nothing of them.
+      const back = await executeMoveDocument(
+        { path: 'manuscript/Chapter 1', to: 'manuscript/One' },
+        context
+      )
+      expect(back).not.toHaveProperty('linksUpdated')
+    })
+
     it('records the move, so a rewind can put it back', async () => {
       await seed()
       const ctx = { ...context, edits: [] }
@@ -1397,9 +1550,14 @@ describe('document tools', () => {
     const chapter = 'manuscript/Chapter 1'
     /** A context that asks first and keeps a record, the way the turn does in ask mode. */
     const asking = () => ({ ...context, propose: true, edits: [] })
+    /** The chapter as a plain document, which holds no suggestions: a change to it is proposed in the chat. */
+    const seedPlain = async () => {
+      await seed()
+      store.updateDocument('sc_1', { plain: true })
+    }
 
     it('proposes an edit instead of making it, and tells the model so', async () => {
-      await seed()
+      await seedPlain()
       const ctx = asking()
       const result = await executeEditDocument({ path: chapter, old: 'Snow', new: 'Rain' }, ctx)
 
@@ -1426,7 +1584,7 @@ describe('document tools', () => {
     })
 
     it('proposes a rewrite, and a summary sent with it changes nothing', async () => {
-      await seed()
+      await seedPlain()
       const ctx = asking()
       const before = store.getDocument('sc_1').summary
       await executeUpdateDocument(
@@ -1448,7 +1606,7 @@ describe('document tools', () => {
     })
 
     it('proposes an append and a creation', async () => {
-      await seed()
+      await seedPlain()
       const ctx = asking()
       await executeAppendDocument({ path: chapter, text: 'Then hail.' }, ctx)
       await executeCreateDocument({ path: 'Verse', content: 'Once.', summary: 'A verse.' }, ctx)
@@ -1597,5 +1755,19 @@ describe('document tools', () => {
       expect(store.getDocument('sc_1').content).toBe('Rain, this time.')
       expect(store.getDocument('sc_1').summary).toBe(before)
     })
+  })
+})
+
+describe('digestAbout', () => {
+  it('puts the line in front of the paragraph unless the paragraph begins with it', () => {
+    expect(digestAbout({ line: 'An atlas.', text: 'Its coasts.', of: 'x', made: 1 })).toBe(
+      'An atlas. Its coasts.'
+    )
+    expect(digestAbout({ line: 'An atlas', text: 'Its coasts.', of: 'x', made: 1 })).toBe(
+      'An atlas. Its coasts.'
+    )
+    expect(
+      digestAbout({ line: 'An atlas.', text: 'An atlas. Its coasts.', of: 'x', made: 1 })
+    ).toBe('An atlas. Its coasts.')
   })
 })

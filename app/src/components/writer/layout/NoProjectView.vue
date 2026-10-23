@@ -20,6 +20,16 @@
           data-action="import-project"
           @click="fileInput?.click()"
         />
+        <Button
+          v-if="projects.trashed.value.length > 0"
+          label="Trash"
+          icon="pi pi-trash"
+          size="small"
+          severity="secondary"
+          text
+          data-action="trash"
+          @click="showTrash = true"
+        />
       </div>
     </div>
 
@@ -31,24 +41,30 @@
       @change="importChosen"
     />
     <NewProjectDialog v-model:visible="showCreateDialog" @create="projects.create($event.title)" />
+    <TrashDialog v-model:visible="showTrash" />
   </main>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import Button from 'primevue/button'
 import NewProjectDialog from '../projects/NewProjectDialog.vue'
+import TrashDialog from '../projects/TrashDialog.vue'
 import { useProjects } from '@/composables/useProjects'
 import { useToast } from '@/composables/useToast'
 
 /**
  * The writer with no project open: what they see on first launch, and after
- * deleting the last project. There are none to switch to, so the only things
- * to do are to start one or bring one in from a file.
+ * deleting the last project. There are none to switch to, so the things to
+ * do are to start one, bring one in from a file, or, with the last ones in
+ * the trash, bring one back from there.
  */
 const projects = useProjects()
 const toast = useToast()
 const showCreateDialog = ref(false)
+const showTrash = ref(false)
+
+onMounted(() => projects.init())
 
 /** @type {import('vue').Ref<HTMLInputElement|null>} */
 const fileInput = ref(null)
@@ -64,8 +80,8 @@ const importChosen = async event => {
 
   isImporting.value = true
   try {
-    const story = await projects.importFile(file)
-    toast.success(`Imported "${projects.nameOf(story.id)}"`)
+    // It opens, which shows it came in.
+    await projects.importFile(file)
   } catch (error) {
     console.error('Project import failed:', error)
     toast.error(error.message)

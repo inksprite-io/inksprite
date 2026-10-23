@@ -231,4 +231,29 @@ describe('ChatSegment', () => {
     expect(wrapper.find('[aria-label="Edit command"]').attributes('disabled')).toBeDefined()
     expect(wrapper.find('[aria-label="Delete command"]').attributes('disabled')).toBeUndefined()
   })
+
+  it('holds asking a command again while an answer is being written', () => {
+    const wrapper = mount(ChatSegment, {
+      props: {
+        segment: ran({ name: 'roll', input: '2d6', label: '2d6', result: '7' }),
+        busy: true,
+      },
+      global: { plugins: [PrimeVue], directives: { tooltip: {} } },
+    })
+
+    expect(wrapper.find('[aria-label="Ask again"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('[aria-label="Edit command"]').attributes('disabled')).toBeUndefined()
+  })
+
+  it('says how far one that does not stream has got, while it runs', () => {
+    const running = show(
+      ran({ name: 'interpret', input: 'Why?', pending: true, progress: '3 of 7 requests' })
+    )
+    expect(running.find('[data-progress]').text()).toBe('3 of 7 requests')
+    expect(
+      show(ran({ name: 'interpret', input: 'Why?', pending: true }))
+        .find('[data-progress]')
+        .exists()
+    ).toBe(false)
+  })
 })

@@ -25,6 +25,16 @@ describe('exportDocument', () => {
     expect(await blob.text()).toBe('The gate.')
   })
 
+  it('hands it out as its text stands, its comments kept and its suggestions left out', async () => {
+    const markdown =
+      'A {--cold--}{>>sabcd1<<}{++warm++}{>>sabcd1<<} {==night==}{>>cabcd1<<}.\n\n{++Gulls.++}{>>sabcd2<<}'
+    const { blob } = await exportDocument({ title: 'Prologue' }, markdown, async () => null)
+    expect(await blob.text()).toBe('A cold {==night==}{>>cabcd1<<}.')
+    // A plain document is handed out as typed.
+    const plain = await exportDocument({ title: 'Prompt', plain: true }, markdown, async () => null)
+    expect(await plain.blob.text()).toBe(markdown)
+  })
+
   it('hands out one with pictures as a zip, the pictures in images beside it', async () => {
     const text = [
       'The gate ![](.images/doc_a1/gate.png) shut.',

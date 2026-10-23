@@ -6,6 +6,110 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.20
+
+Sync between your devices and with friends, a trash, document versions,
+suggested edits, explore, and backups as zip files.
+
+- Sync keeps your projects, your setup and your card library on every
+  device you sign in on, through our server at sync.inksprite.io. It's
+  in private preview, and an account needs an invitation. Everything is
+  encrypted on your device before it's sent, so the server can't read
+  it. Settings › System › Sync makes the account, with a passphrase and
+  a recovery code, and lists the devices signed in. Edits made on two
+  devices come together; where both changed the same words, the device
+  that synced last wins, and the other's words are kept as a version. An
+  imported file comes down the first time it's opened. A project can be
+  kept on one device only. The About page says what the server sees.
+- A project can be shared with friends who have accounts too. Type the
+  name others see in Settings › System › Sync, and your friend code
+  shows there. Share…, on the project's menu, takes a friend's code and
+  lists who has the project. Everyone can write in it; only its owner
+  shares or deletes it, and the others leave it. Each person's chats in
+  it stay their own, and comments show who wrote them.
+- When another device, or someone you share a project with, has synced
+  from a newer version of inksprite, a dialog says some changes can't
+  sync until you update, with Update once it's ready.
+- Deleting no longer asks. Documents, folders, chats and projects go to
+  the trash, kept for 30 days and restored from Projects › Trash, and
+  Command-Z (Control-Z on Windows and Linux) in the outline takes a
+  delete back. The model can delete a document too, to the trash.
+- A text document keeps versions of itself: after a pause in typing, and
+  before anything else changes it, such as the model, a sync or a
+  character card imported again. Versions…, on its menu or its tab,
+  compares one with the text and restores it.
+- A chat that asks before changing documents suggests its edits in the
+  text. Each change is accepted or rejected on its own, in the Comments
+  tab or from the bar over it in the text, and Command-Z in the Comments
+  tab takes that back.
+- A linked Google Doc's suggested edits come in as suggestions, and
+  accepting or rejecting one here does the same in the Doc. Typing
+  inside one changes it in the Doc too. The model's suggestions go to the
+  Doc as suggested edits in your name, with its notes as replies; one
+  that changes formatting or adds or removes a paragraph stays here. An
+  edit beside one of the Doc's suggestions no longer stops a sync. A sync
+  with a Doc no longer asks which words to keep: where both changed the
+  same words, the document's words stand and the Doc's are kept as a
+  version.
+- Sync with a Google Doc takes comments both ways. A comment you or the
+  model make here shows in the Google Doc on the same words, and one
+  made in the Doc comes here under the name of who made it. Replies,
+  edits to your own comments, and resolving or reopening a comment go
+  across on the next sync, whichever side they were made on. A comment
+  deleted in the Doc is resolved here, and one longer than Google Docs
+  allows stays here.
+- A document that isn't linked to a Google Doc can go into a new one:
+  right-click it and choose Sync to a new Google Doc. The Doc goes in an
+  inksprite-sync folder in your Drive, in a folder for the project and
+  one for each folder the document is in, and when you rename or move
+  the document, its folders or the project, the next sync does the same
+  in Drive. From then on it syncs like a Doc you imported.
+- `/explore`, Explore… on a folder's or the project's menu, and the
+  model itself can write a line on what each document, folder and long
+  section is about, which the model sees beside each when it lists them.
+  A large one asks first, unless Ask before exploring large folders is
+  off in Settings › System › Chats.
+- `/aside` asks the model something outside the conversation, such as
+  where the story could go next. It answers, and then forgets the
+  question and its answer: the chat goes on as if neither was said.
+- The model saves a page or a document it finds to the project, asking
+  first until you choose Always allow. In the desktop app it also reads
+  PDFs and Word files on the web, and saves one as the file itself.
+- Each AI provider has Requests at once, how many it's asked together:
+  one for a server on your computer or network, as many as llama.cpp has
+  slots, and no limit for the rest. What you're waiting on goes before a
+  job's.
+- In the desktop app, File › New Window opens another window, each with
+  a project of its own and named for it.
+- Shift-Command-F (Shift-Control-F on Windows and Linux) searches the
+  whole project, in the sidebar, by document. A match opens its document
+  at it, and a PDF at its page.
+- A link to a document still goes to it after the document is renamed or
+  moved.
+- In the outline, Command-Z undoes and Shift-Command-Z redoes, a click
+  on the selected document's title renames it, and a drag shows where it
+  will go.
+- Backups, selections and project exports are zip files, so a large one
+  can be made and read back: past about 512 MB, they failed. Backups
+  from before still import, but an earlier release can't open the new
+  zips. Settings files and chats are still JSON.
+- inksprite says less. There's no message where you can see what
+  happened, and no question before undoing a new document, switching
+  Roleplay off or adding projects from a backup. An error says what
+  didn't happen, and why.
+- `/roll max(2d20)+1` keeps the higher of two d20s, for advantage, and
+  `min(2d20)+1` the lower.
+- The spelling checker leaves swearing, hedging, the Oxford comma and
+  shortened words alone.
+- List items are spaced tightly with Compact text off too.
+- A file opened while its import is still saving it opens once it's
+  saved.
+- Deleting the paragraph after a page break no longer leaves a stray
+  full stop in a paragraph of its own in the Doc when it syncs.
+- This release moves your data to a new version of its database. Once a
+  browser or the desktop app has opened it, an earlier release can't
+  open that data, so there's no going back to one.
+
 ## v0.1.0-dev.19
 
 Pictures in documents, comment threads, Sync with Google Docs, and

@@ -38,6 +38,7 @@
  */
 
 import { Fragment, Slice } from 'prosemirror-model'
+import { isMine, nameOf } from '@/cloud/people.js'
 
 /**
  * @typedef {import('prosemirror-model').Node} Node
@@ -570,6 +571,34 @@ export function newPost(author, text, now = Date.now()) {
 }
 
 /**
+ * Who said a post, as the writer reads it: You, the Assistant, the person
+ * by name, from a linked Google Doc, or, in a project shared, the one of
+ * them who wrote it by the name they show.
+ *
+ * @param {{author: string, name?: string, by?: number}} post
+ * @param {import('@/cloud/people.js').People|null} [people] - Where the project is shared
+ * @returns {string}
+ */
+export function authorOf(post, people = null) {
+  if (post.author === 'writer') {
+    return !people || isMine(post, people) ? 'You' : nameOf(post, people)
+  }
+  if (post.author === 'person') return post.name || 'Someone'
+  return 'Assistant'
+}
+
+/**
+ * Who suggested a change, as the writer reads it: You, or the person by name,
+ * from a linked Google Doc. Nothing for the model's, whose chat says it.
+ *
+ * @param {import('@/types/models.js').CommentSuggestion|undefined} suggestion
+ * @returns {string}
+ */
+export function suggesterOf(suggestion) {
+  return suggestion?.author ? authorOf({ author: suggestion.author, name: suggestion.name }) : ''
+}
+
+/**
  * A thread, opened on a passage by its first post.
  *
  * @param {CommentPost} post
@@ -628,10 +657,23 @@ function wordsAround(text, start, end) {
 }
 
 /**
+ * Whether a suggestion's marks are in a piece of markdown: a half's close
+ * holding its id.
+ *
+ * @param {string} content
+ * @param {string} id
+ * @returns {boolean}
+ */
+const suggestionPlaced = (content, id) =>
+  content.includes(`++}{>>${id}<<}`) || content.includes(`--}{>>${id}<<}`)
+
+/**
  * Threads brought up to date with the text: each placed one open, with its
  * passage and the words around it as they read now, so that a thread whose
- * passage goes later still knows what it was on and where. The same object
- * back when nothing changed, so a save that touched no comment writes none.
+ * passage goes later still knows what it was on and where. A suggestion's
+ * thread is open while its marks are in the text, as a comment's is, which
+ * is how undoing an accept opens it again. The same object back when nothing
+ * changed, so a save that touched no comment writes none.
  *
  * @param {string|null|undefined} content
  * @param {Threads|undefined} threads
@@ -652,6 +694,15 @@ export function settleThreads(content, threads) {
   /** @type {Threads} */
   const next = {}
   for (const [id, thread] of Object.entries(threads)) {
+    if (thread.suggestion) {
+      const back = thread.status !== 'open' && suggestionPlaced(content || '', id)
+      if (back) {
+        const { settled: _settled, settledAt: _at, ...suggestion } = thread.suggestion
+        next[id] = { ...thread, status: 'open', suggestion }
+        changed = true
+      } else next[id] = thread
+      continue
+    }
     const placed = runs.get(id)
     if (!placed) {
       next[id] = thread
@@ -719,19 +770,21 @@ export function withThreadsOnly(content, threads) {
  * How many of a document's comments are open: on their passages, or stale
  * with their passages gone, and not resolved. Saving the text keeps a
  * placed thread open (`settleThreads`), so the row says it without the text.
+ * A suggestion's thread is not a comment's.
  *
  * @param {Threads|undefined} threads
  * @returns {number}
  */
 export function countOpen(threads) {
   if (!threads) return 0
-  return Object.values(threads).filter(thread => thread.status === 'open').length
+  return Object.values(threads).filter(thread => thread.status === 'open' && !thread.suggestion)
+    .length
 }
 
 /**
  * Whether two versions of a thread say the same: its standing and its posts.
  * Where its passage is, and the words around it, follow the text and are
- * not what anyone said.
+ * not what anyone said; nor is what a sync keeps of a linked Doc's.
  *
  * @param {CommentThread|null|undefined} a
  * @param {CommentThread|null|undefined} b
@@ -739,7 +792,9 @@ export function countOpen(threads) {
  */
 export function sameThread(a, b) {
   if (!a || !b) return !a && !b
-  return a.status === b.status && JSON.stringify(a.posts) === JSON.stringify(b.posts)
+  /** @param {CommentThread} thread */
+  const said = thread => JSON.stringify(thread.posts.map(({ google: _google, ...post }) => post))
+  return a.status === b.status && said(a) === said(b)
 }
 
 /**
@@ -1013,6 +1068,19 @@ export function commentsInDoc(doc) {
       passage: doc.textBetween(range.from, range.to, ' ', ' '),
     }))
   )
+}
+
+/**
+ * The comments a change took the passages of: on the text before it, and
+ * nowhere after.
+ *
+ * @param {Node} before
+ * @param {Node} after
+ * @returns {string[]}
+ */
+export function commentsGone(before, after) {
+  const still = new Set(commentRanges(after).map(range => range.id))
+  return [...new Set(commentRanges(before).map(range => range.id))].filter(id => !still.has(id))
 }
 
 /**

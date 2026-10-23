@@ -43,17 +43,19 @@ describe('tool groups', () => {
       'update_document',
       'edit_document',
       'move_document',
+      'delete_document',
       'append_document',
       'list_comments',
       'add_comment',
       'reply_comment',
       'resolve_comment',
+      'explore_documents',
     ])
     expect(byId.rpg).toEqual(['roll_dice', 'oracle', 'roll_table', 'draw_tarot', 'generate_names'])
     // The skills group holds the writer's own, and they have none here.
     expect(byId.skills).toBeUndefined()
     expect(byId.experimental).toEqual(['interpret', 'write'])
-    expect(byId.web).toEqual(['web_search', 'read_web_page'])
+    expect(byId.web).toEqual(['web_search', 'read_web_page', 'save_web_page'])
   })
 
   it('offers the web only to a chat that searches, less any tool it switched off', () => {

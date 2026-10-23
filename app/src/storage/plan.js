@@ -28,7 +28,7 @@ import {
   repositoryFile,
   sidecarPath,
 } from './documents.js'
-import { MOVING, STORY_FILE, narrationPath, picturePath, picturesDir } from './layout.js'
+import { MOVING, ROW_FILES, STORY_FILE, picturePath, picturesDir } from './layout.js'
 
 /** @typedef {import('../types/models.js').Document} Document */
 /** @typedef {import('../types/models.js').Story} Story */
@@ -111,11 +111,12 @@ function repositoryText(repository, entries, documentOf) {
 }
 
 /**
- * A narration file's text.
+ * A row file's text.
  *
+ * @param {import('./layout.js').RowFile} kept
  * @param {Document} document
  */
-const narrationText = document => `${JSON.stringify(document.speakers)}\n`
+const rowFileText = (kept, document) => `${JSON.stringify(document[kept.field])}\n`
 
 /**
  * Every file of a project but its chats and the bytes of its imported files:
@@ -138,7 +139,9 @@ export function projectFiles(story, schema, entries, documentOf) {
       const { path, text } = repositoryText(entry, entries, documentOf)
       files.set(path, text)
     }
-    if (entry.narration) files.set(narrationPath(entry.id), narrationText(document))
+    for (const kept of ROW_FILES) {
+      if (entry[kept.flag]) files.set(kept.path(entry.id), rowFileText(kept, document))
+    }
   }
   return files
 }
@@ -249,7 +252,9 @@ export function planProject(previous, next, documentOf, changed) {
   const trashed = []
   for (const entry of gone) {
     const path = /** @type {string} */ (at.get(entry.id))
-    if (entry.narration) ops.push({ op: 'trash', path: narrationPath(entry.id) })
+    for (const kept of ROW_FILES) {
+      if (entry[kept.flag]) ops.push({ op: 'trash', path: kept.path(entry.id) })
+    }
     if (trashed.some(dir => path === dir || isBelow(path, dir))) continue
     if (isFolder(entry.kind)) {
       if (!keptPaths.some(kept => kept === path || isBelow(kept, path))) {
@@ -281,10 +286,12 @@ export function planProject(previous, next, documentOf, changed) {
     if (touched) {
       for (const { path, text } of filesOf(entry, document)) ops.push({ op: 'write', path, text })
     }
-    if (entry.narration && touched) {
-      ops.push({ op: 'write', path: narrationPath(entry.id), text: narrationText(document) })
-    } else if (!entry.narration && !fresh && previous.get(entry.id)?.narration) {
-      ops.push({ op: 'trash', path: narrationPath(entry.id) })
+    for (const kept of ROW_FILES) {
+      if (entry[kept.flag] && touched) {
+        ops.push({ op: 'write', path: kept.path(entry.id), text: rowFileText(kept, document) })
+      } else if (!entry[kept.flag] && !fresh && previous.get(entry.id)?.[kept.flag]) {
+        ops.push({ op: 'trash', path: kept.path(entry.id) })
+      }
     }
     // The pictures its row let go of, where they are now it has moved.
     const had = fresh ? undefined : previous.get(entry.id)?.pictures

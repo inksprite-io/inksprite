@@ -166,21 +166,16 @@ watch(
 )
 
 /**
- * Handle refresh models button click
+ * Ask the provider for its models again. The list shows what came back.
  */
 const handleRefreshModels = async () => {
   if (props.selectedProviderId) {
     try {
       await modelLists.load(props.selectedProviderId, kind.value)
-      toast.add({
-        severity: 'success',
-        detail: 'Models refreshed',
-        life: 2000,
-      })
     } catch (error) {
       toast.add({
         severity: 'error',
-        detail: `Failed to load models: ${error.message || 'check the provider settings'}`,
+        detail: `The models couldn't be loaded. ${error.message || 'Check the provider settings.'}`,
         life: 5000,
       })
     }

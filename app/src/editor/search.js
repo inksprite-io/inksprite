@@ -47,7 +47,7 @@ import { Decoration, DecorationSet } from 'prosemirror-view'
  */
 
 /** Stands in for an inline node that is not text, such as a line break, so positions line up. */
-const NOT_TEXT = '￼'
+export const NOT_TEXT = '\uFFFC'
 
 /** @type {PluginKey<SearchState>} */
 export const searchKey = new PluginKey('search')
@@ -98,19 +98,36 @@ export function findMatches(doc, query, options = {}) {
   const pattern = patternFor(query, options)
   /** @type {Match[]} */
   const matches = []
+  for (const { text, pos } of textblocksOf(doc)) {
+    for (const found of text.matchAll(pattern)) {
+      const from = pos + (found.index ?? 0)
+      matches.push({ from, to: from + found[0].length })
+    }
+  }
+  return matches
+}
+
+/**
+ * The text a search looks in: each textblock's, in document order, with
+ * where its text starts. An inline node that is not text is `NOT_TEXT`, one
+ * for each position it takes.
+ *
+ * @param {Node} doc
+ * @returns {Array<{text: string, pos: number}>}
+ */
+export function textblocksOf(doc) {
+  /** @type {Array<{text: string, pos: number}>} */
+  const blocks = []
   doc.descendants((node, pos) => {
     if (!node.isTextblock) return true
     let text = ''
     node.forEach(child => {
       text += child.isText ? child.text : NOT_TEXT.repeat(child.nodeSize)
     })
-    for (const found of text.matchAll(pattern)) {
-      const from = pos + 1 + (found.index ?? 0)
-      matches.push({ from, to: from + found[0].length })
-    }
+    blocks.push({ text, pos: pos + 1 })
     return false
   })
-  return matches
+  return blocks
 }
 
 /**
@@ -219,6 +236,23 @@ export const find =
     dispatch?.(withSearch(state.tr, query, options, matches, current))
     return true
   }
+
+/**
+ * Look for something and go to one of its matches, by where it comes among
+ * them: the third is the third the find comes to from the top, which is how
+ * a search across the project names a match. Past the last, the last.
+ *
+ * @param {string} query
+ * @param {SearchOptions} options
+ * @param {number} index
+ * @returns {Command}
+ */
+export const findAt = (query, options, index) => (state, dispatch) => {
+  const matches = findMatches(state.doc, query, options)
+  const current = Math.min(Math.max(index, 0), matches.length - 1)
+  dispatch?.(withSearch(state.tr, query, options, matches, current))
+  return true
+}
 
 /**
  * Move to the match after the one the writer is on, or before it, going round

@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { undo } from 'prosemirror-history'
+import { closeHistory, undo } from 'prosemirror-history'
 import {
   useComments,
+  forgetDone,
   commentDraft,
   currentComment,
   goToComment,
@@ -15,6 +16,7 @@ import { useDocuments, clearDocumentInstances } from '@/composables/useDocuments
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { useEditor, clearEditor } from '@/composables/useEditor.js'
 import { commentRanges } from '@/editor/comments.js'
+import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
 vi.mock('@/stores/db', () => ({
@@ -62,6 +64,7 @@ describe('useComments', () => {
     vi.clearAllMocks()
     await useDocuments(STORY).init()
     leaveComment(currentComment.value?.documentId ?? '')
+    forgetDone()
   })
 
   it("lists each document's comments in the outline's order, and only those with any", () => {
@@ -182,6 +185,186 @@ describe('useComments', () => {
     )
   })
 
+  describe('suggestions', () => {
+    const SUGGESTED =
+      'We had a {==cold and narrow==}{>>cabcd1<<} attic, {--damp--}{>>sabcd1<<}{++dry++}{>>sabcd1<<} and dark.'
+    const pending = (quote, text, posts = []) => ({
+      status: 'open',
+      quote,
+      posts,
+      suggestion: { text, created: 1, chat: 'chat_1' },
+    })
+    const suggested = () =>
+      text('Chapter', SUGGESTED, {
+        cabcd1: open('cold and narrow', said('reword this')),
+        sabcd1: pending('damp', 'dry'),
+      })
+
+    it('lists one among the comments in the order of the text, with its change', () => {
+      suggested()
+      const [group] = useComments(STORY).groups.value
+      expect(group.comments.map(c => [c.id, c.change ?? null])).toEqual([
+        ['cabcd1', null],
+        ['sabcd1', { out: 'damp', in: 'dry' }],
+      ])
+      expect(group.stale).toEqual([])
+    })
+
+    it('accepts one in a closed document, keeping its thread settled, and says when', () => {
+      const document = suggested()
+      const { groups, accept } = useComments(STORY)
+
+      accept(document.id, 'sabcd1')
+
+      expect(store.getDocument(document.id).content).toBe(
+        'We had a {==cold and narrow==}{>>cabcd1<<} attic, dry and dark.'
+      )
+      expect(thread(document.id, 'sabcd1')).toMatchObject({
+        status: 'resolved',
+        suggestion: { settled: 'accepted', settledAt: expect.any(Number) },
+      })
+      expect(groups.value[0].resolved).toMatchObject([
+        { id: 'sabcd1', state: 'resolved', change: { out: 'damp', in: 'dry' } },
+      ])
+    })
+
+    it('resolves a comment whose passage accepting takes out, and rejecting none', () => {
+      const document = text('Chapter', 'A {--{==cold==}{>>cabcd1<<} --}{>>sabcd1<<}night.', {
+        cabcd1: open('cold', said('why cold?')),
+        sabcd1: pending('cold ', ''),
+      })
+      useComments(STORY).accept(document.id, 'sabcd1')
+      expect(store.getDocument(document.id).content).toBe('A night.')
+      expect(thread(document.id, 'cabcd1').status).toBe('resolved')
+    })
+
+    it('rejects one in an open document as a change to it, which undoing opens again', () => {
+      const document = suggested()
+      const editor = useEditor()
+      editor.open(document.id, document.content)
+      const { groups, reject } = useComments(STORY)
+
+      reject(document.id, 'sabcd1')
+
+      const after = editor.stateOf(document.id)
+      expect(after.doc.textContent).toBe('We had a cold and narrow attic, damp and dark.')
+      expect(groups.value[0].comments.map(c => c.id)).toEqual(['cabcd1'])
+      editor.flush(document.id)
+      expect(thread(document.id, 'sabcd1').suggestion.settled).toBe('rejected')
+
+      undo(after, tr => editor.dispatch(document.id, tr))
+      expect(groups.value[0].comments.map(c => c.id)).toEqual(['cabcd1', 'sabcd1'])
+      editor.flush(document.id)
+      expect(thread(document.id, 'sabcd1')).toEqual(pending('damp', 'dry'))
+    })
+
+    it('takes one accepted in an open document back as undoing there would, and does it again', () => {
+      const document = suggested()
+      const editor = useEditor()
+      editor.open(document.id, document.content)
+      const comments = useComments(STORY)
+      const ACCEPTED = 'We had a {==cold and narrow==}{>>cabcd1<<} attic, dry and dark.'
+
+      comments.accept(document.id, 'sabcd1')
+      expect(editor.markdown(document.id)).toBe(ACCEPTED)
+
+      expect(comments.undo()).toBe(true)
+      expect(editor.markdown(document.id)).toBe(SUGGESTED)
+      expect(thread(document.id, 'sabcd1')).toEqual(pending('damp', 'dry'))
+      expect(comments.groups.value[0].comments.map(c => c.id)).toEqual(['cabcd1', 'sabcd1'])
+      // The step the editor's own undo would have taken: there is none before it.
+      expect(undo(editor.stateOf(document.id))).toBe(false)
+
+      expect(comments.redo()).toBe(true)
+      expect(editor.markdown(document.id)).toBe(ACCEPTED)
+      expect(thread(document.id, 'sabcd1').suggestion.settled).toBe('accepted')
+      expect(comments.redo()).toBe(false)
+
+      expect(comments.undo()).toBe(true)
+      editor.flush(document.id)
+      expect(store.getDocument(document.id).content).toBe(SUGGESTED)
+      expect(thread(document.id, 'sabcd1')).toEqual(pending('damp', 'dry'))
+      expect(comments.undo()).toBe(false)
+    })
+
+    it('takes back two accepted in turn, and none once a change lies between', () => {
+      const TWO =
+        'A {--cold--}{>>sabcd1<<}{++warm++}{>>sabcd1<<} night, {++very ++}{>>sabcd2<<}dark.'
+      const document = text('Chapter', TWO, {
+        sabcd1: pending('cold', 'warm'),
+        sabcd2: pending('', 'very '),
+      })
+      const editor = useEditor()
+      editor.open(document.id, document.content)
+      const comments = useComments(STORY)
+
+      comments.accept(document.id, 'sabcd1')
+      comments.accept(document.id, 'sabcd2')
+      expect(comments.undo()).toBe(true)
+      expect(comments.undo()).toBe(true)
+      expect(editor.markdown(document.id)).toBe(TWO)
+
+      comments.accept(document.id, 'sabcd1')
+      // Typed and deleted again: the text reads as the accept left it, and
+      // the step undoing would take is the deleting.
+      const end = () => editor.stateOf(document.id).doc.content.size - 1
+      editor.dispatch(document.id, editor.stateOf(document.id).tr.insertText('!', end()))
+      editor.dispatch(
+        document.id,
+        closeHistory(editor.stateOf(document.id).tr.delete(end() - 1, end()))
+      )
+      expect(comments.undo()).toBe(false)
+      expect(editor.markdown(document.id)).toBe('A warm night, {++very ++}{>>sabcd2<<}dark.')
+    })
+
+    it('takes one accepted in a closed document back by putting back what it said', () => {
+      const CUT = 'A {--{==cold==}{>>cabcd1<<} --}{>>sabcd1<<}night.'
+      const document = text('Chapter', CUT, {
+        cabcd1: open('cold', said('why cold?')),
+        sabcd1: pending('cold ', ''),
+      })
+      const comments = useComments(STORY)
+
+      comments.accept(document.id, 'sabcd1')
+      expect(thread(document.id, 'cabcd1').status).toBe('resolved')
+
+      expect(comments.undo()).toBe(true)
+      // As the store keeps any text, in the editor's markup.
+      expect(store.getDocument(document.id).content).toBe(serializeMarkdown(parseMarkdown(CUT)))
+      expect(thread(document.id, 'sabcd1')).toEqual(pending('cold ', ''))
+      expect(thread(document.id, 'cabcd1').status).toBe('open')
+    })
+
+    it('leaves one the text has changed around since, and takes back what came before', () => {
+      const first = suggested()
+      const second = text('Two', 'A {++cold ++}{>>sabcd2<<}night.', {
+        sabcd2: pending('', 'cold '),
+      })
+      const editor = useEditor()
+      editor.open(second.id, second.content)
+      const comments = useComments(STORY)
+      comments.accept(first.id, 'sabcd1')
+      comments.accept(second.id, 'sabcd2')
+      const typed = editor.stateOf(second.id)
+      editor.dispatch(second.id, typed.tr.insertText('!', typed.doc.content.size - 1))
+
+      expect(comments.undo()).toBe(true)
+      expect(editor.markdown(second.id)).toBe('A cold night.!')
+      expect(store.getDocument(first.id).content).toBe(SUGGESTED)
+      expect(comments.undo()).toBe(false)
+    })
+
+    it('deletes any post of one alone, the first too, and leaves the suggestion', () => {
+      const document = text('Chapter', SUGGESTED, {
+        cabcd1: open('cold and narrow', said('reword this')),
+        sabcd1: pending('damp', 'dry', [said('Drier.', 'model')]),
+      })
+      useComments(STORY).deletePost(document.id, 'sabcd1', 0)
+      expect(thread(document.id, 'sabcd1').posts).toEqual([])
+      expect(store.getDocument(document.id).content).toBe(SUGGESTED)
+    })
+  })
+
   it("answers a comment, and changes any of the writer's posts, never the model's", () => {
     const document = chapter()
     const { reply, editPost } = useComments(STORY)
@@ -243,6 +426,64 @@ describe('useComments', () => {
     expect(store.getDocument(document.id).comments).toBeUndefined()
     // Nothing for undo to bring back: its thread is gone.
     expect(undo(after)).toBe(false)
+  })
+
+  it('takes back a comment resolved or deleted, on its passage with its thread', () => {
+    const document = chapter()
+    const editor = useEditor()
+    editor.open(document.id, document.content)
+    const comments = useComments(STORY)
+    const placed = () => commentRanges(editor.stateOf(document.id).doc).map(range => range.id)
+
+    comments.resolve(document.id, 'cabcd1')
+    expect(comments.undo()).toBe(true)
+    expect(placed()).toEqual(['cabcd1'])
+    expect(thread(document.id, 'cabcd1')).toMatchObject(
+      open('cold and narrow', said('reword this'))
+    )
+
+    comments.remove(document.id, 'cabcd1')
+    expect(comments.undo()).toBe(true)
+    expect(placed()).toEqual(['cabcd1'])
+    expect(thread(document.id, 'cabcd1')).toMatchObject(
+      open('cold and narrow', said('reword this'))
+    )
+    // Neither is in the editor's own history now: it was taken back there, or never in it.
+    expect(undo(editor.stateOf(document.id))).toBe(false)
+
+    expect(comments.redo()).toBe(true)
+    expect(placed()).toEqual([])
+    expect(store.getDocument(document.id).comments).toBeUndefined()
+
+    const closed = text('Two', 'She {==ran==}{>>cabcd2<<}.', { cabcd2: open('ran', said('x')) })
+    comments.deletePost(closed.id, 'cabcd2', 0)
+    expect(comments.undo()).toBe(true)
+    expect(store.getDocument(closed.id).content).toBe('She {==ran==}{>>cabcd2<<}.')
+    expect(thread(closed.id, 'cabcd2')).toMatchObject(open('ran', said('x')))
+  })
+
+  it('takes back a reply while the thread says what it left it saying, in its project only', () => {
+    const document = chapter()
+    const comments = useComments(STORY)
+    const texts = () => thread(document.id, 'cabcd1').posts.map(post => post.text)
+
+    comments.reply(document.id, 'cabcd1', 'and the tense')
+    expect(useComments('story_2').undo()).toBe(false)
+    expect(comments.undo()).toBe(true)
+    expect(texts()).toEqual(['reword this'])
+    expect(comments.redo()).toBe(true)
+    expect(texts()).toEqual(['reword this', 'and the tense'])
+
+    store.updateDocument(document.id, {
+      comments: {
+        cabcd1: {
+          ...thread(document.id, 'cabcd1'),
+          posts: [...thread(document.id, 'cabcd1').posts, said('Done.', 'model')],
+        },
+      },
+    })
+    expect(comments.undo()).toBe(false)
+    expect(texts()).toEqual(['reword this', 'and the tense', 'Done.'])
   })
 
   it('reopens a resolved comment on its passage, in a closed or an open document', () => {

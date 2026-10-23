@@ -38,6 +38,8 @@ import { BUILT_IN_PROVIDERS } from '@/ai/providers.js'
  * @property {Sampler[]} [samplers] - The samplers it takes
  * @property {ReasoningTraits|null} [reasoning] - How it reasons; null for a
  *   model that doesn't
+ * @property {number} [contextLength] - How many tokens it reads and writes in
+ *   one request, its answer among them
  */
 
 /**

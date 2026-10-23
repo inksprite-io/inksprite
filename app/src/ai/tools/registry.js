@@ -75,6 +75,25 @@
  *   deep the consultation runs is not the skill's to say: the loop counts that.
  *   `edits` is the turn's record of what its tools changed, handed on so a
  *   skill's writes are recorded with the turn's.
+ * @property {(question: string) => Promise<'allow'|'always'|'deny'>} [approve] -
+ *   Ask the writer before doing something that costs a lot, beside the call.
+ *   `always` is yes and stop asking, which the tool keeps where the writer
+ *   can undo it. Supplied by whoever runs the turn. Absent outside a turn,
+ *   and a tool that would ask does not do it. A stopped turn answers no.
+ *   The wait is in the call's time, so a tool that asks has a long one.
+ * @property {(said: string) => void} [progress] - Say how far a long call has
+ *   got, in a few words ("3 of 7 requests"), for the turn's status line.
+ * @property {import('../../types/models.js').AIPreset|null} [preset] - The
+ *   preset the chat runs on: the connection, model, routing and settings its
+ *   own requests go out with. For a tool that asks a model of its own on the
+ *   chat's behalf, as explore's job does, to ask the same one. Supplied by
+ *   whoever runs the turn; absent, such a tool takes the active preset,
+ *   which a new chat runs on.
+ * @property {(shown: import('../../types/models.js').ShownResult) => void} [show] -
+ *   Put an answer in front of the writer as it is, where the call sits in the
+ *   turn: for one they should read in the tool's own words rather than have
+ *   retold. The model is sent the result as ever, and the tool tells it the
+ *   writer has it. Absent where nothing would show it.
  * @property {AbortSignal} [signal] - Aborted when the call is stopped: its
  *   time is up, or the turn it is part of was stopped. A tool with something
  *   slow to wait on — a request, a server — hands it on; one that doesn't is

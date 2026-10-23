@@ -1,8 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 vi.mock('@/ai/anthropic.js', () => ({ listAnthropicModels: vi.fn() }))
+const askProps = vi.hoisted(() => vi.fn())
+vi.mock('@/ai/llamacpp.js', () => ({ askProps }))
 
-const { listModels, listSpeechModels, openRouterTraits, traitsOf } = await import('@/ai/models.js')
+const { contextOf, listModels, listSpeechModels, openRouterTraits, traitsOf } = await import(
+  '@/ai/models.js'
+)
 
 /** Answer every fetch with this list, as `/models` does. */
 const serve = data =>
@@ -39,6 +43,11 @@ describe('openRouterTraits', () => {
       levels: ['high', 'xhigh'],
       defaultLevel: 'high',
     })
+  })
+
+  it('reads how long a context it takes, where the list says', () => {
+    expect(openRouterTraits({ ...GLM, context_length: 131072 }).contextLength).toBe(131072)
+    expect(openRouterTraits(GLM)).not.toHaveProperty('contextLength')
   })
 
   it('leaves out an effort the settings have no word for', () => {
@@ -192,5 +201,21 @@ describe('listSpeechModels', () => {
     vi.stubGlobal('fetch', vi.fn())
     expect(await listSpeechModels({ id: 'a', name: 'Anthropic', type: 'anthropic' })).toEqual([])
     expect(fetch).not.toHaveBeenCalled()
+  })
+})
+
+describe('contextOf', () => {
+  it('reads it off OpenRouter’s list, and from what llama.cpp says a slot holds', async () => {
+    serve([{ ...GLM, context_length: 202752 }])
+    expect(await contextOf(freshOpenRouter(), 'z-ai/glm')).toBe(202752)
+
+    askProps.mockResolvedValue({ slots: 1, context: 8192 })
+    expect(await contextOf(/** @type {any} */ ({ id: 'l', type: 'llamacpp' }), 'any')).toBe(8192)
+  })
+
+  it('knows nothing of any other connection’s', async () => {
+    expect(
+      await contextOf(/** @type {any} */ ({ id: 'x', type: 'generic' }), 'any')
+    ).toBeUndefined()
   })
 })

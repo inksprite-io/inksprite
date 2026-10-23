@@ -70,7 +70,6 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
-import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import ContextMenu from 'primevue/contextmenu'
@@ -112,7 +111,6 @@ const emit = defineEmits(['select', 'delete', 'export', 'menu-open', 'menu-close
 
 const { debug } = useApplicationState()
 
-const confirm = useConfirm()
 const chatsApi = useChats(props.storyId)
 const { formatRelativeTime } = useReactiveTime()
 
@@ -201,7 +199,7 @@ const menuItems = computed(() => [
     label: 'Delete',
     icon: 'pi pi-trash',
     command: () => {
-      confirmDelete()
+      moveToTrash()
     },
   },
 ])
@@ -280,18 +278,8 @@ const onMenuHide = which => {
   if (openMenu.value === which) settle()
 }
 
-const confirmDelete = () => {
-  confirm.require({
-    message: `Delete "${chat.value?.title || 'this chat'}"?`,
-    header: 'Delete chat',
-    icon: 'pi pi-exclamation-triangle',
-    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-    acceptProps: { label: 'Delete', severity: 'danger' },
-    accept: () => {
-      emit('delete', props.chatId)
-    },
-  })
-}
+/** To the trash, without asking: it can be restored from there. */
+const moveToTrash = () => emit('delete', props.chatId)
 
 onMounted(async () => {
   await chatsApi.init()

@@ -8,6 +8,12 @@
       @open="$emit('open-document', $event)"
       @select-chat="$emit('select-chat', $event)"
     />
+    <SearchPanel
+      v-else-if="tab === SIDEBAR_TABS.SEARCH"
+      :story-id="storyId"
+      :document-id="documentId"
+      @open-document="$emit('open-document', $event)"
+    />
     <ChatHistory
       v-else-if="tab === SIDEBAR_TABS.CHATS"
       :story-id="storyId"
@@ -33,12 +39,14 @@ import ChatHistory from '../chats/ChatHistory.vue'
 import CommentsPanel from '../comments/CommentsPanel.vue'
 import NarrationPanel from '../narration/NarrationPanel.vue'
 import DocumentTree from '../tree/DocumentTree.vue'
+import SearchPanel from '../search/SearchPanel.vue'
 import { SIDEBAR_TABS } from './layout.js'
 
 /**
  * Where the writer picks what to work on: the project's documents, with
- * the other projects a menu away at the top, its chats, or the comments left
- * in it — or hears the document open in the editor read aloud.
+ * the other projects a menu away at the top, what they search it for, its
+ * chats, or the comments left in it — or hears the document open in the
+ * editor read aloud.
  * Which is showing is chosen on the rail and kept in the story's layout, so
  * it is asked for here rather than held.
  *

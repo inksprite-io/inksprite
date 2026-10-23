@@ -13,6 +13,7 @@ import { computed, toValue } from 'vue'
 import { useChats } from './useChats.js'
 import { droppedFrom, droppedSkills, loadedSkills } from '@/ai/skills/loads.js'
 import { assembleTurn } from '@/ai/commands.js'
+import { withoutAsides } from '@/ai/asides.js'
 
 /**
  * @param {import('vue').MaybeRefOrGetter<string>} chatId
@@ -30,11 +31,17 @@ export function useLoadedSkills(chatId) {
     return id ? chatsApi.getMessagesForChat(id)?.value || [] : []
   })
 
+  /**
+   * The chat as the next turn reads it. A skill loaded in an aside's answer
+   * went with the aside. See ai/asides.js.
+   */
+  const read = computed(() => withoutAsides(messages.value))
+
   /** The skills loaded here, in the order they were first loaded. */
-  const loaded = computed(() => loadedSkills(messages.value))
+  const loaded = computed(() => loadedSkills(read.value))
 
   /** The loaded skills that go at the next summary. */
-  const dropped = computed(() => droppedSkills(messages.value))
+  const dropped = computed(() => droppedSkills(read.value))
 
   /**
    * Drop a skill from the chat, wherever it was loaded, so it is not kept past

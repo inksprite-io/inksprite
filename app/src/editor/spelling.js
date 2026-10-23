@@ -14,8 +14,11 @@
  * now reads is drawn straight from the checker's cache, and the rest are sent
  * to be checked, a few at a time, and drawn when the answers come back. Each
  * paragraph is checked on its own, as a string in which a line break is `\n`,
- * so a lint at offset `i` is at position `start + i`. Code blocks are not
- * checked, and a lint that touches inline code is not drawn.
+ * so a lint at offset `i` is at position `start + i`. A paragraph with
+ * suggestions in it is checked as it would read with them taken, so what
+ * they would take out is not in the string, and its offsets are mapped back
+ * (`blockText`). Code blocks are not checked, and a lint that touches inline
+ * code is not drawn.
  *
  * Only what is near the screen is checked: Harper takes about a quarter of a
  * millisecond a word, so a novel in one document would keep a core busy for
@@ -115,12 +118,35 @@ const changedRanges = tr => {
 }
 
 /**
- * A paragraph's text as it is sent to be checked.
+ * A paragraph's text as it is sent to be checked, read as it would be with
+ * its suggestions taken: what one would put in is checked, as the words on
+ * offer, and what one would take out is left out, so the words either side
+ * are read together as they would then stand. A deleted word takes its space
+ * with it, so blanking it instead would leave a run of spaces to be flagged.
  *
  * @param {Node} node - A textblock
- * @returns {string}
+ * @returns {{ text: string, offsets: number[]|null }} `offsets[i]` is where
+ *   the text's `i`th character is in the paragraph; null when it is at `i`
  */
-export const blockText = node => node.textBetween(0, node.content.size, undefined, BREAK)
+export const blockText = node => {
+  let taken = false
+  node.forEach(child => {
+    taken ||= child.marks.some(mark => mark.type.name === 'deletion')
+  })
+  if (!taken) {
+    return { text: node.textBetween(0, node.content.size, undefined, BREAK), offsets: null }
+  }
+  let text = ''
+  /** @type {number[]} */
+  const offsets = []
+  node.forEach((child, offset) => {
+    if (child.marks.some(mark => mark.type.name === 'deletion')) return
+    const part = child.isText ? (child.text ?? '') : BREAK
+    text += part
+    for (let i = 0; i < part.length; i++) offsets.push(offset + i)
+  })
+  return { text, offsets }
+}
 
 /**
  * Where the inline code in a paragraph is, as offsets into its text.
@@ -141,27 +167,27 @@ const codeIn = node => {
 
 /**
  * The underlines for a paragraph's lints: those the checker shows, and none
- * on inline code.
+ * on inline code. One across what a suggestion would take out runs over it.
  *
  * @param {Node} node
  * @param {number} start - Where its content starts
  * @param {LintInfo[]} lints
  * @param {Checker} checker
+ * @param {number[]|null} offsets - Where the checked text's characters are
+ *   in the paragraph, as `blockText` gives them
  * @returns {Decoration[]}
  */
-const underlines = (node, start, lints, checker) => {
+const underlines = (node, start, lints, checker, offsets) => {
   const code = codeIn(node)
+  const at = (/** @type {number} */ i) => (offsets ? offsets[i] : i)
   return lints
-    .filter(
-      lint =>
-        lint.from < lint.to &&
-        checker.shows(lint) &&
-        !code.some(range => lint.from < range.to && range.from < lint.to)
-    )
-    .map(lint =>
+    .filter(lint => lint.from < lint.to && checker.shows(lint))
+    .map(lint => ({ lint, from: at(lint.from), to: at(lint.to - 1) + 1 }))
+    .filter(({ from, to }) => !code.some(range => from < range.to && range.from < to))
+    .map(({ lint, from, to }) =>
       Decoration.inline(
-        start + lint.from,
-        start + lint.to,
+        start + from,
+        start + to,
         { class: SPELLING_KINDS.has(lint.kind) ? 'spelling-error' : 'grammar-error' },
         { lint }
       )
@@ -413,10 +439,14 @@ export function spellingPlugin(checker = spellChecker) {
             pending.push({ from, to })
             continue
           }
-          const text = blockText(node)
+          const { text, offsets } = blockText(node)
           const lints = text.trim() ? checker.cached(text) : []
           if (lints) {
-            checked.push({ from, to, decorations: underlines(node, from, lints, checker) })
+            checked.push({
+              from,
+              to,
+              decorations: underlines(node, from, lints, checker, offsets),
+            })
             continue
           }
           pending.push({ from, to })

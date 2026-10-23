@@ -45,6 +45,9 @@
  *   to come back to `path`; `onReturn` gets the query it came back with
  * @property {(id: number) => void} stopSignIn
  * @property {(url: string) => Promise<void>} openInBrowser
+ * @property {(path: string) => Promise<void>} openWindow - Open another window,
+ *   on a path of the page
+ * @property {() => Promise<void>} focusWindow - Bring this window to the front
  * @property {() => Promise<string|null>} downloadUpdate
  * @property {() => Promise<void>} installUpdate
  * @property {() => Promise<string|null>} settingsFile - The text of the settings

@@ -19,6 +19,7 @@ import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
 import { sessionStorage } from '@/utils/sessionStorage'
 import { storage } from '@/storage/index.js'
+import { onTablesWritten } from '@/platform/windows.js'
 
 /** @typedef {import('../types/models.js').AIProvider} AIProvider */
 
@@ -110,6 +111,14 @@ export const useAIProvidersStore = defineStore('aiProviders', () => {
 
   /** @type {import('vue').Ref<Promise<void>|null>} */
   const initializePromise = ref(null)
+
+  // Another window wrote them: read again, with this window's own session keys.
+  onTablesWritten(['aiProviders'], async () => {
+    if (!initializePromise.value) return
+    const rows = await storage.all('aiProviders')
+    providers.value = new Map(rows.map(provider => [provider.id, provider]))
+    restoreSessionApiKeys()
+  })
 
   /**
    * Ensure initialization happens only once

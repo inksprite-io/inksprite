@@ -65,11 +65,11 @@
          into the project open. -->
     <CardLibraryDialog :story-id="currentStoryId" />
 
+    <!-- A text document's versions, from the outline or its tab. -->
+    <VersionsDialog v-if="currentStoryId" :key="currentStoryId" :story-id="currentStoryId" />
+
     <!-- A picture in a document at its own size, from the editor or a chat. -->
     <PictureViewer />
-
-    <!-- What a sync with a Google Doc asks, from the tree or the editor. -->
-    <DriveSyncDialog />
 
     <Welcome
       :visible="appState.showWelcomeDialog.value"
@@ -79,7 +79,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, watchEffect, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useApplicationState } from '@/composables/useApplicationState'
@@ -87,11 +87,21 @@ import { useDocuments } from '@/composables/useDocuments'
 import { useScreenSize } from '@/composables/useScreenSize'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
-import { replaceProjectInRoute, storyIdFromRoute } from '@/utils/routeHelpers'
+import { pushProjectToRoute, replaceProjectInRoute, storyIdFromRoute } from '@/utils/routeHelpers'
 import { useAIProvidersStore } from '@/stores/aiProvidersStore'
 import { useToast } from 'primevue/usetoast'
 import { useAIConfig } from '@/composables/useAIConfig'
 import { sessionStorage } from '@/utils/sessionStorage'
+import { useProjects } from '@/composables/useProjects'
+import { saveNow } from '@/composables/useSaveBeforeClosing.js'
+import {
+  askForProject,
+  bringWindowForward,
+  letGoOfProject,
+  onProjectAsked,
+  projectsElsewhere,
+  takeProject,
+} from '@/platform/windows.js'
 
 import Welcome from '@/components/common/Welcome.vue'
 import AppNavbar from './layout/AppNavbar.vue'
@@ -102,16 +112,18 @@ import NoProjectView from './layout/NoProjectView.vue'
 import Settings from './settings/Settings.vue'
 import SettingsDialog from './settings/SettingsDialog.vue'
 import CardLibraryDialog from './cards/CardLibraryDialog.vue'
+import VersionsDialog from './editor/VersionsDialog.vue'
 import PictureViewer from './editor/PictureViewer.vue'
-import DriveSyncDialog from './editor/DriveSyncDialog.vue'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import { useEditorRequest } from '@/composables/useEditorRequest.js'
 import { useChatRequest } from '@/composables/useChatRequest.js'
 import { useFocusMode, useFocusModeKeys } from '@/composables/useFocusMode.js'
+import { requestSearchField, useProjectSearchKey } from '@/composables/useProjectSearch.js'
 import {
   NO_PROJECT_LAYOUT,
   PANELS,
+  SIDEBAR_TABS,
   normalizeLayout,
   selectSidebarTab,
   keptWithoutAI,
@@ -125,6 +137,7 @@ const { isMobile } = useScreenSize()
 const storiesStore = useStoriesStore()
 const projectViewsStore = useProjectViewsStore()
 const appState = useApplicationState()
+const projects = useProjects()
 
 /** The project the URL names. */
 const routeStoryId = computed(() => storyIdFromRoute(route.params.storyId))
@@ -137,8 +150,9 @@ const currentStoryId = ref('')
 
 /**
  * True once the URL has been followed and found no project to open: there are
- * none. Until then the frame shows nothing, rather than the empty state for a
- * moment before the project arrives.
+ * none, or in the desktop app every one is open in another window. Until then
+ * the frame shows nothing, rather than the empty state for a moment before
+ * the project arrives.
  */
 const noProject = ref(false)
 
@@ -153,6 +167,8 @@ const currentDocumentId = computed(() =>
 // Focus mode is the document alone, so there is nothing to be in it with no
 // project open. See useFocusMode.
 useFocusModeKeys()
+// Mod-Shift-F searches the project open, from anywhere in it.
+useProjectSearchKey(() => currentStoryId.value)
 const focusMode = useFocusMode()
 const focused = computed(() => focusMode.focused.value && Boolean(currentStoryId.value))
 
@@ -223,8 +239,16 @@ const openDocument = documentId => {
   showPanel(PANELS.EDITOR)
 }
 
-/** @param {import('./layout/layout.js').SidebarTab} tab */
-const selectTab = tab => setLayout(selectSidebarTab(layout.value, tab))
+/**
+ * Pick a list on the rail. The search, picked to be shown, has the caret
+ * put in its field.
+ * @param {import('./layout/layout.js').SidebarTab} tab
+ */
+const selectTab = tab => {
+  const next = selectSidebarTab(layout.value, tab)
+  if (tab === SIDEBAR_TABS.SEARCH && next.sidebar) requestSearchField()
+  setLayout(next)
+}
 
 // A list asked for from deeper in the writer is shown, never toggled away as
 // a second click on the rail would: on a phone its tab, here the sidebar.
@@ -288,7 +312,8 @@ const toast = useToast()
 /**
  * Follow the URL to its project. A URL that names nothing — an old one, a
  * project since deleted — goes to the root, which opens the most recent
- * project instead.
+ * project instead. A project open in another window is shown there, and
+ * this one goes back to its own, or with none to the most recent.
  */
 const openRouteProject = async () => {
   noProject.value = false
@@ -296,11 +321,33 @@ const openRouteProject = async () => {
   if (!storyId) return openMostRecentProject()
 
   await storiesStore.ensureInitialized()
+  await projects.refresh()
   if (!storiesStore.getStory(storyId)) {
     currentStoryId.value = ''
     router.replace('/')
     return
   }
+
+  const { held, stale, first } = await takeProject(storyId, 'open')
+  if (!held) {
+    askForProject(storyId)
+    if (currentStoryId.value) replaceProjectInRoute(router, currentStoryId.value)
+    else router.replace('/')
+    return
+  }
+  // The writer went on to another project while this one was being taken.
+  if (routeStoryId.value !== storyId) {
+    if (currentStoryId.value !== storyId) letGoOfProject(storyId, 'open')
+    return
+  }
+  // Another window has had the project since this one last did, and what
+  // this one kept of it is behind: the page reads it all again.
+  if (stale) {
+    await saveNow()
+    window.location.reload()
+    return
+  }
+  if (first) await storiesStore.readAfresh(storyId)
 
   const api = useDocuments(storyId)
   await api.init()
@@ -319,12 +366,19 @@ const openRouteProject = async () => {
  * Nothing in the URL names a project: the app was opened at its root, or the
  * project that was open is gone. Go to the project the writer was last in on
  * this copy of the app, or with none opened here the one changed last, and
- * with no projects, stay here and say so.
+ * with no projects, stay here and say so. In the desktop app, projects open
+ * in other windows are passed over: a new window with every project open
+ * elsewhere is as empty as one with none.
  */
 const openMostRecentProject = async () => {
   currentStoryId.value = ''
   await Promise.all([storiesStore.ensureInitialized(), projectViewsStore.ensureInitialized()])
-  const ids = storiesStore.getAllStoriesOrdered().map(story => story.id)
+  await projects.refresh()
+  const away = await projectsElsewhere()
+  const ids = storiesStore
+    .getAllStoriesOrdered()
+    .map(story => story.id)
+    .filter(id => !away.has(id))
   const storyId = projectViewsStore.lastOpened(ids) ?? ids[0]
   if (storyId) replaceProjectInRoute(router, storyId)
   else noProject.value = true
@@ -332,12 +386,61 @@ const openMostRecentProject = async () => {
 
 watch(routeStoryId, openRouteProject, { immediate: true })
 
+// A project that comes while none is open, synced from another device, is
+// opened as one there at the start would have been.
+watch(
+  () => storiesStore.stories.size,
+  count => {
+    if (noProject.value && count > 0) openMostRecentProject()
+  }
+)
+
+// The project open, gone to the trash or deleted, here or on another device,
+// closes, and the most recent other one opens in its place.
+watch(
+  () => Boolean(currentStoryId.value) && !storiesStore.getStory(currentStoryId.value),
+  gone => {
+    if (gone) router.replace('/')
+  }
+)
+
+/**
+ * Let go of a project left, for another window to take, once what was done
+ * in it is saved. One come back to meanwhile is kept.
+ * @param {string} storyId
+ */
+const leave = async storyId => {
+  try {
+    await saveNow()
+  } finally {
+    if (currentStoryId.value !== storyId) letGoOfProject(storyId, 'open')
+  }
+}
+
 // A chat belongs to a story, so the one showing cannot follow the writer to
 // another project; the new project's own last chat comes back instead. The
-// project left keeps its tabs but not their editor states.
+// project left keeps its tabs but not their editor states, and is let go of.
 watch(currentStoryId, (storyId, previous) => {
-  if (previous) useDocuments(previous).releaseTabs()
+  if (previous) {
+    useDocuments(previous).releaseTabs()
+    leave(previous)
+  }
   selectedChatId.value = storyId ? sessionStorage.get(chatStorageKey()) : null
+})
+
+// The window is titled with its project, so that the windows can be told
+// apart: in the Window menu and the Dock, and as a browser's tabs.
+watchEffect(() => {
+  document.title = currentStoryId.value
+    ? `${projects.nameOf(currentStoryId.value)} — inksprite`
+    : 'inksprite'
+})
+
+// Another window asking to see the project this one has: this one comes
+// forward on it.
+const stopAnswering = onProjectAsked(storyId => {
+  if (storyId !== currentStoryId.value) pushProjectToRoute(router, storyId)
+  bringWindowForward()
 })
 
 // A chat asked for from elsewhere, in the project it is in, shown once that
@@ -386,5 +489,6 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('message', handleOAuthMessage)
+  stopAnswering()
 })
 </script>

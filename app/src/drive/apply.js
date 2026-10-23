@@ -24,6 +24,24 @@
  *   before it, and what followed in the paragraph follows the table. Each of
  *   its cells, and each cell of a row or column put in, is one empty
  *   paragraph. A table goes whole, by its range or by its last row or column.
+ * - A comment thread is on the characters of its range, and goes where they
+ *   go; text typed inside a comment joins it, and one whose words all went
+ *   stands with none. A comment made, a reply, a resolve, a reopen and an
+ *   edit of one's own post are the signed-in account's, `me`; the tests can
+ *   send a batch as someone else.
+ * - Text put in between two characters a suggestion marks, as put in or
+ *   as taken out, is marked so too: part of it. At either end of what it
+ *   marks it is not (checked live, 22 Oct 2026).
+ * - A suggestion accepted takes out the characters it marks as taken out
+ *   and keeps those it put in; rejected, the other way about. Either way a
+ *   paragraph that loses its newline joins the next, and the suggestion's
+ *   thread leaves the Doc's list. A reply on one is a reply as on a comment.
+ * - The tests can send a batch as a suggestion, as someone in Suggesting
+ *   mode would make it: what it puts in is marked as put in, what it takes
+ *   out as taken out, but what it put in itself, which goes. Put in between
+ *   two characters another suggestion put in, it is marked as put in by
+ *   both, nested in that one. Styles only on
+ *   what it put in, and nothing of tables.
  *
  * Only what the writer sends is here; anything else is refused, as Docs
  * would refuse what is refused here. The Doc is held as atoms, one per
@@ -265,15 +283,86 @@ function insertText(model, { text, location }) {
   const atoms = entry.block.atoms
   const before = entry.offset > 0 ? atoms[entry.offset - 1] : atoms[entry.offset]
   const style = before.char !== undefined ? before.style : (before.value?.textStyle ?? {})
+  // Inside a comment, the text joins it.
+  const left = entry.offset > 0 ? atoms[entry.offset - 1].anchors : undefined
+  const right = atoms[entry.offset]?.anchors
+  const anchors = left && right ? new Set([...left].filter(id => right.has(id))) : undefined
+  // Inside a suggestion, it joins it too.
+  const marks = entry.offset > 0 ? shared(atoms[entry.offset - 1], atoms[entry.offset]) : {}
+  if (model.suggest) {
+    marks.suggestedInsertionIds = [model.suggest, ...(marks.suggestedInsertionIds ?? [])]
+    delete marks.suggestedDeletionIds
+  }
   const inserted = text
     .replace(STRIPPED, '')
     .split('')
-    .map(char => ({ char, style: clone(style) }))
+    .map(char => ({
+      char,
+      style: clone(style),
+      ...(anchors?.size && { anchors: new Set(anchors) }),
+      ...(Object.keys(marks).length > 0 && { extra: clone(marks) }),
+    }))
   atoms.splice(entry.offset, 0, ...inserted)
   if (inserted.some(atom => atom.char === '\n')) splitAtNewlines(entry)
 }
 
+/**
+ * The suggestions two atoms both carry, as put in and as taken out.
+ *
+ * @returns {{suggestedInsertionIds?: string[], suggestedDeletionIds?: string[]}}
+ */
+function shared(left, right) {
+  const marksOf = atom => (atom?.char !== undefined ? atom?.extra : atom?.value) ?? {}
+  const [a, b] = [marksOf(left), marksOf(right)]
+  const out = {}
+  for (const key of ['suggestedInsertionIds', 'suggestedDeletionIds']) {
+    const both = (a[key] ?? []).filter(id => (b[key] ?? []).includes(id))
+    if (both.length > 0) out[key] = both
+  }
+  return out
+}
+
+/** Whether an atom is one the batch's suggestion put in. */
+const putInBy = (model, atom) =>
+  !!atom &&
+  (atom.char !== undefined ? atom.extra : atom.value)?.suggestedInsertionIds?.includes(
+    model.suggest
+  )
+
+/** Refuse what a suggestion here cannot make: anything but what it put in. */
+function onlyPutIn(model, atoms) {
+  if (model.suggest && !atoms.every(atom => putInBy(model, atom))) {
+    throw new Error('the stand-in suggests a style only for what the suggestion put in')
+  }
+}
+
+/**
+ * A deletion suggested: the characters marked as taken out, but for those
+ * the suggestion put in itself, which go.
+ */
+function suggestDeletion(model, range) {
+  const segment = segmentOf(model, range)
+  const { startIndex: start, endIndex: end } = range
+  if (!(start < end)) throw new Error('400: an empty range')
+  const { paragraphs, fixed } = layout(segment)
+  if (fixed.some(entry => entry.start >= start && entry.start < end)) {
+    throw new Error('the stand-in suggests nothing of tables')
+  }
+  for (const entry of paragraphs) {
+    entry.block.atoms = entry.block.atoms.map((atom, i) => {
+      const index = entry.start + i
+      if (index < start || index >= end) return atom
+      if (putInBy(model, atom)) return null
+      const extra = atom.char !== undefined ? (atom.extra ??= {}) : atom.value
+      extra.suggestedDeletionIds = [...(extra.suggestedDeletionIds ?? []), model.suggest]
+      return atom
+    })
+  }
+  closeUp(paragraphs)
+}
+
 function deleteContentRange(model, { range }) {
+  if (model.suggest) return suggestDeletion(model, range)
   const segment = segmentOf(model, range)
   const { startIndex: start, endIndex: end } = range
   if (!(start < end)) throw new Error('400: an empty range')
@@ -308,6 +397,16 @@ function deleteContentRange(model, { range }) {
     const to = Math.min(end, entry.start + entry.block.atoms.length) - entry.start
     if (from < to) entry.block.atoms.splice(from, to - from, ...new Array(to - from).fill(null))
   }
+  closeUp(paragraphs)
+}
+
+/**
+ * The atoms taken out, those set to null, and each paragraph that lost its
+ * newline joined to the next, which keeps its style.
+ *
+ * @param {any[]} paragraphs - As `layout` lists them
+ */
+function closeUp(paragraphs) {
   for (const entry of [...paragraphs].reverse()) {
     const { block, list } = entry
     const lostNewline = block.atoms.at(-1) === null
@@ -327,6 +426,15 @@ function fieldsOf(mask, given) {
 
 function updateTextStyle(model, { range, textStyle = {}, fields }) {
   const segment = segmentOf(model, range)
+  onlyPutIn(
+    model,
+    layout(segment).paragraphs.flatMap(entry =>
+      entry.block.atoms.filter((_, i) => {
+        const index = entry.start + i
+        return index >= range.startIndex && index < range.endIndex
+      })
+    )
+  )
   for (const entry of layout(segment).paragraphs) {
     entry.block.atoms.forEach((atom, i) => {
       const index = entry.start + i
@@ -348,7 +456,12 @@ function overlapping(segment, range) {
 }
 
 function updateParagraphStyle(model, { range, paragraphStyle = {}, fields }) {
-  for (const { block } of overlapping(segmentOf(model, range), range)) {
+  const entries = overlapping(segmentOf(model, range), range)
+  onlyPutIn(
+    model,
+    entries.map(entry => entry.block.atoms.at(-1))
+  )
+  for (const { block } of entries) {
     const style = (block.props.paragraphStyle ??= {})
     for (const field of fieldsOf(fields, paragraphStyle)) {
       if (field in paragraphStyle) style[field] = clone(paragraphStyle[field])
@@ -361,6 +474,10 @@ function createParagraphBullets(model, { range, bulletPreset }) {
   const levels = PRESETS[bulletPreset]
   if (!levels) throw new Error(`no preset ${bulletPreset}`)
   const entries = overlapping(segmentOf(model, range), range)
+  onlyPutIn(
+    model,
+    entries.map(entry => entry.block.atoms.at(-1))
+  )
   const before = entries[0] && entries[0].list[entries[0].i - 1]
   const joined = before?.props?.bullet?.listId
   const listId =
@@ -376,7 +493,12 @@ function createParagraphBullets(model, { range, bulletPreset }) {
 }
 
 function deleteParagraphBullets(model, { range }) {
-  for (const { block } of overlapping(segmentOf(model, range), range)) delete block.props.bullet
+  const entries = overlapping(segmentOf(model, range), range)
+  onlyPutIn(
+    model,
+    entries.map(entry => entry.block.atoms.at(-1))
+  )
+  for (const { block } of entries) delete block.props.bullet
 }
 
 /** A table's empty cell, as Docs makes one. */
@@ -479,7 +601,172 @@ function deleteTableColumn(model, { tableCellLocation }) {
   dropIfEmpty(table)
 }
 
+/** The account a batch is sent as. */
+const ME = { displayName: 'Me', user: 'user-me', me: true }
+
+/** When the stand-in says its posts were made: a second apart, from a fixed day. */
+const timeOf = (/** @type {number} */ n) => new Date(Date.UTC(2026, 9, 1) + n * 1000).toISOString()
+
+/** A comment's characters, by its anchor, in a segment. */
+function anchorRange(model, range, anchorId) {
+  const segment = segmentOf(model, range)
+  let quote = ''
+  for (const entry of layout(segment).paragraphs) {
+    entry.block.atoms.forEach((atom, i) => {
+      const index = entry.start + i
+      if (index < range.startIndex || index >= range.endIndex) return
+      ;(atom.anchors ??= new Set()).add(anchorId)
+      quote += atom.char ?? ''
+    })
+  }
+  return quote
+}
+
+function insertComment(model, { range, content }) {
+  if (!(range.startIndex < range.endIndex)) throw new Error('400: a comment on no text')
+  const n = model.comments.length + 1
+  const anchorId = `kix.comment${n}`
+  const quote = anchorRange(model, range, anchorId)
+  const time = timeOf(++model.posted)
+  const comment = {
+    commentId: `comment.${n}`,
+    anchorId,
+    status: 'OPEN',
+    headPost: {
+      postId: `post.${n}.0`,
+      author: clone(model.author),
+      content,
+      createTime: time,
+      updateTime: time,
+    },
+    replies: [],
+    plainTextQuote: quote.replace(/\n$/, ''),
+  }
+  model.comments.push(comment)
+  model.anchorIds.add(anchorId)
+  return { insertComment: { commentThread: clone(comment) } }
+}
+
+/**
+ * A thread of the Doc's, by id: a comment's, or a suggestion's, which Docs
+ * finds only when it is named as one.
+ *
+ * @param {any} model
+ * @param {{commentId?: string, suggestionId?: string}} named
+ */
+function threadOf(model, { commentId, suggestionId }) {
+  const thread = suggestionId
+    ? model.suggestions.find(each => each.suggestionId === suggestionId)
+    : model.comments.find(each => each.commentId === commentId)
+  if (!thread) throw new Error(`404: no thread ${suggestionId ?? commentId}`)
+  return thread
+}
+
+/**
+ * A suggestion accepted or rejected: the characters it takes out, or those
+ * it put in, gone, and its marks off the rest. Docs keeps listing it, as it
+ * ended.
+ *
+ * @param {any} model
+ * @param {string} suggestionId
+ * @param {boolean} accepted
+ */
+function settleSuggestion(model, suggestionId, accepted) {
+  const [gone, kept] = accepted
+    ? ['suggestedDeletionIds', 'suggestedInsertionIds']
+    : ['suggestedInsertionIds', 'suggestedDeletionIds']
+  let found = false
+  for (const segment of [model.body, ...Object.values(model.footnotes)]) {
+    const { paragraphs } = layout(segment)
+    for (const entry of paragraphs) {
+      entry.block.atoms = entry.block.atoms.map(atom => {
+        const extra = atom.char !== undefined ? atom.extra : atom.value
+        if (extra?.[gone]?.includes(suggestionId)) {
+          found = true
+          return null
+        }
+        if (extra?.[kept]?.includes(suggestionId)) {
+          found = true
+          extra[kept] = extra[kept].filter(id => id !== suggestionId)
+          if (extra[kept].length === 0) delete extra[kept]
+        }
+        return atom
+      })
+    }
+    closeUp(paragraphs)
+  }
+  if (!found) throw new Error(`404: no suggestion ${suggestionId}`)
+  const thread = model.suggestions.find(each => each.suggestionId === suggestionId)
+  if (thread) thread.status = accepted ? 'ACCEPTED' : 'REJECTED'
+  return {}
+}
+
+/**
+ * @param {any} model
+ * @param {{commentId?: string, suggestionId?: string, post?: {content?: string, commentAction?: string}}} request
+ */
+function addCommentReply(model, { post = {}, ...named }) {
+  const comment = threadOf(model, named)
+  if (!post.content && !post.commentAction) throw new Error('400: a reply that says nothing')
+  const time = timeOf(++model.posted)
+  const reply = {
+    postId: `${comment.headPost.postId.replace(/\.0$/, '')}.${(comment.replies ?? []).length + 1}`,
+    author: clone(model.author),
+    ...(post.content && { content: post.content }),
+    commentAction: post.commentAction ?? 'NO_COMMENT_ACTION_CHANGE',
+    createTime: time,
+    updateTime: time,
+  }
+  ;(comment.replies ??= []).push(reply)
+  if (post.commentAction === 'RESOLVE') comment.status = 'RESOLVED'
+  if (post.commentAction === 'REOPEN') comment.status = 'OPEN'
+  return { addCommentReply: { post: clone(reply) } }
+}
+
+function updateCommentPost(model, { postId, content, ...named }) {
+  const comment = threadOf(model, named)
+  const post = [comment.headPost, ...(comment.replies ?? [])].find(each => each.postId === postId)
+  if (!post) throw new Error(`404: no post ${postId}`)
+  if (post.author?.user !== model.author.user) throw new Error('403: not the author’s post')
+  post.content = content
+  post.updateTime = timeOf(++model.posted)
+  return {}
+}
+
+/** Each comment's ranges again, from the characters it is on. */
+function anchorsOf(model) {
+  const ranges = Object.fromEntries([...model.anchorIds].map(id => [id, []]))
+  const walk = (blocks, segmentId) => {
+    for (const entry of layout(blocks).paragraphs) {
+      entry.block.atoms.forEach((atom, i) => {
+        const index = entry.start + i
+        for (const id of atom.anchors ?? []) {
+          const list = (ranges[id] ??= [])
+          const last = list.at(-1)
+          if (last && last.endIndex === index && (last.segmentId ?? '') === (segmentId ?? '')) {
+            last.endIndex++
+          } else {
+            list.push({ startIndex: index, endIndex: index + 1, ...(segmentId && { segmentId }) })
+          }
+        }
+      })
+    }
+  }
+  walk(model.body, '')
+  for (const [id, blocks] of Object.entries(model.footnotes)) walk(blocks, id)
+  return Object.fromEntries(
+    Object.entries(ranges).map(([anchorId, list]) => [anchorId, { anchorId, ranges: list }])
+  )
+}
+
+const COMMENT_REQUESTS = new Set(['insertComment', 'addCommentReply', 'updateCommentPost'])
+
 const REQUESTS = {
+  insertComment,
+  addCommentReply,
+  updateCommentPost,
+  acceptSuggestion: (model, { suggestionId }) => settleSuggestion(model, suggestionId, true),
+  rejectSuggestion: (model, { suggestionId }) => settleSuggestion(model, suggestionId, false),
   insertText,
   insertTable,
   insertTableRow,
@@ -504,7 +791,25 @@ const REQUESTS = {
  * @returns {import('./docsTypes.js').Document}
  * @throws {Error} Where Docs would refuse the batch
  */
-export function applyRequests(document, requests, { tabId } = {}) {
+export function applyRequests(document, requests, options) {
+  return applyBatch(document, requests, options).document
+}
+
+/**
+ * Apply a batch, as `applyRequests` does, with Docs' answer to each request:
+ * what a comment made was given, and nothing for the rest.
+ *
+ * @param {import('./docsTypes.js').Document} document
+ * @param {object[]} requests
+ * @param {Object} [options]
+ * @param {string} [options.tabId]
+ * @param {{displayName?: string, user?: string, me?: boolean}} [options.author] -
+ *   Who sends it; the signed-in account otherwise
+ * @param {string} [options.suggest] - Send it as a suggestion of this id
+ * @returns {{document: import('./docsTypes.js').Document, replies: object[]}}
+ * @throws {Error} Where Docs would refuse the batch
+ */
+export function applyBatch(document, requests, { tabId, author = ME, suggest } = {}) {
   const out = structuredClone(document)
   const tab = tabId ? tabsOf(out).find(each => each.tabProperties?.tabId === tabId) : out.tabs?.[0]
   if (!tab?.documentTab) throw new Error('The Doc has no such tab')
@@ -521,13 +826,49 @@ export function applyRequests(document, requests, { tabId } = {}) {
     tabLists: (documentTab.lists ??= {}),
     lists: { made: 0 },
     presets: {},
+    comments: out.comments ?? [],
+    suggestions: out.suggestions ?? [],
+    anchorIds: new Set(Object.keys(documentTab.commentAnchors ?? {})),
+    posted: (out.comments ?? []).reduce(
+      (total, comment) => total + 1 + (comment.replies?.length ?? 0),
+      0
+    ),
+    author,
+    suggest,
   }
+  const commented =
+    !!documentTab.commentAnchors ||
+    requests.some(request => COMMENT_REQUESTS.has(Object.keys(request)[0]))
+  for (const [anchorId, anchor] of Object.entries(documentTab.commentAnchors ?? {})) {
+    for (const range of anchor.ranges ?? []) anchorRange(model, range, anchorId)
+  }
+  const replies = []
   for (const request of requests) {
     const [kind, body] = Object.entries(request)[0]
     const apply = REQUESTS[kind]
     if (!apply) throw new Error(`the stand-in has no ${kind}`)
-    apply(model, body)
+    if (suggest && /Table/.test(kind)) throw new Error('the stand-in suggests nothing of tables')
+    replies.push(apply(model, body) ?? {})
   }
+  if (suggest && requests.length > 0) {
+    const time = timeOf(++model.posted)
+    model.suggestions.push({
+      suggestionId: suggest,
+      status: 'OPEN',
+      headPost: {
+        postId: `post.${suggest}.0`,
+        author: clone(author),
+        createTime: time,
+        updateTime: time,
+      },
+      replies: [],
+    })
+  }
+  if (commented) {
+    documentTab.commentAnchors = anchorsOf(model)
+    out.comments = model.comments
+  }
+  if (out.suggestions || suggest) out.suggestions = model.suggestions
   documentTab.body = { content: contentOf(model.body, 0).content }
   for (const [id, blocks] of Object.entries(model.footnotes)) {
     documentTab.footnotes[id] = /** @type {any} */ ({
@@ -536,5 +877,5 @@ export function applyRequests(document, requests, { tabId } = {}) {
     })
   }
   out.revisionId = `${document.revisionId}+`
-  return out
+  return { document: out, replies }
 }

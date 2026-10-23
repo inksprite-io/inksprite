@@ -1,3 +1,4 @@
+import { invited } from './cloud/invited.js'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
@@ -12,6 +13,7 @@ import App from './App.vue'
 import router from './router'
 import { openStorage } from './storage/open.js'
 import { importSettingsFile } from './composables/useSettingsFile.js'
+import { useSettingsPanel } from './composables/useSettingsPanel.js'
 
 // Zod, under the MCP and Anthropic clients, tries `new Function` to see
 // whether it can compile its checks. The page's Content-Security-Policy
@@ -112,6 +114,8 @@ openStorage().then(
   async () => {
     await importSettingsFile()
     app.mount('#app')
+    // Opened from an invitation to sync: the settings show it.
+    if (invited) useSettingsPanel().open('system')
   },
   error => {
     console.error('The library could not be opened:', error)

@@ -150,6 +150,29 @@ describe('spellingPlugin', () => {
     expect(underlined(view)).toEqual(['spelling-error:walkd'])
   })
 
+  it('checks what a suggestion would put in, and not what it would take out', async () => {
+    const checker = standIn()
+    const view = mount(
+      'She {--walkd--}{>>sabcd1<<}{++teh++}{>>sabcd1<<} home, and fooBar.',
+      checker
+    )
+    await settle()
+    expect(underlined(view)).toEqual(['spelling-error:teh', 'spelling-error:fooBar'])
+    expect(checker.asked.flat()).toEqual(['She teh home, and fooBar.'])
+  })
+
+  it('puts the underline where the word is after what a suggestion takes out, and across it', async () => {
+    const view = mount(
+      'She {--quickly --}{>>sabcd1<<}walkd, and t{--o--}{>>sabcd1<<}eh.',
+      standIn()
+    )
+    await settle()
+    const walkd = find(view.state, 'walkd')
+    expect(lintAt(view.state, walkd)).toMatchObject({ from: walkd, to: walkd + 5 })
+    const teh = find(view.state, 'and t') + 4
+    expect(lintAt(view.state, teh)).toMatchObject({ from: teh, to: teh + 4 })
+  })
+
   it('leaves code alone', async () => {
     const checker = standIn()
     const view = mount('```\nwalkd teh\n```\n\nCall `fooBar` and walkd.', checker)

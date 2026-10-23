@@ -4,8 +4,9 @@
  * them: what each does, and the keys for it spelled the way their keyboard
  * prints them.
  *
- * The bindings themselves are `editor/state`'s and `editor/links`'s, and
- * focus mode's is `composables/useFocusMode`'s; this is the list a person
+ * The bindings themselves are `editor/state`'s and `editor/links`'s, focus
+ * mode's is `composables/useFocusMode`'s, and the project's search's is
+ * `composables/useProjectSearch`'s; this is the list a person
  * reads, in the order they would look for things, and its test holds it to
  * those.
  */
@@ -59,6 +60,7 @@ export const SHORTCUTS = [
       { action: 'Undo', keys: 'Mod-z' },
       { action: 'Redo', keys: 'Mod-Shift-z' },
       { action: 'Find and replace', keys: 'Mod-f' },
+      { action: 'Search the project', keys: 'Mod-Shift-f' },
       { action: 'Focus mode', keys: 'Mod-Alt-f' },
       { action: 'Keyboard shortcuts', keys: 'Mod-/' },
     ],

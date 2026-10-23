@@ -18,6 +18,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { describeRound } from '@/ai/tools/progress.js'
+import { useApplicationState } from '@/composables/useApplicationState'
 
 /**
  * What a turn is doing while nothing streams: its tools running, or the model
@@ -80,12 +81,21 @@ const elapsed = computed(() => {
 
 const calls = computed(() => props.activity.calls || [])
 
+const { applyEdits } = useApplicationState()
+/** Whether the chat suggests its edits to the text, for how its calls read. */
+const wording = computed(() => ({
+  suggesting: applyEdits.value === 'ask',
+}))
+
 /** What the wait is, without how long: the time is kept apart, so it is never cut. */
 const line = computed(() => {
-  const { phase } = props.activity
-  if (phase === 'calling' || phase === 'running') return `${describeRound(calls.value, false)}…`
+  const { phase, progress } = props.activity
+  if (phase === 'calling') return `${describeRound(calls.value, false, wording.value)}…`
+  if (phase === 'running') {
+    return `${describeRound(calls.value, false, wording.value)}…${progress ? ` ${progress}` : ''}`
+  }
   const parts = [
-    calls.value.length ? describeRound(calls.value, true) : '',
+    calls.value.length ? describeRound(calls.value, true, wording.value) : '',
     // Before the turn's first call, the wait says nothing until it has gone
     // on long enough to have a time to show.
     calls.value.length || elapsed.value ? 'waiting for the model' : '',

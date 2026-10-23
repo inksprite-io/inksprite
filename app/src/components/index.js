@@ -29,13 +29,17 @@
  *     the new-project dialog
  *   - `editor/` - The editor over a structured document, the field over a
  *     plain one, the strip of tabs above them, and the empty editor for a
- *     project with no documents or no tabs. A comment is begun on a selection
- *     by `CommentButton` or Mod-Shift-M; on a phone it is written and shown
- *     in `CommentBar`, at the bottom, while the caret is in its passage
+ *     project with no documents or no tabs. `TextBar`, under a selection or
+ *     the caret, comments on what is selected (Mod-Shift-M too) and accepts or
+ *     rejects the suggestion the caret is in; on a phone it is in a bar at
+ *     the bottom, where a comment is written and shown in `CommentBar` while
+ *     the caret is in its passage
  *   - `comments/` - `CommentsPanel`, the project's comments in the sidebar,
  *     each a `CommentThread`, and on the desktop where a comment is written
  *     (`CommentDraft`) and answered: picking one opens its document, where
- *     `Editor` scrolls to it and marks it; Resolve takes it off
+ *     `Editor` scrolls to it and marks it; Resolve takes it off. A suggested
+ *     change is a card among them, accepted or rejected there. Mod-Z there
+ *     takes back what was done to one
  *   - `tree/` - The document tree and its nodes. Its header's Import and New
  *     document act on the project's top, as the root's menu does
  *   - `chats/` - A chat, its list, and its settings

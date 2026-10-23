@@ -59,6 +59,7 @@ const KEPT_KEYS = new Set([
   'tool',
   'tool_call_id',
   '_document',
+  'icon',
   'finish_reason',
   'object',
   'model',

@@ -25,7 +25,7 @@
  * @property {boolean} sidebar - Whether the left sidebar is showing
  * @property {boolean} editor - Whether the editor is showing
  * @property {boolean} chat - Whether the chat is showing. Never false while `editor` is.
- * @property {'outline'|'chats'|'narration'|'comments'} sidebarTab - Which list the sidebar is on
+ * @property {'outline'|'search'|'chats'|'narration'|'comments'} sidebarTab - Which list the sidebar is on
  */
 
 /**
@@ -41,6 +41,14 @@
  * @property {StoryOptions} [options] - Story-specific options and overrides
  * @property {StorySpelling} [spelling] - The project's own dictionary, and the
  *   grammar it has ignored. Absent means neither; see `composables/useSpelling`.
+ * @property {number} [trashed] - When the project went to the trash, whole.
+ *   Absent on one that isn't there. See `utils/trash.js`.
+ * @property {number} [syncOff] - When this device began keeping the project
+ *   off sync, on it alone; never sent. Absent on one that syncs, or on a
+ *   device that doesn't. See `cloud/engine.js`.
+ * @property {number} [keptElsewhere] - When another device took the project
+ *   off the sync server to keep to itself, which put it in the trash here and
+ *   out of sync until it is synced again; never sent. See `cloud/engine.js`.
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
  * @property {number} updated - Last update timestamp
@@ -212,11 +220,43 @@
  *   document is read aloud. An overlay on the blocks, found again by their text
  *   when the document changes; see `tts/script.js`. Absent means the default voice
  *   reads all of it.
- * @property {string} summary - Document summary
+ * @property {string} summary - The writer's summary of it, which the model's
+ *   listing shows the first line of. The project's root has the project's,
+ *   edited in its settings. TODO: no other document's can be seen or edited
+ *   in the app (inksprite-io/inksprite#24).
+ * @property {string} [url] - The address it was kept from, for a page or a
+ *   file saved from the web: by the model's `save_web_page`, or Save to project
+ *   on a page it read. Absent on everything else.
+ * @property {Digest} [digest] - What explore made of it, for the model: see
+ *   `jobs/explore.js`. Not the writer's summary, and never shown as theirs.
+ *   Absent until a document or folder is explored.
+ * @property {number} [trashed] - When it went to the trash. Set on what was
+ *   deleted only: what is in a trashed folder keeps its row as it was, and is
+ *   in the trash because the folder is. Absent on one that isn't there. See
+ *   `stores/trash.js`.
  * @property {number} wordCount - Word count; always 0 for folders
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
  * @property {number} updated - Last update timestamp
+ */
+
+/**
+ * A document or folder described for the model, by explore: a finding aid,
+ * saying what is in it and when to read it, rather than an abstract. Kept
+ * when what it was made from changes, for explore to know what to read
+ * again, but shown to the model only while it is current.
+ *
+ * @typedef {Object} Digest
+ * @property {string} line - One line, for a listing
+ * @property {string} text - A paragraph: what it covers, the names in it, the
+ *   sections worth knowing, when to read it
+ * @property {string} of - What it was made from, hashed: a document's title
+ *   and text, or everything shown under a folder. A different hash now is a
+ *   digest to make again.
+ * @property {number} made - When
+ * @property {Array<{link: string, line: string}>} [sections] - A document's
+ *   long sections, a line each, by the link a read takes them by, in order.
+ *   Current while the digest is. Absent where none is long enough.
  */
 
 /**
@@ -260,6 +300,8 @@
  * @property {string} [account] - The address of the Google account that
  *   picked it, which a sync's sign-in is hinted with
  * @property {number} [syncedAt] - When it was last synced
+ * @property {boolean} [made] - inksprite made the Doc, and keeps it in
+ *   `inksprite-sync` in the writer's Drive, where the document is here
  */
 
 /**
@@ -299,6 +341,34 @@
  */
 
 /**
+ * A text document's text as it stood at a moment, kept to look back at and
+ * restore: taken after a pause, during a long stretch, before a change from
+ * outside the editor, or when the writer keeps one. See `stores/versionsStore.js`.
+ *
+ * @typedef {Object} Version
+ * @property {string} id - ver_xxx
+ * @property {string} storyId
+ * @property {string} documentId
+ * @property {number} at - When the text was this
+ * @property {string} title - The document's title then
+ * @property {string} content - Markdown, its comment markers and picture references with it
+ * @property {number} words
+ * @property {VersionBy} [by] - What was about to change it, when that wasn't the writer typing
+ * @property {string} [name] - The writer's, for one they kept: kept until they delete it
+ * @property {'small'|'large'} [clash] - The text that lost when another device
+ *   changed the same words at once, kept under a name of its own. A large
+ *   clash, where nothing of it was merged in, is told of where it arrives.
+ */
+
+/**
+ * What was about to change a document when a version was taken of it: the
+ * model's tools, a Google Docs sync, sync merging another device's edits, a
+ * version restored, or a card imported again.
+ *
+ * @typedef {'model'|'drive'|'sync'|'restore'|'import'} VersionBy
+ */
+
+/**
  * @typedef {Object} Chat
  * @property {string} id - Unique chat identifier (chat_xxx)
  * @property {string} storyId - Parent story ID
@@ -325,6 +395,7 @@
  * @property {string} [characterName] - The name of the character this chat plays: what `{{char}}` becomes in what its model reads. Absent means the macro is read as written.
  * @property {string} [roleplayPrompt] - Roleplay instructions sent after the system prompt, or where it says `{{original}}`: a card's system prompt, for a chat on a card. Kept apart from the prompt so that saving the chat to its profile does not take the card with it. Absent means none. See `withOriginal` in cards/card.js.
  * @property {string} [postHistory] - Roleplay instructions sent after the author's note, or where they say `{{original}}`: a card's post-history instructions, for a chat on a card. Absent means none.
+ * @property {number} [trashed] - When the chat went to the trash, its messages with it. Absent on one that isn't there. See `utils/trash.js`.
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
  * @property {number} updated - Last update timestamp
@@ -366,7 +437,20 @@
  * @property {string} [_hash] - A hash of the text the read saw, for telling whether the document has changed since
  * @property {string} [_reasoning] - What the model thought during this iteration. Ours, not the API's: the service renames it to whatever the backend calls the field, or drops it. Intra-turn only, so it is never stored on a trajectory.
  * @property {Consultation} [_consultation] - On a skill's result: what the skill did on its way to the answer, for the turn to show. Ours, not the API's: stripped before the message is sent, like `_document`.
+ * @property {ShownResult} [_shown] - On a tool's result: what it put in front of the writer as it is, shown where the call sits in the turn. Ours, not the API's, like `_document`. See `ToolContext.show`.
  * @property {true} [_dropped] - On a `use_skill` result: the writer dropped what it loaded, so it is not carried past a summary. Sent back where it is until then. See ai/skills/loads.js.
+ */
+
+/**
+ * An answer a tool put in front of the writer as it is, in the turn: what
+ * explore made of a folder, which the model is told not to repeat.
+ *
+ * @typedef {Object} ShownResult
+ * @property {string} title - Its heading: "Explored Notes/"
+ * @property {string} [icon] - A PrimeIcons name for the heading: `pi-compass`
+ * @property {string} text - Markdown, shown open
+ * @property {{title: string, text: string}} [more] - Plain text folded under
+ *   it, and what to call it: a listing
  */
 
 /**
@@ -419,6 +503,7 @@
  * @property {string} result - What came back, empty while a consulting command is still asking
  * @property {import('../ai/tools/rpg.js').DiceRoll} [roll] - `/roll` only: the dice behind the total, shown and sent while they still add up to `result`. See `rollOf` in ai/commands.js.
  * @property {boolean} [pending] - Set while a command that costs a model call is running
+ * @property {string} [progress] - While it runs: how far one whose answer does not stream has got, as it said ("3 of 7 requests")
  * @property {string} [reasoning] - What it thought on the way to the answer, for the reader. Streamed in as it arrives.
  * @property {number} [thought] - How long it thought, in milliseconds, measured to the first word of the answer
  * @property {string} [error] - Why there is no result, when there is none
@@ -478,10 +563,17 @@
  * One thing said in a comment thread.
  *
  * @typedef {Object} CommentPost
- * @property {string} author - `writer` or `model`
+ * @property {string} author - `writer`, `model`, or `person`: someone else,
+ *   in a Google Doc the document is linked to
+ * @property {string} [name] - A person's, as Google shows it
+ * @property {string} [user] - A person's id at Google
+ * @property {number} [by] - The sync account a writer's post was written as,
+ *   where the device was signed in: in a project shared, who of them said it
  * @property {string} text - What was said; its lines as typed
  * @property {number} created - When it was said
  * @property {number} [edited] - When it was last changed, if it was
+ * @property {{id: string, text: string}} [google] - In a linked Doc: the
+ *   post's id there, and what it said when the two last agreed
  */
 
 /**
@@ -497,6 +589,32 @@
  * @property {string} [before] - The words just before the passage, as they last read
  * @property {string} [after] - The words just after it
  * @property {CommentPost[]} posts - The first is the comment; the rest replies
+ * @property {{doc: string, id: string, status: 'open'|'resolved'}} [google] -
+ *   In a linked Doc: which Doc, the thread's id there, and how it stood when
+ *   the two last agreed, which tells a sync which side resolved or reopened it
+ * @property {CommentSuggestion} [suggestion] - Set when the thread is a
+ *   suggested change's rather than a comment's. Its place is the change
+ *   itself, marks holding the thread's id (see editor/suggestions.js), and
+ *   `quote` is what it takes out. Its posts may be none: the change says it.
+ */
+
+/**
+ * What a thread holds of the change it is on, when it is a suggestion's.
+ *
+ * @typedef {Object} CommentSuggestion
+ * @property {string} text - What it puts in, as it last read
+ * @property {number} created - When it was suggested
+ * @property {string} [chat] - The chat whose model suggested it
+ * @property {'writer'|'person'} [author] - Who suggested it, when it came
+ *   from a linked Google Doc: the writer, or someone else, by `name` and
+ *   `user` as a post's are
+ * @property {string} [name]
+ * @property {string} [user]
+ * @property {'accepted'|'rejected'|'withdrawn'} [settled] - How it ended:
+ *   accepted or rejected by the writer, or taken back by a later change of
+ *   the model that made it. Its thread is resolved then.
+ * @property {number} [settledAt] - When it was accepted or rejected, for the
+ *   model to be told on its next turn
  */
 
 /**
@@ -528,12 +646,14 @@
  * @property {'proposed'|'accepted'|'rejected'} [status] - Set when the chat asks the writer first: proposed until they decide. Absent means the change went straight in. While proposed, `old` and `new` are the tool's own arguments, since they are what applies it; accepted, they become the pair that was applied.
  * @property {string} [summary] - A proposed creation's summary, to give the document when it is created
  * @property {CommentChange[]} [comments] - The threads the change made, answered or resolved, which undoing it takes back
+ * @property {true} [suggested] - The change was suggested, not made: the pair is the markup it wrote, found wherever it is, an append's too, which may have gone into a suggestion before the end
  */
 
 /**
  * Message metadata structure.
  * @typedef {Object} MessageMetadata
  * @property {ChatCommand} [command] - The tool this message is a record of, when the writer ran one themselves rather than typing a message
+ * @property {true} [aside] - Set on a question the writer asked on the side, `/aside`, and on the answer to it: both are left out of every request after it. See ai/asides.js.
  * @property {DirectorNote} [director] - The Director's turn, when this chat runs it before the assistant
  * @property {TurnUsage} [usage] - Token usage reported by the provider, when it reports any
  * @property {string} [model] - Which model wrote this answer, as its provider names it. On the answer rather than the chat, because a chat changes presets as it goes and asking again on another one is half the reason to ask again. Absent on anything written before this was kept, and on a turn nobody generated.
@@ -637,6 +757,10 @@
  * @property {boolean} [rememberKey] - Whether to persist API key in IndexedDB (default true). If false, key is stored in sessionStorage only
  * @property {import('../ai/routing.js').OpenRouterRouting} [routing] - OpenRouter provider routing policy, for every model on this connection. Absent means the defaults: no data collection, zero-data-retention endpoints only. Which providers may serve a model is the preset's `allowedProviders`, and a preset's `ignoredProviders` add to the ignored ones here.
  * @property {boolean} [isDefault] - Whether this is a default provider (cannot be deleted)
+ * @property {number} [concurrency] - How many requests the connection is
+ *   asked at once, as the writer set it. Absent: one for a server at home (or
+ *   as many as llama.cpp has slots), and no limit for a hosted service, which
+ *   is asked less at once when it says too many. See ai/gate.js.
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
  * @property {number} updated - Last update timestamp
@@ -725,6 +849,8 @@
  *   services stay and the keys come back empty.
  * @property {string[]} profiles - The chat profiles whose chats search the
  *   web, unless a chat chooses otherwise
+ * @property {boolean} [saveWithoutAsking] - The model keeps a page in the
+ *   project (`save_web_page`) without asking first. Absent means it asks.
  * @property {number} [updated]
  */
 
@@ -850,6 +976,9 @@
  * @typedef {Object} JobStep
  * @property {string} id - Names the step within its job; a conversion's chunk id
  * @property {string} label - What the panel shows: `Pages 12–19`
+ * @property {string[]} [after] - The steps it waits on. Absent, it waits on
+ *   the step before it; empty, on none. Steps whose waits are over run side
+ *   by side, as many as the connection takes.
  * @property {'pending'|'running'|'done'|'failed'} status
  * @property {string} [output] - What the step produced, kept so the job resumes past it
  * @property {string} [error] - Why it failed, when it did
@@ -862,8 +991,13 @@
  * @typedef {Object} Job
  * @property {string} id - job_xxx
  * @property {string} storyId
- * @property {string} kind - Which kind of job; `convert`
- * @property {string} workflow - The workflow whose model runs it; see application state `workflows`
+ * @property {string} kind - Which kind of job: `convert`, `explore`
+ * @property {string} [workflow] - The workflow whose model runs it, for a job
+ *   that has one (a conversion's); see application state `workflows`. An
+ *   exploration made before explore ran on the chat's model says `explore`,
+ *   and runs on what that workflow still names, or the active preset.
+ * @property {JobModel} [runsOn] - The model it runs on, for a job that has no
+ *   workflow: an exploration's, the chat's that asked for it
  * @property {string} [documentId] - The document it works on, when it works on one
  * @property {string} title - What the panel calls it
  * @property {'queued'|'running'|'paused'|'done'|'failed'|'cancelled'} status
@@ -878,9 +1012,23 @@
  */
 
 /**
- * Which model a workflow runs on: long work with needs of its own — a
- * conversion, later a summary — that may want a stronger or a cheaper model
- * than a chat does.
+ * The model a job runs on when no workflow names one: the one a chat runs on,
+ * kept on the job as it was when the job was planned, so it goes on as it
+ * began whatever is done to the preset after. Its connection is named, not
+ * copied: the key and the address are the connection's.
+ *
+ * @typedef {Object} JobModel
+ * @property {string} providerId
+ * @property {string} model
+ * @property {string[]} [allowedProviders] - OpenRouter only: as on the preset it came from
+ * @property {string[]} [ignoredProviders] - OpenRouter only: as on the preset it came from
+ * @property {import('../ai/defaults.js').AISettingsOverrides} [overrides] - The
+ *   preset's generation settings, which the chat's own requests are sent with
+ */
+
+/**
+ * Which model a workflow runs on: long work with needs of its own, a
+ * conversion, that may want a stronger or a cheaper model than a chat does.
  *
  * @typedef {Object} WorkflowSettings
  * @property {string|null} providerId - The provider the workflow runs on; null for the active preset's

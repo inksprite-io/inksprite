@@ -54,6 +54,25 @@ const { backup, toast } = vi.hoisted(() => ({
 vi.mock('@/composables/useBackup', () => ({ useBackup: () => backup }))
 vi.mock('@/composables/useToast', () => ({ useToast: () => toast }))
 
+// The app's other windows: which projects they have open, and the one asked
+// to show a project or opened beside this one.
+const windows = vi.hoisted(() => ({
+  elsewhere: new Set(),
+  askForProject: vi.fn(),
+  openWindow: vi.fn(),
+}))
+vi.mock('@/platform/windows.js', async importOriginal => ({
+  ...(await importOriginal()),
+  projectsElsewhere: async () => new Set(windows.elsewhere),
+  askForProject: windows.askForProject,
+  openWindow: windows.openWindow,
+}))
+const platform = vi.hoisted(() => ({ desktop: false }))
+vi.mock('@/platform/desktop.js', async importOriginal => ({
+  ...(await importOriginal()),
+  isDesktop: () => platform.desktop,
+}))
+
 describe('ProjectMenu', () => {
   /** @type {ReturnType<typeof useStoriesStore>} */
   let storiesStore
@@ -66,6 +85,8 @@ describe('ProjectMenu', () => {
     vi.clearAllMocks()
     rows.documents = {}
     rows.chats = {}
+    windows.elsewhere.clear()
+    platform.desktop = false
     storiesStore = useStoriesStore()
     documentsStore = useDocumentsStore()
     router = createRouter({
@@ -168,10 +189,67 @@ describe('ProjectMenu', () => {
     const { wrapper, push } = await mountMenu(mine.id)
 
     pick(wrapper, 'Mine')
+    await flushPromises()
     expect(push).not.toHaveBeenCalled()
 
     pick(wrapper, 'Other')
+    await flushPromises()
     expect(push).toHaveBeenCalledWith(`/project/${other.id}`)
+  })
+
+  it('says which projects are open in another window, once it is opened', async () => {
+    const mine = await storiesStore.createStory('Mine')
+    const other = await storiesStore.createStory('Other')
+    windows.elsewhere.add(other.id)
+    platform.desktop = true
+    const { wrapper } = await mountMenu(mine.id)
+
+    await wrapper.find('button').trigger('click')
+    await flushPromises()
+    const [, there] = listed(wrapper)
+    expect(there.detail).toBe('Open in another window')
+    expect(there.icon).toBe('pi pi-clone')
+  })
+
+  it('shows a project open in another window there, rather than here', async () => {
+    const mine = await storiesStore.createStory('Mine')
+    const other = await storiesStore.createStory('Other')
+    windows.elsewhere.add(other.id)
+    platform.desktop = true
+    const { wrapper, push } = await mountMenu(mine.id)
+
+    pick(wrapper, 'Other')
+    await flushPromises()
+    expect(push).not.toHaveBeenCalled()
+    expect(windows.askForProject).toHaveBeenCalledWith(other.id)
+  })
+
+  it('opens a project in a new window when picked with Command or Ctrl held', async () => {
+    const mine = await storiesStore.createStory('Mine')
+    const other = await storiesStore.createStory('Other')
+    const { wrapper, push } = await mountMenu(mine.id)
+
+    const item = listed(wrapper).find(item => item.label === 'Other')
+    item.command({ originalEvent: new window.MouseEvent('click', { metaKey: true }) })
+    await flushPromises()
+    expect(windows.openWindow).toHaveBeenCalledWith(`/project/${other.id}`)
+    expect(push).not.toHaveBeenCalled()
+  })
+
+  it('offers a new window in the desktop app', async () => {
+    const mine = await storiesStore.createStory('Mine')
+    platform.desktop = true
+    const { wrapper } = await mountMenu(mine.id)
+
+    expect(shape(wrapper)).toEqual([
+      'Switch project',
+      'New project…',
+      'Import project…',
+      'New window',
+    ])
+    pick(wrapper, 'New window')
+    await flushPromises()
+    expect(windows.openWindow).toHaveBeenCalledWith()
   })
 
   it('says when each project was last edited, as its root keeps it', async () => {
@@ -180,7 +258,7 @@ describe('ProjectMenu', () => {
     documentsStore.documents.set(root.id, { ...root, edited: Date.now() - 3 * 3600000 })
 
     const { wrapper } = await mountMenu(story.id)
-    expect(listed(wrapper)[0].edited).toBe('3h ago')
+    expect(listed(wrapper)[0].detail).toBe('3h ago')
   })
 
   it('works out when an older project was last edited, from its documents and chats, once', async () => {
@@ -199,7 +277,7 @@ describe('ProjectMenu', () => {
     const { wrapper } = await mountMenu(story.id)
 
     expect(documentsStore.getRoot(story.id).edited).toBe(now - 2 * 86400000)
-    expect(listed(wrapper)[0].edited).toBe('2d ago')
+    expect(listed(wrapper)[0].detail).toBe('2d ago')
 
     // Kept: a second list reads nothing.
     const { default: db } = await import('@/stores/db')
@@ -261,7 +339,7 @@ describe('ProjectMenu', () => {
     expect(backup.readProjectFile).toHaveBeenCalledWith(file)
     expect(backup.importProject).toHaveBeenCalledWith(rows, { title: 'Imported' })
     const storyId = [...storiesStore.stories.keys()][0]
-    expect(toast.success).toHaveBeenCalledWith('Imported "Imported"')
+    expect(toast.success).not.toHaveBeenCalled()
     expect(push).toHaveBeenCalledWith(`/project/${storyId}`)
   })
 

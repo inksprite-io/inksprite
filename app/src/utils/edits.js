@@ -122,7 +122,8 @@ export function narrowEdit(pair) {
  * version stands.
  *
  * An append is undone from the end, where it went; anything else by finding
- * what it wrote, which has to be there exactly once.
+ * what it wrote, which has to be there exactly once. So is a suggestion,
+ * whichever tool made it: an append's may have gone into one before the end.
  *
  * @param {string} content - The document now
  * @param {DocumentEdit} edit
@@ -130,7 +131,7 @@ export function narrowEdit(pair) {
  */
 export function reverseEdit(content, edit) {
   if (!edit.new) return null
-  if (edit.tool === 'append_document') {
+  if (edit.tool === 'append_document' && !edit.suggested) {
     return content.endsWith(edit.new)
       ? content.slice(0, content.length - edit.new.length) + edit.old
       : null
@@ -144,8 +145,8 @@ export function reverseEdit(content, edit) {
  * replaced is not there to replace — the writer has been there since.
  *
  * The mirror of `reverseEdit`. An append goes back onto the end, which has
- * to still read as it did; anything else where the old passage is, which has
- * to be there exactly once. A pair that replaced nothing was written onto an
+ * to still read as it did; anything else, a suggestion among them, where the
+ * old passage is, which has to be there exactly once. A pair that replaced nothing was written onto an
  * empty document, and goes back onto one.
  *
  * @param {string} content - The document now
@@ -153,7 +154,7 @@ export function reverseEdit(content, edit) {
  * @returns {string|null}
  */
 export function applyEdit(content, edit) {
-  if (edit.tool === 'append_document') {
+  if (edit.tool === 'append_document' && !edit.suggested) {
     return content.endsWith(edit.old)
       ? content.slice(0, content.length - edit.old.length) + edit.new
       : null

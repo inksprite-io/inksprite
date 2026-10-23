@@ -7,7 +7,7 @@
       aria-haspopup="true"
       aria-controls="project_menu"
       data-action="projects"
-      @click="menu?.toggle($event)"
+      @click="toggle"
     />
 
     <!-- The projects in a list of their own beside the menu, which scrolls
@@ -27,8 +27,8 @@
           />
           <span class="flex flex-col min-w-0">
             <span class="truncate" :class="{ 'font-semibold': item.open }">{{ item.label }}</span>
-            <span v-if="item.edited" class="text-xs text-surface-500 dark:text-surface-400">
-              {{ item.edited }}
+            <span v-if="item.detail" class="text-xs text-surface-500 dark:text-surface-400">
+              {{ item.detail }}
             </span>
           </span>
           <i v-if="hasSubmenu" class="pi pi-angle-right" v-bind="link.submenuicon" />
@@ -55,12 +55,17 @@ import { useProjects } from '@/composables/useProjects'
 import { useReactiveTime } from '@/composables/useReactiveTime'
 import { useToast } from '@/composables/useToast'
 import { compareNames } from '@/utils/compareNames.js'
+import { isDesktop } from '@/platform/desktop.js'
 
 /**
  * The projects, from a menu at the top of the outline: Switch project for every
- * one by name, the one open checked and each with when it was last edited; a
- * new one or one imported from a file; then what the outline does to the one
+ * one by name, the one open checked and each with when it was last edited, or
+ * that it is open in another window; a new one or one imported from a file;
+ * in the desktop app a new window; then what the outline does to the one
  * open.
+ *
+ * Picked with Command or Ctrl held, a project opens in a new window (a new
+ * tab in a browser). One open in another window is shown there.
  *
  * @typedef {Object} Props
  * @property {string} storyId - The project open
@@ -97,13 +102,19 @@ const sorted = computed(() =>
 const listed = computed(() =>
   sorted.value.map(story => {
     const open = story.id === props.storyId
+    const away = projects.elsewhere.value.has(story.id)
     const edited = projects.editedOf(story.id)
     return {
       label: projects.nameOf(story.id),
-      edited: edited ? formatRelativeTime(edited) : '',
+      detail: away ? 'Open in another window' : edited ? formatRelativeTime(edited) : '',
+      icon: away ? 'pi pi-clone' : undefined,
       open,
-      command: () => {
-        if (!open) projects.open(story.id)
+      /** @param {{originalEvent?: Event}} [event] */
+      command: event => {
+        if (open) return
+        const mouse = /** @type {MouseEvent|undefined} */ (event?.originalEvent)
+        if (mouse?.metaKey || mouse?.ctrlKey) projects.openInNewWindow(story.id)
+        else projects.open(story.id)
       },
     }
   })
@@ -119,8 +130,22 @@ const items = computed(() => [
     },
   },
   { label: 'Import project…', icon: 'pi pi-upload', command: () => fileInput.value?.click() },
+  ...(isDesktop()
+    ? [{ label: 'New window', icon: 'pi pi-clone', command: () => projects.openInNewWindow() }]
+    : []),
   ...(props.projectItems.length > 0 ? [{ separator: true }, ...props.projectItems] : []),
 ])
+
+/**
+ * Open the menu, and read again what other windows may have changed: which
+ * projects they have open, and the list itself.
+ * @param {Event} event
+ */
+const toggle = event => {
+  menu.value?.toggle(event)
+  projects.lookElsewhere()
+  projects.refresh()
+}
 
 /** @param {{ title: string }} options */
 const create = async ({ title }) => {
@@ -141,8 +166,8 @@ const importChosen = async event => {
 
   isImporting.value = true
   try {
-    const story = await projects.importFile(file)
-    toast.success(`Imported "${projects.nameOf(story.id)}"`)
+    // It opens, which shows it came in.
+    await projects.importFile(file)
   } catch (error) {
     console.error('Project import failed:', error)
     toast.error(error.message)

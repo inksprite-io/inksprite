@@ -44,6 +44,15 @@ const { mockUpdateDocument, mockGetDocument, mockApi, mockDocuments, resetCommen
           content: 'We had a {==cold==}{>>cabcd1<<} attic.',
         },
       ],
+      [
+        'doc_s',
+        {
+          id: 'doc_s',
+          title: 'Chapter 4',
+          type: 'text',
+          content: 'A {--cold--}{>>sabcd1<<}{++warm++}{>>sabcd1<<} night.',
+        },
+      ],
     ])
     // Each test starts from the one comment doc_2 has, on "cold".
     const resetComments = () => {
@@ -55,6 +64,14 @@ const { mockUpdateDocument, mockGetDocument, mockApi, mockDocuments, resetCommen
           posts: [{ author: 'writer', text: 'reword', created: 1 }],
         },
       }
+      documents.get('doc_s').comments = {
+        sabcd1: {
+          status: 'open',
+          quote: 'cold',
+          posts: [],
+          suggestion: { text: 'warm', created: 1, chat: 'chat_1' },
+        },
+      }
     }
     return {
       mockDocuments: documents,
@@ -64,6 +81,7 @@ const { mockUpdateDocument, mockGetDocument, mockApi, mockDocuments, resetCommen
       mockApi: {
         init: vi.fn(async () => {}),
         keep: vi.fn(),
+        takesCaret: () => true,
         get: vi.fn(id => documents.get(id) || null),
         displayTitle: vi.fn(document => document.title),
         threadsOf: id => documents.get(id)?.comments,
@@ -826,6 +844,49 @@ describe('Editor', () => {
       await flushPromises()
 
       expect(wrapper.find('[data-comment-field]').exists()).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('offers to accept or reject the suggestion the caret is in, the caret left in the text', async () => {
+      const wrapper = await mountAttached('doc_s')
+      const page = wrapper.find('.ProseMirror').element
+      const bar = () => wrapper.find('[data-text-bar]')
+      page.focus()
+
+      select('doc_s', 2)
+      await flushPromises()
+      expect(bar().exists()).toBe(false)
+
+      // In "cold", which it takes out.
+      select('doc_s', 4)
+      await flushPromises()
+      expect(bar().find('[data-comment-button]').exists()).toBe(false)
+      expect(bar().find('[data-action="reject-suggestion"]').exists()).toBe(true)
+
+      await bar().find('[data-action="accept-suggestion"]').trigger('click')
+      await flushPromises()
+      expect(useEditor().markdown('doc_s')).toBe('A warm night.')
+      expect(mockDocuments.get('doc_s').comments.sabcd1.suggestion.settled).toBe('accepted')
+      expect(bar().exists()).toBe(false)
+      expect(document.activeElement).toBe(page)
+      wrapper.unmount()
+    })
+
+    it('offers a comment and the suggestion together on a selection in it', async () => {
+      const wrapper = await mountAttached('doc_s')
+      wrapper.find('.ProseMirror').element.focus()
+
+      // "cold" and "warm", both halves of it.
+      select('doc_s', 3, 11)
+      await flushPromises()
+      const bar = wrapper.find('[data-text-bar]')
+      expect(bar.find('[data-comment-button]').text()).toBe('')
+      expect(bar.find('[data-comment-button]').attributes('aria-label')).toBe('Comment')
+
+      await bar.find('[data-action="reject-suggestion"]').trigger('click')
+      await flushPromises()
+      expect(useEditor().markdown('doc_s')).toBe('A cold night.')
+      expect(mockDocuments.get('doc_s').comments.sabcd1.suggestion.settled).toBe('rejected')
       wrapper.unmount()
     })
 

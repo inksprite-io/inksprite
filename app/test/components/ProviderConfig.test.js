@@ -134,7 +134,7 @@ describe('ProviderConfig connect', () => {
 
     expect(listModels).toHaveBeenCalledWith(PROVIDER_ID, 'chat')
     expect(toastAdd).toHaveBeenCalledWith(
-      expect.objectContaining({ severity: 'success', detail: 'Connected: 2 models available' })
+      expect.objectContaining({ severity: 'success', detail: 'Connected. 2 models are available.' })
     )
     expect(useModelLists().listOf(PROVIDER_ID)?.models).toEqual([{ id: 'a' }, { id: 'b' }])
   })
@@ -165,7 +165,7 @@ describe('ProviderConfig connect', () => {
 
     expect(listModels).toHaveBeenCalledWith('provider_kokoro_default', 'speech')
     expect(toastAdd).toHaveBeenCalledWith(
-      expect.objectContaining({ severity: 'success', detail: 'Connected: 1 model available' })
+      expect.objectContaining({ severity: 'success', detail: 'Connected. 1 model is available.' })
     )
   })
 
@@ -244,7 +244,7 @@ describe('ProviderConfig connect', () => {
 
     expect(listModels).not.toHaveBeenCalled()
     expect(toastAdd).toHaveBeenCalledWith(
-      expect.objectContaining({ severity: 'error', detail: 'API key is required for OpenAI' })
+      expect.objectContaining({ severity: 'error', detail: 'Enter an API key for OpenAI.' })
     )
   })
 
@@ -302,5 +302,77 @@ describe('ProviderConfig connect', () => {
     const wrapper = await mountDialog()
 
     expect(wrapper.find('[data-action="oauth"]').exists()).toBe(false)
+  })
+})
+
+describe('ProviderConfig requests at once', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  /** @param {Record<string, any>} provider */
+  const showing = async provider => {
+    providers.value = [{ id: PROVIDER_ID, name: 'Server', isDefault: false, ...provider }]
+    return mountDialog()
+  }
+
+  it('says what a connection is asked at once when the field is empty', async () => {
+    const atHome = await showing({ type: 'generic', endpoint: 'http://localhost:1234/v1' })
+    expect(atHome.find('[data-field="concurrency"]').attributes('placeholder')).toBe('1')
+
+    const hosted = await showing({ type: 'openrouter' })
+    expect(hosted.find('[data-field="concurrency"]').attributes('placeholder')).toBe('No limit')
+
+    const llama = await showing({ type: 'llamacpp', endpoint: 'http://localhost:9931/v1' })
+    expect(llama.find('[data-field="concurrency"]').attributes('placeholder')).toBe('One per slot')
+  })
+
+  it('keeps a whole number, and nothing for the default', async () => {
+    const wrapper = await showing({ type: 'openrouter' })
+    const field = wrapper.find('[data-field="concurrency"]')
+
+    await field.setValue('6')
+    await field.trigger('blur')
+    expect(updateProvider).toHaveBeenLastCalledWith(PROVIDER_ID, { concurrency: 6 })
+
+    await field.setValue('')
+    await field.trigger('blur')
+    expect(updateProvider).toHaveBeenLastCalledWith(PROVIDER_ID, { concurrency: undefined })
+  })
+
+  it('puts back what was there for anything that is not a whole number from one up', async () => {
+    const wrapper = await showing({ type: 'openrouter', concurrency: 3 })
+    const field = wrapper.find('[data-field="concurrency"]')
+    expect(/** @type {HTMLInputElement} */ (field.element).value).toBe('3')
+
+    for (const typed of ['0', '2.5', 'many']) {
+      await field.setValue(typed)
+      await field.trigger('blur')
+      expect(/** @type {HTMLInputElement} */ (field.element).value).toBe('3')
+    }
+    expect(updateProvider).not.toHaveBeenCalled()
+  })
+
+  it('is not there for a connection that only speaks', async () => {
+    providers.value = [
+      {
+        id: 'provider_kokoro_default',
+        name: 'Kokoro',
+        type: 'generic',
+        endpoint: 'http://localhost:8880/v1',
+        isDefault: true,
+      },
+    ]
+    const wrapper = mount(ProviderConfig, {
+      props: { visible: true, initialProviderId: 'provider_kokoro_default' },
+      global: {
+        plugins: [PrimeVue],
+        stubs: { Dialog: { template: '<div><slot /></div>' }, ProviderRouting: true },
+        directives: { tooltip: {} },
+      },
+    })
+    await flushPromises()
+
+    expect(wrapper.find('[data-field="concurrency"]').exists()).toBe(false)
   })
 })

@@ -1,6 +1,6 @@
 ---
 title: Comments
-description: Leave comments on passages of a document, as notes to yourself or for the model to work through.
+description: Leave comments on passages of a document, as notes to yourself or for the model to work through, and accept or reject the changes the model suggests.
 ---
 
 import Clip from '../../components/Clip.astro';
@@ -8,7 +8,8 @@ import Screenshot from '../../components/Screenshot.astro';
 
 A comment is a note on a passage: a reminder to yourself, or something for the
 model to fix. The model sees your comments, can work through them for you,
-answer them, and leave comments of its own.
+answer them, and leave comments of its own. A document synced with a
+[Google Doc](/google-docs/#comments) shares its comments with it.
 
 ## Leave a comment
 
@@ -63,7 +64,8 @@ the caret.
 ## The Comments tab
 
 Click **Comments** among the icons at the far left. It lists every open
-comment in the project, under the document each is in, in the outline's order.
+comment and [suggestion](#suggestions) in the project, under the document each
+is in, in the outline's order.
 Each shows the passage and everything that's been said on it. A comment whose passage was deleted comes after the others, its
 passage struck through.
 
@@ -127,8 +129,10 @@ them, and it:
 - replies to a comment, under it, to say what it did or to ask what you meant
 - resolves a comment that needs no change, or that it has answered
 
-Any change to a passage's words resolves its comment. When the model rewrites
-a whole document, a comment stays if its words are still there unchanged. A
+Any change to a passage's words resolves its comment. In a chat that asks
+first, the rewrite is a [suggestion](#suggestions), and the comment is resolved
+when you accept it. When the model rewrites a whole document, a comment stays
+if its words are still there unchanged. A
 resolved comment is kept, so **Reopen** brings back a note to yourself that
 the model rewrote. If some comments are notes to yourself, say which ones are
 for the model.
@@ -150,3 +154,45 @@ All three are resolved, and the Comments tab has none open. Click the tool calls
 above its reply to see each change it made.
 
 <Screenshot name="research-revised" alt="The design doc after the model worked through the comments, with its reply in the chat" />
+
+## Suggestions
+
+In a chat that asks first, with **Apply edits automatically** off under
+[Tools](/chats/#tools), the model's changes to a document come as suggestions
+in the text. Nothing changes until you accept them. Each change is a
+suggestion of its own: a word cut, a phrase replaced, a sentence rewritten.
+
+In the editor, what a suggestion puts in is green and underlined, and what it
+takes out is struck through. Put the caret in one, and the cross (**Reject**)
+and the tick (**Accept**) come up under it; on a phone, they're in the bar at
+the bottom.
+
+In the **Comments** tab, a suggestion is listed among the comments, in its
+place in the text, with what it takes out struck through and what it puts in
+in green. Its cross and tick, **Reject** and **Accept**, stand where a
+comment's **Resolve** is, and you reply to it as to a comment. <kbd>⌘</kbd> <kbd>Z</kbd> (<kbd>Ctrl</kbd>
+<kbd>Z</kbd> on Windows and Linux) takes back an accept or a reject, in the
+text or in the tab.
+
+- Accepting resolves the comments on the words it takes out.
+- Type over a suggestion's words and it's no longer in the text; the tick
+  (**Resolve**) on its card closes it.
+- With **Show resolved comments** on, a settled suggestion says **Accepted**,
+  **Rejected** or **Taken back**.
+
+Until you accept it, a suggestion changes nothing outside the editor: the word
+count, export, narration and other chats read the text as it stands.
+The chat that made it sees its own suggestions as made, and is told on its next
+turn which you accepted and which you rejected. Rewinding the chat to before
+the turn takes them back.
+
+A document [synced with its Google Doc](/google-docs/#suggested-edits) sends
+the assistant's suggestions to the Doc as suggested edits, and brings the
+Doc's in as suggestions. Either side's are accepted or rejected in both.
+
+In the document's text, as the plain text editor shows it, a suggestion is
+CriticMarkup too, each half with its id:
+
+```
+We kept the {--old--}{>>s4k2m1<<}{++new++}{>>s4k2m1<<} format.
+```

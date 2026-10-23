@@ -149,6 +149,22 @@ export const find =
   }
 
 /**
+ * Look for something and go to one of its matches, by where it comes among
+ * them, as `search`'s `findAt` does. Past the last, the last.
+ *
+ * @param {string} query
+ * @param {SearchOptions} options
+ * @param {number} index
+ * @returns {(view: EditorView) => boolean}
+ */
+export const findAt = (query, options, index) => view => {
+  const matches = findMatches(view.state.doc, query, options)
+  const current = Math.min(Math.max(index, 0), matches.length - 1)
+  go(view, { query, options, matches, current })
+  return true
+}
+
+/**
  * Move to the match after the one the writer is on, or before it, going round
  * at the ends. Nothing to do without a match.
  *

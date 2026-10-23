@@ -44,6 +44,17 @@
  * checks what it would do, records it as proposed, and tells the model so;
  * `applyProposal` is what the writer's Accept runs. Title changes
  * still go straight in — they are the listing, not the prose.
+ *
+ * A chat that asks first suggests a change to
+ * a document's text instead, in the text itself: `edit_document`,
+ * `append_document` and `update_document` write the change as marks the
+ * writer accepts or rejects there, each change on its own, with a thread for
+ * each beside the comments' (see editor/suggestions.js). Its model reads the document with its own
+ * pending suggestions made and everyone else's not, as Docs shows a writer
+ * theirs, and a later change that touches one goes into it. Every other chat
+ * reads the text as it stands. A suggestion is recorded with the turn as any
+ * write is, so rewinding past the turn takes it back, or puts back the one it
+ * went into as it was.
  */
 
 import { nanoid } from 'nanoid'
@@ -70,6 +81,7 @@ import { lineCount } from '@/source/text.js'
 import {
   OPEN_MARKUP,
   commentOn,
+  commentsGone,
   commentsInDoc,
   countOpen,
   editAroundComments,
@@ -84,30 +96,79 @@ import {
   withoutComment,
   withoutComments,
 } from '@/editor/comments.js'
-import { parseMarkdown } from '@/editor/markdown.js'
-import { commentsBetween, placedAsRead, postsOf } from './commentReads.js'
+import { parseMarkdown, serializeMarkdown, appendBlocks } from '@/editor/markdown.js'
+import {
+  acceptSuggestion,
+  changeOf,
+  newSuggestionId,
+  seeing,
+  suggestChange,
+  suggestionsIn,
+} from '@/editor/suggestions.js'
+import { holdsSuggestions, withoutSuggestionMarkup } from '@/editor/suggestionText.js'
+import { commentsBetween, ownSuggestions, placedAsRead, postsOf, seenText } from './commentReads.js'
+import { peopleOf } from '@/cloud/people.js'
 import { extensionFor } from '@/files/inspect.js'
 import { namesOf, storedPassage, substitute } from '@/cards/macros.js'
+import { currentDigests } from '@/jobs/index.js'
 
 /**
  * The answer for a path nothing is at. When the path is one of the files of a
  * skill the model loads, it says how that is read: told only that there is no
  * such document, a model asked to read a skill's file goes on looking among
- * the project's.
+ * the project's. When something elsewhere goes by the name the path ends in,
+ * it says where (see `namedElsewhere`).
  *
  * @param {string} path
+ * @param {string[]} [named] - Paths of what goes by that name elsewhere
  * @returns {{error: string}}
  */
-function noDocument(path) {
+function noDocument(path, named = []) {
   const owner = skillWithFile(path)
   return {
     error: owner
       ? `No document at "${path}". It is one of the ${owner} skill's files, not a document: read it with use_skill(name: "${owner}", file: "${path}").`
-      : `No document at "${path}". list_documents shows what the project holds.`,
+      : `No document at "${path}". ${goesByThatName(named) || 'list_documents shows what the project holds.'}`,
   }
 }
 
+/**
+ * Where something by the name a missed path ends in is: a model told to
+ * delete "the Standups folder" asks for "Standups", and the folder is
+ * "Notes/Standups". Told only that nothing is at "Standups", a model has
+ * listed the top of the project, searched for the word, found neither, and
+ * told the writer there is no such folder. Only said, never acted on: two
+ * folders can hold one name, and the path is the address.
+ *
+ * @param {DocumentsApi} api
+ * @param {string} storyId
+ * @param {string} path
+ * @param {(document: Document) => boolean} [sees] - Absent for every document
+ * @param {(document: Document) => boolean} [kind] - Which documents count: folders, for a folder asked for
+ * @returns {string[]} A few paths, those nearest the top first
+ */
+function namedElsewhere(api, storyId, path, sees, kind = () => true) {
+  const name = norm(path).replace(/\/+$/, '').split('/').pop()
+  if (!name) return []
+  return (sees ? visibleDocuments(api, storyId, sees) : allDocuments(api, storyId))
+    .filter(document => norm(document.title) === name && kind(document))
+    .map(document => pathOf(api, document))
+    .sort((a, b) => a.split('/').length - b.split('/').length)
+    .slice(0, 3)
+}
+
+/**
+ * @param {string[]} named - Paths from `namedElsewhere`
+ * @returns {string} A sentence saying where they are, or nothing
+ */
+function goesByThatName(named) {
+  if (named.length === 0) return ''
+  if (named.length === 1) return `"${named[0]}" goes by that name.`
+  return `These go by that name: ${named.map(path => `"${path}"`).join(', ')}.`
+}
+
 /** @typedef {import('./registry.js').ToolDefinition} ToolDefinition */
+/** @typedef {import('prosemirror-model').Node} Node */
 /** @typedef {import('./registry.js').ToolContext} ToolContext */
 /** @typedef {import('@/types/models.js').Document} Document */
 /** @typedef {ReturnType<typeof useDocuments>} DocumentsApi */
@@ -155,13 +216,15 @@ function propose(context, edit) {
 
 /**
  * What a write changed, as the smallest pair that can undo it and make it
- * again. An append's is what arrived at the end; see diffAppend.
+ * again. An append's is what arrived at the end; see diffAppend. A
+ * suggestion's is found where it is, whatever tool made it.
  * @param {string} tool
  * @param {string} before
  * @param {string} after
+ * @param {boolean} [suggested]
  */
-const pairOf = (tool, before, after) =>
-  tool === 'append_document' ? diffAppend(before, after) : diffEdit(before, after)
+const pairOf = (tool, before, after, suggested = false) =>
+  tool === 'append_document' && !suggested ? diffAppend(before, after) : diffEdit(before, after)
 
 /**
  * Run a write and record what it changed as the smallest reversible pair,
@@ -172,11 +235,12 @@ const pairOf = (tool, before, after) =>
  * @param {string} tool
  * @param {() => void} write
  * @param {import('@/types/models.js').CommentChange[]} [comments]
+ * @param {boolean} [suggested] - Whether the write was a suggestion
  */
-function recording(context, api, document, tool, write, comments) {
+function recording(context, api, document, tool, write, comments, suggested = false) {
   const before = api.currentContent(document.id)
-  write()
-  const pair = pairOf(tool, before, api.currentContent(document.id))
+  api.fromOutside(document.id, 'model', write)
+  const pair = pairOf(tool, before, api.currentContent(document.id), suggested)
   if (pair) {
     record(context, {
       documentId: document.id,
@@ -184,6 +248,7 @@ function recording(context, api, document, tool, write, comments) {
       tool,
       ...pair,
       ...(comments?.length ? { comments } : {}),
+      ...(suggested ? { suggested: true } : {}),
     })
   }
 }
@@ -199,19 +264,22 @@ function recording(context, api, document, tool, write, comments) {
  * what has to be said about the text itself rather than read from it.
  *
  * @param {string} storyId
- * @param {(ChatMarks & {userName?: string, characterName?: string})|string|null} [chat] -
+ * @param {(ChatMarks & {id?: string, userName?: string, characterName?: string})|string|null} [chat] -
  *   The chat, or its id. Without one only what is hidden outright is left out,
- *   which is what the writer's own Accept reads by, and nothing is filled in.
+ *   which is what the writer's own Accept reads by, nothing is filled in, and
+ *   no suggestion is seen made.
  */
 async function open(storyId, chat) {
   const api = useDocuments(storyId)
   await api.init()
   const marks = typeof chat === 'string' ? useChatsStore().getChatById(chat) : chat
+  const chatId = typeof chat === 'string' ? chat : chat?.id
   const { sees, markFor } = chatVisibility(marks, api.get)
   const names = namesOf(marks)
   return {
-    api: readerView(api, names),
+    api: readerView(api, names, chatId),
     stored: api,
+    chatId,
     names,
     store: useDocumentsStore(),
     sees,
@@ -222,18 +290,21 @@ async function open(storyId, chat) {
 
 /**
  * The tree as a chat reads it. A text document's text comes without the
- * comments' markup, whose threads a read lists after the text, and a chat
- * with names has them filled in. Documents are what the view hands out, so a
+ * comments' markup, whose threads a read lists after the text, with the
+ * chat's own pending suggestions made and every other not, and a chat with
+ * names has them filled in. Documents are what the view hands out, so a
  * tool walking the tree, building a path, reading a body or searching one
  * never meets a marker or a macro, and every offset it gives is of the text
  * the model is shown; writes go to the tree as it is.
  *
  * @param {DocumentsApi} api
  * @param {import('@/cards/macros.js').Names|null} names
+ * @param {string|null|undefined} chatId
  * @returns {DocumentsApi}
  */
-function readerView(api, names) {
-  const read = (/** @type {Document|undefined} */ document) => document && readable(document, names)
+function readerView(api, names, chatId) {
+  const read = (/** @type {Document|undefined} */ document) =>
+    document && readable(document, names, chatId)
   return {
     ...api,
     get: id => read(api.get(id)),
@@ -242,9 +313,10 @@ function readerView(api, names) {
 }
 
 /**
- * A document as a chat reads it: the names in its title, summary and text,
- * and its text without the comments' markup. The same document back when
- * there is nothing to change.
+ * A document as a chat reads it: the names in its title, summary, digest
+ * and text, and its text without the comments' markup and with suggestions
+ * as the chat sees them. The same document back when there is nothing to
+ * change.
  *
  * The text only when it is asked for: a path is built from every document
  * above it, and the tree is walked whole for every listing and search, while
@@ -252,22 +324,40 @@ function readerView(api, names) {
  *
  * @param {Document} document
  * @param {import('@/cards/macros.js').Names|null} names
+ * @param {string|null|undefined} chatId
  * @returns {Document}
  */
-function readable(document, names) {
-  const marked = document.type === 'text' && !!document.content?.includes(OPEN_MARKUP)
+function readable(document, names, chatId) {
+  const content = document.type === 'text' ? document.content || '' : ''
+  const marked = content.includes(OPEN_MARKUP) || (!document.plain && holdsSuggestions(content))
   if (!marked && !names) return document
   /** @type {string|null} */
-  let content = null
+  let shown = null
   const view = { ...document }
   if (names) {
     view.title = substitute(document.title, names)
     if (document.summary) view.summary = substitute(document.summary, names)
+    if (document.digest) {
+      view.digest = {
+        ...document.digest,
+        line: substitute(document.digest.line, names),
+        text: substitute(document.digest.text, names),
+        ...(document.digest.sections
+          ? {
+              sections: document.digest.sections.map(section => ({
+                ...section,
+                line: substitute(section.line, names),
+              })),
+            }
+          : {}),
+      }
+    }
   }
-  const text = () => (marked ? withoutComments(document.content) : document.content)
+  const text = () =>
+    marked ? withoutComments(seenText(document, content, chatId)) : document.content
   return Object.defineProperty(view, 'content', {
     enumerable: true,
-    get: () => (content ??= names ? substitute(text(), names) : text()),
+    get: () => (shown ??= names ? substitute(text(), names) : text()),
   })
 }
 
@@ -368,6 +458,22 @@ function pathOf(api, document) {
   // and what the model is shown are the same string. The document is taken
   // as passed: a record names it as it was when the change was made.
   return documentPath(api.get, document)
+}
+
+/**
+ * A document or folder by its path, as a chat sees and reads it, with its
+ * path as the tools give it: for a tool kept in a module of its own. Null
+ * when the chat sees nothing there.
+ *
+ * @param {string} storyId
+ * @param {string|null|undefined} chatId
+ * @param {string} path - `/` for the project
+ * @returns {Promise<{document: Document, path: string}|null>}
+ */
+export async function documentForChat(storyId, chatId, path) {
+  const { api, sees } = await open(storyId, chatId)
+  const document = findByPath(api, storyId, path, sees)
+  return document ? { document, path: pathOf(api, document) } : null
 }
 
 /**
@@ -479,6 +585,8 @@ function resolveNewPath(api, storyId, path, sees) {
  * @typedef {Object} ProjectOverview
  * @property {string} project - The project's name
  * @property {string} [summary] - The story's overview, when someone wrote one
+ * @property {string} [about] - What explore said the project holds, when no
+ *   one wrote an overview
  * @property {{documents: number, folders: number}} [size] - How much of it the
  *   chat can see, so the model knows there is more than the block shows. Not
  *   for a model that can't reach the rest.
@@ -571,7 +679,8 @@ export async function pinnedDocuments(storyId, chat) {
 
 /**
  * What the project block says of the project itself: its name, the story's
- * overview, and how much is in it for this chat.
+ * overview (or the line of explore's digest of it, where there is none), and
+ * how much is in it for this chat.
  *
  * Not the tree. The block moves forward to the newest message every turn, so
  * no prompt cache covers it, and a listing there is paid in full on every
@@ -588,9 +697,11 @@ export async function projectOverview(storyId, chat, { size = true } = {}) {
   const root = api.get(rootIdFor(storyId))
   if (!root) return null
   const summary = root.summary?.trim()
+  const about = !summary && currentDigests(storyId)(root.id) ? root.digest?.line : undefined
   const overview = {
     project: root.title || 'Untitled',
     ...(summary ? { summary } : {}),
+    ...(about ? { about } : {}),
   }
   if (!size) return overview
   const seen = visibleDocuments(api, storyId, sees).filter(document => document.id !== root.id)
@@ -605,13 +716,34 @@ export async function projectOverview(storyId, chat, { size = true } = {}) {
 /** How many entries a listing shows before it lists less deep. */
 export const LISTING_LIMIT = 200
 
+const LISTING =
+  'List what the project holds, or what is under one folder: a line for each document and folder, by the full path every tool takes, with how long each document is, how many comments the user left on it, and whether they pinned it, and under it, indented, what it is about where that has been said: the user\'s summary, or a description written for you from its text by explore_documents. A folder ends in "/". Everything under the folder is listed when it fits; in a large project, a folder further down says how many it holds instead, and listing it shows them. A repository (a codebase) is one line until its own path is listed; its files are code, measured in lines.'
+
+/** The longest a listing's line on what something is about runs, in characters. */
+const ABOUT_MOST = 300
+
+/**
+ * What a listing says a document or folder is about: the first line of the
+ * writer's summary, or else of explore's digest while it is current.
+ *
+ * @param {Document} document
+ * @param {(id: string) => boolean} current - Which digests are current
+ * @returns {string}
+ */
+function aboutLine(document, current) {
+  const digest = document.digest && current(document.id) ? document.digest.line : ''
+  const line = (document.summary?.trim().split('\n')[0] || digest).replace(/\s+/g, ' ').trim()
+  if (line.length <= ABOUT_MOST) return line
+  const cut = line.slice(0, ABOUT_MOST)
+  return `${cut.slice(0, Math.max(cut.lastIndexOf(' '), ABOUT_MOST / 2))}…`
+}
+
 /** @type {ToolDefinition} */
 export const listDocumentsDefinition = {
   type: /** @type {const} */ ('function'),
   function: {
     name: 'list_documents',
-    description:
-      'List what the project holds, or what is under one folder: a line for each document and folder, by the full path every tool takes, with how long each document is, how many comments the user left on it, and whether they pinned it. A folder ends in "/". Everything under the folder is listed when it fits; in a large project, a folder further down says how many it holds instead, and listing it shows them. A repository (a codebase) is one line until its own path is listed; its files are code, measured in lines.',
+    description: LISTING,
     parameters: {
       type: 'object',
       properties: {
@@ -679,7 +811,9 @@ function listingLine(api, document, markFor, hidden) {
  *
  * Text rather than JSON: a listing is all names, and a line per name is a
  * fraction of the tokens. Full paths rather than indentation, so a small model
- * copies a path rather than assembling one.
+ * copies a path rather than assembling one. What an entry is about, where
+ * something says, goes indented under it: the line is the address, and what
+ * is under it is not.
  *
  * @param {{path?: string, depth?: number}} args
  * @param {ToolContext} context
@@ -690,10 +824,12 @@ export async function executeListDocuments(args, context) {
   const { api, sees, markFor } = await open(context.storyId, context.chatId)
   const asked = typeof args?.path === 'string' && args.path.trim() ? args.path : '/'
   const folder = findByPath(api, context.storyId, asked, sees)
-  if (!folder)
+  if (!folder) {
+    const named = namedElsewhere(api, context.storyId, asked, sees, doc => doc.type === 'folder')
     return {
-      error: `No folder at "${asked}". list_documents with no path lists the whole project.`,
+      error: `No folder at "${asked}". ${goesByThatName(named) || 'list_documents with no path lists the whole project.'}`,
     }
+  }
   if (folder.type !== 'folder') {
     return { error: `"${asked}" is a document, not a folder. read_document reads it.` }
   }
@@ -723,6 +859,7 @@ export async function executeListDocuments(args, context) {
     })
   }
   if (entries.length === 0) return `"${asked}" is empty.`
+  const current = currentDigests(context.storyId)
 
   // As deep as asked, or the deepest level whose entries fit; at least the
   // folder's own children, however many there are.
@@ -749,7 +886,9 @@ export async function executeListDocuments(args, context) {
           hidden++
         }
       }
-      return listingLine(api, entry.document, markFor, hidden)
+      const line = listingLine(api, entry.document, markFor, hidden)
+      const about = aboutLine(entry.document, current)
+      return about ? `${line}\n  ${about}` : line
     })
     .filter(Boolean)
     .join('\n')
@@ -876,8 +1015,7 @@ function readSource(document, base, args) {
  */
 export async function executeReadDocument(args, context) {
   if (!context?.storyId) return { error: 'No story context available' }
-  const chat = context.chatId ? useChatsStore().getChatById(context.chatId) : null
-  const { api, stored, sees, names } = await open(context.storyId, chat)
+  const { api, stored, sees, names, chatId } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
   if (!document) return noDocument(args.path)
@@ -906,6 +1044,8 @@ export async function executeReadDocument(args, context) {
     title: document.title || '(untitled)',
     path: pathOf(api, document),
     ...sizeOf(document, api.get),
+    // Where a page or a file kept from the web came from, to cite it by.
+    ...(document.url ? { source: document.url } : {}),
   }
 
   if (isSourceFile(api.get, document)) return readSource(document, base, args)
@@ -913,7 +1053,8 @@ export async function executeReadDocument(args, context) {
   // The open comments whose passages end in what was read, after its text:
   // a comment over the end of a slice comes with the slice that has its last
   // words. In their place, the count of the document's.
-  const placed = document.type === 'text' ? placedAsRead(stored.get(document.id), names) : null
+  const placed =
+    document.type === 'text' ? placedAsRead(stored.get(document.id), names, chatId) : null
   /**
    * @template {Record<string, any>} T
    * @param {T} result
@@ -921,7 +1062,9 @@ export async function executeReadDocument(args, context) {
    * @param {number} to
    */
   const withComments = (result, from, to) => {
-    const listed = placed ? commentsBetween(placed, names, from, to) : []
+    const listed = placed
+      ? commentsBetween(placed, names, from, to, peopleOf(document.storyId))
+      : []
     const { comments: _count, ...rest } = result
     return listed.length > 0 ? { ...rest, comments: listed } : rest
   }
@@ -1047,13 +1190,15 @@ const MAP_NODES = 60
 // describe_document — a document's sections, for reading by section
 // ============================================================================
 
+const DESCRIBE =
+  "A document's sections, without its text: its headings as a tree, each with the link read_document takes as `section` and how many words it runs to, its subsections included. A section with a long run of subsections — every term in a glossary, every entry in a reference — gives `entries` (how many) and `range` (the first and last) instead of listing them; name it as `section` to list them. Use it before reading a long document, to go straight to the part you need and to see how big it is. Where explore_documents wrote a description of the document from its text, `about` gives it: what it covers, the names in it, and when to read it; a long section can have an `about` line of its own. A folder that has one gives it too."
+
 /** @type {ToolDefinition} */
 export const describeDocumentDefinition = {
   type: /** @type {const} */ ('function'),
   function: {
     name: 'describe_document',
-    description:
-      "A document's sections, without its text: its headings as a tree, each with the link read_document takes as `section` and how many words it runs to, its subsections included. A section with a long run of subsections — every term in a glossary, every entry in a reference — gives `entries` (how many) and `range` (the first and last) instead of listing them; name it as `section` to list them. Use it before reading a long document, to go straight to the part you need and to see how big it is.",
+    description: DESCRIBE,
     parameters: {
       type: 'object',
       properties: {
@@ -1078,19 +1223,33 @@ export const describeDocumentDefinition = {
  */
 export async function executeDescribeDocument(args, context) {
   if (!context?.storyId) return { error: 'No story context available' }
-  const chat = context.chatId ? useChatsStore().getChatById(context.chatId) : null
-  const { api, sees } = await open(context.storyId, chat)
+  const { api, sees } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
   if (!document) return noDocument(args.path)
+  // What explore wrote of it and of its long sections, for the model, while
+  // it is current.
+  const digest =
+    document.digest && currentDigests(context.storyId)(document.id) ? document.digest : null
+  const about = digest ? digestAbout(digest) : undefined
+  const lines = sectionLines(digest)
   if (document.type === 'folder') {
-    return { error: `"${args.path}" is a folder. list_documents lists what is in it.` }
+    if (!about) {
+      return { error: `"${args.path}" is a folder. list_documents lists what is in it.` }
+    }
+    const path = pathOf(api, document)
+    return {
+      path: path === '/' ? path : `${path}/`,
+      about,
+      note: 'list_documents lists what is in it.',
+    }
   }
   const base = {
     id: document.id,
     title: document.title || '(untitled)',
     path: pathOf(api, document),
     ...sizeOf(document, api.get),
+    ...(about ? { about } : {}),
   }
   if (isSourceFile(api.get, document)) {
     return {
@@ -1105,7 +1264,9 @@ export async function executeDescribeDocument(args, context) {
     if (!section) {
       return {
         error: `"${args.path}" has no section "${args.section}".`,
-        ...(sections.length > 0 ? { sections: sectionTree(sections) } : {}),
+        ...(sections.length > 0
+          ? { sections: withSectionLines(sectionTree(sections), lines) }
+          : {}),
       }
     }
     const inner = sections.filter(
@@ -1118,20 +1279,62 @@ export async function executeDescribeDocument(args, context) {
         title: section.title,
         in: sectionPath(sections, sections.indexOf(section)),
         words: section.words,
+        ...(lines.has(section.link) ? { about: lines.get(section.link) } : {}),
       },
       ...(inner.length > 0
-        ? { sections: sectionTree(inner, SUBTREE_LIMIT) }
+        ? { sections: withSectionLines(sectionTree(inner, SUBTREE_LIMIT), lines) }
         : { note: 'This section has no subsections; read_document reads it.' }),
     }
   }
   return {
     ...base,
     ...(sections.length > 0
-      ? { sections: sectionTree(sections) }
+      ? { sections: withSectionLines(sectionTree(sections), lines) }
       : {
           note: 'This document has no headings. read_document reads it from the top, a slice at a time when it is long.',
         }),
   }
+}
+
+/**
+ * What explore said of a document or folder, as one paragraph: its line in
+ * front of its paragraph, unless the paragraph already begins with it, as it
+ * does where the model wrote only the one.
+ *
+ * @param {import('@/types/models.js').Digest} digest
+ * @returns {string}
+ */
+export function digestAbout({ line, text }) {
+  if (!line || text.startsWith(line)) return text
+  if (!text) return line
+  return `${line}${/[.!?:]$/.test(line) ? '' : '.'} ${text}`
+}
+
+/**
+ * The lines explore wrote of a document's long sections, by link.
+ *
+ * @param {import('@/types/models.js').Digest|null|undefined} digest - Current, or none
+ * @returns {Map<string, string>}
+ */
+export function sectionLines(digest) {
+  return new Map((digest?.sections || []).map(section => [section.link, section.line]))
+}
+
+/**
+ * A section tree with explore's line, as `about`, on each section that has
+ * one: what is in it, for telling which to read.
+ *
+ * @param {import('@/utils/sections.js').SectionNode[]} nodes
+ * @param {Map<string, string>} lines - By link
+ * @returns {import('@/utils/sections.js').SectionNode[]}
+ */
+export function withSectionLines(nodes, lines) {
+  if (lines.size === 0) return nodes
+  return nodes.map(({ sections, ...node }) => ({
+    ...node,
+    ...(lines.has(node.link) ? { about: lines.get(node.link) } : {}),
+    ...(sections ? { sections: withSectionLines(sections, lines) } : {}),
+  }))
 }
 
 /** How many nodes the subsections of one section list: a run of every spell is the answer. */
@@ -1180,6 +1383,7 @@ export async function documentLocator(storyId, chat) {
 // ============================================================================
 
 /** @typedef {import('@/types/models.js').CommentThread} CommentThread */
+/** @typedef {import('@/types/models.js').CommentSuggestion} CommentSuggestion */
 /** @typedef {import('@/types/models.js').CommentChange} CommentChange */
 
 /**
@@ -1276,21 +1480,23 @@ export async function executeListComments(args, context) {
     if (!threads) continue
     const { text, placed } = placedAsRead(
       { ...document, content: api.currentContent(document.id), comments: threads },
-      names
+      names,
+      context.chatId
     )
     const path = pathOf(api, document)
     for (const { id, thread, start, end } of placed) {
-      comments.push({ id, path, passage: text.slice(start, end), posts: postsOf(thread, names) })
+      const posts = postsOf(thread, names, peopleOf(context.storyId))
+      comments.push({ id, path, passage: text.slice(start, end), posts })
     }
     const placedNow = new Set(placed.map(entry => entry.id))
     for (const [id, thread] of Object.entries(threads)) {
-      if (placedNow.has(id) || threadState(thread, false) !== 'stale') continue
+      if (placedNow.has(id) || thread.suggestion || threadState(thread, false) !== 'stale') continue
       comments.push({
         id,
         path,
         passage: substitute(plainPassage(thread.quote), names),
         stale: 'Its passage was deleted. resolve_comment takes it off.',
-        posts: postsOf(thread, names),
+        posts: postsOf(thread, names, peopleOf(context.storyId)),
       })
     }
   }
@@ -1468,7 +1674,7 @@ export async function executeReplyComment(args, context) {
     comment: {
       id: args.id,
       ...(after.status === 'resolved' ? { resolved: true } : {}),
-      posts: postsOf(after, names),
+      posts: postsOf(after, names, peopleOf(context.storyId)),
     },
   }
 }
@@ -1512,6 +1718,11 @@ export async function executeResolveComment(args, context) {
 
   const thread = api.threadsOf(document.id)?.[args.id]
   if (!thread) return noComment(args)
+  if (thread.suggestion) {
+    return {
+      error: `"${args.id}" is a suggested change, which the writer accepts or rejects. To take it back, change its words back with edit_document.`,
+    }
+  }
   const comments = resolving(api, document.id, [args.id])
   const done = {
     success: true,
@@ -2159,6 +2370,369 @@ export async function executeCreateFolder(args, context) {
 }
 
 // ============================================================================
+// A place for what is kept from the web (save_web_page, in ./web.js)
+// ============================================================================
+
+/**
+ * The folder something kept from the web goes in: one the chat can see, by
+ * its path as list_documents gives it, outside any repository. The top of the
+ * project when no path is given. Never made: the folder has to exist, as it
+ * does for create_document.
+ *
+ * @param {ToolContext} context
+ * @param {string|undefined} path
+ * @returns {Promise<{id: string, path: string}|{error: string}>}
+ */
+export async function folderToKeepIn(context, path) {
+  const { api, sees } = await open(context.storyId, context.chatId)
+  const asked = typeof path === 'string' ? path.trim().replace(/^\/+|\/+$/g, '') : ''
+  if (!asked) return { id: rootIdFor(context.storyId), path: '' }
+  const folder = findByPath(api, context.storyId, asked, sees)
+  if (!folder) {
+    return {
+      error: `No folder at "${asked}". list_documents shows the folders that exist; create_folder adds one.`,
+    }
+  }
+  if (folder.type !== 'folder') return { error: `"${asked}" is a document, not a folder.` }
+  if (repositoryOf(api.get, folder)) {
+    return { error: `"${asked}" is in a repository, which is read-only. Put it elsewhere.` }
+  }
+  return { id: folder.id, path: pathOf(api, folder) }
+}
+
+/**
+ * Where what is at an address is in the project already, by the address it
+ * was kept from, when the chat can see it there.
+ *
+ * @param {ToolContext} context
+ * @param {string} url
+ * @returns {Promise<string|null>} Its path
+ */
+export async function keptFrom(context, url) {
+  const { api, sees } = await open(context.storyId, context.chatId)
+  const found = visibleDocuments(api, context.storyId, sees).find(document => document.url === url)
+  return found ? pathOf(api, found) : null
+}
+
+/**
+ * A document's path, as every tool gives it.
+ *
+ * @param {ToolContext} context
+ * @param {string} id
+ * @returns {Promise<string>} '' when it is not there
+ */
+export async function pathInProject(context, id) {
+  const { api } = await open(context.storyId, context.chatId)
+  const document = api.get(id)
+  return document ? pathOf(api, document) : ''
+}
+
+// ============================================================================
+// Suggestions — a change made to the text as the chat sees it
+// ============================================================================
+
+/** What the model is told when its change waits on the writer in the text. */
+export const SUGGESTED_NOTE =
+  'Suggested to the writer, who accepts or rejects each change on its own in the document. To say why, reply_comment on its id. Until they decide, you read the document with your suggestions made, and a later change that touches one goes into it.'
+
+/**
+ * Whether a chat's change to a document's text is suggested in it: in a chat
+ * that asks first, in a document that can hold the marks.
+ * A plain one is stored as typed and holds none, so a change to it is
+ * proposed in the chat.
+ *
+ * @param {ToolContext} context
+ * @param {Document} document
+ * @returns {boolean}
+ */
+const suggests = (context, document) => !!context.propose && !document.plain
+
+/**
+ * Whether a change to a document's text is made to it as the chat sees it:
+ * one suggested, and one made at once to a document that holds suggestions,
+ * which the chat reads with them settled, so its words are not the stored
+ * text's.
+ *
+ * @param {ToolContext} context
+ * @param {DocumentsApi} api
+ * @param {Document} document
+ * @returns {boolean}
+ */
+const changesSeen = (context, api, document) =>
+  suggests(context, document) ||
+  (!context.propose && !document.plain && holdsSuggestions(api.currentContent(document.id)))
+
+/**
+ * A document's text as the chat's model sees it, to change: as stored,
+ * read; the chat's own pending suggestions in it; and the text with those
+ * made and every other not, without the comments' markup.
+ *
+ * @typedef {{before: Node, own: string[], text: string}} SeenText
+ */
+
+/**
+ * @param {DocumentsApi} api
+ * @param {Document} document
+ * @param {string|undefined} chatId
+ * @returns {SeenText}
+ */
+function seenToChange(api, document, chatId) {
+  const stored = api.currentContent(document.id)
+  const before = parseMarkdown(stored)
+  const own = ownSuggestions(api.threadsOf(document.id), chatId)
+  const seen = seeing(before, own)
+  return {
+    before,
+    own,
+    text: withoutComments(seen.docChanged ? serializeMarkdown(seen.doc) : stored),
+  }
+}
+
+/**
+ * What a change to the text as the chat sees it came to.
+ *
+ * @typedef {Object} SeenChange
+ * @property {boolean} changed - False when the text already read so
+ * @property {boolean} suggesting
+ * @property {string[]} suggested - The suggestions it made or went into
+ * @property {Array<{id: string, into: string}>} joined - Those of the chat's
+ *   own it joined to an older one
+ * @property {string[]} withdrawn - Those of the chat's own it took back
+ * @property {CommentChange[]} resolved - The comments whose passages a
+ *   change made at once took
+ */
+
+/**
+ * Make a change to a document as the chat's model sees it, `written` being
+ * that text as the model means it to read. Suggested where the chat
+ * suggests: laid out against the text as it stands, and folded into the
+ * chat's own pending suggestions where it touches them. Made at once
+ * otherwise, over the suggestions there: what touches the chat's own goes
+ * into them, which wait on the writer, and the rest is accepted. Recorded
+ * with the turn, threads and all, so rewinding takes it back.
+ *
+ * @param {ToolContext} context
+ * @param {DocumentsApi} api
+ * @param {Document} document
+ * @param {string} tool
+ * @param {SeenText} seen
+ * @param {string} written
+ * @returns {SeenChange|{error: string}}
+ */
+function changeSeen(context, api, document, tool, { before, own }, written) {
+  const suggesting = suggests(context, document)
+  const threads = api.threadsOf(document.id) || {}
+  // A new id, not one of the document's threads.
+  const fresh = () => {
+    let id = newSuggestionId()
+    while (threads[id]) id = newSuggestionId()
+    return id
+  }
+  const made = suggestChange(before, parseMarkdown(written), fresh(), own, fresh)
+  if (!made) return { error: 'That change could not be laid out in the document.' }
+  const doc = suggesting
+    ? made.doc
+    : made.ids.reduce((each, id) => acceptSuggestion(each, id), made.doc)
+  const done = { suggesting, suggested: [], joined: [], withdrawn: [], resolved: [] }
+  if (doc.eq(before)) return { changed: false, ...done }
+
+  // Only those in the text: one whose marks the writer typed over is not
+  // the change's to take back.
+  const pending = new Set(suggestionsIn(before))
+  const mine = own.filter(each => pending.has(each))
+  const { changes, ...touched } = suggestionThreads(threads, doc, made.into, mine, made.ids, {
+    suggesting,
+    chat: context.chatId,
+  })
+  // Made at once, the change resolves the comments whose passages it took.
+  const resolved = suggesting ? [] : resolving(api, document.id, commentsGone(before, doc))
+  const comments = [...changes, ...resolved]
+  recording(
+    context,
+    api,
+    document,
+    tool,
+    () => {
+      // The threads first, as a comment's go before the text that places it.
+      if (comments.length) api.changeThreads(document.id, comments, false)
+      api.setContent(document.id, serializeMarkdown(doc))
+    },
+    comments,
+    suggesting
+  )
+  return { ...done, changed: true, ...touched, resolved }
+}
+
+/**
+ * The threads a change brings up to date: a new one for each suggestion it
+ * made, with nothing said on it yet; each of the chat's own it went into,
+ * with what it changes now; one it joined to an older, its posts gone to
+ * that one's thread and itself gone; and one it took back, closed.
+ *
+ * @param {Record<string, CommentThread>} threads
+ * @param {Node} doc - With the change made
+ * @param {Record<string, string>} into
+ * @param {string[]} own - Oldest first
+ * @param {string[]} ids - Those the change made, in the text's order
+ * @param {{suggesting: boolean, chat?: string}} by
+ * @returns {{changes: CommentChange[], suggested: string[], joined: Array<{id: string, into: string}>, withdrawn: string[]}}
+ */
+function suggestionThreads(threads, doc, into, own, ids, { suggesting, chat }) {
+  const present = new Set(suggestionsIn(doc))
+  /** @type {Map<string, CommentThread|null>} */
+  const next = new Map()
+  /**
+   * @param {CommentThread} thread
+   * @param {string} each
+   * @returns {CommentThread}
+   */
+  const saying = (thread, each) => {
+    const { out, in: put } = changeOf(doc, each)
+    const suggestion = /** @type {CommentSuggestion} */ (thread.suggestion)
+    return { ...thread, quote: out, suggestion: { ...suggestion, text: put } }
+  }
+
+  const created = Date.now()
+  for (const id of suggesting ? ids : []) {
+    if (!present.has(id)) continue
+    const made = { text: '', created, ...(chat ? { chat } : {}) }
+    next.set(id, saying({ status: 'open', quote: '', posts: [], suggestion: made }, id))
+  }
+  /** @type {Array<{id: string, into: string}>} */
+  const joined = []
+  /** @type {string[]} */
+  const withdrawn = []
+  for (const each of own) {
+    const thread = threads[each]
+    const target = into[each]
+    if (target && threads[target]) {
+      const kept = next.get(target) ?? threads[target]
+      const posts = [...kept.posts, ...thread.posts].sort((a, b) => a.created - b.created)
+      next.set(target, { ...kept, posts })
+      next.set(each, null)
+      joined.push({ id: each, into: target })
+    } else if (!present.has(each)) {
+      const suggestion = /** @type {CommentSuggestion} */ (thread.suggestion)
+      next.set(each, {
+        ...thread,
+        status: 'resolved',
+        suggestion: { ...suggestion, settled: 'withdrawn' },
+      })
+      withdrawn.push(each)
+    }
+  }
+  /** @type {string[]} */
+  const suggested = ids.filter(id => next.has(id))
+  for (const each of own) {
+    if (!present.has(each) || next.get(each) === null) continue
+    const thread = threads[each]
+    const now = saying(next.get(each) ?? thread, each)
+    if (
+      next.has(each) ||
+      now.quote !== thread.quote ||
+      now.suggestion?.text !== thread.suggestion?.text
+    ) {
+      next.set(each, now)
+      suggested.push(each)
+    }
+  }
+  const changes = [...next].map(([each, after]) => ({
+    id: each,
+    before: threads[each] ?? null,
+    after,
+  }))
+  return { changes, suggested, joined, withdrawn }
+}
+
+/**
+ * What the model is told of a change it made to the text as it sees it.
+ *
+ * @param {DocumentsApi} api
+ * @param {Document} document
+ * @param {SeenChange} change
+ * @param {import('@/cards/macros.js').Names|null} names
+ * @param {Record<string, number>} counts - What a write made at once says it wrote
+ * @returns {Record<string, any>}
+ */
+function answerSeen(api, document, change, names, counts) {
+  const path = pathOf(api, document)
+  const where = { id: document.id, title: document.title, path }
+  const { suggested, joined, withdrawn } = change
+  const ids =
+    suggested.length === 1
+      ? { suggestion: suggested[0] }
+      : suggested.length > 1
+        ? { suggestions: suggested }
+        : {}
+  const folds = {
+    ...(joined.length ? { joined } : {}),
+    ...(withdrawn.length ? { withdrawn } : {}),
+  }
+  if (!change.changed) {
+    return {
+      success: true,
+      document: where,
+      unchanged: change.suggesting
+        ? 'It already reads that way to you, so nothing was suggested.'
+        : 'It already reads that way, so nothing changed.',
+    }
+  }
+  if (change.suggesting) {
+    return {
+      suggested: true,
+      document: { path },
+      ...ids,
+      ...folds,
+      note:
+        suggested.length > 0
+          ? SUGGESTED_NOTE
+          : 'That puts back what you had suggested, so the suggestion is gone.',
+    }
+  }
+  return {
+    success: true,
+    document: where,
+    ...counts,
+    ...(suggested.length
+      ? {
+          ...ids,
+          note: 'Where the change touched your suggestions waiting on the writer, it went into them.',
+        }
+      : {}),
+    ...folds,
+    ...resolvedNote(change.resolved, names),
+  }
+}
+
+/**
+ * A chat's suggestions the writer has accepted or rejected, for the model to
+ * be told on its next turn: each with the document it was in, and when.
+ *
+ * @param {string} storyId
+ * @param {ChatMarks & {id?: string}|null} chat
+ * @returns {Promise<Array<{suggestion: string, path: string, accepted: boolean, at: number}>>}
+ */
+export async function settledSuggestions(storyId, chat) {
+  if (!chat?.id) return []
+  const { api, sees } = await open(storyId, chat)
+  return allDocuments(api, storyId).flatMap(document => {
+    if (document.type !== 'text' || !sees(document)) return []
+    return Object.entries(document.comments || {}).flatMap(([id, thread]) => {
+      const { chat: by, settled, settledAt } = thread.suggestion || {}
+      if (by !== chat.id || (settled !== 'accepted' && settled !== 'rejected')) return []
+      return [
+        {
+          suggestion: id,
+          path: pathOf(api, document),
+          accepted: settled === 'accepted',
+          at: settledAt ?? 0,
+        },
+      ]
+    })
+  })
+}
+
+// ============================================================================
 // update_document
 // ============================================================================
 
@@ -2208,9 +2782,19 @@ export async function executeUpdateDocument(args, context) {
   if (document.type === 'folder') return { error: 'A folder has no content to update' }
   if (document.type === 'file') return { error: fileIsNotWritten(args.path) }
 
+  if (changesSeen(context, api, document)) {
+    const seen = seenToChange(api, document, context.chatId)
+    const written = quoteWithoutComments(withoutSuggestionMarkup(content))
+    const change = changeSeen(context, api, document, 'update_document', seen, written)
+    return 'error' in change ? change : answerSeen(api, document, change, names, {})
+  }
+
   // The comments come across where the new body keeps their words; the
-  // rest are resolved.
-  const { body, resolved } = rewriteAroundComments(api.currentContent(document.id), content)
+  // rest are resolved. What the model writes never makes a suggestion.
+  const { body, resolved } = rewriteAroundComments(
+    api.currentContent(document.id),
+    withoutSuggestionMarkup(content)
+  )
   const comments = resolving(
     api,
     document.id,
@@ -2260,7 +2844,7 @@ export const moveDocumentDefinition = {
   function: {
     name: 'move_document',
     description:
-      'Rename a document or folder, move it into another folder, or both. Give the path it has and the full path it should have. The folder it goes into has to exist already: create_folder adds one. A folder moves with everything in it.',
+      'Rename a document or folder, move it into another folder, or both. Give the path it has and the full path it should have. The folder it goes into has to exist already: create_folder adds one. A folder moves with everything in it. Links to it and from it are updated to match; the result lists the documents that changed (`linksUpdated`).',
     parameters: {
       type: 'object',
       properties: {
@@ -2312,16 +2896,115 @@ export async function executeMoveDocument(args, context) {
     return { error: `"${from}" cannot go into a folder inside itself.` }
   }
 
-  if (target.parentId !== document.parentId) api.moveInto(target.parentId, document.id)
-  if (api.get(document.id)?.title !== target.title) api.rename(document.id, target.title)
+  // The links to it, and from it, still go where they went: those that would
+  // not are written again, and the model is told which documents changed.
+  const { relinked } = api.keepingLinks(() => {
+    if (target.parentId !== document.parentId) api.moveInto(target.parentId, document.id)
+    if (api.get(document.id)?.title !== target.title) api.rename(document.id, target.title)
+  })
 
   const moved = api.get(document.id)
   const path = pathOf(api, moved)
   record(context, { documentId: document.id, path, tool: 'move_document', old: from, new: path })
+  const linksUpdated = relinked
+    .map(id => api.get(id))
+    .filter(linking => linking && sees(linking))
+    .map(linking => pathOf(api, linking))
   return {
     success: true,
     document: { id: moved.id, title: moved.title, type: moved.type, path },
     from,
+    ...(linksUpdated.length > 0 ? { linksUpdated } : {}),
+  }
+}
+
+// ============================================================================
+// delete_document
+// ============================================================================
+
+/**
+ * What the model is told when a delete waits on the writer. The note every
+ * proposal gets was not enough: told the delete was proposed, and having read
+ * that it goes to the trash, the model told the writer it was in the trash.
+ * This one was not enough either until the description said a delete can wait
+ * on the writer too.
+ */
+export const DELETE_PROPOSED_NOTE =
+  'Not deleted yet, and not in the trash. The writer is asked in the chat, and it goes to the trash only if they accept. Tell them what you asked to delete and why.'
+
+/** @type {ToolDefinition} */
+export const deleteDocumentDefinition = {
+  type: /** @type {const} */ ('function'),
+  function: {
+    name: 'delete_document',
+    description:
+      "Delete a document or folder, a folder with everything in it. Once deleted it is in the project's trash, where the writer can restore it for 30 days. When the writer approves changes first, the call proposes the delete instead, and nothing is deleted until they accept it in the chat; the result says which it was. Delete only what the writer asks to go, or a document you made that is no longer wanted. A request to tidy or clean up names nothing to go: say what you would delete, and ask.",
+    parameters: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Where it is, from the project root.',
+        },
+      },
+      required: ['path'],
+    },
+  },
+}
+
+/**
+ * Move a document or folder to the project's trash. A folder holding
+ * something this chat doesn't see is refused: the model can't know what it
+ * would take with it. Recorded with the turn's other changes, so rewinding
+ * past the turn brings it back from the trash.
+ *
+ * @param {{path: string}} args
+ * @param {ToolContext} context
+ */
+export async function executeDeleteDocument(args, context) {
+  if (!context?.storyId) return { error: 'No story context available' }
+  const { api, sees } = await open(context.storyId, context.chatId)
+
+  const document = findByPath(api, context.storyId, args.path, sees)
+  if (!document) {
+    return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
+  }
+  if (document.id === rootIdFor(context.storyId)) {
+    return { error: 'The project itself is not deleted from here.' }
+  }
+  const path = pathOf(api, document)
+  if (inRepository(api.get, document) && document.kind !== 'repository') {
+    return { error: `"${path}" is part of a repository, which is read-only.` }
+  }
+  /** @type {Document[]} */
+  const inside = []
+  const walk = (/** @type {string} */ id) => {
+    for (const child of api.childrenOf(id)) {
+      inside.push(child)
+      if (child.type === 'folder') walk(child.id)
+    }
+  }
+  walk(document.id)
+  if (sees && inside.some(child => !sees(child))) {
+    return { error: `"${path}" holds documents kept from this chat. Ask the writer to delete it.` }
+  }
+
+  const going = {
+    path,
+    type: document.type,
+    ...(inside.length > 0 ? { inside: inside.length } : {}),
+  }
+  const edit = { documentId: document.id, path, tool: 'delete_document', old: '', new: '' }
+  if (context.propose) {
+    return { ...propose(context, edit), document: going, note: DELETE_PROPOSED_NOTE }
+  }
+
+  api.trash(document.id)
+  record(context, edit)
+  return {
+    success: true,
+    deleted: going,
+    note: "In the project's trash, where the writer can restore it.",
   }
 }
 
@@ -2401,6 +3084,64 @@ export function nearestContext(content, passage) {
 }
 
 /**
+ * What the model is told when its quote is not in the text once.
+ *
+ * @param {string} path
+ * @param {string} content - The text as the model sees it
+ * @param {string} quoted - As the model gave it
+ * @param {string} plainQuote - Without any markup
+ * @param {number} count
+ * @returns {{error: string, nearest?: string}}
+ */
+function missedQuote(path, content, quoted, plainQuote, count) {
+  if (count > 1) {
+    return {
+      error: `"old" appears ${count} times in "${path}". Include more of the surrounding text so it matches once.`,
+    }
+  }
+  const spacedDifferently = squash(withoutComments(content)).includes(squash(plainQuote))
+  return {
+    error: spacedDifferently
+      ? `"old" was not found in "${path}" as written, though the words are there: the line breaks or spacing differ. Quote the passage exactly as read_document gave it.`
+      : `"old" was not found in "${path}". Quote the passage exactly as read_document gave it; the nearest lines are in "nearest".`,
+    nearest: nearestContext(content, quoted),
+  }
+}
+
+/**
+ * One passage changed in the text as the chat sees it: found there, and the
+ * text with it changed suggested or made (see `changeSeen`). A comment on
+ * the passage stays on it while the change is suggested, since the text
+ * has not changed yet.
+ *
+ * @param {ToolContext} context
+ * @param {DocumentsApi} api
+ * @param {Document} document
+ * @param {import('@/cards/macros.js').Names|null} names
+ * @param {string} path - As the model gave it
+ * @param {string} quoted
+ * @param {string} replacement
+ */
+function editSeen(context, api, document, names, path, quoted, replacement) {
+  const seen = seenToChange(api, document, context.chatId)
+  const quote = quoteWithoutComments(withoutSuggestionMarkup(quoted))
+  const written = quoteWithoutComments(withoutSuggestionMarkup(replacement))
+  // Found as the model sees it, its names filled in, and changed where it is.
+  const found = names ? storedPassage(seen.text, names, quote, written) : null
+  const old = found?.old ?? quote
+  const count = found && found.count !== 1 ? found.count : seen.text.split(old).length - 1
+  if (count !== 1) return missedQuote(path, substitute(seen.text, names), quoted, quote, count)
+
+  const text = seen.text.replace(old, () => found?.new ?? written)
+  const change = changeSeen(context, api, document, 'edit_document', seen, text)
+  if ('error' in change) return change
+  return answerSeen(api, document, change, names, {
+    charactersRemoved: quoted.length,
+    charactersWritten: replacement.length,
+  })
+}
+
+/**
  * @param {{path: string, old: string, new: string}} args
  * @param {ToolContext} context
  */
@@ -2417,14 +3158,17 @@ export async function executeEditDocument(args, context) {
   const replacement = typeof args.new === 'string' ? args.new : ''
   if (!quoted)
     return { error: 'Give the passage to change as "old"; to add text, use append_document.' }
+  if (changesSeen(context, api, document)) {
+    return editSeen(context, api, document, names, args.path, quoted, replacement)
+  }
 
   // The passage is found in the text as it reads without the writer's
   // comments, so a quote may carry their markup or leave it out, and what
-  // the model writes never makes one.
+  // the model writes never makes one, nor a suggestion.
   const stored = api.currentContent(document.id)
   const plain = withoutComments(stored)
   const plainQuote = quoteWithoutComments(quoted)
-  const plainReplacement = quoteWithoutComments(replacement)
+  const plainReplacement = quoteWithoutComments(withoutSuggestionMarkup(replacement))
 
   // A chat with names quotes the text with the names in, which is not what
   // the document says where it has macros: the passage is found there and
@@ -2466,18 +3210,7 @@ export async function executeEditDocument(args, context) {
   const { applied, count } = outcome
   if (!applied) {
     const content = substitute(withoutComments(api.currentContent(document.id)), names)
-    if (count > 1) {
-      return {
-        error: `"old" appears ${count} times in "${args.path}". Include more of the surrounding text so it matches once.`,
-      }
-    }
-    const spacedDifferently = squash(withoutComments(content)).includes(squash(plainQuote))
-    return {
-      error: spacedDifferently
-        ? `"old" was not found in "${args.path}" as written, though the words are there: the line breaks or spacing differ. Quote the passage exactly as read_document gave it.`
-        : `"old" was not found in "${args.path}". Quote the passage exactly as read_document gave it; the nearest lines are in "nearest".`,
-      nearest: nearestContext(content, quoted),
-    }
+    return missedQuote(args.path, content, quoted, plainQuote, count)
   }
 
   // What was said on each comment the edit resolved, for the model to see
@@ -2549,9 +3282,20 @@ export async function executeAppendDocument(args, context) {
   if (document.type === 'folder') return { error: 'A folder has no content to append to' }
   if (document.type === 'file') return { error: fileIsNotWritten(args.path) }
 
-  // What the model writes never makes a comment: add_comment does.
-  const text = withoutComments(typeof args.text === 'string' ? args.text : '')
+  // What the model writes never makes a comment or a suggestion: add_comment
+  // and the edits in a chat that asks first do.
+  const text = withoutComments(
+    withoutSuggestionMarkup(typeof args.text === 'string' ? args.text : '')
+  )
   if (!text.trim()) return { error: 'No text provided' }
+
+  if (changesSeen(context, api, document)) {
+    const seen = seenToChange(api, document, context.chatId)
+    const written = appendBlocks(seen.text, text)
+    const change = changeSeen(context, api, document, 'append_document', seen, written)
+    if ('error' in change) return change
+    return answerSeen(api, document, change, null, { charactersWritten: text.length })
+  }
 
   if (context.propose) {
     return propose(context, {
@@ -2601,6 +3345,14 @@ export async function applyProposal(storyId, edit) {
     return { documentId: document.id, path: target.path, old: '', new: document.content || '' }
   }
 
+  if (edit.tool === 'delete_document') {
+    const going = api.get(edit.documentId)
+    if (!going) return noDocument(edit.path)
+    const path = pathOf(api, going)
+    api.trash(going.id)
+    return { documentId: going.id, path, old: '', new: '' }
+  }
+
   const document = api.get(edit.documentId)
   if (!document || document.type !== 'text') return noDocument(edit.path)
 
@@ -2609,15 +3361,16 @@ export async function applyProposal(storyId, edit) {
   // back if the text cannot be changed.
   const comments = edit.comments || []
   if (comments.length) api.changeThreads(document.id, comments, false)
-  if (edit.tool === 'edit_document') {
-    if (!api.replaceText(document.id, edit.old, edit.new).applied) {
-      if (comments.length) api.changeThreads(document.id, comments, true)
-      return { error: 'The passage has changed since this was proposed.' }
-    }
-  } else if (edit.tool === 'append_document') {
-    api.appendContent(document.id, edit.new)
-  } else {
-    api.setContent(document.id, edit.new)
+  const applied = api.fromOutside(document.id, 'model', () => {
+    if (edit.tool === 'edit_document')
+      return api.replaceText(document.id, edit.old, edit.new).applied
+    if (edit.tool === 'append_document') api.appendContent(document.id, edit.new)
+    else api.setContent(document.id, edit.new)
+    return true
+  })
+  if (!applied) {
+    if (comments.length) api.changeThreads(document.id, comments, true)
+    return { error: 'The passage has changed since this was proposed.' }
   }
 
   const pair = pairOf(edit.tool, before, api.currentContent(document.id)) || { old: '', new: '' }

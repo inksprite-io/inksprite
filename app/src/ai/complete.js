@@ -14,6 +14,7 @@ import { resolveAISettings } from './defaults.js'
 import { attributionHeaders, buildCompletionBody, chatCompletionsUrl } from './wire.js'
 import { streamAnthropic } from './anthropic.js'
 import { traitsOf } from './models.js'
+import { RATE_LIMITED, RateLimitedError, retryAfterOf, throughGate } from './gate.js'
 
 /** @typedef {import('@/types/models.js').AIProvider} AIProvider */
 
@@ -41,15 +42,18 @@ import { traitsOf } from './models.js'
  * @returns {Promise<Completion>}
  * @throws {Error} When the provider refuses, fails mid-stream, or the request is aborted
  */
-export async function complete({
-  provider,
-  model,
-  upstreams,
-  messages,
-  overrides,
-  signal,
-  onChunk,
-}) {
+export function complete(args) {
+  // A job's request waits behind any the writer is waiting on: ai/gate.js.
+  return throughGate(args.provider, { urgency: 'later', signal: args.signal }, () => ask(args))
+}
+
+/**
+ * The request itself, read to the end of its stream.
+ *
+ * @param {Parameters<typeof complete>[0]} args
+ * @returns {Promise<Completion>}
+ */
+async function ask({ provider, model, upstreams, messages, overrides, signal, onChunk }) {
   if (provider.type === 'anthropic') {
     let content = ''
     const { usage, finishReason } = await streamAnthropic({
@@ -90,6 +94,9 @@ export async function complete({
     body: JSON.stringify(body),
     signal,
   })
+  if (response.status === 429) {
+    throw new RateLimitedError(RATE_LIMITED, retryAfterOf(response.headers))
+  }
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Connection failed' }))
     const reported = error.error?.message || error.error || `HTTP ${response.status}`

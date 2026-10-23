@@ -16,6 +16,7 @@ const { mockApi, mockUpdateDocument } = vi.hoisted(() => {
     mockApi: {
       init: vi.fn(async () => {}),
       keep: vi.fn(),
+      takesCaret: () => true,
       get: vi.fn(id => documents.get(id) || null),
     },
   }

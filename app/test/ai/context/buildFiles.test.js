@@ -41,7 +41,7 @@ describe('buildContext, with files', () => {
       messages: [{ role: 'user', content: 'What does the survey say?' }],
     })
 
-    const { messages } = await buildContext('chat', stores, {
+    const { messages } = await buildContext(stores, {
       storyId: 's1',
       chatId: 'c1',
       systemPrompt: 'sys',
@@ -96,7 +96,7 @@ describe('buildContext, with files', () => {
       ],
     })
 
-    const { messages } = await buildContext('chat', stores, {
+    const { messages } = await buildContext(stores, {
       storyId: 's1',
       chatId: 'c1',
       systemPrompt: 'sys',

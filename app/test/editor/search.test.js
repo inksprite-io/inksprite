@@ -5,6 +5,7 @@ import { serializeMarkdown } from '../../src/editor/markdown.js'
 import { createEditorState } from '../../src/editor/state.js'
 import {
   find,
+  findAt,
   findMatches,
   findNext,
   inCaseOf,
@@ -134,6 +135,25 @@ describe('findNext', () => {
   it('does nothing without a match', () => {
     const state = run(createEditorState(DOC), find('nowhere'))
     expect(findNext()(state)).toBe(false)
+  })
+})
+
+describe('findAt', () => {
+  it('goes to a match by where it comes among them, wherever the caret is', () => {
+    const state = run(createEditorState(DOC), findAt('road', {}, 2))
+    expect(searchOf(state).current).toBe(2)
+    expect(selected(state)).toBe('road')
+    expect(state.selection.from).toBe(searchOf(state).matches[2].from)
+  })
+
+  it('goes to the last for a match past it, and to none without one', () => {
+    expect(searchOf(run(createEditorState(DOC), findAt('road', {}, 9))).current).toBe(3)
+    expect(searchOf(run(createEditorState(DOC), findAt('nowhere', {}, 0))).current).toBe(-1)
+  })
+
+  it('looks as it is asked to', () => {
+    const state = run(createEditorState(DOC), findAt('Road', { matchCase: true }, 0))
+    expect(texts(state)).toEqual(['Road'])
   })
 })
 

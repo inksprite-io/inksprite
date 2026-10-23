@@ -217,11 +217,6 @@ const write = async answers => {
       ...answers,
     })
     library.markUsed(job.id, { storyId: props.storyId, folderId: written.folderId })
-    toast.add({
-      severity: 'success',
-      detail: `Imported ${written.title} (${written.documents} documents).`,
-      life: 4000,
-    })
     close()
   } catch (error) {
     fail(error)
@@ -273,7 +268,7 @@ const startChat = async ({ userName, greeting }) => {
   } catch (error) {
     toast.add({
       severity: 'error',
-      detail: `Could not start the chat: ${error.message}`,
+      detail: `The chat couldn't start. ${error.message}`,
       life: 6000,
     })
   }
@@ -298,7 +293,7 @@ const openProject = storyId => {
 const fail = error =>
   toast.add({
     severity: error instanceof NotACardError ? 'warn' : 'error',
-    detail: `Nothing imported: ${error.message}`,
+    detail: `Nothing was imported. ${error.message}`,
     life: 6000,
   })
 </script>

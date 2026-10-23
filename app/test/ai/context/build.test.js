@@ -46,7 +46,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         documentId: 'sc1',
         chatId: 'c1',
@@ -71,7 +71,7 @@ describe('buildContext', () => {
         messages: [{ role: 'user', content: 'follow up' }],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: '',
@@ -92,7 +92,7 @@ describe('buildContext', () => {
       /** Build a chat with `overview` in front of it. */
       const build = async (overview, messages) =>
         (
-          await buildContext('chat', makeStores({ chat: { id: 'c1' }, messages }), {
+          await buildContext(makeStores({ chat: { id: 'c1' }, messages }), {
             storyId: 's1',
             chatId: 'c1',
             systemPrompt: 'You are an assistant.',
@@ -212,7 +212,7 @@ describe('buildContext', () => {
       /** Build a chat with these pins, and hand back the pieces. */
       const build = async ({ documents = [], history, pinned, comments }) => {
         const stores = makeStores({ documents, chat: { id: 'c1' }, messages: history })
-        const { messages } = await buildContext('chat', stores, {
+        const { messages } = await buildContext(stores, {
           storyId: 's1',
           chatId: 'c1',
           systemPrompt: 'sys',
@@ -401,7 +401,7 @@ describe('buildContext', () => {
 
       const build = async (history, opts = {}) =>
         (
-          await buildContext('chat', makeStores({ chat: { id: 'c1' }, messages: history }), {
+          await buildContext(makeStores({ chat: { id: 'c1' }, messages: history }), {
             storyId: 's1',
             chatId: 'c1',
             systemPrompt: 'sys',
@@ -464,6 +464,28 @@ describe('buildContext', () => {
         expect(projectFrom(same).changed).toBeUndefined()
       })
 
+      it('says which suggestions the writer settled since the last answer, once', async () => {
+        const history = [
+          { role: 'user', content: 'Tighten it.', created: 100 },
+          { role: 'assistant', content: 'Suggested.', created: 200 },
+          { role: 'user', content: 'And now?', created: 300 },
+        ]
+        const settled = [
+          { suggestion: 'sold11', path: 'Chapter', accepted: true, at: 150 },
+          { suggestion: 'snew22', path: 'Chapter', accepted: false, at: 250 },
+          { suggestion: 'snew11', path: 'Notes', accepted: true, at: 210 },
+        ]
+
+        const told = projectFrom(await build(history, { settled }))
+        expect(told.settled).toEqual([
+          { suggestion: 'snew11', path: 'Notes', accepted: true },
+          { suggestion: 'snew22', path: 'Chapter', accepted: false },
+        ])
+
+        const later = [...history, { role: 'assistant', content: 'Good.', created: 400 }]
+        expect(projectFrom(await build(later, { settled })).settled).toBeUndefined()
+      })
+
       it('tells a reader of the transcript nothing of reads it cannot see', async () => {
         const messages = await build(
           [{ role: 'user', content: 'Who is Elara?' }, readTurn('r1', 'A knight.')],
@@ -522,7 +544,7 @@ describe('buildContext', () => {
       const build = async (messages, opts = {}) => {
         const stores = makeStores({ chat: { id: 'c1' }, messages })
         return (
-          await buildContext('chat', stores, {
+          await buildContext(stores, {
             storyId: 's1',
             chatId: 'c1',
             systemPrompt: 'sys',
@@ -670,7 +692,7 @@ describe('buildContext', () => {
     it('throws when storyId missing', async () => {
       const stores = makeStores()
       await expect(
-        buildContext('chat', stores, { systemPrompt: '', chatId: 'c1', storyId: '' })
+        buildContext(stores, { systemPrompt: '', chatId: 'c1', storyId: '' })
       ).rejects.toThrow('storyId is required')
     })
 
@@ -708,7 +730,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -745,7 +767,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -782,7 +804,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -800,6 +822,64 @@ describe('buildContext', () => {
       expect(messages.some(m => m.role === 'assistant')).toBe(false)
       expect(messages.some(m => m.role === 'tool')).toBe(false)
       expect(messages[1].content).not.toContain('read_document')
+    })
+
+    describe('an aside', () => {
+      const aside = { aside: true }
+      const conversation = [
+        { id: 'm1', role: 'user', content: 'I walk into the tavern.' },
+        { id: 'm2', role: 'assistant', content: 'It is quiet.' },
+        { id: 'q1', role: 'user', content: '<aside>\nWhat now?\n</aside>', metadata: aside },
+        { id: 'a1', role: 'assistant', content: 'Talk to the keeper.', metadata: aside },
+        { id: 'm3', role: 'user', content: 'I sit at the bar.' },
+      ]
+      const build = async (messages, options = {}) =>
+        (
+          await buildContext(makeStores({ chat: { id: 'c1' }, messages }), {
+            storyId: 's1',
+            chatId: 'c1',
+            systemPrompt: 'sys',
+            ...options,
+          })
+        ).messages
+
+      it('is answered as the next turn, after everything said before it', async () => {
+        const messages = await build(conversation.slice(0, 3))
+
+        expect(messages.map(m => m.content)).toEqual([
+          'sys',
+          'I walk into the tavern.',
+          'It is quiet.',
+          '<aside>\nWhat now?\n</aside>',
+        ])
+      })
+
+      it('is answered again as it was the first time', async () => {
+        const messages = await build(conversation.slice(0, 4), { before: 'a1' })
+
+        expect(messages.at(-1).content).toBe('<aside>\nWhat now?\n</aside>')
+      })
+
+      it('is gone from every turn after it, question and answer', async () => {
+        const messages = await build(conversation)
+
+        // The turn after it starts the way the aside's own request did.
+        expect(messages.map(m => m.content)).toEqual([
+          'sys',
+          'I walk into the tavern.',
+          'It is quiet.',
+          'I sit at the bar.',
+        ])
+      })
+
+      it('is gone from the transcript a skill reads, even the last one', async () => {
+        const messages = await build(conversation.slice(0, 3), {
+          transcript: { user: 'player', assistant: 'game_master' },
+        })
+
+        expect(messages[1].content).not.toContain('What now?')
+        expect(messages[1].content).toContain('It is quiet.')
+      })
     })
 
     it('sends a turn as the one message it was written as', async () => {
@@ -822,7 +902,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -862,7 +942,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -893,7 +973,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -922,7 +1002,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -951,7 +1031,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -972,7 +1052,7 @@ describe('buildContext', () => {
         documents: [{ id: 'd1', path: 'notes', type: 'text', title: 'notes' }],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -1015,7 +1095,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -1039,7 +1119,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -1068,7 +1148,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -1108,7 +1188,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -1141,7 +1221,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -1168,7 +1248,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -1188,7 +1268,7 @@ describe('buildContext', () => {
         messages: [{ id: 'm1', role: 'user', content: 'we set out' }],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -1222,7 +1302,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -1261,7 +1341,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -1289,7 +1369,7 @@ describe('buildContext', () => {
         ],
       })
 
-      const { messages } = await buildContext('chat', stores, {
+      const { messages } = await buildContext(stores, {
         storyId: 's1',
         chatId: 'c1',
         systemPrompt: 'sys',
@@ -1359,7 +1439,7 @@ describe('buildContext', () => {
       const build = async (messages, opts = {}) => {
         const stores = makeStores({ chat: { id: 'c1' }, messages })
         return (
-          await buildContext('chat', stores, {
+          await buildContext(stores, {
             storyId: 's1',
             chatId: 'c1',
             systemPrompt: 'sys',
@@ -1550,34 +1630,6 @@ describe('buildContext', () => {
       })
     })
   })
-
-  describe('summarize mode', () => {
-    it('produces system + user with the scene content embedded', async () => {
-      const stores = makeStores({
-        documents: [doc('sc1', 'manuscript_s1', { title: 'Chapter 1', content: 'A scene.' })],
-      })
-
-      const { messages } = await buildContext('summarize', stores, {
-        storyId: 's1',
-        documentId: 'sc1',
-        systemPrompt: 'Summarize.',
-        userPrompt: 'Summarize the following chapter:',
-      })
-
-      expect(messages).toHaveLength(2)
-      expect(messages[0]).toEqual({ role: 'system', content: 'Summarize.' })
-      expect(messages[1].role).toBe('user')
-      expect(messages[1].content).toContain('Summarize the following chapter:')
-      expect(messages[1].content).toContain('# Chapter 1')
-      expect(messages[1].content).toContain('A scene.')
-    })
-  })
-
-  it('throws on unknown mode', async () => {
-    await expect(
-      buildContext('nope', makeStores(), { storyId: 's1', systemPrompt: '' })
-    ).rejects.toThrow('Unknown context mode: nope')
-  })
 })
 
 describe('the author’s note', () => {
@@ -1590,7 +1642,7 @@ describe('the author’s note', () => {
       ],
     })
   const build = extra =>
-    buildContext('chat', stores(), { storyId: 's1', chatId: 'c1', systemPrompt: 'sys', ...extra })
+    buildContext(stores(), { storyId: 's1', chatId: 'c1', systemPrompt: 'sys', ...extra })
 
   it('goes after the project and ahead of what the writer said', async () => {
     const { messages } = await build({
@@ -1641,7 +1693,6 @@ describe('a chat that plays a card', () => {
   const names = { char: 'Elara', user: 'Riley' }
   const build = extra =>
     buildContext(
-      'chat',
       makeStores({
         documents: [doc('d_elara', 'Cards', { content: '{{char}} has sworn to guard {{user}}.' })],
         chat: { id: 'c1' },

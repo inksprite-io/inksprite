@@ -35,14 +35,17 @@
  * with merged cells changing shape, or a row, column or table deleted that
  * holds what the document cannot show; a list item's kind or nesting
  * changed; a footnote added or removed; an edit in a paragraph with a
- * suggested edit still open; a block inside a list or a quote that a Doc's
- * paragraphs cannot be. See `.llm/google_docs_design.md`, part 3.
+ * newline or a change of style suggested; a block inside a list or a quote
+ * that a Doc's paragraphs cannot be. See `.llm/google_docs_design.md`, part 3.
+ * The words a suggestion puts in are held, as a picture is, and those it
+ * takes out are words as they stand, so the writer writes around them.
  */
 
 import { applyRequests } from './apply.js'
 import { MONOSPACED, readDoc, tabsOf } from './convert.js'
 import { shapeTables } from './shape.js'
 import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
+import { suggestionsIn } from '@/editor/suggestions.js'
 import { diffSequences, deletionsFirst } from '@/utils/diff.js'
 import { schema } from '@/editor/schema.js'
 import { pictureOf } from '@/utils/pictures.js'
@@ -223,7 +226,10 @@ export function writeDoc(document, target, { tabId, pictures = {} } = {}) {
   const { revisionId } = read
   const tab = tabOf(document, read.tabId)
   if (!read.spans || !tab?.documentTab) return { requests: [], unsent: ['layout'], revisionId }
-  const settled = withoutComments(parseMarkdown(serializeMarkdown(target)))
+  const settled = withoutEmpty(withoutComments(parseMarkdown(serializeMarkdown(target))))
+  // Suggestions go as suggestions, never as their markup.
+  if (suggestionsIn(settled).length > 0)
+    throw new Error('A suggestion’s markup would reach the Doc')
 
   // The tables the document's shape first; the words then against the Doc
   // as that leaves it.
@@ -245,6 +251,69 @@ export function writeDoc(document, target, { tabId, pictures = {} } = {}) {
   const writer = new Writer(documentTab, now.read.doc, spans, now.read.tabId, pictures)
   const words = writer.write(settled)
   return { requests: [...shaped.requests, ...words.requests], unsent: words.unsent, revisionId }
+}
+
+/**
+ * The requests without the changes of style among them that change
+ * nothing: written as a suggestion, each would be a suggestion of its own
+ * ("Format: bold, italic, …") beside the change, though it changed nothing.
+ * What they would change is asked of the Doc standing in (`drive/apply`).
+ *
+ * @param {Document} document
+ * @param {object[]} requests
+ * @param {string|undefined} tabId
+ * @returns {object[]}
+ */
+export function withoutIdleStyles(document, requests, tabId) {
+  /** @param {object[]} some */
+  const made = some => JSON.stringify(applyRequests(document, some, { tabId }))
+  let all
+  try {
+    all = made(requests)
+  } catch {
+    return requests
+  }
+  let kept = requests
+  for (const request of requests) {
+    if (!('updateTextStyle' in request || 'updateParagraphStyle' in request)) continue
+    const without = kept.filter(each => each !== request)
+    try {
+      if (made(without) === all) kept = without
+    } catch {
+      // Needed for the rest to apply: kept.
+    }
+  }
+  return kept
+}
+
+/**
+ * A document without its empty list items and headings, which aren't
+ * written: a Doc holds an empty paragraph as spacing and reads it back as
+ * nothing, so one written would be written again at every sync. They stay
+ * in the document.
+ *
+ * @param {Node} node
+ * @returns {Node|null} Null for a block left with nothing in it
+ */
+function withoutEmpty(node) {
+  if (node.isTextblock || node.isLeaf) return node
+  const { heading, list_item: item, paragraph } = schema.nodes
+  /** @type {Node[]} */
+  const kept = []
+  node.forEach(child => {
+    const empty =
+      (child.type === heading && child.content.size === 0) ||
+      (child.type === item && child.childCount === 1 && child.firstChild?.content.size === 0)
+    const left = empty ? null : withoutEmpty(child)
+    if (left) kept.push(left)
+  })
+  if (kept.length === node.childCount && kept.every((child, i) => child === node.child(i))) {
+    return node
+  }
+  if (kept.length === 0) {
+    return node.type === schema.topNodeType ? node.copy(Fragment.from(paragraph.create())) : null
+  }
+  return node.copy(Fragment.fromArray(kept))
 }
 
 /**
@@ -342,8 +411,12 @@ function paragraphsOf(content, tab) {
   const out = []
   /** @param {StructuralElement[]} blocks @param {boolean} inCell */
   const walk = (blocks, inCell) => {
+    // A paragraph after one whose newline is suggested is one with it as
+    // the converter reads it, so a suggestion touches both.
+    let runsOn = false
     blocks.forEach((element, i) => {
       const paragraph = element.paragraph
+      if (!paragraph) runsOn = false
       if (paragraph) {
         const start = element.startIndex ?? 0
         const next = blocks[i + 1]
@@ -356,15 +429,21 @@ function paragraphsOf(content, tab) {
             ...paragraph.suggestedParagraphStyleChanges,
             ...paragraph.suggestedBulletChanges,
           }).length > 0
+        if (runsOn) suggested = true
+        runsOn = false
         let protects = (paragraph.positionedObjectIds?.length ?? 0) > 0
         for (const part of paragraph.elements ?? []) {
           const at = part.startIndex ?? 0
           const run = part.textRun
           if (run) {
             runs.push({ start: at, text: run.content ?? '', style: run.textStyle ?? {} })
+            if (run.content?.endsWith('\n') && run.suggestedInsertionIds?.length) runsOn = true
+            // Words a suggestion puts in are held, and those it takes out
+            // are words, so either is written around; not a newline of one,
+            // nor a change of style.
+            const marked = !!(run.suggestedInsertionIds?.length || run.suggestedDeletionIds?.length)
             if (
-              run.suggestedInsertionIds?.length ||
-              run.suggestedDeletionIds?.length ||
+              (marked && run.content?.includes('\n')) ||
               Object.keys(run.suggestedTextStyleChanges ?? {}).length
             ) {
               suggested = true
@@ -1431,8 +1510,18 @@ class Writer {
     } else if (next?.index !== undefined && next.type !== 'table') {
       anchor = next.index
       from = next
+    } else {
+      // Nothing of the Doc's shows before it, nor after but a table: into
+      // the empty paragraph Docs keeps there, before the table or last.
+      const empty =
+        next?.type === 'table' && next.index !== undefined
+          ? this.#paragraphAt(segment, next.index - 1)
+          : (this.paragraphs.get(segment) ?? []).find(each => each.last)
+      if (empty && empty.start === empty.end) anchor = empty.start
     }
     const paragraph = anchor === undefined ? undefined : this.#paragraphAt(segment, anchor)
+    // Paragraphs put into an empty one end with its newline.
+    const fill = closes && !rotate && !!paragraph && paragraph.start === paragraph.end
     if (anchor === undefined || !paragraph || this.tableStarts.get(segment)?.has(anchor)) {
       // A table put where nothing can go after it is the table's to say.
       this.unsent.add(run.some(move => move.b.type === 'table') ? 'table' : 'layout')
@@ -1476,11 +1565,11 @@ class Writer {
         insert.text += '\v'
       } else if (b.type === 'end' || b.type === 'rule') {
         if (b.type === 'rule') insert.text += '* * *'
-        const at =
-          rotate && lastOne
-            ? { index: /** @type {number} */ (anchor) }
-            : { insert, offset: insert.text.length }
-        if (!(rotate && lastOne)) insert.text += '\n'
+        const own = (rotate || fill) && lastOne
+        const at = own
+          ? { index: /** @type {number} */ (anchor) }
+          : { insert, offset: insert.text.length }
+        if (!own) insert.text += '\n'
         this.endings.push({
           b,
           segment,
@@ -1762,7 +1851,12 @@ class Writer {
 
 /**
  * The moves that make one run of units another, word by word: deletions
- * before insertions where they meet.
+ * before insertions where they meet. The words are laid against each other
+ * from the end first, which keeps a Doc's last newline where it can be, and
+ * from the start where that makes the change smaller: in fewer pieces, and
+ * joining fewer paragraphs. A paragraph deleted after one a page break parts
+ * ends in a full stop like it; laid from the end, the first one's full stop
+ * went with the break, and the two were joined.
  *
  * @param {Unit[]} from
  * @param {Unit[]} to
@@ -1771,30 +1865,62 @@ class Writer {
 function wordMoves(from, to) {
   const a = wordsOf(from)
   const b = wordsOf(to)
-  const diff =
-    diffSequences(
+  /** @param {boolean} startFirst @returns {Move[]} */
+  const laid = startFirst => {
+    const diff = diffSequences(
       a.map(word => word.key),
       b.map(word => word.key),
-      { maxEdits: MAX_EDITS }
-    ) ??
-    /** @type {import('@/utils/diff.js').Step[]} */ ([
-      ...a.map((_, i) => ({ op: 'delete', a: i })),
-      ...b.map((_, j) => ({ op: 'insert', b: j })),
-    ])
-  /** @type {Move[]} */
-  const words = []
-  for (const step of diff) {
-    if (step.op === 'equal') {
-      a[step.a].units.forEach((unit, k) =>
-        words.push({ op: 'equal', a: unit, b: b[step.b].units[k] })
-      )
-    } else if (step.op === 'delete') {
-      for (const unit of a[step.a].units) words.push({ op: 'delete', a: unit })
-    } else {
-      for (const unit of b[step.b].units) words.push({ op: 'insert', b: unit })
+      { maxEdits: MAX_EDITS, startFirst }
+    ) ?? [
+      ...a.map((_, i) => /** @type {const} */ ({ op: 'delete', a: i })),
+      ...b.map((_, j) => /** @type {const} */ ({ op: 'insert', b: j })),
+    ]
+    /** @type {Move[]} */
+    const words = []
+    for (const step of diff) {
+      if (step.op === 'equal') {
+        a[step.a].units.forEach((unit, k) =>
+          words.push({ op: 'equal', a: unit, b: b[step.b].units[k] })
+        )
+      } else if (step.op === 'delete') {
+        for (const unit of a[step.a].units) words.push({ op: 'delete', a: unit })
+      } else {
+        for (const unit of b[step.b].units) words.push({ op: 'insert', b: unit })
+      }
+    }
+    return deletionsFirst(words)
+  }
+  const fromEnd = laid(false)
+  const fromStart = laid(true)
+  return sizeOf(fromStart) < sizeOf(fromEnd) ? fromStart : fromEnd
+}
+
+/**
+ * How big a change is: the pieces it is in, and the paragraphs of the Doc
+ * it joins, each an end deleted from a paragraph not deleted whole.
+ *
+ * @param {Move[]} moves
+ * @returns {number}
+ */
+function sizeOf(moves) {
+  let pieces = 0
+  /** @type {Map<DocParagraph, boolean>} Whether each paragraph goes whole. */
+  const whole = new Map()
+  moves.forEach((move, i) => {
+    if (move.op !== 'equal' && move.op !== 'keep' && (i === 0 || moves[i - 1].op === 'equal')) {
+      pieces++
+    }
+    if (move.op === 'insert' || !move.a.paragraph) return
+    const paragraph = move.a.paragraph
+    whole.set(paragraph, (whole.get(paragraph) ?? true) && move.op === 'delete')
+  })
+  let joins = 0
+  for (const move of moves) {
+    if (move.op === 'delete' && move.a.type === 'end' && move.a.paragraph) {
+      if (!whole.get(move.a.paragraph)) joins++
     }
   }
-  return deletionsFirst(words)
+  return pieces + joins
 }
 
 /** A character that is part of a word. */

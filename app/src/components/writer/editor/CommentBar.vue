@@ -12,6 +12,7 @@
       :passage="passage"
       :state="state"
       :posts="posts"
+      :people="people"
       :active="editing"
       autofocus
       popover
@@ -98,7 +99,8 @@ import { useScreenSize } from '@/composables/useScreenSize.js'
  * @property {boolean} [thread] - A comment on the text, rather than a new one's field
  * @property {string} [passage] - The words it is on
  * @property {'open'|'stale'|'resolved'} [state]
- * @property {Array<{author: string, text: string}>} [posts] - What has been said, in order
+ * @property {Array<{author: string, name?: string, text: string}>} [posts] - What has been said, in order
+ * @property {import('@/cloud/people.js').People|null} [people] - Who is who, where the project is shared
  * @property {boolean} [editing] - The thread picked, or the new comment's field
  */
 const props = defineProps({
@@ -106,6 +108,7 @@ const props = defineProps({
   passage: { type: String, default: '' },
   state: { type: String, default: 'open' },
   posts: { type: Array, default: () => [] },
+  people: { type: Object, default: null },
   editing: { type: Boolean, default: false },
 })
 

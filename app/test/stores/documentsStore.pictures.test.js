@@ -2,9 +2,15 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useDocumentsStore } from '@/stores/documentsStore'
 
-const rows = vi.hoisted(() => ({ /** @type {any[]} */ current: [] }))
+const rows = vi.hoisted(() => ({
+  /** @type {any[]} */ current: [],
+  /** @type {any[]} */ versions: [],
+}))
 vi.mock('@/storage/index.js', () => ({
-  storage: { documents: vi.fn(async () => rows.current) },
+  storage: {
+    documents: vi.fn(async () => rows.current),
+    versionsOf: vi.fn(async documentId => rows.versions.filter(v => v.documentId === documentId)),
+  },
 }))
 
 const trackChange = vi.fn()
@@ -37,6 +43,7 @@ describe('documentsStore, with pictures', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    rows.versions = []
     store = useDocumentsStore()
   })
 
@@ -92,6 +99,15 @@ describe('documentsStore, with pictures', () => {
       ['files', 'doc_b/well.png'],
     ])
     expect(store.getDocument('doc_a')?.updated).toBe(1)
+  })
+
+  it('keeps a picture one of its versions refers to, so the version restored has it', async () => {
+    rows.current = [row('doc_a', 'story_5', 'Words.', { pictures: { 'gate.png': PNG } })]
+    rows.versions = [{ id: 'ver_1', documentId: 'doc_a', content: '![](.images/doc_a/gate.png)' }]
+    await store.loadStory('story_5')
+
+    expect(store.getDocument('doc_a')?.pictures).toEqual({ 'gate.png': PNG })
+    expect(trackDelete).not.toHaveBeenCalled()
   })
 
   it("keeps a picture another document's text refers to", async () => {

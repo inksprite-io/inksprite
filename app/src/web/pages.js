@@ -61,12 +61,24 @@ export function readPage(service, url, options) {
  * @throws When the service fails to read it
  */
 export async function wholePage(url, options = {}) {
-  for (const [key, kept] of pages) {
-    if (key.slice(key.indexOf(' ') + 1) === url) return kept
-  }
+  const kept = keptRead(url)
+  if (kept) return kept
   const using = serviceInUse()
   if (!using) return null
   return readPage(using.service, url, { ...options, key: using.key })
+}
+
+/**
+ * The read kept of a page, whichever service read it, without reading it.
+ *
+ * @param {string} url
+ * @returns {Promise<Page>|null}
+ */
+export function keptRead(url) {
+  for (const [key, kept] of pages) {
+    if (key.slice(key.indexOf(' ') + 1) === url) return kept
+  }
+  return null
 }
 
 /** Forget every page kept: for tests. */

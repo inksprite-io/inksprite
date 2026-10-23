@@ -50,4 +50,12 @@ describe('countWords', () => {
       countWords('We had a {==cold and narrow==}{>>c7k2m1: reword this phrase<<} attic.')
     ).toBe(7)
   })
+
+  it('counts the text as it stands, not what a suggestion would put in', () => {
+    expect(
+      countWords(
+        'A {--cold--}{>>sabcd1<<}{++warm and dry++}{>>sabcd1<<} night.\n\n{++Gulls came.++}{>>sabcd2<<}'
+      )
+    ).toBe(3)
+  })
 })

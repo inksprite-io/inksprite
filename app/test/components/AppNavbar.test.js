@@ -82,7 +82,7 @@ describe('AppNavbar', () => {
     const order = wrapper
       .findAll('[data-tab], [data-action="cards"]')
       .map(button => button.attributes('data-tab') || button.attributes('data-action'))
-    expect(order.slice(0, 3)).toEqual(['outline', 'chats', 'cards'])
+    expect(order.slice(0, 4)).toEqual(['outline', 'search', 'chats', 'cards'])
 
     await wrapper.find('[data-action="cards"]').trigger('click')
     expect(useCardLibraryPanel().visible.value).toBe(true)
@@ -154,7 +154,7 @@ describe('AppNavbar', () => {
   it('has nothing for the panels: the editor and the chat hide each other', async () => {
     await addJob('One')
     const wrapper = mountRail(DEFAULT_LAYOUT)
-    expect(wrapper.findAll('button')).toHaveLength(6)
+    expect(wrapper.findAll('button')).toHaveLength(7)
     expect(wrapper.find('[data-panel]').exists()).toBe(false)
   })
 
@@ -164,6 +164,7 @@ describe('AppNavbar', () => {
 
     expect(wrapper.findAll('[data-tab]').map(button => button.attributes('data-tab'))).toEqual([
       'outline',
+      'search',
       'comments',
     ])
   })

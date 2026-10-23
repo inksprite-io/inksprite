@@ -17,13 +17,24 @@
  * document, which `documentsStore` removes through the sync store.
  *
  * Nothing here is reactive. There is no in-memory copy of a file; storage is
- * where it lives, and a reader is handed it from there.
+ * where it lives, and a reader is handed it from there. A document's row is
+ * made before its bytes are put, so a file opened the moment it appears in
+ * the tree is read while they are still on their way; a read waits for a put
+ * of the same file that has started and not finished.
+ *
+ * On a device that syncs, a file another device imported may have only its
+ * row here, its bytes on the sync server until they are wanted
+ * (`cloud/onDemand.js`). Reading them fetches them, and keeps them.
  */
 
 import { defineStore } from 'pinia'
 import { storage } from '@/storage/index.js'
+import { fetchElsewhere, fileElsewhere } from '@/cloud/onDemand.js'
 
 export const useFilesStore = defineStore('files', () => {
+  /** The puts that have started and not finished, by file. @type {Map<string, Promise<void>>} */
+  const writing = new Map()
+
   /**
    * Keep a document's bytes.
    *
@@ -34,24 +45,43 @@ export const useFilesStore = defineStore('files', () => {
    */
   async function putFile(id, storyId, blob) {
     if (!id) throw new Error('A file needs the id of the document it belongs to')
-    await storage.putFileBytes(id, storyId, blob)
+    const write = storage.putFileBytes(id, storyId, blob)
+    writing.set(id, write)
+    try {
+      await write
+    } finally {
+      if (writing.get(id) === write) writing.delete(id)
+    }
   }
 
   /**
-   * A document's bytes, or null when it has none.
+   * A document's bytes, fetched from the sync server when they are only
+   * there, or null when it has none, or they couldn't be fetched.
    *
    * @param {string} id - The file document's id
+   * @param {{progress?: import('@/cloud/onDemand.js').Progress}} [options] -
+   *   Told how far a download has got, when there is one
    * @returns {Promise<Blob|null>}
    */
-  async function getFile(id) {
+  async function getFile(id, { progress } = {}) {
     if (!id) return null
     try {
-      return await storage.fileBytes(id)
+      await writing.get(id)?.catch(() => {})
+      return (await storage.fileBytes(id)) ?? (await fetchElsewhere(id, progress))
     } catch (error) {
       console.error(`Failed to read file ${id}:`, error)
       return null
     }
   }
 
-  return { putFile, getFile }
+  /**
+   * Whether a document's bytes are on the sync server and not here: a file
+   * to download, rather than one with no bytes anywhere.
+   *
+   * @param {string} id
+   * @returns {Promise<boolean>}
+   */
+  const isElsewhere = id => fileElsewhere(id)
+
+  return { putFile, getFile, isElsewhere }
 })

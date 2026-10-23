@@ -32,6 +32,23 @@ describe('groupTurns', () => {
     expect(turns).toHaveLength(3)
   })
 
+  it('gives an aside and its answer turns of their own, folded into neither side', () => {
+    // The model reads the turns around it and never it. With its answer gone,
+    // the writer's turn before it and the one after are still two.
+    const aside = (id, role) => ({ id, role, metadata: { aside: true } })
+    const turns = groupTurns([
+      said('m1', 'user'),
+      aside('q1', 'user'),
+      aside('a1', 'assistant'),
+      said('m2', 'assistant'),
+      aside('q2', 'user'),
+      said('m3', 'user'),
+    ])
+
+    expect(turns.map(turn => turn.id)).toEqual(['m1', 'q1', 'a1', 'm2', 'q2', 'm3'])
+    expect(turns.map(turn => turn.aside)).toEqual([false, true, true, false, true, false])
+  })
+
   it('gives a consultation a turn of its own, beside the narration', () => {
     // It sits in the assistant's slot but it is not the Game Master, and one
     // name over both would say an interpretation was the next scene.

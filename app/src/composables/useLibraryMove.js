@@ -10,7 +10,6 @@ import { reactive, readonly } from 'vue'
 import { moveIntoLibrary } from '@/storage/open.js'
 import { useEditor } from '@/composables/useEditor.js'
 import { useSyncStore } from '@/stores/syncStore.js'
-import { useToast } from '@/composables/useToast.js'
 
 /** @typedef {import('@/storage/open.js').MoveProgress} MoveProgress */
 
@@ -22,11 +21,10 @@ const state = reactive({
 })
 
 /**
- * Call from a component's setup: a move that fails is told in a toast.
+ * Call from a component's setup. A move that fails is tried again the next
+ * time the app opens, and needs nothing from the writer.
  */
 export function useLibraryMove() {
-  const toast = useToast()
-
   /**
    * Save everything still on its way, move the projects into the folder,
    * and open the app again on them there.
@@ -46,8 +44,9 @@ export function useLibraryMove() {
       })
     } catch (error) {
       state.moving = false
-      toast.error(
-        `The projects couldn't be moved into their folder: ${/** @type {Error} */ (error).message}. inksprite tries again the next time it opens.`
+      console.warn(
+        'The projects could not be moved into their folder. The next start tries again.',
+        error
       )
       return false
     }

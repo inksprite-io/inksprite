@@ -247,7 +247,7 @@ describe('convertPicked', () => {
     const [url, init] = fetchMock.mock.calls[0]
     expect(url).toBe(
       'https://docs.googleapis.com/v1/documents/abc123?includeTabsContent=true' +
-        '&suggestionsViewMode=SUGGESTIONS_INLINE'
+        '&suggestionsViewMode=SUGGESTIONS_INLINE&commentsViewMode=COMMENTS_VIEW_MODE_INCLUDED'
     )
     expect(init.headers).toEqual({ Authorization: 'Bearer tok' })
   })

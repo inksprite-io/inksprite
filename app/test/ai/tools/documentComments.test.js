@@ -132,6 +132,14 @@ describe('comments', () => {
       ])
     })
 
+    it('names someone from a linked Google Doc by their name', async () => {
+      text('Chapter 1', 'He {==said==}{>>cabcd1<<} no.', {
+        cabcd1: open('said', { author: 'person', name: 'Ana Marsh', text: 'Who?', created: 1 }),
+      })
+      const result = await executeReadDocument({ path: 'Chapter 1' }, context)
+      expect(result.comments[0].posts).toEqual([{ author: 'Ana Marsh', text: 'Who?' }])
+    })
+
     it('lists a comment over the end of a slice with the slice that has its last words', async () => {
       const paragraphs = Array.from(
         { length: 600 },
@@ -506,26 +514,6 @@ describe('comments', () => {
 
       expect(content(document.id)).not.toContain('cfake1')
       expect(content(document.id)).toContain('to the door.')
-    })
-
-    it('proposes the edit with the markup it takes in, and resolves on Accept', async () => {
-      const document = chapter()
-      const edits = []
-
-      const result = await edit('She walked to the', 'He ran to the', { propose: true, edits })
-
-      expect(result.proposed).toBe(true)
-      expect(result.resolvedComments).toEqual([{ id: 'cabcd2', comment: 'too slow?' }])
-      expect(content(document.id)).toBe(CHAPTER)
-      expect(edits[0]).toMatchObject({
-        status: 'proposed',
-        old: 'She {==walked==}{>>cabcd2<<} to the',
-        new: 'He ran to the',
-      })
-      expect(threads(document.id).cabcd2.status).toBe('open')
-
-      await applyProposal(STORY, edits[0])
-      expect(threads(document.id).cabcd2.status).toBe('resolved')
     })
   })
 

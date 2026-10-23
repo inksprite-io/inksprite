@@ -35,9 +35,19 @@ import { parseMarkdown } from '@/editor/markdown.js'
  */
 
 /**
+ * Whether a node is what a suggestion waiting on the writer would put in: it
+ * has changed nothing yet, so it is not read.
+ *
+ * @param {import('prosemirror-model').Node} node
+ * @returns {boolean}
+ */
+const putIn = node => node.marks.some(mark => mark.type.name === 'insertion')
+
+/**
  * One node's text as it should be spoken: its words with the marks taken
  * off, and a line break where the writer ended a line. One character to a
- * document position, so an offset into it is an offset into the node.
+ * document position, so an offset into it is an offset into the node. Words
+ * a suggestion would put in are spaces, the text as it stands.
  *
  * @param {import('prosemirror-model').Node} node
  * @returns {string}
@@ -45,7 +55,7 @@ import { parseMarkdown } from '@/editor/markdown.js'
 function spoken(node) {
   let text = ''
   node.forEach(child => {
-    if (child.isText) text += child.text
+    if (child.isText && !putIn(child)) text += child.text
     else text += child.type.name === 'hard_break' ? '\n' : ' '.repeat(child.nodeSize)
   })
   return text
@@ -57,7 +67,8 @@ function spoken(node) {
  * Every node that holds text is one — a paragraph proper, a heading, a list
  * item, a quoted line — with the markdown taken off. Code is not read aloud,
  * nor a table, which is a grid to look along rather than something said; and
- * a rule has nothing to say. Nothing empty is kept.
+ * a rule has nothing to say. Nothing empty is kept. It is read as it stands:
+ * what a suggestion would take out is read, and what it would put in is not.
  *
  * @param {import('prosemirror-model').Node} doc
  * @returns {Block[]}
@@ -67,7 +78,7 @@ export function blocksOfDoc(doc) {
   const blocks = []
 
   doc.descendants((node, pos) => {
-    if (node.type.name === 'table') return false
+    if (node.type.name === 'table' || putIn(node)) return false
     if (!node.isTextblock) return true
     if (node.type.name === 'code_block') return false
 

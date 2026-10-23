@@ -125,6 +125,24 @@ export function pagePart({ from = 0, to = 0, length = 0 }) {
   return `characters ${count(from + 1)}–${count(to)} of ${count(length)}`
 }
 
+/** @param {Date} date */
+const savedOn = date =>
+  date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+
+/**
+ * A web page as the document it is saved as: where it came from and when,
+ * then its text.
+ *
+ * @param {string} url
+ * @param {string} text - Markdown
+ * @param {{part?: string, date?: Date}} [options] - Which part of the page
+ *   it is, when it is not all of it
+ * @returns {string} Markdown
+ */
+export function savedPage(url, text, { part = '', date = new Date() } = {}) {
+  return `*From ${url}${part ? ` (${part})` : ''}, saved ${savedOn(date)}.*\n\n${text.trim()}\n`
+}
+
 /**
  * A result as the document it is saved as: where it came from, then the
  * result itself — as it read, or as a block of JSON when that is what it is.
@@ -133,12 +151,9 @@ export function pagePart({ from = 0, to = 0, length = 0 }) {
  * @returns {string} Markdown
  */
 export function savedContent({ result, server, tool, args, date = new Date() }) {
-  const when = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
   const page = webPageOf(result)
-  if (page) {
-    const part = pagePart(page)
-    return `*From ${page.url}${part ? ` (${part})` : ''}, saved ${when}.*\n\n${page.content.trim()}\n`
-  }
+  if (page) return savedPage(page.url, page.content, { part: pagePart(page), date })
+  const when = savedOn(date)
   const asked = formatToolArguments(args)
   const source = `*From ${server}: ${tool}${asked ? ` (${asked})` : ''}, saved ${when}.*`
   const read = parsed(result)

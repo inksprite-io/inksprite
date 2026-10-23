@@ -27,6 +27,8 @@
  * @property {string} [title]
  * @property {string} [published] - When, as the service gave it
  * @property {string} text - Markdown
+ * @property {File} [file] - The file itself, when the address was one (a PDF,
+ *   say) and it was fetched from its site: what saving it keeps
  */
 
 /** How many results a search answers with. */

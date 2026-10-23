@@ -157,11 +157,12 @@ export const hasText = mime => mime === 'application/pdf' || (!isImage(mime) && 
 export const isStructured = mime => mime === EPUB_MIME
 
 /**
- * A size as a person reads one: `1.2 MB`, `640 KB`, `12 bytes`.
+ * A size as a person reads one: `2 GB`, `1.2 MB`, `640 KB`, `12 bytes`.
  * @param {number} bytes
  * @returns {string}
  */
 export function sizeLabel(bytes) {
+  if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1).replace(/\.0$/, '')} GB`
   if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`
   return bytes === 1 ? '1 byte' : `${bytes} bytes`

@@ -153,4 +153,13 @@ describe('WorkflowsSection', () => {
 
     expect(mountSection().findComponent({ name: 'Select' }).exists()).toBe(false)
   })
+
+  it('has no Explore, which runs on the chat’s model', async () => {
+    const wrapper = mountSection()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('[data-workflow="explore"]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('Ask before exploring')
+    expect(setWorkflow).not.toHaveBeenCalledWith('explore', expect.anything())
+  })
 })

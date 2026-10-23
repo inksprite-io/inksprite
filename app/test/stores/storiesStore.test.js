@@ -53,12 +53,15 @@ vi.mock('../../src/stores/chatsStore.js', () => ({
   useChatsStore: () => ({
     loadChatsForStory: vi.fn().mockResolvedValue(undefined),
     getChatsForStory: vi.fn().mockReturnValue([]),
+    trashedOf: vi.fn().mockReturnValue([]),
     deleteChat: vi.fn(),
   }),
 }))
 
 vi.mock('../../src/stores/messagesStore.js', () => ({
   useMessagesStore: () => ({
+    isChatLoaded: vi.fn().mockReturnValue(true),
+    loadMessagesForChat: vi.fn().mockResolvedValue(undefined),
     deleteMessagesForChat: vi.fn(),
   }),
 }))
@@ -469,6 +472,52 @@ describe('StoriesStore', () => {
 
       // Should not call database again after first init
       expect(db.stories.toArray).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('trash', () => {
+    beforeEach(async () => {
+      const { default: db } = await import('../../src/stores/db')
+      db.stories.toArray.mockResolvedValue([
+        { id: 'story_1', updated: 1 },
+        { id: 'story_2', updated: 2, trashed: 1000 },
+      ])
+      store = useStoriesStore()
+      await store.ensureInitialized()
+    })
+
+    it('reads a trashed project into the trash, out of the list', () => {
+      expect(store.getAllStories().map(s => s.id)).toEqual(['story_1'])
+      expect(store.getStory('story_2')).toBeNull()
+      expect(store.trashedStories().map(s => s.id)).toEqual(['story_2'])
+    })
+
+    it('moves a project to the trash and back', async () => {
+      const trashed = await store.trashStory('story_1', 2000)
+
+      expect(trashed.trashed).toBe(2000)
+      expect(store.getStory('story_1')).toBeNull()
+      expect(store.trashedStories().map(s => s.id)).toEqual(['story_1', 'story_2'])
+      expect(trackChange).toHaveBeenLastCalledWith('stories', 'story_1', trashed)
+
+      const back = await store.restoreStory('story_1')
+
+      expect('trashed' in back).toBe(false)
+      expect(store.getStory('story_1')).toEqual(back)
+    })
+
+    it('deletes a project in the trash for good', async () => {
+      await store.deleteStory('story_2')
+
+      expect(store.trashedStories()).toEqual([])
+      expect(trackDelete).toHaveBeenCalledWith('stories', 'story_2')
+    })
+
+    it('takes a project trashed on another device out of the list', () => {
+      store.receive({ id: 'story_1', updated: 3, trashed: 3000 })
+
+      expect(store.getAllStories()).toEqual([])
+      expect(store.trashedStories().map(s => s.id)).toEqual(['story_1', 'story_2'])
     })
   })
 })

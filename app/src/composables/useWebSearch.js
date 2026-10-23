@@ -49,6 +49,7 @@ const PROBE_TIMEOUT_MS = 30000
  *   setKey: (id: WebServiceId, key: string) => void,
  *   connect: (id: WebServiceId, key: string) => Promise<void>,
  *   setProfile: (profileId: string, on: boolean) => void,
+ *   setAskBeforeSaving: (ask: boolean) => void,
  * }}
  */
 export function useWebSearch() {
@@ -142,6 +143,15 @@ export function useWebSearch() {
     })
   }
 
+  /**
+   * Ask before the model keeps a page in the project, or stop asking.
+   *
+   * @param {boolean} ask
+   */
+  function setAskBeforeSaving(ask) {
+    store.update({ saveWithoutAsking: !ask })
+  }
+
   return {
     ready: () => store.ensureInitialized(),
     setup,
@@ -154,5 +164,6 @@ export function useWebSearch() {
     setKey,
     connect,
     setProfile,
+    setAskBeforeSaving,
   }
 }

@@ -242,6 +242,30 @@ const watchWidth = () => {
   sizer.observe(scroller.value)
 }
 
+/** The page asked for, to show once the pages are laid out; 0 for none. */
+let wanted = 0
+
+/** Bring the page asked for to the top of the panel, once there is one to. */
+const showWanted = () => {
+  const page = pages.value[wanted - 1]
+  const panel = scroller.value
+  if (!page?.el || !panel) return
+  wanted = 0
+  panel.scrollTop += page.el.getBoundingClientRect().top - panel.getBoundingClientRect().top - 16
+}
+
+/**
+ * Show a page, counted from one: now, or once the file is open.
+ *
+ * @param {number} number
+ */
+const showPage = number => {
+  wanted = number
+  showWanted()
+}
+
+defineExpose({ showPage })
+
 onMounted(async () => {
   try {
     await open()
@@ -254,7 +278,9 @@ onMounted(async () => {
   watchWidth()
   // The sheets are in the DOM once Vue has drawn the list.
   await new Promise(resolve => requestAnimationFrame(resolve))
-  if (!gone) watchPages()
+  if (gone) return
+  showWanted()
+  watchPages()
 })
 
 onBeforeUnmount(() => {

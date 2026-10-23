@@ -1,0 +1,10 @@
+{
+  "fixture": "findable",
+  "rewind": true,
+  "messages": [
+    {
+      "text": "Tidy up the notes.",
+      "notCalls": ["delete_document"]
+    }
+  ]
+}

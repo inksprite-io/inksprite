@@ -24,7 +24,7 @@ import { useDocuments } from '@/composables/useDocuments'
 import { generateDocumentId, useDocumentsStore } from '@/stores/documentsStore'
 import { useFilesStore } from '@/stores/filesStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
-import { freeTitle } from '@/utils/documentPath.js'
+import { freeTitle, titleKey } from '@/utils/documentPath.js'
 import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
 import { laysOut } from '@/editor/size.js'
 import { placePictures } from '@/files/pictures.js'
@@ -33,6 +33,7 @@ import { uncomment, undecorate } from './card.js'
 
 /** @typedef {import('./card.js').Card} Card */
 /** @typedef {import('./card.js').LoreEntry} LoreEntry */
+/** @typedef {import('../types/models.js').Document} Document */
 
 /** What the sidecar is called, and what it holds. */
 export const SIDECAR_TITLE = '.card.json'
@@ -48,9 +49,8 @@ export const SIDECAR_TITLE = '.card.json'
  *   documents that have to be in context from the first turn
  * @property {string[]} greetingIds - The greetings, in the card's own order
  * @property {number} documents - How many were written, sidecar included
- * @property {string} [note] - What the toast says after the title, when a
- *   count of documents would not say it: " (3 pages)", or ", a PDF with no
- *   extractable text"
+ * @property {boolean} [scan] - The one document is a PDF with no text in it,
+ *   which the writer is told of: a model can't read a scan
  */
 
 /**
@@ -92,19 +92,23 @@ export async function writeCard(
 }
 
 /**
- * Write a card into a folder again, over what was there.
+ * Write a card into its folder again, over what is there, in place.
  *
- * For a card imported once and wanted fresh, with the edits since taken back. The folder stays, with its
- * title and its place, so a chat started on it still knows what it was on;
- * what is in it goes and is written again from the card. The portrait the
- * card arrived in is kept, unless another is given.
+ * For a card imported once and wanted fresh, with the edits since taken back:
+ * each of its documents is found again by what it holds (a field by its
+ * kind, the greetings in order, a lore entry by its name and then in order)
+ * and given the card's text, keeping its id, so that a chat that pins it
+ * still does, and its versions, which keep what was written in it (one is
+ * taken first). A field the card no longer has goes to the trash, one it has
+ * now is made, and what the writer added to the folder is left alone. The
+ * folder stays, with its title and its place, and so does the portrait.
  *
  * @param {string} storyId
  * @param {string} folderId - A card folder
  * @param {Card} card
  * @param {Object} [options]
  * @param {boolean} [options.useSystemPrompt]
- * @param {Blob} [options.portrait] - The image to keep; the one there already otherwise
+ * @param {Blob} [options.portrait] - The image, where the folder has none yet
  * @returns {Promise<Written>}
  * @throws {Error} When the folder is not a card's
  */
@@ -116,41 +120,177 @@ export async function reimportCard(
 ) {
   const api = useDocuments(storyId)
   await api.init()
+  const store = useDocumentsStore()
   const folder = api.get(folderId)
   if (!folder || folder.type !== 'folder' || folder.kind !== 'card') {
     throw new Error('Only a card folder can be re-imported.')
   }
 
+  const parts = partsOf(card, { useSystemPrompt })
   const children = api.childrenOf(folderId)
-  const kept =
-    portrait ||
-    (await useFilesStore().getFile(children.find(child => child.kind === 'portrait')?.id || '')) ||
-    undefined
-  for (const child of children) api.remove(child.id)
-
-  const filled = await fillCard(storyId, folderId, card, { useSystemPrompt, portrait: kept })
-  return { folderId, title: folder.title, ...filled, documents: filled.documents }
-}
-
-/**
- * The documents a card is made of, written into a folder.
- *
- * @param {string} storyId
- * @param {string} folderId
- * @param {Card} card
- * @param {Object} options
- * @param {boolean} options.useSystemPrompt
- * @param {Blob} [options.portrait]
- * @returns {Promise<Pick<Written, 'pinnedIds'|'greetingIds'|'documents'>>} The
- *   count is of what this wrote: the folder is not counted here
- */
-async function fillCard(storyId, folderId, card, { useSystemPrompt, portrait }) {
-  const store = useDocumentsStore()
-  const folder = { id: folderId }
+  /** The card's own documents in the folder not yet found again. */
+  const left = new Set(children.filter(child => CARD_KINDS.has(child.kind ?? '')).map(c => c.id))
+  /** @param {(document: Document) => boolean} matches */
+  const take = matches => {
+    const found = children.find(child => left.has(child.id) && matches(child))
+    if (found) left.delete(found.id)
+    return found ?? null
+  }
+  /** What is no longer the card's: to the trash. */
+  const discard = (/** @type {string} */ id) => api.trash(id)
 
   /** @type {string[]} */
   const pinnedIds = []
+  /** @type {string[]} */
+  const greetingIds = []
   let documents = 0
+
+  /**
+   * Give a part the document it was written as before, or a new one.
+   * @param {string} parentId
+   * @param {CardPart} part
+   * @param {Document|null} found
+   * @returns {string} The document's id
+   */
+  const place = (parentId, part, found) => {
+    documents++
+    if (!found) {
+      return store.createDocument({
+        storyId,
+        parentId,
+        type: 'text',
+        title: api.uniqueTitle(parentId, part.title),
+        content: part.content,
+        kind: part.kind,
+        hidden: part.hidden,
+        plain: true,
+      }).id
+    }
+    const { id } = found
+    if (found.title !== part.title && !api.namesakeOf(found.parentId, part.title, id)) {
+      store.updateDocument(id, { title: part.title })
+    }
+    if (found.kind !== part.kind) store.updateDocument(id, { kind: part.kind })
+    if (Boolean(found.hidden) !== Boolean(part.hidden)) api.setHidden(id, Boolean(part.hidden))
+    if (api.currentContent(id) !== part.content) {
+      api.fromOutside(id, 'import', () => api.setContent(id, part.content))
+    }
+    return id
+  }
+
+  for (const part of parts.fields) {
+    const id = place(
+      folderId,
+      part,
+      take(child => child.kind === part.kind)
+    )
+    if (part.pin) pinnedIds.push(id)
+  }
+
+  const greetings = children
+    .filter(child => left.has(child.id) && child.kind === 'greeting')
+    .sort(byOrder)
+  parts.greetings.forEach((part, at) => {
+    const found = greetings[at] ?? null
+    if (found) left.delete(found.id)
+    greetingIds.push(place(folderId, part, found))
+  })
+
+  if (parts.lore.length > 0) {
+    let lore = take(child => child.type === 'folder' && child.kind === 'lore')
+    if (!lore) {
+      lore = store.createDocument({
+        storyId,
+        parentId: folderId,
+        type: 'folder',
+        title: api.uniqueTitle(folderId, 'Lore'),
+        kind: 'lore',
+      })
+      documents++
+    }
+    const loreId = lore.id
+    const entries = api.childrenOf(loreId).filter(child => LORE_KINDS.has(child.kind ?? ''))
+    const unmatched = new Set(entries.map(entry => entry.id))
+    // By name first; what was renamed since is taken in order from the rest.
+    const named = parts.lore.map(part => {
+      const found = entries.find(
+        entry => unmatched.has(entry.id) && titleKey(entry.title) === titleKey(part.title)
+      )
+      if (found) unmatched.delete(found.id)
+      return found ?? null
+    })
+    const rest = entries.filter(entry => unmatched.has(entry.id)).sort(byOrder)
+    parts.lore.forEach((part, at) => {
+      let found = named[at]
+      if (!found && rest.length > 0) {
+        found = /** @type {Document} */ (rest.shift())
+        unmatched.delete(found.id)
+      }
+      const id = place(loreId, part, found)
+      if (part.pin) pinnedIds.push(id)
+    })
+    for (const id of unmatched) discard(id)
+  }
+
+  if (parts.sidecar)
+    place(
+      folderId,
+      parts.sidecar,
+      take(child => child.kind === 'sidecar')
+    )
+  // The portrait a re-import has is the one already there, kept as it is: a
+  // file's bytes never change.
+  if (!take(child => child.kind === 'portrait') && portrait) {
+    documents += await writePortrait(store, storyId, folderId, portrait)
+  }
+
+  for (const id of left) discard(id)
+  return { folderId, title: folder.title, pinnedIds, greetingIds, documents }
+}
+
+/**
+ * One of the documents a card is written as: what it says, and what it is,
+ * by which a re-import finds it again.
+ *
+ * @typedef {Object} CardPart
+ * @property {string} title
+ * @property {string} kind
+ * @property {string} content
+ * @property {boolean} [hidden] - Kept from the model
+ * @property {boolean} [pin] - In context in a chat on the card from its first turn
+ */
+
+/** The kinds of the documents a card is written as, in its folder. */
+const CARD_KINDS = new Set([
+  'system-prompt',
+  'rules',
+  'description',
+  'personality',
+  'scenario',
+  'examples',
+  'greeting',
+  'lore',
+  'sidecar',
+  'portrait',
+])
+
+/** The kinds of a lorebook's entries. */
+const LORE_KINDS = new Set(['lore-entry', 'lore-constant'])
+
+/** @param {Document} a @param {Document} b */
+const byOrder = (a, b) => a.order - b.order || (a.id > b.id ? 1 : a.id < b.id ? -1 : 0)
+
+/**
+ * The documents a card is written as, but its portrait: its fields, its
+ * greetings, its lore's entries, and its JSON.
+ *
+ * @param {Card} card
+ * @param {{useSystemPrompt: boolean}} options
+ * @returns {{fields: CardPart[], greetings: CardPart[], lore: CardPart[], sidecar: CardPart|null}}
+ */
+function partsOf(card, { useSystemPrompt }) {
+  /** @type {CardPart[]} */
+  const fields = []
 
   /**
    * One of the card's fields, when it has one. A field with nothing in it gets
@@ -165,19 +305,7 @@ async function fillCard(storyId, folderId, card, { useSystemPrompt, portrait }) 
     { pin = true, hidden = false } = {}
   ) => {
     const content = uncomment(value)
-    if (!content) return
-    const made = store.createDocument({
-      storyId,
-      parentId: folder.id,
-      type: 'text',
-      title,
-      content,
-      kind,
-      hidden,
-      plain: true,
-    })
-    documents++
-    if (pin) pinnedIds.push(made.id)
+    if (content) fields.push({ title, kind, content, pin, ...(hidden ? { hidden } : {}) })
   }
 
   // These two are instructions to a chat rather than things to know about the
@@ -201,30 +329,99 @@ async function fillCard(storyId, folderId, card, { useSystemPrompt, portrait }) 
   // dialog that starts a chat offers instead. They are documents so that they
   // survive and can be edited; they are not pinned, because a greeting in
   // context as well as in the conversation is the same words twice.
-  /** @type {string[]} */
-  const greetingIds = []
-  card.greetings.forEach((greeting, at) => {
-    const made = store.createDocument({
-      storyId,
-      parentId: folder.id,
-      type: 'text',
-      title: at === 0 ? 'Greeting' : `Greeting ${at + 1}`,
-      content: uncomment(greeting),
-      kind: 'greeting',
-      plain: true,
-    })
-    greetingIds.push(made.id)
-    documents++
+  const greetings = card.greetings.map((greeting, at) => ({
+    title: at === 0 ? 'Greeting' : `Greeting ${at + 1}`,
+    kind: 'greeting',
+    content: uncomment(greeting),
+  }))
+
+  const sidecar = card.raw
+    ? {
+        title: SIDECAR_TITLE,
+        kind: 'sidecar',
+        content: JSON.stringify(card.raw, null, 2),
+        hidden: true,
+      }
+    : null
+
+  return { fields, greetings, lore: loreParts(card.lore), sidecar }
+}
+
+/**
+ * A lorebook's entries as documents: each under its own name, a second of one
+ * name as `Name (2)`, its keys on its first line. A `constant` entry is not
+ * retrieval at all — it is a statement that this paragraph is always in
+ * context, which is what a pin is. It goes in the kind rather than only into
+ * what a write returns, because a chat started on the card next week cannot
+ * ask the file what it said.
+ *
+ * @param {LoreEntry[]} entries
+ * @returns {CardPart[]}
+ */
+function loreParts(entries) {
+  /** The names given so far, as the siblings `freeTitle` keeps clear of. @type {Document[]} */
+  const named = []
+  return entries.map(entry => {
+    const title = freeTitle(named, uncomment(undecorate(entry.title)))
+    named.push(/** @type {Document} */ ({ id: title, title }))
+    const keys = entry.keys.length > 0 ? `${entry.keys.join(', ')}\n\n` : ''
+    return {
+      title,
+      kind: entry.constant ? 'lore-constant' : 'lore-entry',
+      content: uncomment(`${keys}${entry.content}`),
+      ...(entry.constant ? { pin: true } : {}),
+    }
   })
+}
+
+/**
+ * The documents a card is made of, written into a folder.
+ *
+ * @param {string} storyId
+ * @param {string} folderId
+ * @param {Card} card
+ * @param {Object} options
+ * @param {boolean} options.useSystemPrompt
+ * @param {Blob} [options.portrait]
+ * @returns {Promise<Pick<Written, 'pinnedIds'|'greetingIds'|'documents'>>} The
+ *   count is of what this wrote: the folder is not counted here
+ */
+async function fillCard(storyId, folderId, card, { useSystemPrompt, portrait }) {
+  const store = useDocumentsStore()
+  const parts = partsOf(card, { useSystemPrompt })
+  /** @type {string[]} */
+  const pinnedIds = []
+  let documents = 0
+
+  /** @param {CardPart} part */
+  const write = part => {
+    documents++
+    return store.createDocument({
+      storyId,
+      parentId: folderId,
+      type: 'text',
+      title: part.title,
+      content: part.content,
+      kind: part.kind,
+      hidden: part.hidden,
+      plain: true,
+    }).id
+  }
+
+  for (const part of parts.fields) {
+    const id = write(part)
+    if (part.pin) pinnedIds.push(id)
+  }
+  const greetingIds = parts.greetings.map(write)
 
   if (card.lore.length > 0) {
-    const written = writeLore(store, storyId, folder.id, card.lore)
+    const written = writeLore(store, storyId, folderId, card.lore)
     pinnedIds.push(...written.pinnedIds)
     documents += written.documents
   }
 
-  documents += writeSidecar(store, storyId, folder.id, card.raw)
-  if (portrait) documents += await writePortrait(store, storyId, folder.id, portrait)
+  if (parts.sidecar) write(parts.sidecar)
+  if (portrait) documents += await writePortrait(store, storyId, folderId, portrait)
 
   return { pinnedIds, greetingIds, documents }
 }
@@ -424,24 +621,20 @@ function writeLore(store, storyId, folderId, entries, { into } = {}) {
   /** @type {string[]} */
   const pinnedIds = []
 
-  for (const entry of entries) {
-    const keys = entry.keys.length > 0 ? `${entry.keys.join(', ')}\n\n` : ''
+  for (const part of loreParts(entries)) {
     const made = store.createDocument({
       storyId,
       parentId,
       type: 'text',
-      // A book can have two entries of one name; the second is `Name (2)`.
-      title: freeTitle(store.getChildrenOrdered(parentId), uncomment(undecorate(entry.title))),
-      content: uncomment(`${keys}${entry.content}`),
+      // A book can have two entries of one name, and one going into a folder
+      // may meet one there already; the second is `Name (2)`.
+      title: freeTitle(store.getChildrenOrdered(parentId), part.title),
+      content: part.content,
       plain: true,
-      // `constant` is not retrieval at all — it is a statement that this
-      // paragraph is always in context, which is what a pin is. It goes in the
-      // kind rather than only into what this call returns, because a chat
-      // started on this card next week cannot ask the file what it said.
-      kind: entry.constant ? 'lore-constant' : 'lore-entry',
+      kind: part.kind,
     })
     documents++
-    if (entry.constant) pinnedIds.push(made.id)
+    if (part.pin) pinnedIds.push(made.id)
   }
 
   return { pinnedIds, documents }

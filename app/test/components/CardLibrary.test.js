@@ -430,7 +430,7 @@ describe('CardLibrary', () => {
       items.find(item => item.label === 'Delete').command()
       expect(require).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: 'Delete Maren from the library? Projects it went into keep their copy.',
+          message: 'Delete Maren from the library?',
         })
       )
       await require.mock.calls[0][0].accept()
@@ -521,5 +521,26 @@ describe('CardLibrary', () => {
     await wrapper.find('[data-card-library]').trigger('drop', { dataTransfer })
     await flushPromises()
     expect(addLink).toHaveBeenCalledWith('https://botbooru.com/character/7')
+  })
+
+  it('opens a card the link leads to that is in the library already, saying nothing', async () => {
+    const id = keep('Maren')
+    const wrapper = await mountLibrary()
+    const library = useCardLibraryStore()
+    vi.spyOn(library, 'addLink').mockResolvedValue({
+      added: [],
+      duplicates: [library.getCard(id)],
+      skipped: [],
+    })
+    const dataTransfer = {
+      types: ['text/uri-list'],
+      files: [],
+      getData: type => (type === 'text/uri-list' ? 'https://botbooru.com/character/7' : ''),
+    }
+    await wrapper.find('[data-card-library]').trigger('drop', { dataTransfer })
+    await flushPromises()
+
+    expect(wrapper.find(`[data-card-detail="${id}"]`).exists()).toBe(true)
+    expect(document.body.textContent).not.toContain('already in the library')
   })
 })

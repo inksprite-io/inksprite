@@ -31,6 +31,8 @@
  *   leave in the app's data folder for it to import as it opens
  * - **closing** - In the desktop app, saving before the window closes or the
  *   app quits
+ * - **windows** - The app open in more than one window or tab: a project in
+ *   one at a time, and what the windows tell each other they changed
  *
  * Design: `.llm/desktop_design.md`.
  *

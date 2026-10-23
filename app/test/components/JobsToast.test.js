@@ -97,6 +97,19 @@ describe('the jobs toast', () => {
     expect(wrapper.findAll('.pi-spinner')).toHaveLength(1)
   })
 
+  it('names the first step asking, and how many more are asking beside it', () => {
+    jobs.value = [
+      job('running', [
+        { id: 'a', label: 'Elara', status: 'running', after: [] },
+        { id: 'b', label: 'Rulebook', status: 'running', after: [] },
+        { id: 'c', label: 'Map', status: 'running', after: [] },
+        { id: 'd', label: 'Notes', status: 'pending', after: ['a', 'b', 'c'] },
+      ]),
+    ]
+    const wrapper = mountToast()
+    expect(wrapper.find('[data-job-status-line]').text()).toContain('Elara +2')
+  })
+
   it('offers pause while running, resume when paused, retry when failed, clear when over', async () => {
     jobs.value = [
       job('running', [{ id: 'a', label: 'a', status: 'running' }]),

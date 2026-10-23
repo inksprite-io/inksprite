@@ -450,6 +450,22 @@ db.version(31).stores({
   docBases: 'id, storyId',
 })
 
+// Sync's own: how far this device has read each project's collection, the
+// rows waiting to be sent, and each row as the server last had it. This
+// device's alone, so left out of backups. No existing row changes.
+db.version(32).stores({
+  cloudState: 'id, storyId',
+  cloudOutbox: 'id, storyId',
+  cloudRecords: 'id, storyId',
+})
+
+// A text document's earlier texts, by the document and its project: kept
+// here on every platform, the desktop app's included, and in a backup. No
+// existing row changes.
+db.version(33).stores({
+  versions: 'id, storyId, documentId',
+})
+
 // A summary is stored where it is read: above the turns it kept, rather than at
 // the end of the chat with a count of how far to hoist it. What the writer
 // sees, what the model is sent, and what a fork or a rewind cuts by become one

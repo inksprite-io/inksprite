@@ -1,21 +1,27 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-const { buildContext, chat, projectOverview, pinnedDocuments, documentLocator } = vi.hoisted(
-  () => ({
-    buildContext: vi.fn(async () => ({ messages: [] })),
-    /** The chat being built for, as the mocked store holds it. */
-    chat: { value: /** @type {any} */ (null) },
-    projectOverview: vi.fn(async (_storyId, _chat, { size = true } = {}) => ({
-      project: 'Harbour',
-      ...(size ? { size: { documents: 3, folders: 1 } } : {}),
-    })),
-    /** What the chat pins, as the documents its `pinnedIds` name. */
-    pinnedDocuments: vi.fn(async (_storyId, chat) =>
-      (chat?.pinnedIds || []).map(id => ({ id, path: `/${id}`, type: 'text' }))
-    ),
-    documentLocator: vi.fn(async () => () => null),
-  })
-)
+const {
+  buildContext,
+  chat,
+  projectOverview,
+  pinnedDocuments,
+  documentLocator,
+  settledSuggestions,
+} = vi.hoisted(() => ({
+  buildContext: vi.fn(async () => ({ messages: [] })),
+  /** The chat being built for, as the mocked store holds it. */
+  chat: { value: /** @type {any} */ (null) },
+  projectOverview: vi.fn(async (_storyId, _chat, { size = true } = {}) => ({
+    project: 'Harbour',
+    ...(size ? { size: { documents: 3, folders: 1 } } : {}),
+  })),
+  /** What the chat pins, as the documents its `pinnedIds` name. */
+  pinnedDocuments: vi.fn(async (_storyId, chat) =>
+    (chat?.pinnedIds || []).map(id => ({ id, path: `/${id}`, type: 'text' }))
+  ),
+  documentLocator: vi.fn(async () => () => null),
+  settledSuggestions: vi.fn(async () => []),
+}))
 
 vi.mock('@/stores/documentsStore.js', () => ({ useDocumentsStore: () => ({}) }))
 vi.mock('@/stores/chatsStore.js', () => ({
@@ -23,7 +29,12 @@ vi.mock('@/stores/chatsStore.js', () => ({
 }))
 vi.mock('@/stores/messagesStore.js', () => ({ useMessagesStore: () => ({}) }))
 vi.mock('@/ai/context/build.js', () => ({ buildContext }))
-vi.mock('@/ai/tools/documents.js', () => ({ projectOverview, pinnedDocuments, documentLocator }))
+vi.mock('@/ai/tools/documents.js', () => ({
+  projectOverview,
+  pinnedDocuments,
+  documentLocator,
+  settledSuggestions,
+}))
 vi.mock('@/ai/tools/index.js', () => ({
   keptInConversation: name => name === 'read_document',
   // The group's switch stands for the document tools; tools/groups.test.js
@@ -40,12 +51,11 @@ const { useAIContext } = await import('@/composables/useAIContext')
  */
 async function optionsGiven(args = {}) {
   await useAIContext('story_1').build({
-    mode: 'chat',
     systemPrompt: 'Hi',
     chatId: 'chat_1',
     ...args,
   })
-  return buildContext.mock.calls.at(-1)[2]
+  return buildContext.mock.calls.at(-1)[1]
 }
 
 describe('useAIContext', () => {
@@ -119,15 +129,6 @@ describe('useAIContext', () => {
 
       expect(project).toEqual({ project: 'Harbour' })
       expect(pinned).toHaveLength(1)
-    })
-
-    it('stays out of a summary', async () => {
-      chat.value = { id: 'chat_1', pinnedIds: ['doc_1'] }
-
-      const { project, pinned } = await optionsGiven({ mode: 'summarize' })
-
-      expect(project).toBeNull()
-      expect(pinned).toEqual([])
     })
   })
 })

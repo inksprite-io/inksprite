@@ -18,6 +18,7 @@ import { keysLeftOut } from '@/utils/backup.js'
 const SETTINGS = {
   aiPreset: 'profile_default_chat',
   applyEdits: 'auto',
+  askBeforeExploring: true,
   nsfwProfiles: false,
   chatProfileId: null,
   roleplayProfileId: null,
@@ -202,6 +203,7 @@ describe('pickSettings', () => {
       roleplayProfileId: null,
       theme: 'system',
       applyEdits: 'auto',
+      askBeforeExploring: true,
       nsfwProfiles: false,
       highlightSpeakers: true,
     })

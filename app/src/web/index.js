@@ -17,8 +17,10 @@
  * - `exa.js`, `kagi.js`, `brave.js` - Each service's search, and its page
  *   read and free check where it has them, its answers taken apart into the
  *   shape the tools answer in
- * - `direct.js` - A page read straight from its site and made markdown, on
- *   desktop, for a service with no reader
+ * - `direct.js` - A page read straight from its site and made markdown, or a
+ *   file there and its text, on desktop, for a service with no reader
+ * - `keep.js` - What is at an address, to keep in the project: the file where
+ *   it can be fetched, the page's text otherwise
  * - `answers.js` - That shape, its limits, and a refusal said for the writer
  * - `config.js` - The setup as the rest of the app reads it, which service
  *   can search, and which chats search
@@ -26,10 +28,10 @@
  *   asking for it again
  *
  * The setup is kept in `stores/webSearchStore.js` and set up in Settings ›
- * Connections (`useWebSearch`). The tools, `web_search` and `read_web_page`,
- * are in `ai/tools/web.js`, in a group of their own that is opted into, as a
- * server's tools are: a chat searches when its profile is one the setup lists,
- * or when the chat itself says so.
+ * Connections (`useWebSearch`). The tools, `web_search`, `read_web_page` and
+ * `save_web_page`, are in `ai/tools/web.js`, in a group of their own that is
+ * opted into, as a server's tools are: a chat searches when its profile is one
+ * the setup lists, or when the chat itself says so.
  *
  * @example
  * import { serviceInUse } from '@/web/config.js'

@@ -66,16 +66,20 @@
             @view="viewPicture"
             @close="closePicture"
           />
-          <CommentButton
-            v-if="commentButton && !isMobile"
-            :left="commentButton.left"
-            :top="commentButton.top"
-            @comment="commentOn(commentButton.from, commentButton.to)"
+          <TextBar
+            v-if="textBar && !isMobile"
+            :left="textBar.left"
+            :top="textBar.top"
+            :comment="textBar.from !== textBar.to"
+            :suggestion="!!textBar.suggestion"
+            @comment="commentOn(textBar.from, textBar.to)"
+            @accept="settleSuggestion(true)"
+            @reject="settleSuggestion(false)"
           />
         </div>
       </div>
     </ScrollPanel>
-    <!-- On a phone the button, the comment and the field are in a bar at the
+    <!-- On a phone the buttons, the comment and the field are in a bar at the
          bottom, clear of the menu iOS keeps beside a selection, and lifted
          over the keyboard where iOS lets it cover the page. On the desktop a
          comment is read and written in the Comments tab, beside the text. -->
@@ -84,16 +88,21 @@
       class="w-full flex-none border-t border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 px-2 py-1"
       data-comment-bar
     >
-      <CommentButton
-        v-if="commentButton"
+      <TextBar
+        v-if="textBar"
         docked
-        @comment="commentOn(commentButton.from, commentButton.to)"
+        :comment="textBar.from !== textBar.to"
+        :suggestion="!!textBar.suggestion"
+        @comment="commentOn(textBar.from, textBar.to)"
+        @accept="settleSuggestion(true)"
+        @reject="settleSuggestion(false)"
       />
       <CommentBar
         v-else-if="commentPopover"
         :thread="!!commentPopover.id"
         :passage="popoverPassage"
         :posts="popoverPosts"
+        :people="people"
         :editing="commentPopover.editing"
         @activate="commentPopover.id && pickComment(commentPopover.id)"
         @resolve="resolveComment"
@@ -145,7 +154,7 @@ import FindBar from '@/components/common/FindBar.vue'
 import EditorMenu from './EditorMenu.vue'
 import LinkPopover from './LinkPopover.vue'
 import PicturePopover from './PicturePopover.vue'
-import CommentButton from './CommentButton.vue'
+import TextBar from './TextBar.vue'
 import CommentBar from './CommentBar.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useKeyboardCover } from '@/composables/useKeyboardCover.js'
@@ -153,12 +162,14 @@ import { useScreenSize } from '@/composables/useScreenSize.js'
 import { useSpelling } from '@/composables/useSpelling.js'
 import { useEditor } from '@/composables/useEditor.js'
 import { useFindKey } from '@/composables/useFindKey.js'
-import { find, findNext, replaceAll, replaceCurrent, searchOf } from '@/editor/search.js'
+import { find, findAt, findNext, replaceAll, replaceCurrent, searchOf } from '@/editor/search.js'
+import { goneTo, takeUpMatch } from '@/composables/useProjectSearch.js'
 import { isEmptyDocument } from '@/editor/state.js'
 import { isShortcutsKey } from '@/editor/shortcuts.js'
 import { useDocuments } from '@/composables/useDocuments'
 import { useNarration } from '@/composables/useNarration'
 import {
+  authorOf,
   commentAround,
   commentRanges,
   keepComments,
@@ -176,14 +187,15 @@ import {
   takeUpComment,
   useComments,
 } from '@/composables/useComments.js'
+import { isMine, usePeople } from '@/cloud/people.js'
 import { draftRange, withDraft } from '@/editor/commentDraft.js'
+import { suggestionAround, suggestionOf, suggestionRanges } from '@/editor/suggestions.js'
 import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import { useFocusMode } from '@/composables/useFocusMode.js'
 import { TINT, skippedRanges, speakerRanges } from '@/tts/highlight.js'
 import { linkAround, links, mapHrefs, removeLink, setLink } from '@/editor/links.js'
 import { insertPictures, pictures } from '@/editor/pictures.js'
 import { downloadBlob } from '@/files/download.js'
-import { useToast } from '@/composables/useToast'
 import { useDocumentLinks } from '@/composables/useDocumentLinks.js'
 import { usePictures } from '@/composables/usePictures.js'
 import { isTextField } from '@/utils/focus.js'
@@ -217,8 +229,6 @@ const documentLinks = useDocumentLinks(props.storyId)
 // Its pictures, its own and the project's, drawn, opened and taken in.
 const documentPictures = usePictures(props.storyId)
 
-const toast = useToast()
-
 const currentDocument = computed(() => api.get(props.documentId))
 
 /** What the popovers are placed in. @type {import('vue').Ref<HTMLElement|null>} */
@@ -244,14 +254,12 @@ const linkPopover = ref(null)
  * line between paragraphs. In WebKit the caret and a selection are as tall as
  * the line, so a shorter line shortens them too. The line height has to be
  * important to beat the sizes' own, which come later behind a breakpoint.
- * Every list item holds a paragraph, so a tight list would otherwise be
- * spaced as a loose one.
  */
 const COMPACT = [
   'leading-normal!',
   'prose-p:my-[0.67em]',
   'prose-headings:mt-[1.2em] prose-headings:mb-[0.4em] [&>:first-child]:mt-0',
-  'prose-ul:my-[0.67em] prose-ol:my-[0.67em] prose-li:my-[0.25em] [&_li>*]:my-0',
+  'prose-ul:my-[0.67em] prose-ol:my-[0.67em] prose-li:my-[0.25em]',
   'prose-blockquote:my-[1em] prose-hr:my-[1.5em]',
 ].join(' ')
 
@@ -272,6 +280,7 @@ const commentPopover = ref(null)
 
 /** What the comments do, on the document's row: see useComments. */
 const comments = useComments(props.storyId)
+const people = usePeople(() => props.storyId)
 
 /** The thread of the comment showing, as the row has it now. */
 const popoverThread = computed(() =>
@@ -295,7 +304,7 @@ const popoverPassage = computed(() => {
  */
 const commentOn = (from, to) => {
   if (!view || from === to) return false
-  commentButton.value = null
+  textBar.value = null
   linkPopover.value = null
   if (isMobile.value) {
     commentPopover.value = { id: null, from, to, editing: true, ...below(view, to, from) }
@@ -431,9 +440,19 @@ const closeComment = refocus => {
 
 /**
  * Whether the text has changed since the caret last moved. A passage can run
- * for a paragraph, and its comment is not to sit over the line being written.
+ * for a paragraph, and neither its comment nor a suggestion's buttons are to
+ * sit over the line being written.
  */
 let typing = false
+
+/**
+ * @param {import('prosemirror-state').EditorState} state
+ * @param {import('prosemirror-state').EditorState} [prevState] - None for the focus coming or going
+ */
+const noteTyping = (state, prevState) => {
+  if (prevState && state.doc !== prevState.doc) typing = true
+  else if (!prevState || !state.selection.eq(prevState.selection)) typing = false
+}
 
 /**
  * On a phone, show the comment the caret is in, while the editor has the
@@ -451,8 +470,6 @@ const showComment = (editorView, prevState) => {
   }
   const { state } = editorView
   const changed = !!prevState && state.doc !== prevState.doc
-  if (changed) typing = true
-  else if (!prevState || !state.selection.eq(prevState.selection)) typing = false
   if (commentPopover.value?.editing) {
     if (changed) commentPopover.value = null
     return
@@ -488,50 +505,77 @@ const followCaret = (editorView, prevState) => {
   const { doc, selection } = editorView.state
   const moved = doc === prevState.doc && !selection.eq(prevState.selection)
   if (!moved || !editorView.hasFocus()) return
-  const around = selection.empty ? commentAround(selection.$from) : null
+  // A comment, or else a suggestion the caret is in: its card in the list.
+  const id = selection.empty
+    ? (commentAround(selection.$from)?.id ?? suggestionAround(selection.$from))
+    : null
   const current = currentComment.value
-  if (!around) leaveComment(props.documentId)
-  else if (current?.documentId !== props.documentId || current.id !== around.id) {
-    goToComment(props.documentId, around.id)
+  if (!id || !comments.threadOf(props.documentId, id)) leaveComment(props.documentId)
+  else if (current?.documentId !== props.documentId || current.id !== id) {
+    goToComment(props.documentId, id)
     takeUpComment(props.documentId)
   }
 }
 
 /**
- * Where the comment button is, and the run of text it was offered on. Taken
+ * Where the text bar is, the run of text it offers a comment on (none when
+ * `from` is `to`), and the suggestion it offers to accept or reject. Taken
  * when it is shown, since a tap on it can let go of a phone's selection.
  *
- * @type {import('vue').Ref<{left: number, top: number, from: number, to: number}|null>}
+ * @type {import('vue').Ref<{left: number, top: number, from: number, to: number, suggestion: string|null}|null>}
  */
-const commentButton = ref(null)
+const textBar = ref(null)
 
 /** Whether the mouse is down making a selection, which is offered once it lets go. */
 let selecting = false
 
 /**
- * Offer to comment on the selected text, while the editor has the focus and
- * no comment is being written. A selection of something other than text — a
- * table's cells, the whole document — is left to the shortcut.
+ * Offer what can be done with the text while the editor has the focus and no
+ * comment is being written: a comment on the selected text, and the
+ * suggestion the selection is on accepted or rejected, unless the writer is
+ * typing, or is in a link, whose own popover is there. A selection of
+ * something other than text — a table's cells, the whole document — is left
+ * to the shortcut, and a picture has its own popover.
  *
  * @param {EditorView} editorView
  */
-const showCommentButton = editorView => {
-  const { selection } = editorView.state
-  const offered =
-    selection instanceof TextSelection &&
-    !selection.empty &&
-    !selecting &&
-    !commentPopover.value?.editing &&
-    editorView.hasFocus()
-  commentButton.value = offered
-    ? { ...below(editorView, selection.to), from: selection.from, to: selection.to }
-    : null
+const showTextBar = editorView => {
+  const { state } = editorView
+  const { selection } = state
+  const shown = !selecting && !commentPopover.value?.editing && editorView.hasFocus()
+  const text = shown && selection instanceof TextSelection && !selection.empty
+  const onText =
+    selection instanceof TextSelection ||
+    (selection instanceof NodeSelection && selection.node.type.name !== 'image')
+  const id =
+    shown && onText && !typing && !linkAround(selection.$from) ? suggestionOf(selection) : null
+  const suggestion = id && comments.threadOf(props.documentId, id)?.suggestion ? id : null
+  if (!text && !suggestion) {
+    textBar.value = null
+    return
+  }
+  const { from, to } = text ? selection : { from: selection.head, to: selection.head }
+  textBar.value = { ...below(editorView, selection.to), from, to, suggestion }
 }
 
 const onMouseUp = () => {
   selecting = false
   // ProseMirror reads the selection the mouse left a moment after it lets go.
-  requestAnimationFrame(() => view && showCommentButton(view))
+  requestAnimationFrame(() => view && showTextBar(view))
+}
+
+/**
+ * Accept or reject the suggestion the bar is on. The caret stays in the
+ * text, where undoing takes it back.
+ *
+ * @param {boolean} accepted
+ */
+const settleSuggestion = accepted => {
+  const id = textBar.value?.suggestion
+  textBar.value = null
+  if (!id) return
+  if (accepted) comments.accept(props.documentId, id)
+  else comments.reject(props.documentId, id)
 }
 
 // While the narration is showing beside the editor, each speaker's lines are
@@ -625,6 +669,7 @@ const fieldTarget = state => {
 /**
  * The comment gone to last, marked over its highlight while it is this
  * document's: the one the comments list picked, or the one the caret is in.
+ * A suggestion is marked the same way, a block of one around the block.
  *
  * @param {import('prosemirror-state').EditorState} state
  * @param {DecorationSet} set
@@ -633,11 +678,18 @@ const currentMarking = (state, set) => {
   const current = currentComment.value
   if (current?.documentId !== props.documentId) return set
   const ranges = commentRanges(state.doc).filter(range => range.id === current.id)
-  if (ranges.length === 0) return set
-  return set.add(
-    state.doc,
-    ranges.map(range => Decoration.inline(range.from, range.to, { class: 'comment-current' }))
-  )
+  const suggested = ranges.length
+    ? []
+    : suggestionRanges(state.doc).filter(range => range.id === current.id)
+  if (ranges.length === 0 && suggested.length === 0) return set
+  return set.add(state.doc, [
+    ...ranges.map(range => Decoration.inline(range.from, range.to, { class: 'comment-current' })),
+    ...suggested.map(range =>
+      range.block
+        ? Decoration.node(range.from, range.to, { class: 'suggestion-current' })
+        : Decoration.inline(range.from, range.to, { class: 'suggestion-current' })
+    ),
+  ])
 }
 
 /** The comments' hover text, kept while neither the text nor the threads change. */
@@ -684,9 +736,9 @@ const commentTitles = state => {
  * @returns {string}
  */
 const titleOf = thread => {
-  const named = thread.posts.length > 1 || thread.posts.some(post => post.author !== 'writer')
+  const named = thread.posts.length > 1 || thread.posts.some(post => !isMine(post, people.value))
   return thread.posts
-    .map(post => (named ? `${post.author === 'writer' ? 'You' : 'Assistant'}: ` : '') + post.text)
+    .map(post => (named ? `${authorOf(post, people.value)}: ` : '') + post.text)
     .join('\n\n')
 }
 
@@ -705,7 +757,11 @@ watch(
 const goToCurrent = () => {
   if (!view) return
   const going = takeUpComment(props.documentId)
-  const range = going && commentRanges(view.state.doc).find(range => range.id === going.id)
+  if (!going) return
+  const { doc } = view.state
+  const range =
+    commentRanges(doc).find(range => range.id === going.id) ??
+    suggestionRanges(doc).find(range => range.id === going.id)
   if (range) bringIntoView(range.from)
 }
 
@@ -732,10 +788,12 @@ const spelling = useSpelling(props.storyId)
  * under it lets its last line come up to the middle of the screen, and no
  * further, so a short document has nothing to scroll. With the checker on,
  * the browser neither underlines nor corrects: Safari would correct as the
- * writer types.
+ * writer types. Every list item holds a paragraph, so what an item holds has
+ * no margins of its own, or every list would be spaced as a loose one, its
+ * items as far apart as paragraphs.
  */
 const attributes = () => ({
-  class: `flex-1 prose font-sans dark:prose-invert sm:prose lg:prose-lg focus:outline-none pt-[var(--page-top,1rem)] pb-[50vh] ${compactText.value ? COMPACT : ''}`,
+  class: `flex-1 prose font-sans dark:prose-invert sm:prose lg:prose-lg [&_li>*]:my-0 focus:outline-none pt-[var(--page-top,1rem)] pb-[50vh] ${compactText.value ? COMPACT : ''}`,
   ...(spelling.on.value ? { spellcheck: 'false', autocorrect: 'off' } : {}),
 })
 watch([compactText, spelling.on], () => view?.setProps({ attributes }))
@@ -747,8 +805,8 @@ const { isMobile } = useScreenSize()
 /** How much of the editor the keyboard covers, which iOS lets it. */
 const covered = useKeyboardCover(root)
 
-/** The phone's comment bar is up: the button, a comment, or the field. */
-const barShown = computed(() => isMobile.value && !!(commentButton.value || commentPopover.value))
+/** The phone's comment bar is up: the buttons, a comment, or the field. */
+const barShown = computed(() => isMobile.value && !!(textBar.value || commentPopover.value))
 
 /**
  * What the bar holds, for keeping what it is about in sight above it: the
@@ -757,7 +815,7 @@ const barShown = computed(() => isMobile.value && !!(commentButton.value || comm
 const inBar = computed(() => {
   if (!isMobile.value) return ''
   if (commentPopover.value) return commentPopover.value.editing ? 'field' : 'comment'
-  return commentButton.value ? 'button' : ''
+  return textBar.value ? 'buttons' : ''
 })
 watch(inBar, holds => {
   if (holds) nextTick(() => view?.dispatch(view.state.tr.scrollIntoView()))
@@ -858,6 +916,26 @@ const closeFind = () => {
   view.focus()
 }
 
+/**
+ * Go to a match the project's search picked in this document, when it was
+ * picked with the document showing or the picking opened it: the find opens
+ * on its query, on that match. The focus stays where it is. It is brought
+ * into view once the find has taken its room above the text, and a view
+ * just made has been laid out.
+ */
+const goToMatch = () => {
+  if (!view) return
+  const match = takeUpMatch(props.documentId)
+  if (!match) return
+  query.value = match.query
+  matchCase.value = !!match.options.matchCase
+  wholeWord.value = !!match.options.wholeWord
+  finding.value = true
+  findAt(match.query, match.options, match.index)(view.state, view.dispatch)
+  nextTick(() => requestAnimationFrame(reveal))
+}
+watch(goneTo, goToMatch)
+
 useFindKey(() => root.value, openFind)
 defineExpose({ openFind })
 
@@ -954,13 +1032,15 @@ const viewPicture = () => {
   if (picked) documentPictures.open(picked.node.attrs.src, props.documentId, picked.node.attrs.alt)
 }
 
-/** The picture selected, downloaded under its name, from the menu. */
+/**
+ * The picture selected, downloaded under its name, from the menu. A picture
+ * whose bytes are missing saves nothing.
+ */
 const savePicture = async () => {
   const picked = view && selectedPicture(view)
   if (!picked) return
   const found = await documentPictures.bytesOf(picked.node.attrs.src, props.documentId)
   if (found) downloadBlob(found.blob, found.name)
-  else toast.warning('This picture is missing.')
 }
 
 /** Make a picture this document's own, and say its path. */
@@ -1107,8 +1187,9 @@ onMounted(async () => {
       new Plugin({
         view: () => ({
           update: (editorView, prevState) => {
+            noteTyping(editorView.state, prevState)
             showPicture(editorView)
-            showCommentButton(editorView)
+            showTextBar(editorView)
             showComment(editorView, prevState)
             followCaret(editorView, prevState)
             // A new comment whose passage has been deleted has nothing to be on.
@@ -1148,7 +1229,8 @@ onMounted(async () => {
     handleDOMEvents: {
       blur: (editorView, event) => {
         editor.flush(id)
-        commentButton.value = null
+        textBar.value = null
+        noteTyping(editorView.state)
         showComment(editorView)
         // Into the picture's field, the picture stays shown, to be named.
         const into = /** @type {Element|null} */ (event.relatedTarget)
@@ -1157,8 +1239,9 @@ onMounted(async () => {
         return false
       },
       focus: editorView => {
+        noteTyping(editorView.state)
         showPicture(editorView)
-        showCommentButton(editorView)
+        showTextBar(editorView)
         showComment(editorView)
         return false
       },
@@ -1189,8 +1272,9 @@ onMounted(async () => {
   editor.attach(id, view)
   document.addEventListener('visibilitychange', onVisibilityChange)
   // The caret comes here, unless the writer is typing somewhere else — naming
-  // this very document in the tree, say — in which case it stays there.
-  if (!isTextField()) view.focus()
+  // this very document in the tree, say — in which case it stays there; or
+  // unless the document only came forward for the one before being deleted.
+  if (!isTextField() && api.takesCaret(props.documentId)) view.focus()
 
   // A tab coming back is scrolled to where it was left. The content has to be
   // laid out first for the height to be there to scroll to.
@@ -1198,6 +1282,7 @@ onMounted(async () => {
   const element = scroller()
   if (element) element.scrollTop = editor.scrollTop(id)
   goToCurrent()
+  goToMatch()
 })
 
 onBeforeUnmount(() => {
@@ -1311,6 +1396,41 @@ onBeforeUnmount(() => {
    its highlight, inside the mark. */
 .ProseMirror .comment-current {
   background-color: rgb(250 204 21 / 0.45);
+  border-radius: 0.15em;
+}
+
+/* A suggestion: what it puts in underlined in green, what it takes out
+   struck through, and a block put in or taken out edged on its left. */
+.ProseMirror ins.suggestion {
+  color: rgb(21 128 61);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+.ProseMirror del.suggestion {
+  color: color-mix(in srgb, currentColor 55%, transparent);
+  text-decoration: line-through;
+}
+/* Words put in straight after words taken out, a hair apart. */
+.ProseMirror del.suggestion + ins.suggestion {
+  margin-left: 0.15em;
+}
+.ProseMirror div.suggestion {
+  border-left: 2px solid rgb(34 197 94);
+  padding-left: 0.75em;
+  margin-left: -0.875em;
+}
+.ProseMirror div.suggestion[data-suggestion='del'] {
+  border-left-color: color-mix(in srgb, currentColor 35%, transparent);
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+.dark .ProseMirror ins.suggestion {
+  color: rgb(74 222 128);
+}
+/* The suggestion gone to last, as a comment is. */
+.ProseMirror .suggestion-current {
+  background-color: rgb(34 197 94 / 0.18);
   border-radius: 0.15em;
 }
 </style>

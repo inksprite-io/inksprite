@@ -109,6 +109,7 @@ describe('useChats', () => {
       chats: new Map(mockChats.map(c => [c.id, c])),
       loadChatsForStory: vi.fn().mockResolvedValue(undefined),
       getChatsForStory: vi.fn().mockReturnValue(mockChats),
+      trashedOf: vi.fn().mockReturnValue([]),
       createChat: vi.fn().mockImplementation((storyId, title) => ({
         id: `chat_${Date.now()}`,
         storyId,
@@ -425,11 +426,20 @@ describe('useChats', () => {
         'user',
         'What about elves?',
         null,
+        null,
         null
       )
       expect(result.role).toBe('user')
       expect(result.content).toBe('What about elves?')
       expect(result.reasoningContent).toBeNull()
+    })
+
+    it('creates a message with what it is known to be from the start', () => {
+      composable.addMessage(mockChatId, 'user', '<aside>\nNow?\n</aside>', null, [], {
+        aside: true,
+      })
+
+      expect(messagesStore.createMessage.mock.calls.at(-1)[5]).toEqual({ aside: true })
     })
 
     it('should add an assistant message with reasoning', () => {
@@ -445,6 +455,7 @@ describe('useChats', () => {
         'assistant',
         'Elves are immortal beings...',
         'The user wants to know about elves...',
+        null,
         null
       )
       expect(result.reasoningContent).toBe('The user wants to know about elves...')

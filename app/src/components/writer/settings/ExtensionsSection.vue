@@ -87,7 +87,7 @@ import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
  * The extensions: parts of the app not every writer wants, each switched on
  * here. Roleplay is character cards, the card library and the roleplay
  * profiles; its settings are the ones only roleplay has. Switching it off
- * hides all of it and deletes nothing, and offers to empty the card library.
+ * hides all of it and deletes nothing, the card library included.
  * See `extensions/`.
  */
 
@@ -105,15 +105,16 @@ const roleplayOn = computed(() => applicationState.extensionOn('roleplay') === t
 // its place, as it does in a chat.
 const roleplayProfile = computed(() => profilesApi.getProfile(profilesApi.roleplayDefaultId())?.id)
 
-/**
- * Empty the library, and say so.
- */
+/** Empty the library. */
 const deleteLibrary = async () => {
   try {
     await library.removeAll()
-    toast.add({ severity: 'success', detail: 'Deleted the card library.', life: 4000 })
   } catch (error) {
-    toast.add({ severity: 'error', detail: `Not deleted: ${error.message}`, life: 6000 })
+    toast.add({
+      severity: 'error',
+      detail: `The card library couldn't be deleted. ${error.message}`,
+      life: 6000,
+    })
   }
 }
 
@@ -123,8 +124,8 @@ const confirmDeleteLibrary = async () => {
     header: 'Delete card library?',
     message:
       library.allCards.length === 1
-        ? 'Delete the card in the library? Cards in projects stay there.'
-        : `Delete all ${library.allCards.length} cards in the library? Cards in projects stay there.`,
+        ? 'Delete the card in the library?'
+        : `Delete all ${library.allCards.length} cards in the library?`,
     icon: 'pi pi-trash',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
     acceptProps: { label: 'Delete', severity: 'danger' },
@@ -133,26 +134,10 @@ const confirmDeleteLibrary = async () => {
 }
 
 /**
- * Switched off, roleplay goes at once, and a library with cards in it asks
- * whether they should go too.
+ * Switched off, roleplay goes at once; the card library is kept for when it
+ * is back on.
  *
  * @param {boolean} on
  */
-const switchRoleplay = async on => {
-  applicationState.setExtension('roleplay', on)
-  if (on) return
-  await library.ensureLoaded()
-  if (library.allCards.length === 0) return
-  confirm.require({
-    header: 'Delete card library?',
-    message:
-      library.allCards.length === 1
-        ? 'The library still has 1 card. Delete it too? Cards in projects stay there.'
-        : `The library still has ${library.allCards.length} cards. Delete them too? Cards in projects stay there.`,
-    icon: 'pi pi-trash',
-    rejectProps: { label: 'Keep', severity: 'secondary', outlined: true },
-    acceptProps: { label: 'Delete', severity: 'danger' },
-    accept: deleteLibrary,
-  })
-}
+const switchRoleplay = on => applicationState.setExtension('roleplay', on)
 </script>

@@ -319,9 +319,10 @@ describe('useCardChat', () => {
       const written = await imported()
       const chat = arrived()
 
-      const card = await cardChats.attach(chat.id, 'Elara')
+      const { card, named } = await cardChats.attach(chat.id, 'Elara')
 
       expect(card.title).toBe('Elara')
+      expect(named).toBe(1)
       expect(chat.pinnedIds).toEqual(written.pinnedIds)
     })
 
@@ -354,7 +355,7 @@ describe('useCardChat', () => {
       await imported()
       const chat = arrived()
 
-      expect(await cardChats.attach(chat.id, 'Seraphina')).toBeNull()
+      expect(await cardChats.attach(chat.id, 'Seraphina')).toEqual({ card: null, named: 0 })
       expect(chat).not.toHaveProperty('pinnedIds')
       expect(mockUpdateChat).not.toHaveBeenCalled()
     })
@@ -364,7 +365,7 @@ describe('useCardChat', () => {
       await imported({ description: 'A knight, revised.' })
       const chat = arrived()
 
-      expect(await cardChats.attach(chat.id, 'Elara')).toBeNull()
+      expect(await cardChats.attach(chat.id, 'Elara')).toEqual({ card: null, named: 2 })
       expect(chat).not.toHaveProperty('pinnedIds')
     })
   })

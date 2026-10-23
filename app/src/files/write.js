@@ -9,7 +9,8 @@
  * its `content`. The bytes go to the files table under the document's id.
  * Two writes, and the row is written first: a document without its file is
  * a document the tree can still show and the model can still read, whereas
- * bytes without a document are bytes nothing will ever find.
+ * bytes without a document are bytes nothing will ever find. The file opened
+ * in between waits for its bytes (`filesStore`).
  *
  * The text can be read out again later, from the same bytes, when the first
  * reading was not good enough — `reextractFile`.
@@ -66,7 +67,7 @@ export async function writeFile(storyId, file, { parentId } = {}) {
     pinnedIds: [],
     greetingIds: [],
     documents: 1,
-    note: noteFor(file),
+    ...(isScan(file) && { scan: true }),
   }
 }
 
@@ -148,7 +149,6 @@ async function writeBook(storyId, file, sections, parent) {
     pinnedIds: [],
     greetingIds: [],
     documents: chapters + 1,
-    note: chapters === 1 ? ' (1 chapter)' : ` (${chapters} chapters)`,
   }
 }
 
@@ -186,15 +186,12 @@ export async function reextractFile(storyId, documentId) {
 }
 
 /**
- * What the toast says about a file after its title. A PDF says how many pages
- * it read, or that it had no text at all, which is a scan the model can't
- * read. Anything else needs nothing said.
+ * Whether a file is a PDF with no text in it: a scan, which a model that
+ * can't see the file has nothing of to read.
  *
  * @param {InspectedFile} file
- * @returns {string}
+ * @returns {boolean}
  */
-function noteFor(file) {
-  if (file.mime !== 'application/pdf') return ''
-  if (!file.text) return ', a PDF with no extractable text'
-  return file.pages === 1 ? ' (1 page)' : ` (${file.pages ?? 0} pages)`
+function isScan(file) {
+  return file.mime === 'application/pdf' && !file.text
 }

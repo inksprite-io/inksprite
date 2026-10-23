@@ -70,6 +70,7 @@ export default defineConfig({
 						{ label: 'MCP Servers', link: '/mcp' },
 					],
 				},
+				{ label: 'Sync Between Devices', link: '/sync' },
 				{ label: 'The Desktop App', link: '/desktop' },
 				{ label: 'About', link: '/about' },
 			],

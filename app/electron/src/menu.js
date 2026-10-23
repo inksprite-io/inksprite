@@ -3,25 +3,45 @@
  * window has none of until the app gives it one.
  */
 
-import { Menu, clipboard } from 'electron'
+import { Menu, app, clipboard } from 'electron'
 
 /**
  * The menu bar: Electron's own menus, less its Help, which is about
- * Electron. Its Edit menu is what makes the clipboard's keys work on a Mac,
- * and its View menu has the Web Inspector: its console is where a failure the
- * app doesn't show is logged. Windows and Linux show the bar only while Alt
- * is down.
+ * Electron, and with New Window in File. Its Edit menu is what makes the
+ * clipboard's keys work on a Mac, and its View menu has the Web Inspector:
+ * its console is where a failure the app doesn't show is logged. Windows and
+ * Linux show the bar only while Alt is down, so the page has a way of its own
+ * to a new window. On a Mac the Dock's menu has New Window too.
+ *
+ * @param {{newWindow: () => void}} actions
  */
-export function setMenu() {
+export function setMenu({ newWindow }) {
+  const mac = process.platform === 'darwin'
+  /** @type {Electron.MenuItemConstructorOptions} */
+  const newWindowItem = {
+    label: 'New Window',
+    accelerator: 'CmdOrCtrl+Shift+N',
+    click: () => newWindow(),
+  }
   /** @type {Electron.MenuItemConstructorOptions[]} */
   const template = [
-    ...(process.platform === 'darwin' ? [{ role: /** @type {const} */ ('appMenu') }] : []),
-    { role: 'fileMenu' },
+    ...(mac ? [{ role: /** @type {const} */ ('appMenu') }] : []),
+    {
+      label: 'File',
+      submenu: [
+        newWindowItem,
+        { type: 'separator' },
+        // What Electron's own File menu holds.
+        mac ? { role: 'close' } : { role: 'quit' },
+      ],
+    },
     { role: 'editMenu' },
     { role: 'viewMenu' },
     { role: 'windowMenu' },
   ]
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+  if (mac)
+    app.dock?.setMenu(Menu.buildFromTemplate([{ label: 'New Window', click: () => newWindow() }]))
 }
 
 /**

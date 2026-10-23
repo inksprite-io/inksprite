@@ -349,7 +349,8 @@ export async function research(ui, { standIn, context }) {
 
   /** Show a document in the editor, or a file in its viewer. */
   const show = async (/** @type {string} */ name, { file = false } = {}) => {
-    await ui.click(row(name))
+    // A click on the row already selected would start renaming it.
+    if ((await row(name).getAttribute('aria-selected')) !== 'true') await ui.click(row(name))
     await page
       .locator(file ? 'canvas' : '.ProseMirror')
       .first()

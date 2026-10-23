@@ -13,8 +13,14 @@
  * the writer spoke twice; one box holding both says what actually happened, and
  * matches what the model is being told.
  *
+ * An aside is a turn of its own on either side, question and answer: the model
+ * reads the turns around it and never it, so it is folded into neither. See
+ * ai/asides.js.
+ *
  * @typedef {import('../types/models.js').Message} Message
  */
+
+import { isAside } from '@/ai/asides.js'
 
 /**
  * @typedef {Object} Turn
@@ -24,6 +30,8 @@
  *   rather than something anybody said
  * @property {Message[]} messages - What it was taken in, in order
  * @property {boolean} compacted - Whether a summary now stands in for it
+ * @property {boolean} aside - Whether it was said on the side: an aside, or
+ *   the answer to one
  */
 
 /**
@@ -62,19 +70,29 @@ export function groupTurns(messages, covered = new Set()) {
   ;(messages || []).forEach((message, index) => {
     const compacted = covered.has(index)
     const command = commandOf(message)
+    const aside = isAside(message)
     const open = turns[turns.length - 1]
 
     if (
       open &&
       open.role === message.role &&
       open.command === command &&
-      open.compacted === compacted
+      open.compacted === compacted &&
+      !open.aside &&
+      !aside
     ) {
       open.messages.push(message)
       return
     }
 
-    turns.push({ id: message.id, role: message.role, command, compacted, messages: [message] })
+    turns.push({
+      id: message.id,
+      role: message.role,
+      command,
+      compacted,
+      aside,
+      messages: [message],
+    })
   })
 
   return turns

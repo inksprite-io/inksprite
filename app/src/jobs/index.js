@@ -4,25 +4,55 @@
  * belongs to a project, its document's, but runs whichever project is open:
  * the jobs toast lists them all.
  *
- * - **runner** - Steps run one after another, stoppable and resumable
+ * - **runner** - Steps run in order, or side by side where they say what they
+ *   wait on; stoppable and resumable
  * - **sections** - A document's section tree, decided before it is converted
  * - **convert** - A document's text turned into Markdown, a section at a time
+ * - **explore** - A folder, a document or the whole project described for the
+ *   model, a digest each: in the background, or while a chat waits, on the
+ *   model the chat runs on
  *
  * A job is a row in the `jobs` table (`stores/jobsStore.js`) with a plan of
  * steps; the runner walks it, and a kind registered here says what a step
- * does and what happens at the end. `useJobs` is the composable the outline
- * and the jobs toast use.
+ * does and what happens at the end. A conversion runs on its workflow's model
+ * (Settings › Workflows); an exploration on the model it keeps, the chat's.
+ * `useJobs` is the composable the outline and the jobs toast use.
  */
 
+import { watch } from 'vue'
 import { useEditor } from '@/composables/useEditor.js'
+import { contextOf } from '@/ai/models.js'
+import { OPEN_MARKUP } from '@/editor/comments.js'
+import { holdsSuggestions, textAsItStands } from '@/editor/suggestionText.js'
 import { readPdfLayout } from '@/files/pdf.js'
+import { isRepository } from '@/source/tree.js'
 import { useDocumentsStore } from '@/stores/documentsStore.js'
 import { useFilesStore } from '@/stores/filesStore.js'
 import { useJobsStore } from '@/stores/jobsStore.js'
+import { useVersionsStore } from '@/stores/versionsStore.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
-import { freeTitle } from '@/utils/documentPath.js'
+import { documentPath, freeTitle } from '@/utils/documentPath.js'
+import { chatVisibility } from '@/utils/visibility.js'
 import { assemble, convertRequest } from './convert.js'
-import { pauseJob, registerJobKind, startJob } from './runner.js'
+import {
+  askedFor,
+  basisOf,
+  budgetFor,
+  exploreMessages,
+  headingPath,
+  parseDigests,
+  partAnswer,
+  planExplore,
+  sectionsAskedFor,
+} from './explore.js'
+import {
+  cancelJob,
+  chatModel,
+  pauseJob,
+  registerJobKind,
+  resolveModel,
+  startJob,
+} from './runner.js'
 import {
   linesOfText,
   parseStructure,
@@ -135,9 +165,14 @@ registerJobKind('convert', {
     await documents.loadStory(job.storyId)
     const existing = copyOf(job.storyId, job.documentId || '')
     if (existing) {
+      // What was written in the copy since is kept as a version first, as
+      // before any of the model's changes.
       const editor = useEditor()
-      if (editor.holds(existing.id)) editor.replaceContent(existing.id, content)
-      else documents.updateDocument(existing.id, { content, plain: false })
+      editor.flush(existing.id)
+      useVersionsStore().around(documents.getDocument(existing.id), 'model', () => {
+        if (editor.holds(existing.id)) editor.replaceContent(existing.id, content)
+        else documents.updateDocument(existing.id, { content, plain: false })
+      })
       return existing.id
     }
     const source = documents.getDocument(job.documentId || '')
@@ -227,6 +262,265 @@ export async function startConversion(storyId, documentId) {
   })
   startJob(job.id).catch(error => console.error('Conversion failed to start:', error))
   return job
+}
+
+/**
+ * A document or folder as explore reads it, as it is now: only what every
+ * chat may see, a text without its comments' markup, and a repository and a
+ * file with no text named and not read. Null for one gone or hidden.
+ *
+ * @param {string} id
+ * @returns {import('./explore.js').ExploreNode|null}
+ */
+export function exploreNode(id) {
+  const store = useDocumentsStore()
+  /** @param {string} at */
+  const get = at => store.getDocument(at)
+  const { sees } = chatVisibility(null, get)
+
+  /**
+   * @param {import('@/types/models.js').Document} document
+   * @returns {import('./explore.js').ExploreNode}
+   */
+  const nodeOf = document => {
+    const folder = document.type === 'folder'
+    const repository = isRepository(document)
+    const content = document.content || ''
+    // A text document as it stands: its comments' markup off, and the
+    // suggestions waiting on the writer left out.
+    const marked =
+      document.type === 'text' &&
+      (content.includes(OPEN_MARKUP) || (!document.plain && holdsSuggestions(content)))
+    const text = folder ? '' : marked ? textAsItStands(content) : content
+    return {
+      id: document.id,
+      path: documentPath(get, document),
+      title: document.title || 'Untitled',
+      type: document.type,
+      text,
+      words: document.wordCount || 0,
+      ...(repository
+        ? { leftOut: 'a codebase' }
+        : document.type === 'file' && !text.trim()
+          ? { leftOut: 'a file with no text' }
+          : {}),
+      children:
+        folder && !repository
+          ? store
+              .getChildrenOrdered(document.id)
+              .filter(child => sees(child))
+              .map(nodeOf)
+          : [],
+      ...(document.digest ? { digest: document.digest } : {}),
+    }
+  }
+
+  const document = get(id)
+  return document && sees(document) ? nodeOf(document) : null
+}
+
+registerJobKind('explore', {
+  async runStep(job, step, { ask }) {
+    /** @type {import('./explore.js').ExplorePlan} */
+    const plan = job.plan
+    const work = plan.work[step.id]
+    if (!work) throw new Error(`No work for step ${step.id}`)
+    const documents = useDocumentsStore()
+    await documents.loadStory(job.storyId)
+
+    /** @type {import('./explore.js').ExploreReader} */
+    const read = {
+      node: exploreNode,
+      output: id => job.steps.find(one => one.id === id)?.output || '',
+    }
+    const messages = exploreMessages(work, read)
+    if (!messages) return { output: '' }
+    const answer = await ask(messages)
+
+    const asked = askedFor(work, read)
+    if (asked.length === 0) {
+      // A part, or a gather in parts: what it said goes into what is put
+      // together from it, its sections' lines with it, and nowhere else.
+      const of = work.of ? exploreNode(work.of) : null
+      return { output: partAnswer(answer.content, of ? headingPath(of) : ''), usage: answer.usage }
+    }
+    const sectionAsks = sectionsAskedFor(work.sections, read)
+    const found = parseDigests(answer.content, [...asked, ...sectionAsks])
+    if (!asked.some(one => found.has(one.id))) {
+      throw new Error('The model answered without the headings it was asked for.')
+    }
+
+    // Each long section's line, by its document: from this answer, or from
+    // the parts of a document read in parts.
+    /** @type {Map<string, Map<string, string>>} */
+    const lines = new Map()
+    /**
+     * @param {import('./explore.js').SectionAsk[]} asks
+     * @param {Map<string, {line: string}>} said
+     */
+    const keep = (asks, said) => {
+      for (const one of asks) {
+        const line = said.get(one.id)?.line
+        if (!line) continue
+        if (!lines.has(one.of)) lines.set(one.of, new Map())
+        lines.get(one.of)?.set(one.link, line)
+      }
+    }
+    keep(sectionAsks, found)
+    for (const partId of work.sectionsFrom || []) {
+      const asks = sectionsAskedFor(plan.work[partId]?.sections, read)
+      keep(asks, parseDigests(read.output(partId), asks, { alone: false }))
+    }
+
+    const made = Date.now()
+    for (const one of asked) {
+      const digest = found.get(one.id)
+      if (!digest) continue
+      const sections = [...(lines.get(one.id) || [])].map(([link, line]) => ({ link, line }))
+      documents.setDigest(one.id, {
+        ...digest,
+        of: work.answers[one.id],
+        made,
+        ...(sections.length > 0 ? { sections } : {}),
+      })
+    }
+    for (const id of work.drop || []) documents.setDigest(id, null)
+    return { output: answer.content, usage: answer.usage }
+  },
+
+  // Each digest is kept as its step lands, for the listing to show at once.
+  async finish() {},
+})
+
+/**
+ * An exploration as planned, and the model it is planned for: how much a
+ * request carries is that model's context.
+ *
+ * @typedef {import('./explore.js').PlannedExplore & {runsOn: import('@/types/models.js').JobModel}} PlannedExploring
+ */
+
+/**
+ * What exploring a folder, a document, or the whole project from its root,
+ * would do: the plan, how many documents it reads, and about how much it
+ * sends. For asking first, and for starting it. Planned on the model a chat
+ * on the preset runs on: the chat's that asks, or, asked from outside a
+ * chat, the active preset's, which a new chat runs on.
+ *
+ * @param {string} id
+ * @param {import('@/types/models.js').AIPreset|null} [preset] - The chat's
+ * @returns {Promise<PlannedExploring>}
+ * @throws {Error} When it is gone or hidden, or a chat on the preset could not run
+ */
+export async function planExploring(id, preset) {
+  const tree = exploreNode(id)
+  if (!tree) throw new Error('There is no such document or folder to explore.')
+  const runsOn = chatModel(preset)
+  const { provider, model } = resolveModel(runsOn)
+  return { ...planExplore(tree, budgetFor(await contextOf(provider, model))), runsOn }
+}
+
+/**
+ * The job that explores something as planned, made and not started: on the
+ * model it was planned for, kept on the job.
+ *
+ * @param {string} storyId
+ * @param {string} id - A folder, a document, or the project's root
+ * @param {PlannedExploring} planned
+ * @returns {Promise<import('@/types/models.js').Job>}
+ */
+function exploreJob(storyId, id, planned) {
+  const explored = useDocumentsStore().getDocument(id)
+  return useJobsStore().createJob({
+    storyId,
+    kind: 'explore',
+    runsOn: planned.runsOn,
+    documentId: id,
+    title: `Explore ${explored?.title || 'Untitled'}`,
+    steps: planned.steps,
+    plan: planned.plan,
+  })
+}
+
+/**
+ * Explore a folder, a document, or the whole project from its root, as
+ * planned, in the background: the jobs toast shows it.
+ *
+ * @param {string} storyId
+ * @param {string} id
+ * @param {PlannedExploring} planned - From `planExploring`
+ * @returns {Promise<import('@/types/models.js').Job|null>} Null when everything is current
+ */
+export async function startExplore(storyId, id, planned) {
+  if (planned.steps.length === 0) return null
+  const job = await exploreJob(storyId, id, planned)
+  startJob(job.id).catch(error => console.error('Explore failed to start:', error))
+  return job
+}
+
+/**
+ * Explore as planned while a chat waits. The job runs as any other does, and
+ * goes once it stops: the chat says what came of it. Stopped, it is
+ * cancelled, and the digests its finished steps made are kept, so exploring
+ * again goes on from there.
+ *
+ * @param {string} storyId
+ * @param {string} id
+ * @param {PlannedExploring} planned - From `planExploring`
+ * @param {{signal?: AbortSignal, progress?: (done: number, of: number) => void}} [options] -
+ *   The chat's signal, and where to say how many requests are done
+ * @returns {Promise<{error?: string}>} Why it ended early, when it did
+ */
+export async function exploreAndWait(storyId, id, planned, { signal, progress } = {}) {
+  if (planned.steps.length === 0) return {}
+  const store = useJobsStore()
+  const job = await exploreJob(storyId, id, planned)
+  const stopWatching = watch(
+    () => store.getJob(job.id)?.steps.filter(step => step.status === 'done').length ?? 0,
+    done => progress?.(done, planned.steps.length),
+    { immediate: true }
+  )
+  const stop = () => cancelJob(job.id)
+  signal?.addEventListener('abort', stop)
+  try {
+    if (!signal?.aborted) await startJob(job.id)
+    const ended = store.getJob(job.id)
+    if (signal?.aborted || ended?.status === 'cancelled') return { error: 'Stopped.' }
+    if (ended?.status !== 'done') return { error: ended?.error || 'It stopped before the end.' }
+    return {}
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : String(error) }
+  } finally {
+    stopWatching()
+    signal?.removeEventListener('abort', stop)
+    await store.deleteJob(job.id)
+  }
+}
+
+/**
+ * Which of a project's digests are current: made from what their document
+ * or folder holds now. The model is shown no other, so nothing it reads of
+ * a document is older than the document. Worked out from the tree as it
+ * stands when this is called, and asked of as often as needed after.
+ *
+ * @param {string} storyId
+ * @returns {(id: string) => boolean}
+ */
+export function currentDigests(storyId) {
+  /** @type {Map<string, import('./explore.js').ExploreNode>} */
+  const nodes = new Map()
+  /** @param {import('./explore.js').ExploreNode} node */
+  const index = node => {
+    nodes.set(node.id, node)
+    node.children.forEach(index)
+  }
+  const root = exploreNode(rootIdFor(storyId))
+  if (root) index(root)
+  /** @type {Map<string, string>} */
+  const known = new Map()
+  return id => {
+    const node = nodes.get(id)
+    return Boolean(node?.digest) && node?.digest?.of === basisOf(node, known)
+  }
 }
 
 /**

@@ -4,6 +4,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { startConversion, isRunning } from '@/jobs/index.js'
 import { useDocumentsStore } from '@/stores/documentsStore.js'
 import { useJobsStore } from '@/stores/jobsStore.js'
+import { useVersionsStore } from '@/stores/versionsStore.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
 const rows = new Map()
@@ -135,12 +136,21 @@ describe('converting a document, as a job', () => {
     // The source is left as it was.
     expect(documents.getDocument(source.id).content.startsWith('Intro\nThe intro')).toBe(true)
 
-    // Converting again replaces the copy rather than making another.
+    // Converting again replaces the copy rather than making another, keeping
+    // what the writer made of it as a version first.
+    documents.updateDocument(copy.id, { content: `${copy.content}\n\nThe writer's own line.` })
+    const around = vi.spyOn(useVersionsStore(), 'around')
     const again = await startConversion(STORY, source.id)
     await settled(again.id)
     const copies = [...documents.documents.values()].filter(one => one.convertedFrom === source.id)
     expect(copies).toHaveLength(1)
     expect(useJobsStore().getJob(again.id).resultId).toBe(copy.id)
+    expect(around).toHaveBeenCalledWith(
+      expect.objectContaining({ id: copy.id, content: expect.stringContaining("writer's own") }),
+      'model',
+      expect.any(Function)
+    )
+    expect(documents.getDocument(copy.id).content).not.toContain("writer's own")
   })
 
   it("plans a PDF's requests from its bookmarks, with no structure step", async () => {

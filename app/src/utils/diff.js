@@ -66,7 +66,9 @@ export function diffSequences(a, b, { maxEdits = Infinity, startFirst = false } 
   /** @type {Step[]} */
   const steps = []
   for (let i = 0; i < start; i++) steps.push({ op: 'equal', a: i, b: i })
-  steps.push(...middle)
+  // One at a time: spread out, a long text's words are more arguments than
+  // a call can take.
+  for (const step of middle) steps.push(step)
   for (let i = 0; i < end; i++) {
     steps.push({ op: 'equal', a: a.length - end + i, b: b.length - end + i })
   }
@@ -188,11 +190,12 @@ export function deletionsFirst(steps) {
     if (step.op === 'insert') added.push(step)
     else if (step.op === 'delete') out.push(step)
     else {
-      out.push(...added, step)
+      for (const each of added) out.push(each)
+      out.push(step)
       added = []
     }
   }
-  out.push(...added)
+  for (const each of added) out.push(each)
   return out
 }
 

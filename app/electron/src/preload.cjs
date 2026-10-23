@@ -83,6 +83,9 @@ contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', {
 
   openInBrowser: url => call('open', url),
 
+  openWindow: path => call('window:open', path),
+  focusWindow: () => call('window:focus'),
+
   downloadUpdate: () => call('update:download'),
   installUpdate: () => call('update:install'),
 

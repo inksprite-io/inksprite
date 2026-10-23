@@ -154,10 +154,10 @@ function countingWords(folder) {
   }
   const file = 'app/src/utils/wordCount.js'
   const counts = lineOf(file, /^export function countWords\(/)
-  lineOf(file, /stripMarkdown\(withoutComments\(content\)\.replace\(PICTURE, ' '\)\)/)
+  lineOf(file, /stripMarkdown\(textAsItStands\(content\)\.replace\(PICTURE, ' '\)\)/)
   const keeps = lineOf(file, /\.filter\(word => \/\[\\p\{L\}\\p\{N\}\]\/u/)
   const strips = lineOf('app/src/utils/markdown.js', /^export function stripMarkdown\(/)
-  const comments = lineOf('app/src/editor/comments.js', /^export function withoutComments\(/)
+  const stands = lineOf('app/src/editor/suggestionText.js', /^export function textAsItStands\(/)
   return {
     match: 'How does inksprite count the words',
     title: 'Counting words',
@@ -166,8 +166,8 @@ function countingWords(folder) {
       { tool: 'read_document', args: { path: `inksprite/${file}` } },
       {
         text:
-          `\`countWords\` in **inksprite/${file}:${counts}** does it. It takes out your comments with \`withoutComments\` (**app/src/editor/comments.js:${comments}**), then any pictures, and the Markdown with \`stripMarkdown\` (**app/src/utils/markdown.js:${strips}**). It splits what is left on whitespace and keeps the runs with a letter or a digit in them (line ${keeps}).\n\n` +
-          'So a rule, a bare dash or a stray `|` from a table isn’t a word, and nor is anything you wrote in a comment or a picture’s alt text.',
+          `\`countWords\` in **inksprite/${file}:${counts}** does it. It reads the text as it stands with \`textAsItStands\` (**app/src/editor/suggestionText.js:${stands}**), your comments taken out and any suggestion not yet accepted left undone, then takes out any pictures, and the Markdown with \`stripMarkdown\` (**app/src/utils/markdown.js:${strips}**). It splits what is left on whitespace and keeps the runs with a letter or a digit in them (line ${keeps}).\n\n` +
+          'So a rule, a bare dash or a stray `|` from a table isn’t a word, and nor is anything you wrote in a comment, a word a suggestion would add, or a picture’s alt text.',
       },
     ],
   }
@@ -608,7 +608,8 @@ export async function features(ui, { standIn, context }) {
   await ui.click(menu('Folder…'))
   await (await chooser).setFiles(code.folder)
   await ui.click(page.getByRole('button', { name: 'Import as repository' }))
-  await page.getByText(/inksprite imported:/).waitFor({ timeout: 300_000 })
+  // Imported whole, the dialog closes without a word.
+  await page.locator('[data-repository-dialog]').waitFor({ state: 'hidden', timeout: 300_000 })
   code.remove()
   await quiet()
   for (const name of ['app', 'src', 'utils']) await ui.click(row(name))

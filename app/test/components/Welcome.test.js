@@ -164,7 +164,7 @@ describe('Welcome', () => {
     const wrapper = mountWelcome()
     expect(wrapper.text()).toContain('Browser storage')
     expect(warning(wrapper)).toContain(
-      "Warning: your work is stored only in this browser. If this site's data is cleared, it's gone."
+      "Your work is stored only in this browser. If this site's data is cleared, it's gone."
     )
     expect(warning(wrapper)).toContain('You can back up your data from Settings › System › Data.')
     expect(wrapper.find('[data-storage-warning] strong').classes()).toContain('text-red-600')

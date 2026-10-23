@@ -31,7 +31,8 @@ import { titleKey } from '@/utils/documentPath.js'
  * @property {number} [images] - Pictures left out of what came in: a Google
  *   Doc's read through the Docs API, whose pictures stay in the Doc for now
  * @property {string[]} [suggested] - Google Docs that had suggested edits
- *   still open, by name: they came in as they were before them
+ *   still open, by name: they came in as they were before them, and a sync
+ *   brings the suggestions in
  */
 
 /**
@@ -113,11 +114,13 @@ export function useBulkImport(storyId) {
 }
 
 /**
- * What to tell the writer when a batch is done, in a line: what landed, then
- * anything worth knowing about it.
+ * What to tell the writer when a batch is done, if anything: what didn't
+ * come in, or what came in that the outline doesn't show, such as a scan the
+ * model can't read. A batch that all came in needs nothing said, since the
+ * outline shows it.
  *
  * @param {Imported} result
- * @returns {{detail: string, severity: 'success'|'warn'|'error'}}
+ * @returns {{detail: string, severity: 'info'|'warn'|'error'}|null}
  */
 export function describeImport(result) {
   const count = (/** @type {number} */ n, /** @type {string} */ word) =>
@@ -128,13 +131,19 @@ export function describeImport(result) {
     if (names.length > shown.length) return `${shown.join(', ')} and ${names.length - 3} more`
     return shown.length > 1 ? `${shown.slice(0, -1).join(', ')} and ${shown.at(-1)}` : shown[0]
   }
-  const bits = [count(result.documents, 'document')]
-  if (result.folders > 0) bits.push(count(result.folders, 'new folder'))
   const notes = []
-  if (result.scans > 0) notes.push(`${count(result.scans, 'PDF')} with no extractable text.`)
-  if (result.images) notes.push(`${count(result.images, 'image')} left out.`)
+  if (result.scans > 0) {
+    notes.push(
+      `${count(result.scans, 'PDF')} ${result.scans === 1 ? 'has' : 'have'} no extractable text.`
+    )
+  }
+  if (result.images) {
+    notes.push(`${count(result.images, 'image')} ${result.images === 1 ? 'was' : 'were'} left out.`)
+  }
   if (result.suggested?.length) {
-    notes.push(`${listed(result.suggested)} had suggested edits still open. They were left out.`)
+    notes.push(
+      `${listed(result.suggested)} had suggested edits still open. They come in when you sync.`
+    )
   }
   if (result.skipped.length > 0) {
     const names = result.skipped
@@ -145,9 +154,10 @@ export function describeImport(result) {
     notes.push(`Skipped ${names}${more}.`)
   }
   const nothing = result.documents === 0
-  const flawed = result.skipped.length > 0 || Boolean(result.suggested?.length)
+  if (!nothing && notes.length === 0) return null
+  const flawed = result.skipped.length > 0
   return {
-    severity: nothing ? 'error' : flawed ? 'warn' : 'success',
-    detail: [nothing ? 'Nothing imported.' : `Imported ${bits.join(', ')}.`, ...notes].join(' '),
+    severity: nothing ? 'error' : flawed ? 'warn' : 'info',
+    detail: [...(nothing ? ['Nothing was imported.'] : []), ...notes].join(' '),
   }
 }

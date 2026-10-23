@@ -1,3 +1,4 @@
+/* global queueMicrotask */
 /**
  * @module storage
  * @description Where the app's rows are kept.
@@ -55,6 +56,7 @@
  * @typedef {import('../types/models.js').StoredFile} StoredFile
  * @typedef {import('../types/models.js').Change} Change
  * @typedef {import('../types/models.js').DocBase} DocBase
+ * @typedef {import('../types/models.js').Version} Version
  */
 
 /**
@@ -71,8 +73,14 @@ export const PROJECT_TABLES = ['stories', 'documents', 'files', 'chats', 'messag
 
 /**
  * The tables that belong to the app rather than to a project.
- * @typedef {'aiProviders'|'aiProfiles'|'aiPrompts'|'chatProfiles'|'skills'|'skillWordings'|'mcpServers'|'webSearch'|'jobs'|'projectViews'|'cards'|'cardFiles'} AppTable
+ * @typedef {'aiProviders'|'aiProfiles'|'aiPrompts'|'chatProfiles'|'skills'|'skillWordings'|'mcpServers'|'webSearch'|'jobs'|'projectViews'|'cards'|'cardFiles'|'cloudState'|'cloudOutbox'|'cloudRecords'|'versions'} AppTable
  */
+
+/**
+ * The app tables whose rows are a project's all the same, and are synced
+ * with it: its documents' versions, kept in IndexedDB beside the library.
+ */
+export const PROJECT_APP_TABLES = ['versions']
 
 /**
  * A project's rows, ready to be added beside the others.
@@ -93,6 +101,10 @@ export const PROJECT_TABLES = ['stories', 'documents', 'files', 'chats', 'messag
  * @typedef {Object} Storage
  * @property {() => number} schemaVersion - The version the rows are in, which a backup records
  * @property {() => Promise<Story[]>} stories - Every project's record
+ * @property {(keep: string[]) => Promise<void>} refreshProjects - Read the list of projects
+ *   again, after another window changed it, but for these, which this window has open
+ * @property {(storyId: string) => Promise<void>} reopenProject - Forget what was read of a
+ *   project, which another window may have changed since, to read it again when asked for
  * @property {(id: string) => Promise<Story|undefined>} story - One project's record
  * @property {(storyId: string) => Promise<Document[]>} documents - A project's whole tree
  * @property {(storyIds: string[]) => Promise<Document[]>} roots - These projects' roots, those there are
@@ -131,20 +143,152 @@ export const PROJECT_TABLES = ['stories', 'documents', 'files', 'chats', 'messag
  * @property {(table: AppTable, row: object) => Promise<void>} put - Write a row of an app table
  * @property {(table: AppTable, ids: string[]) => Promise<void>} remove - Remove rows of an app table
  * @property {(table: AppTable, storyId: string) => Promise<any[]>} ofStory - The rows of an app table for one project
+ * @property {(documentId: string) => Promise<Version[]>} versionsOf - A document's versions, in no order
  * @property {(table: string) => boolean} has - Whether there is such a table
  * @property {(table: string, changes: Change[]) => Promise<void>} write -
  *   Write and remove rows of one table, of either kind, together: what `syncStore` saves
  * @property {() => Promise<Record<string, any[]>>} dump - Every row of every table, for a
- *   backup, but the linked documents' bases
+ *   backup, but the linked documents' bases and what sync keeps of this device
  * @property {(tables: Record<string, any[]>, keep?: string[]) => Promise<number>} replaceAll -
  *   Replace every table but those in `keep` with a backup's rows, all or none, emptying those
  *   it has none for. Resolves to how many rows were written.
  */
 
+/**
+ * A write that sync sends, as those watching are told of it once it is
+ * made: rows of a project or of the setup written or removed, a project
+ * added or taken away, a file's bytes kept, or rows changed in every
+ * project. A project added comes without its files' bytes.
+ *
+ * @typedef {{method: 'write', table: string, changes: Change[]}
+ *   | {method: 'addProject', project: Omit<NewProject, 'files'> & {files: Array<{id: string, storyId: string}>}}
+ *   | {method: 'removeProject', storyId: string}
+ *   | {method: 'putFileBytes', id: string, storyId: string}
+ *   | {method: 'updateEach', table: string, rows: any[]}} Written
+ */
+
 import { dexieStorage } from './dexie.js'
+import { tellOtherWindows } from '@/platform/windows.js'
+import { rootIdFor } from '@/stores/migrations/projectTree.js'
+import { SETUP_TABLES, idOf } from '@/cloud/setup.js'
 
 /** @type {Storage} */
 let current = dexieStorage
+
+/**
+ * What a write tells the other windows the app is open in, once it is done
+ * (`platform/windows.js`): the app tables it wrote, which they read again; a
+ * project come, gone or renamed, for their lists of projects; and everything
+ * replaced, which they reload for. A project's own rows are left out: it is
+ * open in one window at a time.
+ *
+ * @type {Partial<Record<keyof Storage, (...args: any[]) => void>>}
+ */
+const TOLD = {
+  put: table => tablesWritten(table),
+  remove: table => tablesWritten(table),
+  write: (table, /** @type {Change[]} */ changes) => {
+    if (!PROJECT_TABLES.includes(table)) tablesWritten(table)
+    else if (table === 'stories' || changes.some(isRoot)) tellOtherWindows({ type: 'projects' })
+  },
+  addProject: () => tellOtherWindows({ type: 'projects' }),
+  removeProject: () => tellOtherWindows({ type: 'projects' }),
+  replaceAll: () => tellOtherWindows({ type: 'reload' }),
+}
+
+/**
+ * Whether sync sends a table's rows: a project's, or the setup's
+ * (`cloud/setup.js`).
+ * @param {string} table
+ */
+const synced = table => [...PROJECT_TABLES, ...PROJECT_APP_TABLES, ...SETUP_TABLES].includes(table)
+
+/**
+ * What each write that sync sends tells those watching (`onWrittenForSync`).
+ *
+ * @type {Partial<Record<keyof Storage, (...args: any[]) => Written|null>>}
+ */
+const WATCHED = {
+  write: (table, changes) => (synced(table) ? { method: 'write', table, changes } : null),
+  put: (table, row) =>
+    SETUP_TABLES.includes(table)
+      ? {
+          method: 'write',
+          table,
+          changes: [
+            {
+              entityType: table,
+              id: idOf(table, row),
+              op: 'put',
+              data: row,
+              timestamp: Date.now(),
+            },
+          ],
+        }
+      : null,
+  remove: (table, /** @type {string[]} */ ids) =>
+    SETUP_TABLES.includes(table)
+      ? {
+          method: 'write',
+          table,
+          changes: ids.map(id => ({
+            entityType: table,
+            id,
+            op: 'delete',
+            data: null,
+            timestamp: 0,
+          })),
+        }
+      : null,
+  addProject: (/** @type {NewProject} */ project) => ({
+    method: 'addProject',
+    project: { ...project, files: project.files.map(({ id, storyId }) => ({ id, storyId })) },
+  }),
+  removeProject: storyId => ({ method: 'removeProject', storyId }),
+  putFileBytes: (id, storyId) => ({ method: 'putFileBytes', id, storyId }),
+}
+
+/** @type {Set<(written: Written) => void>} */
+const watchers = new Set()
+
+/**
+ * Be told of every write that sync sends once it is made, in this window:
+ * to a project, or to the setup.
+ *
+ * @param {(written: Written) => void} watcher
+ * @returns {() => void} Stop being told
+ */
+export function onWrittenForSync(watcher) {
+  watchers.add(watcher)
+  return () => watchers.delete(watcher)
+}
+
+/** @param {Written|null} written */
+function tellWatchers(written) {
+  if (written) for (const watcher of watchers) watcher(written)
+}
+
+/** @param {Change} change */
+const isRoot = change => Boolean(change.data && change.id === rootIdFor(change.data.storyId))
+
+/** @type {Set<string>} App tables written since the other windows were last told */
+const written = new Set()
+
+/**
+ * Tell the other windows of an app table written, with the others written
+ * in the same moment.
+ *
+ * @param {string} table
+ */
+function tablesWritten(table) {
+  if (written.size === 0) {
+    queueMicrotask(() => {
+      tellOtherWindows({ type: 'tables', tables: [...written] })
+      written.clear()
+    })
+  }
+  written.add(table)
+}
 
 /**
  * Storage as the app reaches it: IndexedDB until `useStorage` says
@@ -155,12 +299,42 @@ let current = dexieStorage
  */
 export const storage = /** @type {Storage} */ (
   Object.fromEntries(
-    Object.keys(dexieStorage).map(name => [
-      name,
-      (/** @type {any[]} */ ...args) => /** @type {any} */ (current)[name](...args),
-    ])
+    Object.keys(dexieStorage).map(name => {
+      const told = TOLD[/** @type {keyof Storage} */ (name)]
+      const watched = WATCHED[/** @type {keyof Storage} */ (name)]
+      return [
+        name,
+        name === 'updateEach'
+          ? updateEach
+          : told || watched
+            ? async (/** @type {any[]} */ ...args) => {
+                const result = await /** @type {any} */ (current)[name](...args)
+                told?.(...args)
+                if (watched && watchers.size > 0) tellWatchers(watched(...args))
+                return result
+              }
+            : (/** @type {any[]} */ ...args) => /** @type {any} */ (current)[name](...args),
+      ]
+    })
   )
 )
+
+/**
+ * `updateEach`, telling those watching of the rows it changed.
+ *
+ * @type {Storage['updateEach']}
+ */
+async function updateEach(table, change) {
+  /** @type {any[]} */
+  const rows = []
+  const changed = await current.updateEach(table, row => {
+    const changes = change(row)
+    if (changes && watchers.size > 0) rows.push({ ...row, ...changes })
+    return changes
+  })
+  if (rows.length > 0) tellWatchers({ method: 'updateEach', table, rows })
+  return changed
+}
 
 /**
  * Keep the rows somewhere else from now on. Before anything is read: the

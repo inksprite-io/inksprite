@@ -46,6 +46,7 @@ import FindBar from '@/components/common/FindBar.vue'
 import { useFindKey } from '@/composables/useFindKey.js'
 import {
   find,
+  findAt,
   findNext,
   plainSearch,
   replaceAll,
@@ -81,10 +82,12 @@ import { isTextField } from '@/utils/focus.js'
  * @typedef {Object} Props
  * @property {string} text - The text, as it stands
  * @property {Scroll|null} [startAt] - Where to start, as `scroll()` left it
+ * @property {boolean} [caret] - Whether to take the caret on opening
  */
 const props = defineProps({
   text: { type: String, required: true },
   startAt: { type: Object, default: null },
+  caret: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['input', 'blur'])
@@ -216,6 +219,25 @@ const closeFind = () => {
   view.focus()
 }
 
+/**
+ * Open the find on a match picked elsewhere, the project's search, by where
+ * it comes among the matches. The focus stays where it is. It is brought
+ * into view once the find has taken its room above the text.
+ *
+ * @param {string} text
+ * @param {import('@/editor/search.js').SearchOptions} options
+ * @param {number} index
+ */
+const showMatch = (text, options, index) => {
+  if (!view) return
+  query.value = text
+  matchCase.value = !!options.matchCase
+  wholeWord.value = !!options.wholeWord
+  finding.value = true
+  findAt(text, options, index)(view)
+  nextTick(() => requestAnimationFrame(() => view && reveal(view)))
+}
+
 useFindKey(() => root.value, openFind)
 
 /**
@@ -228,7 +250,7 @@ const scroll = () => ({
   anchor: view?.scrollSnapshot() ?? null,
 })
 
-defineExpose({ openFind, scroll })
+defineExpose({ openFind, showMatch, scroll })
 
 onMounted(() => {
   if (!host.value) return
@@ -258,7 +280,7 @@ onMounted(() => {
     }),
   })
   // The caret comes here, unless the writer is typing somewhere else.
-  if (!isTextField()) view.focus()
+  if (props.caret && !isTextField()) view.focus()
   // Back where the view was left, by its own anchor where it left one.
   const anchor = /** @type {import('@codemirror/state').StateEffect<unknown>|null} */ (
     props.startAt?.anchor

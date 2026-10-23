@@ -20,6 +20,7 @@ import { ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
 import { storage } from '@/storage/index.js'
+import { onTablesWritten } from '@/platform/windows.js'
 
 /** @typedef {import('../types/models.js').AIPreset} AIPreset */
 
@@ -66,6 +67,13 @@ export const useAIPresetStore = defineStore('aiProfiles', () => {
 
   /** @type {import('vue').Ref<Promise<void>|null>} */
   const initializePromise = ref(null)
+
+  // Another window wrote them: read again.
+  onTablesWritten(['aiProfiles'], async () => {
+    if (!initializePromise.value) return
+    const rows = await storage.all('aiProfiles')
+    presets.value = new Map(rows.map(preset => [preset.id, preset]))
+  })
 
   /**
    * Ensure initialization happens only once

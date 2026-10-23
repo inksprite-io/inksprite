@@ -146,27 +146,45 @@ describe('useRepositoryImport', () => {
 })
 
 describe('describeRepositoryImport', () => {
-  const left = { never: 3, ignored: 2, binary: ['a.png'], large: [] }
+  const none = { never: 0, ignored: 0, binary: [], large: [] }
 
-  it('tallies an import and what was left out', () => {
-    expect(
-      describeRepositoryImport({ folderId: 'f', name: 'acme/widgets', files: 120, left })
-    ).toEqual({
-      detail: 'acme/widgets imported: 120 files. Left out: 5 files ignored, 1 file not text.',
-      severity: 'success',
-    })
-  })
-
-  it('tallies a refresh by what changed', () => {
-    const refreshed = { added: 2, updated: 0, removed: 1, unchanged: 9 }
+  it('says nothing of what came in, or of the files a codebase ignores', () => {
     expect(
       describeRepositoryImport({
         folderId: 'f',
-        name: 'server',
-        files: 11,
-        left: { never: 0, ignored: 0, binary: [], large: [] },
-        refreshed,
+        name: 'acme/widgets',
+        files: 120,
+        left: { ...none, never: 3, ignored: 2 },
       })
-    ).toEqual({ detail: 'server refreshed: 2 added, 1 removed.', severity: 'success' })
+    ).toBeNull()
+  })
+
+  it('says which files were left out that the writer might have wanted', () => {
+    const imported = { folderId: 'f', name: 'acme/widgets', files: 120 }
+    expect(describeRepositoryImport({ ...imported, left: { ...none, binary: ['a.png'] } })).toEqual(
+      { detail: "1 file that isn't text was left out.", severity: 'info' }
+    )
+    expect(
+      describeRepositoryImport({
+        ...imported,
+        left: { ...none, binary: ['a.png', 'b.png'], large: ['data.csv'] },
+      })
+    ).toEqual({
+      detail: "2 files that aren't text and 1 that is too large were left out.",
+      severity: 'info',
+    })
+  })
+
+  it('says when nothing came in', () => {
+    expect(
+      describeRepositoryImport({ folderId: 'f', name: 'acme/widgets', files: 0, left: none })
+    ).toEqual({ detail: 'Nothing was imported.', severity: 'warn' })
+  })
+
+  it('says nothing of a refresh, which the outline shows', () => {
+    const refreshed = { added: 2, updated: 0, removed: 1, unchanged: 9 }
+    expect(
+      describeRepositoryImport({ folderId: 'f', name: 'server', files: 11, left: none, refreshed })
+    ).toBeNull()
   })
 })

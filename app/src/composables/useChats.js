@@ -6,6 +6,8 @@ import { useStoriesStore } from '@/stores/storiesStore'
 import { settingsForNewChat } from '@/ai/profiles/index.js'
 import { useProfiles } from './useProfiles.js'
 import { localStorage as appStorage } from '@/utils/localStorage.js'
+import { expired } from '@/utils/trash.js'
+import { CannotApplyError } from '@/utils/errors.js'
 
 /** @typedef {import('../types/models.js').Chat} Chat */
 /** @typedef {import('../types/models.js').Message} Message */
@@ -78,10 +80,14 @@ export const clearChatsInstances = () => {
  *   defaultProfileId: () => string,
  *   updateChat: (chatId: string, updates: Partial<Chat>) => Chat|null,
  *   deleteChat: (chatId: string) => void,
+ *   trashedChats: import('vue').ComputedRef<Chat[]>,
+ *   trashChat: (chatId: string) => Chat,
+ *   restoreChat: (chatId: string) => Promise<Chat>,
+ *   deleteTrashedChat: (chatId: string) => Promise<void>,
  *   getChatById: (chatId: string) => Chat|null,
  *   forkChat: (chatId: string, messageId: string) => Chat,
  *   importChat: (chat: Chat, messages: Message[], prompt?: AIPrompt) => Chat,
- *   addMessage: (chatId: string, role: 'user'|'assistant', content: string, reasoningContent?: string|null, segments?: import('../types/models.js').MessageSegment[]|null) => Message,
+ *   addMessage: (chatId: string, role: 'user'|'assistant', content: string, reasoningContent?: string|null, segments?: import('../types/models.js').MessageSegment[]|null, metadata?: import('../types/models.js').MessageMetadata|null) => Message,
  *   streamMessageContent: (messageId: string, content: string, reasoningContent?: string|null, timing?: {thinkingFinishTime?: number, streamingFinishTime?: number, thinkingTime?: number}, pendingToolCalls?: import('../types/models.js').PendingToolCall[]) => Message|null,
  *   updateMessage: (messageId: string, updates: Partial<Message>) => Message|null,
  *   beginAlternate: (messageId: string) => Message,
@@ -146,7 +152,12 @@ export const useChats = storyId => {
         await chatsStore.loadChatsForStory(storyId)
         const chats = chatsStore.getChatsForStory(storyId)
         await Promise.all(chats.map(c => messagesStore.loadMessagesForChat(c.id)))
-        settleUnsent(chats)
+        // A chat in the trash keeps its messages unread until it comes back,
+        // and its draft with it; one there for 30 days goes for good.
+        for (const chat of chatsStore.trashedOf(storyId)) {
+          if (expired(chat)) await deleteTrashedChat(chat.id)
+        }
+        settleUnsent([...chats, ...chatsStore.trashedOf(storyId)])
         ready.value = true
       } catch (e) {
         error.value = e
@@ -321,6 +332,42 @@ export const useChats = storyId => {
   }
 
   /**
+   * What this project's trash holds of its chats, the most recent first.
+   * @type {import('vue').ComputedRef<Chat[]>}
+   */
+  const trashedChats = computed(() => chatsStore.trashedOf(storyId))
+
+  /**
+   * Move a chat to the trash, its messages and its unsent draft with it. See
+   * `utils/trash.js`.
+   * @param {string} chatId
+   * @returns {Chat}
+   */
+  const trashChat = chatId => chatsStore.trashChat(chatId)
+
+  /**
+   * Bring a chat back from the trash, and read its messages again.
+   * @param {string} chatId
+   * @returns {Promise<Chat>}
+   */
+  const restoreChat = async chatId => {
+    const chat = chatsStore.restoreChat(chatId)
+    if (!messagesStore.isChatLoaded(chatId)) await messagesStore.loadMessagesForChat(chatId)
+    return chat
+  }
+
+  /**
+   * Delete a chat in the trash for good, with its messages: read first, since
+   * only those read are known to be there to delete.
+   * @param {string} chatId
+   * @returns {Promise<void>}
+   */
+  const deleteTrashedChat = async chatId => {
+    if (!messagesStore.isChatLoaded(chatId)) await messagesStore.loadMessagesForChat(chatId)
+    deleteChat(chatId)
+  }
+
+  /**
    * Get a chat by ID
    * @param {string} chatId - Chat ID
    * @returns {Chat|null} Chat or null if not found
@@ -335,11 +382,29 @@ export const useChats = storyId => {
    * @param {'user'|'assistant'} role - Message role (must be 'user' or 'assistant')
    * @param {string} content - Message content
    * @param {string|null} [reasoningContent=null] - Optional model reasoning content
+   * @param {import('../types/models.js').MessageSegment[]|null} [segments=null] - The
+   *   pieces a turn of the writer's was made of
+   * @param {import('../types/models.js').MessageMetadata|null} [metadata=null] - What
+   *   the message is known to be from the start, such as an aside
    * @returns {Message} Created message
    * @throws {Error} If message creation fails
    */
-  const addMessage = (chatId, role, content, reasoningContent = null, segments = null) => {
-    const message = messagesStore.createMessage(chatId, role, content, reasoningContent, segments)
+  const addMessage = (
+    chatId,
+    role,
+    content,
+    reasoningContent = null,
+    segments = null,
+    metadata = null
+  ) => {
+    const message = messagesStore.createMessage(
+      chatId,
+      role,
+      content,
+      reasoningContent,
+      segments,
+      metadata
+    )
     markEdited()
 
     // Update the chat's last message timestamp
@@ -608,18 +673,18 @@ export const useChats = storyId => {
    * @param {string} chatId - Original chat ID
    * @param {string} messageId - Last message ID to include in the fork
    * @returns {Chat} The newly created forked chat
-   * @throws {Error} If chat not found or fork operation fails
+   * @throws {CannotApplyError} If the chat or the message has gone
    */
   const forkChat = (chatId, messageId) => {
     const originalChat = getChatById(chatId)
     if (!originalChat) {
-      throw new Error(`Cannot fork chat '${chatId}': chat not found`)
+      throw new CannotApplyError(`Cannot fork chat '${chatId}': chat not found`)
     }
 
     const allMessages = messagesStore.getMessagesForChat(chatId)
     const messageIndex = allMessages.findIndex(msg => msg.id === messageId)
     if (messageIndex === -1) {
-      throw new Error(`Message '${messageId}' not found in chat '${chatId}'`)
+      throw new CannotApplyError(`Message '${messageId}' not found in chat '${chatId}'`)
     }
 
     return copyChat(
@@ -674,6 +739,10 @@ export const useChats = storyId => {
     defaultProfileId,
     updateChat,
     deleteChat,
+    trashedChats,
+    trashChat,
+    restoreChat,
+    deleteTrashedChat,
     getChatById,
     forkChat,
     importChat,

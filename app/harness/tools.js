@@ -39,6 +39,7 @@ const norm = path => (path || '').trim().toLowerCase().replace(/^\/+/, '')
  * @property {boolean} [noRereads] - The turn should read nothing it already has to
  *   hand
  * @property {string[]} [calls] - Tools the turn should call at least once
+ * @property {string[]} [notCalls] - Tools the turn should not call at all
  * @property {string[]} [finds] - Paths the turn should have found: read, or in a
  *   search result
  * @property {string[]} [findsAny] - Of which at least one should have been found
@@ -48,7 +49,12 @@ const norm = path => (path || '').trim().toLowerCase().replace(/^\/+/, '')
  * @property {{path: string, contains: string[]}} [document] - Passages the document should hold
  * @property {{path: string, patterns: string[]}} [notContains] - Passages it should not
  * @property {string[]} [gone] - Paths that should hold nothing after the turn: what a
- *   move or rename took away
+ *   move or rename took away, or a delete
+ * @property {string[]} [kept] - Paths that should still hold a document after the turn
+ * @property {string[]} [trashed] - Paths that should be in the project's trash after
+ *   the turn, a folder's by the folder
+ * @property {boolean} [accept] - The writer accepted what the turn proposed; checked
+ *   as every proposal accepted without a refusal
  * @property {{path: string, contains: string[]}} [summary] - What its summary should say
  * @property {CommentCheck|CommentCheck[]} [comments] - What should have become of a
  *   document's comments
@@ -228,6 +234,7 @@ function measure({ turn, expect, holding, pinnedBefore, state }) {
       'append_document',
       'update_document',
       'move_document',
+      'delete_document',
     ].includes(call.name)
   )
   // A read answered as unchanged cost nothing: its text was above already.
@@ -261,6 +268,9 @@ function measure({ turn, expect, holding, pinnedBefore, state }) {
   if (expect.noRereads && again.length) failures.push(`read again ${again.join(', ')}`)
   for (const name of expect.calls || []) {
     if (!calls.some(call => call.name === name)) failures.push(`calls ${name}`)
+  }
+  for (const name of expect.notCalls || []) {
+    if (calls.some(call => call.name === name)) failures.push(`called ${name}`)
   }
   for (const path of expect.finds || []) {
     if (!found.has(norm(path)) && !holding.has(norm(path))) failures.push(`finds ${path}`)
@@ -297,6 +307,16 @@ function measure({ turn, expect, holding, pinnedBefore, state }) {
   // A move leaves nothing behind: a copy at the new path is not one.
   for (const path of expect.gone || []) {
     if (docAt(path)) failures.push(`${path} still there`)
+  }
+  for (const path of expect.kept || []) {
+    if (!docAt(path)) failures.push(`${path} gone`)
+  }
+  const trash = new Set((state?.trash || []).map((/** @type {any} */ item) => norm(item.path)))
+  for (const path of expect.trashed || []) {
+    if (!trash.has(norm(path))) failures.push(`${path} not in the trash`)
+  }
+  for (const refusal of (expect.accept && state?.refused) || []) {
+    failures.push(`accept refused ${refusal}`)
   }
   if (expect.summary) {
     const doc = docAt(expect.summary.path)
@@ -436,6 +456,21 @@ async function report(dir) {
       bucket.failures.push(...m.failures)
       perTurn.set(i, bucket)
     })
+
+    // A scenario that rewinds the chat at the end expects the project back as
+    // it began.
+    const rewind = (meta.runs || []).find((/** @type {any} */ run) => run.n === n)?.rewind
+    if (rewind) {
+      const short = [
+        ...rewind.left.map((/** @type {string} */ edit) => `left ${edit}`),
+        ...rewind.differs.map((/** @type {string} */ path) => `differs ${path}`),
+      ]
+      console.log(
+        `    rewind  undone=${rewind.undone}  ${short.length ? `FAIL ${short.join('; ')}` : 'ok'}`
+      )
+      totals.checks++
+      if (short.length) totals.failed++
+    }
   }
 
   console.log(`  --`)

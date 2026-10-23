@@ -68,6 +68,20 @@ describe('blocksOf', () => {
     }
   })
 
+  it('reads the text as it stands, in step with the document', () => {
+    const doc = parseMarkdown(
+      'The ferry was {--late--}{>>sabcd1<<}{++on time++}{>>sabcd1<<} again.\n\n{++Gulls came.++}{>>sabcd2<<}\n\nThe end.'
+    )
+    const blocks = blocksOfDoc(doc)
+    expect(blocks.map(block => keyOf(block.text))).toEqual([
+      'The ferry was late again.',
+      'The end.',
+    ])
+    expect(doc.textBetween(blocks[0].from, blocks[0].from + 'The ferry was late'.length)).toBe(
+      'The ferry was late'
+    )
+  })
+
   it('reads a link as its words', () => {
     expect(textsOf('See [the map](http://example.com) for more')).toEqual(['See the map for more'])
   })

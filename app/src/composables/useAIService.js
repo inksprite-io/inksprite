@@ -9,6 +9,7 @@ import { resolveAISettings } from '@/ai/defaults.js'
 import { attributionHeaders, buildCompletionBody, chatCompletionsUrl } from '@/ai/wire.js'
 import { listModels as listProviderModels, listSpeechModels, traitsOf } from '@/ai/models.js'
 import { streamAnthropic } from '@/ai/anthropic.js'
+import { RATE_LIMITED, RateLimitedError, retryAfterOf, throughGate } from '@/ai/gate.js'
 
 /**
  * @typedef {import('../types/models.js').AIPreset} AIPreset
@@ -311,6 +312,9 @@ export const useAIService = () => {
    * @param {AbortSignal} [options.signal] - Stops the request. Each caller
    *   brings its own, so a chat, a summary and a skill can all be asking at
    *   once and stopping one stops only that one.
+   * @param {import('@/ai/gate.js').Urgency} [options.urgency] - Who is waiting
+   *   on it, for its place in line on a busy connection: the writer (`now`,
+   *   the default) or a job (`later`). See ai/gate.js.
    * @returns {Promise<{usage?: {prompt_tokens: number, completion_tokens: number, total_tokens: number}, toolCalls?: ToolCall[], reasoningDetails?: ReasoningDetail[], finishReason?: string}>}
    * @throws {Error} When provider not found or API call fails, and the
    *   signal's `AbortError` when it is stopped
@@ -320,7 +324,24 @@ export const useAIService = () => {
     if (!provider) {
       throw new Error(`Provider ${config.providerId} not found`)
     }
+    // Sent when the connection has room for it, and asked again when the
+    // service says too many: see ai/gate.js.
+    return throughGate(provider, { urgency: options.urgency, signal: options.signal }, () =>
+      streamCompletion(provider, messages, config, onChunk, options)
+    )
+  }
 
+  /**
+   * The request itself, read to the end of its stream.
+   *
+   * @param {AIProvider} provider
+   * @param {Parameters<typeof generateChatCompletion>[0]} messages
+   * @param {AIConfig} config
+   * @param {(chunk: StreamChunk) => void} onChunk
+   * @param {Parameters<typeof generateChatCompletion>[3]} options
+   * @returns {ReturnType<typeof generateChatCompletion>}
+   */
+  async function streamCompletion(provider, messages, config, onChunk, options = {}) {
     if (provider.type === 'anthropic') {
       return streamAnthropic({
         provider,
@@ -374,7 +395,7 @@ export const useAIService = () => {
       if (!response.ok) {
         // Handle rate limiting with a user-friendly message
         if (response.status === 429) {
-          throw new Error('Rate limited. Wait a moment and try again, or pick another model.')
+          throw new RateLimitedError(RATE_LIMITED, retryAfterOf(response.headers))
         }
         const error = await response.json().catch(() => ({ error: 'Connection failed' }))
         const reported = error.error?.message || error.error || `HTTP ${response.status}`
@@ -498,8 +519,10 @@ export const useAIService = () => {
         finishReason,
       }
     } catch (error) {
-      // Stopped is not failed: whoever stopped it knows.
-      if (!options.signal?.aborted) console.error('Failed to generate chat completion:', error)
+      // Stopped is not failed, and a refusal for the rate is asked again.
+      if (!options.signal?.aborted && !(error instanceof RateLimitedError)) {
+        console.error('Failed to generate chat completion:', error)
+      }
       throw error
     }
   }

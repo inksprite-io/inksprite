@@ -157,6 +157,20 @@ describe('describeRound', () => {
     )
   })
 
+  it('names the web: what was searched for, and the page by the end of its address', () => {
+    expect(describeRound([call('web_search', { query: 'counting games' })], false)).toBe(
+      'Searching the web for “counting games”'
+    )
+    const save = [call('save_web_page', { url: 'https://example.org/files/maths%20standards.pdf' })]
+    expect(describeRound(save, false)).toBe('Saving maths standards.pdf')
+    expect(describeRound([call('read_web_page', { url: 'https://example.org/' })], true)).toBe(
+      'Read example.org'
+    )
+    expect(describeRound([call('read_web_page', { url: 'https://exa' })], false)).toBe(
+      'Reading exa'
+    )
+  })
+
   it('says what a call without an object does', () => {
     expect(describeRound([call('roll_dice', { notation: '2d6' })], false)).toBe('Rolling dice')
   })
@@ -179,5 +193,44 @@ describe('describeRound', () => {
     expect(describeRound([{ name: 'read_document', arguments: '{"path": "Chap' }], false)).toBe(
       'Reading Chap'
     )
+  })
+})
+
+describe('a chat that suggests its edits', () => {
+  it('says its writing calls suggest, as they are written and once they have run', () => {
+    const suggesting = { suggesting: true }
+    expect(
+      describeProgress('edit_document', '{"path":"Chapter 1","old":"Snow"', suggesting)
+    ).toEqual({
+      verb: 'Suggesting changes to',
+      path: 'Chapter 1',
+      old: 'Snow',
+    })
+    expect(describeProgress('append_document', '{"path":"Chapter 1"}', suggesting).verb).toBe(
+      'Suggesting an addition to'
+    )
+    // What becomes a proposal rather than a suggestion reads as it did.
+    expect(describeProgress('create_document', '{"path":"Verse"}', suggesting).verb).toBe(
+      'Creating'
+    )
+
+    const call = { name: 'edit_document', arguments: '{"path":"Draft/Chapter 1"}' }
+    expect(describeRound([call], false, suggesting)).toBe('Suggesting changes to Chapter 1')
+    expect(describeRound([call], true, suggesting)).toBe('Suggested changes to Chapter 1')
+    expect(describeRound([call, call], true, suggesting)).toBe('Suggested changes to 2 documents')
+    expect(describeRound([call], true)).toBe('Edited Chapter 1')
+  })
+
+  it('says a recorded edit that was suggested suggested', () => {
+    expect(
+      describeEdit({
+        documentId: 'd',
+        path: 'Chapter 1',
+        tool: 'edit_document',
+        old: 'Snow',
+        new: '{--Snow--}{>>s1<<}{++Rain++}{>>s1<<}',
+        suggested: true,
+      }).verb
+    ).toBe('Suggesting changes to')
   })
 })

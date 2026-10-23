@@ -27,6 +27,7 @@
 
 import { fetch } from '@/platform/fetch.js'
 import { capabilitiesOf, fitSettings } from '@/ai/capabilities.js'
+import { RATE_LIMITED, RateLimitedError, retryAfterOf } from '@/ai/gate.js'
 
 /**
  * @typedef {import('@/types/models.js').AIProvider} AIProvider
@@ -696,9 +697,7 @@ async function clientFor(provider) {
  * @returns {Error}
  */
 function plainly(error) {
-  if (error?.status === 429) {
-    return new Error('Rate limited. Wait a moment and try again, or pick another model.')
-  }
+  if (error?.status === 429) return new RateLimitedError(RATE_LIMITED, retryAfterOf(error.headers))
   const said = error?.error?.error?.message
   return said ? new Error(said) : error
 }

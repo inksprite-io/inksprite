@@ -280,21 +280,16 @@ export function commonTags(cards, limit) {
 }
 
 /**
- * What adding some files to the library came to, said plainly.
+ * The files added to the library that held no card, said plainly: the one
+ * part of adding the library shows nowhere else.
  *
- * @param {{added: LibraryCard[], duplicates: LibraryCard[], skipped: string[]}} result
+ * @param {string[]} skipped - Their names
  * @returns {string}
  */
-export function describeAdded({ added, duplicates, skipped }) {
-  const said = []
-  if (added.length === 1) said.push(`Added ${added[0].title}.`)
-  else if (added.length > 1) said.push(`Added ${added.length} cards.`)
-  if (duplicates.length === 1) said.push(`${duplicates[0].title} is already in the library.`)
-  else if (duplicates.length > 1)
-    said.push(`${duplicates.length} cards are already in the library.`)
-  if (skipped.length === 1) said.push(`${skipped[0]} has no character card in it.`)
-  else if (skipped.length > 1) said.push(`${skipped.length} files have no character card in them.`)
-  return said.join(' ')
+export function describeSkipped(skipped) {
+  if (skipped.length === 1) return `${skipped[0]} has no character card in it.`
+  if (skipped.length > 1) return `${skipped.length} files have no character card in them.`
+  return ''
 }
 
 /**

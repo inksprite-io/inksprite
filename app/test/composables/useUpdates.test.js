@@ -24,7 +24,12 @@ vi.mock('@/stores/syncStore.js', () => ({
   useSyncStore: () => ({ processSync: async () => saved.push('store') }),
 }))
 
-import { UPDATE_CHECK_MS, useUpdates } from '@/composables/useUpdates.js'
+import {
+  UPDATE_CHECK_MS,
+  lookForUpdate,
+  updateReady,
+  useUpdates,
+} from '@/composables/useUpdates.js'
 
 /** The app, as far as updates go. */
 const mountApp = () =>
@@ -86,6 +91,27 @@ describe('useUpdates', () => {
       { label: 'Restart', command: expect.any(Function) },
       { duration: 0 }
     )
+  })
+
+  it('offers the update to sync’s settings as well, to install', async () => {
+    updates.downloadUpdate.mockResolvedValue('0.1.0-dev.5')
+    app = mountApp()
+    await vi.waitFor(() => expect(updateReady.value).not.toBeNull())
+
+    expect(updateReady.value?.version).toBe('0.1.0-dev.5')
+    await updateReady.value?.apply()
+    expect(saved).toEqual(['editor', 'store'])
+    expect(updates.installUpdate).toHaveBeenCalled()
+  })
+
+  it('looks at once when sync waits for an update', async () => {
+    updates.downloadUpdate.mockResolvedValue(null)
+    app = mountApp()
+    await vi.waitFor(() => expect(updates.downloadUpdate).toHaveBeenCalledTimes(1))
+
+    lookForUpdate()
+    expect(updates.downloadUpdate).toHaveBeenCalledTimes(2)
+    expect(updateReady.value).toBeNull()
   })
 
   it('offers nothing when the app is up to date', async () => {
@@ -174,6 +200,18 @@ describe('useUpdates', () => {
         { label: 'Reload', command: expect.any(Function) },
         { duration: 0 }
       )
+    })
+
+    it('offers the build to sync’s settings as well, to reload into', async () => {
+      serviceWorker.reloadIntoBuild.mockImplementation(() => saved.push('reload'))
+      app = mountApp()
+      await vi.waitFor(() => expect(serviceWorker.registerServiceWorker).toHaveBeenCalled())
+      expect(updateReady.value).toBeNull()
+
+      buildWaiting()
+      expect(updateReady.value?.version).toBeNull()
+      await updateReady.value?.apply()
+      expect(saved).toEqual(['editor', 'store', 'reload'])
     })
 
     it('saves the open document and the store before it reloads', async () => {

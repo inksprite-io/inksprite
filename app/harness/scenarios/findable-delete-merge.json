@@ -1,0 +1,14 @@
+{
+  "fixture": "findable",
+  "rewind": true,
+  "messages": [
+    {
+      "text": "The v0 retrieval design in the archive and the current retrieval design cover the same ground. Merge them and drop the old one.",
+      "calls": ["delete_document"],
+      "gone": ["Archive/Retrieval design v0"],
+      "trashed": ["Archive/Retrieval design v0"],
+      "kept": ["Design/Retrieval design"],
+      "mentions": ["trash|delet|drop|remov"]
+    }
+  ]
+}

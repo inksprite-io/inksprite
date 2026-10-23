@@ -13,6 +13,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useSyncStore } from './syncStore.js'
 import { storage } from '@/storage/index.js'
+import { heldProjects, onTablesWritten } from '@/platform/windows.js'
 
 /** @typedef {import('../types/models.js').ProjectView} ProjectView */
 
@@ -32,6 +33,16 @@ export const useProjectViewsStore = defineStore('projectViews', () => {
       console.error('Failed to load where projects were left:', error)
     }
   }
+
+  // Another window wrote where it left its projects: read them again, but
+  // for those open here, which are this window's to say.
+  onTablesWritten(['projectViews'], async () => {
+    if (!initializePromise) return
+    const mine = new Set(heldProjects())
+    for (const view of await storage.all('projectViews')) {
+      if (!mine.has(view.id)) views.value.set(view.id, view)
+    }
+  })
 
   /** @returns {Promise<void>} */
   function ensureInitialized() {

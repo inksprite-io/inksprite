@@ -39,6 +39,8 @@ const FENCE = /^[ \t]{0,3}(```|~~~)/
  * @property {number} [entries] - How many subsections a long run has, not listed here
  * @property {string} [range] - The first and last of that run
  * @property {number} [more] - Subsections left out of this tree for its size
+ * @property {string} [about] - What is in it, in a line, where explore wrote
+ *   one: see `withSectionLines` in ai/tools/documents.js
  */
 
 /**

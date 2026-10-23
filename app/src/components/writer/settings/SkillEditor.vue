@@ -547,7 +547,7 @@ const remove = () => {
   const name = form.value?.name || stored?.name || 'this skill'
   confirm.require({
     header: `Delete ${name}?`,
-    message: `It goes from every chat, and /${name} with it. Turns that used it keep what it said.`,
+    message: `It goes from every chat, and /${name} with it.`,
     icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
     acceptProps: { label: 'Delete', severity: 'danger' },

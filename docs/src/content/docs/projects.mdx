@@ -1,6 +1,6 @@
 ---
 title: Projects
-description: Switch between projects, arrange a project's documents, move a project to another computer, and back up everything.
+description: Switch between projects, arrange a project's documents, get back what you deleted, move a project to another computer, and back up everything.
 ---
 
 import Screenshot from '../../components/Screenshot.astro';
@@ -15,7 +15,9 @@ lists your projects by name, each with when it was last edited: click one to
 open it where you left it. **New project…** starts one, and
 **Import project…** adds one from a file: see [move a project](#move-a-project).
 **Project settings**, **Export project** and **Delete project** are for the
-project that's open.
+project that's open. **Trash** is there while anything is in the
+[trash](#delete-and-the-trash). Signed in to [sync](/sync/), **Keep on this
+device only…** keeps the project off it.
 
 A project with a name another already has gets a number: a second
 *Thief* is *Thief (2)*.
@@ -59,7 +61,8 @@ remembers your order for when you choose **Keep in order** again.
 
 Drag a document or a folder onto a folder to put it inside; a closed folder
 opens if you hold it there. Drop it between two rows to put it in their
-folder. In a folder kept in order, it stays where you drop it.
+folder. The folder it would go into is shaded while you drag. In a folder kept
+in order, it stays where you drop it.
 
 ### Names
 
@@ -70,8 +73,11 @@ moved, imported or copied into a folder that has its name gets a number:
 
 ### The row's menu
 
-- **Rename** edits the name; so does <kbd>F2</kbd>.
+- **Rename** edits the name; so does <kbd>F2</kbd>, or clicking the name of
+  the document that's open.
 - **Duplicate** copies a document beside itself and opens the copy.
+- **Versions…** shows a document's earlier versions, to compare and restore:
+  see [Versions](/editor/#versions).
 - **Export** saves a document as a Markdown file, or with its pictures as a
   `.zip` of the file and an `images` folder. **Download** saves an imported
   file as it came in.
@@ -81,18 +87,50 @@ moved, imported or copied into a folder that has its name gets a number:
   in one chat are in [Chats](/chats/#what-the-model-sees-of-your-project).
 - **Import**, on a folder, brings files in: see
   [PDFs, Images, and Ebooks](/files/).
+- **Explore…**, on a folder or the project, has the model write a line on
+  what each document is about, for the chats to find their way by: see
+  [Chats](/chats/#explore-the-project).
 
 From the keyboard, the arrow keys move along the outline and open and close
 folders, and <kbd>Enter</kbd> opens a document.
 
-### Delete
+### Undo
+
+<kbd>⌘</kbd> <kbd>Z</kbd> (<kbd>Ctrl</kbd> <kbd>Z</kbd> on Windows and Linux)
+in the outline takes back the last rename, move, delete or new document, and
+<kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>Z</kbd> (<kbd>Ctrl</kbd> <kbd>Shift</kbd>
+<kbd>Z</kbd>) does it again. Taking back a new document moves it, and
+whatever you wrote in it, to the trash. In the editor the same keys
+undo your typing.
+
+## Delete and the trash
 
 Choose **Delete** from the row's menu. A folder goes with everything in it. To
 delete a whole project and its chats, choose **Delete project** from
-**Projects** or the project's menu.
+**Projects** or the project's menu. A chat is deleted from its menu in the
+[chat list](/chats/#the-chat-list).
 
-There's no undo: if you might want it back, [back up](#back-up-everything)
-first. In the desktop app, what you delete goes to your computer's trash.
+Nothing asks first: what you delete goes to the trash, and is kept there for
+30 days, then deleted for good. A document goes with its comments and
+versions, and an imported file with the file itself. What the model deletes
+goes there too. <kbd>⌘</kbd> <kbd>Z</kbd> in the outline takes back a delete
+you made there.
+
+To see what's in it, choose **Trash** from **Projects**. It lists the open
+project's documents, folders and chats, newest first, each with where it was
+and when it went, then the projects in the trash. With no project open,
+**Trash**, beside **New project** and **Import project**, lists the projects
+in the trash.
+
+- The circular arrow (**Restore**) puts it back where it was, or at the top of
+  the project if its folder has gone. A name taken since gets a number.
+- The cross (**Delete now**) deletes it for good, after asking.
+- **Empty trash** deletes everything in it for good, after asking.
+
+A turn you delete in a chat doesn't go to the trash, nor does a card you
+delete from the
+[card library](/roleplay/#keep-your-cards-in-the-library). In the desktop app,
+what's deleted for good goes to your computer's trash.
 
 ## Move a project
 
@@ -107,7 +145,8 @@ to someone else.
    choose the file.
 
 It comes in as a new project beside the others, and changes nothing that's
-there. Your settings and keys stay behind.
+there. Your settings and keys stay behind, and so do the project's trash and
+its documents' [versions](/editor/#versions).
 
 ## Bring in a Scrivener project
 
@@ -155,14 +194,16 @@ any new server does.
 Untick what you want to leave out. Open a project to pick its documents and
 chats; a document brings the folders above it.
 
-To bring the file in, click **Import** and choose it. inksprite says what it
-adds and changes, and asks before it goes on. Its projects come in as new ones
-beside yours, its character cards join your library unless you have them
-already, and its settings are merged as a settings file's are.
+To bring the file in, click **Import** and choose it. Its projects come in as
+new ones beside yours, and its character cards join your library unless you
+have them already. If it also changes settings, inksprite says what it adds and
+changes, and asks before it goes on; its settings are merged as a settings
+file's are.
 
 ## Back up everything
 
-A backup holds every project, chat and setting.
+A backup holds every project, chat and setting, with what's in the trash and
+every document's versions.
 
 1. Open **Settings** › **System** › **Data** and click **Export**. Leave
    everything ticked.
@@ -173,6 +214,7 @@ A backup holds every project, chat and setting.
 To restore one, click **Import** and choose the file. inksprite says
 what the backup holds and asks before it goes on: **Replace** deletes
 everything inksprite holds now, puts the backup in its place, and reloads.
+Restoring signs the device out of [sync](/sync/).
 
 A backup made without keys comes back without them. Before you restore it,
 inksprite lists the services whose keys were left out, so you know which to
@@ -183,8 +225,9 @@ too.
 ## Where your work is kept
 
 In a browser, your work is in that browser's storage, on that computer. Another
-browser starts empty: bring your work over with a backup or a project file.
-Clearing the site's data deletes it.
+browser starts empty: bring your work over with a backup or a project file, or
+[sync](/sync/) it. Clearing the site's data deletes it, though a synced project
+comes back when you sign in again.
 
 When you start a project, inksprite asks the browser to keep its data. Firefox
 asks you first; allow it.
@@ -192,8 +235,9 @@ asks you first; allow it.
 :::caution[Safari deletes it after a week]
 Safari deletes a site's data after a week without a visit. On an iPhone or an
 iPad, [add inksprite to your Home Screen](/getting-started/#install-it-from-your-browser)
-to keep it, and bring your projects over with a backup, since the Home Screen
-app starts empty. On a Mac, use the desktop app, or back up often.
+to keep it, and bring your projects over with a backup or [sync](/sync/), since
+the Home Screen app starts empty. On a Mac, use the desktop app, or back up
+often.
 :::
 
 The [desktop app](/desktop/) keeps your work where no browser can clear it,

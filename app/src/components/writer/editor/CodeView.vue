@@ -39,7 +39,7 @@ import { languages } from '@codemirror/language-data'
 import { classHighlighter } from '@lezer/highlight'
 import FindBar from '@/components/common/FindBar.vue'
 import { useFindKey } from '@/composables/useFindKey.js'
-import { find, findNext, plainSearch, reveal, searchOf } from '@/editor/plainSearch.js'
+import { find, findAt, findNext, plainSearch, reveal, searchOf } from '@/editor/plainSearch.js'
 
 /**
  * A file's text as code: read-only, with line numbers, highlighted for the
@@ -176,8 +176,27 @@ const closeFind = () => {
   if (view) find('')(view)
 }
 
+/**
+ * Open the find on a match picked elsewhere, the project's search, by where
+ * it comes among the matches. The focus stays where it is. It is brought
+ * into view once the find has taken its room above the text.
+ *
+ * @param {string} text
+ * @param {import('@/editor/search.js').SearchOptions} options
+ * @param {number} index
+ */
+const showMatch = (text, options, index) => {
+  if (!view) return
+  query.value = text
+  matchCase.value = !!options.matchCase
+  wholeWord.value = !!options.wholeWord
+  finding.value = true
+  findAt(text, options, index)(view)
+  nextTick(() => requestAnimationFrame(() => view && reveal(view)))
+}
+
 useFindKey(() => root.value, openFind)
-defineExpose({ openFind })
+defineExpose({ openFind, showMatch })
 
 onMounted(() => {
   if (!host.value) return

@@ -1795,3 +1795,204 @@ with a hyphen. Of 43 searches, 17 matched the phrase, 22 every word, one all
 but one ("dense sparse hybrid recall comparison", the paper, lacking
 "comparison"), and the three empties were right: a word neither the papers
 nor the decisions log use, and a folder that is not there.
+
+## Sonnet 5.5 on the same six, and Gemma 31B locally (17 Oct 2026)
+
+The same scenarios on `anthropic/claude-sonnet-5.5` through OpenRouter (Google
+served it under the harness's provider floor), on dev 3138b548 with the search
+fixes.
+
+| Scenario                    | Runs | Checks | Prompt tokens a turn | GLM 5.2 |
+| --------------------------- | ---- | ------ | -------------------- | ------- |
+| `findable-comments-work`    | 3    | 18/18  | 15.0k                | 10.5k   |
+| `findable-comments-review`  | 3    | 15/15  | 12.5k                | 9.1k    |
+| `findable-comments-overlap` | 3    | 12/12  | 9.8k                 | 7.3k    |
+| `findable-design`           | 2    | 30/30  | 22.2k                | 11.8k   |
+| `findable-explore`          | 3    | 51/51  | 11.8k                | 7.8k    |
+| `findable-big`              | 3    | 24/24  | 12.8k                | 9.2k    |
+
+Every check passed, at 1.3 to 1.9 times GLM's prompt tokens a turn (GLM's
+from the search reruns the same evening; the two count with different
+tokenizers, so not all of that is text). In `findable-explore` every run read
+the changed meeting note again before answering from it, which was the one
+miss GLM had.
+
+**It edits first and explains afterwards.** In `findable-comments-work`, each
+run fixed the budget, which resolved its comment, and then went to reply on
+the comment to say what it had changed. `reply_comment` refused a resolved
+comment, and `resolve_comment` called on it again said there was no such
+comment. That was three tool errors, one a run, and the writer saw none of
+the explanations. Now a reply to a resolved comment is posted and the
+comment stays resolved (the result says `resolved: true`). Resolving a
+comment that is already resolved succeeds and changes nothing (`already:
+true`). Run again on dev 276e1733, the scenario passed 18/18 with no errors,
+and each run's reply now sits under the change it explains.
+
+**Gemma 4 31B on the writer's Mac works, slowly.** In LM Studio with a 32k
+context, two `findable-comments-overlap` runs passed 4/4 each at about 7k
+tokens a turn, with the right tool calls and replies of 11 to 16 words. Each
+turn took about two and a half minutes, while Docker held much of the Mac's
+memory, so that is not a fair measure of the Mac. The rest of the pass waited
+for a faster machine.
+
+## A Gemma 4 31B finetune on an RTX 5090 (18 Oct 2026)
+
+The same scenarios on `sprinkle-gemma-4-31b`, a finetune of Gemma 4 31B, in
+LM Studio on an RTX 5090 with a 32k context, on dev caaff3d0a. A run took 16
+to 105 seconds, and the whole pass about nine minutes.
+
+| Scenario                    | Runs | Checks | Prompt tokens a turn |
+| --------------------------- | ---- | ------ | -------------------- |
+| `findable-comments-work`    | 2    | 12/12  | 9.6k                 |
+| `findable-comments-review`  | 2    | 10/10  | 9.0k                 |
+| `findable-comments-overlap` | 2    | 8/8    | 7.2k                 |
+| `findable-design`           | 1    | 14/15  | 10.7k                |
+| `findable-explore`          | 1    | 16/17  | 7.2k                 |
+| `findable-big`              | 1    | 6/8    | 9.4k                 |
+
+**The comment tools need nothing for it.** Each run did what GLM and Sonnet
+did: the budget fixed and both comments resolved, with a reply on the
+question; the note to self left alone; four review comments, then four edits
+that resolved them. One run resolved the same comment twice, which now
+succeeds as `already: true` rather than failing.
+
+**It answers from what it already has.** The four misses are one habit. Asked
+what is in the big project, it answered from the project block and never
+listed the documents, so it missed the journal. Asked which papers would help
+with reranking, it named one from its title in the listing and said it
+"likely" held the numbers, without opening it. Asked for contradictions in
+the Archive, it took the reranker spike's finding from a search snippet in
+the turn before. That answer was right, and the check wanted a read. The
+largest turn was 15.7k tokens, so the 32k context was never the limit.
+
+**The status note passed and was out of date.** Asked for a status note, it
+read nothing and wrote from what it had read earlier: the 50,000 cap where
+the meeting note now says 80,000, the 200 ms budget the 9 Sep meeting cut to
+150, Evaluation as open after 9 Sep decided it, and only the 26 Aug actions.
+The check asks only for "hybrid" and "rerank". All three of Sonnet's notes
+name 150 ms and 80,000, so a check for those would pass them and fail this
+one.
+
+## Suggestions from the edit tools (20 Oct 2026, GLM 5.2)
+
+The first batches with the model suggesting rather than proposing: a chat
+that asks first, with the `suggestions` preview (`"applyEdits": "ask"`,
+`VITE_PREVIEW=suggestions`). `findable-suggest` on the retrieval design:
+tighten the Goals paragraph, change the latency budget, shorten Goals again,
+then put Goals back. Six runs over three builds on branch `suggestions`.
+
+**The model took to it at once.** Every run suggested each turn's change
+with one `edit_document`, quoting the text with its own suggestions made
+without a miss, said in the chat that it was a suggestion to accept or
+reject, and on the last turn quoted its own words and restored the original
+word for word, which took its suggestion back and left the budget's.
+
+**Each part under the one it shared a place with wove two through one
+paragraph.** On the first build, shortening Goals came out as the first
+suggestion extended plus a new one for the words beside them, interleaved
+through the same sentences; accepting either alone read wrong. Two builds
+later, a change is one suggestion as its call is, and goes whole into one of
+the model's own that it touches, where touching includes sharing a
+paragraph. Three runs: one suggestion for Goals throughout, the budget its
+own.
+
+**No reasons on the threads.** The result asks for `reply_comment` on the id
+to say why; no run called it. The model explained in the chat instead.
+
+**Each change a suggestion of its own** (later on 20 Oct 2026). A writer's
+pass over a short scene, one `update_document` rewriting it, was one
+suggestion of about fifty changes, to take or leave whole. Now each change is
+its own, with words a word or two apart in a sentence one change (see
+`.llm/suggestions_design.md`), and folding into the model's own is by place
+alone, the paragraph rule gone. Three runs: tightening Goals left 3, 8 and 2
+suggestions, a phrase each ("kinds of query have to" made "queries must",
+"served by" cut); shortening it again went into those it touched and made
+new ones beside them, two it bridged joined under the older; putting it back
+took back every one and left the budget's. Read one at a time, each accepted
+alone made a sentence, the run that tied a dash to "are served" cut aside
+("the first two by exact match; the third is why there is…"). No errors, no
+`reply_comment`.
+
+## The model's delete (21 Oct 2026, GLM 5.2)
+
+The first live batches on `delete_document` (#16), with the `trash` preview
+(`VITE_PREVIEW=trash`), on the findable design: five scenarios, 104 runs
+over the morning's builds and description variants. Each scenario
+rewinds the chat at the end and checks the project came back as it began.
+
+| Scenario                  | What the writer asks                                   | Runs |
+| ------------------------- | ------------------------------------------------------ | ---- |
+| `findable-delete`         | delete the vendor comparison, then the Standups folder | 19   |
+| `findable-delete-ask`     | the same, asking first, the writer accepting each      | 33   |
+| `findable-delete-merge`   | merge the v0 design into the current one, drop the old | 15   |
+| `findable-delete-missing` | the 30 Sep meeting notes (none), the vendor shortlist  | 21   |
+| `findable-delete-tidy`    | tidy up the notes                                      | 16   |
+
+**Asked by name, it found and deleted the right document every time.** The
+vendor comparison: 52 of 52 runs called it by its path, 46 of them after a
+single search. The merge: 15 of 15 read both designs, 12 folded something
+of the v0 into the current one (its known gaps, the hosted API it dropped),
+and all deleted the v0 afterwards and said what they had merged. Of the 48
+replies after a delete that applied, all said it was in the trash, and all
+but one that it could be restored for 30 days.
+
+**Asking first, it told the writer the delete was done.** The result said
+`proposed: true` with the note every proposal gets, and 6 of 6 replies said
+the document was in the trash. Edit proposals in the same chat mostly said
+"proposed for you to accept or reject" (`findable-suggest` without the
+suggestions preview, 2 runs), so it was the delete's own words: the
+description said where a delete goes, and the reply repeated it. A note of
+the delete's own ("Not deleted yet") changed nothing, 5 of 6. With the
+description saying that the call proposes while the writer approves changes,
+every reply that called said it waited on the writer, though 5 of 11 still
+had it "in the trash, pending your approval"; with the note saying "and not
+in the trash", 3 of 34. The proposal now also gives the type and what a
+folder holds: before, the replies counted the standups as 18, 20 and 21;
+since, 19 every time.
+
+**A folder named without its parent was not found.** The Standups folder is
+`Notes/Standups`, and most runs asked for "Standups" first. Told
+`No folder at "Standups"`, 2 of 4 applying runs listed the top level,
+searched for the word (search reads no folder names), and told the writer
+the project had no Standups folder. A miss in `delete_document` or
+`list_documents` now says what goes by that name elsewhere (`"Notes/Standups"
+goes by that name`), and no run has said since that the folder isn't there.
+
+**Listing a folder before deleting it is where it stalls.** Of 45 folder
+turns since, 33 deleted or proposed it. Each of the other 12 had first
+listed the folder's 19 entries: 6 asked the writer to confirm what they had
+just asked for, and 6, all asking first, said "I've queued the whole folder
+for deletion" without the call, so the writer has no Accept to press. The
+15 turns that went straight to the path all called. The claims came with
+the sentence about proposing (none in the 3 turns before it, 6 in 27 after),
+and are the habit of 26 Sep's keep claimed without a call; no wording tried
+here removed them.
+
+**What isn't there.** Asked for the 30 September meeting notes, none of 21
+runs called a delete; each named the meetings there are. Asked for "the
+vendor shortlist in the archive", where the one vendor document is the
+comparison, 8 of 21 deleted the comparison, each naming it and saying it was
+in the trash, and 13 asked whether it was the one meant. A sentence telling
+it to ask when nothing has the name made no difference (3 of 6 with it, 5
+of 15 without) and came out again; the check now wants nothing else gone and
+the comparison named.
+
+**Tidying deleted until told not to.** "Tidy up the notes" read 19 to 39
+documents and mostly brought the stale retrieval design up to date. With no
+word on it, 2 of 6 runs deleted duplicate standups (9 in one, 3 in the
+other), listing each and saying they were in the trash. With "A request to
+tidy or clean up names nothing to go: say what you would delete, and ask",
+none of 10 deleted, and most listed the duplicates and asked. An earlier
+wording of that sentence made 2 of 3 runs ask again before a folder delete
+they had been told to make; with this one, 5 of 6 made it.
+
+**Rewinding brought everything back but a table's padding.** 104 runs
+rewound, undoing 185 changes: deletes of documents and folders, accepted
+proposals, the merge's and the tidy's edits. 103 came back as they began.
+In the other, an edit to one row of the decisions log's table rewrote the
+table without its column padding, and the rewind wrote the old text back
+through the same path, so the words came back and the padding did not. Any
+write through the editor does that to a padded table; it is not the
+delete's.
+
+GLM cost $1.32 for the lot: under a cent a run, four for a tidy.

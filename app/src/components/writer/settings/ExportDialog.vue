@@ -143,7 +143,7 @@ async function open() {
     ticked.value = new Set(leavesOf(/** @type {ExportNode[]} */ (nodes.value)))
   } catch (error) {
     console.error('What there is to export could not be read:', error)
-    toast.error(`What there is to export couldn't be read: ${error.message}`)
+    toast.error(`The projects and settings couldn't be read. ${error.message}`)
   }
 }
 
@@ -174,7 +174,7 @@ async function read(node) {
     ticked.value = afterReading(ticked.value, /** @type {ExportNode[]} */ (nodes.value), id)
   } catch (error) {
     console.error(`Project ${id} could not be read:`, error)
-    toast.error(`The project couldn't be read: ${error.message}`)
+    toast.error(`The project couldn't be read. ${error.message}`)
   } finally {
     const still = new Set(reading.value)
     still.delete(node.key)

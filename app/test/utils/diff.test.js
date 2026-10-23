@@ -84,6 +84,16 @@ describe('diffSequences', () => {
     expect(diffSequences([], [...'abcdef'], { maxEdits: 4 })).toBeNull()
   })
 
+  it('lays out a change too long to pass as arguments', () => {
+    const a = Array.from({ length: 300_000 }, (_, i) => `w${i}`)
+    const b = [...a.slice(0, 1000), 'x', ...a.slice(1000, -1000), 'y', ...a.slice(-1000)]
+    const steps = diffSequences(a, b) ?? []
+    expect(steps.filter(step => step.op === 'insert').map(step => b[step.b])).toEqual(['x', 'y'])
+    expect(steps.filter(step => step.op === 'equal')).toHaveLength(300_000)
+    const inserts = Array.from({ length: 300_000 }, (_, at) => ({ op: 'insert', b: at }))
+    expect(deletionsFirst(inserts)).toHaveLength(300_000)
+  })
+
   it('handles empty sequences and the same sequence', () => {
     expect(diffSequences([], [])).toEqual([])
     expect(diffSequences(['x'], ['x'])).toEqual([{ op: 'equal', a: 0, b: 0 }])

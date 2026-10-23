@@ -6,9 +6,9 @@ title: About
 
 **We are not interested in your personal information.** We do hope that you'll share feedback and bug reports with us though.
 
-Privacy is one of inksprite's core features. You don't need an account to use inksprite, since it runs locally in your browser. Your stories and other data are stored locally, which means that we can't access them.
+Privacy is one of inksprite's core features. You don't need an account to use inksprite, since it runs locally in your browser. Your stories and other data are stored locally, which means that we can't access them. If you sync them, they're encrypted before they leave your device, so we still can't.
 
-The only information we collect is page views via Vercel's [web analytics](https://vercel.com/docs/analytics), simply because we want to know how many people are using the app. The feature seems to be blocked by most ad-blockers, so feel free to use one if it concerns you.
+The only information we collect is page views via Vercel's [web analytics](https://vercel.com/docs/analytics), simply because we want to know how many people are using the app, and, if you sync, what's described under [Sync](#sync) below. The feature seems to be blocked by most ad-blockers, so feel free to use one if it concerns you.
 
 ### Caveats
 
@@ -22,11 +22,19 @@ If you connect to one of the built-in web search providers or a third party MCP 
 
 #### Google Drive
 
-Nothing goes to Google until you import from Google Drive. Then Google's own sign-in opens, in a window of its own (in the desktop app, in your browser), and you choose the files there. inksprite can open those files and no others. They go straight from Google to your device, and a sync sends your edits straight back to the Doc, so we never see them. In a browser the sign-in is kept in memory for the hour it lasts. The desktop app keeps it on your device until you take its access away in your Google account, and never in a backup. Google's [privacy policy](https://policies.google.com/privacy) covers its side.
+Nothing goes to Google until you import from Google Drive or sync a document to a new Doc. Then Google's own sign-in opens, in a window of its own (in the desktop app, in your browser). inksprite can open the files you choose there, and the Docs and folders it makes, and no others. They go straight from Google to your device, and a sync sends your edits and comments straight back to the Doc, so we never see them. In a browser the sign-in is kept in memory for the hour it lasts. The desktop app keeps it on your device until you take its access away in your Google account, and never in a backup. Google's [privacy policy](https://policies.google.com/privacy) covers its side.
+
+#### Sync
+
+Sync is optional, in private preview, and needs an account on our server at sync.inksprite.io, by invitation for now. Your projects, setup and character cards are encrypted on your device before they're sent, and only your devices hold the keys, so we can't read them. The server does see your account name, what your devices call themselves (such as "Safari on iPhone"), how many records you sync, how large they are, when, and the addresses your devices connect from.
+
+If you share a project, the people you share it with can read it, and we still can't. The server sees who each shared project is shared with, and keeps the name you show them, as it keeps your account name. Each person's chats in a shared project stay readable only by them.
+
+While you're signed in, inksprite also sends the server diagnostics about how syncing is going: counts of what went each way, how many rounds failed and why, the app's version and the device's name. They never include your text, titles or names. Turn them off with **Send diagnostics** under **Settings** › **System** › **Sync**.
 
 #### Browser Storage
 
-Your data is stored locally in your browser, which means that we have no access to it. There is still a small risk that a malicious browser extension or script could access your data.
+Your data is stored locally in your browser, which means that we have no access to it, synced or not. There is still a small risk that a malicious browser extension or script could access your data.
 
 #### Legal Stuff
 

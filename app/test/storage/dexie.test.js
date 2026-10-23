@@ -204,7 +204,7 @@ describe('storage in IndexedDB', () => {
     expect(await storage.count('jobs')).toBe(0)
   })
 
-  it('dumps every table, empty ones too, but the linked documents’ bases', async () => {
+  it('dumps every table, empty ones too, but the linked documents’ bases and sync’s own', async () => {
     await db.stories.put(story(STORY))
 
     const tables = await storage.dump()
@@ -212,7 +212,7 @@ describe('storage in IndexedDB', () => {
     expect(Object.keys(tables).sort()).toEqual(
       db.tables
         .map(table => table.name)
-        .filter(name => name !== 'docBases')
+        .filter(name => name !== 'docBases' && !name.startsWith('cloud'))
         .sort()
     )
     expect(tables.stories).toHaveLength(1)

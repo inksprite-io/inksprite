@@ -8,11 +8,20 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
 /** @typedef {import('./index.js').Storage} Storage */
 
+/**
+ * The tables a backup leaves out: a copy of a Google Doc, and what sync
+ * keeps of this device's own reading and writing.
+ */
+const UNSAVED = ['docBases', 'cloudState', 'cloudOutbox', 'cloudRecords']
+
 /** @type {Storage} */
 export const dexieStorage = {
   schemaVersion: () => db.verno,
 
   stories: () => db.stories.toArray(),
+  // Every read is the database's, as another window left it.
+  refreshProjects: async () => {},
+  reopenProject: async () => {},
 
   story: id => db.stories.get(id),
 
@@ -86,13 +95,14 @@ export const dexieStorage = {
   async removeProject(storyId) {
     await db.transaction(
       'rw',
-      [db.stories, db.documents, db.files, db.chats, db.messages, db.docBases],
+      [db.stories, db.documents, db.files, db.chats, db.messages, db.docBases, db.versions],
       async () => {
         const chatIds = await db.chats.where('storyId').equals(storyId).primaryKeys()
         await db.messages.where('chatId').anyOf(chatIds).delete()
         await db.chats.bulkDelete(chatIds)
         await db.files.where('storyId').equals(storyId).delete()
         await db.docBases.where('storyId').equals(storyId).delete()
+        await db.versions.where('storyId').equals(storyId).delete()
         await db.documents.where('storyId').equals(storyId).delete()
         await db.stories.delete(storyId)
       }
@@ -120,6 +130,8 @@ export const dexieStorage = {
 
   ofStory: (table, storyId) => db[table].where('storyId').equals(storyId).toArray(),
 
+  versionsOf: documentId => db.versions.where('documentId').equals(documentId).toArray(),
+
   has: table => Boolean(db[table]),
 
   async write(table, changes) {
@@ -142,7 +154,7 @@ export const dexieStorage = {
     const tables = {}
     await Promise.all(
       db.tables
-        .filter((/** @type {import('dexie').Table} */ table) => table.name !== 'docBases')
+        .filter((/** @type {import('dexie').Table} */ table) => !UNSAVED.includes(table.name))
         .map(async (/** @type {import('dexie').Table} */ table) => {
           tables[table.name] = await table.toArray()
         })

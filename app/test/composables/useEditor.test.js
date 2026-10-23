@@ -294,6 +294,22 @@ describe('useEditor', () => {
       editor.appendContent('doc_1', 'x')
       expect(mockUpdateDocument).not.toHaveBeenCalled()
     })
+
+    it('takes text the store already has without writing it back', () => {
+      editor.open('doc_1', 'One.\n\nTwo.')
+      editor.takeStored('doc_1', 'One.\n\nTwo!', 'One.\n\nTwo!')
+      vi.advanceTimersByTime(PROJECTION_DELAY * 2)
+
+      expect(editor.markdown('doc_1')).toBe('One.\n\nTwo!')
+      expect(mockUpdateDocument).not.toHaveBeenCalled()
+    })
+
+    it('writes back text the store has not got, typing merged in', () => {
+      editor.open('doc_1', 'One.')
+      editor.takeStored('doc_1', 'One, typed.\n\nTwo.', 'One.\n\nTwo.')
+
+      expect(mockUpdateDocument).toHaveBeenCalledWith('doc_1', { content: 'One, typed.\n\nTwo.' })
+    })
   })
 
   describe('plain documents', () => {

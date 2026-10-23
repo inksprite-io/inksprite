@@ -429,7 +429,7 @@ describe('useCardImport', () => {
         pages: 1,
         content: '[p.1]\nAbstract',
       })
-      expect(written.note).toBe(' (1 page)')
+      expect(written.scan).toBeUndefined()
       expect(db.files.put).toHaveBeenCalledWith(
         expect.objectContaining({ id: document.id, storyId: STORY })
       )
@@ -597,20 +597,18 @@ describe('useCardImport', () => {
   describe('with roleplay off', () => {
     beforeEach(() => useApplicationState().setExtension('roleplay', false))
 
-    it('reads a card in a PNG as a picture, and says what it holds', async () => {
+    it('reads a card in a PNG as a picture', async () => {
       const found = await cards.inspect(file('elara.png', cardPng(CARD)))
-      expect(found).toMatchObject({ shape: 'file', holds: 'card' })
+      expect(found).toMatchObject({ shape: 'file', mime: 'image/png' })
     })
 
     it('reads a card or a lorebook as JSON as a file', async () => {
       const book = { name: 'A World', entries: { 0: { comment: 'Crowns', content: 'The coin.' } } }
       expect(await cards.inspect(file('elara.json', JSON.stringify(CARD)))).toMatchObject({
         shape: 'file',
-        holds: 'card',
       })
       expect(await cards.inspect(file('world.json', JSON.stringify(book)))).toMatchObject({
         shape: 'file',
-        holds: 'lorebook',
       })
     })
 

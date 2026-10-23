@@ -19,8 +19,6 @@ import { useStorage } from './index.js'
 
 /** @typedef {import('./index.js').Storage} Storage */
 
-/** @typedef {import('./library.js').ChangedElsewhere} ChangedElsewhere */
-
 /**
  * How far a move of the projects has got.
  * @typedef {Object} MoveProgress
@@ -30,26 +28,12 @@ import { useStorage } from './index.js'
  * @property {number} fraction - How much of the whole move is done, from 0 to 1
  */
 
-/** @type {Set<(changed: ChangedElsewhere[]) => void>} */
-const listeners = new Set()
-
 /**
- * Hear of files changed somewhere else that the app put in the trash before
- * writing over them.
- *
- * @param {(changed: ChangedElsewhere[]) => void} listener
- * @returns {() => void} Stops listening
+ * The library as storage. A file changed somewhere else goes to the trash
+ * before the app's version is written over it, without a word: the app's
+ * version is the one the writer has in front of them.
  */
-export function onChangedElsewhere(listener) {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-/** The library as storage. */
-const openLibrary = () =>
-  libraryStorage(libraryDisk(), {
-    onConflict: changed => listeners.forEach(listener => listener(changed)),
-  })
+const openLibrary = () => libraryStorage(libraryDisk())
 
 /** Whether the app opened on its own projects, which are to be moved into the library. */
 let toMove = false

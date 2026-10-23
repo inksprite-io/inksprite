@@ -74,6 +74,9 @@ export const useMessagesStore = defineStore('messages', () => {
    */
   const messages = shallowRef(new Map())
 
+  /** The chats whose messages have been read. @type {Set<string>} */
+  const loadedChats = new Set()
+
   // Get sync store instance
   const syncStore = useSyncStore()
 
@@ -103,10 +106,19 @@ export const useMessagesStore = defineStore('messages', () => {
    * @param {import('../types/models.js').MessageSegment[]|null} [segments=null] - What
    *   the turn was made of, when it was made of more than prose. `content` is
    *   assembled from these by the caller; see assembleTurn.
+   * @param {import('../types/models.js').MessageMetadata|null} [metadata=null] - What
+   *   the message is known to be from the start, such as an aside
    * @returns {Message} The created message
    * @throws {Error} If required parameters are missing or invalid
    */
-  function createMessage(chatId, role, content, reasoningContent = null, segments = null) {
+  function createMessage(
+    chatId,
+    role,
+    content,
+    reasoningContent = null,
+    segments = null,
+    metadata = null
+  ) {
     if (!chatId) {
       throw new Error('Chat ID is required to create a message')
     }
@@ -133,7 +145,7 @@ export const useMessagesStore = defineStore('messages', () => {
       thinkingFinishTime: null,
       edited: false,
       editedAt: null,
-      metadata: null,
+      metadata,
       ...(segments ? { segments } : {}),
       version: 1,
       created: now,
@@ -643,6 +655,7 @@ export const useMessagesStore = defineStore('messages', () => {
         const reactiveMessage = reactive(message)
         messages.value.set(message.id, reactiveMessage)
       })
+      loadedChats.add(chatId)
       triggerRef(messages)
 
       console.log(`Loaded ${chatMessages.length} messages for chat ${chatId}`)
@@ -650,6 +663,30 @@ export const useMessagesStore = defineStore('messages', () => {
       console.error(`Failed to load messages for chat ${chatId}:`, error)
       throw new Error(`Failed to load messages: ${error.message}`)
     }
+  }
+
+  /**
+   * Whether a chat's messages have been read.
+   * @param {string} chatId
+   */
+  const isChatLoaded = chatId => loadedChats.has(chatId)
+
+  /**
+   * Take a message as another device left it, synced (`cloud/`): kept as it
+   * came, and saved; null removes it.
+   *
+   * @param {string} id
+   * @param {Message|null} row
+   */
+  function receive(id, row) {
+    if (row) {
+      messages.value.set(id, reactive(row))
+      syncStore.trackChange('messages', id, row)
+    } else if (messages.value.has(id)) {
+      messages.value.delete(id)
+      syncStore.trackDelete('messages', id)
+    }
+    triggerRef(messages)
   }
 
   /**
@@ -726,6 +763,8 @@ export const useMessagesStore = defineStore('messages', () => {
     getMessagesForChat,
     deleteMessagesForChat,
     loadMessagesForChat,
+    isChatLoaded,
+    receive,
     forgetSavedRequests,
     getLastMessageForChat,
     countMessagesForChat,

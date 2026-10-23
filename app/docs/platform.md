@@ -74,6 +74,53 @@
 - [platform/updates][70]
 - [downloadUpdate][71]
 - [installUpdate][72]
+- [platform/windows][73]
+- [CHANNEL][74]
+- [CHANNEL][75]
+- [CHANNEL][76]
+- [Taken][77]
+- [lockName][78]
+  - [Parameters][79]
+- [held][80]
+- [taking][81]
+- [touched][82]
+- [behind][83]
+- [listeners][84]
+- [channel][85]
+- [locks][86]
+- [theChannel][87]
+- [heard][88]
+  - [Parameters][89]
+- [tellOtherWindows][90]
+  - [Parameters][91]
+- [tellThisWindow][92]
+  - [Parameters][93]
+- [onNotice][94]
+  - [Parameters][95]
+- [onTablesWritten][96]
+  - [Parameters][97]
+- [takeProject][98]
+  - [Parameters][99]
+- [settled][100]
+- [take][101]
+  - [Parameters][102]
+- [Promise][103]
+- [keep][104]
+  - [Parameters][105]
+- [letGoOfProject][106]
+  - [Parameters][107]
+- [holdsProject][108]
+  - [Parameters][109]
+- [heldProjects][110]
+- [projectsElsewhere][111]
+- [askForProject][112]
+  - [Parameters][113]
+- [onProjectAsked][114]
+  - [Parameters][115]
+- [bringWindowForward][116]
+- [openWindow][117]
+  - [Parameters][118]
+- [resetWindowsForTesting][119]
 
 ## platform/closing
 
@@ -101,41 +148,41 @@ bridge to the native side there.
 What the native side is asked for a request: the page's `Request`, read
 out.
 
-Type: [Object][73]
+Type: [Object][120]
 
 ### Properties
 
-- `url` **[string][74]**&#x20;
-- `method` **[string][74]**&#x20;
-- `headers` **[Array][75]<\[[string][74], [string][74]]>**&#x20;
-- `body` **([Uint8Array][76] | null)**&#x20;
+- `url` **[string][121]**&#x20;
+- `method` **[string][121]**&#x20;
+- `headers` **[Array][122]<\[[string][121], [string][121]]>**&#x20;
+- `body` **([Uint8Array][123] | null)**&#x20;
 - `redirect` **RequestRedirect**&#x20;
 
 ## DesktopResponse
 
 A response's status and headers, without its body.
 
-Type: [Object][73]
+Type: [Object][120]
 
 ### Properties
 
-- `status` **[number][77]**&#x20;
-- `statusText` **[string][74]**&#x20;
-- `headers` **[Array][75]<\[[string][74], [string][74]]>**&#x20;
+- `status` **[number][124]**&#x20;
+- `statusText` **[string][121]**&#x20;
+- `headers` **[Array][122]<\[[string][121], [string][121]]>**&#x20;
 
 ## DesktopBodyPart
 
 A piece of a response's body: a chunk of it, or word that it has all come,
 or that it failed.
 
-Type: ({chunk: [Uint8Array][76]} | {done: `true`} | {error: [string][74]})
+Type: ({chunk: [Uint8Array][123]} | {done: `true`} | {error: [string][121]})
 
 ## DesktopBridge
 
 What the desktop app's native side offers the page (`app/electron/src/
 preload.cjs`). Calls that go wrong reject with an Error saying what did.
 
-Type: [Object][73]
+Type: [Object][120]
 
 ### Properties
 
@@ -146,20 +193,20 @@ Type: [Object][73]
 Where the library is, and whether the window's own projects have been
 moved into it.
 
-Type: {path: [string][74], moved: [boolean][78]}
+Type: {path: [string][121], moved: [boolean][125]}
 
 ## BRIDGE
 
 The library: where it is, and the files in it, by paths below it. What is
 done there is `LibraryDisk` in `storage/library.js`.
 
-Type: [string][74]
+Type: [string][121]
 
 ## BRIDGE
 
 Where the bridge is, in the page.
 
-Type: [string][74]
+Type: [string][121]
 
 ## isDesktop
 
@@ -168,7 +215,7 @@ Whether the app is running in its desktop window.
 Decided at runtime, not when the app is built: in development the browser
 tab and the window load the same bundle from the same server.
 
-Returns **[boolean][78]**&#x20;
+Returns **[boolean][125]**&#x20;
 
 ## desktop
 
@@ -211,10 +258,10 @@ page's own does, streamed body and abort signal included.
 
 ### Parameters
 
-- `input` **(RequestInfo | [URL][79])**&#x20;
+- `input` **(RequestInfo | [URL][126])**&#x20;
 - `init` **RequestInit?**&#x20;
 
-Returns **[Promise][80]<[Response][81]>**&#x20;
+Returns **[Promise][103]<[Response][127]>**&#x20;
 
 ## fetchNatively
 
@@ -223,13 +270,13 @@ comes.
 
 ### Parameters
 
-- `request` **[Request][82]**&#x20;
+- `request` **[Request][128]**&#x20;
 
-Returns **[Promise][80]<[Response][81]>**&#x20;
+Returns **[Promise][103]<[Response][127]>**&#x20;
 
 ## controller
 
-Type: ReadableStreamDefaultController<[Uint8Array][76]>
+Type: ReadableStreamDefaultController<[Uint8Array][123]>
 
 ## onBody
 
@@ -270,6 +317,8 @@ sign-in rather than for a platform.
   leave in the app's data folder for it to import as it opens
 - **closing** - In the desktop app, saving before the window closes or the
   app quits
+- **windows** - The app open in more than one window or tab: a project in
+  one at a time, and what the windows tell each other they changed
 
 Design: `.llm/desktop_design.md`.
 
@@ -304,7 +353,7 @@ Show the library, or a file in it, in the system's file manager.
 
 ### Parameters
 
-- `path` **[string][74]?** Below the library
+- `path` **[string][121]?** Below the library
 
 ## libraryDisk
 
@@ -333,9 +382,9 @@ The address a link goes to, if it is one that may open.
 
 ### Parameters
 
-- `href` **[string][74]**&#x20;
+- `href` **[string][121]**&#x20;
 
-Returns **([URL][79] | null)**&#x20;
+Returns **([URL][126] | null)**&#x20;
 
 ## openUrl
 
@@ -343,9 +392,9 @@ Open a link outside the app.
 
 ### Parameters
 
-- `href` **[string][74]**&#x20;
+- `href` **[string][121]**&#x20;
 
-Returns **[Promise][80]<[boolean][78]>** Whether it was one that may open
+Returns **[Promise][103]<[boolean][125]>** Whether it was one that may open
 
 ## openLinkClicked
 
@@ -356,7 +405,7 @@ link, or a click with a modifier somewhere other than this tab.
 
 ### Parameters
 
-- `event` **[MouseEvent][83]**&#x20;
+- `event` **[MouseEvent][129]**&#x20;
 
 ## platform/persistence
 
@@ -385,20 +434,20 @@ Whether this page load has asked: once is enough, whatever the answer.
 
 Ask the browser to keep the page's data, once a page load. Never throws.
 
-Returns **[Promise][80]<[boolean][78]>** Whether the data is kept
+Returns **[Promise][103]<[boolean][125]>** Whether the data is kept
 
 ## BrowserTraits
 
 What the page is in, as far as the advice depends on it.
 
-Type: [Object][73]
+Type: [Object][120]
 
 ### Properties
 
-- `userAgent` **[string][74]**&#x20;
-- `maxTouchPoints` **[number][77]** An iPad sends a Mac's user agent; only
+- `userAgent` **[string][121]**&#x20;
+- `maxTouchPoints` **[number][124]** An iPad sends a Mac's user agent; only
   its touch screen tells the two apart
-- `standalone` **[boolean][78]** Opened from the Home Screen or the Dock,
+- `standalone` **[boolean][125]** Opened from the Home Screen or the Dock,
   rather than in a browser tab
 
 ## StorageAdvice
@@ -406,13 +455,13 @@ Type: [Object][73]
 What the writer is told about keeping their work, beyond that it is in the
 browser.
 
-Type: [Object][73]
+Type: [Object][120]
 
 ### Properties
 
-- `clearsAfterAWeek` **[boolean][78]** Safari, which deletes site data after a week of inactivity
-- `homeScreen` **[boolean][78]** Safari in a tab on an iPhone or iPad, where the Home Screen is exempt
-- `desktopApp` **[boolean][78]** A computer, which the desktop app runs on
+- `clearsAfterAWeek` **[boolean][125]** Safari, which deletes site data after a week of inactivity
+- `homeScreen` **[boolean][125]** Safari in a tab on an iPhone or iPad, where the Home Screen is exempt
+- `desktopApp` **[boolean][125]** A computer, which the desktop app runs on
 
 ## currentBrowser
 
@@ -464,7 +513,7 @@ Type: (ServiceWorkerRegistration | null)
 
 Whether the app keeps its files with a service worker here.
 
-Returns **[boolean][78]**&#x20;
+Returns **[boolean][125]**&#x20;
 
 ## registerServiceWorker
 
@@ -479,7 +528,7 @@ there is no service worker.
 - `onBuild` &#x20;
 - `onRemoved` &#x20;
 
-Returns **[Promise][80]<(ServiceWorkerRegistration | null)>** Null where there is none
+Returns **[Promise][103]<(ServiceWorkerRegistration | null)>** Null where there is none
 
 ## lookForBuild
 
@@ -487,7 +536,7 @@ Ask whether there is a new build, which `onBuild` hears of once it has
 been fetched. Browsers ask on their own as the app opens, and only now and
 then after, which leaves a page that stays open behind.
 
-Returns **[Promise][80]\<void>**&#x20;
+Returns **[Promise][103]\<void>**&#x20;
 
 ## reloadIntoBuild
 
@@ -506,7 +555,7 @@ the app's data folder for it to import as it opens. See
 The settings file's text, or null when there is none, or no folder to
 leave one in: in a browser.
 
-Returns **[Promise][80]<([string][74] | null)>**&#x20;
+Returns **[Promise][103]<([string][121] | null)>**&#x20;
 
 ## platform/signIn
 
@@ -527,14 +576,14 @@ some hold it to exactly that address.
 
 Where the desktop app listens for a sign-in to come back.
 
-Type: [number][77]
+Type: [number][124]
 
 ## callbackOrigin
 
 Where a sign-in comes back to: this page's own origin in a browser, the
 desktop app's listener in its window.
 
-Returns **[string][74]**&#x20;
+Returns **[string][121]**&#x20;
 
 ## signInInBrowser
 
@@ -546,13 +595,13 @@ while another is waiting takes its place.
 
 ### Parameters
 
-- `address` **([string][74] | [URL][79])** Where to sign in
-- `path` **[string][74]** Where the service sends the browser back, under
+- `address` **([string][121] | [URL][126])** Where to sign in
+- `path` **[string][121]** Where the service sends the browser back, under
   `callbackOrigin()`: `/connect/mcp`
-- `$2` **[Object][73]** (optional, default `{}`)
+- `$2` **[Object][120]** (optional, default `{}`)
   - `$2.signal` &#x20;
 
-Returns **[Promise][80]\<URLSearchParams>** The query it came back with
+Returns **[Promise][103]\<URLSearchParams>** The query it came back with
 
 ## platform/updates
 
@@ -567,7 +616,7 @@ the page, which the service worker fetches (`serviceWorker.js`).
 
 Look for an update and download it, in the desktop app.
 
-Returns **[Promise][80]<([string][74] | null)>** The version downloaded, ready to install;
+Returns **[Promise][103]<([string][121] | null)>** The version downloaded, ready to install;
 null when the app is up to date, or not the desktop app
 
 ## installUpdate
@@ -575,7 +624,265 @@ null when the app is up to date, or not the desktop app
 Install the update `downloadUpdate` downloaded, and restart into it. Does
 not return, unless the install fails.
 
-Returns **[Promise][80]\<void>**&#x20;
+Returns **[Promise][103]\<void>**&#x20;
+
+## platform/windows
+
+The app open more than once: in more than one window of the
+desktop app, or in more than one tab of a browser.
+
+Each window keeps what it reads in memory and writes its rows whole, so two
+windows on one project would write over each other's edits, and each would
+go on showing its own. So in the desktop app a project is open in one
+window at a time. The window holds it with a lock (Web Locks) while the
+project is open there, or while a job of the project runs there, and lets
+go when it moves to another project or the job ends. A window that closes
+or reloads lets go of its projects with it. A project asked for in another
+window is shown there.
+
+A browser's tabs hold nothing: a tab opens the project it is asked for, as
+the app did before it knew of other windows, rather than tell the writer
+each new tab that the project is open in another.
+
+What the windows share besides, the app's settings and the list of
+projects, they tell each other about when they change it, on a
+BroadcastChannel, and each reads it again (`onNotice`), tabs as well. A
+window that took a project another window has had since is behind on it,
+and reloads rather than show what it kept (`takeProject`'s `stale`).
+
+## CHANNEL
+
+What a window holds a project for: being open there, or a job running
+there, by the job's id.
+
+Type: [string][121]
+
+## CHANNEL
+
+What one window tells the others.
+
+- `taken` - It took a project: one another window had is now behind
+- `show` - Whichever window has this project is to show it, and come to
+  the front
+- `tables` - It wrote rows of these app tables
+- `projects` - A project came, went, or was renamed
+- `reload` - Everything was replaced, and every window is to read it again
+- `cloud` - The sync server has something new, and a window that syncs
+  projects of its own is to sync them
+
+Type: [string][121]
+
+## CHANNEL
+
+The channel the windows speak on.
+
+Type: [string][121]
+
+## Taken
+
+What came of taking a project: whether this window holds it, and whether
+what it kept of it from before is behind (see `takeProject`).
+
+Type: {held: [boolean][125], stale: [boolean][125], first: [boolean][125]}
+
+## lockName
+
+A project's lock, by its story's id.
+
+### Parameters
+
+- `storyId` &#x20;
+
+## held
+
+The projects this window holds, each with why, and the call that lets go
+of its lock.
+
+## taking
+
+Type: [Map][130]<[string][121], [Promise][103]\<void>>
+
+## touched
+
+Projects this window has held since it loaded.
+
+## behind
+
+Projects this window has held that another window has taken since.
+
+## listeners
+
+## channel
+
+Type: (BroadcastChannel | null)
+
+## locks
+
+The locks projects are held with: the desktop app's, which a browser's
+tabs go without.
+
+Returns **(LockManager | null)**&#x20;
+
+## theChannel
+
+The channel, opened the first time it is wanted.
+
+Returns **(BroadcastChannel | null)**&#x20;
+
+## heard
+
+### Parameters
+
+- `notice` **Notice**&#x20;
+
+## tellOtherWindows
+
+Tell the other windows.
+
+### Parameters
+
+- `notice` **Notice**&#x20;
+
+## tellThisWindow
+
+Have this window hear a notice as if another window had told it: sync,
+having written rows of app tables that this window's stores read.
+
+### Parameters
+
+- `notice` **Notice**&#x20;
+
+## onNotice
+
+Hear what the other windows tell, of one kind.
+
+### Parameters
+
+- `type` **T**&#x20;
+- `listener` &#x20;
+
+## onTablesWritten
+
+When another window writes rows of these app tables: a store reads its
+rows again. What goes wrong doing so is logged.
+
+### Parameters
+
+- `tables` **[Array][122]<[string][121]>**&#x20;
+- `reload` &#x20;
+
+## takeProject
+
+Hold a project in this window, for a reason: open here, or a job of it
+running here. Held already, the reason is added. Held by another window,
+it is not taken.
+
+`stale` says this window has held the project before and another has
+taken it since: what this window kept of it is out of date, and the
+window is to read it again before using it. `first` says this window has
+not held it since it loaded: what it read of it meanwhile, for the list of
+projects, may have been read while another window had it.
+
+### Parameters
+
+- `storyId` **[string][121]**&#x20;
+- `reason` **Reason**&#x20;
+
+Returns **[Promise][103]<[Taken][77]>**&#x20;
+
+## settled
+
+Type: [Promise][103]\<void>
+
+## take
+
+### Parameters
+
+- `storyId` **[string][121]**&#x20;
+- `reason` **Reason**&#x20;
+
+Returns **[Promise][103]<[Taken][77]>**&#x20;
+
+## Promise
+
+## keep
+
+### Parameters
+
+- `storyId` **[string][121]**&#x20;
+- `reason` **Reason**&#x20;
+- `release` &#x20;
+
+## letGoOfProject
+
+Stop holding a project for a reason. With no reason left, the project is
+let go of, for another window to take.
+
+### Parameters
+
+- `storyId` **[string][121]**&#x20;
+- `reason` **Reason**&#x20;
+
+## holdsProject
+
+Whether this window holds a project, for any reason, or for this one.
+
+### Parameters
+
+- `storyId` **[string][121]**&#x20;
+- `reason` **Reason?**&#x20;
+
+Returns **[boolean][125]**&#x20;
+
+## heldProjects
+
+The projects this window holds.
+
+Returns **[Array][122]<[string][121]>**&#x20;
+
+## projectsElsewhere
+
+The projects other windows hold.
+
+Returns **[Promise][103]<[Set][131]<[string][121]>>**&#x20;
+
+## askForProject
+
+Ask the window that has a project to show it, and come to the front: the
+writer asked for a project open in another window.
+
+### Parameters
+
+- `storyId` **[string][121]**&#x20;
+
+## onProjectAsked
+
+When another window asks for a project this one holds, to show it.
+
+### Parameters
+
+- `show` &#x20;
+
+## bringWindowForward
+
+Bring this window to the front.
+
+Returns **[Promise][103]\<void>**&#x20;
+
+## openWindow
+
+Open the app again beside this window, on a path of its own: a new window
+of the desktop app, a new tab in a browser.
+
+### Parameters
+
+- `path` **[string][121]?** (optional, default `'/'`)
+
+Returns **[Promise][103]\<void>**&#x20;
+
+## resetWindowsForTesting
+
+Forget every hold and listener: for tests.
 
 [1]: #platformclosing
 [2]: #beforeclosing
@@ -649,14 +956,62 @@ Returns **[Promise][80]\<void>**&#x20;
 [70]: #platformupdates
 [71]: #downloadupdate
 [72]: #installupdate
-[73]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[74]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[75]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[76]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[77]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[78]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[79]: https://developer.mozilla.org/docs/Web/API/URL/URL
-[80]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[81]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[82]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
-[83]: https://developer.mozilla.org/docs/Web/API/MouseEvent
+[73]: #platformwindows
+[74]: #channel
+[75]: #channel-1
+[76]: #channel-2
+[77]: #taken
+[78]: #lockname
+[79]: #parameters-11
+[80]: #held
+[81]: #taking
+[82]: #touched
+[83]: #behind
+[84]: #listeners
+[85]: #channel-3
+[86]: #locks
+[87]: #thechannel
+[88]: #heard
+[89]: #parameters-12
+[90]: #tellotherwindows
+[91]: #parameters-13
+[92]: #tellthiswindow
+[93]: #parameters-14
+[94]: #onnotice
+[95]: #parameters-15
+[96]: #ontableswritten
+[97]: #parameters-16
+[98]: #takeproject
+[99]: #parameters-17
+[100]: #settled
+[101]: #take
+[102]: #parameters-18
+[103]: #promise
+[104]: #keep
+[105]: #parameters-19
+[106]: #letgoofproject
+[107]: #parameters-20
+[108]: #holdsproject
+[109]: #parameters-21
+[110]: #heldprojects
+[111]: #projectselsewhere
+[112]: #askforproject
+[113]: #parameters-22
+[114]: #onprojectasked
+[115]: #parameters-23
+[116]: #bringwindowforward
+[117]: #openwindow
+[118]: #parameters-24
+[119]: #resetwindowsfortesting
+[120]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[121]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[122]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[123]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[124]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[125]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[126]: https://developer.mozilla.org/docs/Web/API/URL/URL
+[127]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[128]: https://developer.mozilla.org/Add-ons/SDK/High-Level_APIs/request
+[129]: https://developer.mozilla.org/docs/Web/API/MouseEvent
+[130]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[131]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set

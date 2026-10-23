@@ -46,8 +46,8 @@ whether to import it as a repository: click **Import as repository**, or
 ### What comes in
 
 The repository arrives as a folder named after it, with the codebase's folders
-and files inside. A message says how many files came in and how many were left
-out.
+and files inside. A message says how many files were left out for not being
+text or for being too large.
 
 - **Never imported**: `.git`, `node_modules`, and the files secrets are kept
   in, such as `.env` files, `.npmrc`, SSH keys and `*.pem` or `*.key` files,
@@ -119,5 +119,5 @@ desktop app.
   again.
 
 New files come in, changed files are updated, and files that are gone are
-removed. A message says how many of each. A chat that read a changed file is
+removed. A chat that read a changed file is
 told so on its next turn, and your pins and hides on the files stay.

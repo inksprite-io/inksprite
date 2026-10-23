@@ -223,7 +223,7 @@ const onStep = (step, done, total) => {
 
 /**
  * Run one import or refresh with the dialog saying how it goes, and close it
- * with the tally when it is done.
+ * when it is done, saying what was left out.
  *
  * @param {(signal: AbortSignal) => Promise<import('@/composables/useRepositoryImport.js').RepositoryImported>} run
  */
@@ -233,8 +233,8 @@ const perform = async run => {
   error.value = ''
   status.value = ''
   try {
-    const result = await run(controller.signal)
-    toast.add({ ...describeRepositoryImport(result), life: 6000 })
+    const said = describeRepositoryImport(await run(controller.signal))
+    if (said) toast.add({ ...said, life: 6000 })
     busy.value = false
     emit('update:visible', false)
   } catch (failure) {

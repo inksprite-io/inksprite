@@ -114,20 +114,22 @@ export function useCardChat(storyId) {
    *
    * @param {string} chatId
    * @param {string} character - The name they spoke under
-   * @returns {Promise<import('@/cards/chat.js').CardChat|null>} The card it
-   *   is now on, or null if it is on none
+   * @returns {Promise<{card: import('@/cards/chat.js').CardChat|null, named: number}>}
+   *   The card it is now on, or null if it is on none, and how many cards
+   *   in the project are that character
    */
   async function attach(chatId, character) {
     const found = await cardsNamed(storyId, character)
-    if (found.length !== 1) return null
+    const named = found.length
+    if (named !== 1) return { card: null, named }
 
     const card = await readCardChat(storyId, found[0].id)
-    if (!card) return null
+    if (!card) return { card: null, named }
 
     const settings = settingsFrom(card)
     if (Object.keys(settings).length > 0) chatsApi.updateChat(chatId, settings)
 
-    return card
+    return { card, named }
   }
 
   /**

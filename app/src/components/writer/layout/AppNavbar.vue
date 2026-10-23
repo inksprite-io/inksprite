@@ -57,6 +57,7 @@ import CardsIcon from '@/components/icons/CardsIcon.vue'
 import ChatBubbleIcon from '@/components/icons/ChatBubbleIcon.vue'
 import CommentIcon from '@/components/icons/CommentIcon.vue'
 import InProcessIcon from '@/components/icons/InProcessIcon.vue'
+import SearchIcon from '@/components/icons/SearchIcon.vue'
 import SettingsIcon from '@/components/icons/SettingsIcon.vue'
 import SpeakerIcon from '@/components/icons/SpeakerIcon.vue'
 import StoryboardIcon from '@/components/icons/StoryboardIcon.vue'
@@ -69,7 +70,7 @@ import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
 
 /**
  * The rail. Top to bottom: what the sidebar can show — the outline, the
- * chats, the narration, the comments — with the card library under the
+ * search, the chats, the narration, the comments — with the card library under the
  * chats while roleplay is on; then, at the foot, the jobs toast's button,
  * while there are jobs, and the settings. Picking the list showing hides the
  * sidebar, which is how it is hidden; the editor and the chat hide each other
@@ -105,6 +106,7 @@ const { aiEnabled, roleplay } = useApplicationState()
 
 const TABS = [
   { id: SIDEBAR_TABS.OUTLINE, label: 'Outline', icon: StoryboardIcon, needsStory: true },
+  { id: SIDEBAR_TABS.SEARCH, label: 'Search', icon: SearchIcon, needsStory: true },
   { id: SIDEBAR_TABS.CHATS, label: 'Chats', icon: ChatBubbleIcon, needsStory: true },
   { id: SIDEBAR_TABS.NARRATION, label: 'Narration', icon: SpeakerIcon, needsStory: true },
   { id: SIDEBAR_TABS.COMMENTS, label: 'Comments', icon: CommentIcon, needsStory: true },

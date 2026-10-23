@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ChatStatus from '../../src/components/writer/chats/ChatStatus.vue'
+import { useApplicationState } from '../../src/composables/useApplicationState'
 
 const call = (name, args) => ({ name, arguments: JSON.stringify(args) })
 
@@ -26,6 +27,32 @@ describe('ChatStatus', () => {
   it('says what the tools are doing while they run', () => {
     expect(line(show({ phase: 'running', calls: [winter] })).text()).toBe(
       'Reading Keeper log, winter…'
+    )
+  })
+
+  it('says an edit is suggested in a chat that asks first', () => {
+    const { setApplyEdits } = useApplicationState()
+    setApplyEdits('ask')
+    try {
+      const edit = call('edit_document', { path: 'Draft/Chapter 1', old: 'Snow', new: 'Rain' })
+      expect(line(show({ phase: 'running', calls: [edit] })).text()).toBe(
+        'Suggesting changes to Chapter 1…'
+      )
+      expect(line(show({ phase: 'waiting', calls: [edit] })).text()).toBe(
+        'Suggested changes to Chapter 1 · waiting for the model'
+      )
+    } finally {
+      setApplyEdits('auto')
+    }
+  })
+
+  it('says how far a long call has got, as it said', () => {
+    const explore = call('explore_documents', { path: 'Notes' })
+    expect(
+      line(show({ phase: 'running', calls: [explore], progress: '3 of 7 requests' })).text()
+    ).toBe('Exploring Notes… 3 of 7 requests')
+    expect(line(show({ phase: 'running', calls: [call('explore_documents', {})] })).text()).toBe(
+      'Exploring the project…'
     )
   })
 

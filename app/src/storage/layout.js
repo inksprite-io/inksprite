@@ -8,7 +8,8 @@
  *   .inksprite/
  *     story.json              the project's own row, and the schema it is in
  *     narration/<id>.json     who speaks which block of a document
-     bases/<id>.json         a linked document's Google Doc as last synced
+ *     digests/<id>.json       what explore made of a document or a folder
+ *     bases/<id>.json         a linked document's Google Doc as last synced
  *     audio/<id>/<key>.wav    a document's narration, a clip to a block
  *     chats/                  see chats.js
  *     moving/                 where a move puts something out of the way
@@ -72,6 +73,58 @@ export const MOVING = `${META}/moving`
 export const narrationPath = id => `${META}/narration/${id}.json`
 
 /**
+ * Where what explore made of a document or a folder is kept.
+ *
+ * @param {string} id - The document's
+ */
+export const digestPath = id => `${META}/digests/${id}.json`
+
+/**
+ * A field of a row kept in a file of its own in the project's folder rather
+ * than in its frontmatter: something only the app reads. Its entry has the
+ * flag while the file is there. Trashed with the document, and in a backup
+ * with the rest of the row.
+ *
+ * @typedef {Object} RowFile
+ * @property {'narration'|'digest'} flag
+ * @property {'speakers'|'digest'} field - The row's field it holds
+ * @property {(id: string) => string} path
+ * @property {(value: any) => boolean} keeps - Whether a value is worth a file:
+ *   the row's, or one read back from the file
+ */
+
+/** @type {RowFile[]} */
+export const ROW_FILES = [
+  {
+    flag: 'narration',
+    field: 'speakers',
+    path: narrationPath,
+    keeps: value => Array.isArray(value) && value.length > 0,
+  },
+  {
+    flag: 'digest',
+    field: 'digest',
+    path: digestPath,
+    keeps: value =>
+      Boolean(value) && typeof value.line === 'string' && typeof value.text === 'string',
+  },
+]
+
+/** Whether a path is one of the row files, by the folder it is in. @param {string} path */
+const isRowFile = path =>
+  path.endsWith('.json') && ROW_FILES.some(kept => parentOf(path) === parentOf(kept.path('')))
+
+/**
+ * Flag the row files a document has on its entry.
+ *
+ * @param {Entry} entry
+ * @param {Document} document
+ */
+function flagRowFiles(entry, document) {
+  for (const kept of ROW_FILES) if (kept.keeps(document[kept.field])) entry[kept.flag] = true
+}
+
+/**
  * Where a linked document's base is kept: a copy of Google's, trashed with
  * the document, and left out of a backup.
  *
@@ -117,6 +170,7 @@ export const audioPath = (id, key) => `${audioDir(id)}/${key}.wav`
  * @property {string} path - Below the project folder: a folder's directory, a document's file; '' for the root
  * @property {string} [repository] - The id of the repository it is in
  * @property {true} [narration] - It has a narration file
+ * @property {true} [digest] - It has a digest file
  * @property {true} [missing] - An imported file whose row is there and whose bytes are not
  * @property {string[]} [pictures] - A text document's own pictures, by name, in
  *   `picturesDir` beside it
@@ -174,6 +228,8 @@ const picturesOf = document => {
 /**
  * A folder's children in the order the tree shows them: by place in an
  * ordered folder, by title in any other (as `getChildrenOrdered` has it).
+ * What is in the trash comes after them, so that it never takes the name or
+ * the number of a document that isn't.
  *
  * @param {Document[]} children
  * @param {boolean} ordered
@@ -181,8 +237,10 @@ const picturesOf = document => {
  */
 function shown(children, ordered) {
   const out = children.slice()
-  if (ordered) return out.sort((a, b) => a.order - b.order || byId(a, b))
-  return out.sort((a, b) => compareNames(a.title, b.title) || byId(a, b))
+  const trashedLast = (/** @type {Document} */ a, /** @type {Document} */ b) =>
+    Number(Boolean(a.trashed)) - Number(Boolean(b.trashed))
+  if (ordered) return out.sort((a, b) => trashedLast(a, b) || a.order - b.order || byId(a, b))
+  return out.sort((a, b) => trashedLast(a, b) || compareNames(a.title, b.title) || byId(a, b))
 }
 
 /**
@@ -228,6 +286,7 @@ export function layoutProject(documents, rootId, taken = []) {
   /** @type {Map<string, Entry>} */
   const entries = new Map([[rootId, { id: rootId, kind: 'root', path: '' }]])
   if (!root) return entries
+  flagRowFiles(/** @type {Entry} */ (entries.get(rootId)), root)
 
   /** @type {Map<string, Set<string>>} Names in use, by the key of their folder's path */
   const takenIn = new Map()
@@ -288,7 +347,7 @@ export function layoutProject(documents, rootId, taken = []) {
       /** @type {Entry} */
       const entry = { id: kid.id, kind, path }
       if (repository) entry.repository = repository
-      if (kid.speakers?.length) entry.narration = true
+      flagRowFiles(entry, kid)
       if (kind === 'text') Object.assign(entry, picturesOf(kid))
       entries.set(kid.id, entry)
       if (kid.type === 'folder')
@@ -316,7 +375,7 @@ export function wantedTexts(files) {
     repositories.some(dir => dir === '' || path.startsWith(`${dir}/`))
   return files.filter(path => {
     if (path === STORY_FILE) return true
-    if (path.startsWith(`${META}/narration/`)) return path.endsWith('.json')
+    if (isRowFile(path)) return true
     if (inMeta(path)) return false
     if (inRepository(path)) return true
     if (inPictures(path)) return false
@@ -606,17 +665,18 @@ export function readProject({ files, texts, name }, { newId, now }) {
   }
 
   for (const document of documents) {
-    const text = texts.get(narrationPath(document.id))
-    if (text === undefined) continue
-    try {
-      const speakers = JSON.parse(text)
-      if (Array.isArray(speakers) && speakers.length > 0) {
-        document.speakers = speakers
+    for (const kept of ROW_FILES) {
+      const text = texts.get(kept.path(document.id))
+      if (text === undefined) continue
+      try {
+        const value = JSON.parse(text)
+        if (!kept.keeps(value)) continue
+        document[kept.field] = value
         const entry = entries.get(document.id)
-        if (entry) entry.narration = true
+        if (entry) entry[kept.flag] = true
+      } catch {
+        // A file that cannot be read holds nothing.
       }
-    } catch {
-      // A narration file that cannot be read is no narration.
     }
   }
 

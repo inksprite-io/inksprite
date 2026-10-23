@@ -32,7 +32,7 @@
     </div>
     <template #footer>
       <Button label="Cancel" severity="secondary" text @click="$emit('update:visible', false)" />
-      <Button label="Save" @click="save" />
+      <Button label="Save" :disabled="!form.title.trim()" @click="save" />
     </template>
   </Dialog>
 </template>
@@ -104,20 +104,8 @@ watch(
 
 const save = async () => {
   const title = form.value.title.trim()
-  if (!title) {
-    toast.add({
-      severity: 'error',
-      detail: 'Project title cannot be empty',
-      life: 3000,
-    })
-    return
-  }
-
   const root = documentsStore.getRoot(props.storyId)
-  if (!root) {
-    toast.add({ severity: 'error', detail: 'Project not found', life: 3000 })
-    return
-  }
+  if (!title || !root) return
 
   try {
     documentsStore.updateDocument(root.id, {
@@ -133,14 +121,9 @@ const save = async () => {
       })
     }
     emit('update:visible', false)
-    toast.add({ severity: 'success', detail: 'Project updated', life: 3000 })
   } catch (error) {
     console.error('Failed to update project:', error)
-    toast.add({
-      severity: 'error',
-      detail: 'Failed to update project',
-      life: 3000,
-    })
+    toast.add({ severity: 'error', detail: "The project couldn't be saved.", life: 6000 })
   }
 }
 </script>

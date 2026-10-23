@@ -63,6 +63,7 @@ export const SETTINGS_GROUPS = {
     'aiEnabled',
     'theme',
     'applyEdits',
+    'askBeforeExploring',
     'roleplay',
     'nsfwProfiles',
     'blurNsfw',
@@ -164,7 +165,7 @@ function everyInstallHas(table, id) {
  * @param {any} provider
  * @returns {boolean}
  */
-function untouchedBuiltIn(provider) {
+export function untouchedBuiltIn(provider) {
   const builtIn = BUILT_IN_PROVIDERS.find(entry => entry.id === provider.id)
   if (!builtIn) return false
   return (

@@ -48,7 +48,10 @@
     {
       "text": "Write a short status note at Design/Status: what's decided, what's still open, and who is doing what.",
       "noRereads": true,
-      "document": { "path": "Design/Status", "contains": ["hybrid", "rerank"] }
+      "document": {
+        "path": "Design/Status",
+        "contains": ["hybrid", "rerank", "150 ?ms", "80,?000|80k"]
+      }
     }
   ]
 }

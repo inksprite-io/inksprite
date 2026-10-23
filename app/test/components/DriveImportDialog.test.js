@@ -75,12 +75,8 @@ describe('DriveImportDialog', () => {
       'tok',
       expect.objectContaining({ parentId: 'folder_1', signal: expect.any(Object) })
     )
-    expect(toast.add).toHaveBeenCalledWith(
-      expect.objectContaining({
-        severity: 'success',
-        detail: 'Imported 1 document.',
-      })
-    )
+    // The outline shows what came in.
+    expect(toast.add).not.toHaveBeenCalled()
     expect(shown(wrapper).exists()).toBe(false)
   })
 

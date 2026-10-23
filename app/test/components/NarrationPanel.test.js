@@ -402,10 +402,11 @@ describe('NarrationPanel', () => {
     expect(wrapper.find('[data-player]').exists()).toBe(true)
   })
 
-  it('says a run was stopped', () => {
+  it('says nothing of a run that was stopped: its segments show what was read', () => {
     state.reading = allRead({ status: 'stopped', done: 1, total: 2 })
     const wrapper = mountPanel()
-    expect(wrapper.find('[data-notice="stopped"]').text()).toBe('Stopped after 1 of 2.')
+    expect(wrapper.find('[data-notice]').exists()).toBe(false)
+    expect(wrapper.find('[data-player]').exists()).toBe(true)
   })
 
   it('has the editor colour speakers while it is showing, unless switched off', async () => {

@@ -119,6 +119,25 @@ built-in's name, stops the batch rather than leaving the skill out. The
 whose rules a regex can count (`rules/house-style.json`, below), against a
 scene, a question that wants no style, and two scenes in one chat.
 
+A scenario with `"applyEdits": "ask"` runs as a writer who is asked before a
+document changes: the edits suggest in the text, or propose in the chat for
+a plain document.
+`findable-suggest` has the model suggest, change its suggestion, suggest
+apart, and take one back. A turn with `"accept": true` has the writer accept
+everything it proposed once the reply is in, before the project is
+snapshotted, and the transcript lists each proposal with what became of it.
+
+A scenario about a feature in preview names it: `"previews": ["<name>"]`.
+VITE_PREVIEW is read as the app's modules load, so a batch started without it
+stops and says how to run it, and `meta.json` records the previews every
+batch ran under. `"rewind": true` rewinds the chat to the writer's first
+message once the last turn is in, as the chat's Rewind does, and the run
+records whether the project came back as it began (`meta.json`, and a line
+of its own in the tool checks). The `findable-delete` scenarios run the
+model's `delete_document` this way, applying and asking first, with `kept`
+and `trashed` for what a delete should leave and where it should go, and
+`notCalls` for a turn that should not delete at all.
+
 Findings from the batches, and the things that are not about one batch, are
 in `findings.md`. `dialogue.js` is a separate runner for the multi-agent
 scene architecture; see its module comment.

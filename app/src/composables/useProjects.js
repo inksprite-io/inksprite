@@ -1,9 +1,14 @@
 /**
  * @module composables/useProjects
- * @description Every project, and starting, importing, opening and deleting
- * them. A project's name, and when it was last edited, live on its root
+ * @description Every project, and starting, importing, opening, trashing and
+ * deleting them. A project's name, and when it was last edited, live on its root
  * document, so the list loads those alongside the story records — one keyed
  * read, not a tree per project.
+ *
+ * In the desktop app a project is open in one window at a time
+ * (`platform/windows.js`), and one open in another window is shown there.
+ * The list is read again once another window or tab has changed it, when it
+ * is next wanted.
  *
  * @example
  * const projects = useProjects()
@@ -11,18 +16,28 @@
  * projects.open(projects.projects.value[0].id)
  */
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { useDocumentsStore } from '@/stores/documentsStore'
+import { useSyncStore } from '@/stores/syncStore'
 import { storage } from '@/storage/index.js'
 import { useBackup } from '@/composables/useBackup'
 import { projectName } from '@/utils/backup.js'
-import { pushProjectToRoute } from '@/utils/routeHelpers'
+import { goToProject } from '@/utils/routeHelpers'
 import { dropJobsForStory } from '@/jobs/index.js'
 import { askToKeepData } from '@/platform/persistence.js'
+import { expired } from '@/utils/trash.js'
 import { mayHoldProject, packageOfZip } from '@/scrivener/package.js'
+import { isArchive } from '@/utils/backupArchive.js'
 import { openProject, writeProject } from '@/scrivener/project.js'
+import {
+  askForProject,
+  heldProjects,
+  onNotice,
+  openWindow,
+  projectsElsewhere,
+} from '@/platform/windows.js'
 
 /** @typedef {import('@/types/models.js').Story} Story */
 
@@ -32,10 +47,17 @@ import { openProject, writeProject } from '@/scrivener/project.js'
  *   init: () => Promise<void>,
  *   nameOf: (storyId: string) => string,
  *   editedOf: (storyId: string) => number|undefined,
- *   open: (storyId: string) => void,
+ *   open: (storyId: string) => Promise<void>,
+ *   openInNewWindow: (storyId?: string) => Promise<void>,
+ *   elsewhere: import('vue').Ref<Set<string>>,
+ *   lookElsewhere: () => Promise<void>,
+ *   refresh: () => Promise<void>,
  *   create: (title: string, options?: {open?: boolean}) => Promise<Story>,
  *   importFile: (file: File) => Promise<Story>,
  *   remove: (storyId: string) => Promise<void>,
+ *   trashed: import('vue').ComputedRef<Story[]>,
+ *   trash: (storyId: string) => Promise<void>,
+ *   restore: (storyId: string) => Promise<void>,
  * }}
  */
 export function useProjects() {
@@ -47,16 +69,24 @@ export function useProjects() {
   /** Every project, most recently worked on first. */
   const projects = computed(() => storiesStore.getAllStoriesOrdered())
 
+  /** The projects in the trash, the most recent first. */
+  const trashed = computed(() => storiesStore.trashedStories())
+
   /**
    * Load the story records and the root documents their names live on, and
    * work out when each project was last edited where its root does not say.
    * With a project to keep, the browser is asked to keep the page's data.
+   * Once a session, a project 30 days in the trash goes for good.
    */
   async function init() {
     await storiesStore.ensureInitialized()
+    if (!sweptTrash) {
+      sweptTrash = true
+      for (const story of trashed.value) if (expired(story)) await remove(story.id)
+    }
     const storyIds = projects.value.map(story => story.id)
     if (storyIds.length > 0) askToKeepData()
-    await documentsStore.loadRoots(storyIds)
+    await documentsStore.loadRoots([...storyIds, ...trashed.value.map(story => story.id)])
     await workOutEdited(storyIds.filter(id => documentsStore.getRoot(id) && !editedOf(id)))
   }
 
@@ -105,10 +135,48 @@ export function useProjects() {
 
   /**
    * Open a project. It opens on the document the writer left, which the
-   * story remembers.
+   * story remembers. In the desktop app, one open in another window is shown
+   * there instead.
    * @param {string} storyId
+   * @returns {Promise<void>}
    */
-  const open = storyId => pushProjectToRoute(router, storyId)
+  const open = storyId => goToProject(router, storyId)
+
+  /**
+   * Open a project in a window of its own, or with none the project there
+   * finds for itself. One open in another window already is shown there.
+   * @param {string} [storyId]
+   * @returns {Promise<void>}
+   */
+  const openInNewWindow = async storyId => {
+    if (!storyId) return openWindow()
+    if ((await projectsElsewhere()).has(storyId)) askForProject(storyId)
+    else await openWindow(`/project/${storyId}`)
+  }
+
+  /** Find out which projects are open in other windows, for the list. */
+  const lookElsewhere = async () => {
+    elsewhere.value = await projectsElsewhere()
+  }
+
+  /**
+   * Read the list of projects again if another window has changed it since:
+   * a project come, gone or renamed there. The projects this window holds are
+   * its own and stay as they are, and what it has yet to save is saved
+   * first, so that a project it has just made is not taken for gone.
+   * @returns {Promise<void>}
+   */
+  async function refresh() {
+    if (!listChanged) return
+    listChanged = false
+    await useSyncStore().processSync()
+    const keep = heldProjects()
+    await storage.refreshProjects(keep)
+    await storiesStore.refresh(keep)
+    await documentsStore.refreshRoots(
+      projects.value.map(story => story.id).filter(id => !keep.includes(id))
+    )
+  }
 
   /**
    * Start a project and open it. A new project is empty, so the writer lands
@@ -121,10 +189,11 @@ export function useProjects() {
    * @returns {Promise<Story>}
    */
   async function create(title, { open: opening = true } = {}) {
+    await refresh()
     await storiesStore.loadNames()
     const story = await storiesStore.createStory(storiesStore.freeName(title))
     askToKeepData()
-    if (opening) open(story.id)
+    if (opening) await open(story.id)
     return story
   }
 
@@ -132,19 +201,20 @@ export function useProjects() {
    * Add a project file, exported from a project's menu, beside the others
    * with ids of its own, and open it. A project brought back beside the one
    * it was exported from is numbered, so the two can be told apart. A `.scriv`,
-   * or a zip, is a Scrivener project.
+   * or a zip without a backup in it, is a Scrivener project.
    * @param {File} file
    * @returns {Promise<Story>}
    */
   async function importFile(file) {
-    if (mayHoldProject(file)) return importScrivener(file)
+    if (mayHoldProject(file) && !(await isArchive(file))) return importScrivener(file)
     const project = await backup.readProjectFile(file)
+    await refresh()
     await storiesStore.loadNames()
     const story = await backup.importProject(project, {
       title: storiesStore.freeName(projectName(project)),
     })
     askToKeepData()
-    open(story.id)
+    await open(story.id)
     return story
   }
 
@@ -163,11 +233,12 @@ export function useProjects() {
     }
     if (!pack) throw new Error('There is no Scrivener project in this zip.')
     const project = await openProject(pack)
+    await refresh()
     await storiesStore.loadNames()
     const story = await storiesStore.createStory(storiesStore.freeName(project.name))
     await writeProject(story.id, project)
     askToKeepData()
-    open(story.id)
+    await open(story.id)
     return story
   }
 
@@ -185,8 +256,63 @@ export function useProjects() {
     await storiesStore.deleteStory(storyId)
   }
 
-  return { projects, init, nameOf, editedOf, open, create, importFile, remove }
+  /**
+   * Move a project to the trash, whole. Its jobs go, as on a delete: there is
+   * no one to answer them while it is there. See `utils/trash.js`.
+   *
+   * @param {string} storyId
+   * @returns {Promise<void>}
+   */
+  const trash = async storyId => {
+    await dropJobsForStory(storyId)
+    await storiesStore.trashStory(storyId)
+  }
+
+  /**
+   * Bring a project back from the trash, under a name no other project has
+   * taken since.
+   *
+   * @param {string} storyId
+   * @returns {Promise<void>}
+   */
+  const restore = async storyId => {
+    await storiesStore.restoreStory(storyId)
+    await documentsStore.loadRoots([storyId])
+    const name = nameOf(storyId)
+    const free = storiesStore.freeName(name, storyId)
+    if (free !== name) await documentsStore.renameProject(storyId, free)
+  }
+
+  return {
+    projects,
+    init,
+    nameOf,
+    editedOf,
+    open,
+    openInNewWindow,
+    elsewhere,
+    lookElsewhere,
+    refresh,
+    create,
+    importFile,
+    remove,
+    trashed,
+    trash,
+    restore,
+  }
 }
+
+/** The projects open in other windows, as last looked. */
+const elsewhere = ref(/** @type {Set<string>} */ (new Set()))
+
+/** Whether another window has changed the list of projects since it was read. */
+let listChanged = false
+onNotice('projects', () => {
+  listChanged = true
+})
 
 /** Projects whose last edit is being worked out, so that it is read only once. */
 const workingOut = new Set()
+
+/** Whether this session has let go of the projects 30 days in the trash. */
+let sweptTrash = false

@@ -23,12 +23,20 @@ vi.mock('@/stores/db', () => ({
   },
 }))
 
+// The projects other windows have open.
+const windows = vi.hoisted(() => ({ elsewhere: new Set() }))
+vi.mock('@/platform/windows.js', async importOriginal => ({
+  ...(await importOriginal()),
+  projectsElsewhere: async () => new Set(windows.elsewhere),
+}))
+
 /**
  * @param {string} id
  * @param {string} storyId
+ * @param {Object} [fields]
  */
-const keep = (id, storyId) =>
-  rows.set(id, { id, storyId, status: 'done', steps: [], created: 1, updated: 1 })
+const keep = (id, storyId, fields = {}) =>
+  rows.set(id, { id, storyId, status: 'done', steps: [], created: 1, updated: 1, ...fields })
 
 const plan = {
   storyId: 's1',
@@ -42,6 +50,7 @@ describe('jobsStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     rows.clear()
+    windows.elsewhere.clear()
   })
 
   it('has no jobs until one is counted or started', async () => {
@@ -89,5 +98,25 @@ describe('jobsStore', () => {
     await store.countJobs()
     await store.deleteJobsForStory('s1')
     expect(store.hasJobs).toBe(true)
+  })
+
+  it('leaves the jobs of a project open in another window to it, and reads them in once let go of', async () => {
+    keep('job_here', 's1')
+    keep('job_there', 's2', {
+      status: 'running',
+      steps: [{ id: 'a', label: 'a', status: 'running' }],
+    })
+    windows.elsewhere.add('s2')
+    const store = useJobsStore()
+
+    await store.loadJobs()
+    expect(store.getJobs().map(job => job.id)).toEqual(['job_here'])
+    // Still running, in the window that has it.
+    expect(rows.get('job_there').status).toBe('running')
+
+    windows.elsewhere.clear()
+    await store.loadJobs()
+    expect(store.getJob('job_there')?.status).toBe('paused')
+    expect(store.getJob('job_there')?.steps[0].status).toBe('pending')
   })
 })

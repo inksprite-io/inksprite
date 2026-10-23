@@ -1,18 +1,18 @@
 /**
- * The desktop app: the web build in a window of its own. What the page asks
+ * The desktop app: the web build in windows of its own. What the page asks
  * of the native side is answered in `bridge.js`; the design is
  * `.llm/desktop_design.md`.
  */
 
-import { BrowserWindow, app, session, shell } from 'electron'
+import { BrowserWindow, app, session } from 'electron'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { handleBridge } from './bridge.js'
-import { saveBeforeClosing } from './closing.js'
 import { ensureLibrary } from './library.js'
-import { openable, originOf } from './links.js'
-import { setMenu, showContextMenu } from './menu.js'
+import { originOf } from './links.js'
+import { setMenu } from './menu.js'
 import { PAGE_URL, registerScheme, servePage } from './page.js'
+import { windowOpener } from './windows.js'
 
 /**
  * Where the window loads the page from: the build packaged with the app, or,
@@ -25,6 +25,9 @@ const pageUrl = app.isPackaged
   ? PAGE_URL
   : process.env.INKSPRITE_PAGE_URL || 'http://127.0.0.1:8002/'
 const origin = /** @type {string} */ (originOf(pageUrl))
+
+/** Opens a window on a path of the page (`windows.js`). */
+const openWindow = windowOpener(pageUrl)
 
 /** The build's files: packaged with the app, or `app/dist`. */
 const pageRoot = app.isPackaged
@@ -49,31 +52,35 @@ registerScheme()
 // that the two can be open at once.
 if (!app.isPackaged) app.setPath('userData', path.join(app.getPath('appData'), 'inksprite-dev'))
 
-// One copy of the app at a time: a second would open the same database.
+// One copy of the app at a time: a second would open the same database. The
+// app opened again opens another window instead, as the File menu's New
+// Window does.
 if (app.requestSingleInstanceLock()) {
   app.on('second-instance', () => {
-    const [window] = BrowserWindow.getAllWindows()
-    if (window?.isMinimized()) window.restore()
-    window?.focus()
+    if (started) openWindow()
   })
   app.whenReady().then(start)
 } else {
   app.quit()
 }
 
+/** Whether the page is served, and windows may open on it. */
+let started = false
+
 async function start() {
   // The projects' folder is there before the window that keeps them.
   await ensureLibrary()
   servePage(pageRoot)
-  handleBridge(origin)
+  handleBridge(origin, { openWindow })
   session.defaultSession.setPermissionRequestHandler((_, permission, grant) =>
     grant(PERMISSIONS.has(permission))
   )
   session.defaultSession.setPermissionCheckHandler((_, permission) => PERMISSIONS.has(permission))
-  setMenu()
+  setMenu({ newWindow: () => openWindow() })
   openWindow()
-  // On a Mac the app stays open with its window closed, as Mac apps do, and
-  // its Dock icon opens the window again.
+  started = true
+  // On a Mac the app stays open with its windows closed, as Mac apps do, and
+  // its Dock icon opens a window again.
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) openWindow()
   })
@@ -82,41 +89,3 @@ async function start() {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
-
-function openWindow() {
-  const window = new BrowserWindow({
-    title: 'inksprite',
-    width: 1400,
-    height: 900,
-    minWidth: 360,
-    minHeight: 480,
-    show: false,
-    autoHideMenuBar: true,
-    webPreferences: {
-      preload: fileURLToPath(new URL('./preload.cjs', import.meta.url)),
-      sandbox: true,
-    },
-  })
-  window.once('ready-to-show', () => window.show())
-  saveBeforeClosing(window)
-
-  const { webContents } = window
-  // A link followed in the window would take the app's place, and a window
-  // the page opens would be a browser of its own: both go to the system's
-  // browser instead, if they are links that may open (`links.js`).
-  webContents.on('will-navigate', (event, url) => {
-    if (originOf(url) === origin) return
-    event.preventDefault()
-    if (openable(url)) shell.openExternal(url)
-  })
-  webContents.setWindowOpenHandler(({ url }) => {
-    if (openable(url)) shell.openExternal(url)
-    return { action: 'deny' }
-  })
-  webContents.on('context-menu', (_, params) => showContextMenu(webContents, params))
-
-  window.loadURL(pageUrl).catch(error => {
-    console.error(`The page could not be loaded from ${pageUrl}: ${error.message}`)
-    window.show()
-  })
-}

@@ -10,6 +10,7 @@ import {
 } from '@/ai/prompts/index.js'
 import { SKILL_MAX_ROUNDS, setExperimentalSkills } from '@/ai/skills/index.js'
 import { setWebSearch } from '@/web/config.js'
+import { COMMANDS } from '@/ai/commands.js'
 
 // Mock stores
 vi.mock('@/stores/storiesStore', () => ({
@@ -115,8 +116,9 @@ vi.mock('@/composables/useMcpServers.js', () => ({
     allowServer: mockAllowServer,
   }),
 }))
+const mockSetAskBeforeSaving = vi.hoisted(() => vi.fn())
 vi.mock('@/composables/useWebSearch.js', () => ({
-  useWebSearch: () => ({ ready: async () => {} }),
+  useWebSearch: () => ({ ready: async () => {}, setAskBeforeSaving: mockSetAskBeforeSaving }),
 }))
 
 describe('useAIChat', () => {
@@ -608,6 +610,30 @@ describe('useAIChat', () => {
       expect(mockAIService.generateChatCompletion).not.toHaveBeenCalled()
     })
 
+    it('runs a command with the project, the chat it is typed in, and its preset', async () => {
+      COMMANDS.probe = {
+        usage: '/probe',
+        description: 'Say where it ran.',
+        run: async (asked, context) => ({
+          result: `${context?.storyId} ${context?.chatId} ${context?.preset?.model}`,
+        }),
+      }
+      try {
+        const composable = useAIChat(mockStoryId, mockChatId)
+        mockChatsApi.getMessagesForChat.mockReturnValue({ value: [{ id: 'msg_1' }] })
+        mockChatsApi.addMessage.mockReturnValue({ id: 'msg_command', role: 'user' })
+
+        await composable.insertMessage('/probe')
+
+        // And the preset it runs on, for one that asks a model on its behalf.
+        expect(mockChatsApi.addMessage.mock.calls[0][2]).toContain(
+          `${mockStoryId} ${mockChatId} ${mockProfile.model}`
+        )
+      } finally {
+        delete COMMANDS.probe
+      }
+    })
+
     it('writes the assistant voice verbatim, slashes and all', async () => {
       // Nothing is parsed out of narration. A line that opens with a slash is
       // a line that opens with a slash, and the Game Master never ran a tool
@@ -1043,6 +1069,39 @@ describe('useAIChat', () => {
       expect(await captureMetadata()).toMatchObject({ callsKept: true })
     })
 
+    it('says an answer to an aside is one, so it goes with it', async () => {
+      mockAIService.generateChatCompletion.mockImplementation(async (m, p, callback) => {
+        callback({ content: 'Talk to the keeper.' })
+        return {}
+      })
+      const composable = useAIChat(mockStoryId, mockChatId)
+      mockChatsApi.getMessagesForChat.mockReturnValue({
+        value: [
+          { id: 'msg_user', role: 'user', metadata: { aside: true } },
+          { id: 'msg_assistant', role: 'assistant' },
+        ],
+      })
+      mockChatsApi.addMessage
+        .mockReturnValueOnce({ id: 'msg_user', role: 'user' })
+        .mockReturnValueOnce({ id: 'msg_assistant', role: 'assistant', content: '' })
+
+      await composable.sendMessage('/aside What now?')
+
+      expect(mockChatsApi.addMessage.mock.calls[0][5]).toEqual({ aside: true })
+      const calls = mockChatsApi.updateMessage.mock.calls.filter(([id]) => id === 'msg_assistant')
+      expect(calls[0][1].metadata).toMatchObject({ aside: true })
+      expect(calls.at(-1)[1].metadata).toMatchObject({ aside: true })
+    })
+
+    it('says nothing of asides on an answer to the conversation', async () => {
+      mockAIService.generateChatCompletion.mockImplementation(async (m, p, callback) => {
+        callback({ content: 'Response' })
+        return {}
+      })
+
+      expect(await captureMetadata()).not.toHaveProperty('aside')
+    })
+
     it('says so before a word arrives, so a turn that fails still says what on', async () => {
       mockAIService.generateChatCompletion.mockRejectedValue(new Error('Connection lost'))
       const composable = useAIChat(mockStoryId, mockChatId)
@@ -1340,12 +1399,90 @@ describe('useAIChat', () => {
       tools.getEnabledToolDefinitions.mockReturnValue([])
     })
 
+    it('runs the skills of a step one after another on a connection that takes one at a time', async () => {
+      mockAIConfig.getProvider.mockReturnValue({ ...mockProvider, concurrency: 1 })
+      const tools = await import('@/ai/tools/index.js')
+      tools.hasTools.mockReturnValue(true)
+      tools.getEnabledToolDefinitions.mockReturnValue([
+        { type: 'function', function: { name: 'director' } },
+        { type: 'function', function: { name: 'scene' } },
+        { type: 'function', function: { name: 'roll_dice' } },
+      ])
+      const events = []
+      tools.executeTool.mockImplementation(async call => {
+        events.push(`${call.function.name} starts`)
+        await new Promise(resolve => setTimeout(resolve, 5))
+        events.push(`${call.function.name} ends`)
+        return { tool_call_id: call.id, content: '{}' }
+      })
+
+      mockAIService.generateChatCompletion
+        .mockImplementationOnce(async () => ({
+          toolCalls: [
+            { id: 'call_d', type: 'function', function: { name: 'director', arguments: '{}' } },
+            { id: 'call_s', type: 'function', function: { name: 'scene', arguments: '{}' } },
+            { id: 'call_r', type: 'function', function: { name: 'roll_dice', arguments: '{}' } },
+          ],
+        }))
+        .mockImplementationOnce(async (m, p, callback) => {
+          callback({ content: 'Done.' })
+          return {}
+        })
+
+      const composable = useAIChat(mockStoryId, mockChatId)
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: [{ id: 'msg_1' }] })
+      mockChatsApi.addMessage
+        .mockReturnValueOnce({ id: 'msg_user', role: 'user' })
+        .mockReturnValueOnce({ id: 'msg_assistant', role: 'assistant', content: '' })
+
+      await composable.sendMessage('Go on.')
+
+      // The dice go at once; the second skill waits for the first to finish.
+      expect(events.slice(0, 2)).toEqual(['director starts', 'roll_dice starts'])
+      expect(events.indexOf('scene starts')).toBeGreaterThan(events.indexOf('director ends'))
+
+      tools.executeTool.mockReset()
+      tools.hasTools.mockReturnValue(false)
+      tools.getEnabledToolDefinitions.mockReturnValue([])
+      mockAIConfig.getProvider.mockReturnValue(mockProvider)
+    })
+
     it('hands a tool the means to run another inference', async () => {
       const context = await contextForToolCall()
 
       expect(context.storyId).toBe(mockStoryId)
       expect(context.chatId).toBe(mockChatId)
       expect(typeof context.consult).toBe('function')
+    })
+
+    it('shows a tool the conversation without the asides the turn never read', async () => {
+      const context = await contextForToolCall()
+      const aside = { aside: true }
+      mockChatsApi.getMessagesForChat.mockReturnValue({
+        value: [
+          { id: 'msg_1', role: 'user' },
+          { id: 'msg_q', role: 'user', metadata: aside },
+          { id: 'msg_a', role: 'assistant', metadata: aside },
+          { id: 'msg_2', role: 'user' },
+          { id: 'msg_3', role: 'assistant' },
+        ],
+      })
+
+      expect(context.conversation().map(message => message.id)).toEqual(['msg_1', 'msg_2', 'msg_3'])
+    })
+
+    it('shows a tool the aside it is answering', async () => {
+      const context = await contextForToolCall()
+      const aside = { aside: true }
+      mockChatsApi.getMessagesForChat.mockReturnValue({
+        value: [
+          { id: 'msg_1', role: 'user' },
+          { id: 'msg_q', role: 'user', metadata: aside },
+          { id: 'msg_a', role: 'assistant', metadata: aside },
+        ],
+      })
+
+      expect(context.conversation().map(message => message.id)).toEqual(['msg_1', 'msg_q', 'msg_a'])
     })
 
     it('tells a tool what the chat has loaded, as the chat stands when it asks', async () => {
@@ -1385,7 +1522,6 @@ describe('useAIChat', () => {
       const said = await consult('You are the Director.')
 
       expect(mockAIContext().build).toHaveBeenCalledWith({
-        mode: 'chat',
         systemPrompt: 'You are the Director.',
         chatId: mockChatId,
         // As a transcript, so there is no assistant turn to continue. A skill
@@ -1754,7 +1890,10 @@ describe('useAIChat', () => {
      * says something, without waiting for it. Hands back the turn, and what
      * the turn is waiting on.
      */
-    const startTurn = async calls => {
+    const startTurn = async (
+      calls,
+      run = async call => ({ tool_call_id: call.id, content: '"done"' })
+    ) => {
       const { setServers } = await import('@/mcp/servers.js')
       setServers([wiki])
       const tools = await import('@/ai/tools/index.js')
@@ -1763,11 +1902,9 @@ describe('useAIChat', () => {
         { type: 'function', function: { name: 'wiki__edit' } },
         { type: 'function', function: { name: 'wiki__search' } },
         { type: 'function', function: { name: 'edit_document' } },
+        { type: 'function', function: { name: 'save_web_page' } },
       ])
-      tools.executeTool.mockImplementation(async call => ({
-        tool_call_id: call.id,
-        content: '"done"',
-      }))
+      tools.executeTool.mockImplementation(run)
 
       mockAIService.generateChatCompletion
         .mockImplementationOnce(async () => ({ toolCalls: calls }))
@@ -1805,6 +1942,7 @@ describe('useAIChat', () => {
       tools.executeTool.mockReset()
       mockAllowTool.mockClear()
       mockAllowServer.mockClear()
+      mockSetAskBeforeSaving.mockClear()
     })
 
     it('offers the turn the servers the chat is on', async () => {
@@ -1814,6 +1952,61 @@ describe('useAIChat', () => {
       expect(tools.getEnabledToolDefinitions).toHaveBeenCalledWith(
         expect.objectContaining({ servers: ['mcp_wiki'] })
       )
+    })
+
+    it('lets a tool ask as it runs, say how far it has got, and show the writer its answer', async () => {
+      const { composable, turn, pending, answer } = await startTurn(
+        [call('c1', 'edit_document')],
+        async (toolCall, context) => {
+          context.progress('1 of 2 requests')
+          const allowed = await context.approve('Explore the project? 60 documents.')
+          context.show({ title: 'Explored the project', text: 'A novel.' })
+          return { tool_call_id: toolCall.id, content: JSON.stringify({ allowed }) }
+        }
+      )
+
+      await vi.waitFor(() => expect(pending.value).toHaveLength(1))
+      expect(pending.value[0].question).toBe('Explore the project? 60 documents.')
+      expect(composable.activity.value).toMatchObject({
+        phase: 'running',
+        progress: '1 of 2 requests',
+      })
+
+      answer('c1', 'allow')
+      await turn
+
+      const [result] = toolResults()
+      expect(JSON.parse(result.content)).toEqual({ allowed: 'allow' })
+      expect(result._shown).toEqual({ title: 'Explored the project', text: 'A novel.' })
+    })
+
+    it('hands a tool the preset the chat runs on, to ask the same model', async () => {
+      /** @type {any} */
+      let handed = null
+      const { turn } = await startTurn([call('c1', 'edit_document')], async (toolCall, context) => {
+        handed = context.preset
+        return { tool_call_id: toolCall.id, content: '"done"' }
+      })
+      await turn
+
+      expect(handed).toBe(mockProfile)
+    })
+
+    it('answers a tool’s question no when the writer denies it', async () => {
+      const { turn, pending, answer } = await startTurn(
+        [call('c1', 'edit_document')],
+        async (toolCall, context) => ({
+          tool_call_id: toolCall.id,
+          content: JSON.stringify({ allowed: await context.approve('Explore?') }),
+        })
+      )
+
+      await vi.waitFor(() => expect(pending.value).toHaveLength(1))
+      answer('c1', 'deny')
+      await turn
+
+      expect(JSON.parse(toolResults()[0].content)).toEqual({ allowed: 'deny' })
+      expect(toolResults()[0]).not.toHaveProperty('_shown')
     })
 
     it('runs a tool that only reads without asking', async () => {
@@ -1857,6 +2050,19 @@ describe('useAIChat', () => {
       await turn
 
       expect(mockAllowTool).toHaveBeenCalledWith('wiki__edit')
+    })
+
+    it('waits for the writer before keeping a page, and stops asking on Always allow', async () => {
+      const { turn, pending, answer, tools } = await startTurn([call('c1', 'save_web_page')])
+
+      await vi.waitFor(() => expect(pending.value).toHaveLength(1))
+      expect(tools.executeTool).not.toHaveBeenCalled()
+      answer('c1', 'always')
+      await turn
+
+      expect(tools.executeTool).toHaveBeenCalledTimes(1)
+      expect(mockSetAskBeforeSaving).toHaveBeenCalledWith(false)
+      expect(mockAllowTool).not.toHaveBeenCalled()
     })
 
     it('runs a call asked for over and over in one round once, and says so', async () => {

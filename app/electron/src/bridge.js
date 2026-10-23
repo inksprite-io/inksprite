@@ -1,8 +1,8 @@
 /**
  * What the page may ask of the native side, answered here: requests to
  * servers, sign-ins in the system browser, links opened outside the app,
- * updates, the settings file a script left, and the library its projects are
- * kept in. `preload.cjs` is the page's end of it, and `src/platform/` in the
+ * windows, updates, the settings file a script left, and the library its
+ * projects are kept in. `preload.cjs` is the page's end of it, and `src/platform/` in the
  * page is what calls it.
  *
  * Only the app's own page is answered: each call is checked for where it came
@@ -16,6 +16,7 @@ import { listen } from './loopback.js'
 import { downloadUpdate, installUpdate } from './updates.js'
 import { readSettingsFile } from './settingsFile.js'
 import { libraryFolder, librarySettings, markMoved } from './library.js'
+import { bringForward } from './windows.js'
 
 /** Statuses whose response has no body. */
 const NO_BODY = new Set([101, 103, 204, 205, 304])
@@ -25,8 +26,10 @@ const NO_BODY = new Set([101, 103, 204, 205, 304])
  *
  * @param {string} origin - The page's origin: `app://inksprite`, or the dev
  *   server's
+ * @param {{openWindow: (path: string) => unknown}} windows - Opens a window on
+ *   a path of the page (`windows.js`)
  */
-export function handleBridge(origin) {
+export function handleBridge(origin, { openWindow }) {
   /**
    * Answer `channel` with `answer`'s result as `{value}`, or what it threw as
    * `{error}`, which the preload throws again as an Error with that message.
@@ -131,6 +134,14 @@ export function handleBridge(origin) {
       throw new Error(`The browser could not be opened: ${error.message}`)
     }
   })
+
+  // Windows (`src/platform/windows.js`): another one on a project, and the
+  // one asking brought forward, when another window wants its project. A
+  // window opens only on a path of the page (`windows.js`).
+  handle('window:open', (_, path) => {
+    openWindow(path)
+  })
+  handle('window:focus', event => bringForward(BrowserWindow.fromWebContents(event.sender)))
 
   // Updates from the public repository's releases (`updates.js`).
   handle('update:download', () => downloadUpdate())

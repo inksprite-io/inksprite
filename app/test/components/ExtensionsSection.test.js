@@ -98,7 +98,7 @@ describe('ExtensionsSection', () => {
     expect(useApplicationState().roleplayProfileId.value).toBe('chatprofile_mine')
   })
 
-  it('asks whether to delete the card library when Roleplay goes off with cards in it', async () => {
+  it('keeps the card library, asking nothing, when Roleplay goes off', async () => {
     useApplicationState().setExtension('roleplay', true)
     keepCard('libcard_1')
     keepCard('libcard_2')
@@ -108,26 +108,8 @@ describe('ExtensionsSection', () => {
     await flushPromises()
 
     expect(useApplicationState().extensionOn('roleplay')).toBe(false)
-    expect(require).toHaveBeenCalledTimes(1)
-    const question = require.mock.calls[0][0]
-    expect(question.message).toBe(
-      'The library still has 2 cards. Delete them too? Cards in projects stay there.'
-    )
-
-    await question.accept()
-    expect(tables.cards.size).toBe(0)
-    expect(tables.cardFiles.size).toBe(0)
-    expect(useCardLibraryStore().hasCards).toBe(false)
-  })
-
-  it('asks nothing when the library is empty', async () => {
-    useApplicationState().setExtension('roleplay', true)
-    const wrapper = await mountSection()
-
-    await roleplaySwitch(wrapper).vm.$emit('update:modelValue', false)
-    await flushPromises()
-
     expect(require).not.toHaveBeenCalled()
+    expect(tables.cards.size).toBe(2)
   })
 
   it('deletes the whole library from its button, after asking', async () => {
@@ -139,13 +121,12 @@ describe('ExtensionsSection', () => {
     await wrapper.find('[data-delete-card-library]').trigger('click')
     await flushPromises()
     const question = require.mock.calls[0][0]
-    expect(question.message).toBe('Delete the card in the library? Cards in projects stay there.')
+    expect(question.message).toBe('Delete the card in the library?')
 
     await question.accept()
     expect(tables.cards.size).toBe(0)
-    expect(add).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Deleted the card library.' })
-    )
+    expect(useCardLibraryStore().hasCards).toBe(false)
+    expect(add).not.toHaveBeenCalled()
   })
 
   it('has nothing to delete in an empty library', async () => {

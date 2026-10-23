@@ -98,7 +98,7 @@
             icon="pi pi-play"
             size="small"
             text
-            @click="resume(job.id)"
+            @click="resumeJob(job.id)"
           />
           <Button
             v-if="job.status === 'running' || job.status === 'paused' || job.status === 'failed'"
@@ -142,7 +142,8 @@ import JobStatus from './JobStatus.vue'
 import InProcessIcon from '@/components/icons/InProcessIcon.vue'
 import { formatElapsed, useJobs } from '@/composables/useJobs.js'
 import { useToast } from '@/composables/useToast'
-import { pushProjectToRoute } from '@/utils/routeHelpers'
+import { goToProject, pushProjectToRoute } from '@/utils/routeHelpers'
+import { projectsElsewhere } from '@/platform/windows.js'
 
 /**
  * The long jobs, all of them, whichever project each is for: what each is
@@ -160,20 +161,41 @@ const toast = useToast()
 
 /**
  * Open what a finished job wrote, in its project, going there when it is
- * another one.
+ * another one. A project open in another window is gone to there. One whose
+ * document has since been deleted opens nothing.
  * @param {import('@/types/models.js').Job} job
  */
 const openResult = async job => {
+  if ((await projectsElsewhere()).has(job.storyId)) return goToProject(router, job.storyId)
   if (await jobsApi.openResult(job)) pushProjectToRoute(router, job.storyId)
-  else toast.warning('That document has since been deleted.')
+}
+
+/**
+ * Take a job up again, saying why when it can't be: its project is open in
+ * another window.
+ * @param {string} jobId
+ */
+const resumeJob = async jobId => {
+  try {
+    await resume(jobId)
+  } catch (error) {
+    toast.error(/** @type {Error} */ (error).message)
+  }
 }
 
 onMounted(load)
 
 const runningCount = computed(() => jobs.value.filter(job => job.status === 'running').length)
 
-/** The label of the step a job is on. @param {import('@/types/models.js').Job} job */
-const stepOf = job => job.steps.find(step => step.status === 'running')?.label || ''
+/**
+ * The label of the step a job is on, and how many more are asking beside it.
+ * @param {import('@/types/models.js').Job} job
+ */
+const stepOf = job => {
+  const asking = job.steps.filter(step => step.status === 'running')
+  if (asking.length === 0) return ''
+  return asking.length > 1 ? `${asking[0].label} +${asking.length - 1}` : asking[0].label
+}
 
 /**
  * How far a job got and — once it has stopped — how long it ran, said the

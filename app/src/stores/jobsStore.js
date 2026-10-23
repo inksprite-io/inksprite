@@ -20,6 +20,7 @@ import { defineStore } from 'pinia'
 import { computed, ref, shallowRef, triggerRef } from 'vue'
 import { nanoid } from 'nanoid'
 import { storage } from '@/storage/index.js'
+import { projectsElsewhere } from '@/platform/windows.js'
 
 /** @typedef {import('../types/models.js').Job} Job */
 /** @typedef {import('../types/models.js').JobStep} JobStep */
@@ -31,20 +32,35 @@ export const useJobsStore = defineStore('jobs', () => {
   const loaded = ref(false)
   /** How many jobs storage held when last counted, while they are not read in. */
   const counted = ref(0)
+  /** Projects whose jobs were left out as they were read in: open in another window then. */
+  const leftOut = new Set()
 
   /**
    * Read every job in, whichever project it is for. A job found still
    * `running` was interrupted — the tab closed, the app reloaded — and is
    * `paused` from here, ready to resume from its last finished step.
    *
+   * The jobs of a project open in another window are that window's, and
+   * left out (`platform/windows.js`); asked again, they are read in once
+   * that window has let go of the project.
+   *
    * @returns {Promise<void>}
    */
   async function loadJobs() {
-    if (loaded.value) return
+    if (loaded.value && leftOut.size === 0) return
     try {
+      const elsewhere = await projectsElsewhere()
+      const free = [...leftOut].filter(storyId => !elsewhere.has(storyId))
       /** @type {Job[]} */
-      const rows = await storage.all('jobs')
+      const rows = loaded.value
+        ? (await Promise.all(free.map(storyId => storage.ofStory('jobs', storyId)))).flat()
+        : await storage.all('jobs')
+      for (const storyId of free) leftOut.delete(storyId)
       for (const row of rows) {
+        if (elsewhere.has(row.storyId)) {
+          leftOut.add(row.storyId)
+          continue
+        }
         // A job this tab already holds is this tab's: running here, not
         // interrupted. The rows are for what the tab has not seen.
         if (jobs.value.has(row.id)) continue

@@ -6,24 +6,25 @@ import { useDocumentsStore } from '@/stores/documentsStore.js'
 import { useChatsStore } from '@/stores/chatsStore.js'
 import { useMessagesStore } from '@/stores/messagesStore.js'
 import { buildContext } from '@/ai/context/build.js'
-import { documentLocator, projectOverview, pinnedDocuments } from '@/ai/tools/documents.js'
+import {
+  documentLocator,
+  projectOverview,
+  pinnedDocuments,
+  settledSuggestions,
+} from '@/ai/tools/documents.js'
 import { keptInConversation, offersComments, offersDocuments } from '@/ai/tools/index.js'
 import { useEditor } from './useEditor.js'
 import { namesOf } from '@/cards/macros.js'
 
 /**
- * @typedef {'chat'|'summarize'} ContextMode
  * @typedef {import('@/ai/context/build.js').BuildOptions} BuildOptions
  *
  * @typedef {Object} BuildArgs
- * @property {ContextMode} mode
- * @property {string} [documentId]
  * @property {string} [chatId]
  * @property {string} systemPrompt
  * @property {string} [note] - The chat's author's note, written by the writer,
  *   for the turn alone: a skill reads the conversation as a transcript and is
  *   not who it is for
- * @property {string} [userPrompt]
  * @property {import('@/ai/context/build.js').TranscriptRoles} [transcript]
  * @property {string} [before]
  * @property {number} [past]
@@ -59,7 +60,7 @@ export function useAIContext(storyId) {
     // rather than the reader's tools, so every reader of this conversation
     // agrees — a skill consulted inside a plain chat is in the same plain chat.
     const chat = opts.chatId ? stores.chatsStore.getChatById(opts.chatId) : null
-    const inChat = opts.mode === 'chat' && Boolean(storyId)
+    const inChat = Boolean(storyId)
     const reaches =
       inChat &&
       opts.toolsAllowed !== false &&
@@ -74,8 +75,9 @@ export function useAIContext(storyId) {
     const project =
       reaches || pinned.length > 0 ? await projectOverview(storyId, chat, { size: reaches }) : null
     // Where each document the model read is now, for the block to say which
-    // have changed since.
+    // have changed since, and which of its suggestions the writer settled.
     const locate = reaches ? await documentLocator(storyId, chat) : undefined
+    const settled = reaches ? await settledSuggestions(storyId, chat) : []
     // A pinned document's comments go with it to a model that can answer them.
     const comments =
       inChat &&
@@ -84,7 +86,7 @@ export function useAIContext(storyId) {
         disabledTools: chat?.disabledTools,
         disabledGroups: chat?.disabledToolGroups,
       })
-    return buildContext(opts.mode, stores, {
+    return buildContext(stores, {
       ...opts,
       storyId,
       project,
@@ -92,6 +94,7 @@ export function useAIContext(storyId) {
       comments,
       keeps: keptInConversation,
       locate,
+      settled,
       // What a card's macros become in this chat, when it plays one.
       names: namesOf(chat),
     })

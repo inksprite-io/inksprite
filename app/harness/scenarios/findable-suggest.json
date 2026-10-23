@@ -1,0 +1,18 @@
+{
+  "fixture": "findable",
+  "applyEdits": "ask",
+  "messages": [
+    {
+      "text": "The Goals paragraph of the retrieval design is wordy. Tighten it, keeping every point."
+    },
+    {
+      "text": "Also, the latency budget is 150 ms now, not 200. Change it in the retrieval design."
+    },
+    {
+      "text": "Make the Goals paragraph shorter still: one sentence for the three kinds of query."
+    },
+    {
+      "text": "On second thought, put the Goals paragraph back the way it was before you touched it."
+    }
+  ]
+}

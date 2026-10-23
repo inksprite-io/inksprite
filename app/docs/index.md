@@ -37,6 +37,7 @@ The document model:
 - The closed schema a document can hold, and the extensions the editor runs on
 - Markdown as the file format: `parseMarkdown` and `serializeMarkdown`
 - GFM tables: made by typing a header row, edited from the keyboard and a menu
+- Find in a document, and a search across the project that counts its matches the same way
 
 ### 🔊 [TTS](./tts.md)
 
@@ -95,6 +96,15 @@ Files picked in the writer's Google Drive, brought into a folder of the project:
 - A Doc read through the Docs API by a converter of our own, its pictures the document's own; a Sheet exported as CSV, Slides as a PDF, a Drawing as a PNG, and anything else downloaded as it is, then imported as from disk
 - A Doc's document linked to it, and synced with it: merged three ways against the Doc as the two last agreed, written into the Doc in place, and the Doc's changes brought back as edits
 - Offered only when the build names a Google client for where it runs
+
+### 🔄 [Sync](./cloud.md)
+
+The writer's projects kept in step across their devices, through a server of ours that can't read them:
+
+- Every project a collection of records, encrypted on the device under its own key, the keys made from the writer's passphrase and never sent
+- Each write waiting in an outbox, sent against the revision it was based on, and what other devices wrote pulled from the last revision read
+- A row both devices changed merged three ways, a document's text line by line and word by word, and what clashes kept as a conflict copy
+- Files' bytes in parts, and the server a program of its own
 
 ### 🖋️ [Scrivener](./scrivener.md)
 
@@ -200,7 +210,7 @@ Frontend (Vue 3 + Vite)
 │   ├── Chats, Messages
 │   └── AI presets, chat profiles
 ├── Composables (Composition API)
-│   ├── AI: useAIChat, useAIConfig, useProfiles, useAISummarize
+│   ├── AI: useAIChat, useAIConfig, useProfiles, useExplore
 │   ├── Cards: useCardImport, useCardChat
 │   ├── Import: useBulkImport, useRepositoryImport, useDriveImport, useDriveSync
 │   ├── Data: useDocuments, useChats, useBackup, useNarration, useSpeech
@@ -252,6 +262,13 @@ Frontend (Vue 3 + Vite)
 │   ├── gather - Its files listed, sorted by the rules, read, and capped
 │   ├── github - A repository downloaded as one archive
 │   └── write - The repository written into the tree, and refreshed by path
+├── Sync (src/cloud)
+│   ├── crypto - The keys, and what is sealed and hashed with them
+│   ├── account - Making an account and signing a device in
+│   ├── api - The server, as the device asks it
+│   ├── merge - One row as two devices changed it, merged against the base
+│   ├── engine - The rounds: the outbox sent, what others wrote brought in
+│   └── local - The app as the engine reaches it
 ├── Drive (src/drive)
 │   ├── config - The build's Google client, and whether the import is offered
 │   ├── signIn - Google's sign-in, with its picker or plainly, in a popup or the system browser

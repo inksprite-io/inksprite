@@ -198,4 +198,54 @@ describe('CommentThread', () => {
     const thread = await mountThread()
     expect(thread.findAll('[data-comment-post]')).toHaveLength(3)
   })
+
+  describe('a suggestion', () => {
+    const change = { out: 'at noon', in: 'at dawn' }
+
+    it('shows its change, with Reject and Accept where Resolve is, and no posts', async () => {
+      const thread = await mountThread({ change, posts: [] })
+      expect(thread.find('[data-change-out]').text()).toBe('at noon')
+      expect(thread.find('[data-change-in]').text()).toBe('at dawn')
+      expect(thread.find('[data-action="resolve-comment"]').exists()).toBe(false)
+      expect(thread.findAll('[data-comment-post]')).toHaveLength(0)
+
+      await thread.find('[data-action="accept-suggestion"]').trigger('click')
+      await thread.find('[data-action="reject-suggestion"]').trigger('click')
+      expect(thread.emitted('accept')).toHaveLength(1)
+      expect(thread.emitted('reject')).toHaveLength(1)
+      // Neither is a pick of the thread.
+      expect(thread.emitted('activate')).toBeUndefined()
+    })
+
+    it('shows only what it puts in or only what it takes out', async () => {
+      const put = await mountThread({ change: { out: '', in: 'at dawn' }, posts: [] })
+      expect(put.find('[data-change-out]').exists()).toBe(false)
+      expect(put.find('[data-comment-passage]').text()).toBe('at dawn')
+    })
+
+    it('says how it was settled, and offers no Reopen', async () => {
+      const thread = await mountThread({
+        change,
+        state: 'resolved',
+        settled: 'rejected',
+        posts: [],
+      })
+      expect(thread.find('[data-suggestion-settled]').text()).toBe('Rejected')
+      expect(thread.find('[data-action="reopen-comment"]').exists()).toBe(false)
+      expect(thread.find('[data-action="accept-suggestion"]').exists()).toBe(false)
+    })
+
+    it('names who suggested it in a linked Doc, and no one for the model', async () => {
+      const theirs = await mountThread({ change, suggester: 'Ana Marsh', posts: [] })
+      expect(theirs.find('[data-suggestion-author]').text()).toBe('Ana Marsh')
+      const models = await mountThread({ change, posts: [] })
+      expect(models.find('[data-suggestion-author]').exists()).toBe(false)
+    })
+
+    it('can be resolved once its change is gone from the text', async () => {
+      const thread = await mountThread({ change, state: 'stale', posts: [] })
+      await thread.find('[data-action="resolve-comment"]').trigger('click')
+      expect(thread.emitted('resolve')).toHaveLength(1)
+    })
+  })
 })

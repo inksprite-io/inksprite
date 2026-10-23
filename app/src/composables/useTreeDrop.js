@@ -12,10 +12,17 @@
  * top or bottom of a row, the list sorts as before. A shut folder held over
  * for a moment opens, so the drag can go on into it.
  *
+ * Wherever the drop would go, that folder is shown, its row and everything
+ * in it, as VS Code shows it: the folder whose row the drag is over, or the
+ * one whose list the row being dragged has been sorted into. The row being
+ * dragged sits in that list where it would land, drawn at that folder's
+ * depth rather than the one it came from (DocumentNode's style).
+ *
  * One drag happens at a time, so the state is the module's.
  */
 
-import { ref } from 'vue'
+/* global cancelAnimationFrame */
+import { computed, ref } from 'vue'
 import { useDocuments } from './useDocuments.js'
 
 /** How much of a row, from the top and from the bottom, means before and after it. */
@@ -41,8 +48,27 @@ export function zoneOf(rect, y) {
 /** The folder a drop would go into now, or null where the list decides. */
 const into = ref(/** @type {string|null} */ (null))
 
-/** What is being dragged, and in which project. */
-let dragging = /** @type {{storyId: string, documentId: string}|null} */ (null)
+/**
+ * The folder whose list the row being dragged is in now, which is where the
+ * lists put it on a drop.
+ */
+const listed = ref(/** @type {string|null} */ (null))
+
+/** The folder a drop now would put what is being dragged into. */
+const destination = computed(() => into.value ?? listed.value)
+
+/**
+ * What is being dragged, and in which project, and the item the lists move
+ * about as it goes, when there is one to follow.
+ */
+let dragging = /** @type {{storyId: string, documentId: string, item: Element|null}|null} */ (null)
+
+/** The list the item being dragged is in, by the folder it is the list of. */
+const listOf = (/** @type {Element|null} */ item) =>
+  item?.parentElement?.closest('[data-folder-id]')?.getAttribute('data-folder-id') ?? null
+
+/** A frame asked for, to see where the lists have put the item. */
+let frame = 0
 
 /**
  * The folder under a point, if the point is over the middle of its row and
@@ -71,6 +97,14 @@ const folderAt = (x, y) => {
 const follow = event => {
   const point = 'touches' in event ? event.touches[0] : event
   if (point) into.value = folderAt(point.clientX, point.clientY)
+  // The lists move the item after this, in the same event: it is read once
+  // they have.
+  if (!frame && dragging?.item) {
+    frame = requestAnimationFrame(() => {
+      frame = 0
+      if (dragging) listed.value = listOf(dragging.item)
+    })
+  }
 }
 
 const EVENTS = ['dragover', 'pointermove', 'touchmove']
@@ -78,7 +112,8 @@ const EVENTS = ['dragover', 'pointermove', 'touchmove']
 /**
  * @returns {{
  *   into: import('vue').Ref<string|null>,
- *   start: (storyId: string, documentId: string) => void,
+ *   destination: import('vue').ComputedRef<string|null>,
+ *   start: (storyId: string, documentId: string, item?: Element|null) => void,
  *   end: () => void,
  *   allowsMove: () => boolean,
  * }}
@@ -88,10 +123,12 @@ export function useTreeDrop() {
    * A row has started being dragged.
    * @param {string} storyId
    * @param {string} documentId
+   * @param {Element|null} [item] - What the lists move about: the row's node
    */
-  const start = (storyId, documentId) => {
-    dragging = { storyId, documentId }
+  const start = (storyId, documentId, item = null) => {
+    dragging = { storyId, documentId, item }
     into.value = null
+    listed.value = listOf(item)
     for (const name of EVENTS) document.addEventListener(name, follow, { capture: true })
   }
 
@@ -101,15 +138,18 @@ export function useTreeDrop() {
    */
   const end = () => {
     for (const name of EVENTS) document.removeEventListener(name, follow, { capture: true })
+    if (frame) cancelAnimationFrame(frame)
+    frame = 0
     const folderId = into.value
     const drag = dragging
     dragging = null
     into.value = null
+    listed.value = null
     if (drag && folderId) useDocuments(drag.storyId).moveInto(folderId, drag.documentId)
   }
 
   /** Whether the lists may sort the drag now: not while it is over a folder's row. */
   const allowsMove = () => into.value === null
 
-  return { into, start, end, allowsMove }
+  return { into, destination, start, end, allowsMove }
 }

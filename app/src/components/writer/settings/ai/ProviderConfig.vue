@@ -132,6 +132,26 @@
           />
         </div>
 
+        <!-- How many requests it is asked at once (ai/gate.js); empty is the default for its kind -->
+        <div v-if="chats" class="flex flex-col gap-1">
+          <label
+            for="provider-concurrency"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Requests at once</label
+          >
+          <InputText
+            id="provider-concurrency"
+            v-model="localConcurrency"
+            inputmode="numeric"
+            :placeholder="concurrencyByDefault"
+            class="w-full"
+            size="small"
+            data-field="concurrency"
+            @blur="handleConcurrencyChange"
+            @keydown.enter="handleConcurrencyChange"
+          />
+        </div>
+
         <Button
           label="Connect"
           icon="pi pi-link"
@@ -190,6 +210,7 @@ import {
   providerDoes,
   providerLabel,
 } from '@/ai/providers.js'
+import { defaultRoom } from '@/ai/gate.js'
 import ProviderRouting from './ProviderRouting.vue'
 
 /**
@@ -246,6 +267,7 @@ const localName = ref('')
 const localType = ref('')
 const localEndpoint = ref('')
 const localApiKey = ref('')
+const localConcurrency = ref('')
 
 // Sync visible prop with local state
 watch(
@@ -294,12 +316,14 @@ watch(
       localType.value = provider.type || ''
       localEndpoint.value = provider.endpoint || ''
       localApiKey.value = provider.apiKey || ''
+      localConcurrency.value = provider.concurrency ? String(provider.concurrency) : ''
     } else {
       // Clear form when no provider selected
       localName.value = ''
       localType.value = ''
       localEndpoint.value = ''
       localApiKey.value = ''
+      localConcurrency.value = ''
     }
   },
   { immediate: true }
@@ -381,27 +405,56 @@ function handleApiKeyChange() {
 }
 
 /**
+ * Keep how many requests the connection is asked at once: a whole number
+ * from one up, or nothing for its default. Anything else puts back what was
+ * there.
+ */
+function handleConcurrencyChange() {
+  const id = localSelectedProviderId.value
+  const provider = id ? providersById.value.get(id) : null
+  if (!provider) return
+  const typed = localConcurrency.value.trim()
+  const count = Number(typed)
+  if (typed && !(Number.isInteger(count) && count > 0)) {
+    localConcurrency.value = provider.concurrency ? String(provider.concurrency) : ''
+    return
+  }
+  const concurrency = typed ? count : undefined
+  if (concurrency !== provider.concurrency) aiConfig.updateProvider(id, { concurrency })
+}
+
+/** Whether the connection chats, and so is asked for answers at all. */
+const chats = computed(
+  () => Boolean(selectedProvider.value) && providerDoes(selectedProvider.value, 'chat')
+)
+
+/** What the connection is asked at once when the field is empty, as its placeholder says. */
+const concurrencyByDefault = computed(() => {
+  const provider = selectedProvider.value
+  if (!provider) return ''
+  if (provider.type === 'llamacpp') return 'One per slot'
+  const room = defaultRoom({
+    ...provider,
+    type: localType.value || provider.type,
+    endpoint: localEndpoint.value.trim(),
+  })
+  return Number.isFinite(room) ? String(room) : 'No limit'
+})
+
+/**
  * Validate current provider fields (used by test connection)
  */
 function validateProvider() {
-  if (!localSelectedProviderId.value) {
-    throw new ValidationError('No provider selected')
-  }
-
   if (!localName.value?.trim()) {
-    throw new ValidationError('Provider name is required')
-  }
-
-  if (!PROVIDER_TYPES.some(entry => entry.id === localType.value)) {
-    throw new ValidationError('Invalid provider type')
+    throw new ValidationError('Give the provider a name.')
   }
 
   if (needsEndpoint(localType.value) && !localEndpoint.value?.trim()) {
-    throw new ValidationError('Endpoint is required for this provider type')
+    throw new ValidationError("Enter the server's address.")
   }
 
   if (needsKey(localType.value) && !localApiKey.value?.trim()) {
-    throw new ValidationError(`API key is required for ${providerLabel(localType.value)}`)
+    throw new ValidationError(`Enter an API key for ${providerLabel(localType.value)}.`)
   }
 }
 
@@ -429,7 +482,7 @@ async function handleTestConnection() {
       } else {
         toast.add({
           severity: 'error',
-          detail: 'Connection failed. Check your API key and try again.',
+          detail: "OpenRouter didn't accept the key. Check it and try again.",
           life: 3000,
         })
       }
@@ -444,13 +497,16 @@ async function handleTestConnection() {
     if (models && models.length > 0) {
       toast.add({
         severity: 'success',
-        detail: `Connected: ${models.length} ${models.length === 1 ? 'model' : 'models'} available`,
+        detail:
+          models.length === 1
+            ? 'Connected. 1 model is available.'
+            : `Connected. ${models.length} models are available.`,
         life: 3000,
       })
     } else {
       toast.add({
         severity: 'warn',
-        detail: 'Connected, but no models found',
+        detail: 'Connected, but no models were found.',
         life: 3000,
       })
     }
@@ -467,7 +523,7 @@ async function handleTestConnection() {
     console.error('Connection test failed:', error)
     toast.add({
       severity: 'error',
-      detail: `Connection failed: ${error.message || 'could not reach the provider'}`,
+      detail: `The provider couldn't be reached. ${error.message || ''}`.trim(),
       life: 5000,
     })
   } finally {
@@ -486,7 +542,7 @@ async function handleOAuthConnect() {
     console.error('Failed to initiate OAuth:', error)
     toast.add({
       severity: 'error',
-      detail: `Connection failed: ${error.message || 'the sign-in could not start'}`,
+      detail: `The sign-in couldn't start. ${error.message || ''}`.trim(),
       life: 5000,
     })
   }
@@ -501,15 +557,8 @@ async function handleDeleteProvider() {
   const provider = providersById.value.get(localSelectedProviderId.value)
   if (!provider) return
 
-  // Check if this is a default provider
-  if (provider.isDefault) {
-    toast.add({
-      severity: 'error',
-      detail: 'Default providers cannot be deleted',
-      life: 3000,
-    })
-    return
-  }
+  // A default provider has no delete button, and is never deleted.
+  if (provider.isDefault) return
 
   confirm.require({
     message: `Delete "${provider.name}"?`,
@@ -525,7 +574,7 @@ async function handleDeleteProvider() {
         console.error('Failed to delete provider:', error)
         toast.add({
           severity: 'error',
-          detail: 'Failed to delete provider',
+          detail: "The provider couldn't be deleted.",
           life: 3000,
         })
       }

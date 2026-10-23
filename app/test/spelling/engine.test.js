@@ -139,6 +139,18 @@ describe('configure', () => {
     expect(await lintsOf(`The road wound on, ${long}.`)).toEqual([])
   })
 
+  it('leaves style to the writer', async () => {
+    hyphenated = await configure(linter, { dialect: 'american', words: [] })
+    for (const text of [
+      '“Oh shit,” she said. “That bastard took the keys.”',
+      'I would argue that she knew, so to speak.',
+      'He bought bread, cheese and wine.',
+      '“I went thru it, tho,” the kid said. “It’s legit.”',
+    ]) {
+      expect(await lintsOf(text)).toEqual([])
+    }
+  })
+
   it('knows a hyphenated word it is given, and not its parts alone', async () => {
     hyphenated = await configure(linter, { dialect: 'american', words: ['Wi-Fi'] })
     expect(await flagged('The Wi-Fi was down, and the Wi-Fi\u2019s light blinked.')).toEqual([])

@@ -74,6 +74,18 @@ export function serviceInUse(from = setup) {
 }
 
 /**
+ * Whether the model keeps a page in the project without asking the writer
+ * first: only once they said so, with Always allow or in Settings ›
+ * Connections.
+ *
+ * @param {WebSearchSetup|null} [from]
+ * @returns {boolean}
+ */
+export function savesWithoutAsking(from = setup) {
+  return from?.saveWithoutAsking === true
+}
+
+/**
  * Whether a chat searches the web: a service can search, and the chat chose
  * it, or, until it chooses, its profile is one the setup lists.
  *

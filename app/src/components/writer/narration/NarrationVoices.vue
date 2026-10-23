@@ -87,7 +87,8 @@
           class="text-xs text-amber-600 dark:text-amber-400"
           data-voice-unknown
         >
-          Not among this model's voices: {{ unknown.join(', ') }}
+          This model has no {{ unknown.length === 1 ? 'voice' : 'voices' }} called
+          {{ unknown.join(', ') }}.
         </p>
         <Select
           v-if="mixes && serverVoices.length > 0"

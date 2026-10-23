@@ -170,11 +170,13 @@ describe('useBulkImport', () => {
 })
 
 describe('describeImport', () => {
-  it('says what landed, and what did not', () => {
-    expect(describeImport({ documents: 12, folders: 2, cards: 0, scans: 0, skipped: [] })).toEqual({
-      severity: 'success',
-      detail: 'Imported 12 documents, 2 new folders.',
-    })
+  it('says nothing of a batch that all came in', () => {
+    expect(
+      describeImport({ documents: 12, folders: 2, cards: 0, scans: 0, skipped: [] })
+    ).toBeNull()
+  })
+
+  it('says what did not come in, and what the outline does not show', () => {
     expect(
       describeImport({
         documents: 1,
@@ -185,11 +187,15 @@ describe('describeImport', () => {
       })
     ).toEqual({
       severity: 'warn',
-      detail: 'Imported 1 document. 1 PDF with no extractable text. Skipped x.pdf (bad).',
+      detail: '1 PDF has no extractable text. Skipped x.pdf (bad).',
+    })
+    expect(describeImport({ documents: 3, folders: 0, cards: 0, scans: 2, skipped: [] })).toEqual({
+      severity: 'info',
+      detail: '2 PDFs have no extractable text.',
     })
     expect(describeImport({ documents: 0, folders: 0, cards: 0, scans: 0, skipped: [] })).toEqual({
       severity: 'error',
-      detail: 'Nothing imported.',
+      detail: 'Nothing was imported.',
     })
   })
 
@@ -197,16 +203,16 @@ describe('describeImport', () => {
     expect(
       describeImport({ documents: 2, folders: 0, cards: 0, scans: 0, images: 3, skipped: [] })
     ).toEqual({
-      severity: 'success',
-      detail: 'Imported 2 documents. 3 images left out.',
+      severity: 'info',
+      detail: '3 images were left out.',
     })
   })
 
-  it('names the Docs that came with suggested edits still open', () => {
+  it('names the Docs that came with suggested edits still open, which a sync brings in', () => {
     const result = { documents: 2, folders: 0, cards: 0, scans: 0, skipped: [] }
     expect(describeImport({ ...result, suggested: ['Ch. 3'] })).toEqual({
-      severity: 'warn',
-      detail: 'Imported 2 documents. Ch. 3 had suggested edits still open. They were left out.',
+      severity: 'info',
+      detail: 'Ch. 3 had suggested edits still open. They come in when you sync.',
     })
     expect(describeImport({ ...result, suggested: ['Ch. 3', 'Ch. 4'] }).detail).toContain(
       'Ch. 3 and Ch. 4 had'

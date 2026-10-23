@@ -4,6 +4,7 @@ import { EditorView } from '@codemirror/view'
 import { history, undo } from '@codemirror/commands'
 import {
   find,
+  findAt,
   findMatches,
   findNext,
   plainSearch,
@@ -124,6 +125,23 @@ describe('find', () => {
     find('')(view)
     expect(searchOf(view.state).matches).toEqual([])
     expect(searchOf(view.state).decorations.size).toBe(0)
+  })
+})
+
+describe('findAt', () => {
+  it('goes to a match by where it comes among them, wherever the caret is', () => {
+    const view = viewOf(DOC, DOC.length)
+    findAt('road', {}, 1)(view)
+    expect(searchOf(view.state).current).toBe(1)
+    expect(view.state.selection.main.from).toBe(DOC.indexOf('road'))
+  })
+
+  it('goes to the last for a match past it, and to none without one', () => {
+    const view = viewOf(DOC)
+    findAt('road', {}, 9)(view)
+    expect(searchOf(view.state).current).toBe(3)
+    findAt('nowhere', {}, 0)(view)
+    expect(searchOf(view.state).current).toBe(-1)
   })
 })
 

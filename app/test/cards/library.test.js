@@ -5,7 +5,7 @@ import {
   cardMatches,
   isNsfw,
   commonTags,
-  describeAdded,
+  describeSkipped,
   describeCard,
   parseSearch,
   plainText,
@@ -217,26 +217,11 @@ describe('cards/library', () => {
     })
   })
 
-  describe('describeAdded', () => {
-    it('names one card, and counts several', () => {
-      expect(describeAdded({ added: [row('Maren')], duplicates: [], skipped: [] })).toBe(
-        'Added Maren.'
-      )
-      expect(
-        describeAdded({
-          added: [row('a'), row('b')],
-          duplicates: [row('c'), row('d')],
-          skipped: ['x.png', 'y.png'],
-        })
-      ).toBe(
-        'Added 2 cards. 2 cards are already in the library. 2 files have no character card in them.'
-      )
-    })
-
-    it('says which card was already there, and which file had none', () => {
-      expect(describeAdded({ added: [], duplicates: [row('Maren')], skipped: ['x.png'] })).toBe(
-        'Maren is already in the library. x.png has no character card in it.'
-      )
+  describe('describeSkipped', () => {
+    it('names one file with no card in it, and counts several', () => {
+      expect(describeSkipped(['x.png'])).toBe('x.png has no character card in it.')
+      expect(describeSkipped(['x.png', 'y.png'])).toBe('2 files have no character card in them.')
+      expect(describeSkipped([])).toBe('')
     })
   })
 

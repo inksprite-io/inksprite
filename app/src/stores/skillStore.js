@@ -22,6 +22,7 @@ import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
 import { BUILT_IN_SKILLS, setLibrarySkills, setSkillWordings } from '@/ai/skills/index.js'
 import { storage } from '@/storage/index.js'
+import { onTablesWritten } from '@/platform/windows.js'
 
 /** @typedef {import('../types/models.js').StoredSkill} StoredSkill */
 /** @typedef {import('../types/models.js').SkillFile} SkillFile */
@@ -81,6 +82,19 @@ export const useSkillStore = defineStore('skills', () => {
     publish()
     publishWordings()
   }
+
+  // Another window wrote them: read again.
+  onTablesWritten(['skills', 'skillWordings'], async () => {
+    if (!initializePromise.value) return
+    const [stored, reworded] = await Promise.all([
+      storage.all('skills'),
+      storage.all('skillWordings'),
+    ])
+    skills.value = new Map(stored.map(skill => [skill.id, skill]))
+    wordings.value = new Map(reworded.map(wording => [wording.name, wording]))
+    publish()
+    publishWordings()
+  })
 
   /** @returns {Promise<void>} */
   function ensureInitialized() {

@@ -4,15 +4,21 @@
  *
  * A server's tool that does not say it only reads asks first: the turn shows
  * the call and waits for Allow, Always allow (the tool, or everything from the
- * server), or Deny. The wait belongs to
- * the turn rather than to the tool, so it does not count against the tool's
- * time limit, and a turn that is stopped answers every call it was waiting on
- * with Deny.
+ * server), or Deny. So does a page the model keeps in the project
+ * (`save_web_page`), whose Always allow is for every page from then on. A
+ * tool can also ask a question of its own as it runs, whose Always allow
+ * the tool keeps: explore, saying what it would cost. The
+ * wait belongs to the turn rather than to the tool, so it does not count
+ * against the tool's time limit, and a turn that is stopped answers every
+ * call it was waiting on with Deny.
  *
  * Kept in memory, by call: a page reloaded mid-turn has lost the turn anyway.
  */
 
 import { computed, reactive, toValue } from 'vue'
+import { needsApproval } from '@/mcp/servers.js'
+import { savesWithoutAsking } from '@/web/config.js'
+import { SAVE_WEB_PAGE } from '@/ai/tools/web.js'
 
 /**
  * `always` is the tool from now on; `always-server` is everything the server
@@ -27,7 +33,20 @@ import { computed, reactive, toValue } from 'vue'
  * @property {string} messageId - The turn it was made in
  * @property {string} name - The tool, as the model called it
  * @property {string} arguments - As the model wrote them
+ * @property {string} [question] - What the tool itself asks, when it asks
  */
+
+/**
+ * Whether a call waits for the writer to allow it: a server's tool that may
+ * change something, until they allow it always; and a page kept in the
+ * project, until they say to keep pages without asking.
+ *
+ * @param {string} name - The tool, as the model called it
+ * @returns {boolean}
+ */
+export function asksFirst(name) {
+  return name === SAVE_WEB_PAGE ? !savesWithoutAsking() : needsApproval(name)
+}
 
 /** @type {Map<string, PendingApproval & {resolve: (decision: Decision) => void}>} */
 const waiting = reactive(new Map())
@@ -37,15 +56,17 @@ const waiting = reactive(new Map())
  *
  * @param {string} messageId
  * @param {{id: string, function: {name: string, arguments?: string}}} call
+ * @param {string} [question] - What the tool asks, when it asks as it runs
  * @returns {Promise<Decision>}
  */
-export function askApproval(messageId, call) {
+export function askApproval(messageId, call, question) {
   return new Promise(resolve => {
     waiting.set(call.id, {
       id: call.id,
       messageId,
       name: call.function.name,
       arguments: call.function.arguments || '',
+      ...(question ? { question } : {}),
       resolve,
     })
   })
@@ -86,11 +107,12 @@ export function useToolApprovals(messageId) {
   const pending = computed(() =>
     [...waiting.values()]
       .filter(one => one.messageId === toValue(messageId))
-      .map(({ id, messageId: message, name, arguments: args }) => ({
+      .map(({ id, messageId: message, name, arguments: args, question }) => ({
         id,
         messageId: message,
         name,
         arguments: args,
+        ...(question ? { question } : {}),
       }))
   )
   return { pending, answer: answerApproval }

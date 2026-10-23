@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readDoc } from '@/drive/convert.js'
-import { writeDoc } from '@/drive/write.js'
+import { withoutIdleStyles, writeDoc } from '@/drive/write.js'
 import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
 import { applyRequests } from '@/drive/apply.js'
 import { bulleted, docOf, inline, item, numbered, para, run, styled, table } from './docsHelpers.js'
@@ -352,15 +352,56 @@ describe('writeDoc', () => {
     ])
   })
 
-  it('leaves unsent an edit in a paragraph with a suggested edit still open, and sends one elsewhere', () => {
+  it('writes around the words a suggestion puts in or takes out, but not a style', () => {
     const document = docOf([
-      para([run('Kept '), run('new ', {}, { suggestedInsertionIds: ['s.1'] }), run('words.')]),
+      para([
+        run('Kept '),
+        run('new ', {}, { suggestedInsertionIds: ['s.1'] }),
+        run('old ', {}, { suggestedDeletionIds: ['s.1'] }),
+        run('words.'),
+      ]),
+      para([run('Styled', {}, { suggestedTextStyleChanges: { 's.2': {} } }), run(' here.')]),
       para('Free to change.'),
     ])
-    expect(unsentFor(document, md => md.replace('Kept words', 'Kept all words'))).toEqual([
+    // The words it puts in stay put in, and those it takes out stay to take out.
+    const edit = md => md.replace('Kept old words', 'All kept old words, still')
+    expect(unsentFor(document, edit)).toEqual([])
+    const after = applyRequests(
+      document,
+      writeDoc(document, parseMarkdown(edit(readDoc(document).markdown))).requests
+    )
+    expect(readDoc(after).markdown).toMatch(/^All kept old words, still\./)
+    expect(readDoc(after, { accepted: new Set(['s.1']) }).markdown).toMatch(
+      /^All kept new words, still\./
+    )
+
+    expect(unsentFor(document, md => md.replace('Styled here', 'Styled there'))).toEqual([
       'suggestion',
     ])
     expect(unsentFor(document, md => md.replace('Free to', 'Fine to'))).toEqual([])
+  })
+
+  it('leaves out the changes of style that change nothing', () => {
+    const document = docOf([para([run('A '), run('bold', { bold: true }), run(' word.')])])
+    const clear = (/** @type {number} */ startIndex) => ({
+      updateTextStyle: {
+        range: { startIndex, endIndex: startIndex + 1 },
+        textStyle: {},
+        fields: 'bold,italic,strikethrough,link',
+      },
+    })
+    // Put in after plain words, it is plain; after bold ones, bold.
+    const requests = [
+      { insertText: { text: 'x', location: { index: 2 } } },
+      clear(2),
+      { insertText: { text: 'y', location: { index: 8 } } },
+      clear(8),
+    ]
+    expect(withoutIdleStyles(document, requests, undefined)).toEqual([
+      requests[0],
+      requests[2],
+      requests[3],
+    ])
   })
 
   describe('tables', () => {
@@ -605,6 +646,35 @@ describe('writeDoc', () => {
       expect(written).toMatchObject({ requests: [], unsent: [] })
     })
 
+    it('deletes the paragraph a page break parts off whole, the one before it ending alike', () => {
+      // A picture keeps its paragraph in the comparison, which laid from the
+      // end once took the first full stop with the break.
+      const document = docOf(
+        [
+          para('Monday'),
+          para([
+            run('The ferry was late '),
+            inline('inlineObjectElement', { inlineObjectId: 'kix.pier' }),
+            run(' and nobody minded much.'),
+            inline('inlineObjectElement', { inlineObjectId: 'kix.gull' }),
+            inline('pageBreak'),
+          ]),
+          para('Began again on the far side.'),
+          para('Mind the gap.', { style: QUOTE }),
+        ],
+        {
+          pictures: {
+            'kix.pier': { uri: 'https://pictures.example.com/pier' },
+            'kix.gull': {},
+          },
+        }
+      )
+      const { written } = pictureTrip(document, md =>
+        md.replace('Began again on the far side.\n\n', '')
+      )
+      expect(written.requests).toHaveLength(1)
+    })
+
     it('deletes none of the Doc’s pictures the document never had', () => {
       // As one imported before pictures came in, or through Google's export,
       // whose pictures have no ids.
@@ -680,5 +750,46 @@ describe('writeDoc, edited at random', () => {
         edited.includes('image1.png') ? 1 : 0
       )
     }
+  })
+})
+
+describe('writeDoc, into an empty Doc', () => {
+  it('writes any document whole into one, as a new Doc is', () => {
+    const next = random(23)
+    // The busy Doc's words, its pictures and footnote aside: a new Doc has
+    // neither, and nothing yet makes them.
+    const markdown = readDoc(busy())
+      .markdown.replace(/ ?!\[[^\]]*\]\([^)]*\)/g, '')
+      .replace(/\\\[\^1\\\]/g, '')
+      .replace(/\n\n\\\[\^1\\\]: [^\n]*$/, '')
+    let written = 0
+    for (let round = 0; round < 200; round++) {
+      const blocks = markdown.split('\n\n')
+      const pick = list => {
+        const choices = list.map((block, i) => (plain(block) ? i : -1)).filter(i => i >= 0)
+        return choices.length ? choices[Math.floor(next() * choices.length)] : -1
+      }
+      const count = Math.floor(next() * 5)
+      for (let k = 0; k < count; k++) anyEdit(blocks, pick, next)
+      // Some documents start with a table, or are one.
+      if (next() < 0.1) blocks.splice(0, 0, '| a | b |\n| --- | --- |\n| c | d |')
+      if (next() < 0.05) blocks.splice(1)
+      const edited = blocks.join('\n\n')
+      const target = parseMarkdown(edited)
+      const empty = docOf([para('')])
+      const result = writeDoc(empty, target)
+      expect(result.unsent, `round ${round}: ${edited}`).toEqual([])
+      let after
+      try {
+        after = applyRequests(empty, result.requests)
+      } catch (error) {
+        throw new Error(
+          `round ${round}: ${error.message}\n${edited}\n${JSON.stringify(result.requests)}`
+        )
+      }
+      expect(readDoc(after).markdown, `round ${round}`).toBe(serializeMarkdown(target))
+      written++
+    }
+    expect(written).toBe(200)
   })
 })

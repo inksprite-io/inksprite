@@ -18,8 +18,9 @@
  *
  * - `storiesStore.js` - Story CRUD operations and management
  * - `projectViewsStore.js` - Where the writer left each project on this copy of the app: its tabs and panels
- * - `documentsStore.js` - A story's document tree; the source of truth for its content
+ * - `documentsStore.js` - A story's document tree, and its trash; the source of truth for its content
  * - `filesStore.js` - The bytes behind a file document, in a table the tree never loads
+ * - `versionsStore.js` - A text document's versions: when one is taken, and keeping, naming and thinning them
  * - `chatsStore.js` - AI chat session management
  * - `messagesStore.js` - Chat message history
  * - `aiProvidersStore.js` - AI endpoints and credentials

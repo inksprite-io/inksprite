@@ -239,7 +239,7 @@ describe('useChatCommands', () => {
     it('keeps what it had written when its request fails, and says it was cut short', async () => {
       await expect(
         commands.submit('/compact(4)', { consult: fallsShort('They crossed the') })
-      ).rejects.toThrow('Compacted summary was cut short: Connection reset')
+      ).rejects.toThrow('The summary was cut short. Connection reset')
 
       expect(written().content).toBe('They crossed the')
       expect(written().metadata.command).toMatchObject({
@@ -252,7 +252,7 @@ describe('useChatCommands', () => {
 
     it('stays, empty, when it failed before writing anything', async () => {
       await expect(commands.submit('/compact(4)', { consult: fallsShort('') })).rejects.toThrow(
-        'Compacted summary was cut short: Connection reset'
+        'The summary was cut short. Connection reset'
       )
 
       expect(written().content).toBe('')
@@ -290,7 +290,7 @@ describe('useChatCommands', () => {
       })
 
       await expect(commands.rerun('msg_c', null, { consult: fallsShort('They') })).rejects.toThrow(
-        'Compacted summary was cut short: Connection reset'
+        'The summary was cut short. Connection reset'
       )
       expect(written().content).toBe('They')
     })
@@ -816,6 +816,97 @@ describe('useChatCommands', () => {
 
       expect(chatsApi.updateMessage).not.toHaveBeenCalled()
       expect(chatsApi.deleteMessage).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('an aside', () => {
+    const piece = content => ({ type: 'text', content })
+    const asked = input => ({
+      type: 'command',
+      command: { name: 'aside', input, result: input },
+    })
+    const standing = (...messages) => {
+      chatsApi.getMessagesForChat.mockReturnValue({ value: messages })
+    }
+
+    it('is a message of its own that says what it is, and asks for an answer', async () => {
+      const { spoken } = await commands.submit('/aside What should Mara do next?')
+
+      expect(spoken).toBe('What should Mara do next?')
+      expect(chatsApi.addMessage).toHaveBeenCalledWith(
+        chatId,
+        'user',
+        '<aside>\nWhat should Mara do next?\n</aside>',
+        null,
+        [asked('What should Mara do next?')],
+        { aside: true }
+      )
+    })
+
+    it('never joins the turn the writer is taking', async () => {
+      // The rolls are part of the conversation, and the aside is not.
+      standing(
+        { id: 'msg_a', role: 'assistant', content: 'It gives.' },
+        { id: 'msg_u', role: 'user', segments: [piece('I try the door.')] }
+      )
+
+      await commands.submit('/aside Is the door worth it?')
+
+      expect(chatsApi.writeTurn).not.toHaveBeenCalled()
+      expect(chatsApi.addMessage.mock.calls[0][5]).toEqual({ aside: true })
+    })
+
+    it('is never joined by what is said after it', async () => {
+      standing({ id: 'msg_q', role: 'user', segments: [asked('Now?')], metadata: { aside: true } })
+
+      await commands.submit('I step through.')
+
+      expect(chatsApi.writeTurn).not.toHaveBeenCalled()
+      expect(chatsApi.addMessage).toHaveBeenCalledWith(chatId, 'user', 'I step through.', null, [
+        piece('I step through.'),
+      ])
+    })
+
+    it('refuses anything before it, and writes nothing', async () => {
+      await expect(commands.submit('I look around.\n/aside What is here?')).rejects.toThrow(
+        /message of its own/
+      )
+      expect(chatsApi.addMessage).not.toHaveBeenCalled()
+    })
+
+    it('is never folded into the writer’s turns around it', () => {
+      standing(
+        { id: 'msg_u1', role: 'user', segments: [piece('I try the door.')] },
+        { id: 'msg_q', role: 'user', segments: [asked('Now?')], metadata: { aside: true } },
+        { id: 'msg_u2', role: 'user', segments: [piece('I step through.')] }
+      )
+
+      commands.remove('msg_r', null)
+
+      expect(chatsApi.writeTurn).not.toHaveBeenCalled()
+      expect(chatsApi.deleteMessage).toHaveBeenCalledTimes(1)
+    })
+
+    it('stays an aside when it is edited, and nothing else becomes one', async () => {
+      chatsApi.getMessageById.mockReturnValue({
+        value: { id: 'msg_q', segments: [asked('Now?')], metadata: { aside: true } },
+      })
+      await commands.revise('msg_q', null, '/aside Now, or later?')
+      expect(chatsApi.updateMessage.mock.calls[0][1].content).toBe(
+        '<aside>\nNow, or later?\n</aside>'
+      )
+
+      await expect(commands.revise('msg_q', null, 'I step through.')).rejects.toThrow(
+        /stays an aside/
+      )
+
+      chatsApi.getMessageById.mockReturnValue({
+        value: { id: 'msg_u', segments: [piece('I try the door.')] },
+      })
+      await expect(
+        commands.revise('msg_u', null, 'I try the door.\n/aside Should I?')
+      ).rejects.toThrow(/message of its own/)
+      expect(chatsApi.updateMessage).toHaveBeenCalledTimes(1)
     })
   })
 

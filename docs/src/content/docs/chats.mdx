@@ -33,9 +33,11 @@ Click the **Chats** icon at the far left. The most recent chat is first, and
 top left of a chat goes back to the list.
 
 Click **⋮** on a chat, or right-click it, to **Rename**, **Export** or
-**Delete** it. **Import a chat**, the upload arrow at the top of the list,
-brings an exported chat into the open project. It takes SillyTavern chats too,
-and files each under its character's card when the card is in the project.
+**Delete** it. A deleted chat goes to the
+[trash](/projects/#delete-and-the-trash). **Import a chat**, the upload arrow
+at the top of the list, brings an exported chat into the open project. It
+takes SillyTavern chats too, and files each under its character's card when
+the card is in the project.
 
 ## Profiles
 
@@ -121,19 +123,30 @@ profile** leaves it out, and switching profiles keeps it.
 tool in it, to keep it from the model; hover a tool to see what it does.
 **Enable tools** switches **Documents** and **RPG Tools** together.
 
-- **Documents**: listing, searching, reading, creating, editing, renaming and
-  moving the project's documents, and reading and resolving your
-  [comments](/comments/). To let the model read but not write, leave **Read
-  document**, **Describe document**, **List documents** and **Search
-  documents** on, and switch off the rest.
+- **Documents**: listing, searching, reading, creating, editing, renaming,
+  moving and deleting the project's documents,
+  [exploring](#explore-the-project) them, and reading and resolving your
+  [comments](/comments/). What the model deletes goes to the
+  [trash](/projects/#delete-and-the-trash). To let the model read but not
+  write, leave **Read document**, **Describe document**, **List documents**,
+  **Search documents** and **Explore documents** on, and switch off the rest.
 - **RPG Tools**: dice, the oracle, tables, tarot and names, for games.
 - **Web**: searching the web and reading pages, once you've connected a search
   service. See [Web Search](/web-search/).
 - Each [MCP server](/mcp/) you've connected has a group of its own.
 
-**Apply edits automatically** is for every chat. Switch it off, and the model's
-changes to documents wait in the chat, showing what goes and what comes in,
-until you click **Accept** or **Reject**.
+**Apply edits automatically** is for every chat. Switch it off, and the model
+asks first:
+
+- Its changes to a document's text are [suggestions](/comments/#suggestions)
+  in the text, each change on its own, for you to accept or reject there or in
+  the **Comments** tab.
+- A new document, a delete, a comment it leaves or resolves, and a change to a
+  document in the [plain text editor](/editor/#the-plain-text-editor) wait in
+  the chat, showing what goes and what comes in, until you click **Accept** or
+  **Reject**.
+
+A move, a rename or a new folder is made at once.
 
 If the switches are greyed out, **Allow tool use** is off under **Generation**
 in **Settings** › **AI**.
@@ -176,6 +189,30 @@ The eye beside the pin hides a document or a folder from the open chat: the
 model can't list, search or read it. To hide one from every chat, right-click
 it and choose **Hide from all chats**.
 
+### Explore the project
+
+In a large project, the model can't read everything to find what it needs.
+Exploring has it read a folder, or the whole project, and write a line on what
+each document and folder is about. In every chat, the model then sees those
+lines when it lists the project, and knows where to look. A line counts until
+its document changes, and exploring again reads only what has changed.
+
+- Type `/explore` for the whole project, or `/explore Notes` for a folder or a
+  document. Your turn says how far it has got, then what the folder holds,
+  with a line on each document in it, which the model reads too.
+- The model can explore too, when it needs to find its way around. What it
+  found shows in its reply.
+- **Explore…** on a folder's menu, or the project's, explores without a chat.
+  The **Jobs** window shows how far it has got.
+
+From a chat it runs on the chat's model, and from the menu on the model chosen
+in **Settings** › **AI**. Each request is paid for like a chat message, so it
+asks first when it will read more than about 50,000 tokens, saying about how
+many. **Always allow**, beside the model's call, turns off **Ask before exploring large folders** in
+**Settings** › **System** › **Chats**, and it stops asking. What's hidden from
+all chats, [repositories](/repositories/), and files with no text are left
+out.
+
 ## A turn's buttons
 
 - **Copy**, and **Read aloud** once a speech service is set up for
@@ -214,21 +251,25 @@ closes the list. The sparkles mark the ones that call the model.
 
 | Type | And |
 | --- | --- |
-| `/roll 3d6+2` | It rolls the dice. Add a question after them, as in `/roll 2d6 How does the monster react?`, and the model reads the roll for it. |
+| `/roll 3d6+2` | It rolls the dice. `max(2d20)+1` keeps the higher of two d20s, for advantage, and `min(2d20)+1` the lower. Add a question after them, as in `/roll 2d6 How does the monster react?`, and the model reads the roll for it. |
 | `/oracle(likely) Is the door locked?` | It answers yes or no at the odds you give, from `nearly_impossible`, `very_unlikely`, `unlikely`, `fifty_fifty`, `likely`, `very_likely` and `nearly_certain`. Leave them off for 50/50. |
 | `/roll-table "a knife" "a letter" "nothing"` | It picks one of the options. |
 | `/tarot(1, full) Will she forgive him?` | It draws cards: 3 from the major arcana unless you say how many (up to 10) or `full` for the whole deck. The question is optional. |
 | `/name(female, 3)` | It makes up names, `female` or `male`, up to 25. |
 | `/director Wrap this scene up.` | It tells the model what the next reply needs. |
 | `@cody I hide in the closet.` | It says what someone in the scene says or does. |
+| `/aside What should happen next?` | The model answers, and then forgets the question and its answer: the chat goes on as if neither was said. |
 | `/interpret What is the innkeeper afraid of?` | The model draws a tarot card and reads it against the story, for an idea. [Experimental](/skills/#the-built-in-skills). |
 | `/write Yvette goes down into the cistern.` | The model writes the prose from the project's notes, as its reply. [Experimental](/skills/#the-built-in-skills). |
+| `/explore Notes` | The model writes a line on what each document in the folder is about, to find things by. Leave the folder off for the whole project; [see above](#explore-the-project). |
 | `/compact` | The model summarizes the chat; [see below](#compact-a-long-chat). |
 
 A command's answer goes into your turn, and the model takes it as settled;
 `/write` and `/compact` answer in turns of their own. A message of nothing but
 commands gets no reply, so you can settle things before you say what you do;
 `@` lines and your [saved prompts](/skills/#saved-prompts) do ask for one.
+`/aside` is a message of its own, and everything after it, lines and all, is
+the question.
 **Ask again** on an answer asks again, and **Edit command** changes the
 question but keeps the answer. A roll shows a line for each kind of die above
 its total. **Edit turn** has them as text: change a die and the total is

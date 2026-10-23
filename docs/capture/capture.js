@@ -193,6 +193,12 @@ export async function startApp() {
   if (!existsSync(vite))
     throw new Error(`Install the app's dependencies first (npm install in ${APP}).`)
   const { createServer: createVite } = await import(pathToFileURL(vite).href)
+  // The guides show the app as released, without what app/.env.local puts in
+  // preview (src/config/preview.js) or turns on for development
+  // (src/config/dev.js). A value already in the environment wins over a .env
+  // file, an empty one too.
+  process.env.VITE_PREVIEW = ''
+  process.env.VITE_DEV_FEATURES = ''
   const port = await freePort()
   const server = await createVite({
     root: APP,

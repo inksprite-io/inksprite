@@ -1,5 +1,8 @@
+/* global Blob, File */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
+import { isArchive, writeArchive } from '@/utils/backupArchive.js'
+import { deserializeFiles } from '@/utils/backup'
 
 const { mockDb, mockProcessSync } = vi.hoisted(() => {
   const mockProcessSync = vi.fn().mockResolvedValue(undefined)
@@ -92,9 +95,8 @@ describe('useBackup', () => {
 
   describe('readDataFile', () => {
     /** @param {any} contents */
-    const fileOf = contents => ({
-      text: async () => (typeof contents === 'string' ? contents : JSON.stringify(contents)),
-    })
+    const fileOf = contents =>
+      new File([typeof contents === 'string' ? contents : JSON.stringify(contents)], 'backup.json')
 
     it('parses and summarizes without touching the database', async () => {
       const { kind, backup, summary } = await useBackup().readDataFile(
@@ -111,6 +113,40 @@ describe('useBackup', () => {
       expect(summary).toEqual([{ table: 'stories', count: 2 }])
       expect(mockDb.transaction).not.toHaveBeenCalled()
       expect(mockDb.tables[0].clear).not.toHaveBeenCalled()
+    })
+
+    it('reads a backup from a zip, its files as their own bytes', async () => {
+      const zip = await writeArchive(
+        /** @type {any} */ ({
+          app: 'inksprite',
+          format: 1,
+          dbVersion: 2,
+          tables: {
+            stories: [{ id: 's1' }],
+            files: [
+              {
+                id: 'doc_f',
+                storyId: 's1',
+                blob: new Blob(['%PDF-'], { type: 'application/pdf' }),
+              },
+            ],
+          },
+        })
+      )
+      const { kind, backup, summary } = await useBackup().readDataFile(
+        new File([zip], 'inksprite-backup-2026-10-21.zip')
+      )
+
+      expect(kind).toBe('backup')
+      expect(summary).toEqual(
+        expect.arrayContaining([
+          { table: 'stories', count: 1 },
+          { table: 'files', count: 1 },
+        ])
+      )
+      const [file] = deserializeFiles(backup.tables.files)
+      expect(file.blob.type).toBe('application/pdf')
+      expect(await file.blob.text()).toBe('%PDF-')
     })
 
     it('rejects a file that is not JSON', async () => {
@@ -382,7 +418,9 @@ describe('useBackup', () => {
     })
 
     it('refuses a backup newer than the database', async () => {
-      await expect(useBackup().restoreBackup(backupAt(5, {}))).rejects.toThrow('Cannot downgrade')
+      await expect(useBackup().restoreBackup(backupAt(5, {}))).rejects.toThrow(
+        'This backup is from a newer inksprite. Update the app to open it.'
+      )
     })
 
     it('runs every write in one transaction', async () => {
@@ -504,9 +542,14 @@ describe('useBackup', () => {
   })
 
   describe('downloadBackup', () => {
-    it('hands the user a dated json file and releases the blob url', async () => {
+    it('hands the user a dated zip and releases the blob url', async () => {
       const click = vi.fn()
-      const createObjectURL = vi.fn().mockReturnValue('blob:fake')
+      /** @type {Blob[]} */
+      const handed = []
+      const createObjectURL = vi.fn(blob => {
+        handed.push(blob)
+        return 'blob:fake'
+      })
       const revokeObjectURL = vi.fn()
       vi.stubGlobal('URL', { createObjectURL, revokeObjectURL })
       vi.spyOn(document, 'createElement').mockReturnValue(
@@ -516,8 +559,9 @@ describe('useBackup', () => {
 
       const { filename, bytes } = await useBackup().downloadBackup()
 
-      expect(filename).toMatch(/^inksprite-backup-\d{4}-\d{2}-\d{2}\.json$/)
-      expect(bytes).toBeGreaterThan(0)
+      expect(filename).toMatch(/^inksprite-backup-\d{4}-\d{2}-\d{2}\.zip$/)
+      expect(bytes).toBe(handed[0].size)
+      expect(await isArchive(handed[0])).toBe(true)
       expect(click).toHaveBeenCalled()
 
       vi.runAllTimers()

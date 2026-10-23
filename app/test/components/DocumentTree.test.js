@@ -10,6 +10,7 @@ import ContextMenu from 'primevue/contextmenu'
 import Menu from 'primevue/menu'
 import DocumentTree from '../../src/components/writer/tree/DocumentTree.vue'
 import { useDocuments, clearDocumentInstances } from '../../src/composables/useDocuments'
+import { useTreeHistory } from '../../src/composables/useTreeHistory.js'
 import { clearChatsInstances } from '../../src/composables/useChats'
 import { useApplicationState } from '../../src/composables/useApplicationState'
 
@@ -26,11 +27,11 @@ vi.mock('../../src/stores/syncStore', () => ({
   useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
 }))
 
-const { mockStory, deleteStory, push } = await vi.hoisted(async () => {
+const { mockStory, trashStory, push } = await vi.hoisted(async () => {
   const { reactive } = await import('vue')
   return {
     mockStory: reactive({ id: 'story_1', title: 'My Novel' }),
-    deleteStory: vi.fn(async () => undefined),
+    trashStory: vi.fn(async () => undefined),
     push: vi.fn(),
   }
 })
@@ -39,9 +40,24 @@ vi.mock('../../src/stores/storiesStore', () => ({
   useStoriesStore: () => ({
     getStory: id => (id === 'story_1' ? mockStory : null),
     updateStory: vi.fn((_id, updates) => Object.assign(mockStory, updates)),
-    deleteStory,
+    trashStory,
+    trashedStories: () => [],
   }),
 }))
+
+const { cloud } = await vi.hoisted(async () => {
+  const { ref } = await import('vue')
+  return {
+    cloud: {
+      account: ref(/** @type {any} */ (null)),
+      keepOnThisDevice: vi.fn(async () => {}),
+      syncProjectAgain: vi.fn(async () => {}),
+      leaveProject: vi.fn(async () => {}),
+      profile: vi.fn(async () => ({ id: 2, display: 'Grace', friend: 'ABCDE-FGHJK-MNPQR-STVWX' })),
+    },
+  }
+})
+vi.mock('../../src/composables/useCloudSync.js', () => ({ useCloudSync: () => cloud }))
 
 const dropJobsForStory = vi.fn(async () => undefined)
 vi.mock('../../src/jobs/index.js', async importOriginal => ({
@@ -61,9 +77,6 @@ vi.mock('primevue/useconfirm', () => ({
 }))
 vi.mock('../../src/composables/useScreenSize', () => ({
   useScreenSize: () => ({ isMobile: { value: false } }),
-}))
-vi.mock('../../src/components/writer/tree/DocumentSummary.vue', () => ({
-  default: { name: 'DocumentSummary', template: '<div class="summary-stub" />' },
 }))
 
 const importMany = vi.fn(async () => ({
@@ -174,32 +187,17 @@ describe('DocumentTree importing', () => {
 
     afterEach(() => useApplicationState().resetState())
 
-    it('asks first, and imports it as a file when told to', async () => {
-      confirmed.answer = 'reject'
+    it('imports it as a file, asking nothing', async () => {
       const wrapper = mountTree()
       wrapper.findComponent({ name: 'DocumentNode' }).vm.$emit('import', api.root.value.id)
 
       await choose(wrapper.find('input[multiple]'), [cardFile()])
 
-      expect(confirmed.asked.map(asked => asked.message)).toEqual([
-        'elara.json is a character card. Turn on Roleplay to import it as one, or import it as a file.',
-      ])
+      expect(confirmed.asked).toEqual([])
       expect(api.childrenOf(api.root.value.id).map(child => [child.title, child.type])).toEqual([
         ['elara.json', 'file'],
       ])
       expect(useApplicationState().roleplay.value).toBe(false)
-    })
-
-    it("switches roleplay on and asks the card's questions when told to", async () => {
-      const wrapper = mountTree()
-      wrapper.findComponent({ name: 'DocumentNode' }).vm.$emit('import', api.root.value.id)
-
-      await choose(wrapper.find('input[multiple]'), [cardFile()])
-
-      expect(useApplicationState().roleplay.value).toBe(true)
-      const dialog = wrapper.findComponent({ name: 'CardImportDialog' })
-      expect(dialog.props('visible')).toBe(true)
-      expect(dialog.props('found')).toMatchObject({ shape: 'card', title: 'Elara' })
     })
 
     it('asks nothing with the AI off, and imports it as a file', async () => {
@@ -236,9 +234,8 @@ describe('DocumentTree importing', () => {
     const [gathered, options] = importMany.mock.calls[0]
     expect(gathered.map(g => g.file.name)).toEqual(['a.md', 'b.md'])
     expect(options.parentId).toBe(notes.id)
-    expect(toastAdd).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Imported 2 documents, 1 new folder.' })
-    )
+    // The outline shows what came in.
+    expect(toastAdd).not.toHaveBeenCalled()
   })
 
   it('writes a chosen folder with the folders inside it', async () => {
@@ -292,9 +289,7 @@ describe('DocumentTree importing', () => {
     const [listed, options] = importFolder.mock.calls[0]
     expect(listed.map(g => g.file.name)).toContain('.gitignore')
     expect(options.parentId).toBe(api.root.value.id)
-    expect(toastAdd).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'app imported: 3 files.' })
-    )
+    expect(toastAdd).not.toHaveBeenCalled()
   })
 
   it('asks the same of a folder of code dropped on the tree', async () => {
@@ -346,9 +341,7 @@ describe('DocumentTree importing', () => {
       expect.objectContaining({ name: 'Harbour' }),
       { parentId: api.root.value.id, asFolder: true }
     )
-    expect(toastAdd).toHaveBeenCalledWith(
-      expect.objectContaining({ detail: 'Imported 5 documents, 2 new folders.' })
-    )
+    expect(toastAdd).not.toHaveBeenCalled()
   })
 
   it('imports a zipped Scrivener project chosen on its own', async () => {
@@ -386,7 +379,7 @@ describe('DocumentTree importing', () => {
       expect.objectContaining({
         severity: 'error',
         detail:
-          'Nothing imported: This project is from an older Scrivener. Open it in Scrivener 3, then import it again.',
+          'Nothing was imported. This project is from an older Scrivener. Open it in Scrivener 3, then import it again.',
       })
     )
   })
@@ -546,7 +539,7 @@ describe('DocumentTree project menu', () => {
     expect(wrapper.findComponent(ProjectMenu).props('projectItems')).toBe(own)
   })
 
-  it('deletes the project with its jobs, and leaves it', async () => {
+  it('moves the project to the trash with its jobs, and leaves it', async () => {
     const wrapper = mountTree()
     await flushPromises()
 
@@ -554,7 +547,7 @@ describe('DocumentTree project menu', () => {
     await flushPromises()
 
     expect(dropJobsForStory).toHaveBeenCalledWith('story_1')
-    expect(deleteStory).toHaveBeenCalledWith('story_1')
+    expect(trashStory).toHaveBeenCalledWith('story_1')
     expect(push).toHaveBeenCalledWith('/')
   })
 
@@ -567,12 +560,82 @@ describe('DocumentTree project menu', () => {
     await flushPromises()
 
     expect(downloadProject).toHaveBeenCalledWith('story_1')
-    expect(toastAdd).toHaveBeenCalledWith(
-      expect.objectContaining({
-        severity: 'success',
-        detail: 'Saved inksprite-project-my-novel.json',
-      })
-    )
+    expect(toastAdd).not.toHaveBeenCalled()
+  })
+
+  it('keeps the project on this device only, once asked, while signed in to sync', async () => {
+    cloud.account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
+    try {
+      const wrapper = mountTree()
+      await flushPromises()
+
+      await projectCommand(wrapper, 'Keep on this device only…')
+      await flushPromises()
+
+      expect(confirmed.asked.at(-1).header).toBe('Keep on this device only')
+      expect(cloud.keepOnThisDevice).toHaveBeenCalledWith('story_1')
+      expect(toastAdd).not.toHaveBeenCalled()
+
+      mockStory.syncOff = 1
+      await flushPromises()
+      await projectCommand(wrapper, 'Sync this project')
+      await flushPromises()
+      expect(cloud.syncProjectAgain).toHaveBeenCalledWith('story_1')
+    } finally {
+      delete mockStory.syncOff
+      cloud.account.value = null
+    }
+  })
+
+  it('offers to share the project, and has a friend leave one shared with them rather than delete it', async () => {
+    const { sharing } = await import('@/cloud/people.js')
+    const labels = (/** @type {any} */ wrapper) =>
+      wrapper
+        .findComponent({ name: 'DocumentNode' })
+        .props('extraMenuItems')
+        .map((/** @type {any} */ item) => item.label)
+    cloud.account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
+    try {
+      const wrapper = mountTree()
+      await flushPromises()
+      expect(labels(wrapper)).toEqual([
+        'Project settings',
+        'Export project',
+        'Share…',
+        'Keep on this device only…',
+        'Delete project',
+      ])
+
+      sharing.value = {
+        me: 2,
+        projects: {
+          story_1: {
+            role: 'member',
+            owner: 1,
+            members: [
+              { account: 1, owner: true, display: 'Ada' },
+              { account: 2, owner: false, display: 'Grace' },
+            ],
+          },
+        },
+      }
+      await flushPromises()
+      expect(labels(wrapper)).toEqual([
+        'Project settings',
+        'Export project',
+        'People…',
+        'Leave project…',
+      ])
+      await projectCommand(wrapper, 'Leave project…')
+      await flushPromises()
+      expect(confirmed.asked.at(-1).header).toBe('Leave project')
+      expect(cloud.leaveProject).toHaveBeenCalledWith('story_1')
+      expect(trashStory).not.toHaveBeenCalled()
+      expect(push).toHaveBeenCalledWith('/')
+    } finally {
+      sharing.value = { me: null, projects: {} }
+      cloud.account.value = null
+    }
   })
 
   it('says why an export failed', async () => {
@@ -584,7 +647,134 @@ describe('DocumentTree project menu', () => {
     await flushPromises()
 
     expect(toastAdd).toHaveBeenCalledWith(
-      expect.objectContaining({ severity: 'error', detail: 'Export failed: Quota exceeded' })
+      expect.objectContaining({
+        severity: 'error',
+        detail: "The project couldn't be exported. Quota exceeded",
+      })
     )
+  })
+})
+
+describe('DocumentTree undo', () => {
+  /** @type {ReturnType<typeof useDocuments>} */
+  let api
+  /** @type {ReturnType<typeof useTreeHistory>} */
+  let history
+  /** @type {import('@vue/test-utils').VueWrapper|null} */
+  let wrapper = null
+
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    clearDocumentInstances()
+    clearChatsInstances()
+    vi.clearAllMocks()
+    confirmed.answer = 'accept'
+    confirmed.asked = []
+    api = useDocuments('story_1')
+    await api.init()
+    history = useTreeHistory('story_1')
+    // Laid out, as the outline on screen is; nothing in the tests is.
+    vi.spyOn(window.HTMLElement.prototype, 'getClientRects').mockReturnValue(
+      /** @type {any} */ ([{}])
+    )
+  })
+
+  afterEach(() => {
+    wrapper?.unmount()
+    wrapper = null
+    vi.restoreAllMocks()
+  })
+
+  const mountOnPage = async () => {
+    wrapper = mount(DocumentTree, {
+      props: { storyId: 'story_1' },
+      attachTo: document.body,
+      global: {
+        plugins: [PrimeVue, ConfirmationService, ToastService],
+        directives: { tooltip: Tooltip },
+        stubs: { ProjectMenu },
+      },
+    })
+    await flushPromises()
+    return wrapper
+  }
+
+  /** Press a key where the focus is, as the keyboard does. */
+  const press = (key, fields = {}) =>
+    (document.activeElement || document.body).dispatchEvent(
+      new window.KeyboardEvent('keydown', { key, ctrlKey: true, bubbles: true, ...fields })
+    )
+
+  const rowOf = id =>
+    /** @type {HTMLElement} */ (document.querySelector(`[data-document-id="${id}"]`))
+
+  it('takes the last change back on Control-Z in the outline, and does it again on Shift-Control-Z', async () => {
+    const chapter = api.createTextDocument(api.root.value.id, 'Elara')
+    history.rename(chapter.id, 'Mira')
+    await mountOnPage()
+    rowOf(chapter.id).focus()
+
+    press('z')
+    expect(api.get(chapter.id).title).toBe('Elara')
+
+    press('Z', { shiftKey: true })
+    expect(api.get(chapter.id).title).toBe('Mira')
+  })
+
+  it('takes it back with the focus on nothing, as a delete leaves it', async () => {
+    const chapter = api.createTextDocument(api.root.value.id, 'Elara')
+    history.trash(chapter.id)
+    await mountOnPage()
+    const focused = /** @type {HTMLElement|null} */ (document.activeElement)
+    focused?.blur()
+
+    press('z')
+    await flushPromises()
+
+    expect(api.get(chapter.id)?.parentId).toBe(api.root.value.id)
+    expect(document.activeElement).toBe(rowOf(chapter.id))
+  })
+
+  it('leaves the keys to a field, and to the rest of the app', async () => {
+    const chapter = api.createTextDocument(api.root.value.id, 'Elara')
+    history.rename(chapter.id, 'Mira')
+    await mountOnPage()
+    const elsewhere = document.createElement('button')
+    document.body.appendChild(elsewhere)
+
+    elsewhere.focus()
+    press('z')
+    expect(api.get(chapter.id).title).toBe('Mira')
+
+    const field = document.createElement('input')
+    wrapper.find('[role="tree"]').element.appendChild(field)
+    field.focus()
+    press('z')
+    expect(api.get(chapter.id).title).toBe('Mira')
+    elsewhere.remove()
+  })
+
+  it('takes back a document made without asking', async () => {
+    const folder = api.createFolder(api.root.value.id, 'Places')
+    history.created(folder.id)
+    api.createTextDocument(folder.id, 'Harbor')
+    await mountOnPage()
+
+    press('z')
+
+    expect(confirmed.asked).toEqual([])
+    expect(api.get(folder.id)).toBeNull()
+  })
+
+  it('does nothing when what a change was made to has changed since', async () => {
+    const chapter = api.createTextDocument(api.root.value.id, 'Elara')
+    history.rename(chapter.id, 'Mira')
+    api.rename(chapter.id, 'Vess')
+    await mountOnPage()
+
+    press('z')
+
+    expect(api.get(chapter.id).title).toBe('Vess')
+    expect(toastAdd).not.toHaveBeenCalled()
   })
 })

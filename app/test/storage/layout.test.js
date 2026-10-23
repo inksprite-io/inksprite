@@ -81,6 +81,36 @@ describe('where a project’s documents go', () => {
     })
   })
 
+  it('gives a name and a number to what is in the folder before what is in the trash', () => {
+    const entries = layoutProject(
+      [
+        folder(ROOT, STORY, { ordered: true }),
+        doc('old', ROOT, { title: 'Chapter', order: 0, trashed: 1000 }),
+        doc('new', ROOT, { title: 'Chapter', order: 1 }),
+        doc('next', ROOT, { title: 'Next', order: 2 }),
+      ],
+      ROOT
+    )
+    expect(paths(entries)).toMatchObject({
+      new: '01 - Chapter.md',
+      next: '02 - Next.md',
+      old: '03 - Chapter.md',
+    })
+  })
+
+  it('writes when a document went to the trash, and reads it back', () => {
+    const disk = memoryDisk()
+    const rows = sample().map(row =>
+      row.id === 'elara' ? { ...row, trashed: 1700000000000 } : row
+    )
+    writeFresh(disk, rows)
+
+    const read = readBack(disk)
+
+    expect(read.documents.find(row => row.id === 'elara')?.trashed).toBe(1700000000000)
+    expect(disk.files.get('Notes/Elara.md')).toContain('trashed: 2023-11-14')
+  })
+
   it('keeps clear of names in use by what is not a document', () => {
     const entries = layoutProject([folder(ROOT, STORY), doc('a', ROOT, { title: 'Draft' })], ROOT, [
       'Draft.md',
@@ -323,6 +353,48 @@ describe('a project written and read back', () => {
     )
     expect(front.fields).not.toHaveProperty('speakers')
     expect(readBack(disk).documents.find(d => d.id === 'ch1')?.speakers).toEqual(speakers)
+  })
+
+  it("reads a digest back onto its document, and onto the project's root", () => {
+    const digest = {
+      line: 'Who Elara is.',
+      text: 'Her history, and where she lives.',
+      of: 'x',
+      made: 1,
+    }
+    const whole = {
+      line: 'A novel and its notes.',
+      text: 'The manuscript, and notes.',
+      of: 'y',
+      made: 2,
+    }
+    const documents = sample().map(d =>
+      d.id === 'elara' ? { ...d, digest } : d.id === ROOT ? { ...d, digest: whole } : d
+    )
+    const disk = memoryDisk()
+    writeFresh(disk, documents)
+
+    expect(disk.list()).toEqual(
+      expect.arrayContaining(['.inksprite/digests/elara.json', `.inksprite/digests/${ROOT}.json`])
+    )
+    const front = readFrontmatter(/** @type {string} */ (disk.read('Notes/Elara.md')))
+    expect(front.fields).not.toHaveProperty('digest')
+    const read = readBack(disk)
+    expect(read.documents.find(d => d.id === 'elara')?.digest).toEqual(digest)
+    expect(read.documents.find(d => d.id === ROOT)?.digest).toEqual(whole)
+    expect(read.entries.get(ROOT)?.digest).toBe(true)
+  })
+
+  it('reads no digest from a file that holds none', () => {
+    const disk = memoryDisk()
+    writeFresh(disk, sample())
+    disk.write('.inksprite/digests/elara.json', '{"line": 3}\n')
+    disk.write('.inksprite/digests/ch1.json', 'not json')
+
+    const read = readBack(disk)
+
+    expect(read.documents.find(d => d.id === 'elara')).not.toHaveProperty('digest')
+    expect(read.documents.find(d => d.id === 'ch1')).not.toHaveProperty('digest')
   })
 
   it('brings back at the top what a move had out of the way when it stopped', () => {

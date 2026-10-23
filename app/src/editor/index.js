@@ -10,6 +10,14 @@
  *   for joining markdown to markdown
  * - **comments** - A comment on a passage: the markup, the helpers, the parser rules, and
  *   the entries a list shows
+ * - **suggestions** - A suggested change: its markup and parser rules, a change
+ *   laid out as one suggestion for each change in it, folded into the model's
+ *   own where it touches them, where each is, and one accepted or rejected
+ * - **suggestionText** - The same in markdown: whether a text holds any, the
+ *   text as one reader sees it, and a model's text with its markup read as meant
+ * - **comparison** - A version against the text now, laid out as a suggestion
+ *   is, for the Versions dialog to show: what a restore would take out and
+ *   bring back, and the version's own text to copy out of it
  * - **commentDraft** - The passage a new comment is being written on in the
  *   Comments tab: a range in the state, mapped through every change and tinted
  * - **state** - `createEditorState`, the keys and typed shortcuts, and the
@@ -24,6 +32,8 @@
  *   editor's menu, where it is otherwise only typed
  * - **plainSearch** - The same for a plain document, in the CodeMirror view it
  *   is shown in; loaded with that view, so not exported here
+ * - **projectSearch** - Find across a project: every document with the query,
+ *   each match on its line, counted as the document's own find counts them
  * - **plainMacros** - A card's `{{char}}`, `{{user}}` and the rest picked out
  *   in that view; loaded with it too
  * - **size** - `laysOut`, whether a document is short enough for the editor
@@ -68,7 +78,8 @@ export {
   appendContent,
   isEmptyDocument,
 } from './state.js'
-export { find, findNext, replaceCurrent, replaceAll, searchOf } from './search.js'
+export { find, findAt, findNext, replaceCurrent, replaceAll, searchOf } from './search.js'
+export { searchProject } from './projectSearch.js'
 export { spellingKey, lintAt, replaceWith, forgetWord } from './spelling.js'
 export { selectionMarkdown, markdownSlice, pasteMarkdown, readClipboard } from './clipboard.js'
 export { insertTable, insertRule, insertCodeBlock } from './insert.js'

@@ -88,14 +88,14 @@ describe('DataSection', () => {
       settings: new Set(['aiProfiles/profile_team']),
     }
 
-    it('saves what was ticked, with keys when asked, and says where it went', async () => {
+    it('saves what was ticked, with keys when asked, and leaves the download to say so', async () => {
       backup.downloadSelection.mockResolvedValue({ filename: 'inksprite-settings-2026-10-13.json' })
       const wrapper = mountSection()
 
       await exportChosen(wrapper, { pick, includeApiKeys: true })
 
       expect(backup.downloadSelection).toHaveBeenCalledWith(pick, { includeApiKeys: true })
-      expect(toast.success).toHaveBeenCalledWith('Saved inksprite-settings-2026-10-13.json')
+      expect(toast.success).not.toHaveBeenCalled()
     })
 
     it('reports an export that failed', async () => {
@@ -105,7 +105,7 @@ describe('DataSection', () => {
 
       await exportChosen(wrapper, { pick, includeApiKeys: false })
 
-      expect(toast.error).toHaveBeenCalledWith('Export failed: quota')
+      expect(toast.error).toHaveBeenCalledWith("The file couldn't be saved. quota")
     })
   })
 
@@ -198,7 +198,7 @@ describe('DataSection', () => {
       vi.unstubAllGlobals()
     })
 
-    it('asks nothing of a file that changes nothing', async () => {
+    it('does nothing with a file that changes nothing', async () => {
       backup.readDataFile.mockResolvedValue({
         kind: 'settings',
         backup: { app: 'inksprite', tables: {} },
@@ -209,7 +209,8 @@ describe('DataSection', () => {
       await pickFile(wrapper, new File(['{}'], 'inksprite-settings.json'))
 
       expect(confirmRequire).not.toHaveBeenCalled()
-      expect(toast.info).toHaveBeenCalledWith('Everything in this file is here already.')
+      expect(backup.importSettings).not.toHaveBeenCalled()
+      expect(toast.info).not.toHaveBeenCalled()
     })
   })
 
@@ -259,7 +260,7 @@ describe('DataSection', () => {
       vi.unstubAllGlobals()
     })
 
-    it('says what it added, by the names it was given, when no settings changed', async () => {
+    it('takes one that only adds without asking, and says what it added by the names it was given', async () => {
       readSelection()
       backup.importSelection.mockResolvedValue({
         projects: ['Thief (2)'],
@@ -270,8 +271,10 @@ describe('DataSection', () => {
       const wrapper = mountSection()
 
       await pickFile(wrapper, new File(['{}'], 'inksprite-export.json'))
-      await confirmRequire.mock.calls[0][0].accept()
+      await flushPromises()
 
+      expect(confirmRequire).not.toHaveBeenCalled()
+      expect(backup.importSelection).toHaveBeenCalledTimes(1)
       expect(window.location.reload).not.toHaveBeenCalled()
       expect(toast.success).toHaveBeenCalledWith('Added the project Thief (2).')
       vi.unstubAllGlobals()
@@ -314,7 +317,7 @@ describe('DataSection', () => {
 
       await wrapper.find('[data-action="reveal"]').trigger('click')
       await flushPromises()
-      expect(toast.error).toHaveBeenCalledWith("The folder couldn't be shown: gone")
+      expect(toast.error).toHaveBeenCalledWith("The folder couldn't be shown. gone")
     })
   })
 })

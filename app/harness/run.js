@@ -48,6 +48,8 @@ import { resolveRouting } from '@/ai/routing.js'
 import '@/ai/tools/index.js'
 import { toolRegistry } from '@/ai/tools/registry.js'
 import { BUILT_IN_SKILLS, setExperimentalSkills } from '@/ai/skills/index.js'
+import { PREVIEWS, inPreview } from '@/config/preview.js'
+import { documentPath } from '@/utils/documentPath.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
@@ -162,6 +164,11 @@ Usage: npm run transcripts -- --scenario <name> [options]
  * @property {string[]} [skills] - Skills to put in the writer's library before the
  *   first run: folder names under skills/, or paths relative to the scenario,
  *   each holding a SKILL.md and its files. See seedSkills in seed.js.
+ * @property {string[]} [previews] - Features in preview the scenario is about,
+ *   which have to be on in the environment the batch starts in
+ * @property {boolean} [rewind] - Once the last turn is in, the writer rewinds the
+ *   chat to their first message, and the run records whether that put the
+ *   project back as it was
  *
  * @typedef {Object} Turn
  * @property {string} text - What the writer says
@@ -170,6 +177,8 @@ Usage: npm run transcripts -- --scenario <name> [options]
  *   replaced as if typed in the editor, which has to be there to replace; `pin`,
  *   documents pinned for the chat from the outline; `comments`, comments the
  *   writer leaves
+ * @property {boolean} [accept] - Once the reply is in, the writer accepts every
+ *   change the turn proposed, in the order it proposed them
  * @property {boolean} [noWrites] - The turn should change nothing
  * @property {string[]} [findsAny] - At least one of these should be read or found
  * @property {string[]} [mentions] - Regex sources the reply should match
@@ -178,12 +187,15 @@ Usage: npm run transcripts -- --scenario <name> [options]
  * @property {string[]} [notRead] - Documents the turn should not read
  * @property {boolean} [noRereads] - The turn should read nothing it already has
  * @property {string[]} [calls] - Tools the turn should call
+ * @property {string[]} [notCalls] - Tools the turn should not call
  * @property {string[]} [finds] - Documents the turn should read or turn up in a search
  * @property {string[]} [pins] - Documents that should be pinned once the turn is done
  * @property {string[]} [pinnedAtEnd] - The whole pinned set once the turn is done
  * @property {{path: string, contains: string[]}} [document] - What a document should hold afterwards
  * @property {{path: string, patterns: string[]}} [notContains] - What it should not
  * @property {string[]} [gone] - Paths that should hold nothing afterwards
+ * @property {string[]} [kept] - Paths that should still hold a document afterwards
+ * @property {string[]} [trashed] - Paths that should be in the trash afterwards
  * @property {{path: string, contains: string[]}} [summary] - What its summary should say
  * @property {CommentCheck|CommentCheck[]} [comments] - What should have become of a
  *   document's comments; see `tools.js`
@@ -489,10 +501,70 @@ function snapshot(storyId, chatId) {
       summary: document.summary || '',
     }
   }
+  // What went to the trash, by the path it had: a folder's documents go with
+  // it, and are counted rather than listed.
+  const either = (/** @type {string} */ id) => store.getDocument(id) || store.getTrashedDocument(id)
+  const trash = store.trashedOf(storyId).map(document => ({
+    path: documentPath(either, document),
+    type: document.type,
+    inside: store.trashedUnder(document.id).length,
+  }))
   return {
     pinned: (chat?.pinnedIds || []).map(id => api.pathOf(id)).filter(Boolean),
     documents,
     comments: commentsOf(storyId),
+    trash,
+  }
+}
+
+/**
+ * The writer's Accept on every change the turn put to them, in the order the
+ * turn proposed them, as clicking each in the chat would.
+ *
+ * @param {ReturnType<typeof useAIChat>} ai
+ * @param {ReturnType<typeof useChats>} chatsApi
+ * @param {string} chatId
+ * @returns {Promise<string[]>} What could not be accepted, and why
+ */
+async function acceptProposals(ai, chatsApi, chatId) {
+  const messages = chatsApi.getMessagesForChat(chatId)?.value || []
+  const reply = [...messages].reverse().find(message => message.role === 'assistant')
+  const edits = reply?.metadata?.documentEdits || []
+  /** @type {string[]} */
+  const refused = []
+  for (const [index, edit] of edits.entries()) {
+    if (edit.status !== 'proposed') continue
+    try {
+      await ai.acceptEdit(reply.id, index)
+    } catch (error) {
+      refused.push(`${edit.tool} ${edit.path}: ${error instanceof Error ? error.message : error}`)
+    }
+  }
+  return refused
+}
+
+/**
+ * Rewind the chat to the writer's first message, as the chat's Rewind does,
+ * and say whether the project is back as it was before the first turn. Only
+ * the text documents are compared, by path and content; what the writer
+ * changed between turns is not the rewind's to undo.
+ *
+ * @param {ReturnType<typeof useAIChat>} ai
+ * @param {ReturnType<typeof useChats>} chatsApi
+ * @param {string} storyId
+ * @param {string} chatId
+ * @param {Record<string, {content: string}>} began - The documents before the first turn
+ */
+function rewindAll(ai, chatsApi, storyId, chatId, began) {
+  const first = (chatsApi.getMessagesForChat(chatId)?.value || [])[0]
+  if (!first) return { undone: 0, left: [], differs: [] }
+  const { reverted, skipped } = ai.rewindTo(first.id)
+  const now = snapshot(storyId, chatId).documents
+  const paths = new Set([...Object.keys(began), ...Object.keys(now)])
+  return {
+    undone: reverted.length,
+    left: skipped.map(edit => `${edit.tool} ${edit.path}`),
+    differs: [...paths].filter(path => began[path]?.content !== now[path]?.content).sort(),
   }
 }
 
@@ -502,6 +574,14 @@ async function main() {
   const endpoint = await resolveEndpoint(options.endpoint)
   const model = options.model || endpoint.model
   if (!model) throw new Error(`Endpoint ${endpoint.name} names no model; pass --model`)
+  // VITE_PREVIEW is read as the app's modules load, and the tools a preview
+  // offers are registered then, so it cannot be turned on from here.
+  const off = (scenario.previews || []).filter(name => !inPreview(name))
+  if (off.length > 0) {
+    throw new Error(
+      `${scenario.name} needs the ${off.join(', ')} preview on: VITE_PREVIEW=${scenario.previews.join(',')} npm run transcripts -- --scenario ${scenario.name}`
+    )
+  }
   const prompt = await resolvePrompt(options.prompt || scenario.prompt)
   const descriptions = options.descriptions ? await applyDescriptions(options.descriptions) : null
   // Before the descriptions are read off the registry by anything: a skill
@@ -526,6 +606,8 @@ async function main() {
     // The tool definitions are code, so the commit says what they were —
     // unless a descriptions file stood in for some of them.
     commit: currentCommit(),
+    // So are the previews: one changes what a tool does, or whether it is there.
+    previews: Object.keys(PREVIEWS).filter(inPreview),
     ...(descriptions ? { descriptions } : {}),
     ...(skills.length ? { skills } : {}),
     messages: scenario.messages,
@@ -555,6 +637,9 @@ async function main() {
 
     try {
       const { storyId } = await seedProject(scenario.fixtureDir)
+      // Whether the writer is asked before a document changes, which is the
+      // app's to set, not the chat's.
+      useApplicationState().setApplyEdits(scenario.applyEdits === 'ask' ? 'ask' : 'auto')
       const chatsApi = useChats(storyId)
       await chatsApi.init()
       // Stamped from the profile under test, the way the app stamps one, so
@@ -571,6 +656,7 @@ async function main() {
       const ai = useAIChat(storyId, chat.id)
       /** @type {any[]} The project after each turn */
       const states = []
+      const began = snapshot(storyId, chat.id).documents
       for (const message of scenario.messages) {
         // The writer's own change to a document between turns, so a later
         // turn is working from a project that moved under it.
@@ -602,7 +688,9 @@ async function main() {
         // checks of what it did to them.
         const before = { comments: commentsOf(storyId), words: wordsOf(storyId) }
         await ai.sendMessage(typeof message === 'string' ? message : message.text)
-        states.push({ ...snapshot(storyId, chat.id), before })
+        const accept = typeof message !== 'string' && message.accept
+        const refused = accept ? await acceptProposals(ai, chatsApi, chat.id) : []
+        states.push({ ...snapshot(storyId, chat.id), before, ...(accept ? { refused } : {}) })
       }
       await writeFile(join(outDir, `state-${n}.json`), JSON.stringify(states, null, 2))
       await requestsSettled()
@@ -634,6 +722,8 @@ async function main() {
       )
       await writeFile(join(outDir, `run-${n}.json`), JSON.stringify(messages, null, 2))
       await writeFile(join(outDir, `requests-${n}.json`), JSON.stringify(requests, null, 2))
+      // Once the chat as it ended is written down, since a rewind takes it back.
+      if (scenario.rewind) record.rewind = rewindAll(ai, chatsApi, storyId, chat.id, began)
 
       // Which upstream served each request, in order. A run whose provider
       // changed between its title call and its turn is worth knowing about.
@@ -649,6 +739,12 @@ async function main() {
       say(
         `run ${n}/${options.runs}  ${seconds(durationMs).padStart(7)}  ${String(calls).padStart(2)} tool calls  ${String(record.words).padStart(5)} words  ${usage.promptTokens}+${usage.completionTokens} tokens  ${[...new Set(providers)].join('/')}`
       )
+      if (record.rewind) {
+        const { undone, left, differs } = record.rewind
+        say(
+          `  rewound: ${undone} undone${left.length ? `, ${left.length} left` : ''}, ${differs.length ? `differs at ${differs.join(', ')}` : 'project as it began'}`
+        )
+      }
     } catch (error) {
       record.error = error instanceof Error ? error.message : String(error)
       record.durationMs = Date.now() - started

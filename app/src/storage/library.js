@@ -235,41 +235,62 @@ export function libraryStorage(disk, options = {}) {
   // The projects there are: each folder with a story file, its story and root
   // read, nothing else until it is opened.
   const list = () => {
-    listing ??= (async () => {
-      const found = await disk.projects()
-      for (const name of found.taken) libraryTaken.add(nameKey(name))
-      const texts = await disk.read(
-        found.projects.flatMap(dir => [under(dir, STORY_FILE), under(dir, FOLDER_FILE)])
-      )
-      for (const dir of found.projects) {
-        /** @type {any} */
-        let story
-        try {
-          story = JSON.parse(texts[under(dir, STORY_FILE)] || '')
-        } catch {
-          continue
-        }
-        if (!story || typeof story.id !== 'string' || projects.has(story.id)) continue
-        const { schema: written = 0, ...row } = story
-        if (written > schema) {
-          console.warn(`${dir} was written by a newer inksprite, and is left as it is`)
-          continue
-        }
-        const project = newProject(row.id)
-        project.dir = dir
-        project.story = row
-        project.root = readFolderFile(
-          texts[under(dir, FOLDER_FILE)] || '',
-          { storyId: row.id, parentId: row.id, order: 0 },
-          dir,
-          title => stemFits(title, dir),
-          () => rootIdFor(row.id)
-        ).document
-        project.root.id = rootIdFor(row.id)
-        projects.set(row.id, project)
-      }
-    })()
+    listing ??= readList()
     return listing
+  }
+
+  /**
+   * Read which projects the library holds, and keep those not known yet.
+   * With `keep`, the list is read again after another window changed it: a
+   * project known already takes its folder, story and root from the disk,
+   * and one gone from it is forgotten, but for those in `keep`, which this
+   * window has open and which no other window has changed.
+   *
+   * @param {Set<string>|null} [keep]
+   */
+  const readList = async (keep = null) => {
+    const found = await disk.projects()
+    if (keep) libraryTaken.clear()
+    for (const name of found.taken) libraryTaken.add(nameKey(name))
+    const texts = await disk.read(
+      found.projects.flatMap(dir => [under(dir, STORY_FILE), under(dir, FOLDER_FILE)])
+    )
+    /** @type {Set<string>} */
+    const listed = new Set()
+    for (const dir of found.projects) {
+      /** @type {any} */
+      let story
+      try {
+        story = JSON.parse(texts[under(dir, STORY_FILE)] || '')
+      } catch {
+        continue
+      }
+      if (!story || typeof story.id !== 'string' || listed.has(story.id)) continue
+      const { schema: written = 0, ...row } = story
+      if (written > schema) {
+        console.warn(`${dir} was written by a newer inksprite, and is left as it is`)
+        continue
+      }
+      listed.add(row.id)
+      const known = projects.get(row.id)
+      if (known && (!keep || keep.has(row.id))) continue
+      const project = known || newProject(row.id)
+      project.dir = dir
+      project.story = row
+      project.root = readFolderFile(
+        texts[under(dir, FOLDER_FILE)] || '',
+        { storyId: row.id, parentId: row.id, order: 0 },
+        dir,
+        title => stemFits(title, dir),
+        () => rootIdFor(row.id)
+      ).document
+      project.root.id = rootIdFor(row.id)
+      projects.set(row.id, project)
+    }
+    if (!keep) return
+    for (const [id, project] of projects) {
+      if (project.dir && !listed.has(id) && !keep.has(id)) projects.delete(id)
+    }
   }
 
   /**
@@ -1079,6 +1100,32 @@ export function libraryStorage(disk, options = {}) {
         return [...projects.values()]
           .filter(project => project.dir && project.story)
           .map(project => structuredClone(/** @type {Story} */ (project.story)))
+      }),
+
+    reopenProject: storyId =>
+      inTurn(async () => {
+        await list()
+        const project = projects.get(storyId)
+        if (!project?.dir) return
+        // What was read of its folder goes, to be read again when asked for.
+        Object.assign(project, {
+          loaded: false,
+          rows: new Map(),
+          entries: new Map(),
+          seen: new Map(),
+          taken: [],
+          chats: null,
+          lines: new Map(),
+        })
+        // Its folder, record and root as the disk has them now; the others
+        // as they were.
+        await (listing = readList(new Set([...projects.keys()].filter(id => id !== storyId))))
+      }),
+
+    refreshProjects: keep =>
+      inTurn(async () => {
+        // Never listed, the list is read whole when first asked for.
+        if (listing) await (listing = readList(new Set(keep)))
       }),
 
     story: id =>

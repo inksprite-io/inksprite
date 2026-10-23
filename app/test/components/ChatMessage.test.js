@@ -1,3 +1,4 @@
+/* global structuredClone */
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { ref, computed, nextTick } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
@@ -171,7 +172,7 @@ describe('ChatMessage whose turn failed', () => {
   it('says why, where the reply would have been, instead of waiting', () => {
     const wrapper = failed()
 
-    expect(wrapper.find('[data-answer-error]').text()).toContain('No reply: Server error')
+    expect(wrapper.find('[data-answer-error]').text()).toContain('No reply came. Server error')
     expect(wrapper.findAll('.typing-dot')).toHaveLength(0)
   })
 
@@ -179,7 +180,9 @@ describe('ChatMessage whose turn failed', () => {
     const wrapper = failed({ content: 'Half a' })
 
     expect(wrapper.text()).toContain('Half a')
-    expect(wrapper.find('[data-answer-error]').text()).toContain('Cut off: Server error')
+    expect(wrapper.find('[data-answer-error]').text()).toContain(
+      'The reply was cut off. Server error'
+    )
   })
 
   it('asks again from the message', async () => {
@@ -462,6 +465,114 @@ describe('ChatMessage with a server’s tool waiting on the writer', () => {
     askApproval('m2', call)
 
     expect(show().find('[data-approval]').exists()).toBe(false)
+  })
+
+  it('asks to save a page by its address and folder, and always allows every one', async () => {
+    const { askApproval } = await import('../../src/composables/useToolApprovals.js')
+    const decided = askApproval('m1', {
+      id: 'c2',
+      type: 'function',
+      function: {
+        name: 'save_web_page',
+        arguments: JSON.stringify({
+          url: 'https://example.org/standards.pdf',
+          folder: 'References/',
+          title: 'Maths standards',
+        }),
+      },
+    })
+    const wrapper = show()
+    await nextTick()
+
+    const block = wrapper.find('[data-approval]')
+    expect(block.text().replace(/\s+/g, ' ')).toContain(
+      'Save https://example.org/standards.pdf to References as Maths standards'
+    )
+    expect(block.find('pre').exists()).toBe(false)
+
+    await block.find('[data-action="always"]').trigger('click')
+    expect(await decided).toBe('always')
+  })
+
+  it('asks to save a page to the top of the project when it names no folder', async () => {
+    const { askApproval } = await import('../../src/composables/useToolApprovals.js')
+    askApproval('m1', {
+      id: 'c3',
+      type: 'function',
+      function: { name: 'save_web_page', arguments: '{"url":"https://example.org/games"}' },
+    })
+    const wrapper = show()
+    await nextTick()
+
+    expect(wrapper.find('[data-approval]').text().replace(/\s+/g, ' ')).toContain(
+      'Save https://example.org/games to the project'
+    )
+  })
+  it('asks a tool’s own question, and lets it be allowed always', async () => {
+    const { askApproval } = await import('../../src/composables/useToolApprovals.js')
+    const decided = askApproval(
+      'm1',
+      { id: 'c4', type: 'function', function: { name: 'explore_documents', arguments: '{}' } },
+      'Explore the project (~1.5M tokens)?'
+    )
+    const wrapper = show()
+    await nextTick()
+
+    const block = wrapper.find('[data-approval]')
+    expect(block.find('[data-question]').text()).toBe('Explore the project (~1.5M tokens)?')
+    expect(block.find('pre').exists()).toBe(false)
+
+    await block.find('[data-action="always"]').trigger('click')
+    expect(await decided).toBe('always')
+  })
+})
+
+describe('ChatMessage with an answer a tool showed the writer', () => {
+  const explored = {
+    metadata: {
+      apiTrajectory: [
+        {
+          role: 'assistant',
+          content: null,
+          tool_calls: [
+            {
+              id: 'c1',
+              type: 'function',
+              function: { name: 'explore_documents', arguments: '{"path":"Notes"}' },
+            },
+          ],
+        },
+        {
+          role: 'tool',
+          tool_call_id: 'c1',
+          content: '{"path":"Notes/","about":"The cast, one entry each."}',
+          _shown: {
+            title: 'Explored Notes/',
+            icon: 'pi-compass',
+            text: 'The cast, **one entry each**.',
+            more: { title: 'Listing', text: 'Notes/Elara — 5 words\n  A knight.' },
+          },
+        },
+      ],
+    },
+  }
+
+  it('shows it open where the call was made, with the listing folded under it', async () => {
+    const wrapper = show(explored)
+    const block = wrapper.find('[data-shown]')
+
+    expect(block.find('[data-shown-title]').text()).toBe('Explored Notes/')
+    expect(block.find('[data-find-text]').html()).toContain('<strong>one entry each</strong>')
+    expect(block.find('[data-shown-more]').attributes('style')).toContain('display: none')
+
+    await block.find('[data-shown-toggle]').trigger('click')
+    expect(block.find('[data-shown-more]').text()).toContain('Notes/Elara — 5 words')
+  })
+
+  it('shows nothing of the kind for a call that showed nothing', () => {
+    const plain = structuredClone(explored)
+    delete plain.metadata.apiTrajectory[1]._shown
+    expect(show(plain).find('[data-shown]').exists()).toBe(false)
   })
 })
 

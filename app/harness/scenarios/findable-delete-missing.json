@@ -1,0 +1,16 @@
+{
+  "fixture": "findable",
+  "rewind": true,
+  "messages": [
+    {
+      "text": "Delete the notes from the 30 September meeting.",
+      "noWrites": true,
+      "kept": ["Notes/Meeting 2026-09-09", "Notes/Standups/2026-09-25"]
+    },
+    {
+      "text": "Delete the vendor shortlist in the archive.",
+      "kept": ["Archive/Reranker spike", "Archive/Retrieval design v0"],
+      "mentions": ["Embedding vendor comparison"]
+    }
+  ]
+}

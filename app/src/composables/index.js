@@ -8,7 +8,7 @@
  * - **useAIChat** - A chat turn: context, request, tool calls, and streaming into a message
  * - **useAIConfig** - AI configuration (provider + model)
  * - **useModelLists** - The models each provider serves, app-wide: asked for on Connect or Refresh, never as an address is typed
- * - **useAISummarize** - Summarize a document
+ * - **useExplore** - Exploring a folder, a document or the project for the model, on the chat's model: asked first with its size, then the job
  * - **useProfiles** - The chat profiles: how a chat is run, built-in and saved
  * - **useSkills** - The writer's own skills: the library, and when it has been read
  * - **useLoadedSkills** - The skills a chat has loaded, read off its messages, and dropping one
@@ -22,6 +22,8 @@
  * - **useChats** - Chat session management
  * - **useChatSettings** - One chat's settings and profile, started or not
  * - **useBackup** - Whole-database export and restore, and single chats, projects and settings as files
+ * - **useTrash** - The trash: what a project's holds of its documents and chats, and the projects in it, to restore or delete for good
+ * - **useVersions** - A text document's versions, listed, compared with the text now, restored, named and kept; and the Versions dialog's state
  * - **useNarration** - A project read aloud: its voices and hints, a document's speakers, and the readings
  * - **useComments** - The writer's comments in a project, by document, kept up as they are typed; going to one, and resolving it
  * - **useSpeech** - Something read aloud then and there, a line at a time: a chat message. One thing at a time, app-wide
@@ -52,8 +54,11 @@
  * - **usePlainText** - Turn a document plain or back, with an undo when that rewrote its text
  * - **useLongPress** - A finger held still on something, for what a right-click opens elsewhere
  * - **useTreeDrop** - A document dragged onto a folder's row goes into the folder, and a shut
- *   one held over opens
+ *   one held over opens; the folder a drop would go into, shown whole
+ * - **useTreeHistory** - Command-Z and Shift-Command-Z for what the writer does in the outline:
+ *   making, renaming, moving and deleting documents
  * - **useFindKey** - Command-F (Control-F off a Mac) opens the find of the panel the writer is in
+ * - **useProjectSearch** - The search across a project: what is looked for, what it finds, going to a match, and Command-Shift-F
  * - **useChatFind** - Finding in a chat, most of which is not in the page: counted in the messages, gone to and highlighted in the page
  * - **useTheme** - The page in the writer's theme, following the system's while that is the one chosen (`useSystemSettings.js`)
  * - **useUpdates** - In the desktop app, an update downloaded as soon as there is one, and a toast to restart into it; in a browser, a toast to reload into a new build
@@ -106,6 +111,7 @@ export { useSidebarTab } from './useSidebarTab.js'
 export { useEditorRequest } from './useEditorRequest.js'
 export { useChatRequest } from './useChatRequest.js'
 export { useFocusMode, useFocusModeKeys } from './useFocusMode.js'
+export { useProjectSearch, useProjectSearchKey } from './useProjectSearch.js'
 export { useTopmostEscape } from './useTopmostEscape.js'
 export { useCopyPath } from './useCopyPath.js'
 export { useDocumentLinks } from './useDocumentLinks.js'

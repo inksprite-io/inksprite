@@ -34,9 +34,26 @@ function generateStoryId() {
 
 export const useStoriesStore = defineStore('stories', () => {
   /**
+   * Projects by id, those in the trash aside: what the project list, the
+   * switcher and everything else read.
    * @type {import('vue').Ref<Map<string, Story>>}
    */
   const stories = ref(new Map())
+
+  /**
+   * Projects in the trash by id, kept out of `stories`; see `utils/trash.js`.
+   * @type {import('vue').Ref<Map<string, Story>>}
+   */
+  const trash = ref(new Map())
+
+  /**
+   * Keep a project's record in the map it belongs in, and out of the other.
+   * @param {Story} story
+   */
+  function place(story) {
+    ;(story.trashed ? stories : trash).value.delete(story.id)
+    ;(story.trashed ? trash : stories).value.set(story.id, story)
+  }
 
   // Get sync store instance
   const syncStore = useSyncStore()
@@ -48,9 +65,7 @@ export const useStoriesStore = defineStore('stories', () => {
   async function initialize() {
     try {
       const loaded = await storage.stories()
-      loaded.forEach(story => {
-        stories.value.set(story.id, story)
-      })
+      loaded.forEach(place)
       console.log(`Loaded ${loaded.length} stories from database`)
     } catch (error) {
       console.error('Failed to load stories from database:', error)
@@ -82,6 +97,54 @@ export const useStoriesStore = defineStore('stories', () => {
 
   // Auto-initialize when store is created
   ensureInitialized()
+
+  /**
+   * Read every project's record again, after another window changed the
+   * list: those come and gone, and the rest as written there. Those in
+   * `keep`, open here, are this window's and stay as they are.
+   *
+   * @param {string[]} keep
+   * @returns {Promise<void>}
+   */
+  async function refresh(keep) {
+    if (!initializePromise.value) return
+    await initializePromise.value
+    const kept = new Set(keep)
+    try {
+      const loaded = await storage.stories()
+      const found = new Set(loaded.map(story => story.id))
+      for (const map of [stories.value, trash.value]) {
+        for (const id of [...map.keys()]) if (!found.has(id) && !kept.has(id)) map.delete(id)
+      }
+      for (const story of loaded) if (!kept.has(story.id)) place(story)
+    } catch (error) {
+      console.error('Failed to read the projects again:', error)
+    }
+  }
+
+  /**
+   * Read a project again as this window takes it up, not having had it
+   * since it loaded (see `platform/windows.js`): its record and root, read
+   * for the list of projects, and in the library what was read of its
+   * folder, may have been read while another window had it, and be behind.
+   * A project whose tree is loaded was read whole while no other window had
+   * it, and is as it was.
+   *
+   * @param {string} storyId
+   * @returns {Promise<void>}
+   */
+  async function readAfresh(storyId) {
+    const documentsStore = useDocumentsStore()
+    if (documentsStore.isStoryLoaded(storyId)) return
+    try {
+      await storage.reopenProject(storyId)
+      const story = await storage.story(storyId)
+      if (story) place(story)
+      await documentsStore.refreshRoots([storyId])
+    } catch (error) {
+      console.error(`Failed to read ${storyId} again:`, error)
+    }
+  }
 
   /**
    * Create a new project: a story row and an empty root node. What goes under
@@ -157,14 +220,76 @@ export const useStoriesStore = defineStore('stories', () => {
   }
 
   /**
-   * Delete a story and cascade to all children
+   * Take a project's record as another device left it, synced (`cloud/`):
+   * kept as it came, and saved.
+   *
+   * @param {Story} row
+   */
+  function receive(row) {
+    place(row)
+    syncStore.trackChange('stories', row.id, row)
+  }
+
+  /**
+   * Move a project to the trash, whole: its documents and chats stay as they
+   * are, and come back with it.
+   *
+   * @param {string} storyId
+   * @param {number} [at] - When, if not now
+   * @returns {Promise<Story>}
+   * @throws {Error} If the project is not found
+   */
+  async function trashStory(storyId, at = Date.now()) {
+    await ensureInitialized()
+    const story = stories.value.get(storyId)
+    if (!story) {
+      throw new Error(`Failed to trash story, '${storyId}' not found`)
+    }
+    /** @type {Story} */
+    const next = { ...story, trashed: at }
+    place(next)
+    syncStore.trackChange('stories', storyId, next)
+    return next
+  }
+
+  /**
+   * Bring a project back from the trash.
+   *
+   * @param {string} storyId
+   * @returns {Promise<Story>}
+   * @throws {Error} If the project is not in the trash
+   */
+  async function restoreStory(storyId) {
+    await ensureInitialized()
+    const story = trash.value.get(storyId)
+    if (!story) {
+      throw new Error(`Failed to restore story, '${storyId}' is not in the trash`)
+    }
+    /** @type {Story} */
+    const next = { ...story }
+    delete next.trashed
+    place(next)
+    syncStore.trackChange('stories', storyId, next)
+    return next
+  }
+
+  /**
+   * The projects in the trash, the most recent first.
+   * @returns {Story[]}
+   */
+  function trashedStories() {
+    return Array.from(trash.value.values()).sort((a, b) => (b.trashed ?? 0) - (a.trashed ?? 0))
+  }
+
+  /**
+   * Delete a story, in the list or in the trash, and cascade to all children
    * @param {string} storyId - Story ID to delete
    * @throws {Error} If story not found
    */
   async function deleteStory(storyId) {
     await ensureInitialized()
 
-    const story = stories.value.get(storyId)
+    const story = stories.value.get(storyId) ?? trash.value.get(storyId)
     if (!story) {
       throw new Error(`Failed to delete story, '${storyId}' not found`)
     }
@@ -182,10 +307,12 @@ export const useStoriesStore = defineStore('stories', () => {
     // tree, so one call reaches all of it.
     await useDocumentsStore().deleteStoryDocuments(storyId)
 
-    // Delete chats -> messages
+    // Delete chats -> messages, those in the trash too. A chat's messages are
+    // read first: only those read are known to be there to delete.
     await chatsStore.loadChatsForStory(storyId)
-    const chats = chatsStore.getChatsForStory(storyId)
+    const chats = [...chatsStore.getChatsForStory(storyId), ...chatsStore.trashedOf(storyId)]
     for (const chat of chats) {
+      if (!messagesStore.isChatLoaded(chat.id)) await messagesStore.loadMessagesForChat(chat.id)
       messagesStore.deleteMessagesForChat(chat.id)
       chatsStore.deleteChat(chat.id)
     }
@@ -193,6 +320,7 @@ export const useStoriesStore = defineStore('stories', () => {
     useProjectViewsStore().deleteView(storyId)
     syncStore.trackDelete('stories', storyId)
     stories.value.delete(storyId)
+    trash.value.delete(storyId)
   }
 
   /**
@@ -208,7 +336,7 @@ export const useStoriesStore = defineStore('stories', () => {
 
     const story = await storage.story(storyId)
     if (!story) return null
-    stories.value.set(story.id, story)
+    place(story)
     return story
   }
 
@@ -270,23 +398,30 @@ export const useStoriesStore = defineStore('stories', () => {
    */
   async function loadNames() {
     await ensureInitialized()
-    await useDocumentsStore().loadRoots([...stories.value.keys()])
+    await useDocumentsStore().loadRoots([...stories.value.keys(), ...trash.value.keys()])
   }
 
   return {
     // State
     stories,
+    trash,
     isInitialized,
 
     // Actions
     createStory,
     updateStory,
+    trashStory,
+    restoreStory,
+    trashedStories,
     deleteStory,
+    receive,
     loadStory,
     getStory,
     getAllStories,
     getAllStoriesOrdered,
     ensureInitialized,
+    refresh,
+    readAfresh,
     freeName,
     loadNames,
   }

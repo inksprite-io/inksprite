@@ -49,6 +49,7 @@ import {
 } from 'prosemirror-markdown'
 import { schema } from './schema.js'
 import { OPEN_MARKUP, closeMarkup, commentMarkupPlugin, settleComments } from './comments.js'
+import { SUGGESTION_MARKUP, closeSuggestion, suggestionMarkupPlugin } from './suggestions.js'
 
 /**
  * @typedef {import('prosemirror-model').Node} Node
@@ -79,7 +80,9 @@ function cellsIn(line) {
  * @returns {import('markdown-it').MarkdownIt}
  */
 function tokenizerOf() {
-  const md = new MarkdownIt('default', { html: false }).use(commentMarkupPlugin)
+  const md = new MarkdownIt('default', { html: false })
+    .use(commentMarkupPlugin)
+    .use(suggestionMarkupPlugin)
   const ruler = /** @type {{__rules__: {name: string, fn: Function, alt: string[]}[]}} */ (
     /** @type {unknown} */ (md.block.ruler)
   )
@@ -151,6 +154,14 @@ const parser = new MarkdownParser(schema, tokenizerOf(), {
   td: { block: 'table_cell', getAttrs: alignmentOf },
   comment: {
     mark: 'comment',
+    getAttrs: token => ({ id: token.attrGet('id') }),
+  },
+  insertion: {
+    mark: 'insertion',
+    getAttrs: token => ({ id: token.attrGet('id') }),
+  },
+  deletion: {
+    mark: 'deletion',
     getAttrs: token => ({ id: token.attrGet('id') }),
   },
 })
@@ -307,12 +318,52 @@ function endsLine(parent, index) {
   return true
 }
 
+/** @typedef {(state: MarkdownSerializerState, node: Node, parent: Node, index: number) => void} BlockWriter */
+
+/**
+ * Block serializers with a whole block's suggestion written around the
+ * block, each half on a line of its own: the open, the block, then the close
+ * and the id.
+ *
+ * @param {Record<string, BlockWriter>} writers
+ * @returns {Record<string, BlockWriter>}
+ */
+function withBlockSuggestions(writers) {
+  return Object.fromEntries(
+    Object.entries(writers).map(([name, write]) => [
+      name,
+      (state, node, parent, index) => {
+        const mark = node.isBlock
+          ? node.marks.find(
+              each => each.type === schema.marks.insertion || each.type === schema.marks.deletion
+            )
+          : undefined
+        if (!mark) {
+          write(state, node, parent, index)
+          return
+        }
+        const kind = /** @type {'insertion'|'deletion'} */ (mark.type.name)
+        state.write(SUGGESTION_MARKUP[kind].open)
+        state.ensureNewLine()
+        write(state, node, parent, index)
+        // The close on the line after the block, not a blank line after.
+        const closing = /** @type {{flushClose: (size: number) => void}} */ (
+          /** @type {unknown} */ (state)
+        )
+        closing.flushClose(1)
+        state.write(closeSuggestion(kind, mark.attrs.id))
+        state.closeBlock(node)
+      },
+    ])
+  )
+}
+
 /**
  * The serializer `serializeMarkdown` writes with. Exported for tests, which
  * hold it to what the reference's own `serialize` writes.
  */
 export const serializer = new LinearSerializer(
-  {
+  withBlockSuggestions({
     ...nodes,
 
     bullet_list(state, node) {
@@ -368,7 +419,7 @@ export const serializer = new LinearSerializer(
       const inRun = index > 0 && parent.child(index - 1).type === node.type
       state.write(inRun ? '\\\n' : '\n')
     },
-  },
+  }),
   {
     ...defaultMarkdownSerializer.marks,
     strikethrough: { open: '~~', close: '~~', mixable: true, expelEnclosingWhitespace: true },
@@ -381,6 +432,18 @@ export const serializer = new LinearSerializer(
       // inside the comment rather than the comment reopening around each.
       // Its spaces stay in it: a comment written in pieces around another
       // often starts one at a space, and moved out, the space would part it.
+      mixable: false,
+    },
+    // A suggestion's halves the same way, just inside any comment: what it
+    // would put in and take out, then the id its thread is kept by.
+    insertion: {
+      open: SUGGESTION_MARKUP.insertion.open,
+      close: (_state, mark) => closeSuggestion('insertion', mark.attrs.id),
+      mixable: false,
+    },
+    deletion: {
+      open: SUGGESTION_MARKUP.deletion.open,
+      close: (_state, mark) => closeSuggestion('deletion', mark.attrs.id),
       mixable: false,
     },
   }

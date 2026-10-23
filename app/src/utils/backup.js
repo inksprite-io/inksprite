@@ -315,6 +315,10 @@ const UPGRADES = {
   // v31 added `docBases`, the linked documents' Google Docs as last synced,
   // which backups leave out: a restored document's next sync is a first one.
   31: tables => tables,
+
+  // v32 added sync's own tables, which a backup never holds.
+  32: tables => tables,
+  33: tables => tables,
 }
 
 /**
@@ -361,10 +365,15 @@ function fromBase64(base64) {
  * @property {string} mime - The blob's type
  * @property {string} data - Its bytes, base64
  *
+ * Going into a zip (`utils/backupArchive.js`), the bytes stay a Blob, which
+ * the archive keeps as an entry of their own.
+ *
  * @param {import('../types/models.js').StoredFile[]} rows
- * @returns {Promise<SerializedFile[]>}
+ * @param {{asBlobs?: boolean}} [options]
+ * @returns {Promise<SerializedFile[]|import('../types/models.js').StoredFile[]>}
  */
-export async function serializeFiles(rows) {
+export async function serializeFiles(rows, { asBlobs = false } = {}) {
+  if (asBlobs) return rows.map(row => ({ id: row.id, storyId: row.storyId, blob: row.blob }))
   return Promise.all(
     rows.map(async row => ({
       id: row.id,
@@ -376,16 +385,22 @@ export async function serializeFiles(rows) {
 }
 
 /**
- * The rows back as the database holds them.
+ * The rows back as the database holds them: from base64, or as the Blob a
+ * zip's row already holds.
  *
- * @param {SerializedFile[]} rows
+ * @param {Array<SerializedFile|import('../types/models.js').StoredFile>} rows
  * @returns {import('../types/models.js').StoredFile[]}
  */
 export function deserializeFiles(rows) {
   return rows.map(row => ({
     id: row.id,
     storyId: row.storyId,
-    blob: new Blob([fromBase64(row.data || '')], { type: row.mime || '' }),
+    blob:
+      'blob' in row && row.blob instanceof Blob
+        ? row.blob
+        : new Blob([fromBase64(/** @type {SerializedFile} */ (row).data || '')], {
+            type: /** @type {SerializedFile} */ (row).mime || '',
+          }),
   }))
 }
 
@@ -401,9 +416,13 @@ export function deserializeFiles(rows) {
  * @property {string} data - Its bytes, base64, or empty
  *
  * @param {import('../types/models.js').CardFile[]} rows
- * @returns {Promise<SerializedCardFile[]>}
+ * @param {{asBlobs?: boolean}} [options] - Going into a zip, the PNG stays a Blob
+ * @returns {Promise<SerializedCardFile[]|import('../types/models.js').CardFile[]>}
  */
-export async function serializeCardFiles(rows) {
+export async function serializeCardFiles(rows, { asBlobs = false } = {}) {
+  if (asBlobs) {
+    return rows.map(row => ({ id: row.id, card: row.card, image: row.image, thumbnail: null }))
+  }
   return Promise.all(
     rows.map(async row => ({
       id: row.id,
@@ -415,18 +434,28 @@ export async function serializeCardFiles(rows) {
 }
 
 /**
- * The rows back as the database holds them, without thumbnails.
+ * The rows back as the database holds them, without thumbnails: from
+ * base64, or as the Blob a zip's row already holds.
  *
- * @param {SerializedCardFile[]} rows
+ * @param {Array<SerializedCardFile|import('../types/models.js').CardFile>} rows
  * @returns {import('../types/models.js').CardFile[]}
  */
 export function deserializeCardFiles(rows) {
-  return rows.map(row => ({
-    id: row.id,
-    card: row.card,
-    image: row.data ? new Blob([fromBase64(row.data)], { type: row.mime || 'image/png' }) : null,
-    thumbnail: null,
-  }))
+  return rows.map(row => {
+    /** @type {any} */
+    const kept = row
+    return {
+      id: row.id,
+      card: row.card,
+      image:
+        kept.image instanceof Blob
+          ? kept.image
+          : kept.data
+            ? new Blob([fromBase64(kept.data)], { type: kept.mime || 'image/png' })
+            : null,
+      thumbnail: null,
+    }
+  })
 }
 
 /**
@@ -605,11 +634,12 @@ export function validateBackup(data, currentDbVersion, scope = 'database') {
  * @param {number} fromVersion - Schema version the rows were written at
  * @param {number} toVersion - Schema version of the running database
  * @returns {TableData}
- * @throws {Error} If a version in the range has no registered transform
+ * @throws {Error} If the rows are from a newer schema, or a version in the range
+ *   has no registered transform
  */
 export function upgradeTables(tables, fromVersion, toVersion) {
   if (fromVersion > toVersion) {
-    throw new Error(`Cannot downgrade a backup from schema version ${fromVersion} to ${toVersion}`)
+    throw new Error('This backup is from a newer inksprite. Update the app to open it.')
   }
 
   let out = tables

@@ -15,6 +15,7 @@ import { ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
 import { storage } from '@/storage/index.js'
+import { onTablesWritten } from '@/platform/windows.js'
 
 /** @typedef {import('../types/models.js').AIPrompt} AIPrompt */
 
@@ -56,6 +57,13 @@ export const useAIPromptStore = defineStore('aiPrompts', () => {
 
   /** @type {import('vue').Ref<Promise<void>|null>} */
   const initializePromise = ref(null)
+
+  // Another window wrote them: read again.
+  onTablesWritten(['aiPrompts'], async () => {
+    if (!initializePromise.value) return
+    const rows = await storage.all('aiPrompts')
+    prompts.value = new Map(rows.map(prompt => [prompt.id, prompt]))
+  })
 
   /**
    * Ensure initialization happens only once

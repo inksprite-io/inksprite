@@ -216,6 +216,39 @@ const comment = {
 }
 
 /**
+ * A suggested change's two halves: what it would put in, and what it would
+ * take out, each carrying the suggestion's id. Until the writer accepts or
+ * rejects it, the text holds both. On words, or on a whole block that has
+ * none to carry it: a code block, a rule, a table, an empty block. Neither is
+ * inclusive, so typing at the edge of one is outside it, and each excludes
+ * the other and itself: a word is in one suggestion, one way. The markdown
+ * form is in `suggestions.js`.
+ *
+ * @param {'ins'|'del'} tag
+ * @returns {import('prosemirror-model').MarkSpec}
+ */
+const suggested = tag => {
+  /** @param {HTMLElement} dom */
+  const getAttrs = dom => ({ id: dom.getAttribute('data-suggestion-id') })
+  return {
+    attrs: { id: {} },
+    inclusive: false,
+    excludes: 'insertion deletion',
+    parseDOM: [
+      { tag: `${tag}[data-suggestion-id]`, getAttrs },
+      { tag: `div[data-suggestion-id][data-suggestion=${tag}]`, getAttrs },
+    ],
+    toDOM(mark, inline) {
+      const attrs = { class: 'suggestion', 'data-suggestion-id': mark.attrs.id }
+      return inline ? [tag, attrs, 0] : ['div', { ...attrs, 'data-suggestion': tag }, 0]
+    },
+  }
+}
+
+/** The marks a block can carry: a suggestion's, put in or taken out whole. */
+const BLOCK_MARKS = 'insertion deletion'
+
+/**
  * Every node the schema has. The serializer has an entry for each of these
  * and the parser produces nothing else.
  *
@@ -246,6 +279,8 @@ export const NODE_NAMES = Object.freeze([
  */
 export const MARK_NAMES = Object.freeze([
   'comment',
+  'insertion',
+  'deletion',
   'link',
   'em',
   'strong',
@@ -261,14 +296,16 @@ export const MARK_NAMES = Object.freeze([
  */
 export const schema = new Schema({
   nodes: {
-    doc: basic.doc,
+    // Those that hold blocks, but for a list's items and a table's rows,
+    // which markdown has nowhere to mark whole.
+    doc: { ...basic.doc, marks: BLOCK_MARKS },
     paragraph: basic.paragraph,
     text: basic.text,
     heading: basic.heading,
-    blockquote: basic.blockquote,
+    blockquote: { ...basic.blockquote, marks: BLOCK_MARKS },
     bullet_list: { ...bulletList, content: 'list_item+', group: 'block' },
     ordered_list: { ...orderedList, content: 'list_item+', group: 'block' },
-    list_item: { ...listItem, content: 'paragraph block*' },
+    list_item: { ...listItem, content: 'paragraph block*', marks: BLOCK_MARKS },
     code_block,
     horizontal_rule: basic.horizontal_rule,
     hard_break: basic.hard_break,
@@ -281,6 +318,10 @@ export const schema = new Schema({
     // First, so it ranks outermost: a comment wraps whatever else is marked
     // in the passage, and serializes around it rather than inside it.
     comment,
+    // Next, for the same reason: a suggestion's words keep their own marks
+    // inside it.
+    insertion: suggested('ins'),
+    deletion: suggested('del'),
     link: basicMarks.link,
     em: basicMarks.em,
     strong: basicMarks.strong,

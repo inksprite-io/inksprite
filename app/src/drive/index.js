@@ -29,9 +29,17 @@
  * - **merge** - A document and its Doc merged three ways against the base,
  *   the Doc as the two last agreed, with where both changed the same words
  * - **sync** - A linked document and its Doc made one: read, merged,
- *   written and read again, with what the writer is asked on the way
+ *   written and read again, the document's words standing where both changed them
  * - **apply** - The Docs API's requests applied as Docs applies them: what
  *   a sync expects its write to leave
+ * - **comments** - A document's comment threads and its Doc's made one at
+ *   each sync: new ones, replies, edits, resolves and reopens both ways
+ * - **suggestions** - The Doc's suggested edits as the document's own
+ *   suggestions, laid in again at each sync, who made each, and accepting
+ *   and rejecting both ways
+ * - **folders** - Where a Doc inksprite made is kept in Drive:
+ *   `inksprite-sync`, the project, its folders, made, renamed and moved to
+ *   match the project
  * - **session** - The sign-in a sync works with, kept between syncs: a
  *   token for the hour, and a refresh token in the desktop app
  * - **api** - Asking Google with the token: a Doc read, edits written
@@ -49,8 +57,8 @@
  *
  * The importing itself is `useDriveImport`, the dialog the tree opens is
  * `DriveImportDialog.vue`, and the page the popup comes back to is
- * `GoogleCallback.vue`. Syncing is `useDriveSync`, and what it asks the
- * writer `DriveSyncDialog.vue`. Design: `.llm/google_docs_design.md`.
+ * `GoogleCallback.vue`. Syncing is `useDriveSync`. Design:
+ * `.llm/google_docs_design.md`.
  *
  * @example
  * import { driveConfig } from '@/drive/config.js'
@@ -95,5 +103,6 @@ export { writeDoc } from './write.js'
 export { mergeDocs, sameDocs, settle } from './merge.js'
 export { applyRequests } from './apply.js'
 export { syncDoc } from './sync.js'
+export { laySuggestions, settlesToSend, suggestionThreads } from './suggestions.js'
 export { forgetSession, keepSession, signInFor } from './session.js'
 export { mendExport } from './export.js'

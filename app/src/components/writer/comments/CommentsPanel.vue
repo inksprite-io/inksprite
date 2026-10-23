@@ -1,5 +1,13 @@
 <template>
-  <div class="w-full h-full flex flex-col">
+  <!-- Focusable, so the focus stays here when what had it goes: a card's
+       Accept, with the card. Mod-Z here takes back what was done. -->
+  <div
+    ref="root"
+    class="w-full h-full flex flex-col outline-none"
+    tabindex="-1"
+    data-comments-panel
+    @keydown="onKeydown"
+  >
     <PanelHeader title="Comments">
       <HeaderButton
         icon="pi pi-history"
@@ -78,17 +86,25 @@
             >
               <CommentThread
                 :passage="comment.passage"
+                :change="comment.change ?? null"
+                :settled="comment.thread.suggestion?.settled ?? ''"
+                :suggester="suggesterOf(comment.thread.suggestion)"
                 :state="comment.state"
                 :posts="comment.thread.posts"
+                :people="people"
                 :active="isCurrent(group.documentId, comment.id)"
                 @activate="pick(group.documentId, comment)"
-                @resolve="comments.resolve(group.documentId, comment.id)"
-                @reopen="reopen(group.documentId, comment.id)"
+                @resolve="keep(() => comments.resolve(group.documentId, comment.id))"
+                @reopen="keep(() => reopen(group.documentId, comment.id))"
+                @accept="keep(() => comments.accept(group.documentId, comment.id))"
+                @reject="keep(() => comments.reject(group.documentId, comment.id))"
                 @reply="text => comments.reply(group.documentId, comment.id, text)"
                 @edit="
                   (index, text) => comments.editPost(group.documentId, comment.id, index, text)
                 "
-                @delete="index => comments.deletePost(group.documentId, comment.id, index)"
+                @delete="
+                  index => keep(() => comments.deletePost(group.documentId, comment.id, index))
+                "
                 @close="comments.leave(group.documentId)"
               />
               <p
@@ -114,17 +130,23 @@ import PanelHeader from '../layout/PanelHeader.vue'
 import CommentDraft from './CommentDraft.vue'
 import CommentThread from './CommentThread.vue'
 import { useComments } from '@/composables/useComments.js'
+import { usePeople } from '@/cloud/people.js'
+import { suggesterOf } from '@/editor/comments.js'
 import { useEditor } from '@/composables/useEditor.js'
+import { isTextField } from '@/utils/focus.js'
 
 /**
  * Every comment in the project, by document in the outline's order, each as
  * its thread (see `CommentThread`): the open ones, then those whose passages
- * were deleted, struck through, and when asked for, the resolved ones.
+ * were deleted, struck through, and when asked for, the resolved ones. A
+ * suggestion is among them in the text's order, accepted or rejected from
+ * its card, and listed with the resolved once it is.
  * Picking one makes it the current comment, as the caret going into its
  * passage does: it is gone to, ringed, and has the field to reply. A resolved
  * one can be opened again on its passage. On the desktop a new comment is
  * written here too, in its place among its document's comments, on the
- * passage the text keeps tinted for it.
+ * passage the text keeps tinted for it. Mod-Z here takes back the last thing
+ * done to a comment or a suggestion, and Shift-Mod-Z does it again.
  *
  * @typedef {Object} Props
  * @property {string} storyId
@@ -138,6 +160,7 @@ const props = defineProps({
 const emit = defineEmits(['open-document'])
 
 const comments = useComments(props.storyId)
+const people = usePeople(() => props.storyId)
 const { groups, current } = comments
 const editor = useEditor()
 
@@ -276,6 +299,39 @@ watch(
   },
   { immediate: true, flush: 'post' }
 )
+
+/** @type {import('vue').Ref<HTMLElement|null>} */
+const root = ref(null)
+
+/**
+ * Do something that takes its button away with it, the focus held here
+ * first: given to nothing, it would leave Mod-Z with nothing to take back.
+ *
+ * @param {() => void} act
+ */
+const keep = act => {
+  root.value?.focus({ preventScroll: true })
+  act()
+}
+
+/**
+ * Mod-Z takes back the last thing done to a comment or a suggestion, and
+ * Shift-Mod-Z or Mod-Y does it again, as they do in the text; in a field,
+ * they are the field's.
+ *
+ * @param {KeyboardEvent} event
+ */
+const onKeydown = event => {
+  if (!(event.metaKey || event.ctrlKey) || event.altKey) return
+  if (isTextField(/** @type {Element|null} */ (event.target))) return
+  const key = event.key.toLowerCase()
+  if (key === 'z' && !event.shiftKey) comments.undo()
+  else if ((key === 'z' && event.shiftKey) || (key === 'y' && !event.shiftKey)) comments.redo()
+  else return
+  // The browser's own undo, or the desktop app's menu's, would reach into
+  // the text behind the editor's back.
+  event.preventDefault()
+}
 
 /**
  * Open a resolved comment again, or say its words are gone.

@@ -102,25 +102,37 @@ describe('ChatHistory', () => {
     })
 
     it('puts it onto the card for who it was with', async () => {
-      mockAttach.mockResolvedValue({ title: 'Elara' })
+      mockAttach.mockResolvedValue({ card: { title: 'Elara' }, named: 1 })
       const wrapper = mountHistory()
 
       await pick(wrapper)
 
       expect(mockAttach).toHaveBeenCalledWith('chat_new', 'Elara')
-      expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('onto the Elara card'))
+      expect(toast.warning).not.toHaveBeenCalled()
       expect(wrapper.emitted('select-chat')).toEqual([['chat_new']])
     })
 
-    it('says so when there is no one card for them, and imports it anyway', async () => {
-      mockAttach.mockResolvedValue(null)
+    it('says so when there is no card for them, and imports it anyway', async () => {
+      mockAttach.mockResolvedValue({ card: null, named: 0 })
       const wrapper = mountHistory()
 
       await pick(wrapper)
 
-      expect(toast.warning).toHaveBeenCalledWith(expect.stringContaining('no one card for Elara'))
-      expect(toast.success).not.toHaveBeenCalled()
+      expect(toast.warning).toHaveBeenCalledWith(
+        "This project has no card for Elara, so the chat isn't linked to one."
+      )
       expect(wrapper.emitted('select-chat')).toEqual([['chat_new']])
+    })
+
+    it('says so when there are two cards for them', async () => {
+      mockAttach.mockResolvedValue({ card: null, named: 2 })
+      const wrapper = mountHistory()
+
+      await pick(wrapper)
+
+      expect(toast.warning).toHaveBeenCalledWith(
+        "This project has more than one card for Elara, so the chat isn't linked to either."
+      )
     })
   })
 
@@ -131,7 +143,9 @@ describe('ChatHistory', () => {
 
     await pick(wrapper)
 
-    expect(toast.error).toHaveBeenCalledWith('That file is not valid JSON.')
+    expect(toast.error).toHaveBeenCalledWith(
+      "The chat couldn't be imported. That file is not valid JSON."
+    )
     expect(mockImportChat).not.toHaveBeenCalled()
   })
 })

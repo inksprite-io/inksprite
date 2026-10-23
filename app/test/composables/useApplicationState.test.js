@@ -1,4 +1,6 @@
+/* global structuredClone */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { nextTick } from 'vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 
 describe('useApplicationState', () => {
@@ -172,6 +174,82 @@ describe('useApplicationState', () => {
     })
   })
 
+  describe('askBeforeExploring', () => {
+    it('asks until switched off, and app-wide', () => {
+      const a = useApplicationState()
+      const b = useApplicationState()
+      expect(a.askBeforeExploring.value).toBe(true)
+      a.setAskBeforeExploring(false)
+      expect(b.askBeforeExploring.value).toBe(false)
+      expect(a.state.value.system.askBeforeExploring).toBe(false)
+    })
+
+    it('reads the switch from a state saved while explore was a workflow', async () => {
+      window.localStorage.setItem(
+        'inksprite_app_state',
+        JSON.stringify({
+          workflows: {
+            convert: { providerId: 'p1', model: 'strong' },
+            explore: { providerId: 'p1', model: 'cheap', askFirst: false },
+          },
+        })
+      )
+      vi.resetModules()
+      const fresh = (await import('@/composables/useApplicationState')).useApplicationState()
+
+      expect(fresh.askBeforeExploring.value).toBe(false)
+      // Moved, not copied: nothing else reads it there.
+      expect(fresh.workflows.value.explore).toEqual({
+        providerId: 'p1',
+        model: 'cheap',
+      })
+      expect(fresh.settingsForBackup().askBeforeExploring).toBe(false)
+      window.localStorage.removeItem('inksprite_app_state')
+    })
+
+    it('keeps the switch where it is now over one left where it was', async () => {
+      window.localStorage.setItem(
+        'inksprite_app_state',
+        JSON.stringify({
+          system: { askBeforeExploring: true },
+          workflows: { explore: { askFirst: false } },
+        })
+      )
+      vi.resetModules()
+      const fresh = (await import('@/composables/useApplicationState')).useApplicationState()
+
+      expect(fresh.askBeforeExploring.value).toBe(true)
+      expect(fresh.workflows.value.explore).not.toHaveProperty('askFirst')
+      window.localStorage.removeItem('inksprite_app_state')
+    })
+
+    it('takes it from a backup or a settings file made since, or from before', () => {
+      const state = useApplicationState()
+      state.restoreSettings({ askBeforeExploring: false })
+      expect(state.askBeforeExploring.value).toBe(false)
+
+      // From before, it was the Explore workflow's.
+      state.restoreSettings(
+        /** @type {any} */ ({ workflows: { explore: { providerId: null, askFirst: true } } })
+      )
+      expect(state.askBeforeExploring.value).toBe(true)
+      expect(state.workflows.value.explore).not.toHaveProperty('askFirst')
+
+      // One that has both says it where it is now.
+      state.restoreSettings(
+        /** @type {any} */ ({
+          askBeforeExploring: false,
+          workflows: { explore: { askFirst: true } },
+        })
+      )
+      expect(state.askBeforeExploring.value).toBe(false)
+
+      // And one that has neither leaves it.
+      state.restoreSettings({ theme: 'dark' })
+      expect(state.askBeforeExploring.value).toBe(false)
+    })
+  })
+
   describe('nsfwProfiles', () => {
     it('is off until switched on, and app-wide', () => {
       const a = useApplicationState()
@@ -299,6 +377,7 @@ describe('useApplicationState', () => {
         aiEnabled: false,
         aiPreset: 'preset_mine',
         applyEdits: 'ask',
+        askBeforeExploring: true,
         nsfwProfiles: true,
         blurNsfw: true,
         experimentalSkills: ['write'],
@@ -318,6 +397,17 @@ describe('useApplicationState', () => {
         highlightSpeakers: false,
         spelling: { enabled: null, dialect: null, grammar: true, words: [] },
       })
+    })
+
+    it('are plain all through, for sync to keep in IndexedDB', () => {
+      const state = useApplicationState()
+      state.setWorkflow('convert', {
+        allowedProviders: ['anthropic'],
+        ignoredProviders: ['novita'],
+      })
+      state.addWord('Zorb')
+
+      expect(() => structuredClone(state.settingsForBackup())).not.toThrow()
     })
 
     it('leaves out what belongs to this browser', () => {
@@ -396,6 +486,48 @@ describe('useApplicationState', () => {
       expect(state.applyEdits.value).toBe('auto')
       expect(state.workflows.value.convert).toMatchObject({ model: null, onImport: true })
       expect(state.workflows.value.convert).not.toHaveProperty('ignoredProviders')
+    })
+  })
+
+  describe('in more than one window', () => {
+    /** Another window of the app saves its settings. */
+    const savedElsewhere = state => {
+      const newValue = JSON.stringify(state)
+      window.localStorage.setItem('inksprite_app_state', newValue)
+      window.dispatchEvent(
+        new window.StorageEvent('storage', {
+          key: 'inksprite_app_state',
+          newValue,
+          storageArea: window.localStorage,
+        })
+      )
+    }
+
+    it('takes the settings another window saved, without saving them back', async () => {
+      const { aiEnabled } = useApplicationState()
+      await nextTick()
+
+      savedElsewhere({ system: { aiEnabled: false } })
+      await nextTick()
+      expect(aiEnabled.value).toBe(false)
+      // As the other window wrote it, not this one's fuller copy of it.
+      expect(window.localStorage.getItem('inksprite_app_state')).toBe(
+        JSON.stringify({ system: { aiEnabled: false } })
+      )
+    })
+
+    it('saves its own next change on top of them', async () => {
+      const { aiEnabled, setAiEnabled, spelling } = useApplicationState()
+      savedElsewhere({ system: { aiEnabled: false }, spelling: { dialect: 'british' } })
+      await nextTick()
+
+      setAiEnabled(true)
+      await nextTick()
+      const saved = JSON.parse(window.localStorage.getItem('inksprite_app_state'))
+      expect(saved.system.aiEnabled).toBe(true)
+      expect(saved.spelling.dialect).toBe('british')
+      expect(aiEnabled.value).toBe(true)
+      expect(spelling.value.dialect).toBe('british')
     })
   })
 })

@@ -9,6 +9,8 @@ const updates = vi.hoisted(() => ({ downloadUpdate: vi.fn(), installUpdate: vi.f
 vi.mock('../../electron/src/updates.js', () => updates)
 const settingsFile = vi.hoisted(() => ({ readSettingsFile: vi.fn() }))
 vi.mock('../../electron/src/settingsFile.js', () => settingsFile)
+const windows = vi.hoisted(() => ({ bringForward: vi.fn() }))
+vi.mock('../../electron/src/windows.js', () => windows)
 
 import { handleBridge } from '../../electron/src/bridge.js'
 
@@ -24,8 +26,11 @@ const page = ({ url = `${ORIGIN}/project/1`, parent = null } = {}) => ({
 const handlers = {}
 const listeners = {}
 
+/** Opens a window on a path of the page, as `main.js` gives the bridge. */
+const openWindow = vi.fn()
+
 beforeAll(() => {
-  handleBridge(ORIGIN)
+  handleBridge(ORIGIN, { openWindow })
   for (const [channel, handler] of ipcMain.handle.mock.calls) handlers[channel] = handler
   for (const [channel, listener] of ipcMain.on.mock.calls) listeners[channel] = listener
 })
@@ -70,6 +75,32 @@ describe('handleBridge', () => {
     expect(await handlers['update:install'](page())).toEqual({
       error: 'No update has been downloaded.',
     })
+  })
+})
+
+describe('windows', () => {
+  it('opens another window on the path the page asks for', async () => {
+    expect(await handlers['window:open'](page(), '/project/story_2')).toEqual({ value: undefined })
+    expect(openWindow).toHaveBeenCalledWith('/project/story_2')
+  })
+
+  it('says why when a window could not be opened there', async () => {
+    openWindow.mockImplementationOnce(() => {
+      throw new Error('Not a path in the app: https://elsewhere.example/')
+    })
+    expect(await handlers['window:open'](page(), 'https://elsewhere.example/')).toEqual({
+      error: 'Not a path in the app: https://elsewhere.example/',
+    })
+  })
+
+  it('brings forward the window that asks, and no other', async () => {
+    const window = { id: 'the one asking' }
+    BrowserWindow.fromWebContents.mockReturnValue(window)
+    const event = page()
+
+    await handlers['window:focus'](event)
+    expect(BrowserWindow.fromWebContents).toHaveBeenCalledWith(event.sender)
+    expect(windows.bringForward).toHaveBeenCalledWith(window)
   })
 })
 

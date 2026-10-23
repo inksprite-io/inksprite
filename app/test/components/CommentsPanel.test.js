@@ -36,8 +36,9 @@ const GROUPS = [
   },
 ]
 
-const mountPanel = (props = {}) =>
+const mountPanel = (props = {}, options = {}) =>
   mount(CommentsPanel, {
+    ...options,
     props: { storyId: 'story_1', documentId: 'doc_1', ...props },
     global: {
       plugins: [PrimeVue],
@@ -61,6 +62,8 @@ describe('CommentsPanel', () => {
     comments.replyRequest = ref(0)
     comments.addDraft = vi.fn()
     comments.cancelDraft = vi.fn()
+    comments.undo = vi.fn(() => true)
+    comments.redo = vi.fn(() => true)
   })
 
   it('lists the comments by document, each with its passage and what was said', () => {
@@ -159,6 +162,56 @@ describe('CommentsPanel', () => {
 
     expect(comments.resolve).toHaveBeenCalledWith('doc_2', 'cabcd3')
     expect(wrapper.emitted('open-document')).toBeUndefined()
+  })
+
+  it('accepts and rejects a suggestion from its card, without going to it', async () => {
+    const suggestion = {
+      id: 'sabcd1',
+      passage: 'damp',
+      state: 'open',
+      change: { out: 'damp', in: 'dry' },
+      thread: {
+        status: 'open',
+        quote: 'damp',
+        posts: [],
+        suggestion: { text: 'dry', created: 1 },
+      },
+    }
+    comments.groups = ref([{ ...GROUPS[1], comments: [...GROUPS[1].comments, suggestion] }])
+    comments.accept = vi.fn()
+    comments.reject = vi.fn()
+    const wrapper = mountPanel()
+    const card = wrapper.find('[data-comment-entry="sabcd1"]')
+    expect(card.find('[data-change-in]').text()).toBe('dry')
+
+    await card.find('[data-action="accept-suggestion"]').trigger('click')
+    await card.find('[data-action="reject-suggestion"]').trigger('click')
+
+    expect(comments.accept).toHaveBeenCalledWith('doc_2', 'sabcd1')
+    expect(comments.reject).toHaveBeenCalledWith('doc_2', 'sabcd1')
+    expect(wrapper.emitted('open-document')).toBeUndefined()
+  })
+
+  it('keeps the focus once what was done takes its button away, and takes it back with Mod-Z', async () => {
+    const wrapper = mountPanel({}, { attachTo: document.body })
+    const panel = wrapper.find('[data-comments-panel]')
+    await wrapper
+      .find('[data-comment-entry="cabcd3"] [data-action="resolve-comment"]')
+      .trigger('click')
+    expect(document.activeElement).toBe(panel.element)
+
+    await panel.trigger('keydown', { key: 'z', metaKey: true })
+    expect(comments.undo).toHaveBeenCalledTimes(1)
+    await panel.trigger('keydown', { key: 'z', metaKey: true, shiftKey: true })
+    await panel.trigger('keydown', { key: 'y', ctrlKey: true })
+    expect(comments.redo).toHaveBeenCalledTimes(2)
+
+    // In a field, the field's own.
+    comments.current.value = { documentId: 'doc_1', id: 'cabcd1', seq: 1 }
+    await flushPromises()
+    await wrapper.find('[data-reply-field]').trigger('keydown', { key: 'z', metaKey: true })
+    expect(comments.undo).toHaveBeenCalledTimes(1)
+    wrapper.unmount()
   })
 
   it('says who said each thing', () => {

@@ -8,20 +8,71 @@
     @click="$emit('activate')"
   >
     <!-- The passage, edged as it is highlighted in the text, and what is done
-         with the whole thread: resolved, or opened again. -->
+         with the whole thread: resolved, or opened again. A suggestion's
+         change instead, what it takes out struck through, and accepted or
+         rejected; settled, how it was. -->
     <div class="flex items-start gap-2">
       <p
         class="flex-1 min-w-0 border-l-2 pl-2 text-xs text-surface-500 dark:text-surface-400 line-clamp-2 break-words"
         :class="
-          state === 'open' ? 'border-yellow-500' : 'border-surface-300 dark:border-surface-600'
+          state !== 'open'
+            ? 'border-surface-300 dark:border-surface-600'
+            : change
+              ? 'border-green-500'
+              : 'border-yellow-500'
         "
         data-comment-passage
       >
-        <s v-if="state === 'stale'">{{ passage }}</s>
+        <template v-if="change">
+          <s v-if="change.out" data-change-out>{{ change.out }}</s>
+          {{ change.out && change.in ? ' ' : '' }}
+          <span
+            v-if="change.in"
+            class="text-green-700 dark:text-green-400"
+            :class="{ 'line-through': state === 'stale' }"
+            data-change-in
+            >{{ change.in }}</span
+          >
+        </template>
+        <s v-else-if="state === 'stale'">{{ passage }}</s>
         <template v-else>{{ passage }}</template>
       </p>
+      <template v-if="change && state === 'open'">
+        <Button
+          v-tooltip.bottom="tip('Reject')"
+          type="button"
+          icon="pi pi-times"
+          class="!-mt-1.5"
+          severity="secondary"
+          text
+          rounded
+          size="small"
+          aria-label="Reject"
+          data-action="reject-suggestion"
+          @click.stop="$emit('reject')"
+        />
+        <Button
+          v-tooltip.bottom="tip('Accept')"
+          type="button"
+          icon="pi pi-check"
+          class="!-mt-1.5 !-mr-1.5"
+          severity="success"
+          text
+          rounded
+          size="small"
+          aria-label="Accept"
+          data-action="accept-suggestion"
+          @click.stop="$emit('accept')"
+        />
+      </template>
+      <span
+        v-else-if="change && state === 'resolved'"
+        class="flex-none text-xs text-surface-400 dark:text-surface-500"
+        data-suggestion-settled
+        >{{ settledAs }}</span
+      >
       <Button
-        v-if="state === 'resolved'"
+        v-else-if="state === 'resolved'"
         v-tooltip.bottom="tip('Reopen')"
         type="button"
         icon="pi pi-undo"
@@ -50,9 +101,19 @@
       />
     </div>
 
+    <!-- Who suggested it, when it came from a linked Google Doc. -->
+    <p
+      v-if="change && suggester"
+      class="-mt-1.5 text-xs font-semibold text-surface-500 dark:text-surface-400"
+      data-suggestion-author
+    >
+      {{ suggester }}
+    </p>
+
     <!-- Who said what, each on a line of its own above it. A post's menu is
          on its dots, which show on hovering over it. -->
     <div
+      v-if="posts.length > 0"
       class="keeps-scrollbar flex flex-col gap-3 overscroll-contain"
       :class="[popover ? 'max-h-60 overflow-y-auto' : '', textClass]"
       data-comment-said
@@ -65,7 +126,7 @@
             class="text-xs font-semibold text-surface-500 dark:text-surface-400"
             data-comment-author
           >
-            {{ authorName(post.author) }}
+            {{ authorOf(post, people) }}
           </p>
           <Button
             type="button"
@@ -229,6 +290,8 @@ import Button from 'primevue/button'
 import Textarea from 'primevue/textarea'
 import { submitOnEnter } from '@/utils/touch.js'
 import { useScreenSize } from '@/composables/useScreenSize.js'
+import { authorOf } from '@/editor/comments.js'
+import { isMine } from '@/cloud/people.js'
 
 /**
  * A comment and what has been said on it: the passage at the top with the
@@ -238,27 +301,59 @@ import { useScreenSize } from '@/composables/useScreenSize.js'
  * field to reply is under the last post. Shared by the comment under the
  * line, the phone's bar, and the Comments tab.
  *
+ * A suggestion's thread has its change where the passage is, and Reject and
+ * Accept where Resolve is; settled, it says how. It may have no posts: the
+ * change says it.
+ *
  * Deleting the first post is deleting the comment; deleting another is
  * deleting that reply. Only the writer's own posts can be changed.
  *
  * @typedef {Object} Props
  * @property {string} passage - The words it is on, as they read
+ * @property {{out: string, in: string}|null} [change] - A suggestion's: what
+ *   it takes out and what it puts in
+ * @property {string} [settled] - How a suggestion ended: `accepted`,
+ *   `rejected` or `withdrawn`
+ * @property {string} [suggester] - Who suggested it, when it came from a
+ *   linked Google Doc
  * @property {'open'|'stale'|'resolved'} [state]
- * @property {Array<{author: string, text: string}>} posts - What has been said, in order
+ * @property {Array<{author: string, name?: string, by?: number, text: string}>} posts - What has been said, in order
+ * @property {import('@/cloud/people.js').People|null} [people] - Who is who, where the project is shared
  * @property {boolean} [active] - Picked: the field to reply shows
  * @property {boolean} [autofocus] - The reply field takes the focus as it shows
  * @property {boolean} [popover] - Under the line or in the phone's bar, at the editor's size
  */
 const props = defineProps({
   passage: { type: String, default: '' },
+  change: { type: Object, default: null },
+  settled: { type: String, default: '' },
+  suggester: { type: String, default: '' },
   state: { type: String, default: 'open' },
   posts: { type: Array, required: true },
+  people: { type: Object, default: null },
   active: { type: Boolean, default: false },
   autofocus: { type: Boolean, default: false },
   popover: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['activate', 'resolve', 'reopen', 'reply', 'edit', 'delete', 'close'])
+const emit = defineEmits([
+  'activate',
+  'resolve',
+  'reopen',
+  'accept',
+  'reject',
+  'reply',
+  'edit',
+  'delete',
+  'close',
+])
+
+/** How a settled suggestion ended, as its card says it. */
+const settledAs = computed(
+  () =>
+    ({ accepted: 'Accepted', rejected: 'Rejected', withdrawn: 'Taken back' })[props.settled] ??
+    'Resolved'
+)
 
 const { isMobile } = useScreenSize()
 
@@ -288,12 +383,6 @@ const fieldClass = computed(() =>
  */
 const tip = text => (isMobile.value ? null : text)
 
-/**
- * @param {string} author
- * @returns {string}
- */
-const authorName = author => (author === 'writer' ? 'You' : 'Assistant')
-
 /** @type {import('vue').Ref<HTMLElement|null>} */
 const host = ref(null)
 /** @type {import('vue').Ref<HTMLElement|null>} */
@@ -305,16 +394,17 @@ const menuAt = ref({ top: 0, right: 0 })
 
 /**
  * What can be done with the post whose menu is open: the writer's own can be
- * changed, while the thread is open, and any can be deleted.
+ * changed, while the thread is open (in a project shared, only their own,
+ * not another's), and any can be deleted.
  *
  * @typedef {{label: string, icon: string, action: string, run: () => void}} MenuItem
  */
 const menuItems = computed(() => {
   const index = menuFor.value
   if (index === null) return /** @type {MenuItem[]} */ ([])
-  const post = /** @type {{author: string}|undefined} */ (props.posts[index])
+  const post = /** @type {{author: string, by?: number}|undefined} */ (props.posts[index])
   return /** @type {MenuItem[]} */ ([
-    ...(post?.author === 'writer' && props.state !== 'resolved'
+    ...(post && isMine(post, props.people) && props.state !== 'resolved'
       ? [{ label: 'Edit', icon: 'pi pi-pencil', action: 'edit-post', run: () => startEdit(index) }]
       : []),
     {

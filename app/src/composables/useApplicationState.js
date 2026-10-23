@@ -37,6 +37,9 @@ const defaultState = {
     // the chat for the writer to accept them. App-wide: how the writer wants
     // to work with the assistant, not a property of any one conversation.
     applyEdits: 'auto',
+    // Whether a chat asks before exploring more than about 50,000 tokens
+    // (`ASK_FROM_TOKENS`). Always allow on the question turns it off.
+    askBeforeExploring: true,
     // Whether the built-in profiles written for explicit content are offered.
     // Off until the writer switches it on, so nobody meets them by opening a
     // menu.
@@ -144,6 +147,15 @@ const loadState = () => {
       merged.workflows[name] = { ...(merged.workflows[name] || {}), ...settings }
     }
   }
+  // Explore was a workflow until it ran on the chat's model, and asking
+  // before a big one was its: a state saved then has the switch there.
+  const askFirst = merged.workflows.explore?.askFirst
+  if (askFirst !== undefined) {
+    if (typeof stored.system?.askBeforeExploring !== 'boolean' && typeof askFirst === 'boolean') {
+      merged.system.askBeforeExploring = askFirst
+    }
+    delete merged.workflows.explore.askFirst
+  }
   if (stored.narration) {
     Object.assign(merged.narration, stored.narration)
   }
@@ -173,14 +185,31 @@ const loadState = () => {
 // Global reactive state
 const state = ref(loadState())
 
+/** Whether the state was just taken from another window, and is not to be written back. */
+let fromElsewhere = false
+
 // Auto-persist to localStorage on changes
 watch(
   state,
   newState => {
+    if (fromElsewhere) {
+      fromElsewhere = false
+      return
+    }
     localStorage.set(STORAGE_KEY, newState)
   },
   { deep: true }
 )
+
+// Another window of the app changed the settings: this one takes them as
+// they are now.
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', event => {
+    if (event.key !== STORAGE_KEY || event.storageArea !== window.localStorage) return
+    fromElsewhere = true
+    state.value = loadState()
+  })
+}
 
 /**
  * What documents are read aloud through: one of the AI connections that
@@ -202,6 +231,8 @@ watch(
  * @property {boolean} aiEnabled
  * @property {string|null} aiPreset - The AI preset in use
  * @property {'auto'|'ask'} applyEdits
+ * @property {boolean} askBeforeExploring - Whether a chat asks before a big explore.
+ *   A file from before has it as the Explore workflow's `askFirst` instead.
  * @property {boolean} nsfwProfiles
  * @property {boolean} blurNsfw - Whether the card library blurs NSFW pictures
  * @property {string[]} experimentalSkills - The ones switched on
@@ -298,6 +329,8 @@ function workflowFrom(settings) {
  *   setAiEnabled: (on: boolean) => void,
  *   applyEdits: import('vue').ComputedRef<'auto'|'ask'>,
  *   setApplyEdits: (mode: 'auto'|'ask') => void,
+ *   askBeforeExploring: import('vue').ComputedRef<boolean>,
+ *   setAskBeforeExploring: (ask: boolean) => void,
  *   nsfwProfiles: import('vue').ComputedRef<boolean>,
  *   setNsfwProfiles: (on: boolean) => void,
  *   blurNsfw: import('vue').ComputedRef<boolean>,
@@ -407,6 +440,21 @@ export function useApplicationState() {
     if (mode !== 'auto' && mode !== 'ask') return
     if (!state.value.system) state.value.system = {}
     state.value.system.applyEdits = mode
+  }
+
+  /**
+   * Whether a chat asks the writer before exploring a lot: more than about
+   * 50,000 tokens. On unless switched off, which Always allow does too.
+   * @type {import('vue').ComputedRef<boolean>}
+   */
+  const askBeforeExploring = computed(() => state.value.system?.askBeforeExploring !== false)
+
+  /**
+   * @param {boolean} ask
+   */
+  const setAskBeforeExploring = ask => {
+    if (!state.value.system) state.value.system = {}
+    state.value.system.askBeforeExploring = ask !== false
   }
 
   /**
@@ -795,29 +843,35 @@ export function useApplicationState() {
   }
 
   /**
-   * The settings a whole backup carries. See `BackedUpSettings`.
+   * The settings a whole backup carries. See `BackedUpSettings`. A plain copy,
+   * none of the state's proxies in it (a workflow's allowed providers, say):
+   * sync keeps these in IndexedDB, which can't store a proxy.
    * @returns {BackedUpSettings}
    */
-  const settingsForBackup = () => ({
-    aiEnabled: aiEnabled.value,
-    aiPreset: activeAIPresetId.value ?? null,
-    applyEdits: applyEdits.value,
-    nsfwProfiles: nsfwProfiles.value,
-    blurNsfw: blurNsfw.value,
-    experimentalSkills: experimentalSkills.value,
-    roleplay: extensionOn('roleplay') === true,
-    chatProfileId: chatProfileId.value,
-    roleplayProfileId: roleplayProfileId.value,
-    workflows: workflows.value,
-    narration: narration.value,
-    theme: theme.value,
-    highlightSpeakers: highlightSpeakers.value,
-    spelling: {
-      ...spellingChoices(state.value.spelling),
-      grammar: spelling.value.grammar,
-      words: [...spelling.value.words],
-    },
-  })
+  const settingsForBackup = () =>
+    JSON.parse(
+      JSON.stringify({
+        aiEnabled: aiEnabled.value,
+        aiPreset: activeAIPresetId.value ?? null,
+        applyEdits: applyEdits.value,
+        askBeforeExploring: askBeforeExploring.value,
+        nsfwProfiles: nsfwProfiles.value,
+        blurNsfw: blurNsfw.value,
+        experimentalSkills: experimentalSkills.value,
+        roleplay: extensionOn('roleplay') === true,
+        chatProfileId: chatProfileId.value,
+        roleplayProfileId: roleplayProfileId.value,
+        workflows: workflows.value,
+        narration: narration.value,
+        theme: theme.value,
+        highlightSpeakers: highlightSpeakers.value,
+        spelling: {
+          ...spellingChoices(state.value.spelling),
+          grammar: spelling.value.grammar,
+          words: spelling.value.words,
+        },
+      })
+    )
 
   /**
    * Take the settings a restored backup carries. Each is taken only if it is
@@ -831,6 +885,12 @@ export function useApplicationState() {
     if (typeof settings.aiEnabled === 'boolean') setAiEnabled(settings.aiEnabled)
     if (isChoice(settings.aiPreset)) setActiveAIPresetId(settings.aiPreset)
     if (settings.applyEdits) setApplyEdits(settings.applyEdits)
+    // A backup, settings file or setup from before has it as the Explore
+    // workflow's, from when explore was one.
+    const askFirst = /** @type {any} */ (settings.workflows)?.explore?.askFirst
+    const ask =
+      typeof settings.askBeforeExploring === 'boolean' ? settings.askBeforeExploring : askFirst
+    if (typeof ask === 'boolean') setAskBeforeExploring(ask)
     if (typeof settings.nsfwProfiles === 'boolean') setNsfwProfiles(settings.nsfwProfiles)
     if (typeof settings.blurNsfw === 'boolean') setBlurNsfw(settings.blurNsfw)
     if (Array.isArray(settings.experimentalSkills)) {
@@ -900,6 +960,8 @@ export function useApplicationState() {
     // How the assistant's document changes are applied
     applyEdits,
     setApplyEdits,
+    askBeforeExploring,
+    setAskBeforeExploring,
 
     // Whether the NSFW chat profiles are offered
     nsfwProfiles,

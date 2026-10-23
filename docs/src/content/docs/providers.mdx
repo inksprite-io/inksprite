@@ -129,6 +129,23 @@ For a server inksprite doesn't list, click the ⋮ beside **Provider**, then the
 and **API key**, and click **Connect**. Then close the window and choose a
 **Model**.
 
+## Requests at once
+
+Some things ask the model more than one question at a time: two skills in one
+turn, or a conversion running while you chat. A provider's settings (the ⋮
+beside **Provider**) have **Requests at once**, how many it is asked together.
+Left empty, it is:
+
+- **1** for a server on your own computer or your network, which works through
+  one request at a time and keeps the last conversation it read ready for the
+  next turn. llama.cpp is asked as many at once as it has slots (`--parallel`).
+- **No limit** for OpenRouter, Anthropic, OpenAI, vLLM, and a server elsewhere.
+  When a provider says it is being asked too much, inksprite waits as long as
+  it asks and tries again, asking less at once for a while.
+
+What you're waiting on goes first: a turn or a skill never waits behind a
+conversion.
+
 ## Presets
 
 A preset is a provider, a model and their settings, kept together. To make

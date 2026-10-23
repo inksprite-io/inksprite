@@ -163,6 +163,17 @@ describe('ChatTurn', () => {
     })
   })
 
+  it('names the answer to an aside for the aside, and leaves the question the writer’s', () => {
+    const asked = show([message('q1', 'user')], '', { aside: true })
+    expect(asked.text()).toContain('You')
+
+    const answer = show([message('a1', 'assistant')], '', { aside: true })
+    expect(answer.text()).toContain('Aside')
+    expect(answer.text()).not.toContain('Assistant')
+    // Asked again as any answer is.
+    expect(button(answer, 'refresh').exists()).toBe(true)
+  })
+
   it('asks the message’s questions under the turn when the turn is one message', () => {
     // A message's pieces float their own buttons over its corner, so the
     // message's cannot go there.
@@ -273,6 +284,24 @@ describe('ChatTurn', () => {
 
     expect(button(wrapper, 'pencil').attributes('disabled')).toBeDefined()
     expect(button(wrapper, 'refresh').attributes('disabled')).toBeDefined()
+  })
+
+  it('holds editing the turn an answer is being written into', () => {
+    const wrapper = show([message('m1', 'assistant')], '', { busy: true, writing: true })
+
+    expect(button(wrapper, 'pencil').attributes('disabled')).toBeDefined()
+    // Asking again stops the answer and asks it again, which it may.
+    expect(button(wrapper, 'refresh').attributes('disabled')).toBeUndefined()
+  })
+
+  it('holds asking a command again while an answer is being written', () => {
+    const asked = { name: 'interpret', input: 'Why?', result: 'Because.' }
+    const wrapper = show([message('m1', 'assistant', { metadata: { command: asked } })], '', {
+      busy: true,
+    })
+
+    expect(button(wrapper, 'refresh').attributes('disabled')).toBeDefined()
+    expect(button(wrapper, 'pencil').attributes('disabled')).toBeUndefined()
   })
 
   describe('which model wrote it', () => {

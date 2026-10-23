@@ -44,6 +44,13 @@ export function renderTranscript(messages, head) {
       for (const call of calls) out.push(`- ${call}`)
       out.push('')
     }
+    // What the turn put to the writer rather than made, and what came of it.
+    const proposed = (message.metadata?.documentEdits || []).filter(edit => edit.status)
+    if (proposed.length > 0) {
+      out.push('**Proposed**', '')
+      for (const edit of proposed) out.push(`- ${edit.tool} ${edit.path}: ${edit.status}`)
+      out.push('')
+    }
     out.push(message.content.trim() || '_(no reply)_', '')
     const usage = message.metadata?.usage
     if (usage) {
