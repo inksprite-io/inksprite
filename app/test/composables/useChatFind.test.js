@@ -3,6 +3,7 @@ import { defineComponent, h, nextTick, ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import { rangesIn, useChatFind } from '@/composables/useChatFind.js'
 import { renderMarkdown } from '@/utils/markdown.js'
+import { loadMath } from '@/utils/math.js'
 
 /**
  * A chat laid out the way Chat.vue lays it out, as far as a find looks: a block
@@ -89,6 +90,22 @@ describe('useChatFind', () => {
 
     // The roll answers in a box of its own, not in prose, and is not counted.
     expect(find.count.value).toBe(2)
+    wrapper.unmount()
+  })
+
+  it('reads a formula as the glyphs it shows, and not the TeX or MathML behind them', async () => {
+    await loadMath()
+    const { find, wrapper } = chat([turn('t0', 'Let $\\lambda x$ be.\n\n$$\\lambda y$$')])
+    find.openFind()
+
+    find.lookFor('λ')
+    expect(find.count.value).toBe(2)
+    await nextTick()
+    expect(rangesIn(wrapper.element, /λ/gu)).toHaveLength(2)
+
+    find.lookFor('lambda')
+    expect(find.count.value).toBe(0)
+    expect(rangesIn(wrapper.element, /lambda/gu)).toHaveLength(0)
     wrapper.unmount()
   })
 

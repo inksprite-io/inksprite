@@ -35,3 +35,6 @@ harness/test-*/
 # Books, papers and articles to test file import against: other people's
 # work, tens of megabytes, and not ours to redistribute.
 harness/research/
+
+# The desktop app's Python packages, fetched by electron/scripts/fetch-python.mjs.
+electron/python/

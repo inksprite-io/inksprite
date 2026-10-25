@@ -55,6 +55,59 @@
  * @property {(save: () => Promise<void>) => void} beforeClosing - What to do
  *   before the window closes or the app quits, which waits for it a while
  * @property {DesktopLibrary} library - The folder the projects are kept in
+ * @property {DesktopPython} [python] - Python for the model to run code in,
+ *   a session for each chat. Missing from a desktop app older than the page
+ *   it loads.
+ */
+
+/**
+ * What a run of Python came back with (`app/electron/src/sandbox.js`).
+ *
+ * @typedef {Object} PythonRun
+ * @property {string} stdout - What the code printed
+ * @property {string} stderr - What it wrote to stderr
+ * @property {string|null} value - The `repr` of its last expression, if that
+ *   had a value
+ * @property {string|null} error - The traceback, if the code raised, or why
+ *   the run was stopped
+ * @property {boolean} restarted - Whether Python was started again, losing
+ *   what the session's earlier runs had defined
+ */
+
+/**
+ * One thing in the project a run of Python reads at `/project`, by its path
+ * there: a folder, a text, an imported file by its path in the library, which
+ * the main process reads it from, or one still only on the sync server, by
+ * its size, which the run's `fetchFile` brings into the library when the code
+ * reads it.
+ *
+ * @typedef {{path: string, folder: true}
+ *   | {path: string, id: string, text: string}
+ *   | {path: string, id: string, file: string}
+ *   | {path: string, id: string, size: number, onServer: true}} PythonProjectEntry
+ */
+
+/**
+ * How a run of Python is run.
+ *
+ * @typedef {Object} PythonRunOptions
+ * @property {number|null} [timeoutMs] - Stopped after this long; never for none
+ * @property {PythonProjectEntry[]|null} [project] - What it finds at
+ *   `/project`, which it can't change; an empty folder for none
+ * @property {string|null} [filename] - What its traceback calls the code, when
+ *   it was read from a file
+ */
+
+/**
+ * Python, a session for each name the page gives.
+ *
+ * @typedef {Object} DesktopPython
+ * @property {(session: string, code: string, options?: PythonRunOptions, fetchFile?: (id: string) => Promise<string|null>) => Promise<PythonRun>} run -
+ *   Run code in the session, after any of its runs before; `fetchFile` brings
+ *   a file of its project still on the sync server into the library, and
+ *   says where it is there, or null when it couldn't
+ * @property {(session: string) => void} stop - Stop the session's run under
+ *   way, and its Python with it
  */
 
 /**

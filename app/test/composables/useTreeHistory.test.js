@@ -226,6 +226,22 @@ describe('useTreeHistory', () => {
       expect(api.get(a.id).parentId).toBe('notes_story_1')
     })
 
+    it('puts a document dragged out of the one that held it back into it', () => {
+      const card = api.createTextDocument('notes_story_1', 'Wren')
+      const field = useDocumentsStore().createDocument({
+        storyId: 'story_1',
+        parentId: card.id,
+        type: 'text',
+        title: 'Description',
+      })
+      history.beginMove(field.id)
+      api.moveInto('manuscript_story_1', field.id)
+      history.endMove()
+
+      expect(history.undo()).toMatchObject({ done: true })
+      expect(api.get(field.id).parentId).toBe(card.id)
+    })
+
     it('keeps nothing for a drag that changed nothing', () => {
       const a = api.createTextDocument('manuscript_story_1', 'One')
       history.beginMove(a.id)

@@ -70,6 +70,13 @@ export default [
     files: ['electron/**/*.cjs'],
     languageOptions: { sourceType: 'commonjs' },
   },
+  // The Python sandbox's page and its worker run in a page of their own.
+  {
+    files: ['electron/sandbox/*.js'],
+    languageOptions: {
+      globals: { self: 'readonly', Worker: 'readonly', XMLHttpRequest: 'readonly' },
+    },
+  },
   // Rows are read and written through storage/ and nowhere else, which is what
   // lets the desktop app keep projects in a folder. See src/storage/index.js.
   {

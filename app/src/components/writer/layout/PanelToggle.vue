@@ -14,13 +14,14 @@ import HeaderButton from './HeaderButton.vue'
 
 /**
  * The button at the edge of a panel's header that takes the neighbouring
- * panel's room, and gives it back. It stands for the neighbour: press it and
- * the neighbour goes, so this panel has the width; press it again and the
- * neighbour is back. Pressed means this panel is the one spread out. The
- * chevrons point the way the panel's edge moves.
+ * panel's room, and gives it back. It is named for what a press brings
+ * forward: this panel, spread over the neighbour's room (Expand chat), and
+ * then the neighbour, back beside it (Show editor). Pressed means this panel
+ * is the one spread out. The chevrons point the way the panel's edge moves.
  *
  * @typedef {Object} Props
- * @property {'editor'|'chat'} panel - The neighbour it shows and hides
+ * @property {'editor'|'chat'} panel - The neighbour it shows and hides; the
+ *   panel it sits in is the other one
  * @property {boolean} showing - Whether the neighbour is on screen
  * @property {'left'|'right'} side - Which side of this panel the neighbour is on
  */
@@ -32,7 +33,10 @@ const props = defineProps({
 
 defineEmits(['toggle'])
 
-const label = computed(() => `${props.showing ? 'Hide' : 'Show'} ${props.panel}`)
+/** The panel the toggle sits in, beside the neighbour. */
+const OWN = { chat: 'editor', editor: 'chat' }
+
+const label = computed(() => (props.showing ? `Expand ${OWN[props.panel]}` : `Show ${props.panel}`))
 
 // Toward the neighbour to push it off, and back the other way to let it in.
 const icon = computed(() => {

@@ -450,7 +450,7 @@ export async function research(ui, { standIn, context }) {
   await scrollDoc('Network topology')
   await ui.shot('research-revised')
 
-  await ui.click(button('Hide editor'))
+  await ui.click(button('Expand chat'))
   await take(review, 24)
   // The writer's request at the top, and the review under it.
   await page

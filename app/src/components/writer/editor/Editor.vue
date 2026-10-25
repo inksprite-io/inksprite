@@ -66,15 +66,20 @@
             @view="viewPicture"
             @close="closePicture"
           />
+          <!-- A new selection, a new bar: a menu open on the last one goes. -->
           <TextBar
             v-if="textBar && !isMobile"
-            :left="textBar.left"
+            :key="`${textBar.from}-${textBar.to}`"
+            :right="textBar.right"
             :top="textBar.top"
             :comment="textBar.from !== textBar.to"
             :suggestion="!!textBar.suggestion"
+            :formatting="textBar.formatting"
             @comment="commentOn(textBar.from, textBar.to)"
             @accept="settleSuggestion(true)"
             @reject="settleSuggestion(false)"
+            @link="editLink"
+            @format="format"
           />
         </div>
       </div>
@@ -90,12 +95,16 @@
     >
       <TextBar
         v-if="textBar"
+        :key="`${textBar.from}-${textBar.to}`"
         docked
         :comment="textBar.from !== textBar.to"
         :suggestion="!!textBar.suggestion"
+        :formatting="textBar.formatting"
         @comment="commentOn(textBar.from, textBar.to)"
         @accept="settleSuggestion(true)"
         @reject="settleSuggestion(false)"
+        @link="editLink"
+        @format="format"
       />
       <CommentBar
         v-else-if="commentPopover"
@@ -194,6 +203,7 @@ import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import { useFocusMode } from '@/composables/useFocusMode.js'
 import { TINT, skippedRanges, speakerRanges } from '@/tts/highlight.js'
 import { linkAround, links, mapHrefs, removeLink, setLink } from '@/editor/links.js'
+import { formatCommand, formattingAt } from '@/editor/format.js'
 import { insertPictures, pictures } from '@/editor/pictures.js'
 import { downloadBlob } from '@/files/download.js'
 import { useDocumentLinks } from '@/composables/useDocumentLinks.js'
@@ -518,11 +528,12 @@ const followCaret = (editorView, prevState) => {
 }
 
 /**
- * Where the text bar is, the run of text it offers a comment on (none when
- * `from` is `to`), and the suggestion it offers to accept or reject. Taken
- * when it is shown, since a tap on it can let go of a phone's selection.
+ * Where the text bar is, the run of text it offers a comment on and to format
+ * (none when `from` is `to`), what that text has, and the suggestion it
+ * offers to accept or reject. Taken when it is shown, since a tap on it can
+ * let go of a phone's selection.
  *
- * @type {import('vue').Ref<{left: number, top: number, from: number, to: number, suggestion: string|null}|null>}
+ * @type {import('vue').Ref<{right: number, top: number, from: number, to: number, formatting: import('@/editor/format.js').Formatting|null, suggestion: string|null}|null>}
  */
 const textBar = ref(null)
 
@@ -531,11 +542,11 @@ let selecting = false
 
 /**
  * Offer what can be done with the text while the editor has the focus and no
- * comment is being written: a comment on the selected text, and the
- * suggestion the selection is on accepted or rejected, unless the writer is
- * typing, or is in a link, whose own popover is there. A selection of
- * something other than text — a table's cells, the whole document — is left
- * to the shortcut, and a picture has its own popover.
+ * comment is being written: a comment on the selected text and its
+ * formatting, and the suggestion the selection is on accepted or rejected,
+ * unless the writer is typing, or is in a link, whose own popover is there.
+ * A selection of something other than text — a table's cells, the whole
+ * document — is left to the shortcuts, and a picture has its own popover.
  *
  * @param {EditorView} editorView
  */
@@ -555,7 +566,32 @@ const showTextBar = editorView => {
     return
   }
   const { from, to } = text ? selection : { from: selection.head, to: selection.head }
-  textBar.value = { ...below(editorView, selection.to), from, to, suggestion }
+  const formatting = text ? formattingAt(state) : null
+  textBar.value = { ...underEnd(editorView, to), from, to, formatting, suggestion }
+}
+
+/**
+ * Where the text bar goes: its right edge at the end of the selection, and
+ * its top under that line. The end is measured from the text before it, so
+ * that a selection to the end of a wrapped line keeps to that line.
+ *
+ * @param {EditorView} editorView
+ * @param {number} pos
+ */
+const underEnd = (editorView, pos) => {
+  const box = /** @type {HTMLElement} */ (host.value).getBoundingClientRect()
+  const at = editorView.coordsAtPos(pos, -1)
+  return { right: at.right - box.left, top: at.bottom - box.top + 4 }
+}
+
+/**
+ * Toggle or set a format on the selection the bar is on: see `editor/format`.
+ * The bar stays, showing what the text now has.
+ *
+ * @param {string} id
+ */
+const format = id => {
+  if (view) formatCommand(id)(view.state, view.dispatch)
 }
 
 const onMouseUp = () => {

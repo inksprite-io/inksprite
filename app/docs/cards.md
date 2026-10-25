@@ -489,7 +489,9 @@ The documents that have to be in context before the model says anything.
 
 ## isCard
 
-Whether this folder came from a card, and so has a chat to start.
+Whether this document came from a card, and so has a chat to start: a card
+folder, or a card's portrait holding its documents
+(`.llm/nested_documents_design.md`).
 
 ### Parameters
 
@@ -585,7 +587,8 @@ dialogue rather than a page of adjectives.
 - **card** - A card or a book as one shape, whatever version it arrived as
 - **write** - That shape, written into the project as documents
 - **macros** - `{{char}}` and `{{user}}`, filled in for the chat that plays a card
-- **chat** - A card folder read back out of the tree, for a chat to run on
+- **chat** - A card read back out of the tree, for a chat to run on: its folder,
+  or its picture holding its documents
 - **transcript** - A SillyTavern chat file, read into a chat's worth of messages
 - **library** - A card as the writer's library keeps it, outside any project:
   read from a file, described for browsing, and found by name or tag
@@ -1398,8 +1401,9 @@ Type: [Object][236]
 
 ### Properties
 
-- `folderId` **[string][237]** The folder the card became, or the one document
-  an import that had only one to write
+- `folderId` **[string][237]** The folder the card became, or its portrait
+  holding its documents, or the one document an import that had only one
+  to write
 - `title` **[string][237]** What it ended up called
 - `pinnedIds` **[Array][238]<[string][237]>** What a chat on this card should pin: the
   documents that have to be in context from the first turn
@@ -1410,7 +1414,9 @@ Type: [Object][236]
 
 ## writeCard
 
-Write a card into the project.
+Write a card into the project. A card that came in an image is that image,
+holding its documents (`.llm/nested_documents_design.md`); one from a JSON
+file is a folder of them.
 
 ### Parameters
 
@@ -1422,8 +1428,8 @@ Write a card into the project.
     a document of its own. Off by default: most cards that carry one are
     carrying an ST preset's scaffolding rather than anything about the
     character, and it is in the sidecar either way. (optional, default `false`)
-  - `options.portrait` **[Blob][244]?** The image the card came in, kept as a file
-    in its folder. It is what the card looks like where people browse for
+  - `options.portrait` **[Blob][244]?** The image the card came in, which the
+    card is then. It is what the card looks like where people browse for
     them, and a model that can see it may as well.
 
 Returns **[Promise][241]<[Written][177]>**&#x20;
@@ -1439,12 +1445,14 @@ and given the card's text, keeping its id, so that a chat that pins it
 still does, and its versions, which keep what was written in it (one is
 taken first). A field the card no longer has goes to the trash, one it has
 now is made, and what the writer added to the folder is left alone. The
-folder stays, with its title and its place, and so does the portrait.
+folder stays, with its title and its place, and so does the portrait. A
+card that is its portrait, holding its documents, is written into the same
+way, and stays that.
 
 ### Parameters
 
 - `storyId` **[string][237]**&#x20;
-- `folderId` **[string][237]** A card folder
+- `folderId` **[string][237]** A card: its folder, or its portrait
 - `card` **Card**&#x20;
 - `options` **[Object][236]?** (optional, default `{}`)
   - `options.useSystemPrompt` **[boolean][239]?** (optional, default `false`)
@@ -1452,7 +1460,7 @@ folder stays, with its title and its place, and so does the portrait.
 
 <!---->
 
-- Throws **[Error][249]** When the folder is not a card's
+- Throws **[Error][249]** When the document is not a card
 
 Returns **[Promise][241]<[Written][177]>**&#x20;
 
@@ -1600,7 +1608,7 @@ Type: [Document][250]
 
 ## fillCard
 
-The documents a card is made of, written into a folder.
+The documents a card is made of, written into its folder or its image.
 
 ### Parameters
 
@@ -1609,7 +1617,6 @@ The documents a card is made of, written into a folder.
 - `card` **Card**&#x20;
 - `options` **[Object][236]**&#x20;
   - `options.useSystemPrompt` **[boolean][239]**&#x20;
-  - `options.portrait` **[Blob][244]?**&#x20;
 
 Returns **[Promise][241]\<Pick<[Written][177], (`"pinnedIds"` | `"greetingIds"` | `"documents"`)>>** The
 count is of what this wrote: the folder is not counted here
@@ -1622,7 +1629,9 @@ count is of what this wrote: the folder is not counted here
 
 ## writePortrait
 
-The image a card arrived in, kept as a file beside its documents.
+The image a card arrived in, kept as a file beside its documents, in a card
+that is a folder: one imported before a card that came in an image was that
+image, re-imported from one.
 
 Not hidden: it costs a thousand tokens on a model that can see it and
 nothing on one that cannot, and a chat on the card can let it go like

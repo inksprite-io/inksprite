@@ -13,6 +13,14 @@ design is `.llm/desktop_design.md`.
   the files in it, held to it.
 - `src/closing.js` has the window wait for the page to save before it
   closes or the app quits.
+- `src/sandbox.js` and `sandbox/` are Python for the model: Pyodide in a
+  page of its own, fenced from the app's data and the network, a session
+  for each chat, with the chat's project read-only at `/project`, its
+  files read from the library a piece at a time, and one still only on the
+  sync server fetched by the page when it is read. Its packages are fetched
+  into `python/` by
+  `scripts/fetch-python.mjs`, and `scripts/check-sandbox.js` checks the
+  fence in a real Electron. The design is `.llm/code_sandbox_design.md`.
 - `electron-builder.yml` is how it is packaged for each system.
 
 Its tests run with the page's (`app/test/electron/`), and `npm run typecheck`
@@ -24,7 +32,7 @@ npm runs in the container, never on the Mac. Once, and again when this
 folder's `package-lock.json` changes, in the container:
 
 ```sh
-cd app/electron && npm ci
+cd app/electron && npm ci && node scripts/fetch-python.mjs
 ```
 
 What the app runs on in `node_modules` is plain JavaScript, so the

@@ -133,6 +133,102 @@ describe('where a project’s documents go', () => {
   })
 })
 
+describe('a document that holds others', () => {
+  /** The sample, with a chapter holding its scenes and a portrait holding a card's fields. */
+  const holding = () => [
+    ...sample(),
+    doc('arrival', 'ch1', { title: 'Arrival', content: 'She came by the river.', order: 0 }),
+    doc('leaving', 'ch1', { title: 'Leaving', content: 'And went by the road.', order: 1 }),
+    doc('portrait', 'notes', {
+      type: 'file',
+      title: 'Wren',
+      mime: 'image/png',
+      size: 10,
+      content: '',
+      kind: 'portrait',
+    }),
+    doc('description', 'portrait', { title: 'Description', content: 'Quick and quiet.' }),
+    doc('namesake', 'portrait', { title: 'Wren', content: 'Named as the picture is.' }),
+  ]
+
+  it('is a directory of its name, its own file in it under that name', () => {
+    const entries = layoutProject(holding(), ROOT)
+
+    expect(entries.get('ch1')).toEqual({
+      id: 'ch1',
+      kind: 'text',
+      path: 'Manuscript/01 - Act 1/01 - Chapter 1/01 - Chapter 1.md',
+      dir: 'Manuscript/01 - Act 1/01 - Chapter 1',
+    })
+    expect(entries.get('portrait')).toEqual({
+      id: 'portrait',
+      kind: 'file',
+      path: 'Notes/Wren/Wren.png',
+      dir: 'Notes/Wren',
+    })
+    expect(paths(entries)).toMatchObject({
+      arrival: 'Manuscript/01 - Act 1/01 - Chapter 1/Arrival.md',
+      leaving: 'Manuscript/01 - Act 1/01 - Chapter 1/Leaving.md',
+      description: 'Notes/Wren/Description.md',
+      // Its stem is the portrait's own, whatever the extension.
+      namesake: 'Notes/Wren/Wren (2).md',
+      elara: 'Notes/Elara.md',
+    })
+  })
+
+  it('numbers what it holds when it is kept in order', () => {
+    const rows = holding().map(row => (row.id === 'ch1' ? { ...row, ordered: true } : row))
+    expect(paths(layoutProject(rows, ROOT))).toMatchObject({
+      arrival: 'Manuscript/01 - Act 1/01 - Chapter 1/01 - Arrival.md',
+      leaving: 'Manuscript/01 - Act 1/01 - Chapter 1/02 - Leaving.md',
+    })
+  })
+
+  it('reads back as the rows it was written from, kept in order and all', () => {
+    const rows = holding().map(row => (row.id === 'ch1' ? { ...row, ordered: true } : row))
+    const disk = memoryDisk()
+    const entries = writeFresh(disk, rows)
+
+    const read = readBack(disk)
+
+    expect(byIdSorted(read.documents)).toEqual(asRead(rows))
+    expect(read.entries).toEqual(entries)
+    expect(read.adopted).toEqual([])
+    expect(read.unknown).toEqual([])
+    expect(disk.list().filter(path => path.startsWith('Notes/Wren/'))).toEqual([
+      'Notes/Wren/.Wren.png.md',
+      'Notes/Wren/Description.md',
+      'Notes/Wren/Wren (2).md',
+      'Notes/Wren/Wren.png',
+    ])
+    expect(readFrontmatter(disk.read(entries.get('ch1')?.path || '') || '').fields).toMatchObject({
+      ordered: true,
+    })
+  })
+
+  it('keeps one whose bytes are gone, and what it holds', () => {
+    const disk = memoryDisk()
+    writeFresh(disk, holding())
+    disk.trash('Notes/Wren/Wren.png')
+
+    const read = readBack(disk)
+
+    expect(read.entries.get('portrait')).toMatchObject({ kind: 'file', missing: true })
+    expect(read.documents.find(d => d.id === 'description')?.parentId).toBe('portrait')
+  })
+
+  it('is left at the top when it is a file of a repository', () => {
+    const entries = layoutProject([...sample(), doc('stray', 'main', { title: 'Stray' })], ROOT)
+    expect(entries.get('main')).toEqual({
+      id: 'main',
+      kind: 'repoFile',
+      path: 'Notes/tool/src/main.js',
+      repository: 'repo',
+    })
+    expect(entries.get('stray')?.path).toBe('Stray.md')
+  })
+})
+
 describe('a project written and read back', () => {
   it('is the rows it was written from', () => {
     const disk = memoryDisk()

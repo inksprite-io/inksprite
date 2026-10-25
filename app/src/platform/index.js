@@ -33,6 +33,8 @@
  *   app quits
  * - **windows** - The app open in more than one window or tab: a project in
  *   one at a time, and what the windows tell each other they changed
+ * - **python** - In the desktop app, Python for the model to run code in, a
+ *   session for each chat, fenced from the writer's data and the network
  *
  * Design: `.llm/desktop_design.md`.
  *
@@ -57,3 +59,4 @@ export { librarySettings, revealInLibrary } from './library.js'
 export { askToKeepData, storageAdvice } from './persistence.js'
 export { settingsFileText } from './settingsFile.js'
 export { beforeClosing } from './closing.js'
+export { hasPython, runPython } from './python.js'

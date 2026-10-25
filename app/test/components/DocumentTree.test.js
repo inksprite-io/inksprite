@@ -618,6 +618,7 @@ describe('DocumentTree project menu', () => {
             ],
           },
         },
+        selective: [],
       }
       await flushPromises()
       expect(labels(wrapper)).toEqual([
@@ -633,7 +634,7 @@ describe('DocumentTree project menu', () => {
       expect(trashStory).not.toHaveBeenCalled()
       expect(push).toHaveBeenCalledWith('/')
     } finally {
-      sharing.value = { me: null, projects: {} }
+      sharing.value = { me: null, projects: {}, selective: [] }
       cloud.account.value = null
     }
   })

@@ -47,6 +47,9 @@
  *   what the editor component says its path is, a picture from the web as a
  *   placeholder that fetches nothing, figures, and the object URLs the bytes
  *   are shown on
+ * - **format** - What the formatting buttons over a selection offer: its
+ *   marks, its blocks' style, quoted or listed, and the commands that change
+ *   them
  * - **marks** - `markAround`, the run of a mark around a position, for the
  *   link or the comment the caret is in
  * - **shortcuts** - The keys and typed shortcuts as the writer is shown them,

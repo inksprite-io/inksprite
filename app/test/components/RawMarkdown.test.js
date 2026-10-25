@@ -10,6 +10,16 @@ const { mockApi, mockUpdateDocument } = vi.hoisted(() => {
   const documents = new Map([
     ['p_1', { id: 'p_1', title: 'Prompt', type: 'text', plain: true, content: '# One\n\n* a *b*' }],
     ['p_2', { id: 'p_2', title: 'Blank', type: 'text', plain: true, content: '' }],
+    [
+      'p_3',
+      {
+        id: 'p_3',
+        title: 'd20.py',
+        type: 'text',
+        plain: true,
+        content: 'def roll():\n    return 20',
+      },
+    ],
   ])
   return {
     mockUpdateDocument: vi.fn(),
@@ -87,6 +97,19 @@ describe('RawMarkdown', () => {
     expect(shown(wrapper)).toBe('# One\n\n* a *b*')
     expect(useEditor().holds('p_1')).toBe(true)
     expect(useEditor().stateOf('p_1')).toBeNull()
+  })
+
+  it('highlights a script as the language its name says, and text as text', async () => {
+    const script = await mountRaw('p_3')
+    await vi.dynamicImportSettled()
+    await flushPromises()
+    expect(script.find('.tok-keyword').exists()).toBe(true)
+    expect(shown(script)).toBe('def roll():\n    return 20')
+
+    const prompt = await mountRaw('p_1')
+    await vi.dynamicImportSettled()
+    await flushPromises()
+    expect(prompt.find('[class*="tok-"]').exists()).toBe(false)
   })
 
   it('shows the text the registry already holds rather than the store', async () => {

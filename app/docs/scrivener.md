@@ -598,17 +598,20 @@ Opening reads the binder and the styles and checks that there is a project
 to import, so that a zip with none in it, or a project too old to read,
 writes nothing. Writing then goes through the binder in order:
 
-- A folder, or any item with items under it, is an ordered folder, since
-  the binder's order is the writer's. When it has text of its own, that
-  comes first inside it, as a document of the same name.
+- A folder is an ordered folder, since the binder's order is the
+  writer's. When it has text of its own, that comes first inside it, as a
+  document of the same name.
 - A text is a text document, empty or not: an empty scene in the binder is
   a plan.
 - A file, such as a PDF or a picture in Research, is a file document, read
   as any import reads it. One that cannot be read comes in with no text
   rather than being left out.
+- A text or a file with items under it is that document, holding them in
+  the binder's order (`.llm/nested_documents_design.md`).
 - An item's synopsis and notes are documents of their own, `<title>
-synopsis` and `<title> notes`, right after its text: beside a document,
-  or inside a folder before the items under it.
+synopsis` and `<title> notes`, right after its text: beside a document
+  with nothing under it, or inside a folder or a document before the items
+  under it.
 
 Labels, statuses, keywords, snapshots, compile settings and the rest of
 what Scrivener keeps about its items have nowhere to go, and are left.
@@ -727,6 +730,8 @@ Returns **[Promise][172]<([string][161] | null)>**&#x20;
 - `title` **[string][161]**&#x20;
 - `markdown` **[string][161]**&#x20;
 
+Returns **[Promise][172]<[string][161]>** The document's id
+
 ## attachmentOf
 
 An item's file, when it is a file rather than a text: the one in its
@@ -747,6 +752,8 @@ Returns **({name: [string][161], blob: [Blob][171]} | null)**&#x20;
 - `attachment` **{name: [string][161], blob: [Blob][171]}**&#x20;
   - `attachment.name` &#x20;
   - `attachment.blob` &#x20;
+
+Returns **[Promise][172]<[string][161]>** The document's id
 
 ## asides
 

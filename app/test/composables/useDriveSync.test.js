@@ -10,7 +10,7 @@ import { DriveError, NotGrantedError, SignInLapsedError } from '@/drive/errors.j
 import { createDoc } from '@/drive/api.js'
 import { folderFor, placeDoc } from '@/drive/folders.js'
 import { forgetSession, signInFor } from '@/drive/session.js'
-import { checkSendable, syncDoc } from '@/drive/sync.js'
+import { syncDoc } from '@/drive/sync.js'
 import { parseMarkdown } from '@/editor/markdown.js'
 import db from '@/stores/db'
 
@@ -38,7 +38,6 @@ vi.mock('@/stores/syncStore', () => ({
 vi.mock('@/drive/session.js', () => ({ signInFor: vi.fn(), forgetSession: vi.fn() }))
 vi.mock('@/drive/sync.js', () => ({
   syncDoc: vi.fn(),
-  checkSendable: vi.fn(),
   SUGGESTIONS_WAITING: 'This document has suggestions waiting. Accept or reject them, then sync.',
 }))
 vi.mock('@/drive/api.js', () => ({ createDoc: vi.fn() }))
@@ -337,21 +336,6 @@ describe('useDriveSync', () => {
       expect(toast.success).toHaveBeenCalledWith('Synced with a new Google Doc in your Drive.', {
         duration: 3000,
       })
-    })
-
-    it('says what a new Doc could not take, before signing in or making one', async () => {
-      const doc = unlinked()
-      vi.mocked(checkSendable).mockImplementationOnce(() => {
-        throw new DriveError('Sync can’t add or remove footnotes in Google Docs yet.')
-      })
-      await useDriveSync(STORY).syncToNew(doc.id)
-      expect(toast.error).toHaveBeenCalledWith(
-        'Sync can’t add or remove footnotes in Google Docs yet.',
-        { duration: 10000 }
-      )
-      expect(signInFor).not.toHaveBeenCalled()
-      expect(createDoc).not.toHaveBeenCalled()
-      expect(store.getDocument(doc.id).drive).toBeUndefined()
     })
 
     it('keeps the link when the Doc was made and the sync then failed', async () => {

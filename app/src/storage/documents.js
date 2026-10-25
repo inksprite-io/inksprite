@@ -110,7 +110,10 @@ function rowOf(fields) {
  * @returns {string} Its markdown file
  */
 export function textFile(document) {
-  return withFrontmatter(fieldsOf(document, { summary: true, plain: true }), document.content)
+  return withFrontmatter(
+    fieldsOf(document, { summary: true, ordered: true, plain: true }),
+    document.content
+  )
 }
 
 /**
@@ -126,7 +129,7 @@ export function folderFile(document) {
  * @returns {string} The hidden markdown file beside it
  */
 export function fileSidecar(document) {
-  return withFrontmatter(fieldsOf(document, { summary: true }), document.content)
+  return withFrontmatter(fieldsOf(document, { summary: true, ordered: true }), document.content)
 }
 
 /**
@@ -173,7 +176,7 @@ export function readTextFile(text, place, name, fits, newId) {
     parentId: place.parentId,
     order: place.order,
     type: 'text',
-    ordered: false,
+    ordered: row.ordered === true,
     title,
     content: body,
     summary: typeof row.summary === 'string' ? row.summary : '',
@@ -242,7 +245,7 @@ export function readFileSidecar(text, place, name, fits, newId) {
     parentId: place.parentId,
     order: place.order,
     type: 'file',
-    ordered: false,
+    ordered: row.ordered === true,
     title: typeof row.title === 'string' && fits(row.title) ? row.title : name,
     content: adopted ? '' : body,
     summary: typeof row.summary === 'string' ? row.summary : '',

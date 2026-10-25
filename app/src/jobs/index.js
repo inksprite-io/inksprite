@@ -155,12 +155,14 @@ registerJobKind('convert', {
     const content = assemble(
       job.steps.filter(step => step.id !== STRUCTURE_STEP).map(step => step.output || '')
     )
-    // The copy goes beside the source, and is replaced by a later
-    // conversion of the same source; the source is left as it is. It is an
-    // ordinary document, shown and edited like any other: the editor holds
-    // everything a conversion writes but tables, whose rows it keeps as
-    // lines of text. Stored as written; the editor settles it when it is
-    // first edited, not here, which for a book is seconds of work.
+    // The copy goes under the source (`.llm/nested_documents_design.md`),
+    // and a later conversion of the same source replaces it where it is,
+    // beside the source for one made before copies went under it; the
+    // source is left as it is. It is an ordinary document, shown and edited
+    // like any other: the editor holds everything a conversion writes but
+    // tables, whose rows it keeps as lines of text. Stored as written; the
+    // editor settles it when it is first edited, not here, which for a book
+    // is seconds of work.
     const documents = useDocumentsStore()
     await documents.loadStory(job.storyId)
     const existing = copyOf(job.storyId, job.documentId || '')
@@ -176,7 +178,7 @@ registerJobKind('convert', {
       return existing.id
     }
     const source = documents.getDocument(job.documentId || '')
-    const parentId = source?.parentId || rootIdFor(job.storyId)
+    const parentId = source?.id || rootIdFor(job.storyId)
     const made = documents.createDocument({
       storyId: job.storyId,
       parentId,
@@ -292,6 +294,13 @@ export function exploreNode(id) {
       document.type === 'text' &&
       (content.includes(OPEN_MARKUP) || (!document.plain && holdsSuggestions(content)))
     const text = folder ? '' : marked ? textAsItStands(content) : content
+    // A folder's, or a document's that holds others.
+    const children = repository
+      ? []
+      : store
+          .getChildrenOrdered(document.id)
+          .filter(child => sees(child))
+          .map(nodeOf)
     return {
       id: document.id,
       path: documentPath(get, document),
@@ -301,16 +310,10 @@ export function exploreNode(id) {
       words: document.wordCount || 0,
       ...(repository
         ? { leftOut: 'a codebase' }
-        : document.type === 'file' && !text.trim()
+        : document.type === 'file' && !text.trim() && children.length === 0
           ? { leftOut: 'a file with no text' }
           : {}),
-      children:
-        folder && !repository
-          ? store
-              .getChildrenOrdered(document.id)
-              .filter(child => sees(child))
-              .map(nodeOf)
-          : [],
+      children,
       ...(document.digest ? { digest: document.digest } : {}),
     }
   }

@@ -214,11 +214,11 @@ describe('writeProject', () => {
     expect(childOf(chapter.id, 'Arrival notes').content).toBe('Check the tide tables.')
     expect(childOf(chapter.id, 'Storm')).toMatchObject({ type: 'text', content: '' })
 
-    // A text with items under it is a folder, its text first.
+    // A text with items under it is that text, holding them in order.
     const epilogue = childOf(manuscript.id, 'Epilogue')
-    expect(epilogue.type).toBe('folder')
-    expect(titlesUnder(epilogue.id)).toEqual(['Epilogue', 'Coda'])
-    expect(childOf(epilogue.id, 'Epilogue').content).toBe('Years later.')
+    expect(epilogue).toMatchObject({ type: 'text', content: 'Years later.', ordered: true })
+    expect(titlesUnder(epilogue.id)).toEqual(['Coda'])
+    expect(childOf(epilogue.id, 'Coda').content).toBe('The end.')
 
     const characters = childOf(project.id, 'Characters')
     expect(titlesUnder(characters.id)).toEqual(['Untitled'])
@@ -239,7 +239,35 @@ describe('writeProject', () => {
     })
 
     expect(allTitles(root)).not.toContain('Cut scene')
-    expect(result).toEqual({ documents: 11, folders: 6, cards: 0, scans: 1, skipped: [] })
+    expect(result).toEqual({ documents: 11, folders: 5, cards: 0, scans: 1, skipped: [] })
+  })
+
+  it('writes a file with items under it as the file, its synopsis and notes first', async () => {
+    const project = projectOf('Charts', [
+      {
+        id: 'PDF1',
+        type: 'PDF',
+        title: 'Tide tables',
+        extension: 'pdf',
+        files: {
+          'content.pdf': minimalPdf([['High water at noon']]),
+          'synopsis.txt': 'The spring tides.',
+        },
+        children: [
+          {
+            id: 'N1',
+            type: 'Text',
+            title: 'Reading them',
+            files: { 'content.rtf': plainRtf('Count from the moon.') },
+          },
+        ],
+      },
+    ])
+    await writeProject(STORY, await openProject(project))
+
+    const tables = childOf(rootIdFor(STORY), 'Tide tables')
+    expect(tables).toMatchObject({ type: 'file', mime: 'application/pdf', ordered: true })
+    expect(titlesUnder(tables.id)).toEqual(['Tide tables synopsis', 'Reading them'])
   })
 
   it('writes straight into the project, which then keeps the binder’s order', async () => {

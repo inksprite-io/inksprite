@@ -109,6 +109,31 @@ export function fileNameOf(document) {
 }
 
 /**
+ * The name a link's path has for a document on the way to another: a
+ * folder's, or a document's that holds others, by its name without the
+ * extension. Links follow the outline, not the directory such a document has
+ * on disk (`.llm/nested_documents_design.md`).
+ *
+ * @param {Document} document
+ * @returns {string}
+ */
+function stepNameOf(document) {
+  if (document.type === 'folder') return safeName(document.title)
+  return splitExtension(fileNameOf(document)).stem
+}
+
+/**
+ * The names of a link's path to a document, from below the first of them.
+ *
+ * @param {Document[]} documents - The document last, what holds it before it
+ * @returns {string[]}
+ */
+const pathNames = documents =>
+  documents.map((document, at) =>
+    encodeName(at === documents.length - 1 ? fileNameOf(document) : stepNameOf(document))
+  )
+
+/**
  * Every name a document answers to in a link, as names are compared.
  *
  * @param {Document} document
@@ -164,7 +189,6 @@ function walk(tree, folderId, names) {
       if (at.id !== tree.rootId) at = tree.get(at.parentId) || null
       continue
     }
-    if (at.type !== 'folder') return null
     at = childNamed(tree, at.id, name, index === names.length - 1)
   }
   return at
@@ -204,10 +228,10 @@ export function documentNamed(tree, name) {
   const key = nameKey(name.trim())
   /** @type {Document[]} */
   const found = []
-  const visit = (/** @type {string} */ folderId) => {
-    for (const child of tree.childrenOf(folderId)) {
-      if (child.type === 'folder') visit(child.id)
-      else if (namesOf(child).has(key)) found.push(child)
+  const visit = (/** @type {string} */ parentId) => {
+    for (const child of tree.childrenOf(parentId)) {
+      if (child.type !== 'folder' && namesOf(child).has(key)) found.push(child)
+      visit(child.id)
     }
   }
   visit(tree.rootId)
@@ -277,14 +301,16 @@ export function hrefFor(tree, fromId, toId) {
   const to = lineage(tree, toId)
   const folders = from.slice(0, -1)
 
+  // Never all of the way: a link to the document this one is under is to it.
   let shared = 0
-  while (shared < folders.length && shared < to.length && folders[shared].id === to[shared].id) {
+  while (
+    shared < folders.length &&
+    shared < to.length - 1 &&
+    folders[shared].id === to[shared].id
+  ) {
     shared++
   }
-  const names = [
-    ...folders.slice(shared).map(() => '..'),
-    ...to.slice(shared).map(document => encodeName(fileNameOf(document))),
-  ]
+  const names = [...folders.slice(shared).map(() => '..'), ...pathNames(to.slice(shared))]
   return names.join('/') || '.'
 }
 
@@ -299,7 +325,5 @@ export function hrefFor(tree, fromId, toId) {
  * @returns {string}
  */
 export function projectHref(tree, id) {
-  return `/${lineage(tree, id)
-    .map(document => encodeName(fileNameOf(document)))
-    .join('/')}`
+  return `/${pathNames(lineage(tree, id)).join('/')}`
 }

@@ -112,7 +112,7 @@ describe('ChatPanel', () => {
 
     const beside = await mountPanel(chat.id, { editorShowing: true })
     const toggle = beside.find('[data-panel-toggle="editor"]')
-    expect(toggle.attributes('aria-label')).toBe('Hide editor')
+    expect(toggle.attributes('aria-label')).toBe('Expand chat')
     await toggle.trigger('click')
     expect(beside.emitted('toggle-editor')).toHaveLength(1)
   })

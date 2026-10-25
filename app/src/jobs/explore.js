@@ -23,6 +23,11 @@
  *   what it holds, its short documents as they are, in parts when they will
  *   not go in one request. The project's digest is put together last.
  *
+ * A document that holds others, as an import may make one, is described from
+ * its own text when it has one, and what it holds beside it, each by itself;
+ * one with no text of its own, a card's picture or an epub, is described from
+ * what it holds, as a folder is.
+ *
  * A long section of a document (`SECTION_WORDS`) gets a line of its own, so
  * the model can tell which part of a long document to read: asked for in
  * the request that reads the section's heading, and kept on the document's
@@ -62,7 +67,8 @@ import { linesOfText, planRequests, unitsOf } from './sections.js'
  * @property {number} words
  * @property {string} [leftOut] - Why it is not read, said in its folder's
  *   digest: `a codebase`, `a file with no text`
- * @property {ExploreNode[]} children - The ones shown to the model, in the outline's order
+ * @property {ExploreNode[]} children - The ones shown to the model, in the outline's
+ *   order: a folder's, or a document's that holds others
  * @property {Digest} [digest]
  */
 
@@ -234,7 +240,7 @@ export function folderBasis(folder, known = new Map()) {
  * @returns {string}
  */
 export function basisOf(node, known) {
-  if (node.type === 'folder') return folderBasis(node, known)
+  if (fromWhatItHolds(node)) return folderBasis(node, known)
   if (node.leftOut) return 'left'
   const had = known?.get(node.id)
   if (had) return had
@@ -327,6 +333,15 @@ const labelOf = node =>
 
 /** @param {ExploreNode} node */
 const isRead = node => node.type !== 'folder' && !node.leftOut && node.text.trim() !== ''
+
+/**
+ * Whether a digest is made from what something holds: a folder's, or a
+ * document's that holds others and has no text of its own.
+ *
+ * @param {ExploreNode} node
+ */
+const fromWhatItHolds = node =>
+  node.type === 'folder' || (node.children.length > 0 && !isRead(node))
 
 /** @param {ExploreNode} node */
 const worthALine = node => isRead(node) && node.words >= SHORT_WORDS
@@ -429,7 +444,7 @@ export function planExplore(root, budget) {
     const walk = (/** @type {ExploreNode} */ at) => {
       for (const child of at.children) {
         all.push(child)
-        if (child.type === 'folder' && !child.leftOut) walk(child)
+        if (!child.leftOut) walk(child)
       }
     }
     walk(node)
@@ -637,7 +652,7 @@ export function planExplore(root, budget) {
       // The documents, then the folders inside from the deepest out, then
       // this one: each described after what it holds.
       const folders = all.filter(
-        child => child.type === 'folder' && !child.leftOut && hasText(child)
+        child => fromWhatItHolds(child) && !child.leftOut && hasText(child)
       )
       const answered = [...all.filter(worthALine), ...folders.reverse(), node]
       if (answered.every(current) && drop.length === 0) return true
@@ -668,32 +683,52 @@ export function planExplore(root, budget) {
     /** @type {string[]} */
     const shortWithDigests = []
     const before = steps.length
-    for (const child of node.children) {
+    /** @param {ExploreNode} child */
+    const take = child => {
       if (child.leftOut) {
         pieces.push({ left: child.id })
-      } else if (child.type === 'folder') {
+        return
+      }
+      if (fromWhatItHolds(child)) {
         pieces.push(plan(child) ? { digest: child.id } : { left: child.id })
-      } else if (!worthALine(child)) {
+        return
+      }
+      if (!worthALine(child)) {
         pieces.push({ text: child.id })
         if (child.digest) shortWithDigests.push(child.id)
       } else {
         pieces.push({ digest: child.id })
-        if (current(child)) continue
-        if (child.text.length + OVERHEAD > budget) inParts(child)
-        else packed.push(child)
+        if (!current(child)) {
+          if (child.text.length + OVERHEAD > budget) inParts(child)
+          else packed.push(child)
+        }
       }
+      // What a document with text of its own holds goes beside it.
+      child.children.forEach(take)
     }
+    node.children.forEach(take)
     pack(packed)
     if (steps.length === before && current(node) && shortWithDigests.length === 0) return true
     gather(node, pieces, shortWithDigests)
     return true
   }
 
-  if (root.type === 'folder') plan(root)
-  else if (isRead(root) && !current(root)) {
-    if (root.text.length + OVERHEAD > budget) inParts(root)
-    else pack([root])
+  /**
+   * A document asked for, and what it holds, each described by itself.
+   * @param {ExploreNode} node
+   */
+  const alone = node => {
+    if (fromWhatItHolds(node)) {
+      plan(node)
+      return
+    }
+    if (isRead(node) && !current(node)) {
+      if (node.text.length + OVERHEAD > budget) inParts(node)
+      else pack([node])
+    }
+    node.children.forEach(alone)
   }
+  alone(root)
   return { plan: { rootId: root.id, budget, work }, steps, documents, chars }
 }
 
@@ -719,8 +754,8 @@ const counted = n => n.toLocaleString('en-US')
 function documentsUnder(folder) {
   let count = 0
   for (const child of folder.children) {
-    if (child.type === 'folder') count += child.leftOut ? 0 : documentsUnder(child)
-    else count++
+    if (child.type !== 'folder') count++
+    if (!child.leftOut) count += documentsUnder(child)
   }
   return count
 }
@@ -737,10 +772,9 @@ const documentBlock = node =>
  * @param {ExploreNode} node
  */
 function descriptionBlock(node) {
-  const size =
-    node.type === 'folder'
-      ? `documents="${counted(documentsUnder(node))}"`
-      : `words="${counted(node.words)}"`
+  const size = fromWhatItHolds(node)
+    ? `documents="${counted(documentsUnder(node))}"`
+    : `words="${counted(node.words)}"`
   const said = node.digest
     ? `${node.digest.line}\n\n${node.digest.text}`
     : `(Not described. It begins:)\n${node.text.slice(0, DIGEST_CHARS).trim()}…`
@@ -752,7 +786,7 @@ function descriptionBlock(node) {
  * @param {ExploreNode} node
  */
 const whyLeft = node =>
-  `${headingPath(node)} (${node.leftOut || (node.type === 'folder' ? 'nothing in it to read' : 'empty')})`
+  `${headingPath(node)} (${node.leftOut || (fromWhatItHolds(node) ? 'nothing in it to read' : 'empty')})`
 
 /** What joins a document's path to a section's title in a heading. */
 const SECTION_MARK = ' § '
@@ -851,7 +885,7 @@ export function exploreMessages(work, read) {
       folder?.path === '/'
         ? 'These are all the documents in the project. Describe the ones listed below, and the project as a whole.'
         : folder
-          ? `These are the documents in ${headingPath(folder)}, all of them. Describe the ones listed below, and the folder as a whole.`
+          ? `These are the documents in ${headingPath(folder)}, all of them. Describe the ones listed below, and ${folder.type === 'folder' ? 'the folder' : headingPath(folder)} as a whole.`
           : docs.length > 1
             ? 'These are documents from the project.'
             : 'This is a document from the project.'
@@ -911,11 +945,11 @@ export function exploreMessages(work, read) {
   // root directory.
   const project = node.path === '/'
   const it = project ? 'The project' : whose
-  const what = project ? 'the project' : 'the folder'
+  const what = project ? 'the project' : node.type === 'folder' ? 'the folder' : whose
   let intro
-  if (node.type !== 'folder' && work.part) {
+  if (!fromWhatItHolds(node) && work.part) {
     intro = `${whose} was too long to read at once, and was read in parts, too many to put together at once. Here is what was written of ${partNumber} of them, in order, which is part ${work.part} of ${work.parts} of the document. Describe this part of it.`
-  } else if (node.type !== 'folder') {
+  } else if (!fromWhatItHolds(node)) {
     intro = `${whose} was too long to read at once, and was read in ${partNumber} parts. Here is what was written of each. Describe the document as a whole.`
   } else if (fromParts) {
     intro = `${it} holds too much to describe at once, and was described in ${partNumber} parts. Here is what was written of each. Describe ${what} as a whole.`

@@ -49,7 +49,8 @@
  * as in the status line.
  *
  * A project is shared with friends by their friend codes, from its menu,
- * and a friend leaves one shared with them there. Who this account is, and
+ * whole or only some of its documents, and a friend leaves one shared with
+ * them there. Who this account is, and
  * who is in each project shared, is kept in `cloud/people.js` for what shows
  * a comment's author; the account's id is kept with it, so that a comment
  * written before the server is reached says who wrote it too.
@@ -473,7 +474,7 @@ function end() {
   askedToUpdate.value = false
   waitsForUpdate = false
   me.value = null
-  sharing.value = { me: null, projects: {} }
+  sharing.value = { me: null, projects: {}, selective: [] }
 }
 
 /** Let go of what sync kept of this device's reading and writing, the account with it. */
@@ -646,6 +647,16 @@ async function share(storyId, code) {
 }
 
 /**
+ * Share a project with only some of its documents, or with all of them again.
+ * @param {string} storyId
+ * @param {boolean} selective
+ */
+async function setSelective(storyId, selective) {
+  await running().setSelective(storyId, selective)
+  tellOtherWindows({ type: 'cloud' })
+}
+
+/**
  * Take someone out of a project shared.
  * @param {string} storyId
  * @param {number} accountId
@@ -747,6 +758,7 @@ async function signOut() {
  *   profile: typeof profile,
  *   setDisplay: typeof setDisplay,
  *   share: typeof share,
+ *   setSelective: typeof setSelective,
  *   removeMember: typeof removeMember,
  *   leaveProject: typeof leaveProject,
  * }}
@@ -778,6 +790,7 @@ export function useCloudSync() {
     profile,
     setDisplay,
     share,
+    setSelective,
     removeMember,
     leaveProject,
   }

@@ -32,8 +32,8 @@ import { inspectFile } from './inspect.js'
  *
  * Titled after the file, in the folder it was asked for on — or at the top
  * of the project. A second file of the same name in the same folder is
- * `Name (2)`, as an import of anything is. An epub with chapters in it is a
- * folder instead: `writeBook`.
+ * `Name (2)`, as an import of anything is. An epub with chapters in it is
+ * written holding them: `writeBook`.
  *
  * @param {string} storyId
  * @param {InspectedFile} file
@@ -72,14 +72,15 @@ export async function writeFile(storyId, file, { parentId } = {}) {
 }
 
 /**
- * Write a book into the project as a folder of its chapters.
+ * Write a book into the project as the epub holding its chapters.
  *
- * The folder is ordered and titled after the file; a part is an ordered
- * folder inside it, with what the part says before its first chapter as a
- * document of the part's name; each chapter is a markdown document. The
- * epub itself goes last, with no text — the chapters are its text, and a
- * second copy would be found twice by every search — so it can still be
- * read straight through in the viewer and downloaded.
+ * The epub is a file document titled after the file, with no text — the
+ * chapters are its text, and a second copy would be found twice by every
+ * search — so it can still be read straight through in the viewer and
+ * downloaded. It holds its parts and chapters in order
+ * (`.llm/nested_documents_design.md`). Each chapter is a markdown document;
+ * a part that says something before its first chapter is that text, holding
+ * its chapters, and one that says nothing is an ordered folder of them.
  *
  * @param {string} storyId
  * @param {InspectedFile} file
@@ -91,27 +92,19 @@ async function writeBook(storyId, file, sections, parent) {
   const api = useDocuments(storyId)
   const store = useDocumentsStore()
   let chapters = 0
-  const folder = (/** @type {string} */ parentId, /** @type {string} */ title) =>
-    store.createDocument({
-      storyId,
-      parentId,
-      type: 'folder',
-      ordered: true,
-      title: api.uniqueTitle(parentId, title),
-    })
   const chapter = (
     /** @type {string} */ parentId,
     /** @type {string} */ title,
     /** @type {string} */ text
   ) => {
-    store.createDocument({
+    chapters++
+    return store.createDocument({
       storyId,
       parentId,
       type: 'text',
       title: api.uniqueTitle(parentId, title),
       content: settleMarkdown(text),
     })
-    chapters++
   }
 
   /**
@@ -124,24 +117,31 @@ async function writeBook(storyId, file, sections, parent) {
         chapter(parentId, section.title, section.text)
         continue
       }
-      const part = folder(parentId, section.title)
-      if (section.text) chapter(part.id, section.title, section.text)
+      const part = section.text
+        ? chapter(parentId, section.title, section.text)
+        : store.createDocument({
+            storyId,
+            parentId,
+            type: 'folder',
+            title: api.uniqueTitle(parentId, section.title),
+          })
+      store.updateDocument(part.id, { ordered: true })
       write(section.children, part.id)
     }
   }
 
-  const book = folder(parent, file.title || 'Untitled')
-  write(sections, book.id)
-  const made = store.createDocument({
+  const book = store.createDocument({
     storyId,
-    parentId: book.id,
+    parentId: parent,
     type: 'file',
-    title: api.uniqueTitle(book.id, file.title || 'Untitled'),
+    ordered: true,
+    title: api.uniqueTitle(parent, file.title || 'Untitled'),
     content: '',
     mime: file.mime,
     size: file.size,
   })
-  await useFilesStore().putFile(made.id, storyId, file.blob)
+  await useFilesStore().putFile(book.id, storyId, file.blob)
+  write(sections, book.id)
 
   return {
     folderId: book.id,

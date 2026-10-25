@@ -62,6 +62,38 @@ export function formatToolArguments(args) {
     .join(', ')
 }
 
+/** How much of a run of Python's output is shown before it is cut short: a table's worth. */
+const PYTHON_RESULT_PREVIEW_LIMIT = 4000
+
+/**
+ * A run of Python's result for display, as it came: what it printed, the
+ * value of its last line, and its traceback, rather than the JSON the model
+ * read them in. Cut short when it is long.
+ *
+ * @param {string} content - The result as the model was sent it
+ * @returns {string}
+ */
+export function formatPythonResult(content) {
+  let result
+  try {
+    result = JSON.parse(content)
+  } catch {
+    return formatToolResult(content)
+  }
+  if (!result || typeof result !== 'object') return formatToolResult(content)
+  const shown = [result.stdout, result.stderr, result.value, result.error, result.restarted]
+    .filter(part => typeof part === 'string' && part.trim())
+    .map(part => part.replace(/\n+$/, ''))
+    .join('\n')
+  if (shown.length > PYTHON_RESULT_PREVIEW_LIMIT) {
+    return (
+      shown.slice(0, PYTHON_RESULT_PREVIEW_LIMIT) +
+      `\n… (${shown.length - PYTHON_RESULT_PREVIEW_LIMIT} more chars)`
+    )
+  }
+  return shown
+}
+
 /**
  * A tool's result for display: pretty-printed when it is JSON, and cut short
  * when it is long.

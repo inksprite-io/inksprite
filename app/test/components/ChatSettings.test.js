@@ -1198,6 +1198,62 @@ describe('ChatSettings web', () => {
   })
 })
 
+describe('ChatSettings Python', () => {
+  const toggle = (wrapper, label) =>
+    wrapper
+      .findAllComponents({ name: 'ToggleSwitch' })
+      .find(one => one.props('ariaLabel') === label)
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    chat.value = {}
+    updateChat.mockClear()
+    preset.value = { toolsEnabled: true, generationOverrides: {} }
+    vi.stubEnv('VITE_PREVIEW', 'python')
+    globalThis.__INKSPRITE_DESKTOP__ = { python: { run: vi.fn(), stop: vi.fn() } }
+    useApplicationState().setExtension('python', true)
+  })
+
+  afterEach(() => {
+    delete globalThis.__INKSPRITE_DESKTOP__
+    vi.unstubAllEnvs()
+    useApplicationState().setExtension('python', false)
+    useApplicationState().state.value.system.pythonProfiles = null
+  })
+
+  it('lists Python with the connections, on for a chat on Default', async () => {
+    const wrapper = await mountSettings()
+
+    expect(toggle(wrapper, 'Python tools').props('modelValue')).toBe(true)
+    expect(toggle(wrapper, 'Run python')).toBeDefined()
+    // Not also among the groups a chat withholds.
+    expect(wrapper.find('[data-tool-group="python"]').exists()).toBe(false)
+  })
+
+  it('is off for a chat on a profile that does not run it', async () => {
+    useApplicationState().setPythonProfiles([])
+    const wrapper = await mountSettings()
+
+    expect(toggle(wrapper, 'Python tools').props('modelValue')).toBe(false)
+  })
+
+  it('writes the chat’s own choice', async () => {
+    const wrapper = await mountSettings()
+
+    await toggle(wrapper, 'Python tools').vm.$emit('update:modelValue', false)
+    expect(updateChat).toHaveBeenLastCalledWith('chat_1', { python: false })
+  })
+
+  it('is not listed with the extension off, or in a browser', async () => {
+    useApplicationState().setExtension('python', false)
+    expect(toggle(await mountSettings(), 'Python tools')).toBeUndefined()
+
+    useApplicationState().setExtension('python', true)
+    delete globalThis.__INKSPRITE_DESKTOP__
+    expect(toggle(await mountSettings(), 'Python tools')).toBeUndefined()
+  })
+})
+
 describe('ChatSettings voices', () => {
   const userVoiceSelect = wrapper =>
     wrapper

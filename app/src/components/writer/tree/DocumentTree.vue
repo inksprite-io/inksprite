@@ -484,7 +484,8 @@ const targetOf = event => {
   const row = /** @type {HTMLElement} */ (event.target).closest?.('[role="treeitem"]')
   const id = row?.getAttribute('data-document-id') || root.value?.id
   let document = id ? api.get(id) : null
-  if (document && !api.isFolder(document)) document = api.get(document.parentId)
+  // A drop on a document lands in its folder, past any document holding it.
+  while (document && !api.isFolder(document)) document = api.get(document.parentId)
   // Nothing is imported into a repository; a drop on one lands beside it.
   const repository = repositoryOf(api.get, document)
   if (repository) document = api.get(repository.parentId) || root.value
@@ -538,7 +539,7 @@ const jobsToast = useJobsToast()
 /**
  * Turn a document's text into Markdown with a model, as a long job. Asked
  * first, with the size of it: a book is many requests. The Markdown is a
- * new document beside it; the document itself is left as it is.
+ * new document under it; the document itself is left as it is.
  *
  * @param {string} documentId
  */
@@ -549,7 +550,7 @@ const convertDocument = documentId => {
   const words = document.wordCount || 0
   confirm.require({
     header: 'Convert to Markdown?',
-    message: `${words.toLocaleString()} words, about ${requests} ${requests === 1 ? 'request' : 'requests'}. The Markdown goes in a new document beside it.`,
+    message: `${words.toLocaleString()} words, about ${requests} ${requests === 1 ? 'request' : 'requests'}. The Markdown goes in a new document under it.`,
     icon: 'pi pi-sparkles',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
     acceptProps: { label: 'Convert' },

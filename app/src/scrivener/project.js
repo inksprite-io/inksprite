@@ -7,17 +7,20 @@
  * to import, so that a zip with none in it, or a project too old to read,
  * writes nothing. Writing then goes through the binder in order:
  *
- * - A folder, or any item with items under it, is an ordered folder, since
- *   the binder's order is the writer's. When it has text of its own, that
- *   comes first inside it, as a document of the same name.
+ * - A folder is an ordered folder, since the binder's order is the
+ *   writer's. When it has text of its own, that comes first inside it, as a
+ *   document of the same name.
  * - A text is a text document, empty or not: an empty scene in the binder is
  *   a plan.
  * - A file, such as a PDF or a picture in Research, is a file document, read
  *   as any import reads it. One that cannot be read comes in with no text
  *   rather than being left out.
+ * - A text or a file with items under it is that document, holding them in
+ *   the binder's order (`.llm/nested_documents_design.md`).
  * - An item's synopsis and notes are documents of their own, `<title>
- *   synopsis` and `<title> notes`, right after its text: beside a document,
- *   or inside a folder before the items under it.
+ *   synopsis` and `<title> notes`, right after its text: beside a document
+ *   with nothing under it, or inside a folder or a document before the items
+ *   under it.
  *
  * Labels, statuses, keywords, snapshots, compile settings and the rest of
  * what Scrivener keeps about its items have nowhere to go, and are left.
@@ -164,10 +167,12 @@ export async function writeProject(storyId, project, { parentId, asFolder = fals
    * @param {string} parent
    * @param {string} title
    * @param {string} markdown
+   * @returns {Promise<string>} The document's id
    */
   const text = async (parent, title, markdown) => {
-    await writeMarkdown(storyId, title, markdown, { parentId: parent })
+    const written = await writeMarkdown(storyId, title, markdown, { parentId: parent })
     result.documents++
+    return written.folderId
   }
 
   /**
@@ -191,6 +196,7 @@ export async function writeProject(storyId, project, { parentId, asFolder = fals
    * @param {string} parent
    * @param {string} title
    * @param {{name: string, blob: Blob}} attachment
+   * @returns {Promise<string>} The document's id
    */
   const attach = async (parent, title, { name, blob }) => {
     const file = new File([blob], name)
@@ -204,6 +210,7 @@ export async function writeProject(storyId, project, { parentId, asFolder = fals
     const written = await writeFile(storyId, { ...found, title }, { parentId: parent })
     result.documents += written.documents
     if (found.mime === 'application/pdf' && !found.text) result.scans++
+    return written.folderId
   }
 
   /**
@@ -230,21 +237,25 @@ export async function writeProject(storyId, project, { parentId, asFolder = fals
    */
   const write = async (item, parent) => {
     const title = item.title.trim() || 'Untitled'
-    const attachment = attachmentOf(item)
-    if (item.children.length > 0 || FOLDER_TYPES.has(item.type)) {
+    if (FOLDER_TYPES.has(item.type)) {
       const made = folder(parent, title)
-      if (attachment) await attach(made.id, title, attachment)
-      else {
-        const own = await markdownOf(item.id, 'content')
-        if (own) await text(made.id, title, own)
-      }
+      const own = await markdownOf(item.id, 'content')
+      if (own) await text(made.id, title, own)
       await asides(item, title, made.id)
       for (const child of item.children) await write(child, made.id)
       return
     }
-    if (attachment) await attach(parent, title, attachment)
-    else await text(parent, title, (await markdownOf(item.id, 'content')) ?? '')
-    await asides(item, title, parent)
+    const attachment = attachmentOf(item)
+    const own = attachment
+      ? await attach(parent, title, attachment)
+      : await text(parent, title, (await markdownOf(item.id, 'content')) ?? '')
+    if (item.children.length === 0) {
+      await asides(item, title, parent)
+      return
+    }
+    api.setOrdered(own, true)
+    await asides(item, title, own)
+    for (const child of item.children) await write(child, own)
   }
 
   const top = parentId || rootIdFor(storyId)

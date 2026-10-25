@@ -1,5 +1,21 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import { renderMarkdown, stripMarkdown } from '../../src/utils/markdown'
+import { loadMath } from '../../src/utils/math'
+
+/**
+ * The formulas typeset in some HTML, as the TeX each came from, with `$$` round
+ * one set on its own.
+ *
+ * @param {string} html
+ */
+const formulas = html => {
+  const template = document.createElement('template')
+  template.innerHTML = html
+  return [...template.content.querySelectorAll('.katex')].map(formula => {
+    const tex = formula.querySelector('annotation')?.textContent?.trim()
+    return formula.closest('.katex-display') ? `$$${tex}$$` : `$${tex}$`
+  })
+}
 
 describe('renderMarkdown', () => {
   describe('markdown', () => {
@@ -139,6 +155,78 @@ describe('renderMarkdown', () => {
       expect(renderMarkdown('![map](https://example.com/m.png "The coast")')).toContain(
         'title="The coast"'
       )
+    })
+  })
+
+  describe('math', () => {
+    beforeAll(loadMath)
+
+    it('typesets a formula set on its own, in either delimiter', () => {
+      const dollars = renderMarkdown(
+        'The answer:\n\n$$E \\approx \\Gamma(1+\\tfrac{1}{k})$$\n\nThat is all.'
+      )
+      expect(formulas(dollars)).toEqual(['$$E \\approx \\Gamma(1+\\tfrac{1}{k})$$'])
+      expect(dollars).toContain('<p>That is all.</p>')
+
+      expect(formulas(renderMarkdown('\\[\nx^2 + y^2 = r^2\n\\]'))).toEqual(['$$x^2 + y^2 = r^2$$'])
+    })
+
+    it('ends a paragraph where a formula on its own lines starts', () => {
+      // Models put a display formula straight under the line that leads into
+      // it, with no blank line between.
+      const rendered = renderMarkdown('So:\n$$\nE = mc^2\n$$\nAnd on.')
+
+      expect(rendered).toMatch(/^<p>So:<\/p>\n<span class="katex-display">/)
+      expect(formulas(rendered)).toEqual(['$$E = mc^2$$'])
+      expect(rendered).toContain('<p>And on.</p>')
+    })
+
+    it('typesets a formula in a sentence', () => {
+      expect(formulas(renderMarkdown('Both $x^2$ and \\(a_1 + b_2\\) here.'))).toEqual([
+        '$x^2$',
+        '$a_1 + b_2$',
+      ])
+      expect(formulas(renderMarkdown('- one $n$\n- two'))).toEqual(['$n$'])
+      expect(formulas(renderMarkdown('| a |\n| - |\n| $k$ |'))).toEqual(['$k$'])
+    })
+
+    it('leaves money as money', () => {
+      // A dollar opens a formula only with something other than a space after
+      // it, and closes one only with no space before it and no digit after.
+      for (const prose of [
+        'It cost $5 and $10 to get in.',
+        'From $5-$10 a night.',
+        'Somewhere between $ and $$.',
+      ]) {
+        expect(renderMarkdown(prose)).toBe(`<p>${prose}</p>\n`)
+      }
+      expect(renderMarkdown('Only \\$5, or $x = \\$5$.')).toMatch(
+        /^<p>Only \$5, or <span class="katex">/
+      )
+    })
+
+    it('leaves code as code', () => {
+      expect(renderMarkdown('Type `$x$` here.')).toBe('<p>Type <code>$x$</code> here.</p>\n')
+      expect(renderMarkdown('```\n$$x$$\n```')).toBe('<pre><code>$$x$$\n</code></pre>\n')
+    })
+
+    it('shows TeX it cannot read as it was written', () => {
+      expect(renderMarkdown('See $\\nosuchcommand{x}$.')).toBe('<p>See $\\nosuchcommand{x}$.</p>\n')
+      expect(renderMarkdown('$$\n\\frac{1}{\n$$')).toBe('<p>$$\n\\frac{1}{\n$$</p>\n')
+    })
+
+    it('does not run past a blank line looking for the end of a formula', () => {
+      expect(renderMarkdown('$$ one\n\ntwo $$')).toBe('<p>$$ one</p>\n<p>two $$</p>\n')
+    })
+
+    it('makes no links or pictures out of TeX', () => {
+      // A model repeats what it was shown, and KaTeX would link and load if it
+      // were trusted.
+      const rendered = renderMarkdown(
+        '$\\href{javascript:boom()}{x}$ $\\url{https://example.com}$ $\\includegraphics{https://example.com/x.png}$ $\\htmlId{boom}{x}$'
+      )
+
+      expect(rendered).not.toMatch(/<a |<img |href=|id="boom"/)
     })
   })
 })

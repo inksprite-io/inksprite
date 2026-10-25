@@ -286,7 +286,7 @@ export async function roleplay(ui, { standIn, context }) {
   await ui.click(button('Back to chat'))
 
   // The game, wide
-  await ui.click(button('Hide editor'))
+  await ui.click(button('Expand chat'))
   const [explore, job, fire, oracle, steer, ...rest] = turns
   await ui.record('roleplay-explore', async () => {
     await take(explore, 2)

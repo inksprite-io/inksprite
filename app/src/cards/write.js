@@ -42,8 +42,9 @@ export const SIDECAR_TITLE = '.card.json'
  * What an import left behind.
  *
  * @typedef {Object} Written
- * @property {string} folderId - The folder the card became, or the one document
- *   an import that had only one to write
+ * @property {string} folderId - The folder the card became, or its portrait
+ *   holding its documents, or the one document an import that had only one
+ *   to write
  * @property {string} title - What it ended up called
  * @property {string[]} pinnedIds - What a chat on this card should pin: the
  *   documents that have to be in context from the first turn
@@ -54,7 +55,9 @@ export const SIDECAR_TITLE = '.card.json'
  */
 
 /**
- * Write a card into the project.
+ * Write a card into the project. A card that came in an image is that image,
+ * holding its documents (`.llm/nested_documents_design.md`); one from a JSON
+ * file is a folder of them.
  *
  * @param {string} storyId
  * @param {Card} card
@@ -64,8 +67,8 @@ export const SIDECAR_TITLE = '.card.json'
  *   a document of its own. Off by default: most cards that carry one are
  *   carrying an ST preset's scaffolding rather than anything about the
  *   character, and it is in the sidecar either way.
- * @param {Blob} [options.portrait] - The image the card came in, kept as a file
- *   in its folder. It is what the card looks like where people browse for
+ * @param {Blob} [options.portrait] - The image the card came in, which the
+ *   card is then. It is what the card looks like where people browse for
  *   them, and a model that can see it may as well.
  * @returns {Promise<Written>}
  */
@@ -79,6 +82,20 @@ export async function writeCard(
   const store = useDocumentsStore()
 
   const parent = parentId || rootIdFor(storyId)
+  if (portrait) {
+    const made = store.createDocument({
+      storyId,
+      parentId: parent,
+      type: 'file',
+      title: api.uniqueTitle(parent, card.title),
+      kind: 'card',
+      mime: portrait.type || 'image/png',
+      size: portrait.size,
+    })
+    await useFilesStore().putFile(made.id, storyId, portrait)
+    const filled = await fillCard(storyId, made.id, card, { useSystemPrompt })
+    return { folderId: made.id, title: made.title, ...filled, documents: filled.documents + 1 }
+  }
   const folder = store.createDocument({
     storyId,
     parentId: parent,
@@ -87,7 +104,7 @@ export async function writeCard(
     kind: 'card',
   })
 
-  const filled = await fillCard(storyId, folder.id, card, { useSystemPrompt, portrait })
+  const filled = await fillCard(storyId, folder.id, card, { useSystemPrompt })
   return { folderId: folder.id, title: folder.title, ...filled, documents: filled.documents + 1 }
 }
 
@@ -101,16 +118,18 @@ export async function writeCard(
  * still does, and its versions, which keep what was written in it (one is
  * taken first). A field the card no longer has goes to the trash, one it has
  * now is made, and what the writer added to the folder is left alone. The
- * folder stays, with its title and its place, and so does the portrait.
+ * folder stays, with its title and its place, and so does the portrait. A
+ * card that is its portrait, holding its documents, is written into the same
+ * way, and stays that.
  *
  * @param {string} storyId
- * @param {string} folderId - A card folder
+ * @param {string} folderId - A card: its folder, or its portrait
  * @param {Card} card
  * @param {Object} [options]
  * @param {boolean} [options.useSystemPrompt]
  * @param {Blob} [options.portrait] - The image, where the folder has none yet
  * @returns {Promise<Written>}
- * @throws {Error} When the folder is not a card's
+ * @throws {Error} When the document is not a card
  */
 export async function reimportCard(
   storyId,
@@ -122,8 +141,8 @@ export async function reimportCard(
   await api.init()
   const store = useDocumentsStore()
   const folder = api.get(folderId)
-  if (!folder || folder.type !== 'folder' || folder.kind !== 'card') {
-    throw new Error('Only a card folder can be re-imported.')
+  if (!folder || folder.kind !== 'card') {
+    throw new Error('Only a card can be re-imported.')
   }
 
   const parts = partsOf(card, { useSystemPrompt })
@@ -239,8 +258,9 @@ export async function reimportCard(
       take(child => child.kind === 'sidecar')
     )
   // The portrait a re-import has is the one already there, kept as it is: a
-  // file's bytes never change.
-  if (!take(child => child.kind === 'portrait') && portrait) {
+  // file's bytes never change. A card that is its portrait has it.
+  const pictured = take(child => child.kind === 'portrait') || folder.type === 'file'
+  if (!pictured && portrait) {
     documents += await writePortrait(store, storyId, folderId, portrait)
   }
 
@@ -375,18 +395,17 @@ function loreParts(entries) {
 }
 
 /**
- * The documents a card is made of, written into a folder.
+ * The documents a card is made of, written into its folder or its image.
  *
  * @param {string} storyId
  * @param {string} folderId
  * @param {Card} card
  * @param {Object} options
  * @param {boolean} options.useSystemPrompt
- * @param {Blob} [options.portrait]
  * @returns {Promise<Pick<Written, 'pinnedIds'|'greetingIds'|'documents'>>} The
  *   count is of what this wrote: the folder is not counted here
  */
-async function fillCard(storyId, folderId, card, { useSystemPrompt, portrait }) {
+async function fillCard(storyId, folderId, card, { useSystemPrompt }) {
   const store = useDocumentsStore()
   const parts = partsOf(card, { useSystemPrompt })
   /** @type {string[]} */
@@ -421,13 +440,14 @@ async function fillCard(storyId, folderId, card, { useSystemPrompt, portrait }) 
   }
 
   if (parts.sidecar) write(parts.sidecar)
-  if (portrait) documents += await writePortrait(store, storyId, folderId, portrait)
 
   return { pinnedIds, greetingIds, documents }
 }
 
 /**
- * The image a card arrived in, kept as a file beside its documents.
+ * The image a card arrived in, kept as a file beside its documents, in a card
+ * that is a folder: one imported before a card that came in an image was that
+ * image, re-imported from one.
  *
  * Not hidden: it costs a thousand tokens on a model that can see it and
  * nothing on one that cannot, and a chat on the card can let it go like

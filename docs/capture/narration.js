@@ -5,7 +5,7 @@
  * take, so the player shows a track of the right length.
  *
  * The book is Project Gutenberg's EPUB, downloaded the first time and kept
- * beside this file under the name its download has, so the folder it imports
+ * beside this file under the name its download has, so the book it imports
  * as is the one a reader gets. The novel is in the public domain.
  */
 
@@ -15,6 +15,8 @@ import { fileURLToPath } from 'node:url'
 
 const BOOK_URL = 'https://www.gutenberg.org/cache/epub/84/pg84-images-3.epub'
 const BOOK = fileURLToPath(new URL('pg84-images-3.epub', import.meta.url))
+/** What the book is called in the outline: its file's name. */
+const TITLE = 'pg84-images-3'
 
 /** The project the book goes in. */
 const PROJECT = 'Frankenstein'
@@ -57,6 +59,9 @@ export async function narration(ui) {
     const chooser = page.waitForEvent('filechooser')
     await ui.click(page.getByRole('menuitem', { name: 'Files…' }))
     await (await chooser).setFiles(file)
+    // The book comes in shut, holding its letters and chapters.
+    const opened = page.getByRole('treeitem', { name: TITLE, exact: true })
+    await ui.click(opened.getByRole('button', { name: 'Expand', exact: true }))
     await page.getByRole('treeitem', { name: 'Letter 1' }).waitFor()
   })
 

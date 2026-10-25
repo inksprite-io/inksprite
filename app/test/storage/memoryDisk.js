@@ -82,9 +82,11 @@ export function memoryDisk({ caseInsensitive = false } = {}) {
     /** @param {Op[]} ops */
     apply(ops) {
       for (const op of ops) {
-        if (op.op === 'move') disk.move(op.from, op.to)
-        else if (op.op === 'trash') disk.trash(op.path)
-        else disk.write(op.path, op.text)
+        if (op.op === 'move') {
+          if (!op.optional || exists(op.from)) disk.move(op.from, op.to)
+        } else if (op.op === 'trash') {
+          if (!op.optional || exists(op.path)) disk.trash(op.path)
+        } else disk.write(op.path, op.text)
       }
     },
 

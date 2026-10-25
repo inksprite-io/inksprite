@@ -26,7 +26,7 @@
       @previous="run(findNext(-1))"
       @close="closeFind"
     />
-    <div ref="host" class="code-view flex-1 min-h-0 w-full overflow-hidden"></div>
+    <div ref="host" class="code-view code-tokens flex-1 min-h-0 w-full overflow-hidden"></div>
   </div>
 </template>
 
@@ -34,9 +34,10 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { Compartment, EditorState } from '@codemirror/state'
 import { EditorView, lineNumbers } from '@codemirror/view'
-import { LanguageDescription, syntaxHighlighting } from '@codemirror/language'
-import { languages } from '@codemirror/language-data'
+import { syntaxHighlighting } from '@codemirror/language'
 import { classHighlighter } from '@lezer/highlight'
+import { languageFor } from '@/editor/codeLanguage.js'
+import '@/editor/codeTokens.css'
 import FindBar from '@/components/common/FindBar.vue'
 import { useFindKey } from '@/composables/useFindKey.js'
 import { find, findAt, findNext, plainSearch, reveal, searchOf } from '@/editor/plainSearch.js'
@@ -47,9 +48,9 @@ import { find, findAt, findNext, plainSearch, reveal, searchOf } from '@/editor/
  * file costs what a short one does.
  *
  * The highlighting is classes (`tok-keyword`, `tok-string`, …) coloured
- * below for light and dark, so it follows the app's theme without a second
- * CodeMirror theme to switch. Each language's parser is loaded the first
- * time a file of it is opened.
+ * for light and dark (`editor/codeTokens.css`), so it follows the app's
+ * theme without a second CodeMirror theme to switch. Each language's parser
+ * is loaded the first time a file of it is opened.
  *
  * For the same reason a long file costs little, the browser's own find sees
  * only the lines on screen, so the view has a find of its own: the plain
@@ -86,22 +87,6 @@ const layout = EditorView.theme({
   '.cm-lineNumbers .cm-gutterElement': { padding: '0 12px 0 16px', color: 'var(--code-gutter)' },
   '.cm-line': { padding: '0 16px' },
 })
-
-/**
- * The highlighting for a file, by its name, or nothing when no language
- * claims it or its parser will not load.
- *
- * @param {string} filename
- */
-async function languageFor(filename) {
-  const found = LanguageDescription.matchFilename(languages, filename)
-  if (!found) return []
-  try {
-    return await found.load()
-  } catch {
-    return []
-  }
-}
 
 /** Set the highlighting for the current file, if it is still the one shown. */
 async function highlight() {
@@ -251,81 +236,5 @@ onBeforeUnmount(() => {
   --code-rule: #30363d;
   --code-gutter: #6e7681;
   color: #e6edf3;
-}
-
-.code-view .tok-keyword,
-.code-view .tok-operatorKeyword,
-.code-view .tok-modifier {
-  color: #cf222e;
-}
-.code-view .tok-string,
-.code-view .tok-string2,
-.code-view .tok-url {
-  color: #0a3069;
-}
-.code-view .tok-number,
-.code-view .tok-bool,
-.code-view .tok-atom,
-.code-view .tok-literal,
-.code-view .tok-propertyName {
-  color: #0550ae;
-}
-.code-view .tok-comment {
-  color: #6e7781;
-  font-style: italic;
-}
-.code-view .tok-typeName,
-.code-view .tok-className,
-.code-view .tok-namespace {
-  color: #953800;
-}
-.code-view .tok-definition,
-.code-view .tok-macroName,
-.code-view .tok-meta {
-  color: #8250df;
-}
-.code-view .tok-heading,
-.code-view .tok-strong {
-  font-weight: 600;
-}
-.code-view .tok-emphasis {
-  font-style: italic;
-}
-.code-view .tok-invalid {
-  color: #82071e;
-}
-
-.dark .code-view .tok-keyword,
-.dark .code-view .tok-operatorKeyword,
-.dark .code-view .tok-modifier {
-  color: #ff7b72;
-}
-.dark .code-view .tok-string,
-.dark .code-view .tok-string2,
-.dark .code-view .tok-url {
-  color: #a5d6ff;
-}
-.dark .code-view .tok-number,
-.dark .code-view .tok-bool,
-.dark .code-view .tok-atom,
-.dark .code-view .tok-literal,
-.dark .code-view .tok-propertyName {
-  color: #79c0ff;
-}
-.dark .code-view .tok-comment {
-  color: #8b949e;
-}
-.dark .code-view .tok-typeName,
-.dark .code-view .tok-className,
-.dark .code-view .tok-namespace {
-  color: #ffa657;
-}
-.dark .code-view .tok-definition,
-.dark .code-view .tok-macroName,
-.dark .code-view .tok-meta {
-  color: #d2a8ff;
-}
-.dark .code-view .tok-invalid {
-  color: #ffa198;
 }
 </style>

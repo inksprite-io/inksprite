@@ -1,0 +1,32 @@
+{
+  "fixture": "held",
+  "messages": [
+    {
+      "text": "What is Wren after in Saltgate? Check what her card says.",
+      "finds": ["Characters/Wren/Scenario"],
+      "mentions": ["ledger"],
+      "noWrites": true
+    },
+    {
+      "text": "By the house rules, how many guards are on the night shift on a festival night?",
+      "findsAny": ["Rules/House rules", "Rules/House rules/House rules (Markdown)"],
+      "mentions": ["\\b(12|twelve)\\b"],
+      "noWrites": true
+    },
+    {
+      "text": "Which scene of chapter 1 is set inside the counting house, and how many teeth does the dial on the inner door have?",
+      "finds": ["Manuscript/Chapter 1/The counting room"],
+      "mentions": ["counting room", "\\b(14|fourteen)\\b"],
+      "noWrites": true
+    },
+    {
+      "text": "Add to Wren's description that she can't stand the sound of bells.",
+      "document": { "path": "Characters/Wren/Description", "contains": ["bell"] }
+    },
+    {
+      "text": "What scenes does chapter 1 have so far?",
+      "mentions": ["Arrival", "counting room"],
+      "noWrites": true
+    }
+  ]
+}

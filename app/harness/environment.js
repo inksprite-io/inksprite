@@ -144,9 +144,11 @@ const realFetch = globalThis.fetch
 globalThis.fetch = async (input, init) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
   if (init?.body && /chat\/completions\/?$/.test(url)) {
-    let body = init.body
+    // Bytes when it came through the desktop bridge (`desktop.js`).
+    let body =
+      init.body instanceof Uint8Array ? new TextDecoder().decode(init.body) : String(init.body)
     try {
-      body = JSON.parse(String(init.body))
+      body = JSON.parse(body)
     } catch {
       // Not JSON; keep the string.
     }

@@ -1,0 +1,2 @@
+- The ledger could be in code, and only Wren can read it.
+- Osric's fear of heights matters on the roofs in chapter 2.

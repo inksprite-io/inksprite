@@ -31,7 +31,7 @@
     />
     <div
       ref="host"
-      class="flex-1 min-h-0 w-full font-mono text-sm leading-relaxed text-surface-700 dark:text-surface-300"
+      class="code-tokens flex-1 min-h-0 w-full font-mono text-sm leading-relaxed text-surface-700 dark:text-surface-300"
       data-raw-markdown
     ></div>
   </div>
@@ -39,9 +39,13 @@
 
 <script setup>
 import { nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
-import { Annotation, EditorState, Transaction } from '@codemirror/state'
+import { Annotation, Compartment, EditorState, Transaction } from '@codemirror/state'
 import { EditorView, keymap } from '@codemirror/view'
 import { defaultKeymap, history, historyKeymap, insertNewline } from '@codemirror/commands'
+import { syntaxHighlighting } from '@codemirror/language'
+import { classHighlighter } from '@lezer/highlight'
+import { languageFor } from '@/editor/codeLanguage.js'
+import '@/editor/codeTokens.css'
 import FindBar from '@/components/common/FindBar.vue'
 import { useFindKey } from '@/composables/useFindKey.js'
 import {
@@ -83,11 +87,14 @@ import { isTextField } from '@/utils/focus.js'
  * @property {string} text - The text, as it stands
  * @property {Scroll|null} [startAt] - Where to start, as `scroll()` left it
  * @property {boolean} [caret] - Whether to take the caret on opening
+ * @property {string} [filename] - A name that says what language the text is
+ *   in, a script's, for it to be highlighted as code; none for text
  */
 const props = defineProps({
   text: { type: String, required: true },
   startAt: { type: Object, default: null },
   caret: { type: Boolean, default: true },
+  filename: { type: String, default: '' },
 })
 
 const emit = defineEmits(['input', 'blur'])
@@ -108,6 +115,18 @@ let shown = props.text
 
 /** Marks a change that came from elsewhere, which is not the writer's to undo. */
 const fromOutside = Annotation.define()
+
+/** The highlighting for the language the name says, once it has loaded. */
+const language = new Compartment()
+
+/** Highlight the text for its name, if it is still the name once that has loaded. */
+async function highlight() {
+  const asked = props.filename
+  const support = await languageFor(asked)
+  if (view && props.filename === asked) view.dispatch({ effects: language.reconfigure(support) })
+}
+
+watch(() => props.filename, highlight)
 
 /**
  * Show the text where it differs from what is shown, as the one change
@@ -266,6 +285,8 @@ onMounted(() => {
         EditorView.contentAttributes.of({ spellcheck: 'false' }),
         plainSearch,
         plainMacros,
+        syntaxHighlighting(classHighlighter),
+        language.of([]),
         EditorView.updateListener.of(update => {
           const found = searchOf(update.state)
           if (found !== search.value) search.value = found
@@ -287,6 +308,7 @@ onMounted(() => {
   )
   if (anchor) view.dispatch({ effects: anchor })
   else if (props.startAt) view.scrollDOM.scrollTop = props.startAt.top
+  if (props.filename) highlight()
 })
 
 onBeforeUnmount(() => {

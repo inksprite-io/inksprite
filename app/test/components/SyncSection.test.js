@@ -23,7 +23,7 @@ const sync = vi.hoisted(() => ({
   signOutDevice: vi.fn(async () => {}),
   refreshUsage: vi.fn(async () => {}),
   setSendsDiagnostics: vi.fn(),
-  profile: vi.fn(async () => ({ id: 1, display: null, friend: 'ABCDE-FGHJK-MNPQR-STVWX' })),
+  profile: vi.fn(async () => ({ id: 1, display: 'writer', friend: 'ABCDE-FGHJK-MNPQR-STVWX' })),
   setDisplay: vi.fn(async () => {}),
 }))
 vi.mock('@/composables/useCloudSync.js', () => ({
@@ -347,17 +347,34 @@ describe('SyncSection', () => {
     projects.stories.value = new Map()
   })
 
-  it('shows the friend code once the account has a name others see', async () => {
+  it('shows the friend code and the name others see, which can be changed', async () => {
     account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
     const wrapper = mountSection()
     await flushPromises()
-    expect(wrapper.find('[data-friend-code]').exists()).toBe(false)
+    expect(wrapper.find('[data-friend-code]').text()).toBe('ABCDE-FGHJK-MNPQR-STVWX')
+    const field = /** @type {HTMLInputElement} */ (
+      wrapper.find('[data-field="sync-display"]').element
+    )
+    expect(field.value).toBe('writer')
 
     await fill(wrapper, 'sync-display', '  Ada ')
     await wrapper.find('[data-field="sync-display"]').trigger('keydown', { key: 'Enter' })
     await flushPromises()
     expect(sync.setDisplay).toHaveBeenCalledWith('Ada')
-    expect(wrapper.find('[data-friend-code]').text()).toBe('ABCDE-FGHJK-MNPQR-STVWX')
+  })
+
+  it('puts the name others see back when it is cleared', async () => {
+    account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
+    const wrapper = mountSection()
+    await flushPromises()
+    await fill(wrapper, 'sync-display', ' ')
+    await wrapper.find('[data-field="sync-display"]').trigger('blur')
+    await flushPromises()
+    expect(sync.setDisplay).not.toHaveBeenCalled()
+    const field = /** @type {HTMLInputElement} */ (
+      wrapper.find('[data-field="sync-display"]').element
+    )
+    expect(field.value).toBe('writer')
   })
 
   it('shows nothing of sharing for a server without it', async () => {

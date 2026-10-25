@@ -8,10 +8,14 @@ directories:
   buildResources: build
   output: dist
 
-# The main process, and the page beside it.
+# The main process, and the page beside it. The Python sandbox's page, and
+# the packages it offers, fetched by scripts/fetch-python.mjs before a build
+# (src/sandbox.js). Pyodide comes with the dependencies.
 files:
   - package.json
   - src/**
+  - sandbox/**
+  - python/**
   - from: ../dist
     to: page
 

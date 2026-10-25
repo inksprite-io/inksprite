@@ -159,6 +159,12 @@ jobs:
         working-directory: app/electron
         run: npm pkg set version="$VERSION"
 
+      # The Python sandbox's packages, checked against Pyodide's lock file
+      # (src/sandbox.js).
+      - name: Fetch the Python packages
+        working-directory: app/electron
+        run: node scripts/fetch-python.mjs
+
       # On a Mac, electron-builder imports the certificate into a keychain of
       # its own, signs the app, sends it to Apple to be notarized, and staples
       # the ticket to it. The key file is written where the runner throws its

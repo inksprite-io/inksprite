@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useDocumentsStore } from '../../src/stores/documentsStore'
+import { sharing } from '../../src/cloud/people.js'
 
 vi.mock('../../src/stores/db', () => ({
   default: {
@@ -566,5 +567,47 @@ describe('DocumentsStore', () => {
       expect(store.getDocument('notes')).toBeNull()
       expect(store.getChildren('root_story_1')).toEqual([])
     })
+  })
+
+  describe('in a project shared with only some of its documents', () => {
+    beforeEach(() => {
+      sharing.value = { me: 1, projects: {}, selective: ['story_1'] }
+    })
+
+    afterEach(() => {
+      sharing.value = { me: null, projects: {}, selective: [] }
+    })
+
+    it('makes a document as its folder is', () => {
+      folder('open')
+      folder('secret')
+      store.setShared(new Map([['secret', false]]))
+      expect(text('in_open', 'open').unshared).toBe(false)
+      expect(text('in_secret', 'secret').unshared).toBe(true)
+    })
+
+    it('says either way which documents are shared, as no edit of them', () => {
+      folder('notes')
+      text('note', 'notes')
+      vi.clearAllMocks()
+      store.setShared(
+        new Map([
+          ['notes', false],
+          ['note', false],
+        ])
+      )
+      expect(store.getDocument('notes').unshared).toBe(true)
+      store.setShared(new Map([['note', true]]))
+      expect(store.getDocument('note').unshared).toBe(false)
+      expect(trackChange).toHaveBeenCalledTimes(3)
+      // Nothing to change, nothing written.
+      store.setShared(new Map([['note', true]]))
+      expect(trackChange).toHaveBeenCalledTimes(3)
+    })
+  })
+
+  it('makes a document as it always has elsewhere', () => {
+    folder('open')
+    expect('unshared' in text('in_open', 'open')).toBe(false)
   })
 })

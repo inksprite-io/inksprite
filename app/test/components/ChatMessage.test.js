@@ -735,6 +735,28 @@ describe('ChatMessage with the tools its turn called', () => {
     expect(wrapper.findAll('[data-failed]')).toHaveLength(1)
   })
 
+  it('shows a run of Python as its code and what it printed, not as JSON', () => {
+    const code = 'for gap in range(2):\n    print(gap)'
+    const wrapper = turn('Done.', [
+      ...round('', 'run_python', { code }, JSON.stringify({ stdout: '0\n1\n', value: '2' })),
+    ])
+
+    expect(wrapper.find('[data-python-code]').text()).toBe(code)
+    expect(wrapper.text()).not.toContain('code: ')
+    expect(wrapper.find('pre:not([data-python-code])').text()).toBe('0\n1\n2')
+  })
+
+  it('shows a run of a script by its path, and what it printed', () => {
+    const wrapper = turn('Done.', [
+      ...round('', 'run_python', { file: 'Sims/d20.py' }, JSON.stringify({ stdout: '0.5\n' })),
+    ])
+
+    expect(wrapper.find('[data-python-code]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('file: "Sims/d20.py"')
+    expect(wrapper.find('[data-python-output]').text()).toBe('0.5')
+    expect(wrapper.find('[data-python-output]').classes()).toContain('whitespace-pre')
+  })
+
   it('marks nothing when every call answered', () => {
     const wrapper = turn('Done.', [
       ...round('', 'search_documents', { query: 'a' }, '{"results":[]}'),

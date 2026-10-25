@@ -134,14 +134,14 @@ export function useProjectSearch(storyId) {
   const editor = useEditor()
   const { query, matchCase, wholeWord } = keptFor(storyId)
 
-  /** The documents with text, in the outline's order. */
+  /** The documents with text, in the outline's order: each before what it holds. */
   const documents = computed(() => {
     /** @type {Document[]} */
     const listed = []
     const walk = (/** @type {string} */ parentId) => {
       for (const child of api.childrenOf(parentId)) {
-        if (child.type === 'folder') walk(child.id)
-        else listed.push(child)
+        if (child.type !== 'folder') listed.push(child)
+        walk(child.id)
       }
     }
     walk(rootIdFor(storyId))

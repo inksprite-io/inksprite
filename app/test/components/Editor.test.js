@@ -908,6 +908,98 @@ describe('Editor', () => {
       wrapper.unmount()
     })
 
+    it('formats selected text from the bar, which stays to show what it has', async () => {
+      const wrapper = await mountAttached('doc_1')
+      wrapper.find('.ProseMirror').element.focus()
+      const bold = () => wrapper.find('[data-text-bar] [data-format="strong"]')
+
+      select('doc_1', 6, 10)
+      await flushPromises()
+      expect(bold().attributes('aria-pressed')).toBe('false')
+
+      await bold().trigger('click')
+      await flushPromises()
+      expect(useEditor().markdown('doc_1')).toBe('# One\n\n**Snow** fell.')
+      expect(bold().attributes('aria-pressed')).toBe('true')
+      expect(document.activeElement).toBe(wrapper.find('.ProseMirror').element)
+      wrapper.unmount()
+    })
+
+    it('turns a heading back into normal text from the style menu', async () => {
+      const wrapper = await mountAttached('doc_1')
+      wrapper.find('.ProseMirror').element.focus()
+      const menu = () => document.querySelector('[data-format-menu]')
+
+      // "One", the heading.
+      select('doc_1', 1, 4)
+      await flushPromises()
+      const style = wrapper.find('[data-format-menu-button="styles"]')
+      expect(style.text()).toBe('Heading 1')
+      await style.trigger('click')
+      await flushPromises()
+      const checked = [...menu().querySelectorAll('[aria-checked="true"]')]
+      expect(checked.map(item => item.getAttribute('data-format'))).toEqual(['heading1'])
+
+      menu().querySelector('[data-format="paragraph"]').click()
+      await flushPromises()
+      expect(useEditor().markdown('doc_1')).toBe('One\n\nSnow fell.')
+      expect(menu()).toBe(null)
+      expect(wrapper.find('[data-format-menu-button="styles"]').text()).toBe('Normal text')
+      wrapper.unmount()
+    })
+
+    it('clears the marks from the menu of the rest, which Escape puts away', async () => {
+      mockDocuments.set('doc_m', { id: 'doc_m', type: 'text', content: '**Snow** ~~fell~~.' })
+      const wrapper = await mountAttached('doc_m')
+      const page = wrapper.find('.ProseMirror').element
+      page.focus()
+      const menu = () => document.querySelector('[data-format-menu]')
+
+      select('doc_m', 1, 10)
+      await flushPromises()
+      await wrapper.find('[data-format-menu-button="marks"]').trigger('click')
+      await flushPromises()
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await flushPromises()
+      expect(menu()).toBe(null)
+      expect(wrapper.find('[data-text-bar]').exists()).toBe(true)
+
+      await wrapper.find('[data-format-menu-button="marks"]').trigger('click')
+      await flushPromises()
+      menu().querySelector('[data-format="clear"]').click()
+      await flushPromises()
+      expect(useEditor().markdown('doc_m')).toBe('Snow fell.')
+      expect(document.activeElement).toBe(page)
+      wrapper.unmount()
+      mockDocuments.delete('doc_m')
+    })
+
+    it('opens the link field on the selection', async () => {
+      const wrapper = await mountAttached('doc_1')
+      wrapper.find('.ProseMirror').element.focus()
+      select('doc_1', 6, 10)
+      await flushPromises()
+
+      await wrapper.find('[data-text-bar] [data-format="link"]').trigger('click')
+      await flushPromises()
+      expect(wrapper.find('[data-link-popover] [data-link-address]').exists()).toBe(true)
+      wrapper.unmount()
+    })
+
+    it('formats in the bar at the bottom on a phone', async () => {
+      onPhone()
+      const wrapper = await mountAttached('doc_1')
+      wrapper.find('.ProseMirror').element.focus()
+      select('doc_1', 6, 10)
+      await flushPromises()
+
+      const bar = wrapper.find('[data-comment-bar]')
+      await bar.find('[data-format="em"]').trigger('click')
+      await flushPromises()
+      expect(useEditor().markdown('doc_1')).toBe('# One\n\n*Snow* fell.')
+      wrapper.unmount()
+    })
+
     it('marks the comment gone to, until the writer moves on', async () => {
       const wrapper = await mountAttached('doc_2')
       expect(wrapper.find('.ProseMirror .comment-current').exists()).toBe(false)

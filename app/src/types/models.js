@@ -168,17 +168,19 @@
  * @property {'folder'|'text'|'file'} type - Folders hold children, text holds
  *   content, and a file is something imported — a PDF, an image — whose bytes
  *   are kept beside it (see `stores/filesStore.js`) and whose `content` is the
- *   text that could be read out of it.
+ *   text that could be read out of it. A text or a file may hold children too,
+ *   where an import made it so: a card's portrait its fields, a PDF the
+ *   Markdown converted from it (`.llm/nested_documents_design.md`).
  * @property {string} [mime] - Files only: the media type, `application/pdf`,
  *   `image/png`. What decides how it is shown and whether a model can be
  *   handed it.
  * @property {number} [size] - Files only: the file's size in bytes
  * @property {number} [pages] - Files only, and only for a format that has
  *   pages: how many
- * @property {boolean} [ordered] - Folders only. Ordered folders sort by `order` and
- *   accept drag-to-position. Unordered folders sort by title. Absent counts as
- *   unordered.
- * @property {string[]} [handOrder] - Folders only, while sorted by name after
+ * @property {boolean} [ordered] - Folders, and documents that hold others. Ordered
+ *   ones sort their children by `order` and accept drag-to-position; unordered
+ *   ones sort them by title. Absent counts as unordered.
+ * @property {string[]} [handOrder] - Folders and documents that hold others, while sorted by name after
  *   being kept in order: the ids in the order the writer had, taken up again
  *   when the folder is kept in order once more.
  * @property {string} [kind] - What this document is, when it came from somewhere
@@ -234,6 +236,10 @@
  *   deleted only: what is in a trashed folder keeps its row as it was, and is
  *   in the trash because the folder is. Absent on one that isn't there. See
  *   `stores/trash.js`.
+ * @property {boolean} [unshared] - In a project its owner shares with only some
+ *   of its documents, not one of them: hidden from the others, but for a folder
+ *   on the way to one that is. The root's says whether what is made at the top
+ *   level is shared. See `cloud/tree.js`.
  * @property {number} wordCount - Word count; always 0 for folders
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
@@ -383,6 +389,7 @@
  * @property {string[]} [disabledToolGroups] - Group ids withheld from this chat, which also withholds tools added to those groups later.
  * @property {string[]} [mcpServers] - The MCP servers whose tools this chat is offered, by id, once the writer has chosen here. Absent means the servers that list the chat's profile. A server's tools are opted into rather than withheld, so a server connected later reaches no chat that did not ask for it. See mcp/servers.js.
  * @property {boolean} [web] - Whether this chat searches the web, once the writer has chosen here. Absent means it does when web search is set up for the chat's profile. Opted into, as a server's tools are. See web/config.js.
+ * @property {boolean} [python] - Whether this chat runs Python, once the writer has chosen here. Absent means it does when the Python extension lists the chat's profile. Opted into, as the web is. See ai/tools/python.js.
  * @property {string|null} [voiceId] - The voice this chat's messages are read aloud in, one of the project's. Absent, or naming a voice since removed, means the project's default.
  * @property {string} [prompt] - The chat's own system prompt, once the writer has changed it here. Absent means the profile's, read on every turn. See ai/profiles.
  * @property {Record<string, {prompt?: string}>} [skills] - The chat's own wording of a skill, by the skill's name, over the profile's. An empty prompt is the skill's own wording. Absent means the profile's.

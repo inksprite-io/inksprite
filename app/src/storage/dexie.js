@@ -45,6 +45,9 @@ export const dexieStorage = {
 
   projectFiles: storyId => db.files.where('storyId').equals(storyId).toArray(),
 
+  // A browser's storage keeps no file anywhere but in itself.
+  filePath: async () => null,
+
   // Narration audio is kept only in the library: in a browser it would be
   // gigabytes in storage the browser may clear.
   audioKept: () => false,

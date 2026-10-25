@@ -1,0 +1,23 @@
+{
+  "title": "Thief",
+  "summary": "A heist novel. Wren, a thief raised on the river, robs the counting house of Saltgate on the night of the toll festival.",
+  "documents": [
+    { "path": "Manuscript", "folder": true, "ordered": true },
+    { "path": "Manuscript/Chapter 1", "file": "chapter-1.md" },
+    { "path": "Manuscript/Chapter 1/Arrival", "file": "arrival.md" },
+    { "path": "Manuscript/Chapter 1/The counting room", "file": "counting-room.md" },
+    { "path": "Manuscript/Chapter 2", "file": "chapter-2.md" },
+    { "path": "Characters/Wren", "mime": "image/png" },
+    { "path": "Characters/Wren/Description", "file": "wren-description.md" },
+    { "path": "Characters/Wren/Scenario", "file": "wren-scenario.md" },
+    { "path": "Characters/Osric", "file": "osric.md" },
+    {
+      "path": "Rules/House rules",
+      "file": "house-rules.txt",
+      "mime": "application/pdf",
+      "pages": 3
+    },
+    { "path": "Rules/House rules/House rules (Markdown)", "file": "house-rules.md" },
+    { "path": "Notes/Ideas", "file": "ideas.md" }
+  ]
+}

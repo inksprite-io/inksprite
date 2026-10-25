@@ -18,15 +18,20 @@ const SCHEME = 'app'
 export const PAGE_URL = `${SCHEME}://inksprite/`
 
 /**
- * Make the scheme an origin the window trusts, as `https://` is. Before the
- * app is ready.
+ * Make the scheme an origin the window trusts, as `https://` is, and the
+ * other schemes the app serves with it: Electron takes them all in one call,
+ * before the app is ready.
+ *
+ * @param {Electron.CustomScheme[]} [others] - The Python sandbox's
+ *   (`sandbox.js`)
  */
-export function registerScheme() {
+export function registerScheme(others = []) {
   protocol.registerSchemesAsPrivileged([
     {
       scheme: SCHEME,
       privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true },
     },
+    ...others,
   ])
 }
 

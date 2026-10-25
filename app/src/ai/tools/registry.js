@@ -107,8 +107,9 @@
  * @property {ToolDefinition} definition - OpenAI-format tool definition
  * @property {(args: Object, context?: ToolContext) => Promise<Object>} execute - Execute function
  * @property {string} group - Group id this tool belongs to
- * @property {number} [timeoutMs] - How long this tool may take, when the caller's
- *   default is wrong for it. A skill runs an inference, not a lookup.
+ * @property {number|(() => number)} [timeoutMs] - How long this tool may take,
+ *   when the caller's default is wrong for it. A skill runs an inference, not a
+ *   lookup. A function for a limit the writer sets; Infinity for none.
  */
 
 /**
@@ -134,7 +135,8 @@ class ToolRegistry {
    * @param {ToolDefinition} definition - OpenAI-format tool definition
    * @param {(args: Object, context?: ToolContext) => Promise<Object>} execute - Execute function
    * @param {string} group - Group id (see TOOL_GROUP_LABELS in ./index.js)
-   * @param {number} [timeoutMs] - Override the caller's default time limit
+   * @param {number|(() => number)} [timeoutMs] - Override the caller's default
+   *   time limit: a function for one the writer sets, Infinity for none
    */
   register(name, definition, execute, group, timeoutMs) {
     this.tools.set(name, { definition, execute, group, timeoutMs })
@@ -161,12 +163,15 @@ class ToolRegistry {
   }
 
   /**
-   * How long this tool may take, if it has said.
+   * How long this tool may take, if it has said: as it says now, for one whose
+   * limit the writer sets.
    * @param {string} name - Tool name
-   * @returns {number|undefined} Milliseconds, or undefined to use the caller's default
+   * @returns {number|undefined} Milliseconds, Infinity for no limit, or
+   *   undefined to use the caller's default
    */
   timeoutFor(name) {
-    return this.tools.get(name)?.timeoutMs
+    const timeoutMs = this.tools.get(name)?.timeoutMs
+    return typeof timeoutMs === 'function' ? timeoutMs() : timeoutMs
   }
 
   /**

@@ -52,13 +52,15 @@ const PINNED_KINDS = new Set([
 ])
 
 /**
- * Whether this folder came from a card, and so has a chat to start.
+ * Whether this document came from a card, and so has a chat to start: a card
+ * folder, or a card's portrait holding its documents
+ * (`.llm/nested_documents_design.md`).
  *
  * @param {any} document
  * @returns {boolean}
  */
 export function isCard(document) {
-  return document?.type === 'folder' && document?.kind === 'card'
+  return (document?.type === 'folder' || document?.type === 'file') && document?.kind === 'card'
 }
 
 /**
@@ -110,7 +112,7 @@ export async function cardsNamed(storyId, name) {
     for (const child of api.childrenOf(id)) {
       if (isCard(child)) {
         if (characterOf(api, child).trim().toLowerCase() === wanted) found.push(child)
-      } else if (child.type === 'folder') {
+      } else {
         walk(child.id)
       }
     }
@@ -144,7 +146,7 @@ export async function readCardChat(storyId, folderId) {
   const walk = (/** @type {string} */ id) => {
     for (const child of api.childrenOf(id)) {
       documents.push(child)
-      if (child.type === 'folder') walk(child.id)
+      walk(child.id)
     }
   }
   walk(folderId)

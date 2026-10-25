@@ -11,15 +11,28 @@ const settingsFile = vi.hoisted(() => ({ readSettingsFile: vi.fn() }))
 vi.mock('../../electron/src/settingsFile.js', () => settingsFile)
 const windows = vi.hoisted(() => ({ bringForward: vi.fn() }))
 vi.mock('../../electron/src/windows.js', () => windows)
+const python = vi.hoisted(() => ({ run: vi.fn(), stop: vi.fn() }))
+vi.mock('../../electron/src/sandbox.js', () => ({
+  PythonSessions: class {
+    run = python.run
+    stop = python.stop
+  },
+}))
 
-import { handleBridge } from '../../electron/src/bridge.js'
+import { handleBridge, projectFiles } from '../../electron/src/bridge.js'
 
 const ORIGIN = 'app://inksprite'
 
 /** The page's window: the frame calls come from, and where answers go. */
 const page = ({ url = `${ORIGIN}/project/1`, parent = null } = {}) => ({
   senderFrame: { url, parent },
-  sender: { id: 1, send: vi.fn(), isDestroyed: () => false },
+  sender: {
+    id: 1,
+    send: vi.fn(),
+    isDestroyed: () => false,
+    once: vi.fn(),
+    off: vi.fn(),
+  },
 })
 
 /** What `ipcMain` was given for each channel. */
@@ -264,5 +277,165 @@ describe('open', () => {
       error: 'Not a link that opens: javascript:alert(1)',
     })
     expect(shell.openExternal).not.toHaveBeenCalled()
+  })
+})
+
+describe('python', () => {
+  it("runs the page's code in the session it names", async () => {
+    const result = { stdout: '42', stderr: '', value: null, error: null, restarted: false }
+    python.run.mockResolvedValue(result)
+
+    expect(await handlers['python:run'](page(), 'chat-1', 'print(42)')).toEqual({ value: result })
+    expect(python.run).toHaveBeenCalledWith('chat-1', 'print(42)', {
+      timeoutMs: null,
+      project: null,
+      filename: null,
+    })
+
+    await handlers['python:run'](page(), 'chat-1', 'print(42)', {
+      timeoutMs: 600000,
+      filename: '/project/Sims/d20.py',
+    })
+    expect(python.run).toHaveBeenLastCalledWith('chat-1', 'print(42)', {
+      timeoutMs: 600000,
+      project: null,
+      filename: '/project/Sims/d20.py',
+    })
+  })
+
+  it('takes a time limit of milliseconds, or none', async () => {
+    for (const timeoutMs of [0, -1, Infinity, '600000']) {
+      expect(await handlers['python:run'](page(), 'chat-1', '1', { timeoutMs })).toHaveProperty(
+        'error'
+      )
+    }
+    expect(python.run).not.toHaveBeenCalled()
+  })
+
+  it('runs nothing but a string of code, with a project that is a list', async () => {
+    expect(await handlers['python:run'](page(), 'chat-1', { code: 'print(42)' })).toHaveProperty(
+      'error'
+    )
+    expect(
+      await handlers['python:run'](page(), 'chat-1', '1', { project: { path: 'x' } })
+    ).toHaveProperty('error')
+    expect(await handlers['python:run'](page(), 'chat-1', '1', { filename: 1 })).toHaveProperty(
+      'error'
+    )
+    expect(python.run).not.toHaveBeenCalled()
+  })
+
+  it('hands the run its project, without the library when it has no files', async () => {
+    python.run.mockResolvedValue({})
+    const project = [
+      { path: 'Rules', folder: true },
+      { path: 'Rules/Combat', id: 'doc_1', text: '# Combat' },
+    ]
+    await handlers['python:run'](page(), 'chat-1', '1', { project })
+    expect(python.run).toHaveBeenCalledWith('chat-1', '1', {
+      timeoutMs: null,
+      project,
+      filename: null,
+    })
+  })
+
+  it('has the page fetch a file still on the sync server when the run reads it', async () => {
+    python.run.mockResolvedValue({})
+    const event = page()
+    await handlers['python:run'](event, 'chat-1', '1', {
+      project: [{ path: 'big.pdf', id: 'doc_1', size: 2048, onServer: true }],
+    })
+    const [entry] = python.run.mock.calls[0][2].project
+    expect(entry).toEqual({ path: 'big.pdf', id: 'doc_1', size: 2048, fetch: expect.any(Function) })
+
+    const fetched = entry.fetch()
+    expect(event.sender.send).toHaveBeenCalledWith('python:fetchFile', 'chat-1', 1, 'doc_1')
+    const [, , request] = event.sender.send.mock.calls[0]
+    // Only the page that was asked answers for it: another's answer would
+    // have it looked for in a library this test hasn't got.
+    listeners['python:fetched']({ ...page(), sender: { id: 2 } }, request, 'Thief/big.pdf')
+    listeners['python:fetched'](event, request, null)
+    expect(await fetched).toBeNull()
+    expect(event.sender.off).toHaveBeenCalledWith('destroyed', expect.any(Function))
+  })
+
+  it('reads a fetch as failed when the page goes before answering', async () => {
+    python.run.mockResolvedValue({})
+    const event = page()
+    await handlers['python:run'](event, 'chat-1', '1', {
+      project: [{ path: 'big.pdf', id: 'doc_1', size: 2048, onServer: true }],
+    })
+    const fetched = python.run.mock.calls[0][2].project[0].fetch()
+    const [, closed] = event.sender.once.mock.calls[0]
+    closed()
+    expect(await fetched).toBeNull()
+  })
+
+  it('stops the session the page names, and only for the page', () => {
+    listeners['python:stop'](page(), 'chat-1')
+    expect(python.stop).toHaveBeenCalledWith('chat-1')
+
+    listeners['python:stop'](page({ url: 'https://elsewhere.example/' }), 'chat-2')
+    expect(python.stop).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('projectFiles', () => {
+  it('finds each imported file in the library, and leaves out what isn’t there', async () => {
+    const locate = vi.fn(async file =>
+      file === 'Thief/Data/odds.csv' ? { path: '/library/Thief/Data/odds.csv', size: 120 } : null
+    )
+    expect(
+      await projectFiles(
+        [
+          { path: 'Data', folder: true },
+          { path: 'Data/odds.csv', id: 'doc_1', file: 'Thief/Data/odds.csv' },
+          { path: 'Data/gone.pdf', id: 'doc_2', file: 'Thief/Data/gone.pdf' },
+          { path: 'Notes', id: 'doc_3', text: 'kept' },
+        ],
+        locate,
+        vi.fn()
+      )
+    ).toEqual([
+      { path: 'Data', folder: true },
+      { path: 'Data/odds.csv', id: 'doc_1', file: '/library/Thief/Data/odds.csv', size: 120 },
+      { path: 'Notes', id: 'doc_3', text: 'kept' },
+    ])
+  })
+
+  it('fetches a file still on the sync server when it is read, then finds it', async () => {
+    const locate = vi.fn(async file => ({ path: `/library/${file}`, size: 2048 }))
+    const fetchFile = vi.fn().mockResolvedValueOnce('Thief/big.pdf').mockResolvedValueOnce(null)
+    const [entry] = await projectFiles(
+      [{ path: 'big.pdf', id: 'doc_1', size: 2048, onServer: true }],
+      locate,
+      fetchFile
+    )
+    expect(locate).not.toHaveBeenCalled()
+    expect(fetchFile).not.toHaveBeenCalled()
+
+    expect(await entry.fetch()).toEqual({ path: '/library/Thief/big.pdf', size: 2048 })
+    expect(fetchFile).toHaveBeenCalledWith('doc_1')
+    expect(await entry.fetch()).toBeNull()
+    expect(locate).toHaveBeenCalledTimes(1)
+  })
+
+  it('leaves out what isn’t a folder, a text or a file, and a file the library refused', async () => {
+    const locate = vi.fn().mockRejectedValue(new Error('That path leads out of the library'))
+    expect(
+      await projectFiles(
+        [
+          null,
+          { path: '', folder: true },
+          { path: 'x', id: 1, text: 'no id' },
+          { path: 'y', id: 'doc_1' },
+          { path: 'z', id: 'doc_2', file: '../../etc/passwd' },
+          { path: 'w', id: 'doc_3', size: -1, onServer: true },
+          { path: 'v', id: 'doc_4', size: '12', onServer: true },
+        ],
+        locate,
+        vi.fn()
+      )
+    ).toEqual([])
   })
 })

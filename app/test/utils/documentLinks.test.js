@@ -185,3 +185,45 @@ describe('projectHref', () => {
     }
   })
 })
+
+describe('links through a document that holds others', () => {
+  const held = [
+    ...docs,
+    { id: 'arrival', parentId: 'one', type: 'text', title: 'Arrival' },
+    { id: 'leaving', parentId: 'one', type: 'text', title: 'Leaving' },
+    { id: 'copy', parentId: 'paper', type: 'text', title: 'Tide tables (Markdown)' },
+  ]
+  const heldById = new Map(held.map(doc => [doc.id, doc]))
+  const holding = {
+    get: id => heldById.get(id) ?? null,
+    childrenOf: parentId => held.filter(doc => doc.parentId === parentId),
+    rootId: 'root_s',
+  }
+  const resolvedIn = (href, fromId) => resolveLink(holding, href, fromId)?.id ?? null
+
+  it('names it on the way by its name, as the outline does', () => {
+    expect(hrefFor(holding, 'top', 'arrival')).toBe('Drafts/Chapter%201/Arrival.md')
+    expect(hrefFor(holding, 'cast', 'copy')).toBe('Tide%20tables/Tide%20tables%20%28Markdown%29.md')
+    expect(hrefFor(holding, 'arrival', 'leaving')).toBe('Leaving.md')
+    expect(hrefFor(holding, 'one', 'arrival')).toBe('Chapter%201/Arrival.md')
+    expect(projectHref(holding, 'arrival')).toBe('/Drafts/Chapter%201/Arrival.md')
+  })
+
+  it('links what it holds to it, not to itself', () => {
+    expect(hrefFor(holding, 'arrival', 'one')).toBe('../Chapter%201.md')
+    expect(resolvedIn('../Chapter%201.md', 'arrival')).toBe('one')
+  })
+
+  it('reads every link written back to its document', () => {
+    const ids = ['one', 'arrival', 'leaving', 'paper', 'copy', 'cast', 'top']
+    for (const from of ids.filter(id => heldById.get(id).type === 'text')) {
+      for (const to of ids) expect(resolvedIn(hrefFor(holding, from, to), from)).toBe(to)
+    }
+  })
+
+  it('takes it by its file’s name on the way too, and finds what it holds by name', () => {
+    expect(resolvedIn('Drafts/Chapter%201.md/Arrival.md', 'top')).toBe('arrival')
+    expect(resolvedIn('Notes/Tide tables.pdf/Tide tables (Markdown)')).toBe('copy')
+    expect(documentNamed(holding, 'Leaving')?.id).toBe('leaving')
+  })
+})

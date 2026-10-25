@@ -367,8 +367,10 @@ export const useDocuments = storyId => {
    * `uniqueTitle`.
    * @param {string} parentId
    * @param {string} title
-   * @param {string} [content] - Markdown, for callers creating a document with a body
-   * @param {Partial<Document>} [fields] - Anything else it is made with: where it came from
+   * @param {string} [content] - Markdown, for callers creating a document with a
+   *   body; kept as written for a plain one
+   * @param {Partial<Document>} [fields] - Anything else it is made with: where it
+   *   came from, or that it is plain
    * @returns {Document}
    */
   const createTextDocument = (parentId, title, content = '', fields = {}) =>
@@ -378,7 +380,7 @@ export const useDocuments = storyId => {
       parentId,
       type: 'text',
       title: uniqueTitle(parentId, title),
-      content: settleMarkdown(content),
+      content: fields.plain ? content : settleMarkdown(content),
     })
 
   /**
@@ -445,9 +447,8 @@ export const useDocuments = storyId => {
     const texts = []
     const walk = (/** @type {string} */ parentId) => {
       for (const child of childrenOf(parentId)) {
-        if (child.type === 'folder') walk(child.id)
-        else if (child.type === 'text')
-          texts.push({ id: child.id, content: currentContent(child.id) })
+        if (child.type === 'text') texts.push({ id: child.id, content: currentContent(child.id) })
+        walk(child.id)
       }
     }
     walk(rootIdFor(storyId))
@@ -630,12 +631,12 @@ export const useDocuments = storyId => {
       const title = segments.pop()
       if (!title) return false
       let parentId = rootIdFor(storyId)
+      // Through a document, as through a folder: one a move took out of a
+      // document goes back into it.
       for (const name of segments) {
-        const folder = childrenOf(parentId).find(
-          child => child.type === 'folder' && child.title === name
-        )
-        if (!folder) return false
-        parentId = folder.id
+        const above = childrenOf(parentId).find(child => child.title === name)
+        if (!above) return false
+        parentId = above.id
       }
       if (namesakeOf(parentId, title, documentId)) return false
       if (get(documentId)?.parentId !== parentId) {
@@ -728,7 +729,8 @@ export const useDocuments = storyId => {
     }
     const content = currentContent(edit.documentId)
     if (edit.tool === 'create_document') {
-      if (content !== edit.new) return false
+      // Not while it holds others: what was put under it since is not the turn's.
+      if (content !== edit.new || childrenOf(edit.documentId).length > 0) return false
       remove(edit.documentId)
       return true
     }
@@ -742,7 +744,8 @@ export const useDocuments = storyId => {
 
   /**
    * Where a document recorded at a path goes when it is made again: in the
-   * deepest of its folders that is still there, under its own name.
+   * deepest of its folders, or the documents that held it, that is still
+   * there, under its own name.
    * @param {string} path
    * @returns {{parentId: string, title: string}}
    */
@@ -751,11 +754,9 @@ export const useDocuments = storyId => {
     const title = segments.pop() || 'Untitled'
     let parentId = rootIdFor(storyId)
     for (const name of segments) {
-      const folder = childrenOf(parentId).find(
-        child => child.type === 'folder' && child.title === name
-      )
-      if (!folder) break
-      parentId = folder.id
+      const above = childrenOf(parentId).find(child => child.title === name)
+      if (!above) break
+      parentId = above.id
     }
     return { parentId, title }
   }
@@ -944,8 +945,9 @@ export const useDocuments = storyId => {
 
   /**
    * Bring a document back from the trash, with what went with it: into the
-   * folder it was in, or to the top of the project when that folder is gone
-   * or in the trash itself, under a name nothing there has taken since.
+   * folder or the document it was in, or to the top of the project when that
+   * is gone or in the trash itself, under a name nothing there has taken
+   * since.
    * @param {string} documentId - One that was trashed, not one under it
    * @returns {Document}
    */
@@ -954,8 +956,7 @@ export const useDocuments = storyId => {
     if (!trashed?.trashed) {
       throw new Error(`Failed to restore document, '${documentId}' is not in the trash`)
     }
-    const folder = documentsStore.getDocument(trashed.parentId)
-    const parentId = folder?.type === 'folder' ? folder.id : rootIdFor(storyId)
+    const parentId = documentsStore.getDocument(trashed.parentId)?.id || rootIdFor(storyId)
     const title = uniqueTitle(parentId, trashed.title, documentId)
     /** @type {{parentId?: string, title?: string, order?: number}} */
     const changes = {}

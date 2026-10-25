@@ -25,7 +25,7 @@
       :aria-label="api.displayTitle(node)"
       :aria-level="depth + 1"
       :aria-selected="isActive"
-      :aria-expanded="isFolder ? expanded : undefined"
+      :aria-expanded="opens ? expanded : undefined"
       :data-document-id="documentId"
       :data-folder="isFolder || undefined"
       @pointerdown="notePointer"
@@ -41,9 +41,10 @@
       <!-- Twisty. A document has none, and no gap in its place: its icon is
            where a folder beside it has its twisty, so the two read as side
            by side. With a gap, a document lined up with the folder's icon
-           instead, and looked to be inside the folder. -->
+           instead, and looked to be inside the folder. A document that
+           holds others has one, as a folder does. -->
       <button
-        v-if="isFolder"
+        v-if="opens"
         class="flex-none w-4 h-4 flex items-center justify-center text-surface-500 dark:text-surface-400"
         tabindex="-1"
         :aria-label="expanded ? 'Collapse' : 'Expand'"
@@ -97,6 +98,18 @@
         @mouseenter="measureTitle"
         >{{ api.displayTitle(node) }}</span
       >
+
+      <!-- In a project shared with only some of its documents, what the
+           people it is shared with see; faint on a folder they see only on
+           the way to what is shared. -->
+      <i
+        v-if="shareMark"
+        class="flex-none pi pi-users text-surface-400 dark:text-surface-500"
+        :class="shareMark === 'partly' && 'opacity-50'"
+        style="font-size: 0.65rem"
+        :title="shareMark === 'shared' ? 'Shared' : 'Partly shared'"
+        :data-share-mark="shareMark"
+      />
 
       <!-- What the chat sees of a document is in the row itself: dimmed
            where the chat cannot see it, whichever folder decided that, and the
@@ -175,7 +188,7 @@
       v-if="refusal"
       :id="`clash-${documentId}`"
       class="py-0.5 pr-1 text-xs text-red-600 dark:text-red-400"
-      :style="{ paddingLeft: `${depth * 12 + (isFolder ? 40 : 20)}px` }"
+      :style="{ paddingLeft: `${depth * 12 + (opens ? 40 : 20)}px` }"
       data-rename-clash
     >
       {{ refusal }}
@@ -183,7 +196,7 @@
 
     <!-- Children -->
     <Draggable
-      v-if="isFolder && expanded"
+      v-if="opens && expanded"
       v-model="childList"
       :group="{ name: 'documents' }"
       item-key="id"
@@ -251,6 +264,7 @@ import { useScreenSize } from '@/composables/useScreenSize'
 import { useLongPress } from '@/composables/useLongPress.js'
 import { OPEN_AFTER, useTreeDrop } from '@/composables/useTreeDrop.js'
 import { useTreeHistory } from '@/composables/useTreeHistory.js'
+import { useSharedDocuments } from '@/composables/useSharedDocuments.js'
 import { useFilesStore } from '@/stores/filesStore'
 import { downloadBlob, filenameFor } from '@/files/download.js'
 import { exportDocument } from '@/files/exportDocument.js'
@@ -425,6 +439,19 @@ const refused = ref(false)
 const refusal = computed(() => (refused.value ? clash.value : ''))
 const isFolder = computed(() => api.isFolder(node.value))
 const isFile = computed(() => node.value?.type === 'file')
+/**
+ * A document that holds others, as an import may make one: a card's portrait
+ * its fields, a PDF the Markdown converted from it. It opens as a document
+ * does, and twists as a folder does, but takes nothing new: the writer
+ * arranges what it holds, and moves it out, and that is all.
+ */
+const holdsOthers = computed(() => !isFolder.value && childList.value.length > 0)
+/** Whether the row twists open on what is under it. */
+const opens = computed(() => isFolder.value || holdsOthers.value)
+/** What holds this one, as the row's marks say it: its folder, or the document it is under. */
+const above = computed(() =>
+  api.isFolder(api.get(node.value?.parentId ?? '')) ? 'folder' : 'document'
+)
 const isCardFolder = computed(() => isCard(node.value))
 
 /**
@@ -533,6 +560,10 @@ const hidden = computed(() => api.isHidden(props.documentId))
 // The root is the project; hiding it would hide the name and overview the
 // project block is built from, which is not a document going missing.
 const isRoot = computed(() => props.documentId === api.root.value?.id)
+
+const sharedDocuments = useSharedDocuments(props.storyId)
+/** What the row says of who sees it, in a project shared with only some documents. */
+const shareMark = computed(() => (isRoot.value ? null : sharedDocuments.markOf(props.documentId)))
 const isActive = computed(() => props.activeDocumentId === props.documentId)
 
 const { aiEnabled, roleplay } = useApplicationState()
@@ -686,10 +717,10 @@ const pin = computed(() => {
   return {
     showing: true,
     own,
-    label: own ? 'Pinned to this chat' : 'Pinned with the folder above',
+    label: own ? 'Pinned to this chat' : `Pinned with the ${above.value} above`,
     hint: own
       ? 'Pinned to this chat. Click to unpin.'
-      : 'Pinned with its folder. Click to unpin this one.',
+      : `Pinned with its ${above.value}. Click to unpin this one.`,
     toggle: () => {
       if (chat.value && node.value) {
         updateChat(unpinned(chat.value, node.value, api.get))
@@ -719,7 +750,7 @@ const sight = computed(() => {
       showing: true,
       icon: 'pi pi-eye',
       label: 'Shown in this chat',
-      hint: 'Shown, though its folder is hidden. Click to hide.',
+      hint: `Shown, though its ${above.value} is hidden. Click to hide.`,
       toggle: hideInChat,
     }
   }
@@ -759,13 +790,30 @@ const childList = computed({
 const expandedKey = computed(() => `ui.tree.${props.documentId}.expanded`)
 // Folders start open: a collapsed tree on first load hides the whole story.
 // Not in a repository, whose thousands of files would all be drawn at once;
-// there a folder opens when it is asked to.
-const expanded = ref(sessionStorage.get(expandedKey.value, !isInRepository.value))
+// there a folder opens when it is asked to. A document that holds others
+// starts shut, one row as the document it is.
+const expanded = ref(sessionStorage.get(expandedKey.value, isFolder.value && !isInRepository.value))
 
 const toggleExpanded = () => {
   expanded.value = !expanded.value
   sessionStorage.set(expandedKey.value, expanded.value)
 }
+
+// A document that holds others opens when what is opened is under it, so
+// that it has its row: a conversion's copy just made, or a scene opened from
+// a search. Not kept: on the next load it is shut again, as it starts.
+watch(
+  () => props.activeDocumentId,
+  id => {
+    if (!id || id === props.documentId || expanded.value || !holdsOthers.value) return
+    for (let at = api.get(id); at; at = api.get(at.parentId)) {
+      if (at.parentId !== props.documentId) continue
+      expanded.value = true
+      return
+    }
+  },
+  { immediate: true }
+)
 
 const startRename = async () => {
   draftTitle.value = api.editableTitle(props.documentId)
@@ -939,13 +987,13 @@ const handleKeydown = event => {
       break
     case 'ArrowRight':
       // Twist a folder open; open already, step into it.
-      if (!isFolder.value) return
+      if (!opens.value) return
       if (expanded.value) move(1)
       else toggleExpanded()
       break
     case 'ArrowLeft': {
       // Twist a folder shut; shut already, or a document, step out to the parent.
-      if (isFolder.value && expanded.value) {
+      if (opens.value && expanded.value) {
         toggleExpanded()
         break
       }
@@ -1135,6 +1183,16 @@ const menuItems = computed(() => {
     { label: 'Copy path', icon: 'pi pi-copy', command: () => copyPath(props.documentId) }
   )
 
+  // A folder's goes for everything in it.
+  if (sharedDocuments.active.value && !isRoot.value) {
+    const unshared = sharedDocuments.sharingOf(props.documentId) !== 'shared'
+    items.push({
+      label: unshared ? 'Share' : 'Stop sharing',
+      icon: unshared ? 'pi pi-users' : 'pi pi-user-minus',
+      command: () => sharedDocuments.setShared(props.documentId, unshared),
+    })
+  }
+
   if (aiEnabled.value && !isRoot.value) {
     // From every chat, which the label says: the row button's hide is this
     // chat's, and on a phone the two are in this menu together. With the AI
@@ -1146,9 +1204,9 @@ const menuItems = computed(() => {
     })
   }
 
-  // A folder that came from a card has somebody in it to talk to. First,
-  // because on a card folder it is the thing the writer came to do. With
-  // roleplay switched off it is an ordinary folder.
+  // A card, a folder or a portrait holding its documents, has somebody in
+  // it to talk to. First, because on a card it is the thing the writer came
+  // to do. With roleplay switched off it is an ordinary folder or picture.
   if (isCardFolder.value && roleplay.value) {
     items.push({
       label: `Chat with ${api.displayTitle(node.value)}…`,
@@ -1242,18 +1300,21 @@ const menuItems = computed(() => {
 })
 
 /**
- * Refuse a drop the tree won't take: a folder into its own subtree, or
- * anything into a repository or out of one. Sortable asks the list the drag
- * started in, so the folder it would land in is read off the list it is over.
- * Nothing moves in a list while the drag is over a folder's row, which is
- * where the drop goes instead: see useTreeDrop.
+ * Refuse a drop the tree won't take: a folder into its own subtree, anything
+ * into a repository or out of one, or anything new into a document that
+ * holds others, whose own it can only be put in order. Sortable asks the list
+ * the drag started in, so the folder it would land in is read off the list it
+ * is over. Nothing moves in a list while the drag is over a folder's row,
+ * which is where the drop goes instead: see useTreeDrop.
  * @param {any} event
  */
 const onMove = event => {
   if (!drop.allowsMove()) return false
   const draggedId = event.draggedContext?.element?.id
   const folderId = event.to?.dataset?.folderId
-  return !draggedId || !folderId || api.canDropInto(folderId, draggedId)
+  if (!draggedId || !folderId) return true
+  if (!api.isFolder(api.get(folderId)) && api.get(draggedId)?.parentId !== folderId) return false
+  return api.canDropInto(folderId, draggedId)
 }
 
 const drop = useTreeDrop()

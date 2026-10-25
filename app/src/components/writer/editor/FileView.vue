@@ -160,8 +160,10 @@ const downloading = ref(null)
 const elsewhere = ref(false)
 /** A picture at its own size rather than fit to the panel. */
 const natural = ref(false)
-/** An epub's chapters or a web page's article as HTML, or null when there is none. @type {import('vue').Ref<string|null>} */
-const reading = ref(null)
+/** An epub's chapters or a web page's article as markdown, or null when there is none. @type {import('vue').Ref<string|null>} */
+const readingMarkdown = ref(null)
+/** The same as HTML, again once any math in it can be typeset. */
+const reading = computed(() => readingMarkdown.value && renderMarkdown(readingMarkdown.value))
 /** Why an epub or a page could not be shown, when it could not. */
 const unreadable = ref('')
 
@@ -205,7 +207,7 @@ const load = async () => {
   release()
   loaded.value = false
   natural.value = false
-  reading.value = null
+  readingMarkdown.value = null
   unreadable.value = ''
   downloading.value = null
   elsewhere.value = false
@@ -236,7 +238,7 @@ const load = async () => {
 const readBook = async file => {
   try {
     const { text } = extractEpub(await file.arrayBuffer())
-    if (text) reading.value = renderMarkdown(text)
+    if (text) readingMarkdown.value = text
     else unreadable.value = 'There is no text in this epub to show.'
   } catch (error) {
     unreadable.value = error instanceof Error ? error.message : String(error)
@@ -252,7 +254,7 @@ const readBook = async file => {
  */
 const readPage = async file => {
   const text = markdownOfHtml(await file.text())
-  if (text) reading.value = renderMarkdown(text)
+  if (text) readingMarkdown.value = text
   else unreadable.value = 'This page has no text to show.'
 }
 

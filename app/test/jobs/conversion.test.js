@@ -106,7 +106,7 @@ describe('converting a document, as a job', () => {
     documents.ensureRoot(STORY, 'Project')
   })
 
-  it('asks for the headings first, then converts, and writes a copy beside it', async () => {
+  it('asks for the headings first, then converts, and writes a copy under it', async () => {
     const source = documents.createDocument({
       storyId: STORY,
       parentId: rootIdFor(STORY),
@@ -127,7 +127,7 @@ describe('converting a document, as a job', () => {
     const copy = [...documents.documents.values()].find(one => one.convertedFrom === source.id)
     expect(copy.title).toBe('Notes (Markdown)')
     expect(done.resultId).toBe(copy.id)
-    expect(copy.parentId).toBe(rootIdFor(STORY))
+    expect(copy.parentId).toBe(source.id)
     expect(copy.plain).toBeFalsy()
     expect(
       copy.content.startsWith('- [Intro](#intro)\n- [Details](#details)\n\n---\n\n# Intro')
@@ -175,19 +175,43 @@ describe('converting a document, as a job', () => {
     expect(copy.content).toContain('# Spells\n\nSpell sentence number 0 is about magic.')
   })
 
-  it('numbers the copy beside a document that already has its name', async () => {
-    documents.createDocument({
-      storyId: STORY,
-      parentId: rootIdFor(STORY),
-      type: 'text',
-      title: 'Notes (Markdown)',
-    })
+  it('replaces a copy from before where it is, beside its source', async () => {
     const source = documents.createDocument({
       storyId: STORY,
       parentId: rootIdFor(STORY),
       type: 'text',
       title: 'Notes',
       content: ['Intro', ...sentences('intro')].join('\n'),
+    })
+    const before = documents.createDocument({
+      storyId: STORY,
+      parentId: rootIdFor(STORY),
+      type: 'text',
+      title: 'Notes (Markdown)',
+      content: 'Old.',
+    })
+    documents.updateDocument(before.id, { convertedFrom: source.id })
+
+    await settled((await startConversion(STORY, source.id)).id)
+
+    const copies = [...documents.documents.values()].filter(one => one.convertedFrom === source.id)
+    expect(copies.map(one => [one.id, one.parentId])).toEqual([[before.id, rootIdFor(STORY)]])
+    expect(documents.getDocument(before.id).content).not.toBe('Old.')
+  })
+
+  it('numbers the copy under a document that already holds one of its name', async () => {
+    const source = documents.createDocument({
+      storyId: STORY,
+      parentId: rootIdFor(STORY),
+      type: 'text',
+      title: 'Notes',
+      content: ['Intro', ...sentences('intro')].join('\n'),
+    })
+    documents.createDocument({
+      storyId: STORY,
+      parentId: source.id,
+      type: 'text',
+      title: 'Notes (Markdown)',
     })
 
     await settled((await startConversion(STORY, source.id)).id)

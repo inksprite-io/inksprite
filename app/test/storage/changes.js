@@ -81,6 +81,11 @@ export function anyChange(documents, next, count) {
   const folders = documents.filter(
     d => d.type === 'folder' && d.kind !== 'repository' && !inRepository(d)
   )
+  // What an import may put documents under, as well as folders.
+  const parents = [
+    ...folders,
+    ...documents.filter(d => d.type !== 'folder' && d.id !== ROOT && !inRepository(d)),
+  ]
   const kind = pick([
     'rename',
     'rename',
@@ -100,14 +105,14 @@ export function anyChange(documents, next, count) {
   if (kind === 'move' && movable.length) {
     const moving = pick(movable)
     const inside = below(moving.id)
-    const to = pick(folders.filter(f => !inside.has(f.id)))
+    const to = pick((next() < 0.7 ? folders : parents).filter(f => !inside.has(f.id)))
     if (to) return change(documents, moving.id, { parentId: to.id, order: Math.floor(next() * 5) })
   }
   if (kind === 'delete' && movable.length) {
     return without(documents, [...below(pick(movable).id)])
   }
   if (kind === 'create') {
-    const parent = pick(folders)
+    const parent = pick(next() < 0.7 ? folders : parents)
     const type = pick(['text', 'text', 'folder', 'file'])
     const id = `new${count}`
     const fields =
@@ -117,13 +122,13 @@ export function anyChange(documents, next, count) {
     return [...documents, doc(id, parent.id, { ...fields, order: Math.floor(next() * 5) })]
   }
   if (kind === 'reorder') {
-    const parent = pick(folders)
+    const parent = pick(parents)
     return documents.map(d =>
       d.parentId === parent.id ? { ...d, order: Math.floor(next() * 10) } : d
     )
   }
   if (kind === 'order') {
-    const parent = pick(folders)
+    const parent = pick(parents)
     return change(documents, parent.id, { ordered: !parent.ordered })
   }
   if (kind === 'edit' && movable.length) {

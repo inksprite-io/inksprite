@@ -64,6 +64,14 @@
  * opted into the same way: offered only when the selection says the chat
  * searches, which a service set up and the chat's profile or its own choice
  * decide. See ../../web/config.js.
+ *
+ * ## Python
+ *
+ * `run_python` (./python.js) runs the model's code, or a script kept in the
+ * project, in the desktop app, in a session for each chat, with the project
+ * read-only at `/project`. A group of its own, opted into as the web is:
+ * offered only when the selection says the chat runs Python, which the
+ * Python extension and the chat's profile or its own choice decide.
  */
 
 import { toolRegistry } from './registry.js'
@@ -141,6 +149,13 @@ import {
   saveWebPageDefinition,
   webSearchDefinition,
 } from './web.js'
+import {
+  PYTHON_GROUP,
+  RUN_PYTHON,
+  executeRunPython,
+  pythonCallTimeout,
+  runPythonDefinition,
+} from './python.js'
 
 /**
  * The group skills are registered in.
@@ -175,6 +190,7 @@ export const TOOL_GROUP_LABELS = {
   [SKILLS_GROUP]: 'Skills',
   [EXPERIMENTAL_GROUP]: 'Experimental',
   [WEB_GROUP]: 'Web',
+  [PYTHON_GROUP]: 'Python',
 }
 
 /**
@@ -276,6 +292,16 @@ toolRegistry.register(
   executeSaveWebPage,
   WEB_GROUP,
   SAVE_TIMEOUT_MS
+)
+
+// Opted into as the web is: a group added now would otherwise turn up in
+// every chat there is. See python.js.
+toolRegistry.register(
+  RUN_PYTHON,
+  runPythonDefinition,
+  executeRunPython,
+  PYTHON_GROUP,
+  pythonCallTimeout
 )
 
 /**
@@ -479,7 +505,8 @@ const COMMENT_TOOLS = new Set(['list_comments', 'add_comment', 'reply_comment', 
 /**
  * The time limit a tool has asked for, if it has asked for one.
  * @param {string} name - Tool name
- * @returns {number|undefined} Milliseconds, or undefined to use the caller's default
+ * @returns {number|undefined} Milliseconds, Infinity for none, or undefined to
+ *   use the caller's default
  */
 export function getToolTimeout(name) {
   return toolRegistry.timeoutFor(name)
@@ -501,9 +528,11 @@ export function getToolDefinitions() {
  *
  * A server's tools are offered only when `servers` names the server, and then
  * less any the chat switched off by name. The web tools are the same: offered
- * only when `web` says the chat searches (web/config.js `webForChat`).
+ * only when `web` says the chat searches (web/config.js `webForChat`), and
+ * Python only when `python` says the chat runs it (python.js
+ * `pythonForChat`).
  *
- * @param {{disabledTools?: string[], disabledGroups?: string[], servers?: string[], web?: boolean}} [selection]
+ * @param {{disabledTools?: string[], disabledGroups?: string[], servers?: string[], web?: boolean, python?: boolean}} [selection]
  * @returns {import('./registry.js').ToolDefinition[]}
  */
 export function getEnabledToolDefinitions(selection) {
@@ -513,6 +542,7 @@ export function getEnabledToolDefinitions(selection) {
     const name = definition.function.name
     const group = toolRegistry.groupOf(name)
     if (group === WEB_GROUP) return selection?.web ? [definition] : []
+    if (group === PYTHON_GROUP) return selection?.python ? [definition] : []
     const server = serverOfGroup(group)
     if (server !== null) return servers.has(server) ? [definition] : []
     if (name !== USE_SKILL) return [definition]

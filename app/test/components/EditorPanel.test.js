@@ -165,7 +165,7 @@ describe('EditorPanel', () => {
     // The strip is the panel's header, and the toggle is what makes it one.
     expect(wrapper.find('[role="tablist"]').exists()).toBe(true)
     expect(wrapper.find('[data-empty]').exists()).toBe(true)
-    expect(toggle().attributes('aria-label')).toBe('Hide chat')
+    expect(toggle().attributes('aria-label')).toBe('Expand editor')
 
     await toggle().trigger('click')
     expect(wrapper.emitted('toggle-chat')).toHaveLength(1)

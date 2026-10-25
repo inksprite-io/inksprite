@@ -206,3 +206,11 @@
 .card-macro {
   color: var(--p-primary-color);
 }
+
+/* A formula set on its own (see utils/math) that is wider than the column
+   scrolls sideways in its place, rather than the chat. The padding keeps a
+   tall one's top and bottom out of the clip. */
+.katex-display {
+  overflow: auto hidden;
+  padding: 0.25em 0;
+}

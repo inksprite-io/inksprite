@@ -30,7 +30,9 @@ import { computed, shallowRef } from 'vue'
 export const me = shallowRef(/** @type {number|null} */ (null))
 
 /** The projects shared, as sync last heard. */
-export const sharing = shallowRef(/** @type {Sharing} */ ({ me: null, projects: {} }))
+export const sharing = shallowRef(
+  /** @type {Sharing} */ ({ me: null, projects: {}, selective: [] })
+)
 
 /**
  * A post as the writer here writes it: saying which account it is, where

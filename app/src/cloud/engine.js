@@ -83,6 +83,12 @@
  * with edits waiting it stays here in the trash, out of sync, rather than
  * go up again.
  *
+ * A project its owner shares with only some of its documents hides the
+ * others from everyone it is shared with: they go as the owner's own, their
+ * files and versions with them, and what the others had of them goes with a
+ * removal for them (`regroup`). The folders on the way to what is shared go
+ * as everyone's (`cloud/tree.js`), so the tree holds together for them.
+ *
  * Past the account's quota, the server refuses what would take more room,
  * record by record, and a file's parts; those wait in the outbox, the rest
  * syncs, and the status says the storage is full.
@@ -117,10 +123,10 @@ import {
 } from './crypto.js'
 import { CloudError } from './api.js'
 import { UNCOUNTED, errorTag } from './diagnostics.js'
-import { FORMAT } from './format.js'
+import { FORMAT, formatOf as recordFormat } from './format.js'
 import { comparable, mergeRow } from './merge.js'
 import { SETTINGS, SETUP, SETUP_TABLES, asMade, asSent, idOf } from './setup.js'
-import { treeFixes } from './tree.js'
+import { hiddenDocuments, treeFixes } from './tree.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
 /** @typedef {import('./api.js').Api} Api */
@@ -150,6 +156,41 @@ const TRASHED = new Set(['stories', 'documents', 'chats'])
 
 /** The tables whose rows, in a shared project, are their writer's own. */
 const OWN = new Set(['chats', 'messages'])
+
+/**
+ * The tables whose rows go as their document does in a project shared with
+ * only some of its documents: hidden from the others with it, as its owner's own.
+ */
+const DOCUMENTED = new Set(['documents', 'files', 'versions'])
+
+/**
+ * The document a project's row goes with: a file's bytes and a picture's are
+ * their document's (`<id>/<name>`), and so is a version.
+ * @param {string} table
+ * @param {string} rowId
+ * @param {any} [row]
+ * @returns {string|null}
+ */
+const documentOf = (table, rowId, row) =>
+  table === 'documents'
+    ? rowId
+    : table === 'files'
+      ? rowId.split('/')[0]
+      : table === 'versions'
+        ? (row?.documentId ?? null)
+        : null
+
+/**
+ * Whether a document's change may change what a project shared with only some
+ * of its documents hides: one made or removed, moved, or shared or not.
+ * @param {any} before - As the server last had it
+ * @param {any} after - None for a removal
+ */
+const reshapes = (before, after) =>
+  !before ||
+  !after ||
+  before.parentId !== after.parentId ||
+  Boolean(before.unshared) !== Boolean(after.unshared)
 
 /**
  * The tables whose rows carry bytes, sent as a file's parts and never
@@ -213,6 +254,8 @@ const STREAMING_MS = 2 * 60 * 1000
  * @property {string} [blob] - A file's blob, once its upload has begun
  * @property {boolean} [first] - Put there by the device's first sync of the
  *   setup: where the account has the row already, the account's stands
+ * @property {boolean} [whole] - Put there by a project going up whole, which
+ *   the server may have had before: not a document made since
  * @property {WrittenBy} [ahead] - A newer app's copy on the server, which a row
  *   with no record here waits behind, as `Kept`'s does
  * @property {number} at - When it was written
@@ -232,7 +275,8 @@ const STREAMING_MS = 2 * 60 * 1000
  * @property {WrittenBy} [ahead] - The server's copy, written since by a newer
  *   app, which this row's waiting change holds for until this app is updated
  * @property {boolean} [own] - Sealed under this account's own key: a chat, or
- *   a message, in a shared project
+ *   a message, in a shared project; or a document hidden from the others in one
+ *   shared with only some, with its files and versions
  */
 
 /**
@@ -341,6 +385,7 @@ const STREAMING_MS = 2 * 60 * 1000
  *   table, its settings among them
  * @property {(storyId: string) => Promise<any[]>} tree - A project's documents, in the
  *   trash and out of it, as they stand here
+ * @property {(storyId: string) => Promise<any[]>} versions - A project's documents' versions
  * @property {(chatId: string) => Promise<string|null>} storyOfChat
  * @property {(table: string, id: string) => Promise<Blob|null>} fileBytes - A file's
  *   bytes, or a library card's picture
@@ -397,6 +442,8 @@ const STREAMING_MS = 2 * 60 * 1000
  * @property {number|null} owner - The owner's account, where the server says
  * @property {number} members - How many are in it, the owner among them
  * @property {boolean} shared - Ever shared: its chats are each one's own
+ * @property {boolean} selective - Shared with only some of its documents, the
+ *   others its owner's own
  */
 
 /**
@@ -414,6 +461,8 @@ const STREAMING_MS = 2 * 60 * 1000
  * @typedef {Object} Sharing
  * @property {number|null} me - This account, once the server has said
  * @property {Record<string, Shared>} projects - By story
+ * @property {string[]} selective - The projects this account shares with only
+ *   some of their documents, whether or not with anyone yet
  */
 
 /**
@@ -423,7 +472,9 @@ const STREAMING_MS = 2 * 60 * 1000
  * @property {Local} local
  * @property {State} state
  * @property {number} schema - The schema this app writes
- * @property {number} [format] - The format this app writes, `FORMAT` but in tests
+ * @property {number} [format] - The newest format this app reads, `FORMAT` but in tests
+ * @property {(table: string, row: any, parentType?: string) => number} [formatOf] - The
+ *   format a record is written in, `formatOf` in `format.js` but in tests
  * @property {(table: string, row: any, from: number) => any} upgrade - A row
  *   from an older schema, moved forward
  * @property {(status: Status) => void} [onStatus]
@@ -486,6 +537,7 @@ export function createEngine({
   state,
   schema,
   format = FORMAT,
+  formatOf = recordFormat,
   upgrade,
   onStatus = () => {},
   onSharing = () => {},
@@ -526,6 +578,19 @@ export function createEngine({
 
   /** The projects shared now, as last listed, by story. @type {Set<string>} */
   let sharedHere = new Set()
+
+  /** The projects this account shares with only some of their documents, as last listed. @type {Set<string>} */
+  let selectiveHere = new Set()
+
+  /**
+   * The projects of this account looked at for what is to be hidden since the
+   * engine began, with whether they were shared with only some documents
+   * then. @type {Map<string, boolean>}
+   */
+  const regrouped = new Map()
+
+  /** The projects a pull brought a change to their tree since they were last looked at so. @type {Set<string>} */
+  const moved = new Set()
 
   /** @type {Status} */
   let status = { phase: 'idle', waiting: 0, last: null, error: null }
@@ -698,7 +763,7 @@ export function createEngine({
       else {
         const project = await local.readProject(storyId)
         if (!project) continue
-        entries = projectWaiting(project, Date.now())
+        entries = projectWaiting(project, Date.now()).map(entry => ({ ...entry, whole: true }))
       }
       await state.write(
         'cloudOutbox',
@@ -911,6 +976,7 @@ export function createEngine({
           { role, owner, members },
         ])
       ),
+      selective: [...selectiveHere].sort(),
     }
     const said = JSON.stringify(sharing)
     if (said === toldSharing) return
@@ -939,12 +1005,24 @@ export function createEngine({
 
   /**
    * Whether every chat and message of a project the server has is this
-   * account's own, and none waits to go.
+   * account's own, and none waits to go; and, shared with only some of its
+   * documents, every one hidden from the others, with its files and versions.
    * @param {string} storyId
+   * @param {boolean} selective
    */
-  async function allOwn(storyId) {
+  async function allOwn(storyId, selective) {
+    const hidden = selective ? hiddenDocuments(await local.tree(storyId), storyId) : null
+    const versions = hidden
+      ? new Map((await local.versions(storyId)).map(row => [row.id, row]))
+      : null
     for (const record of /** @type {Kept[]} */ (await state.ofStory('cloudRecords', storyId))) {
-      if (OWN.has(record.id.split(':')[0]) && record.print !== null && !record.own) return false
+      if (record.print === null || record.own) continue
+      const [table, ...rest] = record.id.split(':')
+      if (OWN.has(table)) return false
+      if (!hidden || !DOCUMENTED.has(table)) continue
+      const rowId = rest.join(':')
+      const of = documentOf(table, rowId, versions?.get(rowId))
+      if (of !== null && hidden.has(of)) return false
     }
     for (const entry of /** @type {Waiting[]} */ (await state.all('cloudOutbox'))) {
       if (!OWN.has(entry.table)) continue
@@ -959,7 +1037,8 @@ export function createEngine({
    * marked shared first, so that no device of this account sends a chat
    * the friend could read; then its chats and messages go again as this
    * account's own; then its key is wrapped for the friend's public key, once
-   * that key is the one the code is of.
+   * that key is the one the code is of. An account with no name for others
+   * yet is given its own.
    *
    * @param {string} storyId
    * @param {string} code - As typed
@@ -982,11 +1061,10 @@ export function createEngine({
     if (!listed.shared) await api.share(listed.id)
     checked = false
     await round()
-    if (!(await allOwn(storyId))) {
-      throw new Error(
-        "Its chats haven't all synced yet, so it wasn't shared. Try again in a moment."
-      )
+    if (!(await allOwn(storyId, Boolean(listed.selective)))) {
+      throw new Error("Not all of it has synced yet, so it wasn't shared. Try again in a moment.")
     }
+    await named(await api.account())
     const about = `collection ${listed.id}`
     const secret = await open(keys.wrap, listed.key, about)
     const added = await api.addMember(
@@ -997,6 +1075,26 @@ export function createEngine({
     peopleAsked.delete(storyId)
     await round()
     return { account: added.account, owner: false, display: added.display }
+  }
+
+  /**
+   * Share a project with only some of its documents, the others hidden from
+   * everyone it is shared with, or with all of them again: marked so on the
+   * server, then sent as it now goes.
+   *
+   * @param {string} storyId
+   * @param {boolean} selective
+   * @throws {Error} Saying why it wasn't, in words for the writer
+   */
+  async function setSelective(storyId, selective) {
+    await idle()
+    const listed = await listedFor(storyId)
+    if (!listed || listed.deleted != null) {
+      throw new Error("This project isn't on the sync server yet. Try again once it has synced.")
+    }
+    if (listed.role !== 'owner') throw new Error('Only its owner can choose what it shares.')
+    if (Boolean(listed.selective) !== selective) await api.setSelective(listed.id, selective)
+    await round()
   }
 
   /**
@@ -1046,7 +1144,28 @@ export function createEngine({
     const account = await api.account()
     me = account.id ?? null
     const { publicKey } = await keyPair()
-    return { id: me, display: account.display ?? null, friend: await friendCode(publicKey) }
+    return { id: me, display: await named(account), friend: await friendCode(publicKey) }
+  }
+
+  /**
+   * The name the people this account shares with see: the account's own,
+   * given on a server that shares until the writer gives another.
+   * @param {import('./api.js').AccountRecord} account
+   * @returns {Promise<string|null>}
+   */
+  async function named(account) {
+    if (account.display != null || account.id == null) return account.display ?? null
+    await setDisplay(account.name)
+    return account.name
+  }
+
+  /**
+   * Give this account the name the people it shares with see.
+   * @param {string} display
+   */
+  async function setDisplay(display) {
+    await api.setDisplay(display)
+    peopleAsked.clear()
   }
 
   /** Have every write noted so far in the outbox. */
@@ -1177,6 +1296,7 @@ export function createEngine({
     const known = new Map()
     left = new Set()
     sharedHere = new Set()
+    selectiveHere = new Set()
     for (const collection of listed) {
       if (collection.left) {
         left.add(collection.id)
@@ -1205,8 +1325,10 @@ export function createEngine({
           owner: collection.owner ?? null,
           members: collection.members ?? 1,
           shared: Boolean(collection.shared),
+          selective: Boolean(collection.selective),
         })
         if (collection.shared) sharedHere.add(storyId)
+        if (collection.selective && collection.role === 'owner') selectiveHere.add(storyId)
       } catch (error) {
         diagnostics.error('open collection')
         console.error(`Sync could not open the collection ${collection.id}:`, error)
@@ -1388,6 +1510,13 @@ export function createEngine({
         const key = `${payload.table}:${payload.id}`
         received.add(key)
         const record_ = /** @type {Kept|undefined} */ (await state.get('cloudRecords', key))
+        if (
+          collection.role === 'owner' &&
+          payload.table === 'documents' &&
+          reshapes(record_?.row, payload.deleted ? null : payload.row)
+        ) {
+          moved.add(storyId)
+        }
         const taken = await take(collection, payload, record.name, record.rev, {
           record: record_,
           waiting: ownWaiting.get(key),
@@ -1816,6 +1945,15 @@ export function createEngine({
    * @param {Map<string, Map<string, Waiting>>} waiting
    */
   async function push(known, waiting) {
+    // A project of this account's whose hidden documents may have changed is
+    // looked at, whether or not anything of it waits.
+    for (const collection of known.values()) {
+      const { storyId } = collection
+      if (storyId === SETUP || collection.role !== 'owner' || collection.deleted != null) continue
+      const was = regrouped.get(storyId)
+      const due = moved.has(storyId) || (collection.selective ? was !== true : was === true)
+      if (due && !waiting.has(storyId)) waiting.set(storyId, new Map())
+    }
     for (const [storyId, group] of waiting) {
       // Kept off by a pull of this round, another device keeping it.
       if (!local.syncsHere(storyId) || keptOff.has(storyId)) continue
@@ -1901,30 +2039,51 @@ export function createEngine({
       owner: collection.owner ?? null,
       members: collection.members ?? 1,
       shared: Boolean(collection.shared),
+      selective: Boolean(collection.selective),
     }
   }
 
   /**
-   * Send one project's waiting rows.
+   * Send one project's waiting rows. In a project this account shares with
+   * only some of its documents, those hidden from the others go as its own,
+   * and what of them the others had goes with a removal for them; whatever of
+   * the project the server keeps sealed the other way goes again first.
    *
    * @param {Known} collection
    * @param {Map<string, Waiting>} group
    */
   async function pushGroup(collection, group) {
     const { storyId } = collection
+    let tree = collection.role === 'owner' ? await local.tree(storyId) : []
+    if (collection.role === 'owner' && collection.selective) {
+      tree = await stampNew(collection, group, tree)
+    }
+    const hidden =
+      collection.role === 'owner' && collection.selective ? hiddenDocuments(tree, storyId) : null
+    if (collection.role === 'owner') await regroup(collection, group, tree, hidden)
     /** @type {Sending[]} */
     let batch = []
     let size = 0
     /** @type {Change[]} */
     const dropped = []
+    /** @type {Map<string, string>|null} The project's documents' types, read once a document is sent */
+    let types = null
+    const formatOfRow = async (/** @type {string} */ table, /** @type {any} */ row) => {
+      if (table !== 'documents') return formatOf(table, row)
+      types ??= new Map(
+        (collection.role === 'owner' ? tree : await local.tree(storyId)).map(document => [
+          document.id,
+          document.type,
+        ])
+      )
+      return formatOf(table, row, types.get(row.parentId))
+    }
     for (const entry of group.values()) {
       const record = /** @type {Kept|undefined} */ (await state.get('cloudRecords', entry.id))
       // Behind a newer app's copy, it waits for this one to be updated.
       const behind = record?.ahead ?? entry.ahead
       if (behind && ahead(behind)) continue
-      // A chat in a shared project is its writer's own; one sent before it
-      // was shared goes again so, even unchanged.
-      const own = OWN.has(entry.table) && (collection.shared || Boolean(record?.own))
+      const own = ownFor(collection, entry, record, hidden)
       /** @type {Payload} */
       let payload
       /** @type {string|null} */
@@ -1934,33 +2093,44 @@ export function createEngine({
           dropped.push(removal('cloudOutbox', entry.id))
           continue
         }
-        payload = { table: entry.table, id: entry.rowId, schema, format, deleted: true }
+        payload = {
+          table: entry.table,
+          id: entry.rowId,
+          schema,
+          format: formatOf(entry.table, null),
+          deleted: true,
+        }
       } else if (BYTES.has(entry.table)) {
         // Once a part was refused for room, the other files wait too.
         if (full) continue
-        if (record?.print) {
+        // Bytes go once; a file's record goes again, sealed the other way, without them.
+        const resealed =
+          record?.print && record.file && Boolean(record.own) !== own ? record.file : null
+        if (record?.print && !resealed) {
           dropped.push(removal('cloudOutbox', entry.id))
           continue
         }
-        const bytes = await local.fileBytes(entry.table, entry.rowId)
-        // A file waits for its bytes; a card without a picture has none to wait for.
-        if (!bytes && entry.table === 'files') continue
         /** @type {FileInfo|null} */
-        let file = null
-        try {
-          file = bytes ? await upload(collection, entry, bytes) : null
-        } catch (error) {
-          // No room for it: it waits, and the rest goes.
-          if (!(error instanceof CloudError && error.status === 507)) throw error
-          full = true
-          continue
+        let file = resealed
+        if (!resealed) {
+          const bytes = await local.fileBytes(entry.table, entry.rowId)
+          // A file waits for its bytes; a card without a picture has none to wait for.
+          if (!bytes && entry.table === 'files') continue
+          try {
+            file = bytes ? await upload(collection, entry, bytes) : null
+          } catch (error) {
+            // No room for it: it waits, and the rest goes.
+            if (!(error instanceof CloudError && error.status === 507)) throw error
+            full = true
+            continue
+          }
         }
         const row = entry.table === 'files' ? { id: entry.rowId, storyId } : entry.data
         payload = {
           table: entry.table,
           id: entry.rowId,
           schema,
-          format,
+          format: formatOf(entry.table, row),
           row,
           ...(file ? { file } : {}),
         }
@@ -1973,40 +2143,200 @@ export function createEngine({
         }
         const row = entry.table === 'stories' ? asSentStory(entry.data) : entry.data
         print = await fingerprint(comparable(row))
-        if (record?.print === print && (!own || record.own)) {
+        if (record?.print === print && Boolean(record.own) === own) {
           dropped.push(removal('cloudOutbox', entry.id))
           continue
         }
-        payload = { table: entry.table, id: entry.rowId, schema, format, row }
+        payload = {
+          table: entry.table,
+          id: entry.rowId,
+          schema,
+          format: await formatOfRow(entry.table, row),
+          row,
+        }
       }
       const name = record?.name ?? (await hashName(collection.keys.names, entry.id))
       const sealing = own ? await ownOf(collection) : collection.keys
-      const body = await sealJson(sealing.seal, payload, `${collection.id}/${name}`)
+      const about = `${collection.id}/${name}`
+      const body = await sealJson(sealing.seal, payload, about)
+      // A document the others had, hidden from them now, reaches them as removed.
+      const hiding =
+        own && DOCUMENTED.has(entry.table) && record && record.print !== null && !record.own
+      const removed = hiding
+        ? await sealJson(
+            collection.keys.seal,
+            {
+              table: entry.table,
+              id: entry.rowId,
+              schema,
+              format: formatOf(entry.table, null),
+              deleted: true,
+            },
+            about
+          )
+        : null
       batch.push({
         name,
         base: record?.rev ?? 0,
         body,
         blob: payload.file?.blob ?? null,
         own,
+        hidden: removed,
         entry,
         payload,
         print,
       })
       size += body.length
       if (size >= PUSH_BYTES) {
-        await send(collection, batch)
+        // Refused for what the project is shared as: the rest waits for the next round.
+        if (!(await send(collection, batch))) return
         batch = []
         size = 0
       }
     }
-    if (batch.length > 0) await send(collection, batch)
+    if (batch.length > 0 && !(await send(collection, batch))) return
     if (dropped.length > 0) await state.write('cloudOutbox', dropped)
+  }
+
+  /**
+   * Give each document made on this device since its project was last sent,
+   * in a project this account shares with only some of its documents, its
+   * folder's answer, the root's at the top level: written here as the
+   * engine's own, and sent so. One made elsewhere, by another of this
+   * account's devices or by someone it is shared with, came with its own, or
+   * with none and shared; and one going up again whole is not new.
+   *
+   * @param {Known} collection
+   * @param {Map<string, Waiting>} group
+   * @param {any[]} tree - Its documents here
+   * @returns {Promise<any[]>} The tree, as they are now
+   */
+  async function stampNew(collection, group, tree) {
+    const { storyId } = collection
+    const byId = new Map(tree.map(document => [document.id, document]))
+    /** @type {Set<string>} */
+    const fresh = new Set()
+    for (const entry of group.values()) {
+      if (entry.table !== 'documents' || entry.op === 'delete' || entry.whole) continue
+      const document = byId.get(entry.rowId)
+      if (!document || document.unshared !== undefined) continue
+      if (await state.get('cloudRecords', entry.id)) continue
+      fresh.add(entry.rowId)
+    }
+    /** @param {string} id @param {Set<string>} passed @returns {boolean} */
+    const unsharedOf = (id, passed = new Set()) => {
+      const document = byId.get(id)
+      if (!document || passed.has(id)) return false
+      passed.add(id)
+      return fresh.has(id) && document.unshared === undefined
+        ? unsharedOf(document.parentId, passed)
+        : Boolean(document.unshared)
+    }
+    const stamped = [...fresh]
+      .filter(id => unsharedOf(id))
+      .map(id => ({ ...byId.get(id), unshared: true }))
+    if (stamped.length === 0) return tree
+    /** @type {Change[]} */
+    const outbox = []
+    for (const row of stamped) {
+      const key = `documents:${row.id}`
+      expected.set(key, await fingerprint(comparable(row)))
+      const entry = { .../** @type {Waiting} */ (group.get(key)), data: row }
+      group.set(key, entry)
+      outbox.push(put('cloudOutbox', entry))
+    }
+    await local.write(
+      storyId,
+      stamped.map(row => ({ table: 'documents', id: row.id, row }))
+    )
+    await state.write('cloudOutbox', outbox)
+    const now = new Map(stamped.map(row => [row.id, row]))
+    return tree.map(document => now.get(document.id) ?? document)
+  }
+
+  /**
+   * Whether a row goes as this account's own: a chat or a message in a
+   * shared project, ever after; and in a project this account shares with
+   * only some of its documents, a document hidden from the others, with its
+   * files and versions. A removal goes as the record it removes was.
+   *
+   * @param {Known} collection
+   * @param {Waiting} entry
+   * @param {Kept|undefined} record
+   * @param {Set<string>|null} hidden - None in a project shared whole
+   */
+  function ownFor(collection, entry, record, hidden) {
+    // A chat sent before its project was shared goes again so, even unchanged.
+    if (OWN.has(entry.table)) return collection.shared || Boolean(record?.own)
+    if (!DOCUMENTED.has(entry.table) || collection.role !== 'owner') return false
+    if (entry.op === 'delete') return Boolean(record?.own)
+    const of = documentOf(entry.table, entry.rowId, entry.data)
+    return hidden !== null && of !== null && hidden.has(of)
+  }
+
+  /**
+   * Put with what waits of a project of this account's every row whose
+   * record the server keeps sealed the other way from how it is to go: the
+   * project shared with only some of its documents since, or whole again, or
+   * a document hidden or shown since, its files and versions with it. Looked
+   * at once the engine begins, for a project shared so, and when its tree
+   * may have changed: a document made, moved, removed, or shared or not, here
+   * or in a pull.
+   *
+   * @param {Known} collection
+   * @param {Map<string, Waiting>} group
+   * @param {any[]} tree - Its documents here
+   * @param {Set<string>|null} hidden - None in a project shared whole
+   */
+  async function regroup(collection, group, tree, hidden) {
+    const { storyId } = collection
+    const was = regrouped.get(storyId)
+    let due = moved.has(storyId) || (hidden ? was !== true : was === true)
+    for (const entry of group.values()) {
+      if (due) break
+      if (entry.table !== 'documents') continue
+      const record = /** @type {Kept|undefined} */ (await state.get('cloudRecords', entry.id))
+      due = reshapes(record?.row, entry.op === 'delete' ? null : entry.data)
+    }
+    if (!due) return
+    moved.delete(storyId)
+    const records = /** @type {Kept[]} */ (await state.ofStory('cloudRecords', storyId)).filter(
+      record => record.print !== null && DOCUMENTED.has(record.id.split(':')[0])
+    )
+    // Shared whole, only what is sealed as hidden has to go again.
+    if (hidden || records.some(record => record.own)) {
+      const documents = new Map(tree.map(document => [document.id, document]))
+      const versions = new Map((await local.versions(storyId)).map(row => [row.id, row]))
+      /** @type {Waiting[]} */
+      const again = []
+      const at = Date.now()
+      for (const record of records) {
+        if (group.has(record.id)) continue
+        const [table, ...rest] = record.id.split(':')
+        const rowId = rest.join(':')
+        const row = table === 'documents' ? documents.get(rowId) : versions.get(rowId)
+        const of = documentOf(table, rowId, row)
+        const own = hidden !== null && of !== null && hidden.has(of)
+        if (Boolean(record.own) === own || (table !== 'files' && !row)) continue
+        again.push(
+          waitingOf(table, table === 'files' ? { id: rowId, storyId } : row, at, rowId, storyId)
+        )
+      }
+      if (again.length > 0) {
+        await state.write(
+          'cloudOutbox',
+          again.map(entry => put('cloudOutbox', entry))
+        )
+        for (const entry of again) group.set(entry.id, entry)
+      }
+    }
+    regrouped.set(storyId, hidden !== null)
   }
 
   /**
    * A record on its way, with what it was made from.
    *
-   * @typedef {{name: string, base: number, body: Bytes, blob: string|null, own: boolean, entry: Waiting, payload: Payload, print: string|null}} Sending
+   * @typedef {{name: string, base: number, body: Bytes, blob: string|null, own: boolean, hidden: Bytes|null, entry: Waiting, payload: Payload, print: string|null}} Sending
    */
 
   /**
@@ -2014,6 +2344,8 @@ export function createEngine({
    *
    * @param {Known} collection
    * @param {Sending[]} batch
+   * @returns {Promise<boolean>} Whether the server took it, rather than refuse
+   *   it for what this device took the project to be shared as
    */
   async function send(collection, batch) {
     const { storyId } = collection
@@ -2023,22 +2355,29 @@ export function createEngine({
       pushed = await api.push(
         collection.id,
         schema,
-        batch.map(({ name, base, body, blob, own }) => ({
+        batch.map(({ name, base, body, blob, own, hidden }) => ({
           name,
           base,
           body,
           blob,
           ...(own ? { own: true } : {}),
+          ...(hidden ? { hidden } : {}),
         })),
-        { shared: collection.shared }
+        { shared: collection.shared, selective: collection.selective }
       )
     } catch (error) {
-      // Shared since the round began: what waits goes again, chats as their writer's own.
-      if (!(error instanceof CloudError && error.status === 409 && error.extra.shared)) throw error
-      collection.shared = true
-      sharedHere.add(storyId)
+      // Shared since the round began, or with only some of its documents
+      // since, or whole again: what waits goes again as it now goes.
+      if (!(error instanceof CloudError && error.status === 409)) throw error
+      const { extra } = error
+      if (!extra.shared && !('selective' in extra)) throw error
+      if (extra.shared) {
+        collection.shared = true
+        sharedHere.add(storyId)
+      }
+      if ('selective' in extra) collection.selective = Boolean(extra.selective)
       again = true
-      return
+      return false
     }
     diagnostics.count(
       'bytesUp',
@@ -2136,6 +2475,7 @@ export function createEngine({
     if (reading && reading.cursor === pushed.from) {
       await state.write('cloudState', [put('cloudState', { ...reading, cursor: pushed.seq })])
     }
+    return true
   }
 
   // Files.
@@ -2279,17 +2619,11 @@ export function createEngine({
     fetchFile,
     fetchProjectFiles,
     share,
+    setSelective,
     removeMember,
     leave,
     profile,
-    /**
-     * Give this account the name the people it shares with see.
-     * @param {string} display - Empty for none
-     */
-    setDisplay: async display => {
-      await api.setDisplay(display)
-      peopleAsked.clear()
-    },
+    setDisplay,
     /**
      * Begin keeping a project off sync, its story saying so already
      * (`syncOff`): the next round takes it off the server.

@@ -14,7 +14,8 @@
  * Mod-Shift-S, Mod-Alt-1 through 6, Mod-Shift-7 and 8, Mod-Shift-B, Mod-Alt-C
  * — and the reference's for lists: Enter splits an item, Tab and Shift-Tab
  * nest and lift. In a table they move between cells and rows (see
- * `editor/tables`). The typed shortcuts are markdown's own: `# `, `- `, `1. `,
+ * `editor/tables`). A list's keys and the quote's take it off again, as their
+ * items under a selection do (see `editor/format`). The typed shortcuts are markdown's own: `# `, `- `, `1. `,
  * `> `, ```` ``` ````, `---`, `**bold**` as you type, and a table's header
  * row followed by Enter. Quotes, dashes and ellipses are made as they are
  * typed, as a word processor makes them.
@@ -23,15 +24,8 @@
 import { EditorState, Selection, TextSelection } from 'prosemirror-state'
 import { history, undo, redo, closeHistory } from 'prosemirror-history'
 import { keymap } from 'prosemirror-keymap'
-import {
-  baseKeymap,
-  chainCommands,
-  exitCode,
-  setBlockType,
-  toggleMark,
-  wrapIn,
-} from 'prosemirror-commands'
-import { liftListItem, sinkListItem, splitListItem, wrapInList } from 'prosemirror-schema-list'
+import { baseKeymap, chainCommands, exitCode, setBlockType, toggleMark } from 'prosemirror-commands'
+import { liftListItem, sinkListItem, splitListItem } from 'prosemirror-schema-list'
 import {
   InputRule,
   ellipsis,
@@ -50,6 +44,7 @@ import { searchPlugin } from './search.js'
 import { spellingPlugin } from './spelling.js'
 import { commentDraftPlugin } from './commentDraft.js'
 import { figuresPlugin } from './pictures.js'
+import { toggleList, toggleQuote } from './format.js'
 import { diffSequences } from '@/utils/diff.js'
 import {
   cellPaste,
@@ -113,9 +108,9 @@ export const keys = {
   Enter: chainCommands(tableFromRow, nextRow, splitListItem(list_item)),
   Tab: chainCommands(nextCell, sinkListItem(list_item)),
   'Shift-Tab': chainCommands(previousCell, liftListItem(list_item)),
-  'Mod-Shift-7': wrapInList(ordered_list),
-  'Mod-Shift-8': wrapInList(bullet_list),
-  'Mod-Shift-b': wrapIn(blockquote),
+  'Mod-Shift-7': toggleList(ordered_list),
+  'Mod-Shift-8': toggleList(bullet_list),
+  'Mod-Shift-b': toggleQuote,
   'Mod-Alt-0': setBlockType(paragraph),
   'Mod-Alt-1': setBlockType(heading, { level: 1 }),
   'Mod-Alt-2': setBlockType(heading, { level: 2 }),

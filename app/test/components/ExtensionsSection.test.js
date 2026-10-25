@@ -135,4 +135,53 @@ describe('ExtensionsSection', () => {
     const wrapper = await mountSection()
     expect(wrapper.find('[data-delete-card-library]').attributes('disabled')).toBeDefined()
   })
+
+  describe('Python', () => {
+    beforeEach(() => {
+      vi.stubEnv('VITE_PREVIEW', 'python')
+      globalThis.__INKSPRITE_DESKTOP__ = { python: { run: vi.fn(), stop: vi.fn() } }
+    })
+
+    afterEach(() => {
+      delete globalThis.__INKSPRITE_DESKTOP__
+      vi.unstubAllEnvs()
+    })
+
+    it('is there only in the desktop app', async () => {
+      expect((await mountSection()).find('[data-extension="python"]').exists()).toBe(true)
+      delete globalThis.__INKSPRITE_DESKTOP__
+      expect((await mountSection()).find('[data-extension="python"]').exists()).toBe(false)
+    })
+
+    it('is there only in its preview', async () => {
+      vi.stubEnv('VITE_PREVIEW', '')
+      expect((await mountSection()).find('[data-extension="python"]').exists()).toBe(false)
+    })
+
+    it('gives a run ten minutes until the writer sets another limit, or none', async () => {
+      useApplicationState().setExtension('python', true)
+      const wrapper = await mountSection()
+      const limit = wrapper.findComponent('[data-python-time-limit]')
+      expect(limit.props('modelValue')).toBe(600)
+
+      await limit.vm.$emit('update:modelValue', 0)
+      expect(useApplicationState().pythonTimeLimit.value).toBe(0)
+    })
+
+    it('switches on, and lists the profiles whose chats run it, Default to start', async () => {
+      const wrapper = await mountSection()
+      await wrapper
+        .findComponent('[data-extension-switch="python"]')
+        .vm.$emit('update:modelValue', true)
+      expect(useApplicationState().extensionOn('python')).toBe(true)
+
+      const mine = wrapper.findComponent('[data-python-profile="chatprofile_mine"]')
+      expect(mine.props('modelValue')).toBe(false)
+      await mine.vm.$emit('update:modelValue', true)
+      expect(useApplicationState().pythonProfiles.value).toEqual([
+        'builtin_profile_chat',
+        'chatprofile_mine',
+      ])
+    })
+  })
 })

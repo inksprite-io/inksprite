@@ -157,3 +157,17 @@ export function languageOf(filename) {
  * @returns {boolean}
  */
 export const isBinaryName = filename => BINARY_EXTENSIONS.has(extensionOf(filename))
+
+/**
+ * Whether a name says what it names is code or data, rather than prose: a
+ * language the table knows, Markdown aside. A document made under such a
+ * name is kept as written (`plain`), since settling it as Markdown would
+ * change it.
+ *
+ * @param {string} filename
+ * @returns {boolean}
+ */
+export function isCodeName(filename) {
+  const { language, mime } = languageOf(filename)
+  return language !== 'Text' && mime !== 'text/markdown'
+}

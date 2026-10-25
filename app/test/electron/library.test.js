@@ -221,7 +221,7 @@ describe('reading the library', () => {
     })
   })
 
-  it('walks a project’s own folders, and names the rest without going in', async () => {
+  it('walks a project’s own folders and documents’ directories, and names the rest without going in', async () => {
     await put('Novel/.folder.md', 'root')
     await put('Novel/.inksprite/story.json', '{}')
     await put('Novel/.inksprite/chats/chat_1.jsonl', '')
@@ -232,6 +232,12 @@ describe('reading the library', () => {
     await put('Novel/Notes/tool/.repository.json', '{}')
     await put('Novel/Notes/tool/src/main.js', 'x')
     await put('Novel/Photos/cat.jpg', 'pixels')
+    await put('Novel/Notes/Wren/Wren.png', 'pixels')
+    await put('Novel/Notes/Wren/.Wren.png.md', 'portrait')
+    await put('Novel/Notes/Wren/Description.md', 'Quick.')
+    await put('Novel/Notes/Chapter/Chapter.md', 'A chapter.')
+    await put('Novel/Notes/Chapter/Scene.md', 'A scene.')
+    await put('Novel/Notes/Other/Scene.md', 'Not named as its directory.')
     await fs.symlink(path.join(place), path.join(root, 'Novel/away'))
 
     const { files, closed } = await library.walk('Novel')
@@ -242,11 +248,16 @@ describe('reading the library', () => {
       '.inksprite/story.json',
       'Notes/.folder.md',
       'Notes/.images/doc_1/map.png',
+      'Notes/Chapter/Chapter.md',
+      'Notes/Chapter/Scene.md',
       'Notes/Elara.md',
+      'Notes/Wren/.Wren.png.md',
+      'Notes/Wren/Description.md',
+      'Notes/Wren/Wren.png',
       'Notes/tool/.repository.json',
       'Notes/tool/src/main.js',
     ])
-    expect(closed.sort()).toEqual(['Photos', 'away'])
+    expect(closed.sort()).toEqual(['Notes/Other', 'Photos', 'away'])
     expect(files.find(file => file.path === 'Notes/Elara.md')).toMatchObject({ size: 5 })
   })
 

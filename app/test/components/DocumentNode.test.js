@@ -16,6 +16,7 @@ import { OPEN_AFTER, useTreeDrop } from '../../src/composables/useTreeDrop.js'
 import { useTreeHistory } from '../../src/composables/useTreeHistory.js'
 import { useApplicationState } from '../../src/composables/useApplicationState'
 import { useCardLibraryPanel } from '../../src/composables/useCardLibraryPanel.js'
+import { sharing } from '../../src/cloud/people.js'
 
 const reextractFile = vi.fn()
 vi.mock('../../src/files/write.js', () => ({ reextractFile: (...args) => reextractFile(...args) }))
@@ -347,6 +348,72 @@ describe('DocumentNode', () => {
 
     await wrapper.find('.group').trigger('click')
     expect(wrapper.text()).toContain('Opening')
+  })
+
+  describe('a document that holds others', () => {
+    /** A card's portrait, as an import makes it, with a field under it. */
+    const holding = () => {
+      const card = useDocumentsStore().createDocument({
+        storyId: 'story_1',
+        parentId: 'notes_story_1',
+        type: 'file',
+        title: 'Wren',
+        mime: 'image/png',
+        kind: 'portrait',
+      })
+      useDocumentsStore().createDocument({
+        storyId: 'story_1',
+        parentId: card.id,
+        type: 'text',
+        title: 'Description',
+      })
+      return card
+    }
+
+    it('starts shut, opens as a document, and twists open on what it holds', async () => {
+      const card = holding()
+      const wrapper = mountNode(card.id)
+      const cardRow = row(wrapper, card.id)
+
+      expect(cardRow.attributes('aria-expanded')).toBe('false')
+      expect(cardRow.find('[data-node-icon]').classes()).toContain('pi-image')
+      expect(wrapper.text()).not.toContain('Description')
+
+      await cardRow.trigger('click')
+      expect(wrapper.emitted('open')).toEqual([[card.id]])
+
+      await cardRow.find('button[aria-label="Expand"]').trigger('click')
+      expect(wrapper.text()).toContain('Description')
+      await cardRow.trigger('keydown', { key: 'ArrowLeft' })
+      expect(wrapper.text()).not.toContain('Description')
+    })
+
+    it('opens when what is opened is under it', async () => {
+      const card = holding()
+      const description = useDocumentsStore()
+        .getChildren(card.id)
+        .find(child => child.title === 'Description')
+      const wrapper = mountNode(card.id)
+      expect(wrapper.text()).not.toContain('Description')
+
+      await wrapper.setProps({ activeDocumentId: description.id })
+      expect(row(wrapper, card.id).attributes('aria-expanded')).toBe('true')
+      expect(wrapper.text()).toContain('Description')
+    })
+
+    it('takes no drop into it, and offers nothing to make in it', () => {
+      const card = holding()
+      const wrapper = mountNode(card.id)
+      const labels = wrapper
+        .findComponent({ name: 'ContextMenu' })
+        .props('model')
+        .map(item => item.label)
+
+      expect(row(wrapper, card.id).attributes('data-folder')).toBeUndefined()
+      expect(labels).not.toContain('New document')
+      expect(labels).not.toContain('New folder')
+      expect(labels).toContain('Download')
+    })
   })
 
   it('marks the active document', () => {
@@ -1300,6 +1367,33 @@ describe('DocumentNode', () => {
       expect(wrapper.emitted('reimport')).toEqual([[folder.id]])
     })
 
+    it('offers a chat and an import again on a card that is its picture', () => {
+      const store = useDocumentsStore()
+      const card = store.createDocument({
+        storyId: 'story_1',
+        parentId: 'notes_story_1',
+        type: 'file',
+        title: 'Elara',
+        kind: 'card',
+        mime: 'image/png',
+        size: 10,
+      })
+      store.createDocument({
+        storyId: 'story_1',
+        parentId: card.id,
+        type: 'text',
+        title: '.card.json',
+        kind: 'sidecar',
+        content: '{}',
+      })
+      const labels = mountNode(card.id)
+        .findComponent({ name: 'ContextMenu' })
+        .props('model')
+        .map(item => item.label)
+      expect(labels).toContain('Chat with Elara…')
+      expect(labels).toContain('Re-import card…')
+    })
+
     it('has nothing to import again without the sidecar', () => {
       const folder = useDocumentsStore().createDocument({
         storyId: 'story_1',
@@ -1756,5 +1850,136 @@ describe('DocumentNode, in a repository', () => {
     expect(api.canDropInto('root_story_1', stray.id)).toBe(true)
     api.reorder('root_story_1', [stray.id])
     expect(store.getDocument(stray.id).parentId).toBe('root_story_1')
+  })
+})
+
+describe('DocumentNode in a project shared with only some of its documents', () => {
+  /** @type {ReturnType<typeof useDocuments>} */
+  let api
+  /** @type {ReturnType<typeof useDocumentsStore>} */
+  let store
+
+  const PEOPLE = {
+    me: 1,
+    projects: {
+      story_1: {
+        role: 'owner',
+        owner: 1,
+        members: [
+          { account: 1, owner: true, display: 'Ada' },
+          { account: 2, owner: false, display: 'Grace' },
+        ],
+      },
+    },
+    selective: ['story_1'],
+  }
+
+  beforeEach(async () => {
+    vi.stubEnv('VITE_PREVIEW', 'selective-sharing')
+    setActivePinia(createPinia())
+    clearDocumentInstances()
+    vi.clearAllMocks()
+    store = useDocumentsStore()
+    api = useDocuments('story_1')
+    await api.init()
+    sharing.value = PEOPLE
+  })
+
+  afterEach(() => {
+    sharing.value = { me: null, projects: {}, selective: [] }
+    vi.unstubAllEnvs()
+  })
+
+  /** @param {string} id */
+  const unshare = id => store.setShared(new Map([[id, false]]))
+
+  /** @param {import('@vue/test-utils').VueWrapper} wrapper */
+  const items = wrapper => wrapper.findComponent({ name: 'ContextMenu' }).props('model')
+
+  it('marks what the others see, faintly a folder they see only on the way to it', () => {
+    const notes = api.createFolder('root_story_1', 'Notes')
+    const note = api.createTextDocument(notes.id, 'A note')
+    unshare(notes.id)
+    const plan = api.createTextDocument('root_story_1', 'The plan')
+    unshare(plan.id)
+    const chapter = api.createTextDocument('root_story_1', 'Chapter 1')
+
+    const wrapper = mountNode('root_story_1')
+    const mark = (/** @type {string} */ id) =>
+      row(wrapper, id).find('[data-share-mark]').attributes('data-share-mark')
+    expect(mark(chapter.id)).toBe('shared')
+    expect(mark(note.id)).toBe('shared')
+    expect(mark(notes.id)).toBe('partly')
+    expect(row(wrapper, plan.id).find('[data-share-mark]').exists()).toBe(false)
+    expect(row(wrapper, 'root_story_1').find('[data-share-mark]').exists()).toBe(false)
+  })
+
+  it('shares a folder from its menu with everything in it, and stops', async () => {
+    const notes = api.createFolder('root_story_1', 'Notes')
+    const note = api.createTextDocument(notes.id, 'A note')
+    const chapter = api.createTextDocument('root_story_1', 'Chapter 1')
+    store.setShared(
+      new Map([
+        [notes.id, false],
+        [note.id, false],
+      ])
+    )
+    const wrapper = mountNode(notes.id)
+
+    items(wrapper)
+      .find((/** @type {any} */ item) => item.label === 'Share')
+      .command()
+    await wrapper.vm.$nextTick()
+    expect(store.getDocument(notes.id).unshared).toBe(false)
+    expect(store.getDocument(note.id).unshared).toBe(false)
+
+    items(wrapper)
+      .find((/** @type {any} */ item) => item.label === 'Stop sharing')
+      .command()
+    await wrapper.vm.$nextTick()
+    expect(store.getDocument(notes.id).unshared).toBe(true)
+    expect(store.getDocument(note.id).unshared).toBe(true)
+    expect(store.getDocument(chapter.id).unshared).toBe(false)
+  })
+
+  it('shares what a document holds with the document it is in', async () => {
+    const chapter = api.createTextDocument('root_story_1', 'Chapter 1')
+    const held = (/** @type {string} */ title) =>
+      store.createDocument({ storyId: 'story_1', parentId: chapter.id, type: 'text', title })
+    const arrival = held('Arrival')
+    const escape = held('Escape')
+    store.setShared(
+      new Map([
+        [chapter.id, false],
+        [arrival.id, false],
+        [escape.id, false],
+      ])
+    )
+    const wrapper = mountNode(arrival.id)
+
+    items(wrapper)
+      .find((/** @type {any} */ item) => item.label === 'Share')
+      .command()
+    await wrapper.vm.$nextTick()
+    expect(store.getDocument(arrival.id).unshared).toBe(false)
+    expect(store.getDocument(chapter.id).unshared).toBe(false)
+    expect(store.getDocument(escape.id).unshared).toBe(true)
+  })
+
+  it('shows nothing of it before anyone else is in the project, or without the preview', () => {
+    const chapter = api.createTextDocument('root_story_1', 'Chapter 1')
+    const labels = (/** @type {import('@vue/test-utils').VueWrapper} */ wrapper) =>
+      items(wrapper).map((/** @type {any} */ item) => item.label)
+
+    sharing.value = { ...PEOPLE, projects: {} }
+    let wrapper = mountNode(chapter.id)
+    expect(wrapper.find('[data-share-mark]').exists()).toBe(false)
+    expect(labels(wrapper)).not.toContain('Stop sharing')
+
+    sharing.value = PEOPLE
+    vi.stubEnv('VITE_PREVIEW', '')
+    wrapper = mountNode(chapter.id)
+    expect(wrapper.find('[data-share-mark]').exists()).toBe(false)
+    expect(labels(wrapper)).not.toContain('Stop sharing')
   })
 })

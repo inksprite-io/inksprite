@@ -1,0 +1,1 @@
+Wren is twenty-three, small, quick, and quiet. She grew up on the river barges and can hold her breath for the length of a long prayer. She trusts locks more than people, and Osric more than most people. She keeps her mother's tally knife in her boot.

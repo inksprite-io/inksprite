@@ -16,6 +16,12 @@
  * A text document's own pictures (`picturesDir`) go where it goes: moved when
  * it changes folders, trashed with it, and one by one as its row lets them
  * go. Their bytes are written as they come, as an imported file's are.
+ *
+ * The directory a document holds others in is planned as a folder is, as an
+ * entry of its own beside the document's (`withDirs`): moved whole when the
+ * document is renamed or moved, made by what goes into it when it gets its
+ * first, and trashed when it holds nothing kept. It has no file of its own,
+ * and may hold nothing by the time it moves or goes, so both are optional.
  */
 
 import { nameKey } from './names.js'
@@ -41,11 +47,12 @@ import { MOVING, ROW_FILES, STORY_FILE, picturePath, picturesDir } from './layou
  * - `move` - A file or a folder, with all that is in it, to where nothing is;
  *   with `optional`, only if it is there: a document's pictures, whose bytes
  *   may not have come yet
- * - `trash` - A file or a folder to the system's trash
+ * - `trash` - A file or a folder to the system's trash; with `optional`, only if
+ *   it is there: a document's directory, which may be empty by then
  * - `write` - A file's whole text, made whole or not at all
  *
  * @typedef {{op: 'move', from: string, to: string, optional?: true}
- *   | {op: 'trash', path: string}
+ *   | {op: 'trash', path: string, optional?: true}
  *   | {op: 'write', path: string, text: string}} Op
  */
 
@@ -63,7 +70,28 @@ const isBelow = (path, dir) => (dir === '' ? path !== '' : path.startsWith(`${di
 
 /** @param {EntryKind} kind */
 const isFolder = kind =>
-  kind === 'root' || kind === 'folder' || kind === 'repository' || kind === 'repoFolder'
+  kind === 'root' ||
+  kind === 'folder' ||
+  kind === 'repository' ||
+  kind === 'repoFolder' ||
+  kind === 'holder'
+
+/**
+ * The entries, with the directory each document that holds others has as an
+ * entry of its own, under its id and `#dir`: no document's id has a `#`.
+ *
+ * @param {Map<string, Entry>} entries
+ * @returns {Map<string, Entry>}
+ */
+function withDirs(entries) {
+  const out = new Map(entries)
+  for (const entry of entries.values()) {
+    if (entry.dir === undefined) continue
+    const id = `${entry.id}#dir`
+    out.set(id, { id, kind: 'holder', path: entry.dir })
+  }
+  return out
+}
 
 /**
  * The files an entry is, less a repository's own file, which is made from
@@ -172,6 +200,8 @@ export function storyText(story, schema) {
  * @returns {Op[]}
  */
 export function planProject(previous, next, documentOf, changed) {
+  previous = withDirs(previous)
+  next = withDirs(next)
   /** @type {Op[]} */
   const ops = []
   const changedIds = new Set(changed)
@@ -195,7 +225,8 @@ export function planProject(previous, next, documentOf, changed) {
   const move = (/** @type {string} */ id, /** @type {string} */ to) => {
     const from = /** @type {string} */ (at.get(id))
     const entry = /** @type {Entry} */ (previous.get(id))
-    if (!entry.missing) ops.push({ op: 'move', from, to })
+    if (entry.kind === 'holder') ops.push({ op: 'move', from, to, optional: true })
+    else if (!entry.missing) ops.push({ op: 'move', from, to })
     if (entry.kind === 'file') {
       ops.push({ op: 'move', from: sidecarPath(from), to: sidecarPath(to) })
     }
@@ -258,7 +289,9 @@ export function planProject(previous, next, documentOf, changed) {
     if (trashed.some(dir => path === dir || isBelow(path, dir))) continue
     if (isFolder(entry.kind)) {
       if (!keptPaths.some(kept => kept === path || isBelow(kept, path))) {
-        ops.push({ op: 'trash', path })
+        ops.push(
+          entry.kind === 'holder' ? { op: 'trash', path, optional: true } : { op: 'trash', path }
+        )
         trashed.push(path)
       } else if (entry.kind === 'folder') {
         ops.push({ op: 'trash', path: join(path, FOLDER_FILE) })

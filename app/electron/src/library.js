@@ -48,6 +48,28 @@ const AUDIO = /^[^/]+\/\.inksprite\/audio(\/|$)/
 const READ_AT_ONCE = 64
 
 /**
+ * Whether a directory is the app's to walk, by the names in it: a folder's
+ * `.folder.md`, a repository's `.repository.json`, or a document that holds
+ * others, its own file in it under the directory's name: `<name>.md`, or the
+ * row `.<name>.<ext>.md` beside an imported file (`storage/layout.js`).
+ *
+ * @param {string} name - The directory's
+ * @param {string[]} inside - The names in it
+ * @returns {boolean}
+ */
+export function isOurs(name, inside) {
+  if (inside.includes('.folder.md') || inside.includes('.repository.json')) return true
+  if (inside.includes(`${name}.md`)) return true
+  return inside.some(file => {
+    const match = /^\.(.+)\.md$/s.exec(file)
+    if (!match) return false
+    const target = match[1]
+    const dot = target.lastIndexOf('.')
+    return target === name || (dot > 0 && target.slice(0, dot) === name)
+  })
+}
+
+/**
  * @typedef {Object} LibrarySettings
  * @property {string} path - The library
  * @property {boolean} moved - Whether the projects kept in the window were moved into it
@@ -260,10 +282,7 @@ export function libraryFolder(root) {
               repository ||
               (relative === '' && item.name === '.inksprite') ||
               item.name === '.images'
-            const ours =
-              whole ||
-              (await fs.stat(path.join(full, '.folder.md')).catch(() => null)) !== null ||
-              (await fs.stat(path.join(full, '.repository.json')).catch(() => null)) !== null
+            const ours = whole || isOurs(item.name, await fs.readdir(full).catch(() => []))
             if (ours) await visit(full, at, whole)
             else closed.push(at)
           }
@@ -308,6 +327,20 @@ export function libraryFolder(root) {
         .filter(item => item.isFile())
         .map(item => item.name)
         .sort()
+    },
+
+    /**
+     * Where a file in the library is on this disk, and how large it is: for
+     * Python, which reads it there a piece at a time.
+     *
+     * @param {string} relative
+     * @returns {Promise<{path: string, size: number}|null>} Null when it is
+     *   not a file there
+     */
+    async locate(relative) {
+      const absolute = await inside(relative).catch(() => null)
+      const found = absolute ? await fs.stat(absolute).catch(() => null) : null
+      return absolute && found?.isFile() ? { path: absolute, size: found.size } : null
     },
 
     /**

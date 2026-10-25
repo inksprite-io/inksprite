@@ -56,6 +56,7 @@ describe('tool groups', () => {
     expect(byId.skills).toBeUndefined()
     expect(byId.experimental).toEqual(['interpret', 'write'])
     expect(byId.web).toEqual(['web_search', 'read_web_page', 'save_web_page'])
+    expect(byId.python).toEqual(['run_python'])
   })
 
   it('offers the web only to a chat that searches, less any tool it switched off', () => {
@@ -68,6 +69,18 @@ describe('tool groups', () => {
     expect(offered({})).toEqual([])
     expect(offered({ web: true })).toEqual(['web_search', 'read_web_page'])
     expect(offered({ web: true, disabledTools: ['read_web_page'] })).toEqual(['web_search'])
+  })
+
+  it('offers Python only to a chat that runs it, less the tool if it switched it off', () => {
+    const offered = selection =>
+      getEnabledToolDefinitions(selection)
+        .map(definition => definition.function.name)
+        .filter(name => name === 'run_python')
+
+    // Opted into: a chat that withholds nothing still does not run Python.
+    expect(offered({})).toEqual([])
+    expect(offered({ python: true })).toEqual(['run_python'])
+    expect(offered({ python: true, disabledTools: ['run_python'] })).toEqual([])
   })
 
   it('keeps the document calls of a turn from when only they went back', () => {

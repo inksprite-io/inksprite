@@ -23,6 +23,9 @@ export const BrowserWindow = Object.assign(vi.fn(), {
 })
 export const Menu = { buildFromTemplate: vi.fn(template => template), setApplicationMenu: vi.fn() }
 export const clipboard = { writeText: vi.fn() }
+export const session = { fromPartition: vi.fn(), defaultSession: {} }
+export const WebContentsView = vi.fn()
+export const MessageChannelMain = vi.fn()
 
 export const autoUpdater = {
   checkForUpdates: vi.fn(),

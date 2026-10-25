@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { FORMAT } from '@/cloud/format.js'
+import { FORMAT, TEXT_FORMAT, HELD_FORMAT, formatOf } from '@/cloud/format.js'
 import { schema } from '@/editor/schema.js'
 
 /**
@@ -7,9 +7,9 @@ import { schema } from '@/editor/schema.js'
  * attributes. An older app's editor drops what it doesn't know as it saves a
  * document, so the editor learning a node, a mark or an attribute is the
  * likeliest change to need a new format. When the first test fails, raise
- * `FORMAT` (`cloud/format.js`) and add what the editor holds now under the new
- * number; change the entry in place only if an older app would keep the text
- * as it was.
+ * `TEXT_FORMAT` and `FORMAT` with it (`cloud/format.js`) and add what the
+ * editor holds now under the new number; change the entry in place only if
+ * an older app would keep the text as it was.
  */
 const AT = {
   1: {
@@ -52,11 +52,21 @@ const withAttributes = types =>
 describe('the format synced records carry', () => {
   it('names what the editor holds', () => {
     expect({ nodes: withAttributes(schema.nodes), marks: withAttributes(schema.marks) }).toEqual(
-      /** @type {any} */ (AT)[FORMAT]
+      /** @type {any} */ (AT)[TEXT_FORMAT]
     )
   })
 
   it('is the newest listed', () => {
-    expect(Math.max(...Object.keys(AT).map(Number))).toBe(FORMAT)
+    expect(Math.max(...Object.keys(AT).map(Number))).toBe(TEXT_FORMAT)
+  })
+
+  it('is the oldest that holds each record, and never newer than the app reads', () => {
+    expect(formatOf('documents', { parentId: 'doc_ch1' }, 'text')).toBe(HELD_FORMAT)
+    expect(formatOf('documents', { parentId: 'doc_pdf' }, 'file')).toBe(HELD_FORMAT)
+    expect(formatOf('documents', { parentId: 'root_story_1' }, 'folder')).toBe(TEXT_FORMAT)
+    expect(formatOf('documents', { parentId: 'story_1' })).toBe(TEXT_FORMAT)
+    expect(formatOf('documents', null)).toBe(1)
+    expect(formatOf('chats', { id: 'chat_1' })).toBe(1)
+    expect(Math.max(TEXT_FORMAT, HELD_FORMAT)).toBe(FORMAT)
   })
 })

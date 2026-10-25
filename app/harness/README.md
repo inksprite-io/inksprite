@@ -138,6 +138,14 @@ model's `delete_document` this way, applying and asking first, with `kept`
 and `trashed` for what a delete should leave and where it should go, and
 `notCalls` for a turn that should not delete at all.
 
+A scenario with `"python": true` (and `"previews": ["python"]`) runs as the
+desktop app with the Python extension on, so the chat is offered
+`run_python`: `desktop.js` stands up the desktop bridge, the chat's requests
+going through it and its Python the desktop app's own Pyodide and wheels in
+a worker thread, with `/project` made by the app's `projectForPython`. It
+needs `npm ci` and `node scripts/fetch-python.mjs` in `app/electron`.
+`held-python` reads a project whose documents hold others from Python.
+
 Findings from the batches, and the things that are not about one batch, are
 in `findings.md`. `dialogue.js` is a separate runner for the multi-agent
 scene architecture; see its module comment.

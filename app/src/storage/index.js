@@ -112,6 +112,9 @@ export const PROJECT_APP_TABLES = ['versions']
  * @property {(id: string) => Promise<Chat|undefined>} chat - One chat
  * @property {(chatId: string) => Promise<Message[]>} messages - A chat's messages, in no order
  * @property {(id: string) => Promise<Blob|null>} fileBytes - A file document's bytes
+ * @property {(id: string) => Promise<string|null>} filePath - Where an imported file's bytes
+ *   are in the library, as a path below it: null in a browser's storage, and for bytes not
+ *   on this disk yet
  * @property {(storyId: string) => Promise<StoredFile[]>} projectFiles - The bytes of every file in a project
  * @property {(id: string, storyId: string, blob: Blob) => Promise<void>} putFileBytes - Keep a file document's bytes
  * @property {() => boolean} audioKept - Whether narration audio is kept past the session: in the

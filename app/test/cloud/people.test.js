@@ -20,7 +20,7 @@ const SHARED = {
 
 afterEach(() => {
   me.value = null
-  sharing.value = { me: null, projects: {} }
+  sharing.value = { me: null, projects: {}, selective: [] }
 })
 
 describe('people', () => {

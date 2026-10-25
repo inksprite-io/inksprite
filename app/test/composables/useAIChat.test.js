@@ -923,9 +923,11 @@ describe('useAIChat', () => {
       expect(getEnabledToolDefinitions).toHaveBeenCalledWith({
         disabledTools: ['oracle'],
         disabledGroups: ['lore'],
-        // No server is connected, so none is offered; nor is the web set up.
+        // No server is connected, so none is offered; nor is the web set up,
+        // and Python runs only in the desktop app.
         servers: [],
         web: false,
+        python: false,
       })
     })
 
@@ -938,6 +940,7 @@ describe('useAIChat', () => {
         disabledGroups: undefined,
         servers: [],
         web: false,
+        python: false,
       })
     })
 

@@ -51,8 +51,9 @@
  */
 
 import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
-import { seeing } from '@/editor/suggestions.js'
+import { newSuggestionId, seeing } from '@/editor/suggestions.js'
 import { nameKey } from '@/storage/names.js'
+import { diffSequences } from '@/utils/diff.js'
 import { pictureHref, pictureName, pictureOf } from '@/utils/pictures.js'
 import { readDocument, writeDocument } from './api.js'
 import { applyBatch, applyRequests } from './apply.js'
@@ -60,7 +61,7 @@ import { answersToSend, commentsIn, commentsToMake, withMade } from './comments.
 import { readDoc, tabsOf } from './convert.js'
 import { DriveError, StaleRevisionError } from './errors.js'
 import { DOC_TYPE, fetchDocPictures } from './fetch.js'
-import { mergeDocs, sameDocs, settle } from './merge.js'
+import { keyOf, mergeDocs, sameDocs, settle } from './merge.js'
 import {
   besideRequests,
   layOwn,
@@ -71,6 +72,7 @@ import {
   settlesToSend,
   suggestionIds,
   suggestionThreads,
+  takenOver,
   wholeBlock,
 } from './suggestions.js'
 import { withoutIdleStyles, writeDoc } from './write.js'
@@ -140,6 +142,8 @@ import { withoutIdleStyles, writeDoc } from './write.js'
  *   the Doc; what of them the Doc changed here, replies among it; and the
  *   model's sent to the Doc as suggestions
  * @property {number} sent - The edits written to the Doc
+ * @property {import('./write.js').Unsent[]} left - What kinds of change the
+ *   document has that the writer can't send yet, and stay here
  * @property {boolean} changed - Whether `doc` differs from the document
  * @property {number} unsent - The document's own pictures the Doc lacks:
  *   added here, as nothing can send one yet
@@ -150,39 +154,8 @@ import { withoutIdleStyles, writeDoc } from './write.js'
 /** Why a Doc of several tabs, linked to none of them, is not synced. */
 const SEVERAL_TABS = 'This Doc has several tabs, and Sync can’t choose between them yet.'
 
-/**
- * Why a document whose words of a Doc's suggestion changed here, in a way
- * the Doc can't be given, is not synced.
- */
-const SUGGESTION_CHANGED =
-  'A suggested edit from the Doc was changed here. Accept or reject it, then sync.'
-
-/**
- * What the writer could not send, the most telling first.
- *
- * @type {import('./write.js').Unsent[]}
- */
-const ORDER = ['suggestion', 'held', 'merged', 'table', 'footnote', 'list', 'layout']
-
 /** How many writes refused as too late a sync makes before it stops. */
 const TRIES = 3
-
-/**
- * What the writer could not send, said for the writer.
- *
- * @type {Record<import('./write.js').Unsent, string>}
- */
-const UNSENT = {
-  table:
-    'Sync can’t send this change to a table to Google Docs yet, such as one to a table inside a table.',
-  merged: 'Sync can’t change the rows or columns of a table with merged cells in Google Docs yet.',
-  held: 'Part of a table deleted here has a picture or a drawing in the Doc. Delete that part in Google Docs, then sync again.',
-  list: 'Sync can’t send a list item’s new kind or nesting to Google Docs yet.',
-  footnote: 'Sync can’t add or remove footnotes in Google Docs yet.',
-  suggestion:
-    'The Doc has suggested edits open where this document changed. Accept or reject them, then sync again.',
-  layout: 'Sync can’t send part of this document to Google Docs yet, such as a heading in a list.',
-}
 
 /**
  * The Doc's suggestions changed as they were here: the words going in beside
@@ -210,6 +183,69 @@ async function rewriteSuggestions(docId, document, tabId, rewrites, token, signa
     read = await readDocument(docId, token, { signal })
   }
   return read
+}
+
+/**
+ * The writer's requests for as much of the document as it can send: each
+ * run of blocks changed that it can't send yet (a footnote put in or taken
+ * out, a list item's kind or nesting, a table with merged cells reshaped,
+ * words beside a newline or a style suggested in the Doc, …) left as the
+ * Doc has it, tried run by run, so that the rest goes. What is left stays in
+ * the document, and goes once it can.
+ *
+ * @param {Document} document - The Doc as read
+ * @param {Node} theirs - The same in the document's form
+ * @param {Node} target
+ * @param {{tabId: string, pictures: Record<string, PictureInfo>}} options
+ * @returns {{written: import('./write.js').Written, left: import('./write.js').Unsent[]}}
+ */
+function sendable(document, theirs, target, options) {
+  const whole = writeDoc(document, target, options)
+  if (whole.unsent.length === 0) return { written: whole, left: [] }
+  /** @param {Node} doc */
+  const blocks = doc => /** @type {Node[]} */ (doc.content.content)
+  const [from, to] = [blocks(theirs), blocks(target)]
+  /** @type {Array<{same: Node[]}|{theirs: Node[], ours: Node[]}>} */
+  const parts = []
+  for (const step of diffSequences(from.map(keyOf), to.map(keyOf)) ?? []) {
+    const last = parts.at(-1)
+    if (step.op === 'equal') {
+      if (last && 'same' in last) last.same.push(to[step.b])
+      else parts.push({ same: [to[step.b]] })
+      continue
+    }
+    const run = last && 'ours' in last ? last : { theirs: [], ours: [] }
+    if (run !== last) parts.push(run)
+    if (step.op === 'delete') run.theirs.push(from[step.a])
+    else run.ours.push(to[step.b])
+  }
+  /** @param {Set<object>} taken */
+  const made = taken => {
+    const content = parts.flatMap(part =>
+      'same' in part ? part.same : taken.has(part) ? part.ours : part.theirs
+    )
+    return target.type.create(
+      null,
+      content.length > 0 ? content : [target.type.schema.nodes.paragraph.create()]
+    )
+  }
+  /** @type {Set<object>} */
+  const taken = new Set()
+  /** @type {Set<import('./write.js').Unsent>} */
+  const left = new Set()
+  let written = writeDoc(document, made(taken), options)
+  for (const part of parts) {
+    if ('same' in part) continue
+    const tried = writeDoc(document, made(new Set([...taken, part])), options)
+    if (tried.unsent.length > 0) {
+      tried.unsent.forEach(kind => left.add(kind))
+      console.warn('Sync leaves here what Google Docs can’t take yet:', tried.unsent)
+      continue
+    }
+    taken.add(part)
+    written = tried
+  }
+  return { written, left: [...left] }
 }
 
 /**
@@ -321,6 +357,18 @@ function changesWords(document, requests, tabId) {
 }
 
 /**
+ * A new suggestion id, not one of the threads'.
+ *
+ * @param {Threads} threads
+ * @returns {string}
+ */
+function freshId(threads) {
+  let id = newSuggestionId()
+  while (threads[id]) id = newSuggestionId()
+  return id
+}
+
+/**
  * Threads with the links to the Doc's suggestions the model's became.
  *
  * @param {Threads} threads
@@ -370,12 +418,17 @@ export async function syncDoc(linked, token, { signal } = {}) {
         tabId,
       })
     : { rewrites: [], stuck: [] }
-  if (stuck.length > 0) throw new DriveError(SUGGESTION_CHANGED)
+  // Those that can't be changed in place: rejected there, and the words here
+  // a suggestion of the writer's own, which goes as the model's do.
+  const swaps = new Map(stuck.map(id => [id, freshId(linked.threads())]))
+  const at = Date.now()
+  /** The document and its threads, those it can't be given taken over. */
+  const current = () => takenOver(linked.current(), linked.threads(), swaps, at)
   // The Doc's suggestions settled here, settled there first, so that the
   // words compare as both now have them.
   const settles = settlesToSend({
     open: new Set(readDoc(fresh, { tabId }).suggested),
-    threads: linked.threads(),
+    threads: current().threads,
     docId: link.id,
   })
   if (settles.requests.length > 0) {
@@ -391,7 +444,7 @@ export async function syncDoc(linked, token, { signal } = {}) {
 
   for (;;) {
     signal?.throwIfAborted()
-    const shown = linked.current()
+    const { doc: shown, threads: had } = current()
     // The words as they stand: the Doc's suggestions are laid in again after.
     const mine = seeing(shown, []).doc
     const document = fresh ?? (await readDocument(link.id, token, { signal }))
@@ -416,13 +469,11 @@ export async function syncDoc(linked, token, { signal } = {}) {
     }
 
     pictures.holdUnused(target)
-    const written = writeDoc(document, target, {
+    // What the writer can't send yet stays here, and the rest goes.
+    const { written, left } = sendable(document, theirs.doc, target, {
       tabId: theirs.tabId,
       pictures: pictures.known(target),
     })
-    // The likeliest cause first: a table added also leaves nowhere for what follows it.
-    const unsent = ORDER.find(kind => written.unsent.includes(kind))
-    if (unsent) throw new DriveError(UNSENT[unsent])
     let expected = theirs.doc
     let after = theirs
     let afterDocument = document
@@ -446,7 +497,7 @@ export async function syncDoc(linked, token, { signal } = {}) {
     const own = await suggestOwn(link.id, afterDocument, {
       shown,
       mine,
-      ids: ownSuggestions(shown, linked.threads(), link.id),
+      ids: ownSuggestions(shown, had, link.id),
       tabId,
       pictures,
       token,
@@ -461,7 +512,7 @@ export async function syncDoc(linked, token, { signal } = {}) {
       link.id,
       afterDocument,
       target,
-      linkedTo(carried(linked.threads(), settles.threads), own.links, link.id),
+      linkedTo(carried(had, settles.threads), own.links, link.id),
       token,
       { tabId, signal }
     )
@@ -469,7 +520,7 @@ export async function syncDoc(linked, token, { signal } = {}) {
     await linked.keep(pictures.newIn(target))
     // What was typed while the sync ran, and what Google merged in between
     // the read and the write, each kept.
-    const now = linked.current()
+    const { doc: now, threads: having } = current()
     const standing = seeing(now, []).doc
     let doc = standing.eq(mine) ? target : settle(mergeDocs(mine, standing, target))
     if (!sameDocs(after.doc, expected)) doc = settle(mergeDocs(expected, doc, after.doc))
@@ -479,7 +530,7 @@ export async function syncDoc(linked, token, { signal } = {}) {
       document: crossed.document,
       read: readDoc(crossed.document, { tabId }),
       doc,
-      threads: carried(linked.threads(), crossed.threads),
+      threads: carried(having, crossed.threads),
       docId: link.id,
       tabId: after.tabId || tabId,
     })
@@ -545,50 +596,12 @@ export async function syncDoc(linked, token, { signal } = {}) {
         held: pictures.stillHeld(),
       },
       sent: written.requests.length,
+      left,
       changed: !doc.eq(now),
       unsent: pictures.onlyIn(doc, after.doc),
       lost: gave ? theirs.markdown : null,
     }
   }
-}
-
-/** A new Doc, as the Docs API reads one: its section break and an empty paragraph. */
-const NEW_DOC = /** @type {Document} */ ({
-  revisionId: '',
-  tabs: [
-    {
-      tabProperties: { tabId: 't.0' },
-      documentTab: {
-        body: {
-          content: [
-            { endIndex: 1, sectionBreak: {} },
-            {
-              startIndex: 1,
-              endIndex: 2,
-              paragraph: {
-                elements: [{ startIndex: 1, endIndex: 2, textRun: { content: '\n' } }],
-                paragraphStyle: { namedStyleType: 'NORMAL_TEXT' },
-              },
-            },
-          ],
-        },
-      },
-    },
-  ],
-})
-
-/**
- * Throw why a document cannot go into a new Doc, if the writer cannot send
- * all of it yet: before the Doc is made. Its text as it stands is asked
- * after; its suggestions go after it, and one the Doc can't take stays here.
- *
- * @param {Node} doc
- * @throws {DriveError}
- */
-export function checkSendable(doc) {
-  const written = writeDoc(NEW_DOC, seeing(doc, []).doc)
-  const unsent = ORDER.find(kind => written.unsent.includes(kind))
-  if (unsent) throw new DriveError(UNSENT[unsent])
 }
 
 /**

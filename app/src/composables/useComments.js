@@ -332,7 +332,7 @@ export function useComments(storyId) {
     const walk = (/** @type {string} */ parentId) => {
       for (const child of api.childrenOf(parentId)) {
         if (child.type === 'text') ids.push(child.id)
-        else if (child.type === 'folder' && !isRepository(child)) walk(child.id)
+        if (!isRepository(child)) walk(child.id)
       }
     }
     walk(rootIdFor(storyId))

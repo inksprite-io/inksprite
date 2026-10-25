@@ -64,7 +64,7 @@ import { READ_BUDGET, isLong, offsetOfPage, pageAt, sectionsOfText, sliceAt } fr
 import { findSection, sectionIndexAt, sectionPath, sectionTree, slugOf } from '@/utils/sections.js'
 import { useDocuments } from '@/composables/useDocuments.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
-import { documentPath } from '@/utils/documentPath.js'
+import { documentPath, documentTitles } from '@/utils/documentPath.js'
 import { diffAppend, diffEdit } from '@/utils/edits.js'
 import { chatVisibility } from '@/utils/visibility.js'
 import { readInView, textHash } from '@/ai/context/reads.js'
@@ -76,7 +76,7 @@ import {
   isSourceFile,
   repositoryOf,
 } from '@/source/tree.js'
-import { languageOf } from '@/source/language.js'
+import { isCodeName, languageOf } from '@/source/language.js'
 import { lineCount } from '@/source/text.js'
 import {
   OPEN_MARKUP,
@@ -137,7 +137,9 @@ function noDocument(path, named = []) {
  * delete "the Standups folder" asks for "Standups", and the folder is
  * "Notes/Standups". Told only that nothing is at "Standups", a model has
  * listed the top of the project, searched for the word, found neither, and
- * told the writer there is no such folder. Only said, never acted on: two
+ * told the writer there is no such folder. A model also drops a document
+ * that holds others from the path of what it holds, taking "Rules/House
+ * rules/House rules (Markdown)" for a slip. Only said, never acted on: two
  * folders can hold one name, and the path is the address.
  *
  * @param {DocumentsApi} api
@@ -385,7 +387,8 @@ function readBasis(document) {
 const readKey = document => textHash(readBasis(document))
 
 /**
- * The documents in a story, the root first, depth first.
+ * The documents in a story, the root first, depth first: a document that
+ * holds others before what it holds, as a folder is.
  *
  * The root is included because it is addressable: its title is the story's
  * name and its summary is the overview, both of which appear in every listing.
@@ -394,7 +397,7 @@ const readKey = document => textHash(readBasis(document))
  * @param {DocumentsApi} api
  * @param {string} storyId
  * @param {(document: Document) => boolean} include - Whether a document is
- *   listed. A folder it refuses is still walked into: a chat can hide a folder
+ *   listed. One it refuses is still walked into: a chat can hide a folder
  *   and show one thing in it.
  * @returns {Document[]}
  */
@@ -407,7 +410,7 @@ function collectDocuments(api, storyId, include) {
   const walk = (/** @type {string} */ parentId) => {
     for (const child of api.childrenOf(parentId)) {
       if (include(child)) out.push(child)
-      if (child.type === 'folder') walk(child.id)
+      walk(child.id)
     }
   }
   walk(rootIdFor(storyId))
@@ -474,6 +477,24 @@ export async function documentForChat(storyId, chatId, path) {
   const { api, sees } = await open(storyId, chatId)
   const document = findByPath(api, storyId, path, sees)
   return document ? { document, path: pathOf(api, document) } : null
+}
+
+/**
+ * Every document a chat sees, as it reads them, each with its path as the
+ * tools give it and the titles that path is made of: for a tool kept in a
+ * module of its own. The project itself first.
+ *
+ * @param {string} storyId
+ * @param {string|null|undefined} chatId
+ * @returns {Promise<{document: Document, path: string, titles: string[]}[]>}
+ */
+export async function documentsForChat(storyId, chatId) {
+  const { api, sees } = await open(storyId, chatId)
+  return visibleDocuments(api, storyId, sees).map(document => ({
+    document,
+    path: pathOf(api, document),
+    titles: documentTitles(api.get, document),
+  }))
 }
 
 /**
@@ -617,8 +638,9 @@ function sizeOf(document, get) {
 }
 /**
  * Everything below `parentId` that the chat can see, depth first, each with how
- * many levels down it is. A folder the chat cannot see is still walked into: a
- * chat can hide a folder and show one thing in it.
+ * many levels down it is: under a folder, or under a document that holds
+ * others. One the chat cannot see is still walked into: a chat can hide a
+ * folder and show one thing in it.
  *
  * @param {DocumentsApi} api
  * @param {string} parentId
@@ -631,11 +653,27 @@ function entriesBelow(api, parentId, sees) {
   const walk = (/** @type {string} */ id, /** @type {number} */ depth) => {
     for (const child of api.childrenOf(id)) {
       if (sees(child)) entries.push({ document: child, depth })
-      if (child.type === 'folder') walk(child.id, depth + 1)
+      walk(child.id, depth + 1)
     }
   }
   walk(parentId, 1)
   return entries
+}
+
+/**
+ * What a read says of a document that holds others, as an import may make
+ * one: how many are under it, and where to find them. Nothing for one that
+ * holds nothing the chat can see.
+ *
+ * @param {DocumentsApi} api
+ * @param {Document} document
+ * @param {(document: Document) => boolean} sees
+ * @returns {{holds?: string}}
+ */
+function holdsNote(api, document, sees) {
+  const held = entriesBelow(api, document.id, sees).length
+  if (held === 0) return {}
+  return { holds: `${counted(held)} inside; list_documents with its path lists them.` }
 }
 
 /**
@@ -717,7 +755,7 @@ export async function projectOverview(storyId, chat, { size = true } = {}) {
 export const LISTING_LIMIT = 200
 
 const LISTING =
-  'List what the project holds, or what is under one folder: a line for each document and folder, by the full path every tool takes, with how long each document is, how many comments the user left on it, and whether they pinned it, and under it, indented, what it is about where that has been said: the user\'s summary, or a description written for you from its text by explore_documents. A folder ends in "/". Everything under the folder is listed when it fits; in a large project, a folder further down says how many it holds instead, and listing it shows them. A repository (a codebase) is one line until its own path is listed; its files are code, measured in lines.'
+  'List what the project holds, or what is under one folder: a line for each document and folder, by the full path every tool takes, with how long each document is, how many comments the user left on it, and whether they pinned it, and under it, indented, what it is about where that has been said: the user\'s summary, or a description written for you from its text by explore_documents. A folder ends in "/". A document can hold others as a folder does, an imported card\'s picture its fields or a PDF the Markdown converted from it: they are listed under it, by paths that go through it. Everything under the folder is listed when it fits; in a large project, a folder or document further down says how many it holds instead, and listing it shows them. A repository (a codebase) is one line until its own path is listed; its files are code, measured in lines.'
 
 /** The longest a listing's line on what something is about runs, in characters. */
 const ABOUT_MOST = 300
@@ -750,7 +788,7 @@ export const listDocumentsDefinition = {
         path: {
           type: 'string',
           description:
-            'The folder to list, by its path from the project root. Default "/", the whole project.',
+            'The folder to list, or the document that holds others, by its path from the project root. Default "/", the whole project.',
         },
         depth: {
           type: 'integer',
@@ -782,8 +820,8 @@ function fileKind(document) {
  * @param {DocumentsApi} api
  * @param {Document} document
  * @param {(document: Document) => import('@/utils/visibility.js').ChatMark|null} markFor
- * @param {number|null} hidden - For a folder listed without what is in it, how
- *   many entries are under it
+ * @param {number|null} hidden - For a folder, or a document that holds others,
+ *   listed without what is in it, how many entries are under it
  * @returns {string}
  */
 function listingLine(api, document, markFor, hidden) {
@@ -802,6 +840,7 @@ function listingLine(api, document, markFor, hidden) {
   const comments = document.type === 'text' ? countOpen(document.comments) : 0
   if (comments > 0) facts.push(comments === 1 ? '1 comment' : `${counted(comments)} comments`)
   if (markFor(document) === 'pinned') facts.push('pinned')
+  if (hidden) facts.push(`${counted(hidden)} inside, not listed`)
   return `${path} — ${facts.join(', ')}`
 }
 
@@ -825,12 +864,18 @@ export async function executeListDocuments(args, context) {
   const asked = typeof args?.path === 'string' && args.path.trim() ? args.path : '/'
   const folder = findByPath(api, context.storyId, asked, sees)
   if (!folder) {
-    const named = namedElsewhere(api, context.storyId, asked, sees, doc => doc.type === 'folder')
+    const named = namedElsewhere(
+      api,
+      context.storyId,
+      asked,
+      sees,
+      doc => doc.type === 'folder' || api.childrenOf(doc.id).length > 0
+    )
     return {
       error: `No folder at "${asked}". ${goesByThatName(named) || 'list_documents with no path lists the whole project.'}`,
     }
   }
-  if (folder.type !== 'folder') {
+  if (folder.type !== 'folder' && entriesBelow(api, folder.id, sees).length === 0) {
     return { error: `"${asked}" is a document, not a folder. read_document reads it.` }
   }
 
@@ -879,7 +924,7 @@ export async function executeListDocuments(args, context) {
         return `${pathOf(api, entry.document)}/ — ${describeRepository(entry.document, files)}, not listed`
       }
       let hidden = null
-      if (entry.document.type === 'folder' && entry.depth === depth) {
+      if (entry.depth === depth) {
         hidden = 0
         for (const below of entries.slice(at + 1)) {
           if (below.depth <= entry.depth) break
@@ -1018,7 +1063,7 @@ export async function executeReadDocument(args, context) {
   const { api, stored, sees, names, chatId } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
-  if (!document) return noDocument(args.path)
+  if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
   if (document.type === 'folder') {
     return { error: `"${args.path}" is a folder. list_documents lists what is in it.` }
   }
@@ -1145,7 +1190,11 @@ export async function executeReadDocument(args, context) {
     )
   }
 
-  if (!long) return withComments({ ...base, ...kind, content: text }, 0, text.length)
+  // What it holds, said with its text from the top.
+  const holding = holdsNote(api, document, sees)
+  if (!long) {
+    return withComments({ ...base, ...kind, ...holding, content: text }, 0, text.length)
+  }
 
   // A long document comes one slice at a time, the first with its top
   // sections and their links; describe_document has the whole tree.
@@ -1170,6 +1219,7 @@ export async function executeReadDocument(args, context) {
       next: slice.next,
       ...(page !== null ? { page } : {}),
       ...(slice.next === null ? { note: 'This is the end of the document.' } : {}),
+      ...(slice.from === 0 ? holding : {}),
       ...(slice.from === 0 && sections.length > 0
         ? {
             sections: sectionTree(sections, MAP_NODES),
@@ -1226,7 +1276,7 @@ export async function executeDescribeDocument(args, context) {
   const { api, sees } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
-  if (!document) return noDocument(args.path)
+  if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
   // What explore wrote of it and of its long sections, for the model, while
   // it is current.
   const digest =
@@ -1250,6 +1300,7 @@ export async function executeDescribeDocument(args, context) {
     path: pathOf(api, document),
     ...sizeOf(document, api.get),
     ...(about ? { about } : {}),
+    ...holdsNote(api, document, sees),
   }
   if (isSourceFile(api.get, document)) {
     return {
@@ -1430,7 +1481,7 @@ const resolvedNote = (changes, names) =>
  */
 function commentable(api, storyId, path, sees) {
   const document = findByPath(api, storyId, path, sees)
-  if (!document) return noDocument(path)
+  if (!document) return noDocument(path, namedElsewhere(api, storyId, path, sees))
   if (document.type === 'folder') return { error: 'A folder has no comments' }
   if (document.type === 'file') return { error: fileIsNotWritten(path) }
   return { document }
@@ -1467,7 +1518,9 @@ export async function executeListComments(args, context) {
   let documents
   if (args?.path) {
     const document = findByPath(api, context.storyId, args.path, sees)
-    if (!document) return noDocument(args.path)
+    if (!document) {
+      return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
+    }
     documents = [document]
   } else {
     documents = visibleDocuments(api, context.storyId, sees)
@@ -1792,7 +1845,7 @@ export const searchDocumentsDefinition = {
         path: {
           type: 'string',
           description:
-            'Search only under this folder (or only this document), by its path from the project root. Default: the whole project.',
+            'Search only under this folder (or only this document, and what it holds), by its path from the project root. Default: the whole project.',
         },
         query: {
           type: 'string',
@@ -2069,7 +2122,8 @@ export async function executeSearchDocuments(args, context) {
   )
 
   // A search can be kept to one folder — a repository, the notes — or to one
-  // document. The root is the whole project, the same as no path.
+  // document, with what it holds when it holds others. The root is the whole
+  // project, the same as no path.
   const scopePath = typeof args.path === 'string' ? args.path.trim().replace(/^\/+|\/+$/g, '') : ''
   if (scopePath) {
     const scope = findByPath(api, context.storyId, scopePath, sees)
@@ -2078,10 +2132,9 @@ export async function executeSearchDocuments(args, context) {
         error: `Nothing at "${args.path}" to search in. list_documents shows the folders that exist.`,
       }
     }
-    documents =
-      scope.type === 'folder'
-        ? documents.filter(document => isUnder(api, document, scope.id))
-        : documents.filter(document => document.id === scope.id)
+    documents = documents.filter(
+      document => document.id === scope.id || isUnder(api, document, scope.id)
+    )
   }
 
   /**
@@ -2243,6 +2296,14 @@ export async function executeSearchDocuments(args, context) {
 // create_document
 // ============================================================================
 
+/**
+ * What a new document is made with when it is to be kept as written.
+ *
+ * @param {boolean} plain
+ * @returns {Partial<Document>}
+ */
+const plainIf = plain => (plain ? { plain: true } : {})
+
 /** @type {ToolDefinition} */
 export const createDocumentDefinition = {
   type: /** @type {const} */ ('function'),
@@ -2261,7 +2322,7 @@ export const createDocumentDefinition = {
         content: {
           type: 'string',
           description:
-            'The body text, in Markdown. To link to another document, use its path from this one, ending in .md (or a file\'s own extension, such as .pdf), with %20 for each space: from "Drafts/Chapter 1", [the cast](../Notes/Cast%20list.md).',
+            'The body text, in Markdown. To link to another document, use its path from this one, ending in .md (or a file\'s own extension, such as .pdf), with %20 for each space: from "Drafts/Chapter 1", [the cast](../Notes/Cast%20list.md). A title ending in a language\'s extension, such as .py or .csv, keeps the text exactly as written instead.',
         },
       },
       required: ['path', 'content'],
@@ -2280,8 +2341,10 @@ export async function executeCreateDocument(args, context) {
   const target = resolveNewPath(api, context.storyId, args.path, sees)
   if ('error' in target) return target
 
-  // What the model writes never makes a comment: add_comment does.
-  const body = withoutComments(args.content || '')
+  // What the model writes never makes a comment: add_comment does. A script
+  // or a table is kept as written, which a plain document holds none in.
+  const plain = isCodeName(target.title)
+  const body = plain ? args.content || '' : withoutComments(args.content || '')
   if (context.propose) {
     return propose(context, {
       documentId: '',
@@ -2292,7 +2355,7 @@ export async function executeCreateDocument(args, context) {
     })
   }
 
-  const document = api.createTextDocument(target.parentId, target.title, body)
+  const document = api.createTextDocument(target.parentId, target.title, body, plainIf(plain))
   record(context, {
     documentId: document.id,
     path: target.path,
@@ -2772,7 +2835,7 @@ export async function executeUpdateDocument(args, context) {
   const { api, sees, names } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
-  if (!document) return noDocument(args.path)
+  if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
 
   const content = typeof args.content === 'string' ? args.content : args.updates?.content
   if (typeof args.updates?.title === 'string' && typeof content !== 'string') {
@@ -2872,7 +2935,7 @@ export async function executeMoveDocument(args, context) {
   const { api, sees } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
-  if (!document) return noDocument(args.path)
+  if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
   if (document.id === rootIdFor(context.storyId))
     return { error: 'The project itself stays where it is.' }
   const from = pathOf(api, document)
@@ -2938,7 +3001,7 @@ export const deleteDocumentDefinition = {
   function: {
     name: 'delete_document',
     description:
-      "Delete a document or folder, a folder with everything in it. Once deleted it is in the project's trash, where the writer can restore it for 30 days. When the writer approves changes first, the call proposes the delete instead, and nothing is deleted until they accept it in the chat; the result says which it was. Delete only what the writer asks to go, or a document you made that is no longer wanted. A request to tidy or clean up names nothing to go: say what you would delete, and ask.",
+      "Delete a document or folder, with everything in it: a folder's, or what a document holds. Once deleted it is in the project's trash, where the writer can restore it for 30 days. When the writer approves changes first, the call proposes the delete instead, and nothing is deleted until they accept it in the chat; the result says which it was. Delete only what the writer asks to go, or a document you made that is no longer wanted. A request to tidy or clean up names nothing to go: say what you would delete, and ask.",
     parameters: {
       type: 'object',
       properties: {
@@ -2981,7 +3044,7 @@ export async function executeDeleteDocument(args, context) {
   const walk = (/** @type {string} */ id) => {
     for (const child of api.childrenOf(id)) {
       inside.push(child)
-      if (child.type === 'folder') walk(child.id)
+      walk(child.id)
     }
   }
   walk(document.id)
@@ -3150,7 +3213,7 @@ export async function executeEditDocument(args, context) {
   const { api, sees, names } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
-  if (!document) return noDocument(args.path)
+  if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
   if (document.type === 'folder') return { error: 'A folder has no content to edit' }
   if (document.type === 'file') return { error: fileIsNotWritten(args.path) }
 
@@ -3278,7 +3341,7 @@ export async function executeAppendDocument(args, context) {
   const { api, sees } = await open(context.storyId, context.chatId)
 
   const document = findByPath(api, context.storyId, args.path, sees)
-  if (!document) return noDocument(args.path)
+  if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
   if (document.type === 'folder') return { error: 'A folder has no content to append to' }
   if (document.type === 'file') return { error: fileIsNotWritten(args.path) }
 
@@ -3339,7 +3402,12 @@ export async function applyProposal(storyId, edit) {
   if (edit.tool === 'create_document') {
     const target = resolveNewPath(api, storyId, edit.path, sees)
     if ('error' in target) return target
-    const document = api.createTextDocument(target.parentId, target.title, edit.new)
+    const document = api.createTextDocument(
+      target.parentId,
+      target.title,
+      edit.new,
+      plainIf(isCodeName(target.title))
+    )
     if (typeof edit.summary === 'string')
       store.updateDocument(document.id, { summary: edit.summary })
     return { documentId: document.id, path: target.path, old: '', new: document.content || '' }

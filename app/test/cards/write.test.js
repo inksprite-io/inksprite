@@ -7,6 +7,7 @@ import { useDocumentsStore } from '@/stores/documentsStore'
 import { useVersionsStore } from '@/stores/versionsStore'
 import { clearDocumentInstances } from '@/composables/useDocuments'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
+import { isCard } from '@/cards/chat.js'
 
 vi.mock('@/stores/db', () => ({
   default: {
@@ -62,7 +63,7 @@ describe('cards/write', () => {
     })
 
   describe('writeCard', () => {
-    it('writes the card as a folder of documents', async () => {
+    it('writes a card from a JSON file as a folder of documents', async () => {
       const written = await writeCard(STORY, card({ personality: 'Blunt.', scenario: 'The road.' }))
 
       expect(titlesUnder(written.folderId)).toEqual([
@@ -77,6 +78,24 @@ describe('cards/write', () => {
         kind: 'card',
         title: 'Elara',
       })
+    })
+
+    it('writes a card that came in a picture as the picture, holding its documents', async () => {
+      const png = new Blob(['png'], { type: 'image/png' })
+      const written = await writeCard(STORY, card(), { portrait: png })
+
+      const made = store.getDocument(written.folderId)
+      expect(made).toMatchObject({
+        type: 'file',
+        kind: 'card',
+        title: 'Elara',
+        mime: 'image/png',
+        parentId: rootIdFor(STORY),
+      })
+      expect(isCard(made)).toBe(true)
+      expect(db.files.put).toHaveBeenCalledWith({ id: made.id, storyId: STORY, blob: png })
+      expect(titlesUnder(made.id)).toEqual(['Description', 'Greeting', SIDECAR_TITLE])
+      expect(written.documents).toBe(4)
     })
 
     it('writes no document for a field the card left empty', async () => {
@@ -434,16 +453,54 @@ describe('cards/write', () => {
       expect(store.getTrashedDocument(personality.id)?.trashed).toBeTypeOf('number')
     })
 
-    it('keeps the portrait the card arrived in, as it is', async () => {
+    it('writes into a card that is its picture, and adds no portrait', async () => {
       const png = new Blob(['png'], { type: 'image/png' })
       const written = await writeCard(STORY, card(), { portrait: png })
-      const portrait = byTitle(written.folderId, 'Portrait')
+      const description = byTitle(written.folderId, 'Description')
+      vi.mocked(db.files.put).mockClear()
+
+      await reimportCard(STORY, written.folderId, card({ description: 'A knight, retired.' }), {
+        portrait: png,
+      })
+
+      expect(store.getDocument(written.folderId)?.type).toBe('file')
+      expect(byTitle(written.folderId, 'Description').id).toBe(description.id)
+      expect(store.getDocument(description.id)?.content).toBe('A knight, retired.')
+      expect(titlesUnder(written.folderId)).not.toContain('Portrait')
+      expect(db.files.put).not.toHaveBeenCalled()
+    })
+
+    it('keeps a card folder imported before as a folder, and its portrait as it is', async () => {
+      const png = new Blob(['png'], { type: 'image/png' })
+      const written = await writeCard(STORY, card())
+      const portrait = store.createDocument({
+        storyId: STORY,
+        parentId: written.folderId,
+        type: 'file',
+        title: 'Portrait',
+        kind: 'portrait',
+        mime: 'image/png',
+        size: 3,
+      })
       vi.mocked(db.files.put).mockClear()
 
       await reimportCard(STORY, written.folderId, card(), { portrait: png })
 
-      expect(byTitle(written.folderId, 'Portrait').id).toBe(portrait.id)
+      expect(store.getDocument(written.folderId)?.type).toBe('folder')
+      expect(byTitle(written.folderId, 'Portrait')?.id).toBe(portrait.id)
       expect(db.files.put).not.toHaveBeenCalled()
+    })
+
+    it('gives a card folder with no portrait the picture it is re-imported from', async () => {
+      const png = new Blob(['png'], { type: 'image/png' })
+      const written = await writeCard(STORY, card())
+
+      await reimportCard(STORY, written.folderId, card(), { portrait: png })
+
+      const portrait = byTitle(written.folderId, 'Portrait')
+      expect(portrait).toMatchObject({ type: 'file', kind: 'portrait', mime: 'image/png' })
+      expect(db.files.put).toHaveBeenCalledWith({ id: portrait.id, storyId: STORY, blob: png })
+      expect(store.getDocument(written.folderId)?.type).toBe('folder')
     })
 
     it('refuses a folder that is not a card', async () => {
@@ -453,7 +510,7 @@ describe('cards/write', () => {
         type: 'folder',
         title: 'Notes',
       })
-      await expect(reimportCard(STORY, folder.id, card())).rejects.toThrow('card folder')
+      await expect(reimportCard(STORY, folder.id, card())).rejects.toThrow('Only a card')
     })
   })
 })

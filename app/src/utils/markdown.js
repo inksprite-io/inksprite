@@ -25,10 +25,18 @@
  * A lone newline is a line break, not CommonMark's soft wrap. What is rendered
  * here is shown where it was typed — a chat message, a model's reply, a
  * document — and a writer who ended a line meant it to end there.
+ *
+ * Math is TeX, as models write it: `$$…$$` or `\[…\]` for a formula set on
+ * its own, `$…$` or `\(…\)` for one in a sentence, typeset by `utils/math.js`.
+ * A dollar is money as often as it is math, so a single one opens a formula
+ * only as Pandoc has it: something other than a space straight after it, and
+ * a closing one with no space before it and no digit after. "$5 and $10" is
+ * two prices. Where a formula has nothing to show, it stays as it was written.
  */
 
 import { Marked } from 'marked'
 import he from 'he'
+import { typesetMath } from './math.js'
 
 /** What a link in a story is allowed to be. Everything else is not a link. */
 const SAFE_SCHEMES = new Set(['http', 'https', 'mailto'])
@@ -61,6 +69,88 @@ function isSafeUrl(href) {
   return !scheme || SAFE_SCHEMES.has(scheme[1].toLowerCase())
 }
 
+/** A formula's TeX: anything up to its closing delimiter, but not past a blank line. */
+const TEX = String.raw`((?:(?!\n[ \t]*\n)[\s\S])+?)`
+
+/** Display math, in either of its delimiters. */
+const DISPLAY = String.raw`\$\$${TEX}\$\$|\\\[${TEX}\\\]`
+
+/** A formula with lines of its own, from the start of one to the end of another. */
+const MATH_BLOCK = new RegExp(String.raw` {0,3}(?:${DISPLAY})[ \t]*(?:\n|$)`, 'y')
+
+/**
+ * A formula in a sentence, by its delimiters, the display ones first: `$$`
+ * would otherwise read as an empty `$…$`. A single dollar keeps to one line.
+ *
+ * @type {{pattern: RegExp, display: boolean}[]}
+ */
+const MATH_INLINE = [
+  { pattern: new RegExp(`^(?:${DISPLAY})`), display: true },
+  { pattern: new RegExp(String.raw`^\\\(${TEX}\\\)`), display: false },
+  { pattern: /^\$(?![\s$])((?:\\.|[^\\$\n])+?)(?<!\s)\$(?!\d)/, display: false },
+]
+
+/**
+ * A formula token, or nothing when there is no TeX between the delimiters.
+ *
+ * @param {string} type
+ * @param {RegExpExecArray|null} match
+ * @param {boolean} display
+ */
+const mathToken = (type, match, display) => {
+  const tex = match?.slice(1).find(group => group !== undefined)
+  if (!match || !tex?.trim()) return undefined
+  return { type, raw: match[0], tex, display }
+}
+
+/**
+ * The formulas, as marked extensions: one for those with lines of their own,
+ * which stops a paragraph where it starts, and one for those in a sentence.
+ *
+ * @type {import('marked').TokenizerAndRendererExtension[]}
+ */
+const math = [
+  {
+    name: 'mathBlock',
+    level: 'block',
+    // Where a paragraph's text gives way to a formula. Marked hands over the
+    // text from its second character, so a formula only starts after a
+    // newline, and over the rest of the document, which is only looked into
+    // as far as the paragraph could go.
+    start(src) {
+      const blank = src.search(/\n[ \t]*\n/)
+      const paragraph = blank < 0 ? src : src.slice(0, blank)
+      for (const line of paragraph.matchAll(/\n(?= {0,3}(?:\$\$|\\\[))/g)) {
+        MATH_BLOCK.lastIndex = line.index + 1
+        if (MATH_BLOCK.test(src)) return line.index + 1
+      }
+      return undefined
+    },
+    tokenizer(src) {
+      MATH_BLOCK.lastIndex = 0
+      return mathToken('mathBlock', MATH_BLOCK.exec(src), true)
+    },
+    renderer: token =>
+      `${typesetMath(token.tex, true) ?? `<p>${escapeHtml(token.raw.trim())}</p>`}\n`,
+  },
+  {
+    name: 'math',
+    level: 'inline',
+    start: src => {
+      const at = src.search(/\$|\\[[(]/)
+      return at < 0 ? undefined : at
+    },
+    tokenizer(src) {
+      for (const { pattern, display } of MATH_INLINE) {
+        const token = mathToken('math', pattern.exec(src), display)
+        if (token) return token
+      }
+      return undefined
+    },
+    renderer: token => typesetMath(token.tex, token.display) ?? escapeHtml(token.raw),
+  },
+]
+
 /**
  * The one reader everything goes through.
  *
@@ -70,6 +160,7 @@ function isSafeUrl(href) {
  */
 const reader = new Marked({
   breaks: true,
+  extensions: math,
   renderer: {
     html: ({ text }) => escapeHtml(text),
 

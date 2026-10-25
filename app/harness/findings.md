@@ -1996,3 +1996,69 @@ write through the editor does that to a padded table; it is not the
 delete's.
 
 GLM cost $1.32 for the lot: under a cent a run, four for a tidy.
+
+## Documents that hold others (24 Oct 2026, GLM 5.2 and a Gemma 4 31B)
+
+Scenario `held-find` on fixture `held`: a card's picture holding its
+description and scenario, a PDF of house rules holding the Markdown
+converted from it, and a chapter holding its two scenes
+(`.llm/nested_documents_design.md`, step 2). Five turns: what the card says
+the character wants, a number the rules give only by doubling another, a
+detail from one scene, an edit to the card's description, and the chapter's
+scenes.
+
+**Found by path, through the document.** 7 runs on GLM 5.2 and 3 on
+`sprinkle-gemma-4-31b`: 107 of 108 checks and 36 of 36. Every listing put
+what a document holds under it by paths that go through it, and the models
+read them by those paths, calling them "sub-documents of the Wren card" and
+"under Chapter 1" unprompted. The one miss was a scene's detail answered
+from a search two turns before, the "answers from what it has" pattern of
+the findable runs, not the nesting.
+
+**One path dropped the document it went through.** In one GLM run the model
+had "Rules/House rules/House rules (Markdown)" from a search and asked for
+"Rules/House rules (Markdown)", as if the repeated name were a slip, and
+was told only that nothing was there. A read, a description, an edit, an
+append and a move now say where something by the missed name is, as a
+delete did already; 3 runs after it had no path misses. The converted
+copy's title, said twice in its path under its source, is the likeliest to
+draw this, which bears on step 6.
+
+**Nothing changed without them.** `findable-design` on GLM 5.2: 15 of 15,
+no tool errors, no path misses.
+
+**From Python (`held-python`).** The same fixture, read from `run_python`,
+which the harness now offers as the desktop app does (`desktop.js`, with
+`/project` made by the app's own `projectForPython`). Four turns: the words
+in the chapter's own text and in each scene, which of the card's fields
+mention her mother, which page of the PDF's text gives the night shift, and
+how often a phrase appears in each document under the manuscript. Four
+rounds, 18 runs on GLM 5.2 and 16 on `sprinkle-gemma-4-31b`.
+
+- What a document holds, and its own text, found by walking: right on the
+  first try in every run that walked (`Chapter 1/Chapter 1` read as the
+  chapter's own text, unprompted, "the framing text").
+- The PDF's text beside a document that holds others was the one path
+  missed: `/project/Rules/House rules.txt`, the tools' path with `.txt`
+  added, on the first try in 2 of the 3 GLM runs that went straight for it
+  (the third added `.md` to the copy's path) and in 3 of 3 Gemma runs. Each
+  found it by walking, in 1 to 8 more calls.
+- A worked example in the description (a PDF holding a note, with its
+  three paths) took GLM's first-try misses to 1 of 5, but that one added
+  the example's `.pdf`, and Gemma took the example's `.txt` for every
+  text's, trying `Arrival.txt`. Out again, for a plain clause: "and a
+  file's text beside it in there too".
+- What did work: a `note` on a run that was refused a path, when the path
+  is a document that holds others taken by the tools' path, its text so, or
+  either with `.md` added. In the last two rounds it came back 12 times,
+  and every next call had the path right. It reads what the code printed as
+  well: Gemma caught `IsADirectoryError` itself and printed it, and with no
+  note took 6 calls to find the chapter's text.
+- Last round: GLM 59 of 60 (the miss a turn that searched instead of
+  running Python), Gemma 60 of 60.
+
+Not about the nesting: GLM mostly reads with `read_document` and pastes the
+text into the code, which the description asks it not to, harmless at these
+sizes; and both models once or twice asked `read_document` for
+`Rules/House rules.txt`, Python's name for the PDF's text, and read the PDF
+on the next call.

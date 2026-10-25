@@ -18,6 +18,13 @@
  * next free one, "Chapter 3 (2)". The fixes depend on the rows alone, so two
  * devices that see the same tree make the same ones, and their merge agrees.
  *
+ * A project shared with only some of its documents hides the others from
+ * those it is shared with (`hiddenDocuments`), never a folder on the way to
+ * something shared: a friend's device would take the document for one whose
+ * folder is gone. A document that holds others is never on the way, since
+ * its own text and file would go with it: what is under one goes only with
+ * it.
+ *
  * Design: `.llm/sync_design.md`, "Merging".
  */
 
@@ -104,6 +111,37 @@ export function treeFixes(documents, storyId, now) {
     }
   }
   return [...fixed.values()]
+}
+
+/**
+ * The documents of a project shared with only some of them that are hidden
+ * from the others: those unshared, but for the root and the folders on the
+ * way to something shared, which go with it so that the tree holds together
+ * on the others' devices; and what is under an unshared document, which
+ * isn't a folder and so can't go only on the way.
+ *
+ * @param {Document[]} documents - The project's, in the trash and out of it
+ * @param {string} storyId
+ * @returns {Set<string>} By id
+ */
+export function hiddenDocuments(documents, storyId) {
+  /** @type {Map<string, Document>} */
+  const byId = new Map(documents.map(document => [document.id, document]))
+  const shown = new Set([rootIdFor(storyId)])
+  for (const document of documents) {
+    if (document.unshared) continue
+    /** @type {Set<string>} */
+    const way = new Set()
+    let held = false
+    for (let at = document; at && !shown.has(at.id) && !way.has(at.id); ) {
+      held = Boolean(at.unshared) && at.type !== 'folder'
+      if (held) break
+      way.add(at.id)
+      at = byId.get(at.parentId)
+    }
+    if (!held) for (const id of way) shown.add(id)
+  }
+  return new Set(documents.filter(document => !shown.has(document.id)).map(document => document.id))
 }
 
 /**

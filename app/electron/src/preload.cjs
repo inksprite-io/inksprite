@@ -32,6 +32,24 @@ ipcRenderer.on('signIn:back', (_, id, query) => {
 })
 
 /**
+ * What fetches a file still only on the sync server, for each session whose
+ * run is under way: the page's, which says where the file is in the library
+ * once it is there (`bridge.js`).
+ * @type {Map<string, (id: string) => Promise<string|null>>}
+ */
+const fetchers = new Map()
+
+ipcRenderer.on('python:fetchFile', async (_, session, request, id) => {
+  let file = null
+  try {
+    file = (await fetchers.get(session)?.(id)) ?? null
+  } catch {
+    // Not fetched: Python's read of it fails.
+  }
+  ipcRenderer.send('python:fetched', request, file)
+})
+
+/**
  * What the page does before its window closes: saves. Done or not, the
  * window is told, and goes (`closing.js`).
  * @type {(() => Promise<void>)|null}
@@ -93,6 +111,16 @@ contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', {
 
   beforeClosing: save => {
     beforeClosing = save
+  },
+
+  python: {
+    run(session, code, options, fetchFile) {
+      if (fetchFile) fetchers.set(session, fetchFile)
+      return call('python:run', session, code, options ?? {}).finally(() => {
+        if (fetchers.get(session) === fetchFile) fetchers.delete(session)
+      })
+    },
+    stop: session => ipcRenderer.send('python:stop', session),
   },
 
   library: {

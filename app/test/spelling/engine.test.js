@@ -78,8 +78,8 @@ describe('lintTexts', () => {
 
   it('gives grammar a hash to ignore it by, and spelling none', async () => {
     hyphenated = await configure(linter, { dialect: 'american', words: [] })
-    const lints = await lintsOf('He go home and walkd.')
-    const grammar = lints.find(lint => lint.text === 'go')
+    const lints = await lintsOf('She ate a apple and walkd.')
+    const grammar = lints.find(lint => lint.text === 'a')
     const spelling = lints.find(lint => lint.text === 'walkd')
     expect(grammar?.hash).toMatch(/^[0-9a-z]+$/)
     expect(spelling?.hash).toBeUndefined()
@@ -146,9 +146,52 @@ describe('configure', () => {
       'I would argue that she knew, so to speak.',
       'He bought bread, cheese and wine.',
       '“I went thru it, tho,” the kid said. “It’s legit.”',
+      '“Um, I was, uh, out,” she said. Instead he said nothing. “No thanks.”',
+      'It was very cold, and it was not uncommon. OK, that that was it.',
+      'She left.  Then it rained... She was 5\'8" and lived at 555-0142.',
     ]) {
       expect(await lintsOf(text)).toEqual([])
     }
+  })
+
+  it('leaves alone what Harper is mostly wrong about in fiction', async () => {
+    hyphenated = await configure(linter, { dialect: 'american', words: [] })
+    for (const text of [
+      'She strode across the field. He was sure it was gone.',
+      '“Who’s there?” He let out a breath. “Sit down, you two.”',
+      'The goats hopped down from the cart by the trash can, and it was back to normal.',
+      '“We’ll find out tomorrow,” she said.',
+    ]) {
+      expect(await lintsOf(text)).toEqual([])
+    }
+  })
+
+  it('leaves a speech that runs on into the next paragraph alone', async () => {
+    hyphenated = await configure(linter, { dialect: 'american', words: [] })
+    expect(await lintsOf('“I went down to the river, and the boat was gone.')).toEqual([])
+    expect(await lintsOf('“Yes,” she said. “And then I went on.')).toEqual([])
+    expect(await lintsOf('"Yes," she said. "And then I went on.')).toEqual([])
+    expect(await flagged('She said “no and left.')).toEqual(['“'])
+  })
+
+  it('knows a title’s full stop doesn’t end the sentence', async () => {
+    hyphenated = await configure(linter, { dialect: 'american', words: [] })
+    expect(await lintsOf('Mr. and Mrs. Hale came, and Capt. and Dr. Hale.')).toEqual([])
+    expect(await flagged('The cat sat. the dog ran.')).toEqual(['the'])
+  })
+
+  it('reads an apostrophe after a word as a letter dropped', async () => {
+    hyphenated = await configure(linter, { dialect: 'american', words: [] })
+    expect(await lintsOf("“Ma an’ Pa was goin’ home, an' nothin' was wrong.”")).toEqual([])
+    expect(await flagged('“He was fyin’ home.”')).toEqual(['fyin'])
+    expect(await flagged('“He was goin home.”')).toEqual(['goin'])
+    expect(await flagged('She ate a apple.')).toEqual(['a'])
+  })
+
+  it('lets a word be repeated where it is grammar', async () => {
+    hyphenated = await configure(linter, { dialect: 'american', words: [] })
+    expect(await lintsOf('She had had enough. Had had, she said.')).toEqual([])
+    expect(await flagged('She went to the the shop.')).toEqual(['the the'])
   })
 
   it('knows a hyphenated word it is given, and not its parts alone', async () => {

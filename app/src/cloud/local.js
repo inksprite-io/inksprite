@@ -237,6 +237,8 @@ export function appLocal({ syncsForApp }) {
       return { story, documents, chats, messages, files, versions }
     },
 
+    versions: storyId => storage.ofStory('versions', storyId),
+
     async tree(storyId) {
       if (!documentsStore.isStoryLoaded(storyId)) return storage.documents(storyId)
       return [...documentsStore.documents.values(), ...documentsStore.trash.values()].filter(

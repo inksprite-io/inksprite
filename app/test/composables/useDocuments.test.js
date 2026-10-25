@@ -217,6 +217,34 @@ describe('useDocuments', () => {
         expect(store.getDocument('sc_1')).not.toBeNull()
       })
 
+      it('keeps a created document that has come to hold others', () => {
+        const created = { ...edit, tool: 'create_document', old: '', new: 'Snow fell.' }
+        store.createDocument({ storyId: 'story_1', parentId: 'sc_1', type: 'text', title: 'Copy' })
+        expect(api.revertEdit(created)).toBe(false)
+        expect(store.getDocument('sc_1')).not.toBeNull()
+      })
+
+      it('puts a document moved out of the one that held it back into it', () => {
+        const chapter = api.createTextDocument('manuscript_story_1', 'Chapter')
+        const scene = store.createDocument({
+          storyId: 'story_1',
+          parentId: chapter.id,
+          type: 'text',
+          title: 'Scene',
+        })
+        const moved = {
+          ...edit,
+          documentId: scene.id,
+          tool: 'move_document',
+          old: 'manuscript/Chapter/Scene',
+          new: 'manuscript/Scene',
+        }
+        api.moveInto('manuscript_story_1', scene.id)
+
+        expect(api.revertEdit(moved)).toBe(true)
+        expect(api.get(scene.id)?.parentId).toBe(chapter.id)
+      })
+
       it('removes a folder a tool made once it is empty, and keeps one with something in it', () => {
         const folder = api.createFolder('manuscript_story_1', 'Design')
         const made = { ...edit, documentId: folder.id, tool: 'create_folder', old: '', new: '' }
@@ -1091,6 +1119,21 @@ describe('useDocuments', () => {
 
       expect(api.get(chapter.id)?.parentId).toBe('manuscript_story_1')
       expect(api.trashed.value).toEqual([])
+    })
+
+    it('restores a document into the document that held it', () => {
+      const pdf = api.createTextDocument('notes_story_1', 'Rulebook')
+      const copy = store.createDocument({
+        storyId: 'story_1',
+        parentId: pdf.id,
+        type: 'text',
+        title: 'Rulebook (Markdown)',
+      })
+      api.trash(copy.id)
+
+      api.restore(copy.id)
+
+      expect(api.get(copy.id)?.parentId).toBe(pdf.id)
     })
 
     it('restores to the top of the project when the folder it was in is in the trash too', () => {

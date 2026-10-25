@@ -25,6 +25,7 @@ import {
 } from '@/ai/profiles/index.js'
 import { ownPrompt, skillPrompt } from '@/ai/skills/index.js'
 import { webForChat } from '@/web/config.js'
+import { pythonForChat, pythonProfiles, setPythonProfile } from '@/ai/tools/python.js'
 import { serversForChat } from '@/mcp/servers.js'
 
 /** @typedef {import('../types/models.js').Chat} Chat */
@@ -185,7 +186,7 @@ export function useChatSettings(storyId, chatId) {
 
   /**
    * Whether this chat runs differently from its profile: its prompt, a skill's
-   * wording, its tools, the web or a server, or its author's note. What Save
+   * wording, its tools, the web, Python or a server, or its author's note. What Save
    * to profile would write.
    */
   const changed = computed(() => {
@@ -202,6 +203,7 @@ export function useChatSettings(storyId, chatId) {
       !sameSet(own.disabledToolGroups, settings.disabledToolGroups) ||
       (note.value || '') !== (settings.rules || '') ||
       webForChat(own, id) !== webForChat(null, id) ||
+      pythonForChat(own, id) !== pythonForChat(null, id) ||
       (Array.isArray(own.mcpServers) && !sameSet(own.mcpServers, listedServers()))
     )
   })
@@ -229,8 +231,8 @@ export function useChatSettings(storyId, chatId) {
   }
 
   /**
-   * List a profile with the web search setup and each server as this chat
-   * uses them: its own choice where it made one, and the profile it is on
+   * List a profile with the web search setup, Python and each server as this
+   * chat uses them: its own choice where it made one, and the profile it is on
    * where it did not. For a copy, so new chats on it start as this one runs;
    * and for a save, so the profile takes the chat's choice.
    * @param {string} id - The profile to list
@@ -241,6 +243,8 @@ export function useChatSettings(storyId, chatId) {
     const listed = webSearch.setup.value.profiles || []
     const web = typeof own.web === 'boolean' ? own.web : listed.includes(from)
     if (web !== listed.includes(id)) webSearch.setProfile(id, web)
+    const python = typeof own.python === 'boolean' ? own.python : pythonProfiles().includes(from)
+    if (python !== pythonProfiles().includes(id)) setPythonProfile(id, python)
     for (const server of mcp.servers.value) {
       const on = Array.isArray(own.mcpServers)
         ? own.mcpServers.includes(server.id)
@@ -287,7 +291,13 @@ export function useChatSettings(storyId, chatId) {
     if (!source.readOnly) {
       profilesApi.updateProfile(source.id, { settings: chatAsProfile() })
       listAs(source.id)
-      update({ prompt: undefined, skills: undefined, web: undefined, mcpServers: undefined })
+      update({
+        prompt: undefined,
+        skills: undefined,
+        web: undefined,
+        python: undefined,
+        mcpServers: undefined,
+      })
       return
     }
 

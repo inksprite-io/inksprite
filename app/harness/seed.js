@@ -17,7 +17,10 @@
  *     }
  *
  * Folders on a path are created as they are met, unordered unless the fixture
- * lists them. A character card goes through the app's own importer and lands
+ * lists them. A path through a document already listed puts what follows
+ * under that document, as an import puts a card's fields under its picture.
+ * An entry with a `mime` is an imported file, its text what was read out of
+ * it, with no bytes. A character card goes through the app's own importer and lands
  * as the folder of documents an import leaves — description, examples,
  * greetings, the hidden rules and sidecar — under the last segment of its path.
  * Each call builds a new story, so runs never see each other's edits.
@@ -49,6 +52,10 @@ import { entriesOnDisk } from './disk.js'
  * @property {string} [content] - The content inline, when there is no file
  * @property {string} [summary]
  * @property {boolean} [folder] - A folder rather than a text document
+ * @property {string} [mime] - An imported file rather than a text document, of
+ *   this type: `application/pdf`, `image/png`. Its text is what was read out
+ *   of it, `[p.N]` markers and all; a picture has none
+ * @property {number} [pages] - Files only: how many pages
  * @property {boolean} [ordered] - Folders only: children keep their order
  * @property {string} [card] - A character card, PNG or JSON, relative to project.json;
  *   imported as the app imports one, into a folder titled by the path's last segment
@@ -152,9 +159,11 @@ export async function seedProject(fixtureDir) {
     const document = documents.createDocument({
       storyId: story.id,
       parentId,
-      type: 'text',
+      type: entry.mime ? 'file' : 'text',
       title,
       content: content.trim(),
+      ...(entry.mime ? { mime: entry.mime, size: content.length } : {}),
+      ...(typeof entry.pages === 'number' ? { pages: entry.pages } : {}),
     })
     if (entry.summary) documents.updateDocument(document.id, { summary: entry.summary })
     byPath.set(entry.path, document.id)

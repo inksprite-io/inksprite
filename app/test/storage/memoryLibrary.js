@@ -8,6 +8,8 @@
  * a file written again is not as it was seen.
  */
 
+import { isOurs } from '../../electron/src/library.js'
+
 /** @typedef {import('@/storage/library.js').LibraryDisk} LibraryDisk */
 /** @typedef {import('@/storage/library.js').LibraryOp} LibraryOp */
 
@@ -78,9 +80,13 @@ export function memoryLibrary() {
       /** @type {Set<string>} */
       const closed = new Set()
       const prefix = `${dir}/`
-      const opens = (/** @type {string} */ folder) =>
-        files.has(`${prefix}${folder}/.folder.md`) ||
-        files.has(`${prefix}${folder}/.repository.json`)
+      const opens = (/** @type {string} */ folder) => {
+        const there = `${prefix}${folder}/`
+        const inside = [...files.keys()]
+          .filter(path => path.startsWith(there) && !path.slice(there.length).includes('/'))
+          .map(path => path.slice(there.length))
+        return isOurs(folder.slice(folder.lastIndexOf('/') + 1), inside)
+      }
       for (const [path, file] of files) {
         if (!path.startsWith(prefix)) continue
         const relative = path.slice(prefix.length)

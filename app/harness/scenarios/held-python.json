@@ -1,0 +1,31 @@
+{
+  "fixture": "held",
+  "python": true,
+  "previews": ["python"],
+  "messages": [
+    {
+      "text": "Use Python to count the words in chapter 1: its own text, and each of its scenes.",
+      "calls": ["run_python"],
+      "mentions": ["\\b(4[0-4]|6[0-3])\\b", "\\b80\\b", "\\b90\\b"],
+      "noWrites": true
+    },
+    {
+      "text": "With Python, which of the fields on Wren's card mention her mother?",
+      "calls": ["run_python"],
+      "mentions": ["Description", "Scenario"],
+      "noWrites": true
+    },
+    {
+      "text": "Using Python on the house rules PDF's text, which page says how many guards are on the night shift?",
+      "calls": ["run_python"],
+      "mentions": ["\\b(page|p\\.?)\\W*2\\b"],
+      "noWrites": true
+    },
+    {
+      "text": "With Python, count how many times \"counting house\" appears in each document under Manuscript.",
+      "calls": ["run_python"],
+      "mentions": ["Chapter 1", "\\b(2|two|twice)\\b"],
+      "noWrites": true
+    }
+  ]
+}

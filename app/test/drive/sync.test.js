@@ -1,6 +1,6 @@
 /* global Response */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { checkSendable, syncDoc } from '@/drive/sync.js'
+import { syncDoc } from '@/drive/sync.js'
 import { spliceInside } from '@/drive/suggestions.js'
 import { applyBatch, applyRequests } from '@/drive/apply.js'
 import { readDoc } from '@/drive/convert.js'
@@ -325,25 +325,33 @@ describe('syncDoc', () => {
     expect(text(state.doc)).toBe(serializeMarkdown(next.doc))
   })
 
-  it('says, before a Doc is made, what of a document a new Doc could not take', () => {
-    expect(() => checkSendable(parseMarkdown('The ferry left at six.\n\n- a\n  - b'))).toThrow(
-      new DriveError('Sync can’t send a list item’s new kind or nesting to Google Docs yet.')
+  it('leaves here what the Doc can’t take yet, and sends the rest', async () => {
+    const start = docOf(
+      [item('Ropes', 'l'), item('Oars', 'l'), para('Gulls came in.'), para('It rained.')],
+      { lists: { l: bulleted() } }
     )
-    expect(() =>
-      checkSendable(parseMarkdown('# The crossing\n\nAt six.\n\n| a | b |\n| - | - |\n| 1 | 2 |'))
-    ).not.toThrow()
-  })
-
-  it('stops before writing anything the Doc cannot take yet', async () => {
-    const start = paragraphs('The ferry left at six.')
     const { state } = google(start)
-    await expect(
-      sync({
-        base: baseOf(start),
-        mine: 'The ferry left at six.[^1]\n\n[^1]: Or so they said.',
-      })
-    ).rejects.toThrow(new DriveError('Sync can’t add or remove footnotes in Google Docs yet.'))
-    expect(state.writes).toEqual([])
+    // A list inside a list, which the writer can't send yet, and words it can.
+    const mine = '- Ropes\n  - Oars\n\nGulls came in.\n\nIt rained hard.'
+    const first = await sync({ base: baseOf(start), mine })
+    expect(first.left).toEqual(['list'])
+    expect(text(state.doc)).toBe('- Ropes\n- Oars\n\nGulls came in.\n\nIt rained hard.')
+    expect(serializeMarkdown(first.doc)).toBe(as(mine))
+    // Tried again, and still left: nothing more is written.
+    const writes = state.writes.length
+    const second = await sync({ base: { ...baseOf(state.doc), ...first.base }, mine })
+    expect(second).toMatchObject({ sent: 0, changed: false, left: ['list'] })
+    expect(state.writes).toHaveLength(writes)
+
+    // A footnote put in, alone, sends nothing and stops nothing.
+    const plain = paragraphs('The ferry left at six.')
+    const { state: other } = google(plain)
+    const noted = await sync({
+      base: baseOf(plain),
+      mine: 'The ferry left at six.[^1]\n\n[^1]: Or so they said.',
+    })
+    expect(noted.left).toEqual(['footnote'])
+    expect(other.writes).toEqual([])
   })
 
   it('leaves a Doc of several tabs alone when the link names none of them', async () => {
@@ -1137,27 +1145,67 @@ describe('syncDoc, the Doc’s suggestions', () => {
     expect(third).toMatchObject({ sent: 0, changed: false })
   })
 
-  it('stops, writing nothing, where words of one in pieces apart were changed here', async () => {
-    const doc = docOf([
-      para([
-        run('The '),
-        run('old ', {}, { suggestedDeletionIds: ['suggest.d'] }),
-        run('ferry left, as the '),
-        run('old ', {}, { suggestedDeletionIds: ['suggest.d'] }),
-        run('timetable said.'),
+  it('rejects in the Doc one changed here it can’t be given, and sends the words here as the writer’s', async () => {
+    const doc = {
+      ...docOf([
+        para([
+          run('The '),
+          run('old ', {}, { suggestedDeletionIds: ['suggest.d'] }),
+          run('ferry left, as the '),
+          run('old ', {}, { suggestedDeletionIds: ['suggest.d'] }),
+          run('timetable said.'),
+        ]),
       ]),
-    ])
+      suggestions: [
+        {
+          suggestionId: 'suggest.d',
+          status: 'OPEN',
+          headPost: { postId: 'post.d.0', author: ANA, createTime: '2026-10-01T00:00:00Z' },
+        },
+      ],
+    }
     const { state } = google(doc)
     const first = await sync({ base: baseOf(doc), mine: text(doc) })
     const [id] = Object.keys(first.threads)
+    // In two pieces apart here, one of them changed: no stretch of the Doc's to rewrite.
     const typed = serializeMarkdown(first.doc).replace(
       `{--old --}{>>${id}<<}ferry`,
       `{--olde --}{>>${id}<<}ferry`
     )
-    await expect(
-      sync({ base: next(state, first), mine: typed, threads: first.threads })
-    ).rejects.toThrow('A suggested edit from the Doc was changed here.')
-    expect(state.writes).toEqual([])
+    const second = await sync({ base: next(state, first), mine: typed, threads: first.threads })
+
+    // Hers rejected there, and settled so here.
+    const listed = Object.fromEntries(
+      state.doc.suggestions.map(each => [each.suggestionId, each.status])
+    )
+    expect(listed['suggest.d']).toBe('REJECTED')
+    expect(second.threads[id]).toMatchObject({
+      status: 'resolved',
+      suggestion: { settled: 'rejected', name: 'Ana Marsh' },
+    })
+    // The words here are the writer's suggestion there, and here.
+    expect(text(state.doc)).toBe('The olde ferry left, as the old timetable said.')
+    const open = state.doc.suggestions.filter(each => each.status === 'OPEN')
+    expect(open.every(each => each.headPost.author.me)).toBe(true)
+    expect(
+      readDoc(state.doc, { accepted: new Set(open.map(each => each.suggestionId)) }).markdown
+    ).toBe('The ferry left, as the timetable said.')
+    const mine = Object.entries(second.threads).filter(
+      ([other, thread]) => other !== id && thread.status === 'open'
+    )
+    expect(mine.length).toBeGreaterThan(0)
+    expect(mine.every(([, thread]) => thread.suggestion.author === 'writer')).toBe(true)
+    expect(
+      serializeMarkdown(
+        seeing(
+          second.doc,
+          mine.map(([other]) => other)
+        ).doc
+      )
+    ).toBe('The ferry left, as the timetable said.')
+    expect(serializeMarkdown(seeing(second.doc, []).doc)).toBe(
+      'The olde ferry left, as the old timetable said.'
+    )
   })
 
   it('keeps an empty list item and an empty heading here, and writes nothing for them', async () => {
@@ -1244,8 +1292,6 @@ describe('syncDoc, the Doc’s suggestions', () => {
 
   it('puts a document with the model’s suggestions into a new Doc, they as suggestions', async () => {
     const mine = 'The ferry left at {--six--}{>>sabcd1<<}{++seven++}{>>sabcd1<<}.\n\nIt rained.'
-    // Asked of the text as it stands, before the Doc is made.
-    expect(() => checkSendable(parseMarkdown(mine))).not.toThrow()
     const { state } = google(docOf([para('')]))
     const first = await sync({ mine, threads: { sabcd1: models('six', 'seven') } })
     expect(text(state.doc)).toBe('The ferry left at six.\n\nIt rained.')
@@ -1624,8 +1670,8 @@ describe('syncDoc, the Doc’s suggestions at random, sync after sync', () => {
       settledThere: 0,
       settledHere: 0,
       typed: 0,
-      stuck: 0,
       modelled: 0,
+      left: 0,
     }
 
     for (let round = 0; round < 60; round++) {
@@ -1687,20 +1733,17 @@ describe('syncDoc, the Doc’s suggestions at random, sync after sync', () => {
         if (untouched(changed, mine)) mine = changed
       }
       // And types into one of the Doc's suggestions.
-      const untyped = mine
       const typed = next() < 0.6 ? typedInto(mine, next) : null
       if (typed) {
         mine = typed
         counts.typed++
       }
       // The model suggests an edit here.
-      let modelled = false
       if (next() < 0.3) {
         const made = modelSuggests(mine, threads, next, round)
         if (made) {
           ;({ mine, threads } = made)
           counts.modelled++
-          modelled = true
         }
       }
 
@@ -1713,17 +1756,6 @@ describe('syncDoc, the Doc’s suggestions at random, sync after sync', () => {
           threads,
         })
       } catch (error) {
-        // One typed into, or changed by the model's edit, that the Doc can't
-        // be given stops the sync; it is changed again otherwise.
-        if (
-          (typed || modelled) &&
-          error instanceof DriveError &&
-          /was changed here/.test(error.message)
-        ) {
-          counts.stuck++
-          mine = untyped
-          continue
-        }
         if (
           !(error instanceof DriveError) ||
           error instanceof StaleRevisionError ||
@@ -1735,9 +1767,15 @@ describe('syncDoc, the Doc’s suggestions at random, sync after sync', () => {
         continue
       }
       counts.synced++
-      mine = serializeMarkdown(result.doc)
       threads = result.threads
       base = { ...baseOf(state.doc), ...result.base }
+      // What the Doc can't take yet stays here; the writer gives it up.
+      if (result.left.length > 0) {
+        counts.left++
+        mine = result.base.markdown
+        continue
+      }
+      mine = serializeMarkdown(result.doc)
 
       // The two say the same as they stand.
       expect(as(text(state.doc)), `${said}\nas it stands`).toBe(
@@ -1780,7 +1818,7 @@ describe('syncDoc, the Doc’s suggestions at random, sync after sync', () => {
     console.log(counts)
     expect(counts.synced).toBeGreaterThan(30)
     expect(counts.suggested).toBeGreaterThan(10)
-    expect(counts.typed - counts.stuck).toBeGreaterThan(0)
+    expect(counts.typed).toBeGreaterThan(3)
   })
 
   it('does the same in a Doc of pictures, a chip, a page break, a quote, a table and a footnote', async () => {
@@ -1863,10 +1901,8 @@ describe('syncDoc, the Doc’s suggestions at random, sync after sync', () => {
         const changed = edited(mine, next)
         if (noted(changed, mine) && untouched(changed, mine)) mine = changed
       }
-      const untyped = mine
       const typed = next() < 0.6 ? typedInto(mine, next) : null
       if (typed && noted(typed, mine)) mine = typed
-      let modelled = false
       if (next() < 0.3) {
         const made = modelSuggests(mine, threads, next, round)
         // Accepted, it keeps the footnote too.
@@ -1877,7 +1913,6 @@ describe('syncDoc, the Doc’s suggestions at random, sync after sync', () => {
           )
         if (made && noted(made.mine, mine) && noted(/** @type {string} */ (accepted), mine)) {
           ;({ mine, threads } = made)
-          modelled = true
         }
       }
 
@@ -1892,14 +1927,6 @@ describe('syncDoc, the Doc’s suggestions at random, sync after sync', () => {
         })
       } catch (error) {
         if (
-          (typed || modelled) &&
-          error instanceof DriveError &&
-          /was changed here/.test(error.message)
-        ) {
-          mine = untyped
-          continue
-        }
-        if (
           !(error instanceof DriveError) ||
           error instanceof StaleRevisionError ||
           /was changed here/.test(error.message)
@@ -1909,9 +1936,13 @@ describe('syncDoc, the Doc’s suggestions at random, sync after sync', () => {
         continue
       }
       synced++
-      mine = serializeMarkdown(result.doc)
       threads = result.threads
       base = { ...baseOf(state.doc), ...result.base }
+      if (result.left.length > 0) {
+        mine = result.base.markdown
+        continue
+      }
+      mine = serializeMarkdown(result.doc)
 
       expect(words(inForm(state.doc)), `${said}\nas it stands`).toBe(
         words(as(serializeMarkdown(seeing(result.doc, []).doc)))
@@ -2012,6 +2043,8 @@ describe('syncDoc, edited at random on both sides', () => {
         if (error instanceof DriveError && !(error instanceof StaleRevisionError)) continue
         throw new Error(`round ${round}: ${error.message}\nmine:\n${mine}\ntheirs:\n${theirs}`)
       }
+      // What the Doc can't take yet stays here, and the two differ by it.
+      if (result.left.length > 0) continue
       synced++
       if (result.lost) clashed++
       const doc = serializeMarkdown(result.doc)
@@ -2204,6 +2237,7 @@ describe('syncDoc, comments at random on both sides, sync after sync', () => {
         if (error instanceof DriveError && !(error instanceof StaleRevisionError)) continue
         throw new Error(`seed ${seed} round ${round}: ${error.stack}`)
       }
+      if (result.left.length > 0) continue
       synced++
       const said = `seed ${seed} round ${round}`
       const doc = serializeMarkdown(result.doc)

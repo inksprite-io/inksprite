@@ -222,9 +222,10 @@ const STAMPED_SETTINGS = [
   // Not a profile's setting: a chat's choice of servers, cleared so the chat
   // follows the servers that list the profile it moves to.
   'mcpServers',
-  // Nor this: whether the chat searches the web, cleared so it follows the
-  // profile it moves to.
+  // Nor these: whether the chat searches the web, and whether it runs
+  // Python, cleared so it follows the profile it moves to.
   'web',
+  'python',
 ]
 
 /**

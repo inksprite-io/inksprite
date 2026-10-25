@@ -12,7 +12,8 @@
  * - **card** - A card or a book as one shape, whatever version it arrived as
  * - **write** - That shape, written into the project as documents
  * - **macros** - `{{char}}` and `{{user}}`, filled in for the chat that plays a card
- * - **chat** - A card folder read back out of the tree, for a chat to run on
+ * - **chat** - A card read back out of the tree, for a chat to run on: its folder,
+ *   or its picture holding its documents
  * - **transcript** - A SillyTavern chat file, read into a chat's worth of messages
  * - **library** - A card as the writer's library keeps it, outside any project:
  *   read from a file, described for browsing, and found by name or tag

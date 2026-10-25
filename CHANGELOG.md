@@ -6,6 +6,61 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.21
+
+Formatting from the bar under a selection, documents that hold others,
+math in the chat, a grammar checker that leaves fiction alone, and syncs
+with Google Docs that no longer stop.
+
+- Some documents hold others, as a folder does. A book you import is the
+  epub, holding its parts and chapters; a character card that came in a
+  picture is the picture, holding its parts; a Scrivener text holds the
+  texts under it in the binder; and Convert to Markdown puts its copy
+  under the file it came from. Click the arrow beside one to see what it
+  holds, and the document itself to open it. Hiding or deleting it hides
+  or deletes what it holds too. What you imported or converted before
+  keeps its shape. In the desktop app, one is a folder of its name on
+  disk, with the document inside. A device on an earlier release syncs a
+  project with one in it once it's updated.
+- Select some words, and the bar under them formats them too: Link, Bold,
+  Italic, a menu of the rest with Clear formatting, and the paragraph's
+  style, from normal text and headings to a code block, a quote or a
+  list. On a phone, the same buttons are in the bar at the bottom of the
+  screen. The quote and list keys now take a quote or a list off again.
+- Math in the chat is typeset: TeX between `$…$` in a sentence, or
+  `$$…$$` on lines of its own, in your messages and the model's. Copying
+  a formula copies its TeX.
+- The spelling and grammar checker leaves fiction alone. It no longer
+  flags what novels do on purpose: dialect such as "nothin’" and "an’",
+  speech that runs on over paragraphs, "had had", "OK", "uh" and "um",
+  three full stops, inch marks, and two spaces after a full stop. Its
+  suggestions of style and wording are gone, and so are the grammar
+  rules that were mostly wrong over published fiction, so "he go", and
+  "to" for "too", aren't caught any more.
+- A sync with a Google Doc no longer stops for what a Doc can't take
+  yet, such as a footnote added or removed, a list inside a list, or an
+  edit beside a paragraph the Doc suggests. That stays here, the rest
+  syncs, and the next sync tries it again. Sync to a new Google Doc makes
+  the Doc with what it can take. A Doc's suggestion you change here in a
+  way the Doc can't follow, such as parting its paragraph in two, is
+  rejected in the Doc, and your words go to it as a suggestion of yours.
+- A sync that puts a table in a Doc no longer turns the paragraphs after
+  it into a quote.
+- The name others see starts as your account's name, so your friend
+  code shows at once in Settings › System › Sync, and Share… never asks
+  for a name. Type another there if you'd rather your friends saw
+  something else.
+- The buttons that give one panel the other's room are named for the
+  panel they spread out: Expand editor, at the right end of the tabs, and
+  Expand chat, at the left of the chat's header.
+- A document the model makes under a code file's name, such as `odds.csv`
+  or `roll.py`, is kept exactly as written, and the plain text editor
+  colours a document with such a name as its language.
+- In the desktop app, a synced file opens the second time too, rather
+  than showing nothing once it had been downloaded.
+- Importing a character card from a picture no longer says it made one
+  document more than it did.
+
 ## v0.1.0-dev.20
 
 Sync between your devices and with friends, a trash, document versions,

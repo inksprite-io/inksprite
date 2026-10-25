@@ -112,7 +112,7 @@
       </section>
 
       <!-- Sharing: the name the people this account shares with see, and the
-           friend code they share with it by, once it has a name. -->
+           friend code they share with it by. -->
       <section v-if="profile" class="flex flex-col gap-2" data-sync-sharing>
         <label for="sync-display" class="text-xs font-medium text-surface-600 dark:text-surface-300"
           >Name others see</label
@@ -126,7 +126,7 @@
           @keydown.enter="saveDisplay"
           @blur="saveDisplay"
         />
-        <div v-if="profile.display" class="flex items-center gap-2" data-sync-friend>
+        <div class="flex items-center gap-2" data-sync-friend>
           <span class="text-xs font-medium text-surface-600 dark:text-surface-300"
             >Friend code</span
           >
@@ -496,13 +496,15 @@ async function copyCode() {
 const profile = ref(null)
 const display = ref('')
 
-/** Keep the name others see, if it changed. */
+/** Keep the name others see, if it changed; one cleared is put back. */
 async function saveDisplay() {
+  if (!profile.value) return
   const typed = display.value.trim()
-  if (!profile.value || typed === (profile.value.display ?? '')) return
+  if (!typed) display.value = profile.value.display ?? ''
+  if (!typed || typed === profile.value.display) return
   try {
     await sync.setDisplay(typed)
-    profile.value = { ...profile.value, display: typed || null }
+    profile.value = { ...profile.value, display: typed }
   } catch (error) {
     toast.error(`The name couldn't be saved. ${/** @type {Error} */ (error).message}`)
   }

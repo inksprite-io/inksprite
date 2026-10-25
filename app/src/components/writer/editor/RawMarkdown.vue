@@ -5,6 +5,7 @@
     :text="held"
     :start-at="startAt"
     :caret="api.takesCaret(documentId)"
+    :filename="api.get(documentId)?.title || ''"
     class="h-full w-full"
     @input="type"
     @blur="flush"

@@ -53,6 +53,7 @@ import { SAVE_WEB_PAGE } from '@/ai/tools/web.js'
 import { inTurn, roomFor } from '@/ai/gate.js'
 import { serversForChat } from '@/mcp/servers.js'
 import { webForChat } from '@/web/config.js'
+import { pythonForChat } from '@/ai/tools/python.js'
 import { askApproval, asksFirst, denyWaiting } from './useToolApprovals.js'
 import { useMcpServers } from './useMcpServers.js'
 import { useWebSearch } from './useWebSearch.js'
@@ -753,13 +754,17 @@ export function useAIChat(storyId, chatId) {
 
     // Timed from here, after any wait on the writer, which is not the tool's.
     // The call stops when its time is up or when the work it is part of does.
+    // One with no limit (Python, as the writer may set it) waits for the work.
     const name = toolCall.function.name
     const timeout = getToolTimeout(name) ?? TOOL_TIMEOUT_MS
     const timer = new AbortController()
-    const handle = setTimeout(
-      () => timer.abort(new DOMException(`${name} timed out after ${timeout}ms`, 'TimeoutError')),
-      timeout
-    )
+    const handle = Number.isFinite(timeout)
+      ? setTimeout(
+          () =>
+            timer.abort(new DOMException(`${name} timed out after ${timeout}ms`, 'TimeoutError')),
+          timeout
+        )
+      : undefined
     const callSignal = AbortSignal.any([signal, timer.signal])
 
     const context = {
@@ -1488,6 +1493,7 @@ export function useAIChat(storyId, chatId) {
               disabledGroups: chat?.disabledToolGroups,
               servers: serversForChat(chat, profileId).map(server => server.id),
               web: webForChat(chat, profileId),
+              python: pythonForChat(chat, profileId),
             })
           : []
       const { apiTrajectory, edits, usage } = await runCompletionLoop({

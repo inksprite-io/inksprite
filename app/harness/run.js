@@ -23,6 +23,7 @@ import { fileURLToPath } from 'node:url'
 import { format } from 'node:util'
 import { resolveEndpoint } from './endpoints.js'
 import { seedProject, seedSkills } from './seed.js'
+import { installDesktop } from './desktop.js'
 import { renderTranscript, wordCount } from './transcript.js'
 import { useAIProvidersStore } from '@/stores/aiProvidersStore.js'
 import { useAIPresetStore } from '@/stores/aiPresetStore.js'
@@ -166,6 +167,8 @@ Usage: npm run transcripts -- --scenario <name> [options]
  *   each holding a SKILL.md and its files. See seedSkills in seed.js.
  * @property {string[]} [previews] - Features in preview the scenario is about,
  *   which have to be on in the environment the batch starts in
+ * @property {boolean} [python] - Python is there for the chat, as in the desktop app with
+ *   its extension on (`desktop.js`); needs the `python` preview too
  * @property {boolean} [rewind] - Once the last turn is in, the writer rewinds the
  *   chat to their first message, and the run records whether that put the
  *   project back as it was
@@ -582,6 +585,7 @@ async function main() {
       `${scenario.name} needs the ${off.join(', ')} preview on: VITE_PREVIEW=${scenario.previews.join(',')} npm run transcripts -- --scenario ${scenario.name}`
     )
   }
+  if (scenario.python) installDesktop()
   const prompt = await resolvePrompt(options.prompt || scenario.prompt)
   const descriptions = options.descriptions ? await applyDescriptions(options.descriptions) : null
   // Before the descriptions are read off the registry by anything: a skill
@@ -640,6 +644,7 @@ async function main() {
       // Whether the writer is asked before a document changes, which is the
       // app's to set, not the chat's.
       useApplicationState().setApplyEdits(scenario.applyEdits === 'ask' ? 'ask' : 'auto')
+      if (scenario.python) useApplicationState().setExtension('python', true)
       const chatsApi = useChats(storyId)
       await chatsApi.init()
       // Stamped from the profile under test, the way the app stamps one, so

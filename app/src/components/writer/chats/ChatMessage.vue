@@ -400,8 +400,17 @@
               "
               >{{ tc.name }}</span
             >
-            <span class="text-surface-500">({{ formatToolArguments(tc.arguments) }})</span>
+            <span v-if="tc.code === null" class="text-surface-500"
+              >({{ formatToolArguments(tc.arguments) }})</span
+            >
           </div>
+          <!-- Python's code as code, not as the JSON the model sent it in. -->
+          <pre
+            v-if="tc.code !== null"
+            class="text-surface-700 dark:text-surface-200 whitespace-pre overflow-x-auto m-0 pl-3 border-l-2 border-sky-500/40"
+            data-python-code
+            >{{ tc.code }}</pre
+          >
           <!-- The document the call made or changed, to go and read it. -->
           <div v-if="tc.wrote" class="pl-3">
             <button
@@ -419,10 +428,16 @@
           >
             running…
           </div>
+          <!-- Python's output as it was printed: a table's columns stay in
+               line, and a long line scrolls rather than wraps. -->
           <pre
             v-else
-            class="text-surface-600 dark:text-surface-400 whitespace-pre-wrap break-words m-0 pl-3 border-l-2"
-            :class="tc.failed ? 'border-red-500/60' : 'border-surface-300 dark:border-surface-700'"
+            class="text-surface-600 dark:text-surface-400 m-0 pl-3 border-l-2"
+            :class="[
+              tc.failed ? 'border-red-500/60' : 'border-surface-300 dark:border-surface-700',
+              tc.python ? 'whitespace-pre overflow-x-auto' : 'whitespace-pre-wrap break-words',
+            ]"
+            :data-python-output="tc.python || undefined"
             >{{ tc.resultDisplay }}</pre
           >
           <!-- A server's answer is the model's for this turn only; this keeps
@@ -597,12 +612,18 @@ import { holdTurnWhile, useTurnState } from '@/composables/useNearTurns.js'
 import { renderMarkdown } from '@/utils/markdown'
 import { commandDetail, formatAnswered, formatTurn } from '@/ai/commands.js'
 import { describeProgress, describeEdit, writesProse } from '@/ai/tools/progress.js'
-import { formatThinkingTime, formatToolArguments, formatToolResult } from '@/utils/formatters'
+import {
+  formatPythonResult,
+  formatThinkingTime,
+  formatToolArguments,
+  formatToolResult,
+} from '@/utils/formatters'
 import { consultationsIn, fromDirectorNote, isConsultation } from '@/ai/skills/consultations.js'
 import { useToolApprovals } from '@/composables/useToolApprovals.js'
 import { serverTool } from '@/mcp/servers.js'
 import { canSave } from '@/mcp/saved.js'
 import { READ_WEB_PAGE, SAVE_WEB_PAGE } from '@/ai/tools/web.js'
+import { RUN_PYTHON } from '@/ai/tools/python.js'
 import { useDocuments } from '@/composables/useDocuments.js'
 import SaveToolResultDialog from './SaveToolResultDialog.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
@@ -866,6 +887,8 @@ const expandToolCalls = useTurnState(`${props.messageId}:tools`, false)
  * @property {boolean} savable - A server's answer, or a web page read, that can be kept in the project
  * @property {boolean} failed - It came back with an error rather than an answer
  * @property {{id: string, path: string}|null} wrote - The document it made or changed, there still
+ * @property {string|null} code - For a run of Python, its code
+ * @property {boolean} python - It is a run of Python, whose output is shown as printed
  */
 const toolCalls = computed(() => {
   /** @type {ToolCallDisplay[]} */
@@ -900,17 +923,24 @@ const toolCalls = computed(() => {
       const found = serverTool(name)
       const prefixed = name.includes('__') ? name.split('__') : null
       const page = name === READ_WEB_PAGE
+      // A run of a script of the project's says which, as any call says its
+      // arguments; a run of code shows the code.
+      const python = name === RUN_PYTHON
+      const code = python && typeof parsedArgs?.code === 'string' ? parsedArgs.code : null
       out.push({
         id: tc.id,
         name,
         arguments: parsedArgs,
         result,
-        resultDisplay: result === null ? '' : formatToolResult(result),
+        resultDisplay:
+          result === null ? '' : python ? formatPythonResult(result) : formatToolResult(result),
         server: found?.server.name || prefixed?.[0] || (page ? 'Web' : ''),
         tool: found?.tool.title || found?.tool.name || prefixed?.slice(1).join('__') || name,
         savable: Boolean(found || prefixed || page) && canSave(result),
         failed: failedResult(result),
         wrote: written(name, parsedArgs),
+        code,
+        python,
       })
     }
   }

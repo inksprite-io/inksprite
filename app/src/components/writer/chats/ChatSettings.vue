@@ -346,7 +346,7 @@
 
             <!-- The web and the writer's servers, each opted into rather than
                  withheld: one connected tomorrow reaches no chat that did not ask. -->
-            <template v-if="servers.length > 0 || webGroup">
+            <template v-if="servers.length > 0 || webGroup || pythonGroup">
               <ExpandableSection
                 v-if="webGroup"
                 :title="webGroup.label"
@@ -380,6 +380,46 @@
                     <ToggleSwitch
                       :model-value="!disabledTools.includes(tool.name)"
                       :disabled="!isWebEnabled"
+                      class="flex-none"
+                      :aria-label="tool.label"
+                      @update:model-value="setToolEnabled(tool.name, $event)"
+                    />
+                  </div>
+                </div>
+              </ExpandableSection>
+              <ExpandableSection
+                v-if="pythonGroup"
+                :title="pythonGroup.label"
+                storage-key="ui.chat-settings.tools.python"
+                subsection
+                content-wrapper-class="flex flex-col"
+              >
+                <template #actions>
+                  <ToggleSwitch
+                    :model-value="isPythonEnabled"
+                    :disabled="!modelToolsEnabled"
+                    class="flex-none"
+                    :aria-label="toolsOf(pythonGroup.label)"
+                    data-python-tools
+                    @update:model-value="setPythonEnabled"
+                  />
+                </template>
+                <div class="flex flex-col gap-1 pt-1 pb-2">
+                  <div
+                    v-for="tool in pythonGroup.tools"
+                    :key="tool.name"
+                    class="flex items-center justify-between gap-2"
+                  >
+                    <span
+                      v-tooltip.top="{ value: tool.description, showDelay: 400 }"
+                      class="text-xs text-surface-700 dark:text-surface-200 truncate"
+                      :class="{ 'opacity-50': !isPythonEnabled }"
+                    >
+                      {{ tool.label }}
+                    </span>
+                    <ToggleSwitch
+                      :model-value="!disabledTools.includes(tool.name)"
+                      :disabled="!isPythonEnabled"
                       class="flex-none"
                       :aria-label="tool.label"
                       @update:model-value="setToolEnabled(tool.name, $event)"
@@ -636,6 +676,7 @@ import { useNarration } from '@/composables/useNarration'
 import { useProfiles } from '@/composables/useProfiles'
 import { EXPERIMENTAL_GROUP, getToolGroups, SKILLS_GROUP, toolGroupOf } from '@/ai/tools/index.js'
 import { WEB_GROUP } from '@/ai/tools/web.js'
+import { PYTHON_GROUP, pythonForChat, pythonOffered } from '@/ai/tools/python.js'
 import { availableSkills, skillLabel } from '@/ai/skills/index.js'
 import { loadedByModel, waitingOn } from '@/ai/skills/runner.js'
 import { useSkills } from '@/composables/useSkills'
@@ -739,6 +780,19 @@ const isWebEnabled = computed(
  */
 const setWebEnabled = enabled => update({ web: enabled })
 
+/** Whether this chat runs Python: its choice, or its profile's until it makes one. */
+const isPythonEnabled = computed(
+  () => modelToolsEnabled.value && pythonForChat(chat.value, selectedProfileId.value)
+)
+
+/**
+ * Run Python in this chat, or stop. From then on the chat no longer follows
+ * its profile.
+ *
+ * @param {boolean} enabled
+ */
+const setPythonEnabled = enabled => update({ python: enabled })
+
 // What this chat has loaded, read off its messages; see ai/skills/loads.js.
 const {
   loaded: loadedSkillNames,
@@ -788,13 +842,19 @@ const allGroups = computed(() => {
 
 // The skills have a section of their own, so they are not also a group in the
 // tool list: one switch per thing, in the place that explains what it is. The
-// web is listed with the connections, since that is where it is set up.
-const NOT_LISTED = new Set([SKILLS_GROUP, EXPERIMENTAL_GROUP, WEB_GROUP])
+// web is listed with the connections, since that is where it is set up, and
+// Python beside it, opted into as it is.
+const NOT_LISTED = new Set([SKILLS_GROUP, EXPERIMENTAL_GROUP, WEB_GROUP, PYTHON_GROUP])
 const toolGroups = computed(() => allGroups.value.filter(group => !NOT_LISTED.has(group.id)))
 
 /** The web tools, while a service is set up to search. */
 const webGroup = computed(() =>
   webSearch.inUse.value ? allGroups.value.find(group => group.id === WEB_GROUP) || null : null
+)
+
+/** Python, while its extension is on, in the desktop app. */
+const pythonGroup = computed(() =>
+  pythonOffered() ? allGroups.value.find(group => group.id === PYTHON_GROUP) || null : null
 )
 
 /**

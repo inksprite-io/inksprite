@@ -40,6 +40,9 @@ version="$release.$(git -C "$root" rev-list --count HEAD)"
 echo "Building the page for inksprite $version..."
 (cd "$root/app" && VITE_APP_VERSION=$version npm run build)
 
+echo "Fetching the Python packages..."
+(cd "$here" && node scripts/fetch-python.mjs)
+
 # The zip target, though the zip is of no use unsigned, because only a build
 # for the updater has the updater's address written into it.
 echo "Building the app..."

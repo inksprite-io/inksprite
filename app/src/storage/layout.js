@@ -23,6 +23,10 @@
  *       doc_x7Kp…/map.png     Elara.md's own, by its id
  *     Rulebook.pdf            an imported file, as it was imported
  *     .Rulebook.pdf.md        its row and the text read out of it
+ *     Wren/                   an imported file that holds others
+ *       Wren.png              the file itself, named as its directory is
+ *       .Wren.png.md
+ *       Description.md        what it holds
  *     tool/                   a repository: its files as they are
  *       .repository.json      every row in it, by path
  *       src/main.js
@@ -32,6 +36,11 @@
  * ordered folder. A name in use is taken by the first in the order the
  * folder shows, and the rest get `(2)` and on. Nothing internal names a
  * path: ids are in the files, so a document keeps its id however it moves.
+ *
+ * A text or an imported file that holds others, as an import may make one,
+ * is a directory of its name with no `.folder.md`, holding its own file
+ * under that name and what it holds beside it. No other name in there has
+ * that stem, so its own file is the only one it can be.
  */
 
 import { compareNames } from '@/utils/compareNames.js'
@@ -157,8 +166,10 @@ export const audioPath = (id, key) => `${audioDir(id)}/${key}.wav`
  * - `file` - An imported file, with its row beside it (`sidecarPath`)
  * - `repository` - A directory with a `.repository.json`
  * - `repoFolder`, `repoFile` - What is in a repository, whose rows its `.repository.json` keeps
+ * - `holder` - The directory a text or an imported file holds others in, as a
+ *   plan sees it (plan.js); never in a layout, whose entry has it as `dir`
  *
- * @typedef {'root'|'folder'|'text'|'file'|'repository'|'repoFolder'|'repoFile'} EntryKind
+ * @typedef {'root'|'folder'|'text'|'file'|'repository'|'repoFolder'|'repoFile'|'holder'} EntryKind
  */
 
 /**
@@ -168,6 +179,8 @@ export const audioPath = (id, key) => `${audioDir(id)}/${key}.wav`
  * @property {string} id
  * @property {EntryKind} kind
  * @property {string} path - Below the project folder: a folder's directory, a document's file; '' for the root
+ * @property {string} [dir] - A text or an imported file that holds others: the
+ *   directory they are in, which its own file is in too
  * @property {string} [repository] - The id of the repository it is in
  * @property {true} [narration] - It has a narration file
  * @property {true} [digest] - It has a digest file
@@ -299,7 +312,21 @@ export function layoutProject(documents, rootId, taken = []) {
   for (const path of taken) namesIn(parentOf(path)).add(nameKey(baseOf(path)))
   namesIn('').add(nameKey(META))
 
-  // Where each document is shown: its parent when that is a folder that
+  // Whether a document is in a repository, whose files hold nothing: its
+  // list keeps their rows by path.
+  const inRepository = (/** @type {Document} */ document) => {
+    const seen = new Set()
+    for (let at = byIdMap.get(document.parentId); at && !seen.has(at.id); ) {
+      if (at.type === 'folder' && at.kind === 'repository') return true
+      seen.add(at.id)
+      at = byIdMap.get(at.parentId)
+    }
+    return false
+  }
+  const holds = (/** @type {Document} */ document) =>
+    document.type === 'folder' || !inRepository(document)
+
+  // Where each document is shown: its parent when that holds others and
   // leads up to the root, the root otherwise.
   /** @type {Map<string, boolean>} */
   const reaches = new Map([[rootId, true]])
@@ -309,7 +336,7 @@ export function layoutProject(documents, rootId, taken = []) {
     let at = id
     while (!reaches.has(at)) {
       const document = byIdMap.get(at)
-      if (!document || document.type !== 'folder' || path.includes(at)) {
+      if (!document || path.includes(at) || !holds(document)) {
         for (const seen of path) reaches.set(seen, false)
         return false
       }
@@ -330,28 +357,38 @@ export function layoutProject(documents, rootId, taken = []) {
   }
 
   /**
-   * @param {Document} folder
+   * @param {Document} folder - Or a document that holds others
    * @param {string} dir
    * @param {string} [repository]
+   * @param {string} [own] - In a document's directory, its own file's stem,
+   *   which nothing beside it may take
    */
-  const visit = (folder, dir, repository) => {
+  const visit = (folder, dir, repository, own) => {
     const ordered = folder.ordered === true && !repository
     const kids = shown(children.get(folder.id) || [], ordered)
     const width = prefixWidth(kids.length)
     const names = namesIn(dir)
     kids.forEach((kid, at) => {
       const { stem, extension } = nameOf(kid)
-      const name = claimName(names, ordered ? withPrefix(at + 1, width, stem) : stem, extension)
-      const path = join(dir, name)
+      const placed = ordered ? withPrefix(at + 1, width, stem) : stem
       const kind = kindOf(kid, Boolean(repository))
+      if (own !== undefined) names.add(nameKey(`${own}${extension}`))
       /** @type {Entry} */
-      const entry = { id: kid.id, kind, path }
+      let entry
+      if (kid.type !== 'folder' && !repository && children.has(kid.id)) {
+        const holder = join(dir, claimName(names, placed, ''))
+        const name = claimName(namesIn(holder), baseOf(holder), extension)
+        entry = { id: kid.id, kind, path: join(holder, name), dir: holder }
+      } else {
+        entry = { id: kid.id, kind, path: join(dir, claimName(names, placed, extension)) }
+      }
       if (repository) entry.repository = repository
       flagRowFiles(entry, kid)
       if (kind === 'text') Object.assign(entry, picturesOf(kid))
       entries.set(kid.id, entry)
       if (kid.type === 'folder')
-        visit(kid, path, repository || (kind === 'repository' ? kid.id : undefined))
+        visit(kid, entry.path, repository || (kind === 'repository' ? kid.id : undefined))
+      else if (entry.dir) visit(kid, entry.dir, undefined, baseOf(entry.dir))
     })
   }
   visit(root, '')
@@ -410,10 +447,11 @@ const inMeta = path =>
  * renamed somewhere else is that title now. In an ordered folder the order
  * is the order of the prefixes, numbered again from the top; in any other,
  * the order of the titles. A file with no id, or frontmatter that cannot be
- * read, is a document under a new id. A folder with no `.folder.md`, or a
- * file that is neither markdown nor beside a row, is not read, and is left
- * as it is. What a move had put out of the way when the app stopped comes
- * back at the top of the project.
+ * read, is a document under a new id. A directory holding a document of its
+ * own name, and no `.folder.md`, is that document, holding the rest. A
+ * folder with neither, or a file that is neither markdown nor beside a row,
+ * is not read, and is left as it is. What a move had put out of the way
+ * when the app stopped comes back at the top of the project.
  *
  * @param {Object} found
  * @param {string[]} found.files - Every file below the project folder
@@ -485,73 +523,105 @@ export function readProject({ files, texts, name }, { newId, now }) {
     files.filter(path => path.startsWith(`${dir}/`))
 
   /**
+   * A text document from its file.
+   *
+   * @param {string} dir
+   * @param {string} file - Its name, `.md` and all
+   * @param {Document} parent
+   * @returns {{document: Document, entry: Entry}}
+   */
+  const readText = (dir, file, parent) => {
+    const path = join(dir, file)
+    const { rest } = readPrefix(file.slice(0, -3))
+    const read = readTextFile(
+      texts.get(path) || '',
+      { storyId, parentId: parent.id, order: 0 },
+      rest,
+      title => stemFits(title, rest),
+      newId
+    )
+    const document = keep(read)
+    return { document, entry: { id: document.id, kind: 'text', path, ...picturesOf(document) } }
+  }
+
+  /**
+   * An imported file from the row beside it.
+   *
+   * @param {string} dir
+   * @param {string} target - The file's name, whose row is `.<target>.md`
+   * @param {Document} parent
+   * @param {Set<string>} present - The files in its directory
+   * @returns {{document: Document, entry: Entry}}
+   */
+  const readFile = (dir, target, parent, present) => {
+    const { rest } = readPrefix(target)
+    const { stem } = splitExtension(rest)
+    const read = readFileSidecar(
+      texts.get(join(dir, `.${target}.md`)) || '',
+      { storyId, parentId: parent.id, order: 0 },
+      stem,
+      title => stemFits(title, stem) || stemFits(title, rest),
+      newId
+    )
+    const document = keep(read)
+    /** @type {Entry} */
+    const entry = { id: document.id, kind: 'file', path: join(dir, target) }
+    if (!present.has(target)) entry.missing = true
+    return { document, entry }
+  }
+
+  /**
+   * The file a directory with no `.folder.md` is the document of: the text
+   * or the imported file named as it is, if it holds one.
+   *
+   * @param {string} name - The directory's
+   * @param {string[]} inside - The files in it
+   * @returns {{text: string}|{target: string}|null}
+   */
+  const ownFile = (name, inside) => {
+    if (inside.includes(`${name}.md`)) return { text: `${name}.md` }
+    for (const file of inside) {
+      const match = /^\.(.+)\.md$/s.exec(file)
+      if (!match || file === FOLDER_FILE) continue
+      const target = match[1]
+      if (target === name || splitExtension(target).stem === name) return { target }
+    }
+    return null
+  }
+
+  /**
    * Read a folder's children into the documents.
    *
    * @param {string} dir
-   * @param {Document} parent
+   * @param {Document} parent - A folder, or a document that holds others
    * @param {number} [after] - Places taken in the parent already
+   * @param {Set<string>} [own] - In a document's directory, its own files
    */
-  const readChildren = (dir, parent, after = 0) => {
+  const readChildren = (dir, parent, after = 0, own = new Set()) => {
     const here = contents.get(dir) || { files: [], dirs: [] }
     const ordered = parent.ordered === true
+    const files = here.files.filter(file => !own.has(file))
     const present = new Set(here.files)
 
     /** @type {Array<{sortName: string, place: number|null, read: () => {document: Document, entry: Entry}|null, then?: (document: Document) => void}>} */
     const found = []
     const sidecarOf = new Set()
-    for (const file of here.files) {
+    for (const file of files) {
       const match = /^\.(.+)\.md$/s.exec(file)
       if (!match || file === FOLDER_FILE) continue
       const target = match[1]
       sidecarOf.add(target)
       const { place, rest } = readPrefix(target)
-      const path = join(dir, target)
-      found.push({
-        sortName: rest,
-        place,
-        read: () => {
-          const { stem } = splitExtension(rest)
-          const read = readFileSidecar(
-            texts.get(join(dir, file)) || '',
-            { storyId, parentId: parent.id, order: 0 },
-            stem,
-            title => stemFits(title, stem) || stemFits(title, rest),
-            newId
-          )
-          const document = keep(read)
-          /** @type {Entry} */
-          const entry = { id: document.id, kind: 'file', path }
-          if (!present.has(target)) entry.missing = true
-          return { document, entry }
-        },
-      })
+      found.push({ sortName: rest, place, read: () => readFile(dir, target, parent, present) })
     }
-    for (const file of here.files) {
+    for (const file of files) {
       if (file.startsWith('.') || sidecarOf.has(file)) continue
-      const path = join(dir, file)
       if (!file.endsWith('.md')) {
-        unknown.push(path)
+        unknown.push(join(dir, file))
         continue
       }
       const { place, rest } = readPrefix(file.slice(0, -3))
-      found.push({
-        sortName: rest,
-        place,
-        read: () => {
-          const read = readTextFile(
-            texts.get(path) || '',
-            { storyId, parentId: parent.id, order: 0 },
-            rest,
-            title => stemFits(title, rest),
-            newId
-          )
-          const document = keep(read)
-          return {
-            document,
-            entry: { id: document.id, kind: 'text', path, ...picturesOf(document) },
-          }
-        },
-      })
+      found.push({ sortName: rest, place, read: () => readText(dir, file, parent) })
     }
     for (const sub of here.dirs) {
       if (dir === '' && sub === META) continue
@@ -560,6 +630,7 @@ export function readProject({ files, texts, name }, { newId, now }) {
       const path = join(dir, sub)
       const inside = contents.get(path)?.files || []
       const { place, rest } = readPrefix(sub)
+      const holder = inside.includes(FOLDER_FILE) ? null : ownFile(sub, inside)
       if (inside.includes(REPOSITORY_FILE)) {
         found.push({
           sortName: rest,
@@ -582,6 +653,28 @@ export function readProject({ files, texts, name }, { newId, now }) {
             return { document, entry: { id: document.id, kind: 'folder', path } }
           },
           then: document => readChildren(path, document),
+        })
+      } else if (holder && 'text' in holder) {
+        const { text } = holder
+        found.push({
+          sortName: rest,
+          place,
+          read: () => {
+            const { document, entry } = readText(path, text, parent)
+            return { document, entry: { ...entry, dir: path } }
+          },
+          then: document => readChildren(path, document, 0, new Set([text])),
+        })
+      } else if (holder && 'target' in holder) {
+        const { target } = holder
+        found.push({
+          sortName: rest,
+          place,
+          read: () => {
+            const { document, entry } = readFile(path, target, parent, new Set(inside))
+            return { document, entry: { ...entry, dir: path } }
+          },
+          then: document => readChildren(path, document, 0, new Set([target, `.${target}.md`])),
         })
       } else {
         unknown.push(...everythingBelow(path))

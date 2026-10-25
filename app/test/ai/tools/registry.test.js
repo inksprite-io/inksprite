@@ -11,6 +11,28 @@ describe('ToolRegistry', () => {
     registry = toolRegistry
   })
 
+  describe('timeoutFor', () => {
+    const definition = {
+      type: 'function',
+      function: { name: 'slow', description: '', parameters: { type: 'object', properties: {} } },
+    }
+
+    it('gives the limit a tool asked for, and none for one that did not', () => {
+      registry.register('slow', definition, vi.fn(), 'group', 90000)
+      expect(registry.timeoutFor('slow')).toBe(90000)
+      registry.register('quick', definition, vi.fn(), 'group')
+      expect(registry.timeoutFor('quick')).toBeUndefined()
+    })
+
+    it('reads a limit the writer sets as it is now', () => {
+      let limit = 60000
+      registry.register('slow', definition, vi.fn(), 'group', () => limit)
+      expect(registry.timeoutFor('slow')).toBe(60000)
+      limit = Infinity
+      expect(registry.timeoutFor('slow')).toBe(Infinity)
+    })
+  })
+
   describe('register', () => {
     it('should register a tool', () => {
       const definition = {

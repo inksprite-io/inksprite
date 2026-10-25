@@ -7,6 +7,7 @@
  * ### Text Processing
  * - **formatters** - Text formatting utilities
  * - **markdown** - Markdown parsing and rendering
+ * - **math** - TeX in markdown typeset with KaTeX, loaded the first time a formula needs it
  * - **partialJson** - The strings in JSON that has not finished arriving
  * - **wordCount** - Words in a document's markdown
  * - **lineDiff** - The lines that changed between two versions of a text

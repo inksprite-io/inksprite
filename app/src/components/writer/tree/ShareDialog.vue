@@ -34,36 +34,65 @@
         </li>
       </ul>
 
-      <template v-if="owns">
-        <label
-          v-if="needsName"
-          class="flex flex-col gap-1 text-xs font-medium text-surface-700 dark:text-surface-200"
-        >
-          Name others see
-          <InputText
-            v-model="display"
-            size="small"
-            autocomplete="name"
-            :disabled="busy"
-            data-field="share-display"
-          />
-        </label>
-        <label
-          class="flex flex-col gap-1 text-xs font-medium text-surface-700 dark:text-surface-200"
-        >
-          Friend code
-          <InputText
-            v-model="code"
-            size="small"
-            autocomplete="off"
-            spellcheck="false"
-            placeholder="XXXXX-XXXXX-XXXXX-XXXXX"
-            :disabled="busy"
-            data-field="share-code"
-            @keydown.enter="go"
-          />
-        </label>
+      <template v-if="owns && choosesDocuments">
+        <SelectButton
+          :model-value="selective"
+          :options="SCOPES"
+          option-label="label"
+          option-value="value"
+          :allow-empty="false"
+          size="small"
+          :disabled="busy"
+          aria-label="What is shared"
+          data-field="share-scope"
+          @update:model-value="choose"
+        />
+        <!-- Each its own box: ticked where shared, half where seen only on
+             the way to something shared. A click goes for everything in it,
+             and leaves the folders above as they are. -->
+        <div v-if="selective" class="max-h-[min(18rem,40vh)] overflow-y-auto" data-share-tree>
+          <Tree
+            v-model:expanded-keys="expanded"
+            :value="nodes"
+            :pt="{
+              root: { class: '!p-0 !bg-transparent' },
+              node: { class: '!outline-none' },
+              nodeContent: { class: '!py-0.5 !px-1' },
+              nodeLabel: { class: 'text-sm leading-snug' },
+            }"
+          >
+            <template #default="{ node }">
+              <label class="flex items-center gap-2 cursor-pointer" :data-share-node="node.key">
+                <Checkbox
+                  :model-value="shares.sharingOf(node.key) === 'shared'"
+                  :indeterminate="shares.sharingOf(node.key) === 'partly'"
+                  binary
+                  size="small"
+                  @update:model-value="value => shares.setShared(node.key, value)"
+                />
+                <span>{{ node.label }}</span>
+              </label>
+            </template>
+          </Tree>
+        </div>
       </template>
+
+      <label
+        v-if="owns"
+        class="flex flex-col gap-1 text-xs font-medium text-surface-700 dark:text-surface-200"
+      >
+        Friend code
+        <InputText
+          v-model="code"
+          size="small"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="XXXXX-XXXXX-XXXXX-XXXXX"
+          :disabled="busy"
+          data-field="share-code"
+          @keydown.enter="go"
+        />
+      </label>
 
       <div class="flex items-center justify-end gap-3">
         <p v-if="failure" class="mr-auto text-xs text-red-600 dark:text-red-400" data-share-error>
@@ -86,17 +115,26 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import Button from 'primevue/button'
+import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
+import SelectButton from 'primevue/selectbutton'
+import Tree from 'primevue/tree'
 import { readFriendCode } from '@/cloud/crypto.js'
 import { me, sharing } from '@/cloud/people.js'
+import { inPreview } from '@/config/preview.js'
 import { useCloudSync } from '@/composables/useCloudSync.js'
+import { useDocuments } from '@/composables/useDocuments'
+import { useSharedDocuments } from '@/composables/useSharedDocuments.js'
+import { useDocumentsStore } from '@/stores/documentsStore'
+import { shareTree } from '@/utils/sharedDocuments.js'
 
 /**
  * A project's people: who it is shared with, and, for its owner, sharing it
- * with someone else by their friend code, or taking someone out. Shared with
- * no one yet, its owner may first have to give the name others see. See
- * composables/useCloudSync.js.
+ * with someone else by their friend code, or taking someone out. The owner
+ * also chooses whether it is shared whole or only some of its documents,
+ * ticked in a tree of boxes; either takes effect at once. See
+ * composables/useCloudSync.js and composables/useSharedDocuments.js.
  *
  * @typedef {Object} Props
  * @property {boolean} visible
@@ -112,14 +150,22 @@ const props = defineProps({
 const emit = defineEmits(['update:visible'])
 
 const cloud = useCloudSync()
+const store = useDocumentsStore()
+const { displayTitle } = useDocuments(props.storyId)
+const shares = useSharedDocuments(props.storyId)
+
+/** Whether the owner may share only some of the documents. */
+const choosesDocuments = inPreview('selective-sharing')
+
+const SCOPES = [
+  { label: 'Entire project', value: false },
+  { label: 'Only selected documents', value: true },
+]
 
 const code = ref('')
-const display = ref('')
 const busy = ref(false)
 /** @type {import('vue').Ref<string|null>} */
 const failure = ref(null)
-/** Whether the account has no name for others yet. */
-const needsName = ref(false)
 
 /** This project as sync last heard of it, if it is shared. */
 const shared = computed(() => sharing.value.projects[props.storyId] ?? null)
@@ -129,26 +175,51 @@ const owns = computed(() => !shared.value || shared.value.role === 'owner')
 
 const members = computed(() => shared.value?.members ?? [])
 
-const ready = computed(
-  () => Boolean(readFriendCode(code.value)) && (!needsName.value || Boolean(display.value.trim()))
-)
+const ready = computed(() => Boolean(readFriendCode(code.value)))
+
+/** Whether it is shared with only some of its documents, as last chosen. */
+const selective = ref(false)
+
+/** @type {import('vue').Ref<Record<string, boolean>>} */
+const expanded = ref({})
+
+/** The project's documents, as boxes. */
+const nodes = computed(() => {
+  const root = store.getRoot(props.storyId)
+  return root ? shareTree(root, parentId => store.getChildrenOrdered(parentId), displayTitle) : []
+})
 
 watch(
   () => props.visible,
-  async open => {
+  open => {
     if (!open) return
     code.value = ''
     failure.value = null
-    try {
-      const profile = await cloud.profile()
-      needsName.value = !profile.display
-      display.value = profile.display ?? ''
-    } catch (error) {
-      failure.value = /** @type {Error} */ (error).message
-    }
+    selective.value = choosesDocuments && sharing.value.selective.includes(props.storyId)
+    const root = store.getRoot(props.storyId)
+    expanded.value = root ? { [root.id]: true } : {}
   },
   { immediate: true }
 )
+
+/**
+ * Share it whole, or only some of its documents.
+ * @param {boolean} value
+ */
+async function choose(value) {
+  if (busy.value || value === selective.value) return
+  selective.value = value
+  busy.value = true
+  failure.value = null
+  try {
+    await cloud.setSelective(props.storyId, value)
+  } catch (error) {
+    selective.value = !value
+    failure.value = /** @type {Error} */ (error).message
+  } finally {
+    busy.value = false
+  }
+}
 
 /** Share the project with the account the code is of. */
 async function go() {
@@ -156,10 +227,6 @@ async function go() {
   busy.value = true
   failure.value = null
   try {
-    if (needsName.value) {
-      await cloud.setDisplay(display.value.trim())
-      needsName.value = false
-    }
     await cloud.share(props.storyId, code.value)
     code.value = ''
   } catch (error) {

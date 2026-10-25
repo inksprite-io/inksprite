@@ -432,8 +432,12 @@ export function libraryStorage(disk, options = {}) {
     for (const op of planned) {
       if (op.op === 'move') {
         // A document's pictures move only when there are some to move: their
-        // bytes may not have come yet.
-        if (op.optional && !there(op.from)) continue
+        // bytes may not have come yet. A directory a document held others in
+        // may hold nothing by now, and goes rather than stand in the way.
+        if (op.optional && !there(op.from)) {
+          toDo.push({ op: 'trash', path: under(dir, op.from) })
+          continue
+        }
         follow(op.from, op.to)
         toDo.push({ op: 'move', from: under(dir, op.from), to: under(dir, op.to) })
       } else if (op.op === 'trash') {
@@ -1182,6 +1186,14 @@ export function libraryStorage(disk, options = {}) {
         return project ? bytesOf(project, id) : null
       }),
 
+    filePath: id =>
+      inTurn(async () => {
+        const project = projectOfDocument(id)
+        if (!project?.dir || project.bytes.has(id) || project.entries.get(id)?.missing) return null
+        const entry = project.entries.get(id)
+        return entry?.kind === 'file' ? under(project.dir, entry.path) : null
+      }),
+
     projectFiles: storyId =>
       inTurn(async () => {
         await list()
@@ -1205,6 +1217,10 @@ export function libraryStorage(disk, options = {}) {
         await apply(project, [
           { op: 'write', path, bytes: new Uint8Array(await blob.arrayBuffer()) },
         ])
+        // There now, where the project as it was read had found none: sync
+        // fetching them from the server.
+        const entry = project.entries.get(id)
+        if (entry?.missing) delete entry.missing
       }),
 
     updateEach: (table, change) =>

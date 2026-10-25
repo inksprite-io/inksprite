@@ -1,0 +1,82 @@
+/*
+ * Code's highlighting, as `classHighlighter` marks it (`tok-keyword`,
+ * `tok-string`, …), coloured for light and dark so it follows the app's
+ * theme without a CodeMirror theme to switch: in the code viewer, and in the
+ * plain text editor for a document named for a language.
+ */
+
+.code-tokens .tok-keyword,
+.code-tokens .tok-operatorKeyword,
+.code-tokens .tok-modifier {
+  color: #cf222e;
+}
+.code-tokens .tok-string,
+.code-tokens .tok-string2,
+.code-tokens .tok-url {
+  color: #0a3069;
+}
+.code-tokens .tok-number,
+.code-tokens .tok-bool,
+.code-tokens .tok-atom,
+.code-tokens .tok-literal,
+.code-tokens .tok-propertyName {
+  color: #0550ae;
+}
+.code-tokens .tok-comment {
+  color: #6e7781;
+  font-style: italic;
+}
+.code-tokens .tok-typeName,
+.code-tokens .tok-className,
+.code-tokens .tok-namespace {
+  color: #953800;
+}
+.code-tokens .tok-definition,
+.code-tokens .tok-macroName,
+.code-tokens .tok-meta {
+  color: #8250df;
+}
+.code-tokens .tok-heading,
+.code-tokens .tok-strong {
+  font-weight: 600;
+}
+.code-tokens .tok-emphasis {
+  font-style: italic;
+}
+.code-tokens .tok-invalid {
+  color: #82071e;
+}
+
+.dark .code-tokens .tok-keyword,
+.dark .code-tokens .tok-operatorKeyword,
+.dark .code-tokens .tok-modifier {
+  color: #ff7b72;
+}
+.dark .code-tokens .tok-string,
+.dark .code-tokens .tok-string2,
+.dark .code-tokens .tok-url {
+  color: #a5d6ff;
+}
+.dark .code-tokens .tok-number,
+.dark .code-tokens .tok-bool,
+.dark .code-tokens .tok-atom,
+.dark .code-tokens .tok-literal,
+.dark .code-tokens .tok-propertyName {
+  color: #79c0ff;
+}
+.dark .code-tokens .tok-comment {
+  color: #8b949e;
+}
+.dark .code-tokens .tok-typeName,
+.dark .code-tokens .tok-className,
+.dark .code-tokens .tok-namespace {
+  color: #ffa657;
+}
+.dark .code-tokens .tok-definition,
+.dark .code-tokens .tok-macroName,
+.dark .code-tokens .tok-meta {
+  color: #d2a8ff;
+}
+.dark .code-tokens .tok-invalid {
+  color: #ffa198;
+}

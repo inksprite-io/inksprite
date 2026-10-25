@@ -292,6 +292,96 @@ describe('a plan for a project’s folder', () => {
   })
 })
 
+describe('a plan for a document that holds others', () => {
+  const arrival = doc('arrival', 'elara', { title: 'Arrival', content: 'She came by the river.' })
+
+  it('moves it into a directory of its name when it gets its first', () => {
+    const disk = memoryDisk()
+    writeFresh(disk, sample())
+
+    const ops = step(disk, sample(), [...sample(), arrival])
+
+    expect(ops).toEqual([
+      { op: 'move', from: 'Notes/Elara.md', to: 'Notes/Elara/Elara.md' },
+      { op: 'write', path: 'Notes/Elara/Arrival.md', text: expect.any(String) },
+    ])
+  })
+
+  it('moves it back out when it has none, and the directory goes', () => {
+    const disk = memoryDisk()
+    writeFresh(disk, [...sample(), arrival])
+
+    const ops = step(disk, [...sample(), arrival], sample())
+
+    expect(ops).toEqual([
+      { op: 'move', from: 'Notes/Elara/Elara.md', to: 'Notes/Elara.md' },
+      { op: 'trash', path: 'Notes/Elara', optional: true },
+    ])
+    expect(disk.list().some(path => path.startsWith('Notes/Elara/'))).toBe(false)
+  })
+
+  it('moves an imported file into its directory with the row beside it', () => {
+    const disk = memoryDisk()
+    writeFresh(disk, sample())
+    const copy = doc('copy', 'pdf', { title: 'Rulebook (Markdown)', content: '# Rules' })
+
+    const ops = step(disk, sample(), [...sample(), copy])
+
+    expect(ops.filter(op => op.op === 'move')).toEqual([
+      { op: 'move', from: 'Notes/Rulebook.pdf', to: 'Notes/Rulebook/Rulebook.pdf' },
+      { op: 'move', from: 'Notes/.Rulebook.pdf.md', to: 'Notes/Rulebook/.Rulebook.pdf.md' },
+    ])
+    expect(disk.read('Notes/Rulebook/Rulebook.pdf')).toBe('bytes of pdf')
+  })
+
+  it('renames its directory whole, then its own file in it', () => {
+    const disk = memoryDisk()
+    const before = [...sample(), arrival]
+    writeFresh(disk, before)
+
+    const ops = step(disk, before, change(before, 'elara', { title: 'Elara Voss' }))
+
+    expect(ops).toEqual([
+      { op: 'move', from: 'Notes/Elara', to: 'Notes/Elara Voss', optional: true },
+      { op: 'move', from: 'Notes/Elara Voss/Elara.md', to: 'Notes/Elara Voss/Elara Voss.md' },
+      { op: 'write', path: 'Notes/Elara Voss/Elara Voss.md', text: expect.any(String) },
+    ])
+  })
+
+  it('moves to another folder with all it holds', () => {
+    const disk = memoryDisk()
+    const before = [...sample(), arrival]
+    writeFresh(disk, before)
+
+    step(disk, before, change(before, 'elara', { parentId: 'manuscript', order: 5 }))
+
+    expect(disk.read('Manuscript/02 - Elara/02 - Elara.md')).toContain('Tall.')
+    expect(disk.read('Manuscript/02 - Elara/Arrival.md')).toContain('She came by the river.')
+  })
+
+  it('trashes its directory whole when it goes', () => {
+    const disk = memoryDisk()
+    const before = [...sample(), arrival]
+    writeFresh(disk, before)
+
+    const ops = step(disk, before, without(before, ['elara', 'arrival']))
+
+    expect(ops).toEqual([{ op: 'trash', path: 'Notes/Elara', optional: true }])
+  })
+
+  it('gives its name to a folder that takes it as it lets its last go', () => {
+    const disk = memoryDisk()
+    const before = [...sample(), arrival]
+    writeFresh(disk, before)
+    const after = [...sample(), folder('elaras', 'notes', { title: 'Elara' })]
+
+    step(disk, before, after)
+
+    expect(disk.read('Notes/Elara.md')).toContain('Tall.')
+    expect(disk.list()).toContain('Notes/Elara/.folder.md')
+  })
+})
+
 describe('plans for any run of changes', () => {
   for (const caseInsensitive of [false, true]) {
     for (const seed of [1, 2, 3, 4, 5, 6]) {

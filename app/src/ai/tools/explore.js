@@ -139,6 +139,11 @@ export async function exploreFor(asked, context) {
   const about = explored?.digest ? digestAbout(explored.digest) : ''
   if (!about) return { error: `There is nothing in "${path}" to read.` }
   const shown = found.path === '/' ? '/' : node.type === 'folder' ? `${found.path}/` : found.path
+  // What it holds, listed: a folder's, or a document's that holds others.
+  const listing =
+    node.type === 'folder' || node.children.length > 0
+      ? await executeListDocuments({ path: found.path }, context)
+      : null
   if (node.type !== 'folder') {
     const lines = sectionLines(explored?.digest)
     const tree = withSectionLines(
@@ -151,9 +156,9 @@ export async function exploreFor(asked, context) {
       name: exploredName(node),
       about,
       ...(described.length > 0 ? { sections: described } : {}),
+      ...(typeof listing === 'string' ? { listing } : {}),
     }
   }
-  const listing = await executeListDocuments({ path: found.path }, context)
   return {
     path: shown,
     name: exploredName(node),

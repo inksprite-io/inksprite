@@ -367,6 +367,9 @@ describe('useApplicationState', () => {
       state.setNsfwProfiles(true)
       state.setExperimentalSkill('write', true)
       state.setExtension('roleplay', true)
+      state.setExtension('python', true)
+      state.setPythonProfiles(['chatprofile_mine'])
+      state.setPythonTimeLimit(3600)
       state.setChatProfileId('chatprofile_mine')
       state.setWorkflow('convert', { providerId: 'p1', model: 'strong', onImport: true })
       state.setNarration({ providerId: 'provider_openai_default', model: 'tts-1' })
@@ -382,6 +385,9 @@ describe('useApplicationState', () => {
         blurNsfw: true,
         experimentalSkills: ['write'],
         roleplay: true,
+        python: true,
+        pythonProfiles: ['chatprofile_mine'],
+        pythonTimeLimit: 3600,
         chatProfileId: 'chatprofile_mine',
         roleplayProfileId: null,
         workflows: {

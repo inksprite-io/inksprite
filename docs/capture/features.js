@@ -542,7 +542,7 @@ export async function features(ui, { standIn, context }) {
   })
 
   // A chat, its answers and a turn's menu, with the chat wide
-  await ui.click(button('Hide editor'))
+  await ui.click(button('Expand chat'))
   await at(42)
   await send('How could the book end? Give me three ways.')
   await ui.click(button('Regenerate reply').last())
@@ -640,7 +640,7 @@ export async function features(ui, { standIn, context }) {
   await closeSettings()
 
   await at(58)
-  await ui.click(button('Hide editor'))
+  await ui.click(button('Expand chat'))
   await ui.click(button('New chat').last())
   await ui.click(message)
   await ui.type('Using DeepWiki, find out how the facebook/react repository batches state updates.')

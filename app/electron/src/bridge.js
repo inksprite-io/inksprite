@@ -1,8 +1,8 @@
 /**
  * What the page may ask of the native side, answered here: requests to
  * servers, sign-ins in the system browser, links opened outside the app,
- * windows, updates, the settings file a script left, and the library its
- * projects are kept in. `preload.cjs` is the page's end of it, and `src/platform/` in the
+ * windows, updates, the settings file a script left, the library its
+ * projects are kept in, and Python for the model to run code in. `preload.cjs` is the page's end of it, and `src/platform/` in the
  * page is what calls it.
  *
  * Only the app's own page is answered: each call is checked for where it came
@@ -17,6 +17,7 @@ import { downloadUpdate, installUpdate } from './updates.js'
 import { readSettingsFile } from './settingsFile.js'
 import { libraryFolder, librarySettings, markMoved } from './library.js'
 import { bringForward } from './windows.js'
+import { PythonSessions } from './sandbox.js'
 
 /** Statuses whose response has no body. */
 const NO_BODY = new Set([101, 103, 204, 205, 304])
@@ -178,6 +179,96 @@ export function handleBridge(origin, { openWindow }) {
   handle('library:readBytes', (_, path) => inTurn(folder => folder.readBytes(path)))
   handle('library:apply', (_, ops) => inTurn(folder => folder.apply(ops)))
   handle('library:reveal', (_, path) => inTurn(folder => folder.reveal(path)))
+
+  // Python, a session for each chat, fenced from everything here
+  // (`sandbox.js`, and `src/platform/python.js` in the page). The project a
+  // run is handed names its imported files by their paths in the library,
+  // which are found here, and left out when they aren't there. A file still
+  // only on the sync server is the page's to fetch, which it is asked to do
+  // when the run reads it, and answers with where it is in the library then.
+  const python = new PythonSessions()
+  let fetchesAsked = 0
+  /** @type {Map<string, (file: string|null) => void>} */
+  const fetches = new Map()
+  /**
+   * @param {Electron.WebContents} page
+   * @param {string} session
+   * @returns {(id: string) => Promise<string|null>}
+   */
+  const fetchFrom = (page, session) => id =>
+    new Promise(resolve => {
+      if (page.isDestroyed()) return resolve(null)
+      const request = ++fetchesAsked
+      const key = `${page.id}:${request}`
+      const closed = () => answered(null)
+      const answered = (/** @type {string|null} */ file) => {
+        fetches.delete(key)
+        page.off('destroyed', closed)
+        resolve(file)
+      }
+      fetches.set(key, answered)
+      page.once('destroyed', closed)
+      page.send('python:fetchFile', session, request, id)
+    })
+  on('python:fetched', (event, request, file) =>
+    fetches.get(`${event.sender.id}:${request}`)?.(typeof file === 'string' ? file : null)
+  )
+  handle('python:run', async (event, session, code, options = {}) => {
+    const { timeoutMs = null, project = null, filename = null } = options ?? {}
+    if (typeof session !== 'string' || typeof code !== 'string') {
+      throw new Error('Python runs a string of code, in a session named by a string.')
+    }
+    if (timeoutMs !== null && !(Number.isFinite(timeoutMs) && timeoutMs > 0)) {
+      throw new Error('A run’s time limit is a number of milliseconds, or none.')
+    }
+    if (filename !== null && typeof filename !== 'string') {
+      throw new Error('A run’s file name is a string, or none.')
+    }
+    if (project !== null && !Array.isArray(project)) {
+      throw new Error('A run’s project is a list of what is in it, or none.')
+    }
+    const locate = (/** @type {string} */ file) => inTurn(folder => folder.locate(file))
+    const entries =
+      project && (await projectFiles(project, locate, fetchFrom(event.sender, session)))
+    return python.run(session, code, { timeoutMs, project: entries, filename })
+  })
+  on('python:stop', (_, session) => python.stop(session))
+}
+
+/**
+ * A run's project as the page handed it, each imported file found in the
+ * library, each one still on the sync server to be fetched as it is read,
+ * and anything not as a project's entries are left out.
+ *
+ * @param {unknown[]} project
+ * @param {(file: string) => Promise<{path: string, size: number}|null>} locate -
+ *   Where a file in the library is on the disk, and how large
+ * @param {(id: string) => Promise<string|null>} fetchFile - Has the page fetch
+ *   a file into the library, and says where it is there
+ * @returns {Promise<import('./sandbox.js').ProjectEntry[]>}
+ */
+export async function projectFiles(project, locate, fetchFile) {
+  const found = await Promise.all(
+    project.map(async (/** @type {any} */ entry) => {
+      if (typeof entry?.path !== 'string' || !entry.path) return null
+      if (entry.folder === true) return { path: entry.path, folder: /** @type {const} */ (true) }
+      if (typeof entry.id !== 'string') return null
+      const { path, id } = entry
+      if (typeof entry.text === 'string') return { path, id, text: entry.text }
+      if (entry.onServer === true) {
+        if (!Number.isSafeInteger(entry.size) || entry.size < 0) return null
+        const fetch = async () => {
+          const file = await fetchFile(id)
+          return file ? locate(file) : null
+        }
+        return { path, id, size: /** @type {number} */ (entry.size), fetch }
+      }
+      if (typeof entry.file !== 'string') return null
+      const at = await locate(entry.file).catch(() => null)
+      return at && { path, id, file: at.path, size: at.size }
+    })
+  )
+  return found.filter(entry => entry !== null)
 }
 
 /**

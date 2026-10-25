@@ -152,6 +152,8 @@ import { Fragment } from 'prosemirror-model'
  * @property {string} segment
  * @property {{index: number}|{insert: Insert, offset: number}} at
  * @property {Kind} base - What it is in the Doc before it is styled
+ * @property {boolean} [guessed] - `base` is a guess: a paragraph put in takes
+ *   the style of the one it is typed into, which is styled whole then
  * @property {string} named - Its named style there
  * @property {boolean} bullet - Whether it has a bullet there
  * @property {boolean} joined - Paragraphs of the Doc were joined into it
@@ -1543,6 +1545,9 @@ class Writer {
     const on = running.get(paragraph)
     const copied = {
       base: from?.kind ?? { kind: 'paragraph' },
+      // Docs gives it the style of the paragraph it is typed into, which
+      // what it was judged by may not be in: a quote's indent, say.
+      guessed: !from || from.paragraph !== paragraph,
       named: paragraph.named,
       bullet: paragraph.bullet || !!on?.bullet,
     }
@@ -1777,8 +1782,8 @@ class Writer {
     for (const ending of this.endings.filter(each => each.segment === segment)) {
       const wanted = ending.b.kind
       if (wanted.kind === 'footnote' || wanted.kind === 'table') continue
-      const { base, joined } = ending
-      if (!joined && sameKind(wanted, base)) continue
+      const { base, joined, guessed } = ending
+      if (!joined && !guessed && sameKind(wanted, base)) continue
       const index =
         'index' in ending.at
           ? map.kept(ending.at.index)
@@ -1791,7 +1796,7 @@ class Writer {
             ? ending.named
             : `HEADING_${wanted.level}`
           : 'NORMAL_TEXT'
-      if (joined || named !== ending.named) {
+      if (joined || guessed || named !== ending.named) {
         out.push({
           updateParagraphStyle: {
             range,
@@ -1803,6 +1808,7 @@ class Writer {
 
       const quote = wanted.kind === 'quote'
       if (
+        guessed ||
         quote !== (base.kind === 'quote') ||
         (joined && (quote || ending.involved.some(each => each.kind === 'quote')))
       ) {

@@ -632,3 +632,88 @@ describe('long sections', () => {
     expect(parseDigests(part, asked).size).toBe(1)
   })
 })
+
+describe('planExplore over a document that holds others', () => {
+  /** A card's picture, with no text, holding its fields. */
+  const portrait = () =>
+    doc('Cards/Wren', '', {
+      type: 'file',
+      children: [
+        doc('Cards/Wren/Description', prose(120, 'quiet')),
+        doc('Cards/Wren/Scenario', prose(90, 'market')),
+      ],
+    })
+
+  it('describes one with no text of its own from what it holds, as a folder', () => {
+    const wren = portrait()
+    const planned = planExplore(folder('Cards', [wren]), DEFAULT_BUDGET)
+
+    expect(kinds(planned)).toEqual(['read'])
+    const work = planned.plan.work[planned.steps[0].id]
+    expect(work.reads).toEqual(['Cards/Wren/Description', 'Cards/Wren/Scenario'])
+    expect(Object.keys(work.answers)).toEqual([
+      'Cards/Wren/Description',
+      'Cards/Wren/Scenario',
+      'Cards/Wren',
+      'Cards',
+    ])
+    // What it is made from changes with what it holds.
+    const before = folderBasis(wren)
+    wren.children[0].text = prose(130, 'loud')
+    expect(folderBasis(wren)).not.toBe(before)
+  })
+
+  it('reads one with text of its own as a document, and what it holds beside it', () => {
+    const budget = 20000
+    const chapter = doc('Book/Chapter 1', prose(1500, 'gate'), {
+      children: [
+        doc('Book/Chapter 1/Arrival', prose(1500, 'river')),
+        doc('Book/Chapter 1/Leaving', prose(1500, 'road')),
+      ],
+    })
+    const planned = planExplore(folder('Book', [chapter]), budget)
+
+    const reads = planned.steps
+      .map(step => planned.plan.work[step.id])
+      .filter(work => work.kind === 'read')
+      .flatMap(work => work.reads)
+    expect(reads).toEqual(['Book/Chapter 1', 'Book/Chapter 1/Arrival', 'Book/Chapter 1/Leaving'])
+    const gather = planned.plan.work[planned.steps.at(-1).id]
+    expect(gather.pieces).toEqual([
+      { digest: 'Book/Chapter 1' },
+      { digest: 'Book/Chapter 1/Arrival' },
+      { digest: 'Book/Chapter 1/Leaving' },
+    ])
+  })
+
+  it('asked for alone, describes it and each thing it holds', () => {
+    const chapter = doc('Chapter 1', prose(200, 'gate'), {
+      children: [doc('Chapter 1/Arrival', prose(30, 'river'))],
+    })
+    const planned = planExplore(chapter, DEFAULT_BUDGET)
+
+    expect(planned.steps.flatMap(step => Object.keys(planned.plan.work[step.id].answers))).toEqual([
+      'Chapter 1',
+      'Chapter 1/Arrival',
+    ])
+  })
+
+  it('sends one with no text as what it holds, and asks it last', () => {
+    const wren = portrait()
+    const nodes = new Map()
+    const index = node => {
+      nodes.set(node.id, node)
+      node.children.forEach(index)
+    }
+    index(wren)
+    const planned = planExplore(wren, DEFAULT_BUDGET)
+    const messages = exploreMessages(planned.plan.work[planned.steps[0].id], {
+      node: id => nodes.get(id) ?? null,
+      output: () => '',
+    })
+
+    expect(messages?.[1].content).toContain(
+      'These are the documents in Cards/Wren, all of them. Describe the ones listed below, and Cards/Wren as a whole.'
+    )
+  })
+})

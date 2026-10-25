@@ -11,6 +11,12 @@
  * hyphenated word in a dictionary is kept here rather than given to Harper:
  * a misspelling inside it is dropped, and "Wi" on its own is still one.
  *
+ * Harper is written for prose that explains, and fiction trips it up. The
+ * rules that were mostly wrong over published fiction are off, and so are
+ * the kinds of lint that are style, while what fiction writes on purpose (a
+ * speech run on over paragraphs, "Mr." before a small letter, dialogue with
+ * its g's dropped) is left out of what the rest find.
+ *
  * Harper takes about a quarter of a millisecond a word of prose it hasn't
  * seen, in Node and in a worker alike (15 Oct 2026, harper.js 2.10): a
  * screenful is quick, a novel is half a minute. Text it has seen comes back
@@ -67,13 +73,111 @@ const DIALECT_NUMBERS = {
 }
 
 /**
- * Harper's rules that are off. A long sentence is flagged by its length
- * alone, which in fiction is noise. The rest are style a writer chooses, and
- * a character speaks in: swearing, hedging ("I would argue that"), a list
- * without the Oxford comma. Which others go is for a run over a real
- * manuscript to settle.
+ * Harper's rules that are off. Most were settled by a run over published
+ * fiction (25 Oct 2026, harper.js 2.10), where what they found was nearly
+ * all false alarms: prose that has been edited has few mistakes left.
  */
-const RULES_OFF = ['LongSentences', 'AvoidCurses', 'Hedging', 'OxfordComma']
+const RULES_OFF = [
+  // Wrong far more often than right in fiction: "She strode across" taken for
+  // a verb that doesn't agree, "He was sure" for one missing a preposition,
+  // "a thief" for a mass noun, "Who's there?" for a misspelling, "He let out
+  // a sigh" for "let's", "Sit down, you two" for "your", "back to normal" for
+  // "too", "hopped down" for "hope", "the Berrys" for "Berries", "find out"
+  // for "find", and open compounds ("trash can", "out back") for closed ones.
+  'PronounVerbAgreement',
+  'MissingPreposition',
+  'MassNouns',
+  'OrthographicConsistency',
+  'LetsConfusion',
+  'PossessiveYour',
+  'ToTwoToo',
+  'HopHope',
+  'PronounKnew',
+  'ThereToTheir',
+  'QuiteQuiet',
+  'ThatThan',
+  'WereWhere',
+  'MissingTo',
+  'WrongNegative',
+  'RegularIrregulars',
+  'CompoundNouns',
+  'DisjointPrefixes',
+  'MergeWords',
+  'FindOut',
+  // A long sentence, flagged by its length alone.
+  'LongSentences',
+  // Style a writer chooses, and a character speaks in: swearing, hedging ("I
+  // would argue that"), a list without the Oxford comma, "uh" and "um", no
+  // comma after "Instead" or in "No thanks", "that that", "OK", "yeh".
+  'AvoidCurses',
+  'Hedging',
+  'OxfordComma',
+  'FillerWords',
+  'DiscourseMarkers',
+  'IntroCueCommaBeforeThanks',
+  'RedundantThat',
+  'ThatWhich',
+  'OkToOkay',
+  'YehToYeah',
+  // Typesetting, which is for whatever sets the text in type: two spaces
+  // after a full stop (Harper's French spaces), "..." for "…", 5'8" for
+  // 5′8″, a hyphen in a range of numbers.
+  'NoFrenchSpaces',
+  'UseEllipsisCharacter',
+  'FootInchMinuteSecondSymbols',
+  'NumericRangeEnDash',
+]
+
+/**
+ * Harper's kinds of lint that are off, whichever rule finds them: a word it
+ * would have more vivid ("very cold" for "freezing"), a phrasing it would
+ * have otherwise ("not uncommon", "and also", "all of the"), or another
+ * country's ("have a look"). They are the writer's to choose, and a rule of
+ * one of these kinds that Harper adds later is off as well.
+ */
+const KINDS_OFF = new Set(['Enhancement', 'Style', 'Redundancy', 'Regionalism'])
+
+/** Titles written with a full stop, after which the sentence goes on. */
+const TITLE =
+  /\b(?:Mr|Mrs|Ms|Mx|Dr|Prof|Rev|Fr|St|Mt|Capt|Col|Gen|Lt|Sgt|Cpl|Det|Insp|Supt|Gov|Sen|Rep|Hon|Messrs|Mme|Mlle)\.\s+$/u
+
+/** The quotation marks speech opens with: a curly one, or a straight one. */
+const OPENING_QUOTES = ['\u201c', '"']
+
+/** A double quotation mark, of any of the three. */
+const QUOTE = /[\u201c\u201d"]/u
+
+/** Words that are grammar twice over. */
+const GRAMMAR_REPEATED = ['had had', 'that that']
+
+/** An apostrophe, either one: what a dropped letter is written with. */
+const APOSTROPHE = /['\u2019]/u
+
+/**
+ * What fiction writes on purpose and one of Harper's rules takes for a
+ * mistake, by rule: whether the lint it found from `from` to `to` in a
+ * paragraph is one of those.
+ *
+ * @type {Record<string, (paragraph: string, from: number, to: number) => boolean>}
+ */
+const ON_PURPOSE = {
+  // A speech that runs on into the next paragraph opens this one and isn't
+  // closed in it. Harper sees a paragraph at a time, so it can't tell; a
+  // quote opened in the middle of narration and not closed is still flagged.
+  // A quote mark after a number is an inch mark: 5'8".
+  UnclosedQuotes: (paragraph, from, to) =>
+    /\d$/u.test(paragraph.slice(0, from)) ||
+    (OPENING_QUOTES.includes(paragraph.charAt(from)) &&
+      OPENING_QUOTES.includes(paragraph.trimStart().charAt(0)) &&
+      !QUOTE.test(paragraph.slice(to))),
+  // "Mr. and Mrs. Hale": the full stop after a title doesn't end the sentence.
+  SentenceCapitalization: (paragraph, from) => TITLE.test(paragraph.slice(0, from)),
+  // "Ma an’ Pa": "and" with its d dropped, not the article.
+  AnA: (paragraph, _from, to) => APOSTROPHE.test(paragraph.charAt(to)),
+  // "She had had enough." "She knew that that was it."
+  RepeatedWords: (paragraph, from, to) =>
+    GRAMMAR_REPEATED.includes(paragraph.slice(from, to).toLowerCase().split(/\s+/u).join(' ')),
+}
 
 /**
  * Whether one of Harper's rules is off: one of `RULES_OFF`, or one that spells
@@ -244,7 +348,33 @@ export function lintHash(kind, paragraph, from, to) {
 }
 
 /**
- * Check paragraphs, each on its own.
+ * Whether a misspelling is a word with its g dropped, as dialogue spells it:
+ * "nothin’" for "nothing". The apostrophe says it is on purpose, and the
+ * word with its g is to be one the checker knows, so a typo in one is still
+ * a typo.
+ *
+ * @param {Linter} linter
+ * @param {string} paragraph
+ * @param {number} from
+ * @param {number} to
+ * @param {Map<string, boolean>} known - What was found of words with their g
+ *   put back, kept for the rest of the check
+ * @returns {Promise<boolean>}
+ */
+async function isDroppedG(linter, paragraph, from, to, known) {
+  const word = paragraph.slice(from, to)
+  if (!/in$/iu.test(word) || !APOSTROPHE.test(paragraph.charAt(to))) return false
+  const whole = word + (word.endsWith('N') ? 'G' : 'g')
+  if (!known.has(whole)) {
+    const lints = await linter.lint(whole, { language: 'plaintext' })
+    known.set(whole, !lints.some(lint => SPELLING_KINDS.has(lint.lint_kind())))
+  }
+  return known.get(whole) ?? false
+}
+
+/**
+ * Check paragraphs, each on its own. What fiction writes on purpose is left
+ * out (`ON_PURPOSE`, `isDroppedG`), as are the kinds that are off.
  *
  * @param {Linter} linter
  * @param {string[]} texts
@@ -255,13 +385,24 @@ export function lintHash(kind, paragraph, from, to) {
 export async function lintTexts(linter, texts, hyphenated = new Set()) {
   /** @type {LintInfo[][]} */
   const results = []
+  /** @type {Map<string, boolean>} */
+  const known = new Map()
   for (const paragraph of texts) {
     /** @type {LintInfo[]} */
     const infos = []
-    const lints = paragraph.trim() ? await linter.lint(paragraph, { language: 'plaintext' }) : []
-    for (const lint of lints) {
-      const { start: from, end: to } = lint.span()
+    const byRule = paragraph.trim()
+      ? await linter.organizedLints(paragraph, { language: 'plaintext' })
+      : {}
+    const lints = Object.entries(byRule)
+      .flatMap(([rule, found]) => found.map(lint => ({ rule, lint, span: lint.span() })))
+      .sort((a, b) => a.span.start - b.span.start)
+    for (const { rule, lint, span } of lints) {
+      const { start: from, end: to } = span
       const kind = lint.lint_kind()
+      if (KINDS_OFF.has(kind) || ON_PURPOSE[rule]?.(paragraph, from, to)) continue
+      if (SPELLING_KINDS.has(kind) && (await isDroppedG(linter, paragraph, from, to, known))) {
+        continue
+      }
       const text = paragraph.slice(from, to)
       /** @type {LintInfo} */
       const info = {

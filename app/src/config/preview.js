@@ -27,7 +27,12 @@
  *
  * @type {Record<string, string>}
  */
-export const PREVIEWS = {}
+export const PREVIEWS = {
+  // Python the model runs, in the desktop app: .llm/code_sandbox_design.md.
+  python: '2026-10-23',
+  // A project shared with only some of its documents: .llm/sync_design.md, "Only some documents".
+  'selective-sharing': '2026-10-24',
+}
 
 /**
  * The names a value of VITE_PREVIEW gives.

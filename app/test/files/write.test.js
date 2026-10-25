@@ -132,42 +132,58 @@ describe('writeFile', () => {
         ],
         ...more,
       })
-    /** Titles under a folder, in order, folders as `{title: [...]}`. */
-    const tree = (/** @type {string} */ id) =>
-      store
-        .getChildrenOrdered(id)
-        .map(child => (child.type === 'folder' ? { [child.title]: tree(child.id) } : child.title))
-
-    it('becomes an ordered folder of its parts and chapters, with the epub last', async () => {
-      const written = await writeFile(STORY, book())
-
-      const folder = store.getDocument(written.folderId)
-      expect(folder).toMatchObject({ type: 'folder', title: 'Tides', ordered: true })
-      expect(tree(folder.id)).toEqual([
-        'Front matter',
-        { 'Part One': ['Part One', 'Chapter', 'Chapter (2)'] },
-        { 'Part Two': ['Coda'] },
-        'Tides',
-      ])
-      expect(written).toMatchObject({
-        title: 'Tides',
-        documents: 6,
+    /** Titles under a document, in order, what holds others as `{title: [...]}`. */
+    const held = (/** @type {string} */ id) =>
+      store.getChildrenOrdered(id).map(child => {
+        const under = store.getChildrenOrdered(child.id)
+        return under.length || child.type === 'folder'
+          ? { [child.title]: held(child.id) }
+          : child.title
       })
-    })
 
-    it('writes the chapters as markdown, and keeps the epub with no text of its own', async () => {
+    it('is the epub, holding its parts and chapters in order', async () => {
       const written = await writeFile(STORY, book())
-      const [front, partOne, , file] = store.getChildrenOrdered(written.folderId)
 
-      expect(front).toMatchObject({ type: 'text', content: 'For K.' })
-      expect(store.getChildrenOrdered(partOne.id)[0].content).toBe('# Part One\n\nWhere it begins.')
-      expect(store.getDocument(partOne.id).ordered).toBe(true)
-      expect(file).toMatchObject({ type: 'file', mime: 'application/epub+zip', content: '' })
+      const epub = store.getDocument(written.folderId)
+      expect(epub).toMatchObject({
+        type: 'file',
+        title: 'Tides',
+        mime: 'application/epub+zip',
+        content: '',
+        ordered: true,
+      })
+      expect(epub.parentId).toBe(rootIdFor(STORY))
+      expect(held(epub.id)).toEqual([
+        'Front matter',
+        { 'Part One': ['Chapter', 'Chapter (2)'] },
+        { 'Part Two': ['Coda'] },
+      ])
       expect(db.files.put).toHaveBeenCalledWith({
-        id: file.id,
+        id: epub.id,
         storyId: STORY,
         blob: expect.any(Blob),
       })
+      expect(written).toMatchObject({ title: 'Tides', documents: 6 })
+    })
+
+    it('writes the chapters as markdown', async () => {
+      const written = await writeFile(STORY, book())
+      const [front, partOne] = store.getChildrenOrdered(written.folderId)
+
+      expect(front).toMatchObject({ type: 'text', content: 'For K.' })
+      expect(store.getChildrenOrdered(partOne.id)[0]).toMatchObject({ type: 'text', content: 'A.' })
+    })
+
+    it('makes a part with words of its own that text, and one with none a folder', async () => {
+      const written = await writeFile(STORY, book())
+      const [, partOne, partTwo] = store.getChildrenOrdered(written.folderId)
+
+      expect(partOne).toMatchObject({
+        type: 'text',
+        content: '# Part One\n\nWhere it begins.',
+        ordered: true,
+      })
+      expect(partTwo).toMatchObject({ type: 'folder', ordered: true })
     })
 
     it('is one file, as before, when no chapters could be read out of it', async () => {

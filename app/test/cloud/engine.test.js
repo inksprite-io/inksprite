@@ -577,7 +577,7 @@ describe.skipIf(!HAVE_SERVER)('a newer app’s records', () => {
     await a.sync()
     await b.sync()
 
-    a.update({ format: 2 })
+    a.update({ format: 3 })
     const chapter = a.db.documents.get('doc_ch1')
     a.put('documents', {
       ...chapter,
@@ -615,7 +615,7 @@ describe.skipIf(!HAVE_SERVER)('a newer app’s records', () => {
     await b.sync()
     expect(sent).toEqual([])
 
-    b.update({ format: 2 })
+    b.update({ format: 3 })
     await b.sync()
     await a.sync()
     expect(b.engine.status.phase).toBe('idle')
@@ -627,13 +627,80 @@ describe.skipIf(!HAVE_SERVER)('a newer app’s records', () => {
     }
   })
 
+  it('of a document held by a text hold an older app’s pull of that project alone', async () => {
+    const { a, b } = await twoDevices()
+    writeProject(a)
+    const t = 1000
+    const row = {
+      summary: '',
+      order: 0,
+      version: 1,
+      created: t,
+      updated: t,
+    }
+    a.put('stories', { id: 'story_2', wordCount: 0, version: 1, created: t, updated: t })
+    a.put('documents', {
+      ...row,
+      id: 'root_story_2',
+      storyId: 'story_2',
+      parentId: 'story_2',
+      type: 'folder',
+      title: 'Heist',
+      content: '',
+      wordCount: 0,
+    })
+    a.put('documents', {
+      ...row,
+      id: 'doc_plan',
+      storyId: 'story_2',
+      parentId: 'root_story_2',
+      type: 'text',
+      title: 'Plan',
+      content: 'Go at night.\n',
+      wordCount: 3,
+    })
+    await settled(a)
+    await a.sync()
+    b.update({ format: 1 })
+    await b.sync()
+    expect(b.db.documents.has('doc_plan')).toBe(true)
+
+    a.put('documents', {
+      ...row,
+      id: 'doc_scene',
+      storyId: 'story_1',
+      parentId: 'doc_ch1',
+      type: 'text',
+      title: 'Over the wall',
+      content: 'She climbed.\n',
+      wordCount: 2,
+    })
+    a.put('documents', {
+      ...a.db.documents.get('doc_plan'),
+      content: 'Go at dawn.\n',
+      updated: 2000,
+    })
+    await settled(a)
+    await a.sync()
+    await b.sync()
+
+    expect(b.engine.status).toMatchObject({ phase: 'held', error: null })
+    expect(b.db.documents.has('doc_scene')).toBe(false)
+    expect(b.db.documents.get('doc_plan').content).toBe('Go at dawn.\n')
+
+    b.update({})
+    await b.sync()
+    expect(b.engine.status.phase).toBe('idle')
+    expect(b.db.documents.get('doc_scene')).toMatchObject({ parentId: 'doc_ch1' })
+  })
+
   it('stop a whole read partway without removing what it hasn’t reached, read whole once updated', async () => {
     const { a, b } = await twoDevices()
     writeProject(a)
     await settled(a)
     await a.sync()
     await b.sync()
-    a.update({ format: 2 })
+    a.update({ format: 3 })
     a.put('documents', {
       ...a.db.documents.get('doc_ch1'),
       content: 'Another way in.\n',
@@ -664,7 +731,7 @@ describe.skipIf(!HAVE_SERVER)('a newer app’s records', () => {
     expect(b.db.documents.get('doc_ch1').content).toContain('She climbed the wall.')
     expect(b.db.messages.has('msg_ghost')).toBe(true)
 
-    b.update({ format: 2 })
+    b.update({ format: 3 })
     await b.sync()
     expect(b.engine.status.phase).toBe('idle')
     expect(b.db.documents.get('doc_ch1').content).toBe('Another way in.\n')

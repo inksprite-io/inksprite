@@ -64,7 +64,7 @@ const removalOf = (table, id) => ({ entityType: table, id, op: 'delete', data: n
  */
 export function makeDevice({ api, keys, schema = 32, format, now = Date.now, diagnostics }) {
   /** What the engine last said of the projects shared. @type {import('@/cloud/engine.js').Sharing} */
-  let sharing = { me: null, projects: {} }
+  let sharing = { me: null, projects: {}, selective: [] }
   /** @type {Record<string, Map<string, any>>} */
   const db = {
     stories: new Map(),
@@ -118,6 +118,8 @@ export function makeDevice({ api, keys, schema = 32, format, now = Date.now, dia
       db.stories.has(storyId) ? structuredClone(rowsOf(storyId)) : null,
     tree: async storyId =>
       structuredClone([...db.documents.values()].filter(row => row.storyId === storyId)),
+    versions: async storyId =>
+      structuredClone([...db.versions.values()].filter(row => row.storyId === storyId)),
     readSetup: async () =>
       Object.fromEntries(
         [...SETUP_TABLES, SETTINGS].map(table => [table, structuredClone([...db[table].values()])])
@@ -190,14 +192,20 @@ export function makeDevice({ api, keys, schema = 32, format, now = Date.now, dia
     },
   }
 
-  /** @param {{schema: number, format?: number}} writes */
-  const start = writes =>
+  /**
+   * An app that writes this schema, and, given a format, reads that and
+   * writes it on every record, as an app does that knows no newer one.
+   *
+   * @param {{schema: number, format?: number}} writes
+   */
+  const start = ({ schema, format }) =>
     createEngine({
       api,
       keys,
       local,
       state,
-      ...writes,
+      schema,
+      ...(format === undefined ? {} : { format, formatOf: () => format }),
       upgrade: (table, row) => row,
       onSharing: told => {
         sharing = told

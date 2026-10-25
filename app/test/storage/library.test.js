@@ -91,6 +91,89 @@ describe('the library as storage', () => {
     expect(await (await again.fileBytes('pdf'))?.text()).toBe('%PDF-1.7 bytes')
   })
 
+  it('says where an imported file’s bytes are in the library, for Python to read', async () => {
+    const library = await withProject()
+    expect(await library.storage.filePath('pdf')).toBe('My Novel/Notes/Rulebook.pdf')
+
+    const again = reopened(library)
+    await again.documents(STORY)
+    expect(await again.filePath('pdf')).toBe('My Novel/Notes/Rulebook.pdf')
+    expect(await again.filePath('ch1')).toBeNull()
+    expect(await again.filePath('none')).toBeNull()
+  })
+
+  it('has a file’s bytes once they come, that weren’t there when the project was read', async () => {
+    const library = await withProject()
+    library.files.delete('My Novel/Notes/Rulebook.pdf')
+
+    const again = reopened(library)
+    await again.documents(STORY)
+    expect(await again.filePath('pdf')).toBeNull()
+    expect(await again.fileBytes('pdf')).toBeNull()
+
+    await again.putFileBytes('pdf', STORY, new Blob(['fetched'], { type: 'application/pdf' }))
+    expect(await again.filePath('pdf')).toBe('My Novel/Notes/Rulebook.pdf')
+    expect(await (await again.fileBytes('pdf'))?.text()).toBe('fetched')
+  })
+
+  it('moves a file into a directory of its name when it gets what it holds, bytes and all', async () => {
+    const library = await withProject()
+    const copy = doc('copy', 'pdf', { title: 'Rulebook (Markdown)', content: '# Rules' })
+    await library.storage.write('documents', [put('documents', copy)])
+
+    expect(await library.storage.filePath('pdf')).toBe('My Novel/Notes/Rulebook/Rulebook.pdf')
+    expect(library.outside.list()).toEqual(
+      expect.arrayContaining([
+        'My Novel/Notes/Rulebook/Rulebook.pdf',
+        'My Novel/Notes/Rulebook/.Rulebook.pdf.md',
+        'My Novel/Notes/Rulebook/Rulebook (Markdown).md',
+      ])
+    )
+
+    const again = reopened(library)
+    expect(byIdSorted(await again.documents(STORY))).toEqual(asRead([...sample(), copy]))
+    expect(await (await again.fileBytes('pdf'))?.text()).toBe('%PDF-1.7 bytes')
+  })
+
+  it('keeps a card that is its picture, with a folder of lore in it, as it was written', async () => {
+    const library = await withProject()
+    await library.storage.putFileBytes(
+      'wren',
+      STORY,
+      new Blob(['png bytes'], { type: 'image/png' })
+    )
+    const card = [
+      doc('wren', 'notes', {
+        type: 'file',
+        title: 'Wren',
+        kind: 'card',
+        mime: 'image/png',
+        size: 9,
+      }),
+      doc('description', 'wren', { title: 'Description', content: 'Quick.', kind: 'description' }),
+      doc('sidecar', 'wren', { title: '.card.json', content: '{}', kind: 'sidecar', hidden: true }),
+      folder('lore', 'wren', { title: 'Lore', kind: 'lore' }),
+      doc('harbour', 'lore', { title: 'Harbour', content: 'Tides.', kind: 'lore-entry' }),
+    ]
+    await library.storage.write(
+      'documents',
+      card.map(row => put('documents', row))
+    )
+
+    expect(await library.storage.filePath('wren')).toBe('My Novel/Notes/Wren/Wren.png')
+    expect(library.outside.list()).toEqual(
+      expect.arrayContaining([
+        'My Novel/Notes/Wren/Wren.png',
+        'My Novel/Notes/Wren/Description.md',
+        'My Novel/Notes/Wren/Lore/.folder.md',
+        'My Novel/Notes/Wren/Lore/Harbour.md',
+      ])
+    )
+    const again = reopened(library)
+    expect(byIdSorted(await again.documents(STORY))).toEqual(asRead([...sample(), ...card]))
+    expect(await (await again.fileBytes('wren'))?.text()).toBe('png bytes')
+  })
+
   it('writes a project whose rows come before its story', async () => {
     const library = memoryLibrary()
     const storage = libraryStorage(library.disk)

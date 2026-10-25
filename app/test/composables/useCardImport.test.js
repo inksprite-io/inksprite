@@ -113,9 +113,9 @@ describe('useCardImport', () => {
     it('counts what it is about to write, sidecar and all', async () => {
       const found = await cards.inspect(file('elara.png', cardPng(CARD)))
 
-      // Folder, description, two greetings, the Lore folder, one entry,
-      // sidecar — and the PNG itself, kept as the portrait.
-      expect(found.documents).toBe(8)
+      // The PNG itself, holding the description, two greetings, the Lore
+      // folder, one entry and the sidecar.
+      expect(found.documents).toBe(7)
       expect(found.portrait).toBeInstanceOf(File)
     })
 
@@ -392,25 +392,25 @@ describe('useCardImport', () => {
       expect(store.getDocument(written.folderId).title).toBe('Elara')
     })
 
-    it('keeps the PNG a card came in as its portrait', async () => {
+    it('writes a card that came in a PNG as the PNG, holding its documents', async () => {
       const store = useDocumentsStore()
       const png = file('elara.png', cardPng(CARD))
       const found = await cards.inspect(png)
 
       const written = await cards.write(found)
 
-      const portrait = store
-        .getChildren(written.folderId)
-        .find(document => document.kind === 'portrait')
-      expect(portrait).toMatchObject({
+      const card = store.getDocument(written.folderId)
+      expect(card).toMatchObject({
         type: 'file',
-        title: 'Portrait',
+        kind: 'card',
+        title: 'Elara',
         mime: 'image/png',
         size: png.size,
         content: '',
       })
-      expect(portrait.hidden).toBeUndefined()
-      expect(db.files.put).toHaveBeenCalledWith({ id: portrait.id, storyId: STORY, blob: png })
+      expect(card.hidden).toBeUndefined()
+      expect(db.files.put).toHaveBeenCalledWith({ id: card.id, storyId: STORY, blob: png })
+      expect(store.getChildren(card.id).some(document => document.kind === 'portrait')).toBe(false)
     })
 
     it('writes a file as one document with its bytes beside it', async () => {
@@ -540,10 +540,20 @@ describe('useCardImport', () => {
   describe('inspectCard', () => {
     it('reads the card back out of its folder, portrait and all', async () => {
       const store = useDocumentsStore()
-      const written = await cards.write(await cards.inspect(file('elara.png', cardPng(CARD))))
-      const portrait = store
-        .getChildren(written.folderId)
-        .find(document => document.kind === 'portrait')
+      // A card folder with its portrait in it, as a picture card was imported
+      // before it was the picture.
+      const written = await cards.write(
+        await cards.inspect(file('elara.json', JSON.stringify(CARD)))
+      )
+      const portrait = store.createDocument({
+        storyId: STORY,
+        parentId: written.folderId,
+        type: 'file',
+        title: 'Portrait',
+        kind: 'portrait',
+        mime: 'image/png',
+        size: 3,
+      })
       db.files.get.mockImplementation(async id =>
         id === portrait.id
           ? { id, storyId: STORY, blob: new Blob(['png'], { type: 'image/png' }) }
@@ -557,9 +567,23 @@ describe('useCardImport', () => {
         title: 'Elara',
         greetings: 2,
         lore: 1,
-        documents: 8,
+        documents: 7,
         replaces: written.folderId,
       })
+      expect(found.portrait).toBeInstanceOf(File)
+    })
+
+    it('reads the portrait of a card that is its picture from the card', async () => {
+      const written = await cards.write(await cards.inspect(file('elara.png', cardPng(CARD))))
+      db.files.get.mockImplementation(async id =>
+        id === written.folderId
+          ? { id, storyId: STORY, blob: new Blob(['png'], { type: 'image/png' }) }
+          : undefined
+      )
+
+      const found = await cards.inspectCard(written.folderId)
+
+      expect(found).toMatchObject({ shape: 'card', title: 'Elara', replaces: written.folderId })
       expect(found.portrait).toBeInstanceOf(File)
     })
 
@@ -631,8 +655,11 @@ describe('useCardImport', () => {
       expect(found.portrait).toBeInstanceOf(File)
 
       const written = await cards.write(found)
-      const children = useDocumentsStore().getChildren(written.folderId)
-      expect(children.some(document => document.kind === 'portrait')).toBe(true)
+      expect(useDocumentsStore().getDocument(written.folderId)).toMatchObject({
+        type: 'file',
+        kind: 'card',
+        mime: 'image/png',
+      })
       expect(useDocumentsStore().getDocument(written.folderId).parentId).not.toBe(rootIdFor(STORY))
     })
 

@@ -30,6 +30,7 @@ import { settleThreads } from '@/editor/comments.js'
 import { orderSiblings } from '@/utils/siblingOrder.js'
 import { pictureKey, picturesIn, unreferencedPictures } from '@/utils/pictures.js'
 import { expired, trashedIds } from '@/utils/trash.js'
+import { sharing } from '@/cloud/people.js'
 
 /** @typedef {import('../types/models.js').Document} Document */
 /** @typedef {import('../types/models.js').RepositorySource} RepositorySource */
@@ -270,7 +271,8 @@ export const useDocumentsStore = defineStore('documents', () => {
    * @param {number} [opts.order] - Defaults to appending after existing siblings
    * @param {string} [opts.content] - Text documents and files only: markdown,
    *   or the text read out of the file
-   * @param {boolean} [opts.ordered] - Folders only; new folders are unordered by default
+   * @param {boolean} [opts.ordered] - Whether what it holds is kept in order: a folder's,
+   *   or a document's an import puts under it; unordered by default
    * @param {string} [opts.summary] - A short description, for the listing the model reads
    * @param {string} [opts.kind] - What this document is, for an importer and its exporter
    * @param {boolean} [opts.hidden] - Kept from the model, and so is anything under it
@@ -323,7 +325,7 @@ export const useDocumentsStore = defineStore('documents', () => {
       parentId,
       order: order ?? getChildren(parentId).length,
       type,
-      ordered: isFolder ? ordered : false,
+      ordered,
       title,
       content: isFolder ? '' : content,
       summary,
@@ -345,6 +347,11 @@ export const useDocumentsStore = defineStore('documents', () => {
         ? { comments: settleThreads(content, comments) }
         : {}),
       ...(type === 'text' && pictures && Object.keys(pictures).length > 0 ? { pictures } : {}),
+      // In a project this account shares with only some of its documents, as
+      // its folder is. Sync gives one made before it has heard the same.
+      ...(sharing.value.selective.includes(storyId)
+        ? { unshared: Boolean(documents.value.get(parentId)?.unshared) }
+        : {}),
       version: 1,
       created: Date.now(),
       updated: Date.now(),
@@ -422,6 +429,26 @@ export const useDocumentsStore = defineStore('documents', () => {
     markEdited(next.storyId)
 
     return next
+  }
+
+  /**
+   * Share documents of a project its owner shares with only some of them, or
+   * stop sharing them: each with whether it is shared now, said either way,
+   * so that sync never takes one for a document made since. Not an edit of
+   * any of them. See `utils/sharedDocuments.js`.
+   *
+   * @param {Map<string, boolean>} shared - By id
+   */
+  function setShared(shared) {
+    for (const [id, now] of shared) {
+      const previous = documents.value.get(id)
+      if (!previous || !previous.unshared === now) continue
+      /** @type {Document} */
+      const next = { ...previous, unshared: !now }
+      documents.value.set(id, next)
+      syncStore.trackChange('documents', id, next)
+    }
+    triggerRef(documents)
   }
 
   /**
@@ -913,6 +940,7 @@ export const useDocumentsStore = defineStore('documents', () => {
     getChildrenOrdered,
     createDocument,
     updateDocument,
+    setShared,
     trashDocument,
     restoreDocument,
     deleteDocument,

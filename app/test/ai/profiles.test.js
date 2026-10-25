@@ -19,12 +19,15 @@ import {
 } from '@/ai/prompts/index.js'
 import { TOOL_GROUP_LABELS } from '@/ai/tools/index.js'
 import { WEB_GROUP } from '@/ai/tools/web.js'
+import { PYTHON_GROUP } from '@/ai/tools/python.js'
 
 /**
- * The groups a profile withholds by naming them. The web is not one: it is
- * opted into, as a server's tools are, so no profile has to withhold it.
+ * The groups a profile withholds by naming them. The web and Python are not:
+ * they are opted into, as a server's tools are, so no profile has to withhold
+ * them.
  */
-const WITHHELD_GROUPS = Object.keys(TOOL_GROUP_LABELS).filter(id => id !== WEB_GROUP)
+const OPTED_INTO = new Set([WEB_GROUP, PYTHON_GROUP])
+const WITHHELD_GROUPS = Object.keys(TOOL_GROUP_LABELS).filter(id => !OPTED_INTO.has(id))
 
 describe('chat profiles', () => {
   describe('the built-ins', () => {

@@ -23,6 +23,10 @@ is. What it is switched off from stays where it was, for when it is back on.
 - **Roleplay** - Character cards, the card library and the roleplay chat
   profiles. On where roleplay was already in use the first time the app
   opened with extensions, and off otherwise.
+- **Python** - Python the model runs code in, in the desktop app only, in
+  chats on the profiles its settings list or that switch it on. Off until
+  switched on: nothing before it was in use. In the `python` preview. See
+  ai/tools/python.js.
 
 Design: `.llm/extensions_design.md`.
 

@@ -213,9 +213,9 @@ const makeHistory = api => {
 
   /**
    * Put a document back where it was, if it is still where it was put and
-   * the folder is still there: into the folder, among what is still there in
-   * the order they had, and under its name, unless something there has taken
-   * it since.
+   * what it was in is still there: into that folder, or the document it was
+   * taken out of, among what is still there in the order they had, and under
+   * its name, unless something there has taken it since.
    * @param {string} documentId
    * @param {Place} now - Where it was put
    * @param {Place} then - Where it goes back to
@@ -225,7 +225,7 @@ const makeHistory = api => {
     if (!document || document.parentId !== now.parentId || document.title !== now.title) {
       return false
     }
-    if (!api.isFolder(api.get(then.parentId))) return false
+    if (!api.get(then.parentId)) return false
     api.keepingLinks(() => {
       const there = api
         .childrenOf(then.parentId)

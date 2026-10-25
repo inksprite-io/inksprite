@@ -820,7 +820,7 @@ const keys = new WeakMap()
  * @param {Node} node
  * @returns {string}
  */
-function keyOf(node) {
+export function keyOf(node) {
   let key = keys.get(node)
   if (key === undefined) {
     /** @type {Array<string|{text: string, marks: string}>} */

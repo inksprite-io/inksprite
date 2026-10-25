@@ -68,6 +68,68 @@
         </div>
       </div>
     </ExpandableSection>
+
+    <ExpandableSection
+      v-if="pythonHere"
+      title="Python"
+      storage-key="ui.settings.extensions.python"
+      subsection
+      :disabled="!pythonOn"
+      container-class="pt-1"
+      content-wrapper-class="flex flex-col"
+      data-extension="python"
+    >
+      <template #actions>
+        <ToggleSwitch
+          :model-value="pythonOn"
+          class="flex-none"
+          aria-label="Python"
+          data-extension-switch="python"
+          @update:model-value="on => applicationState.setExtension('python', on)"
+        />
+      </template>
+      <div class="flex flex-col gap-3 pt-2 pb-1">
+        <div class="flex flex-col gap-1">
+          <label
+            for="python-time-limit"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Time limit</label
+          >
+          <Select
+            input-id="python-time-limit"
+            :model-value="applicationState.pythonTimeLimit.value"
+            :options="PYTHON_TIME_LIMITS"
+            option-label="label"
+            option-value="seconds"
+            aria-label="Time limit"
+            class="w-full dark:!bg-surface-900"
+            size="small"
+            data-python-time-limit
+            @update:model-value="applicationState.setPythonTimeLimit"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <span class="text-xs font-medium text-surface-700 dark:text-surface-200">
+            Used in chats on
+          </span>
+          <div class="flex flex-wrap gap-x-4 gap-y-1">
+            <label
+              v-for="profile in profiles"
+              :key="profile.id"
+              class="flex items-center gap-2 text-xs"
+            >
+              <ToggleSwitch
+                :model-value="pythonProfileIds.includes(profile.id)"
+                :aria-label="`Run Python in chats on ${profile.name}`"
+                :data-python-profile="profile.id"
+                @update:model-value="setPythonProfile(profile.id, $event)"
+              />
+              {{ profile.name }}
+            </label>
+          </div>
+        </div>
+      </div>
+    </ExpandableSection>
   </div>
 </template>
 
@@ -82,12 +144,25 @@ import ExpandableSection from '@/components/common/ExpandableSection.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useProfiles } from '@/composables/useProfiles'
 import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
+import { inPreview } from '@/config/preview.js'
+import { hasPython } from '@/platform/python.js'
+import {
+  PYTHON_GROUP,
+  PYTHON_TIME_LIMITS,
+  pythonProfiles,
+  setPythonProfile,
+} from '@/ai/tools/python.js'
 
 /**
  * The extensions: parts of the app not every writer wants, each switched on
  * here. Roleplay is character cards, the card library and the roleplay
  * profiles; its settings are the ones only roleplay has. Switching it off
  * hides all of it and deletes nothing, the card library included.
+ *
+ * Python is the model running code, in the desktop app only, in chats on the
+ * profiles listed here or that switch it on themselves. See
+ * `ai/tools/python.js`.
+ *
  * See `extensions/`.
  */
 
@@ -100,6 +175,13 @@ const toast = useToast()
 
 /** The switch as it is set, whether or not the AI is on to use it. */
 const roleplayOn = computed(() => applicationState.extensionOn('roleplay') === true)
+
+/** Whether Python can run here at all: in the desktop app. */
+const pythonHere = inPreview('python') && hasPython()
+const pythonOn = computed(() => applicationState.extensionOn(PYTHON_GROUP) === true)
+
+/** The profiles whose chats run Python. */
+const pythonProfileIds = computed(() => pythonProfiles())
 
 // As the picker shows it: the NSFW switch puts a built-in's counterpart in
 // its place, as it does in a chat.

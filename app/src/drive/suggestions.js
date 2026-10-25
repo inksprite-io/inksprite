@@ -32,7 +32,8 @@
  * is put in whole after its first letter and the rest taken out
  * (`spliceInside`). A side of one letter can't be: it goes, and the words
  * here go in before it as a suggestion of the writer's own. One in pieces
- * apart here, or across paragraphs there, stops the sync.
+ * apart here, or across paragraphs there, is rejected in the Doc, and the
+ * words here go as a suggestion of the writer's own (`takenOver`).
  *
  * Its thread keeps the Doc's id for it, as a comment's does (`google`), who
  * suggested it, and the replies; a reply here goes to the Doc as a comment's
@@ -430,6 +431,42 @@ export function laySuggestions({ formOf, suggested, doc, ids, marked: into = doc
     laid.set(docsId, id)
   }
   return { doc: marked, laid }
+}
+
+/**
+ * The Doc's suggestions changed here in a way the Doc can't be given, made
+ * the writer's own: each one's marks under a new id, its thread settled as
+ * rejected (so the sync rejects it in the Doc), and a thread of the
+ * writer's for the new, which then goes to the Doc as the model's do, or
+ * stays here.
+ *
+ * @param {Node} doc
+ * @param {Threads} threads
+ * @param {Map<string, string>} swaps - The new ids, by the old
+ * @param {number} at - When the new were suggested
+ * @returns {{doc: Node, threads: Threads}}
+ */
+export function takenOver(doc, threads, swaps, at) {
+  let out = doc
+  const next = { ...threads }
+  for (const [id, fresh] of swaps) {
+    const thread = threads[id]
+    if (!thread?.suggestion || !suggestionsIn(out).includes(id)) continue
+    out = underOne(out, new Set([id]), fresh)
+    next[id] = {
+      ...thread,
+      status: 'resolved',
+      suggestion: { ...thread.suggestion, settled: 'rejected' },
+    }
+    const { out: quote, in: put } = changeOf(out, fresh)
+    next[fresh] = {
+      status: 'open',
+      quote,
+      posts: [],
+      suggestion: { text: put, created: at, author: 'writer' },
+    }
+  }
+  return { doc: out, threads: next }
 }
 
 /**

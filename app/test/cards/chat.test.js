@@ -1,3 +1,4 @@
+/* global Blob */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { cardsNamed, isCard, readCardChat } from '@/cards/chat.js'
@@ -15,6 +16,7 @@ vi.mock('@/stores/db', () => ({
       bulkGet: vi.fn(async () => []),
       get: vi.fn(async () => undefined),
     },
+    files: { put: vi.fn(async () => undefined), get: vi.fn(async () => undefined) },
     stories: { toArray: vi.fn(async () => []) },
   },
 }))
@@ -155,6 +157,27 @@ describe('cards/chat', () => {
 
       expect(await readCardChat(STORY, folder.id)).toBeNull()
       expect(await readCardChat(STORY, 'nothing_here')).toBeNull()
+    })
+  })
+
+  describe('a card that is its picture', () => {
+    const portrait = { portrait: new Blob(['png'], { type: 'image/png' }) }
+
+    it('is a card, read as a folder of one is', async () => {
+      const written = await imported(
+        { post_history_instructions: 'Never write for them.' },
+        portrait
+      )
+
+      expect(isCard(store.getDocument(written.folderId))).toBe(true)
+      const card = await readCardChat(STORY, written.folderId)
+      expect(card).toMatchObject({ title: 'Elara', rules: 'Never write for them.' })
+      expect(card.pinnedIds.sort()).toEqual([...written.pinnedIds].sort())
+    })
+
+    it('is found by its character', async () => {
+      const written = await imported({}, portrait)
+      expect((await cardsNamed(STORY, 'elara')).map(found => found.id)).toEqual([written.folderId])
     })
   })
 

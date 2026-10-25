@@ -52,6 +52,13 @@ const defaultState = {
     // tools, as commands, and in a chat's settings. Each is off until the
     // writer switches it on in Settings › Skills.
     experimentalSkills: [],
+    // The profiles whose chats run Python, while its extension is on, until
+    // a chat chooses for itself. Null until the writer chooses, which is
+    // Default alone; see ai/tools/python.js.
+    pythonProfiles: null,
+    // How long a run of Python may take, in seconds; 0 for as long as it
+    // takes. See PYTHON_TIME_LIMITS in ai/tools/python.js.
+    pythonTimeLimit: 600,
     // The profiles chats start on: new chats in a project that hasn't chosen
     // its own, and chats on a character card. Null for the built-ins, Default
     // and Roleplay.
@@ -237,6 +244,11 @@ if (typeof window !== 'undefined') {
  * @property {boolean} blurNsfw - Whether the card library blurs NSFW pictures
  * @property {string[]} experimentalSkills - The ones switched on
  * @property {boolean} roleplay - Whether the Roleplay extension is on
+ * @property {boolean} python - Whether the Python extension is on
+ * @property {string[]|null} pythonProfiles - The profiles whose chats run
+ *   Python, or null where the writer never chose
+ * @property {number} pythonTimeLimit - How long a run of Python may take, in
+ *   seconds; 0 for no limit
  * @property {string|null} chatProfileId - The profile new chats start on
  * @property {string|null} roleplayProfileId - The one chats on a character card start on
  * @property {Record<string, import('../types/models.js').WorkflowSettings>} workflows
@@ -337,6 +349,10 @@ function workflowFrom(settings) {
  *   setBlurNsfw: (on: boolean) => void,
  *   experimentalSkills: import('vue').ComputedRef<string[]>,
  *   setExperimentalSkill: (name: string, on: boolean) => void,
+ *   pythonProfiles: import('vue').ComputedRef<string[]|null>,
+ *   setPythonProfiles: (ids: string[]) => void,
+ *   pythonTimeLimit: import('vue').ComputedRef<number>,
+ *   setPythonTimeLimit: (seconds: number) => void,
  *   extensionOn: (id: string) => boolean|undefined,
  *   setExtension: (id: string, on: boolean) => void,
  *   roleplay: import('vue').ComputedRef<boolean>,
@@ -509,6 +525,43 @@ export function useApplicationState() {
   const setExperimentalSkill = (name, on) => {
     const others = experimentalSkills.value.filter(one => one !== name)
     setExperimentalSkills(on === true ? [...others, name] : others)
+  }
+
+  /**
+   * The profiles whose chats run Python, as the writer chose them, or null
+   * where they never did. See ai/tools/python.js.
+   * @type {import('vue').ComputedRef<string[]|null>}
+   */
+  const pythonProfiles = computed(() => {
+    const ids = state.value.system?.pythonProfiles
+    return Array.isArray(ids) ? namesIn(ids) : null
+  })
+
+  /**
+   * @param {string[]} ids
+   */
+  const setPythonProfiles = ids => {
+    if (!state.value.system) state.value.system = {}
+    state.value.system.pythonProfiles = [...new Set(ids)]
+  }
+
+  /**
+   * How long a run of Python may take, in seconds; 0 for no limit. Ten
+   * minutes unless the writer chose.
+   * @type {import('vue').ComputedRef<number>}
+   */
+  const pythonTimeLimit = computed(() => {
+    const seconds = state.value.system?.pythonTimeLimit
+    return Number.isFinite(seconds) && seconds >= 0 ? seconds : 600
+  })
+
+  /**
+   * @param {number} seconds
+   */
+  const setPythonTimeLimit = seconds => {
+    if (!Number.isFinite(seconds) || seconds < 0) return
+    if (!state.value.system) state.value.system = {}
+    state.value.system.pythonTimeLimit = seconds
   }
 
   /**
@@ -859,6 +912,9 @@ export function useApplicationState() {
         blurNsfw: blurNsfw.value,
         experimentalSkills: experimentalSkills.value,
         roleplay: extensionOn('roleplay') === true,
+        python: extensionOn('python') === true,
+        pythonProfiles: pythonProfiles.value,
+        pythonTimeLimit: pythonTimeLimit.value,
         chatProfileId: chatProfileId.value,
         roleplayProfileId: roleplayProfileId.value,
         workflows: workflows.value,
@@ -897,6 +953,11 @@ export function useApplicationState() {
       setExperimentalSkills(namesIn(settings.experimentalSkills))
     }
     if (typeof settings.roleplay === 'boolean') setExtension('roleplay', settings.roleplay)
+    if (typeof settings.python === 'boolean') setExtension('python', settings.python)
+    if (Array.isArray(settings.pythonProfiles)) {
+      setPythonProfiles(namesIn(settings.pythonProfiles))
+    }
+    if (typeof settings.pythonTimeLimit === 'number') setPythonTimeLimit(settings.pythonTimeLimit)
     if (isChoice(settings.chatProfileId)) setChatProfileId(settings.chatProfileId)
     if (isChoice(settings.roleplayProfileId)) setRoleplayProfileId(settings.roleplayProfileId)
     if (settings.workflows && typeof settings.workflows === 'object') {
@@ -974,6 +1035,12 @@ export function useApplicationState() {
     // The experimental skills switched on
     experimentalSkills,
     setExperimentalSkill,
+
+    // The profiles whose chats run Python, and how long a run may take
+    pythonProfiles,
+    setPythonProfiles,
+    pythonTimeLimit,
+    setPythonTimeLimit,
 
     // Extensions, and whether roleplay is there
     extensionOn,

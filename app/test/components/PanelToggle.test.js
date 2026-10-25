@@ -5,10 +5,12 @@ import PanelToggle from '@/components/writer/layout/PanelToggle.vue'
 const mountToggle = props => mount(PanelToggle, { props, global: { directives: { tooltip: {} } } })
 
 describe('PanelToggle', () => {
-  it('names the neighbour and what a press does to it', () => {
+  it('names the panel a press spreads out, then the neighbour it brings back', () => {
     const hiding = mountToggle({ panel: 'chat', side: 'right', showing: true })
-    expect(hiding.attributes('aria-label')).toBe('Hide chat')
+    expect(hiding.attributes('aria-label')).toBe('Expand editor')
     expect(hiding.attributes('aria-pressed')).toBe('false')
+    const fromChat = mountToggle({ panel: 'editor', side: 'left', showing: true })
+    expect(fromChat.attributes('aria-label')).toBe('Expand chat')
 
     const showing = mountToggle({ panel: 'chat', side: 'right', showing: false })
     expect(showing.attributes('aria-label')).toBe('Show chat')

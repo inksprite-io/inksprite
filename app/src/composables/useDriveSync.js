@@ -37,7 +37,7 @@ import {
 import { createDoc } from '@/drive/api.js'
 import { folderFor, placeDoc } from '@/drive/folders.js'
 import { forgetSession, signInFor } from '@/drive/session.js'
-import { checkSendable, syncDoc } from '@/drive/sync.js'
+import { syncDoc } from '@/drive/sync.js'
 import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
 import { measurePicture } from '@/files/pictures.js'
 import { storage } from '@/storage/index.js'
@@ -130,19 +130,13 @@ export function useDriveSync(storyId) {
    * Make a Doc of a document not linked to one, and sync the document into
    * it. Call it straight from the click, with nothing awaited first: in a
    * browser that opens Google's window, when no sign-in is held. What the
-   * Doc could not take is said before anything is made.
+   * Doc can't take yet stays here, as in any sync.
    *
    * @param {string} documentId
    * @returns {Promise<void>} When it is done, or failed and said why
    */
   const syncToNew = documentId => {
     if (!canSyncToNew(documentId) || syncing.has(documentId)) {
-      return Promise.resolve()
-    }
-    try {
-      checkSendable(current(documentId))
-    } catch (error) {
-      toast.error(failure(error, null), { duration: 10000 })
       return Promise.resolve()
     }
     syncing.add(documentId)

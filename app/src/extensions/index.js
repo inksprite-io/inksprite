@@ -10,6 +10,10 @@
  * - **Roleplay** - Character cards, the card library and the roleplay chat
  *   profiles. On where roleplay was already in use the first time the app
  *   opened with extensions, and off otherwise.
+ * - **Python** - Python the model runs code in, in the desktop app only, in
+ *   chats on the profiles its settings list or that switch it on. Off until
+ *   switched on: nothing before it was in use. In the `python` preview. See
+ *   ai/tools/python.js.
  *
  * Design: `.llm/extensions_design.md`.
  *
@@ -60,7 +64,10 @@ export async function roleplayInUse() {
 }
 
 /** @type {Extension[]} */
-export const EXTENSIONS = [{ id: 'roleplay', name: 'Roleplay', inUse: roleplayInUse }]
+export const EXTENSIONS = [
+  { id: 'roleplay', name: 'Roleplay', inUse: roleplayInUse },
+  { id: 'python', name: 'Python', inUse: async () => false },
+]
 
 /**
  * Decide the switch of each extension never decided, from whether what it

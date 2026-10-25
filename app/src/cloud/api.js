@@ -43,6 +43,8 @@ export class CloudError extends Error {
  * @property {number} [owner] - The owner's account; none from a server before sharing
  * @property {number} [members] - How many are in it, the owner among them
  * @property {boolean} [shared] - Ever shared: its chats are each one's own
+ * @property {boolean} [selective] - Shared with only some of its documents, the
+ *   others its owner's own
  * @property {boolean} [sealed] - Its key is wrapped for this account's public key
  * @property {boolean} [left] - This account left it, or was removed: its key is gone
  */
@@ -111,9 +113,10 @@ const APP_VERSION = import.meta.env.VITE_APP_VERSION || ''
 
 /**
  * What this app speaks of the protocol, for the server to hold an older app
- * back from a collection ever shared: 2 knows a record may be one account's own.
+ * back from a collection ever shared: 2 knows a record may be one account's
+ * own, and 3 which of a project's documents its owner shares with no one.
  */
-export const PROTOCOL = 2
+export const PROTOCOL = 3
 
 /**
  * The server at this address, as one device signed in to it, or not yet.
@@ -280,6 +283,14 @@ export function createApi(
     share: id => call('PUT', `/v1/collections/${id}/shared`),
 
     /**
+     * Share a collection with only some of its documents, or all of them again.
+     * @param {string} id
+     * @param {boolean} selective
+     */
+    setSelective: (id, selective) =>
+      call('PUT', `/v1/collections/${id}/selective`, { body: { selective } }),
+
+    /**
      * Who is in a collection, the owner first.
      * @param {string} id
      * @returns {Promise<Member[]>}
@@ -384,21 +395,28 @@ export function createApi(
     /**
      * @param {string} id
      * @param {number} schema
-     * @param {Array<{name: string, base: number, body: Bytes, blob?: string|null, own?: boolean}>} records -
+     * @param {Array<{name: string, base: number, body: Bytes, blob?: string|null, own?: boolean, hidden?: Bytes}>} records -
      *   `blob` is the blob a file's record names, which the server lets go
-     *   of once nothing names it; `own`, a record of this account's alone
-     * @param {{shared?: boolean}} [knows] - Whether this device takes the
-     *   collection to be shared, which the server refuses a push to unless it does
+     *   of once nothing names it; `own`, a record of this account's alone;
+     *   `hidden`, where one the others had is made so, the removal they get
+     * @param {{shared?: boolean, selective?: boolean}} [knows] - Whether this
+     *   device takes the collection to be shared, and with only some of its
+     *   documents, which the server refuses a push to unless it does
      * @returns {Promise<{from: number, seq: number, results: PushResult[]}>}
      */
-    async push(id, schema, records, { shared = false } = {}) {
+    async push(id, schema, records, { shared = false, selective = false } = {}) {
       const pushed = await call('POST', `/v1/collections/${id}/push`, {
         body: {
           schema,
           app,
           protocol: PROTOCOL,
           shared,
-          records: records.map(record => ({ ...record, body: toBase64(record.body) })),
+          selective,
+          records: records.map(record => ({
+            ...record,
+            body: toBase64(record.body),
+            ...(record.hidden ? { hidden: toBase64(record.hidden) } : {}),
+          })),
         },
       })
       return {

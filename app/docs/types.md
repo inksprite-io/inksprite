@@ -420,17 +420,19 @@ Type: [Object][131]
 - `type` **(`"folder"` | `"text"` | `"file"`)** Folders hold children, text holds
   content, and a file is something imported — a PDF, an image — whose bytes
   are kept beside it (see `stores/filesStore.js`) and whose `content` is the
-  text that could be read out of it.
+  text that could be read out of it. A text or a file may hold children too,
+  where an import made it so: a card's portrait its fields, a PDF the
+  Markdown converted from it (`.llm/nested_documents_design.md`).
 - `mime` **[string][132]?** Files only: the media type, `application/pdf`,
   `image/png`. What decides how it is shown and whether a model can be
   handed it.
 - `size` **[number][133]?** Files only: the file's size in bytes
 - `pages` **[number][133]?** Files only, and only for a format that has
   pages: how many
-- `ordered` **[boolean][134]?** Folders only. Ordered folders sort by `order` and
-  accept drag-to-position. Unordered folders sort by title. Absent counts as
-  unordered.
-- `handOrder` **[Array][135]<[string][132]>?** Folders only, while sorted by name after
+- `ordered` **[boolean][134]?** Folders, and documents that hold others. Ordered
+  ones sort their children by `order` and accept drag-to-position; unordered
+  ones sort them by title. Absent counts as unordered.
+- `handOrder` **[Array][135]<[string][132]>?** Folders and documents that hold others, while sorted by name after
   being kept in order: the ids in the order the writer had, taken up again
   when the folder is kept in order once more.
 - `kind` **[string][132]?** What this document is, when it came from somewhere
@@ -486,6 +488,10 @@ Type: [Object][131]
   deleted only: what is in a trashed folder keeps its row as it was, and is
   in the trash because the folder is. Absent on one that isn't there. See
   `stores/trash.js`.
+- `unshared` **[boolean][134]?** In a project its owner shares with only some
+  of its documents, not one of them: hidden from the others, but for a folder
+  on the way to one that is. The root's says whether what is made at the top
+  level is shared. See `cloud/tree.js`.
 - `wordCount` **[number][133]** Word count; always 0 for folders
 - `version` **[number][133]** Version number for conflict resolution
 - `created` **[number][133]** Creation timestamp
@@ -659,6 +665,7 @@ Type: [Object][131]
 - `disabledToolGroups` **[Array][135]<[string][132]>?** Group ids withheld from this chat, which also withholds tools added to those groups later.
 - `mcpServers` **[Array][135]<[string][132]>?** The MCP servers whose tools this chat is offered, by id, once the writer has chosen here. Absent means the servers that list the chat's profile. A server's tools are opted into rather than withheld, so a server connected later reaches no chat that did not ask for it. See mcp/servers.js.
 - `web` **[boolean][134]?** Whether this chat searches the web, once the writer has chosen here. Absent means it does when web search is set up for the chat's profile. Opted into, as a server's tools are. See web/config.js.
+- `python` **[boolean][134]?** Whether this chat runs Python, once the writer has chosen here. Absent means it does when the Python extension lists the chat's profile. Opted into, as the web is. See ai/tools/python.js.
 - `voiceId` **([string][132] | null)?** The voice this chat's messages are read aloud in, one of the project's. Absent, or naming a voice since removed, means the project's default.
 - `prompt` **[string][132]?** The chat's own system prompt, once the writer has changed it here. Absent means the profile's, read on every turn. See ai/profiles.
 - `rules` **[string][132]?** The chat's author's note: standing instructions the writer keeps as they go, sent in their latest message after the project block and ahead of what they said. Starts as the profile's. Absent means none.

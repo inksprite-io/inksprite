@@ -97,6 +97,8 @@ const print = (parentId, depth) => {
           .join('\n')}\n${indent}  └`
       )
     }
+    // What a document holds.
+    print(document.id, depth + 1)
   }
 }
 print(rootIdFor(story.id), 0)

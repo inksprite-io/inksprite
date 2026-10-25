@@ -69,10 +69,10 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
  * @property {import('@/files/pictures.js').TakenPicture[]} [pictures] - Markdown or
  *   a Word file: the pictures taken out of it, a marker in the text where each
  *   was, to be the document's own
- * @property {File|null} [portrait] - A card that came in a PNG: the PNG, kept
- *   in the card's folder as its picture
- * @property {string} [replaces] - A card read back out of its own folder, to
- *   be written there again over what is in it
+ * @property {File|null} [portrait] - A card that came in a PNG: the PNG, which
+ *   the card is
+ * @property {string} [replaces] - A card read back out of the tree, to be
+ *   written there again over what it holds
  * @property {any} value - The card, the book, the text, or the inspected file
  */
 
@@ -201,9 +201,9 @@ export function useCardImport(storyId) {
   /**
    * Read a card back out of the folder it was written to, for writing it
    * there again. The sidecar holds the card as it arrived; the portrait, when
-   * the card came in one, is beside it.
+   * the card came in one, is beside it, or is the card, holding the rest.
    *
-   * @param {string} folderId - A card folder
+   * @param {string} folderId - A card: its folder, or its portrait
    * @returns {Promise<Found>}
    * @throws {NotACardError} When the folder has no sidecar to read, or it no
    *   longer parses as a card
@@ -215,10 +215,12 @@ export function useCardImport(storyId) {
     const sidecar = children.find(child => child.kind === 'sidecar')
     const value = sidecar ? parseJson(sidecar.content || '') : null
     if (shapeOf(value) !== 'card') {
-      throw new NotACardError('This folder has no card in it to import again.')
+      throw new NotACardError('There is no card in it to import again.')
     }
 
-    const portraitDocument = children.find(child => child.kind === 'portrait')
+    const card = api.get(folderId)
+    const portraitDocument =
+      card?.type === 'file' ? card : children.find(child => child.kind === 'portrait')
     const blob = portraitDocument ? await useFilesStore().getFile(portraitDocument.id) : null
     const portrait = blob
       ? new File([blob], 'Portrait.png', { type: blob.type || 'image/png' })
@@ -341,11 +343,10 @@ function foundCard(card, portrait) {
     greetings: card.greetings.length,
     lore: card.lore.length,
     documents:
-      2 + // the folder and the sidecar
+      2 + // the card, its folder or the PNG it came in, and the sidecar
       fields.filter(Boolean).length +
       card.greetings.length +
-      (card.lore.length > 0 ? 1 + card.lore.length : 0) +
-      (portrait ? 1 : 0),
+      (card.lore.length > 0 ? 1 + card.lore.length : 0),
     asks: true,
     portrait,
     value: card,

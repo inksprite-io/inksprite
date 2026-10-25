@@ -15,6 +15,7 @@ import {
   executeEditDocument,
   executeListDocuments,
   executeDescribeDocument,
+  executeDeleteDocument,
   digestAbout,
   listDocumentsDefinition,
   LISTING_LIMIT,
@@ -908,6 +909,20 @@ describe('document tools', () => {
       )
     })
 
+    it('keeps a script exactly as written, as a plain document', async () => {
+      await seed()
+      const code =
+        '# The odds\ndef roll(*dice, **rules):\n    return _best(dice)\n\n\n\nx = 2 * 3 * 4\n'
+      const result = await executeCreateDocument({ path: 'd20.py', content: code }, context)
+      const created = store.getDocument(result.document.id)
+      expect(created.plain).toBe(true)
+      expect(created.content).toBe(code)
+
+      const notes = await executeCreateDocument({ path: 'Odds', content: code }, context)
+      expect(store.getDocument(notes.document.id).plain).toBeUndefined()
+      expect(store.getDocument(notes.document.id).content).not.toBe(code)
+    })
+
     it('reads the folder off the front of the path', async () => {
       await seed()
       const result = await executeCreateDocument(
@@ -1634,6 +1649,22 @@ describe('document tools', () => {
     })
 
     describe('applyProposal', () => {
+      it('makes a script the writer accepted as it was proposed', async () => {
+        await seed()
+        const code = 'counts = {**a, **b}\n\n\n\nprint(counts)\n'
+        const applied = await applyProposal(STORY, {
+          documentId: '',
+          path: 'tally.py',
+          tool: 'create_document',
+          old: '',
+          new: code,
+          status: 'proposed',
+        })
+        const created = store.getDocument(applied.documentId)
+        expect(created.plain).toBe(true)
+        expect(created.content).toBe(code)
+      })
+
       it('makes an edit the writer accepted and returns the pair as applied', async () => {
         await seed()
         const applied = await applyProposal(STORY, {
@@ -1716,6 +1747,132 @@ describe('document tools', () => {
         })
         expect(applied.error).toContain('No document')
       })
+    })
+  })
+
+  describe('a document that holds others', () => {
+    /** The seed, with a chapter holding a scene and a card's picture holding its fields. */
+    const seedHolding = async () => {
+      await seed()
+      store.createDocument({
+        id: 'arrival',
+        storyId: STORY,
+        parentId: 'sc_1',
+        type: 'text',
+        title: 'Arrival',
+        content: 'She came by the river.',
+      })
+      store.createDocument({
+        id: 'wren',
+        storyId: STORY,
+        parentId: notesIdFor(STORY),
+        type: 'file',
+        title: 'Wren',
+        mime: 'image/png',
+        kind: 'portrait',
+      })
+      store.createDocument({
+        id: 'description',
+        storyId: STORY,
+        parentId: 'wren',
+        type: 'text',
+        title: 'Description',
+        content: 'Quick and quiet by the river.',
+      })
+    }
+
+    it('is listed as a document, with what it holds under it by paths through it', async () => {
+      await seedHolding()
+
+      expect(await executeListDocuments({}, context)).toBe(
+        [
+          'manuscript/',
+          'manuscript/Chapter 1 — 5 words',
+          'manuscript/Chapter 1/Arrival — 5 words',
+          'notes/',
+          'notes/Characters/',
+          'notes/Characters/Elara — 5 words',
+          '  A knight.',
+          'notes/Wren — file, png, 0 words',
+          'notes/Wren/Description — 6 words',
+        ].join('\n')
+      )
+      expect(await executeListDocuments({ path: 'manuscript', depth: 1 }, context)).toBe(
+        'manuscript/Chapter 1 — 5 words, 1 inside, not listed'
+      )
+    })
+
+    it('lists what it holds, and is a document to read when it holds nothing', async () => {
+      await seedHolding()
+
+      expect(await executeListDocuments({ path: 'notes/Wren' }, context)).toBe(
+        'notes/Wren/Description — 6 words'
+      )
+      expect(await executeListDocuments({ path: 'notes/Characters/Elara' }, context)).toEqual({
+        error: '"notes/Characters/Elara" is a document, not a folder. read_document reads it.',
+      })
+    })
+
+    it('reads as itself, saying what it holds, and what it holds by its path', async () => {
+      await seedHolding()
+
+      expect(await executeReadDocument({ path: 'manuscript/Chapter 1' }, context)).toMatchObject({
+        content: 'Snow fell on the road.',
+        holds: '1 inside; list_documents with its path lists them.',
+      })
+      expect(
+        await executeReadDocument({ path: 'manuscript/Chapter 1/Arrival' }, context)
+      ).toMatchObject({ content: 'She came by the river.' })
+      expect(
+        await executeReadDocument({ path: 'notes/Characters/Elara' }, context)
+      ).not.toHaveProperty('holds')
+      expect(await executeDescribeDocument({ path: 'notes/Wren' }, context)).toMatchObject({
+        holds: '1 inside; list_documents with its path lists them.',
+      })
+    })
+
+    it('says where what it holds is when a read leaves it out of the path', async () => {
+      await seedHolding()
+
+      expect(await executeReadDocument({ path: 'notes/Description' }, context)).toEqual({
+        error: 'No document at "notes/Description". "notes/Wren/Description" goes by that name.',
+      })
+    })
+
+    it('is searched with what it holds, and one that holds nothing alone', async () => {
+      await seedHolding()
+
+      const paths = async path =>
+        (await executeSearchDocuments({ query: 'river', path }, context)).results.map(
+          hit => hit.path
+        )
+      expect(await paths('notes/Wren')).toEqual(['notes/Wren/Description'])
+      expect(await paths('manuscript/Chapter 1')).toEqual(['manuscript/Chapter 1/Arrival'])
+      expect(await paths('manuscript/Chapter 1/Arrival')).toEqual(['manuscript/Chapter 1/Arrival'])
+    })
+
+    it('takes nothing new: a document is made and moved into a folder', async () => {
+      await seedHolding()
+
+      expect(
+        await executeCreateDocument({ path: 'manuscript/Chapter 1/Leaving', content: 'x' }, context)
+      ).toEqual({ error: '"manuscript/Chapter 1" is a document, not a folder' })
+      expect(
+        await executeMoveDocument(
+          { path: 'notes/Characters/Elara', to: 'notes/Wren/Elara' },
+          context
+        )
+      ).toMatchObject({ error: expect.stringContaining('is a document, not a folder') })
+    })
+
+    it('goes to the trash with what it holds, and says how much', async () => {
+      await seedHolding()
+
+      expect(await executeDeleteDocument({ path: 'notes/Wren' }, context)).toMatchObject({
+        success: true,
+        deleted: { path: 'notes/Wren', type: 'file', inside: 1 },
+      })
+      expect(store.getDocument('description')).toBeNull()
     })
   })
 

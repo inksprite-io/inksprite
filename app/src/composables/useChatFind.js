@@ -21,15 +21,22 @@
  * message's id. Where the text on screen is not quite the text counted, as in
  * a message shown raw, the nth match of a message is the nth on screen, or the
  * last there is.
+ *
+ * A typeset formula reads as its glyphs. The MathML KaTeX puts beside them,
+ * for screen readers, is out of sight and so out of the find.
  */
 
-/* global CSS, Highlight, MutationObserver, NodeFilter, performance, cancelAnimationFrame */
+/* global CSS, Highlight, MutationObserver, Node, NodeFilter, performance, cancelAnimationFrame */
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import { renderMarkdown } from '@/utils/markdown.js'
+import { mathReady } from '@/utils/math.js'
 import { segmentProse } from '@/ai/commands.js'
 
 /** How long after going to a match it is kept in view while the turns around it come in. */
 const SETTLE_MS = 600
+
+/** What a typeset formula has in the page that nobody sees: its MathML. */
+const UNSEEN = 'katex-mathml'
 
 /**
  * @typedef {Object} ChatMatch
@@ -70,7 +77,18 @@ const registry = () =>
  * @returns {Range[]}
  */
 export function rangesIn(element, pattern) {
-  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
+  const walker = document.createTreeWalker(
+    element,
+    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
+    {
+      acceptNode: node => {
+        if (node.nodeType === Node.TEXT_NODE) return NodeFilter.FILTER_ACCEPT
+        return /** @type {Element} */ (node).classList.contains(UNSEEN)
+          ? NodeFilter.FILTER_REJECT
+          : NodeFilter.FILTER_SKIP
+      },
+    }
+  )
   /** @type {{node: Text, start: number}[]} */
   const nodes = []
   let text = ''
@@ -113,27 +131,33 @@ export function useChatFind(turns, scroller) {
   /** @type {import('vue').ShallowRef<string|null>} */
   const holding = shallowRef(null)
 
-  /** Each message's text as it reads, until what it says changes. */
-  /** @type {Map<string, {source: string|object, text: string}>} */
+  /**
+   * Each message's text as it reads, until what it says changes, or its math
+   * can be typeset.
+   *
+   * @type {Map<string, {source: string|object, math: boolean, text: string}>}
+   */
   const texts = new Map()
 
   /** @param {string} markdown */
   const readable = markdown => {
     const template = document.createElement('template')
     template.innerHTML = renderMarkdown(markdown)
+    for (const unseen of template.content.querySelectorAll(`.${UNSEEN}`)) unseen.remove()
     return template.content.textContent || ''
   }
 
   /** @param {FindableMessage} message */
   const textOf = message => {
     const source = message.segments?.length ? message.segments : message.content || ''
+    const math = mathReady()
     const known = texts.get(message.id)
-    if (known?.source === source) return known.text
+    if (known?.source === source && known.math === math) return known.text
     const text =
       typeof source === 'string'
         ? readable(source)
         : source.map(segment => readable(segmentProse(segment))).join('\n')
-    texts.set(message.id, { source, text })
+    texts.set(message.id, { source, math, text })
     return text
   }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { treeFixes } from '@/cloud/tree.js'
+import { hiddenDocuments, treeFixes } from '@/cloud/tree.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
 const STORY = 'story_1'
@@ -85,5 +85,51 @@ describe('putting a merged tree right', () => {
 
   it('makes no fixes in a tree without its root', () => {
     expect(treeFixes([doc('ch2', 'gone_folder')], STORY, 5000)).toEqual([])
+  })
+})
+
+describe('what a project shared with only some documents hides', () => {
+  it('hides what is unshared, but never the root, nor a folder on the way to something shared', () => {
+    const tree = [
+      { ...root, unshared: true },
+      doc('notes', ROOT, { type: 'folder', unshared: true }),
+      doc('note', 'notes'),
+      doc('secret', ROOT, { type: 'folder', unshared: true }),
+      doc('plan', 'secret', { unshared: true }),
+      doc('deeper', 'plan', { type: 'folder', unshared: true }),
+      doc('ch1', ROOT),
+    ]
+    expect([...hiddenDocuments(tree, STORY)].sort()).toEqual(['deeper', 'plan', 'secret'])
+  })
+
+  it('never shows a document that holds others only on the way to what it holds', () => {
+    const tree = [
+      { ...root, unshared: true },
+      doc('pdf', ROOT, { type: 'file', unshared: true }),
+      doc('markdown', 'pdf'),
+      doc('chapter', ROOT),
+      doc('scene', 'chapter', { unshared: true }),
+      doc('draft', 'chapter'),
+      doc('book', ROOT, { type: 'file', unshared: true }),
+      doc('part', 'book'),
+      doc('verse', 'part'),
+    ]
+    expect([...hiddenDocuments(tree, STORY)].sort()).toEqual([
+      'book',
+      'markdown',
+      'part',
+      'pdf',
+      'scene',
+      'verse',
+    ])
+  })
+
+  it('hides nothing of a project shared whole', () => {
+    expect(hiddenDocuments([root, doc('ch1', ROOT)], STORY).size).toBe(0)
+  })
+
+  it('comes to an end in a loop', () => {
+    const tree = [root, doc('a', 'b', { type: 'folder' }), doc('b', 'a', { type: 'folder' })]
+    expect(hiddenDocuments(tree, STORY).size).toBe(0)
   })
 })
