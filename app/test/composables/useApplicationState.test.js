@@ -347,6 +347,19 @@ describe('useApplicationState', () => {
       expect(state.extensionOn('roleplay')).toBe(true)
     })
 
+    it('keeps its switches when the app opens again', async () => {
+      window.localStorage.setItem(
+        'inksprite_app_state',
+        JSON.stringify({ extensions: { roleplay: false, python: true } })
+      )
+      vi.resetModules()
+      const fresh = await import('@/composables/useApplicationState')
+      const state = fresh.useApplicationState()
+      expect(state.extensionOn('roleplay')).toBe(false)
+      expect(state.extensionOn('python')).toBe(true)
+      window.localStorage.removeItem('inksprite_app_state')
+    })
+
     it('takes the switch from a backup that has it, and keeps it from one that has not', () => {
       const state = useApplicationState()
       state.setExtension('roleplay', true)

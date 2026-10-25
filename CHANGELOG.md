@@ -6,6 +6,14 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.22
+
+Extensions stay as you switch them.
+
+- An extension you switch on or off in Settings › Extensions stays that
+  way. inksprite had been deciding again each time it opened, so Roleplay
+  could come back on, or go off, by itself.
+
 ## v0.1.0-dev.21
 
 Formatting from the bar under a selection, documents that hold others,

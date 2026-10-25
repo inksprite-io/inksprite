@@ -146,6 +146,9 @@ const loadState = () => {
   if (stored.debug) {
     Object.assign(merged.debug, stored.debug)
   }
+  if (stored.extensions) {
+    Object.assign(merged.extensions, stored.extensions)
+  }
   // Called roles until they were renamed workflows; a state saved before then
   // has them under the old name, and is read as if it had the new one.
   const workflows = stored.workflows || stored.roles
