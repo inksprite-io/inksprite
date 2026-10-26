@@ -58,7 +58,7 @@
       v-else-if="activeMobileTab === 'settings'"
       class="h-full bg-surface-100 dark:bg-surface-800"
     >
-      <Settings />
+      <Settings :story-id="storyId" />
     </div>
   </div>
 </template>

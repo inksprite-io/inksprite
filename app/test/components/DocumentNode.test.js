@@ -9,6 +9,7 @@ import Tooltip from 'primevue/tooltip'
 import DocumentNode from '../../src/components/writer/tree/DocumentNode.vue'
 import { useDocuments, clearDocumentInstances } from '../../src/composables/useDocuments'
 import { useDocumentsStore } from '../../src/stores/documentsStore'
+import { useProjectViewsStore } from '../../src/stores/projectViewsStore.js'
 import { useChatsStore } from '../../src/stores/chatsStore'
 import { clearChatsInstances, useChats } from '../../src/composables/useChats'
 import { LONG_PRESS_MS } from '../../src/composables/useLongPress.js'
@@ -158,6 +159,19 @@ describe('DocumentNode', () => {
 
     expect(wrapper.text()).toContain('First Act')
     expect(wrapper.text()).toContain('Opening')
+  })
+
+  it('keeps a folder the writer shuts shut, with where they left the project', async () => {
+    const act = api.createFolder('manuscript_story_1', 'First Act')
+    api.createTextDocument(act.id, 'Opening')
+    const before = mountNode(act.id)
+    await row(before, act.id).find('button[aria-label="Collapse"]').trigger('click')
+    before.unmount()
+
+    expect(useProjectViewsStore().getView('story_1')?.expanded).toEqual({ [act.id]: false })
+    const after = mountNode(act.id)
+    expect(row(after, act.id).attributes('aria-expanded')).toBe('false')
+    expect(after.text()).not.toContain('Opening')
   })
 
   it('shows the bare title inside an ordered folder', () => {
@@ -424,6 +438,23 @@ describe('DocumentNode', () => {
 
     expect(active.find('.group').classes()).toContain('bg-surface-200')
     expect(inactive.find('.group').classes()).not.toContain('bg-surface-200')
+  })
+
+  it('marks the folders the active document is in, but not the project', () => {
+    const act = api.createFolder('manuscript_story_1', 'First Act')
+    const chapter = api.createTextDocument(act.id, 'Chapter 1')
+    const beside = api.createTextDocument(act.id, 'Chapter 2')
+    const wrapper = mountInTree('root_story_1', { activeDocumentId: chapter.id })
+    const weighty = (/** @type {string} */ id) =>
+      row(wrapper, id).find('[data-title]').classes().includes('font-semibold')
+
+    expect(weighty('manuscript_story_1')).toBe(true)
+    expect(weighty(act.id)).toBe(true)
+    expect(weighty(chapter.id)).toBe(true)
+    expect(weighty(beside.id)).toBe(false)
+    expect(weighty('notes_story_1')).toBe(false)
+    expect(weighty('root_story_1')).toBe(false)
+    wrapper.unmount()
   })
 
   it('indents by depth so nesting is legible', () => {

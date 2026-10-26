@@ -152,6 +152,9 @@ describe('useAIChat', () => {
     apiKey: 'test-api-key',
   }
 
+  /** The presets there are besides the default, by id. */
+  const mockPresets = new Map()
+
   const mockChat = {
     id: mockChatId,
     storyId: mockStoryId,
@@ -166,9 +169,15 @@ describe('useAIChat', () => {
     debug.value = false
 
     // Setup mock AI config
+    mockPresets.clear()
     mockAIConfig = {
       activeAIPreset: { value: mockProfile },
       getProvider: vi.fn().mockReturnValue(mockProvider),
+      // As useAIConfig has it: the chat's, its profile's, then the default.
+      presetFor: (chat, profile) =>
+        mockPresets.get(chat?.presetId) ||
+        mockPresets.get(profile?.settings?.presetId) ||
+        mockAIConfig.activeAIPreset.value,
     }
 
     // Setup mock AI service
@@ -193,6 +202,8 @@ describe('useAIChat', () => {
     mockSavedProfiles.clear()
     mockChatsApi = {
       getChatById: vi.fn().mockReturnValue(mockChat),
+      isUnstarted: vi.fn(() => false),
+      unstartedChat: { value: null },
       defaultProfileId: vi.fn(() => 'builtin_profile_chat'),
       updateChat: vi.fn(),
       addMessage: vi.fn(),
@@ -350,6 +361,16 @@ describe('useAIChat', () => {
       expect(error?.name).toBe('ProviderNotConfiguredError')
       expect(error?.message).toBe('Connect OpenRouter in Settings › AI.')
       expect(mockChatsApi.addMessage).not.toHaveBeenCalled()
+    })
+
+    it('checks the unstarted chat’s preset, before anything is sent in it', () => {
+      mockPresets.set('profile_bare', { ...mockProfile, id: 'profile_bare', model: null })
+      mockChatsApi.isUnstarted.mockReturnValue(true)
+      mockChatsApi.getChatById.mockReturnValue(null)
+      mockChatsApi.unstartedChat.value = { id: mockChatId, presetId: 'profile_bare' }
+      const composable = useAIChat(mockStoryId, mockChatId)
+
+      expect(composable.configurationError.value?.message).toBe('Pick a model in Settings › AI.')
     })
 
     it('reports a missing model as a plain error', () => {
@@ -1061,6 +1082,39 @@ describe('useAIChat', () => {
       })
 
       expect(await captureMetadata()).toMatchObject({ model: 'gpt-4', provider: 'Test Provider' })
+    })
+
+    it('runs on the chat’s own preset rather than the one chats run on otherwise', async () => {
+      mockPresets.set('profile_glm', { ...mockProfile, id: 'profile_glm', model: 'z-ai/glm-4.6' })
+      // Untitled, so a title is asked for too.
+      mockChatsApi.getChatById.mockReturnValue({ ...mockChat, title: '', presetId: 'profile_glm' })
+      mockAIService.generateChatCompletion.mockImplementation(async (m, p, callback) => {
+        callback({ content: 'Response' })
+        return {}
+      })
+
+      expect(await captureMetadata()).toMatchObject({ model: 'z-ai/glm-4.6' })
+      // The title is asked of the same model.
+      const calls = mockAIService.generateChatCompletion.mock.calls
+      expect(calls).toHaveLength(2)
+      expect(calls.map(([, config]) => config.model)).toEqual(['z-ai/glm-4.6', 'z-ai/glm-4.6'])
+    })
+
+    it('runs on its profile’s preset until it chooses one', async () => {
+      mockPresets.set('profile_glm', { ...mockProfile, id: 'profile_glm', model: 'z-ai/glm-4.6' })
+      mockSavedProfiles.set('chatprofile_glm', {
+        id: 'chatprofile_glm',
+        name: 'On GLM',
+        settings: { prompt: 'Be brief.', presetId: 'profile_glm' },
+        readOnly: false,
+      })
+      mockChatsApi.getChatById.mockReturnValue({ ...mockChat, profileId: 'chatprofile_glm' })
+      mockAIService.generateChatCompletion.mockImplementation(async (m, p, callback) => {
+        callback({ content: 'Response' })
+        return {}
+      })
+
+      expect(await captureMetadata()).toMatchObject({ model: 'z-ai/glm-4.6' })
     })
 
     it('says every call it makes goes back with the conversation', async () => {

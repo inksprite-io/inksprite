@@ -309,7 +309,7 @@ describe('project export and import', () => {
     const backup = useBackup()
     const file = asFile(await backup.createBackup())
     await expect(backup.readProjectFile(file)).rejects.toThrow(
-      'Restore it with Import in Settings › System › Data'
+      'Restore it with Import in Settings › Sync and sharing › Backup'
     )
   })
 })

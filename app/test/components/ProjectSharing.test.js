@@ -4,7 +4,7 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import Tooltip from 'primevue/tooltip'
-import ShareDialog from '@/components/writer/tree/ShareDialog.vue'
+import ProjectSharing from '@/components/writer/settings/ProjectSharing.vue'
 import { me, sharing } from '@/cloud/people.js'
 import { clearDocumentInstances, useDocuments } from '@/composables/useDocuments'
 import { useDocumentsStore } from '@/stores/documentsStore'
@@ -33,9 +33,9 @@ const CODE = 'ABCDE-FGHJK-MNPQR-STVWX'
 /** @type {import('@vue/test-utils').VueWrapper|null} */
 let wrapper = null
 
-const mountDialog = async () => {
-  wrapper = mount(ShareDialog, {
-    props: { visible: true, storyId: 'story_1', title: 'Thief' },
+const mountSharing = async () => {
+  wrapper = mount(ProjectSharing, {
+    props: { storyId: 'story_1' },
     attachTo: document.body,
     global: { plugins: [PrimeVue], directives: { tooltip: Tooltip } },
   })
@@ -71,9 +71,9 @@ afterEach(() => {
   vi.unstubAllEnvs()
 })
 
-describe('ShareDialog', () => {
+describe('ProjectSharing', () => {
   it('shares the project with a friend’s code once it reads as one', async () => {
-    await mountDialog()
+    await mountSharing()
     await type('[data-field="share-code"]', 'abcde-fghjk')
     expect(/** @type {HTMLButtonElement} */ (find('[data-action="share"]')).disabled).toBe(true)
     await type('[data-field="share-code"]', 'abcde-fghjk-mnpqr-stvwx')
@@ -84,14 +84,14 @@ describe('ShareDialog', () => {
 
   it('says why it wasn’t shared', async () => {
     cloud.share.mockRejectedValueOnce(new Error('No one has that friend code.'))
-    await mountDialog()
+    await mountSharing()
     await type('[data-field="share-code"]', CODE)
     find('[data-action="share"]').click()
     await flushPromises()
     expect(find('[data-share-error]').textContent?.trim()).toBe('No one has that friend code.')
   })
 
-  it('lists who it is shared with, and takes one out', async () => {
+  it('lists who it is shared with, each by name and friend code, and takes one out', async () => {
     me.value = 1
     sharing.value = {
       me: 1,
@@ -100,19 +100,21 @@ describe('ShareDialog', () => {
           role: 'owner',
           owner: 1,
           members: [
-            { account: 1, owner: true, display: 'Ada' },
-            { account: 2, owner: false, display: 'Grace' },
+            { account: 1, owner: true, display: 'Ada', friend: 'ABCDEFGHJKMNPQRSTVWX' },
+            { account: 2, owner: false, display: 'Grace', friend: null },
           ],
         },
       },
       selective: [],
     }
-    await mountDialog()
+    await mountSharing()
     const rows = [...document.body.querySelectorAll('[data-member]')]
-    expect(rows.map(row => row.textContent?.replace(/\s+/g, ' ').trim())).toEqual([
-      'AdaYou',
-      'Grace',
-    ])
+    /** @param {Element} row @param {string} part */
+    const text = (row, part) => row.querySelector(part)?.textContent?.trim() ?? null
+    expect(rows.map(row => text(row, '[data-member-name]'))).toEqual(['Ada', 'Grace'])
+    expect(rows.map(row => text(row, '[data-member-tag]'))).toEqual(['You', null])
+    // Grouped as it is typed; a server from before codes were listed has none.
+    expect(rows.map(row => text(row, '[data-member-friend]'))).toEqual([CODE, ''])
     expect(rows[0].querySelector('[data-action="remove-member"]')).toBeNull()
     const remove = /** @type {HTMLElement} */ (
       rows[1].querySelector('[data-action="remove-member"]')
@@ -138,14 +140,14 @@ describe('ShareDialog', () => {
       },
       selective: [],
     }
-    await mountDialog()
+    await mountSharing()
     expect(find('[data-field="share-code"]')).toBeNull()
     expect(document.body.querySelectorAll('[data-action="remove-member"]')).toHaveLength(0)
     expect(find('[data-member="1"]').textContent).toContain('Owner')
   })
 })
 
-describe('ShareDialog, sharing only some documents', () => {
+describe('ProjectSharing, sharing only some documents', () => {
   /** @type {ReturnType<typeof useDocuments>} */
   let api
 
@@ -155,15 +157,17 @@ describe('ShareDialog, sharing only some documents', () => {
     await api.init()
   })
 
-  /** Choose a scope as the writer clicks it. @param {string} label */
-  async function scope(label) {
-    const option = [...document.body.querySelectorAll('[data-field="share-scope"] button')].find(
-      button => button.textContent?.trim() === label
-    )
-    const button = /** @type {HTMLElement} */ (option)
-    button.click()
+  /** The switch for sharing it whole. */
+  const whole = () => /** @type {HTMLInputElement} */ (find('[data-field="share-whole"] input'))
+
+  /** Turn sharing it whole on or off, as the writer clicks it. */
+  async function flip() {
+    whole().click()
     await flushPromises()
   }
+
+  /** @param {string} id */
+  const box = id => /** @type {HTMLInputElement} */ (find(`[data-share-node="${id}"] input`))
 
   it('shares only the documents ticked, from the moment they are', async () => {
     cloud.setSelective.mockImplementation(async (storyId, on) => {
@@ -173,14 +177,19 @@ describe('ShareDialog, sharing only some documents', () => {
     const notes = api.createFolder(api.root.value.id, 'Notes')
     const note = api.createTextDocument(notes.id, 'A note')
     const chapter = api.createTextDocument(api.root.value.id, 'Chapter 1')
-    await mountDialog()
-    expect(find('[data-share-tree]')).toBeNull()
+    await mountSharing()
+    // Shared whole, every box is ticked and none can be clicked.
+    expect(whole().checked).toBe(true)
+    expect(find('[data-share-tree]').getAttribute('aria-disabled')).toBe('true')
+    expect(box(notes.id).checked).toBe(true)
+    expect(box(notes.id).disabled).toBe(true)
 
-    await scope('Only selected documents')
+    await flip()
     expect(cloud.setSelective).toHaveBeenCalledWith('story_1', true)
-    /** @param {string} id */
-    const box = id => /** @type {HTMLInputElement} */ (find(`[data-share-node="${id}"] input`))
+    expect(whole().checked).toBe(false)
+    expect(find('[data-share-tree]').getAttribute('aria-disabled')).toBeNull()
     expect(box(chapter.id).checked).toBe(true)
+    expect(box(chapter.id).disabled).toBe(false)
 
     // Nothing shared, from the project's own box; then the chapter again.
     box(api.root.value.id).click()
@@ -196,21 +205,23 @@ describe('ShareDialog, sharing only some documents', () => {
     expect(box(api.root.value.id).closest('[data-p-indeterminate]')).not.toBeNull()
     expect(box(notes.id).checked).toBe(false)
 
-    await scope('Entire project')
+    await flip()
     expect(cloud.setSelective).toHaveBeenLastCalledWith('story_1', false)
-    expect(find('[data-share-tree]')).toBeNull()
+    expect(whole().checked).toBe(true)
+    expect(box(notes.id).checked).toBe(true)
+    expect(box(notes.id).disabled).toBe(true)
   })
 
   it('opens as the project is shared, and goes back when the choice can’t be made', async () => {
     sharing.value = { me: null, projects: {}, selective: ['story_1'] }
-    await mountDialog()
-    expect(find('[data-share-tree]')).not.toBeNull()
+    await mountSharing()
+    expect(whole().checked).toBe(false)
 
     cloud.setSelective.mockRejectedValueOnce(
       new Error("This project isn't on the sync server yet. Try again once it has synced.")
     )
-    await scope('Entire project')
-    expect(find('[data-share-tree]')).not.toBeNull()
+    await flip()
+    expect(whole().checked).toBe(false)
     expect(find('[data-share-error]').textContent?.trim()).toBe(
       "This project isn't on the sync server yet. Try again once it has synced."
     )
@@ -231,13 +242,15 @@ describe('ShareDialog, sharing only some documents', () => {
       },
       selective: [],
     }
-    await mountDialog()
-    expect(find('[data-field="share-scope"]')).toBeNull()
+    await mountSharing()
+    expect(find('[data-field="share-whole"]')).toBeNull()
+    expect(find('[data-share-tree]')).toBeNull()
     wrapper?.unmount()
 
     sharing.value = { me: null, projects: {}, selective: [] }
     vi.stubEnv('VITE_PREVIEW', '')
-    await mountDialog()
-    expect(find('[data-field="share-scope"]')).toBeNull()
+    await mountSharing()
+    expect(find('[data-field="share-whole"]')).toBeNull()
+    expect(find('[data-share-tree]')).toBeNull()
   })
 })

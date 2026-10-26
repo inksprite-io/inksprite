@@ -3,7 +3,7 @@
  * @typedef {import('../types/models.js').AIPreset} AIPreset
  */
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useAIProvidersStore } from '@/stores/aiProvidersStore'
 import { useAIPresetStore } from '@/stores/aiPresetStore'
 import { useApplicationState } from '@/composables/useApplicationState'
@@ -22,7 +22,20 @@ const aiPresetDefaults = {
 }
 
 /**
- * Composable for managing AI configuration (providers + the single preset).
+ * The preset Settings › AI shows, by id: whichever the writer picked there or
+ * asked a chat to edit. Absent, or naming one since deleted, it shows the
+ * default. One for the app, as the settings are.
+ * @type {import('vue').Ref<string|null>}
+ */
+const shownPresetId = ref(null)
+
+/**
+ * Composable for managing AI configuration: the providers, and the presets.
+ *
+ * A chat runs on the preset it names, or its profile names, or the default:
+ * `activeAIPreset`, the one chats run on when neither says. Settings › AI
+ * shows one preset at a time to edit, `shownPreset`, which picking it there
+ * does not make the default; Settings › System › Chats does that.
  *
  * @returns {{
  *   init: () => Promise<void>,
@@ -34,12 +47,15 @@ const aiPresetDefaults = {
  *   reloadProvider: (id: string) => Promise<AIProvider>,
  *   presets: import('vue').ComputedRef<AIPreset[]>,
  *   getPreset: (id: string) => AIPreset | null,
- *   createPreset: (name?: string) => AIPreset,
+ *   createPreset: (name?: string, source?: AIPreset|null) => AIPreset,
  *   updatePreset: (id: string, updates: Partial<AIPreset>) => AIPreset | null,
  *   deletePreset: (id: string) => boolean,
  *   activeAIPresetId: import('vue').ComputedRef<string>,
  *   activeAIPreset: import('vue').ComputedRef<AIPreset | null>,
  *   setActiveAIPreset: (presetId: string) => void,
+ *   shownPreset: import('vue').ComputedRef<AIPreset | null>,
+ *   showPreset: (presetId: string) => void,
+ *   presetFor: (chat: {presetId?: string}|null|undefined, profile: {settings?: {presetId?: string}}|null|undefined) => AIPreset | null,
  *   aiPresetDefaults: Partial<AIPreset>,
  * }}
  */
@@ -132,20 +148,19 @@ export const useAIConfig = () => {
   const updatePreset = (id, updates) => presetsStore.updatePreset(id, updates)
 
   /**
-   * Create a preset and switch to it.
+   * Create a preset, and show it in Settings › AI.
    *
-   * Starts on the active preset's provider — a new preset is nearly always
-   * Copied from the one in use, tuning and all, because that is what somebody
-   * reaching for a new preset almost always wants: the same setup pointed at
-   * another model. Starting blank meant re-entering a sampler tune every time,
-   * which is what the old separate Duplicate was for.
+   * A copy of one, tuning and all, because that is what somebody reaching for
+   * a new preset almost always wants: the same setup pointed at another
+   * model. Starting blank meant re-entering a sampler tune every time, which
+   * is what the old separate Duplicate was for. Chats go on as they were: the
+   * copy is the one that chooses it.
    *
    * @param {string} [name] - Display name
+   * @param {AIPreset|null} [source] - What it copies: the one Settings › AI shows, unless named
    * @returns {AIPreset}
    */
-  function createPreset(name = 'New preset') {
-    const source = activeAIPreset.value
-
+  function createPreset(name = 'New preset', source = shownPreset.value) {
     const preset = presetsStore.createPreset({
       ...aiPresetDefaults,
       name,
@@ -157,9 +172,32 @@ export const useAIConfig = () => {
       toolsEnabled: source?.toolsEnabled !== false,
       generationOverrides: { ...(source?.generationOverrides || {}) },
     })
-    setActiveAIPreset(preset.id)
+    showPreset(preset.id)
     return preset
   }
+
+  /** The preset Settings › AI shows: the one picked there, or the default. */
+  const shownPreset = computed(() => getPreset(shownPresetId.value) || activeAIPreset.value)
+
+  /** @param {string} presetId - The preset for Settings › AI to show */
+  const showPreset = presetId => {
+    shownPresetId.value = presetId
+  }
+
+  /**
+   * The preset a chat runs on: its own choice, or else its profile's, or else
+   * the default. One that names a preset not here, deleted or never synced to
+   * this device, reads as the next one down, as a deleted profile reads as
+   * the project's default.
+   *
+   * @param {{presetId?: string}|null|undefined} chat
+   * @param {{settings?: {presetId?: string}}|null|undefined} profile - The one it runs on
+   * @returns {AIPreset|null}
+   */
+  const presetFor = (chat, profile) =>
+    getPreset(chat?.presetId ?? '') ||
+    getPreset(profile?.settings?.presetId ?? '') ||
+    activeAIPreset.value
 
   /**
    * Delete a preset, moving off it first if it's the active one so the app is
@@ -188,7 +226,7 @@ export const useAIConfig = () => {
     deleteProvider,
     reloadProvider,
 
-    // Preset (single shared)
+    // Presets
     presets,
     getPreset,
     createPreset,
@@ -197,6 +235,9 @@ export const useAIConfig = () => {
     activeAIPresetId,
     activeAIPreset,
     setActiveAIPreset,
+    shownPreset,
+    showPreset,
+    presetFor,
     aiPresetDefaults,
   }
 }

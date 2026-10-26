@@ -38,7 +38,7 @@
  * - **useCommandMenu** - The menu of commands a slash at the start of a line opens in the message field
  * - **useJumpToBottom** - When to offer the way back to the end of a long chat: far from it, and heading for it
  * - **useNearTurns** - Which of a chat's turns are in the page: those near the screen, the newest two, and any with an editor open; plus the state a turn keeps while it is away
- * - **useSettingsPanel** - Opening the settings, on a section, from anywhere in the writer
+ * - **useSettingsPanel** - Opening the settings, on a section and a part of it, from anywhere in the writer
  * - **useCardLibraryPanel** - Opening the card library, to browse or to pick a card for a folder, from anywhere in the writer
  * - **useSidebarTab** - Showing a sidebar list, such as the narration, from anywhere in the writer
  * - **useEditorRequest** - Showing the editor, having opened a tab in it, from anywhere in the writer
@@ -46,6 +46,7 @@
  * - **useFocusMode** - Focus mode: the document alone, full screen, in and out on Option-Command-F
  * - **useTopmostEscape** - Escape closes the dialog on top, and only that one
  * - **useCopyPath** - Copy a document's path, the address the tools take, to the clipboard
+ * - **useReveal** - Show a document where it is on disk, in the desktop app's file manager
  * - **useDocumentLinks** - Links between a project's documents: one opens the document in a tab,
  *   and the link field makes one from a path or a name
  * - **usePictures** - What a picture's path in a document is (its own, a file document, or the
@@ -114,6 +115,7 @@ export { useFocusMode, useFocusModeKeys } from './useFocusMode.js'
 export { useProjectSearch, useProjectSearchKey } from './useProjectSearch.js'
 export { useTopmostEscape } from './useTopmostEscape.js'
 export { useCopyPath } from './useCopyPath.js'
+export { useReveal } from './useReveal.js'
 export { useDocumentLinks } from './useDocumentLinks.js'
 export { usePictures } from './usePictures.js'
 export { usePictureViewer } from './usePictureViewer.js'

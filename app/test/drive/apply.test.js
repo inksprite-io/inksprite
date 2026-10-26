@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { readDoc } from '@/drive/convert.js'
 import { applyRequests } from '@/drive/apply.js'
-import { docOf, inline, para, run, styled, table } from './docsHelpers.js'
+import { bulleted, docOf, inline, item, para, run, styled, table } from './docsHelpers.js'
 
 const read = document => readDoc(document).markdown
 
@@ -90,6 +90,21 @@ describe('the Docs stand-in', () => {
       },
     ])
     expect(read(after)).toBe('1. One\n   1. Two\n2. Three')
+  })
+
+  it('gives a list made after one it doesn’t join an id of its own', () => {
+    const document = docOf([item('Rope', 'list.1'), para('Salt')], {
+      lists: { 'list.1': bulleted() },
+    })
+    const after = applyRequests(document, [
+      {
+        createParagraphBullets: {
+          range: { startIndex: 6, endIndex: 7 },
+          bulletPreset: 'NUMBERED_DECIMAL_ALPHA_ROMAN',
+        },
+      },
+    ])
+    expect(read(after)).toBe('- Rope\n\n1. Salt')
   })
 
   describe('tables', () => {

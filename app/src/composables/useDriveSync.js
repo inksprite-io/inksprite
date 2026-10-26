@@ -37,9 +37,11 @@ import {
 import { createDoc } from '@/drive/api.js'
 import { folderFor, placeDoc } from '@/drive/folders.js'
 import { forgetSession, signInFor } from '@/drive/session.js'
+import { docLinks } from '@/drive/links.js'
 import { syncDoc } from '@/drive/sync.js'
 import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
 import { measurePicture } from '@/files/pictures.js'
+import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { storage } from '@/storage/index.js'
 import { useDocumentsStore } from '@/stores/documentsStore.js'
 import { useFilesStore } from '@/stores/filesStore.js'
@@ -63,6 +65,8 @@ export function clearDriveSync() {
  */
 export function useDriveSync(storyId) {
   const api = useDocuments(storyId)
+  /** @type {import('@/utils/documentLinks.js').LinkTree} */
+  const tree = { get: api.get, childrenOf: api.childrenOf, rootId: rootIdFor(storyId) }
   const editor = useEditor()
   const store = useDocumentsStore()
   const toast = useToast()
@@ -230,6 +234,7 @@ export function useDriveSync(storyId) {
           current: () => current(documentId),
           threads: () => api.threadsOf(documentId) ?? {},
           keep: pictures => keepPictures(documentId, pictures),
+          links: docLinks(tree, documentId),
         },
         signed.token
       )

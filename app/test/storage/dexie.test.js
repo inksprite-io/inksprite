@@ -107,6 +107,7 @@ describe('storage in IndexedDB', () => {
     expect(await blob?.text()).toBe('%PDF')
     expect(await storage.fileBytes('none')).toBeNull()
     expect(await storage.filePath('pdf')).toBeNull()
+    expect(await storage.documentPath('pdf')).toBeNull()
     expect((await storage.projectFiles(STORY)).map(row => row.id)).toEqual(['pdf'])
     expect(await storage.projectFiles(OTHER)).toEqual([])
   })

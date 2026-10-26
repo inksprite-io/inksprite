@@ -10,12 +10,18 @@ vi.mock('@/composables/useAIConfig', () => ({
 
 const section = name => ({ template: `<div data-section-pane="${name}" />` })
 
-const mountSettings = () =>
+const mountSettings = (props = {}) =>
   mount(Settings, {
+    props,
     global: {
       plugins: [PrimeVue],
       stubs: {
         SystemSection: section('system'),
+        SyncSection: section('sync'),
+        ProjectSection: {
+          props: ['storyId'],
+          template: '<div data-section-pane="project" :data-story="storyId" />',
+        },
         AiConfigSection: section('ai'),
         WorkflowsSection: section('workflows'),
         SkillsSection: section('skills'),
@@ -61,7 +67,7 @@ describe('Settings', () => {
 
     expect(
       wrapper.findAll('[data-section]').map(button => button.attributes('data-section'))
-    ).toEqual(['system', 'about'])
+    ).toEqual(['system', 'sync', 'about'])
     // A section looked at before it went opens on the first.
     expect(wrapper.find('[data-section-pane="system"]').exists()).toBe(true)
 
@@ -74,6 +80,30 @@ describe('Settings', () => {
     const wrapper = mountSettings()
     expect(wrapper.find('[data-section="data"]').exists()).toBe(false)
     expect(wrapper.find('[data-section="debug"]').exists()).toBe(false)
+  })
+
+  it('has sync and sharing after System, then the project open, if one is', async () => {
+    const ids = wrapper => wrapper.findAll('[data-section]').map(b => b.attributes('data-section'))
+    expect(ids(mountSettings()).slice(0, 3)).toEqual(['system', 'sync', 'ai'])
+
+    const wrapper = mountSettings({ storyId: 'story_1' })
+    expect(ids(wrapper).slice(0, 3)).toEqual(['system', 'sync', 'project'])
+    await wrapper.find('[data-section="project"]').trigger('click')
+    expect(wrapper.find('h2').text()).toBe('Project')
+    expect(wrapper.find('[data-section-pane="project"]').attributes('data-story')).toBe('story_1')
+
+    // With no project open, the one last looked at opens on the first.
+    expect(mountSettings().find('[data-section-pane="system"]').exists()).toBe(true)
+  })
+
+  it('opens on the section asked for', async () => {
+    const { useSettingsPanel } = await import('@/composables/useSettingsPanel.js')
+    useSettingsPanel().open('project', 'sharing')
+    const wrapper = mountSettings({ storyId: 'story_1' })
+    expect(wrapper.find('[data-section-pane="project"]').exists()).toBe(true)
+    // The part is the section's to take.
+    expect(useSettingsPanel().takePart()).toBe('sharing')
+    useSettingsPanel().close()
   })
 
   it('has a section for the license and the credits', async () => {

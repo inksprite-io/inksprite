@@ -1007,8 +1007,27 @@ const writtenDocuments = () => {
   }
 }
 
-/** How many of the turn's calls failed, for its block to say before it is opened. */
-const failedCalls = computed(() => toolCalls.value.filter(tc => tc.failed).length)
+/**
+ * How many of the turn's calls failed, for its block to say before it is
+ * opened, once the turn is over. A call the model made again and got done
+ * after (the same tool, on the same document) failed only on the way and is
+ * not counted, though it is still marked inside the block.
+ */
+const failedCalls = computed(() => {
+  if (props.activity) return 0
+  const calls = toolCalls.value
+  const retried = (tc, i) =>
+    calls
+      .slice(i + 1)
+      .some(
+        later =>
+          later.name === tc.name &&
+          later.result !== null &&
+          !later.failed &&
+          pathKey(later.arguments?.path) === pathKey(tc.arguments?.path)
+      )
+  return calls.filter((tc, i) => tc.failed && !retried(tc, i)).length
+})
 
 /**
  * The turn's words split where its tools come: what it said before reaching

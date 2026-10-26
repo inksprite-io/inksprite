@@ -249,6 +249,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { importItems } from './importItems.js'
 import { useCopyPath } from '@/composables/useCopyPath.js'
+import { useReveal } from '@/composables/useReveal.js'
 import { usePlainText } from '@/composables/usePlainText.js'
 import { useFileView } from '@/composables/useFileView.js'
 import { useJobs } from '@/composables/useJobs.js'
@@ -266,12 +267,12 @@ import { OPEN_AFTER, useTreeDrop } from '@/composables/useTreeDrop.js'
 import { useTreeHistory } from '@/composables/useTreeHistory.js'
 import { useSharedDocuments } from '@/composables/useSharedDocuments.js'
 import { useFilesStore } from '@/stores/filesStore'
+import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
 import { downloadBlob, filenameFor } from '@/files/download.js'
 import { exportDocument } from '@/files/exportDocument.js'
 import { EPUB_MIME, hasText, isText } from '@/files/inspect.js'
 import { inRepository, isRepository, repositoryOf } from '@/source/tree.js'
 import { reextractFile } from '@/files/write.js'
-import { sessionStorage } from '@/utils/sessionStorage'
 import { isDesktop } from '@/platform/desktop.js'
 import { openUrl } from '@/platform/open.js'
 
@@ -309,6 +310,7 @@ const api = useDocuments(props.storyId)
 // What the writer does here, to take back with Command-Z: see DocumentTree.
 const history = useTreeHistory(props.storyId)
 const { copyPath } = useCopyPath(props.storyId)
+const { revealItem } = useReveal()
 const { plainTextItem } = usePlainText(props.storyId)
 const { fileViewItem } = useFileView(props.storyId)
 const driveSync = useDriveSync(props.storyId)
@@ -660,14 +662,20 @@ const carried = computed(
 )
 
 /**
+ * The folders the document open is in, below the project: marked as it is,
+ * so that the way back to it shows with them shut.
+ */
+const onActivePath = computed(() => isActive.value || (holdsActive.value && !isRoot.value))
+
+/**
  * The title's colour: the primary colour where the chat carries the document,
  * which is the one thing the row says about the chat at rest, and otherwise
- * darker for the document open than for the rest.
+ * darker for the document open and the folders it is in than for the rest.
  */
 const titleTone = computed(() => {
-  const weight = isActive.value ? ' font-semibold' : ''
+  const weight = onActivePath.value ? ' font-semibold' : ''
   if (carried.value) return `text-primary-600 dark:text-primary-400${weight}`
-  return isActive.value
+  return onActivePath.value
     ? `text-surface-900 dark:text-surface-0${weight}`
     : 'text-surface-700 dark:text-surface-200'
 })
@@ -787,30 +795,43 @@ const childList = computed({
     ),
 })
 
-const expandedKey = computed(() => `ui.tree.${props.documentId}.expanded`)
+const projectViews = useProjectViewsStore()
+
 // Folders start open: a collapsed tree on first load hides the whole story.
 // Not in a repository, whose thousands of files would all be drawn at once;
 // there a folder opens when it is asked to. A document that holds others
-// starts shut, one row as the document it is.
-const expanded = ref(sessionStorage.get(expandedKey.value, isFolder.value && !isInRepository.value))
+// starts shut, one row as the document it is. Once the writer opens or shuts
+// one, it stays that way, kept with where they left the project.
+const expanded = ref(
+  projectViews.getView(props.storyId)?.expanded?.[props.documentId] ??
+    (isFolder.value && !isInRepository.value)
+)
 
 const toggleExpanded = () => {
   expanded.value = !expanded.value
-  sessionStorage.set(expandedKey.value, expanded.value)
+  const kept = projectViews.getView(props.storyId)?.expanded
+  projectViews.updateView(props.storyId, {
+    expanded: { ...kept, [props.documentId]: expanded.value },
+  })
 }
+
+/** Whether the document open is somewhere under this row. */
+const holdsActive = computed(() => {
+  const id = props.activeDocumentId
+  if (!id || id === props.documentId) return false
+  for (let at = api.get(id); at; at = api.get(at.parentId)) {
+    if (at.parentId === props.documentId) return true
+  }
+  return false
+})
 
 // A document that holds others opens when what is opened is under it, so
 // that it has its row: a conversion's copy just made, or a scene opened from
 // a search. Not kept: on the next load it is shut again, as it starts.
 watch(
   () => props.activeDocumentId,
-  id => {
-    if (!id || id === props.documentId || expanded.value || !holdsOthers.value) return
-    for (let at = api.get(id); at; at = api.get(at.parentId)) {
-      if (at.parentId !== props.documentId) continue
-      expanded.value = true
-      return
-    }
+  () => {
+    if (holdsOthers.value && holdsActive.value) expanded.value = true
   },
   { immediate: true }
 )
@@ -1182,6 +1203,9 @@ const menuItems = computed(() => {
     // The address the tools take, for naming the document to the assistant.
     { label: 'Copy path', icon: 'pi pi-copy', command: () => copyPath(props.documentId) }
   )
+  // The project's own is with the project's items, which the root has too.
+  const shown = isRoot.value ? null : revealItem(props.documentId)
+  if (shown) items.push(shown)
 
   // A folder's goes for everything in it.
   if (sharedDocuments.active.value && !isRoot.value) {

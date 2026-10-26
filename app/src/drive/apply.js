@@ -55,14 +55,21 @@ import { tabsOf } from './convert.js'
 // eslint-disable-next-line no-control-regex
 const STRIPPED = /[\u0000-\u0008\u000c-\u001f-]/g
 
+/** A preset's nine levels, its first three over again. */
+const nine = (/** @type {object[]} */ three) => [...three, ...three, ...three]
+
 /** The bullet presets the writer uses, as a list's levels. */
 const PRESETS = {
-  BULLET_DISC_CIRCLE_SQUARE: [{ glyphSymbol: '●' }, { glyphSymbol: '○' }, { glyphSymbol: '■' }],
-  NUMBERED_DECIMAL_ALPHA_ROMAN: [
+  BULLET_DISC_CIRCLE_SQUARE: nine([
+    { glyphSymbol: '●' },
+    { glyphSymbol: '○' },
+    { glyphSymbol: '■' },
+  ]),
+  NUMBERED_DECIMAL_ALPHA_ROMAN: nine([
     { glyphType: 'DECIMAL', startNumber: 1 },
     { glyphType: 'ALPHA', startNumber: 1 },
     { glyphType: 'ROMAN', startNumber: 1 },
-  ],
+  ]),
 }
 
 const clone = value => (value === undefined ? undefined : structuredClone(value))
@@ -480,8 +487,12 @@ function createParagraphBullets(model, { range, bulletPreset }) {
   )
   const before = entries[0] && entries[0].list[entries[0].i - 1]
   const joined = before?.props?.bullet?.listId
-  const listId =
-    joined && model.presets[joined] === bulletPreset ? joined : `list.${++model.lists.made}`
+  let listId = joined && model.presets[joined] === bulletPreset ? joined : ''
+  // A new one's id is its own, as Docs gives each list.
+  while (!listId || (listId !== joined && model.tabLists[listId])) {
+    listId = `list.${++model.lists.made}`
+    if (listId === joined) listId = ''
+  }
   model.presets[listId] = bulletPreset
   model.tabLists[listId] ??= { listProperties: { nestingLevels: clone(levels) } }
   for (const { block } of entries) {

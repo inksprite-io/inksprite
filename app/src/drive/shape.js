@@ -308,6 +308,10 @@ class Shaper {
         total += sharedCount(words, earlier) - sharedCount(words, later)
         if (total > best) [best, cut] = [total, k + 1]
       })
+      // One parted that holds what can't be typed again, a picture or a page
+      // break, in its words after the table goes after it whole instead, so
+      // that the words before move and what it holds stays.
+      if (cut > 0 && this.#holdsAfter(theirs[room[cut - 1]], earlier, later)) cut--
       const x = cut > 0 ? room[cut - 1] : fromA
       this.#insert(ours[j].node, j, x >= 0 ? theirs[x] : null)
     }
@@ -450,6 +454,52 @@ class Shaper {
       order: 0,
       requests: [{ deleteContentRange: { range: this.#range(start, end) } }],
     })
+  }
+
+  /**
+   * Whether a block of the Doc, parted where its words part best into those
+   * before a table and those after, holds what can't be typed again in the
+   * words after, and none in those before.
+   *
+   * @param {Laid} block
+   * @param {string[]} earlier - The document's words before the table
+   * @param {string[]} later - And after it
+   * @returns {boolean}
+   */
+  #holdsAfter(block, earlier, later) {
+    const held = this.#spansIn(block)
+      .filter(
+        span => span.kind === 'picture' || (span.kind === 'held' && !SPACING.has(span.held ?? ''))
+      )
+      .map(
+        span =>
+          block.node
+            .textBetween(0, span.pos - block.pos - 1, ' ')
+            .split(/\s+/)
+            .filter(Boolean).length
+      )
+    if (held.length === 0) return false
+    const words = wordsOf(block.node)
+    /** @param {string[]} list */
+    const counts = list =>
+      list.reduce((map, word) => map.set(word, (map.get(word) ?? 0) + 1), new Map())
+    const [before, after] = [counts(earlier), counts(later)]
+    let score = 0
+    let best = 0
+    let split = 0
+    words.forEach((word, k) => {
+      if ((before.get(word) ?? 0) > 0) {
+        before.set(word, before.get(word) - 1)
+        score++
+      }
+      if ((after.get(word) ?? 0) > 0) {
+        after.set(word, after.get(word) - 1)
+        score--
+      }
+      if (score > best) [best, split] = [score, k + 1]
+    })
+    if (split === 0 || split >= words.length) return false
+    return held.every(at => at >= split)
   }
 
   /**

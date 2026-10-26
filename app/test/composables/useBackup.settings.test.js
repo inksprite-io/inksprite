@@ -133,7 +133,7 @@ describe('useBackup, settings files', () => {
 
   it('is refused where a project is expected, saying where it goes', async () => {
     await expect(useBackup().readProjectFile(fileOf(settingsFile({})))).rejects.toThrow(
-      'This file holds settings, not one project. Import it with Import in Settings › System › Data.'
+      'This file holds settings, not one project. Import it with Import in Settings › Sync and sharing › Backup.'
     )
   })
 

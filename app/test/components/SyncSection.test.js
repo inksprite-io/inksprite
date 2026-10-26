@@ -71,7 +71,13 @@ vi.mock('@/stores/documentsStore', () => ({
 import SyncSection from '@/components/writer/settings/SyncSection.vue'
 
 const mountSection = () =>
-  mount(SyncSection, { global: { plugins: [PrimeVue], directives: { tooltip: {} } } })
+  mount(SyncSection, {
+    global: {
+      plugins: [PrimeVue],
+      directives: { tooltip: {} },
+      stubs: { BackupSection: { template: '<div data-backup />' } },
+    },
+  })
 
 /**
  * @param {ReturnType<typeof mountSection>} wrapper
@@ -299,9 +305,67 @@ describe('SyncSection', () => {
     status.value = { ...status.value, full: true }
     await flushPromises()
     expect(wrapper.find('[data-sync-usage]').text()).toBe('1 KB used')
-    expect(wrapper.find('[data-sync-status]').text()).toBe(
-      'Your sync storage is full. Some changes wait here.'
-    )
+    expect(wrapper.find('[data-sync-status]').text()).toBe('Sync storage is full')
+  })
+
+  it('says what sync is doing in a few words, and what is left of a large sync', async () => {
+    account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
+    const wrapper = mountSection()
+    await flushPromises()
+    const line = wrapper.find('[data-sync-status]')
+    expect(line.text()).toBe('Up to date')
+
+    // What waits after a round that went through waits on something else.
+    status.value = { ...status.value, waiting: 3 }
+    await flushPromises()
+    expect(line.text()).toBe('Up to date')
+
+    status.value = { ...status.value, phase: 'syncing' }
+    await flushPromises()
+    expect(line.text()).toBe('Syncing…')
+    expect(wrapper.find('[data-action="sync-now"] .pi-spin').exists()).toBe(true)
+
+    status.value = { ...status.value, waiting: 1204 }
+    await flushPromises()
+    expect(line.text()).toBe('Syncing 1,204 changes…')
+
+    status.value = { ...status.value, phase: 'offline' }
+    await flushPromises()
+    expect(line.text()).toBe("Can't reach the sync server")
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+    status.value = { ...status.value }
+    await flushPromises()
+    expect(line.text()).toBe('No network connection')
+    vi.restoreAllMocks()
+  })
+
+  it('keeps signing out with the passphrase and the recovery code, and backups signed in or not', async () => {
+    const wrapper = mountSection()
+    /** The folds, by title. */
+    const folds = () => wrapper.findAll('button[aria-expanded]').map(button => button.text())
+    expect(folds()).toEqual(['Backup'])
+    expect(wrapper.find('[data-backup]').exists()).toBe(true)
+
+    account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
+    sync.devices.mockResolvedValueOnce([{ id: 1, device: 'Mac', used: Date.now(), current: true }])
+    await flushPromises()
+    expect(folds()).toEqual(['Devices', 'Sharing', 'Account', 'Backup'])
+    const buttons = wrapper.findAll('[data-action]').map(button => button.attributes('data-action'))
+    expect(buttons.slice(buttons.indexOf('make-recovery'))).toEqual([
+      'make-recovery',
+      'change-passphrase',
+      'sync-sign-out',
+    ])
+    await wrapper.find('[data-action="sync-sign-out"]').trigger('click')
+    expect(sync.signOut).toHaveBeenCalled()
+  })
+
+  it('syncs by hand from beside what it says', async () => {
+    account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
+    const wrapper = mountSection()
+    await flushPromises()
+    await wrapper.find('[data-action="sync-now"]').trigger('click')
+    expect(sync.syncNow).toHaveBeenCalled()
   })
 
   it('says quietly that it waits for an update, and offers the one ready', async () => {
@@ -310,15 +374,13 @@ describe('SyncSection', () => {
     const wrapper = mountSection()
     await flushPromises()
     const line = wrapper.find('[data-sync-status]')
-    expect(line.text()).toBe('2 changes waiting for an update')
+    expect(line.text()).toBe('Update inksprite to keep syncing')
     expect(line.classes()).not.toContain('text-red-600')
     expect(wrapper.find('[data-action="sync-update"]').exists()).toBe(false)
 
     const apply = vi.fn(async () => {})
     updates.ready.value = { version: '0.1.0-dev.21', apply }
-    status.value = { ...status.value, waiting: 0 }
     await flushPromises()
-    expect(line.text()).toBe('Waiting for an update')
     await wrapper.find('[data-action="sync-update"]').trigger('click')
     expect(apply).toHaveBeenCalled()
 

@@ -470,25 +470,26 @@ export function takenOver(doc, threads, swaps, at) {
 }
 
 /**
- * Whether a suggestion puts in or takes out a block whole here, alone or
- * with others: a block it is in has every word of it put in, or every word
- * taken out. In a Doc that is a paragraph's end suggested, which holds the
- * writer off the paragraphs either side, so such a one of the model's
- * stays here.
+ * How a suggestion meets the blocks it is in: whether one has every word of
+ * it put in or every word taken out, and whether it changes any but whole.
+ * One that only puts in or takes out whole paragraphs goes to a Doc as a
+ * suggested paragraph; one that parts or joins one, or puts in or takes out
+ * a paragraph as well as changing words, stays here, as a Doc lays such a
+ * one beside its own suggestions apart from how it lies here.
  *
  * @param {Node} doc
  * @param {string} id
- * @returns {boolean}
+ * @returns {{whole: boolean, partly: boolean}}
  */
-export function wholeBlock(doc, id) {
+export function blocksOf(doc, id) {
   const { insertion, deletion } = schema.marks
   /** @param {import('prosemirror-model').Mark} mark */
   const suggests = mark => mark.type === insertion || mark.type === deletion
   let whole = false
+  let partly = false
   doc.descendants(node => {
-    if (whole) return false
     if (!node.isInline && node.marks.some(mark => suggests(mark) && mark.attrs.id === id)) {
-      whole = true
+      whole = partly = true
       return false
     }
     if (!node.isTextblock) return true
@@ -498,16 +499,18 @@ export function wholeBlock(doc, id) {
     let bare = node.childCount === 0
     node.forEach(child => {
       const marks = child.marks.filter(suggests)
-      if (marks.length === 0) bare = true
+      if (!marks.some(mark => mark.attrs.id === id)) bare = true
       for (const mark of marks) {
+        if (mark.attrs.id !== id) continue
         kinds.add(mark.type)
-        if (mark.attrs.id === id) its = true
+        its = true
       }
     })
     if (its && !bare && kinds.size === 1) whole = true
+    else if (its) partly = true
     return false
   })
-  return whole
+  return { whole, partly }
 }
 
 /**

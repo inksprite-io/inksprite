@@ -17,8 +17,9 @@
  * The wording is the exception in one direction only. The prompt and the
  * skills' prompts are read from the profile every turn, so a chat keeps up
  * with its profile's words, until the writer changes them in the chat: then
- * the chat keeps its own (`Chat.prompt`, `Chat.skills`). Every change in a
- * chat is the chat's; Save to profile is how one reaches the profile.
+ * the chat keeps its own (`Chat.prompt`, `Chat.skills`). The AI preset is
+ * read the same way (`Chat.presetId`). Every change in a chat is the chat's;
+ * Save to profile is how one reaches the profile.
  *
  * These ship as source rather than data, like the prompts in `ai/prompts`, so
  * an improvement reaches chats that have not been created yet when the app
@@ -55,6 +56,9 @@ import {
  *   under in a chat on this profile, keyed by skill name. An override rather
  *   than a copy: a skill absent here reads the wording its own file has, and
  *   keeps picking up improvements to it. See `skillPrompt` in ai/skills.
+ * @property {string} [presetId] - The AI preset a chat on this profile runs
+ *   on, read every turn as the prompt is. Absent means the default. See
+ *   `presetFor` in composables/useAIConfig.js.
  *
  * @typedef {Object} ChatProfile
  * @property {string} id - Stable identifier, prefixed so it cannot collide with a stored profile
@@ -188,8 +192,8 @@ export const DEFAULT_PROFILE_ID = CHAT_PROFILE_ID
 /**
  * What to stamp onto a new chat, given the profile it is being started on.
  *
- * Everything but the wording. The prompt and the skills' prompts stay on the
- * profile and are read on every turn, so a chat follows its profile's words;
+ * Everything but the wording and the preset. Those stay on the profile and
+ * are read on every turn, so a chat follows its profile's words and model;
  * the rest is copied and then the chat's own, which is the rule `createChat`
  * has always followed — a writer who switches a tool off in one chat has not
  * asked to switch it off in nine others.
@@ -204,18 +208,20 @@ export const DEFAULT_PROFILE_ID = CHAT_PROFILE_ID
 export function settingsForNewChat(profile) {
   const resolved = profile || getBuiltInProfile(DEFAULT_PROFILE_ID)
   // eslint-disable-next-line no-unused-vars
-  const { prompt, skills, ...rest } = resolved?.settings || {}
+  const { prompt, skills, presetId, ...rest } = resolved?.settings || {}
   return { profileId: resolved?.id ?? DEFAULT_PROFILE_ID, ...rest }
 }
 
 /**
  * The settings a profile can stamp onto a chat: `ProfileSettings` less the
- * wording, which stays on the profile.
+ * wording and the preset, which stay on the profile.
  */
 const STAMPED_SETTINGS = [
-  // The chat's own wording, cleared so it reads the profile it moves to.
+  // The chat's own wording and preset, cleared so it reads the profile it
+  // moves to.
   'prompt',
   'skills',
+  'presetId',
   'disabledTools',
   'disabledToolGroups',
   'rules',

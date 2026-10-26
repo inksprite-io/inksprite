@@ -80,6 +80,9 @@
  *   null means every tab is kept.
  * @property {StoryLayout} [layout] - How the writer left the panels. Absent means the
  *   default arrangement; see `components/writer/layout/layout.js`.
+ * @property {Object<string, boolean>} [expanded] - The outline's folders the writer
+ *   opened (true) or shut (false), by document id. One absent is as it starts; see
+ *   `components/writer/tree/DocumentNode.vue`.
  * @property {number} version - Bumped each time it is saved
  * @property {number} updated - When the writer was last in the project here
  */
@@ -392,6 +395,7 @@
  * @property {boolean} [python] - Whether this chat runs Python, once the writer has chosen here. Absent means it does when the Python extension lists the chat's profile. Opted into, as the web is. See ai/tools/python.js.
  * @property {string|null} [voiceId] - The voice this chat's messages are read aloud in, one of the project's. Absent, or naming a voice since removed, means the project's default.
  * @property {string} [prompt] - The chat's own system prompt, once the writer has changed it here. Absent means the profile's, read on every turn. See ai/profiles.
+ * @property {string} [presetId] - The AI preset this chat runs on, once the writer has chosen one here. Absent, or naming one not on this device, means its profile's, and then the default. See `presetFor` in composables/useAIConfig.js.
  * @property {Record<string, {prompt?: string}>} [skills] - The chat's own wording of a skill, by the skill's name, over the profile's. An empty prompt is the skill's own wording. Absent means the profile's.
  * @property {string} [rules] - The chat's author's note: standing instructions the writer keeps as they go, sent in their latest message after the project block and ahead of what they said. Starts as the profile's. Absent means none.
  * @property {string[]} [pinnedIds] - Documents whose text rides in the project block from the first turn, without the model having read them. A folder pins what is under it. Absent means none.

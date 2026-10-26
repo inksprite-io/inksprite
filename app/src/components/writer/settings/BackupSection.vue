@@ -1,11 +1,13 @@
 <template>
-  <div class="flex flex-wrap justify-end gap-2 pt-2 pb-1">
+  <div class="flex flex-wrap gap-2 pt-2 pb-1">
     <Button
       label="Export"
       icon="pi pi-download"
       size="small"
       outlined
+      severity="secondary"
       :loading="isExporting"
+      data-action="export"
       @click="exportDialogVisible = true"
     />
     <Button
@@ -15,17 +17,8 @@
       outlined
       severity="secondary"
       :loading="isImporting"
+      data-action="import"
       @click="handleImportClick"
-    />
-    <Button
-      v-if="desktop"
-      :label="revealLabel"
-      icon="pi pi-folder-open"
-      size="small"
-      outlined
-      severity="secondary"
-      data-action="reveal"
-      @click="reveal"
     />
     <input
       ref="fileInput"
@@ -48,11 +41,15 @@ import { describeBackupContents, keysLeftOut, projectName } from '@/utils/backup
 import { changesAnything, describeImport, describeSelection } from '@/utils/settingsFile.js'
 import ExportDialog from './ExportDialog.vue'
 import { getWebService } from '@/web/services.js'
-import { isDesktop } from '@/platform/desktop.js'
-import { revealInLibrary } from '@/platform/library.js'
 
 /** @typedef {import('@/utils/backup.js').Backup} Backup */
 /** @typedef {import('@/utils/settingsFile.js').SettingsImport} SettingsImport */
+
+/**
+ * Settings › Sync and sharing › Backup: everything, or some of it, saved to a
+ * file, and a file taken back in, whatever it holds: a whole backup, a
+ * selection, or settings.
+ */
 
 const backup = useBackup()
 const toast = useToast()
@@ -66,24 +63,6 @@ const fileInput = ref(null)
 
 /** What a web search service is called, for naming the keys a file left out. */
 const webName = (/** @type {string} */ id) => getWebService(id)?.name ?? id
-
-// In the desktop app, the folder the projects are kept in can be shown in
-// the system's file manager.
-const desktop = isDesktop()
-const platform = typeof navigator === 'undefined' ? '' : navigator.userAgent
-const revealLabel = /Mac/.test(platform)
-  ? 'Show in Finder'
-  : /Windows/.test(platform)
-    ? 'Show in Explorer'
-    : 'Show folder'
-
-const reveal = async () => {
-  try {
-    await revealInLibrary()
-  } catch (error) {
-    toast.error(`The folder couldn't be shown. ${error.message}`)
-  }
-}
 
 /**
  * Save what was ticked.

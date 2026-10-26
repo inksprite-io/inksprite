@@ -412,13 +412,18 @@ export function libraryFolder(root) {
     },
 
     /**
-     * Show a file or folder in the system's file manager: the library itself
-     * when no path is given.
+     * Show a file or folder in the system's file manager: a folder opened, the
+     * library itself when no path is given, and a file in the folder it is in.
      *
      * @param {string} [relative]
      */
     async reveal(relative) {
-      shell.showItemInFolder(relative ? await inside(relative) : root)
+      const target = relative ? await inside(relative) : root
+      const found = await fs.stat(target).catch(() => null)
+      if (found?.isDirectory()) {
+        const failed = await shell.openPath(target)
+        if (failed) throw new Error(failed)
+      } else shell.showItemInFolder(target)
     },
   }
 }

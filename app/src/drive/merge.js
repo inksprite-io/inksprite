@@ -210,9 +210,30 @@ function mergeStretch(base, mine, theirs) {
  */
 function mergeApart(base, mine, theirs) {
   if (sameBlocks(mine, base) || sameBlocks(theirs, base)) return null
-  const ours = hunksOf(base, mine)
-  const others = hunksOf(base, theirs)
-  if (!ours || !others) return null
+  const mineHunks = hunksOf(base, mine)
+  const theirHunks = hunksOf(base, theirs)
+  if (!mineHunks || !theirHunks) return null
+  // Blocks one side put in between blocks the other changed together go
+  // beside what it made of them: a table put in between two paragraphs the
+  // other joined goes after the paragraph they make. One the Doc put in
+  // goes before it where the paragraphs after it in the Doc have a picture
+  // and those before none, so that the words that move past it are those
+  // that can be typed again.
+  /** @param {Hunk[]} hunks @param {Hunk[]} around @param {boolean} doc */
+  const beside = (hunks, around, doc) =>
+    hunks.map(hunk => {
+      const over =
+        hunk.from === hunk.to && around.find(each => each.from < hunk.from && hunk.from < each.to)
+      if (!over) return hunk
+      const first =
+        doc &&
+        base.slice(hunk.from, over.to).some(pictured) &&
+        !base.slice(over.from, hunk.from).some(pictured)
+      const at = first ? over.from : over.to
+      return { ...hunk, from: at, to: at }
+    })
+  const ours = beside(mineHunks, theirHunks, false)
+  const others = beside(theirHunks, mineHunks, true)
   const touch = (/** @type {Hunk} */ a, /** @type {Hunk} */ b) =>
     a.from === a.to && b.from === b.to ? a.from === b.from : a.from < b.to && b.from < a.to
   if (ours.some(a => others.some(b => touch(a, b)))) return null
@@ -237,6 +258,21 @@ function mergeApart(base, mine, theirs) {
   }
   if (at < base.length) out.push(agreed(base.slice(at), kept.slice(at)))
   return out
+}
+
+/**
+ * Whether a block holds a picture.
+ *
+ * @param {Node} block
+ * @returns {boolean}
+ */
+function pictured(block) {
+  let found = false
+  block.descendants(node => {
+    if (node.type === schema.nodes.image) found = true
+    return !found
+  })
+  return found
 }
 
 /**

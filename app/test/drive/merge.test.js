@@ -207,6 +207,28 @@ describe('mergeDocs', () => {
     expect(md(result.clashes[0].theirs)).toBe('- Ropes\n- Paddles')
   })
 
+  it('puts what one side put in between two paragraphs the other joined after the paragraph they make', () => {
+    const base = 'Rain came in.\n\nThe ferry was late.\n\nAfter.'
+    const joined = 'Rain came in. The ferry was late.\n\nAfter.'
+    const table = '| Day | Miles |\n| --- | --- |\n| Mon | 12 |'
+    for (const block of [table, 'A gull overhead.']) {
+      const between = base.replace('\n\nThe ferry', `\n\n${block}\n\nThe ferry`)
+      const both = joined.replace('\n\nAfter.', `\n\n${block}\n\nAfter.`)
+      // Neither side's words twice, whichever side joined.
+      expect(merged(base, joined, between)).toBe(as(both))
+      expect(merged(base, between, joined)).toBe(as(both))
+    }
+  })
+
+  it('puts a table the Doc put in before the paragraph joined here when the words after it hold a picture', () => {
+    const base = 'Rain came in.\n\nThe ferry ![](pier.png) was late.\n\nAfter.'
+    const table = '| Day | Miles |\n| --- | --- |\n| Mon | 12 |'
+    const joined = 'Rain came in. The ferry ![](pier.png) was late.\n\nAfter.'
+    const between = base.replace('\n\nThe ferry', `\n\n${table}\n\nThe ferry`)
+    // So the words before it move past it in the Doc, and the picture stays.
+    expect(merged(base, joined, between)).toBe(as(`${table}\n\n${joined}`))
+  })
+
   describe('tables', () => {
     /** A table as markdown, by its rows. */
     const grid = (...rows) =>

@@ -83,14 +83,7 @@
       @change="readChosenFolder"
     />
 
-    <ProjectDialog v-model:visible="showProjectDialog" :story-id="storyId" />
     <TrashDialog v-model:visible="showTrash" :story-id="storyId" />
-    <ShareDialog
-      v-if="cloud.account.value"
-      v-model:visible="showShare"
-      :story-id="storyId"
-      :title="api.displayTitle(root)"
-    />
     <RepositoryDialog
       ref="repositoryDialog"
       v-model:visible="showRepositoryDialog"
@@ -117,7 +110,6 @@ import ScrollPanel from 'primevue/scrollpanel'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import DocumentNode from './DocumentNode.vue'
-import ProjectDialog from './ProjectDialog.vue'
 import CardImportDialog from './CardImportDialog.vue'
 import CardChatDialog from './CardChatDialog.vue'
 import RepositoryDialog from './RepositoryDialog.vue'
@@ -127,7 +119,6 @@ import HeaderButton from '../layout/HeaderButton.vue'
 import PanelHeader from '../layout/PanelHeader.vue'
 import ProjectMenu from '../projects/ProjectMenu.vue'
 import TrashDialog from '../projects/TrashDialog.vue'
-import ShareDialog from './ShareDialog.vue'
 import { useTrash } from '@/composables/useTrash.js'
 import { useBackup } from '@/composables/useBackup'
 import { useCardChat } from '@/composables/useCardChat'
@@ -137,6 +128,8 @@ import { useDocuments } from '@/composables/useDocuments'
 import { undoKeyOf, useTreeHistory } from '@/composables/useTreeHistory.js'
 import { useProjects } from '@/composables/useProjects'
 import { useCloudSync } from '@/composables/useCloudSync.js'
+import { useReveal } from '@/composables/useReveal.js'
+import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { sharing } from '@/cloud/people.js'
 import { useJobs } from '@/composables/useJobs.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
@@ -196,13 +189,14 @@ const openRootMenu = event => {
 }
 
 const isDragging = ref(false)
-const showProjectDialog = ref(false)
 
 const trash = useTrash(props.storyId)
 /** Sync, where a project can be kept on this device only, or shared. */
 const cloud = useCloudSync()
 const showTrash = ref(false)
-const showShare = ref(false)
+/** The project's settings, its sharing among them, are the settings' Project section. */
+const settingsPanel = useSettingsPanel()
+const { revealItem } = useReveal()
 
 /** Whether the project was shared with this account, by someone else. */
 const sharedWithMe = computed(() => sharing.value.projects[props.storyId]?.role === 'member')
@@ -759,11 +753,11 @@ const projectMenuItems = computed(() => [
   {
     label: 'Project settings',
     icon: 'pi pi-cog',
-    command: () => {
-      showProjectDialog.value = true
-    },
+    command: () => settingsPanel.open('project'),
   },
   { label: 'Export project', icon: 'pi pi-download', command: () => exportProject() },
+  // In the desktop app, the project's folder.
+  ...[root.value && revealItem(root.value.id)].filter(item => Boolean(item)),
   // Signed in to sync: shared, kept on this device, or synced again. One
   // shared with this account is its owner's to keep off.
   ...(cloud.account.value
@@ -773,9 +767,7 @@ const projectMenuItems = computed(() => [
           {
             label: sharedWithMe.value ? 'People…' : 'Share…',
             icon: 'pi pi-users',
-            command: () => {
-              showShare.value = true
-            },
+            command: () => settingsPanel.open('project', 'sharing'),
           },
           ...(sharedWithMe.value
             ? []

@@ -347,6 +347,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import { useAIChat } from '@/composables/useAIChat'
 import { useProviderSetup } from '@/composables/useProviderSetup.js'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
+import { useAIConfig } from '@/composables/useAIConfig'
 import { useMessageField } from '@/composables/useMessageField.js'
 import { useCommandMenu, commandOptionId } from '@/composables/useCommandMenu.js'
 import {
@@ -382,6 +383,7 @@ const chatGeneration = useAIChat(props.storyId, props.chatId)
 const { providerSetupDialogVisible, handleDontShowAgain, isProviderSetupDialogEnabled } =
   useProviderSetup()
 const settings = useSettingsPanel()
+const aiConfig = useAIConfig()
 
 // Refs
 const scrollPanel = ref(null)
@@ -616,6 +618,9 @@ const explainSetup = () => {
   if (providerMissing.value && isProviderSetupDialogEnabled()) {
     providerSetupDialogVisible.value = true
   } else {
+    // On the preset this chat runs on, which is the one to fix.
+    const preset = chatGeneration.runningPreset()
+    if (preset) aiConfig.showPreset(preset.id)
     settings.open('ai')
   }
 }

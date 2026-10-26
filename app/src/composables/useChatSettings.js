@@ -15,6 +15,7 @@ import { useProfiles } from './useProfiles.js'
 import { useApplicationState } from './useApplicationState.js'
 import { useWebSearch } from './useWebSearch.js'
 import { useMcpServers } from './useMcpServers.js'
+import { useAIConfig } from './useAIConfig.js'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { DEFAULT_CHAT_PROMPT } from '@/ai/prompts/index.js'
 import {
@@ -40,6 +41,7 @@ export function useChatSettings(storyId, chatId) {
   const app = useApplicationState()
   const webSearch = useWebSearch()
   const mcp = useMcpServers()
+  const aiConfig = useAIConfig()
   const storiesStore = useStoriesStore()
 
   const unstarted = computed(() => chatsApi.isUnstarted(toValue(chatId)))
@@ -99,6 +101,23 @@ export function useChatSettings(storyId, chatId) {
    * @param {string} text
    */
   const setNote = text => update({ rules: text.trim() || undefined })
+
+  /** The AI preset the chat's profile runs chats on: its own, or the default. */
+  const profilePresetId = computed(
+    () => aiConfig.presetFor(null, selectedProfile.value)?.id ?? null
+  )
+
+  /** The AI preset the chat runs on: its own choice, or its profile's. */
+  const preset = computed(() => aiConfig.presetFor(chat.value, selectedProfile.value))
+  const presetId = computed(() => preset.value?.id ?? null)
+
+  /**
+   * Run the chat on a preset. The choice is the chat's: every other chat
+   * runs on what it ran on. Back on its profile's, the chat follows the
+   * profile again.
+   * @param {string} id
+   */
+  const setPreset = id => update({ presetId: id === profilePresetId.value ? undefined : id })
 
   /**
    * The chat's roleplay settings: the names its macros become, and the
@@ -186,8 +205,8 @@ export function useChatSettings(storyId, chatId) {
 
   /**
    * Whether this chat runs differently from its profile: its prompt, a skill's
-   * wording, its tools, the web, Python or a server, or its author's note. What Save
-   * to profile would write.
+   * wording, its tools, the web, Python or a server, its author's note, or its
+   * preset. What Save to profile would write.
    */
   const changed = computed(() => {
     const own = chat.value
@@ -202,6 +221,7 @@ export function useChatSettings(storyId, chatId) {
       !sameSet(own.disabledTools, settings.disabledTools) ||
       !sameSet(own.disabledToolGroups, settings.disabledToolGroups) ||
       (note.value || '') !== (settings.rules || '') ||
+      presetId.value !== profilePresetId.value ||
       webForChat(own, id) !== webForChat(null, id) ||
       pythonForChat(own, id) !== pythonForChat(null, id) ||
       (Array.isArray(own.mcpServers) && !sameSet(own.mcpServers, listedServers()))
@@ -227,6 +247,12 @@ export function useChatSettings(storyId, chatId) {
       disabledToolGroups: [...(own.disabledToolGroups || [])],
       rules: note.value || undefined,
       skills,
+      // The profile's own where the chat runs as it does, so one that runs
+      // chats on the default goes on following the default.
+      presetId:
+        presetId.value === profilePresetId.value
+          ? selectedProfile.value?.settings?.presetId
+          : (presetId.value ?? undefined),
     }
   }
 
@@ -294,6 +320,7 @@ export function useChatSettings(storyId, chatId) {
       update({
         prompt: undefined,
         skills: undefined,
+        presetId: undefined,
         web: undefined,
         python: undefined,
         mcpServers: undefined,
@@ -318,7 +345,7 @@ export function useChatSettings(storyId, chatId) {
     }
   }
 
-  /** Put this chat back as its profile has it: its prompt, tools, note and all. */
+  /** Put this chat back as its profile has it: its prompt, tools, note, preset and all. */
   const resetToProfile = () => {
     if (selectedProfile.value) update(settingsForProfileSwitch(selectedProfile.value))
   }
@@ -373,6 +400,10 @@ export function useChatSettings(storyId, chatId) {
     prompt,
     profilePrompt,
     setPrompt,
+    preset,
+    presetId,
+    profilePresetId,
+    setPreset,
     skillPromptOf,
     setSkillPrompt,
     resetSkill,

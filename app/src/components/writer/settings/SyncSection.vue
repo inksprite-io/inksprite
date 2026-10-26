@@ -1,91 +1,197 @@
 <template>
-  <div class="flex flex-col gap-3 pt-2 pb-1" data-sync>
-    <template v-if="account">
-      <!-- A recovery code just made, shown this once. -->
-      <div
-        v-if="shownCode"
-        class="flex flex-col gap-2 rounded border border-surface-200 dark:border-surface-700 p-3"
-        data-recovery-shown
-      >
-        <span class="text-xs font-medium text-surface-700 dark:text-surface-200">
-          Recovery code
-        </span>
-        <code
-          class="text-sm tracking-wide select-all text-surface-900 dark:text-surface-0"
-          data-recovery-code
-          >{{ shownCode }}</code
+  <div class="flex flex-col" data-sync>
+    <div class="flex flex-col gap-3 px-2 pt-1 pb-2">
+      <template v-if="account">
+        <!-- A recovery code just made, shown this once. -->
+        <div
+          v-if="shownCode"
+          class="flex flex-col gap-2 rounded border border-surface-200 dark:border-surface-700 p-3"
+          data-recovery-shown
         >
-        <p class="text-xs text-surface-500 dark:text-surface-400">
-          It signs in to this account if the passphrase is forgotten. Keep it where you keep the
-          passphrase.
+          <span class="text-xs font-medium text-surface-700 dark:text-surface-200">
+            Recovery code
+          </span>
+          <code
+            class="text-sm tracking-wide select-all text-surface-900 dark:text-surface-0"
+            data-recovery-code
+            >{{ shownCode }}</code
+          >
+          <p class="text-xs text-surface-500 dark:text-surface-400">
+            It signs in to this account if the passphrase is forgotten. Keep it where you keep the
+            passphrase.
+          </p>
+          <div class="flex justify-end gap-2">
+            <Button
+              :label="copied ? 'Copied' : 'Copy'"
+              :icon="copied ? 'pi pi-check' : 'pi pi-copy'"
+              size="small"
+              text
+              data-action="copy-recovery"
+              @click="copyCode"
+            />
+            <Button
+              label="Done"
+              size="small"
+              data-action="recovery-done"
+              @click="shownCode = null"
+            />
+          </div>
+        </div>
+
+        <p class="text-xs text-surface-700 dark:text-surface-200" data-sync-account>
+          Signed in as {{ account.name }} on {{ host(account.server) }}
         </p>
-        <div class="flex justify-end gap-2">
+        <!-- What sync is doing, with a sync to start by hand, and what the
+             account keeps of its quota. -->
+        <div class="flex items-center gap-2 text-xs">
+          <button
+            v-tooltip.bottom="'Sync now'"
+            type="button"
+            class="flex-none w-6 h-6 -ml-1 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
+            aria-label="Sync now"
+            :disabled="status.phase === 'syncing'"
+            data-action="sync-now"
+            @click="syncNow"
+          >
+            <i
+              class="pi pi-sync"
+              :class="{ 'pi-spin': status.phase === 'syncing' }"
+              style="font-size: 0.75rem"
+            />
+          </button>
+          <span
+            class="min-w-0"
+            :class="
+              status.phase === 'error' || status.full
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-surface-500 dark:text-surface-400'
+            "
+            data-sync-status
+            >{{ said }}</span
+          >
           <Button
-            :label="copied ? 'Copied' : 'Copy'"
-            :icon="copied ? 'pi pi-check' : 'pi pi-copy'"
+            v-if="update"
+            label="Update"
             size="small"
             text
-            data-action="copy-recovery"
-            @click="copyCode"
+            class="!py-0"
+            data-action="sync-update"
+            @click="update.apply()"
           />
-          <Button label="Done" size="small" data-action="recovery-done" @click="shownCode = null" />
+          <span
+            v-if="kept"
+            class="ml-auto flex-none text-surface-500 dark:text-surface-400"
+            data-sync-usage
+            >{{ kept }}</span
+          >
         </div>
-      </div>
+        <p
+          v-if="keptHere"
+          class="text-xs text-surface-500 dark:text-surface-400"
+          data-sync-kept-here
+        >
+          {{ keptHere }}
+        </p>
+      </template>
 
-      <p class="text-xs text-surface-700 dark:text-surface-200" data-sync-account>
-        Signed in as {{ account.name }} on {{ host(account.server) }}
-      </p>
-      <p v-if="kept" class="text-xs text-surface-500 dark:text-surface-400" data-sync-usage>
-        {{ kept }}
-      </p>
-      <p v-if="keptHere" class="text-xs text-surface-500 dark:text-surface-400" data-sync-kept-here>
-        {{ keptHere }}
-      </p>
-      <p
-        class="text-xs"
-        :class="
-          status.phase === 'error' || status.full
-            ? 'text-red-600 dark:text-red-400'
-            : 'text-surface-500 dark:text-surface-400'
-        "
-        data-sync-status
-      >
-        {{ said }}
-      </p>
-      <div class="flex flex-wrap justify-end gap-2">
-        <Button
-          v-if="update"
-          label="Update"
-          icon="pi pi-download"
+      <template v-else>
+        <p v-if="notice" class="text-xs text-red-600 dark:text-red-400" data-sync-notice>
+          {{ notice }}
+        </p>
+        <p class="text-xs text-surface-500 dark:text-surface-400" data-sync-preview>
+          Sync is in private preview. An account needs an invitation.
+        </p>
+        <SelectButton
+          v-model="mode"
+          :options="MODES"
+          option-label="label"
+          option-value="value"
+          :allow-empty="false"
           size="small"
-          outlined
-          data-action="sync-update"
-          @click="update.apply()"
+          aria-label="Sign in, create an account, or recover one"
+          data-field="sync-mode"
         />
-        <Button
-          label="Sync now"
-          icon="pi pi-sync"
-          size="small"
-          outlined
-          :loading="status.phase === 'syncing'"
-          data-action="sync-now"
-          @click="syncNow"
-        />
-        <Button
-          label="Sign out"
-          icon="pi pi-sign-out"
-          size="small"
-          outlined
-          severity="secondary"
-          data-action="sync-sign-out"
-          @click="signOut"
-        />
-      </div>
+        <label
+          v-if="choosesServer"
+          class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300"
+        >
+          Server
+          <InputText
+            v-model="server"
+            size="small"
+            placeholder="https://sync.example.com"
+            autocomplete="url"
+            data-field="sync-server"
+          />
+        </label>
+        <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
+          Name
+          <InputText v-model="name" size="small" autocomplete="username" data-field="sync-name" />
+          <span
+            v-if="mode === 'create'"
+            class="text-surface-500 dark:text-surface-400"
+            data-sync-name-format
+            >{{ SHORTEST_NAME }} to {{ LONGEST_NAME }} letters, digits and hyphens</span
+          >
+        </label>
+        <label
+          v-if="mode === 'recover'"
+          class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300"
+        >
+          Recovery code
+          <InputText
+            v-model="recoveryCode"
+            size="small"
+            autocomplete="off"
+            spellcheck="false"
+            data-field="sync-recovery-code"
+          />
+        </label>
+        <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
+          {{ mode === 'recover' ? 'New passphrase' : 'Passphrase' }}
+          <InputText
+            v-model="passphrase"
+            size="small"
+            type="password"
+            :autocomplete="mode === 'sign-in' ? 'current-password' : 'new-password'"
+            data-field="sync-passphrase"
+            @keydown.enter="go"
+          />
+        </label>
+        <label
+          v-if="mode === 'create'"
+          class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300"
+        >
+          Sign-up code
+          <InputText v-model="code" size="small" data-field="sync-code" @keydown.enter="go" />
+        </label>
+        <div class="flex items-center justify-end gap-3">
+          <p v-if="failure" class="mr-auto text-xs text-red-600 dark:text-red-400" data-sync-error>
+            {{ failure }}
+          </p>
+          <Button
+            :label="ACTIONS[mode]"
+            size="small"
+            :loading="working"
+            :disabled="!ready"
+            data-action="sync-sign-in"
+            @click="go"
+          />
+        </div>
+      </template>
+    </div>
 
+    <template v-if="account">
       <!-- The devices signed in, any of which can sign another out. -->
-      <section v-if="deviceList.length > 0" class="flex flex-col gap-1" data-sync-devices>
-        <span class="text-xs font-medium text-surface-600 dark:text-surface-300">Devices</span>
-        <ul class="flex flex-col">
+      <ExpandableSection
+        v-if="deviceList.length > 0"
+        title="Devices"
+        storage-key="ui.settings.sync.devices"
+        subsection
+        container-class="pt-2"
+        content-wrapper-class="flex flex-col"
+      >
+        <ul class="flex flex-col pt-1 pb-1" data-sync-devices>
           <li
             v-for="device in deviceList"
             :key="device.id"
@@ -107,217 +213,186 @@
             >
               <i class="pi pi-sign-out" style="font-size: 0.7rem" />
             </button>
+            <span v-else class="flex-none w-6" />
           </li>
         </ul>
-      </section>
+      </ExpandableSection>
 
-      <!-- Sharing: the name the people this account shares with see, and the
-           friend code they share with it by. -->
-      <section v-if="profile" class="flex flex-col gap-2" data-sync-sharing>
-        <label for="sync-display" class="text-xs font-medium text-surface-600 dark:text-surface-300"
-          >Name others see</label
-        >
-        <InputText
-          id="sync-display"
-          v-model="display"
-          size="small"
-          autocomplete="name"
-          data-field="sync-display"
-          @keydown.enter="saveDisplay"
-          @blur="saveDisplay"
-        />
-        <div class="flex items-center gap-2" data-sync-friend>
-          <span class="text-xs font-medium text-surface-600 dark:text-surface-300"
-            >Friend code</span
-          >
-          <code
-            class="flex-1 min-w-0 truncate text-xs tracking-wide select-all text-surface-900 dark:text-surface-0"
-            data-friend-code
-            >{{ profile.friend }}</code
-          >
-          <button
-            v-tooltip.bottom="friendCopied ? 'Copied' : 'Copy'"
-            type="button"
-            class="flex-none w-6 h-6 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
-            aria-label="Copy friend code"
-            data-action="copy-friend-code"
-            @click="copyFriendCode"
-          >
-            <i :class="friendCopied ? 'pi pi-check' : 'pi pi-copy'" style="font-size: 0.7rem" />
-          </button>
+      <!-- The name the people this account shares with see, and the friend
+           code they share with it by. Each project is shared from Settings ›
+           Project. -->
+      <ExpandableSection
+        v-if="profile"
+        title="Sharing"
+        storage-key="ui.settings.sync.sharing"
+        subsection
+        container-class="pt-2"
+        content-wrapper-class="flex flex-col"
+      >
+        <div class="flex flex-col gap-3 pt-2 pb-1" data-sync-sharing>
+          <div class="flex flex-col gap-1">
+            <label
+              for="sync-display"
+              class="text-xs font-medium text-surface-700 dark:text-surface-200"
+              >Name others see</label
+            >
+            <InputText
+              id="sync-display"
+              v-model="display"
+              size="small"
+              autocomplete="name"
+              data-field="sync-display"
+              @keydown.enter="saveDisplay"
+              @blur="saveDisplay"
+            />
+          </div>
+          <div class="flex items-center gap-2" data-sync-friend>
+            <span class="text-xs font-medium text-surface-700 dark:text-surface-200"
+              >Friend code</span
+            >
+            <code
+              class="flex-1 min-w-0 truncate text-xs tracking-wide select-all text-surface-900 dark:text-surface-0"
+              data-friend-code
+              >{{ profile.friend }}</code
+            >
+            <button
+              v-tooltip.bottom="friendCopied ? 'Copied' : 'Copy'"
+              type="button"
+              class="flex-none w-6 h-6 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
+              aria-label="Copy friend code"
+              data-action="copy-friend-code"
+              @click="copyFriendCode"
+            >
+              <i :class="friendCopied ? 'pi pi-check' : 'pi pi-copy'" style="font-size: 0.7rem" />
+            </button>
+          </div>
         </div>
-      </section>
+      </ExpandableSection>
 
-      <div class="flex items-center justify-between gap-2">
-        <label
-          for="sync-diagnostics"
-          class="text-xs font-medium text-surface-700 dark:text-surface-200"
-          >Send diagnostics</label
-        >
-        <ToggleSwitch
-          :model-value="sync.sendsDiagnostics.value"
-          input-id="sync-diagnostics"
-          class="flex-none"
-          data-sync-diagnostics
-          @update:model-value="sync.setSendsDiagnostics"
-        />
-      </div>
+      <!-- This device's diagnostics, and what signs in: a new recovery code,
+           a new passphrase, and signing out. -->
+      <ExpandableSection
+        title="Account"
+        storage-key="ui.settings.sync.account"
+        subsection
+        container-class="pt-2"
+        content-wrapper-class="flex flex-col"
+      >
+        <div class="flex flex-col gap-3 pt-2 pb-1">
+          <div class="flex items-center justify-between gap-2">
+            <label
+              for="sync-diagnostics"
+              class="text-xs font-medium text-surface-700 dark:text-surface-200"
+              >Send diagnostics</label
+            >
+            <ToggleSwitch
+              :model-value="sync.sendsDiagnostics.value"
+              input-id="sync-diagnostics"
+              class="flex-none"
+              data-sync-diagnostics
+              @update:model-value="sync.setSendsDiagnostics"
+            />
+          </div>
 
-      <!-- What signs in: a new recovery code, or a new passphrase. -->
-      <div v-if="!asking" class="flex flex-wrap gap-2">
-        <Button
-          :label="hasCode ? 'New recovery code…' : 'Make a recovery code…'"
-          size="small"
-          text
-          data-action="make-recovery"
-          @click="ask('recovery')"
-        />
-        <Button
-          label="Change passphrase…"
-          size="small"
-          text
-          data-action="change-passphrase"
-          @click="ask('passphrase')"
-        />
-      </div>
-      <div v-else class="flex flex-col gap-2" data-sync-asking>
-        <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
-          {{ asking === 'passphrase' ? 'Current passphrase' : 'Passphrase' }}
-          <InputText
-            v-model="current"
-            size="small"
-            type="password"
-            autocomplete="current-password"
-            data-field="sync-current"
-            @keydown.enter="finish"
-          />
-        </label>
-        <label
-          v-if="asking === 'passphrase'"
-          class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300"
-        >
-          New passphrase
-          <InputText
-            v-model="next"
-            size="small"
-            type="password"
-            autocomplete="new-password"
-            data-field="sync-next"
-            @keydown.enter="finish"
-          />
-        </label>
-        <p
-          v-if="asking === 'recovery' && hasCode"
-          class="text-xs text-surface-500 dark:text-surface-400"
-        >
-          The code you have now stops working.
-        </p>
-        <div class="flex items-center justify-end gap-2">
-          <p
-            v-if="askFailure"
-            class="mr-auto text-xs text-red-600 dark:text-red-400"
-            data-sync-error
-          >
-            {{ askFailure }}
-          </p>
-          <Button label="Cancel" size="small" text severity="secondary" @click="asking = null" />
-          <Button
-            :label="asking === 'recovery' ? 'Make code' : 'Change'"
-            size="small"
-            :loading="working"
-            :disabled="!current || (asking === 'passphrase' && !next)"
-            data-action="sync-confirm"
-            @click="finish"
-          />
+          <div v-if="!asking" class="flex flex-wrap gap-2">
+            <Button
+              :label="hasCode ? 'New recovery code…' : 'Make a recovery code…'"
+              icon="pi pi-key"
+              size="small"
+              outlined
+              severity="secondary"
+              data-action="make-recovery"
+              @click="ask('recovery')"
+            />
+            <Button
+              label="Change passphrase…"
+              icon="pi pi-lock"
+              size="small"
+              outlined
+              severity="secondary"
+              data-action="change-passphrase"
+              @click="ask('passphrase')"
+            />
+            <Button
+              label="Sign out"
+              icon="pi pi-sign-out"
+              size="small"
+              outlined
+              severity="secondary"
+              data-action="sync-sign-out"
+              @click="signOut"
+            />
+          </div>
+          <div v-else class="flex flex-col gap-2" data-sync-asking>
+            <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
+              {{ asking === 'passphrase' ? 'Current passphrase' : 'Passphrase' }}
+              <InputText
+                v-model="current"
+                size="small"
+                type="password"
+                autocomplete="current-password"
+                data-field="sync-current"
+                @keydown.enter="finish"
+              />
+            </label>
+            <label
+              v-if="asking === 'passphrase'"
+              class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300"
+            >
+              New passphrase
+              <InputText
+                v-model="next"
+                size="small"
+                type="password"
+                autocomplete="new-password"
+                data-field="sync-next"
+                @keydown.enter="finish"
+              />
+            </label>
+            <p
+              v-if="asking === 'recovery' && hasCode"
+              class="text-xs text-surface-500 dark:text-surface-400"
+            >
+              The code you have now stops working.
+            </p>
+            <div class="flex items-center justify-end gap-2">
+              <p
+                v-if="askFailure"
+                class="mr-auto text-xs text-red-600 dark:text-red-400"
+                data-sync-error
+              >
+                {{ askFailure }}
+              </p>
+              <Button
+                label="Cancel"
+                size="small"
+                text
+                severity="secondary"
+                @click="asking = null"
+              />
+              <Button
+                :label="asking === 'recovery' ? 'Make code' : 'Change'"
+                size="small"
+                :loading="working"
+                :disabled="!current || (asking === 'passphrase' && !next)"
+                data-action="sync-confirm"
+                @click="finish"
+              />
+            </div>
+          </div>
         </div>
-      </div>
+      </ExpandableSection>
     </template>
 
-    <template v-else>
-      <p v-if="notice" class="text-xs text-red-600 dark:text-red-400" data-sync-notice>
-        {{ notice }}
-      </p>
-      <p class="text-xs text-surface-500 dark:text-surface-400" data-sync-preview>
-        Sync is in private preview. An account needs an invitation.
-      </p>
-      <SelectButton
-        v-model="mode"
-        :options="MODES"
-        option-label="label"
-        option-value="value"
-        :allow-empty="false"
-        size="small"
-        aria-label="Sign in, create an account, or recover one"
-        data-field="sync-mode"
-      />
-      <label
-        v-if="choosesServer"
-        class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300"
-      >
-        Server
-        <InputText
-          v-model="server"
-          size="small"
-          placeholder="https://sync.example.com"
-          autocomplete="url"
-          data-field="sync-server"
-        />
-      </label>
-      <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
-        Name
-        <InputText v-model="name" size="small" autocomplete="username" data-field="sync-name" />
-        <span
-          v-if="mode === 'create'"
-          class="text-surface-500 dark:text-surface-400"
-          data-sync-name-format
-          >{{ SHORTEST_NAME }} to {{ LONGEST_NAME }} letters, digits and hyphens</span
-        >
-      </label>
-      <label
-        v-if="mode === 'recover'"
-        class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300"
-      >
-        Recovery code
-        <InputText
-          v-model="recoveryCode"
-          size="small"
-          autocomplete="off"
-          spellcheck="false"
-          data-field="sync-recovery-code"
-        />
-      </label>
-      <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
-        {{ mode === 'recover' ? 'New passphrase' : 'Passphrase' }}
-        <InputText
-          v-model="passphrase"
-          size="small"
-          type="password"
-          :autocomplete="mode === 'sign-in' ? 'current-password' : 'new-password'"
-          data-field="sync-passphrase"
-          @keydown.enter="go"
-        />
-      </label>
-      <label
-        v-if="mode === 'create'"
-        class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300"
-      >
-        Sign-up code
-        <InputText v-model="code" size="small" data-field="sync-code" @keydown.enter="go" />
-      </label>
-      <div class="flex items-center justify-end gap-3">
-        <p v-if="failure" class="mr-auto text-xs text-red-600 dark:text-red-400" data-sync-error>
-          {{ failure }}
-        </p>
-        <Button
-          :label="ACTIONS[mode]"
-          size="small"
-          :loading="working"
-          :disabled="!ready"
-          data-action="sync-sign-in"
-          @click="go"
-        />
-      </div>
-    </template>
+    <ExpandableSection
+      title="Backup"
+      storage-key="ui.settings.sync.backup"
+      subsection
+      container-class="pt-2"
+      content-wrapper-class="flex flex-col"
+    >
+      <BackupSection />
+    </ExpandableSection>
   </div>
 </template>
 
@@ -327,6 +402,8 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import SelectButton from 'primevue/selectbutton'
 import ToggleSwitch from 'primevue/toggleswitch'
+import ExpandableSection from '@/components/common/ExpandableSection.vue'
+import BackupSection from './BackupSection.vue'
 import { HOSTED_SERVER } from '@/cloud/api.js'
 import { takeInvite } from '@/cloud/invite.js'
 import { LONGEST_NAME, SHORTEST_NAME } from '@/cloud/names.js'
@@ -340,18 +417,19 @@ import { useReactiveTime } from '@/composables/useReactiveTime'
 import { useToast } from '@/composables/useToast'
 
 /**
- * Settings → System → Sync: signing this device in to a sync server, making
- * an account on one, or getting back into one with its recovery code; what
- * sync is doing once it is signed in; the devices signed in, any of which
- * can be signed out from here; how much the account keeps of its quota, and
- * which projects are kept on this device only (each project's menu does that);
- * the name the people it shares projects with see, and its friend code,
- * which they share by (each project's menu shares it);
- * whether this device sends diagnostics; and a new recovery code or
- * passphrase. Waiting for an update, it offers the one ready. A recovery code is shown once, as it is made. Opened from an
- * invitation's link, it is ready to create an account with its code. The
- * server is ours, but in a build with dev features, where it can be typed
- * and an invitation's counts. See composables/useCloudSync.js.
+ * Settings › Sync and sharing: signing this device in to a sync server,
+ * making an account on one, or getting back into one with its recovery code;
+ * once signed in, what sync is doing, with a sync to start by hand, how much
+ * of its quota the account keeps, and which projects are kept on this device
+ * only (each project's menu does that); the devices signed in, any of which
+ * can be signed out from here; the name the people it shares projects with
+ * see, and its friend code, which they share by (Settings › Project shares
+ * each project); whether this device sends diagnostics, a new recovery code
+ * or passphrase, and signing out; and, signed in or not, backups. Waiting for
+ * an update, it offers the one ready. A recovery code is shown once, as it is
+ * made. Opened from an invitation's link, it is ready to create an account
+ * with its code. The server is ours, but in a build with dev features, where
+ * it can be typed and an invitation's counts. See composables/useCloudSync.js.
  *
  * @typedef {import('@/cloud/api.js').Device} Device
  */
@@ -428,18 +506,27 @@ const ready = computed(
 /** The update sync waits for, once it is ready. */
 const update = computed(() => (status.value.phase === 'held' ? updateReady.value : null))
 
-/** What sync is doing, as a line. */
+/** A sync of this many changes or more says how many it has to send. */
+const COUNTED_FROM = 100
+
+/**
+ * What sync is doing, in a few words. What waits after a round that went
+ * through waits for what the writer can't hurry, such as a file's bytes
+ * still on another device, and goes when it comes: here it is up to date.
+ */
 const said = computed(() => {
   const now = status.value
-  if (now.phase === 'syncing') return 'Syncing…'
-  if (now.phase === 'offline') return "The server can't be reached. Changes wait here."
-  if (now.phase === 'held') {
-    if (now.waiting === 0) return 'Waiting for an update'
-    return `${now.waiting} ${now.waiting === 1 ? 'change' : 'changes'} waiting for an update`
+  if (now.phase === 'syncing') {
+    return now.waiting >= COUNTED_FROM
+      ? `Syncing ${now.waiting.toLocaleString()} changes…`
+      : 'Syncing…'
   }
+  if (now.phase === 'offline') {
+    return navigator.onLine === false ? 'No network connection' : "Can't reach the sync server"
+  }
+  if (now.phase === 'held') return 'Update inksprite to keep syncing'
   if (now.error) return now.error
-  if (now.full) return 'Your sync storage is full. Some changes wait here.'
-  if (now.waiting > 0) return `${now.waiting} ${now.waiting === 1 ? 'change' : 'changes'} waiting`
+  if (now.full) return 'Sync storage is full'
   return now.last ? 'Up to date' : ''
 })
 

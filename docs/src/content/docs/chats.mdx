@@ -46,11 +46,12 @@ the card is in the project.
 ## Profiles
 
 A profile sets how a chat starts: its system prompt, its tools, **Project
-context** and its author's note. The chat's profile is named at the top of the
+context**, its author's note, and the [preset](/providers/#presets) it runs
+on. The chat's profile is named at the top of the
 chat. Click it to choose another, and the chat takes that profile's settings in
 place of its own.
 
-New chats start on the project's **Default profile**, set in
+New chats start on the project's **Default chat profile**, set in
 [Project settings](/projects/#project-settings). A project that hasn't chosen
 one uses **Profile for new chats** in **Settings** › **System** › **Chats**.
 Chats on a character card start on **Profile for character cards** in
@@ -102,8 +103,12 @@ click the arrow at the top.
   summary from [Project settings](/projects/#project-settings), how many
   documents it holds, and the documents you [pinned](#pin-documents). Turn it
   off for a chat that has nothing to do with the project.
-- **AI**, further down, is the model and how it generates, shared by every
-  chat; see [AI Providers](/providers/). **Voices** sets the **Assistant
+- **AI**, further down, is the preset this chat runs on: a provider, a model
+  and how it generates. It starts as the profile's, and the reset button beside
+  it goes back to the profile's. Its **⋮** menu has **New preset**, a copy this
+  chat moves onto, and **Edit preset**; both open **Settings** › **AI** on it,
+  and a change there reaches every chat on that preset. See
+  [Presets](/providers/#presets). **Voices** sets the **Assistant
   voice** and **Your voice** that read turns aloud; see
   [Narration](/narration/).
 
@@ -153,7 +158,7 @@ asks first:
 A move, a rename or a new folder is made at once.
 
 If the switches are greyed out, **Allow tool use** is off under **Generation**
-in **Settings** › **AI**.
+in the chat's preset.
 
 ### Skills
 
@@ -209,8 +214,8 @@ its document changes, and exploring again reads only what has changed.
 - **Explore…** on a folder's menu, or the project's, explores without a chat.
   The **Jobs** window shows how far it has got.
 
-From a chat it runs on the chat's model, and from the menu on the model chosen
-in **Settings** › **AI**. Each request is paid for like a chat message, so it
+From a chat it runs on the chat's model, and from the menu on the **Default
+preset** in **Settings** › **System** › **Chats**. Each request is paid for like a chat message, so it
 asks first when it will read more than about 50,000 tokens, saying about how
 many. **Always allow**, beside the model's call, turns off **Ask before exploring large folders** in
 **Settings** › **System** › **Chats**, and it stops asking. What's hidden from

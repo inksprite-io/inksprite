@@ -166,7 +166,9 @@ describe('Welcome', () => {
     expect(warning(wrapper)).toContain(
       "Your work is stored only in this browser. If this site's data is cleared, it's gone."
     )
-    expect(warning(wrapper)).toContain('You can back up your data from Settings › System › Data.')
+    expect(warning(wrapper)).toContain(
+      'You can back up your data from Settings › Sync and sharing › Backup.'
+    )
     expect(wrapper.find('[data-storage-warning] strong').classes()).toContain('text-red-600')
   })
 
@@ -205,7 +207,9 @@ describe('Welcome', () => {
   it('offers a phone neither', () => {
     platform.advice = { clearsAfterAWeek: false, homeScreen: false, desktopApp: false }
     const wrapper = mountWelcome()
-    expect(warning(wrapper)).toMatch(/back up your data from Settings › System › Data\.$/)
+    expect(warning(wrapper)).toMatch(
+      /back up your data from Settings › Sync and sharing › Backup\.$/
+    )
   })
 
   it('says nothing about browser storage in the desktop app', () => {

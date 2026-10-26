@@ -6,6 +6,56 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.23
+
+A preset for each chat, the project and sync in settings of their own,
+and nested lists and links in Google Docs.
+
+- A chat runs on a preset of its own. Pick it under AI in the chat's
+  settings: it starts as the profile's, the button beside it goes back to
+  the profile's, and Save to profile keeps it for new chats on that
+  profile. Its ⋮ menu makes a New preset, a copy the chat moves onto, or
+  opens the chat's preset to edit. A chat's settings no longer change the
+  model for every chat: a preset is edited only in Settings › AI, which
+  shows one at a time. A chat that hasn't chosen one, on a profile that
+  hasn't either, runs on the Default preset in Settings › System › Chats.
+- A fork of a chat, and a chat imported from a file, keep the chat's own
+  prompt and skill wording, and whether it searches the web and runs
+  Python.
+- Settings has two new sections. Project, while one is open, has the
+  project's title, summary and default chat profile, and who it's shared
+  with, in place of the Share… dialog. Sync and sharing has what was
+  under System › Sync and System › Data: what sync is doing, with a
+  button to sync now, then your devices, the name others see and your
+  friend code, your account, and Backup.
+- The people a project is shared with are listed with their friend codes,
+  so two with the same name can be told apart.
+- In the desktop app, Show in Finder (Show in Explorer on Windows, Show
+  in folder on Linux) is on the outline's menus: on the project's it opens
+  the project's folder, and on a document's it shows the document's file
+  in its folder.
+- The outline keeps the folders you open or shut as you left them, each
+  project its own, rather than opening them all again each time inksprite
+  starts. The folders the open document is in are marked as it is, so the
+  way back to it shows with them shut.
+- Nested lists sync to a Google Doc, and so does a list changed from
+  bullets to numbers. A list in a Doc is one kind all the way down, so
+  bullets inside a numbered list are numbered there. A document whose
+  changes the Doc can't all take syncs the rest, paragraph by paragraph:
+  before, a nested list in a new document made an empty Doc.
+- A link to another document that has a Doc of its own goes to that Doc,
+  and a link in the Doc to it comes back as a link to the document. A link
+  to a document with no Doc goes as its words.
+- Edits beside a paragraph a Doc suggests parting or joining now sync, and
+  the model's suggestions that add or take out whole paragraphs go to the
+  Doc as suggestions.
+- A sync where a table and two joined paragraphs meet no longer loses a
+  Doc's picture, leaves the paragraphs apart, or repeats their words. A
+  join no longer leaves two spaces.
+- A tool call that failed, and that the model then made again and got
+  done, no longer marks the chat's tool block as failed. It's still marked
+  inside the block.
+
 ## v0.1.0-dev.22
 
 Extensions stay as you switch them.

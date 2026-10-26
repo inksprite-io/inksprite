@@ -1194,6 +1194,17 @@ export function libraryStorage(disk, options = {}) {
         return entry?.kind === 'file' ? under(project.dir, entry.path) : null
       }),
 
+    documentPath: id =>
+      inTurn(async () => {
+        const project = [...projects.values()].find(
+          known => known.rows.has(id) || known.root?.id === id
+        )
+        if (!project?.dir) return null
+        const entry = project.entries.get(id)
+        if (entry) return under(project.dir, entry.path)
+        return project.root?.id === id ? project.dir : null
+      }),
+
     projectFiles: storyId =>
       inTurn(async () => {
         await list()

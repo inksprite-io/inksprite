@@ -289,7 +289,7 @@
               />
             </div>
             <p v-if="!modelToolsEnabled" class="text-xs text-surface-500 dark:text-surface-400">
-              Allow tool use is off in Settings › AI.
+              Allow tool use is off for this chat's preset.
             </p>
             <!-- App-wide, unlike the rest of the section, and it says so. -->
             <div class="flex items-center justify-between gap-2 h-8 px-2">
@@ -577,7 +577,8 @@
           </div>
         </ExpandableSection>
 
-        <!-- 5. AI: what the request runs on. App-wide, and says so. -->
+        <!-- 5. AI: the preset this chat runs on. Presets are edited in
+             Settings › AI, so a chat only picks one. -->
         <ExpandableSection
           title="AI"
           storage-key="ui.chat-settings.ai"
@@ -585,7 +586,46 @@
           content-wrapper-class="flex flex-col px-3"
         >
           <div class="flex flex-col gap-3 pt-2 pb-2">
-            <AiPresetGroup />
+            <div class="flex flex-col gap-1">
+              <SettingLabel
+                label="Preset"
+                :overridden="presetId !== profilePresetId"
+                reset-tooltip="Back to the profile's"
+                @reset="profilePresetId && setPreset(profilePresetId)"
+              />
+              <div class="flex gap-1">
+                <Select
+                  :model-value="presetId"
+                  :options="aiConfig.presets.value"
+                  option-label="name"
+                  option-value="id"
+                  placeholder="Select a preset"
+                  aria-label="Preset"
+                  class="flex-1 min-w-0 dark:!bg-surface-900"
+                  size="small"
+                  data-chat-preset
+                  @update:model-value="setPreset"
+                />
+                <Button
+                  v-tooltip.top="'Preset actions'"
+                  icon="pi pi-ellipsis-v"
+                  severity="secondary"
+                  text
+                  rounded
+                  size="small"
+                  aria-label="Preset actions"
+                  aria-haspopup="true"
+                  aria-controls="chat_preset_actions"
+                  @click="presetMenu?.toggle($event)"
+                />
+                <Menu
+                  id="chat_preset_actions"
+                  ref="presetMenu"
+                  :model="presetMenuItems"
+                  :popup="true"
+                />
+              </div>
+            </div>
           </div>
         </ExpandableSection>
 
@@ -667,7 +707,6 @@ import ExpandableSection from '@/components/common/ExpandableSection.vue'
 import ProfileContextMenu from './ProfileContextMenu.vue'
 import PanelHeader from '../layout/PanelHeader.vue'
 import HeaderButton from '../layout/HeaderButton.vue'
-import AiPresetGroup from '@/components/writer/settings/ai/AiPresetGroup.vue'
 import { useChatSettings } from '@/composables/useChatSettings'
 import { useDocuments } from '@/composables/useDocuments'
 import { useEditorRequest } from '@/composables/useEditorRequest.js'
@@ -700,13 +739,13 @@ import { chatTabId } from '@/utils/chatTabs.js'
  * instructions, sent after the profile's. **Tools** are what the model can
  * reach for.
  * **Skills** are the pieces of work with prompts of their own that the model
- * may hand a turn to. **AI** is what the request runs on, which is app-wide and
- * says so. **Voices** is how it is read aloud.
+ * may hand a turn to. **AI** is the preset the request runs on, which the chat
+ * picks and Settings › AI edits. **Voices** is how it is read aloud.
  *
  * Two scopes are mixed on purpose. The writer does not care which row a setting
  * is stored on; they care that everything about this chat is in one place. What
- * the sections keep straight is which of them are shared, and each shared one
- * says so: the AI section, and whether edits apply automatically, under Tools.
+ * the sections keep straight is which of them are shared, and the one shared
+ * one says so: whether edits apply automatically, under Tools.
  *
  * @typedef {Object} Props
  * @property {string} storyId - The story this chat belongs to
@@ -863,10 +902,9 @@ const pythonGroup = computed(() =>
  */
 const skillTools = computed(() => skills.value.flatMap(skill => (skill.tool ? [skill.tool] : [])))
 
-// The preset gates whether this model can call tools at all; these switches
-// only choose among the ones it would otherwise be offered.
-const activePreset = computed(() => aiConfig.activeAIPreset.value)
-const modelToolsEnabled = computed(() => activePreset.value?.toolsEnabled !== false)
+// The chat's preset gates whether its model can call tools at all; these
+// switches only choose among the ones it would otherwise be offered.
+const modelToolsEnabled = computed(() => preset.value?.toolsEnabled !== false)
 
 // Whether the assistant's changes to documents go straight in, or wait in the
 // chat for the writer. App-wide; it sits here because this is where the writer
@@ -896,6 +934,10 @@ const {
   prompt: chatPrompt,
   profilePrompt,
   setPrompt,
+  preset,
+  presetId,
+  profilePresetId,
+  setPreset,
   skillPromptOf,
   setSkillPrompt: writeSkillPrompt,
   resetSkill,
@@ -1186,6 +1228,31 @@ const commitProfileRename = () => {
   if (!name || name === selectedProfile.value?.name) return
   profilesApi.updateProfile(selectedProfileId.value, { name })
 }
+
+/** @type {import('vue').Ref<any>} */
+const presetMenu = ref(null)
+
+/** Settings › AI, on the preset this chat runs on. */
+const editPreset = () => {
+  if (presetId.value) aiConfig.showPreset(presetId.value)
+  settingsPanel.open('ai')
+}
+
+const presetMenuItems = computed(() => [
+  {
+    label: 'New preset',
+    icon: 'pi pi-plus',
+    // A copy of the chat's, which the chat moves onto, open in Settings › AI
+    // for its model to be changed: the usual reason to reach for one here is
+    // this chat on another model.
+    command: () => {
+      const source = preset.value
+      setPreset(aiConfig.createPreset(`${source?.name || 'Preset'} copy`, source).id)
+      settingsPanel.open('ai')
+    },
+  },
+  { label: 'Edit preset', icon: 'pi pi-sliders-h', command: editPreset },
+])
 
 /** Remove the selected profile. See `deleteProfile` in useChatSettings. */
 const deleteSelectedProfile = () => deleteProfile(selectedProfileId.value)

@@ -115,6 +115,9 @@ export const PROJECT_APP_TABLES = ['versions']
  * @property {(id: string) => Promise<string|null>} filePath - Where an imported file's bytes
  *   are in the library, as a path below it: null in a browser's storage, and for bytes not
  *   on this disk yet
+ * @property {(id: string) => Promise<string|null>} documentPath - Where a document is in the
+ *   library, as a path below it: a project's folder for its root, a folder's directory, a
+ *   document's file. Null in a browser's storage, and for one not written yet
  * @property {(storyId: string) => Promise<StoredFile[]>} projectFiles - The bytes of every file in a project
  * @property {(id: string, storyId: string, blob: Blob) => Promise<void>} putFileBytes - Keep a file document's bytes
  * @property {() => boolean} audioKept - Whether narration audio is kept past the session: in the

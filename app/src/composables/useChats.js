@@ -60,6 +60,17 @@ function readUnsent(storyId) {
 }
 
 /**
+ * A chat's wording of its skills, copied down to each skill, so that a copy
+ * reworded in one chat does not reach back into the other, and none of the
+ * store's proxies go to the database.
+ *
+ * @param {Record<string, {prompt?: string}>} skills
+ * @returns {Record<string, {prompt?: string}>}
+ */
+const copySkills = skills =>
+  Object.fromEntries(Object.entries(skills).map(([name, skill]) => [name, { ...skill }]))
+
+/**
  * Clear all singleton instances (for testing)
  */
 export const clearChatsInstances = () => {
@@ -602,9 +613,9 @@ export const useChats = storyId => {
    * story. What a fork and an import have in common.
    *
    * A copy continues the original conversation, so it carries that chat's
-   * settings over; a brand new chat leaves them unset and falls back to the
-   * built-in prompt. The messages keep their content and timing and get fresh
-   * ids.
+   * settings over, its own wording, preset, web search and Python among them;
+   * a brand new chat has none of those and reads its profile's. The messages
+   * keep their content and timing and get fresh ids.
    *
    * The pins come too. A fork of a chat on a character card that lost them
    * would be a fork of a different character, since what a card puts in front
@@ -626,9 +637,14 @@ export const useChats = storyId => {
   const copyChat = (source, messages, title, { now = false } = {}) => {
     const copy = chatsStore.createChat(storyId, title, null, {
       profileId: source.profileId ?? null,
+      ...(typeof source.prompt === 'string' ? { prompt: source.prompt } : {}),
+      ...(source.skills ? { skills: copySkills(source.skills) } : {}),
+      ...(source.presetId ? { presetId: source.presetId } : {}),
       disabledTools: [...(source.disabledTools || [])],
       disabledToolGroups: [...(source.disabledToolGroups || [])],
       ...(source.mcpServers ? { mcpServers: [...source.mcpServers] } : {}),
+      ...(typeof source.web === 'boolean' ? { web: source.web } : {}),
+      ...(typeof source.python === 'boolean' ? { python: source.python } : {}),
       ...(source.rules ? { rules: source.rules } : {}),
       ...(source.pinnedIds?.length ? { pinnedIds: [...source.pinnedIds] } : {}),
       ...(source.shownIds?.length ? { shownIds: [...source.shownIds] } : {}),

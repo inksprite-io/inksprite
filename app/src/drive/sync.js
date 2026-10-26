@@ -62,6 +62,7 @@ import { readDoc, tabsOf } from './convert.js'
 import { DriveError, StaleRevisionError } from './errors.js'
 import { DOC_TYPE, fetchDocPictures } from './fetch.js'
 import { keyOf, mergeDocs, sameDocs, settle } from './merge.js'
+import { NO_LINKS, linksHere, linksThere } from './links.js'
 import {
   besideRequests,
   layOwn,
@@ -73,7 +74,7 @@ import {
   suggestionIds,
   suggestionThreads,
   takenOver,
-  wholeBlock,
+  blocksOf,
 } from './suggestions.js'
 import { withoutIdleStyles, writeDoc } from './write.js'
 
@@ -81,6 +82,7 @@ import { withoutIdleStyles, writeDoc } from './write.js'
  * @typedef {import('prosemirror-model').Node} Node
  * @typedef {import('./docsTypes.js').Document} Document
  * @typedef {import('@/types/models.js').PictureInfo} PictureInfo
+ * @typedef {import('./links.js').DocLinks} DocLinks
  */
 
 /**
@@ -99,6 +101,8 @@ import { withoutIdleStyles, writeDoc } from './write.js'
  *   the end, so that nothing typed is waited past
  * @property {() => Threads} threads - Its comment threads as they stand: read
  *   with the document, as it is
+ * @property {DocLinks} [links] - Its links to the project's other documents,
+ *   as the Doc has them; none go when absent
  */
 
 /** @typedef {Record<string, import('@/types/models.js').CommentThread>} Threads */
@@ -158,45 +162,74 @@ const SEVERAL_TABS = 'This Doc has several tabs, and Sync can’t choose between
 const TRIES = 3
 
 /**
+ * The Doc a sync reads and writes: read with its links to the Docs of the
+ * project's documents as the links to them, and written with those as the
+ * Docs' addresses (`drive/links.js`).
+ *
+ * @typedef {Object} DocIO
+ * @property {() => Promise<Document>} read
+ * @property {(requests: object[], revisionId: string|null, options?: {suggest?: boolean}) => Promise<any>} write
+ */
+
+/**
+ * @param {string} docId
+ * @param {string} token
+ * @param {DocLinks} links
+ * @param {AbortSignal|undefined} signal
+ * @returns {DocIO}
+ */
+function docIO(docId, token, links, signal) {
+  return {
+    read: async () => linksHere(await readDocument(docId, token, { signal }), links),
+    write: (requests, revisionId, { suggest = false } = {}) =>
+      writeDocument(docId, linksThere(requests, links), revisionId, token, {
+        signal,
+        ...(suggest && { suggest }),
+      }),
+  }
+}
+
+/**
  * The Doc's suggestions changed as they were here: the words going in beside
  * one of a letter put in as the writer's suggestion first, then each
  * rewritten in place against the Doc as read after.
  *
- * @param {string} docId
+ * @param {DocIO} io
  * @param {Document} document - The Doc as read
  * @param {string|undefined} tabId
  * @param {import('./suggestions.js').Rewrite[]} rewrites
- * @param {string} token
- * @param {AbortSignal|undefined} signal
  * @returns {Promise<Document>} The Doc as read after
  */
-async function rewriteSuggestions(docId, document, tabId, rewrites, token, signal) {
+async function rewriteSuggestions(io, document, tabId, rewrites) {
   let read = document
   const beside = besideRequests(read, tabId, rewrites)
   if (beside.length > 0) {
-    await writeDocument(docId, beside, read.revisionId ?? null, token, { signal, suggest: true })
-    read = await readDocument(docId, token, { signal })
+    await io.write(beside, read.revisionId ?? null, { suggest: true })
+    read = await io.read()
   }
   const requests = rewriteRequests(read, tabId, rewrites)
   if (requests.length > 0) {
-    await writeDocument(docId, requests, read.revisionId ?? null, token, { signal })
-    read = await readDocument(docId, token, { signal })
+    await io.write(requests, read.revisionId ?? null)
+    read = await io.read()
   }
   return read
 }
 
 /**
  * The writer's requests for as much of the document as it can send: each
- * run of blocks changed that it can't send yet (a footnote put in or taken
- * out, a list item's kind or nesting, a table with merged cells reshaped,
- * words beside a newline or a style suggested in the Doc, …) left as the
- * Doc has it, tried run by run, so that the rest goes. What is left stays in
- * the document, and goes once it can.
+ * block changed that it can't send yet (a footnote put in or taken out, a
+ * heading in a list, a table with merged cells reshaped, words beside a
+ * newline or a style suggested in the Doc, …) left as the Doc has it, so
+ * that the rest goes. Each run of blocks changed between those the two
+ * share is tried whole, then by halves down to a block, a block of the
+ * Doc's against the block here in its place; those with a footnote's number
+ * or note in them go first, together. What is left stays in the document,
+ * and goes once it can.
  *
  * @param {Document} document - The Doc as read
  * @param {Node} theirs - The same in the document's form
  * @param {Node} target
- * @param {{tabId: string, pictures: Record<string, PictureInfo>}} options
+ * @param {{tabId: string, pictures: Record<string, PictureInfo>, links: DocLinks}} options
  * @returns {{written: import('./write.js').Written, left: import('./write.js').Unsent[]}}
  */
 function sendable(document, theirs, target, options) {
@@ -206,24 +239,33 @@ function sendable(document, theirs, target, options) {
   const blocks = doc => /** @type {Node[]} */ (doc.content.content)
   const [from, to] = [blocks(theirs), blocks(target)]
   /** @type {Array<{same: Node[]}|{theirs: Node[], ours: Node[]}>} */
-  const parts = []
+  const runs = []
   for (const step of diffSequences(from.map(keyOf), to.map(keyOf)) ?? []) {
-    const last = parts.at(-1)
+    const last = runs.at(-1)
     if (step.op === 'equal') {
       if (last && 'same' in last) last.same.push(to[step.b])
-      else parts.push({ same: [to[step.b]] })
+      else runs.push({ same: [to[step.b]] })
       continue
     }
     const run = last && 'ours' in last ? last : { theirs: [], ours: [] }
-    if (run !== last) parts.push(run)
+    if (run !== last) runs.push(run)
     if (step.op === 'delete') run.theirs.push(from[step.a])
     else run.ours.push(to[step.b])
   }
+  // Each run in pieces of a block each, the Doc's and the one here beside.
+  const parts = runs.map(run => {
+    if ('same' in run) return [run]
+    const length = Math.max(run.theirs.length, run.ours.length)
+    return Array.from({ length }, (_, i) => ({
+      theirs: run.theirs.slice(i, i + 1),
+      ours: run.ours.slice(i, i + 1),
+    }))
+  })
   /** @param {Set<object>} taken */
   const made = taken => {
-    const content = parts.flatMap(part =>
-      'same' in part ? part.same : taken.has(part) ? part.ours : part.theirs
-    )
+    const content = parts
+      .flat()
+      .flatMap(part => ('same' in part ? part.same : taken.has(part) ? part.ours : part.theirs))
     return target.type.create(
       null,
       content.length > 0 ? content : [target.type.schema.nodes.paragraph.create()]
@@ -234,16 +276,34 @@ function sendable(document, theirs, target, options) {
   /** @type {Set<import('./write.js').Unsent>} */
   const left = new Set()
   let written = writeDoc(document, made(taken), options)
-  for (const part of parts) {
-    if ('same' in part) continue
-    const tried = writeDoc(document, made(new Set([...taken, part])), options)
-    if (tried.unsent.length > 0) {
+  /** @param {object[]} some @param {boolean} [whole] - Not to be parted */
+  const take = (some, whole = false) => {
+    const tried = writeDoc(document, made(new Set([...taken, ...some])), options)
+    if (tried.unsent.length === 0) {
+      some.forEach(part => taken.add(part))
+      written = tried
+    } else if (some.length === 1 || whole) {
       tried.unsent.forEach(kind => left.add(kind))
       console.warn('Sync leaves here what Google Docs can’t take yet:', tried.unsent)
-      continue
+    } else {
+      const half = Math.ceil(some.length / 2)
+      take(some.slice(0, half))
+      take(some.slice(half))
     }
-    taken.add(part)
-    written = tried
+  }
+  // A footnote's number and its note go together or not at all: one
+  // without the other is only words.
+  /** @param {Node} block */
+  const noted = block => /\[\^[^\]\s]+\]/.test(block.textContent)
+  const changes = parts.map(
+    run =>
+      /** @type {Array<{theirs: Node[], ours: Node[]}>} */ (run.filter(part => !('same' in part)))
+  )
+  const notes = changes.flat().filter(part => [...part.theirs, ...part.ours].some(noted))
+  if (notes.length > 0) take(notes, true)
+  for (const run of changes) {
+    const rest = run.filter(part => !notes.includes(part))
+    if (rest.length > 0) take(rest)
   }
   return { written, left: [...left] }
 }
@@ -253,13 +313,12 @@ function sendable(document, theirs, target, options) {
  * the Doc as it stands with that one made, against the Doc as read last,
  * sent in Suggesting mode, then read again for the suggestion Docs made of
  * it. One the Doc can't take (`writeDoc`'s unsent), whose words the Doc
- * changed meanwhile, or that changes style or puts in or takes out a
- * paragraph's end, stays here; so does any after a write that failed, which
- * the next sync tries again. A change of style would be a suggestion of
- * style in the Doc, which no sync lays in here, so it would be sent again
- * each time; a newline suggested holds the writer off its paragraphs.
+ * changed meanwhile, or that changes style stays here; so does any after a
+ * write that failed, which the next sync tries again. A change of style
+ * would be a suggestion of style in the Doc, which no sync lays in here, so
+ * it would be sent again each time.
  *
- * @param {string} docId
+ * @param {DocIO} io
  * @param {Document} document - The Doc as read last
  * @param {Object} given
  * @param {Node} given.shown - The document, its suggestions in it
@@ -267,31 +326,34 @@ function sendable(document, theirs, target, options) {
  * @param {string[]} given.ids - The model's suggestions, by their ids here
  * @param {string|undefined} given.tabId
  * @param {Pictures} given.pictures
- * @param {string} given.token
+ * @param {DocLinks} given.links
  * @param {AbortSignal|undefined} given.signal
  * @returns {Promise<{document: Document, links: Record<string, string>}>} The
  *   Doc as read last, and the Doc's id for each sent, by its id here
  */
-async function suggestOwn(docId, document, { shown, mine, ids, tabId, pictures, token, signal }) {
+async function suggestOwn(io, document, { shown, mine, ids, tabId, pictures, links, signal }) {
   let read = document
   /** @type {Record<string, string>} */
-  const links = {}
+  const made = {}
   for (const id of ids) {
-    if (wholeBlock(shown, id)) {
-      console.warn('A suggestion of the model’s stays here, a paragraph put in or taken out:', id)
+    // Whole paragraphs put in or taken out go; one that parts or joins a
+    // paragraph, or mixes whole ones with words, stays here.
+    const blocks = blocksOf(shown, id)
+    if (blocks.whole && blocks.partly) {
+      console.warn('A suggestion of the model’s stays here, a paragraph and words both:', id)
       continue
     }
     const merged = mergeDocs(mine, seeing(shown, [id]).doc, pictures.read(read, tabId).doc)
     if (merged.clashes.length > 0) continue
     const target = settle(merged)
     pictures.holdUnused(target)
-    const written = writeDoc(read, target, { tabId, pictures: pictures.known(target) })
+    const written = writeDoc(read, target, { tabId, pictures: pictures.known(target), links })
     if (written.unsent.length > 0 || written.requests.length === 0) {
       console.warn('A suggestion of the model’s stays here:', id, written.unsent)
       continue
     }
     const requests = withoutIdleStyles(read, written.requests, tabId)
-    if (!changesWords(read, requests, tabId)) {
+    if (!changesWords(read, requests, tabId, blocks.whole)) {
       console.warn(
         'A suggestion of the model’s stays here, a change of style or of paragraphs:',
         id
@@ -300,32 +362,32 @@ async function suggestOwn(docId, document, { shown, mine, ids, tabId, pictures, 
     }
     const before = new Set(readDoc(read, { tabId }).suggested)
     try {
-      await writeDocument(docId, requests, written.revisionId, token, { signal, suggest: true })
-      read = await readDocument(docId, token, { signal })
+      await io.write(requests, written.revisionId, { suggest: true })
+      read = await io.read()
     } catch (error) {
       if (signal?.aborted) throw error
       console.warn('The model’s suggestions stay here from', id, error)
       break
     }
-    const made = readDoc(read, { tabId }).suggested.find(each => !before.has(each))
-    if (made) links[id] = made
+    const theirs = readDoc(read, { tabId }).suggested.find(each => !before.has(each))
+    if (theirs) made[id] = theirs
   }
-  return { document: read, links }
+  return { document: read, links: made }
 }
 
 /**
  * Whether requests, made as a suggestion, only put words in and take them
- * out within paragraphs, styling none but those they put in: as the Doc
- * standing in makes a suggestion, which refuses anything else. A newline
- * suggested keeps the writer from the paragraphs either side of it until it
- * is settled, so one isn't sent.
+ * out, and newlines with them where `paragraphs`, styling none but what they
+ * put in: as the Doc standing in makes a suggestion, which refuses anything
+ * else.
  *
  * @param {Document} document
  * @param {object[]} requests
  * @param {string|undefined} tabId
+ * @param {boolean} paragraphs - Whole paragraphs go in or out
  * @returns {boolean}
  */
-function changesWords(document, requests, tabId) {
+function changesWords(document, requests, tabId, paragraphs) {
   if (!requests.some(request => 'insertText' in request || 'deleteContentRange' in request)) {
     return false
   }
@@ -336,6 +398,7 @@ function changesWords(document, requests, tabId) {
   } catch {
     return false
   }
+  if (paragraphs) return true
   const tab = tabsOf(made).find(each => !tabId || each.tabProperties?.tabId === tabId)
   /** @param {import('./docsTypes.js').StructuralElement[]} content @returns {boolean} */
   const newline = content =>
@@ -403,9 +466,12 @@ export async function syncDoc(linked, token, { signal } = {}) {
   const pictures = new Pictures(linked.documentId, linked.pictures, base)
   let tries = 0
 
+  const links = linked.links ?? NO_LINKS
+  const io = docIO(link.id, token, links, signal)
+
   const laidBefore = base ? parseMarkdown(base.markdown) : null
   /** @type {Document|null} */
-  let fresh = await readDocument(link.id, token, { signal })
+  let fresh = await io.read()
   // The Doc's suggestions changed here, to be changed there to match; one
   // that can't be stops the sync before anything is written.
   const { rewrites, stuck } = laidBefore
@@ -432,12 +498,10 @@ export async function syncDoc(linked, token, { signal } = {}) {
     docId: link.id,
   })
   if (settles.requests.length > 0) {
-    await writeDocument(link.id, settles.requests, null, token, { signal })
-    fresh = await readDocument(link.id, token, { signal })
+    await io.write(settles.requests, null)
+    fresh = await io.read()
   }
-  if (rewrites.length > 0) {
-    fresh = await rewriteSuggestions(link.id, fresh, tabId, rewrites, token, signal)
-  }
+  if (rewrites.length > 0) fresh = await rewriteSuggestions(io, fresh, tabId, rewrites)
   // As the two agree now: the suggestions accepted here made in it, as they
   // now are in the Doc, and every other rejected.
   const agreed = laidBefore ? seeing(laidBefore, settles.accepted).doc : null
@@ -447,7 +511,7 @@ export async function syncDoc(linked, token, { signal } = {}) {
     const { doc: shown, threads: had } = current()
     // The words as they stand: the Doc's suggestions are laid in again after.
     const mine = seeing(shown, []).doc
-    const document = fresh ?? (await readDocument(link.id, token, { signal }))
+    const document = fresh ?? (await io.read())
     fresh = null
     // One imported by its export may have been all its tabs at once.
     if (tabId === undefined && tabsOf(document).length > 1) throw new DriveError(SEVERAL_TABS)
@@ -473,6 +537,7 @@ export async function syncDoc(linked, token, { signal } = {}) {
     const { written, left } = sendable(document, theirs.doc, target, {
       tabId: theirs.tabId,
       pictures: pictures.known(target),
+      links,
     })
     let expected = theirs.doc
     let after = theirs
@@ -483,24 +548,24 @@ export async function syncDoc(linked, token, { signal } = {}) {
         tabId
       ).doc
       try {
-        await writeDocument(link.id, written.requests, written.revisionId, token, { signal })
+        await io.write(written.requests, written.revisionId)
       } catch (error) {
         if (error instanceof StaleRevisionError && ++tries < TRIES) continue
         throw error
       }
-      afterDocument = await readDocument(link.id, token, { signal })
+      afterDocument = await io.read()
       after = pictures.read(afterDocument, tabId)
     }
 
     // The model's suggestions, each one of the Doc's now, in the writer's
     // name, as its comments are; their replies go with the comments'.
-    const own = await suggestOwn(link.id, afterDocument, {
+    const own = await suggestOwn(io, afterDocument, {
       shown,
       mine,
       ids: ownSuggestions(shown, had, link.id),
       tabId,
       pictures,
-      token,
+      links,
       signal,
     })
     if (own.document !== afterDocument) {
@@ -513,8 +578,8 @@ export async function syncDoc(linked, token, { signal } = {}) {
       afterDocument,
       target,
       linkedTo(carried(had, settles.threads), own.links, link.id),
-      token,
-      { tabId, signal }
+      io,
+      tabId
     )
 
     await linked.keep(pictures.newIn(target))
@@ -614,11 +679,11 @@ export async function syncDoc(linked, token, { signal } = {}) {
  * @param {Document} document - The Doc as the words left it
  * @param {Node} target - The document as written, its comments on it
  * @param {Threads} threads
- * @param {string} token
- * @param {{tabId?: string, signal?: AbortSignal}} options
+ * @param {DocIO} io
+ * @param {string|undefined} tabId
  * @returns {Promise<{document: Document, threads: Threads, tooLong: number, sent: number}>}
  */
-async function sendComments(docId, document, target, threads, token, { tabId, signal }) {
+async function sendComments(docId, document, target, threads, io, tabId) {
   let latest = document
   let next = threads
   /** @type {Set<string>} */
@@ -639,25 +704,23 @@ async function sendComments(docId, document, target, threads, token, { tabId, si
     if (made.made.length === 0) break
     try {
       const requests = made.made.map(each => each.request)
-      const answer = await writeDocument(docId, requests, latest.revisionId ?? '', token, {
-        signal,
-      })
+      const answer = await io.write(requests, latest.revisionId ?? '')
       next = withMade(next, made.made, answer, docId)
       sent += requests.length
       break
     } catch (error) {
       if (!(error instanceof StaleRevisionError) || tries >= TRIES) throw error
-      latest = await readDocument(docId, token, { signal })
+      latest = await io.read()
     }
   }
   const answers = answersToSend({ document: latest, threads: next, docId })
   next = answers.threads
   answers.tooLong.forEach(id => long.add(id))
   if (answers.requests.length > 0) {
-    await writeDocument(docId, answers.requests, null, token, { signal })
+    await io.write(answers.requests, null)
     sent += answers.requests.length
   }
-  if (sent > 0) latest = await readDocument(docId, token, { signal })
+  if (sent > 0) latest = await io.read()
   return { document: latest, threads: next, tooLong: long.size, sent }
 }
 

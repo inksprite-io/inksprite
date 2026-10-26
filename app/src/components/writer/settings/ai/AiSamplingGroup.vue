@@ -98,8 +98,8 @@ const aiConfig = useAIConfig()
 // only instead of another (Claude's top-p, beside a temperature) is shown but
 // can't be moved while the other is set.
 const capabilities = useModelCapabilities(
-  () => aiConfig.activeAIPreset.value?.providerId,
-  () => aiConfig.activeAIPreset.value?.model
+  () => aiConfig.shownPreset.value?.providerId,
+  () => aiConfig.shownPreset.value?.model
 )
 const offered = computed(() =>
   samplersAt(capabilities.value, fitEffort(effective.value.reasoningEffort, capabilities.value))

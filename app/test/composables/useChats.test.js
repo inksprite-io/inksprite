@@ -806,6 +806,17 @@ describe('useChats', () => {
       expect(chatsStore.createChat.mock.calls.at(-1)[3].profileId).toBe('prompt_editor')
     })
 
+    it("brings the chat's own prompt with it", () => {
+      composable.importChat({ ...exported, prompt: 'Answer as the ship.' }, rows, editor)
+
+      // The profile made from the file's copy is the profile's; the chat's own
+      // wording still goes over it.
+      expect(chatsStore.createChat.mock.calls.at(-1)[3]).toMatchObject({
+        profileId: 'chatprofile_saved_here',
+        prompt: 'Answer as the ship.',
+      })
+    })
+
     it('keeps the profile id as it is when the file carries no prompt', () => {
       composable.importChat(exported, rows)
 
@@ -888,6 +899,84 @@ describe('useChats', () => {
         voiceId: 'voice_narrator',
         userVoiceId: 'voice_writer',
       })
+    })
+
+    it('should run the fork on the preset the chat ran on', () => {
+      chatsStore.chats.set(mockChatId, {
+        ...chatsStore.chats.get(mockChatId),
+        presetId: 'profile_glm',
+      })
+
+      composable.forkChat(mockChatId, mockMessageId)
+
+      expect(chatsStore.createChat.mock.calls.at(-1)[3]).toMatchObject({
+        presetId: 'profile_glm',
+      })
+    })
+
+    it("should keep the chat's own wording of its prompt and skills", () => {
+      chatsStore.chats.set(mockChatId, {
+        ...chatsStore.chats.get(mockChatId),
+        prompt: 'Answer as the ship.',
+        skills: { interpret: { prompt: 'Read it as a sea chart.' } },
+      })
+
+      composable.forkChat(mockChatId, mockMessageId)
+
+      // Without them the fork would read the profile's prompt, and talk as
+      // something other than the chat it came from.
+      expect(chatsStore.createChat.mock.calls.at(-1)[3]).toMatchObject({
+        prompt: 'Answer as the ship.',
+        skills: { interpret: { prompt: 'Read it as a sea chart.' } },
+      })
+    })
+
+    it('should keep a prompt the writer emptied', () => {
+      chatsStore.chats.set(mockChatId, {
+        ...chatsStore.chats.get(mockChatId),
+        prompt: '',
+      })
+
+      composable.forkChat(mockChatId, mockMessageId)
+
+      // An empty prompt is the chat's own, not a missing one.
+      expect(chatsStore.createChat.mock.calls.at(-1)[3]).toHaveProperty('prompt', '')
+    })
+
+    it('should give the fork skills of its own to reword', () => {
+      const skills = { interpret: { prompt: 'Read it as a sea chart.' } }
+      chatsStore.chats.set(mockChatId, { ...chatsStore.chats.get(mockChatId), skills })
+
+      composable.forkChat(mockChatId, mockMessageId)
+
+      const carried = chatsStore.createChat.mock.calls.at(-1)[3].skills
+      expect(carried).not.toBe(skills)
+      expect(carried.interpret).not.toBe(skills.interpret)
+    })
+
+    it("should keep the chat's choice of web search and Python, off as well as on", () => {
+      chatsStore.chats.set(mockChatId, {
+        ...chatsStore.chats.get(mockChatId),
+        web: false,
+        python: true,
+      })
+
+      composable.forkChat(mockChatId, mockMessageId)
+
+      expect(chatsStore.createChat.mock.calls.at(-1)[3]).toMatchObject({
+        web: false,
+        python: true,
+      })
+    })
+
+    it("should leave the fork of a chat that took its profile's settings on its profile's", () => {
+      composable.forkChat(mockChatId, mockMessageId)
+
+      const carried = chatsStore.createChat.mock.calls.at(-1)[3]
+      expect(carried).not.toHaveProperty('prompt')
+      expect(carried).not.toHaveProperty('skills')
+      expect(carried).not.toHaveProperty('web')
+      expect(carried).not.toHaveProperty('python')
     })
 
     it('should give the fork pins of its own to edit', () => {

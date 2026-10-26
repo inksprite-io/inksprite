@@ -12,7 +12,7 @@
     />
     <AiModelUpstreams
       v-if="routesProviders"
-      :upstreams="activePreset"
+      :upstreams="shownPreset"
       :model="selectedModelId || ''"
       @update="handleUpstreamsChange"
     />
@@ -24,13 +24,9 @@
 <script setup>
 /**
  * An AI preset: what a request runs on — which provider, which model, and how
- * it generates.
- *
- * App-wide, not the chat's, and shown in both places it is wanted: in a chat's
- * settings, because that is where it is read and changed while writing, and in
- * the settings dialog, because a fresh install has no chat to open yet and the
- * provider has to be reachable before anything can run at all. One component
- * either way, so the two cannot drift.
+ * it generates. The one Settings › AI shows, which a chat's settings can ask
+ * it to: the only place a preset is edited, since every chat on it runs as it
+ * says. A chat only picks one.
  *
  * Not a chat profile (`ai/profiles/index.js`), which is how a chat is run.
  */
@@ -45,26 +41,26 @@ import { useAIConfig } from '@/composables/useAIConfig'
 
 const aiConfig = useAIConfig()
 
-const activePreset = computed(() => aiConfig.activeAIPreset.value)
-const selectedProviderId = computed(() => activePreset.value?.providerId || null)
-const selectedModelId = computed(() => activePreset.value?.model || null)
+const shownPreset = computed(() => aiConfig.shownPreset.value)
+const selectedProviderId = computed(() => shownPreset.value?.providerId || null)
+const selectedModelId = computed(() => shownPreset.value?.model || null)
 const routesProviders = computed(
   () => aiConfig.getProvider(selectedProviderId.value)?.type === 'openrouter'
 )
 
 const handleProviderChange = providerId => {
-  if (!activePreset.value) return
-  aiConfig.updatePreset(activePreset.value.id, { providerId })
+  if (!shownPreset.value) return
+  aiConfig.updatePreset(shownPreset.value.id, { providerId })
 }
 
 const handleModelChange = modelId => {
-  if (!activePreset.value) return
-  aiConfig.updatePreset(activePreset.value.id, { model: modelId })
+  if (!shownPreset.value) return
+  aiConfig.updatePreset(shownPreset.value.id, { model: modelId })
 }
 
 /** @param {import('@/ai/routing.js').ModelUpstreams} patch - The list that changed */
 const handleUpstreamsChange = patch => {
-  if (!activePreset.value) return
-  aiConfig.updatePreset(activePreset.value.id, patch)
+  if (!shownPreset.value) return
+  aiConfig.updatePreset(shownPreset.value.id, patch)
 }
 </script>

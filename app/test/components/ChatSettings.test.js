@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { setActivePinia, createPinia } from 'pinia'
 import { mount, flushPromises } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
@@ -27,6 +27,7 @@ import {
 import { useSkillStore } from '@/stores/skillStore'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { setWebSearch } from '@/web/config.js'
+import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 
 /** The writer's skills library, as the mocked database holds it. */
 const { storedSkills, storedWordings, storedServers, storedWeb } = vi.hoisted(() => ({
@@ -56,7 +57,18 @@ const updateChat = vi.fn((id, updates) => {
   chat.value = { ...chat.value, ...updates }
 })
 const defaultProfileId = vi.fn(() => CHAT_PROFILE_ID)
+/** The preset chats run on when neither they nor their profile name one. */
 const preset = ref({ toolsEnabled: true, generationOverrides: {} })
+/** The other presets there are. */
+const otherPresets = ref([])
+const allPresets = () => [preset.value, ...otherPresets.value]
+const getPreset = id => allPresets().find(one => one.id === id) || null
+const showPreset = vi.fn()
+const createPreset = vi.fn((name, source) => {
+  const made = { ...source, id: `profile_made_${otherPresets.value.length}`, name }
+  otherPresets.value = [...otherPresets.value, made]
+  return made
+})
 
 /** The story's unstarted chat, as the mocked chats API holds it. */
 const unstartedChat = ref({})
@@ -83,7 +95,16 @@ vi.mock('@/composables/useChats', () => ({
   }),
 }))
 vi.mock('@/composables/useAIConfig', () => ({
-  useAIConfig: () => ({ activeAIPreset: preset }),
+  useAIConfig: () => ({
+    activeAIPreset: preset,
+    presets: computed(allPresets),
+    getPreset,
+    // As useAIConfig has it: the chat's, its profile's, then the default.
+    presetFor: (chat, profile) =>
+      getPreset(chat?.presetId) || getPreset(profile?.settings?.presetId) || preset.value,
+    showPreset,
+    createPreset,
+  }),
 }))
 
 /** Where a tab is opened in the editor. */
@@ -110,12 +131,9 @@ async function mountSettings(chatId = 'chat_1', options = {}) {
     global: {
       plugins: [PrimeVue],
       directives: { tooltip: {} },
-      // The AI section reaches for a Toast provider through the model
-      // selector, and none of this is about which model answers.
       // ExpandableSection is stubbed open so the sections' contents are there
       // to find without clicking five headers first.
       stubs: {
-        AiPresetGroup: true,
         ExpandableSection: { template: '<div><slot name="actions" /><slot /></div>' },
       },
     },
@@ -422,6 +440,199 @@ describe('ChatSettings profile', () => {
 
     expect(document.body.querySelector('.p-contextmenu')).toBeNull()
     wrapper.unmount()
+  })
+})
+
+describe('ChatSettings preset', () => {
+  /** @type {ReturnType<typeof useProfiles>} */
+  let library
+
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    vi.clearAllMocks()
+    chat.value = { id: 'chat_1', storyId: 'story_1', profileId: CHAT_PROFILE_ID }
+    preset.value = { id: 'profile_default', name: 'Default', toolsEnabled: true }
+    otherPresets.value = [{ id: 'profile_glm', name: 'GLM', toolsEnabled: true }]
+    library = useProfiles()
+    await useChatProfileStore().ensureInitialized()
+  })
+
+  afterEach(() => {
+    useApplicationState().setChatProfileId(null)
+    useSettingsPanel().close()
+  })
+
+  const presetPicker = wrapper => wrapper.findComponent('[data-chat-preset]')
+
+  /** Pick an item from the preset actions menu. */
+  const pick = async (wrapper, label) => {
+    await button(wrapper, 'Preset actions').trigger('click')
+    await flushPromises()
+    const item = [...document.body.querySelectorAll('#chat_preset_actions [role="menuitem"]')].find(
+      one => one.textContent.trim() === label
+    )
+    item.querySelector('a').click()
+    await flushPromises()
+  }
+
+  it('shows the preset chats run on until the chat or its profile picks one', async () => {
+    const wrapper = await mountSettings()
+
+    expect(presetPicker(wrapper).props('modelValue')).toBe('profile_default')
+    expect(
+      presetPicker(wrapper)
+        .props('options')
+        .map(one => one.name)
+    ).toEqual(['Default', 'GLM'])
+    expect(button(wrapper, 'Reset Preset').exists()).toBe(false)
+  })
+
+  it('runs this chat on the preset picked, and no other chat or preset', async () => {
+    const wrapper = await mountSettings()
+
+    await presetPicker(wrapper).vm.$emit('update:modelValue', 'profile_glm')
+    await flushPromises()
+
+    expect(updateChat).toHaveBeenLastCalledWith('chat_1', { presetId: 'profile_glm' })
+    expect(presetPicker(wrapper).props('modelValue')).toBe('profile_glm')
+    // The chat differs from its profile now, as an edited prompt does.
+    expect(button(wrapper, 'Reset Preset').exists()).toBe(true)
+    expect(button(wrapper, 'Save to profile').exists()).toBe(true)
+    expect(preset.value).toEqual({ id: 'profile_default', name: 'Default', toolsEnabled: true })
+  })
+
+  it("follows its profile's again once picked back, or reset", async () => {
+    const wrapper = await mountSettings()
+
+    await presetPicker(wrapper).vm.$emit('update:modelValue', 'profile_glm')
+    await presetPicker(wrapper).vm.$emit('update:modelValue', 'profile_default')
+    expect(chat.value.presetId).toBeUndefined()
+
+    await presetPicker(wrapper).vm.$emit('update:modelValue', 'profile_glm')
+    await flushPromises()
+    await button(wrapper, 'Reset Preset').trigger('click')
+    await flushPromises()
+    expect(chat.value.presetId).toBeUndefined()
+    expect(presetPicker(wrapper).props('modelValue')).toBe('profile_default')
+  })
+
+  it("shows a profile's preset, and marks the chat that differs from it", async () => {
+    const mine = library.saveProfile('On GLM', { prompt: 'Be terse.', presetId: 'profile_glm' })
+    chat.value.profileId = mine.id
+    const wrapper = await mountSettings()
+
+    expect(presetPicker(wrapper).props('modelValue')).toBe('profile_glm')
+    expect(button(wrapper, 'Reset Preset').exists()).toBe(false)
+
+    await presetPicker(wrapper).vm.$emit('update:modelValue', 'profile_default')
+    await flushPromises()
+    // The default, chosen over a profile that names another, is the chat's own.
+    expect(chat.value.presetId).toBe('profile_default')
+    expect(button(wrapper, 'Reset Preset').exists()).toBe(true)
+  })
+
+  it("saves the chat's preset to a profile of the writer's own", async () => {
+    const mine = library.saveProfile('Mine', { prompt: 'Be terse.' })
+    chat.value.profileId = mine.id
+    const wrapper = await mountSettings()
+
+    await presetPicker(wrapper).vm.$emit('update:modelValue', 'profile_glm')
+    await button(wrapper, 'Save to profile').trigger('click')
+    await flushPromises()
+
+    expect(library.getProfile(mine.id).settings.presetId).toBe('profile_glm')
+    expect(chat.value.presetId).toBeUndefined()
+    expect(presetPicker(wrapper).props('modelValue')).toBe('profile_glm')
+  })
+
+  it("saves a built-in's to Default - Custom, which new chats then start on", async () => {
+    const wrapper = await mountSettings()
+
+    await presetPicker(wrapper).vm.$emit('update:modelValue', 'profile_glm')
+    await button(wrapper, 'Save to profile').trigger('click')
+    await flushPromises()
+
+    const [copy] = saved(library)
+    expect(copy.name).toBe('Default - Custom')
+    expect(copy.settings.presetId).toBe('profile_glm')
+    expect(chat.value.profileId).toBe(copy.id)
+    expect(chat.value.presetId).toBeUndefined()
+  })
+
+  it('leaves a profile on the default when only something else is saved', async () => {
+    const mine = library.saveProfile('Mine', { prompt: 'Be terse.' })
+    chat.value.profileId = mine.id
+    const wrapper = await mountSettings()
+
+    await promptField(wrapper).setValue('Be very terse.')
+    await button(wrapper, 'Save to profile').trigger('click')
+    await flushPromises()
+
+    // Not pinned to whichever is the default today.
+    expect(library.getProfile(mine.id).settings.presetId).toBeUndefined()
+  })
+
+  it('goes back to the profile’s preset on Reset to profile, and on a switch', async () => {
+    chat.value.presetId = 'profile_glm'
+    const wrapper = await mountSettings('chat_1', { attachTo: document.body })
+
+    await button(wrapper, 'Profile actions').trigger('click')
+    await flushPromises()
+    const reset = [...document.body.querySelectorAll('#chat_profile_actions [role="menuitem"]')]
+    reset
+      .find(one => one.textContent.trim() === 'Reset to profile')
+      .querySelector('a')
+      .click()
+    await flushPromises()
+    expect(chat.value.presetId).toBeUndefined()
+
+    chat.value = { ...chat.value, presetId: 'profile_glm' }
+    const mine = library.saveProfile('Mine', { prompt: 'Be terse.' })
+    await wrapper.findAll('.p-select').at(0).trigger('click')
+    // Moving profile is the profile's preset, as it is the profile's prompt.
+    await wrapper.findComponent({ name: 'Select' }).vm.$emit('update:modelValue', mine.id)
+    expect(chat.value.presetId).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('opens Settings › AI on the chat’s preset to edit it', async () => {
+    chat.value.presetId = 'profile_glm'
+    const wrapper = await mountSettings('chat_1', { attachTo: document.body })
+
+    await pick(wrapper, 'Edit preset')
+
+    expect(showPreset).toHaveBeenCalledWith('profile_glm')
+    expect(useSettingsPanel().visible.value).toBe(true)
+    expect(useSettingsPanel().takeSection()).toBe('ai')
+    wrapper.unmount()
+  })
+
+  it('moves the chat onto a New preset, a copy of its own, open to be changed', async () => {
+    chat.value.presetId = 'profile_glm'
+    const wrapper = await mountSettings('chat_1', { attachTo: document.body })
+
+    await pick(wrapper, 'New preset')
+
+    expect(createPreset).toHaveBeenCalledWith(
+      'GLM copy',
+      expect.objectContaining({ id: 'profile_glm' })
+    )
+    const [, made] = otherPresets.value
+    expect(chat.value.presetId).toBe(made.id)
+    expect(useSettingsPanel().takeSection()).toBe('ai')
+    wrapper.unmount()
+  })
+
+  it('gates the tools on the chat’s preset, not the default', async () => {
+    otherPresets.value = [{ id: 'profile_bare', name: 'Bare', toolsEnabled: false }]
+    chat.value.presetId = 'profile_bare'
+    const wrapper = await mountSettings()
+
+    const enable = wrapper
+      .findAllComponents({ name: 'ToggleSwitch' })
+      .find(one => one.props('ariaLabel') === 'Enable tools')
+    expect(enable.props('disabled')).toBe(true)
+    expect(wrapper.text()).toContain("Allow tool use is off for this chat's preset.")
   })
 })
 

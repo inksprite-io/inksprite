@@ -163,12 +163,24 @@ describe('useAIConfig presets', () => {
   })
 
   describe('createPreset', () => {
-    it('adds a preset and switches to it', () => {
+    it('adds a preset and shows it, leaving the one chats run on', () => {
+      const defaultId = aiConfig.activeAIPresetId.value
       const created = aiConfig.createPreset('Local Gemma')
 
       expect(aiConfig.presets.value).toHaveLength(2)
-      expect(aiConfig.activeAIPresetId.value).toBe(created.id)
+      expect(aiConfig.shownPreset.value.id).toBe(created.id)
+      expect(aiConfig.activeAIPresetId.value).toBe(defaultId)
       expect(created.name).toBe('Local Gemma')
+    })
+
+    it('copies the preset it is given, rather than the one shown', () => {
+      const glm = aiConfig.createPreset('GLM')
+      aiConfig.updatePreset(glm.id, { model: 'z-ai/glm-4.6' })
+      aiConfig.showPreset(aiConfig.activeAIPresetId.value)
+
+      const made = aiConfig.createPreset('GLM copy', aiConfig.getPreset(glm.id))
+
+      expect(made.model).toBe('z-ai/glm-4.6')
     })
 
     it('reuses the active preset’s provider', () => {
@@ -193,7 +205,7 @@ describe('useAIConfig presets', () => {
         maxTokens: 512,
         parameters: { temperature: 0.2 },
       })
-      expect(aiConfig.activeAIPresetId.value).toBe(made.id)
+      expect(aiConfig.shownPreset.value.id).toBe(made.id)
     })
 
     it('copies the overrides rather than sharing them', () => {
@@ -230,10 +242,64 @@ describe('useAIConfig presets', () => {
     })
   })
 
+  describe('shownPreset', () => {
+    it('shows the default until another is shown', () => {
+      const other = aiConfig.createPreset('Other')
+      aiConfig.showPreset(aiConfig.activeAIPresetId.value)
+      expect(aiConfig.shownPreset.value.id).toBe(aiConfig.activeAIPresetId.value)
+
+      aiConfig.showPreset(other.id)
+      expect(aiConfig.shownPreset.value.id).toBe(other.id)
+    })
+
+    it('goes back to the default when the one shown is deleted', () => {
+      const doomed = aiConfig.createPreset('Doomed')
+      aiConfig.deletePreset(doomed.id)
+
+      expect(aiConfig.shownPreset.value.id).toBe(aiConfig.activeAIPresetId.value)
+    })
+  })
+
+  describe('presetFor', () => {
+    it('runs a chat on its own preset, over its profile’s', () => {
+      const own = aiConfig.createPreset('Own')
+      const profiles = aiConfig.createPreset('Profile’s')
+
+      expect(
+        aiConfig.presetFor({ presetId: own.id }, { settings: { presetId: profiles.id } }).id
+      ).toBe(own.id)
+    })
+
+    it('runs one that chose none on its profile’s', () => {
+      const profiles = aiConfig.createPreset('Profile’s')
+
+      expect(aiConfig.presetFor({}, { settings: { presetId: profiles.id } }).id).toBe(profiles.id)
+    })
+
+    it('runs one whose profile chose none on the default', () => {
+      aiConfig.createPreset('Unused')
+
+      expect(aiConfig.presetFor({}, { settings: {} }).id).toBe(aiConfig.activeAIPresetId.value)
+      expect(aiConfig.presetFor(null, null).id).toBe(aiConfig.activeAIPresetId.value)
+    })
+
+    it('reads a preset that is not here as the next one down', () => {
+      const profiles = aiConfig.createPreset('Profile’s')
+
+      expect(
+        aiConfig.presetFor({ presetId: 'profile_gone' }, { settings: { presetId: profiles.id } }).id
+      ).toBe(profiles.id)
+      expect(
+        aiConfig.presetFor({ presetId: 'profile_gone' }, { settings: { presetId: 'profile_gone' } })
+          .id
+      ).toBe(aiConfig.activeAIPresetId.value)
+    })
+  })
+
   describe('deletePreset', () => {
     it('moves off the preset before deleting it', () => {
       const created = aiConfig.createPreset('Doomed')
-      expect(aiConfig.activeAIPresetId.value).toBe(created.id)
+      aiConfig.setActiveAIPreset(created.id)
 
       aiConfig.deletePreset(created.id)
 

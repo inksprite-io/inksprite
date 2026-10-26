@@ -19,6 +19,8 @@ const {
   setSpellingEnabled,
   setSpellingDialect,
   setGrammar,
+  activeAIPresetId,
+  setActiveAIPreset,
 } = vi.hoisted(() => ({
   aiEnabled: { value: true },
   setAiEnabled: vi.fn(),
@@ -33,6 +35,8 @@ const {
   setSpellingEnabled: vi.fn(),
   setSpellingDialect: vi.fn(),
   setGrammar: vi.fn(),
+  activeAIPresetId: { value: 'profile_default' },
+  setActiveAIPreset: vi.fn(),
 }))
 
 const SPELLING = { enabled: true, dialect: 'american', grammar: true, words: [] }
@@ -72,6 +76,18 @@ vi.mock('@/composables/useProfiles', () => ({
     roleplayDefaultId: () => 'builtin_profile_roleplay',
   }),
 }))
+vi.mock('@/composables/useAIConfig', () => ({
+  useAIConfig: () => ({
+    presets: {
+      value: [
+        { id: 'profile_default', name: 'Default' },
+        { id: 'profile_glm', name: 'GLM' },
+      ],
+    },
+    activeAIPresetId,
+    setActiveAIPreset,
+  }),
+}))
 vi.mock('@/stores/messagesStore', () => ({ useMessagesStore: () => ({ forgetSavedRequests }) }))
 
 /** The switch whose root carries this attribute. */
@@ -82,8 +98,6 @@ const mountSection = () =>
     global: {
       plugins: [PrimeVue],
       stubs: {
-        DataSection: { template: '<div data-data-section />' },
-        SyncSection: { template: '<div data-sync-section />' },
         DictionaryDialog: {
           props: ['visible'],
           template: '<div v-if="visible" data-dictionary-dialog />',
@@ -200,9 +214,9 @@ describe('SystemSection folds', () => {
   const fold = (wrapper, title) =>
     wrapper.findAll('button[aria-expanded]').find(button => button.text() === title)
 
-  it('has spelling, the chats and the data folded away, and opens them', async () => {
+  it('has spelling and the chats folded away, and opens them', async () => {
     const wrapper = mountSection()
-    for (const title of ['Spelling', 'Chats', 'Data']) {
+    for (const title of ['Spelling', 'Chats']) {
       expect(fold(wrapper, title).attributes('aria-expanded')).toBe('false')
       await fold(wrapper, title).trigger('click')
       expect(fold(wrapper, title).attributes('aria-expanded')).toBe('true')
@@ -274,8 +288,10 @@ describe('SystemSection spelling', () => {
 })
 
 describe('SystemSection data', () => {
-  it('holds backup and restore', () => {
-    expect(mountSection().find('[data-data-section]').exists()).toBe(true)
+  it('leaves backups and sync to a section of their own', () => {
+    const wrapper = mountSection()
+    expect(wrapper.text()).not.toContain('Data')
+    expect(wrapper.text()).not.toContain('Sync')
   })
 })
 
@@ -297,6 +313,15 @@ describe('SystemSection chats', () => {
     expect(setChatProfileId).toHaveBeenCalledWith('builtin_profile_chat')
   })
 
+  it('shows the preset chats run on when they name none, and keeps the one chosen', async () => {
+    const wrapper = mountSection()
+    expect(wrapper.find('[for="chat-preset"]').text()).toBe('Default preset')
+    expect(picker(wrapper, 'data-chat-preset').props('modelValue')).toBe('profile_default')
+
+    await picker(wrapper, 'data-chat-preset').vm.$emit('update:modelValue', 'profile_glm')
+    expect(setActiveAIPreset).toHaveBeenCalledWith('profile_glm')
+  })
+
   it('asks before exploring a lot until switched off', async () => {
     const wrapper = mountSection()
 
@@ -314,9 +339,9 @@ describe('SystemSection chats', () => {
     const wrapper = mountSection()
 
     expect(picker(wrapper, 'data-chat-profile').exists()).toBe(false)
+    expect(picker(wrapper, 'data-chat-preset').exists()).toBe(false)
     expect(toggle(wrapper, 'data-ask-before-exploring').exists()).toBe(false)
     expect(wrapper.text()).not.toContain('Chats')
     expect(toggle(wrapper, 'data-debug').exists()).toBe(true)
-    expect(wrapper.find('[data-data-section]').exists()).toBe(true)
   })
 })

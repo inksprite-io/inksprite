@@ -28,7 +28,7 @@ const providers = {
 }
 
 vi.mock('@/composables/useAIConfig', () => ({
-  useAIConfig: () => ({ activeAIPreset: preset, getProvider: id => providers[id] || null }),
+  useAIConfig: () => ({ shownPreset: preset, getProvider: id => providers[id] || null }),
 }))
 
 const listed = ref({})

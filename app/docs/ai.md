@@ -5688,8 +5688,9 @@ nothing on screen would tell them they had.
 The wording is the exception in one direction only. The prompt and the
 skills' prompts are read from the profile every turn, so a chat keeps up
 with its profile's words, until the writer changes them in the chat: then
-the chat keeps its own (`Chat.prompt`, `Chat.skills`). Every change in a
-chat is the chat's; Save to profile is how one reaches the profile.
+the chat keeps its own (`Chat.prompt`, `Chat.skills`). The AI preset is
+read the same way (`Chat.presetId`). Every change in a chat is the chat's;
+Save to profile is how one reaches the profile.
 
 These ship as source rather than data, like the prompts in `ai/prompts`, so
 an improvement reaches chats that have not been created yet when the app
@@ -5716,6 +5717,9 @@ Type: [Object][1604]
 - `rules` **[string][1603]?** The author's note a chat on this profile starts
   with: standing instructions, sent in the writer's latest message ahead of
   what they said. See `renderAuthorsNote` in ai/context/build.js.
+- `presetId` **[string][1603]?** The AI preset a chat on this profile runs
+  on, read every turn as the prompt is. Absent means the default. See
+  `presetFor` in composables/useAIConfig.js.
 - `id` **[string][1603]** Stable identifier, prefixed so it cannot collide with a stored profile
 - `name` **[string][1603]** Display name
 - `description` **[string][1603]?** One line, for the picker; the built-ins have one
@@ -5795,8 +5799,8 @@ The profile a new chat is stamped from when nobody has chosen one.
 
 What to stamp onto a new chat, given the profile it is being started on.
 
-Everything but the wording. The prompt and the skills' prompts stay on the
-profile and are read on every turn, so a chat follows its profile's words;
+Everything but the wording and the preset. Those stay on the profile and
+are read on every turn, so a chat follows its profile's words and model;
 the rest is copied and then the chat's own, which is the rule `createChat`
 has always followed — a writer who switches a tool off in one chat has not
 asked to switch it off in nine others.
@@ -5814,7 +5818,7 @@ Returns **[Object][1604]** Settings to copy onto the chat
 ## STAMPED_SETTINGS
 
 The settings a profile can stamp onto a chat: `ProfileSettings` less the
-wording, which stays on the profile.
+wording and the preset, which stay on the profile.
 
 ## settingsForProfileSwitch
 

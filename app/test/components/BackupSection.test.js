@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import Tooltip from 'primevue/tooltip'
-import DataSection from '../../src/components/writer/settings/DataSection.vue'
+import BackupSection from '../../src/components/writer/settings/BackupSection.vue'
 import ExportDialog from '../../src/components/writer/settings/ExportDialog.vue'
 
 const { backup, confirmRequire, toast } = vi.hoisted(() => ({
@@ -23,12 +23,10 @@ vi.mock('@/composables/useToast', () => ({ useToast: () => toast }))
 vi.mock('primevue/useconfirm', () => ({ useConfirm: () => ({ require: confirmRequire }) }))
 
 const desktop = vi.hoisted(() => ({ on: false }))
-const library = vi.hoisted(() => ({ revealInLibrary: vi.fn() }))
 vi.mock('@/platform/desktop.js', () => ({ isDesktop: () => desktop.on }))
-vi.mock('@/platform/library.js', () => library)
 
 const mountSection = () =>
-  mount(DataSection, {
+  mount(BackupSection, {
     global: {
       plugins: [PrimeVue],
       directives: { tooltip: Tooltip },
@@ -69,7 +67,7 @@ const plan = (overrides = {}) => ({
   ...overrides,
 })
 
-describe('DataSection', () => {
+describe('BackupSection', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     desktop.on = false
@@ -292,32 +290,10 @@ describe('DataSection', () => {
     expect(toast.error).toHaveBeenCalledWith('Not a backup file.')
   })
 
-  describe('the projects folder', () => {
-    it('is not offered in a browser', async () => {
-      const wrapper = mountSection()
-      await flushPromises()
-
-      expect(wrapper.find('[data-action="reveal"]').exists()).toBe(false)
-    })
-
-    it('is shown beside Export and Import in the desktop app', async () => {
-      desktop.on = true
-      const wrapper = mountSection()
-      await flushPromises()
-
-      await wrapper.find('[data-action="reveal"]').trigger('click')
-      expect(library.revealInLibrary).toHaveBeenCalledWith()
-    })
-
-    it('says so when it cannot be shown', async () => {
-      desktop.on = true
-      library.revealInLibrary.mockRejectedValue(new Error('gone'))
-      const wrapper = mountSection()
-      await flushPromises()
-
-      await wrapper.find('[data-action="reveal"]').trigger('click')
-      await flushPromises()
-      expect(toast.error).toHaveBeenCalledWith("The folder couldn't be shown. gone")
-    })
+  it('leaves showing the projects’ folder to the outline, in the desktop app too', async () => {
+    desktop.on = true
+    const wrapper = mountSection()
+    await flushPromises()
+    expect(wrapper.findAll('button').map(button => button.text())).toEqual(['Export', 'Import'])
   })
 })

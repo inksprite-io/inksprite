@@ -51,7 +51,7 @@
           >
           If this site's data is cleared, it's gone.
         </p>
-        <p>You can back up your data from Settings › System › Data.</p>
+        <p>You can back up your data from Settings › Sync and sharing › Backup.</p>
         <p v-if="advice.desktopApp">
           Alternatively, you can use the standalone
           <a :href="DESKTOP_URL" target="_blank" rel="noopener noreferrer" :class="LINK"

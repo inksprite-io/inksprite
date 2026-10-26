@@ -1074,7 +1074,7 @@ export function createEngine({
     )
     peopleAsked.delete(storyId)
     await round()
-    return { account: added.account, owner: false, display: added.display }
+    return { account: added.account, owner: false, display: added.display, friend: letters }
   }
 
   /**

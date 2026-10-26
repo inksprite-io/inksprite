@@ -58,7 +58,7 @@
         <NoProjectView v-else-if="noProject" />
       </div>
 
-      <SettingsDialog v-model:visible="settingsVisible" />
+      <SettingsDialog v-model:visible="settingsVisible" :story-id="currentStoryId" />
     </div>
 
     <!-- App-wide, over whichever layout is showing; a card picked in it goes

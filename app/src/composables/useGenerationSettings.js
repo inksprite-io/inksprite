@@ -1,6 +1,7 @@
 /**
  * @module composables/useGenerationSettings
- * @description Read and write the active profile's generation overrides —
+ * @description Read and write the generation overrides of the preset
+ * Settings › AI shows —
  * sampler parameters, seed, max tokens, reasoning settings, and how far back
  * the model is shown its own dice and oracle calls.
  *
@@ -32,7 +33,7 @@ import { useAIConfig } from './useAIConfig.js'
 export function useGenerationSettings() {
   const aiConfig = useAIConfig()
 
-  const profile = computed(() => aiConfig.activeAIPreset.value)
+  const profile = computed(() => aiConfig.shownPreset.value)
   const overrides = computed(() => profile.value?.generationOverrides || {})
   const effective = computed(() => resolveAISettings(overrides.value))
 

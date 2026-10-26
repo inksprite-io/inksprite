@@ -994,6 +994,8 @@ Type: [Object][686]
 - `account` **[number][685]**&#x20;
 - `owner` **[boolean][689]**&#x20;
 - `display` **([string][684] | null)** The name they show the people they share with
+- `friend` **([string][684] | null)?** Their friend code, as the server keeps it; none from
+  a server before it said, or for an account that has never shared
 
 ## AccountRecord
 
@@ -3594,8 +3596,8 @@ server is a program of its own, kept apart from the app.
   project shared, and whose a comment's post is
 
 `composables/useCloudSync` signs in and out and runs the rounds; Settings
-› System › Sync is where the writer does it, always
-with `sync.inksprite.io` but in a build with dev features (`config/dev.js`).
+› Sync and sharing is where the writer does it, always with
+`sync.inksprite.io` but in a build with dev features (`config/dev.js`).
 
 Design: `.llm/sync_design.md`.
 

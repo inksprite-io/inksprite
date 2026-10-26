@@ -128,6 +128,9 @@ Vue components for the inksprite application UI.
     turn has one in its header, and the chat's settings choose the voice.
   - `settings/` - App-wide settings: `Settings` is a section list beside a
     pane, shown in `SettingsDialog` on the desktop and as a tab on phones.
+    The project open has a section of its own, `ProjectSection`, with its
+    sharing in `ProjectSharing`; `SyncSection` is sync and the account's
+    sharing, with backups in `BackupSection`.
     `LibraryMoveToast` shuts the page while the desktop app's projects move
     into their folder or back, and says how far they are.
   - `cards/` - The card library, app-wide like the settings:

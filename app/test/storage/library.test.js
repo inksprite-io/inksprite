@@ -102,6 +102,20 @@ describe('the library as storage', () => {
     expect(await again.filePath('none')).toBeNull()
   })
 
+  it('says where each document is in the library, for the file manager to show', async () => {
+    const library = await withProject()
+    const again = reopened(library)
+    await again.stories()
+    // The project's folder, before anything in it has been read.
+    expect(await again.documentPath(ROOT)).toBe('My Novel')
+    await again.documents(STORY)
+    expect(await again.documentPath(ROOT)).toBe('My Novel')
+    expect(await again.documentPath('ch1')).toBe('My Novel/Manuscript/01 - Act 1/01 - Chapter 1.md')
+    expect(await again.documentPath('notes')).toBe('My Novel/Notes')
+    expect(await again.documentPath('pdf')).toBe('My Novel/Notes/Rulebook.pdf')
+    expect(await again.documentPath('none')).toBeNull()
+  })
+
   it('has a file’s bytes once they come, that weren’t there when the project was read', async () => {
     const library = await withProject()
     library.files.delete('My Novel/Notes/Rulebook.pdf')

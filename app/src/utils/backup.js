@@ -79,16 +79,22 @@ export const BACKUP_FORMAT = 1
  * @type {Record<string, {noun: string, hint: string}>}
  */
 const SCOPES = {
-  database: { noun: 'a whole backup', hint: 'Restore it with Import in Settings › System › Data.' },
+  database: {
+    noun: 'a whole backup',
+    hint: 'Restore it with Import in Settings › Sync and sharing › Backup.',
+  },
   chat: { noun: 'one chat', hint: 'Import it from the chat list.' },
   project: {
     noun: 'one project',
     hint: 'Import it with Import project, in the projects menu at the top of the outline.',
   },
-  settings: { noun: 'settings', hint: 'Import it with Import in Settings › System › Data.' },
+  settings: {
+    noun: 'settings',
+    hint: 'Import it with Import in Settings › Sync and sharing › Backup.',
+  },
   selection: {
     noun: 'projects and settings',
-    hint: 'Import it with Import in Settings › System › Data.',
+    hint: 'Import it with Import in Settings › Sync and sharing › Backup.',
   },
 }
 

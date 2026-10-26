@@ -4,7 +4,7 @@ import { withoutIdleStyles, writeDoc } from '@/drive/write.js'
 import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
 import { applyRequests } from '@/drive/apply.js'
 import { bulleted, docOf, inline, item, numbered, para, run, styled, table } from './docsHelpers.js'
-import { anyEdit, busy, imported, objects, plain, random } from './randomEdits.js'
+import { WORDS, anyEdit, busy, imported, objects, plain, random } from './randomEdits.js'
 
 const MONO = { weightedFontFamily: { fontFamily: 'Courier New' } }
 const QUOTE = {
@@ -198,11 +198,83 @@ describe('writeDoc', () => {
     roundTrip(document, md => md.replace('- Rope', 'Rope').replace('\n\nOars', '\n\n1. Oars'))
   })
 
-  it('leaves a list item’s nesting unsent', () => {
-    const document = docOf([item('Rope', 'kit'), item('Oars', 'kit')], {
-      lists: { kit: bulleted() },
+  describe('nesting', () => {
+    const kit = () =>
+      docOf([item('Rope', 'kit'), item('Oars', 'kit'), item('Tea', 'kit'), para('After.')], {
+        lists: { kit: bulleted() },
+      })
+
+    it('nests an item, and takes it out again, the list made again whole', () => {
+      const { written, after } = roundTrip(kit(), md => md.replace('- Oars', '  - Oars'))
+      const kinds = written.requests.map(request => Object.keys(request)[0])
+      expect(kinds).toEqual([
+        'deleteParagraphBullets',
+        'updateParagraphStyle',
+        'insertText',
+        'createParagraphBullets',
+      ])
+      // One list still.
+      const lists = after.tabs[0].documentTab.body.content.flatMap(element =>
+        element.paragraph?.bullet ? [element.paragraph.bullet.listId] : []
+      )
+      expect(new Set(lists).size).toBe(1)
+      roundTrip(after, md => md.replace('  - Oars', '- Oars'))
     })
-    expect(unsentFor(document, md => md.replace('- Oars', '  - Oars'))).toEqual(['list'])
+
+    it('makes a list nested three deep in a new Doc', () => {
+      const document = docOf([para('')])
+      const nested = '- One\n  - Two\n    - Three\n      - Four\n  - Five\n- Six'
+      const { after } = roundTrip(document, () => nested, { held: heldOf(document) })
+      expect(readDoc(after).markdown).toBe(nested)
+    })
+
+    it('leaves a list nested past a Doc’s nine levels unsent', () => {
+      const deep = Array.from({ length: 10 }, (_, depth) => `${'  '.repeat(depth)}- Level`).join(
+        '\n'
+      )
+      expect(writeDoc(docOf([para('')]), parseMarkdown(deep)).unsent).toEqual(['list'])
+    })
+
+    it('changes a list’s kind, and nests numbers in numbers', () => {
+      const { after } = roundTrip(kit(), md => md.replace(/^- /gm, '1. '))
+      roundTrip(after, md => md.replace('1. Oars', '   1. Oars'))
+    })
+
+    it('puts an item at a list’s end into that list, as its bullet is typed into', () => {
+      const { written, after } = roundTrip(kit(), md => md.replace('- Tea', '- Tea\n- Milk'))
+      expect(written.requests.filter(request => 'createParagraphBullets' in request)).toEqual([])
+      const lists = after.tabs[0].documentTab.body.content.flatMap(element =>
+        element.paragraph?.bullet ? [element.paragraph.bullet.listId] : []
+      )
+      expect(new Set(lists).size).toBe(1)
+    })
+
+    it('leaves a Doc’s list of numbers with bullets in it as it is', () => {
+      const mixed = {
+        listProperties: {
+          nestingLevels: [{ glyphType: 'DECIMAL', startNumber: 1 }, { glyphSymbol: '○' }],
+        },
+      }
+      const document = docOf([item('Rope', 'mix'), item('Knots', 'mix', 1), item('Oars', 'mix')], {
+        lists: { mix: mixed },
+      })
+      expect(readDoc(document).markdown).toBe('1. Rope\n   - Knots\n2. Oars')
+      expect(writeDoc(document, parseMarkdown(readDoc(document).markdown)).requests).toEqual([])
+      const { written } = roundTrip(document, md => md.replace('Knots', 'Hitches'))
+      expect(written.requests.some(request => /Bullets/.test(Object.keys(request)[0]))).toBe(false)
+    })
+
+    it('writes a list of another kind inside one as of that one’s, and not again', () => {
+      const document = docOf([item('Rope', 'kit'), item('Oars', 'kit')], {
+        lists: { kit: numbered() },
+      })
+      const target = parseMarkdown('1. Rope\n   - Knots\n2. Oars')
+      const written = writeDoc(document, target)
+      expect(written.unsent).toEqual([])
+      const after = applyRequests(document, written.requests)
+      expect(readDoc(after).markdown).toBe('1. Rope\n   1. Knots\n2. Oars')
+      expect(writeDoc(after, target).requests).toEqual([])
+    })
   })
 
   it('sends a rule as a paragraph of * * *, and takes one out', () => {
@@ -379,6 +451,47 @@ describe('writeDoc', () => {
       'suggestion',
     ])
     expect(unsentFor(document, md => md.replace('Free to', 'Fine to'))).toEqual([])
+  })
+
+  it('takes the space a paragraph starts with when a join takes its words', () => {
+    const document = docOf([
+      para('Late again, and nobody'),
+      para(' Rain from the'),
+      para('calmwest, then dry.'),
+    ])
+    roundTrip(document, () => 'Late again, and nobody west, then dry.')
+  })
+
+  it('writes around a newline a suggestion puts in or takes out', () => {
+    const document = docOf([
+      // Parted in two once its newline is taken; one paragraph till then.
+      para([run('The ferry left.'), run('', {}, { suggestedInsertionIds: ['s.1'] })]),
+      para('It rained.'),
+      // Joined once its newline is taken out.
+      para([run('Gulls came.'), run('', {}, { suggestedDeletionIds: ['s.2'] })]),
+      para('They left.'),
+    ])
+    expect(readDoc(document).markdown).toBe(
+      'The ferry left.It rained.\n\nGulls came.\n\nThey left.'
+    )
+    const edit = md =>
+      md
+        .replace('ferry left', 'late ferry left')
+        .replace('It rained.', 'It rained hard.')
+        .replace('Gulls came', 'Two gulls came')
+        .replace('They left', 'They flew off')
+    expect(unsentFor(document, edit)).toEqual([])
+    const after = applyRequests(
+      document,
+      writeDoc(document, parseMarkdown(edit(readDoc(document).markdown))).requests
+    )
+    expect(readDoc(after).markdown).toBe(
+      'The late ferry left.It rained hard.\n\nTwo gulls came.\n\nThey flew off.'
+    )
+    // Each suggestion still makes its change, with the words changed around it.
+    expect(readDoc(after, { accepted: new Set(['s.1', 's.2']) }).markdown).toBe(
+      'The late ferry left.\n\nIt rained hard.\n\nTwo gulls came.They flew off.'
+    )
   })
 
   it('leaves out the changes of style that change nothing', () => {
@@ -675,6 +788,41 @@ describe('writeDoc', () => {
       expect(written.requests).toHaveLength(1)
     })
 
+    it('keeps a picture where it is when a table parts its paragraph, moving the words before', () => {
+      const document = docOf(
+        [
+          para('Monday'),
+          para([
+            run('Rain came in from the west, hard, then dry for an hour. The ferry '),
+            inline('inlineObjectElement', { inlineObjectId: 'kix.pier' }),
+            run(' was late.'),
+          ]),
+          para('After.'),
+        ],
+        { pictures: { 'kix.pier': { uri: 'https://pictures.example.com/pier' } } }
+      )
+      const { after } = pictureTrip(document, md =>
+        md.replace(
+          'for an hour. ',
+          'for an hour.\n\n| Day | Miles |\n| --- | --- |\n| Mon | 12 |\n\n'
+        )
+      )
+      expect(objects(after, 'kix.pier')).toBe(1)
+    })
+
+    it('types words that run on after a table into the paragraph past the Doc’s spacing', () => {
+      const document = docOf([
+        para('Monday'),
+        para('Rain came in.'),
+        table([['Day', 'Miles']]),
+        para(''),
+        para('The ferry was late.'),
+      ])
+      roundTrip(document, md =>
+        md.replace('Rain came in.\n\n', '').replace('The ferry', 'Rain came in. The ferry')
+      )
+    })
+
     it('deletes none of the Doc’s pictures the document never had', () => {
       // As one imported before pictures came in, or through Google's export,
       // whose pictures have no ids.
@@ -749,6 +897,122 @@ describe('writeDoc, edited at random', () => {
       expect(objects(after, 'kix.photo'), `round ${round}: the picture`).toBe(
         edited.includes('image1.png') ? 1 : 0
       )
+    }
+  })
+})
+
+describe('writeDoc, lists edited at random', () => {
+  /**
+   * @typedef {{ordered: boolean, items: Array<{depth: number, text: string}>}} List
+   */
+
+  /** A list as markdown, each level below the top of `nested`'s kind if given. */
+  const render = (/** @type {List} */ list, nested = list.ordered) =>
+    list.items
+      .map(({ depth, text }) => {
+        const ordered = depth === 0 ? list.ordered : nested
+        let indent = ''
+        // Each level in by its marker's width.
+        for (let level = 0; level < depth; level++) {
+          indent += ' '.repeat((level === 0 ? list.ordered : nested) ? 3 : 2)
+        }
+        return `${indent}${ordered ? '1.' : '-'} ${text}`
+      })
+      .join('\n')
+
+  /** No item deeper than one below the one before. */
+  const fix = (/** @type {List} */ list) => {
+    list.items.forEach((item, k) => {
+      item.depth = Math.min(item.depth, k === 0 ? 0 : list.items[k - 1].depth + 1)
+    })
+  }
+
+  /** @type {Array<(list: List, next: () => number) => void>} */
+  const listEdits = [
+    // An item nested.
+    (list, next) => {
+      const k = 1 + Math.floor(next() * (list.items.length - 1))
+      if (k < list.items.length) list.items[k].depth++
+    },
+    // An item out of its nesting.
+    (list, next) => {
+      const item = list.items[Math.floor(next() * list.items.length)]
+      item.depth = Math.max(0, item.depth - 1)
+    },
+    // An item in, as deep as it may be.
+    (list, next) => {
+      if (list.items.length >= 9) return
+      const k = Math.floor(next() * list.items.length)
+      const depth = Math.floor(next() * (list.items[k].depth + 2))
+      list.items.splice(k + 1, 0, { depth, text: WORDS[Math.floor(next() * WORDS.length)] })
+    },
+    // An item out.
+    (list, next) => {
+      if (list.items.length > 1) list.items.splice(Math.floor(next() * list.items.length), 1)
+    },
+    // Bullets made numbers, or numbers bullets.
+    list => {
+      list.ordered = !list.ordered
+    },
+    // A word changed.
+    (list, next) => {
+      const item = list.items[Math.floor(next() * list.items.length)]
+      item.text = `${item.text} ${WORDS[Math.floor(next() * WORDS.length)]}`
+    },
+  ]
+
+  it('reads back as each edit, its lists whole, and writes nothing again', () => {
+    const next = random(5)
+    /** @type {List[]} */
+    const lists = [
+      { ordered: false, items: ['Rope', 'Oars', 'Tea'].map(text => ({ depth: 0, text })) },
+      { ordered: true, items: ['Salt', 'Pier'].map(text => ({ depth: 0, text })) },
+    ]
+    let document = docOf(
+      [
+        para('Packing'),
+        item('Rope', 'a'),
+        item('Oars', 'a'),
+        item('Tea', 'a'),
+        para('Then.'),
+        item('Salt', 'b'),
+        item('Pier', 'b'),
+        para('After.'),
+      ],
+      { lists: { a: bulleted(), b: numbered() } }
+    )
+    for (let round = 0; round < 200; round++) {
+      const count = 1 + Math.floor(next() * 3)
+      for (let k = 0; k < count; k++) {
+        const list = lists[Math.floor(next() * lists.length)]
+        listEdits[Math.floor(next() * listEdits.length)](list, next)
+        fix(list)
+      }
+      // Now and then a list of another kind inside one, which a Doc can't hold.
+      const mixed = lists.map(list => (next() < 0.2 ? !list.ordered : list.ordered))
+      const blocks = [
+        'Packing',
+        render(lists[0], mixed[0]),
+        'Then.',
+        render(lists[1], mixed[1]),
+        'After.',
+      ]
+      const target = parseMarkdown(blocks.join('\n\n'))
+      const written = writeDoc(document, target)
+      expect(written.unsent, `round ${round}`).toEqual([])
+      const after = applyRequests(document, written.requests)
+      const expected = serializeMarkdown(
+        parseMarkdown(
+          ['Packing', render(lists[0]), 'Then.', render(lists[1]), 'After.'].join('\n\n')
+        )
+      )
+      expect(readDoc(after).markdown, `round ${round}`).toBe(expected)
+      expect(writeDoc(after, target).requests, `round ${round}: again`).toEqual([])
+      const ids = after.tabs[0].documentTab.body.content.flatMap(element =>
+        element.paragraph?.bullet ? [element.paragraph.bullet.listId] : []
+      )
+      expect(new Set(ids).size, `round ${round}: lists`).toBe(2)
+      document = after
     }
   })
 })

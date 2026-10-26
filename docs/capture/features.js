@@ -371,12 +371,12 @@ export async function features(ui, { standIn, context }) {
   // The project's settings
   await ui.click(top, { button: 'right' })
   await ui.click(menu('Project settings'))
-  const projectSettings = dialog('Project settings')
-  await projectSettings.waitFor()
-  await ui.paste(projectSettings.locator('textarea'), SUMMARY)
-  await ui.shot('projects-settings', { of: projectSettings })
-  await ui.click(projectSettings.getByRole('button', { name: 'Save' }))
-  await projectSettings.waitFor({ state: 'hidden' })
+  await settings.getByRole('heading', { name: 'Project', exact: true }).waitFor()
+  await ui.paste(settings.locator('textarea'), SUMMARY)
+  await ui.shot('projects-settings', { of: settings, pad: 0 })
+  // Closed, it keeps what was typed.
+  await ui.click(settings.getByRole('button', { name: 'Close' }))
+  await settings.waitFor({ state: 'hidden' })
 
   // The switcher
   await at(55)

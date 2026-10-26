@@ -20,6 +20,7 @@ import {
 } from '@/editor/suggestions.js'
 import { schema } from '@/editor/schema.js'
 import { Transform } from 'prosemirror-transform'
+import { docLinks } from '@/drive/links.js'
 import { bulleted, docOf, inline, item, para, run, styled } from './docsHelpers.js'
 import { anyEdit, busy, edits, objects, plain, random } from './randomEdits.js'
 
@@ -122,8 +123,9 @@ const baseOf = (doc, extra = {}) => ({
  *   that changes while the sync runs, the last read at the end
  * @param {any} [options.base]
  * @param {Record<string, any>} [options.pictures]
+ * @param {import('@/drive/links.js').DocLinks} [options.links]
  */
-async function sync({ mine, base = null, pictures = {}, threads = {} }) {
+async function sync({ mine, base = null, pictures = {}, threads = {}, links }) {
   const versions = [mine].flat()
   let reads = 0
   const current = () => parseMarkdown(versions[Math.min(reads++, versions.length - 1)])
@@ -139,6 +141,7 @@ async function sync({ mine, base = null, pictures = {}, threads = {} }) {
       current,
       keep,
       threads: () => threads,
+      ...(links && { links }),
     },
     'tok'
   )
@@ -326,32 +329,32 @@ describe('syncDoc', () => {
   })
 
   it('leaves here what the Doc can’t take yet, and sends the rest', async () => {
-    const start = docOf(
-      [item('Ropes', 'l'), item('Oars', 'l'), para('Gulls came in.'), para('It rained.')],
-      { lists: { l: bulleted() } }
-    )
+    const start = paragraphs('The ferry left at six.', 'Gulls came in.', 'It rained.')
     const { state } = google(start)
-    // A list inside a list, which the writer can't send yet, and words it can.
-    const mine = '- Ropes\n  - Oars\n\nGulls came in.\n\nIt rained hard.'
+    // A footnote put in, which the writer can't send yet, and words it can.
+    const mine =
+      'The ferry left at six.[^1]\n\nGulls came in.\n\nIt rained hard.\n\n[^1]: Or so they said.'
     const first = await sync({ base: baseOf(start), mine })
-    expect(first.left).toEqual(['list'])
-    expect(text(state.doc)).toBe('- Ropes\n- Oars\n\nGulls came in.\n\nIt rained hard.')
+    expect(first.left).toEqual(['footnote'])
+    expect(text(state.doc)).toBe('The ferry left at six.\n\nGulls came in.\n\nIt rained hard.')
     expect(serializeMarkdown(first.doc)).toBe(as(mine))
     // Tried again, and still left: nothing more is written.
     const writes = state.writes.length
     const second = await sync({ base: { ...baseOf(state.doc), ...first.base }, mine })
-    expect(second).toMatchObject({ sent: 0, changed: false, left: ['list'] })
+    expect(second).toMatchObject({ sent: 0, changed: false, left: ['footnote'] })
     expect(state.writes).toHaveLength(writes)
+  })
 
-    // A footnote put in, alone, sends nothing and stops nothing.
-    const plain = paragraphs('The ferry left at six.')
-    const { state: other } = google(plain)
-    const noted = await sync({
-      base: baseOf(plain),
-      mine: 'The ferry left at six.[^1]\n\n[^1]: Or so they said.',
-    })
-    expect(noted.left).toEqual(['footnote'])
-    expect(other.writes).toEqual([])
+  it('puts a document of lists nested deep into a new Doc whole, and writes it once', async () => {
+    const { state } = google(docOf([para('')]))
+    const mine =
+      '# List Test\n\nHere is a list:\n\n- One\n- Two\n  - Three\n    - Four\n  - Five\n' +
+      '- Six\n  - Seven\n    - Eight\n      - Nine\n      - Ten\n- Eleven\n\nThat was the list'
+    const first = await sync({ mine })
+    expect(first.left).toEqual([])
+    expect(text(state.doc)).toBe(as(mine))
+    const second = await sync({ base: { ...baseOf(state.doc), ...first.base }, mine })
+    expect(second).toMatchObject({ sent: 0, changed: false, left: [] })
   })
 
   it('leaves a Doc of several tabs alone when the link names none of them', async () => {
@@ -1288,6 +1291,67 @@ describe('syncDoc, the Doc’s suggestions', () => {
     }
     await sync({ base: next(state, second), mine: accepted, threads: settled })
     expect(text(state.doc)).toBe('The ferry left at seven, and it rained.\n\nGulls came in.')
+  })
+
+  it('sends the model’s paragraphs put in and taken out to the Doc as suggestions', async () => {
+    for (const [mine, made, accepted] of [
+      [
+        'The ferry left at six.\n\n{++A gull flew past.++}{>>sabcd9<<}\n\nGulls came in.',
+        models('', 'A gull flew past.'),
+        'The ferry left at six.\n\nA gull flew past.\n\nGulls came in.',
+      ],
+      [
+        '{--The ferry left at six.--}{>>sabcd9<<}\n\nGulls came in.',
+        models('The ferry left at six.', ''),
+        'Gulls came in.',
+      ],
+    ]) {
+      const doc = paragraphs('The ferry left at six.', 'Gulls came in.')
+      const { state } = google(doc)
+      const first = await sync({ base: baseOf(doc), mine, threads: { sabcd9: made } })
+      expect(
+        state.writes.filter(write => write.writeControl?.writeMode === 'SUGGEST')
+      ).toHaveLength(1)
+      expect(text(state.doc)).toBe('The ferry left at six.\n\nGulls came in.')
+      const ids = state.doc.suggestions.map(each => each.suggestionId)
+      expect(readDoc(state.doc, { accepted: new Set(ids) }).markdown).toBe(accepted)
+      expect(serializeMarkdown(first.doc)).toBe(as(mine))
+      expect(first.threads.sabcd9.google).toMatchObject({ doc: 'doc-1', status: 'open' })
+      const second = await sync({ base: next(state, first), mine, threads: first.threads })
+      expect(second).toMatchObject({ sent: 0, changed: false, suggestions: { sent: 0 } })
+    }
+  })
+
+  it('keeps here one of the model’s that parts a paragraph, or joins two', async () => {
+    for (const mine of [
+      'The ferry left{-- at six--}{>>sabcd9<<}.\n\n{++At six.++}{>>sabcd9<<}\n\nGulls came in.',
+      'The ferry left at six.{++ Gulls came in.++}{>>sabcd9<<}\n\n{--Gulls came in.--}{>>sabcd9<<}',
+    ]) {
+      const doc = paragraphs('The ferry left at six.', 'Gulls came in.')
+      const { state } = google(doc)
+      const first = await sync({ base: baseOf(doc), mine, threads: { sabcd9: models('', '') } })
+      expect(state.writes).toEqual([])
+      expect(serializeMarkdown(first.doc)).toBe(as(mine))
+      expect(first.threads.sabcd9).not.toHaveProperty('google')
+    }
+  })
+
+  it('writes an edit beside a paragraph the Doc suggests parting, and keeps the suggestion', async () => {
+    const doc = docOf([
+      para([run('One half.'), run('', {}, { suggestedInsertionIds: ['suggest.b'] })]),
+      para('The other half.'),
+      para('It rained.'),
+    ])
+    const { state } = google(doc)
+    const first = await sync({ base: baseOf(doc), mine: text(doc) })
+    const edited = serializeMarkdown(first.doc).replace('other half', 'second half')
+    const second = await sync({ base: next(state, first), mine: edited, threads: first.threads })
+    expect(second.left).toEqual([])
+    expect(text(state.doc)).toBe('One half.The second half.\n\nIt rained.')
+    expect(readDoc(state.doc, { accepted: new Set(['suggest.b']) }).markdown).toBe(
+      'One half.\n\nThe second half.\n\nIt rained.'
+    )
+    expect(serializeMarkdown(second.doc)).toBe(as(edited))
   })
 
   it('puts a document with the model’s suggestions into a new Doc, they as suggestions', async () => {
@@ -2291,5 +2355,93 @@ describe('syncDoc, comments at random on both sides, sync after sync', () => {
     let synced = 0
     for (const seed of [31, 37]) synced += await run(seed, 40)
     expect(synced).toBeGreaterThan(60)
+  })
+})
+
+describe('syncDoc, links between linked documents', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  const rows = [
+    { id: 'root_s', parentId: 's', type: 'folder', title: 'Thief' },
+    { id: ID, parentId: 'root_s', type: 'text', title: 'Plan', drive: { id: 'doc-1' } },
+    {
+      id: 'doc_cast',
+      parentId: 'root_s',
+      type: 'text',
+      title: 'Cast list',
+      drive: { id: 'doc-2', tabId: 't.0' },
+    },
+    { id: 'doc_loose', parentId: 'root_s', type: 'text', title: 'Loose ends' },
+  ]
+  const tree = {
+    get: id => rows.find(row => row.id === id) ?? null,
+    childrenOf: parentId => rows.filter(row => row.parentId === parentId),
+    rootId: 'root_s',
+  }
+  const links = docLinks(tree, ID)
+  const CAST = 'https://docs.google.com/document/d/doc-2/edit?tab=t.0'
+  /** The addresses of a Doc's links. */
+  const urls = doc =>
+    (JSON.stringify(doc).match(/"url":"[^"]*"/g) ?? []).map(each => each.slice(7, -1))
+
+  /** Sync once, then again from where that left the two: the second sends nothing. */
+  const twice = async (start, mine) => {
+    const { state } = google(start)
+    const first = await sync({ base: baseOf(start), mine, links })
+    const writes = state.writes.length
+    const second = await sync({
+      base: { ...baseOf(state.doc), markdown: first.base.markdown },
+      mine: serializeMarkdown(first.doc),
+      links,
+    })
+    expect(state.writes.length, 'the second sync').toBe(writes)
+    expect(second.changed).toBe(false)
+    return { state, first }
+  }
+
+  it('writes a link to a document with a Doc as that Doc’s address', async () => {
+    const mine = 'See [the cast](Cast%20list.md) first.'
+    const { state, first } = await twice(paragraphs('See the cast first.'), mine)
+    expect(urls(state.doc)).toEqual([CAST])
+    expect(text(state.doc)).toBe(`See [the cast](${CAST}) first.`)
+    expect(serializeMarkdown(first.doc)).toBe(as(mine))
+  })
+
+  it('reads a link to a linked document’s Doc as the link to it, the Doc’s address left be', async () => {
+    const shared = 'https://docs.google.com/document/d/doc-2/edit?usp=sharing'
+    const start = docOf([
+      para([run('See '), run('the cast', { link: { url: shared } }), run(' first.')]),
+    ])
+    const { state, first } = await twice(start, text(start))
+    expect(serializeMarkdown(first.doc)).toBe(as('See [the cast](Cast%20list.md) first.'))
+    expect(state.writes).toEqual([])
+    expect(urls(state.doc)).toEqual([shared])
+  })
+
+  it('sends a link to a document with no Doc as its words, and keeps it here', async () => {
+    const mine = 'See [the loose ends](Loose%20ends.md) first.'
+    const { state, first } = await twice(paragraphs('See the loose ends first.'), mine)
+    expect(urls(state.doc)).toEqual([])
+    expect(serializeMarkdown(first.doc)).toBe(as(mine))
+  })
+
+  it('leaves a link to a Doc no document here is linked to as it is', async () => {
+    const other = 'https://docs.google.com/document/d/doc-9/edit'
+    const start = docOf([
+      para([run('See '), run('the old plan', { link: { url: other } }), run('.')]),
+    ])
+    const mine = `See [the old plan](${other}), then the cast.`
+    const { state, first } = await twice(start, mine)
+    expect(urls(state.doc)).toEqual([other])
+    expect(serializeMarkdown(first.doc)).toBe(as(mine))
+  })
+
+  it('takes out a link to a document that went up as a relative path before', async () => {
+    const start = docOf([
+      para([run('See '), run('the loose ends', { link: { url: 'Loose%20ends.md' } }), run('.')]),
+    ])
+    const { state, first } = await twice(start, text(start))
+    expect(urls(state.doc)).toEqual([])
+    expect(serializeMarkdown(first.doc)).toBe(as('See [the loose ends](Loose%20ends.md).'))
   })
 })

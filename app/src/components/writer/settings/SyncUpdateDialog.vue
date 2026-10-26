@@ -40,7 +40,7 @@ import { updateReady } from '@/composables/useUpdates.js'
  * Said once as sync begins to wait for an update: a newer app's changes
  * hold back what comes in, or the server takes nothing from this build.
  * Update shows once the update is ready, which the app looks for at once.
- * Settings › System › Sync says it too, for as long as it waits. See
+ * Settings › Sync and sharing says it too, for as long as it waits. See
  * composables/useCloudSync.js.
  */
 const sync = useCloudSync()

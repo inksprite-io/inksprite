@@ -16,6 +16,7 @@
  * @typedef {import('../types/composables.js').StoryContext} StoryContext
  * @typedef {import('../types/models.js').AIPreset} AIPreset
  * @typedef {import('../types/models.js').Message} Message
+ * @typedef {import('../types/models.js').Chat} Chat
  * @typedef {import('../types/models.js').ApiMessage} ApiMessage
  * @typedef {import('./useChats.js').ChatsApi} ChatsApi
  * @typedef {import('../ai/tools/registry.js').ToolCall} ToolCall
@@ -198,6 +199,7 @@ function replyAfter(messages, index) {
  *   isThinking: import('vue').Ref<boolean>,
  *   activity: import('vue').Ref<TurnActivity|null>,
  *   configurationError: import('vue').ComputedRef<Error|null>,
+ *   runningPreset: () => AIPreset|null,
  *   sendMessage: (userMessage: string) => Promise<Message|null>,
  *   insertMessage: (text: string, role?: 'user'|'assistant') => Promise<Message|null>,
  *   regenerateMessage: (messageId: string) => Promise<Message|null>,
@@ -279,7 +281,7 @@ export function useAIChat(storyId, chatId) {
   const commandContext = signal => ({
     storyId,
     chatId,
-    preset: getActiveProfile(),
+    preset: runningPreset(),
     consult: (systemPrompt, toolNames, options = {}) =>
       consult(systemPrompt, toolNames, { ...options, signal }),
     promptFor: skillPromptFor,
@@ -290,10 +292,12 @@ export function useAIChat(storyId, chatId) {
   const activity = ref(null)
 
   /**
-   * Get the active AI profile.
+   * The AI preset this chat runs on: its own, its profile's, or the default.
+   * Read when asked, so a choice made in the settings mid-turn reaches the
+   * next request, as the prompt does. See `presetFor`.
    * @returns {AIPreset|null}
    */
-  const getActiveProfile = () => aiConfig.activeAIPreset.value
+  const runningPreset = () => aiConfig.presetFor(currentChat(), runningProfile())
 
   /**
    * Check if AI is properly configured for chat
@@ -302,7 +306,7 @@ export function useAIChat(storyId, chatId) {
    * @throws {Error} If other configuration issues exist
    */
   const getChatProfileIfValid = () => {
-    const profile = getActiveProfile()
+    const profile = runningPreset()
     const problem = presetProblem(profile, id => aiConfig.getProvider(id))
     if (problem) throw problem
     return /** @type {AIPreset} */ (profile)
@@ -325,12 +329,20 @@ export function useAIChat(storyId, chatId) {
   })
 
   /**
+   * This chat, or while nothing has been sent in it, the settings it will
+   * start with: what the composer checks before the first message is sent.
+   * @returns {Partial<Chat>|null}
+   */
+  const currentChat = () =>
+    chatsApi.isUnstarted(chatId) ? chatsApi.unstartedChat.value : chatsApi.getChatById(chatId)
+
+  /**
    * The chat profile this chat runs on: the one it names, or the project's
    * default when that one is gone.
    * @returns {import('./useProfiles.js').ProfileEntry|null}
    */
   const runningProfile = () =>
-    profilesApi.getProfile(chatsApi.getChatById(chatId)?.profileId) ||
+    profilesApi.getProfile(currentChat()?.profileId) ||
     profilesApi.getProfile(chatsApi.defaultProfileId())
 
   /**
@@ -695,7 +707,7 @@ export function useAIChat(storyId, chatId) {
    */
   async function executeToolCalls(toolCalls, depth, edits, signal) {
     const skills = toolCalls.filter(call => isSkill(call.function.name)).length
-    const provider = skills > 1 ? aiConfig.getProvider(getActiveProfile()?.providerId) : null
+    const provider = skills > 1 ? aiConfig.getProvider(runningPreset()?.providerId) : null
     const inLine = inTurn(provider ? await roomFor(provider) : Infinity)
     return Promise.all(
       toolCalls.map(call =>
@@ -772,7 +784,7 @@ export function useAIChat(storyId, chatId) {
       chatId,
       // What the chat runs on, for a tool that asks a model of its own on
       // its behalf to ask the same one.
-      preset: getActiveProfile(),
+      preset: runningPreset(),
       ...(propose ? { propose: true } : {}),
       ...(edits ? { edits } : {}),
       // What each skill runs under here, which is the profile's business and
@@ -2184,6 +2196,7 @@ export function useAIChat(storyId, chatId) {
     configurationError,
 
     // Methods
+    runningPreset,
     sendMessage,
     insertMessage,
     regenerateMessage,

@@ -142,8 +142,8 @@ export async function walkthrough(ui, { standIn, context }) {
 
   // Backing up
   await ui.click(button('Settings'))
-  await ui.click(button('System'))
-  await ui.click(button('Data'))
+  await ui.click(button('Sync and sharing'))
+  await ui.click(button('Backup'))
   await ui.click(button('Export'))
   await dialog('Export').waitFor()
   await ui.shot('backup', { of: dialog('Settings'), pad: 0 })

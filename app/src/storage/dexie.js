@@ -47,6 +47,7 @@ export const dexieStorage = {
 
   // A browser's storage keeps no file anywhere but in itself.
   filePath: async () => null,
+  documentPath: async () => null,
 
   // Narration audio is kept only in the library: in a browser it would be
   // gigabytes in storage the browser may clear.

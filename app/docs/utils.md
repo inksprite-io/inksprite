@@ -139,720 +139,720 @@
 - [deleted][135]
 - [deletedAt][136]
 - [deletedAt][137]
-- [stores/migrations/lore][138]
-- [slug][139]
+- [stores/migrations/projectTree][138]
+- [rootIdFor][139]
   - [Parameters][140]
-- [slug][141]
+- [rootIdFor][141]
   - [Parameters][142]
-- [categoryFolderIdFor][143]
+- [manuscriptIdFor][143]
   - [Parameters][144]
-- [archiveFolderIdFor][145]
+- [notesIdFor][145]
   - [Parameters][146]
-- [plainTextToHtml][147]
+- [draftsIdFor][147]
   - [Parameters][148]
-- [countWords][149]
+- [folder][149]
   - [Parameters][150]
-- [countWords][151]
+- [folder][151]
   - [Parameters][152]
-- [folder][153]
+- [rootNode][153]
   - [Parameters][154]
-- [folder][155]
+- [defaultProjectFolders][155]
   - [Parameters][156]
-- [loreToDocuments][157]
+- [actTitle][157]
   - [Parameters][158]
-- [storyIdByLorebook][159]
-- [emittedFolders][160]
-- [folderCount][161]
-- [entryCount][162]
-- [nextOrder][163]
-  - [Parameters][164]
-- [][165]
-- [entry][166]
-- [stores/migrations/lastDocument][167]
-- [lastSceneToLastDocument][168]
+- [byOrder][159]
+  - [Parameters][160]
+- [documentsToProjectTree][161]
+  - [Parameters][162]
+- [byStory][163]
+- [restructured][164]
+- [stores/migrations/lore][165]
+- [slug][166]
+  - [Parameters][167]
+- [slug][168]
   - [Parameters][169]
-- [lastSceneToLastDocument][170]
+- [categoryFolderIdFor][170]
   - [Parameters][171]
-- [stores/migrations/overview][172]
-- [overviewToRootSummary][173]
-  - [Parameters][174]
-- [overviewToRootSummary][175]
-  - [Parameters][176]
-- [overviewToRootSummary][177]
-  - [Parameters][178]
-- [byId][179]
-- [byId][180]
-- [byId][181]
-- [byId][182]
-- [root][183]
-- [stores/migrations/commandInput][184]
-- [commandArgsToInput][185]
-  - [Parameters][186]
-- [commandArgsToInput][187]
-  - [Parameters][188]
-- [commandArgsToInput][189]
-  - [Parameters][190]
-- [message][191]
-  - [message][192]
-  - [message][193]
-  - [message][194]
-- [stores/migrations/commandVoice][195]
-- [CONSULTED][196]
-- [CONSULTED][197]
-- [commandsIntoTheirVoice][198]
+- [archiveFolderIdFor][172]
+  - [Parameters][173]
+- [plainTextToHtml][174]
+  - [Parameters][175]
+- [countWords][176]
+  - [Parameters][177]
+- [countWords][178]
+  - [Parameters][179]
+- [loreToDocuments][180]
+  - [Parameters][181]
+- [storyIdByLorebook][182]
+- [emittedFolders][183]
+- [folderCount][184]
+- [entryCount][185]
+- [nextOrder][186]
+  - [Parameters][187]
+- [][188]
+- [entry][189]
+- [stores/migrations/lastDocument][190]
+- [lastSceneToLastDocument][191]
+  - [Parameters][192]
+- [lastSceneToLastDocument][193]
+  - [Parameters][194]
+- [stores/migrations/overview][195]
+- [overviewToRootSummary][196]
+  - [Parameters][197]
+- [overviewToRootSummary][198]
   - [Parameters][199]
-- [stores/migrations/characterSigil][200]
-- [COMMANDS][201]
-- [COMMANDS][202]
-- [markCharacters][203]
-  - [Parameters][204]
-- [][205]
-- [stores/migrations/turnSegments][206]
-- [TAGS][207]
-- [TAGS][208]
-- [renderCommand][209]
-  - [Parameters][210]
-- [segmentOf][211]
-  - [Parameters][212]
-- [foldTurns][213]
-  - [Parameters][214]
-- [byChat][215]
-- [byChat][216]
-- [untouched][217]
-- [run][218]
-- [run][219]
-- [run][220]
-- [stores/migrations/turnRuns][221]
-- [cutOf][222]
-  - [Parameters][223]
-- [cutOf][224]
-  - [Parameters][225]
-- [piecesOf][226]
+- [overviewToRootSummary][200]
+  - [Parameters][201]
+- [byId][202]
+- [byId][203]
+- [byId][204]
+- [byId][205]
+- [root][206]
+- [stores/migrations/commandInput][207]
+- [commandArgsToInput][208]
+  - [Parameters][209]
+- [commandArgsToInput][210]
+  - [Parameters][211]
+- [commandArgsToInput][212]
+  - [Parameters][213]
+- [message][214]
+  - [message][215]
+  - [message][216]
+  - [message][217]
+- [stores/migrations/commandVoice][218]
+- [CONSULTED][219]
+- [CONSULTED][220]
+- [commandsIntoTheirVoice][221]
+  - [Parameters][222]
+- [stores/migrations/characterSigil][223]
+- [COMMANDS][224]
+- [COMMANDS][225]
+- [markCharacters][226]
   - [Parameters][227]
-- [piecesOf][228]
-  - [Parameters][229]
-- [foldChat][230]
-  - [Parameters][231]
-- [foldRuns][232]
+- [][228]
+- [stores/migrations/turnSegments][229]
+- [TAGS][230]
+- [TAGS][231]
+- [renderCommand][232]
   - [Parameters][233]
-- [stores/migrations/markdown][234]
-- [htmlToMarkdown][235]
-  - [Parameters][236]
-- [htmlToMarkdown][237]
-  - [Parameters][238]
-- [documentsToMarkdown][239]
-  - [Parameters][240]
-- [editor/schema][241]
-- [languageOf][242]
-  - [Parameters][243]
-- [code_block][244]
-- [][245]
-- [KEPT_SOURCE][246]
-- [image][247]
-- [getAttribute][248]
-- [getAttribute][249]
-- [getAttribute][250]
-- [getAttribute][251]
-- [strikethrough][252]
-- [ALIGNMENTS][253]
-- [alignmentOf][254]
-  - [Parameters][255]
-- [alignmentOf][256]
-  - [Parameters][257]
-- [cellAttrs][258]
+- [segmentOf][234]
+  - [Parameters][235]
+- [foldTurns][236]
+  - [Parameters][237]
+- [byChat][238]
+- [byChat][239]
+- [untouched][240]
+- [run][241]
+- [run][242]
+- [run][243]
+- [stores/migrations/turnRuns][244]
+- [cutOf][245]
+  - [Parameters][246]
+- [cutOf][247]
+  - [Parameters][248]
+- [piecesOf][249]
+  - [Parameters][250]
+- [piecesOf][251]
+  - [Parameters][252]
+- [foldChat][253]
+  - [Parameters][254]
+- [foldRuns][255]
+  - [Parameters][256]
+- [stores/migrations/markdown][257]
+- [htmlToMarkdown][258]
   - [Parameters][259]
-- [BREAKS][260]
-- [cellContent][261]
-  - [Parameters][262]
-- [cloneNode][263]
-- [table][264]
-- [table_row][265]
-- [table_cell][266]
-- [comment][267]
-- [suggested][268]
-  - [Parameters][269]
-- [getAttrs][270]
-  - [Parameters][271]
-- [BLOCK_MARKS][272]
-- [NODE_NAMES][273]
-- [MARK_NAMES][274]
-- [schema][275]
-- [editor/markdown][276]
-- [cellsIn][277]
+- [htmlToMarkdown][260]
+  - [Parameters][261]
+- [documentsToMarkdown][262]
+  - [Parameters][263]
+- [editor/schema][264]
+- [languageOf][265]
+  - [Parameters][266]
+- [code_block][267]
+- [][268]
+- [KEPT_SOURCE][269]
+- [image][270]
+- [getAttribute][271]
+- [getAttribute][272]
+- [getAttribute][273]
+- [getAttribute][274]
+- [strikethrough][275]
+- [ALIGNMENTS][276]
+- [alignmentOf][277]
   - [Parameters][278]
-- [cellsIn][279]
+- [alignmentOf][279]
   - [Parameters][280]
-- [tokenizerOf][281]
-- [block][282]
-- [block][283]
-- [top][284]
-- [split][285]
-- [state][286]
-  - [Parameters][287]
-- [state][288]
-  - [Parameters][289]
-- [state][290]
-  - [Parameters][291]
-- [state][292]
-  - [Parameters][293]
-- [state][294]
-  - [Parameters][295]
-- [state][296]
-  - [Parameters][297]
-- [state][298]
-  - [Parameters][299]
-- [][300]
-- [][301]
-- [TAIL][302]
-- [ROOM][303]
-- [DELIMITED][304]
-- [spacesAsNeighbours][305]
-  - [Parameters][306]
-- [children][307]
-- [children][308]
-- [children][309]
-- [LinearSerializer][310]
-  - [serialize][311]
-    - [Parameters][312]
-- [][313]
-- [ENTITY][314]
-- [AUTOLINK][315]
-- [escapeMore][316]
-  - [Parameters][317]
-- [endsLine][318]
-  - [Parameters][319]
-- [withBlockSuggestions][320]
-  - [Parameters][321]
-- [withBlockSuggestions][322]
-  - [Parameters][323]
-- [type][324]
-- [type][325]
-- [][326]
-- [][327]
-- [serializer][328]
-- [][329]
-- [][330]
-- [cells][331]
-- [rowOf][332]
-  - [Parameters][333]
-- [ruleOf][334]
-  - [Parameters][335]
-- [parseMarkdown][336]
-  - [Parameters][337]
-- [serializeMarkdown][338]
-  - [Parameters][339]
-- [settleMarkdown][340]
-  - [Parameters][341]
-- [appendBlocks][342]
-  - [Parameters][343]
-- [stores/migrations/commentThreads][344]
-- [threadsOffText][345]
+- [cellAttrs][281]
+  - [Parameters][282]
+- [BREAKS][283]
+- [cellContent][284]
+  - [Parameters][285]
+- [cloneNode][286]
+- [table][287]
+- [table_row][288]
+- [table_cell][289]
+- [comment][290]
+- [suggested][291]
+  - [Parameters][292]
+- [getAttrs][293]
+  - [Parameters][294]
+- [BLOCK_MARKS][295]
+- [NODE_NAMES][296]
+- [MARK_NAMES][297]
+- [schema][298]
+- [editor/markdown][299]
+- [cellsIn][300]
+  - [Parameters][301]
+- [cellsIn][302]
+  - [Parameters][303]
+- [tokenizerOf][304]
+- [block][305]
+- [block][306]
+- [top][307]
+- [split][308]
+- [state][309]
+  - [Parameters][310]
+- [state][311]
+  - [Parameters][312]
+- [state][313]
+  - [Parameters][314]
+- [state][315]
+  - [Parameters][316]
+- [state][317]
+  - [Parameters][318]
+- [state][319]
+  - [Parameters][320]
+- [state][321]
+  - [Parameters][322]
+- [][323]
+- [][324]
+- [TAIL][325]
+- [ROOM][326]
+- [DELIMITED][327]
+- [spacesAsNeighbours][328]
+  - [Parameters][329]
+- [children][330]
+- [children][331]
+- [children][332]
+- [LinearSerializer][333]
+  - [serialize][334]
+    - [Parameters][335]
+- [][336]
+- [ENTITY][337]
+- [AUTOLINK][338]
+- [escapeMore][339]
+  - [Parameters][340]
+- [endsLine][341]
+  - [Parameters][342]
+- [withBlockSuggestions][343]
+  - [Parameters][344]
+- [withBlockSuggestions][345]
   - [Parameters][346]
-- [threadsOffText][347]
-  - [Parameters][348]
-- [editor/comments][349]
-- [Threads][350]
-- [FoundComment][351]
-  - [Properties][352]
-- [MarkupToken][353]
-  - [Properties][354]
-- [OPEN_MARKUP][355]
-- [OPEN_MARKUP][356]
-- [ParsedMarkup][357]
-- [TOKEN_PATTERN][358]
-- [CLOSE_PATTERN][359]
-- [newCommentId][360]
-- [BREAK_PATTERN][361]
-- [closeMarkup][362]
-  - [Parameters][363]
-- [cleanComment][364]
-  - [Parameters][365]
-- [commentOf][366]
-  - [Parameters][367]
-- [parseMarkup][368]
+- [type][347]
+- [type][348]
+- [][349]
+- [][350]
+- [serializer][351]
+- [][352]
+- [][353]
+- [cells][354]
+- [rowOf][355]
+  - [Parameters][356]
+- [ruleOf][357]
+  - [Parameters][358]
+- [parseMarkdown][359]
+  - [Parameters][360]
+- [serializeMarkdown][361]
+  - [Parameters][362]
+- [settleMarkdown][363]
+  - [Parameters][364]
+- [appendBlocks][365]
+  - [Parameters][366]
+- [stores/migrations/commentThreads][367]
+- [threadsOffText][368]
   - [Parameters][369]
-- [stack][370]
-- [stack][371]
-- [pairs][372]
-- [pop][373]
-- [pop][374]
-- [tokens][375]
-- [runs][376]
-- [runs][377]
-- [runs][378]
-- [get][379]
-- [get][380]
-- [get][381]
-- [get][382]
-- [Span][383]
-- [renderMarkup][384]
-  - [Parameters][385]
-- [pop][386]
-- [pop][387]
-- [open][388]
-- [open][389]
-- [open][390]
-- [open][391]
-- [open][392]
-- [joinRuns][393]
-  - [Parameters][394]
-- [joined][395]
-- [joined][396]
-- [last][397]
-- [markupOffset][398]
-  - [Parameters][399]
-- [changeStretch][400]
-  - [Parameters][401]
-- [withoutRuns][402]
-  - [Parameters][403]
-- [findComments][404]
-  - [Parameters][405]
-- [settleComments][406]
-  - [Parameters][407]
-- [withoutComments][408]
-  - [Parameters][409]
-- [HALF_PATTERN][410]
-- [quoteWithoutComments][411]
-  - [Parameters][412]
-- [nearest][413]
-  - [Parameters][414]
-- [editAroundComments][415]
-  - [Parameters][416]
-- [lost][417]
-- [lost][418]
-- [spans][419]
-- [rewriteAroundComments][420]
-  - [Parameters][421]
-- [placed][422]
-- [countComments][423]
+- [threadsOffText][370]
+  - [Parameters][371]
+- [editor/comments][372]
+- [Threads][373]
+- [FoundComment][374]
+  - [Properties][375]
+- [MarkupToken][376]
+  - [Properties][377]
+- [OPEN_MARKUP][378]
+- [OPEN_MARKUP][379]
+- [ParsedMarkup][380]
+- [TOKEN_PATTERN][381]
+- [CLOSE_PATTERN][382]
+- [newCommentId][383]
+- [BREAK_PATTERN][384]
+- [closeMarkup][385]
+  - [Parameters][386]
+- [cleanComment][387]
+  - [Parameters][388]
+- [commentOf][389]
+  - [Parameters][390]
+- [parseMarkup][391]
+  - [Parameters][392]
+- [stack][393]
+- [stack][394]
+- [pairs][395]
+- [pop][396]
+- [pop][397]
+- [tokens][398]
+- [runs][399]
+- [runs][400]
+- [runs][401]
+- [get][402]
+- [get][403]
+- [get][404]
+- [get][405]
+- [Span][406]
+- [renderMarkup][407]
+  - [Parameters][408]
+- [pop][409]
+- [pop][410]
+- [open][411]
+- [open][412]
+- [open][413]
+- [open][414]
+- [open][415]
+- [joinRuns][416]
+  - [Parameters][417]
+- [joined][418]
+- [joined][419]
+- [last][420]
+- [markupOffset][421]
+  - [Parameters][422]
+- [changeStretch][423]
   - [Parameters][424]
-- [CONTEXT_CHARS][425]
-- [newPost][426]
-  - [Parameters][427]
-- [authorOf][428]
-  - [Parameters][429]
-- [suggesterOf][430]
-  - [Parameters][431]
-- [newThread][432]
-  - [Parameters][433]
-- [placedIds][434]
+- [withoutRuns][425]
+  - [Parameters][426]
+- [findComments][427]
+  - [Parameters][428]
+- [settleComments][429]
+  - [Parameters][430]
+- [withoutComments][431]
+  - [Parameters][432]
+- [HALF_PATTERN][433]
+- [quoteWithoutComments][434]
   - [Parameters][435]
-- [threadState][436]
+- [nearest][436]
   - [Parameters][437]
-- [wordsAround][438]
+- [editAroundComments][438]
   - [Parameters][439]
-- [suggestionPlaced][440]
-  - [Parameters][441]
-- [settleThreads][442]
-  - [Parameters][443]
-- [next][444]
-- [next][445]
-- [next][446]
-- [liftThreads][447]
-  - [Parameters][448]
-- [withThreadsOnly][449]
+- [lost][440]
+- [lost][441]
+- [spans][442]
+- [rewriteAroundComments][443]
+  - [Parameters][444]
+- [placed][445]
+- [countComments][446]
+  - [Parameters][447]
+- [CONTEXT_CHARS][448]
+- [newPost][449]
   - [Parameters][450]
-- [countOpen][451]
+- [authorOf][451]
   - [Parameters][452]
-- [sameThread][453]
+- [suggesterOf][453]
   - [Parameters][454]
-- [said][455]
+- [newThread][455]
   - [Parameters][456]
-- [placeThread][457]
+- [placedIds][457]
   - [Parameters][458]
-- [spots][459]
-- [commentOn][460]
-  - [Parameters][461]
-- [PlacedThread][462]
-  - [Properties][463]
-- [readableText][464]
-  - [Parameters][465]
-- [WIDEN_STEP][466]
-- [passageInText][467]
-  - [Parameters][468]
-- [][469]
-- [withoutComment][470]
+- [threadState][459]
+  - [Parameters][460]
+- [wordsAround][461]
+  - [Parameters][462]
+- [suggestionPlaced][463]
+  - [Parameters][464]
+- [settleThreads][465]
+  - [Parameters][466]
+- [next][467]
+- [next][468]
+- [next][469]
+- [liftThreads][470]
   - [Parameters][471]
-- [CommentRange][472]
-- [runsOver][473]
-  - [Parameters][474]
-- [ranges][475]
-- [going][476]
-- [commentRanges][477]
-  - [Parameters][478]
-- [pieces][479]
-- [pieces][480]
-- [pieces][481]
-- [pieces][482]
-- [pieces][483]
-- [keepComments][484]
-  - [Parameters][485]
-- [][486]
-- [nodes][487]
-- [nodes][488]
-- [commentAround][489]
-  - [Parameters][490]
-- [CommentEntry][491]
-  - [Properties][492]
-- [entriesOf][493]
+- [withThreadsOnly][472]
+  - [Parameters][473]
+- [countOpen][474]
+  - [Parameters][475]
+- [sameThread][476]
+  - [Parameters][477]
+- [said][478]
+  - [Parameters][479]
+- [placeThread][480]
+  - [Parameters][481]
+- [spots][482]
+- [commentOn][483]
+  - [Parameters][484]
+- [PlacedThread][485]
+  - [Properties][486]
+- [readableText][487]
+  - [Parameters][488]
+- [WIDEN_STEP][489]
+- [passageInText][490]
+  - [Parameters][491]
+- [][492]
+- [withoutComment][493]
   - [Parameters][494]
-- [entriesOf][495]
-  - [Parameters][496]
-- [commentsInDoc][497]
-  - [Parameters][498]
-- [commentsGone][499]
-  - [Parameters][500]
-- [commentsInMarkdown][501]
-  - [Parameters][502]
-- [plainPassage][503]
-  - [Parameters][504]
-- [closeOf][505]
-  - [Parameters][506]
-- [CommentCount][507]
-- [commentMarkupPlugin][508]
-  - [Parameters][509]
-- [counts][510]
-- [counts][511]
-- [countOf][512]
+- [CommentRange][495]
+- [runsOver][496]
+  - [Parameters][497]
+- [ranges][498]
+- [going][499]
+- [commentRanges][500]
+  - [Parameters][501]
+- [pieces][502]
+- [pieces][503]
+- [pieces][504]
+- [pieces][505]
+- [pieces][506]
+- [keepComments][507]
+  - [Parameters][508]
+- [][509]
+- [nodes][510]
+- [nodes][511]
+- [commentAround][512]
   - [Parameters][513]
-- [countOf][514]
-  - [Parameters][515]
-- [loose][516]
-- [loose][517]
-- [stores/migrations/profiles][518]
-- [builtInFor][519]
-  - [Parameters][520]
-- [profileFrom][521]
-  - [Parameters][522]
-- [promptsToProfiles][523]
-  - [Parameters][524]
-- [chatsToProfiles][525]
-  - [Parameters][526]
-- [storiesToProfiles][527]
-  - [Parameters][528]
-- [stores/migrations/summariesInPlace][529]
-- [stoodFor][530]
-  - [Parameters][531]
-- [stoodFor][532]
-  - [Parameters][533]
-- [placeChat][534]
-  - [Parameters][535]
-- [targets][536]
-- [targets][537]
-- [order][538]
-- [moved][539]
-- [moved][540]
-  - [Parameters][541]
-- [summariesIntoPlace][542]
+- [CommentEntry][514]
+  - [Properties][515]
+- [entriesOf][516]
+  - [Parameters][517]
+- [entriesOf][518]
+  - [Parameters][519]
+- [commentsInDoc][520]
+  - [Parameters][521]
+- [commentsGone][522]
+  - [Parameters][523]
+- [commentsInMarkdown][524]
+  - [Parameters][525]
+- [plainPassage][526]
+  - [Parameters][527]
+- [closeOf][528]
+  - [Parameters][529]
+- [CommentCount][530]
+- [commentMarkupPlugin][531]
+  - [Parameters][532]
+- [counts][533]
+- [counts][534]
+- [countOf][535]
+  - [Parameters][536]
+- [countOf][537]
+  - [Parameters][538]
+- [loose][539]
+- [loose][540]
+- [stores/migrations/profiles][541]
+- [builtInFor][542]
   - [Parameters][543]
-- [chats][544]
-- [changed][545]
-- [changed][546]
-- [stores/migrations/purgeDeleted][547]
-- [FLAGGED_TABLES][548]
-- [Purged][549]
-  - [Properties][550]
-- [withoutDeleted][551]
-  - [Parameters][552]
-- [goneFiles][553]
-- [deletedIds][554]
-  - [Parameters][555]
-- [stores/migrations/profileSkills][556]
-- [RENAMED][557]
-- [rolesToSkills][558]
-  - [Parameters][559]
-- [skills][560]
-- [][561]
-- [stores/migrations/jobWorkflows][562]
-- [rolesToWorkflows][563]
+- [profileFrom][544]
+  - [Parameters][545]
+- [promptsToProfiles][546]
+  - [Parameters][547]
+- [chatsToProfiles][548]
+  - [Parameters][549]
+- [storiesToProfiles][550]
+  - [Parameters][551]
+- [stores/migrations/summariesInPlace][552]
+- [stoodFor][553]
+  - [Parameters][554]
+- [stoodFor][555]
+  - [Parameters][556]
+- [placeChat][557]
+  - [Parameters][558]
+- [targets][559]
+- [targets][560]
+- [order][561]
+- [moved][562]
+- [moved][563]
   - [Parameters][564]
-- [stores/migrations/modelKeeps][565]
-- [withoutModelKeeps][566]
-  - [Parameters][567]
-- [stores/migrations/allowedProviders][568]
-- [allowedProvidersToPresets][569]
-  - [Parameters][570]
-- [stores/migrations/experimentalSkills][571]
-- [withExperimentalOff][572]
-  - [Parameters][573]
-- [experimentalOffChats][574]
+- [summariesIntoPlace][565]
+  - [Parameters][566]
+- [chats][567]
+- [changed][568]
+- [changed][569]
+- [stores/migrations/purgeDeleted][570]
+- [FLAGGED_TABLES][571]
+- [Purged][572]
+  - [Properties][573]
+- [withoutDeleted][574]
   - [Parameters][575]
-- [experimentalOffProfiles][576]
-  - [Parameters][577]
-- [stores/migrations/projectViews][578]
-- [VIEW_FIELDS][579]
-- [viewsOffStories][580]
-  - [Parameters][581]
-- [views][582]
-- [view][583]
-- [view][584]
-  - [Parameters][585]
-- [utils/backupArchive][586]
-- [MANIFEST][587]
-- [BYTES][588]
-  - [BYTES][589]
-  - [BYTES][590]
-- [ENTRY_CHARS][591]
-- [SLICE][592]
-- [GATHER][593]
-- [MOST_BYTES][594]
-- [writeArchive][595]
+- [goneFiles][576]
+- [deletedIds][577]
+  - [Parameters][578]
+- [stores/migrations/profileSkills][579]
+- [RENAMED][580]
+- [rolesToSkills][581]
+  - [Parameters][582]
+- [skills][583]
+- [][584]
+- [stores/migrations/jobWorkflows][585]
+- [rolesToWorkflows][586]
+  - [Parameters][587]
+- [stores/migrations/modelKeeps][588]
+- [withoutModelKeeps][589]
+  - [Parameters][590]
+- [stores/migrations/allowedProviders][591]
+- [allowedProvidersToPresets][592]
+  - [Parameters][593]
+- [stores/migrations/experimentalSkills][594]
+- [withExperimentalOff][595]
   - [Parameters][596]
-- [written][597]
-- [gathered][598]
-- [failed][599]
-- [][600]
-- [counted][601]
-  - [Parameters][602]
-- [addText][603]
+- [experimentalOffChats][597]
+  - [Parameters][598]
+- [experimentalOffProfiles][599]
+  - [Parameters][600]
+- [stores/migrations/projectViews][601]
+- [VIEW_FIELDS][602]
+- [viewsOffStories][603]
   - [Parameters][604]
-- [addBlob][605]
-  - [Parameters][606]
-- [named][607]
-- [named][608]
-  - [Parameters][609]
-- [ZipEntry][610]
-  - [Properties][611]
-- [isArchive][612]
-  - [Parameters][613]
-- [isZip][614]
-  - [Parameters][615]
-- [readArchive][616]
-  - [Parameters][617]
-- [tables][618]
-- [][619]
-- [entries][620]
-- [dataStart][621]
-  - [Parameters][622]
-- [blobOf][623]
-  - [Parameters][624]
-- [bytesOf][625]
-  - [Parameters][626]
-- [inflateSync][627]
-- [textOf][628]
+- [views][605]
+- [view][606]
+- [view][607]
+  - [Parameters][608]
+- [utils/backupArchive][609]
+- [MANIFEST][610]
+- [BYTES][611]
+  - [BYTES][612]
+  - [BYTES][613]
+- [ENTRY_CHARS][614]
+- [SLICE][615]
+- [GATHER][616]
+- [MOST_BYTES][617]
+- [writeArchive][618]
+  - [Parameters][619]
+- [written][620]
+- [gathered][621]
+- [failed][622]
+- [][623]
+- [counted][624]
+  - [Parameters][625]
+- [addText][626]
+  - [Parameters][627]
+- [addBlob][628]
   - [Parameters][629]
-- [utils/chatTabs][630]
-- [ChatText][631]
-- [CHAT_TEXT_TITLES][632]
-- [chatTabId][633]
-  - [Parameters][634]
-- [chatTabOf][635]
+- [named][630]
+- [named][631]
+  - [Parameters][632]
+- [ZipEntry][633]
+  - [Properties][634]
+- [isArchive][635]
   - [Parameters][636]
-- [match][637]
-- [match][638]
-- [match][639]
-- [utils/chatTitle][640]
-- [DEFAULT_CHAT_TITLE][641]
-- [EARLIER_DEFAULTS][642]
-- [isDefaultChatTitle][643]
-  - [Parameters][644]
-- [shownChatTitle][645]
-  - [Parameters][646]
-- [][647]
-- [plainLine][648]
+- [isZip][637]
+  - [Parameters][638]
+- [readArchive][639]
+  - [Parameters][640]
+- [tables][641]
+- [][642]
+- [entries][643]
+- [dataStart][644]
+  - [Parameters][645]
+- [blobOf][646]
+  - [Parameters][647]
+- [bytesOf][648]
   - [Parameters][649]
-- [plainTitle][650]
-  - [Parameters][651]
-- [plainTitle][652]
-  - [Parameters][653]
-- [chatPreview][654]
-  - [Parameters][655]
-- [utils/compareNames][656]
-- [compareNames][657]
-  - [Parameters][658]
-- [utils/dataUrl][659]
-- [DATA_URL][660]
-- [decodeDataPayload][661]
-  - [Parameters][662]
-- [bytesOfDataUrl][663]
-  - [Parameters][664]
-- [utils/diff][665]
-- [Step][666]
-- [diffSequences][667]
-  - [Parameters][668]
-- [steps][669]
-- [shortestEdit][670]
-  - [Parameters][671]
-- [trace][672]
-- [at][673]
+- [inflateSync][650]
+- [textOf][651]
+  - [Parameters][652]
+- [utils/chatTabs][653]
+- [ChatText][654]
+- [CHAT_TEXT_TITLES][655]
+- [chatTabId][656]
+  - [Parameters][657]
+- [chatTabOf][658]
+  - [Parameters][659]
+- [match][660]
+- [match][661]
+- [match][662]
+- [utils/chatTitle][663]
+- [DEFAULT_CHAT_TITLE][664]
+- [EARLIER_DEFAULTS][665]
+- [isDefaultChatTitle][666]
+  - [Parameters][667]
+- [shownChatTitle][668]
+  - [Parameters][669]
+- [][670]
+- [plainLine][671]
+  - [Parameters][672]
+- [plainTitle][673]
   - [Parameters][674]
-- [deletionsFirst][675]
+- [plainTitle][675]
   - [Parameters][676]
-- [added][677]
-- [Chunk][678]
-  - [Properties][679]
-- [diff3][680]
+- [chatPreview][677]
+  - [Parameters][678]
+- [utils/compareNames][679]
+- [compareNames][680]
   - [Parameters][681]
-- [chunks][682]
-- [matches][683]
-  - [Parameters][684]
-- [pairUp][685]
-  - [Parameters][686]
-- [sharedCount][687]
-  - [Parameters][688]
-- [utils/documentLinks][689]
-- [ELSEWHERE][690]
-- [ELSEWHERE][691]
-- [LinkTree][692]
-  - [Properties][693]
-- [ORDER_PREFIX][694]
-- [UNSAFE_IN_LINK][695]
-- [isDocumentHref][696]
+- [utils/dataUrl][682]
+- [DATA_URL][683]
+- [decodeDataPayload][684]
+  - [Parameters][685]
+- [bytesOfDataUrl][686]
+  - [Parameters][687]
+- [utils/diff][688]
+- [Step][689]
+- [diffSequences][690]
+  - [Parameters][691]
+- [steps][692]
+- [shortestEdit][693]
+  - [Parameters][694]
+- [trace][695]
+- [at][696]
   - [Parameters][697]
-- [unwrap][698]
+- [deletionsFirst][698]
   - [Parameters][699]
-- [pathOf][700]
-  - [Parameters][701]
-- [fileNameOf][702]
-  - [Parameters][703]
-- [stepNameOf][704]
-  - [Parameters][705]
-- [pathNames][706]
+- [added][700]
+- [Chunk][701]
+  - [Properties][702]
+- [diff3][703]
+  - [Parameters][704]
+- [chunks][705]
+- [matches][706]
   - [Parameters][707]
-- [namesOf][708]
+- [pairUp][708]
   - [Parameters][709]
-- [childNamed][710]
+- [sharedCount][710]
   - [Parameters][711]
-- [][712]
-- [walk][713]
-  - [Parameters][714]
-- [resolveLink][715]
-  - [Parameters][716]
-- [documentNamed][717]
-  - [Parameters][718]
-- [found][719]
-- [found][720]
-- [][721]
-- [readableHref][722]
-  - [Parameters][723]
-- [lineage][724]
-  - [Parameters][725]
-- [encodeName][726]
-  - [Parameters][727]
-- [hrefFor][728]
-  - [Parameters][729]
-- [projectHref][730]
-  - [Parameters][731]
-- [utils/documentPath][732]
-- [documentTitles][733]
+- [utils/documentLinks][712]
+- [ELSEWHERE][713]
+- [ELSEWHERE][714]
+- [LinkTree][715]
+  - [Properties][716]
+- [ORDER_PREFIX][717]
+- [UNSAFE_IN_LINK][718]
+- [isDocumentHref][719]
+  - [Parameters][720]
+- [unwrap][721]
+  - [Parameters][722]
+- [pathOf][723]
+  - [Parameters][724]
+- [fileNameOf][725]
+  - [Parameters][726]
+- [stepNameOf][727]
+  - [Parameters][728]
+- [pathNames][729]
+  - [Parameters][730]
+- [namesOf][731]
+  - [Parameters][732]
+- [childNamed][733]
   - [Parameters][734]
-- [documentTitles][735]
-  - [Parameters][736]
-- [documentPath][737]
-  - [Parameters][738]
-- [titleKey][739]
-  - [Parameters][740]
-- [namesake][741]
-  - [Parameters][742]
-- [freeTitle][743]
-  - [Parameters][744]
-- [utils/edits][745]
-- [CONTEXT_STEP][746]
-- [CONTEXT_STEP][747]
-- [occurrences][748]
-  - [Parameters][749]
-- [diffEdit][750]
-  - [Parameters][751]
-- [diffAppend][752]
-  - [Parameters][753]
-- [narrowEdit][754]
-  - [Parameters][755]
-- [reverseEdit][756]
+- [][735]
+- [walk][736]
+  - [Parameters][737]
+- [resolveLink][738]
+  - [Parameters][739]
+- [documentNamed][740]
+  - [Parameters][741]
+- [found][742]
+- [found][743]
+- [][744]
+- [readableHref][745]
+  - [Parameters][746]
+- [lineage][747]
+  - [Parameters][748]
+- [encodeName][749]
+  - [Parameters][750]
+- [hrefFor][751]
+  - [Parameters][752]
+- [projectHref][753]
+  - [Parameters][754]
+- [utils/documentPath][755]
+- [documentTitles][756]
   - [Parameters][757]
-- [applyEdit][758]
+- [documentTitles][758]
   - [Parameters][759]
-- [keepDecisions][760]
+- [documentPath][760]
   - [Parameters][761]
-- [utils/errors][762]
-- [ProviderNotConfiguredError][763]
-  - [Parameters][764]
-- [CommandError][765]
-  - [Parameters][766]
-- [CannotApplyError][767]
-  - [Parameters][768]
-- [AnswerFailedError][769]
-  - [Parameters][770]
-- [SummaryCutShortError][771]
+- [titleKey][762]
+  - [Parameters][763]
+- [namesake][764]
+  - [Parameters][765]
+- [freeTitle][766]
+  - [Parameters][767]
+- [utils/edits][768]
+- [CONTEXT_STEP][769]
+- [CONTEXT_STEP][770]
+- [occurrences][771]
   - [Parameters][772]
-- [failureNotice][773]
+- [diffEdit][773]
   - [Parameters][774]
-- [utils/exportTree][775]
-- [PROJECTS][776]
-- [PROJECTS][777]
-- [PROJECTS][778]
-- [PROJECTS][779]
-- [ExportNode][780]
-  - [Properties][781]
-- [ExportProject][782]
-  - [Properties][783]
-- [Exportable][784]
-  - [Properties][785]
-- [ExportPick][786]
-  - [Properties][787]
-- [][788]
-- [][789]
-- [][790]
-- [][791]
-- [][792]
-- [idIn][793]
-  - [Parameters][794]
-- [idIn][795]
-- [exportTree][796]
+- [diffAppend][775]
+  - [Parameters][776]
+- [narrowEdit][777]
+  - [Parameters][778]
+- [reverseEdit][779]
+  - [Parameters][780]
+- [applyEdit][781]
+  - [Parameters][782]
+- [keepDecisions][783]
+  - [Parameters][784]
+- [utils/errors][785]
+- [ProviderNotConfiguredError][786]
+  - [Parameters][787]
+- [CommandError][788]
+  - [Parameters][789]
+- [CannotApplyError][790]
+  - [Parameters][791]
+- [AnswerFailedError][792]
+  - [Parameters][793]
+- [SummaryCutShortError][794]
+  - [Parameters][795]
+- [failureNotice][796]
   - [Parameters][797]
-- [projectNode][798]
-  - [Parameters][799]
-- [byParent][800]
-- [boxesUnder][801]
-  - [Parameters][802]
-- [documentNodes][803]
-  - [Parameters][804]
-- [settingsNodes][805]
-  - [Parameters][806]
-- [][807]
-- [leavesOf][808]
-  - [Parameters][809]
-- [selectionKeys][810]
-  - [Parameters][811]
-- [keys][812]
-- [keys][813]
-- [keys][814]
-- [keys][815]
-- [keys][816]
-- [visit][817]
-  - [Parameters][818]
-- [visit][819]
+- [utils/exportTree][798]
+- [PROJECTS][799]
+- [PROJECTS][800]
+- [PROJECTS][801]
+- [PROJECTS][802]
+- [ExportNode][803]
+  - [Properties][804]
+- [ExportProject][805]
+  - [Properties][806]
+- [Exportable][807]
+  - [Properties][808]
+- [ExportPick][809]
+  - [Properties][810]
+- [][811]
+- [][812]
+- [][813]
+- [][814]
+- [][815]
+- [idIn][816]
+  - [Parameters][817]
+- [idIn][818]
+- [exportTree][819]
   - [Parameters][820]
-- [tickedLeaves][821]
+- [projectNode][821]
   - [Parameters][822]
-- [afterReading][823]
-  - [Parameters][824]
-- [exportPick][825]
-  - [Parameters][826]
-- [documentsWith][827]
-  - [Parameters][828]
-- [stores/migrations/projectTree][829]
-- [rootIdFor][830]
-  - [Parameters][831]
-- [rootIdFor][832]
-  - [Parameters][833]
-- [manuscriptIdFor][834]
-  - [Parameters][835]
-- [notesIdFor][836]
-  - [Parameters][837]
-- [draftsIdFor][838]
-  - [Parameters][839]
-- [rootNode][840]
+- [byParent][823]
+- [boxesUnder][824]
+  - [Parameters][825]
+- [documentNodes][826]
+  - [Parameters][827]
+- [settingsNodes][828]
+  - [Parameters][829]
+- [][830]
+- [leavesOf][831]
+  - [Parameters][832]
+- [selectionKeys][833]
+  - [Parameters][834]
+- [keys][835]
+- [keys][836]
+- [keys][837]
+- [keys][838]
+- [keys][839]
+- [visit][840]
   - [Parameters][841]
-- [defaultProjectFolders][842]
+- [visit][842]
   - [Parameters][843]
-- [actTitle][844]
+- [tickedLeaves][844]
   - [Parameters][845]
-- [byOrder][846]
+- [afterReading][846]
   - [Parameters][847]
-- [documentsToProjectTree][848]
+- [exportPick][848]
   - [Parameters][849]
-- [byStory][850]
-- [restructured][851]
+- [documentsWith][850]
+  - [Parameters][851]
 - [utils/focus][852]
 - [isTextField][853]
   - [Parameters][854]
@@ -1759,6 +1759,10 @@ Type: [Array][1527]<[Document][1528]>
 
 ## out
 
+Type: [Array][1527]<[Document][1528]>
+
+## out
+
 Type: [Array][1527]\<Message>
 
 ## out
@@ -1775,7 +1779,7 @@ Type: Record<[string][1522], [Array][1527]\<any>>
 
 ## out
 
-Type: [Array][1527]<[Step][666]>
+Type: [Array][1527]<[Step][689]>
 
 ## out
 
@@ -1784,10 +1788,6 @@ Type: [Array][1527]\<T>
 ## out
 
 Type: [Array][1527]<\[[number][1520], [number][1520]]>
-
-## out
-
-Type: [Array][1527]<[Document][1528]>
 
 ## out
 
@@ -2265,6 +2265,161 @@ Type: any
 
 Type: any
 
+## stores/migrations/projectTree
+
+Give every story a root node and a default folder structure.
+
+Acts sat at the top level of a story, which left nowhere to record that they
+are a sequence — `ordered` lives on a folder, and the story record is not a
+folder. A real root node fixes that and gives lore and notes somewhere to
+live later.
+
+Pure, like the parts/scenes transform, so it can be tested without IndexedDB
+and shared between the Dexie upgrade hook and backup restore.
+
+## rootIdFor
+
+### Parameters
+
+- `storyId` &#x20;
+
+## rootIdFor
+
+### Parameters
+
+- `storyId` **[string][1522]**&#x20;
+
+## manuscriptIdFor
+
+### Parameters
+
+- `storyId` **[string][1522]**&#x20;
+
+## notesIdFor
+
+### Parameters
+
+- `storyId` **[string][1522]**&#x20;
+
+## draftsIdFor
+
+### Parameters
+
+- `storyId` **[string][1522]**&#x20;
+
+## folder
+
+Build one of the fixed structural folders.
+
+### Parameters
+
+- `opts` **[object][1521]**&#x20;
+  - `opts.id` **[string][1522]**&#x20;
+  - `opts.storyId` **[string][1522]**&#x20;
+  - `opts.parentId` **[string][1522]**&#x20;
+  - `opts.title` **[string][1522]**&#x20;
+  - `opts.order` **[number][1520]**&#x20;
+  - `opts.ordered` **[boolean][1523]**&#x20;
+  - `opts.now` **[number][1520]**&#x20;
+
+Returns **[Document][1528]**&#x20;
+
+## folder
+
+Build a folder document.
+
+### Parameters
+
+- `opts` **[object][1521]**&#x20;
+  - `opts.id` **[string][1522]**&#x20;
+  - `opts.storyId` **[string][1522]**&#x20;
+  - `opts.parentId` **[string][1522]**&#x20;
+  - `opts.title` **[string][1522]**&#x20;
+  - `opts.order` **[number][1520]**&#x20;
+  - `opts.now` **[number][1520]**&#x20;
+
+Returns **[Document][1528]**&#x20;
+
+## rootNode
+
+The one document a project cannot do without.
+
+It carries the project's name as its title and the story's overview as its
+summary, `"/"` resolves to it, and every path is relative to it. A fixed id
+rather than a generated one, so anything holding a story id can find the
+root without searching.
+
+### Parameters
+
+- `storyId` **[string][1522]**&#x20;
+- `storyTitle` **[string][1522]?** Copied once; the root node's title is its own from then on
+- `now` **[number][1520]?** (optional, default `Date.now()`)
+
+Returns **[Document][1528]**&#x20;
+
+## defaultProjectFolders
+
+The folders the restructure lays down.
+
+A migration shape, not a new project's shape: acts move under `manuscript`,
+so that folder has to exist for a story being restructured, and a story
+carrying lore needs `notes` for it to land in. A _new_ project starts with
+nothing under its root.
+
+### Parameters
+
+- `storyId` **[string][1522]**&#x20;
+- `storyTitle` **[string][1522]** Copied once; the root node's title is its own from then on
+- `now` **[number][1520]?** (optional, default `Date.now()`)
+
+Returns **[Array][1527]<[Document][1528]>** root, manuscript, notes
+
+## actTitle
+
+The title the old outline would have displayed for an untitled act.
+
+### Parameters
+
+- `act` **[Document][1528]**&#x20;
+
+Returns **[string][1522]**&#x20;
+
+## byOrder
+
+Sort helper matching the store's stable ordering.
+
+### Parameters
+
+- `a` **[Document][1528]**&#x20;
+- `b` **[Document][1528]**&#x20;
+
+## documentsToProjectTree
+
+Restructure a flat story into a project tree.
+
+Acts move under `manuscript`, drafts becomes an ordinary top-level folder,
+and anything untitled has the name the old outline computed for it written
+down. Nothing is invented that a user was not already looking at.
+
+Idempotent: a story that already has a root node is returned untouched, so a
+retried upgrade or a re-imported backup cannot double-nest.
+
+### Parameters
+
+- `documents` **[Array][1527]<[Document][1528]>** Every document, across all stories
+- `stories` &#x20;
+- `now` **[number][1520]?** (optional, default `Date.now()`)
+
+Returns **{documents: [Array][1527]<[Document][1528]>, restructured: [Array][1527]<[string][1522]>}** Full document set, and the stories touched
+
+## byStory
+
+Type: [Map][1532]<[string][1522], [Array][1527]<[Document][1528]>>
+
+## restructured
+
+Type: [Array][1527]<[string][1522]>
+
 ## stores/migrations/lore
 
 Fold `lorebooks` and `loreEntries` into the document tree.
@@ -2357,39 +2512,6 @@ picture is no words, its alt text included.
 - `content` **([string][1522] | null | [undefined][1533])** Markdown
 
 Returns **[number][1520]**&#x20;
-
-## folder
-
-Build a folder document.
-
-### Parameters
-
-- `opts` **[object][1521]**&#x20;
-  - `opts.id` **[string][1522]**&#x20;
-  - `opts.storyId` **[string][1522]**&#x20;
-  - `opts.parentId` **[string][1522]**&#x20;
-  - `opts.title` **[string][1522]**&#x20;
-  - `opts.order` **[number][1520]**&#x20;
-  - `opts.now` **[number][1520]**&#x20;
-
-Returns **[Document][1528]**&#x20;
-
-## folder
-
-Build one of the fixed structural folders.
-
-### Parameters
-
-- `opts` **[object][1521]**&#x20;
-  - `opts.id` **[string][1522]**&#x20;
-  - `opts.storyId` **[string][1522]**&#x20;
-  - `opts.parentId` **[string][1522]**&#x20;
-  - `opts.title` **[string][1522]**&#x20;
-  - `opts.order` **[number][1520]**&#x20;
-  - `opts.ordered` **[boolean][1523]**&#x20;
-  - `opts.now` **[number][1520]**&#x20;
-
-Returns **[Document][1528]**&#x20;
 
 ## loreToDocuments
 
@@ -2532,11 +2654,11 @@ Type: [Map][1532]<[string][1522], [Document][1528]>
 
 ## byId
 
-Type: [Map][1532]<[string][1522], [PlacedThread][462]>
+Type: [Map][1532]<[string][1522], [PlacedThread][485]>
 
 ## byId
 
-Type: [Map][1532]<[string][1522], [CommentEntry][491]>
+Type: [Map][1532]<[string][1522], [CommentEntry][514]>
 
 ## byId
 
@@ -3274,7 +3396,7 @@ Type: [Array][1527]<[Node][1529]>
 
 ## children
 
-Type: [Array][1527]<[ExportNode][780]>
+Type: [Array][1527]<[ExportNode][803]>
 
 ## children
 
@@ -3648,7 +3770,7 @@ paragraph.
 
 - `content` **([string][1522] | null | [undefined][1533])**&#x20;
 
-Returns **[ParsedMarkup][357]**&#x20;
+Returns **[ParsedMarkup][380]**&#x20;
 
 ## stack
 
@@ -3672,7 +3794,7 @@ Type: [string][1522]
 
 ## tokens
 
-Type: [Map][1532]<[number][1520], [MarkupToken][353]>
+Type: [Map][1532]<[number][1520], [MarkupToken][376]>
 
 ## runs
 
@@ -3680,7 +3802,7 @@ Type: [Array][1527]\<MarkedRun>
 
 ## runs
 
-Type: [Map][1532]<[string][1522], [Array][1527]<[FoundComment][351]>>
+Type: [Map][1532]<[string][1522], [Array][1527]<[FoundComment][374]>>
 
 ## runs
 
@@ -3688,11 +3810,11 @@ Type: [Map][1532]<[number][1520], [number][1520]>
 
 ## get
 
-Type: [MarkupToken][353]
+Type: [MarkupToken][376]
 
 ## get
 
-Type: [MarkupToken][353]
+Type: [MarkupToken][376]
 
 ## get
 
@@ -3719,21 +3841,21 @@ comment, and spans of one id that touch are one.
 ### Parameters
 
 - `text` **[string][1522]** Without any markup
-- `spans` **[Array][1527]<[Span][383]>**&#x20;
+- `spans` **[Array][1527]<[Span][406]>**&#x20;
 
 Returns **[string][1522]**&#x20;
 
 ## pop
 
-Type: [Span][383]
+Type: [Span][406]
 
 ## pop
 
-Type: [Span][383]
+Type: [Span][406]
 
 ## open
 
-Type: [Array][1527]<[Span][383]>
+Type: [Array][1527]<[Span][406]>
 
 ## open
 
@@ -3781,7 +3903,7 @@ the comments that close there and before those that open.
 
 ### Parameters
 
-- `parsed` **[ParsedMarkup][357]**&#x20;
+- `parsed` **[ParsedMarkup][380]**&#x20;
 - `at` **[number][1520]**&#x20;
 
 Returns **[number][1520]**&#x20;
@@ -3796,7 +3918,7 @@ where they are in it, and gives back what they become.
 
 ### Parameters
 
-- `parsed` **[ParsedMarkup][357]**&#x20;
+- `parsed` **[ParsedMarkup][380]**&#x20;
 - `from` **[number][1520]** In the text without the markup
 - `to` **[number][1520]**&#x20;
 - `change` &#x20;
@@ -3810,7 +3932,7 @@ passages left.
 
 ### Parameters
 
-- `parsed` **[ParsedMarkup][357]**&#x20;
+- `parsed` **[ParsedMarkup][380]**&#x20;
 - `take` &#x20;
 
 Returns **[string][1522]**&#x20;
@@ -3823,7 +3945,7 @@ Every run of every comment in a piece of markdown, in the order they start.
 
 - `content` **([string][1522] | null | [undefined][1533])**&#x20;
 
-Returns **[Array][1527]<[FoundComment][351]>**&#x20;
+Returns **[Array][1527]<[FoundComment][374]>**&#x20;
 
 ## settleComments
 
@@ -3891,11 +4013,11 @@ and is named in what comes back.
 - `old` **[string][1522]** The passage to change, as it reads without them
 - `replacement` **[string][1522]** What it becomes, without them
 
-Returns **{count: [number][1520], old: [string][1522], new: [string][1522], resolved: [Array][1527]<[FoundComment][351]>}** How many times `old` is in the text, and when once, the edit to make
+Returns **{count: [number][1520], old: [string][1522], new: [string][1522], resolved: [Array][1527]<[FoundComment][374]>}** How many times `old` is in the text, and when once, the edit to make
 
 ## lost
 
-Type: [Array][1527]<[FoundComment][351]>
+Type: [Array][1527]<[FoundComment][374]>
 
 ## lost
 
@@ -3903,7 +4025,7 @@ Type: [Set][1526]<[string][1522]>
 
 ## spans
 
-Type: [Array][1527]<[Span][383]>
+Type: [Array][1527]<[Span][406]>
 
 ## rewriteAroundComments
 
@@ -3919,11 +4041,11 @@ more than once, is resolved, and named in what comes back.
 - `content` **[string][1522]** The document as it is, comments and all
 - `body` **[string][1522]** What it becomes
 
-Returns **{body: [string][1522], resolved: [Array][1527]<[FoundComment][351]>}**&#x20;
+Returns **{body: [string][1522], resolved: [Array][1527]<[FoundComment][374]>}**&#x20;
 
 ## placed
 
-Type: [Map][1532]<[string][1522], [Array][1527]<[Span][383]>>
+Type: [Map][1532]<[string][1522], [Array][1527]<[Span][406]>>
 
 ## countComments
 
@@ -4048,17 +4170,17 @@ changed, so a save that touched no comment writes none.
 ### Parameters
 
 - `content` **([string][1522] | null | [undefined][1533])**&#x20;
-- `threads` **([Threads][350] | [undefined][1533])**&#x20;
+- `threads` **([Threads][373] | [undefined][1533])**&#x20;
 
-Returns **([Threads][350] | [undefined][1533])**&#x20;
-
-## next
-
-Type: [Threads][350]
+Returns **([Threads][373] | [undefined][1533])**&#x20;
 
 ## next
 
-Type: [Threads][350]
+Type: [Threads][373]
+
+## next
+
+Type: [Threads][373]
 
 ## next
 
@@ -4074,7 +4196,7 @@ for an id is kept as it is.
 ### Parameters
 
 - `content` **[string][1522]**&#x20;
-- `threads` **([Threads][350] | [undefined][1533])**&#x20;
+- `threads` **([Threads][373] | [undefined][1533])**&#x20;
 - `now` **[number][1520]?** When the moved posts say they were written (optional, default `Date.now()`)
 
 ## withThreadsOnly
@@ -4085,7 +4207,7 @@ left: one pasted from another document, or written by hand.
 ### Parameters
 
 - `content` **[string][1522]**&#x20;
-- `threads` **([Threads][350] | [undefined][1533])**&#x20;
+- `threads` **([Threads][373] | [undefined][1533])**&#x20;
 
 Returns **[string][1522]**&#x20;
 
@@ -4098,7 +4220,7 @@ A suggestion's thread is not a comment's.
 
 ### Parameters
 
-- `threads` **([Threads][350] | [undefined][1533])**&#x20;
+- `threads` **([Threads][373] | [undefined][1533])**&#x20;
 
 Returns **[number][1520]**&#x20;
 
@@ -4179,9 +4301,9 @@ no thread is only taken out.
 ### Parameters
 
 - `content` **([string][1522] | null | [undefined][1533])**&#x20;
-- `threads` **([Threads][350] | [undefined][1533])**&#x20;
+- `threads` **([Threads][373] | [undefined][1533])**&#x20;
 
-Returns **{text: [string][1522], placed: [Array][1527]<[PlacedThread][462]>}**&#x20;
+Returns **{text: [string][1522], placed: [Array][1527]<[PlacedThread][485]>}**&#x20;
 
 ## WIDEN_STEP
 
@@ -4232,15 +4354,15 @@ overlap. In the order they start.
 - `pieces` **[Array][1527]<{node: [Node][1529], pos: [number][1520]}>** In order
 - `type` &#x20;
 
-Returns **[Array][1527]<[CommentRange][472]>**&#x20;
+Returns **[Array][1527]<[CommentRange][495]>**&#x20;
 
 ## ranges
 
-Type: [Array][1527]<[CommentRange][472]>
+Type: [Array][1527]<[CommentRange][495]>
 
 ## going
 
-Type: [Map][1532]<[string][1522], [CommentRange][472]>
+Type: [Map][1532]<[string][1522], [CommentRange][495]>
 
 ## commentRanges
 
@@ -4255,7 +4377,7 @@ passage is part of it, not the end of a run.
 
 - `doc` **[Node][1529]**&#x20;
 
-Returns **[Array][1527]<[CommentRange][472]>**&#x20;
+Returns **[Array][1527]<[CommentRange][495]>**&#x20;
 
 ## pieces
 
@@ -4300,7 +4422,7 @@ Type: [Array][1527]<[Node][1529]>
 
 ## nodes
 
-Type: [Array][1527]<[ExportNode][780]>
+Type: [Array][1527]<[ExportNode][803]>
 
 ## commentAround
 
@@ -4312,7 +4434,7 @@ words, the innermost, and of two as short the one that starts later.
 
 - `$pos` **ResolvedPos**&#x20;
 
-Returns **([CommentRange][472] | null)**&#x20;
+Returns **([CommentRange][495] | null)**&#x20;
 
 ## CommentEntry
 
@@ -4333,9 +4455,9 @@ Entries in the order their comments start, the runs of one id joined.
 
 ### Parameters
 
-- `runs` **[Array][1527]<[CommentEntry][491]>**&#x20;
+- `runs` **[Array][1527]<[CommentEntry][514]>**&#x20;
 
-Returns **[Array][1527]<[CommentEntry][491]>**&#x20;
+Returns **[Array][1527]<[CommentEntry][514]>**&#x20;
 
 ## entriesOf
 
@@ -4345,7 +4467,7 @@ The entries a zip's central directory lists.
 
 - `file` **[Blob][1536]**&#x20;
 
-Returns **[Promise][1537]<[Array][1527]<[ZipEntry][610]>>**&#x20;
+Returns **[Promise][1537]<[Array][1527]<[ZipEntry][633]>>**&#x20;
 
 ## commentsInDoc
 
@@ -4355,7 +4477,7 @@ The comments in an editor document, one entry each.
 
 - `doc` **[Node][1529]**&#x20;
 
-Returns **[Array][1527]<[CommentEntry][491]>**&#x20;
+Returns **[Array][1527]<[CommentEntry][514]>**&#x20;
 
 ## commentsGone
 
@@ -4378,7 +4500,7 @@ gives for the same text, without parsing it.
 
 - `content` **([string][1522] | null | [undefined][1533])**&#x20;
 
-Returns **[Array][1527]<[CommentEntry][491]>**&#x20;
+Returns **[Array][1527]<[CommentEntry][514]>**&#x20;
 
 ## plainPassage
 
@@ -4685,7 +4807,7 @@ Drop every row marked deleted, and the bytes of any file document among them.
 
 - `tables` **Record<[string][1522], [Array][1527]\<any>>** Rows by table name
 
-Returns **[Purged][549]**&#x20;
+Returns **[Purged][572]**&#x20;
 
 ## goneFiles
 
@@ -5119,7 +5241,7 @@ Type: [Array][1527]<[string][1522]>
 
 ## entries
 
-Type: [Array][1527]<[ZipEntry][610]>
+Type: [Array][1527]<[ZipEntry][633]>
 
 ## dataStart
 
@@ -5129,7 +5251,7 @@ field may differ in length from the central directory's.
 ### Parameters
 
 - `file` **[Blob][1536]**&#x20;
-- `entry` **[ZipEntry][610]**&#x20;
+- `entry` **[ZipEntry][633]**&#x20;
 
 ## blobOf
 
@@ -5138,7 +5260,7 @@ An entry's bytes, as a Blob cut from the file: stored, never read.
 ### Parameters
 
 - `file` **[Blob][1536]**&#x20;
-- `entry` **[ZipEntry][610]**&#x20;
+- `entry` **[ZipEntry][633]**&#x20;
 - `type` **[string][1522]**&#x20;
 
 ## bytesOf
@@ -5148,7 +5270,7 @@ An entry's bytes, read and inflated.
 ### Parameters
 
 - `file` **[Blob][1536]**&#x20;
-- `entry` **[ZipEntry][610]**&#x20;
+- `entry` **[ZipEntry][633]**&#x20;
 - `from` **[number][1520]?** Where its data begins, if known
 
 Returns **[Promise][1537]<[Uint8Array][1524]<[ArrayBuffer][1525]>>**&#x20;
@@ -5162,7 +5284,7 @@ Type: [Uint8Array][1524]<[ArrayBuffer][1525]>
 ### Parameters
 
 - `file` **[Blob][1536]**&#x20;
-- `entry` **[ZipEntry][610]**&#x20;
+- `entry` **[ZipEntry][633]**&#x20;
 
 ## utils/chatTabs
 
@@ -5187,7 +5309,7 @@ Type: (`"prompt"` | `"note"` | `"roleplay-prompt"` | `"post-history"`)
 What each tab is called. The roleplay prompt says whose it is, since the
 chat has a system prompt of its own and the tab may sit beside it.
 
-Type: Record<[ChatText][631], [string][1522]>
+Type: Record<[ChatText][654], [string][1522]>
 
 ## chatTabId
 
@@ -5196,7 +5318,7 @@ The tab for one of a chat's texts.
 ### Parameters
 
 - `chatId` **[string][1522]**&#x20;
-- `text` **[ChatText][631]**&#x20;
+- `text` **[ChatText][654]**&#x20;
 
 Returns **[string][1522]**&#x20;
 
@@ -5208,11 +5330,11 @@ The chat and the text a tab holds, or null for a document's tab.
 
 - `tabId` **([string][1522] | null | [undefined][1533])**&#x20;
 
-Returns **({chatId: [string][1522], text: [ChatText][631]} | null)**&#x20;
+Returns **({chatId: [string][1522], text: [ChatText][654]} | null)**&#x20;
 
 ## match
 
-Type: [ChatText][631]
+Type: [ChatText][654]
 
 ## match
 
@@ -5400,11 +5522,11 @@ The steps from `a` to `b`, items compared with `===`.
   - `options.startFirst` **[boolean][1523]?** Set aside what the two share at
     the start before what they share at the end
 
-Returns **([Array][1527]<[Step][666]> | null)** Null when the edit is over `maxEdits`
+Returns **([Array][1527]<[Step][689]> | null)** Null when the edit is over `maxEdits`
 
 ## steps
 
-Type: [Array][1527]<[Step][666]>
+Type: [Array][1527]<[Step][689]>
 
 ## shortestEdit
 
@@ -5421,7 +5543,7 @@ Myers' greedy search for the fewest deletions and insertions between
 - `bHi` **[number][1520]**&#x20;
 - `maxEdits` **[number][1520]**&#x20;
 
-Returns **([Array][1527]<[Step][666]> | null)**&#x20;
+Returns **([Array][1527]<[Step][689]> | null)**&#x20;
 
 ## trace
 
@@ -5485,11 +5607,11 @@ both changed. Items compared with `===`.
   - `options.startFirst` **[boolean][1523]?** Line each side up against the
     base from the start first (`diffSequences`)
 
-Returns **([Array][1527]<[Chunk][678]> | null)** Null when either side's edit is over `maxEdits`
+Returns **([Array][1527]<[Chunk][701]> | null)** Null when either side's edit is over `maxEdits`
 
 ## chunks
 
-Type: [Array][1527]<[Chunk][678]>
+Type: [Array][1527]<[Chunk][701]>
 
 ## matches
 
@@ -5665,7 +5787,7 @@ file whose kind the writer did not know may have wrong.
 
 ### Parameters
 
-- `tree` **[LinkTree][692]**&#x20;
+- `tree` **[LinkTree][715]**&#x20;
 - `folderId` **[string][1522]**&#x20;
 - `name` **[string][1522]**&#x20;
 - `last` **[boolean][1523]**&#x20;
@@ -5684,7 +5806,7 @@ meant the folder it got to.
 
 ### Parameters
 
-- `tree` **[LinkTree][692]**&#x20;
+- `tree` **[LinkTree][715]**&#x20;
 - `folderId` **[string][1522]**&#x20;
 - `names` **[Array][1527]<[string][1522]>**&#x20;
 
@@ -5698,7 +5820,7 @@ document it is in.
 
 ### Parameters
 
-- `tree` **[LinkTree][692]**&#x20;
+- `tree` **[LinkTree][715]**&#x20;
 - `href` **[string][1522]**&#x20;
 - `fromId` **([string][1522] | null)?** The document the link is in. Without one,
   as in a chat, a link is read from the top of the project.
@@ -5713,7 +5835,7 @@ one: a link has to go to one document.
 
 ### Parameters
 
-- `tree` **[LinkTree][692]**&#x20;
+- `tree` **[LinkTree][715]**&#x20;
 - `name` **[string][1522]**&#x20;
 
 Returns **([Document][1528] | null)**&#x20;
@@ -5747,7 +5869,7 @@ itself left out.
 
 ### Parameters
 
-- `tree` **[LinkTree][692]**&#x20;
+- `tree` **[LinkTree][715]**&#x20;
 - `id` **[string][1522]**&#x20;
 
 Returns **[Array][1527]<[Document][1528]>**&#x20;
@@ -5770,7 +5892,7 @@ The link from one document to another, as it is written in the first.
 
 ### Parameters
 
-- `tree` **[LinkTree][692]**&#x20;
+- `tree` **[LinkTree][715]**&#x20;
 - `fromId` **[string][1522]** The document the link goes in
 - `toId` **[string][1522]** The document it goes to
 
@@ -5785,7 +5907,7 @@ another folder, where the link as written would go somewhere else.
 
 ### Parameters
 
-- `tree` **[LinkTree][692]**&#x20;
+- `tree` **[LinkTree][715]**&#x20;
 - `id` **[string][1522]**&#x20;
 
 Returns **[string][1522]**&#x20;
@@ -6144,7 +6266,7 @@ Type: [Object][1521]
 
 - `key` **[string][1522]**&#x20;
 - `label` **[string][1522]**&#x20;
-- `children` **[Array][1527]<[ExportNode][780]>?**&#x20;
+- `children` **[Array][1527]<[ExportNode][803]>?**&#x20;
 - `leaf` **[boolean][1523]?** False on a project not read yet, which has
   children to show once it is, and on one read with nothing in it
 - `selectable` **[boolean][1523]?** False on the line an empty project
@@ -6171,7 +6293,7 @@ Type: [Object][1521]
 
 ### Properties
 
-- `projects` **[Array][1527]<[ExportProject][782]>**&#x20;
+- `projects` **[Array][1527]<[ExportProject][805]>**&#x20;
 - `cards` **[Array][1527]<{id: [string][1522], title: [string][1522]}>**&#x20;
 - `settings` **[Array][1527]<[SettingsItem][1097]>**&#x20;
 
@@ -6229,12 +6351,12 @@ The tree Export shows.
 
 ### Parameters
 
-- `exportable` **[Exportable][784]**&#x20;
+- `exportable` **[Exportable][807]**&#x20;
   - `exportable.projects` &#x20;
   - `exportable.cards` &#x20;
   - `exportable.settings` &#x20;
 
-Returns **[Array][1527]<[ExportNode][780]>** Projects, character cards and settings, each left
+Returns **[Array][1527]<[ExportNode][803]>** Projects, character cards and settings, each left
 out when there is none
 
 ## projectNode
@@ -6244,12 +6366,12 @@ that opens until then. One with neither is a leaf for good.
 
 ### Parameters
 
-- `project` **[ExportProject][782]**&#x20;
+- `project` **[ExportProject][805]**&#x20;
   - `project.id` &#x20;
   - `project.title` &#x20;
   - `project.contents` &#x20;
 
-Returns **[ExportNode][780]**&#x20;
+Returns **[ExportNode][803]**&#x20;
 
 ## byParent
 
@@ -6262,9 +6384,9 @@ none is a leaf, ticked for itself.
 
 ### Parameters
 
-- `node` **[ExportNode][780]**&#x20;
+- `node` **[ExportNode][803]**&#x20;
 
-Returns **[Array][1527]<[ExportNode][780]>**&#x20;
+Returns **[Array][1527]<[ExportNode][803]>**&#x20;
 
 ## documentNodes
 
@@ -6275,7 +6397,7 @@ A folder's documents, in the outline's order, each folder with its own.
 - `folder` **[Document][1528]**&#x20;
 - `byParent` **[Map][1532]<[string][1522], [Array][1527]<[Document][1528]>>**&#x20;
 
-Returns **[Array][1527]<[ExportNode][780]>**&#x20;
+Returns **[Array][1527]<[ExportNode][803]>**&#x20;
 
 ## settingsNodes
 
@@ -6285,7 +6407,7 @@ The settings under a heading per kind, in the order the kinds are listed.
 
 - `items` **[Array][1527]<[SettingsItem][1097]>**&#x20;
 
-Returns **[Array][1527]<[ExportNode][780]>**&#x20;
+Returns **[Array][1527]<[ExportNode][803]>**&#x20;
 
 ##
 
@@ -6297,7 +6419,7 @@ Every leaf of the tree, in order.
 
 ### Parameters
 
-- `nodes` **[Array][1527]<[ExportNode][780]>**&#x20;
+- `nodes` **[Array][1527]<[ExportNode][803]>**&#x20;
 
 Returns **[Array][1527]<[string][1522]>**&#x20;
 
@@ -6308,7 +6430,7 @@ all under it is, partly when some is.
 
 ### Parameters
 
-- `nodes` **[Array][1527]<[ExportNode][780]>**&#x20;
+- `nodes` **[Array][1527]<[ExportNode][803]>**&#x20;
 - `ticked` **[Set][1526]<[string][1522]>** Leaf keys
 
 Returns **TreeSelectionKeys**&#x20;
@@ -6337,7 +6459,7 @@ Type: [WeakMap][1539]<[Node][1529], [string][1522]>
 
 ### Parameters
 
-- `node` **[ExportNode][780]**&#x20;
+- `node` **[ExportNode][803]**&#x20;
 
 Returns **(`"all"` | `"some"` | `"none"`)**&#x20;
 
@@ -6355,7 +6477,7 @@ settings export always has (`pickWithNeeds`).
 
 ### Parameters
 
-- `nodes` **[Array][1527]<[ExportNode][780]>**&#x20;
+- `nodes` **[Array][1527]<[ExportNode][803]>**&#x20;
 - `keys` **TreeSelectionKeys**&#x20;
 - `before` **[Set][1526]<[string][1522]>** The leaves ticked before the click
 - `settings` **[Array][1527]<[SettingsItem][1097]>**&#x20;
@@ -6370,7 +6492,7 @@ becomes everything under it ticked.
 ### Parameters
 
 - `ticked` **[Set][1526]<[string][1522]>**&#x20;
-- `nodes` **[Array][1527]<[ExportNode][780]>** The tree with the project read
+- `nodes` **[Array][1527]<[ExportNode][803]>** The tree with the project read
 - `projectId` **[string][1522]**&#x20;
 
 Returns **[Set][1526]<[string][1522]>**&#x20;
@@ -6381,10 +6503,10 @@ What the boxes ticked choose.
 
 ### Parameters
 
-- `nodes` **[Array][1527]<[ExportNode][780]>**&#x20;
+- `nodes` **[Array][1527]<[ExportNode][803]>**&#x20;
 - `ticked` **[Set][1526]<[string][1522]>**&#x20;
 
-Returns **[ExportPick][786]**&#x20;
+Returns **[ExportPick][809]**&#x20;
 
 ## documentsWith
 
@@ -6398,128 +6520,6 @@ folder above one, and the root, which carries the project's name.
 - `picked` **Iterable<[string][1522]>** The ids of those ticked
 
 Returns **[Array][1527]<[Document][1528]>** In the order they came
-
-## stores/migrations/projectTree
-
-Give every story a root node and a default folder structure.
-
-Acts sat at the top level of a story, which left nowhere to record that they
-are a sequence — `ordered` lives on a folder, and the story record is not a
-folder. A real root node fixes that and gives lore and notes somewhere to
-live later.
-
-Pure, like the parts/scenes transform, so it can be tested without IndexedDB
-and shared between the Dexie upgrade hook and backup restore.
-
-## rootIdFor
-
-### Parameters
-
-- `storyId` &#x20;
-
-## rootIdFor
-
-### Parameters
-
-- `storyId` **[string][1522]**&#x20;
-
-## manuscriptIdFor
-
-### Parameters
-
-- `storyId` **[string][1522]**&#x20;
-
-## notesIdFor
-
-### Parameters
-
-- `storyId` **[string][1522]**&#x20;
-
-## draftsIdFor
-
-### Parameters
-
-- `storyId` **[string][1522]**&#x20;
-
-## rootNode
-
-The one document a project cannot do without.
-
-It carries the project's name as its title and the story's overview as its
-summary, `"/"` resolves to it, and every path is relative to it. A fixed id
-rather than a generated one, so anything holding a story id can find the
-root without searching.
-
-### Parameters
-
-- `storyId` **[string][1522]**&#x20;
-- `storyTitle` **[string][1522]?** Copied once; the root node's title is its own from then on
-- `now` **[number][1520]?** (optional, default `Date.now()`)
-
-Returns **[Document][1528]**&#x20;
-
-## defaultProjectFolders
-
-The folders the restructure lays down.
-
-A migration shape, not a new project's shape: acts move under `manuscript`,
-so that folder has to exist for a story being restructured, and a story
-carrying lore needs `notes` for it to land in. A _new_ project starts with
-nothing under its root.
-
-### Parameters
-
-- `storyId` **[string][1522]**&#x20;
-- `storyTitle` **[string][1522]** Copied once; the root node's title is its own from then on
-- `now` **[number][1520]?** (optional, default `Date.now()`)
-
-Returns **[Array][1527]<[Document][1528]>** root, manuscript, notes
-
-## actTitle
-
-The title the old outline would have displayed for an untitled act.
-
-### Parameters
-
-- `act` **[Document][1528]**&#x20;
-
-Returns **[string][1522]**&#x20;
-
-## byOrder
-
-Sort helper matching the store's stable ordering.
-
-### Parameters
-
-- `a` **[Document][1528]**&#x20;
-- `b` **[Document][1528]**&#x20;
-
-## documentsToProjectTree
-
-Restructure a flat story into a project tree.
-
-Acts move under `manuscript`, drafts becomes an ordinary top-level folder,
-and anything untitled has the name the old outline computed for it written
-down. Nothing is invented that a user was not already looking at.
-
-Idempotent: a story that already has a root node is returned untouched, so a
-retried upgrade or a re-imported backup cannot double-nest.
-
-### Parameters
-
-- `documents` **[Array][1527]<[Document][1528]>** Every document, across all stories
-- `stories` &#x20;
-- `now` **[number][1520]?** (optional, default `Date.now()`)
-
-Returns **{documents: [Array][1527]<[Document][1528]>, restructured: [Array][1527]<[string][1522]>}** Full document set, and the stories touched
-
-## byStory
-
-Type: [Map][1532]<[string][1522], [Array][1527]<[Document][1528]>>
-
-## restructured
-
-Type: [Array][1527]<[string][1522]>
 
 ## utils/focus
 
@@ -6833,7 +6833,7 @@ project for one written from there, from the linking document otherwise.
 
 ### Parameters
 
-- `tree` **[LinkTree][692]**&#x20;
+- `tree` **[LinkTree][715]**&#x20;
 - `path` **[string][1522]** The link's path as it is written
 - `fromId` **[string][1522]**&#x20;
 - `toId` **[string][1522]**&#x20;
@@ -6846,7 +6846,7 @@ Where the links in these documents go now.
 
 ### Parameters
 
-- `tree` **[LinkTree][692]**&#x20;
+- `tree` **[LinkTree][715]**&#x20;
 - `documents` **[Array][1527]<[LinkedText][888]>**&#x20;
 
 Returns **[LinkTargets][890]**&#x20;
@@ -6862,7 +6862,7 @@ still goes where it went, and in the form it was written in.
 
 ### Parameters
 
-- `tree` **[LinkTree][692]**&#x20;
+- `tree` **[LinkTree][715]**&#x20;
 - `href` **[string][1522]** As it is written
 - `fromId` **[string][1522]**&#x20;
 - `target` **([LinkTarget][889] | [undefined][1533])** Where it went
@@ -6877,7 +6877,7 @@ change are left out.
 
 ### Parameters
 
-- `tree` **[LinkTree][692]** As it is now
+- `tree` **[LinkTree][715]** As it is now
 - `documents` **[Array][1527]<[LinkedText][888]>** As they are now
 - `targets` **[LinkTargets][890]** Where their links went, from `linkTargets`
 
@@ -9730,7 +9730,7 @@ comments, suggestions and all.
 - `own` **[Array][1527]<[string][1522]>?** The model's own pending suggestions, oldest first (optional, default `[]`)
 - `fresh` (optional, default `newSuggestionId`)
 
-Returns **([Suggested][268] | null)**&#x20;
+Returns **([Suggested][291] | null)**&#x20;
 
 ## layOut
 
@@ -10663,720 +10663,720 @@ Type: [Array][1527]<[Piece][1510]>
 [135]: #deleted-3
 [136]: #deletedat
 [137]: #deletedat-1
-[138]: #storesmigrationslore
-[139]: #slug
+[138]: #storesmigrationsprojecttree
+[139]: #rootidfor
 [140]: #parameters-35
-[141]: #slug-1
+[141]: #rootidfor-1
 [142]: #parameters-36
-[143]: #categoryfolderidfor
+[143]: #manuscriptidfor
 [144]: #parameters-37
-[145]: #archivefolderidfor
+[145]: #notesidfor
 [146]: #parameters-38
-[147]: #plaintexttohtml
+[147]: #draftsidfor
 [148]: #parameters-39
-[149]: #countwords
+[149]: #folder
 [150]: #parameters-40
-[151]: #countwords-1
+[151]: #folder-1
 [152]: #parameters-41
-[153]: #folder
+[153]: #rootnode
 [154]: #parameters-42
-[155]: #folder-1
+[155]: #defaultprojectfolders
 [156]: #parameters-43
-[157]: #loretodocuments
+[157]: #acttitle
 [158]: #parameters-44
-[159]: #storyidbylorebook
-[160]: #emittedfolders
-[161]: #foldercount
-[162]: #entrycount
-[163]: #nextorder
-[164]: #parameters-45
-[165]: #-2
-[166]: #entry
-[167]: #storesmigrationslastdocument
-[168]: #lastscenetolastdocument
-[169]: #parameters-46
-[170]: #lastscenetolastdocument-1
-[171]: #parameters-47
-[172]: #storesmigrationsoverview
-[173]: #overviewtorootsummary
-[174]: #parameters-48
-[175]: #overviewtorootsummary-1
-[176]: #parameters-49
-[177]: #overviewtorootsummary-2
-[178]: #parameters-50
-[179]: #byid
-[180]: #byid-1
-[181]: #byid-2
-[182]: #byid-3
-[183]: #root
-[184]: #storesmigrationscommandinput
-[185]: #commandargstoinput
-[186]: #parameters-51
-[187]: #commandargstoinput-1
-[188]: #parameters-52
-[189]: #commandargstoinput-2
-[190]: #parameters-53
-[191]: #message
-[192]: #message-1
-[193]: #message-2
-[194]: #message-3
-[195]: #storesmigrationscommandvoice
-[196]: #consulted
-[197]: #consulted-1
-[198]: #commandsintotheirvoice
-[199]: #parameters-54
-[200]: #storesmigrationscharactersigil
-[201]: #commands
-[202]: #commands-1
-[203]: #markcharacters
-[204]: #parameters-55
-[205]: #-3
-[206]: #storesmigrationsturnsegments
-[207]: #tags
-[208]: #tags-1
-[209]: #rendercommand
-[210]: #parameters-56
-[211]: #segmentof
-[212]: #parameters-57
-[213]: #foldturns
-[214]: #parameters-58
-[215]: #bychat
-[216]: #bychat-1
-[217]: #untouched
-[218]: #run
-[219]: #run-1
-[220]: #run-2
-[221]: #storesmigrationsturnruns
-[222]: #cutof
-[223]: #parameters-59
-[224]: #cutof-1
-[225]: #parameters-60
-[226]: #piecesof
-[227]: #parameters-61
-[228]: #piecesof-1
-[229]: #parameters-62
-[230]: #foldchat
-[231]: #parameters-63
-[232]: #foldruns
-[233]: #parameters-64
-[234]: #storesmigrationsmarkdown
-[235]: #htmltomarkdown
-[236]: #parameters-65
-[237]: #htmltomarkdown-1
-[238]: #parameters-66
-[239]: #documentstomarkdown
-[240]: #parameters-67
-[241]: #editorschema
-[242]: #languageof
-[243]: #parameters-68
-[244]: #code_block
-[245]: #-4
-[246]: #kept_source
-[247]: #image
-[248]: #getattribute
-[249]: #getattribute-1
-[250]: #getattribute-2
-[251]: #getattribute-3
-[252]: #strikethrough
-[253]: #alignments
-[254]: #alignmentof
-[255]: #parameters-69
-[256]: #alignmentof-1
-[257]: #parameters-70
-[258]: #cellattrs
-[259]: #parameters-71
-[260]: #breaks
-[261]: #cellcontent
-[262]: #parameters-72
-[263]: #clonenode
-[264]: #table
-[265]: #table_row
-[266]: #table_cell
-[267]: #comment
-[268]: #suggested
-[269]: #parameters-73
-[270]: #getattrs
-[271]: #parameters-74
-[272]: #block_marks
-[273]: #node_names
-[274]: #mark_names
-[275]: #schema
-[276]: #editormarkdown
-[277]: #cellsin
-[278]: #parameters-75
-[279]: #cellsin-1
-[280]: #parameters-76
-[281]: #tokenizerof
-[282]: #block
-[283]: #block-1
-[284]: #top
-[285]: #split
-[286]: #state
-[287]: #parameters-77
-[288]: #state-1
-[289]: #parameters-78
-[290]: #state-2
-[291]: #parameters-79
-[292]: #state-3
-[293]: #parameters-80
-[294]: #state-4
-[295]: #parameters-81
-[296]: #state-5
-[297]: #parameters-82
-[298]: #state-6
-[299]: #parameters-83
-[300]: #-5
-[301]: #-6
-[302]: #tail
-[303]: #room
-[304]: #delimited
-[305]: #spacesasneighbours
-[306]: #parameters-84
-[307]: #children
-[308]: #children-1
-[309]: #children-2
-[310]: #linearserializer
-[311]: #serialize
-[312]: #parameters-85
-[313]: #-7
-[314]: #entity
-[315]: #autolink
-[316]: #escapemore
-[317]: #parameters-86
-[318]: #endsline
-[319]: #parameters-87
-[320]: #withblocksuggestions
-[321]: #parameters-88
-[322]: #withblocksuggestions-1
-[323]: #parameters-89
-[324]: #type
-[325]: #type-1
-[326]: #-8
-[327]: #-9
-[328]: #serializer
-[329]: #-10
-[330]: #-11
-[331]: #cells
-[332]: #rowof
-[333]: #parameters-90
-[334]: #ruleof
-[335]: #parameters-91
-[336]: #parsemarkdown
-[337]: #parameters-92
-[338]: #serializemarkdown
-[339]: #parameters-93
-[340]: #settlemarkdown
-[341]: #parameters-94
-[342]: #appendblocks
-[343]: #parameters-95
-[344]: #storesmigrationscommentthreads
-[345]: #threadsofftext
-[346]: #parameters-96
-[347]: #threadsofftext-1
-[348]: #parameters-97
-[349]: #editorcomments
-[350]: #threads
-[351]: #foundcomment
-[352]: #properties-4
-[353]: #markuptoken
-[354]: #properties-5
-[355]: #open_markup
-[356]: #open_markup-1
-[357]: #parsedmarkup
-[358]: #token_pattern
-[359]: #close_pattern
-[360]: #newcommentid
-[361]: #break_pattern
-[362]: #closemarkup
-[363]: #parameters-98
-[364]: #cleancomment
-[365]: #parameters-99
-[366]: #commentof
-[367]: #parameters-100
-[368]: #parsemarkup
-[369]: #parameters-101
-[370]: #stack
-[371]: #stack-1
-[372]: #pairs
-[373]: #pop
-[374]: #pop-1
-[375]: #tokens
-[376]: #runs
-[377]: #runs-1
-[378]: #runs-2
-[379]: #get
-[380]: #get-1
-[381]: #get-2
-[382]: #get-3
-[383]: #span
-[384]: #rendermarkup
-[385]: #parameters-102
-[386]: #pop-2
-[387]: #pop-3
-[388]: #open
-[389]: #open-1
-[390]: #open-2
-[391]: #open-3
-[392]: #open-4
-[393]: #joinruns
-[394]: #parameters-103
-[395]: #joined
-[396]: #joined-1
-[397]: #last
-[398]: #markupoffset
-[399]: #parameters-104
-[400]: #changestretch
-[401]: #parameters-105
-[402]: #withoutruns
-[403]: #parameters-106
-[404]: #findcomments
-[405]: #parameters-107
-[406]: #settlecomments
-[407]: #parameters-108
-[408]: #withoutcomments
-[409]: #parameters-109
-[410]: #half_pattern
-[411]: #quotewithoutcomments
-[412]: #parameters-110
-[413]: #nearest
-[414]: #parameters-111
-[415]: #editaroundcomments
-[416]: #parameters-112
-[417]: #lost
-[418]: #lost-1
-[419]: #spans
-[420]: #rewritearoundcomments
-[421]: #parameters-113
-[422]: #placed
-[423]: #countcomments
-[424]: #parameters-114
-[425]: #context_chars
-[426]: #newpost
-[427]: #parameters-115
-[428]: #authorof
-[429]: #parameters-116
-[430]: #suggesterof
-[431]: #parameters-117
-[432]: #newthread
-[433]: #parameters-118
-[434]: #placedids
-[435]: #parameters-119
-[436]: #threadstate
-[437]: #parameters-120
-[438]: #wordsaround
-[439]: #parameters-121
-[440]: #suggestionplaced
-[441]: #parameters-122
-[442]: #settlethreads
-[443]: #parameters-123
-[444]: #next
-[445]: #next-1
-[446]: #next-2
-[447]: #liftthreads
-[448]: #parameters-124
-[449]: #withthreadsonly
+[159]: #byorder
+[160]: #parameters-45
+[161]: #documentstoprojecttree
+[162]: #parameters-46
+[163]: #bystory
+[164]: #restructured
+[165]: #storesmigrationslore
+[166]: #slug
+[167]: #parameters-47
+[168]: #slug-1
+[169]: #parameters-48
+[170]: #categoryfolderidfor
+[171]: #parameters-49
+[172]: #archivefolderidfor
+[173]: #parameters-50
+[174]: #plaintexttohtml
+[175]: #parameters-51
+[176]: #countwords
+[177]: #parameters-52
+[178]: #countwords-1
+[179]: #parameters-53
+[180]: #loretodocuments
+[181]: #parameters-54
+[182]: #storyidbylorebook
+[183]: #emittedfolders
+[184]: #foldercount
+[185]: #entrycount
+[186]: #nextorder
+[187]: #parameters-55
+[188]: #-2
+[189]: #entry
+[190]: #storesmigrationslastdocument
+[191]: #lastscenetolastdocument
+[192]: #parameters-56
+[193]: #lastscenetolastdocument-1
+[194]: #parameters-57
+[195]: #storesmigrationsoverview
+[196]: #overviewtorootsummary
+[197]: #parameters-58
+[198]: #overviewtorootsummary-1
+[199]: #parameters-59
+[200]: #overviewtorootsummary-2
+[201]: #parameters-60
+[202]: #byid
+[203]: #byid-1
+[204]: #byid-2
+[205]: #byid-3
+[206]: #root
+[207]: #storesmigrationscommandinput
+[208]: #commandargstoinput
+[209]: #parameters-61
+[210]: #commandargstoinput-1
+[211]: #parameters-62
+[212]: #commandargstoinput-2
+[213]: #parameters-63
+[214]: #message
+[215]: #message-1
+[216]: #message-2
+[217]: #message-3
+[218]: #storesmigrationscommandvoice
+[219]: #consulted
+[220]: #consulted-1
+[221]: #commandsintotheirvoice
+[222]: #parameters-64
+[223]: #storesmigrationscharactersigil
+[224]: #commands
+[225]: #commands-1
+[226]: #markcharacters
+[227]: #parameters-65
+[228]: #-3
+[229]: #storesmigrationsturnsegments
+[230]: #tags
+[231]: #tags-1
+[232]: #rendercommand
+[233]: #parameters-66
+[234]: #segmentof
+[235]: #parameters-67
+[236]: #foldturns
+[237]: #parameters-68
+[238]: #bychat
+[239]: #bychat-1
+[240]: #untouched
+[241]: #run
+[242]: #run-1
+[243]: #run-2
+[244]: #storesmigrationsturnruns
+[245]: #cutof
+[246]: #parameters-69
+[247]: #cutof-1
+[248]: #parameters-70
+[249]: #piecesof
+[250]: #parameters-71
+[251]: #piecesof-1
+[252]: #parameters-72
+[253]: #foldchat
+[254]: #parameters-73
+[255]: #foldruns
+[256]: #parameters-74
+[257]: #storesmigrationsmarkdown
+[258]: #htmltomarkdown
+[259]: #parameters-75
+[260]: #htmltomarkdown-1
+[261]: #parameters-76
+[262]: #documentstomarkdown
+[263]: #parameters-77
+[264]: #editorschema
+[265]: #languageof
+[266]: #parameters-78
+[267]: #code_block
+[268]: #-4
+[269]: #kept_source
+[270]: #image
+[271]: #getattribute
+[272]: #getattribute-1
+[273]: #getattribute-2
+[274]: #getattribute-3
+[275]: #strikethrough
+[276]: #alignments
+[277]: #alignmentof
+[278]: #parameters-79
+[279]: #alignmentof-1
+[280]: #parameters-80
+[281]: #cellattrs
+[282]: #parameters-81
+[283]: #breaks
+[284]: #cellcontent
+[285]: #parameters-82
+[286]: #clonenode
+[287]: #table
+[288]: #table_row
+[289]: #table_cell
+[290]: #comment
+[291]: #suggested
+[292]: #parameters-83
+[293]: #getattrs
+[294]: #parameters-84
+[295]: #block_marks
+[296]: #node_names
+[297]: #mark_names
+[298]: #schema
+[299]: #editormarkdown
+[300]: #cellsin
+[301]: #parameters-85
+[302]: #cellsin-1
+[303]: #parameters-86
+[304]: #tokenizerof
+[305]: #block
+[306]: #block-1
+[307]: #top
+[308]: #split
+[309]: #state
+[310]: #parameters-87
+[311]: #state-1
+[312]: #parameters-88
+[313]: #state-2
+[314]: #parameters-89
+[315]: #state-3
+[316]: #parameters-90
+[317]: #state-4
+[318]: #parameters-91
+[319]: #state-5
+[320]: #parameters-92
+[321]: #state-6
+[322]: #parameters-93
+[323]: #-5
+[324]: #-6
+[325]: #tail
+[326]: #room
+[327]: #delimited
+[328]: #spacesasneighbours
+[329]: #parameters-94
+[330]: #children
+[331]: #children-1
+[332]: #children-2
+[333]: #linearserializer
+[334]: #serialize
+[335]: #parameters-95
+[336]: #-7
+[337]: #entity
+[338]: #autolink
+[339]: #escapemore
+[340]: #parameters-96
+[341]: #endsline
+[342]: #parameters-97
+[343]: #withblocksuggestions
+[344]: #parameters-98
+[345]: #withblocksuggestions-1
+[346]: #parameters-99
+[347]: #type
+[348]: #type-1
+[349]: #-8
+[350]: #-9
+[351]: #serializer
+[352]: #-10
+[353]: #-11
+[354]: #cells
+[355]: #rowof
+[356]: #parameters-100
+[357]: #ruleof
+[358]: #parameters-101
+[359]: #parsemarkdown
+[360]: #parameters-102
+[361]: #serializemarkdown
+[362]: #parameters-103
+[363]: #settlemarkdown
+[364]: #parameters-104
+[365]: #appendblocks
+[366]: #parameters-105
+[367]: #storesmigrationscommentthreads
+[368]: #threadsofftext
+[369]: #parameters-106
+[370]: #threadsofftext-1
+[371]: #parameters-107
+[372]: #editorcomments
+[373]: #threads
+[374]: #foundcomment
+[375]: #properties-4
+[376]: #markuptoken
+[377]: #properties-5
+[378]: #open_markup
+[379]: #open_markup-1
+[380]: #parsedmarkup
+[381]: #token_pattern
+[382]: #close_pattern
+[383]: #newcommentid
+[384]: #break_pattern
+[385]: #closemarkup
+[386]: #parameters-108
+[387]: #cleancomment
+[388]: #parameters-109
+[389]: #commentof
+[390]: #parameters-110
+[391]: #parsemarkup
+[392]: #parameters-111
+[393]: #stack
+[394]: #stack-1
+[395]: #pairs
+[396]: #pop
+[397]: #pop-1
+[398]: #tokens
+[399]: #runs
+[400]: #runs-1
+[401]: #runs-2
+[402]: #get
+[403]: #get-1
+[404]: #get-2
+[405]: #get-3
+[406]: #span
+[407]: #rendermarkup
+[408]: #parameters-112
+[409]: #pop-2
+[410]: #pop-3
+[411]: #open
+[412]: #open-1
+[413]: #open-2
+[414]: #open-3
+[415]: #open-4
+[416]: #joinruns
+[417]: #parameters-113
+[418]: #joined
+[419]: #joined-1
+[420]: #last
+[421]: #markupoffset
+[422]: #parameters-114
+[423]: #changestretch
+[424]: #parameters-115
+[425]: #withoutruns
+[426]: #parameters-116
+[427]: #findcomments
+[428]: #parameters-117
+[429]: #settlecomments
+[430]: #parameters-118
+[431]: #withoutcomments
+[432]: #parameters-119
+[433]: #half_pattern
+[434]: #quotewithoutcomments
+[435]: #parameters-120
+[436]: #nearest
+[437]: #parameters-121
+[438]: #editaroundcomments
+[439]: #parameters-122
+[440]: #lost
+[441]: #lost-1
+[442]: #spans
+[443]: #rewritearoundcomments
+[444]: #parameters-123
+[445]: #placed
+[446]: #countcomments
+[447]: #parameters-124
+[448]: #context_chars
+[449]: #newpost
 [450]: #parameters-125
-[451]: #countopen
+[451]: #authorof
 [452]: #parameters-126
-[453]: #samethread
+[453]: #suggesterof
 [454]: #parameters-127
-[455]: #said
+[455]: #newthread
 [456]: #parameters-128
-[457]: #placethread
+[457]: #placedids
 [458]: #parameters-129
-[459]: #spots
-[460]: #commenton
-[461]: #parameters-130
-[462]: #placedthread
-[463]: #properties-6
-[464]: #readabletext
-[465]: #parameters-131
-[466]: #widen_step
-[467]: #passageintext
-[468]: #parameters-132
-[469]: #-12
-[470]: #withoutcomment
-[471]: #parameters-133
-[472]: #commentrange
-[473]: #runsover
-[474]: #parameters-134
-[475]: #ranges
-[476]: #going
-[477]: #commentranges
-[478]: #parameters-135
-[479]: #pieces
-[480]: #pieces-1
-[481]: #pieces-2
-[482]: #pieces-3
-[483]: #pieces-4
-[484]: #keepcomments
-[485]: #parameters-136
-[486]: #-13
-[487]: #nodes
-[488]: #nodes-1
-[489]: #commentaround
-[490]: #parameters-137
-[491]: #commententry
-[492]: #properties-7
-[493]: #entriesof
-[494]: #parameters-138
-[495]: #entriesof-1
-[496]: #parameters-139
-[497]: #commentsindoc
-[498]: #parameters-140
-[499]: #commentsgone
-[500]: #parameters-141
-[501]: #commentsinmarkdown
-[502]: #parameters-142
-[503]: #plainpassage
-[504]: #parameters-143
-[505]: #closeof
-[506]: #parameters-144
-[507]: #commentcount
-[508]: #commentmarkupplugin
-[509]: #parameters-145
-[510]: #counts
-[511]: #counts-1
-[512]: #countof
-[513]: #parameters-146
-[514]: #countof-1
-[515]: #parameters-147
-[516]: #loose
-[517]: #loose-1
-[518]: #storesmigrationsprofiles
-[519]: #builtinfor
-[520]: #parameters-148
-[521]: #profilefrom
-[522]: #parameters-149
-[523]: #promptstoprofiles
-[524]: #parameters-150
-[525]: #chatstoprofiles
-[526]: #parameters-151
-[527]: #storiestoprofiles
-[528]: #parameters-152
-[529]: #storesmigrationssummariesinplace
-[530]: #stoodfor
-[531]: #parameters-153
-[532]: #stoodfor-1
-[533]: #parameters-154
-[534]: #placechat
-[535]: #parameters-155
-[536]: #targets
-[537]: #targets-1
-[538]: #order
-[539]: #moved
-[540]: #moved-1
-[541]: #parameters-156
-[542]: #summariesintoplace
-[543]: #parameters-157
-[544]: #chats
-[545]: #changed
-[546]: #changed-1
-[547]: #storesmigrationspurgedeleted
-[548]: #flagged_tables
-[549]: #purged
-[550]: #properties-8
-[551]: #withoutdeleted
-[552]: #parameters-158
-[553]: #gonefiles
-[554]: #deletedids
-[555]: #parameters-159
-[556]: #storesmigrationsprofileskills
-[557]: #renamed
-[558]: #rolestoskills
-[559]: #parameters-160
-[560]: #skills
-[561]: #-14
-[562]: #storesmigrationsjobworkflows
-[563]: #rolestoworkflows
-[564]: #parameters-161
-[565]: #storesmigrationsmodelkeeps
-[566]: #withoutmodelkeeps
-[567]: #parameters-162
-[568]: #storesmigrationsallowedproviders
-[569]: #allowedproviderstopresets
-[570]: #parameters-163
-[571]: #storesmigrationsexperimentalskills
-[572]: #withexperimentaloff
-[573]: #parameters-164
-[574]: #experimentaloffchats
-[575]: #parameters-165
-[576]: #experimentaloffprofiles
-[577]: #parameters-166
-[578]: #storesmigrationsprojectviews
-[579]: #view_fields
-[580]: #viewsoffstories
-[581]: #parameters-167
-[582]: #views
-[583]: #view
-[584]: #view-1
-[585]: #parameters-168
-[586]: #utilsbackuparchive
-[587]: #manifest
-[588]: #bytes
-[589]: #bytes-1
-[590]: #bytes-2
-[591]: #entry_chars
-[592]: #slice
-[593]: #gather
-[594]: #most_bytes
-[595]: #writearchive
-[596]: #parameters-169
-[597]: #written
-[598]: #gathered
-[599]: #failed
-[600]: #-15
-[601]: #counted-1
-[602]: #parameters-170
-[603]: #addtext
-[604]: #parameters-171
-[605]: #addblob
-[606]: #parameters-172
-[607]: #named
-[608]: #named-1
-[609]: #parameters-173
-[610]: #zipentry
-[611]: #properties-9
-[612]: #isarchive
-[613]: #parameters-174
-[614]: #iszip
-[615]: #parameters-175
-[616]: #readarchive
-[617]: #parameters-176
-[618]: #tables
-[619]: #-16
-[620]: #entries
-[621]: #datastart
-[622]: #parameters-177
-[623]: #blobof
-[624]: #parameters-178
-[625]: #bytesof
-[626]: #parameters-179
-[627]: #inflatesync
-[628]: #textof
-[629]: #parameters-180
-[630]: #utilschattabs
-[631]: #chattext
-[632]: #chat_text_titles
-[633]: #chattabid
-[634]: #parameters-181
-[635]: #chattabof
-[636]: #parameters-182
-[637]: #match
-[638]: #match-1
-[639]: #match-2
-[640]: #utilschattitle
-[641]: #default_chat_title
-[642]: #earlier_defaults
-[643]: #isdefaultchattitle
-[644]: #parameters-183
-[645]: #shownchattitle
-[646]: #parameters-184
-[647]: #-17
-[648]: #plainline
-[649]: #parameters-185
-[650]: #plaintitle
-[651]: #parameters-186
-[652]: #plaintitle-1
-[653]: #parameters-187
-[654]: #chatpreview
-[655]: #parameters-188
-[656]: #utilscomparenames
-[657]: #comparenames
-[658]: #parameters-189
-[659]: #utilsdataurl
-[660]: #data_url
-[661]: #decodedatapayload
-[662]: #parameters-190
-[663]: #bytesofdataurl
-[664]: #parameters-191
-[665]: #utilsdiff
-[666]: #step
-[667]: #diffsequences
-[668]: #parameters-192
-[669]: #steps
-[670]: #shortestedit
-[671]: #parameters-193
-[672]: #trace
-[673]: #at
-[674]: #parameters-194
-[675]: #deletionsfirst
-[676]: #parameters-195
-[677]: #added
-[678]: #chunk
-[679]: #properties-10
-[680]: #diff3
-[681]: #parameters-196
-[682]: #chunks
-[683]: #matches
-[684]: #parameters-197
-[685]: #pairup
-[686]: #parameters-198
-[687]: #sharedcount
-[688]: #parameters-199
-[689]: #utilsdocumentlinks
-[690]: #elsewhere
-[691]: #elsewhere-1
-[692]: #linktree
-[693]: #properties-11
-[694]: #order_prefix
-[695]: #unsafe_in_link
-[696]: #isdocumenthref
-[697]: #parameters-200
-[698]: #unwrap
-[699]: #parameters-201
-[700]: #pathof
-[701]: #parameters-202
-[702]: #filenameof
-[703]: #parameters-203
-[704]: #stepnameof
-[705]: #parameters-204
-[706]: #pathnames
-[707]: #parameters-205
-[708]: #namesof
-[709]: #parameters-206
-[710]: #childnamed
-[711]: #parameters-207
-[712]: #-18
-[713]: #walk
-[714]: #parameters-208
-[715]: #resolvelink
-[716]: #parameters-209
-[717]: #documentnamed
-[718]: #parameters-210
-[719]: #found
-[720]: #found-1
-[721]: #-19
-[722]: #readablehref
-[723]: #parameters-211
-[724]: #lineage
-[725]: #parameters-212
-[726]: #encodename
-[727]: #parameters-213
-[728]: #hreffor
-[729]: #parameters-214
-[730]: #projecthref
-[731]: #parameters-215
-[732]: #utilsdocumentpath
-[733]: #documenttitles
-[734]: #parameters-216
-[735]: #documenttitles-1
-[736]: #parameters-217
-[737]: #documentpath
-[738]: #parameters-218
-[739]: #titlekey
-[740]: #parameters-219
-[741]: #namesake
-[742]: #parameters-220
-[743]: #freetitle
-[744]: #parameters-221
-[745]: #utilsedits
-[746]: #context_step
-[747]: #context_step-1
-[748]: #occurrences
-[749]: #parameters-222
-[750]: #diffedit
-[751]: #parameters-223
-[752]: #diffappend
-[753]: #parameters-224
-[754]: #narrowedit
-[755]: #parameters-225
-[756]: #reverseedit
+[459]: #threadstate
+[460]: #parameters-130
+[461]: #wordsaround
+[462]: #parameters-131
+[463]: #suggestionplaced
+[464]: #parameters-132
+[465]: #settlethreads
+[466]: #parameters-133
+[467]: #next
+[468]: #next-1
+[469]: #next-2
+[470]: #liftthreads
+[471]: #parameters-134
+[472]: #withthreadsonly
+[473]: #parameters-135
+[474]: #countopen
+[475]: #parameters-136
+[476]: #samethread
+[477]: #parameters-137
+[478]: #said
+[479]: #parameters-138
+[480]: #placethread
+[481]: #parameters-139
+[482]: #spots
+[483]: #commenton
+[484]: #parameters-140
+[485]: #placedthread
+[486]: #properties-6
+[487]: #readabletext
+[488]: #parameters-141
+[489]: #widen_step
+[490]: #passageintext
+[491]: #parameters-142
+[492]: #-12
+[493]: #withoutcomment
+[494]: #parameters-143
+[495]: #commentrange
+[496]: #runsover
+[497]: #parameters-144
+[498]: #ranges
+[499]: #going
+[500]: #commentranges
+[501]: #parameters-145
+[502]: #pieces
+[503]: #pieces-1
+[504]: #pieces-2
+[505]: #pieces-3
+[506]: #pieces-4
+[507]: #keepcomments
+[508]: #parameters-146
+[509]: #-13
+[510]: #nodes
+[511]: #nodes-1
+[512]: #commentaround
+[513]: #parameters-147
+[514]: #commententry
+[515]: #properties-7
+[516]: #entriesof
+[517]: #parameters-148
+[518]: #entriesof-1
+[519]: #parameters-149
+[520]: #commentsindoc
+[521]: #parameters-150
+[522]: #commentsgone
+[523]: #parameters-151
+[524]: #commentsinmarkdown
+[525]: #parameters-152
+[526]: #plainpassage
+[527]: #parameters-153
+[528]: #closeof
+[529]: #parameters-154
+[530]: #commentcount
+[531]: #commentmarkupplugin
+[532]: #parameters-155
+[533]: #counts
+[534]: #counts-1
+[535]: #countof
+[536]: #parameters-156
+[537]: #countof-1
+[538]: #parameters-157
+[539]: #loose
+[540]: #loose-1
+[541]: #storesmigrationsprofiles
+[542]: #builtinfor
+[543]: #parameters-158
+[544]: #profilefrom
+[545]: #parameters-159
+[546]: #promptstoprofiles
+[547]: #parameters-160
+[548]: #chatstoprofiles
+[549]: #parameters-161
+[550]: #storiestoprofiles
+[551]: #parameters-162
+[552]: #storesmigrationssummariesinplace
+[553]: #stoodfor
+[554]: #parameters-163
+[555]: #stoodfor-1
+[556]: #parameters-164
+[557]: #placechat
+[558]: #parameters-165
+[559]: #targets
+[560]: #targets-1
+[561]: #order
+[562]: #moved
+[563]: #moved-1
+[564]: #parameters-166
+[565]: #summariesintoplace
+[566]: #parameters-167
+[567]: #chats
+[568]: #changed
+[569]: #changed-1
+[570]: #storesmigrationspurgedeleted
+[571]: #flagged_tables
+[572]: #purged
+[573]: #properties-8
+[574]: #withoutdeleted
+[575]: #parameters-168
+[576]: #gonefiles
+[577]: #deletedids
+[578]: #parameters-169
+[579]: #storesmigrationsprofileskills
+[580]: #renamed
+[581]: #rolestoskills
+[582]: #parameters-170
+[583]: #skills
+[584]: #-14
+[585]: #storesmigrationsjobworkflows
+[586]: #rolestoworkflows
+[587]: #parameters-171
+[588]: #storesmigrationsmodelkeeps
+[589]: #withoutmodelkeeps
+[590]: #parameters-172
+[591]: #storesmigrationsallowedproviders
+[592]: #allowedproviderstopresets
+[593]: #parameters-173
+[594]: #storesmigrationsexperimentalskills
+[595]: #withexperimentaloff
+[596]: #parameters-174
+[597]: #experimentaloffchats
+[598]: #parameters-175
+[599]: #experimentaloffprofiles
+[600]: #parameters-176
+[601]: #storesmigrationsprojectviews
+[602]: #view_fields
+[603]: #viewsoffstories
+[604]: #parameters-177
+[605]: #views
+[606]: #view
+[607]: #view-1
+[608]: #parameters-178
+[609]: #utilsbackuparchive
+[610]: #manifest
+[611]: #bytes
+[612]: #bytes-1
+[613]: #bytes-2
+[614]: #entry_chars
+[615]: #slice
+[616]: #gather
+[617]: #most_bytes
+[618]: #writearchive
+[619]: #parameters-179
+[620]: #written
+[621]: #gathered
+[622]: #failed
+[623]: #-15
+[624]: #counted-1
+[625]: #parameters-180
+[626]: #addtext
+[627]: #parameters-181
+[628]: #addblob
+[629]: #parameters-182
+[630]: #named
+[631]: #named-1
+[632]: #parameters-183
+[633]: #zipentry
+[634]: #properties-9
+[635]: #isarchive
+[636]: #parameters-184
+[637]: #iszip
+[638]: #parameters-185
+[639]: #readarchive
+[640]: #parameters-186
+[641]: #tables
+[642]: #-16
+[643]: #entries
+[644]: #datastart
+[645]: #parameters-187
+[646]: #blobof
+[647]: #parameters-188
+[648]: #bytesof
+[649]: #parameters-189
+[650]: #inflatesync
+[651]: #textof
+[652]: #parameters-190
+[653]: #utilschattabs
+[654]: #chattext
+[655]: #chat_text_titles
+[656]: #chattabid
+[657]: #parameters-191
+[658]: #chattabof
+[659]: #parameters-192
+[660]: #match
+[661]: #match-1
+[662]: #match-2
+[663]: #utilschattitle
+[664]: #default_chat_title
+[665]: #earlier_defaults
+[666]: #isdefaultchattitle
+[667]: #parameters-193
+[668]: #shownchattitle
+[669]: #parameters-194
+[670]: #-17
+[671]: #plainline
+[672]: #parameters-195
+[673]: #plaintitle
+[674]: #parameters-196
+[675]: #plaintitle-1
+[676]: #parameters-197
+[677]: #chatpreview
+[678]: #parameters-198
+[679]: #utilscomparenames
+[680]: #comparenames
+[681]: #parameters-199
+[682]: #utilsdataurl
+[683]: #data_url
+[684]: #decodedatapayload
+[685]: #parameters-200
+[686]: #bytesofdataurl
+[687]: #parameters-201
+[688]: #utilsdiff
+[689]: #step
+[690]: #diffsequences
+[691]: #parameters-202
+[692]: #steps
+[693]: #shortestedit
+[694]: #parameters-203
+[695]: #trace
+[696]: #at
+[697]: #parameters-204
+[698]: #deletionsfirst
+[699]: #parameters-205
+[700]: #added
+[701]: #chunk
+[702]: #properties-10
+[703]: #diff3
+[704]: #parameters-206
+[705]: #chunks
+[706]: #matches
+[707]: #parameters-207
+[708]: #pairup
+[709]: #parameters-208
+[710]: #sharedcount
+[711]: #parameters-209
+[712]: #utilsdocumentlinks
+[713]: #elsewhere
+[714]: #elsewhere-1
+[715]: #linktree
+[716]: #properties-11
+[717]: #order_prefix
+[718]: #unsafe_in_link
+[719]: #isdocumenthref
+[720]: #parameters-210
+[721]: #unwrap
+[722]: #parameters-211
+[723]: #pathof
+[724]: #parameters-212
+[725]: #filenameof
+[726]: #parameters-213
+[727]: #stepnameof
+[728]: #parameters-214
+[729]: #pathnames
+[730]: #parameters-215
+[731]: #namesof
+[732]: #parameters-216
+[733]: #childnamed
+[734]: #parameters-217
+[735]: #-18
+[736]: #walk
+[737]: #parameters-218
+[738]: #resolvelink
+[739]: #parameters-219
+[740]: #documentnamed
+[741]: #parameters-220
+[742]: #found
+[743]: #found-1
+[744]: #-19
+[745]: #readablehref
+[746]: #parameters-221
+[747]: #lineage
+[748]: #parameters-222
+[749]: #encodename
+[750]: #parameters-223
+[751]: #hreffor
+[752]: #parameters-224
+[753]: #projecthref
+[754]: #parameters-225
+[755]: #utilsdocumentpath
+[756]: #documenttitles
 [757]: #parameters-226
-[758]: #applyedit
+[758]: #documenttitles-1
 [759]: #parameters-227
-[760]: #keepdecisions
+[760]: #documentpath
 [761]: #parameters-228
-[762]: #utilserrors
-[763]: #providernotconfigurederror
-[764]: #parameters-229
-[765]: #commanderror
-[766]: #parameters-230
-[767]: #cannotapplyerror
-[768]: #parameters-231
-[769]: #answerfailederror
-[770]: #parameters-232
-[771]: #summarycutshorterror
-[772]: #parameters-233
-[773]: #failurenotice
-[774]: #parameters-234
-[775]: #utilsexporttree
-[776]: #projects
-[777]: #projects-1
-[778]: #projects-2
-[779]: #projects-3
-[780]: #exportnode
-[781]: #properties-12
-[782]: #exportproject
-[783]: #properties-13
-[784]: #exportable
-[785]: #properties-14
-[786]: #exportpick
-[787]: #properties-15
-[788]: #-20
-[789]: #-21
-[790]: #-22
-[791]: #-23
-[792]: #-24
-[793]: #idin
-[794]: #parameters-235
-[795]: #idin-1
-[796]: #exporttree
-[797]: #parameters-236
-[798]: #projectnode
-[799]: #parameters-237
-[800]: #byparent
-[801]: #boxesunder
-[802]: #parameters-238
-[803]: #documentnodes
-[804]: #parameters-239
-[805]: #settingsnodes
-[806]: #parameters-240
-[807]: #-25
-[808]: #leavesof
-[809]: #parameters-241
-[810]: #selectionkeys
-[811]: #parameters-242
-[812]: #keys
-[813]: #keys-1
-[814]: #keys-2
-[815]: #keys-3
-[816]: #keys-4
-[817]: #visit
-[818]: #parameters-243
-[819]: #visit-1
-[820]: #parameters-244
-[821]: #tickedleaves
-[822]: #parameters-245
-[823]: #afterreading
-[824]: #parameters-246
-[825]: #exportpick-1
-[826]: #parameters-247
-[827]: #documentswith
-[828]: #parameters-248
-[829]: #storesmigrationsprojecttree
-[830]: #rootidfor
-[831]: #parameters-249
-[832]: #rootidfor-1
-[833]: #parameters-250
-[834]: #manuscriptidfor
-[835]: #parameters-251
-[836]: #notesidfor
-[837]: #parameters-252
-[838]: #draftsidfor
-[839]: #parameters-253
-[840]: #rootnode
-[841]: #parameters-254
-[842]: #defaultprojectfolders
-[843]: #parameters-255
-[844]: #acttitle
-[845]: #parameters-256
-[846]: #byorder
-[847]: #parameters-257
-[848]: #documentstoprojecttree
-[849]: #parameters-258
-[850]: #bystory
-[851]: #restructured
+[762]: #titlekey
+[763]: #parameters-229
+[764]: #namesake
+[765]: #parameters-230
+[766]: #freetitle
+[767]: #parameters-231
+[768]: #utilsedits
+[769]: #context_step
+[770]: #context_step-1
+[771]: #occurrences
+[772]: #parameters-232
+[773]: #diffedit
+[774]: #parameters-233
+[775]: #diffappend
+[776]: #parameters-234
+[777]: #narrowedit
+[778]: #parameters-235
+[779]: #reverseedit
+[780]: #parameters-236
+[781]: #applyedit
+[782]: #parameters-237
+[783]: #keepdecisions
+[784]: #parameters-238
+[785]: #utilserrors
+[786]: #providernotconfigurederror
+[787]: #parameters-239
+[788]: #commanderror
+[789]: #parameters-240
+[790]: #cannotapplyerror
+[791]: #parameters-241
+[792]: #answerfailederror
+[793]: #parameters-242
+[794]: #summarycutshorterror
+[795]: #parameters-243
+[796]: #failurenotice
+[797]: #parameters-244
+[798]: #utilsexporttree
+[799]: #projects
+[800]: #projects-1
+[801]: #projects-2
+[802]: #projects-3
+[803]: #exportnode
+[804]: #properties-12
+[805]: #exportproject
+[806]: #properties-13
+[807]: #exportable
+[808]: #properties-14
+[809]: #exportpick
+[810]: #properties-15
+[811]: #-20
+[812]: #-21
+[813]: #-22
+[814]: #-23
+[815]: #-24
+[816]: #idin
+[817]: #parameters-245
+[818]: #idin-1
+[819]: #exporttree
+[820]: #parameters-246
+[821]: #projectnode
+[822]: #parameters-247
+[823]: #byparent
+[824]: #boxesunder
+[825]: #parameters-248
+[826]: #documentnodes
+[827]: #parameters-249
+[828]: #settingsnodes
+[829]: #parameters-250
+[830]: #-25
+[831]: #leavesof
+[832]: #parameters-251
+[833]: #selectionkeys
+[834]: #parameters-252
+[835]: #keys
+[836]: #keys-1
+[837]: #keys-2
+[838]: #keys-3
+[839]: #keys-4
+[840]: #visit
+[841]: #parameters-253
+[842]: #visit-1
+[843]: #parameters-254
+[844]: #tickedleaves
+[845]: #parameters-255
+[846]: #afterreading
+[847]: #parameters-256
+[848]: #exportpick-1
+[849]: #parameters-257
+[850]: #documentswith
+[851]: #parameters-258
 [852]: #utilsfocus
 [853]: #istextfield
 [854]: #parameters-259

@@ -521,6 +521,30 @@ describe('DocumentTree project menu', () => {
     expect(labels).toEqual(['Project settings', 'Export project', 'Delete project'])
   })
 
+  it('opens the project’s settings, and its sharing, in the settings', async () => {
+    const { useSettingsPanel } = await import('@/composables/useSettingsPanel.js')
+    const panel = useSettingsPanel()
+    cloud.account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
+    try {
+      const wrapper = mountTree()
+      await flushPromises()
+
+      projectCommand(wrapper, 'Project settings')
+      expect(panel.visible.value).toBe(true)
+      expect(panel.takeSection()).toBe('project')
+      expect(panel.takePart()).toBeNull()
+
+      panel.close()
+      projectCommand(wrapper, 'Share…')
+      expect(panel.visible.value).toBe(true)
+      expect(panel.takeSection()).toBe('project')
+      expect(panel.takePart()).toBe('sharing')
+    } finally {
+      panel.close()
+      cloud.account.value = null
+    }
+  })
+
   it('has the projects menu at the start of the header, for the project open, before the Outline title', () => {
     const wrapper = mountTree()
     const header = wrapper.findComponent({ name: 'PanelHeader' })

@@ -16,7 +16,7 @@
       />
       <Select
         v-else
-        :model-value="activePresetId"
+        :model-value="shownPresetId"
         :options="presets"
         option-label="name"
         option-value="id"
@@ -24,7 +24,7 @@
         aria-label="Preset"
         class="flex-1 min-w-0 dark:!bg-surface-900"
         size="small"
-        @update:model-value="aiConfig.setActiveAIPreset($event)"
+        @update:model-value="aiConfig.showPreset($event)"
       />
       <Button
         v-tooltip.top="'Preset actions'"
@@ -45,7 +45,9 @@
 
 <script setup>
 /**
- * Which AI preset is in use, and the three things you can do to one.
+ * Which AI preset is shown to edit, and the three things you can do to one.
+ * Showing one makes it nothing else: a chat picks the preset it runs on, and
+ * Settings › System › Chats the one chats run on otherwise.
  *
  * A dropdown and a menu rather than a row of buttons: naming a preset is rare
  * enough that a text box standing open for it is a text box in the way, and
@@ -61,8 +63,8 @@ import { useAIConfig } from '@/composables/useAIConfig'
 const aiConfig = useAIConfig()
 
 const presets = computed(() => aiConfig.presets.value)
-const activePreset = computed(() => aiConfig.activeAIPreset.value)
-const activePresetId = computed(() => activePreset.value?.id || null)
+const shownPreset = computed(() => aiConfig.shownPreset.value)
+const shownPresetId = computed(() => shownPreset.value?.id || null)
 
 /** @type {import('vue').Ref<any>} */
 const menu = ref(null)
@@ -74,11 +76,11 @@ const draftName = ref('')
 // The default preset is undeletable in the store, and the last one standing
 // would leave nothing to switch to.
 const canDelete = computed(
-  () => !!activePreset.value && !activePreset.value.isDefault && presets.value.length > 1
+  () => !!shownPreset.value && !shownPreset.value.isDefault && presets.value.length > 1
 )
 
 const startRename = async () => {
-  draftName.value = activePreset.value?.name || ''
+  draftName.value = shownPreset.value?.name || ''
   renaming.value = true
   await nextTick()
   renameInput.value?.$el?.focus?.()
@@ -90,8 +92,8 @@ const commitRename = () => {
   if (!renaming.value) return
   renaming.value = false
   const name = draftName.value.trim()
-  if (!activePreset.value || !name || name === activePreset.value.name) return
-  aiConfig.updatePreset(activePreset.value.id, { name })
+  if (!shownPreset.value || !name || name === shownPreset.value.name) return
+  aiConfig.updatePreset(shownPreset.value.id, { name })
 }
 
 const menuItems = computed(() => [
@@ -102,7 +104,7 @@ const menuItems = computed(() => [
     // preset is the same setup pointed at another model. Its name is the first
     // thing to change, so it opens for that, as a rename does.
     command: () => {
-      aiConfig.createPreset(`${activePreset.value?.name || 'Preset'} copy`)
+      aiConfig.createPreset(`${shownPreset.value?.name || 'Preset'} copy`)
       return startRename()
     },
   },
@@ -111,7 +113,7 @@ const menuItems = computed(() => [
     label: 'Delete preset',
     icon: 'pi pi-trash',
     disabled: !canDelete.value,
-    command: () => canDelete.value && aiConfig.deletePreset(activePresetId.value),
+    command: () => canDelete.value && aiConfig.deletePreset(shownPresetId.value),
   },
 ])
 </script>

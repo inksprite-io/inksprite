@@ -17,7 +17,7 @@ const providers = { or: { id: 'or', type: 'openrouter' }, local: { id: 'local', 
 const updatePreset = vi.fn()
 vi.mock('@/composables/useAIConfig', () => ({
   useAIConfig: () => ({
-    activeAIPreset: preset,
+    shownPreset: preset,
     getProvider: id => providers[id] || null,
     updatePreset,
   }),

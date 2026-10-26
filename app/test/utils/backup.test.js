@@ -221,7 +221,9 @@ describe('validateBackup', () => {
   it('sends a whole backup to Import in the settings', () => {
     const { ok, errors } = validateBackup(validBackup(), 2, 'chat')
     expect(ok).toBe(false)
-    expect(errors.join(' ')).toContain('Restore it with Import in Settings › System › Data')
+    expect(errors.join(' ')).toContain(
+      'Restore it with Import in Settings › Sync and sharing › Backup'
+    )
   })
 
   it('sends a project file to Import project', () => {
@@ -959,7 +961,7 @@ describe('a selection', () => {
       tables: {},
     }
     expect(validateBackup(file, 1, 'project').errors).toEqual([
-      'This file holds projects and settings, not one project. Import it with Import in Settings › System › Data.',
+      'This file holds projects and settings, not one project. Import it with Import in Settings › Sync and sharing › Backup.',
     ])
   })
 })

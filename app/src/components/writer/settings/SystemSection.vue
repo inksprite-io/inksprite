@@ -158,6 +158,25 @@
             @update:model-value="applicationState.setChatProfileId"
           />
         </div>
+        <div class="flex flex-col gap-1">
+          <label
+            for="chat-preset"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Default preset</label
+          >
+          <Select
+            input-id="chat-preset"
+            :model-value="aiConfig.activeAIPresetId.value"
+            :options="aiConfig.presets.value"
+            option-label="name"
+            option-value="id"
+            aria-label="Default preset"
+            class="w-full dark:!bg-surface-900"
+            size="small"
+            data-chat-preset
+            @update:model-value="aiConfig.setActiveAIPreset"
+          />
+        </div>
         <div class="flex items-center justify-between gap-2">
           <label
             for="ask-before-exploring"
@@ -174,26 +193,6 @@
         </div>
       </div>
     </ExpandableSection>
-
-    <ExpandableSection
-      title="Data"
-      storage-key="ui.settings.data"
-      subsection
-      container-class="pt-2"
-      content-wrapper-class="flex flex-col"
-    >
-      <DataSection />
-    </ExpandableSection>
-
-    <ExpandableSection
-      title="Sync"
-      storage-key="ui.settings.sync"
-      subsection
-      container-class="pt-2"
-      content-wrapper-class="flex flex-col"
-    >
-      <SyncSection />
-    </ExpandableSection>
   </div>
 </template>
 
@@ -201,13 +200,12 @@
 import { computed, ref } from 'vue'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
-import DataSection from './DataSection.vue'
-import SyncSection from './SyncSection.vue'
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
 import Button from 'primevue/button'
 import DictionaryDialog from './DictionaryDialog.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useProfiles } from '@/composables/useProfiles'
+import { useAIConfig } from '@/composables/useAIConfig'
 import { useMessagesStore } from '@/stores/messagesStore'
 import { DIALECTS } from '@/spelling/dialects.js'
 import { hasTouchKeyboard } from '@/utils/touch.js'
@@ -224,6 +222,10 @@ const { profiles } = profilesApi
 // The profile new chats start on, as the picker shows it: the NSFW switch puts
 // a built-in's counterpart in its place, as it does in a chat.
 const chatProfile = computed(() => profilesApi.getProfile(profilesApi.chatDefaultId())?.id)
+
+// The default preset: what a chat runs on when neither it nor its profile names
+// one, and a workflow or a job with no provider of its own.
+const aiConfig = useAIConfig()
 
 // Switched off, it forgets what it kept. A saved request is as large as the
 // conversation behind it, and in a long chat kept with it on they came to most

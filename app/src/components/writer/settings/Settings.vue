@@ -11,10 +11,14 @@ import SkillsSection from './SkillsSection.vue'
 import ConnectionsSection from './ConnectionsSection.vue'
 import MagicBookIcon from '@/components/icons/MagicBookIcon.vue'
 import SystemSection from './SystemSection.vue'
+import SyncSection from './SyncSection.vue'
+import ProjectSection from './ProjectSection.vue'
 import AboutSection from './AboutSection.vue'
 import ExtensionsSection from './ExtensionsSection.vue'
 import ExtensionsIcon from '@/components/icons/ExtensionsIcon.vue'
 import SettingsIcon from '@/components/icons/SettingsIcon.vue'
+import CloudIcon from '@/components/icons/CloudIcon.vue'
+import StoryboardIcon from '@/components/icons/StoryboardIcon.vue'
 import BookIcon from '@/components/icons/BookIcon.vue'
 import AiNetworkIcon from '@/components/icons/AiNetworkIcon.vue'
 import NetworkIcon from '@/components/icons/NetworkIcon.vue'
@@ -25,14 +29,29 @@ import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { sessionStorage } from '@/utils/sessionStorage'
 
 /**
- * App-wide settings, a section at a time. Reopens on the section last looked
- * at, unless whoever opened them asked for another. With the AI switched off,
- * the sections that are only the AI's are not there, and one of them last
- * looked at opens on the first. System has the switch.
+ * The settings, a section at a time: the app's, and the project open's in a
+ * section of its own, which is there only while one is open. Reopens on the
+ * section last looked at, unless whoever opened them asked for another. With
+ * the AI switched off, the sections that are only the AI's are not there,
+ * and one of them last looked at opens on the first. System has the switch.
+ *
+ * @typedef {Object} Props
+ * @property {string} [storyId] - The project open, if one is
  */
+const props = defineProps({
+  storyId: { type: String, default: '' },
+})
 
 const SECTIONS = [
   { id: 'system', label: 'System', icon: SettingsIcon, component: SystemSection },
+  { id: 'sync', label: 'Sync and sharing', icon: CloudIcon, component: SyncSection },
+  {
+    id: 'project',
+    label: 'Project',
+    icon: StoryboardIcon,
+    component: ProjectSection,
+    project: true,
+  },
   { id: 'ai', label: 'AI', icon: AiNetworkIcon, component: AiConfigSection, ai: true },
   {
     id: 'workflows',
@@ -63,7 +82,15 @@ const SECTIONS = [
 const { aiEnabled } = useApplicationState()
 
 const sections = computed(() =>
-  aiEnabled.value ? SECTIONS : SECTIONS.filter(section => !section.ai)
+  SECTIONS.filter(
+    section => (aiEnabled.value || !section.ai) && (props.storyId || !section.project)
+  )
+    // The project's is keyed on it, so that another project's opens fresh.
+    .map(section =>
+      section.project
+        ? { ...section, props: { storyId: props.storyId, key: props.storyId } }
+        : section
+    )
 )
 
 const STORAGE_KEY = 'ui.settings.section'

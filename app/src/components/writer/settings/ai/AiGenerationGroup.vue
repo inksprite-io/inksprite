@@ -130,8 +130,8 @@ const aiConfig = useAIConfig()
 // Only what the preset's model takes, and the effort it would be sent: a
 // level it lacks reads as the nearest it has, and stays stored as chosen.
 const capabilities = useModelCapabilities(
-  () => aiConfig.activeAIPreset.value?.providerId,
-  () => aiConfig.activeAIPreset.value?.model
+  () => aiConfig.shownPreset.value?.providerId,
+  () => aiConfig.shownPreset.value?.model
 )
 const effortOptions = computed(() =>
   REASONING_EFFORT_OPTIONS.filter(option => capabilities.value.efforts.includes(option.value))
@@ -140,10 +140,10 @@ const effort = computed(() => fitEffort(effective.value.reasoningEffort, capabil
 
 // Presets saved before this setting existed have no flag; treat them as
 // allowing tools, which is what they did.
-const toolsEnabled = computed(() => aiConfig.activeAIPreset.value?.toolsEnabled !== false)
+const toolsEnabled = computed(() => aiConfig.shownPreset.value?.toolsEnabled !== false)
 
 const setToolsEnabled = enabled => {
-  const preset = aiConfig.activeAIPreset.value
+  const preset = aiConfig.shownPreset.value
   if (preset) aiConfig.updatePreset(preset.id, { toolsEnabled: enabled })
 }
 </script>

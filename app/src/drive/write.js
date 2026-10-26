@@ -35,13 +35,16 @@
  * with merged cells changing shape, or a row, column or table deleted that
  * holds what the document cannot show; a list item's kind or nesting
  * changed; a footnote added or removed; an edit in a paragraph with a
- * newline or a change of style suggested; a block inside a list or a quote
- * that a Doc's paragraphs cannot be. See `.llm/google_docs_design.md`, part 3.
- * The words a suggestion puts in are held, as a picture is, and those it
- * takes out are words as they stand, so the writer writes around them.
+ * change of style suggested; a paragraph's end or style changed beside a
+ * newline suggested; a block inside a list or a quote that a Doc's
+ * paragraphs cannot be. See `.llm/google_docs_design.md`, part 3. The words
+ * a suggestion puts in are held, as a picture is, a newline among them, and
+ * those it takes out are words as they stand, so the writer writes around
+ * them.
  */
 
 import { applyRequests } from './apply.js'
+import { NO_LINKS } from './links.js'
 import { MONOSPACED, readDoc, tabsOf } from './convert.js'
 import { shapeTables } from './shape.js'
 import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
@@ -49,10 +52,12 @@ import { suggestionsIn } from '@/editor/suggestions.js'
 import { diffSequences, deletionsFirst } from '@/utils/diff.js'
 import { schema } from '@/editor/schema.js'
 import { pictureOf } from '@/utils/pictures.js'
+import { isDocumentHref } from '@/utils/documentLinks.js'
 import { Fragment } from 'prosemirror-model'
 
 /**
  * @typedef {import('prosemirror-model').Node} Node
+ * @typedef {import('prosemirror-model').NodeType} NodeType
  * @typedef {import('./docsTypes.js').Document} Document
  * @typedef {import('./docsTypes.js').DocumentTab} DocumentTab
  * @typedef {import('./docsTypes.js').StructuralElement} StructuralElement
@@ -131,6 +136,11 @@ import { Fragment } from 'prosemirror-model'
  * @property {string} named - Its named style
  * @property {boolean} bullet
  * @property {boolean} suggested - A suggested edit touches it
+ * @property {boolean} [heldEnd] - Its newline is one a suggestion put in,
+ *   held as the suggestion's words are, so it never goes whole
+ * @property {boolean} [ends] - A newline suggested touches it, its own or
+ *   the one before it: its words are written around it, but not its end,
+ *   nor its style, until the suggestion is settled
  * @property {boolean} protects - It holds what a deletion leaves: a picture,
  *   a break, an equation
  * @property {boolean} beforeBlock - A table, a table of contents or a
@@ -221,14 +231,20 @@ const NO_LOOK = /** @type {Look} */ ({
  * @param {Record<string, import('@/types/models.js').PictureInfo>} [options.pictures]
  *   - The document's pictures, by name, as its row has them: those with the
  *   Doc's id are the Doc's
+ * @param {import('./links.js').DocLinks} [options.links] - Which links to
+ *   the project's documents can go, as links to their Docs: those to a
+ *   document with none go as their words alone. None can when absent.
  * @returns {Written}
  */
-export function writeDoc(document, target, { tabId, pictures = {} } = {}) {
+export function writeDoc(document, target, { tabId, pictures = {}, links = NO_LINKS } = {}) {
   const read = readDoc(document, { tabId })
   const { revisionId } = read
   const tab = tabOf(document, read.tabId)
   if (!read.spans || !tab?.documentTab) return { requests: [], unsent: ['layout'], revisionId }
-  const settled = withoutEmpty(withoutComments(parseMarkdown(serializeMarkdown(target))))
+  const settled = withoutLinksTo(
+    nestedAsTop(withoutEmpty(withoutComments(parseMarkdown(serializeMarkdown(target))))),
+    href => isDocumentHref(href) && !links.there(href)
+  )
   // Suggestions go as suggestions, never as their markup.
   if (suggestionsIn(settled).length > 0)
     throw new Error('A suggestion’s markup would reach the Doc')
@@ -250,9 +266,224 @@ export function writeDoc(document, target, { tabId, pictures = {} } = {}) {
   const spans = now.read.spans
   const documentTab = now.tab?.documentTab
   if (!spans || !documentTab) return { requests: [], unsent: ['table'], revisionId }
-  const writer = new Writer(documentTab, now.read.doc, spans, now.read.tabId, pictures)
+  // Read as it is written, a nested list of another kind than its top's.
+  const theirs = nestedAsTop(now.read.doc)
+  const writer = new Writer(documentTab, theirs, spans, now.read.tabId, pictures)
   const words = writer.write(settled)
-  return { requests: [...shaped.requests, ...words.requests], unsent: words.unsent, revisionId }
+  const requests = [...shaped.requests, ...words.requests]
+  const lists = listsRemade(document, settled, requests, read.tabId)
+  return {
+    requests: [...requests, ...lists.requests],
+    unsent: [...new Set([...words.unsent, ...lists.unsent])],
+    revisionId,
+  }
+}
+
+/**
+ * The requests that make again each list the others leave reading
+ * otherwise than the document: nested otherwise, of another kind, or in
+ * pieces. Docs nests a paragraph by the tabs before it as its bullet is
+ * made, and takes them out, so a list's bullets are taken off and made
+ * again over it whole, a tab before each item for each level it is below
+ * the top. Which lists those are, and where they are, is asked of the Doc
+ * standing in (`drive/apply`) after the others.
+ *
+ * @param {Document} document
+ * @param {Node} target - As written
+ * @param {object[]} requests - The others
+ * @param {string} tabId
+ * @returns {{requests: object[], unsent: Unsent[]}}
+ */
+function listsRemade(document, target, requests, tabId) {
+  const ours = textblocksOf(target)
+  if (!ours.some(block => block.item)) return { requests: [], unsent: [] }
+  let made
+  try {
+    made = applyRequests(document, requests, { tabId })
+  } catch {
+    return { requests: [], unsent: ['list'] }
+  }
+  const read = readDoc(made, { tabId })
+  const body = tabOf(made, read.tabId)?.documentTab?.body?.content
+  if (!read.spans || !body) return { requests: [], unsent: ['list'] }
+  const theirs = textblocksOf(read.doc)
+  /** @type {Map<number, number>} Each textblock's newline, by where it ends */
+  const ends = new Map(
+    read.spans.flatMap(span =>
+      span.kind === 'end' && !span.segment ? [[span.pos, span.index]] : []
+    )
+  )
+  /** @type {Map<number, {start: number, list: string|undefined}>} The Doc's paragraphs, by their newline */
+  const paragraphs = new Map(
+    body.flatMap(element =>
+      element.paragraph
+        ? [
+            [
+              (element.endIndex ?? 1) - 1,
+              { start: element.startIndex ?? 0, list: element.paragraph.bullet?.listId },
+            ],
+          ]
+        : []
+    )
+  )
+  /** @type {Map<number, number>} The Doc's textblock for each of ours with the same words */
+  const pairs = new Map()
+  for (const step of diffSequences(
+    theirs.map(block => block.text),
+    ours.map(block => block.text)
+  ) ?? []) {
+    if (step.op === 'equal') pairs.set(step.b, step.a)
+  }
+
+  /** @type {Map<number, number[]>} Our list items, by their list */
+  const lists = new Map()
+  ours.forEach((block, i) => {
+    if (block.item) lists.set(block.item.list, [...(lists.get(block.item.list) ?? []), i])
+  })
+  /** @type {Set<Unsent>} */
+  const unsent = new Set()
+  /** @type {Array<{items: Array<{start: number, end: number, depth: number}>, ordered: boolean}>} */
+  const remade = []
+  for (const items of lists.values()) {
+    const found = items.map(i => {
+      const block = theirs[pairs.get(i) ?? -1]
+      const end = block && ends.get(block.end)
+      const paragraph = end === undefined ? undefined : paragraphs.get(end)
+      return block && end !== undefined && paragraph ? { block, end, paragraph } : null
+    })
+    // A Doc nests nine levels at most.
+    const deepest = Math.max(...items.map(i => /** @type {ListPlace} */ (ours[i].item).depth))
+    if (found.some(each => !each) || deepest > 8) {
+      unsent.add('list')
+      continue
+    }
+    const all = /** @type {Array<NonNullable<(typeof found)[number]>>} */ (found)
+    const list = all[0].block.item?.list
+    const read =
+      all.every(({ block }, k) => {
+        const wanted = /** @type {ListPlace} */ (ours[items[k]].item)
+        return (
+          !!block.item &&
+          block.item.list === list &&
+          block.item.depth === wanted.depth &&
+          block.item.ordered === wanted.ordered
+        )
+      }) &&
+      theirs.filter(block => block.item && block.item.list === list).length === items.length &&
+      new Set(all.map(({ paragraph }) => paragraph.list)).size === 1
+    if (read) continue
+    remade.push({
+      items: all.map(({ end, paragraph }, k) => ({
+        start: paragraph.start,
+        end,
+        depth: /** @type {ListPlace} */ (ours[items[k]].item).depth,
+      })),
+      ordered: /** @type {ListPlace} */ (ours[items[0]].item).ordered,
+    })
+  }
+
+  /** @param {number} start @param {number} end */
+  const range = (start, end) => ({ startIndex: start, endIndex: end, ...(tabId && { tabId }) })
+  /** @type {object[]} */
+  const out = []
+  // The last first, so that the tabs put in move none of those before.
+  for (const { items, ordered } of remade.sort((a, b) => b.items[0].start - a.items[0].start)) {
+    const start = items[0].start
+    const last = /** @type {(typeof items)[number]} */ (items.at(-1)).end
+    out.push(
+      { deleteParagraphBullets: { range: range(start, last + 1) } },
+      {
+        updateParagraphStyle: {
+          range: range(start, last + 1),
+          paragraphStyle: {},
+          fields: 'indentStart,indentFirstLine',
+        },
+      }
+    )
+    let tabs = 0
+    for (const item of [...items].reverse()) {
+      if (item.depth === 0) continue
+      out.push({
+        insertText: {
+          text: '\t'.repeat(item.depth),
+          location: { index: item.start, ...(tabId && { tabId }) },
+        },
+      })
+      tabs += item.depth
+    }
+    out.push({
+      createParagraphBullets: {
+        range: range(start, last + 1 + tabs),
+        bulletPreset: presetOf({ kind: 'list', ordered }),
+      },
+    })
+    // What is between its items, spacing the Doc holds, has no bullet.
+    let moved = 0
+    for (const [end, paragraph] of [...paragraphs].sort((a, b) => a[0] - b[0])) {
+      if (end < start || end > last) continue
+      const item = items.find(each => each.end === end)
+      if (item) moved += item.depth
+      else {
+        out.push({
+          deleteParagraphBullets: {
+            range: range(paragraph.start + moved, end + moved + 1),
+          },
+        })
+      }
+    }
+  }
+  return { requests: out, unsent: [...unsent] }
+}
+
+/**
+ * Where a list item is: its list, the top one by its place among them, how
+ * deep it is there, and the kind of the top one.
+ *
+ * @typedef {{list: number, depth: number, ordered: boolean}} ListPlace
+ */
+
+/**
+ * A document's textblocks, in order, each list item's first with where it
+ * is. A list in a quote is not one a Doc has.
+ *
+ * @param {Node} doc
+ * @returns {Array<{end: number, text: string, item: ListPlace|null}>} Each
+ *   with where its words end
+ */
+function textblocksOf(doc) {
+  /** @type {Array<{end: number, text: string, item: ListPlace|null}>} */
+  const out = []
+  let lists = 0
+  /**
+   * @param {Node} node
+   * @param {number} pos
+   * @param {ListPlace|null} place - The list it is in
+   * @param {boolean} quoted
+   */
+  const visit = (node, pos, place, quoted) => {
+    if (node.isTextblock) {
+      out.push({ end: pos + 1 + node.content.size, text: node.textContent, item: null })
+      return
+    }
+    const name = node.type.name
+    if ((name === 'bullet_list' || name === 'ordered_list') && !quoted) {
+      const inner = place
+        ? { ...place, depth: place.depth + 1 }
+        : { list: lists++, depth: 0, ordered: name === 'ordered_list' }
+      node.forEach((item, offset) => {
+        item.forEach((child, at, index) => {
+          visit(child, pos + 1 + offset + 1 + at, inner, quoted)
+          if (index === 0 && child.isTextblock) /** @type {any} */ (out.at(-1)).item = inner
+        })
+      })
+      return
+    }
+    node.forEach((child, offset) =>
+      visit(child, pos + 1 + offset, place, quoted || name === 'blockquote')
+    )
+  }
+  doc.forEach((child, offset) => visit(child, offset, null, false))
+  return out
 }
 
 /**
@@ -286,6 +517,59 @@ export function withoutIdleStyles(document, requests, tabId) {
     }
   }
   return kept
+}
+
+/**
+ * A document without the links that can't go: their words stay.
+ *
+ * @param {Node} node
+ * @param {(href: string) => boolean} drops
+ * @returns {Node}
+ */
+function withoutLinksTo(node, drops) {
+  if (node.isInline) {
+    const marks = node.marks.filter(mark => !(mark.type.name === 'link' && drops(mark.attrs.href)))
+    return marks.length === node.marks.length ? node : node.mark(marks)
+  }
+  if (node.isLeaf) return node
+  /** @type {Node[]} */
+  const children = []
+  let changed = false
+  node.forEach(child => {
+    const next = withoutLinksTo(child, drops)
+    if (next !== child) changed = true
+    children.push(next)
+  })
+  return changed ? node.copy(Fragment.fromArray(children)) : node
+}
+
+/**
+ * A document with each list inside a list made of the kind of the list it
+ * is in, the only kind a list in a Doc has below its top: a Doc reads a
+ * bulleted one inside a numbered one as numbered, so it would be written
+ * again at every sync otherwise. The document keeps it as it is.
+ *
+ * @param {Node} node
+ * @param {NodeType|null} [top] - The kind of the list it is in
+ * @returns {Node}
+ */
+function nestedAsTop(node, top = null) {
+  if (node.isTextblock || node.isLeaf) return node
+  const { bullet_list: bullets, ordered_list: numbers } = schema.nodes
+  const isList = node.type === bullets || node.type === numbers
+  const kind = isList ? (top ?? node.type) : top
+  /** @type {Node[]} */
+  const children = []
+  let changed = false
+  node.forEach(child => {
+    const next = nestedAsTop(child, kind)
+    if (next !== child) changed = true
+    children.push(next)
+  })
+  if (isList && kind !== node.type) {
+    return kind.create(kind === numbers ? { order: 1 } : null, Fragment.fromArray(children))
+  }
+  return changed ? node.copy(Fragment.fromArray(children)) : node
 }
 
 /**
@@ -414,7 +698,7 @@ function paragraphsOf(content, tab) {
   /** @param {StructuralElement[]} blocks @param {boolean} inCell */
   const walk = (blocks, inCell) => {
     // A paragraph after one whose newline is suggested is one with it as
-    // the converter reads it, so a suggestion touches both.
+    // the converter reads it, so the suggestion touches both.
     let runsOn = false
     blocks.forEach((element, i) => {
       const paragraph = element.paragraph
@@ -431,25 +715,25 @@ function paragraphsOf(content, tab) {
             ...paragraph.suggestedParagraphStyleChanges,
             ...paragraph.suggestedBulletChanges,
           }).length > 0
-        if (runsOn) suggested = true
-        runsOn = false
         let protects = (paragraph.positionedObjectIds?.length ?? 0) > 0
+        let heldEnd = false
+        let ends = runsOn
         for (const part of paragraph.elements ?? []) {
           const at = part.startIndex ?? 0
           const run = part.textRun
           if (run) {
             runs.push({ start: at, text: run.content ?? '', style: run.textStyle ?? {} })
-            if (run.content?.endsWith('\n') && run.suggestedInsertionIds?.length) runsOn = true
-            // Words a suggestion puts in are held, and those it takes out
-            // are words, so either is written around; not a newline of one,
-            // nor a change of style.
-            const marked = !!(run.suggestedInsertionIds?.length || run.suggestedDeletionIds?.length)
+            if (run.content?.endsWith('\n') && run.suggestedInsertionIds?.length) heldEnd = true
             if (
-              (marked && run.content?.includes('\n')) ||
-              Object.keys(run.suggestedTextStyleChanges ?? {}).length
+              run.content?.includes('\n') &&
+              (run.suggestedInsertionIds?.length || run.suggestedDeletionIds?.length)
             ) {
-              suggested = true
+              ends = true
             }
+            // Words a suggestion puts in are held, a newline among them, and
+            // those it takes out are words, so either is written around; not
+            // a change of style.
+            if (Object.keys(run.suggestedTextStyleChanges ?? {}).length) suggested = true
             continue
           }
           const [kind, inline] = /** @type {[string, any]} */ (
@@ -481,12 +765,15 @@ function paragraphsOf(content, tab) {
           named: paragraph.paragraphStyle?.namedStyleType ?? 'NORMAL_TEXT',
           bullet: !!paragraph.bullet,
           suggested,
+          ...(heldEnd && { heldEnd }),
+          ...(ends && { ends }),
           protects,
           beforeBlock: !!next && !next.paragraph,
           last: !inCell && i === blocks.length - 1,
           runs,
           breaks,
         })
+        runsOn = heldEnd
       }
       for (const row of element.table?.tableRows ?? []) {
         for (const cell of row.tableCells ?? []) walk(cell.content ?? [], true)
@@ -1213,13 +1500,15 @@ class Writer {
   }
 
   /**
-   * Whether every unit of a paragraph of the Doc goes.
+   * Whether every unit of a paragraph of the Doc goes, so it goes whole: not
+   * one whose newline a suggestion put in, which stays as its words do.
    *
    * @param {Move[]} moves
    * @param {DocParagraph} paragraph
    * @returns {boolean}
    */
   #wholly(moves, paragraph) {
+    if (paragraph.heldEnd) return false
     let any = false
     for (const move of moves) {
       if (move.op === 'insert' || move.a.paragraph !== paragraph) continue
@@ -1292,6 +1581,10 @@ class Writer {
     const check = unit => {
       if (unit.paragraph?.suggested) this.unsent.add('suggestion')
     }
+    /** A paragraph's end or its style changed, where a newline is suggested. @param {Unit} unit */
+    const checkEnd = unit => {
+      if (unit.paragraph?.ends) this.unsent.add('suggestion')
+    }
 
     for (let i = 0; i < moves.length; i++) {
       const move = moves[i]
@@ -1316,11 +1609,13 @@ class Writer {
         if (unit.index === undefined) continue
         const paragraph = unit.paragraph
         if (paragraph && whole.has(paragraph)) {
+          checkEnd(unit)
           // A paragraph gone whole goes with the whitespace it held, and
           // joins nothing.
           if (!removed.has(paragraph)) remove(paragraph.start, paragraph.end + 1)
           removed.add(paragraph)
         } else if (unit.type === 'end' && paragraph) {
+          checkEnd(unit)
           // A join takes the whitespace either side of the newline with it.
           // Its own reach in order; what it takes further on, apart.
           const [own, ...further] = this.#joinReach(segment, unit, previous, moves.slice(i + 1))
@@ -1357,7 +1652,10 @@ class Writer {
             joined: carried.joined,
             involved: [...carried.involved, unit.kind],
           })
-          if (carried.joined || !sameKind(unit.kind, b.kind)) check(unit)
+          if (carried.joined || !sameKind(unit.kind, b.kind)) {
+            check(unit)
+            checkEnd(unit)
+          }
           carried = { joined: false, involved: [] }
         }
       }
@@ -1423,6 +1721,20 @@ class Writer {
         const lead = this.#textBetween(segment, into.start, to)
         if (TRIMMABLE.test(lead)) for (let at = into.start; at < to; at++) take(at)
       }
+      // And what the converter held as spacing in the paragraphs whose words
+      // go between: a space at one's start, which no unit shows.
+      const taken = new Set(out.flatMap(([from, end]) => range(from, end)))
+      for (const span of this.spans) {
+        if (span.kind !== 'held' || span.held !== 'space' || (span.segment ?? '') !== segment)
+          continue
+        for (const at of range(span.index, span.index + span.size)) {
+          if (at > newline && at < to && !taken.has(at)) {
+            taken.add(at)
+            take(at)
+          }
+        }
+      }
+      out.sort((a, b) => a[0] - b[0])
     }
     return out
   }
@@ -1504,6 +1816,16 @@ class Writer {
     ) {
       anchor = previous.index + (previous.size ?? 1)
       from = previous
+    } else if (
+      previous?.type === 'table' &&
+      !closes &&
+      next?.index !== undefined &&
+      next.type !== 'table'
+    ) {
+      // Words that run on into the Doc's after a table go at their start,
+      // past any empty paragraph the Doc keeps between.
+      anchor = next.index
+      from = next
     } else if (previous?.type === 'table' && previous.index !== undefined) {
       // At the start of the paragraph after the table, which Docs always has.
       anchor = previous.index + (previous.size ?? 0)
@@ -1530,6 +1852,10 @@ class Writer {
       return carried
     }
     if (paragraph.suggested) this.unsent.add('suggestion')
+    // A newline put in beside one suggested waits for it to be settled.
+    if (paragraph.ends && run.some(move => move.b.type === 'end' || move.b.type === 'rule')) {
+      this.unsent.add('suggestion')
+    }
 
     /** @type {Insert} */
     const insert = {
@@ -1828,25 +2154,26 @@ class Writer {
       }
 
       const list = wanted.kind === 'list'
+      // An item nested, or of another kind than it was, has its list's
+      // bullets made again whole after (`listsRemade`).
+      const remade = list && ((wanted.depth ?? 0) > 0 || base.kind === 'list')
       if (joined) {
         // Joined list items of the kind wanted keep their bullet; anything
         // else is given the bullet wanted, or none.
         const kept = ending.involved.every(each => each.kind === 'list' && sameKind(each, wanted))
         const any = ending.involved.some(each => each.kind === 'list') || ending.bullet
         if (list && !kept) {
-          if ((wanted.depth ?? 0) > 0) this.unsent.add('list')
-          else {
+          if (!remade || (wanted.depth ?? 0) === 0) {
             if (any) bullets.push({ deleteParagraphBullets: { range } })
             bullets.push({ createParagraphBullets: { range, bulletPreset: presetOf(wanted) } })
           }
         } else if (!list && any) {
           bullets.push({ deleteParagraphBullets: { range } })
         }
-      } else if (list && base.kind === 'list') {
-        this.unsent.add('list')
+      } else if (remade) {
+        // After, with its list.
       } else if (list) {
-        if ((wanted.depth ?? 0) > 0) this.unsent.add('list')
-        else bullets.push({ createParagraphBullets: { range, bulletPreset: presetOf(wanted) } })
+        bullets.push({ createParagraphBullets: { range, bulletPreset: presetOf(wanted) } })
       } else if (base.kind === 'list' || ending.bullet) {
         bullets.push({ deleteParagraphBullets: { range } })
       }
@@ -1854,6 +2181,15 @@ class Writer {
     return [...out, ...bullets]
   }
 }
+
+/**
+ * The numbers from `from` up to `to`, not counting it.
+ *
+ * @param {number} from
+ * @param {number} to
+ * @returns {number[]}
+ */
+const range = (from, to) => Array.from({ length: Math.max(0, to - from) }, (_, i) => from + i)
 
 /**
  * The moves that make one run of units another, word by word: deletions

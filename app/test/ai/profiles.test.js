@@ -151,6 +151,12 @@ describe('chat profiles', () => {
       expect(stamped).not.toHaveProperty('skills')
     })
 
+    it('leaves the preset on the profile, read every turn as its words are', () => {
+      const saved = { id: 'chatprofile_x', settings: { prompt: '', presetId: 'profile_glm' } }
+
+      expect(settingsForNewChat(saved)).toEqual({ profileId: 'chatprofile_x' })
+    })
+
     it('falls back to the default profile when handed nothing', () => {
       expect(settingsForNewChat(null).profileId).toBe(DEFAULT_PROFILE_ID)
       expect(settingsForNewChat(undefined).profileId).toBe(DEFAULT_PROFILE_ID)
@@ -187,6 +193,14 @@ describe('chat profiles', () => {
       // The chat's own wording is taken off, so it reads the profile's.
       expect(updates.prompt).toBeUndefined()
       expect(updates.skills).toBeUndefined()
+    })
+
+    it("takes off the chat's own preset, so it runs on the profile's", () => {
+      const saved = { id: 'chatprofile_x', settings: { prompt: '', presetId: 'profile_glm' } }
+      const updates = settingsForProfileSwitch(saved)
+
+      expect(updates).toHaveProperty('presetId', undefined)
+      expect(updates.profileId).toBe('chatprofile_x')
     })
   })
 

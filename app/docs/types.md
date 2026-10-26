@@ -314,6 +314,9 @@ Type: [Object][131]
   null means every tab is kept.
 - `layout` **[StoryLayout][14]?** How the writer left the panels. Absent means the
   default arrangement; see `components/writer/layout/layout.js`.
+- `expanded` **[Object][131]<[string][132], [boolean][134]>?** The outline's folders the writer
+  opened (true) or shut (false), by document id. One absent is as it starts; see
+  `components/writer/tree/DocumentNode.vue`.
 - `version` **[number][133]** Bumped each time it is saved
 - `updated` **[number][133]** When the writer was last in the project here
 
@@ -668,6 +671,7 @@ Type: [Object][131]
 - `python` **[boolean][134]?** Whether this chat runs Python, once the writer has chosen here. Absent means it does when the Python extension lists the chat's profile. Opted into, as the web is. See ai/tools/python.js.
 - `voiceId` **([string][132] | null)?** The voice this chat's messages are read aloud in, one of the project's. Absent, or naming a voice since removed, means the project's default.
 - `prompt` **[string][132]?** The chat's own system prompt, once the writer has changed it here. Absent means the profile's, read on every turn. See ai/profiles.
+- `presetId` **[string][132]?** The AI preset this chat runs on, once the writer has chosen one here. Absent, or naming one not on this device, means its profile's, and then the default. See `presetFor` in composables/useAIConfig.js.
 - `rules` **[string][132]?** The chat's author's note: standing instructions the writer keeps as they go, sent in their latest message after the project block and ahead of what they said. Starts as the profile's. Absent means none.
 - `pinnedIds` **[Array][135]<[string][132]>?** Documents whose text rides in the project block from the first turn, without the model having read them. A folder pins what is under it. Absent means none.
 - `shownIds` **[Array][135]<[string][132]>?** Documents this chat sees although a folder above them is hidden in it: a character's own folder, under the folder all the characters are in. Absent means none.

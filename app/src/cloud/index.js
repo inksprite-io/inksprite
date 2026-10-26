@@ -30,8 +30,8 @@
  *   project shared, and whose a comment's post is
  *
  * `composables/useCloudSync` signs in and out and runs the rounds; Settings
- * › System › Sync is where the writer does it, always
- * with `sync.inksprite.io` but in a build with dev features (`config/dev.js`).
+ * › Sync and sharing is where the writer does it, always with
+ * `sync.inksprite.io` but in a build with dev features (`config/dev.js`).
  *
  * Design: `.llm/sync_design.md`.
  */

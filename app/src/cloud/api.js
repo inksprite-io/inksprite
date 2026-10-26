@@ -69,6 +69,8 @@ export class CloudError extends Error {
  * @property {number} account
  * @property {boolean} owner
  * @property {string|null} display - The name they show the people they share with
+ * @property {string|null} [friend] - Their friend code, as the server keeps it; none from
+ *   a server before it said, or for an account that has never shared
  */
 
 /**

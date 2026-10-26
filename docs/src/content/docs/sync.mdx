@@ -20,7 +20,7 @@ accounts.
 ## Make an account
 
 For now, an account takes an invitation. Open the link in it, and inksprite
-opens **Settings** › **System** › **Sync** on **Create account**, with the
+opens **Settings** › **Sync and sharing** on **Create account**, with the
 **Sign-up code** filled in. The desktop app doesn't open the link: choose
 **Create account** there, and type the code, the part of the link after
 `invite=`.
@@ -40,7 +40,7 @@ The device then sends up everything it has.
 
 ## Sign in on another device
 
-Open **Settings** › **System** › **Sync** there, type your **Name** and
+Open **Settings** › **Sync and sharing** there, type your **Name** and
 **Passphrase**, and click **Sign in**. Each device asks for the passphrase
 once.
 
@@ -86,8 +86,9 @@ same words, the device that synced last wins, and the other words are kept as a
 A delete on one device goes to the [trash](/projects/#delete-and-the-trash) on
 all of them, and can be restored from any.
 
-Under **Sync**, a line says what's happening: **Up to date**, how many changes
-are waiting, or what went wrong. **Sync now** syncs at once.
+In **Settings** › **Sync and sharing**, a line says what's happening: **Up to date**,
+**Syncing…**, or what went wrong. The arrows beside it (**Sync now**) sync at
+once.
 
 If another device, or someone you share a project with, has synced from a
 newer version of inksprite, this one says *Some changes can't sync until
@@ -103,7 +104,7 @@ sync server, and your other devices move it to their trash. Its files that are
 only on the server are downloaded first.
 
 **Sync this project**, in the same place, sends it up again.
-**Settings** › **System** › **Sync** names the projects you keep this way.
+**Settings** › **Sync and sharing** names the projects you keep this way.
 
 ## Share a project
 
@@ -117,7 +118,7 @@ been updated can't sync a shared project, and says it waits for an update.
 
 ### Your friend code
 
-In **Settings** › **System** › **Sync**, your **Friend code** is under **Name
+In **Settings** › **Sync and sharing** › **Sharing**, your **Friend code** is under **Name
 others see**. Click the copy button beside it, and send the code to whoever
 wants to share a project with you.
 
@@ -130,12 +131,13 @@ you are, and lets it check that the server hasn't swapped in someone else.
 
 ### Share yours
 
-1. Choose **Share…** from **Projects**, or from the project's menu.
+1. Choose **Share…** from **Projects**, or from the project's menu. It opens
+   **Settings** › **Project** › **Sharing**.
 2. Paste your friend's **Friend code**, and click **Share**.
 
 The project appears in your friend's projects the next time their devices
-sync. **Share…** lists who has it, and the cross beside someone (**Remove**)
-takes them out. A removed friend keeps what they already had, in their trash.
+sync. **Sharing** lists who has it, each by name and friend code, and the
+cross beside someone (**Remove**) takes them out. A removed friend keeps what they already had, in their trash.
 
 Sharing first sends your chats in the project again, encrypted so that only you
 can read them. If a reply is still being written in one of them, let it finish
@@ -146,8 +148,8 @@ friends add to it.
 
 ### A project shared with you
 
-It's in your projects like your own. Its menu has **People…**, which lists who
-has it, and **Leave project…** in place of **Delete project**. Leaving moves it
+It's in your projects like your own. Its menu has **People…**, which shows who
+has it in **Settings** › **Project** › **Sharing**, and **Leave project…** in place of **Delete project**. Leaving moves it
 to your trash and stops it syncing. Only its owner can share it with you again.
 
 If its owner deletes it, it moves to your trash as it does to theirs, and
@@ -164,16 +166,17 @@ document, as between your own devices.
 
 ## Your account
 
-In **Settings** › **System** › **Sync**, once you're signed in:
+In **Settings** › **Sync and sharing**, once you're signed in:
 
-- A line says how much the account holds, as in *120 MB of 2 GB used*. An
+- Beside what sync is doing, a line says how much the account holds, as in
+  *120 MB of 2 GB used*. An
   account has 2 GB unless its invitation says otherwise, and imported files
   are most of what it holds. When it's full, the status line says so, and
   changes that don't fit wait on the device.
 - **Devices** lists the devices signed in, this one first. The arrow beside
   another (**Sign out**) signs it out. What it has stays on it, keys included,
   so if it's lost, change your AI providers' keys too.
-- **Send diagnostics** sends the server counts of what sync did on this
+- Under **Account**, **Send diagnostics** sends the server counts of what sync did on this
   device, such as how many changes went each way and how many rounds failed.
   Never your text, titles or names. See [About](/about/#sync).
 - **Make a recovery code…**, or **New recovery code…**, asks for your

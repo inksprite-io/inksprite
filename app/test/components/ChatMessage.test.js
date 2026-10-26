@@ -735,6 +735,46 @@ describe('ChatMessage with the tools its turn called', () => {
     expect(wrapper.findAll('[data-failed]')).toHaveLength(1)
   })
 
+  it('leaves the block unmarked when the model made the failed call again and got it done', () => {
+    const wrapper = turn('Done.', [
+      ...round('', 'edit_document', { path: 'Notes', old: 'a', new: 'a' }, '{"error":"Same"}'),
+      ...round(
+        '',
+        'edit_document',
+        { path: 'notes', old: 'a', new: 'b' },
+        '{"success":true}',
+        'c2'
+      ),
+    ])
+
+    expect(wrapper.find('[data-failed-calls]').exists()).toBe(false)
+    expect(wrapper.findAll('[data-failed]')).toHaveLength(1)
+  })
+
+  it('marks a failed call when what came after was on another document', () => {
+    const wrapper = turn('Done.', [
+      ...round('', 'edit_document', { path: 'Notes', old: 'a', new: 'b' }, '{"error":"No"}'),
+      ...round('', 'edit_document', { path: 'Plan', old: 'a', new: 'b' }, '{"success":true}', 'c2'),
+    ])
+
+    expect(wrapper.find('[data-failed-calls]').exists()).toBe(true)
+  })
+
+  it('marks no failed call while the turn runs', () => {
+    const wrapper = show(
+      {
+        content: '',
+        metadata: {
+          apiTrajectory: round('', 'read_document', { path: 'Gone' }, '{"error":"No document"}'),
+        },
+      },
+      'thinking'
+    )
+
+    expect(wrapper.text()).toContain('1 tool call')
+    expect(wrapper.find('[data-failed-calls]').exists()).toBe(false)
+  })
+
   it('shows a run of Python as its code and what it printed, not as JSON', () => {
     const code = 'for gap in range(2):\n    print(gap)'
     const wrapper = turn('Done.', [
