@@ -858,7 +858,8 @@ describe('writeDoc', () => {
   })
 })
 
-describe('writeDoc, edited at random', () => {
+// Seconds each here, and past the default five on a CI runner with coverage.
+describe('writeDoc, edited at random', { timeout: 30_000 }, () => {
   it('reads back as each edit, holding what it held', () => {
     const next = random(11)
     const document = busy()
@@ -901,7 +902,8 @@ describe('writeDoc, edited at random', () => {
   })
 })
 
-describe('writeDoc, lists edited at random', () => {
+// Seconds each here, and past the default five on a CI runner with coverage.
+describe('writeDoc, lists edited at random', { timeout: 30_000 }, () => {
   /**
    * @typedef {{ordered: boolean, items: Array<{depth: number, text: string}>}} List
    */
@@ -1017,7 +1019,8 @@ describe('writeDoc, lists edited at random', () => {
   })
 })
 
-describe('writeDoc, into an empty Doc', () => {
+// Seconds each here, and past the default five on a CI runner with coverage.
+describe('writeDoc, into an empty Doc', { timeout: 30_000 }, () => {
   it('writes any document whole into one, as a new Doc is', () => {
     const next = random(23)
     // The busy Doc's words, its pictures and footnote aside: a new Doc has

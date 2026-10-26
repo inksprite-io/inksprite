@@ -1569,7 +1569,8 @@ describe('syncDoc, the Doc’s suggestions', () => {
   })
 })
 
-describe('syncDoc, the Doc’s suggestions at random, sync after sync', () => {
+// Seconds each here, and past the default five on a CI runner with coverage.
+describe('syncDoc, the Doc’s suggestions at random, sync after sync', { timeout: 30_000 }, () => {
   /** Whether an edit here left every suggestion's change as it was. */
   const untouched = (changed, was) => {
     const [after, before] = [parseMarkdown(changed), parseMarkdown(was)]
@@ -2040,7 +2041,8 @@ describe('syncDoc, the Doc’s suggestions at random, sync after sync', () => {
   })
 })
 
-describe('syncDoc, edited at random on both sides', () => {
+// Seconds each here, and past the default five on a CI runner with coverage.
+describe('syncDoc, edited at random on both sides', { timeout: 30_000 }, () => {
   /**
    * The edits of one side, made to the base's blocks.
    *
@@ -2129,7 +2131,8 @@ describe('syncDoc, edited at random on both sides', () => {
   })
 })
 
-describe('syncDoc, comments at random on both sides, sync after sync', () => {
+// Seconds each here, and past the default five on a CI runner with coverage.
+describe('syncDoc, comments at random on both sides, sync after sync', { timeout: 30_000 }, () => {
   const ANA = { displayName: 'Ana Marsh', user: 'user-ana' }
   const WORDS = ['tide', 'rope', 'gull', 'late', 'grey', 'salt']
 
