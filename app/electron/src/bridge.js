@@ -2,8 +2,9 @@
  * What the page may ask of the native side, answered here: requests to
  * servers, sign-ins in the system browser, links opened outside the app,
  * windows, updates, the settings file a script left, the library its
- * projects are kept in, and Python for the model to run code in. `preload.cjs` is the page's end of it, and `src/platform/` in the
- * page is what calls it.
+ * projects are kept in, exports to a folder the writer chooses, and Python
+ * for the model to run code in. `preload.cjs` is the page's end of it, and
+ * `src/platform/` in the page is what calls it.
  *
  * Only the app's own page is answered: each call is checked for where it came
  * from, whatever the window has loaded.
@@ -16,6 +17,7 @@ import { listen } from './loopback.js'
 import { downloadUpdate, installUpdate } from './updates.js'
 import { readSettingsFile } from './settingsFile.js'
 import { libraryFolder, librarySettings, markMoved } from './library.js'
+import { exportFolders } from './exporting.js'
 import { bringForward } from './windows.js'
 import { PythonSessions } from './sandbox.js'
 
@@ -179,6 +181,16 @@ export function handleBridge(origin, { openWindow }) {
   handle('library:readBytes', (_, path) => inTurn(folder => folder.readBytes(path)))
   handle('library:apply', (_, ops) => inTurn(folder => folder.apply(ops)))
   handle('library:reveal', (_, path) => inTurn(folder => folder.reveal(path)))
+
+  // A project or a folder exported to a folder the writer chooses
+  // (`exporting.js`), its imported files copied from the library.
+  const exports = exportFolders()
+  handle('export:choose', (event, name) =>
+    exports.choose(BrowserWindow.fromWebContents(event.sender), name)
+  )
+  handle('export:write', (_, target, entries) =>
+    exports.write(target, entries, file => inTurn(folder => folder.locate(file)))
+  )
 
   // Python, a session for each chat, fenced from everything here
   // (`sandbox.js`, and `src/platform/python.js` in the page). The project a

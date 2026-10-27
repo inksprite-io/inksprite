@@ -106,7 +106,7 @@ import ShortcutsDialog from '../editor/ShortcutsDialog.vue'
 import HeaderButton from './HeaderButton.vue'
 import PanelToggle from './PanelToggle.vue'
 import { useChats } from '@/composables/useChats.js'
-import { useCopyPath } from '@/composables/useCopyPath.js'
+import { useCopyLink } from '@/composables/useCopyLink.js'
 import { useDocuments } from '@/composables/useDocuments'
 import { useVersionsPanel } from '@/composables/useVersions.js'
 import { useDriveSync } from '@/composables/useDriveSync.js'
@@ -155,7 +155,7 @@ defineEmits(['toggle-chat'])
 
 const api = useDocuments(props.storyId)
 const versionsPanel = useVersionsPanel()
-const { copyPath } = useCopyPath(props.storyId)
+const { copyLink } = useCopyLink(props.storyId)
 const { plainTextItem } = usePlainText(props.storyId)
 const { showsText, fileViewItem } = useFileView(props.storyId)
 const { focused, enter: enterFocus } = useFocusMode()
@@ -180,7 +180,7 @@ const tabActions = id =>
   chatTabOf(id)
     ? []
     : [
-        { label: 'Copy path', icon: 'pi pi-copy', command: () => copyPath(id) },
+        { label: 'Copy link', icon: 'pi pi-copy', command: () => copyLink(id) },
         plainTextItem(id),
         fileViewItem(id),
         api.get(id)?.type === 'text'

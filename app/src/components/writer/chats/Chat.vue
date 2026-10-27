@@ -209,17 +209,27 @@
           @pick="pickCommand"
           @hover="menuActive = $event"
         />
+        <!-- The documents `[[` could be starting a link to. -->
+        <LinkSuggestions
+          v-else-if="linkMenuOpen"
+          :id="linkMenuId"
+          :entries="linkEntries"
+          :active="linkActive"
+          class="absolute bottom-full left-2 mb-1 z-20"
+          @pick="pickLink"
+          @hover="linkActive = $event"
+        />
         <!-- The buttons sit beside the draft while it fits on one line there,
            and drop under it once it does not, so a paragraph gets the whole
            width rather than the column a row of buttons leaves. The field
            takes the row to push them off it. See useMessageField.
 
-           Keys reach the command menu first, on the way down, so that while
-           it is open Enter finishes a name instead of sending the draft. -->
+           Keys reach the menus first, on the way down, so that while one is
+           open Enter picks from it instead of sending the draft. -->
         <div
           ref="inputRow"
           class="w-full p-1 px-2 gap-1 flex flex-wrap items-end justify-end !rounded-4xl bg-surface-100 dark:bg-surface-900"
-          @keydown.capture="onMenuKeydown"
+          @keydown.capture="onFieldKeydown"
         >
           <!-- Provider setup dialog -->
           <InitialProviderSetup
@@ -236,12 +246,18 @@
             :disabled="isGenerating"
             rows="1"
             aria-autocomplete="list"
-            :aria-controls="menuOpen ? menuId : undefined"
-            :aria-activedescendant="menuOpen ? activeCommandId : undefined"
+            :aria-controls="menuOpen ? menuId : linkMenuOpen ? linkMenuId : undefined"
+            :aria-activedescendant="
+              menuOpen ? activeCommandId : linkMenuOpen ? `${linkMenuId}-${linkActive}` : undefined
+            "
             @keydown.enter.exact="submitOnEnter($event, handleSendMessage)"
             @keydown.enter.meta.exact.prevent="handleInsertMessage('user')"
             @keydown.enter.ctrl.exact.prevent="handleInsertMessage('user')"
             @keydown.enter.alt.exact.prevent="handleInsertMessage('assistant')"
+            @paste="onPaste"
+            @dragenter="onDragOver"
+            @dragover="onDragOver"
+            @drop="onDrop"
           />
           <Button
             v-tooltip.top="'Chat settings'"
@@ -332,6 +348,7 @@ import SendIcon from '@/components/icons/SendIcon.vue'
 import ChatTurn from './ChatTurn.vue'
 import ChatSettings from './ChatSettings.vue'
 import ChatCommandMenu from './ChatCommandMenu.vue'
+import LinkSuggestions from '../editor/LinkSuggestions.vue'
 import ChatProfileMenu from './ChatProfileMenu.vue'
 import PanelHeader from '../layout/PanelHeader.vue'
 import FindBar from '@/components/common/FindBar.vue'
@@ -343,6 +360,8 @@ import { useChatFind } from '@/composables/useChatFind.js'
 import { useFindKey } from '@/composables/useFindKey.js'
 import { useToast } from '@/composables/useToast'
 import { useDocumentLinks } from '@/composables/useDocumentLinks.js'
+import { linkOnClipboard } from '@/utils/documentLinks.js'
+import { draggingFromOutline } from '@/composables/useTreeDrop.js'
 import { useConfirm } from 'primevue/useconfirm'
 import { useAIChat } from '@/composables/useAIChat'
 import { useProviderSetup } from '@/composables/useProviderSetup.js'
@@ -350,6 +369,7 @@ import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useAIConfig } from '@/composables/useAIConfig'
 import { useMessageField } from '@/composables/useMessageField.js'
 import { useCommandMenu, commandOptionId } from '@/composables/useCommandMenu.js'
+import { useLinkMenu } from '@/composables/useLinkMenu.js'
 import {
   COMPACT_COMMAND,
   compactionCover,
@@ -402,6 +422,97 @@ const userInput = computed({
 /** The textarea itself, inside PrimeVue's component. */
 const fieldElement = computed(() => messageField.value?.$el ?? null)
 
+/**
+ * A link to a document pasted in (`useCopyLink`) goes in as Markdown, its
+ * words and the document's path, which the message shows as a link to it
+ * and the model reads as the path its tools take. Typed in where the caret
+ * is, as the field's own paste would be, so Undo takes it back. After a
+ * command it goes in as the path alone, which the command takes.
+ *
+ * @param {ClipboardEvent} event
+ */
+const onPaste = event => {
+  if (/^\s*\//.test(userInput.value)) return
+  const copied = linkOnClipboard(event.clipboardData)
+  const markdown = copied ? documentLinks.chatLink(copied.href, copied.words) : null
+  const field = /** @type {HTMLTextAreaElement|null} */ (fieldElement.value)
+  if (!markdown || !field) return
+  event.preventDefault()
+  typeIn(field, markdown, field.selectionStart, field.selectionEnd)
+}
+
+/**
+ * A document dragged over from the outline is taken: the outline's drags
+ * are moves only, which a text field does not take of itself. The caret
+ * follows the pointer, to show where the link will go.
+ *
+ * @param {DragEvent} event
+ */
+const onDragOver = event => {
+  const field = /** @type {HTMLTextAreaElement|null} */ (fieldElement.value)
+  if (!draggingFromOutline() || !event.dataTransfer || !field) return
+  event.preventDefault()
+  event.dataTransfer.dropEffect = 'move'
+  const at = offsetAt(field, event)
+  if (at === null) return
+  if (document.activeElement !== field) field.focus({ preventScroll: true })
+  field.setSelectionRange(at, at)
+}
+
+/**
+ * Where in the message a point is, as an offset into its text, where the
+ * browser can say.
+ *
+ * @param {HTMLTextAreaElement} field
+ * @param {MouseEvent} event
+ * @returns {number|null}
+ */
+const offsetAt = (field, event) => {
+  const position = document.caretPositionFromPoint?.(event.clientX, event.clientY)
+  return position?.offsetNode === field ? position.offset : null
+}
+
+/**
+ * A document dragged in from the outline goes in as its link where it is
+ * let go, as a pasted one does, and after a command as its path alone. The
+ * field puts it in itself: the outline's drag takes every drop it ends in
+ * for its own, which leaves the field nothing. The place is the letter the
+ * pointer is over where the browser can say, and the caret otherwise.
+ *
+ * @param {DragEvent} event
+ */
+const onDrop = event => {
+  const field = /** @type {HTMLTextAreaElement|null} */ (fieldElement.value)
+  const dropped = linkOnClipboard(event.dataTransfer)
+  if (!field || !dropped?.href.startsWith('/')) return
+  const command = /^\s*\//.test(userInput.value)
+  const text =
+    (!command && documentLinks.chatLink(dropped.href, dropped.words)) ||
+    event.dataTransfer?.getData('text/plain')
+  if (!text) return
+  event.preventDefault()
+  const at = offsetAt(field, event) ?? field.selectionEnd
+  typeIn(field, text, at, at)
+}
+
+/**
+ * Words typed into the message in place of what is from `from` to `to`, as
+ * typing them would, so that Undo takes them back.
+ *
+ * @param {HTMLTextAreaElement} field
+ * @param {string} text
+ * @param {number} from
+ * @param {number} to
+ */
+const typeIn = (field, text, from, to) => {
+  field.focus()
+  field.setSelectionRange(from, to)
+  if (document.execCommand?.('insertText', false, text)) return
+  const { value } = field
+  userInput.value = value.slice(0, from) + text + value.slice(to)
+  nextTick(() => field.setSelectionRange(from + text.length, from + text.length))
+}
+
 // The field fits its draft, and its buttons stay beside it only while the
 // draft fits beside them. See useMessageField.
 const { beside } = useMessageField(fieldElement, inputRow, userInput)
@@ -420,6 +531,32 @@ const activeCommandId = computed(() => {
   const entry = menuEntries.value[menuActive.value]
   return entry ? commandOptionId(menuId.value, entry.name) : undefined
 })
+
+// `[[` opens the documents a link could go to, put in as a pasted link is,
+// or as the path alone after a command. See useLinkMenu.
+const {
+  open: linkMenuOpen,
+  entries: linkEntries,
+  active: linkActive,
+  pick: pickLink,
+  onKeydown: onLinkKeydown,
+} = useLinkMenu(fieldElement, userInput, {
+  suggest: query => documentLinks.suggest(query, ''),
+  textFor: (entry, before) =>
+    /^\s*\//.test(before)
+      ? (documentLinks.chatPath(`/${entry.href}`)?.slice(1) ?? null)
+      : documentLinks.chatLink(`/${entry.href}`, entry.title),
+})
+const linkMenuId = computed(() => `chat-links-${props.chatId}`)
+
+/**
+ * A key in the message, for whichever menu is open first.
+ * @param {KeyboardEvent} event
+ */
+const onFieldKeydown = event => {
+  onLinkKeydown(event)
+  if (!event.defaultPrevented) onMenuKeydown(event)
+}
 
 // Computed
 const chat = computed(() => chatsApi.getChatById(props.chatId))

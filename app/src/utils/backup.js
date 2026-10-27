@@ -795,16 +795,6 @@ function slugOf(title) {
 }
 
 /**
- * Filename for a downloaded selection, e.g. `inksprite-export-2026-10-15.json`.
- *
- * @param {Date} date
- * @returns {string}
- */
-export function selectionFilename(date) {
-  return backupFilename(date).replace('-backup-', '-export-')
-}
-
-/**
  * Filename for a downloaded chat, e.g. `inksprite-chat-plot-holes-in-act-two.json`.
  *
  * @param {string} title
@@ -812,16 +802,6 @@ export function selectionFilename(date) {
  */
 export function chatFilename(title) {
   return `inksprite-chat-${slugOf(title)}.json`
-}
-
-/**
- * Filename for a downloaded project, e.g. `inksprite-project-the-salt-road.json`.
- *
- * @param {string} title - The project's name
- * @returns {string}
- */
-export function projectFilename(title) {
-  return `inksprite-project-${slugOf(title)}.json`
 }
 
 /**

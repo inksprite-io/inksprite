@@ -16,7 +16,7 @@ export const ipcMain = { handle: vi.fn(), on: vi.fn(), removeListener: vi.fn() }
 export const net = { fetch: vi.fn() }
 export const protocol = { handle: vi.fn(), registerSchemesAsPrivileged: vi.fn() }
 export const shell = { openExternal: vi.fn(), trashItem: vi.fn(), showItemInFolder: vi.fn() }
-export const dialog = { showMessageBox: vi.fn(), showOpenDialog: vi.fn() }
+export const dialog = { showMessageBox: vi.fn(), showOpenDialog: vi.fn(), showSaveDialog: vi.fn() }
 export const BrowserWindow = Object.assign(vi.fn(), {
   fromWebContents: vi.fn(),
   getFocusedWindow: vi.fn(),

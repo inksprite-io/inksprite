@@ -11,6 +11,8 @@ design is `.llm/desktop_design.md`.
   opened outside, updates, and the library (`src/platform/` in the page asks).
 - `src/library.js` is the library: the folder the projects are kept in, and
   the files in it, held to it.
+- `src/exporting.js` writes a project or a folder exported to a folder the
+  writer chooses, in place of one there of that name.
 - `src/closing.js` has the window wait for the page to save before it
   closes or the app quits.
 - `src/sandbox.js` and `sandbox/` are Python for the model: Pyodide in a

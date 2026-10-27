@@ -20,6 +20,7 @@ import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import { commentRanges } from '@/editor/comments.js'
 import { parseFilters } from '@/tts/filters.js'
 import { TextSelection } from 'prosemirror-state'
+import { useEditorRequest } from '@/composables/useEditorRequest.js'
 
 const { mockUpdateDocument, mockGetDocument, mockApi, mockDocuments, resetComments } = vi.hoisted(
   () => {
@@ -32,7 +33,7 @@ const { mockUpdateDocument, mockGetDocument, mockApi, mockDocuments, resetCommen
           id: 'doc_link',
           title: 'Chapter 3',
           type: 'text',
-          content: 'See [the cast](../Notes/Cast%20list.md) first.',
+          content: 'See [the cast](../Notes/Cast%20list.md) first.\n\n## The crew\n\nA pilot.',
         },
       ],
       [
@@ -98,10 +99,19 @@ const { mockUpdateDocument, mockGetDocument, mockApi, mockDocuments, resetCommen
 
 vi.mock('@/composables/useDocuments', () => ({ useDocuments: () => mockApi }))
 
-const { mockLinks } = vi.hoisted(() => ({
-  mockLinks: { open: vi.fn(), target: vi.fn(), addressFor: vi.fn(), onClick: vi.fn() },
+const { mockLinks, mockCopy } = vi.hoisted(() => ({
+  mockLinks: {
+    open: vi.fn(),
+    target: vi.fn(),
+    addressFor: vi.fn(),
+    onClick: vi.fn(),
+    suggest: vi.fn(() => []),
+    pastedHref: vi.fn(href => href),
+  },
+  mockCopy: { copyHref: vi.fn() },
 }))
 vi.mock('@/composables/useDocumentLinks.js', () => ({ useDocumentLinks: () => mockLinks }))
+vi.mock('@/composables/useCopyLink.js', () => ({ useCopyLink: () => mockCopy }))
 
 const { mockNarration, mockAppState, mockSpelling } = vi.hoisted(() => ({
   mockNarration: {},
@@ -356,6 +366,65 @@ describe('Editor', () => {
       expect(wrapper.find('[data-action="open-link"]').text()).toBe('Cast list')
       await wrapper.find('[data-action="open-link"]').trigger('click')
       expect(mockLinks.open).toHaveBeenCalledWith('../Notes/Cast%20list.md', 'doc_link')
+      // Copied with its own words.
+      await wrapper.find('[data-action="copy-link"]').trigger('click')
+      expect(mockCopy.copyHref).toHaveBeenCalledWith(
+        '../Notes/Cast%20list.md',
+        'doc_link',
+        'the cast'
+      )
+      wrapper.unmount()
+    })
+
+    it('opens the field on a link’s words as well as its address', async () => {
+      const wrapper = await mountLinked()
+      const editor = useEditor()
+      wrapper.find('.ProseMirror').element.focus()
+      const state = editor.stateOf('doc_link')
+      editor.dispatch('doc_link', state.tr.setSelection(TextSelection.create(state.doc, 8)))
+      await flushPromises()
+
+      await wrapper.find('[data-action="edit-link"]').trigger('click')
+      await flushPromises()
+      const words = /** @type {HTMLInputElement} */ (wrapper.find('[data-link-text]').element)
+      expect(words.value).toBe('the cast')
+      const address = /** @type {HTMLInputElement} */ (wrapper.find('[data-link-address]').element)
+      expect(address.value).toBe('../Notes/Cast%20list.md')
+      wrapper.unmount()
+    })
+
+    it('lists what `[[` could link to under it, and puts in the one picked', async () => {
+      mockLinks.suggest.mockReturnValue([
+        { key: 'plan', title: 'Plan', detail: '', href: '../Plan.md' },
+        { key: 'tides', title: 'Tide tables', detail: 'Notes', href: '../Notes/Tide%20tables.md' },
+      ])
+      const wrapper = await mountLinked()
+      const editor = useEditor()
+      wrapper.find('.ProseMirror').element.focus()
+      const state = editor.stateOf('doc_link')
+      const end = state.doc.firstChild.nodeSize - 1
+      editor.dispatch(
+        'doc_link',
+        state.tr.setSelection(TextSelection.create(state.doc, end)).insertText(' [[ti')
+      )
+      await flushPromises()
+
+      expect(mockLinks.suggest).toHaveBeenLastCalledWith('ti', 'doc_link')
+      const rows = wrapper.findAll('[data-link-suggestions] [role="option"]')
+      expect(rows.map(row => row.text())).toEqual(['Plan', 'Tide tablesNotes'])
+      await rows[1].trigger('click')
+      expect(editor.markdown('doc_link').split('\n')[0]).toBe(
+        'See [the cast](../Notes/Cast%20list.md) first. [Tide tables](../Notes/Tide%20tables.md)'
+      )
+      expect(wrapper.find('[data-link-suggestions]').exists()).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('goes to the heading a link asked for, once the document shows', async () => {
+      useEditorRequest().goToHeading('doc_link', 'the crew')
+      const wrapper = await mountLinked()
+      const { selection, doc } = useEditor().stateOf('doc_link')
+      expect(doc.resolve(selection.from).parent.textContent).toBe('The crew')
       wrapper.unmount()
     })
   })

@@ -1,6 +1,6 @@
 ---
 title: Projects
-description: Switch between projects, arrange a project's documents, get back what you deleted, move a project to another computer, and back up everything.
+description: Switch between projects, arrange a project's documents, get back what you deleted, export your work as files, and back up everything.
 ---
 
 import Screenshot from '../../components/Screenshot.astro';
@@ -13,9 +13,11 @@ its chats.
 Click **Projects**, the menu at the top left of the outline. **Switch project**
 lists your projects by name, each with when it was last edited: click one to
 open it where you left it. **New project…** starts one, and
-**Import project…** adds one from a file: see [move a project](#move-a-project).
-**Project settings**, **Export project** and **Delete project** are for the
-project that's open. **Trash** is there while anything is in the
+**Import project…** brings in a
+[Scrivener project](#bring-in-a-scrivener-project), or a project file from an
+earlier version of inksprite. **Project settings**,
+[**Export project**](#export) and **Delete project** are for the project
+that's open. **Trash** is there while anything is in the
 [trash](#delete-and-the-trash). Signed in to [sync](/sync/), **Keep on this
 device only…** keeps the project off it.
 
@@ -91,11 +93,11 @@ moved, imported or copied into a folder that has its name gets a number:
 - **Duplicate** copies a document beside itself and opens the copy.
 - **Versions…** shows a document's earlier versions, to compare and restore:
   see [Versions](/editor/#versions).
-- **Export** saves a document as a Markdown file, or with its pictures as a
-  `.zip` of the file and an `images` folder. **Download** saves an imported
-  file as it came in.
-- **Copy path** copies where the document is, such as `Notes/Characters/Elara`,
-  for naming it in a chat.
+- **Export** saves a document or a folder as files to use elsewhere: see
+  [Export](#export).
+- **Copy link** copies a link to the document, to paste in a document or a
+  chat. Pasted anywhere else, it's where the document is, such as
+  `Notes/Characters/Elara`.
 - **Hide from all chats** keeps it out of every chat's sight. Pins and hiding
   in one chat are in [Chats](/chats/#what-the-model-sees-of-your-project).
 - **Import**, on a folder, brings files in: see
@@ -145,21 +147,38 @@ delete from the
 [card library](/roleplay/#keep-your-cards-in-the-library). In the desktop app,
 what's deleted for good goes to your computer's trash.
 
+## Export
+
+Export saves your work as ordinary files, to use somewhere else: another
+Markdown app, a website, a repository's docs. Choose **Export project** from
+**Projects**, or right-click the project; a folder or a document has
+**Export** on its menu.
+
+- Each folder is a folder and each document a Markdown file (`.md`), named as
+  in the outline. A folder kept in order loses its order.
+- A document's text is as it stands, without comments or the suggestions you
+  haven't accepted. Its summary, comment threads and versions stay behind.
+- An imported file is the file as it came in, not its text. A document that
+  holds others has a folder of its name beside it, for what it holds.
+- A document's pictures go in an `images` folder beside it.
+- A link from one exported document to another is written to the other's
+  file, so it still works. A link to anything else stays as it was.
+- Chats, the trash and narration stay behind.
+
+In a browser, a document alone, without pictures, is saved as its own file,
+and anything more as a `.zip`. In the desktop app, a project or a folder goes
+to a folder you choose. If one of that name is already there, it goes to your
+computer's trash first, so a document you've deleted since leaves nothing
+behind.
+
+A file that's still only on the [sync](/sync/) server is downloaded for the
+export. If it can't be, it's left out, and inksprite says how many were.
+
 ## Move a project
 
-A project file carries one project to another browser, to the desktop app, or
-to someone else.
-
-1. Choose **Export project** from **Projects**, or right-click the project.
-   inksprite saves a file named after it, with its documents, imported files
-   and chats, and any profiles of yours its chats use.
-2. Where you want it, choose **Import project…** from **Projects** at the top
-   of the outline (click **Import project** when no project is open), and
-   choose the file.
-
-It comes in as a new project beside the others, and changes nothing that's
-there. Your settings and keys stay behind, and so do the project's trash and
-its documents' [versions](/editor/#versions).
+To have a project in another browser or the desktop app, [sync](/sync/) both,
+or bring it from a [backup](#back-up-everything) with **Add**, beside what's
+there. To give it to someone, [share it](/sync/#share-a-project).
 
 ## Bring in a Scrivener project
 
@@ -186,10 +205,10 @@ presets, chat profiles, MCP servers, skills, web search, and the choices you
 made in **Settings**. Use one to set up another browser or the desktop app, or
 to share your setup with someone.
 
-1. Open **Settings** › **Sync and sharing** › **Backup**, click **Export**, and untick
-   **Projects** and **Character cards**.
-2. Open **Settings** and untick anything you don't want in the file. Ticking a
-   preset ticks the connection it runs on.
+1. Open **Settings** › **Sync and sharing** › **Backup** and click
+   **Export settings**.
+2. Untick anything you don't want in the file. Ticking a preset ticks the
+   connection it runs on.
 3. Leave **Include API keys** off unless the file stays with you, and click
    **Export**.
 
@@ -202,46 +221,38 @@ for it is left out, so you'd add it again. An MCP server you already have
 keeps the tools you allowed; one the file adds asks before it runs a tool, as
 any new server does.
 
-## Export part of your work
-
-**Export** lists your projects, character cards and settings, all ticked.
-Untick what you want to leave out. Open a project to pick its documents and
-chats; a document brings the folders above it.
-
-To bring the file in, click **Import** and choose it. Its projects come in as
-new ones beside yours, and its character cards join your library unless you
-have them already. If it also changes settings, inksprite says what it adds and
-changes, and asks before it goes on; its settings are merged as a settings
-file's are.
-
 ## Back up everything
 
 A backup holds every project, chat and setting, with what's in the trash and
 every document's versions.
 
-1. Open **Settings** › **Sync and sharing** › **Backup** and click **Export**. Leave
-   everything ticked.
+1. Open **Settings** › **Sync and sharing** › **Backup** and click **Export**.
 2. Leave **Include API keys** off unless the file stays with you. It covers the
    keys for your AI providers, MCP servers and web search.
 3. Click **Export**. inksprite saves a file named with the date.
 
-To restore one, click **Import** and choose the file. inksprite says
-what the backup holds and asks before it goes on: **Replace** deletes
-everything inksprite holds now, puts the backup in its place, and reloads.
-Restoring signs the device out of [sync](/sync/).
+To bring one back, click **Import** and choose the file. inksprite says what
+the backup holds, and lists its projects and character cards.
+
+- **Replace** deletes everything inksprite holds now, puts the backup in its
+  place, and reloads. It signs the device out of [sync](/sync/).
+- **Add** brings in only the projects and cards you tick, beside yours. Each
+  project comes with its chats and the profiles they run on, and a name
+  that's taken gets a number. A card joins your library unless you have it
+  already. Your settings stay as they are.
 
 A backup made without keys comes back without them. Before you restore it,
 inksprite lists the services whose keys were left out, so you know which to
 connect again. Your sign-ins to [MCP servers](/mcp/) and the **Debug** switch
 are never in a backup. A backup from an older version of inksprite restores
-too.
+too, and a file of part of your work from one still comes in.
 
 ## Where your work is kept
 
 In a browser, your work is in that browser's storage, on that computer. Another
-browser starts empty: bring your work over with a backup or a project file, or
-[sync](/sync/) it. Clearing the site's data deletes it, though a synced project
-comes back when you sign in again.
+browser starts empty: bring your work over with a backup, or [sync](/sync/)
+it. Clearing the site's data deletes it, though a synced project comes back
+when you sign in again.
 
 When you start a project, inksprite asks the browser to keep its data. Firefox
 asks you first; allow it.

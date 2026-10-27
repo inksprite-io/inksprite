@@ -20,6 +20,7 @@ import { Plugin, TextSelection } from 'prosemirror-state'
 import { keydownHandler } from 'prosemirror-keymap'
 import { schema } from './schema.js'
 import { markAround } from './marks.js'
+import { isDocumentHref, linkOnClipboard } from '@/utils/documentLinks.js'
 
 /**
  * @typedef {import('prosemirror-state').EditorState} EditorState
@@ -66,7 +67,9 @@ export function canLink(state) {
 /**
  * Link the selection to `href`, or the link the caret is in. With nothing
  * selected and no link there, `text` goes in as the link's words, or the
- * address itself without any. The caret ends up after the link.
+ * address itself without any; in a link, `text` takes the place of its
+ * words when it is other words, looking as the first of them did. The caret
+ * ends up after the link.
  *
  * @param {string} href
  * @param {string} [text]
@@ -85,6 +88,10 @@ export function setLink(href, text = '') {
         const words = text || href
         tr.insertText(words, from)
         to = from + words.length
+      } else if (around && text && text !== state.doc.textBetween(from, to)) {
+        const marks = (state.doc.nodeAt(from)?.marks ?? []).filter(mark => mark.type !== link)
+        tr.replaceWith(from, to, schema.text(text, marks))
+        to = from + text.length
       }
       // A link replaces any other on the same text.
       tr.addMark(from, to, link.create({ href }))
@@ -174,20 +181,35 @@ export function mapHrefs(slice, change) {
 /**
  * A link pasted over a selection links it; on its own, it goes in as a link.
  * Not in code, and on its own only as text: a link copied from a page comes
- * with its own words as HTML, and the editor's paste keeps those.
+ * with its own words as HTML, and the editor's paste keeps those. A link to
+ * a document the app copied (`useCopyLink`) links a selection too, written
+ * from this document; on its own the editor's paste makes it, words and all.
  *
  * @param {EditorView} view
  * @param {ClipboardEvent} event
+ * @param {(href: string) => string} relink - A link the clipboard carries,
+ *   as this document writes it
  * @returns {boolean}
  */
-function pasteLink(view, event) {
-  const href = event.clipboardData?.getData('text/plain').trim() ?? ''
+function pasteLink(view, event, relink) {
   const { state } = view
   const { selection } = state
-  if (!PASTED_LINK.test(href) || !(selection instanceof TextSelection) || !canLink(state)) {
-    return false
-  }
+  if (!(selection instanceof TextSelection) || !canLink(state)) return false
   if (selection.$from.marks().some(mark => mark.type.spec.code)) return false
+  // Words copied from a document, a link among them, replace a selection.
+  const fromEditor = event.clipboardData?.getData('text/html').includes('data-pm-slice')
+  const copied = selection.empty || fromEditor ? null : linkOnClipboard(event.clipboardData)
+  if (copied && isDocumentHref(copied.href)) {
+    const tr = state.tr.addMark(
+      selection.from,
+      selection.to,
+      link.create({ href: relink(copied.href) })
+    )
+    view.dispatch(tr.setSelection(TextSelection.create(tr.doc, selection.to)).scrollIntoView())
+    return true
+  }
+  const href = event.clipboardData?.getData('text/plain').trim() ?? ''
+  if (!PASTED_LINK.test(href)) return false
   if (selection.empty && event.clipboardData?.types.includes('text/html')) return false
   // A new link even against one already there, which Mod-K would change.
   const { from } = selection
@@ -207,9 +229,11 @@ function pasteLink(view, event) {
  * @param {(href: string) => void} options.open - Open a link: Mod-click
  * @param {(view: EditorView) => void} options.update - The caret may have
  *   moved into a link or out of one, or the editor taken or lost the focus
+ * @param {(href: string) => string} [options.relink] - A link pasted, as this
+ *   document writes it
  * @returns {Plugin}
  */
-export function links({ edit, open, update }) {
+export function links({ edit, open, update, relink = href => href }) {
   return new Plugin({
     props: {
       handleKeyDown: keydownHandler({
@@ -227,7 +251,7 @@ export function links({ edit, open, update }) {
         open(anchor.getAttribute('href') || '')
         return true
       },
-      handlePaste: pasteLink,
+      handlePaste: (view, event) => pasteLink(view, event, relink),
       handleDOMEvents: {
         focus: view => {
           update(view)

@@ -14,7 +14,7 @@ italics: a preview, which the next document you click replaces. Type in it, or
 double-click the document or its tab, to keep it open.
 
 - Close a tab with its **×**, or click it with the middle button.
-- Right-click a tab for **Copy path**, **Edit in plain text editor**,
+- Right-click a tab for **Copy link**, **Edit in plain text editor**,
   **Versions…** and **Keyboard shortcuts**.
 - Each project remembers its tabs, and a tab you come back to is where you
   left it.
@@ -102,33 +102,50 @@ a third time deletes it.
 
 Select some words and press <kbd>⌘</kbd> <kbd>K</kbd> (<kbd>Ctrl</kbd>
 <kbd>K</kbd> on Windows and Linux). Type or paste the address and press
-<kbd>Enter</kbd> or click **Apply**. An address without `https://` gets it,
+<kbd>Enter</kbd> or click the check. An address without `https://` gets it,
 and an email address becomes a mail link. With nothing selected, the keys ask
-for the link's **Text** too; with the caret in a link, they change it.
+for the link's **Text** too; with the caret in a link, they change both its
+text and where it goes.
 
 Paste an address that starts with `https://` over selected words to link them,
 or on its own to put it in as a link.
 
-Click in a link to see where it goes, with **Edit** and **Remove** beside it.
-Click the address, or <kbd>⌘</kbd>-click the link (<kbd>Ctrl</kbd>-click on
-Windows and Linux), to follow it. In a browser it opens in a new tab; in the
-desktop app, in your usual browser.
+Click in a link to see where it goes, with buttons beside it to copy, edit and
+remove it. Right-click the link, or what it shows, for the same. Click the
+address, or <kbd>⌘</kbd>-click the link (<kbd>Ctrl</kbd>-click on Windows and
+Linux), to follow it. In a browser it opens in a new tab; in the desktop app,
+in your usual browser.
 
-<Screenshot name="editor-link" alt="A link, with its address, Edit and Remove" />
+<Screenshot name="editor-link" alt="A link, with its address and buttons to copy, edit and remove it" />
 
 ### Link to another document
 
-In the link field, type the document's path, such as `Notes/Cast list`, or
-just its name if no other document has it. To get a path, right-click the
-document in the outline and choose **Copy path**.
+Type `[[` and the start of a document's name, and the documents it could be
+are listed under it. Pick one with the arrow keys and <kbd>Enter</kbd>, or
+click it, and a link to it goes in, the document's name as its words.
+<kbd>Esc</kbd> puts the list away and leaves what you typed. The link field
+lists documents the same way as you type in it.
+
+You can also right-click a document in the outline, or its tab, choose **Copy
+link**, and paste it: over selected words it links them, and on its own it
+goes in with the document's name. Or drag the document from the outline into
+the text.
 
 The link is written the way other Markdown apps write it, from this document
 to the other one: `../Notes/Cast%20list.md`. Click in it to see the
 document's name, and click the name or <kbd>⌘</kbd>-click the link to open the
-document in a tab. If the document isn't there, inksprite says so.
+document in a tab.
 
 Copied into a document in another folder, a link still goes to the same
 document. Renaming or moving a document changes the links to it to match.
+
+### Link to a heading
+
+After a document's name, type `#` and the list shows its headings instead, as
+in `[[Cast list#The crew`; `[[#` lists this document's own. The link opens the
+document at that heading, and is written as Obsidian writes one:
+`Cast%20list.md#The%20crew`. If the heading's words change, the link still
+opens the document.
 
 ## Pictures
 
@@ -284,9 +301,11 @@ long for the editor to keep up with comes in as plain text.
 
 Right-click a document in the outline:
 
-- **Export** saves it as a Markdown file (`.md`). A document with pictures
-  comes as a `.zip` of the Markdown file and an `images` folder beside it,
-  which any Markdown app can open.
+- **Export** saves it as a Markdown file (`.md`), without comments or the
+  suggestions you haven't accepted. A document with pictures comes as a
+  `.zip` of the Markdown file and an `images` folder beside it, which any
+  Markdown app can open. A folder or the whole project exports the same way:
+  see [Export](/projects/#export).
 - **Duplicate** makes a copy beside it, named with **(2)**, and opens it: try
   something there without touching the original.
 

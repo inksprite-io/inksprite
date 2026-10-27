@@ -25,7 +25,8 @@
  * Design: the backup's format is `utils/backup.js`.
  */
 
-import { Zip, ZipDeflate, ZipPassThrough, inflateSync, strToU8 } from 'fflate'
+import { inflateSync } from 'fflate'
+import { zipWriter } from './zipWriter.js'
 
 /** The envelope's entry. */
 export const MANIFEST = 'backup.json'
@@ -35,16 +36,6 @@ const BYTES = { files: 'blob', cardFiles: 'image' }
 
 /** How much JSON text an entry holds before the next is begun. */
 const ENTRY_CHARS = 32 * 1024 * 1024
-
-/** How much of a file is read at a time as it is written in. */
-const SLICE = 4 * 1024 * 1024
-
-/** How much of what is written is gathered before it is let go to a Blob. */
-const GATHER = 64 * 1024 * 1024
-
-/** What a zip without ZIP64 can hold. */
-const MOST_BYTES = 0xffffffff
-const MOST_ENTRIES = 0xffff
 
 /**
  * Write a backup as a zip. Its byte-carrying rows hold Blobs: `blob` for a
@@ -56,62 +47,7 @@ const MOST_ENTRIES = 0xffff
  * @throws {Error} When it is too large for a zip to hold
  */
 export async function writeArchive(backup, { entryChars = ENTRY_CHARS } = {}) {
-  /** @type {Blob[]} */
-  const written = []
-  /** @type {Uint8Array[]} */
-  let gathered = []
-  let gatheredBytes = 0
-  let total = 0
-  let entries = 0
-  /** @type {Error|null} */
-  let failed = null
-
-  const zip = new Zip((error, chunk, final) => {
-    if (error) {
-      failed = error
-      return
-    }
-    gathered.push(chunk)
-    gatheredBytes += chunk.length
-    total += chunk.length
-    if (gatheredBytes >= GATHER || final) {
-      written.push(new Blob(/** @type {BlobPart[]} */ (gathered)))
-      gathered = []
-      gatheredBytes = 0
-    }
-  })
-
-  /** @param {string} name */
-  function counted(name) {
-    if (++entries >= MOST_ENTRIES) throw tooLarge()
-    return name
-  }
-
-  /**
-   * @param {string} name
-   * @param {string} text
-   */
-  function addText(name, text) {
-    const entry = new ZipDeflate(counted(name), { level: 6 })
-    zip.add(entry)
-    entry.push(strToU8(text), true)
-  }
-
-  /**
-   * @param {string} name
-   * @param {Blob} blob
-   */
-  async function addBlob(name, blob) {
-    const entry = new ZipPassThrough(counted(name))
-    zip.add(entry)
-    if (blob.size === 0) entry.push(new Uint8Array(0), true)
-    for (let at = 0; at < blob.size; at += SLICE) {
-      const piece = new Uint8Array(await blob.slice(at, at + SLICE).arrayBuffer())
-      entry.push(piece, at + SLICE >= blob.size)
-      if (total > MOST_BYTES) throw tooLarge()
-    }
-  }
-
+  const zip = zipWriter('This is more than a backup file can hold yet: 4 GB, or 65,535 files.')
   const { tables, ...envelope } = backup
   /** @type {Record<string, string[]>} */
   const named = {}
@@ -124,7 +60,7 @@ export async function writeArchive(backup, { entryChars = ENTRY_CHARS } = {}) {
     let length = 0
     const close = () => {
       const name = `tables/${table}/${named[table].length + 1}.json`
-      addText(name, `[${pieces.join(',')}]`)
+      zip.addText(name, `[${pieces.join(',')}]`)
       named[table].push(name)
       pieces = []
       length = 0
@@ -134,7 +70,7 @@ export async function writeArchive(backup, { entryChars = ENTRY_CHARS } = {}) {
       if (carries && row?.[carries] instanceof Blob) {
         const { [carries]: blob, ...rest } = row
         const entry = `files/${++files}`
-        await addBlob(entry, blob)
+        await zip.addBlob(entry, blob)
         kept = { ...rest, mime: blob.type, entry }
       }
       const json = JSON.stringify(kept)
@@ -144,15 +80,8 @@ export async function writeArchive(backup, { entryChars = ENTRY_CHARS } = {}) {
     }
     if (pieces.length > 0 || named[table].length === 0) close()
   }
-  addText(MANIFEST, JSON.stringify({ ...envelope, archive: 1, tables: named }, null, 2))
-  zip.end()
-  if (failed) throw failed
-  if (total > MOST_BYTES) throw tooLarge()
-  return new Blob(written, { type: 'application/zip' })
-}
-
-function tooLarge() {
-  return new Error('This is more than a backup file can hold yet: 4 GB, or 65,535 files.')
+  zip.addText(MANIFEST, JSON.stringify({ ...envelope, archive: 1, tables: named }, null, 2))
+  return zip.end()
 }
 
 /**

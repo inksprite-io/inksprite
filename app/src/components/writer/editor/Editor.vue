@@ -48,11 +48,25 @@
           <LinkPopover
             v-if="linkPopover"
             v-bind="linkPopover"
+            :suggest="query => documentLinks.suggest(query, props.documentId)"
             @open="documentLinks.open(linkPopover.href, props.documentId)"
+            @copy="copyLink"
             @edit="editLink"
             @remove="unlink"
             @apply="applyLink"
             @close="closeLink"
+            @menu="onLinkMenu"
+          />
+          <!-- What `[[` could be starting a link to, under it. -->
+          <LinkSuggestions
+            v-if="picker"
+            :id="pickerId"
+            class="absolute z-10"
+            :style="{ left: `${picker.left}px`, top: `${picker.top}px` }"
+            :entries="picker.entries"
+            :active="picker.active"
+            @pick="pickLink"
+            @hover="picker.active = $event"
           />
           <PicturePopover
             v-if="picturePopover"
@@ -128,6 +142,7 @@
       @add-to-project="spelling.addProjectWord"
       @ignore="spelling.ignore"
       @link="editLink"
+      @copy-link="copyLink"
       @remove-link="unlink"
       @comment="commentOnSelection"
       @reply-comment="pickComment"
@@ -162,6 +177,7 @@ import ScrollPanel from 'primevue/scrollpanel'
 import FindBar from '@/components/common/FindBar.vue'
 import EditorMenu from './EditorMenu.vue'
 import LinkPopover from './LinkPopover.vue'
+import LinkSuggestions from './LinkSuggestions.vue'
 import PicturePopover from './PicturePopover.vue'
 import TextBar from './TextBar.vue'
 import CommentBar from './CommentBar.vue'
@@ -203,6 +219,10 @@ import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import { useFocusMode } from '@/composables/useFocusMode.js'
 import { TINT, skippedRanges, speakerRanges } from '@/tts/highlight.js'
 import { linkAround, links, mapHrefs, removeLink, setLink } from '@/editor/links.js'
+import { linkPicker, putLink } from '@/editor/linkPicker.js'
+import { useCopyLink } from '@/composables/useCopyLink.js'
+import { headingAsked, takeHeading } from '@/composables/useEditorRequest.js'
+import { headingOf, namesHeading } from '@/utils/documentLinks.js'
 import { formatCommand, formattingAt } from '@/editor/format.js'
 import { insertPictures, pictures } from '@/editor/pictures.js'
 import { downloadBlob } from '@/files/download.js'
@@ -235,6 +255,7 @@ const api = useDocuments(props.storyId)
 
 // Links to its other documents, followed and made from this one.
 const documentLinks = useDocumentLinks(props.storyId)
+const { copyHref } = useCopyLink(props.storyId)
 
 // Its pictures, its own and the project's, drawn, opened and taken in.
 const documentPictures = usePictures(props.storyId)
@@ -254,7 +275,7 @@ let view = null
  * The link the caret is in, shown under it, or the field for making or
  * changing one. See `editor/links`.
  *
- * @type {import('vue').Ref<{ href: string, document?: string, left: number, top: number, editing: boolean, withText: boolean }|null>}
+ * @type {import('vue').Ref<{ href: string, document?: string, left: number, top: number, editing: boolean, withText: boolean, text?: string }|null>}
  */
 const linkPopover = ref(null)
 
@@ -1135,15 +1156,22 @@ const below = (editorView, pos, from = pos) => {
  * @param {EditorView} editorView
  */
 const showLink = editorView => {
-  if (linkPopover.value?.editing) return
+  if (linkPopover.value?.editing || linkMenuOpen) return
   const { selection } = editorView.state
   const around = selection.empty && editorView.hasFocus() ? linkAround(selection.$from) : null
-  // A link to another document reads as the document's name.
+  // A link to another document reads as the document's name, and its
+  // heading's; one to a heading in this one, as the heading's.
   const linked = around ? documentLinks.target(around.href, props.documentId) : null
+  const heading = around ? headingOf(around.href) : ''
+  const named = !linked
+    ? ''
+    : linked.id === props.documentId && heading
+      ? heading
+      : [api.displayTitle(linked), heading].filter(Boolean).join(' › ')
   linkPopover.value = around
     ? {
         href: around.href,
-        document: linked ? api.displayTitle(linked) : '',
+        document: named,
         editing: false,
         withText: false,
         ...below(editorView, selection.head, around.from),
@@ -1151,15 +1179,21 @@ const showLink = editorView => {
     : null
 }
 
-/** The field for the link at the selection: Mod-K, or Edit. */
+/**
+ * The field for the link at the selection: Mod-K, or Edit. A link the caret
+ * is in comes with its words, to change as well as where it goes; a new one
+ * with nothing selected asks for its words.
+ */
 const editLink = () => {
   if (!view) return
   const { selection } = view.state
   const around = linkAround(selection.$from)
+  const inLink = selection.empty && !!around
   linkPopover.value = {
     href: around?.href ?? '',
     editing: true,
-    withText: selection.empty && !around,
+    withText: selection.empty,
+    text: inLink && around ? view.state.doc.textBetween(around.from, around.to) : '',
     ...below(view, selection.to, selection.empty ? around?.from : selection.from),
   }
 }
@@ -1188,6 +1222,104 @@ const closeLink = refocus => {
   if (refocus) view?.focus()
 }
 
+/** The link the caret is in, onto the clipboard: from the popover, or the menu. */
+const copyLink = () => {
+  if (!view) return
+  const around = linkAround(view.state.selection.$from)
+  if (around) {
+    copyHref(around.href, props.documentId, view.state.doc.textBetween(around.from, around.to))
+  }
+}
+
+/** Whether the popover's own menu is open, which keeps the popover showing. */
+let linkMenuOpen = false
+
+/**
+ * The popover's menu opened, or put away: back to the text then, the link
+ * still showing, unless what was picked asked for the field.
+ * @param {boolean} open
+ */
+const onLinkMenu = open => {
+  linkMenuOpen = open
+  if (!open && !linkPopover.value?.editing) view?.focus()
+}
+
+/**
+ * What `[[` offers, under it, while the caret is after one: see
+ * `editor/linkPicker`.
+ *
+ * @type {import('vue').Ref<{ picking: import('@/editor/linkPicker.js').Picking, entries: import('@/composables/useDocumentLinks.js').LinkSuggestion[], active: number, left: number, top: number }|null>}
+ */
+const picker = ref(null)
+const pickerId = `link-picker-${props.documentId}`
+
+/**
+ * @param {EditorView} editorView
+ * @param {import('@/editor/linkPicker.js').Picking|null} picking
+ */
+const showPicker = (editorView, picking) => {
+  const entries = picking ? documentLinks.suggest(picking.query, props.documentId) : []
+  if (!picking || entries.length === 0) {
+    picker.value = null
+    return
+  }
+  const was = picker.value
+  const same = was?.picking.from === picking.from && was?.picking.query === picking.query
+  picker.value = {
+    picking,
+    entries,
+    active: same && was ? Math.min(was.active, entries.length - 1) : 0,
+    ...below(editorView, picking.to, picking.from),
+  }
+}
+
+/**
+ * A key for the list `[[` opened.
+ * @param {'up'|'down'|'pick'} key
+ * @returns {boolean} Whether it showed, to take it
+ */
+const pickerKey = key => {
+  const shown = picker.value
+  if (!shown) return false
+  if (key === 'pick') {
+    pickLink(shown.active)
+    return true
+  }
+  const count = shown.entries.length
+  shown.active = (shown.active + (key === 'down' ? 1 : count - 1)) % count
+  return true
+}
+
+/** @param {number} index */
+const pickLink = index => {
+  const shown = picker.value
+  const entry = shown?.entries[index]
+  if (!view || !shown || !entry) return
+  picker.value = null
+  putLink(view, shown.picking, { href: entry.href, words: entry.title })
+}
+
+/**
+ * Go to the heading a link asked for in this document, once it shows: the
+ * caret at its start, and it brought into view.
+ */
+const goToHeading = () => {
+  if (!view) return
+  const words = takeHeading(props.documentId)
+  if (!words) return
+  let found = -1
+  view.state.doc.descendants((node, pos) => {
+    if (found >= 0) return false
+    if (node.type.name === 'heading' && namesHeading(words, node.textContent)) found = pos + 1
+    return !node.isTextblock
+  })
+  if (found < 0) return
+  view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, found)))
+  view.focus()
+  nextTick(() => requestAnimationFrame(() => bringIntoView(found)))
+}
+watch(headingAsked, goToHeading)
+
 /** The tab going to the background is the last chance to write the document out. */
 const onVisibilityChange = () => {
   if (document.hidden) editor.flush(props.documentId)
@@ -1213,7 +1345,9 @@ onMounted(async () => {
         edit: editLink,
         open: href => documentLinks.open(href, props.documentId),
         update: showLink,
+        relink: href => documentLinks.pastedHref(href, props.documentId),
       }),
+      linkPicker({ update: showPicker, key: pickerKey }),
       pictures({
         describe: src => documentPictures.describe(src, props.documentId),
         open: node => documentPictures.open(node.attrs.src, props.documentId, node.attrs.alt),
@@ -1319,6 +1453,7 @@ onMounted(async () => {
   if (element) element.scrollTop = editor.scrollTop(id)
   goToCurrent()
   goToMatch()
+  goToHeading()
 })
 
 onBeforeUnmount(() => {
@@ -1339,6 +1474,11 @@ onBeforeUnmount(() => {
 </script>
 
 <style>
+/* Where a drag will put what it carries: a picture, words, a document's link. */
+.editor-drop-cursor {
+  background-color: var(--p-primary-color);
+}
+
 /* An empty document's first line says where to start, in the text's own
    colour faded, and takes up no room of its own. */
 .ProseMirror .placeholder::before {

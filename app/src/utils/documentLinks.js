@@ -1,3 +1,4 @@
+/* global DOMParser, location */
 /**
  * @module utils/documentLinks
  * @description Links from one document to another, as Markdown files link to
@@ -312,6 +313,86 @@ export function hrefFor(tree, fromId, toId) {
   }
   const names = [...folders.slice(shared).map(() => '..'), ...pathNames(to.slice(shared))]
   return names.join('/') || '.'
+}
+
+/**
+ * A link to a heading, after a document's path or on its own for one in the
+ * same document: `#` and the heading's words, encoded as a name is, as
+ * Obsidian writes one (`Cast%20list.md#The%20crew`).
+ *
+ * @param {string} words - The heading's
+ * @returns {string}
+ */
+export const headingHref = words => `#${encodeName(words.trim())}`
+
+/**
+ * The heading a link names after its `#`, decoded; empty for none.
+ *
+ * @param {string} href
+ * @returns {string}
+ */
+export function headingOf(href) {
+  const text = unwrap(href)
+  const hash = text.indexOf('#')
+  if (hash < 0) return ''
+  const raw = text.slice(hash + 1)
+  try {
+    return decodeURIComponent(raw).trim()
+  } catch {
+    return raw.trim()
+  }
+}
+
+/**
+ * Whether the heading a link names is one with these words: as they are, in
+ * any case, or as the slug a page on the web makes of them (`the-crew`).
+ *
+ * @param {string} named - As `headingOf` reads it
+ * @param {string} words - The heading's
+ * @returns {boolean}
+ */
+export function namesHeading(named, words) {
+  /** @param {string} text */
+  const plain = text => text.trim().replace(/\s+/g, ' ').toLowerCase()
+  /** @param {string} text */
+  const slug = text =>
+    plain(text)
+      .replace(/[^\p{L}\p{N}\s-]/gu, '')
+      .replace(/\s/g, '-')
+  return !!named && (plain(named) === plain(words) || slug(named) === slug(words))
+}
+
+/**
+ * A link the app put on the clipboard, as it was put there: a browser writes
+ * a link from the top of the project as a whole address on the app's own
+ * (`http://localhost:8002/Notes/Cast%20list.md`), and this takes that off.
+ *
+ * @param {string} href
+ * @returns {string}
+ */
+export function ownHref(href) {
+  const origin = typeof location === 'undefined' ? '' : location.origin
+  return origin && origin !== 'null' && href.startsWith(`${origin}/`)
+    ? href.slice(origin.length)
+    : href
+}
+
+/**
+ * The link a clipboard holds, when it holds one and nothing else, as the app
+ * copies one (`useCopyLink`): its address and its words.
+ *
+ * @param {DataTransfer|null|undefined} data
+ * @returns {{href: string, words: string}|null}
+ */
+export function linkOnClipboard(data) {
+  const html = data?.getData('text/html')
+  if (!html) return null
+  const page = new DOMParser().parseFromString(html, 'text/html')
+  const anchors = page.querySelectorAll('a[href]')
+  if (anchors.length !== 1) return null
+  const words = anchors[0].textContent?.trim() ?? ''
+  if ((page.body.textContent ?? '').trim() !== words) return null
+  return { href: ownHref(anchors[0].getAttribute('href') ?? ''), words }
 }
 
 /**

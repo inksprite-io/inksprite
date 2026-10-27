@@ -275,6 +275,19 @@ const makeHistory = api => {
   }
 
   /**
+   * The drag went out of the outline, into the text or a chat, to link the
+   * document there: whatever it moved on the way goes back, and no step is
+   * kept.
+   */
+  const cancelMove = () => {
+    const start = moving
+    moving = null
+    if (!start) return
+    const to = placeOf(start.documentId)
+    if (to && !samePlace(start.from, to)) replace(start.documentId, to, start.from)
+  }
+
+  /**
    * Take a step from one list, try it, and put it on the other if it went.
    * One that cannot be taken is let go of.
    * @param {import('vue').ShallowRef<Step[]>} from
@@ -302,6 +315,7 @@ const makeHistory = api => {
     trash,
     beginMove,
     endMove,
+    cancelMove,
     undo: () => take(done, undone, 'undo'),
     redo: () => take(undone, done, 'redo'),
   }

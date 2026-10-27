@@ -120,7 +120,7 @@ import PanelHeader from '../layout/PanelHeader.vue'
 import ProjectMenu from '../projects/ProjectMenu.vue'
 import TrashDialog from '../projects/TrashDialog.vue'
 import { useTrash } from '@/composables/useTrash.js'
-import { useBackup } from '@/composables/useBackup'
+import { useExport } from '@/composables/useExport.js'
 import { useCardChat } from '@/composables/useCardChat'
 import { useBulkImport, describeImport } from '@/composables/useBulkImport'
 import { useCardImport, NotACardError } from '@/composables/useCardImport'
@@ -150,6 +150,7 @@ import { driveAvailable } from '@/drive/config.js'
 import { mayHoldProject, packageOfFolder, packageOfZip } from '@/scrivener/package.js'
 import { openProject, writeProject } from '@/scrivener/project.js'
 import { useStoriesStore } from '@/stores/storiesStore'
+import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
 
@@ -168,6 +169,7 @@ const confirm = useConfirm()
 const storiesStore = useStoriesStore()
 const projects = useProjects()
 const api = useDocuments(props.storyId)
+const { exportDocument } = useExport(props.storyId)
 
 /** @type {import('vue').Ref<any>} */
 const rootNode = ref(null)
@@ -734,20 +736,6 @@ const syncAgain = async () => {
   }
 }
 
-/** Save the project, with its chats, to a file of its own. */
-const exportProject = async () => {
-  try {
-    await useBackup().downloadProject(props.storyId)
-  } catch (error) {
-    console.error('Project export failed:', error)
-    toast.add({
-      severity: 'error',
-      detail: `The project couldn't be exported. ${error.message}`,
-      life: 6000,
-    })
-  }
-}
-
 /** What can be done to the project: on the root's menu, and under Projects in the header. */
 const projectMenuItems = computed(() => [
   {
@@ -755,7 +743,12 @@ const projectMenuItems = computed(() => [
     icon: 'pi pi-cog',
     command: () => settingsPanel.open('project'),
   },
-  { label: 'Export project', icon: 'pi pi-download', command: () => exportProject() },
+  // As it would be published; a backup is in the settings.
+  {
+    label: 'Export project',
+    icon: 'pi pi-download',
+    command: () => exportDocument(rootIdFor(props.storyId)),
+  },
   // In the desktop app, the project's folder.
   ...[root.value && revealItem(root.value.id)].filter(item => Boolean(item)),
   // Signed in to sync: shared, kept on this device, or synced again. One

@@ -5,12 +5,17 @@ import PrimeVue from 'primevue/config'
 import Tooltip from 'primevue/tooltip'
 import BackupSection from '../../src/components/writer/settings/BackupSection.vue'
 import ExportDialog from '../../src/components/writer/settings/ExportDialog.vue'
+import ImportBackupDialog from '../../src/components/writer/settings/ImportBackupDialog.vue'
+import SettingsExportDialog from '../../src/components/writer/settings/SettingsExportDialog.vue'
 
 const { backup, confirmRequire, toast } = vi.hoisted(() => ({
   backup: {
-    downloadSelection: vi.fn(),
+    downloadBackup: vi.fn(),
+    downloadSettings: vi.fn(),
+    listSettings: vi.fn(),
     readDataFile: vi.fn(),
     restoreBackup: vi.fn(),
+    addFromBackup: vi.fn(),
     importSettings: vi.fn(),
     importSelection: vi.fn(),
   },
@@ -48,12 +53,12 @@ const pickFile = async (wrapper, file) => {
   await input.trigger('change')
 }
 
-/** What the export dialog hands over, as if the writer chose it there. */
-const exportChosen = async (wrapper, choice) => {
-  await buttonNamed(wrapper, 'Export').trigger('click')
-  const dialog = wrapper.findComponent(ExportDialog)
-  expect(dialog.props('visible')).toBe(true)
-  await dialog.vm.$emit('export', choice)
+/** What a dialog the button opens hands over, as if the writer chose it there. */
+const exportChosen = async (wrapper, choice, { button = 'Export', dialog = ExportDialog } = {}) => {
+  await buttonNamed(wrapper, button).trigger('click')
+  const opened = wrapper.findComponent(dialog)
+  expect(opened.props('visible')).toBe(true)
+  await opened.vm.$emit('export', choice)
   await flushPromises()
 }
 
@@ -73,45 +78,79 @@ describe('BackupSection', () => {
     desktop.on = false
   })
 
-  it('has two buttons, Export and Import, and no trash to empty', () => {
+  it('has three buttons, Export, Export settings and Import, and no trash to empty', () => {
     const wrapper = mountSection()
-    expect(wrapper.findAll('button').map(button => button.text())).toEqual(['Export', 'Import'])
+    expect(wrapper.findAll('button').map(button => button.text())).toEqual([
+      'Export',
+      'Export settings',
+      'Import',
+    ])
   })
 
   describe('Export', () => {
-    const pick = {
-      everything: false,
-      projects: [],
-      cardIds: [],
-      settings: new Set(['aiProfiles/profile_team']),
-    }
-
-    it('saves what was ticked, with keys when asked, and leaves the download to say so', async () => {
-      backup.downloadSelection.mockResolvedValue({ filename: 'inksprite-settings-2026-10-13.json' })
+    it('saves everything, with keys when asked, and leaves the download to say so', async () => {
+      backup.downloadBackup.mockResolvedValue({ filename: 'inksprite-backup-2026-10-26.zip' })
       const wrapper = mountSection()
 
-      await exportChosen(wrapper, { pick, includeApiKeys: true })
+      await exportChosen(wrapper, { includeApiKeys: true })
 
-      expect(backup.downloadSelection).toHaveBeenCalledWith(pick, { includeApiKeys: true })
+      expect(backup.downloadBackup).toHaveBeenCalledWith({ includeApiKeys: true })
       expect(toast.success).not.toHaveBeenCalled()
     })
 
-    it('reports an export that failed', async () => {
-      backup.downloadSelection.mockRejectedValue(new Error('quota'))
+    it('reports a backup that failed', async () => {
+      backup.downloadBackup.mockRejectedValue(new Error('quota'))
       vi.spyOn(console, 'error').mockImplementation(() => {})
       const wrapper = mountSection()
 
-      await exportChosen(wrapper, { pick, includeApiKeys: false })
+      await exportChosen(wrapper, { includeApiKeys: false })
 
-      expect(toast.error).toHaveBeenCalledWith("The file couldn't be saved. quota")
+      expect(toast.error).toHaveBeenCalledWith("The backup couldn't be saved. quota")
+    })
+  })
+
+  describe('Export settings', () => {
+    const settings = { button: 'Export settings', dialog: SettingsExportDialog }
+
+    it('saves the settings ticked, with keys when asked', async () => {
+      backup.downloadSettings.mockResolvedValue({ filename: 'inksprite-settings-2026-10-26.json' })
+      const wrapper = mountSection()
+      const picked = new Set(['aiProfiles/profile_team'])
+
+      await exportChosen(wrapper, { picked, includeApiKeys: true }, settings)
+
+      expect(backup.downloadSettings).toHaveBeenCalledWith({ picked, includeApiKeys: true })
+    })
+
+    it('reports a settings file that failed', async () => {
+      backup.downloadSettings.mockRejectedValue(new Error('quota'))
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      const wrapper = mountSection()
+
+      await exportChosen(wrapper, { picked: new Set(), includeApiKeys: false }, settings)
+
+      expect(toast.error).toHaveBeenCalledWith("The settings couldn't be saved. quota")
     })
   })
 
   describe('Import of a backup', () => {
+    const addable = { projects: [], cards: { rows: [], files: [] } }
     const readBackup = parsed =>
-      backup.readDataFile.mockResolvedValue({ kind: 'backup', backup: parsed, summary: [] })
+      backup.readDataFile.mockResolvedValue({
+        kind: 'backup',
+        backup: parsed,
+        summary: [],
+        addable,
+      })
 
-    it('asks before restoring, then restores', async () => {
+    /** Pick a backup, and the dialog it opens. */
+    const picked = async wrapper => {
+      await pickFile(wrapper, new File(['{}'], 'backup.json'))
+      await flushPromises()
+      return wrapper.findComponent(ImportBackupDialog)
+    }
+
+    it('asks what to do, and restores in place of everything when asked to', async () => {
       const parsed = {
         app: 'inksprite',
         tables: { chats: [{ id: 'c1' }], messages: [{ id: 'm1' }, { id: 'm2' }] },
@@ -122,21 +161,55 @@ describe('BackupSection', () => {
       const wrapper = mountSection()
 
       await buttonNamed(wrapper, 'Import').trigger('click')
-      await pickFile(wrapper, new File(['{}'], 'backup.json'))
+      const dialog = await picked(wrapper)
 
       expect(backup.restoreBackup).not.toHaveBeenCalled()
-      expect(confirmRequire).toHaveBeenCalledTimes(1)
-      expect(confirmRequire.mock.calls[0][0].header).toBe('Replace all data?')
-      expect(confirmRequire.mock.calls[0][0].message).toContain('This backup holds 1 chat.')
+      expect(dialog.props('visible')).toBe(true)
+      expect(dialog.props('message')).toBe('This backup holds 1 chat.')
+      expect(dialog.props('addable')).toEqual(addable)
 
-      await confirmRequire.mock.calls[0][0].accept()
+      await dialog.vm.$emit('replace')
+      await dialog.vm.$emit('update:visible', false)
+      await flushPromises()
 
       expect(backup.restoreBackup).toHaveBeenCalledWith(parsed)
       expect(window.location.reload).toHaveBeenCalled()
       vi.unstubAllGlobals()
     })
 
-    it('names the keys a backup left out before restoring it', async () => {
+    it('adds what was ticked beside what is here, and says what it added', async () => {
+      readBackup({ app: 'inksprite', tables: { stories: [{ id: 's1' }] } })
+      backup.addFromBackup.mockResolvedValue({ projects: ['Thief (2)'], cards: ['Wren'] })
+      const wrapper = mountSection()
+      const dialog = await picked(wrapper)
+      const taken = { projects: [{ story: { id: 's1' } }], cards: { rows: [], files: [] } }
+
+      await dialog.vm.$emit('add', taken)
+      await dialog.vm.$emit('update:visible', false)
+      await flushPromises()
+
+      expect(backup.addFromBackup).toHaveBeenCalledWith(taken)
+      expect(backup.restoreBackup).not.toHaveBeenCalled()
+      expect(toast.success).toHaveBeenCalledWith(
+        'Added the project Thief (2) and the character card Wren.'
+      )
+      expect(wrapper.findComponent(ImportBackupDialog).props('visible')).toBe(false)
+    })
+
+    it('does nothing when cancelled', async () => {
+      readBackup({ app: 'inksprite', tables: { chats: [{ id: 'c1' }] } })
+      const wrapper = mountSection()
+      const dialog = await picked(wrapper)
+
+      await dialog.vm.$emit('update:visible', false)
+      await flushPromises()
+
+      expect(backup.restoreBackup).not.toHaveBeenCalled()
+      expect(backup.addFromBackup).not.toHaveBeenCalled()
+      expect(wrapper.findComponent(ImportBackupDialog).props('visible')).toBe(false)
+    })
+
+    it('names the keys a backup left out before taking it', async () => {
       readBackup({
         app: 'inksprite',
         includesApiKeys: false,
@@ -147,10 +220,10 @@ describe('BackupSection', () => {
       })
       const wrapper = mountSection()
 
-      await pickFile(wrapper, new File(['{}'], 'backup.json'))
+      const dialog = await picked(wrapper)
 
-      expect(confirmRequire.mock.calls[0][0].message).toBe(
-        'This backup holds your settings. Keys left out: OpenRouter, Kagi. Everything in inksprite now is replaced.'
+      expect(dialog.props('message')).toBe(
+        'This backup holds your settings. Keys left out: OpenRouter, Kagi.'
       )
     })
 
@@ -158,9 +231,9 @@ describe('BackupSection', () => {
       readBackup({ app: 'inksprite', includesApiKeys: true, tables: { chats: [{ id: 'c1' }] } })
       const wrapper = mountSection()
 
-      await pickFile(wrapper, new File(['{}'], 'backup.json'))
+      const dialog = await picked(wrapper)
 
-      expect(confirmRequire.mock.calls[0][0].message).not.toContain('Keys')
+      expect(dialog.props('message')).not.toContain('Keys')
     })
   })
 
@@ -294,6 +367,10 @@ describe('BackupSection', () => {
     desktop.on = true
     const wrapper = mountSection()
     await flushPromises()
-    expect(wrapper.findAll('button').map(button => button.text())).toEqual(['Export', 'Import'])
+    expect(wrapper.findAll('button').map(button => button.text())).toEqual([
+      'Export',
+      'Export settings',
+      'Import',
+    ])
   })
 })

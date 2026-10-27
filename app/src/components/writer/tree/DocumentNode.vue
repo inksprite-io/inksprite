@@ -209,6 +209,7 @@
       :animation="200"
       :empty-insert-threshold="30"
       :move="onMove"
+      :set-data="setDragData"
       @start="onDragStart"
       @end="onDragEnd"
     >
@@ -238,7 +239,6 @@
 </template>
 
 <script setup>
-/* global Blob */
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Draggable from 'vuedraggable'
 import Button from 'primevue/button'
@@ -248,7 +248,7 @@ import TieredMenu from 'primevue/tieredmenu'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import { importItems } from './importItems.js'
-import { useCopyPath } from '@/composables/useCopyPath.js'
+import { useCopyLink } from '@/composables/useCopyLink.js'
 import { useReveal } from '@/composables/useReveal.js'
 import { usePlainText } from '@/composables/usePlainText.js'
 import { useFileView } from '@/composables/useFileView.js'
@@ -266,11 +266,9 @@ import { useLongPress } from '@/composables/useLongPress.js'
 import { OPEN_AFTER, useTreeDrop } from '@/composables/useTreeDrop.js'
 import { useTreeHistory } from '@/composables/useTreeHistory.js'
 import { useSharedDocuments } from '@/composables/useSharedDocuments.js'
-import { useFilesStore } from '@/stores/filesStore'
+import { useExport } from '@/composables/useExport.js'
 import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
-import { downloadBlob, filenameFor } from '@/files/download.js'
-import { exportDocument } from '@/files/exportDocument.js'
-import { EPUB_MIME, hasText, isText } from '@/files/inspect.js'
+import { EPUB_MIME, hasText } from '@/files/inspect.js'
 import { inRepository, isRepository, repositoryOf } from '@/source/tree.js'
 import { reextractFile } from '@/files/write.js'
 import { isDesktop } from '@/platform/desktop.js'
@@ -309,11 +307,12 @@ const emit = defineEmits([
 const api = useDocuments(props.storyId)
 // What the writer does here, to take back with Command-Z: see DocumentTree.
 const history = useTreeHistory(props.storyId)
-const { copyPath } = useCopyPath(props.storyId)
+const { copyLink, linkFor } = useCopyLink(props.storyId)
 const { revealItem } = useReveal()
 const { plainTextItem } = usePlainText(props.storyId)
 const { fileViewItem } = useFileView(props.storyId)
 const driveSync = useDriveSync(props.storyId)
+const { exportDocument } = useExport(props.storyId)
 const jobs = useJobs()
 /** What a job running on this document is doing: the row spins while it does. */
 const working = computed(() => {
@@ -482,32 +481,8 @@ const repositoryIcon = computed(() =>
   node.value?.source?.from === 'github' ? 'pi pi-github' : 'pi pi-box'
 )
 
-/** Hand the writer the file back, named as it came in. */
-const download = async () => {
-  const document = node.value
-  if (!document) return
-  // A repository's file keeps no bytes; its text is the file.
-  const blob =
-    (await useFilesStore().getFile(document.id)) ||
-    (isText(document.mime || '')
-      ? new Blob([document.content || ''], { type: document.mime })
-      : null)
-  if (blob) downloadBlob(blob, filenameFor(document))
-}
-
-/**
- * Hand the writer a text document as it stands, edits not yet written out
- * and all: its markdown file, or with its pictures a `.zip` of the two.
- */
-const exportText = async () => {
-  const document = node.value
-  if (!document) return
-  const files = useFilesStore()
-  const { blob, filename } = await exportDocument(document, api.currentContent(document.id), key =>
-    files.getFile(key)
-  )
-  downloadBlob(blob, filename)
-}
+/** Hand the writer this document or folder as it would be published. */
+const exportThis = () => exportDocument(props.documentId)
 
 /**
  * Copy a text document beside itself, and open the copy, as making one does:
@@ -1128,21 +1103,18 @@ const menuItems = computed(() => {
   } else {
     const plainText = plainTextItem(props.documentId)
     if (plainText) items.push(plainText)
-    // A file: the file or its text in the panel, the text read again, and
-    // the file as it came in.
+    // A file: the file or its text in the panel, and the text read again.
     const fileView = fileViewItem(props.documentId)
     if (fileView) items.push(fileView)
     if (extractable.value) {
       items.push({ label: 'Re-extract text', icon: 'pi pi-refresh', command: confirmReextract })
     }
-    if (isFile.value) items.push({ label: 'Download', icon: 'pi pi-download', command: download })
-    // A text document goes out as markdown, which is what it is kept as, its
-    // pictures with it, and can be copied to try something on.
+    // Out as it would be published: a file as it came in, a text as its
+    // markdown, and either with its pictures and what it holds as a zip.
+    items.push({ label: 'Export', icon: 'pi pi-download', command: exportThis })
+    // A text document can be copied to try something on.
     if (node.value?.type === 'text') {
-      items.push(
-        { label: 'Export', icon: 'pi pi-download', command: exportText },
-        { label: 'Duplicate', icon: 'pi pi-clone', command: duplicate }
-      )
+      items.push({ label: 'Duplicate', icon: 'pi pi-clone', command: duplicate })
       items.push({
         label: 'Versions…',
         icon: 'pi pi-history',
@@ -1201,7 +1173,7 @@ const menuItems = computed(() => {
   }
   items.push(
     // The address the tools take, for naming the document to the assistant.
-    { label: 'Copy path', icon: 'pi pi-copy', command: () => copyPath(props.documentId) }
+    { label: 'Copy link', icon: 'pi pi-copy', command: () => copyLink(props.documentId) }
   )
   // The project's own is with the project's items, which the root has too.
   const shown = isRoot.value ? null : revealItem(props.documentId)
@@ -1247,6 +1219,11 @@ const menuItems = computed(() => {
     }
   }
 
+  // A folder goes out as a directory of what it holds. The project's own
+  // export is with the project's items.
+  if (isFolder.value && !isRoot.value) {
+    items.push({ label: 'Export', icon: 'pi pi-download', command: exportThis })
+  }
   // A folder is where anything imported goes: files chosen together, or a
   // folder whole with the folders inside it. The tree owns the file choosers
   // and what they open; this only says where. Files can also be dropped on
@@ -1350,6 +1327,21 @@ const dropTarget = computed(() => drop.into.value === props.documentId)
 const isDestination = computed(() => drop.destination.value === props.documentId)
 
 /**
+ * What a row dragged out of the outline carries: a link to its document, as
+ * Copy link copies one, so that the editor and the chat put in a link where
+ * it is dropped; its path as text anywhere else.
+ * @param {DataTransfer} data
+ * @param {HTMLElement} item - The item Sortable took up
+ */
+const setDragData = (data, item) => {
+  const id = item.querySelector('[role="treeitem"]')?.getAttribute('data-document-id')
+  const link = id ? linkFor(id) : null
+  if (!link) return
+  data.setData('text/plain', link.text)
+  data.setData('text/html', link.html)
+}
+
+/**
  * A row of this folder's has started being dragged. The row is the first in
  * the item Sortable took up.
  * @param {{item?: HTMLElement}} event
@@ -1366,13 +1358,18 @@ const onDragStart = event => {
 
 /**
  * The drag is over, and what it moved is one step to take back. The row it
- * moved is drawn afresh where it landed, and the keys go to it there.
- * @param {{item?: HTMLElement}} event
+ * moved is drawn afresh where it landed, and the keys go to it there. Let go
+ * over text, the editor's or a chat's, it was carrying a link there, and
+ * whatever it moved in the outline on the way goes back.
+ * @param {{item?: HTMLElement, originalEvent?: MouseEvent}} event
  */
 const onDragEnd = event => {
   const id = event.item?.querySelector('[role="treeitem"]')?.getAttribute('data-document-id')
   drop.end()
-  history.endMove()
+  const at = event.originalEvent
+  const over = at?.clientX || at?.clientY ? document.elementFromPoint(at.clientX, at.clientY) : null
+  if (over?.closest('.ProseMirror, textarea')) history.cancelMove()
+  else history.endMove()
   emit('dragging', false)
   if (!id) return
   nextTick(() =>

@@ -185,6 +185,21 @@ describe('useTreeHistory', () => {
       expect(api.get(b.id)).toMatchObject({ parentId: 'notes_story_1', title: 'Two (2)' })
     })
 
+    it('puts back what a drag moved on its way out to the text, keeping no step', () => {
+      const a = api.createTextDocument('manuscript_story_1', 'One')
+      const b = api.createTextDocument('manuscript_story_1', 'Two')
+      api.createTextDocument('manuscript_story_1', 'Three')
+      const before = ids('manuscript_story_1')
+
+      history.beginMove(b.id)
+      api.moveInto('notes_story_1', b.id)
+      history.cancelMove()
+
+      expect(ids('manuscript_story_1')).toEqual(before)
+      expect(api.get(a.id).parentId).toBe('manuscript_story_1')
+      expect(history.nextUndo()).toBeNull()
+    })
+
     it('puts a new order in a folder back', () => {
       const a = api.createTextDocument('manuscript_story_1', 'One')
       const b = api.createTextDocument('manuscript_story_1', 'Two')

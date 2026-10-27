@@ -13,11 +13,9 @@ import {
   backupFilename,
   chatFilename,
   chatFromTables,
-  projectFilename,
   projectFromTables,
   projectsFromTables,
   projectName,
-  selectionFilename,
   withFreshIds,
 } from '@/utils/backup.js'
 
@@ -712,16 +710,6 @@ describe('chatFromTables', () => {
   })
 })
 
-describe('projectFilename', () => {
-  it('names the file after the project', () => {
-    expect(projectFilename('The Salt Road')).toBe('inksprite-project-the-salt-road.json')
-  })
-
-  it('has a name for a project without one', () => {
-    expect(projectFilename('')).toBe('inksprite-project-untitled.json')
-  })
-})
-
 describe('projectFromTables', () => {
   const tables = () => ({
     stories: [{ id: 'story_a' }],
@@ -946,10 +934,6 @@ describe('a selection', () => {
   it('picks the project asked for out of several', () => {
     expect(projectFromTables(tables, 'story_b').story.id).toBe('story_b')
     expect(() => projectFromTables(tables, 'story_missing')).toThrow('There is no project')
-  })
-
-  it('is named for the day it was saved', () => {
-    expect(selectionFilename(new Date(2026, 9, 15))).toBe('inksprite-export-2026-10-15.json')
   })
 
   it('is refused where a project is expected, saying where it goes', () => {

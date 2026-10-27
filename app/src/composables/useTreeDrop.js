@@ -63,6 +63,14 @@ const destination = computed(() => into.value ?? listed.value)
  */
 let dragging = /** @type {{storyId: string, documentId: string, item: Element|null}|null} */ (null)
 
+/**
+ * Whether a row of the outline is being dragged now: for a field elsewhere
+ * that takes the document as a link, which has to say it takes the drag.
+ *
+ * @returns {boolean}
+ */
+export const draggingFromOutline = () => dragging !== null
+
 /** The list the item being dragged is in, by the folder it is the list of. */
 const listOf = (/** @type {Element|null} */ item) =>
   item?.parentElement?.closest('[data-folder-id]')?.getAttribute('data-folder-id') ?? null

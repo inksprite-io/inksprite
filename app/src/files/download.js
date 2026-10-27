@@ -34,6 +34,7 @@ export function downloadBlob(blob, filename) {
   link.href = url
   link.download = filename
   link.click()
-  // Revoking synchronously can cancel the download in some browsers.
-  setTimeout(() => URL.revokeObjectURL(url), 0)
+  // Revoking at once can cancel the download in some browsers, and a large
+  // zip takes a while to be saved.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }

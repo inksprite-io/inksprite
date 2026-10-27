@@ -39,8 +39,8 @@ const isMobile = ref(false)
 vi.mock('@/composables/useScreenSize.js', () => ({
   useScreenSize: () => ({ isMobile, isNarrow: ref(false) }),
 }))
-const mockCopyPath = vi.fn()
-vi.mock('@/composables/useCopyPath.js', () => ({ useCopyPath: () => ({ copyPath: mockCopyPath }) }))
+const mockCopyLink = vi.fn()
+vi.mock('@/composables/useCopyLink.js', () => ({ useCopyLink: () => ({ copyLink: mockCopyLink }) }))
 vi.mock('@/composables/useToast.js', () => ({ useToast: () => ({ action: toastAction }) }))
 const mockSync = vi.hoisted(() => ({ linked: new Set(), busy: new Set(), sync: vi.fn() }))
 vi.mock('@/composables/useDriveSync.js', () => ({
@@ -116,14 +116,14 @@ describe('EditorPanel', () => {
     expect(wrapper.find('[data-empty]').exists()).toBe(false)
   })
 
-  it("offers to copy a tab's path from its menu", () => {
+  it("offers to copy a link to a tab's document from its menu", () => {
     const wrapper = mountPanel({ open: ['doc_1', 'doc_2'], active: 'doc_1' })
     const actions = wrapper.findComponent({ name: 'EditorTabs' }).props('actions')
 
     const items = actions('doc_2')
-    expect(items[0].label).toBe('Copy path')
+    expect(items[0].label).toBe('Copy link')
     items[0].command()
-    expect(mockCopyPath).toHaveBeenCalledWith('doc_2')
+    expect(mockCopyLink).toHaveBeenCalledWith('doc_2')
   })
 
   it('names tabs of one title by as much of their path as tells them apart', () => {
@@ -323,7 +323,7 @@ describe('EditorPanel', () => {
 
     const actions = wrapper.findComponent({ name: 'EditorTabs' }).props('actions')
     // A file is never a document to lay out, so there is no kind to switch.
-    expect(actions('pdf_1').map(item => item.label)).toEqual(['Copy path', 'Show as text'])
+    expect(actions('pdf_1').map(item => item.label)).toEqual(['Copy link', 'Show as text'])
 
     actions('pdf_1')[1].command()
     await wrapper.vm.$nextTick()

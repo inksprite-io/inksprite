@@ -117,8 +117,8 @@ vi.mock('../../src/scrivener/project.js', async importOriginal => ({
 const toastAdd = vi.fn()
 vi.mock('primevue/usetoast', () => ({ useToast: () => ({ add: toastAdd }) }))
 
-const downloadProject = vi.fn()
-vi.mock('../../src/composables/useBackup', () => ({ useBackup: () => ({ downloadProject }) }))
+const exportDocument = vi.fn()
+vi.mock('../../src/composables/useExport.js', () => ({ useExport: () => ({ exportDocument }) }))
 
 const ProjectMenu = {
   name: 'ProjectMenu',
@@ -575,16 +575,14 @@ describe('DocumentTree project menu', () => {
     expect(push).toHaveBeenCalledWith('/')
   })
 
-  it('exports the project, and says where it went', async () => {
-    downloadProject.mockResolvedValue({ filename: 'inksprite-project-my-novel.json', bytes: 1 })
+  it('exports the project as it would be published', async () => {
     const wrapper = mountTree()
     await flushPromises()
 
     await projectCommand(wrapper, 'Export project')
     await flushPromises()
 
-    expect(downloadProject).toHaveBeenCalledWith('story_1')
-    expect(toastAdd).not.toHaveBeenCalled()
+    expect(exportDocument).toHaveBeenCalledWith('root_story_1')
   })
 
   it('keeps the project on this device only, once asked, while signed in to sync', async () => {
@@ -661,22 +659,6 @@ describe('DocumentTree project menu', () => {
       sharing.value = { me: null, projects: {}, selective: [] }
       cloud.account.value = null
     }
-  })
-
-  it('says why an export failed', async () => {
-    downloadProject.mockRejectedValue(new Error('Quota exceeded'))
-    const wrapper = mountTree()
-    await flushPromises()
-
-    await projectCommand(wrapper, 'Export project')
-    await flushPromises()
-
-    expect(toastAdd).toHaveBeenCalledWith(
-      expect.objectContaining({
-        severity: 'error',
-        detail: "The project couldn't be exported. Quota exceeded",
-      })
-    )
   })
 })
 

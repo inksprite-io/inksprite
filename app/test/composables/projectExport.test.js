@@ -1,5 +1,5 @@
 // @vitest-environment node
-/* global Blob, File, btoa */
+/* global Blob, File */
 // Node's own Blob, which IndexedDB's structured clone keeps: happy-dom's comes
 // back from fake-indexeddb as an empty object, and a file without its bytes.
 import 'fake-indexeddb/auto'
@@ -12,9 +12,12 @@ import { useDocumentsStore } from '@/stores/documentsStore'
 import { useChatProfileStore } from '@/stores/chatProfileStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
+import { buildBackup, serializeFiles } from '@/utils/backup.js'
 
-// A project exported and imported through the real database: what goes into
-// the file, and what comes out of it beside what was there.
+// A project taken out of a backup and added beside the others through the
+// real database: what of it is offered, and what comes in beside what was
+// there. And the files of one project, or of a selection, that the app made
+// until 26 Oct 2026, which still come in.
 
 const STORY = 'story_V1StGXR8Z5jdHi6BmyT'
 const OTHER = 'story_Kp3Wq8Zr1MxT5vLc9NbYe'
@@ -161,47 +164,80 @@ async function seed() {
 const asFile = backup =>
   new File([JSON.stringify(backup)], 'project.json', { type: 'application/json' })
 
-describe('project export and import', () => {
+/**
+ * A file of the project's rows, as the app wrote a project file, or a
+ * selection, until 26 Oct 2026: its documents, those named or every one, its
+ * files' bytes, and its chats and their profile unless left out.
+ *
+ * @param {{scope?: 'project'|'selection', documentIds?: string[], chats?: boolean}} [options]
+ */
+async function savedBefore({ scope = 'project', documentIds, chats = true } = {}) {
+  const documents = (await db.documents.where('storyId').equals(STORY).toArray()).filter(
+    row => !documentIds || documentIds.includes(row.id)
+  )
+  const kept = new Set(documents.map(row => row.id))
+  const files = (await db.files.where('storyId').equals(STORY).toArray()).filter(row =>
+    kept.has(row.id)
+  )
+  const chatRows = chats ? await db.chats.where('storyId').equals(STORY).toArray() : []
+  const chatIds = new Set(chatRows.map(row => row.id))
+  return buildBackup(
+    {
+      stories: [await db.stories.get(STORY)],
+      documents,
+      files: await serializeFiles(files),
+      chats: chatRows,
+      messages: (await db.messages.toArray()).filter(row => chatIds.has(row.chatId)),
+      chatProfiles: chats ? [await db.chatProfiles.get(PROFILE)] : [],
+    },
+    { dbVersion: db.verno, scope }
+  )
+}
+
+/** The project as a whole backup of everything here offers it to be added. */
+async function fromBackup(storyId = STORY) {
+  const backup = useBackup()
+  const read = await backup.readDataFile(asFile(await backup.createBackup()))
+  expect(read.kind).toBe('backup')
+  return read.addable.projects.find(project => project.story.id === storyId)
+}
+
+describe('a project added from a backup', () => {
   beforeEach(async () => {
     setActivePinia(createPinia())
     await Promise.all(db.tables.map((/** @type {import('dexie').Table} */ table) => table.clear()))
     await seed()
   })
 
-  it('exports the project, its chats, and the profile it runs on, and nothing else', async () => {
-    const backup = await useBackup().createProjectBackup(STORY)
-
-    expect(backup.scope).toBe('project')
-    expect(backup.dbVersion).toBe(db.verno)
-    expect(backup.tables.stories.map(row => row.id)).toEqual([STORY])
-    expect(backup.tables.documents.map(row => row.id).sort()).toEqual([CHAPTER, PDF, ROOT].sort())
-    expect(backup.tables.chats.map(row => row.id)).toEqual([CHAT])
-    expect(backup.tables.messages.map(row => row.content)).toEqual([
-      'Tighten chapter one.',
-      'Done.',
-    ])
-    expect(backup.tables.chatProfiles.map(row => row.id)).toEqual([PROFILE])
-    expect(backup.tables.files).toEqual([
-      {
-        id: PDF,
-        storyId: STORY,
-        mime: 'application/pdf',
-        data: btoa(String.fromCharCode(...PDF_BYTES)),
-      },
-    ])
-    expect(Object.keys(backup.tables).sort()).toEqual(
-      ['chatProfiles', 'chats', 'documents', 'files', 'messages', 'stories'].sort()
+  it('is offered with its chats, its files and the profile it runs on, without its trash', async () => {
+    await db.documents.add(
+      doc('doc_Gone000000000000000000', STORY, ROOT, { type: 'text', title: 'Cut', trashed: 9 })
     )
+    await db.chats.add({
+      id: 'chat_Gone0000000000000000',
+      storyId: STORY,
+      title: 'Old',
+      titleSet: true,
+      trashed: 9,
+      version: 1,
+      created: 1,
+      updated: 1,
+    })
+    await db.stories.update(OTHER, { trashed: 9 })
+
+    const project = await fromBackup()
+
+    expect(project.documents.map(row => row.id).sort()).toEqual([CHAPTER, PDF, ROOT].sort())
+    expect(project.chats.map(row => row.id)).toEqual([CHAT])
+    expect(project.messages.map(row => row.content)).toEqual(['Tighten chapter one.', 'Done.'])
+    expect(project.profiles.map(row => row.id)).toEqual([PROFILE])
+    expect(project.files.map(row => row.id)).toEqual([PDF])
+    // A project that was in the trash itself isn't offered.
+    expect(await fromBackup(OTHER)).toBeUndefined()
   })
 
-  it('refuses a project that is not there', async () => {
-    await expect(useBackup().createProjectBackup('story_missing')).rejects.toThrow('not found')
-  })
-
-  it('imports the file as a new project beside the one it came from', async () => {
-    const backup = useBackup()
-    const project = await backup.readProjectFile(asFile(await backup.createProjectBackup(STORY)))
-    const story = await backup.importProject(project)
+  it('comes in as a new project beside the one it came from', async () => {
+    const story = await useBackup().importProject(await fromBackup())
 
     expect(story.id).not.toBe(STORY)
     expect(await db.stories.count()).toBe(3)
@@ -235,39 +271,30 @@ describe('project export and import', () => {
     expect(messages[1].metadata.documentEdits[0].documentId).toBe(chapter.id)
   })
 
-  it('tells the stores about the project, so the list shows it by name', async () => {
-    // Loaded before the import, as they are in the app by the time a writer
-    // can pick a file: they will not go back to the database on their own.
+  it('is numbered when its name is taken, and tells the stores, so the list shows it', async () => {
+    // Loaded before, as they are in the app by the time a writer can pick a
+    // file: they will not go back to the database on their own.
     const storiesStore = useStoriesStore()
     await storiesStore.ensureInitialized()
     expect(storiesStore.getAllStories()).toHaveLength(2)
 
-    const backup = useBackup()
-    const story = await backup.importProject(
-      await backup.readProjectFile(asFile(await backup.createProjectBackup(STORY)))
-    )
+    const done = await useBackup().addFromBackup({
+      projects: [await fromBackup()],
+      cards: { rows: [], files: [] },
+    })
 
+    expect(done).toEqual({ projects: ['The Salt Road (2)'], cards: [] })
     expect(storiesStore.getAllStories()).toHaveLength(3)
-    expect(storiesStore.getStory(story.id)).toMatchObject({ id: story.id })
-    expect(useDocumentsStore().getRoot(story.id)?.title).toBe('The Salt Road')
+    const added = storiesStore.getAllStories().find(story => ![STORY, OTHER].includes(story.id))
+    expect(useDocumentsStore().getRoot(added.id)?.title).toBe('The Salt Road (2)')
+    expect((await db.documents.get(rootIdFor(added.id)))?.title).toBe('The Salt Road (2)')
   })
 
-  it('writes the project under the name it is given', async () => {
+  it('comes in twice without one overwriting the other', async () => {
     const backup = useBackup()
-    const story = await backup.importProject(
-      await backup.readProjectFile(asFile(await backup.createProjectBackup(STORY))),
-      { title: 'The Salt Road (2)' }
-    )
-
-    expect((await db.documents.get(rootIdFor(story.id)))?.title).toBe('The Salt Road (2)')
-    expect(useDocumentsStore().getRoot(story.id)?.title).toBe('The Salt Road (2)')
-  })
-
-  it('imports the same file twice without one overwriting the other', async () => {
-    const backup = useBackup()
-    const file = asFile(await backup.createProjectBackup(STORY))
-    const first = await backup.importProject(await backup.readProjectFile(file))
-    const second = await backup.importProject(await backup.readProjectFile(file))
+    const project = await fromBackup()
+    const first = await backup.importProject(project)
+    const second = await backup.importProject(project)
 
     expect(second.id).not.toBe(first.id)
     expect(await db.stories.count()).toBe(4)
@@ -276,11 +303,10 @@ describe('project export and import', () => {
   })
 
   it('brings a profile this library does not have, under its own id', async () => {
-    const backup = useBackup()
-    const file = asFile(await backup.createProjectBackup(STORY))
+    const project = await fromBackup()
     await db.chatProfiles.clear()
 
-    await backup.importProject(await backup.readProjectFile(file))
+    await useBackup().importProject(project)
 
     expect(useChatProfileStore().getProfile(PROFILE)).toMatchObject({
       name: 'Line editor',
@@ -289,8 +315,7 @@ describe('project export and import', () => {
   })
 
   it('uses the profile this library has, as it stands', async () => {
-    const backup = useBackup()
-    const file = asFile(await backup.createProjectBackup(STORY))
+    const project = await fromBackup()
     await db.chatProfiles.put({
       id: PROFILE,
       name: 'Line editor',
@@ -300,9 +325,29 @@ describe('project export and import', () => {
       updated: 9,
     })
 
-    await backup.importProject(await backup.readProjectFile(file))
+    await useBackup().importProject(project)
 
     expect(useChatProfileStore().getProfile(PROFILE).settings.prompt).toBe('Cut more.')
+  })
+})
+
+describe('a project file made before', () => {
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    await Promise.all(db.tables.map((/** @type {import('dexie').Table} */ table) => table.clear()))
+    await seed()
+  })
+
+  it('comes in as a new project from Import project…', async () => {
+    const backup = useBackup()
+    const story = await backup.importProject(
+      await backup.readProjectFile(asFile(await savedBefore()))
+    )
+
+    expect(story.id).not.toBe(STORY)
+    const documents = await db.documents.where('storyId').equals(story.id).toArray()
+    expect(documents.map(row => row.title).sort()).toEqual(['Chapter One', 'Map', 'The Salt Road'])
+    expect(await db.chats.where('storyId').equals(story.id).count()).toBe(1)
   })
 
   it('sends a whole backup to Import in the settings', async () => {
@@ -312,83 +357,29 @@ describe('project export and import', () => {
       'Restore it with Import in Settings › Sync and sharing › Backup'
     )
   })
+
+  it('is taken as a selection of one project by Import in the settings', async () => {
+    const read = await useBackup().readDataFile(asFile(await savedBefore()))
+    expect(read.kind).toBe('selection')
+    expect(read.selection.projects.map(project => project.story.id)).toEqual([STORY])
+  })
 })
 
-describe('a selection', () => {
+describe('a selection made before', () => {
   beforeEach(async () => {
     setActivePinia(createPinia())
     await Promise.all(db.tables.map((/** @type {import('dexie').Table} */ table) => table.clear()))
     await seed()
   })
 
-  /** What Export hands over with these ticked. */
-  const pick = (overrides = {}) => ({
-    everything: false,
-    projects: [],
-    cardIds: [],
-    settings: new Set(),
-    ...overrides,
-  })
-
-  it('holds the documents ticked with the folders above them, the chats ticked, and their profile', async () => {
-    const backup = await useBackup().createSelectionBackup(
-      pick({ projects: [{ id: STORY, whole: false, documentIds: [CHAPTER], chatIds: [CHAT] }] })
-    )
-
-    expect(backup.scope).toBe('selection')
-    expect(backup.tables.stories.map(row => row.id)).toEqual([STORY])
-    expect(backup.tables.documents.map(row => row.id).sort()).toEqual([CHAPTER, ROOT].sort())
-    // The PDF wasn't ticked, so its bytes stay behind with it.
-    expect(backup.tables.files).toEqual([])
-    expect(backup.tables.chats.map(row => row.id)).toEqual([CHAT])
-    expect(backup.tables.messages).toHaveLength(2)
-    expect(backup.tables.chatProfiles.map(row => row.id)).toEqual([PROFILE])
-  })
-
-  it('leaves the chats behind when none were ticked', async () => {
-    const backup = await useBackup().createSelectionBackup(
-      pick({ projects: [{ id: STORY, whole: false, documentIds: [PDF], chatIds: [] }] })
-    )
-
-    expect(backup.tables.documents.map(row => row.id).sort()).toEqual([PDF, ROOT].sort())
-    expect(backup.tables.files.map(row => row.id)).toEqual([PDF])
-    expect(backup.tables.chats).toEqual([])
-    expect(backup.tables.messages).toEqual([])
-  })
-
-  it("carries a ticked text's pictures, and no one else's", async () => {
-    const picture = id => ({
-      id,
-      storyId: STORY,
-      blob: new Blob([new Uint8Array([0x89, 0x50])], { type: 'image/png' }),
+  it('adds its project beside the one it came from, numbered, with only what was in it', async () => {
+    const file = await savedBefore({
+      scope: 'selection',
+      documentIds: [ROOT, CHAPTER],
+      chats: false,
     })
-    await db.files.add(picture(`${CHAPTER}/gate.png`))
-    await db.files.add(picture(`${PDF}x/well.png`))
-
-    const backup = await useBackup().createSelectionBackup(
-      pick({ projects: [{ id: STORY, whole: false, documentIds: [CHAPTER], chatIds: [] }] })
-    )
-
-    expect(backup.tables.files.map(row => row.id)).toEqual([`${CHAPTER}/gate.png`])
-  })
-
-  it('is a whole backup with everything ticked, and a settings file with settings alone', async () => {
-    expect((await useBackup().createSelectionBackup(pick({ everything: true }))).scope).toBe(
-      'database'
-    )
-    const settings = await useBackup().createSelectionBackup(
-      pick({ settings: new Set([`chatProfiles/${PROFILE}`]) })
-    )
-    expect(settings.scope).toBe('settings')
-    expect(settings.tables.chatProfiles.map(row => row.id)).toEqual([PROFILE])
-  })
-
-  it('adds its project beside the one it came from, numbered, with only what was ticked', async () => {
-    const backup = await useBackup().createSelectionBackup(
-      pick({ projects: [{ id: STORY, whole: false, documentIds: [CHAPTER], chatIds: [] }] })
-    )
     await useStoriesStore().loadNames()
-    const read = await useBackup().readDataFile(asFile(backup))
+    const read = await useBackup().readDataFile(asFile(file))
     expect(read.kind).toBe('selection')
 
     const done = await useBackup().importSelection(read.selection)
@@ -401,13 +392,5 @@ describe('a selection', () => {
     expect(documents.map(row => row.title).sort()).toEqual(['Chapter One', 'The Salt Road (2)'])
     // The project it came from is as it was.
     expect(await db.documents.where('storyId').equals(STORY).count()).toBe(3)
-  })
-
-  it('takes a project file through the same door', async () => {
-    const read = await useBackup().readDataFile(
-      asFile(await useBackup().createProjectBackup(STORY))
-    )
-    expect(read.kind).toBe('selection')
-    expect(read.selection.projects.map(project => project.story.id)).toEqual([STORY])
   })
 })

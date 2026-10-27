@@ -25,8 +25,8 @@
  * - **write** - A file written into the project as a document, bytes and all,
  *   and its text read out again on request
  * - **download** - The file handed back, named as it came in
- * - **exportDocument** - A text document handed out: its markdown, and with
- *   its pictures, a `.zip` with an `images` folder
+ * - **exportDocument** - A project, a folder or a document as it would be
+ *   published: its files and directories, each text as it stands
  * - **batch** - Many files at once, each with the folders it came in: a
  *   folder chosen whole, or a drop from the desktop
  *
@@ -51,7 +51,7 @@ export { inspectFile, mimeOf, titleOf, hasText, isStructured, sizeLabel } from '
 export { textOfHtml, markdownOfHtml } from './html.js'
 export { docxToMarkdown, isDocx, DOCX_MIME } from './docx.js'
 export { takePictures, placePictures, measurePicture, markerFor } from './pictures.js'
-export { exportDocument } from './exportDocument.js'
+export { exportEntries } from './exportDocument.js'
 export {
   gatherFiles,
   gatherDropped,

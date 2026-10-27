@@ -11,6 +11,16 @@
       @click="exportDialogVisible = true"
     />
     <Button
+      label="Export settings"
+      icon="pi pi-sliders-h"
+      size="small"
+      outlined
+      severity="secondary"
+      :loading="isExportingSettings"
+      data-action="export-settings"
+      @click="settingsDialogVisible = true"
+    />
+    <Button
       label="Import"
       icon="pi pi-upload"
       size="small"
@@ -28,6 +38,15 @@
       @change="handleFileChange"
     />
     <ExportDialog v-model:visible="exportDialogVisible" @export="handleExport" />
+    <SettingsExportDialog v-model:visible="settingsDialogVisible" @export="handleSettingsExport" />
+    <ImportBackupDialog
+      :visible="restoring !== null"
+      :message="restoring?.message ?? ''"
+      :addable="restoring?.addable ?? null"
+      @update:visible="restoreDialogShown"
+      @replace="replaceAll"
+      @add="addPicked"
+    />
   </div>
 </template>
 
@@ -40,15 +59,18 @@ import { useToast } from '@/composables/useToast'
 import { describeBackupContents, keysLeftOut, projectName } from '@/utils/backup.js'
 import { changesAnything, describeImport, describeSelection } from '@/utils/settingsFile.js'
 import ExportDialog from './ExportDialog.vue'
+import ImportBackupDialog from './ImportBackupDialog.vue'
+import SettingsExportDialog from './SettingsExportDialog.vue'
 import { getWebService } from '@/web/services.js'
 
 /** @typedef {import('@/utils/backup.js').Backup} Backup */
 /** @typedef {import('@/utils/settingsFile.js').SettingsImport} SettingsImport */
 
 /**
- * Settings › Sync and sharing › Backup: everything, or some of it, saved to a
- * file, and a file taken back in, whatever it holds: a whole backup, a
- * selection, or settings.
+ * Settings › Sync and sharing › Backup: everything saved to a file, the
+ * settings picked saved to a file of their own, and a file taken back in,
+ * whatever it holds: a whole backup, settings, or a selection or a project
+ * saved before.
  */
 
 const backup = useBackup()
@@ -56,28 +78,54 @@ const toast = useToast()
 const confirm = useConfirm()
 
 const exportDialogVisible = ref(false)
+const settingsDialogVisible = ref(false)
 const isExporting = ref(false)
+const isExportingSettings = ref(false)
 const isImporting = ref(false)
 /** @type {import('vue').Ref<HTMLInputElement|null>} */
 const fileInput = ref(null)
+/**
+ * The whole backup being asked about: what it holds, said, and what of it
+ * can be added.
+ *
+ * @type {import('vue').Ref<{backup: Backup, message: string, addable: import('@/composables/useBackup').BackupAddable}|null>}
+ */
+const restoring = ref(null)
 
 /** What a web search service is called, for naming the keys a file left out. */
 const webName = (/** @type {string} */ id) => getWebService(id)?.name ?? id
 
 /**
- * Save what was ticked.
+ * Save everything.
  *
- * @param {import('./ExportDialog.vue').ExportChoice} choice
+ * @param {{includeApiKeys: boolean}} choice
  */
 const handleExport = async choice => {
   isExporting.value = true
   try {
-    await backup.downloadSelection(choice.pick, { includeApiKeys: choice.includeApiKeys })
+    await backup.downloadBackup({ includeApiKeys: choice.includeApiKeys })
   } catch (error) {
     console.error('Export failed:', error)
-    toast.error(`The file couldn't be saved. ${error.message}`)
+    toast.error(`The backup couldn't be saved. ${error.message}`)
   } finally {
     isExporting.value = false
+  }
+}
+
+/**
+ * Save the settings ticked.
+ *
+ * @param {import('./SettingsExportDialog.vue').SettingsExportChoice} choice
+ */
+const handleSettingsExport = async choice => {
+  isExportingSettings.value = true
+  try {
+    await backup.downloadSettings(choice)
+  } catch (error) {
+    console.error('Settings export failed:', error)
+    toast.error(`The settings couldn't be saved. ${error.message}`)
+  } finally {
+    isExportingSettings.value = false
   }
 }
 
@@ -105,7 +153,7 @@ const handleFileChange = async event => {
     const read = await backup.readDataFile(file)
     if (read.kind === 'settings') askToImportSettings(read.backup, read.plan)
     else if (read.kind === 'selection') askToImportSelection(read.backup, read.selection)
-    else askToRestore(read.backup)
+    else askToRestore(read.backup, read.addable)
   } catch (error) {
     console.error('Import failed:', error)
     toast.error(error.message)
@@ -114,43 +162,67 @@ const handleFileChange = async event => {
 }
 
 /**
- * Ask before a whole backup takes the place of everything here.
+ * Ask whether a whole backup takes the place of everything here, or only
+ * some of its projects and cards are added beside what is here.
  *
  * @param {Backup} parsed
+ * @param {import('@/composables/useBackup').BackupAddable} addable
  */
-function askToRestore(parsed) {
+function askToRestore(parsed, addable) {
   // The keys to enter again afterwards, named while the writer can still
   // go and find them: otherwise a chat or a search is how they find out.
   const leftOut = keysLeftOut(parsed, webName)
   const keys = leftOut.length > 0 ? ` Keys left out: ${leftOut.join(', ')}.` : ''
+  restoring.value = { backup: parsed, message: `${describeBackupContents(parsed)}${keys}`, addable }
+}
 
-  confirm.require({
-    header: 'Replace all data?',
-    message: `${describeBackupContents(parsed)}${keys} Everything in inksprite now is replaced.`,
-    icon: 'pi pi-exclamation-triangle',
-    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-    acceptProps: { label: 'Replace', severity: 'danger' },
-    accept: async () => {
-      // onHide fires as the dialog closes, so re-arm the spinner for the
-      // restore itself.
-      isImporting.value = true
-      try {
-        await backup.restoreBackup(parsed)
-        // Every Pinia store is holding rows that no longer exist. Reloading
-        // is the only honest way back to a consistent view.
-        window.location.reload()
-      } catch (error) {
-        console.error('Backup restore failed:', error)
-        toast.error(`The backup couldn't be restored. ${error.message}`)
-      }
-    },
-    reject: () => {
-      isImporting.value = false
-    },
-    onHide: () => {
-      isImporting.value = false
-    },
-  })
+/** Whether the dialog closed on a restore or an add, which keeps the spinner going. */
+let taking = false
+
+/** @param {boolean} visible */
+function restoreDialogShown(visible) {
+  if (visible) return
+  restoring.value = null
+  if (!taking) isImporting.value = false
+}
+
+/** Put the backup asked about in place of everything here, and start again on it. */
+async function replaceAll() {
+  const parsed = restoring.value?.backup
+  if (!parsed) return
+  taking = true
+  try {
+    await backup.restoreBackup(parsed)
+    // Every Pinia store is holding rows that no longer exist. Reloading
+    // is the only honest way back to a consistent view.
+    window.location.reload()
+  } catch (error) {
+    console.error('Backup restore failed:', error)
+    toast.error(`The backup couldn't be restored. ${error.message}`)
+    taking = false
+    isImporting.value = false
+  }
+}
+
+/**
+ * Add the projects and cards ticked of a backup beside what is here, and say
+ * what was added, since none of it shows from here.
+ *
+ * @param {import('@/composables/useBackup').BackupAddable} taken
+ */
+async function addPicked(taken) {
+  taking = true
+  try {
+    const done = await backup.addFromBackup(taken)
+    const added = describeSelection({ ...done, plan: { added: [], changed: [] } }, { done: true })
+    if (added) toast.success(added)
+  } catch (error) {
+    console.error('Import failed:', error)
+    toast.error(`Nothing was imported. ${error.message}`)
+  } finally {
+    taking = false
+    isImporting.value = false
+  }
 }
 
 /**

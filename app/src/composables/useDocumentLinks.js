@@ -15,20 +15,41 @@
 
 import { openUrl } from '@/platform/open.js'
 import { normalizeHref } from '@/editor/links.js'
+import { parseMarkdown } from '@/editor/markdown.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import {
   documentNamed,
+  headingHref,
+  headingOf,
   hrefFor,
   isDocumentHref,
+  ownHref,
   projectHref,
   resolveLink,
 } from '@/utils/documentLinks.js'
 import { pictureOf } from '@/utils/pictures.js'
 import { useDocuments } from './useDocuments.js'
+import { useEditor } from './useEditor.js'
 import { usePictures } from './usePictures.js'
 import { useEditorRequest } from './useEditorRequest.js'
 
 /** @typedef {import('@/types/models.js').Document} Document */
+
+/**
+ * A document, or a heading in one, that a link can be made to: what the
+ * link field and `[[` offer as the writer types.
+ *
+ * @typedef {Object} LinkSuggestion
+ * @property {string} key
+ * @property {string} title - The document's name, or the heading's words
+ * @property {string} detail - Where it is: the folders above the document,
+ *   or the document the heading is in
+ * @property {string} href - The link, from the document it goes in
+ * @property {boolean} [heading]
+ */
+
+/** The documents' headings as last read, by document, with the text read. */
+const headingsRead = new Map()
 
 /**
  * @param {string} storyId
@@ -38,11 +59,15 @@ import { useEditorRequest } from './useEditorRequest.js'
  *   addressFor: (input: string, fromId: string) => string,
  *   copiedHref: (href: string, fromId: string) => string,
  *   pastedHref: (href: string, toId: string) => string,
+ *   suggest: (query: string, fromId: string, limit?: number) => LinkSuggestion[],
+ *   chatLink: (href: string, words: string) => string|null,
+ *   chatPath: (href: string) => string|null,
  *   onClick: (event: MouseEvent) => void,
  * }}
  */
 export function useDocumentLinks(storyId) {
   const api = useDocuments(storyId)
+  const editor = useEditor()
   const editorRequest = useEditorRequest()
 
   /** @type {import('@/utils/documentLinks.js').LinkTree} */
@@ -78,6 +103,8 @@ export function useDocumentLinks(storyId) {
     const document = target(href, fromId)
     if (!document || document.type === 'folder') return
     api.open(document.id, { preview: true })
+    const heading = headingOf(href)
+    if (heading && document.type === 'text') editorRequest.goToHeading(document.id, heading)
     editorRequest.show()
   }
 
@@ -115,18 +142,19 @@ export function useDocumentLinks(storyId) {
   }
 
   /**
-   * A link from the clipboard, written from the document it is pasted into.
-   * One that names no document stays as it came, and still goes to it from
-   * the top.
+   * A link from the clipboard, written from the document it is pasted into,
+   * with the app's own address taken off where a browser put it on. One that
+   * names no document stays as it came, and still goes to it from the top.
    *
-   * @param {string} href
+   * @param {string} pasted
    * @param {string} toId - The document it is pasted into
    * @returns {string}
    */
-  const pastedHref = (href, toId) => {
-    if (!href.trim().startsWith('/') || !isDocumentHref(href)) return href
+  const pastedHref = (pasted, toId) => {
+    const href = ownHref(pasted)
+    if (!href.trim().startsWith('/') || !isDocumentHref(href)) return pasted
     const document = target(href, toId)
-    if (!document) return href
+    if (!document) return pasted
     // A link to the document it is in is its place in it, as it was written.
     if (document.id === toId && fragmentOf(href)) return fragmentOf(href)
     return hrefFor(tree, toId, document.id) + fragmentOf(href)
@@ -148,5 +176,153 @@ export function useDocumentLinks(storyId) {
     open(href)
   }
 
-  return { open, target, addressFor, copiedHref, pastedHref, onClick }
+  /**
+   * The words of a document's headings, in order: as the editor has it, if
+   * it is open, or as it was last saved.
+   * @param {string} documentId
+   * @returns {string[]}
+   */
+  const headingsOf = documentId => {
+    if (api.get(documentId)?.type !== 'text' || api.isPlain(documentId)) return []
+    let doc = editor.stateOf(documentId)?.doc
+    if (!doc) {
+      const content = api.currentContent(documentId)
+      const read = headingsRead.get(documentId)
+      doc = read?.content === content ? read.doc : parseMarkdown(content)
+      headingsRead.set(documentId, { content, doc })
+    }
+    /** @type {string[]} */
+    const out = []
+    doc.descendants(node => {
+      if (node.type.name === 'heading' && node.textContent.trim()) out.push(node.textContent.trim())
+      return !node.isTextblock
+    })
+    return out
+  }
+
+  /**
+   * The project's documents a name could be, the likeliest first: named so,
+   * then a name starting so, then a word in it, then anywhere in its name or
+   * its path. Folders aside, as a link to one goes nowhere. Every document,
+   * in the outline's order, for no name.
+   * @param {string} name
+   * @returns {Document[]}
+   */
+  const documentsLike = name => {
+    const wanted = name.trim().toLowerCase()
+    /** @type {Array<{document: Document, rank: number, order: number}>} */
+    const found = []
+    /** @param {string} parentId */
+    const visit = parentId => {
+      for (const child of api.childrenOf(parentId)) {
+        if (child.type !== 'folder') {
+          const title = api.displayTitle(child).toLowerCase()
+          const rank = !wanted
+            ? 0
+            : title === wanted
+              ? 0
+              : title.startsWith(wanted)
+                ? 1
+                : title.split(/\s+/).some(word => word.startsWith(wanted))
+                  ? 2
+                  : title.includes(wanted)
+                    ? 3
+                    : api.pathOf(child.id).toLowerCase().includes(wanted)
+                      ? 4
+                      : -1
+          if (rank >= 0) found.push({ document: child, rank, order: found.length })
+        }
+        visit(child.id)
+      }
+    }
+    visit(tree.rootId)
+    return found.sort((a, b) => a.rank - b.rank || a.order - b.order).map(each => each.document)
+  }
+
+  /**
+   * What a link could go to, for what the writer has typed: the documents
+   * it could name, or after a `#` the headings of the document named before
+   * it, or of this one with nothing before it.
+   * @param {string} query
+   * @param {string} fromId - The document the link goes in
+   * @param {number} [limit]
+   * @returns {LinkSuggestion[]}
+   */
+  const suggest = (query, fromId, limit = 8) => {
+    const hash = query.indexOf('#')
+    if (hash < 0) {
+      return documentsLike(query)
+        .slice(0, limit)
+        .map(document => ({
+          key: document.id,
+          title: api.displayTitle(document),
+          detail: api.titlesOf(document.id).slice(0, -1).join(' / '),
+          href: hrefFor(tree, fromId, document.id),
+        }))
+    }
+    const name = query.slice(0, hash).trim()
+    const wanted = query
+      .slice(hash + 1)
+      .trim()
+      .toLowerCase()
+    const document = name ? documentsLike(name)[0] : api.get(fromId)
+    if (!document) return []
+    const path = document.id === fromId ? '' : hrefFor(tree, fromId, document.id)
+    return headingsOf(document.id)
+      .map((words, at) => ({ words, at }))
+      .filter(({ words }) => !wanted || words.toLowerCase().includes(wanted))
+      .slice(0, limit)
+      .map(({ words, at }) => ({
+        key: `${document.id}#${at}`,
+        title: words,
+        detail: api.displayTitle(document),
+        href: path + headingHref(words),
+        heading: true,
+      }))
+  }
+
+  /**
+   * A link to a document as a chat's message holds it, pasted or dropped
+   * there: Markdown, its words and the document's path from the top of the
+   * project as the document tools take it, which both the writer and the
+   * model can read. Null for a link to no document of the project's.
+   * @param {string} href - From the top of the project, as the clipboard has it
+   * @param {string} words
+   * @returns {string|null}
+   */
+  const chatLink = (href, words) => {
+    const path = chatPath(href)
+    const document = path ? target(href) : null
+    if (!path || !document) return null
+    const heading = headingOf(href)
+    const text = (words || heading || api.displayTitle(document)).replace(/[[\]\\]/g, '\\$&')
+    return `[${text}](<${path.replace(/[<>\\]/g, '\\$&')}>)`
+  }
+
+  /**
+   * A link to a document as the path the document tools take, and a chat's
+   * commands, from the top of the project: `/Notes/Cast list`, its heading
+   * after a `#`. Null for a link to no document of the project's.
+   * @param {string} href - From the top of the project
+   * @returns {string|null}
+   */
+  const chatPath = href => {
+    if (!href.trim().startsWith('/') || !isDocumentHref(href) || pictureOf(href)) return null
+    const document = target(href)
+    if (!document || document.type === 'folder') return null
+    const heading = headingOf(href)
+    return `/${api.pathOf(document.id)}${heading ? `#${heading}` : ''}`
+  }
+
+  return {
+    open,
+    target,
+    addressFor,
+    copiedHref,
+    pastedHref,
+    suggest,
+    chatLink,
+    chatPath,
+    onClick,
+  }
 }

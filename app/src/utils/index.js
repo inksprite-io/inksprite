@@ -44,9 +44,11 @@
  *
  * ### Storage
  * - **localStorage** - LocalStorage wrapper with quota management
- * - **backup** - Build and validate export files: the whole database, a chat, a project, settings
+ * - **backup** - Build and validate backup files: the whole database, a chat, settings, and a project or a selection saved before
+ * - **backupArchive** - A backup as a zip, its rows as JSON and each file's bytes an entry of its own
+ * - **zipWriter** - A zip written a piece at a time, a backup's and an export's
  * - **settingsFile** - What a settings file holds, which of it the writer picked, and what importing one changes
- * - **exportTree** - What Export offers, as a tree of boxes, and what the boxes ticked choose
+ * - **settingsTree** - What Export settings offers, as a tree of boxes, and what the boxes ticked choose
  *
  * ## Usage Examples
  *

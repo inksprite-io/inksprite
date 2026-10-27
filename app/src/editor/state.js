@@ -227,7 +227,8 @@ export function plugins() {
     tableEditing(),
     keymap(keys),
     keymap(baseKeymap),
-    dropCursor(),
+    // Drawn by the editor's styles, in the theme's colour, light or dark.
+    dropCursor({ color: false, width: 2, class: 'editor-drop-cursor' }),
     gapCursor(),
     history(),
     searchPlugin(),

@@ -58,6 +58,30 @@
  * @property {DesktopPython} [python] - Python for the model to run code in,
  *   a session for each chat. Missing from a desktop app older than the page
  *   it loads.
+ * @property {DesktopExportFolder} [exportFolder] - Exports written to a
+ *   folder the writer chooses. Missing from a desktop app older than the
+ *   page it loads.
+ */
+
+/**
+ * One thing in an export written to a folder, by its path in the export, the
+ * export's own folder first: a directory, a text, a file's bytes, or a file
+ * in the library to copy.
+ *
+ * @typedef {{path: string, folder: true}
+ *   | {path: string, text: string}
+ *   | {path: string, bytes: Uint8Array}
+ *   | {path: string, file: string}} DesktopExportEntry
+ */
+
+/**
+ * Exports written to a folder of the writer's (`app/electron/src/exporting.js`).
+ *
+ * @typedef {Object} DesktopExportFolder
+ * @property {(name: string) => Promise<string|null>} choose - Ask where, with
+ *   a folder of this name to start with; null when the writer cancelled
+ * @property {(target: string, entries: DesktopExportEntry[]) => Promise<void>} write -
+ *   Write an export where the writer chose, in place of what is there
  */
 
 /**

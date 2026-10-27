@@ -22,6 +22,7 @@
  * - **useChats** - Chat session management
  * - **useChatSettings** - One chat's settings and profile, started or not
  * - **useBackup** - Whole-database export and restore, and single chats, projects and settings as files
+ * - **useExport** - A project, a folder or a document handed out as it would be published, a zip of it where it is more than one file
  * - **useTrash** - The trash: what a project's holds of its documents and chats, and the projects in it, to restore or delete for good
  * - **useVersions** - A text document's versions, listed, compared with the text now, restored, named and kept; and the Versions dialog's state
  * - **useNarration** - A project read aloud: its voices and hints, a document's speakers, and the readings
@@ -45,7 +46,7 @@
  * - **useChatRequest** - Showing a chat in the project it is in, once that project is open, from anywhere in the writer
  * - **useFocusMode** - Focus mode: the document alone, full screen, in and out on Option-Command-F
  * - **useTopmostEscape** - Escape closes the dialog on top, and only that one
- * - **useCopyPath** - Copy a document's path, the address the tools take, to the clipboard
+ * - **useCopyLink** - Copy a link to a document, its path the address the tools take, to the clipboard
  * - **useReveal** - Show a document where it is on disk, in the desktop app's file manager
  * - **useDocumentLinks** - Links between a project's documents: one opens the document in a tab,
  *   and the link field makes one from a path or a name
@@ -89,6 +90,7 @@
 export { useAIConfig } from './useAIConfig.js'
 export { useModelLists } from './useModelLists.js'
 export { useBackup } from './useBackup.js'
+export { useExport } from './useExport.js'
 export { useProfiles } from './useProfiles.js'
 export { useSkills } from './useSkills.js'
 export { useLoadedSkills } from './useLoadedSkills.js'
@@ -114,7 +116,7 @@ export { useChatRequest } from './useChatRequest.js'
 export { useFocusMode, useFocusModeKeys } from './useFocusMode.js'
 export { useProjectSearch, useProjectSearchKey } from './useProjectSearch.js'
 export { useTopmostEscape } from './useTopmostEscape.js'
-export { useCopyPath } from './useCopyPath.js'
+export { useCopyLink } from './useCopyLink.js'
 export { useReveal } from './useReveal.js'
 export { useDocumentLinks } from './useDocumentLinks.js'
 export { usePictures } from './usePictures.js'

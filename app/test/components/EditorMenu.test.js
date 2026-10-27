@@ -301,15 +301,18 @@ describe('EditorMenu', () => {
       expect(wrapper.emitted('comment')).toHaveLength(1)
     })
 
-    it('edits or removes the link the caret is in', async () => {
+    it('edits, copies or removes the link the caret is in', async () => {
       const view = viewOf('See [the cast](https://example.com) first.', [])
       const { wrapper } = mountMenu()
       await openAt(wrapper, view, 7)
-      expect(labels(model(wrapper)).slice(-5, -2)).toEqual([
+      expect(labels(model(wrapper)).slice(-6, -2)).toEqual([
         'Edit link…',
+        'Copy link',
         'Remove link',
         'Comment…',
       ])
+      await item(wrapper, 'Copy link').command()
+      expect(wrapper.emitted('copy-link')).toHaveLength(1)
       await item(wrapper, 'Remove link').command()
       expect(wrapper.emitted('remove-link')).toHaveLength(1)
     })

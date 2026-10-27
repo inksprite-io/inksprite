@@ -6,6 +6,48 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.24
+
+Documents to link to listed as you type, and Export apart from Backup:
+your work as ordinary files to use elsewhere, and a backup of everything.
+
+- Type `[[` and the start of a document's name, in a document or in a
+  chat's message, and the documents it could be are listed. Pick one and
+  a link to it goes in, with the document's name as its words. The link
+  field (⌘K) lists them as you type too.
+- A link can go to a heading: type `#` after the document's name, and its
+  headings are listed. The link opens the document there, and still opens
+  it if the heading's words change.
+- Copy path on a document's menu and its tab is now Copy link. Pasted over
+  selected words it links them, and on its own it goes in with the
+  document's name; in a chat's message it's a link the model reads as the
+  document's path. A document dragged from the outline into a document or
+  a chat's message goes in as a link too, and the drop cursor now shows
+  in dark mode.
+- Editing a link changes its words as well as its address, the words
+  above the address. The buttons under a link are icons, Copy link among
+  them, and Copy link is on the editor's menu for a link too.
+- Export project, and Export on every folder and document, give your work
+  as ordinary files to use somewhere else: a folder for each folder and a
+  Markdown file for each document, named as in the outline, each imported
+  file as it came in, and a document's pictures in an `images` folder
+  beside it. The text is as it stands, without comments or the
+  suggestions you haven't accepted, and a link from one exported document
+  to another is written to the other's file, so it still works. Chats stay
+  behind. In a browser, more than one file comes as a `.zip`; in the
+  desktop app, a project or a folder goes to a folder you choose, and one
+  of that name already there goes to your computer's trash first.
+  Download on an imported file's menu is now Export.
+- Export in Settings › Sync and sharing › Backup makes a backup of
+  everything, with one switch for API keys. Export settings beside it
+  makes a settings file of the settings you tick. Export no longer picks
+  out part of your work, and Export project no longer makes a project
+  file; files made either way still come in.
+- Importing a backup lists its projects and character cards. Replace puts
+  the backup in place of everything, as before, and Add brings in only
+  those you tick, beside what you have, each project with its chats and
+  the profiles they run on.
+
 ## v0.1.0-dev.23
 
 A preset for each chat, the project and sync in settings of their own,

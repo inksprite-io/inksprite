@@ -9,8 +9,8 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { isRepository, repositoryOf } from '@/source/tree.js'
 
 // A repository belongs to its project, and goes wherever the project's
-// documents go: into a whole backup and back, and into a project's own file
-// and out again as a copy. Its files have no bytes beside their text, so
+// documents go: into a whole backup and back, and out of one again as a
+// copy of the project. Its files have no bytes beside their text, so
 // nothing of it is in `files`.
 
 const STORY = 'story_R4pQx8Lm2Wz6Tn0Vc3Ky9'
@@ -81,20 +81,25 @@ describe('a repository in backups', () => {
     await seed()
   })
 
-  it("goes into the project's own file, folder, files and all", async () => {
-    const backup = await useBackup().createProjectBackup(STORY)
+  /** The project as a whole backup offers it to be added beside the others. */
+  const offered = async () => {
+    const backup = useBackup()
+    const read = await backup.readDataFile(asFile(await backup.createBackup()))
+    return read.addable.projects.find(project => project.story.id === STORY)
+  }
 
-    const repository = backup.tables.documents.find(row => row.id === REPOSITORY)
+  it('is offered with its project from a whole backup, folder, files and all', async () => {
+    const project = await offered()
+
+    const repository = project.documents.find(row => row.id === REPOSITORY)
     expect(repository).toMatchObject({ kind: 'repository', source: SOURCE })
-    expect(backup.tables.documents.find(row => row.id === INDEX).content).toBe(CODE)
-    expect(backup.tables.files).toEqual([])
+    expect(project.documents.find(row => row.id === INDEX).content).toBe(CODE)
+    expect(project.files).toEqual([])
   })
 
-  it('comes out of that file as a copy of its own, its text untouched', async () => {
+  it('comes out of it as a copy of its own, its text untouched', async () => {
     const backup = useBackup()
-    const story = await backup.importProject(
-      await backup.readProjectFile(asFile(await backup.createProjectBackup(STORY)))
-    )
+    const story = await backup.importProject(await offered())
 
     const documents = await db.documents.where('storyId').equals(story.id).toArray()
     const byId = new Map(documents.map(row => [row.id, row]))

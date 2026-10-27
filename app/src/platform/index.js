@@ -35,6 +35,8 @@
  *   one at a time, and what the windows tell each other they changed
  * - **python** - In the desktop app, Python for the model to run code in, a
  *   session for each chat, fenced from the writer's data and the network
+ * - **exportFolder** - In the desktop app, a project or a folder exported to
+ *   a folder the writer chooses, rather than downloaded as a zip
  *
  * Design: `.llm/desktop_design.md`.
  *
@@ -60,3 +62,4 @@ export { askToKeepData, storageAdvice } from './persistence.js'
 export { settingsFileText } from './settingsFile.js'
 export { beforeClosing } from './closing.js'
 export { hasPython, runPython } from './python.js'
+export { canExportToFolder, chooseExportFolder, writeExportFolder } from './exportFolder.js'

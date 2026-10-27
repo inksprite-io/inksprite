@@ -95,6 +95,30 @@ describe('setLink', () => {
     )
   })
 
+  it('changes the words of the link the caret is in, looking as they did', () => {
+    const state = at(
+      'The keeper kept a [**logbook**](https://example.com/log) of every ship.',
+      'log',
+      {
+        caret: true,
+      }
+    )
+    expect(after(state, setLink('https://example.com/diary', 'diary'))).toBe(
+      'The keeper kept a [**diary**](https://example.com/diary) of every ship.'
+    )
+  })
+
+  it('keeps the words, and how each looks, when they are the same or none were given', () => {
+    const markdown = 'The keeper kept a [log**book**](https://example.com/log) of every ship.'
+    const state = at(markdown, 'log', { caret: true })
+    expect(after(state, setLink('https://example.com/new', 'logbook'))).toBe(
+      markdown.replace('https://example.com/log', 'https://example.com/new')
+    )
+    expect(after(state, setLink('https://example.com/new'))).toBe(
+      markdown.replace('https://example.com/log', 'https://example.com/new')
+    )
+  })
+
   it('leaves the caret after the link', () => {
     const state = at(TEXT, 'every ship')
     let next = state
@@ -162,7 +186,12 @@ describe('links', () => {
 
   /** A view over `state` with the plugin, and what it called back with. */
   const mount = state => {
-    const calls = { edit: vi.fn(), open: vi.fn(), update: vi.fn() }
+    const calls = {
+      edit: vi.fn(),
+      open: vi.fn(),
+      update: vi.fn(),
+      relink: vi.fn(href => href.replace(/^\/Notes\//, '')),
+    }
     view = new EditorView(document.createElement('div'), { state, plugins: [links(calls)] })
     return { view, calls }
   }
@@ -226,6 +255,23 @@ describe('links', () => {
     expect(
       paste(mount(at('Some `inline code` here.', 'code')).view, 'https://a.example')
     ).toBeFalsy()
+  })
+
+  it('links the selection with a link to a document the app copied, written from here', () => {
+    const { view, calls } = mount(at(TEXT, 'every ship'))
+    const copied =
+      '<meta charset="utf-8"><a href="http://localhost:3000/Notes/Cast%20list.md">Cast list</a>'
+    expect(paste(view, 'Notes/Cast list', copied)).toBe(true)
+    expect(calls.relink).toHaveBeenCalledWith('/Notes/Cast%20list.md')
+    expect(serializeMarkdown(view.state.doc)).toBe(
+      'The keeper kept a [logbook](https://example.com/log) of [every ship](Cast%20list.md).'
+    )
+  })
+
+  it("leaves words copied from a document, a link among them, to the editor's own paste", () => {
+    const { view } = mount(at(TEXT, 'every ship'))
+    const copied = '<p data-pm-slice="1 1 []"><a href="/Notes/Cast%20list.md">Cast list</a></p>'
+    expect(paste(view, 'Cast list', copied)).toBeFalsy()
   })
 
   it('tells the editor as the state changes', () => {

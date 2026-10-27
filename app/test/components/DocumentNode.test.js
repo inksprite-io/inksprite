@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
+import { unzipSync } from 'fflate'
 import PrimeVue from 'primevue/config'
 import ConfirmationService from 'primevue/confirmationservice'
 import ToastService from 'primevue/toastservice'
@@ -333,6 +334,38 @@ describe('DocumentNode', () => {
     expect(api.get(loose.id).parentId).toBe('notes_story_1')
   })
 
+  it('carries a link to the document dragged out, and puts it back when let go over text', async () => {
+    const act = api.createFolder('manuscript_story_1', 'First Act')
+    const chapter = api.createTextDocument(act.id, 'Chapter 1')
+    const history = useTreeHistory('story_1')
+    const wrapper = mountNode(act.id)
+    const lists = wrapper.findComponent({ name: 'Draggable' })
+    const item = wrapper.find(`[data-document-id="${chapter.id}"]`).element.parentElement
+
+    const data = new Map()
+    const setData = lists.vm.$attrs.setData ?? lists.vm.$attrs['set-data']
+    setData({ setData: (type, value) => data.set(type, value) }, item)
+    expect(data.get('text/plain')).toBe('manuscript/First Act/Chapter 1')
+    expect(data.get('text/html')).toBe(
+      '<a href="/manuscript/First%20Act/Chapter%201.md">Chapter 1</a>'
+    )
+
+    // Over the editor's text, as a drop into it.
+    const text = document.createElement('div')
+    text.className = 'ProseMirror'
+    document.body.append(text)
+    const elementFromPoint = document.elementFromPoint
+    document.elementFromPoint = () => text
+    lists.vm.$emit('start', { item })
+    api.moveInto('notes_story_1', chapter.id)
+    lists.vm.$emit('end', { item, originalEvent: { clientX: 400, clientY: 300 } })
+    document.elementFromPoint = elementFromPoint
+    text.remove()
+
+    expect(api.get(chapter.id).parentId).toBe(act.id)
+    expect(history.nextUndo()).toBeNull()
+  })
+
   it('keeps a document made, or copied, to take back', () => {
     const act = api.createFolder('manuscript_story_1', 'First Act')
     const chapter = api.createTextDocument(act.id, 'Chapter 1')
@@ -426,7 +459,7 @@ describe('DocumentNode', () => {
       expect(row(wrapper, card.id).attributes('data-folder')).toBeUndefined()
       expect(labels).not.toContain('New document')
       expect(labels).not.toContain('New folder')
-      expect(labels).toContain('Download')
+      expect(labels).toContain('Export')
     })
   })
 
@@ -687,6 +720,27 @@ describe('DocumentNode', () => {
     expect(filename).toBe('Chapter 1.md')
     expect(blob.type).toBe('text/markdown')
     expect(await blob.text()).toBe('She *ran*.')
+  })
+
+  it('exports a folder as a zip of the directory it is, which the project’s root leaves to the project’s own items', async () => {
+    const act = api.createFolder('manuscript_story_1', 'First Act')
+    api.createTextDocument(act.id, 'Chapter 1', 'She ran.')
+    const items = mountNode(act.id).findComponent({ name: 'ContextMenu' }).props('model')
+
+    await items.find(item => item.label === 'Export').command()
+
+    const [blob, filename] = downloadBlob.mock.calls.at(-1)
+    expect(filename).toBe('First Act.zip')
+    const files = unzipSync(new Uint8Array(await blob.arrayBuffer()))
+    expect(Object.keys(files).sort()).toEqual(['First Act/', 'First Act/Chapter 1.md'])
+    expect(new TextDecoder().decode(files['First Act/Chapter 1.md'])).toBe('She ran.')
+
+    const root = mountNode('root_story_1', { canDelete: false })
+    const labels = root
+      .findComponent({ name: 'ContextMenu' })
+      .props('model')
+      .map(item => item.label)
+    expect(labels).not.toContain('Export')
   })
 
   it('duplicates a text document beside it, and opens the copy', async () => {
@@ -973,13 +1027,13 @@ describe('DocumentNode', () => {
     expect(labels).not.toContain('Hide from all chats')
   })
 
-  it('offers to copy the path the tools address the document by', async () => {
+  it('offers to copy a link to the document, its path the tools address it by', async () => {
     const act = api.createFolder('manuscript_story_1', 'First Act')
     const chapter = api.createTextDocument(act.id, 'Chapter 1')
     const wrapper = mountNode(chapter.id)
     const items = wrapper.findComponent({ name: 'ContextMenu' }).props('model')
 
-    await items.find(item => item.label === 'Copy path').command()
+    await items.find(item => item.label === 'Copy link').command()
 
     expect(writeText).toHaveBeenCalledWith('manuscript/First Act/Chapter 1')
   })
@@ -1271,7 +1325,7 @@ describe('DocumentNode', () => {
       const labels = labelsOf(mountNode(fileNode('application/pdf').id))
       expect(labels).toContain('Show as text')
       expect(labels).toContain('Re-extract text')
-      expect(labels).toContain('Download')
+      expect(labels).toContain('Export')
       expect(labels).not.toContain('Edit in plain text editor')
     })
 
@@ -1295,7 +1349,7 @@ describe('DocumentNode', () => {
 
     it('offers neither a fresh reading nor a conversion of an epub, whose chapters are documents', () => {
       const labels = labelsOf(mountNode(fileNode('application/epub+zip').id))
-      expect(labels).toContain('Download')
+      expect(labels).toContain('Export')
       expect(labels).not.toContain('Re-extract text')
       expect(labels).not.toContain('Convert to Markdown…')
     })
@@ -1798,10 +1852,10 @@ describe('DocumentNode, in a repository', () => {
     expect(labelsOf(mountNode(folder.id))).not.toContain('New document')
   })
 
-  it('offers a source file for download and copying its path, and not as text, a conversion or a fresh reading', () => {
+  it('offers a source file for export and copying a link to it, and not as text, a conversion or a fresh reading', () => {
     const labels = labelsOf(mountNode(source.id))
-    expect(labels).toContain('Download')
-    expect(labels).toContain('Copy path')
+    expect(labels).toContain('Export')
+    expect(labels).toContain('Copy link')
     for (const label of ['Show as text', 'Convert to Markdown…', 'Re-extract text', 'Rename']) {
       expect(labels).not.toContain(label)
     }

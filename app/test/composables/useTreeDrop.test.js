@@ -1,7 +1,7 @@
 /* global Event */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useTreeDrop, zoneOf } from '@/composables/useTreeDrop.js'
+import { draggingFromOutline, useTreeDrop, zoneOf } from '@/composables/useTreeDrop.js'
 
 const { moveInto, canDropInto } = vi.hoisted(() => ({
   moveInto: vi.fn(),
@@ -50,6 +50,15 @@ describe('useTreeDrop', () => {
     expect(zoneOf(rect, 102)).toBe('before')
     expect(zoneOf(rect, 120)).toBe('into')
     expect(zoneOf(rect, 138)).toBe('after')
+  })
+
+  it('says when a row is being dragged, for a field elsewhere that takes it', () => {
+    const drop = useTreeDrop()
+    expect(draggingFromOutline()).toBe(false)
+    drop.start('story_1', 'doc_1')
+    expect(draggingFromOutline()).toBe(true)
+    drop.end()
+    expect(draggingFromOutline()).toBe(false)
   })
 
   it('takes the folder whose row the drag is over the middle of, and holds the lists still', () => {

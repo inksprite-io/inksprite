@@ -1,9 +1,15 @@
+/* global location */
 import { describe, it, expect } from 'vitest'
 import { parseMarkdown } from '@/editor/markdown.js'
 import {
   documentNamed,
   fileNameOf,
+  headingHref,
+  headingOf,
   hrefFor,
+  linkOnClipboard,
+  namesHeading,
+  ownHref,
   projectHref,
   isDocumentHref,
   readableHref,
@@ -225,5 +231,53 @@ describe('links through a document that holds others', () => {
     expect(resolvedIn('Drafts/Chapter%201.md/Arrival.md', 'top')).toBe('arrival')
     expect(resolvedIn('Notes/Tide tables.pdf/Tide tables (Markdown)')).toBe('copy')
     expect(documentNamed(holding, 'Leaving')?.id).toBe('leaving')
+  })
+})
+
+describe('links to headings', () => {
+  it('writes a heading after a path as Obsidian does, and reads it back', () => {
+    expect(headingHref('The crew')).toBe('#The%20crew')
+    expect(headingHref(' Q&A: #1 ')).toBe('#Q&A:%20%231')
+    expect(headingOf('Notes/Cast%20list.md#The%20crew')).toBe('The crew')
+    expect(headingOf('#Q&A:%20%231')).toBe('Q&A: #1')
+    expect(headingOf('Notes/Cast%20list.md')).toBe('')
+  })
+
+  it('knows a heading by its words in any case, or by a slug of them', () => {
+    expect(namesHeading('The crew', 'The Crew')).toBe(true)
+    expect(namesHeading('the-crew', 'The crew')).toBe(true)
+    expect(namesHeading('the-crew', 'The crew!')).toBe(true)
+    expect(namesHeading('The cook', 'The crew')).toBe(false)
+    expect(namesHeading('', 'The crew')).toBe(false)
+  })
+
+  it('still finds the document a link to one of its headings goes to', () => {
+    expect(resolved('../Notes/Cast%20list.md#The%20crew', 'top')).toBe('cast')
+  })
+})
+
+describe('linkOnClipboard', () => {
+  /** A clipboard holding HTML. */
+  const holding = html => ({ getData: type => (type === 'text/html' ? html : 'x') })
+
+  it('reads the one link the app copied, its own address taken off', () => {
+    const html = `<meta charset="utf-8"><a href="${location.origin}/Notes/Cast%20list.md">Cast list</a>`
+    expect(linkOnClipboard(holding(html))).toEqual({
+      href: '/Notes/Cast%20list.md',
+      words: 'Cast list',
+    })
+  })
+
+  it('reads nothing from words with a link among them, two links, or no HTML', () => {
+    expect(linkOnClipboard(holding('See <a href="/Plan.md">the plan</a> first.'))).toBeNull()
+    expect(linkOnClipboard(holding('<a href="/a.md">a</a><a href="/b.md">b</a>'))).toBeNull()
+    expect(linkOnClipboard(holding(''))).toBeNull()
+    expect(linkOnClipboard(null)).toBeNull()
+  })
+
+  it('takes off only the app’s own address', () => {
+    expect(ownHref(`${location.origin}/Plan.md`)).toBe('/Plan.md')
+    expect(ownHref('https://example.com/Plan.md')).toBe('https://example.com/Plan.md')
+    expect(ownHref('/Plan.md')).toBe('/Plan.md')
   })
 })

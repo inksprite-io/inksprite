@@ -51,8 +51,9 @@ import { useToast } from '@/composables/useToast'
 /**
  * `add-word`, `add-to-project`: a word for the writer's dictionary or the
  * project's. `ignore`: a grammar lint's hash. `link`: the link field for the
- * selection; `remove-link`. `comment`: the comment field for the selection;
- * `reply-comment` and `resolve-comment`: a comment's id. `insert-picture`:
+ * selection; `copy-link` and `remove-link`, for the link the caret is in.
+ * `comment`: the comment field for the selection; `reply-comment` and
+ * `resolve-comment`: a comment's id. `insert-picture`:
  * pictures to choose from the disk; `paste-pictures`: the clipboard's.
  * `picture-alt`, `view-picture` and `save-picture`: for the picture selected.
  */
@@ -61,6 +62,7 @@ const emit = defineEmits([
   'add-to-project',
   'ignore',
   'link',
+  'copy-link',
   'remove-link',
   'comment',
   'reply-comment',
@@ -249,6 +251,7 @@ function markItems(view) {
     ...(link
       ? [
           { label: 'Edit link\u2026', shortcut: keyLabel('Mod-k'), command: asks('link') },
+          { label: 'Copy link', command: asks('copy-link') },
           { label: 'Remove link', command: asks('remove-link') },
         ]
       : [

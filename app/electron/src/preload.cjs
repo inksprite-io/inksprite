@@ -134,4 +134,9 @@ contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', {
     apply: ops => call('library:apply', ops),
     reveal: path => call('library:reveal', path),
   },
+
+  exportFolder: {
+    choose: name => call('export:choose', name),
+    write: (target, entries) => call('export:write', target, entries),
+  },
 })

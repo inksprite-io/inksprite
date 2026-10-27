@@ -423,9 +423,9 @@ export async function features(ui, { standIn, context }) {
   await ui.press('Enter')
   await ui.pause(300)
   await ui.click(page.locator('.ProseMirror a').first())
-  await page.getByRole('button', { name: 'Remove' }).waitFor()
+  await page.getByRole('button', { name: 'Remove link', exact: true }).waitFor()
   await ui.shot('editor-link', {
-    of: [page.locator('.ProseMirror a').first(), button('Remove')],
+    of: [page.locator('.ProseMirror a').first(), button('Remove link')],
     pad: 120,
   })
   await ui.press('Escape')
