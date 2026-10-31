@@ -241,15 +241,17 @@ out.
   to here** ([below](#compact-a-long-chat)), **Delete turn** or **Delete
   message**, and:
   - **Fork from here**: copies the chat up to that turn into a new chat, named
-    with *- forked* on the end.
+    with *- forked* on the end. Taken at an [aside](#commands), the fork goes
+    on from it: the question and its answer are part of the new chat, for you
+    to say more about.
   - **Rewind to here**: after asking, removes the turns after it and undoes
     their changes to documents, except passages you've edited since.
 
 <Screenshot name="chat-turn-menu" alt="A reply's buttons, its other answer, and its menu" />
 
 Regenerating an earlier reply removes the turns after it and undoes their
-changes to documents, so it asks first. To keep them, **Fork from here** and
-regenerate in the fork.
+changes to documents, except passages you've edited since. To keep them,
+**Fork from here** and regenerate in the fork.
 
 A reply's header names its model and, as **ctx**, the size of the conversation
 it was sent; hover it for the tokens. **Thought for**, above a reply, opens the
@@ -264,7 +266,7 @@ closes the list. The sparkles mark the ones that call the model.
 | Type | And |
 | --- | --- |
 | `/roll 3d6+2` | It rolls the dice. `max(2d20)+1` keeps the higher of two d20s, for advantage, and `min(2d20)+1` the lower. Add a question after them, as in `/roll 2d6 How does the monster react?`, and the model reads the roll for it. |
-| `/oracle(likely) Is the door locked?` | It answers yes or no at the odds you give, from `nearly_impossible`, `very_unlikely`, `unlikely`, `fifty_fifty`, `likely`, `very_likely` and `nearly_certain`. Leave them off for 50/50. |
+| `/oracle(likely) Is the door locked?` | It answers yes or no at the odds you give: nearly impossible, very unlikely, unlikely, 50/50, likely, very likely or nearly certain. Leave them off for 50/50. |
 | `/roll-table "a knife" "a letter" "nothing"` | It picks one of the options. |
 | `/tarot(1, full) Will she forgive him?` | It draws cards: 3 from the major arcana unless you say how many (up to 10) or `full` for the whole deck. The question is optional. |
 | `/name(female, 3)` | It makes up names, `female` or `male`, up to 25. |

@@ -124,11 +124,20 @@ describe('formatCommand', () => {
   it('round-trips whatever was parsed, so an edit starts where the writer left off', () => {
     for (const line of [
       '/roll 3d6+2',
-      '/oracle(very_likely) Is the door locked?',
+      '/oracle(very likely) Is the door locked?',
       '/interpret What is this innkeeper afraid of?',
     ]) {
       expect(formatCommand(parseCommand(line))).toBe(line)
     }
+  })
+
+  it('writes the odds back in words, the way the writer types them', () => {
+    expect(formatCommand({ name: 'oracle', param: 'very_likely', input: 'Is it?' })).toBe(
+      '/oracle(very likely) Is it?'
+    )
+    expect(formatCommand({ name: 'oracle', param: 'fifty_fifty', input: 'Is it?' })).toBe(
+      '/oracle(50/50) Is it?'
+    )
   })
 })
 
@@ -324,7 +333,8 @@ describe('runCommand', () => {
     const outcome = await runCommand({ name: 'oracle', input: 'Is it?', param: 'probably' })
 
     expect(outcome.error).toMatch(/probably/)
-    expect(outcome.error).toMatch(/fifty_fifty/)
+    // In the words it takes, not the spelling the model is sent.
+    expect(outcome.error).toContain('very unlikely, unlikely, 50/50')
   })
 
   it('refuses parentheses on a command that has nothing to put in them', async () => {
@@ -363,6 +373,17 @@ describe('runCommand', () => {
     const command = await runCommand({ name: 'oracle', input: 'Is it?', param: 'likely' })
 
     expect(command).toMatchObject({ input: 'Is it?', param: 'likely' })
+  })
+
+  it('reads the odds in words, and keeps the value the oracle takes', async () => {
+    for (const param of ['very unlikely', 'Very Unlikely', 'very-unlikely', 'very_unlikely']) {
+      const command = await runCommand({ name: 'oracle', input: 'Is it?', param })
+      expect(command.param).toBe('very_unlikely')
+    }
+    for (const param of ['50/50', 'fifty fifty']) {
+      const command = await runCommand({ name: 'oracle', input: 'Is it?', param })
+      expect(command.param).toBe('fifty_fifty')
+    }
   })
 
   it('offers every likelihood the oracle itself knows', () => {

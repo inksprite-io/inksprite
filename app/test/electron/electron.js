@@ -8,6 +8,7 @@ import { vi } from 'vitest'
 export const app = {
   isPackaged: false,
   getPath: vi.fn(),
+  getLocaleCountryCode: vi.fn(() => ''),
   on: vi.fn(),
   quit: vi.fn(),
   dock: { setMenu: vi.fn() },

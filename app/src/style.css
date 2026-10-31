@@ -76,18 +76,21 @@
   --table-edge: rgb(255 255 255 / 0.14);
 }
 
-.ProseMirror td {
+.ProseMirror td,
+.print-page td {
   vertical-align: top;
   min-width: 4em;
 }
 
-.ProseMirror tr:first-child > td {
+.ProseMirror tr:first-child > td,
+.print-page tr:first-child > td {
   font-weight: 600;
   color: var(--tw-prose-headings);
   vertical-align: bottom;
 }
 
-.ProseMirror tbody > tr:first-child {
+.ProseMirror tbody > tr:first-child,
+.print-page tbody > tr:first-child {
   border-bottom-color: var(--tw-prose-th-borders);
 }
 
@@ -213,4 +216,143 @@
 .katex-display {
   overflow: auto hidden;
   padding: 0.25em 0;
+}
+
+/* A document being printed (see composables/usePrint): its page takes the
+   app's place, which a print would otherwise show as it is on screen. Never
+   on the screen itself. It is the editor's text set closer for paper: smaller,
+   with tighter lines and less room around headings, paragraphs and list
+   items. Its text keeps its spaces, as the editor's does, and the page holds
+   what the screen would scroll: a wide table wraps, and a picture is no taller
+   than most of the page. A heading stays with what follows it, and a code
+   block keeps its dark ground though the print leaves out backgrounds. */
+.print-page {
+  display: none;
+}
+
+@media print {
+  html.printing,
+  html.printing body {
+    height: auto !important;
+    overflow: visible !important;
+    background: none !important;
+    color-scheme: light;
+  }
+
+  html.printing body > :not(.print-page) {
+    display: none !important;
+  }
+
+  .print-page {
+    display: block;
+    font-size: 10pt;
+    line-height: 1.35;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+
+  /* In `:where()`, so that these decide between themselves by their order
+     alone: the first block has no room above it, and a list item's paragraph
+     has none of a paragraph's spacing. */
+  .print-page :where(p, ul, ol, blockquote, pre, .table-scroll) {
+    margin: 0 0 0.5em;
+  }
+
+  .print-page :where(hr) {
+    margin: 1.2em 0;
+  }
+
+  .print-page :where(table) {
+    margin: 0;
+  }
+
+  .print-page :where(ul, ol) {
+    padding-left: 1.4em;
+  }
+
+  .print-page :where(li) {
+    margin: 0.2em 0;
+    padding-left: 0.2em;
+  }
+
+  .print-page :where(li > *) {
+    margin: 0;
+  }
+
+  .print-page :where(h1, h2, h3, h4, h5, h6) {
+    line-height: 1.25;
+    break-after: avoid;
+  }
+
+  .print-page :where(h1) {
+    font-size: 1.5em;
+    margin: 0.9em 0 0.3em;
+  }
+
+  .print-page :where(h2) {
+    font-size: 1.25em;
+    margin: 0.9em 0 0.25em;
+  }
+
+  .print-page :where(h3) {
+    font-size: 1.1em;
+    margin: 0.8em 0 0.2em;
+  }
+
+  .print-page :where(h4, h5, h6) {
+    font-size: 1em;
+    margin: 0.8em 0 0.2em;
+  }
+
+  .print-page :where(h1, h2, h3, h4, h5, h6) + :where(h1, h2, h3, h4, h5, h6) {
+    margin-top: 0.4em;
+  }
+
+  .print-page > :first-child {
+    margin-top: 0;
+  }
+
+  .print-page :where(td) {
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
+  }
+
+  .print-page .table-scroll {
+    overflow: visible;
+  }
+
+  .print-page img {
+    display: inline-block;
+    margin: 0;
+    max-width: 100%;
+    max-height: 70vh;
+    border-radius: 0.25rem;
+  }
+
+  .print-page .figure {
+    text-align: center;
+  }
+
+  .print-page :is(tr, img) {
+    break-inside: avoid;
+  }
+
+  .print-page pre {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* Its pages, their size the print's. Where each page's text brings its own
+   room above and below (see files/printPage), the page's margins there are
+   zero instead. */
+@page {
+  margin: 0.5in 0.6in;
+}
+
+@media print {
+  .print-page.paged {
+    padding-block: 0.5in;
+    box-decoration-break: clone;
+  }
 }

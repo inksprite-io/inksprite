@@ -5,10 +5,10 @@
  * prints them.
  *
  * The bindings themselves are `editor/state`'s and `editor/links`'s, focus
- * mode's is `composables/useFocusMode`'s, and the project's search's is
- * `composables/useProjectSearch`'s; this is the list a person
- * reads, in the order they would look for things, and its test holds it to
- * those.
+ * mode's is `composables/useFocusMode`'s, the project's search's is
+ * `composables/useProjectSearch`'s, and printing's is
+ * `composables/usePrint`'s; this is the list a person reads, in the order
+ * they would look for things, and its test holds it to those.
  */
 
 const isMac = /Mac|iP(hone|ad|od)/.test(
@@ -62,6 +62,7 @@ export const SHORTCUTS = [
       { action: 'Find and replace', keys: 'Mod-f' },
       { action: 'Search the project', keys: 'Mod-Shift-f' },
       { action: 'Focus mode', keys: 'Mod-Alt-f' },
+      { action: 'Print', keys: 'Mod-p' },
       { action: 'Keyboard shortcuts', keys: 'Mod-/' },
     ],
   },

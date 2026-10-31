@@ -23,6 +23,7 @@
  * - **useChatSettings** - One chat's settings and profile, started or not
  * - **useBackup** - Whole-database export and restore, and single chats, projects and settings as files
  * - **useExport** - A project, a folder or a document handed out as it would be published, a zip of it where it is more than one file
+ * - **usePrint** - A document printed, or saved as a PDF, in the editor's styles, on Command-P and Export as PDF…
  * - **useTrash** - The trash: what a project's holds of its documents and chats, and the projects in it, to restore or delete for good
  * - **useVersions** - A text document's versions, listed, compared with the text now, restored, named and kept; and the Versions dialog's state
  * - **useNarration** - A project read aloud: its voices and hints, a document's speakers, and the readings
@@ -91,6 +92,7 @@ export { useAIConfig } from './useAIConfig.js'
 export { useModelLists } from './useModelLists.js'
 export { useBackup } from './useBackup.js'
 export { useExport } from './useExport.js'
+export { usePrint, usePrintKey, isPrintKey } from './usePrint.js'
 export { useProfiles } from './useProfiles.js'
 export { useSkills } from './useSkills.js'
 export { useLoadedSkills } from './useLoadedSkills.js'

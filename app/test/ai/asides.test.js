@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isAside, withoutAsides } from '@/ai/asides.js'
+import { intoConversation, isAside, lastAside, withoutAsides } from '@/ai/asides.js'
 
 /** A message of the conversation. */
 const said = (id, role) => ({ id, role })
@@ -60,5 +60,58 @@ describe('withoutAsides', () => {
   it('keeps none for a reader that is not answering one', () => {
     const asking = [said('m1', 'user'), said('m2', 'assistant'), aside('q1', 'user')]
     expect(ids(withoutAsides(asking))).toEqual(['m1', 'm2'])
+  })
+})
+
+describe('lastAside', () => {
+  it('finds the question of the aside the conversation ends in', () => {
+    const asked = [said('m1', 'user'), said('m2', 'assistant'), aside('q1', 'user')]
+    expect(lastAside(asked)).toBe(2)
+    expect(lastAside([...asked, aside('a1', 'assistant')])).toBe(2)
+  })
+
+  it('is the length of a conversation that does not end in one', () => {
+    const past = [
+      said('m1', 'user'),
+      aside('q1', 'user'),
+      aside('a1', 'assistant'),
+      said('m2', 'user'),
+    ]
+    expect(lastAside(past)).toBe(4)
+    expect(lastAside([])).toBe(0)
+  })
+
+  it('takes an answer whose question has gone for no aside', () => {
+    expect(lastAside([said('m1', 'user'), aside('a1', 'assistant')])).toBe(2)
+  })
+})
+
+describe('intoConversation', () => {
+  it('takes the mark off the message and every answer it has had', () => {
+    const answer = {
+      ...aside('a1', 'assistant'),
+      content: 'Later.',
+      metadata: { aside: true, model: 'two' },
+      alternates: [
+        { content: 'Now.', metadata: { aside: true, model: 'one' } },
+        { content: 'Later.', metadata: { aside: true, model: 'two' } },
+      ],
+      alternate: 1,
+    }
+
+    const brought = intoConversation(answer)
+
+    expect(isAside(brought)).toBe(false)
+    expect(brought).toMatchObject({ id: 'a1', content: 'Later.', alternate: 1 })
+    expect(brought.metadata).toEqual({ model: 'two' })
+    expect(brought.alternates.map(one => one.metadata)).toEqual([
+      { model: 'one' },
+      { model: 'two' },
+    ])
+    expect(isAside(answer)).toBe(true)
+  })
+
+  it('leaves a message with no metadata as it was', () => {
+    expect(intoConversation(said('m1', 'user'))).toEqual(said('m1', 'user'))
   })
 })

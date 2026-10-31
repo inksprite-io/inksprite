@@ -120,6 +120,7 @@ import { useEditorRequest } from '@/composables/useEditorRequest.js'
 import { useChatRequest } from '@/composables/useChatRequest.js'
 import { useFocusMode, useFocusModeKeys } from '@/composables/useFocusMode.js'
 import { requestSearchField, useProjectSearchKey } from '@/composables/useProjectSearch.js'
+import { usePrintKey } from '@/composables/usePrint.js'
 import {
   NO_PROJECT_LAYOUT,
   PANELS,
@@ -169,6 +170,8 @@ const currentDocumentId = computed(() =>
 useFocusModeKeys()
 // Mod-Shift-F searches the project open, from anywhere in it.
 useProjectSearchKey(() => currentStoryId.value)
+// Mod-P prints the document open, rather than the app.
+usePrintKey(() => currentStoryId.value)
 const focusMode = useFocusMode()
 const focused = computed(() => focusMode.focused.value && Boolean(currentStoryId.value))
 

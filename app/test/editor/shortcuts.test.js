@@ -13,7 +13,15 @@ describe('editor/shortcuts', () => {
   it('lists only keys the editor has', () => {
     // Bound elsewhere than the state's keymap: links, comments, the find,
     // the project's search, focus mode, and this list itself.
-    const elsewhere = ['Mod-k', 'Mod-Shift-m', 'Mod-f', 'Mod-Shift-f', 'Mod-Alt-f', 'Mod-/']
+    const elsewhere = [
+      'Mod-k',
+      'Mod-Shift-m',
+      'Mod-f',
+      'Mod-Shift-f',
+      'Mod-Alt-f',
+      'Mod-p',
+      'Mod-/',
+    ]
     const bound = new Set([...Object.keys(keys), ...elsewhere].map(parts))
 
     for (const group of SHORTCUTS) {

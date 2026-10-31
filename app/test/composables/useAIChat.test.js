@@ -3169,42 +3169,6 @@ describe('useAIChat', () => {
       ])
     })
 
-    it('plans asking an answer again: the turns after it go, and the answer stays', () => {
-      mockChatsApi.getMessagesForChat.mockReturnValue({ value: conversation() })
-      const chat = useAIChat(mockStoryId, mockChatId)
-
-      const plan = chat.regeneratePlan('msg_2')
-      expect(plan.messages.map(m => m.id)).toEqual(['msg_3', 'msg_4'])
-      expect(plan.documents).toEqual([
-        { documentId: 'doc_2', path: 'notes/doc_2' },
-        { documentId: 'doc_1', path: 'notes/doc_1' },
-      ])
-      expect(chat.regeneratePlan('msg_4').messages).toEqual([])
-    })
-
-    it('plans sending the writer’s message again from the reply it asks again', () => {
-      mockChatsApi.getMessagesForChat.mockReturnValue({ value: conversation() })
-      const chat = useAIChat(mockStoryId, mockChatId)
-
-      expect(chat.regeneratePlan('msg_1').messages.map(m => m.id)).toEqual(['msg_3', 'msg_4'])
-      expect(chat.regeneratePlan('msg_3').messages).toEqual([])
-    })
-
-    it('plans sending again from the message itself when no reply follows it', () => {
-      // A command's own turn is not a reply: sending again asks for one after
-      // the writer's message, and everything already there goes.
-      mockChatsApi.getMessagesForChat.mockReturnValue({
-        value: [
-          { id: 'msg_1', role: 'user', content: '/compact' },
-          { id: 'msg_2', role: 'assistant', content: 'So far…', metadata: { command: {} } },
-          { id: 'msg_3', role: 'user', content: 'c' },
-        ],
-      })
-
-      const plan = useAIChat(mockStoryId, mockChatId).regeneratePlan('msg_1')
-      expect(plan.messages.map(m => m.id)).toEqual(['msg_2', 'msg_3'])
-    })
-
     it('rewinds: undoes newest first, drops what came after, and says what it left', () => {
       mockChatsApi.getMessagesForChat.mockReturnValue({ value: conversation() })
       mockDocuments.revertEdit.mockImplementation(e => e.new !== 'new 2')

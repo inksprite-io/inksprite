@@ -969,53 +969,12 @@ const handleRegenerateMessage = async (messageId, index = null) => {
     return
   }
 
-  askAgainFirst(
-    messageId,
-    { header: 'Regenerate reply?', label: 'Regenerate', icon: 'pi pi-refresh' },
-    async () => {
-      try {
-        await chatGeneration.regenerateMessage(messageId)
-      } catch (error) {
-        console.error('Failed to regenerate message:', error)
-        reportFailure(error, "The reply couldn't be asked again.")
-      }
-    }
-  )
-}
-
-/**
- * Ask again, after saying what that takes with it when it takes anything.
- * Asking an earlier answer again removes every turn after it, and undoes what
- * they did to the project, as rewinding to it would. The last answer has
- * nothing after it, and is asked again at once.
- *
- * @param {string} messageId - The answer, or the writer's message
- * @param {{header: string, label: string, icon: string}} asking - What the
- *   dialog is headed, the button that goes ahead, and its icon
- * @param {() => Promise<void>} ask
- */
-const askAgainFirst = (messageId, asking, ask) => {
-  const plan = chatGeneration.regeneratePlan(messageId)
-  const count = plan.messages.length
-  if (count === 0) {
-    ask()
-    return
+  try {
+    await chatGeneration.regenerateMessage(messageId)
+  } catch (error) {
+    console.error('Failed to regenerate message:', error)
+    reportFailure(error, "The reply couldn't be asked again.")
   }
-  const later = `${count} later message${count === 1 ? '' : 's'}`
-  const paths = plan.documents.map(document => document.path)
-  const message =
-    paths.length === 0
-      ? `Removes ${later}.`
-      : `Removes ${later} and undoes their changes to ${paths.join(', ')}. Passages you’ve edited since are kept.`
-
-  confirm.require({
-    header: asking.header,
-    message,
-    icon: asking.icon,
-    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-    acceptProps: { label: asking.label, severity: 'danger' },
-    accept: ask,
-  })
 }
 
 /**
@@ -1134,22 +1093,16 @@ const handleRejectEdit = (messageId, index) => {
 
 /**
  * Send the writer's message again: its reply is asked again, or one is asked
- * for where it has none. See askAgainFirst.
+ * for where it has none. Either way the turns after it go.
  * @param {string} messageId
  */
-const handleResendMessage = messageId => {
-  askAgainFirst(
-    messageId,
-    { header: 'Send again?', label: 'Send again', icon: 'pi pi-arrow-right' },
-    async () => {
-      try {
-        await chatGeneration.resendMessage(messageId)
-      } catch (error) {
-        console.error('Failed to resend message:', error)
-        reportFailure(error, "The message couldn't be sent again.")
-      }
-    }
-  )
+const handleResendMessage = async messageId => {
+  try {
+    await chatGeneration.resendMessage(messageId)
+  } catch (error) {
+    console.error('Failed to resend message:', error)
+    reportFailure(error, "The message couldn't be sent again.")
+  }
 }
 
 /**

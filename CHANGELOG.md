@@ -6,6 +6,27 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.25
+
+A document printed or saved as a PDF, and a fork from an aside to say
+more about it.
+
+- ⌘P (Ctrl+P on Windows and Linux) prints the document you're in, and
+  Export as PDF… on a document's menu and its tab makes a PDF of it: the
+  text as it stands, without comments or the suggestions you haven't
+  accepted, in the editor's styles set closer for paper. In a browser the
+  print dialog opens, to print or save as a PDF there. The desktop app
+  asks where to save it, on your region's paper, with the headings as
+  the PDF's outline.
+- Fork from here on an aside's question or answer makes a chat that goes
+  on from it: the aside is part of the new chat's conversation rather
+  than on the side, for you to say more about.
+- Regenerate reply on an earlier reply, and Send again on your earlier
+  message, no longer ask first: the turns after it go, and their changes
+  to documents are undone, except passages you've edited since.
+- The oracle takes its odds in words: `/oracle(very unlikely)`,
+  `/oracle(50/50)`, as well as `very_unlikely` and `fifty_fifty`.
+
 ## v0.1.0-dev.24
 
 Documents to link to listed as you type, and Export apart from Backup:

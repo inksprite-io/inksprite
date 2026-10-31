@@ -139,4 +139,8 @@ contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', {
     choose: name => call('export:choose', name),
     write: (target, entries) => call('export:write', target, entries),
   },
+
+  pdf: {
+    save: name => call('pdf:save', name),
+  },
 })

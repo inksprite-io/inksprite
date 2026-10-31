@@ -27,6 +27,8 @@
  * - **download** - The file handed back, named as it came in
  * - **exportDocument** - A project, a folder or a document as it would be
  *   published: its files and directories, each text as it stands
+ * - **printPage** - A document as a printed page, in the editor's styles,
+ *   which takes the app's place while it prints
  * - **batch** - Many files at once, each with the folders it came in: a
  *   folder chosen whole, or a drop from the desktop
  *
@@ -52,6 +54,7 @@ export { textOfHtml, markdownOfHtml } from './html.js'
 export { docxToMarkdown, isDocx, DOCX_MIME } from './docx.js'
 export { takePictures, placePictures, measurePicture, markerFor } from './pictures.js'
 export { exportEntries } from './exportDocument.js'
+export { printPage } from './printPage.js'
 export {
   gatherFiles,
   gatherDropped,

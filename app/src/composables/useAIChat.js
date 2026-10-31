@@ -206,7 +206,6 @@ function replyAfter(messages, index) {
  *   selectAlternate: (messageId: string, index: number) => Promise<{skipped: DocumentEdit[]}>,
  *   resendMessage: (messageId: string) => Promise<Message|null>,
  *   rewindPlan: (messageId: string) => RewindPlan,
- *   regeneratePlan: (messageId: string) => RewindPlan,
  *   rewindTo: (messageId: string) => RewindOutcome,
  *   acceptEdit: (messageId: string, index: number) => Promise<void>,
  *   rejectEdit: (messageId: string, index: number) => void,
@@ -1932,25 +1931,6 @@ export function useAIChat(storyId, chatId) {
   }
 
   /**
-   * What asking again would take with it, for asking the writer first: the
-   * turns after the answer that is asked again, which go, as on a rewind to
-   * it. The answer itself is kept, to be turned back to. For the writer's
-   * message, that answer is its reply, or the message itself when it has none.
-   *
-   * @param {string} messageId - An answer to regenerate, or the writer's
-   *   message to send again
-   * @returns {RewindPlan}
-   */
-  const regeneratePlan = messageId => {
-    const messages = chatsApi.getMessagesForChat(chatId)?.value || []
-    const index = messages.findIndex(m => m.id === messageId)
-    if (index === -1) throw new CannotApplyError('Message not found')
-
-    const reply = messages[index].role === 'user' ? replyAfter(messages, index) : null
-    return rewindPlan(reply?.id ?? messageId)
-  }
-
-  /**
    * Rewind the conversation to a message: everything after it goes, and what
    * those turns did to the project is undone, newest first, where the writer
    * has not been since.
@@ -2203,7 +2183,6 @@ export function useAIChat(storyId, chatId) {
     selectAlternate,
     resendMessage,
     rewindPlan,
-    regeneratePlan,
     rewindTo,
     acceptEdit,
     rejectEdit,

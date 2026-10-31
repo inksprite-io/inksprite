@@ -61,6 +61,17 @@
  * @property {DesktopExportFolder} [exportFolder] - Exports written to a
  *   folder the writer chooses. Missing from a desktop app older than the
  *   page it loads.
+ * @property {DesktopPdf} [pdf] - The page as it prints, saved as a PDF.
+ *   Missing from a desktop app older than the page it loads.
+ */
+
+/**
+ * The page as it prints, saved as a PDF (`app/electron/src/printing.js`).
+ *
+ * @typedef {Object} DesktopPdf
+ * @property {(name: string) => Promise<boolean>} save - Ask where, with a file
+ *   of this name to start with, and save it there; false when the writer
+ *   cancelled
  */
 
 /**

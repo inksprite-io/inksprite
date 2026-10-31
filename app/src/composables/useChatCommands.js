@@ -760,8 +760,13 @@ export function useChatCommands(storyId, chatId) {
       : message?.segments || []
 
     // An aside stays the one thing it is, and nothing else becomes one: the
-    // message says which it is, and what it says has to agree.
+    // message says which it is, and what it says has to agree. A question
+    // asked on the side that a fork brought into the conversation is no
+    // longer one, but it was asked as one and may stay asked that way.
     const aside = isAside(message)
+    const asked = held.some(
+      segment => segment.type === 'command' && commandIsAside(segment.command)
+    )
     if (
       aside &&
       (parsed.length !== 1 || parsed[0].type !== 'command' || !commandIsAside(parsed[0]))
@@ -776,7 +781,7 @@ export function useChatCommands(storyId, chatId) {
 
       const { error } = inspectCommand(segment)
       if (error) throw new CommandError(error)
-      if (!aside && commandIsAside(segment)) throw new CommandError(ASIDE_ALONE)
+      if (!aside && !asked && commandIsAside(segment)) throw new CommandError(ASIDE_ALONE)
 
       // A turn holds what answers into it, and a message that answers alone
       // holds only itself. Neither can become the other in place.

@@ -1083,6 +1083,72 @@ describe('useChats', () => {
       )
     })
 
+    describe('at an aside', () => {
+      const said = (id, role) => ({ id, chatId: mockChatId, role, content: id, created: 1 })
+      const aside = (id, role, extra = {}) => ({
+        ...said(id, role),
+        metadata: { aside: true },
+        ...extra,
+      })
+      const chat = [
+        said('m1', 'user'),
+        said('m2', 'assistant'),
+        aside('q1', 'user'),
+        aside('a1', 'assistant'),
+        said('m3', 'user'),
+        said('m4', 'assistant'),
+        aside('q2', 'user'),
+        aside('a2', 'assistant', {
+          alternates: [
+            { content: 'first', metadata: { aside: true, model: 'one' } },
+            { content: 'a2', metadata: { aside: true, model: 'two' } },
+          ],
+          alternate: 1,
+        }),
+        said('m5', 'user'),
+      ]
+      const copied = () => messagesStore.duplicateMessage.mock.calls.map(([message]) => message)
+
+      beforeEach(() => {
+        messagesStore.getMessagesForChat.mockReturnValue(chat)
+      })
+
+      it('carries on from it: the aside is part of the fork’s conversation', () => {
+        composable.forkChat(mockChatId, 'a2')
+
+        const [q2, a2] = copied().slice(-2)
+        expect(q2).toMatchObject({ id: 'q2', role: 'user', metadata: {} })
+        expect(a2).toMatchObject({ id: 'a2', role: 'assistant', metadata: {} })
+        expect(a2.metadata.aside).toBeUndefined()
+        // Turning to its other answer doesn't put it back on the side.
+        expect(a2.alternates.map(answer => answer.metadata)).toEqual([
+          { model: 'one' },
+          { model: 'two' },
+        ])
+        expect(copied().map(message => message.id)).not.toContain('m5')
+      })
+
+      it('leaves the asides before it on the side', () => {
+        composable.forkChat(mockChatId, 'a2')
+
+        const kept = copied().filter(message => message.id === 'q1' || message.id === 'a1')
+        expect(kept.map(message => message.metadata)).toEqual([{ aside: true }, { aside: true }])
+      })
+
+      it('carries the question on its own when it is taken at the question', () => {
+        composable.forkChat(mockChatId, 'q2')
+
+        expect(copied().at(-1)).toMatchObject({ id: 'q2', metadata: {} })
+        expect(copied().at(-1).metadata.aside).toBeUndefined()
+      })
+
+      it('copies a chat taken past its asides as it stands', () => {
+        composable.forkChat(mockChatId, 'm5')
+
+        expect(copied()).toEqual(chat)
+      })
+    })
+
     it('should throw error when message not found in chat', () => {
       expect(() => composable.forkChat(mockChatId, 'non_existent_msg')).toThrow(
         "Message 'non_existent_msg' not found in chat"

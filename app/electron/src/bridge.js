@@ -2,8 +2,8 @@
  * What the page may ask of the native side, answered here: requests to
  * servers, sign-ins in the system browser, links opened outside the app,
  * windows, updates, the settings file a script left, the library its
- * projects are kept in, exports to a folder the writer chooses, and Python
- * for the model to run code in. `preload.cjs` is the page's end of it, and
+ * projects are kept in, exports to a folder the writer chooses, PDFs saved
+ * as the page prints, and Python for the model to run code in. `preload.cjs` is the page's end of it, and
  * `src/platform/` in the page is what calls it.
  *
  * Only the app's own page is answered: each call is checked for where it came
@@ -18,6 +18,7 @@ import { downloadUpdate, installUpdate } from './updates.js'
 import { readSettingsFile } from './settingsFile.js'
 import { libraryFolder, librarySettings, markMoved } from './library.js'
 import { exportFolders } from './exporting.js'
+import { savePdf } from './printing.js'
 import { bringForward } from './windows.js'
 import { PythonSessions } from './sandbox.js'
 
@@ -190,6 +191,11 @@ export function handleBridge(origin, { openWindow }) {
   )
   handle('export:write', (_, target, entries) =>
     exports.write(target, entries, file => inTurn(folder => folder.locate(file)))
+  )
+
+  // The page as it prints, saved as a PDF where the writer says (`printing.js`).
+  handle('pdf:save', (event, name) =>
+    savePdf(event.sender, BrowserWindow.fromWebContents(event.sender), name)
   )
 
   // Python, a session for each chat, fenced from everything here

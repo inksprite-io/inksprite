@@ -267,6 +267,7 @@ import { OPEN_AFTER, useTreeDrop } from '@/composables/useTreeDrop.js'
 import { useTreeHistory } from '@/composables/useTreeHistory.js'
 import { useSharedDocuments } from '@/composables/useSharedDocuments.js'
 import { useExport } from '@/composables/useExport.js'
+import { usePrint } from '@/composables/usePrint.js'
 import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
 import { EPUB_MIME, hasText } from '@/files/inspect.js'
 import { inRepository, isRepository, repositoryOf } from '@/source/tree.js'
@@ -313,6 +314,7 @@ const { plainTextItem } = usePlainText(props.storyId)
 const { fileViewItem } = useFileView(props.storyId)
 const driveSync = useDriveSync(props.storyId)
 const { exportDocument } = useExport(props.storyId)
+const { printable, exportPdf } = usePrint(() => props.storyId)
 const jobs = useJobs()
 /** What a job running on this document is doing: the row spins while it does. */
 const working = computed(() => {
@@ -1112,6 +1114,14 @@ const menuItems = computed(() => {
     // Out as it would be published: a file as it came in, a text as its
     // markdown, and either with its pictures and what it holds as a zip.
     items.push({ label: 'Export', icon: 'pi pi-download', command: exportThis })
+    // A text laid out also as it would print.
+    if (printable(props.documentId)) {
+      items.push({
+        label: 'Export as PDF…',
+        icon: 'pi pi-file-pdf',
+        command: () => exportPdf(props.documentId),
+      })
+    }
     // A text document can be copied to try something on.
     if (node.value?.type === 'text') {
       items.push({ label: 'Duplicate', icon: 'pi pi-clone', command: duplicate })

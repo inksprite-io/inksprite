@@ -908,6 +908,19 @@ describe('useChatCommands', () => {
       ).rejects.toThrow(/message of its own/)
       expect(chatsApi.updateMessage).toHaveBeenCalledTimes(1)
     })
+
+    it('stays asked as one in a fork that brought it into the conversation', async () => {
+      chatsApi.getMessageById.mockReturnValue({
+        value: { id: 'msg_q', segments: [asked('Now?')], metadata: {} },
+      })
+      await commands.revise('msg_q', null, '/aside Now, or later?')
+      expect(chatsApi.updateMessage.mock.calls[0][1].content).toBe(
+        '<aside>\nNow, or later?\n</aside>'
+      )
+
+      await commands.revise('msg_q', null, 'Now, or later?')
+      expect(chatsApi.updateMessage.mock.calls[1][1].content).toBe('Now, or later?')
+    })
   })
 
   describe('with the experimental skills off', () => {
@@ -1007,6 +1020,26 @@ describe('useChatCommands', () => {
       const [, updates] = chatsApi.updateMessage.mock.calls[0]
       expect(updates.segments[0].command.result).toBe('yes')
       expect(updates.content).toBe('<oracle>\nIs it locked?\nyes\n</oracle>')
+    })
+
+    it('reads odds written in words as the odds the record holds', async () => {
+      standing(
+        ran({
+          name: 'oracle',
+          input: 'Is it locked?',
+          param: 'very_unlikely',
+          label: 'Is it locked?',
+          result: 'no',
+        })
+      )
+
+      await commands.revise('msg_1', null, '/oracle(very unlikely) Is it locked?\n> yes')
+
+      const [, updates] = chatsApi.updateMessage.mock.calls[0]
+      expect(updates.segments[0].command).toMatchObject({ param: 'very_unlikely', result: 'yes' })
+      expect(updates.content).toBe(
+        '<oracle likelihood="very_unlikely">\nIs it locked?\nyes\n</oracle>'
+      )
     })
 
     it('asks again when the answer is cleared', async () => {

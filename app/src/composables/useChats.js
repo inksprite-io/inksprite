@@ -8,6 +8,7 @@ import { useProfiles } from './useProfiles.js'
 import { localStorage as appStorage } from '@/utils/localStorage.js'
 import { expired } from '@/utils/trash.js'
 import { CannotApplyError } from '@/utils/errors.js'
+import { intoConversation, lastAside } from '@/ai/asides.js'
 
 /** @typedef {import('../types/models.js').Chat} Chat */
 /** @typedef {import('../types/models.js').Message} Message */
@@ -685,7 +686,12 @@ export const useChats = storyId => {
   }
 
   /**
-   * Fork a chat at a specific message, creating a new chat with all messages up to that point
+   * Fork a chat at a specific message, creating a new chat with all messages up to that point.
+   *
+   * A fork taken at an aside carries on from it: the aside is part of the new
+   * chat's conversation, for the writer to say more about. The asides before
+   * it stay on the side, as in any fork. See ai/asides.js.
+   *
    * @param {string} chatId - Original chat ID
    * @param {string} messageId - Last message ID to include in the fork
    * @returns {Chat} The newly created forked chat
@@ -703,9 +709,11 @@ export const useChats = storyId => {
       throw new CannotApplyError(`Message '${messageId}' not found in chat '${chatId}'`)
     }
 
+    const kept = allMessages.slice(0, messageIndex + 1)
+    const aside = lastAside(kept)
     return copyChat(
       originalChat,
-      allMessages.slice(0, messageIndex + 1),
+      kept.map((message, at) => (at < aside ? message : intoConversation(message))),
       `${originalChat.title} - forked`,
       { now: true }
     )

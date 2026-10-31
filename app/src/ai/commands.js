@@ -132,7 +132,7 @@ export const LIKELIHOODS = Object.keys(LIKELIHOOD_TARGETS)
 const DEFAULT_LIKELIHOOD = 'fifty_fifty'
 
 /**
- * A likelihood as the writer would say it out loud.
+ * A likelihood as the writer would say it out loud, and type it.
  *
  * Derived rather than listed, so a bucket added to LIKELIHOOD_TARGETS cannot
  * arrive without a name here. Only the even odds need saying differently: every
@@ -141,9 +141,19 @@ const DEFAULT_LIKELIHOOD = 'fifty_fifty'
  * @param {string} value
  * @returns {string}
  */
-function likelihoodLabel(value) {
+function likelihoodSaid(value) {
   if (value === 'fifty_fifty') return '50/50'
-  const said = value.replace(/_/g, ' ')
+  return value.replace(/_/g, ' ')
+}
+
+/**
+ * A likelihood as it reads beside the question.
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+function likelihoodLabel(value) {
+  const said = likelihoodSaid(value)
   return said.charAt(0).toUpperCase() + said.slice(1)
 }
 
@@ -156,6 +166,10 @@ function likelihoodLabel(value) {
  *   of the writer. The values themselves are written for the model — an enum it
  *   picks from, in the spelling the tool expects — and `fifty_fifty` is a fine
  *   thing to send and a poor thing to read.
+ * @property {(value: string) => string} [said] - How the writer types a value,
+ *   which is how an edit writes it back. A choice is read in any case and with
+ *   spaces, hyphens or underscores between its words, so `very unlikely` and
+ *   `very_unlikely` are the one value; what is stored is the value itself.
  * @property {boolean} [send] - Whether the model should be told what it was
  *   asked under. For a parameter that is a judgement about the fiction rather
  *   than a setting on a tool: how surprising an answer is changes how it should
@@ -654,6 +668,7 @@ const WRITTEN = {
       values: LIKELIHOODS,
       default: DEFAULT_LIKELIHOOD,
       label: likelihoodLabel,
+      said: likelihoodSaid,
       send: true,
     },
     check({ input }) {
@@ -1232,7 +1247,9 @@ export function parseCommand(input) {
  */
 export function formatCommand({ name, param, input, character }) {
   const sigil = character ? '@' : '/'
-  return `${sigil}${name}${param ? `(${param})` : ''}${input ? ` ${input}` : ''}`
+  const spec = definitionFor({ name, character })?.param
+  const written = param && spec ? sayValue(spec, param) : param
+  return `${sigil}${name}${written ? `(${written})` : ''}${input ? ` ${input}` : ''}`
 }
 
 /** An answer written under the command it answers. */
@@ -1435,13 +1452,57 @@ export function splitInput(input) {
  * @returns {CommandInput}
  */
 function withParam(command, { name, input, param, character }) {
-  const value = param || command.param?.default
+  const value = param ? storedParam(command.param, param) : command.param?.default
   return {
     name,
     input,
     ...(character ? { character: /** @type {const} */ (true) } : {}),
     ...(value ? { param: value } : {}),
   }
+}
+
+/**
+ * The parentheses as stored: a choice as the value it names, however the writer
+ * spelled it, and anything else as typed. A choice it names none of is left as
+ * typed too, for `checkParam` to say so.
+ *
+ * @param {CommandParameter|undefined} spec
+ * @param {string} written
+ * @returns {string}
+ */
+function storedParam(spec, written) {
+  if (!spec?.values) return written
+  const words = wordsOf(written)
+  const named = spec.values.find(
+    value => wordsOf(value) === words || wordsOf(sayValue(spec, value)) === words
+  )
+  return named ?? written
+}
+
+/**
+ * A choice's words, the one way: `Very-Unlikely` and `very_unlikely` are both
+ * `very unlikely`.
+ *
+ * @param {string} text
+ * @returns {string}
+ */
+function wordsOf(text) {
+  return text
+    .trim()
+    .toLowerCase()
+    .split(/[\s_-]+/)
+    .join(' ')
+}
+
+/**
+ * A value as the writer types it.
+ *
+ * @param {CommandParameter} spec
+ * @param {string} value
+ * @returns {string}
+ */
+function sayValue(spec, value) {
+  return spec.said && spec.values?.includes(value) ? spec.said(value) : value
 }
 
 /**
@@ -1455,9 +1516,10 @@ function checkParam(command, { name, param }) {
   if (!param) return
   if (!command.param) return `/${name} takes nothing in parentheses.`
 
-  const { name: what, values } = command.param
-  if (values && !values.includes(param)) {
-    return `Unknown ${what} "${param}". Use one of: ${values.join(', ')}.`
+  const spec = command.param
+  if (spec.values && !spec.values.includes(storedParam(spec, param))) {
+    const choices = spec.values.map(value => sayValue(spec, value))
+    return `Unknown ${spec.name} "${param}". Use one of: ${choices.join(', ')}.`
   }
 }
 
