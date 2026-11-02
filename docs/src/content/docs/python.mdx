@@ -1,0 +1,157 @@
+---
+title: Python
+description: Let the model run Python in the desktop app, to work out sums, odds and tables and to read the data in your project.
+---
+
+With Python on, the model runs code rather than working things out in its head:
+the odds of a roll, a table of them, a simulation, a budget, the word count of
+each chapter. It writes the code, runs it, and answers from what comes back.
+
+Python works only in the [desktop app](/desktop/). It runs in a
+[sandbox](#the-sandbox), with no network and none of inksprite's settings or
+keys. It can read the chat's project, but it can't change it.
+
+[Data Analysis](/data-analysis/) follows one analysis from start to finish.
+
+## Turn it on
+
+Python is an extension, off until you turn it on.
+
+1. Open **Settings** › **Extensions** and switch on **Python**.
+2. Open **Python**. Under **Used in chats on**, switch on the
+   [profiles](/chats/#profiles) whose chats should run it. **Default** is on to
+   start.
+
+To change one chat, click the gear in the message box, open **Tools**, and
+switch **Python** on or off. The chat keeps your choice until you move it to
+another profile; then it follows that profile.
+
+## Ask
+
+Ask for something that has to be worked out. You don't have to mention Python,
+as the model is told to run the numbers rather than reason them out.
+
+> Skill and difficulty each run from 1 to 5. When they're level, a d20 above 10
+> succeeds. Each point of skill over the difficulty adds a die and keeps the
+> highest, and each point under it adds a die and keeps the lowest. Make a table
+> of the chances.
+
+> Which day of the week was 29 September 1503, in the Julian calendar?
+
+> How many words is each chapter, and how often do Yvette, Nicola and Fulke
+> appear in each?
+
+Click the **tool calls** box above the reply to see the code it ran and what
+came back. If the model does a sum in its head anyway, ask it to run the
+numbers.
+
+## Read your project
+
+Python has the chat's project at `/project`, by the same paths the model sees.
+It's made again for each run, so a document the model has just written is
+there.
+
+| In the project | At `/project` |
+|---|---|
+| A text document | Its Markdown, with no `.md` on its name: `/project/Chapters/Chapter 1` |
+| An imported file | The file as it came in: `/project/Playtests/rolls.csv`, `/project/Playtests/rolls.parquet` |
+| The text read out of a PDF | Beside the file, with `.txt` added: `/project/Rules/Rulebook.pdf.txt`, each page under a `[p.N]` line |
+| A document that holds others | A folder of its name, with the document inside it under the same name |
+
+This means data doesn't have to pass through the model. Import a CSV and ask
+about it:
+
+> What success rate did we get at each skill and difficulty in
+> Playtests/rolls.csv, and does anything look odd?
+
+The model reads the file with pandas where it is, and sees only what comes back
+from the run. A file is read as the code asks for it, so it can be far too long to
+fit in the conversation. An imported file can be up to 1 GB, and a text file over
+50 MB is only for code to read: it [has no preview](/files/), and the model can't
+read it any other way.
+
+Python sees what the chat's model sees. [Hidden
+documents](/chats/#hide-documents), the trash and chats aren't there. In a chat
+with every document tool switched off, as on the **Blank** profile, `/project`
+is empty.
+
+A file [sync](/sync/) hasn't brought to this computer yet is downloaded the
+first time the code reads it, and the wait counts against the time limit. If it
+can't be downloaded, the code gets an I/O error.
+
+Python can't change the project. To make or change a document, the model uses
+its [document tools](/chats/#tools), so **Apply edits automatically** applies
+as it does to any other edit.
+
+## Keep a script
+
+Ask the model to keep a script you'll want again:
+
+> Keep that as Analysis/success_rates.py.
+
+A document named `.py` is kept exactly as written, not as Markdown. It opens in
+the [plain text editor](/editor/#the-plain-text-editor), coloured as Python,
+where you can change it.
+
+To run it again, ask the model:
+
+> Run Analysis/success_rates.py again.
+
+It runs the script as it is now, with your changes, on the project as it is
+now. There's no button to run one yourself. A `.py` file you imported runs the
+same way.
+
+## Limits
+
+- **Packages**: the standard library, numpy, pandas, pyarrow and duckdb. No
+  others can be installed, so there are no charts for now.
+- **Time**: a run that goes past the limit is stopped. Set it under
+  **Settings** › **Extensions** › **Python** › **Time limit**: **1 minute**,
+  **10 minutes** (to start), **1 hour** or **No limit**. <kbd>Esc</kbd> or the
+  stop button stops a run at any time.
+- **Memory**: about 4 GB. Past that, the code gets an error. To work with more
+  than fits, [read less of it](/data-analysis/#tables-too-large-to-load).
+- **Output**: the model gets up to 20,000 characters of what the code printed,
+  and is told how much more there was.
+
+## What a run keeps
+
+What a run defines, its variables, functions and imports, stays for later runs
+in the chat. The model can write a function in one run and try it across a grid
+in the next. Each chat has its own Python.
+
+A chat's Python starts again, without what it defined, when:
+
+- A run is stopped.
+- The chat hasn't run anything for an hour.
+- More than four chats have Python running, and this one ran longest ago.
+
+The model is told when this happens. Quitting inksprite ends every chat's
+Python too, but the model isn't told, and finds out when its code no longer
+works. Anything a run writes to Python's own folders, such as `/tmp`, goes as
+well. To keep something, ask the model to put it in a document.
+
+## The sandbox
+
+inksprite doesn't ask before a run. The code is written by a model that may
+just have read a web page, so it runs where there's nothing to take and nowhere
+to send it:
+
+- **No network.** Every request is refused, and a package can't be fetched.
+- **None of inksprite's data.** Python runs in a process of its own, with storage
+  of its own. The database that holds your keys, sign-ins and projects isn't
+  there to open.
+- **None of your computer.** Python's only folders are `/project` and its own,
+  in memory. It can't open your other files or start a program.
+- **One project, to read.** It has the chat's project and no other, and every
+  change to it is refused.
+
+Python won't run if inksprite is started with the system's sandbox turned off,
+as with `--no-sandbox`. The model is told why.
+
+## Privacy
+
+Python runs on your computer. The model's code, and what comes back from a run,
+go to your [AI provider](/providers/) like the rest of the chat. What the code
+reads and doesn't print stays here. With a
+[local model](/providers/#local-models), none of it goes to a provider.

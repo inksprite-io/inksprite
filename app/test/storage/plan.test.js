@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect } from 'vitest'
-import { layoutProject } from '@/storage/layout.js'
+import { holdsBytes, layoutProject } from '@/storage/layout.js'
 import { planProject } from '@/storage/plan.js'
 import { random, anyChange } from './changes.js'
 import { memoryDisk } from './memoryDisk.js'
@@ -46,8 +46,7 @@ function step(disk, before, after) {
   disk.apply(ops)
   // An imported file's bytes come on their own, after its row.
   for (const entry of next.values()) {
-    if (entry.kind === 'file' && !previous.has(entry.id))
-      disk.write(entry.path, `bytes of ${entry.id}`)
+    if (holdsBytes(entry) && !previous.has(entry.id)) disk.write(entry.path, `bytes of ${entry.id}`)
   }
   const read = readBack(disk)
   expect(byIdSorted(read.documents)).toEqual(asRead(after))
@@ -248,6 +247,64 @@ describe('a plan for a project’s folder', () => {
         'write tool/.repository.json',
       ].sort()
     )
+  })
+
+  it('moves a repository’s files an older app named otherwise to their own names', () => {
+    const disk = memoryDisk()
+    const documents = [
+      ...sample(),
+      doc('license', 'repo', {
+        type: 'file',
+        title: 'LICENSE',
+        mime: 'text/plain',
+        content: 'Free.\n',
+      }),
+      doc('ignore', 'repo', {
+        type: 'file',
+        title: '.gitignore',
+        mime: 'text/plain',
+        content: 'dist/\n',
+      }),
+      folder('ci', 'repo', { title: '.github' }),
+      doc('flow', 'ci', {
+        type: 'file',
+        title: 'ci.yml',
+        mime: 'text/x-yaml',
+        content: 'on: push\n',
+      }),
+    ]
+    const entries = writeFresh(disk, documents)
+    // As an older app left them: a `.txt` added, and the leading dots dropped.
+    const older = [
+      ['Notes/tool/LICENSE', 'Notes/tool/LICENSE.txt'],
+      ['Notes/tool/.gitignore', 'Notes/tool/gitignore.txt'],
+      ['Notes/tool/.github', 'Notes/tool/github'],
+    ]
+    disk.apply(older.map(([from, to]) => ({ op: 'move', from, to })))
+    const list = /** @type {string} */ (disk.read('Notes/tool/.repository.json'))
+    disk.write(
+      'Notes/tool/.repository.json',
+      older.reduce(
+        (text, [from, to]) =>
+          text.replaceAll(
+            `"${from.slice('Notes/tool/'.length)}`,
+            `"${to.slice('Notes/tool/'.length)}`
+          ),
+        list
+      )
+    )
+    const read = readBack(disk)
+    expect(read.entries.get('license')?.path).toBe('Notes/tool/LICENSE.txt')
+    expect(read.entries.get('flow')?.path).toBe('Notes/tool/github/ci.yml')
+
+    const ops = planProject(read.entries, entries, lookup(documents), [])
+    disk.apply(ops)
+
+    const after = readBack(disk)
+    expect(after.entries).toEqual(entries)
+    expect(byIdSorted(after.documents)).toEqual(asRead(documents))
+    expect(after.unknown).toEqual([])
+    expect(disk.read('Notes/tool/.github/ci.yml')).toBe('on: push\n')
   })
 
   it('writes and trashes a document’s narration as it comes and goes', () => {

@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useCardImport } from '@/composables/useCardImport'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { MAX_FILE_BYTES, MAX_TEXT_BYTES } from '@/files/inspect.js'
 
 const startConversion = vi.fn(async () => ({ id: 'job_1' }))
 vi.mock('@/jobs/index.js', () => ({ startConversion: (...args) => startConversion(...args) }))
@@ -180,6 +181,39 @@ describe('useCardImport', () => {
       const found = await cards.inspect(file('fake.png', 'plain text'))
 
       expect(found.shape).toBe('file')
+    })
+
+    it('refuses a file too large for a project to keep, whatever it is', async () => {
+      for (const name of [
+        'book.md',
+        'cards.json',
+        'portrait.png',
+        'report.docx',
+        'trips.parquet',
+      ]) {
+        const large = new File(['x'], name)
+        Object.defineProperty(large, 'size', { value: MAX_FILE_BYTES + 1 })
+        large.arrayBuffer = vi.fn(() => Promise.reject(new Error('read')))
+
+        await expect(cards.inspect(large)).rejects.toThrow(`"${name}" is too large`)
+        expect(large.arrayBuffer).not.toHaveBeenCalled()
+      }
+    })
+
+    it('keeps markdown or JSON too large to read as a file, unread', async () => {
+      for (const [name, type] of [
+        ['book.md', 'text/markdown'],
+        ['dump.json', 'application/json'],
+      ]) {
+        const large = new File(['{}'], name, { type })
+        Object.defineProperty(large, 'size', { value: MAX_TEXT_BYTES + 1 })
+        large.text = vi.fn(() => Promise.reject(new Error('read')))
+
+        const found = await cards.inspect(large)
+
+        expect(found).toMatchObject({ shape: 'file', mime: type, text: false })
+        expect(large.text).not.toHaveBeenCalled()
+      }
     })
 
     it('reads a PDF out page by page', async () => {

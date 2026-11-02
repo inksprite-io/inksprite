@@ -1,30 +1,40 @@
 /**
  * Check the Python sandbox (`src/sandbox.js`) against what it has to keep
- * out, in a real Electron: numpy and pandas load from the app's own files, a
- * run's state is kept, the project it is handed is there to read and not to
+ * out, in a real Electron: numpy, pandas, pyarrow and duckdb load from the
+ * app's own files, Parquet is read and written as it should be, a run's state
+ * is kept, the project it is handed is there to read and not to
  * change, and no other session's is, no request reaches a server, the app's
- * database isn't there to read, nothing of Node is in reach, and a run that
- * doesn't end is stopped.
+ * database isn't there to read, nothing of Node is in reach, a run that
+ * doesn't end is stopped, and all of it is in a process the system is
+ * sandboxing.
  *
  * After `node scripts/fetch-python.mjs`, in the container, on a display of
  * Xvfb's (`Xvfb :97 &`):
  *
- *   DISPLAY=:97 node_modules/.bin/electron scripts/check-sandbox.js --no-sandbox
+ *   DISPLAY=:97 node_modules/.bin/electron scripts/check-sandbox.js
  *
- * `--no-sandbox` because Chromium's own sandbox can't start in the container.
- * On a Mac, with the Electron `start-on-mac.sh` fetched, run without it, and
- * the sandbox's process should say it is sandboxed:
+ * On a Mac, with the Electron `start-on-mac.sh` fetched:
  *
  *   ~/Library/Caches/inksprite/electron-v44.7.0-darwin-arm64/Electron.app/Contents/MacOS/Electron scripts/check-sandbox.js
+ *
+ * Python won't start in a process the system isn't sandboxing, so with
+ * Chromium's sandbox off, in part or whole, every check fails. With
+ * `--no-sandbox`, it checks that refusal, and nothing else.
  */
 
 import { BrowserWindow, app, protocol, session } from 'electron'
 import { createHash, randomBytes } from 'node:crypto'
-import { mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import http from 'node:http'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { PythonSandbox, SANDBOX_PARTITION, SANDBOX_SCHEME_PRIVILEGES } from '../src/sandbox.js'
+import {
+  NOT_SANDBOXED,
+  PythonSandbox,
+  SANDBOX_PARTITION,
+  SANDBOX_SCHEME_PRIVILEGES,
+  osSandboxed,
+} from '../src/sandbox.js'
 
 app.setPath('userData', mkdtempSync(path.join(tmpdir(), 'sandbox-check-')))
 protocol.registerSchemesAsPrivileged([
@@ -115,6 +125,19 @@ async function checkAll() {
     record({ name, ok: expect(result, ms), detail: `${ms} ms\n${shown}` })
   }
 
+  if (app.commandLine.hasSwitch('no-sandbox')) {
+    const refused = await sandbox.run('print("ran")')
+    const ok =
+      refused.error === NOT_SANDBOXED &&
+      !refused.stdout &&
+      !refused.restarted &&
+      sandbox.pid === null
+    record({ name: 'won’t start Python with the sandbox off', ok, detail: String(refused.error) })
+    server.close()
+    app.exit(ok ? 0 : 1)
+    return
+  }
+
   await check('starts Python', 'import sys\nsys.version', r => /^'3\.14/.test(r.value ?? ''))
 
   await check(
@@ -193,6 +216,109 @@ for gap in range(-4, 5):
     r => /^(np\.float64\()?1\.5\)?$/.test(r.value ?? ''),
     { project }
   )
+
+  // A Parquet file, made in one session for the project of the next, each
+  // naming only what a model would.
+  const writer = new PythonSandbox()
+  const written = await writer.run(`import base64, io
+import pandas as pd
+buffer = io.BytesIO()
+pd.DataFrame({"skill": [1, 2, 3], "name": ["a", "b", "a"]}).to_parquet(buffer, compression="zstd")
+base64.b64encode(buffer.getvalue()).decode()`)
+  writer.close()
+  const parquet = path.join(folder, 'skills.parquet')
+  writeFileSync(parquet, Buffer.from((written.value ?? '').replace(/'/g, ''), 'base64'))
+  const withParquet = [
+    ...project,
+    { path: 'Data/skills.parquet', id: 'doc_4', file: parquet, size: statSync(parquet).size },
+  ]
+  await check(
+    'reads Parquet with pandas, and holds strings in Arrow, naming neither',
+    `import pandas as pd
+frame = pd.read_parquet("/project/Data/skills.parquet", columns=["skill", "name"])
+(int(frame.skill.sum()), frame.name.tolist(), frame.name.dtype.storage)`,
+    r => r.value === "(6, ['a', 'b', 'a'], 'pyarrow')",
+    { project: withParquet }
+  )
+  await check(
+    'prints a wide table whole, for the model to read every column',
+    `import pandas as pd
+text = repr(pd.DataFrame({f"column_{n}": [n] for n in range(40)}))
+("column_20" in text, "..." in text)`,
+    r => r.value === '(True, False)',
+    { project: withParquet }
+  )
+  await check(
+    'leaves a setting a run made for itself',
+    `pd.set_option("display.max_columns", 3)
+first = pd.get_option("display.max_columns")
+first`,
+    r => r.value === '3',
+    { project: withParquet }
+  )
+  await check(
+    'to the next run too',
+    `import pandas as pd
+pd.get_option("display.max_columns")`,
+    r => r.value === '3',
+    { project: withParquet }
+  )
+  await check(
+    'writes no Parquet into the project',
+    `import pandas as pd
+try:
+    pd.DataFrame({"a": [1]}).to_parquet("/project/Data/new.parquet")
+    outcome = "written"
+except PermissionError:
+    outcome = "refused"
+outcome`,
+    r => r.value === "'refused'",
+    { project: withParquet }
+  )
+  // In a session of its own: duckdb must bring what .df() needs, unasked.
+  const ducks = new PythonSandbox()
+  const asked = async (/** @type {string} */ code) => ducks.run(code, { project: withParquet })
+  const answer = await asked(`import duckdb
+frame = duckdb.sql("select name, sum(skill)::int as total from '/project/Data/skills.parquet' group by 1 order by 1").df()
+frame.values.tolist()`)
+  record({
+    name: 'queries Parquet with duckdb, and hands back a frame',
+    ok: answer.value === "[['a', 4], ['b', 2]]",
+    detail: answer.error ?? answer.value ?? '',
+  })
+  const bars = await asked(`[
+    duckdb.sql("select current_setting('enable_progress_bar')").fetchone()[0],
+    duckdb.connect().sql("select current_setting('enable_progress_bar')").fetchone()[0],
+]`)
+  record({
+    name: 'draws duckdb no progress bars into what the model reads',
+    ok: bars.value === '[False, False]',
+    detail: bars.error ?? bars.value ?? '',
+  })
+  const hitsBeforeDuck = hits.length
+  const fenced = await asked(`outcomes = {}
+for name, query in {
+    "install": "INSTALL httpfs",
+    "a server": "select * from read_csv('${local}/duck.csv')",
+    "the web": "select * from read_parquet('https://example.com/x.parquet')",
+    "into the project": "COPY (select 1 as a) TO '/project/Data/new.parquet'",
+    "a database in the project": "ATTACH '/project/Data/new.duckdb'",
+}.items():
+    try:
+        duckdb.sql(query)
+        outcomes[name] = "allowed"
+    except Exception as error:
+        outcomes[name] = "refused"
+outcomes`)
+  ducks.close()
+  record({
+    name: 'keeps duckdb to the sandbox',
+    ok:
+      fenced.error === null &&
+      !/allowed/.test(fenced.value ?? '') &&
+      hits.length === hitsBeforeDuck,
+    detail: `${fenced.error ?? fenced.value}, server hits: ${hits.length - hitsBeforeDuck}`,
+  })
   await check(
     'reads a file of many pieces, in pieces',
     `import hashlib, os
@@ -367,6 +493,8 @@ await attempt("the app’s page", lambda: js.fetch("app://inksprite/"))
 await attempt("a file", lambda: js.fetch("file:///etc/hosts"))
 await attempt("the sandbox’s main process", lambda: js.fetch("sandbox://python/../src/main.js"))
 await attempt("eval", lambda: run_js("1 + 1"))
+import pandas as pd
+await attempt("pandas from a server", lambda: pd.read_parquet(LOCAL + "/pandas.parquet"))
 await asyncio.sleep(1)
 outcomes`,
     r => r.error === null && hits.length === hitsBefore && !/allowed/.test(r.value ?? '')
@@ -447,7 +575,22 @@ request.onerror = lambda event: settle("error")
       sandbox.pid !== null &&
       sandbox.pid !== appWindow.webContents.getOSProcessId() &&
       sandbox.pid !== process.pid,
-    detail: `sandbox ${sandbox.pid}, app ${appWindow.webContents.getOSProcessId()}, main ${process.pid}; ${metrics?.type}, sandboxed: ${metrics?.sandboxed ?? 'not reported on this system'}, ${Math.round((metrics?.memory.workingSetSize ?? 0) / 1024)} MB`,
+    detail: `sandbox ${sandbox.pid}, app ${appWindow.webContents.getOSProcessId()}, main ${process.pid}; ${metrics?.type}, ${Math.round((metrics?.memory.workingSetSize ?? 0) / 1024)} MB`,
+  })
+  /** @param {number|string} pid */
+  const reading = pid =>
+    readFileSync(`/proc/${pid}/status`, 'utf8')
+      .split('\n')
+      .filter(line => /^(NSpid|Seccomp_filters):/.test(line))
+      .join(', ')
+      .replace(/\s+/g, ' ')
+  record({
+    name: 'that the system is sandboxing',
+    ok: sandbox.pid !== null && osSandboxed(sandbox.pid),
+    detail:
+      process.platform === 'linux' && sandbox.pid !== null
+        ? `sandbox: ${reading(sandbox.pid)}\nmain: ${reading('self')}`
+        : `sandboxed: ${metrics?.sandboxed}`,
   })
 
   const failed = results.filter(result => !result.ok).length

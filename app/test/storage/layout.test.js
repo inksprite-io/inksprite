@@ -426,6 +426,79 @@ describe('a project written and read back', () => {
     expect(read.documents).toHaveLength(sample().length)
   })
 
+  it('names what is in a repository as the codebase does, dots and all', () => {
+    const entries = layoutProject(
+      [
+        ...sample(),
+        doc('license', 'repo', { type: 'file', title: 'LICENSE', mime: 'text/plain' }),
+        doc('ignore', 'repo', { type: 'file', title: '.gitignore', mime: 'text/plain' }),
+        doc('readme2', 'repo', { type: 'file', title: 'README.markdown', mime: 'text/markdown' }),
+        folder('ci', 'repo', { title: '.github' }),
+        doc('list', 'repo', { type: 'file', title: '.repository.json', mime: 'application/json' }),
+      ],
+      ROOT
+    )
+
+    expect(paths(entries)).toMatchObject({
+      license: 'Notes/tool/LICENSE',
+      ignore: 'Notes/tool/.gitignore',
+      readme2: 'Notes/tool/README.markdown',
+      ci: 'Notes/tool/.github',
+      // Never the repository's own list.
+      list: 'Notes/tool/.repository (2).json',
+    })
+  })
+
+  describe('a repository’s file that came in whole', () => {
+    const withWhole = () => [
+      ...sample(),
+      doc('logo', 'repo', { type: 'file', title: 'logo.jpeg', mime: 'image/jpeg', size: 4 }),
+      doc('spec', 'src', {
+        type: 'file',
+        title: 'spec.pdf',
+        mime: 'application/pdf',
+        size: 9,
+        pages: 1,
+        content: 'The mill, page one.',
+      }),
+    ]
+
+    it('is itself on disk, under its own name, its row and its text in the list', () => {
+      const disk = memoryDisk()
+      const entries = writeFresh(disk, withWhole())
+
+      expect(entries.get('logo')).toEqual({
+        id: 'logo',
+        kind: 'repoBytes',
+        path: 'Notes/tool/logo.jpeg',
+        repository: 'repo',
+      })
+      expect(disk.read('Notes/tool/src/spec.pdf')).toBe('bytes of spec')
+      const listed = JSON.parse(/** @type {string} */ (disk.read('Notes/tool/.repository.json')))
+      expect(listed.entries.find(entry => entry.id === 'spec')).toMatchObject({
+        path: 'src/spec.pdf',
+        content: 'The mill, page one.',
+        pages: 1,
+      })
+      expect(listed.entries.find(entry => entry.id === 'main')).not.toHaveProperty('content')
+      expect(wantedTexts(disk.list())).not.toContain('Notes/tool/src/spec.pdf')
+      expect(wantedTexts(disk.list())).toContain('Notes/tool/src/main.js')
+    })
+
+    it('reads back as it was, and says when its bytes are gone', () => {
+      const disk = memoryDisk()
+      const entries = writeFresh(disk, withWhole())
+      disk.trash('Notes/tool/logo.jpeg')
+
+      const read = readBack(disk)
+
+      expect(byIdSorted(read.documents)).toEqual(byIdSorted(asRead(withWhole())))
+      expect(read.entries.get('spec')).toEqual(entries.get('spec'))
+      expect(read.entries.get('logo')).toMatchObject({ kind: 'repoBytes', missing: true })
+      expect(read.unknown).toEqual([])
+    })
+  })
+
   it('keeps an imported file whose bytes are gone, and says so', () => {
     const disk = memoryDisk()
     writeFresh(disk, sample())

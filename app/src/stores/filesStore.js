@@ -11,7 +11,7 @@
  * something wants to show it or send it.
  *
  * Written straight to storage rather than through `syncStore`. The sync store
- * deep-clones a change through JSON on its way to storage, and a Blob comes
+ * copies a change as JSON would have it on its way to storage, and a Blob comes
  * out of that as `{}`. A file's bytes never change after import, so there is
  * nothing to debounce either: they are put once and read. They go with their
  * document, which `documentsStore` removes through the sync store.

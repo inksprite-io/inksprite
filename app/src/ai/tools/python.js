@@ -6,7 +6,7 @@
  * In the desktop app only, in a session for each chat that keeps what its
  * runs define, fenced from the writer's data and the network
  * (platform/python.js, and `app/electron/src/sandbox.js` behind it). The
- * standard library, numpy and pandas, and nothing else.
+ * standard library, numpy, pandas, pyarrow and duckdb, and nothing else.
  *
  * The chat's project is at `/project`, read-only, as the chat's model sees
  * it and only when it sees it at all (`projectForPython`): the code reads a
@@ -24,9 +24,8 @@
  */
 
 import { fetchElsewhere, fileElsewhere } from '@/cloud/onDemand.js'
-import { inPreview } from '@/config/preview.js'
 import { useApplicationState } from '@/composables/useApplicationState'
-import { showsAsText } from '@/files/inspect.js'
+import { isUnreadText, showsAsText } from '@/files/inspect.js'
 import { hasPython, runPython } from '@/platform/python.js'
 import { storage } from '@/storage/index.js'
 import { useChatsStore } from '@/stores/chatsStore.js'
@@ -95,7 +94,7 @@ export const runPythonDefinition = {
   function: {
     name: RUN_PYTHON,
     description:
-      'Run Python code and get back what it printed and the value of its last line. Use it for anything that has to be worked out: arithmetic, probabilities, statistics, simulations, tables, dates. Run the numbers here rather than reasoning them out, and answer from what comes back. There is the standard library, numpy and pandas, and nothing else, and no network. The project is at /project, read-only, by the paths list_documents gives: a text document as its Markdown, an imported file as the file itself (a CSV as the CSV). A file whose text was read out of it, such as a PDF, has that text beside it, at its path with .txt added, each PDF page under a [p.N] line. A document that holds others is a directory there, with the document in it under its own name, and a file’s text beside it in there too. A file not yet on this device is downloaded when it is read; an I/O error reading it means it couldn’t be. Read data from there rather than copying it into the code; make or change a document with the document tools. What a run defines (variables, functions, imports) stays for later runs in this chat, until a run is stopped. A run that goes past the time limit the writer set is stopped, and loses what it defined; memory is 4 GB at most. When the cases are few enough to count, count them exactly (itertools.product, fractions.Fraction); otherwise simulate with numpy, and say how many trials. A script worth running again can be kept in the project: create_document with a title ending in .py keeps it as written, and file runs it.',
+      'Run Python code and get back what it printed and the value of its last line. Use it for anything that has to be worked out: arithmetic, probabilities, statistics, simulations, tables, dates. Run the numbers here rather than reasoning them out, and answer from what comes back. There is the standard library, numpy, pandas, pyarrow and duckdb, and nothing else, and no network. The project is at /project, read-only, by the paths list_documents gives: a text document as its Markdown, an imported file as the file itself (a CSV as the CSV, a Parquet file as the Parquet file). A file whose text was read out of it, such as a PDF, has that text beside it, at its path with .txt added, each PDF page under a [p.N] line. A document that holds others is a directory there, with the document in it under its own name, and a file’s text beside it in there too. A file not yet on this device is downloaded when it is read; an I/O error reading it means it couldn’t be. Read data from there rather than copying it into the code; make or change a document with the document tools. pandas reads a table of any size only if it fits in memory: for a large one, load only the columns you need (usecols for a CSV, columns for Parquet). A Parquet table too big for that can still be queried, with duckdb.sql, over one file or a glob of many, holding little of it in memory. Read a CSV with pandas, not duckdb, which here takes more than a minute a query on a few hundred megabytes. What a run defines (variables, functions, imports) stays for later runs in this chat, until a run is stopped. A run that goes past the time limit the writer set is stopped, and loses what it defined; memory is 4 GB at most, and what a run takes isn’t given back while Python is running, so from the first read of a large file load only the columns you need, and read in chunks if a read runs out of memory. When the cases are few enough to count, count them exactly (itertools.product, fractions.Fraction); otherwise simulate with numpy, and say how many trials. A script worth running again can be kept in the project: create_document with a title ending in .py keeps it as written, and file runs it.',
     parameters: {
       type: 'object',
       properties: {
@@ -121,7 +120,7 @@ export const runPythonDefinition = {
  * @returns {boolean}
  */
 export function pythonOffered() {
-  if (!inPreview('python') || !hasPython()) return false
+  if (!hasPython()) return false
   const { aiEnabled, extensionOn } = useApplicationState()
   return aiEnabled.value && extensionOn(PYTHON_GROUP) === true
 }
@@ -219,7 +218,7 @@ async function entryOf(document, path) {
   const { id } = document
   const text = { path, id, text: document.content || '' }
   if (document.type === 'text') return text
-  const ofText = showsAsText(document.mime || '')
+  const ofText = showsAsText(document.mime || '') && !isUnreadText(document)
   if (await fileElsewhere(id)) {
     if (ofText) return text
     return typeof document.size === 'number'
@@ -349,7 +348,7 @@ async function scriptAt(path, context) {
   if (!found || !document || document.type === 'folder') {
     return { error: `There is no script at ${path}.` }
   }
-  if (document.type === 'file' && !showsAsText(document.mime || '')) {
+  if (document.type === 'file' && (!showsAsText(document.mime || '') || isUnreadText(document))) {
     return { error: `${found.path} isn’t text.` }
   }
   return { code: document.content || '', filename: `${PROJECT_FOLDER}/${found.path}` }

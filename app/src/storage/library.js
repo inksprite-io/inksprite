@@ -26,6 +26,7 @@ import {
   audioDir,
   audioPath,
   basePath,
+  holdsBytes,
   layoutProject,
   picturePath,
   readProject,
@@ -161,7 +162,7 @@ const bytesPath = (entries, id) => {
   const picture = pictureOfKey(id)
   if (!picture) {
     const entry = entries.get(id)
-    return entry?.kind === 'file' ? entry.path : null
+    return holdsBytes(entry) ? entry.path : null
   }
   const entry = entries.get(picture.documentId)
   return entry?.kind === 'text' ? picturePath(entry.path, picture.documentId, picture.name) : null
@@ -713,8 +714,17 @@ export function libraryStorage(disk, options = {}) {
       for (const [id, blob] of project.bytes) {
         const path = bytesPath(entries, id)
         if (!path) continue
-        ops.push({ op: 'write', path, bytes: new Uint8Array(await blob.arrayBuffer()) })
         project.bytes.delete(id)
+        try {
+          ops.push({ op: 'write', path, bytes: new Uint8Array(await blob.arrayBuffer()) })
+        } catch (error) {
+          // A file moved since it was chosen, or too large to read. It goes
+          // without its bytes, as one whose bytes are gone, rather than hold up
+          // this save and every one after it, with the writer's other changes.
+          console.error(`The bytes of ${id} couldn't be read: ${error}`)
+          const entry = entries.get(id)
+          if (entry) entry.missing = true
+        }
       }
       await apply(project, ops)
       const gone = own.filter(change => change.op === 'delete').map(change => change.id)
@@ -969,9 +979,7 @@ export function libraryStorage(disk, options = {}) {
   const bytesOfAll = async project => {
     /** @type {StoredFile[]} */
     const files = []
-    const ids = [...project.entries.values()]
-      .filter(entry => entry.kind === 'file')
-      .map(entry => entry.id)
+    const ids = [...project.entries.values()].filter(holdsBytes).map(entry => entry.id)
     for (const id of [...ids, ...pictureKeys(project.entries)]) {
       const blob = await bytesOf(project, id)
       if (blob) files.push({ id, storyId: project.id, blob })
@@ -1191,7 +1199,7 @@ export function libraryStorage(disk, options = {}) {
         const project = projectOfDocument(id)
         if (!project?.dir || project.bytes.has(id) || project.entries.get(id)?.missing) return null
         const entry = project.entries.get(id)
-        return entry?.kind === 'file' ? under(project.dir, entry.path) : null
+        return holdsBytes(entry) ? under(project.dir, entry.path) : null
       }),
 
     documentPath: id =>

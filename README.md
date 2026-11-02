@@ -1,106 +1,86 @@
 # inksprite
 
-inksprite is a writing app that runs locally in your browser or as a standalone
-desktop application. You do not need to make an account to use inksprite. Your
-work stays on your device.
+inksprite is a privacy-focused research and writing app with a powerful suite of built-in AI tools.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/src/assets/guide/first-chat-dark.png">
-  <img alt="A project's outline, a document of ideas, and the chat in which the AI read Chapter 1 and wrote them" src="docs/src/assets/guide/first-chat.png">
-</picture>
+Some of the ways people use inksprite:
 
-**[Open it in your browser](https://app.inksprite.io)** ·
-[Download the desktop app](https://github.com/inksprite-io/inksprite/releases/latest) ·
-[Getting Started guide](https://docs.inksprite.io/getting-started)
+- **Technical research and writing:**
+  - Write research papers and technical design documents
+  - Summarize and ask questions about books, papers, and source code
+  - Integrate with internal MCP tooling and model providers
+- **Creative writing and worldbuilding:**
+  - Brainstorm about your world and characters
+  - Play D&D by yourself
+  - Write ~~terrible fanfiction~~ your magnum opus
+- **Education and learning:**
+  - Plan homeschool lessons and track your child’s progress
+  - Ask questions about lecture notes, book chapters, and research papers
+  - Create audio podcast summaries from your study material
 
-## AI tools
+![A homeschool project in inksprite: its outline of subjects and lesson logs, a session's notes, and the chat that added to them](docs/readme/home-preschool.webp)
 
-You can use the built-in AI tools to:
+## Getting Started
 
-- Write and edit documents
-- Research and brainstorm
-- Generate audio narrations
+**Web app:** No account or sign-in needed. Just go to [app.inksprite.io](https://app.inksprite.io) and start writing.
 
-They work with OpenRouter, Anthropic, OpenAI, or a model on your own machine.
-Requests go straight from your device to the provider.
+**Desktop:** The desktop app has [a few extra features](https://docs.inksprite.io/desktop#what-only-the-desktop-app-does), and is available for Mac, Linux, and Windows. Grab the [latest release](https://github.com/inksprite-io/inksprite/releases/latest) for your platform.
 
-inksprite is still in development. Please report bugs and issues
-[here](https://github.com/inksprite-io/inksprite/issues).
+**Mobile:** We don’t ship a dedicated app for Android or iOS (yet), but you can [install it as a browser app](https://docs.inksprite.io/getting-started#install-it-from-your-browser).
 
-## Examples
+Check out the [user guide](https://docs.inksprite.io/) if you need help getting started.
 
-### Research
+## Philosophy
 
-The model summarizes the papers you import, searches the web, and writes a
-design doc from what it found. You comment on the draft as you would on a
-colleague's, and the model works through the comments.
-[The research guide](https://docs.inksprite.io/research) follows it from
-start to finish.
+**Local-first:** inksprite runs on your device and works without an internet connection. All of the default tooling is tuned to work well with popular local models.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/research-comment-dark.webp">
-  <img alt="Selecting a passage in a design doc and commenting on it" src="docs/readme/research-comment.webp">
-</picture>
+**Privacy-first:** None of your data leaves your device unless you choose to enable cloud sync or connect to a third-party service. Your data is stored in your browser when using the web app, or on your local file system when using the desktop app.
 
-### Narration
+**Open source:** inksprite is open source. We built it both for ourselves and to share it with others.
 
-inksprite reads your documents aloud in the voices you choose, with Kokoro on
-your own computer or a voice from OpenAI or OpenRouter, and you can download
-the audio. [The narration guide](https://docs.inksprite.io/narration) reads
-the first letter of *Frankenstein*, and you can listen to it there.
+## Features
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/narration-generate-dark.webp">
-  <img alt="Narration of the letter being generated, a segment at a time" src="docs/readme/narration-generate.webp">
-</picture>
+**AI writing and editing tools:** The built-in AI tools can help you [write and edit your work](https://docs.inksprite.io/research#write-the-draft), [give you critical feedback](https://docs.inksprite.io/research#ask-for-a-review), take notes, brainstorm, or plan your project.
 
-### Roleplay
+**Research tools:** The AI can [search the web](https://docs.inksprite.io/web-search), [extract text from PDFs](https://docs.inksprite.io/files), [summarize large bodies of work](https://docs.inksprite.io/research#summarize-them), and answer questions about complex topics. In the desktop app, it can also [analyze data and run experiments](https://docs.inksprite.io/data-analysis) in an isolated Python sandbox.
 
-Import a character card and its lorebook, play your own character, and the
-model plays everyone else. You steer the story with dice, the oracle and
-out-of-character notes. [The roleplay guide](https://docs.inksprite.io/roleplay)
-plays one through.
+**MCP servers and skills:** You can extend inksprite by connecting to [MCP servers](https://docs.inksprite.io/mcp) and adding [custom skills](https://docs.inksprite.io/skills).
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/src/assets/guide/roleplay-oracle-dark.png">
-  <img alt="The oracle's answer in the player's turn, and the reply built on it" src="docs/src/assets/guide/roleplay-oracle.png">
-</picture>
+**Provider support:** We provide out-of-the-box integrations with OpenRouter, Anthropic, OpenAI, and various local endpoints. inksprite will work with any OpenAI-compatible provider. If you find a provider that doesn’t work, let us know by [opening an issue](https://github.com/inksprite-io/inksprite/issues).
 
-## Running it
+**Encrypted cloud sync:** You can **optionally** back up your work to the cloud, which allows you to [access it from any device](https://docs.inksprite.io/sync) and [collaborate with other inksprite users](https://docs.inksprite.io/sync#share-a-project). You hold the encryption keys, which means that we cannot access your work even if we wanted to (we don’t). **Cloud sync is currently invite-only. Email us at [sync@inksprite.io](mailto:sync@inksprite.io) if you want an invite.**
 
-```bash
-cd app
-npm install
-npm run dev
+**Sync to and from Google Docs:** Need to share a design doc with your team but want to do your research and writing in inksprite? You can [link a document to a Google Doc](https://docs.inksprite.io/google-docs), which allows you to share your work, respond to comments and suggestions, and synchronize changes with Google Drive.
+
+**Roleplaying games:** inksprite started out as a tool for running solo tabletop RPGs. Use the built-in RPG tools to play solo, plan and run tabletop games for your friends, or [chat with character cards](https://docs.inksprite.io/roleplay) from popular bot sites.
+
+**Audio narration:** Use inksprite’s text-to-speech [narration tools](https://docs.inksprite.io/narration) to create an educational podcast series for your kids, turn your novel into an audiobook, or create an easy-to-digest podcast summary of your dissertation.
+
+## Building and Running Locally
+
+This builds and runs the provided Docker Compose file, which starts dev servers for the web app at <http://localhost:8002> and the docs site at <http://localhost:4321>.
+
+```sh
+docker compose up -d
 ```
 
-`npm run build` writes a static site to `app/dist/`. A build sends no
-analytics unless it is built with `VITE_VERCEL_ANALYTICS=true`. Its service
-worker keeps the app's files, so that it opens offline and installs; should
-that ever have to go from browsers that have it, build with
-`VITE_REMOVE_SERVICE_WORKER=true` (`app/sw-remove.js`).
+The dev servers will hot reload as you make changes. If the app’s dependencies change, rebuild it by running `./rebuild-test-server.sh`.
+
+### Desktop App
+
+You can run the desktop app on Mac using this script:
+
+```sh
+./app/electron/start-on-mac.sh
+```
+
+On Linux, run `npm start` in `app/electron` instead. Running on Windows is left as an exercise for the reader. Send us a pull request with your script if you try it 🙏.
+
+See the desktop app [README](app/electron/README.md) for more details.
 
 ## Contributing
 
-[CONTRIBUTING.md](CONTRIBUTING.md) has the setup, the sign-off rule, and the
-terms a contribution comes in under: you keep your copyright and license it
-under Apache-2.0, and the project releases the whole under the GPL. Read that
-section before your first pull request.
+[Feedback](https://github.com/inksprite-io/inksprite/discussions), [bug reports](https://github.com/inksprite-io/inksprite/issues), and [patches](https://github.com/inksprite-io/inksprite/pulls) are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-inksprite is free software under the
-[GNU General Public License, version 3 or later](LICENSE).
-Copyright © 2025–2026 The inksprite Authors.
-
-### Icons
-
-The icons are from the [Noun Project](https://thenounproject.com), each
-under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) by its
-creator, and are not covered by the GPL. [CREDITS.md](CREDITS.md) lists
-them, and the app credits them under Settings › About.
-
-### The name and the logo
-
-The inksprite name and the logo are not covered by the license; all rights to
-them are reserved.
+inksprite is licensed under the [GNU General Public License, version 3 or later](LICENSE). All rights to the inksprite name and logo are reserved. See [CREDITS.md](CREDITS.md) for a list of third-party resources not covered by this license.

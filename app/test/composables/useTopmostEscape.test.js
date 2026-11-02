@@ -61,6 +61,35 @@ describe('useTopmostEscape', () => {
     expect(isTopmostMask(null)).toBe(false)
   })
 
+  it('goes by the stacking, whatever the order on the page', () => {
+    // The settings' mask, mounted with the writer, comes first on the page
+    // though it opened over the other.
+    const opened = openMask()
+    const over = openMask()
+    document.body.insertBefore(over, opened)
+    opened.style.zIndex = '3102'
+    over.style.zIndex = '5204'
+
+    expect(isTopmostMask(over)).toBe(true)
+    expect(isTopmostMask(opened)).toBe(false)
+  })
+
+  it('closes only the dialog on top, wherever it is on the page', () => {
+    const opened = openMask()
+    const over = openMask()
+    document.body.insertBefore(over, opened)
+    opened.style.zIndex = '3102'
+    over.style.zIndex = '5204'
+    const below = listen(ref(true), opened)
+    const above = listen(ref(true), over)
+
+    // Nothing focused counts as whichever dialog is on top.
+    escape()
+
+    expect(above.close).toHaveBeenCalledTimes(1)
+    expect(below.close).not.toHaveBeenCalled()
+  })
+
   it('closes on Escape while nothing is open over it', () => {
     const mask = openMask()
     const { close } = listen(ref(true), mask)

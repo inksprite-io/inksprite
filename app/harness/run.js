@@ -168,7 +168,7 @@ Usage: npm run transcripts -- --scenario <name> [options]
  * @property {string[]} [previews] - Features in preview the scenario is about,
  *   which have to be on in the environment the batch starts in
  * @property {boolean} [python] - Python is there for the chat, as in the desktop app with
- *   its extension on (`desktop.js`); needs the `python` preview too
+ *   its extension on (`desktop.js`)
  * @property {boolean} [rewind] - Once the last turn is in, the writer rewinds the
  *   chat to their first message, and the run records whether that put the
  *   project back as it was

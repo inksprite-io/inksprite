@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import Settings from '@/components/writer/settings/Settings.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 
 vi.mock('@/composables/useAIConfig', () => ({
   useAIConfig: () => ({ init: vi.fn(async () => {}) }),
@@ -42,6 +43,24 @@ describe('Settings', () => {
     const wrapper = mountSettings()
     expect(wrapper.find('[data-section-pane="system"]').exists()).toBe(true)
     expect(wrapper.find('h2').text()).toBe('System')
+  })
+
+  it('shows the project asked for in place of the one open, until it closes', async () => {
+    const panel = useSettingsPanel()
+    panel.open('project', undefined, 'story_other')
+    const wrapper = mountSettings({ storyId: 'story_open' })
+    expect(wrapper.find('[data-section-pane="project"]').attributes('data-story')).toBe(
+      'story_other'
+    )
+
+    wrapper.unmount()
+    panel.close()
+    expect(panel.requestedProject.value).toBeNull()
+
+    panel.open('project')
+    const again = mountSettings({ storyId: 'story_open' })
+    expect(again.find('[data-section-pane="project"]').attributes('data-story')).toBe('story_open')
+    panel.close()
   })
 
   it('shows one section at a time', async () => {

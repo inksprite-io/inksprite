@@ -58,9 +58,18 @@ export function textOf(bytes) {
  * @returns {Promise<string|null>}
  */
 export async function textOfFile(blob) {
-  const head = new Uint8Array(await blob.slice(0, SNIFF_BYTES).arrayBuffer())
-  if (!encodingOf(head)) return null
+  if (!(await startsAsText(blob))) return null
   return textOf(new Uint8Array(await blob.arrayBuffer()))
+}
+
+/**
+ * Whether a file looks like text from its top, reading no more of it than that.
+ *
+ * @param {Blob} blob
+ * @returns {Promise<boolean>}
+ */
+export async function startsAsText(blob) {
+  return encodingOf(new Uint8Array(await blob.slice(0, SNIFF_BYTES).arrayBuffer())) !== null
 }
 
 /**

@@ -11,7 +11,10 @@
  *   from the sandbox's files and Pyodide's, and turns down every other
  *   request. The page's CSP says the same.
  * - **Its own process**, under Chromium's sandbox, with no Node and no bridge:
- *   its preload hands the page one port to this side, and nothing else.
+ *   its preload hands the page one port to this side, and nothing else. That
+ *   sandbox can be turned off from outside, by `--no-sandbox` or the
+ *   environment, and Python won't start in a process without it
+ *   (`osSandboxed`).
  * - **A time limit**, the page's to set, or none. A run that goes past it has
  *   its process killed, and the next run starts a new one. What the code had
  *   defined is lost. Memory is WebAssembly's 4 GB at most, and none of ours.
@@ -34,8 +37,9 @@
  * fetched once the app runs.
  */
 
-import { MessageChannelMain, WebContentsView, session } from 'electron'
+import { MessageChannelMain, WebContentsView, app, session } from 'electron'
 import { randomBytes } from 'node:crypto'
+import { readFileSync } from 'node:fs'
 import { open, readFile, stat } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
@@ -323,6 +327,64 @@ function getSession() {
 }
 
 /**
+ * Why a run didn't happen, in a process the system isn't sandboxing. The model
+ * passes it on to the writer, who is the one who can change it.
+ */
+export const NOT_SANDBOXED =
+  'Python didn’t run because the system isn’t sandboxing it, as when inksprite is started with --no-sandbox. Start inksprite without that. On Ubuntu, if the AppImage won’t start without it, install the .deb.'
+
+/**
+ * Whether a process is under both layers of Chromium's sandbox on Linux, by
+ * its `/proc/<pid>/status` beside the main process's: a PID namespace of its
+ * own, `NSpid` having an id for each namespace a process is in, and seccomp
+ * filters beyond those it inherited, a container's among them. On a kernel too
+ * old to count them (before 5.9), only that it has seccomp filters at all.
+ *
+ * `NoNewPrivs` says nothing here: a renderer has it with the sandbox off too.
+ *
+ * @param {string} status - The process's
+ * @param {string} main - The main process's
+ * @returns {boolean}
+ */
+export function linuxSandboxed(status, main) {
+  /**
+   * @param {string} text
+   * @param {string} name
+   */
+  const field = (text, name) => text.match(new RegExp(`^${name}:\\s*(.+)$`, 'm'))?.[1].trim()
+  /** @param {string} text */
+  const depth = text => field(text, 'NSpid')?.split(/\s+/).length ?? 0
+  const filters = field(status, 'Seccomp_filters')
+  const filtered =
+    filters === undefined
+      ? field(status, 'Seccomp') === '2'
+      : Number(filters) > Number(field(main, 'Seccomp_filters'))
+  return depth(status) > depth(main) && filtered
+}
+
+/**
+ * Whether the system is sandboxing a process. Electron can say so on a Mac and
+ * on Windows; on Linux it doesn't, so the kernel is asked. What can't be told
+ * counts as not.
+ *
+ * @param {number} pid
+ * @returns {boolean}
+ */
+export function osSandboxed(pid) {
+  if (process.platform !== 'linux') {
+    return app.getAppMetrics().find(metric => metric.pid === pid)?.sandboxed === true
+  }
+  try {
+    return linuxSandboxed(
+      readFileSync(`/proc/${pid}/status`, 'utf8'),
+      readFileSync('/proc/self/status', 'utf8')
+    )
+  } catch {
+    return false
+  }
+}
+
+/**
  * What a run comes back with.
  *
  * @typedef {Object} RunResult
@@ -410,7 +472,13 @@ export class PythonSandbox {
     try {
       port = await this.#start()
     } catch (error) {
-      return { stdout: '', stderr: '', value: null, error: error.message, restarted: true }
+      return {
+        stdout: '',
+        stderr: '',
+        value: null,
+        error: error.message,
+        restarted: error.message !== NOT_SANDBOXED,
+      }
     }
     const id = this.#nextId++
     const view = this.#view
@@ -498,7 +566,16 @@ export class PythonSandbox {
         }
       })
       port1.start()
-      webContents.once('did-finish-load', () => webContents.postMessage('port', null, [port2]))
+      // The port is what starts Python, so it never starts unsandboxed.
+      webContents.once('did-finish-load', () => {
+        if (osSandboxed(webContents.getOSProcessId())) {
+          webContents.postMessage('port', null, [port2])
+          return
+        }
+        clearTimeout(timer)
+        this.close()
+        reject(new Error(NOT_SANDBOXED))
+      })
       webContents.loadURL(SANDBOX_URL).catch(error => {
         clearTimeout(timer)
         this.close()

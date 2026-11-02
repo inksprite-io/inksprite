@@ -8,6 +8,7 @@
 import { BrowserWindow, shell } from 'electron'
 import { fileURLToPath } from 'node:url'
 import { saveBeforeClosing } from './closing.js'
+import { offerReloadWhenGone } from './gone.js'
 import { openable, originOf } from './links.js'
 import { showContextMenu } from './menu.js'
 
@@ -57,6 +58,7 @@ export function windowOpener(pageUrl) {
     })
     window.once('ready-to-show', () => window.show())
     saveBeforeClosing(window)
+    offerReloadWhenGone(window)
 
     const { webContents } = window
     // A link followed in the window would take the app's place, and a window

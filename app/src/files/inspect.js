@@ -9,10 +9,13 @@
  */
 
 import { languageOf } from '@/source/language.js'
-import { textOfFile } from '@/source/text.js'
+import { startsAsText, textOfFile } from '@/source/text.js'
 import { extractEpub } from './epub.js'
 import { textOfHtml } from './html.js'
 import { extractPdf } from './pdf.js'
+
+/** A Parquet file's media type. */
+export const PARQUET_MIME = 'application/vnd.apache.parquet'
 
 /**
  * Media types by extension, for the files a browser hands over with an empty
@@ -28,6 +31,9 @@ export const MIME_BY_EXTENSION = {
   jpeg: 'image/jpeg',
   gif: 'image/gif',
   webp: 'image/webp',
+  avif: 'image/avif',
+  bmp: 'image/bmp',
+  ico: 'image/x-icon',
   svg: 'image/svg+xml',
   txt: 'text/plain',
   md: 'text/markdown',
@@ -47,6 +53,7 @@ export const MIME_BY_EXTENSION = {
   odt: 'application/vnd.oasis.opendocument.text',
   rtf: 'application/rtf',
   zip: 'application/zip',
+  parquet: PARQUET_MIME,
 }
 
 /** What a file is called when nothing says otherwise. */
@@ -79,6 +86,15 @@ export function extensionFor(mime) {
   return ''
 }
 
+/**
+ * Whether a file of this type is data, for code to read rather than a person
+ * or a model. It can't be shown, and its text is no use, but its name tells
+ * code how to read it.
+ * @param {string} mime
+ * @returns {boolean}
+ */
+export const isData = mime => mime === PARQUET_MIME
+
 /** Extensions that mark prose, which a title drops as a paper's does. */
 const PROSE_EXTENSIONS = new Set(['md', 'markdown', 'txt'])
 
@@ -90,7 +106,7 @@ const PROSE_EXTENSIONS = new Set(['md', 'markdown', 'txt'])
  * `Papers/RAG survey.pdf`; the extension is the media type's to know, and a
  * download puts it back. Anything else shown as plain text, such as code,
  * configuration or data, keeps it: there the extension is part of the name,
- * and `foo.cpp` and `foo.h` are two files.
+ * and `foo.cpp` and `foo.h` are two files. So too for a data file (`isData`).
  *
  * @param {string} name
  * @param {string} [mime] - The type it came in as; without one, the extension goes
@@ -98,7 +114,9 @@ const PROSE_EXTENSIONS = new Set(['md', 'markdown', 'txt'])
  */
 export function titleOf(name, mime = '') {
   const extension = (name.match(/\.([^.]+)$/)?.[1] || '').toLowerCase()
-  if (showsAsText(mime) && !PROSE_EXTENSIONS.has(extension)) return name.trim() || 'Untitled'
+  if (isData(mime) || (showsAsText(mime) && !PROSE_EXTENSIONS.has(extension))) {
+    return name.trim() || 'Untitled'
+  }
   return name.replace(/\.[^.]+$/, '').trim() || name.trim() || 'Untitled'
 }
 
@@ -138,6 +156,50 @@ const KEPT_AS_BYTES = new Set(Object.values(MIME_BY_EXTENSION).filter(mime => !i
 
 /** An epub's media type. */
 export const EPUB_MIME = 'application/epub+zip'
+
+/**
+ * The largest file of text that comes in with its text in its document. A
+ * larger one, a data set more than anything to read, keeps only its bytes:
+ * its text in a row would be in memory while the project is open and go
+ * through every save and every sync, and past 128 million characters
+ * `JSON.stringify` can kill the page (`utils/plainCopy.js`).
+ */
+export const MAX_TEXT_BYTES = 50 * 1024 * 1024
+
+/**
+ * The largest file a project can keep. A file goes to the disk and comes back
+ * whole, several copies of it in memory at once: opening one of 1 GB took 8 GB,
+ * and one of 2 GB took 12. A Blob gives up no more than about 2 GB at all, so
+ * past that it could be neither saved nor opened.
+ */
+export const MAX_FILE_BYTES = 1024 * 1024 * 1024
+
+/**
+ * Refuse a file too large for a project to keep.
+ *
+ * @param {File} file
+ * @throws {Error} Saying so, for the writer to read
+ */
+export function refuseTooLarge(file) {
+  if (file.size <= MAX_FILE_BYTES) return
+  throw new Error(
+    `"${file.name}" is too large. A project can keep files of up to ${sizeLabel(MAX_FILE_BYTES)}.`
+  )
+}
+
+/**
+ * Whether a document is a file of text too large to have come in with its
+ * text, so that what it holds is in its bytes alone. A file from before there
+ * was a limit keeps the text it came in with.
+ *
+ * @param {{mime?: string, size?: number, content?: string}|null|undefined} document
+ * @returns {boolean}
+ */
+export const isUnreadText = document =>
+  Boolean(document) &&
+  showsAsText(document?.mime || '') &&
+  !document?.content &&
+  (document?.size ?? 0) > MAX_TEXT_BYTES
 
 /**
  * Whether importing a file of this type reads any text out of it, and so
@@ -200,14 +262,21 @@ export function sizeLabel(bytes) {
  * TypeScript `.ts` for a video), is read, and comes in as the text it turns
  * out to be, typed by its name.
  *
+ * A file of text over `MAX_TEXT_BYTES` isn't read: only its top is looked at,
+ * to type it, and it comes in with no text.
+ *
  * @param {File} file
  * @returns {Promise<InspectedFile>}
- * @throws {Error} When a PDF or an epub cannot be opened
+ * @throws {Error} When a PDF or an epub cannot be opened, or the file is too
+ *   large for a project to keep
  */
 export async function inspectFile(file) {
+  refuseTooLarge(file)
   const declared = mimeOf(file.name, file.type)
-  const read = isUnread(declared) ? await textOfFile(file) : null
-  const mime = read === null ? declared : languageOf(file.name).mime
+  const large = file.size > MAX_TEXT_BYTES
+  const read = isUnread(declared) && !large ? await textOfFile(file) : null
+  const turnedOutText = read !== null || (isUnread(declared) && large && (await startsAsText(file)))
+  const mime = turnedOutText ? languageOf(file.name).mime : declared
   // The bytes are kept with the type they were found to have: a browser that
   // handed the file over with none would otherwise leave a PDF the viewer
   // shows as characters.
@@ -222,10 +291,10 @@ export async function inspectFile(file) {
     const { sections, text } = extractEpub(await file.arrayBuffer())
     return { ...found, text, sections }
   }
+  if (isImage(mime) || !isText(mime) || large) return { ...found, text: '' }
   if (mime === 'text/html') {
     return { ...found, text: textOfHtml(await file.text()) }
   }
-  if (isImage(mime) || !isText(mime)) return { ...found, text: '' }
   // A file typed as text is taken at its word, even when it is not UTF-8.
   return { ...found, text: read ?? (await textOfFile(file)) ?? (await file.text()) }
 }

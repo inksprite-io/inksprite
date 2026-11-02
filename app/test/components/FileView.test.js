@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import FileView from '@/components/writer/editor/FileView.vue'
-import { minimalEpub } from '../files/helpers.js'
+import { minimalDocx, minimalEpub } from '../files/helpers.js'
 
 const documents = new Map()
 vi.mock('@/composables/useDocuments', () => ({
@@ -58,6 +58,13 @@ describe('FileView', () => {
       type: 'file',
       title: 'Novel',
       mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      size: 3 * 1024 * 1024,
+    })
+    documents.set('pptx', {
+      id: 'pptx',
+      type: 'file',
+      title: 'Pitch',
+      mime: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
       size: 3 * 1024 * 1024,
     })
     documents.set('epub', {
@@ -152,17 +159,43 @@ describe('FileView', () => {
     expect(none.text()).toContain('not a zip file')
   })
 
-  it('says there is no preview of anything else, and offers the file', async () => {
+  it('shows a Word file as its text, read out of the file, without its pictures', async () => {
+    const docx = minimalDocx(
+      '<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>Plans</w:t></w:r></w:p>' +
+        '<w:p><w:r><w:t>The vault is under the mill.</w:t></w:r></w:p>'
+    )
+    getFile.mockResolvedValue(new Blob([docx], { type: documents.get('docx').mime }))
     const wrapper = mountView('docx')
+    // The converter is loaded with the first Word file, which takes a while
+    // on a busy machine.
+    await vi.waitFor(() => expect(wrapper.find('[data-file-reader]').exists()).toBe(true), {
+      timeout: 15000,
+    })
+
+    const text = wrapper.find('[data-file-reader]')
+    expect(text.find('h1').text()).toBe('Plans')
+    expect(text.text()).toContain('The vault is under the mill.')
+  })
+
+  it("says why when a Word file can't be read", async () => {
+    const wrapper = mountView('docx')
+    await vi.waitFor(() => expect(wrapper.find('[data-file-none]').exists()).toBe(true))
+
+    expect(wrapper.find('[data-file-reader]').exists()).toBe(false)
+    expect(wrapper.find('[data-file-none]').text()).toContain('No preview available')
+  })
+
+  it('says there is no preview of anything else, and offers the file', async () => {
+    const wrapper = mountView('pptx')
     await flushPromises()
 
     const none = wrapper.find('[data-file-none]')
     expect(none.text()).toContain('No preview available')
-    expect(none.text()).toContain('wordprocessingml.document · 3.0 MB')
+    expect(none.text()).toContain('presentationml.presentation · 3.0 MB')
     expect(URL.createObjectURL).not.toHaveBeenCalled()
 
     await none.find('button').trigger('click')
-    expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), 'Novel.bin')
+    expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), 'Pitch.bin')
   })
 
   it('says when the bytes are gone, with nothing to download', async () => {
@@ -220,6 +253,44 @@ describe('FileView', () => {
   })
 
   describe('a file of text', () => {
+    it('has no preview when it came in too large to read, and offers the file', async () => {
+      documents.set('large', {
+        id: 'large',
+        type: 'file',
+        title: 'flights.csv',
+        mime: 'text/csv',
+        size: 247 * 1024 * 1024,
+        content: '',
+      })
+      getFile.mockResolvedValue(new Blob(['a,b'], { type: 'text/csv' }))
+
+      const wrapper = mountView('large')
+      await flushPromises()
+
+      expect(wrapper.find('[data-code-stub]').exists()).toBe(false)
+      const none = wrapper.find('[data-file-none]')
+      expect(none.text()).toContain('No preview available')
+      expect(none.text()).toContain('text/csv · 247.0 MB')
+      expect(none.find('button').exists()).toBe(true)
+    })
+
+    it('still shows a large one as code when it came in with its text', async () => {
+      documents.set('older', {
+        id: 'older',
+        type: 'file',
+        title: 'flights.csv',
+        mime: 'text/csv',
+        size: 247 * 1024 * 1024,
+        content: 'a,b',
+      })
+      getFile.mockResolvedValue(new Blob(['a,b'], { type: 'text/csv' }))
+
+      const wrapper = mountView('older')
+      await flushPromises()
+
+      expect(wrapper.find('[data-code-stub]').text()).toBe('a,b')
+    })
+
     it("shows a repository's file, which keeps no bytes, as code", async () => {
       documents.set('src', {
         id: 'src',

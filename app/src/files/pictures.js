@@ -44,6 +44,19 @@ const MARKER = 'inksprite-picture-'
  */
 export const markerFor = n => `${MARKER}${n}`
 
+/** A picture taken out, where it was: `![alt](inksprite-picture-1)`. */
+const TAKEN = new RegExp(String.raw`!\[(?:\\.|[^\\\]\n])*\]\(${MARKER}\d+\)`, 'g')
+
+/**
+ * Markdown with the pictures taken out of it gone, markers and all: the text
+ * of a file that keeps its pictures itself, a Word file in a repository,
+ * which is shown from its bytes.
+ *
+ * @param {string} markdown
+ * @returns {string}
+ */
+export const withoutPictures = markdown => markdown.replace(TAKEN, '').replace(/\n{3,}/g, '\n\n')
+
 /**
  * A use of a picture: `![alt][label]`, `![label][]` or `![label]`, the last
  * not followed by a link of its own.

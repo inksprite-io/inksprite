@@ -4,7 +4,7 @@
 
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { countWords } from '@/utils/wordCount.js'
-import { layoutProject, readProject, wantedTexts } from '@/storage/layout.js'
+import { holdsBytes, layoutProject, readProject, wantedTexts } from '@/storage/layout.js'
 import { projectFiles } from '@/storage/plan.js'
 import { safeName } from '@/storage/names.js'
 
@@ -176,7 +176,7 @@ export function writeFresh(disk, documents) {
     disk.write(path, text)
   }
   for (const entry of entries.values()) {
-    if (entry.kind === 'file') disk.write(entry.path, `bytes of ${entry.id}`)
+    if (holdsBytes(entry)) disk.write(entry.path, `bytes of ${entry.id}`)
   }
   return entries
 }

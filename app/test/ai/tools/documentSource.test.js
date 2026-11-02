@@ -14,6 +14,7 @@ import { readInView, textHash } from '@/ai/context/reads.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { clearDocumentInstances } from '@/composables/useDocuments'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
+import { minimalPdf } from '../../files/helpers.js'
 
 vi.mock('@/stores/db', () => ({
   default: {
@@ -32,12 +33,19 @@ vi.mock('@/stores/syncStore', () => ({
   useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
 }))
 
+vi.mock('@/stores/filesStore', () => ({
+  useFilesStore: () => ({ putFile: vi.fn(), getFile: vi.fn(async () => null) }),
+}))
+
 const STORY = 'story_1'
 const context = { storyId: STORY }
 
 /** A file of `count` numbered lines, each `const line<N> = <N>`. */
 const numbered = count =>
   Array.from({ length: count }, (_, at) => `const line${at + 1} = ${at + 1}`).join('\n') + '\n'
+
+/** A paper in the repository, which comes in whole. */
+const SPEC = minimalPdf([['Operations carry a clock.'], ['The later clock wins.']])
 
 const MERGE = [
   '# Merges two lists of operations.',
@@ -81,6 +89,13 @@ describe('document tools, on a repository', () => {
         { path: 'src/sync/clock.py', text: 'def clock(op):\n    return op.at\n', size: 30 },
         { path: 'src/big.ts', text: numbered(3000), size: 1 },
         { path: 'README.md', text: '# Sync server\n\nMerges operations.\n', size: 30 },
+        {
+          path: 'papers/spec.pdf',
+          text: '',
+          size: SPEC.length,
+          bytes: SPEC,
+          mime: 'application/pdf',
+        },
       ],
     })
   })
@@ -92,7 +107,7 @@ describe('document tools, on a repository', () => {
       expect(String(listing).split('\n')).toEqual([
         'Design/',
         expect.stringMatching(/^Design\/Sync protocol — \d+ words$/),
-        'server/ — repository acme/sync at 3f2a9c1, 4 files, not listed',
+        'server/ — repository acme/sync at 3f2a9c1, 5 files, not listed',
       ])
     })
 
@@ -102,6 +117,8 @@ describe('document tools, on a repository', () => {
       expect(listing).toContain('server/src/sync/merge.py — code, 6 lines')
       expect(listing).toContain('server/src/big.ts — code, 3,000 lines')
       expect(listing).toContain('server/README.md — code, 3 lines')
+      // A paper is listed as the file it is.
+      expect(listing).toMatch(/^server\/papers\/spec\.pdf — file, pdf, 2 pages, \d+ words$/m)
     })
   })
 
@@ -118,6 +135,15 @@ describe('document tools, on a repository', () => {
       })
       expect(result).not.toHaveProperty('words')
       expect(result).not.toHaveProperty('line')
+    })
+
+    it('reads a PDF in a repository by its pages, not by line', async () => {
+      const result = await executeReadDocument({ path: 'server/papers/spec.pdf' }, context)
+
+      expect(result).toMatchObject({ path: 'server/papers/spec.pdf', type: 'file', pages: 2 })
+      expect(result.content).toContain('The later clock wins.')
+      expect(result).not.toHaveProperty('lines')
+      expect(result).not.toHaveProperty('language')
     })
 
     it('makes no sections of comments that start with #', async () => {

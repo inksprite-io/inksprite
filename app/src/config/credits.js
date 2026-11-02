@@ -13,6 +13,11 @@
  *
  * The spelling and grammar checker is Harper, under the Apache License 2.0,
  * which asks that a copy of the license go with it.
+ *
+ * The desktop app's Python is Pyodide, under the Mozilla Public License 2.0,
+ * which asks that whoever receives it be told where its source is: its credit
+ * links there. CREDITS.md also names the CPython its build holds, and the
+ * smaller packages the ones here need. The wheels go in the app unchanged.
  */
 
 /**
@@ -46,6 +51,47 @@ export const PROGRAM_CREDITS = Object.freeze([
     by: 'Automattic',
     use: 'Spelling and grammar',
     license: { name: 'Apache License 2.0', url: 'https://www.apache.org/licenses/LICENSE-2.0' },
+  },
+  {
+    name: 'Pyodide',
+    url: 'https://github.com/pyodide/pyodide',
+    by: 'the Pyodide contributors',
+    use: 'Python, in the desktop app',
+    license: { name: 'Mozilla Public License 2.0', url: 'https://www.mozilla.org/en-US/MPL/2.0/' },
+  },
+  {
+    name: 'NumPy',
+    url: 'https://numpy.org',
+    by: 'the NumPy developers',
+    use: 'Python, in the desktop app',
+    license: {
+      name: 'BSD 3-Clause License',
+      url: 'https://github.com/numpy/numpy/blob/main/LICENSE.txt',
+    },
+  },
+  {
+    name: 'pandas',
+    url: 'https://pandas.pydata.org',
+    by: 'the pandas development team',
+    use: 'Python, in the desktop app',
+    license: {
+      name: 'BSD 3-Clause License',
+      url: 'https://github.com/pandas-dev/pandas/blob/main/LICENSE',
+    },
+  },
+  {
+    name: 'Apache Arrow',
+    url: 'https://arrow.apache.org',
+    by: 'the Apache Software Foundation',
+    use: 'Python, in the desktop app',
+    license: { name: 'Apache License 2.0', url: 'https://www.apache.org/licenses/LICENSE-2.0' },
+  },
+  {
+    name: 'DuckDB',
+    url: 'https://duckdb.org',
+    by: 'the DuckDB Foundation',
+    use: 'Python, in the desktop app',
+    license: { name: 'MIT License', url: 'https://github.com/duckdb/duckdb/blob/main/LICENSE' },
   },
 ])
 

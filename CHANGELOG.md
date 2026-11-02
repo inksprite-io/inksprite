@@ -6,6 +6,51 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.26
+
+Python for the model in the desktop app, every project in a table to search
+and sort, inksprite starting on the project you were last in, and a
+repository's PDFs, books, Word files and pictures brought in whole.
+
+- In the desktop app, the model can run Python to work things out rather
+  than do them in its head: sums, odds, simulations, and the data in your
+  project. Switch it on under Settings › Extensions. It has the standard
+  library, NumPy, pandas, PyArrow and DuckDB, reads the chat's project, CSV
+  and Parquet files among it, and can't change it. It runs with no network
+  and none of inksprite's data, and won't start unless your system is
+  sandboxing it. A script it keeps in the project it can run again. The
+  guide has a page on Python, and a new one that analyzes a month of US
+  flights with it, Data Analysis.
+- Importing a very large text file no longer kills the app. A file of text
+  over 50 MB now comes in as the file it is, without its text: it has no
+  preview and can be downloaded, and the model can read it only with Python.
+- A file over 1 GB isn't imported, and inksprite says so. A file over about
+  2 GB used to fail with no message, and nothing else in the project saved
+  until you quit, so what you wrote after it was lost.
+- A window that stops working now says so and offers to reload, rather than
+  staying white. What it died of goes in `windows.log`, in the app's logs
+  folder.
+- inksprite starts on the project you were last in. It could start on
+  another before, whichever last had its tabs or panels change. With two
+  windows open, it starts on the one you used last.
+- Recent projects, on the outline's menu, lists the eight projects you
+  edited last, and opens as you point at it. Switch project… lists all of
+  them in a table: search it by name, and click a column to sort by name,
+  last edited or created. The order you choose is kept.
+- Right-click a project in either list, or press and hold it on a phone,
+  for the menu it has in the outline: its settings, an export, Show in
+  Finder, Delete project and the rest. They work on that project without
+  opening it.
+- A repository import brings in PDFs, EPUBs, Word files and pictures as
+  the files they are, up to 50 MB each and 200 MB in all. The model reads
+  them as it reads any imported file, and they open in the viewer, a Word
+  file as its text. The message after an import counts what's still left
+  out as files the app can't open.
+- In the desktop app, a repository's files on disk have the names they
+  have in the codebase: `LICENSE` rather than `LICENSE.txt`, and
+  `.gitignore` and `.github/` with their dots. Files from an earlier
+  import are renamed the next time inksprite saves the project.
+
 ## v0.1.0-dev.25
 
 A document printed or saved as a PDF, and a fork from an aside to say

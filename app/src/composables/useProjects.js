@@ -44,10 +44,12 @@ import {
 /**
  * @returns {{
  *   projects: import('vue').ComputedRef<Story[]>,
+ *   rows: import('vue').ComputedRef<import('@/utils/projectList.js').ProjectRow[]>,
  *   init: () => Promise<void>,
  *   nameOf: (storyId: string) => string,
  *   editedOf: (storyId: string) => number|undefined,
  *   open: (storyId: string) => Promise<void>,
+ *   pick: (storyId: string, event?: Event) => Promise<void>,
  *   openInNewWindow: (storyId?: string) => Promise<void>,
  *   elsewhere: import('vue').Ref<Set<string>>,
  *   lookElsewhere: () => Promise<void>,
@@ -133,6 +135,16 @@ export function useProjects() {
    */
   const editedOf = storyId => documentsStore.getRoot(storyId)?.edited
 
+  /** Every project as a list of them shows it. */
+  const rows = computed(() =>
+    projects.value.map(story => ({
+      id: story.id,
+      name: nameOf(story.id),
+      edited: editedOf(story.id),
+      created: story.created,
+    }))
+  )
+
   /**
    * Open a project. It opens on the document the writer left, which the
    * story remembers. In the desktop app, one open in another window is shown
@@ -152,6 +164,18 @@ export function useProjects() {
     if (!storyId) return openWindow()
     if ((await projectsElsewhere()).has(storyId)) askForProject(storyId)
     else await openWindow(`/project/${storyId}`)
+  }
+
+  /**
+   * Open a project the writer picked from a list: with Command or Ctrl held,
+   * in a new window (a new tab in a browser).
+   * @param {string} storyId
+   * @param {Event} [event] - The click or key that picked it
+   * @returns {Promise<void>}
+   */
+  const pick = (storyId, event) => {
+    const held = /** @type {MouseEvent|KeyboardEvent|undefined} */ (event)
+    return held?.metaKey || held?.ctrlKey ? openInNewWindow(storyId) : open(storyId)
   }
 
   /** Find out which projects are open in other windows, for the list. */
@@ -285,10 +309,12 @@ export function useProjects() {
 
   return {
     projects,
+    rows,
     init,
     nameOf,
     editedOf,
     open,
+    pick,
     openInNewWindow,
     elsewhere,
     lookElsewhere,

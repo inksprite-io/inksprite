@@ -6,7 +6,8 @@
  *
  * A folder on disk is listed the way the browser's folder chooser lists one,
  * every file under it, and goes through the same rules: the lists, the
- * `.gitignore` files, the binary check, the caps. A GitHub address is
+ * `.gitignore` files, the binary check, the files that come in whole (PDFs,
+ * books, Word files, pictures), the caps. A GitHub address is
  * downloaded as the desktop app downloads it, which Node can do because it
  * has no page origin for GitHub to refuse.
  *
@@ -64,12 +65,14 @@ if (address) {
 }
 
 const seconds = ((performance.now() - started) / 1000).toFixed(1)
-const { files, left, bytes } = gathered
+const { files, left, bytes, wholeBytes } = gathered
+const whole = files.filter(file => file.bytes)
 
 /** @type {Map<string, {files: number, lines: number}>} */
 const byLanguage = new Map()
 let lines = 0
 for (const file of files) {
+  if (file.bytes) continue
   const language = languageOf(basename(file.path)).language
   const count = lineCount(file.text)
   lines += count
@@ -82,7 +85,10 @@ for (const file of files) {
 console.log(`${name}${commit ? ` at ${commit}` : ''}: ${seconds} s`)
 if (listedCount) console.log(`  listed      ${listedCount.toLocaleString('en-US')} files`)
 console.log(
-  `  in          ${files.length.toLocaleString('en-US')} files, ${lines.toLocaleString('en-US')} lines, ${(bytes / (1024 * 1024)).toFixed(2)} MB`
+  `  in          ${(files.length - whole.length).toLocaleString('en-US')} files, ${lines.toLocaleString('en-US')} lines, ${(bytes / (1024 * 1024)).toFixed(2)} MB`
+)
+console.log(
+  `  whole       ${whole.length.toLocaleString('en-US')} files, ${(wholeBytes / (1024 * 1024)).toFixed(2)} MB`
 )
 console.log(`  never       ${left.never.toLocaleString('en-US')}`)
 console.log(`  ignored     ${left.ignored.toLocaleString('en-US')}`)

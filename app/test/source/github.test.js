@@ -148,14 +148,20 @@ describe('readArchive', () => {
       'README.md': '# Widgets\n',
       'dist/bundle.js': 'compiled',
       'assets/logo.png': new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0, 0]),
+      'assets/font.woff2': new Uint8Array([0x77, 0x4f, 0x46, 0x32, 0, 0]),
       '.env': 'TOKEN=1',
     })
 
     const { commit, gathered } = await readArchive(bytes)
 
     expect(commit).toBe('3f2a9c1')
-    expect(gathered.files.map(file => file.path)).toEqual(['README.md', 'src/index.ts'])
-    expect(gathered.left).toMatchObject({ never: 1, ignored: 1, binary: ['assets/logo.png'] })
+    expect(gathered.files.map(file => file.path)).toEqual([
+      'README.md',
+      'assets/logo.png',
+      'src/index.ts',
+    ])
+    expect(Array.from(gathered.files[1].bytes ?? [])).toEqual([0x89, 0x50, 0x4e, 0x47, 0, 0])
+    expect(gathered.left).toMatchObject({ never: 1, ignored: 1, binary: ['assets/font.woff2'] })
   })
 
   it('takes only the folder asked for, with paths below it', async () => {

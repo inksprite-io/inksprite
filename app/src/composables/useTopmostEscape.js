@@ -19,19 +19,32 @@
 
 import { onBeforeUnmount, watch } from 'vue'
 
-/** Every dialog mask on the page, in the order they were opened. */
+/** Every dialog mask on the page. */
 const MASK_SELECTOR = '.p-dialog-mask'
 
 /**
- * Whether the mask given is the last one on the page: nothing has been
- * opened over it.
+ * Whether the mask given is on top: nothing has been opened over it. Each is
+ * given a higher z-index than the last as it opens, which is what says.
+ * Where it is on the page doesn't: a dialog's mask goes where the dialog was
+ * first mounted, so the settings, mounted with the writer, come before a
+ * dialog mounted later and opened under them. Of masks with one z-index, the
+ * later on the page is on top.
  * @param {Element|null|undefined} mask
  * @returns {boolean}
  */
 export function isTopmostMask(mask) {
   if (!mask) return false
-  const masks = document.querySelectorAll(MASK_SELECTOR)
-  return masks[masks.length - 1] === mask
+  /** @type {Element|null} */
+  let top = null
+  let highest = -Infinity
+  for (const each of document.querySelectorAll(MASK_SELECTOR)) {
+    const z = Number.parseInt(window.getComputedStyle(each).zIndex, 10) || 0
+    if (z >= highest) {
+      highest = z
+      top = each
+    }
+  }
+  return top === mask
 }
 
 /**

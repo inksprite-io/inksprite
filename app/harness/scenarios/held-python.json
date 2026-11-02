@@ -1,7 +1,6 @@
 {
   "fixture": "held",
   "python": true,
-  "previews": ["python"],
   "messages": [
     {
       "text": "Use Python to count the words in chapter 1: its own text, and each of its scenes.",

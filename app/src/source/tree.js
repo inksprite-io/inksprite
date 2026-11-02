@@ -7,6 +7,8 @@
  * refresh, by path. So everything here goes by the nearest repository above.
  */
 
+import { isText } from '@/files/inspect.js'
+
 /** @typedef {import('@/types/models.js').Document} Document */
 /** @typedef {(id: string) => Document|undefined|null} Lookup */
 
@@ -48,15 +50,26 @@ export const inRepository = (get, document) =>
   !!document && !isRepository(document) && !!repositoryOf(get, document)
 
 /**
- * Whether a document is a source file: a file in a repository, whose text is
- * code to be read by line.
+ * Whether a file, one in a repository, came in whole: a PDF, a book, a Word
+ * file or a picture, kept as the file it is, its text what was read out of
+ * it. Any other file of a repository is its text.
+ *
+ * @param {Document|null|undefined} document
+ * @returns {boolean}
+ */
+export const keptWhole = document =>
+  document?.type === 'file' && !!document.mime && !isText(document.mime)
+
+/**
+ * Whether a document is a source file: a file of text in a repository, which
+ * is code to be read by line.
  *
  * @param {Lookup} get
  * @param {Document|null|undefined} document
  * @returns {boolean}
  */
 export const isSourceFile = (get, document) =>
-  document?.type === 'file' && !!repositoryOf(get, document)
+  document?.type === 'file' && !keptWhole(document) && !!repositoryOf(get, document)
 
 /**
  * A repository's line in a listing: what it is, where from, and how much.

@@ -45,6 +45,7 @@ export default defineConfig({
 					label: 'Guides',
 					items: [
 						{ label: 'Research', link: '/research' },
+						{ label: 'Data Analysis', link: '/data-analysis' },
 						{ label: 'Roleplay', link: '/roleplay' },
 						{ label: 'Narration', link: '/narration' },
 					],
@@ -67,6 +68,7 @@ export default defineConfig({
 						{ label: 'AI Providers', link: '/providers' },
 						{ label: 'Skills', link: '/skills' },
 						{ label: 'Web Search', link: '/web-search' },
+						{ label: 'Python', link: '/python' },
 						{ label: 'MCP Servers', link: '/mcp' },
 					],
 				},

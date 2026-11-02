@@ -95,8 +95,8 @@ function withDirs(entries) {
 
 /**
  * The files an entry is, less a repository's own file, which is made from
- * all that is in it (`repositoryText`), and an imported file's bytes, which
- * are written when they come.
+ * all that is in it (`repositoryText`), and an imported file's bytes, or a
+ * repository's file's that came in whole, which are written when they come.
  *
  * @param {Entry} entry
  * @param {Document} document
@@ -127,12 +127,14 @@ function filesOf(entry, document) {
  * @returns {{path: string, text: string}}
  */
 function repositoryText(repository, entries, documentOf) {
-  /** @type {Array<{path: string, document: Document}>} */
+  /** @type {Array<{path: string, document: Document, whole?: boolean}>} */
   const below = []
   for (const entry of entries.values()) {
     if (entry.repository !== repository.id) continue
     const document = documentOf(entry.id)
-    if (document) below.push({ path: entry.path.slice(repository.path.length + 1), document })
+    if (!document) continue
+    const path = entry.path.slice(repository.path.length + 1)
+    below.push({ path, document, ...(entry.kind === 'repoBytes' ? { whole: true } : {}) })
   }
   const own = /** @type {Document} */ (documentOf(repository.id))
   return { path: join(repository.path, REPOSITORY_FILE), text: repositoryFile(own, below) }
@@ -305,14 +307,20 @@ export function planProject(previous, next, documentOf, changed) {
     if (entry.pictures) ops.push({ op: 'trash', path: picturesDir(path, entry.id) })
   }
 
-  // The writes, and every repository something in it changed in.
+  // Where something in a repository is below it, as its list keeps it.
+  const within = (/** @type {Map<string, Entry>} */ layout, /** @type {Entry} */ entry) =>
+    entry.path.slice((layout.get(entry.repository ?? '')?.path.length ?? -1) + 1)
+
+  // The writes, and every repository something in it changed or moved in.
   /** @type {Set<string>} */
   const repositories = new Set()
   for (const entry of gone) if (entry.repository) repositories.add(entry.repository)
   for (const entry of next.values()) {
     const fresh = !kept(entry.id)
     const touched = fresh || changedIds.has(entry.id)
-    if (entry.repository && touched) repositories.add(entry.repository)
+    const was = previous.get(entry.id)
+    const moved = !fresh && !!was && within(previous, was) !== within(next, entry)
+    if (entry.repository && (touched || moved)) repositories.add(entry.repository)
     if (entry.kind === 'repository' && touched) repositories.add(entry.id)
     const document = documentOf(entry.id)
     if (!document) continue

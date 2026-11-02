@@ -10866,7 +10866,7 @@ odds, statistics, simulations and tables rather than do them in its head.
 In the desktop app only, in a session for each chat that keeps what its
 runs define, fenced from the writer's data and the network
 (platform/python.js, and `app/electron/src/sandbox.js` behind it). The
-standard library, numpy and pandas, and nothing else.
+standard library, numpy, pandas, pyarrow and duckdb, and nothing else.
 
 The chat's project is at `/project`, read-only, as the chat's model sees
 it and only when it sees it at all (`projectForPython`): the code reads a

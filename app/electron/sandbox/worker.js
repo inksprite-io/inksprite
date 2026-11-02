@@ -6,7 +6,9 @@
  *
  * One namespace is kept for every run, so that what one defines the next can
  * use. The packages a run imports are loaded from the sandbox's own files
- * first.
+ * first, and pyarrow with pandas or duckdb: what they read Parquet with, and
+ * hold strings in, and which pandas looks for once, when it is first imported.
+ * The code naming only pandas is how Parquet is meant to be read.
  *
  * The run's project is at `/project`, read-only: a file system of its own
  * (`projectFS`), made again for every run from what the run says is in it,
@@ -27,6 +29,35 @@ from pyodide.code import eval_code_async
 
 namespace = {"__name__": "__main__"}
 
+frames_whole = False
+
+def whole_frames():
+    # Printed to fit a terminal of 80, a frame hides its middle columns behind
+    # "...", and a model reads the column it can see as the one it asked for.
+    # Once, so that a run's own setting stays.
+    global frames_whole
+    if frames_whole:
+        return
+    frames_whole = True
+    try:
+        import pandas
+    except ImportError:
+        return
+    pandas.set_option("display.max_columns", None, "display.width", 160)
+
+def quiet_duckdb():
+    # It draws a progress bar, into what the model reads, in any program it
+    # takes for an interactive one, which it decides as it is first imported:
+    # one whose __main__ has no __file__, as here.
+    import __main__
+    __main__.__file__ = "<code>"
+    try:
+        import duckdb
+    except ImportError:
+        pass
+    finally:
+        del __main__.__file__
+
 def format_error(error, filename):
     tb = error.__traceback__
     while tb is not None and tb.tb_frame.f_code.co_filename != filename:
@@ -40,6 +71,9 @@ async def run(code, filename):
         return [None, format_error(error, filename)]
     return [None if value is None else repr(value), None]
 `
+
+/** Packages that have pyarrow loaded ahead of them. */
+const WANT_ARROW = new Set(['pandas', 'duckdb'])
 
 /** Where the project is. */
 const PROJECT = '/project'
@@ -215,11 +249,17 @@ self.addEventListener(
     const port = event.ports[0]
     let pyodide
     let run
+    let findImports
+    let wholeFrames
+    let quietDuckdb
     try {
       pyodide = await loadPyodide({ indexURL: new URL('./pyodide/', import.meta.url).href })
       const scope = pyodide.globals.get('dict')()
       pyodide.runPython(RUNNER, { globals: scope })
       run = scope.get('run')
+      quietDuckdb = scope.get('quiet_duckdb')
+      wholeFrames = scope.get('whole_frames')
+      findImports = pyodide.pyimport('pyodide.code').find_imports
       pyodide.FS.mkdir(PROJECT)
     } catch (error) {
       port.postMessage({ error: String(error?.message || error) })
@@ -233,9 +273,16 @@ self.addEventListener(
       pyodide.setStderr({ batched: line => stderr.push(line) })
       mountProject(pyodide.FS, project)
       // A package that isn't there is the import's error to report.
-      await pyodide
-        .loadPackagesFromImports(code, { messageCallback: () => {}, errorCallback: () => {} })
-        .catch(() => {})
+      const quietly = { messageCallback: () => {}, errorCallback: () => {} }
+      const found = findImports(code)
+      const imports = found.toJs()
+      found.destroy()
+      if (imports.some(name => WANT_ARROW.has(name))) {
+        await pyodide.loadPackage('pyarrow', quietly).catch(() => {})
+      }
+      await pyodide.loadPackagesFromImports(code, quietly).catch(() => {})
+      if (imports.includes('duckdb')) quietDuckdb()
+      if (imports.some(name => WANT_ARROW.has(name))) wholeFrames()
       const answer = await run(code, filename)
       const [value, error] = answer.toJs()
       answer.destroy()

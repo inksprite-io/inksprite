@@ -1,0 +1,217 @@
+---
+title: Data Analysis
+description: Analyze a month of US flight data with the model and Python, and check its work along the way.
+---
+
+With [Python](/python/) on, the model can work through a table far too long to
+fit in a conversation: it writes code, the code reads the file, and the model
+sees only what comes back. This guide follows one analysis from start to finish:
+half a million US flights from January 2024, with a question that leads somewhere
+odd, and a look at how to tell when the model has it wrong.
+
+It was done with Claude Sonnet 5.5 through
+[Anthropic](/providers/#anthropic-and-openai). The model's words will differ from
+run to run, and so may what it chooses to work out, but the data won't.
+
+Python works only in the [desktop app](/desktop/).
+
+## Turn on Python
+
+Open **Settings** › **Extensions** and switch on **Python**. Chats on the
+**Default** profile can then run it.
+
+## Get the data
+
+The US Bureau of Transportation Statistics publishes
+[every domestic flight](https://www.transtats.bts.gov/DL_SelectFields.aspx?gnoyr_VQ=FGJ&QO_fu146_anzr=b0-gvzr)
+of the larger airlines, a month to a file. Download
+[January 2024](https://transtats.bts.gov/PREZIP/On_Time_Reporting_Carrier_On_Time_Performance_1987_present_2024_1.zip)
+(27 MB) and unzip it. There's a CSV of about 240 MB, and a `readme.html` that
+says what each column means.
+
+Make a project, and [drag the CSV onto the outline](/files/). Rename it
+`flights.csv`, so it's easy to talk about.
+
+Click it, and it says **No preview available**. A text file over 50 MB is kept for
+code to read, not for you or the model to read through. That's what you want here:
+nothing of it goes into the conversation, or to your AI provider, until the code
+picks out a part of it.
+
+## Look at it first
+
+Start a chat and ask what's there:
+
+> flights.csv is one month of US domestic flights, from the Bureau of
+> Transportation Statistics. Take a look at it. How many flights, what dates, and
+> which columns would I use to study delays?
+
+The model read the file with pandas and answered from what its code printed:
+547,271 flights, every day of January, in 110 columns. It sorted the columns by
+what they measure, and it noticed something worth knowing later: the columns giving
+the cause of a delay are filled in for only 126,410 flights.
+
+Click the **tool calls** box above its reply to see the code it ran and what came
+back. Keep doing that. It's the difference between an answer and a result you can
+stand behind.
+
+## Ask a question
+
+> Which airline had the worst delays?
+
+American, with a mean arrival delay of 19.2 minutes and 29.4% of its flights 15
+minutes or more late. Delta was the best of the large airlines, at 4.4 minutes.
+
+"Worst" can be measured in more ways than one, and the tool calls show which was
+used. This used `ArrDelay`, where an early arrival counts against the delays.
+Another run might use `ArrDelayMinutes`, where an early arrival counts as zero, and
+say 26.7. Both are right, and they answer slightly different questions.
+
+## Follow what looks odd
+
+The reply also pointed out that a cancelled flight has no delay, so an airline can
+look better on this measure than it was for its passengers. So ask:
+
+> Which airlines cancelled the most, as a share of their own flights? Does
+> anything look odd?
+
+Alaska cancelled 17.5% of its flights, and United 8.0%. No one else passed 5.7%.
+
+> Show me Alaska and United's cancellations day by day, as a percentage of their
+> flights.
+
+| | 1–5 January | 6 January | After that |
+|---|---|---|---|
+| **Alaska** | 0.6–1.5% | 23.8% | 21–29% most days to the 22nd, back to 2–5% by the 30th |
+| **United** | 0–0.2% | 5.9% | 6–15% most days, back under 2% by the 28th |
+
+Both turn on one date. The answer took about ten seconds, against forty for the
+first, because what a run defines
+[stays for the next](/python/#what-a-run-keeps): the table was still in memory.
+
+The file can say who and when, but not why. The model suggested the grounding of
+the Boeing 737 MAX 9 that week, and said that this came from its own memory and not
+from the file. To check something like that, [search the web](/web-search/).
+
+## Check its work
+
+Now a question with a trap in it:
+
+> What causes the delays? How many minutes does each cause add, per flight?
+
+| Cause | Per flight flown | Per flight 15+ minutes late |
+|---|---|---|
+| Late aircraft | 7.07 | 29.4 |
+| Carrier | 5.92 | 24.6 |
+| National air system | 3.25 | 13.5 |
+| Weather | 1.86 | 7.8 |
+| Security | 0.04 | 0.2 |
+
+The trap is in those blank cells. An average skips what's blank, so averaging the
+carrier column gives 24.6 minutes, which is true only of flights already 15 minutes
+late. Sonnet saw that, counted the blanks as zero, and showed both.
+
+Then the cancellations:
+
+> Why were flights cancelled, overall and for Alaska?
+
+It said weather was behind 59% of all cancellations, and the carrier behind 38%.
+For Alaska, the carrier was behind 94%. Now ask it to check itself:
+
+> Check your last two answers. What does each average leave out, and where did the
+> meanings of the cancellation codes come from?
+
+It listed what its figures leave out, such as every cancelled and diverted flight.
+And it said what the tool calls had already shown: the file holds only the letters
+A, B and C. The meanings came from its memory, and it had labeled them as if they
+were data. They were right, as
+[the Bureau's own key](https://www.transtats.bts.gov/Download_Lookup.asp?Y11x72=Y_PNaPRYYNgVba)
+shows, but it could as easily have been wrong.
+
+A smaller model, running on one computer, did get them wrong, on these same
+questions:
+
+- It reported carrier delay as 24.6 minutes "across all flights", about four times
+  too high.
+- It read the code B as carrier and C as weather. The key says B is weather and C
+  is the national air system, so it concluded that weather caused few cancellations,
+  when it caused the most.
+- It named SkyWest as Mesa, as the file holds only each airline's code.
+
+In all three, the code ran without error and the arithmetic was right. Nothing
+looks wrong until you ask what the numbers mean. So, whichever model you use:
+
+- **Ask what a figure leaves out.** Blank cells, cancelled flights and early
+  arrivals all change an average.
+- **Open the tool calls** to see which column it really used.
+- **Ask where a meaning came from.** If it isn't in the data, give the model the key.
+- **Compare with something you know.** A total, a date or a figure you can look up.
+
+## Keep a script
+
+To run the analysis again, on the next month, ask the model to keep it:
+
+> Keep the delay causes and the cancellations as a script, Analysis/delays.py, with
+> the file to read in a variable at the top.
+
+A document named `.py` [is kept as written](/python/#keep-a-script). Run it with:
+
+> Run Analysis/delays.py.
+
+This time it ran out of memory, with `ParserError: out of memory`. The model had
+loaded the whole file on its first turn, taking more than half of Python's 4 GB,
+and that memory isn't given back while the chat's Python is running. So it changed
+the script to read only the columns it uses, and to read them in chunks, and ran it
+again. The results matched its earlier answers.
+
+For another month, import the file, change the variable at the top of the script
+in the [plain text editor](/editor/#the-plain-text-editor), and ask it to run again.
+
+## Write it up
+
+> Write up what we found in a document called Findings.
+
+It's an ordinary document, which you can edit, [comment on](/comments/) or
+[export](/projects/#export). This one kept what the data shows apart from what came
+from the model's memory, after the earlier question about where the meanings came
+from. If you skipped that question, ask for it here.
+
+The whole conversation came to about 200,000 tokens in and 17,000 out. The model's
+code and what it printed go to your [AI provider](/providers/), like the rest of
+the chat. What the code reads and doesn't print stays on your computer.
+
+## Tables too large to load
+
+Python has about 4 GB of memory, and that one month, loaded whole, took 2.4 GB. It
+takes far less to read only part of a table:
+
+- **Ask for only the columns you need**, in your first message, before the model
+  loads the whole file. Twelve files the size of this one, three columns of each,
+  took about 30 seconds and 530 MB.
+- **Keep a large table in several files.** An imported file can be up to 1 GB. The
+  model can read a whole folder of them at `/project`.
+- **Start a new chat** if a chat's Python has run out of room. Each chat has its
+  own, and a new one starts empty.
+
+**Parquet** files go further. A `.parquet` file imports like any other, and pandas
+reads it, a column at a time, much faster than a CSV. And when even that won't fit,
+the model can ask a question of the files themselves with **DuckDB**, in SQL,
+without loading them. On 80 Parquet files, 4 GB and 240 million rows, pandas ran
+out of memory on two columns, at the 74th file. DuckDB answered the same question
+in 37 seconds, using about 150 MB.
+
+DuckDB is for Parquet. On this CSV it was about ten times slower than pandas, and
+the model is told to use pandas there.
+
+## Going further
+
+- Compare airports, routes, or the time of day, or ask for a table to put in a
+  document. There are no charts for now.
+- Import more months and ask how they compare.
+- Bring in something to compare with. The model can
+  [search the web](/web-search/) and keep what it finds in the project.
+
+[Python](/python/) has the details: what's at `/project`, the time limit, and how
+the sandbox keeps the code away from everything else.
+
+The data is from the U.S. Department of Transportation, Bureau of Transportation
+Statistics.

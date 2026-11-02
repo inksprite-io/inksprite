@@ -317,8 +317,11 @@ Type: [Object][131]
 - `expanded` **[Object][131]<[string][132], [boolean][134]>?** The outline's folders the writer
   opened (true) or shut (false), by document id. One absent is as it starts; see
   `components/writer/tree/DocumentNode.vue`.
+- `opened` **[number][133]?** When the writer last opened the project here, or came
+  back to the window it is open in. Absent on one not opened since this was kept,
+  where `updated` says instead.
 - `version` **[number][133]** Bumped each time it is saved
-- `updated` **[number][133]** When the writer was last in the project here
+- `updated` **[number][133]** When it was last saved
 
 ## TtsVoice
 

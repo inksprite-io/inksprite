@@ -11,6 +11,36 @@ Settings › About.
 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). The app
 loads its WebAssembly build from the `harper.js` package, unchanged.
 
+## Python
+
+[Pyodide](https://github.com/pyodide/pyodide), by the Pyodide contributors,
+under the [Mozilla Public License 2.0](https://www.mozilla.org/en-US/MPL/2.0/).
+The desktop app runs it from the `pyodide` package, unchanged, and its source
+is at that address. Its build holds CPython, by the Python Software Foundation,
+under the [PSF License Agreement](https://docs.python.org/3/license.html).
+
+The packages it is given go in the desktop app as Pyodide builds them, unchanged:
+
+- [NumPy](https://numpy.org), by the NumPy developers, under the
+  [BSD 3-Clause License](https://github.com/numpy/numpy/blob/main/LICENSE.txt).
+  The parts of it under other licenses are listed in its package.
+- [pandas](https://pandas.pydata.org), by the pandas development team, under the
+  [BSD 3-Clause License](https://github.com/pandas-dev/pandas/blob/main/LICENSE).
+- [Apache Arrow](https://arrow.apache.org), by the Apache Software Foundation,
+  under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0), as
+  its Python package, PyArrow.
+- [DuckDB](https://duckdb.org), by the DuckDB Foundation, under the
+  [MIT License](https://github.com/duckdb/duckdb/blob/main/LICENSE).
+- [python-dateutil](https://github.com/dateutil/dateutil), by Gustavo Niemeyer
+  and Paul Ganssle, under the
+  [Apache License 2.0 or the BSD 3-Clause License](https://github.com/dateutil/dateutil/blob/master/LICENSE).
+- [pytz](https://github.com/stub42/pytz), by Stuart Bishop, under the
+  [MIT License](https://github.com/stub42/pytz/blob/master/LICENSE.txt).
+- [six](https://github.com/benjaminp/six), by Benjamin Peterson, under the
+  [MIT License](https://github.com/benjaminp/six/blob/main/LICENSE).
+- [pyodide-unix-timezones](https://github.com/joemarshall/pyodide-unix-timezones),
+  by Joe Marshall, under the MIT License.
+
 ## Hashing
 
 [cyrb53](https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js),

@@ -5,20 +5,32 @@
  *
  * Each file is a file document titled with its filename, extension and all,
  * whose `content` is its text and which has no bytes stored beside it: the
- * text is the file. Folders are made as the paths need them. The tree fills
- * in as it goes, and the loop gives the page a moment every few hundred
- * files so it can show it.
+ * text is the file. A file that comes in whole, a PDF, a book, a Word file or
+ * a picture, has its bytes stored as an imported file's are, and its text
+ * read out of them: a PDF's page by page, a book's chapters as one text, a
+ * Word file as markdown, a picture none. Folders are made as the paths need
+ * them. The tree fills in as it goes, and the loop gives the page a moment
+ * every few hundred files so it can show it.
  *
  * A refresh goes by path. A file whose text is the same is left alone; one
  * whose text changed is updated in place, so it keeps its id, its marks in
  * each chat, and a chat that read it is told it changed; one that is gone
- * is removed, and a folder it leaves empty goes with it.
+ * is removed, and a folder it leaves empty goes with it. A file that came in
+ * whole and whose bytes changed is replaced by a new document: a file's
+ * bytes never change under its id, which sync counts on.
  */
+
+/* global Blob, File */
 
 import { useDocuments } from '@/composables/useDocuments.js'
 import { useDocumentsStore } from '@/stores/documentsStore.js'
+import { useFilesStore } from '@/stores/filesStore.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
+import { DOCX_MIME, docxToMarkdown } from '@/files/docx.js'
+import { inspectFile } from '@/files/inspect.js'
+import { withoutPictures } from '@/files/pictures.js'
 import { languageOf } from './language.js'
+import { keptWhole } from './tree.js'
 
 /** @typedef {import('@/types/models.js').Document} Document */
 /** @typedef {import('@/types/models.js').RepositorySource} RepositorySource */
@@ -91,20 +103,83 @@ function foldersUnder(storyId, rootId, folders) {
 }
 
 /**
+ * A file that came in whole, as a blob of its type.
+ *
+ * @param {SourceFile} file - With its bytes
+ * @returns {Blob}
+ */
+const blobOf = file => new Blob([/** @type {BlobPart} */ (file.bytes)], { type: file.mime })
+
+/**
+ * The text read out of a file that came in whole. One that can't be opened
+ * comes in all the same, with none.
+ *
+ * @param {SourceFile} file - With its bytes
+ * @returns {Promise<{text: string, pages?: number}>}
+ */
+async function textOfWhole(file) {
+  const blob = blobOf(file)
+  try {
+    if (file.mime === DOCX_MIME) {
+      const { markdown } = await docxToMarkdown(await blob.arrayBuffer())
+      return { text: withoutPictures(markdown) }
+    }
+    const found = await inspectFile(new File([blob], nameOf(file.path), { type: file.mime }))
+    return { text: found.text, ...(typeof found.pages === 'number' ? { pages: found.pages } : {}) }
+  } catch (error) {
+    console.warn(`Could not read the text of ${file.path}:`, error)
+    return { text: '' }
+  }
+}
+
+/**
  * @param {string} storyId
  * @param {string} parentId
  * @param {SourceFile} file
  */
-function createFile(storyId, parentId, file) {
-  return useDocumentsStore().createDocument({
+async function createFile(storyId, parentId, file) {
+  const store = useDocumentsStore()
+  if (!file.bytes) {
+    return store.createDocument({
+      storyId,
+      parentId,
+      type: 'file',
+      title: nameOf(file.path),
+      content: file.text,
+      mime: languageOf(nameOf(file.path)).mime,
+      size: file.size,
+    })
+  }
+  const { text, pages } = await textOfWhole(file)
+  const made = store.createDocument({
     storyId,
     parentId,
     type: 'file',
     title: nameOf(file.path),
-    content: file.text,
-    mime: languageOf(nameOf(file.path)).mime,
+    content: text,
+    mime: file.mime,
     size: file.size,
+    ...(typeof pages === 'number' ? { pages } : {}),
   })
+  await useFilesStore().putFile(made.id, storyId, blobOf(file))
+  return made
+}
+
+/**
+ * Whether a file that came in whole has the bytes it had: its size, then
+ * the bytes themselves, fetched from the sync server if they are only there.
+ *
+ * @param {Document} document
+ * @param {SourceFile} file - With its bytes
+ * @returns {Promise<boolean>}
+ */
+async function sameBytes(document, file) {
+  if (document.size !== file.size || document.mime !== file.mime) return false
+  const kept = await useFilesStore().getFile(document.id)
+  if (!kept) return false
+  const had = new Uint8Array(await kept.arrayBuffer())
+  const bytes = /** @type {Uint8Array} */ (file.bytes)
+  return had.length === bytes.length && had.every((byte, at) => byte === bytes[at])
 }
 
 /**
@@ -142,7 +217,7 @@ export async function writeRepository(
       await breathe()
       signal?.throwIfAborted()
     }
-    createFile(storyId, folderFor(folderOf(file.path)), file)
+    await createFile(storyId, folderFor(folderOf(file.path)), file)
     onProgress?.(at + 1, files.length)
   }
   return { folderId: folder.id, files: files.length }
@@ -195,15 +270,25 @@ export async function refreshRepository(storyId, folderId, { source, files, sign
       signal?.throwIfAborted()
     }
     const there = existing.files.get(file.path)
-    if (there && store.getDocument(there.id)) {
-      if (there.content === file.text) result.unchanged++
+    const parentId = folderFor(folderOf(file.path))
+    if (!there || !store.getDocument(there.id)) {
+      await createFile(storyId, parentId, file)
+      result.added++
+    } else if (file.bytes) {
+      if (keptWhole(there) && (await sameBytes(there, file))) result.unchanged++
       else {
-        store.updateDocument(there.id, { content: file.text, size: file.size })
+        api.remove(there.id)
+        await createFile(storyId, parentId, file)
         result.updated++
       }
-    } else {
-      createFile(storyId, folderFor(folderOf(file.path)), file)
-      result.added++
+    } else if (keptWhole(there)) {
+      api.remove(there.id)
+      await createFile(storyId, parentId, file)
+      result.updated++
+    } else if (there.content === file.text) result.unchanged++
+    else {
+      store.updateDocument(there.id, { content: file.text, size: file.size })
+      result.updated++
     }
     onProgress?.(at + 1, files.length)
   }

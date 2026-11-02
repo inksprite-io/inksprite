@@ -1,7 +1,7 @@
 // @vitest-environment node
 /* global Blob, TextEncoder */
 import 'fake-indexeddb/auto'
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { libraryStorage } from '@/storage/library.js'
 import { dexieStorage } from '@/storage/dexie.js'
 import { memoryLibrary } from './memoryLibrary.js'
@@ -276,6 +276,38 @@ describe('the library as storage', () => {
 
     await library.storage.write('documents', [gone('documents', 'elara')])
     expect(library.trashed).toEqual(['My Novel/Notes/Elara (2).md'])
+  })
+
+  it('saves a file whose bytes can’t be read without them, and every other change', async () => {
+    const said = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const library = await withProject()
+    await library.storage.documents(STORY)
+    const unreadable = new Blob(['too large'], { type: 'text/csv' })
+    unreadable.arrayBuffer = () => Promise.reject(new Error('NotReadableError'))
+    await library.storage.putFileBytes('flights', STORY, unreadable)
+    const flights = doc('flights', 'notes', {
+      type: 'file',
+      title: 'flights.csv',
+      mime: 'text/csv',
+      content: '',
+    })
+    const novel = doc('novel', 'notes', { title: 'Novel', content: 'Written meanwhile.' })
+
+    // In the one write that would have failed whole, again and again.
+    await library.storage.write('documents', [put('documents', flights), put('documents', novel)])
+
+    expect(library.outside.read('My Novel/Notes/Novel.md')).toContain('Written meanwhile.')
+    expect(library.outside.read('My Novel/Notes/flights.csv')).toBeUndefined()
+    expect(await library.storage.fileBytes('flights')).toBeNull()
+    expect(await library.storage.filePath('flights')).toBeNull()
+    expect(said).toHaveBeenCalledWith(expect.stringContaining("flights couldn't be read"))
+
+    // And the saves after it.
+    await library.storage.write('documents', [
+      put('documents', { ...novel, content: 'Written later.' }),
+    ])
+    expect(library.outside.read('My Novel/Notes/Novel.md')).toContain('Written later.')
+    said.mockRestore()
   })
 
   it('writes an imported file’s bytes when its row comes, and trashes both with it', async () => {

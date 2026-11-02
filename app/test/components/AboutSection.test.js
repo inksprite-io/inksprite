@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import AboutSection from '@/components/writer/settings/AboutSection.vue'
-import { ICON_CREDITS, iconUrl } from '@/config/credits.js'
+import { ICON_CREDITS, PROGRAM_CREDITS, iconUrl } from '@/config/credits.js'
 
 describe('AboutSection', () => {
   it('gives the copyright and license, and links the source and the issues', () => {
@@ -19,6 +19,21 @@ describe('AboutSection', () => {
       'inksprite 0.1.0-dev.8'
     )
     expect(mount(AboutSection).find('[data-version]').exists()).toBe(false)
+  })
+
+  it('credits every program by name and author, linked to it and its license', () => {
+    const wrapper = mount(AboutSection)
+    for (const program of PROGRAM_CREDITS) {
+      const section = wrapper.find(`[data-credits="${program.name}"]`)
+      expect(section.find('h3').text()).toBe(program.use)
+      expect(section.find('p').text()).toBe(
+        `${program.name} by ${program.by}, under the ${program.license.name}.`
+      )
+      expect(section.findAll('a').map(link => link.attributes('href'))).toEqual([
+        program.url,
+        program.license.url,
+      ])
+    }
   })
 
   it('credits every icon by title and creator, linked to its page', () => {

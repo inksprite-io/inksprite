@@ -83,4 +83,57 @@ describe('the project views store', () => {
     expect(store.lastOpened(['s1', 's2', 's3'])).toBe('s2')
     expect(store.lastOpened(['s3'])).toBeUndefined()
   })
+
+  it('goes by when a project was opened, not by when its view was last saved', async () => {
+    toArray.mockResolvedValue([
+      // Written in for hours with its tabs as they were.
+      { id: 'written', version: 1, opened: 100, updated: 100 },
+      // Left earlier, with a job there closing a tab of it since.
+      { id: 'left', version: 1, opened: 50, updated: 200 },
+    ])
+    const store = useProjectViewsStore()
+    await store.ensureInitialized()
+
+    expect(store.lastOpened(['written', 'left'])).toBe('written')
+  })
+
+  it('takes a project opened now over one last saved before opening was kept', async () => {
+    toArray.mockResolvedValue([
+      { id: 'older', version: 1, updated: 500 },
+      { id: 'mine', version: 1, updated: 100 },
+    ])
+    const store = useProjectViewsStore()
+    await store.ensureInitialized()
+
+    expect(store.lastOpened(['older', 'mine'])).toBe('older')
+    store.markOpened('mine')
+    expect(store.lastOpened(['older', 'mine'])).toBe('mine')
+  })
+
+  it('keeps the rest of a view when marking it opened', async () => {
+    toArray.mockResolvedValue([{ id: 's1', version: 1, updated: 5, lastDocumentId: 'doc' }])
+    const store = useProjectViewsStore()
+    await store.ensureInitialized()
+
+    store.markOpened('s1')
+
+    expect(store.getView('s1')).toMatchObject({ lastDocumentId: 'doc', opened: expect.any(Number) })
+    expect(trackChange).toHaveBeenCalledWith('projectViews', 's1', store.getView('s1'))
+  })
+
+  it('writes nothing for the project the writer was in last already', async () => {
+    toArray.mockResolvedValue([
+      { id: 's1', version: 1, opened: 100, updated: 100 },
+      { id: 's2', version: 1, opened: 50, updated: 50 },
+    ])
+    const store = useProjectViewsStore()
+    await store.ensureInitialized()
+
+    store.markOpened('s1')
+    expect(trackChange).not.toHaveBeenCalled()
+
+    store.markOpened('s2')
+    expect(store.lastOpened(['s1', 's2'])).toBe('s2')
+    expect(trackChange).toHaveBeenCalledTimes(1)
+  })
 })

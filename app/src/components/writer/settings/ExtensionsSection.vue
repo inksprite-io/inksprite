@@ -144,7 +144,6 @@ import ExpandableSection from '@/components/common/ExpandableSection.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useProfiles } from '@/composables/useProfiles'
 import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
-import { inPreview } from '@/config/preview.js'
 import { hasPython } from '@/platform/python.js'
 import {
   PYTHON_GROUP,
@@ -177,7 +176,7 @@ const toast = useToast()
 const roleplayOn = computed(() => applicationState.extensionOn('roleplay') === true)
 
 /** Whether Python can run here at all: in the desktop app. */
-const pythonHere = inPreview('python') && hasPython()
+const pythonHere = hasPython()
 const pythonOn = computed(() => applicationState.extensionOn(PYTHON_GROUP) === true)
 
 /** The profiles whose chats run Python. */

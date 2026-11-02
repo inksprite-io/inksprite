@@ -6,6 +6,9 @@ name: Desktop Release
 # by pushing a tag (v0.1.0-dev.1), or by hand with one, which is then made at
 # the commit being built. The app is built as the tag's version.
 #
+# The Python sandbox's check runs first, on every system (check-sandbox.yml),
+# and nothing is built unless it passes.
+#
 # The page is built once, and each system's job wraps that same build with
 # electron-builder (app/electron/electron-builder.yml). The release is made
 # only when every system has built, so it never goes out with one missing.
@@ -110,9 +113,14 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  sandbox:
+    name: Python Sandbox
+    if: ${{ !github.event.repository.private }}
+    uses: ./.github/workflows/check-sandbox.yml
+
   desktop:
     name: ${{ matrix.name }}
-    needs: page
+    needs: [page, sandbox]
     runs-on: ${{ matrix.runner }}
     environment: release
     env:
@@ -242,7 +250,7 @@ jobs:
 
           - **macOS**: the `.dmg` ending in `arm64` for Apple silicon, or in `x64` for an Intel Mac. Signed and notarized.
           - **Windows**: the `.exe`. It isn't signed, so Windows warns that it doesn't recognize the app: choose More info, then Run anyway.
-          - **Linux**: the `.AppImage`, or the `.deb` for Debian and Ubuntu. If the AppImage won't start on Ubuntu 24.04 or later, install the `.deb`, or start the AppImage with `--no-sandbox`.
+          - **Linux**: the `.AppImage`, or the `.deb` for Debian and Ubuntu. If the AppImage won't start on Ubuntu 24.04 or later, install the `.deb`.
 
           Once installed, the app updates itself: it downloads each new release and offers to restart into it. The `.zip`, `.blockmap` and `.yml` files are for the updater.
 

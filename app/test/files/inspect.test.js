@@ -1,10 +1,14 @@
 /* global File */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
+  MAX_FILE_BYTES,
+  MAX_TEXT_BYTES,
+  PARQUET_MIME,
   extensionFor,
   inspectFile,
   isImage,
   isText,
+  isUnreadText,
   mimeOf,
   titleOf,
   UNKNOWN_MIME,
@@ -12,6 +16,52 @@ import {
 import { barePng, minimalPdf } from './helpers.js'
 
 const file = (name, data, type = '') => new File([data], name, { type })
+
+describe('refuseTooLarge', () => {
+  const sized = (/** @type {number} */ size) => {
+    const made = new File(['a,b'], 'flights.csv', { type: 'text/csv' })
+    Object.defineProperty(made, 'size', { value: size })
+    return made
+  }
+
+  it('says what was too large, and what a project can keep', async () => {
+    await expect(inspectFile(sized(MAX_FILE_BYTES + 1))).rejects.toThrow(
+      '"flights.csv" is too large. A project can keep files of up to 1 GB.'
+    )
+  })
+
+  it('takes a file of exactly the limit', async () => {
+    expect((await inspectFile(sized(MAX_FILE_BYTES))).text).toBe('')
+  })
+})
+
+describe('isUnreadText', () => {
+  const over = MAX_TEXT_BYTES + 1
+
+  it('is a file of text over the limit with no text', () => {
+    expect(isUnreadText({ mime: 'text/csv', size: over, content: '' })).toBe(true)
+    expect(isUnreadText({ mime: 'text/csv', size: over })).toBe(true)
+  })
+
+  it('is not one that came in with its text, from before there was a limit', () => {
+    expect(isUnreadText({ mime: 'text/csv', size: over, content: 'a,b' })).toBe(false)
+  })
+
+  it('is not an empty file, or a small one', () => {
+    expect(isUnreadText({ mime: 'text/csv', size: 0, content: '' })).toBe(false)
+    expect(isUnreadText({ mime: 'text/csv', size: MAX_TEXT_BYTES, content: '' })).toBe(false)
+  })
+
+  it('is not a large file of any other kind', () => {
+    expect(isUnreadText({ mime: 'application/pdf', size: over, content: '' })).toBe(false)
+    expect(isUnreadText({ mime: 'image/png', size: over, content: '' })).toBe(false)
+  })
+
+  it('is nothing for no document', () => {
+    expect(isUnreadText(null)).toBe(false)
+    expect(isUnreadText(undefined)).toBe(false)
+  })
+})
 
 describe('mimeOf', () => {
   it('takes what the browser said first', () => {
@@ -54,6 +104,10 @@ describe('titleOf', () => {
 
   it('has a name for an empty one', () => {
     expect(titleOf('')).toBe('Untitled')
+  })
+
+  it('keeps the extension of a data file, which tells code how to read it', () => {
+    expect(titleOf('trips.parquet', PARQUET_MIME)).toBe('trips.parquet')
   })
 
   it('keeps the extension of anything shown as plain text but prose', () => {
@@ -156,6 +210,63 @@ describe('inspectFile', () => {
     const found = await inspectFile(file('letter.rtf', '{\\rtf1 Dear sir}', 'application/rtf'))
 
     expect(found).toMatchObject({ title: 'letter', mime: 'application/rtf', text: '' })
+  })
+
+  describe('a file of text too large to read', () => {
+    /** A file saying it is over the limit, whose text would throw if it were read. */
+    const large = (name, type = '', top = 'a,b\n1,2\n') => {
+      const made = new File([top], name, { type })
+      Object.defineProperty(made, 'size', { value: MAX_TEXT_BYTES + 1 })
+      made.text = vi.fn(() => Promise.reject(new Error('read')))
+      made.arrayBuffer = vi.fn(() => Promise.reject(new Error('read')))
+      return made
+    }
+
+    it('comes in with its bytes and no text, keeping its name and type', async () => {
+      const csv = large('flights.csv', 'text/csv')
+      const found = await inspectFile(csv)
+
+      expect(found).toMatchObject({ title: 'flights.csv', mime: 'text/csv', text: '' })
+      expect(found.blob).toBe(csv)
+      expect(csv.text).not.toHaveBeenCalled()
+      expect(csv.arrayBuffer).not.toHaveBeenCalled()
+    })
+
+    it('is typed by its top when no table knows it', async () => {
+      expect(await inspectFile(large('events.jsonl'))).toMatchObject({
+        title: 'events.jsonl',
+        mime: 'text/plain',
+        text: '',
+      })
+    })
+
+    it('is kept as what it is when its top is not text', async () => {
+      expect(await inspectFile(large('dump.bin', '', 'a\0b'))).toMatchObject({
+        mime: UNKNOWN_MIME,
+        text: '',
+      })
+    })
+
+    it('leaves a web page unread as well', async () => {
+      expect(await inspectFile(large('page.html', 'text/html', '<p>hi</p>'))).toMatchObject({
+        mime: 'text/html',
+        text: '',
+      })
+    })
+
+    it('reads a file of exactly the limit', async () => {
+      const edge = new File(['a,b\n'], 'edge.csv', { type: 'text/csv' })
+      Object.defineProperty(edge, 'size', { value: MAX_TEXT_BYTES })
+
+      expect((await inspectFile(edge)).text).toBe('a,b\n')
+    })
+  })
+
+  it('keeps a Parquet file as bytes, by its name, whatever its top looks like', async () => {
+    const found = await inspectFile(file('trips.parquet', 'PAR1 looks like text'))
+
+    expect(found).toMatchObject({ title: 'trips.parquet', mime: PARQUET_MIME, text: '' })
+    expect(found.blob.type).toBe(PARQUET_MIME)
   })
 
   it('reads a UTF-16 text file by its byte-order mark', async () => {

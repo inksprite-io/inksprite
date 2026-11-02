@@ -67,6 +67,20 @@ export function safeName(title) {
 }
 
 /**
+ * A codebase's file or folder as a name every system takes: its own name,
+ * leading dot and extension and all, made safe as a title is otherwise.
+ * `.gitignore` stays `.gitignore`, and `LICENSE` stays `LICENSE`.
+ *
+ * @param {string} name
+ * @returns {string}
+ */
+export function sourceName(name) {
+  const dots = /^\.+/.exec(name)?.[0] ?? ''
+  const rest = name.slice(dots.length)
+  return rest ? `${dots}${safeName(rest)}` : safeName(name)
+}
+
+/**
  * What two names are compared by: the same on any disk that would take them
  * for one file.
  *

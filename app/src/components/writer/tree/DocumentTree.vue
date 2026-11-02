@@ -104,7 +104,6 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import Menu from 'primevue/menu'
 import ScrollPanel from 'primevue/scrollpanel'
 import { useToast } from 'primevue/usetoast'
@@ -119,18 +118,13 @@ import HeaderButton from '../layout/HeaderButton.vue'
 import PanelHeader from '../layout/PanelHeader.vue'
 import ProjectMenu from '../projects/ProjectMenu.vue'
 import TrashDialog from '../projects/TrashDialog.vue'
+import { useProjectActions } from '@/composables/useProjectActions.js'
 import { useTrash } from '@/composables/useTrash.js'
-import { useExport } from '@/composables/useExport.js'
 import { useCardChat } from '@/composables/useCardChat'
 import { useBulkImport, describeImport } from '@/composables/useBulkImport'
 import { useCardImport, NotACardError } from '@/composables/useCardImport'
 import { useDocuments } from '@/composables/useDocuments'
 import { undoKeyOf, useTreeHistory } from '@/composables/useTreeHistory.js'
-import { useProjects } from '@/composables/useProjects'
-import { useCloudSync } from '@/composables/useCloudSync.js'
-import { useReveal } from '@/composables/useReveal.js'
-import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
-import { sharing } from '@/cloud/people.js'
 import { useJobs } from '@/composables/useJobs.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
 import { askToExplore } from '@/composables/useExplore.js'
@@ -149,8 +143,6 @@ import { repositoryOf } from '@/source/tree.js'
 import { driveAvailable } from '@/drive/config.js'
 import { mayHoldProject, packageOfFolder, packageOfZip } from '@/scrivener/package.js'
 import { openProject, writeProject } from '@/scrivener/project.js'
-import { useStoriesStore } from '@/stores/storiesStore'
-import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
 
@@ -163,13 +155,9 @@ const props = defineProps({
 
 const emit = defineEmits(['open', 'select-chat'])
 
-const router = useRouter()
 const toast = useToast()
 const confirm = useConfirm()
-const storiesStore = useStoriesStore()
-const projects = useProjects()
 const api = useDocuments(props.storyId)
-const { exportDocument } = useExport(props.storyId)
 
 /** @type {import('vue').Ref<any>} */
 const rootNode = ref(null)
@@ -193,15 +181,8 @@ const openRootMenu = event => {
 const isDragging = ref(false)
 
 const trash = useTrash(props.storyId)
-/** Sync, where a project can be kept on this device only, or shared. */
-const cloud = useCloudSync()
 const showTrash = ref(false)
-/** The project's settings, its sharing among them, are the settings' Project section. */
-const settingsPanel = useSettingsPanel()
-const { revealItem } = useReveal()
-
-/** Whether the project was shared with this account, by someone else. */
-const sharedWithMe = computed(() => sharing.value.projects[props.storyId]?.role === 'member')
+const projectActions = useProjectActions()
 
 const cards = useCardImport(props.storyId)
 const { roleplay } = useApplicationState()
@@ -667,128 +648,24 @@ const importMenuItems = computed(() => {
  */
 const openDocument = documentId => emit('open', documentId)
 
-/** Move the project to the trash, without asking: it can be restored from there. */
-const trashProject = async () => {
-  if (!storiesStore.getStory(props.storyId)) return
-  try {
-    await projects.trash(props.storyId)
-    router.push('/')
-  } catch (error) {
-    console.error('Failed to move the project to the trash:', error)
-    toast.add({
-      severity: 'error',
-      detail: "The project couldn't be moved to the trash.",
-      life: 6000,
-    })
-  }
-}
-
-/**
- * Whether a project is out of sync here: kept on this device by the writer,
- * or by another device to itself and then brought back out of the trash here.
- * @param {any} story
- */
-const keptOffSync = story => Boolean(story?.syncOff || story?.keptElsewhere)
-
-/** Keep the project on this device only, once the writer has said so. */
-const confirmKeepHere = () => {
-  const name = api.displayTitle(root.value)
-  confirm.require({
-    message: `Keep “${name}” on this device only? It leaves the sync server, and your other devices move it to their trash.`,
-    header: 'Keep on this device only',
-    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-    acceptProps: { label: 'Keep here only' },
-    accept: async () => {
-      try {
-        await cloud.keepOnThisDevice(props.storyId)
-      } catch (error) {
-        toast.add({ severity: 'error', detail: error.message, life: 6000 })
-      }
-    },
-  })
-}
-
-/** Leave a project shared with this account, once the writer has said so. */
-const confirmLeave = () => {
-  const name = api.displayTitle(root.value)
-  confirm.require({
-    message: `Leave “${name}”? It goes to your trash and stops syncing. Only its owner can share it with you again.`,
-    header: 'Leave project',
-    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-    acceptProps: { label: 'Leave', severity: 'danger' },
-    accept: async () => {
-      try {
-        await cloud.leaveProject(props.storyId)
-        router.push('/')
-      } catch (error) {
-        toast.add({ severity: 'error', detail: error.message, life: 6000 })
-      }
-    },
-  })
-}
-
-/** Sync the project again, having kept it on this device only. */
-const syncAgain = async () => {
-  try {
-    await cloud.syncProjectAgain(props.storyId)
-  } catch (error) {
-    toast.add({ severity: 'error', detail: error.message, life: 6000 })
-  }
-}
-
 /** What can be done to the project: on the root's menu, and under Projects in the header. */
-const projectMenuItems = computed(() => [
-  {
-    label: 'Project settings',
-    icon: 'pi pi-cog',
-    command: () => settingsPanel.open('project'),
-  },
-  // As it would be published; a backup is in the settings.
-  {
-    label: 'Export project',
-    icon: 'pi pi-download',
-    command: () => exportDocument(rootIdFor(props.storyId)),
-  },
-  // In the desktop app, the project's folder.
-  ...[root.value && revealItem(root.value.id)].filter(item => Boolean(item)),
-  // Signed in to sync: shared, kept on this device, or synced again. One
-  // shared with this account is its owner's to keep off.
-  ...(cloud.account.value
-    ? keptOffSync(storiesStore.getStory(props.storyId))
-      ? [{ label: 'Sync this project', icon: 'pi pi-cloud-upload', command: () => syncAgain() }]
-      : [
-          {
-            label: sharedWithMe.value ? 'People…' : 'Share…',
-            icon: 'pi pi-users',
-            command: () => settingsPanel.open('project', 'sharing'),
-          },
-          ...(sharedWithMe.value
-            ? []
-            : [
-                {
-                  label: 'Keep on this device only…',
-                  icon: 'pi pi-cloud',
-                  command: () => confirmKeepHere(),
-                },
-              ]),
-        ]
-    : []),
-  ...(trash.count.value > 0
-    ? [
-        {
-          label: 'Trash',
-          icon: 'pi pi-trash',
-          command: () => {
-            showTrash.value = true
-          },
-        },
-      ]
-    : []),
-  // Only its owner deletes a project shared; the others leave it.
-  sharedWithMe.value
-    ? { label: 'Leave project…', icon: 'pi pi-sign-out', command: () => confirmLeave() }
-    : { label: 'Delete project', icon: 'pi pi-trash', command: () => trashProject() },
-])
+const projectMenuItems = computed(() =>
+  projectActions.itemsFor(props.storyId, {
+    current: true,
+    beforeDelete:
+      trash.count.value > 0
+        ? [
+            {
+              label: 'Trash',
+              icon: 'pi pi-trash',
+              command: () => {
+                showTrash.value = true
+              },
+            },
+          ]
+        : [],
+  })
+)
 
 const history = useTreeHistory(props.storyId)
 /** @type {import('vue').Ref<HTMLElement|null>} */

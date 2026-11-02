@@ -97,6 +97,59 @@ describe('document tools, on files', () => {
     expect(result.note).toBeUndefined()
   })
 
+  describe('a file of text too large to read', () => {
+    beforeEach(() => {
+      store.createDocument({
+        storyId: STORY,
+        parentId: rootIdFor(STORY),
+        type: 'file',
+        title: 'flights.csv',
+        mime: 'text/csv',
+        size: 247 * 1024 * 1024,
+      })
+    })
+
+    it('lists it by its size, as too large to read', async () => {
+      expect(await executeListDocuments({}, context)).toMatch(
+        /^flights\.csv — file, csv, 247\.0 MB, too large to read$/m
+      )
+    })
+
+    it('says why there is nothing to read, and what can read it', async () => {
+      const result = await executeReadDocument({ path: 'flights.csv' }, context)
+
+      expect(result).toMatchObject({ type: 'file', mime: 'text/csv', content: '' })
+      expect(result.note).toMatch(/too large to read here, at 247\.0 MB/)
+      expect(result.note).toMatch(/run_python/)
+    })
+  })
+
+  describe('a data file', () => {
+    beforeEach(() => {
+      store.createDocument({
+        storyId: STORY,
+        parentId: rootIdFor(STORY),
+        type: 'file',
+        title: 'trips.parquet',
+        mime: 'application/vnd.apache.parquet',
+        size: 50 * 1024 * 1024,
+      })
+    })
+
+    it('lists it by its size', async () => {
+      expect(await executeListDocuments({}, context)).toMatch(
+        /^trips\.parquet — file, parquet, 50\.0 MB$/m
+      )
+    })
+
+    it('says it is for code to read, rather than that it may be a scan', async () => {
+      const result = await executeReadDocument({ path: 'trips.parquet' }, context)
+
+      expect(result.note).toMatch(/data file, of 50\.0 MB/)
+      expect(result.note).toMatch(/run_python/)
+    })
+  })
+
   it('says when a file had no text to read', async () => {
     const result = await executeReadDocument({ path: 'Papers/Figure 3' }, context)
 

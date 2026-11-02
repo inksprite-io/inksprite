@@ -61,6 +61,9 @@
  * - **useTreeHistory** - Command-Z and Shift-Command-Z for what the writer does in the outline:
  *   making, renaming, moving and deleting documents
  * - **useFindKey** - Command-F (Control-F off a Mac) opens the find of the panel the writer is in
+ * - **useLastOpened** - Keeps which project the writer was last in, which the app opens on
+ * - **useProjectActions** - What can be done to a project, as menu items, the open one or another
+ * - **useHoverSubmenus** - A TieredMenu's submenus opening on hover, once the pointer rests
  * - **useProjectSearch** - The search across a project: what is looked for, what it finds, going to a match, and Command-Shift-F
  * - **useChatFind** - Finding in a chat, most of which is not in the page: counted in the messages, gone to and highlighted in the page
  * - **useTheme** - The page in the writer's theme, following the system's while that is the one chosen (`useSystemSettings.js`)
@@ -116,6 +119,9 @@ export { useSidebarTab } from './useSidebarTab.js'
 export { useEditorRequest } from './useEditorRequest.js'
 export { useChatRequest } from './useChatRequest.js'
 export { useFocusMode, useFocusModeKeys } from './useFocusMode.js'
+export { useLastOpened } from './useLastOpened.js'
+export { useProjectActions } from './useProjectActions.js'
+export { useHoverSubmenus } from './useHoverSubmenus.js'
 export { useProjectSearch, useProjectSearchKey } from './useProjectSearch.js'
 export { useTopmostEscape } from './useTopmostEscape.js'
 export { useCopyLink } from './useCopyLink.js'

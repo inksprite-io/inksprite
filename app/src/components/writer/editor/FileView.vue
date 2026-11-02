@@ -28,8 +28,8 @@
       class="flex-1 min-h-0"
     />
 
-    <!-- A book, chapter after chapter, or a web page's article, read out of
-         the file. -->
+    <!-- A book, chapter after chapter, a Word file, or a web page's article,
+         read out of the file. -->
     <div v-else-if="kind === 'reader'" class="flex-1 min-h-0 overflow-auto" data-file-reader>
       <article
         class="prose dark:prose-invert max-w-prose mx-auto px-6 py-8"
@@ -114,16 +114,25 @@ import { useDocuments } from '@/composables/useDocuments'
 import { useFilesStore } from '@/stores/filesStore'
 import { downloadBlob, filenameFor } from '@/files/download.js'
 import { extractEpub } from '@/files/epub.js'
+import { DOCX_MIME, docxToMarkdown } from '@/files/docx.js'
 import { markdownOfHtml } from '@/files/html.js'
-import { EPUB_MIME, isImage, isText, showsAsText, sizeLabel } from '@/files/inspect.js'
+import { withoutPictures } from '@/files/pictures.js'
+import {
+  EPUB_MIME,
+  isImage,
+  isText,
+  isUnreadText,
+  showsAsText,
+  sizeLabel,
+} from '@/files/inspect.js'
 import { renderMarkdown } from '@/utils/markdown.js'
 import { goneTo, takeUpMatch } from '@/composables/useProjectSearch.js'
 import { pageAt } from '@/ai/tools/slices.js'
 
 /**
  * A file document, shown as the file: the picture, the PDF's pages
- * (`PdfView`), an epub's chapters or a web page's article read out of it
- * again, a file of text as code (`CodeView`) — a repository's files, which keep no bytes since their
+ * (`PdfView`), an epub's chapters, a Word file or a web page's article read
+ * out of it again, a file of text as code (`CodeView`) — a repository's files, which keep no bytes since their
  * text is the file, and a JSON or CSV imported on its own — or a line saying
  * there is no preview of this kind and the way to download it instead. Its text is a different view, `RawMarkdown` on its
  * `content`, reached from the tab's menu; this shows the bytes.
@@ -160,23 +169,23 @@ const downloading = ref(null)
 const elsewhere = ref(false)
 /** A picture at its own size rather than fit to the panel. */
 const natural = ref(false)
-/** An epub's chapters or a web page's article as markdown, or null when there is none. @type {import('vue').Ref<string|null>} */
+/** An epub's chapters, a Word file or a web page's article as markdown, or null when there is none. @type {import('vue').Ref<string|null>} */
 const readingMarkdown = ref(null)
 /** The same as HTML, again once any math in it can be typeset. */
 const reading = computed(() => readingMarkdown.value && renderMarkdown(readingMarkdown.value))
-/** Why an epub or a page could not be shown, when it could not. */
+/** Why an epub, a Word file or a page could not be shown, when it could not. */
 const unreadable = ref('')
 
 /** Which view this file gets: nothing until the bytes are known. */
 const kind = computed(() => {
   if (!loaded.value) return downloading.value ? 'downloading' : 'loading'
   if (!blob.value && elsewhere.value) return 'elsewhere'
-  // A repository's file keeps no bytes: its text is the file.
-  if (!blob.value) return isText(mime.value) ? 'code' : 'none'
+  // A repository's file of text keeps no bytes: its text is the file.
+  if (!blob.value) return isText(mime.value) && !isUnreadText(document.value) ? 'code' : 'none'
   if (isImage(mime.value)) return 'image'
   if (mime.value === 'application/pdf') return 'pdf'
   if (reading.value) return 'reader'
-  if (showsAsText(mime.value)) return 'code'
+  if (showsAsText(mime.value) && !isUnreadText(document.value)) return 'code'
   return 'none'
 })
 
@@ -224,6 +233,7 @@ const load = async () => {
   blob.value = found
   if (found && isImage(mime.value)) url.value = URL.createObjectURL(found)
   if (found && mime.value === EPUB_MIME) await readBook(found)
+  if (found && mime.value === DOCX_MIME) await readWord(found)
   if (found && mime.value === 'text/html') await readPage(found)
   loaded.value = true
 }
@@ -240,6 +250,23 @@ const readBook = async file => {
     const { text } = extractEpub(await file.arrayBuffer())
     if (text) readingMarkdown.value = text
     else unreadable.value = 'There is no text in this epub to show.'
+  } catch (error) {
+    unreadable.value = error instanceof Error ? error.message : String(error)
+  }
+}
+
+/**
+ * Read a Word file out of its bytes, as markdown, as a repository's import
+ * did; its pictures stay in the file.
+ *
+ * @param {Blob} file
+ */
+const readWord = async file => {
+  try {
+    const { markdown } = await docxToMarkdown(await file.arrayBuffer())
+    const text = withoutPictures(markdown)
+    if (text.trim()) readingMarkdown.value = text
+    else unreadable.value = 'There is no text in this Word file to show.'
   } catch (error) {
     unreadable.value = error instanceof Error ? error.message : String(error)
   }

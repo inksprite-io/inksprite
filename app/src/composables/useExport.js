@@ -69,10 +69,11 @@ const leftOut = count =>
 
 /**
  * @param {string} storyId - The project exported from
+ * @param {ReturnType<typeof useToast>} [toast] - Where what happened is said,
+ *   for a caller past a component's setup, where a toast can't be had
  */
-export function useExport(storyId) {
+export function useExport(storyId, toast = useToast()) {
   const api = useDocuments(storyId)
-  const toast = useToast()
 
   /**
    * Hand the writer a project, a folder or a document as it would be

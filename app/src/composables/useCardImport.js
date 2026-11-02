@@ -31,7 +31,13 @@ import { shapeOf, readCard, readLorebook } from '@/cards/card.js'
 import { reimportCard, shelfFor, writeCard, writeLorebook, writeMarkdown } from '@/cards/write.js'
 import { docxToMarkdown, isDocx } from '@/files/docx.js'
 import { takePictures } from '@/files/pictures.js'
-import { inspectFile, isStructured, titleOf } from '@/files/inspect.js'
+import {
+  MAX_TEXT_BYTES,
+  inspectFile,
+  isStructured,
+  refuseTooLarge,
+  titleOf,
+} from '@/files/inspect.js'
 import { writeFile } from '@/files/write.js'
 import { useJobsToast } from '@/composables/useJobsToast.js'
 import { useApplicationState } from '@/composables/useApplicationState'
@@ -126,7 +132,11 @@ export function useCardImport(storyId) {
    * @throws {Error} If the file cannot be read at all
    */
   async function inspect(file, { cards = useApplicationState().roleplay.value } = {}) {
-    if (MARKDOWN.test(file.name) || file.type === 'text/markdown') {
+    refuseTooLarge(file)
+    // Too long for a document to hold, or to be a card: a file to keep, below.
+    const readable = file.size <= MAX_TEXT_BYTES
+
+    if (readable && (MARKDOWN.test(file.name) || file.type === 'text/markdown')) {
       // A Google Doc's pictures come written into its markdown.
       const { markdown, pictures } = takePictures(await file.text())
       return {
@@ -156,7 +166,7 @@ export function useCardImport(storyId) {
     const isPng = PNG.test(file.name) || file.type === 'image/png'
     const value = isPng
       ? cardInPng(await file.arrayBuffer())
-      : JSON_FILE.test(file.name) || file.type === 'application/json'
+      : readable && (JSON_FILE.test(file.name) || file.type === 'application/json')
         ? parseJson(await file.text())
         : null
     const shape = value === null ? null : shapeOf(value)

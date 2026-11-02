@@ -1420,14 +1420,12 @@ describe('ChatSettings Python', () => {
     chat.value = {}
     updateChat.mockClear()
     preset.value = { toolsEnabled: true, generationOverrides: {} }
-    vi.stubEnv('VITE_PREVIEW', 'python')
     globalThis.__INKSPRITE_DESKTOP__ = { python: { run: vi.fn(), stop: vi.fn() } }
     useApplicationState().setExtension('python', true)
   })
 
   afterEach(() => {
     delete globalThis.__INKSPRITE_DESKTOP__
-    vi.unstubAllEnvs()
     useApplicationState().setExtension('python', false)
     useApplicationState().state.value.system.pythonProfiles = null
   })

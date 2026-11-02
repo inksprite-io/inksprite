@@ -9,6 +9,7 @@ export const app = {
   isPackaged: false,
   getPath: vi.fn(),
   getLocaleCountryCode: vi.fn(() => ''),
+  getAppMetrics: vi.fn(() => []),
   on: vi.fn(),
   quit: vi.fn(),
   dock: { setMenu: vi.fn() },

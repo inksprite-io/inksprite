@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, toRaw } from 'vue'
 import { storage } from '@/storage/index.js'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { plainCopy } from '@/utils/plainCopy.js'
 
 /** @typedef {import('../types/models.js').Change} Change */
 
@@ -106,10 +107,9 @@ export const useSyncStore = defineStore('sync', () => {
           if (debug.value) console.log(`Deleting ${entityType} row:`, change.id)
           return change
         }
-        // Belt-and-suspenders: toRaw() removes Vue reactivity, deep clone ensures
-        // complete isolation and strips non-serializable properties. This fixed
-        // reactivity issues before type checking was added - keeping for safety.
-        const plainData = JSON.parse(JSON.stringify(toRaw(change.data)))
+        // What's saved is apart from the row the app goes on changing, and
+        // free of reactivity and of anything that can't be stored.
+        const plainData = plainCopy(change.data)
         const dataToSave = {
           ...plainData,
           version: (plainData.version || 0) + 1,

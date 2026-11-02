@@ -3,14 +3,15 @@
  * @description A file handed back to the writer, named as it came in.
  */
 
-import { extensionFor } from './inspect.js'
+import { extensionFor, mimeOf } from './inspect.js'
 
 /** @typedef {import('@/types/models.js').Document} Document */
 
 /**
  * The filename a file document is saved under: its title, with the extension
  * its media type takes. The title lost its extension at import; this is
- * where it comes back.
+ * where it comes back. A title that kept one, as a repository's files do,
+ * keeps it, `photo.jpeg` as well as `photo.jpg`.
  *
  * @param {Pick<Document, 'title'|'mime'>} document
  * @returns {string}
@@ -18,7 +19,7 @@ import { extensionFor } from './inspect.js'
 export function filenameFor(document) {
   const title = (document.title || '').trim() || 'Untitled'
   const extension = extensionFor(document.mime || '')
-  if (!extension || title.toLowerCase().endsWith(`.${extension}`)) return title
+  if (!extension || mimeOf(title) === document.mime) return title
   return `${title}.${extension}`
 }
 

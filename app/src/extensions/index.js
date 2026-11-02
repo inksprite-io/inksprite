@@ -12,8 +12,7 @@
  *   opened with extensions, and off otherwise.
  * - **Python** - Python the model runs code in, in the desktop app only, in
  *   chats on the profiles its settings list or that switch it on. Off until
- *   switched on: nothing before it was in use. In the `python` preview. See
- *   ai/tools/python.js.
+ *   switched on: nothing before it was in use. See ai/tools/python.js.
  *
  * Design: `.llm/extensions_design.md`.
  *

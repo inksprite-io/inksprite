@@ -93,6 +93,7 @@ import { useToast } from 'primevue/usetoast'
 import { useAIConfig } from '@/composables/useAIConfig'
 import { sessionStorage } from '@/utils/sessionStorage'
 import { useProjects } from '@/composables/useProjects'
+import { useLastOpened } from '@/composables/useLastOpened.js'
 import { saveNow } from '@/composables/useSaveBeforeClosing.js'
 import {
   askForProject,
@@ -165,6 +166,8 @@ const currentDocumentId = computed(() =>
   currentStoryId.value ? useDocuments(currentStoryId.value).activeDocumentId.value : ''
 )
 
+// The project the app opens on next time is the one the writer was in last.
+useLastOpened(() => currentStoryId.value)
 // Focus mode is the document alone, so there is nothing to be in it with no
 // project open. See useFocusMode.
 useFocusModeKeys()

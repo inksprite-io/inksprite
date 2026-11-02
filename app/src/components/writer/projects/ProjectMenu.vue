@@ -10,17 +10,29 @@
       @click="toggle"
     />
 
-    <!-- The projects in a list of their own beside the menu, which scrolls
-         when there are many, so what comes after them is never below it. -->
+    <!-- The recent projects in a list of their own beside the menu, which
+         scrolls where it has no room, so what comes after them is never below
+         it. -->
     <TieredMenu
       id="project_menu"
       ref="menu"
       :model="items"
       :popup="true"
-      :pt="{ submenu: { class: 'w-72 max-w-[calc(100vw-2rem)] max-h-[50vh] overflow-y-auto' } }"
+      :pt="{
+        ...hoverSubmenus,
+        submenu: { class: 'w-72 max-w-[calc(100vw-2rem)] max-h-[50vh] overflow-y-auto' },
+      }"
     >
       <template #item="{ item, hasSubmenu, props: link }">
-        <a v-bind="link.action" :aria-current="item.open || undefined">
+        <a
+          v-bind="link.action"
+          :aria-current="item.open || undefined"
+          @contextmenu="item.storyId && showProjectMenu($event, item.storyId)"
+          @touchstart.passive="item.storyId && pressOn($event, item.storyId)"
+          @touchmove.passive="press.touchmove"
+          @touchend="press.touchend"
+          @touchcancel="press.touchend"
+        >
           <span
             class="pi pi-fw shrink-0 self-start mt-0.5"
             :class="item.icon || (item.open && 'pi-check')"
@@ -35,6 +47,7 @@
         </a>
       </template>
     </TieredMenu>
+    <ContextMenu ref="projectMenu" :model="projectMenuItems" @hide="returnFocus" />
     <input
       ref="fileInput"
       type="file"
@@ -43,29 +56,42 @@
       @change="importChosen"
     />
     <NewProjectDialog v-model:visible="showCreateDialog" @create="create" />
+    <ProjectsDialog
+      ref="projectsDialog"
+      v-model:visible="showProjects"
+      :story-id="storyId"
+      @project-menu="showProjectMenu"
+    />
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import ContextMenu from 'primevue/contextmenu'
 import TieredMenu from 'primevue/tieredmenu'
 import HeaderButton from '../layout/HeaderButton.vue'
 import NewProjectDialog from './NewProjectDialog.vue'
+import ProjectsDialog from './ProjectsDialog.vue'
+import { useHoverSubmenus } from '@/composables/useHoverSubmenus.js'
+import { useLongPress } from '@/composables/useLongPress.js'
+import { useProjectActions } from '@/composables/useProjectActions.js'
 import { useProjects } from '@/composables/useProjects'
 import { useReactiveTime } from '@/composables/useReactiveTime'
 import { useToast } from '@/composables/useToast'
-import { compareNames } from '@/utils/compareNames.js'
+import { recentProjects } from '@/utils/projectList.js'
 import { isDesktop } from '@/platform/desktop.js'
 
 /**
- * The projects, from a menu at the top of the outline: Switch project for every
- * one by name, the one open checked and each with when it was last edited, or
- * that it is open in another window; a new one or one imported from a file;
- * in the desktop app a new window; then what the outline does to the one
- * open.
+ * The projects, from a menu at the top of the outline: Recent projects for
+ * those edited last, the one open checked and each with when it was last
+ * edited, or that it is open in another window; Switch project for all of them
+ * in a table; a new one or one imported from a file; in the desktop app a new
+ * window; then what the outline does to the one open.
  *
  * Picked with Command or Ctrl held, a project opens in a new window (a new
- * tab in a browser). One open in another window is shown there.
+ * tab in a browser). One open in another window is shown there. Right-clicked
+ * or held under a finger, in either list, a project has its own menu: the
+ * outline's for the one open, and the same for another, without opening it.
  *
  * @typedef {Object} Props
  * @property {string} storyId - The project open
@@ -76,7 +102,11 @@ const props = defineProps({
   projectItems: { type: Array, default: () => [] },
 })
 
+/** How many projects Recent projects lists. */
+const RECENT = 8
+
 const projects = useProjects()
+const projectActions = useProjectActions()
 const toast = useToast()
 const { formatRelativeTime } = useReactiveTime()
 
@@ -85,43 +115,93 @@ const menu = ref(null)
 /** @type {import('vue').Ref<HTMLInputElement|null>} */
 const fileInput = ref(null)
 const showCreateDialog = ref(false)
+const showProjects = ref(false)
 const isImporting = ref(false)
 
+const hoverSubmenus = useHoverSubmenus(menu)
+
+/** @type {import('vue').Ref<any>} */
+const projectMenu = ref(null)
+/** @type {import('vue').Ref<Array<Object>>} */
+const projectMenuItems = ref([])
+
 /**
- * By name, so a project stays where the writer last saw it: ordered by when
- * each was last worked on, the one being written in jumped to the top on every
- * save. Numbers count as numbers ("Draft 2" before "Draft 10"), case and accents
- * are ignored, and two projects of one name keep a fixed order between them.
+ * Open a project's own menu where the pointer is.
+ * @param {Event|{pageX: number, pageY: number, stopPropagation: () => void, preventDefault: () => void}} event
+ * @param {string} storyId
  */
-const sorted = computed(() =>
-  [...projects.projects.value].sort(
-    (a, b) => compareNames(projects.nameOf(a.id), projects.nameOf(b.id)) || a.id.localeCompare(b.id)
-  )
+const showProjectMenu = (event, storyId) => {
+  projectMenuItems.value =
+    storyId === props.storyId ? props.projectItems : projectActions.itemsFor(storyId)
+  projectMenu.value?.show(event)
+}
+
+/** @type {import('vue').Ref<any>} */
+const projectsDialog = ref(null)
+
+/**
+ * A project's menu shut gives the focus back to the list it was opened from,
+ * for the keys to go on working there: the next Escape shuts that too. An item
+ * that opens something takes the focus on from here.
+ */
+const returnFocus = () => {
+  if (showProjects.value) projectsDialog.value?.focusSearch?.()
+  else if (menu.value?.visible) menu.value.menubar?.focus()
+}
+
+/** The project a finger went down on. */
+let pressedOn = ''
+
+const press = useLongPress(
+  ({ x, y }) =>
+    showProjectMenu(
+      {
+        pageX: x + window.scrollX,
+        pageY: y + window.scrollY,
+        stopPropagation() {},
+        preventDefault() {},
+      },
+      pressedOn
+    ),
+  () => projectMenu.value?.hide()
 )
 
-const listed = computed(() =>
-  sorted.value.map(story => {
-    const open = story.id === props.storyId
-    const away = projects.elsewhere.value.has(story.id)
-    const edited = projects.editedOf(story.id)
+/**
+ * @param {TouchEvent} event
+ * @param {string} storyId
+ */
+const pressOn = (event, storyId) => {
+  pressedOn = storyId
+  press.touchstart(event)
+}
+
+const recent = computed(() =>
+  recentProjects(projects.rows.value, RECENT).map(row => {
+    const open = row.id === props.storyId
+    const away = projects.elsewhere.value.has(row.id)
     return {
-      label: projects.nameOf(story.id),
-      detail: away ? 'Open in another window' : edited ? formatRelativeTime(edited) : '',
+      label: row.name,
+      detail: away ? 'Open in another window' : row.edited ? formatRelativeTime(row.edited) : '',
       icon: away ? 'pi pi-clone' : undefined,
       open,
+      storyId: row.id,
       /** @param {{originalEvent?: Event}} [event] */
       command: event => {
-        if (open) return
-        const mouse = /** @type {MouseEvent|undefined} */ (event?.originalEvent)
-        if (mouse?.metaKey || mouse?.ctrlKey) projects.openInNewWindow(story.id)
-        else projects.open(story.id)
+        if (!open) projects.pick(row.id, event?.originalEvent)
       },
     }
   })
 )
 
 const items = computed(() => [
-  { label: 'Switch project', icon: 'pi pi-book', items: listed.value },
+  { label: 'Recent projects', icon: 'pi pi-history', items: recent.value },
+  {
+    label: 'Switch project…',
+    icon: 'pi pi-book',
+    command: () => {
+      showProjects.value = true
+    },
+  },
   {
     label: 'New project…',
     icon: 'pi pi-plus',

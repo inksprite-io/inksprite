@@ -161,16 +161,16 @@ describe('describeRepositoryImport', () => {
 
   it('says which files were left out that the writer might have wanted', () => {
     const imported = { folderId: 'f', name: 'acme/widgets', files: 120 }
-    expect(describeRepositoryImport({ ...imported, left: { ...none, binary: ['a.png'] } })).toEqual(
-      { detail: "1 file that isn't text was left out.", severity: 'info' }
-    )
+    expect(
+      describeRepositoryImport({ ...imported, left: { ...none, binary: ['a.woff2'] } })
+    ).toEqual({ detail: "1 file the app can't open was left out.", severity: 'info' })
     expect(
       describeRepositoryImport({
         ...imported,
-        left: { ...none, binary: ['a.png', 'b.png'], large: ['data.csv'] },
+        left: { ...none, binary: ['a.woff2', 'b.zip'], large: ['data.csv'] },
       })
     ).toEqual({
-      detail: "2 files that aren't text and 1 that is too large were left out.",
+      detail: "2 files the app can't open and 1 that is too large were left out.",
       severity: 'info',
     })
   })

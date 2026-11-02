@@ -9,9 +9,11 @@
  * - **markdown** - Markdown parsing and rendering
  * - **math** - TeX in markdown typeset with KaTeX, loaded the first time a formula needs it
  * - **partialJson** - The strings in JSON that has not finished arriving
+ * - **plainCopy** - A deep copy of a row, as JSON would have it, without writing it out as JSON
  * - **wordCount** - Words in a document's markdown
  * - **lineDiff** - The lines that changed between two versions of a text
  * - **compareNames** - Names in the order a person expects, numbers by value
+ * - **projectList** - The projects as listed for picking one: found by name, and in an order
  * - **siblingOrder** - The order a folder's children are shown in
  * - **trash** - How long the trash keeps what is in it, and which of a project's documents are there
  * - **versions** - When a document's version is due, and which go as they age
@@ -74,6 +76,7 @@ export * from './turns.js'
 export * from './focus.js'
 export * from './documentPath.js'
 export * from './compareNames.js'
+export * from './projectList.js'
 export * from './siblingOrder.js'
 export {
   isDocumentHref,

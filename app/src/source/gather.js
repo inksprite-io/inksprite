@@ -6,25 +6,33 @@
  * Wherever the files come from — a folder chosen in the browser, an archive
  * from GitHub — they arrive here as entries: a path, a size, and a way to
  * read the bytes. What the rules or the name rule out is never read; what is
- * left is read, and kept only if it is text. The caps are checked as the
- * files are counted, so a codebase too big to take stops before anything is
- * written rather than after.
+ * left is read, and kept only if it is text, but for a PDF, a book, a Word
+ * file or a picture, which comes in whole (`isWholeFileName`). The caps are
+ * checked as the files are counted, so a codebase too big to take stops
+ * before anything is written rather than after.
  */
 
+import { mimeOf } from '@/files/inspect.js'
 import { createRules } from './rules.js'
-import { isBinaryName } from './language.js'
+import { isBinaryName, isWholeFileName } from './language.js'
 import { textOf } from './text.js'
 
 /** @typedef {import('@/files/batch.js').Gathered} Gathered */
 
-/** Larger than this, a file is left out. */
+/** Larger than this, a file of text is left out. */
 export const MAX_FILE_BYTES = 512 * 1024
+
+/** Larger than this, a file that comes in whole is left out. */
+export const MAX_WHOLE_FILE_BYTES = 50 * 1024 * 1024
 
 /** More files than this, and the import stops. */
 export const MAX_FILES = 5000
 
 /** More text than this, in bytes, and the import stops. */
 export const MAX_TOTAL_BYTES = 40 * 1024 * 1024
+
+/** More bytes of files that come in whole than this, and the import stops. */
+export const MAX_WHOLE_BYTES = 200 * 1024 * 1024
 
 /**
  * One file of a codebase, before it is read.
@@ -36,12 +44,15 @@ export const MAX_TOTAL_BYTES = 40 * 1024 * 1024
  */
 
 /**
- * One file that came in.
+ * One file that came in: its text, or a file that comes in whole, its bytes,
+ * whose text is read out of them when it is written.
  *
  * @typedef {Object} SourceFile
  * @property {string} path
- * @property {string} text - As it is, with `\n` line ends
+ * @property {string} text - As it is, with `\n` line ends; '' for a file that comes in whole
  * @property {number} size - Bytes, as it came
+ * @property {Uint8Array} [bytes] - A file that comes in whole: a PDF, a book, a Word file, a picture
+ * @property {string} [mime] - Its media type, for one that comes in whole
  */
 
 /**
@@ -50,8 +61,8 @@ export const MAX_TOTAL_BYTES = 40 * 1024 * 1024
  * @typedef {Object} LeftOut
  * @property {number} never - Version control, installed packages, secrets
  * @property {number} ignored - The default list or a `.gitignore`
- * @property {string[]} binary - Not text
- * @property {string[]} large - Over MAX_FILE_BYTES
+ * @property {string[]} binary - Not text, and not a file that comes in whole
+ * @property {string[]} large - Over MAX_FILE_BYTES, or MAX_WHOLE_FILE_BYTES for a file that comes in whole
  */
 
 /**
@@ -59,21 +70,29 @@ export const MAX_TOTAL_BYTES = 40 * 1024 * 1024
  * @property {SourceFile[]} files - In path order
  * @property {LeftOut} left
  * @property {number} bytes - The text's size in all
+ * @property {number} wholeBytes - The size of the files that came in whole, in all
  */
+
+/** @param {string} path */
+const nameOf = path => path.slice(path.lastIndexOf('/') + 1)
+
+/** @param {number} bytes */
+const megabytes = bytes => (bytes / (1024 * 1024)).toFixed(1)
 
 /** A codebase too big to take whole. */
 export class SourceTooLargeError extends Error {
   /**
    * @param {number} files - How many files would have come in, at least
-   * @param {number} bytes
+   * @param {number} bytes - Of text
+   * @param {number} [wholeBytes] - Of the files that would have come in whole
    */
-  constructor(files, bytes) {
-    const megabytes = (bytes / (1024 * 1024)).toFixed(1)
-    super(
-      `More than this can take: at least ${files.toLocaleString('en-US')} files and ${megabytes} MB of text, ` +
-        `over the limit of ${MAX_FILES.toLocaleString('en-US')} files or ${MAX_TOTAL_BYTES / (1024 * 1024)} MB. ` +
-        'Import one of its folders instead.'
-    )
+  constructor(files, bytes, wholeBytes = 0) {
+    const over =
+      wholeBytes > MAX_WHOLE_BYTES && files <= MAX_FILES && bytes <= MAX_TOTAL_BYTES
+        ? `${megabytes(wholeBytes)} MB of PDFs, documents and pictures, over the limit of ${MAX_WHOLE_BYTES / (1024 * 1024)} MB`
+        : `at least ${files.toLocaleString('en-US')} files and ${megabytes(bytes)} MB of text, ` +
+          `over the limit of ${MAX_FILES.toLocaleString('en-US')} files or ${MAX_TOTAL_BYTES / (1024 * 1024)} MB`
+    super(`More than this can take: ${over}. Import one of its folders instead.`)
     this.name = 'SourceTooLargeError'
   }
 }
@@ -108,11 +127,12 @@ export async function sortEntries(entries, { rules = createRules(), gitignores =
   const kept = []
   for (const entry of entries) {
     const by = rules.check(entry.path)
+    const name = nameOf(entry.path)
+    const limit = isWholeFileName(name) ? MAX_WHOLE_FILE_BYTES : MAX_FILE_BYTES
     if (by === 'never') left.never++
     else if (by === 'ignored') left.ignored++
-    else if (isBinaryName(entry.path.slice(entry.path.lastIndexOf('/') + 1)))
-      left.binary.push(entry.path)
-    else if (entry.size > MAX_FILE_BYTES) left.large.push(entry.path)
+    else if (isBinaryName(name) && !isWholeFileName(name)) left.binary.push(entry.path)
+    else if (entry.size > limit) left.large.push(entry.path)
     else kept.push(entry)
   }
   return { kept, left }
@@ -135,27 +155,40 @@ export async function sortEntries(entries, { rules = createRules(), gitignores =
  */
 export async function gatherSource(entries, { signal, onProgress, gitignores, prepare } = {}) {
   const { kept, left } = await sortEntries(entries, { gitignores })
-  const total = kept.reduce((sum, entry) => sum + entry.size, 0)
-  if (kept.length > MAX_FILES || total > MAX_TOTAL_BYTES) {
-    throw new SourceTooLargeError(kept.length, total)
+  const sizeOf = (/** @type {boolean} */ whole) =>
+    kept
+      .filter(entry => isWholeFileName(nameOf(entry.path)) === whole)
+      .reduce((sum, entry) => sum + entry.size, 0)
+  const total = sizeOf(false)
+  const wholeTotal = sizeOf(true)
+  if (kept.length > MAX_FILES || total > MAX_TOTAL_BYTES || wholeTotal > MAX_WHOLE_BYTES) {
+    throw new SourceTooLargeError(kept.length, total, wholeTotal)
   }
   await prepare?.(kept)
 
   /** @type {SourceFile[]} */
   const files = []
   let bytes = 0
+  let wholeBytes = 0
   for (const [at, entry] of kept.entries()) {
     signal?.throwIfAborted()
-    const text = textOf(await entry.read())
-    if (text === null) left.binary.push(entry.path)
-    else {
-      files.push({ path: entry.path, text, size: entry.size })
-      bytes += entry.size
+    const read = await entry.read()
+    const name = nameOf(entry.path)
+    if (isWholeFileName(name)) {
+      files.push({ path: entry.path, text: '', size: entry.size, bytes: read, mime: mimeOf(name) })
+      wholeBytes += entry.size
+    } else {
+      const text = textOf(read)
+      if (text === null) left.binary.push(entry.path)
+      else {
+        files.push({ path: entry.path, text, size: entry.size })
+        bytes += entry.size
+      }
     }
     onProgress?.(at + 1, kept.length)
   }
   files.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0))
-  return { files, left, bytes }
+  return { files, left, bytes, wholeBytes }
 }
 
 /**

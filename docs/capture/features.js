@@ -381,10 +381,12 @@ export async function features(ui, { standIn, context }) {
   // The switcher
   await at(55)
   await ui.click(button('Projects'))
-  await ui.click(menu('Switch project'))
-  await page.getByRole('menuitem', { name: /Field notes/ }).waitFor()
-  await ui.shot('projects-switcher', { region: { x: 0, y: 0, width: 640, height: 400 } })
+  await ui.click(menu('Switch project…'))
+  const switcher = page.locator('[data-projects-dialog]')
+  await switcher.getByText('Field notes').waitFor()
+  await ui.shot('projects-switcher', { of: switcher, pad: 0 })
   await ui.press('Escape')
+  await switcher.waitFor({ state: 'hidden' })
 
   // Find and replace
   await ui.click(row('Prologue'))

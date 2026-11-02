@@ -46,8 +46,11 @@
 import { compareNames } from '@/utils/compareNames.js'
 import { PICTURES_DIR } from '@/utils/pictures.js'
 import { filenameFor } from '@/files/download.js'
+import { isWholeFileName } from '@/source/language.js'
+import { keptWhole } from '@/source/tree.js'
 import {
   safeName,
+  sourceName,
   nameKey,
   splitExtension,
   claimName,
@@ -166,10 +169,12 @@ export const audioPath = (id, key) => `${audioDir(id)}/${key}.wav`
  * - `file` - An imported file, with its row beside it (`sidecarPath`)
  * - `repository` - A directory with a `.repository.json`
  * - `repoFolder`, `repoFile` - What is in a repository, whose rows its `.repository.json` keeps
+ * - `repoBytes` - A file in a repository that came in whole, a PDF or a
+ *   picture: itself, its row and its text in the `.repository.json`
  * - `holder` - The directory a text or an imported file holds others in, as a
  *   plan sees it (plan.js); never in a layout, whose entry has it as `dir`
  *
- * @typedef {'root'|'folder'|'text'|'file'|'repository'|'repoFolder'|'repoFile'|'holder'} EntryKind
+ * @typedef {'root'|'folder'|'text'|'file'|'repository'|'repoFolder'|'repoFile'|'repoBytes'|'holder'} EntryKind
  */
 
 /**
@@ -184,7 +189,8 @@ export const audioPath = (id, key) => `${audioDir(id)}/${key}.wav`
  * @property {string} [repository] - The id of the repository it is in
  * @property {true} [narration] - It has a narration file
  * @property {true} [digest] - It has a digest file
- * @property {true} [missing] - An imported file whose row is there and whose bytes are not
+ * @property {true} [missing] - An imported file, or a repository's file that
+ *   came in whole, whose row is there and whose bytes are not
  * @property {string[]} [pictures] - A text document's own pictures, by name, in
  *   `picturesDir` beside it
  */
@@ -258,11 +264,14 @@ function shown(children, ordered) {
 
 /**
  * The name a document's file or folder takes, before any prefix or `(2)`.
+ * In a repository, the name it has in the codebase, which its title is.
  *
  * @param {Document} document
+ * @param {boolean} inRepository
  * @returns {{stem: string, extension: string}}
  */
-function nameOf(document) {
+function nameOf(document, inRepository) {
+  if (inRepository) return splitExtension(sourceName(document.title))
   if (document.type === 'folder') return { stem: safeName(document.title), extension: '' }
   if (document.type === 'file') return splitExtension(safeName(filenameFor(document)))
   return { stem: safeName(document.title), extension: '.md' }
@@ -276,7 +285,10 @@ function nameOf(document) {
  * @returns {EntryKind}
  */
 function kindOf(document, inRepository) {
-  if (inRepository) return document.type === 'folder' ? 'repoFolder' : 'repoFile'
+  if (inRepository) {
+    if (document.type === 'folder') return 'repoFolder'
+    return keptWhole(document) ? 'repoBytes' : 'repoFile'
+  }
   if (document.type === 'folder') return document.kind === 'repository' ? 'repository' : 'folder'
   return document.type === 'file' ? 'file' : 'text'
 }
@@ -368,8 +380,10 @@ export function layoutProject(documents, rootId, taken = []) {
     const kids = shown(children.get(folder.id) || [], ordered)
     const width = prefixWidth(kids.length)
     const names = namesIn(dir)
+    // A codebase's names keep their dots, so none takes the repository's own file.
+    if (repository === folder.id) names.add(nameKey(REPOSITORY_FILE))
     kids.forEach((kid, at) => {
-      const { stem, extension } = nameOf(kid)
+      const { stem, extension } = nameOf(kid, Boolean(repository))
       const placed = ordered ? withPrefix(at + 1, width, stem) : stem
       const kind = kindOf(kid, Boolean(repository))
       if (own !== undefined) names.add(nameKey(`${own}${extension}`))
@@ -396,10 +410,20 @@ export function layoutProject(documents, rootId, taken = []) {
 }
 
 /**
+ * Whether the document an entry is has its bytes where the entry is: an
+ * imported file, or a repository's file that came in whole.
+ *
+ * @param {Entry|undefined} entry
+ * @returns {entry is Entry}
+ */
+export const holdsBytes = entry => entry?.kind === 'file' || entry?.kind === 'repoBytes'
+
+/**
  * The files of a project's folder whose text a read needs: every markdown
- * file, the project's own files, and everything in a repository. Not the
- * bytes of imported files, which are read when something opens one, and not
- * the chats, which are read a chat at a time.
+ * file, the project's own files, and everything in a repository but the
+ * files that came in whole. Not the bytes of imported files, which are read
+ * when something opens one, and not the chats, which are read a chat at a
+ * time.
  *
  * @param {string[]} files - Every file below the project folder
  * @returns {string[]}
@@ -414,7 +438,7 @@ export function wantedTexts(files) {
     if (path === STORY_FILE) return true
     if (isRowFile(path)) return true
     if (inMeta(path)) return false
-    if (inRepository(path)) return true
+    if (inRepository(path)) return !isWholeFileName(baseOf(path))
     if (inPictures(path)) return false
     return path.endsWith('.md') || baseOf(path) === REPOSITORY_FILE
   })
@@ -728,18 +752,22 @@ export function readProject({ files, texts, name }, { newId, now }) {
     }
     keep({ document: repository, adopted: false })
     const listed = new Set([join(path, REPOSITORY_FILE)])
-    for (const { path: at, document } of below) {
+    const present = new Set(everythingBelow(path))
+    for (const { path: at, document, whole } of below) {
       const full = join(path, at)
       listed.add(full)
       keep({ document, adopted: false })
-      entries.set(document.id, {
+      /** @type {Entry} */
+      const entry = {
         id: document.id,
-        kind: document.type === 'folder' ? 'repoFolder' : 'repoFile',
+        kind: document.type === 'folder' ? 'repoFolder' : whole ? 'repoBytes' : 'repoFile',
         path: full,
         repository: repository.id,
-      })
+      }
+      if (whole && !present.has(full)) entry.missing = true
+      entries.set(document.id, entry)
     }
-    unknown.push(...everythingBelow(path).filter(file => !listed.has(file)))
+    unknown.push(...[...present].filter(file => !listed.has(file)))
     return { document: repository, entry: { id: repository.id, kind: 'repository', path } }
   }
 

@@ -269,8 +269,8 @@ import { useSharedDocuments } from '@/composables/useSharedDocuments.js'
 import { useExport } from '@/composables/useExport.js'
 import { usePrint } from '@/composables/usePrint.js'
 import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
-import { EPUB_MIME, hasText } from '@/files/inspect.js'
-import { inRepository, isRepository, repositoryOf } from '@/source/tree.js'
+import { EPUB_MIME, hasText, isUnreadText } from '@/files/inspect.js'
+import { inRepository, isRepository, isSourceFile, repositoryOf } from '@/source/tree.js'
 import { reextractFile } from '@/files/write.js'
 import { isDesktop } from '@/platform/desktop.js'
 import { openUrl } from '@/platform/open.js'
@@ -474,7 +474,7 @@ const leafIcon = computed(() => {
   if (mime === 'application/pdf') return 'pi pi-file-pdf'
   if (mime.startsWith('image/')) return 'pi pi-image'
   if (mime === EPUB_MIME) return 'pi pi-book'
-  if (isInRepository.value) return 'pi pi-code'
+  if (isSourceFile(api.get, node.value)) return 'pi pi-code'
   return 'pi pi-file'
 })
 
@@ -499,7 +499,11 @@ const duplicate = () => {
 
 /** Whether reading this file's bytes again could change its text. */
 const extractable = computed(
-  () => isFile.value && !isInRepository.value && hasText(node.value?.mime || '')
+  () =>
+    isFile.value &&
+    !isInRepository.value &&
+    hasText(node.value?.mime || '') &&
+    !isUnreadText(node.value)
 )
 
 /**

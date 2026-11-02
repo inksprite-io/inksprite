@@ -1,11 +1,12 @@
 ---
 title: The Desktop App
-description: Install inksprite on macOS, Windows or Linux, bring your work over from the browser, and find your projects as a folder of Markdown files.
+description: Install inksprite on macOS, Windows or Linux, bring your work over from the browser, find your projects as a folder of Markdown files, and see what only the desktop app does.
 ---
 
-The desktop app is the same inksprite as the one in your browser, in windows
-of its own. No browser can clear your work, and it reaches servers a web page
-can't.
+The desktop app is inksprite in windows of its own, and it does more than the
+one in your browser. It keeps your projects as files on your computer, where
+no browser can clear them, and it reaches servers and sites a web page can't.
+See [what only the desktop app does](#what-only-the-desktop-app-does).
 
 ## Install it
 
@@ -41,8 +42,7 @@ Or, on Debian or Ubuntu, install the `.deb`:
 sudo apt install ./inksprite-*.deb
 ```
 
-If the AppImage won't start on Ubuntu 24.04 or later, install the `.deb`, or
-start the AppImage with `--no-sandbox`.
+If the AppImage won't start on Ubuntu 24.04 or later, install the `.deb`.
 
 ## Bring your work over
 
@@ -102,7 +102,7 @@ The desktop app keeps your projects as ordinary files: a folder for each
 project, a Markdown file for each document, and imported files as they came.
 A document that holds others is a folder of its name, with the document inside
 beside what it holds. A document's pictures are in a hidden `.images` folder
-beside it.
+beside it. A repository's files have the names they have in the codebase.
 You can open them in another editor, or back them up with your own tools. To
 use a project's documents elsewhere, [export](/projects/#export) it instead:
 its files carry nothing of inksprite's own, and its links and pictures work
@@ -165,12 +165,37 @@ yourself, it can let an MCP server's tools run without asking.
 
 - **No browser can clear your work.** See
   [where your work is kept](/projects/#where-your-work-is-kept).
+- **Your projects are files**, a Markdown file for each document, to open in
+  another editor or back up with your own tools. See
+  [your projects folder](#your-projects-folder).
+- **[More than one window](#more-than-one-window)**, a project in each.
 - **Local model servers** need no setup to let inksprite reach them, and a
   server on another computer on your network works too. See
   [AI Providers](/providers/#local-models).
 - **[MCP servers](/mcp/)** that don't accept connections from web pages work.
 - **[Web search](/web-search/)** can use Brave.
-- **[Code repositories](/repositories/)** import straight from GitHub.
+- **A PDF the model finds on the web** is
+  [kept](/web-search/#the-model-keeps-what-it-finds) as the file itself, as
+  is any other file. In a browser, most sites won't hand the file over, so
+  the model keeps its text.
+- **[Code repositories](/repositories/)** import straight from GitHub, and
+  refresh from there.
+- **[Python](/python/)** lets the model run code.
+- **[Export](/projects/#export)** puts a project or a folder in a folder you
+  choose, rather than in a `.zip`.
+- **[Export as PDF…](/editor/#export-print-or-copy-a-document)** saves the PDF
+  where you choose, without the print dialog.
+- **[Narration](/narration/) audio** is kept with the project. In a browser,
+  it's gone when you close the tab.
+- **[Google Drive](/google-docs/)** stays signed in until you take its access
+  away in your Google account. In a browser, a sign-in lasts an hour.
+- **Links to botbooru** add cards to the
+  [card library](/roleplay/#keep-your-cards-in-the-library).
+- **What you delete for good** from the
+  [trash](/projects/#delete-and-the-trash) goes to your computer's Trash (the
+  Recycle Bin on Windows).
+- **A [settings file](#set-it-up-for-someone-else)** left by a script sets it
+  up for someone else.
 - **Sign-ins**, to OpenRouter, MCP servers and [Google Drive](/google-docs/),
   open in your usual browser. When you're done, close the tab and go back to
   inksprite.

@@ -86,10 +86,11 @@ import { useDocumentsStore } from '@/stores/documentsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 
 /**
- * Settings › Project: the project open's title and summary, which are its
- * root's, the profile a new chat in it starts on, and whom it is shared
- * with. Each is kept as it is changed: a field once the writer leaves it.
- * The outline's Share… opens it on the sharing.
+ * Settings › Project: a project's title and summary, which are its root's,
+ * the profile a new chat in it starts on, and whom it is shared with: the
+ * project open, or one asked for from a list of them. Each is kept as it is
+ * changed: a field once the writer leaves it. The outline's Share… opens it on
+ * the sharing.
  *
  * @typedef {Object} Props
  * @property {string} storyId

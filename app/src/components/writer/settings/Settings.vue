@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import SectionLayout from '@/components/common/SectionLayout.vue'
 import AiConfigSection from './ai/AiConfigSection.vue'
 import WorkflowsSection from './WorkflowsSection.vue'
@@ -81,14 +81,24 @@ const SECTIONS = [
 
 const { aiEnabled } = useApplicationState()
 
+const { requestedSection, requestedProject, takeSection } = useSettingsPanel()
+
+/** The project whose section this is: one asked for from a list, or the one open. */
+const projectId = computed(() => requestedProject.value || props.storyId)
+
+// Asked for once: the settings open on the project open next time.
+onBeforeUnmount(() => {
+  requestedProject.value = null
+})
+
 const sections = computed(() =>
   SECTIONS.filter(
-    section => (aiEnabled.value || !section.ai) && (props.storyId || !section.project)
+    section => (aiEnabled.value || !section.ai) && (projectId.value || !section.project)
   )
     // The project's is keyed on it, so that another project's opens fresh.
     .map(section =>
       section.project
-        ? { ...section, props: { storyId: props.storyId, key: props.storyId } }
+        ? { ...section, props: { storyId: projectId.value, key: projectId.value } }
         : section
     )
 )
@@ -106,7 +116,6 @@ const aiConfig = useAIConfig()
 
 // Whoever opened the settings may have asked for a section — a chat with no
 // provider wants the AI section, not the one last looked at.
-const { requestedSection, takeSection } = useSettingsPanel()
 watch(
   requestedSection,
   section => {

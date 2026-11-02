@@ -7,14 +7,17 @@
  * A repository is a folder with `kind: 'repository'` and a `source` saying
  * where it came from. Each of its files is a file document titled with its
  * filename, extension and all, whose `content` is its text; no bytes are kept
- * beside it, since the text is the file. A refresh reads the source again
- * and settles the tree against it by path, keeping each file's id, so a chat
- * that read a file is told when it changed.
+ * beside it, since the text is the file. A PDF, a book, a Word file or a
+ * picture comes in whole instead, as an imported file does: its bytes kept,
+ * and its `content` the text read out of them. A refresh reads the source
+ * again and settles the tree against it by path, keeping each file's id, so
+ * a chat that read a file is told when it changed.
  *
  * - **rules** - What comes in: never version control, packages or secrets;
  *   not by default build output, lock files or minified code; and the
  *   codebase's own `.gitignore` files
- * - **language** - A file's language and media type, by its name
+ * - **language** - A file's language and media type, by its name, and
+ *   whether it comes in whole
  * - **text** - Whether bytes are text, and how many lines a text has
  * - **detect** - Whether a folder about to come in as files looks like code
  * - **gather** - Entries listed, sorted by the rules, read, and capped
@@ -37,8 +40,8 @@
  */
 
 export { createRules, NEVER, NOT_BY_DEFAULT } from './rules.js'
-export { languageOf, isBinaryName } from './language.js'
-export { textOf, textOfFile, lineCount } from './text.js'
+export { languageOf, isBinaryName, isWholeFileName } from './language.js'
+export { textOf, textOfFile, startsAsText, lineCount } from './text.js'
 export { looksLikeCodebase } from './detect.js'
 export { gatherSource, sortEntries, entriesOfFolder, SourceTooLargeError } from './gather.js'
 export { parseGitHubUrl, downloadArchive, readArchive, GitHubError } from './github.js'
@@ -48,5 +51,6 @@ export {
   repositoryOf,
   inRepository,
   isSourceFile,
+  keptWhole,
   describeRepository,
 } from './tree.js'

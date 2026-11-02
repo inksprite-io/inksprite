@@ -87,7 +87,9 @@ export const useProjectViewsStore = defineStore('projectViews', () => {
 
   /**
    * Of these projects, the one the writer was in last on this copy of the
-   * app, or undefined when none has been opened here.
+   * app, or undefined when none has been opened here. When a view was saved
+   * does not say: a project can be written in for hours with its tabs and
+   * panels as they were, and a job in one left behind can close its tabs.
    * @param {string[]} storyIds
    * @returns {string|undefined}
    */
@@ -95,14 +97,26 @@ export const useProjectViewsStore = defineStore('projectViews', () => {
     let last
     let at = 0
     for (const storyId of storyIds) {
-      const updated = views.value.get(storyId)?.updated ?? 0
-      if (updated > at) {
+      const view = views.value.get(storyId)
+      const time = view?.opened ?? view?.updated ?? 0
+      if (time > at) {
         last = storyId
-        at = updated
+        at = time
       }
     }
     return last
   }
 
-  return { views, ensureInitialized, getView, updateView, deleteView, lastOpened }
+  /**
+   * Record that the writer is in a project now. Nothing is written for the
+   * one they were in last already: a window comes forward often, and with
+   * one window it is always on that project.
+   * @param {string} storyId
+   */
+  function markOpened(storyId) {
+    if (views.value.get(storyId)?.opened && lastOpened([...views.value.keys()]) === storyId) return
+    updateView(storyId, { opened: Date.now() })
+  }
+
+  return { views, ensureInitialized, getView, updateView, deleteView, lastOpened, markOpened }
 })

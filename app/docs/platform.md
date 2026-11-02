@@ -878,8 +878,8 @@ and reloads rather than show what it kept (`takeProject`'s `stale`).
 
 ## CHANNEL
 
-What a window holds a project for: being open there, or a job running
-there, by the job's id.
+What a window holds a project for: being open there, being read there for a
+menu's action on it, or a job running there, by the job's id.
 
 Type: [string][147]
 

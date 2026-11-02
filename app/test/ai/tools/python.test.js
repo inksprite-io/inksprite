@@ -132,7 +132,6 @@ beforeEach(() => {
   for (const id of Object.keys(chats)) delete chats[id]
   python = { run: vi.fn().mockResolvedValue(ran()), stop: vi.fn() }
   globalThis.__INKSPRITE_DESKTOP__ = { python }
-  vi.stubEnv('VITE_PREVIEW', 'python')
   const state = useApplicationState()
   state.setAiEnabled(true)
   state.setExtension('python', true)
@@ -142,7 +141,6 @@ beforeEach(() => {
 
 afterEach(() => {
   delete globalThis.__INKSPRITE_DESKTOP__
-  vi.unstubAllEnvs()
 })
 
 describe('pythonOffered', () => {
@@ -162,11 +160,6 @@ describe('pythonOffered', () => {
     expect(pythonOffered()).toBe(false)
     useApplicationState().setExtension('python', true)
     useApplicationState().setAiEnabled(false)
-    expect(pythonOffered()).toBe(false)
-  })
-
-  it('offers none outside its preview', () => {
-    vi.stubEnv('VITE_PREVIEW', '')
     expect(pythonOffered()).toBe(false)
   })
 })
@@ -354,6 +347,22 @@ describe('projectForPython', () => {
       { path: 'map.pdf', id: 'd8', file: 'Thief/map.pdf' },
       { path: 'map.pdf.txt', id: 'd9', text: 'My own notes' },
       { path: 'portrait.png', id: 'd10', file: 'Thief/portrait.png' },
+    ])
+  })
+
+  it('reads a file of text too large to have come in with its text from its bytes', async () => {
+    const large = (/** @type {string} */ id) => ({
+      document: doc({ id, type: 'file', mime: 'text/csv', size: 247 * 1024 * 1024, content: '' }),
+      path: `${id}.csv`,
+      titles: [`${id}.csv`],
+    })
+    documents.documentsForChat.mockResolvedValue([large('d2'), large('d7'), large('gone')])
+
+    expect(await projectForPython({ chatId: 'chat-1', storyId: 'story-1' })).toEqual([
+      // On this device, by its path.
+      { path: 'd2.csv', id: 'd2', file: 'Thief/Rules/odds.csv' },
+      // On the sync server, fetched as it is read, rather than an empty text.
+      { path: 'd7.csv', id: 'd7', size: 247 * 1024 * 1024, onServer: true },
     ])
   })
 

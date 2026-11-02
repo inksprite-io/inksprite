@@ -570,6 +570,25 @@ describe('SyncStore', () => {
       )
     })
 
+    it('saves a row without writing it out as JSON', async () => {
+      const { default: db } = await import('../../src/stores/db')
+      db.transaction.mockImplementation(async (mode, tables, fn) => {
+        await fn()
+      })
+      // A very long text beside a character that doesn't fit in a byte can
+      // kill the page in JSON.stringify, past anything a catch can reach.
+      const stringify = vi.spyOn(JSON, 'stringify')
+
+      store.trackChange('stories', 'story_1', { id: 'story_1', title: 'it’s', version: 0 })
+      await store.processSync()
+
+      expect(stringify).not.toHaveBeenCalled()
+      expect(db.stories.put).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'story_1', title: 'it’s', version: 1 })
+      )
+      stringify.mockRestore()
+    })
+
     it('should handle rapid successive changes', async () => {
       const { default: db } = await import('../../src/stores/db')
       db.transaction.mockImplementation(async (mode, tables, fn) => {

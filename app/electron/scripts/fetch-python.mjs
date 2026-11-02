@@ -14,7 +14,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 /** What the sandbox offers beside the standard library. */
-const PACKAGES = ['numpy', 'pandas']
+const PACKAGES = ['numpy', 'pandas', 'pyarrow', 'duckdb']
 
 const require = createRequire(import.meta.url)
 const { version } = require('pyodide/package.json')

@@ -6,7 +6,8 @@
  * An imported file is itself, with a hidden markdown file beside it carrying
  * its row and the text read out of it. A repository keeps its own row and
  * the rows of everything in it in one `.repository.json` inside it; its files
- * are their text.
+ * are their text, but for those that came in whole, a PDF or a picture, which
+ * are themselves and whose rows carry the text read out of them.
  *
  * The frontmatter is the row, less what the file already says (the body,
  * where the file is, what kind of file it is) and what is worked out (the
@@ -260,12 +261,14 @@ export function readFileSidecar(text, place, name, fits, newId) {
 
 /**
  * A row as a repository keeps it: what its file cannot say, by path below
- * the repository. The text is the file itself.
+ * the repository. The text is the file itself, but for a file that came in
+ * whole, whose row has the text read out of it.
  *
  * @typedef {Object} RepositoryEntry
  * @property {string} path
  * @property {string} id
  * @property {'folder'|'file'} type
+ * @property {string} [content] - A file that came in whole: its text
  */
 
 /**
@@ -273,7 +276,8 @@ export function readFileSidecar(text, place, name, fits, newId) {
  * path. Kept as rows rather than frontmatter: nobody reads it but the app.
  *
  * @param {Document} repository
- * @param {Array<{path: string, document: Document}>} below
+ * @param {Array<{path: string, document: Document, whole?: boolean}>} below -
+ *   `whole` for a file that came in whole, which is its bytes on disk
  * @returns {string}
  */
 export function repositoryFile(repository, below) {
@@ -288,19 +292,25 @@ export function repositoryFile(repository, below) {
     }
     return out
   }
-  const entries = below.map(({ path, document }) => ({ path, ...strip(document) }))
+  const entries = below.map(({ path, document, whole }) => ({
+    path,
+    ...strip(document),
+    ...(whole ? { content: document.content || '' } : {}),
+  }))
   return `${JSON.stringify({ ...strip(repository), entries }, null, 2)}\n`
 }
 
 /**
  * A repository's rows from its `.repository.json`, with the text of each of
- * its files, which `textOf` reads from where the file is.
+ * its files, which `textOf` reads from where the file is, or the row has for
+ * a file that came in whole.
  *
  * @param {string} text
  * @param {Place} place - The repository's own
  * @param {(path: string) => string|undefined} textOf - A file's text by its path below the repository
- * @returns {Array<{path: string, document: Document}>|null} The repository first, at '',
- *   then what is in it; null when the file cannot be read
+ * @returns {Array<{path: string, document: Document, whole?: boolean}>|null} The
+ *   repository first, at '', then what is in it, `whole` for a file that came
+ *   in whole; null when the file cannot be read
  */
 export function readRepositoryFile(text, place, textOf) {
   /** @type {any} */
@@ -339,7 +349,8 @@ export function readRepositoryFile(text, place, textOf) {
       const parentId = ids.get(parentPath) || repository.id
       const order = counts.get(parentId) || 0
       counts.set(parentId, order + 1)
-      const content = row.type === 'file' ? (textOf(path) ?? '') : ''
+      const whole = row.type === 'file' && typeof row.content === 'string'
+      const content = row.type !== 'file' ? '' : whole ? row.content : (textOf(path) ?? '')
       /** @type {Document} */
       const document = {
         ...row,
@@ -350,7 +361,7 @@ export function readRepositoryFile(text, place, textOf) {
         wordCount: row.type === 'file' ? countWords(content) : 0,
         version: 1,
       }
-      return { path, document }
+      return { path, document, ...(whole ? { whole } : {}) }
     })
   return [{ path: '', document: repository }, ...rows]
 }

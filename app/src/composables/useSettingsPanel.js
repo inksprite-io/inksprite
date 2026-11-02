@@ -32,11 +32,19 @@ const requestedSection = ref(null)
 const requestedPart = ref(null)
 
 /**
+ * The project whose settings were asked for, when it isn't the one open, until
+ * the settings close.
+ * @type {import('vue').Ref<string|null>}
+ */
+const requestedProject = ref(null)
+
+/**
  * @returns {{
  *   visible: import('vue').Ref<boolean>,
  *   requestedSection: import('vue').Ref<SettingsSection|null>,
  *   requestedPart: import('vue').Ref<SettingsPart|null>,
- *   open: (section?: SettingsSection, part?: SettingsPart) => void,
+ *   requestedProject: import('vue').Ref<string|null>,
+ *   open: (section?: SettingsSection, part?: SettingsPart, project?: string) => void,
  *   close: () => void,
  *   takeSection: () => SettingsSection|null,
  *   takePart: () => SettingsPart|null,
@@ -45,13 +53,15 @@ const requestedPart = ref(null)
 export function useSettingsPanel() {
   /**
    * Show the settings, on a section when one is named, with a part of it
-   * open.
+   * open, and for a project other than the one open when one is named.
    * @param {SettingsSection} [section]
    * @param {SettingsPart} [part]
+   * @param {string} [project]
    */
-  const open = (section, part) => {
+  const open = (section, part, project) => {
     if (section) requestedSection.value = section
     if (part) requestedPart.value = part
+    requestedProject.value = project ?? null
     visible.value = true
   }
 
@@ -80,5 +90,14 @@ export function useSettingsPanel() {
     return part
   }
 
-  return { visible, requestedSection, requestedPart, open, close, takeSection, takePart }
+  return {
+    visible,
+    requestedSection,
+    requestedPart,
+    requestedProject,
+    open,
+    close,
+    takeSection,
+    takePart,
+  }
 }

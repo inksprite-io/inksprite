@@ -6,6 +6,8 @@ import PrimeVue from 'primevue/config'
 import TieredMenu from 'primevue/tieredmenu'
 import ProjectMenu from '@/components/writer/projects/ProjectMenu.vue'
 import NewProjectDialog from '@/components/writer/projects/NewProjectDialog.vue'
+import ProjectsDialog from '@/components/writer/projects/ProjectsDialog.vue'
+import { LONG_PRESS_MS } from '@/composables/useLongPress.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
@@ -67,6 +69,11 @@ vi.mock('@/platform/windows.js', async importOriginal => ({
   askForProject: windows.askForProject,
   openWindow: windows.openWindow,
 }))
+// What a project's menu offers, which has tests of its own.
+const actions = vi.hoisted(() => ({
+  itemsFor: vi.fn(storyId => [{ label: `Actions on ${storyId}` }]),
+}))
+vi.mock('@/composables/useProjectActions.js', () => ({ useProjectActions: () => actions }))
 const platform = vi.hoisted(() => ({ desktop: false }))
 vi.mock('@/platform/desktop.js', async importOriginal => ({
   ...(await importOriginal()),
@@ -104,7 +111,7 @@ describe('ProjectMenu', () => {
       global: {
         plugins: [router, PrimeVue],
         directives: { tooltip: {} },
-        stubs: { NewProjectDialog: true },
+        stubs: { NewProjectDialog: true, ProjectsDialog: true },
       },
     })
     await flushPromises()
@@ -114,12 +121,12 @@ describe('ProjectMenu', () => {
   /** What the menu offers, in order. */
   const items = wrapper => wrapper.findComponent(TieredMenu).props('model')
 
-  /** The projects, under Switch project. */
-  const listed = wrapper => items(wrapper).find(item => item.label === 'Switch project').items
+  /** The projects, under Recent projects. */
+  const listed = wrapper => items(wrapper).find(item => item.label === 'Recent projects').items
 
   const titles = wrapper => listed(wrapper).map(item => item.label)
 
-  /** Choose something in the menu, or a project under Switch project. */
+  /** Choose something in the menu, or a project under Recent projects. */
   const pick = (wrapper, label) =>
     [...items(wrapper), ...listed(wrapper)].find(item => item.label === label).command()
 
@@ -132,7 +139,12 @@ describe('ProjectMenu', () => {
     expect(wrapper.findAll('button').map(button => button.attributes('aria-label'))).toEqual([
       'Projects',
     ])
-    expect(shape(wrapper)).toEqual(['Switch project', 'New project…', 'Import project…'])
+    expect(shape(wrapper)).toEqual([
+      'Recent projects',
+      'Switch project…',
+      'New project…',
+      'Import project…',
+    ])
     expect(titles(wrapper)).toEqual(['Mine'])
   })
 
@@ -146,7 +158,8 @@ describe('ProjectMenu', () => {
 
     const { wrapper } = await mountMenu(story.id, projectItems)
     expect(shape(wrapper)).toEqual([
-      'Switch project',
+      'Recent projects',
+      'Switch project…',
       'New project…',
       'Import project…',
       '—',
@@ -157,22 +170,39 @@ describe('ProjectMenu', () => {
     expect(settings).toHaveBeenCalled()
   })
 
-  it('lists projects by name, numbers as numbers and case aside, named from their roots', async () => {
-    for (const title of ['Zebra', 'Draft 10', 'apple', 'Draft 2']) {
-      await storiesStore.createStory(title)
+  /** Say a project was last edited so long ago. */
+  const editedAgo = (story, ms) => {
+    const root = documentsStore.getRoot(story.id)
+    documentsStore.documents.set(root.id, { ...root, edited: Date.now() - ms })
+  }
+
+  it('lists the projects edited most recently, the latest first, named from their roots', async () => {
+    const stories = {}
+    for (const title of ['Zebra', 'Draft 10', 'apple']) {
+      stories[title] = await storiesStore.createStory(title)
+    }
+    editedAgo(stories.Zebra, 2 * 3600000)
+    editedAgo(stories['Draft 10'], 3 * 3600000)
+    editedAgo(stories.apple, 3600000)
+
+    const { wrapper } = await mountMenu('')
+    expect(titles(wrapper)).toEqual(['apple', 'Zebra', 'Draft 10'])
+  })
+
+  it('lists only the most recent of many, and all of them in the table', async () => {
+    for (let at = 0; at < 12; at++) {
+      const story = await storiesStore.createStory(`Project ${at}`)
+      editedAgo(story, (at + 1) * 3600000)
     }
 
     const { wrapper } = await mountMenu('')
-    expect(titles(wrapper)).toEqual(['apple', 'Draft 2', 'Draft 10', 'Zebra'])
-  })
+    expect(titles(wrapper)).toEqual([0, 1, 2, 3, 4, 5, 6, 7].map(at => `Project ${at}`))
 
-  it('keeps a project where it is when it is worked on', async () => {
-    const first = await storiesStore.createStory('First')
-    const second = await storiesStore.createStory('Second')
-    storiesStore.stories.get(second.id).updated = first.updated + 1000
-
-    const { wrapper } = await mountMenu(first.id)
-    expect(titles(wrapper)).toEqual(['First', 'Second'])
+    const table = wrapper.findComponent(ProjectsDialog)
+    expect(table.props('visible')).toBe(false)
+    pick(wrapper, 'Switch project…')
+    await flushPromises()
+    expect(table.props('visible')).toBe(true)
   })
 
   it('marks the project open', async () => {
@@ -180,7 +210,8 @@ describe('ProjectMenu', () => {
     await storiesStore.createStory('Other')
 
     const { wrapper } = await mountMenu(story.id)
-    expect(listed(wrapper).map(item => item.open)).toEqual([true, false])
+    expect(listed(wrapper).find(item => item.open).label).toBe('Mine')
+    expect(listed(wrapper).find(item => !item.open).label).toBe('Other')
   })
 
   it('switches to another project, and stays on the one open', async () => {
@@ -206,7 +237,7 @@ describe('ProjectMenu', () => {
 
     await wrapper.find('button').trigger('click')
     await flushPromises()
-    const [, there] = listed(wrapper)
+    const there = listed(wrapper).find(item => item.label === 'Other')
     expect(there.detail).toBe('Open in another window')
     expect(there.icon).toBe('pi pi-clone')
   })
@@ -242,7 +273,8 @@ describe('ProjectMenu', () => {
     const { wrapper } = await mountMenu(mine.id)
 
     expect(shape(wrapper)).toEqual([
-      'Switch project',
+      'Recent projects',
+      'Switch project…',
       'New project…',
       'Import project…',
       'New window',
@@ -369,5 +401,158 @@ describe('ProjectMenu', () => {
     expect(backup.importProject).not.toHaveBeenCalled()
     expect(toast.error).toHaveBeenCalledWith('This file holds one chat, not one project.')
     expect(push).not.toHaveBeenCalled()
+  })
+
+  describe('a project’s own menu', () => {
+    const show = vi.fn()
+    const hide = vi.fn()
+
+    /** The menu with its projects drawn in one list, as they are once it is open. */
+    const mountDrawn = async (storyId, projectItems) => {
+      const wrapper = mount(ProjectMenu, {
+        props: { storyId, ...(projectItems && { projectItems }) },
+        global: {
+          plugins: [router, PrimeVue],
+          directives: { tooltip: {} },
+          stubs: {
+            NewProjectDialog: true,
+            ProjectsDialog: true,
+            ContextMenu: {
+              name: 'ContextMenu',
+              props: ['model'],
+              methods: { show, hide },
+              template: '<div />',
+            },
+            TieredMenu: {
+              name: 'TieredMenu',
+              props: ['model'],
+              data: () => ({ visible: false, menubar: null }),
+              methods: { toggle() {} },
+              computed: {
+                drawn() {
+                  return this.model.flatMap(item => (item.items ? [item, ...item.items] : [item]))
+                },
+              },
+              template: `<ul><li v-for="item in drawn" :key="item.label"><slot
+                name="item" :item="item" :has-submenu="false" :props="{ action: {}, submenuicon: {} }"
+              /></li></ul>`,
+            },
+          },
+        },
+      })
+      await flushPromises()
+      return wrapper
+    }
+
+    const row = (wrapper, label) => wrapper.findAll('a').find(link => link.text().startsWith(label))
+    const offered = wrapper => wrapper.findComponent({ name: 'ContextMenu' }).props('model')
+
+    beforeEach(() => {
+      show.mockClear()
+      hide.mockClear()
+    })
+
+    it('offers the outline’s items on the project open', async () => {
+      const mine = await storiesStore.createStory('Mine')
+      const own = [{ label: 'Trash' }]
+      const wrapper = await mountDrawn(mine.id, own)
+
+      await row(wrapper, 'Mine').trigger('contextmenu')
+
+      expect(show).toHaveBeenCalledTimes(1)
+      expect(offered(wrapper)).toEqual(own)
+      expect(actions.itemsFor).not.toHaveBeenCalled()
+    })
+
+    it('offers the same on another project, for that project', async () => {
+      const mine = await storiesStore.createStory('Mine')
+      const other = await storiesStore.createStory('Other')
+      const wrapper = await mountDrawn(mine.id)
+
+      await row(wrapper, 'Other').trigger('contextmenu')
+
+      expect(actions.itemsFor).toHaveBeenCalledWith(other.id)
+      expect(offered(wrapper)).toEqual([{ label: `Actions on ${other.id}` }])
+    })
+
+    it('offers nothing on what isn’t a project', async () => {
+      const wrapper = await mountDrawn('')
+
+      await row(wrapper, 'New project…').trigger('contextmenu')
+
+      expect(show).not.toHaveBeenCalled()
+    })
+
+    it('offers it for a project right-clicked in the table', async () => {
+      const wrapper = await mountDrawn('')
+      const event = { pageX: 1, pageY: 2 }
+
+      wrapper.findComponent(ProjectsDialog).vm.$emit('project-menu', event, 'story_x')
+      await flushPromises()
+
+      expect(actions.itemsFor).toHaveBeenCalledWith('story_x')
+      expect(show).toHaveBeenCalledWith(event)
+    })
+
+    it('gives the focus back to the menu when a project’s menu shuts', async () => {
+      const wrapper = await mountDrawn('')
+      const list = document.createElement('ul')
+      list.tabIndex = 0
+      document.body.append(list)
+      const tiered = wrapper.findComponent({ name: 'TieredMenu' }).vm
+      tiered.menubar = list
+
+      wrapper.findComponent({ name: 'ContextMenu' }).vm.$emit('hide')
+      expect(document.activeElement).not.toBe(list)
+
+      tiered.visible = true
+      wrapper.findComponent({ name: 'ContextMenu' }).vm.$emit('hide')
+      expect(document.activeElement).toBe(list)
+      list.remove()
+    })
+
+    it('gives the focus back to the table when it opened from there', async () => {
+      const focusSearch = vi.fn()
+      const wrapper = await mountDrawn('')
+      wrapper.findComponent(ProjectsDialog).vm.focusSearch = focusSearch
+      await wrapper.findComponent(ProjectsDialog).vm.$emit('update:visible', true)
+
+      wrapper.findComponent({ name: 'ContextMenu' }).vm.$emit('hide')
+
+      expect(focusSearch).toHaveBeenCalledTimes(1)
+    })
+
+    it('opens under a finger held on a project, where the finger is', async () => {
+      const other = await storiesStore.createStory('Other')
+      const wrapper = await mountDrawn('')
+      vi.useFakeTimers()
+      try {
+        await row(wrapper, 'Other').trigger('touchstart', {
+          touches: [{ clientX: 30, clientY: 40 }],
+        })
+        expect(show).not.toHaveBeenCalled()
+
+        vi.advanceTimersByTime(LONG_PRESS_MS)
+
+        expect(actions.itemsFor).toHaveBeenCalledWith(other.id)
+        expect(show.mock.calls[0][0]).toMatchObject({ pageX: 30, pageY: 40 })
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
+    it('leaves a finger held on what isn’t a project alone', async () => {
+      const wrapper = await mountDrawn('')
+      vi.useFakeTimers()
+      try {
+        await row(wrapper, 'New project…').trigger('touchstart', {
+          touches: [{ clientX: 30, clientY: 40 }],
+        })
+        vi.advanceTimersByTime(LONG_PRESS_MS)
+        expect(show).not.toHaveBeenCalled()
+      } finally {
+        vi.useRealTimers()
+      }
+    })
   })
 })

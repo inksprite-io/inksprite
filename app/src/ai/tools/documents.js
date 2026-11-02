@@ -108,7 +108,7 @@ import {
 import { holdsSuggestions, withoutSuggestionMarkup } from '@/editor/suggestionText.js'
 import { commentsBetween, ownSuggestions, placedAsRead, postsOf, seenText } from './commentReads.js'
 import { peopleOf } from '@/cloud/people.js'
-import { extensionFor } from '@/files/inspect.js'
+import { extensionFor, isData, isUnreadText, sizeLabel } from '@/files/inspect.js'
 import { namesOf, storedPassage, substitute } from '@/cards/macros.js'
 import { currentDigests } from '@/jobs/index.js'
 
@@ -835,7 +835,11 @@ function listingLine(api, document, markFor, hidden) {
     : [
         ...(document.type === 'file' ? [fileKind(document)] : []),
         ...(typeof document.pages === 'number' ? [`${counted(document.pages)} pages`] : []),
-        `${counted(document.wordCount || 0)} words`,
+        ...(isUnreadText(document)
+          ? [sizeLabel(document.size || 0), 'too large to read']
+          : isData(document.mime || '')
+            ? [sizeLabel(document.size || 0)]
+            : [`${counted(document.wordCount || 0)} words`]),
       ]
   const comments = document.type === 'text' ? countOpen(document.comments) : 0
   if (comments > 0) facts.push(comments === 1 ? '1 comment' : `${counted(comments)} comments`)
@@ -1125,7 +1129,13 @@ export async function executeReadDocument(args, context) {
           mime: document.mime || '',
           ...(text
             ? {}
-            : { note: 'No text could be read out of this file. It may be a scan, or a picture.' }),
+            : {
+                note: isUnreadText(document)
+                  ? `This file is too large to read here, at ${sizeLabel(document.size || 0)}. Code can read it, in a chat with run_python.`
+                  : isData(document.mime || '')
+                    ? `This is a data file, of ${sizeLabel(document.size || 0)}. Code can read it, in a chat with run_python.`
+                    : 'No text could be read out of this file. It may be a scan, or a picture.',
+              }),
         }
       : { type: 'text' }
 

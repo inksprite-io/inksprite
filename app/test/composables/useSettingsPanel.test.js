@@ -29,6 +29,16 @@ describe('useSettingsPanel', () => {
     expect(panel.takeSection()).toBeNull()
   })
 
+  it('names a project other than the one open only for the asking that named it', () => {
+    const panel = useSettingsPanel()
+
+    panel.open('project', undefined, 'story_other')
+    expect(panel.requestedProject.value).toBe('story_other')
+
+    panel.open('project')
+    expect(panel.requestedProject.value).toBeNull()
+  })
+
   it('opens on no section in particular when none is named', () => {
     const panel = useSettingsPanel()
     panel.open()

@@ -5,6 +5,8 @@ import {
   gatherSource,
   sortEntries,
   MAX_FILE_BYTES,
+  MAX_WHOLE_BYTES,
+  MAX_WHOLE_FILE_BYTES,
   SourceTooLargeError,
 } from '@/source/gather.js'
 
@@ -36,7 +38,7 @@ describe('gatherSource', () => {
       ['node_modules/x/index.js', 'module.exports = 1'],
       ['.env', 'SECRET=1'],
       ['dist/out.js', 'compiled'],
-      ['logo.png', new Uint8Array([0x89, 0x50, 0x4e, 0x47])],
+      ['font.woff2', new Uint8Array([0x77, 0x4f, 0x46, 0x32])],
       ['data.bin2', new Uint8Array([0x01, 0x00, 0x02])],
     ])
 
@@ -48,16 +50,68 @@ describe('gatherSource', () => {
     expect(left).toEqual({
       never: 2,
       ignored: 1,
-      binary: ['logo.png', 'data.bin2'],
+      binary: ['font.woff2', 'data.bin2'],
       large: [],
     })
+  })
+
+  it('takes a PDF, a book, a Word file and a picture whole, bytes and all', async () => {
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0, 0])
+    const { entries } = entriesOf([
+      ['docs/spec.pdf', '%PDF-1.7 not much of one'],
+      ['docs/guide.epub', new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0])],
+      ['docs/notes.DOCX', new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0])],
+      ['assets/logo.png', png],
+      ['src/a.ts', 'a'],
+    ])
+
+    const { files, left, bytes, wholeBytes } = await gatherSource(entries)
+
+    expect(files.map(file => file.path)).toEqual([
+      'assets/logo.png',
+      'docs/guide.epub',
+      'docs/notes.DOCX',
+      'docs/spec.pdf',
+      'src/a.ts',
+    ])
+    expect(files[0]).toEqual({
+      path: 'assets/logo.png',
+      text: '',
+      size: 6,
+      bytes: png,
+      mime: 'image/png',
+    })
+    // Taken whole even where the bytes would pass for text.
+    expect(files[3]).toMatchObject({ text: '', mime: 'application/pdf' })
+    expect(files[2].mime).toBe(
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
+    expect(files[4]).toMatchObject({ text: 'a' })
+    expect(files[4].bytes).toBeUndefined()
+    expect(bytes).toBe(1)
+    expect(wholeBytes).toBe(24 + 5 + 5 + 6)
+    expect(left.binary).toEqual([])
+  })
+
+  it('leaves out a whole file only past a size of its own', async () => {
+    const entry = (path, size) => ({ path, size, read: vi.fn(() => new Uint8Array(size)) })
+    const entries = [
+      entry('docs/scan.pdf', MAX_FILE_BYTES * 4),
+      entry('docs/huge.pdf', MAX_WHOLE_FILE_BYTES + 1),
+    ]
+
+    const { files, left } = await gatherSource(entries)
+
+    expect(files.map(file => file.path)).toEqual(['docs/scan.pdf'])
+    expect(left.large).toEqual(['docs/huge.pdf'])
+    expect(entries[1].read).not.toHaveBeenCalled()
   })
 
   it('reads nothing it leaves out by name, size or rule', async () => {
     const { entries, reads } = entriesOf([
       ['src/a.ts', 'a'],
       ['node_modules/x.js', 'x'],
-      ['logo.png', 'not really a picture'],
+      ['font.woff2', 'not really a font'],
       ['big.json', 'x'.repeat(MAX_FILE_BYTES + 1)],
     ])
 
@@ -101,6 +155,22 @@ describe('gatherSource', () => {
     }))
 
     await expect(gatherSource(entries)).rejects.toBeInstanceOf(SourceTooLargeError)
+    expect(entries[0].read).not.toHaveBeenCalled()
+  })
+
+  it('stops when the files that come in whole are more than it can take', async () => {
+    const count = Math.ceil(MAX_WHOLE_BYTES / MAX_WHOLE_FILE_BYTES) + 1
+    const entries = Array.from({ length: count }, (_, at) => ({
+      path: `scans/p${at}.pdf`,
+      size: MAX_WHOLE_FILE_BYTES,
+      read: vi.fn(() => new Uint8Array()),
+    }))
+
+    const failure = gatherSource(entries)
+    await expect(failure).rejects.toBeInstanceOf(SourceTooLargeError)
+    await expect(failure).rejects.toThrow(
+      /MB of PDFs, documents and pictures, over the limit of 200 MB/
+    )
     expect(entries[0].read).not.toHaveBeenCalled()
   })
 

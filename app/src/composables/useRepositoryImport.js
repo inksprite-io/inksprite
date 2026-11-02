@@ -185,13 +185,13 @@ export function describeRepositoryImport(result) {
   const { left } = result
   const binary = left.binary.length
   const large = left.large.length
-  const notText = `that ${binary === 1 ? "isn't" : "aren't"} text`
+  const unopened = "the app can't open"
   const tooLarge = `that ${large === 1 ? 'is' : 'are'} too large`
   const leftOut =
     binary > 0 && large > 0
-      ? `${count(binary, 'file')} ${notText} and ${large.toLocaleString('en-US')} ${tooLarge} were left out.`
+      ? `${count(binary, 'file')} ${unopened} and ${large.toLocaleString('en-US')} ${tooLarge} were left out.`
       : binary > 0
-        ? `${count(binary, 'file')} ${notText} ${binary === 1 ? 'was' : 'were'} left out.`
+        ? `${count(binary, 'file')} ${unopened} ${binary === 1 ? 'was' : 'were'} left out.`
         : large > 0
           ? `${count(large, 'file')} ${tooLarge} ${large === 1 ? 'was' : 'were'} left out.`
           : ''

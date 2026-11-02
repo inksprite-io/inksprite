@@ -57,8 +57,8 @@ fingerprints are in `public/guide/fingerprints.json`); a change that only
 restyles a step in the middle of one shows in the screenshots, and
 `npm run capture -- --videos` records them all again.
 
-The repository's README shows two of the clips, as animated WebP in
-`readme/`, since GitHub plays no video kept in a repository. A run makes one
+Two of the clips are also kept as animated WebP in `readme/`, for the
+repository's README, since GitHub plays no video kept in a repository. A run makes one
 again whenever it records its clip anew, and `npm run capture:readme` makes
 them all again from the clips (`capture/readme.js` lists them).
 

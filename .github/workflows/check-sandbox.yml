@@ -1,0 +1,69 @@
+name: Python Sandbox
+
+# The Python sandbox's check (app/electron/scripts/check-sandbox.js) on each
+# system, with Chromium's own sandbox on: it fails if the system isn't
+# sandboxing Python's process, or if anything gets past the sandbox. The release
+# runs it before anything is built, and it can be run by hand. It runs Electron
+# as npm installs it, not the app as built, and is given no secrets.
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+    # Each system runs to the end even when another fails, so a run says what
+    # is wrong with every one of them.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS
+            runner: macos-latest
+          - name: Windows
+            runner: windows-latest
+          - name: Linux
+            runner: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: app/electron/package.json
+          cache: 'npm'
+          cache-dependency-path: app/electron/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app/electron
+        run: npm ci
+
+      - name: Fetch the Python packages
+        working-directory: app/electron
+        run: node scripts/fetch-python.mjs
+
+      # Ubuntu 24.04 and later let Chromium make its user namespaces only under
+      # an AppArmor profile. The app's .deb installs one; Electron as npm
+      # installs it has none.
+      - name: Let Chromium make its namespaces
+        if: runner.os == 'Linux'
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Run the check
+        working-directory: app/electron
+        run: |
+          if [ "$RUNNER_OS" = Linux ]; then
+            xvfb-run -a npx electron scripts/check-sandbox.js
+          else
+            npx electron scripts/check-sandbox.js
+          fi

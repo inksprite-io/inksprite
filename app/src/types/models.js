@@ -83,8 +83,11 @@
  * @property {Object<string, boolean>} [expanded] - The outline's folders the writer
  *   opened (true) or shut (false), by document id. One absent is as it starts; see
  *   `components/writer/tree/DocumentNode.vue`.
+ * @property {number} [opened] - When the writer last opened the project here, or came
+ *   back to the window it is open in. Absent on one not opened since this was kept,
+ *   where `updated` says instead.
  * @property {number} version - Bumped each time it is saved
- * @property {number} updated - When the writer was last in the project here
+ * @property {number} updated - When it was last saved
  */
 
 /**

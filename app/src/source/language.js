@@ -5,7 +5,8 @@
  *
  * Only for the media type a file is stored with and the word a listing uses:
  * by the repository import, and by the file import for text whose type said
- * nothing (`files/inspect.js`).
+ * nothing (`files/inspect.js`); and for which files a repository takes as
+ * themselves rather than as text.
  * Whether a file is text at all is decided by reading it (`source/text.js`),
  * so a file this table has never heard of still comes in, as plain text; and
  * the viewer picks its highlighting by filename itself
@@ -132,6 +133,16 @@ export const BINARY_EXTENSIONS = new Set(
   ).split(' ')
 )
 
+/**
+ * Extensions of files that are not text and come into a repository all the
+ * same, as the files they are: papers, books and Word files, whose text is
+ * read out of them for the model, and pictures, which the viewer shows.
+ * Every other extension in `BINARY_EXTENSIONS` is left out.
+ */
+export const FILE_EXTENSIONS = new Set(
+  'pdf epub docx png jpg jpeg gif webp avif bmp ico'.split(' ')
+)
+
 /** @param {string} name */
 const extensionOf = name => {
   const dot = name.lastIndexOf('.')
@@ -157,6 +168,14 @@ export function languageOf(filename) {
  * @returns {boolean}
  */
 export const isBinaryName = filename => BINARY_EXTENSIONS.has(extensionOf(filename))
+
+/**
+ * Whether a file's name says it comes into a repository as the file it is,
+ * bytes and all, rather than as its text: `FILE_EXTENSIONS`.
+ * @param {string} filename
+ * @returns {boolean}
+ */
+export const isWholeFileName = filename => FILE_EXTENSIONS.has(extensionOf(filename))
 
 /**
  * Whether a name says what it names is code or data, rather than prose: a

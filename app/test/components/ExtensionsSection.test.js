@@ -138,23 +138,16 @@ describe('ExtensionsSection', () => {
 
   describe('Python', () => {
     beforeEach(() => {
-      vi.stubEnv('VITE_PREVIEW', 'python')
       globalThis.__INKSPRITE_DESKTOP__ = { python: { run: vi.fn(), stop: vi.fn() } }
     })
 
     afterEach(() => {
       delete globalThis.__INKSPRITE_DESKTOP__
-      vi.unstubAllEnvs()
     })
 
     it('is there only in the desktop app', async () => {
       expect((await mountSection()).find('[data-extension="python"]').exists()).toBe(true)
       delete globalThis.__INKSPRITE_DESKTOP__
-      expect((await mountSection()).find('[data-extension="python"]').exists()).toBe(false)
-    })
-
-    it('is there only in its preview', async () => {
-      vi.stubEnv('VITE_PREVIEW', '')
       expect((await mountSection()).find('[data-extension="python"]').exists()).toBe(false)
     })
 

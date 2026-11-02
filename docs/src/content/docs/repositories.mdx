@@ -46,15 +46,17 @@ whether to import it as a repository: click **Import as repository**, or
 ### What comes in
 
 The repository arrives as a folder named after it, with the codebase's folders
-and files inside. A message says how many files were left out for not being
-text or for being too large.
+and files inside. A message says how many files were left out because inksprite
+can't open them or because they're too large.
 
 - **Never imported**: `.git`, `node_modules`, and the files secrets are kept
   in, such as `.env` files, `.npmrc`, SSH keys and `*.pem` or `*.key` files,
   even when they're committed. What's imported can go to your AI provider.
 - **Left out**: build output (`dist`, `build`, `target` and the like), lock
   files, minified files, whatever the codebase's `.gitignore` files ignore,
-  files over 512 KB, and files that aren't text, such as images and PDFs.
+  text files over 512 KB, and files inksprite can't open, such as fonts,
+  archives and spreadsheets.
+- **Kept as they are**: PDFs, EPUBs, Word files and pictures, up to 50 MB each.
 
 Other files and folders whose names start with a dot, such as `.github/` and
 `.eslintrc`, come in. There are two exceptions:
@@ -65,8 +67,9 @@ Other files and folders whose names start with a dot, such as `.github/` and
 - A dropped folder's dot-folders, such as `.github/`, stay behind. Its
   `.gitignore` files come with it.
 
-A codebase of more than 5,000 files, or 40 MB of text, isn't imported at all.
-Import one of its folders instead.
+A codebase of more than 5,000 files, 40 MB of text, or 200 MB of PDFs, EPUBs,
+Word files and pictures isn't imported at all. Import one of its folders
+instead.
 
 Click **Stop** to end an import partway. The files already imported stay.
 
@@ -76,6 +79,9 @@ Click a file to open it. It shows with line numbers, highlighted for its
 language. To find in it, press <kbd>⌘</kbd> <kbd>F</kbd> (<kbd>Ctrl</kbd>
 <kbd>F</kbd> on Windows and Linux), or click **Find**, the magnifier at the top
 of the editor.
+
+A PDF, an EPUB or a picture opens [as any imported file does](/files/#look-at-a-file),
+and a Word file shows as its text.
 
 <Screenshot name="repository-code-view" alt="inksprite's own code in the outline, with app/src/utils/wordCount.js open" />
 
@@ -92,7 +98,9 @@ A repository is part of the project, so it's in your
 
 In a chat, ask about the code as you would about any document. The model lists
 the repository, searches its files, and reads them a range of lines at a time,
-so it can cite the lines it means. To point it at a file, choose
+so it can cite the lines it means. A PDF, an EPUB or a Word file it
+[reads as any imported file](/files/#how-the-model-reads-a-long-file). To point
+it at a file, choose
 **Copy link** from the file's menu and paste it in your message.
 
 For example, with inksprite's own code imported as `inksprite`:
@@ -120,4 +128,6 @@ desktop app.
 
 New files come in, changed files are updated, and files that are gone are
 removed. A chat that read a changed file is
-told so on its next turn, and your pins and hides on the files stay.
+told so on its next turn, and your pins and hides on the files stay. A PDF, an
+EPUB, a Word file or a picture that changed comes in as a new file, without the
+pin or hide it had.
