@@ -28,7 +28,7 @@ vi.mock('@/stores/db.js', () => {
 })
 
 vi.mock('@/stores/syncStore.js', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 /** A SKILL.md for a saved prompt of this name. */

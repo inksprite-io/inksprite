@@ -50,10 +50,13 @@
  *
  * A project is shared with friends by their friend codes, from its menu,
  * whole or only some of its documents, and a friend leaves one shared with
- * them there. Who this account is, and
- * who is in each project shared, is kept in `cloud/people.js` for what shows
- * a comment's author; the account's id is kept with it, so that a comment
- * written before the server is reached says who wrote it too.
+ * them there. A share reaches them as an invitation, which they accept,
+ * reject, or answer by blocking whoever sent it. The people this account
+ * shares with, and those it blocked, are kept by the server and asked for
+ * here (`people`). Who this account is, who is in each project shared, and
+ * the invitations waiting are kept in `cloud/people.js` for what shows a
+ * comment's author and the invitations; the account's id is kept with it,
+ * so that a comment written before the server is reached says who wrote it too.
  *
  * Design: `.llm/sync_design.md`.
  */
@@ -77,6 +80,7 @@ import { provideFiles } from '@/cloud/onDemand.js'
 import { stableJson } from '@/cloud/crypto.js'
 import { me, sharing } from '@/cloud/people.js'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { useDocumentsStore } from '@/stores/documentsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { useSyncStore } from '@/stores/syncStore'
 import { upgradeTables } from '@/utils/backup.js'
@@ -136,6 +140,14 @@ const usage = ref(null)
 
 /** Whether this device sends the server its diagnostics. */
 const sendsDiagnostics = ref(/** @type {boolean} */ (kept.get(DIAGNOSTICS_KEY, true)))
+
+/** @typedef {import('@/cloud/api.js').Person} Person */
+
+/**
+ * The people this account shares with, and those it blocked, as the server
+ * last said. @type {import('vue').Ref<{people: Person[], blocked: Person[]}|null>}
+ */
+const people = ref(null)
 
 /** Whether the server wants them, as it last said. */
 let serverWants = true
@@ -474,7 +486,8 @@ function end() {
   askedToUpdate.value = false
   waitsForUpdate = false
   me.value = null
-  sharing.value = { me: null, projects: {}, selective: [] }
+  sharing.value = { me: null, projects: {}, selective: [], invitations: [] }
+  people.value = null
 }
 
 /** Let go of what sync kept of this device's reading and writing, the account with it. */
@@ -624,26 +637,88 @@ function running() {
 }
 
 /**
- * This account as the people it shares with know it: the name they see,
- * and its friend code.
+ * This account as the people it shares with know it: its name, and its
+ * friend code.
  */
 const profile = () => running().profile()
 
-/**
- * Give this account the name the people it shares with see.
- * @param {string} display
- */
-const setDisplay = display => running().setDisplay(display)
+/** Ask the server for the people this account knows again. */
+async function refreshPeople() {
+  people.value = await running().people()
+}
 
 /**
- * Share a project with the account a friend code is of.
+ * Share a project with the account a friend code is of: they are invited
+ * to it, under its title as it is now.
  * @param {string} storyId
  * @param {string} code
  */
 async function share(storyId, code) {
-  const shared = await running().share(storyId, code)
+  const title = useDocumentsStore().getRoot(storyId)?.title || 'Untitled'
+  const shared = await running().share(storyId, code, title)
   tellOtherWindows({ type: 'cloud' })
+  refreshPeople().catch(() => {})
   return shared
+}
+
+/**
+ * Accept an invitation: the project comes in as one shared did.
+ * @param {string} collection
+ */
+async function accept(collection) {
+  await running().accept(collection)
+  startRounds()
+  refreshPeople().catch(() => {})
+}
+
+/**
+ * Reject an invitation.
+ * @param {string} collection
+ */
+async function reject(collection) {
+  await running().reject(collection)
+  startRounds()
+}
+
+/**
+ * Block an account: every share between the two ends, and what it shared
+ * with this one goes to the trash here.
+ * @param {number} accountId
+ */
+async function block(accountId) {
+  await useSyncStore().processSync()
+  await running().block(accountId)
+  startRounds()
+  await refreshPeople()
+}
+
+/**
+ * Unblock an account.
+ * @param {number} accountId
+ */
+async function unblock(accountId) {
+  await running().unblock(accountId)
+  await refreshPeople()
+}
+
+/**
+ * Keep the account a friend code is of among this account's people.
+ * @param {string} code
+ * @returns {Promise<Person>}
+ */
+async function addPerson(code) {
+  const added = await running().addPerson(code)
+  await refreshPeople()
+  return added
+}
+
+/**
+ * Let go of someone among this account's people.
+ * @param {number} accountId
+ */
+async function forgetPerson(accountId) {
+  await running().forgetPerson(accountId)
+  await refreshPeople()
 }
 
 /**
@@ -664,16 +739,6 @@ async function setSelective(storyId, selective) {
 async function removeMember(storyId, accountId) {
   await running().removeMember(storyId, accountId)
   tellOtherWindows({ type: 'cloud' })
-}
-
-/**
- * Leave a project shared with this account: it goes to the trash here.
- * @param {string} storyId
- */
-async function leaveProject(storyId) {
-  await useSyncStore().processSync()
-  await running().leave(storyId)
-  startRounds()
 }
 
 /** The writer has seen that some changes wait for an update. */
@@ -756,11 +821,17 @@ async function signOut() {
  *   keepOnThisDevice: typeof keepOnThisDevice,
  *   syncProjectAgain: typeof syncProjectAgain,
  *   profile: typeof profile,
- *   setDisplay: typeof setDisplay,
+ *   people: Readonly<import('vue').Ref<{people: readonly Person[], blocked: readonly Person[]}|null>>,
+ *   refreshPeople: typeof refreshPeople,
  *   share: typeof share,
  *   setSelective: typeof setSelective,
  *   removeMember: typeof removeMember,
- *   leaveProject: typeof leaveProject,
+ *   accept: typeof accept,
+ *   reject: typeof reject,
+ *   block: typeof block,
+ *   unblock: typeof unblock,
+ *   addPerson: typeof addPerson,
+ *   forgetPerson: typeof forgetPerson,
  * }}
  */
 export function useCloudSync() {
@@ -788,10 +859,16 @@ export function useCloudSync() {
     keepOnThisDevice,
     syncProjectAgain,
     profile,
-    setDisplay,
+    people: readonly(people),
+    refreshPeople,
     share,
     setSelective,
     removeMember,
-    leaveProject,
+    accept,
+    reject,
+    block,
+    unblock,
+    addPerson,
+    forgetPerson,
   }
 }

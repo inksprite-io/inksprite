@@ -191,7 +191,8 @@ export async function roleplay(ui, { standIn, context }) {
   await settings.waitFor({ state: 'hidden' })
 
   // The project, the card and its lorebook
-  await ui.click(button('New project'))
+  await ui.click(button('Projects'))
+  await ui.click(menu('New project…'))
   await ui.type(PROJECT)
   await ui.click(button('Create'))
   const project = row(PROJECT, 1)

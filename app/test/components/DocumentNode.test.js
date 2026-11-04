@@ -47,7 +47,7 @@ vi.mock('../../src/stores/db', () => ({
 }))
 
 vi.mock('../../src/stores/syncStore', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 // A real ref, so the template unwraps it: a plain object reads as true there,
@@ -1957,6 +1957,7 @@ describe('DocumentNode in a project shared with only some of its documents', () 
       },
     },
     selective: ['story_1'],
+    invitations: [],
   }
 
   beforeEach(async () => {
@@ -1971,7 +1972,7 @@ describe('DocumentNode in a project shared with only some of its documents', () 
   })
 
   afterEach(() => {
-    sharing.value = { me: null, projects: {}, selective: [] }
+    sharing.value = { me: null, projects: {}, selective: [], invitations: [] }
     vi.unstubAllEnvs()
   })
 

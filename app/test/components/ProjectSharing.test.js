@@ -13,6 +13,9 @@ const cloud = vi.hoisted(() => ({
   share: vi.fn(async () => {}),
   setSelective: vi.fn(async () => {}),
   removeMember: vi.fn(async () => {}),
+  refreshPeople: vi.fn(async () => {}),
+  account: { value: /** @type {any} */ (null) },
+  people: { value: /** @type {any} */ (null) },
 }))
 vi.mock('@/composables/useCloudSync.js', () => ({ useCloudSync: () => cloud }))
 
@@ -25,7 +28,7 @@ vi.mock('@/stores/db', () => ({
 }))
 
 vi.mock('@/stores/syncStore', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 const CODE = 'ABCDE-FGHJK-MNPQR-STVWX'
@@ -67,7 +70,8 @@ afterEach(() => {
   wrapper?.unmount()
   wrapper = null
   me.value = null
-  sharing.value = { me: null, projects: {}, selective: [] }
+  sharing.value = { me: null, projects: {}, selective: [], invitations: [] }
+  cloud.people.value = null
   vi.unstubAllEnvs()
 })
 
@@ -79,7 +83,87 @@ describe('ProjectSharing', () => {
     await type('[data-field="share-code"]', 'abcde-fghjk-mnpqr-stvwx')
     find('[data-action="share"]').click()
     await flushPromises()
-    expect(cloud.share).toHaveBeenCalledWith('story_1', 'abcde-fghjk-mnpqr-stvwx')
+    expect(cloud.share).toHaveBeenCalledWith('story_1', CODE)
+  })
+
+  it('offers the people this account shares with, and shares with one by name', async () => {
+    cloud.people.value = {
+      people: [
+        { account: 2, name: 'grace', friend: 'ABCDEFGHJKMNPQRSTVWX' },
+        { account: 3, name: 'gil', friend: 'BBCDEFGHJKMNPQRSTVWX' },
+        { account: 4, name: 'ada', friend: 'CBCDEFGHJKMNPQRSTVWX' },
+      ],
+      blocked: [],
+    }
+    me.value = 1
+    sharing.value = {
+      me: 1,
+      projects: {
+        story_1: {
+          role: 'owner',
+          owner: 1,
+          members: [
+            { account: 1, owner: true, display: 'writer' },
+            { account: 4, owner: false, display: 'ada' },
+          ],
+        },
+      },
+      selective: [],
+      invitations: [],
+    }
+    await mountSharing()
+    const field = find('[data-field="share-code"]')
+    field.dispatchEvent(new Event('focus'))
+    await flushPromises()
+    /** The people offered, by name. */
+    const offered = () =>
+      [...document.body.querySelectorAll('[data-suggestion]')].map(option =>
+        option.querySelector('span')?.textContent?.trim()
+      )
+    // Not those it is shared with already.
+    expect(offered()).toEqual(['grace', 'gil'])
+    await type('[data-field="share-code"]', 'gr')
+    expect(offered()).toEqual(['grace'])
+    find('[data-suggestion="2"]').dispatchEvent(new Event('mousedown'))
+    await flushPromises()
+    expect(/** @type {HTMLInputElement} */ (field).value).toBe('grace')
+    expect(offered()).toEqual([])
+    find('[data-action="share"]').click()
+    await flushPromises()
+    expect(cloud.share).toHaveBeenCalledWith('story_1', 'ABCDE-FGHJK-MNPQR-STVWX')
+  })
+
+  it('marks someone invited until they answer, and takes the invitation back', async () => {
+    me.value = 1
+    sharing.value = {
+      me: 1,
+      projects: {
+        story_1: {
+          role: 'owner',
+          owner: 1,
+          members: [
+            { account: 1, owner: true, display: 'writer' },
+            { account: 2, owner: false, display: 'grace', invited: true },
+            { account: 3, owner: false, display: 'gil' },
+          ],
+        },
+      },
+      selective: [],
+      invitations: [],
+    }
+    await mountSharing()
+    const rows = [...document.body.querySelectorAll('[data-member]')]
+    expect(rows.map(row => Boolean(row.querySelector('[data-member-invited]')))).toEqual([
+      false,
+      true,
+      false,
+    ])
+    const takeBack = /** @type {HTMLElement} */ (
+      rows[1].querySelector('[data-action="remove-member"]')
+    )
+    takeBack.click()
+    await flushPromises()
+    expect(cloud.removeMember).toHaveBeenCalledWith('story_1', 2)
   })
 
   it('says why it wasn’t shared', async () => {
@@ -106,6 +190,7 @@ describe('ProjectSharing', () => {
         },
       },
       selective: [],
+      invitations: [],
     }
     await mountSharing()
     const rows = [...document.body.querySelectorAll('[data-member]')]
@@ -139,6 +224,7 @@ describe('ProjectSharing', () => {
         },
       },
       selective: [],
+      invitations: [],
     }
     await mountSharing()
     expect(find('[data-field="share-code"]')).toBeNull()
@@ -241,13 +327,14 @@ describe('ProjectSharing, sharing only some documents', () => {
         },
       },
       selective: [],
+      invitations: [],
     }
     await mountSharing()
     expect(find('[data-field="share-whole"]')).toBeNull()
     expect(find('[data-share-tree]')).toBeNull()
     wrapper?.unmount()
 
-    sharing.value = { me: null, projects: {}, selective: [] }
+    sharing.value = { me: null, projects: {}, selective: [], invitations: [] }
     vi.stubEnv('VITE_PREVIEW', '')
     await mountSharing()
     expect(find('[data-field="share-whole"]')).toBeNull()

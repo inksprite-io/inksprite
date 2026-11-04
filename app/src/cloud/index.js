@@ -6,7 +6,9 @@
  * Each device keeps its own whole copy and works offline; the server keeps
  * every project as a collection of records it can't read, the setup as one
  * more, and answers what changed since a revision. A project can be shared
- * with friends by their friend codes, each one's chats in it their own. The
+ * with friends by their friend codes, as an invitation each accepts, each
+ * one's chats in it their own; the server keeps the people each account
+ * shares with, and those it blocks. The
  * devices do everything that needs the content: encrypting it, merging what
  * two of them changed, and writing what came in where the app reads it. The
  * server is a program of its own, kept apart from the app.

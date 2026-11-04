@@ -317,6 +317,26 @@ export async function openFor(privateKey, sealed, about) {
   return open(await agreed(privateKey, point), sealed.subarray(RAW_POINT), about)
 }
 
+/**
+ * Text sealed for an account's public key, as `sealFor` seals a secret.
+ * @param {Bytes} publicKey
+ * @param {string} text
+ * @param {string} about
+ * @returns {Promise<Bytes>}
+ */
+export const sealTextFor = (publicKey, text, about) =>
+  sealFor(publicKey, encoder.encode(text), about)
+
+/**
+ * What `sealTextFor` sealed for this account.
+ * @param {CryptoKey} privateKey
+ * @param {Bytes} sealed
+ * @param {string} about
+ * @returns {Promise<string>}
+ */
+export const openTextFor = async (privateKey, sealed, about) =>
+  decoder.decode(await openFor(privateKey, sealed, about))
+
 /** How many letters a friend code has: 100 bits. */
 const FRIEND_LENGTH = 20
 

@@ -814,6 +814,18 @@ export const useDocumentsStore = defineStore('documents', () => {
   }
 
   /**
+   * Let go of a project's root, as the project not saved yet is let go of
+   * (`storiesStore.dropFresh`): its removal is held back with its making, and
+   * goes with it.
+   * @param {string} storyId
+   */
+  function forgetRoot(storyId) {
+    receive(rootIdFor(storyId), null)
+    childrenByParent.value.delete(storyId)
+    triggerRef(childrenByParent)
+  }
+
+  /**
    * Delete every document in a story.
    *
    * Deleting a story used to walk parts and their scenes, which reached only
@@ -959,5 +971,6 @@ export const useDocumentsStore = defineStore('documents', () => {
     renameProject,
     isStoryLoaded,
     ensureRoot,
+    forgetRoot,
   }
 })

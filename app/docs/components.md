@@ -92,7 +92,8 @@ Vue components for the inksprite application UI.
     `ChatPanel`), and opens the settings. Which are showing is the story's
     `layout`, with the rules in `layout.js`: the editor and the chat are never
     both hidden, and hiding one moves the sidebar off its list. With no
-    project open, `NoProjectView` invites the writer to start one. Phones
+    project to open, the writer is in one not saved yet, Untitled project
+    (`storiesStore.createFresh`). Phones
     get `MobileTopBar` and `MobileView` instead, one view at a time. The
     sidebar's lists head themselves with `PanelHeader`, the height of the
     editor's tab strip and the chat's header, and the small icon buttons in

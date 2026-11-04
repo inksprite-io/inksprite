@@ -23,8 +23,7 @@ const sync = vi.hoisted(() => ({
   signOutDevice: vi.fn(async () => {}),
   refreshUsage: vi.fn(async () => {}),
   setSendsDiagnostics: vi.fn(),
-  profile: vi.fn(async () => ({ id: 1, display: 'writer', friend: 'ABCDE-FGHJK-MNPQR-STVWX' })),
-  setDisplay: vi.fn(async () => {}),
+  profile: vi.fn(async () => ({ id: 1, name: 'writer', friend: 'ABCDE-FGHJK-MNPQR-STVWX' })),
 }))
 vi.mock('@/composables/useCloudSync.js', () => ({
   useCloudSync: () => ({
@@ -75,7 +74,13 @@ const mountSection = () =>
     global: {
       plugins: [PrimeVue],
       directives: { tooltip: {} },
-      stubs: { BackupSection: { template: '<div data-backup />' } },
+      stubs: {
+        BackupSection: { template: '<div data-backup />' },
+        PeopleSection: {
+          template:
+            '<div><button type="button" aria-expanded="false">People</button><div data-people /></div>',
+        },
+      },
     },
   })
 
@@ -349,7 +354,7 @@ describe('SyncSection', () => {
     account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
     sync.devices.mockResolvedValueOnce([{ id: 1, device: 'Mac', used: Date.now(), current: true }])
     await flushPromises()
-    expect(folds()).toEqual(['Devices', 'Sharing', 'Account', 'Backup'])
+    expect(folds()).toEqual(['Account', 'People', 'Devices', 'Backup'])
     const buttons = wrapper.findAll('[data-action]').map(button => button.attributes('data-action'))
     expect(buttons.slice(buttons.indexOf('make-recovery'))).toEqual([
       'make-recovery',
@@ -409,34 +414,12 @@ describe('SyncSection', () => {
     projects.stories.value = new Map()
   })
 
-  it('shows the friend code and the name others see, which can be changed', async () => {
+  it('shows the friend code in the account, apart from the people', async () => {
     account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
     const wrapper = mountSection()
     await flushPromises()
     expect(wrapper.find('[data-friend-code]').text()).toBe('ABCDE-FGHJK-MNPQR-STVWX')
-    const field = /** @type {HTMLInputElement} */ (
-      wrapper.find('[data-field="sync-display"]').element
-    )
-    expect(field.value).toBe('writer')
-
-    await fill(wrapper, 'sync-display', '  Ada ')
-    await wrapper.find('[data-field="sync-display"]').trigger('keydown', { key: 'Enter' })
-    await flushPromises()
-    expect(sync.setDisplay).toHaveBeenCalledWith('Ada')
-  })
-
-  it('puts the name others see back when it is cleared', async () => {
-    account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
-    const wrapper = mountSection()
-    await flushPromises()
-    await fill(wrapper, 'sync-display', ' ')
-    await wrapper.find('[data-field="sync-display"]').trigger('blur')
-    await flushPromises()
-    expect(sync.setDisplay).not.toHaveBeenCalled()
-    const field = /** @type {HTMLInputElement} */ (
-      wrapper.find('[data-field="sync-display"]').element
-    )
-    expect(field.value).toBe('writer')
+    expect(wrapper.find('[data-people]').exists()).toBe(true)
   })
 
   it('shows nothing of sharing for a server without it', async () => {
@@ -444,7 +427,8 @@ describe('SyncSection', () => {
     account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
     const wrapper = mountSection()
     await flushPromises()
-    expect(wrapper.find('[data-sync-sharing]').exists()).toBe(false)
+    expect(wrapper.find('[data-people]').exists()).toBe(false)
+    expect(wrapper.find('[data-friend-code]').exists()).toBe(false)
   })
 
   it('turns diagnostics off for this device', async () => {

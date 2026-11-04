@@ -2,11 +2,12 @@
  * @module composables/useProjectActions
  * @description What can be done to a project, as menu items: its settings, an
  * export, showing its folder, sharing it or keeping it on this device, and
- * deleting or leaving it. The outline's menus offer them for the project open,
- * and a list of projects for any of them, without opening it.
+ * removing it: to the trash, with an Undo, whether it is this account's or
+ * shared with it. The outline's menus offer them for the project open, and a
+ * list of projects for any of them, without opening it.
  *
  * A project not open here has only its story and its root in memory. That is
- * enough to delete it or show its folder; what wants its documents reads them
+ * enough to remove it or show its folder; what wants its documents reads them
  * first (`readWhole`). One open in another window is that window's, and only
  * its folder can be shown from here.
  */
@@ -36,7 +37,7 @@ const keptOffSync = story => Boolean(story?.syncOff || story?.keptElsewhere)
 /**
  * @typedef {Object} ItemsOptions
  * @property {boolean} [current] - It is the project open in this window
- * @property {Array<Object>} [beforeDelete] - Items of the caller's to go above the delete
+ * @property {Array<Object>} [beforeDelete] - Items of the caller's to go above Remove
  */
 
 /**
@@ -120,19 +121,35 @@ export function useProjectActions() {
   }
 
   /**
-   * To the trash, and to another project if it was the one open.
+   * To the trash, and to another project if it was the one open, with an
+   * Undo that brings it back, and back open if it was. One shared goes to
+   * this account's trash alone, and stops syncing until it is back.
    * @param {string} storyId
    * @param {boolean} current
    */
-  const trash = async (storyId, current) => {
+  const remove = async (storyId, current) => {
     if (!storiesStore.getStory(storyId)) return
+    const name = projects.nameOf(storyId)
     try {
       await projects.trash(storyId)
       if (current) router.push('/')
     } catch (error) {
       console.error('Failed to move the project to the trash:', error)
       toast.error("The project couldn't be moved to the trash.")
+      return
     }
+    toast.action(`Removed ${name}`, {
+      label: 'Undo',
+      command: async () => {
+        try {
+          await projects.restore(storyId)
+          if (current) await projects.pick(storyId)
+        } catch (error) {
+          console.error('Failed to bring the project back from the trash:', error)
+          toast.error("The project couldn't be brought back. It's in the trash.")
+        }
+      },
+    })
   }
 
   /**
@@ -148,28 +165,6 @@ export function useProjectActions() {
       accept: async () => {
         try {
           await cloud.keepOnThisDevice(storyId)
-        } catch (error) {
-          toast.error(error.message)
-        }
-      },
-    })
-  }
-
-  /**
-   * Leave a project shared with this account, once the writer has said so.
-   * @param {string} storyId
-   * @param {boolean} current
-   */
-  const confirmLeave = (storyId, current) => {
-    confirm.require({
-      message: `Leave “${projects.nameOf(storyId)}”? It goes to your trash and stops syncing. Only its owner can share it with you again.`,
-      header: 'Leave project',
-      rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-      acceptProps: { label: 'Leave', severity: 'danger' },
-      accept: async () => {
-        try {
-          await cloud.leaveProject(storyId)
-          if (current) router.push('/')
         } catch (error) {
           toast.error(error.message)
         }
@@ -201,7 +196,20 @@ export function useProjectActions() {
     const reveal = revealItem(rootIdFor(storyId))
     if (!current && projects.elsewhere.value.has(storyId)) return reveal ? [reveal] : []
 
-    // Only its owner deletes a project shared; the others leave it.
+    // Not saved yet, it has only its settings: there is nothing to export,
+    // share, show on disk or remove.
+    if (storiesStore.isFresh(storyId)) {
+      return [
+        {
+          label: 'Project settings',
+          icon: 'pi pi-cog',
+          command: () => showSettings(storyId, current),
+        },
+        ...beforeDelete,
+      ]
+    }
+
+    // One shared with this account shows its people, and is its owner's to keep off.
     const sharedWithMe = sharing.value.projects[storyId]?.role === 'member'
     return [
       {
@@ -244,13 +252,7 @@ export function useProjectActions() {
             ]
         : []),
       ...beforeDelete,
-      sharedWithMe
-        ? {
-            label: 'Leave project…',
-            icon: 'pi pi-sign-out',
-            command: () => confirmLeave(storyId, current),
-          }
-        : { label: 'Delete project', icon: 'pi pi-trash', command: () => trash(storyId, current) },
+      { label: 'Remove', icon: 'pi pi-trash', command: () => remove(storyId, current) },
     ]
   }
 

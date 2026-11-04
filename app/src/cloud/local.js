@@ -308,6 +308,7 @@ export function appLocal({ syncsForApp }) {
       }
       return off
     },
+    stories: () => storage.stories(),
     syncsHere: storyId =>
       isDesktop()
         ? holdsProject(storyId) || (syncsForApp() && !elsewhere.has(storyId))

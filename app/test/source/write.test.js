@@ -31,7 +31,7 @@ const getFile = vi.fn(async id => stored.get(id) ?? null)
 vi.mock('@/stores/filesStore', () => ({ useFilesStore: () => ({ putFile, getFile }) }))
 
 vi.mock('@/stores/syncStore', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 const STORY = 'story_1'

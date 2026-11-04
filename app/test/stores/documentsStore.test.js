@@ -571,11 +571,11 @@ describe('DocumentsStore', () => {
 
   describe('in a project shared with only some of its documents', () => {
     beforeEach(() => {
-      sharing.value = { me: 1, projects: {}, selective: ['story_1'] }
+      sharing.value = { me: 1, projects: {}, selective: ['story_1'], invitations: [] }
     })
 
     afterEach(() => {
-      sharing.value = { me: null, projects: {}, selective: [] }
+      sharing.value = { me: null, projects: {}, selective: [], invitations: [] }
     })
 
     it('makes a document as its folder is', () => {

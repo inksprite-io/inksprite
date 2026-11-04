@@ -55,10 +55,8 @@ afterAll(async () => {
 
 /**
  * An account, and a device signed in to it; more devices on asking.
- * @param {string} [display] - The name it shows the people it shares with,
- *   if not its own
  */
-async function writer(display) {
+async function writer() {
   const name = `writer${++accounts}`
   const made = await signUp(createApi(server), {
     name,
@@ -67,7 +65,6 @@ async function writer(display) {
     kdf: FAST,
   })
   const device = makeDevice({ api: createApi(server, made.token), keys: made.keys })
-  if (display !== undefined) await device.engine.setDisplay(display)
   return {
     name,
     device,
@@ -135,6 +132,30 @@ function writeProject(device, storyId = 'story_s') {
   })
 }
 
+/**
+ * A project with nothing in it but its root.
+ * @param {ReturnType<typeof makeDevice>} device
+ * @param {string} storyId
+ */
+function writeRoot(device, storyId) {
+  const t = 1000
+  device.put('stories', { id: storyId, wordCount: 0, version: 1, created: t, updated: t })
+  device.put('documents', {
+    id: `root_${storyId}`,
+    storyId,
+    parentId: storyId,
+    type: 'folder',
+    title: 'Notes',
+    content: '',
+    summary: '',
+    order: 0,
+    wordCount: 0,
+    version: 1,
+    created: t,
+    updated: t,
+  })
+}
+
 /** @param {ReturnType<typeof makeDevice>} device */
 const sync = async device => {
   await device.engine.noted()
@@ -143,19 +164,32 @@ const sync = async device => {
 }
 
 /**
+ * Share a project with a friend, their device told of the invitation and accepting it.
+ * @param {ReturnType<typeof makeDevice>} owner
+ * @param {ReturnType<typeof makeDevice>} friend
+ * @param {string} code - The friend's
+ */
+async function shareWith(owner, friend, code, storyId = 'story_s') {
+  await owner.engine.share(storyId, code, 'Thief')
+  await sync(friend)
+  const [invitation] = friend.sharing.invitations
+  await friend.engine.accept(invitation.collection)
+}
+
+/**
  * An owner with a project synced on two devices, and a friend it is shared with.
  */
 async function sharedProject() {
-  const owner = await writer('Ada')
+  const owner = await writer()
   const a = owner.device
   writeProject(a)
   await sync(a)
   const a2 = await owner.another()
   await sync(a2)
-  const friend = await writer('Grace')
+  const friend = await writer()
   const f = friend.device
   const { friend: code } = await f.engine.profile()
-  await a.engine.share('story_s', code)
+  await shareWith(a, f, code)
   return { owner, a, a2, friend, f, code }
 }
 
@@ -234,7 +268,7 @@ describe.skipIf(!HAVE_SERVER)('a project shared with a friend', () => {
   })
 
   it('has an owner’s device not yet told it was shared send its chat as its own', async () => {
-    const owner = await writer('Ada')
+    const owner = await writer()
     const a = owner.device
     writeProject(a)
     await sync(a)
@@ -259,9 +293,9 @@ describe.skipIf(!HAVE_SERVER)('a project shared with a friend', () => {
       a2.api.listing = listing
       return stale
     }
-    const friend = await writer('Grace')
+    const friend = await writer()
     const f = friend.device
-    await a.engine.share('story_s', (await f.engine.profile()).friend)
+    await shareWith(a, f, (await f.engine.profile()).friend)
     await sync(a2)
     expect(await a2.waiting()).toEqual([])
     await sync(f)
@@ -270,15 +304,15 @@ describe.skipIf(!HAVE_SERVER)('a project shared with a friend', () => {
     expect(a.db.chats.get('chat_late').title).toBe('Late')
   })
 
-  it('says who is in it, by the names they show, on both sides', async () => {
-    const { a, f } = await sharedProject()
+  it('says who is in it, by their account names, on both sides', async () => {
+    const { owner, friend, a, f } = await sharedProject()
     await sync(f)
     await sync(a)
     const names = (/** @type {ReturnType<typeof makeDevice>} */ device) =>
       device.sharing.projects.story_s.members.map(member => [member.display, member.owner])
     expect(names(a)).toEqual([
-      ['Ada', true],
-      ['Grace', false],
+      [owner.name, true],
+      [friend.name, false],
     ])
     expect(names(f)).toEqual(names(a))
     expect(a.sharing.projects.story_s.role).toBe('owner')
@@ -287,32 +321,113 @@ describe.skipIf(!HAVE_SERVER)('a project shared with a friend', () => {
     expect(f.sharing.projects.story_s.owner).toBe(a.sharing.me)
   })
 
-  it('shows an account by its own name until it gives another', async () => {
+  it('comes as an invitation, nothing of it on the friend’s device until they accept', async () => {
     const owner = await writer()
     const a = owner.device
     writeProject(a)
     await sync(a)
     const friend = await writer()
     const f = friend.device
-    const { friend: code, display } = await f.engine.profile()
-    expect(display).toBe(friend.name)
-    await a.engine.share('story_s', code)
-    await sync(f)
-    expect(f.sharing.projects.story_s.members.map(member => member.display)).toEqual([
-      owner.name,
-      friend.name,
+    const { friend: code, name } = await f.engine.profile()
+    expect(name).toBe(friend.name)
+    // The owner has never asked for its own friend code; sharing makes it.
+    await a.engine.share('story_s', code, 'Thief')
+    await sync(a)
+    expect(a.sharing.projects.story_s.members.map(member => member.invited ?? false)).toEqual([
+      false,
+      true,
     ])
 
-    await f.engine.setDisplay('Grace')
-    expect((await f.engine.profile()).display).toBe('Grace')
+    await sync(f)
+    expect(f.db.stories.has('story_s')).toBe(false)
+    expect(f.sharing.projects).toEqual({})
+    const ownerCode = (await a.engine.profile()).friend
+    expect(f.sharing.invitations).toEqual([
+      {
+        collection: expect.any(String),
+        from: { account: a.sharing.me, name: owner.name, friend: ownerCode.replace(/-/g, '') },
+        title: 'Thief',
+        invited: expect.any(Number),
+      },
+    ])
+
+    await f.engine.accept(f.sharing.invitations[0].collection)
+    expect(f.sharing.invitations).toEqual([])
+    expect(f.db.documents.get('doc_s1').content).toContain('She climbed the wall.')
+    await sync(a)
+    expect(a.sharing.projects.story_s.members.map(member => member.invited ?? false)).toEqual([
+      false,
+      false,
+    ])
+    // Each is among the other's people.
+    expect((await a.engine.people()).people.map(person => person.name)).toEqual([friend.name])
+    expect((await f.engine.people()).people.map(person => person.name)).toEqual([owner.name])
   })
 
-  it('refuses a friend code the server gives the wrong key for', async () => {
-    const owner = await writer('Ada')
+  it('goes once rejected, and the owner can share it again', async () => {
+    const owner = await writer()
     const a = owner.device
     writeProject(a)
     await sync(a)
-    const friend = await writer('Grace')
+    const friend = await writer()
+    const f = friend.device
+    const { friend: code } = await f.engine.profile()
+    await a.engine.share('story_s', code, 'Thief')
+    await sync(f)
+    await f.engine.reject(f.sharing.invitations[0].collection)
+    expect(f.sharing.invitations).toEqual([])
+    await sync(f)
+    expect(f.sharing.invitations).toEqual([])
+    expect(f.db.stories.has('story_s')).toBe(false)
+    await sync(a)
+    expect(a.sharing.projects.story_s).toBeUndefined()
+
+    await shareWith(a, f, code)
+    expect(f.db.stories.has('story_s')).toBe(true)
+  })
+
+  it('ends every share between two accounts once one blocks the other, and hides its invitations', async () => {
+    const { a, f, code } = await sharedProject()
+    await sync(f)
+    // The friend's own project, shared with the owner.
+    writeRoot(f, 'story_f')
+    await sync(f)
+    await shareWith(f, a, (await a.engine.profile()).friend, 'story_f')
+    expect(a.db.stories.has('story_f')).toBe(true)
+
+    await a.engine.block(/** @type {number} */ (f.sharing.me))
+    expect(a.sharing.projects.story_s).toBeUndefined()
+    expect(a.db.stories.get('story_f').trashed).toBeGreaterThan(0)
+    await sync(f)
+    expect(f.db.stories.get('story_s').trashed).toBeGreaterThan(0)
+    expect(f.sharing.projects.story_f).toBeUndefined()
+    const { people, blocked } = await a.engine.people()
+    expect(people).toEqual([])
+    expect(blocked.map(person => person.account)).toEqual([f.sharing.me])
+
+    // Shared with it again, it hears nothing of it.
+    writeRoot(f, 'story_g')
+    await sync(f)
+    await f.engine.share('story_g', (await a.engine.profile()).friend, 'Another')
+    await sync(a)
+    expect(a.sharing.invitations).toEqual([])
+    await sync(f)
+    expect(
+      f.sharing.projects.story_g.members.find(member => member.account === a.sharing.me)?.invited
+    ).toBe(true)
+    await expect(a.engine.share('story_s', code, 'Thief')).rejects.toThrow('blocked')
+
+    await a.engine.unblock(/** @type {number} */ (f.sharing.me))
+    await sync(a)
+    expect(a.sharing.invitations.map(invitation => invitation.title)).toEqual(['Another'])
+  })
+
+  it('refuses a friend code the server gives the wrong key for', async () => {
+    const owner = await writer()
+    const a = owner.device
+    writeProject(a)
+    await sync(a)
+    const friend = await writer()
     const { friend: code } = await friend.device.engine.profile()
     // The server hands back a key of its own for the code.
     const wrap = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, [
@@ -322,12 +437,15 @@ describe.skipIf(!HAVE_SERVER)('a project shared with a friend', () => {
     const real = a.api.friend
     a.api.friend = async typed => ({ ...(await real(typed)), publicKey: its.publicKey })
     try {
-      await expect(a.engine.share('story_s', code)).rejects.toThrow('key for that friend code')
+      await expect(a.engine.share('story_s', code, 'Thief')).rejects.toThrow(
+        'key for that friend code'
+      )
     } finally {
       a.api.friend = real
     }
     await sync(friend.device)
     expect(friend.device.db.stories.has('story_s')).toBe(false)
+    expect(friend.device.sharing.invitations).toEqual([])
   })
 
   it('goes to a friend’s trash, out of sync, once they are removed, and comes back when added again', async () => {
@@ -347,8 +465,7 @@ describe.skipIf(!HAVE_SERVER)('a project shared with a friend', () => {
     await sync(a)
     expect(a.db.documents.get('doc_s1').title).toBe('Chapter 1')
 
-    await a.engine.share('story_s', code)
-    await sync(f)
+    await shareWith(a, f, code)
     expect(f.db.stories.get('story_s').keptElsewhere).toBeUndefined()
     expect(f.db.stories.get('story_s').trashed).toBeUndefined()
   })
@@ -388,26 +505,79 @@ describe.skipIf(!HAVE_SERVER)('a project shared with a friend', () => {
     expect(a.sharing.projects.story_s).toBeUndefined()
   })
 
-  it('deletes it for the friend when the owner deletes it', async () => {
+  it('hands it on to the friend when the owner deletes it', async () => {
     const { a, f } = await sharedProject()
     await sync(f)
     await a.removeProject('story_s')
     await sync(a)
     await sync(f)
-    expect(f.db.stories.has('story_s')).toBe(false)
+    expect(f.db.stories.get('story_s').trashed).toBeUndefined()
+    expect(f.sharing.projects.story_s).toBeUndefined()
+    f.put('documents', { ...f.db.documents.get('doc_s1'), title: 'Theirs now' })
+    await sync(f)
+    expect(await f.waiting()).toEqual([])
+    expect((await f.api.collections())[0].role).toBe('owner')
   })
 
-  it('keeps it in the trash of a friend writing to it when the owner deletes it', async () => {
+  it('deletes it once there is no one to hand it to', async () => {
     const { a, f } = await sharedProject()
     await sync(f)
-    f.put('documents', { ...f.db.documents.get('doc_s1'), title: 'Still writing' })
-    await f.engine.noted()
+    await f.engine.leave('story_s')
     await a.removeProject('story_s')
     await sync(a)
+    expect((await a.api.collections())[0].deleted).not.toBeNull()
+  })
+
+  /**
+   * Move a project to the trash on a device, or bring it back, as the app does.
+   * @param {ReturnType<typeof makeDevice>} device
+   * @param {boolean} removed
+   */
+  function remove(device, removed = true) {
+    const { trashed: _trashed, ...story } = device.db.stories.get('story_s')
+    device.put('stories', removed ? { ...story, trashed: 5000 } : story)
+  }
+
+  it('keeps a friend’s removing it to themselves, out of sync until they restore it', async () => {
+    const { a, friend, f } = await sharedProject()
     await sync(f)
-    expect(f.db.stories.get('story_s').trashed).toBeGreaterThan(0)
-    expect(f.db.documents.get('doc_s1').title).toBe('Still writing')
+    const f2 = await friend.another()
+    await sync(f2)
+
+    remove(f)
+    await sync(f)
+    await sync(a)
+    expect(a.db.stories.get('story_s').trashed).toBeUndefined()
+    await sync(f2)
+    expect(f2.db.stories.get('story_s').trashed).toBeGreaterThan(0)
+
+    // Nothing comes to it, or goes from it, while it is in the trash.
+    a.put('documents', { ...a.db.documents.get('doc_s1'), title: 'While away' })
+    await sync(a)
+    await sync(f)
+    expect(f.db.documents.get('doc_s1').title).toBe('Chapter 1')
+
+    remove(f, false)
+    await sync(f)
+    expect(f.db.documents.get('doc_s1').title).toBe('While away')
+    await sync(f2)
+    expect(f2.db.stories.get('story_s').trashed).toBeUndefined()
+    await sync(a)
+    expect(a.db.stories.get('story_s').trashed).toBeUndefined()
+  })
+
+  it('keeps the owner’s removing it from the friends', async () => {
+    const { a, a2, f } = await sharedProject()
+    await sync(f)
+    remove(a)
+    await sync(a)
+    await sync(f)
+    expect(f.db.stories.get('story_s').trashed).toBeUndefined()
+    f.put('documents', { ...f.db.documents.get('doc_s1'), title: 'Still writing' })
+    await sync(f)
     expect(await f.waiting()).toEqual([])
+    await sync(a2)
+    expect(a2.db.stories.get('story_s').trashed).toBeGreaterThan(0)
   })
 })
 
@@ -458,7 +628,7 @@ const documentsOf = device => [...device.db.documents.keys()].sort()
 
 describe.skipIf(!HAVE_SERVER)('a project shared with only some of its documents', () => {
   it('hides the rest from a friend, files, pictures and versions with them, but for the folders on the way', async () => {
-    const owner = await writer('Ada')
+    const owner = await writer()
     const a = owner.device
     writeProject(a)
     writeDocument(a, 'fold_notes', { type: 'folder', title: 'Notes', content: '', unshared: true })
@@ -483,9 +653,9 @@ describe.skipIf(!HAVE_SERVER)('a project shared with only some of its documents'
     await sync(a)
     await a.engine.setSelective('story_s', true)
     expect(a.sharing.selective).toEqual(['story_s'])
-    const friend = await writer('Grace')
+    const friend = await writer()
     const f = friend.device
-    await a.engine.share('story_s', (await f.engine.profile()).friend)
+    await shareWith(a, f, (await f.engine.profile()).friend)
 
     await sync(f)
     expect(documentsOf(f)).toEqual(['doc_note', 'doc_s1', 'fold_notes', 'root_story_s'])
@@ -506,7 +676,7 @@ describe.skipIf(!HAVE_SERVER)('a project shared with only some of its documents'
   })
 
   it('isn’t shared with anyone while something to hide is still everyone’s on the server', async () => {
-    const owner = await writer('Ada')
+    const owner = await writer()
     const a = owner.device
     writeProject(a)
     writeDocument(a, 'doc_plan', { title: 'The plan', unshared: true })
@@ -523,11 +693,11 @@ describe.skipIf(!HAVE_SERVER)('a project shared with only some of its documents'
       },
     ])
     await a.engine.setSelective('story_s', true)
-    const friend = await writer('Grace')
+    const friend = await writer()
     const f = friend.device
-    await expect(a.engine.share('story_s', (await f.engine.profile()).friend)).rejects.toThrow(
-      'Not all of it has synced yet'
-    )
+    await expect(
+      a.engine.share('story_s', (await f.engine.profile()).friend, 'Thief')
+    ).rejects.toThrow('Not all of it has synced yet')
     expect((await f.api.listing()).collections).toEqual([])
   })
 

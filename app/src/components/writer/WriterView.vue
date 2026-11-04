@@ -24,10 +24,6 @@
           @update:active-mobile-tab="activeMobileTab = $event"
           @update:chat-id="selectChat"
         />
-        <template v-else-if="noProject">
-          <Settings v-if="mobileTab === 'settings'" />
-          <NoProjectView v-else />
-        </template>
       </div>
     </div>
 
@@ -55,7 +51,6 @@
           @open-document="openDocument"
           @toggle="togglePanel"
         />
-        <NoProjectView v-else-if="noProject" />
       </div>
 
       <SettingsDialog v-model:visible="settingsVisible" :story-id="currentStoryId" />
@@ -109,8 +104,6 @@ import AppNavbar from './layout/AppNavbar.vue'
 import MobileTopBar from './layout/MobileTopBar.vue'
 import MobileView from './layout/MobileView.vue'
 import DesktopView from './layout/DesktopView.vue'
-import NoProjectView from './layout/NoProjectView.vue'
-import Settings from './settings/Settings.vue'
 import SettingsDialog from './settings/SettingsDialog.vue'
 import CardLibraryDialog from './cards/CardLibraryDialog.vue'
 import VersionsDialog from './editor/VersionsDialog.vue'
@@ -149,14 +142,6 @@ const routeStoryId = computed(() => storyIdFromRoute(route.params.storyId))
  * is loaded, so nothing below renders against a project that is not there.
  */
 const currentStoryId = ref('')
-
-/**
- * True once the URL has been followed and found no project to open: there are
- * none, or in the desktop app every one is open in another window. Until then
- * the frame shows nothing, rather than the empty state for a moment before
- * the project arrives.
- */
-const noProject = ref(false)
 
 /**
  * The document the writer is in: the project's last document, while that is
@@ -322,7 +307,6 @@ const toast = useToast()
  * this one goes back to its own, or with none to the most recent.
  */
 const openRouteProject = async () => {
-  noProject.value = false
   const storyId = routeStoryId.value
   if (!storyId) return openMostRecentProject()
 
@@ -357,6 +341,8 @@ const openRouteProject = async () => {
 
   const api = useDocuments(storyId)
   await api.init()
+  // The project not saved yet, left untouched for this one, is let go of.
+  if (storiesStore.fresh && storiesStore.fresh.id !== storyId) storiesStore.dropFresh()
   currentStoryId.value = storyId
 
   // A project opened for the first time opens on its first document; one
@@ -372,9 +358,10 @@ const openRouteProject = async () => {
  * Nothing in the URL names a project: the app was opened at its root, or the
  * project that was open is gone. Go to the project the writer was last in on
  * this copy of the app, or with none opened here the one changed last, and
- * with no projects, stay here and say so. In the desktop app, projects open
- * in other windows are passed over: a new window with every project open
- * elsewhere is as empty as one with none.
+ * with no projects, to one not saved yet, Untitled project, which is saved
+ * once something is done in it. In the desktop app, projects open in other
+ * windows are passed over: a new window with every project open elsewhere
+ * starts in a new one, as with none.
  */
 const openMostRecentProject = async () => {
   currentStoryId.value = ''
@@ -385,19 +372,20 @@ const openMostRecentProject = async () => {
     .getAllStoriesOrdered()
     .map(story => story.id)
     .filter(id => !away.has(id))
-  const storyId = projectViewsStore.lastOpened(ids) ?? ids[0]
-  if (storyId) replaceProjectInRoute(router, storyId)
-  else noProject.value = true
+  const storyId =
+    projectViewsStore.lastOpened(ids) ?? ids[0] ?? (await storiesStore.createFresh()).id
+  replaceProjectInRoute(router, storyId)
 }
 
 watch(routeStoryId, openRouteProject, { immediate: true })
 
-// A project that comes while none is open, synced from another device, is
-// opened as one there at the start would have been.
+// A project that comes while the one open is not saved yet, synced from
+// another device or accepted from a friend, is opened as one there at the
+// start would have been, and the untouched one let go of.
 watch(
   () => storiesStore.stories.size,
   count => {
-    if (noProject.value && count > 0) openMostRecentProject()
+    if (storiesStore.isFresh(currentStoryId.value) && count > 0) openMostRecentProject()
   }
 )
 

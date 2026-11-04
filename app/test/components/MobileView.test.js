@@ -6,7 +6,7 @@ import { clearChatsInstances } from '@/composables/useChats'
 
 vi.mock('@/stores/db', () => ({ default: {} }))
 vi.mock('@/stores/syncStore', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 const ChatHistory = {

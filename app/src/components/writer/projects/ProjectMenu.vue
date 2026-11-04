@@ -4,6 +4,7 @@
       icon="pi pi-bars"
       label="Projects"
       :loading="isImporting"
+      :dot="invitations.length > 0"
       aria-haspopup="true"
       aria-controls="project_menu"
       data-action="projects"
@@ -78,15 +79,18 @@ import { useProjectActions } from '@/composables/useProjectActions.js'
 import { useProjects } from '@/composables/useProjects'
 import { useReactiveTime } from '@/composables/useReactiveTime'
 import { useToast } from '@/composables/useToast'
+import { sharing } from '@/cloud/people.js'
 import { recentProjects } from '@/utils/projectList.js'
 import { isDesktop } from '@/platform/desktop.js'
 
 /**
  * The projects, from a menu at the top of the outline: Recent projects for
  * those edited last, the one open checked and each with when it was last
- * edited, or that it is open in another window; Switch project for all of them
+ * edited, or that it is open in another window; Projects… for all of them
  * in a table; a new one or one imported from a file; in the desktop app a new
- * window; then what the outline does to the one open.
+ * window; then what the outline does to the one open. While someone's
+ * invitation to a project waits, a dot on the button says so, and Projects…,
+ * whose table has it at the top, says how many.
  *
  * Picked with Command or Ctrl held, a project opens in a new window (a new
  * tab in a browser). One open in another window is shown there. Right-clicked
@@ -193,11 +197,21 @@ const recent = computed(() =>
   })
 )
 
+/** The invitations to projects waiting for an answer. */
+const invitations = computed(() => sharing.value.invitations)
+
 const items = computed(() => [
   { label: 'Recent projects', icon: 'pi pi-history', items: recent.value },
   {
-    label: 'Switch project…',
+    label: 'Projects…',
     icon: 'pi pi-book',
+    // The table has the invitations waiting at its top.
+    detail:
+      invitations.value.length === 0
+        ? ''
+        : invitations.value.length === 1
+          ? '1 invitation'
+          : `${invitations.value.length} invitations`,
     command: () => {
       showProjects.value = true
     },

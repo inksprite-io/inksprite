@@ -15,7 +15,7 @@ import { useApplicationState } from '@/composables/useApplicationState'
 
 vi.mock('@/stores/db', () => ({ default: {} }))
 vi.mock('@/stores/syncStore', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 const mountMenu = chatId =>

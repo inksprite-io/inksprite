@@ -1,9 +1,9 @@
 /**
  * @module cloud/people
  * @description Who is who, for sharing: the account this device is signed in
- * to, and who is in each project shared, as sync last heard (`useCloudSync`
- * keeps them here). Kept apart from sync itself so that what shows a
- * comment's author needn't load it.
+ * to, who is in each project shared, and the projects others invited it to,
+ * as sync last heard (`useCloudSync` keeps them here). Kept apart from sync
+ * itself so that what shows a comment's author needn't load it.
  *
  * A comment's post written on a device signed in to sync says which account
  * wrote it (`by`). In a project shared, a post is the writer's own when that
@@ -29,9 +29,9 @@ import { computed, shallowRef } from 'vue'
 /** The account this device is signed in to, once the server has said. */
 export const me = shallowRef(/** @type {number|null} */ (null))
 
-/** The projects shared, as sync last heard. */
+/** The projects shared, and the invitations waiting, as sync last heard. */
 export const sharing = shallowRef(
-  /** @type {Sharing} */ ({ me: null, projects: {}, selective: [] })
+  /** @type {Sharing} */ ({ me: null, projects: {}, selective: [], invitations: [] })
 )
 
 /**

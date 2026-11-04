@@ -118,26 +118,28 @@ been updated can't sync a shared project, and says it waits for an update.
 
 ### Your friend code
 
-In **Settings** › **Sync and sharing** › **Sharing**, your **Friend code** is under **Name
-others see**. Click the copy button beside it, and send the code to whoever
-wants to share a project with you.
-
-The name others see is what the people you share with know you by. It starts
-as your account's name; type another there if you'd rather they saw something
-else.
+In **Settings** › **Sync and sharing** › **Account**, click the copy button
+beside your **Friend code**, and send the code to whoever wants to share a
+project with you. The people you share with know you by your account's name.
 
 Your friend code doesn't sign in to anything. It only tells their device who
 you are, and lets it check that the server hasn't swapped in someone else.
+Whoever has it can invite you to a project, but nothing of the project reaches
+you unless you accept.
 
 ### Share yours
 
 1. Choose **Share…** from **Projects**, or from the project's menu. It opens
    **Settings** › **Project** › **Sharing**.
-2. Paste your friend's **Friend code**, and click **Share**.
+2. Under **Share with**, paste your friend's friend code, or start typing the
+   name of someone you've shared with before and pick them. Click **Share**.
 
-The project appears in your friend's projects the next time their devices
-sync. **Sharing** lists who has it, each by name and friend code, and the
-cross beside someone (**Remove**) takes them out. A removed friend keeps what they already had, in their trash.
+Your friend is invited, and the project appears in their projects once they
+accept. **Sharing** lists who has it, each by name and friend code, with
+*Invited* beside anyone who hasn't answered yet. The cross beside someone
+takes them out, or takes the invitation back. A removed friend keeps what they
+already had, in their trash. You aren't told whether someone accepts or
+rejects, only that they're no longer *Invited*.
 
 Sharing first sends your chats in the project again, encrypted so that only you
 can read them. If a reply is still being written in one of them, let it finish
@@ -148,18 +150,55 @@ friends add to it.
 
 ### A project shared with you
 
-It's in your projects like your own. Its menu has **People…**, which shows who
-has it in **Settings** › **Project** › **Sharing**, and **Leave project…** in place of **Delete project**. Leaving moves it
-to your trash and stops it syncing. Only its owner can share it with you again.
+When someone shares a project with you, a notice says who and which project,
+with their friend code. Check the code against the one they gave you before
+you accept.
 
-If its owner deletes it, it moves to your trash as it does to theirs, and
-restoring it there restores it for everyone. Once it's gone from their trash,
-it goes from your devices too, unless you were changing it then: then it stays
-in your trash with your changes.
+- **Accept** brings the project in, like your own.
+- **Reject** turns it down. They can share it again.
+- **Block** turns it down and blocks them (see below).
+
+If you close the notice, the invitation waits at the top of **Projects…**,
+greyed, with the same answers on its row, and a dot on the **Projects** menu
+says it's there. An invitation you don't answer goes after 30 days.
+
+Once you've accepted it, the project's menu has **People…**, which shows who
+has it in **Settings** › **Project** › **Sharing**. **Projects…** says whose
+each project is and who else is in it.
+
+### Removing a shared project
+
+**Remove** moves a shared project to your trash, the same as one of your own,
+and **Undo** in the notice brings it back. It stays in everyone else's
+projects. While it's in your trash it doesn't sync, so nothing of it downloads;
+restore it and it catches up.
+
+After 30 days in your trash, or once you delete it for good, you leave it. If
+it's yours, it passes to the person who joined it first, and counts toward
+their storage from then on. Your chats in it, and any documents you kept from
+them, go with you. With no one left to take it, it's deleted.
+
+### People and blocking
+
+**Settings** › **Sync and sharing** › **People** lists everyone you've shared
+with, and everyone whose project you've accepted, so you can share with them
+by name. To add someone before you share anything, click the plus beside
+**People** and paste their friend code. Right-click someone, or press and hold
+on a phone, to copy their friend code, forget them (once nothing is shared
+between you), or block them.
+
+Block someone from their invitation or from **People**. You stop sharing with
+each other: they're taken out of your projects, and you leave theirs. If any
+project is shared between you, inksprite asks first. Their projects come back
+to you as your own, kept on this device, unless you tick **Delete their
+projects**, which moves them to your trash. Their invitations no longer reach
+you, and they aren't told they're blocked. The people you've blocked are only
+listed once you click the blocked button beside **People**, where their menu
+has **Unblock**. What the block ended stays ended.
 
 ### Working together
 
-Comments show who wrote them, by the name each person shows, and you can only
+Comments show who wrote them, by each person's account name, and you can only
 edit your own. When two of you change the same words, the one who synced last
 wins, and the other's words are kept as a [version](/editor/#versions) of the
 document, as between your own devices.
@@ -173,10 +212,8 @@ In **Settings** › **Sync and sharing**, once you're signed in:
   account has 2 GB unless its invitation says otherwise, and imported files
   are most of what it holds. When it's full, the status line says so, and
   changes that don't fit wait on the device.
-- **Devices** lists the devices signed in, this one first. The arrow beside
-  another (**Sign out**) signs it out. What it has stays on it, keys included,
-  so if it's lost, change your AI providers' keys too.
-- Under **Account**, **Send diagnostics** sends the server counts of what sync did on this
+- Under **Account**, your [friend code](#your-friend-code) comes first, then
+  **Send diagnostics**, which sends the server counts of what sync did on this
   device, such as how many changes went each way and how many rounds failed.
   Never your text, titles or names. See [About](/about/#sync).
 - **Make a recovery code…**, or **New recovery code…**, asks for your
@@ -184,6 +221,10 @@ In **Settings** › **Sync and sharing**, once you're signed in:
 - **Change passphrase…** asks for the passphrase you have and a new one. Your
   other devices stay signed in.
 - **Sign out** signs this device out. Its projects stay on it.
+- **People** is [the people you share with](#people-and-blocking).
+- **Devices** lists the devices signed in, this one first. The arrow beside
+  another (**Sign out**) signs it out. What it has stays on it, keys included,
+  so if it's lost, change your AI providers' keys too.
 
 Restoring a [backup](/projects/#back-up-everything) with **Replace** signs the
 device out too. Sign in again, and what the backup brought syncs as it would
@@ -211,8 +252,9 @@ passphrase has your AI providers' keys as well as your writing: use a
 passphrase you don't use anywhere else.
 
 If you share a project, the people you share it with can read it, but the
-server still can't. It does see who each project is shared with, and keeps
-the name others see as it keeps your account's name, unencrypted. Your friend
+server still can't. It does see who each project is shared with, and who is
+among your people and who you've blocked. An invitation's project name is
+encrypted for the person invited. Your friend
 code is made from a key your devices create for sharing. The server keeps its
 public half for others to find you by, and its private half encrypted like the
 rest.

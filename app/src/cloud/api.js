@@ -41,12 +41,26 @@ export class CloudError extends Error {
  * @property {Bytes} key
  * @property {Bytes|null} meta
  * @property {number} [owner] - The owner's account; none from a server before sharing
- * @property {number} [members] - How many are in it, the owner among them
+ * @property {number} [members] - How many are in it, the owner and those invited among them
+ * @property {number} [waiting] - How many of them are invited and haven't answered
  * @property {boolean} [shared] - Ever shared: its chats are each one's own
  * @property {boolean} [selective] - Shared with only some of its documents, the
  *   others its owner's own
  * @property {boolean} [sealed] - Its key is wrapped for this account's public key
  * @property {boolean} [left] - This account left it, or was removed: its key is gone
+ * @property {number} [invited] - When this account was invited to it, until it
+ *   accepts: nothing else of it is served until then
+ * @property {Person} [from] - Who invited it
+ * @property {boolean} [removed] - In this account's trash: not synced until it is restored
+ * @property {Bytes} [note] - The invitation's, sealed for this account: the project's title
+ */
+
+/**
+ * Someone an account knows, by their account name and friend code.
+ * @typedef {Object} Person
+ * @property {number} account
+ * @property {string} name
+ * @property {string|null} friend - None for an account that has never shared
  */
 
 /**
@@ -68,9 +82,11 @@ export class CloudError extends Error {
  * @typedef {Object} Member
  * @property {number} account
  * @property {boolean} owner
- * @property {string|null} display - The name they show the people they share with
+ * @property {string|null} display - Their account name; from a server before
+ *   that, the name they gave
  * @property {string|null} [friend] - Their friend code, as the server keeps it; none from
  *   a server before it said, or for an account that has never shared
+ * @property {boolean} [invited] - Invited, and not yet answered
  */
 
 /**
@@ -85,7 +101,6 @@ export class CloudError extends Error {
  *   keeps and may keep, in bytes; no quota for no limit. None from an older server.
  * @property {boolean} [diagnostics] - Whether the server wants them
  * @property {number} [id] - None from a server before sharing
- * @property {string|null} [display] - The name the people it shares with see
  * @property {Bytes} [publicKey] - Its key pair's, once one is made
  * @property {Bytes} [privateKey] - Sealed under the account key
  */
@@ -116,9 +131,10 @@ const APP_VERSION = import.meta.env.VITE_APP_VERSION || ''
 /**
  * What this app speaks of the protocol, for the server to hold an older app
  * back from a collection ever shared: 2 knows a record may be one account's
- * own, and 3 which of a project's documents its owner shares with no one.
+ * own, 3 which of a project's documents its owner shares with no one, and 4
+ * asks before it takes a project shared with it, so is listed invitations.
  */
-export const PROTOCOL = 3
+export const PROTOCOL = 4
 
 /**
  * The server at this address, as one device signed in to it, or not yet.
@@ -168,6 +184,7 @@ export function createApi(
     ...listed,
     key: fromBase64(listed.key),
     meta: listed.meta ? fromBase64(listed.meta) : null,
+    ...(listed.note ? { note: fromBase64(listed.note) } : {}),
   })
 
   /**
@@ -176,7 +193,7 @@ export function createApi(
    * @returns {Promise<{collections: ListedCollection[], generation: string|null}>}
    */
   async function listing() {
-    const listed = await call('GET', '/v1/collections')
+    const listed = await call('GET', `/v1/collections?protocol=${PROTOCOL}`)
     return {
       collections: listed.collections.map(collection),
       generation: listed.generation ?? null,
@@ -263,12 +280,6 @@ export function createApi(
     },
 
     /**
-     * Give the account the name the people it shares with see.
-     * @param {string} display - Empty for none
-     */
-    setDisplay: display => call('PUT', '/v1/account/display', { body: { display } }),
-
-    /**
      * The account a friend code is of, and its public key.
      * @param {string} code
      * @returns {Promise<{account: number, publicKey: Bytes, display: string|null}>}
@@ -302,14 +313,65 @@ export function createApi(
     },
 
     /**
-     * Add the account a friend code is of to a collection, with its key wrapped for them.
+     * Invite the account a friend code is of to a collection, with its key
+     * and a note wrapped for them.
      * @param {string} id
      * @param {string} friend - The code
      * @param {Bytes} key
+     * @param {Bytes} note
      * @returns {Promise<{account: number, display: string|null}>}
      */
-    addMember: (id, friend, key) =>
-      call('POST', `/v1/collections/${id}/members`, { body: { friend, key: toBase64(key) } }),
+    addMember: (id, friend, key, note) =>
+      call('POST', `/v1/collections/${id}/members`, {
+        body: { friend, key: toBase64(key), note: toBase64(note) },
+      }),
+
+    /**
+     * Accept an invitation to a collection, with its key wrapped again under this account's.
+     * @param {string} id
+     * @param {Bytes} key
+     */
+    accept: (id, key) =>
+      call('PUT', `/v1/collections/${id}/accept`, { body: { key: toBase64(key) } }),
+
+    /**
+     * Mark a collection removed to this account's trash, or restored from it.
+     * @param {string} id
+     * @param {boolean} removed
+     */
+    setRemoved: (id, removed) =>
+      call('PUT', `/v1/collections/${id}/removed`, { body: { removed } }),
+
+    /**
+     * The people this account knows, and those it blocked.
+     * @returns {Promise<{people: Person[], blocked: Person[]}>}
+     */
+    people: () => call('GET', '/v1/people'),
+
+    /**
+     * Keep the account a friend code is of among this account's people.
+     * @param {string} friend - The code
+     * @returns {Promise<Person>}
+     */
+    addPerson: friend => call('POST', '/v1/people', { body: { friend } }),
+
+    /**
+     * Let go of someone among this account's people.
+     * @param {number} account
+     */
+    forgetPerson: account => call('DELETE', `/v1/people/${account}`),
+
+    /**
+     * Block an account: every share between the two ends.
+     * @param {number} account
+     */
+    block: account => call('POST', '/v1/blocks', { body: { account } }),
+
+    /**
+     * Unblock an account.
+     * @param {number} account
+     */
+    unblock: account => call('DELETE', `/v1/blocks/${account}`),
 
     /**
      * Take someone out of a collection, or this account, leaving it.

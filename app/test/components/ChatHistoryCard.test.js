@@ -16,7 +16,7 @@ vi.mock('../../src/stores/db', () => {
 })
 
 vi.mock('../../src/stores/syncStore', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 const mountCard = chatId =>

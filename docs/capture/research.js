@@ -395,7 +395,8 @@ export async function research(ui, { standIn, context }) {
   await settings.waitFor({ state: 'hidden' })
 
   // The project and its papers
-  await ui.click(button('New project'))
+  await ui.click(button('Projects'))
+  await ui.click(menu('New project…'))
   await ui.type(PROJECT)
   await ui.click(button('Create'))
   const project = page.locator(`[role="treeitem"][aria-level="1"][aria-label="${PROJECT}"]`)

@@ -11,6 +11,7 @@ import { LONG_PRESS_MS } from '@/composables/useLongPress.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
+import { sharing } from '@/cloud/people.js'
 
 // What the database holds of each project's documents and chats, by story id,
 // for working out when a project was last edited.
@@ -43,7 +44,7 @@ vi.mock('@/stores/db', () => {
 })
 
 vi.mock('@/stores/syncStore', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 const { backup, toast } = vi.hoisted(() => ({
@@ -141,7 +142,7 @@ describe('ProjectMenu', () => {
     ])
     expect(shape(wrapper)).toEqual([
       'Recent projects',
-      'Switch project…',
+      'Projects…',
       'New project…',
       'Import project…',
     ])
@@ -159,7 +160,7 @@ describe('ProjectMenu', () => {
     const { wrapper } = await mountMenu(story.id, projectItems)
     expect(shape(wrapper)).toEqual([
       'Recent projects',
-      'Switch project…',
+      'Projects…',
       'New project…',
       'Import project…',
       '—',
@@ -168,6 +169,33 @@ describe('ProjectMenu', () => {
     ])
     pick(wrapper, 'Project settings')
     expect(settings).toHaveBeenCalled()
+  })
+
+  it('says on its button and on Projects… that invitations wait', async () => {
+    await storiesStore.createStory('Mine')
+    const { wrapper } = await mountMenu('')
+    expect(wrapper.find('[data-dot]').exists()).toBe(false)
+
+    const from = (/** @type {number} */ account, /** @type {string} */ name) => ({
+      account,
+      name,
+      friend: null,
+    })
+    sharing.value = {
+      me: 1,
+      projects: {},
+      selective: [],
+      invitations: [
+        { collection: 'c1', from: from(2, 'grace'), title: 'Thief', invited: 1 },
+        { collection: 'c2', from: from(2, 'grace'), title: null, invited: 2 },
+        { collection: 'c3', from: from(3, 'gil'), title: 'Notes', invited: 3 },
+      ],
+    }
+    await flushPromises()
+    expect(wrapper.find('[data-dot]').exists()).toBe(true)
+    expect(shape(wrapper)[0]).toBe('Recent projects')
+    expect(items(wrapper).find(item => item.label === 'Projects…').detail).toBe('3 invitations')
+    sharing.value = { me: null, projects: {}, selective: [], invitations: [] }
   })
 
   /** Say a project was last edited so long ago. */
@@ -200,7 +228,7 @@ describe('ProjectMenu', () => {
 
     const table = wrapper.findComponent(ProjectsDialog)
     expect(table.props('visible')).toBe(false)
-    pick(wrapper, 'Switch project…')
+    pick(wrapper, 'Projects…')
     await flushPromises()
     expect(table.props('visible')).toBe(true)
   })
@@ -274,7 +302,7 @@ describe('ProjectMenu', () => {
 
     expect(shape(wrapper)).toEqual([
       'Recent projects',
-      'Switch project…',
+      'Projects…',
       'New project…',
       'Import project…',
       'New window',

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { setActivePinia, createPinia } from 'pinia'
@@ -6,6 +6,7 @@ import PrimeVue from 'primevue/config'
 import ProjectsDialog from '@/components/writer/projects/ProjectsDialog.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { LONG_PRESS_MS } from '@/composables/useLongPress.js'
+import { sharing } from '@/cloud/people.js'
 
 const projects = vi.hoisted(() => ({
   rows: { value: [] },
@@ -15,6 +16,16 @@ const projects = vi.hoisted(() => ({
   refresh: vi.fn(),
 }))
 vi.mock('@/composables/useProjects', () => ({ useProjects: () => projects }))
+
+const cloud = vi.hoisted(() => ({
+  accept: vi.fn(async () => {}),
+  reject: vi.fn(async () => {}),
+}))
+vi.mock('@/composables/useCloudSync.js', () => ({ useCloudSync: () => cloud }))
+const blocking = vi.hoisted(() => ({ block: vi.fn(async () => {}) }))
+vi.mock('@/composables/useBlocking.js', () => ({ useBlocking: () => blocking }))
+const toast = vi.hoisted(() => ({ error: vi.fn() }))
+vi.mock('@/composables/useToast.js', () => ({ useToast: () => toast }))
 
 const Dialog = {
   name: 'Dialog',
@@ -42,7 +53,7 @@ describe('ProjectsDialog', () => {
   const mountDialog = async (props = {}) => {
     const wrapper = mount(ProjectsDialog, {
       props: { visible: false, storyId: 'b', ...props },
-      global: { plugins: [PrimeVue], stubs: { Dialog } },
+      global: { plugins: [PrimeVue], stubs: { Dialog }, directives: { tooltip: {} } },
     })
     await wrapper.setProps({ visible: true })
     await flushPromises()
@@ -278,6 +289,97 @@ describe('ProjectsDialog', () => {
       await search(wrapper).trigger('keydown', { key: 'Enter' })
       expect(projects.pick).not.toHaveBeenCalled()
       expect(wrapper.emitted('update:visible')).toBeUndefined()
+    })
+  })
+
+  describe('with projects shared', () => {
+    const GRACE = { account: 2, name: 'grace', friend: null }
+
+    beforeEach(() => {
+      sharing.value = {
+        me: 1,
+        projects: {
+          a: {
+            role: 'owner',
+            owner: 1,
+            members: [
+              { account: 1, owner: true, display: 'writer' },
+              { account: 2, owner: false, display: 'grace' },
+              { account: 3, owner: false, display: 'gil' },
+              { account: 4, owner: false, display: 'ivy', invited: true },
+            ],
+          },
+          c: {
+            role: 'member',
+            owner: 2,
+            members: [
+              { account: 2, owner: true, display: 'grace' },
+              { account: 1, owner: false, display: 'writer' },
+              { account: 3, owner: false, display: 'gil' },
+            ],
+          },
+        },
+        selective: [],
+        invitations: [
+          { collection: 'c1', from: GRACE, title: 'Heist', invited: 1 },
+          { collection: 'c2', from: GRACE, title: null, invited: 2 },
+        ],
+      }
+    })
+
+    afterEach(() => {
+      sharing.value = { me: null, projects: {}, selective: [], invitations: [] }
+    })
+
+    it('says whose each project is and who else is in it, but those only invited', async () => {
+      const wrapper = await mountDialog()
+      expect(wrapper.findAll('th').map(th => th.text())).toEqual([
+        'Name',
+        'Owner',
+        'People',
+        'Last edited',
+        'Created',
+      ])
+      const cells = wrapper
+        .findAll('[data-project]')
+        .map(row => [row.find('[data-owner]').text(), row.find('[data-people]').text()])
+      // Banana, then Cherry, then Apple, the latest edited first.
+      expect(cells).toEqual([
+        ['You', ''],
+        ['grace', 'gil'],
+        ['You', 'grace and gil'],
+      ])
+    })
+
+    it('puts the invitations first, to accept or reject on their rows, and Block in their menu', async () => {
+      const wrapper = await mountDialog()
+      const rows = wrapper.findAll('tbody tr')
+      expect(rows.slice(0, 2).map(row => row.attributes('data-invitation'))).toEqual(['c1', 'c2'])
+      expect(rows[1].text()).toContain('A project')
+      await rows[0].find('[data-action="accept-invitation"]').trigger('click')
+      await rows[1].find('[data-action="reject-invitation"]').trigger('click')
+      await flushPromises()
+      expect(cloud.accept).toHaveBeenCalledWith('c1')
+      expect(cloud.reject).toHaveBeenCalledWith('c2')
+      // Picking one opens nothing.
+      await rows[0].trigger('click')
+      expect(projects.pick).not.toHaveBeenCalled()
+
+      await rows[0].trigger('contextmenu')
+      const menu = wrapper.findComponent({ name: 'ContextMenu' })
+      const items = menu.props('model')
+      expect(items.map(item => item.label)).toEqual(['Accept', 'Reject', 'Block'])
+      items[2].command()
+      await flushPromises()
+      expect(blocking.block).toHaveBeenCalledWith(GRACE)
+    })
+
+    it('finds invitations by name as the search is typed', async () => {
+      const wrapper = await mountDialog()
+      await search(wrapper).setValue('heis')
+      expect(
+        wrapper.findAll('[data-invitation]').map(row => row.attributes('data-invitation'))
+      ).toEqual(['c1'])
     })
   })
 })

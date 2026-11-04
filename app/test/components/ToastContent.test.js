@@ -43,6 +43,39 @@ describe('ToastContent', () => {
     expect(remove).toHaveBeenCalledWith(message)
   })
 
+  it('asks for an answer with a button for each, and goes on any', async () => {
+    const message = {
+      severity: 'info',
+      summary: 'grace shared a project with you: Thief',
+      actions: [
+        { label: 'Accept', name: 'accept', command: vi.fn() },
+        { label: 'Reject', name: 'reject', command: vi.fn() },
+      ],
+    }
+    const wrapper = show(message)
+
+    expect(wrapper.findAll('button').map(button => button.text())).toEqual(['Accept', 'Reject'])
+    await wrapper.find('[data-action="reject"]').trigger('click')
+
+    expect(message.actions[1].command).toHaveBeenCalledTimes(1)
+    expect(message.actions[0].command).not.toHaveBeenCalled()
+    expect(remove).toHaveBeenCalledWith(message)
+  })
+
+  it('stays up for an answer that may yet not happen', async () => {
+    const message = {
+      severity: 'info',
+      summary: 'grace shared a project with you: Thief',
+      actions: [{ label: 'Block', name: 'block', stays: true, command: vi.fn() }],
+    }
+    const wrapper = show(message)
+
+    await wrapper.find('[data-action="block"]').trigger('click')
+
+    expect(message.actions[0].command).toHaveBeenCalledTimes(1)
+    expect(remove).not.toHaveBeenCalled()
+  })
+
   it('offers no changes to look at when it has none', () => {
     const wrapper = show({
       severity: 'info',

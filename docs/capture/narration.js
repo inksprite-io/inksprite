@@ -48,7 +48,8 @@ export async function narration(ui) {
   await ui.click(button('Start writing'))
 
   // The book
-  await ui.click(button('New project'))
+  await ui.click(button('Projects'))
+  await ui.click(page.getByRole('menuitem', { name: 'New project…' }))
   await ui.type(PROJECT)
   await ui.click(button('Create'))
   const project = page.getByRole('treeitem', { name: PROJECT })

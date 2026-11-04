@@ -4,6 +4,7 @@
   <JobsToastHost />
   <LibraryMoveToast />
   <SyncUpdateDialog />
+  <InvitationNotices />
   <RouterView />
   <ConfirmDialog :pt="{ root: { class: 'max-w-lg' } }" />
 </template>
@@ -16,6 +17,7 @@ import AppToast from './components/common/AppToast.vue'
 import JobsToastHost from './components/writer/jobs/JobsToastHost.vue'
 import LibraryMoveToast from './components/writer/settings/LibraryMoveToast.vue'
 import SyncUpdateDialog from './components/writer/settings/SyncUpdateDialog.vue'
+import InvitationNotices from './components/writer/settings/InvitationNotices.vue'
 import { useTheme } from './composables/useSystemSettings'
 import { useSkills } from './composables/useSkills'
 import { useApplicationState } from './composables/useApplicationState'

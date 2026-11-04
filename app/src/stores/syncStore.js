@@ -11,6 +11,19 @@ const SYNC_DEBOUNCE_MS = 500 // Wait 500ms after last change before syncing
 const SYNC_RETRY_MS = 500 // Retry failed syncs after 500ms
 const SYNC_PERIODIC_MS = 10000 // Safety sync every 10s
 
+/** The tables a change to which is something done in a project, which saves a project held back. */
+const DOING = new Set(['stories', 'documents', 'chats', 'files', 'versions'])
+
+/**
+ * The project a change is of, where it says.
+ * @param {string} entityType
+ * @param {string} id
+ * @param {any} data
+ * @returns {string|undefined}
+ */
+const projectOf = (entityType, id, data) =>
+  entityType === 'stories' || entityType === 'projectViews' ? id : data?.storyId
+
 export const useSyncStore = defineStore('sync', () => {
   /**
    * @type {import('vue').Ref<Map<string, Change>>}
@@ -25,6 +38,80 @@ export const useSyncStore = defineStore('sync', () => {
 
   /** Whether the writer has the Debug switch on, which logs every save. */
   const { debug } = useApplicationState()
+
+  /**
+   * The changes of a project not saved yet, held back by its id until
+   * something is done in it (`hold`): then they go, and it is told.
+   * @type {Map<string, {changes: Map<string, Change>, making: boolean, onStart: () => void}>}
+   */
+  const held = new Map()
+
+  /**
+   * Hold back a project's changes: those made in making it, and from then on
+   * those that do nothing in it (its view), until one that does (a document,
+   * a chat, its name or settings) saves them all. `made` says it is made.
+   * @param {string} storyId
+   * @param {() => void} onStart - Told once its changes go
+   */
+  function hold(storyId, onStart) {
+    held.set(storyId, { changes: new Map(), making: true, onStart })
+  }
+
+  /**
+   * A project held back is made: a change that does something in it saves it.
+   * @param {string} storyId
+   */
+  function made(storyId) {
+    const holding = held.get(storyId)
+    if (holding) holding.making = false
+  }
+
+  /**
+   * Save a project held back, and what was held of it.
+   * @param {string} storyId
+   * @returns {boolean} Whether it was held back
+   */
+  function start(storyId) {
+    const holding = held.get(storyId)
+    if (!holding) return false
+    held.delete(storyId)
+    for (const [key, change] of holding.changes) pendingChanges.value.set(key, change)
+    holding.onStart()
+    schedule()
+    return true
+  }
+
+  /**
+   * Let go of a project held back, and of everything held of it: nothing of
+   * it is saved.
+   * @param {string} storyId
+   */
+  function drop(storyId) {
+    held.delete(storyId)
+  }
+
+  /**
+   * Where a change goes while its project is held back: kept with it, or,
+   * doing something in it, saving it first.
+   * @param {string} key
+   * @param {Change} change
+   * @returns {boolean} Whether it was held
+   */
+  function heldBack(key, change) {
+    if (held.size === 0) return false
+    const storyId =
+      change.op === 'delete'
+        ? [...held].find(([, holding]) => holding.changes.has(key))?.[0]
+        : projectOf(change.entityType, change.id, change.data)
+    const holding = storyId ? held.get(storyId) : undefined
+    if (!holding) return false
+    if (holding.making || change.op === 'delete' || !DOING.has(change.entityType)) {
+      holding.changes.set(key, change)
+      return true
+    }
+    start(/** @type {string} */ (storyId))
+    return false
+  }
 
   /**
    * Track a change for persistence
@@ -46,13 +133,16 @@ export const useSyncStore = defineStore('sync', () => {
     }
 
     const key = `${entityType}:${id}`
-    pendingChanges.value.set(key, {
+    /** @type {Change} */
+    const change = {
       entityType,
       id,
       op: 'put',
       data: toRaw(data), // Use toRaw to avoid reactivity issues
       timestamp: Date.now(),
-    })
+    }
+    if (heldBack(key, change)) return
+    pendingChanges.value.set(key, change)
 
     schedule()
   }
@@ -75,13 +165,11 @@ export const useSyncStore = defineStore('sync', () => {
       return
     }
 
-    pendingChanges.value.set(`${entityType}:${id}`, {
-      entityType,
-      id,
-      op: 'delete',
-      data: null,
-      timestamp: Date.now(),
-    })
+    const key = `${entityType}:${id}`
+    /** @type {Change} */
+    const change = { entityType, id, op: 'delete', data: null, timestamp: Date.now() }
+    if (heldBack(key, change)) return
+    pendingChanges.value.set(key, change)
 
     schedule()
   }
@@ -255,5 +343,9 @@ export const useSyncStore = defineStore('sync', () => {
     trackChange,
     trackDelete,
     processSync,
+    hold,
+    made,
+    start,
+    drop,
   }
 })

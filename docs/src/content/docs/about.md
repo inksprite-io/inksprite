@@ -26,7 +26,7 @@ Nothing goes to Google until you import from Google Drive or sync a document to 
 
 #### Sync
 
-Sync is optional, in private preview, and needs an account on our server at sync.inksprite.io, by invitation for now. Your projects, setup and character cards are encrypted on your device before they're sent, and only your devices hold the keys, so we can't read them. The server does see your account name, what your devices call themselves (such as "Safari on iPhone"), how many records you sync, how large they are, when, and the addresses your devices connect from.
+Sync is optional, in private preview, and needs an account on our server at sync.inksprite.io, by invitation for now. Your projects, setup and character cards are encrypted on your device before they're sent, and only your devices hold the keys, so we can't read them. The server does see your account name, what your devices call themselves (such as "Safari on iPhone"), how many records you sync, how large they are, when, and the addresses your devices connect from. If you share projects, it also sees who you share them with, the people you keep to share with, and who you've blocked.
 
 If you share a project, the people you share it with can read it, and we still can't. The server sees who each shared project is shared with, and keeps the name you show them, as it keeps your account name. Each person's chats in a shared project stay readable only by them.
 

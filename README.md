@@ -47,11 +47,13 @@ Check out the [user guide](https://docs.inksprite.io/) if you need help getting 
 
 **Provider support:** We provide out-of-the-box integrations with OpenRouter, Anthropic, OpenAI, and various local endpoints. inksprite will work with any OpenAI-compatible provider. If you find a provider that doesn’t work, let us know by [opening an issue](https://github.com/inksprite-io/inksprite/issues).
 
-**Encrypted cloud sync:** You can **optionally** back up your work to the cloud, which allows you to [access it from any device](https://docs.inksprite.io/sync) and [collaborate with other inksprite users](https://docs.inksprite.io/sync#share-a-project). You hold the encryption keys, which means that we cannot access your work even if we wanted to (we don’t). **Cloud sync is currently invite-only. Email us at [sync@inksprite.io](mailto:sync@inksprite.io) if you want an invite.**
+**Encrypted cloud sync:** You can **optionally** back up your work to the cloud, which allows you to [access it from any device](https://docs.inksprite.io/sync) and [collaborate with other inksprite users](https://docs.inksprite.io/sync#share-a-project). You hold the encryption keys, which means that we cannot access your work even if we wanted to (we don’t).
+
+**Cloud sync is currently invite-only. Email us at [sync@inksprite.io](mailto:sync@inksprite.io) if you want an invite.**
 
 **Sync to and from Google Docs:** Need to share a design doc with your team but want to do your research and writing in inksprite? You can [link a document to a Google Doc](https://docs.inksprite.io/google-docs), which allows you to share your work, respond to comments and suggestions, and synchronize changes with Google Drive.
 
-**Roleplaying games:** inksprite started out as a tool for running solo tabletop RPGs. Use the built-in RPG tools to play solo, plan and run tabletop games for your friends, or [chat with character cards](https://docs.inksprite.io/roleplay) from popular bot sites.
+**Roleplaying games:** inksprite started out as a tool for running solo tabletop RPGs. Use the built-in RPG tools to play solo games, plan and run tabletop games for your friends, or [chat with character cards](https://docs.inksprite.io/roleplay) from popular bot sites.
 
 **Audio narration:** Use inksprite’s text-to-speech [narration tools](https://docs.inksprite.io/narration) to create an educational podcast series for your kids, turn your novel into an audiobook, or create an easy-to-digest podcast summary of your dissertation.
 

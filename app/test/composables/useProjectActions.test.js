@@ -9,15 +9,16 @@ const { push, confirmed, projects, cloud, toast, exported, windows, stores, save
     projects: {
       elsewhere: { value: new Set() },
       trash: vi.fn(async () => {}),
+      restore: vi.fn(async () => {}),
+      pick: vi.fn(async () => {}),
       nameOf: (/** @type {string} */ id) => `Name of ${id}`,
     },
     cloud: {
       account: { value: /** @type {any} */ (null) },
       keepOnThisDevice: vi.fn(async () => {}),
       syncProjectAgain: vi.fn(async () => {}),
-      leaveProject: vi.fn(async () => {}),
     },
-    toast: { error: vi.fn() },
+    toast: { error: vi.fn(), action: vi.fn() },
     exported: { storyIds: /** @type {string[]} */ ([]), documentIds: /** @type {string[]} */ ([]) },
     windows: {
       taken: { held: true, stale: false, first: false },
@@ -27,6 +28,7 @@ const { push, confirmed, projects, cloud, toast, exported, windows, stores, save
     },
     stores: {
       story: /** @type {any} */ ({ id: 'other' }),
+      fresh: /** @type {string|null} */ (null),
       readAfresh: vi.fn(async () => {}),
       loadStory: vi.fn(async () => {}),
     },
@@ -68,6 +70,7 @@ vi.mock('@/stores/storiesStore', () => ({
   useStoriesStore: () => ({
     getStory: () => stores.story,
     readAfresh: stores.readAfresh,
+    isFresh: (/** @type {string} */ id) => id === stores.fresh,
   }),
 }))
 vi.mock('@/stores/documentsStore', () => ({
@@ -91,6 +94,7 @@ describe('useProjectActions', () => {
     cloud.account.value = null
     people.sharing.value.projects = {}
     stores.story = { id: 'other' }
+    stores.fresh = null
     stores.loadStory.mockImplementation(async () => {})
     windows.desktop = false
     windows.taken = { held: true, stale: false, first: false }
@@ -107,18 +111,14 @@ describe('useProjectActions', () => {
 
   it('offers the settings, an export and a delete, with the folder in the desktop app', () => {
     const { itemsFor } = useProjectActions()
-    expect(labels(itemsFor('other'))).toEqual([
-      'Project settings',
-      'Export project',
-      'Delete project',
-    ])
+    expect(labels(itemsFor('other'))).toEqual(['Project settings', 'Export project', 'Remove'])
 
     windows.desktop = true
     expect(labels(itemsFor('other'))).toEqual([
       'Project settings',
       'Export project',
       'Show in Finder',
-      'Delete project',
+      'Remove',
     ])
     expect(itemsFor('other')[2].id).toBe('root_other')
   })
@@ -128,7 +128,7 @@ describe('useProjectActions', () => {
     const trash = { label: 'Trash' }
     expect(labels(itemsFor('other', { current: true, beforeDelete: [trash] })).slice(-2)).toEqual([
       'Trash',
-      'Delete project',
+      'Remove',
     ])
   })
 
@@ -140,7 +140,7 @@ describe('useProjectActions', () => {
       'Export project',
       'Share…',
       'Keep on this device only…',
-      'Delete project',
+      'Remove',
     ])
 
     stores.story = { id: 'other', syncOff: 5 }
@@ -148,11 +148,11 @@ describe('useProjectActions', () => {
       'Project settings',
       'Export project',
       'Sync this project',
-      'Delete project',
+      'Remove',
     ])
   })
 
-  it('offers leaving in place of deleting and keeping, for a project shared with this account', () => {
+  it('offers its people in place of sharing and keeping, for a project shared with this account', () => {
     const { itemsFor } = useProjectActions()
     cloud.account.value = { name: 'writer' }
     people.sharing.value.projects = { other: { role: 'member' } }
@@ -160,8 +160,18 @@ describe('useProjectActions', () => {
       'Project settings',
       'Export project',
       'People…',
-      'Leave project…',
+      'Remove',
     ])
+  })
+
+  it('offers only the settings of a project not saved yet, and the caller’s items', () => {
+    const { itemsFor } = useProjectActions()
+    cloud.account.value = { name: 'writer' }
+    windows.desktop = true
+    stores.fresh = 'mine'
+    expect(labels(itemsFor('mine', { current: true, beforeDelete: [{ label: 'Trash' }] }))).toEqual(
+      ['Project settings', 'Trash']
+    )
   })
 
   it('offers only its folder for a project open in another window', () => {
@@ -195,22 +205,27 @@ describe('useProjectActions', () => {
       expect(panel.requestedProject.value).toBeNull()
     })
 
-    it('leaves it for another once deleted', async () => {
+    it('leaves it for another once removed, and Undo brings it back open', async () => {
       const { itemsFor } = useProjectActions()
-      await run(itemsFor('mine', { current: true }), 'Delete project')
+      await run(itemsFor('mine', { current: true }), 'Remove')
 
       expect(projects.trash).toHaveBeenCalledWith('mine')
       expect(push).toHaveBeenCalledWith('/')
+      const [message, undo] = toast.action.mock.calls[0]
+      expect(message).toBe('Removed Name of mine')
+      await undo.command()
+      expect(projects.restore).toHaveBeenCalledWith('mine')
+      expect(projects.pick).toHaveBeenCalledWith('mine')
     })
 
-    it('leaves it for another once left', async () => {
+    it('removes one shared with this account the same way, without asking', async () => {
       const { itemsFor } = useProjectActions()
       cloud.account.value = { name: 'writer' }
       people.sharing.value.projects = { mine: { role: 'member' } }
 
-      await run(itemsFor('mine', { current: true }), 'Leave project…')
-      await vi.waitFor(() => expect(push).toHaveBeenCalledWith('/'))
-      expect(cloud.leaveProject).toHaveBeenCalledWith('mine')
+      await run(itemsFor('mine', { current: true }), 'Remove')
+      expect(projects.trash).toHaveBeenCalledWith('mine')
+      expect(confirmed.asked).toEqual([])
     })
   })
 
@@ -286,12 +301,15 @@ describe('useProjectActions', () => {
       vi.restoreAllMocks()
     })
 
-    it('moves it to the trash and stays where it is', async () => {
+    it('moves it to the trash and stays where it is, and Undo brings it back', async () => {
       const { itemsFor } = useProjectActions()
-      await run(itemsFor('other'), 'Delete project')
+      await run(itemsFor('other'), 'Remove')
 
       expect(projects.trash).toHaveBeenCalledWith('other')
       expect(push).not.toHaveBeenCalled()
+      await toast.action.mock.calls[0][1].command()
+      expect(projects.restore).toHaveBeenCalledWith('other')
+      expect(projects.pick).not.toHaveBeenCalled()
     })
 
     it('says so when it can’t be moved to the trash', async () => {
@@ -299,9 +317,10 @@ describe('useProjectActions', () => {
       projects.trash.mockRejectedValue(new Error('no'))
       vi.spyOn(console, 'error').mockImplementation(() => {})
 
-      await run(itemsFor('other'), 'Delete project')
+      await run(itemsFor('other'), 'Remove')
 
       expect(toast.error).toHaveBeenCalledWith("The project couldn't be moved to the trash.")
+      expect(toast.action).not.toHaveBeenCalled()
       vi.restoreAllMocks()
     })
 
@@ -313,18 +332,6 @@ describe('useProjectActions', () => {
       await vi.waitFor(() => expect(cloud.keepOnThisDevice).toHaveBeenCalledWith('other'))
 
       expect(confirmed.asked[0].message).toContain('Name of other')
-    })
-
-    it('leaves it without going anywhere', async () => {
-      const { itemsFor } = useProjectActions()
-      cloud.account.value = { name: 'writer' }
-      people.sharing.value.projects = { other: { role: 'member' } }
-
-      await run(itemsFor('other'), 'Leave project…')
-      await vi.waitFor(() => expect(cloud.leaveProject).toHaveBeenCalledWith('other'))
-
-      expect(confirmed.asked[0].message).toContain('Name of other')
-      expect(push).not.toHaveBeenCalled()
     })
 
     it('syncs it again, and says why not when it can’t', async () => {

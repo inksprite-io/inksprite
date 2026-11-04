@@ -4,6 +4,12 @@
  * for stories including creation, deletion, updates, and synchronization with IndexedDB.
  * Stories are the top-level entities that contain parts (acts) and scenes (chapters).
  *
+ * With no project to open, the writer is in one not saved yet (`fresh`), as a
+ * chat not started is: named Untitled project, out of the lists of projects,
+ * and saved, into them, once something is done in it (a document, a chat, a
+ * new name, its settings; see `syncStore.hold`). Left untouched for another,
+ * it is let go of.
+ *
  * @example
  * // Create a new story
  * const store = useStoriesStore()
@@ -23,6 +29,9 @@ import { storage } from '@/storage/index.js'
 import { freeName as freeAmong } from '@/utils/titleValidation.js'
 
 /** @typedef {import('../types/models.js').Story} Story */
+
+/** What a project not saved yet is called. */
+export const UNTITLED_PROJECT = 'Untitled project'
 
 /**
  * Generate a unique story ID
@@ -45,6 +54,21 @@ export const useStoriesStore = defineStore('stories', () => {
    * @type {import('vue').Ref<Map<string, Story>>}
    */
   const trash = ref(new Map())
+
+  /**
+   * The project not saved yet that the writer is in, if they are in one:
+   * out of `stories` until something is done in it.
+   * @type {import('vue').Ref<Story|null>}
+   */
+  const fresh = ref(null)
+
+  /**
+   * A project open here, saved or not.
+   * @param {string} storyId
+   * @returns {Story|undefined}
+   */
+  const lookUp = storyId =>
+    stories.value.get(storyId) ?? (fresh.value?.id === storyId ? fresh.value : undefined)
 
   /**
    * Keep a project's record in the map it belongs in, and out of the other.
@@ -186,6 +210,53 @@ export const useStoriesStore = defineStore('stories', () => {
   }
 
   /**
+   * A project to be in when there is none to open, saved only once something
+   * is done in it: the one there is, or a new one, named Untitled project.
+   * @returns {Promise<Story>}
+   */
+  async function createFresh() {
+    await ensureInitialized()
+    if (fresh.value) return fresh.value
+    const storyId = generateStoryId()
+    /** @type {Story} */
+    const story = {
+      id: storyId,
+      overview: '',
+      wordCount: 0,
+      options: {},
+      version: 1,
+      created: Date.now(),
+      updated: Date.now(),
+    }
+    syncStore.hold(storyId, () => {
+      const started = fresh.value?.id === storyId ? fresh.value : story
+      fresh.value = null
+      stories.value.set(storyId, started)
+    })
+    fresh.value = story
+    useDocumentsStore().ensureRoot(storyId, freeName(UNTITLED_PROJECT))
+    syncStore.trackChange('stories', storyId, story)
+    syncStore.made(storyId)
+    return story
+  }
+
+  /**
+   * Whether a project is the one not saved yet.
+   * @param {string|null|undefined} storyId
+   */
+  const isFresh = storyId => Boolean(storyId) && fresh.value?.id === storyId
+
+  /** Let go of the project not saved yet: nothing of it was. */
+  function dropFresh() {
+    const story = fresh.value
+    if (!story) return
+    // Held with the rest of it, and let go of with it.
+    useDocumentsStore().forgetRoot(story.id)
+    syncStore.drop(story.id)
+    fresh.value = null
+  }
+
+  /**
    * Update an existing story with partial updates
    * @param {string} storyId - Story ID to update
    * @param {Partial<Story>} updates - Fields to update
@@ -195,7 +266,7 @@ export const useStoriesStore = defineStore('stories', () => {
   async function updateStory(storyId, updates) {
     await ensureInitialized()
 
-    const story = stories.value.get(storyId)
+    const story = lookUp(storyId)
     if (!story) {
       throw new Error(`Failed to update story, '${storyId}' not found`)
     }
@@ -211,7 +282,9 @@ export const useStoriesStore = defineStore('stories', () => {
       updated: Date.now(),
     }
 
-    stories.value.set(storyId, updated)
+    // Changing the project not saved yet saves it, into `stories`.
+    if (isFresh(storyId)) fresh.value = updated
+    else stories.value.set(storyId, updated)
 
     // Track change for persistence
     syncStore.trackChange('stories', storyId, updated)
@@ -346,9 +419,7 @@ export const useStoriesStore = defineStore('stories', () => {
    * @returns {Story|null} Story or null if not found
    */
   function getStory(storyId) {
-    // Check if we have the story in memory
-    const story = stories.value.get(storyId)
-    return story || null
+    return lookUp(storyId) || null
   }
 
   /**
@@ -405,10 +476,14 @@ export const useStoriesStore = defineStore('stories', () => {
     // State
     stories,
     trash,
+    fresh,
     isInitialized,
 
     // Actions
     createStory,
+    createFresh,
+    isFresh,
+    dropFresh,
     updateStory,
     trashStory,
     restoreStory,

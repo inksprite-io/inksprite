@@ -111,7 +111,8 @@ async function inTab({ url, headed, theme, storageState }, then) {
   try {
     await ui.goto('/')
     await ui.click(button('Start writing'))
-    await ui.click(button('New project'))
+    await ui.click(button('Projects'))
+    await ui.click(page.getByRole('menuitem', { name: 'New project…' }))
     await ui.type('Thief')
     await ui.click(button('Create'))
     await ui.click(button('Connect'))

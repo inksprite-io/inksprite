@@ -13,7 +13,7 @@ vi.mock('@/stores/db', () => ({
   default: { webSearch: { get: vi.fn(async () => undefined) } },
 }))
 vi.mock('@/stores/syncStore', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 const listServer = vi.hoisted(() => vi.fn())

@@ -381,7 +381,7 @@ export async function features(ui, { standIn, context }) {
   // The switcher
   await at(55)
   await ui.click(button('Projects'))
-  await ui.click(menu('Switch project…'))
+  await ui.click(menu('Projects…'))
   const switcher = page.locator('[data-projects-dialog]')
   await switcher.getByText('Field notes').waitFor()
   await ui.shot('projects-switcher', { of: switcher, pad: 0 })

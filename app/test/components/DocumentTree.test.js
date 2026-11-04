@@ -24,7 +24,7 @@ vi.mock('../../src/stores/db', () => ({
   },
 }))
 vi.mock('../../src/stores/syncStore', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 const { mockStory, trashStory, push } = await vi.hoisted(async () => {
@@ -42,6 +42,7 @@ vi.mock('../../src/stores/storiesStore', () => ({
     updateStory: vi.fn((_id, updates) => Object.assign(mockStory, updates)),
     trashStory,
     trashedStories: () => [],
+    isFresh: () => false,
   }),
 }))
 
@@ -52,7 +53,6 @@ const { cloud } = await vi.hoisted(async () => {
       account: ref(/** @type {any} */ (null)),
       keepOnThisDevice: vi.fn(async () => {}),
       syncProjectAgain: vi.fn(async () => {}),
-      leaveProject: vi.fn(async () => {}),
       profile: vi.fn(async () => ({ id: 2, display: 'Grace', friend: 'ABCDE-FGHJK-MNPQR-STVWX' })),
     },
   }
@@ -518,7 +518,7 @@ describe('DocumentTree project menu', () => {
       .findComponent({ name: 'DocumentNode' })
       .props('extraMenuItems')
       .map(item => item.label)
-    expect(labels).toEqual(['Project settings', 'Export project', 'Delete project'])
+    expect(labels).toEqual(['Project settings', 'Export project', 'Remove'])
   })
 
   it('opens the project’s settings, and its sharing, in the settings', async () => {
@@ -563,16 +563,19 @@ describe('DocumentTree project menu', () => {
     expect(wrapper.findComponent(ProjectMenu).props('projectItems')).toBe(own)
   })
 
-  it('moves the project to the trash with its jobs, and leaves it', async () => {
+  it('moves the project to the trash with its jobs, and leaves it, saying so with an Undo', async () => {
     const wrapper = mountTree()
     await flushPromises()
 
-    await projectCommand(wrapper, 'Delete project')
+    await projectCommand(wrapper, 'Remove')
     await flushPromises()
 
     expect(dropJobsForStory).toHaveBeenCalledWith('story_1')
     expect(trashStory).toHaveBeenCalledWith('story_1')
     expect(push).toHaveBeenCalledWith('/')
+    expect(toastAdd).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Removed My Novel', action: expect.anything() })
+    )
   })
 
   it('exports the project as it would be published', async () => {
@@ -609,7 +612,7 @@ describe('DocumentTree project menu', () => {
     }
   })
 
-  it('offers to share the project, and has a friend leave one shared with them rather than delete it', async () => {
+  it('offers to share the project, and its people for one shared with this account', async () => {
     const { sharing } = await import('@/cloud/people.js')
     const labels = (/** @type {any} */ wrapper) =>
       wrapper
@@ -625,7 +628,7 @@ describe('DocumentTree project menu', () => {
         'Export project',
         'Share…',
         'Keep on this device only…',
-        'Delete project',
+        'Remove',
       ])
 
       sharing.value = {
@@ -641,22 +644,12 @@ describe('DocumentTree project menu', () => {
           },
         },
         selective: [],
+        invitations: [],
       }
       await flushPromises()
-      expect(labels(wrapper)).toEqual([
-        'Project settings',
-        'Export project',
-        'People…',
-        'Leave project…',
-      ])
-      await projectCommand(wrapper, 'Leave project…')
-      await flushPromises()
-      expect(confirmed.asked.at(-1).header).toBe('Leave project')
-      expect(cloud.leaveProject).toHaveBeenCalledWith('story_1')
-      expect(trashStory).not.toHaveBeenCalled()
-      expect(push).toHaveBeenCalledWith('/')
+      expect(labels(wrapper)).toEqual(['Project settings', 'Export project', 'People…', 'Remove'])
     } finally {
-      sharing.value = { me: null, projects: {}, selective: [] }
+      sharing.value = { me: null, projects: {}, selective: [], invitations: [] }
       cloud.account.value = null
     }
   })

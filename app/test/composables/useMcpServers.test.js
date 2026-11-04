@@ -6,7 +6,7 @@ vi.mock('@/stores/db', () => ({
   default: { mcpServers: { toArray: vi.fn(async () => []) } },
 }))
 vi.mock('@/stores/syncStore', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 const auth = vi.hoisted(() => {

@@ -43,38 +43,38 @@
   - [Parameters][39]
 - [ListedCollection][40]
   - [Properties][41]
-- [PulledRecord][42]
+- [Person][42]
   - [Properties][43]
-- [proofOf][44]
-  - [Parameters][45]
+- [PulledRecord][44]
+  - [Properties][45]
 - [proofOf][46]
   - [Parameters][47]
-- [Member][48]
-  - [Properties][49]
-- [AccountRecord][50]
+- [proofOf][48]
+  - [Parameters][49]
+- [Member][50]
   - [Properties][51]
-- [Device][52]
+- [AccountRecord][52]
   - [Properties][53]
-- [Proof][54]
-- [APP_VERSION][55]
-- [PROTOCOL][56]
-- [createApi][57]
-  - [Parameters][58]
-- [call][59]
+- [Device][54]
+  - [Properties][55]
+- [Proof][56]
+- [APP_VERSION][57]
+- [PROTOCOL][58]
+- [createApi][59]
   - [Parameters][60]
-- [response][61]
-- [name][62]
-- [collection][63]
-  - [Parameters][64]
-- [listing][65]
-- [prelogin][66]
-  - [Parameters][67]
-- [account][68]
-- [setKeys][69]
-  - [Parameters][70]
-- [setDisplay][71]
-  - [Parameters][72]
-- [setDisplay][73]
+- [call][61]
+  - [Parameters][62]
+- [response][63]
+- [name][64]
+- [collection][65]
+  - [Parameters][66]
+  - [collection][67]
+  - [collection][68]
+- [listing][69]
+- [prelogin][70]
+  - [Parameters][71]
+- [account][72]
+- [setKeys][73]
   - [Parameters][74]
 - [friend][75]
   - [Parameters][76]
@@ -90,601 +90,644 @@
   - [Parameters][86]
 - [addMember][87]
   - [Parameters][88]
-- [removeMember][89]
+- [accept][89]
   - [Parameters][90]
-- [removeMember][91]
+- [accept][91]
   - [Parameters][92]
-- [rewrap][93]
+- [setRemoved][93]
   - [Parameters][94]
-- [setRecovery][95]
-  - [Parameters][96]
-- [setPassphrase][97]
+- [people][95]
+- [people][96]
+- [addPerson][97]
   - [Parameters][98]
-- [devices][99]
-- [signOutDevice][100]
-  - [Parameters][101]
-- [nameDevice][102]
-  - [Parameters][103]
-- [collections][104]
-- [putCollection][105]
+- [addPerson][99]
+  - [Parameters][100]
+- [forgetPerson][101]
+  - [Parameters][102]
+- [forgetPerson][103]
+  - [Parameters][104]
+- [block][105]
   - [Parameters][106]
-- [deleteCollection][107]
+- [block][107]
   - [Parameters][108]
-- [push][109]
+- [unblock][109]
   - [Parameters][110]
-- [push][111]
-- [push][112]
-  - [Parameters][113]
-- [][114]
-- [changes][115]
+- [unblock][111]
+  - [Parameters][112]
+- [removeMember][113]
+  - [Parameters][114]
+- [removeMember][115]
   - [Parameters][116]
-- [][117]
-- [parts][118]
-  - [Parameters][119]
-- [parts][120]
-- [putPart][121]
+- [rewrap][117]
+  - [Parameters][118]
+- [setRecovery][119]
+  - [Parameters][120]
+- [setPassphrase][121]
   - [Parameters][122]
-- [getPart][123]
-  - [Parameters][124]
-- [diagnostics][125]
-  - [Parameters][126]
-- [listen][127]
-  - [Parameters][128]
-- [getReader][129]
-- [answer][130]
-  - [Parameters][131]
-- [answer][132]
-  - [Parameters][133]
-- [body][134]
-- [serverAddress][135]
-  - [Parameters][136]
-- [cloud/crypto][137]
-- [KDF][138]
-- [Kdf][139]
-- [encoder][140]
-- [AccountKeys][141]
-  - [Properties][142]
-- [CollectionKeys][143]
-  - [Properties][144]
-- [randomBytes][145]
+- [devices][123]
+- [signOutDevice][124]
+  - [Parameters][125]
+- [nameDevice][126]
+  - [Parameters][127]
+- [collections][128]
+- [putCollection][129]
+  - [Parameters][130]
+- [deleteCollection][131]
+  - [Parameters][132]
+- [push][133]
+  - [Parameters][134]
+- [push][135]
+- [push][136]
+  - [Parameters][137]
+- [][138]
+- [changes][139]
+  - [Parameters][140]
+- [][141]
+- [parts][142]
+  - [Parameters][143]
+- [parts][144]
+- [putPart][145]
   - [Parameters][146]
-- [toBase64][147]
+- [getPart][147]
   - [Parameters][148]
-- [fromBase64][149]
+- [diagnostics][149]
   - [Parameters][150]
-- [toBase64Url][151]
+- [listen][151]
   - [Parameters][152]
-- [hkdfBase][153]
-  - [Parameters][154]
-- [hkdf][155]
-  - [Parameters][156]
-- [aesFrom][157]
-  - [Parameters][158]
-- [hmacFrom][159]
+- [getReader][153]
+- [answer][154]
+  - [Parameters][155]
+- [answer][156]
+  - [Parameters][157]
+- [body][158]
+- [serverAddress][159]
   - [Parameters][160]
-- [passphraseKeys][161]
-  - [Parameters][162]
-- [CODE_LETTERS][163]
-- [CODE_LENGTH][164]
-- [makeRecoveryCode][165]
-- [recoveryKeys][166]
-  - [Parameters][167]
-- [accountKeys][168]
-  - [Parameters][169]
-- [collectionKeys][170]
-  - [Parameters][171]
-- [ownKeys][172]
-  - [Parameters][173]
-- [PRIVATE_KEY][174]
-- [ECDH][175]
-- [makeKeyPair][176]
-  - [Parameters][177]
-- [generateKey][178]
-- [generateKey][179]
-- [openPrivateKey][180]
-  - [Parameters][181]
-- [agreed][182]
-  - [Parameters][183]
-- [RAW_POINT][184]
-- [sealFor][185]
+- [cloud/crypto][161]
+- [KDF][162]
+- [Kdf][163]
+- [encoder][164]
+- [AccountKeys][165]
+  - [Properties][166]
+- [CollectionKeys][167]
+  - [Properties][168]
+- [randomBytes][169]
+  - [Parameters][170]
+- [toBase64][171]
+  - [Parameters][172]
+- [fromBase64][173]
+  - [Parameters][174]
+- [toBase64Url][175]
+  - [Parameters][176]
+- [hkdfBase][177]
+  - [Parameters][178]
+- [hkdf][179]
+  - [Parameters][180]
+- [aesFrom][181]
+  - [Parameters][182]
+- [hmacFrom][183]
+  - [Parameters][184]
+- [passphraseKeys][185]
   - [Parameters][186]
-- [openFor][187]
-  - [Parameters][188]
-- [FRIEND_LENGTH][189]
-- [friendCode][190]
+- [CODE_LETTERS][187]
+- [CODE_LENGTH][188]
+- [makeRecoveryCode][189]
+- [recoveryKeys][190]
   - [Parameters][191]
-- [join][192]
-- [join][193]
-- [readFriendCode][194]
+- [accountKeys][192]
+  - [Parameters][193]
+- [collectionKeys][194]
   - [Parameters][195]
-- [seal][196]
+- [ownKeys][196]
   - [Parameters][197]
-- [open][198]
-  - [Parameters][199]
-- [hashName][200]
+- [PRIVATE_KEY][198]
+- [ECDH][199]
+- [makeKeyPair][200]
   - [Parameters][201]
-- [through][202]
-  - [Parameters][203]
-- [sealJson][204]
+- [generateKey][202]
+- [generateKey][203]
+- [openPrivateKey][204]
   - [Parameters][205]
-- [openJson][206]
+- [agreed][206]
   - [Parameters][207]
-- [fingerprint][208]
-  - [Parameters][209]
-- [stableJson][210]
-  - [Parameters][211]
-- [cloud/deviceName][212]
-- [Seen][213]
-  - [Properties][214]
-- [deviceName][215]
+- [RAW_POINT][208]
+- [sealFor][209]
+  - [Parameters][210]
+- [openFor][211]
+  - [Parameters][212]
+- [sealTextFor][213]
+  - [Parameters][214]
+- [openTextFor][215]
   - [Parameters][216]
-- [cloud/diagnostics][217]
-- [VERSION][218]
-- [Diagnostics][219]
-- [UNCOUNTED][220]
-- [createDiagnostics][221]
-  - [Parameters][222]
-- [counts][223]
-- [errors][224]
-- [errorTag][225]
-  - [Parameters][226]
-- [error][227]
-- [cloud/engine][228]
-- [SYNCED][229]
-- [SYNCED][230]
-- [SYNCED][231]
-- [SYNCED][232]
-- [SYNCED][233]
-- [SYNCED][234]
-- [SYNCED][235]
-- [SYNCED][236]
-- [SETUP_SYNCED][237]
-- [MERGED][238]
-- [TRASHED][239]
-- [OWN][240]
-- [OWN][241]
-- [DOCUMENTED][242]
-- [documentOf][243]
+- [FRIEND_LENGTH][217]
+- [friendCode][218]
+  - [Parameters][219]
+- [join][220]
+- [join][221]
+- [readFriendCode][222]
+  - [Parameters][223]
+- [seal][224]
+  - [Parameters][225]
+- [open][226]
+  - [Parameters][227]
+- [hashName][228]
+  - [Parameters][229]
+- [through][230]
+  - [Parameters][231]
+- [sealJson][232]
+  - [Parameters][233]
+- [openJson][234]
+  - [Parameters][235]
+- [fingerprint][236]
+  - [Parameters][237]
+- [stableJson][238]
+  - [Parameters][239]
+- [cloud/deviceName][240]
+- [Seen][241]
+  - [Properties][242]
+- [deviceName][243]
   - [Parameters][244]
-- [reshapes][245]
-  - [Parameters][246]
-- [BYTES][247]
-- [intoTrash][248]
-  - [Parameters][249]
-- [PART_SIZE][250]
-- [PUSH_BYTES][251]
-- [GONE][252]
-- [FETCHED][253]
-- [MOST_ROUNDS][254]
-- [SETTLE_MS][255]
-- [STREAMING_MS][256]
-- [Waiting][257]
-  - [Properties][258]
-- [Kept][259]
-  - [Properties][260]
-- [WrittenBy][261]
-  - [Properties][262]
-- [FileInfo][263]
-  - [Properties][264]
-- [Pending][265]
-  - [Properties][266]
-- [Reading][267]
-  - [Properties][268]
-- [Incoming][269]
-  - [Properties][270]
-- [Clash][271]
-  - [Properties][272]
-- [Payload][273]
-  - [Properties][274]
-- [ProjectRows][275]
-  - [Properties][276]
-- [Local][277]
-- [State][278]
-- [Status][279]
-  - [Properties][280]
-- [Known][281]
-  - [Properties][282]
-- [Shared][283]
-  - [Properties][284]
-- [Sharing][285]
+- [cloud/diagnostics][245]
+- [VERSION][246]
+- [Diagnostics][247]
+- [UNCOUNTED][248]
+- [createDiagnostics][249]
+  - [Parameters][250]
+- [counts][251]
+- [errors][252]
+- [errorTag][253]
+  - [Parameters][254]
+- [error][255]
+- [cloud/engine][256]
+- [SYNCED][257]
+- [SYNCED][258]
+- [SYNCED][259]
+- [SYNCED][260]
+- [SYNCED][261]
+- [SYNCED][262]
+- [SYNCED][263]
+- [SYNCED][264]
+- [SETUP_SYNCED][265]
+- [MERGED][266]
+- [TRASHED][267]
+- [OWN][268]
+- [OWN][269]
+- [DOCUMENTED][270]
+- [documentOf][271]
+  - [Parameters][272]
+- [reshapes][273]
+  - [Parameters][274]
+- [BYTES][275]
+- [intoTrash][276]
+  - [Parameters][277]
+- [PART_SIZE][278]
+- [PUSH_BYTES][279]
+- [GONE][280]
+- [FETCHED][281]
+- [MOST_ROUNDS][282]
+- [SETTLE_MS][283]
+- [STREAMING_MS][284]
+- [Waiting][285]
   - [Properties][286]
-- [Options][287]
+- [Kept][287]
   - [Properties][288]
-- [put][289]
-  - [Parameters][290]
-- [entityType][291]
-- [entityType][292]
-- [removal][293]
-  - [Parameters][294]
-- [storyOf][295]
-  - [Parameters][296]
-- [asSentStory][297]
-  - [Parameters][298]
-- [asSentStory][299]
-  - [Parameters][300]
-- [createEngine][301]
-  - [Parameters][302]
-- [][303]
-- [writtenBy][304]
-  - [Parameters][305]
-- [ahead][306]
-  - [Parameters][307]
-- [expected][308]
-- [noting][309]
-- [keysById][310]
-- [ownById][311]
-- [left][312]
-- [left][313]
-- [left][314]
-- [sharedHere][315]
-- [selectiveHere][316]
-- [regrouped][317]
-- [moved][318]
-- [status][319]
-- [status][320]
-- [tell][321]
-  - [Parameters][322]
-- [noteWrite][323]
-  - [Parameters][324]
-- [note][325]
-  - [Parameters][326]
-- [waiting][327]
-- [waitingOf][328]
+- [WrittenBy][289]
+  - [Properties][290]
+- [FileInfo][291]
+  - [Properties][292]
+- [Pending][293]
+  - [Properties][294]
+- [Reading][295]
+  - [Properties][296]
+- [Incoming][297]
+  - [Properties][298]
+- [Clash][299]
+  - [Properties][300]
+- [Payload][301]
+  - [Properties][302]
+- [ProjectRows][303]
+  - [Properties][304]
+- [Local][305]
+- [State][306]
+- [Status][307]
+  - [Properties][308]
+- [Known][309]
+  - [Properties][310]
+- [Shared][311]
+  - [Properties][312]
+- [Invitation][313]
+  - [Properties][314]
+- [Invitation][315]
+- [Sharing][316]
+  - [Properties][317]
+- [Options][318]
+  - [Properties][319]
+- [put][320]
+  - [Parameters][321]
+- [entityType][322]
+- [entityType][323]
+- [removal][324]
+  - [Parameters][325]
+- [storyOf][326]
+  - [Parameters][327]
+- [asSentStory][328]
   - [Parameters][329]
-- [][330]
-- [projectWaiting][331]
-  - [Parameters][332]
-- [entry][333]
-  - [Parameters][334]
-- [setupWaiting][335]
+- [asSentStory][330]
+  - [Parameters][331]
+- [createEngine][332]
+  - [Parameters][333]
+- [][334]
+- [writtenBy][335]
   - [Parameters][336]
-- [enqueue][337]
+- [ahead][337]
   - [Parameters][338]
-- [entries][339]
-- [entries][340]
-- [restoredSince][341]
-  - [Parameters][342]
-- [had][343]
-- [sendAgain][344]
-- [forgotten][345]
-- [blobs][346]
-- [all][347]
-- [all][348]
-- [all][349]
-- [takeOff][350]
-  - [Parameters][351]
-- [writeStory][352]
-  - [Parameters][353]
-- [keptElsewhere][354]
-  - [Parameters][355]
-- [takeBack][356]
-  - [Parameters][357]
-- [leftBehind][358]
-- [people][359]
-- [peopleAsked][360]
-- [me][361]
-- [me][362]
-- [me][363]
-- [me][364]
-- [toldSharing][365]
-- [lookAtPeople][366]
-  - [Parameters][367]
-- [tellSharing][368]
-- [sharing][369]
-- [sharing][370]
-- [idle][371]
-- [listedFor][372]
-  - [Parameters][373]
-- [reading][374]
-- [allOwn][375]
-  - [Parameters][376]
-- [ofStory][377]
-- [ofStory][378]
-- [leave][379]
-  - [Parameters][380]
-- [leaveCollection][381]
-  - [Parameters][382]
-- [profile][383]
-- [named][384]
+- [expected][339]
+- [noting][340]
+- [keysById][341]
+- [ownById][342]
+- [left][343]
+- [left][344]
+- [left][345]
+- [sharedHere][346]
+- [removedHere][347]
+- [selectiveHere][348]
+- [regrouped][349]
+- [moved][350]
+- [status][351]
+- [status][352]
+- [tell][353]
+  - [Parameters][354]
+- [noteWrite][355]
+  - [Parameters][356]
+- [note][357]
+  - [Parameters][358]
+- [waiting][359]
+- [waitingOf][360]
+  - [Parameters][361]
+- [][362]
+- [projectWaiting][363]
+  - [Parameters][364]
+- [entry][365]
+  - [Parameters][366]
+- [setupWaiting][367]
+  - [Parameters][368]
+- [enqueue][369]
+  - [Parameters][370]
+- [entries][371]
+- [entries][372]
+- [restoredSince][373]
+  - [Parameters][374]
+- [had][375]
+- [sendAgain][376]
+- [forgotten][377]
+- [blobs][378]
+- [all][379]
+- [all][380]
+- [all][381]
+- [takeOff][382]
+  - [Parameters][383]
+- [writeStory][384]
   - [Parameters][385]
-- [noted][386]
-- [running][387]
-- [round][388]
-- [full][389]
-- [keptOff][390]
-- [counted][391]
-  - [Parameters][392]
-- [grown][393]
-- [][394]
-- [learn][395]
-  - [Parameters][396]
-- [known][397]
-- [setupId][398]
-- [setupCollection][399]
-- [takeShared][400]
-  - [Parameters][401]
-- [pair][402]
-- [keyPair][403]
-- [ownOf][404]
+- [keptElsewhere][386]
+  - [Parameters][387]
+- [takeBack][388]
+  - [Parameters][389]
+- [leftBehind][390]
+- [peopleAsked][391]
+- [me][392]
+- [me][393]
+- [me][394]
+- [me][395]
+- [invitations][396]
+- [titles][397]
+- [toldSharing][398]
+- [lookAtPeople][399]
+  - [Parameters][400]
+- [tellSharing][401]
+- [sharing][402]
+- [sharing][403]
+- [followRemoved][404]
   - [Parameters][405]
-- [keysOf][406]
-  - [Parameters][407]
-- [groupWaiting][408]
-- [grouped][409]
-- [map][410]
-- [map][411]
-- [map][412]
-- [map][413]
-- [chats][414]
-- [lost][415]
-- [lost][416]
-- [pull][417]
+- [stories][406]
+- [markRemoved][407]
+  - [Parameters][408]
+- [idle][409]
+- [listedFor][410]
+  - [Parameters][411]
+- [reading][412]
+- [allOwn][413]
+  - [Parameters][414]
+- [ofStory][415]
+- [ofStory][416]
+- [leave][417]
   - [Parameters][418]
-- [get][419]
-- [get][420]
-- [get][421]
-- [get][422]
-- [get][423]
-- [get][424]
-- [get][425]
-- [get][426]
-- [get][427]
-- [get][428]
-- [get][429]
-- [get][430]
-- [received][431]
-- [held][432]
-- [held][433]
-- [incoming][434]
-- [incoming][435]
-- [incoming][436]
-- [clashes][437]
-- [clashes][438]
-- [clashes][439]
-- [kept][440]
-  - [kept][441]
-- [kept][442]
-  - [kept][443]
-- [kept][444]
-  - [kept][445]
-- [kept][446]
-  - [kept][447]
-- [outbox][448]
-- [outbox][449]
-- [outbox][450]
-- [outbox][451]
-- [checked][452]
-- [check][453]
-- [behind][454]
-- [broken][455]
-- [repairTrees][456]
-  - [Parameters][457]
-- [take][458]
-  - [Parameters][459]
-- [openRecord][460]
-  - [Parameters][461]
-- [payload][462]
-- [payload][463]
-- [arrive][464]
-  - [Parameters][465]
-- [project][466]
-  - [project][467]
-- [gone][468]
-  - [Parameters][469]
-- [dropUnreceived][470]
-  - [Parameters][471]
-- [forget][472]
-  - [Parameters][473]
-- [make][474]
-  - [Parameters][475]
-- [pushGroup][476]
-  - [Parameters][477]
-- [batch][478]
-- [dropped][479]
-- [types][480]
-- [][481]
-- [][482]
-- [print][483]
-- [file][484]
-- [stampNew][485]
-  - [Parameters][486]
-- [fresh][487]
-- [unsharedOf][488]
-  - [Parameters][489]
-- [ownFor][490]
-  - [Parameters][491]
-- [regroup][492]
-  - [Parameters][493]
-- [filter][494]
-- [again][495]
-- [send][496]
-  - [Parameters][497]
-- [send][498]
-  - [Parameters][499]
-- [pushed][500]
-- [upload][501]
-  - [Parameters][502]
-- [pending][503]
-- [fetchFiles][504]
-- [fetching][505]
-- [fetchOne][506]
-  - [Parameters][507]
-- [hasFile][508]
+- [leaveCollection][419]
+  - [Parameters][420]
+- [reject][421]
+  - [Parameters][422]
+- [forgetInvitation][423]
+  - [Parameters][424]
+- [knownPeople][425]
+- [profile][426]
+- [noted][427]
+- [running][428]
+- [round][429]
+- [full][430]
+- [keptOff][431]
+- [counted][432]
+  - [Parameters][433]
+- [grown][434]
+- [][435]
+- [learn][436]
+  - [Parameters][437]
+- [known][438]
+- [setupId][439]
+- [setupCollection][440]
+- [invitationOf][441]
+  - [Parameters][442]
+- [title][443]
+- [takeShared][444]
+  - [Parameters][445]
+- [pair][446]
+- [keyPair][447]
+- [ownOf][448]
+  - [Parameters][449]
+- [keysOf][450]
+  - [Parameters][451]
+- [groupWaiting][452]
+- [grouped][453]
+- [map][454]
+- [map][455]
+- [map][456]
+- [map][457]
+- [chats][458]
+- [lost][459]
+- [lost][460]
+- [pull][461]
+  - [Parameters][462]
+- [get][463]
+- [get][464]
+- [get][465]
+- [get][466]
+- [get][467]
+- [get][468]
+- [get][469]
+- [get][470]
+- [get][471]
+- [get][472]
+- [get][473]
+- [get][474]
+- [received][475]
+- [held][476]
+- [held][477]
+- [incoming][478]
+- [incoming][479]
+- [incoming][480]
+- [clashes][481]
+- [clashes][482]
+- [clashes][483]
+- [kept][484]
+  - [kept][485]
+- [kept][486]
+  - [kept][487]
+- [kept][488]
+  - [kept][489]
+- [kept][490]
+  - [kept][491]
+- [outbox][492]
+- [outbox][493]
+- [outbox][494]
+- [outbox][495]
+- [checked][496]
+- [check][497]
+- [behind][498]
+- [broken][499]
+- [repairTrees][500]
+  - [Parameters][501]
+- [take][502]
+  - [Parameters][503]
+- [openRecord][504]
+  - [Parameters][505]
+- [payload][506]
+- [payload][507]
+- [arrive][508]
   - [Parameters][509]
-- [fetchFile][510]
-  - [Parameters][511]
-- [want][512]
-- [fetchProjectFiles][513]
-  - [Parameters][514]
-- [fetchProjectFiles][515]
-  - [Parameters][516]
-- [keepOff][517]
-  - [Parameters][518]
-- [syncAgain][519]
-  - [Parameters][520]
-- [checkNextRound][521]
-- [cloud/format][522]
-- [FORMAT][523]
-- [FIRST][524]
-- [TEXT_FORMAT][525]
-- [HELD_FORMAT][526]
-- [formatOf][527]
-  - [Parameters][528]
-- [cloud][529]
-- [cloud/invite][530]
-- [Invitation][531]
-- [opened][532]
-- [takeInviteFromAddress][533]
-  - [Parameters][534]
-- [takeInvite][535]
-- [cloud/invited][536]
-- [cloud/local][537]
-- [putOf][538]
-  - [Parameters][539]
-- [putOf][540]
+- [project][510]
+  - [project][511]
+- [gone][512]
+  - [Parameters][513]
+- [dropUnreceived][514]
+  - [Parameters][515]
+- [forget][516]
+  - [Parameters][517]
+- [make][518]
+  - [Parameters][519]
+- [pushGroup][520]
+  - [Parameters][521]
+- [batch][522]
+- [dropped][523]
+- [types][524]
+- [][525]
+- [][526]
+- [print][527]
+- [file][528]
+- [stampNew][529]
+  - [Parameters][530]
+- [fresh][531]
+- [unsharedOf][532]
+  - [Parameters][533]
+- [ownFor][534]
+  - [Parameters][535]
+- [regroup][536]
+  - [Parameters][537]
+- [filter][538]
+- [again][539]
+- [send][540]
   - [Parameters][541]
-- [putOf][542]
+- [send][542]
   - [Parameters][543]
-- [putOf][544]
-  - [Parameters][545]
-- [putOf][546]
-  - [Parameters][547]
-- [removalOf][548]
-  - [Parameters][549]
-- [appLocal][550]
+- [pushed][544]
+- [upload][545]
+  - [Parameters][546]
+- [pending][547]
+- [fetchFiles][548]
+- [fetching][549]
+- [fetchOne][550]
   - [Parameters][551]
-- [elsewhere][552]
-- [intoEditor][553]
-  - [Parameters][554]
-- [keepClash][555]
-  - [Parameters][556]
-- [writeSetup][557]
+- [hasFile][552]
+  - [Parameters][553]
+- [fetchFile][554]
+  - [Parameters][555]
+- [want][556]
+- [fetchProjectFiles][557]
   - [Parameters][558]
-- [byTable][559]
-- [settings][560]
-- [settings][561]
-- [write][562]
-  - [Parameters][563]
-- [straight][564]
-- [toStorage][565]
-  - [Parameters][566]
-- [versions][567]
-- [setup][568]
-- [][569]
-- [off][570]
-- [cloud/merge][571]
-- [Lost][572]
-  - [Properties][573]
-- [Merged][574]
-  - [Properties][575]
-- [MAX_EDITS][576]
-- [SMALL_CLASH][577]
-- [BY_ID][578]
-- [WORDS][579]
-- [same][580]
-  - [Parameters][581]
-- [comparable][582]
-  - [Parameters][583]
-- [mergeRow][584]
-  - [Parameters][585]
-- [row][586]
-  - [row][587]
-- [row][588]
-  - [row][589]
-- [row][590]
-  - [row][591]
-- [withoutBase][592]
-  - [Parameters][593]
-- [mergeValue][594]
-  - [Parameters][595]
-- [mergeById][596]
+- [fetchProjectFiles][559]
+  - [Parameters][560]
+- [keepOff][561]
+  - [Parameters][562]
+- [syncAgain][563]
+  - [Parameters][564]
+- [checkNextRound][565]
+- [cloud/format][566]
+- [FORMAT][567]
+- [FIRST][568]
+- [TEXT_FORMAT][569]
+- [HELD_FORMAT][570]
+- [formatOf][571]
+  - [Parameters][572]
+- [cloud][573]
+- [cloud/invite][574]
+- [opened][575]
+- [takeInviteFromAddress][576]
+  - [Parameters][577]
+- [takeInvite][578]
+- [cloud/invited][579]
+- [cloud/local][580]
+- [putOf][581]
+  - [Parameters][582]
+- [putOf][583]
+  - [Parameters][584]
+- [putOf][585]
+  - [Parameters][586]
+- [putOf][587]
+  - [Parameters][588]
+- [putOf][589]
+  - [Parameters][590]
+- [removalOf][591]
+  - [Parameters][592]
+- [appLocal][593]
+  - [Parameters][594]
+- [elsewhere][595]
+- [intoEditor][596]
   - [Parameters][597]
-- [out][598]
-- [out][599]
-- [settleText][600]
+- [keepClash][598]
+  - [Parameters][599]
+- [writeSetup][600]
   - [Parameters][601]
-- [mergeText][602]
-  - [Parameters][603]
-- [mergeWords][604]
-  - [Parameters][605]
-- [lines][606]
-  - [Parameters][607]
-- [sameLines][608]
+- [byTable][602]
+- [settings][603]
+- [settings][604]
+- [write][605]
+  - [Parameters][606]
+- [straight][607]
+- [toStorage][608]
   - [Parameters][609]
-- [cloud/names][610]
-- [nameProblem][611]
-  - [Parameters][612]
-- [cloud/onDemand][613]
-- [FileSource][614]
-- [source][615]
-- [source][616]
-- [provideFiles][617]
-  - [Parameters][618]
-- [fileElsewhere][619]
-  - [Parameters][620]
-- [fetchElsewhere][621]
-  - [Parameters][622]
-- [cloud/people][623]
-- [People][624]
-  - [Properties][625]
-- [][626]
-- [byMe][627]
+- [versions][610]
+- [setup][611]
+- [][612]
+- [off][613]
+- [cloud/merge][614]
+- [Lost][615]
+  - [Properties][616]
+- [Merged][617]
+  - [Properties][618]
+- [MAX_EDITS][619]
+- [SMALL_CLASH][620]
+- [BY_ID][621]
+- [WORDS][622]
+- [same][623]
+  - [Parameters][624]
+- [comparable][625]
+  - [Parameters][626]
+- [mergeRow][627]
   - [Parameters][628]
-- [peopleOf][629]
-  - [Parameters][630]
-- [usePeople][631]
-  - [Parameters][632]
-- [isMine][633]
-  - [Parameters][634]
-- [nameOf][635]
+- [row][629]
+  - [row][630]
+- [row][631]
+  - [row][632]
+- [row][633]
+  - [row][634]
+- [withoutBase][635]
   - [Parameters][636]
-- [cloud/setup][637]
-- [SETUP][638]
-- [SETUP][639]
-- [SETUP][640]
-- [SETUP_TABLES][641]
-- [SETTINGS][642]
-- [DEVICE_SPELLING][643]
-- [idOf][644]
-  - [Parameters][645]
-- [asSent][646]
-  - [Parameters][647]
-- [SAME_MOMENT_MS][648]
-- [asMade][649]
+- [mergeValue][637]
+  - [Parameters][638]
+- [mergeById][639]
+  - [Parameters][640]
+- [out][641]
+- [out][642]
+- [settleText][643]
+  - [Parameters][644]
+- [mergeText][645]
+  - [Parameters][646]
+- [mergeWords][647]
+  - [Parameters][648]
+- [lines][649]
   - [Parameters][650]
-- [settingsRows][651]
+- [sameLines][651]
   - [Parameters][652]
-- [settingsOf][653]
-  - [Parameters][654]
-- [][655]
-- [cloud/tree][656]
-- [treeFixes][657]
-  - [Parameters][658]
-- [treeFixes][659]
-  - [Parameters][660]
-- [byId][661]
-- [byId][662]
-- [fixed][663]
-- [current][664]
+- [cloud/names][653]
+- [nameProblem][654]
+  - [Parameters][655]
+- [cloud/onDemand][656]
+- [FileSource][657]
+- [source][658]
+- [source][659]
+- [provideFiles][660]
+  - [Parameters][661]
+- [fileElsewhere][662]
+  - [Parameters][663]
+- [fetchElsewhere][664]
   - [Parameters][665]
-- [change][666]
-  - [Parameters][667]
-- [][668]
-- [childrenOf][669]
-  - [Parameters][670]
-- [toRoot][671]
-  - [Parameters][672]
-- [placed][673]
-  - [Parameters][674]
-- [][675]
-- [settled][676]
-- [path][677]
-- [hiddenDocuments][678]
+- [cloud/people][666]
+- [People][667]
+  - [Properties][668]
+- [][669]
+- [byMe][670]
+  - [Parameters][671]
+- [peopleOf][672]
+  - [Parameters][673]
+- [usePeople][674]
+  - [Parameters][675]
+- [isMine][676]
+  - [Parameters][677]
+- [nameOf][678]
   - [Parameters][679]
-- [way][680]
-- [groupBy][681]
-  - [Parameters][682]
-- [groups][683]
+- [cloud/setup][680]
+- [SETUP][681]
+- [SETUP][682]
+- [SETUP][683]
+- [SETUP_TABLES][684]
+- [SETTINGS][685]
+- [DEVICE_SPELLING][686]
+- [idOf][687]
+  - [Parameters][688]
+- [asSent][689]
+  - [Parameters][690]
+- [SAME_MOMENT_MS][691]
+- [asMade][692]
+  - [Parameters][693]
+- [settingsRows][694]
+  - [Parameters][695]
+- [settingsOf][696]
+  - [Parameters][697]
+- [][698]
+- [cloud/tree][699]
+- [treeFixes][700]
+  - [Parameters][701]
+- [treeFixes][702]
+  - [Parameters][703]
+- [byId][704]
+- [byId][705]
+- [fixed][706]
+- [current][707]
+  - [Parameters][708]
+- [change][709]
+  - [Parameters][710]
+- [][711]
+- [childrenOf][712]
+  - [Parameters][713]
+- [toRoot][714]
+  - [Parameters][715]
+- [placed][716]
+  - [Parameters][717]
+- [][718]
+- [settled][719]
+- [path][720]
+- [hiddenDocuments][721]
+  - [Parameters][722]
+- [way][723]
+- [groupBy][724]
+  - [Parameters][725]
+- [groups][726]
 
 ## cloud/account
 
@@ -703,25 +746,25 @@ Design: `.llm/sync_design.md`, "Keys".
 
 ## ACCOUNT
 
-Type: [string][684]
+Type: [string][727]
 
 ## ACCOUNT
 
-Type: [string][684]
+Type: [string][727]
 
 ## ACCOUNT
 
-Type: [string][684]
+Type: [string][727]
 
 ## ACCOUNT
 
-Type: [string][684]
+Type: [string][727]
 
 ## ACCOUNT
 
 What the account key is sealed as, under the wrapping key.
 
-Type: [string][684]
+Type: [string][727]
 
 ## recoveryFor
 
@@ -734,7 +777,7 @@ server keeps of it.
 
 ## readRecoveryCode
 
-Type: [string][684]
+Type: [string][727]
 
 ## readRecoveryCode
 
@@ -743,9 +786,9 @@ case, I and L as 1, O as 0, spaces and dashes ignored.
 
 ### Parameters
 
-- `typed` **[string][684]**&#x20;
+- `typed` **[string][727]**&#x20;
 
-Returns **([string][684] | null)** Its 25 letters, or null for what isn't one
+Returns **([string][727] | null)** Its 25 letters, or null for what isn't one
 
 ## SHORTEST_PASSPHRASE
 
@@ -753,7 +796,7 @@ The fewest characters a new passphrase may have. Whoever holds the
 server's database can try passphrases against it as fast as the key
 derivation lets them; one signing in is not held to it.
 
-Type: [number][685]
+Type: [number][728]
 
 ## longEnough
 
@@ -761,7 +804,7 @@ Refuse a new passphrase too short to stand up to that.
 
 ### Parameters
 
-- `passphrase` **[string][684]**&#x20;
+- `passphrase` **[string][727]**&#x20;
 
 ## passphraseFor
 
@@ -769,9 +812,9 @@ What the server keeps of a passphrase for an account key.
 
 ### Parameters
 
-- `passphrase` **[string][684]**&#x20;
+- `passphrase` **[string][727]**&#x20;
 - `secret` **Bytes**&#x20;
-- `kdf` **[Kdf][138]**&#x20;
+- `kdf` **[Kdf][162]**&#x20;
 
 ## signUp
 
@@ -780,20 +823,20 @@ Make an account, and sign this device in to it.
 ### Parameters
 
 - `api` **Api**&#x20;
-- `$1` **[Object][686]**&#x20;
+- `$1` **[Object][729]**&#x20;
   - `$1.name` &#x20;
   - `$1.passphrase` &#x20;
   - `$1.code` &#x20;
   - `$1.device` &#x20;
   - `$1.kdf` (optional, default `KDF`)
 
-Returns **[Promise][687]<{token: [string][684], keys: [AccountKeys][141], recoveryCode: [string][684]}>**&#x20;
+Returns **[Promise][730]<{token: [string][727], keys: [AccountKeys][165], recoveryCode: [string][727]}>**&#x20;
 
 ## signUp
 
 ### Parameters
 
-- `account` **{name: [string][684], salt: Bytes, kdf: [object][686], auth: Bytes, key: Bytes, recovery: {auth: Bytes, key: Bytes}, code: [string][684], device: [string][684]}**&#x20;
+- `account` **{name: [string][727], salt: Bytes, kdf: [object][729], auth: Bytes, key: Bytes, recovery: {auth: Bytes, key: Bytes}, code: [string][727], device: [string][727]}**&#x20;
   - `account.name` &#x20;
   - `account.salt` &#x20;
   - `account.kdf` &#x20;
@@ -803,7 +846,7 @@ Returns **[Promise][687]<{token: [string][684], keys: [AccountKeys][141], recove
   - `account.code` &#x20;
   - `account.device` &#x20;
 
-Returns **[Promise][687]<{token: [string][684]}>**&#x20;
+Returns **[Promise][730]<{token: [string][727]}>**&#x20;
 
 ## signIn
 
@@ -812,22 +855,22 @@ Sign this device in to an account.
 ### Parameters
 
 - `api` **Api**&#x20;
-- `account` **{name: [string][684], passphrase: [string][684], device: [string][684]}**&#x20;
+- `account` **{name: [string][727], passphrase: [string][727], device: [string][727]}**&#x20;
   - `account.name` &#x20;
   - `account.passphrase` &#x20;
   - `account.device` &#x20;
 
-Returns **[Promise][687]<{token: [string][684], keys: [AccountKeys][141]}>**&#x20;
+Returns **[Promise][730]<{token: [string][727], keys: [AccountKeys][165]}>**&#x20;
 
 ## signIn
 
 ### Parameters
 
-- `name` **[string][684]**&#x20;
+- `name` **[string][727]**&#x20;
 - `auth` **Bytes**&#x20;
-- `device` **[string][684]** What this device calls itself
+- `device` **[string][727]** What this device calls itself
 
-Returns **[Promise][687]<{token: [string][684], key: Bytes}>**&#x20;
+Returns **[Promise][730]<{token: [string][727], key: Bytes}>**&#x20;
 
 ## unlock
 
@@ -837,13 +880,13 @@ passphrase's sign-in key to prove it with.
 ### Parameters
 
 - `api` **Api** As this device signed in
-- `passphrase` **[string][684]**&#x20;
+- `passphrase` **[string][727]**&#x20;
 
 <!---->
 
-- Throws **[Error][688]** For a passphrase that doesn't open it
+- Throws **[Error][731]** For a passphrase that doesn't open it
 
-Returns **[Promise][687]<{secret: Bytes, auth: Bytes}>**&#x20;
+Returns **[Promise][730]<{secret: Bytes, auth: Bytes}>**&#x20;
 
 ## remakeRecovery
 
@@ -852,9 +895,9 @@ Make a new recovery code, in place of the one there was.
 ### Parameters
 
 - `api` **Api** As this device signed in
-- `passphrase` **[string][684]**&#x20;
+- `passphrase` **[string][727]**&#x20;
 
-Returns **[Promise][687]<[string][684]>** The code, to show once
+Returns **[Promise][730]<[string][727]>** The code, to show once
 
 ## changePassphrase
 
@@ -863,7 +906,7 @@ Change the passphrase. Devices signed in stay so.
 ### Parameters
 
 - `api` **Api** As this device signed in
-- `$1` **[Object][686]**&#x20;
+- `$1` **[Object][729]**&#x20;
   - `$1.current` &#x20;
   - `$1.next` &#x20;
   - `$1.kdf` (optional, default `KDF`)
@@ -876,7 +919,7 @@ code is used up: a new one is made in its place.
 ### Parameters
 
 - `api` **Api**&#x20;
-- `$1` **[Object][686]**&#x20;
+- `$1` **[Object][729]**&#x20;
   - `$1.name` &#x20;
   - `$1.code` &#x20;
   - `$1.passphrase` &#x20;
@@ -887,9 +930,9 @@ code is used up: a new one is made in its place.
 
 <!---->
 
-- Throws **[Error][688]** For what isn't a recovery code
+- Throws **[Error][731]** For what isn't a recovery code
 
-Returns **[Promise][687]<{token: [string][684], keys: [AccountKeys][141], recoveryCode: [string][684]}>**&#x20;
+Returns **[Promise][730]<{token: [string][727], keys: [AccountKeys][165], recoveryCode: [string][727]}>**&#x20;
 
 ## recover
 
@@ -897,11 +940,11 @@ Sign in with a recovery code's sign-in key.
 
 ### Parameters
 
-- `name` **[string][684]**&#x20;
+- `name` **[string][727]**&#x20;
 - `auth` **Bytes**&#x20;
-- `device` **[string][684]**&#x20;
+- `device` **[string][727]**&#x20;
 
-Returns **[Promise][687]<{token: [string][684], key: Bytes}>** The account key wrapped under the code
+Returns **[Promise][730]<{token: [string][727], key: Bytes}>** The account key wrapped under the code
 
 ## cloud/api
 
@@ -913,13 +956,13 @@ The design is `.llm/sync_design.md`, "The protocol".
 
 ## HOSTED_SERVER
 
-Type: [string][684]
+Type: [string][727]
 
 ## HOSTED_SERVER
 
 Our sync service, the only server a build without dev features (`config/dev.js`) signs in to.
 
-Type: [string][684]
+Type: [string][727]
 
 ## CloudError
 
@@ -929,44 +972,62 @@ A request the server refused, or one that never reached it.
 
 ### Parameters
 
-- `message` **[string][684]**&#x20;
-- `status` **[number][685]** The server's answer; 0 when there was none
-- `extra` **Record<[string][684], unknown>?** The rest of what it said (optional, default `{}`)
+- `message` **[string][727]**&#x20;
+- `status` **[number][728]** The server's answer; 0 when there was none
+- `extra` **Record<[string][727], unknown>?** The rest of what it said (optional, default `{}`)
 
 ## ListedCollection
 
 A collection as the server lists it, its keys still wrapped.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `id` **[string][684]**&#x20;
-- `seq` **[number][685]**&#x20;
-- `epoch` **[number][685]**&#x20;
-- `deleted` **([number][685] | null)**&#x20;
-- `kept` **[boolean][689]?** Deleted because a device keeps the project to itself
-- `role` **[string][684]** `owner`, or `member` of a project shared with this account
+- `id` **[string][727]**&#x20;
+- `seq` **[number][728]**&#x20;
+- `epoch` **[number][728]**&#x20;
+- `deleted` **([number][728] | null)**&#x20;
+- `kept` **[boolean][732]?** Deleted because a device keeps the project to itself
+- `role` **[string][727]** `owner`, or `member` of a project shared with this account
 - `key` **Bytes**&#x20;
 - `meta` **(Bytes | null)**&#x20;
-- `owner` **[number][685]?** The owner's account; none from a server before sharing
-- `members` **[number][685]?** How many are in it, the owner among them
-- `shared` **[boolean][689]?** Ever shared: its chats are each one's own
-- `selective` **[boolean][689]?** Shared with only some of its documents, the
+- `owner` **[number][728]?** The owner's account; none from a server before sharing
+- `members` **[number][728]?** How many are in it, the owner and those invited among them
+- `waiting` **[number][728]?** How many of them are invited and haven't answered
+- `shared` **[boolean][732]?** Ever shared: its chats are each one's own
+- `selective` **[boolean][732]?** Shared with only some of its documents, the
   others its owner's own
-- `sealed` **[boolean][689]?** Its key is wrapped for this account's public key
-- `left` **[boolean][689]?** This account left it, or was removed: its key is gone
+- `sealed` **[boolean][732]?** Its key is wrapped for this account's public key
+- `left` **[boolean][732]?** This account left it, or was removed: its key is gone
+- `invited` **[number][728]?** When this account was invited to it, until it
+  accepts: nothing else of it is served until then
+- `from` **[Person][42]?** Who invited it
+- `removed` **[boolean][732]?** In this account's trash: not synced until it is restored
+- `note` **Bytes?** The invitation's, sealed for this account: the project's title
+
+## Person
+
+Someone an account knows, by their account name and friend code.
+
+Type: [Object][729]
+
+### Properties
+
+- `account` **[number][728]**&#x20;
+- `name` **[string][727]**&#x20;
+- `friend` **([string][727] | null)** None for an account that has never shared
 
 ## PulledRecord
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `name` **[string][684]**&#x20;
-- `rev` **[number][685]**&#x20;
+- `name` **[string][727]**&#x20;
+- `rev` **[number][728]**&#x20;
 - `body` **(Bytes | null)**&#x20;
-- `own` **[boolean][689]?** This account's own, sealed under its own key
+- `own` **[boolean][732]?** This account's own, sealed under its own key
 
 ## proofOf
 
@@ -981,37 +1042,38 @@ take past the quota, or for being another account's own.
 
 ### Parameters
 
-- `proof` **[Proof][54]**&#x20;
+- `proof` **[Proof][56]**&#x20;
 
 ## Member
 
 Someone in a shared project.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `account` **[number][685]**&#x20;
-- `owner` **[boolean][689]**&#x20;
-- `display` **([string][684] | null)** The name they show the people they share with
-- `friend` **([string][684] | null)?** Their friend code, as the server keeps it; none from
+- `account` **[number][728]**&#x20;
+- `owner` **[boolean][732]**&#x20;
+- `display` **([string][727] | null)** Their account name; from a server before
+  that, the name they gave
+- `friend` **([string][727] | null)?** Their friend code, as the server keeps it; none from
   a server before it said, or for an account that has never shared
+- `invited` **[boolean][732]?** Invited, and not yet answered
 
 ## AccountRecord
 
 The account, as the server keeps it for its devices.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `name` **[string][684]**&#x20;
+- `name` **[string][727]**&#x20;
 - `salt` **Bytes**&#x20;
 - `key` **Bytes** The account key, wrapped under the passphrase
-- `recovery` **[boolean][689]** Whether a recovery code was made
-- `diagnostics` **[boolean][689]?** Whether the server wants them
-- `id` **[number][685]?** None from a server before sharing
-- `display` **([string][684] | null)?** The name the people it shares with see
+- `recovery` **[boolean][732]** Whether a recovery code was made
+- `diagnostics` **[boolean][732]?** Whether the server wants them
+- `id` **[number][728]?** None from a server before sharing
 - `publicKey` **Bytes?** Its key pair's, once one is made
 - `privateKey` **Bytes?** Sealed under the account key
 
@@ -1019,15 +1081,15 @@ Type: [Object][686]
 
 A device signed in to the account.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `id` **[string][684]**&#x20;
-- `device` **([string][684] | null)** What it calls itself
-- `created` **[number][685]**&#x20;
-- `used` **[number][685]** To the hour
-- `current` **[boolean][689]** This one
+- `id` **[string][727]**&#x20;
+- `device` **([string][727] | null)** What it calls itself
+- `created` **[number][728]**&#x20;
+- `used` **[number][728]** To the hour
+- `current` **[boolean][732]** This one
 
 ## Proof
 
@@ -1044,9 +1106,10 @@ This build's version, as Settings › About shows it; none on the test server.
 
 What this app speaks of the protocol, for the server to hold an older app
 back from a collection ever shared: 2 knows a record may be one account's
-own, and 3 which of a project's documents its owner shares with no one.
+own, 3 which of a project's documents its owner shares with no one, and 4
+asks before it takes a project shared with it, so is listed invitations.
 
-Type: [number][685]
+Type: [number][728]
 
 ## createApi
 
@@ -1054,10 +1117,10 @@ The server at this address, as one device signed in to it, or not yet.
 
 ### Parameters
 
-- `server` **[string][684]** Its address, `https://sync.example.com`; https is
+- `server` **[string][727]** Its address, `https://sync.example.com`; https is
   assumed when no scheme is given
-- `token` **([string][684] | null)?** (optional, default `null`)
-- `$2` **[Object][686]** (optional, default `{}`)
+- `token` **([string][727] | null)?** (optional, default `null`)
+- `$2` **[Object][729]** (optional, default `{}`)
   - `$2.fetch` (optional, default `globalThis.fetch`)
   - `$2.app` (optional, default `APP_VERSION`)
 
@@ -1065,27 +1128,33 @@ The server at this address, as one device signed in to it, or not yet.
 
 ### Parameters
 
-- `method` **[string][684]**&#x20;
-- `path` **[string][684]**&#x20;
-- `$2` **[Object][686]** (optional, default `{}`)
+- `method` **[string][727]**&#x20;
+- `path` **[string][727]**&#x20;
+- `$2` **[Object][729]** (optional, default `{}`)
   - `$2.body` &#x20;
   - `$2.signal` &#x20;
 
-Returns **[Promise][687]\<any>**&#x20;
+Returns **[Promise][730]\<any>**&#x20;
 
 ## response
 
-Type: [Response][690]
+Type: [Response][733]
 
 ## name
 
-Type: [Error][688]
+Type: [Error][731]
 
 ## collection
 
 ### Parameters
 
 - `listed` **any** @returns {ListedCollection}
+
+### collection
+
+Type: [number][728]
+
+### collection
 
 ## listing
 
@@ -1096,11 +1165,11 @@ put back from a backup. An older server has none.
 
 ### Parameters
 
-- `name` **[string][684]**&#x20;
+- `name` **[string][727]**&#x20;
 
 ## account
 
-Returns **[Promise][687]<[AccountRecord][50]>**&#x20;
+Returns **[Promise][730]<[AccountRecord][52]>**&#x20;
 
 ## setKeys
 
@@ -1111,23 +1180,7 @@ Keep the account's key pair, unless it has one: what it has comes back.
 - `publicKey` **Bytes**&#x20;
 - `privateKey` **Bytes** Sealed under the account key
 
-Returns **[Promise][687]<{publicKey: Bytes, privateKey: Bytes}>**&#x20;
-
-## setDisplay
-
-Give the account the name the people it shares with see.
-
-### Parameters
-
-- `display` **[string][684]** Empty for none
-
-## setDisplay
-
-Give this account the name the people it shares with see.
-
-### Parameters
-
-- `display` **[string][684]**&#x20;
+Returns **[Promise][730]<{publicKey: Bytes, privateKey: Bytes}>**&#x20;
 
 ## friend
 
@@ -1135,7 +1188,7 @@ The account a friend code is of, and its public key.
 
 ### Parameters
 
-- `code` **[string][684]**&#x20;
+- `code` **[string][727]**&#x20;
 
 ## share
 
@@ -1143,7 +1196,7 @@ Mark a collection shared, before its chats go again as each one's own.
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
+- `id` **[string][727]**&#x20;
 
 ## share
 
@@ -1151,17 +1204,19 @@ Share a project with the account a friend code is of. The collection is
 marked shared first, so that no device of this account sends a chat
 the friend could read; then its chats and messages go again as this
 account's own; then its key is wrapped for the friend's public key, once
-that key is the one the code is of. An account with no name for others
-yet is given its own.
+that key is the one the code is of, and they are invited with its title
+sealed for them. An account with no key pair yet makes one, so that the
+invitation shows its friend code.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
-- `code` **[string][684]** As typed
+- `storyId` **[string][727]**&#x20;
+- `code` **[string][727]** As typed
+- `title` **[string][727]** The project's, for the invitation to say
 
 <!---->
 
-- Throws **[Error][688]** Saying why it wasn't, in words for the writer
+- Throws **[Error][731]** Saying why it wasn't, in words for the writer
 
 ## setSelective
 
@@ -1169,8 +1224,8 @@ Share a collection with only some of its documents, or all of them again.
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
-- `selective` **[boolean][689]**&#x20;
+- `id` **[string][727]**&#x20;
+- `selective` **[boolean][732]**&#x20;
 
 ## setSelective
 
@@ -1180,12 +1235,12 @@ server, then sent as it now goes.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
-- `selective` **[boolean][689]**&#x20;
+- `storyId` **[string][727]**&#x20;
+- `selective` **[boolean][732]**&#x20;
 
 <!---->
 
-- Throws **[Error][688]** Saying why it wasn't, in words for the writer
+- Throws **[Error][731]** Saying why it wasn't, in words for the writer
 
 ## members
 
@@ -1193,19 +1248,127 @@ Who is in a collection, the owner first.
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
+- `id` **[string][727]**&#x20;
 
-Returns **[Promise][687]<[Array][691]<[Member][48]>>**&#x20;
+Returns **[Promise][730]<[Array][734]<[Member][50]>>**&#x20;
 
 ## addMember
 
-Add the account a friend code is of to a collection, with its key wrapped for them.
+Invite the account a friend code is of to a collection, with its key
+and a note wrapped for them.
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
-- `friend` **[string][684]** The code
+- `id` **[string][727]**&#x20;
+- `friend` **[string][727]** The code
 - `key` **Bytes**&#x20;
+- `note` **Bytes**&#x20;
+
+## accept
+
+Accept an invitation to a collection, with its key wrapped again under this account's.
+
+### Parameters
+
+- `id` **[string][727]**&#x20;
+- `key` **Bytes**&#x20;
+
+## accept
+
+Accept an invitation: the project's key opened with this account's
+private key and wrapped again under its account key, as the server is
+told; the project then comes in as one made on another device.
+
+### Parameters
+
+- `collection` **[string][727]**&#x20;
+
+## setRemoved
+
+Mark a collection removed to this account's trash, or restored from it.
+
+### Parameters
+
+- `id` **[string][727]**&#x20;
+- `removed` **[boolean][732]**&#x20;
+
+## people
+
+The people this account knows, and those it blocked.
+
+Returns **[Promise][730]<{people: [Array][734]<[Person][42]>, blocked: [Array][734]<[Person][42]>}>**&#x20;
+
+## people
+
+Who is in each project shared, as last asked, by story. @type {Map\<string, Shared & {count: number, waiting?: number}>}
+
+## addPerson
+
+Keep the account a friend code is of among this account's people.
+
+### Parameters
+
+- `friend` **[string][727]** The code
+
+Returns **[Promise][730]<[Person][42]>**&#x20;
+
+## addPerson
+
+Keep the account a friend code is of among this account's people.
+
+### Parameters
+
+- `code` **[string][727]** As typed
+
+<!---->
+
+- Throws **[Error][731]** Saying why it wasn't, in words for the writer
+
+## forgetPerson
+
+Let go of someone among this account's people.
+
+### Parameters
+
+- `account` **[number][728]**&#x20;
+
+## forgetPerson
+
+### Parameters
+
+- `account` **[number][728]**&#x20;
+
+## block
+
+Block an account: every share between the two ends.
+
+### Parameters
+
+- `account` **[number][728]**&#x20;
+
+## block
+
+Block an account: the server ends every share between the two, and
+lists none of its invitations here from then on. What it shared with
+this account goes to the trash here, as a project left does.
+
+### Parameters
+
+- `account` **[number][728]**&#x20;
+
+## unblock
+
+Unblock an account.
+
+### Parameters
+
+- `account` **[number][728]**&#x20;
+
+## unblock
+
+### Parameters
+
+- `account` **[number][728]**&#x20;
 
 ## removeMember
 
@@ -1213,8 +1376,8 @@ Take someone out of a collection, or this account, leaving it.
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
-- `account` **[number][685]**&#x20;
+- `id` **[string][727]**&#x20;
+- `account` **[number][728]**&#x20;
 
 ## removeMember
 
@@ -1222,8 +1385,8 @@ Take someone out of a project shared by this account.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
-- `account` **[number][685]**&#x20;
+- `storyId` **[string][727]**&#x20;
+- `account` **[number][728]**&#x20;
 
 ## rewrap
 
@@ -1231,7 +1394,7 @@ Keep a shared collection's key wrapped again, under this account's key.
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
+- `id` **[string][727]**&#x20;
 - `key` **Bytes**&#x20;
 
 ## setRecovery
@@ -1240,7 +1403,7 @@ Keep a new recovery code: its sign-in key, and the account key wrapped under it.
 
 ### Parameters
 
-- `proof` **[Proof][54]**&#x20;
+- `proof` **[Proof][56]**&#x20;
 - `recovery` **{auth: Bytes, key: Bytes}**&#x20;
   - `recovery.auth` &#x20;
   - `recovery.key` &#x20;
@@ -1252,8 +1415,8 @@ account key wrapped under it.
 
 ### Parameters
 
-- `proof` **[Proof][54]**&#x20;
-- `passphrase` **{salt: Bytes, kdf: [object][686], auth: Bytes, key: Bytes}**&#x20;
+- `proof` **[Proof][56]**&#x20;
+- `passphrase` **{salt: Bytes, kdf: [object][729], auth: Bytes, key: Bytes}**&#x20;
   - `passphrase.salt` &#x20;
   - `passphrase.kdf` &#x20;
   - `passphrase.auth` &#x20;
@@ -1261,23 +1424,23 @@ account key wrapped under it.
 
 ## devices
 
-Returns **[Promise][687]<[Array][691]<[Device][52]>>**&#x20;
+Returns **[Promise][730]<[Array][734]<[Device][54]>>**&#x20;
 
 ## signOutDevice
 
 ### Parameters
 
-- `id` **[string][684]** Another device's
+- `id` **[string][727]** Another device's
 
 ## nameDevice
 
 ### Parameters
 
-- `device` **[string][684]** What this device calls itself
+- `device` **[string][727]** What this device calls itself
 
 ## collections
 
-Returns **[Promise][687]<[Array][691]<[ListedCollection][40]>>**&#x20;
+Returns **[Promise][730]<[Array][734]<[ListedCollection][40]>>**&#x20;
 
 ## putCollection
 
@@ -1285,11 +1448,11 @@ Make a collection, or have the one already there.
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
+- `id` **[string][727]**&#x20;
 - `key` **Bytes**&#x20;
 - `meta` **(Bytes | null)** What it is, sealed; none for the account's own
 
-Returns **[Promise][687]<{made: [boolean][689], collection: [ListedCollection][40]}>**&#x20;
+Returns **[Promise][730]<{made: [boolean][732], collection: [ListedCollection][40]}>**&#x20;
 
 ## deleteCollection
 
@@ -1298,24 +1461,24 @@ itself, which the other devices hear of as such.
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
-- `$1` **[Object][686]** (optional, default `{}`)
+- `id` **[string][727]**&#x20;
+- `$1` **[Object][729]** (optional, default `{}`)
   - `$1.kept` (optional, default `false`)
 
-Returns **[Promise][687]<{seq: [number][685]}>**&#x20;
+Returns **[Promise][730]<{seq: [number][728]}>**&#x20;
 
 ## push
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
-- `schema` **[number][685]**&#x20;
+- `id` **[string][727]**&#x20;
+- `schema` **[number][728]**&#x20;
 - `records` &#x20;
-- `$3` **[Object][686]** (optional, default `{}`)
+- `$3` **[Object][729]** (optional, default `{}`)
   - `$3.shared` (optional, default `false`)
   - `$3.selective` (optional, default `false`)
 
-Returns **[Promise][687]<{from: [number][685], seq: [number][685], results: [Array][691]\<PushResult>}>**&#x20;
+Returns **[Promise][730]<{from: [number][728], seq: [number][728], results: [Array][734]\<PushResult>}>**&#x20;
 
 ## push
 
@@ -1327,8 +1490,8 @@ Send what waits, project by project.
 
 ### Parameters
 
-- `known` **[Map][692]<[string][684], [Known][281]>**&#x20;
-- `waiting` **[Map][692]<[string][684], [Map][692]<[string][684], [Waiting][257]>>**&#x20;
+- `known` **[Map][735]<[string][727], [Known][309]>**&#x20;
+- `waiting` **[Map][735]<[string][727], [Map][735]<[string][727], [Waiting][285]>>**&#x20;
 
 ##
 
@@ -1338,10 +1501,10 @@ Type: any
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
-- `since` **[number][685]**&#x20;
+- `id` **[string][727]**&#x20;
+- `since` **[number][728]**&#x20;
 
-Returns **[Promise][687]<{seq: [number][685], epoch: [number][685], more: [boolean][689], records: [Array][691]<[PulledRecord][42]>}>**&#x20;
+Returns **[Promise][730]<{seq: [number][728], epoch: [number][728], more: [boolean][732], records: [Array][734]<[PulledRecord][44]>}>**&#x20;
 
 ##
 
@@ -1353,33 +1516,33 @@ The parts of a file the server has.
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
-- `blob` **[string][684]**&#x20;
+- `id` **[string][727]**&#x20;
+- `blob` **[string][727]**&#x20;
 
-Returns **[Promise][687]<[Array][691]<[number][685]>>**&#x20;
+Returns **[Promise][730]<[Array][734]<[number][728]>>**&#x20;
 
 ## parts
 
-Type: [Array][691]\<Bytes>
+Type: [Array][734]\<Bytes>
 
 ## putPart
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
-- `blob` **[string][684]**&#x20;
-- `part` **[number][685]**&#x20;
+- `id` **[string][727]**&#x20;
+- `blob` **[string][727]**&#x20;
+- `part` **[number][728]**&#x20;
 - `bytes` **Bytes**&#x20;
 
 ## getPart
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
-- `blob` **[string][684]**&#x20;
-- `part` **[number][685]**&#x20;
+- `id` **[string][727]**&#x20;
+- `blob` **[string][727]**&#x20;
+- `part` **[number][728]**&#x20;
 
-Returns **[Promise][687]\<Bytes>**&#x20;
+Returns **[Promise][730]\<Bytes>**&#x20;
 
 ## diagnostics
 
@@ -1388,7 +1551,7 @@ Sent as the page is hidden too, so it may outlive the page.
 
 ### Parameters
 
-- `report` **[object][686]**&#x20;
+- `report` **[object][729]**&#x20;
 
 ## listen
 
@@ -1416,7 +1579,7 @@ What the server answered, or what it refused.
 
 ### Parameters
 
-- `response` **[Response][690]**&#x20;
+- `response` **[Response][733]**&#x20;
 
 ## body
 
@@ -1429,7 +1592,7 @@ given, and no slash at the end.
 
 ### Parameters
 
-- `typed` **[string][684]**&#x20;
+- `typed` **[string][727]**&#x20;
 
 ## cloud/crypto
 
@@ -1470,7 +1633,7 @@ How keys are made from a passphrase, as the account keeps it.
 
 ## Kdf
 
-Type: {name: [string][684], hash: [string][684], iterations: [number][685]}
+Type: {name: [string][727], hash: [string][727], iterations: [number][728]}
 
 ## encoder
 
@@ -1480,7 +1643,7 @@ Bytes as WebCrypto takes them. @typedef {Uint8Array<ArrayBuffer>} Bytes
 
 What a device keeps of the account, to read and write its collections.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
@@ -1491,7 +1654,7 @@ Type: [Object][686]
 
 What a device holds of one collection, in memory.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
@@ -1502,7 +1665,7 @@ Type: [Object][686]
 
 ### Parameters
 
-- `size` **[number][685]** 65,536 at most
+- `size` **[number][728]** 65,536 at most
 
 Returns **Bytes**&#x20;
 
@@ -1510,13 +1673,13 @@ Returns **Bytes**&#x20;
 
 ### Parameters
 
-- `bytes` **[Uint8Array][693]**&#x20;
+- `bytes` **[Uint8Array][736]**&#x20;
 
 ## fromBase64
 
 ### Parameters
 
-- `text` **[string][684]**&#x20;
+- `text` **[string][727]**&#x20;
 
 Returns **Bytes**&#x20;
 
@@ -1524,7 +1687,7 @@ Returns **Bytes**&#x20;
 
 ### Parameters
 
-- `bytes` **[Uint8Array][693]**&#x20;
+- `bytes` **[Uint8Array][736]**&#x20;
 
 ## hkdfBase
 
@@ -1540,7 +1703,7 @@ HKDF's settings, for what a key is for.
 
 ### Parameters
 
-- `info` **[string][684]**&#x20;
+- `info` **[string][727]**&#x20;
 
 ## aesFrom
 
@@ -1549,7 +1712,7 @@ An AES-GCM key from a secret, for what it is for.
 ### Parameters
 
 - `base` **CryptoKey**&#x20;
-- `info` **[string][684]**&#x20;
+- `info` **[string][727]**&#x20;
 
 ## hmacFrom
 
@@ -1558,7 +1721,7 @@ An HMAC key from a secret, for what it is for.
 ### Parameters
 
 - `base` **CryptoKey**&#x20;
-- `info` **[string][684]**&#x20;
+- `info` **[string][727]**&#x20;
 
 ## passphraseKeys
 
@@ -1566,29 +1729,29 @@ The sign-in key and the wrapping key, from the passphrase.
 
 ### Parameters
 
-- `passphrase` **[string][684]**&#x20;
+- `passphrase` **[string][727]**&#x20;
 - `salt` **Bytes**&#x20;
-- `kdf` **[Kdf][138]?** (optional, default `KDF`)
+- `kdf` **[Kdf][162]?** (optional, default `KDF`)
 
-Returns **[Promise][687]<{auth: Bytes, wrapping: CryptoKey}>**&#x20;
+Returns **[Promise][730]<{auth: Bytes, wrapping: CryptoKey}>**&#x20;
 
 ## CODE_LETTERS
 
 The letters a recovery code is written in: Crockford's base 32.
 
-Type: [string][684]
+Type: [string][727]
 
 ## CODE_LENGTH
 
 How many letters a recovery code has: 125 bits.
 
-Type: [number][685]
+Type: [number][728]
 
 ## makeRecoveryCode
 
 A new recovery code, in groups of five: `7KQ4M-2XWPD-…`.
 
-Returns **[string][684]**&#x20;
+Returns **[string][727]**&#x20;
 
 ## recoveryKeys
 
@@ -1596,9 +1759,9 @@ The sign-in key and the wrapping key, from a recovery code.
 
 ### Parameters
 
-- `code` **[string][684]** As `readRecoveryCode` gives it
+- `code` **[string][727]** As `readRecoveryCode` gives it
 
-Returns **[Promise][687]<{auth: Bytes, wrapping: CryptoKey}>**&#x20;
+Returns **[Promise][730]<{auth: Bytes, wrapping: CryptoKey}>**&#x20;
 
 ## accountKeys
 
@@ -1608,7 +1771,7 @@ What the device keeps of an account, from its key.
 
 - `accountSecret` **Bytes**&#x20;
 
-Returns **[Promise][687]<[AccountKeys][141]>**&#x20;
+Returns **[Promise][730]<[AccountKeys][165]>**&#x20;
 
 ## collectionKeys
 
@@ -1618,7 +1781,7 @@ What the device holds of a collection, from its key.
 
 - `secret` **Bytes**&#x20;
 
-Returns **[Promise][687]<[CollectionKeys][143]>**&#x20;
+Returns **[Promise][730]<[CollectionKeys][167]>**&#x20;
 
 ## ownKeys
 
@@ -1629,15 +1792,15 @@ its devices, and on no other account's.
 ### Parameters
 
 - `ids` **CryptoKey** The account's
-- `collectionId` **[string][684]**&#x20;
+- `collectionId` **[string][727]**&#x20;
 
-Returns **[Promise][687]<[CollectionKeys][143]>**&#x20;
+Returns **[Promise][730]<[CollectionKeys][167]>**&#x20;
 
 ## PRIVATE_KEY
 
 What the private half of an account's key pair is sealed as.
 
-Type: [string][684]
+Type: [string][727]
 
 ## ECDH
 
@@ -1652,7 +1815,7 @@ the private half sealed under the account key.
 
 - `wrap` **CryptoKey** The account's
 
-Returns **[Promise][687]<{publicKey: Bytes, privateKey: Bytes}>**&#x20;
+Returns **[Promise][730]<{publicKey: Bytes, privateKey: Bytes}>**&#x20;
 
 ## generateKey
 
@@ -1671,7 +1834,7 @@ The private half of the key pair, opened, as a key that can't be exported.
 - `wrap` **CryptoKey** The account's
 - `sealed` **Bytes**&#x20;
 
-Returns **[Promise][687]\<CryptoKey>**&#x20;
+Returns **[Promise][730]\<CryptoKey>**&#x20;
 
 ## agreed
 
@@ -1686,7 +1849,7 @@ The AES-GCM key two halves of two key pairs agree on.
 
 How long a P-256 public key is, raw: the point, uncompressed.
 
-Type: [number][685]
+Type: [number][728]
 
 ## sealFor
 
@@ -1697,9 +1860,9 @@ key pair made for this once, whose public half goes first.
 
 - `publicKey` **Bytes** Theirs, as the server keeps it
 - `secret` **Bytes**&#x20;
-- `about` **[string][684]**&#x20;
+- `about` **[string][727]**&#x20;
 
-Returns **[Promise][687]\<Bytes>**&#x20;
+Returns **[Promise][730]\<Bytes>**&#x20;
 
 ## openFor
 
@@ -1709,15 +1872,39 @@ What `sealFor` sealed for this account.
 
 - `privateKey` **CryptoKey** This account's
 - `sealed` **Bytes**&#x20;
-- `about` **[string][684]**&#x20;
+- `about` **[string][727]**&#x20;
 
-Returns **[Promise][687]\<Bytes>**&#x20;
+Returns **[Promise][730]\<Bytes>**&#x20;
+
+## sealTextFor
+
+Text sealed for an account's public key, as `sealFor` seals a secret.
+
+### Parameters
+
+- `publicKey` **Bytes**&#x20;
+- `text` **[string][727]**&#x20;
+- `about` **[string][727]**&#x20;
+
+Returns **[Promise][730]\<Bytes>**&#x20;
+
+## openTextFor
+
+What `sealTextFor` sealed for this account.
+
+### Parameters
+
+- `privateKey` **CryptoKey**&#x20;
+- `sealed` **Bytes**&#x20;
+- `about` **[string][727]**&#x20;
+
+Returns **[Promise][730]<[string][727]>**&#x20;
 
 ## FRIEND_LENGTH
 
 How many letters a friend code has: 100 bits.
 
-Type: [number][685]
+Type: [number][728]
 
 ## friendCode
 
@@ -1728,15 +1915,15 @@ key's SHA-256, as the server makes it (`server/src/friends.js`).
 
 - `publicKey` **Bytes**&#x20;
 
-Returns **[Promise][687]<[string][684]>** In groups of five, `7KQ4M-2XWPD-9HJ3N-QRT5V`
+Returns **[Promise][730]<[string][727]>** In groups of five, `7KQ4M-2XWPD-9HJ3N-QRT5V`
 
 ## join
 
-Type: [Array][691]<[string][684]>
+Type: [Array][734]<[string][727]>
 
 ## join
 
-Type: [Array][691]<[string][684]>
+Type: [Array][734]<[string][727]>
 
 ## readFriendCode
 
@@ -1744,9 +1931,9 @@ A friend code as typed, read as a recovery code is.
 
 ### Parameters
 
-- `typed` **[string][684]**&#x20;
+- `typed` **[string][727]**&#x20;
 
-Returns **([string][684] | null)** Its letters in groups of five, or null for what isn't one
+Returns **([string][727] | null)** Its letters in groups of five, or null for what isn't one
 
 ## seal
 
@@ -1756,9 +1943,9 @@ Encrypt, the nonce first.
 
 - `key` **CryptoKey**&#x20;
 - `plain` **Bytes**&#x20;
-- `about` **[string][684]** What it is, which opening it must say again
+- `about` **[string][727]** What it is, which opening it must say again
 
-Returns **[Promise][687]\<Bytes>**&#x20;
+Returns **[Promise][730]\<Bytes>**&#x20;
 
 ## open
 
@@ -1768,13 +1955,13 @@ Decrypt what `seal` made.
 
 - `key` **CryptoKey**&#x20;
 - `sealed` **Bytes**&#x20;
-- `about` **[string][684]**&#x20;
+- `about` **[string][727]**&#x20;
 
 <!---->
 
-- Throws **[Error][688]** When it was sealed with another key, or as something else
+- Throws **[Error][731]** When it was sealed with another key, or as something else
 
-Returns **[Promise][687]\<Bytes>**&#x20;
+Returns **[Promise][730]\<Bytes>**&#x20;
 
 ## hashName
 
@@ -1783,7 +1970,7 @@ A name the server can't read back: an HMAC, in base64url.
 ### Parameters
 
 - `key` **CryptoKey**&#x20;
-- `name` **[string][684]**&#x20;
+- `name` **[string][727]**&#x20;
 
 ## through
 
@@ -1794,7 +1981,7 @@ Bytes run through a stream of the browser's, compressing or not.
 - `bytes` **Bytes**&#x20;
 - `stream` **(CompressionStream | DecompressionStream)**&#x20;
 
-Returns **[Promise][687]\<Bytes>**&#x20;
+Returns **[Promise][730]\<Bytes>**&#x20;
 
 ## sealJson
 
@@ -1805,7 +1992,7 @@ quarter.
 
 - `key` **CryptoKey**&#x20;
 - `value` **unknown**&#x20;
-- `about` **[string][684]**&#x20;
+- `about` **[string][727]**&#x20;
 
 ## openJson
 
@@ -1815,7 +2002,7 @@ What `sealJson` sealed.
 
 - `key` **CryptoKey**&#x20;
 - `sealed` **Bytes**&#x20;
-- `about` **[string][684]**&#x20;
+- `about` **[string][727]**&#x20;
 
 ## fingerprint
 
@@ -1826,7 +2013,7 @@ keys were written in.
 
 - `value` **unknown**&#x20;
 
-Returns **[Promise][687]<[string][684]>**&#x20;
+Returns **[Promise][730]<[string][727]>**&#x20;
 
 ## stableJson
 
@@ -1836,7 +2023,7 @@ JSON with every object's keys in order, and nothing JSON would leave out.
 
 - `value` **unknown**&#x20;
 
-Returns **[string][684]**&#x20;
+Returns **[string][727]**&#x20;
 
 ## cloud/deviceName
 
@@ -1847,24 +2034,24 @@ trusted than that.
 
 ## Seen
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `userAgent` **[string][684]**&#x20;
-- `maxTouchPoints` **[number][685]** An iPad says it is a Mac, but has a touch screen
-- `desktop` **[boolean][689]** The desktop app
+- `userAgent` **[string][727]**&#x20;
+- `maxTouchPoints` **[number][728]** An iPad says it is a Mac, but has a touch screen
+- `desktop` **[boolean][732]** The desktop app
 
 ## deviceName
 
 ### Parameters
 
-- `seen` **Partial<[Seen][213]>?** What the device is, when not this one (optional, default `{}`)
+- `seen` **Partial<[Seen][241]>?** What the device is, when not this one (optional, default `{}`)
   - `seen.userAgent` (optional, default `globalThis.navigator?.userAgent??''`)
   - `seen.maxTouchPoints` (optional, default `globalThis.navigator?.maxTouchPoints??0`)
   - `seen.desktop` (optional, default `isDesktop()`)
 
-Returns **[string][684]** `inksprite on macOS`, `Safari on iPhone`
+Returns **[string][727]** `inksprite on macOS`, `Safari on iPhone`
 
 ## cloud/diagnostics
 
@@ -1884,11 +2071,11 @@ Design: `.llm/sync_design.md`, "Hosted", "Seeing what happens".
 
 What the report's shape is, should it change.
 
-Type: [number][685]
+Type: [number][728]
 
 ## Diagnostics
 
-Type: [Object][686]
+Type: [Object][729]
 
 ## UNCOUNTED
 
@@ -1898,18 +2085,18 @@ Counts nothing, for an engine nobody reads. @type {Diagnostics}
 
 ### Parameters
 
-- `$0` **[Object][686]** (optional, default `{}`)
+- `$0` **[Object][729]** (optional, default `{}`)
   - `$0.now` (optional, default `Date.now`)
 
-Returns **[Diagnostics][125]**&#x20;
+Returns **[Diagnostics][149]**&#x20;
 
 ## counts
 
-Type: Record<[string][684], [number][685]>
+Type: Record<[string][727], [number][728]>
 
 ## errors
 
-Type: Record<[string][684], [number][685]>
+Type: Record<[string][727], [number][728]>
 
 ## errorTag
 
@@ -1921,7 +2108,7 @@ error's class. Never its message.
 
 - `error` **unknown**&#x20;
 
-Returns **[string][684]**&#x20;
+Returns **[string][727]**&#x20;
 
 ## error
 
@@ -1997,9 +2184,17 @@ a newer app wrote since waits in the outbox, unmerged, since a merge here
 would lose what that app knows. The status says sync waits for an update.
 
 A project is shared with friends by their friend codes (`share`): the
-project's key wrapped for each one's public key, which their first device
-wraps again under their account key as it first sees the project, and
-which it then brings in as a project made elsewhere. In a shared project a
+project's key wrapped for each one's public key, with its title sealed for
+them, as an invitation. Their devices are told of it, and nothing else of
+the project, until one of them accepts it (`accept`): it wraps the key
+again under their account key, and the project comes in as one made
+elsewhere. One rejected goes; an account blocked (`block`) shares nothing
+with this one either way, and its invitations aren't listed. In a project
+ever shared, the trash is each account's own: its story never carries
+`trashed`, and an account's removing it is a mark on its membership, which
+its devices follow (`followRemoved`), keeping it out of sync until it is
+restored. Deleted for good, its owner hands it on to a friend rather than
+delete it for them. In a shared project a
 chat and its messages are their writer's own: sealed under a key only
 that account makes, and served by the server to it alone. Sharing sends
 the owner's chats again so before anyone else has the key, and the server
@@ -2080,11 +2275,11 @@ their document's (`<id>/<name>`), and so is a version.
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
-- `rowId` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
+- `rowId` **[string][727]**&#x20;
 - `row` **any?**&#x20;
 
-Returns **([string][684] | null)**&#x20;
+Returns **([string][727] | null)**&#x20;
 
 ## reshapes
 
@@ -2110,8 +2305,8 @@ its own. See `.llm/trash_design.md`.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
-- `table` **[string][684]**&#x20;
+- `storyId` **[string][727]**&#x20;
+- `table` **[string][727]**&#x20;
 - `row` **any**&#x20;
 
 Returns **any** The row, or a copy of it in the trash
@@ -2128,26 +2323,26 @@ How much a push carries at most, records once encrypted.
 
 What `expected` holds for a row the engine removed here.
 
-Type: [string][684]
+Type: [string][727]
 
 ## FETCHED
 
 What `expected` holds for bytes the engine fetched and kept here.
 
-Type: [string][684]
+Type: [string][727]
 
 ## MOST_ROUNDS
 
 How many rounds one call runs at most, while conflicts send it round again.
 
-Type: [number][685]
+Type: [number][728]
 
 ## SETTLE_MS
 
 How long a broken tree is left as it is, in case it is only half of what
 another device is still sending.
 
-Type: [number][685]
+Type: [number][728]
 
 ## STREAMING_MS
 
@@ -2157,45 +2352,45 @@ How long a reply that never said it finished is taken to be still streaming.
 
 A row waiting to be sent, by its key: `documents:doc_x`.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `id` **[string][684]**&#x20;
-- `table` **[string][684]**&#x20;
-- `rowId` **[string][684]**&#x20;
+- `id` **[string][727]**&#x20;
+- `table` **[string][727]**&#x20;
+- `rowId` **[string][727]**&#x20;
 - `op` **(`"put"` | `"delete"`)**&#x20;
 - `data` **any?** The row as written; none for a file, whose bytes
   are read when it is sent
-- `storyId` **([string][684] | null)** Its project, where the row says, or `SETUP`
-- `chatId` **[string][684]?** A message's chat, which says its project
-- `blob` **[string][684]?** A file's blob, once its upload has begun
-- `first` **[boolean][689]?** Put there by the device's first sync of the
+- `storyId` **([string][727] | null)** Its project, where the row says, or `SETUP`
+- `chatId` **[string][727]?** A message's chat, which says its project
+- `blob` **[string][727]?** A file's blob, once its upload has begun
+- `first` **[boolean][732]?** Put there by the device's first sync of the
   setup: where the account has the row already, the account's stands
-- `whole` **[boolean][689]?** Put there by a project going up whole, which
+- `whole` **[boolean][732]?** Put there by a project going up whole, which
   the server may have had before: not a document made since
-- `ahead` **[WrittenBy][261]?** A newer app's copy on the server, which a row
+- `ahead` **[WrittenBy][289]?** A newer app's copy on the server, which a row
   with no record here waits behind, as `Kept`'s does
-- `at` **[number][685]** When it was written
+- `at` **[number][728]** When it was written
 
 ## Kept
 
 A row as the server last had it.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `id` **[string][684]**&#x20;
-- `storyId` **[string][684]** Its project, or `SETUP`
-- `name` **[string][684]** What the server knows it by
-- `rev` **[number][685]**&#x20;
-- `print` **([string][684] | null)** The row's fingerprint; null once removed
+- `id` **[string][727]**&#x20;
+- `storyId` **[string][727]** Its project, or `SETUP`
+- `name` **[string][727]** What the server knows it by
+- `rev` **[number][728]**&#x20;
+- `print` **([string][727] | null)** The row's fingerprint; null once removed
 - `row` **any?** The row itself, for the tables merged three ways
-- `file` **[FileInfo][263]?** A file's bytes, as uploaded
-- `ahead` **[WrittenBy][261]?** The server's copy, written since by a newer
+- `file` **[FileInfo][291]?** A file's bytes, as uploaded
+- `ahead` **[WrittenBy][289]?** The server's copy, written since by a newer
   app, which this row's waiting change holds for until this app is updated
-- `own` **[boolean][689]?** Sealed under this account's own key: a chat, or
+- `own` **[boolean][732]?** Sealed under this account's own key: a chat, or
   a message, in a shared project; or a document hidden from the others in one
   shared with only some, with its files and versions
 
@@ -2203,71 +2398,71 @@ Type: [Object][686]
 
 The schema and format a record was written in.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `schema` **[number][685]**&#x20;
-- `format` **[number][685]**&#x20;
+- `schema` **[number][728]**&#x20;
+- `format` **[number][728]**&#x20;
 
 ## FileInfo
 
 A file's bytes as uploaded.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `blob` **[string][684]**&#x20;
-- `size` **[number][685]**&#x20;
-- `type` **[string][684]**&#x20;
-- `parts` **[number][685]**&#x20;
+- `blob` **[string][727]**&#x20;
+- `size` **[number][728]**&#x20;
+- `type` **[string][727]**&#x20;
+- `parts` **[number][728]**&#x20;
 
 ## Pending
 
 Bytes on the server that this device has yet to have, as the round that
 brought their record left them, in its own table.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `id` **[string][684]** `file:<id>`
-- `storyId` **[string][684]**&#x20;
-- `collection` **[string][684]**&#x20;
-- `table` **[string][684]?** `files` where absent, as before cards had pictures
-- `fileId` **[string][684]**&#x20;
-- `file` **[FileInfo][263]**&#x20;
+- `id` **[string][727]** `file:<id>`
+- `storyId` **[string][727]**&#x20;
+- `collection` **[string][727]**&#x20;
+- `table` **[string][727]?** `files` where absent, as before cards had pictures
+- `fileId` **[string][727]**&#x20;
+- `file` **[FileInfo][291]**&#x20;
 - `row` **any?** A card's row, to keep with its picture
 
 ## Reading
 
 How far this device has read a project's collection.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `id` **[string][684]** `collection:<storyId>`
-- `storyId` **[string][684]**&#x20;
-- `collection` **[string][684]**&#x20;
-- `cursor` **[number][685]**&#x20;
-- `epoch` **[number][685]**&#x20;
-- `held` **[WrittenBy][261]?** What the record from a newer app that it
+- `id` **[string][727]** `collection:<storyId>`
+- `storyId` **[string][727]**&#x20;
+- `collection` **[string][727]**&#x20;
+- `cursor` **[number][728]**&#x20;
+- `epoch` **[number][728]**&#x20;
+- `held` **[WrittenBy][289]?** What the record from a newer app that it
   stopped at was written in: it pulls no further until this app is updated
-- `partial` **[boolean][689]?** Held partway through reading it whole: read
+- `partial` **[boolean][732]?** Held partway through reading it whole: read
   whole again, from the start, once this app is updated
 
 ## Incoming
 
 A row the server sent, as the app is to write it.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `table` **[string][684]**&#x20;
-- `id` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
+- `id` **[string][727]**&#x20;
 - `row` **(any | null)** Null to remove it
 - `replaced` **any?** A document as this device had it, which a merge
   with another device's changes is about to change: kept as a version first
@@ -2276,133 +2471,153 @@ Type: [Object][686]
 
 A document's text that lost a clash with this device's.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
 - `of` **any** The document as the merge left it
-- `content` **[string][684]** The other device's text, whole
-- `large` **[boolean][689]** More than a paragraph or two clashed, and
+- `content` **[string][727]** The other device's text, whole
+- `large` **[boolean][732]** More than a paragraph or two clashed, and
   nothing of the other text was merged in
 
 ## Payload
 
 What a record holds once opened.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `table` **[string][684]**&#x20;
-- `id` **[string][684]**&#x20;
-- `schema` **[number][685]**&#x20;
-- `format` **[number][685]?** None on a record from before formats: 0
+- `table` **[string][727]**&#x20;
+- `id` **[string][727]**&#x20;
+- `schema` **[number][728]**&#x20;
+- `format` **[number][728]?** None on a record from before formats: 0
 - `row` **any?**&#x20;
-- `deleted` **[boolean][689]?**&#x20;
-- `file` **[FileInfo][263]?**&#x20;
+- `deleted` **[boolean][732]?**&#x20;
+- `file` **[FileInfo][291]?**&#x20;
 
 ## ProjectRows
 
 A project's rows, files without their bytes.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
 - `story` **any**&#x20;
-- `documents` **[Array][691]\<any>**&#x20;
-- `chats` **[Array][691]\<any>**&#x20;
-- `messages` **[Array][691]\<any>**&#x20;
-- `files` **[Array][691]<{id: [string][684], storyId: [string][684]}>** The bytes it has to
+- `documents` **[Array][734]\<any>**&#x20;
+- `chats` **[Array][734]\<any>**&#x20;
+- `messages` **[Array][734]\<any>**&#x20;
+- `files` **[Array][734]<{id: [string][727], storyId: [string][727]}>** The bytes it has to
   send, by the document or picture they are of: never a repository's source
   file, which is its text alone
-- `versions` **[Array][691]\<any>?** Its documents' versions
+- `versions` **[Array][734]\<any>?** Its documents' versions
 
 ## Local
 
 The app, as the engine reaches it.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ## State
 
 Where the engine keeps its own rows: the app tables of that name.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ## Status
 
 What sync is doing, for the settings to show.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
 - `phase` **(`"idle"` | `"syncing"` | `"offline"` | `"error"` | `"held"`)** Held: waiting
   for this app to be updated, to bring in what a newer one wrote or to send
   anything
-- `waiting` **[number][685]** Rows waiting to be sent
-- `last` **([number][685] | null)** When a round last finished
-- `error` **([string][684] | null)**&#x20;
-- `full` **[boolean][689]?** The account's storage is full, and some rows wait for room
+- `waiting` **[number][728]** Rows waiting to be sent
+- `last` **([number][728] | null)** When a round last finished
+- `error` **([string][727] | null)**&#x20;
+- `full` **[boolean][732]?** The account's storage is full, and some rows wait for room
 
 ## Known
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `id` **[string][684]**&#x20;
-- `storyId` **[string][684]**&#x20;
-- `keys` **[CollectionKeys][143]**&#x20;
+- `id` **[string][727]**&#x20;
+- `storyId` **[string][727]**&#x20;
+- `keys` **[CollectionKeys][167]**&#x20;
 - `wrapped` **Bytes** Its key as the server keeps it for this account
-- `seq` **[number][685]**&#x20;
-- `epoch` **[number][685]**&#x20;
-- `deleted` **([number][685] | null)**&#x20;
-- `kept` **[boolean][689]?** Deleted because another device keeps the project to itself
-- `role` **[string][684]** `owner`, or `member` of a project shared with this account
-- `owner` **([number][685] | null)** The owner's account, where the server says
-- `members` **[number][685]** How many are in it, the owner among them
-- `shared` **[boolean][689]** Ever shared: its chats are each one's own
-- `selective` **[boolean][689]** Shared with only some of its documents, the
+- `seq` **[number][728]**&#x20;
+- `epoch` **[number][728]**&#x20;
+- `deleted` **([number][728] | null)**&#x20;
+- `kept` **[boolean][732]?** Deleted because another device keeps the project to itself
+- `role` **[string][727]** `owner`, or `member` of a project shared with this account
+- `owner` **([number][728] | null)** The owner's account, where the server says
+- `members` **[number][728]** How many are in it, the owner and those invited among them
+- `waiting` **[number][728]** How many of them are invited and haven't answered
+- `removed` **[boolean][732]?** In this account's trash: not synced until restored
+- `shared` **[boolean][732]** Ever shared: its chats are each one's own
+- `selective` **[boolean][732]** Shared with only some of its documents, the
   others its owner's own
 
 ## Shared
 
 A project shared, as this device last heard of it.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `role` **[string][684]** This account's: `owner`, or `member`
-- `owner` **([number][685] | null)** The owner's account
+- `role` **[string][727]** This account's: `owner`, or `member`
+- `owner` **([number][728] | null)** The owner's account
+
+## Invitation
+
+A project someone invited this account to, waiting for its answer.
+
+Type: [Object][729]
+
+### Properties
+
+- `collection` **[string][727]** The project's collection
+- `title` **([string][727] | null)** The project's, as the note said; none from an older app
+- `invited` **[number][728]** When
+
+## Invitation
+
+Type: {server: [string][727], code: [string][727]}
 
 ## Sharing
 
-Who this account is, and the projects shared with it or by it.
+Who this account is, the projects shared with it or by it, and those it
+is invited to.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `me` **([number][685] | null)** This account, once the server has said
-- `projects` **Record<[string][684], [Shared][283]>** By story
-- `selective` **[Array][691]<[string][684]>** The projects this account shares with only
+- `me` **([number][728] | null)** This account, once the server has said
+- `projects` **Record<[string][727], [Shared][311]>** By story
+- `selective` **[Array][734]<[string][727]>** The projects this account shares with only
   some of their documents, whether or not with anyone yet
+- `invitations` **[Array][734]<[Invitation][313]>** The oldest first
 
 ## Options
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
 - `api` **Api**&#x20;
-- `keys` **[AccountKeys][141]**&#x20;
-- `local` **[Local][277]**&#x20;
-- `state` **[State][278]**&#x20;
-- `schema` **[number][685]** The schema this app writes
-- `format` **[number][685]?** The newest format this app reads, `FORMAT` but in tests
+- `keys` **[AccountKeys][165]**&#x20;
+- `local` **[Local][305]**&#x20;
+- `state` **[State][306]**&#x20;
+- `schema` **[number][728]** The schema this app writes
+- `format` **[number][728]?** The newest format this app reads, `FORMAT` but in tests
 
 ## put
 
@@ -2410,7 +2625,7 @@ A row to write into one of the engine's tables.
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
 - `data` **any**&#x20;
 
 ## entityType
@@ -2425,7 +2640,7 @@ Type: Change
 
 ### Parameters
 
-- `table` **[string][684]** @param {string} id
+- `table` **[string][727]** @param {string} id
 - `id` &#x20;
 
 ## storyOf
@@ -2434,7 +2649,7 @@ A row's project, where the row says.
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
 - `row` **any**&#x20;
 
 ## asSentStory
@@ -2443,22 +2658,20 @@ Whether a message is still being written by the model.
 
 ### Parameters
 
+- `story` &#x20;
+- `shared` &#x20;
 - `message` **any**&#x20;
-  - `message.syncOff` &#x20;
-  - `message.keptElsewhere` &#x20;
-  - `message.story` **...any**&#x20;
 
 ## asSentStory
 
 A story as it goes to the server: without what is this device's alone,
-whether it keeps the project off sync.
+whether it keeps the project off sync; and, in a project ever shared,
+without whether it is in the trash, which is each account's own.
 
 ### Parameters
 
 - `story` **any**&#x20;
-  - `story.syncOff` &#x20;
-  - `story.keptElsewhere` &#x20;
-  - `story.story` **...any**&#x20;
+- `shared` **[boolean][732]**&#x20;
 
 ## createEngine
 
@@ -2466,7 +2679,7 @@ The engine for one device signed in to one account.
 
 ### Parameters
 
-- `options` **[Options][287]**&#x20;
+- `options` **[Options][318]**&#x20;
   - `options.api` &#x20;
   - `options.keys` &#x20;
   - `options.local` &#x20;
@@ -2488,9 +2701,9 @@ What a record was written in.
 
 ### Parameters
 
-- `payload` **[Payload][273]**&#x20;
+- `payload` **[Payload][301]**&#x20;
 
-Returns **[WrittenBy][261]**&#x20;
+Returns **[WrittenBy][289]**&#x20;
 
 ## ahead
 
@@ -2498,14 +2711,14 @@ Whether a record was written by a newer app than this one.
 
 ### Parameters
 
-- `written` **([WrittenBy][261] | [Payload][273])**&#x20;
+- `written` **([WrittenBy][289] | [Payload][301])**&#x20;
 
 ## expected
 
 Rows the engine wrote here, by key, with their fingerprints, or `GONE`
 for those it removed.
 
-Type: [Map][692]<[string][684], [string][684]>
+Type: [Map][735]<[string][727], [string][727]>
 
 ## noting
 
@@ -2525,15 +2738,19 @@ The collections this account left, or was removed from, as last listed. @type {S
 
 ## left
 
-Type: [Array][691]<[Waiting][257]>
+Type: [Array][734]<[Waiting][285]>
 
 ## left
 
-Type: [Array][691]<[Waiting][257]>
+Type: [Array][734]<[Waiting][285]>
 
 ## sharedHere
 
 The projects shared now, as last listed, by story. @type {Set<string>}
+
+## removedHere
+
+The projects shared that this account removed to its trash, as last listed. @type {Set<string>}
 
 ## selectiveHere
 
@@ -2551,17 +2768,17 @@ The projects a pull brought a change to their tree since they were last looked a
 
 ## status
 
-Type: [Status][279]
+Type: [Status][307]
 
 ## status
 
-Returns **[Status][279]**&#x20;
+Returns **[Status][307]**&#x20;
 
 ## tell
 
 ### Parameters
 
-- `change` **Partial<[Status][279]>**&#x20;
+- `change` **Partial<[Status][307]>**&#x20;
 
 ## noteWrite
 
@@ -2580,7 +2797,7 @@ as it is made; the outbox is written meanwhile.
 
 ## waiting
 
-Type: [Array][691]<[Waiting][257]>
+Type: [Array][734]<[Waiting][285]>
 
 ## waitingOf
 
@@ -2589,17 +2806,17 @@ which are read when it is sent, and the setup's as it is sent.
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
 - `row` **any**&#x20;
-- `at` **[number][685]**&#x20;
-- `id` **[string][684]?** Its id, where the row is known by something else (optional, default `idOf(table,row)`)
-- `storyId` **([string][684] | null)?** Its project, where the row doesn't say (optional, default `storyOf(table,row)`)
+- `at` **[number][728]**&#x20;
+- `id` **[string][727]?** Its id, where the row is known by something else (optional, default `idOf(table,row)`)
+- `storyId` **([string][727] | null)?** Its project, where the row doesn't say (optional, default `storyOf(table,row)`)
 
-Returns **[Waiting][257]**&#x20;
+Returns **[Waiting][285]**&#x20;
 
 ##
 
-Type: [string][684]
+Type: [string][727]
 
 ## projectWaiting
 
@@ -2607,16 +2824,16 @@ Every row of a project, to wait in the outbox.
 
 ### Parameters
 
-- `project` **[ProjectRows][275]**&#x20;
-- `at` **[number][685]**&#x20;
+- `project` **[ProjectRows][303]**&#x20;
+- `at` **[number][728]**&#x20;
 
-Returns **[Array][691]<[Waiting][257]>**&#x20;
+Returns **[Array][734]<[Waiting][285]>**&#x20;
 
 ## entry
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
 - `row` **any**&#x20;
 
 ## setupWaiting
@@ -2626,10 +2843,10 @@ sync of it.
 
 ### Parameters
 
-- `setup` **Record<[string][684], [Array][691]\<any>>**&#x20;
-- `at` **[number][685]**&#x20;
+- `setup` **Record<[string][727], [Array][734]\<any>>**&#x20;
+- `at` **[number][728]**&#x20;
 
-Returns **[Array][691]<[Waiting][257]>**&#x20;
+Returns **[Array][734]<[Waiting][285]>**&#x20;
 
 ## enqueue
 
@@ -2638,17 +2855,17 @@ device's first sync, or a collection to upload whole again.
 
 ### Parameters
 
-- `storyIds` **[Array][691]<[string][684]>?** Every project and the setup when absent
-- `$1` **[Object][686]** (optional, default `{}`)
+- `storyIds` **[Array][734]<[string][727]>?** Every project and the setup when absent
+- `$1` **[Object][729]** (optional, default `{}`)
   - `$1.blobs` &#x20;
 
 ## entries
 
-Type: [Array][691]<[Waiting][257]>
+Type: [Array][734]<[Waiting][285]>
 
 ## entries
 
-Type: [Array][691]<[Waiting][257]>
+Type: [Array][734]<[Waiting][285]>
 
 ## restoredSince
 
@@ -2657,11 +2874,11 @@ from a backup since. The first one heard of is only kept.
 
 ### Parameters
 
-- `generation` **([string][684] | null)**&#x20;
+- `generation` **([string][727] | null)**&#x20;
 
 ## had
 
-Type: ({value: [string][684]} | [undefined][694])
+Type: ({value: [string][727]} | [undefined][737])
 
 ## sendAgain
 
@@ -2673,23 +2890,23 @@ that has them.
 
 ## forgotten
 
-Type: [Array][691]\<Change>
+Type: [Array][734]\<Change>
 
 ## blobs
 
-Type: [Map][692]<[string][684], [string][684]>
+Type: [Map][735]<[string][727], [string][727]>
 
 ## all
 
-Type: [Array][691]<[Kept][259]>
+Type: [Array][734]<[Kept][287]>
 
 ## all
 
-Type: [Array][691]<[Waiting][257]>
+Type: [Array][734]<[Waiting][285]>
 
 ## all
 
-Type: [Array][691]<[Waiting][257]>
+Type: [Array][734]<[Waiting][285]>
 
 ## takeOff
 
@@ -2699,7 +2916,7 @@ device sends of one afterwards is left alone here.
 
 ### Parameters
 
-- `known` **[Map][692]<[string][684], [Known][281]>**&#x20;
+- `known` **[Map][735]<[string][727], [Known][309]>**&#x20;
 
 ## writeStory
 
@@ -2708,7 +2925,7 @@ than one to send.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
+- `storyId` **[string][727]**&#x20;
 - `story` **any**&#x20;
 
 ## keptElsewhere
@@ -2718,7 +2935,7 @@ here in the trash, out of sync, its edits waiting here with it.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
+- `storyId` **[string][727]**&#x20;
 
 ## takeBack
 
@@ -2728,17 +2945,13 @@ first sync would, the story as it was so that the server's is the newer.
 
 ### Parameters
 
-- `known` **[Map][692]<[string][684], [Known][281]>**&#x20;
+- `known` **[Map][735]<[string][727], [Known][309]>**&#x20;
 
 ## leftBehind
 
 The projects shared with this account that it has left, or been removed
 from: moved to the trash here, out of sync, as one another device kept
 to itself. Added again, they are taken back as those are.
-
-## people
-
-Who is in each project shared, as last asked, by story. @type {Map\<string, Shared & {count: number}>}
 
 ## peopleAsked
 
@@ -2756,7 +2969,15 @@ The account this device is signed in to, once the server has said.
 
 ## me
 
-Type: [Sharing][285]
+Type: [Sharing][316]
+
+## invitations
+
+The invitations waiting, as last listed. @type {Invitation\[]}
+
+## titles
+
+Each invitation's title, once opened, by collection and when it was made. @type {Map\<string, string|null>}
 
 ## toldSharing
 
@@ -2764,13 +2985,13 @@ What the app was last told, to tell it only of a change.
 
 ## lookAtPeople
 
-Who is in each project shared, asked again where the number in it has
-changed, or not yet since the engine began; kept for when the server
+Who is in each project shared, asked again where the number in it, or
+the number invited, has changed, or not yet since the engine began; kept for when the server
 can't be reached. The app is told when it changes.
 
 ### Parameters
 
-- `known` **[Map][692]<[string][684], [Known][281]>**&#x20;
+- `known` **[Map][735]<[string][727], [Known][309]>**&#x20;
 
 ## tellSharing
 
@@ -2778,11 +2999,39 @@ Tell the app of the projects shared, if that has changed.
 
 ## sharing
 
-Type: [Sharing][285]
+Type: [Sharing][316]
 
 ## sharing
 
-The projects shared, as sync last heard.
+The projects shared, and the invitations waiting, as sync last heard.
+
+## followRemoved
+
+Have each project ever shared in this account's trash here as the
+server's mark says: taken to the trash or back out of it, as the
+engine's own write. A story waiting to go says otherwise, and is to be
+the mark (`markRemoved`).
+
+### Parameters
+
+- `known` **[Map][735]<[string][727], [Known][309]>**&#x20;
+- `waiting` **[Map][735]<[string][727], [Map][735]<[string][727], [Waiting][285]>>**&#x20;
+
+## stories
+
+Type: ([Map][735]<[string][727], any> | null)
+
+## markRemoved
+
+Send whether a project ever shared is in this account's trash, as its
+story waiting to go says, as the mark on its membership.
+
+### Parameters
+
+- `collection` **[Known][309]**&#x20;
+- `group` **[Map][735]<[string][727], [Waiting][285]>** What waits to go of it
+
+Returns **[Promise][730]<[boolean][732]>** Whether the rest of it is to go: not while it is in the trash
 
 ## idle
 
@@ -2794,13 +3043,13 @@ A project's collection as the server lists it now.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
+- `storyId` **[string][727]**&#x20;
 
-Returns **[Promise][687]<([ListedCollection][40] | null)>**&#x20;
+Returns **[Promise][730]<([ListedCollection][40] | null)>**&#x20;
 
 ## reading
 
-Type: ([Reading][267] | [undefined][694])
+Type: ([Reading][295] | [undefined][737])
 
 ## allOwn
 
@@ -2810,16 +3059,16 @@ documents, every one hidden from the others, with its files and versions.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
-- `selective` **[boolean][689]**&#x20;
+- `storyId` **[string][727]**&#x20;
+- `selective` **[boolean][732]**&#x20;
 
 ## ofStory
 
-Type: [Array][691]<[Kept][259]>
+Type: [Array][734]<[Kept][287]>
 
 ## ofStory
 
-Type: [Array][691]<[Kept][259]>
+Type: [Array][734]<[Kept][287]>
 
 ## leave
 
@@ -2828,7 +3077,7 @@ and it goes to the trash here, out of sync.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
+- `storyId` **[string][727]**&#x20;
 
 ## leaveCollection
 
@@ -2836,23 +3085,32 @@ Take this account out of a collection shared with it.
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
+- `id` **[string][727]**&#x20;
 
-## profile
+## reject
 
-This account as the people it shares with know it: its id, the name
-they see, and its friend code, its key pair made if it has none.
-
-## named
-
-The name the people this account shares with see: the account's own,
-given on a server that shares until the writer gives another.
+Reject an invitation: it goes, and the one who sent it can send another.
 
 ### Parameters
 
-- `account` &#x20;
+- `collection` **[string][727]**&#x20;
 
-Returns **[Promise][687]<([string][684] | null)>**&#x20;
+## forgetInvitation
+
+Let go of an invitation answered here, before the next listing says so.
+
+### Parameters
+
+- `collection` **[string][727]**&#x20;
+
+## knownPeople
+
+The people this account knows, and those it blocked.
+
+## profile
+
+This account as the people it shares with know it: its id, its name,
+and its friend code, its key pair made if it has none.
 
 ## noted
 
@@ -2860,13 +3118,13 @@ Have every write noted so far in the outbox.
 
 ## running
 
-Type: ([Promise][687]\<void> | null)
+Type: ([Promise][730]\<void> | null)
 
 ## round
 
 Sync once, or once more after the round under way.
 
-Returns **[Promise][687]\<void>**&#x20;
+Returns **[Promise][730]\<void>**&#x20;
 
 ## full
 
@@ -2886,11 +3144,11 @@ Count a page of changes that came.
 
 ## grown
 
-Type: [Set][695]<[string][684]>
+Type: [Set][738]<[string][727]>
 
 ##
 
-Type: [Error][688]
+Type: [Error][731]
 
 ## learn
 
@@ -2898,26 +3156,41 @@ The collections the server lists, opened: whose each is, and its keys.
 
 ### Parameters
 
-- `listed` **[Array][691]<[ListedCollection][40]>**&#x20;
+- `listed` **[Array][734]<[ListedCollection][40]>**&#x20;
 
-Returns **[Promise][687]<[Map][692]<[string][684], [Known][281]>>** By story
+Returns **[Promise][730]<[Map][735]<[string][727], [Known][309]>>** By story
 
 ## known
 
-Type: [Map][692]<[string][684], [Known][281]>
+Type: [Map][735]<[string][727], [Known][309]>
 
 ## setupId
 
-Type: ([string][684] | null)
+Type: ([string][727] | null)
 
 ## setupCollection
 
 The id of the account's own collection, the same on every device.
 
+## invitationOf
+
+An invitation as the listing has it, its note opened with this account's
+private key, once for each invitation.
+
+### Parameters
+
+- `collection` **[ListedCollection][40]**&#x20;
+
+Returns **[Promise][730]<[Invitation][313]>**&#x20;
+
+## title
+
+Type: ([string][727] | null)
+
 ## takeShared
 
-A collection shared with this account, its key still wrapped for the
-account's public key: opened with the private key, and wrapped again
+A collection shared with this account before invitations, its key still
+wrapped for the account's public key: opened with the private key, and wrapped again
 under the account key, as this account's own collections are, for its
 other devices to take as they take those.
 
@@ -2927,14 +3200,14 @@ other devices to take as they take those.
 
 ## pair
 
-Type: ([Promise][687]<{publicKey: Bytes, privateKey: CryptoKey}> | null)
+Type: ([Promise][730]<{publicKey: Bytes, privateKey: CryptoKey}> | null)
 
 ## keyPair
 
 The account's key pair, made the first time any of its devices needs
 one: a second device making one at once takes the first's.
 
-Returns **[Promise][687]<{publicKey: Bytes, privateKey: CryptoKey}>**&#x20;
+Returns **[Promise][730]<{publicKey: Bytes, privateKey: CryptoKey}>**&#x20;
 
 ## ownOf
 
@@ -2942,7 +3215,7 @@ The keys this account's own records in a collection are sealed with.
 
 ### Parameters
 
-- `collection` **[Known][281]**&#x20;
+- `collection` **[Known][309]**&#x20;
 
 ## keysOf
 
@@ -2955,39 +3228,39 @@ The keys this account's own records in a collection are sealed with.
 The outbox, by project. A row with no project of its own (a removal, a
 message) is put with the project its record or its chat says.
 
-Returns **[Promise][687]<[Map][692]<[string][684], [Map][692]<[string][684], [Waiting][257]>>>**&#x20;
+Returns **[Promise][730]<[Map][735]<[string][727], [Map][735]<[string][727], [Waiting][285]>>>**&#x20;
 
 ## grouped
 
-Type: [Map][692]<[string][684], [Map][692]<[string][684], [Waiting][257]>>
+Type: [Map][735]<[string][727], [Map][735]<[string][727], [Waiting][285]>>
 
 ## map
 
-Type: [Array][691]<[Kept][259]>
+Type: [Array][734]<[Kept][287]>
 
 ## map
 
-Type: [Array][691]<[Waiting][257]>
+Type: [Array][734]<[Waiting][285]>
 
 ## map
 
-Type: [Array][691]<[Kept][259]>
+Type: [Array][734]<[Kept][287]>
 
 ## map
 
-Type: [Array][691]\<SettingsGroup>
+Type: [Array][734]\<SettingsGroup>
 
 ## chats
 
-Type: [Map][692]<[string][684], ([string][684] | null)>
+Type: [Map][735]<[string][727], ([string][727] | null)>
 
 ## lost
 
-Type: [Array][691]<[string][684]>
+Type: [Array][734]<[string][727]>
 
 ## lost
 
-Type: ([Lost][415] | null)
+Type: ([Lost][459] | null)
 
 ## pull
 
@@ -2995,141 +3268,141 @@ Bring a project's collection in from where this device last read it.
 
 ### Parameters
 
-- `collection` **[Known][281]**&#x20;
-- `waiting` **[Map][692]<[string][684], [Map][692]<[string][684], [Waiting][257]>>**&#x20;
-- `here` **[Set][695]<[string][684]>** The projects this device has
+- `collection` **[Known][309]**&#x20;
+- `waiting` **[Map][735]<[string][727], [Map][735]<[string][727], [Waiting][285]>>**&#x20;
+- `here` **[Set][738]<[string][727]>** The projects this device has
 
-Returns **[Promise][687]<[boolean][689]>** Whether documents came, which may have broken its tree
-
-## get
-
-Type: ([Reading][267] | [undefined][694])
+Returns **[Promise][730]<[boolean][732]>** Whether documents came, which may have broken its tree
 
 ## get
 
-Type: ([Kept][259] | [undefined][694])
+Type: ([Reading][295] | [undefined][737])
 
 ## get
 
-Type: ([Reading][267] | [undefined][694])
+Type: ([Kept][287] | [undefined][737])
 
 ## get
 
-Type: ([Kept][259] | [undefined][694])
+Type: ([Reading][295] | [undefined][737])
 
 ## get
 
-Type: [Waiting][257]
+Type: ([Kept][287] | [undefined][737])
 
 ## get
 
-Type: ([Kept][259] | [undefined][694])
+Type: [Waiting][285]
+
+## get
+
+Type: ([Kept][287] | [undefined][737])
 
 ## get
 
 ## get
 
-Type: ([Waiting][257] | [undefined][694])
+Type: ([Waiting][285] | [undefined][737])
 
 ## get
 
-Type: ([Kept][259] | [undefined][694])
+Type: ([Kept][287] | [undefined][737])
 
 ## get
 
-Type: ([Waiting][257] | [undefined][694])
+Type: ([Waiting][285] | [undefined][737])
 
 ## get
 
-Type: ([Reading][267] | [undefined][694])
+Type: ([Reading][295] | [undefined][737])
 
 ## get
 
-Type: [Document][696]
+Type: [Document][739]
 
 ## received
 
-Type: [Set][695]<[string][684]>
+Type: [Set][738]<[string][727]>
 
 ## held
 
-Type: ([WrittenBy][261] | null)
+Type: ([WrittenBy][289] | null)
 
 ## held
 
-Type: ([WrittenBy][261] | null)
+Type: ([WrittenBy][289] | null)
 
 ## incoming
 
-Type: [Array][691]<[Incoming][269]>
+Type: [Array][734]<[Incoming][297]>
 
 ## incoming
 
-Type: [Array][691]<[Incoming][269]>
+Type: [Array][734]<[Incoming][297]>
 
 ## incoming
 
-Type: [Array][691]<[Incoming][269]>
+Type: [Array][734]<[Incoming][297]>
 
 ## clashes
 
-Type: [Array][691]<[Clash][271]>
+Type: [Array][734]<[Clash][299]>
 
 ## clashes
 
-Type: [Array][691]<[Clash][271]>
+Type: [Array][734]<[Clash][299]>
 
 ## clashes
 
-Type: [Array][691]<[Clash][271]>
+Type: [Array][734]<[Clash][299]>
 
 ## kept
 
-Type: [Array][691]\<Change>
+Type: [Array][734]\<Change>
 
 ### kept
 
-Type: [string][684]
+Type: [string][727]
 
 ## kept
 
-Type: [Kept][259]
+Type: [Kept][287]
 
 ### kept
 
-Type: [string][684]
+Type: [string][727]
 
 ## kept
 
-Type: [Array][691]\<Change>
+Type: [Array][734]\<Change>
 
 ### kept
 
-Type: [string][684]
+Type: [string][727]
 
 ## kept
 
-Type: [Array][691]\<Change>
+Type: [Array][734]\<Change>
 
 ### kept
 
-Type: [string][684]
+Type: [string][727]
 
 ## outbox
 
-Type: [Array][691]\<Change>
+Type: [Array][734]\<Change>
 
 ## outbox
 
-Type: (Change | [undefined][694])
+Type: (Change | [undefined][737])
 
 ## outbox
 
-Type: [Array][691]\<Change>
+Type: [Array][734]\<Change>
 
 ## outbox
 
-Type: [Array][691]\<Change>
+Type: [Array][734]\<Change>
 
 ## checked
 
@@ -3145,11 +3418,11 @@ Bytes waiting for a document that has none to send leave the outbox:
 they would wait for ever. A repository's source file was put there as a
 file once.
 
-Returns **[Promise][687]<[number][685]>** How many were found
+Returns **[Promise][730]<[number][728]>** How many were found
 
 ## behind
 
-Type: [Array][691]<[Waiting][257]>
+Type: [Array][734]<[Waiting][285]>
 
 ## broken
 
@@ -3162,7 +3435,7 @@ looked at, and put right what has been wrong for a while.
 
 ### Parameters
 
-- `grown` **[Set][695]<[string][684]>** The projects documents came to this round
+- `grown` **[Set][738]<[string][727]>** The projects documents came to this round
 
 ## take
 
@@ -3171,11 +3444,11 @@ here, what to keep of it, and what is to wait to go back.
 
 ### Parameters
 
-- `collection` **[Known][281]**&#x20;
-- `payload` **[Payload][273]**&#x20;
-- `name` **[string][684]**&#x20;
-- `rev` **[number][685]**&#x20;
-- `$4` **[Object][686]**&#x20;
+- `collection` **[Known][309]**&#x20;
+- `payload` **[Payload][301]**&#x20;
+- `name` **[string][727]**&#x20;
+- `rev` **[number][728]**&#x20;
+- `$4` **[Object][729]**&#x20;
   - `$4.record` &#x20;
   - `$4.waiting` &#x20;
   - `$4.own` &#x20;
@@ -3187,20 +3460,20 @@ passed over rather than stop every other.
 
 ### Parameters
 
-- `collection` **[Known][281]**&#x20;
-- `name` **[string][684]**&#x20;
+- `collection` **[Known][309]**&#x20;
+- `name` **[string][727]**&#x20;
 - `body` **(Bytes | null)**&#x20;
-- `own` **[boolean][689]?** This account's own, sealed under its own key (optional, default `false`)
+- `own` **[boolean][732]?** This account's own, sealed under its own key (optional, default `false`)
 
-Returns **[Promise][687]<([Payload][273] | null)>**&#x20;
-
-## payload
-
-Type: [Payload][273]
+Returns **[Promise][730]<([Payload][301] | null)>**&#x20;
 
 ## payload
 
-Type: [Payload][273]
+Type: [Payload][301]
+
+## payload
+
+Type: [Payload][301]
 
 ## arrive
 
@@ -3208,11 +3481,11 @@ A project another device made, brought in whole.
 
 ### Parameters
 
-- `collection` **[Known][281]**&#x20;
+- `collection` **[Known][309]**&#x20;
 
 ## project
 
-Type: [ProjectRows][275]
+Type: [ProjectRows][303]
 
 ### project
 
@@ -3226,9 +3499,9 @@ goes to the trash here, and up again whole in the push, in the trash.
 
 ### Parameters
 
-- `collection` **[Known][281]**&#x20;
-- `reading` **([Reading][267] | [undefined][694])**&#x20;
-- `waiting` **[Map][692]<[string][684], [Waiting][257]>**&#x20;
+- `collection` **[Known][309]**&#x20;
+- `reading` **([Reading][295] | [undefined][737])**&#x20;
+- `waiting` **[Map][735]<[string][727], [Waiting][285]>**&#x20;
 
 ## dropUnreceived
 
@@ -3237,9 +3510,9 @@ here, but those waiting to go up.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
-- `received` **[Set][695]<[string][684]>**&#x20;
-- `waiting` **[Map][692]<[string][684], [Waiting][257]>**&#x20;
+- `storyId` **[string][727]**&#x20;
+- `received` **[Set][738]<[string][727]>**&#x20;
+- `waiting` **[Map][735]<[string][727], [Waiting][285]>**&#x20;
 
 ## forget
 
@@ -3247,7 +3520,7 @@ Forget everything sync kept of a project.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
+- `storyId` **[string][727]**&#x20;
 
 ## make
 
@@ -3256,10 +3529,10 @@ meanwhile, or make again one deleted.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
-- `was` **[Known][281]?**&#x20;
+- `storyId` **[string][727]**&#x20;
+- `was` **[Known][309]?**&#x20;
 
-Returns **[Promise][687]<[Known][281]>**&#x20;
+Returns **[Promise][730]<[Known][309]>**&#x20;
 
 ## pushGroup
 
@@ -3270,24 +3543,24 @@ the project the server keeps sealed the other way goes again first.
 
 ### Parameters
 
-- `collection` **[Known][281]**&#x20;
-- `group` **[Map][692]<[string][684], [Waiting][257]>**&#x20;
+- `collection` **[Known][309]**&#x20;
+- `group` **[Map][735]<[string][727], [Waiting][285]>**&#x20;
 
 ## batch
 
-Type: [Array][691]\<Sending>
+Type: [Array][734]\<Sending>
 
 ## dropped
 
-Type: [Array][691]\<Change>
+Type: [Array][734]\<Change>
 
 ## types
 
-Type: ([Map][692]<[string][684], [string][684]> | null)
+Type: ([Map][735]<[string][727], [string][727]> | null)
 
 ##
 
-Type: [string][684]
+Type: [string][727]
 
 ##
 
@@ -3295,11 +3568,11 @@ Type: any
 
 ## print
 
-Type: ([string][684] | null)
+Type: ([string][727] | null)
 
 ## file
 
-Type: ([FileInfo][263] | null)
+Type: ([FileInfo][291] | null)
 
 ## stampNew
 
@@ -3312,21 +3585,21 @@ with none and shared; and one going up again whole is not new.
 
 ### Parameters
 
-- `collection` **[Known][281]**&#x20;
-- `group` **[Map][692]<[string][684], [Waiting][257]>**&#x20;
-- `tree` **[Array][691]\<any>** Its documents here
+- `collection` **[Known][309]**&#x20;
+- `group` **[Map][735]<[string][727], [Waiting][285]>**&#x20;
+- `tree` **[Array][734]\<any>** Its documents here
 
-Returns **[Promise][687]<[Array][691]\<any>>** The tree, as they are now
+Returns **[Promise][730]<[Array][734]\<any>>** The tree, as they are now
 
 ## fresh
 
-Type: [Set][695]<[string][684]>
+Type: [Set][738]<[string][727]>
 
 ## unsharedOf
 
 ### Parameters
 
-- `id` **[string][684]** @param {Set<string>} passed @returns {boolean}
+- `id` **[string][727]** @param {Set<string>} passed @returns {boolean}
 - `passed` (optional, default `new Set()`)
 
 ## ownFor
@@ -3338,10 +3611,10 @@ files and versions. A removal goes as the record it removes was.
 
 ### Parameters
 
-- `collection` **[Known][281]**&#x20;
-- `entry` **[Waiting][257]**&#x20;
-- `record` **([Kept][259] | [undefined][694])**&#x20;
-- `hidden` **([Set][695]<[string][684]> | null)** None in a project shared whole
+- `collection` **[Known][309]**&#x20;
+- `entry` **[Waiting][285]**&#x20;
+- `record` **([Kept][287] | [undefined][737])**&#x20;
+- `hidden` **([Set][738]<[string][727]> | null)** None in a project shared whole
 
 ## regroup
 
@@ -3355,18 +3628,18 @@ or in a pull.
 
 ### Parameters
 
-- `collection` **[Known][281]**&#x20;
-- `group` **[Map][692]<[string][684], [Waiting][257]>**&#x20;
-- `tree` **[Array][691]\<any>** Its documents here
-- `hidden` **([Set][695]<[string][684]> | null)** None in a project shared whole
+- `collection` **[Known][309]**&#x20;
+- `group` **[Map][735]<[string][727], [Waiting][285]>**&#x20;
+- `tree` **[Array][734]\<any>** Its documents here
+- `hidden` **([Set][738]<[string][727]> | null)** None in a project shared whole
 
 ## filter
 
-Type: [Array][691]<[Kept][259]>
+Type: [Array][734]<[Kept][287]>
 
 ## again
 
-Type: [Array][691]<[Waiting][257]>
+Type: [Array][734]<[Waiting][285]>
 
 ## send
 
@@ -3383,10 +3656,10 @@ One push, and what came of each record.
 
 ### Parameters
 
-- `collection` **[Known][281]**&#x20;
-- `batch` **[Array][691]\<Sending>**&#x20;
+- `collection` **[Known][309]**&#x20;
+- `batch` **[Array][734]\<Sending>**&#x20;
 
-Returns **[Promise][687]<[boolean][689]>** Whether the server took it, rather than refuse
+Returns **[Promise][730]<[boolean][732]>** Whether the server took it, rather than refuse
 it for what this device took the project to be shared as
 
 ## pushed
@@ -3397,15 +3670,15 @@ Upload a file's bytes, carrying on from the parts the server has.
 
 ### Parameters
 
-- `collection` **[Known][281]**&#x20;
-- `entry` **[Waiting][257]**&#x20;
-- `bytes` **[Blob][697]**&#x20;
+- `collection` **[Known][309]**&#x20;
+- `entry` **[Waiting][285]**&#x20;
+- `bytes` **[Blob][740]**&#x20;
 
-Returns **[Promise][687]<[FileInfo][263]>**&#x20;
+Returns **[Promise][730]<[FileInfo][291]>**&#x20;
 
 ## pending
 
-Returns **[Promise][687]<[Array][691]<[Pending][265]>>**&#x20;
+Returns **[Promise][730]<[Array][734]<[Pending][293]>>**&#x20;
 
 ## fetchFiles
 
@@ -3421,10 +3694,10 @@ Download one file's bytes and keep them here.
 
 ### Parameters
 
-- `want` **[Pending][265]**&#x20;
+- `want` **[Pending][293]**&#x20;
 - `progress` &#x20;
 
-Returns **[Promise][687]<[Blob][697]>**&#x20;
+Returns **[Promise][730]<[Blob][740]>**&#x20;
 
 ## hasFile
 
@@ -3433,7 +3706,7 @@ they are wanted.
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
+- `id` **[string][727]**&#x20;
 
 ## fetchFile
 
@@ -3441,18 +3714,18 @@ A file's bytes from the server, fetched now and kept here.
 
 ### Parameters
 
-- `id` **[string][684]** The file document's id
+- `id` **[string][727]** The file document's id
 - `progress` &#x20;
 
 <!---->
 
 - Throws **[CloudError][38]** When the server can't be reached
 
-Returns **[Promise][687]<([Blob][697] | null)>** Null when the server has none of it for this device
+Returns **[Promise][730]<([Blob][740] | null)>** Null when the server has none of it for this device
 
 ## want
 
-Type: ([Pending][265] | [undefined][694])
+Type: ([Pending][293] | [undefined][737])
 
 ## fetchProjectFiles
 
@@ -3461,9 +3734,9 @@ as a backup wants them. Stops at the first that can't be fetched.
 
 ### Parameters
 
-- `storyIds` **[Array][691]<[string][684]>?** Every project when absent
+- `storyIds` **[Array][734]<[string][727]>?** Every project when absent
 
-Returns **[Promise][687]<[number][685]>** How many are left unfetched
+Returns **[Promise][730]<[number][728]>** How many are left unfetched
 
 ## fetchProjectFiles
 
@@ -3471,11 +3744,11 @@ Have every file of these projects here, as a backup of them wants.
 
 ### Parameters
 
-- `storyIds` **[Array][691]<[string][684]>?** Every project when absent
+- `storyIds` **[Array][734]<[string][727]>?** Every project when absent
 
 <!---->
 
-- Throws **[Error][688]** When some can't be fetched now
+- Throws **[Error][731]** When some can't be fetched now
 
 ## keepOff
 
@@ -3484,7 +3757,7 @@ Begin keeping a project off sync, its story saying so already
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
+- `storyId` **[string][727]**&#x20;
 
 ## syncAgain
 
@@ -3493,7 +3766,7 @@ up whole.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
+- `storyId` **[string][727]**&#x20;
 
 ## checkNextRound
 
@@ -3525,13 +3798,13 @@ to mean something else; and say in `formatOf` which records carry it. A
 new table or index raises the schema instead. Records from before formats
 carry none, which reads as 0.
 
-Type: [number][685]
+Type: [number][728]
 
 ## FIRST
 
 What every record has carried at the least since formats began, 21 Oct 2026.
 
-Type: [number][685]
+Type: [number][728]
 
 ## TEXT_FORMAT
 
@@ -3540,7 +3813,7 @@ The format a document is written in for its text: what the editor holds
 the editor learns a node, a mark or an attribute, or a text may hold new
 markup.
 
-Type: [number][685]
+Type: [number][728]
 
 ## HELD_FORMAT
 
@@ -3549,7 +3822,7 @@ rather than by a folder (`.llm/nested_documents_design.md`). An older
 desktop app lays one out at the top of its project on disk, reads it back
 from there, and sends that on as a move.
 
-Type: [number][685]
+Type: [number][728]
 
 ## formatOf
 
@@ -3557,12 +3830,12 @@ The format a record is written in: the oldest that holds it.
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
 - `row` **any** The row it sends; null for one it removes
-- `parentType` **[string][684]?** For a document, its parent's type, when its
+- `parentType` **[string][727]?** For a document, its parent's type, when its
   parent is a document here
 
-Returns **[number][685]**&#x20;
+Returns **[number][728]**&#x20;
 
 ## cloud
 
@@ -3572,7 +3845,9 @@ step across their devices through a server of ours that can't read them.
 Each device keeps its own whole copy and works offline; the server keeps
 every project as a collection of records it can't read, the setup as one
 more, and answers what changed since a revision. A project can be shared
-with friends by their friend codes, each one's chats in it their own. The
+with friends by their friend codes, as an invitation each accepts, each
+one's chats in it their own; the server keeps the people each account
+shares with, and those it blocks. The
 devices do everything that needs the content: encrypting it, merging what
 two of them changed, and writing what came in where the app reads it. The
 server is a program of its own, kept apart from the app.
@@ -3614,10 +3889,6 @@ script prints the link (`server/src/admin.js invite`).
 
 Design: `.llm/sync_design.md`, "Hosted", "Accounts".
 
-## Invitation
-
-Type: {server: [string][684], code: [string][684]}
-
 ## opened
 
 The invitation opened, until the Sync settings take it. @type {Invitation|null}
@@ -3628,17 +3899,17 @@ Take an invitation from the page's address, if it carries one.
 
 ### Parameters
 
-- `$0` **[Object][686]** (optional, default `{}`)
+- `$0` **[Object][729]** (optional, default `{}`)
   - `$0.location` (optional, default `window.location`)
   - `$0.history` (optional, default `window.history`)
 
-Returns **[boolean][689]** Whether it did
+Returns **[boolean][732]** Whether it did
 
 ## takeInvite
 
 The invitation opened, handed over once.
 
-Returns **([Invitation][531] | null)**&#x20;
+Returns **([Invitation][313] | null)**&#x20;
 
 ## cloud/invited
 
@@ -3702,7 +3973,7 @@ window syncing for the app syncs the rest and the setup
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
 - `row` **any**&#x20;
 
 Returns **Change**&#x20;
@@ -3711,8 +3982,8 @@ Returns **Change**&#x20;
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
-- `id` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
+- `id` **[string][727]**&#x20;
 
 Returns **Change**&#x20;
 
@@ -3722,10 +3993,10 @@ The app, for the engine.
 
 ### Parameters
 
-- `$0` **[Object][686]**&#x20;
+- `$0` **[Object][729]**&#x20;
   - `$0.syncsForApp` &#x20;
 
-Returns **[Local][277]**&#x20;
+Returns **[Local][305]**&#x20;
 
 ## elsewhere
 
@@ -3738,8 +4009,8 @@ one open there, merged with what was typed since the store last heard.
 
 ### Parameters
 
-- `before` **([Document][696] | [undefined][694])**&#x20;
-- `row` **[Document][696]**&#x20;
+- `before` **([Document][739] | [undefined][737])**&#x20;
+- `row` **[Document][739]**&#x20;
 
 ## keepClash
 
@@ -3747,8 +4018,8 @@ Keep the text that lost a clash, as a version of its document.
 
 ### Parameters
 
-- `_storyId` **[string][684]**&#x20;
-- `$1` **[Object][686]**&#x20;
+- `_storyId` **[string][727]**&#x20;
+- `$1` **[Object][729]**&#x20;
   - `$1.of` &#x20;
   - `$1.content` &#x20;
   - `$1.large` &#x20;
@@ -3760,45 +4031,45 @@ and the stores told to read their tables again.
 
 ### Parameters
 
-- `incoming` **[Array][691]<[Incoming][269]>**&#x20;
+- `incoming` **[Array][734]<[Incoming][297]>**&#x20;
 
 ## byTable
 
-Type: Record<[string][684], [Array][691]\<Change>>
+Type: Record<[string][727], [Array][734]\<Change>>
 
 ## settings
 
-Type: [Array][691]\<any>
+Type: [Array][734]\<any>
 
 ## settings
 
-Type: Record<[string][684], unknown>
+Type: Record<[string][727], unknown>
 
 ## write
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
-- `incoming` **[Array][691]<[Incoming][269]>**&#x20;
+- `storyId` **[string][727]**&#x20;
+- `incoming` **[Array][734]<[Incoming][297]>**&#x20;
 
 ## straight
 
-Type: Record<[string][684], [Array][691]\<Change>>
+Type: Record<[string][727], [Array][734]\<Change>>
 
 ## toStorage
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
 - `change` **Change**&#x20;
 
 ## versions
 
-Type: [Array][691]<(any | null)>
+Type: [Array][734]<(any | null)>
 
 ## setup
 
-Type: Record<[string][684], [Array][691]\<any>>
+Type: Record<[string][727], [Array][734]\<any>>
 
 ##
 
@@ -3806,7 +4077,7 @@ Type: any
 
 ## off
 
-Type: [Map][692]<[string][684], (`"here"` | `"elsewhere"`)>
+Type: [Map][735]<[string][727], (`"here"` | `"elsewhere"`)>
 
 ## cloud/merge
 
@@ -3839,35 +4110,35 @@ Design: `.llm/sync_design.md`, "Merging".
 
 The text that lost a clash: the other device's, whole.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `content` **[string][684]**&#x20;
-- `large` **[boolean][689]** More than a paragraph or two clashed, and
+- `content` **[string][727]**&#x20;
+- `large` **[boolean][732]** More than a paragraph or two clashed, and
   nothing of it was merged in
 
 ## Merged
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
 - `row` **any** The row as both are to have it
-- `lost` **([Lost][415] | null)** The text that lost a clash, to be kept as a
+- `lost` **([Lost][459] | null)** The text that lost a clash, to be kept as a
   version, or null when everything was merged
 
 ## MAX_EDITS
 
 Past this many changed lines or words on a side, the text clashes whole.
 
-Type: [number][685]
+Type: [number][728]
 
 ## SMALL_CLASH
 
 How many paragraphs can clash and leave the rest merged.
 
-Type: [number][685]
+Type: [number][728]
 
 ## BY_ID
 
@@ -3898,28 +4169,28 @@ A row as this device and the server have it, merged.
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
 - `base` **(any | null)** As both last had it, if that was kept
 - `mine` **any** As this device has it
 - `theirs` **any** As the server has it
 
-Returns **[Merged][238]**&#x20;
+Returns **[Merged][266]**&#x20;
 
 ## row
 
-Type: Record<[string][684], unknown>
+Type: Record<[string][727], unknown>
 
 ### row
 
-Type: [string][684]
+Type: [string][727]
 
 ## row
 
-Type: Record<[string][684], unknown>
+Type: Record<[string][727], unknown>
 
 ### row
 
-Type: [string][684]
+Type: [string][727]
 
 ## row
 
@@ -3927,7 +4198,7 @@ Type: SettingsGroup
 
 ### row
 
-Type: [string][684]
+Type: [string][727]
 
 ## withoutBase
 
@@ -3936,12 +4207,12 @@ text document whose text differs hands back the other's.
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
 - `mine` **any**&#x20;
 - `theirs` **any**&#x20;
 - `newer` **any**&#x20;
 
-Returns **[Merged][238]**&#x20;
+Returns **[Merged][266]**&#x20;
 
 ## mergeValue
 
@@ -3953,7 +4224,7 @@ and what changed on both takes the newer's, a value kept over one removed.
 - `base` **unknown**&#x20;
 - `mine` **unknown**&#x20;
 - `theirs` **unknown**&#x20;
-- `mineNewer` **[boolean][689]**&#x20;
+- `mineNewer` **[boolean][732]**&#x20;
 
 ## mergeById
 
@@ -3961,18 +4232,18 @@ A field that holds things by their ids, merged id by id.
 
 ### Parameters
 
-- `base` **(Record<[string][684], unknown> | [undefined][694])**&#x20;
-- `mine` **(Record<[string][684], unknown> | [undefined][694])**&#x20;
-- `theirs` **(Record<[string][684], unknown> | [undefined][694])**&#x20;
-- `mineNewer` **[boolean][689]**&#x20;
+- `base` **(Record<[string][727], unknown> | [undefined][737])**&#x20;
+- `mine` **(Record<[string][727], unknown> | [undefined][737])**&#x20;
+- `theirs` **(Record<[string][727], unknown> | [undefined][737])**&#x20;
+- `mineNewer` **[boolean][732]**&#x20;
 
 ## out
 
-Type: Record<[string][684], unknown>
+Type: Record<[string][727], unknown>
 
 ## out
 
-Type: [Array][691]<[string][684]>
+Type: [Array][734]<[string][727]>
 
 ## settleText
 
@@ -3982,9 +4253,9 @@ keeps this device's text whole.
 
 ### Parameters
 
-- `base` **[string][684]**&#x20;
-- `mine` **[string][684]**&#x20;
-- `theirs` **[string][684]**&#x20;
+- `base` **[string][727]**&#x20;
+- `mine` **[string][727]**&#x20;
+- `theirs` **[string][727]**&#x20;
 
 ## mergeText
 
@@ -3994,11 +4265,11 @@ in each. A text too changed on a side to merge clashes everywhere.
 
 ### Parameters
 
-- `base` **[string][684]**&#x20;
-- `mine` **[string][684]**&#x20;
-- `theirs` **[string][684]**&#x20;
+- `base` **[string][727]**&#x20;
+- `mine` **[string][727]**&#x20;
+- `theirs` **[string][727]**&#x20;
 
-Returns **{text: [string][684], clashed: [boolean][689], clashes: [number][685]}**&#x20;
+Returns **{text: [string][727], clashed: [boolean][732], clashes: [number][728]}**&#x20;
 
 ## mergeWords
 
@@ -4007,11 +4278,11 @@ were changed differently.
 
 ### Parameters
 
-- `base` **[string][684]**&#x20;
-- `mine` **[string][684]**&#x20;
-- `theirs` **[string][684]**&#x20;
+- `base` **[string][727]**&#x20;
+- `mine` **[string][727]**&#x20;
+- `theirs` **[string][727]**&#x20;
 
-Returns **([string][684] | null)**&#x20;
+Returns **([string][727] | null)**&#x20;
 
 ## lines
 
@@ -4019,16 +4290,16 @@ A text's lines, each with the newline that ends it.
 
 ### Parameters
 
-- `text` **[string][684]**&#x20;
+- `text` **[string][727]**&#x20;
 
-Returns **[Array][691]<[string][684]>**&#x20;
+Returns **[Array][734]<[string][727]>**&#x20;
 
 ## sameLines
 
 ### Parameters
 
-- `a` **[Array][691]<[string][684]>**&#x20;
-- `b` **[Array][691]<[string][684]>**&#x20;
+- `a` **[Array][734]<[string][727]>**&#x20;
+- `b` **[Array][734]<[string][727]>**&#x20;
 
 ## cloud/names
 
@@ -4047,9 +4318,9 @@ What is wrong with a name for a new account, or null if nothing is.
 
 ### Parameters
 
-- `name` **[string][684]**&#x20;
+- `name` **[string][727]**&#x20;
 
-Returns **([string][684] | null)**&#x20;
+Returns **([string][727] | null)**&#x20;
 
 ## cloud/onDemand
 
@@ -4071,7 +4342,7 @@ Design: `.llm/sync_design.md`, "Files".
 
 ## FileSource
 
-Type: [Object][686]
+Type: [Object][729]
 
 ## source
 
@@ -4079,7 +4350,7 @@ Told how far a download has got, in parts.
 
 ## source
 
-Type: ([FileSource][614] | null)
+Type: ([FileSource][657] | null)
 
 ## provideFiles
 
@@ -4087,7 +4358,7 @@ Fetch files from here on, until the returned call stops it.
 
 ### Parameters
 
-- `next` **[FileSource][614]**&#x20;
+- `next` **[FileSource][657]**&#x20;
 
 ## fileElsewhere
 
@@ -4095,9 +4366,9 @@ Whether a file's bytes are on the sync server and not on this device.
 
 ### Parameters
 
-- `id` **[string][684]** The file document's id
+- `id` **[string][727]** The file document's id
 
-Returns **[Promise][687]<[boolean][689]>**&#x20;
+Returns **[Promise][730]<[boolean][732]>**&#x20;
 
 ## fetchElsewhere
 
@@ -4105,21 +4376,21 @@ A file's bytes from the sync server, kept here once fetched.
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
+- `id` **[string][727]**&#x20;
 - `progress` **Progress?**&#x20;
 
 <!---->
 
-- Throws **[Error][688]** When they are there and can't be fetched now
+- Throws **[Error][731]** When they are there and can't be fetched now
 
-Returns **[Promise][687]<([Blob][697] | null)>** Null when they are nowhere else
+Returns **[Promise][730]<([Blob][740] | null)>** Null when they are nowhere else
 
 ## cloud/people
 
 Who is who, for sharing: the account this device is signed in
-to, and who is in each project shared, as sync last heard (`useCloudSync`
-keeps them here). Kept apart from sync itself so that what shows a
-comment's author needn't load it.
+to, who is in each project shared, and the projects others invited it to,
+as sync last heard (`useCloudSync` keeps them here). Kept apart from sync
+itself so that what shows a comment's author needn't load it.
 
 A comment's post written on a device signed in to sync says which account
 wrote it (`by`). In a project shared, a post is the writer's own when that
@@ -4132,17 +4403,17 @@ Design: `.llm/sync_design.md`, "Sharing".
 
 The people of one project shared, for naming a post's author.
 
-Type: [Object][686]
+Type: [Object][729]
 
 ### Properties
 
-- `me` **([number][685] | null)** This account
-- `owner` **([number][685] | null)** The project's owner
-- `names` **Record<[number][685], ([string][684] | null)>** Each one's name, by account
+- `me` **([number][728] | null)** This account
+- `owner` **([number][728] | null)** The project's owner
+- `names` **Record<[number][728], ([string][727] | null)>** Each one's name, by account
 
 ##
 
-Type: ([number][685] | null)
+Type: ([number][728] | null)
 
 ## byMe
 
@@ -4159,9 +4430,9 @@ The people of a project, where it is shared.
 
 ### Parameters
 
-- `storyId` **[string][684]**&#x20;
+- `storyId` **[string][727]**&#x20;
 
-Returns **([People][359] | null)**&#x20;
+Returns **([People][95] | null)**&#x20;
 
 ## usePeople
 
@@ -4179,7 +4450,7 @@ someone they share the project with, the model, or a person in a Doc.
 ### Parameters
 
 - `post` &#x20;
-- `people` **([People][359] | null)?** (optional, default `null`)
+- `people` **([People][95] | null)?** (optional, default `null`)
 
 ## nameOf
 
@@ -4189,9 +4460,9 @@ one's, in a project shared.
 ### Parameters
 
 - `post` &#x20;
-- `people` **[People][359]**&#x20;
+- `people` **[People][95]**&#x20;
 
-Returns **[string][684]**&#x20;
+Returns **[string][727]**&#x20;
 
 ## cloud/setup
 
@@ -4214,17 +4485,17 @@ Design: `.llm/sync_design.md`, "The account's own collection".
 
 ## SETUP
 
-Type: [string][684]
+Type: [string][727]
 
 ## SETUP
 
-Type: [string][684]
+Type: [string][727]
 
 ## SETUP
 
 What the account's collection is kept under, in place of a story's id.
 
-Type: [string][684]
+Type: [string][727]
 
 ## SETUP_TABLES
 
@@ -4234,7 +4505,7 @@ The app tables the setup is made of, the card library's two among them.
 
 The settings kept outside the database, as rows of the collection: one a group.
 
-Type: [string][684]
+Type: [string][727]
 
 ## DEVICE_SPELLING
 
@@ -4247,10 +4518,10 @@ skill's name, the rest by their ids.
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
 - `row` **any**&#x20;
 
-Returns **([string][684] | [undefined][694])**&#x20;
+Returns **([string][727] | [undefined][737])**&#x20;
 
 ## asSent
 
@@ -4260,7 +4531,7 @@ and a card's picture, whose bytes go as a file's do.
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
 - `row` **any**&#x20;
 
 Returns **any**&#x20;
@@ -4269,7 +4540,7 @@ Returns **any**&#x20;
 
 How long after it was made a row can say it was changed, and have been changed by nobody.
 
-Type: [number][685]
+Type: [number][728]
 
 ## asMade
 
@@ -4281,10 +4552,10 @@ empty defaults the account's.
 
 ### Parameters
 
-- `table` **[string][684]**&#x20;
+- `table` **[string][727]**&#x20;
 - `row` **any**&#x20;
 
-Returns **[boolean][689]**&#x20;
+Returns **[boolean][732]**&#x20;
 
 ## settingsRows
 
@@ -4295,7 +4566,7 @@ each, the device's own left out.
 
 - `settings` **BackedUpSettings**&#x20;
 
-Returns **[Array][691]\<any>**&#x20;
+Returns **[Array][734]\<any>**&#x20;
 
 ## settingsOf
 
@@ -4303,7 +4574,7 @@ Settings rows back as the settings they hold, for the app to take.
 
 ### Parameters
 
-- `rows` **[Array][691]\<any>**&#x20;
+- `rows` **[Array][734]\<any>**&#x20;
 
 Returns **Partial\<BackedUpSettings>**&#x20;
 
@@ -4355,46 +4626,46 @@ to be: none when the tree is whole.
 
 ### Parameters
 
-- `documents` **[Array][691]<[Document][696]>** The project's, in the trash and out of it
-- `storyId` **[string][684]**&#x20;
-- `now` **[number][685]** When the fixes are made
+- `documents` **[Array][734]<[Document][739]>** The project's, in the trash and out of it
+- `storyId` **[string][727]**&#x20;
+- `now` **[number][728]** When the fixes are made
 
-Returns **[Array][691]<[Document][696]>**&#x20;
-
-## byId
-
-Type: [Map][692]<[string][684], [Document][696]>
+Returns **[Array][734]<[Document][739]>**&#x20;
 
 ## byId
 
-Type: [Map][692]<[string][684], [Document][696]>
+Type: [Map][735]<[string][727], [Document][739]>
+
+## byId
+
+Type: [Map][735]<[string][727], [Document][739]>
 
 ## fixed
 
-Type: [Map][692]<[string][684], [Document][696]>
+Type: [Map][735]<[string][727], [Document][739]>
 
 ## current
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
+- `id` **[string][727]**&#x20;
 
 ## change
 
 ### Parameters
 
-- `id` **[string][684]**&#x20;
+- `id` **[string][727]**&#x20;
 - `fields` &#x20;
 
 ##
 
-Type: Partial<[Document][696]>
+Type: Partial<[Document][739]>
 
 ## childrenOf
 
 ### Parameters
 
-- `parentId` **[string][684]**&#x20;
+- `parentId` **[string][727]**&#x20;
 
 ## toRoot
 
@@ -4414,15 +4685,15 @@ A document's folder is one of the project's, or the project itself, as a root's 
 
 ##
 
-Type: [Document][696]
+Type: [Document][739]
 
 ## settled
 
-Type: [Set][695]<[string][684]>
+Type: [Set][738]<[string][727]>
 
 ## path
 
-Type: [Array][691]<[string][684]>
+Type: [Array][734]<[string][727]>
 
 ## hiddenDocuments
 
@@ -4434,14 +4705,14 @@ isn't a folder and so can't go only on the way.
 
 ### Parameters
 
-- `documents` **[Array][691]<[Document][696]>** The project's, in the trash and out of it
-- `storyId` **[string][684]**&#x20;
+- `documents` **[Array][734]<[Document][739]>** The project's, in the trash and out of it
+- `storyId` **[string][727]**&#x20;
 
-Returns **[Set][695]<[string][684]>** By id
+Returns **[Set][738]<[string][727]>** By id
 
 ## way
 
-Type: [Set][695]<[string][684]>
+Type: [Set][738]<[string][727]>
 
 ## groupBy
 
@@ -4450,14 +4721,14 @@ than some of the Safaris the app runs in.
 
 ### Parameters
 
-- `items` **[Array][691]\<T>**&#x20;
+- `items` **[Array][734]\<T>**&#x20;
 - `keyOf` &#x20;
 
-Returns **[Map][692]<[string][684], [Array][691]\<T>>**&#x20;
+Returns **[Map][735]<[string][727], [Array][734]\<T>>**&#x20;
 
 ## groups
 
-Type: [Map][692]<[string][684], [Array][691]\<T>>
+Type: [Map][735]<[string][727], [Array][734]\<T>>
 
 [1]: #cloudaccount
 [2]: #account
@@ -4500,659 +4771,702 @@ Type: [Map][692]<[string][684], [Array][691]\<T>>
 [39]: #parameters-13
 [40]: #listedcollection
 [41]: #properties
-[42]: #pulledrecord
+[42]: #person
 [43]: #properties-1
-[44]: #proofof
-[45]: #parameters-14
-[46]: #proofof-1
-[47]: #parameters-15
-[48]: #member
-[49]: #properties-2
-[50]: #accountrecord
+[44]: #pulledrecord
+[45]: #properties-2
+[46]: #proofof
+[47]: #parameters-14
+[48]: #proofof-1
+[49]: #parameters-15
+[50]: #member
 [51]: #properties-3
-[52]: #device
+[52]: #accountrecord
 [53]: #properties-4
-[54]: #proof
-[55]: #app_version
-[56]: #protocol
-[57]: #createapi
-[58]: #parameters-16
-[59]: #call
-[60]: #parameters-17
-[61]: #response
-[62]: #name
-[63]: #collection
-[64]: #parameters-18
-[65]: #listing
-[66]: #prelogin
-[67]: #parameters-19
-[68]: #account-5
-[69]: #setkeys
-[70]: #parameters-20
-[71]: #setdisplay
-[72]: #parameters-21
-[73]: #setdisplay-1
-[74]: #parameters-22
+[54]: #device
+[55]: #properties-5
+[56]: #proof
+[57]: #app_version
+[58]: #protocol
+[59]: #createapi
+[60]: #parameters-16
+[61]: #call
+[62]: #parameters-17
+[63]: #response
+[64]: #name
+[65]: #collection
+[66]: #parameters-18
+[67]: #collection-1
+[68]: #collection-2
+[69]: #listing
+[70]: #prelogin
+[71]: #parameters-19
+[72]: #account-5
+[73]: #setkeys
+[74]: #parameters-20
 [75]: #friend
-[76]: #parameters-23
+[76]: #parameters-21
 [77]: #share
-[78]: #parameters-24
+[78]: #parameters-22
 [79]: #share-1
-[80]: #parameters-25
+[80]: #parameters-23
 [81]: #setselective
-[82]: #parameters-26
+[82]: #parameters-24
 [83]: #setselective-1
-[84]: #parameters-27
+[84]: #parameters-25
 [85]: #members
-[86]: #parameters-28
+[86]: #parameters-26
 [87]: #addmember
-[88]: #parameters-29
-[89]: #removemember
-[90]: #parameters-30
-[91]: #removemember-1
-[92]: #parameters-31
-[93]: #rewrap
-[94]: #parameters-32
-[95]: #setrecovery
-[96]: #parameters-33
-[97]: #setpassphrase
-[98]: #parameters-34
-[99]: #devices
-[100]: #signoutdevice
-[101]: #parameters-35
-[102]: #namedevice
-[103]: #parameters-36
-[104]: #collections
-[105]: #putcollection
-[106]: #parameters-37
-[107]: #deletecollection
-[108]: #parameters-38
-[109]: #push
-[110]: #parameters-39
-[111]: #push-1
-[112]: #push-2
-[113]: #parameters-40
-[114]: #
-[115]: #changes
-[116]: #parameters-41
-[117]: #-1
-[118]: #parts
-[119]: #parameters-42
-[120]: #parts-1
-[121]: #putpart
+[88]: #parameters-27
+[89]: #accept
+[90]: #parameters-28
+[91]: #accept-1
+[92]: #parameters-29
+[93]: #setremoved
+[94]: #parameters-30
+[95]: #people
+[96]: #people-1
+[97]: #addperson
+[98]: #parameters-31
+[99]: #addperson-1
+[100]: #parameters-32
+[101]: #forgetperson
+[102]: #parameters-33
+[103]: #forgetperson-1
+[104]: #parameters-34
+[105]: #block
+[106]: #parameters-35
+[107]: #block-1
+[108]: #parameters-36
+[109]: #unblock
+[110]: #parameters-37
+[111]: #unblock-1
+[112]: #parameters-38
+[113]: #removemember
+[114]: #parameters-39
+[115]: #removemember-1
+[116]: #parameters-40
+[117]: #rewrap
+[118]: #parameters-41
+[119]: #setrecovery
+[120]: #parameters-42
+[121]: #setpassphrase
 [122]: #parameters-43
-[123]: #getpart
-[124]: #parameters-44
-[125]: #diagnostics
-[126]: #parameters-45
-[127]: #listen
-[128]: #parameters-46
-[129]: #getreader
-[130]: #answer
-[131]: #parameters-47
-[132]: #answer-1
-[133]: #parameters-48
-[134]: #body
-[135]: #serveraddress
-[136]: #parameters-49
-[137]: #cloudcrypto
-[138]: #kdf
-[139]: #kdf-1
-[140]: #encoder
-[141]: #accountkeys
-[142]: #properties-5
-[143]: #collectionkeys
-[144]: #properties-6
-[145]: #randombytes
-[146]: #parameters-50
-[147]: #tobase64
-[148]: #parameters-51
-[149]: #frombase64
-[150]: #parameters-52
-[151]: #tobase64url
-[152]: #parameters-53
-[153]: #hkdfbase
-[154]: #parameters-54
-[155]: #hkdf
-[156]: #parameters-55
-[157]: #aesfrom
-[158]: #parameters-56
-[159]: #hmacfrom
-[160]: #parameters-57
-[161]: #passphrasekeys
-[162]: #parameters-58
-[163]: #code_letters
-[164]: #code_length
-[165]: #makerecoverycode
-[166]: #recoverykeys
-[167]: #parameters-59
-[168]: #accountkeys-1
-[169]: #parameters-60
-[170]: #collectionkeys-1
-[171]: #parameters-61
-[172]: #ownkeys
-[173]: #parameters-62
-[174]: #private_key
-[175]: #ecdh
-[176]: #makekeypair
-[177]: #parameters-63
-[178]: #generatekey
-[179]: #generatekey-1
-[180]: #openprivatekey
-[181]: #parameters-64
-[182]: #agreed
-[183]: #parameters-65
-[184]: #raw_point
-[185]: #sealfor
-[186]: #parameters-66
-[187]: #openfor
-[188]: #parameters-67
-[189]: #friend_length
-[190]: #friendcode
+[123]: #devices
+[124]: #signoutdevice
+[125]: #parameters-44
+[126]: #namedevice
+[127]: #parameters-45
+[128]: #collections
+[129]: #putcollection
+[130]: #parameters-46
+[131]: #deletecollection
+[132]: #parameters-47
+[133]: #push
+[134]: #parameters-48
+[135]: #push-1
+[136]: #push-2
+[137]: #parameters-49
+[138]: #
+[139]: #changes
+[140]: #parameters-50
+[141]: #-1
+[142]: #parts
+[143]: #parameters-51
+[144]: #parts-1
+[145]: #putpart
+[146]: #parameters-52
+[147]: #getpart
+[148]: #parameters-53
+[149]: #diagnostics
+[150]: #parameters-54
+[151]: #listen
+[152]: #parameters-55
+[153]: #getreader
+[154]: #answer
+[155]: #parameters-56
+[156]: #answer-1
+[157]: #parameters-57
+[158]: #body
+[159]: #serveraddress
+[160]: #parameters-58
+[161]: #cloudcrypto
+[162]: #kdf
+[163]: #kdf-1
+[164]: #encoder
+[165]: #accountkeys
+[166]: #properties-6
+[167]: #collectionkeys
+[168]: #properties-7
+[169]: #randombytes
+[170]: #parameters-59
+[171]: #tobase64
+[172]: #parameters-60
+[173]: #frombase64
+[174]: #parameters-61
+[175]: #tobase64url
+[176]: #parameters-62
+[177]: #hkdfbase
+[178]: #parameters-63
+[179]: #hkdf
+[180]: #parameters-64
+[181]: #aesfrom
+[182]: #parameters-65
+[183]: #hmacfrom
+[184]: #parameters-66
+[185]: #passphrasekeys
+[186]: #parameters-67
+[187]: #code_letters
+[188]: #code_length
+[189]: #makerecoverycode
+[190]: #recoverykeys
 [191]: #parameters-68
-[192]: #join
-[193]: #join-1
-[194]: #readfriendcode
-[195]: #parameters-69
-[196]: #seal
-[197]: #parameters-70
-[198]: #open
-[199]: #parameters-71
-[200]: #hashname
+[192]: #accountkeys-1
+[193]: #parameters-69
+[194]: #collectionkeys-1
+[195]: #parameters-70
+[196]: #ownkeys
+[197]: #parameters-71
+[198]: #private_key
+[199]: #ecdh
+[200]: #makekeypair
 [201]: #parameters-72
-[202]: #through
-[203]: #parameters-73
-[204]: #sealjson
-[205]: #parameters-74
-[206]: #openjson
-[207]: #parameters-75
-[208]: #fingerprint
-[209]: #parameters-76
-[210]: #stablejson
-[211]: #parameters-77
-[212]: #clouddevicename
-[213]: #seen
-[214]: #properties-7
-[215]: #devicename
+[202]: #generatekey
+[203]: #generatekey-1
+[204]: #openprivatekey
+[205]: #parameters-73
+[206]: #agreed
+[207]: #parameters-74
+[208]: #raw_point
+[209]: #sealfor
+[210]: #parameters-75
+[211]: #openfor
+[212]: #parameters-76
+[213]: #sealtextfor
+[214]: #parameters-77
+[215]: #opentextfor
 [216]: #parameters-78
-[217]: #clouddiagnostics
-[218]: #version
-[219]: #diagnostics-1
-[220]: #uncounted
-[221]: #creatediagnostics
-[222]: #parameters-79
-[223]: #counts
-[224]: #errors
-[225]: #errortag
-[226]: #parameters-80
-[227]: #error
-[228]: #cloudengine
-[229]: #synced
-[230]: #synced-1
-[231]: #synced-2
-[232]: #synced-3
-[233]: #synced-4
-[234]: #synced-5
-[235]: #synced-6
-[236]: #synced-7
-[237]: #setup_synced
-[238]: #merged
-[239]: #trashed
-[240]: #own
-[241]: #own-1
-[242]: #documented
-[243]: #documentof
-[244]: #parameters-81
-[245]: #reshapes
-[246]: #parameters-82
-[247]: #bytes
-[248]: #intotrash
-[249]: #parameters-83
-[250]: #part_size
-[251]: #push_bytes
-[252]: #gone
-[253]: #fetched
-[254]: #most_rounds
-[255]: #settle_ms
-[256]: #streaming_ms
-[257]: #waiting
-[258]: #properties-8
-[259]: #kept
-[260]: #properties-9
-[261]: #writtenby
-[262]: #properties-10
-[263]: #fileinfo
-[264]: #properties-11
-[265]: #pending
-[266]: #properties-12
-[267]: #reading
-[268]: #properties-13
-[269]: #incoming
-[270]: #properties-14
-[271]: #clash
-[272]: #properties-15
-[273]: #payload
-[274]: #properties-16
-[275]: #projectrows
-[276]: #properties-17
-[277]: #local
-[278]: #state
-[279]: #status
-[280]: #properties-18
-[281]: #known
-[282]: #properties-19
-[283]: #shared
-[284]: #properties-20
-[285]: #sharing
-[286]: #properties-21
-[287]: #options
-[288]: #properties-22
-[289]: #put
-[290]: #parameters-84
-[291]: #entitytype
-[292]: #entitytype-1
-[293]: #removal
-[294]: #parameters-85
-[295]: #storyof
-[296]: #parameters-86
-[297]: #assentstory
-[298]: #parameters-87
-[299]: #assentstory-1
-[300]: #parameters-88
-[301]: #createengine
-[302]: #parameters-89
-[303]: #-2
-[304]: #writtenby-1
-[305]: #parameters-90
-[306]: #ahead
-[307]: #parameters-91
-[308]: #expected
-[309]: #noting
-[310]: #keysbyid
-[311]: #ownbyid
-[312]: #left
-[313]: #left-1
-[314]: #left-2
-[315]: #sharedhere
-[316]: #selectivehere
-[317]: #regrouped
-[318]: #moved
-[319]: #status-1
-[320]: #status-2
-[321]: #tell
-[322]: #parameters-92
-[323]: #notewrite
-[324]: #parameters-93
-[325]: #note
-[326]: #parameters-94
-[327]: #waiting-1
-[328]: #waitingof
-[329]: #parameters-95
-[330]: #-3
-[331]: #projectwaiting
-[332]: #parameters-96
-[333]: #entry
-[334]: #parameters-97
-[335]: #setupwaiting
-[336]: #parameters-98
-[337]: #enqueue
-[338]: #parameters-99
-[339]: #entries
-[340]: #entries-1
-[341]: #restoredsince
-[342]: #parameters-100
-[343]: #had
-[344]: #sendagain
-[345]: #forgotten
-[346]: #blobs
-[347]: #all
-[348]: #all-1
-[349]: #all-2
-[350]: #takeoff
-[351]: #parameters-101
-[352]: #writestory
-[353]: #parameters-102
-[354]: #keptelsewhere
-[355]: #parameters-103
-[356]: #takeback
-[357]: #parameters-104
-[358]: #leftbehind
-[359]: #people
-[360]: #peopleasked
-[361]: #me
-[362]: #me-1
-[363]: #me-2
-[364]: #me-3
-[365]: #toldsharing
-[366]: #lookatpeople
-[367]: #parameters-105
-[368]: #tellsharing
-[369]: #sharing-1
-[370]: #sharing-2
-[371]: #idle
-[372]: #listedfor
-[373]: #parameters-106
-[374]: #reading-1
-[375]: #allown
-[376]: #parameters-107
-[377]: #ofstory
-[378]: #ofstory-1
-[379]: #leave
-[380]: #parameters-108
-[381]: #leavecollection
-[382]: #parameters-109
-[383]: #profile
-[384]: #named
-[385]: #parameters-110
-[386]: #noted
-[387]: #running
-[388]: #round
-[389]: #full
-[390]: #keptoff
-[391]: #counted
-[392]: #parameters-111
-[393]: #grown
-[394]: #-4
-[395]: #learn
-[396]: #parameters-112
-[397]: #known-1
-[398]: #setupid
-[399]: #setupcollection
-[400]: #takeshared
-[401]: #parameters-113
-[402]: #pair
-[403]: #keypair
-[404]: #ownof
-[405]: #parameters-114
-[406]: #keysof
-[407]: #parameters-115
-[408]: #groupwaiting
-[409]: #grouped
-[410]: #map
-[411]: #map-1
-[412]: #map-2
-[413]: #map-3
-[414]: #chats
-[415]: #lost
-[416]: #lost-1
-[417]: #pull
-[418]: #parameters-116
-[419]: #get
-[420]: #get-1
-[421]: #get-2
-[422]: #get-3
-[423]: #get-4
-[424]: #get-5
-[425]: #get-6
-[426]: #get-7
-[427]: #get-8
-[428]: #get-9
-[429]: #get-10
-[430]: #get-11
-[431]: #received
-[432]: #held
-[433]: #held-1
-[434]: #incoming-1
-[435]: #incoming-2
-[436]: #incoming-3
-[437]: #clashes
-[438]: #clashes-1
-[439]: #clashes-2
-[440]: #kept-1
-[441]: #kept-2
-[442]: #kept-3
-[443]: #kept-4
-[444]: #kept-5
-[445]: #kept-6
-[446]: #kept-7
-[447]: #kept-8
-[448]: #outbox
-[449]: #outbox-1
-[450]: #outbox-2
-[451]: #outbox-3
-[452]: #checked
-[453]: #check
-[454]: #behind
-[455]: #broken
-[456]: #repairtrees
-[457]: #parameters-117
-[458]: #take
-[459]: #parameters-118
-[460]: #openrecord
-[461]: #parameters-119
-[462]: #payload-1
-[463]: #payload-2
-[464]: #arrive
-[465]: #parameters-120
-[466]: #project
-[467]: #project-1
-[468]: #gone-1
-[469]: #parameters-121
-[470]: #dropunreceived
-[471]: #parameters-122
-[472]: #forget
-[473]: #parameters-123
-[474]: #make
-[475]: #parameters-124
-[476]: #pushgroup
-[477]: #parameters-125
-[478]: #batch
-[479]: #dropped
-[480]: #types
-[481]: #-5
-[482]: #-6
-[483]: #print
-[484]: #file
-[485]: #stampnew
-[486]: #parameters-126
-[487]: #fresh
-[488]: #unsharedof
-[489]: #parameters-127
-[490]: #ownfor
-[491]: #parameters-128
-[492]: #regroup
-[493]: #parameters-129
-[494]: #filter
-[495]: #again
-[496]: #send
-[497]: #parameters-130
-[498]: #send-1
-[499]: #parameters-131
-[500]: #pushed
-[501]: #upload
-[502]: #parameters-132
-[503]: #pending-1
-[504]: #fetchfiles
-[505]: #fetching
-[506]: #fetchone
-[507]: #parameters-133
-[508]: #hasfile
-[509]: #parameters-134
-[510]: #fetchfile
-[511]: #parameters-135
-[512]: #want
-[513]: #fetchprojectfiles
-[514]: #parameters-136
-[515]: #fetchprojectfiles-1
-[516]: #parameters-137
-[517]: #keepoff
-[518]: #parameters-138
-[519]: #syncagain
-[520]: #parameters-139
-[521]: #checknextround
-[522]: #cloudformat
-[523]: #format
-[524]: #first
-[525]: #text_format
-[526]: #held_format
-[527]: #formatof
-[528]: #parameters-140
-[529]: #cloud
-[530]: #cloudinvite
-[531]: #invitation
-[532]: #opened
-[533]: #takeinvitefromaddress
-[534]: #parameters-141
-[535]: #takeinvite
-[536]: #cloudinvited
-[537]: #cloudlocal
-[538]: #putof
-[539]: #parameters-142
-[540]: #putof-1
-[541]: #parameters-143
-[542]: #putof-2
-[543]: #parameters-144
-[544]: #putof-3
-[545]: #parameters-145
-[546]: #putof-4
-[547]: #parameters-146
-[548]: #removalof
-[549]: #parameters-147
-[550]: #applocal
+[217]: #friend_length
+[218]: #friendcode
+[219]: #parameters-79
+[220]: #join
+[221]: #join-1
+[222]: #readfriendcode
+[223]: #parameters-80
+[224]: #seal
+[225]: #parameters-81
+[226]: #open
+[227]: #parameters-82
+[228]: #hashname
+[229]: #parameters-83
+[230]: #through
+[231]: #parameters-84
+[232]: #sealjson
+[233]: #parameters-85
+[234]: #openjson
+[235]: #parameters-86
+[236]: #fingerprint
+[237]: #parameters-87
+[238]: #stablejson
+[239]: #parameters-88
+[240]: #clouddevicename
+[241]: #seen
+[242]: #properties-8
+[243]: #devicename
+[244]: #parameters-89
+[245]: #clouddiagnostics
+[246]: #version
+[247]: #diagnostics-1
+[248]: #uncounted
+[249]: #creatediagnostics
+[250]: #parameters-90
+[251]: #counts
+[252]: #errors
+[253]: #errortag
+[254]: #parameters-91
+[255]: #error
+[256]: #cloudengine
+[257]: #synced
+[258]: #synced-1
+[259]: #synced-2
+[260]: #synced-3
+[261]: #synced-4
+[262]: #synced-5
+[263]: #synced-6
+[264]: #synced-7
+[265]: #setup_synced
+[266]: #merged
+[267]: #trashed
+[268]: #own
+[269]: #own-1
+[270]: #documented
+[271]: #documentof
+[272]: #parameters-92
+[273]: #reshapes
+[274]: #parameters-93
+[275]: #bytes
+[276]: #intotrash
+[277]: #parameters-94
+[278]: #part_size
+[279]: #push_bytes
+[280]: #gone
+[281]: #fetched
+[282]: #most_rounds
+[283]: #settle_ms
+[284]: #streaming_ms
+[285]: #waiting
+[286]: #properties-9
+[287]: #kept
+[288]: #properties-10
+[289]: #writtenby
+[290]: #properties-11
+[291]: #fileinfo
+[292]: #properties-12
+[293]: #pending
+[294]: #properties-13
+[295]: #reading
+[296]: #properties-14
+[297]: #incoming
+[298]: #properties-15
+[299]: #clash
+[300]: #properties-16
+[301]: #payload
+[302]: #properties-17
+[303]: #projectrows
+[304]: #properties-18
+[305]: #local
+[306]: #state
+[307]: #status
+[308]: #properties-19
+[309]: #known
+[310]: #properties-20
+[311]: #shared
+[312]: #properties-21
+[313]: #invitation
+[314]: #properties-22
+[315]: #invitation-1
+[316]: #sharing
+[317]: #properties-23
+[318]: #options
+[319]: #properties-24
+[320]: #put
+[321]: #parameters-95
+[322]: #entitytype
+[323]: #entitytype-1
+[324]: #removal
+[325]: #parameters-96
+[326]: #storyof
+[327]: #parameters-97
+[328]: #assentstory
+[329]: #parameters-98
+[330]: #assentstory-1
+[331]: #parameters-99
+[332]: #createengine
+[333]: #parameters-100
+[334]: #-2
+[335]: #writtenby-1
+[336]: #parameters-101
+[337]: #ahead
+[338]: #parameters-102
+[339]: #expected
+[340]: #noting
+[341]: #keysbyid
+[342]: #ownbyid
+[343]: #left
+[344]: #left-1
+[345]: #left-2
+[346]: #sharedhere
+[347]: #removedhere
+[348]: #selectivehere
+[349]: #regrouped
+[350]: #moved
+[351]: #status-1
+[352]: #status-2
+[353]: #tell
+[354]: #parameters-103
+[355]: #notewrite
+[356]: #parameters-104
+[357]: #note
+[358]: #parameters-105
+[359]: #waiting-1
+[360]: #waitingof
+[361]: #parameters-106
+[362]: #-3
+[363]: #projectwaiting
+[364]: #parameters-107
+[365]: #entry
+[366]: #parameters-108
+[367]: #setupwaiting
+[368]: #parameters-109
+[369]: #enqueue
+[370]: #parameters-110
+[371]: #entries
+[372]: #entries-1
+[373]: #restoredsince
+[374]: #parameters-111
+[375]: #had
+[376]: #sendagain
+[377]: #forgotten
+[378]: #blobs
+[379]: #all
+[380]: #all-1
+[381]: #all-2
+[382]: #takeoff
+[383]: #parameters-112
+[384]: #writestory
+[385]: #parameters-113
+[386]: #keptelsewhere
+[387]: #parameters-114
+[388]: #takeback
+[389]: #parameters-115
+[390]: #leftbehind
+[391]: #peopleasked
+[392]: #me
+[393]: #me-1
+[394]: #me-2
+[395]: #me-3
+[396]: #invitations
+[397]: #titles
+[398]: #toldsharing
+[399]: #lookatpeople
+[400]: #parameters-116
+[401]: #tellsharing
+[402]: #sharing-1
+[403]: #sharing-2
+[404]: #followremoved
+[405]: #parameters-117
+[406]: #stories
+[407]: #markremoved
+[408]: #parameters-118
+[409]: #idle
+[410]: #listedfor
+[411]: #parameters-119
+[412]: #reading-1
+[413]: #allown
+[414]: #parameters-120
+[415]: #ofstory
+[416]: #ofstory-1
+[417]: #leave
+[418]: #parameters-121
+[419]: #leavecollection
+[420]: #parameters-122
+[421]: #reject
+[422]: #parameters-123
+[423]: #forgetinvitation
+[424]: #parameters-124
+[425]: #knownpeople
+[426]: #profile
+[427]: #noted
+[428]: #running
+[429]: #round
+[430]: #full
+[431]: #keptoff
+[432]: #counted
+[433]: #parameters-125
+[434]: #grown
+[435]: #-4
+[436]: #learn
+[437]: #parameters-126
+[438]: #known-1
+[439]: #setupid
+[440]: #setupcollection
+[441]: #invitationof
+[442]: #parameters-127
+[443]: #title
+[444]: #takeshared
+[445]: #parameters-128
+[446]: #pair
+[447]: #keypair
+[448]: #ownof
+[449]: #parameters-129
+[450]: #keysof
+[451]: #parameters-130
+[452]: #groupwaiting
+[453]: #grouped
+[454]: #map
+[455]: #map-1
+[456]: #map-2
+[457]: #map-3
+[458]: #chats
+[459]: #lost
+[460]: #lost-1
+[461]: #pull
+[462]: #parameters-131
+[463]: #get
+[464]: #get-1
+[465]: #get-2
+[466]: #get-3
+[467]: #get-4
+[468]: #get-5
+[469]: #get-6
+[470]: #get-7
+[471]: #get-8
+[472]: #get-9
+[473]: #get-10
+[474]: #get-11
+[475]: #received
+[476]: #held
+[477]: #held-1
+[478]: #incoming-1
+[479]: #incoming-2
+[480]: #incoming-3
+[481]: #clashes
+[482]: #clashes-1
+[483]: #clashes-2
+[484]: #kept-1
+[485]: #kept-2
+[486]: #kept-3
+[487]: #kept-4
+[488]: #kept-5
+[489]: #kept-6
+[490]: #kept-7
+[491]: #kept-8
+[492]: #outbox
+[493]: #outbox-1
+[494]: #outbox-2
+[495]: #outbox-3
+[496]: #checked
+[497]: #check
+[498]: #behind
+[499]: #broken
+[500]: #repairtrees
+[501]: #parameters-132
+[502]: #take
+[503]: #parameters-133
+[504]: #openrecord
+[505]: #parameters-134
+[506]: #payload-1
+[507]: #payload-2
+[508]: #arrive
+[509]: #parameters-135
+[510]: #project
+[511]: #project-1
+[512]: #gone-1
+[513]: #parameters-136
+[514]: #dropunreceived
+[515]: #parameters-137
+[516]: #forget
+[517]: #parameters-138
+[518]: #make
+[519]: #parameters-139
+[520]: #pushgroup
+[521]: #parameters-140
+[522]: #batch
+[523]: #dropped
+[524]: #types
+[525]: #-5
+[526]: #-6
+[527]: #print
+[528]: #file
+[529]: #stampnew
+[530]: #parameters-141
+[531]: #fresh
+[532]: #unsharedof
+[533]: #parameters-142
+[534]: #ownfor
+[535]: #parameters-143
+[536]: #regroup
+[537]: #parameters-144
+[538]: #filter
+[539]: #again
+[540]: #send
+[541]: #parameters-145
+[542]: #send-1
+[543]: #parameters-146
+[544]: #pushed
+[545]: #upload
+[546]: #parameters-147
+[547]: #pending-1
+[548]: #fetchfiles
+[549]: #fetching
+[550]: #fetchone
 [551]: #parameters-148
-[552]: #elsewhere
-[553]: #intoeditor
-[554]: #parameters-149
-[555]: #keepclash
-[556]: #parameters-150
-[557]: #writesetup
+[552]: #hasfile
+[553]: #parameters-149
+[554]: #fetchfile
+[555]: #parameters-150
+[556]: #want
+[557]: #fetchprojectfiles
 [558]: #parameters-151
-[559]: #bytable
-[560]: #settings
-[561]: #settings-1
-[562]: #write
-[563]: #parameters-152
-[564]: #straight
-[565]: #tostorage
-[566]: #parameters-153
-[567]: #versions
-[568]: #setup
-[569]: #-7
-[570]: #off
-[571]: #cloudmerge
-[572]: #lost-2
-[573]: #properties-23
-[574]: #merged-1
-[575]: #properties-24
-[576]: #max_edits
-[577]: #small_clash
-[578]: #by_id
-[579]: #words
-[580]: #same
-[581]: #parameters-154
-[582]: #comparable
-[583]: #parameters-155
-[584]: #mergerow
-[585]: #parameters-156
-[586]: #row
-[587]: #row-1
-[588]: #row-2
-[589]: #row-3
-[590]: #row-4
-[591]: #row-5
-[592]: #withoutbase
-[593]: #parameters-157
-[594]: #mergevalue
-[595]: #parameters-158
-[596]: #mergebyid
-[597]: #parameters-159
-[598]: #out
-[599]: #out-1
-[600]: #settletext
-[601]: #parameters-160
-[602]: #mergetext
-[603]: #parameters-161
-[604]: #mergewords
-[605]: #parameters-162
-[606]: #lines
-[607]: #parameters-163
-[608]: #samelines
-[609]: #parameters-164
-[610]: #cloudnames
-[611]: #nameproblem
-[612]: #parameters-165
-[613]: #cloudondemand
-[614]: #filesource
-[615]: #source
-[616]: #source-1
-[617]: #providefiles
-[618]: #parameters-166
-[619]: #fileelsewhere
-[620]: #parameters-167
-[621]: #fetchelsewhere
-[622]: #parameters-168
-[623]: #cloudpeople
-[624]: #people-1
-[625]: #properties-25
-[626]: #-8
-[627]: #byme
-[628]: #parameters-169
-[629]: #peopleof
-[630]: #parameters-170
-[631]: #usepeople
-[632]: #parameters-171
-[633]: #ismine
-[634]: #parameters-172
-[635]: #nameof
-[636]: #parameters-173
-[637]: #cloudsetup
-[638]: #setup-1
-[639]: #setup-2
-[640]: #setup-3
-[641]: #setup_tables
-[642]: #settings-2
-[643]: #device_spelling
-[644]: #idof
-[645]: #parameters-174
-[646]: #assent
-[647]: #parameters-175
-[648]: #same_moment_ms
-[649]: #asmade
-[650]: #parameters-176
-[651]: #settingsrows
-[652]: #parameters-177
-[653]: #settingsof
-[654]: #parameters-178
-[655]: #-9
-[656]: #cloudtree
-[657]: #treefixes
-[658]: #parameters-179
-[659]: #treefixes-1
-[660]: #parameters-180
-[661]: #byid
-[662]: #byid-1
-[663]: #fixed
-[664]: #current
-[665]: #parameters-181
-[666]: #change
-[667]: #parameters-182
-[668]: #-10
-[669]: #childrenof
-[670]: #parameters-183
-[671]: #toroot
-[672]: #parameters-184
-[673]: #placed
-[674]: #parameters-185
-[675]: #-11
-[676]: #settled
-[677]: #path
-[678]: #hiddendocuments
-[679]: #parameters-186
-[680]: #way
-[681]: #groupby
-[682]: #parameters-187
-[683]: #groups
-[684]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[685]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[686]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[687]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[688]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[689]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[690]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[691]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[692]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[693]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[694]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[695]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
-[696]: https://developer.mozilla.org/docs/Web/API/Document
-[697]: https://developer.mozilla.org/docs/Web/API/Blob
+[559]: #fetchprojectfiles-1
+[560]: #parameters-152
+[561]: #keepoff
+[562]: #parameters-153
+[563]: #syncagain
+[564]: #parameters-154
+[565]: #checknextround
+[566]: #cloudformat
+[567]: #format
+[568]: #first
+[569]: #text_format
+[570]: #held_format
+[571]: #formatof
+[572]: #parameters-155
+[573]: #cloud
+[574]: #cloudinvite
+[575]: #opened
+[576]: #takeinvitefromaddress
+[577]: #parameters-156
+[578]: #takeinvite
+[579]: #cloudinvited
+[580]: #cloudlocal
+[581]: #putof
+[582]: #parameters-157
+[583]: #putof-1
+[584]: #parameters-158
+[585]: #putof-2
+[586]: #parameters-159
+[587]: #putof-3
+[588]: #parameters-160
+[589]: #putof-4
+[590]: #parameters-161
+[591]: #removalof
+[592]: #parameters-162
+[593]: #applocal
+[594]: #parameters-163
+[595]: #elsewhere
+[596]: #intoeditor
+[597]: #parameters-164
+[598]: #keepclash
+[599]: #parameters-165
+[600]: #writesetup
+[601]: #parameters-166
+[602]: #bytable
+[603]: #settings
+[604]: #settings-1
+[605]: #write
+[606]: #parameters-167
+[607]: #straight
+[608]: #tostorage
+[609]: #parameters-168
+[610]: #versions
+[611]: #setup
+[612]: #-7
+[613]: #off
+[614]: #cloudmerge
+[615]: #lost-2
+[616]: #properties-25
+[617]: #merged-1
+[618]: #properties-26
+[619]: #max_edits
+[620]: #small_clash
+[621]: #by_id
+[622]: #words
+[623]: #same
+[624]: #parameters-169
+[625]: #comparable
+[626]: #parameters-170
+[627]: #mergerow
+[628]: #parameters-171
+[629]: #row
+[630]: #row-1
+[631]: #row-2
+[632]: #row-3
+[633]: #row-4
+[634]: #row-5
+[635]: #withoutbase
+[636]: #parameters-172
+[637]: #mergevalue
+[638]: #parameters-173
+[639]: #mergebyid
+[640]: #parameters-174
+[641]: #out
+[642]: #out-1
+[643]: #settletext
+[644]: #parameters-175
+[645]: #mergetext
+[646]: #parameters-176
+[647]: #mergewords
+[648]: #parameters-177
+[649]: #lines
+[650]: #parameters-178
+[651]: #samelines
+[652]: #parameters-179
+[653]: #cloudnames
+[654]: #nameproblem
+[655]: #parameters-180
+[656]: #cloudondemand
+[657]: #filesource
+[658]: #source
+[659]: #source-1
+[660]: #providefiles
+[661]: #parameters-181
+[662]: #fileelsewhere
+[663]: #parameters-182
+[664]: #fetchelsewhere
+[665]: #parameters-183
+[666]: #cloudpeople
+[667]: #people-2
+[668]: #properties-27
+[669]: #-8
+[670]: #byme
+[671]: #parameters-184
+[672]: #peopleof
+[673]: #parameters-185
+[674]: #usepeople
+[675]: #parameters-186
+[676]: #ismine
+[677]: #parameters-187
+[678]: #nameof
+[679]: #parameters-188
+[680]: #cloudsetup
+[681]: #setup-1
+[682]: #setup-2
+[683]: #setup-3
+[684]: #setup_tables
+[685]: #settings-2
+[686]: #device_spelling
+[687]: #idof
+[688]: #parameters-189
+[689]: #assent
+[690]: #parameters-190
+[691]: #same_moment_ms
+[692]: #asmade
+[693]: #parameters-191
+[694]: #settingsrows
+[695]: #parameters-192
+[696]: #settingsof
+[697]: #parameters-193
+[698]: #-9
+[699]: #cloudtree
+[700]: #treefixes
+[701]: #parameters-194
+[702]: #treefixes-1
+[703]: #parameters-195
+[704]: #byid
+[705]: #byid-1
+[706]: #fixed
+[707]: #current
+[708]: #parameters-196
+[709]: #change
+[710]: #parameters-197
+[711]: #-10
+[712]: #childrenof
+[713]: #parameters-198
+[714]: #toroot
+[715]: #parameters-199
+[716]: #placed
+[717]: #parameters-200
+[718]: #-11
+[719]: #settled
+[720]: #path
+[721]: #hiddendocuments
+[722]: #parameters-201
+[723]: #way
+[724]: #groupby
+[725]: #parameters-202
+[726]: #groups
+[727]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[728]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[729]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[730]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[731]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[732]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[733]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[734]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[735]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[736]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[737]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[738]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
+[739]: https://developer.mozilla.org/docs/Web/API/Document
+[740]: https://developer.mozilla.org/docs/Web/API/Blob

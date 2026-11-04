@@ -64,7 +64,7 @@ const removalOf = (table, id) => ({ entityType: table, id, op: 'delete', data: n
  */
 export function makeDevice({ api, keys, schema = 32, format, now = Date.now, diagnostics }) {
   /** What the engine last said of the projects shared. @type {import('@/cloud/engine.js').Sharing} */
-  let sharing = { me: null, projects: {}, selective: [] }
+  let sharing = { me: null, projects: {}, selective: [], invitations: [] }
   /** @type {Record<string, Map<string, any>>} */
   const db = {
     stories: new Map(),
@@ -190,6 +190,7 @@ export function makeDevice({ api, keys, schema = 32, format, now = Date.now, dia
       }
       return off
     },
+    stories: async () => [...db.stories.values()],
   }
 
   /**

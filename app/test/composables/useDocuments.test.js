@@ -16,7 +16,7 @@ vi.mock('@/stores/db', () => ({
 }))
 
 vi.mock('@/stores/syncStore', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 // A picture's bytes, by key, as the files table keeps them.

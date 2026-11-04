@@ -612,4 +612,74 @@ describe('SyncStore', () => {
       expect(db.stories.put).toHaveBeenCalledTimes(10)
     })
   })
+
+  describe('a project held back', () => {
+    beforeEach(() => {
+      store = useSyncStore()
+    })
+
+    const keys = () => [...store.pendingChanges.keys()].sort()
+
+    it('holds what makes it, and what does nothing in it, until something is done in it', () => {
+      const onStart = vi.fn()
+      store.hold('story_new', onStart)
+      store.trackChange('stories', 'story_new', { id: 'story_new' })
+      store.trackChange('documents', 'root_story_new', {
+        id: 'root_story_new',
+        storyId: 'story_new',
+      })
+      store.made('story_new')
+      store.trackChange('projectViews', 'story_new', { id: 'story_new', expanded: [] })
+      store.trackChange('documents', 'doc_other', { id: 'doc_other', storyId: 'story_other' })
+      expect(keys()).toEqual(['documents:doc_other'])
+      expect(onStart).not.toHaveBeenCalled()
+
+      store.trackChange('documents', 'doc_1', { id: 'doc_1', storyId: 'story_new' })
+      expect(keys()).toEqual([
+        'documents:doc_1',
+        'documents:doc_other',
+        'documents:root_story_new',
+        'projectViews:story_new',
+        'stories:story_new',
+      ])
+      expect(onStart).toHaveBeenCalledTimes(1)
+
+      // Saved, it is held no more.
+      store.pendingChanges.clear()
+      store.trackChange('projectViews', 'story_new', { id: 'story_new', expanded: [] })
+      expect(keys()).toEqual(['projectViews:story_new'])
+    })
+
+    it('saves it for a new chat in it, a new name, or being started outright', () => {
+      for (const [table, id, data] of [
+        ['chats', 'chat_1', { id: 'chat_1', storyId: 'story_a' }],
+        ['stories', 'story_a', { id: 'story_a', overview: 'A heist.' }],
+      ]) {
+        const onStart = vi.fn()
+        store.hold('story_a', onStart)
+        store.made('story_a')
+        store.trackChange(table, id, data)
+        expect(onStart).toHaveBeenCalledTimes(1)
+      }
+      store.hold('story_b', vi.fn())
+      store.made('story_b')
+      expect(store.start('story_b')).toBe(true)
+      expect(store.start('story_b')).toBe(false)
+    })
+
+    it('lets go of everything held of it, a removal of what it held among it', () => {
+      store.hold('story_new', vi.fn())
+      store.trackChange('documents', 'root_story_new', {
+        id: 'root_story_new',
+        storyId: 'story_new',
+      })
+      store.made('story_new')
+      store.trackDelete('documents', 'root_story_new')
+      store.drop('story_new')
+      expect(keys()).toEqual([])
+      // Gone, nothing of it is held back from then on.
+      store.trackChange('documents', 'doc_1', { id: 'doc_1', storyId: 'story_new' })
+      expect(keys()).toEqual(['documents:doc_1'])
+    })
+  })
 })

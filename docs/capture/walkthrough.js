@@ -72,9 +72,14 @@ export async function walkthrough(ui, { standIn, context }) {
 
   // A project, and its first document
   await ui.record('new-project', async () => {
-    await ui.click(button('New project'))
+    await ui.click(
+      page.getByRole('treeitem', { name: 'Untitled project' }).getByText('Untitled project'),
+      { button: 'right' }
+    )
+    await ui.click(page.getByRole('menuitem', { name: 'Rename' }))
+    await ui.press('ControlOrMeta+a')
     await ui.type(PROJECT)
-    await ui.click(button('Create'))
+    await ui.press('Enter')
     await page.getByRole('treeitem', { name: PROJECT }).waitFor()
     // The empty editor's, which says so; the outline's plus is named the same.
     await ui.click(button('New document').filter({ hasText: 'New document' }))

@@ -69,9 +69,17 @@
  * would lose what that app knows. The status says sync waits for an update.
  *
  * A project is shared with friends by their friend codes (`share`): the
- * project's key wrapped for each one's public key, which their first device
- * wraps again under their account key as it first sees the project, and
- * which it then brings in as a project made elsewhere. In a shared project a
+ * project's key wrapped for each one's public key, with its title sealed for
+ * them, as an invitation. Their devices are told of it, and nothing else of
+ * the project, until one of them accepts it (`accept`): it wraps the key
+ * again under their account key, and the project comes in as one made
+ * elsewhere. One rejected goes; an account blocked (`block`) shares nothing
+ * with this one either way, and its invitations aren't listed. In a project
+ * ever shared, the trash is each account's own: its story never carries
+ * `trashed`, and an account's removing it is a mark on its membership, which
+ * its devices follow (`followRemoved`), keeping it out of sync until it is
+ * restored. Deleted for good, its owner hands it on to a friend rather than
+ * delete it for them. In a shared project a
  * chat and its messages are their writer's own: sealed under a key only
  * that account makes, and served by the server to it alone. Sharing sends
  * the owner's chats again so before anyone else has the key, and the server
@@ -112,6 +120,7 @@ import {
   open,
   openFor,
   openJson,
+  openTextFor,
   openPrivateKey,
   ownKeys,
   randomBytes,
@@ -119,6 +128,7 @@ import {
   seal,
   sealFor,
   sealJson,
+  sealTextFor,
   toBase64,
 } from './crypto.js'
 import { CloudError } from './api.js'
@@ -403,6 +413,7 @@ const STREAMING_MS = 2 * 60 * 1000
  * @property {() => Promise<Map<string, 'here'|'elsewhere'>>} keptOff - The projects this
  *   device keeps off sync: those the writer keeps on it alone, and those another
  *   device keeps to itself, in the trash here
+ * @property {() => Promise<any[]>} stories - Every project's story, those in the trash among them
  */
 
 /**
@@ -440,7 +451,9 @@ const STREAMING_MS = 2 * 60 * 1000
  * @property {boolean} [kept] - Deleted because another device keeps the project to itself
  * @property {string} role - `owner`, or `member` of a project shared with this account
  * @property {number|null} owner - The owner's account, where the server says
- * @property {number} members - How many are in it, the owner among them
+ * @property {number} members - How many are in it, the owner and those invited among them
+ * @property {number} waiting - How many of them are invited and haven't answered
+ * @property {boolean} [removed] - In this account's trash: not synced until restored
  * @property {boolean} shared - Ever shared: its chats are each one's own
  * @property {boolean} selective - Shared with only some of its documents, the
  *   others its owner's own
@@ -456,13 +469,25 @@ const STREAMING_MS = 2 * 60 * 1000
  */
 
 /**
- * Who this account is, and the projects shared with it or by it.
+ * A project someone invited this account to, waiting for its answer.
+ *
+ * @typedef {Object} Invitation
+ * @property {string} collection - The project's collection
+ * @property {import('./api.js').Person} from - Who invited it
+ * @property {string|null} title - The project's, as the note said; none from an older app
+ * @property {number} invited - When
+ */
+
+/**
+ * Who this account is, the projects shared with it or by it, and those it
+ * is invited to.
  *
  * @typedef {Object} Sharing
  * @property {number|null} me - This account, once the server has said
  * @property {Record<string, Shared>} projects - By story
  * @property {string[]} selective - The projects this account shares with only
  *   some of their documents, whether or not with anyone yet
+ * @property {Invitation[]} invitations - The oldest first
  */
 
 /**
@@ -516,10 +541,16 @@ const storyOf = (table, row) =>
  */
 /**
  * A story as it goes to the server: without what is this device's alone,
- * whether it keeps the project off sync.
+ * whether it keeps the project off sync; and, in a project ever shared,
+ * without whether it is in the trash, which is each account's own.
  * @param {any} story
+ * @param {boolean} shared
  */
-const asSentStory = ({ syncOff: _syncOff, keptElsewhere: _keptElsewhere, ...story }) => story
+function asSentStory(story, shared) {
+  const { syncOff: _syncOff, keptElsewhere: _keptElsewhere, ...sent } = story
+  if (shared) delete sent.trashed
+  return sent
+}
 
 const streaming = message =>
   Boolean(message?.streamingStartTime) &&
@@ -578,6 +609,9 @@ export function createEngine({
 
   /** The projects shared now, as last listed, by story. @type {Set<string>} */
   let sharedHere = new Set()
+
+  /** The projects shared that this account removed to its trash, as last listed. @type {Set<string>} */
+  let removedHere = new Set()
 
   /** The projects this account shares with only some of their documents, as last listed. @type {Set<string>} */
   let selectiveHere = new Set()
@@ -902,7 +936,7 @@ export function createEngine({
 
   // Sharing.
 
-  /** Who is in each project shared, as last asked, by story. @type {Map<string, Shared & {count: number}>} */
+  /** Who is in each project shared, as last asked, by story. @type {Map<string, Shared & {count: number, waiting?: number}>} */
   const people = new Map()
 
   /** The projects whose people were asked for since the engine began. @type {Set<string>} */
@@ -911,12 +945,18 @@ export function createEngine({
   /** This account, once the server has said. @type {number|null} */
   let me = null
 
+  /** The invitations waiting, as last listed. @type {Invitation[]} */
+  let invitations = []
+
+  /** Each invitation's title, once opened, by collection and when it was made. @type {Map<string, string|null>} */
+  const titles = new Map()
+
   /** What the app was last told, to tell it only of a change. */
   let toldSharing = ''
 
   /**
-   * Who is in each project shared, asked again where the number in it has
-   * changed, or not yet since the engine began; kept for when the server
+   * Who is in each project shared, asked again where the number in it, or
+   * the number invited, has changed, or not yet since the engine began; kept for when the server
    * can't be reached. The app is told when it changes.
    * @param {Map<string, Known>} known
    */
@@ -931,7 +971,12 @@ export function createEngine({
         continue
       }
       const had = people.get(storyId) ?? (await state.get('cloudState', `people:${storyId}`))
-      if (had && had.count === collection.members && peopleAsked.has(storyId)) {
+      if (
+        had &&
+        had.count === collection.members &&
+        (had.waiting ?? 0) === collection.waiting &&
+        peopleAsked.has(storyId)
+      ) {
         people.set(storyId, had)
         continue
       }
@@ -940,6 +985,7 @@ export function createEngine({
           id: `people:${storyId}`,
           storyId,
           count: collection.members,
+          waiting: collection.waiting,
           role: collection.role,
           owner: collection.owner,
           members: await api.members(collection.id),
@@ -977,11 +1023,62 @@ export function createEngine({
         ])
       ),
       selective: [...selectiveHere].sort(),
+      invitations: [...invitations].sort((a, b) => a.invited - b.invited),
     }
     const said = JSON.stringify(sharing)
     if (said === toldSharing) return
     toldSharing = said
     onSharing(sharing)
+  }
+
+  /**
+   * Have each project ever shared in this account's trash here as the
+   * server's mark says: taken to the trash or back out of it, as the
+   * engine's own write. A story waiting to go says otherwise, and is to be
+   * the mark (`markRemoved`).
+   * @param {Map<string, Known>} known
+   * @param {Map<string, Map<string, Waiting>>} waiting
+   */
+  async function followRemoved(known, waiting) {
+    /** @type {Map<string, any>|null} */
+    let stories = null
+    for (const collection of known.values()) {
+      const { storyId } = collection
+      if (!collection.shared || collection.deleted != null || keptOff.has(storyId)) continue
+      if (waiting.get(storyId)?.has(`stories:${storyId}`)) continue
+      stories ??= new Map((await local.stories()).map(story => [story.id, story]))
+      const story = stories.get(storyId)
+      if (!story || Boolean(story.trashed) === Boolean(collection.removed)) continue
+      if (collection.removed) await writeStory(storyId, { ...story, trashed: now() })
+      else {
+        const { trashed: _trashed, ...back } = story
+        await writeStory(storyId, back)
+      }
+    }
+  }
+
+  /**
+   * Send whether a project ever shared is in this account's trash, as its
+   * story waiting to go says, as the mark on its membership.
+   * @param {Known} collection
+   * @param {Map<string, Waiting>} group - What waits to go of it
+   * @returns {Promise<boolean>} Whether the rest of it is to go: not while it is in the trash
+   */
+  async function markRemoved(collection, group) {
+    const story = group.get(`stories:${collection.storyId}`)
+    if (story?.op === 'put') {
+      const removed = Boolean(story.data?.trashed)
+      if (removed !== Boolean(collection.removed)) {
+        await api.setRemoved(collection.id, removed)
+        collection.removed = removed
+        removedHere[removed ? 'add' : 'delete'](collection.storyId)
+        // Restored, it catches up on what came meanwhile.
+        if (!removed) again = true
+      }
+    }
+    if (!collection.removed) return true
+    if (story) await state.write('cloudOutbox', [removal('cloudOutbox', story.id)])
+    return false
   }
 
   /** Wait for the round under way, if one is. */
@@ -1037,15 +1134,17 @@ export function createEngine({
    * marked shared first, so that no device of this account sends a chat
    * the friend could read; then its chats and messages go again as this
    * account's own; then its key is wrapped for the friend's public key, once
-   * that key is the one the code is of. An account with no name for others
-   * yet is given its own.
+   * that key is the one the code is of, and they are invited with its title
+   * sealed for them. An account with no key pair yet makes one, so that the
+   * invitation shows its friend code.
    *
    * @param {string} storyId
    * @param {string} code - As typed
+   * @param {string} title - The project's, for the invitation to say
    * @returns {Promise<import('./api.js').Member>} Who it was shared with
    * @throws {Error} Saying why it wasn't, in words for the writer
    */
-  async function share(storyId, code) {
+  async function share(storyId, code, title) {
     const letters = readFriendCode(code)
     if (!letters) throw new Error("That isn't a friend code.")
     await idle()
@@ -1055,6 +1154,8 @@ export function createEngine({
     }
     if (listed.role !== 'owner') throw new Error('Only its owner can share it.')
     const friend = await api.friend(letters)
+    // This account's own friend code, for the invitation to show the friend.
+    await keyPair()
     if ((await friendCode(friend.publicKey)) !== letters) {
       throw new Error("The sync server's key for that friend code is wrong, so it wasn't shared.")
     }
@@ -1064,17 +1165,23 @@ export function createEngine({
     if (!(await allOwn(storyId, Boolean(listed.selective)))) {
       throw new Error("Not all of it has synced yet, so it wasn't shared. Try again in a moment.")
     }
-    await named(await api.account())
     const about = `collection ${listed.id}`
     const secret = await open(keys.wrap, listed.key, about)
     const added = await api.addMember(
       listed.id,
       letters,
-      await sealFor(friend.publicKey, secret, about)
+      await sealFor(friend.publicKey, secret, about),
+      await sealTextFor(friend.publicKey, title, `invitation ${listed.id}`)
     )
     peopleAsked.delete(storyId)
     await round()
-    return { account: added.account, owner: false, display: added.display, friend: letters }
+    return {
+      account: added.account,
+      owner: false,
+      display: added.display,
+      friend: letters,
+      invited: true,
+    }
   }
 
   /**
@@ -1136,36 +1243,91 @@ export function createEngine({
   }
 
   /**
-   * This account as the people it shares with know it: its id, the name
-   * they see, and its friend code, its key pair made if it has none.
-   * @returns {Promise<{id: number|null, display: string|null, friend: string}>}
+   * Accept an invitation: the project's key opened with this account's
+   * private key and wrapped again under its account key, as the server is
+   * told; the project then comes in as one made on another device.
+   * @param {string} collection
+   */
+  async function accept(collection) {
+    await idle()
+    const listed = (await api.collections()).find(one => one.id === collection)
+    if (!listed?.invited) {
+      forgetInvitation(collection)
+      return
+    }
+    const { privateKey } = await keyPair()
+    const about = `collection ${collection}`
+    const secret = await openFor(privateKey, listed.key, about)
+    await api.accept(collection, await seal(keys.wrap, secret, about))
+    forgetInvitation(collection)
+    await round()
+  }
+
+  /**
+   * Reject an invitation: it goes, and the one who sent it can send another.
+   * @param {string} collection
+   */
+  async function reject(collection) {
+    await leaveCollection(collection)
+    forgetInvitation(collection)
+  }
+
+  /**
+   * Let go of an invitation answered here, before the next listing says so.
+   * @param {string} collection
+   */
+  function forgetInvitation(collection) {
+    invitations = invitations.filter(invitation => invitation.collection !== collection)
+    tellSharing()
+  }
+
+  /**
+   * Block an account: the server ends every share between the two, and
+   * lists none of its invitations here from then on. What it shared with
+   * this account goes to the trash here, as a project left does.
+   * @param {number} account
+   */
+  async function block(account) {
+    await idle()
+    await api.block(account)
+    invitations = invitations.filter(invitation => invitation.from.account !== account)
+    for (const [storyId, shared] of people) {
+      if (shared.owner === account || shared.members.some(member => member.account === account)) {
+        peopleAsked.delete(storyId)
+      }
+    }
+    tellSharing()
+    await round()
+  }
+
+  /**
+   * The people this account knows, and those it blocked.
+   * @returns {Promise<{people: import('./api.js').Person[], blocked: import('./api.js').Person[]}>}
+   */
+  const knownPeople = () => api.people()
+
+  /**
+   * Keep the account a friend code is of among this account's people.
+   * @param {string} code - As typed
+   * @returns {Promise<import('./api.js').Person>}
+   * @throws {Error} Saying why it wasn't, in words for the writer
+   */
+  async function addPerson(code) {
+    const letters = readFriendCode(code)
+    if (!letters) throw new Error("That isn't a friend code.")
+    return api.addPerson(letters)
+  }
+
+  /**
+   * This account as the people it shares with know it: its id, its name,
+   * and its friend code, its key pair made if it has none.
+   * @returns {Promise<{id: number|null, name: string, friend: string}>}
    */
   async function profile() {
     const account = await api.account()
     me = account.id ?? null
     const { publicKey } = await keyPair()
-    return { id: me, display: await named(account), friend: await friendCode(publicKey) }
-  }
-
-  /**
-   * The name the people this account shares with see: the account's own,
-   * given on a server that shares until the writer gives another.
-   * @param {import('./api.js').AccountRecord} account
-   * @returns {Promise<string|null>}
-   */
-  async function named(account) {
-    if (account.display != null || account.id == null) return account.display ?? null
-    await setDisplay(account.name)
-    return account.name
-  }
-
-  /**
-   * Give this account the name the people it shares with see.
-   * @param {string} display
-   */
-  async function setDisplay(display) {
-    await api.setDisplay(display)
-    peopleAsked.clear()
+    return { id: me, name: account.name, friend: await friendCode(publicKey) }
   }
 
   /** Have every write noted so far in the outbox. */
@@ -1241,11 +1403,13 @@ export function createEngine({
         await enqueue([SETUP])
       }
       const waiting = await groupWaiting()
+      await followRemoved(known, waiting)
       const here = new Set([...(await local.projects()), SETUP])
       /** @type {Set<string>} */
       const grown = new Set()
       for (const collection of known.values()) {
         if (!local.syncsHere(collection.storyId) || keptOff.has(collection.storyId)) continue
+        if (collection.removed) continue
         if (await pull(collection, waiting, here)) grown.add(collection.storyId)
       }
       await push(known, waiting)
@@ -1296,10 +1460,16 @@ export function createEngine({
     const known = new Map()
     left = new Set()
     sharedHere = new Set()
+    removedHere = new Set()
     selectiveHere = new Set()
+    invitations = []
     for (const collection of listed) {
       if (collection.left) {
         left.add(collection.id)
+        continue
+      }
+      if (collection.invited) {
+        invitations.push(await invitationOf(collection))
         continue
       }
       try {
@@ -1324,10 +1494,13 @@ export function createEngine({
           role: collection.role,
           owner: collection.owner ?? null,
           members: collection.members ?? 1,
+          waiting: collection.waiting ?? 0,
+          removed: Boolean(collection.removed),
           shared: Boolean(collection.shared),
           selective: Boolean(collection.selective),
         })
         if (collection.shared) sharedHere.add(storyId)
+        if (collection.removed) removedHere.add(storyId)
         if (collection.selective && collection.role === 'owner') selectiveHere.add(storyId)
       } catch (error) {
         diagnostics.error('open collection')
@@ -1347,8 +1520,38 @@ export function createEngine({
   }
 
   /**
-   * A collection shared with this account, its key still wrapped for the
-   * account's public key: opened with the private key, and wrapped again
+   * An invitation as the listing has it, its note opened with this account's
+   * private key, once for each invitation.
+   * @param {ListedCollection} collection
+   * @returns {Promise<Invitation>}
+   */
+  async function invitationOf(collection) {
+    const invited = /** @type {number} */ (collection.invited)
+    const at = `${collection.id} ${invited}`
+    if (!titles.has(at)) {
+      /** @type {string|null} */
+      let title = null
+      if (collection.note) {
+        try {
+          const { privateKey } = await keyPair()
+          title = await openTextFor(privateKey, collection.note, `invitation ${collection.id}`)
+        } catch (error) {
+          console.warn(`Sync could not open the invitation to ${collection.id}:`, error)
+        }
+      }
+      titles.set(at, title)
+    }
+    return {
+      collection: collection.id,
+      from: /** @type {import('./api.js').Person} */ (collection.from),
+      title: titles.get(at) ?? null,
+      invited,
+    }
+  }
+
+  /**
+   * A collection shared with this account before invitations, its key still
+   * wrapped for the account's public key: opened with the private key, and wrapped again
    * under the account key, as this account's own collections are, for its
    * other devices to take as they take those.
    * @param {ListedCollection} collection
@@ -1581,7 +1784,7 @@ export function createEngine({
     const at = Date.now()
     let found = 0
     for (const storyId of [...(await local.projects()), SETUP]) {
-      if (!local.syncsHere(storyId) || keptOff.has(storyId)) continue
+      if (!local.syncsHere(storyId) || keptOff.has(storyId) || removedHere.has(storyId)) continue
       /** @type {Waiting[]} */
       let entries
       if (storyId === SETUP) entries = setupWaiting(await local.readSetup(), at)
@@ -1613,7 +1816,8 @@ export function createEngine({
         }
         if (entry.table === 'messages' && streaming(entry.data)) continue
         if (!record && asMade(entry.table, entry.data)) continue
-        const row = entry.table === 'stories' ? asSentStory(entry.data) : entry.data
+        const row =
+          entry.table === 'stories' ? asSentStory(entry.data, sharedHere.has(storyId)) : entry.data
         // A chat sent before its project was shared goes again, as its writer's own.
         const unowned = OWN.has(entry.table) && sharedHere.has(storyId) && !record?.own
         if (record?.print === (await fingerprint(comparable(row))) && !unowned) continue
@@ -1785,6 +1989,12 @@ export function createEngine({
       const sealing = own ? await ownOf(collection) : collection.keys
       /** @type {Payload} */
       const payload = await openJson(sealing.seal, body, `${collection.id}/${name}`)
+      // Whether a project ever shared is in the trash is each account's own,
+      // whatever an older app sent.
+      if (payload.table === 'stories' && payload.row?.trashed && collection.shared) {
+        const { trashed: _trashed, ...row } = payload.row
+        payload.row = row
+      }
       if (payload.row && payload.schema < schema) {
         return { ...payload, row: upgrade(payload.table, payload.row, payload.schema), schema }
       }
@@ -1962,15 +2172,20 @@ export function createEngine({
       )
       if (group.get(`stories:${storyId}`)?.op === 'delete') {
         const collection = known.get(storyId)
-        // Deleted by a friend it was shared with, it is left: only its owner deletes it.
+        // Deleted by a friend it was shared with, it is left; by its owner, once
+        // shared, it is handed on to a friend: only one never shared is deleted.
         if (collection && collection.deleted == null) {
-          if (collection.role === 'owner') await api.deleteCollection(collection.id)
-          else await leaveCollection(collection.id)
+          if (collection.role === 'owner' && !collection.shared) {
+            await api.deleteCollection(collection.id)
+          } else await leaveCollection(collection.id)
         }
         await forget(storyId)
         continue
       }
       let collection = known.get(storyId)
+      if (collection?.shared && collection.deleted == null) {
+        if (!(await markRemoved(collection, group))) continue
+      }
       // Only its owner makes a shared project's collection again.
       if (collection && collection.role !== 'owner' && collection.deleted != null) continue
       if (!collection || collection.deleted != null) {
@@ -2038,6 +2253,7 @@ export function createEngine({
       role: 'owner',
       owner: collection.owner ?? null,
       members: collection.members ?? 1,
+      waiting: collection.waiting ?? 0,
       shared: Boolean(collection.shared),
       selective: Boolean(collection.selective),
     }
@@ -2141,7 +2357,8 @@ export function createEngine({
           dropped.push(removal('cloudOutbox', entry.id))
           continue
         }
-        const row = entry.table === 'stories' ? asSentStory(entry.data) : entry.data
+        const row =
+          entry.table === 'stories' ? asSentStory(entry.data, collection.shared) : entry.data
         print = await fingerprint(comparable(row))
         if (record?.print === print && Boolean(record.own) === own) {
           dropped.push(removal('cloudOutbox', entry.id))
@@ -2622,8 +2839,16 @@ export function createEngine({
     setSelective,
     removeMember,
     leave,
+    accept,
+    reject,
+    block,
+    /** @param {number} account */
+    unblock: account => api.unblock(account),
+    people: knownPeople,
+    addPerson,
+    /** @param {number} account */
+    forgetPerson: account => api.forgetPerson(account),
     profile,
-    setDisplay,
     /**
      * Begin keeping a project off sync, its story saying so already
      * (`syncOff`): the next round takes it off the server.

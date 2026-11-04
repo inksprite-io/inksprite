@@ -12,7 +12,7 @@
       {{ message.detail }}
     </div>
 
-    <template v-if="message.action">
+    <template v-if="actions.length">
       <!-- Links in the toast's own colour rather than buttons in the app's:
            the toast is already the thing asking. -->
       <div class="flex items-center gap-4 text-sm">
@@ -29,12 +29,15 @@
         </button>
         <!-- At the far end whether or not there are changes to look at. -->
         <button
+          v-for="(action, at) in actions"
+          :key="action.label"
           type="button"
-          class="ml-auto font-semibold hover:underline cursor-pointer"
-          data-action="toast-action"
-          @click="act"
+          class="font-semibold hover:underline cursor-pointer"
+          :class="{ 'ml-auto': at === 0 }"
+          :data-action="action.name ?? 'toast-action'"
+          @click="act(action)"
         >
-          {{ message.action.label }}
+          {{ action.label }}
         </button>
       </div>
 
@@ -84,11 +87,17 @@ import { useToast } from 'primevue/usetoast'
  * One toast's content. Anything a toast can say, and for one made with
  * `useToast().action`, the button that does something about it and — where
  * what it is about is a change to some text — the lines that changed, folded
- * away until asked for.
+ * away until asked for. A toast that asks for an answer has a button for
+ * each (`actions`).
+ *
+ * @typedef {{label: string, command: () => void, name?: string, stays?: boolean}} ToastAction -
+ *   `name` is its `data-action`; one that `stays` leaves the toast up, for
+ *   what it starts to take away once it is done
  *
  * @typedef {Object} Props
  * @property {import('primevue/toast').ToastMessageOptions & {
- *   action?: {label: string, command: () => void},
+ *   action?: ToastAction,
+ *   actions?: ToastAction[],
  *   changes?: import('@/utils/lineDiff.js').LineChange[],
  * }} message
  */
@@ -113,6 +122,11 @@ const icon = computed(
 
 const changes = computed(() => props.message.changes || [])
 
+/** Its buttons: the one an action has, or the answers it asks for. @type {import('vue').ComputedRef<ToastAction[]>} */
+const actions = computed(
+  () => props.message.actions ?? (props.message.action ? [props.message.action] : [])
+)
+
 /** Whether the changes are showing. Each toast its own. */
 const open = ref(false)
 
@@ -126,9 +140,13 @@ const toggleChanges = () => {
   if (open.value) emit('keep')
 }
 
-/** Do what the toast offers, once: it goes as soon as it is taken up. */
-const act = () => {
-  toast.remove(props.message)
-  props.message.action.command()
+/**
+ * Do what the toast offers, once: it goes as soon as it is taken up, unless
+ * what it starts may yet not happen.
+ * @param {ToastAction} action
+ */
+const act = action => {
+  if (!action.stays) toast.remove(props.message)
+  action.command()
 }
 </script>

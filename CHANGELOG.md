@@ -6,6 +6,44 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.27
+
+Sharing by invitation, the people you share with kept by name, Remove in
+place of Delete project, and an Untitled project to start in.
+
+- A project shared with you comes as an invitation. A notice says who
+  shared it and which project, with their friend code to check: Accept
+  brings it in, Reject turns it down, and Block turns it down and blocks
+  them. Nothing of the project reaches your devices until you accept.
+  An invitation you close waits at the top of Projects…, with a dot on
+  the Projects menu, and goes after 30 days. A device on an older
+  version doesn't see invitations until it's updated.
+- The people you share with are kept in Settings › Sync and sharing ›
+  People, and Share… offers them by name as you type. The plus beside
+  People adds someone by their friend code, and right-clicking someone
+  copies their friend code, forgets them, or blocks them.
+- Blocking someone ends every share between you, both ways. Their
+  projects stay with you as your own, kept on this device, unless you
+  choose to delete them, and their invitations no longer reach you.
+  They aren't told. The people you've blocked are listed only when you
+  ask, with Unblock on their menu.
+- The people you share with know you by your account's name. The name
+  others see is gone.
+- Settings › Sync and sharing is Account, with your friend code first,
+  People, Devices and Backup.
+- Remove takes the place of Delete project and Leave project…: the
+  project goes to the trash at once, and Undo in the notice brings it
+  back. A shared project you remove goes to your trash alone: it stays
+  in everyone else's projects, and doesn't sync for you until you
+  restore it. After 30 days in the trash, or once you delete it for
+  good, you leave it, and if it's yours, it passes to the person who
+  joined it first.
+- Switch project… is now Projects…. Once you share, its table says whose
+  each project is and who else is in it.
+- With no project to open, inksprite starts you in an Untitled project
+  rather than an empty page. It's saved once you do something in it: a
+  document, a chat, a new name or its settings. Left untouched, it goes.
+
 ## v0.1.0-dev.26
 
 Python for the model in the desktop app, every project in a table to search

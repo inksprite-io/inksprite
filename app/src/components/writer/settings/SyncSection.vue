@@ -182,71 +182,18 @@
     </div>
 
     <template v-if="account">
-      <!-- The devices signed in, any of which can sign another out. -->
+      <!-- This account's friend code, for the people it shares with; this
+           device's diagnostics; and what signs in: a new recovery code, a new
+           passphrase, and signing out. -->
       <ExpandableSection
-        v-if="deviceList.length > 0"
-        title="Devices"
-        storage-key="ui.settings.sync.devices"
+        title="Account"
+        storage-key="ui.settings.sync.account"
         subsection
         container-class="pt-2"
         content-wrapper-class="flex flex-col"
       >
-        <ul class="flex flex-col pt-1 pb-1" data-sync-devices>
-          <li
-            v-for="device in deviceList"
-            :key="device.id"
-            class="flex items-center gap-2 py-1 text-xs text-surface-700 dark:text-surface-200"
-            :data-device="device.current ? 'this' : device.id"
-          >
-            <span class="flex-1 min-w-0 truncate">{{ device.device || 'A device' }}</span>
-            <span class="text-surface-500 dark:text-surface-400">
-              {{ device.current ? 'This device' : formatRelativeTime(device.used) }}
-            </span>
-            <button
-              v-if="!device.current"
-              v-tooltip.bottom="'Sign out'"
-              type="button"
-              class="flex-none w-6 h-6 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
-              :aria-label="`Sign out ${device.device || 'this device'}`"
-              data-action="sign-out-device"
-              @click="signOutOther(device)"
-            >
-              <i class="pi pi-sign-out" style="font-size: 0.7rem" />
-            </button>
-            <span v-else class="flex-none w-6" />
-          </li>
-        </ul>
-      </ExpandableSection>
-
-      <!-- The name the people this account shares with see, and the friend
-           code they share with it by. Each project is shared from Settings ›
-           Project. -->
-      <ExpandableSection
-        v-if="profile"
-        title="Sharing"
-        storage-key="ui.settings.sync.sharing"
-        subsection
-        container-class="pt-2"
-        content-wrapper-class="flex flex-col"
-      >
-        <div class="flex flex-col gap-3 pt-2 pb-1" data-sync-sharing>
-          <div class="flex flex-col gap-1">
-            <label
-              for="sync-display"
-              class="text-xs font-medium text-surface-700 dark:text-surface-200"
-              >Name others see</label
-            >
-            <InputText
-              id="sync-display"
-              v-model="display"
-              size="small"
-              autocomplete="name"
-              data-field="sync-display"
-              @keydown.enter="saveDisplay"
-              @blur="saveDisplay"
-            />
-          </div>
-          <div class="flex items-center gap-2" data-sync-friend>
+        <div class="flex flex-col gap-3 pt-2 pb-1">
+          <div v-if="profile" class="flex items-center gap-2" data-sync-friend>
             <span class="text-xs font-medium text-surface-700 dark:text-surface-200"
               >Friend code</span
             >
@@ -266,19 +213,6 @@
               <i :class="friendCopied ? 'pi pi-check' : 'pi pi-copy'" style="font-size: 0.7rem" />
             </button>
           </div>
-        </div>
-      </ExpandableSection>
-
-      <!-- This device's diagnostics, and what signs in: a new recovery code,
-           a new passphrase, and signing out. -->
-      <ExpandableSection
-        title="Account"
-        storage-key="ui.settings.sync.account"
-        subsection
-        container-class="pt-2"
-        content-wrapper-class="flex flex-col"
-      >
-        <div class="flex flex-col gap-3 pt-2 pb-1">
           <div class="flex items-center justify-between gap-2">
             <label
               for="sync-diagnostics"
@@ -382,6 +316,46 @@
           </div>
         </div>
       </ExpandableSection>
+
+      <!-- The people it shares with, kept by the server. Each project is
+           shared from Settings › Project. -->
+      <PeopleSection v-if="profile" />
+
+      <!-- The devices signed in, any of which can sign another out. -->
+      <ExpandableSection
+        v-if="deviceList.length > 0"
+        title="Devices"
+        storage-key="ui.settings.sync.devices"
+        subsection
+        container-class="pt-2"
+        content-wrapper-class="flex flex-col"
+      >
+        <ul class="flex flex-col pt-1 pb-1" data-sync-devices>
+          <li
+            v-for="device in deviceList"
+            :key="device.id"
+            class="flex items-center gap-2 py-1 text-xs text-surface-700 dark:text-surface-200"
+            :data-device="device.current ? 'this' : device.id"
+          >
+            <span class="flex-1 min-w-0 truncate">{{ device.device || 'A device' }}</span>
+            <span class="text-surface-500 dark:text-surface-400">
+              {{ device.current ? 'This device' : formatRelativeTime(device.used) }}
+            </span>
+            <button
+              v-if="!device.current"
+              v-tooltip.bottom="'Sign out'"
+              type="button"
+              class="flex-none w-6 h-6 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
+              :aria-label="`Sign out ${device.device || 'this device'}`"
+              data-action="sign-out-device"
+              @click="signOutOther(device)"
+            >
+              <i class="pi pi-sign-out" style="font-size: 0.7rem" />
+            </button>
+            <span v-else class="flex-none w-6" />
+          </li>
+        </ul>
+      </ExpandableSection>
     </template>
 
     <ExpandableSection
@@ -403,6 +377,7 @@ import InputText from 'primevue/inputtext'
 import SelectButton from 'primevue/selectbutton'
 import ToggleSwitch from 'primevue/toggleswitch'
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
+import PeopleSection from './PeopleSection.vue'
 import BackupSection from './BackupSection.vue'
 import { HOSTED_SERVER } from '@/cloud/api.js'
 import { takeInvite } from '@/cloud/invite.js'
@@ -421,11 +396,11 @@ import { useToast } from '@/composables/useToast'
  * making an account on one, or getting back into one with its recovery code;
  * once signed in, what sync is doing, with a sync to start by hand, how much
  * of its quota the account keeps, and which projects are kept on this device
- * only (each project's menu does that); the devices signed in, any of which
- * can be signed out from here; the name the people it shares projects with
- * see, and its friend code, which they share by (Settings › Project shares
- * each project); whether this device sends diagnostics, a new recovery code
- * or passphrase, and signing out; and, signed in or not, backups. Waiting for
+ * only (each project's menu does that); the account (its friend code,
+ * whether this device sends diagnostics, a new recovery code or passphrase,
+ * and signing out); the people it shares with (`PeopleSection`; Settings ›
+ * Project shares each project); the devices signed in, any of which can be
+ * signed out from here; and, signed in or not, backups. Waiting for
  * an update, it offers the one ready. A recovery code is shown once, as it is
  * made. Opened from an invitation's link, it is ready to create an account
  * with its code. The server is ours, but in a build with dev features, where
@@ -579,23 +554,8 @@ async function copyCode() {
   }
 }
 
-/** The account as the people it shares with know it, once asked. @type {import('vue').Ref<{display: string|null, friend: string}|null>} */
+/** The account as the people it shares with know it, once asked. @type {import('vue').Ref<{name: string, friend: string}|null>} */
 const profile = ref(null)
-const display = ref('')
-
-/** Keep the name others see, if it changed; one cleared is put back. */
-async function saveDisplay() {
-  if (!profile.value) return
-  const typed = display.value.trim()
-  if (!typed) display.value = profile.value.display ?? ''
-  if (!typed || typed === profile.value.display) return
-  try {
-    await sync.setDisplay(typed)
-    profile.value = { ...profile.value, display: typed }
-  } catch (error) {
-    toast.error(`The name couldn't be saved. ${/** @type {Error} */ (error).message}`)
-  }
-}
 
 /** Whether the friend code has just been copied, for its button to say so. */
 const friendCopied = ref(false)
@@ -623,10 +583,7 @@ async function look() {
   storiesStore.loadNames().catch(() => {})
   sync
     .profile()
-    .then(asked => {
-      profile.value = asked
-      display.value = asked.display ?? ''
-    })
+    .then(asked => (profile.value = asked))
     // A server from before sharing has none.
     .catch(() => (profile.value = null))
   try {

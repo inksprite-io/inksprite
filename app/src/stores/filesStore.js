@@ -30,6 +30,7 @@
 import { defineStore } from 'pinia'
 import { storage } from '@/storage/index.js'
 import { fetchElsewhere, fileElsewhere } from '@/cloud/onDemand.js'
+import { useSyncStore } from './syncStore'
 
 export const useFilesStore = defineStore('files', () => {
   /** The puts that have started and not finished, by file. @type {Map<string, Promise<void>>} */
@@ -45,6 +46,9 @@ export const useFilesStore = defineStore('files', () => {
    */
   async function putFile(id, storyId, blob) {
     if (!id) throw new Error('A file needs the id of the document it belongs to')
+    // A file put in a project not saved yet saves it, before its bytes need it.
+    const syncStore = useSyncStore()
+    if (syncStore.start(storyId)) await syncStore.processSync()
     const write = storage.putFileBytes(id, storyId, blob)
     writing.set(id, write)
     try {

@@ -19,7 +19,7 @@ vi.mock('@/stores/db', () => ({
 }))
 
 vi.mock('@/stores/syncStore', () => ({
-  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn() }),
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
 describe('usePrompts', () => {
