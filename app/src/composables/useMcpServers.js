@@ -2,7 +2,8 @@
 /**
  * @module composables/useMcpServers
  * @description The writer's MCP servers: adding one, listing what it offers
- * again, which profiles use it, and the tools they always allow.
+ * again, and the tools they always allow. Which chats use one is each chat's,
+ * among its tools (ai/tools/choice.js).
  *
  * Adding is two steps, because what a server offers is what the model will be
  * told: `preview` connects and lists its tools with their descriptions for the
@@ -85,9 +86,9 @@ if (typeof BroadcastChannel !== 'undefined') {
  *   isSignedIn: (url: string) => boolean,
  *   signIn: (url: string) => Promise<{signedIn: true}|{error: string}>,
  *   signOut: (url: string) => void,
- *   addServer: (configured: ConfiguredServer, preview?: ServerPreview, profiles?: string[]) => McpServer,
+ *   addServer: (configured: ConfiguredServer, preview?: ServerPreview) => McpServer,
  *   refreshServer: (id: string) => Promise<{server: McpServer}|{error: string}>,
- *   updateServer: (id: string, updates: Partial<Pick<McpServer, 'name'|'url'|'headers'|'profiles'|'allowed'|'allowAll'|'auth'>>) => McpServer|null,
+ *   updateServer: (id: string, updates: Partial<Pick<McpServer, 'name'|'url'|'headers'|'allowed'|'allowAll'|'auth'>>) => McpServer|null,
  *   removeServer: (id: string) => boolean,
  *   allowTool: (exposed: string) => void,
  *   allowServer: (exposed: string) => void,
@@ -199,9 +200,8 @@ export function useMcpServers() {
    *
    * @param {ConfiguredServer} configured
    * @param {ServerPreview} [listed] - Absent for one that runs as a program
-   * @param {string[]} [profiles] - The profiles whose chats use it
    */
-  const addServer = (configured, listed, profiles = []) => {
+  const addServer = (configured, listed) => {
     const prefix = serverPrefix(
       configured.name,
       store.getAllServers().map(server => server.prefix)
@@ -220,7 +220,6 @@ export function useMcpServers() {
       ...(configured.args ? { args: configured.args } : {}),
       tools: listed ? named(prefix, listed.tools) : [],
       prompts: listed ? listed.prompts : [],
-      profiles,
       allowed: [],
       ...(listed ? { listedAt: Date.now() } : {}),
     })
@@ -266,7 +265,7 @@ export function useMcpServers() {
 
   /**
    * @param {string} id
-   * @param {Partial<Pick<McpServer, 'name'|'url'|'headers'|'profiles'|'allowed'|'allowAll'|'auth'>>} updates
+   * @param {Partial<Pick<McpServer, 'name'|'url'|'headers'|'allowed'|'allowAll'|'auth'>>} updates
    */
   const updateServer = (id, updates) => {
     if ('url' in updates || 'headers' in updates) disconnect(id)

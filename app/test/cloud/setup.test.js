@@ -40,16 +40,20 @@ describe('the setup as sync sends it', () => {
   it('makes a row of each group of settings, without the checker’s switch, and back', () => {
     const settings = /** @type {any} */ ({
       aiPreset: 'profile_work',
+      builtInProfiles: { builtin_profile_chat: { presetId: 'profile_work' } },
       theme: 'dark',
       applyEdits: 'ask',
       askBeforeExploring: false,
       spelling: { enabled: true, dialect: 'british', grammar: false, words: ['Vex'] },
     })
     const rows = settingsRows(settings)
-    expect(rows.find(row => row.id === 'aiPreset')).toEqual({
-      id: 'aiPreset',
-      aiPreset: 'profile_work',
+    expect(rows.find(row => row.id === 'builtInProfiles')).toEqual({
+      id: 'builtInProfiles',
+      builtInProfiles: { builtin_profile_chat: { presetId: 'profile_work' } },
     })
+    // The preset chats ran on by default before profiles kept their own goes
+    // to no device: nothing sets it any more.
+    expect(rows.find(row => row.id === 'aiPreset')).toBeUndefined()
     expect(rows.find(row => row.id === 'spelling')).toEqual({
       id: 'spelling',
       spelling: { dialect: 'british', grammar: false, words: ['Vex'] },
@@ -62,6 +66,9 @@ describe('the setup as sync sends it', () => {
 
     const back = settingsOf(rows)
     expect(back.theme).toBe('dark')
+    expect(back.builtInProfiles).toEqual({ builtin_profile_chat: { presetId: 'profile_work' } })
+    // An older device's row of it is passed over.
+    expect(settingsOf([{ id: 'aiPreset', aiPreset: 'profile_old' }])).toEqual({})
     expect(back.askBeforeExploring).toBe(false)
     expect(back.spelling).toEqual({ dialect: 'british', grammar: false, words: ['Vex'] })
     expect(back).not.toHaveProperty('chatProfileId')

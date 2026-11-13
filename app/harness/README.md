@@ -93,12 +93,15 @@ A message can also be an object: `{ "text": "…", "mentions": ["150 ?ms"],
 "reads": ["Notes/Meeting 2026-09-09"] }`, carrying what the turn is expected
 to do. `tools.js` checks each expectation against the transcript and the
 `state-N.json` the runner writes after every turn (every document's text and
-summary, and the chat's pins). The keys are `mentions` (regexes the reply
-should match), `reads` (documents the turn should have to hand — read this
-turn, or kept when the turn began), `finds` (read, or turned up by a
-search), `pins` and `pinnedAtEnd` (what the chat keeps, which the writer
-sees as pins), `noWrites`, and `document`, `notContains` and `summary` for
-what a document should say afterwards. See `run.js` for the shape and
+summary, and what the writer has attached). The keys are `mentions` (regexes
+the reply should match), `reads` (documents the turn should have to hand —
+read this turn, or still in the conversation from an earlier read or from the
+writer attaching them), `notRead` (documents it should not read, having
+them), `finds` (read, or turned up by a search), `noWrites`, and `document`,
+`notContains` and `summary` for what a document should say afterwards. A turn
+with `"before": { "attach": ["Design/Retrieval design"] }` attaches documents
+to its message, as an `@` in the message box does: a mention to a line above
+the words, the copy taken as the message is sent. See `run.js` for the shape and
 `scenarios/findable-design.json` for a whole one. `findable` is a design
 workspace of 38 documents for exactly this: whether the model finds, reads,
 keeps and edits the right things across a long chat; `findable-keep` edits
@@ -145,6 +148,15 @@ going through it and its Python the desktop app's own Pyodide and wheels in
 a worker thread, with `/project` made by the app's `projectForPython`. It
 needs `npm ci` and `node scripts/fetch-python.mjs` in `app/electron`.
 `held-python` reads a project whose documents hold others from Python.
+A scenario with `"card": "Riley"` runs as a chat on that character's card, as
+Chat with… starts one: the card's documents attached to a turn of the writer's
+that opens the chat, the card's own instructions on it, and the card's name
+for `{{char}}` (`chat.userName` gives `{{user}}`). `riley-card-roleplay`, with
+`--prompt builtin_profile_roleplay`, plays a card that way: whether the model
+reads the writer's persona up front and leaves the attached card alone, reads
+nothing again on the next turn, and after `/compact`, which keeps the chat's
+opening, reads the persona again and still not the card. `dice-advantage` is what notation it writes for
+advantage and burden dice; the checks only see that it rolled, so read the calls.
 
 Findings from the batches, and the things that are not about one batch, are
 in `findings.md`. `dialogue.js` is a separate runner for the multi-agent
@@ -194,8 +206,8 @@ name, a read of one of its files as `name:path`.
     npm run tools -- harness/runs/<batch>
 
 For a chat that works on the project rather than writes prose: per turn,
-what was read (and whether it was already in the block), searched, written
-and pinned, which tool calls came back with an error, the prompt tokens the
+what was read (and whether it was already attached or read), searched and
+written, which tool calls came back with an error, the prompt tokens the
 turn cost, and whether the scenario's expectations for that turn held. The
 last lines say which turns failed across the batch and why, which is what
 to change something about. `meta.json` records the commit the tools were

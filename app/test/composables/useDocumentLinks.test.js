@@ -158,6 +158,26 @@ describe('useDocumentLinks', () => {
       expect(links.suggest('nobody', 'one')).toEqual([])
     })
 
+    it('offers folders too where they are asked for, as a chat’s message does', () => {
+      const links = useDocumentLinks('s')
+      expect(links.suggest('notes', 'one', { folders: true })[0]).toMatchObject({
+        title: 'Notes',
+        folder: true,
+      })
+    })
+
+    it('says how long each document is where that is asked, for one to be attached whole', () => {
+      const links = useDocumentLinks('s')
+      const [entry] = links.suggest('cast', 'one', { words: true })
+      expect(entry.words).toBeTypeOf('number')
+      expect(links.suggest('cast', 'one')[0]).not.toHaveProperty('words')
+    })
+
+    it('offers every match, up to a limit', () => {
+      const links = useDocumentLinks('s')
+      expect(links.suggest('', 'one', { limit: 1 })).toHaveLength(1)
+    })
+
     it('offers the headings of the document named before a `#`, or of this one', () => {
       const links = useDocumentLinks('s')
       expect(links.suggest('Cast list#cr', 'one')).toEqual([
@@ -191,13 +211,18 @@ describe('useDocumentLinks', () => {
     it('gives the path alone, as the tools and the commands take it', () => {
       const links = useDocumentLinks('s')
       expect(links.chatPath('/Notes/Cast%20list.md#The%20crew')).toBe('/Notes/Cast list#The crew')
-      expect(links.chatPath('/Notes')).toBeNull()
     })
 
-    it('writes nothing for a link to no document, a folder, or the web', () => {
+    it('writes a folder with a slash after it, as a listing does, for the model to list', () => {
+      const links = useDocumentLinks('s')
+      expect(links.chatPath('/Notes')).toBe('/Notes/')
+      expect(links.chatLink('/Notes', 'Notes')).toBe('[Notes](</Notes/>)')
+    })
+
+    it('writes nothing for a link to no document, the project itself, or the web', () => {
       const links = useDocumentLinks('s')
       expect(links.chatLink('/Nowhere.md', 'x')).toBeNull()
-      expect(links.chatLink('/Notes', 'x')).toBeNull()
+      expect(links.chatLink('/', 'x')).toBeNull()
       expect(links.chatLink('https://example.com', 'x')).toBeNull()
     })
   })

@@ -1,14 +1,19 @@
 #!/bin/sh
-# Signs the app build-for-mac.sh built in the container with the Developer ID
-# in this Mac's keychain, and puts it in place of /Applications/inksprite.app:
-# quits inksprite, which saves as it quits, swaps the app, and opens it again.
-# It is the installed app, on the installed app's data. Plain shell, as npm
-# never runs on the Mac.
+# Builds this checkout's app in its dev container (build-for-mac.sh, run there
+# through docker, since npm runs only in the container), signs it with the
+# Developer ID in this Mac's keychain, and puts it in place of
+# /Applications/inksprite.app: quits inksprite, which saves as it quits, swaps
+# the app, and opens it again. It is the installed app, on the installed app's
+# data. Plain shell, as npm never runs on the Mac.
 #
-#   app/electron/install-on-mac.sh
+#   app/electron/install-on-mac.sh [--no-build]
 #
-# INKSPRITE_SIGN_IDENTITY names the identity to sign with, when the keychain
-# has more than one Developer ID Application.
+# --no-build installs what was built last, as it is.
+#
+# The container is the running one VS Code's Dev Containers made for this
+# folder (its devcontainer.local_folder label); INKSPRITE_CONTAINER names
+# another. INKSPRITE_SIGN_IDENTITY names the identity to sign with, when the
+# keychain has more than one Developer ID Application.
 #
 # It is never notarized: macOS asks that only of an app downloaded from the
 # internet.
@@ -16,6 +21,7 @@
 set -eu
 
 here=$(cd "$(dirname "$0")" && pwd)
+root=$(cd "$here/../.." && pwd -P)
 build="$here/dist/for-mac"
 installed=/Applications/inksprite.app
 bundle_id=io.inksprite.inksprite
@@ -25,13 +31,32 @@ fail() {
   exit 1
 }
 
+no_build=
+case "${1-}" in
+  --no-build) no_build=1 ;;
+  "") ;;
+  *) fail "usage: install-on-mac.sh [--no-build]" ;;
+esac
+
 [ "$(uname -s)" = Darwin ] || fail "this is for a Mac; build-for-mac.sh builds for one in the container"
 case "$(uname -m)" in
-  arm64) built="$build/mac-arm64/inksprite.app" ;;
-  x86_64) built="$build/mac/inksprite.app" ;;
+  arm64) arch=arm64 built="$build/mac-arm64/inksprite.app" ;;
+  x86_64) arch=x64 built="$build/mac/inksprite.app" ;;
   *) fail "there is no build for $(uname -m)" ;;
 esac
-[ -d "$built" ] || fail "nothing is built for this Mac: run build-for-mac.sh in the container"
+
+if [ -z "$no_build" ]; then
+  command -v docker >/dev/null || fail "docker isn't here to build in the container with"
+  container=${INKSPRITE_CONTAINER:-$(docker ps -q --filter "label=devcontainer.local_folder=$root" | head -n 1)}
+  [ -n "$container" ] || fail "no dev container is running for $root: open it, or name one in INKSPRITE_CONTAINER"
+  # Where the container has this folder, which Dev Containers puts under
+  # /workspaces.
+  workspace=$(docker inspect -f '{{range .Mounts}}{{if eq .Source "'"$root"'"}}{{.Destination}}{{end}}{{end}}' "$container")
+  workspace=${workspace:-/workspaces/$(basename "$root")}
+  docker exec -u node -w "$workspace" "$container" app/electron/build-for-mac.sh "$arch" ||
+    fail "the build failed in the container"
+fi
+[ -d "$built" ] || fail "nothing is built for this Mac"
 version=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$built/Contents/Info.plist")
 
 identity=${INKSPRITE_SIGN_IDENTITY:-$(security find-identity -v -p codesigning |

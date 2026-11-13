@@ -15,7 +15,12 @@
  */
 
 import { buildProviderRouting } from '@/ai/routing.js'
-import { knownAddress, takesChatTemplateKwargs, takesReasoningEffort } from '@/ai/providers.js'
+import {
+  knownAddress,
+  speaksOpenRouterReasoning,
+  takesChatTemplateKwargs,
+  takesReasoningEffort,
+} from '@/ai/providers.js'
 import { capabilitiesOf, fitSettings } from '@/ai/capabilities.js'
 
 /**
@@ -52,6 +57,16 @@ export function baseUrl(provider) {
  */
 export function modelsUrl(provider) {
   return joinUrl(baseUrl(provider), 'models')
+}
+
+/**
+ * NanoGPT's list of the models that speak, kept apart from its chat models.
+ *
+ * @param {AIProvider} provider
+ * @returns {string}
+ */
+export function audioModelsUrl(provider) {
+  return joinUrl(baseUrl(provider), 'audio-models')
 }
 
 /**
@@ -94,7 +109,8 @@ export function attributionHeaders(provider) {
  *      which would force a miss next turn.
  *
  * Only applied to openrouter-typed providers; we don't know whether a
- * generic-typed provider's backend supports cache_control.
+ * generic-typed provider's backend supports cache_control. NanoGPT is asked
+ * its own way (`promptCaching`).
  *
  * @param {Array<any>} messages
  * @param {{ type: string }} provider
@@ -140,7 +156,10 @@ function withCacheControl(messages, provider) {
  * normalization over a dozen incompatible conventions and the only one
  * carrying Anthropic's signatures, which Anthropic needs echoed back
  * verbatim. Everyone else gets `reasoning_content`, the shape DeepSeek
- * defined and LM Studio, lmdeploy, and llama.cpp follow.
+ * defined and LM Studio, lmdeploy, and llama.cpp follow. NanoGPT sends
+ * `reasoning_details` back for some models and not others, so it is given
+ * them where it sent them, and the thinking as `reasoning_content` where it
+ * didn't.
  *
  * `_reasoning` is ours, set by whoever ran the turn (see
  * composables/useAIChat.js) and never sent under that name. It is only ever
@@ -163,6 +182,7 @@ function withSupportedReasoning(messages, provider) {
     if (provider.type === 'openrouter') {
       return details ? { ...rest, reasoning_details: details } : rest
     }
+    if (provider.type === 'nanogpt' && details) return { ...rest, reasoning_details: details }
     return reasoning ? { ...rest, reasoning_content: reasoning } : rest
   })
 }
@@ -216,7 +236,9 @@ export function toWireMessages(messages, provider) {
  * Saying nothing is not saying no: a model that thinks by default goes on
  * thinking, and `disabled` reads on the settings panel like a switch that did
  * something. So OpenRouter is told so, explicitly. There is no `exclude` on
- * that branch because there is nothing to exclude.
+ * that branch because there is nothing to exclude. NanoGPT takes the same
+ * object, and needs `enabled` the more: some of its models think only when
+ * asked.
  *
  * @param {{ type: string }} provider
  * @param {AISettings} settings - Fitted to the model
@@ -224,7 +246,7 @@ export function toWireMessages(messages, provider) {
  * @returns {Record<string, any>}
  */
 function reasoningFields(provider, settings, askedForEffort) {
-  if (provider.type === 'openrouter') {
+  if (speaksOpenRouterReasoning(provider.type)) {
     return {
       reasoning:
         settings.reasoningEffort === 'disabled'
@@ -338,11 +360,19 @@ export function buildCompletionBody({
   const speaksOfReasoning = capabilities.efforts.length > 0
   const askedForEffort =
     speaksOfReasoning &&
-    (provider.type === 'openrouter' || takesReasoningEffort(provider.type)) &&
+    (speaksOpenRouterReasoning(provider.type) || takesReasoningEffort(provider.type)) &&
     settings.reasoningEffort !== 'disabled' &&
     settings.reasoningEffort !== 'enabled'
 
   if (speaksOfReasoning) Object.assign(body, reasoningFields(provider, settings, askedForEffort))
+
+  // NanoGPT caches most models' prompts by itself, but Claude's only when
+  // asked, and places the breakpoints itself when it is. Asking moves a
+  // request off a subscription, which never covers Claude, so only Claude is
+  // asked for it.
+  if (provider.type === 'nanogpt' && /^anthropic\//.test(model)) {
+    body.prompt_caching = { enabled: true }
+  }
 
   // Provider routing: the connection's policy, and the providers the preset
   // allows and ignores for this model.

@@ -14,9 +14,8 @@
  * knows what a step does.
  *
  * A job runs on the model it keeps (`runsOn`), the one the chat that asked
- * for it runs on, or else on its workflow's: a kind of job the writer can put
- * on a model of its own in Settings › Workflows, and which runs on the active
- * preset until they do.
+ * for it runs on, or else on its workflow's: a conversion's, chosen in the
+ * dialog that asks for one, and until then what new chats start on.
  *
  * One job runs at a time per browser tab. The requests it makes are its
  * own — see `ai/complete.js` — so a chat can go on beside it. A job writes
@@ -163,8 +162,8 @@ export const isRunning = jobId => running.has(jobId)
 /**
  * The way to ask the model a workflow names, or an error saying what is not set.
  *
- * The allowed and ignored providers come with the model they were chosen
- * for: the preset's with the preset's, the workflow's own with its own.
+ * Its own model where it has one, else what new chats start on, on that
+ * model's settings (`runOn` in useAIConfig), with the workflow's own effort.
  *
  * @param {string} name - A workflow in the application state's `workflows`
  * @returns {ResolvedModel}
@@ -175,48 +174,47 @@ export function resolveWorkflow(name) {
   const aiConfig = useAIConfig()
   /** @type {Partial<import('@/types/models.js').WorkflowSettings>} */
   const settings = workflows.value[name] || {}
-  // A workflow never set runs on the active preset; one set runs on its own.
-  const preset = settings.providerId ? null : aiConfig.activeAIPreset.value
-  const providerId = settings.providerId || preset?.providerId
-  const model = settings.providerId ? settings.model : preset?.model
+  // A workflow never set runs on what new chats start on; one set runs on
+  // its own.
+  const run =
+    settings.providerId && settings.model
+      ? aiConfig.runOn(settings.providerId, settings.model)
+      : aiConfig.startingPreset.value
+  const providerId = run?.providerId
+  const model = run?.model
   if (!providerId) {
-    throw new ProviderNotConfiguredError(
-      'Set up a provider, and pick one for this workflow in Settings.'
-    )
+    throw new ProviderNotConfiguredError('No AI provider is connected.')
   }
   const provider = aiConfig.getProvider(providerId)
   if (!provider) throw new ProviderNotConfiguredError('The provider this workflow uses is gone.')
-  if (!model) throw new Error('Pick a model for this workflow in Settings.')
-  const overrides = settings.providerId
-    ? settings.reasoningEffort
-      ? { reasoningEffort: settings.reasoningEffort }
-      : undefined
-    : preset?.generationOverrides
-  const upstreams = settings.providerId ? settings : preset
-  return { provider, model, upstreams, overrides }
+  if (!model) throw new Error('Pick a model to convert with.')
+  const effort = settings.providerId ? settings.reasoningEffort : null
+  const overrides = effort
+    ? { ...(run?.generationOverrides || {}), reasoningEffort: /** @type {any} */ (effort) }
+    : run?.generationOverrides
+  return { provider, model, upstreams: run, overrides }
 }
 
 /**
- * The model a chat on a preset runs on, as a job keeps it: the connection
- * and the model, the providers allowed and ignored for it, and the preset's
- * settings, copied, so the job goes on as it was planned whatever is done to
- * the preset after. Without a preset, the active one, which every chat runs
- * on: a new chat in any project as much as one going.
+ * The model a chat runs on, as a job keeps it: the connection and the model,
+ * the providers preferred and ignored for it, and its settings, copied, so
+ * the job goes on as it was planned whatever is done to them after.
  *
- * @param {import('@/types/models.js').AIPreset|null} [preset]
+ * @param {import('@/types/models.js').AIPreset|null} preset - The chat's
  * @returns {JobModel}
  * @throws {ProviderNotConfiguredError|Error} What a chat on it would fail with
  */
 export function chatModel(preset) {
   const aiConfig = useAIConfig()
-  const chosen = preset === undefined ? aiConfig.activeAIPreset.value : preset
-  const problem = presetProblem(chosen, id => aiConfig.getProvider(id))
-  if (problem || !chosen) throw problem
-  const { providerId, model, allowedProviders, ignoredProviders, generationOverrides } = chosen
+  const problem = presetProblem(preset, id => aiConfig.getProvider(id))
+  if (problem || !preset) throw problem
+  const { providerId, model, allowedProviders, fallbacks, ignoredProviders, generationOverrides } =
+    preset
   return {
     providerId,
     model,
     ...(allowedProviders?.length ? { allowedProviders: [...allowedProviders] } : {}),
+    ...(typeof fallbacks === 'boolean' ? { fallbacks } : {}),
     ...(ignoredProviders?.length ? { ignoredProviders: [...ignoredProviders] } : {}),
     // Plain, for the job's row: a preset read from its store is a proxy.
     ...(generationOverrides && Object.keys(generationOverrides).length > 0
@@ -241,8 +239,8 @@ export function resolveModel(runsOn) {
 /**
  * The way to ask the model a job runs on: the one it keeps, or its
  * workflow's. An exploration from before explore kept one names the
- * workflow it ran on, `explore`, which runs on the active preset unless the
- * writer gave it a model of its own then.
+ * workflow it ran on, `explore`, which runs on what new chats start on
+ * unless the writer gave it a model of its own then.
  *
  * @param {Job} job
  * @returns {ResolvedModel}
@@ -330,7 +328,7 @@ export async function startJob(jobId) {
               attempt > 0 ? 'asked again after a dropped connection' : undefined
             )
             try {
-              return await complete({
+              const answer = await complete({
                 provider,
                 model,
                 upstreams,
@@ -339,6 +337,12 @@ export async function startJob(jobId) {
                 signal: controller.signal,
                 onChunk: piece => addChars(jobId, piece.length),
               })
+              useApplicationState().noteModelUse(
+                provider.id,
+                model,
+                answer.usage?.completion_tokens
+              )
+              return answer
             } catch (error) {
               if (state.stop || attempt >= RETRY.times || !isTransient(error)) throw error
               await pause(RETRY.delay * 3 ** attempt, controller.signal)

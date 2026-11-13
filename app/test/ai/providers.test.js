@@ -15,6 +15,10 @@ import {
   servesChat,
   inMenuOrder,
   providerDoes,
+  signInOf,
+  creditsPage,
+  speaksOpenRouterReasoning,
+  listsPublicly,
 } from '@/ai/providers.js'
 
 describe('provider types', () => {
@@ -43,7 +47,7 @@ describe('provider types', () => {
   it('asks for an address from everything but the hosted services', () => {
     // Naming the types one at a time is how the next one gets forgotten and
     // saves with nowhere to go.
-    const hosted = ['openrouter', 'anthropic', 'openai', 'gemini']
+    const hosted = ['openrouter', 'anthropic', 'openai', 'nanogpt', 'gemini']
     for (const entry of PROVIDER_TYPES) {
       expect(needsEndpoint(entry.id)).toBe(!hosted.includes(entry.id))
     }
@@ -58,6 +62,7 @@ describe('provider types', () => {
     expect(needsKey('anthropic')).toBe(true)
     expect(needsKey('openai')).toBe(true)
     expect(needsKey('gemini')).toBe(true)
+    expect(needsKey('nanogpt')).toBe(true)
     expect(needsKey('llamacpp')).toBe(false)
     expect(needsKey('generic')).toBe(false)
     expect(needsKey(undefined)).toBe(false)
@@ -232,17 +237,19 @@ describe('presetProblem', () => {
     const all = find([proxy, openRouter, anthropic, server])
 
     expect(presetProblem({ providerId: 'p', model: '' }, all)?.message).toBe(
-      'Pick a model in Settings › AI.'
+      'Choose a model for this chat.'
     )
-    const connect = presetProblem({ providerId: 'o', model: 'm' }, all)
-    expect(connect?.name).toBe('ProviderNotConfiguredError')
-    expect(connect?.message).toBe('Connect OpenRouter in Settings › AI.')
-    expect(presetProblem({ providerId: 'a', model: 'm' }, all)?.message).toBe(
-      'Add your Anthropic key in Settings › AI.'
-    )
-    expect(presetProblem({ providerId: 's', model: 'm' }, all)?.message).toBe(
-      'Add the server address in Settings › AI.'
-    )
+    // A connection with no key or no address is one to connect, by its id.
+    for (const [providerId, name] of [
+      ['o', 'OpenRouter'],
+      ['a', 'Anthropic'],
+      ['s', 'Box'],
+    ]) {
+      const problem = presetProblem({ providerId, model: 'm' }, all)
+      expect(problem?.name).toBe('ConnectionNeededError')
+      expect(problem?.message).toBe(`${name} isn't connected.`)
+      expect(/** @type {any} */ (problem).providerId).toBe(providerId)
+    }
   })
 })
 
@@ -254,8 +261,10 @@ describe('canListModels', () => {
     expect(canListModels({ type: 'openai' })).toBe(false)
   })
 
-  it('asks OpenRouter without a key, since its list is public', () => {
+  it('asks OpenRouter and NanoGPT without a key, since their lists are public', () => {
     expect(canListModels({ type: 'openrouter' })).toBe(true)
+    expect(canListModels({ type: 'nanogpt' })).toBe(true)
+    expect(listsPublicly('anthropic')).toBe(false)
   })
 
   it('asks nothing of no connection', () => {
@@ -282,6 +291,12 @@ describe('providerDoes', () => {
     expect(kinds('provider_kokoro_default')).toEqual(['speech'])
   })
 
+  it('offers NanoGPT for both', () => {
+    const nanoGpt = { id: 'provider_nano', type: 'nanogpt' }
+    expect(providerDoes(nanoGpt, 'chat')).toBe(true)
+    expect(providerDoes(nanoGpt, 'speech')).toBe(true)
+  })
+
   it("offers a server the writer adds for both, since nothing's known of it", () => {
     const own = { id: 'provider_own', type: 'generic' }
     expect(providerDoes(own, 'chat')).toBe(true)
@@ -293,5 +308,35 @@ describe('providerDoes', () => {
 
   it('offers nothing for no connection', () => {
     expect(providerDoes(null, 'chat')).toBe(false)
+  })
+})
+
+describe('services', () => {
+  it('signs in to OpenRouter and NanoGPT, and to nothing else', () => {
+    expect(signInOf('openrouter')?.authorize).toBe('https://openrouter.ai/auth')
+    expect(signInOf('nanogpt')).toEqual({
+      authorize: 'https://nano-gpt.com/auth',
+      exchange: 'https://nano-gpt.com/api/v1/auth/keys',
+      params: {
+        client_name: 'inksprite',
+        scope: 'api.use models.read',
+        invitation_code: 'GNjxyGKL',
+      },
+    })
+    expect(signInOf('anthropic')).toBeUndefined()
+    expect(signInOf('generic')).toBeUndefined()
+  })
+
+  it('knows where the services that sell by the request sell credits', () => {
+    expect(creditsPage('openrouter')).toBe('https://openrouter.ai/settings/credits')
+    expect(creditsPage('nanogpt')).toBe('https://nano-gpt.com/balance')
+    expect(creditsPage('generic')).toBeUndefined()
+  })
+
+  it('tells OpenRouter and NanoGPT about reasoning in OpenRouter’s words', () => {
+    expect(speaksOpenRouterReasoning('openrouter')).toBe(true)
+    expect(speaksOpenRouterReasoning('nanogpt')).toBe(true)
+    expect(speaksOpenRouterReasoning('openai')).toBe(false)
+    expect(takesReasoningEffort('nanogpt')).toBe(false)
   })
 })

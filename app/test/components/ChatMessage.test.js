@@ -1,15 +1,24 @@
 /* global structuredClone */
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach, beforeAll, afterAll } from 'vitest'
 import { ref, computed, nextTick } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import ChatMessage from '../../src/components/writer/chats/ChatMessage.vue'
+import { setTrialSkills } from '@/ai/skills/index.js'
+import { TRIAL_SKILLS } from '../../harness/skills/trials.js'
+
+// The harness's skills, Interpret among them, for the turns that consulted one.
+beforeAll(() => setTrialSkills(TRIAL_SKILLS))
+afterAll(() => setTrialSkills([]))
 
 /** The message being shown, as the mocked chats API holds it. */
 const stored = ref(null)
 
 vi.mock('../../src/composables/useChats', () => ({
-  useChats: () => ({ getMessageById: () => computed(() => stored.value) }),
+  useChats: () => ({
+    getMessageById: () => computed(() => stored.value),
+    getChatById: () => null,
+  }),
 }))
 
 /** The project's documents, for a result saved into them. */
@@ -197,6 +206,19 @@ describe('ChatMessage whose turn failed', () => {
     const wrapper = failed({}, 'waiting')
 
     expect(wrapper.find('[data-answer-error]').exists()).toBe(false)
+  })
+
+  it('offers what fixes it beside Retry, where something does', async () => {
+    const fix = { kind: 'connection', providerId: 'p_or' }
+    const wrapper = failed({
+      metadata: { error: "OpenRouter didn't accept the key.", errorFix: fix },
+    })
+
+    const offered = wrapper.find('[data-action="fix-connection"]')
+    expect(offered.text()).toBe('Connection settings')
+    await offered.trigger('click')
+    expect(wrapper.emitted('fix')).toEqual([[fix]])
+    expect(failed().find('[data-action^="fix-"]').exists()).toBe(false)
   })
 })
 

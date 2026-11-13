@@ -7,6 +7,19 @@
 - [Navigation Patterns][3]
   - [Examples][4]
 - [routes][5]
+- [composables/useSignIn][6]
+- [signInPath][7]
+  - [Parameters][8]
+- [WAIT_MS][9]
+- [sleep][10]
+  - [Parameters][11]
+- [useSignIn][12]
+  - [Parameters][13]
+- [service][14]
+- [finish][15]
+  - [Parameters][16]
+- [start][17]
+  - [Parameters][18]
 
 ## router
 
@@ -18,7 +31,8 @@ Vue Router configuration for the inksprite application.
   projects yet, an invitation to start one
 - `/project/:storyId` - The writer, on one project. It opens on the document
   the writer left, which the story remembers
-- `/connect/openrouter` - OAuth callback for OpenRouter authentication
+- `/connect/openrouter`, `/connect/nanogpt` - Where OpenRouter's and
+  NanoGPT's sign-ins send the writer back, with a code to trade for a key
 - `/connect/mcp` - OAuth callback for signing in to an MCP server
 - `/connect/google` - Where Google's sign-in, with its picker, sends the
   Drive import's popup back to
@@ -46,8 +60,106 @@ router.push('/')
 
 ## routes
 
+## composables/useSignIn
+
+Connecting an account by signing in, with OAuth (PKCE), to a
+service that makes the app a key for it: OpenRouter and NanoGPT
+(`signIn` on their types, `ai/providers.js`).
+
+`start` sends the writer to the service. In a browser that is a tab of its
+own, which the service sends back to `/connect/<type>`
+(`SignInCallback.vue`); that page calls `finish` and tells the tab that
+started it with an `oauth-success` message. In the desktop window it is the
+system browser, which comes back to the window's listener on localhost:
+`start` calls `finish` itself and posts the same message to its own window.
+Whoever listens for the message hears it either way.
+
+The key goes on the connection signed in from, or on a new connection of
+the service where there was none, which takes the built-in's id where the
+service had one (`addConnection`).
+
+## signInPath
+
+Where a service sends the writer back after signing in.
+
+### Parameters
+
+- `type` **[string][19]** The connection's type: `openrouter`, `nanogpt`
+
+Returns **[string][19]**&#x20;
+
+## WAIT_MS
+
+How long the desktop window waits for the writer to come back.
+
+## sleep
+
+### Parameters
+
+- `ms` **[number][20]**&#x20;
+
+## useSignIn
+
+### Parameters
+
+- `type` **[string][19]** The connection's type, one with a sign-in
+
+## service
+
+The sign-in, as the service's type has it.
+
+## finish
+
+Finish connecting from what the service sent back: check the state, trade
+the code for a key, and keep it on the connection.
+
+### Parameters
+
+- `params` **URLSearchParams** The query the writer came back with
+
+<!---->
+
+- Throws **[Error][21]** With what the writer should be told
+
+Returns **[Promise][22]<[string][19]>** The connection's id
+
+## start
+
+Send the writer to the service to connect their account. In a browser
+this returns once the tab is open; in the desktop window, once they are
+back and the key is kept.
+
+### Parameters
+
+- `$0` **[Object][23]** (optional, default `{}`)
+  - `$0.providerId` &#x20;
+
+<!---->
+
+- Throws **[Error][21]** With what the writer should be told
+
+Returns **[Promise][22]\<void>**&#x20;
+
 [1]: #router
 [2]: #routes
 [3]: #navigation-patterns
 [4]: #examples
 [5]: #routes-1
+[6]: #composablesusesignin
+[7]: #signinpath
+[8]: #parameters
+[9]: #wait_ms
+[10]: #sleep
+[11]: #parameters-1
+[12]: #usesignin
+[13]: #parameters-2
+[14]: #service
+[15]: #finish
+[16]: #parameters-3
+[17]: #start
+[18]: #parameters-4
+[19]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[20]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[21]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[22]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[23]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object

@@ -8,9 +8,9 @@
  * refuses a page, so it is the desktop app's alone.
  */
 
-import { checkExa, readExa, searchExa, EXA_LIMITED } from './exa.js'
-import { readKagi, searchKagi } from './kagi.js'
-import { searchBrave } from './brave.js'
+import { checkExa, readExa, searchExa, EXA_LIMITED, EXA_URL } from './exa.js'
+import { readKagi, searchKagi, KAGI_URL } from './kagi.js'
+import { searchBrave, BRAVE_URL } from './brave.js'
 import { readDirect } from './direct.js'
 
 /** @typedef {import('./answers.js').SearchAnswer} SearchAnswer */
@@ -26,6 +26,7 @@ import { readDirect } from './direct.js'
  * @typedef {Object} WebService
  * @property {WebServiceId} id
  * @property {string} name - As the writer knows it
+ * @property {string} address - Where it answers, for Connections to show
  * @property {boolean} needsKey - Whether it answers at all without a key
  * @property {boolean} desktopOnly - Whether only the desktop app can reach it
  * @property {string} [note] - The one line Connections shows under it
@@ -42,6 +43,7 @@ export const WEB_SERVICES = [
   {
     id: 'exa',
     name: 'Exa',
+    address: EXA_URL,
     needsKey: false,
     desktopOnly: false,
     note: 'Searches go to Exa, which may keep them.',
@@ -55,6 +57,7 @@ export const WEB_SERVICES = [
   {
     id: 'kagi',
     name: 'Kagi',
+    address: KAGI_URL,
     needsKey: true,
     desktopOnly: false,
     search: searchKagi,
@@ -63,6 +66,7 @@ export const WEB_SERVICES = [
   {
     id: 'brave',
     name: 'Brave',
+    address: BRAVE_URL,
     needsKey: true,
     desktopOnly: true,
     search: searchBrave,

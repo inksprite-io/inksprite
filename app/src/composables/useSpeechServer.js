@@ -14,7 +14,7 @@ import { computed, ref } from 'vue'
 import { useAIConfig } from './useAIConfig.js'
 import { useApplicationState } from './useApplicationState.js'
 import { useModelLists } from './useModelLists.js'
-import { canListModels, connectionGap, providerDoes } from '@/ai/providers.js'
+import { canListModels, connectionGap, knownAddress, providerDoes } from '@/ai/providers.js'
 import { listVoices, speechConnectionOf } from '@/tts/client.js'
 
 /** @type {import('vue').Ref<string[]>} What `audio/voices` gave, once asked */
@@ -109,8 +109,8 @@ export function useSpeechServer(chosen) {
       })
     }
     if (listed.value?.voices) return listed.value.voices
-    // OpenRouter and OpenAI say a model's voices or don't; neither answers `audio/voices`.
-    if (current.type === 'openrouter' || current.type === 'openai') return []
+    // The hosted services say a model's voices or don't; none answers `audio/voices`.
+    if (knownAddress(current.type)) return []
     const server = connection.value
     if (!server) return []
     const key = askedOfOf(current.id, server)

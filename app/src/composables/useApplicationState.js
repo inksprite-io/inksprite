@@ -3,13 +3,10 @@
  * @description Centralized application state management using localStorage for persistence
  *
  * @example
- * // Access active profile
- * const { activeAIPresetId, setActiveAIPresetId } = useApplicationState()
+ * const { theme, setTheme } = useApplicationState()
+ * setTheme('dark')
  *
- * // Set active profile
- * setActiveProfileId('profile_custom_creative')
- *
- * // Future: Access other state
+ * // Anything else
  * const { getState, setState } = useApplicationState()
  * setState('ui.theme', 'dark')
  * const theme = getState('ui.theme')
@@ -24,9 +21,28 @@ const STORAGE_KEY = 'inksprite_app_state'
 // Default application state structure
 const defaultState = {
   ai: {
-    // Active AI profile. Stored under the legacy "chat" key so we don't have
-    // to migrate IndexedDB-resident IDs from earlier per-mode profiles.
+    // The preset chats ran on when neither the chat nor its profile named
+    // one, from before each profile kept its own. Nothing sets it any more:
+    // it is read only as where a profile never picked on starts chats, so
+    // those run on what they ran on. Stored under `activeChatProfileId`,
+    // which is two renames out of date and stays that way: it is a key in
+    // somebody's saved settings.
     activeChatProfileId: null,
+    // Whether every chat and profile on this device has been given the model
+    // it ran on, once, when a model's settings came to be found by the model.
+    // This device's alone. (`chatsStamped` before it, when chats were given
+    // presets, is left as it is.)
+    modelsGiven: false,
+    // Whether every profile and chat on this device has been given the web,
+    // Python and MCP servers as tools of its own to switch, once
+    // (composables/useToolChoices.js). This device's alone.
+    toolsGiven: false,
+    // The models chosen lately, newest first, for the model menu beside a
+    // chat's box: `{providerId, model}`. This device's alone.
+    recentModels: [],
+    // Whether they have been filled, once, from the models used before they
+    // were kept.
+    recentSeeded: false,
   },
   system: {
     // Whether the AI is there at all. Off, the app is a writing app alone:
@@ -34,8 +50,9 @@ const defaultState = {
     // What the AI kept stays, for when it is switched back on.
     aiEnabled: true,
     // Whether the assistant's changes to documents go straight in, or wait in
-    // the chat for the writer to accept them. App-wide: how the writer wants
-    // to work with the assistant, not a property of any one conversation.
+    // the chat for the writer to accept them, for a chat that has not chosen.
+    // Each chat and profile keeps its own now; this was app-wide before, and
+    // is read only for a chat from then.
     applyEdits: 'auto',
     // Whether a chat asks before exploring more than about 50,000 tokens
     // (`ASK_FROM_TOKENS`). Always allow on the question turns it off.
@@ -48,13 +65,9 @@ const defaultState = {
     // switched in the library. On until the writer switches it off, as the
     // NSFW profiles are off.
     blurNsfw: true,
-    // The built-in skills still being tuned that are there at all, by name: as
-    // tools, as commands, and in a chat's settings. Each is off until the
-    // writer switches it on in Settings › Skills.
-    experimentalSkills: [],
-    // The profiles whose chats run Python, while its extension is on, until
-    // a chat chooses for itself. Null until the writer chooses, which is
-    // Default alone; see ai/tools/python.js.
+    // Legacy: the profiles whose chats ran Python, from before a profile and
+    // a chat said which of their tools are on. Read once, as each profile's
+    // and chat's tools are given them (composables/useToolChoices.js).
     pythonProfiles: null,
     // How long a run of Python may take, in seconds; 0 for as long as it
     // takes. See PYTHON_TIME_LIMITS in ai/tools/python.js.
@@ -64,6 +77,10 @@ const defaultState = {
     // and Roleplay.
     chatProfileId: null,
     roleplayProfileId: null,
+    // What the writer has chosen on each built-in profile, by its id, over
+    // the settings it ships with: the model, effort and edits a pick in a
+    // chat leaves there. See composables/useProfiles.js.
+    builtInProfiles: {},
     // Whether the editor sets its text close, or with the typography plugin's
     // article spacing. For comparing the two while one is chosen.
     compactText: true,
@@ -80,10 +97,9 @@ const defaultState = {
   },
   workflows: {
     // The provider and model that convert a document's text to Markdown, and
-    // how hard the model thinks about it. Nulls run the active preset's; the
-    // Workflows settings fill them from it the first time they open.
-    // `onImport` converts every file with text as it is imported.
-    convert: { providerId: null, model: null, reasoningEffort: null, onImport: false },
+    // how hard the model thinks about it, as last chosen where a conversion
+    // is asked for. Nulls run on what the Default profile's chats start on.
+    convert: { providerId: null, model: null, reasoningEffort: null },
   },
   narration: {
     // The connection and model last chosen to read aloud through, which a
@@ -112,7 +128,6 @@ const defaultState = {
   },
   ui: {
     theme: 'system', // 'light', 'dark', or 'system'
-    showProviderSetupDialog: true, // Show or hide the provider setup dialog
     showWelcomeDialog: true, // Show or hide the welcome dialog
     // Whether the editor colours each speaker's lines while the narration is
     // showing beside it.
@@ -239,17 +254,20 @@ if (typeof window !== 'undefined') {
  *
  * @typedef {Object} BackedUpSettings
  * @property {boolean} aiEnabled
- * @property {string|null} aiPreset - The AI preset in use
- * @property {'auto'|'ask'} applyEdits
+ * @property {string|null} aiPreset - The preset chats ran on by default, from
+ *   before each profile kept its own. Kept for where a profile never picked
+ *   on starts chats.
+ * @property {'auto'|'ask'} applyEdits - Whether edits wait, for a chat from
+ *   before each kept its own
+ * @property {Record<string, Partial<import('../ai/profiles/index.js').ProfileSettings>>} builtInProfiles -
+ *   What the writer has chosen on each built-in profile, by its id
  * @property {boolean} askBeforeExploring - Whether a chat asks before a big explore.
  *   A file from before has it as the Explore workflow's `askFirst` instead.
  * @property {boolean} nsfwProfiles
  * @property {boolean} blurNsfw - Whether the card library blurs NSFW pictures
- * @property {string[]} experimentalSkills - The ones switched on
  * @property {boolean} roleplay - Whether the Roleplay extension is on
  * @property {boolean} python - Whether the Python extension is on
- * @property {string[]|null} pythonProfiles - The profiles whose chats run
- *   Python, or null where the writer never chose
+ * @property {boolean} [web] - Whether the Web search extension is on
  * @property {number} pythonTimeLimit - How long a run of Python may take, in
  *   seconds; 0 for no limit
  * @property {string|null} chatProfileId - The profile new chats start on
@@ -316,7 +334,6 @@ const namesIn = value =>
  */
 function workflowFrom(settings) {
   if (!settings || typeof settings !== 'object') return {}
-  const { onImport } = settings
   const choices = ['providerId', 'model', 'reasoningEffort'].filter(field =>
     isChoice(settings[field])
   )
@@ -326,39 +343,55 @@ function workflowFrom(settings) {
   return {
     ...Object.fromEntries(choices.map(field => [field, settings[field]])),
     ...Object.fromEntries(lists.map(field => [field, settings[field]])),
-    ...(typeof onImport === 'boolean' ? { onImport } : {}),
   }
 }
+
+/**
+ * A model that answered lately, and how much it has written in all.
+ * @typedef {Object} ModelUse
+ * @property {string} providerId
+ * @property {string} model
+ * @property {number} outputTokens - Every answer's, added up
+ * @property {number} used - When it last answered
+ */
 
 /**
  * Application state composable
  *
  * @returns {{
  *   state: import('vue').Ref<object>,
- *   activeAIPresetId: import('vue').ComputedRef<string>,
- *   setActiveAIPresetId: (profileId: string) => void,
- *   getActiveAIPresetId: () => string,
+ *   legacyPresetId: import('vue').ComputedRef<string|null>,
+ *   chatsStamped: import('vue').ComputedRef<boolean>,
+ *   recentModels: import('vue').ComputedRef<Array<{providerId: string, model: string}>>,
+ *   rememberModel: (providerId: string, model: string) => void,
+ *   modelUses: import('vue').ComputedRef<ModelUse[]>,
+ *   noteModelUse: (providerId: string, model: string, outputTokens?: number) => void,
+ *   seedRecentModels: (used: Array<{providerId: string, model: string}>) => void,
+ *   setChatsStamped: (stamped: boolean) => void,
+ *   toolsGiven: import('vue').ComputedRef<boolean>,
+ *   setToolsGiven: (given: boolean) => void,
+ *   builtInProfiles: import('vue').ComputedRef<Record<string, Partial<import('../ai/profiles/index.js').ProfileSettings>>>,
+ *   setBuiltInProfile: (id: string, settings: Partial<import('../ai/profiles/index.js').ProfileSettings>) => void,
  *   debug: import('vue').ComputedRef<boolean>,
  *   setDebug: (on: boolean) => void,
  *   aiEnabled: import('vue').ComputedRef<boolean>,
  *   setAiEnabled: (on: boolean) => void,
  *   applyEdits: import('vue').ComputedRef<'auto'|'ask'>,
  *   setApplyEdits: (mode: 'auto'|'ask') => void,
+ *   applyEditsFor: (chat: {applyEdits?: string}|null|undefined) => 'auto'|'ask',
  *   askBeforeExploring: import('vue').ComputedRef<boolean>,
  *   setAskBeforeExploring: (ask: boolean) => void,
  *   nsfwProfiles: import('vue').ComputedRef<boolean>,
  *   setNsfwProfiles: (on: boolean) => void,
  *   blurNsfw: import('vue').ComputedRef<boolean>,
  *   setBlurNsfw: (on: boolean) => void,
- *   experimentalSkills: import('vue').ComputedRef<string[]>,
- *   setExperimentalSkill: (name: string, on: boolean) => void,
  *   pythonProfiles: import('vue').ComputedRef<string[]|null>,
- *   setPythonProfiles: (ids: string[]) => void,
  *   pythonTimeLimit: import('vue').ComputedRef<number>,
  *   setPythonTimeLimit: (seconds: number) => void,
  *   extensionOn: (id: string) => boolean|undefined,
  *   setExtension: (id: string, on: boolean) => void,
  *   roleplay: import('vue').ComputedRef<boolean>,
+ *   webSearch: import('vue').ComputedRef<boolean>,
  *   chatProfileId: import('vue').ComputedRef<string|null>,
  *   roleplayProfileId: import('vue').ComputedRef<string|null>,
  *   setChatProfileId: (id: string|null) => void,
@@ -384,9 +417,6 @@ function workflowFrom(settings) {
  *   getLorebookSortBy: () => 'name'|'category'|'updated',
  *   setLorebookSortOrder: (order: 'asc'|'desc') => void,
  *   getLorebookSortOrder: () => 'asc'|'desc',
- *   showProviderSetupDialog: import('vue').ComputedRef<boolean>,
- *   setShowProviderSetupDialog: (show: boolean) => void,
- *   getShowProviderSetupDialog: () => boolean,
  *   showWelcomeDialog: import('vue').ComputedRef<boolean>,
  *   setShowWelcomeDialog: (show: boolean) => void,
  *   getShowWelcomeDialog: () => boolean,
@@ -399,16 +429,142 @@ function workflowFrom(settings) {
  * }}
  */
 export function useApplicationState() {
-  // The one AI preset in use — the provider, model and sampling everything
-  // runs on. Stored under `activeChatProfileId`, which is two renames out of
-  // date and stays that way: it is a key in somebody's saved settings, and it
-  // has nothing to do with the chat profiles a chat is stamped from.
+  /**
+   * The preset chats ran on by default before each profile kept its own,
+   * where one was chosen. Read only. See `activeChatProfileId` above.
+   * @type {import('vue').ComputedRef<string|null>}
+   */
+  const legacyPresetId = computed(() => state.value.ai?.activeChatProfileId ?? null)
 
-  const setActiveAIPresetId = profileId => {
-    state.value.ai.activeChatProfileId = profileId
+  /** How many models the model menu keeps. */
+  const RECENT_MODELS = 8
+
+  /**
+   * The models chosen lately, newest first.
+   * @type {import('vue').ComputedRef<Array<{providerId: string, model: string}>>}
+   */
+  const recentModels = computed(() => {
+    const kept = state.value.ai?.recentModels
+    return Array.isArray(kept)
+      ? kept.filter(one => typeof one?.providerId === 'string' && typeof one?.model === 'string')
+      : []
+  })
+
+  /**
+   * Keep a model chosen, first among the recent ones.
+   * @param {string} providerId
+   * @param {string} model
+   */
+  const rememberModel = (providerId, model) => {
+    const others = recentModels.value.filter(
+      one => one.providerId !== providerId || one.model !== model
+    )
+    state.value.ai = {
+      ...(state.value.ai || {}),
+      recentModels: [{ providerId, model }, ...others].slice(0, RECENT_MODELS),
+    }
   }
-  const getActiveAIPresetId = () => state.value.ai.activeChatProfileId
-  const activeAIPresetId = computed(() => state.value.ai.activeChatProfileId)
+
+  /** How many models' use is kept. */
+  const MODEL_USES = 20
+
+  /**
+   * The models that answered lately, on this device, the latest first, each
+   * with how much it has written. Not a model chosen: one that answered. Kept
+   * with the settings, as the models chosen lately are, and not synced.
+   * @type {import('vue').ComputedRef<ModelUse[]>}
+   */
+  const modelUses = computed(() => {
+    const kept = state.value.ai?.modelUses
+    return Array.isArray(kept)
+      ? kept.filter(one => typeof one?.providerId === 'string' && typeof one?.model === 'string')
+      : []
+  })
+
+  /**
+   * Count an answer from a model: it goes first among those used lately, and
+   * what it wrote is added to its tokens.
+   * @param {string} providerId
+   * @param {string} model
+   * @param {number} [outputTokens] - What the answer came to, where the service says
+   */
+  const noteModelUse = (providerId, model, outputTokens = 0) => {
+    if (!providerId || !model) return
+    const before = modelUses.value.find(one => one.providerId === providerId && one.model === model)
+    const others = modelUses.value.filter(one => one !== before)
+    /** @type {ModelUse} */
+    const now = {
+      providerId,
+      model,
+      outputTokens: (before?.outputTokens || 0) + (Number(outputTokens) || 0),
+      used: Date.now(),
+    }
+    state.value.ai = {
+      ...(state.value.ai || {}),
+      modelUses: [now, ...others].slice(0, MODEL_USES),
+    }
+  }
+
+  /**
+   * Fill the recent models once, from those the writer used before they were
+   * kept: after any chosen since, in the order given, up to as many as are kept.
+   * @param {Array<{providerId: string, model: string}>} used
+   */
+  const seedRecentModels = used => {
+    if (state.value.ai?.recentSeeded === true) return
+    const recent = [...recentModels.value]
+    for (const { providerId, model } of used) {
+      if (!recent.some(one => one.providerId === providerId && one.model === model)) {
+        recent.push({ providerId, model })
+      }
+    }
+    state.value.ai = {
+      ...(state.value.ai || {}),
+      recentModels: recent.slice(0, RECENT_MODELS),
+      recentSeeded: true,
+    }
+  }
+
+  /** Whether this device's chats and profiles have been given the models they ran on. */
+  const chatsStamped = computed(() => state.value.ai?.modelsGiven === true)
+
+  /** @param {boolean} stamped */
+  const setChatsStamped = stamped => {
+    state.value.ai = { ...(state.value.ai || {}), modelsGiven: stamped === true }
+  }
+
+  /** Whether profiles and chats have been given their web, Python and servers as tools. */
+  const toolsGiven = computed(() => state.value.ai?.toolsGiven === true)
+
+  /** @param {boolean} given */
+  const setToolsGiven = given => {
+    state.value.ai = { ...(state.value.ai || {}), toolsGiven: given === true }
+  }
+
+  /**
+   * What the writer has chosen on each built-in profile, by its id.
+   * @type {import('vue').ComputedRef<Record<string, Partial<import('../ai/profiles/index.js').ProfileSettings>>>}
+   */
+  const builtInProfiles = computed(() => {
+    const kept = state.value.system?.builtInProfiles
+    return kept && typeof kept === 'object' && !Array.isArray(kept) ? kept : {}
+  })
+
+  /**
+   * Keep choices on a built-in profile, over those it has: a field given as
+   * undefined is taken off, and the built-in's own reads again.
+   * @param {string} id
+   * @param {Partial<import('../ai/profiles/index.js').ProfileSettings>} settings
+   */
+  const setBuiltInProfile = (id, settings) => {
+    if (!state.value.system) state.value.system = {}
+    /** @type {Record<string, any>} */
+    const merged = { ...(builtInProfiles.value[id] || {}), ...settings }
+    for (const [key, value] of Object.entries(merged)) {
+      if (value === undefined) delete merged[key]
+    }
+    state.value.system.builtInProfiles = { ...builtInProfiles.value, [id]: merged }
+  }
 
   /**
    * Whether the debug switch is on: each assistant turn keeps the request
@@ -446,11 +602,21 @@ export function useApplicationState() {
   }
 
   /**
-   * Whether the assistant's changes to documents wait on the writer. Anything
-   * but an explicit ask means they go in, as they always did.
+   * Whether the assistant's changes to documents wait on the writer, for a
+   * chat from before each chat kept its own. Anything but an explicit ask
+   * means they go in, as they always did.
    * @type {import('vue').ComputedRef<'auto'|'ask'>}
    */
   const applyEdits = computed(() => (state.value.system?.applyEdits === 'ask' ? 'ask' : 'auto'))
+
+  /**
+   * Whether a chat's edits wait on the writer: its own choice, or for a chat
+   * from before chats had one, the app's.
+   * @param {{applyEdits?: string}|null|undefined} chat
+   * @returns {'auto'|'ask'}
+   */
+  const applyEditsFor = chat =>
+    chat?.applyEdits === 'ask' || chat?.applyEdits === 'auto' ? chat.applyEdits : applyEdits.value
 
   /**
    * @param {'auto'|'ask'} mode
@@ -507,46 +673,15 @@ export function useApplicationState() {
   }
 
   /**
-   * The experimental skills switched on, by name. None unless switched on.
-   * See `setExperimentalSkills` in ai/skills, which App.vue tells.
-   * @type {import('vue').ComputedRef<string[]>}
-   */
-  const experimentalSkills = computed(() => namesIn(state.value.system?.experimentalSkills))
-
-  /**
-   * @param {string[]} names
-   */
-  const setExperimentalSkills = names => {
-    if (!state.value.system) state.value.system = {}
-    state.value.system.experimentalSkills = [...new Set(names)]
-  }
-
-  /**
-   * @param {string} name - An experimental skill's
-   * @param {boolean} on
-   */
-  const setExperimentalSkill = (name, on) => {
-    const others = experimentalSkills.value.filter(one => one !== name)
-    setExperimentalSkills(on === true ? [...others, name] : others)
-  }
-
-  /**
-   * The profiles whose chats run Python, as the writer chose them, or null
-   * where they never did. See ai/tools/python.js.
+   * Legacy: the profiles whose chats ran Python, as the writer chose them,
+   * or null where they never did. Read once, to give each profile and chat
+   * its tools (composables/useToolChoices.js).
    * @type {import('vue').ComputedRef<string[]|null>}
    */
   const pythonProfiles = computed(() => {
     const ids = state.value.system?.pythonProfiles
     return Array.isArray(ids) ? namesIn(ids) : null
   })
-
-  /**
-   * @param {string[]} ids
-   */
-  const setPythonProfiles = ids => {
-    if (!state.value.system) state.value.system = {}
-    state.value.system.pythonProfiles = [...new Set(ids)]
-  }
 
   /**
    * How long a run of Python may take, in seconds; 0 for no limit. Ten
@@ -594,6 +729,13 @@ export function useApplicationState() {
    * @type {import('vue').ComputedRef<boolean>}
    */
   const roleplay = computed(() => aiEnabled.value && state.value.extensions?.roleplay === true)
+
+  /**
+   * Whether web search is there: the model's web tools, and its services in
+   * Settings › Connections. On unless its extension was switched off.
+   * @type {import('vue').ComputedRef<boolean>}
+   */
+  const webSearch = computed(() => aiEnabled.value && state.value.extensions?.web !== false)
 
   /**
    * The profile new chats start on, where a project has not chosen one, and
@@ -832,28 +974,6 @@ export function useApplicationState() {
   }
 
   /**
-   * Set show provider setup dialog state
-   * @param {boolean} show - Whether to show the provider setup dialog
-   */
-  const setShowProviderSetupDialog = show => {
-    state.value.ui.showProviderSetupDialog = show
-  }
-
-  /**
-   * Get show provider setup dialog state
-   * @returns {boolean} Whether to show the provider setup dialog
-   */
-  const getShowProviderSetupDialog = () => {
-    return state.value.ui?.showProviderSetupDialog !== false // Default to true if not set
-  }
-
-  /**
-   * Computed ref for reactive show provider setup dialog state
-   * @type {import('vue').ComputedRef<boolean>}
-   */
-  const showProviderSetupDialog = computed(() => state.value.ui?.showProviderSetupDialog !== false)
-
-  /**
    * Set show welcome dialog state
    * @param {boolean} show - Whether to show the welcome dialog
    */
@@ -908,15 +1028,15 @@ export function useApplicationState() {
     JSON.parse(
       JSON.stringify({
         aiEnabled: aiEnabled.value,
-        aiPreset: activeAIPresetId.value ?? null,
+        aiPreset: legacyPresetId.value,
         applyEdits: applyEdits.value,
+        builtInProfiles: builtInProfiles.value,
         askBeforeExploring: askBeforeExploring.value,
         nsfwProfiles: nsfwProfiles.value,
         blurNsfw: blurNsfw.value,
-        experimentalSkills: experimentalSkills.value,
         roleplay: extensionOn('roleplay') === true,
         python: extensionOn('python') === true,
-        pythonProfiles: pythonProfiles.value,
+        web: extensionOn('web') !== false,
         pythonTimeLimit: pythonTimeLimit.value,
         chatProfileId: chatProfileId.value,
         roleplayProfileId: roleplayProfileId.value,
@@ -942,8 +1062,20 @@ export function useApplicationState() {
   const restoreSettings = settings => {
     if (!settings || typeof settings !== 'object') return
     if (typeof settings.aiEnabled === 'boolean') setAiEnabled(settings.aiEnabled)
-    if (isChoice(settings.aiPreset)) setActiveAIPresetId(settings.aiPreset)
+    if (isChoice(settings.aiPreset)) {
+      state.value.ai = { ...(state.value.ai || {}), activeChatProfileId: settings.aiPreset }
+    }
     if (settings.applyEdits) setApplyEdits(settings.applyEdits)
+    // Each built-in the file has choices on takes them whole; one it has
+    // none on keeps its own.
+    const builtIns = settings.builtInProfiles
+    if (builtIns && typeof builtIns === 'object' && !Array.isArray(builtIns)) {
+      for (const [id, choices] of Object.entries(builtIns)) {
+        if (!choices || typeof choices !== 'object' || Array.isArray(choices)) continue
+        if (!state.value.system) state.value.system = {}
+        state.value.system.builtInProfiles = { ...builtInProfiles.value, [id]: { ...choices } }
+      }
+    }
     // A backup, settings file or setup from before has it as the Explore
     // workflow's, from when explore was one.
     const askFirst = /** @type {any} */ (settings.workflows)?.explore?.askFirst
@@ -952,14 +1084,9 @@ export function useApplicationState() {
     if (typeof ask === 'boolean') setAskBeforeExploring(ask)
     if (typeof settings.nsfwProfiles === 'boolean') setNsfwProfiles(settings.nsfwProfiles)
     if (typeof settings.blurNsfw === 'boolean') setBlurNsfw(settings.blurNsfw)
-    if (Array.isArray(settings.experimentalSkills)) {
-      setExperimentalSkills(namesIn(settings.experimentalSkills))
-    }
     if (typeof settings.roleplay === 'boolean') setExtension('roleplay', settings.roleplay)
     if (typeof settings.python === 'boolean') setExtension('python', settings.python)
-    if (Array.isArray(settings.pythonProfiles)) {
-      setPythonProfiles(namesIn(settings.pythonProfiles))
-    }
+    if (typeof settings.web === 'boolean') setExtension('web', settings.web)
     if (typeof settings.pythonTimeLimit === 'number') setPythonTimeLimit(settings.pythonTimeLimit)
     if (isChoice(settings.chatProfileId)) setChatProfileId(settings.chatProfileId)
     if (isChoice(settings.roleplayProfileId)) setRoleplayProfileId(settings.roleplayProfileId)
@@ -1008,10 +1135,21 @@ export function useApplicationState() {
     // Full state ref for advanced usage
     state,
 
-    // Active AI profile
-    activeAIPresetId,
-    setActiveAIPresetId,
-    getActiveAIPresetId,
+    // The preset chats ran on by default, from before profiles kept their own
+    legacyPresetId,
+    chatsStamped,
+    setChatsStamped,
+    toolsGiven,
+    setToolsGiven,
+    recentModels,
+    rememberModel,
+    seedRecentModels,
+    modelUses,
+    noteModelUse,
+
+    // What the writer has chosen on the built-in profiles
+    builtInProfiles,
+    setBuiltInProfile,
 
     // Debug specific
     debug,
@@ -1024,6 +1162,7 @@ export function useApplicationState() {
     // How the assistant's document changes are applied
     applyEdits,
     setApplyEdits,
+    applyEditsFor,
     askBeforeExploring,
     setAskBeforeExploring,
 
@@ -1036,19 +1175,17 @@ export function useApplicationState() {
     setBlurNsfw,
 
     // The experimental skills switched on
-    experimentalSkills,
-    setExperimentalSkill,
 
     // The profiles whose chats run Python, and how long a run may take
     pythonProfiles,
-    setPythonProfiles,
     pythonTimeLimit,
     setPythonTimeLimit,
 
-    // Extensions, and whether roleplay is there
+    // Extensions, and whether roleplay and web search are there
     extensionOn,
     setExtension,
     roleplay,
+    webSearch,
 
     chatProfileId,
     roleplayProfileId,
@@ -1087,9 +1224,6 @@ export function useApplicationState() {
     getLorebookSortOrder,
 
     // Show provider setup dialog specific
-    showProviderSetupDialog,
-    setShowProviderSetupDialog,
-    getShowProviderSetupDialog,
 
     // Show welcome dialog specific
     showWelcomeDialog,

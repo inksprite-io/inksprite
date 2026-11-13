@@ -31,7 +31,7 @@
     },
     {
       "text": "What's still TODO in the retrieval design?",
-      "before": { "pin": ["Design/Retrieval design"] },
+      "before": { "attach": ["Design/Retrieval design"] },
       "notRead": ["Design/Retrieval design"],
       "mentions": ["rerank", "Evaluation|judged|judge"]
     },

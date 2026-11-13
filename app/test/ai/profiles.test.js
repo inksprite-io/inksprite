@@ -9,6 +9,7 @@ import {
   getBuiltInProfile,
   isBuiltInProfileId,
   settingsForNewChat,
+  keptOpeningOf,
   settingsForProfileSwitch,
   noteOnProfile,
 } from '@/ai/profiles/index.js'
@@ -18,16 +19,14 @@ import {
   DEFAULT_ROLEPLAY_NSFW_NOTE,
 } from '@/ai/prompts/index.js'
 import { TOOL_GROUP_LABELS } from '@/ai/tools/index.js'
-import { WEB_GROUP } from '@/ai/tools/web.js'
-import { PYTHON_GROUP } from '@/ai/tools/python.js'
+import { groupOn } from '@/ai/tools/choice.js'
+import { serverGroup } from '@/mcp/names.js'
 
-/**
- * The groups a profile withholds by naming them. The web and Python are not:
- * they are opted into, as a server's tools are, so no profile has to withhold
- * them.
- */
-const OPTED_INTO = new Set([WEB_GROUP, PYTHON_GROUP])
-const WITHHELD_GROUPS = Object.keys(TOOL_GROUP_LABELS).filter(id => !OPTED_INTO.has(id))
+/** Every group there is now, and one added later: a server's. */
+const GROUPS = [...Object.keys(TOOL_GROUP_LABELS), serverGroup('mcp_later')]
+
+/** The groups a profile's chats have on. */
+const onIn = settings => GROUPS.filter(group => groupOn(settings, group))
 
 describe('chat profiles', () => {
   describe('the built-ins', () => {
@@ -41,22 +40,31 @@ describe('chat profiles', () => {
       }
     })
 
-    it('puts nothing between the writer and the model on Blank', () => {
+    it('puts nothing between the writer and the model on Blank, whatever is added', () => {
       const blank = getBuiltInProfile(BLANK_PROFILE_ID).settings
 
       expect(blank.prompt).toBe('')
-      expect([...blank.disabledToolGroups].sort()).toEqual([...WITHHELD_GROUPS].sort())
+      expect(onIn(blank)).toEqual([])
       expect(blank.rules).toBeUndefined()
     })
 
     it('stamps Blank onto a new chat with every tool off', () => {
       const stamped = settingsForNewChat(getBuiltInProfile(BLANK_PROFILE_ID))
 
-      expect(stamped).toMatchObject({
-        profileId: BLANK_PROFILE_ID,
-        disabledToolGroups: expect.arrayContaining(WITHHELD_GROUPS),
-      })
+      expect(stamped.profileId).toBe(BLANK_PROFILE_ID)
+      expect(onIn(stamped)).toEqual([])
       expect(stamped).not.toHaveProperty('prompt')
+    })
+
+    it('leaves the groups off that an app from before reads, on Blank and Roleplay', () => {
+      // An older app knows nothing of the groups a profile offers, and reads
+      // only the ones it has off.
+      expect(getBuiltInProfile(BLANK_PROFILE_ID).settings.disabledToolGroups).toEqual(
+        expect.arrayContaining(['documents', 'rpg', 'skills', 'experimental'])
+      )
+      expect(getBuiltInProfile(ROLEPLAY_PROFILE_ID).settings.disabledToolGroups).toEqual(
+        expect.arrayContaining(['rpg', 'skills', 'experimental'])
+      )
     })
 
     it('cannot be mistaken for a prompt or for a stored profile', () => {
@@ -68,28 +76,17 @@ describe('chat profiles', () => {
       expect(isBuiltInProfileId(null)).toBe(false)
     })
 
-    it('offers Roleplay the documents and withholds every other tool group', () => {
+    it('offers Roleplay the documents and nothing else, whatever is added', () => {
       const roleplay = getBuiltInProfile(ROLEPLAY_PROFILE_ID)
 
       // The ids are written out in the profile rather than imported, so this is
       // what keeps them honest: a renamed group would otherwise turn into a
       // profile that quietly offers the tools it means to withhold.
-      expect([...roleplay.settings.disabledToolGroups].sort()).toEqual(
-        WITHHELD_GROUPS.filter(id => id !== 'documents').sort()
-      )
+      expect(onIn(roleplay.settings)).toEqual(['documents'])
     })
 
-    it('withholds the experimental skills from every built-in', () => {
-      expect(WITHHELD_GROUPS).toContain('experimental')
-      for (const profile of BUILT_IN_PROFILES) {
-        expect(profile.settings.disabledToolGroups, profile.name).toContain('experimental')
-      }
-    })
-
-    it('offers Default every other group', () => {
-      expect(getBuiltInProfile(CHAT_PROFILE_ID).settings.disabledToolGroups).toEqual([
-        'experimental',
-      ])
+    it('offers Default every group, one added later among them', () => {
+      expect(onIn(getBuiltInProfile(CHAT_PROFILE_ID).settings)).toEqual(GROUPS)
     })
 
     it('gives the roleplay profiles standing rules and Default none', () => {
@@ -137,6 +134,7 @@ describe('chat profiles', () => {
 
       expect(settingsForNewChat(roleplay)).toEqual({
         profileId: ROLEPLAY_PROFILE_ID,
+        onlyToolGroups: roleplay.settings.onlyToolGroups,
         disabledToolGroups: roleplay.settings.disabledToolGroups,
         rules: roleplay.settings.rules,
       })
@@ -151,10 +149,37 @@ describe('chat profiles', () => {
       expect(stamped).not.toHaveProperty('skills')
     })
 
-    it('leaves the preset on the profile, read every turn as its words are', () => {
-      const saved = { id: 'chatprofile_x', settings: { prompt: '', presetId: 'profile_glm' } }
+    it('keeps a longer opening on the roleplay profiles, read from them and never copied', () => {
+      expect(keptOpeningOf(getBuiltInProfile(ROLEPLAY_PROFILE_ID))).toBe(2)
+      expect(keptOpeningOf(getBuiltInProfile(ROLEPLAY_NSFW_PROFILE_ID))).toBe(2)
+      expect(keptOpeningOf(getBuiltInProfile(CHAT_PROFILE_ID))).toBe(1)
+      expect(keptOpeningOf(null)).toBe(1)
+      expect(settingsForNewChat(getBuiltInProfile(ROLEPLAY_PROFILE_ID))).not.toHaveProperty(
+        'keptOpening'
+      )
+    })
 
-      expect(settingsForNewChat(saved)).toEqual({ profileId: 'chatprofile_x' })
+    it('copies the model, effort and edits, which the chat keeps, but not the words', () => {
+      const saved = {
+        id: 'chatprofile_x',
+        settings: {
+          prompt: 'Be terse.',
+          providerId: 'p_or',
+          model: 'glm',
+          // From before: no further than the profile.
+          presetId: 'profile_glm',
+          reasoningEffort: 'high',
+          applyEdits: 'ask',
+        },
+      }
+
+      expect(settingsForNewChat(saved)).toEqual({
+        profileId: 'chatprofile_x',
+        providerId: 'p_or',
+        model: 'glm',
+        reasoningEffort: 'high',
+        applyEdits: 'ask',
+      })
     })
 
     it('falls back to the default profile when handed nothing', () => {
@@ -176,12 +201,16 @@ describe('chat profiles', () => {
       expect(updates).toEqual({
         profileId: CHAT_PROFILE_ID,
         disabledTools: undefined,
-        disabledToolGroups: ['experimental'],
+        disabledToolGroups: undefined,
+        // Off a profile that offers only some, onto one that offers every group.
+        onlyToolGroups: undefined,
         rules: undefined,
-        // The chat's own choice of servers goes, so it follows the ones the
-        // new profile is used with.
+        // What chats chose before their tools said goes too.
         mcpServers: undefined,
+        web: undefined,
+        python: undefined,
       })
+      expect(Object.keys(updates)).toContain('onlyToolGroups')
     })
 
     it('stamps what the profile does set', () => {
@@ -189,18 +218,28 @@ describe('chat profiles', () => {
       const updates = settingsForProfileSwitch(roleplay)
 
       expect(updates.disabledToolGroups).toEqual(roleplay.settings.disabledToolGroups)
+      expect(updates.onlyToolGroups).toEqual(['documents'])
       expect(updates.rules).toBe(roleplay.settings.rules)
       // The chat's own wording is taken off, so it reads the profile's.
       expect(updates.prompt).toBeUndefined()
       expect(updates.skills).toBeUndefined()
     })
 
-    it("takes off the chat's own preset, so it runs on the profile's", () => {
-      const saved = { id: 'chatprofile_x', settings: { prompt: '', presetId: 'profile_glm' } }
+    it("moves the chat to the model the profile's chats start on, its effort and edits too", () => {
+      const saved = {
+        id: 'chatprofile_x',
+        settings: { prompt: '', providerId: 'p_or', model: 'glm' },
+      }
       const updates = settingsForProfileSwitch(saved)
 
-      expect(updates).toHaveProperty('presetId', undefined)
-      expect(updates.profileId).toBe('chatprofile_x')
+      expect(updates).toMatchObject({
+        profileId: 'chatprofile_x',
+        providerId: 'p_or',
+        model: 'glm',
+      })
+      // What it does not set is taken off, as it would be on a new chat.
+      expect(updates).toHaveProperty('reasoningEffort', undefined)
+      expect(updates).toHaveProperty('applyEdits', undefined)
     })
   })
 

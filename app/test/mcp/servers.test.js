@@ -1,11 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest'
-import {
-  missingHeaders,
-  needsApproval,
-  serverTool,
-  serversForChat,
-  setServers,
-} from '@/mcp/servers.js'
+import { missingHeaders, needsApproval, serverTool, setServers } from '@/mcp/servers.js'
 
 const server = (id, extra = {}) => ({
   id,
@@ -25,23 +19,6 @@ const server = (id, extra = {}) => ({
 })
 
 afterEach(() => setServers([]))
-
-describe('serversForChat', () => {
-  it('follows the chat’s profile until the chat chooses', () => {
-    setServers([server('a', { profiles: ['chat'] }), server('b', { profiles: ['roleplay'] })])
-
-    expect(serversForChat({}, 'chat').map(one => one.id)).toEqual(['a'])
-    expect(serversForChat({ mcpServers: ['b'] }, 'chat').map(one => one.id)).toEqual(['b'])
-    expect(serversForChat({ mcpServers: [] }, 'chat')).toEqual([])
-  })
-
-  it('offers none that runs as a program, whatever the chat chose', () => {
-    setServers([server('a', { url: undefined, command: 'npx', profiles: ['chat'] })])
-
-    expect(serversForChat({}, 'chat')).toEqual([])
-    expect(serversForChat({ mcpServers: ['a'] }, 'chat')).toEqual([])
-  })
-})
 
 describe('needsApproval', () => {
   it('lets a tool that says it only reads run, and asks before the rest', () => {

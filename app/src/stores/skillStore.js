@@ -4,9 +4,7 @@
  *
  * Each is kept as its SKILL.md, text and all, with the other files that came
  * with it; the text is the skill, read by the same parser the built-ins are
- * (`ai/skills/format.js`). The built-ins ship as source and are not here; what
- * is, beside the writer's own, is their wording of a built-in, for every chat
- * — the prompt alone, kept only while it differs from the file's.
+ * (`ai/skills/format.js`). The built-ins ship as source and are not here.
  *
  * Whatever the library holds is handed to the skills registry the moment it
  * changes, so the model's tools and the writer's commands are made from what
@@ -20,13 +18,12 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { useSyncStore } from './syncStore.js'
-import { BUILT_IN_SKILLS, setLibrarySkills, setSkillWordings } from '@/ai/skills/index.js'
+import { setLibrarySkills } from '@/ai/skills/index.js'
 import { storage } from '@/storage/index.js'
 import { onTablesWritten } from '@/platform/windows.js'
 
 /** @typedef {import('../types/models.js').StoredSkill} StoredSkill */
 /** @typedef {import('../types/models.js').SkillFile} SkillFile */
-/** @typedef {import('../types/models.js').SkillWording} SkillWording */
 
 /** @returns {string} */
 function generateSkillId() {
@@ -37,29 +34,20 @@ export const useSkillStore = defineStore('skills', () => {
   /** @type {import('vue').Ref<Map<string, StoredSkill>>} */
   const skills = ref(new Map())
 
-  /** @type {import('vue').Ref<Map<string, SkillWording>>} */
-  const wordings = ref(new Map())
-
   const syncStore = useSyncStore()
 
   /** @type {import('vue').Ref<Promise<void>|null>} */
   const initializePromise = ref(null)
+
+  /** Whether the library has been read: until then nothing is known to be gone. */
+  const loaded = ref(false)
 
   /** Hand the library as it stands to the registry. */
   function publish() {
     setLibrarySkills(Array.from(skills.value.values()))
   }
 
-  /** Hand the wordings as they stand to the registry. */
-  function publishWordings() {
-    setSkillWordings(Array.from(wordings.value.values()))
-  }
-
-  /**
-   * Read both tables before keeping either, then keep and publish them in one
-   * go: what is made from the library reads the registry when the library
-   * changes, so the two must never be seen apart.
-   */
+  /** Read the library, and hand it to the registry. */
   async function initialize() {
     /** @type {StoredSkill[]} */
     let stored = []
@@ -68,32 +56,18 @@ export const useSkillStore = defineStore('skills', () => {
     } catch (error) {
       console.error('Failed to load skills from database:', error)
     }
-    /** @type {SkillWording[]} */
-    let reworded = []
-    try {
-      reworded = await storage.all('skillWordings')
-    } catch (error) {
-      console.error('Failed to load skill wordings from database:', error)
-    }
-
     for (const skill of stored) skills.value.set(skill.id, skill)
-    for (const wording of reworded) wordings.value.set(wording.name, wording)
     console.log(`Loaded ${skills.value.size} skills`)
+    loaded.value = true
     publish()
-    publishWordings()
   }
 
   // Another window wrote them: read again.
-  onTablesWritten(['skills', 'skillWordings'], async () => {
+  onTablesWritten(['skills'], async () => {
     if (!initializePromise.value) return
-    const [stored, reworded] = await Promise.all([
-      storage.all('skills'),
-      storage.all('skillWordings'),
-    ])
+    const stored = await storage.all('skills')
     skills.value = new Map(stored.map(skill => [skill.id, skill]))
-    wordings.value = new Map(reworded.map(wording => [wording.name, wording]))
     publish()
-    publishWordings()
   })
 
   /** @returns {Promise<void>} */
@@ -180,58 +154,14 @@ export const useSkillStore = defineStore('skills', () => {
     return Array.from(skills.value.values()).sort((a, b) => a.name.localeCompare(b.name))
   }
 
-  /**
-   * Have a built-in run under this in every chat whose profile has no wording
-   * of its own. Words that are its file's, or nothing but space, are no
-   * wording, and take away the one there was — so a skill put back the way it
-   * ships keeps picking up the app's improvements to it.
-   *
-   * @param {string} name - The built-in's
-   * @param {string} prompt
-   * @returns {boolean} Whether there is such a built-in
-   */
-  function setWording(name, prompt) {
-    const skill = BUILT_IN_SKILLS.find(one => one.name === name)
-    if (!skill) {
-      console.error(`Failed to reword skill, '${name}' is not a built-in`)
-      return false
-    }
-
-    const trimmed = (prompt || '').trim()
-    if (!trimmed || trimmed === skill.body.trim()) {
-      if (wordings.value.delete(name)) {
-        syncStore.trackDelete('skillWordings', name)
-        publishWordings()
-      }
-      return true
-    }
-
-    /** @type {SkillWording} */
-    const wording = { name, prompt, updated: Date.now() }
-    wordings.value.set(name, wording)
-    syncStore.trackChange('skillWordings', name, wording)
-    publishWordings()
-    return true
-  }
-
-  /**
-   * @param {string} name - A built-in's
-   * @returns {string|null} The writer's wording of it, when they have one
-   */
-  function getWording(name) {
-    return wordings.value.get(name)?.prompt ?? null
-  }
-
   return {
     skills,
-    wordings,
+    loaded,
     ensureInitialized,
     createSkill,
     updateSkill,
     deleteSkill,
     getSkill,
     getAllSkills,
-    setWording,
-    getWording,
   }
 })

@@ -54,17 +54,11 @@ afterEach(() => {
 })
 
 describe('a server’s prompt as a command', () => {
-  it('reads /server:prompt as one name, and @Name: as a character saying the rest', () => {
+  it('reads /server:prompt as one name', () => {
     expect(parseCommand('/glossary:outline the lighthouse')).toEqual({
       name: 'glossary:outline',
       input: 'the lighthouse',
     })
-    expect(parseCommand('@Vivi:hi there')).toEqual({
-      name: 'Vivi',
-      character: true,
-      input: ':hi there',
-    })
-    expect(parseCommand('@Vivi: I hide')).toMatchObject({ name: 'Vivi', input: ': I hide' })
   })
 
   it('finds the name being typed past the colon', () => {

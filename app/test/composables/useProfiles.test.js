@@ -2,12 +2,18 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useProfiles } from '@/composables/useProfiles'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { useAIPresetStore } from '@/stores/aiPresetStore'
+import { DEFAULT_PRESET_ID } from '@/ai/defaults.js'
 import {
   CHAT_PROFILE_ID,
   ROLEPLAY_PROFILE_ID,
   ROLEPLAY_NSFW_PROFILE_ID,
 } from '@/ai/profiles/index.js'
-import { DEFAULT_ROLEPLAY_PROMPT, DEFAULT_ROLEPLAY_NSFW_PROMPT } from '@/ai/prompts/index.js'
+import {
+  DEFAULT_CHAT_PROMPT,
+  DEFAULT_ROLEPLAY_PROMPT,
+  DEFAULT_ROLEPLAY_NSFW_PROMPT,
+} from '@/ai/prompts/index.js'
 
 vi.mock('@/stores/db', () => ({ default: {} }))
 
@@ -91,6 +97,85 @@ describe('useProfiles', () => {
       useApplicationState().setRoleplayProfileId('chatprofile_gone')
       expect(profiles.chatDefaultId()).toBe(mine.id)
       expect(profiles.roleplayDefaultId()).toBe(ROLEPLAY_PROFILE_ID)
+    })
+  })
+
+  describe('the model a profile starts its chats on', () => {
+    /** @param {string} id */
+    const preset = id =>
+      useAIPresetStore().createPreset({
+        id,
+        name: id,
+        providerId: 'p',
+        model: `${id}_model`,
+        isDefault: false,
+      })
+
+    beforeEach(() => {
+      preset(DEFAULT_PRESET_ID)
+    })
+
+    it('is none of its own for a profile never picked on, built-in or the writer’s own', () => {
+      const profiles = useProfiles()
+      const mine = profiles.saveProfile('Mine', { prompt: 'Plan.' })
+
+      expect(profiles.getProfile(CHAT_PROFILE_ID)?.settings).not.toHaveProperty('model')
+      expect(profiles.getProfile(mine.id)?.settings).not.toHaveProperty('model')
+      expect(profiles.startingPresetId()).toBe(DEFAULT_PRESET_ID)
+    })
+
+    it('starts them on the preset chosen for chats before profiles kept their own, while it is here', () => {
+      preset('preset_chosen')
+      const state = useApplicationState().state.value
+      state.ai.activeChatProfileId = 'preset_chosen'
+      const profiles = useProfiles()
+
+      expect(profiles.startingPresetId()).toBe('preset_chosen')
+
+      state.ai.activeChatProfileId = 'preset_gone'
+      expect(profiles.startingPresetId()).toBe(DEFAULT_PRESET_ID)
+    })
+
+    it('keeps a pick on a built-in beside it, and makes no copy of it', () => {
+      const profiles = useProfiles()
+      profiles.setProfileChoices(CHAT_PROFILE_ID, {
+        providerId: 'p',
+        model: 'glm',
+        reasoningEffort: 'high',
+      })
+
+      const chat = profiles.getProfile(CHAT_PROFILE_ID)
+      expect(chat?.settings).toMatchObject({
+        prompt: DEFAULT_CHAT_PROMPT,
+        providerId: 'p',
+        model: 'glm',
+        reasoningEffort: 'high',
+      })
+      expect(chat?.readOnly).toBe(true)
+      expect(profiles.profiles.value.filter(one => !one.readOnly)).toEqual([])
+    })
+
+    it('keeps a pick on one of the writer’s own in its settings, with the rest', () => {
+      const profiles = useProfiles()
+      const mine = profiles.saveProfile('Mine', { prompt: 'Plan.' })
+      profiles.setProfileChoices(mine.id, { providerId: 'p', model: 'glm', applyEdits: 'ask' })
+
+      expect(profiles.getProfile(mine.id)?.settings).toEqual({
+        prompt: 'Plan.',
+        providerId: 'p',
+        model: 'glm',
+        applyEdits: 'ask',
+      })
+    })
+
+    it('keeps the NSFW one’s apart from Roleplay’s', () => {
+      const profiles = useProfiles()
+      useApplicationState().setNsfwProfiles(true)
+      profiles.setProfileChoices(ROLEPLAY_NSFW_PROFILE_ID, { providerId: 'p', model: 'local' })
+      expect(profiles.getProfile(ROLEPLAY_PROFILE_ID)?.settings.model).toBe('local')
+
+      useApplicationState().setNsfwProfiles(false)
+      expect(profiles.getProfile(ROLEPLAY_PROFILE_ID)?.settings).not.toHaveProperty('model')
     })
   })
 })

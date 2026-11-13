@@ -14,8 +14,9 @@
  *
  * A job is a row in the `jobs` table (`stores/jobsStore.js`) with a plan of
  * steps; the runner walks it, and a kind registered here says what a step
- * does and what happens at the end. A conversion runs on its workflow's model
- * (Settings › Workflows); an exploration on the model it keeps, the chat's.
+ * does and what happens at the end. A conversion runs on its workflow's model,
+ * chosen where it is asked for; an exploration on the model it keeps, the
+ * chat's.
  * `useJobs` is the composable the outline and the jobs toast use.
  */
 
@@ -405,12 +406,11 @@ registerJobKind('explore', {
 /**
  * What exploring a folder, a document, or the whole project from its root,
  * would do: the plan, how many documents it reads, and about how much it
- * sends. For asking first, and for starting it. Planned on the model a chat
- * on the preset runs on: the chat's that asks, or, asked from outside a
- * chat, the active preset's, which a new chat runs on.
+ * sends. For asking first, and for starting it. Planned on the model of the
+ * chat that asks.
  *
  * @param {string} id
- * @param {import('@/types/models.js').AIPreset|null} [preset] - The chat's
+ * @param {import('@/types/models.js').AIPreset|null} preset - The chat's
  * @returns {Promise<PlannedExploring>}
  * @throws {Error} When it is gone or hidden, or a chat on the preset could not run
  */
@@ -442,22 +442,6 @@ function exploreJob(storyId, id, planned) {
     steps: planned.steps,
     plan: planned.plan,
   })
-}
-
-/**
- * Explore a folder, a document, or the whole project from its root, as
- * planned, in the background: the jobs toast shows it.
- *
- * @param {string} storyId
- * @param {string} id
- * @param {PlannedExploring} planned - From `planExploring`
- * @returns {Promise<import('@/types/models.js').Job|null>} Null when everything is current
- */
-export async function startExplore(storyId, id, planned) {
-  if (planned.steps.length === 0) return null
-  const job = await exploreJob(storyId, id, planned)
-  startJob(job.id).catch(error => console.error('Explore failed to start:', error))
-  return job
 }
 
 /**

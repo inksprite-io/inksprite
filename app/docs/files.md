@@ -2077,6 +2077,9 @@ which set it closer for paper.
   for, such as a picture on the web, is left out. A paragraph that is only
   a picture is a figure, as in the editor.
 
+- A formula is typeset, KaTeX loaded for it if it isn't yet; one KaTeX
+  can't read is its TeX as written.
+
 - Where each page's text can bring its own room above and below, the page's
   margins there are zero, which keeps Chrome from printing its own header
   and footer in them: the date, the title, the page's address.

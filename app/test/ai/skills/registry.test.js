@@ -2,43 +2,35 @@ import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import {
   BUILT_IN_SKILLS,
   DIRECTOR,
-  availableSkills,
+  allSkills,
+  builtInSkills,
   getSkill,
   onSkillsChanged,
-  setExperimentalSkills,
-  skillIsOn,
+  setTrialSkills,
   skillLabel,
   skillPrompt,
-  ownPrompt,
-  setSkillWordings,
   COMPACT_PROMPT,
-  INTERPRET_PROMPT,
   toolDefinitionFor,
 } from '@/ai/skills/index.js'
 import { getBuiltInProfile, ROLEPLAY_PROFILE_ID, CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
 import {
-  EXPERIMENTAL_GROUP,
-  TOOL_GROUP_LABELS,
+  SKILLS_GROUP,
   getEnabledToolDefinitions,
   getToolDefinitions,
   getToolDefinitionsFor,
-  getToolGroups,
   isSkill,
   toolGroupOf,
 } from '@/ai/tools/index.js'
 import { COMMANDS } from '@/ai/commands.js'
+import { TRIAL_SKILLS } from '../../../harness/skills/trials.js'
 
 describe('the skills registry', () => {
-  beforeEach(() => {
-    setExperimentalSkills(['interpret', 'write'])
-  })
-
-  it('has the three that ship, each read from its own SKILL.md', () => {
-    expect(BUILT_IN_SKILLS.map(skill => skill.name)).toEqual(['interpret', 'write', 'compact'])
+  it('has the one that ships, read from its own SKILL.md', () => {
+    expect(BUILT_IN_SKILLS.map(skill => skill.name)).toEqual(['compact'])
     for (const skill of BUILT_IN_SKILLS) {
       expect(skill.body.trim(), skill.name).toBeTruthy()
       expect(skill.summary.trim(), skill.name).toBeTruthy()
-      // All three run on their own, as an inference of their own.
+      // It runs on its own, as an inference of its own.
       expect(skill.fork, skill.name).toBe(true)
     }
   })
@@ -49,48 +41,15 @@ describe('the skills registry', () => {
     expect(DIRECTOR.body.trim()).toBeTruthy()
   })
 
-  it('offers the model a tool for each skill it may call, and only those', () => {
-    const registered = getToolDefinitions().map(d => d.function.name)
-
-    for (const skill of BUILT_IN_SKILLS) {
-      expect(registered.includes(skill.name), skill.name).toBe(skill.model)
-    }
-    expect(BUILT_IN_SKILLS.filter(skill => !skill.model).map(skill => skill.name)).toEqual([
-      'compact',
-    ])
-  })
-
-  it('offers Interpret and Write in the experimental group, as skills', () => {
-    for (const name of ['interpret', 'write']) {
-      expect(toolGroupOf(name), name).toBe(EXPERIMENTAL_GROUP)
-      expect(isSkill(name), name).toBe(true)
-    }
-    expect(TOOL_GROUP_LABELS[EXPERIMENTAL_GROUP]).toBe('Experimental')
-  })
-
-  it('offers each tool as its SKILL.md describes it', () => {
-    for (const skill of BUILT_IN_SKILLS.filter(one => one.model)) {
-      expect(getToolDefinitionsFor([skill.name], 0)).toEqual([toolDefinitionFor(skill)])
-    }
-  })
-
-  it('gives the writer a command for each skill they may call', () => {
-    for (const skill of BUILT_IN_SKILLS.filter(one => one.user)) {
-      expect(COMMANDS[skill.name]?.consults, skill.name).toBe(true)
-      expect(COMMANDS[skill.name].description).toBe(skill.summary)
-    }
+  it('offers the model no tool for Compact, which is the writer’s', () => {
+    expect(getToolDefinitions().map(d => d.function.name)).not.toContain('compact')
+    expect(COMMANDS.compact).toMatchObject({ ownTurn: true, tag: 'summary' })
+    expect(COMMANDS.compact.usage).toBe('/compact(<turns to keep>) [instructions]')
   })
 
   it('leaves /director as the writer’s own direction, which asks no model', () => {
     expect(DIRECTOR.user).toBe(false)
     expect(COMMANDS.director.consults).toBeUndefined()
-  })
-
-  it('answers each command where its skill says: a record, the reply, or a summary', () => {
-    expect(COMMANDS.interpret.ownTurn).toBeUndefined()
-    expect(COMMANDS.write).toMatchObject({ ownTurn: true, tag: 'draft' })
-    expect(COMMANDS.compact).toMatchObject({ ownTurn: true, tag: 'summary' })
-    expect(COMMANDS.compact.usage).toBe('/compact(<turns to keep>) [instructions]')
   })
 
   it('does not answer to a name it does not have', () => {
@@ -103,55 +62,65 @@ describe('the skills registry', () => {
   })
 })
 
-describe('the experimental switches', () => {
+describe("the harness's skills", () => {
   beforeEach(() => {
-    setExperimentalSkills([])
+    setTrialSkills(TRIAL_SKILLS)
   })
 
-  it('start off', async () => {
+  afterEach(() => {
+    setTrialSkills([])
+  })
+
+  it('are none in the app', async () => {
     vi.resetModules()
     const fresh = await import('@/ai/skills/index.js')
 
-    expect(fresh.skillIsOn('interpret')).toBe(false)
-    expect(fresh.skillIsOn('write')).toBe(false)
-    expect(fresh.skillIsOn('compact')).toBe(true)
+    expect(fresh.allSkills().map(skill => skill.name)).toEqual(['compact'])
+    expect(fresh.getSkill('interpret')).toBeNull()
   })
 
-  it('leave Interpret and Write out of what can be used while they are off', () => {
-    expect(availableSkills().map(skill => skill.name)).toEqual(['compact'])
-    // Still found by name, for the records they left in chats.
-    expect(getSkill('interpret')?.builtIn).toBe(true)
-    expect(getSkill('write')?.builtIn).toBe(true)
-  })
-
-  it('take their tools away while they are off, wherever a tool is asked for', () => {
-    const offered = getEnabledToolDefinitions({}).map(d => d.function.name)
-
-    expect(offered).not.toContain('interpret')
-    expect(offered).not.toContain('write')
-    expect(getToolDefinitions().map(d => d.function.name)).not.toContain('write')
-    expect(getToolDefinitionsFor(['interpret', 'roll_dice'], 0).map(d => d.function.name)).toEqual([
-      'roll_dice',
-    ])
-    expect(getToolGroups().map(group => group.id)).not.toContain(EXPERIMENTAL_GROUP)
-  })
-
-  it('bring back only the one switched on, and say so once', () => {
+  it('are there beside the built-ins once the harness sets them, and say so once', () => {
+    setTrialSkills([])
     const told = vi.fn()
     const stop = onSkillsChanged(told)
 
-    setExperimentalSkills(['interpret'])
-    setExperimentalSkills(['interpret'])
+    setTrialSkills(TRIAL_SKILLS)
     stop()
 
     expect(told).toHaveBeenCalledTimes(1)
-    expect(skillIsOn('interpret')).toBe(true)
-    expect(skillIsOn('write')).toBe(false)
-    expect(availableSkills().map(skill => skill.name)).toEqual(['interpret', 'compact'])
-    expect(toolGroupOf('interpret')).toBe(EXPERIMENTAL_GROUP)
+    expect(builtInSkills().map(skill => skill.name)).toEqual(['compact', 'interpret', 'write'])
+    expect(allSkills().map(skill => skill.name)).toEqual(['compact', 'interpret', 'write'])
+    expect(getSkill('interpret')?.builtIn).toBe(true)
+  })
+
+  it('offer the model a tool for each, in the skills group, as its SKILL.md describes it', () => {
+    for (const skill of TRIAL_SKILLS) {
+      expect(toolGroupOf(skill.name), skill.name).toBe(SKILLS_GROUP)
+      expect(isSkill(skill.name), skill.name).toBe(true)
+      expect(getToolDefinitionsFor([skill.name], 0)).toEqual([toolDefinitionFor(skill)])
+    }
+  })
+
+  it('give the writer a command for each, answered where each says', () => {
+    for (const skill of TRIAL_SKILLS) {
+      expect(COMMANDS[skill.name]?.consults, skill.name).toBe(true)
+      expect(COMMANDS[skill.name].description).toBe(skill.summary)
+    }
+    expect(COMMANDS.interpret.ownTurn).toBeUndefined()
+    expect(COMMANDS.write).toMatchObject({ ownTurn: true, tag: 'draft' })
+  })
+
+  it('go again, tools, commands and all, once the harness takes them away', () => {
+    setTrialSkills([])
+
     const offered = getEnabledToolDefinitions({}).map(d => d.function.name)
-    expect(offered).toContain('interpret')
+    expect(offered).not.toContain('interpret')
     expect(offered).not.toContain('write')
+    expect(getToolDefinitionsFor(['interpret', 'roll_dice'], 0).map(d => d.function.name)).toEqual([
+      'roll_dice',
+    ])
+    expect(COMMANDS.interpret).toBeUndefined()
+    expect(COMMANDS.write).toBeUndefined()
   })
 })
 
@@ -178,42 +147,6 @@ describe('skillPrompt', () => {
 
   it('is nothing for a skill that does not exist', () => {
     expect(skillPrompt('nothing', {})).toBe('')
-  })
-})
-
-describe("the writer's wording of a built-in", () => {
-  afterEach(() => setSkillWordings([]))
-
-  it('is what a profile with none of its own runs the skill under', () => {
-    setSkillWordings([{ name: 'interpret', prompt: 'Read the card darkly.\n' }])
-
-    expect(ownPrompt('interpret')).toBe('Read the card darkly.')
-    expect(skillPrompt('interpret', {})).toBe('Read the card darkly.')
-  })
-
-  it("gives way to a profile's own", () => {
-    setSkillWordings([{ name: 'compact', prompt: 'Keep everything.' }])
-    const settings = { skills: { compact: { prompt: 'Keep the dialogue.' } } }
-
-    expect(skillPrompt('compact', settings)).toBe('Keep the dialogue.')
-  })
-
-  it('leaves the others on their own files', () => {
-    setSkillWordings([{ name: 'compact', prompt: 'Keep everything.' }])
-
-    expect(skillPrompt('interpret', {})).toBe(INTERPRET_PROMPT)
-  })
-
-  it('is no wording when it is nothing but space', () => {
-    setSkillWordings([{ name: 'interpret', prompt: '  \n' }])
-
-    expect(skillPrompt('interpret', {})).toBe(INTERPRET_PROMPT)
-  })
-
-  it("is only a built-in's: a skill of the writer's is reworded in its file", () => {
-    setSkillWordings([{ name: 'tighten', prompt: 'Cut more.' }])
-
-    expect(skillPrompt('tighten', {})).toBe('')
   })
 })
 

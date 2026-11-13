@@ -13,13 +13,14 @@ make, unless you want to [sync](/sync/) your work between devices.
 
 ## Open inksprite
 
-The first time you open inksprite, a welcome window opens. You can connect an
-AI provider on its **AI** tab now, or [later](#connect-an-ai-provider). Click
-**Start writing** to close it.
+The first time you open inksprite, a welcome window opens. Its tabs say what
+inksprite is for (**Welcome**), where this guide is (**Getting started**),
+where to report a bug or ask a question (**Feedback**), and the **Terms of
+Service**. Click **Start writing** to close it.
 
-If you'd rather write without AI, click **turn them off** on the welcome, or
-later turn off **Enable AI** in **Settings** › **System**. The chat and the
-narration go away until you turn it back on, and any chats you had are kept.
+If you'd rather write without AI, turn off **Enable AI** in **Settings** ›
+**System**. The chat and the narration go away until you turn it back on, and
+any chats you had are kept.
 
 <Screenshot name="welcome" alt="The welcome window" />
 
@@ -91,12 +92,13 @@ place. See [Projects](/projects/#arrange-the-outline) for more.
 ## Connect an AI provider
 
 The chat needs a model to talk to. This guide uses OpenRouter, which gives you
-one account for hundreds of models, paid as you go. For Anthropic, OpenAI, or a
-model on your own computer, see [AI Providers](/providers/).
+one account for hundreds of models, paid as you go. For NanoGPT, Anthropic,
+OpenAI, or a model on your own computer, see [AI Providers](/providers/).
 
-Click **Connect** above the chat's message box, then **Connect to OpenRouter**.
+Click **Connect** above the chat's message box. **Provider** is already
+**OpenRouter**: click **Sign in with OpenRouter**.
 
-<Screenshot name="connect-provider" alt="The Connect an AI provider dialog" />
+<Screenshot name="connect-provider" alt="Connecting an AI provider" />
 
 A tab opens at OpenRouter. Make an account there, or click **Sign in** at the
 bottom if you have one.
@@ -104,22 +106,16 @@ bottom if you have one.
 <Screenshot name="openrouter-sign-up" alt="OpenRouter's sign-up page" />
 
 Then click **Authorize**. The tab closes and inksprite says it's connected.
+Click **Next**.
 
 <Clip name="connect-openrouter" label="Connecting to OpenRouter" />
 
-:::note
-A new connection starts on a paid model. Add
-[credits on OpenRouter](https://openrouter.ai/settings/credits), or
-[choose](#choose-a-model) a free model: its name ends in *(free)*.
-:::
-
 ### Choose a model
 
-Open **Settings** › **AI**. The model you pick here is the one your chats use.
-
-<Screenshot name="ai-settings" alt="The AI settings" />
-
-Click **Model** to see what the provider offers, and type to search the list.
+The list is what OpenRouter offers; type to search it. One is chosen already:
+Claude Sonnet, or a free model if your OpenRouter account has never bought
+credits. Click **Done**, and your chats start on it. To change a chat's model
+later, see [the chat's model](/chats/#the-chats-model).
 
 <Screenshot name="choose-model" alt="Choosing a model" />
 

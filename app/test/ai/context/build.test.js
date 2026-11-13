@@ -181,7 +181,7 @@ describe('buildContext', () => {
       })
     })
 
-    describe('documents the writer pinned', () => {
+    describe('reads from before document calls stayed', () => {
       const project = { project: 'My Story', size: { documents: 2, folders: 1 } }
 
       /** One turn from before document calls stayed, that read `documentId`. */
@@ -207,18 +207,14 @@ describe('buildContext', () => {
         },
       })
 
-      const pin = (id, path, extra = {}) => ({ id, path, type: 'text', words: 3, ...extra })
-
-      /** Build a chat with these pins, and hand back the pieces. */
-      const build = async ({ documents = [], history, pinned, comments }) => {
+      /** Build a chat, and hand back the pieces. */
+      const build = async ({ documents = [], history }) => {
         const stores = makeStores({ documents, chat: { id: 'c1' }, messages: history })
         const { messages } = await buildContext(stores, {
           storyId: 's1',
           chatId: 'c1',
           systemPrompt: 'sys',
           project,
-          pinned,
-          comments,
           keeps: name => name === 'read_document',
         })
         const match = messages.at(-1).content.match(/```json\n([\s\S]*?)\n```/)
@@ -226,105 +222,6 @@ describe('buildContext', () => {
       }
 
       const elara = doc('d_elara', 'notes', { content: 'Elara rides north.' })
-
-      it('carries a pinned document without anyone having read it', async () => {
-        const { block, messages } = await build({
-          documents: [elara],
-          history: [{ role: 'user', content: 'begin' }],
-          pinned: [pin('d_elara', 'notes/Elara')],
-        })
-
-        // The whole point: a character's description has to be there on the
-        // first turn, and a model that has to call a tool before it knows who
-        // it is playing has already spent a turn not playing them. The id is
-        // how the entry finds its text; it is not an address, and stays out.
-        expect(block.pinned).toEqual([
-          { path: 'notes/Elara', type: 'text', words: 3, content: 'Elara rides north.' },
-        ])
-        expect(messages.some(m => m.role === 'tool' || m.tool_calls)).toBe(false)
-      })
-
-      it('carries a document the writer pinned whole, however long it is', async () => {
-        const thesis = doc('d_thesis', 'notes', { content: 'word '.repeat(12000) })
-        const { block } = await build({
-          documents: [thesis],
-          history: [{ role: 'user', content: 'begin' }],
-          pinned: [pin('d_thesis', 'notes/Thesis', { words: 12000 })],
-        })
-
-        expect(block.pinned[0].content).toBe('word '.repeat(12000))
-        expect(block.pinned[0]).not.toHaveProperty('note')
-      })
-
-      it('says what a pinned document says now, not when it was pinned', async () => {
-        const { block } = await build({
-          documents: [doc('d_elara', 'notes', { content: 'Elara turned back.' })],
-          history: [{ role: 'user', content: 'begin' }],
-          pinned: [pin('d_elara', 'notes/Elara')],
-        })
-
-        expect(block.pinned[0].content).toBe('Elara turned back.')
-      })
-
-      it('reads a pinned document without its markup, and its comments after it in a chat that can answer them', async () => {
-        const commented = doc('d_elara', 'notes', {
-          content: 'Elara {==rides north==}{>>cabcd1<<}.',
-          comments: {
-            cabcd1: {
-              status: 'open',
-              quote: 'rides north',
-              posts: [{ author: 'writer', text: 'Why north?', created: 1 }],
-            },
-          },
-        })
-        const pinned = [pin('d_elara', 'notes/Elara', { comments: 1 })]
-        const history = [{ role: 'user', content: 'begin' }]
-
-        const plain = await build({ documents: [commented], history, pinned })
-        expect(plain.block.pinned).toEqual([
-          { path: 'notes/Elara', type: 'text', words: 3, content: 'Elara rides north.' },
-        ])
-
-        const answering = await build({ documents: [commented], history, pinned, comments: true })
-        expect(answering.block.pinned[0].content).toBe('Elara rides north.')
-        expect(answering.block.pinned[0].comments).toEqual([
-          {
-            id: 'cabcd1',
-            passage: 'rides north',
-            posts: [{ author: 'writer', text: 'Why north?' }],
-          },
-        ])
-      })
-
-      it('ignores a pin on a folder, or on a document that is gone', async () => {
-        // Folders are expanded before they get here, and a deleted document is
-        // a pin the writer already answered. Neither is an error worth raising
-        // at a turn that is trying to be taken.
-        const { block } = await build({
-          documents: [doc('d_notes', '/', { type: 'folder' })],
-          history: [{ role: 'user', content: 'begin' }],
-          pinned: [pin('d_notes', 'notes', { type: 'folder' }), pin('d_deleted', 'notes/Gone')],
-        })
-
-        expect(block).not.toHaveProperty('pinned')
-      })
-
-      it('states a pinned document once, and as it is now, however often it was read', async () => {
-        const { block } = await build({
-          documents: [elara],
-          history: [
-            { role: 'user', content: 'who is Elara?' },
-            readTurn('T1', 'd_elara', '{"content":"rides south"}'),
-            { role: 'user', content: 'again?' },
-            readTurn('T2', 'd_elara', '{"content":"second copy"}'),
-            { role: 'user', content: 'and now?' },
-          ],
-          pinned: [pin('d_elara', 'notes/Elara')],
-        })
-
-        expect(block.pinned).toHaveLength(1)
-        expect(block.pinned[0].content).toBe('Elara rides north.')
-      })
 
       it('sends nothing of a read made before document calls stayed', async () => {
         const { messages } = await build({
@@ -1703,18 +1600,16 @@ describe('a chat that plays a card', () => {
         chatId: 'c1',
         systemPrompt: 'You are {{char}}. Never speak for {{user}}.',
         project: { project: 'My Story', size: { documents: 1, folders: 0 } },
-        pinned: [{ id: 'd_elara', path: 'Cards/Elara', type: 'text', words: 6 }],
         note: 'Keep {{user}} on the road.',
         ...extra,
       }
     )
 
-  it('fills its names in to the prompt, the note and what is pinned', async () => {
+  it('fills its names in to the prompt and the note', async () => {
     const { messages } = await build({ names })
     const last = messages.at(-1).content
 
     expect(messages[0].content).toBe('You are Elara. Never speak for Riley.')
-    expect(last).toContain('"content": "Elara has sworn to guard Riley."')
     expect(last).toContain('<authors_note>\nKeep Riley on the road.\n</authors_note>')
     // What was said is the chat's, and goes as it was said.
     expect(last.endsWith('Hello, {{char}}.')).toBe(true)
@@ -1724,6 +1619,6 @@ describe('a chat that plays a card', () => {
     const { messages } = await build()
 
     expect(messages[0].content).toBe('You are {{char}}. Never speak for {{user}}.')
-    expect(messages.at(-1).content).toContain('{{char}} has sworn to guard {{user}}.')
+    expect(messages.at(-1).content).toContain('Keep {{user}} on the road.')
   })
 })

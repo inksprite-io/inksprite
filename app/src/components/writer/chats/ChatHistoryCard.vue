@@ -35,9 +35,28 @@
     <ContextMenu ref="contextMenu" :model="menuItems" @hide="onMenuHide('context')" />
 
     <div class="flex flex-col gap-1 pr-8">
-      <!-- Chat Title -->
-      <div v-if="!isEditing" class="text-sm font-medium text-surface-900 dark:text-surface-0">
-        {{ shownChatTitle(chat?.title) }}
+      <!-- Chat Title, with the model at work in it, or a dot when it
+           finished in it while the chat wasn't showing. -->
+      <div
+        v-if="!isEditing"
+        class="flex items-center gap-1.5 text-sm font-medium text-surface-900 dark:text-surface-0"
+      >
+        <i
+          v-if="busy"
+          class="pi pi-spinner pi-spin flex-none text-surface-500 dark:text-surface-400"
+          style="font-size: 0.7rem"
+          role="img"
+          aria-label="Working"
+          data-mark="busy"
+        ></i>
+        <span
+          v-else-if="unread"
+          class="flex-none w-1.5 h-1.5 rounded-full bg-primary-500"
+          role="img"
+          aria-label="Unread"
+          data-mark="unread"
+        ></span>
+        <span class="min-w-0">{{ shownChatTitle(chat?.title) }}</span>
       </div>
       <InputText
         v-else
@@ -78,6 +97,7 @@ import { useApplicationState } from '@/composables/useApplicationState'
 import { useChats } from '@/composables/useChats'
 import { useReactiveTime } from '@/composables/useReactiveTime'
 import { chatPreview, shownChatTitle } from '@/utils/chatTitle.js'
+import { onlyAttaches } from '@/ai/context/attachments.js'
 
 /**
  * @typedef {Object} Props
@@ -102,6 +122,16 @@ const props = defineProps({
   },
   /** Whether this is the chat open beside the list. */
   active: {
+    type: Boolean,
+    default: false,
+  },
+  /** Whether the model is working in the chat. */
+  busy: {
+    type: Boolean,
+    default: false,
+  },
+  /** Whether the model finished in it while it wasn't showing. */
+  unread: {
     type: Boolean,
     default: false,
   },
@@ -135,10 +165,11 @@ const chat = computed(() => chatsApi.getChatById(props.chatId))
 // Get messages for this chat - already a computed ref
 const messages = chatsApi.getMessagesForChat(props.chatId)
 
-// Get first message for preview
+// The first message that says something, for the preview: a turn that only
+// attaches documents, as a card's chat opens with, says nothing.
 const firstMessage = computed(() => {
-  const msgs = messages.value
-  return msgs && msgs.length > 0 ? msgs[0] : null
+  const msgs = messages.value || []
+  return msgs.find(message => !onlyAttaches(message.content)) ?? msgs[0] ?? null
 })
 
 // The first message's words, without its markdown.
@@ -255,7 +286,7 @@ const handleClick = () => {
 const saveTitle = async () => {
   if (editedTitle.value && editedTitle.value !== chat.value?.title) {
     try {
-      await chatsApi.updateChat(props.chatId, { title: editedTitle.value })
+      chatsApi.renameChat(props.chatId, editedTitle.value)
     } catch (e) {
       console.error('Rename failed', e)
       editedTitle.value = shownChatTitle(chat.value?.title)

@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useAIChat } from '@/composables/useAIChat'
+import { clearAIChatInstances, useAIChat } from '@/composables/useAIChat'
+import { clearChatActivity, isWorking, onStoppedWorking } from '@/composables/useChatActivity.js'
+import { useConnections } from '@/composables/useConnections.js'
 import { TITLE_DEFAULTS } from '@/ai/defaults.js'
 import {
   DEFAULT_CHAT_PROMPT,
@@ -8,8 +10,9 @@ import {
   DEFAULT_ROLEPLAY_NOTE,
   DEFAULT_ROLEPLAY_NSFW_NOTE,
 } from '@/ai/prompts/index.js'
-import { SKILL_MAX_ROUNDS, setExperimentalSkills } from '@/ai/skills/index.js'
-import { setWebSearch } from '@/web/config.js'
+import { SKILL_MAX_ROUNDS, setTrialSkills } from '@/ai/skills/index.js'
+import { TRIAL_SKILLS } from '../../harness/skills/trials.js'
+import { INTERPRET_PROMPT } from '../../harness/skills/interpret/index.js'
 import { COMMANDS } from '@/ai/commands.js'
 
 // Mock stores
@@ -79,7 +82,15 @@ vi.mock('@/composables/useProfiles', async () => {
 const debug = { value: false }
 const applyEdits = { value: 'auto' }
 vi.mock('@/composables/useApplicationState', () => ({
-  useApplicationState: () => ({ debug, applyEdits }),
+  useApplicationState: () => ({
+    debug,
+    applyEdits,
+    // As useApplicationState has it: the chat's own, or the app's from before.
+    applyEditsFor: chat =>
+      chat?.applyEdits === 'ask' || chat?.applyEdits === 'auto'
+        ? chat.applyEdits
+        : applyEdits.value,
+  }),
 }))
 
 const mockDocuments = vi.hoisted(() => ({
@@ -92,6 +103,13 @@ const mockApplyProposal = vi.hoisted(() => vi.fn())
 vi.mock('@/ai/tools/documents.js', async importOriginal => ({
   .../** @type {any} */ (await importOriginal()),
   applyProposal: mockApplyProposal,
+}))
+
+// What a connection's list says of a model: nothing, unless a test says.
+const traitsOf = vi.hoisted(() => vi.fn(async () => undefined))
+vi.mock('@/ai/models.js', async importOriginal => ({
+  ...(await importOriginal()),
+  traitsOf,
 }))
 
 vi.mock('@/ai/tools/index.js', () => ({
@@ -160,12 +178,18 @@ describe('useAIChat', () => {
     storyId: mockStoryId,
     title: 'Test Chat',
     contextOptions: null,
+    // The model it has answered on: the preset's.
+    providerId: 'provider_1',
+    model: 'gpt-4',
   }
 
   beforeEach(async () => {
     // Set up Pinia
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    // Each test's chat starts fresh, on this test's mocks.
+    clearAIChatInstances()
+    clearChatActivity()
     debug.value = false
 
     // Setup mock AI config
@@ -173,9 +197,11 @@ describe('useAIChat', () => {
     mockAIConfig = {
       activeAIPreset: { value: mockProfile },
       getProvider: vi.fn().mockReturnValue(mockProvider),
-      // As useAIConfig has it: the chat's, its profile's, then the default.
+      // As useAIConfig has it, but for models: the chat's, or for a chat that
+      // names none here, its profile's, then what a profile never picked on
+      // starts chats on.
       presetFor: (chat, profile) =>
-        mockPresets.get(chat?.presetId) ||
+        (chat?.presetId && mockPresets.get(chat.presetId)) ||
         mockPresets.get(profile?.settings?.presetId) ||
         mockAIConfig.activeAIPreset.value,
     }
@@ -265,6 +291,23 @@ describe('useAIChat', () => {
       await expect(composable.sendMessage('Hello')).rejects.toThrow('No AI provider is connected.')
     })
 
+    it('keeps the model a chat first answers on, from then on', async () => {
+      const { providerId, model, ...unanswered } = mockChat
+      mockChatsApi.getChatById.mockReturnValue(unanswered)
+      mockChatsApi.getMessagesForChat.mockReturnValue({
+        value: [{ id: 'msg_1', role: 'user', content: 'Hello' }],
+      })
+      mockChatsApi.addMessage.mockImplementation((chatId, role) => ({ id: `msg_${role}`, role }))
+      mockAIService.generateChatCompletion.mockImplementation(async (m, p, callback) => {
+        callback({ content: 'Reply' })
+        return {}
+      })
+
+      await useAIChat(mockStoryId, mockChatId).sendMessage('Hello')
+
+      expect(mockChatsApi.updateChat).toHaveBeenCalledWith(mockChatId, { providerId, model })
+    })
+
     it('should throw error when provider is not found', async () => {
       mockAIConfig.getProvider.mockReturnValue(null)
       const composable = useAIChat(mockStoryId, mockChatId)
@@ -290,9 +333,7 @@ describe('useAIChat', () => {
       })
       mockChatsApi.getMessagesForChat.mockReturnValue({ value: [{ id: 'msg_1' }] })
 
-      await expect(composable.sendMessage('Hello')).rejects.toThrow(
-        'Pick a model in Settings › AI.'
-      )
+      await expect(composable.sendMessage('Hello')).rejects.toThrow('Choose a model for this chat.')
     })
 
     it('should throw error when OpenRouter API key is missing', async () => {
@@ -307,11 +348,11 @@ describe('useAIChat', () => {
       mockChatsApi.getMessagesForChat.mockReturnValue({ value: [{ id: 'msg_1' }] })
 
       await expect(composable.sendMessage('Hello')).rejects.toThrow(
-        'Connect OpenRouter in Settings › AI.'
+        "Test Provider isn't connected."
       )
     })
 
-    it('asks for the key of a hosted service other than OpenRouter in its settings', () => {
+    it('names the connection a hosted service with no key is, to connect it', () => {
       mockAIConfig.getProvider.mockReturnValue({
         id: 'provider_openai_default',
         name: 'OpenAI',
@@ -320,10 +361,10 @@ describe('useAIChat', () => {
       })
       const composable = useAIChat(mockStoryId, mockChatId)
 
-      // Not OpenRouter's connect dialog: the key goes in the provider's own.
       const error = composable.configurationError.value
-      expect(error?.name).not.toBe('ProviderNotConfiguredError')
-      expect(error?.message).toBe('Add your OpenAI key in Settings › AI.')
+      expect(error?.name).toBe('ConnectionNeededError')
+      expect(error?.message).toBe("OpenAI isn't connected.")
+      expect(/** @type {any} */ (error).providerId).toBe('provider_openai_default')
     })
 
     it('should throw error when a self-hosted provider has no endpoint', async () => {
@@ -342,7 +383,7 @@ describe('useAIChat', () => {
       mockChatsApi.getMessagesForChat.mockReturnValue({ value: [{ id: 'msg_1' }] })
 
       await expect(composable.sendMessage('Hello')).rejects.toThrow(
-        'Add the server address in Settings › AI.'
+        "Test Provider isn't connected."
       )
     })
   })
@@ -358,8 +399,8 @@ describe('useAIChat', () => {
       const composable = useAIChat(mockStoryId, mockChatId)
 
       const error = composable.configurationError.value
-      expect(error?.name).toBe('ProviderNotConfiguredError')
-      expect(error?.message).toBe('Connect OpenRouter in Settings › AI.')
+      expect(error?.name).toBe('ConnectionNeededError')
+      expect(error?.message).toBe("Test Provider isn't connected.")
       expect(mockChatsApi.addMessage).not.toHaveBeenCalled()
     })
 
@@ -370,7 +411,7 @@ describe('useAIChat', () => {
       mockChatsApi.unstartedChat.value = { id: mockChatId, presetId: 'profile_bare' }
       const composable = useAIChat(mockStoryId, mockChatId)
 
-      expect(composable.configurationError.value?.message).toBe('Pick a model in Settings › AI.')
+      expect(composable.configurationError.value?.message).toBe('Choose a model for this chat.')
     })
 
     it('reports a missing model as a plain error', () => {
@@ -379,7 +420,7 @@ describe('useAIChat', () => {
 
       const error = composable.configurationError.value
       expect(error?.name).toBe('Error')
-      expect(error?.message).toBe('Pick a model in Settings › AI.')
+      expect(error?.message).toBe('Choose a model for this chat.')
     })
   })
 
@@ -941,48 +982,25 @@ describe('useAIChat', () => {
       await captureTools()
 
       const { getEnabledToolDefinitions } = await import('@/ai/tools/index.js')
-      expect(getEnabledToolDefinitions).toHaveBeenCalledWith({
-        disabledTools: ['oracle'],
-        disabledGroups: ['lore'],
-        // No server is connected, so none is offered; nor is the web set up,
-        // and Python runs only in the desktop app.
-        servers: [],
-        web: false,
-        python: false,
-      })
-    })
-
-    it('asks for everything when the chat has no opinion', async () => {
-      await captureTools()
-
-      const { getEnabledToolDefinitions } = await import('@/ai/tools/index.js')
-      expect(getEnabledToolDefinitions).toHaveBeenCalledWith({
-        disabledTools: undefined,
-        disabledGroups: undefined,
-        servers: [],
-        web: false,
-        python: false,
-      })
-    })
-
-    it('offers the web to a chat that asked for it, once a service can search', async () => {
-      setWebSearch({ id: 'web', service: 'exa', keys: {}, profiles: [] })
-      mockChatsApi.getChatById.mockReturnValue({ ...mockChat, web: true })
-
-      try {
-        await captureTools()
-      } finally {
-        setWebSearch(null)
-      }
-
-      const { getEnabledToolDefinitions } = await import('@/ai/tools/index.js')
-      expect(getEnabledToolDefinitions).toHaveBeenCalledWith(expect.objectContaining({ web: true }))
+      expect(getEnabledToolDefinitions).toHaveBeenCalledWith(
+        expect.objectContaining({ disabledTools: ['oracle'], disabledToolGroups: ['lore'] })
+      )
     })
 
     it('sends no tools when the profile has tool use off', async () => {
       mockAIConfig.activeAIPreset.value = { ...mockProfile, toolsEnabled: false }
 
       expect(await captureTools()).toBeUndefined()
+    })
+
+    it("sends no tools when the model's list says it can't call them", async () => {
+      traitsOf.mockResolvedValueOnce({ tools: false })
+
+      expect(await captureTools()).toBeUndefined()
+      expect(traitsOf).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'openrouter' }),
+        mockProfile.model
+      )
     })
 
     it('tells the context when the profile has tool use off, for the project block', async () => {
@@ -1055,6 +1073,35 @@ describe('useAIChat', () => {
       expect(titleCall[3].overrides).toEqual(TITLE_DEFAULTS)
       expect(replyCall[3].overrides).toEqual({ maxTokens: 4096 })
     })
+
+    it('should route the title as the reply is routed, fallbacks and all', async () => {
+      // Without its fallbacks, the model's preferred providers would be the
+      // only ones the title could go to.
+      mockAIConfig.activeAIPreset.value = {
+        ...mockProfile,
+        allowedProviders: ['novita'],
+        ignoredProviders: ['uomi'],
+        fallbacks: true,
+      }
+      const composable = useAIChat(mockStoryId, mockChatId)
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: [] })
+      mockChatsApi.addMessage
+        .mockReturnValueOnce({ id: 'msg_user', role: 'user' })
+        .mockReturnValueOnce({ id: 'msg_assistant', role: 'assistant', content: '' })
+      mockAIService.generateChatCompletion.mockImplementation(async (m, p, callback) => {
+        callback({ content: 'Response' })
+        return {}
+      })
+
+      await composable.sendMessage('Hello')
+
+      const [titleCall] = mockAIService.generateChatCompletion.mock.calls
+      expect(titleCall[1]).toMatchObject({
+        allowedProviders: ['novita'],
+        ignoredProviders: ['uomi'],
+        fallbacks: true,
+      })
+    })
   })
 
   describe('token usage', () => {
@@ -1117,6 +1164,27 @@ describe('useAIChat', () => {
       expect(await captureMetadata()).toMatchObject({ model: 'z-ai/glm-4.6' })
     })
 
+    it('sends how hard the chat has the model think, over its preset', async () => {
+      mockPresets.set('profile_glm', {
+        ...mockProfile,
+        id: 'profile_glm',
+        generationOverrides: { reasoningEffort: 'low', temperature: 0.5 },
+      })
+      mockChatsApi.getChatById.mockReturnValue({
+        ...mockChat,
+        presetId: 'profile_glm',
+        reasoningEffort: 'high',
+      })
+      mockAIService.generateChatCompletion.mockImplementation(async (m, p, callback) => {
+        callback({ content: 'Response' })
+        return {}
+      })
+
+      await captureMetadata()
+      const [, , , options] = mockAIService.generateChatCompletion.mock.calls[0]
+      expect(options.overrides).toMatchObject({ reasoningEffort: 'high', temperature: 0.5 })
+    })
+
     it('says every call it makes goes back with the conversation', async () => {
       mockAIService.generateChatCompletion.mockImplementation(async (m, p, callback) => {
         callback({ content: 'Response' })
@@ -1126,25 +1194,32 @@ describe('useAIChat', () => {
       expect(await captureMetadata()).toMatchObject({ callsKept: true })
     })
 
-    it('says an answer to an aside is one, so it goes with it', async () => {
+    it('says an answer to an aside asked again is one, so it goes with it', async () => {
+      // No aside is asked anew since /fork took its place, but one asked
+      // before can be asked again.
       mockAIService.generateChatCompletion.mockImplementation(async (m, p, callback) => {
         callback({ content: 'Talk to the keeper.' })
         return {}
       })
       const composable = useAIChat(mockStoryId, mockChatId)
-      mockChatsApi.getMessagesForChat.mockReturnValue({
-        value: [
-          { id: 'msg_user', role: 'user', metadata: { aside: true } },
-          { id: 'msg_assistant', role: 'assistant' },
-        ],
+      // An aside whose answer was deleted, and the answer asked again for it.
+      const question = {
+        id: 'msg_user',
+        role: 'user',
+        content: 'What now?',
+        metadata: { aside: true },
+      }
+      mockChatsApi.getMessagesForChat
+        .mockReturnValueOnce({ value: [question] })
+        .mockReturnValue({ value: [question, { id: 'msg_assistant', role: 'assistant' }] })
+      mockChatsApi.addMessage.mockReturnValueOnce({
+        id: 'msg_assistant',
+        role: 'assistant',
+        content: '',
       })
-      mockChatsApi.addMessage
-        .mockReturnValueOnce({ id: 'msg_user', role: 'user' })
-        .mockReturnValueOnce({ id: 'msg_assistant', role: 'assistant', content: '' })
 
-      await composable.sendMessage('/aside What now?')
+      await composable.resendMessage('msg_user')
 
-      expect(mockChatsApi.addMessage.mock.calls[0][5]).toEqual({ aside: true })
       const calls = mockChatsApi.updateMessage.mock.calls.filter(([id]) => id === 'msg_assistant')
       expect(calls[0][1].metadata).toMatchObject({ aside: true })
       expect(calls.at(-1)[1].metadata).toMatchObject({ aside: true })
@@ -2002,15 +2077,6 @@ describe('useAIChat', () => {
       mockSetAskBeforeSaving.mockClear()
     })
 
-    it('offers the turn the servers the chat is on', async () => {
-      const { turn, tools } = await startTurn([call('c1', 'wiki__search')])
-      await turn
-
-      expect(tools.getEnabledToolDefinitions).toHaveBeenCalledWith(
-        expect.objectContaining({ servers: ['mcp_wiki'] })
-      )
-    })
-
     it('lets a tool ask as it runs, say how far it has got, and show the writer its answer', async () => {
       const { composable, turn, pending, answer } = await startTurn(
         [call('c1', 'edit_document')],
@@ -2035,6 +2101,22 @@ describe('useAIChat', () => {
       const [result] = toolResults()
       expect(JSON.parse(result.content)).toEqual({ allowed: 'allow' })
       expect(result._shown).toEqual({ title: 'Explored the project', text: 'A novel.' })
+    })
+
+    it('says the model has stopped working while a call waits for Allow', async () => {
+      const stopped = vi.fn()
+      onStoppedWorking(stopped)
+      const { turn, pending, answer } = await startTurn([call('c1', 'wiki__edit')])
+
+      await vi.waitFor(() => expect(pending.value).toHaveLength(1))
+      await vi.waitFor(() => expect(isWorking(mockChatId)).toBe(false))
+      expect(stopped).toHaveBeenCalledTimes(1)
+
+      // To work again once allowed, and to stop again when the turn ends.
+      answer('c1', 'allow')
+      await turn
+      expect(isWorking(mockChatId)).toBe(false)
+      expect(stopped).toHaveBeenCalledTimes(2)
     })
 
     it('hands a tool the preset the chat runs on, to ask the same model', async () => {
@@ -2396,7 +2478,7 @@ describe('useAIChat', () => {
     })
 
     it("falls back to the skill's own wording when the profile has not said", async () => {
-      const { INTERPRET_PROMPT } = await import('@/ai/skills/interpret/index.js')
+      setTrialSkills(TRIAL_SKILLS)
       mockChatsApi.getChatById.mockReturnValue({ ...mockChat, profileId: 'builtin_profile_chat' })
 
       const context = await runWithTool()
@@ -3026,7 +3108,7 @@ describe('useAIChat', () => {
     })
 
     it('should refuse an edit that asks the model while a reply is being written', async () => {
-      setExperimentalSkills(['interpret', 'write'])
+      setTrialSkills(TRIAL_SKILLS)
       const composable = useAIChat(mockStoryId, mockChatId)
       composable.isGenerating.value = true
       mockChatsApi.getMessageById.mockReturnValue({
@@ -3226,6 +3308,43 @@ describe('useAIChat', () => {
       ])
       executeTool.mockResolvedValue({ tool_call_id: 'call_1', content: '{}' })
       applyEdits.value = 'ask'
+      mockAIService.generateChatCompletion
+        .mockImplementationOnce(async () => ({
+          toolCalls: [
+            {
+              id: 'call_1',
+              type: 'function',
+              function: { name: 'edit_document', arguments: '{}' },
+            },
+          ],
+        }))
+        .mockImplementationOnce(async (m, p, callback) => {
+          callback({ content: 'Proposed.' })
+          return {}
+        })
+
+      const composable = useAIChat(mockStoryId, mockChatId)
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: [{ id: 'msg_1' }] })
+      mockChatsApi.addMessage
+        .mockReturnValueOnce({ id: 'msg_user', role: 'user' })
+        .mockReturnValueOnce({ id: 'msg_assistant', role: 'assistant', content: '' })
+
+      await composable.sendMessage('Change it')
+
+      expect(executeTool.mock.calls.at(-1)[1].propose).toBe(true)
+    })
+
+    it('asks first when this chat says so, whatever the app had before', async () => {
+      const { hasTools, getEnabledToolDefinitions, executeTool } = await import(
+        '@/ai/tools/index.js'
+      )
+      hasTools.mockReturnValue(true)
+      getEnabledToolDefinitions.mockReturnValue([
+        { type: 'function', function: { name: 'edit_document' } },
+      ])
+      executeTool.mockResolvedValue({ tool_call_id: 'call_1', content: '{}' })
+      applyEdits.value = 'auto'
+      mockChatsApi.getChatById.mockReturnValue({ ...mockChat, applyEdits: 'ask' })
       mockAIService.generateChatCompletion
         .mockImplementationOnce(async () => ({
           toolCalls: [
@@ -3463,6 +3582,38 @@ describe('useAIChat', () => {
       expect(composable.isGenerating.value).toBe(false)
     })
 
+    it('says what fixes a refused key, and keeps how its connection answered', async () => {
+      const composable = useAIChat(mockStoryId, mockChatId)
+      const messages = [
+        { id: 'msg_1', role: 'user', content: 'Hello' },
+        { id: 'msg_2', role: 'assistant', content: '', metadata: null },
+      ]
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: messages })
+      mockChatsApi.getMessageById.mockReturnValue({ value: messages[1] })
+      mockAIService.generateChatCompletion.mockRejectedValueOnce(
+        Object.assign(new Error('User not found.'), { status: 401 })
+      )
+
+      await expect(composable.regenerateMessage('msg_2')).rejects.toMatchObject({
+        name: 'AnswerFailedError',
+      })
+      expect(mockChatsApi.updateMessage).toHaveBeenLastCalledWith('msg_2', {
+        metadata: expect.objectContaining({
+          error: "Test Provider didn't accept the key.",
+          errorFix: { kind: 'connection', providerId: 'provider_1' },
+        }),
+      })
+      expect(useConnections().stateOf('provider_1')).toBe('key')
+
+      // Answered, it is connected again.
+      mockAIService.generateChatCompletion.mockImplementationOnce(async (m, p, callback) => {
+        callback({ content: 'Hi' })
+        return {}
+      })
+      await composable.regenerateMessage('msg_2')
+      expect(useConnections().stateOf('provider_1')).toBe('connected')
+    })
+
     it('asks again only what the assistant said', async () => {
       const composable = useAIChat(mockStoryId, mockChatId)
       mockChatsApi.getMessagesForChat.mockReturnValue({
@@ -3639,6 +3790,78 @@ describe('useAIChat', () => {
     })
   })
 
+  describe('a summary, asked for in the thread', () => {
+    const offered = [{ type: 'function', function: { name: 'read_document' } }]
+
+    /** A named chat with a turn in it, its tools on, and a message for each one added. */
+    const chatting = async () => {
+      const tools = await import('@/ai/tools/index.js')
+      tools.hasTools.mockReturnValue(true)
+      tools.getEnabledToolDefinitions.mockReturnValue(offered)
+      mockChatsApi.getChatById.mockReturnValue({ ...mockChat, title: 'The pass' })
+      mockChatsApi.getMessagesForChat.mockReturnValue({
+        value: [
+          { id: 'msg_1', role: 'user', content: 'We set out.' },
+          { id: 'msg_2', role: 'assistant', content: 'Snow fell.' },
+        ],
+      })
+      mockChatsApi.addMessage.mockImplementation((chatId, role) => ({
+        id: `msg_${role}`,
+        role,
+        content: '',
+      }))
+      return tools
+    }
+
+    it('is the turn’s own request with the wording as the last word', async () => {
+      await chatting()
+      mockAIService.generateChatCompletion.mockImplementationOnce(async (m, p, callback) => {
+        callback({ content: 'They crossed the pass.' })
+        return {}
+      })
+
+      await useAIChat(mockStoryId, mockChatId).sendMessage('/compact')
+
+      // The conversation as the turn sends it, so the request goes on from
+      // the turn's cached prefix: no transcript, and no author's note, which
+      // is for a turn.
+      const built = mockAIContext().build.mock.calls.at(-1)[0]
+      expect(built).toMatchObject({ chatId: mockChatId, toolsAllowed: true })
+      expect(built.ask).toMatch(/in place of a reply/)
+      expect(built.ask).toMatch(/Summarize this chat/)
+      expect(built).not.toHaveProperty('transcript')
+      expect(built).not.toHaveProperty('note')
+      // The tools the turn offers, which are part of that prefix.
+      expect(mockAIService.generateChatCompletion.mock.calls[0][3].tools).toBe(offered)
+    })
+
+    it('runs no tool the model reaches for, and asks again', async () => {
+      const tools = await chatting()
+      mockAIService.generateChatCompletion
+        .mockImplementationOnce(async () => ({
+          toolCalls: [
+            {
+              id: 'call_1',
+              type: 'function',
+              function: { name: 'read_document', arguments: '{}' },
+            },
+          ],
+        }))
+        .mockImplementationOnce(async (m, p, callback) => {
+          callback({ content: 'They crossed the pass.' })
+          return {}
+        })
+
+      await useAIChat(mockStoryId, mockChatId).sendMessage('/compact')
+
+      expect(tools.executeTool).not.toHaveBeenCalled()
+      expect(mockAIService.generateChatCompletion).toHaveBeenCalledTimes(2)
+      const again = mockAIService.generateChatCompletion.mock.calls[1][0]
+      expect(again.at(-1)).toMatchObject({ role: 'tool', tool_call_id: 'call_1' })
+      expect(again.at(-1).content).toMatch(/No tool runs here/)
+    })
+  })
+
   describe('naming a chat', () => {
     /** A user turn and an empty answer, for each message sent. */
     const sends = () =>
@@ -3668,6 +3891,76 @@ describe('useAIChat', () => {
 
       expect(asked[0].at(-1).content).toContain('Tell me about the lighthouse')
       expect(mockChatsApi.updateChat).toHaveBeenCalledWith(mockChatId, { title: 'The Lighthouse' })
+    })
+
+    describe('a fork', () => {
+      /** The chat it came from, copied, and the fork waiting for a name. */
+      beforeEach(() => {
+        mockChatsApi.getChatById.mockReturnValue({
+          ...mockChat,
+          title: 'The heist - forked',
+          nameAfter: 'msg_2',
+        })
+      })
+
+      /** Ask for titles and replies, keeping what each title was asked from. */
+      const titleAsks = () => {
+        const asked = []
+        mockAIService.generateChatCompletion.mockImplementation(async (messages, p, callback) => {
+          asked.push(messages)
+          callback({ content: asked.length === 1 ? 'The Getaway' : 'Reply' })
+          return {}
+        })
+        return asked
+      }
+
+      it('is named from what is said after the fork point', async () => {
+        mockChatsApi.getMessagesForChat.mockReturnValue({
+          value: [
+            { id: 'msg_1', role: 'user', content: 'Plan the vault job' },
+            { id: 'msg_2', role: 'assistant', content: 'First, the guard rota.' },
+          ],
+        })
+        sends()
+        const asked = titleAsks()
+
+        await useAIChat(mockStoryId, mockChatId).sendMessage('Now the getaway car')
+
+        expect(asked[0].at(-1).content).toContain('Now the getaway car')
+        expect(asked[0].at(-1).content).not.toContain('vault')
+        expect(mockChatsApi.updateChat).toHaveBeenCalledWith(mockChatId, {
+          title: 'The Getaway',
+          nameAfter: undefined,
+        })
+      })
+
+      it('is named from a turn added by hand after the fork point', async () => {
+        mockChatsApi.getMessagesForChat.mockReturnValue({
+          value: [
+            { id: 'msg_1', role: 'user', content: 'Plan the vault job' },
+            { id: 'msg_2', role: 'assistant', content: 'First, the guard rota.' },
+            { id: 'msg_3', role: 'user', content: 'The car is a hearse' },
+          ],
+        })
+        sends()
+        const asked = titleAsks()
+
+        await useAIChat(mockStoryId, mockChatId).sendMessage('Who drives it?')
+
+        expect(asked[0].at(-1).content).toContain('The car is a hearse')
+      })
+
+      it('is named from what is sent once rewound past its fork point', async () => {
+        mockChatsApi.getMessagesForChat.mockReturnValue({
+          value: [{ id: 'msg_1', role: 'user', content: 'Plan the vault job' }],
+        })
+        sends()
+        const asked = titleAsks()
+
+        await useAIChat(mockStoryId, mockChatId).sendMessage('Start over at the docks')
+
+        expect(asked[0].at(-1).content).toContain('Start over at the docks')
+      })
     })
 
     it('leaves a named chat alone', async () => {
@@ -3821,6 +4114,46 @@ describe('useAIChat', () => {
       )
       return { release: () => release(), signal: () => signal }
     }
+
+    it('is the same reply for whoever asks for the chat next, who can stop it', async () => {
+      vi.spyOn(console, 'log').mockImplementation(() => {})
+      const held = heldTurn()
+
+      // The view the writer sent from, gone once they look at another chat.
+      const turn = useAIChat(mockStoryId, mockChatId).resendMessage('msg_u')
+      await vi.waitFor(() => expect(mockChatsApi.streamMessageContent).toHaveBeenCalled())
+
+      // The view that shows the chat when they come back.
+      const back = useAIChat(mockStoryId, mockChatId)
+      expect(back.isGenerating.value).toBe(true)
+      expect(back.activity.value?.messageId).toBe('msg_a')
+      // Another chat isn't busy with it.
+      expect(useAIChat(mockStoryId, 'chat_other').isGenerating.value).toBe(false)
+
+      back.stopGeneration()
+      await turn
+
+      expect(held.signal().aborted).toBe(true)
+      expect(back.isGenerating.value).toBe(false)
+      expect(back.activity.value).toBeNull()
+    })
+
+    it('says the model is working while the reply is, and when it stops', async () => {
+      vi.spyOn(console, 'log').mockImplementation(() => {})
+      const stopped = vi.fn()
+      onStoppedWorking(stopped)
+      const composable = useAIChat(mockStoryId, mockChatId)
+      const held = heldTurn()
+
+      const turn = composable.resendMessage('msg_u')
+      await vi.waitFor(() => expect(mockChatsApi.streamMessageContent).toHaveBeenCalled())
+      expect(isWorking(mockChatId)).toBe(true)
+
+      held.release()
+      await turn
+      await vi.waitFor(() => expect(isWorking(mockChatId)).toBe(false))
+      expect(stopped).toHaveBeenCalledWith(mockStoryId, mockChatId)
+    })
 
     it('finishes the message as it stands, and writes nothing to it after', async () => {
       vi.spyOn(console, 'log').mockImplementation(() => {})

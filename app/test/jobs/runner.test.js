@@ -45,7 +45,8 @@ const provider = { id: 'p1', name: 'Test', type: 'generic', endpoint: 'http://x'
 vi.mock('@/composables/useAIConfig.js', () => ({
   useAIConfig: () => ({
     getPreset: id => (id === 'preset_strong' ? { providerId: 'p1', model: 'strong' } : null),
-    activeAIPreset: {
+    // What the profile new chats start on starts them on.
+    startingPreset: {
       value: {
         providerId: 'p1',
         model: 'active',
@@ -54,11 +55,19 @@ vi.mock('@/composables/useAIConfig.js', () => ({
       },
     },
     getProvider: id => (id === 'p1' ? provider : null),
+    // A model's settings: the strong one's routing is its own.
+    runOn: (providerId, model) => ({
+      providerId,
+      model,
+      generationOverrides: {},
+      ...(model === 'strong' ? { allowedProviders: ['big'], ignoredProviders: ['small'] } : {}),
+    }),
   }),
 }))
 const workflows = { value: { convert: { presetId: null } } }
+const noteModelUse = vi.fn()
 vi.mock('@/composables/useApplicationState.js', () => ({
-  useApplicationState: () => ({ workflows }),
+  useApplicationState: () => ({ workflows, noteModelUse }),
 }))
 
 const asked = []
@@ -141,6 +150,7 @@ describe('the job runner', () => {
     windows.takeProject.mockReset().mockImplementation(async () => windows.taken)
     windows.letGoOfProject.mockReset()
     room.value = Infinity
+    noteModelUse.mockClear()
   })
 
   const plan = (kind = 'test') =>
@@ -164,6 +174,20 @@ describe('the job runner', () => {
     expect(after.resultId).toBe('doc_result')
     expect(rows.get(job.id).status).toBe('done')
     expect(isRunning(job.id)).toBe(false)
+  })
+
+  it('counts each answer for the models used lately', async () => {
+    answer = async messages => ({
+      content: `did ${messages[0].content}`,
+      usage: { completion_tokens: 7 },
+      finishReason: 'stop',
+    })
+    const job = await plan()
+
+    await startJob(job.id)
+
+    expect(noteModelUse).toHaveBeenCalledTimes(3)
+    expect(noteModelUse.mock.calls[0].slice(1)).toEqual([asked[0].model, 7])
   })
 
   it('holds the job’s project while it runs, and lets go of it once it stops', async () => {
@@ -197,7 +221,7 @@ describe('the job runner', () => {
     expect(windows.letGoOfProject).toHaveBeenCalledWith('s1', `job:${job.id}`)
   })
 
-  it('asks on the role’s preset, or the active one when the role names none', async () => {
+  it('asks on the role’s model, or what new chats start on when the role names none', async () => {
     const job = await plan()
     await startJob(job.id)
     expect(asked[0].model).toBe('active')
@@ -208,9 +232,9 @@ describe('the job runner', () => {
     expect(asked.at(-1).model).toBe('strong')
   })
 
-  it('routes to the providers allowed and ignored for the model it asks', async () => {
-    // Chosen for a model, so they come with it: the preset's with the
-    // preset's, and a workflow on a model of its own has its own or none.
+  it('routes to the providers preferred and ignored for the model it asks', async () => {
+    // A model's settings, wherever it is asked from: what new chats start
+    // on, or a workflow's own model.
     const job = await plan()
     await startJob(job.id)
     expect(asked[0].allowedProviders).toEqual(['fast'])
@@ -219,19 +243,6 @@ describe('the job runner', () => {
     workflows.value = { convert: { providerId: 'p1', model: 'strong' } }
     const second = await plan()
     await startJob(second.id)
-    expect(asked.at(-1).allowedProviders).toBeUndefined()
-    expect(asked.at(-1).ignoredProviders).toBeUndefined()
-
-    workflows.value = {
-      convert: {
-        providerId: 'p1',
-        model: 'strong',
-        allowedProviders: ['big'],
-        ignoredProviders: ['small'],
-      },
-    }
-    const third = await plan()
-    await startJob(third.id)
     expect(asked.at(-1).allowedProviders).toEqual(['big'])
     expect(asked.at(-1).ignoredProviders).toEqual(['small'])
   })
@@ -648,8 +659,14 @@ describe('chatModel', () => {
     expect(kept.allowedProviders).toEqual(['fast'])
   })
 
-  it('takes the preset in use, which a new chat runs on, when it is given none', () => {
-    expect(chatModel()).toEqual({
+  it('takes the chat’s preset, its routing with it', () => {
+    const preset = /** @type {any} */ ({
+      providerId: 'p1',
+      model: 'active',
+      allowedProviders: ['fast'],
+      ignoredProviders: ['slow'],
+    })
+    expect(chatModel(preset)).toEqual({
       providerId: 'p1',
       model: 'active',
       allowedProviders: ['fast'],
@@ -663,7 +680,7 @@ describe('chatModel', () => {
       'No AI provider is connected.'
     )
     expect(() => chatModel(/** @type {any} */ ({ providerId: 'p1', model: '' }))).toThrow(
-      'Pick a model in Settings › AI.'
+      'Choose a model for this chat.'
     )
   })
 })

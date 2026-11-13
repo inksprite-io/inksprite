@@ -5,7 +5,7 @@ tableOfContents:
   maxHeadingLevel: 3
 ---
 
-import Screenshot from '../../components/Screenshot.astro';
+import Screenshot from "../../components/Screenshot.astro";
 
 In the chat you work through your project with a model, which reads, searches
 and writes its documents when you ask. Each project keeps its own chats.
@@ -13,16 +13,19 @@ and writes its documents when you ask. Each project keeps its own chats.
 ## Start a chat
 
 Type in the box at the bottom of the chat and press <kbd>Enter</kbd> to send;
-<kbd>Shift</kbd> <kbd>Enter</kbd> starts a new line. On a phone, Return starts
-a new line and the send arrow sends. A message you haven't sent stays in the
-box, even through a reload.
 
-- **New chat**, the **+** at the top of the chat, opens a fresh one. The model
-  names it from your first message.
-- <kbd>Esc</kbd>, or the stop button, stops a reply. What it wrote stays.
-- To add a turn without asking for a reply, click the arrow beside send and
-  choose **Add as user** or **Add as assistant**, or press <kbd>⌘</kbd>
-  <kbd>Enter</kbd> or <kbd>⌥</kbd> <kbd>Enter</kbd> (<kbd>Ctrl</kbd>
+<kbd>Shift</kbd> <kbd>Enter</kbd> starts a new line. On a phone, Return starts a
+new line and the send arrow sends. A message you haven't sent stays in the box,
+even through a reload.
+
+- **New chat**, the **+** at the top of the chat, opens a fresh one in a
+  [tab](#tabs) of its own. The model names it from your first message.
+- <kbd>Esc</kbd>, or the stop button, stops a reply. What it wrote stays. You
+  can write your next message while it replies, and send it once it's done.
+- To add a turn without asking for a reply, right-click send, or hold a finger
+  on it, and choose **Add as user** or **Add as assistant**, or press
+  <kbd>⌘</kbd> <kbd>Enter</kbd> or <kbd>⌥</kbd> <kbd>Enter</kbd> (
+  <kbd>Ctrl</kbd>
   <kbd>Enter</kbd> or <kbd>Alt</kbd> <kbd>Enter</kbd> on Windows and Linux).
   Write the model's side yourself to show it what you want.
 
@@ -43,17 +46,34 @@ at the top of the list, brings an exported chat into the open project. It
 takes SillyTavern chats too, and files each under its character's card when
 the card is in the project.
 
+## Tabs
+
+Each chat you open has a tab above it, as documents have above the editor.
+
+- A chat you click in the chat list opens in a tab in italics, which the next
+  chat you click takes over. Send something in it, or double-click its tab, to
+  keep it.
+- **New chat** and **Fork from here** open a tab beside the one you're in.
+- Close a tab with its **×**, or click it with the middle button, and you're
+  back in the tab you were in before it. Closing the last leaves a new chat.
+- Right-click a tab to **Close others**, **Export** or **Delete** its chat.
+- A spinner on a tab, and on the chat in the chat list, means the model is
+  working in that chat. A dot means it stopped while you were in another chat:
+  it finished, or it's waiting for you to allow something. The dot goes once
+  you open the chat.
+- Point at a tab to see the chat's profile.
+
 ## Profiles
 
-A profile sets how a chat starts: its system prompt, its tools, **Project
-context**, its author's note, and the [preset](/providers/#presets) it runs
-on. The chat's profile is named at the top of the
-chat. Click it to choose another, and the chat takes that profile's settings in
-place of its own.
+A profile sets how a chat starts: its system prompt, its author's note, its
+tools, and its [model](#the-chats-model). The first of the chips under the
+message box names the chat's profile. Click it and choose another, and the chat
+takes that profile's settings in place of its own. The same menu
+[makes, renames and deletes](#manage-profiles) profiles.
 
 New chats start on the project's **Default chat profile**, set in
 [Project settings](/projects/#project-settings). A project that hasn't chosen
-one uses **Profile for new chats** in **Settings** › **System** › **Chats**.
+one uses the profile with the star in the profile menu.
 Chats on a character card start on **Profile for character cards** in
 **Settings** › **Extensions** › **Roleplay**.
 
@@ -69,55 +89,82 @@ Chats on a character card start on **Profile for character cards** in
 
 ### Save changes to a profile
 
-Whatever you change in a chat's settings changes that chat only. To start new
-chats with the same changes, click **Save to profile**, the disk beside the
-profile's name. It shows only while the chat differs from its profile. Chats
-already on the profile keep their own settings.
+A chat's system prompt and author's note are that chat's only. Its
+[model](#the-chats-model) and [tools](#tools) aren't: changing them in a chat
+changes them for its profile's next chats too. A built-in skill's wording,
+under **Skills** in [Settings](#chat-settings), is its profile's: changing it
+in any chat changes it for every chat on the profile.
 
-The built-in profiles can't be changed. Saving to one makes a copy named after
-it, such as *Default - Custom*, and moves the chat onto it. Where the built-in
-was the profile chats start on, the copy takes its place.
+To start new chats with the chat's system prompt or author's note, click the
+disk beside its name, under **Prompts** in [Settings](#chat-settings). It shows
+only while the text differs from its profile's, beside the arrow that takes the
+profile's back.
+Chats already on the profile keep their own settings. Saving to a built-in
+profile changes it in place. Choosing the chat's own profile again in the
+profile menu puts the whole chat back as its profile has it.
 
-In the **⋮** menu beside the profile:
+### Manage profiles
 
-- **New profile** makes a profile from this chat's settings and moves the chat
-  onto it. A copy of one of your own is numbered, such as *Notes (2)*.
-- **Reset to profile** puts the chat back as its profile has it.
-- **Rename profile** and **Delete profile** work on your own profiles. Deleting
-  one sends its chats back to the project's default. You can also right-click a
-  profile in either list of profiles.
+The profile menu, from the profile chip under the message box, lists every
+profile. The chat's own is tinted.
+
+- The star marks the profile new chats start on where a project hasn't chosen
+  its own. Right-click another and choose **Set as default** to start them
+  there.
+- **New profile…** asks for a name, makes a profile from this chat's settings,
+  and moves the chat onto it.
+- Right-click a profile of your own to **Rename…** or **Delete** it. Deleting
+  one sends its chats back to the project's default.
+- **Prompts…** opens the chat's prompts in [Settings](#chat-settings).
+
+## The chat's model
+
+The second chip under the message box names the chat's model, with its
+connection and how hard it thinks. Click it for the chat's **Model** and its
+**Reasoning effort**. Each is this chat's, and the next
+new chat on its profile starts with it too; chats already going keep their own.
+A chat moved to a stronger model for a hard question leaves your other chats
+where they were.
+
+**Model** lists the chat's model and the ones you chose lately. **Other
+models…** opens **Settings** › **Models**, the
+[list of models](/providers/#models), where a click on any model of your
+connections moves the chat onto it. **Reasoning effort** lists only the levels
+the model takes, and says _None_ for a model with nothing to choose.
+
+A chat keeps the model it first answered on.
+
+The last chip says **Suggesting** or **Editing**: whether the model's changes
+to documents wait for you. See [Document edits](#document-edits).
 
 ## Chat settings
 
-Click the gear in the message box. The settings take the chat's place until you
-click the arrow at the top.
+The rest of a chat's settings are in **Settings**, the gear at the bottom left.
+While a chat is showing, its profile is at the top of the list of sections,
+with the same [menu](#manage-profiles) as the chip under the message box, and
+**Prompts**, **Models**, **Tools** and **Skills** are that chat's.
 
-<Screenshot name="chat-settings" alt="A chat's settings: its profile, system prompt and author's note, and its tools" />
+<Screenshot name="chat-settings" alt="Settings, open at a chat's tools" />
 
-- **System prompt** tells the model what it's there to do. It starts as the
-  profile's; the reset button beside it goes back to the profile's.
-- **Author's note** is this chat's own, and goes with each message you send.
-  Put standing instructions here: a tense, a point of view, things to avoid.
+- **Prompts**:
+  - **System prompt**, which tells the model what it's there to do. It starts
+    as the profile's; the reset button beside it goes back to the profile's.
+  - **Author's note**, this chat's own, which goes with each message you send.
+    Put standing instructions here: a tense, a point of view, things to avoid.
+
   **Open in editor**, beside either one, opens it as a tab in the editor.
-- **Project context** sends, with every message, the project's name, its
-  summary from [Project settings](/projects/#project-settings), how many
-  documents it holds, and the documents you [pinned](#pin-documents). Turn it
-  off for a chat that has nothing to do with the project.
-- **AI**, further down, is the preset this chat runs on: a provider, a model
-  and how it generates. It starts as the profile's, and the reset button beside
-  it goes back to the profile's. Its **⋮** menu has **New preset**, a copy this
-  chat moves onto, and **Edit preset**; both open **Settings** › **AI** on it,
-  and a change there reaches every chat on that preset. See
-  [Presets](/providers/#presets). **Voices** sets the **Assistant
-  voice** and **Your voice** that read turns aloud; see
-  [Narration](/narration/).
+- **Models** is the [list of models](/providers/#models): click one to move
+  the chat onto it. The button at the end of a model's card opens its
+  settings, which reach every chat on that model.
+- **Tools**, **Skills** and **Roleplay** are below.
 
 ### Roleplay
 
-**Roleplay** holds what a chat on a [character card](/roleplay/) brings with
-it. It shows in roleplay chats: chats on a card, and chats on Roleplay or on
-the **Profile for character cards**. It belongs to the chat: **Save to
-profile** leaves it out, and switching profiles keeps it.
+**Roleplay**, under **Prompts**, holds what a chat on a
+[character card](/roleplay/) brings with it. It shows in roleplay chats: chats
+on a card, and chats on Roleplay or on the **Profile for character cards**. It
+belongs to the chat: saving a prompt to the profile leaves it out, and
+switching profiles keeps it.
 
 - **User** and **Character** are the names `{{user}}` and `{{char}}` become in
   what the model reads. Left empty, the model reads the macro as written. A new
@@ -128,9 +175,17 @@ profile** leaves it out, and switching profiles keeps it.
 
 ### Tools
 
-**Tools** lists what the model can use, in groups. Switch off a group, or one
-tool in it, to keep it from the model; hover a tool to see what it does.
-**Enable tools** switches **Documents** and **RPG Tools** together.
+**Tools** lists what the model can use, in groups by where each comes from.
+Switch off a group, or one tool in it, to keep it from the model; hover a tool
+to see what it does. A switch here is this chat's, and the next new chat on
+its profile starts with it too; chats already going keep their own.
+**Enable tools** switches them all off, and back on as each was switched.
+
+Something you add, a search service, an [MCP server](/mcp/) or
+[Python](/python/), is on in every chat, except on the Roleplay and Blank
+profiles, which offer only what they start with. A tool that asks before each
+call says **Asks first**, and one you've let run without asking says **Always
+allowed**.
 
 - **Documents**: listing, searching, reading, creating, editing, renaming,
   moving and deleting the project's documents,
@@ -139,15 +194,25 @@ tool in it, to keep it from the model; hover a tool to see what it does.
   [trash](/projects/#delete-and-the-trash). To let the model read but not
   write, leave **Read document**, **Describe document**, **List documents**,
   **Search documents** and **Explore documents** on, and switch off the rest.
-- **RPG Tools**: dice, the oracle, tables, tarot and names, for games.
 - **Web**: searching the web and reading pages, once you've connected a search
   service. See [Web Search](/web-search/).
 - **Python**: running code, in the desktop app, once you've turned it on. See
   [Python](/python/).
 - Each [MCP server](/mcp/) you've connected has a group of its own.
+- **Skills**: each of your [skills](/skills/) the model can call.
+- **RPG Tools**: dice, the oracle, tables, tarot and names, for games.
 
-**Apply edits automatically** is for every chat. Switch it off, and the model
-asks first:
+If the switches are greyed out, the chat's model can't call tools, or **Allow
+tool use** is off under **Generation** in its
+[settings](/providers/#models).
+
+### Document edits
+
+The last chip under the message box says whether the model's changes to
+documents wait for you. It's this chat's, and new chats on its profile start
+with it. The chip is there while the chat has its **Documents** tools.
+**Editing** makes the model's changes at once; **Suggesting** has it ask
+first:
 
 - Its changes to a document's text are [suggestions](/comments/#suggestions)
   in the text, each change on its own, for you to accept or reject there or in
@@ -159,49 +224,64 @@ asks first:
 
 A move, a rename or a new folder is made at once.
 
-If the switches are greyed out, **Allow tool use** is off under **Generation**
-in the chat's preset.
+When the model adds to the end of a document you have open, its words appear
+there as it writes them, as a suggestion if it's suggesting. They go into the
+document once it has finished writing them. If you stop the reply before
+then, nothing goes in.
 
 ### Skills
 
-**Skills** lists every [skill](/skills/): yours, then the built-in ones, each
-in alphabetical order. Each one the model can call has a switch. **Compact**
-has no switch, as only you call it. **Interpret** and **Write**, marked
-**Experimental**, are listed last, each only while it's switched on in
-**Settings** › **Skills**; they start off in each chat. Open a skill to change
-its **Prompt** for this chat ([more](/skills/#for-one-chat)). A skill the
-model has loaded says **Loaded**; **Drop** lets it go at the next
-[summary](#compact-a-long-chat).
+**Skills** lists every [skill](/skills/): the built-in ones, then your own.
+Whether the model can call one is under **Tools**. Open a built-in skill to
+change its **Instructions** for the chats on this chat's profile
+([more](/skills/#reword-a-built-in-skill)).
+
+### Voices
+
+Once a speech service is set up for [narration](/narration/), **Read aloud**
+on a turn reads it. Right-click **Read aloud** and choose a voice under **Set
+voice**: on a reply, for the model's turns in this chat; on a turn of yours,
+for your own, which are read in the model's voice until you choose another.
+**Narration settings…**, under the voices, opens the narration panel, where
+voices are made.
 
 ## What the model sees of your project
 
-The model doesn't get the whole project with every message. It gets what
-**Project context** sends, and finds the rest itself: it lists, searches and
-reads documents as it needs them. Click the **tool calls** box above a reply to
+The model doesn't get the whole project with every message. It gets the
+project's name and [summary](/projects/#project-settings), and finds the rest
+itself: it lists, searches and reads documents as it needs them. Click the **tool calls** box above a reply to
 see what it looked at; a path there opens that document, and so does a link to
 a document in a reply. To point the model at
 a document, type `[[` and the start of its name in your message and pick it
 from the list, or drag it from the outline into your message, or right-click
 it, choose **Copy link**, and paste it there: it shows as a link to the
 document, and the model reads the document's path. A `#` after the name lists
-its headings, as in a document.
+its headings, as in a document. The list has folders too, for the model to
+list.
 
-### Pin documents
+### Attach documents
 
-Pin what the model should always have in front of it: an outline, a style
-guide, the chapter you're on. Hover the document in the outline and click the
-pin; on a phone, long-press it and choose **Pin to chat**. A pinned document's
-title shows in colour, and goes to the model whole with every message, so a
-long one costs on every turn. Pin a folder to pin everything in it. A pin
-belongs to the chat you made it in.
+To put a document in front of the model without waiting for it to read it,
+attach it: type `@` and the start of its name in your message, and pick it
+from the list. Its link goes into your message with the `@` before it, and the
+whole document goes to the model with the message, as it stands when you send
+it. The list says how many words each document has, since all of them are
+sent.
 
-<Screenshot name="chat-pinned" alt="An outline with one document pinned to the chat" />
+An attached document stays in the conversation as it was sent. When it changes
+later, the model is told so, and reads it again when it needs to.
+
+<Screenshot
+  name="chat-attach"
+  alt="The documents listed as @ is typed in the message box, each with its length"
+/>
 
 ### Hide documents
 
-The eye beside the pin hides a document or a folder from the open chat: the
-model can't list, search or read it. To hide one from every chat, right-click
-it and choose **Hide from all chats**.
+Hover a document or a folder in the outline and click the eye to hide it from
+the open chat: the model can't list, search or read it. On a phone, long-press
+it and choose **Hide from this chat**. To hide one from every chat,
+right-click it and choose **Hide from all chats**.
 
 ### Explore the project
 
@@ -216,21 +296,17 @@ its document changes, and exploring again reads only what has changed.
   with a line on each document in it, which the model reads too.
 - The model can explore too, when it needs to find its way around. What it
   found shows in its reply.
-- **Explore…** on a folder's menu, or the project's, explores without a chat.
-  The **Jobs** window shows how far it has got.
-
-From a chat it runs on the chat's model, and from the menu on the **Default
-preset** in **Settings** › **System** › **Chats**. Each request is paid for like a chat message, so it
-asks first when it will read more than about 50,000 tokens, saying about how
-many. **Always allow**, beside the model's call, turns off **Ask before exploring large folders** in
-**Settings** › **System** › **Chats**, and it stops asking. What's hidden from
-all chats, [repositories](/repositories/), and files with no text are left
-out.
+  It runs on the chat's model. Each request is paid for like a chat message, so it
+  asks first when it will read more than about 50,000 tokens, saying about how
+  many. **Always allow**, beside the model's call, stops it asking, for good.
+  What's hidden from all chats, [repositories](/repositories/), and files with
+  no text are left out.
 
 ## A turn's buttons
 
 - **Copy**, and **Read aloud** once a speech service is set up for
-  [narration](/narration/).
+  [narration](/narration/). Right-click **Read aloud** to choose its
+  [voice](#voices).
 - **Edit turn** or **Edit message**, the pencil, changes what was said, without
   asking for a new reply. <kbd>⌘</kbd> <kbd>Enter</kbd> (<kbd>Ctrl</kbd>
   <kbd>Enter</kbd> on Windows and Linux) saves, and <kbd>Esc</kbd> cancels.
@@ -238,18 +314,22 @@ out.
   **Send again**, the arrow on your turn, asks again for its reply, or for one
   where there is none.
 - **Previous answer** and **Next answer** step through the last reply's
-  answers, as *2 / 3*. Each answer's changes to documents come and go with it.
+  answers, as _2 / 3_. Each answer's changes to documents come and go with it.
 - **⋯** holds **Show raw** (the turn as the model is sent it), **Summarize up
   to here** ([below](#compact-a-long-chat)), **Delete turn** or **Delete
   message**, and:
-  - **Fork from here**: copies the chat up to that turn into a new chat, named
-    with *- forked* on the end. Taken at an [aside](#commands), the fork goes
-    on from it: the question and its answer are part of the new chat, for you
-    to say more about.
+  - **Fork from here**: copies the chat up to that turn into a new chat and
+    opens it in a tab beside this one. It's named with _- forked_ on the end
+    until the model names it from the first thing you say in it. To fork the
+    whole chat and say something there at once, use
+    [`/fork`](#commands).
   - **Rewind to here**: after asking, removes the turns after it and undoes
     their changes to documents, except passages you've edited since.
 
-<Screenshot name="chat-turn-menu" alt="A reply's buttons, its other answer, and its menu" />
+<Screenshot
+  name="chat-turn-menu"
+  alt="A reply's buttons, its other answer, and its menu"
+/>
 
 Regenerating an earlier reply removes the turns after it and undoes their
 changes to documents, except passages you've edited since. To keep them,
@@ -265,30 +345,28 @@ Type `/` at the start of a line for the commands. Keep typing to narrow the
 list; <kbd>Tab</kbd> or <kbd>Enter</kbd> finishes the name, and <kbd>Esc</kbd>
 closes the list. The sparkles mark the ones that call the model.
 
-| Type | And |
-| --- | --- |
-| `/roll 3d6+2` | It rolls the dice. `max(2d20)+1` keeps the higher of two d20s, for advantage, and `min(2d20)+1` the lower. Add a question after them, as in `/roll 2d6 How does the monster react?`, and the model reads the roll for it. |
-| `/oracle(likely) Is the door locked?` | It answers yes or no at the odds you give: nearly impossible, very unlikely, unlikely, 50/50, likely, very likely or nearly certain. Leave them off for 50/50. |
-| `/roll-table "a knife" "a letter" "nothing"` | It picks one of the options. |
-| `/tarot(1, full) Will she forgive him?` | It draws cards: 3 from the major arcana unless you say how many (up to 10) or `full` for the whole deck. The question is optional. |
-| `/name(female, 3)` | It makes up names, `female` or `male`, up to 25. |
-| `/director Wrap this scene up.` | It tells the model what the next reply needs. |
-| `@cody I hide in the closet.` | It says what someone in the scene says or does. |
-| `/aside What should happen next?` | The model answers, and then forgets the question and its answer: the chat goes on as if neither was said. |
-| `/interpret What is the innkeeper afraid of?` | The model draws a tarot card and reads it against the story, for an idea. [Experimental](/skills/#the-built-in-skills). |
-| `/write Yvette goes down into the cistern.` | The model writes the prose from the project's notes, as its reply. [Experimental](/skills/#the-built-in-skills). |
-| `/explore Notes` | The model writes a line on what each document in the folder is about, to find things by. Leave the folder off for the whole project; [see above](#explore-the-project). |
-| `/compact` | The model summarizes the chat; [see below](#compact-a-long-chat). |
+| Type                                         | And                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/roll 3d6+2`                                | It rolls the dice. An `a` adds an advantage die and drops the lowest, so `3d6a` rolls four d6s and keeps the best three, and `d20a+1` keeps the higher of two d20s. A `b` adds a burden die, or disadvantage, and drops the highest. `3d6a2` adds two dice and drops two. Dice can be added to, taken from, multiplied and divided, as in `2d6-1d6`, `5d4*10` or `8d6+4 / 2`, which rounds down. What's written without spaces counts as one roll, so `3d6+1 * 2` doubles all of it and `3d6 + 1 * 2` only the 1. Add a question after them, as in `/roll 2d6 How does the monster react?`, and the model reads the roll for it. |
+| `/oracle(likely) Is the door locked?`        | It answers yes or no at the odds you give: nearly impossible, very unlikely, unlikely, 50/50, likely, very likely or nearly certain. Leave them off for 50/50.                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `/roll-table "a knife" "a letter" "nothing"` | It picks one of the options.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `/tarot(1, full) Will she forgive him?`      | It draws cards: 3 from the major arcana unless you say how many (up to 10) or `full` for the whole deck. The question is optional.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `/name(female, 3)`                           | It makes up names, `female` or `male`, up to 25.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `/director Wrap this scene up.`              | It tells the model what the next reply needs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `/fork What should happen next?`             | It copies the chat into a new tab and sends the message there, so the chat you were in goes on as if it was never asked. `/fork` alone just makes the copy.                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `/explore Notes`                             | The model writes a line on what each document in the folder is about, to find things by. Leave the folder off for the whole project; [see above](#explore-the-project).                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `/compact`                                   | The model summarizes the chat; [see below](#compact-a-long-chat).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 A command's answer goes into your turn, and the model takes it as settled;
-`/write` and `/compact` answer in turns of their own. A message of nothing but
+`/compact` answers in a turn of its own. A message of nothing but
 commands gets no reply, so you can settle things before you say what you do;
-`@` lines and your [saved prompts](/skills/#saved-prompts) do ask for one.
-`/aside` is a message of its own, and everything after it, lines and all, is
-the question.
+your own [skills](/skills/#make-your-own) do ask for one.
+`/fork` is a message of its own, and everything after it, lines and all, goes
+to the fork.
 **Ask again** on an answer asks again, and **Edit command** changes the
-question but keeps the answer. A roll shows a line for each kind of die above
-its total. **Edit turn** has them as text: change a die and the total is
+question but keeps the answer. A roll shows its dice above its total, a line
+for each set, with the ones it dropped first and struck through. **Edit turn**
+has them as text, the dropped dice between `~~`: change a die and the total is
 worked out again, or change only the total to keep your own number. Your own [skills](/skills/), and the prompts of
 [MCP servers](/mcp/) you've connected, are in the list too.
 
@@ -310,7 +388,7 @@ first message always stays as it is.
 Each summary folds in the one before, so the newest tells the whole story.
 Edit it like any turn. Delete it, and the model goes back to the summary
 before, or to the whole chat. To change how a profile summarizes, change
-**Compact**'s **Prompt** under [Skills](#skills).
+**Compact**'s **Instructions** under [Skills](#skills).
 
 ## Find in a chat
 

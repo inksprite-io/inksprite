@@ -31,12 +31,12 @@ vi.mock('@/stores/syncStore', () => ({
 const provider = { id: 'p1', name: 'Test', type: 'generic', endpoint: 'http://x' }
 vi.mock('@/composables/useAIConfig.js', () => ({
   useAIConfig: () => ({
-    activeAIPreset: { value: { providerId: 'p1', model: 'glm' } },
+    startingPreset: { value: { providerId: 'p1', model: 'glm' } },
     getProvider: id => (id === 'p1' ? provider : null),
   }),
 }))
 vi.mock('@/composables/useApplicationState.js', () => ({
-  useApplicationState: () => ({ workflows: { value: { convert: {} } } }),
+  useApplicationState: () => ({ workflows: { value: { convert: {} } }, noteModelUse: () => {} }),
 }))
 
 /** A PDF's layout, with bookmarks, for the file path. */

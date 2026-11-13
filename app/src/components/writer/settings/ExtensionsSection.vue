@@ -70,6 +70,77 @@
     </ExpandableSection>
 
     <ExpandableSection
+      title="Web search"
+      storage-key="ui.settings.extensions.web"
+      subsection
+      :disabled="!webOn"
+      container-class="pt-1"
+      content-wrapper-class="flex flex-col"
+      data-extension="web"
+    >
+      <template #actions>
+        <ToggleSwitch
+          :model-value="webOn"
+          class="flex-none"
+          aria-label="Web search"
+          data-extension-switch="web"
+          @update:model-value="on => applicationState.setExtension('web', on)"
+        />
+      </template>
+      <div class="flex flex-col gap-3 pt-2 pb-1">
+        <div class="flex flex-col gap-1">
+          <label
+            for="web-service"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Search with</label
+          >
+          <Select
+            input-id="web-service"
+            :model-value="webChoice"
+            :options="webServices"
+            option-label="name"
+            option-value="id"
+            placeholder="Choose a service"
+            aria-label="Search with"
+            class="w-full dark:!bg-surface-900"
+            size="small"
+            data-web-service-choice
+            @update:model-value="web.choose"
+          />
+          <p
+            v-if="webProblem"
+            class="m-0 text-xs text-red-600 dark:text-red-400"
+            data-web-service-problem
+          >
+            {{ webProblem }}
+            <button
+              type="button"
+              class="underline"
+              data-action="open-connections"
+              @click="settingsPanel.open('connections', 'web')"
+            >
+              Open Connections
+            </button>
+          </p>
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <label
+            for="web-ask-before-saving"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Ask before saving pages</label
+          >
+          <ToggleSwitch
+            :model-value="!web.setup.value.saveWithoutAsking"
+            input-id="web-ask-before-saving"
+            class="flex-none"
+            data-field="web-ask-before-saving"
+            @update:model-value="web.setAskBeforeSaving"
+          />
+        </div>
+      </div>
+    </ExpandableSection>
+
+    <ExpandableSection
       v-if="pythonHere"
       title="Python"
       storage-key="ui.settings.extensions.python"
@@ -108,26 +179,6 @@
             @update:model-value="applicationState.setPythonTimeLimit"
           />
         </div>
-        <div class="flex flex-col gap-1">
-          <span class="text-xs font-medium text-surface-700 dark:text-surface-200">
-            Used in chats on
-          </span>
-          <div class="flex flex-wrap gap-x-4 gap-y-1">
-            <label
-              v-for="profile in profiles"
-              :key="profile.id"
-              class="flex items-center gap-2 text-xs"
-            >
-              <ToggleSwitch
-                :model-value="pythonProfileIds.includes(profile.id)"
-                :aria-label="`Run Python in chats on ${profile.name}`"
-                :data-python-profile="profile.id"
-                @update:model-value="setPythonProfile(profile.id, $event)"
-              />
-              {{ profile.name }}
-            </label>
-          </div>
-        </div>
       </div>
     </ExpandableSection>
   </div>
@@ -144,13 +195,11 @@ import ExpandableSection from '@/components/common/ExpandableSection.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useProfiles } from '@/composables/useProfiles'
 import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
+import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
+import { useWebSearch } from '@/composables/useWebSearch.js'
+import { serviceInUse } from '@/web/config.js'
 import { hasPython } from '@/platform/python.js'
-import {
-  PYTHON_GROUP,
-  PYTHON_TIME_LIMITS,
-  pythonProfiles,
-  setPythonProfile,
-} from '@/ai/tools/python.js'
+import { PYTHON_GROUP, PYTHON_TIME_LIMITS } from '@/ai/tools/python.js'
 
 /**
  * The extensions: parts of the app not every writer wants, each switched on
@@ -158,9 +207,12 @@ import {
  * profiles; its settings are the ones only roleplay has. Switching it off
  * hides all of it and deletes nothing, the card library included.
  *
- * Python is the model running code, in the desktop app only, in chats on the
- * profiles listed here or that switch it on themselves. See
- * `ai/tools/python.js`.
+ * Web search is the model searching the web and reading pages, through the
+ * service chosen here, on from the start. Its services' keys are in
+ * Settings › Connections, which lists them only while it is on. See `web/`.
+ *
+ * Python is the model running code, in the desktop app only, in the chats
+ * that have it on among their tools. See `ai/tools/python.js`.
  *
  * See `extensions/`.
  */
@@ -179,8 +231,30 @@ const roleplayOn = computed(() => applicationState.extensionOn('roleplay') === t
 const pythonHere = hasPython()
 const pythonOn = computed(() => applicationState.extensionOn(PYTHON_GROUP) === true)
 
-/** The profiles whose chats run Python. */
-const pythonProfileIds = computed(() => pythonProfiles())
+const web = useWebSearch()
+const settingsPanel = useSettingsPanel()
+const webOn = computed(() => applicationState.extensionOn('web') !== false)
+
+/** The services this copy of the app can reach. */
+const webServices = web.services.filter(web.reachable)
+
+/** The service chosen, where it can be reached from here. */
+const webChoice = computed(() => {
+  const id = web.setup.value.service
+  return webServices.some(service => service.id === id) ? id : null
+})
+
+/**
+ * What stands between the service chosen and a search: it refused its key,
+ * or it has none and needs one. Both are put right in Connections.
+ */
+const webProblem = computed(() => {
+  const service = webServices.find(one => one.id === webChoice.value)
+  if (!service) return ''
+  const check = web.checks.value[service.id]
+  if (check && 'error' in check) return check.error
+  return serviceInUse(web.setup.value) ? '' : `${service.name} needs a key.`
+})
 
 // As the picker shows it: the NSFW switch puts a built-in's counterpart in
 // its place, as it does in a chat.

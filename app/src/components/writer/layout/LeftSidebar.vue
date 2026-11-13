@@ -17,7 +17,6 @@
     <ChatHistory
       v-else-if="tab === SIDEBAR_TABS.CHATS"
       :story-id="storyId"
-      :selected-chat-id="chatId"
       @select-chat="$emit('select-chat', $event)"
     />
     <NarrationPanel
@@ -54,7 +53,7 @@ import { SIDEBAR_TABS } from './layout.js'
  * @property {string} storyId
  * @property {string} [documentId] - The document open in the editor, highlighted in the tree
  * @property {string|null} [chatId] - The chat open in the chat panel: highlighted in the list,
- *   and what the tree pins a document to
+ *   and what the tree shows and hides documents for
  * @property {import('./layout.js').SidebarTab} tab - Which list is showing
  */
 defineProps({

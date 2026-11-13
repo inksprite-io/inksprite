@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from 'pinia'
 import { useSkills, renamedIn } from '@/composables/useSkills'
 import { useChatProfileStore } from '@/stores/chatProfileStore'
 import { useChatsStore } from '@/stores/chatsStore'
-import { setLibrarySkills } from '@/ai/skills/index.js'
+import { librarySkills, setLibrarySkills } from '@/ai/skills/index.js'
 
 const tables = vi.hoisted(() => ({ skills: [], chatProfiles: [], chats: [] }))
 
@@ -34,6 +34,9 @@ vi.mock('@/stores/syncStore.js', () => ({
 /** A SKILL.md for a saved prompt of this name. */
 const file = name =>
   `---\nname: ${name}\ndescription: ${name}.\ndisable-model-invocation: true\n---\n\nDo ${name}.\n`
+
+/** A SKILL.md with nothing written in it yet. */
+const UNWRITTEN = "---\nname: ''\ndescription: ''\n---\n\n\n"
 
 describe('renamedIn', () => {
   it('moves a profile’s wording and a switched-off tool to the new name', () => {
@@ -87,7 +90,7 @@ describe('useSkills', () => {
     await skills.saveSkill({ text: file('tighten') })
 
     expect(skills.nameProblem('tighten')).toMatch(/already have a skill/)
-    expect(skills.nameProblem('interpret')).toMatch(/built-in skill/)
+    expect(skills.nameProblem('compact')).toMatch(/built-in skill/)
     expect(skills.nameProblem('roll')).toMatch(/already a \/roll/)
     expect(skills.nameProblem('roll_dice')).toMatch(/tool called roll_dice/)
     expect(skills.nameProblem('trim')).toBe('')
@@ -153,7 +156,7 @@ describe('useSkills', () => {
       const rows = skills.planImport([
         found(file('trim')),
         found(file('tighten')),
-        found(file('interpret')),
+        found(file('compact')),
         found(file('trim')),
         found('no frontmatter'),
       ])
@@ -163,7 +166,7 @@ describe('useSkills', () => {
       ).toEqual([
         ['trim', false, '', 0],
         ['tighten', true, '', 0],
-        ['interpret', false, 'interpret is a built-in skill.', 0],
+        ['compact', false, 'compact is a built-in skill.', 0],
         ['trim', false, 'Another skill here is called trim.', 0],
         ['', false, '', 1],
       ])
@@ -202,12 +205,118 @@ describe('useSkills', () => {
     })
   })
 
+  it('keeps a new skill under the name its file gives it, and offers it once it reads', async () => {
+    const skills = useSkills()
+    await skills.ready()
+
+    const made = skills.createSkill(file('tighten'))
+
+    expect(made.name).toBe('tighten')
+    expect(skills.problemOf(made)).toBe('')
+    expect(librarySkills().map(skill => skill.name)).toEqual(['tighten'])
+  })
+
+  it('keeps a new skill whose file gives it no name it can have, under one nothing has', async () => {
+    const skills = useSkills()
+    await skills.ready()
+    await skills.saveSkill({ text: file('tighten') })
+
+    const unnamed = skills.createSkill(UNWRITTEN)
+    const second = skills.createSkill(UNWRITTEN)
+    const taken = skills.createSkill(file('tighten'))
+
+    expect([unnamed.name, second.name, taken.name]).toEqual([
+      'new-skill',
+      'new-skill-2',
+      'new-skill-3',
+    ])
+    expect(skills.problemOf(unnamed)).toBe('It needs a name.')
+    expect(skills.problemOf(taken)).toBe('You already have a skill called tighten.')
+    expect(librarySkills().map(skill => skill.name)).toEqual(['tighten'])
+  })
+
+  it('keeps a file as it is typed, whatever state it is in', async () => {
+    const skills = useSkills()
+    await skills.ready()
+    const made = skills.createSkill(UNWRITTEN)
+
+    const unreadable = '---\nname: [oops\n---\n'
+    const kept = await skills.writeSkill(made.id, unreadable)
+
+    expect(kept?.text).toBe(unreadable)
+    expect(kept?.name).toBe('new-skill')
+    expect(skills.problemOf(/** @type {any} */ (kept))).toMatch(/^The frontmatter can’t be read/)
+    expect(await skills.writeSkill('skill_gone', unreadable)).toBeNull()
+  })
+
+  it('offers a skill once its file reads, under the name the file gives it', async () => {
+    const skills = useSkills()
+    await skills.ready()
+    const made = skills.createSkill(UNWRITTEN)
+
+    const kept = await skills.writeSkill(made.id, file('tighten'))
+
+    expect(kept?.name).toBe('tighten')
+    expect(skills.problemOf(/** @type {any} */ (kept))).toBe('')
+    expect(librarySkills().map(skill => skill.name)).toEqual(['tighten'])
+  })
+
+  it('leaves a name with the skill that had it first, and says so of the other', async () => {
+    const skills = useSkills()
+    await skills.ready()
+    await skills.saveSkill({ text: file('tighten') })
+    const other = await skills.saveSkill({ text: file('trim') })
+    const id = 'skill' in other ? other.skill.id : ''
+
+    const kept = await skills.writeSkill(id, file('tighten'))
+
+    expect(kept?.name).toBe('trim')
+    expect(skills.problemOf(/** @type {any} */ (kept))).toBe(
+      'You already have a skill called tighten.'
+    )
+    expect(librarySkills().map(skill => skill.name)).toEqual(['tighten'])
+
+    const command = await skills.writeSkill(id, file('roll'))
+    expect(command?.name).toBe('trim')
+    expect(skills.problemOf(/** @type {any} */ (command))).toBe('There is already a /roll.')
+  })
+
+  it('gives a skill the name its file asks for once the name comes free', async () => {
+    const skills = useSkills()
+    await skills.ready()
+    const first = await skills.saveSkill({ text: file('tighten') })
+    const other = await skills.saveSkill({ text: file('trim') })
+    const id = 'skill' in other ? other.skill.id : ''
+    await skills.writeSkill(id, file('tighten'))
+
+    await skills.deleteSkill('skill' in first ? first.skill.id : '')
+
+    expect(skills.getSkill(id)?.name).toBe('tighten')
+    expect(librarySkills().map(skill => skill.name)).toEqual(['tighten'])
+  })
+
+  it('carries a rename typed into the file to what hangs on the name', async () => {
+    const skills = useSkills()
+    await skills.ready()
+    const profiles = useChatProfileStore()
+    await profiles.ensureInitialized()
+    const profile = profiles.createProfile({ name: 'Editing' })
+    profiles.updateProfile(profile.id, {
+      settings: /** @type {any} */ ({ disabledTools: ['tighten'] }),
+    })
+    const saved = await skills.saveSkill({ text: file('tighten') })
+
+    await skills.writeSkill('skill' in saved ? saved.skill.id : '', file('trim'))
+
+    expect(profiles.getProfile(profile.id)?.settings?.disabledTools).toEqual(['trim'])
+  })
+
   it('forgets a skill it is asked to', async () => {
     const skills = useSkills()
     await skills.ready()
     const saved = await skills.saveSkill({ text: file('tighten') })
 
-    expect(skills.deleteSkill('skill' in saved ? saved.skill.id : '')).toBe(true)
+    expect(await skills.deleteSkill('skill' in saved ? saved.skill.id : '')).toBe(true)
     expect(skills.skills.value).toEqual([])
   })
 })

@@ -45,7 +45,7 @@ Check out the [user guide](https://docs.inksprite.io/) if you need help getting 
 
 **MCP servers and skills:** You can extend inksprite by connecting to [MCP servers](https://docs.inksprite.io/mcp) and adding [custom skills](https://docs.inksprite.io/skills).
 
-**Provider support:** We provide out-of-the-box integrations with OpenRouter, Anthropic, OpenAI, and various local endpoints. inksprite will work with any OpenAI-compatible provider. If you find a provider that doesn’t work, let us know by [opening an issue](https://github.com/inksprite-io/inksprite/issues).
+**Provider support:** We provide out-of-the-box integrations with OpenRouter, NanoGPT, Anthropic, OpenAI, and various local endpoints. inksprite will work with any OpenAI-compatible provider. If you find a provider that doesn’t work, let us know by [opening an issue](https://github.com/inksprite-io/inksprite/issues).
 
 **Encrypted cloud sync:** You can **optionally** back up your work to the cloud, which allows you to [access it from any device](https://docs.inksprite.io/sync) and [collaborate with other inksprite users](https://docs.inksprite.io/sync#share-a-project). You hold the encryption keys, which means that we cannot access your work even if we wanted to (we don’t).
 

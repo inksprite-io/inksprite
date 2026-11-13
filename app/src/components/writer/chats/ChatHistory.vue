@@ -49,7 +49,9 @@
           :key="chat.id"
           :chat-id="chat.id"
           :story-id="props.storyId"
-          :active="chat.id === selectedChatId"
+          :active="chat.id === chatTabs.activeChatId.value"
+          :busy="isWorking(chat.id)"
+          :unread="chatTabs.isUnread(chat.id)"
           :is-any-menu-open="isAnyMenuOpen"
           @select="handleChatSelect"
           @delete="handleChatDelete"
@@ -92,6 +94,8 @@ import { useCardChat } from '@/composables/useCardChat'
 import { useChats } from '@/composables/useChats'
 import { useSearch, stripHtml } from '@/composables/useSearch'
 import { useToast } from '@/composables/useToast'
+import { useChatTabs } from '@/composables/useChatTabs.js'
+import { isWorking } from '@/composables/useChatActivity.js'
 import ChatHistoryCard from './ChatHistoryCard.vue'
 import HeaderButton from '../layout/HeaderButton.vue'
 import PanelHeader from '../layout/PanelHeader.vue'
@@ -99,16 +103,15 @@ import PanelHeader from '../layout/PanelHeader.vue'
 /**
  * @typedef {Object} Props
  * @property {string} storyId - The ID of the current story
- * @property {string|null} [selectedChatId] - The chat open beside this list, marked as such
  */
 const props = defineProps({
   storyId: { type: String, required: true },
-  selectedChatId: { type: String, default: null },
 })
 
 const emit = defineEmits(['select-chat'])
 
 const chatsApi = useChats(props.storyId)
+const chatTabs = useChatTabs(props.storyId)
 const cardChat = useCardChat(props.storyId)
 const backup = useBackup()
 const toast = useToast()
@@ -152,13 +155,18 @@ const { searchQuery, searchResults, isSearching, hasResults } = useSearch(search
 const hasChats = computed(() => chatsApi.chats.value.length > 0)
 
 /** Open the unstarted chat, which becomes a chat when something is sent in it. */
-const handleNewChat = () => emit('select-chat', chatsApi.unstartedChat.value.id)
+const handleNewChat = () => {
+  chatTabs.openNew()
+  emit('select-chat', chatsApi.unstartedChat.value.id)
+}
 
 /**
- * Handle chat selection
+ * Open a chat picked from the list, in the tab only being looked at, as a
+ * document picked from the outline is.
  * @param {string} chatId - The ID of the selected chat
  */
 const handleChatSelect = chatId => {
+  chatTabs.open(chatId, { preview: true })
   emit('select-chat', chatId)
 }
 
@@ -216,12 +224,13 @@ const handleImportFile = async event => {
     // A chat from SillyTavern knows who it was with and nothing else about
     // them. If that character's card is in the project the chat goes onto it;
     // if not, the writer is told, since the chat will answer as nobody until
-    // the card is imported and pinned. The chat opens either way, which says
+    // the card is imported and attached. The chat opens either way, which says
     // it came in.
     if (character) {
       const { card, named } = await cardChat.attach(imported.id, character)
       if (!card) toast.warning(notOnCard(character, named))
     }
+    chatTabs.open(imported.id)
     emit('select-chat', imported.id)
   } catch (error) {
     console.error('Chat import failed:', error)

@@ -1,7 +1,13 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import ChatSegment from '../../src/components/writer/chats/ChatSegment.vue'
+import { setTrialSkills } from '@/ai/skills/index.js'
+import { TRIAL_SKILLS } from '../../harness/skills/trials.js'
+
+// Interpret's records, as the harness has it: a skill that asks a model.
+beforeAll(() => setTrialSkills(TRIAL_SKILLS))
+afterAll(() => setTrialSkills([]))
 
 /** Mount a segment with the bits PrimeVue needs and nothing else. */
 const show = segment =>
@@ -80,8 +86,8 @@ describe('ChatSegment', () => {
     expect(text).toContain('Likely')
   })
 
-  it('shows a roll’s notation by its name, and its dice by kind above the total', () => {
-    const roll = { roll: '3d6+2', dice: { d6: [4, 2, 5] }, modifier: 2, total: 13 }
+  it('shows a roll’s notation by its name, and its dice worked through above the total', () => {
+    const roll = { roll: '3d6+2', dice: { d6: [4, 2, 5] }, total: 13 }
     const wrapper = show(
       ran({
         name: 'roll',
@@ -92,16 +98,29 @@ describe('ChatSegment', () => {
       })
     )
 
-    const lines = wrapper.findAll('[data-dice] span').map(line => line.text())
-    expect(lines).toEqual(['d6: 4, 2, 5'])
+    expect(wrapper.find('[data-dice]').text()).toBe('4, 2, 5 → 11')
+    expect(wrapper.find('[data-dropped]').exists()).toBe(false)
     expect(wrapper.text()).toContain('roll3d6+2')
     expect(wrapper.text()).toContain('for strength')
     expect(wrapper.text()).not.toContain('3d6+2 for strength')
     expect(wrapper.text()).toContain('13')
   })
 
+  it('strikes through the dice a roll dropped, and only those', () => {
+    const roll = { roll: 'd20a + d20b', dice: { d20: [10, 20, 3, 20] }, total: 23 }
+    const wrapper = show(ran({ name: 'roll', input: 'd20a + d20b', roll, result: '23' }))
+
+    expect(wrapper.findAll('[data-dice-line]').map(line => line.text())).toEqual([
+      'd20a: 10, 20',
+      'd20b: 20, 3',
+    ])
+    expect(wrapper.findAll('[data-dropped]').map(die => die.element.tagName)).toEqual(['S', 'S'])
+    expect(wrapper.findAll('[data-dropped]').map(die => die.text())).toEqual(['10', '20'])
+    expect(wrapper.find('[data-dice]').text()).not.toContain('~')
+  })
+
   it('shows no dice under a total the writer changed', () => {
-    const roll = { roll: '3d6+2', dice: { d6: [4, 2, 5] }, modifier: 2, total: 13 }
+    const roll = { roll: '3d6+2', dice: { d6: [4, 2, 5] }, total: 13 }
     const wrapper = show(ran({ name: 'roll', input: '3d6+2', label: '3d6+2', roll, result: '18' }))
 
     expect(wrapper.find('[data-dice]').exists()).toBe(false)

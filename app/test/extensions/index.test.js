@@ -72,6 +72,18 @@ describe('extensions', () => {
       expect(useApplicationState().extensionOn('roleplay')).toBe(true)
     })
 
+    it('switches web search on for everyone', async () => {
+      await decideExtensions()
+      expect(useApplicationState().extensionOn('web')).toBe(true)
+      expect(useApplicationState().webSearch.value).toBe(true)
+    })
+
+    it('leaves web search off where the writer switched it off', async () => {
+      useApplicationState().setExtension('web', false)
+      await decideExtensions()
+      expect(useApplicationState().webSearch.value).toBe(false)
+    })
+
     it('leaves a switch already decided as it is', async () => {
       useApplicationState().setExtension('roleplay', false)
       held.cards = 1

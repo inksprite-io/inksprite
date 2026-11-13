@@ -30,7 +30,7 @@ Sync is optional, in private preview, and needs an account on our server at sync
 
 If you share a project, the people you share it with can read it, and we still can't. The server sees who each shared project is shared with, and keeps the name you show them, as it keeps your account name. Each person's chats in a shared project stay readable only by them.
 
-While you're signed in, inksprite also sends the server diagnostics about how syncing is going: counts of what went each way, how many rounds failed and why, the app's version and the device's name. They never include your text, titles or names. Turn them off with **Send diagnostics** under **Settings** › **System** › **Sync**.
+While you're signed in, inksprite also sends the server diagnostics about how syncing is going: counts of what went each way, how many rounds failed and why, the app's version and the device's name. They never include your text, titles or names. Turn them off with **Send diagnostics** under **Settings** › **Sync and sharing** › **Account**.
 
 #### Browser Storage
 

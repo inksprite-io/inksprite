@@ -22,9 +22,9 @@ describe('useSettingsPanel', () => {
   it('hands a requested section over once', () => {
     const panel = useSettingsPanel()
 
-    panel.open('ai')
-    expect(panel.requestedSection.value).toBe('ai')
-    expect(panel.takeSection()).toBe('ai')
+    panel.open('skills')
+    expect(panel.requestedSection.value).toBe('skills')
+    expect(panel.takeSection()).toBe('skills')
     // Taken, so the settings do not keep jumping back to it.
     expect(panel.takeSection()).toBeNull()
   })

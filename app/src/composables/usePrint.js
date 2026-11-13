@@ -82,6 +82,8 @@ async function begin(storyId, documentId, content, title) {
       Promise.resolve(image.decode?.()).catch(() => {})
     )
   )
+  // A formula's fonts, which load once it is on the page.
+  await document.fonts?.ready
   return run === begun
 }
 

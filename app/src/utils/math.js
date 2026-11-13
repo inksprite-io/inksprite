@@ -16,7 +16,9 @@
  *
  * Copying out of typeset math copies its TeX, between the delimiters it came
  * in, rather than the glyphs and the MathML beside them that the browser
- * would otherwise put on the clipboard twice over.
+ * would otherwise put on the clipboard twice over. In the HTML each formula
+ * is the element the editor writes for one, so it pastes there as a formula.
+ * A copy something has handled already, the editor's own, is left to it.
  */
 
 /* global Element */
@@ -40,6 +42,15 @@ const remembered = new Map()
 
 /** How many formulas to remember before starting again. */
 const REMEMBER = 500
+
+/** How KaTeX is asked to typeset, but for whether a formula is set on its own. */
+const OPTIONS = {
+  throwOnError: true,
+  trust: false,
+  strict: false,
+  // In ems. No rule or space a model asks for is wider than the chat.
+  maxSize: 20,
+}
 
 /**
  * Load KaTeX, its stylesheet and fonts. Once is enough; every later call has
@@ -84,20 +95,51 @@ export function typesetMath(tex, display) {
   /** @type {string|null} */
   let html = null
   try {
-    html = engine.renderToString(tex, {
-      displayMode: display,
-      throwOnError: true,
-      trust: false,
-      strict: false,
-      // In ems. No rule or space a model asks for is wider than the chat.
-      maxSize: 20,
-    })
+    html = engine.renderToString(tex, { ...OPTIONS, displayMode: display })
   } catch {
     // Not TeX after all, or TeX KaTeX does not know.
   }
   if (remembered.size >= REMEMBER) remembered.clear()
   remembered.set(key, html)
   return html
+}
+
+/**
+ * What KaTeX says is wrong with a formula it cannot read, in its own words
+ * without its own name; null for one it can, or before it is here.
+ *
+ * @param {string} tex
+ * @param {boolean} display
+ * @returns {string|null}
+ */
+export function mathError(tex, display) {
+  const engine = katex.value
+  if (!engine) return null
+  try {
+    engine.renderToString(tex, { ...OPTIONS, displayMode: display })
+    return null
+  } catch (error) {
+    return String(error instanceof Error ? error.message : error).replace(
+      /^KaTeX parse error: /,
+      ''
+    )
+  }
+}
+
+/**
+ * A formula's TeX as an element of the editor's own (`editor/schema.js`): its
+ * TeX on an attribute, for the editor, and between its delimiters, for
+ * anywhere else.
+ *
+ * @param {string} tex
+ * @param {boolean} display
+ * @returns {HTMLElement}
+ */
+function asWritten(tex, display) {
+  const element = document.createElement(display ? 'div' : 'span')
+  element.setAttribute('data-tex', tex)
+  element.textContent = display ? `$$${tex}$$` : `$${tex}$`
+  return element
 }
 
 /**
@@ -120,6 +162,9 @@ const formulaAround = node =>
  * @param {ClipboardEvent} event
  */
 function copyTex(event) {
+  // The editor's copy, or a field's, is theirs.
+  const target = /** @type {Element|null} */ (event.target)
+  if (event.defaultPrevented || target?.closest?.('input, textarea')) return
   const selection = window.getSelection()
   if (!selection || selection.isCollapsed || !event.clipboardData) return
   const range = selection.getRangeAt(0).cloneRange()
@@ -134,13 +179,8 @@ function copyTex(event) {
   for (const formula of formulas) {
     const tex = formula.querySelector('annotation')?.textContent ?? ''
     const display = formula.parentElement?.closest('.katex-display')
-    if (!display) {
-      formula.replaceWith(`$${tex}$`)
-      continue
-    }
-    const paragraph = document.createElement('p')
-    paragraph.textContent = `$$${tex}$$`
-    display.replaceWith(paragraph)
+    if (display) display.replaceWith(asWritten(tex, true))
+    else formula.replaceWith(asWritten(tex, false))
   }
   const holder = document.createElement('div')
   holder.style.cssText = 'position: fixed; left: -10000px; top: 0; white-space: normal'

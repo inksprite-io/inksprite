@@ -7,11 +7,13 @@ import SkillsSection from '@/components/writer/settings/SkillsSection.vue'
 import SkillEditor from '@/components/writer/settings/SkillEditor.vue'
 import SkillImportDialog from '@/components/writer/settings/SkillImportDialog.vue'
 import BuiltInSkillEditor from '@/components/writer/settings/BuiltInSkillEditor.vue'
-import { INTERPRET_PROMPT } from '@/ai/skills/index.js'
-import { useApplicationState } from '@/composables/useApplicationState'
+import { COMPACT_PROMPT } from '@/ai/skills/index.js'
+import { parseSkill, splitSkill } from '@/ai/skills/format.js'
 
 const library = vi.hoisted(() => ({
   rows: null,
+  createSkill: null,
+  writeSkill: null,
   saveSkill: null,
   deleteSkill: null,
   importSkills: null,
@@ -26,6 +28,13 @@ vi.mock('@/composables/useSkills', () => ({
     ready: async () => {},
     skills: computed(() => library.rows.value),
     getSkill: id => library.rows.value.find(row => row.id === id) || null,
+    // The first thing wrong with the file, as the real one says it.
+    problemOf: row => {
+      const read = parseSkill(row.text)
+      return 'errors' in read ? read.errors[0] : ''
+    },
+    createSkill: (...args) => library.createSkill(...args),
+    writeSkill: (...args) => library.writeSkill(...args),
     nameProblem: (name, exceptId) =>
       library.rows.value.some(row => row.name === name && row.id !== exceptId)
         ? `You already have a skill called ${name}.`
@@ -52,8 +61,41 @@ vi.mock('@/composables/useSkills', () => ({
   }),
 }))
 
+// The profile's wording of the built-ins, held as the library's used to be.
+vi.mock('@/composables/useChatSettings', async () => {
+  const { BUILT_IN_SKILLS } = await import('@/ai/skills/index.js')
+  const shipped = name => BUILT_IN_SKILLS.find(one => one.name === name)?.body ?? ''
+  return {
+    useChatSettings: () => ({
+      selectedProfileId: computed(() => 'builtin_profile_chat'),
+      skillPromptOf: name => library.wordings.value[name] ?? shipped(name),
+      isSkillReworded: name => name in library.wordings.value,
+      setSkillPrompt: (name, text) => {
+        library.wordings.value = { ...library.wordings.value, [name]: text }
+        library.setWording(name, text)
+      },
+      resetSkill: name => {
+        const { [name]: _gone, ...rest } = library.wordings.value
+        library.wordings.value = rest
+        library.setWording(name, shipped(name))
+      },
+    }),
+  }
+})
+
 vi.mock('@/composables/useProfiles', () => ({
   useProfiles: () => ({ profiles: computed(() => library.profiles.value) }),
+}))
+
+const opened = vi.hoisted(() => ({ open: null, show: null, close: null }))
+vi.mock('@/composables/useDocuments', () => ({
+  useDocuments: () => ({ open: (...args) => opened.open(...args) }),
+}))
+vi.mock('@/composables/useEditorRequest.js', () => ({
+  useEditorRequest: () => ({ show: () => opened.show() }),
+}))
+vi.mock('@/composables/useSettingsPanel.js', () => ({
+  useSettingsPanel: () => ({ close: () => opened.close() }),
 }))
 
 vi.mock('primevue/useconfirm', () => ({
@@ -84,24 +126,47 @@ const mountSection = () =>
     global: { plugins: [PrimeVue], directives: { tooltip: {} } },
   })
 
-const mountEditor = (skillId = null) =>
+const mountEditor = (skillId = '', props = {}) =>
   mount(SkillEditor, {
-    props: { skillId },
+    props: { skillId, ...props },
     global: { plugins: [PrimeVue], directives: { tooltip: {} } },
   })
+
+/** A skill that can be used, as the library keeps it. */
+const critique = {
+  id: 'skill_critique',
+  name: 'critique',
+  text: file('name: critique\ndescription: Notes on a scene.', 'Give notes.'),
+  files: [],
+}
+
+/** The frontmatter of a file. */
+const frontOf = text => {
+  const split = splitSkill(text)
+  return 'front' in split ? split.front : null
+}
 
 beforeEach(() => {
   library.rows = ref([])
   library.saveSkill = vi.fn(async () => ({ skill: {} }))
+  library.createSkill = vi.fn(text => {
+    const made = { id: 'skill_new', name: 'new-skill', text, files: [] }
+    library.rows.value = [...library.rows.value, made]
+    return made
+  })
+  library.writeSkill = vi.fn(async (id, text) => {
+    library.rows.value = library.rows.value.map(row => (row.id === id ? { ...row, text } : row))
+    return library.rows.value.find(row => row.id === id) || null
+  })
+  opened.open = vi.fn()
+  opened.show = vi.fn()
+  opened.close = vi.fn()
   library.deleteSkill = vi.fn(() => true)
   library.importSkills = vi.fn(async rows => ({ imported: rows.length, failed: [] }))
   library.wordings = ref({})
   library.setWording = vi.fn(() => true)
   library.profiles = ref([{ id: 'chat', name: 'Default', settings: {} }])
   confirmed.last = null
-  const app = useApplicationState()
-  app.setExperimentalSkill('interpret', false)
-  app.setExperimentalSkill('write', false)
 })
 
 describe('importing skills', () => {
@@ -181,218 +246,242 @@ describe('SkillsSection', () => {
     expect(wrapper.find('[data-skill="director"]').exists()).toBe(false)
   })
 
-  it('lists the experimental skills under the built-ins, by name', () => {
-    const wrapper = mountSection()
-    const lists = wrapper.findAll('[data-list]').map(list => list.attributes('data-list'))
-    const experimental = wrapper.find('[data-list="experimental"]')
-
-    expect(lists).toEqual(['yours', 'built-in', 'experimental'])
-    expect(experimental.findAll('[data-skill]').map(row => row.attributes('data-skill'))).toEqual([
-      'interpret',
-      'write',
-    ])
-    expect(experimental.find('[data-skill="interpret"]').text()).toContain('/interpret')
-  })
-
-  it('switches each experimental skill for the whole app, and dims it while off', async () => {
-    const wrapper = mountSection()
-    const row = name => wrapper.find(`[data-list="experimental"] [data-skill="${name}"]`)
-    const toggle = name => wrapper.findComponent(`[data-skill-switch="${name}"]`)
-    expect(toggle('write').props('modelValue')).toBe(false)
-    expect(row('write').classes()).toContain('opacity-60')
-
-    await toggle('write').vm.$emit('update:modelValue', true)
-
-    expect(useApplicationState().experimentalSkills.value).toEqual(['write'])
-    expect(toggle('write').props('modelValue')).toBe(true)
-    expect(row('write').classes()).not.toContain('opacity-60')
-    // The other stays as it was.
-    expect(toggle('interpret').props('modelValue')).toBe(false)
-    expect(row('interpret').classes()).toContain('opacity-60')
-    // The built-ins are always there, and have none.
-    expect(wrapper.find('[data-list="built-in"] [data-skill-switch]').exists()).toBe(false)
-  })
-
   it('says which built-ins you have reworded', () => {
-    library.wordings.value = { interpret: 'Read darkly.' }
+    library.wordings.value = { compact: 'Sum up darkly.' }
     const wrapper = mountSection()
 
-    expect(wrapper.find('[data-skill="interpret"] [data-reworded]').exists()).toBe(true)
-    expect(wrapper.find('[data-skill="compact"] [data-reworded]').exists()).toBe(false)
+    expect(wrapper.find('[data-skill="compact"] [data-reworded]').exists()).toBe(true)
   })
 
-  it('opens a built-in to reword, even an experimental one while it is off', async () => {
+  it('opens a built-in on its wording, and no more', async () => {
     const wrapper = mountSection()
-    await wrapper.find('[data-list="experimental"] [data-skill="interpret"]').trigger('click')
+    await wrapper.find('[data-skill="compact"] [data-card-toggle]').trigger('click')
 
-    expect(wrapper.findComponent(BuiltInSkillEditor).props('name')).toBe('interpret')
-    await wrapper.find('[data-action="back"]').trigger('click')
-    expect(wrapper.find('[data-skill-editor]').exists()).toBe(false)
+    const editor = wrapper.find('[data-skill="compact"] [data-built-in]')
+    expect(editor.find('[data-field="body"]').exists()).toBe(true)
+    expect(editor.find('[data-field="name"]').exists()).toBe(false)
+    expect(editor.find('[data-action="delete"]').exists()).toBe(false)
   })
 
-  it('says when you have none yet', () => {
-    expect(mountSection().find('[data-list="yours"]').text()).toContain('None yet.')
+  it('offers a new skill and an import, and no export of them all', () => {
+    const wrapper = mountSection()
+
+    expect(wrapper.find('[data-action="new-skill"]').exists()).toBe(true)
+    expect(wrapper.find('[data-action="import"]').exists()).toBe(true)
+    expect(wrapper.find('[data-action="export-all"]').exists()).toBe(false)
   })
 
-  it('lists yours with who calls each and what it is waiting on', () => {
+  it('heads the built-ins whether or not you have skills of your own', () => {
+    const wrapper = mountSection()
+
+    expect(wrapper.find('[data-list="built-in"]').text()).toContain('Built-in')
+    expect(wrapper.find('[data-list="yours"]').exists()).toBe(false)
+  })
+
+  it('shows what a skill is called, what it does and its command', () => {
     library.rows.value = [
-      tighten,
+      critique,
       {
-        id: 'skill_style',
-        name: 'house-style',
-        text: file('name: house-style\ndescription: The house style.'),
+        id: 'skill_editor',
+        name: 'short-story-editor',
+        text: file(
+          'name: short-story-editor\ndescription: Critiques stories.\nmetadata:\n  inksprite-title: Short Story Editor'
+        ),
+        files: [],
       },
-      { id: 'skill_broken', name: 'broken', text: 'no frontmatter' },
     ]
-    const yours = mountSection().find('[data-list="yours"]')
+    const wrapper = mountSection()
 
-    expect(yours.find('[data-skill="tighten"]').text()).toContain('Called by you')
-    // The model loads it, and the writer can call it too.
-    expect(yours.find('[data-skill="house-style"]').text()).toContain('Called by the model or you')
-    expect(yours.text()).not.toMatch(/Runs on its own|Joins the conversation|A saved prompt/)
-    expect(yours.find('[data-skill="broken"]').text()).toMatch(/Can’t be read.*frontmatter/s)
+    const named = wrapper.find('[data-skill="critique"]').text()
+    expect(named).toContain('Critique')
+    expect(named).toContain('Notes on a scene.')
+    expect(named).toContain('/critique')
+    const titled = wrapper.find('[data-skill="short-story-editor"]').text()
+    expect(titled).toContain('Short Story Editor')
+    expect(titled).toContain('/short-story-editor')
   })
 
-  it('opens the editor on a new skill, and comes back', async () => {
+  it('keeps a skill that can’t be used on its description, without a command or an error', () => {
+    library.rows.value = [{ ...critique, text: file('name: critique\ndescription: Notes.', '') }]
+    const wrapper = mountSection()
+
+    const row = wrapper.find('[data-skill="critique"]').text()
+    expect(row).toContain('Notes.')
+    expect(row).not.toContain('/critique')
+    expect(row).not.toContain('It needs instructions.')
+  })
+
+  it('opens a card to write a new skill in, which is nothing if cancelled', async () => {
     const wrapper = mountSection()
     await wrapper.find('[data-action="new-skill"]').trigger('click')
 
-    expect(wrapper.find('[data-skill-editor]').exists()).toBe(true)
-    await wrapper.find('[data-action="back"]').trigger('click')
+    const draft = wrapper.find('[data-skill-draft]')
+    expect(draft.text()).toContain('New skill')
+    expect(draft.find('[data-field="name"]').element.value).toBe('')
+
+    await draft.find('[data-action="cancel"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('[data-skill-draft]').exists()).toBe(false)
+    expect(library.createSkill).not.toHaveBeenCalled()
+  })
+
+  it('makes the new skill one of the list’s once it is saved, and shuts it', async () => {
+    const wrapper = mountSection()
+    await wrapper.find('[data-action="new-skill"]').trigger('click')
+    const draft = wrapper.find('[data-skill-draft]')
+    await draft.find('[data-field="name"]').setValue('Scene Notes')
+    await draft.find('[data-field="description"]').setValue('Notes on a scene.')
+    await draft.find('[data-field="body"]').setValue('Give notes.')
+    await draft.find('[data-action="save"]').trigger('click')
+    await flushPromises()
+
+    expect(library.createSkill).toHaveBeenCalledTimes(1)
+    expect(wrapper.find('[data-skill-draft]').exists()).toBe(false)
+    expect(wrapper.find('[data-list="yours"]').text()).toContain('Scene Notes')
     expect(wrapper.find('[data-skill-editor]').exists()).toBe(false)
+  })
+
+  it('leaves a new skill open on what is wrong with it', async () => {
+    const wrapper = mountSection()
+    await wrapper.find('[data-action="new-skill"]').trigger('click')
+    await wrapper.find('[data-skill-draft] [data-field="name"]').setValue('Scene Notes')
+    await wrapper.find('[data-skill-draft] [data-action="save"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('[data-skill-draft]').exists()).toBe(false)
+    expect(wrapper.find('[data-skill-editor] [data-problem]').text()).toBe(
+      'It needs a description.'
+    )
   })
 })
 
 describe('SkillEditor', () => {
-  it('starts a new skill as a saved prompt with a name nothing has', () => {
-    library.rows.value = [{ ...tighten, name: 'new-skill', id: 'x' }]
-    const wrapper = mountEditor()
-
-    expect(wrapper.find('[data-field="name"]').element.value).toBe('new-skill-2')
-  })
-
-  it('puts the focus in a new skill’s name, ready to be typed over', () => {
-    const wrapper = mount(SkillEditor, {
-      props: { skillId: null },
-      global: { plugins: [PrimeVue], directives: { tooltip: {} } },
-      attachTo: document.body,
-    })
-    const name = wrapper.find('[data-field="name"]').element
-
-    expect(document.activeElement).toBe(name)
-    expect([name.selectionStart, name.selectionEnd]).toEqual([0, name.value.length])
-    wrapper.unmount()
-  })
-
-  it('starts with nothing written for it, and waits for it without a word', () => {
-    const wrapper = mountEditor()
-
-    expect(wrapper.find('[data-field="description"]').element.value).toBe('')
-    expect(wrapper.find('[data-field="description"]').attributes('placeholder')).toBeTruthy()
-    expect(wrapper.find('[data-field="body"]').element.value).toBe('')
-    expect(wrapper.find('[data-problems]').exists()).toBe(false)
-    expect(wrapper.find('[data-action="save"]').attributes('disabled')).toBeDefined()
-  })
-
-  it('says a field it needs is empty under it, once the writer has left it', async () => {
-    const wrapper = mountEditor()
-    expect(wrapper.find('[data-description-problem]').exists()).toBe(false)
-
-    await wrapper.find('[data-field="description"]').trigger('blur')
-    await wrapper.find('[data-field="body"]').trigger('blur')
-
-    expect(wrapper.find('[data-description-problem]').text()).toBe('It needs a description.')
-    expect(wrapper.find('[data-body-problem]').text()).toBe('It needs instructions.')
-    expect(wrapper.find('[data-problems]').exists()).toBe(false)
-  })
-
-  it('writes the file as the form changes, and saves the file', async () => {
-    const wrapper = mountEditor()
-    await wrapper.find('[data-field="name"]').setValue('trim')
-    await wrapper.find('[data-field="description"]').setValue('Trims a passage.')
-    await wrapper.find('[data-field="body"]').setValue('Cut $ARGUMENTS down.')
+  const field = (wrapper, name) => wrapper.find(`[data-field="${name}"]`)
+  const save = async wrapper => {
     await wrapper.find('[data-action="save"]').trigger('click')
     await flushPromises()
+  }
 
-    const [saved] = library.saveSkill.mock.calls[0]
-    expect(saved.id).toBe(null)
-    expect(saved.text).toMatch(/^---\nname: trim\n/)
+  it('opens on the three fields, read from the file', () => {
+    library.rows.value = [critique]
+    const wrapper = mountEditor('skill_critique')
+
+    expect(field(wrapper, 'name').element.value).toBe('critique')
+    expect(field(wrapper, 'description').element.value).toBe('Notes on a scene.')
+    expect(field(wrapper, 'body').element.value).toBe('Give notes.')
+    expect(wrapper.find('[data-problem]').exists()).toBe(false)
+  })
+
+  it('keeps nothing until it is saved, then shuts on a skill that can be used', async () => {
+    library.rows.value = [critique]
+    const wrapper = mountEditor('skill_critique')
+    await field(wrapper, 'body').setValue('Give kind notes.')
+
+    expect(library.writeSkill).not.toHaveBeenCalled()
+    await save(wrapper)
+
+    expect(library.writeSkill).toHaveBeenCalledWith(
+      'skill_critique',
+      critique.text.replace('Give notes.', 'Give kind notes.')
+    )
     expect(wrapper.emitted('close')).toHaveLength(1)
   })
 
-  it('keeps a file only opened exactly as it was, comments and all', async () => {
-    library.rows.value = [tighten]
-    const wrapper = mountEditor('skill_tighten')
-    await wrapper.find('[data-mode="file"]').trigger('click')
+  it('makes the name a skill is called by from the name as it is written', async () => {
+    library.rows.value = [critique]
+    const wrapper = mountEditor('skill_critique')
+    await field(wrapper, 'name').setValue('Scene Critique')
+    await save(wrapper)
 
-    expect(wrapper.find('[data-field="text"]').element.value).toBe(tighten.text)
+    expect(frontOf(library.writeSkill.mock.calls[0][1])).toEqual({
+      name: 'scene-critique',
+      description: 'Notes on a scene.',
+      metadata: { 'inksprite-title': 'Scene Critique' },
+    })
   })
 
-  it('saves an existing skill under its id, with the files that came with it', async () => {
-    library.rows.value = [tighten]
-    const wrapper = mountEditor('skill_tighten')
-    await wrapper.find('[data-field="argumentDescription"]').setValue('the passage to cut')
-    await wrapper.find('[data-action="save"]').trigger('click')
-    await flushPromises()
+  it('says what is wrong only once it is saved, and stays open', async () => {
+    library.rows.value = [critique]
+    const wrapper = mountEditor('skill_critique')
+    await field(wrapper, 'name').setValue('')
 
-    const [saved] = library.saveSkill.mock.calls[0]
-    expect(saved.id).toBe('skill_tighten')
-    expect(saved.files).toEqual(tighten.files)
-    expect(saved.text).toContain('argument-hint: the passage to cut')
+    expect(wrapper.find('[data-problem]').exists()).toBe(false)
+    await save(wrapper)
+
+    expect(wrapper.find('[data-problem]').text()).toBe('It needs a name.')
+    expect(wrapper.emitted('close')).toBeUndefined()
   })
 
-  it('says who can call a skill with one choice', async () => {
-    library.rows.value = [tighten]
-    const wrapper = mountEditor('skill_tighten')
-    const callers = wrapper.findComponent('[data-field="callers"]')
+  it('says what is wrong with a skill as it opens, and leaves that while it is put right', async () => {
+    library.rows.value = [{ ...critique, text: file('name: critique\ndescription: Notes.', '') }]
+    const wrapper = mountEditor('skill_critique')
 
-    await callers.vm.$emit('update:modelValue', 'model')
-    await wrapper.find('[data-action="save"]').trigger('click')
-    await flushPromises()
-
-    const [saved] = library.saveSkill.mock.calls[0]
-    expect(saved.text).toContain('user-invocable: false')
-    expect(saved.text).not.toContain('disable-model-invocation')
+    expect(wrapper.find('[data-problem]').text()).toBe('It needs instructions.')
+    await field(wrapper, 'body').setValue('Give notes.')
+    expect(wrapper.find('[data-problem]').text()).toBe('It needs instructions.')
   })
 
-  it('says what is wrong, and will not save until it is right', async () => {
-    library.rows.value = [tighten]
+  it('puts the fields back and shuts on Cancel, keeping nothing', async () => {
+    library.rows.value = [critique]
+    const wrapper = mountEditor('skill_critique')
+    await field(wrapper, 'body').setValue('Give kind notes.')
+    await wrapper.find('[data-action="cancel"]').trigger('click')
+    const closed = wrapper.emitted('close')
+    wrapper.unmount()
+
+    expect(closed).toHaveLength(1)
+    expect(library.writeSkill).not.toHaveBeenCalled()
+  })
+
+  it('keeps what was typed when it is shut some other way', async () => {
+    library.rows.value = [critique]
+    const wrapper = mountEditor('skill_critique')
+    await field(wrapper, 'body').setValue('Give kind notes.')
+    wrapper.unmount()
+
+    expect(library.writeSkill).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not keep a new skill with nothing written, and asks for its name', async () => {
     const wrapper = mountEditor()
-    await wrapper.find('[data-field="name"]').setValue('tighten')
+    await save(wrapper)
 
-    expect(wrapper.find('[data-name-problem]').text()).toContain(
-      'already have a skill called tighten'
+    expect(wrapper.find('[data-problem]').text()).toBe('It needs a name.')
+    expect(wrapper.find('[data-action="delete"]').exists()).toBe(false)
+    wrapper.unmount()
+    expect(library.createSkill).not.toHaveBeenCalled()
+  })
+
+  it('shows one line in place of the fields for a file that can’t be read', () => {
+    library.rows.value = [{ ...critique, text: 'Just instructions.' }]
+    const wrapper = mountEditor('skill_critique', { storyId: 'story_1' })
+
+    expect(wrapper.find('[data-problem]').text()).toBe(
+      'A skill starts with its frontmatter, between two lines of three dashes.'
     )
-    expect(wrapper.find('[data-problems]').exists()).toBe(false)
-    expect(wrapper.find('[data-action="save"]').attributes('disabled')).toBeDefined()
+    expect(field(wrapper, 'name').exists()).toBe(false)
+    expect(wrapper.find('[data-action="save"]').exists()).toBe(false)
+    expect(wrapper.find('[data-action="open"]').exists()).toBe(true)
   })
 
-  it('reads a file edited by hand back into the form', async () => {
-    const wrapper = mountEditor()
-    await wrapper.find('[data-mode="file"]').trigger('click')
-    await wrapper
-      .find('[data-field="text"]')
-      .setValue(file('name: critique\ndescription: Notes.\ncontext: fork'))
-    await wrapper.find('[data-mode="form"]').trigger('click')
+  it('opens the file in the editor with what was typed kept, and closes the settings', async () => {
+    library.rows.value = [critique]
+    const wrapper = mountEditor('skill_critique', { storyId: 'story_1' })
+    await field(wrapper, 'body').setValue('Give kind notes.')
+    await wrapper.find('[data-action="open"]').trigger('click')
+    await flushPromises()
 
-    expect(wrapper.find('[data-field="name"]').element.value).toBe('critique')
+    expect(library.writeSkill).toHaveBeenCalledTimes(1)
+    expect(opened.open).toHaveBeenCalledWith('skill:skill_critique')
+    expect(opened.show).toHaveBeenCalled()
+    expect(opened.close).toHaveBeenCalled()
   })
 
-  it('stays on the file when its frontmatter cannot be read, and says why', async () => {
-    const wrapper = mountEditor()
-    await wrapper.find('[data-mode="file"]').trigger('click')
-    await wrapper.find('[data-field="text"]').setValue('no frontmatter')
-    await wrapper.find('[data-mode="form"]').trigger('click')
+  it('has no way to the editor with no project open', () => {
+    library.rows.value = [critique]
 
-    expect(wrapper.find('[data-field="text"]').exists()).toBe(true)
-    expect(wrapper.find('[data-mode-error]').text()).toContain('frontmatter')
-  })
-
-  it('opens a skill whose file does not read on the file', () => {
-    library.rows.value = [{ id: 'skill_broken', name: 'broken', text: 'no frontmatter' }]
-    const wrapper = mountEditor('skill_broken')
-
-    expect(wrapper.find('[data-field="text"]').exists()).toBe(true)
+    expect(mountEditor('skill_critique').find('[data-action="open"]').exists()).toBe(false)
   })
 
   it('asks before deleting, and deletes when told to', async () => {
@@ -414,7 +503,7 @@ describe('SkillEditor', () => {
 })
 
 describe('BuiltInSkillEditor', () => {
-  const mountBuiltIn = (name = 'interpret') =>
+  const mountBuiltIn = (name = 'compact') =>
     mount(BuiltInSkillEditor, {
       props: { name },
       global: { plugins: [PrimeVue], directives: { tooltip: {} } },
@@ -426,51 +515,35 @@ describe('BuiltInSkillEditor', () => {
   it('opens on the wording it ships with, with nothing to reset', () => {
     const wrapper = mountBuiltIn()
 
-    expect(field(wrapper).element.value).toBe(INTERPRET_PROMPT)
+    expect(field(wrapper).element.value).toBe(COMPACT_PROMPT)
     expect(resetButton(wrapper).exists()).toBe(false)
   })
 
   it('opens on your wording when you have one', () => {
-    library.wordings.value = { interpret: 'Read darkly.' }
+    library.wordings.value = { compact: 'Sum up darkly.' }
 
-    expect(field(mountBuiltIn()).element.value).toBe('Read darkly.')
+    expect(field(mountBuiltIn()).element.value).toBe('Sum up darkly.')
   })
 
   it('saves the wording as it is typed', async () => {
     const wrapper = mountBuiltIn()
 
-    await field(wrapper).setValue('Read darkly.')
+    await field(wrapper).setValue('Sum up darkly.')
 
-    expect(library.setWording).toHaveBeenLastCalledWith('interpret', 'Read darkly.')
+    expect(library.setWording).toHaveBeenLastCalledWith('compact', 'Sum up darkly.')
   })
 
   it('puts the wording it ships with back', async () => {
-    library.wordings.value = { interpret: 'Read darkly.' }
+    library.wordings.value = { compact: 'Sum up darkly.' }
     const wrapper = mountBuiltIn()
 
     await resetButton(wrapper).trigger('click')
 
-    expect(field(wrapper).element.value).toBe(INTERPRET_PROMPT)
-    expect(library.setWording).toHaveBeenLastCalledWith('interpret', INTERPRET_PROMPT)
+    expect(field(wrapper).element.value).toBe(COMPACT_PROMPT)
+    expect(library.setWording).toHaveBeenLastCalledWith('compact', COMPACT_PROMPT)
   })
 
   it('says nothing of where it reaches when every chat uses it', () => {
     expect(mountBuiltIn().find('[data-scope]').exists()).toBe(false)
-  })
-
-  it('names the profiles that word it their own way', () => {
-    library.profiles.value = [
-      { id: 'chat', name: 'Default', settings: {} },
-      {
-        id: 'roleplay',
-        name: 'Roleplay',
-        settings: { skills: { compact: { prompt: 'Scenes.' } } },
-      },
-      { id: 'mine', name: 'Mine', settings: { skills: { compact: { prompt: ' ' } } } },
-    ]
-
-    expect(mountBuiltIn('compact').find('[data-scope]').text()).toBe(
-      'Chats on Roleplay use their own wording.'
-    )
   })
 })

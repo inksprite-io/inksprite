@@ -72,16 +72,29 @@ describe('a server’s tools in the registry', () => {
     })
   })
 
-  it('offers them only to a chat that names the server, less any it switched off', () => {
+  it('offers them to every chat that has not switched the server off, less any it switched off', () => {
     setServers([wiki])
 
-    expect(names(getEnabledToolDefinitions({}))).not.toContain('wiki__search')
-    expect(names(getEnabledToolDefinitions({ servers: ['mcp_wiki'] }))).toEqual(
+    expect(names(getEnabledToolDefinitions({}))).toEqual(
       expect.arrayContaining(['wiki__search', 'wiki__edit'])
     )
+    expect(names(getEnabledToolDefinitions({ disabledTools: ['wiki__edit'] }))).not.toContain(
+      'wiki__edit'
+    )
+    expect(names(getEnabledToolDefinitions({ disabledToolGroups: ['mcp:mcp_wiki'] }))).toEqual(
+      expect.not.arrayContaining(['wiki__search'])
+    )
+  })
+
+  it('offers none to a chat on a profile that offers only some, which a server is not among', () => {
+    setServers([wiki])
+
+    expect(names(getEnabledToolDefinitions({ onlyToolGroups: ['documents'] }))).not.toContain(
+      'wiki__search'
+    )
     expect(
-      names(getEnabledToolDefinitions({ servers: ['mcp_wiki'], disabledTools: ['wiki__edit'] }))
-    ).not.toContain('wiki__edit')
+      names(getEnabledToolDefinitions({ onlyToolGroups: ['documents', 'mcp:mcp_wiki'] }))
+    ).toContain('wiki__search')
   })
 
   it('does not take them for skills', () => {

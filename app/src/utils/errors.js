@@ -20,6 +20,22 @@ export class ProviderNotConfiguredError extends Error {
 }
 
 /**
+ * A chat's connection is there but can't be asked anything yet: it has no
+ * key, or no address. The chat offers to connect it.
+ */
+export class ConnectionNeededError extends Error {
+  /**
+   * @param {string} message
+   * @param {string} providerId - The connection to connect
+   */
+  constructor(message, providerId) {
+    super(message)
+    this.name = 'ConnectionNeededError'
+    this.providerId = providerId
+  }
+}
+
+/**
  * Error thrown when a slash command cannot run.
  *
  * Its own class because nothing has been written when it is thrown — commands

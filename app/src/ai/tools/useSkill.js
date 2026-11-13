@@ -21,7 +21,7 @@
  * and says which.
  */
 
-import { getSkill, availableSkills } from '../skills/index.js'
+import { allSkills, getSkill } from '../skills/index.js'
 import { fillArgument, loadedByModel } from '../skills/runner.js'
 import { USE_SKILL } from '../skills/loads.js'
 
@@ -39,7 +39,7 @@ export { USE_SKILL }
  * @returns {Skill[]}
  */
 export function loadableSkills() {
-  return availableSkills().filter(loadedByModel)
+  return allSkills().filter(loadedByModel)
 }
 
 /**

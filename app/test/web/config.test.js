@@ -1,11 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest'
-import {
-  serviceInUse,
-  setWebSearch,
-  webForChat,
-  webSearchSetup,
-  onWebSearchChanged,
-} from '@/web/config.js'
+import { serviceInUse, setWebSearch, webSearchSetup, onWebSearchChanged } from '@/web/config.js'
 
 /** A setup with this service, keys and profiles. */
 const setup = (service, keys = {}, profiles = ['p_default']) => ({
@@ -61,21 +55,5 @@ describe('serviceInUse', () => {
     setWebSearch(setup('kagi'))
 
     expect(told).toBe(1)
-  })
-})
-
-describe('webForChat', () => {
-  it('searches in chats on a listed profile, until the chat says otherwise', () => {
-    const from = setup('exa')
-
-    expect(webForChat({}, 'p_default', from)).toBe(true)
-    expect(webForChat({}, 'p_roleplay', from)).toBe(false)
-    expect(webForChat({ web: false }, 'p_default', from)).toBe(false)
-    expect(webForChat({ web: true }, 'p_roleplay', from)).toBe(true)
-  })
-
-  it('never searches while no service can, whatever the chat said', () => {
-    expect(webForChat({ web: true }, 'p_default', setup(undefined))).toBe(false)
-    expect(webForChat({ web: true }, 'p_default', setup('kagi'))).toBe(false)
   })
 })

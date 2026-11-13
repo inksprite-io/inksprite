@@ -24,6 +24,13 @@ describe('printPage', () => {
     expect(page.innerHTML).toBe('<p>A cold night.</p><h1>The gate</h1>')
   })
 
+  it('typesets formulas, and leaves one KaTeX cannot read as written', async () => {
+    const page = await printPage('So $x^2$ and $\\nope{$.\n\n$$\ny = 1\n$$', shown)
+    expect(page.querySelectorAll('p .katex')).toHaveLength(1)
+    expect(page.querySelector('div[data-tex] .katex-display')).not.toBeNull()
+    expect(page.textContent).toContain('$\\nope{$')
+  })
+
   it('keeps a link to a site, and a link to a document as its words', async () => {
     const page = await printPage(
       'See [the map](https://example.com/map), [the plan](../Notes/Plan.md) and [above](#the-gate).',

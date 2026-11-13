@@ -29,7 +29,7 @@ import { useAIProvidersStore } from '@/stores/aiProvidersStore.js'
 import { useAIPresetStore } from '@/stores/aiPresetStore.js'
 import { useApplicationState } from '@/composables/useApplicationState.js'
 import { useChats } from '@/composables/useChats.js'
-import { useChatsStore } from '@/stores/chatsStore.js'
+import { useCardChat } from '@/composables/useCardChat.js'
 import { useDocuments } from '@/composables/useDocuments.js'
 import { useDocumentsStore } from '@/stores/documentsStore.js'
 import {
@@ -43,21 +43,23 @@ import {
 } from '@/editor/comments.js'
 import { useProfiles } from '@/composables/useProfiles.js'
 import { useAIChat } from '@/composables/useAIChat.js'
+import { attachmentsOf, mentionOf } from '@/ai/context/attachments.js'
 import { CHAT_PROMPT_ID, DEFAULT_CHAT_PROMPT, isBuiltInPromptId } from '@/ai/prompts/index.js'
 import { isBuiltInProfileId } from '@/ai/profiles/index.js'
 import { resolveRouting } from '@/ai/routing.js'
 import '@/ai/tools/index.js'
 import { toolRegistry } from '@/ai/tools/registry.js'
-import { BUILT_IN_SKILLS, setExperimentalSkills } from '@/ai/skills/index.js'
+import { TRIAL_SKILLS } from './skills/trials.js'
+import { setTrialSkills } from '@/ai/skills/index.js'
 import { PREVIEWS, inPreview } from '@/config/preview.js'
 import { documentPath } from '@/utils/documentPath.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
-// The harness is where the experimental skills are tuned, so they are all
-// there, as in an app that has switched each on. Whether a scenario's model is
-// offered them is its chat's to say, by its tool groups.
-setExperimentalSkills(BUILT_IN_SKILLS.filter(skill => skill.experimental).map(skill => skill.name))
+// The harness is where skills are tuned before one ships, so its own are
+// there beside the built-ins. Whether a scenario's model is offered them is
+// its chat's to say, by its tools.
+setTrialSkills(TRIAL_SKILLS)
 
 /**
  * @typedef {Object} Options
@@ -162,6 +164,9 @@ Usage: npm run transcripts -- --scenario <name> [options]
  *   `tools.js` checks afterwards
  * @property {string} [prompt] - Prompt or profile under test, when the scenario names one
  * @property {ChatSettings} [chat] - Settings put on the chat before the first turn
+ * @property {string} [card] - The character whose card the chat is on, by name:
+ *   the chat opens with the card's documents attached and the card's own
+ *   instructions on it, as a chat on a card does in the app
  * @property {string[]} [skills] - Skills to put in the writer's library before the
  *   first run: folder names under skills/, or paths relative to the scenario,
  *   each holding a SKILL.md and its files. See seedSkills in seed.js.
@@ -175,11 +180,12 @@ Usage: npm run transcripts -- --scenario <name> [options]
  *
  * @typedef {Object} Turn
  * @property {string} text - What the writer says
- * @property {{edit?: {path: string, old: string, new: string}, pin?: string[], comments?: WriterComment[]}} [before] - What
+ * @property {{edit?: {path: string, old: string, new: string}, attach?: string[], comments?: WriterComment[]}} [before] - What
  *   the writer does before saying it: `edit`, one passage of a document
- *   replaced as if typed in the editor, which has to be there to replace; `pin`,
- *   documents pinned for the chat from the outline; `comments`, comments the
- *   writer leaves
+ *   replaced as if typed in the editor, which has to be there to replace;
+ *   `attach`, documents attached to the message, as an `@` in the message box
+ *   attaches one, a mention to a line above the words (the words can carry
+ *   mentions of their own as well); `comments`, comments the writer leaves
  * @property {boolean} [accept] - Once the reply is in, the writer accepts every
  *   change the turn proposed, in the order it proposed them
  * @property {boolean} [noWrites] - The turn should change nothing
@@ -192,8 +198,6 @@ Usage: npm run transcripts -- --scenario <name> [options]
  * @property {string[]} [calls] - Tools the turn should call
  * @property {string[]} [notCalls] - Tools the turn should not call
  * @property {string[]} [finds] - Documents the turn should read or turn up in a search
- * @property {string[]} [pins] - Documents that should be pinned once the turn is done
- * @property {string[]} [pinnedAtEnd] - The whole pinned set once the turn is done
  * @property {{path: string, contains: string[]}} [document] - What a document should hold afterwards
  * @property {{path: string, patterns: string[]}} [notContains] - What it should not
  * @property {string[]} [gone] - Paths that should hold nothing afterwards
@@ -218,6 +222,10 @@ Usage: npm run transcripts -- --scenario <name> [options]
  * @property {string[]} [disabledTools] - Tool names withheld from the chat
  * @property {string[]} [disabledToolGroups] - Group ids withheld: documents, rpg, skills
  * @property {boolean} [projectContextEnabled] - Whether the project block rides at the tail
+ * @property {string} [userName] - Who the writer is in a chat on a card: what the
+ *   card's `{{user}}` reads as
+ * @property {string} [characterName] - What its `{{char}}` reads as; the card's
+ *   name unless given
  */
 
 /**
@@ -283,11 +291,14 @@ async function resolvePrompt(ref) {
 }
 
 /**
- * The connection and preset the chat sends through, made active.
+ * The connection and model the chat sends through, and the model's settings
+ * on it. A chat keeps the model it was made with, so each run's chat is given
+ * this one.
  *
  * @param {import('./endpoints.js').Endpoint} endpoint
  * @param {string} model
  * @param {boolean} toolsEnabled
+ * @returns {Promise<{providerId: string, model: string}>}
  */
 async function configurePreset(endpoint, model, toolsEnabled) {
   const providers = useAIProvidersStore()
@@ -302,7 +313,7 @@ async function configurePreset(endpoint, model, toolsEnabled) {
     // still sends the privacy floor.
     routing: endpoint.routing ? resolveRouting(endpoint.routing) : undefined,
   })
-  const preset = presets.createPreset({
+  presets.createPreset({
     id: 'profile_harness',
     name: `${endpoint.name} ${model}`,
     providerId: provider.id,
@@ -310,7 +321,7 @@ async function configurePreset(endpoint, model, toolsEnabled) {
     allowedProviders: endpoint.allowedProviders,
     toolsEnabled,
   })
-  useApplicationState().setActiveAIPresetId(preset.id)
+  return { providerId: provider.id, model }
 }
 
 /**
@@ -485,8 +496,8 @@ function wordsOf(storyId) {
 }
 
 /**
- * The project and the chat's pins as they stand, for `tools.js` to check
- * what a turn did to them. Every text document, by path.
+ * The project as it stands, and what the writer has attached in the chat, for
+ * `tools.js` to check what a turn did. Every text document, by path.
  *
  * @param {string} storyId
  * @param {string} chatId
@@ -494,7 +505,7 @@ function wordsOf(storyId) {
 function snapshot(storyId, chatId) {
   const api = useDocuments(storyId)
   const store = useDocumentsStore()
-  const chat = useChatsStore().getChatById(chatId)
+  const messages = useChats(storyId).getMessagesForChat(chatId)?.value || []
   /** @type {Record<string, {content: string, summary: string}>} */
   const documents = {}
   for (const document of store.documents.values()) {
@@ -513,7 +524,9 @@ function snapshot(storyId, chatId) {
     inside: store.trashedUnder(document.id).length,
   }))
   return {
-    pinned: (chat?.pinnedIds || []).map(id => api.pathOf(id)).filter(Boolean),
+    // By the path each had when it was attached, which is the one the model
+    // was given.
+    attached: [...new Set(messages.flatMap(attachmentsOf).map(attachment => attachment.path))],
     documents,
     comments: commentsOf(storyId),
     trash,
@@ -591,7 +604,7 @@ async function main() {
   // Before the descriptions are read off the registry by anything: a skill
   // the model can load changes what `use_skill` says.
   const skills = await seedSkills(scenario.skillDirs)
-  await configurePreset(endpoint, model, options.tools)
+  const run = await configurePreset(endpoint, model, options.tools)
 
   const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
   const outDir = join(options.out, `${stamp}-${scenario.name}`)
@@ -654,8 +667,20 @@ async function main() {
       // Whatever else the scenario puts on the chat: the Director, the tool
       // switches. Everything a writer sets in the chat's own settings is a
       // variable of the experiment, not a fixed part of it.
-      const settings = { ...(scenario.chat || {}) }
-      if (Object.keys(settings).length > 0) chatsApi.updateChat(chat.id, settings)
+      chatsApi.updateChat(chat.id, { ...run, ...(scenario.chat || {}) })
+      // A chat on a card opens with the card's documents attached, ahead of
+      // anything said.
+      if (scenario.card) {
+        const { card, named } = await useCardChat(storyId).attach(chat.id, scenario.card)
+        if (!card) {
+          throw new Error(`${named} cards in the fixture are ${scenario.card}; a chat is on one`)
+        }
+        // Who the card's macros name, in what its model reads. The writer's
+        // own name is the scenario's to give (`chat.userName`).
+        if (!scenario.chat?.characterName) {
+          chatsApi.updateChat(chat.id, { characterName: card.name })
+        }
+      }
 
       resetRequests()
       const ai = useAIChat(storyId, chat.id)
@@ -682,17 +707,18 @@ async function main() {
         // The writer's comments, left in the editor before saying it.
         const comments = typeof message === 'string' ? undefined : message.before?.comments
         for (const comment of comments || []) leaveComment(storyId, comment)
-        // The writer's pins, made from the outline before saying it.
-        const pins = typeof message === 'string' ? undefined : message.before?.pin
-        if (pins?.length) {
-          const ids = pins.map(path => documentAt(storyId, path).id)
-          const current = chatsApi.getChatById(chat.id)?.pinnedIds || []
-          chatsApi.updateChat(chat.id, { pinnedIds: [...new Set([...current, ...ids])] })
-        }
+        // What the writer attaches to the message, as the message box writes
+        // it: the copy is taken as the message is sent.
+        const attach = typeof message === 'string' ? undefined : message.before?.attach
+        const mentions = (attach || []).map(path => {
+          documentAt(storyId, path)
+          return mentionOf(path.split('/').pop() || path, path)
+        })
         // What the comments and the words were as the turn began, for the
         // checks of what it did to them.
         const before = { comments: commentsOf(storyId), words: wordsOf(storyId) }
-        await ai.sendMessage(typeof message === 'string' ? message : message.text)
+        const text = typeof message === 'string' ? message : message.text
+        await ai.sendMessage([...mentions, text].join('\n'))
         const accept = typeof message !== 'string' && message.accept
         const refused = accept ? await acceptProposals(ai, chatsApi, chat.id) : []
         states.push({ ...snapshot(storyId, chat.id), before, ...(accept ? { refused } : {}) })

@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import {
   projectOverview,
-  pinnedDocuments,
   documentLocator,
   executeAppendDocument,
   executeEditDocument,
@@ -40,8 +39,6 @@ describe('a chat that plays a card', () => {
   let store
   /** @type {any} */
   let description
-  /** @type {any} */
-  let oath
   /** A chat on the card, with names. */
   let playing = ''
   /** A chat working on the card, with none. */
@@ -71,7 +68,7 @@ describe('a chat that plays a card', () => {
         plain: true,
       })
     description = document('Description', '{{char}} is a knight. {{user}} met her on the road.')
-    oath = document("{{char}}'s Oath", 'Sworn to guard {{user}} until the river freezes.')
+    document("{{char}}'s Oath", 'Sworn to guard {{user}} until the river freezes.')
 
     const chats = useChatsStore()
     playing = chats.createChat(STORY).id
@@ -107,14 +104,6 @@ describe('a chat that plays a card', () => {
 
     expect(results.map(hit => hit.path)).toEqual(['Elara/Description'])
     expect(results[0].passages[0].text).toContain('Riley met her')
-  })
-
-  it('pins with the names in the path', async () => {
-    useChatsStore().updateChat(playing, { pinnedIds: [oath.id] })
-
-    const pinned = await pinnedDocuments(STORY, useChatsStore().getChatById(playing))
-
-    expect(pinned.map(entry => entry.path)).toEqual(["Elara/Elara's Oath"])
   })
 
   it('edits the passage it quoted, and leaves the macros it did not touch', async () => {

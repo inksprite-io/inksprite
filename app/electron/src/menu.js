@@ -35,13 +35,38 @@ export function setMenu({ newWindow }) {
         mac ? { role: 'close' } : { role: 'quit' },
       ],
     },
-    { role: 'editMenu' },
+    mac ? { label: 'Edit', submenu: macEditMenu() } : { role: 'editMenu' },
     { role: 'viewMenu' },
     { role: 'windowMenu' },
   ]
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
   if (mac)
     app.dock?.setMenu(Menu.buildFromTemplate([{ label: 'New Window', click: () => newWindow() }]))
+}
+
+/**
+ * Electron's Edit menu on a Mac, with ⇧⌘V pasting without formatting as it
+ * does in a browser, beside the Mac's own ⌥⇧⌘V the menu shows. Electron puts
+ * nothing on ⇧⌘V, and a key no menu item has never reaches the page as a
+ * paste.
+ *
+ * @returns {Electron.MenuItemConstructorOptions[]}
+ */
+function macEditMenu() {
+  return [
+    { role: 'undo' },
+    { role: 'redo' },
+    { type: 'separator' },
+    { role: 'cut' },
+    { role: 'copy' },
+    { role: 'paste' },
+    { role: 'pasteAndMatchStyle' },
+    { role: 'pasteAndMatchStyle', accelerator: 'Cmd+Shift+V', visible: false },
+    { role: 'delete' },
+    { role: 'selectAll' },
+    { type: 'separator' },
+    { label: 'Speech', submenu: [{ role: 'startSpeaking' }, { role: 'stopSpeaking' }] },
+  ]
 }
 
 /**

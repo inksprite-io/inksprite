@@ -5,6 +5,7 @@ import {
   isRoutingOverridden,
   buildProviderRouting,
   isClosedWeights,
+  routingFilterOf,
 } from '@/ai/routing.js'
 
 /** An OpenRouter connection carrying `routing`. */
@@ -105,6 +106,22 @@ describe('isRoutingOverridden', () => {
   })
 })
 
+describe('routingFilterOf', () => {
+  it('names the setting behind each step OpenRouter refuses at', () => {
+    expect(routingFilterOf('Filter by Data Policy')).toBe('connection')
+    expect(routingFilterOf('Filter by Quantization')).toBe('connection')
+    expect(routingFilterOf('Filter by Ignored Providers')).toBe('connection')
+    expect(routingFilterOf('Filter by Allowed Providers')).toBe('model')
+    expect(routingFilterOf('Filter by Tool Compatibility')).toBe('tools')
+  })
+
+  it('knows nothing of a step it has not seen, or none', () => {
+    expect(routingFilterOf('Filter by Something New')).toBeNull()
+    expect(routingFilterOf(undefined)).toBeNull()
+    expect(routingFilterOf(404)).toBeNull()
+  })
+})
+
 describe('buildProviderRouting', () => {
   it('sends the floor for a connection nobody has configured', () => {
     // The floor is not what OpenRouter does on its own, so it has to be said.
@@ -131,6 +148,35 @@ describe('buildProviderRouting', () => {
         })
       )
     ).toBeUndefined()
+  })
+
+  it('sends NanoGPT zero data retention alone, on by default', () => {
+    expect(buildProviderRouting({ type: 'nanogpt' }, 'z-ai/glm-5')).toEqual({ zdr: true })
+  })
+
+  it('sends NanoGPT the model’s providers beside it, and none of OpenRouter’s floor', () => {
+    const nanoGpt = {
+      type: 'nanogpt',
+      routing: { zdr: true, ignore: ['uomi'], dataCollection: 'deny' },
+    }
+    expect(
+      buildProviderRouting(nanoGpt, 'z-ai/glm-5', {
+        allowedProviders: ['novita'],
+        ignoredProviders: ['siliconflow'],
+      })
+    ).toEqual({ only: ['novita'], ignore: ['siliconflow'], zdr: true })
+    expect(
+      buildProviderRouting(nanoGpt, 'z-ai/glm-5', { allowedProviders: ['novita'], fallbacks: true })
+    ).toEqual({ order: ['novita'], zdr: true })
+    expect(
+      buildProviderRouting({ type: 'nanogpt', routing: { zdr: false } }, 'z-ai/glm-5', {
+        ignoredProviders: ['siliconflow'],
+      })
+    ).toEqual({ ignore: ['siliconflow'] })
+  })
+
+  it('omits the field for NanoGPT with zero data retention off', () => {
+    expect(buildProviderRouting({ type: 'nanogpt', routing: { zdr: false } })).toBeUndefined()
   })
 
   it('omits the field for a non-OpenRouter provider', () => {

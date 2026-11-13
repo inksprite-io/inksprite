@@ -43,6 +43,9 @@ themselves: a folder chosen whole is skipped.
 - A Doc's **footnotes** come in at its end. Its **smart chips** come in as
   words: a person as their name, linked to their email address, and a date
   as it shows.
+- TeX between dollars comes in as a [formula](/editor/#formulas): `$x^2$` in
+  a sentence, or a paragraph of nothing but `$$…$$` for one on its own line.
+  Equations made with Google Docs' own equation tool are left out.
 - A Doc with **suggested edits** still open comes in as it was before them,
   and the message names it. Its first sync brings them in as
   [suggestions](#suggested-edits).
@@ -86,6 +89,10 @@ deleting a paragraph that a suggestion in the Doc parts or joins. They stay here
 and the rest syncs; each is tried again at the next sync. Pictures you add here stay here, and pictures added in the Doc
 come in. A list in a Doc is one kind all the way down, so bullets inside a
 numbered list are numbered there.
+
+A [formula](/editor/#formulas) goes to the Doc as its TeX between dollars, and
+changing the TeX in the Doc changes the formula here. A formula on its own line
+inside a quote or a list stays here.
 
 A [link to another document](/editor/#links) that has a Doc of its own goes to
 that Doc, and a link in the Doc to it comes back as a link to the document. A

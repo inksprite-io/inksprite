@@ -1,12 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { computed } from 'vue'
 import { setActivePinia, createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import ConnectionsSection from '@/components/writer/settings/ConnectionsSection.vue'
 import { useMcpServerStore } from '@/stores/mcpServerStore.js'
-import { CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
 import { SIGN_IN_NEEDED } from '@/mcp/client.js'
+import { useApplicationState } from '@/composables/useApplicationState'
+import { SECTION_HEADING } from '@/components/common/sectionHeading.js'
 
 vi.mock('@/stores/db', () => ({
   default: {
@@ -73,6 +74,7 @@ const offered = {
 
 const mountSection = async () => {
   const wrapper = mount(ConnectionsSection, {
+    props: { part: 'mcp' },
     global: { plugins: [PrimeVue], directives: { tooltip: {} } },
   })
   await flushPromises()
@@ -129,7 +131,7 @@ describe('ConnectionsSection', () => {
     expect(useMcpServerStore().getAllServers()[0].url).toBe('https://mcp.example.org/mcp')
   })
 
-  it('keeps it, named for the model, and used in chats on the default profile', async () => {
+  it('keeps it, named for the model, saying nothing of which chats use it', async () => {
     listServer.mockResolvedValue(offered)
     const wrapper = await mountSection()
 
@@ -141,9 +143,10 @@ describe('ConnectionsSection', () => {
       name: 'Example',
       prefix: 'example',
       url: 'https://mcp.example.com/mcp',
-      profiles: [CHAT_PROFILE_ID],
       allowed: [],
     })
+    // Each chat's tools say: it is on in every one that has not switched it off.
+    expect(server.profiles).toBeUndefined()
     expect(server.tools.map(tool => tool.exposed)).toEqual([
       'example__look_up',
       'example__save_note',
@@ -235,6 +238,7 @@ describe('ConnectionsSection', () => {
 
   it('opens a new server ready to take its address', async () => {
     const wrapper = mount(ConnectionsSection, {
+      props: { part: 'mcp' },
       global: { plugins: [PrimeVue], directives: { tooltip: {} } },
       attachTo: document.body,
     })
@@ -284,7 +288,7 @@ describe('ConnectionsSection', () => {
     expect(wrapper.text()).toContain('needs a bridge')
   })
 
-  it('always allows a tool, uses it on another profile, and removes it, from its row', async () => {
+  it('always allows a tool, and removes the server, from its row', async () => {
     listServer.mockResolvedValue(offered)
     const wrapper = await mountSection()
     await connectTo(wrapper, 'https://mcp.example.com/mcp')
@@ -300,12 +304,7 @@ describe('ConnectionsSection', () => {
 
     await toggle('Always allow save_note').vm.$emit('update:modelValue', true)
     expect(store.getServer(server.id).allowed).toEqual(['save_note'])
-
-    await toggle('Use Example in chats on Roleplay').vm.$emit('update:modelValue', true)
-    expect(store.getServer(server.id).profiles).toEqual([
-      CHAT_PROFILE_ID,
-      'builtin_profile_roleplay',
-    ])
+    expect(wrapper.text()).not.toContain('Used in chats on')
 
     await wrapper.find('[data-action="remove"]').trigger('click')
     expect(store.getAllServers()).toEqual([])
@@ -432,5 +431,193 @@ describe('ConnectionsSection, a server always allowed', () => {
     useMcpServers().allowServer('example__save_note')
 
     expect(store.getServer(server.id).allowAll).toBe(true)
+  })
+})
+
+describe('ConnectionsSection, a part at a time', () => {
+  const AiConnections = { name: 'AiConnections', template: '<div data-ai-connections />' }
+  const WebSearchConnection = { name: 'WebSearchConnection', template: '<div data-web-search />' }
+
+  /** @param {string} [part] */
+  const mountPart = async part => {
+    const wrapper = mount(ConnectionsSection, {
+      props: part ? { part } : {},
+      global: {
+        plugins: [PrimeVue],
+        directives: { tooltip: {} },
+        stubs: { AiConnections, WebSearchConnection },
+      },
+    })
+    await flushPromises()
+    return wrapper
+  }
+
+  /** Which of the three is showing. */
+  const showing = wrapper => ({
+    providers: wrapper.find('[data-ai-connections]').exists(),
+    mcp: wrapper.find('[data-heading="mcp"]').exists(),
+    web: wrapper.find('[data-web-search]').exists(),
+  })
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    listServer.mockReset()
+    useApplicationState().resetState()
+  })
+
+  afterEach(() => useApplicationState().resetState())
+
+  it('shows the AI providers alone, and first', async () => {
+    expect(showing(await mountPart())).toEqual({ providers: true, mcp: false, web: false })
+    expect(showing(await mountPart('providers'))).toEqual({
+      providers: true,
+      mcp: false,
+      web: false,
+    })
+  })
+
+  it('shows the MCP servers alone', async () => {
+    const wrapper = await mountPart('mcp')
+
+    expect(showing(wrapper)).toEqual({ providers: false, mcp: true, web: false })
+    expect(wrapper.find('[data-connections-section]').attributes('data-part')).toBe('mcp')
+  })
+
+  it('shows web search’s services alone, and moves from part to part as told', async () => {
+    const wrapper = await mountPart('web')
+    expect(showing(wrapper)).toEqual({ providers: false, mcp: false, web: true })
+
+    await wrapper.setProps({ part: 'providers' })
+    expect(showing(wrapper)).toEqual({ providers: true, mcp: false, web: false })
+  })
+
+  it('has web search’s services only while its extension is on', async () => {
+    useApplicationState().setExtension('web', false)
+    const wrapper = await mountPart('web')
+    expect(showing(wrapper).web).toBe(false)
+
+    useApplicationState().setExtension('web', true)
+    await flushPromises()
+    expect(showing(wrapper)).toEqual({ providers: false, mcp: false, web: true })
+  })
+
+  it('has none of them with the AI off', async () => {
+    useApplicationState().setAiEnabled(false)
+    expect(showing(await mountPart('web')).web).toBe(false)
+  })
+})
+
+describe('ConnectionsSection, the servers as cards', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    listServer.mockReset()
+    signed.clear()
+    vi.spyOn(window, 'open').mockReturnValue(null)
+  })
+
+  /** Keep the test server, and give back its row in the store. */
+  const keep = async wrapper => {
+    listServer.mockResolvedValue(offered)
+    await connectTo(wrapper, 'https://mcp.example.com/mcp')
+    await wrapper.find('[data-action="keep"]').trigger('click')
+    await flushPromises()
+    return useMcpServerStore().getAllServers()[0]
+  }
+
+  it('draws no box, and says nothing, with no servers', async () => {
+    const wrapper = await mountSection()
+
+    expect(wrapper.find('[data-card-list]').exists()).toBe(false)
+    expect(wrapper.find('[data-heading="mcp"]').text()).toBe('')
+    expect(wrapper.find('[data-action="add-server"]').attributes('aria-label')).toBe('Add a server')
+  })
+
+  it('opens a new server as an open card, put away by a click on its name or Cancel', async () => {
+    const wrapper = await mountSection()
+
+    await wrapper.find('[data-action="add-server"]').trigger('click')
+
+    const adding = wrapper.find('[data-adding]')
+    expect(adding.find('[data-card-toggle]').text()).toContain('New server')
+    expect(adding.find('[data-card-toggle]').attributes('aria-expanded')).toBe('true')
+    expect(adding.find('[data-card-body] [data-field="url"]').exists()).toBe(true)
+
+    await adding.find('[data-card-toggle]').trigger('click')
+    expect(wrapper.find('[data-adding]').exists()).toBe(false)
+
+    await wrapper.find('[data-action="add-server"]').trigger('click')
+    await wrapper.find('[data-action="cancel"]').trigger('click')
+    expect(wrapper.find('[data-adding]').exists()).toBe(false)
+  })
+
+  it('lists a kept server as a card, by its name and address, saying nothing of one that was listed', async () => {
+    const wrapper = await mountSection()
+    const server = await keep(wrapper)
+
+    const card = wrapper.find(`[data-list="servers"] [data-server="${server.id}"]`)
+    expect(card.find('[data-card-toggle]').text()).toContain('Example')
+    expect(card.find('[data-connection-address]').text()).toBe('https://mcp.example.com/mcp')
+    expect(card.find('[data-status]').exists()).toBe(false)
+    expect(card.text()).not.toContain('Connected')
+  })
+
+  it('says “Not connected”, with a red dot, only of one that couldn’t be listed', async () => {
+    const wrapper = await mountSection()
+    const server = await keep(wrapper)
+    const store = useMcpServerStore()
+    const status = () => wrapper.find(`[data-server="${server.id}"] [data-status]`)
+
+    // The server refused, or couldn't be reached.
+    store.updateServer(server.id, { error: 'The server could not be reached.' })
+    await flushPromises()
+    expect(status().text()).toBe('Not connected')
+    expect(status().find('.bg-red-500').exists()).toBe(true)
+
+    store.updateServer(server.id, { error: undefined })
+    await flushPromises()
+    expect(status().exists()).toBe(false)
+
+    // Its key missing, as a backup without keys restores it.
+    store.updateServer(server.id, { headers: { Authorization: '' } })
+    await flushPromises()
+    expect(status().text()).toBe('Not connected')
+  })
+
+  it('opens a server’s settings in its card, one at a time', async () => {
+    const wrapper = await mountSection()
+    const server = await keep(wrapper)
+    const card = () => wrapper.find(`[data-server="${server.id}"]`)
+
+    await card().find('[data-card-toggle]').trigger('click')
+    expect(card().find('[data-connection-body] [data-action="remove"]').exists()).toBe(true)
+
+    await card().find('[data-card-toggle]').trigger('click')
+    expect(card().find('[data-connection-body]').exists()).toBe(false)
+  })
+
+  it('puts its plus beside the heading of the section it is in', async () => {
+    const heading = document.createElement('div')
+    heading.id = 'mcp-heading'
+    document.body.appendChild(heading)
+    const wrapper = mount(ConnectionsSection, {
+      props: { part: 'mcp' },
+      global: {
+        plugins: [PrimeVue],
+        directives: { tooltip: {} },
+        provide: { [SECTION_HEADING]: '#mcp-heading' },
+      },
+      attachTo: document.body,
+    })
+    await flushPromises()
+
+    expect(heading.querySelector('[data-action="add-server"]')).not.toBeNull()
+    expect(wrapper.find('[data-heading="mcp"] [data-action="add-server"]').exists()).toBe(false)
+
+    // Only while the servers are the part showing.
+    await wrapper.setProps({ part: 'web' })
+    await flushPromises()
+    expect(heading.querySelector('[data-action="add-server"]')).toBeNull()
+    wrapper.unmount()
+    heading.remove()
   })
 })

@@ -72,17 +72,19 @@ describe('useBackup, settings files', () => {
       tables.aiProviders = [proxy]
       tables.aiProfiles = [preset]
       tables.stories = [{ id: 's1' }]
-      useApplicationState().setActiveAIPresetId('profile_team')
+      useApplicationState().setBuiltInProfile('builtin_profile_chat', { presetId: 'profile_team' })
 
       const backup = await useBackup().createSettingsBackup({
-        picked: new Set(['aiProviders/provider_proxy', 'settings/aiPreset']),
+        picked: new Set(['aiProviders/provider_proxy', 'settings/builtInProfiles']),
       })
 
       expect(processSync).toHaveBeenCalled()
       expect(backup.scope).toBe('settings')
       expect(backup.dbVersion).toBe(28)
       expect(backup.tables).toEqual({ aiProviders: [{ ...proxy, apiKey: '' }] })
-      expect(backup.settings).toEqual({ aiPreset: 'profile_team' })
+      expect(backup.settings).toEqual({
+        builtInProfiles: { builtin_profile_chat: { presetId: 'profile_team' } },
+      })
 
       const kept = await useBackup().createSettingsBackup({
         picked: new Set(['aiProviders/provider_proxy']),
@@ -145,7 +147,10 @@ describe('useBackup, settings files', () => {
         fileOf(
           settingsFile(
             { aiProviders: [{ ...proxy, apiKey: '' }], aiProfiles: [preset] },
-            { aiPreset: 'profile_team', theme: 'dark' }
+            {
+              builtInProfiles: { builtin_profile_chat: { presetId: 'profile_team' } },
+              theme: 'dark',
+            }
           )
         )
       )
@@ -155,26 +160,17 @@ describe('useBackup, settings files', () => {
         expect.objectContaining({ name: 'Team proxy', apiKey: 'team-secret' }),
       ])
       expect(tables.aiProfiles).toEqual([expect.objectContaining({ id: 'profile_team' })])
-      expect(useApplicationState().activeAIPresetId.value).toBe('profile_team')
+      expect(useApplicationState().builtInProfiles.value.builtin_profile_chat).toEqual({
+        presetId: 'profile_team',
+      })
       expect(useApplicationState().theme.value).toBe('dark')
       expect(
         Object.keys(JSON.parse(window.localStorage.getItem('inksprite.settings-imported')))
       ).toEqual([
         'aiProviders/provider_proxy',
         'aiProfiles/profile_team',
-        'settings/aiPreset',
+        'settings/builtInProfiles',
         'settings/preferences',
-      ])
-    })
-
-    it('writes a skill’s wording under the skill’s name', async () => {
-      const backup = useBackup()
-      const { plan } = await backup.readDataFile(
-        fileOf(settingsFile({ skillWordings: [{ name: 'write', prompt: 'Short.', updated: 1 }] }))
-      )
-      await backup.importSettings(plan)
-      expect(storage.write).toHaveBeenCalledWith('skillWordings', [
-        expect.objectContaining({ id: 'write', op: 'put' }),
       ])
     })
   })

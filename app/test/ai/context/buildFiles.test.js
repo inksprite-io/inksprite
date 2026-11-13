@@ -34,30 +34,6 @@ const blockOf = messages => {
 }
 
 describe('buildContext, with files', () => {
-  it('carries a pinned file’s text in the block', async () => {
-    const stores = makeStores({
-      documents: [paper],
-      chat: { id: 'c1' },
-      messages: [{ role: 'user', content: 'What does the survey say?' }],
-    })
-
-    const { messages } = await buildContext(stores, {
-      storyId: 's1',
-      chatId: 'c1',
-      systemPrompt: 'sys',
-      project,
-      pinned: [{ id: 'd_paper', path: 'Papers/RAG survey', type: 'file', words: 4, pages: 1 }],
-    })
-
-    expect(blockOf(messages).pinned[0]).toEqual({
-      path: 'Papers/RAG survey',
-      type: 'file',
-      words: 4,
-      pages: 1,
-      content: '[p.1]\nRetrieval helps generation.',
-    })
-  })
-
   it('keeps a file the model read in the conversation, not in the block', async () => {
     const stores = makeStores({
       documents: [paper],

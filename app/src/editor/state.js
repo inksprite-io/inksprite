@@ -12,13 +12,15 @@
  *
  * The keys follow the previous editor's where it had them — Mod-B, Mod-I,
  * Mod-Shift-S, Mod-Alt-1 through 6, Mod-Shift-7 and 8, Mod-Shift-B, Mod-Alt-C
- * — and the reference's for lists: Enter splits an item, Tab and Shift-Tab
- * nest and lift. In a table they move between cells and rows (see
- * `editor/tables`). A list's keys and the quote's take it off again, as their
- * items under a selection do (see `editor/format`). The typed shortcuts are markdown's own: `# `, `- `, `1. `,
- * `> `, ```` ``` ````, `---`, `**bold**` as you type, and a table's header
- * row followed by Enter. Quotes, dashes and ellipses are made as they are
- * typed, as a word processor makes them.
+ * — Notion's for a formula, Mod-Shift-E, and the reference's for lists: Enter
+ * splits an item, Tab and Shift-Tab nest and lift. In a table they move
+ * between cells and rows (see `editor/tables`). A list's keys and the quote's
+ * take it off again, as their items under a selection do (see
+ * `editor/format`). The typed shortcuts are markdown's own: `# `, `- `,
+ * `1. `, `> `, ```` ``` ````, `---`, `**bold**` and `$x^2$` as you type
+ * (`$$` for a formula of its own, see `editor/formulas`), and a table's
+ * header row followed by Enter. Quotes, dashes and ellipses are made as they
+ * are typed, as a word processor makes them.
  */
 
 import { EditorState, Selection, TextSelection } from 'prosemirror-state'
@@ -44,6 +46,8 @@ import { searchPlugin } from './search.js'
 import { spellingPlugin } from './spelling.js'
 import { commentDraftPlugin } from './commentDraft.js'
 import { figuresPlugin } from './pictures.js'
+import { streamingPlugin } from './streaming.js'
+import { formulaRules, formulasPlugin, insertFormula } from './formulas.js'
 import { toggleList, toggleQuote } from './format.js'
 import { diffSequences } from '@/utils/diff.js'
 import {
@@ -119,6 +123,7 @@ export const keys = {
   'Mod-Alt-5': setBlockType(heading, { level: 5 }),
   'Mod-Alt-6': setBlockType(heading, { level: 6 }),
   'Mod-Alt-c': setBlockType(code_block),
+  'Mod-Shift-e': insertFormula,
 }
 
 /**
@@ -211,6 +216,7 @@ export const rules = [
   markInputRule(/(?:^|\s)(_(?!\s+_)([^_]+)_(?!\s+_))$/, em),
   markInputRule(/(?:^|\s)(~~(?!\s+~~)([^~]+)~~(?!\s+~~))$/, strikethrough),
   markInputRule(/(?:^|\s)(`(?!\s+`)([^`]+)`(?!\s+`))$/, code),
+  ...formulaRules,
   ...typography,
 ]
 
@@ -221,6 +227,7 @@ export const rules = [
  */
 export function plugins() {
   return [
+    formulasPlugin(),
     inputRules({ rules }),
     cellPaste(),
     keymap(wholeTableKeys),
@@ -235,6 +242,7 @@ export function plugins() {
     spellingPlugin(),
     commentDraftPlugin(),
     figuresPlugin(),
+    streamingPlugin(),
   ]
 }
 
@@ -247,7 +255,18 @@ export function plugins() {
  */
 export function createEditorState(markdown) {
   const doc = parseMarkdown(markdown)
-  return EditorState.create({ doc, selection: Selection.atEnd(doc), plugins: plugins() })
+  return EditorState.create({ doc, selection: endOf(doc), plugins: plugins() })
+}
+
+/**
+ * The caret at the end of a document's text: in its last text, and not on a
+ * rule or a formula that ends it, which the first key typed would replace.
+ *
+ * @param {Node} doc
+ * @returns {Selection}
+ */
+function endOf(doc) {
+  return Selection.findFrom(doc.resolve(doc.content.size), -1, true) ?? Selection.atEnd(doc)
 }
 
 /**
@@ -270,7 +289,7 @@ export function isEmptyDocument(doc) {
  */
 export function replaceContent(state, markdown) {
   const tr = state.tr.replaceWith(0, state.doc.content.size, parseMarkdown(markdown).content)
-  return closeHistory(tr.setSelection(Selection.atEnd(tr.doc)).scrollIntoView())
+  return closeHistory(tr.setSelection(endOf(tr.doc)).scrollIntoView())
 }
 
 /**

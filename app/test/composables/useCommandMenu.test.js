@@ -92,7 +92,8 @@ describe('useCommandMenu', () => {
 
     expect(chat.open()).toBe(true)
     expect(chat.names()).toContain('oracle')
-    expect(chat.active()).toBe('aside')
+    // The first, alphabetically.
+    expect(chat.active()).toBe('compact')
   })
 
   it('narrows to what the name could be as it is typed', async () => {

@@ -76,6 +76,9 @@ import { sessionStorage } from '@/utils/sessionStorage'
  *   chevron ahead of a small title, as a tree has it, so that its `actions`
  *   line up with the rows under it; and the content hung from it by a line
  *   down from the chevron, so what is inside it is plainly its own.
+ * @property {boolean} [flush=false] - A subsection holding a list that is a
+ *   box of its own (`CardList`): no line hangs it from the chevron, and it
+ *   takes the section's whole width.
  * @property {boolean} [disabled=false] - Shut, and not to be opened: a
  *   section whose switch in its actions is off. Whether it was left open is
  *   kept, for when it can open again.
@@ -129,6 +132,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  flush: {
+    type: Boolean,
+    default: false,
+  },
   disabled: {
     type: Boolean,
     default: false,
@@ -139,7 +146,8 @@ const props = defineProps({
 // far from the right as the header's actions do, so switches line up.
 const contentClasses = computed(() => [
   props.contentWrapperClass,
-  props.subsection && 'ml-3.5 pl-3 pr-2 border-l border-surface-300 dark:border-surface-600',
+  props.subsection &&
+    (props.flush ? 'pr-2' : 'ml-3.5 pl-3 pr-2 border-l border-surface-300 dark:border-surface-600'),
 ])
 
 /** What the title's button opens and closes, for a screen reader to follow. */

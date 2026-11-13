@@ -3,70 +3,8 @@
        hands a component's attributes to its root, and two siblings are not
        one. A link in a reply to one of the project's documents opens it. -->
   <div ref="root" class="w-full h-full" @click="documentLinks.onClick">
-    <!-- Settings takes over the chat's container, so this works the same
-       wherever the chat is rendered. The chat is only hidden behind it, so
-       that it comes back as it was left: its turns at the sizes they had and
-       the writer where they were in it. -->
-    <ChatSettings
-      v-if="showSettings"
-      :story-id="props.storyId"
-      :chat-id="props.chatId"
-      @back="closeSettings"
-    />
-    <div
-      v-show="!showSettings"
-      class="w-full h-full flex flex-col bg-surface-0 dark:bg-surface-800"
-    >
-      <!-- The chat's title, and the profile it runs on beside it. -->
-      <PanelHeader :title="chatTitle">
-        <!-- Back to the list, where the list is behind this panel; otherwise
-           whatever the panel puts here, which beside the editor is the
-           toggle for it. -->
-        <template #start>
-          <Button
-            v-if="showBack"
-            type="button"
-            icon="pi pi-chevron-left"
-            severity="secondary"
-            size="small"
-            rounded
-            class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700"
-            aria-label="Back"
-            @click="handleBack"
-          />
-          <slot v-else name="header-start"><div class="w-7" /></slot>
-        </template>
-        <ChatProfileMenu :story-id="props.storyId" :chat-id="props.chatId" />
-        <!-- Finding in the chat, which the browser's find cannot do for the
-           turns not in the page. Here for a phone, which has no key for it. -->
-        <Button
-          v-if="!unstarted"
-          v-tooltip.bottom="'Find in chat'"
-          type="button"
-          icon="pi pi-search"
-          severity="secondary"
-          size="small"
-          rounded
-          class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700"
-          aria-label="Find in chat"
-          data-action="find"
-          @click="openFind"
-        />
-        <!-- A fresh conversation, without going back to the list for one. A
-           chat not started yet is already one. -->
-        <Button
-          v-if="!unstarted"
-          v-tooltip.bottom="'New chat'"
-          type="button"
-          icon="pi pi-plus"
-          severity="secondary"
-          size="small"
-          rounded
-          class="flex-none !w-7 !h-7 !p-0 !bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700"
-          aria-label="New chat"
-          @click="emit('new-chat')"
-        />
-      </PanelHeader>
+    <ChatVoiceMenu ref="voiceMenu" :story-id="props.storyId" :chat-id="props.chatId" />
+    <div class="w-full h-full flex flex-col bg-surface-0 dark:bg-surface-850">
       <!-- Finding in the chat. See useChatFind. -->
       <FindBar
         v-if="finding"
@@ -134,7 +72,7 @@
                   :writing="isGenerating && index === turns.length - 1"
                   :compacted="turn.compacted"
                   :summarizable="!isGenerating && summarizable.has(turn.id)"
-                  :voice-id="chat?.voiceId ?? null"
+                  :voice-id="voiceFor(turn.role)"
                   @regenerate="handleRegenerateMessage"
                   @alternate="handleSelectAlternate"
                   @resend="handleResendMessage"
@@ -145,6 +83,8 @@
                   @summarize="handleSummarize"
                   @accept="handleAcceptEdit"
                   @reject="handleRejectEdit"
+                  @fix="handleFix"
+                  @voice-menu="voiceMenu?.show($event, turn.role)"
                 />
               </div>
             </template>
@@ -228,22 +168,29 @@
            open Enter picks from it instead of sending the draft. -->
         <div
           ref="inputRow"
-          class="w-full p-1 px-2 gap-1 flex flex-wrap items-end justify-end !rounded-4xl bg-surface-100 dark:bg-surface-900"
+          class="w-full p-1 px-2 gap-1 flex flex-wrap items-end justify-end !rounded-4xl bg-surface-100 dark:bg-surface-750"
           @keydown.capture="onFieldKeydown"
         >
-          <!-- Provider setup dialog -->
-          <InitialProviderSetup
-            v-model:visible="providerSetupDialogVisible"
-            @dont-show-again="handleDontShowAgain"
+          <!-- Setting up the AI, the first time; and a connection to fix. -->
+          <SetupWizard
+            v-if="wizardOpen"
+            v-model:visible="wizardOpen"
+            :story-id="props.storyId"
+            :chat-id="props.chatId"
+            @done="nextTick(() => fieldElement?.focus())"
           />
-
+          <ConnectionDialog
+            v-if="connectionToFix"
+            visible
+            :provider-id="connectionToFix"
+            @close="connectionToFix = null"
+          />
           <Textarea
             ref="messageField"
             v-model="userInput"
             placeholder="Let's brainstorm…"
             class="grow min-w-0 !bg-transparent !border-0 resize-none max-h-[20rem] !overflow-y-auto"
             :class="beside ? 'basis-0' : 'basis-full'"
-            :disabled="isGenerating"
             rows="1"
             aria-autocomplete="list"
             :aria-controls="menuOpen ? menuId : linkMenuOpen ? linkMenuId : undefined"
@@ -259,21 +206,21 @@
             @dragover="onDragOver"
             @drop="onDrop"
           />
-          <Button
-            v-tooltip.top="'Chat settings'"
-            type="button"
-            icon="pi pi-cog"
-            severity="secondary"
-            size="small"
-            rounded
-            class="!bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700 mb-[0.25rem] !p-2"
-            aria-label="Chat settings"
-            @click="openSettings"
-          />
-          <!-- Send, with the two quieter destinations behind the caret. Enter is
-             the whole story for most turns; pushing one in without a reply is
-             not, so it waits in here with its shortcut written beside it. -->
-          <div v-if="!isGenerating" class="flex-none flex items-end mb-[0.25rem]">
+          <!-- Send, with the two quieter destinations on a right-click, or a
+             finger held on it. Enter is the whole story for most turns;
+             pushing one in without a reply is not, so it waits in there with
+             its shortcut written beside it. -->
+          <div
+            v-if="!isGenerating"
+            ref="sendGroup"
+            class="flex-none flex items-end mb-[0.25rem]"
+            data-send
+            @contextmenu.prevent="showSendMenu"
+            @touchstart.passive="sendPress.touchstart"
+            @touchmove.passive="sendPress.touchmove"
+            @touchend="sendPress.touchend"
+            @touchcancel="sendPress.touchend"
+          >
             <Button
               v-tooltip.top="'Send'"
               type="button"
@@ -286,23 +233,10 @@
               @click="handleSendMessage"
             >
               <template #icon>
-                <SendIcon :size="18" class="text-surface-contrast" />
+                <!-- 16px, kept from shrinking. -->
+                <SendIcon :size="16" class="shrink-0 text-surface-contrast" />
               </template>
             </Button>
-            <Button
-              v-tooltip.top="'Add without replying'"
-              type="button"
-              icon="pi pi-chevron-down"
-              severity="secondary"
-              size="small"
-              rounded
-              :disabled="!hasInput"
-              aria-haspopup="true"
-              aria-controls="chat_send_menu"
-              class="!bg-transparent !border-transparent hover:!bg-surface-200 dark:hover:!bg-surface-700 !p-1 !text-xs"
-              aria-label="More ways to add this"
-              @click="toggleSendMenu"
-            />
             <Menu id="chat_send_menu" ref="sendMenu" :model="sendOptions" :popup="true">
               <template #item="{ item, props: itemProps }">
                 <a
@@ -332,6 +266,12 @@
             </template>
           </Button>
         </div>
+        <ChatChips
+          ref="chips"
+          class="px-1 pt-1"
+          :story-id="props.storyId"
+          :chat-id="props.chatId"
+        />
       </div>
     </div>
   </div>
@@ -345,14 +285,15 @@ import ScrollPanel from 'primevue/scrollpanel'
 import Menu from 'primevue/menu'
 import StopIcon from '@/components/icons/StopIcon.vue'
 import SendIcon from '@/components/icons/SendIcon.vue'
+import { useLongPress } from '@/composables/useLongPress.js'
 import ChatTurn from './ChatTurn.vue'
-import ChatSettings from './ChatSettings.vue'
 import ChatCommandMenu from './ChatCommandMenu.vue'
 import LinkSuggestions from '../editor/LinkSuggestions.vue'
-import ChatProfileMenu from './ChatProfileMenu.vue'
-import PanelHeader from '../layout/PanelHeader.vue'
 import FindBar from '@/components/common/FindBar.vue'
-import InitialProviderSetup from '@/components/common/InitialProviderSetup.vue'
+import SetupWizard from '../connections/SetupWizard.vue'
+import ConnectionDialog from '../connections/ConnectionDialog.vue'
+import ChatChips from './ChatChips.vue'
+import ChatVoiceMenu from './ChatVoiceMenu.vue'
 import { useChats } from '@/composables/useChats'
 import { useJumpToBottom } from '@/composables/useJumpToBottom'
 import { useNearTurns } from '@/composables/useNearTurns.js'
@@ -364,12 +305,12 @@ import { linkOnClipboard } from '@/utils/documentLinks.js'
 import { draggingFromOutline } from '@/composables/useTreeDrop.js'
 import { useConfirm } from 'primevue/useconfirm'
 import { useAIChat } from '@/composables/useAIChat'
-import { useProviderSetup } from '@/composables/useProviderSetup.js'
-import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
-import { useAIConfig } from '@/composables/useAIConfig'
+import { BUILT_IN_PROVIDERS, creditsPage } from '@/ai/providers.js'
+import { useConnections } from '@/composables/useConnections.js'
 import { useMessageField } from '@/composables/useMessageField.js'
 import { useCommandMenu, commandOptionId } from '@/composables/useCommandMenu.js'
 import { useLinkMenu } from '@/composables/useLinkMenu.js'
+import { keepPlace, placeIn } from '@/composables/useChatPlaces.js'
 import {
   COMPACT_COMMAND,
   compactionCover,
@@ -378,21 +319,20 @@ import {
 } from '@/ai/compaction.js'
 import { compactedRuns, groupTurns } from '@/utils/turns.js'
 import { hasTouchKeyboard, submitOnEnter } from '@/utils/touch.js'
-import { shownChatTitle } from '@/utils/chatTitle.js'
 import { failureNotice } from '@/utils/errors.js'
+import { forkAsked } from '@/ai/commands.js'
+import { keptOpeningOf } from '@/ai/profiles/index.js'
+import { useProfiles } from '@/composables/useProfiles.js'
 
 const props = defineProps({
   storyId: { type: String, required: true },
   /** The chat, or the story's unstarted one, which starts on its first submission. */
   chatId: { type: String, required: true },
-  /** Whether the chats list is behind this panel, so a back button leads to it. */
-  showBack: {
-    type: Boolean,
-    default: false,
-  },
 })
 
-const emit = defineEmits(['back', 'open-chat', 'new-chat'])
+// `sent` says something went into the chat, which keeps a tab only being
+// looked at; `open-chat` asks for another chat, such as a fork, to be shown.
+const emit = defineEmits(['open-chat', 'sent'])
 
 // Composables
 const chatsApi = useChats(props.storyId)
@@ -400,18 +340,12 @@ const toast = useToast()
 const documentLinks = useDocumentLinks(props.storyId)
 const confirm = useConfirm()
 const chatGeneration = useAIChat(props.storyId, props.chatId)
-const { providerSetupDialogVisible, handleDontShowAgain, isProviderSetupDialogEnabled } =
-  useProviderSetup()
-const settings = useSettingsPanel()
-const aiConfig = useAIConfig()
+const connections = useConnections()
 
 // Refs
 const scrollPanel = ref(null)
 const messageField = ref(null)
 const inputRow = ref(null)
-
-// Swaps this component between the conversation and its settings pane.
-const showSettings = ref(false)
 
 // User input with draft message persistence
 const userInput = computed({
@@ -532,8 +466,12 @@ const activeCommandId = computed(() => {
   return entry ? commandOptionId(menuId.value, entry.name) : undefined
 })
 
-// `[[` opens the documents a link could go to, put in as a pasted link is,
-// or as the path alone after a command. See useLinkMenu.
+// `[[` opens the documents and folders a link could go to, put in as a
+// pasted link is, or as the path alone after a command. `@` opens the
+// documents alone, and the one picked is attached: its link with the `@`
+// before it. Not in a command, which takes a path. See useLinkMenu.
+/** @param {string} before */
+const commanding = before => /^\s*\//.test(before)
 const {
   open: linkMenuOpen,
   entries: linkEntries,
@@ -541,11 +479,18 @@ const {
   pick: pickLink,
   onKeydown: onLinkKeydown,
 } = useLinkMenu(fieldElement, userInput, {
-  suggest: query => documentLinks.suggest(query, ''),
-  textFor: (entry, before) =>
-    /^\s*\//.test(before)
-      ? (documentLinks.chatPath(`/${entry.href}`)?.slice(1) ?? null)
-      : documentLinks.chatLink(`/${entry.href}`, entry.title),
+  suggest: (query, attach) => {
+    if (!attach) return documentLinks.suggest(query, '', { folders: true })
+    // With how long each is, since the whole of it goes to the model.
+    return query.includes('#') || commanding(userInput.value)
+      ? []
+      : documentLinks.suggest(query, '', { words: true })
+  },
+  textFor: (entry, before, attach) => {
+    if (commanding(before)) return documentLinks.chatPath(`/${entry.href}`)?.slice(1) ?? null
+    const link = documentLinks.chatLink(`/${entry.href}`, entry.title)
+    return link && attach ? `@${link}` : link
+  },
 })
 const linkMenuId = computed(() => `chat-links-${props.chatId}`)
 
@@ -560,9 +505,19 @@ const onFieldKeydown = event => {
 
 // Computed
 const chat = computed(() => chatsApi.getChatById(props.chatId))
+
+/** The voice menu, on a right click on a turn's Read aloud. */
+const voiceMenu = ref(/** @type {InstanceType<typeof ChatVoiceMenu>|null} */ (null))
+
+/**
+ * The voice a turn is read aloud in: the chat's for the assistant, and for
+ * the writer's own turns theirs, where they chose one apart from it.
+ * @param {string} role
+ * @returns {string|null}
+ */
+const voiceFor = role => (role === 'user' && chat.value?.userVoiceId) || chat.value?.voiceId || null
 // Not a chat yet: the one "New chat" opens, until something is sent in it.
 const unstarted = computed(() => chatsApi.isUnstarted(props.chatId))
-const chatTitle = computed(() => shownChatTitle(chat.value?.title))
 const messages = chatsApi.getMessagesForChat(props.chatId)
 
 // Use chat generation state
@@ -580,7 +535,10 @@ const compacted = computed(() => compactedRuns(turns.value))
 
 // The turns a summary could go in above. See firstSummarizable.
 const summarizable = computed(() => {
-  const from = firstSummarizable(messages.value)
+  const from = firstSummarizable(
+    messages.value,
+    keptOpeningOf(useProfiles().getProfile(chat.value?.profileId))
+  )
   /** @type {Set<string>} */
   const turnIds = new Set()
   let at = 0
@@ -652,10 +610,19 @@ const closeFind = () => {
   if (!hasTouchKeyboard()) nextTick(() => fieldElement.value?.focus())
 }
 
+// The turn the writer was reading when they last left this chat, while the
+// chat opens back onto it. See returnTo.
+/** @type {import('vue').Ref<string|null>} */
+const returningTo = ref(null)
+
 // Which turns are in the page: those near the screen, the newest two, the
-// summary being written, which the chat is about to take the writer to, and
-// the turn the find is on.
-const nearTurns = useNearTurns(scroller, turns, () => [summarising.value, chatFind.holding.value])
+// summary being written, which the chat is about to take the writer to, the
+// turn the find is on, and the one the chat opens back onto.
+const nearTurns = useNearTurns(scroller, turns, () => [
+  summarising.value,
+  chatFind.holding.value,
+  returningTo.value,
+])
 
 // The way back down, for somebody a long way up and heading that way. The
 // room kept under a summary is not content, so it is not part of how far away
@@ -740,27 +707,74 @@ const hasInput = computed(() => Boolean(userInput.value?.trim()))
 // Why a message could not be answered right now: no provider, no key, no
 // model picked. Shown above the box, and checked before a send.
 const setupProblem = computed(() => chatGeneration.configurationError.value)
-const providerMissing = computed(() => setupProblem.value?.name === 'ProviderNotConfiguredError')
-const setupMessage = computed(() =>
-  providerMissing.value ? 'No AI provider is connected.' : setupProblem.value?.message || ''
-)
-const setupAction = computed(() => (providerMissing.value ? 'Connect' : 'AI settings'))
 
 /**
- * Take the writer to where the problem is fixed: the connect dialog for a
- * missing provider, unless they have asked not to see it, and the AI
- * settings for everything else.
+ * What fixes it: setting up the AI, where no model the writer has can answer
+ * yet; connecting the chat's own, where it needs a key or an address; and
+ * otherwise another model, its connection being gone.
+ * @type {import('vue').ComputedRef<'setup'|'connection'|'model'|null>}
  */
-const explainSetup = () => {
-  if (providerMissing.value && isProviderSetupDialogEnabled()) {
-    providerSetupDialogVisible.value = true
-  } else {
-    // On the preset this chat runs on, which is the one to fix.
-    const preset = chatGeneration.runningPreset()
-    if (preset) aiConfig.showPreset(preset.id)
-    settings.open('ai')
+const setupFix = computed(() => {
+  const problem = setupProblem.value
+  if (!problem) return null
+  const named = problem.name === 'ProviderNotConfiguredError'
+  if ((named || problem.name === 'ConnectionNeededError') && !connections.canChat.value) {
+    return 'setup'
   }
+  return problem.name === 'ConnectionNeededError' ? 'connection' : 'model'
+})
+const setupMessage = computed(() => {
+  if (setupFix.value === 'setup') return 'No AI provider is connected.'
+  if (setupProblem.value?.name === 'ProviderNotConfiguredError') {
+    // One of the connections every install used to make, never made here,
+    // is named; any other was the writer's, and has been removed.
+    const providerId = chatGeneration.runningPreset()?.providerId
+    const builtIn = BUILT_IN_PROVIDERS.find(entry => entry.id === providerId)
+    return builtIn ? `${builtIn.name} isn't connected.` : "This chat's connection was removed."
+  }
+  return setupProblem.value?.message || ''
+})
+const setupAction = computed(() => (setupFix.value === 'model' ? 'Choose a model' : 'Connect'))
+
+/** @type {import('vue').Ref<InstanceType<typeof ChatChips>|null>} */
+const chips = ref(null)
+/** Whether setup is open. */
+const wizardOpen = ref(false)
+/** The connection whose settings are open, to be connected. */
+const connectionToFix = ref(/** @type {string|null} */ (null))
+
+/**
+ * Take the writer to where the problem is fixed: setup, the chat's
+ * connection, or the chat's model under its box.
+ *
+ * @param {Event} [event] - The click that asked, which the model's popover
+ *   must not take for a click outside it and close on
+ */
+const explainSetup = event => {
+  if (setupFix.value === 'setup') wizardOpen.value = true
+  else if (setupFix.value === 'connection') {
+    connectionToFix.value = /** @type {any} */ (setupProblem.value).providerId
+  } else showModels(event)
 }
+
+/**
+ * Fix what a failed reply says went wrong: its connection's settings, credits
+ * where its account buys them, or another model.
+ * @param {import('@/composables/useConnections.js').FailureFix} fix
+ */
+const handleFix = fix => {
+  if (fix.kind === 'connection') connectionToFix.value = fix.providerId
+  else if (fix.kind === 'credits') {
+    window.open(fix.url ?? creditsPage('openrouter'), '_blank', 'noopener')
+  } else showModels()
+}
+
+/**
+ * The chat's model, open beside its chip under the box.
+ * @param {Event} [event] - The click that asked, which the popover must not
+ *   take for a click outside it and close on
+ */
+const showModels = event => chips.value?.showModels(event)
 
 // The modifier is named for the keyboard actually in front of the writer;
 // telling a Linux user about ⌘ is worse than saying nothing.
@@ -768,6 +782,7 @@ const isMac =
   typeof navigator !== 'undefined' &&
   /Mac|iP(hone|ad|od)/.test(navigator.platform || navigator.userAgent || '')
 
+/** @type {import('vue').Ref<any>} */
 const sendMenu = ref(null)
 
 const sendOptions = computed(() => [
@@ -785,23 +800,38 @@ const sendOptions = computed(() => [
   },
 ])
 
-const toggleSendMenu = event => {
-  sendMenu.value?.toggle(event)
-}
+/** @type {import('vue').Ref<HTMLElement|null>} */
+const sendGroup = ref(null)
 
 /**
- * Handle back button click
+ * Open the other ways to add what is in the box, beside Send: on a
+ * right-click, or a finger held on it. With nothing in the box there is
+ * nothing to add, and nothing opens.
  */
-const handleBack = () => {
-  emit('back')
+const showSendMenu = () => {
+  if (hasInput.value && sendGroup.value) {
+    sendMenu.value?.show({ currentTarget: sendGroup.value }, sendGroup.value)
+  }
 }
+
+const sendPress = useLongPress(showSendMenu, () => sendMenu.value?.hide())
 
 /**
  * Handle sending a message
  */
 const handleSendMessage = async () => {
+  // The box stays open while the model works, so the writer can start their
+  // reply; it goes once the turn is done.
+  if (isGenerating.value) return
   const messageContent = userInput.value.trim()
   if (!messageContent) {
+    return
+  }
+
+  // A /fork goes on in a copy of the chat, and nothing of it is said here.
+  const forking = forkAsked(messageContent)
+  if (forking && !(forking.message && setupProblem.value)) {
+    forkWith(forking.message)
     return
   }
 
@@ -814,6 +844,7 @@ const handleSendMessage = async () => {
 
   try {
     startIfUnstarted()
+    emit('sent')
     // Clear draft immediately
     chatsApi.clearDraftMessage(props.chatId)
 
@@ -843,12 +874,8 @@ const handleSendMessage = async () => {
  * @param {string} said - What didn't happen
  */
 const reportFailure = (error, said) => {
-  if (error.name === 'ProviderNotConfiguredError') {
-    if (isProviderSetupDialogEnabled()) {
-      providerSetupDialogVisible.value = true
-    } else {
-      toast.error('Connect an AI provider in Settings › AI.')
-    }
+  if (error.name === 'ProviderNotConfiguredError' || error.name === 'ConnectionNeededError') {
+    explainSetup()
     return
   }
   report(error, said, { why: true })
@@ -878,6 +905,7 @@ const report = (error, said, options) => {
  * @param {'user'|'assistant'} role - Whose turn to write it as
  */
 const handleInsertMessage = async role => {
+  if (isGenerating.value) return
   const messageContent = userInput.value.trim()
   if (!messageContent) {
     return
@@ -885,6 +913,7 @@ const handleInsertMessage = async role => {
 
   try {
     startIfUnstarted()
+    emit('sent')
     chatsApi.clearDraftMessage(props.chatId)
     await seeIn(() => chatGeneration.insertMessage(messageContent, role))
   } catch (error) {
@@ -945,8 +974,11 @@ const stopOnEscape = event => {
 }
 
 const unbindEscape = () => document.removeEventListener('keydown', stopOnEscape)
-watch(isGenerating, generating =>
-  generating ? document.addEventListener('keydown', stopOnEscape) : unbindEscape()
+// From the start, for a chat opened while it is still working.
+watch(
+  isGenerating,
+  generating => (generating ? document.addEventListener('keydown', stopOnEscape) : unbindEscape()),
+  { immediate: true }
 )
 onBeforeUnmount(unbindEscape)
 
@@ -1160,24 +1192,41 @@ const handleForkMessage = messageId => {
   }
 }
 
-// Where the writer was in the chat when they opened its settings. A hidden
-// panel has no scroll position to keep, so it is put back by hand.
-let settingsLeftAt = 0
-
-/** Hide the chat behind its settings. */
-const openSettings = () => {
-  settingsLeftAt = scroller()?.scrollTop ?? 0
-  showSettings.value = true
+/**
+ * Go on in a copy of the whole chat: `/fork`, and the message after it, which
+ * the fork sends as if it were typed there, so the fork is named from it.
+ * Nothing is said here, and the box is emptied. A chat with nothing in it
+ * has nothing to fork, and the /fork stays in the box.
+ *
+ * @param {string} message - What to send in the fork; '' for nothing yet
+ */
+const forkWith = message => {
+  const last = messages.value.at(-1)
+  if (!last) return
+  try {
+    const forkedChat = chatsApi.forkChat(props.chatId, last.id)
+    chatsApi.clearDraftMessage(props.chatId)
+    emit('open-chat', { chatId: forkedChat.id, title: forkedChat.title, send: message })
+  } catch (error) {
+    console.error('Failed to fork conversation:', error)
+    report(error, "The conversation couldn't be forked.")
+  }
 }
 
-/** Give the chat back, where the writer left it. */
-const closeSettings = async () => {
-  showSettings.value = false
-  await nextTick()
-  const panel = scroller()
-  if (!panel) return
-  hushJump()
-  panel.scrollTop = settingsLeftAt
+/**
+ * Send something as if the writer had typed it in the box and pressed Enter:
+ * for a fork, the message its /fork brought.
+ *
+ * @param {string} text
+ */
+const send = text => {
+  userInput.value = text
+  return handleSendMessage()
+}
+
+/** Put the caret in the message box, as a fork opens, but not where a keyboard would come up with it. */
+const focusMessage = () => {
+  if (!hasTouchKeyboard()) fieldElement.value?.focus()
 }
 
 /**
@@ -1189,9 +1238,66 @@ const scrollToBottom = async () => {
   await jumpToBottom()
 }
 
-// Initialize and scroll when component mounts
+/**
+ * Open the chat where the writer was in it when they left: the turn at the
+ * top of the screen held in the page, and the screen begun as far into it.
+ * The turns around it come into the page as they near the screen, and are
+ * put back in place as they do (useNearTurns).
+ *
+ * @param {import('@/composables/useChatPlaces.js').ChatPlace} place
+ */
+const returnTo = async ({ turnId, offset }) => {
+  returningTo.value = turnId
+  await nextTick()
+  const panel = scroller()
+  const target = panel?.querySelector(`[data-turn="${turnId}"]`)
+  if (!panel || !target) {
+    returningTo.value = null
+    await scrollToBottom()
+    return
+  }
+  hushJump()
+  panel.scrollTop += target.getBoundingClientRect().top - panel.getBoundingClientRect().top + offset
+  // Near the screen now, so in the page of its own accord.
+  setTimeout(() => {
+    returningTo.value = null
+  }, 1000)
+}
+
+/**
+ * Keep where the writer is in the chat as it goes from the screen, for when
+ * its tab comes forward again: the turn at the top of the screen and how far
+ * into it. At the end there is nothing to keep; the chat opens there.
+ */
+const leave = () => {
+  const panel = scroller()
+  if (!panel) return
+  // At the end, as far as a line: the room kept under a summary is not content.
+  const gap = panel.scrollHeight - spacer.value - panel.scrollTop - panel.clientHeight
+  if (gap < 24) {
+    keepPlace(props.chatId, null)
+    return
+  }
+  const top = panel.getBoundingClientRect().top
+  const turn = [
+    .../** @type {NodeListOf<HTMLElement>} */ (panel.querySelectorAll('[data-turn]')),
+  ].find(el => el.getBoundingClientRect().bottom > top)
+  const turnId = turn?.dataset.turn
+  if (turn && turnId) {
+    keepPlace(props.chatId, { turnId, offset: top - turn.getBoundingClientRect().top })
+  }
+}
+onBeforeUnmount(leave)
+
+// Open where the writer was in the chat when they left it, or at its end.
 onMounted(async () => {
   await chatsApi.init()
-  scrollToBottom()
+  const place = placeIn(props.chatId)
+  if (place && turns.value.some(turn => turn.id === place.turnId)) await returnTo(place)
+  else await scrollToBottom()
 })
+
+// The panel finds in the chat from the strip above it, and sends in a fork,
+// or puts the caret there, as it opens.
+defineExpose({ openFind, send, focusMessage })
 </script>

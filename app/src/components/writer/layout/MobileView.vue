@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full w-full min-w-0 bg-surface-0 dark:bg-surface-900">
+  <div class="h-full w-full min-w-0 bg-surface-0 dark:bg-surface-850">
     <!-- Write Mode -->
     <EditorPanel v-if="activeMobileTab === 'write'" :story-id="storyId" class="h-full w-full" />
 
@@ -10,7 +10,7 @@
       class="h-full bg-surface-100 dark:bg-surface-800"
     >
       <!-- The chat is the one the chat tab has open, which is what a
-           document is pinned to and hidden from here. -->
+           document is hidden from here. -->
       <DocumentTree
         :story-id="storyId"
         :document-id="documentId"
@@ -27,14 +27,7 @@
     <!-- Chat: the one open, as beside the editor, with the list behind it -->
     <div v-else-if="activeMobileTab === 'chat'" class="h-full bg-surface-100 dark:bg-surface-800">
       <ChatHistory v-if="listing" :story-id="storyId" @select-chat="pickChat" />
-      <ChatPanel
-        v-else
-        :story-id="storyId"
-        :chat-id="chatId"
-        show-back
-        @back="listing = true"
-        @update:chat-id="$emit('update:chatId', $event)"
-      />
+      <ChatPanel v-else :story-id="storyId" show-back @back="listing = true" />
     </div>
 
     <!-- Narration -->
@@ -106,7 +99,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:activeMobileTab', 'update:chatId'])
+const emit = defineEmits(['update:activeMobileTab'])
 
 /**
  * Open a document picked from the outline, the search or the comments, and
@@ -122,11 +115,9 @@ const openDocument = documentId => {
 const listing = ref(false)
 
 /**
- * Open a chat picked from the list.
- * @param {string} chatId
+ * Show the chat picked from the list, which the list has opened in a tab.
  */
-const pickChat = chatId => {
-  emit('update:chatId', chatId)
+const pickChat = () => {
   listing.value = false
 }
 </script>

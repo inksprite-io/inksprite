@@ -1,7 +1,8 @@
 /**
  * @module ai/routing
  * @description OpenRouter provider routing — which upstream provider is allowed
- * to serve a request, and which ones are disqualified.
+ * to serve a request, and which ones are disqualified — and NanoGPT's one
+ * piece of it, zero data retention.
  *
  * Two owners. The policy here is stored on the AIProvider: it describes an
  * OpenRouter *connection*, not a model. A privacy floor ("never route to an
@@ -14,7 +15,15 @@
  * model badly: the preset's `ignoredProviders` are left out as well as the
  * connection's, which still hold for every model.
  *
+ * NanoGPT routes among upstreams too, and takes the same `provider` field.
+ * Only its zero-data-retention floor is the connection's, stored as
+ * OpenRouter's `zdr` is and on by default as it is. The providers a model
+ * prefers and ignores are the model's, as on OpenRouter; NanoGPT bills a
+ * request that names any as pay-as-you-go, with a markup, off a
+ * subscription, so they go only where the writer chose some.
+ *
  * @see https://openrouter.ai/docs/guides/routing/provider-selection
+ * @see https://docs.nano-gpt.com/api-reference/miscellaneous/provider-selection
  */
 
 /**
@@ -32,7 +41,8 @@
  * own. Either list may come from a backup, so junk in them is dropped.
  *
  * @typedef {Object} ModelUpstreams
- * @property {string[]} [allowedProviders] - The only ones that may serve the model; empty or absent allows any
+ * @property {string[]} [allowedProviders] - The model's preferred providers, tried first and in this order; empty or absent prefers none
+ * @property {boolean} [fallbacks] - Whether any other provider that passes the connection's floor may serve once the preferred ones can't. Absent, as on a list from before it was asked, the preferred are the only ones
  * @property {string[]} [ignoredProviders] - Never routed to for the model, besides the connection's `ignore`
  */
 
@@ -168,16 +178,51 @@ export function isClosedWeights(model) {
 }
 
 /**
- * Build the `provider` field of an OpenRouter chat completion request.
+ * What left a request with no endpoint, from the step OpenRouter names when
+ * it refuses one (`error.metadata.failed_routing_step`, a 404): the
+ * connection's floor, the providers the model is limited to, or the model
+ * itself, which can't use tools. Null for a step not known here, or none.
+ *
+ * OpenRouter's steps as it named them on 11 Nov 2026: "Filter by Data
+ * Policy" (zero data retention, data collection), "Filter by Quantization",
+ * "Filter by Ignored Providers", "Filter by Allowed Providers", "Filter by
+ * Tool Compatibility". A model it has dropped names none.
+ *
+ * Ignored providers are the connection's and the model's both; the
+ * connection's are the ones a writer is likelier to have widened.
+ *
+ * @param {unknown} step
+ * @returns {'connection'|'model'|'tools'|null}
+ */
+export function routingFilterOf(step) {
+  if (typeof step !== 'string') return null
+  if (/allowed providers/i.test(step)) return 'model'
+  if (/tool/i.test(step)) return 'tools'
+  if (/data policy|quantization|ignored providers/i.test(step)) return 'connection'
+  return null
+}
+
+/**
+ * Build the `provider` field of an OpenRouter or NanoGPT request.
+ *
+ * NanoGPT's holds `zdr`, sent while the connection asks for zero data
+ * retention: NanoGPT then serves through providers that keep nothing, its
+ * fallbacks too, and fails a request none of them can serve rather than
+ * relax it. Beside it go the model's preferred and ignored providers, as
+ * OpenRouter's do; NanoGPT has no connection-wide list of its own here, and
+ * none of OpenRouter's other knobs.
  *
  * Only knobs that constrain routing are sent: the permissive values are what
  * OpenRouter does anyway, so a connection with the whole floor lowered, on a
- * preset that allows any provider, yields `undefined` and the field is
+ * model that prefers no provider, yields `undefined` and the field is
  * omitted. A connection at the defaults sends the floor, because the floor is
  * not OpenRouter's default. Every filter sent is a hard one — `allow_fallbacks` lets
  * OpenRouter try the next eligible provider when the cheapest is down, never
- * one outside the filters. The preset's ignored providers join the
+ * one outside the filters. The model's ignored providers join the
  * connection's in one `ignore`; neither takes the other's away.
+ *
+ * The model's preferred providers go as `order`, tried first, where it may
+ * fall back to others, and as `only` where it may not.
  *
  * The quantization floor is for open weights, which any provider may serve at
  * any precision. A vendor serving its own closed model — Anthropic, OpenAI,
@@ -190,22 +235,29 @@ export function isClosedWeights(model) {
  * @returns {Object|undefined} The `provider` field, or undefined to omit it
  */
 export function buildProviderRouting(provider, model, upstreams) {
-  if (provider?.type !== 'openrouter') return undefined
+  if (provider?.type !== 'openrouter' && provider?.type !== 'nanogpt') return undefined
 
   const routing = resolveRouting(provider.routing)
-  const only = toSlugList(upstreams?.allowedProviders)
-  const ignore = [...new Set([...routing.ignore, ...toSlugList(upstreams?.ignoredProviders)])]
+  const preferred = toSlugList(upstreams?.allowedProviders)
+  const ordered = preferred.length > 0 && upstreams?.fallbacks === true
+  const connectionIgnores = provider.type === 'openrouter' ? routing.ignore : []
+  const ignore = [...new Set([...connectionIgnores, ...toSlugList(upstreams?.ignoredProviders)])]
 
   /** @type {Record<string, any>} */
   const field = {}
-  if (only.length > 0) field.only = only
+  if (preferred.length > 0) field[ordered ? 'order' : 'only'] = preferred
   if (ignore.length > 0) field.ignore = ignore
+  if (provider.type === 'nanogpt') {
+    if (routing.zdr) field.zdr = true
+    return Object.keys(field).length > 0 ? field : undefined
+  }
   if (routing.quantizations.length > 0 && !isClosedWeights(model)) {
     field.quantizations = routing.quantizations
   }
   if (routing.dataCollection === 'deny') field.data_collection = 'deny'
   if (routing.zdr) field.zdr = true
-  if (!routing.allowFallbacks) field.allow_fallbacks = false
+  // A model that may fall back past its preferred ones has to be let.
+  if (!routing.allowFallbacks && !ordered) field.allow_fallbacks = false
 
   return Object.keys(field).length > 0 ? field : undefined
 }

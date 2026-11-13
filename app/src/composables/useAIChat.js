@@ -5,11 +5,15 @@
  * chat responses, context building from story content, and integration with chat messages.
  * This is the primary interface for the chat assistant feature.
  *
+ * One instance per chat, as `useChats` keeps one per project: a reply belongs
+ * to its chat, not to the view showing it, so a writer who goes to another
+ * chat and comes back finds it still working, with its progress and its stop.
+ *
  * @example
- * const { sendMessage, isGenerating, stopGeneration } = useAIChat()
+ * const { sendMessage, isGenerating, stopGeneration } = useAIChat(storyId, chatId)
  *
  * // Send a message and get AI response
- * await sendMessage(chatId, 'Help me develop this character', storyContext)
+ * await sendMessage('Help me develop this character')
  */
 
 /**
@@ -23,8 +27,9 @@
  * @typedef {import('../types/models.js').TurnUsage} TurnUsage
  */
 
-import { computed, ref } from 'vue'
+import { computed, effectScope, ref, watch } from 'vue'
 import { useAIConfig } from './useAIConfig.js'
+import { describeFailure, useConnections } from './useConnections.js'
 import { useAIService } from './useAIService.js'
 import { useAIContext } from './useAIContext.js'
 import { useChats } from './useChats.js'
@@ -37,7 +42,7 @@ import { AnswerFailedError, CannotApplyError } from '@/utils/errors.js'
 import { isDefaultChatTitle, plainTitle } from '@/utils/chatTitle.js'
 import { presetProblem } from '@/ai/providers.js'
 import { DEFAULT_CHAT_PROMPT } from '@/ai/prompts/index.js'
-import { noteOnProfile } from '@/ai/profiles/index.js'
+import { keptOpeningOf, noteOnProfile } from '@/ai/profiles/index.js'
 import { withOriginal } from '@/cards/card.js'
 import { TITLE_DEFAULTS, mergeAISettings, resolveAISettings } from '@/ai/defaults.js'
 import {
@@ -52,10 +57,9 @@ import {
 } from '@/ai/tools/index.js'
 import { SAVE_WEB_PAGE } from '@/ai/tools/web.js'
 import { inTurn, roomFor } from '@/ai/gate.js'
-import { serversForChat } from '@/mcp/servers.js'
-import { webForChat } from '@/web/config.js'
-import { pythonForChat } from '@/ai/tools/python.js'
+import { traitsOf } from '@/ai/models.js'
 import { askApproval, asksFirst, denyWaiting } from './useToolApprovals.js'
+import { reportWorking } from './useChatActivity.js'
 import { useMcpServers } from './useMcpServers.js'
 import { useWebSearch } from './useWebSearch.js'
 import { SKILL_MAX_ROUNDS } from '@/ai/skills/index.js'
@@ -63,6 +67,7 @@ import { USE_SKILL, loadedSkills } from '@/ai/skills/loads.js'
 import { DEFAULT_TRANSCRIPT_ROLES } from '@/ai/context/build.js'
 import { isAside, withoutAsides } from '@/ai/asides.js'
 import { readNotes, applyProposal } from '@/ai/tools/documents.js'
+import { streamAppends } from '@/ai/tools/streamedAppends.js'
 import { useDocuments } from './useDocuments.js'
 import { keepDecisions } from '@/utils/edits.js'
 import { refusedAnswer, splitOffered, trimRound, unofferedAnswer } from '@/ai/rounds.js'
@@ -190,11 +195,9 @@ function replyAfter(messages, index) {
  */
 
 /**
- * AI chat service for assistant conversations
+ * What a chat's AI does, and whether it is doing it.
  *
- * @param {string} storyId - The story ID
- * @param {string} chatId - The chat ID
- * @returns {{
+ * @typedef {{
  *   isGenerating: import('vue').Ref<boolean>,
  *   isThinking: import('vue').Ref<boolean>,
  *   activity: import('vue').Ref<TurnActivity|null>,
@@ -214,9 +217,54 @@ function replyAfter(messages, index) {
  *   editCommand: (messageId: string, index: number|null, text: string) => Promise<Message|null>,
  *   removeCommand: (messageId: string, index?: number|null) => void,
  *   generateChatTitle: (userMessage: string) => Promise<string>
- * }}
+ * }} AIChatApi
+ */
+
+/**
+ * Each chat's instance, by project and chat. Kept for the life of the page:
+ * an instance is a handful of closures, and one for a chat gone is never
+ * asked for again.
+ * @type {Map<string, AIChatApi>}
+ */
+const instances = new Map()
+
+/**
+ * Forget every chat's instance (for testing).
+ */
+export const clearAIChatInstances = () => {
+  instances.clear()
+}
+
+/**
+ * A chat's AI: the one instance for it, made the first time it is asked for.
+ *
+ * Made in a scope of its own, so nothing in it stops with the view that
+ * first asked: a reply runs on while the writer is elsewhere, and the view
+ * that shows the chat next reads the same state. That includes the watch
+ * that says whether the model is working, for the chat's tab.
+ *
+ * @param {string} storyId - The story ID
+ * @param {string} chatId - The chat ID
+ * @returns {AIChatApi}
  */
 export function useAIChat(storyId, chatId) {
+  const key = `${storyId}:${chatId}`
+  let instance = instances.get(key)
+  if (!instance) {
+    instance = /** @type {AIChatApi} */ (effectScope(true).run(() => createAIChat(storyId, chatId)))
+    instances.set(key, instance)
+  }
+  return instance
+}
+
+/**
+ * AI chat service for assistant conversations. See `useAIChat`.
+ *
+ * @param {string} storyId - The story ID
+ * @param {string} chatId - The chat ID
+ * @returns {AIChatApi}
+ */
+function createAIChat(storyId, chatId) {
   const chatsApi = useChats(storyId)
   const profilesApi = useProfiles()
   const skillsApi = useSkills()
@@ -224,19 +272,49 @@ export function useAIChat(storyId, chatId) {
   const webApi = useWebSearch()
   const commands = useChatCommands(storyId, chatId)
   const aiConfig = useAIConfig()
+  const connections = useConnections()
   const aiService = useAIService()
-  const { debug, applyEdits } = useApplicationState()
+  const { debug, applyEditsFor } = useApplicationState()
 
   // State
   const isGenerating = ref(false)
   const isThinking = ref(false)
 
+  /** How many of the turn's calls are waiting for the writer to allow them. */
+  const waitingOnWriter = ref(0)
+
+  /**
+   * Ask the writer to allow a call, and while they are asked, the model is
+   * not working: the chat says so, as it does when a turn ends.
+   * @param {Parameters<typeof askApproval>} args
+   * @returns {ReturnType<typeof askApproval>}
+   */
+  const askWriter = async (...args) => {
+    waitingOnWriter.value++
+    try {
+      return await askApproval(...args)
+    } finally {
+      waitingOnWriter.value--
+    }
+  }
+
+  // Whether the model is working in this chat, for the tabs and the chat list
+  // to show (useChatActivity). Said as it changes, not once a tick, so a turn
+  // that ends straight after a call is allowed still ends.
+  watch(
+    () => isGenerating.value && waitingOnWriter.value === 0,
+    now => reportWorking(storyId, chatId, now),
+    { flush: 'sync' }
+  )
+
   /**
    * The turn under way, for the tool calls made inside it: which message a
-   * call waiting on the writer belongs to. A chat runs one turn at a time.
+   * call waiting on the writer belongs to, and the appends shown in their
+   * documents as they were written, which end as each call runs. A chat runs
+   * one turn at a time.
    */
-  /** @type {{messageId: string, finish: (() => void)|null}} */
-  const turn = { messageId: '', finish: null }
+  /** @type {{messageId: string, finish: (() => void)|null, appends: import('../ai/tools/streamedAppends.js').StreamedAppends|null}} */
+  const turn = { messageId: '', finish: null, appends: null }
 
   /**
    * The work under way — a turn, a submission and the turn it asks for, a
@@ -283,7 +361,9 @@ export function useAIChat(storyId, chatId) {
     preset: runningPreset(),
     consult: (systemPrompt, toolNames, options = {}) =>
       consult(systemPrompt, toolNames, { ...options, signal }),
+    inThread: (instruction, options = {}) => askInThread(instruction, { ...options, signal }),
     promptFor: skillPromptFor,
+    opening: keptOpeningOf(runningProfile()),
     signal,
   })
 
@@ -309,6 +389,33 @@ export function useAIChat(storyId, chatId) {
     const problem = presetProblem(profile, id => aiConfig.getProvider(id))
     if (problem) throw problem
     return /** @type {AIPreset} */ (profile)
+  }
+
+  /**
+   * Whether the model may be offered tools at all: its settings allow it
+   * (Allow tool use), and its connection's list doesn't say it can't call
+   * them. Not a preference, so a skill it runs is held to it too.
+   * @param {AIPreset} preset - What the chat runs on
+   * @returns {Promise<boolean>}
+   */
+  const callsTools = async preset => {
+    if (preset.toolsEnabled === false) return false
+    const provider = aiConfig.getProvider(preset.providerId)
+    if (!provider) return true
+    return (await traitsOf(provider, preset.model))?.tools !== false
+  }
+
+  /**
+   * Have the chat keep the model it answers on, from its first answer: until
+   * then it goes where its preset goes, so that setting up a connection, or
+   * changing the preset, moves it; from then on it stays.
+   * @param {AIPreset} preset - What it is answering on
+   */
+  const keepModel = preset => {
+    const chat = chatsApi.getChatById(chatId)
+    if (chat && !(chat.providerId && chat.model) && preset.providerId && preset.model) {
+      chatsApi.updateChat(chatId, { providerId: preset.providerId, model: preset.model })
+    }
   }
 
   /**
@@ -343,6 +450,19 @@ export function useAIChat(storyId, chatId) {
   const runningProfile = () =>
     profilesApi.getProfile(currentChat()?.profileId) ||
     profilesApi.getProfile(chatsApi.defaultProfileId())
+
+  /**
+   * What a request in this chat is sent with: its preset's settings, with
+   * how hard the model thinks as the chat has it, where it has chosen.
+   * @param {AIPreset} preset
+   * @returns {import('@/ai/defaults.js').AISettingsOverrides|undefined}
+   */
+  const chatOverrides = preset => {
+    const effort = currentChat()?.reasoningEffort
+    return effort
+      ? { ...preset.generationOverrides, reasoningEffort: /** @type {any} */ (effort) }
+      : preset.generationOverrides
+  }
 
   /**
    * The system prompt for this chat: its own, once the writer has changed it
@@ -543,12 +663,11 @@ export function useAIChat(storyId, chatId) {
     } = options
     const profile = getChatProfileIfValid()
 
-    // The profile's gate still applies, because it is not a preference: a model
+    // The model's gate still applies, because it is not a preference: a model
     // that cannot call tools cannot call them for a skill either.
+    const toolsAllowed = await callsTools(profile)
     const tools =
-      profile.toolsEnabled !== false && toolNames.length > 0
-        ? getToolDefinitionsFor(toolNames, depth)
-        : []
+      toolsAllowed && toolNames.length > 0 ? getToolDefinitionsFor(toolNames, depth) : []
 
     const { messages } = await useAIContext(storyId).build({
       systemPrompt,
@@ -559,7 +678,7 @@ export function useAIChat(storyId, chatId) {
       transcript: roles,
       before,
       past,
-      toolsAllowed: profile.toolsEnabled !== false,
+      toolsAllowed,
     })
     signal.throwIfAborted()
 
@@ -596,7 +715,7 @@ export function useAIChat(storyId, chatId) {
           tools: tools.length > 0 ? tools : undefined,
           // The role's settings win where they overlap; everything it does not
           // mention is still the writer's to tune.
-          overrides: mergeAISettings(profile.generationOverrides, overrides),
+          overrides: mergeAISettings(chatOverrides(profile), overrides),
           signal,
         }
       )
@@ -631,6 +750,117 @@ export function useAIChat(storyId, chatId) {
     // advice: the skill reports having heard nothing and the turn goes on
     // without it, which is the same thing that happens when it says nothing.
     console.warn(`Skill used all ${SKILL_MAX_ROUNDS} rounds without answering`)
+    return ''
+  }
+
+  /** How many times a request asked in the thread is made before it has to have answered. */
+  const IN_THREAD_ROUNDS = 3
+
+  /** What a call gets back while something is asked in the thread: no tool runs. */
+  const NO_TOOLS_NOW = JSON.stringify({
+    error: 'No tool runs here. Answer what was just asked, without calling tools.',
+  })
+
+  /**
+   * Ask the chat's own model something at the end of the conversation as it
+   * reads it, in place of a turn, and hand back what it said.
+   *
+   * The request is the turn's own with one message after it: the same system
+   * prompt, the same tools, and the conversation with every call it kept and
+   * every document the writer attached. So the model answers from everything
+   * the conversation holds, where a transcript has only what was said, and
+   * the request shares the turn's cached prefix: a server at home goes on
+   * from what it has already read, and a hosted one bills it as cached. All
+   * but the last turn, which sheds its project block as on any next turn.
+   *
+   * The tools are offered because they are part of that prefix, and none is
+   * run: a call is answered that there are none, and the question asked again.
+   * The author's note stays out. It is standing instructions for a turn (how
+   * long a reply runs, whose lines to leave alone), and this is not one.
+   *
+   * Nothing is stored: the instruction and what was said to it are the
+   * caller's to keep or not.
+   *
+   * @param {string} instruction - What is asked, as the writer's last word
+   * @param {Object} [options]
+   * @param {import('@/ai/defaults.js').AISettingsOverrides} [options.overrides] -
+   *   Laid over the settings the chat runs on
+   * @param {(said: string) => void} [options.onContent] - Called with the
+   *   answer so far as it is written, thinking stripped out of it
+   * @param {(thinking: string) => void} [options.onReasoning] - Called with
+   *   everything thought so far, as it arrives
+   * @param {string} [options.before] - Read the conversation as it stood
+   *   before this message, as `consult` does
+   * @param {number} [options.past] - With `before`: this many messages past it
+   * @param {AbortSignal} [options.signal] - Stops it
+   * @returns {Promise<string>} What it said, or '' if it said nothing usable
+   * @throws The signal's reason, once stopped
+   */
+  const askInThread = async (instruction, options = {}) => {
+    const {
+      onContent,
+      onReasoning,
+      overrides,
+      before,
+      past,
+      signal = new AbortController().signal,
+    } = options
+    const profile = getChatProfileIfValid()
+
+    // As the turn does: what is offered has to be what the turn offered.
+    await Promise.all([skillsApi.ready(), mcpApi.ready(), webApi.ready()])
+    const toolsAllowed = await callsTools(profile)
+    const { messages } = await useAIContext(storyId).build({
+      systemPrompt: await resolveSystemPrompt(),
+      chatId,
+      ask: instruction,
+      before,
+      past,
+      toolsAllowed,
+    })
+    signal.throwIfAborted()
+
+    const chat = chatsApi.getChatById(chatId)
+    const tools = toolsAllowed && hasTools() ? getEnabledToolDefinitions(chat) : []
+
+    let thinking = ''
+    for (let round = 0; round < IN_THREAD_ROUNDS; round++) {
+      let content = ''
+      let thought = ''
+      const result = await aiService.generateChatCompletion(
+        messages,
+        profile,
+        chunk => {
+          if (chunk?.content) {
+            content += chunk.content
+            if (onContent) onContent(stripThinking(content).trim())
+          }
+          if (chunk?.reasoning) {
+            if (!thought && thinking) thinking += '\n\n'
+            thought += chunk.reasoning
+            thinking += chunk.reasoning
+            if (onReasoning) onReasoning(thinking)
+          }
+        },
+        {
+          tools: tools.length > 0 ? tools : undefined,
+          overrides: mergeAISettings(chatOverrides(profile), overrides),
+          signal,
+        }
+      )
+      signal.throwIfAborted()
+
+      if (!result?.toolCalls?.length) return stripThinking(content).trim()
+
+      // It reached for a tool. None runs: it is told so and asked again.
+      const reached = buildAssistantMessage(content, result.toolCalls, result.reasoningDetails)
+      messages.push(thought ? { ...reached, _reasoning: thought } : reached)
+      for (const call of result.toolCalls) {
+        messages.push({ role: 'tool', tool_call_id: call.id, content: NO_TOOLS_NOW })
+      }
+    }
+
+    console.warn(`Asked in the thread ${IN_THREAD_ROUNDS} times and answered with calls each time`)
     return ''
   }
 
@@ -743,7 +973,7 @@ export function useAIChat(storyId, chatId) {
     // kept in the project. The wait is as long as the writer takes, and it is
     // not the tool's, so it is not timed.
     if (asksFirst(toolCall.function.name)) {
-      const decision = await askApproval(turn.messageId, toolCall)
+      const decision = await askWriter(turn.messageId, toolCall)
       if (decision === 'deny') {
         return {
           role: 'tool',
@@ -758,8 +988,8 @@ export function useAIChat(storyId, chatId) {
     }
 
     // Whether the writer is asked before a document changes is theirs to
-    // set, app-wide; read here so the tools need not know where it lives.
-    const propose = applyEdits.value === 'ask'
+    // set, for each chat; read here so the tools need not know where it lives.
+    const propose = applyEditsFor(currentChat()) === 'ask'
     /** @type {{thinking: string, calls: import('../types/models.js').ConsultedCall[], shown?: import('../types/models.js').ShownResult}} */
     const record = { thinking: '', calls: [] }
 
@@ -802,7 +1032,7 @@ export function useAIChat(storyId, chatId) {
       // Asked beside the call, like a server's tool, and answered no when the
       // turn stops. What always means is the tool's to keep.
       approve: async question => {
-        const decision = await askApproval(turn.messageId, toolCall, question)
+        const decision = await askWriter(turn.messageId, toolCall, question)
         return decision === 'always-server' ? 'always' : decision
       },
       // In the turn's status line while its calls run.
@@ -842,6 +1072,9 @@ export function useAIChat(storyId, chatId) {
     } finally {
       clearTimeout(handle)
     }
+    // An append shown in its document as it was written has been written now,
+    // or will not be: off with its preview, before anything is drawn.
+    if (depth === 0) turn.appends?.ran(toolCall)
     if (record.shown) message._shown = record.shown
     if (isSkill(name)) {
       message._consultation = {
@@ -914,9 +1147,11 @@ export function useAIChat(storyId, chatId) {
    * @param {string} messageId - Message ID to update
    * @param {StreamingState} state - Mutable state object
    * @param {AbortSignal} signal - The turn's
+   * @param {import('../ai/tools/streamedAppends.js').StreamedAppends} [appends] -
+   *   Shows an append in its document as it is written
    * @returns {(chunk: import('./useAIService.js').StreamChunk) => void}
    */
-  function createStreamingCallback(messageId, state, signal) {
+  function createStreamingCallback(messageId, state, signal, appends) {
     return chunkData => {
       if (signal.aborted) return
       if (!chunkData) {
@@ -955,6 +1190,7 @@ export function useAIChat(storyId, chatId) {
           state.timing,
           chunkData.toolCalls
         )
+        appends?.update(chunkData.toolCalls)
       }
 
       if (chunkData.reasoning) {
@@ -1183,7 +1419,14 @@ export function useAIChat(storyId, chatId) {
     // accumulate, since every request is billed.
     const usage = { promptTokens: 0, completionTokens: 0, requests: 0 }
     const workingMessages = [...messages]
-    const onChunk = createStreamingCallback(messageId, state, signal)
+    // Read once for the turn: the preview says how the change will go in, and
+    // the writer changing their mind mid-turn changes the next calls' anyway.
+    const appends = streamAppends({
+      storyId,
+      chatId,
+      propose: applyEditsFor(currentChat()) === 'ask',
+    })
+    const onChunk = createStreamingCallback(messageId, state, signal, appends)
 
     // How many rounds of calls the turn may make; the writer's to set, with 0
     // for no limit. Past it, or once the turn is going round, it gets one more
@@ -1208,10 +1451,13 @@ export function useAIChat(storyId, chatId) {
       }
       endThinking(state)
       activity.value = null
-      // Nothing will come of a call still waiting on the writer.
+      // Nothing will come of a call still waiting on the writer, nor of an
+      // append still being shown.
       denyWaiting(messageId)
+      appends.end()
       turn.messageId = ''
       turn.finish = null
+      turn.appends = null
       // What the tools changed that the message has no record of yet: a round
       // stopped, or thrown, partway through, with a call that wrote finished
       // beside one still running. On the record as a finished round's changes
@@ -1231,6 +1477,7 @@ export function useAIChat(storyId, chatId) {
 
     turn.messageId = messageId
     turn.finish = finish
+    turn.appends = appends
 
     // The last round's calls, whose results the next request carries: what
     // the status line says the model is taking in.
@@ -1256,7 +1503,7 @@ export function useAIChat(storyId, chatId) {
           // Still declared, so the calls already made stay valid, and not to
           // be called.
           ...(lastRound ? { toolChoice: /** @type {const} */ ('none') } : {}),
-          overrides: profile.generationOverrides,
+          overrides: chatOverrides(profile),
           signal,
         })
 
@@ -1323,6 +1570,7 @@ export function useAIChat(storyId, chatId) {
           console.warn(`A round asked for ${result.toolCalls.length} calls; ran ${asked.length}`)
         }
         const { offered: run, unoffered } = splitOffered(asked, tools)
+        appends.settle(result.toolCalls, run)
         if (unoffered.length) {
           console.warn(
             'Calls to tools not offered:',
@@ -1369,6 +1617,7 @@ export function useAIChat(storyId, chatId) {
         const { results: toolResults, wrote } = handsOver
           ? await handOverReply(run, messageId, state, edits, signal)
           : { results: await executeToolCalls(run, 0, edits, signal), wrote: false }
+        appends.end()
         // Stopped while the calls ran: no next round, and the message may be
         // gone.
         signal.throwIfAborted()
@@ -1435,6 +1684,7 @@ export function useAIChat(storyId, chatId) {
    */
   const generateAIResponse = async (storyId, chatId, into, signal) => {
     const profile = getChatProfileIfValid()
+    keepModel(profile)
     // The answer being written, once there is one: where a failure is said.
     let answerId = into
 
@@ -1449,10 +1699,10 @@ export function useAIChat(storyId, chatId) {
       // are their servers', and the web's.
       await Promise.all([skillsApi.ready(), mcpApi.ready(), webApi.ready()])
 
-      // Two gates: the profile says whether the model can call tools at all,
-      // the chat says which of them it should be offered. The context reads
-      // both, for whether the project block goes with the turn.
-      const toolsAllowed = profile.toolsEnabled !== false
+      // Two gates: the model says whether it can call tools at all, the chat
+      // says which of them it should be offered. The context reads both, for
+      // whether the project block goes with the turn.
+      const toolsAllowed = await callsTools(profile)
 
       // Build context
       const aiContext = useAIContext(storyId)
@@ -1494,19 +1744,9 @@ export function useAIChat(storyId, chatId) {
 
       const chat = chatsApi.getChatById(chatId)
 
-      // Run the completion loop with tool support. Profiles pointed at models
-      // that can't handle tool calls opt out via toolsEnabled.
-      const profileId = profilesApi.getProfile(chat?.profileId)?.id ?? chatsApi.defaultProfileId()
-      const tools =
-        toolsAllowed && hasTools()
-          ? getEnabledToolDefinitions({
-              disabledTools: chat?.disabledTools,
-              disabledGroups: chat?.disabledToolGroups,
-              servers: serversForChat(chat, profileId).map(server => server.id),
-              web: webForChat(chat, profileId),
-              python: pythonForChat(chat, profileId),
-            })
-          : []
+      // Run the completion loop with the tools the chat has on, while its model
+      // can call them.
+      const tools = toolsAllowed && hasTools() ? getEnabledToolDefinitions(chat) : []
       const { apiTrajectory, edits, usage } = await runCompletionLoop({
         messages: contextResult.messages,
         profile,
@@ -1515,6 +1755,9 @@ export function useAIChat(storyId, chatId) {
         turnMetadata,
         signal,
       })
+
+      // It answered, which is how its connection answered too.
+      connections.setState(profile.providerId, 'connected')
 
       if (apiTrajectory.length > 0 || usage) {
         chatsApi.updateMessage(assistantMsg.id, {
@@ -1540,12 +1783,17 @@ export function useAIChat(storyId, chatId) {
       // the chat: a toast would be gone in seconds and leave an empty turn.
       // Asking again clears it.
       if (activity.value?.messageId === answerId) activity.value = null
+      // What went wrong, said with what fixes it; and a refused key or a
+      // server not there is how its connection answered.
+      const said = describeFailure(error, aiConfig.getProvider(profile.providerId), profile.model)
+      if (said.state) connections.setState(profile.providerId, said.state)
       const failed = chatsApi.getMessageById(answerId)?.value
       if (failed) {
         chatsApi.updateMessage(answerId, {
           metadata: unlessForgotten({
             ...(failed.metadata || {}),
-            error: error?.message || String(error),
+            error: said.text,
+            ...(said.fix ? { errorFix: said.fix } : {}),
           }),
         })
       }
@@ -1589,11 +1837,16 @@ export function useAIChat(storyId, chatId) {
     // A chat is named from its first message. One still waiting for a name
     // — its first message stopped while the title was being asked for, or
     // written in by hand, which asks no model anything — is named from its
-    // opening on the next message the writer sends.
+    // opening on the next message the writer sends. A fork is named the same
+    // way from what is said in it after the fork point, the messages before
+    // being the chat it came from.
     const existingMessagesRef = chatsApi.getMessagesForChat(chatId)
     const existingMessages = existingMessagesRef?.value || []
     const isFirstMessage = existingMessages.length === 0
-    const needsTitle = isFirstMessage || isDefaultChatTitle(chatsApi.getChatById(chatId)?.title)
+    const forkedAt = chatsApi.getChatById(chatId)?.nameAfter
+    const needsTitle =
+      isFirstMessage || Boolean(forkedAt) || isDefaultChatTitle(chatsApi.getChatById(chatId)?.title)
+    const opening = () => openingOf(saidSince(existingMessages, forkedAt))
 
     // What the writer submitted may be prose, commands, or both in whatever
     // order they wrote them. This records all of it; `spoken` is the part
@@ -1614,7 +1867,7 @@ export function useAIChat(storyId, chatId) {
       // the chat is named from what asked for it.
       if (!spoken) {
         if (answered && needsTitle) {
-          await nameChat(openingOf(existingMessages) || userMessage.trim(), signal)
+          await nameChat(opening() || userMessage.trim(), signal)
         }
         return null
       }
@@ -1622,7 +1875,7 @@ export function useAIChat(storyId, chatId) {
       // The title is asked for alongside the reply rather than ahead of it,
       // which on a slow model would be a whole round trip before the first
       // word. It never fails the turn.
-      const titled = needsTitle ? nameChat(openingOf(existingMessages) || spoken, signal) : null
+      const titled = needsTitle ? nameChat(opening() || spoken, signal) : null
 
       try {
         return await generateAIResponse(storyId, chatId, '', signal)
@@ -1636,6 +1889,21 @@ export function useAIChat(storyId, chatId) {
     } finally {
       end(signal)
     }
+  }
+
+  /**
+   * The messages said in a chat since a fork point, or all of them for a
+   * chat that is no fork. A fork point gone since, rewound past, leaves
+   * nothing said since.
+   *
+   * @param {Message[]} messages
+   * @param {string|undefined} after - The fork's last copied message
+   * @returns {Message[]}
+   */
+  const saidSince = (messages, after) => {
+    if (!after) return messages
+    const at = messages.findIndex(message => message.id === after)
+    return at === -1 ? [] : messages.slice(at + 1)
   }
 
   /**
@@ -1663,7 +1931,9 @@ export function useAIChat(storyId, chatId) {
       const title = await generateChatTitle(opening, signal)
       if (!title || signal.aborted) return
       if (chatsApi.getChatById(chatId)?.title !== before) return
-      chatsApi.updateChat(chatId, { title })
+      // A fork's wait for a name ends with it.
+      const forked = Boolean(chatsApi.getChatById(chatId)?.nameAfter)
+      chatsApi.updateChat(chatId, { title, ...(forked ? { nameAfter: undefined } : {}) })
     } catch (error) {
       console.error('Failed to generate chat title, using default:', error)
     }
@@ -2013,6 +2283,7 @@ export function useAIChat(storyId, chatId) {
           model: profile.model,
           allowedProviders: profile.allowedProviders,
           ignoredProviders: profile.ignoredProviders,
+          fallbacks: profile.fallbacks,
         },
         chunkData => {
           if (chunkData.content) {

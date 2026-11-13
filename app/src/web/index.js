@@ -40,5 +40,5 @@
  */
 
 export { WEB_SERVICES, getWebService } from './services.js'
-export { serviceInUse, webForChat, setWebSearch, onWebSearchChanged } from './config.js'
+export { serviceInUse, setWebSearch, onWebSearchChanged } from './config.js'
 export { readPage } from './pages.js'

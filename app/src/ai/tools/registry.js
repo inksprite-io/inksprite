@@ -4,6 +4,8 @@
  * Tools are registered with their OpenAI-format definitions and execute functions.
  */
 
+import { toolOn } from './choice.js'
+
 /**
  * Tool definition in OpenAI format
  * @typedef {Object} ToolDefinition
@@ -51,6 +53,9 @@
  *   unchanged rather than send it again. Supplied for the chat's own turn only:
  *   a skill reads the conversation as a transcript, without its calls, so a
  *   read above is not in front of it.
+ * @property {number} [opening] - How many messages at the top of the chat a
+ *   summary leaves standing, where its profile keeps more than one. See
+ *   ai/compaction.js.
  * @property {() => string[]} [loadedSkills] - The skills this chat has loaded
  *   and not dropped, for `use_skill` to say one already is rather than send it
  *   twice. Supplied by whoever is running the turn, which has the chat.
@@ -75,6 +80,15 @@
  *   deep the consultation runs is not the skill's to say: the loop counts that.
  *   `edits` is the turn's record of what its tools changed, handed on so a
  *   skill's writes are recorded with the turn's.
+ * @property {(instruction: string, options?: {overrides?: import('../defaults.js').AISettingsOverrides, onContent?: (said: string) => void, onReasoning?: (thinking: string) => void, before?: string, past?: number}) => Promise<string>} [inThread] -
+ *   Ask the chat's own model something at the end of the conversation as it
+ *   reads it, in place of a turn, and return what it said. Where `consult`
+ *   hands another role a transcript, this sends the turn's own request with
+ *   the instruction as the writer's last word: the model has everything the
+ *   conversation holds, calls and attached documents among them, and the
+ *   request shares the turn's cached prefix. No tool runs. A summary is asked
+ *   for this way. `before` and `past` are `consult`'s. Supplied by whoever is
+ *   running the turn.
  * @property {(question: string) => Promise<'allow'|'always'|'deny'>} [approve] -
  *   Ask the writer before doing something that costs a lot, beside the call.
  *   `always` is yes and stop asking, which the tool keeps where the writer
@@ -87,8 +101,7 @@
  *   preset the chat runs on: the connection, model, routing and settings its
  *   own requests go out with. For a tool that asks a model of its own on the
  *   chat's behalf, as explore's job does, to ask the same one. Supplied by
- *   whoever runs the turn; absent, such a tool takes the active preset,
- *   which a new chat runs on.
+ *   whoever runs the turn.
  * @property {(shown: import('../../types/models.js').ShownResult) => void} [show] -
  *   Put an answer in front of the writer as it is, where the call sits in the
  *   turn: for one they should read in the tool's own words rather than have
@@ -192,21 +205,17 @@ class ToolRegistry {
   }
 
   /**
-   * Tool definitions minus anything the caller has switched off.
+   * Tool definitions minus anything the caller has switched off: a tool on
+   * by the choice's rule (./choice.js), which names what is off, so a tool
+   * registered later reaches existing chats instead of going silently
+   * missing.
    *
-   * Both lists name what is *withheld* rather than what is allowed, so a tool
-   * registered later reaches existing chats instead of going silently missing.
-   * A disabled group withholds its members even if they were never named
-   * individually — which is the point of the group.
-   *
-   * @param {{disabledTools?: string[], disabledGroups?: string[]}} [selection]
+   * @param {import('./choice.js').ToolChoice} [choice]
    * @returns {ToolDefinition[]}
    */
-  getEnabledDefinitions(selection = {}) {
-    const tools = new Set(selection.disabledTools || [])
-    const groups = new Set(selection.disabledGroups || [])
+  getEnabledDefinitions(choice = {}) {
     return Array.from(this.tools.entries())
-      .filter(([name, tool]) => !tools.has(name) && !groups.has(tool.group))
+      .filter(([name, tool]) => toolOn(choice, name, tool.group))
       .map(([, tool]) => tool.definition)
   }
 

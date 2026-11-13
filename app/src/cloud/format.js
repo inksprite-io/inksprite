@@ -15,6 +15,8 @@
  * Design: `.llm/sync_design.md`, "Schema versions".
  */
 
+import { mayHoldFormula } from '@/utils/tex.js'
+
 /**
  * The newest format this app reads, and so the newest a record it writes may
  * carry. Raise it by one when a synced row may come to hold what an older app
@@ -24,7 +26,7 @@
  * new table or index raises the schema instead. Records from before formats
  * carry none, which reads as 0.
  */
-export const FORMAT = 2
+export const FORMAT = 3
 
 /** What every record has carried at the least since formats began, 21 Oct 2026. */
 const FIRST = 1
@@ -33,9 +35,22 @@ const FIRST = 1
  * The format a document is written in for its text: what the editor holds
  * (`editor/schema.js`, which a test pins to it). Raised with `FORMAT` when
  * the editor learns a node, a mark or an attribute, or a text may hold new
- * markup.
+ * markup. 3 brought formulas, and only a text that may hold one carries it
+ * (`textFormatOf`): an older app reads a formula's backslashes as markdown's
+ * escapes and writes them back doubled, and an escaped dollar as a dollar.
  */
-export const TEXT_FORMAT = 1
+export const TEXT_FORMAT = 3
+
+/**
+ * The format a document's text is written in: the one formulas came with
+ * where it may hold one, or a dollar escaped so as not to be one, and the
+ * first otherwise. A file's text is never the editor's to write.
+ *
+ * @param {any} row
+ * @returns {number}
+ */
+const textFormatOf = row =>
+  row.type !== 'file' && mayHoldFormula(row.content) ? TEXT_FORMAT : FIRST
 
 /**
  * The format a document held by a text or an imported file is written in,
@@ -57,5 +72,5 @@ export const HELD_FORMAT = 2
 export function formatOf(table, row, parentType) {
   if (table !== 'documents' || !row) return FIRST
   const held = parentType !== undefined && parentType !== 'folder'
-  return Math.max(TEXT_FORMAT, held ? HELD_FORMAT : FIRST)
+  return Math.max(textFormatOf(row), held ? HELD_FORMAT : FIRST)
 }

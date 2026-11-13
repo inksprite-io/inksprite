@@ -2,13 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 const jobs = vi.hoisted(() => ({
   planExploring: vi.fn(),
-  startExplore: vi.fn(),
   exploreAndWait: vi.fn(),
   exploreNode: vi.fn(),
 }))
 vi.mock('@/jobs/index.js', () => jobs)
-const show = vi.hoisted(() => vi.fn())
-vi.mock('@/composables/useJobsToast.js', () => ({ useJobsToast: () => ({ show }) }))
 const asking = vi.hoisted(() => ({ value: true, set: vi.fn() }))
 vi.mock('@/composables/useApplicationState.js', () => ({
   useApplicationState: () => ({
@@ -17,8 +14,9 @@ vi.mock('@/composables/useApplicationState.js', () => ({
   }),
 }))
 
-const { ASK_FROM_TOKENS, askToExplore, exploreNow, exploreQuestion, exploredName, tokenCount } =
-  await import('@/composables/useExplore.js')
+const { ASK_FROM_TOKENS, exploreNow, exploreQuestion, exploredName, tokenCount } = await import(
+  '@/composables/useExplore.js'
+)
 
 /** A plan of so many steps over so many documents and characters. */
 const plan = (steps, documents, chars) => ({
@@ -44,80 +42,6 @@ describe('how much exploring reads', () => {
     expect(exploreQuestion({ ...notes, path: '/' }, plan(34, 60, 6_000_000))).toBe(
       'Explore the project (~1.5M tokens)?'
     )
-  })
-})
-
-describe('askToExplore', () => {
-  /** The question asked, and the answer the writer gives it. */
-  let asked
-  const answering = yes => options => {
-    asked = options
-    if (yes) options.accept()
-    else options.reject()
-  }
-
-  beforeEach(() => {
-    vi.clearAllMocks()
-    asked = null
-    asking.value = true
-    jobs.exploreNode.mockReturnValue({
-      id: 'f',
-      path: 'Research',
-      title: 'Research',
-      type: 'folder',
-      children: [],
-    })
-    jobs.planExploring.mockResolvedValue(plan(3, 5, 40_000))
-    jobs.startExplore.mockResolvedValue({ id: 'job_1' })
-  })
-
-  it('starts a small one without asking, and shows the jobs', async () => {
-    const require = vi.fn()
-    const outcome = await askToExplore('s1', 'f', { require })
-
-    // Outside a chat, on the model a new chat runs on.
-    expect(jobs.planExploring).toHaveBeenCalledWith('f')
-    expect(require).not.toHaveBeenCalled()
-    expect(jobs.startExplore).toHaveBeenCalledWith(
-      's1',
-      'f',
-      expect.objectContaining({ documents: 5 })
-    )
-    expect(outcome).toMatchObject({ job: { id: 'job_1' } })
-    expect(show).toHaveBeenCalled()
-  })
-
-  it('asks about a large one with what it costs, then starts it', async () => {
-    jobs.planExploring.mockResolvedValue(plan(34, 60, (ASK_FROM_TOKENS + 10_000) * 4))
-    const outcome = await askToExplore('s1', 'f', { require: answering(true) })
-
-    expect(asked.header).toBe('Explore Research/ (~60k tokens)?')
-    expect(asked.message).toBeUndefined()
-    expect(outcome).toMatchObject({ job: { id: 'job_1' } })
-  })
-
-  it('starts nothing when the writer says no', async () => {
-    jobs.planExploring.mockResolvedValue(plan(34, 60, (ASK_FROM_TOKENS + 10_000) * 4))
-    expect(await askToExplore('s1', 'f', { require: answering(false) })).toEqual({ declined: true })
-    expect(jobs.startExplore).not.toHaveBeenCalled()
-  })
-
-  it('asks nothing about a large one once the writer has said to always allow it', async () => {
-    asking.value = false
-    jobs.planExploring.mockResolvedValue(plan(34, 60, (ASK_FROM_TOKENS + 10_000) * 4))
-    const require = vi.fn()
-
-    expect(await askToExplore('s1', 'f', { require })).toMatchObject({ job: { id: 'job_1' } })
-    expect(require).not.toHaveBeenCalled()
-  })
-
-  it('does nothing when there is nothing to do', async () => {
-    jobs.planExploring.mockResolvedValue(plan(0, 0, 0))
-    const require = vi.fn()
-
-    expect(await askToExplore('s1', 'f', { require })).toEqual({ nothing: true })
-    expect(require).not.toHaveBeenCalled()
-    expect(jobs.startExplore).not.toHaveBeenCalled()
   })
 })
 

@@ -10,6 +10,7 @@
  * question and its answer left out of every request after them — see
  * ./asides.js), what the model
  * has read of the project and what of it has changed since (./context/reads.js),
+ * the documents attached to a message (./context/attachments.js),
  * how many requests each connection is asked at once and who goes first
  * (./gate.js), what a llama.cpp server says it has (./llamacpp.js), and the
  * tool registry for the inksprite chat and summarize features.

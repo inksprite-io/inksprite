@@ -115,7 +115,7 @@ openStorage().then(
     await importSettingsFile()
     app.mount('#app')
     // Opened from an invitation to sync: the settings show it.
-    if (invited) useSettingsPanel().open('sync')
+    if (invited) useSettingsPanel().open('sync', 'account')
   },
   error => {
     console.error('The library could not be opened:', error)

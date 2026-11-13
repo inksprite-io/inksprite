@@ -52,6 +52,8 @@
  * opening, the summary before it, and everything since — the turns it will sit
  * above included. Those are kept so the next turn has a scene to continue
  * rather than an account of one, not because the summary leaves them out.
+ * It is asked of the chat's own model at the end of the thread, so the model
+ * writes it from the calls and attached documents too, not from a transcript.
  *
  * This module is the whole idea and none of the plumbing: what a compaction is,
  * and how a history reads once there is one. The skill that writes a summary
@@ -77,11 +79,32 @@ export const DEFAULT_KEEP = 0
 /**
  * How much of the top of a conversation no summary stands in for.
  *
- * One message, always, and not the writer's to say yet: how a chat opens is a
- * fact about the chat, and nobody should have to remember to protect a greeting
+ * One message, and not the writer's to say yet: how a chat opens is a fact
+ * about the chat, and nobody should have to remember to protect a greeting
  * every time they compact.
+ *
+ * A profile may keep more (`keptOpening`): roleplay keeps two, since a scene
+ * opens over two messages whichever way it is started. A card's chat opens
+ * with the card's documents and then the greeting; a greeting written in by
+ * hand is followed by the writer's reply to it; and a game set up in the
+ * writer's first message has the model's opening scene after it.
+ *
+ * A summary says how much it kept (`metadata.opening`), where that is not
+ * one, so that what it stands for is read off the conversation alone and
+ * stays what it was if the chat moves to another profile.
  */
 export const KEPT_OPENING = 1
+
+/**
+ * How much of the top a summary left standing.
+ *
+ * @param {Message|undefined} summary
+ * @returns {number}
+ */
+function openingKept(summary) {
+  const kept = summary?.metadata?.opening
+  return typeof kept === 'number' && kept >= KEPT_OPENING ? kept : KEPT_OPENING
+}
 
 /**
  * How many turns a compaction was asked to sit above.
@@ -148,7 +171,7 @@ export function compactionCover(history) {
     if (isCompaction(history[i])) newest = i
   }
 
-  for (let i = KEPT_OPENING; i < newest; i++) covered.add(i)
+  for (let i = openingKept(history[newest]); i < newest; i++) covered.add(i)
 
   return covered
 }
@@ -177,13 +200,14 @@ export function applyCompaction(history) {
  * on, so it is offered from here down.
  *
  * @param {Message[]} history - The conversation in order
+ * @param {number} [opening] - How much of the top the chat keeps
  * @returns {number} An index; the length of the history or more when there is nowhere
  */
-export function firstSummarizable(history) {
+export function firstSummarizable(history, opening = KEPT_OPENING) {
   let newest = -1
   for (let i = history.length - 1; i >= 0 && newest === -1; i--) {
     if (isCompaction(history[i])) newest = i
   }
 
-  return Math.max(KEPT_OPENING, newest + 1) + 1
+  return Math.max(opening, newest + 1) + 1
 }

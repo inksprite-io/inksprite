@@ -4,15 +4,12 @@
  *
  * The model reaches the project through tools, and a small block rides at the
  * tail of every conversation carrying what is true right now: the project's
- * name and overview, how much is in it, the current text of the documents the
- * writer pinned, and which documents read earlier have changed since. Not the
- * tree: the block moves forward to the newest message every turn, so no
- * prompt cache ever covers it, and what is in it is paid in full on every
- * request. The model lists the project with a tool when it needs to.
- *
- * A pin is on the chat, not in the history, so it outlives the turns that made
- * it and a compaction that replaces them. Only the writer pins. See
- * pinnedContent.
+ * name and overview, how much is in it, and which documents read earlier have
+ * changed since. Not the tree, and no document's text: the block moves forward
+ * to the newest message every turn, so no prompt cache ever covers it, and
+ * what is in it is paid in full on every request. The model lists the project
+ * with a tool when it needs to, and a document the writer wants in front of
+ * it is attached to a message, where it stays (ai/context/attachments.js).
  *
  * Every call a turn made goes back on every later turn, where it was made, with
  * its result and without its words — the turn's content is the one copy of
@@ -47,9 +44,8 @@
  * asking what already exists.
  *
  * A chat that plays a card has names for its macros, and they are filled in
- * here in what the chat holds as written: the prompt, the author's note and
- * the pinned documents. The tools fill in what they read the same way; see
- * cards/macros.js.
+ * here in what the chat holds as written: the prompt and the author's note.
+ * The tools fill in what they read the same way; see cards/macros.js.
  *
  * Nothing here is persisted. The block is built per request; the stored
  * conversation holds only what the writer and the model actually said.
@@ -60,9 +56,8 @@ import { withoutAsides } from '@/ai/asides.js'
 import { renderCommand } from '@/ai/commands.js'
 import { USE_SKILL, carriedLoads, loadedText } from '@/ai/skills/loads.js'
 import { changedSinceRead, keepsDocumentCalls, keepsEveryCall } from './reads.js'
+import { withAttachments } from './attachments.js'
 import { substitute } from '@/cards/macros.js'
-import { commentsBetween, placedAsRead } from '@/ai/tools/commentReads.js'
-import { peopleOf } from '@/cloud/people.js'
 
 /**
  * What to call the two voices when the caller has not said.
@@ -76,7 +71,9 @@ import { peopleOf } from '@/cloud/people.js'
 export const DEFAULT_TRANSCRIPT_ROLES = { user: 'user', assistant: 'assistant' }
 
 /**
- * @typedef {{ role: 'system'|'user'|'assistant'|'tool', content: string|null, tool_call_id?: string, tool_calls?: any[], reasoning_details?: any[] }} ChatMessage
+ * @typedef {{ role: 'system'|'user'|'assistant'|'tool', content: string|null, tool_call_id?: string, tool_calls?: any[], reasoning_details?: any[], _lead?: number }} ChatMessage
+ *   `_lead` is how much of a writer's turn, from its start, is the documents
+ *   it attached; like every key that opens with an underscore, it is not sent.
  *
  * @typedef {Object} BuildOptions
  * @property {string} storyId
@@ -90,13 +87,15 @@ export const DEFAULT_TRANSCRIPT_ROLES = { user: 'user', assistant: 'assistant' }
  *   instructions, sent after the project block and ahead of what they said.
  *   Not read in a transcript — a skill reading the conversation is not the
  *   one the note is addressed to. See `renderAuthorsNote`.
- * @property {import('@/ai/tools/documents.js').DocumentListing[]} [pinned] -
- *   Documents whose text rides in the project block on every turn: the
- *   writer's pins. Already resolved: folders expanded, hidden left out. See
- *   `pinnedDocuments`.
  * @property {TranscriptRoles} [transcript] - Set to hand the conversation over
  *   as a transcript inside one user message, under these names, rather than as
  *   messages. For a reader that is not a party to it.
+ * @property {string} [ask] - Something asked of the chat's own model at the
+ *   end of the conversation as it reads it, in place of a turn: a summary. The
+ *   conversation goes as the turn sends it, calls and attached documents and
+ *   all, so the request shares the turn's cached prefix, and this follows as
+ *   the writer's last word. No project block and no author's note go with it:
+ *   they are for a turn. See `askInThread` in composables/useAIChat.js.
  * @property {string} [before] - Read the conversation as it stood before this
  *   message, which is not in it. For a request that is itself a message in the
  *   chat: what it says cannot be part of what it read, and asking it again
@@ -112,18 +111,15 @@ export const DEFAULT_TRANSCRIPT_ROLES = { user: 'user', assistant: 'assistant' }
  * @property {(id: string) => import('./reads.js').Located|null} [locate] -
  *   Where a document is now and what it says, for the block to say which reads
  *   have changed since. Absent means nothing is said.
- * @property {boolean} [comments] - Whether the pinned documents' open comments
- *   go after their text: for a chat offered the comment tools. Absent means
- *   the text alone.
  * @property {Array<{suggestion: string, path: string, accepted: boolean, at: number}>} [settled] -
  *   The chat's suggestions the writer has accepted or rejected, when. The
  *   block says those settled since the model's last answer began, so it is
  *   told of each once. See `settledSuggestions`.
  * @property {import('@/cards/macros.js').Names|null} [names] - What `{{char}}`
- *   and `{{user}}` become in the prompt, the author's note and the pinned
- *   documents: the chat's, when it plays a card. Absent means they are sent as
- *   written. The overview, the pins' paths and the changed reads arrive with
- *   them in already, from the tools that resolved them.
+ *   and `{{user}}` become in the prompt and the author's note: the chat's,
+ *   when it plays a card. Absent means they are sent as written. The overview
+ *   and the changed reads arrive with them in already, from the tools that
+ *   resolved them.
  *
  * @typedef {Object} TranscriptRoles
  * @property {string} user - What to call the writer's turns
@@ -147,15 +143,14 @@ export async function buildContext(
     chatId,
     systemPrompt,
     project,
-    pinned,
     note,
     transcript,
+    ask,
     before,
     past,
     keeps,
     locate,
     names,
-    comments,
     settled = [],
   }
 ) {
@@ -172,17 +167,14 @@ export async function buildContext(
   // What was asked on the side is not part of the conversation, except the
   // question this request may be answering. See ai/asides.js.
   const read = withoutAsides(chatId ? chatMessages(stores, chatId, { before, past }) : [], {
-    answering: !transcript,
+    answering: !transcript && !ask,
   })
   const history = applyCompaction(read)
 
   if (transcript) {
     // A reader of the transcript sees no calls, so there is no read for it
     // to have seen go stale.
-    const block = renderProjectState(
-      project,
-      pinnedContent(stores, pinned, names, comments, chatId)
-    )
+    const block = renderProjectState(project)
     messages.push({
       role: 'user',
       content: [renderTranscript(history, transcript), renderLoads(read, history), block]
@@ -203,13 +195,15 @@ export async function buildContext(
     if (isCompaction(msg)) messages.push(...carriedMessages(carried))
   }
 
+  // Asked something in place of a turn: the conversation as it stands, and
+  // the question after it.
+  if (ask) {
+    messages.push({ role: 'user', content: ask })
+    return { messages: mergeAdjacentTurns(messages) }
+  }
+
   const changed = locate ? changedSinceRead(read, locate) : []
-  const block = renderProjectState(
-    project,
-    pinnedContent(stores, pinned, names, comments, chatId),
-    changed,
-    settledSince(settled, read)
-  )
+  const block = renderProjectState(project, changed, settledSince(settled, read))
   const head = [block, renderAuthorsNote(substitute(note, names))].filter(Boolean).join('\n\n')
   attachProjectState(mergeAdjacentTurns(messages), head)
 
@@ -323,47 +317,10 @@ function renderLoads(read, history) {
 }
 
 /**
- * What the documents the writer pinned say now, each with its listing.
- *
- * Now, not what they said when they were pinned. That is the whole point: the
- * writer edits the same documents the model is working from, and a copy taken
- * eight turns ago is a copy of something that has since moved.
- *
- * Text and files both: a file's content is the text that was read out of it.
- * Length is no bar. A long document in this list was pinned by the writer from
- * the outline, or by a card import: a decision, which the block honours whole
- * rather than second-guessing with a note.
- *
- * @param {Stores} stores
- * @param {import('@/ai/tools/documents.js').DocumentListing[]} [pinned]
- * @param {import('@/cards/macros.js').Names|null} [names] - Filled in, when the chat has them
- * @param {boolean} [comments] - Whether a text document's open comments go after its text
- * @param {string} [chatId] - Whose suggestions it sees made
- * @returns {Array<Omit<import('@/ai/tools/documents.js').DocumentListing, 'id'|'comments'> & {content: string, comments?: object[]}>}
- */
-function pinnedContent(stores, pinned, names, comments, chatId) {
-  return (pinned || []).flatMap(({ id, comments: _count, ...entry }) => {
-    const document = stores.documentsStore.getDocument(id)
-    if (!document || document.type === 'folder') return []
-    if (document.type !== 'text')
-      return [{ ...entry, content: substitute(document.content, names) }]
-    // Read as read_document reads it: the text without the markup, and the
-    // open comments after it for a chat that can answer them.
-    const read = placedAsRead(document, names, chatId)
-    const listed = comments
-      ? commentsBetween(read, names, 0, read.text.length, peopleOf(document.storyId))
-      : []
-    return [{ ...entry, content: read.text, ...(listed.length > 0 ? { comments: listed } : {}) }]
-  })
-}
-
-/**
  * The project as it stands, for the model to read without asking.
  *
- * JSON, in the shape the document tools already answer in, because a pinned
- * document carries both what is said about it and its text, and prose has no
- * way of saying which is which. Empty fields are dropped rather than sent
- * blank, so an absent key means the thing is absent.
+ * JSON, in the shape the document tools already answer in. Empty fields are
+ * dropped rather than sent blank, so an absent key means the thing is absent.
  *
  * What this block *is* belongs in the system prompt, not in here. This sits
  * past every cache breakpoint, so a line of explanation is a line re-sent on
@@ -378,8 +335,6 @@ function pinnedContent(stores, pinned, names, comments, chatId) {
  * running the Director does. Named, it can be pointed at instead of located.
  *
  * @param {import('@/ai/tools/documents.js').ProjectOverview|null} [project]
- * @param {Array<{path: string, content: string}>} [pinned] - The pinned
- *   documents, with their text now
  * @param {Array<{path: string, since: string}>} [changed] - Documents read in
  *   view that have changed since, by the path they were read at
  * @param {Array<{suggestion: string, path: string, accepted: boolean}>} [settled] -
@@ -387,11 +342,10 @@ function pinnedContent(stores, pinned, names, comments, chatId) {
  *   answered
  * @returns {string}
  */
-function renderProjectState(project, pinned = [], changed = [], settled = []) {
+function renderProjectState(project, changed = [], settled = []) {
   if (!project) return ''
   const body = {
     ...project,
-    ...(pinned.length > 0 ? { pinned } : {}),
     ...(changed.length > 0 ? { changed } : {}),
     ...(settled.length > 0 ? { settled } : {}),
   }
@@ -467,9 +421,16 @@ function attachProjectState(messages, block) {
 
   const last = messages[messages.length - 1]
   if (last?.role === 'user') {
+    // After the documents the message opens with, which are the same on every
+    // later turn: ahead of them, the block would change what comes before
+    // them, and the turn after would read them again uncached.
+    const lead = last._lead || 0
+    const content = last.content || ''
+    const documents = lead > 0 ? `${content.slice(0, lead)}\n\n` : ''
+    const said = lead > 0 ? content.slice(lead).trimStart() : content
     messages[messages.length - 1] = {
       ...last,
-      content: `${block}\n\n---\n\n${last.content}`,
+      content: `${documents}${block}\n\n---\n\n${said}`,
     }
     return
   }
@@ -509,7 +470,12 @@ function expandMessage(msg, out, replays) {
   }
 
   if (replays) out.push(...replayedCalls(msg.metadata?.apiTrajectory, replays))
-  if (msg.content) out.push({ role: msg.role, content: msg.content })
+  if (!msg.content) return
+
+  // What the writer attached goes ahead of what they said, as it stood when
+  // they sent it. See ai/context/attachments.js.
+  const { content, lead } = withAttachments(msg)
+  out.push({ role: msg.role, content, ...(lead > 0 ? { _lead: lead } : {}) })
 }
 
 /**

@@ -3,6 +3,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAIService } from '@/composables/useAIService'
+import { useApplicationState } from '@/composables/useApplicationState'
 
 const provider = {
   id: 'provider_1',
@@ -533,24 +534,66 @@ describe('useAIService failure reporting', () => {
     // is naming; the message has to say which panel to open.
     provider.type = 'openrouter'
     failWith(404, {
-      error: { message: 'No endpoints found for the request with quantization: fp32.' },
+      error: {
+        message: 'No endpoints found for the request with quantization: fp32.',
+        code: 404,
+        metadata: { failed_routing_step: 'Filter by Quantization', routing_funnel: [] },
+      },
     })
 
     const error = await failureFrom([{ role: 'user', content: 'hi' }])
 
     expect(error.message).toContain('No endpoints found')
-    expect(error.message).toContain('Allowed providers')
+    expect(error.message).toContain("model's Providers")
     expect(error.message).toContain('Provider routing')
+    expect(error).toMatchObject({ status: 404, routingStep: 'Filter by Quantization' })
   })
 
-  it('leaves a no-endpoints error alone when this request carried no routing', async () => {
-    // A generic connection sends no provider field, so the filter is not ours.
+  it('gives no routing advice where the model itself is what no endpoint takes', async () => {
+    provider.type = 'openrouter'
+    const message = 'No endpoints found that support tool use. Try disabling "noop".'
+    failWith(404, {
+      error: {
+        message,
+        code: 404,
+        metadata: { failed_routing_step: 'Filter by Tool Compatibility' },
+      },
+    })
+
+    const error = await failureFrom([{ role: 'user', content: 'hi' }])
+
+    expect(error.message).toBe(message)
+    expect(error.routingStep).toBe('Filter by Tool Compatibility')
+  })
+
+  it('keeps the code a service names its refusal by, beside its status', async () => {
+    // NanoGPT names zero data retention's refusal by its code alone.
+    provider.type = 'nanogpt'
+    failWith(403, { error: { message: 'No eligible route', code: 'zdr_provider_required' } })
+
+    const error = await failureFrom([{ role: 'user', content: 'hi' }])
+
+    expect(error).toMatchObject({ status: 403, code: 'zdr_provider_required' })
+  })
+
+  it('keeps no code where the service sent a number for one', async () => {
+    failWith(404, { error: { message: 'Not found', code: 404 } })
+
+    const error = await failureFrom([{ role: 'user', content: 'hi' }])
+
+    expect(error.status).toBe(404)
+    expect(error).not.toHaveProperty('code')
+  })
+
+  it('leaves a no-endpoints error alone when no routing step was named', async () => {
+    // A server that only borrows OpenRouter's words names no filter of ours.
     provider.type = 'generic'
     failWith(404, { error: { message: 'No endpoints found for the request.' } })
 
     const error = await failureFrom([{ role: 'user', content: 'hi' }])
 
     expect(error.message).toBe('No endpoints found for the request.')
+    expect(error).not.toHaveProperty('routingStep')
   })
 
   it('names the effort level when that is what the model refused', async () => {
@@ -682,6 +725,34 @@ describe('useAIService providers serving a model', () => {
 
     expect(fetch).toHaveBeenCalledTimes(1)
   })
+
+  it('asks NanoGPT for a model’s providers at its site, the whole id one segment', async () => {
+    answerWith({
+      supportsProviderSelection: true,
+      providers: [{ provider: 'novita', displayName: 'Novita', available: true }],
+    })
+
+    const listed = await useAIService().listNanoGptProviders('z-ai/four-model')
+
+    expect(fetch.mock.calls[0][0]).toBe(
+      'https://nano-gpt.com/api/models/z-ai%2Ffour-model/providers'
+    )
+    expect(listed).toEqual({
+      selectable: true,
+      providers: [{ slug: 'novita', name: 'Novita', zdr: false }],
+    })
+  })
+
+  it('asks NanoGPT once per model, and again after a failure', async () => {
+    answerWith({}, 500)
+    await expect(useAIService().listNanoGptProviders('z-ai/five-model')).rejects.toThrow('500')
+
+    answerWith({ supportsProviderSelection: false })
+    await useAIService().listNanoGptProviders('z-ai/five-model')
+    await useAIService().listNanoGptProviders('z-ai/five-model')
+
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('useAIService model lists', () => {
@@ -783,5 +854,51 @@ describe('useAIService on Anthropic', () => {
 
     expect(models).toEqual([{ id: 'claude-haiku-5-5', name: 'Claude Haiku 5.5' }])
     expect(listAnthropicModels).toHaveBeenCalledWith(anthropic)
+  })
+})
+
+describe('the models used lately', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useApplicationState().state.value.ai.modelUses = []
+  })
+
+  it('counts an answer, and what it wrote, for the model that gave it', async () => {
+    streamEvents([
+      { choices: [{ delta: { content: 'Hi.' } }] },
+      { choices: [], usage: { prompt_tokens: 40, completion_tokens: 12, total_tokens: 52 } },
+    ])
+    await useAIService().generateChatCompletion(
+      [{ role: 'user', content: 'hi' }],
+      { providerId: provider.id, model: 'local-model' },
+      () => {}
+    )
+    streamEvents([
+      { choices: [{ delta: { content: 'Again.' } }] },
+      { choices: [], usage: { prompt_tokens: 60, completion_tokens: 30, total_tokens: 90 } },
+    ])
+    await useAIService().generateChatCompletion(
+      [{ role: 'user', content: 'hi' }],
+      { providerId: provider.id, model: 'local-model' },
+      () => {}
+    )
+
+    expect(useApplicationState().modelUses.value).toEqual([
+      { providerId: provider.id, model: 'local-model', outputTokens: 42, used: expect.any(Number) },
+    ])
+  })
+
+  it('counts nothing for a request that fails', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
+
+    await expect(
+      useAIService().generateChatCompletion(
+        [{ role: 'user', content: 'hi' }],
+        { providerId: provider.id, model: 'local-model' },
+        () => {}
+      )
+    ).rejects.toThrow()
+
+    expect(useApplicationState().modelUses.value).toEqual([])
   })
 })

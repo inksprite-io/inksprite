@@ -20,9 +20,8 @@
           :active-mobile-tab="mobileTab"
           :story-id="currentStoryId"
           :document-id="currentDocumentId"
-          :chat-id="selectedChatId"
+          :chat-id="activeChatId"
           @update:active-mobile-tab="activeMobileTab = $event"
-          @update:chat-id="selectChat"
         />
       </div>
     </div>
@@ -45,8 +44,7 @@
           :layout="layout"
           :story-id="currentStoryId"
           :document-id="currentDocumentId"
-          :chat-id="selectedChatId"
-          @update:chat-id="selectChat"
+          :chat-id="activeChatId"
           @select-chat="openChat"
           @open-document="openDocument"
           @toggle="togglePanel"
@@ -84,9 +82,10 @@ import { useStoriesStore } from '@/stores/storiesStore'
 import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
 import { pushProjectToRoute, replaceProjectInRoute, storyIdFromRoute } from '@/utils/routeHelpers'
 import { useAIProvidersStore } from '@/stores/aiProvidersStore'
-import { useToast } from 'primevue/usetoast'
+import { signInOf } from '@/ai/providers.js'
 import { useAIConfig } from '@/composables/useAIConfig'
-import { sessionStorage } from '@/utils/sessionStorage'
+import { seedRecentModels, stampEveryChat } from '@/composables/useChatPresets'
+import { giveToolChoices } from '@/composables/useToolChoices.js'
 import { useProjects } from '@/composables/useProjects'
 import { useLastOpened } from '@/composables/useLastOpened.js'
 import { saveNow } from '@/composables/useSaveBeforeClosing.js'
@@ -112,6 +111,7 @@ import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useSidebarTab } from '@/composables/useSidebarTab.js'
 import { useEditorRequest } from '@/composables/useEditorRequest.js'
 import { useChatRequest } from '@/composables/useChatRequest.js'
+import { useChatTabs } from '@/composables/useChatTabs.js'
 import { useFocusMode, useFocusModeKeys } from '@/composables/useFocusMode.js'
 import { requestSearchField, useProjectSearchKey } from '@/composables/useProjectSearch.js'
 import { usePrintKey } from '@/composables/usePrint.js'
@@ -271,34 +271,27 @@ watch(settingsVisible, visible => {
 })
 
 /**
- * The chat the chat panel shows, or the phone's chat tab. Remembered for the
- * session per story, so it survives a reload and does not follow the writer
- * to another project.
+ * The open project's chat tabs, which the chat panel shows, and whose showing
+ * chat the outline shows and hides documents for. Each project keeps its own, so the
+ * chat showing does not follow the writer to another project.
  */
-const selectedChatId = ref(null)
-
-const chatStorageKey = () => `ui.writer.${currentStoryId.value}.chat`
-
-/** @param {string|null} chatId */
-const selectChat = chatId => {
-  selectedChatId.value = chatId
-  if (chatId) sessionStorage.set(chatStorageKey(), chatId)
-  else sessionStorage.remove(chatStorageKey())
-}
+const chatTabs = computed(() => (currentStoryId.value ? useChatTabs(currentStoryId.value) : null))
+const activeChatId = computed(() => chatTabs.value?.activeChatId.value ?? null)
 
 /**
- * Picking a chat from the list means wanting to read it.
+ * Show a chat, in a tab of its own beside the one showing, and the panel it
+ * is in. One picked from the list is already open there, as a preview, and
+ * is only brought forward.
  * @param {string} chatId
  */
 const openChat = chatId => {
-  selectChat(chatId)
+  chatTabs.value?.open(chatId)
   showPanel(PANELS.CHAT)
 }
 
 // Needed to handle OAuth messages
 const aiProvidersStore = useAIProvidersStore()
 const aiConfig = useAIConfig()
-const toast = useToast()
 
 /**
  * Follow the URL to its project. A URL that names nothing — an old one, a
@@ -411,15 +404,13 @@ const leave = async storyId => {
   }
 }
 
-// A chat belongs to a story, so the one showing cannot follow the writer to
-// another project; the new project's own last chat comes back instead. The
-// project left keeps its tabs but not their editor states, and is let go of.
+// The project left keeps its tabs but not their editor states, and is let go
+// of. Its chat tabs are its own, and the one switched to brings back its own.
 watch(currentStoryId, (storyId, previous) => {
   if (previous) {
     useDocuments(previous).releaseTabs()
     leave(previous)
   }
-  selectedChatId.value = storyId ? sessionStorage.get(chatStorageKey()) : null
 })
 
 // The window is titled with its project, so that the windows can be told
@@ -444,7 +435,7 @@ watch([chatRequest.requested, currentStoryId], () => {
   const chatId = currentStoryId.value && chatRequest.take(currentStoryId.value)
   if (!chatId) return
   if (isMobile.value) {
-    selectChat(chatId)
+    chatTabs.value?.open(chatId)
     activeMobileTab.value = 'chat'
   } else openChat(chatId)
 })
@@ -458,25 +449,27 @@ async function handleOAuthMessage(event) {
     return
   }
 
-  if (event.data.type === 'oauth-success' && event.data.provider === 'openrouter') {
+  if (event.data.type === 'oauth-success' && signInOf(event.data.provider)) {
     // Reload the provider from database to get the updated API key
     if (event.data.providerId) {
       await aiProvidersStore.reloadProvider(event.data.providerId)
     }
 
-    console.log('OpenRouter OAuth connected successfully')
-
-    toast.add({
-      severity: 'success',
-      detail: 'Connected to your OpenRouter account',
-      life: 3000,
-    })
+    // The form that started it checks the connection and says how it went.
+    console.log(`Signed in to ${event.data.provider}`)
   }
 }
 
 // Initialize on mount
 onMounted(async () => {
   await aiConfig.init()
+  // Once: each chat from before chats kept their own model keeps the one it
+  // runs on, whatever is picked on its profile from now on; then the model
+  // menu learns the models used before it kept them.
+  stampEveryChat().then(seedRecentModels)
+  // Once: the web, Python and servers become switches of each profile's and
+  // chat's own, from the lists that said before.
+  giveToolChoices()
   window.addEventListener('message', handleOAuthMessage)
   await appState.checkAndShowWelcomeDialog()
 })

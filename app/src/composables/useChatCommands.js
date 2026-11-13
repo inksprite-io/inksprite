@@ -37,7 +37,8 @@
  * An aside is never part of a turn. It is a message of its own however the
  * writer's turn stands, and nothing is folded into it or it into anything,
  * because the model reads the turns around it and not the aside. See
- * ai/asides.js.
+ * ai/asides.js. No new ones are made: `/fork` took `/aside`'s place, and the
+ * chat handles it before anything is submitted here.
  */
 
 import { useChats } from './useChats.js'
@@ -55,10 +56,13 @@ import {
   commandTakesTurn,
   commandSpeaks,
   commandTag,
-  commandSwitchedOff,
   commandIsAside,
+  commandForks,
+  commandSwitchedOff,
 } from '@/ai/commands.js'
 import { isAside } from '@/ai/asides.js'
+import { mentionsIn } from '@/ai/context/attachments.js'
+import { attachedDocuments } from '@/ai/tools/documents.js'
 import { CommandError, SummaryCutShortError } from '@/utils/errors.js'
 import { groupTurns } from '@/utils/turns.js'
 import { KEPT_OPENING, compactionCover, isCompaction } from '@/ai/compaction.js'
@@ -69,8 +73,12 @@ import { KEPT_OPENING, compactionCover, isCompaction } from '@/ai/compaction.js'
 /** @typedef {import('../ai/commands.js').CommandInput} CommandInput */
 /** @typedef {import('../types/models.js').MessageSegment} MessageSegment */
 
-/** Why an aside can't be part of anything else. See ai/asides.js. */
-const ASIDE_ALONE = '/aside goes in a message of its own.'
+/**
+ * Why a /fork can't go in with anything else. The chat makes the fork from a
+ * message that is nothing but one, before it is submitted (`forkAsked`); one
+ * that gets this far had something before it, or was put into a turn.
+ */
+const FORK_ALONE = '/fork goes at the start of a message of its own.'
 
 /**
  * What a message of the writer's is made of. Every one has carried its pieces
@@ -104,6 +112,19 @@ export function useChatCommands(storyId, chatId) {
   const history = () => chatsApi.getMessagesForChat(chatId)?.value || []
 
   /**
+   * A piece of prose as a turn holds it, with the documents it attaches as
+   * they stand now. See ai/context/attachments.js.
+   *
+   * @param {string} content
+   * @returns {Promise<MessageSegment>}
+   */
+  const said = async content => {
+    const paths = mentionsIn(content).map(mention => mention.path)
+    const attachments = await attachedDocuments(storyId, chatId, paths)
+    return { type: 'text', content, ...(attachments.length > 0 ? { attachments } : {}) }
+  }
+
+  /**
    * How far a summary can move from where it is, up the chat and down it.
    *
    * No further than the summary either side of it, and never above how the
@@ -113,15 +134,16 @@ export function useChatCommands(storyId, chatId) {
    * already — would be read again as a turn under it.
    *
    * @param {string} messageId - The summary, which may still be being written
+   * @param {number} [opening] - How much of the top it leaves standing
    * @returns {{up: number, down: number}}
    */
-  const roomFor = messageId => {
+  const roomFor = (messageId, opening = KEPT_OPENING) => {
     const messages = history()
     const at = messages.findIndex(message => message.id === messageId)
     if (at === -1) return { up: 0, down: 0 }
 
     let up = 0
-    while (at - up - 1 >= KEPT_OPENING && !isCompaction(messages[at - up - 1])) up++
+    while (at - up - 1 >= opening && !isCompaction(messages[at - up - 1])) up++
     let down = 0
     while (at + down + 1 < messages.length && !isCompaction(messages[at + down + 1])) down++
 
@@ -165,9 +187,9 @@ export function useChatCommands(storyId, chatId) {
     const segments = splitInput(input)
 
     // Everything that can be refused for free is refused here, before a word
-    // is written: an unknown command, a question nobody asked, an experimental
-    // skill that is switched off. Past this point a consulting command has a
-    // message of its own and a failure lands in it.
+    // is written: an unknown command, a question nobody asked, a retired
+    // one. Past this point a consulting command has a message of its own and a
+    // failure lands in it.
     //
     // A command that answers on a turn of its own is the last thing a
     // submission can hold, because the writer's words cannot be on both sides
@@ -188,14 +210,8 @@ export function useChatCommands(storyId, chatId) {
       const off = commandSwitchedOff(segment)
       if (off) throw new CommandError(off)
       if (commandTakesTurn(segment)) apart = segment.name
-      // Everything after it is its question already, so only something before
-      // it can be in the way.
-      if (commandIsAside(segment) && segments.length > 1) throw new CommandError(ASIDE_ALONE)
+      if (commandForks(segment)) throw new CommandError(FORK_ALONE)
     }
-
-    // An aside is a message of its own, whatever the writer was in the middle
-    // of, and says what it is. See ai/asides.js.
-    const aside = segments.some(segment => segment.type === 'command' && commandIsAside(segment))
 
     // The instant ones run before anything is written, so a chat that is about
     // to be refused is left exactly as it was. One the writer answered for
@@ -239,7 +255,7 @@ export function useChatCommands(storyId, chatId) {
     const closeTurn = () => {
       if (turn.length === 0) return
 
-      const open = aside ? null : openTurn()
+      const open = openTurn()
       let id
       let offset = 0
       if (open) {
@@ -251,9 +267,7 @@ export function useChatCommands(storyId, chatId) {
         chatsApi.writeTurn(open.id, segments, assembleTurn(segments))
         id = open.id
       } else {
-        const written = aside
-          ? chatsApi.addMessage(chatId, 'user', assembleTurn(turn), null, turn, { aside: true })
-          : chatsApi.addMessage(chatId, 'user', assembleTurn(turn), null, turn)
+        const written = chatsApi.addMessage(chatId, 'user', assembleTurn(turn), null, turn)
         if (!written) throw new Error('Failed to add user message')
         id = written.id
       }
@@ -267,7 +281,7 @@ export function useChatCommands(storyId, chatId) {
 
     for (const [index, segment] of segments.entries()) {
       if (segment.type === 'text') {
-        turn.push({ type: 'text', content: segment.content })
+        turn.push(await said(segment.content))
         spoken.push(segment.content)
         continue
       }
@@ -298,12 +312,18 @@ export function useChatCommands(storyId, chatId) {
         // are not that many to keep it keeps what there are, and says so: the
         // count on the record is how far past itself it reads when asked
         // again, and has to be what happened. See ai/compaction.js.
+        const opening = context.opening ?? KEPT_OPENING
         const wanted = askedCommand(segment).keep
-        const room = typeof wanted === 'number' ? roomFor(message.id).up : 0
+        const room = typeof wanted === 'number' ? roomFor(message.id, opening).up : 0
         const asked = wanted > room ? { ...segment, param: String(room) } : segment
 
+        // With how much of the top it leaves standing, where its profile
+        // keeps more than one message: what it stands for is read off it.
         chatsApi.updateMessage(message.id, {
-          metadata: { command: pendingCommand(asked) },
+          metadata: {
+            command: pendingCommand(asked),
+            ...(opening > KEPT_OPENING ? { opening } : {}),
+          },
           streamingStartTime: Date.now(),
         })
         if (wanted > 0 && room > 0) chatsApi.moveMessage(message.id, Math.min(wanted, room))
@@ -458,26 +478,38 @@ export function useChatCommands(storyId, chatId) {
 
     if (typeof context.consult !== 'function') return { ...context, progress }
 
+    // What either way of reaching the model is given: where the answer and
+    // the thinking go as they arrive, and where the question sits.
+    const tied = {
+      /** @param {string} said */
+      onContent: said => {
+        streamed.result = said
+        // The moment it stopped thinking and started writing, rather than
+        // when the last word landed.
+        streamed.thought = streamed.thought ?? Date.now() - started
+        show()
+      },
+      /** @param {string} thinking */
+      onReasoning: thinking => {
+        streamed.reasoning = thinking
+        show()
+      },
+      before: messageId,
+    }
+    const { inThread } = context
+
+    // Tied last, so where it sits is not a command's to talk its way past.
     return {
       ...context,
       progress,
       consult: (systemPrompt, toolNames, options) =>
-        context.consult(systemPrompt, toolNames, {
-          ...options,
-          onContent: said => {
-            streamed.result = said
-            // The moment it stopped thinking and started writing, rather than
-            // when the last word landed.
-            streamed.thought = streamed.thought ?? Date.now() - started
-            show()
-          },
-          onReasoning: thinking => {
-            streamed.reasoning = thinking
-            show()
-          },
-          // Last, so it is not a command's to talk its way past.
-          before: messageId,
-        }),
+        context.consult(systemPrompt, toolNames, { ...options, ...tied }),
+      ...(typeof inThread === 'function'
+        ? {
+            inThread: (/** @type {string} */ instruction, /** @type {Object} */ options) =>
+              inThread(instruction, { ...options, ...tied }),
+          }
+        : {}),
     }
   }
 
@@ -508,6 +540,20 @@ export function useChatCommands(storyId, chatId) {
   }
 
   /**
+   * What a message that is nothing but a command holds: its record, and for
+   * a summary how much of the top it left standing, which stays what it was
+   * when the summary was first asked for however often it is written again.
+   *
+   * @param {string} messageId
+   * @param {ChatCommand} command
+   * @returns {import('../types/models.js').MessageMetadata}
+   */
+  const recordOn = (messageId, command) => {
+    const opening = chatsApi.getMessageById(messageId)?.value?.metadata?.opening
+    return { command, ...(opening ? { opening } : {}) }
+  }
+
+  /**
    * Put a command back where it came from.
    *
    * A segment carries the turn's own content with it, because the content is
@@ -520,7 +566,10 @@ export function useChatCommands(storyId, chatId) {
    */
   const writeCommand = (messageId, index, command, { streamed = false } = {}) => {
     if (index === undefined || index === null) {
-      chatsApi.updateMessage(messageId, { content: command.result || '', metadata: { command } })
+      chatsApi.updateMessage(messageId, {
+        content: command.result || '',
+        metadata: recordOn(messageId, command),
+      })
       return
     }
 
@@ -613,7 +662,10 @@ export function useChatCommands(storyId, chatId) {
    * @throws {CommandError} If it can't run now. Nothing has changed.
    */
   const ask = async (messageId, index, parsed, context) => {
-    // One that can't run now keeps the answer it has.
+    // One that can't run now, retired or a skill's that is gone, keeps the
+    // answer it has.
+    const { error } = inspectCommand(parsed)
+    if (error) throw new CommandError(error)
     const off = commandSwitchedOff(parsed)
     if (off) throw new CommandError(off)
 
@@ -624,7 +676,7 @@ export function useChatCommands(storyId, chatId) {
       if (index === null || index === undefined) {
         chatsApi.updateMessage(messageId, {
           content: '',
-          metadata: { command: pendingCommand(parsed) },
+          metadata: recordOn(messageId, pendingCommand(parsed)),
           reasoningContent: null,
           streamingStartTime: Date.now(),
           thinkingFinishTime: null,
@@ -759,14 +811,10 @@ export function useChatCommands(storyId, chatId) {
       ? [{ type: /** @type {const} */ ('command'), command: message.metadata.command }]
       : message?.segments || []
 
-    // An aside stays the one thing it is, and nothing else becomes one: the
-    // message says which it is, and what it says has to agree. A question
-    // asked on the side that a fork brought into the conversation is no
-    // longer one, but it was asked as one and may stay asked that way.
+    // An aside stays the one thing it is: the message says which it is, and
+    // what it says has to agree. Nothing else becomes one, since /aside is
+    // retired and refuses to be asked anew.
     const aside = isAside(message)
-    const asked = held.some(
-      segment => segment.type === 'command' && commandIsAside(segment.command)
-    )
     if (
       aside &&
       (parsed.length !== 1 || parsed[0].type !== 'command' || !commandIsAside(parsed[0]))
@@ -781,7 +829,7 @@ export function useChatCommands(storyId, chatId) {
 
       const { error } = inspectCommand(segment)
       if (error) throw new CommandError(error)
-      if (!aside && !asked && commandIsAside(segment)) throw new CommandError(ASIDE_ALONE)
+      if (commandForks(segment)) throw new CommandError(FORK_ALONE)
 
       // A turn holds what answers into it, and a message that answers alone
       // holds only itself. Neither can become the other in place.
@@ -806,7 +854,7 @@ export function useChatCommands(storyId, chatId) {
     if (alone && typeof alone.keep === 'number' && parsed[0].type === 'command') {
       const wanted = askedCommand(parsed[0]).keep
       if (typeof wanted === 'number' && wanted !== alone.keep) {
-        const { up, down } = roomFor(messageId)
+        const { up, down } = roomFor(messageId, message.metadata.opening)
         shift = Math.max(-down, Math.min(up, wanted - alone.keep))
         if (shift !== wanted - alone.keep) {
           parsed[0] = { ...parsed[0], param: String(alone.keep + shift) }
@@ -822,8 +870,9 @@ export function useChatCommands(storyId, chatId) {
     const waiting = []
 
     for (const segment of parsed) {
+      // Prose written again attaches its documents again, as they stand now.
       if (segment.type === 'text') {
-        next.push({ type: 'text', content: segment.content })
+        next.push(await said(segment.content))
         continue
       }
 
@@ -845,7 +894,7 @@ export function useChatCommands(storyId, chatId) {
       }
 
       // Only a line that has to be asked: one that came through untouched, or
-      // with its answer written, reads the same with the skill switched off.
+      // with its answer written, reads the same though it can't run now.
       const off = commandSwitchedOff(segment)
       if (off) throw new CommandError(off)
 

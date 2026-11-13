@@ -93,8 +93,10 @@ inksprite and are under the GPL with the rest of the code.
 | [progressing](https://thenounproject.com/icon/4621962/)     | Laura                | not used yet                                    |
 | [scene](https://thenounproject.com/icon/3738525/)           | Muslim,-             | not used yet                                    |
 | [setting](https://thenounproject.com/icon/7514150/)         | Icon Master          | `SettingsIcon`                                  |
+| [Settings](https://thenounproject.com/icon/4927881/)        | Mohamed Salah Hajji  | `SlidersIcon`                                   |
 | [side navigation](https://thenounproject.com/icon/5497891/) | Gregor Cresnar       | `SideNavigationIcon`                            |
 | [sketch](https://thenounproject.com/icon/7247484/)          | Corner Pixel         | not used yet                                    |
+| [Sliders](https://thenounproject.com/icon/8143942/)         | Skena Grafis         | not used yet                                    |
 | [stack books](https://thenounproject.com/icon/6546320/)     | Dicky Prayudawanto   | `BookshelfIcon`                                 |
 | [Stop](https://thenounproject.com/icon/569575/)             | Isma Ruiz            | `StopIcon`                                      |
 | [storyboard](https://thenounproject.com/icon/7307076/)      | ajat sudrajat        | not used yet                                    |

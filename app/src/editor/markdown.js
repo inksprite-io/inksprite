@@ -33,6 +33,16 @@
  * the words on both sides of it are: one left in bold after bold italic
  * would sit between the delimiters, and markdown would read them as text.
  *
+ * A formula is read before markdown's escapes, by the delimiters the chat
+ * reads (`utils/tex.js`), and its TeX written as it is: `$…$` in a sentence,
+ * or `\(…\)` where dollars can't hold it, and `$$`, its TeX and `$$` on lines
+ * of their own. `\[…\]` is no formula here, since a bracket in the text is
+ * written `\[`. A dollar in the
+ * text is written `\$` only where it would otherwise open a formula, so a
+ * price stays as it is: each is written as a mark first, and once the whole
+ * is written, each mark, the last first, is a dollar or an escaped one by
+ * what is written after it.
+ *
  * Two properties are pinned by tests: `parse(serialize(doc))` is `doc` for
  * every node and mark, and `serialize(parse(md))` is a fixed point after one
  * pass, which is what matters once files are edited outside the app.
@@ -47,6 +57,7 @@ import {
   defaultMarkdownParser,
   defaultMarkdownSerializer,
 } from 'prosemirror-markdown'
+import { formulaAt, trimTex } from '@/utils/tex.js'
 import { schema } from './schema.js'
 import { OPEN_MARKUP, closeMarkup, commentMarkupPlugin, settleComments } from './comments.js'
 import { SUGGESTION_MARKUP, closeSuggestion, suggestionMarkupPlugin } from './suggestions.js'
@@ -54,8 +65,85 @@ import { SUGGESTION_MARKUP, closeSuggestion, suggestionMarkupPlugin } from './su
 /**
  * @typedef {import('prosemirror-model').Node} Node
  * @typedef {import('markdown-it').StateBlock} StateBlock
+ * @typedef {import('markdown-it').StateInline} StateInline
  * @typedef {import('markdown-it').Token} Token
  */
+
+/**
+ * A formula in a sentence, read where markdown would otherwise read its
+ * dollar or its backslash as text. Within what a link's words or a cell may
+ * hold, as every inline rule is.
+ *
+ * @param {StateInline} state
+ * @param {boolean} silent
+ * @returns {boolean}
+ */
+function formulaInline(state, silent) {
+  const { src, pos, posMax } = state
+  if (src[pos] !== '$' && !(src[pos] === '\\' && src[pos + 1] === '(')) return false
+  const found = formulaAt(src.slice(pos, posMax), false)
+  if (!found) return false
+  if (!silent) state.push('formula', 'span', 0).content = trimTex(found.tex)
+  state.pos += found.raw.length
+  return true
+}
+
+/**
+ * Where a formula's closing `$$` is on the line it ends: the first with
+ * nothing but spaces after it, or -1.
+ *
+ * @param {string} line
+ * @returns {number}
+ */
+function closeOn(line) {
+  for (let at = line.indexOf('$$'); at >= 0; at = line.indexOf('$$', at + 1)) {
+    if (/^[ \t]*$/.test(line.slice(at + 2))) return at
+  }
+  return -1
+}
+
+/**
+ * A formula with lines of its own: `$$` starting a line, and `$$` ending the
+ * same line or a later one, with no blank line between. It ends a paragraph
+ * where it starts, as a fence does.
+ *
+ * @param {StateBlock} state
+ * @param {number} startLine
+ * @param {number} endLine
+ * @param {boolean} silent
+ * @returns {boolean}
+ */
+function formulaBlock(state, startLine, endLine, silent) {
+  if (state.sCount[startLine] - state.blkIndent >= 4) return false
+  const start = state.bMarks[startLine] + state.tShift[startLine]
+  if (!state.src.startsWith('$$', start)) return false
+  /** @type {string[]} */
+  const lines = []
+  let line = startLine
+  let from = start + 2
+  for (;;) {
+    const text = state.src.slice(from, state.eMarks[line])
+    const end = closeOn(text)
+    if (end >= 0) {
+      lines.push(text.slice(0, end))
+      break
+    }
+    lines.push(text)
+    line++
+    if (line >= endLine || state.isEmpty(line) || state.sCount[line] < state.blkIndent) {
+      return false
+    }
+    from = state.bMarks[line] + state.tShift[line]
+  }
+  const tex = trimTex(lines.join('\n'))
+  if (!tex) return false
+  if (silent) return true
+  const token = state.push('formula_block', 'div', 0)
+  token.content = tex
+  token.map = [startLine, line + 1]
+  state.line = line + 1
+  return true
+}
 
 /**
  * How many cells markdown-it finds in a row: the line cut at every pipe not
@@ -117,6 +205,10 @@ function tokenizerOf() {
     },
     { alt }
   )
+  md.block.ruler.before('fence', 'formula_block', formulaBlock, {
+    alt: ['paragraph', 'reference', 'blockquote', 'list'],
+  })
+  md.inline.ruler.before('escape', 'formula', formulaInline)
   return md
 }
 
@@ -145,6 +237,8 @@ const parser = new MarkdownParser(schema, tokenizerOf(), {
     }),
   },
   softbreak: { node: 'hard_break' },
+  formula: { node: 'formula', getAttrs: token => ({ tex: token.content }) },
+  formula_block: { node: 'formula_block', getAttrs: token => ({ tex: token.content }) },
   s: { mark: 'strikethrough' },
   table: { block: 'table' },
   thead: { ignore: true },
@@ -237,16 +331,42 @@ function spacesAsNeighbours(parent) {
  */
 class LinearSerializer extends MarkdownSerializer {
   /**
+   * The document written, its text's dollars each a mark until what is
+   * written after them says whether they are escaped. A mark is a character
+   * the document has none of: should the first be in it already, the next is
+   * tried, and with none left every dollar is escaped.
+   *
    * @param {Node} content
    * @param {{tightLists?: boolean}} [options]
    * @returns {string}
    */
   serialize(content, options = {}) {
+    for (const mark of [...DOLLAR_MARKS, null]) {
+      /** @type {Dollars} */
+      const dollars = { mark, count: 0 }
+      const written = this.write(content, options, dollars)
+      if (!mark || !dollars.count) return written
+      const pieces = written.split(mark)
+      if (pieces.length - 1 === dollars.count) return dollarsResolved(pieces)
+    }
+    return ''
+  }
+
+  /**
+   * @param {Node} content
+   * @param {{tightLists?: boolean}} options
+   * @param {Dollars} dollars
+   * @returns {string}
+   */
+  write(content, options, dollars) {
     // The reference leaves the state's constructor out of its types.
     const State = /** @type {new (...args: unknown[]) => MarkdownSerializerState} */ (
       MarkdownSerializerState
     )
-    const state = new State(this.nodes, this.marks, { ...this.options, ...options })
+    const state = Object.assign(
+      new State(this.nodes, this.marks, { ...this.options, ...options }),
+      { dollars }
+    )
     const written = []
     let tail = ''
     // The reference only adds to its output or changes its last character,
@@ -269,6 +389,104 @@ class LinearSerializer extends MarkdownSerializer {
     return written.join('')
   }
 }
+
+/**
+ * How a serialization writes the text's dollars: each as `mark`, counted, to
+ * be settled once all is written; or, with no mark, each escaped.
+ *
+ * @typedef {{mark: string|null, count: number}} Dollars
+ */
+
+/** Characters a dollar is written as until it is settled: the private use area's. */
+const DOLLAR_MARKS = ['\uE000', '\uF8FF']
+
+/**
+ * The text's dollars, written as marks, made dollars again: each escaped
+ * where it would open a formula as written, and left as it is otherwise. The
+ * last is settled first, since whether one opens a formula hangs on what is
+ * written after it, and a dollar escaped is no formula's close.
+ *
+ * @param {string[]} pieces - What was written, cut at the marks
+ * @returns {string}
+ */
+function dollarsResolved(pieces) {
+  /** @type {string[]} */
+  const dollars = new Array(pieces.length - 1)
+  for (let i = dollars.length - 1; i >= 0; i--) {
+    dollars[i] = opensFormula(pieces, dollars, i) ? '\\$' : '$'
+  }
+  let out = pieces[0]
+  dollars.forEach((dollar, i) => (out += dollar + pieces[i + 1]))
+  return out
+}
+
+/**
+ * Whether the `i`th dollar would open a formula, read with what is written
+ * after it as far as a blank line, beyond which no formula reaches.
+ *
+ * @param {string[]} pieces
+ * @param {string[]} dollars - Those after it, settled
+ * @param {number} i
+ * @returns {boolean}
+ */
+function opensFormula(pieces, dollars, i) {
+  const next = pieces[i + 1][0] ?? (i + 1 < dollars.length ? '$' : '')
+  if (!next || /\s/.test(next)) return false
+  let after = ''
+  for (let j = i + 1; j < pieces.length; j++) {
+    const blank = pieces[j].search(/\n[ \t]*\n/)
+    if (blank >= 0) {
+      after += pieces[j].slice(0, blank)
+      break
+    }
+    after += pieces[j] + (dollars[j] ?? '')
+  }
+  return formulaAt(`$${after}`) !== null
+}
+
+/**
+ * A text's dollars as the serialization writes them (`Dollars`).
+ *
+ * @param {MarkdownSerializerState} state
+ * @param {string} text
+ * @returns {string}
+ */
+function dollarsIn(state, text) {
+  const { dollars } = /** @type {{dollars?: Dollars}} */ (/** @type {unknown} */ (state))
+  if (!dollars || !text.includes('$')) return text
+  if (!dollars.mark) return text.replace(/\$/g, '\\$')
+  const { mark } = dollars
+  return text.replace(/\$/g, () => {
+    dollars.count++
+    return mark
+  })
+}
+
+/** A formula's TeX that `$…$` holds: Pandoc's rule, as it is read (`utils/tex.js`). */
+const BETWEEN_DOLLARS = /^(?![\s$])(?:\\[^\n]|[^\\$\n])+(?<!\s)$/
+
+/**
+ * A formula in a sentence as it is written: between dollars, or between `\(`
+ * and `\)` where dollars can't hold it, its TeX starting or ending with a
+ * space, running over lines, or a digit following it.
+ *
+ * @param {string} tex
+ * @param {boolean} [digitAfter] - Whether a digit follows it
+ * @returns {string}
+ */
+export function writtenFormula(tex, digitAfter = false) {
+  if (!digitAfter && BETWEEN_DOLLARS.test(tex)) return `$${tex}$`
+  return `\\(${tex}\\)`
+}
+
+/**
+ * A formula with lines of its own as it is written: its TeX on the lines
+ * between, a blank line among them closed up, since none can be in it.
+ *
+ * @param {string} tex
+ * @returns {string}
+ */
+export const writtenFormulaBlock = tex => `$$\n${tex.replace(/\n(?:[ \t]*\n)+/g, '\n')}\n$$`
 
 const { nodes } = defaultMarkdownSerializer
 
@@ -389,7 +607,30 @@ export const serializer = new LinearSerializer(
       const startOfLine = Boolean(atBlockStart) || afterBreak
       const endsHeading = parent.type.name === 'heading' && endsLine(parent, index)
       const text = escapeMore(state.esc(node.text || '', startOfLine), startOfLine, endsHeading)
-      state.text(text, false)
+      state.text(dollarsIn(state, text), false)
+    },
+
+    // An empty one is only ever the one being written, and has no form.
+    formula(state, node, parent, index) {
+      if (!node.attrs.tex) return
+      const next = index + 1 < parent.childCount ? parent.child(index + 1) : null
+      state.text(writtenFormula(node.attrs.tex, /^\d/.test(next?.text ?? '')), false)
+    },
+
+    formula_block(state, node) {
+      if (!node.attrs.tex) return
+      state.text(writtenFormulaBlock(node.attrs.tex), false)
+      state.closeBlock(node)
+    },
+
+    // A dollar in a picture's words is never a formula's: they are words alone.
+    image(state, node) {
+      const { src, alt, title } = node.attrs
+      state.write(
+        `![${state.esc(alt || '').replace(/\$/g, '\\$')}](${src.replace(/[()]/g, '\\$&')}${
+          title ? ` "${title.replace(/"/g, '\\"')}"` : ''
+        })`
+      )
     },
 
     table(state, node) {

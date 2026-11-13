@@ -6,10 +6,17 @@
  * reason: they are what a chat falls back to, and a list whose first entries
  * move as saved ones come and go is a list nobody can point at.
  *
- * A built-in cannot be edited. Saving a chat's settings to one makes a copy of
- * the writer's own, `Default - Custom`, and moves the chat onto it; a copy of
- * one of the writer's own is numbered, `Notes (2)`, as copies are everywhere
- * else.
+ * A built-in's wording cannot be edited. Saving a chat's settings to one makes
+ * a copy of the writer's own, `Default - Custom`, and moves the chat onto it;
+ * a copy of one of the writer's own is numbered, `Notes (2)`, as copies are
+ * everywhere else. What a pick in a chat leaves on a profile, its model, its
+ * effort, whether edits wait and its tools, is kept on a built-in all the
+ * same, in the application state beside it (`builtInProfiles`), so it is
+ * never copied for that.
+ *
+ * Every profile has a preset its chats start on. One never picked on starts
+ * them on the preset chats ran on before profiles kept their own, while it is
+ * here, and otherwise on the built-in one.
  *
  * An NSFW built-in and its general counterpart are one entry, which the
  * settings switch decides between. Off, the general one is offered, and a chat
@@ -24,7 +31,9 @@
 
 import { computed } from 'vue'
 import { useChatProfileStore } from '@/stores/chatProfileStore'
+import { useAIPresetStore } from '@/stores/aiPresetStore'
 import { useApplicationState } from './useApplicationState.js'
+import { DEFAULT_PRESET_ID } from '@/ai/defaults.js'
 import {
   BUILT_IN_PROFILES,
   DEFAULT_PROFILE_ID,
@@ -40,21 +49,15 @@ import { freeName } from '@/utils/titleValidation.js'
  * @typedef {Object} ProfileEntry
  * @property {string} id
  * @property {string} name
- * @property {string} [description] - Built-ins only, for the picker
  * @property {import('@/ai/profiles/index.js').ProfileSettings} settings
  * @property {boolean} readOnly - True for the ones that ship with the app
  */
 
-/** @param {any} profile @returns {ProfileEntry} */
-const storedEntry = profile => ({
-  id: profile.id,
-  name: profile.name,
-  settings: profile.settings || {},
-  readOnly: false,
-})
-
-/** @param {import('@/ai/profiles/index.js').ChatProfile} profile @returns {ProfileEntry} */
-const builtInEntry = profile => ({ ...profile, readOnly: true })
+/**
+ * The choices a pick in a chat leaves on its profile: its model, effort and
+ * edits, and its tools switched.
+ * @typedef {Pick<import('@/ai/profiles/index.js').ProfileSettings, 'providerId'|'model'|'reasoningEffort'|'applyEdits'|'disabledTools'|'disabledToolGroups'|'onlyToolGroups'|'toolsOff'>} ProfileChoices
+ */
 
 /** Each general built-in's NSFW counterpart, by the general one's id. */
 const NSFW_COUNTERPARTS = Object.fromEntries(
@@ -63,7 +66,41 @@ const NSFW_COUNTERPARTS = Object.fromEntries(
 
 export const useProfiles = () => {
   const store = useChatProfileStore()
-  const { nsfwProfiles, chatProfileId, roleplayProfileId, roleplay } = useApplicationState()
+  const presets = useAIPresetStore()
+  const {
+    nsfwProfiles,
+    chatProfileId,
+    roleplayProfileId,
+    roleplay,
+    legacyPresetId,
+    builtInProfiles,
+    setBuiltInProfile,
+  } = useApplicationState()
+
+  /**
+   * The preset a profile never picked on starts chats on: the one chats ran
+   * on before profiles kept their own, while it is here, then the built-in
+   * one, then any.
+   * @returns {string|undefined}
+   */
+  const startingPresetId = () =>
+    [legacyPresetId.value, DEFAULT_PRESET_ID].find(id => id && presets.getPreset(id)) ??
+    presets.getAllPresetsOrdered()[0]?.id
+
+  /** @param {any} profile @returns {ProfileEntry} */
+  const storedEntry = profile => ({
+    id: profile.id,
+    name: profile.name,
+    settings: profile.settings || {},
+    readOnly: false,
+  })
+
+  /** @param {import('@/ai/profiles/index.js').ChatProfile} profile @returns {ProfileEntry} */
+  const builtInEntry = profile => ({
+    ...profile,
+    settings: { ...profile.settings, ...builtInProfiles.value[profile.id] },
+    readOnly: true,
+  })
 
   /**
    * The built-in that runs in place of this one: its counterpart when the
@@ -132,8 +169,17 @@ export const useProfiles = () => {
    * @returns {string}
    */
   function copyName(source) {
+    return freeProfileName(source.readOnly ? `${source.name} - Custom` : source.name)
+  }
+
+  /**
+   * A name no profile has yet: this one, or this one numbered, `New Profile (2)`.
+   * @param {string} name
+   * @returns {string}
+   */
+  function freeProfileName(name) {
     const taken = [...BUILT_IN_PROFILES, ...store.getAllProfiles()].map(profile => profile.name)
-    return freeName(taken, source.readOnly ? `${source.name} - Custom` : source.name)
+    return freeName(taken, name)
   }
 
   /**
@@ -178,6 +224,21 @@ export const useProfiles = () => {
   }
 
   /**
+   * Leave what was picked in a chat on its profile, for the chats started on
+   * it next: on one of the writer's own, in its settings; on a built-in,
+   * beside it.
+   *
+   * @param {string} id
+   * @param {ProfileChoices} choices
+   */
+  function setProfileChoices(id, choices) {
+    if (getBuiltInProfile(id)) setBuiltInProfile(id, choices)
+    // Merged into its settings by the store, the rest kept.
+    else if (store.getProfile(id))
+      store.updateProfile(id, /** @type {any} */ ({ settings: choices }))
+  }
+
+  /**
    * @param {string} id
    * @returns {boolean}
    */
@@ -190,10 +251,13 @@ export const useProfiles = () => {
     saveProfile,
     duplicateProfile,
     copyName,
+    freeProfileName,
     chatDefaultId,
     roleplayDefaultId,
     updateProfile,
+    setProfileChoices,
     deleteProfile,
+    startingPresetId,
     DEFAULT_PROFILE_ID,
   }
 }

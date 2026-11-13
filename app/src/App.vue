@@ -10,7 +10,7 @@
 </template>
 
 <script setup>
-import { defineAsyncComponent, onBeforeUnmount, onMounted, watch } from 'vue'
+import { defineAsyncComponent, onBeforeUnmount, onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import ConfirmDialog from 'primevue/confirmdialog'
 import AppToast from './components/common/AppToast.vue'
@@ -20,8 +20,6 @@ import SyncUpdateDialog from './components/writer/settings/SyncUpdateDialog.vue'
 import InvitationNotices from './components/writer/settings/InvitationNotices.vue'
 import { useTheme } from './composables/useSystemSettings'
 import { useSkills } from './composables/useSkills'
-import { useApplicationState } from './composables/useApplicationState'
-import { setExperimentalSkills } from './ai/skills/index.js'
 import { useUpdates } from './composables/useUpdates'
 import { useSaveBeforeClosing } from './composables/useSaveBeforeClosing'
 import { useLibraryMove } from './composables/useLibraryMove'
@@ -48,14 +46,6 @@ const Analytics =
 // every chat, so the library is read as the app opens rather than when a
 // screen that lists it first does.
 useSkills()
-
-// The experimental skills come and go with the writer's switches for them, in
-// the same moment, so nothing made from the skills reads a switch as it was.
-const { experimentalSkills } = useApplicationState()
-watch(experimentalSkills, names => setExperimentalSkills(names), {
-  immediate: true,
-  flush: 'sync',
-})
 
 // The jobs left from before are counted as the app opens, so the Jobs button
 // is there for them; they are read in when the jobs toast first opens.

@@ -3,8 +3,8 @@
  * @description The comments a read lists after its text, as the model reads
  * them: where each passage is in the text without the markup, with the
  * chat's suggestions as it sees them and its names filled in, and what has
- * been said on it, by whom. Shared by `read_document`, `list_comments` and
- * the pinned documents of the project block. Pure.
+ * been said on it, by whom. Shared by `read_document` and `list_comments`.
+ * Pure.
  *
  * A chat sees its own pending suggestions made and everyone else's not, as
  * Docs shows a writer theirs: the change it suggested is the text it goes on

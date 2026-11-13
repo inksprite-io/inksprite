@@ -1,463 +1,425 @@
 <template>
-  <div class="flex flex-col gap-4 px-2 pt-2 pb-1" data-connections-section>
-    <WebSearchConnection />
+  <div class="flex flex-col" data-connections-section :data-part="part">
+    <AiConnections v-if="part === 'providers'" />
 
-    <h3
-      class="pt-2 text-sm font-semibold text-surface-800 dark:text-surface-100"
-      data-heading="mcp"
-    >
-      MCP servers
-    </h3>
+    <WebSearchConnection v-else-if="part === 'web' && webSearch" />
 
-    <!-- Adding: an address, or a pasted block of servers, then a look at what
-         each offers — which is what the model will be told — before keeping it. -->
-    <section
-      v-if="adding"
-      class="flex flex-col gap-3 rounded-lg border border-surface-200 dark:border-surface-700 p-3"
-      data-adding
-    >
-      <div class="flex gap-2">
-        <Button
-          label="By address"
-          size="small"
-          :severity="mode === 'url' ? undefined : 'secondary'"
-          :outlined="mode !== 'url'"
-          data-mode="url"
-          @click="mode = 'url'"
+    <div v-else class="flex flex-col gap-2" data-heading="mcp">
+      <Teleport defer :to="heading" :disabled="!heading">
+        <HeaderButton
+          icon="pi pi-plus"
+          label="Add a server"
+          data-action="add-server"
+          @click="openAdding"
         />
-        <Button
-          label="Paste a config"
-          size="small"
-          :severity="mode === 'json' ? undefined : 'secondary'"
-          :outlined="mode !== 'json'"
-          data-mode="json"
-          @click="mode = 'json'"
-        />
-      </div>
+      </Teleport>
 
-      <template v-if="mode === 'url'">
-        <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
-          Address
-          <InputText
-            ref="addressField"
-            v-model="draft.url"
-            size="small"
-            placeholder="https://example.com/mcp"
-            :invalid="Boolean(addressProblem)"
-            aria-label="Address"
-            :aria-describedby="addressProblem ? 'mcp-address-problem' : undefined"
-            data-field="url"
-            @update:model-value="addressProblem = ''"
-          />
-          <!-- Inside the label, so it is named "Address" outright: otherwise
-               what is wrong with it would be read as part of its name. -->
-          <span
-            v-if="addressProblem"
-            id="mcp-address-problem"
-            class="text-red-600 dark:text-red-400"
-            data-address-problem
-          >
-            {{ addressProblem }}
-          </span>
-        </label>
-        <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
-          Name
-          <InputText
-            v-model="draft.name"
-            size="small"
-            :placeholder="draft.url ? nameFromUrl(draft.url) : 'What to call it'"
-            data-field="name"
-          />
-        </label>
-        <div class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
-          Header (optional)
+      <!-- Adding: an address, or a pasted block of servers, then a look at what
+       each offers — which is what the model will be told — before keeping it. -->
+      <CardList v-if="adding">
+        <CardItem title="New server" open data-adding @toggle="closeAdding">
           <div class="flex gap-2">
-            <InputText
-              v-model="draft.headerName"
+            <Button
+              label="By address"
               size="small"
-              class="w-2/5"
-              placeholder="Authorization"
-              aria-label="Header name"
-              data-field="header-name"
+              :severity="mode === 'url' ? undefined : 'secondary'"
+              :outlined="mode !== 'url'"
+              data-mode="url"
+              @click="mode = 'url'"
             />
-            <InputText
-              v-model="draft.headerValue"
+            <Button
+              label="Paste a config"
               size="small"
-              class="flex-1"
-              type="password"
-              placeholder="Bearer …"
-              aria-label="Header value"
-              data-field="header-value"
+              :severity="mode === 'json' ? undefined : 'secondary'"
+              :outlined="mode !== 'json'"
+              data-mode="json"
+              @click="mode = 'json'"
             />
           </div>
-        </div>
-      </template>
 
-      <label v-else class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
-        The <span class="font-mono">mcpServers</span> block from another app's settings
-        <Textarea
-          v-model="draft.json"
-          rows="6"
-          class="font-mono text-xs"
-          placeholder='{ "mcpServers": { "deepwiki": { "url": "https://mcp.deepwiki.com/mcp" } } }'
-          data-field="json"
-        />
-      </label>
+          <template v-if="mode === 'url'">
+            <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
+              Address
+              <InputText
+                ref="addressField"
+                v-model="draft.url"
+                size="small"
+                placeholder="https://example.com/mcp"
+                :invalid="Boolean(addressProblem)"
+                aria-label="Address"
+                :aria-describedby="addressProblem ? 'mcp-address-problem' : undefined"
+                data-field="url"
+                @update:model-value="addressProblem = ''"
+              />
+              <!-- Inside the label, so it is named "Address" outright: otherwise
+             what is wrong with it would be read as part of its name. -->
+              <span
+                v-if="addressProblem"
+                id="mcp-address-problem"
+                class="text-red-600 dark:text-red-400"
+                data-address-problem
+              >
+                {{ addressProblem }}
+              </span>
+            </label>
+            <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
+              Name
+              <InputText
+                v-model="draft.name"
+                size="small"
+                :placeholder="draft.url ? nameFromUrl(draft.url) : 'What to call it'"
+                data-field="name"
+              />
+            </label>
+            <div class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
+              Header (optional)
+              <div class="flex gap-2">
+                <InputText
+                  v-model="draft.headerName"
+                  size="small"
+                  class="w-2/5"
+                  placeholder="Authorization"
+                  aria-label="Header name"
+                  data-field="header-name"
+                />
+                <InputText
+                  v-model="draft.headerValue"
+                  size="small"
+                  class="flex-1"
+                  type="password"
+                  placeholder="Bearer …"
+                  aria-label="Header value"
+                  data-field="header-value"
+                />
+              </div>
+            </div>
+          </template>
 
-      <p v-for="problem in problems" :key="problem" class="text-xs text-red-600 dark:text-red-400">
-        {{ problem }}
-      </p>
-
-      <!-- What each server offered, counted; its tools, what the model will be
-           told, are a click away. -->
-      <div
-        v-for="candidate in candidates"
-        :key="candidate.key"
-        class="flex flex-col gap-1 rounded-lg bg-surface-50 dark:bg-surface-900/40 px-3 py-2"
-        data-candidate
-      >
-        <component
-          :is="hasTools(candidate) ? 'button' : 'div'"
-          :type="hasTools(candidate) ? 'button' : undefined"
-          :aria-expanded="hasTools(candidate) ? shown === candidate.key : undefined"
-          class="flex flex-col gap-0.5 text-left"
-          data-candidate-summary
-          @click="hasTools(candidate) && toggleShown(candidate.key)"
-        >
-          <span class="flex items-center gap-2 min-w-0">
-            <span class="text-sm font-medium truncate">{{ candidate.server.name }}</span>
-            <span v-if="candidate.preview" class="text-xs text-surface-500">
-              {{ offers(candidate.preview) }}
-            </span>
-          </span>
-          <span class="text-xs text-surface-500 font-mono truncate">
-            {{ candidate.server.url || candidate.server.command }}
-          </span>
-        </component>
-        <template v-if="candidate.error">
-          <span v-if="!candidate.signIn" class="text-xs text-red-600 dark:text-red-400">
-            {{ candidate.error }}
-          </span>
-          <span v-else class="flex flex-wrap items-center gap-2 text-xs text-surface-600">
-            Sign in to see what it offers.
-            <Button
-              label="Sign in"
-              size="small"
-              :loading="signingIn === candidate.key"
-              data-action="sign-in"
-              @click="signInCandidate(candidate)"
+          <label v-else class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
+            The <span class="font-mono">mcpServers</span> block from another app's settings
+            <Textarea
+              v-model="draft.json"
+              rows="6"
+              class="font-mono text-xs"
+              placeholder='{ "mcpServers": { "deepwiki": { "url": "https://mcp.deepwiki.com/mcp" } } }'
+              data-field="json"
             />
-            <!-- A tab closed before it finished says nothing; this frees the button. -->
+          </label>
+
+          <p
+            v-for="problem in problems"
+            :key="problem"
+            class="text-xs text-red-600 dark:text-red-400"
+          >
+            {{ problem }}
+          </p>
+
+          <!-- What each server offered, counted; its tools, what the model will be
+         told, are a click away. -->
+          <div
+            v-for="candidate in candidates"
+            :key="candidate.key"
+            class="flex flex-col gap-1 rounded-lg bg-surface-50 dark:bg-surface-900/40 px-3 py-2"
+            data-candidate
+          >
+            <component
+              :is="hasTools(candidate) ? 'button' : 'div'"
+              :type="hasTools(candidate) ? 'button' : undefined"
+              :aria-expanded="hasTools(candidate) ? shown === candidate.key : undefined"
+              class="flex flex-col gap-0.5 text-left"
+              data-candidate-summary
+              @click="hasTools(candidate) && toggleShown(candidate.key)"
+            >
+              <span class="flex items-center gap-2 min-w-0">
+                <span class="text-sm font-medium truncate">{{ candidate.server.name }}</span>
+                <span v-if="candidate.preview" class="text-xs text-surface-500">
+                  {{ offers(candidate.preview) }}
+                </span>
+              </span>
+              <span class="text-xs text-surface-500 font-mono truncate">
+                {{ candidate.server.url || candidate.server.command }}
+              </span>
+            </component>
+            <template v-if="candidate.error">
+              <span v-if="!candidate.signIn" class="text-xs text-red-600 dark:text-red-400">
+                {{ candidate.error }}
+              </span>
+              <span v-else class="flex flex-wrap items-center gap-2 text-xs text-surface-600">
+                Sign in to see what it offers.
+                <Button
+                  label="Sign in"
+                  size="small"
+                  :loading="signingIn === candidate.key"
+                  data-action="sign-in"
+                  @click="signInCandidate(candidate)"
+                />
+                <!-- A tab closed before it finished says nothing; this frees the button. -->
+                <Button
+                  v-if="signingIn === candidate.key"
+                  label="Cancel"
+                  size="small"
+                  text
+                  severity="secondary"
+                  data-action="cancel-sign-in"
+                  @click="signingIn = null"
+                />
+              </span>
+            </template>
+            <span
+              v-else-if="!candidate.server.url"
+              class="text-xs italic text-surface-500 dark:text-surface-400"
+            >
+              Runs as a program, so it needs an HTTP bridge.
+            </span>
+            <ul
+              v-else-if="hasTools(candidate) && shown === candidate.key"
+              class="flex flex-col gap-1 pt-1"
+            >
+              <li
+                v-for="tool in candidate.preview.tools"
+                :key="tool.name"
+                class="text-xs text-surface-600 dark:text-surface-300"
+              >
+                <span class="font-mono">{{ tool.name }}</span>
+                <span v-if="tool.annotations?.readOnlyHint" class="text-surface-400">
+                  · Reads only</span
+                >
+                <span v-if="tool.description"> — {{ tool.description }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Keep takes Connect's place once something can be kept; an edit
+         above clears what was listed and brings Connect back. -->
+          <div class="flex gap-2">
             <Button
-              v-if="signingIn === candidate.key"
+              v-if="keepable.length > 0"
+              :label="keepable.length === 1 ? 'Keep it' : `Keep ${keepable.length}`"
+              size="small"
+              data-action="keep"
+              @click="keep"
+            />
+            <Button
+              v-else
+              label="Connect"
+              size="small"
+              :loading="connecting"
+              :disabled="!canConnect"
+              data-action="connect"
+              @click="connect"
+            />
+            <Button
               label="Cancel"
               size="small"
               text
               severity="secondary"
-              data-action="cancel-sign-in"
-              @click="signingIn = null"
+              data-action="cancel"
+              @click="closeAdding"
             />
-          </span>
-        </template>
-        <span
-          v-else-if="!candidate.server.url"
-          class="text-xs italic text-surface-500 dark:text-surface-400"
+          </div>
+        </CardItem>
+      </CardList>
+
+      <CardList v-if="servers.length > 0" data-list="servers">
+        <ConnectionCard
+          v-for="server in servers"
+          :key="server.id"
+          :name="server.name"
+          :address="server.url || server.command || ''"
+          :status="statusOf(server)"
+          :open="open === server.id"
+          :data-server="server.id"
+          @toggle="toggleOpen(server)"
         >
-          Runs as a program, so it needs an HTTP bridge.
-        </span>
-        <ul
-          v-else-if="hasTools(candidate) && shown === candidate.key"
-          class="flex flex-col gap-1 pt-1"
-        >
-          <li
-            v-for="tool in candidate.preview.tools"
-            :key="tool.name"
-            class="text-xs text-surface-600 dark:text-surface-300"
-          >
-            <span class="font-mono">{{ tool.name }}</span>
-            <span v-if="tool.annotations?.readOnlyHint" class="text-surface-400">
-              · Reads only</span
-            >
-            <span v-if="tool.description"> — {{ tool.description }}</span>
-          </li>
-        </ul>
-      </div>
-
-      <div v-if="keepable.length > 0" class="flex flex-col gap-1">
-        <span class="text-xs text-surface-600 dark:text-surface-300"> Used in chats on </span>
-        <div class="flex flex-wrap gap-x-4 gap-y-1">
-          <label
-            v-for="profile in profiles"
-            :key="profile.id"
-            class="flex items-center gap-2 text-xs"
-          >
-            <ToggleSwitch
-              :model-value="draft.profiles.includes(profile.id)"
-              :aria-label="`Use in chats on ${profile.name}`"
-              @update:model-value="toggleDraftProfile(profile.id, $event)"
-            />
-            {{ profile.name }}
-          </label>
-        </div>
-      </div>
-
-      <!-- Keep takes Connect's place once something can be kept; an edit
-           above clears what was listed and brings Connect back. -->
-      <div class="flex gap-2">
-        <Button
-          v-if="keepable.length > 0"
-          :label="keepable.length === 1 ? 'Keep it' : `Keep ${keepable.length}`"
-          size="small"
-          data-action="keep"
-          @click="keep"
-        />
-        <Button
-          v-else
-          label="Connect"
-          size="small"
-          :loading="connecting"
-          :disabled="!canConnect"
-          data-action="connect"
-          @click="connect"
-        />
-        <Button
-          label="Cancel"
-          size="small"
-          text
-          severity="secondary"
-          data-action="cancel"
-          @click="closeAdding"
-        />
-      </div>
-    </section>
-
-    <div v-else class="flex flex-wrap gap-2">
-      <Button
-        label="Add a server"
-        icon="pi pi-plus"
-        size="small"
-        data-action="add-server"
-        @click="openAdding"
-      />
-    </div>
-
-    <section class="flex flex-col gap-2" data-list="servers">
-      <p v-if="servers.length === 0" class="text-sm text-surface-500 dark:text-surface-400">
-        None yet.
-      </p>
-      <div
-        v-for="server in servers"
-        :key="server.id"
-        class="flex flex-col gap-2 rounded-lg px-3 py-2 border border-surface-200 dark:border-surface-700"
-        :data-server="server.id"
-      >
-        <button
-          type="button"
-          class="flex flex-col gap-0.5 text-left"
-          :aria-expanded="open === server.id"
-          @click="toggleOpen(server)"
-        >
-          <span class="flex items-center gap-2 min-w-0">
-            <span class="text-sm font-medium truncate">{{ server.name }}</span>
+          <template #badges>
             <span class="text-xs text-surface-500">{{ summaryOf(server) }}</span>
-          </span>
-          <span class="text-xs text-surface-500 font-mono truncate">
-            {{ server.url || server.command }}
-          </span>
-          <span v-if="!server.url" class="text-xs italic text-surface-500 dark:text-surface-400">
-            Runs as a program, so it needs an HTTP bridge.
-          </span>
-          <span
-            v-else-if="missingHeaders(server).length"
-            class="text-xs text-red-600 dark:text-red-400"
-            data-key-missing
-          >
-            Its key was left out of a backup.
-          </span>
-          <span v-else-if="server.error" class="text-xs text-red-600 dark:text-red-400">
-            {{ server.error }}
-          </span>
-          <span
-            v-if="server.url && isSignedIn(server.url)"
-            class="text-xs text-surface-500"
-            data-signed-in
-            >Signed in</span
-          >
-        </button>
-        <div v-if="needsSignIn(server)" class="flex gap-2">
-          <Button
-            label="Sign in"
-            size="small"
-            :loading="signingIn === server.id"
-            data-action="sign-in"
-            @click="signInServer(server)"
-          />
-          <Button
-            v-if="signingIn === server.id"
-            label="Cancel"
-            size="small"
-            text
-            severity="secondary"
-            data-action="cancel-sign-in"
-            @click="signingIn = null"
-          />
-        </div>
-
-        <div v-if="open === server.id" class="flex flex-col gap-3 pt-1">
-          <div
-            v-if="server.url && headerDrafts[server.id]"
-            class="flex flex-col gap-1"
-            data-headers
-          >
-            <span class="text-xs font-medium text-surface-700 dark:text-surface-200">
-              {{ headerDrafts[server.id].length > 1 ? 'Headers' : 'Header' }}
-            </span>
-            <div v-for="(row, index) in headerDrafts[server.id]" :key="index" class="flex gap-2">
-              <InputText
-                v-model="row.name"
-                size="small"
-                class="w-2/5"
-                placeholder="Authorization"
-                aria-label="Header name"
-                data-field="server-header-name"
-              />
-              <InputText
-                v-model="row.value"
-                size="small"
-                class="flex-1"
-                type="password"
-                placeholder="Bearer …"
-                aria-label="Header value"
-                data-field="server-header-value"
-              />
-            </div>
-            <div v-if="headersChanged(server)">
-              <Button
-                label="Save"
-                size="small"
-                :loading="refreshing === server.id"
-                data-action="save-headers"
-                @click="saveHeaders(server)"
-              />
-            </div>
-          </div>
-
-          <div v-if="server.url" class="flex flex-col gap-1">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-xs font-medium text-surface-700 dark:text-surface-200">Tools</span>
-              <label
-                v-if="server.tools.length > 0"
-                class="flex items-center gap-2 text-xs text-surface-500"
-              >
-                Always allow all of them
-                <ToggleSwitch
-                  :model-value="Boolean(server.allowAll)"
-                  :aria-label="`Always allow all of ${server.name}'s tools`"
-                  data-allow-all
-                  @update:model-value="updateServer(server.id, { allowAll: $event })"
-                />
-              </label>
-            </div>
-            <p v-if="server.tools.length === 0" class="text-xs text-surface-500">It offers none.</p>
-            <div
-              v-for="tool in server.tools"
-              :key="tool.name"
-              class="flex items-start justify-between gap-2"
-            >
-              <span class="text-xs text-surface-600 dark:text-surface-300 min-w-0">
-                <span class="font-mono">{{ tool.title || tool.name }}</span>
-                <span v-if="tool.description" class="text-surface-500">
-                  — {{ tool.description }}</span
-                >
-              </span>
-              <span v-if="tool.annotations?.readOnlyHint" class="text-xs text-surface-400 flex-none"
-                >Reads only</span
-              >
-              <span v-else-if="server.allowAll" class="text-xs text-surface-400 flex-none"
-                >Allowed</span
-              >
-              <label v-else class="flex items-center gap-2 text-xs text-surface-500 flex-none">
-                Always allow
-                <ToggleSwitch
-                  :model-value="(server.allowed || []).includes(tool.name)"
-                  :aria-label="`Always allow ${tool.name}`"
-                  @update:model-value="setAllowed(server, tool.name, $event)"
-                />
-              </label>
-            </div>
-          </div>
-
-          <div v-if="server.url && server.prompts?.length" class="flex flex-col gap-1">
-            <span class="text-xs font-medium text-surface-700 dark:text-surface-200">Prompts</span>
-            <div
-              v-for="prompt in server.prompts"
-              :key="prompt.name"
-              class="text-xs text-surface-600 dark:text-surface-300"
-              data-prompt
-            >
-              <span class="font-mono">{{ commandFor(server, prompt) || prompt.name }}</span>
-              <span v-if="prompt.description" class="text-surface-500">
-                — {{ prompt.description }}</span
-              >
-              <span v-if="!commandFor(server, prompt)" class="italic text-surface-500">
-                · needs {{ requiredArguments(prompt) }} arguments, so it isn’t in the
-                <span class="font-mono">/</span> menu</span
-              >
-            </div>
-          </div>
-
-          <div v-if="server.url" class="flex flex-col gap-1">
-            <span class="text-xs font-medium text-surface-700 dark:text-surface-200">
-              Used in chats on
-            </span>
-            <div class="flex flex-wrap gap-x-4 gap-y-1">
-              <label
-                v-for="profile in profiles"
-                :key="profile.id"
-                class="flex items-center gap-2 text-xs"
-              >
-                <ToggleSwitch
-                  :model-value="(server.profiles || []).includes(profile.id)"
-                  :aria-label="`Use ${server.name} in chats on ${profile.name}`"
-                  @update:model-value="setProfile(server, profile.id, $event)"
-                />
-                {{ profile.name }}
-              </label>
-            </div>
-          </div>
-
-          <div class="flex gap-2">
-            <Button
-              v-if="server.url"
-              label="List its tools again"
-              size="small"
-              severity="secondary"
-              outlined
-              :loading="refreshing === server.id"
-              data-action="refresh"
-              @click="refresh(server.id)"
-            />
-            <Button
+            <span
               v-if="server.url && isSignedIn(server.url)"
-              label="Sign out"
-              size="small"
-              severity="secondary"
-              text
-              data-action="sign-out"
-              @click="signOut(server.url)"
-            />
-            <Button
-              label="Remove"
-              size="small"
-              severity="danger"
-              text
-              data-action="remove"
-              @click="removeServer(server.id)"
-            />
+              class="text-xs text-surface-500"
+              data-signed-in
+              >Signed in</span
+            >
+          </template>
+          <template #notes>
+            <span v-if="!server.url" class="text-xs italic text-surface-500 dark:text-surface-400">
+              Runs as a program, so it needs an HTTP bridge.
+            </span>
+            <span
+              v-else-if="missingHeaders(server).length"
+              class="text-xs text-red-600 dark:text-red-400"
+              data-key-missing
+            >
+              Its key was left out of a backup.
+            </span>
+            <span v-else-if="server.error" class="text-xs text-red-600 dark:text-red-400">
+              {{ server.error }}
+            </span>
+          </template>
+          <template #after>
+            <div v-if="needsSignIn(server)" class="flex gap-2">
+              <Button
+                label="Sign in"
+                size="small"
+                :loading="signingIn === server.id"
+                data-action="sign-in"
+                @click="signInServer(server)"
+              />
+              <Button
+                v-if="signingIn === server.id"
+                label="Cancel"
+                size="small"
+                text
+                severity="secondary"
+                data-action="cancel-sign-in"
+                @click="signingIn = null"
+              />
+            </div>
+          </template>
+
+          <div class="flex flex-col gap-3">
+            <div
+              v-if="server.url && headerDrafts[server.id]"
+              class="flex flex-col gap-1"
+              data-headers
+            >
+              <span class="text-xs font-medium text-surface-700 dark:text-surface-200">
+                {{ headerDrafts[server.id].length > 1 ? 'Headers' : 'Header' }}
+              </span>
+              <div v-for="(row, index) in headerDrafts[server.id]" :key="index" class="flex gap-2">
+                <InputText
+                  v-model="row.name"
+                  size="small"
+                  class="w-2/5"
+                  placeholder="Authorization"
+                  aria-label="Header name"
+                  data-field="server-header-name"
+                />
+                <InputText
+                  v-model="row.value"
+                  size="small"
+                  class="flex-1"
+                  type="password"
+                  placeholder="Bearer …"
+                  aria-label="Header value"
+                  data-field="server-header-value"
+                />
+              </div>
+              <div v-if="headersChanged(server)">
+                <Button
+                  label="Save"
+                  size="small"
+                  :loading="refreshing === server.id"
+                  data-action="save-headers"
+                  @click="saveHeaders(server)"
+                />
+              </div>
+            </div>
+
+            <div v-if="server.url" class="flex flex-col gap-1">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-medium text-surface-700 dark:text-surface-200"
+                  >Tools</span
+                >
+                <label
+                  v-if="server.tools.length > 0"
+                  class="flex items-center gap-2 text-xs text-surface-500"
+                >
+                  Always allow all of them
+                  <ToggleSwitch
+                    :model-value="Boolean(server.allowAll)"
+                    :aria-label="`Always allow all of ${server.name}'s tools`"
+                    data-allow-all
+                    @update:model-value="updateServer(server.id, { allowAll: $event })"
+                  />
+                </label>
+              </div>
+              <p v-if="server.tools.length === 0" class="text-xs text-surface-500">
+                It offers none.
+              </p>
+              <div
+                v-for="tool in server.tools"
+                :key="tool.name"
+                class="flex items-start justify-between gap-2"
+              >
+                <span class="text-xs text-surface-600 dark:text-surface-300 min-w-0">
+                  <span class="font-mono">{{ tool.title || tool.name }}</span>
+                  <span v-if="tool.description" class="text-surface-500">
+                    — {{ tool.description }}</span
+                  >
+                </span>
+                <span
+                  v-if="tool.annotations?.readOnlyHint"
+                  class="text-xs text-surface-400 flex-none"
+                  >Reads only</span
+                >
+                <span v-else-if="server.allowAll" class="text-xs text-surface-400 flex-none"
+                  >Allowed</span
+                >
+                <label v-else class="flex items-center gap-2 text-xs text-surface-500 flex-none">
+                  Always allow
+                  <ToggleSwitch
+                    :model-value="(server.allowed || []).includes(tool.name)"
+                    :aria-label="`Always allow ${tool.name}`"
+                    @update:model-value="setAllowed(server, tool.name, $event)"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div v-if="server.url && server.prompts?.length" class="flex flex-col gap-1">
+              <span class="text-xs font-medium text-surface-700 dark:text-surface-200"
+                >Prompts</span
+              >
+              <div
+                v-for="prompt in server.prompts"
+                :key="prompt.name"
+                class="text-xs text-surface-600 dark:text-surface-300"
+                data-prompt
+              >
+                <span class="font-mono">{{ commandFor(server, prompt) || prompt.name }}</span>
+                <span v-if="prompt.description" class="text-surface-500">
+                  — {{ prompt.description }}</span
+                >
+                <span v-if="!commandFor(server, prompt)" class="italic text-surface-500">
+                  · needs {{ requiredArguments(prompt) }} arguments, so it isn’t in the
+                  <span class="font-mono">/</span> menu</span
+                >
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <Button
+                v-if="server.url"
+                label="List its tools again"
+                size="small"
+                severity="secondary"
+                outlined
+                :loading="refreshing === server.id"
+                data-action="refresh"
+                @click="refresh(server.id)"
+              />
+              <Button
+                v-if="server.url && isSignedIn(server.url)"
+                label="Sign out"
+                size="small"
+                severity="secondary"
+                text
+                data-action="sign-out"
+                @click="signOut(server.url)"
+              />
+              <Button
+                label="Remove"
+                size="small"
+                severity="danger"
+                text
+                data-action="remove"
+                @click="removeServer(server.id)"
+              />
+            </div>
           </div>
-        </div>
-      </div>
-    </section>
+        </ConnectionCard>
+      </CardList>
+    </div>
   </div>
 </template>
 
@@ -468,20 +430,35 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import ToggleSwitch from 'primevue/toggleswitch'
 import WebSearchConnection from './WebSearchConnection.vue'
+import AiConnections from '../connections/AiConnections.vue'
+import ConnectionCard from '../connections/ConnectionCard.vue'
+import { useSectionHeading } from '@/components/common/sectionHeading.js'
+import CardList from '@/components/common/CardList.vue'
+import CardItem from '@/components/common/CardItem.vue'
+import HeaderButton from '../layout/HeaderButton.vue'
 import { useMcpServers } from '@/composables/useMcpServers.js'
-import { useProfiles } from '@/composables/useProfiles'
+import { useApplicationState } from '@/composables/useApplicationState'
 import { isWebAddress, nameFromUrl, parseServerConfig } from '@/mcp/config.js'
 import { SIGN_IN_NEEDED } from '@/mcp/client.js'
 import { missingHeaders, promptCommand, requiredArguments } from '@/mcp/servers.js'
-import { CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
 
 /** @typedef {import('@/types/models.js').McpServer} McpServer */
 /** @typedef {import('@/mcp/config.js').ConfiguredServer} ConfiguredServer */
 /** @typedef {import('@/composables/useMcpServers.js').ServerPreview} ServerPreview */
 
 /**
- * Settings → Connections: web search, then the writer's MCP servers, app-wide.
+ * Settings → Connections, a part at a time: the AI's providers, the writer's
+ * MCP servers, app-wide, and web search's services while its extension is
+ * on. Each part's plus sits beside the heading.
  */
+
+defineProps({
+  /** Which part shows: `providers`, `mcp` or `web`. */
+  part: { type: String, default: 'providers' },
+})
+
+const { webSearch } = useApplicationState()
+const heading = useSectionHeading()
 
 const {
   servers,
@@ -494,8 +471,6 @@ const {
   signIn,
   signOut,
 } = useMcpServers()
-const { profiles } = useProfiles()
-
 const adding = ref(false)
 /** @type {import('vue').Ref<'url'|'json'>} */
 const mode = ref('url')
@@ -524,8 +499,6 @@ const draft = reactive({
   headerName: '',
   headerValue: '',
   json: '',
-  /** @type {string[]} */
-  profiles: [CHAT_PROFILE_ID],
 })
 
 /**
@@ -601,6 +574,14 @@ const summaryOf = server =>
         ...(server.prompts?.length ? [countOf(server.prompts.length, 'prompt')] : []),
       ].join(' · ')
     : 'needs a bridge'
+
+/**
+ * What its card says beside it: that it couldn't be listed, its key missing
+ * or the server refusing, and nothing of one that was.
+ * @param {McpServer} server
+ */
+const statusOf = server =>
+  server.url && (missingHeaders(server).length || server.error) ? 'Not connected' : ''
 
 /**
  * The command a server's prompt is typed as, or nothing for one that is not
@@ -727,7 +708,7 @@ async function signInServer(server) {
 /** Keep every server that listed, or that waits on a bridge. */
 function keep() {
   for (const candidate of keepable.value) {
-    addServer(candidate.server, candidate.preview, [...draft.profiles])
+    addServer(candidate.server, candidate.preview)
   }
   closeAdding()
 }
@@ -743,29 +724,6 @@ function closeAdding() {
     headerName: '',
     headerValue: '',
     json: '',
-    profiles: [CHAT_PROFILE_ID],
-  })
-}
-
-/**
- * @param {string} profileId
- * @param {boolean} on
- */
-function toggleDraftProfile(profileId, on) {
-  draft.profiles = on
-    ? [...new Set([...draft.profiles, profileId])]
-    : draft.profiles.filter(id => id !== profileId)
-}
-
-/**
- * @param {McpServer} server
- * @param {string} profileId
- * @param {boolean} on
- */
-function setProfile(server, profileId, on) {
-  const current = server.profiles || []
-  updateServer(server.id, {
-    profiles: on ? [...new Set([...current, profileId])] : current.filter(id => id !== profileId),
   })
 }
 

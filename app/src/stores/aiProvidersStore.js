@@ -145,11 +145,13 @@ export const useAIProvidersStore = defineStore('aiProviders', () => {
    * @param {object} opts
    * @param {string} [opts.id] - Optional ID (for default providers)
    * @param {string} opts.name - Provider name
-   * @param {'openrouter'|'anthropic'|'openai'|'gemini'|'llamacpp'|'generic'} opts.type - Provider type. See ai/providers.js.
+   * @param {'openrouter'|'anthropic'|'openai'|'nanogpt'|'gemini'|'llamacpp'|'generic'} opts.type - Provider type. See ai/providers.js.
    * @param {string} [opts.endpoint] - API endpoint
    * @param {string} [opts.apiKey] - API key
    * @param {boolean} [opts.rememberKey] - Whether to persist API key in IndexedDB (default true)
    * @param {import('../ai/routing.js').OpenRouterRouting} [opts.routing] - OpenRouter provider routing policy
+   * @param {string} [opts.server] - The server behind a generic connection, by its kind
+   * @param {boolean} [opts.added] - Whether the writer added it
    * @param {boolean} [opts.isDefault] - Whether this is a default provider
    * @returns {AIProvider} The created provider
    */
@@ -161,6 +163,8 @@ export const useAIProvidersStore = defineStore('aiProviders', () => {
     apiKey,
     rememberKey = true,
     routing,
+    server,
+    added,
     isDefault = false,
   }) {
     const providerId = id || generateProviderId()
@@ -174,6 +178,8 @@ export const useAIProvidersStore = defineStore('aiProviders', () => {
       apiKey: rememberKey ? apiKey : undefined, // Only store in DB if rememberKey is true
       rememberKey,
       routing,
+      ...(server ? { server } : {}),
+      ...(added ? { added: true } : {}),
       isDefault,
       version: 1,
       created: Date.now(),
@@ -263,11 +269,6 @@ export const useAIProvidersStore = defineStore('aiProviders', () => {
     const provider = providers.value.get(providerId)
     if (!provider) {
       throw new Error(`Failed to delete provider, '${providerId}' not found`)
-    }
-
-    // Prevent deletion of default providers
-    if (provider.isDefault) {
-      throw new Error(`Cannot delete default provider '${providerId}'`)
     }
 
     syncStore.trackDelete('aiProviders', providerId)

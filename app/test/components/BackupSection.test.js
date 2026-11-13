@@ -242,7 +242,7 @@ describe('BackupSection', () => {
       const changes = plan({
         rows: { aiProviders: [{ id: 'provider_proxy', name: 'Team proxy', apiKey: '' }] },
         added: [{ key: 'aiProviders/provider_proxy', kind: 'aiProviders', name: 'Team proxy' }],
-        changed: [{ key: 'settings/aiPreset', kind: 'settings', name: 'Preset in use' }],
+        changed: [{ key: 'settings/builtInProfiles', kind: 'settings', name: 'Built-in profiles' }],
       })
       backup.readDataFile.mockResolvedValue({
         kind: 'settings',
@@ -258,7 +258,7 @@ describe('BackupSection', () => {
       const asked = confirmRequire.mock.calls[0][0]
       expect(asked.header).toBe('Import settings?')
       expect(asked.message).toBe(
-        'Adds the connection Team proxy. Changes the preset in use. Keys left out: Team proxy.'
+        'Adds the connection Team proxy. Changes your choices on the built-in profiles. Keys left out: Team proxy.'
       )
       expect(backup.importSettings).not.toHaveBeenCalled()
       expect(backup.restoreBackup).not.toHaveBeenCalled()
@@ -305,7 +305,11 @@ describe('BackupSection', () => {
 
     it('says what it adds and changes before importing', async () => {
       readSelection(
-        plan({ changed: [{ key: 'settings/aiPreset', kind: 'settings', name: 'Preset in use' }] })
+        plan({
+          changed: [
+            { key: 'settings/builtInProfiles', kind: 'settings', name: 'Built-in profiles' },
+          ],
+        })
       )
       backup.importSelection.mockResolvedValue({
         projects: ['Thief (2)'],
@@ -320,7 +324,7 @@ describe('BackupSection', () => {
       const asked = confirmRequire.mock.calls[0][0]
       expect(asked.header).toBe('Import?')
       expect(asked.message).toBe(
-        'Adds the project Thief and the character card Wren. Changes the preset in use.'
+        'Adds the project Thief and the character card Wren. Changes your choices on the built-in profiles.'
       )
       expect(backup.importSelection).not.toHaveBeenCalled()
 

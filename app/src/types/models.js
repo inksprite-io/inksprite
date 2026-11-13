@@ -78,6 +78,18 @@
  * @property {string|null} [previewDocumentId] - The open document that is only being
  *   looked at, whose tab the next one opened from the outline takes. Absent or
  *   null means every tab is kept.
+ * @property {string[]} [shownDocumentIds] - The open documents as they were last
+ *   shown, the active one first: where closing a tab goes back to. Absent means
+ *   only the active one is known; see `utils/tabs.js`.
+ * @property {string[]} [openChatIds] - The chats open in the chat panel, in tab order.
+ *   Absent means the project's chats were never in tabs; see `useChatTabs`.
+ * @property {string|null} [lastChatId] - The chat panel's tab showing
+ * @property {string|null} [previewChatId] - The chat only being looked at, whose tab
+ *   the next one opened from the chat list takes
+ * @property {string[]} [shownChatIds] - The open chats as they were last shown, the
+ *   one showing first
+ * @property {string[]} [unreadChatIds] - Chats the model finished in while they weren't
+ *   showing, until they are
  * @property {StoryLayout} [layout] - How the writer left the panels. Absent means the
  *   default arrangement; see `components/writer/layout/layout.js`.
  * @property {Object<string, boolean>} [expanded] - The outline's folders the writer
@@ -386,24 +398,33 @@
  * @property {string} storyId - Parent story ID
  * @property {string} title - Chat title
  * @property {boolean} titleSet - Whether title has been set (auto or manual)
+ * @property {string} [nameAfter] - A fork's last copied message: the chat waits to be
+ *   named, as a new chat is, from the first thing the writer says after it. Gone once
+ *   it is named, or the writer names it; see `useChats.forkChat`.
  * @property {number|null} lastMessageAt - Timestamp of last message
  * @property {string} [description] - Chat description/purpose
  * @property {number} [messageCount] - Number of messages in chat
  * @property {string|null} [profileId] - Chat profile this chat runs on, built-in or the writer's own. Absent, or naming one since deleted, means the profile its project starts chats on.
  * @property {string|null} [promptId] - Legacy. The library prompt this chat ran on before prompts became profiles; kept as the record of what it was pointed at. See `stores/migrations/profiles.js`.
- * @property {string[]} [disabledTools] - Names of tools withheld from this chat. Absent means every registered tool is offered.
- * @property {string[]} [disabledToolGroups] - Group ids withheld from this chat, which also withholds tools added to those groups later.
- * @property {string[]} [mcpServers] - The MCP servers whose tools this chat is offered, by id, once the writer has chosen here. Absent means the servers that list the chat's profile. A server's tools are opted into rather than withheld, so a server connected later reaches no chat that did not ask for it. See mcp/servers.js.
- * @property {boolean} [web] - Whether this chat searches the web, once the writer has chosen here. Absent means it does when web search is set up for the chat's profile. Opted into, as a server's tools are. See web/config.js.
- * @property {boolean} [python] - Whether this chat runs Python, once the writer has chosen here. Absent means it does when the Python extension lists the chat's profile. Opted into, as the web is. See ai/tools/python.js.
+ * @property {string[]} [disabledTools] - Names of tools withheld from this chat. Absent means every registered tool is offered. See ai/tools/choice.js.
+ * @property {string[]} [disabledToolGroups] - Group ids withheld from this chat, which also withholds tools added to those groups later: the app's own, the web, Python, and a server's.
+ * @property {true} [toolsOff] - Every tool off in this chat, each group's and tool's own switch kept as it is for when they are back on. See ai/tools/choice.js.
+ * @property {string[]} [onlyToolGroups] - The groups this chat may have on at all, copied from a profile that offers only some (Roleplay, Blank): a group added later stays off. Absent means every group.
+ * @property {string[]} [mcpServers] - Legacy: the MCP servers whose tools this chat was offered, once the writer chose here, from before its tools said. Read once, to give it that (composables/useToolChoices.js).
+ * @property {boolean} [web] - Legacy: whether this chat searched the web, as `mcpServers`.
+ * @property {boolean} [python] - Legacy: whether this chat ran Python, as `mcpServers`.
  * @property {string|null} [voiceId] - The voice this chat's messages are read aloud in, one of the project's. Absent, or naming a voice since removed, means the project's default.
  * @property {string} [prompt] - The chat's own system prompt, once the writer has changed it here. Absent means the profile's, read on every turn. See ai/profiles.
- * @property {string} [presetId] - The AI preset this chat runs on, once the writer has chosen one here. Absent, or naming one not on this device, means its profile's, and then the default. See `presetFor` in composables/useAIConfig.js.
- * @property {Record<string, {prompt?: string}>} [skills] - The chat's own wording of a skill, by the skill's name, over the profile's. An empty prompt is the skill's own wording. Absent means the profile's.
+ * @property {string} [presetId] - Legacy: the preset this chat ran on, before a model's settings were found by the model. Read once, to give the chat that model (composables/useChatPresets.js), and never written.
+ * @property {string} [providerId] - The connection this chat runs on, with `model`: what it first answered on, or was moved to since. It stays there whatever is done to presets. Absent on a chat that hasn't answered, which goes where its preset goes.
+ * @property {string} [model] - The model this chat runs on, on `providerId`'s connection.
+ * @property {string} [reasoningEffort] - How hard the model thinks in this chat, as started from its profile or picked here, fitted to the model as it is sent. Absent means its preset's.
+ * @property {'auto'|'ask'} [applyEdits] - Whether the model's changes to documents go straight in or wait for the writer, as started from its profile or picked here. Absent means the app's choice from before chats had their own.
+ * @property {Record<string, {prompt?: string}>} [skills] - The chat's own wording of a skill, by the skill's name, over the profile's: given before a skill's wording was its profile's alone, and dropped for a skill changed on the profile from this chat. Absent means the profile's.
  * @property {string} [rules] - The chat's author's note: standing instructions the writer keeps as they go, sent in their latest message after the project block and ahead of what they said. Starts as the profile's. Absent means none.
- * @property {string[]} [pinnedIds] - Documents whose text rides in the project block from the first turn, without the model having read them. A folder pins what is under it. Absent means none.
+ * @property {string[]} [pinnedIds] - Legacy: the documents a chat pinned, when a pin carried a document's text on every turn. Never written now, and read only as documents the chat shows; a document is attached to a message instead. See utils/visibility.js.
  * @property {string[]} [shownIds] - Documents this chat sees although a folder above them is hidden in it: a character's own folder, under the folder all the characters are in. Absent means none.
- * @property {string[]} [hiddenIds] - Documents kept from this chat's model, and everything under them unless something nearer is pinned or shown. The document's own `hidden` keeps it from every chat. See `utils/visibility.js`. Absent means none.
+ * @property {string[]} [hiddenIds] - Documents kept from this chat's model, and everything under them unless something nearer is shown. The document's own `hidden` keeps it from every chat. See `utils/visibility.js`. Absent means none.
  * @property {string|null} [userVoiceId] - The voice this chat's own messages are read aloud in, one of the project's. Absent means the same voice everything else is read in.
  * @property {string} [userName] - The writer's name in this chat: what `{{user}}` becomes in what its model reads. Asked for when a chat on a card starts. Absent means the macro is read as written. See `cards/macros.js`.
  * @property {string} [characterName] - The name of the character this chat plays: what `{{char}}` becomes in what its model reads. Absent means the macro is read as written.
@@ -570,7 +591,10 @@
  * enough. That is one turn — one speaker, taken in pieces — and the pieces are
  * these. See ai/commands.js.
  *
- * @typedef {{type: 'text', content: string}|{type: 'command', command: ChatCommand}} MessageSegment
+ * A piece of prose carries the documents it attached, each as it stood when
+ * the piece was sent: `@` before a link to one. See ai/context/attachments.js.
+ *
+ * @typedef {{type: 'text', content: string, attachments?: import('../ai/context/attachments.js').Attachment[]}|{type: 'command', command: ChatCommand}} MessageSegment
  */
 
 /**
@@ -667,6 +691,7 @@
  * Message metadata structure.
  * @typedef {Object} MessageMetadata
  * @property {ChatCommand} [command] - The tool this message is a record of, when the writer ran one themselves rather than typing a message
+ * @property {number} [opening] - On a summary: how many messages at the top of the chat it left standing, where that is not one. See ai/compaction.js.
  * @property {true} [aside] - Set on a question the writer asked on the side, `/aside`, and on the answer to it: both are left out of every request after it. See ai/asides.js.
  * @property {DirectorNote} [director] - The Director's turn, when this chat runs it before the assistant
  * @property {TurnUsage} [usage] - Token usage reported by the provider, when it reports any
@@ -678,6 +703,7 @@
  * @property {true} [documentCallsKept] - This turn's document calls go back with the conversation. Set on turns written while only they did, before `callsKept`. See ai/context/reads.js.
  * @property {import('../ai/context/build.js').ChatMessage[]} [context] - The request that opened this turn, kept only while the Debug setting is on. Everything the turn went on to append is in apiTrajectory.
  * @property {string} [error] - Why the turn failed, when it did: the provider's own words, or the app's. Shown where the reply would have been, and gone when the message is asked again. Never sent to the model.
+ * @property {import('../composables/useConnections.js').FailureFix} [errorFix] - What fixes the failure, offered beside it: the connection's settings, credits, or another model. See `describeFailure`.
  */
 
 /**
@@ -765,12 +791,14 @@
  * @typedef {Object} AIProvider
  * @property {string} id - Unique provider identifier (provider_xxx)
  * @property {string} name - User-friendly name for the provider
- * @property {'openrouter'|'anthropic'|'openai'|'gemini'|'llamacpp'|'generic'} type - Provider type. See ai/providers.js.
+ * @property {'openrouter'|'anthropic'|'openai'|'nanogpt'|'gemini'|'llamacpp'|'generic'} type - Provider type. See ai/providers.js.
  * @property {string} [endpoint] - API endpoint URL, for a type without a known address (see ai/providers.js)
  * @property {string} [apiKey] - API key for authentication
  * @property {boolean} [rememberKey] - Whether to persist API key in IndexedDB (default true). If false, key is stored in sessionStorage only
  * @property {import('../ai/routing.js').OpenRouterRouting} [routing] - OpenRouter provider routing policy, for every model on this connection. Absent means the defaults: no data collection, zero-data-retention endpoints only. Which providers may serve a model is the preset's `allowedProviders`, and a preset's `ignoredProviders` add to the ignored ones here.
- * @property {boolean} [isDefault] - Whether this is a default provider (cannot be deleted)
+ * @property {boolean} [isDefault] - Legacy. A built-in connection, which every install made on start until setup took their place (ai/providers.js).
+ * @property {string} [server] - The server behind a generic connection, by its kind's id (`lmstudio`, `kokoro`…), for what it takes. Absent on a built-in, which is known by its id. See `kindOf` in ai/providers.js.
+ * @property {boolean} [added] - Whether the writer added it, in setup or in Settings › Connections. One without it shows only while it holds something of theirs. See `isSetUp` in composables/useConnections.js.
  * @property {number} [concurrency] - How many requests the connection is
  *   asked at once, as the writer set it. Absent: one for a server at home (or
  *   as many as llama.cpp has slots), and no limit for a hosted service, which
@@ -781,16 +809,22 @@
  */
 
 /**
+ * A model's settings on a connection: one to a connection and model, made
+ * the first time the writer changes one of them, and holding only the
+ * changes. Never shown as a preset, or by its name. See `runOn` in
+ * composables/useAIConfig.js.
+ *
  * @typedef {Object} AIPreset
- * @property {string} id - Unique profile identifier (profile_xxx)
- * @property {string} [type] - Profile type (legacy, retained for stored data compatibility)
- * @property {string} name - Profile name
- * @property {string} providerId - ID of the AI provider to use
- * @property {string} model - Model identifier
- * @property {string[]} [allowedProviders] - OpenRouter only: the upstream providers allowed to serve this model, by slug. Absent or empty allows any the connection's routing does. Here rather than on the connection because it is a choice about the model. See ai/routing.js.
- * @property {string[]} [ignoredProviders] - OpenRouter only: upstream providers never routed to for this model, by slug, on top of the connection's ignored ones. Absent or empty adds none.
+ * @property {string} id - Unique identifier (profile_xxx)
+ * @property {string} [type] - Legacy, retained for stored data compatibility
+ * @property {string} name - Legacy: the model's id, for presets made since they became a model's settings
+ * @property {string} providerId - The connection
+ * @property {string} model - The model, on the connection
+ * @property {string[]} [allowedProviders] - OpenRouter and NanoGPT: the upstream providers this model prefers, by slug, tried first and in this order. Absent means the ones it is recommended with, or none (ai/recommended.js); empty, none. Here rather than on the connection because it is a choice about the model. See ai/routing.js.
+ * @property {boolean} [fallbacks] - OpenRouter and NanoGPT: whether other providers that pass the connection's floor may serve once the preferred ones can't. Absent on a list from before it was asked, where the preferred are the only ones.
+ * @property {string[]} [ignoredProviders] - OpenRouter and NanoGPT: upstream providers never routed to for this model, by slug, on top of the connection's ignored ones. Absent means the ones it is recommended with, or none.
  * @property {boolean} [toolsEnabled] - Whether the model may call tools. Undefined is treated as enabled.
- * @property {import('../ai/defaults.js').AISettingsOverrides} [generationOverrides] - Sparse overrides on AI_DEFAULTS (sampler params, seed, max tokens, reasoning). Absent keys fall back to the defaults.
+ * @property {import('../ai/defaults.js').AISettingsOverrides} [generationOverrides] - Sparse overrides on the model's and the app's defaults (sampler params, seed, max tokens). Absent keys fall back to the defaults.
  * @property {boolean} isDefault - Whether this is a default profile
  * @property {number} version - Version number for conflict resolution
  * @property {number} created - Creation timestamp
@@ -811,6 +845,7 @@
  * @typedef {Object} StoredChatProfile
  * @property {string} id - chatprofile_xxx, or a migrated prompt_xxx
  * @property {string} name
+ * @property {string} [description] - One line on what it is for, as the built-ins have
  * @property {import('../ai/profiles/index.js').ProfileSettings} settings
  * @property {number} version
  * @property {number} created
@@ -838,10 +873,13 @@
  */
 
 /**
+ * Legacy: the writer's app-wide wording of a built-in skill, from before a
+ * skill's wording was its profile's alone. The `skillWordings` table still
+ * holds and syncs them, for an app from before; nothing reads them.
+ *
  * @typedef {Object} SkillWording
- * @property {string} name - The built-in skill it rewords
- * @property {string} prompt - What that skill runs under instead of its file's
- *   instructions, in every chat whose profile has no wording of its own
+ * @property {string} name - The built-in skill it reworded
+ * @property {string} prompt
  * @property {number} updated
  */
 
@@ -861,8 +899,9 @@
  *   each service they set one for, kept when they switch to another. Left out
  *   of backups unless the writer includes keys, as a provider's is: the
  *   services stay and the keys come back empty.
- * @property {string[]} profiles - The chat profiles whose chats search the
- *   web, unless a chat chooses otherwise
+ * @property {string[]} [profiles] - Legacy: the chat profiles whose chats
+ *   searched the web, from before a profile and a chat said which of their
+ *   tools are on. Read once, to give them that (composables/useToolChoices.js).
  * @property {boolean} [saveWithoutAsking] - The model keeps a page in the
  *   project (`save_web_page`) without asking first. Absent means it asks.
  * @property {number} [updated]
@@ -937,8 +976,9 @@
  * @property {string[]} [args]
  * @property {McpTool[]} tools - Its tools as last listed
  * @property {McpPrompt[]} prompts - Its prompts as last listed
- * @property {string[]} profiles - The chat profiles whose chats use it, unless
- *   a chat chooses otherwise
+ * @property {string[]} [profiles] - Legacy: the chat profiles whose chats used
+ *   it, from before a profile and a chat said which of their tools are on.
+ *   Read once, to give them that (composables/useToolChoices.js).
  * @property {string[]} allowed - Its tools the writer always allows, by their
  *   own names, so a call to one runs without asking
  * @property {boolean} [allowAll] - The writer always allows every tool it has,
@@ -1009,7 +1049,7 @@
  * @property {string} [workflow] - The workflow whose model runs it, for a job
  *   that has one (a conversion's); see application state `workflows`. An
  *   exploration made before explore ran on the chat's model says `explore`,
- *   and runs on what that workflow still names, or the active preset.
+ *   and runs on what that workflow still names, or what new chats start on.
  * @property {JobModel} [runsOn] - The model it runs on, for a job that has no
  *   workflow: an exploration's, the chat's that asked for it
  * @property {string} [documentId] - The document it works on, when it works on one
@@ -1034,24 +1074,25 @@
  * @typedef {Object} JobModel
  * @property {string} providerId
  * @property {string} model
- * @property {string[]} [allowedProviders] - OpenRouter only: as on the preset it came from
- * @property {string[]} [ignoredProviders] - OpenRouter only: as on the preset it came from
+ * @property {string[]} [allowedProviders] - OpenRouter and NanoGPT: as on the model's settings it came from
+ * @property {boolean} [fallbacks] - OpenRouter and NanoGPT: as on the model's settings it came from
+ * @property {string[]} [ignoredProviders] - OpenRouter and NanoGPT: as on the model's settings it came from
  * @property {import('../ai/defaults.js').AISettingsOverrides} [overrides] - The
- *   preset's generation settings, which the chat's own requests are sent with
+ *   model's generation settings, which the chat's own requests are sent with
  */
 
 /**
  * Which model a workflow runs on: long work with needs of its own, a
  * conversion, that may want a stronger or a cheaper model than a chat does.
+ * Chosen where the work is asked for, and kept for the next time.
  *
  * @typedef {Object} WorkflowSettings
- * @property {string|null} providerId - The provider the workflow runs on; null for the active preset's
- * @property {string|null} model - The model; null for the active preset's
- * @property {string[]} [allowedProviders] - OpenRouter only: the upstreams allowed to serve the model, like a preset's. Read only when the workflow names its own provider; one that runs on the active preset runs on the preset's list.
- * @property {string[]} [ignoredProviders] - OpenRouter only: the upstreams never routed to for the model, like a preset's, and read the same way as `allowedProviders`.
+ * @property {string|null} providerId - The connection the workflow runs on; null for the model the Default profile's chats start on
+ * @property {string|null} model - The model; null for that one
+ * @property {string[]} [allowedProviders] - Legacy: OpenRouter upstreams copied from a preset, before a model's settings were found by the model. No longer read.
+ * @property {string[]} [ignoredProviders] - Legacy, as `allowedProviders`.
  * @property {string|null} [reasoningEffort] - How hard the model thinks: one of `REASONING_EFFORT_OPTIONS`, fitted to the model as it is sent;
  *   null for the app's default (`AI_DEFAULTS.reasoningEffort`)
- * @property {boolean} [onImport] - Convert only: convert every file with text as it is imported
  */
 
 // Export empty object to make this a module

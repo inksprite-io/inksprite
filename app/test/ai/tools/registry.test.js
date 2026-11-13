@@ -134,7 +134,7 @@ describe('ToolRegistry', () => {
 
     it('withholds every member of a disabled group', () => {
       const names = registry
-        .getEnabledDefinitions({ disabledGroups: ['lore'] })
+        .getEnabledDefinitions({ disabledToolGroups: ['lore'] })
         .map(d => d.function.name)
 
       // Neither lore tool was named individually — that's the point of a group.
@@ -145,14 +145,14 @@ describe('ToolRegistry', () => {
       registry.register('search_lore', def('search_lore'), vi.fn(), 'lore')
 
       const names = registry
-        .getEnabledDefinitions({ disabledGroups: ['lore'] })
+        .getEnabledDefinitions({ disabledToolGroups: ['lore'] })
         .map(d => d.function.name)
 
       expect(names).not.toContain('search_lore')
     })
 
     it('ignores an unknown group id', () => {
-      expect(registry.getEnabledDefinitions({ disabledGroups: ['retired'] })).toHaveLength(3)
+      expect(registry.getEnabledDefinitions({ disabledToolGroups: ['retired'] })).toHaveLength(3)
     })
   })
 

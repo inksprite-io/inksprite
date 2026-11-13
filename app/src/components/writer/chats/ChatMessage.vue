@@ -12,7 +12,7 @@
     <div
       v-if="!alone && !isEditing"
       :class="[
-        'absolute top-0 right-0 z-10 flex gap-1 rounded-lg bg-surface-0 dark:bg-surface-800 transition-opacity',
+        'absolute top-0 right-0 z-10 flex gap-1 rounded-lg bg-surface-0 dark:bg-surface-850 transition-opacity',
         isMobile ? 'opacity-60' : 'opacity-0 group-hover/message:opacity-100',
       ]"
     >
@@ -139,7 +139,7 @@
         :aria-expanded="canExpand ? expandReasoning : undefined"
         @click="canExpand && toggleReasoning()"
       >
-        <ChatStatus v-if="showStatus" :activity="activity" />
+        <ChatStatus v-if="showStatus" :activity="activity" :suggesting="wording.suggesting" />
         <span v-else-if="isThinking" class="thinking-text text-sm font-medium">Thinking…</span>
         <span v-else-if="formattedThinkingTime" class="text-sm font-medium text-surface-500"
           >Thought for {{ formattedThinkingTime }}</span
@@ -524,7 +524,7 @@
          here shows that, because nothing else in here is written for it. -->
     <div
       v-else-if="raw"
-      class="bg-surface-50 dark:bg-surface-900 rounded-lg p-4 overflow-x-auto border border-surface-200 dark:border-surface-700"
+      class="bg-surface-50 dark:bg-surface-800 rounded-lg p-4 overflow-x-auto border border-surface-200 dark:border-surface-700"
     >
       <pre
         class="text-sm text-surface-700 dark:text-surface-300 whitespace-pre-wrap break-words m-0"
@@ -568,10 +568,11 @@
       <span class="typing-dot"></span>
     </div>
 
-    <!-- Why the turn failed, under whatever it wrote first. -->
+    <!-- Why the turn failed, under whatever it wrote first. Its buttons go
+         under the words where the two don't fit side by side. -->
     <div
       v-if="failure && !isEditing"
-      class="flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm"
+      class="flex flex-wrap items-start gap-x-2 gap-y-1 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm"
       :class="{ 'mt-3': message?.content }"
       data-answer-error
     >
@@ -579,20 +580,31 @@
         class="pi pi-exclamation-circle mt-0.5 flex-none text-red-600 dark:text-red-400"
         aria-hidden="true"
       />
-      <p class="m-0 flex-1 min-w-0 break-words text-surface-700 dark:text-surface-200">
+      <p class="m-0 flex-1 min-w-[12rem] break-words text-surface-700 dark:text-surface-200">
         <span class="font-medium">{{
           message?.content ? 'The reply was cut off.' : 'No reply came.'
         }}</span>
         {{ failure }}
       </p>
-      <Button
-        label="Retry"
-        icon="pi pi-refresh"
-        size="small"
-        text
-        class="flex-none !py-0.5"
-        @click="$emit('regenerate', null)"
-      />
+      <div class="flex flex-none ml-auto">
+        <Button
+          v-if="fix"
+          :label="FIX_LABELS[fix.kind]"
+          size="small"
+          text
+          class="flex-none !py-0.5"
+          :data-action="`fix-${fix.kind}`"
+          @click="$emit('fix', fix)"
+        />
+        <Button
+          label="Retry"
+          icon="pi pi-refresh"
+          size="small"
+          text
+          class="flex-none !py-0.5"
+          @click="$emit('regenerate', null)"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -648,7 +660,7 @@ const props = defineProps({
   writing: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['regenerate', 'delete', 'revise', 'accept', 'reject'])
+const emit = defineEmits(['regenerate', 'delete', 'revise', 'accept', 'reject', 'fix'])
 
 // Get chat API
 const chatsApi = useChats(props.storyId)
@@ -658,10 +670,11 @@ const { isMobile } = useScreenSize()
 /** @type {import('vue').ComputedRef<import('@/types/models.js').Message|null>} */
 const message = chatsApi.getMessageById(props.messageId)
 
-const { applyEdits } = useApplicationState()
+const { applyEditsFor } = useApplicationState()
 /** Whether the chat suggests its edits to the text, for how its calls read. */
 const wording = computed(() => ({
-  suggesting: applyEdits.value === 'ask',
+  suggesting:
+    applyEditsFor(message.value ? chatsApi.getChatById(message.value.chatId) : null) === 'ask',
 }))
 
 // Edit mode state. The turn stays in the page while it is open, so scrolling
@@ -1229,6 +1242,15 @@ const canExpand = computed(() => props.showReasoning && hasReasoning.value)
 
 // Why the turn failed, once it is over. See MessageMetadata.error.
 const failure = computed(() => (props.activity ? '' : message.value?.metadata?.error || ''))
+
+/** What fixes it, offered beside Retry. See MessageMetadata.errorFix. */
+const fix = computed(() => (failure.value ? (message.value?.metadata?.errorFix ?? null) : null))
+
+const FIX_LABELS = Object.freeze({
+  connection: 'Connection settings',
+  credits: 'Add credits',
+  model: 'Choose a model',
+})
 
 // The box at the top: thinking to open, or a status to say.
 const hasThinkingBox = computed(() => canExpand.value || isThinking.value || showStatus.value)

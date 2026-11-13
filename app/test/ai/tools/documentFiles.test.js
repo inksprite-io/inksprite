@@ -3,7 +3,6 @@ import { setActivePinia, createPinia } from 'pinia'
 import {
   projectOverview,
   executeListDocuments,
-  pinnedDocuments,
   executeReadDocument,
   executeSearchDocuments,
   executeUpdateDocument,
@@ -156,12 +155,6 @@ describe('document tools, on files', () => {
     expect(result).toMatchObject({ id: figure.id, type: 'file', mime: 'image/png', content: '' })
     expect(result.pages).toBeUndefined()
     expect(result.note).toMatch(/no text/i)
-  })
-
-  it('pins a file like any document', async () => {
-    expect(
-      (await pinnedDocuments(STORY, { pinnedIds: [paper.id] })).map(entry => entry.id)
-    ).toEqual([paper.id])
   })
 
   it('finds text inside a file', async () => {

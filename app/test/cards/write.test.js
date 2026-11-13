@@ -169,7 +169,6 @@ describe('cards/write', () => {
       expect(note).toMatchObject({ kind: 'rules', hidden: true })
       // Resolved on each turn of a chat on the card, not here.
       expect(note.content).toContain('{{original}}')
-      expect(written.pinnedIds).not.toContain(note.id)
     })
 
     it('numbers the alternate greetings and keeps the first first', async () => {
@@ -179,21 +178,6 @@ describe('cards/write', () => {
       expect(byTitle(written.folderId, 'Greeting 2').content).toBe('Second.')
       expect(written.greetingIds).toHaveLength(3)
       expect(byTitle(written.folderId, 'Greeting').id).toBe(written.greetingIds[0])
-    })
-
-    it('pins what has to be in context from the first turn', async () => {
-      const written = await writeCard(
-        STORY,
-        card({ personality: 'Blunt.', mes_example: 'Elara: Well?' })
-      )
-
-      // Not the greeting: it is seeded as the opening message, and in context
-      // as well would be the same words twice.
-      expect(written.pinnedIds).toEqual([
-        byTitle(written.folderId, 'Description').id,
-        byTitle(written.folderId, 'Personality').id,
-        byTitle(written.folderId, 'Example dialogue').id,
-      ])
     })
 
     it('keeps the card as it arrived, hidden and stored as written', async () => {
@@ -290,15 +274,15 @@ describe('cards/write', () => {
       expect(titlesUnder(byTitle(written.folderId, 'Lore').id)).toEqual(['The Realm'])
     })
 
-    it('pins the entries that say they are always in context', async () => {
+    it('marks the entries that say they are always in context', async () => {
       const written = await writeCard(
         STORY,
         withLore({ comment: 'Always', constant: true }, { comment: 'Sometimes' })
       )
       const lore = byTitle(written.folderId, 'Lore')
 
-      expect(written.pinnedIds).toContain(byTitle(lore.id, 'Always').id)
-      expect(written.pinnedIds).not.toContain(byTitle(lore.id, 'Sometimes').id)
+      expect(byTitle(lore.id, 'Always').kind).toBe('lore-constant')
+      expect(byTitle(lore.id, 'Sometimes').kind).toBe('lore-entry')
     })
 
     it('makes no Lore folder for a card that has no book', async () => {
@@ -325,10 +309,10 @@ describe('cards/write', () => {
       expect(titlesUnder(written.folderId)).toEqual(['Crowns', 'Underworld', SIDECAR_TITLE])
     })
 
-    it('pins its constants, the same as a card would', async () => {
+    it('marks its constants, the same as a card would', async () => {
       const written = await writeLorebook(STORY, book)
 
-      expect(written.pinnedIds).toEqual([byTitle(written.folderId, 'Underworld').id])
+      expect(byTitle(written.folderId, 'Underworld').kind).toBe('lore-constant')
     })
 
     it("takes a title from the caller over the book's own", async () => {
@@ -357,8 +341,6 @@ describe('cards/write', () => {
       expect(byTitle(written.folderId, 'Description').content).toContain('{{user}} met her')
       expect(byTitle(written.folderId, 'Greeting').content).toBe('Well, {{user}}?')
       expect(childrenOf(written.folderId).map(document => document.id)).toEqual(before)
-      // So a chat that pins the card's documents still pins them.
-      expect(again.pinnedIds).toEqual(written.pinnedIds)
       expect(again.greetingIds).toEqual(written.greetingIds)
     })
 

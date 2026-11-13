@@ -28,7 +28,7 @@ const providers = {
 }
 
 vi.mock('@/composables/useAIConfig', () => ({
-  useAIConfig: () => ({ shownPreset: preset, getProvider: id => providers[id] || null }),
+  useAIConfig: () => ({ getProvider: id => providers[id] || null }),
 }))
 
 const listed = ref({})
@@ -49,6 +49,7 @@ const OLDER_CLAUDE = {
 
 const mountGroup = () =>
   mount(AiSamplingGroup, {
+    props: { providerId: preset.value.providerId, model: preset.value.model },
     global: {
       plugins: [PrimeVue],
       stubs: { ExpandableSection: { template: '<section><slot /></section>' } },

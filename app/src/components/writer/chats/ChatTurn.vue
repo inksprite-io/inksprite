@@ -51,6 +51,7 @@
         @revise="(index, text, done) => $emit('revise', message.id, index, text, done)"
         @accept="index => $emit('accept', message.id, index)"
         @reject="index => $emit('reject', message.id, index)"
+        @fix="fix => $emit('fix', fix)"
       />
     </div>
 
@@ -140,13 +141,15 @@
         :disabled="pending || writing"
         @click="body[0]?.startEditing()"
       />
-      <!-- Heard rather than read. The whole turn, in the chat's voice. -->
+      <!-- Heard rather than read. The whole turn, in the chat's voice for
+           its side, which a right click chooses. -->
       <ReadAloudButton
         v-if="spoken"
         :story-id="storyId"
         :speech-key="`turn:${messages[0].id}`"
         :text="spoken"
         :voice-id="voiceId"
+        @contextmenu.prevent="emit('voice-menu', $event)"
       />
       <Button
         v-if="spoken"
@@ -198,7 +201,7 @@ const props = defineProps({
   // the model reads only while answering it. See ai/asides.js.
   aside: { type: Boolean, default: false },
   isLast: { type: Boolean, default: false },
-  // The voice the chat is read aloud in; the project's default when it names none.
+  // The voice this side of the chat is read aloud in; the project's default when it names none.
   voiceId: { type: String, default: null },
   // Dimmed rather than hidden: a summary stands in for this turn in the
   // request, but the turn is still the writer's record of their own story.
@@ -228,6 +231,9 @@ const emit = defineEmits([
   'accept',
   'reject',
   'summarize',
+  'fix',
+  // A right click on Read aloud, with the click, for the voice menu.
+  'voice-menu',
 ])
 
 const toast = useToast()

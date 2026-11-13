@@ -26,6 +26,9 @@ is. What it is switched off from stays where it was, for when it is back on.
 - **Python** - Python the model runs code in, in the desktop app only, in
   chats on the profiles its settings list or that switch it on. Off until
   switched on: nothing before it was in use. See ai/tools/python.js.
+- **Web search** - The model searching the web and reading pages, through
+  the service chosen here, whose key is in Settings › Connections. On
+  unless switched off. See web/ and ai/tools/web.js.
 
 Design: `.llm/extensions_design.md`.
 

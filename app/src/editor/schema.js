@@ -15,12 +15,12 @@
  * the editor writes.
  *
  * A table is what GFM can write: a grid of one-line cells, the first row its
- * header, each column aligned or not. So a cell holds text and nothing else —
- * no break, which would end the row — and the header is the first row because
- * it is first: there is one kind of cell, and no way to put a header row
- * anywhere markdown could not. The cells carry `colspan` and `rowspan` only
- * because `prosemirror-tables` reads them; nothing sets them, and they are
- * always 1.
+ * header, each column aligned or not. So a cell holds text and formulas and
+ * nothing else — no break, which would end the row — and the header is the
+ * first row because it is first: there is one kind of cell, and no way to put
+ * a header row anywhere markdown could not. The cells carry `colspan` and
+ * `rowspan` only because `prosemirror-tables` reads them; nothing sets them,
+ * and they are always 1.
  *
  * A picture is markdown's image, inline, since markdown has no picture as a
  * block. Its `src` is a path: to one of the document's own pictures, to a file
@@ -29,6 +29,12 @@
  * those, or the picture itself (`data:image/…`), which the paste makes one
  * of the document's own; one held by the page it came from (`blob:`) or on
  * the disk it came from (`file:`) is no picture to keep.
+ *
+ * A formula is TeX between dollars (`utils/tex.js`): `formula` in a sentence,
+ * `formula_block` on lines of its own. Each is a leaf holding its TeX, so
+ * whatever reads the document's words reads a formula as one of them. Pasted
+ * HTML keeps the editor's own element for one, KaTeX's, and MathML that
+ * carries its TeX.
  */
 
 import { DOMParser, Schema } from 'prosemirror-model'
@@ -87,6 +93,73 @@ const image = {
       },
     },
   ],
+}
+
+/**
+ * A formula's TeX from what was pasted: the editor's own element for one,
+ * KaTeX's typeset formula, or MathML with its TeX alongside, as KaTeX and
+ * MathJax write it. Null where there is none.
+ *
+ * @param {HTMLElement} dom
+ * @returns {string|null}
+ */
+function texOf(dom) {
+  const tex =
+    dom.getAttribute('data-tex') ??
+    dom.querySelector('annotation[encoding="application/x-tex"]')?.textContent ??
+    null
+  return tex?.trim() ? tex.trim() : null
+}
+
+/**
+ * @param {boolean} display - Whether the formula pasted is set on its own
+ * @returns {(dom: HTMLElement|string) => {tex: string}|false}
+ */
+const pastedFormula = display => dom => {
+  const element = /** @type {HTMLElement} */ (dom)
+  const tex = texOf(element)
+  if (tex === null) return false
+  const block = element.matches('math') ? element.getAttribute('display') === 'block' : display
+  return block === display ? { tex } : false
+}
+
+/**
+ * A formula in a sentence: its TeX, typeset by its node view
+ * (`editor/formulas.js`). One word to everything that reads the text, so no
+ * change takes half of it. Written as it is between its dollars.
+ *
+ * @type {import('prosemirror-model').NodeSpec}
+ */
+const formula = {
+  inline: true,
+  group: 'inline',
+  atom: true,
+  attrs: { tex: { default: '', validate: 'string' } },
+  parseDOM: [
+    { tag: 'span[data-tex]', getAttrs: pastedFormula(false), priority: 60 },
+    { tag: 'span.katex', getAttrs: pastedFormula(false), priority: 60 },
+    { tag: 'math', getAttrs: pastedFormula(false), priority: 60 },
+  ],
+  toDOM: node => ['span', { 'data-tex': node.attrs.tex }, `$${node.attrs.tex}$`],
+  leafText: node => `$${node.attrs.tex}$`,
+}
+
+/**
+ * A formula set on lines of its own, where a code block could be.
+ *
+ * @type {import('prosemirror-model').NodeSpec}
+ */
+const formula_block = {
+  group: 'block',
+  atom: true,
+  attrs: { tex: { default: '', validate: 'string' } },
+  parseDOM: [
+    { tag: 'div[data-tex]', getAttrs: pastedFormula(true), priority: 60 },
+    { tag: 'span.katex-display', getAttrs: pastedFormula(true), priority: 60 },
+    { tag: 'math', getAttrs: pastedFormula(true), priority: 60 },
+  ],
+  toDOM: node => ['div', { 'data-tex': node.attrs.tex }, `$$${node.attrs.tex}$$`],
+  leafText: node => `$$${node.attrs.tex}$$`,
 }
 
 /** @type {import('prosemirror-model').MarkSpec} */
@@ -173,7 +246,7 @@ const table_row = {
 
 /** @type {import('prosemirror-model').NodeSpec} */
 const table_cell = {
-  content: 'text*',
+  content: '(text | formula)*',
   attrs: {
     align: { default: null },
     colspan: { default: 1 },
@@ -267,6 +340,8 @@ export const NODE_NAMES = Object.freeze([
   'horizontal_rule',
   'hard_break',
   'image',
+  'formula',
+  'formula_block',
   'table',
   'table_row',
   'table_cell',
@@ -307,9 +382,11 @@ export const schema = new Schema({
     ordered_list: { ...orderedList, content: 'list_item+', group: 'block' },
     list_item: { ...listItem, content: 'paragraph block*', marks: BLOCK_MARKS },
     code_block,
+    formula_block,
     horizontal_rule: basic.horizontal_rule,
     hard_break: basic.hard_break,
     image,
+    formula,
     table,
     table_row,
     table_cell,

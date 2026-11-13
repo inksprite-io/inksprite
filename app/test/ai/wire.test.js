@@ -5,6 +5,7 @@ import {
   toWireMessages,
   chatCompletionsUrl,
   modelsUrl,
+  audioModelsUrl,
 } from '@/ai/wire.js'
 import { AI_DEFAULTS, TITLE_DEFAULTS, resolveAISettings } from '@/ai/defaults.js'
 
@@ -24,6 +25,8 @@ const openrouter = { type: 'openrouter', endpoint: 'ignored' }
 const llamacpp = { type: 'llamacpp', endpoint: 'http://localhost:8080/v1' }
 const openai = { type: 'openai' }
 const gemini = { type: 'gemini' }
+// The address on the row is for apps that don't know NanoGPT.
+const nanogpt = { type: 'nanogpt', endpoint: 'https://elsewhere.example/v1' }
 
 describe('endpoint addressing', () => {
   it('joins a base URL whether or not it ends in a slash', () => {
@@ -38,6 +41,8 @@ describe('endpoint addressing', () => {
     expect(chatCompletionsUrl(openrouter)).toBe('https://openrouter.ai/api/v1/chat/completions')
     expect(chatCompletionsUrl(openai)).toBe('https://api.openai.com/v1/chat/completions')
     expect(modelsUrl(gemini)).toBe('https://generativelanguage.googleapis.com/v1beta/openai/models')
+    expect(chatCompletionsUrl(nanogpt)).toBe('https://api.nano-gpt.com/api/v1/chat/completions')
+    expect(audioModelsUrl(nanogpt)).toBe('https://api.nano-gpt.com/api/v1/audio-models')
   })
 })
 
@@ -49,6 +54,8 @@ describe('attributionHeaders', () => {
     })
     // Gemini turns a browser away over a header it has not heard of.
     expect(attributionHeaders(gemini)).toEqual({})
+    // NanoGPT takes them, and does nothing with them.
+    expect(attributionHeaders(nanogpt)).toEqual({})
     expect(attributionHeaders(local)).toEqual({})
   })
 })
@@ -63,6 +70,34 @@ describe('toWireMessages', () => {
     )
 
     expect(message).toEqual({ role: 'assistant', content: null, reasoning_content: 'mm' })
+  })
+
+  it('gives NanoGPT back the details it sent, and the thinking where it sent none', () => {
+    const details = [{ type: 'reasoning.text', text: 'mm', signature: 'sig' }]
+    const [signed, plain] = toWireMessages(
+      [
+        { role: 'assistant', content: null, reasoning_details: details, _reasoning: 'mm' },
+        { role: 'assistant', content: null, _reasoning: 'hm' },
+      ],
+      nanogpt
+    )
+
+    expect(signed).toEqual({ role: 'assistant', content: null, reasoning_details: details })
+    expect(plain).toEqual({ role: 'assistant', content: null, reasoning_content: 'hm' })
+  })
+
+  it('marks no cache breakpoints for NanoGPT, which places its own', () => {
+    const wire = toWireMessages(
+      [
+        { role: 'system', content: 's' },
+        { role: 'user', content: 'a' },
+        { role: 'assistant', content: 'b' },
+        { role: 'user', content: 'c' },
+      ],
+      nanogpt
+    )
+
+    expect(wire.some(message => 'cache_control' in message)).toBe(false)
   })
 
   it('keeps our own notes off the wire', () => {
@@ -356,5 +391,96 @@ describe('buildCompletionBody', () => {
     })
 
     expect(sentReasoning).toBe(true)
+  })
+
+  it('tells NanoGPT about reasoning as OpenRouter is told', () => {
+    const levelled = buildCompletionBody({
+      ...base,
+      provider: nanogpt,
+      settings: resolveAISettings({ reasoningEffort: 'high' }),
+      traits: { reasoning: { optional: true, levels: ['low', 'high', 'max'] } },
+    })
+    expect(levelled.body.reasoning).toEqual({ effort: 'high', exclude: false })
+    expect(levelled.askedForEffort).toBe(true)
+    expect(levelled.body).not.toHaveProperty('reasoning_effort')
+
+    // Some of its models think only when asked, so Enabled has to be said.
+    const enabled = buildCompletionBody({
+      ...base,
+      provider: nanogpt,
+      settings: resolveAISettings({ reasoningEffort: 'enabled', showModelReasoning: false }),
+    })
+    expect(enabled.body.reasoning).toEqual({ enabled: true, exclude: true })
+
+    const off = buildCompletionBody({
+      ...base,
+      provider: nanogpt,
+      settings: resolveAISettings({ reasoningEffort: 'disabled' }),
+    })
+    expect(off.body.reasoning).toEqual({ enabled: false })
+  })
+
+  it('asks a NanoGPT model that always thinks to think as little as it can, not to stop', () => {
+    const { body } = buildCompletionBody({
+      ...base,
+      provider: nanogpt,
+      settings: resolveAISettings({ reasoningEffort: 'disabled' }),
+      traits: { reasoning: { optional: false, levels: ['low', 'high', 'max'] } },
+    })
+
+    expect(body.reasoning).toEqual({ effort: 'low', exclude: false })
+  })
+
+  it('asks NanoGPT to cache Claude’s prompt, and nobody else’s', () => {
+    const claude = buildCompletionBody({
+      ...base,
+      provider: nanogpt,
+      model: 'anthropic/claude-sonnet-latest',
+      settings: AI_DEFAULTS,
+    })
+    expect(claude.body.prompt_caching).toEqual({ enabled: true })
+
+    // Asking moves a request off a subscription, which covers this one.
+    const glm = buildCompletionBody({
+      ...base,
+      provider: nanogpt,
+      model: 'z-ai/glm-latest',
+      settings: AI_DEFAULTS,
+    })
+    expect(glm.body).not.toHaveProperty('prompt_caching')
+
+    const elsewhere = buildCompletionBody({
+      ...base,
+      provider: openrouter,
+      model: 'anthropic/claude-sonnet-latest',
+      settings: AI_DEFAULTS,
+    })
+    expect(elsewhere.body).not.toHaveProperty('prompt_caching')
+  })
+
+  it('sends NanoGPT the samplers, which it passes on, and its routing', () => {
+    const { body } = buildCompletionBody({
+      ...base,
+      provider: nanogpt,
+      settings: resolveAISettings({ parameters: { topK: 40, minP: 0.05 } }),
+      traits: { reasoning: null },
+      upstreams: { allowedProviders: ['novita'], ignoredProviders: ['uomi'] },
+    })
+
+    expect(body.top_k).toBe(40)
+    expect(body.min_p).toBe(0.05)
+    expect(body.provider).toEqual({ only: ['novita'], ignore: ['uomi'], zdr: true })
+    expect(body).not.toHaveProperty('max_completion_tokens')
+  })
+
+  it('sends NanoGPT no routing once its zero data retention is off', () => {
+    const { body } = buildCompletionBody({
+      ...base,
+      provider: { ...nanogpt, routing: { zdr: false } },
+      settings: resolveAISettings(),
+      traits: { reasoning: null },
+    })
+
+    expect(body).not.toHaveProperty('provider')
   })
 })

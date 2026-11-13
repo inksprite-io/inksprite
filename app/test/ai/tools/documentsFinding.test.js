@@ -2,12 +2,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import {
   projectOverview,
-  executeListDocuments,
   executeSearchDocuments,
   executeEditDocument,
 } from '@/ai/tools/documents.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
-import { useChatsStore } from '@/stores/chatsStore'
 import { clearDocumentInstances } from '@/composables/useDocuments'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
@@ -50,43 +48,6 @@ describe('finding things in a project', () => {
     store = useDocumentsStore()
     vi.clearAllMocks()
     await projectOverview(STORY)
-  })
-
-  describe('the listing', () => {
-    it('marks what the writer pinned, and nothing else', async () => {
-      const held = text('Design', 'The design.')
-      text('Notes', 'Some notes.')
-      const chat = useChatsStore().createChat(STORY)
-      useChatsStore().updateChat(chat.id, { pinnedIds: [held.id] })
-
-      const listing = await executeListDocuments({}, { storyId: STORY, chatId: chat.id })
-
-      expect(listing).toContain('Design — 2 words, pinned')
-      expect(listing).toContain('Notes — 2 words')
-      expect(listing).not.toContain('Notes — 2 words, pinned')
-    })
-
-    it('marks each document under a pinned folder, not the folder', async () => {
-      const folder = store.createDocument({
-        storyId: STORY,
-        parentId: rootIdFor(STORY),
-        type: 'folder',
-        title: 'Papers',
-      })
-      store.createDocument({ storyId: STORY, parentId: folder.id, type: 'text', title: 'One' })
-      const chat = useChatsStore().createChat(STORY)
-      useChatsStore().updateChat(chat.id, { pinnedIds: [folder.id] })
-
-      const listing = await executeListDocuments({}, { storyId: STORY, chatId: chat.id })
-
-      expect(listing.split('\n')).toContain('Papers/')
-      expect(listing).toContain('Papers/One — 0 words, pinned')
-    })
-
-    it('marks nothing for a chat with no pins', async () => {
-      text('Design', 'The design.')
-      expect(await executeListDocuments({}, { storyId: STORY })).not.toContain('pinned')
-    })
   })
 
   describe('search_documents', () => {

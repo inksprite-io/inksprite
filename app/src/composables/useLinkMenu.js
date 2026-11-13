@@ -2,7 +2,8 @@ import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 
 /**
  * @module composables/useLinkMenu
- * @description The documents `[[` opens a list of in the message field.
+ * @description The documents `[[` opens a list of in the message field, and
+ * `@`, which attaches the one picked (ai/context/attachments.js).
  *
  * As in a document (`editor/linkPicker`): typing `[[` lists the project's
  * documents, which narrow as a name is typed after it, and a `#` goes on to
@@ -18,15 +19,28 @@ import { ref, computed, watch, nextTick, onBeforeUnmount } from 'vue'
 const OPENED = /\[\[([^[\]\n]*)$/
 
 /**
- * The `[[` the caret is after in a text, and what has been typed since.
+ * `@` and a name, at the end of the text before the caret: at the start of a
+ * word, so an address is not one, and with the name begun straight after it
+ * or not at all, so an `@` on its own between words is not one either.
+ */
+const ATTACHING = /(?:^|[\s(])@((?:[^\s@[\]][^@[\]\n]{0,60})?)$/
+
+/**
+ * The `[[` the caret is after in a text, and what has been typed since; or
+ * the `@`, which attaches the document picked.
  *
  * @param {string} text
  * @param {number} caret
- * @returns {{start: number, query: string}|null}
+ * @returns {{start: number, query: string, attach?: true}|null}
  */
 export function linkAtCaret(text, caret) {
-  const found = OPENED.exec(text.slice(0, caret))
-  return found ? { start: caret - found[0].length, query: found[1] } : null
+  const before = text.slice(0, caret)
+  const found = OPENED.exec(before)
+  if (found) return { start: caret - found[0].length, query: found[1] }
+  const attaching = ATTACHING.exec(before)
+  return attaching
+    ? { start: caret - attaching[1].length - 1, query: attaching[1], attach: true }
+    : null
 }
 
 /**
@@ -35,10 +49,10 @@ export function linkAtCaret(text, caret) {
  * @param {import('vue').Ref<HTMLTextAreaElement|null>} field - The textarea
  * @param {import('vue').Ref<string>} draft - What it holds
  * @param {Object} options
- * @param {(query: string) => LinkSuggestion[]} options.suggest - What a name
- *   could be
- * @param {(entry: LinkSuggestion, before: string) => string|null} options.textFor -
- *   What goes in for the one picked, given the draft before the `[[`
+ * @param {(query: string, attach?: true) => LinkSuggestion[]} options.suggest -
+ *   What a name could be, to link to or to attach
+ * @param {(entry: LinkSuggestion, before: string, attach?: true) => string|null} options.textFor -
+ *   What goes in for the one picked, given the draft before the `[[` or `@`
  * @returns {{
  *   open: import('vue').ComputedRef<boolean>,
  *   entries: import('vue').ComputedRef<LinkSuggestion[]>,
@@ -55,7 +69,11 @@ export function useLinkMenu(field, draft, { suggest, textFor }) {
   const active = ref(0)
 
   const spot = computed(() => (caret.value === null ? null : linkAtCaret(draft.value, caret.value)))
-  const entries = computed(() => (spot.value ? suggest(spot.value.query) : []))
+  const entries = computed(() => {
+    const at = spot.value
+    if (!at) return []
+    return at.attach ? suggest(at.query, true) : suggest(at.query)
+  })
   const open = computed(
     () => !!spot.value && entries.value.length > 0 && shut.value !== spot.value.start
   )
@@ -108,7 +126,8 @@ export function useLinkMenu(field, draft, { suggest, textFor }) {
     const end = caret.value
     if (!at || !entry || end === null) return
     const text = draft.value
-    const link = textFor(entry, text.slice(0, at.start))
+    const before = text.slice(0, at.start)
+    const link = at.attach ? textFor(entry, before, true) : textFor(entry, before)
     if (!link) return
     const to = at.start + link.length
     draft.value = text.slice(0, at.start) + link + text.slice(end)

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
+  CHAT_TABS,
   NO_TABS,
   closeTab,
   dropTabs,
@@ -11,7 +12,16 @@ import {
   tabsPatch,
 } from '@/utils/tabs.js'
 
-const tabs = (open, active = open[0] ?? null, preview = null) => ({ open, active, preview })
+/**
+ * A set of tabs. Its history is the one showing alone, as for tabs from
+ * before the history was kept, unless given.
+ */
+const tabs = (open, active = open[0] ?? null, preview = null, shown = active ? [active] : []) => ({
+  open,
+  active,
+  preview,
+  shown,
+})
 
 describe('tabsOf', () => {
   it('reads the tabs off a story', () => {
@@ -42,36 +52,80 @@ describe('tabsOf', () => {
       tabs(['a', 'b'], 'a')
     )
   })
+
+  it('reads the history, keeping only open tabs, each once, the showing one first', () => {
+    expect(
+      tabsOf({
+        openDocumentIds: ['a', 'b', 'c'],
+        lastDocumentId: 'b',
+        shownDocumentIds: ['c', 'z', 'a', 'c', 'b'],
+      })
+    ).toEqual(tabs(['a', 'b', 'c'], 'b', null, ['b', 'c', 'a']))
+  })
 })
 
 describe('tabsPatch', () => {
   it('writes the tabs back as story fields', () => {
-    expect(tabsPatch(tabs(['a', 'b'], 'b', 'a'))).toEqual({
+    expect(tabsPatch(tabs(['a', 'b'], 'b', 'a', ['b', 'a']))).toEqual({
       openDocumentIds: ['a', 'b'],
       lastDocumentId: 'b',
       previewDocumentId: 'a',
+      shownDocumentIds: ['b', 'a'],
     })
     expect(tabsPatch(NO_TABS)).toEqual({
       openDocumentIds: [],
       lastDocumentId: null,
       previewDocumentId: null,
+      shownDocumentIds: [],
     })
   })
 
   it('round-trips through a story', () => {
-    const set = tabs(['a', 'b', 'c'], 'c')
+    const set = tabs(['a', 'b', 'c'], 'c', null, ['c', 'a', 'b'])
     expect(tabsOf(tabsPatch(set))).toEqual(set)
   })
 })
 
+describe("the chat panel's tabs", () => {
+  it('reads and writes the chat fields, leaving the editor’s alone', () => {
+    const view = {
+      openDocumentIds: ['doc_1'],
+      lastDocumentId: 'doc_1',
+      openChatIds: ['chat_1', 'chat_2'],
+      lastChatId: 'chat_2',
+      previewChatId: 'chat_1',
+      shownChatIds: ['chat_2', 'chat_1'],
+    }
+    const set = tabsOf(view, CHAT_TABS)
+    expect(set).toEqual(tabs(['chat_1', 'chat_2'], 'chat_2', 'chat_1', ['chat_2', 'chat_1']))
+    expect(tabsPatch(set, CHAT_TABS)).toEqual({
+      openChatIds: ['chat_1', 'chat_2'],
+      lastChatId: 'chat_2',
+      previewChatId: 'chat_1',
+      shownChatIds: ['chat_2', 'chat_1'],
+    })
+  })
+})
+
 describe('openTab', () => {
+  it('opens a tab beside the one showing when asked', () => {
+    expect(openTab(tabs(['a', 'b', 'c'], 'a'), 'd', { beside: true })).toEqual(
+      tabs(['a', 'd', 'b', 'c'], 'd', null, ['d', 'a'])
+    )
+    expect(openTab(NO_TABS, 'a', { beside: true })).toEqual(tabs(['a']))
+  })
+
   it('adds a new document at the end of the strip, showing', () => {
-    expect(openTab(tabs(['a', 'b'], 'a'), 'c')).toEqual(tabs(['a', 'b', 'c'], 'c'))
+    expect(openTab(tabs(['a', 'b'], 'a'), 'c')).toEqual(
+      tabs(['a', 'b', 'c'], 'c', null, ['c', 'a'])
+    )
     expect(openTab(NO_TABS, 'a')).toEqual(tabs(['a']))
   })
 
   it('brings a document already open to the front where it is', () => {
-    expect(openTab(tabs(['a', 'b', 'c'], 'c'), 'a')).toEqual(tabs(['a', 'b', 'c'], 'a'))
+    expect(openTab(tabs(['a', 'b', 'c'], 'c'), 'a')).toEqual(
+      tabs(['a', 'b', 'c'], 'a', null, ['a', 'c'])
+    )
   })
 
   it('changes nothing for the document already showing', () => {
@@ -85,11 +139,36 @@ describe('closeTab', () => {
     expect(closeTab(tabs(['a', 'b', 'c'], 'a'), 'b')).toEqual(tabs(['a', 'c'], 'a'))
   })
 
-  it('brings the neighbour to the right forward when the showing one goes', () => {
+  it('goes back to the tab shown before, down the whole history', () => {
+    // Shown 1, 3, 2, 5, 4.
+    let set = ['1', '3', '2', '5', '4'].reduce((before, id) => openTab(before, id), NO_TABS)
+    expect(set.shown).toEqual(['4', '5', '2', '3', '1'])
+
+    // 5 closed unseen: 4 still shows, and 5 is out of the history.
+    set = closeTab(set, '5')
+    expect(set.active).toBe('4')
+
+    const after = []
+    while (set.active) {
+      set = closeTab(set, set.active)
+      after.push(set.active)
+    }
+    expect(after).toEqual(['2', '3', '1', null])
+    expect(set).toEqual(NO_TABS)
+  })
+
+  it('goes back to a tab brought forward again, not where it was first opened', () => {
+    let set = ['a', 'b', 'c'].reduce((before, id) => openTab(before, id), NO_TABS)
+    set = openTab(set, 'a')
+    set = openTab(set, 'b')
+    expect(closeTab(set, 'b').active).toBe('a')
+  })
+
+  it('past the history, brings the neighbour to the right forward', () => {
     expect(closeTab(tabs(['a', 'b', 'c'], 'b'), 'b')).toEqual(tabs(['a', 'c'], 'c'))
   })
 
-  it('falls back to the neighbour on the left at the end of the strip', () => {
+  it('past the history, falls back to the neighbour on the left at the end of the strip', () => {
     expect(closeTab(tabs(['a', 'b', 'c'], 'c'), 'c')).toEqual(tabs(['a', 'b'], 'b'))
   })
 
@@ -110,7 +189,13 @@ describe('closeTab', () => {
 })
 
 describe('dropTabs', () => {
-  it('closes several, and shows the nearest survivor to the right', () => {
+  it('closes several, and shows the latest shown of those left', () => {
+    expect(
+      dropTabs(tabs(['a', 'b', 'c', 'd'], 'b', null, ['b', 'c', 'a', 'd']), ['b', 'c'])
+    ).toEqual(tabs(['a', 'd'], 'a', null, ['a', 'd']))
+  })
+
+  it('past the history, closes several, and shows the nearest survivor to the right', () => {
     expect(dropTabs(tabs(['a', 'b', 'c', 'd'], 'b'), ['b', 'c'])).toEqual(tabs(['a', 'd'], 'd'))
   })
 
@@ -154,24 +239,36 @@ describe('previews', () => {
   })
 
   it('opens a preview at the end when there is none', () => {
-    expect(openTab(tabs(['a']), 'b', { preview: true })).toEqual(tabs(['a', 'b'], 'b', 'b'))
+    expect(openTab(tabs(['a']), 'b', { preview: true })).toEqual(
+      tabs(['a', 'b'], 'b', 'b', ['b', 'a'])
+    )
   })
 
   it('opens a preview in the preview tab, where it stands', () => {
     expect(openTab(tabs(['a', 'b', 'c'], 'c', 'b'), 'd', { preview: true })).toEqual(
-      tabs(['a', 'd', 'c'], 'd', 'd')
+      tabs(['a', 'd', 'c'], 'd', 'd', ['d', 'c'])
     )
   })
 
+  it('takes the replaced preview out of the history, so closing never goes back to it', () => {
+    let set = openTab(NO_TABS, 'a')
+    set = openTab(set, 'b', { preview: true })
+    set = openTab(set, 'c', { preview: true })
+    expect(set.shown).toEqual(['c', 'a'])
+    expect(closeTab(set, 'c')).toEqual(tabs(['a'], 'a'))
+  })
+
   it('opens a kept document beside the preview, leaving it a preview', () => {
-    expect(openTab(tabs(['a', 'b'], 'b', 'b'), 'c')).toEqual(tabs(['a', 'b', 'c'], 'c', 'b'))
+    expect(openTab(tabs(['a', 'b'], 'b', 'b'), 'c')).toEqual(
+      tabs(['a', 'b', 'c'], 'c', 'b', ['c', 'b'])
+    )
   })
 
   it('brings an open document forward as it was, kept or not', () => {
     expect(openTab(tabs(['a', 'b'], 'b', 'b'), 'a', { preview: true })).toEqual(
-      tabs(['a', 'b'], 'a', 'b')
+      tabs(['a', 'b'], 'a', 'b', ['a', 'b'])
     )
-    expect(openTab(tabs(['a', 'b'], 'a', 'b'), 'b')).toEqual(tabs(['a', 'b'], 'b', 'b'))
+    expect(openTab(tabs(['a', 'b'], 'a', 'b'), 'b')).toEqual(tabs(['a', 'b'], 'b', 'b', ['b', 'a']))
   })
 
   it('keeps a preview, and leaves a kept tab as it is', () => {

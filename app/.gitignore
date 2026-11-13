@@ -29,8 +29,10 @@ scripts/endpoints.local.json
 # Transcript harness output: one folder per batch of runs.
 harness/runs/
 
-# Test files for various import scenarios: each subfolder contains a different type of test data.
-harness/test-*/
+# Test files for various import scenarios: each subfolder contains a different
+# type of test data. No trailing slash, so a worktree's links to the main
+# checkout's folders are ignored as the folders are.
+harness/test-*
 
 # Books, papers and articles to test file import against: other people's
 # work, tens of megabytes, and not ours to redistribute.

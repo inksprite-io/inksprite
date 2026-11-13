@@ -1,6 +1,6 @@
 /**
  * The roleplay guide, done: a character card and its lorebook imported, a
- * persona pinned, and a few turns of the game played and compacted, in the
+ * persona written, and a few turns of the game played and compacted, in the
  * order the guide tells it.
  *
  * The card is Pif, by bipbop on Chub, and the lorebook its page links to. They
@@ -19,6 +19,7 @@
 import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
+import { setUpAI } from './setup.js'
 
 const FILES = {
   card: {
@@ -96,7 +97,10 @@ export async function roleplay(ui, { standIn, context }) {
 
   for (const turn of turns) {
     if (turn.summary) {
-      standIn.script({ system: 'Summarize this roleplay chat', steps: [{ text: turn.summary }] })
+      standIn.script({
+        match: 'asked for a summary of this conversation',
+        steps: [{ text: turn.summary }],
+      })
     } else if (turn.steps) {
       standIn.script({ match: matchOf(turn), steps: turn.steps })
     }
@@ -161,19 +165,8 @@ export async function roleplay(ui, { standIn, context }) {
   await ui.goto('/')
   await dialog('Welcome').waitFor()
   await ui.click(button('Start writing'))
+  await setUpAI(page, ui, { provider: 'Anthropic', key: ANTHROPIC_KEY, model: 'Claude Sonnet 5.5' })
   await ui.click(button('Settings'))
-  await ui.click(settings.getByRole('button', { name: 'AI', exact: true }))
-  await ui.click(page.getByRole('combobox', { name: 'Provider', exact: true }))
-  await ui.click(page.getByRole('option', { name: 'Anthropic' }))
-  await ui.click(settings.getByRole('button', { name: 'Connect', exact: true }))
-  const provider = dialog('Provider configuration')
-  await ui.paste(provider.getByRole('textbox', { name: 'API key' }), ANTHROPIC_KEY)
-  await ui.click(provider.getByRole('button', { name: 'Connect' }))
-  await settings.getByText('Ready').waitFor()
-  await ui.click(provider.getByRole('button', { name: 'Close' }))
-  await provider.waitFor({ state: 'hidden' })
-  await ui.click(page.getByRole('combobox', { name: 'Model' }))
-  await ui.click(page.getByRole('option', { name: 'Claude Sonnet 5.5' }))
 
   // Roleplay, which is off until the writer turns it on
   await ui.click(settings.getByRole('button', { name: 'Extensions', exact: true }))
@@ -258,33 +251,27 @@ export async function roleplay(ui, { standIn, context }) {
   await ui.click(start.getByRole('button', { name: 'Start chat' }))
   await start.waitFor({ state: 'hidden' })
 
-  await row(PERSONA).hover()
-  await ui.click(row(PERSONA).getByRole('button', { name: 'Pin to this chat' }))
-  await row(PERSONA).getByRole('button', { name: 'Pinned to this chat' }).waitFor()
   // The greeting from its start.
   await page.mouse.move(1100, 400)
   await page.mouse.wheel(0, -4000)
   await ui.pause(400)
-  await ui.shot('roleplay-pinned')
+  await ui.shot('roleplay-greeting')
 
-  // Who is who, and what the card asks of every turn
-  await ui.click(button('Chat settings'))
-  await ui.click(button('Roleplay'))
-  const instructions = page.getByRole('textbox', { name: 'Post-history instructions' })
-  // At the top of the pane, so the section fits under it whole.
-  await button('Roleplay').evaluate(header => header.scrollIntoView({ block: 'start' }))
+  // Who is who, and what the card asks of every turn: the chat's prompts,
+  // from the profile chip's menu, with Roleplay under them
+  await ui.click(page.locator('[data-chat-profile-chip]'))
+  await ui.click(menu('Prompts…'))
+  await settings.locator('[data-prompts-roleplay]').waitFor()
+  await settings.locator('[data-roleplay="post-history"]').scrollIntoViewIfNeeded()
   await ui.pause(400)
-  await ui.shot('roleplay-settings', { of: [button('Roleplay'), instructions], pad: 12 })
-  await ui.click(button('Roleplay'))
+  await ui.shot('roleplay-settings', { of: settings, pad: 0 })
 
   // What the model may do
-  await ui.click(button('Tools'))
-  await ui.click(page.getByRole('switch', { name: 'RPG Tools', exact: true }))
-  await ui.shot('roleplay-tools', {
-    of: [button('Tools'), page.getByRole('switch', { name: 'RPG Tools', exact: true })],
-    pad: 12,
-  })
-  await ui.click(button('Back to chat'))
+  await ui.click(settings.getByRole('button', { name: 'Tools', exact: true }))
+  await ui.click(settings.getByRole('switch', { name: 'RPG Tools', exact: true }))
+  await ui.shot('roleplay-tools', { of: settings, pad: 0 })
+  await ui.click(settings.getByRole('button', { name: 'Close' }))
+  await settings.waitFor({ state: 'hidden' })
 
   // The game, wide
   await ui.click(button('Expand chat'))

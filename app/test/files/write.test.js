@@ -63,7 +63,7 @@ describe('writeFile', () => {
       plain: true,
     })
     expect(made.wordCount).toBe(2)
-    expect(written).toMatchObject({ title: 'paper', documents: 1, pinnedIds: [], greetingIds: [] })
+    expect(written).toMatchObject({ title: 'paper', documents: 1, greetingIds: [] })
   })
 
   it('keeps the bytes under the document, straight in the database', async () => {

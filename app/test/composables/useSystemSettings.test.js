@@ -45,7 +45,7 @@ const mountApp = () =>
 beforeEach(() => {
   document.head.innerHTML = `
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#18181b" media="(prefers-color-scheme: dark)" />`
+    <meta name="theme-color" content="#202023" media="(prefers-color-scheme: dark)" />`
   system.dark = false
   system.listeners.clear()
   vi.stubGlobal('matchMedia', (/** @type {string} */ query) => ({

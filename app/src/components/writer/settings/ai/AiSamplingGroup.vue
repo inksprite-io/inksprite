@@ -59,9 +59,20 @@ import CustomSlider from './CustomSlider.vue'
 import SettingLabel from '@/components/common/SettingLabel.vue'
 import { AI_PARAMETERS } from '@/config/aiParameters'
 import { useGenerationSettings } from '@/composables/useGenerationSettings'
-import { useAIConfig } from '@/composables/useAIConfig'
 import { useModelCapabilities } from '@/composables/useModelCapabilities'
 import { blockedBy, fitEffort, samplersAt } from '@/ai/capabilities.js'
+
+/**
+ * A model's samplers on a connection, as many as it takes.
+ *
+ * @typedef {Object} Props
+ * @property {string} providerId
+ * @property {string} model
+ */
+const props = defineProps({
+  providerId: { type: String, required: true },
+  model: { type: String, required: true },
+})
 
 const {
   effective,
@@ -71,7 +82,10 @@ const {
   setParameter,
   resetSettings,
   resetParameter,
-} = useGenerationSettings()
+} = useGenerationSettings(
+  () => props.providerId,
+  () => props.model
+)
 
 /**
  * Display order, plus the bounds AI_PARAMETERS can't express. Top-K is
@@ -91,15 +105,13 @@ const PARAMETER_SPECS = [
   { key: 'repetitionPenalty' },
 ]
 
-const aiConfig = useAIConfig()
-
-// Only the samplers the preset's model takes, at the effort it would be sent:
-// an older Claude takes them only while it isn't thinking. One a model takes
+// Only the samplers the model takes, at the effort it would be sent: an
+// older Claude takes them only while it isn't thinking. One a model takes
 // only instead of another (Claude's top-p, beside a temperature) is shown but
 // can't be moved while the other is set.
 const capabilities = useModelCapabilities(
-  () => aiConfig.shownPreset.value?.providerId,
-  () => aiConfig.shownPreset.value?.model
+  () => props.providerId,
+  () => props.model
 )
 const offered = computed(() =>
   samplersAt(capabilities.value, fitEffort(effective.value.reasoningEffort, capabilities.value))

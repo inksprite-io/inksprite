@@ -7,7 +7,8 @@ vi.mock('@/mcp/client.js', async importOriginal => ({
   callServerTool,
 }))
 
-const { executeReadWebPage, executeWebSearch } = await import('@/ai/tools/web.js')
+const { executeReadWebPage, executeWebSearch, webSearchOffered } = await import('@/ai/tools/web.js')
+const { useApplicationState } = await import('@/composables/useApplicationState')
 const { setWebSearch } = await import('@/web/config.js')
 const { forgetPages } = await import('@/web/pages.js')
 const { READ_BUDGET } = await import('@/ai/tools/slices.js')
@@ -50,7 +51,7 @@ describe('web_search', () => {
     setWebSearch(null)
 
     expect(await executeWebSearch({ query: 'tides' })).toEqual({
-      error: expect.stringMatching(/Settings › Connections › Web search/),
+      error: expect.stringMatching(/Settings › Extensions › Web search/),
     })
     expect(callServerTool).not.toHaveBeenCalled()
   })
@@ -86,6 +87,28 @@ describe('web_search', () => {
     await expect(executeWebSearch({ query: 'tides' }, { signal: stopped.signal })).rejects.toThrow(
       'stopped'
     )
+  })
+})
+
+describe('webSearchOffered', () => {
+  afterEach(() => {
+    setWebSearch(null)
+    useApplicationState().resetState()
+  })
+
+  it('offers the web while a service is set up and the extension is on', () => {
+    withExa()
+    expect(webSearchOffered()).toBe(true)
+  })
+
+  it('offers none with the extension switched off, whatever is set up', () => {
+    withExa()
+    useApplicationState().setExtension('web', false)
+    expect(webSearchOffered()).toBe(false)
+  })
+
+  it('offers none without a service', () => {
+    expect(webSearchOffered()).toBe(false)
   })
 })
 

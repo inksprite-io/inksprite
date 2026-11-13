@@ -43,15 +43,12 @@ export const COMPACT_PROMPT = COMPACT.body
 export const COMPACT_SETTINGS = {}
 
 /**
- * The role, and what this particular compaction is for.
- *
- * The writer's instructions go in the system prompt rather than the transcript,
- * for the same reason a skill's question does: the transcript is the material,
- * and a note about how to read it that arrives inside the material reads as
- * something a character said.
+ * What a summary is asked for with, and what this particular one is for: the
+ * skill's wording, or the profile's, and what the writer asked it to favour
+ * under it.
  *
  * @param {string} [instructions] - What the writer asked this one to favour
- * @param {string} [base] - What the role runs under; its own when not given
+ * @param {string} [base] - The wording; the skill's own when not given
  * @returns {string}
  */
 export function buildCompactPrompt(instructions, base) {
@@ -67,13 +64,30 @@ ${asked}`
 }
 
 /**
+ * What goes ahead of the wording when the summary is asked for in the thread.
+ *
+ * The chat's own prompt is still above the conversation, and for a scene it
+ * says to stay in it, so this says the one thing the wording does not: that
+ * what is wanted is not the next turn. In brackets, as the app's other words
+ * to a model in the writer's place are.
+ */
+const IN_PLACE_OF_A_TURN =
+  '[The user has asked for a summary of this conversation, in place of a reply. Write the summary alone: do not continue the conversation, and call no tools.]'
+
+/**
  * Write the summary.
+ *
+ * It is asked of the chat's own model at the end of the conversation, as the
+ * writer's last word (`inThread`): the model has what the conversation holds,
+ * the documents it read and the ones the writer attached among them, where a
+ * transcript has only what was said, and the request goes on from the turn's
+ * cached prefix where a transcript is read from nothing. A context with no
+ * `inThread` hands it a transcript under the wording as a system prompt, as
+ * every summary once was.
  *
  * It reads the turns it is keeping as well as the ones it stands for: they are
  * kept so the next turn has a scene to continue, not because the summary
- * leaves them out. And it reads them under the default names rather than the
- * table's — compaction happens to any chat, and a summarizer told it is
- * reading a game master starts writing like one.
+ * leaves them out.
  *
  * @param {string} instructions - What the writer asked this one to favour, if anything
  * @param {ToolContext} [context]
@@ -81,15 +95,17 @@ ${asked}`
  * @returns {Promise<{answer: string}|{error: string}>}
  */
 export async function askCompact(instructions, context = {}, { past } = {}) {
-  if (typeof context.consult !== 'function') {
+  const wording = buildCompactPrompt(instructions, context.promptFor?.('compact'))
+  const asked = { overrides: COMPACT_SETTINGS, past }
+
+  let summary
+  if (typeof context.inThread === 'function') {
+    summary = await context.inThread(`${IN_PLACE_OF_A_TURN}\n\n${wording}`, asked)
+  } else if (typeof context.consult === 'function') {
+    summary = await context.consult(wording, undefined, asked)
+  } else {
     return { error: 'There is no conversation here to compact.' }
   }
-
-  const under = buildCompactPrompt(instructions, context.promptFor?.('compact'))
-  const summary = await context.consult(under, undefined, {
-    overrides: COMPACT_SETTINGS,
-    past,
-  })
   if (!summary) {
     return { error: 'Nothing came back to stand in for the conversation.' }
   }

@@ -27,7 +27,7 @@
       :aria-selected="isActive"
       :aria-expanded="opens ? expanded : undefined"
       :data-document-id="documentId"
-      :data-folder="isFolder || undefined"
+      :data-folder="takesNew || undefined"
       @pointerdown="notePointer"
       @click="handleClick"
       @dblclick="handleDoubleClick"
@@ -112,44 +112,23 @@
       />
 
       <!-- What the chat sees of a document is in the row itself: dimmed
-           where the chat cannot see it, whichever folder decided that, and the
-           title in the primary colour where the chat carries it. No icon at
-           rest — a column of them said the same thing louder.
+           where the chat cannot see it, whichever folder decided that. No
+           icon at rest — a column of them said the same thing louder.
 
-           The open chat's two toggles show on hover, and when the keyboard is
-           on them; in the primary colour when on, since a mark is this chat's
-           and not the document's. A pin taken from a folder above shows
-           faintly, and is let go of here. Not on a phone, which has no hover:
-           the menu has both there. They float over the end of the title, in
-           the row's own colour, rather than keep room in every row for
-           buttons that are not there at rest; and take no clicks until they
-           show, so the end of a title is the title. Not during a drag, which
-           WebKit leaves the hover on every row it crossed. -->
+           The open chat's toggle shows on hover, and when the keyboard is on
+           it; in the primary colour when on, since a mark is this chat's and
+           not the document's. Not on a phone, which has no hover: the menu
+           has it there. It floats over the end of the title, in the row's
+           own colour, rather than keep room in every row for a button that
+           is not there at rest; and takes no clicks until it shows, so the
+           end of a title is the title. Not during a drag, which WebKit
+           leaves the hover on every row it crossed. -->
       <div
-        v-if="toggles && !isMobile && !isDragging"
+        v-if="toggles && !isRoot && !isMobile && !isDragging"
         class="absolute inset-y-0 right-1 flex items-center gap-1 pl-1 bg-inherit opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto focus-within:opacity-100 focus-within:pointer-events-auto"
         data-row-toggles
       >
         <button
-          type="button"
-          class="flex-none w-5 h-5 rounded flex items-center justify-center hover:bg-surface-300 dark:hover:bg-surface-600"
-          :class="pin.showing ? 'text-primary-500' : 'text-surface-500 dark:text-surface-400'"
-          tabindex="-1"
-          :title="pin.hint"
-          :aria-label="pin.label"
-          :aria-pressed="pin.showing"
-          data-toggle="pin"
-          @click.stop="pin.toggle"
-          @dblclick.stop
-        >
-          <i
-            class="pi pi-thumbtack"
-            :class="pin.showing && !pin.own && 'opacity-50'"
-            style="font-size: 0.7rem"
-          ></i>
-        </button>
-        <button
-          v-if="!isRoot"
           type="button"
           class="flex-none w-5 h-5 rounded flex items-center justify-center hover:bg-surface-300 dark:hover:bg-surface-600"
           :class="sight.showing ? 'text-primary-500' : 'text-surface-500 dark:text-surface-400'"
@@ -230,7 +209,6 @@
           @chat-with="emit('chat-with', $event)"
           @reimport="emit('reimport', $event)"
           @convert="emit('convert', $event)"
-          @explore="emit('explore', $event)"
           @dragging="emit('dragging', $event)"
         />
       </template>
@@ -258,7 +236,7 @@ import { useChatSettings } from '@/composables/useChatSettings'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
 import { isCard } from '@/cards/chat.js'
-import { chatVisibility, markOf, unpinned, withMark } from '@/utils/visibility.js'
+import { chatVisibility, markOf, withMark } from '@/utils/visibility.js'
 import { useDocuments } from '@/composables/useDocuments'
 import { useDriveSync } from '@/composables/useDriveSync.js'
 import { useScreenSize } from '@/composables/useScreenSize'
@@ -281,7 +259,7 @@ const props = defineProps({
   storyId: { type: String, required: true },
   documentId: { type: String, required: true },
   activeDocumentId: { type: String, default: null },
-  /** The chat this document would be pinned to. Null when none is open. */
+  /** The chat this document is hidden from or shown in. Null when none is open. */
   chatId: { type: String, default: null },
   depth: { type: Number, default: 0 },
   isDragging: { type: Boolean, default: false },
@@ -301,7 +279,6 @@ const emit = defineEmits([
   'chat-with',
   'reimport',
   'convert',
-  'explore',
   'dragging',
 ])
 
@@ -445,8 +422,8 @@ const isFile = computed(() => node.value?.type === 'file')
 /**
  * A document that holds others, as an import may make one: a card's portrait
  * its fields, a PDF the Markdown converted from it. It opens as a document
- * does, and twists as a folder does, but takes nothing new: the writer
- * arranges what it holds, and moves it out, and that is all.
+ * does, and twists as a folder does. Only a card takes anything new; in the
+ * rest the writer arranges what it holds, and moves it out, and that is all.
  */
 const holdsOthers = computed(() => !isFolder.value && childList.value.length > 0)
 /** Whether the row twists open on what is under it. */
@@ -466,6 +443,8 @@ const isCardFolder = computed(() => isCard(node.value))
 const repository = computed(() => repositoryOf(api.get, node.value))
 const isRepositoryFolder = computed(() => isRepository(node.value))
 const isInRepository = computed(() => inRepository(api.get, node.value))
+/** Whether documents can be made here, dragged in and imported into it: a folder, or a card. */
+const takesNew = computed(() => api.takesDocuments(node.value) && !repository.value)
 
 /** What a document that is not a folder is drawn as: a page, or the kind of file it is. */
 const leafIcon = computed(() => {
@@ -630,17 +609,11 @@ const hideInChat = () => {
 }
 
 /**
- * Whether the row offers the open chat's toggles: there is a chat, and this
+ * Whether the row offers the open chat's toggle: there is a chat, and this
  * is something it can mark. What every chat is kept from has nothing to
- * toggle — no chat can show it, and the block a pin rides in is the one it
- * is kept out of.
+ * toggle, since no chat can show it.
  */
 const toggles = computed(() => !!chat.value && !hiddenEverywhere.value)
-
-/** Whether the open chat carries this document on every turn, whoever pinned it. */
-const carried = computed(
-  () => seen.value && !!node.value && visibility.value.markFor(node.value) === 'pinned'
-)
 
 /**
  * The folders the document open is in, below the project: marked as it is,
@@ -649,17 +622,14 @@ const carried = computed(
 const onActivePath = computed(() => isActive.value || (holdsActive.value && !isRoot.value))
 
 /**
- * The title's colour: the primary colour where the chat carries the document,
- * which is the one thing the row says about the chat at rest, and otherwise
- * darker for the document open and the folders it is in than for the rest.
+ * The title's colour: darker for the document open and the folders it is in
+ * than for the rest.
  */
-const titleTone = computed(() => {
-  const weight = onActivePath.value ? ' font-semibold' : ''
-  if (carried.value) return `text-primary-600 dark:text-primary-400${weight}`
-  return onActivePath.value
-    ? `text-surface-900 dark:text-surface-0${weight}`
+const titleTone = computed(() =>
+  onActivePath.value
+    ? 'text-surface-900 dark:text-surface-0 font-semibold'
     : 'text-surface-700 dark:text-surface-200'
-})
+)
 
 /** Whether the title is cut short in the row, as it was when the pointer last came over it. */
 const truncated = ref(false)
@@ -670,59 +640,19 @@ const measureTitle = event => {
   truncated.value = title.scrollWidth > title.clientWidth
 }
 
-/**
- * The title's tooltip: the whole title, where the row cuts it short, and
- * whether the chat carries the document. Nothing for a title shown whole in a
- * row the chat does not carry.
- */
-const titleHint = computed(
-  () =>
-    [
-      truncated.value ? api.displayTitle(node.value) : '',
-      carried.value ? 'Pinned to this chat' : '',
-    ]
-      .filter(Boolean)
-      .join('\n') || undefined
-)
+/** The title's tooltip: the whole title, where the row cuts it short. */
+const titleHint = computed(() => (truncated.value ? api.displayTitle(node.value) : undefined))
 
-/** The mark that decides for the folder above, for telling a shown override from a let-go. */
+/** The mark that decides for the folder above, for telling a show that overrides a hide. */
 const aboveMark = computed(() => {
   const parent = node.value?.parentId ? api.get(node.value.parentId) : null
   return parent ? visibility.value.markFor(parent) : null
 })
 
-/** The pin toggle: what it shows, and what a click does. */
-const pin = computed(() => {
-  if (!carried.value) {
-    return {
-      showing: false,
-      own: false,
-      label: 'Pin to this chat',
-      hint: 'Pin to this chat',
-      toggle: () => markAs('pinned'),
-    }
-  }
-  const own = mark.value === 'pinned'
-  return {
-    showing: true,
-    own,
-    label: own ? 'Pinned to this chat' : `Pinned with the ${above.value} above`,
-    hint: own
-      ? 'Pinned to this chat. Click to unpin.'
-      : `Pinned with its ${above.value}. Click to unpin this one.`,
-    toggle: () => {
-      if (chat.value && node.value) {
-        updateChat(unpinned(chat.value, node.value, api.get))
-      }
-    },
-  }
-})
-
 /**
  * The eye toggle: what it shows, and what a click does. A hide of its own
  * shows as the eye-slash that takes it off; a show of its own shows as an eye
- * only where it overrides a folder's hide, since under a pinned folder a show
- * is a let-go and not a matter of sight.
+ * only where it overrides a folder's hide.
  */
 const sight = computed(() => {
   if (mark.value === 'hidden') {
@@ -1095,7 +1025,8 @@ const menuItems = computed(() => {
   /** @type {any[]} */
   const items = []
 
-  if (isFolder.value && !repository.value) {
+  // A card that came in a picture takes them as a card folder does.
+  if (takesNew.value) {
     items.push(
       { label: 'New document', icon: 'pi pi-file', command: () => createChild('text') },
       { label: 'New folder', icon: 'pi pi-folder', command: () => createChild('folder') },
@@ -1106,7 +1037,9 @@ const menuItems = computed(() => {
         command: () => api.setOrdered(props.documentId, !ordered.value),
       }
     )
-  } else {
+    if (!isFolder.value) items.push({ separator: true })
+  }
+  if (!isFolder.value) {
     const plainText = plainTextItem(props.documentId)
     if (plainText) items.push(plainText)
     // A file: the file or its text in the panel, and the text read again.
@@ -1238,11 +1171,11 @@ const menuItems = computed(() => {
   if (isFolder.value && !isRoot.value) {
     items.push({ label: 'Export', icon: 'pi pi-download', command: exportThis })
   }
-  // A folder is where anything imported goes: files chosen together, or a
-  // folder whole with the folders inside it. The tree owns the file choosers
-  // and what they open; this only says where. Files can also be dropped on
-  // the row from the desktop. The ways in share one submenu.
-  if (isFolder.value && !repository.value) {
+  // A folder is where anything imported goes, and a card: files chosen
+  // together, or a folder whole with the folders inside it. The tree owns the
+  // file choosers and what they open; this only says where. Files can also be
+  // dropped on the row from the desktop. The ways in share one submenu.
+  if (takesNew.value) {
     items.push({
       label: 'Import',
       icon: 'pi pi-upload',
@@ -1255,16 +1188,6 @@ const menuItems = computed(() => {
       }),
     })
   }
-  // A model describes what is in it, for the chats to find it by. Not a
-  // codebase, which wants a description of its own, and not what is hidden
-  // from the AI.
-  if (aiEnabled.value && isFolder.value && !repository.value && !hiddenEverywhere.value) {
-    items.push({
-      label: 'Explore…',
-      icon: 'pi pi-compass',
-      command: () => emit('explore', props.documentId),
-    })
-  }
   // GitHub only answers the desktop app, so a repository from there can't be
   // read again in a browser; a folder is chosen again, which works anywhere.
   if (isRepositoryFolder.value && (isDesktop() || node.value?.source?.from !== 'github')) {
@@ -1275,28 +1198,25 @@ const menuItems = computed(() => {
     })
   }
 
-  // The open chat's own marks, so there is nothing to offer without one. A
-  // document hidden from every chat has none to take: the block a pin would
-  // ride in is the one it is being kept out of, and no chat can show it. On a
-  // phone, and from the keyboard, only: everywhere else the row's toggles are
-  // these, and a phone has no hover to find them by, nor the keys a Tab.
-  if (chatId.value && !hiddenEverywhere.value && (isMobile.value || fromKeys.value)) {
-    items.push({
-      label: carried.value ? 'Unpin from chat' : 'Pin to chat',
-      icon: 'pi pi-thumbtack',
-      command: () => pin.value.toggle(),
-    })
-    if (!isRoot.value) {
-      items.push(
-        seen.value
-          ? {
-              label: 'Hide from this chat',
-              icon: 'pi pi-eye-slash',
-              command: () => hideInChat(),
-            }
-          : { label: 'Unhide in this chat', icon: 'pi pi-eye', command: () => showInChat() }
-      )
-    }
+  // The open chat's own mark, so there is nothing to offer without one. A
+  // document hidden from every chat has none to take: no chat can show it. On
+  // a phone, and from the keyboard, only: everywhere else the row's toggle is
+  // this, and a phone has no hover to find it by, nor the keys a Tab.
+  if (
+    chatId.value &&
+    !hiddenEverywhere.value &&
+    !isRoot.value &&
+    (isMobile.value || fromKeys.value)
+  ) {
+    items.push(
+      seen.value
+        ? {
+            label: 'Hide from this chat',
+            icon: 'pi pi-eye-slash',
+            command: () => hideInChat(),
+          }
+        : { label: 'Unhide in this chat', icon: 'pi pi-eye', command: () => showInChat() }
+    )
   }
 
   if (props.extraMenuItems.length > 0) items.push({ separator: true }, ...props.extraMenuItems)
@@ -1317,7 +1237,7 @@ const menuItems = computed(() => {
 /**
  * Refuse a drop the tree won't take: a folder into its own subtree, anything
  * into a repository or out of one, or anything new into a document that
- * holds others, whose own it can only be put in order. Sortable asks the list
+ * holds others, whose own it can only be put in order, but a card. Sortable asks the list
  * the drag started in, so the folder it would land in is read off the list it
  * is over. Nothing moves in a list while the drag is over a folder's row,
  * which is where the drop goes instead: see useTreeDrop.
@@ -1328,7 +1248,9 @@ const onMove = event => {
   const draggedId = event.draggedContext?.element?.id
   const folderId = event.to?.dataset?.folderId
   if (!draggedId || !folderId) return true
-  if (!api.isFolder(api.get(folderId)) && api.get(draggedId)?.parentId !== folderId) return false
+  if (!api.takesDocuments(api.get(folderId)) && api.get(draggedId)?.parentId !== folderId) {
+    return false
+  }
   return api.canDropInto(folderId, draggedId)
 }
 

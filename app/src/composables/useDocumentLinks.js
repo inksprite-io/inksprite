@@ -46,7 +46,16 @@ import { useEditorRequest } from './useEditorRequest.js'
  *   or the document the heading is in
  * @property {string} href - The link, from the document it goes in
  * @property {boolean} [heading]
+ * @property {boolean} [folder]
+ * @property {number} [words] - How long the document is, where that is asked
  */
+
+/**
+ * How many a list of suggestions holds at most. It scrolls, so every match
+ * of a name is there to be reached: the eleventh greeting of a card as well
+ * as the first. A limit all the same, for a project holding a repository.
+ */
+export const SUGGESTIONS_MOST = 200
 
 /** The documents' headings as last read, by document, with the text read. */
 const headingsRead = new Map()
@@ -59,7 +68,7 @@ const headingsRead = new Map()
  *   addressFor: (input: string, fromId: string) => string,
  *   copiedHref: (href: string, fromId: string) => string,
  *   pastedHref: (href: string, toId: string) => string,
- *   suggest: (query: string, fromId: string, limit?: number) => LinkSuggestion[],
+ *   suggest: (query: string, fromId: string, options?: {limit?: number, folders?: boolean, words?: boolean}) => LinkSuggestion[],
  *   chatLink: (href: string, words: string) => string|null,
  *   chatPath: (href: string) => string|null,
  *   onClick: (event: MouseEvent) => void,
@@ -203,19 +212,21 @@ export function useDocumentLinks(storyId) {
   /**
    * The project's documents a name could be, the likeliest first: named so,
    * then a name starting so, then a word in it, then anywhere in its name or
-   * its path. Folders aside, as a link to one goes nowhere. Every document,
-   * in the outline's order, for no name.
+   * its path. Folders aside, as a link to one goes nowhere, unless they are
+   * asked for: a chat's message may name one for the model to list. Every
+   * document, in the outline's order, for no name.
    * @param {string} name
+   * @param {boolean} [folders]
    * @returns {Document[]}
    */
-  const documentsLike = name => {
+  const documentsLike = (name, folders = false) => {
     const wanted = name.trim().toLowerCase()
     /** @type {Array<{document: Document, rank: number, order: number}>} */
     const found = []
     /** @param {string} parentId */
     const visit = parentId => {
       for (const child of api.childrenOf(parentId)) {
-        if (child.type !== 'folder') {
+        if (folders || child.type !== 'folder') {
           const title = api.displayTitle(child).toLowerCase()
           const rank = !wanted
             ? 0
@@ -245,19 +256,27 @@ export function useDocumentLinks(storyId) {
    * it, or of this one with nothing before it.
    * @param {string} query
    * @param {string} fromId - The document the link goes in
-   * @param {number} [limit]
+   * @param {{limit?: number, folders?: boolean, words?: boolean}} [options] -
+   *   `folders` lists folders among the documents; `words` says how long each
+   *   document is, for one about to be attached whole
    * @returns {LinkSuggestion[]}
    */
-  const suggest = (query, fromId, limit = 8) => {
+  const suggest = (
+    query,
+    fromId,
+    { limit = SUGGESTIONS_MOST, folders = false, words = false } = {}
+  ) => {
     const hash = query.indexOf('#')
     if (hash < 0) {
-      return documentsLike(query)
+      return documentsLike(query, folders)
         .slice(0, limit)
         .map(document => ({
           key: document.id,
           title: api.displayTitle(document),
           detail: api.titlesOf(document.id).slice(0, -1).join(' / '),
           href: hrefFor(tree, fromId, document.id),
+          ...(document.type === 'folder' ? { folder: true } : {}),
+          ...(words && document.type !== 'folder' ? { words: document.wordCount || 0 } : {}),
         }))
     }
     const name = query.slice(0, hash).trim()
@@ -285,7 +304,8 @@ export function useDocumentLinks(storyId) {
    * A link to a document as a chat's message holds it, pasted or dropped
    * there: Markdown, its words and the document's path from the top of the
    * project as the document tools take it, which both the writer and the
-   * model can read. Null for a link to no document of the project's.
+   * model can read. A folder's too, for the model to list. Null for a link
+   * to nothing of the project's.
    * @param {string} href - From the top of the project, as the clipboard has it
    * @param {string} words
    * @returns {string|null}
@@ -294,7 +314,7 @@ export function useDocumentLinks(storyId) {
     const path = chatPath(href)
     const document = path ? target(href) : null
     if (!path || !document) return null
-    const heading = headingOf(href)
+    const heading = document.type === 'folder' ? null : headingOf(href)
     const text = (words || heading || api.displayTitle(document)).replace(/[[\]\\]/g, '\\$&')
     return `[${text}](<${path.replace(/[<>\\]/g, '\\$&')}>)`
   }
@@ -302,14 +322,16 @@ export function useDocumentLinks(storyId) {
   /**
    * A link to a document as the path the document tools take, and a chat's
    * commands, from the top of the project: `/Notes/Cast list`, its heading
-   * after a `#`. Null for a link to no document of the project's.
+   * after a `#`; a folder's ends in a slash, `/Notes/`, as a listing writes
+   * one. Null for a link to nothing of the project's.
    * @param {string} href - From the top of the project
    * @returns {string|null}
    */
   const chatPath = href => {
     if (!href.trim().startsWith('/') || !isDocumentHref(href) || pictureOf(href)) return null
     const document = target(href)
-    if (!document || document.type === 'folder') return null
+    if (!document || document.id === tree.rootId) return null
+    if (document.type === 'folder') return `/${api.pathOf(document.id)}/`
     const heading = headingOf(href)
     return `/${api.pathOf(document.id)}${heading ? `#${heading}` : ''}`
   }

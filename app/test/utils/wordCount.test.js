@@ -58,4 +58,9 @@ describe('countWords', () => {
       )
     ).toBe(3)
   })
+
+  it('counts a formula in a sentence as a word, and one on lines of its own as none', () => {
+    expect(countWords('Let $x^2 + y^2$ be one.\n\n$$\n\\int_0^1 x \\, dx\n$$')).toBe(4)
+    expect(countWords('It costs $5 and $10.')).toBe(5)
+  })
 })

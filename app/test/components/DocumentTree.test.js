@@ -10,6 +10,7 @@ import ContextMenu from 'primevue/contextmenu'
 import Menu from 'primevue/menu'
 import DocumentTree from '../../src/components/writer/tree/DocumentTree.vue'
 import { useDocuments, clearDocumentInstances } from '../../src/composables/useDocuments'
+import { useDocumentsStore } from '../../src/stores/documentsStore'
 import { useTreeHistory } from '../../src/composables/useTreeHistory.js'
 import { clearChatsInstances } from '../../src/composables/useChats'
 import { useApplicationState } from '../../src/composables/useApplicationState'
@@ -406,6 +407,40 @@ describe('DocumentTree importing', () => {
     expect(gathered.map(g => g.file.name)).toEqual(['dropped.md'])
     expect(options.parentId).toBe(notes.id)
     expect(tree.exists()).toBe(true)
+  })
+
+  it('lands a drop on a card in the card, and on another document that holds others beside it', async () => {
+    const wrapper = mountTree()
+    const notes = api.createFolder(api.root.value.id, 'Notes')
+    /** A file holding a text, as an import or Convert makes one. */
+    const holding = (title, fields) => {
+      const held = useDocumentsStore().createDocument({
+        storyId: 'story_1',
+        parentId: notes.id,
+        type: 'file',
+        title,
+        ...fields,
+      })
+      api.createTextDocument(held.id, 'Inside')
+      return held
+    }
+    const card = holding('Wren', { mime: 'image/png', kind: 'card' })
+    const pdf = holding('Rulebook', { mime: 'application/pdf' })
+    await wrapper.vm.$nextTick()
+    const files = [new File(['x'], 'dropped.md', { type: 'text/markdown' })]
+    const dataTransfer = { types: ['Files'], items: [], files, dropEffect: '' }
+
+    for (const held of [card, pdf]) {
+      const row = wrapper.find(`[data-document-id="${held.id}"]`)
+      await row.trigger('dragenter', { dataTransfer })
+      await row.trigger('drop', { dataTransfer })
+      await flushPromises()
+    }
+
+    expect(importMany.mock.calls.map(([, options]) => options.parentId)).toEqual([
+      card.id,
+      notes.id,
+    ])
   })
 
   it('lands a drop on the space below the documents in the project', async () => {

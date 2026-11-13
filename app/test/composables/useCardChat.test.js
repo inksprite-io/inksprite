@@ -9,6 +9,8 @@ import { ROLEPLAY_PROFILE_ID, ROLEPLAY_NSFW_PROFILE_ID } from '@/ai/profiles/ind
 import { DEFAULT_ROLEPLAY_NOTE, DEFAULT_ROLEPLAY_NSFW_NOTE } from '@/ai/prompts/index.js'
 import { useProfiles } from '@/composables/useProfiles'
 import { useApplicationState } from '@/composables/useApplicationState'
+import { useDocumentsStore } from '@/stores/documentsStore'
+import { chatVisibility } from '@/utils/visibility.js'
 
 vi.mock('@/stores/db', () => ({
   default: {
@@ -27,24 +29,28 @@ vi.mock('@/stores/syncStore', () => ({
   useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
-const { chats, messages, mockCreateChat, mockUpdateChat, mockAddMessage } = vi.hoisted(() => {
-  const chats = new Map()
-  const messages = []
-  return {
-    chats,
-    messages,
-    mockCreateChat: vi.fn((storyId, title, _id, initial) => {
-      const chat = { id: `chat_${chats.size + 1}`, storyId, title, ...initial }
-      chats.set(chat.id, chat)
-      return chat
-    }),
-    mockUpdateChat: vi.fn((id, updates) => Object.assign(chats.get(id), updates)),
-    mockAddMessage: vi.fn((chatId, role, content) => {
-      messages.push({ chatId, role, content })
-      return messages.at(-1)
-    }),
+const { chats, messages, preset, mockCreateChat, mockUpdateChat, mockAddMessage } = vi.hoisted(
+  () => {
+    const chats = new Map()
+    const messages = []
+    return {
+      chats,
+      messages,
+      /** What the chat runs on: a model that can call tools, unless a test says not. */
+      preset: { current: {} },
+      mockCreateChat: vi.fn((storyId, title, _id, initial) => {
+        const chat = { id: `chat_${chats.size + 1}`, storyId, title, ...initial }
+        chats.set(chat.id, chat)
+        return chat
+      }),
+      mockUpdateChat: vi.fn((id, updates) => Object.assign(chats.get(id), updates)),
+      mockAddMessage: vi.fn((chatId, role, content, _reasoning, segments) => {
+        messages.push({ chatId, role, content, ...(segments ? { segments } : {}) })
+        return messages.at(-1)
+      }),
+    }
   }
-})
+)
 
 vi.mock('@/stores/chatsStore', () => ({
   generateChatId: () => 'chat_unstarted',
@@ -52,6 +58,7 @@ vi.mock('@/stores/chatsStore', () => ({
     chats,
     loadChatsForStory: vi.fn(async () => {}),
     getChatsForStory: () => [...chats.values()],
+    getChatById: id => chats.get(id),
     createChat: mockCreateChat,
     updateChat: mockUpdateChat,
   }),
@@ -65,6 +72,10 @@ vi.mock('@/stores/messagesStore', () => ({
   }),
 }))
 vi.mock('@/stores/storiesStore', () => ({ useStoriesStore: () => ({ getStory: () => null }) }))
+vi.mock('@/composables/useAIConfig', async importOriginal => ({
+  ...(await importOriginal()),
+  useAIConfig: () => ({ presetFor: () => preset.current }),
+}))
 
 const STORY = 'story_1'
 
@@ -78,6 +89,7 @@ describe('useCardChat', () => {
     clearChatsInstances()
     chats.clear()
     messages.length = 0
+    preset.current = {}
     vi.clearAllMocks()
     useApplicationState().resetState()
     cardChats = useCardChat(STORY)
@@ -148,12 +160,49 @@ describe('useCardChat', () => {
     expect(chat.roleplayPrompt).toBe('{{original}}\n\nElara never lies.')
   })
 
-  it('pins the card so it is in context before anything is said', async () => {
+  it('opens with the card’s documents attached, ahead of the greeting', async () => {
+    const written = await imported()
+
+    await begin(written.folderId)
+    const { openingIds } = await cardChats.read(written.folderId)
+
+    // With the first reply whether or not the model can read the project,
+    // and kept with the opening through every summary.
+    expect(openingIds).toHaveLength(1)
+    expect(messages.map(message => message.role)).toEqual(['user', 'assistant'])
+    const [turn] = messages
+    expect(turn.content).toBe('@[Description](</Elara/Description>)')
+    expect(turn.segments).toEqual([
+      {
+        type: 'text',
+        content: turn.content,
+        attachments: [
+          {
+            id: openingIds[0],
+            path: 'Elara/Description',
+            hash: expect.any(String),
+            text: 'A knight.',
+          },
+        ],
+      },
+    ])
+  })
+
+  it('attaches them with the names in, as the chat reads them', async () => {
+    const written = await imported({ description: '{{char}} is sworn to {{user}}.' })
+
+    await begin(written.folderId)
+
+    expect(messages[0].segments[0].attachments[0].text).toBe('Elara is sworn to Riley.')
+  })
+
+  it('pins nothing', async () => {
+    preset.current = { toolsEnabled: false }
     const written = await imported()
 
     const chat = await begin(written.folderId)
 
-    expect(chat.pinnedIds).toEqual(written.pinnedIds)
+    expect(chat).not.toHaveProperty('pinnedIds')
   })
 
   it('hides the other characters on its shelf, and shows its own', async () => {
@@ -164,17 +213,32 @@ describe('useCardChat', () => {
 
     // The shelf rather than each card on it, so one imported next week is
     // hidden too.
-    expect(chat.hiddenIds).toEqual([shelf])
+    expect(chat.hiddenIds).toContain(shelf)
     expect(chat.shownIds).toEqual([written.folderId])
   })
 
-  it('hides nothing for a card that is not on the shelf', async () => {
+  it('hides no shelf for a card that is not on one', async () => {
     const written = await imported()
 
     const chat = await begin(written.folderId)
 
-    expect(chat.hiddenIds).toBeUndefined()
+    expect(chat.hiddenIds).toEqual(written.greetingIds)
     expect(chat.shownIds).toBeUndefined()
+  })
+
+  it('keeps the greetings from a model reading up on the card, and shows it the rest', async () => {
+    const shelf = await shelfFor(STORY, 'characters')
+    const written = await imported({ alternate_greetings: ['Elsewhere.'] }, { parentId: shelf })
+
+    const chat = await begin(written.folderId)
+
+    const store = useDocumentsStore()
+    const { sees } = chatVisibility(chat, id => store.getDocument(id))
+    const documents = store.getChildrenOrdered(written.folderId)
+    expect(documents.filter(document => sees(document)).map(document => document.kind)).toEqual([
+      'description',
+    ])
+    expect(written.greetingIds).toHaveLength(2)
   })
 
   it('opens with the greeting, as an ordinary message', async () => {
@@ -184,7 +248,9 @@ describe('useCardChat', () => {
 
     // The opening turn sets voice and length by example before anything has
     // been asked, and it is a message so the writer can retry or delete it.
-    expect(messages).toEqual([expect.objectContaining({ role: 'assistant', content: 'Well?' })])
+    expect(messages.filter(message => message.role === 'assistant')).toEqual([
+      expect.objectContaining({ content: 'Well?' }),
+    ])
   })
 
   it('puts the names its macros become on the chat', async () => {
@@ -303,7 +369,7 @@ describe('useCardChat', () => {
 
     await begin(written.folderId)
 
-    expect(messages).toEqual([])
+    expect(messages.filter(message => message.role === 'assistant')).toEqual([])
   })
 
   describe('attach', () => {
@@ -315,7 +381,7 @@ describe('useCardChat', () => {
         ...settings,
       })
 
-    it('pins the card for the character the chat was with', async () => {
+    it('finds the card for the character the chat was with, and attaches it', async () => {
       const written = await imported()
       const chat = arrived()
 
@@ -323,7 +389,21 @@ describe('useCardChat', () => {
 
       expect(card.title).toBe('Elara')
       expect(named).toBe(1)
-      expect(chat.pinnedIds).toEqual(written.pinnedIds)
+      expect(chat).not.toHaveProperty('pinnedIds')
+      expect(messages).toEqual([
+        expect.objectContaining({
+          role: 'user',
+          segments: [
+            expect.objectContaining({
+              attachments: [
+                expect.objectContaining({
+                  id: (await cardChats.read(written.folderId)).openingIds[0],
+                }),
+              ],
+            }),
+          ],
+        }),
+      ])
     })
 
     it('says nothing twice: the chat has its opening already', async () => {
@@ -331,7 +411,7 @@ describe('useCardChat', () => {
 
       await cardChats.attach(arrived().id, 'Elara')
 
-      expect(messages).toEqual([])
+      expect(messages.filter(message => message.role === 'assistant')).toEqual([])
     })
 
     it("puts the card's instructions beside the note the import made", async () => {

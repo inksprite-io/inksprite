@@ -237,6 +237,156 @@ describe('tables', () => {
   })
 })
 
+describe('formulas', () => {
+  const { formula, formula_block, paragraph } = schema.nodes
+  /** @param {string} tex */
+  const inline = tex => formula.create({ tex })
+  /** @param {...any} content */
+  const doc = (...content) => schema.node('doc', null, content)
+  /** @param {...any} content */
+  const para = (...content) => paragraph.create(null, content)
+
+  it('reads TeX between dollars as a formula, its backslashes as TeX', () => {
+    const read = parseMarkdown('Euler: $e^{i\\pi} + 1 = 0$ and $\\{x \\mid x > 0\\}$.')
+    expect(
+      read.eq(
+        doc(
+          para(
+            schema.text('Euler: '),
+            inline('e^{i\\pi} + 1 = 0'),
+            schema.text(' and '),
+            inline('\\{x \\mid x > 0\\}'),
+            schema.text('.')
+          )
+        )
+      )
+    ).toBe(true)
+  })
+
+  it('reads a formula on lines of its own as a block, ending a paragraph', () => {
+    const read = parseMarkdown('Let\n$$\n\\begin{pmatrix} a \\\\ b \\end{pmatrix}\n$$\nwhere')
+    expect(read.content.content.map(node => node.type.name)).toEqual([
+      'paragraph',
+      'formula_block',
+      'paragraph',
+    ])
+    expect(read.child(1).attrs.tex).toBe('\\begin{pmatrix} a \\\\ b \\end{pmatrix}')
+  })
+
+  it('reads dollars as Pandoc does, so a price is a price', () => {
+    for (const text of ['It costs $5 and $10.', 'From $5-$10.', '$ 5 and 6 $', 'Just $5']) {
+      expect(parseMarkdown(text).textContent).toBe(text)
+    }
+    expect(parseMarkdown('So $x$5').textContent).toBe('So $x$5')
+  })
+
+  it('reads \\(…\\), and writes it with dollars', () => {
+    expect(settle('between \\( a + b \\) and')).toBe('between $a + b$ and')
+    expect(settle('One $$y$$ in a sentence')).toBe('One $y$ in a sentence')
+  })
+
+  it('reads \\[…\\] as the brackets it writes', () => {
+    expect(parseMarkdown('a literal \\[bracket\\]').textContent).toBe('a literal [bracket]')
+    const lines = parseMarkdown('\\[citation needed\\]\n\\[1\\] Smith')
+    expect(lines.textBetween(0, lines.content.size, '\n', '\n')).toBe(
+      '[citation needed]\n[1] Smith'
+    )
+  })
+
+  it('reads no formula in code, nor in a math fence', () => {
+    expect(parseMarkdown('`$x$`').firstChild.firstChild.marks[0].type.name).toBe('code')
+    expect(parseMarkdown('```math\nx^2\n```').firstChild.type.name).toBe('code_block')
+  })
+
+  it('reads an escaped dollar as a dollar', () => {
+    expect(parseMarkdown('\\$x$').textContent).toBe('$x$')
+  })
+
+  it("writes a formula's TeX as it is", () => {
+    expect(serializeMarkdown(doc(para(inline('a_1 * b_2 \\{c\\}'))))).toBe('$a_1 * b_2 \\{c\\}$')
+    expect(serializeMarkdown(doc(formula_block.create({ tex: 'x\n\ny' })))).toBe('$$\nx\ny\n$$')
+  })
+
+  it("writes one dollars can't hold between \\( and \\)", () => {
+    expect(serializeMarkdown(doc(para(inline('x'), schema.text('5'))))).toBe('\\(x\\)5')
+    expect(serializeMarkdown(doc(para(inline('a\\ '))))).toBe('\\(a\\ \\)')
+    expect(serializeMarkdown(doc(para(inline('a\\'))))).toBe('\\(a\\\\)')
+  })
+
+  it('writes an empty one, the one being written, as nothing', () => {
+    expect(serializeMarkdown(doc(para(schema.text('a'), inline(''))))).toBe('a')
+    expect(serializeMarkdown(doc(formula_block.create(), para(schema.text('a'))))).toBe('a')
+  })
+
+  it('escapes a dollar only where it would open a formula', () => {
+    /** @param {string} text */
+    const written = text => serializeMarkdown(doc(para(schema.text(text))))
+    expect(written('It costs $5 and $10.')).toBe('It costs $5 and $10.')
+    expect(written('From $5-$10.')).toBe('From $5-$10.')
+    expect(written('literally $x$ here')).toBe('literally \\$x$ here')
+    expect(written('between $5 and 6$')).toBe('between \\$5 and 6$')
+    // The second, escaped, would let the first reach the last.
+    expect(written('$a $b$')).toBe('\\$a \\$b$')
+    expect(written('$$x$$')).toBe('\\$\\$x$$')
+  })
+
+  it('escapes a dollar beside a formula that would join it', () => {
+    const md = serializeMarkdown(doc(para(schema.text('$'), inline('x'), schema.text('$'))))
+    expect(md).toBe('\\$$x$$')
+    expect(parseMarkdown(md).firstChild.childCount).toBe(3)
+  })
+
+  it("escapes a dollar in a picture's words", () => {
+    const picture = schema.nodes.image.create({ src: 'a.png', alt: 'costs $5 and 6$' })
+    const md = serializeMarkdown(doc(para(picture)))
+    expect(md).toBe('![costs \\$5 and 6\\$](a.png)')
+    expect(parseMarkdown(md).firstChild.firstChild.attrs.alt).toBe('costs $5 and 6$')
+  })
+
+  it('writes a dollar of its own when the text already has the mark', () => {
+    const md = serializeMarkdown(doc(para(schema.text('\uE000 $x$ \uE000'))))
+    expect(parseMarkdown(md).textContent).toBe('\uE000 $x$ \uE000')
+  })
+
+  it('holds formulas in cells, a pipe in one escaped', () => {
+    const table = '| a | $\\|x\\|$ |\n| --- | --- |\n| $y$ | $5 |'
+    const read = parseMarkdown(table)
+    expect(read.firstChild.child(0).child(1).firstChild.attrs.tex).toBe('|x|')
+    expect(settle(table)).toBe(table)
+  })
+
+  it('keeps formulas through every container and mark', () => {
+    const cases = [
+      '- item $x$\n- next',
+      '> $$\n> a\n> $$',
+      '- one\n\n  $$\n  y\n  $$',
+      '**bold $x$** and [$y$](https://example.com)',
+      '{==the $x$ here==}{>>c_a1<<}',
+      'We had {--$x^2$--}{>>s_1<<}{++$x^3$++}{>>s_1<<} here',
+      '# A heading with $x$',
+      'Once\n$x$ after a break',
+      'With $a$ and $5 then $b$',
+      '$x$ $y$ $5',
+    ]
+    for (const markdown of cases) {
+      expect(settle(markdown)).toBe(markdown)
+      const read = parseMarkdown(markdown)
+      expect(parseMarkdown(serializeMarkdown(read)).eq(read)).toBe(true)
+    }
+  })
+
+  it('round-trips dollars wherever they stand', () => {
+    const texts = ['$', '$$', '$x', 'x$', '$x$', '$ x $', '5$', '$5', '\\$', '$\\', '`$`']
+    for (const a of texts) {
+      for (const b of texts) {
+        const built = doc(para(schema.text(`${a} ${b}`), inline('t'), schema.text(`${b}${a}`)))
+        const back = parseMarkdown(serializeMarkdown(built))
+        expect(back.eq(built), `${a} | ${b}: ${serializeMarkdown(built)}`).toBe(true)
+      }
+    }
+  })
+})
+
 describe('serializeMarkdown', () => {
   it('writes an empty document as nothing', () => {
     expect(serializeMarkdown(parseMarkdown(''))).toBe('')

@@ -23,6 +23,7 @@ vi.mock('@/composables/useToast.js', () => ({ useToast: () => toast }))
 import PeopleSection from '@/components/writer/settings/PeopleSection.vue'
 import { sharing } from '@/cloud/people.js'
 import { useBlocking } from '@/composables/useBlocking.js'
+import { SECTION_HEADING } from '@/components/common/sectionHeading.js'
 
 const GRACE = { account: 2, name: 'grace', friend: 'ABCDEFGHJKMNPQRSTVWX' }
 const GIL = { account: 3, name: 'gil', friend: 'BBCDEFGHJKMNPQRSTVWX' }
@@ -37,9 +38,6 @@ const mountPeople = async () => {
     global: { plugins: [PrimeVue], directives: { tooltip: {} } },
   })
   await flushPromises()
-  // Open, as it was left.
-  const title = wrapper.find('button[aria-expanded]')
-  if (title.attributes('aria-expanded') !== 'true') await title.trigger('click')
   return wrapper
 }
 
@@ -178,5 +176,36 @@ describe('PeopleSection', () => {
     expect(find('[data-people-error]').textContent?.trim()).toBe(
       'The sync server can’t be reached.'
     )
+  })
+
+  it('puts its buttons beside the heading of the section it is in', async () => {
+    const heading = document.createElement('div')
+    heading.id = 'people-heading'
+    document.body.appendChild(heading)
+    wrapper = mount(PeopleSection, {
+      attachTo: document.body,
+      global: {
+        plugins: [PrimeVue],
+        directives: { tooltip: {} },
+        provide: { [SECTION_HEADING]: '#people-heading' },
+      },
+    })
+    await flushPromises()
+
+    try {
+      // Those blocked, then the plus, as they stand beside any heading.
+      expect(
+        [...heading.querySelectorAll('[data-action]')].map(one => one.getAttribute('data-action'))
+      ).toEqual(['show-blocked', 'add-person'])
+      expect(find('[data-sync-people] [data-action="add-person"]')).toBeNull()
+
+      heading.querySelector('[data-action="add-person"]').click()
+      await flushPromises()
+      expect(find('[data-sync-people] input')).not.toBeNull()
+    } finally {
+      wrapper.unmount()
+      wrapper = null
+      heading.remove()
+    }
   })
 })

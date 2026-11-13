@@ -1,8 +1,8 @@
 /**
  * @module composables/useChatSettings
  * @description One chat's settings, and the profile it runs on, for everything
- * that shows or changes them: the settings pane and the chat header's profile
- * menu.
+ * that shows or changes them: the settings and the chips under the message
+ * box.
  *
  * The chat can be the story's unstarted one, whose settings are kept in memory
  * until something is sent in it. Reading and writing go to whichever it is, so
@@ -13,21 +13,18 @@ import { computed, toValue } from 'vue'
 import { useChats } from './useChats.js'
 import { useProfiles } from './useProfiles.js'
 import { useApplicationState } from './useApplicationState.js'
-import { useWebSearch } from './useWebSearch.js'
-import { useMcpServers } from './useMcpServers.js'
 import { useAIConfig } from './useAIConfig.js'
-import { useStoriesStore } from '@/stores/storiesStore'
 import { DEFAULT_CHAT_PROMPT } from '@/ai/prompts/index.js'
 import {
+  getBuiltInProfile,
   noteOnProfile,
   settingsForProfileSwitch,
   ROLEPLAY_NSFW_PROFILE_ID,
   ROLEPLAY_PROFILE_ID,
 } from '@/ai/profiles/index.js'
 import { ownPrompt, skillPrompt } from '@/ai/skills/index.js'
-import { webForChat } from '@/web/config.js'
-import { pythonForChat, pythonProfiles, setPythonProfile } from '@/ai/tools/python.js'
-import { serversForChat } from '@/mcp/servers.js'
+import { resolveAISettings } from '@/ai/defaults.js'
+import { copyChoice, switchGroups, switchTool, toolsSwitchedOff } from '@/ai/tools/choice.js'
 
 /** @typedef {import('../types/models.js').Chat} Chat */
 
@@ -39,10 +36,7 @@ export function useChatSettings(storyId, chatId) {
   const chatsApi = useChats(storyId)
   const profilesApi = useProfiles()
   const app = useApplicationState()
-  const webSearch = useWebSearch()
-  const mcp = useMcpServers()
   const aiConfig = useAIConfig()
-  const storiesStore = useStoriesStore()
 
   const unstarted = computed(() => chatsApi.isUnstarted(toValue(chatId)))
 
@@ -81,8 +75,8 @@ export function useChatSettings(storyId, chatId) {
   /** The system prompt the next request sends: the chat's own, or its profile's. */
   const prompt = computed(() => chat.value?.prompt ?? profilePrompt.value)
 
-  // Only the writer's own can be renamed, removed or saved over; the built-ins
-  // ship with the app, and saving to one makes a copy instead.
+  // Only the writer's own can be renamed or removed; the built-ins ship with
+  // the app, and are saved to in place.
   const isSavedProfile = computed(() => !!selectedProfile.value && !selectedProfile.value.readOnly)
 
   /**
@@ -102,22 +96,100 @@ export function useChatSettings(storyId, chatId) {
    */
   const setNote = text => update({ rules: text.trim() || undefined })
 
-  /** The AI preset the chat's profile runs chats on: its own, or the default. */
-  const profilePresetId = computed(
-    () => aiConfig.presetFor(null, selectedProfile.value)?.id ?? null
-  )
-
-  /** The AI preset the chat runs on: its own choice, or its profile's. */
+  /**
+   * What the chat runs on: its model, on that model's settings (`runOn` in
+   * useAIConfig). Null where there is none.
+   */
   const preset = computed(() => aiConfig.presetFor(chat.value, selectedProfile.value))
-  const presetId = computed(() => preset.value?.id ?? null)
 
   /**
-   * Run the chat on a preset. The choice is the chat's: every other chat
-   * runs on what it ran on. Back on its profile's, the chat follows the
-   * profile again.
-   * @param {string} id
+   * Leave a choice on the chat and on its profile: the chat runs with it, and
+   * the next chat started on the profile starts with it. Every other chat
+   * goes on as it was.
+   * @param {import('./useProfiles.js').ProfileChoices} choices
    */
-  const setPreset = id => update({ presetId: id === profilePresetId.value ? undefined : id })
+  const choose = choices => {
+    update(choices)
+    profilesApi.setProfileChoices(selectedProfileId.value, choices)
+  }
+
+  /**
+   * Run the chat on a model, and start the profile's next chats there. It is
+   * kept among the models the writer chose lately, for the model menu.
+   * @param {string} providerId
+   * @param {string} model
+   */
+  const setModel = (providerId, model) => {
+    if (!providerId || !model) return
+    choose({ providerId, model })
+    app.rememberModel(providerId, model)
+  }
+
+  /**
+   * How hard the model thinks in this chat: its own choice, or, for a chat
+   * that has made none, its preset's, and then the app's. Fitted to the
+   * model as it is sent.
+   */
+  const reasoningEffort = computed(
+    () =>
+      chat.value?.reasoningEffort ||
+      resolveAISettings(preset.value?.generationOverrides).reasoningEffort
+  )
+
+  /**
+   * Have the model think this hard in this chat, and in the profile's next.
+   * @param {string} effort
+   */
+  const setReasoningEffort = effort => {
+    if (effort) choose({ reasoningEffort: effort })
+  }
+
+  /**
+   * Switch groups of tools on or off in this chat, and in its profile's next
+   * chats: the profile takes the same switch on its own tools, not the chat's
+   * whole list, so what another chat on it switched since stays.
+   * @param {string[]} groups
+   * @param {boolean} on
+   */
+  const setToolGroups = (groups, on) => {
+    update(switchGroups(chat.value, groups, on))
+    const profile = selectedProfile.value
+    if (profile)
+      profilesApi.setProfileChoices(profile.id, switchGroups(profile.settings, groups, on))
+  }
+
+  /**
+   * Switch one tool on or off in this chat, and in its profile's next chats,
+   * as a group is.
+   * @param {string} name
+   * @param {boolean} on
+   */
+  const setTool = (name, on) => {
+    update(switchTool(chat.value, name, on))
+    const profile = selectedProfile.value
+    if (profile) profilesApi.setProfileChoices(profile.id, switchTool(profile.settings, name, on))
+  }
+
+  /** Whether the chat's tools are on at all, whatever each is switched to. */
+  const toolsOn = computed(() => !toolsSwitchedOff(chat.value))
+
+  /**
+   * Switch every tool off in this chat, and in its profile's next chats, or
+   * back on: each group and tool comes back as it was switched.
+   * @param {boolean} on
+   */
+  const setToolsOn = on => choose({ toolsOff: on ? undefined : true })
+
+  /** Whether the chat's edits wait for the writer: its own choice, or the app's from before. */
+  const applyEdits = computed(() => app.applyEditsFor(chat.value))
+
+  /**
+   * Have this chat's edits wait, or go in, and the profile's next chats too.
+   * @param {'auto'|'ask'} mode
+   */
+  const setApplyEdits = mode => {
+    if (mode === 'auto' || mode === 'ask') choose({ applyEdits: mode })
+  }
 
   /**
    * The chat's roleplay settings: the names its macros become, and the
@@ -158,206 +230,155 @@ export function useChatSettings(storyId, chatId) {
   const setPostHistory = text => update({ postHistory: text.trim() || undefined })
 
   /**
-   * What a skill runs under on the profile, and in this chat: the chat's
-   * wording over the profile's, and the skill's own under both. See
-   * `skillPrompt`.
+   * What a skill runs under in this chat: its profile's wording, or the
+   * skill's own where the profile has none. A chat that was given wording of
+   * its own, before a skill's wording was its profile's alone, runs under
+   * that until it is changed here. See `skillPrompt`.
    * @param {string} id
    */
-  const profileSkillPrompt = id => skillPrompt(id, selectedProfile.value?.settings)
-  /** @param {string} id */
   const skillPromptOf = id =>
     skillPrompt(id, {
       skills: { ...selectedProfile.value?.settings?.skills, ...chat.value?.skills },
     })
 
   /**
-   * Change what a skill runs under, in this chat. Typed back to the profile's
-   * wording, the chat reads the profile's again; to the skill's own, it is
-   * kept as none, so it keeps up with that wording as it changes.
+   * What a skill runs under on this profile before the writer rewords it
+   * there: the wording a built-in profile ships with, as Roleplay does
+   * Compact, and the skill's own otherwise.
+   * @param {string} id
+   */
+  const shippedSkillPrompt = id =>
+    getBuiltInProfile(selectedProfileId.value)?.settings.skills?.[id]?.prompt?.trim() ||
+    ownPrompt(id)
+
+  /**
+   * Change what a skill runs under, on the profile: as the model and the
+   * tools are, it is no one chat's, and every chat on the profile reads it.
+   * Typed back to what it was before any rewording, the profile keeps none
+   * of its own, so it keeps up with that wording as it changes; the chat's
+   * own, from before, gives way.
    * @param {string} id
    * @param {string} text
    */
   const setSkillPrompt = (id, text) => {
-    const own = { ...chat.value?.skills }
-    if (text.trim() === profileSkillPrompt(id)) delete own[id]
-    else own[id] = { prompt: text.trim() === ownPrompt(id) ? '' : text }
-    update({ skills: Object.keys(own).length > 0 ? own : undefined })
+    /** @type {Record<string, {prompt?: string}>} */
+    const skills = { ...selectedProfile.value?.settings?.skills }
+    const shipped = getBuiltInProfile(selectedProfileId.value)?.settings.skills?.[id]
+    if (text.trim() !== shippedSkillPrompt(id)) skills[id] = { prompt: text }
+    else if (shipped) skills[id] = shipped
+    else delete skills[id]
+    writeToProfile({ skills })
+    if (chat.value?.skills?.[id]) {
+      const own = { ...chat.value.skills }
+      delete own[id]
+      update({ skills: Object.keys(own).length > 0 ? own : undefined })
+    }
   }
 
   /**
-   * Put a skill back on its own wording, in this chat.
+   * Put a skill back on the wording it had before the profile reworded it.
    * @param {string} id
    */
-  const resetSkill = id => setSkillPrompt(id, ownPrompt(id))
+  const resetSkill = id => setSkillPrompt(id, shippedSkillPrompt(id))
 
   /** @param {string} id */
-  const isSkillReworded = id => skillPromptOf(id) !== ownPrompt(id)
+  const isSkillReworded = id => skillPromptOf(id) !== shippedSkillPrompt(id)
 
-  /** @param {string[]|undefined} a @param {string[]|undefined} b */
-  const sameSet = (a, b) => {
-    const left = new Set(a || [])
-    const right = new Set(b || [])
-    return left.size === right.size && [...left].every(name => right.has(name))
-  }
+  /** Whether the chat's system prompt is its own, which Save carries to the profile. */
+  const promptUnsaved = computed(() => prompt.value !== profilePrompt.value)
 
-  /** The servers the chat's profile lists, as a chat that has not chosen reads them. */
-  const listedServers = () => serversForChat(null, selectedProfileId.value).map(server => server.id)
+  /** Whether the chat's author's note differs from its profile's. */
+  const noteUnsaved = computed(
+    () => (note.value || '') !== (selectedProfile.value?.settings?.rules || '')
+  )
 
   /**
-   * Whether this chat runs differently from its profile: its prompt, a skill's
-   * wording, its tools, the web, Python or a server, its author's note, or its
-   * preset. What Save to profile would write.
-   */
-  const changed = computed(() => {
-    const own = chat.value
-    const settings = selectedProfile.value?.settings
-    if (!own || !settings) return false
-    const id = selectedProfileId.value
-    return (
-      prompt.value !== profilePrompt.value ||
-      Object.keys(own.skills || {}).some(
-        skill => skillPromptOf(skill) !== profileSkillPrompt(skill)
-      ) ||
-      !sameSet(own.disabledTools, settings.disabledTools) ||
-      !sameSet(own.disabledToolGroups, settings.disabledToolGroups) ||
-      (note.value || '') !== (settings.rules || '') ||
-      presetId.value !== profilePresetId.value ||
-      webForChat(own, id) !== webForChat(null, id) ||
-      pythonForChat(own, id) !== pythonForChat(null, id) ||
-      (Array.isArray(own.mcpServers) && !sameSet(own.mcpServers, listedServers()))
-    )
-  })
-
-  /**
-   * What this chat runs under, as a profile's settings. A skill's wording that
-   * is only its own is left out, so the profile keeps up with it.
+   * What this chat runs under, as a profile's settings, its profile's
+   * wording of the skills with them.
    * @returns {import('@/ai/profiles/index.js').ProfileSettings}
    */
   const chatAsProfile = () => {
     const own = chat.value || {}
-    const worded = { ...selectedProfile.value?.settings?.skills, ...own.skills }
     const skills = Object.fromEntries(
-      Object.entries(worded).filter(
+      Object.entries({ ...selectedProfile.value?.settings?.skills, ...own.skills }).filter(
         ([id, wording]) => wording?.prompt?.trim() && wording.prompt.trim() !== ownPrompt(id)
       )
     )
     return {
       prompt: prompt.value,
-      disabledTools: [...(own.disabledTools || [])],
-      disabledToolGroups: [...(own.disabledToolGroups || [])],
+      ...copyChoice(own),
       rules: note.value || undefined,
       skills,
-      // The profile's own where the chat runs as it does, so one that runs
-      // chats on the default goes on following the default.
-      presetId:
-        presetId.value === profilePresetId.value
-          ? selectedProfile.value?.settings?.presetId
-          : (presetId.value ?? undefined),
+      providerId: preset.value?.providerId || undefined,
+      model: preset.value?.model || undefined,
+      reasoningEffort: own.reasoningEffort || undefined,
+      applyEdits: own.applyEdits || undefined,
     }
   }
 
   /**
-   * List a profile with the web search setup, Python and each server as this
-   * chat uses them: its own choice where it made one, and the profile it is on
-   * where it did not. For a copy, so new chats on it start as this one runs;
-   * and for a save, so the profile takes the chat's choice.
-   * @param {string} id - The profile to list
-   */
-  const listAs = id => {
-    const own = chat.value || {}
-    const from = selectedProfileId.value
-    const listed = webSearch.setup.value.profiles || []
-    const web = typeof own.web === 'boolean' ? own.web : listed.includes(from)
-    if (web !== listed.includes(id)) webSearch.setProfile(id, web)
-    const python = typeof own.python === 'boolean' ? own.python : pythonProfiles().includes(from)
-    if (python !== pythonProfiles().includes(id)) setPythonProfile(id, python)
-    for (const server of mcp.servers.value) {
-      const on = Array.isArray(own.mcpServers)
-        ? own.mcpServers.includes(server.id)
-        : (server.profiles || []).includes(from)
-      if (on === (server.profiles || []).includes(id)) continue
-      const others = (server.profiles || []).filter(one => one !== id)
-      mcp.updateServer(server.id, { profiles: on ? [...others, id] : others })
-    }
-  }
-
-  /**
-   * A profile of the writer's own made from this chat, named after the one it
-   * is on, with the chat moved onto it. See `copyName` in useProfiles.
+   * New profile: a copy of this chat's settings, under the name given, made
+   * free where another profile has it, which the chat moves onto. The usual
+   * reason to reach for one is a variation on what is already there.
+   * @param {string} [name]
    * @returns {import('./useProfiles.js').ProfileEntry|null}
    */
-  const copyToProfile = () => {
-    const source = selectedProfile.value
-    if (!source) return null
-    const copy = profilesApi.saveProfile(profilesApi.copyName(source), chatAsProfile())
-    listAs(copy.id)
+  const newProfile = (name = '') => {
+    if (!selectedProfile.value) return null
+    const copy = profilesApi.saveProfile(
+      profilesApi.freeProfileName(name.trim() || 'New Profile'),
+      chatAsProfile()
+    )
     update(settingsForProfileSwitch(copy))
     return copy
   }
 
   /**
-   * New profile: a copy of this chat's settings, which the chat moves onto.
-   * The usual reason to reach for one is a variation on what is already there.
+   * Carry texts to the chat's profile, for every new chat on it, and for
+   * every chat on it that has none of its own. A built-in takes them in
+   * place, beside it (`system.builtInProfiles`); a text that is the one it
+   * ships with is kept as none, so the built-in keeps up with the app's
+   * improvements to it.
+   * @param {{prompt?: string, rules?: string, skills?: Record<string, {prompt?: string}>}} texts
    */
-  const forkProfile = () => {
-    copyToProfile()
-  }
-
-  /**
-   * Save this chat's settings to its profile, for every new chat on it. The
-   * chats already on it keep their own.
-   *
-   * A built-in can't be changed, so its settings go to a copy, `Default -
-   * Custom`, which takes the built-in's place wherever it was the one chats
-   * start on: in the settings, and as this project's default.
-   */
-  const saveToProfile = async () => {
+  const writeToProfile = texts => {
     const source = selectedProfile.value
     if (!source) return
-    if (!source.readOnly) {
-      profilesApi.updateProfile(source.id, { settings: chatAsProfile() })
-      listAs(source.id)
-      update({
-        prompt: undefined,
-        skills: undefined,
-        presetId: undefined,
-        web: undefined,
-        python: undefined,
-        mcpServers: undefined,
-      })
+    const shipped = getBuiltInProfile(source.id)?.settings
+    if (!shipped) {
+      profilesApi.updateProfile(source.id, { settings: texts })
       return
     }
-
-    const resolves = (/** @type {string} */ id) => profilesApi.getProfile(id)?.id === source.id
-    const startsChats = resolves(profilesApi.chatDefaultId())
-    const startsCards = resolves(profilesApi.roleplayDefaultId())
-    const story = storiesStore.getStory(storyId)
-    const startsProject = !!story?.options?.profileId && resolves(story.options.profileId)
-
-    const copy = copyToProfile()
-    if (!copy) return
-    if (startsChats) app.setChatProfileId(copy.id)
-    if (startsCards) app.setRoleplayProfileId(copy.id)
-    if (startsProject && story) {
-      await storiesStore.updateStory(storyId, {
-        options: { ...story.options, profileId: copy.id },
-      })
-    }
+    /** @type {Partial<import('@/ai/profiles/index.js').ProfileSettings>} */
+    const kept = {}
+    if ('prompt' in texts) kept.prompt = texts.prompt === shipped.prompt ? undefined : texts.prompt
+    if ('rules' in texts)
+      kept.rules = (texts.rules || '') === (shipped.rules || '') ? undefined : texts.rules
+    if ('skills' in texts)
+      kept.skills =
+        JSON.stringify(texts.skills) === JSON.stringify(shipped.skills || {})
+          ? undefined
+          : texts.skills
+    app.setBuiltInProfile(source.id, kept)
   }
 
-  /** Put this chat back as its profile has it: its prompt, tools, note, preset and all. */
-  const resetToProfile = () => {
-    if (selectedProfile.value) update(settingsForProfileSwitch(selectedProfile.value))
+  /** Save the chat's system prompt to its profile; the chat reads the profile's again. */
+  const savePrompt = () => {
+    writeToProfile({ prompt: prompt.value })
+    update({ prompt: undefined })
   }
+
+  /** Save the chat's author's note to its profile, for the chats started on it next. */
+  const saveNote = () => writeToProfile({ rules: note.value || undefined })
 
   /**
    * Point the chat at a profile.
    *
    * Only the prompt follows the profile from here. Everything the profile also
-   * carries — its tools, its context switches, its author's note — is stamped
-   * on in place of whatever the chat had, because a chat that silently
-   * retooled itself when its profile changed would be a chat whose settings
-   * nobody could trust.
+   * carries — its tools, its context switches, its author's note, its model —
+   * is stamped on in place of whatever the chat had, because a chat that
+   * silently retooled itself when its profile changed would be a chat whose
+   * settings nobody could trust.
    *
    * @param {string} id
    */
@@ -401,17 +422,24 @@ export function useChatSettings(storyId, chatId) {
     profilePrompt,
     setPrompt,
     preset,
-    presetId,
-    profilePresetId,
-    setPreset,
+    setModel,
+    reasoningEffort,
+    setReasoningEffort,
+    applyEdits,
+    setApplyEdits,
+    setToolGroups,
+    setTool,
+    toolsOn,
+    setToolsOn,
     skillPromptOf,
     setSkillPrompt,
     resetSkill,
     isSkillReworded,
-    changed,
-    forkProfile,
-    saveToProfile,
-    resetToProfile,
+    promptUnsaved,
+    noteUnsaved,
+    newProfile,
+    savePrompt,
+    saveNote,
     setProfile,
     deleteProfile,
   }

@@ -42,6 +42,9 @@ import { dump, load } from 'js-yaml'
  * @typedef {Object} SkillDefinition
  * @property {string} name - What the writer types after the slash, and the
  *   model's name for the tool
+ * @property {string} title - What the writer called it, where that is more
+ *   than its name can hold: "Short Story Editor" for `short-story-editor`.
+ *   Nothing when the name is all there is.
  * @property {string} description - What it does and when to use it. The model
  *   reads this to decide whether to call it.
  * @property {string} summary - What it does, in a line, for the writer: the
@@ -76,8 +79,8 @@ const FRONTMATTER = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/
 const NAME = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
 
 /** The longest name and description the standard allows. */
-const MAX_NAME = 64
-const MAX_DESCRIPTION = 1024
+export const MAX_NAME = 64
+export const MAX_DESCRIPTION = 1024
 
 /** What an argument can be called and still be written `$name` in a body. */
 const ARGUMENT = /^[A-Za-z_][\w-]*$/
@@ -123,6 +126,20 @@ function listOf(value) {
 }
 
 /**
+ * What YAML could not read, in a line: js-yaml's own message runs to several,
+ * with the lines around the fault drawn out under it.
+ *
+ * @param {any} error
+ * @returns {string}
+ */
+function yamlProblem(error) {
+  const reason = typeof error?.reason === 'string' ? error.reason : 'it is not YAML'
+  const line = error?.mark?.line
+  // Its lines count from nought, and from under the opening dashes.
+  return typeof line === 'number' ? `${reason}, on line ${line + 2}` : reason
+}
+
+/**
  * A SKILL.md in its two parts: the frontmatter, as the fields YAML reads it
  * into, and the body. Nothing about what the fields mean — that is
  * `parseSkill` — only whether there are fields to read.
@@ -140,10 +157,10 @@ export function splitSkill(text) {
   try {
     front = load(match[1])
   } catch (error) {
-    return { error: `Its frontmatter is not YAML that can be read: ${error.message}` }
+    return { error: `The frontmatter can’t be read: ${yamlProblem(error)}.` }
   }
   if (!front || typeof front !== 'object' || Array.isArray(front)) {
-    return { error: 'Its frontmatter has to be a set of fields.' }
+    return { error: 'The frontmatter can’t be read: it has to be a set of fields.' }
   }
 
   return {
@@ -165,10 +182,10 @@ export function joinSkill(front, body) {
 }
 
 /** What a skill with no description is told. */
-export const NEEDS_DESCRIPTION = 'It needs a `description`: what it does, and when to use it.'
+export const NEEDS_DESCRIPTION = 'It needs a description.'
 
 /** What a skill with no instructions is told. */
-export const NEEDS_INSTRUCTIONS = 'It needs instructions, under its frontmatter.'
+export const NEEDS_INSTRUCTIONS = 'It needs instructions.'
 
 /**
  * What is wrong with a skill's name as a name, whatever else has it.
@@ -177,7 +194,7 @@ export const NEEDS_INSTRUCTIONS = 'It needs instructions, under its frontmatter.
  * @returns {string} Nothing for a good one
  */
 export function nameError(name) {
-  if (!name) return 'It needs a `name`.'
+  if (!name) return 'It needs a name.'
   if (name.length > MAX_NAME) return `Its name is longer than ${MAX_NAME} characters.`
   if (!NAME.test(name)) {
     return `"${name}" cannot be a name: lowercase letters, digits and single hyphens, starting with a letter.`
@@ -188,13 +205,18 @@ export function nameError(name) {
 /**
  * Read a SKILL.md.
  *
- * Everything that is wrong with it is said, not just the first thing, so a
- * writer fixing a file by hand fixes it once. Fields it does not use are named
- * in `ignored`, for anyone importing it who wants to know what did not come
- * across.
+ * Three things keep a file from being a skill: frontmatter that can't be
+ * read, no name it can be called by, and no description or instructions.
+ * They are said in that order, so the first is the one to put right first.
+ *
+ * Nothing else does. A field this app has no use for, and one it knows whose
+ * value it can't use, are both passed over as other tools pass them over, and
+ * named in `ignored` for anyone importing the file who wants to know what did
+ * not come across. `unusable` says what was wrong with the second kind, which
+ * only a skill that ships with the app is held to.
  *
  * @param {string} text - The whole file
- * @returns {{skill: SkillDefinition, ignored: string[]}|{errors: string[]}}
+ * @returns {{skill: SkillDefinition, ignored: string[], unusable: string[]}|{errors: string[]}}
  */
 export function parseSkill(text) {
   const split = splitSkill(text)
@@ -203,11 +225,17 @@ export function parseSkill(text) {
   const fields = split.front
   /** @type {string[]} */
   const errors = []
+  /** What was passed over, by its field, and why. @type {Map<string, string>} */
+  const passed = new Map()
+  const pass = (/** @type {string} */ key, /** @type {string} */ why) => {
+    if (!passed.has(key)) passed.set(key, why)
+  }
+
   const textField = (/** @type {string} */ key) => {
     const value = fields[key]
     if (value === undefined || value === null) return ''
     if (typeof value !== 'string') {
-      errors.push(`\`${key}\` has to be text.`)
+      pass(key, `\`${key}\` has to be text.`)
       return ''
     }
     return value.trim()
@@ -216,86 +244,82 @@ export function parseSkill(text) {
     const value = fields[key]
     if (value === undefined || value === null) return otherwise
     if (typeof value !== 'boolean') {
-      errors.push(`\`${key}\` has to be true or false.`)
+      pass(key, `\`${key}\` has to be true or false.`)
       return otherwise
     }
     return value
   }
 
-  const name = textField('name')
+  // A name YAML read as something else, a number or a date, is still what
+  // was written there.
+  const named = fields.name
+  const name = typeof named === 'string' || typeof named === 'number' ? String(named).trim() : ''
   const badName = nameError(name)
   if (badName) errors.push(badName)
 
-  const described = textField('description')
+  const described = typeof fields.description === 'string' ? fields.description.trim() : ''
   if (!described) errors.push(NEEDS_DESCRIPTION)
-  else if (described.length > MAX_DESCRIPTION) {
-    errors.push(`Its description is longer than ${MAX_DESCRIPTION} characters.`)
-  }
   const whenToUse = textField('when_to_use')
   const description = whenToUse ? `${described} ${whenToUse}` : described
 
   const model = !flag('disable-model-invocation', false)
   const user = flag('user-invocable', true)
-  if (!model && !user) errors.push('Nobody can call it: the model is kept from it, and so are you.')
 
   const context = fields.context
   if (context !== undefined && context !== null && context !== 'fork') {
-    errors.push('`context` can only be `fork`, for a skill that runs on its own.')
+    pass('context', '`context` can only be `fork`, for a skill that runs on its own.')
   }
   const fork = context === 'fork'
 
-  const named = listOf(fields.arguments)
-  if (named === null) errors.push('`arguments` has to be a name, or a list of them.')
-  else if (named.length > 1) {
-    errors.push('It can take one argument: everything typed after its name.')
-  } else if (named.length === 1 && !ARGUMENT.test(named[0])) {
-    errors.push(`"${named[0]}" cannot be an argument's name.`)
+  const args = listOf(fields.arguments)
+  if (args === null) pass('arguments', '`arguments` has to be a name, or a list of them.')
+  else if (args.length > 1) {
+    pass('arguments', 'It can take one argument: everything typed after its name.')
+  } else if (args.length === 1 && !ARGUMENT.test(args[0])) {
+    pass('arguments', `"${args[0]}" cannot be an argument's name.`)
   }
-  const argument = named?.length === 1 ? named[0] : null
+  const argument = args?.length === 1 && !passed.has('arguments') ? args[0] : null
 
   const tools = listOf(fields['allowed-tools'])
-  if (tools === null) errors.push('`allowed-tools` has to be a list of tool names.')
+  if (tools === null) pass('allowed-tools', '`allowed-tools` has to be a list of tool names.')
 
   const metadata = fields.metadata ?? {}
-  if (typeof metadata !== 'object' || Array.isArray(metadata)) {
-    errors.push('`metadata` has to be a set of fields.')
-  }
-  const meta = /** @type {Record<string, unknown>} */ (
-    typeof metadata === 'object' && !Array.isArray(metadata) ? metadata : {}
-  )
+  const readable = typeof metadata === 'object' && !Array.isArray(metadata)
+  if (!readable) pass('metadata', '`metadata` has to be a set of fields.')
+  const meta = /** @type {Record<string, unknown>} */ (readable ? metadata : {})
   const metaText = (/** @type {string} */ key) => {
     const value = meta[key]
     if (value === undefined || value === null) return ''
     if (typeof value !== 'string') {
-      errors.push(`\`metadata.${key}\` has to be text.`)
+      pass(`metadata.${key}`, `\`metadata.${key}\` has to be text.`)
       return ''
     }
     return value.trim()
   }
 
   const outputAsked = metaText('inksprite-output')
-  if (outputAsked && !OUTPUTS.includes(/** @type {SkillOutput} */ (outputAsked))) {
-    errors.push(`\`metadata.inksprite-output\` has to be one of ${OUTPUTS.join(', ')}.`)
+  const outputKnown = OUTPUTS.includes(/** @type {SkillOutput} */ (outputAsked))
+  if (outputAsked && !outputKnown) {
+    pass(
+      'metadata.inksprite-output',
+      `\`metadata.inksprite-output\` has to be one of ${OUTPUTS.join(', ')}.`
+    )
   }
   // Where it answers when the file does not say: back to whoever asked, or,
   // for a skill only the writer can call, as the reply — a skill nobody else
   // calls is one they wanted to read.
-  const output = /** @type {SkillOutput} */ (
-    outputAsked && OUTPUTS.includes(/** @type {SkillOutput} */ (outputAsked))
-      ? outputAsked
-      : model
-        ? 'result'
-        : 'reply'
-  )
+  const output = /** @type {SkillOutput} */ (outputKnown ? outputAsked : model ? 'result' : 'reply')
 
   const voices = metaText('inksprite-speakers').split(/\s+/).filter(Boolean)
   if (voices.length !== 0 && voices.length !== 2) {
-    errors.push(
+    pass(
+      'metadata.inksprite-speakers',
       '`metadata.inksprite-speakers` names two voices: the writer’s, then the other one’s.'
     )
   }
   const speakers = voices.length === 2 ? { user: voices[0], assistant: voices[1] } : null
 
+  const title = metaText('inksprite-title')
   const argumentHint = textField('argument-hint')
   const summary = metaText('inksprite-summary') || description
   const argumentDescription = metaText('inksprite-argument') || argumentHint
@@ -307,11 +331,12 @@ export function parseSkill(text) {
 
   if (errors.length > 0) return { errors }
 
-  const ignored = Object.keys(fields).filter(key => !FIELDS.has(key))
+  const unknown = Object.keys(fields).filter(key => !FIELDS.has(key))
 
   return {
     skill: {
       name,
+      title,
       description,
       summary,
       model,
@@ -321,32 +346,34 @@ export function parseSkill(text) {
       argument,
       argumentHint,
       argumentDescription,
-      tools: /** @type {string[]} */ (tools),
+      tools: tools ?? [],
       speakers,
       body,
       ...(license ? { license } : {}),
       ...(compatibility ? { compatibility } : {}),
     },
-    ignored,
+    ignored: [...new Set([...unknown, ...passed.keys()])],
+    unusable: [...passed.values()],
   }
 }
 
 /**
  * Read a skill that ships with the app.
  *
- * One that does not read is a bug in the app rather than a file somebody
- * brought, so it throws, and the module that ships it fails to load where a
- * test will see it.
+ * One that does not read, or that has a field this app can't use, is a bug in
+ * the app rather than a file somebody brought, so it throws, and the module
+ * that ships it fails to load where a test will see it.
  *
  * @param {string} text - The SKILL.md
  * @returns {SkillDefinition}
  */
 export function readBuiltInSkill(text) {
   const read = parseSkill(text)
-  if ('errors' in read) {
-    throw new Error(`A built-in skill does not read: ${read.errors.join(' ')}`)
+  const wrong = 'errors' in read ? read.errors : read.unusable
+  if (wrong.length > 0) {
+    throw new Error(`A built-in skill does not read: ${wrong.join(' ')}`)
   }
-  return read.skill
+  return /** @type {{skill: SkillDefinition}} */ (read).skill
 }
 
 /**

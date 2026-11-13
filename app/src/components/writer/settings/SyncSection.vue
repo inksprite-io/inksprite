@@ -1,6 +1,6 @@
 <template>
-  <div class="flex flex-col" data-sync>
-    <div class="flex flex-col gap-3 px-2 pt-1 pb-2">
+  <div class="flex flex-col" data-sync :data-part="part">
+    <div v-if="part === 'account'" class="flex flex-col gap-3">
       <template v-if="account">
         <!-- A recovery code just made, shown this once. -->
         <div
@@ -92,6 +92,124 @@
         >
           {{ keptHere }}
         </p>
+        <!-- This account's friend code, for the people it shares with; this
+             device's diagnostics; and what signs in: a new recovery code, a
+             new passphrase, and signing out. -->
+        <div v-if="profile" class="flex items-center gap-2" data-sync-friend>
+          <span class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Friend code</span
+          >
+          <code
+            class="flex-1 min-w-0 truncate text-xs tracking-wide select-all text-surface-900 dark:text-surface-0"
+            data-friend-code
+            >{{ profile.friend }}</code
+          >
+          <button
+            v-tooltip.bottom="friendCopied ? 'Copied' : 'Copy'"
+            type="button"
+            class="flex-none w-6 h-6 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
+            aria-label="Copy friend code"
+            data-action="copy-friend-code"
+            @click="copyFriendCode"
+          >
+            <i :class="friendCopied ? 'pi pi-check' : 'pi pi-copy'" style="font-size: 0.7rem" />
+          </button>
+        </div>
+        <div class="flex items-center justify-between gap-2">
+          <label
+            for="sync-diagnostics"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Send diagnostics</label
+          >
+          <ToggleSwitch
+            :model-value="sync.sendsDiagnostics.value"
+            input-id="sync-diagnostics"
+            class="flex-none"
+            data-sync-diagnostics
+            @update:model-value="sync.setSendsDiagnostics"
+          />
+        </div>
+
+        <div v-if="!asking" class="flex flex-wrap gap-2">
+          <Button
+            :label="hasCode ? 'New recovery code…' : 'Make a recovery code…'"
+            icon="pi pi-key"
+            size="small"
+            outlined
+            severity="secondary"
+            data-action="make-recovery"
+            @click="ask('recovery')"
+          />
+          <Button
+            label="Change passphrase…"
+            icon="pi pi-lock"
+            size="small"
+            outlined
+            severity="secondary"
+            data-action="change-passphrase"
+            @click="ask('passphrase')"
+          />
+          <Button
+            label="Sign out"
+            icon="pi pi-sign-out"
+            size="small"
+            outlined
+            severity="secondary"
+            data-action="sync-sign-out"
+            @click="signOut"
+          />
+        </div>
+        <div v-else class="flex flex-col gap-2" data-sync-asking>
+          <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
+            {{ asking === 'passphrase' ? 'Current passphrase' : 'Passphrase' }}
+            <InputText
+              v-model="current"
+              size="small"
+              type="password"
+              autocomplete="current-password"
+              data-field="sync-current"
+              @keydown.enter="finish"
+            />
+          </label>
+          <label
+            v-if="asking === 'passphrase'"
+            class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300"
+          >
+            New passphrase
+            <InputText
+              v-model="next"
+              size="small"
+              type="password"
+              autocomplete="new-password"
+              data-field="sync-next"
+              @keydown.enter="finish"
+            />
+          </label>
+          <p
+            v-if="asking === 'recovery' && hasCode"
+            class="text-xs text-surface-500 dark:text-surface-400"
+          >
+            The code you have now stops working.
+          </p>
+          <div class="flex items-center justify-end gap-2">
+            <p
+              v-if="askFailure"
+              class="mr-auto text-xs text-red-600 dark:text-red-400"
+              data-sync-error
+            >
+              {{ askFailure }}
+            </p>
+            <Button label="Cancel" size="small" text severity="secondary" @click="asking = null" />
+            <Button
+              :label="asking === 'recovery' ? 'Make code' : 'Change'"
+              size="small"
+              :loading="working"
+              :disabled="!current || (asking === 'passphrase' && !next)"
+              data-action="sync-confirm"
+              @click="finish"
+            />
+          </div>
+        </div>
       </template>
 
       <template v-else>
@@ -181,194 +299,50 @@
       </template>
     </div>
 
-    <template v-if="account">
-      <!-- This account's friend code, for the people it shares with; this
-           device's diagnostics; and what signs in: a new recovery code, a new
-           passphrase, and signing out. -->
-      <ExpandableSection
-        title="Account"
-        storage-key="ui.settings.sync.account"
-        subsection
-        container-class="pt-2"
-        content-wrapper-class="flex flex-col"
+    <!-- The people it shares with, kept by the server. Each project is
+         shared from Settings › Project. -->
+    <PeopleSection v-else-if="part === 'people' && profile !== null" />
+
+    <!-- The devices signed in, any of which can sign another out. -->
+    <ul v-else-if="part === 'devices'" class="flex flex-col" data-sync-devices>
+      <li
+        v-for="device in deviceList"
+        :key="device.id"
+        class="flex items-center gap-2 py-1 text-xs text-surface-700 dark:text-surface-200"
+        :data-device="device.current ? 'this' : device.id"
       >
-        <div class="flex flex-col gap-3 pt-2 pb-1">
-          <div v-if="profile" class="flex items-center gap-2" data-sync-friend>
-            <span class="text-xs font-medium text-surface-700 dark:text-surface-200"
-              >Friend code</span
-            >
-            <code
-              class="flex-1 min-w-0 truncate text-xs tracking-wide select-all text-surface-900 dark:text-surface-0"
-              data-friend-code
-              >{{ profile.friend }}</code
-            >
-            <button
-              v-tooltip.bottom="friendCopied ? 'Copied' : 'Copy'"
-              type="button"
-              class="flex-none w-6 h-6 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
-              aria-label="Copy friend code"
-              data-action="copy-friend-code"
-              @click="copyFriendCode"
-            >
-              <i :class="friendCopied ? 'pi pi-check' : 'pi pi-copy'" style="font-size: 0.7rem" />
-            </button>
-          </div>
-          <div class="flex items-center justify-between gap-2">
-            <label
-              for="sync-diagnostics"
-              class="text-xs font-medium text-surface-700 dark:text-surface-200"
-              >Send diagnostics</label
-            >
-            <ToggleSwitch
-              :model-value="sync.sendsDiagnostics.value"
-              input-id="sync-diagnostics"
-              class="flex-none"
-              data-sync-diagnostics
-              @update:model-value="sync.setSendsDiagnostics"
-            />
-          </div>
+        <span class="flex-1 min-w-0 truncate">{{ device.device || 'A device' }}</span>
+        <span class="text-surface-500 dark:text-surface-400">
+          {{ device.current ? 'This device' : formatRelativeTime(device.used) }}
+        </span>
+        <button
+          v-if="!device.current"
+          v-tooltip.bottom="'Sign out'"
+          type="button"
+          class="flex-none w-6 h-6 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
+          :aria-label="`Sign out ${device.device || 'this device'}`"
+          data-action="sign-out-device"
+          @click="signOutOther(device)"
+        >
+          <i class="pi pi-sign-out" style="font-size: 0.7rem" />
+        </button>
+        <span v-else class="flex-none w-6" />
+      </li>
+    </ul>
 
-          <div v-if="!asking" class="flex flex-wrap gap-2">
-            <Button
-              :label="hasCode ? 'New recovery code…' : 'Make a recovery code…'"
-              icon="pi pi-key"
-              size="small"
-              outlined
-              severity="secondary"
-              data-action="make-recovery"
-              @click="ask('recovery')"
-            />
-            <Button
-              label="Change passphrase…"
-              icon="pi pi-lock"
-              size="small"
-              outlined
-              severity="secondary"
-              data-action="change-passphrase"
-              @click="ask('passphrase')"
-            />
-            <Button
-              label="Sign out"
-              icon="pi pi-sign-out"
-              size="small"
-              outlined
-              severity="secondary"
-              data-action="sync-sign-out"
-              @click="signOut"
-            />
-          </div>
-          <div v-else class="flex flex-col gap-2" data-sync-asking>
-            <label class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300">
-              {{ asking === 'passphrase' ? 'Current passphrase' : 'Passphrase' }}
-              <InputText
-                v-model="current"
-                size="small"
-                type="password"
-                autocomplete="current-password"
-                data-field="sync-current"
-                @keydown.enter="finish"
-              />
-            </label>
-            <label
-              v-if="asking === 'passphrase'"
-              class="flex flex-col gap-1 text-xs text-surface-600 dark:text-surface-300"
-            >
-              New passphrase
-              <InputText
-                v-model="next"
-                size="small"
-                type="password"
-                autocomplete="new-password"
-                data-field="sync-next"
-                @keydown.enter="finish"
-              />
-            </label>
-            <p
-              v-if="asking === 'recovery' && hasCode"
-              class="text-xs text-surface-500 dark:text-surface-400"
-            >
-              The code you have now stops working.
-            </p>
-            <div class="flex items-center justify-end gap-2">
-              <p
-                v-if="askFailure"
-                class="mr-auto text-xs text-red-600 dark:text-red-400"
-                data-sync-error
-              >
-                {{ askFailure }}
-              </p>
-              <Button
-                label="Cancel"
-                size="small"
-                text
-                severity="secondary"
-                @click="asking = null"
-              />
-              <Button
-                :label="asking === 'recovery' ? 'Make code' : 'Change'"
-                size="small"
-                :loading="working"
-                :disabled="!current || (asking === 'passphrase' && !next)"
-                data-action="sync-confirm"
-                @click="finish"
-              />
-            </div>
-          </div>
-        </div>
-      </ExpandableSection>
-
-      <!-- The people it shares with, kept by the server. Each project is
-           shared from Settings › Project. -->
-      <PeopleSection v-if="profile" />
-
-      <!-- The devices signed in, any of which can sign another out. -->
-      <ExpandableSection
-        v-if="deviceList.length > 0"
-        title="Devices"
-        storage-key="ui.settings.sync.devices"
-        subsection
-        container-class="pt-2"
-        content-wrapper-class="flex flex-col"
-      >
-        <ul class="flex flex-col pt-1 pb-1" data-sync-devices>
-          <li
-            v-for="device in deviceList"
-            :key="device.id"
-            class="flex items-center gap-2 py-1 text-xs text-surface-700 dark:text-surface-200"
-            :data-device="device.current ? 'this' : device.id"
-          >
-            <span class="flex-1 min-w-0 truncate">{{ device.device || 'A device' }}</span>
-            <span class="text-surface-500 dark:text-surface-400">
-              {{ device.current ? 'This device' : formatRelativeTime(device.used) }}
-            </span>
-            <button
-              v-if="!device.current"
-              v-tooltip.bottom="'Sign out'"
-              type="button"
-              class="flex-none w-6 h-6 rounded flex items-center justify-center text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700 hover:text-surface-900 dark:hover:text-surface-0"
-              :aria-label="`Sign out ${device.device || 'this device'}`"
-              data-action="sign-out-device"
-              @click="signOutOther(device)"
-            >
-              <i class="pi pi-sign-out" style="font-size: 0.7rem" />
-            </button>
-            <span v-else class="flex-none w-6" />
-          </li>
-        </ul>
-      </ExpandableSection>
-    </template>
-
-    <ExpandableSection
-      title="Backup"
-      storage-key="ui.settings.sync.backup"
-      subsection
-      container-class="pt-2"
-      content-wrapper-class="flex flex-col"
-    >
-      <BackupSection />
-    </ExpandableSection>
+    <BackupSection v-else-if="part === 'backup'" />
   </div>
 </template>
+
+<script>
+/**
+ * What the server last said of each account (its profile and its devices),
+ * kept while the app runs, so People and Devices are there as soon as the
+ * settings open, and brought up to date as the server answers again.
+ * @type {Map<string, {profile: {name: string, friend: string}|null|undefined, devices?: import('@/cloud/api.js').Device[]}>}
+ */
+const lastSaid = new Map()
+</script>
 
 <script setup>
 import { computed, ref, watch } from 'vue'
@@ -376,7 +350,6 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import SelectButton from 'primevue/selectbutton'
 import ToggleSwitch from 'primevue/toggleswitch'
-import ExpandableSection from '@/components/common/ExpandableSection.vue'
 import PeopleSection from './PeopleSection.vue'
 import BackupSection from './BackupSection.vue'
 import { HOSTED_SERVER } from '@/cloud/api.js'
@@ -392,22 +365,32 @@ import { useReactiveTime } from '@/composables/useReactiveTime'
 import { useToast } from '@/composables/useToast'
 
 /**
- * Settings › Sync and sharing: signing this device in to a sync server,
- * making an account on one, or getting back into one with its recovery code;
- * once signed in, what sync is doing, with a sync to start by hand, how much
- * of its quota the account keeps, and which projects are kept on this device
- * only (each project's menu does that); the account (its friend code,
- * whether this device sends diagnostics, a new recovery code or passphrase,
- * and signing out); the people it shares with (`PeopleSection`; Settings ›
- * Project shares each project); the devices signed in, any of which can be
- * signed out from here; and, signed in or not, backups. Waiting for
- * an update, it offers the one ready. A recovery code is shown once, as it is
- * made. Opened from an invitation's link, it is ready to create an account
- * with its code. The server is ours, but in a build with dev features, where
- * it can be typed and an invitation's counts. See composables/useCloudSync.js.
+ * Settings › Sync and sharing, a part at a time. **Account**: signing this
+ * device in to a sync server, making an account on one, or getting back into
+ * one with its recovery code; once signed in, what sync is doing, with a
+ * sync to start by hand, how much of its quota the account keeps, which
+ * projects are kept on this device only (each project's menu does that),
+ * its friend code, whether this device sends diagnostics, a new recovery
+ * code or passphrase, and signing out. **People**: those it shares with
+ * (`PeopleSection`; Settings › Project shares each project). **Devices**:
+ * the devices signed in, any of which can be signed out from here.
+ * **Backup**, signed in or not (`BackupSection`). People and Devices are
+ * only listed for an account. Waiting for an update, Account offers the one
+ * ready. A recovery code is shown once, as it is made. Opened from an
+ * invitation's link, it is ready to create an account with its code. The
+ * server is ours, but in a build with dev features, where it can be typed
+ * and an invitation's counts. See composables/useCloudSync.js.
+ *
+ * The section stays as it is while its parts change, so what the server
+ * said of the account is asked once however they are gone through.
  *
  * @typedef {import('@/cloud/api.js').Device} Device
  */
+
+defineProps({
+  /** Which part shows: `account`, `people`, `devices` or `backup`. */
+  part: { type: String, default: 'account' },
+})
 
 const sync = useCloudSync()
 const { account, status, notice, usage, signOut, syncNow } = sync
@@ -554,8 +537,12 @@ async function copyCode() {
   }
 }
 
-/** The account as the people it shares with know it, once asked. @type {import('vue').Ref<{name: string, friend: string}|null>} */
-const profile = ref(null)
+/**
+ * The account as the people it shares with know it: undefined until asked,
+ * and null on a server from before sharing, which has no People either.
+ * @type {import('vue').Ref<{name: string, friend: string}|null|undefined>}
+ */
+const profile = ref(lastHeard()?.profile)
 
 /** Whether the friend code has just been copied, for its button to say so. */
 const friendCopied = ref(false)
@@ -572,7 +559,9 @@ async function copyFriendCode() {
 }
 
 /** @type {import('vue').Ref<Device[]>} */
-const deviceList = ref([])
+const deviceList = ref(lastHeard()?.devices ?? [])
+/** Whether the devices have been listed, here or the last time the settings opened. */
+const devicesKnown = ref(Boolean(lastHeard()?.devices))
 /** Whether the account has a recovery code. */
 const hasCode = ref(true)
 
@@ -586,6 +575,7 @@ async function look() {
     .then(asked => (profile.value = asked))
     // A server from before sharing has none.
     .catch(() => (profile.value = null))
+    .finally(remember)
   try {
     const [listed, recovery] = await Promise.all([sync.devices(), sync.hasRecovery()])
     // This one first, then the rest as they were last seen.
@@ -596,6 +586,27 @@ async function look() {
     deviceList.value = []
     console.error('The devices could not be listed:', error)
   }
+  devicesKnown.value = true
+  remember()
+}
+
+/** Which account the settings show, for what was said of it last. */
+function accountKey() {
+  return account.value ? `${account.value.server}\n${account.value.name}` : ''
+}
+
+/** What the server said of this account the last time the settings asked. */
+function lastHeard() {
+  return lastSaid.get(accountKey())
+}
+
+/** Keep what the server said, for the settings to open on next time. */
+function remember() {
+  if (!accountKey()) return
+  lastSaid.set(accountKey(), {
+    profile: profile.value,
+    devices: devicesKnown.value ? deviceList.value : undefined,
+  })
 }
 
 watch(
@@ -604,7 +615,8 @@ watch(
     if (signedIn) look()
     else {
       deviceList.value = []
-      profile.value = null
+      devicesKnown.value = false
+      profile.value = undefined
     }
   },
   { immediate: true }
@@ -615,6 +627,7 @@ async function signOutOther(device) {
   try {
     await sync.signOutDevice(device.id)
     deviceList.value = deviceList.value.filter(other => other.id !== device.id)
+    remember()
   } catch (error) {
     toast.error(/** @type {Error} */ (error).message)
   }

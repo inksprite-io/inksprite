@@ -64,9 +64,7 @@
               :key="`chat-panel:${storyId}`"
               class="h-full w-full"
               :story-id="storyId"
-              :chat-id="chatId"
               :editor-showing="shown.editor"
-              @update:chat-id="$emit('update:chatId', $event)"
               @toggle-editor="$emit('toggle', PANELS.EDITOR)"
             />
           </SplitterPanel>
@@ -125,7 +123,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:chatId', 'select-chat', 'open-document', 'toggle'])
+const emit = defineEmits(['select-chat', 'open-document', 'toggle'])
 
 const layout = computed(() => /** @type {import('@/types/models.js').StoryLayout} */ (props.layout))
 

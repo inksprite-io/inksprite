@@ -21,8 +21,8 @@ const setup = async () => {
   const suggest = vi.fn(query =>
     DOCUMENTS.filter(entry => entry.title.toLowerCase().includes(query.toLowerCase()))
   )
-  const textFor = vi.fn((entry, before) =>
-    before.startsWith('/') ? entry.href : `[${entry.title}](</${entry.href}>)`
+  const textFor = vi.fn((entry, before, attach) =>
+    before.startsWith('/') ? entry.href : `${attach ? '@' : ''}[${entry.title}](</${entry.href}>)`
   )
   let menu
 
@@ -90,6 +90,19 @@ describe('linkAtCaret', () => {
     expect(linkAtCaret('See [Cast', 9)).toBeNull()
     expect(linkAtCaret('See [[Cast\nlist', 15)).toBeNull()
   })
+
+  it('finds an `@` at the start of a word, which attaches what is picked', () => {
+    expect(linkAtCaret('@', 1)).toEqual({ start: 0, query: '', attach: true })
+    expect(linkAtCaret('Read @Cast li', 13)).toEqual({ start: 5, query: 'Cast li', attach: true })
+    expect(linkAtCaret('Read (@Ca', 9)).toEqual({ start: 6, query: 'Ca', attach: true })
+  })
+
+  it('takes no `@` in an address, on its own between words, or before a link', () => {
+    expect(linkAtCaret('me@example', 10)).toBeNull()
+    expect(linkAtCaret('meet @ five', 11)).toBeNull()
+    expect(linkAtCaret('Read @[Cast](</Cast.md>)', 24)).toBeNull()
+    expect(linkAtCaret('Read @[Cast', 11)).toBeNull()
+  })
 })
 
 describe('useLinkMenu', () => {
@@ -112,6 +125,16 @@ describe('useLinkMenu', () => {
     expect(enter.defaultPrevented).toBe(true)
     expect(chat.sent).not.toHaveBeenCalled()
     expect(chat.draft()).toBe('Read [Plan](</Plan.md>) and tell me.')
+    expect(chat.open()).toBe(false)
+  })
+
+  it('lists what the name after `@` could be, and attaches the one picked', async () => {
+    const chat = await setup()
+    await chat.type('Is @ca')
+    expect(chat.titles()).toEqual(['Cast list'])
+    expect(chat.suggest).toHaveBeenLastCalledWith('ca', true)
+    await chat.press('Enter')
+    expect(chat.draft()).toBe('Is @[Cast list](</Notes/Cast%20list.md>)')
     expect(chat.open()).toBe(false)
   })
 

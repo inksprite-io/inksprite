@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAIConfig } from '@/composables/useAIConfig'
-import { BUILT_IN_PROVIDERS } from '@/ai/providers.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 import db from '@/stores/db'
 
@@ -10,6 +9,7 @@ vi.mock('@/stores/db', () => ({
   default: {
     aiProfiles: { toArray: vi.fn().mockResolvedValue([]) },
     aiProviders: { toArray: vi.fn().mockResolvedValue([]) },
+    chatProfiles: { toArray: vi.fn().mockResolvedValue([]) },
   },
 }))
 
@@ -17,38 +17,23 @@ vi.mock('@/stores/syncStore', () => ({
   useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
-describe('useAIConfig built-in providers', () => {
+describe('useAIConfig connections', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     window.localStorage.clear()
     vi.clearAllMocks()
   })
 
-  it('starts a first install with every built-in, first in the menu and fixed', async () => {
+  it('makes no connection of its own on a first start: setup adds the writer’s', async () => {
     const aiConfig = useAIConfig()
-    aiConfig.createProvider({ name: 'Mine', type: 'generic', endpoint: 'http://box:1234/v1' })
     await aiConfig.init()
 
-    expect(aiConfig.providers.value.map(p => p.name)).toEqual([
-      ...BUILT_IN_PROVIDERS.map(entry => entry.name),
-      'Mine',
-    ])
-    // `server` is what the app knows of a built-in, not stored on it.
-    for (const { id, name, type, endpoint } of BUILT_IN_PROVIDERS) {
-      expect(aiConfig.getProvider(id)).toMatchObject({ id, name, type, endpoint, isDefault: true })
-    }
+    expect(aiConfig.providers.value).toEqual([])
   })
 
-  it('adds the built-ins an install is missing and leaves the rest as the writer has them', async () => {
-    // An install from before there were any but OpenRouter, with its key in.
+  it('keeps the built-ins an install has, in their order, the writer’s after', async () => {
     db.aiProviders.toArray.mockResolvedValueOnce([
-      {
-        id: 'provider_openrouter_default',
-        name: 'OpenRouter',
-        type: 'openrouter',
-        apiKey: 'sk-or-1',
-        isDefault: true,
-      },
+      { id: 'provider_mine', name: 'Mine', type: 'generic', endpoint: 'http://box:1234/v1' },
       {
         id: 'provider_lmstudio_default',
         name: 'LM Studio',
@@ -56,17 +41,19 @@ describe('useAIConfig built-in providers', () => {
         endpoint: 'http://box:1234/v1',
         isDefault: true,
       },
+      {
+        id: 'provider_openrouter_default',
+        name: 'OpenRouter',
+        type: 'openrouter',
+        apiKey: 'sk-or-1',
+        isDefault: true,
+      },
     ])
-
     const aiConfig = useAIConfig()
     await aiConfig.init()
 
+    expect(aiConfig.providers.value.map(p => p.name)).toEqual(['OpenRouter', 'LM Studio', 'Mine'])
     expect(aiConfig.getProvider('provider_openrouter_default').apiKey).toBe('sk-or-1')
-    expect(aiConfig.getProvider('provider_lmstudio_default').endpoint).toBe('http://box:1234/v1')
-    expect(aiConfig.getProvider('provider_ollama_default').endpoint).toBe(
-      'http://localhost:11434/v1'
-    )
-    expect(aiConfig.providers.value).toHaveLength(BUILT_IN_PROVIDERS.length)
   })
 })
 
@@ -106,7 +93,10 @@ describe('useAIConfig moving the speech server onto a connection', () => {
     const aiConfig = useAIConfig()
     await aiConfig.init()
 
-    expect(aiConfig.getProvider('provider_kokoro_default').endpoint).toBe('http://box:8880/v1')
+    expect(aiConfig.getProvider('provider_kokoro_default')).toMatchObject({
+      endpoint: 'http://box:8880/v1',
+      added: true,
+    })
     expect(aiConfig.getProvider('provider_kokoro_default').apiKey).toBeUndefined()
   })
 
@@ -140,199 +130,167 @@ describe('useAIConfig moving the speech server onto a connection', () => {
       providerId: 'provider_openrouter_default',
       model: 'acme/voice',
     })
-    expect(aiConfig.getProvider('provider_kokoro_default').apiKey).toBeUndefined()
+    expect(aiConfig.getProvider('provider_kokoro_default')).toBeNull()
   })
 })
 
-describe('useAIConfig presets', () => {
+describe("useAIConfig a model's settings", () => {
   /** @type {ReturnType<typeof useAIConfig>} */
   let aiConfig
+  const OR = 'provider_openrouter_default'
 
   beforeEach(async () => {
     setActivePinia(createPinia())
     window.localStorage.clear()
     vi.clearAllMocks()
+    useApplicationState().resetState()
 
     aiConfig = useAIConfig()
     await aiConfig.init()
+    aiConfig.createProvider({ id: OR, name: 'OpenRouter', type: 'openrouter', apiKey: 'sk-or' })
   })
 
-  it('starts with a single default preset that is active', () => {
-    expect(aiConfig.presets.value).toHaveLength(1)
-    expect(aiConfig.activeAIPreset.value.isDefault).toBe(true)
-  })
-
-  describe('createPreset', () => {
-    it('adds a preset and shows it, leaving the one chats run on', () => {
-      const defaultId = aiConfig.activeAIPresetId.value
-      const created = aiConfig.createPreset('Local Gemma')
-
-      expect(aiConfig.presets.value).toHaveLength(2)
-      expect(aiConfig.shownPreset.value.id).toBe(created.id)
-      expect(aiConfig.activeAIPresetId.value).toBe(defaultId)
-      expect(created.name).toBe('Local Gemma')
-    })
-
-    it('copies the preset it is given, rather than the one shown', () => {
-      const glm = aiConfig.createPreset('GLM')
-      aiConfig.updatePreset(glm.id, { model: 'z-ai/glm-4.6' })
-      aiConfig.showPreset(aiConfig.activeAIPresetId.value)
-
-      const made = aiConfig.createPreset('GLM copy', aiConfig.getPreset(glm.id))
-
-      expect(made.model).toBe('z-ai/glm-4.6')
-    })
-
-    it('reuses the active preset’s provider', () => {
-      const providerId = aiConfig.activeAIPreset.value.providerId
-
-      expect(aiConfig.createPreset().providerId).toBe(providerId)
-    })
-
-    it('copies the tuning in use, so it does not have to be re-entered', () => {
-      const source = aiConfig.activeAIPreset.value
-      aiConfig.updatePreset(source.id, {
-        model: 'z-ai/glm-4.6',
-        generationOverrides: { maxTokens: 512, parameters: { temperature: 0.2 } },
-      })
-
-      const made = aiConfig.createPreset('Another')
-
-      // What somebody reaching for a new preset almost always wants: the same
-      // setup pointed at another model.
-      expect(made.model).toBe('z-ai/glm-4.6')
-      expect(made.generationOverrides).toEqual({
-        maxTokens: 512,
-        parameters: { temperature: 0.2 },
-      })
-      expect(aiConfig.shownPreset.value.id).toBe(made.id)
-    })
-
-    it('copies the overrides rather than sharing them', () => {
-      const source = aiConfig.activeAIPreset.value
-      aiConfig.updatePreset(source.id, { generationOverrides: { maxTokens: 512 } })
-
-      const made = aiConfig.createPreset('Another')
-      aiConfig.updatePreset(made.id, { generationOverrides: { maxTokens: 4096 } })
-
-      // Tuning one model must not retune the other.
-      expect(aiConfig.getPreset(source.id).generationOverrides).toEqual({ maxTokens: 512 })
-    })
-
-    it('copies the providers allowed and ignored for the model, and keeps them its own', () => {
-      const source = aiConfig.activeAIPreset.value
-      aiConfig.updatePreset(source.id, {
-        allowedProviders: ['deepinfra'],
-        ignoredProviders: ['novita'],
-      })
-
-      const made = aiConfig.createPreset('Another')
-      expect(made.allowedProviders).toEqual(['deepinfra'])
-      expect(made.ignoredProviders).toEqual(['novita'])
-
-      aiConfig.updatePreset(made.id, { allowedProviders: undefined, ignoredProviders: undefined })
-      expect(aiConfig.getPreset(source.id).allowedProviders).toEqual(['deepinfra'])
-      expect(aiConfig.getPreset(source.id).ignoredProviders).toEqual(['novita'])
-    })
-
-    it('leaves the fields off a copy of a preset that allows any provider and ignores none', () => {
-      const made = aiConfig.createPreset('Another')
-      expect(made).not.toHaveProperty('allowedProviders')
-      expect(made).not.toHaveProperty('ignoredProviders')
+  it('starts new chats on Sonnet on OpenRouter, where nothing else says', () => {
+    expect(aiConfig.startingPreset.value).toMatchObject({
+      providerId: OR,
+      model: '~anthropic/claude-sonnet-latest',
     })
   })
 
-  describe('shownPreset', () => {
-    it('shows the default until another is shown', () => {
-      const other = aiConfig.createPreset('Other')
-      aiConfig.showPreset(aiConfig.activeAIPresetId.value)
-      expect(aiConfig.shownPreset.value.id).toBe(aiConfig.activeAIPresetId.value)
+  it('runs a model never changed on the app’s settings, keeping nothing', () => {
+    const run = aiConfig.runOn('p_box', 'qwen')
 
-      aiConfig.showPreset(other.id)
-      expect(aiConfig.shownPreset.value.id).toBe(other.id)
+    expect(run).toMatchObject({ providerId: 'p_box', model: 'qwen', generationOverrides: {} })
+    expect(aiConfig.settingsOf('p_box', 'qwen')).toBeNull()
+    expect(aiConfig.getPreset(run.id)).toBeNull()
+  })
+
+  it('keeps a model’s settings the first time one is changed, and only the change', () => {
+    const before = aiConfig.presets.value.length
+    aiConfig.changeModelSettings('p_box', 'qwen', {
+      generationOverrides: { parameters: { temperature: 0.6 } },
     })
 
-    it('goes back to the default when the one shown is deleted', () => {
-      const doomed = aiConfig.createPreset('Doomed')
-      aiConfig.deletePreset(doomed.id)
-
-      expect(aiConfig.shownPreset.value.id).toBe(aiConfig.activeAIPresetId.value)
+    expect(aiConfig.presets.value).toHaveLength(before + 1)
+    expect(aiConfig.runOn('p_box', 'qwen').generationOverrides).toEqual({
+      parameters: { temperature: 0.6 },
     })
+    // The same model on another connection has settings of its own.
+    expect(aiConfig.runOn('p_other', 'qwen').generationOverrides).toEqual({})
+
+    aiConfig.changeModelSettings('p_box', 'qwen', { toolsEnabled: false })
+    expect(aiConfig.presets.value).toHaveLength(before + 1)
+    expect(aiConfig.runOn('p_box', 'qwen')).toMatchObject({
+      toolsEnabled: false,
+      generationOverrides: { parameters: { temperature: 0.6 } },
+    })
+  })
+
+  it('routes a recommended model as it is recommended, until the writer changes it', () => {
+    expect(aiConfig.runOn(OR, 'z-ai/glm-5.2')).toMatchObject({
+      allowedProviders: ['siliconflow', 'novita'],
+      fallbacks: true,
+      ignoredProviders: ['alibaba', 'z-ai'],
+    })
+
+    aiConfig.changeModelSettings(OR, 'z-ai/glm-5.2', { allowedProviders: [] })
+    const run = aiConfig.runOn(OR, 'z-ai/glm-5.2')
+    expect(run.allowedProviders).toEqual([])
+    expect(run.ignoredProviders).toEqual(['alibaba', 'z-ai'])
+    // A model nobody recommends is routed as the connection says.
+    expect(aiConfig.runOn(OR, 'acme/other')).not.toHaveProperty('allowedProviders')
   })
 
   describe('presetFor', () => {
-    it('runs a chat on its own preset, over its profile’s', () => {
-      const own = aiConfig.createPreset('Own')
-      const profiles = aiConfig.createPreset('Profile’s')
-
+    it('runs a chat on its model, over its profile’s', () => {
       expect(
-        aiConfig.presetFor({ presetId: own.id }, { settings: { presetId: profiles.id } }).id
-      ).toBe(own.id)
+        aiConfig.presetFor(
+          { providerId: 'p_box', model: 'qwen' },
+          { settings: { providerId: OR, model: 'm' } }
+        )
+      ).toMatchObject({ providerId: 'p_box', model: 'qwen' })
     })
 
-    it('runs one that chose none on its profile’s', () => {
-      const profiles = aiConfig.createPreset('Profile’s')
-
-      expect(aiConfig.presetFor({}, { settings: { presetId: profiles.id } }).id).toBe(profiles.id)
+    it('runs one that names none on its profile’s, then on what new chats start on', () => {
+      expect(
+        aiConfig.presetFor({}, { settings: { providerId: 'p_box', model: 'qwen' } }).model
+      ).toBe('qwen')
+      expect(aiConfig.presetFor({}, { settings: {} }).model).toBe('~anthropic/claude-sonnet-latest')
+      expect(aiConfig.presetFor(null, null).model).toBe('~anthropic/claude-sonnet-latest')
     })
 
-    it('runs one whose profile chose none on the default', () => {
-      aiConfig.createPreset('Unused')
+    it('no longer reads the preset a chat named before', () => {
+      aiConfig.changeModelSettings('p_box', 'qwen', { toolsEnabled: false })
+      const stored = aiConfig.settingsOf('p_box', 'qwen')
 
-      expect(aiConfig.presetFor({}, { settings: {} }).id).toBe(aiConfig.activeAIPresetId.value)
-      expect(aiConfig.presetFor(null, null).id).toBe(aiConfig.activeAIPresetId.value)
+      expect(aiConfig.presetFor({ presetId: stored.id }, null).model).toBe(
+        '~anthropic/claude-sonnet-latest'
+      )
     })
 
-    it('reads a preset that is not here as the next one down', () => {
-      const profiles = aiConfig.createPreset('Profile’s')
+    it('starts them on the model of the preset chosen for chats before profiles kept their own', () => {
+      aiConfig.changeModelSettings('p_box', 'chosen-model', { toolsEnabled: true })
+      useApplicationState().state.value.ai.activeChatProfileId = aiConfig.settingsOf(
+        'p_box',
+        'chosen-model'
+      ).id
 
-      expect(
-        aiConfig.presetFor({ presetId: 'profile_gone' }, { settings: { presetId: profiles.id } }).id
-      ).toBe(profiles.id)
-      expect(
-        aiConfig.presetFor({ presetId: 'profile_gone' }, { settings: { presetId: 'profile_gone' } })
-          .id
-      ).toBe(aiConfig.activeAIPresetId.value)
+      expect(aiConfig.presetFor({}, { settings: {} }).model).toBe('chosen-model')
     })
   })
 
-  describe('deletePreset', () => {
-    it('moves off the preset before deleting it', () => {
-      const created = aiConfig.createPreset('Doomed')
-      aiConfig.setActiveAIPreset(created.id)
+  describe('mergeDuplicates', () => {
+    /** A preset from before, as the store makes it. */
+    const old = async (id, model, updated, settings = {}) => {
+      const { useAIPresetStore } = await import('@/stores/aiPresetStore')
+      const preset = useAIPresetStore().createPreset({
+        id,
+        name: id,
+        providerId: 'p_box',
+        model,
+        ...settings,
+      })
+      preset.updated = updated
+      return preset
+    }
 
-      aiConfig.deletePreset(created.id)
+    it('keeps the last changed of the presets on a connection and model, and lets the rest go', async () => {
+      await old('preset_a', 'glm', 1, { generationOverrides: { parameters: { temperature: 0.2 } } })
+      await old('preset_b', 'glm', 3, { generationOverrides: { parameters: { temperature: 0.9 } } })
+      await old('preset_c', 'qwen', 2)
 
-      // Never left pointing at a deleted preset.
-      expect(aiConfig.activeAIPresetId.value).not.toBe(created.id)
-      expect(aiConfig.activeAIPreset.value).not.toBeNull()
-      expect(aiConfig.presets.value).toHaveLength(1)
+      expect(aiConfig.mergeDuplicates()).toBe(1)
+
+      expect(aiConfig.getPreset('preset_a')).toBeNull()
+      expect(aiConfig.runOn('p_box', 'glm').generationOverrides).toEqual({
+        parameters: { temperature: 0.9 },
+      })
+      expect(aiConfig.getPreset('preset_c')).not.toBeNull()
+      expect(aiConfig.mergeDuplicates()).toBe(0)
     })
 
-    it('leaves an inactive preset’s selection alone', () => {
-      const created = aiConfig.createPreset('Spare')
-      const defaultId = aiConfig.presets.value.find(p => p.isDefault).id
-      aiConfig.setActiveAIPreset(defaultId)
+    it('keeps the built-in one in the winner’s place, with the winner’s settings', async () => {
+      await old('preset_mine', '~anthropic/claude-sonnet-latest', Date.now() + 1000, {
+        generationOverrides: { maxTokens: 900 },
+      })
+      const { useAIPresetStore } = await import('@/stores/aiPresetStore')
+      useAIPresetStore().getPreset('preset_mine').providerId = OR
 
-      aiConfig.deletePreset(created.id)
+      aiConfig.mergeDuplicates()
 
-      expect(aiConfig.activeAIPresetId.value).toBe(defaultId)
+      expect(aiConfig.getPreset('preset_mine')).toBeNull()
+      expect(aiConfig.getPreset('profile_default_chat').generationOverrides).toEqual({
+        maxTokens: 900,
+      })
     })
+  })
 
-    it('refuses to delete the last remaining preset', () => {
-      const defaultId = aiConfig.presets.value.find(p => p.isDefault).id
+  it('lets a connection’s model settings go with it, the built-in one kept', () => {
+    aiConfig.changeModelSettings('p_box', 'qwen', { toolsEnabled: false })
+    aiConfig.forgetModelSettings('p_box')
+    aiConfig.forgetModelSettings(OR)
 
-      // Nothing to switch to, so it declines rather than leaving the app
-      // pointing at a deleted preset.
-      expect(aiConfig.deletePreset(defaultId)).toBe(false)
-      expect(aiConfig.presets.value).toHaveLength(1)
-    })
-
-    it('refuses to delete the default preset even when others exist', () => {
-      const defaultId = aiConfig.presets.value.find(p => p.isDefault).id
-      aiConfig.createPreset('Spare')
-
-      expect(() => aiConfig.deletePreset(defaultId)).toThrow(/default preset/i)
-    })
+    expect(aiConfig.settingsOf('p_box', 'qwen')).toBeNull()
+    expect(aiConfig.getPreset('profile_default_chat')).not.toBeNull()
   })
 })

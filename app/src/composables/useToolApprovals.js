@@ -16,7 +16,7 @@
  */
 
 import { computed, reactive, toValue } from 'vue'
-import { needsApproval } from '@/mcp/servers.js'
+import { needsApproval, serverTool } from '@/mcp/servers.js'
 import { savesWithoutAsking } from '@/web/config.js'
 import { SAVE_WEB_PAGE } from '@/ai/tools/web.js'
 
@@ -46,6 +46,22 @@ import { SAVE_WEB_PAGE } from '@/ai/tools/web.js'
  */
 export function asksFirst(name) {
   return name === SAVE_WEB_PAGE ? !savesWithoutAsking() : needsApproval(name)
+}
+
+/**
+ * Whether a tool asks before each call, or would and is always allowed: for
+ * the list of a chat's tools to show beside it. Null for one that never asks:
+ * a server's that only reads, and the app's own.
+ *
+ * @param {string} name - The tool, as the model calls it
+ * @returns {'asks'|'allowed'|null}
+ */
+export function approvalOf(name) {
+  if (name !== SAVE_WEB_PAGE) {
+    const found = serverTool(name)
+    if (!found || found.tool.annotations?.readOnlyHint === true) return null
+  }
+  return asksFirst(name) ? 'asks' : 'allowed'
 }
 
 /** @type {Map<string, PendingApproval & {resolve: (decision: Decision) => void}>} */

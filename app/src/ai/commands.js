@@ -53,8 +53,10 @@
  *
  *     /roll-table "a knife" "a letter" "nothing at all"
  *
- * And one is a whole message rather than a line: `/aside`, a question asked on
- * the side, which runs to the end of what was typed. See ai/asides.js.
+ * And one is a whole message rather than a line: `/fork`, which goes on in a
+ * copy of the chat, and whose message runs to the end of what was typed. It
+ * took the place of `/aside`, a question asked on the side (ai/asides.js),
+ * which is retired: the asides already in chats still read as they did.
  *
  * A slash at the start of a line opens a menu of them in the message field,
  * each with its usage and a line saying what it does. The menu only finishes
@@ -71,15 +73,13 @@
  *
  * ## Everyone in the scene
  *
- * `@` is a person, and what follows is what they said or did:
- *
- *     @cody I quickly hide in the closet.
- *     @emily "Ugh! I was having a nap! What do you want?"
- *
- * No list of them, because there is nothing to list: a game runs for an hour
- * before anyone writes a character note, and most of the cast never gets one.
- * The sigil is what makes that safe — `/` stays a closed set, so a name nothing
- * answers to is still a mistake worth naming. See CHARACTER.
+ * `@` at the start of a line was a person, and what followed was what they
+ * said or did: `@cody I quickly hide in the closet.` went to the model as
+ * `<cody>` around it. `@` attaches a document now
+ * (ai/context/attachments.js), and a line that opens with one is prose. The
+ * lines a chat already holds are still records of a character, shown and sent
+ * as they were; written again, one is the prose the model read. See
+ * CHARACTER.
  *
  * This module runs commands; it does not know they end up in a chat. What to do
  * with the record is composables/useChatCommands.js.
@@ -89,9 +89,12 @@ import {
   executeOracle,
   executeRollTable,
   executeDrawTarot,
-  diceTotal,
   parseDice,
   rollDice,
+  rollFrom,
+  sameThrow,
+  workingOf,
+  workingText,
   DEFAULT_TAROT_DECK,
   LIKELIHOOD_TARGETS,
   MAX_TABLE_OPTIONS,
@@ -100,7 +103,7 @@ import {
   TAROT_SPREAD,
 } from './tools/rpg.js'
 import { executeGenerateNames, GENDERS, MAX_NAMES } from './tools/names.js'
-import { allSkills, onSkillsChanged, skillIsOn } from './skills/index.js'
+import { allSkills, onSkillsChanged } from './skills/index.js'
 import { fillArgument, loadedByModel } from './skills/runner.js'
 import { parseKeep } from './compaction.js'
 import { getServer, onServersChanged, promptCommands } from '../mcp/servers.js'
@@ -119,8 +122,9 @@ import { exploreFor, exploredText } from './tools/explore.js'
  * @typedef {Object} CommandInput
  * @property {string} name
  * @property {string} input - Everything after the name, verbatim
- * @property {true} [character] - Set when the writer wrote `@`, meaning this is
- *   somebody rather than something
+ * @property {true} [character] - On a record from when `@name` at the start
+ *   of a line was somebody speaking: this is somebody rather than something.
+ *   Nothing typed now is read as one.
  * @property {string} [param] - The parenthesised setting, resolved to its
  *   default by `inspectCommand` when the writer left it out
  */
@@ -233,13 +237,14 @@ function likelihoodLabel(value) {
  *   back, when there is more to it than the result: a roll's dice. Given the
  *   record the line had before the edit, when there was one, so a change can be
  *   told from what it changed.
- * @property {boolean} [aside] - Whether it is asked on the side: a message of
- *   its own, the whole of it after the name, which the model answers and then
- *   forgets along with the answer. See ai/asides.js.
- * @property {boolean} [experimental] - Whether it is an experimental skill's,
- *   which runs only while the writer has that skill switched on. It is kept
- *   while the skill is off, so the records it left read as they did. See
- *   `commandSwitchedOff`.
+ * @property {boolean} [whole] - Whether it is a message of its own: the whole of
+ *   it after the name, lines and all, is its input
+ * @property {boolean} [aside] - Whether it is asked on the side, which the model
+ *   answers and then forgets along with the answer. See ai/asides.js.
+ * @property {boolean} [forks] - Whether it goes on in a copy of the chat: the
+ *   chat makes the fork and sends its message there, so it is never run here
+ * @property {string} [retired] - Why it no longer runs, for one taken out
+ *   whose records still read. See `commandSwitchedOff`.
  */
 
 /**
@@ -302,20 +307,30 @@ function describeNameAsk(param) {
 }
 
 /**
- * A term `parseDice` reads: dice, `min(…)` or `max(…)` of them, or a number.
- * Anything up to the bracket in `min(…)`, so what is wrong in there is what
+ * A term `parseDice` reads: dice with any advantage or burden they carry,
+ * `min(…)` or `max(…)` of them, or a number. Anything up to the bracket in
+ * `min(…)`, and any run of those letters, so what is wrong there is what
  * `parseDice` says.
  */
-const DICE_TERM = String.raw`(?:(?:min|max)\s*\([^)]*\)|\d*d?\d+)`
+const DICE_TERM = String.raw`(?:(?:min|max)\s*\([^)]*\)|\d*d\d+(?:[ab]\d*)*|\d+)`
+
+/** A term with any signs in front of it and brackets around it. */
+const DICE_OPERAND = String.raw`(?:[+-]\s*)*(?:\(\s*(?:[+-]\s*)*)*${DICE_TERM}(?:\s*\))*`
 
 /**
  * Dice at the start of a line, and whatever follows them after a space: the
- * terms `parseDice` reads, joined by signs.
+ * terms `parseDice` reads, joined by the signs it reads.
  */
 const DICE_THEN_QUESTION = new RegExp(
-  String.raw`^([+-]?\s*${DICE_TERM}(?:\s*[+-]\s*${DICE_TERM})*)(?:\s+(.*))?$`,
+  String.raw`^(${DICE_OPERAND}(?:\s*(?:[-+*/×÷]|x)\s*${DICE_OPERAND})*)(?:\s+(.*))?$`,
   'is'
 )
+
+/**
+ * What a question doesn't start with: a sign and a number, as in `2d6 ^ 4`,
+ * which is arithmetic the dice don't do rather than something to ask.
+ */
+const ARITHMETIC = /^(?:[+*/×÷^%=]|-\s*(?:[\d(]|d\d))/i
 
 /**
  * What a `/roll` was asked for: the dice, and the question they answer if the
@@ -323,7 +338,8 @@ const DICE_THEN_QUESTION = new RegExp(
  *
  * The whole line is tried as dice first, so spaced-out notation (`3d6 + 2`)
  * reads as it always did. A line that is no dice at all reports what is wrong
- * with it as a whole.
+ * with it as a whole, and so does one whose question would start with
+ * arithmetic.
  *
  * @param {string} input
  * @returns {{notation: string, question: string}|{error: string}}
@@ -335,26 +351,75 @@ function parseRoll(input) {
 
   const split = DICE_THEN_QUESTION.exec(written)
   if (!split) return whole
+  const question = (split[2] || '').trim()
+  if (ARITHMETIC.test(question)) return whole
 
   const dice = parseDice(split[1])
   if ('error' in dice) return dice
-  return { notation: split[1], question: (split[2] || '').trim() }
+  return { notation: split[1], question }
 }
 
-/** A line of dice under a roll, as the writer edits it: `d6: 3, 6, 5`. */
-const DICE_LINE = /^(d\d+):\s*(\d+(?:\s*,\s*\d+)*)$/i
+/**
+ * A line of dice by kind, as rolls were written before their working was, and
+ * as a writer might still type them: `d6: 3, 6, 5`, with `(kept 3, 6)` after
+ * them where some were dropped. What it says was kept is not read: that is
+ * worked out again from the dice.
+ */
+const DICE_LINE = /^(d\d+):\s*(\d+(?:\s*,\s*\d+)*)(?:\s*\(kept\b[^)]*\))?$/i
 
 /**
- * A roll's dice as the writer reads them, a line for each kind. Nothing for one
- * die with nothing added, which the total already is.
- *
- * @param {DiceRoll} roll
- * @returns {string[]}
+ * A line of a term's dice as the writer edits it: the term it is, if it says,
+ * its dice, the dropped ones between strikes, and what they come to. Only the
+ * dice are read.
  */
-function diceLines(roll) {
-  const kinds = Object.entries(roll.dice)
-  if (kinds.length === 1 && kinds[0][1].length === 1 && !roll.modifier) return []
-  return kinds.map(([kind, faces]) => `${kind}: ${faces.join(', ')}`)
+const TERM_LINE = /^(?:[^:]*:)?\s*([\d\s,~]+?)\s*(?:(?:→|->)\s*-?\d+)?$/
+
+/**
+ * The dice the writer wrote above a roll's total, by kind, or null where what
+ * they wrote is not dice.
+ *
+ * A line for each of the notation's dice terms, in the order written, each with
+ * as many dice as the term throws, or every die on one line in that order. What
+ * a line is named and what it says its dice come to are not read, nor what was
+ * struck through: the notation says which term it is, and the dice what counts.
+ * Or a line for each kind, as rolls were written before. Dice that are not as
+ * many as the notation's are dice it doesn't throw, and come back as none.
+ *
+ * @param {string[]} lines
+ * @param {import('./tools/rpg.js').DiceNotation|null} notation
+ * @returns {Record<string, number[]>|null}
+ */
+function thrownIn(lines, notation) {
+  /** @type {Record<string, number[]>} */
+  const thrown = {}
+  if (lines.every(line => DICE_LINE.test(line))) {
+    for (const line of lines) {
+      const [, kind, faces] = /** @type {RegExpExecArray} */ (DICE_LINE.exec(line))
+      const key = kind.toLowerCase()
+      thrown[key] = [...(thrown[key] ?? []), ...faces.split(',').map(Number)]
+    }
+    return thrown
+  }
+  const read = lines.map(line => TERM_LINE.exec(line))
+  if (!notation || read.some(found => !found)) return null
+
+  const written = read.map(found => (found?.[1].match(/\d+/g) ?? []).map(Number))
+  const terms = notation.dice
+  /** @type {number[][]} */
+  let byTerm = written
+  if (written.length === 1 && terms.length > 1) {
+    const all = written[0]
+    byTerm = terms.map(term => all.splice(0, term.count))
+    if (all.length) return {}
+  }
+  if (byTerm.length !== terms.length) return {}
+  if (byTerm.some((faces, at) => faces.length !== terms[at].count)) return {}
+
+  terms.forEach((term, at) => {
+    const kind = `d${term.sides}`
+    thrown[kind] = [...(thrown[kind] ?? []), ...byTerm[at]]
+  })
+  return thrown
 }
 
 /**
@@ -363,10 +428,11 @@ function diceLines(roll) {
  *
  * Dice the writer changed make a new total, worked out again whatever the
  * total line says. A total changed under the same dice is a fudge: the
- * writer's number stands, and the dice, which no longer make it, go. Dice that
- * are not the ones the notation throws go too, leaving the total. A total left
- * off is worked out from the dice. Anything that is not dice and a total is
- * taken as written.
+ * writer's number stands, and the dice, which no longer make it, go. The same
+ * dice in another order are the same dice, kept as they fell: the working
+ * shows the dropped ones first. Dice that are not the ones the notation throws
+ * go too, leaving the total. A total left off is worked out from the dice.
+ * Anything that is not dice and a total is taken as written.
  *
  * @param {string} input - What followed `/roll`
  * @param {string} written - The answer under it, out of its quotes
@@ -378,40 +444,23 @@ function readRoll(input, written, before) {
     .split('\n')
     .map(line => line.trim())
     .filter(Boolean)
-
-  /** @type {Record<string, number[]>} */
-  const thrown = {}
-  /** @type {number|undefined} */
-  let total
-  for (const [at, line] of lines.entries()) {
-    const kind = DICE_LINE.exec(line)
-    if (kind) {
-      const key = kind[1].toLowerCase()
-      thrown[key] = [...(thrown[key] || []), ...kind[2].split(',').map(Number)]
-    } else if (at === lines.length - 1 && /^-?\d+$/.test(line)) {
-      total = Number(line)
-    } else {
-      return { result: written.trim() }
-    }
-  }
+  const total = /^-?\d+$/.test(lines.at(-1) ?? '') ? Number(lines.pop()) : undefined
 
   const asked = parseRoll(input)
-  const notation = 'error' in asked ? null : parseDice(asked.notation)
-  const dice = notation && !('error' in notation) ? diceAsThrown(notation, thrown) : null
-  if (!dice || !notation || 'error' in notation || 'error' in asked) {
-    return { result: total === undefined ? written.trim() : String(total) }
-  }
+  const parsed = 'error' in asked ? null : parseDice(asked.notation)
+  const notation = parsed && !('error' in parsed) ? parsed : null
+  const thrown = thrownIn(lines, notation)
+  if (!thrown) return { result: written.trim() }
 
-  const made = diceTotal(notation, dice)
+  const dice = notation ? diceAsThrown(notation, thrown) : null
+  if (!dice || !notation) return { result: total === undefined ? written.trim() : String(total) }
+
   const was = before ? rollOf(before) : null
-  const fudged =
-    total !== undefined && total !== made && JSON.stringify(was?.dice) === JSON.stringify(dice)
-  if (fudged) return { result: String(total) }
+  const same = Boolean(was && sameThrow(notation, was.dice, dice))
+  const made = rollFrom(notation, same && was ? was.dice : dice)
+  if (same && total !== undefined && total !== made.total) return { result: String(total) }
 
-  return {
-    result: String(made),
-    roll: { roll: asked.notation, dice, modifier: notation.modifier, total: made },
-  }
+  return { result: String(made.total), roll: made }
 }
 
 /**
@@ -603,13 +652,28 @@ const WRITTEN = {
   aside: {
     usage: '/aside <question>',
     description: 'Ask something the model forgets once it has answered.',
+    whole: true,
     aside: true,
+    retired: '/aside is now /fork, which asks in a copy of the chat that you can reply in.',
     // Asked like anything else the writer says. What it is about is theirs to
     // say in it; see ai/asides.js.
     speaks: true,
     check({ input }) {
       if (!input) return 'Ask something: /aside What should happen next?'
     },
+    async run({ input }) {
+      return { result: input }
+    },
+  },
+
+  // Made and sent by the chat, which opens the fork beside it, before
+  // anything is submitted here; see `forkAsked`. One that reaches a
+  // submission was not at the start of a message of its own.
+  fork: {
+    usage: '/fork <message>',
+    description: 'Go on in a copy of the chat, in a tab of its own.',
+    whole: true,
+    forks: true,
     async run({ input }) {
       return { result: input }
     },
@@ -704,7 +768,8 @@ const WRITTEN = {
     answer: {
       write: command => {
         const roll = rollOf(command)
-        return [...(roll ? diceLines(roll) : []), command.result].join('\n')
+        const working = roll ? workingText(workingOf(roll)) : ''
+        return [working, command.result].filter(Boolean).join('\n')
       },
       read: (asked, written, before) => readRoll(asked.input, written, before),
     },
@@ -948,9 +1013,7 @@ function savedPrompt(skill) {
  * the model's to ask.
  *
  * The skills' part is made again whenever the writer's library changes, in
- * place, so everything holding this table sees the change. An experimental
- * skill's is here whether or not it is switched on, since its records are
- * read through it; the menu and running it ask `commandSwitchedOff`.
+ * place, so everything holding this table sees the change.
  *
  * @type {Record<string, CommandDefinition>}
  */
@@ -967,7 +1030,7 @@ function makeSkillCommands() {
     if (!skill.user || skill.name in COMMANDS) continue
     const command = skillCommand(skill)
     if (!command) continue
-    COMMANDS[skill.name] = skill.experimental ? { ...command, experimental: true } : command
+    COMMANDS[skill.name] = command
     fromSkills.push(skill.name)
   }
 }
@@ -1041,21 +1104,17 @@ makeServerCommands()
 onServersChanged(makeServerCommands)
 
 /**
- * Everyone else at the table.
+ * Everyone else at the table, in the chats that have them.
  *
- * `@emily` is a character, and there is no list of them to check against — a
- * game gets played for an hour before anybody writes a character note, and half
- * of them never get one. So the writer says who is speaking and that is who is
- * speaking.
+ * `@emily` at the start of a line was a character, with no list of them to
+ * check against: the writer said who was speaking and that was who was
+ * speaking. Nothing was inferred and nothing rolled. It was the writer's turn,
+ * said in somebody's voice: `<cody>` around what they did, the same way
+ * everything else here is tagged with whatever it came from.
  *
- * The sigil is what makes that free. `@` is a person and `/` is an instruction
- * to the application, which is what both already mean everywhere else, and it
- * leaves `/` a closed set — so a mistyped `/directr` is still a complaint
- * naming what there is, rather than a character called directr.
- *
- * Nothing is inferred and nothing is rolled. It is the writer's turn, said in
- * somebody's voice: `<cody>` around what they did, the same way everything else
- * here is tagged with whatever it came from.
+ * No line typed now is one, since `@` attaches a document. This is what the
+ * records already in a chat answer to, so they are shown and sent as they
+ * were.
  *
  * @type {CommandDefinition}
  */
@@ -1075,7 +1134,7 @@ function unknownCommand(name) {
   const known = listCommands()
     .map(each => `/${each.name}`)
     .join(', ')
-  return `No command called /${name}. There is ${known} — and @${name} if ${name} is a person.`
+  return `No command called /${name}. There is ${known}.`
 }
 
 /**
@@ -1173,10 +1232,11 @@ export function commandAtCaret(text, caret) {
 /**
  * What answers to this, or null if nothing does.
  *
- * The sigil decides, not the name. A command is matched however it was
+ * The record decides, not the name. A command is matched however it was
  * capitalised, because there is one `/oracle` and shouting at it should still
- * roll; `@oracle` is somebody called Oracle, which is a perfectly good name for
- * somebody in the kind of story that has an oracle in it.
+ * roll; a record of a character called Oracle is somebody, which is a
+ * perfectly good name for somebody in the kind of story that has an oracle in
+ * it.
  *
  * @param {{name: string, character?: boolean}} command
  * @returns {CommandDefinition|null}
@@ -1187,14 +1247,13 @@ function definitionFor(command) {
 }
 
 /**
- * A sigil, a name, an optional parenthesised setting, and the rest of the line.
+ * A slash, a name, an optional parenthesised setting, and the rest of the line.
  *
- * Apostrophes and hyphens are in the name because names have them, and a line
- * that comes back as a character called `o` is worse than no character at all.
- * A colon joins a server to one of its prompts (`/glossary:outline`); a
- * character is never named that way, so `@Vivi:hi` is Vivi saying `:hi`.
+ * Apostrophes and hyphens are in the name because a skill's or a server's
+ * may have them. A colon joins a server to one of its prompts
+ * (`/glossary:outline`).
  */
-const COMMAND_LINE = /^([/@])([A-Za-z][\w'-]*(?::[A-Za-z][\w'-]*)?)(?:\(([^)]*)\))?\s*([\s\S]*)$/
+const COMMAND_LINE = /^\/([A-Za-z][\w'-]*(?::[A-Za-z][\w'-]*)?)(?:\(([^)]*)\))?\s*([\s\S]*)$/
 
 /**
  * Split a typed line into a command and what it was given.
@@ -1211,25 +1270,10 @@ export function parseCommand(input) {
   const match = COMMAND_LINE.exec((input || '').trim())
   if (!match) return null
 
-  const [, sigil, name, param, said] = match
-  // Only a command's name has a colon in it: a character's ends there, and
-  // the rest is what they said.
-  if (sigil === '@' && name.includes(':')) {
-    const character = name.slice(0, name.indexOf(':'))
-    return {
-      name: character,
-      character: /** @type {const} */ (true),
-      input: input
-        .trim()
-        .slice(1 + character.length)
-        .trim(),
-    }
-  }
+  const [, name, param, said] = match
   return {
-    // As typed. A command's name is canonicalised where it is looked up; a
-    // character's is theirs, and Mrs-Hale is not mrs-hale.
+    // As typed. A command's name is canonicalised where it is looked up.
     name,
-    ...(sigil === '@' ? { character: /** @type {const} */ (true) } : {}),
     ...(param?.trim() ? { param: param.trim() } : {}),
     input: said.trim(),
   }
@@ -1242,14 +1286,19 @@ export function parseCommand(input) {
  * writer to edit. A record holds what was asked rather than the keystrokes that
  * asked it, so this is what a stored command looks like written down.
  *
+ * A character's line, from when `@name` gave one, has no line that asks it
+ * again. It is written as the model reads it, their name around what they
+ * said, so a turn written again holds it as the prose it then is and the
+ * model is sent the same words.
+ *
  * @param {CommandInput} asked
  * @returns {string}
  */
 export function formatCommand({ name, param, input, character }) {
-  const sigil = character ? '@' : '/'
-  const spec = definitionFor({ name, character })?.param
+  if (character) return renderCommand({ name, input, result: input, character })
+  const spec = definitionFor({ name })?.param
   const written = param && spec ? sayValue(spec, param) : param
-  return `${sigil}${name}${written ? `(${written})` : ''}${input ? ` ${input}` : ''}`
+  return `/${name}${written ? `(${written})` : ''}${input ? ` ${input}` : ''}`
 }
 
 /** An answer written under the command it answers. */
@@ -1424,9 +1473,9 @@ export function splitInput(input) {
     }
     flush()
 
-    // An aside is the whole of its message, so its question runs to the end
-    // of it, lines and all.
-    if (commandIsAside(parsed)) {
+    // One that is the whole of its message runs to the end of it, lines and
+    // all.
+    if (commandIsWhole(parsed)) {
       const rest = lines.slice(at + 1).join('\n')
       segments.push({
         type: /** @type {const} */ ('command'),
@@ -1525,16 +1574,13 @@ function checkParam(command, { name, param }) {
 
 /**
  * Why a command can't run now, though the records it left still read: it is
- * an experimental skill's, and that skill is switched off. Nothing when it
- * can.
+ * retired, as `/aside` is. Nothing when it can.
  *
  * @param {{name: string, character?: boolean}} command
  * @returns {string}
  */
 export function commandSwitchedOff(command) {
-  const name = command.name.toLowerCase()
-  if (!definitionFor(command)?.experimental || skillIsOn(name)) return ''
-  return `/${name} is an experimental skill, and it's off. Switch it on in Settings › Skills.`
+  return definitionFor(command)?.retired || ''
 }
 
 /**
@@ -1602,21 +1648,21 @@ export function rollOf(command) {
 }
 
 /**
- * A roll's dice as the writer reads them, a line for each kind, above the
- * total. Not what was added: that is in the notation beside the name.
+ * A roll's working as the writer reads it, above the total: a line of dice for
+ * each term, the dropped ones struck through. See `workingOf`.
  *
  * A roll from before the dice were kept has its working written out instead,
  * and that is what it shows.
  *
  * @param {ChatCommand} command
- * @returns {string[]}
+ * @returns {import('./tools/rpg.js').WorkingPart[][]} A line of parts for each
  */
-export function rollLines(command) {
+export function rollWorking(command) {
   if (definitionFor(command) !== COMMANDS.roll) return []
 
   const roll = rollOf(command)
-  if (roll) return diceLines(roll)
-  return command.detail ? [command.detail] : []
+  if (roll) return workingOf(roll)
+  return command.detail ? [[{ text: command.detail }]] : []
 }
 
 /**
@@ -1740,6 +1786,43 @@ export function commandIsPrompt(command) {
  */
 export function commandIsAside(command) {
   return definitionFor(command)?.aside === true
+}
+
+/**
+ * Whether it is a message of its own, its input everything after its name.
+ *
+ * @param {{name: string, character?: boolean}} command
+ * @returns {boolean}
+ */
+export function commandIsWhole(command) {
+  return definitionFor(command)?.whole === true
+}
+
+/**
+ * Whether it goes on in a copy of the chat. See `forkAsked`.
+ *
+ * @param {{name: string, character?: boolean}} command
+ * @returns {boolean}
+ */
+export function commandForks(command) {
+  return definitionFor(command)?.forks === true
+}
+
+/**
+ * What a submission asks the chat to fork with, when it is `/fork` and
+ * nothing before it: the message to send in the fork, as typed, commands and
+ * all, or '' to fork and say nothing yet. Null for any other submission,
+ * including a `/fork` with something before it, which the submission
+ * refuses.
+ *
+ * @param {string} text - Everything the writer submitted
+ * @returns {{message: string}|null}
+ */
+export function forkAsked(text) {
+  const segments = splitInput(text)
+  const [first] = segments
+  if (segments.length !== 1 || first.type !== 'command' || !commandForks(first)) return null
+  return { message: first.input }
 }
 
 /**

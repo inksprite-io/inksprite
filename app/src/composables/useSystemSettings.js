@@ -2,10 +2,11 @@ import { onBeforeUnmount, onMounted, watch } from 'vue'
 import { useApplicationState } from './useApplicationState.js'
 
 /**
- * The page's background in each theme (`main`'s surface-0 and surface-900),
- * which the installed app's title bar takes on.
+ * The page's background in each theme (`main`'s surface-0 and surface-850,
+ * halfway between zinc 800 and 900), which the installed app's title bar
+ * takes on.
  */
-export const TITLE_BAR_COLORS = { light: '#ffffff', dark: '#18181b' }
+export const TITLE_BAR_COLORS = { light: '#ffffff', dark: '#202023' }
 
 /**
  * Apply the specified theme to the document.

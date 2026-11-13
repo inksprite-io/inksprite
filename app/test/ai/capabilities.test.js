@@ -42,6 +42,14 @@ describe('capabilitiesOf', () => {
     expect(capabilities.reasoningDisplay).toBe(true)
   })
 
+  it('offers an undescribed NanoGPT model what it offers one of OpenRouter’s', () => {
+    const capabilities = capabilitiesOf({ type: 'nanogpt' }, 'some/model')
+
+    expect(capabilities.samplers.size).toBe(9)
+    expect(capabilities.efforts).toEqual(['disabled', 'enabled', 'low', 'medium', 'high'])
+    expect(capabilities.reasoningDisplay).toBe(true)
+  })
+
   it('offers a model the samplers and efforts its list says it takes', () => {
     const capabilities = capabilitiesOf(openrouter, 'some/model', {
       samplers: ['temperature', 'seed'],

@@ -107,28 +107,28 @@ export async function walkthrough(ui, { standIn, context }) {
   })
   await ui.press('Escape')
 
-  // Connecting OpenRouter
+  // Connecting OpenRouter, from the chat
   await ui.click(button('Connect'))
-  await dialog('Connect an AI provider').waitFor()
-  await ui.shot('connect-provider', { of: dialog('Connect an AI provider') })
+  const setup = dialog('Connect an AI provider')
+  await setup.waitFor()
+  await ui.shot('connect-provider', { of: setup })
   await ui.record('connect-openrouter', async () => {
     const tab = page.waitForEvent('popup')
-    await ui.click(button('Connect to OpenRouter'))
+    await ui.click(button('Sign in with OpenRouter'))
     await (await tab).waitForEvent('close')
-    await page.getByText('Connected to your OpenRouter account').waitFor()
+    await setup.locator('[data-state="connected"]').waitFor()
+    await ui.click(button('Next'))
   })
 
-  // The model
-  await ui.click(button('Settings'))
-  await ui.click(button('AI'))
-  await page.getByRole('combobox', { name: 'Model' }).waitFor()
-  await ui.shot('ai-settings', { of: dialog('Settings'), pad: 0 })
-  await ui.click(page.getByRole('combobox', { name: 'Model' }))
-  await page.getByRole('option', { name: 'Z.ai: GLM 5.2' }).waitFor()
-  await ui.shot('choose-model', { of: dialog('Settings'), pad: 0 })
-  await ui.press('Escape')
-  await ui.click(dialog('Settings').getByRole('button', { name: 'Close' }))
-  await dialog('Settings').waitFor({ state: 'hidden' })
+  // The model, one chosen already
+  const models = dialog('Choose a model')
+  // Its card, by its name: the first, where Recommended lists it too.
+  const model = models.locator('[data-card-toggle]').filter({ hasText: 'Z.ai: GLM 5.2' }).first()
+  await model.waitFor()
+  await ui.click(model)
+  await ui.shot('choose-model', { of: models })
+  await ui.click(button('Done'))
+  await models.waitFor({ state: 'hidden' })
 
   // A first chat, at a time that reads the same on every run
   await context.clock.setSystemTime(new Date('2026-10-01T09:41:00Z'))
@@ -157,13 +157,18 @@ export async function walkthrough(ui, { standIn, context }) {
   if (!(await download).suggestedFilename().endsWith('.zip'))
     throw new Error('The backup is not a .zip file')
 
-  // LM Studio instead of OpenRouter
-  await ui.click(button('AI'))
+  // LM Studio as well as OpenRouter
+  await ui.click(button('Connections'))
   await ui.record('connect-lmstudio', async () => {
-    await ui.click(page.getByRole('combobox', { name: 'Provider', exact: true }))
-    await ui.click(page.getByRole('option', { name: 'LM Studio' }))
-    await ui.click(page.getByRole('combobox', { name: 'Model' }))
-    await ui.click(page.getByRole('option', { name: 'qwen/qwen3-14b' }))
+    await ui.click(button('Add connection'))
+    const added = page.locator('[data-adding-connection]')
+    // By its field: PrimeVue's Select is a span, which its <label for> can't name.
+    await ui.click(added.locator('[data-field="kind"]'))
+    await ui.click(page.getByRole('option', { name: 'LM Studio', exact: true }))
+    await ui.click(added.getByRole('button', { name: 'Connect', exact: true }))
+    await added.locator('[data-state="connected"]').waitFor()
   })
-  await ui.shot('lmstudio-settings', { of: dialog('Settings'), pad: 0 })
+  const added = page.locator('[data-adding-connection]')
+  await ui.shot('lmstudio-settings', { of: added })
+  await ui.click(added.getByRole('button', { name: 'Done', exact: true }))
 }

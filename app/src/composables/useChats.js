@@ -5,10 +5,12 @@ import { useDocumentsStore } from '@/stores/documentsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { settingsForNewChat } from '@/ai/profiles/index.js'
 import { useProfiles } from './useProfiles.js'
+import { stampFor, stampChats } from './useChatPresets.js'
 import { localStorage as appStorage } from '@/utils/localStorage.js'
 import { expired } from '@/utils/trash.js'
 import { CannotApplyError } from '@/utils/errors.js'
 import { intoConversation, lastAside } from '@/ai/asides.js'
+import { copyChoice } from '@/ai/tools/choice.js'
 
 /** @typedef {import('../types/models.js').Chat} Chat */
 /** @typedef {import('../types/models.js').Message} Message */
@@ -98,6 +100,7 @@ export const clearChatsInstances = () => {
  *   deleteTrashedChat: (chatId: string) => Promise<void>,
  *   getChatById: (chatId: string) => Chat|null,
  *   forkChat: (chatId: string, messageId: string) => Chat,
+ *   renameChat: (chatId: string, title: string) => void,
  *   importChat: (chat: Chat, messages: Message[], prompt?: AIPrompt) => Chat,
  *   addMessage: (chatId: string, role: 'user'|'assistant', content: string, reasoningContent?: string|null, segments?: import('../types/models.js').MessageSegment[]|null, metadata?: import('../types/models.js').MessageMetadata|null) => Message,
  *   streamMessageContent: (messageId: string, content: string, reasoningContent?: string|null, timing?: {thinkingFinishTime?: number, streamingFinishTime?: number, thinkingTime?: number}, pendingToolCalls?: import('../types/models.js').PendingToolCall[]) => Message|null,
@@ -164,6 +167,9 @@ export const useChats = storyId => {
         await chatsStore.loadChatsForStory(storyId)
         const chats = chatsStore.getChatsForStory(storyId)
         await Promise.all(chats.map(c => messagesStore.loadMessagesForChat(c.id)))
+        // One from an older device, a backup or an import names no preset:
+        // it keeps the one it runs on, whatever is picked on its profile.
+        await stampChats(chats)
         // A chat in the trash keeps its messages unread until it comes back,
         // and its draft with it; one there for 30 days goes for good.
         for (const chat of chatsStore.trashedOf(storyId)) {
@@ -618,35 +624,39 @@ export const useChats = storyId => {
    * a brand new chat has none of those and reads its profile's. The messages
    * keep their content and timing and get fresh ids.
    *
-   * The pins come too. A fork of a chat on a character card that lost them
-   * would be a fork of a different character, since what a card puts in front
-   * of the model is pinned rather than read. They are document ids, so an
-   * import carries ids from another project; those name nothing here and are
-   * skipped when the block is built.
+   * What a card put in front of the model comes with the messages: the turn
+   * that opens its chat holds a copy of each document it attached.
    *
-   * What a chat pins, shows and hides is carried: a fork is the same
+   * What a chat shows and hides is carried: a fork is the same
    * conversation, and it would be a different one if it could suddenly see
    * every other character in the project.
    *
    * @param {Chat} source - Whose settings to carry over
    * @param {Message[]} messages - In order; each is duplicated under the new chat
    * @param {string} title
-   * @param {{now?: boolean}} [options] - `now` to sort it as just made, as a
-   *   fork is, rather than where its conversation left off
+   * @param {{now?: boolean, named?: boolean}} [options] - `now` to sort it as
+   *   just made, as a fork is, rather than where its conversation left off;
+   *   `named: false` for one to be named from what is said in it next, as a
+   *   fork is
    * @returns {Chat}
    */
-  const copyChat = (source, messages, title, { now = false } = {}) => {
+  const copyChat = (source, messages, title, { now = false, named = true } = {}) => {
     const copy = chatsStore.createChat(storyId, title, null, {
       profileId: source.profileId ?? null,
       ...(typeof source.prompt === 'string' ? { prompt: source.prompt } : {}),
       ...(source.skills ? { skills: copySkills(source.skills) } : {}),
-      ...(source.presetId ? { presetId: source.presetId } : {}),
-      disabledTools: [...(source.disabledTools || [])],
-      disabledToolGroups: [...(source.disabledToolGroups || [])],
-      ...(source.mcpServers ? { mcpServers: [...source.mcpServers] } : {}),
-      ...(typeof source.web === 'boolean' ? { web: source.web } : {}),
-      ...(typeof source.python === 'boolean' ? { python: source.python } : {}),
+      // The model it runs on; one from before chats kept their own goes on
+      // what it ran on.
+      ...(source.providerId && source.model
+        ? { providerId: source.providerId, model: source.model }
+        : {}),
+      ...stampFor({ ...source, storyId }),
+      ...(source.reasoningEffort ? { reasoningEffort: source.reasoningEffort } : {}),
+      ...(source.applyEdits ? { applyEdits: source.applyEdits } : {}),
+      // Its tools, as it has them, a profile's that offers only some with them.
+      ...copyChoice(source),
       ...(source.rules ? { rules: source.rules } : {}),
+      // Pins from before among what it shows, which is all they are now.
       ...(source.pinnedIds?.length ? { pinnedIds: [...source.pinnedIds] } : {}),
       ...(source.shownIds?.length ? { shownIds: [...source.shownIds] } : {}),
       ...(source.hiddenIds?.length ? { hiddenIds: [...source.hiddenIds] } : {}),
@@ -665,9 +675,8 @@ export const useChats = storyId => {
       updateChat(copy.id, { description: source.description })
     }
 
-    messages.forEach(message => {
-      messagesStore.duplicateMessage(message, copy.id)
-    })
+    let last = null
+    for (const message of messages) last = messagesStore.duplicateMessage(message, copy.id)
     markEdited()
 
     // An import is stamped with its last message, so it sorts where the
@@ -679,6 +688,9 @@ export const useChats = storyId => {
       updateChat(copy.id, {
         lastMessageAt: now ? Date.now() : messages[messages.length - 1].created,
         messageCount: messages.length,
+        // Named, as a new chat is, from the first thing said in it, which is
+        // the first thing after the last message it was given.
+        ...(!named && last ? { nameAfter: last.id } : {}),
       })
     }
 
@@ -715,9 +727,18 @@ export const useChats = storyId => {
       originalChat,
       kept.map((message, at) => (at < aside ? message : intoConversation(message))),
       `${originalChat.title} - forked`,
-      { now: true }
+      { now: true, named: false }
     )
   }
+
+  /**
+   * Give a chat the writer's own name for it, which ends any wait for one
+   * from the model, as a fork waits for one.
+   *
+   * @param {string} chatId
+   * @param {string} title
+   */
+  const renameChat = (chatId, title) => updateChat(chatId, { title, nameAfter: undefined })
 
   /**
    * Bring a chat read from a file into this story.
@@ -769,6 +790,7 @@ export const useChats = storyId => {
     deleteTrashedChat,
     getChatById,
     forkChat,
+    renameChat,
     importChat,
 
     // Message actions

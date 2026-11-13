@@ -11,8 +11,8 @@ Connect a server, and the model can call its tools in your chats.
 
 ## Add a server
 
-1. In **Settings** › **Connections**, click **Add a server** under **MCP
-   servers**.
+1. In **Settings** › **Connections** › **MCP servers**, click the plus beside
+   the heading (**Add a server**).
 2. Paste the server's address, from its own docs, in **Address**.
 3. Give it a **Name**, or leave the one made from the address. Its tools and
    prompts are named after it.
@@ -21,9 +21,7 @@ Connect a server, and the model can call its tools in your chats.
    `Bearer ` followed by the key; the server's docs say which.
 5. Click **Connect**. inksprite says how many tools the server offers. Click
    the server to see them, with what each one tells the model it does.
-6. Under **Used in chats on**, switch on the [profiles](/chats/#profiles) whose
-   chats should have its tools. **Default** is on to start.
-7. Click **Keep it**. It takes the place of **Connect** until you change what
+6. Click **Keep it**. It takes the place of **Connect** until you change what
    you typed.
 
 <Screenshot name="mcp-add-server" alt="DeepWiki added by its address, offering three tools" />
@@ -42,7 +40,7 @@ tools. If you close the tab without finishing, click **Cancel**.
 A server you're signed in to shows **Signed in**, and **Sign out** is in its
 row. If a sign-in runs out and can't be renewed, the model's calls to that
 server fail with *It needs you to sign in. Sign in from Settings ›
-Connections.*, and the server's row offers **Sign in** again.
+Connections.*, and the server's card offers **Sign in** again.
 
 A few servers' sign-in doesn't work with inksprite, GitHub's among them.
 GitHub's server takes a personal access token in a header instead.
@@ -94,13 +92,12 @@ DeepWiki answers, and the model writes its reply from that.
 
 ## Choose which chats use it
 
-A chat has a server's tools when its profile is on under **Used in chats on**.
-To change that, click the server in **Settings** › **Connections**.
-
-To change one chat, click the gear in the message box and open **Tools**. Each
-server has a switch of its own, and one for each of its tools. The chat keeps
-your choice until you move it to another profile; then it follows that
-profile.
+Once you keep a server, every chat has its tools, except on the Roleplay and
+Blank [profiles](/chats/#profiles). To change one chat, open **Settings** ›
+**Tools** while it's showing. Each
+server has a switch of its own, and one for each of its tools, marked **Asks
+first** or **Always allowed**. New chats on the same profile start the same
+way; chats already going keep their own.
 
 ## Allow a call
 
@@ -115,7 +112,8 @@ passing it.
 
 The call waits as long as you take. Stopping the turn denies it.
 
-To change what's allowed, click the server in **Settings** › **Connections**.
+To change what's allowed, click the server in **Settings** › **Connections** ›
+**MCP servers**.
 Under **Tools**, each tool has an **Always allow** switch, or says **Reads
 only**. **Always allow all of them** covers every tool, including those the
 server adds later.
@@ -129,7 +127,8 @@ own material in them. Type `/` in the message box, and each is listed as
 `/<server>:<prompt>`. Type what it asks for after the name, and send. The
 server's text goes into your message, and the model answers it.
 
-The server's row in **Settings** › **Connections** lists its prompts. A prompt
+The server's card in **Settings** › **Connections** › **MCP servers** lists
+its prompts. A prompt
 that needs more than one thing filled in isn't in the `/` list.
 
 ## Keep an answer
@@ -142,7 +141,7 @@ which server and tool it came from, and when you saved it.
 
 ## Change or remove a server
 
-Click a server in **Settings** › **Connections** to open it.
+Click a server in **Settings** › **Connections** › **MCP servers** to open it.
 
 - **Header**: change the key, then click **Save**.
 - **List its tools again**: after the server adds or changes tools.

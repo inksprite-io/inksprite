@@ -44,13 +44,20 @@
  * covers it; each skill it offers keeps a switch of its own, by its name, as
  * if it were a tool.
  *
+ * ## Which are offered
+ *
+ * Every group is switched the same way, on a profile and on a chat started
+ * from it: on unless switched off, so something added later is on wherever
+ * nothing said otherwise, except in a profile written to offer only some
+ * (Blank and Roleplay). See ./choice.js. A group that can't be offered here
+ * isn't, whatever the switches say: the web without a service set up, and
+ * Python outside the desktop app or without its extension.
+ *
  * ## Tools from MCP servers
  *
  * Each server the writer connected is a group of its own, its tools named
  * `<prefix>__<tool>` (see ../../mcp/names.js) and registered from what the
- * server offered when it was last listed. Unlike the built-in groups, a
- * server's is opted into: a chat is offered a server's tools only when the
- * selection names the server. See ../../mcp/servers.js.
+ * server offered when it was last listed. See ../../mcp/servers.js.
  *
  * ## Explore
  *
@@ -61,17 +68,22 @@
  * ## The web
  *
  * `web_search` and `read_web_page` (./web.js) are a group of their own,
- * opted into the same way: offered only when the selection says the chat
- * searches, which a service set up and the chat's profile or its own choice
- * decide. See ../../web/config.js.
+ * offered while a service is set up to search. See ../../web/config.js.
  *
  * ## Python
  *
  * `run_python` (./python.js) runs the model's code, or a script kept in the
  * project, in the desktop app, in a session for each chat, with the project
- * read-only at `/project`. A group of its own, opted into as the web is:
- * offered only when the selection says the chat runs Python, which the
- * Python extension and the chat's profile or its own choice decide.
+ * read-only at `/project`. A group of its own, offered while the Python
+ * extension is on.
+ *
+ * ## Calls still being written
+ *
+ * A call's arguments stream in a token at a time. `./progress.js` says what
+ * one in flight is doing, for the chat to show the prose growing, and
+ * `./streamedAppends.js` shows an `append_document` call's text at the end of
+ * its document while the editor has it open (../../editor/streaming.js). The
+ * text is written only when the call runs.
  */
 
 import { toolRegistry } from './registry.js'
@@ -110,13 +122,12 @@ import {
   executeAppendDocument,
 } from './documents.js'
 import {
-  BUILT_IN_SKILLS,
   SKILL_MAX_ROUNDS,
   SKILL_MAX_DEPTH,
+  builtInSkills,
   getSkill,
   librarySkills,
   onSkillsChanged,
-  skillIsOn,
   toolDefinitionFor,
 } from '../skills/index.js'
 import {
@@ -135,7 +146,7 @@ import {
   exploreDocumentsDefinition,
 } from './explore.js'
 import { allServers, getServer, onServersChanged, reachable } from '../../mcp/servers.js'
-import { serverGroup, serverOfGroup } from '../../mcp/names.js'
+import { serverGroup } from '../../mcp/names.js'
 import { callServerTool, describeFailure, resultForModel } from '../../mcp/client.js'
 import {
   SAVE_TIMEOUT_MS,
@@ -148,12 +159,14 @@ import {
   readWebPageDefinition,
   saveWebPageDefinition,
   webSearchDefinition,
+  webSearchOffered,
 } from './web.js'
 import {
   PYTHON_GROUP,
   RUN_PYTHON,
   executeRunPython,
   pythonCallTimeout,
+  pythonOffered,
   runPythonDefinition,
 } from './python.js'
 
@@ -166,31 +179,18 @@ import {
 export const SKILLS_GROUP = 'skills'
 
 /**
- * The group the built-in skills still being tuned are registered in:
- * Interpret and Write, each while the writer has it switched on. Every
- * built-in profile starts with the group off, so the model is offered them
- * only in a chat that switches one on; the writer's `/interpret` and `/write`
- * work in any chat while they are on. See ai/profiles.
- */
-export const EXPERIMENTAL_GROUP = 'experimental'
-
-/** The groups whose tools are skills. */
-const SKILL_GROUPS = new Set([SKILLS_GROUP, EXPERIMENTAL_GROUP])
-
-/**
- * Tool groups, in display order. The keys are stored on chats that switch a
- * group off, so renaming one orphans that setting — change the label, not the
- * key.
+ * The app's own tool groups, in the order they are listed, a server's coming
+ * after Python. The keys are stored on chats and profiles that switch a group
+ * off, so renaming one orphans that setting — change the label, not the key.
  *
  * @type {Record<string, string>}
  */
 export const TOOL_GROUP_LABELS = {
   documents: 'Documents',
-  rpg: 'RPG Tools',
-  [SKILLS_GROUP]: 'Skills',
-  [EXPERIMENTAL_GROUP]: 'Experimental',
   [WEB_GROUP]: 'Web',
   [PYTHON_GROUP]: 'Python',
+  [SKILLS_GROUP]: 'Skills',
+  rpg: 'RPG Tools',
 }
 
 /**
@@ -304,30 +304,31 @@ toolRegistry.register(
   pythonCallTimeout
 )
 
+/** The built-in skills registered as tools, as last made. */
+let builtInTools = /** @type {string[]} */ ([])
+
 /**
  * Register every built-in skill the model may call, as the tool its SKILL.md
- * describes, in the experimental group while it is still being tuned, and
- * then only while the writer has it switched on. `interpret` draws a card of
- * its own out of sight and returns what it made of it, for a Game Master that
- * wants an idea rather than a card to read; `draw_tarot`, above, is for one
- * that wants the cards. See ../skills/interpret.
+ * describes, and the harness's while it runs (`setTrialSkills` in
+ * ../skills). None of the app's own is one yet: Compact is the writer's.
  *
  * One already registered is left where it is, so a change to the library does
  * not move the built-ins in the list the model is offered.
  */
 function registerBuiltInTools() {
-  for (const skill of BUILT_IN_SKILLS) {
-    if (!skill.model || !skill.execute) continue
-    if (!skillIsOn(skill.name)) {
-      toolRegistry.unregister(skill.name)
-      continue
-    }
+  const callable = builtInSkills().filter(skill => skill.model && skill.execute)
+  for (const name of builtInTools) {
+    if (!callable.some(skill => skill.name === name)) toolRegistry.unregister(name)
+  }
+  builtInTools = []
+  for (const skill of callable) {
+    builtInTools.push(skill.name)
     if (toolRegistry.has(skill.name)) continue
     toolRegistry.register(
       skill.name,
       toolDefinitionFor(skill),
       skill.execute,
-      skill.experimental ? EXPERIMENTAL_GROUP : SKILLS_GROUP,
+      SKILLS_GROUP,
       SKILL_TIMEOUT_MS
     )
   }
@@ -478,29 +479,14 @@ export function keptInConversation(name) {
  * One that is reaches the project, and every turn of it carries the project
  * block; see composables/useAIContext.js.
  *
- * @param {{disabledTools?: string[], disabledGroups?: string[]}} [selection]
+ * @param {import('./choice.js').ToolChoice|null} [choice] - The chat's
  * @returns {boolean}
  */
-export function offersDocuments(selection) {
+export function offersDocuments(choice) {
   return toolRegistry
-    .getEnabledDefinitions(selection)
+    .getEnabledDefinitions(choice ?? {})
     .some(definition => toolRegistry.groupOf(definition.function.name) === 'documents')
 }
-
-/**
- * Whether a chat is offered any of the comment tools: what decides whether
- * its pinned documents come with their comments.
- * @param {{disabledTools?: string[], disabledGroups?: string[]}} selection
- * @returns {boolean}
- */
-export function offersComments(selection) {
-  return toolRegistry
-    .getEnabledDefinitions(selection)
-    .some(definition => COMMENT_TOOLS.has(definition.function.name))
-}
-
-/** The tools that work on comments. */
-const COMMENT_TOOLS = new Set(['list_comments', 'add_comment', 'reply_comment', 'resolve_comment'])
 
 /**
  * The time limit a tool has asked for, if it has asked for one.
@@ -521,30 +507,35 @@ export function getToolDefinitions() {
 }
 
 /**
- * Tool definitions minus whatever a chat has switched off, by tool or by group.
+ * Whether a group can be offered here at all, whatever a chat's switches
+ * say: the web while its extension is on and a service is set up to search,
+ * Python while its extension is on in the desktop app. A server's tools are registered only
+ * while it can be reached, and every other group always can be.
+ *
+ * @param {string|undefined} group
+ * @returns {boolean}
+ */
+export function groupAvailable(group) {
+  if (group === WEB_GROUP) return webSearchOffered()
+  if (group === PYTHON_GROUP) return pythonOffered()
+  return true
+}
+
+/**
+ * Tool definitions minus whatever a chat has switched off, by tool or by
+ * group (./choice.js), and any group that can't be offered here.
  *
  * A skill the model loads is switched off by its name, like any tool, and
  * that takes it out of `use_skill`'s list; with none left, `use_skill` goes.
  *
- * A server's tools are offered only when `servers` names the server, and then
- * less any the chat switched off by name. The web tools are the same: offered
- * only when `web` says the chat searches (web/config.js `webForChat`), and
- * Python only when `python` says the chat runs it (python.js
- * `pythonForChat`).
- *
- * @param {{disabledTools?: string[], disabledGroups?: string[], servers?: string[], web?: boolean, python?: boolean}} [selection]
+ * @param {import('./choice.js').ToolChoice|null} [choice] - The chat's
  * @returns {import('./registry.js').ToolDefinition[]}
  */
-export function getEnabledToolDefinitions(selection) {
-  const off = new Set(selection?.disabledTools || [])
-  const servers = new Set(selection?.servers || [])
-  return toolRegistry.getEnabledDefinitions(selection).flatMap(definition => {
+export function getEnabledToolDefinitions(choice) {
+  const off = new Set(choice?.disabledTools || [])
+  return toolRegistry.getEnabledDefinitions(choice ?? {}).flatMap(definition => {
     const name = definition.function.name
-    const group = toolRegistry.groupOf(name)
-    if (group === WEB_GROUP) return selection?.web ? [definition] : []
-    if (group === PYTHON_GROUP) return selection?.python ? [definition] : []
-    const server = serverOfGroup(group)
-    if (server !== null) return servers.has(server) ? [definition] : []
+    if (!groupAvailable(toolRegistry.groupOf(name))) return []
     if (name !== USE_SKILL) return [definition]
     const offered = loadableSkills().filter(skill => !off.has(skill.name))
     return offered.length > 0 ? [useSkillDefinition(offered)] : []
@@ -593,7 +584,7 @@ export function getToolDefinitionsFor(names, depth = 1) {
  * @returns {boolean}
  */
 export function isSkill(name) {
-  return name !== USE_SKILL && SKILL_GROUPS.has(toolRegistry.groupOf(name) ?? '')
+  return name !== USE_SKILL && toolRegistry.groupOf(name) === SKILLS_GROUP
 }
 
 /**
@@ -632,11 +623,20 @@ export function handsOverReply(name) {
 }
 
 /**
- * Registered tools arranged into groups, for the settings UI.
+ * Registered tools arranged into groups, for the settings UI: where each
+ * comes from, the documents first, then the web, Python and each server, then
+ * the skills and the RPG tools. Only the groups that can be offered here.
+ *
  * @returns {import('./registry.js').ToolGroup[]}
  */
 export function getToolGroups() {
-  return toolRegistry.getGroups(TOOL_GROUP_LABELS)
+  const { documents, [WEB_GROUP]: web, [PYTHON_GROUP]: python, ...rest } = TOOL_GROUP_LABELS
+  /** @type {Record<string, string>} */
+  const labels = { documents, [WEB_GROUP]: web, [PYTHON_GROUP]: python }
+  for (const server of allServers()) {
+    if (reachable(server)) labels[serverGroup(server.id)] = server.name
+  }
+  return toolRegistry.getGroups({ ...labels, ...rest }).filter(group => groupAvailable(group.id))
 }
 
 /**

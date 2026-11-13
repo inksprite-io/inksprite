@@ -1,6 +1,6 @@
 ---
 title: AI Providers
-description: Connect OpenRouter, Anthropic, OpenAI, a model on your own computer, or any server that speaks the OpenAI API.
+description: Connect OpenRouter, NanoGPT, Anthropic, OpenAI, a model on your own computer, or any server that speaks the OpenAI API.
 tableOfContents:
   maxHeadingLevel: 4
 ---
@@ -14,41 +14,76 @@ straight to the provider you choose; nothing goes through us.
 - **[OpenRouter](/getting-started/#connect-an-ai-provider)** gives you one
   account for hundreds of models, paid as you go. Getting started walks through
   it.
+- **[NanoGPT](#nanogpt)** is another account for many models, with a key or
+  its own sign-in.
 - **[Anthropic or OpenAI](#anthropic-and-openai)** take an API key from your
   account with them.
 - **A [local model](#local-models)** runs on your own computer, free and
   private, if your computer is up to it.
 
-Each is set up under **Settings** › **AI**: choose it under **Provider**, then
-choose a **Model**. The ⋮ beside **Provider** opens its settings, for a key or
-another address.
+The first time you use the chat, **Connect** above its message box sets one up:
+choose the **Provider**, give it a key or an address, click **Connect**, then
+choose a model. Add more in **Settings** › **Connections** › **AI providers**,
+with the plus beside the heading (**Add connection**). Each connection there
+is a card with its address; click one for its settings. A card says nothing
+more while its connection answers, and **Key not accepted** or **Can't reach
+it** when it last didn't.
 
 ## Anthropic and OpenAI
 
 Make a key at [Anthropic](https://platform.claude.com/settings/keys) or at
 [OpenAI](https://platform.openai.com/api-keys). Then in inksprite:
 
-1. Open **Settings** › **AI** and choose **Anthropic** or **OpenAI** under
-   **Provider**. It says *Not connected*: click **Connect** beside that.
-2. Paste the key in **API key** and click **Connect**. inksprite says how
-   many models it found.
-3. Close the window and choose a **Model**.
+1. Click **Connect** above the chat's message box, or **Add connection**, the
+   plus in **Settings** › **Connections** › **AI providers**.
+2. Choose **Anthropic** or **OpenAI** under **Provider**, paste the key in
+   **API key**, and click **Connect**. It says *Connected*.
+3. Click **Next** and choose a model.
+
+## NanoGPT
+
+Choose **NanoGPT** under **Provider**. Then either:
+
+- paste a key from your NanoGPT account in **API key** and click **Connect**,
+  or
+- click **Sign in with NanoGPT**. A tab opens at NanoGPT; sign in or make an
+  account there and approve inksprite, and the tab closes with the connection
+  made.
+
+:::note[Accounts made through the sign-in]
+The sign-in carries inksprite's referral code. An account you make during it
+counts as referred by inksprite, unless you untick the checkbox for that on
+NanoGPT's consent screen.
+:::
+
+The [list of models](#models) shows NanoGPT's prices. inksprite asks NanoGPT
+to cache Claude's prompts. Its speech
+models can read for [narration](/narration/#choose-a-voice) too.
+
+A NanoGPT connection's settings have **Zero data retention**, on to start
+with. While it's on, every request through the connection, from chats, titles,
+exploring, conversions and narration alike, asks NanoGPT for providers that
+keep nothing. A model that none of them serves fails, saying *NanoGPT can't
+serve* the model *with zero data retention*, and offers **Choose a model**;
+switch it off to use such a model. Your NanoGPT key can have a data policy of
+its own, set at NanoGPT. That holds as well, and inksprite can't see or change
+it.
 
 ## Local models
 
-**Provider** lists LM Studio, Ollama, llama.cpp, vLLM and KoboldCpp. For any
-other server that speaks the OpenAI API, see [another server](#another-server).
+**Provider** lists LM Studio, Ollama, llama.cpp, vLLM and KoboldCpp, each at
+the address it listens on when started without being told. For any other server
+that speaks the OpenAI API, see [another server](#another-server).
 
 1. Start your server as its section below says.
-2. Open **Settings** › **AI** and choose the server under **Provider**.
-3. Choose a **Model**. inksprite asks the server what it has.
+2. Choose it under **Provider**, change the **Address** if yours is elsewhere,
+   paste the **API key** if it asks for one, and click **Connect**. inksprite
+   asks the server what models it has.
+3. Click **Next** and choose a model.
 
-In a browser, some servers have to be told to let inksprite reach them; their
-sections say how. The [desktop app](/desktop/) doesn't need that.
-
-If no models come, or your server is at another address or asks for a key,
-click the ⋮ beside **Provider**, change the **Endpoint** or paste the
-**API key**, and click **Connect**.
+If it says *Can't reach it*, check that the server is running at that address.
+In a browser, some servers also have to be told to let inksprite reach them;
+their sections say how. The [desktop app](/desktop/) doesn't need that.
 
 <Clip name="connect-lmstudio" label="Connecting to LM Studio" />
 
@@ -59,7 +94,7 @@ Download and load a model, as
 [start the server](https://lmstudio.ai/docs/developer/core/server) on the
 **Developer** tab and turn on **Enable CORS** in its settings.
 
-- **Endpoint**: `http://localhost:1234/v1`
+- **Address**: `http://localhost:1234/v1`
 - **API key**: LM Studio's token, if you turned on **Require Authentication**
 
 #### Ollama
@@ -70,7 +105,7 @@ Download and load a model, as
 [its FAQ](https://docs.ollama.com/faq#how-can-i-allow-additional-web-origins-to-access-ollama)
 shows for each system.
 
-- **Endpoint**: `http://localhost:11434/v1`
+- **Address**: `http://localhost:11434/v1`
 - **API key**: none
 
 #### llama.cpp
@@ -84,12 +119,12 @@ has the other options.
 llama-server -m model.gguf
 ```
 
-- **Endpoint**: `http://localhost:9931/v1`, or the address the server prints as
+- **Address**: `http://localhost:9931/v1`, or the address the server prints as
   it starts (older versions use port 8080)
 - **API key**: what you gave `--api-key`, if anything
 
-To turn a model's thinking off, set **Reasoning effort** under **Generation**
-to *Disabled*.
+To turn a model's thinking off, set **Reasoning effort** to *Disabled* in the
+chat: click the model's chip under the message box.
 
 #### vLLM
 
@@ -107,7 +142,7 @@ The parser depends on the model:
 [vLLM's list](https://docs.vllm.ai/en/latest/features/tool_calling/) says which
 to use.
 
-- **Endpoint**: `http://localhost:8000/v1`
+- **Address**: `http://localhost:8000/v1`
 - **API key**: what you gave `--api-key`, if anything
 
 #### KoboldCpp
@@ -119,43 +154,86 @@ and start it with a model file:
 koboldcpp --model model.gguf
 ```
 
-- **Endpoint**: `http://localhost:5001/v1`
+- **Address**: `http://localhost:5001/v1`
 - **API key**: what you gave `--password`, if anything
 
 ## Another server
 
-For a server inksprite doesn't list, click the ⋮ beside **Provider**, then the
-**+** beside the provider list. Give it a **Name**, fill in the **Endpoint**
-and **API key**, and click **Connect**. Then close the window and choose a
-**Model**.
+For a server inksprite doesn't list, choose **OpenAI-compatible** under
+**Provider**. Give it a **Name**, fill in the **Address** and **API key**, and
+click **Connect**.
 
 ## Requests at once
 
 Some things ask the model more than one question at a time: two skills in one
-turn, or a conversion running while you chat. A provider's settings (the ⋮
-beside **Provider**) have **Requests at once**, how many it is asked together.
+turn, or a conversion running while you chat. A connection's settings (click it
+in **Settings** › **Connections** › **AI providers**) have **Requests at
+once**, how many it is asked together.
 Left empty, it is:
 
 - **1** for a server on your own computer or your network, which works through
   one request at a time and keeps the last conversation it read ready for the
   next turn. llama.cpp is asked as many at once as it has slots (`--parallel`).
-- **No limit** for OpenRouter, Anthropic, OpenAI, vLLM, and a server elsewhere.
+- **No limit** for OpenRouter, NanoGPT, Anthropic, OpenAI, vLLM, and a server
+  elsewhere.
   When a provider says it is being asked too much, inksprite waits as long as
   it asks and tries again, asking less at once for a while.
 
 What you're waiting on goes first: a turn or a skill never waits behind a
 conversion.
 
-## Presets
+## Models
 
-A preset is a provider, a model and their settings, kept together.
-**Settings** › **AI** shows one at a time: choose which beside **Preset**, and
-click the ⋮ beside it to make another with **New preset**.
+**Settings** › **Models** lists the models of all your connections. **Other
+models…**, under the model's chip in a chat's message box, opens it. First
+come **Recent models**, the few that answered you lately, the ones that wrote
+the most first; then **Recommended**; then each connection's models under its
+name. Click a group's heading to shut it, and again to open it. Each model
+says which connection serves it, so Sonnet on
+OpenRouter and Sonnet on Anthropic are told apart, with its price per million
+tokens read and written, how much it reads at once, and whether it has tool
+support, where its connection says. Type to search. The filter in the search
+narrows the list to some of your **Connections**, or to free models, and sorts
+each connection's models by **Name** or **Cost**. The refresh beside it asks
+the connections again. Anthropic's and OpenAI's prices come from OpenRouter's
+list, which charges what they do.
 
-A chat runs on the preset chosen under **AI** in its settings (the gear in the
-message box), and **Save to profile** keeps that choice for new chats on its
-profile. A chat that hasn't chosen one, on a profile that hasn't either, runs
-on the **Default preset** in **Settings** › **System** › **Chats**. Changing a
-preset changes it for every chat that runs on it.
+With a chat showing, a click on a model moves the chat onto it, as choosing
+it under the [chip in the chat](/chats/#the-chats-model) does. That also
+starts the next new chats on the chat's [profile](/chats/#profiles) on it;
+chats already going keep theirs.
 
-**Generation** and **Sampling** show only the settings the chosen model takes.
+The button at the end of a model's card (**Settings**) opens the model's
+settings: **Generation**, **Sampling**, and on OpenRouter **Providers**. They
+are the model's, so a change reaches every chat on it. Until you change one, a
+model runs as its makers recommend, where OpenRouter lists that, and otherwise
+as inksprite does by default; the reset beside a setting goes back to that.
+**Generation** and **Sampling** show only the settings the model takes.
+
+**Providers** says which of OpenRouter's providers serve the model first
+(**Preferred providers**), whether it may **Fall back to others** when they
+can't, and which it never goes to (**Ignored providers**). A recommended model
+starts with the ones it runs best on.
+
+A NanoGPT model has **Providers** too, where NanoGPT lets its providers be
+chosen. Each provider is listed with its price as NanoGPT gives it. While the
+connection's **Zero data retention** is on, only providers that keep nothing
+are offered.
+
+## When a reply fails
+
+A reply that fails says why, and offers what fixes it where something does:
+
+- A key that wasn't accepted, or a server that can't be reached, offers
+  **Connection settings**.
+- An OpenRouter or NanoGPT account out of credits offers **Add credits**.
+- A model its service no longer offers gives **Choose a model**.
+- On OpenRouter, *OpenRouter's provider routing leaves no provider for* the
+  model means the connection's **Provider routing** (its **Ignored
+  providers**, **Data collection** and **Quantization**) rules out every
+  provider that serves it. **Connection settings** opens them.
+- *None of the providers chosen for* the model *serve it* means the model's
+  own **Providers** leave none, on OpenRouter or NanoGPT. Choose another
+  model, or change them in the model's settings.
+- On OpenRouter, a model that *can't use tools on OpenRouter* gives **Choose a
+  model**.

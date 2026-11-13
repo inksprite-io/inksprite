@@ -52,7 +52,6 @@
           @chat-with="startCardChat"
           @reimport="reimportCard"
           @convert="convertDocument"
-          @explore="exploreFolder"
           @dragging="isDragging = $event"
         />
       </div>
@@ -99,6 +98,7 @@
       :last-user-name="lastUserName"
       @confirm="openCardChat"
     />
+    <ConvertDialog :story-id="storyId" :document-id="converting" @close="converting = null" />
   </div>
 </template>
 
@@ -111,6 +111,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import DocumentNode from './DocumentNode.vue'
 import CardImportDialog from './CardImportDialog.vue'
 import CardChatDialog from './CardChatDialog.vue'
+import ConvertDialog from './ConvertDialog.vue'
 import RepositoryDialog from './RepositoryDialog.vue'
 import DriveImportDialog from './DriveImportDialog.vue'
 import { importItems } from './importItems.js'
@@ -125,10 +126,6 @@ import { useBulkImport, describeImport } from '@/composables/useBulkImport'
 import { useCardImport, NotACardError } from '@/composables/useCardImport'
 import { useDocuments } from '@/composables/useDocuments'
 import { undoKeyOf, useTreeHistory } from '@/composables/useTreeHistory.js'
-import { useJobs } from '@/composables/useJobs.js'
-import { useJobsToast } from '@/composables/useJobsToast.js'
-import { askToExplore } from '@/composables/useExplore.js'
-import { requestsFor } from '@/jobs/index.js'
 import {
   carriesFiles,
   folderOf,
@@ -149,7 +146,7 @@ import { useCardLibraryPanel } from '@/composables/useCardLibraryPanel.js'
 const props = defineProps({
   storyId: { type: String, required: true },
   documentId: { type: String, default: null },
-  /** The chat a document is pinned to, when one is open. */
+  /** The chat a document is hidden from or shown in, when one is open. */
   chatId: { type: String, default: null },
 })
 
@@ -447,8 +444,8 @@ const tellImport = result => {
 }
 
 /**
- * The folder a drag from the desktop is over: the folder under the pointer,
- * a document's folder, or the project when it is over the space below.
+ * The folder a drag from the desktop is over: the folder or card under the
+ * pointer, a document's folder, or the project when it is over the space below.
  *
  * @type {import('vue').Ref<{id: string, title: string}|null>}
  */
@@ -461,8 +458,9 @@ const targetOf = event => {
   const row = /** @type {HTMLElement} */ (event.target).closest?.('[role="treeitem"]')
   const id = row?.getAttribute('data-document-id') || root.value?.id
   let document = id ? api.get(id) : null
-  // A drop on a document lands in its folder, past any document holding it.
-  while (document && !api.isFolder(document)) document = api.get(document.parentId)
+  // A drop on a document lands in its folder, past any document holding it
+  // but a card, which takes it as a folder does.
+  while (document && !api.takesDocuments(document)) document = api.get(document.parentId)
   // Nothing is imported into a repository; a drop on one lands beside it.
   const repository = repositoryOf(api.get, document)
   if (repository) document = api.get(repository.parentId) || root.value
@@ -510,59 +508,21 @@ const onDrop = async event => {
   await importListed(await listDropped(event.dataTransfer), target.id)
 }
 
-const jobs = useJobs()
-const jobsToast = useJobsToast()
+/**
+ * The document being asked about converting to Markdown, while it is.
+ * @type {import('vue').Ref<string|null>}
+ */
+const converting = ref(null)
 
 /**
  * Turn a document's text into Markdown with a model, as a long job. Asked
- * first, with the size of it: a book is many requests. The Markdown is a
- * new document under it; the document itself is left as it is.
+ * first, with the size of it and the model: a book is many requests. The
+ * Markdown is a new document under it; the document itself is left as it is.
  *
  * @param {string} documentId
  */
 const convertDocument = documentId => {
-  const document = api.get(documentId)
-  if (!document) return
-  const requests = requestsFor(document.content || '')
-  const words = document.wordCount || 0
-  confirm.require({
-    header: 'Convert to Markdown?',
-    message: `${words.toLocaleString()} words, about ${requests} ${requests === 1 ? 'request' : 'requests'}. The Markdown goes in a new document under it.`,
-    icon: 'pi pi-sparkles',
-    rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
-    acceptProps: { label: 'Convert' },
-    accept: async () => {
-      try {
-        await jobs.convert(props.storyId, documentId)
-        jobsToast.show()
-      } catch (error) {
-        toast.add({
-          severity: 'error',
-          detail: `The conversion couldn't start. ${error.message}`,
-          life: 6000,
-        })
-      }
-    },
-  })
-}
-
-/**
- * Describe what a folder holds for the model, or the whole project, as a
- * long job, on the model a new chat would run on. One that reads a lot is
- * asked about first, with how much.
- *
- * @param {string} folderId
- */
-const exploreFolder = async folderId => {
-  try {
-    await askToExplore(props.storyId, folderId, { require: confirm.require })
-  } catch (error) {
-    toast.add({
-      severity: 'error',
-      detail: `Exploring couldn't start. ${error.message}`,
-      life: 6000,
-    })
-  }
+  if (api.get(documentId)) converting.value = documentId
 }
 
 /**

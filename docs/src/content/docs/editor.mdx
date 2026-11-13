@@ -1,6 +1,6 @@
 ---
 title: The Editor
-description: Write and format documents in inksprite's editor, with Markdown as you type, tables, links, pictures, find and replace, spelling and grammar, a plain text editor, and earlier versions to go back to.
+description: Write and format documents in inksprite's editor, with Markdown as you type, tables, links, pictures, formulas, find and replace, spelling and grammar, a plain text editor, and earlier versions to go back to.
 ---
 
 import Screenshot from '../../components/Screenshot.astro';
@@ -39,6 +39,8 @@ Type the Markdown and it turns into what it stands for:
 | `*italic*` | *italic* |
 | `~~struck~~` | ~~struck~~ |
 | `` `code` `` | `code` |
+| `$x^2$` | A formula: see [Formulas](#formulas) |
+| `$$` on a line of its own | A formula on its own line |
 
 Press <kbd>Backspace</kbd> straight after to undo a conversion and keep what
 you typed.
@@ -172,6 +174,27 @@ press <kbd>Enter</kbd>.
   can't see you open the document. It shows as a box naming the site.
 - A Word file or a Google Doc you import keeps its pictures.
 
+## Formulas
+
+Math written in TeX between dollars is typeset where it stands, as in the chat:
+`$x^2$` in a sentence, and `$$` on a line of its own for a formula set apart.
+A formula is made once you type what comes after its closing dollar, so
+"$5 to $10" stays two prices. You can also choose **Insert** › **Formula**, or
+press <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>E</kbd> (<kbd>Ctrl</kbd> <kbd>Shift</kbd>
+<kbd>E</kbd> on Windows and Linux); with words selected, they become its TeX.
+
+Click a formula, or arrow onto it, to change it. Its TeX opens in its place,
+dollars and all, with the formula typeset under it as you type. Arrow out past
+either end, or press <kbd>Esc</kbd> or <kbd>Enter</kbd>, to close it
+(<kbd>⌘</kbd> <kbd>Enter</kbd> for one on its own line, where <kbd>Enter</kbd>
+starts a new line of TeX). Take out a dollar and it's text again. One the
+typesetting can't read shows its TeX in red, with what's wrong when you hover
+over it.
+
+A formula is TeX between dollars in the Markdown too, which other Markdown apps
+typeset, and in a [Google Doc](/google-docs/#sync-with-the-doc) the document is
+linked to.
+
 ## Find and replace
 
 With the caret in a document, press <kbd>⌘</kbd> <kbd>F</kbd>
@@ -205,9 +228,10 @@ Right-click in a document for:
 - **Insert link…**, or **Edit link…** and **Remove link** in a link.
 - **Comment…** on selected text, or **Edit comment…** and **Resolve comment**
   in one: see [Comments](/comments/).
-- **Insert**: a **Picture…** from your computer, at the caret; or a **Table**,
-  a **Horizontal rule** or a **Code block**. These take an empty line's place,
-  or go after the paragraph you're in.
+- **Insert**: a **Picture…** from your computer, at the caret; a **Table**,
+  a **Horizontal rule** or a **Code block**, which take an empty line's place,
+  or go after the paragraph you're in; or a **Formula**: see
+  [Formulas](#formulas).
 - **Table**, in a table.
 
 On a misspelled word, its corrections come first: see
@@ -276,6 +300,7 @@ Linux) in a document for the whole list, or right-click its tab and choose
 | Numbered list | <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>7</kbd> | <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>7</kbd> |
 | Quote | <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>B</kbd> | <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>B</kbd> |
 | Code block | <kbd>⌘</kbd> <kbd>⌥</kbd> <kbd>C</kbd> | <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>C</kbd> |
+| Formula | <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>E</kbd> | <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>E</kbd> |
 | Undo | <kbd>⌘</kbd> <kbd>Z</kbd> | <kbd>Ctrl</kbd> <kbd>Z</kbd> |
 | Redo | <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>Z</kbd> | <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>Z</kbd> or <kbd>Ctrl</kbd> <kbd>Y</kbd> |
 | Find and replace | <kbd>⌘</kbd> <kbd>F</kbd> | <kbd>Ctrl</kbd> <kbd>F</kbd> |
@@ -355,7 +380,7 @@ Markdown and all. Only text documents have versions, not imported files.
 
 - **Expand editor**, at the right end of the tabs, gives the editor the
   chat's room; click it again (**Show chat**) to bring the chat back.
-  **Expand chat**, at the left of the chat's header, does the same the other
+  **Expand chat**, at the left of the chat's tabs, does the same the other
   way.
 - Click the icon at the far left for the list that's showing (the outline,
   say) to hide the sidebar, and any of the icons to show it again.

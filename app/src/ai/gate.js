@@ -29,7 +29,7 @@
  * Kept for the page: a reload starts every connection afresh.
  */
 
-import { BUILT_IN_PROVIDERS } from './providers.js'
+import { BUILT_IN_PROVIDERS, knownAddress } from './providers.js'
 import { askProps, forgetProps } from './llamacpp.js'
 
 /** @typedef {import('@/types/models.js').AIProvider} AIProvider */
@@ -60,9 +60,6 @@ const AT_HOME = new Set(
     ['lmstudio', 'ollama', 'koboldcpp', 'kokoro'].includes(entry.server || '')
   ).map(entry => entry.id)
 )
-
-/** The types that are hosted services. */
-const HOSTED = new Set(['openrouter', 'anthropic', 'openai', 'gemini'])
 
 /**
  * A refusal for the rate the connection is being asked at: a 429. Said for
@@ -145,7 +142,7 @@ export function isAtHome(address) {
  * @returns {number} Infinity for no limit
  */
 export function defaultRoom(provider, slots) {
-  if (HOSTED.has(provider.type)) return Infinity
+  if (knownAddress(provider.type)) return Infinity
   if (provider.id === 'provider_vllm_default') return Infinity
   if (provider.type === 'llamacpp') return slots && slots > 0 ? slots : 1
   if (AT_HOME.has(provider.id)) return 1

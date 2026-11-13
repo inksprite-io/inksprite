@@ -1,0 +1,27 @@
+{
+  "fixture": "riley-card-play",
+  "card": "Riley",
+  "chat": { "userName": "Noah" },
+  "messages": [
+    {
+      "text": "The third day of the heat wave. I'm at the desk with the stack of essays when I hear your key in the door. \"You're letting the heat in,\" I say, without looking up.",
+      "calls": ["list_documents"],
+      "reads": [
+        "Cards/Characters/Riley/Description",
+        "Cards/Characters/Riley/Example dialogue",
+        "Personas/Noah"
+      ],
+      "notRead": ["Cards/Characters/Riley/Description", "Cards/Characters/Riley/Example dialogue"]
+    },
+    {
+      "text": "I mark another paper and keep my eyes on it. \"There's water in the fridge. It might even be cold.\"",
+      "noRereads": true
+    },
+    { "text": "/compact" },
+    {
+      "text": "I put the pen down, finally. \"Say whatever it is you came to say.\"",
+      "readsAgain": ["Personas/Noah"],
+      "notRead": ["Cards/Characters/Riley/Description", "Cards/Characters/Riley/Example dialogue"]
+    }
+  ]
+}

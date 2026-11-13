@@ -7,11 +7,10 @@
  * skills library is, so the tool registry and the chat can read them without
  * reaching for a store, and be told when they change.
  *
- * A server is opted into, not out of. Each lists the profiles whose chats use
- * it; a chat follows that until the writer picks servers in the chat itself.
- * The usual rule — every group on unless withheld — would put a server added
- * tomorrow into every Roleplay chat, which withholds the groups it knows of
- * and has never heard of this one.
+ * Each server's tools are a group of their own, switched on a profile and a
+ * chat as every group is (ai/tools/choice.js): on wherever nothing switched
+ * them off, so a server added is there in the chat it was added for, but for
+ * the profiles that offer only some, Roleplay and Blank.
  */
 
 /** @typedef {import('../types/models.js').McpServer} McpServer */
@@ -94,26 +93,6 @@ export function serverTool(exposed) {
     if (tool) return { server, tool }
   }
   return null
-}
-
-/**
- * The servers whose tools a chat is offered: the ones it chose, or, until it
- * chooses, the ones that list its profile.
- *
- * @param {{mcpServers?: string[]}|null|undefined} chat
- * @param {string} profileId - The chat's profile, the default resolved
- * @param {McpServer[]} [from] - The servers to choose among; every one by default
- * @returns {McpServer[]}
- */
-export function serversForChat(chat, profileId, from = servers) {
-  const chosen = chat?.mcpServers
-  return from.filter(
-    server =>
-      reachable(server) &&
-      (Array.isArray(chosen)
-        ? chosen.includes(server.id)
-        : (server.profiles || []).includes(profileId))
-  )
 }
 
 /**

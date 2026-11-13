@@ -69,17 +69,16 @@ vi.mock('@/stores/documentsStore', () => ({
 
 import SyncSection from '@/components/writer/settings/SyncSection.vue'
 
-const mountSection = () =>
+/** @param {string} [part] */
+const mountSection = (part = 'account') =>
   mount(SyncSection, {
+    props: { part },
     global: {
       plugins: [PrimeVue],
       directives: { tooltip: {} },
       stubs: {
         BackupSection: { template: '<div data-backup />' },
-        PeopleSection: {
-          template:
-            '<div><button type="button" aria-expanded="false">People</button><div data-people /></div>',
-        },
+        PeopleSection: { template: '<div data-people />' },
       },
     },
   })
@@ -184,7 +183,7 @@ describe('SyncSection', () => {
         current: false,
       },
     ])
-    const wrapper = mountSection()
+    const wrapper = mountSection('devices')
     await flushPromises()
 
     expect(wrapper.find('[data-device="this"]').text()).toContain('This device')
@@ -345,16 +344,15 @@ describe('SyncSection', () => {
   })
 
   it('keeps signing out with the passphrase and the recovery code, and backups signed in or not', async () => {
-    const wrapper = mountSection()
-    /** The folds, by title. */
-    const folds = () => wrapper.findAll('button[aria-expanded]').map(button => button.text())
-    expect(folds()).toEqual(['Backup'])
+    const wrapper = mountSection('backup')
     expect(wrapper.find('[data-backup]').exists()).toBe(true)
 
     account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
     sync.devices.mockResolvedValueOnce([{ id: 1, device: 'Mac', used: Date.now(), current: true }])
     await flushPromises()
-    expect(folds()).toEqual(['Account', 'People', 'Devices', 'Backup'])
+    expect(wrapper.find('[data-backup]').exists()).toBe(true)
+
+    await wrapper.setProps({ part: 'account' })
     const buttons = wrapper.findAll('[data-action]').map(button => button.attributes('data-action'))
     expect(buttons.slice(buttons.indexOf('make-recovery'))).toEqual([
       'make-recovery',
@@ -363,6 +361,25 @@ describe('SyncSection', () => {
     ])
     await wrapper.find('[data-action="sync-sign-out"]').trigger('click')
     expect(sync.signOut).toHaveBeenCalled()
+  })
+
+  it('shows one part at a time, asking the server once however they are gone through', async () => {
+    account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
+    sync.devices.mockResolvedValue([{ id: 1, device: 'Mac', used: Date.now(), current: true }])
+    const wrapper = mountSection()
+    await flushPromises()
+    expect(wrapper.find('[data-sync-account]').exists()).toBe(true)
+    expect(wrapper.find('[data-sync-devices]').exists()).toBe(false)
+
+    await wrapper.setProps({ part: 'devices' })
+    expect(wrapper.find('[data-sync-account]').exists()).toBe(false)
+    expect(wrapper.find('[data-device="this"]').exists()).toBe(true)
+
+    await wrapper.setProps({ part: 'people' })
+    await wrapper.setProps({ part: 'account' })
+    await flushPromises()
+    expect(sync.devices).toHaveBeenCalledTimes(1)
+    expect(sync.profile).toHaveBeenCalledTimes(1)
   })
 
   it('syncs by hand from beside what it says', async () => {
@@ -419,6 +436,8 @@ describe('SyncSection', () => {
     const wrapper = mountSection()
     await flushPromises()
     expect(wrapper.find('[data-friend-code]').text()).toBe('ABCDE-FGHJK-MNPQR-STVWX')
+    expect(wrapper.find('[data-people]').exists()).toBe(false)
+    await wrapper.setProps({ part: 'people' })
     expect(wrapper.find('[data-people]').exists()).toBe(true)
   })
 
@@ -427,8 +446,9 @@ describe('SyncSection', () => {
     account.value = { server: 'https://sync.inksprite.io', name: 'writer' }
     const wrapper = mountSection()
     await flushPromises()
-    expect(wrapper.find('[data-people]').exists()).toBe(false)
     expect(wrapper.find('[data-friend-code]').exists()).toBe(false)
+    await wrapper.setProps({ part: 'people' })
+    expect(wrapper.find('[data-people]').exists()).toBe(false)
   })
 
   it('turns diagnostics off for this device', async () => {
@@ -436,5 +456,109 @@ describe('SyncSection', () => {
     const wrapper = mountSection()
     await wrapper.find('[data-sync-diagnostics] input').setValue(false)
     expect(sync.setSendsDiagnostics).toHaveBeenCalledWith(false)
+  })
+})
+
+describe('SyncSection, what the server said last', () => {
+  const MAC = { id: 'a'.repeat(64), device: 'inksprite on macOS', used: 1, current: true }
+  const PHONE = { id: 'b'.repeat(64), device: 'Safari on iPhone', used: 1, current: false }
+
+  /** The devices listed, by name. */
+  const listed = wrapper =>
+    wrapper.findAll('[data-sync-devices] li span:first-child').map(one => one.text())
+
+  /** Open the settings once on an account, as the server answers, and close them. */
+  const lookOnce = async () => {
+    sync.devices.mockResolvedValueOnce([PHONE, MAC])
+    const wrapper = mountSection('devices')
+    await flushPromises()
+    wrapper.unmount()
+  }
+
+  it('has the devices and the friend code at once the next time the settings open', async () => {
+    account.value = { server: 'https://sync.inksprite.io', name: 'returning' }
+    await lookOnce()
+    // The server slow to answer this time.
+    sync.devices.mockReturnValueOnce(new Promise(() => {}))
+    sync.profile.mockReturnValueOnce(new Promise(() => {}))
+
+    const wrapper = mountSection('devices')
+
+    // This device first, as it was listed.
+    expect(listed(wrapper)).toEqual(['inksprite on macOS', 'Safari on iPhone'])
+    await wrapper.setProps({ part: 'account' })
+    expect(wrapper.find('[data-friend-code]').text()).toBe('ABCDE-FGHJK-MNPQR-STVWX')
+    await wrapper.setProps({ part: 'people' })
+    expect(wrapper.find('[data-people]').exists()).toBe(true)
+  })
+
+  it('brings them up to date as the server answers again', async () => {
+    account.value = { server: 'https://sync.inksprite.io', name: 'updated' }
+    await lookOnce()
+    sync.devices.mockResolvedValueOnce([MAC])
+
+    const wrapper = mountSection('devices')
+    expect(listed(wrapper)).toHaveLength(2)
+    await flushPromises()
+
+    expect(listed(wrapper)).toEqual(['inksprite on macOS'])
+    expect(sync.devices).toHaveBeenCalledTimes(2)
+  })
+
+  it('remembers a device signed out from here as gone', async () => {
+    account.value = { server: 'https://sync.inksprite.io', name: 'tidy' }
+    sync.devices.mockResolvedValueOnce([MAC, PHONE])
+    const first = mountSection('devices')
+    await flushPromises()
+    await first.find('[data-action="sign-out-device"]').trigger('click')
+    await flushPromises()
+    first.unmount()
+    sync.devices.mockReturnValueOnce(new Promise(() => {}))
+
+    expect(listed(mountSection('devices'))).toEqual(['inksprite on macOS'])
+  })
+
+  it('shows one account nothing of what was said of another', async () => {
+    account.value = { server: 'https://sync.inksprite.io', name: 'first-writer' }
+    await lookOnce()
+    account.value = { server: 'https://sync.inksprite.io', name: 'second-writer' }
+    sync.devices.mockReturnValueOnce(new Promise(() => {}))
+    sync.profile.mockReturnValueOnce(new Promise(() => {}))
+
+    const wrapper = mountSection('devices')
+
+    expect(listed(wrapper)).toEqual([])
+    await wrapper.setProps({ part: 'account' })
+    expect(wrapper.find('[data-friend-code]').exists()).toBe(false)
+  })
+
+  it('lists no devices for a server that lists none, and goes on', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    account.value = { server: 'https://sync.inksprite.io', name: 'older-server' }
+    sync.devices.mockRejectedValueOnce(new Error('There is nothing here.'))
+
+    const wrapper = mountSection('devices')
+    await flushPromises()
+
+    expect(wrapper.find('[data-sync-devices]').exists()).toBe(true)
+    expect(listed(wrapper)).toEqual([])
+    await wrapper.setProps({ part: 'account' })
+    expect(wrapper.find('[data-sync-account]').text()).toContain('Signed in as older-server')
+    vi.restoreAllMocks()
+  })
+
+  it('forgets what it showed once signed out', async () => {
+    account.value = { server: 'https://sync.inksprite.io', name: 'leaving' }
+    sync.devices.mockResolvedValueOnce([MAC])
+    const wrapper = mountSection('devices')
+    await flushPromises()
+    expect(listed(wrapper)).toHaveLength(1)
+
+    account.value = null
+    await flushPromises()
+
+    expect(listed(wrapper)).toEqual([])
+    await wrapper.setProps({ part: 'account' })
+    expect(wrapper.find('[data-field="sync-mode"]').exists()).toBe(true)
   })
 })

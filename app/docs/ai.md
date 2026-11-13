@@ -99,1525 +99,1702 @@
   - [Parameters][95]
 - [read][96]
   - [Parameters][97]
-- [lastAside][98]
-  - [Parameters][99]
-- [intoConversation][100]
-  - [Parameters][101]
-- [withoutMark][102]
-  - [Parameters][103]
-- [ai/capabilities][104]
-- [LEVELS][105]
+  - [read][98]
+- [lastAside][99]
+  - [Parameters][100]
+- [intoConversation][101]
+  - [Parameters][102]
+- [withoutMark][103]
+  - [Parameters][104]
+- [ai/capabilities][105]
 - [LEVELS][106]
-- [ModelTraits][107]
-  - [Properties][108]
-- [ReasoningTraits][109]
-  - [Properties][110]
-- [Capabilities][111]
-  - [Properties][112]
-- [][113]
-- [ALL_SAMPLERS][114]
-- [UNDESCRIBED_EFFORTS][115]
+- [LEVELS][107]
+- [ModelTraits][108]
+  - [Properties][109]
+- [ReasoningTraits][110]
+  - [Properties][111]
+- [Capabilities][112]
+  - [Properties][113]
+- [][114]
+- [ALL_SAMPLERS][115]
 - [UNDESCRIBED_EFFORTS][116]
-- [OPENAI_SAMPLING_MODELS][117]
-- [OPENAI_SAMPLERS][118]
-- [server][119]
-  - [Parameters][120]
-- [SERVERS][121]
-- [serverOf][122]
-  - [Parameters][123]
-- [capabilitiesOf][124]
-  - [Parameters][125]
-- [][126]
-- [fitEffort][127]
-  - [Parameters][128]
-- [rank][129]
-  - [Parameters][130]
-- [][131]
-- [samplersAt][132]
-  - [Parameters][133]
-- [blockedBy][134]
-  - [Parameters][135]
-- [isSet][136]
-  - [Parameters][137]
-- [fitSettings][138]
-  - [Parameters][139]
-- [keys][140]
-- [ai/commands][141]
-- [How they are typed][142]
-- [Whose turn they are][143]
-- [Everyone in the scene][144]
-- [LIKELIHOODS][145]
+- [UNDESCRIBED_EFFORTS][117]
+- [OPENAI_SAMPLING_MODELS][118]
+- [OPENAI_SAMPLERS][119]
+- [server][120]
+  - [Parameters][121]
+- [SERVERS][122]
+- [serverOf][123]
+  - [Parameters][124]
+- [capabilitiesOf][125]
+  - [Parameters][126]
+- [][127]
+- [fitEffort][128]
+  - [Parameters][129]
+- [rank][130]
+  - [Parameters][131]
+- [][132]
+- [samplersAt][133]
+  - [Parameters][134]
+- [blockedBy][135]
+  - [Parameters][136]
+- [isSet][137]
+  - [Parameters][138]
+- [fitSettings][139]
+  - [Parameters][140]
+- [keys][141]
+- [ai/commands][142]
+- [How they are typed][143]
+- [Whose turn they are][144]
+- [Everyone in the scene][145]
 - [LIKELIHOODS][146]
 - [LIKELIHOODS][147]
 - [LIKELIHOODS][148]
-- [CommandInput][149]
-  - [Properties][150]
-- [DEFAULT_LIKELIHOOD][151]
-- [likelihoodSaid][152]
-  - [Parameters][153]
-- [likelihoodLabel][154]
-  - [Parameters][155]
-- [CommandParameter][156]
-  - [Properties][157]
-- [CommandDefinition][158]
-  - [Properties][159]
-- [compactNote][160]
-  - [Parameters][161]
-- [parseNameAsk][162]
-  - [Parameters][163]
-- [describeNameAsk][164]
-  - [Parameters][165]
-- [DICE_TERM][166]
-- [DICE_THEN_QUESTION][167]
-- [parseRoll][168]
-  - [Parameters][169]
-- [DICE_LINE][170]
-- [diceLines][171]
+- [LIKELIHOODS][149]
+- [CommandInput][150]
+  - [Properties][151]
+- [DEFAULT_LIKELIHOOD][152]
+- [likelihoodSaid][153]
+  - [Parameters][154]
+- [likelihoodLabel][155]
+  - [Parameters][156]
+- [CommandParameter][157]
+  - [Properties][158]
+- [CommandDefinition][159]
+  - [Properties][160]
+- [compactNote][161]
+  - [Parameters][162]
+- [parseNameAsk][163]
+  - [Parameters][164]
+- [describeNameAsk][165]
+  - [Parameters][166]
+- [DICE_TERM][167]
+- [DICE_OPERAND][168]
+- [DICE_THEN_QUESTION][169]
+- [ARITHMETIC][170]
+- [parseRoll][171]
   - [Parameters][172]
-- [readRoll][173]
-  - [Parameters][174]
-- [thrown][175]
-- [total][176]
-- [diceAsThrown][177]
-  - [Parameters][178]
-- [sides][179]
-- [counts][180]
-- [dice][181]
-- [dice][182]
-- [dice][183]
-- [TAROT_DECK_NAMES][184]
-- [TAROT_DECK_NAMES][185]
-- [parseTarotAsk][186]
-  - [Parameters][187]
-- [describeTarotAsk][188]
-  - [Parameters][189]
-- [TABLE_TOKEN][190]
-- [parseTable][191]
+- [DICE_LINE][173]
+- [TERM_LINE][174]
+- [thrownIn][175]
+  - [Parameters][176]
+- [thrown][177]
+- [exec][178]
+- [byTerm][179]
+- [readRoll][180]
+  - [Parameters][181]
+- [diceAsThrown][182]
+  - [Parameters][183]
+- [sides][184]
+- [counts][185]
+- [dice][186]
+- [dice][187]
+- [dice][188]
+- [TAROT_DECK_NAMES][189]
+- [TAROT_DECK_NAMES][190]
+- [parseTarotAsk][191]
   - [Parameters][192]
-- [options][193]
-- [tableLabel][194]
-  - [Parameters][195]
-- [EXPLORE][196]
-- [WRITTEN][197]
-- [skillCommand][198]
-  - [Parameters][199]
-- [needsItsArgument][200]
-  - [Parameters][201]
-- [savedPrompt][202]
-  - [Parameters][203]
-- [][204]
-- [][205]
-- [COMMANDS][206]
-- [fromSkills][207]
-- [][208]
-- [serverPromptCommand][209]
-  - [Parameters][210]
-- [][211]
-- [fromServers][212]
+- [describeTarotAsk][193]
+  - [Parameters][194]
+- [TABLE_TOKEN][195]
+- [parseTable][196]
+  - [Parameters][197]
+- [options][198]
+- [tableLabel][199]
+  - [Parameters][200]
+- [EXPLORE][201]
+- [WRITTEN][202]
+- [skillCommand][203]
+  - [Parameters][204]
+- [needsItsArgument][205]
+  - [Parameters][206]
+- [savedPrompt][207]
+  - [Parameters][208]
+- [][209]
+- [][210]
+- [COMMANDS][211]
+- [fromSkills][212]
 - [][213]
-- [CHARACTER][214]
-- [unknownCommand][215]
-  - [Parameters][216]
-- [CommandEntry][217]
-  - [Properties][218]
-- [listCommands][219]
-- [matchCommands][220]
+- [serverPromptCommand][214]
+  - [Parameters][215]
+- [][216]
+- [fromServers][217]
+- [][218]
+- [CHARACTER][219]
+- [unknownCommand][220]
   - [Parameters][221]
-- [TYPING_NAME][222]
-- [commandAtCaret][223]
-  - [Parameters][224]
-- [definitionFor][225]
+- [CommandEntry][222]
+  - [Properties][223]
+- [listCommands][224]
+- [matchCommands][225]
   - [Parameters][226]
-- [COMMAND_LINE][227]
-- [parseCommand][228]
+- [TYPING_NAME][227]
+- [commandAtCaret][228]
   - [Parameters][229]
-- [][230]
-- [][231]
-- [formatCommand][232]
-  - [Parameters][233]
-- [ANSWER_LINE][234]
-- [formatSegment][235]
+- [definitionFor][230]
+  - [Parameters][231]
+- [COMMAND_LINE][232]
+- [parseCommand][233]
+  - [Parameters][234]
+- [formatCommand][235]
   - [Parameters][236]
-- [answerText][237]
-  - [Parameters][238]
-- [answeredCommand][239]
-  - [Parameters][240]
-- [formatTurn][241]
-  - [Parameters][242]
-- [formatAnswered][243]
-  - [Parameters][244]
-- [splitAnswered][245]
-  - [Parameters][246]
-- [splitInput][247]
-  - [Parameters][248]
-- [segments][249]
-- [said][250]
-- [said][251]
-- [said][252]
-- [][253]
-- [][254]
-- [][255]
-- [withParam][256]
-  - [Parameters][257]
+- [ANSWER_LINE][237]
+- [formatSegment][238]
+  - [Parameters][239]
+- [answerText][240]
+  - [Parameters][241]
+- [answeredCommand][242]
+  - [Parameters][243]
+- [formatTurn][244]
+  - [Parameters][245]
+- [formatAnswered][246]
+  - [Parameters][247]
+- [splitAnswered][248]
+  - [Parameters][249]
+- [splitInput][250]
+  - [Parameters][251]
+- [segments][252]
+- [said][253]
+- [said][254]
+- [said][255]
+- [][256]
+- [][257]
 - [][258]
-- [storedParam][259]
+- [withParam][259]
   - [Parameters][260]
-- [wordsOf][261]
-  - [Parameters][262]
-- [sayValue][263]
-  - [Parameters][264]
-- [checkParam][265]
-  - [Parameters][266]
-- [commandSwitchedOff][267]
-  - [Parameters][268]
-- [runCommand][269]
-  - [Parameters][270]
-- [renderCommand][271]
-  - [Parameters][272]
-- [rollOf][273]
-  - [Parameters][274]
-- [rollLines][275]
-  - [Parameters][276]
-- [saidUnder][277]
-  - [Parameters][278]
-- [commandTag][279]
-  - [Parameters][280]
-- [commandDetail][281]
-  - [Parameters][282]
-- [commandLabel][283]
-  - [Parameters][284]
-- [commandIsCharacter][285]
-  - [Parameters][286]
-- [commandSpeaks][287]
-  - [Parameters][288]
-- [commandIsPrompt][289]
-  - [Parameters][290]
-- [commandIsAside][291]
-  - [Parameters][292]
-- [commandConsults][293]
-  - [Parameters][294]
-- [commandTakesTurn][295]
-  - [Parameters][296]
-- [assembleTurn][297]
-  - [Parameters][298]
-- [inspectCommand][299]
-  - [Parameters][300]
-- [askedCommand][301]
-  - [Parameters][302]
-- [pendingCommand][303]
-  - [Parameters][304]
-- [commandWritesProse][305]
-  - [Parameters][306]
-- [segmentProse][307]
-  - [Parameters][308]
-- [pendingSegment][309]
-  - [Parameters][310]
-- [commandRepeatable][311]
-  - [Parameters][312]
-- [mcp/servers][313]
-- [servers][314]
-- [servers][315]
-- [servers][316]
-- [servers][317]
-- [listeners][318]
-- [listeners][319]
-- [setServers][320]
+- [][261]
+- [storedParam][262]
+  - [Parameters][263]
+- [wordsOf][264]
+  - [Parameters][265]
+- [sayValue][266]
+  - [Parameters][267]
+- [checkParam][268]
+  - [Parameters][269]
+- [commandSwitchedOff][270]
+  - [Parameters][271]
+- [runCommand][272]
+  - [Parameters][273]
+- [renderCommand][274]
+  - [Parameters][275]
+- [rollOf][276]
+  - [Parameters][277]
+- [rollWorking][278]
+  - [Parameters][279]
+- [saidUnder][280]
+  - [Parameters][281]
+- [commandTag][282]
+  - [Parameters][283]
+- [commandDetail][284]
+  - [Parameters][285]
+- [commandLabel][286]
+  - [Parameters][287]
+- [commandIsCharacter][288]
+  - [Parameters][289]
+- [commandSpeaks][290]
+  - [Parameters][291]
+- [commandIsPrompt][292]
+  - [Parameters][293]
+- [commandIsAside][294]
+  - [Parameters][295]
+- [commandIsWhole][296]
+  - [Parameters][297]
+- [commandForks][298]
+  - [Parameters][299]
+- [forkAsked][300]
+  - [Parameters][301]
+- [commandConsults][302]
+  - [Parameters][303]
+- [commandTakesTurn][304]
+  - [Parameters][305]
+- [assembleTurn][306]
+  - [Parameters][307]
+- [inspectCommand][308]
+  - [Parameters][309]
+- [askedCommand][310]
+  - [Parameters][311]
+- [pendingCommand][312]
+  - [Parameters][313]
+- [commandWritesProse][314]
+  - [Parameters][315]
+- [segmentProse][316]
+  - [Parameters][317]
+- [pendingSegment][318]
+  - [Parameters][319]
+- [commandRepeatable][320]
   - [Parameters][321]
-- [onServersChanged][322]
-  - [Parameters][323]
-- [allServers][324]
-- [getServer][325]
-  - [Parameters][326]
-- [reachable][327]
-  - [Parameters][328]
-- [missingHeaders][329]
+- [mcp/servers][322]
+- [servers][323]
+- [servers][324]
+- [servers][325]
+- [servers][326]
+- [listeners][327]
+- [listeners][328]
+- [setServers][329]
   - [Parameters][330]
-- [serverTool][331]
+- [onServersChanged][331]
   - [Parameters][332]
-- [serversForChat][333]
-  - [Parameters][334]
-- [requiredArguments][335]
-  - [Parameters][336]
-- [PromptCommand][337]
-  - [Parameters][338]
-  - [Properties][339]
-- [promptCommands][340]
-- [needsApproval][341]
-  - [Parameters][342]
-- [mcp/client][343]
-- [fetch][344]
-- [fetch][345]
-- [fetch][346]
-- [fetch][347]
-- [CLIENT_INFO][348]
-- [MAX_PAGES][349]
-- [loadSdk][350]
-- [loadSdk][351]
-- [connections][352]
-- [connectionKey][353]
-  - [Parameters][354]
-- [statusOf][355]
-  - [Parameters][356]
-- [open][357]
-  - [Parameters][358]
-- [open][359]
-  - [Parameters][360]
-- [open][361]
-  - [Parameters][362]
-- [connection][363]
-  - [Parameters][364]
-- [disconnect][365]
-  - [Parameters][366]
-- [everyPage][367]
-  - [Parameters][368]
-- [items][369]
-- [listServer][370]
+- [allServers][333]
+- [getServer][334]
+  - [Parameters][335]
+- [reachable][336]
+  - [Parameters][337]
+- [missingHeaders][338]
+  - [Parameters][339]
+- [serverTool][340]
+  - [Parameters][341]
+- [requiredArguments][342]
+  - [Parameters][343]
+- [PromptCommand][344]
+  - [Parameters][345]
+  - [Properties][346]
+- [promptCommands][347]
+- [needsApproval][348]
+  - [Parameters][349]
+- [mcp/client][350]
+- [fetch][351]
+- [fetch][352]
+- [fetch][353]
+- [fetch][354]
+- [CLIENT_INFO][355]
+- [MAX_PAGES][356]
+- [loadSdk][357]
+- [loadSdk][358]
+- [connections][359]
+- [connectionKey][360]
+  - [Parameters][361]
+- [statusOf][362]
+  - [Parameters][363]
+- [open][364]
+  - [Parameters][365]
+- [open][366]
+  - [Parameters][367]
+- [open][368]
+  - [Parameters][369]
+- [connection][370]
   - [Parameters][371]
-- [callServerTool][372]
+- [disconnect][372]
   - [Parameters][373]
-- [getServerPrompt][374]
+- [everyPage][374]
   - [Parameters][375]
-- [promptText][376]
-  - [Parameters][377]
-- [SIGN_IN_NEEDED][378]
-- [wantsSignIn][379]
+- [items][376]
+- [listServer][377]
+  - [Parameters][378]
+- [callServerTool][379]
   - [Parameters][380]
-- [answeredOtherwise][381]
+- [getServerPrompt][381]
   - [Parameters][382]
-- [describeFailure][383]
+- [promptText][383]
   - [Parameters][384]
-- [resultForModel][385]
-  - [Parameters][386]
-- [mcp/auth][387]
-- [CALLBACK_PATH][388]
-- [CALLBACK_PATH][389]
-- [CALLBACK_PATH][390]
-- [CALLBACK_PATH][391]
-- [PUBLIC_ORIGIN][392]
-- [CLIENT_METADATA_URL][393]
-- [SIGN_IN_CHANNEL][394]
-- [AUTH_KEY][395]
-- [PENDING_KEY][396]
-- [SIGN_IN_TTL_MS][397]
-- [AuthRecord][398]
-  - [Properties][399]
-- [storage][400]
-- [storage][401]
-- [useAuthStorage][402]
-  - [Parameters][403]
-- [records][404]
-- [recordOf][405]
-  - [Parameters][406]
-- [updateRecord][407]
-  - [Parameters][408]
-- [issuerKey][409]
+- [SIGN_IN_NEEDED][385]
+- [wantsSignIn][386]
+  - [Parameters][387]
+- [answeredOtherwise][388]
+  - [Parameters][389]
+- [describeFailure][390]
+  - [Parameters][391]
+- [resultForModel][392]
+  - [Parameters][393]
+- [mcp/auth][394]
+- [CALLBACK_PATH][395]
+- [CALLBACK_PATH][396]
+- [CALLBACK_PATH][397]
+- [CALLBACK_PATH][398]
+- [PUBLIC_ORIGIN][399]
+- [CLIENT_METADATA_URL][400]
+- [SIGN_IN_CHANNEL][401]
+- [AUTH_KEY][402]
+- [PENDING_KEY][403]
+- [SIGN_IN_TTL_MS][404]
+- [AuthRecord][405]
+  - [Properties][406]
+- [storage][407]
+- [storage][408]
+- [useAuthStorage][409]
   - [Parameters][410]
-- [signedIn][411]
-  - [Parameters][412]
-- [signOut][413]
-  - [Parameters][414]
-- [appOrigin][415]
-- [callbackUrl][416]
-- [clientMetadata][417]
-  - [Parameters][418]
-- [randomState][419]
-- [rememberSignIn][420]
+- [records][411]
+- [recordOf][412]
+  - [Parameters][413]
+- [updateRecord][414]
+  - [Parameters][415]
+- [issuerKey][416]
+  - [Parameters][417]
+- [signedIn][418]
+  - [Parameters][419]
+- [signOut][420]
   - [Parameters][421]
-- [takeSignIn][422]
-  - [Parameters][423]
-- [authProvider][424]
+- [appOrigin][422]
+- [callbackUrl][423]
+- [clientMetadata][424]
   - [Parameters][425]
-- [startSignIn][426]
-  - [Parameters][427]
-- [SignInError][428]
-  - [Parameters][429]
-- [finishSignIn][430]
-  - [Parameters][431]
-- [ai/compaction][432]
-- [COMPACT_COMMAND][433]
-- [COMPACT_COMMAND][434]
-- [DEFAULT_KEEP][435]
-- [KEPT_OPENING][436]
-- [parseKeep][437]
+- [randomState][426]
+- [rememberSignIn][427]
+  - [Parameters][428]
+- [takeSignIn][429]
+  - [Parameters][430]
+- [authProvider][431]
+  - [Parameters][432]
+- [startSignIn][433]
+  - [Parameters][434]
+- [SignInError][435]
+  - [Parameters][436]
+- [finishSignIn][437]
   - [Parameters][438]
-- [isCompacting][439]
-  - [Parameters][440]
-- [isCompaction][441]
-  - [Parameters][442]
-- [compactionCover][443]
-  - [Parameters][444]
-- [covered][445]
-- [applyCompaction][446]
-  - [Parameters][447]
-- [firstSummarizable][448]
-  - [Parameters][449]
-- [ai/complete][450]
-- [complete][451]
+- [composables/useExplore][439]
+- [tokenCount][440]
+  - [Parameters][441]
+- [tokenCount][442]
+  - [Parameters][443]
+- [ExploreDecision][444]
+- [tokensOf][445]
+  - [Parameters][446]
+- [exploredName][447]
+  - [Parameters][448]
+- [exploreQuestion][449]
+  - [Parameters][450]
+- [askInDialog][451]
   - [Parameters][452]
-- [complete][453]
+- [confirmExploring][453]
   - [Parameters][454]
-- [Completion][455]
-  - [Properties][456]
-- [ask][457]
+- [ASK_FROM_TOKENS][455]
+- [ExploredOutcome][456]
+- [exploreNow][457]
   - [Parameters][458]
-- [headers][459]
-  - [headers][460]
-- [headers][461]
-  - [headers][462]
-- [headers][463]
-  - [headers][464]
-- [finishReason][465]
-- [ai/context/build][466]
-- [DEFAULT_TRANSCRIPT_ROLES][467]
-- [Stores][468]
-  - [Properties][469]
-- [buildContext][470]
+- [ai/compaction][459]
+- [COMPACT_COMMAND][460]
+- [COMPACT_COMMAND][461]
+- [DEFAULT_KEEP][462]
+- [KEPT_OPENING][463]
+- [openingKept][464]
+  - [Parameters][465]
+- [parseKeep][466]
+  - [Parameters][467]
+- [isCompacting][468]
+  - [Parameters][469]
+- [isCompaction][470]
   - [Parameters][471]
-- [messages][472]
-- [renderAuthorsNote][473]
-  - [Parameters][474]
-- [renderTranscript][475]
+- [compactionCover][472]
+  - [Parameters][473]
+- [covered][474]
+- [applyCompaction][475]
   - [Parameters][476]
-- [renderLoads][477]
+- [firstSummarizable][477]
   - [Parameters][478]
-- [pinnedContent][479]
-  - [Parameters][480]
-- [renderProjectState][481]
-  - [Parameters][482]
-- [settledSince][483]
-  - [Parameters][484]
-- [mergeAdjacentTurns][485]
-  - [Parameters][486]
-- [attachProjectState][487]
-  - [Parameters][488]
-- [expandMessage][489]
-  - [Parameters][490]
-- [carriedMessages][491]
-  - [Parameters][492]
-- [replayedCalls][493]
-  - [Parameters][494]
-- [chatMessages][495]
-  - [Parameters][496]
-- [ai/context/reads][497]
-- [Located][498]
-  - [Properties][499]
-- [keepsEveryCall][500]
-  - [Parameters][501]
-- [keepsDocumentCalls][502]
-  - [Parameters][503]
-- [textHash][504]
-  - [Parameters][505]
-- [parsedArgs][506]
-  - [Parameters][507]
-- [readsIn][508]
-  - [Parameters][509]
-- [reads][510]
-- [calls][511]
-- [readsInView][512]
-  - [Parameters][513]
-- [partOf][514]
-  - [Parameters][515]
-- [readInView][516]
-  - [Parameters][517]
-- [changedSinceRead][518]
-  - [Parameters][519]
-- [latest][520]
-- [AISamplerParameters][521]
-  - [Properties][522]
-- [REASONING_EFFORT_OPTIONS][523]
-- [DEFAULT_PRESET_ID][524]
-- [AI_DEFAULTS][525]
-- [resolveAISettings][526]
+- [ai/complete][479]
+- [complete][480]
+  - [Parameters][481]
+- [complete][482]
+  - [Parameters][483]
+- [Completion][484]
+  - [Properties][485]
+- [ask][486]
+  - [Parameters][487]
+- [headers][488]
+  - [headers][489]
+- [headers][490]
+  - [headers][491]
+- [headers][492]
+  - [headers][493]
+- [finishReason][494]
+- [ai/context/attachments][495]
+- [Attachment][496]
+  - [Properties][497]
+- [MENTION][498]
+- [mentionsIn][499]
+  - [Parameters][500]
+- [onlyAttaches][501]
+  - [Parameters][502]
+- [mentionOf][503]
+  - [Parameters][504]
+- [attachingTurn][505]
+  - [Parameters][506]
+- [withoutSigils][507]
+  - [Parameters][508]
+- [attachmentsOf][509]
+  - [Parameters][510]
+- [attached][511]
+- [attached][512]
+- [renderAttachments][513]
+  - [Parameters][514]
+- [withAttachments][515]
+  - [Parameters][516]
+- [ai/context/build][517]
+- [DEFAULT_TRANSCRIPT_ROLES][518]
+- [Stores][519]
+  - [Properties][520]
+- [buildContext][521]
+  - [Parameters][522]
+- [messages][523]
+- [renderAuthorsNote][524]
+  - [Parameters][525]
+- [renderTranscript][526]
   - [Parameters][527]
-- [resolveAISettings][528]
+- [renderLoads][528]
   - [Parameters][529]
-- [mergeAISettings][530]
+- [renderProjectState][530]
   - [Parameters][531]
-- [TITLE_DEFAULTS][532]
-- [ai/gate][533]
-- [RATE_RETRIES][534]
-- [RATE_RETRIES][535]
-- [Urgency][536]
-- [FIRST_WAIT_MS][537]
-- [LONGEST_WAIT_MS][538]
-- [AT_HOME][539]
-- [HOSTED][540]
-- [RateLimitedError][541]
-  - [Parameters][542]
-- [RATE_LIMITED][543]
-- [retryAfterOf][544]
+- [settledSince][532]
+  - [Parameters][533]
+- [mergeAdjacentTurns][534]
+  - [Parameters][535]
+- [attachProjectState][536]
+  - [Parameters][537]
+- [expandMessage][538]
+  - [Parameters][539]
+- [carriedMessages][540]
+  - [Parameters][541]
+- [replayedCalls][542]
+  - [Parameters][543]
+- [chatMessages][544]
   - [Parameters][545]
-- [isAtHome][546]
-  - [Parameters][547]
-- [defaultRoom][548]
-  - [Parameters][549]
-- [roomFor][550]
-  - [Parameters][551]
-- [Waiting][552]
-  - [Properties][553]
-- [Lane][554]
-  - [Properties][555]
-- [lanes][556]
-- [laneOf][557]
+- [ai/context/reads][546]
+- [Located][547]
+  - [Properties][548]
+- [keepsEveryCall][549]
+  - [Parameters][550]
+- [keepsDocumentCalls][551]
+  - [Parameters][552]
+- [textHash][553]
+  - [Parameters][554]
+- [parsedArgs][555]
+  - [Parameters][556]
+- [readsIn][557]
   - [Parameters][558]
-- [hasPlace][559]
-  - [Parameters][560]
-- [wake][561]
-  - [Parameters][562]
-- [take][563]
-  - [Parameters][564]
-- [waiting][565]
-- [settle][566]
+- [reads][559]
+- [calls][560]
+- [calls][561]
+- [readsInView][562]
+  - [Parameters][563]
+- [partOf][564]
+  - [Parameters][565]
+- [readInView][566]
   - [Parameters][567]
-- [throughGate][568]
+- [changedSinceRead][568]
   - [Parameters][569]
-- [inTurn][570]
-  - [Parameters][571]
-- [queued][572]
-- [resetGate][573]
-- [ai][574]
-- [ai/llamacpp][575]
-- [propsAddress][576]
+- [latest][570]
+- [AISamplerParameters][571]
+  - [Properties][572]
+- [REASONING_EFFORT_OPTIONS][573]
+- [DEFAULT_PRESET_ID][574]
+- [AI_DEFAULTS][575]
+- [resolveAISettings][576]
   - [Parameters][577]
-- [propsAddress][578]
+- [resolveAISettings][578]
   - [Parameters][579]
-- [ServerProps][580]
-  - [Properties][581]
-- [count][582]
-  - [Parameters][583]
-- [askProps][584]
-  - [Parameters][585]
-- [found][586]
-- [found][587]
-- [found][588]
-- [found][589]
-- [forgetProps][590]
-- [ai/models][591]
-- [SAMPLER_NAMES][592]
-- [SAMPLER_NAMES][593]
-- [AIModel][594]
-  - [Properties][595]
-- [openRouterTraits][596]
-  - [Parameters][597]
-- [traits][598]
-- [levels][599]
-- [entriesOf][600]
-  - [Parameters][601]
-- [byName][602]
-  - [Parameters][603]
-- [parseModelsResponse][604]
-  - [Parameters][605]
-- [entry][606]
-- [entry][607]
-- [listHeaders][608]
+- [mergeAISettings][580]
+  - [Parameters][581]
+- [TITLE_DEFAULTS][582]
+- [ai/gate][583]
+- [RATE_RETRIES][584]
+- [RATE_RETRIES][585]
+- [Urgency][586]
+- [FIRST_WAIT_MS][587]
+- [LONGEST_WAIT_MS][588]
+- [AT_HOME][589]
+- [RateLimitedError][590]
+  - [Parameters][591]
+- [RATE_LIMITED][592]
+- [retryAfterOf][593]
+  - [Parameters][594]
+- [isAtHome][595]
+  - [Parameters][596]
+- [defaultRoom][597]
+  - [Parameters][598]
+- [roomFor][599]
+  - [Parameters][600]
+- [Waiting][601]
+  - [Properties][602]
+- [Lane][603]
+  - [Properties][604]
+- [lanes][605]
+- [laneOf][606]
+  - [Parameters][607]
+- [hasPlace][608]
   - [Parameters][609]
-- [catalogs][610]
-- [byId][611]
-  - [Parameters][612]
-- [listModels][613]
-  - [Parameters][614]
-- [traitsOf][615]
-  - [Parameters][616]
-- [contextOf][617]
+- [wake][610]
+  - [Parameters][611]
+- [take][612]
+  - [Parameters][613]
+- [take][614]
+  - [Parameters][615]
+- [waiting][616]
+- [settle][617]
   - [Parameters][618]
-- [OPENAI_VOICES][619]
-- [OPENAI_INPUT_LIMIT][620]
-- [openAIVoices][621]
+- [throughGate][619]
+  - [Parameters][620]
+- [inTurn][621]
   - [Parameters][622]
-- [listSpeechModels][623]
-  - [Parameters][624]
-- [ai/profiles][625]
-- [ChatProfile][626]
-  - [Properties][627]
-- [ALL_TOOL_GROUPS][628]
-- [EXPERIMENTAL][629]
-- [ROLEPLAY_SETTINGS][630]
-- [BUILT_IN_PROFILES][631]
-- [isBuiltInProfileId][632]
-  - [Parameters][633]
-- [getBuiltInProfile][634]
-  - [Parameters][635]
-- [DEFAULT_PROFILE_ID][636]
-- [settingsForNewChat][637]
-  - [Parameters][638]
-- [STAMPED_SETTINGS][639]
-- [settingsForProfileSwitch][640]
-  - [Parameters][641]
-- [noteOnProfile][642]
-  - [Parameters][643]
-- [ai/prompts][644]
-- [DEFAULT_ROLEPLAY_NSFW_PROMPT][645]
-- [ROLEPLAY_COMPACTION_PROMPT][646]
-- [DEFAULT_ROLEPLAY_NOTE][647]
-- [DEFAULT_ROLEPLAY_NSFW_NOTE][648]
-- [BuiltInPrompt][649]
-  - [Properties][650]
-- [BUILT_IN_PROMPTS][651]
-- [isBuiltInPromptId][652]
+- [queued][623]
+- [resetGate][624]
+- [ai][625]
+- [ai/llamacpp][626]
+- [propsAddress][627]
+  - [Parameters][628]
+- [propsAddress][629]
+  - [Parameters][630]
+- [ServerProps][631]
+  - [Properties][632]
+- [count][633]
+  - [Parameters][634]
+- [askProps][635]
+  - [Parameters][636]
+- [found][637]
+- [found][638]
+- [found][639]
+- [found][640]
+- [forgetProps][641]
+- [ai/models][642]
+- [SAMPLER_NAMES][643]
+- [SAMPLER_NAMES][644]
+- [AIModel][645]
+  - [Properties][646]
+- [openRouterTraits][647]
+  - [Parameters][648]
+- [traits][649]
+- [traits][650]
+- [levels][651]
+- [nanoGptTraits][652]
   - [Parameters][653]
-- [getBuiltInPrompt][654]
-  - [Parameters][655]
-- [DEFAULT_PROMPT_ID][656]
-- [ai/providers][657]
-- [ProviderType][658]
-  - [Properties][659]
-- [ProviderKind][660]
-- [PROVIDER_TYPES][661]
-- [BUILT_IN_PROVIDERS][662]
-- [DEFAULT_SPEECH_PROVIDER_ID][663]
-- [inMenuOrder][664]
+- [NanoGptProvider][654]
+  - [Properties][655]
+- [NanoGptProviders][656]
+  - [Properties][657]
+- [nanoGptProvidersOf][658]
+  - [Parameters][659]
+- [provider][660]
+- [defaultsOf][661]
+  - [Parameters][662]
+- [defaults][663]
+- [pricingOf][664]
   - [Parameters][665]
-- [typeOf][666]
+- [isFree][666]
   - [Parameters][667]
-- [providerDoes][668]
+- [entriesOf][668]
   - [Parameters][669]
-- [DEFAULT_PROVIDER_TYPE][670]
-- [providerLabel][671]
-  - [Parameters][672]
-- [knownAddress][673]
-  - [Parameters][674]
-- [needsEndpoint][675]
-  - [Parameters][676]
-- [needsKey][677]
+- [byName][670]
+  - [Parameters][671]
+- [parseModelsResponse][672]
+  - [Parameters][673]
+- [entry][674]
+- [entry][675]
+- [entry][676]
+- [listHeaders][677]
   - [Parameters][678]
-- [connectionGap][679]
-  - [Parameters][680]
-- [presetProblem][681]
-  - [Parameters][682]
-- [canListModels][683]
-  - [Parameters][684]
-- [servesChat][685]
-  - [Parameters][686]
-- [takesReasoningEffort][687]
-  - [Parameters][688]
-- [takesChatTemplateKwargs][689]
+- [catalogs][679]
+- [describesModels][680]
+  - [Parameters][681]
+- [byId][682]
+  - [Parameters][683]
+- [listModels][684]
+  - [Parameters][685]
+- [plainModelId][686]
+  - [Parameters][687]
+- [publicList][688]
+- [pricesOf][689]
   - [Parameters][690]
-- [ai/rounds][691]
-- [ROUND_LIMIT][692]
-- [ROUND_LIMIT][693]
-- [ROUND_LIMIT][694]
-- [asked][695]
+- [withPrices][691]
+  - [Parameters][692]
+- [traitsOf][693]
+  - [Parameters][694]
+- [contextOf][695]
   - [Parameters][696]
-- [trimRound][697]
-  - [Parameters][698]
-- [run][699]
-- [over][700]
-- [refusedAnswer][701]
+- [OPENAI_VOICES][697]
+- [OPENAI_INPUT_LIMIT][698]
+- [openAIVoices][699]
+  - [Parameters][700]
+- [listSpeechModels][701]
   - [Parameters][702]
-- [splitOffered][703]
+- [listNanoGptSpeech][703]
   - [Parameters][704]
-- [offered][705]
-- [unoffered][706]
-- [unofferedAnswer][707]
-  - [Parameters][708]
-- [ai/routing][709]
-- [OpenRouterRouting][710]
-  - [Properties][711]
-- [ModelUpstreams][712]
-  - [Properties][713]
-- [ROUTING_DEFAULTS][714]
-- [QUANTIZATIONS][715]
-- [toSlugList][716]
-  - [Parameters][717]
-- [resolveRouting][718]
-  - [Parameters][719]
-- [isRoutingOverridden][720]
+- [ai/profiles][705]
+- [ChatProfile][706]
+  - [Properties][707]
+- [ROLEPLAY_SETTINGS][708]
+- [BUILT_IN_PROFILES][709]
+- [isBuiltInProfileId][710]
+  - [Parameters][711]
+- [getBuiltInProfile][712]
+  - [Parameters][713]
+- [DEFAULT_PROFILE_ID][714]
+- [settingsForNewChat][715]
+  - [Parameters][716]
+- [keptOpeningOf][717]
+  - [Parameters][718]
+- [STAMPED_SETTINGS][719]
+- [settingsForProfileSwitch][720]
   - [Parameters][721]
-- [CLOSED_VENDORS][722]
-- [isClosedWeights][723]
-  - [Parameters][724]
-- [buildProviderRouting][725]
-  - [Parameters][726]
-- [field][727]
-- [ai/skills/bundle][728]
-- [MAX_FILE_BYTES][729]
-- [MAX_FILE_BYTES][730]
-- [BundleEntry][731]
-  - [Properties][732]
-- [FoundSkill][733]
-  - [Properties][734]
-- [isNoise][735]
-  - [Parameters][736]
-- [folderOf][737]
-  - [Parameters][738]
-- [nameOf][739]
-  - [Parameters][740]
-- [nameOf][741]
-  - [Parameters][742]
-- [textOf][743]
-  - [Parameters][744]
-- [textOf][745]
-  - [Parameters][746]
-- [entriesFromZip][747]
-  - [Parameters][748]
-- [entriesFromFiles][749]
-  - [Parameters][750]
-- [entries][751]
-- [entries][752]
-- [webkitRelativePath][753]
-- [namedAfterFile][754]
-  - [Parameters][755]
-- [findSkills][756]
-  - [Parameters][757]
-- [ownerOf][758]
-  - [Parameters][759]
-- [stray][760]
-- [zipSkills][761]
+- [noteOnProfile][722]
+  - [Parameters][723]
+- [ai/prompts][724]
+- [DEFAULT_ROLEPLAY_NSFW_PROMPT][725]
+- [ROLEPLAY_COMPACTION_PROMPT][726]
+- [DEFAULT_ROLEPLAY_NOTE][727]
+- [DEFAULT_ROLEPLAY_NSFW_NOTE][728]
+- [BuiltInPrompt][729]
+  - [Properties][730]
+- [BUILT_IN_PROMPTS][731]
+- [isBuiltInPromptId][732]
+  - [Parameters][733]
+- [getBuiltInPrompt][734]
+  - [Parameters][735]
+- [DEFAULT_PROMPT_ID][736]
+- [ai/providers][737]
+- [ProviderType][738]
+  - [Properties][739]
+- [SignIn][740]
+  - [Properties][741]
+- [ProviderKind][742]
+- [PROVIDER_TYPES][743]
+- [BUILT_IN_PROVIDERS][744]
+- [DEFAULT_SPEECH_PROVIDER_ID][745]
+- [ConnectionKind][746]
+  - [Properties][747]
+- [BUILT_IN_KINDS][748]
+- [CONNECTION_KINDS][749]
+  - [][750]
+  - [][751]
+- [connectionKind][752]
+  - [Parameters][753]
+- [connectionKind][754]
+- [kindOf][755]
+  - [Parameters][756]
+- [untouchedBuiltIn][757]
+  - [Parameters][758]
+- [inMenuOrder][759]
+  - [Parameters][760]
+- [typeOf][761]
   - [Parameters][762]
-- [zipSkills][763]
-- [contents][764]
-- [zipBlob][765]
-  - [Parameters][766]
-- [ai/skills/compact][767]
-- [COMPACT][768]
-- [COMPACT][769]
-- [COMPACT_SETTINGS][770]
-- [buildCompactPrompt][771]
-  - [Parameters][772]
-- [askCompact][773]
-  - [Parameters][774]
-- [unwrapSummary][775]
-  - [Parameters][776]
-- [ai/skills/consultations][777]
-- [ANSWER_FIELDS][778]
-- [ANSWER_FIELDS][779]
-- [ANSWER_FIELDS][780]
-- [ANSWER_FIELDS][781]
-- [ConsultationView][782]
-  - [Properties][783]
-- [CallView][784]
-  - [Properties][785]
-- [SET_ASIDE][786]
-- [isConsultation][787]
-  - [Parameters][788]
-- [parsed][789]
-  - [Parameters][790]
-- [parsed][791]
-  - [Parameters][792]
-- [askedIn][793]
-  - [Parameters][794]
-- [consultationView][795]
-  - [Parameters][796]
-- [consultationsIn][797]
-  - [Parameters][798]
-- [results][799]
-- [results][800]
-- [results][801]
-- [fromDirectorNote][802]
-  - [Parameters][803]
-- [ai/skills/director][804]
-- [DIRECTOR][805]
-- [DIRECTOR][806]
-- [DIRECTOR][807]
-- [DIRECTOR_TOOLS][808]
-- [DIRECTOR_SETTINGS][809]
-- [directorDefinition][810]
-- [executeDirector][811]
-  - [Parameters][812]
-- [buildDirectionBlock][813]
-  - [Parameters][814]
-- [ai/skills/form][815]
-- [OUTPUTS][816]
-- [OUTPUTS][817]
-- [OUTPUTS][818]
-- [SkillForm][819]
-  - [Properties][820]
-- [listOf][821]
-  - [Parameters][822]
-- [listOf][823]
-  - [Parameters][824]
-- [formFromText][825]
-  - [Parameters][826]
-- [front][827]
-- [includes][828]
-- [][829]
-- [put][830]
-  - [Parameters][831]
-- [textFromForm][832]
-  - [Parameters][833]
-- [fields][834]
-- [metadata][835]
-- [metadata][836]
-- [withName][837]
-  - [Parameters][838]
-- [newSkillText][839]
-  - [Parameters][840]
-- [ai/skills/format][841]
-- [FRONTMATTER][842]
-- [FRONTMATTER][843]
-- [FRONTMATTER][844]
-- [SkillOutput][845]
-- [SkillDefinition][846]
+- [providerDoes][763]
+  - [Parameters][764]
+- [DEFAULT_PROVIDER_TYPE][765]
+- [providerLabel][766]
+  - [Parameters][767]
+- [knownAddress][768]
+  - [Parameters][769]
+- [needsEndpoint][770]
+  - [Parameters][771]
+- [needsKey][772]
+  - [Parameters][773]
+- [connectionGap][774]
+  - [Parameters][775]
+- [presetProblem][776]
+  - [Parameters][777]
+- [canListModels][778]
+  - [Parameters][779]
+- [listsPublicly][780]
+  - [Parameters][781]
+- [signInOf][782]
+  - [Parameters][783]
+- [creditsPage][784]
+  - [Parameters][785]
+- [speaksOpenRouterReasoning][786]
+  - [Parameters][787]
+- [servesChat][788]
+  - [Parameters][789]
+- [takesReasoningEffort][790]
+  - [Parameters][791]
+- [takesChatTemplateKwargs][792]
+  - [Parameters][793]
+- [ai/recommended][794]
+- [RecommendedModel][795]
+  - [Properties][796]
+- [RECOMMENDED][797]
+- [recommendedFor][798]
+  - [Parameters][799]
+- [recommendedRouting][800]
+  - [Parameters][801]
+- [ai/rounds][802]
+- [ROUND_LIMIT][803]
+- [ROUND_LIMIT][804]
+- [ROUND_LIMIT][805]
+- [asked][806]
+  - [Parameters][807]
+- [trimRound][808]
+  - [Parameters][809]
+- [run][810]
+- [over][811]
+- [refusedAnswer][812]
+  - [Parameters][813]
+- [splitOffered][814]
+  - [Parameters][815]
+- [offered][816]
+- [unoffered][817]
+- [unofferedAnswer][818]
+  - [Parameters][819]
+- [ai/routing][820]
+- [OpenRouterRouting][821]
+  - [Properties][822]
+- [ModelUpstreams][823]
+  - [Properties][824]
+- [ROUTING_DEFAULTS][825]
+- [QUANTIZATIONS][826]
+- [toSlugList][827]
+  - [Parameters][828]
+- [resolveRouting][829]
+  - [Parameters][830]
+- [isRoutingOverridden][831]
+  - [Parameters][832]
+- [CLOSED_VENDORS][833]
+- [isClosedWeights][834]
+  - [Parameters][835]
+- [routingFilterOf][836]
+  - [Parameters][837]
+- [buildProviderRouting][838]
+  - [Parameters][839]
+- [field][840]
+- [ai/skills/bundle][841]
+- [MAX_FILE_BYTES][842]
+- [MAX_FILE_BYTES][843]
+- [BundleEntry][844]
+  - [Properties][845]
+- [FoundSkill][846]
   - [Properties][847]
-- [NAME][848]
-- [MAX_NAME][849]
-- [MAX_NAME][850]
-- [ARGUMENT][851]
-- [FIELDS][852]
-- [splitSkill][853]
-  - [Parameters][854]
-- [][855]
-- [joinSkill][856]
+- [isNoise][848]
+  - [Parameters][849]
+- [folderOf][850]
+  - [Parameters][851]
+- [nameOf][852]
+  - [Parameters][853]
+- [nameOf][854]
+  - [Parameters][855]
+- [textOf][856]
   - [Parameters][857]
-- [NEEDS_DESCRIPTION][858]
-- [NEEDS_INSTRUCTIONS][859]
-- [nameError][860]
+- [entriesFromZip][858]
+  - [Parameters][859]
+- [entriesFromFiles][860]
   - [Parameters][861]
-- [parseSkill][862]
-  - [Parameters][863]
-- [errors][864]
-- [][865]
-- [][866]
-- [][867]
-- [][868]
-- [][869]
-- [outputAsked][870]
-- [][871]
-- [][872]
-- [readBuiltInSkill][873]
-  - [Parameters][874]
-- [HANDS_OVER_REPLY][875]
-- [toolDefinitionFor][876]
+- [entries][862]
+- [entries][863]
+- [webkitRelativePath][864]
+- [namedAfterFile][865]
+  - [Parameters][866]
+- [findSkills][867]
+  - [Parameters][868]
+- [ownerOf][869]
+  - [Parameters][870]
+- [stray][871]
+- [zipSkills][872]
+  - [Parameters][873]
+- [zipSkills][874]
+- [contents][875]
+- [zipBlob][876]
   - [Parameters][877]
-- [][878]
-- [ai/skills][879]
-- [SKILL_MAX_ROUNDS][880]
-- [SKILL_MAX_ROUNDS][881]
-- [SKILL_MAX_ROUNDS][882]
-- [SKILL_MAX_DEPTH][883]
-- [BUILT_IN_SKILLS][884]
-- [library][885]
-- [wordings][886]
-- [switchedOn][887]
-- [fromLibrary][888]
-  - [Parameters][889]
-- [made][890]
-- [made][891]
-- [setLibrarySkills][892]
-  - [Parameters][893]
-- [setSkillWordings][894]
-  - [Parameters][895]
-- [setExperimentalSkills][896]
-  - [Parameters][897]
-- [skillIsOn][898]
-  - [Parameters][899]
-- [onSkillsChanged][900]
-  - [Parameters][901]
-- [allSkills][902]
-- [availableSkills][903]
-- [librarySkills][904]
-- [getSkill][905]
+- [ai/skills/compact][878]
+- [COMPACT][879]
+- [COMPACT][880]
+- [COMPACT_SETTINGS][881]
+- [buildCompactPrompt][882]
+  - [Parameters][883]
+- [IN_PLACE_OF_A_TURN][884]
+- [askCompact][885]
+  - [Parameters][886]
+- [unwrapSummary][887]
+  - [Parameters][888]
+- [ai/skills/consultations][889]
+- [ANSWER_FIELDS][890]
+- [ANSWER_FIELDS][891]
+- [ANSWER_FIELDS][892]
+- [ANSWER_FIELDS][893]
+- [ConsultationView][894]
+  - [Properties][895]
+- [CallView][896]
+  - [Properties][897]
+- [SET_ASIDE][898]
+- [isConsultation][899]
+  - [Parameters][900]
+- [parsed][901]
+  - [Parameters][902]
+- [parsed][903]
+  - [Parameters][904]
+- [askedIn][905]
   - [Parameters][906]
-- [skillLabel][907]
+- [consultationView][907]
   - [Parameters][908]
-- [skillPrompt][909]
+- [consultationsIn][909]
   - [Parameters][910]
-- [ownPrompt][911]
-  - [Parameters][912]
-- [ai/skills/interpret][913]
-- [INTERPRET][914]
-- [INTERPRET][915]
-- [INTERPRET][916]
-- [INTERPRET_SETTINGS][917]
-- [describeCard][918]
-  - [Parameters][919]
-- [buildInterpretPrompt][920]
-  - [Parameters][921]
-- [interpretDefinition][922]
-- [executeInterpret][923]
+- [results][911]
+- [results][912]
+- [results][913]
+- [fromDirectorNote][914]
+  - [Parameters][915]
+- [ai/skills/director][916]
+- [DIRECTOR][917]
+- [DIRECTOR][918]
+- [DIRECTOR][919]
+- [DIRECTOR_TOOLS][920]
+- [DIRECTOR_SETTINGS][921]
+- [directorDefinition][922]
+- [executeDirector][923]
   - [Parameters][924]
-- [askInterpret][925]
+- [buildDirectionBlock][925]
   - [Parameters][926]
-- [ai/skills/loads][927]
-- [USE_SKILL][928]
-- [USE_SKILL][929]
-- [USE_SKILL][930]
-- [Load][931]
-  - [Properties][932]
-- [skillCalls][933]
-  - [Parameters][934]
-- [loadsIn][935]
+- [ai/skills/form][927]
+- [SkillForm][928]
+  - [Properties][929]
+- [FRONT_BLOCK][930]
+- [shown][931]
+  - [Parameters][932]
+- [shown][933]
+- [TITLE][934]
+- [titleIn][935]
   - [Parameters][936]
-- [loads][937]
-- [][938]
-- [loadedText][939]
-  - [Parameters][940]
-- [loaded][941]
-- [loadedSkills][942]
+- [meta][937]
+- [formFromText][938]
+  - [Parameters][939]
+- [nameFromTitle][940]
+  - [Parameters][941]
+- [withTitle][942]
   - [Parameters][943]
-- [droppedSkills][944]
-  - [Parameters][945]
-- [carriedLoads][946]
-  - [Parameters][947]
-- [carried][948]
-- [droppedFrom][949]
-  - [Parameters][950]
-- [][951]
-- [ai/skills/runner][952]
-- [fillArgument][953]
-  - [Parameters][954]
-- [fillArgument][955]
-  - [Parameters][956]
-- [fillArgument][957]
-  - [Parameters][958]
-- [offeredToModel][959]
-  - [Parameters][960]
-- [loadedByModel][961]
-  - [Parameters][962]
-- [writerCalls][963]
-  - [Parameters][964]
-- [describeCallers][965]
-  - [Parameters][966]
-- [waitingOn][967]
-  - [Parameters][968]
-- [runOnItsOwn][969]
+- [][944]
+- [textFromForm][945]
+  - [Parameters][946]
+- [withName][947]
+  - [Parameters][948]
+- [ai/skills/format][949]
+- [FRONTMATTER][950]
+- [FRONTMATTER][951]
+- [FRONTMATTER][952]
+- [SkillOutput][953]
+- [SkillDefinition][954]
+  - [Properties][955]
+- [NAME][956]
+- [MAX_NAME][957]
+- [MAX_NAME][958]
+- [ARGUMENT][959]
+- [OUTPUTS][960]
+- [FIELDS][961]
+- [listOf][962]
+  - [Parameters][963]
+- [yamlProblem][964]
+  - [Parameters][965]
+- [splitSkill][966]
+  - [Parameters][967]
+- [][968]
+- [joinSkill][969]
   - [Parameters][970]
-- [ai/skills/write][971]
-- [WRITE][972]
-- [WRITE][973]
-- [WRITE_TOOLS][974]
-- [WRITE_SETTINGS][975]
-- [buildWritePrompt][976]
-  - [Parameters][977]
-- [executeWrite][978]
-  - [Parameters][979]
-- [askWrite][980]
-  - [Parameters][981]
-- [ai/tools/commentReads][982]
-- [PASSAGE_LIMIT][983]
-- [ownSuggestions][984]
-  - [Parameters][985]
-- [seenText][986]
-  - [Parameters][987]
-- [placedAsRead][988]
-  - [Parameters][989]
-- [][990]
-- [postsOf][991]
-  - [Parameters][992]
-- [commentsBetween][993]
+- [NEEDS_DESCRIPTION][971]
+- [NEEDS_INSTRUCTIONS][972]
+- [nameError][973]
+  - [Parameters][974]
+- [parseSkill][975]
+  - [Parameters][976]
+- [errors][977]
+- [passed][978]
+- [][979]
+- [][980]
+- [][981]
+- [][982]
+- [][983]
+- [readable][984]
+- [readable][985]
+  - [Parameters][986]
+- [][987]
+- [][988]
+- [outputKnown][989]
+- [readBuiltInSkill][990]
+  - [Parameters][991]
+- [HANDS_OVER_REPLY][992]
+- [toolDefinitionFor][993]
   - [Parameters][994]
-- [ai/tools/data/names][995]
-- [WeightedName][996]
-- [FEMALE_FIRST_NAMES][997]
-- [MALE_FIRST_NAMES][998]
-- [SURNAMES][999]
-- [ai/tools/data/tarot][1000]
-- [MAJOR_ARCANA][1001]
-- [SUITS][1002]
-- [RANKS][1003]
-- [MINOR_ARCANA][1004]
-- [TAROT_DECK][1005]
-- [ai/tools/dice][1006]
-- [diceToolDefinition][1007]
-  - [][1008]
-- [executeDiceTool][1009]
+- [][995]
+- [ai/skills][996]
+- [SKILL_MAX_ROUNDS][997]
+- [SKILL_MAX_ROUNDS][998]
+- [SKILL_MAX_ROUNDS][999]
+- [SKILL_MAX_DEPTH][1000]
+- [BUILT_IN_SKILLS][1001]
+- [library][1002]
+- [trials][1003]
+- [fromLibrary][1004]
+  - [Parameters][1005]
+- [made][1006]
+- [made][1007]
+- [made][1008]
+- [setLibrarySkills][1009]
   - [Parameters][1010]
-- [ai/tools/documents][1011]
-- [noDocument][1012]
-  - [Parameters][1013]
-- [namedElsewhere][1014]
+- [setTrialSkills][1011]
+  - [Parameters][1012]
+- [builtInSkills][1013]
+- [onSkillsChanged][1014]
   - [Parameters][1015]
-- [goesByThatName][1016]
-  - [Parameters][1017]
-- [norm][1018]
+- [allSkills][1016]
+- [librarySkills][1017]
+- [getSkill][1018]
   - [Parameters][1019]
-- [norm][1020]
+- [skillLabel][1020]
   - [Parameters][1021]
-- [norm][1022]
+- [skillPrompt][1022]
   - [Parameters][1023]
-- [norm][1024]
+- [ownPrompt][1024]
   - [Parameters][1025]
-- [norm][1026]
-  - [Parameters][1027]
-- [norm][1028]
-  - [Parameters][1029]
-- [record][1030]
-  - [Parameters][1031]
-- [record][1032]
+- [ai/skills/loads][1026]
+- [USE_SKILL][1027]
+- [USE_SKILL][1028]
+- [USE_SKILL][1029]
+- [Load][1030]
+  - [Properties][1031]
+- [skillCalls][1032]
   - [Parameters][1033]
-- [fileIsNotWritten][1034]
+- [loadsIn][1034]
   - [Parameters][1035]
-- [PROPOSED_NOTE][1036]
-- [propose][1037]
-  - [Parameters][1038]
-- [pairOf][1039]
-  - [Parameters][1040]
-- [recording][1041]
+- [loads][1036]
+- [][1037]
+- [loadedText][1038]
+  - [Parameters][1039]
+- [loaded][1040]
+- [loadedSkills][1041]
   - [Parameters][1042]
-- [readerView][1043]
+- [droppedSkills][1043]
   - [Parameters][1044]
-- [][1045]
-- [readable][1046]
-  - [Parameters][1047]
-- [shown][1048]
-- [readBasis][1049]
-  - [Parameters][1050]
-- [readKey][1051]
-  - [Parameters][1052]
-- [collectDocuments][1053]
-  - [Parameters][1054]
-- [][1055]
-- [allDocuments][1056]
+- [carriedLoads][1045]
+  - [Parameters][1046]
+- [carried][1047]
+- [droppedFrom][1048]
+  - [Parameters][1049]
+- [][1050]
+- [ai/skills/runner][1051]
+- [fillArgument][1052]
+  - [Parameters][1053]
+- [fillArgument][1054]
+  - [Parameters][1055]
+- [fillArgument][1056]
   - [Parameters][1057]
-- [visibleDocuments][1058]
+- [offeredToModel][1058]
   - [Parameters][1059]
-- [pathOf][1060]
+- [loadedByModel][1060]
   - [Parameters][1061]
-- [documentForChat][1062]
+- [writerCalls][1062]
   - [Parameters][1063]
-- [documentsForChat][1064]
+- [waitingOn][1064]
   - [Parameters][1065]
-- [findByPath][1066]
+- [runOnItsOwn][1066]
   - [Parameters][1067]
-- [resolveNewPath][1068]
-  - [Parameters][1069]
-- [DocumentListing][1070]
-  - [Properties][1071]
-- [ProjectOverview][1072]
-  - [Properties][1073]
-- [sizeOf][1074]
+- [ai/suggestions][1068]
+- [SONNET][1069]
+- [SONNET][1070]
+- [NANOGPT_SONNET][1071]
+- [FREE_FIRST][1072]
+- [OPENAI_FIRST][1073]
+- [newest][1074]
   - [Parameters][1075]
-- [entriesBelow][1076]
+- [suggestModel][1076]
   - [Parameters][1077]
-- [][1078]
-- [][1079]
-- [holdsNote][1080]
-  - [Parameters][1081]
-- [pinnedDocuments][1082]
-  - [Parameters][1083]
-- [projectOverview][1084]
-  - [Parameters][1085]
-- [LISTING_LIMIT][1086]
-- [ABOUT_MOST][1087]
-- [aboutLine][1088]
-  - [Parameters][1089]
-- [listDocumentsDefinition][1090]
-  - [][1091]
-- [counted][1092]
-  - [Parameters][1093]
-- [fileKind][1094]
-  - [Parameters][1095]
-- [listingLine][1096]
-  - [Parameters][1097]
-- [executeListDocuments][1098]
+- [ai/tools/choice][1078]
+- [ToolChoice][1079]
+  - [Properties][1080]
+- [toggled][1081]
+  - [Parameters][1082]
+- [toolsSwitchedOff][1083]
+  - [Parameters][1084]
+- [groupOn][1085]
+  - [Parameters][1086]
+- [toolOn][1087]
+  - [Parameters][1088]
+- [switchGroups][1089]
+  - [Parameters][1090]
+- [switchTool][1091]
+  - [Parameters][1092]
+- [copyChoice][1093]
+  - [Parameters][1094]
+- [copy][1095]
+- [ai/tools/commentReads][1096]
+- [PASSAGE_LIMIT][1097]
+- [ownSuggestions][1098]
   - [Parameters][1099]
-- [folded][1100]
-- [inside][1101]
-- [inside][1102]
-- [inside][1103]
-  - [Parameters][1104]
-- [readDocumentDefinition][1105]
-  - [][1106]
-- [LINE_LIMIT][1107]
-- [readSource][1108]
-  - [Parameters][1109]
-- [][1110]
-- [executeReadDocument][1111]
-  - [Parameters][1112]
-- [withComments][1113]
-  - [Parameters][1114]
-- [MAP_NODES][1115]
-- [describeDocumentDefinition][1116]
-  - [][1117]
-- [executeDescribeDocument][1118]
-  - [Parameters][1119]
-- [digestAbout][1120]
-  - [Parameters][1121]
-- [sectionLines][1122]
-  - [Parameters][1123]
-- [withSectionLines][1124]
-  - [Parameters][1125]
-- [SUBTREE_LIMIT][1126]
-- [readNotes][1127]
-  - [Parameters][1128]
-- [documentLocator][1129]
-  - [Parameters][1130]
-- [resolving][1131]
-  - [Parameters][1132]
-- [resolving][1133]
-  - [Parameters][1134]
-- [resolving][1135]
-  - [Parameters][1136]
-- [resolving][1137]
-  - [Parameters][1138]
-- [resolvedNote][1139]
-  - [Parameters][1140]
-- [commentable][1141]
-  - [Parameters][1142]
-- [listCommentsDefinition][1143]
-  - [][1144]
-- [executeListComments][1145]
-  - [Parameters][1146]
-- [documents][1147]
-- [addCommentDefinition][1148]
-  - [][1149]
-- [executeAddComment][1150]
-  - [Parameters][1151]
-- [comments][1152]
-- [comments][1153]
-- [replyCommentDefinition][1154]
-  - [][1155]
-- [executeReplyComment][1156]
-  - [Parameters][1157]
-- [noComment][1158]
-  - [Parameters][1159]
-- [resolveCommentDefinition][1160]
-  - [][1161]
-- [executeResolveComment][1162]
+- [seenText][1100]
+  - [Parameters][1101]
+- [placedAsRead][1102]
+  - [Parameters][1103]
+- [][1104]
+- [postsOf][1105]
+  - [Parameters][1106]
+- [commentsBetween][1107]
+  - [Parameters][1108]
+- [ai/tools/data/names][1109]
+- [WeightedName][1110]
+- [FEMALE_FIRST_NAMES][1111]
+- [MALE_FIRST_NAMES][1112]
+- [SURNAMES][1113]
+- [ai/tools/data/tarot][1114]
+- [MAJOR_ARCANA][1115]
+- [SUITS][1116]
+- [RANKS][1117]
+- [MINOR_ARCANA][1118]
+- [TAROT_DECK][1119]
+- [ai/tools/dice][1120]
+- [diceToolDefinition][1121]
+  - [][1122]
+- [executeDiceTool][1123]
+  - [Parameters][1124]
+- [ai/tools/documents][1125]
+- [noDocument][1126]
+  - [Parameters][1127]
+- [namedElsewhere][1128]
+  - [Parameters][1129]
+- [goesByThatName][1130]
+  - [Parameters][1131]
+- [norm][1132]
+  - [Parameters][1133]
+- [norm][1134]
+  - [Parameters][1135]
+- [norm][1136]
+  - [Parameters][1137]
+- [norm][1138]
+  - [Parameters][1139]
+- [norm][1140]
+  - [Parameters][1141]
+- [norm][1142]
+  - [Parameters][1143]
+- [record][1144]
+  - [Parameters][1145]
+- [record][1146]
+  - [Parameters][1147]
+- [fileIsNotWritten][1148]
+  - [Parameters][1149]
+- [PROPOSED_NOTE][1150]
+- [propose][1151]
+  - [Parameters][1152]
+- [pairOf][1153]
+  - [Parameters][1154]
+- [recording][1155]
+  - [Parameters][1156]
+- [readerView][1157]
+  - [Parameters][1158]
+- [][1159]
+- [readBasis][1160]
+  - [Parameters][1161]
+- [readKey][1162]
   - [Parameters][1163]
-- [searchDocumentsDefinition][1164]
-  - [][1165]
-- [SEARCH_LIMIT][1166]
-- [LINES_PER_FILE][1167]
-- [linesSaying][1168]
-  - [Parameters][1169]
-- [isUnder][1170]
-  - [Parameters][1171]
-- [snippetsOf][1172]
-  - [Parameters][1173]
-- [snippets][1174]
-- [countOf][1175]
+- [collectDocuments][1164]
+  - [Parameters][1165]
+- [][1166]
+- [allDocuments][1167]
+  - [Parameters][1168]
+- [visibleDocuments][1169]
+  - [Parameters][1170]
+- [pathOf][1171]
+  - [Parameters][1172]
+- [documentForChat][1173]
+  - [Parameters][1174]
+- [documentsForChat][1175]
   - [Parameters][1176]
-- [findIn][1177]
+- [findByPath][1177]
   - [Parameters][1178]
-- [RUN][1179]
-- [looseMatch][1180]
-  - [Parameters][1181]
-- [spelledIn][1182]
-  - [Parameters][1183]
-- [findLoosely][1184]
-  - [Parameters][1185]
-- [passagesOf][1186]
-  - [Parameters][1187]
-- [first][1188]
-- [INDEX_LINE][1189]
-- [SCAN_LIMIT][1190]
-- [SECTIONS_PER_DOCUMENT][1191]
-- [TITLED_LIMIT][1192]
-- [titledSections][1193]
-  - [Parameters][1194]
-- [executeSearchDocuments][1195]
+- [resolveNewPath][1179]
+  - [Parameters][1180]
+- [ProjectOverview][1181]
+  - [Properties][1182]
+- [sizeOf][1183]
+  - [Parameters][1184]
+- [entriesBelow][1185]
+  - [Parameters][1186]
+- [][1187]
+- [][1188]
+- [holdsNote][1189]
+  - [Parameters][1190]
+- [projectOverview][1191]
+  - [Parameters][1192]
+- [LISTING_LIMIT][1193]
+- [ABOUT_MOST][1194]
+- [aboutLine][1195]
   - [Parameters][1196]
-- [Hit][1197]
-  - [Properties][1198]
-- [][1199]
-- [][1200]
-- [][1201]
-- [matchedBy][1202]
-- [hitOn][1203]
+- [listDocumentsDefinition][1197]
+  - [][1198]
+- [counted][1199]
+  - [Parameters][1200]
+- [fileKind][1201]
+  - [Parameters][1202]
+- [listingLine][1203]
   - [Parameters][1204]
-- [plainIf][1205]
+- [executeListDocuments][1205]
   - [Parameters][1206]
-- [createDocumentDefinition][1207]
-  - [][1208]
-- [executeCreateDocument][1209]
-  - [Parameters][1210]
-- [createFolderDefinition][1211]
-  - [][1212]
-- [executeCreateFolder][1213]
-  - [Parameters][1214]
-- [folderToKeepIn][1215]
+- [folded][1207]
+- [inside][1208]
+- [inside][1209]
+- [inside][1210]
+  - [Parameters][1211]
+- [readDocumentDefinition][1212]
+  - [][1213]
+- [LINE_LIMIT][1214]
+- [readSource][1215]
   - [Parameters][1216]
-- [keptFrom][1217]
-  - [Parameters][1218]
-- [pathInProject][1219]
-  - [Parameters][1220]
-- [SUGGESTED_NOTE][1221]
-- [suggests][1222]
+- [][1217]
+- [unreadNote][1218]
+  - [Parameters][1219]
+- [attachedDocuments][1220]
+  - [Parameters][1221]
+- [attachedById][1222]
   - [Parameters][1223]
-- [changesSeen][1224]
+- [copiesOf][1224]
   - [Parameters][1225]
-- [SeenText][1226]
-- [seenToChange][1227]
-  - [Parameters][1228]
-- [SeenChange][1229]
-  - [Properties][1230]
-- [changeSeen][1231]
-  - [Parameters][1232]
-- [suggestionThreads][1233]
+- [executeReadDocument][1226]
+  - [Parameters][1227]
+- [withComments][1228]
+  - [Parameters][1229]
+- [MAP_NODES][1230]
+- [describeDocumentDefinition][1231]
+  - [][1232]
+- [executeDescribeDocument][1233]
   - [Parameters][1234]
-- [next][1235]
-- [saying][1236]
-  - [Parameters][1237]
-- [thread][1238]
-- [thread][1239]
-- [joined][1240]
-- [withdrawn][1241]
-- [suggested][1242]
-- [answerSeen][1243]
-  - [Parameters][1244]
-- [settledSuggestions][1245]
-  - [Parameters][1246]
-- [updateDocumentDefinition][1247]
-  - [][1248]
-- [executeUpdateDocument][1249]
-  - [Parameters][1250]
-- [moveDocumentDefinition][1251]
-  - [][1252]
-- [executeMoveDocument][1253]
-  - [Parameters][1254]
-- [DELETE_PROPOSED_NOTE][1255]
-- [deleteDocumentDefinition][1256]
-  - [][1257]
-- [executeDeleteDocument][1258]
-  - [Parameters][1259]
-- [][1260]
-- [editDocumentDefinition][1261]
-  - [][1262]
-- [squash][1263]
-  - [Parameters][1264]
-- [nearestContext][1265]
+- [digestAbout][1235]
+  - [Parameters][1236]
+- [sectionLines][1237]
+  - [Parameters][1238]
+- [withSectionLines][1239]
+  - [Parameters][1240]
+- [SUBTREE_LIMIT][1241]
+- [readNotes][1242]
+  - [Parameters][1243]
+- [documentLocator][1244]
+  - [Parameters][1245]
+- [resolving][1246]
+  - [Parameters][1247]
+- [resolving][1248]
+  - [Parameters][1249]
+- [resolving][1250]
+  - [Parameters][1251]
+- [resolving][1252]
+  - [Parameters][1253]
+- [resolvedNote][1254]
+  - [Parameters][1255]
+- [commentable][1256]
+  - [Parameters][1257]
+- [listCommentsDefinition][1258]
+  - [][1259]
+- [executeListComments][1260]
+  - [Parameters][1261]
+- [documents][1262]
+- [addCommentDefinition][1263]
+  - [][1264]
+- [executeAddComment][1265]
   - [Parameters][1266]
-- [][1267]
-- [missedQuote][1268]
-  - [Parameters][1269]
-- [editSeen][1270]
-  - [Parameters][1271]
-- [executeEditDocument][1272]
-  - [Parameters][1273]
-- [outcome][1274]
-- [appendDocumentDefinition][1275]
+- [comments][1267]
+- [comments][1268]
+- [replyCommentDefinition][1269]
+  - [][1270]
+- [executeReplyComment][1271]
+  - [Parameters][1272]
+- [noComment][1273]
+  - [Parameters][1274]
+- [resolveCommentDefinition][1275]
   - [][1276]
-- [executeAppendDocument][1277]
+- [executeResolveComment][1277]
   - [Parameters][1278]
-- [applyProposal][1279]
-  - [Parameters][1280]
-- [ai/tools/explore][1281]
-- [EXPLORE_DOCUMENTS][1282]
-- [EXPLORE_DOCUMENTS][1283]
-- [EXPLORE_TIMEOUT_MS][1284]
-- [exploreDocumentsDefinition][1285]
-  - [][1286]
-- [Explored][1287]
-  - [Properties][1288]
-- [linedOnly][1289]
-  - [Parameters][1290]
-- [exploreFor][1291]
-  - [Parameters][1292]
-- [executeExploreDocuments][1293]
-  - [Parameters][1294]
-- [outline][1295]
+- [searchDocumentsDefinition][1279]
+  - [][1280]
+- [SEARCH_LIMIT][1281]
+- [LINES_PER_FILE][1282]
+- [linesSaying][1283]
+  - [Parameters][1284]
+- [isUnder][1285]
+  - [Parameters][1286]
+- [snippetsOf][1287]
+  - [Parameters][1288]
+- [snippets][1289]
+- [countOf][1290]
+  - [Parameters][1291]
+- [findIn][1292]
+  - [Parameters][1293]
+- [RUN][1294]
+- [looseMatch][1295]
   - [Parameters][1296]
-- [exploredText][1297]
+- [spelledIn][1297]
   - [Parameters][1298]
-- [ai/tools][1299]
-- [Adding New Tools][1300]
-  - [Examples][1301]
-- [SKILLS_GROUP][1302]
-- [EXPERIMENTAL_GROUP][1303]
-- [SKILL_GROUPS][1304]
-- [TOOL_GROUP_LABELS][1305]
-- [SKILL_TIMEOUT_MS][1306]
-- [registerBuiltInTools][1307]
-- [libraryTools][1308]
-- [][1309]
-- [registerLibraryTools][1310]
-- [SERVER_TOOL_TIMEOUT_MS][1311]
-- [serverTools][1312]
-- [][1313]
-- [serverToolDefinition][1314]
-  - [Parameters][1315]
-- [inputSchema][1316]
-- [][1317]
-- [runServerTool][1318]
+- [findLoosely][1299]
+  - [Parameters][1300]
+- [passagesOf][1301]
+  - [Parameters][1302]
+- [first][1303]
+- [INDEX_LINE][1304]
+- [SCAN_LIMIT][1305]
+- [SECTIONS_PER_DOCUMENT][1306]
+- [TITLED_LIMIT][1307]
+- [titledSections][1308]
+  - [Parameters][1309]
+- [executeSearchDocuments][1310]
+  - [Parameters][1311]
+- [Hit][1312]
+  - [Properties][1313]
+- [][1314]
+- [][1315]
+- [][1316]
+- [matchedBy][1317]
+- [hitOn][1318]
   - [Parameters][1319]
-- [registerServerTools][1320]
-- [KEPT_GROUP][1321]
-- [keptInConversation][1322]
-  - [Parameters][1323]
-- [offersDocuments][1324]
+- [plainIf][1320]
+  - [Parameters][1321]
+- [createDocumentDefinition][1322]
+  - [][1323]
+- [executeCreateDocument][1324]
   - [Parameters][1325]
-- [offersComments][1326]
-  - [Parameters][1327]
-- [COMMENT_TOOLS][1328]
-- [getToolTimeout][1329]
-  - [Parameters][1330]
-- [getToolDefinitions][1331]
-- [getEnabledToolDefinitions][1332]
+- [createFolderDefinition][1326]
+  - [][1327]
+- [executeCreateFolder][1328]
+  - [Parameters][1329]
+- [folderToKeepIn][1330]
+  - [Parameters][1331]
+- [keptFrom][1332]
   - [Parameters][1333]
-- [getToolDefinitionsFor][1334]
+- [pathInProject][1334]
   - [Parameters][1335]
-- [isSkill][1336]
-  - [Parameters][1337]
-- [drawsByChance][1338]
-  - [Parameters][1339]
-- [toolGroupOf][1340]
-  - [Parameters][1341]
-- [handsOverReply][1342]
+- [SUGGESTED_NOTE][1336]
+- [suggests][1337]
+  - [Parameters][1338]
+- [changesSeen][1339]
+  - [Parameters][1340]
+- [SeenText][1341]
+- [seenToChange][1342]
   - [Parameters][1343]
-- [getToolGroups][1344]
-- [hasTool][1345]
-  - [Parameters][1346]
-- [executeTool][1347]
-  - [Parameters][1348]
-- [hasTools][1349]
-- [mcp/names][1350]
-- [SERVER_GROUP_PREFIX][1351]
-- [MAX_PREFIX][1352]
-- [serverGroup][1353]
-  - [Parameters][1354]
-- [serverOfGroup][1355]
-  - [Parameters][1356]
-- [slug][1357]
-  - [Parameters][1358]
-- [serverPrefix][1359]
-  - [Parameters][1360]
-- [exposedNames][1361]
-  - [Parameters][1362]
-- [names][1363]
-- [ai/tools/names][1364]
-- [GENDERS][1365]
-- [GENDERS][1366]
-- [GENDERS][1367]
-- [MAX_NAMES][1368]
-- [pickWeighted][1369]
-  - [Parameters][1370]
-- [sumWeights][1371]
-  - [Parameters][1372]
-- [generateNamesDefinition][1373]
-  - [][1374]
-- [executeGenerateNames][1375]
-  - [Parameters][1376]
-- [ai/tools/progress][1377]
-- [ToolProgress][1378]
-  - [Properties][1379]
-- [WRITING_TOOLS][1380]
-- [SUGGESTING][1381]
-- [Wording][1382]
-  - [Properties][1383]
-- [writesProse][1384]
-  - [Parameters][1385]
-- [NAMED_TOOLS][1386]
-- [describeEdit][1387]
+- [SeenChange][1344]
+  - [Properties][1345]
+- [changeSeen][1346]
+  - [Parameters][1347]
+- [suggestionThreads][1348]
+  - [Parameters][1349]
+- [next][1350]
+- [saying][1351]
+  - [Parameters][1352]
+- [thread][1353]
+- [thread][1354]
+- [joined][1355]
+- [withdrawn][1356]
+- [suggested][1357]
+- [answerSeen][1358]
+  - [Parameters][1359]
+- [settledSuggestions][1360]
+  - [Parameters][1361]
+- [updateDocumentDefinition][1362]
+  - [][1363]
+- [executeUpdateDocument][1364]
+  - [Parameters][1365]
+- [moveDocumentDefinition][1366]
+  - [][1367]
+- [executeMoveDocument][1368]
+  - [Parameters][1369]
+- [DELETE_PROPOSED_NOTE][1370]
+- [deleteDocumentDefinition][1371]
+  - [][1372]
+- [executeDeleteDocument][1373]
+  - [Parameters][1374]
+- [][1375]
+- [editDocumentDefinition][1376]
+  - [][1377]
+- [squash][1378]
+  - [Parameters][1379]
+- [nearestContext][1380]
+  - [Parameters][1381]
+- [][1382]
+- [missedQuote][1383]
+  - [Parameters][1384]
+- [editSeen][1385]
+  - [Parameters][1386]
+- [executeEditDocument][1387]
   - [Parameters][1388]
-- [describeProgress][1389]
-  - [Parameters][1390]
-- [ROUND_VERBS][1391]
-- [WHOLE_PROJECT][1392]
-- [PATH_NOUNS][1393]
-- [objectOf][1394]
+- [outcome][1389]
+- [appendDocumentDefinition][1390]
+  - [][1391]
+- [executeAppendDocument][1392]
+  - [Parameters][1393]
+- [appendTarget][1394]
   - [Parameters][1395]
-- [addressed][1396]
+- [appendedText][1396]
   - [Parameters][1397]
-- [describeRound][1398]
+- [applyProposal][1398]
   - [Parameters][1399]
-- [describeRound][1400]
-  - [Parameters][1401]
-- [ai/tools/python][1402]
-- [PYTHON_GROUP][1403]
-- [PYTHON_GROUP][1404]
-- [PYTHON_GROUP][1405]
-- [RUN_PYTHON][1406]
-- [PYTHON_TIME_LIMITS][1407]
-- [START_MS][1408]
-- [pythonTimeLimit][1409]
-- [pythonCallTimeout][1410]
-- [RESTARTED][1411]
-- [PROJECT_FOLDER][1412]
-- [runPythonDefinition][1413]
-  - [][1414]
-- [pythonOffered][1415]
-- [pythonProfiles][1416]
-- [setPythonProfile][1417]
-  - [Parameters][1418]
-- [pythonForChat][1419]
-  - [Parameters][1420]
-- [PythonResult][1421]
-  - [Properties][1422]
-- [seesProject][1423]
-  - [Parameters][1424]
-- [TEXT_BESIDE][1425]
-- [entryOf][1426]
-  - [Parameters][1427]
-- [textBeside][1428]
-  - [Parameters][1429]
-- [projectForPython][1430]
-  - [Parameters][1431]
-- [pathNote][1432]
-  - [Parameters][1433]
-- [][1434]
-- [fetchForPython][1435]
-  - [Parameters][1436]
-- [scriptAt][1437]
+- [ai/tools/explore][1400]
+- [EXPLORE_DOCUMENTS][1401]
+- [EXPLORE_DOCUMENTS][1402]
+- [EXPLORE_TIMEOUT_MS][1403]
+- [exploreDocumentsDefinition][1404]
+  - [][1405]
+- [Explored][1406]
+  - [Properties][1407]
+- [linedOnly][1408]
+  - [Parameters][1409]
+- [exploreFor][1410]
+  - [Parameters][1411]
+- [executeExploreDocuments][1412]
+  - [Parameters][1413]
+- [outline][1414]
+  - [Parameters][1415]
+- [exploredText][1416]
+  - [Parameters][1417]
+- [ai/tools][1418]
+- [Adding New Tools][1419]
+  - [Examples][1420]
+- [SKILLS_GROUP][1421]
+- [TOOL_GROUP_LABELS][1422]
+- [SKILL_TIMEOUT_MS][1423]
+- [builtInTools][1424]
+- [][1425]
+- [registerBuiltInTools][1426]
+- [libraryTools][1427]
+- [][1428]
+- [registerLibraryTools][1429]
+- [SERVER_TOOL_TIMEOUT_MS][1430]
+- [serverTools][1431]
+- [][1432]
+- [serverToolDefinition][1433]
+  - [Parameters][1434]
+- [inputSchema][1435]
+- [][1436]
+- [runServerTool][1437]
   - [Parameters][1438]
-- [executeRunPython][1439]
-  - [Parameters][1440]
-- [script][1441]
-- [ai/tools/registry][1442]
-- [ToolDefinition][1443]
-  - [Properties][1444]
-- [ToolCall][1445]
-  - [Properties][1446]
-- [ToolResult][1447]
-  - [Properties][1448]
-- [ToolContext][1449]
-  - [Properties][1450]
-- [RegisteredTool][1451]
-  - [Properties][1452]
-- [ToolGroup][1453]
-  - [Properties][1454]
-- [ToolRegistry][1455]
-  - [tools][1456]
-  - [register][1457]
-    - [Parameters][1458]
-  - [unregister][1459]
-    - [Parameters][1460]
-  - [has][1461]
-    - [Parameters][1462]
-  - [timeoutFor][1463]
-    - [Parameters][1464]
-  - [groupOf][1465]
-    - [Parameters][1466]
-  - [getDefinitions][1467]
-  - [getEnabledDefinitions][1468]
-    - [Parameters][1469]
-  - [getDefinitionsFor][1470]
-    - [Parameters][1471]
-  - [getGroups][1472]
-    - [Parameters][1473]
-  - [execute][1474]
-    - [Parameters][1475]
-  - [hasTools][1476]
-- [ai/tools/rpg][1477]
-- [LIKELIHOOD_TARGETS][1478]
-- [LIKELIHOOD_TARGETS][1479]
-- [rollDie][1480]
+- [registerServerTools][1439]
+- [KEPT_GROUP][1440]
+- [keptInConversation][1441]
+  - [Parameters][1442]
+- [offersDocuments][1443]
+  - [Parameters][1444]
+- [getToolTimeout][1445]
+  - [Parameters][1446]
+- [getToolDefinitions][1447]
+- [groupAvailable][1448]
+  - [Parameters][1449]
+- [getEnabledToolDefinitions][1450]
+  - [Parameters][1451]
+- [getToolDefinitionsFor][1452]
+  - [Parameters][1453]
+- [isSkill][1454]
+  - [Parameters][1455]
+- [drawsByChance][1456]
+  - [Parameters][1457]
+- [toolGroupOf][1458]
+  - [Parameters][1459]
+- [handsOverReply][1460]
+  - [Parameters][1461]
+- [getToolGroups][1462]
+- [labels][1463]
+- [hasTool][1464]
+  - [Parameters][1465]
+- [executeTool][1466]
+  - [Parameters][1467]
+- [hasTools][1468]
+- [mcp/names][1469]
+- [SERVER_GROUP_PREFIX][1470]
+- [MAX_PREFIX][1471]
+- [serverGroup][1472]
+  - [Parameters][1473]
+- [serverOfGroup][1474]
+  - [Parameters][1475]
+- [slug][1476]
+  - [Parameters][1477]
+- [serverPrefix][1478]
+  - [Parameters][1479]
+- [exposedNames][1480]
   - [Parameters][1481]
-- [rollD100][1482]
-- [MAX_DICE][1483]
-- [DIE_TERM][1484]
-- [KEPT_TERM][1485]
-- [DiceTerm][1486]
-  - [Properties][1487]
-- [parseDice][1488]
+- [names][1482]
+- [ai/tools/names][1483]
+- [GENDERS][1484]
+- [GENDERS][1485]
+- [GENDERS][1486]
+- [MAX_NAMES][1487]
+- [pickWeighted][1488]
   - [Parameters][1489]
-- [kept][1490]
-- [DiceRoll][1491]
-  - [Properties][1492]
-- [diceTotal][1493]
-  - [Parameters][1494]
-- [taken][1495]
-- [rollDice][1496]
-  - [Parameters][1497]
-- [interpretRoll][1498]
-  - [Parameters][1499]
-- [oracleDefinition][1500]
-  - [][1501]
-- [executeOracle][1502]
-  - [Parameters][1503]
-- [MAX_TABLE_OPTIONS][1504]
-- [rollTableDefinition][1505]
-  - [][1506]
-- [executeRollTable][1507]
-  - [Parameters][1508]
-- [TAROT_DECKS][1509]
-- [DEFAULT_TAROT_DECK][1510]
-- [TAROT_SPREAD][1511]
-- [MAX_TAROT_CARDS][1512]
-- [drawTarot][1513]
+- [sumWeights][1490]
+  - [Parameters][1491]
+- [generateNamesDefinition][1492]
+  - [][1493]
+- [executeGenerateNames][1494]
+  - [Parameters][1495]
+- [ai/tools/progress][1496]
+- [ToolProgress][1497]
+  - [Properties][1498]
+- [WRITING_TOOLS][1499]
+- [SUGGESTING][1500]
+- [Wording][1501]
+  - [Properties][1502]
+- [writesProse][1503]
+  - [Parameters][1504]
+- [NAMED_TOOLS][1505]
+- [describeEdit][1506]
+  - [Parameters][1507]
+- [describeProgress][1508]
+  - [Parameters][1509]
+- [ROUND_VERBS][1510]
+- [WHOLE_PROJECT][1511]
+- [PATH_NOUNS][1512]
+- [objectOf][1513]
   - [Parameters][1514]
-- [drawn][1515]
-- [drawTarotDefinition][1516]
-  - [][1517]
-- [executeDrawTarot][1518]
-  - [Parameters][1519]
-- [DrawnCard][1520]
-  - [Properties][1521]
-- [drawCard][1522]
-- [ai/tools/slices][1523]
-- [READ_BUDGET][1524]
-- [SLACK][1525]
-- [PAGE_MARKER][1526]
-- [HEADING][1527]
-- [isLong][1528]
-  - [Parameters][1529]
-- [Slice][1530]
-  - [Properties][1531]
-- [sliceAt][1532]
-  - [Parameters][1533]
-- [offsetOfPage][1534]
-  - [Parameters][1535]
-- [pageAt][1536]
-  - [Parameters][1537]
-- [Heading][1538]
-  - [Properties][1539]
-- [CHAPTER][1540]
-- [NUMBERED][1541]
-- [CONTENTS_LINE][1542]
-- [MAP_LIMIT][1543]
-- [headingsOf][1544]
+- [addressed][1515]
+  - [Parameters][1516]
+- [describeRound][1517]
+  - [Parameters][1518]
+- [describeRound][1519]
+  - [Parameters][1520]
+- [ai/tools/python][1521]
+- [PYTHON_GROUP][1522]
+- [PYTHON_GROUP][1523]
+- [PYTHON_GROUP][1524]
+- [RUN_PYTHON][1525]
+- [PYTHON_TIME_LIMITS][1526]
+- [START_MS][1527]
+- [pythonTimeLimit][1528]
+- [pythonCallTimeout][1529]
+- [RESTARTED][1530]
+- [PROJECT_FOLDER][1531]
+- [runPythonDefinition][1532]
+  - [][1533]
+- [pythonOffered][1534]
+- [PythonResult][1535]
+  - [Properties][1536]
+- [seesProject][1537]
+  - [Parameters][1538]
+- [TEXT_BESIDE][1539]
+- [entryOf][1540]
+  - [Parameters][1541]
+- [textBeside][1542]
+  - [Parameters][1543]
+- [projectForPython][1544]
   - [Parameters][1545]
-- [][1546]
-- [marked][1547]
-- [numberedHeadings][1548]
-  - [Parameters][1549]
-- [trimMap][1550]
-  - [Parameters][1551]
-- [Section][1552]
-  - [Properties][1553]
-- [sectionOf][1554]
-  - [Parameters][1555]
-- [wordsIn][1556]
-  - [Parameters][1557]
-- [sectionsOfText][1558]
-  - [Parameters][1559]
-- [ai/tools/useSkill][1560]
-- [loadableSkills][1561]
-- [useSkillDefinition][1562]
-  - [Parameters][1563]
-- [][1564]
-- [inFolder][1565]
-  - [Parameters][1566]
-- [skillWithFile][1567]
-  - [Parameters][1568]
-- [executeUseSkill][1569]
-  - [Parameters][1570]
-- [ai/tools/web][1571]
-- [WEB_GROUP][1572]
-- [READ_WEB_PAGE][1573]
-- [SAVE_WEB_PAGE][1574]
-- [WEB_TIMEOUT_MS][1575]
-- [SAVE_TIMEOUT_MS][1576]
-- [NOT_SET_UP][1577]
-- [][1578]
-- [][1579]
-- [webAddress][1580]
-  - [Parameters][1581]
-- [executeWebSearch][1582]
-  - [Parameters][1583]
-- [executeReadWebPage][1584]
-  - [Parameters][1585]
-- [][1586]
-- [namesFile][1587]
-  - [Parameters][1588]
-- [executeSaveWebPage][1589]
-  - [Parameters][1590]
-- [ai/wire][1591]
-- [joinUrl][1592]
-  - [Parameters][1593]
-- [joinUrl][1594]
+- [pathNote][1546]
+  - [Parameters][1547]
+- [][1548]
+- [fetchForPython][1549]
+  - [Parameters][1550]
+- [scriptAt][1551]
+  - [Parameters][1552]
+- [executeRunPython][1553]
+  - [Parameters][1554]
+- [script][1555]
+- [ai/tools/registry][1556]
+- [ToolDefinition][1557]
+  - [Properties][1558]
+- [ToolCall][1559]
+  - [Properties][1560]
+- [ToolResult][1561]
+  - [Properties][1562]
+- [ToolContext][1563]
+  - [Properties][1564]
+- [RegisteredTool][1565]
+  - [Properties][1566]
+- [ToolGroup][1567]
+  - [Properties][1568]
+- [ToolRegistry][1569]
+  - [tools][1570]
+  - [register][1571]
+    - [Parameters][1572]
+  - [unregister][1573]
+    - [Parameters][1574]
+  - [has][1575]
+    - [Parameters][1576]
+  - [timeoutFor][1577]
+    - [Parameters][1578]
+  - [groupOf][1579]
+    - [Parameters][1580]
+  - [getDefinitions][1581]
+  - [getEnabledDefinitions][1582]
+    - [Parameters][1583]
+  - [getDefinitionsFor][1584]
+    - [Parameters][1585]
+  - [getGroups][1586]
+    - [Parameters][1587]
+  - [execute][1588]
+    - [Parameters][1589]
+  - [hasTools][1590]
+- [ai/tools/rpg][1591]
+- [LIKELIHOOD_TARGETS][1592]
+- [LIKELIHOOD_TARGETS][1593]
+- [rollDie][1594]
   - [Parameters][1595]
-- [baseUrl][1596]
-  - [Parameters][1597]
-- [modelsUrl][1598]
-  - [Parameters][1599]
-- [chatCompletionsUrl][1600]
-  - [Parameters][1601]
-- [attributionHeaders][1602]
-  - [Parameters][1603]
-- [withCacheControl][1604]
-  - [Parameters][1605]
-- [withSupportedReasoning][1606]
-  - [Parameters][1607]
-- [withoutPrivateFields][1608]
-  - [Parameters][1609]
-- [toWireMessages][1610]
+- [rollD100][1596]
+- [MAX_DICE][1597]
+- [DICE_AT][1598]
+- [KEPT_AT][1599]
+- [KEPT_DICE][1600]
+- [NUMBER_AT][1601]
+- [WORD_AT][1602]
+- [SIGNS][1603]
+- [DiceTerm][1604]
+  - [Properties][1605]
+- [NotationError][1606]
+- [NotationError][1607]
+- [DiceNotation][1608]
+  - [Properties][1609]
+- [parseDice][1610]
   - [Parameters][1611]
-- [reasoningFields][1612]
-  - [Parameters][1613]
-- [buildCompletionBody][1614]
-  - [Parameters][1615]
-- [body][1616]
+- [spaced][1612]
+- [takeChar][1613]
+  - [Parameters][1614]
+- [unreadable][1615]
+- [signAt][1616]
+  - [Parameters][1617]
+- [sum][1618]
+  - [Parameters][1619]
+- [product][1620]
+  - [Parameters][1621]
+- [operand][1622]
+- [toLowerCase][1623]
+- [diceTerm][1624]
+  - [Parameters][1625]
+- [DiceRoll][1626]
+  - [Properties][1627]
+- [facesByTerm][1628]
+  - [Parameters][1629]
+- [facesByTerm][1630]
+- [taken][1631]
+- [faces][1632]
+- [countedAt][1633]
+  - [Parameters][1634]
+- [facesKept][1635]
+  - [Parameters][1636]
+- [valueOf][1637]
+  - [Parameters][1638]
+- [rollFrom][1639]
+  - [Parameters][1640]
+- [kept][1641]
+- [rollDice][1642]
+  - [Parameters][1643]
+- [workingOf][1644]
+  - [Parameters][1645]
+- [workingOf][1646]
+  - [Parameters][1647]
+- [line][1648]
+- [write][1649]
+  - [Parameters][1650]
+- [workingText][1651]
+  - [Parameters][1652]
+- [sameThrow][1653]
+  - [Parameters][1654]
+- [sorted][1655]
+  - [Parameters][1656]
+- [interpretRoll][1657]
+  - [Parameters][1658]
+- [oracleDefinition][1659]
+  - [][1660]
+- [executeOracle][1661]
+  - [Parameters][1662]
+- [MAX_TABLE_OPTIONS][1663]
+- [rollTableDefinition][1664]
+  - [][1665]
+- [executeRollTable][1666]
+  - [Parameters][1667]
+- [TAROT_DECKS][1668]
+- [DEFAULT_TAROT_DECK][1669]
+- [TAROT_SPREAD][1670]
+- [MAX_TAROT_CARDS][1671]
+- [drawTarot][1672]
+  - [Parameters][1673]
+- [drawn][1674]
+- [drawTarotDefinition][1675]
+  - [][1676]
+- [executeDrawTarot][1677]
+  - [Parameters][1678]
+- [DrawnCard][1679]
+  - [Properties][1680]
+- [drawCard][1681]
+- [ai/tools/slices][1682]
+- [READ_BUDGET][1683]
+- [SLACK][1684]
+- [PAGE_MARKER][1685]
+- [HEADING][1686]
+- [isLong][1687]
+  - [Parameters][1688]
+- [Slice][1689]
+  - [Properties][1690]
+- [sliceAt][1691]
+  - [Parameters][1692]
+- [offsetOfPage][1693]
+  - [Parameters][1694]
+- [pageAt][1695]
+  - [Parameters][1696]
+- [Heading][1697]
+  - [Properties][1698]
+- [CHAPTER][1699]
+- [NUMBERED][1700]
+- [CONTENTS_LINE][1701]
+- [MAP_LIMIT][1702]
+- [headingsOf][1703]
+  - [Parameters][1704]
+- [][1705]
+- [marked][1706]
+- [numberedHeadings][1707]
+  - [Parameters][1708]
+- [trimMap][1709]
+  - [Parameters][1710]
+- [Section][1711]
+  - [Properties][1712]
+- [sectionOf][1713]
+  - [Parameters][1714]
+- [wordsIn][1715]
+  - [Parameters][1716]
+- [sectionsOfText][1717]
+  - [Parameters][1718]
+- [ai/tools/streamedAppends][1719]
+- [Streamed][1720]
+  - [Properties][1721]
+- [StreamedAppends][1722]
+- [streamAppends][1723]
+  - [Parameters][1724]
+- [running][1725]
+- [show][1726]
+  - [Parameters][1727]
+- [stop][1728]
+  - [Parameters][1729]
+- [begin][1730]
+  - [Parameters][1731]
+- [streamed][1732]
+- [][1733]
+- [ai/tools/useSkill][1734]
+- [loadableSkills][1735]
+- [useSkillDefinition][1736]
+  - [Parameters][1737]
+- [][1738]
+- [inFolder][1739]
+  - [Parameters][1740]
+- [skillWithFile][1741]
+  - [Parameters][1742]
+- [executeUseSkill][1743]
+  - [Parameters][1744]
+- [ai/tools/web][1745]
+- [WEB_GROUP][1746]
+- [READ_WEB_PAGE][1747]
+- [SAVE_WEB_PAGE][1748]
+- [WEB_TIMEOUT_MS][1749]
+- [SAVE_TIMEOUT_MS][1750]
+- [NOT_SET_UP][1751]
+- [webSearchOffered][1752]
+- [][1753]
+- [][1754]
+- [webAddress][1755]
+  - [Parameters][1756]
+- [executeWebSearch][1757]
+  - [Parameters][1758]
+- [executeReadWebPage][1759]
+  - [Parameters][1760]
+- [][1761]
+- [namesFile][1762]
+  - [Parameters][1763]
+- [executeSaveWebPage][1764]
+  - [Parameters][1765]
+- [ai/wire][1766]
+- [joinUrl][1767]
+  - [Parameters][1768]
+- [joinUrl][1769]
+  - [Parameters][1770]
+- [baseUrl][1771]
+  - [Parameters][1772]
+- [modelsUrl][1773]
+  - [Parameters][1774]
+- [audioModelsUrl][1775]
+  - [Parameters][1776]
+- [chatCompletionsUrl][1777]
+  - [Parameters][1778]
+- [attributionHeaders][1779]
+  - [Parameters][1780]
+- [withCacheControl][1781]
+  - [Parameters][1782]
+- [withSupportedReasoning][1783]
+  - [Parameters][1784]
+- [withoutPrivateFields][1785]
+  - [Parameters][1786]
+- [toWireMessages][1787]
+  - [Parameters][1788]
+- [reasoningFields][1789]
+  - [Parameters][1790]
+- [buildCompletionBody][1791]
+  - [Parameters][1792]
+- [body][1793]
 
 ## ai/anthropic
 
@@ -1647,13 +1824,13 @@ The SDK is loaded the first time a connection to Anthropic is used.
 
 ## THINKING_FORMAT
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## THINKING_FORMAT
 
 What OpenRouter calls Anthropic's thinking, and so what it is called here.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## BINDING_BETA
 
@@ -1662,19 +1839,19 @@ changed since: compaction, an edited message, the project block moving to
 the latest turn. Dropping it costs the model that reasoning; refusing it
 would cost the writer the turn.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## FALLBACK_BETA
 
 Lets a request name `fallbacks: 'default'`: the model's own choice of who answers when it declines.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## LISTED_FALLBACKS_BETA
 
 Makes the Models API say which models a model falls back to.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## BUDGETS
 
@@ -1684,21 +1861,21 @@ Thinking budgets for a model that takes a budget rather than an effort level.
 
 What a model can do, as the Models API describes it.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `id` **[string][1617]**&#x20;
-- `name` **[string][1617]** Its display name
-- `maxTokens` **[number][1619]?** The longest answer it can give
-- `thinking` **({adaptive: [boolean][1620], enabled: [boolean][1620], disabled: [boolean][1620]} | null)** Which kinds of thinking it takes: `adaptive` decides how much for itself,
+- `id` **[string][1794]**&#x20;
+- `name` **[string][1794]** Its display name
+- `maxTokens` **[number][1796]?** The longest answer it can give
+- `thinking` **({adaptive: [boolean][1797], enabled: [boolean][1797], disabled: [boolean][1797]} | null)** Which kinds of thinking it takes: `adaptive` decides how much for itself,
   `enabled` takes a budget, `disabled` is not thinking at all. Null for a
   model that doesn't think.
-- `effort` **[Array][1621]<[string][1617]>** The effort levels it takes, lowest first
-- `samplers` **[boolean][1620]** Whether it takes a temperature, a top-p or a
+- `effort` **[Array][1798]<[string][1794]>** The effort levels it takes, lowest first
+- `samplers` **[boolean][1797]** Whether it takes a temperature, a top-p or a
   top-k. The Models API doesn't say; the models that take a thinking budget
   are the ones that still take them, and only while not thinking.
-- `fallbacks` **[boolean][1620]** Whether it has models to fall back on when it declines
+- `fallbacks` **[boolean][1797]** Whether it has models to fall back on when it declines
 
 ## ASSUMED
 
@@ -1714,10 +1891,10 @@ The index of the last item that passes, or -1.
 
 ### Parameters
 
-- `items` **[Array][1621]\<T>**&#x20;
+- `items` **[Array][1798]\<T>**&#x20;
 - `passes` &#x20;
 
-Returns **[number][1619]**&#x20;
+Returns **[number][1796]**&#x20;
 
 ## modelInfo
 
@@ -1725,7 +1902,7 @@ Read a model as the Models API lists it.
 
 ### Parameters
 
-- `model` **Record<[string][1617], any>** One entry of `/v1/models`
+- `model` **Record<[string][1794], any>** One entry of `/v1/models`
 
 Returns **[ModelInfo][8]**&#x20;
 
@@ -1736,9 +1913,9 @@ that moved from another provider can carry ids with dots and colons in them.
 
 ### Parameters
 
-- `id` **[string][1617]?**&#x20;
+- `id` **[string][1794]?**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## toolInput
 
@@ -1748,9 +1925,9 @@ told it called with.
 
 ### Parameters
 
-- `args` **[string][1617]?**&#x20;
+- `args` **[string][1794]?**&#x20;
 
-Returns **Record<[string][1617], any>**&#x20;
+Returns **Record<[string][1794], any>**&#x20;
 
 ## thinkingBlocks
 
@@ -1759,17 +1936,17 @@ format: another model's reasoning means nothing to Claude.
 
 ### Parameters
 
-- `details` **[Array][1621]\<ReasoningDetail>?**&#x20;
+- `details` **[Array][1798]\<ReasoningDetail>?**&#x20;
 
 ## blocks
 
 ## blocks
 
-Type: [Array][1621]\<Record<[string][1617], any>>
+Type: [Array][1798]\<Record<[string][1794], any>>
 
 ## blocks
 
-Type: [Array][1621]\<Record<[string][1617], any>>
+Type: [Array][1798]\<Record<[string][1794], any>>
 
 ## interleave
 
@@ -1780,33 +1957,33 @@ entries along the reasoning, not the answer) go first, where thinking was.
 ### Parameters
 
 - `thinking` &#x20;
-- `others` **[Array][1621]\<Record<[string][1617], any>>** The text and tool calls, in order
+- `others` **[Array][1798]\<Record<[string][1794], any>>** The text and tool calls, in order
 
-Returns **[Array][1621]\<Record<[string][1617], any>>**&#x20;
+Returns **[Array][1798]\<Record<[string][1794], any>>**&#x20;
 
 ## unplaced
 
-Type: [Array][1621]\<Record<[string][1617], any>>
+Type: [Array][1798]\<Record<[string][1794], any>>
 
 ## out
 
-Type: [Array][1621]\<Record<[string][1617], any>>
+Type: [Array][1798]\<Record<[string][1794], any>>
 
 ## out
 
-Type: [Array][1621]\<Record<[string][1617], any>>
+Type: [Array][1798]\<Record<[string][1794], any>>
 
 ## out
 
-Type: [Array][1621]\<ChatMessage>
+Type: [Array][1798]\<ChatMessage>
 
 ## out
 
-Type: [Array][1621]<[ConsultationView][782]>
+Type: [Array][1798]<[ConsultationView][894]>
 
 ## out
 
-Type: [Array][1621]<[Document][1622]>
+Type: [Array][1798]<[Document][1799]>
 
 ## markCached
 
@@ -1815,7 +1992,7 @@ can't carry the mark, so it goes on the last one that can.
 
 ### Parameters
 
-- `blocks` **[Array][1621]\<Record<[string][1617], any>>**&#x20;
+- `blocks` **[Array][1798]\<Record<[string][1794], any>>**&#x20;
 
 ## toAnthropicMessages
 
@@ -1835,23 +2012,23 @@ reads the rounds before at the cached price.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<Record<[string][1617], any>>** The conversation, in the app's shape
-- `$1` **[Object][1618]** (optional, default `{}`)
+- `messages` **[Array][1798]\<Record<[string][1794], any>>** The conversation, in the app's shape
+- `$1` **[Object][1795]** (optional, default `{}`)
   - `$1.thinking` (optional, default `true`)
 
-Returns **{system: [Array][1621]\<Record<[string][1617], any>>, messages: [Array][1621]\<Record<[string][1617], any>>}**&#x20;
+Returns **{system: [Array][1798]\<Record<[string][1794], any>>, messages: [Array][1798]\<Record<[string][1794], any>>}**&#x20;
 
 ## system
 
-Type: [Array][1621]\<Record<[string][1617], any>>
+Type: [Array][1798]\<Record<[string][1794], any>>
 
 ## result
 
-Type: Record<[string][1617], any>
+Type: Record<[string][1794], any>
 
 ## result
 
-Type: [PythonResult][1421]
+Type: [PythonResult][1535]
 
 ## claudeTraits
 
@@ -1863,7 +2040,7 @@ from; one that decides for itself, the efforts it lists.
 
 - `info` **Omit<[ModelInfo][8], (`"id"` | `"name"`)>**&#x20;
 
-Returns **[ModelTraits][107]**&#x20;
+Returns **[ModelTraits][108]**&#x20;
 
 ## adaptive
 
@@ -1885,13 +2062,13 @@ that takes a budget instead.
 
 - `settings` **AISettings** Fitted to the model
 - `info` **Omit<[ModelInfo][8], (`"id"` | `"name"`)>**&#x20;
-- `maxTokens` **[number][1619]** The answer's cap, which a budget must stay under
+- `maxTokens` **[number][1796]** The answer's cap, which a budget must stay under
 
 ## effort
 
 ### Parameters
 
-- `effort` **[string][1617]**&#x20;
+- `effort` **[string][1794]**&#x20;
 
 ##
 
@@ -1906,19 +2083,19 @@ and a temperature rather than a top-p when both are set.
 
 ### Parameters
 
-- `args` **[Object][1618]**&#x20;
-  - `args.messages` **[Array][1621]\<Record<[string][1617], any>>** The conversation, in the app's shape
-  - `args.model` **[string][1617]**&#x20;
+- `args` **[Object][1795]**&#x20;
+  - `args.messages` **[Array][1798]\<Record<[string][1794], any>>** The conversation, in the app's shape
+  - `args.model` **[string][1794]**&#x20;
   - `args.info` **Omit<[ModelInfo][8], (`"id"` | `"name"`)>** What the model can do
   - `args.settings` **AISettings** Already resolved over AI_DEFAULTS
-  - `args.tools` **[Array][1621]<[ToolDefinition][1443]>?**&#x20;
+  - `args.tools` **[Array][1798]<[ToolDefinition][1557]>?**&#x20;
   - `args.toolChoice` **(`"auto"` | `"none"`)?**&#x20;
 
-Returns **{params: Record<[string][1617], any>, betas: [Array][1621]<[string][1617]>, askedForEffort: [boolean][1620]}**&#x20;
+Returns **{params: Record<[string][1794], any>, betas: [Array][1798]<[string][1794]>, askedForEffort: [boolean][1797]}**&#x20;
 
 ## params
 
-Type: Record<[string][1617], any>
+Type: Record<[string][1794], any>
 
 ## params
 
@@ -1926,7 +2103,7 @@ Type: any
 
 ## betas
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## finishReasonOf
 
@@ -1934,9 +2111,9 @@ What ended an answer, in the words the rest of the app uses for it.
 
 ### Parameters
 
-- `reason` **([string][1617] | null)** Anthropic's `stop_reason`
+- `reason` **([string][1794] | null)** Anthropic's `stop_reason`
 
-Returns **([string][1617] | null)**&#x20;
+Returns **([string][1794] | null)**&#x20;
 
 ## RefusalError
 
@@ -1946,7 +2123,7 @@ Said when the model declines and nothing answered in its place.
 
 ### Parameters
 
-- `category` **([string][1617] | null)?** What Anthropic says it declined over
+- `category` **([string][1794] | null)?** What Anthropic says it declined over
 
 ## createStreamReader
 
@@ -1965,36 +2142,36 @@ thinking and its tool calls are let go, since nothing can hand them back.
 ### Parameters
 
 - `onChunk` &#x20;
-- `$1` **[Object][1618]** (optional, default `{}`)
+- `$1` **[Object][1795]** (optional, default `{}`)
   - `$1.showReasoning` (optional, default `true`)
 
 ## usage
 
-Type: Record<[string][1617], any>
+Type: Record<[string][1794], any>
 
 ## usage
 
 ## stopReason
 
-Type: ([string][1617] | null)
+Type: ([string][1794] | null)
 
 ## stopDetails
 
-Type: (Record<[string][1617], any> | null)
+Type: (Record<[string][1794], any> | null)
 
 ## servedBy
 
-Type: ([string][1617] | null)
+Type: ([string][1794] | null)
 
 ## push
 
 ### Parameters
 
-- `event` **Record<[string][1617], any>**&#x20;
+- `event` **Record<[string][1794], any>**&#x20;
 
 ## block
 
-Type: Record<[string][1617], any>
+Type: Record<[string][1794], any>
 
 ## finish
 
@@ -2004,11 +2181,11 @@ The answer, whole.
 
 ## toolCalls
 
-Type: [Array][1621]<[ToolCall][1445]>
+Type: [Array][1798]<[ToolCall][1559]>
 
 ## reasoningDetails
 
-Type: [Array][1621]\<ReasoningDetail>
+Type: [Array][1798]\<ReasoningDetail>
 
 ## type
 
@@ -2035,11 +2212,11 @@ What the API said went wrong, without the SDK's status-and-JSON wrapping.
 
 - `error` **any**&#x20;
 
-Returns **[Error][1623]**&#x20;
+Returns **[Error][1800]**&#x20;
 
 ## described
 
-Type: [Map][1624]<[string][1617], [Promise][1625]<([ModelInfo][8] | null)>>
+Type: [Map][1801]<[string][1794], [Promise][1802]<([ModelInfo][8] | null)>>
 
 ## listAnthropicModels
 
@@ -2050,11 +2227,11 @@ them. What each can do is kept for the requests that follow.
 
 - `provider` **AIProvider**&#x20;
 
-Returns **[Promise][1625]<[Array][1621]<{id: [string][1617], name: [string][1617]}>>**&#x20;
+Returns **[Promise][1802]<[Array][1798]<{id: [string][1794], name: [string][1794]}>>**&#x20;
 
 ## models
 
-Type: [Array][1621]<{id: [string][1617], name: [string][1617], traits: [ModelTraits][107]}>
+Type: [Array][1798]<{id: [string][1794], name: [string][1794], traits: [ModelTraits][108]}>
 
 ##
 
@@ -2067,9 +2244,9 @@ What the model can do, asked once a page.
 ### Parameters
 
 - `provider` **AIProvider**&#x20;
-- `model` **[string][1617]**&#x20;
+- `model` **[string][1794]**&#x20;
 
-Returns **[Promise][1625]<([ModelInfo][8] | null)>** Null when the Models API doesn't know it
+Returns **[Promise][1802]<([ModelInfo][8] | null)>** Null when the Models API doesn't know it
 
 ##
 
@@ -2077,11 +2254,11 @@ Type: any
 
 ## get
 
-Type: [Promise][1625]<([ModelInfo][8] | null)>
+Type: [Promise][1802]<([ModelInfo][8] | null)>
 
 ## get
 
-Type: [Headers][1626]
+Type: [Headers][1803]
 
 ## streamAnthropic
 
@@ -2089,19 +2266,19 @@ One streamed answer from Claude.
 
 ### Parameters
 
-- `args` **[Object][1618]**&#x20;
+- `args` **[Object][1795]**&#x20;
   - `args.provider` **AIProvider**&#x20;
-  - `args.model` **[string][1617]**&#x20;
-  - `args.messages` **[Array][1621]\<Record<[string][1617], any>>** The conversation, in the app's shape
+  - `args.model` **[string][1794]**&#x20;
+  - `args.messages` **[Array][1798]\<Record<[string][1794], any>>** The conversation, in the app's shape
   - `args.settings` **AISettings** Already resolved over AI_DEFAULTS
-  - `args.tools` **[Array][1621]<[ToolDefinition][1443]>?**&#x20;
+  - `args.tools` **[Array][1798]<[ToolDefinition][1557]>?**&#x20;
   - `args.toolChoice` **(`"auto"` | `"none"`)?**&#x20;
   - `args.signal` **AbortSignal?**&#x20;
   - `args.onChunk` &#x20;
 
 <!---->
 
-- Throws **[Error][1623]** What the API said, a [RefusalError][54], or the signal's
+- Throws **[Error][1800]** What the API said, a [RefusalError][54], or the signal's
   reason when it is stopped
 
 ##
@@ -2149,9 +2326,9 @@ Whether a message is an aside: the question, or its answer.
 
 ### Parameters
 
-- `message` **(Message | null | [undefined][1627])**&#x20;
+- `message` **(Message | null | [undefined][1804])**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## withoutAsides
 
@@ -2163,11 +2340,11 @@ A reader of the transcript is never answering one, and keeps none.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<T>** In order
-- `$1` **[Object][1618]** (optional, default `{}`)
+- `messages` **[Array][1798]\<T>** In order
+- `$1` **[Object][1795]** (optional, default `{}`)
   - `$1.answering` (optional, default `false`)
 
-Returns **[Array][1621]\<T>**&#x20;
+Returns **[Array][1798]\<T>**&#x20;
 
 ## read
 
@@ -2176,6 +2353,10 @@ Returns **[Array][1621]\<T>**&#x20;
 - `message` &#x20;
 - `at` &#x20;
 
+### read
+
+Type: {skill: [SkillDefinition][954]}
+
 ## lastAside
 
 Where the aside the conversation ends in begins: its question, followed by
@@ -2183,9 +2364,9 @@ its answer as far as it has got.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<Message>** In order
+- `messages` **[Array][1798]\<Message>** In order
 
-Returns **[number][1619]** The question's place, or the length of the conversation
+Returns **[number][1796]** The question's place, or the length of the conversation
 when it does not end in an aside
 
 ## intoConversation
@@ -2218,8 +2399,9 @@ show only those, and a request sends only those.
 Three sources, the most particular first:
 
 - What the provider's list says of the model. OpenRouter lists each model's
-  parameters and how it reasons; Anthropic's Models API says how each Claude
-  thinks and at which efforts. These arrive as [ModelTraits][107].
+  parameters and how it reasons; NanoGPT's, how each reasons; Anthropic's
+  Models API says how each Claude thinks and at which efforts. These arrive
+  as [ModelTraits][108].
 - What the API was found to take, family by family, where its list says
   nothing: OpenAI's samplers.
 - What the server takes at all. A server someone runs answers to the names
@@ -2242,24 +2424,28 @@ The effort levels, lowest first.
 What a provider's list says about one of its models. A field the list says
 nothing about is absent.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `samplers` **[Array][1621]\<Sampler>?** The samplers it takes
-- `reasoning` **([ReasoningTraits][109] | null)?** How it reasons; null for a
+- `samplers` **[Array][1798]\<Sampler>?** The samplers it takes
+- `reasoning` **([ReasoningTraits][110] | null)?** How it reasons; null for a
   model that doesn't
-- `contextLength` **[number][1619]?** How many tokens it reads and writes in
+- `contextLength` **[number][1796]?** How many tokens it reads and writes in
   one request, its answer among them
+- `tools` **[boolean][1797]?** Whether it can call tools, where the list says
+- `defaults` **Partial\<Record\<Sampler, [number][1796]>>?** The samplers its
+  makers say it runs best at, where the list says: what its settings start
+  from, under the writer's changes
 
 ## ReasoningTraits
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `optional` **[boolean][1620]** Whether it can be asked not to reason
-- `levels` **[Array][1621]\<ReasoningEffort>** The effort levels it takes, lowest
+- `optional` **[boolean][1797]** Whether it can be asked not to reason
+- `levels` **[Array][1798]\<ReasoningEffort>** The effort levels it takes, lowest
   first. None for reasoning that is only on or off.
 - `defaultLevel` **ReasoningEffort?** The level it reasons at untold
 
@@ -2267,22 +2453,24 @@ Type: [Object][1618]
 
 What a request on this connection and model can carry.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
 - `samplers` **ReadonlySet\<Sampler>** The samplers it takes
-- `samplersWhileThinking` **[boolean][1620]** Whether it takes them while it
+- `samplersWhileThinking` **[boolean][1797]** Whether it takes them while it
   reasons. Older Claude models take a temperature only when not thinking.
-- `efforts` **[Array][1621]\<ReasoningEffort>** What Reasoning effort offers, in the
+- `efforts` **[Array][1798]\<ReasoningEffort>** What Reasoning effort offers, in the
   menu's order. None when a request says nothing of reasoning; one when
   there is nothing to choose.
 - `defaultEffort` **ReasoningEffort?** The level it reasons at untold
-- `reasons` **[boolean][1620]** Whether the model may reason at all
-- `reasoningDisplay` **[boolean][1620]** Whether the provider can be asked to
+- `reasons` **[boolean][1797]** Whether the model may reason at all
+- `reasoningDisplay` **[boolean][1797]** Whether the provider can be asked to
   keep the reasoning to itself, which is what Show reasoning does
-- `names` **Partial\<Record\<Sampler, [string][1617]>>** The key a server reads a
+- `names` **Partial\<Record\<Sampler, [string][1794]>>** The key a server reads a
   sampler under, where it isn't OpenAI's name for it
+- `tools` **[boolean][1797]** Whether it can call tools: unless its list says
+  it can't
 
 ##
 
@@ -2290,7 +2478,7 @@ Type: const
 
 ## ALL_SAMPLERS
 
-Type: [Array][1621]\<Sampler>
+Type: [Array][1798]\<Sampler>
 
 ## UNDESCRIBED_EFFORTS
 
@@ -2298,7 +2486,7 @@ What a model nobody has described is offered: everything there was before.
 
 ## UNDESCRIBED_EFFORTS
 
-Type: [Array][1621]\<ReasoningEffort>
+Type: [Array][1798]\<ReasoningEffort>
 
 ## OPENAI_SAMPLING_MODELS
 
@@ -2310,7 +2498,7 @@ model released since is taken to be like the newest ones.
 
 ## OPENAI_SAMPLERS
 
-Type: [Array][1621]\<Sampler>
+Type: [Array][1798]\<Sampler>
 
 ## server
 
@@ -2335,15 +2523,15 @@ llama-server, whose chat template can be told to leave thinking out.
 
 ## serverOf
 
-Which kind of server a connection reaches. Its type, except for the built-in
-connections to servers that speak the generic dialect: those are known by
-which built-in they are.
+Which kind of server a connection reaches. Its type, except for servers
+that speak the generic dialect: those are known by the server the
+connection names, or the built-in it is.
 
 ### Parameters
 
 - `provider` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## capabilitiesOf
 
@@ -2352,14 +2540,14 @@ What a request on this connection and model can carry.
 ### Parameters
 
 - `provider` &#x20;
-- `model` **[string][1617]?**&#x20;
-- `traits` **[ModelTraits][107]?** What the provider's list says of the model
+- `model` **[string][1794]?**&#x20;
+- `traits` **[ModelTraits][108]?** What the provider's list says of the model
 
-Returns **[Capabilities][111]**&#x20;
+Returns **[Capabilities][112]**&#x20;
 
 ##
 
-Type: [Array][1621]\<ReasoningEffort>
+Type: [Array][1798]\<ReasoningEffort>
 
 ## fitEffort
 
@@ -2372,7 +2560,7 @@ two as near.
 ### Parameters
 
 - `effort` **ReasoningEffort**&#x20;
-- `capabilities` **[Capabilities][111]**&#x20;
+- `capabilities` **[Capabilities][112]**&#x20;
   - `capabilities.efforts` &#x20;
   - `capabilities.defaultEffort` &#x20;
 
@@ -2382,9 +2570,9 @@ Returns **ReasoningEffort**&#x20;
 
 ### Parameters
 
-- `effort` **[string][1617]**&#x20;
+- `effort` **[string][1794]**&#x20;
 
-Returns **[number][1619]** Its place among the levels, or -1 for Disabled and Enabled
+Returns **[number][1796]** Its place among the levels, or -1 for Disabled and Enabled
 
 ##
 
@@ -2397,7 +2585,7 @@ takes them only while it isn't reasoning and is going to be.
 
 ### Parameters
 
-- `capabilities` **[Capabilities][111]**&#x20;
+- `capabilities` **[Capabilities][112]**&#x20;
 - `effort` **ReasoningEffort** Already fitted
 
 Returns **ReadonlySet\<Sampler>**&#x20;
@@ -2409,11 +2597,11 @@ it pairs with on a model that takes only one of the two.
 
 ### Parameters
 
-- `capabilities` **[Capabilities][111]**&#x20;
+- `capabilities` **[Capabilities][112]**&#x20;
 - `sampler` **Sampler**&#x20;
 - `settings` **AISettings**&#x20;
 
-Returns **(Sampler | [undefined][1627])**&#x20;
+Returns **(Sampler | [undefined][1804])**&#x20;
 
 ## isSet
 
@@ -2422,7 +2610,7 @@ Returns **(Sampler | [undefined][1627])**&#x20;
 - `sampler` **Sampler**&#x20;
 - `settings` **AISettings**&#x20;
 
-Returns **[boolean][1620]** Whether it is moved off the value that leaves it out
+Returns **[boolean][1797]** Whether it is moved off the value that leaves it out
 
 ## fitSettings
 
@@ -2433,7 +2621,7 @@ that leaves it out of the request.
 ### Parameters
 
 - `settings` **AISettings** Already resolved over AI_DEFAULTS
-- `capabilities` **[Capabilities][111]**&#x20;
+- `capabilities` **[Capabilities][112]**&#x20;
 
 Returns **AISettings**&#x20;
 
@@ -2494,8 +2682,10 @@ phrase ends, and quotes are how everybody already says it:
 
     /roll-table "a knife" "a letter" "nothing at all"
 
-And one is a whole message rather than a line: `/aside`, a question asked on
-the side, which runs to the end of what was typed. See ai/asides.js.
+And one is a whole message rather than a line: `/fork`, which goes on in a
+copy of the chat, and whose message runs to the end of what was typed. It
+took the place of `/aside`, a question asked on the side (ai/asides.js),
+which is retired: the asides already in chats still read as they did.
 
 A slash at the start of a line opens a menu of them in the message field,
 each with its usage and a line saying what it does. The menu only finishes
@@ -2512,7 +2702,16 @@ watching it arrive. See `commandWritesProse`.
 
 ## Everyone in the scene
 
-`@` is a person, and what follows is what they said or did:
+`@` at the start of a line was a person, and what followed was what they
+said or did: `@cody I quickly hide in the closet.` went to the model as
+`<cody>` around it. `@` attaches a document now
+(ai/context/attachments.js), and a line that opens with one is prose. The
+lines a chat already holds are still records of a character, shown and sent
+as they were; written again, one is the prose the model read. See
+CHARACTER.
+
+This module runs commands; it does not know they end up in a chat. What to do
+with the record is composables/useChatCommands.js.
 
 ## LIKELIHOODS
 
@@ -2529,22 +2728,23 @@ The likelihoods `/oracle` accepts, for anything that wants to list them.
 A command as the writer asked it: which one, what they said, and the setting
 they put in parentheses if it takes one.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `name` **[string][1617]**&#x20;
-- `input` **[string][1617]** Everything after the name, verbatim
-- `character` **`true`?** Set when the writer wrote `@`, meaning this is
-  somebody rather than something
-- `param` **[string][1617]?** The parenthesised setting, resolved to its
+- `name` **[string][1794]**&#x20;
+- `input` **[string][1794]** Everything after the name, verbatim
+- `character` **`true`?** On a record from when `@name` at the start
+  of a line was somebody speaking: this is somebody rather than something.
+  Nothing typed now is read as one.
+- `param` **[string][1794]?** The parenthesised setting, resolved to its
   default by `inspectCommand` when the writer left it out
 
 ## DEFAULT_LIKELIHOOD
 
 What `/oracle` assumes when the writer does not say.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## likelihoodSaid
 
@@ -2556,9 +2756,9 @@ other bucket already reads as English once the underscore is a space.
 
 ### Parameters
 
-- `value` **[string][1617]**&#x20;
+- `value` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## likelihoodLabel
 
@@ -2566,19 +2766,19 @@ A likelihood as it reads beside the question.
 
 ### Parameters
 
-- `value` **[string][1617]**&#x20;
+- `value` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## CommandParameter
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `name` **[string][1617]** What it is, for the error when it is wrong
-- `default` **[string][1617]?** What it means when it is left out
-- `send` **[boolean][1620]?** Whether the model should be told what it was
+- `name` **[string][1794]** What it is, for the error when it is wrong
+- `default` **[string][1794]?** What it means when it is left out
+- `send` **[boolean][1797]?** Whether the model should be told what it was
   asked under. For a parameter that is a judgement about the fiction rather
   than a setting on a tool: how surprising an answer is changes how it should
   be narrated. Only when the writer chose one — the default is the absence of
@@ -2586,50 +2786,51 @@ Type: [Object][1618]
 
 ## CommandDefinition
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `usage` **[string][1617]** How to type it, for the error when it is typed wrong
-- `description` **[string][1617]** What it does, in a line, for the menu the
+- `usage` **[string][1794]** How to type it, for the error when it is typed wrong
+- `description` **[string][1794]** What it does, in a line, for the menu the
   writer picks it from. Written for the writer, in any kind of chat: most of
   these came from the table, and none of them is only for it.
-- `param` **[CommandParameter][156]?** What goes in the parentheses, for the
+- `param` **[CommandParameter][157]?** What goes in the parentheses, for the
   commands that have a second thing to say. Validated here rather than in
   `check`, so every command spells its choices the same way.
-- `consults` **[boolean][1620]?** Whether running it costs a model call. One
+- `consults` **[boolean][1797]?** Whether running it costs a model call. One
   that does cannot be run before its record is written — the writer would
   watch an empty box — so it is written pending and filled in.
-- `ownTurn` **[boolean][1620]?** Whether its record is a message of its own
+- `ownTurn` **[boolean][1797]?** Whether its record is a message of its own
   rather than a piece of the writer's turn. Almost nothing is: an answer the
   writer asked for is theirs to bring to the turn, whatever answered, and a
   voice that is not the Game Master's in the slot the Game Master narrates
   from is the one thing a model reliably copies. `/compact` is the exception
   because a summary is not a turn at all — it stands in for the conversation
   the turns were part of.
-- `speaks` **[boolean][1620]?** Whether its record is the writer saying
+- `speaks` **[boolean][1797]?** Whether its record is the writer saying
   something, which asks for a reply the way a character's line does and a
   roll does not. A saved prompt.
-- `derived` **[boolean][1620]?** Whether its answer follows from what it was
+- `derived` **[boolean][1797]?** Whether its answer follows from what it was
   given and nothing else, so the turn written out for an edit carries no
   answer under it and the edit fills it in again. `/director`'s answer is
   the sentence itself and needs no saying; a saved prompt's is its skill's
   instructions with the sentence put in.
-- `repeatable` **[boolean][1620]?** Whether asking again could answer
+- `repeatable` **[boolean][1797]?** Whether asking again could answer
   differently: a draw, or an inference. Those are the ones worth a retry, and
   the ones an edit must not quietly re-ask — a writer fixing a typo in a
   question is not asking for new dice. `/director` is neither: its answer is
   the sentence it was given, so editing it simply runs it again.
-- `tag` **[string][1617]?** The tag its record renders under, when the name
+- `tag` **[string][1794]?** The tag its record renders under, when the name
   the writer types is the wrong word for the thing it produced. `/compact`
   is an instruction; what lands in the conversation is a summary.
-- `aside` **[boolean][1620]?** Whether it is asked on the side: a message of
-  its own, the whole of it after the name, which the model answers and then
-  forgets along with the answer. See ai/asides.js.
-- `experimental` **[boolean][1620]?** Whether it is an experimental skill's,
-  which runs only while the writer has that skill switched on. It is kept
-  while the skill is off, so the records it left read as they did. See
-  `commandSwitchedOff`.
+- `whole` **[boolean][1797]?** Whether it is a message of its own: the whole of
+  it after the name, lines and all, is its input
+- `aside` **[boolean][1797]?** Whether it is asked on the side, which the model
+  answers and then forgets along with the answer. See ai/asides.js.
+- `forks` **[boolean][1797]?** Whether it goes on in a copy of the chat: the
+  chat makes the fork and sends its message there, so it is never run here
+- `retired` **[string][1794]?** Why it no longer runs, for one taken out
+  whose records still read. See `commandSwitchedOff`.
 
 ## compactNote
 
@@ -2643,10 +2844,10 @@ re-summarising anything. See composables/useChatCommands.js.
 
 ### Parameters
 
-- `instructions` **[string][1617]** What the writer asked this one to favour, if anything
-- `kept` **[number][1619]**&#x20;
+- `instructions` **[string][1794]** What the writer asked this one to favour, if anything
+- `kept` **[number][1796]**&#x20;
 
-Returns **{detail: [string][1617], keep: [number][1619]}**&#x20;
+Returns **{detail: [string][1794], keep: [number][1796]}**&#x20;
 
 ## parseNameAsk
 
@@ -2659,9 +2860,9 @@ live where the setting lives.
 
 ### Parameters
 
-- `param` **[string][1617]?** What the writer put in the parentheses
+- `param` **[string][1794]?** What the writer put in the parentheses
 
-Returns **({gender: [string][1617], count: [number][1619]} | {error: [string][1617]})**&#x20;
+Returns **({gender: [string][1794], count: [number][1796]} | {error: [string][1794]})**&#x20;
 
 ## describeNameAsk
 
@@ -2672,20 +2873,30 @@ the place a mistake gets reported — `check` has already said so.
 
 ### Parameters
 
-- `param` **[string][1617]**&#x20;
+- `param` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## DICE_TERM
 
-A term `parseDice` reads: dice, `min(…)` or `max(…)` of them, or a number.
-Anything up to the bracket in `min(…)`, so what is wrong in there is what
+A term `parseDice` reads: dice with any advantage or burden they carry,
+`min(…)` or `max(…)` of them, or a number. Anything up to the bracket in
+`min(…)`, and any run of those letters, so what is wrong there is what
 `parseDice` says.
+
+## DICE_OPERAND
+
+A term with any signs in front of it and brackets around it.
 
 ## DICE_THEN_QUESTION
 
 Dice at the start of a line, and whatever follows them after a space: the
-terms `parseDice` reads, joined by signs.
+terms `parseDice` reads, joined by the signs it reads.
+
+## ARITHMETIC
+
+What a question doesn't start with: a sign and a number, as in `2d6 ^ 4`,
+which is arithmetic the dice don't do rather than something to ask.
 
 ## parseRoll
 
@@ -2694,28 +2905,56 @@ writer gave one — `2d6 How does the monster react?`.
 
 The whole line is tried as dice first, so spaced-out notation (`3d6 + 2`)
 reads as it always did. A line that is no dice at all reports what is wrong
-with it as a whole.
+with it as a whole, and so does one whose question would start with
+arithmetic.
 
 ### Parameters
 
-- `input` **[string][1617]**&#x20;
+- `input` **[string][1794]**&#x20;
 
-Returns **({notation: [string][1617], question: [string][1617]} | {error: [string][1617]})**&#x20;
+Returns **({notation: [string][1794], question: [string][1794]} | {error: [string][1794]})**&#x20;
 
 ## DICE_LINE
 
-A line of dice under a roll, as the writer edits it: `d6: 3, 6, 5`.
+A line of dice by kind, as rolls were written before their working was, and
+as a writer might still type them: `d6: 3, 6, 5`, with `(kept 3, 6)` after
+them where some were dropped. What it says was kept is not read: that is
+worked out again from the dice.
 
-## diceLines
+## TERM_LINE
 
-A roll's dice as the writer reads them, a line for each kind. Nothing for one
-die with nothing added, which the total already is.
+A line of a term's dice as the writer edits it: the term it is, if it says,
+its dice, the dropped ones between strikes, and what they come to. Only the
+dice are read.
+
+## thrownIn
+
+The dice the writer wrote above a roll's total, by kind, or null where what
+they wrote is not dice.
+
+A line for each of the notation's dice terms, in the order written, each with
+as many dice as the term throws, or every die on one line in that order. What
+a line is named and what it says its dice come to are not read, nor what was
+struck through: the notation says which term it is, and the dice what counts.
+Or a line for each kind, as rolls were written before. Dice that are not as
+many as the notation's are dice it doesn't throw, and come back as none.
 
 ### Parameters
 
-- `roll` **[DiceRoll][1491]**&#x20;
+- `lines` **[Array][1798]<[string][1794]>**&#x20;
+- `notation` &#x20;
 
-Returns **[Array][1621]<[string][1617]>**&#x20;
+Returns **(Record<[string][1794], [Array][1798]<[number][1796]>> | null)**&#x20;
+
+## thrown
+
+Type: Record<[string][1794], [Array][1798]<[number][1796]>>
+
+## exec
+
+Type: RegExpExecArray
+
+## byTerm
 
 ## readRoll
 
@@ -2724,24 +2963,17 @@ they make.
 
 Dice the writer changed make a new total, worked out again whatever the
 total line says. A total changed under the same dice is a fudge: the
-writer's number stands, and the dice, which no longer make it, go. Dice that
-are not the ones the notation throws go too, leaving the total. A total left
-off is worked out from the dice. Anything that is not dice and a total is
-taken as written.
+writer's number stands, and the dice, which no longer make it, go. The same
+dice in another order are the same dice, kept as they fell: the working
+shows the dropped ones first. Dice that are not the ones the notation throws
+go too, leaving the total. A total left off is worked out from the dice.
+Anything that is not dice and a total is taken as written.
 
 ### Parameters
 
-- `input` **[string][1617]** What followed `/roll`
-- `written` **[string][1617]** The answer under it, out of its quotes
+- `input` **[string][1794]** What followed `/roll`
+- `written` **[string][1794]** The answer under it, out of its quotes
 - `before` **ChatCommand?** The record the line had before this edit
-
-## thrown
-
-Type: Record<[string][1617], [Array][1621]<[number][1619]>>
-
-## total
-
-Type: ([number][1619] | [undefined][1627])
 
 ## diceAsThrown
 
@@ -2752,29 +2984,29 @@ record reads the same as one rolled.
 ### Parameters
 
 - `notation` &#x20;
-- `thrown` **Record<[string][1617], [Array][1621]<[number][1619]>>**&#x20;
+- `thrown` **Record<[string][1794], [Array][1798]<[number][1796]>>**&#x20;
 
-Returns **(Record<[string][1617], [Array][1621]<[number][1619]>> | null)**&#x20;
+Returns **(Record<[string][1794], [Array][1798]<[number][1796]>> | null)**&#x20;
 
 ## sides
 
-Type: Record<[string][1617], [number][1619]>
+Type: Record<[string][1794], [number][1796]>
 
 ## counts
 
-Type: Record<[string][1617], [number][1619]>
+Type: Record<[string][1794], [number][1796]>
 
 ## dice
 
-Type: Record<[string][1617], [Array][1621]<[number][1619]>>
+Type: Record<[string][1794], [Array][1798]<[number][1796]>>
 
 ## dice
 
-Type: [Array][1621]<[DiceTerm][1486]>
+Type: [Array][1798]<[DiceTerm][1604]>
 
 ## dice
 
-Type: Record<[string][1617], [Array][1621]<[number][1619]>>
+Type: Record<[string][1794], [Array][1798]<[number][1796]>>
 
 ## TAROT_DECK_NAMES
 
@@ -2794,9 +3026,9 @@ making the writer remember which comes first. Either can be left out.
 
 ### Parameters
 
-- `param` **[string][1617]?** What the writer put in the parentheses
+- `param` **[string][1794]?** What the writer put in the parentheses
 
-Returns **({count: [number][1619], deck: [string][1617]} | {error: [string][1617]})**&#x20;
+Returns **({count: [number][1796], deck: [string][1794]} | {error: [string][1794]})**&#x20;
 
 ## describeTarotAsk
 
@@ -2808,9 +3040,9 @@ said what was wrong with it.
 
 ### Parameters
 
-- `param` **[string][1617]**&#x20;
+- `param` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## TABLE_TOKEN
 
@@ -2830,13 +3062,13 @@ change the odds the writer wrote.
 
 ### Parameters
 
-- `input` **[string][1617]** What the writer typed after the name
+- `input` **[string][1794]** What the writer typed after the name
 
-Returns **({options: [Array][1621]<[string][1617]>} | {error: [string][1617]})**&#x20;
+Returns **({options: [Array][1798]<[string][1794]>} | {error: [string][1794]})**&#x20;
 
 ## options
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## tableLabel
 
@@ -2846,9 +3078,9 @@ because a label is not the place a mistake gets reported.
 
 ### Parameters
 
-- `input` **[string][1617]**&#x20;
+- `input` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## EXPLORE
 
@@ -2860,7 +3092,7 @@ paragraph, and what a folder holds with each document's line, which the
 model reads too. One that reads a lot asks first, in a dialog, since there
 is no call to ask beside.
 
-Type: [CommandDefinition][158]
+Type: [CommandDefinition][159]
 
 ## WRITTEN
 
@@ -2869,7 +3101,7 @@ skill — the ones that run a tool and no model, and `/director`, which runs
 nothing at all. The skills' commands are made from the skills; see
 `skillCommand`.
 
-Type: Record<[string][1617], [CommandDefinition][158]>
+Type: Record<[string][1794], [CommandDefinition][159]>
 
 ## skillCommand
 
@@ -2903,7 +3135,7 @@ is an edit has no command: its answer belongs in a document, not in a turn.
 
 - `skill` &#x20;
 
-Returns **([CommandDefinition][158] | null)**&#x20;
+Returns **([CommandDefinition][159] | null)**&#x20;
 
 ## needsItsArgument
 
@@ -2938,7 +3170,7 @@ the writer drops it. See ai/skills/loads.js.
 
 - `skill` &#x20;
 
-Returns **[CommandDefinition][158]**&#x20;
+Returns **[CommandDefinition][159]**&#x20;
 
 ##
 
@@ -2956,11 +3188,9 @@ one — `/director` is the writer's own direction, and the Director skill is
 the model's to ask.
 
 The skills' part is made again whenever the writer's library changes, in
-place, so everything holding this table sees the change. An experimental
-skill's is here whether or not it is switched on, since its records are
-read through it; the menu and running it ask `commandSwitchedOff`.
+place, so everything holding this table sees the change.
 
-Type: Record<[string][1617], [CommandDefinition][158]>
+Type: Record<[string][1794], [CommandDefinition][159]>
 
 ## fromSkills
 
@@ -2968,7 +3198,7 @@ The commands the skills gave, as last made.
 
 ##
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## serverPromptCommand
 
@@ -2984,13 +3214,13 @@ prompt that takes none gets it after its text, as a saved prompt does.
 
 ### Parameters
 
-- `$0` **[Object][1618]**&#x20;
+- `$0` **[Object][1795]**&#x20;
   - `$0.name` &#x20;
   - `$0.server` &#x20;
   - `$0.prompt` &#x20;
   - `$0.argument` &#x20;
 
-Returns **[CommandDefinition][158]**&#x20;
+Returns **[CommandDefinition][159]**&#x20;
 
 ##
 
@@ -3002,27 +3232,23 @@ The commands the servers' prompts gave, as last made.
 
 ##
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## CHARACTER
 
-Everyone else at the table.
+Everyone else at the table, in the chats that have them.
 
-`@emily` is a character, and there is no list of them to check against — a
-game gets played for an hour before anybody writes a character note, and half
-of them never get one. So the writer says who is speaking and that is who is
-speaking.
+`@emily` at the start of a line was a character, with no list of them to
+check against: the writer said who was speaking and that was who was
+speaking. Nothing was inferred and nothing rolled. It was the writer's turn,
+said in somebody's voice: `<cody>` around what they did, the same way
+everything else here is tagged with whatever it came from.
 
-The sigil is what makes that free. `@` is a person and `/` is an instruction
-to the application, which is what both already mean everywhere else, and it
-leaves `/` a closed set — so a mistyped `/directr` is still a complaint
-naming what there is, rather than a character called directr.
+No line typed now is one, since `@` attaches a document. This is what the
+records already in a chat answer to, so they are shown and sent as they
+were.
 
-Nothing is inferred and nothing is rolled. It is the writer's turn, said in
-somebody's voice: `<cody>` around what they did, the same way everything else
-here is tagged with whatever it came from.
-
-Type: [CommandDefinition][158]
+Type: [CommandDefinition][159]
 
 ## unknownCommand
 
@@ -3036,16 +3262,16 @@ What there is, for the error when the writer asks for something else.
 
 A command as the `/` menu lists it.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `name` **[string][1617]** What follows the slash
-- `usage` **[string][1617]** How to type it, name and all
-- `description` **[string][1617]** What it does, in a line
-- `consults` **[boolean][1620]** Whether it calls the model, and so takes
+- `name` **[string][1794]** What follows the slash
+- `usage` **[string][1794]** How to type it, name and all
+- `description` **[string][1794]** What it does, in a line
+- `consults` **[boolean][1797]** Whether it calls the model, and so takes
   seconds where the rest take none
-- `takesParam` **[boolean][1620]** Whether it has a setting in parentheses.
+- `takesParam` **[boolean][1797]** Whether it has a setting in parentheses.
   Completing one stops at the name, so the writer can open them or not.
 
 ## listCommands
@@ -3055,7 +3281,7 @@ Every command the writer can type, in alphabetical order, for the menu.
 Only the `/` ones. `@` has no list to offer, for the reason there is none to
 check a name against: most of the cast never gets a note.
 
-Returns **[Array][1621]<[CommandEntry][217]>**&#x20;
+Returns **[Array][1798]<[CommandEntry][222]>**&#x20;
 
 ## matchCommands
 
@@ -3067,9 +3293,9 @@ are.
 
 ### Parameters
 
-- `typed` **[string][1617]** The name so far, without its slash
+- `typed` **[string][1794]** The name so far, without its slash
 
-Returns **[Array][1621]<[CommandEntry][217]>**&#x20;
+Returns **[Array][1798]<[CommandEntry][222]>**&#x20;
 
 ## TYPING_NAME
 
@@ -3088,34 +3314,34 @@ caret is inside replaces all of it rather than leaving its tail.
 
 ### Parameters
 
-- `text` **[string][1617]** The whole draft
-- `caret` **[number][1619]** Where the caret is in it
+- `text` **[string][1794]** The whole draft
+- `caret` **[number][1796]** Where the caret is in it
 
-Returns **({start: [number][1619], end: [number][1619], typed: [string][1617]} | null)**&#x20;
+Returns **({start: [number][1796], end: [number][1796], typed: [string][1794]} | null)**&#x20;
 
 ## definitionFor
 
 What answers to this, or null if nothing does.
 
-The sigil decides, not the name. A command is matched however it was
+The record decides, not the name. A command is matched however it was
 capitalised, because there is one `/oracle` and shouting at it should still
-roll; `@oracle` is somebody called Oracle, which is a perfectly good name for
-somebody in the kind of story that has an oracle in it.
+roll; a record of a character called Oracle is somebody, which is a
+perfectly good name for somebody in the kind of story that has an oracle in
+it.
 
 ### Parameters
 
 - `command` &#x20;
 
-Returns **([CommandDefinition][158] | null)**&#x20;
+Returns **([CommandDefinition][159] | null)**&#x20;
 
 ## COMMAND_LINE
 
-A sigil, a name, an optional parenthesised setting, and the rest of the line.
+A slash, a name, an optional parenthesised setting, and the rest of the line.
 
-Apostrophes and hyphens are in the name because names have them, and a line
-that comes back as a character called `o` is worse than no character at all.
-A colon joins a server to one of its prompts (`/glossary:outline`); a
-character is never named that way, so `@Vivi:hi` is Vivi saying `:hi`.
+Apostrophes and hyphens are in the name because a skill's or a server's
+may have them. A colon joins a server to one of its prompts
+(`/glossary:outline`).
 
 ## parseCommand
 
@@ -3128,17 +3354,9 @@ back null, so the caller can send it as the message it is.
 
 ### Parameters
 
-- `input` **[string][1617]** What the writer typed
+- `input` **[string][1794]** What the writer typed
 
-Returns **([CommandInput][149] | null)**&#x20;
-
-##
-
-Type: const
-
-##
-
-Type: const
+Returns **([CommandInput][150] | null)**&#x20;
 
 ## formatCommand
 
@@ -3148,15 +3366,20 @@ The inverse of `parseCommand`, for putting a command back in front of the
 writer to edit. A record holds what was asked rather than the keystrokes that
 asked it, so this is what a stored command looks like written down.
 
+A character's line, from when `@name` gave one, has no line that asks it
+again. It is written as the model reads it, their name around what they
+said, so a turn written again holds it as the prose it then is and the
+model is sent the same words.
+
 ### Parameters
 
-- `asked` **[CommandInput][149]**&#x20;
+- `asked` **[CommandInput][150]**&#x20;
   - `asked.name` &#x20;
   - `asked.param` &#x20;
   - `asked.input` &#x20;
   - `asked.character` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## ANSWER_LINE
 
@@ -3178,7 +3401,7 @@ a direction and a character's line would only be saying it twice.
 
 - `segment` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## answerText
 
@@ -3192,7 +3415,7 @@ untouched, so a die changed and the total left alone is still a change.
 
 - `command` **ChatCommand**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## answeredCommand
 
@@ -3217,7 +3440,7 @@ them to change.
 
 - `segments` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## formatAnswered
 
@@ -3235,7 +3458,7 @@ would make them write out again.
 
 - `command` **ChatCommand**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## splitAnswered
 
@@ -3249,7 +3472,7 @@ answer, which asks it again.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
 
 ## splitInput
 
@@ -3268,17 +3491,17 @@ turn keeps the answers it already had — and how the writer overrules one.
 
 ### Parameters
 
-- `input` **[string][1617]** Everything the writer submitted
+- `input` **[string][1794]** Everything the writer submitted
 
 ## segments
 
 ## said
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## said
 
-Type: [Array][1621]\<ChatMessage>
+Type: [Array][1798]\<ChatMessage>
 
 ## said
 
@@ -3303,14 +3526,14 @@ or what the command means when they leave them off.
 
 ### Parameters
 
-- `command` **[CommandDefinition][158]**&#x20;
-- `parsed` **[CommandInput][149]**&#x20;
+- `command` **[CommandDefinition][159]**&#x20;
+- `parsed` **[CommandInput][150]**&#x20;
   - `parsed.name` &#x20;
   - `parsed.input` &#x20;
   - `parsed.param` &#x20;
   - `parsed.character` &#x20;
 
-Returns **[CommandInput][149]**&#x20;
+Returns **[CommandInput][150]**&#x20;
 
 ##
 
@@ -3324,10 +3547,10 @@ typed too, for `checkParam` to say so.
 
 ### Parameters
 
-- `spec` **([CommandParameter][156] | [undefined][1627])**&#x20;
-- `written` **[string][1617]**&#x20;
+- `spec` **([CommandParameter][157] | [undefined][1804])**&#x20;
+- `written` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## wordsOf
 
@@ -3336,9 +3559,9 @@ A choice's words, the one way: `Very-Unlikely` and `very_unlikely` are both
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## sayValue
 
@@ -3346,10 +3569,10 @@ A value as the writer types it.
 
 ### Parameters
 
-- `spec` **[CommandParameter][156]**&#x20;
-- `value` **[string][1617]**&#x20;
+- `spec` **[CommandParameter][157]**&#x20;
+- `value` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## checkParam
 
@@ -3357,24 +3580,23 @@ What is wrong with the parentheses, if anything.
 
 ### Parameters
 
-- `command` **[CommandDefinition][158]**&#x20;
-- `parsed` **[CommandInput][149]**&#x20;
+- `command` **[CommandDefinition][159]**&#x20;
+- `parsed` **[CommandInput][150]**&#x20;
   - `parsed.name` &#x20;
   - `parsed.param` &#x20;
 
-Returns **([string][1617] | [undefined][1627])**&#x20;
+Returns **([string][1794] | [undefined][1804])**&#x20;
 
 ## commandSwitchedOff
 
 Why a command can't run now, though the records it left still read: it is
-an experimental skill's, and that skill is switched off. Nothing when it
-can.
+retired, as `/aside` is. Nothing when it can.
 
 ### Parameters
 
 - `command` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## runCommand
 
@@ -3387,12 +3609,12 @@ arguments change shape later.
 
 ### Parameters
 
-- `parsed` **[CommandInput][149]**&#x20;
-- `context` **[ToolContext][1449]?** What a consulting command needs to
+- `parsed` **[CommandInput][150]**&#x20;
+- `context` **[ToolContext][1563]?** What a consulting command needs to
   reach a model. Supplied by whoever is running the chat, the same way a
   skill's is — see ai/tools/registry.js. (optional, default `{}`)
 
-Returns **[Promise][1625]<(ChatCommand | {error: [string][1617]})>**&#x20;
+Returns **[Promise][1802]<(ChatCommand | {error: [string][1794]})>**&#x20;
 
 ## renderCommand
 
@@ -3406,7 +3628,7 @@ model can tell which words are the fiction's and which are the writer's.
 
 - `command` **ChatCommand**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## rollOf
 
@@ -3420,12 +3642,12 @@ edit drops them as it is saved; this holds wherever a record is read.
 
 - `command` **ChatCommand**&#x20;
 
-Returns **([DiceRoll][1491] | null)**&#x20;
+Returns **([DiceRoll][1626] | null)**&#x20;
 
-## rollLines
+## rollWorking
 
-A roll's dice as the writer reads them, a line for each kind, above the
-total. Not what was added: that is in the notation beside the name.
+A roll's working as the writer reads it, above the total: a line of dice for
+each term, the dropped ones struck through. See `workingOf`.
 
 A roll from before the dice were kept has its working written out instead,
 and that is what it shows.
@@ -3433,8 +3655,6 @@ and that is what it shows.
 ### Parameters
 
 - `command` **ChatCommand**&#x20;
-
-Returns **[Array][1621]<[string][1617]>**&#x20;
 
 ## saidUnder
 
@@ -3453,7 +3673,7 @@ needs escaping.
 
 - `command` **ChatCommand**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## commandTag
 
@@ -3467,7 +3687,7 @@ is only ever called what they are called.
 
 - `command` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## commandDetail
 
@@ -3482,7 +3702,7 @@ notation. Everything else has already written its own note.
 
 - `command` **ChatCommand**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## commandLabel
 
@@ -3493,7 +3713,7 @@ less what `commandDetail` already put up beside the name.
 
 - `command` **ChatCommand**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## commandIsCharacter
 
@@ -3507,7 +3727,7 @@ later must not turn a record written today into something it never was.
 
 - `command` &#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## commandSpeaks
 
@@ -3519,7 +3739,7 @@ something before there is a turn to take, and ask for nothing.
 
 - `command` &#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## commandIsPrompt
 
@@ -3531,7 +3751,7 @@ is one after its skill has gone.
 
 - `command` &#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## commandIsAside
 
@@ -3542,7 +3762,41 @@ is answered. See ai/asides.js.
 
 - `command` &#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
+
+## commandIsWhole
+
+Whether it is a message of its own, its input everything after its name.
+
+### Parameters
+
+- `command` &#x20;
+
+Returns **[boolean][1797]**&#x20;
+
+## commandForks
+
+Whether it goes on in a copy of the chat. See `forkAsked`.
+
+### Parameters
+
+- `command` &#x20;
+
+Returns **[boolean][1797]**&#x20;
+
+## forkAsked
+
+What a submission asks the chat to fork with, when it is `/fork` and
+nothing before it: the message to send in the fork, as typed, commands and
+all, or '' to fork and say nothing yet. Null for any other submission,
+including a `/fork` with something before it, which the submission
+refuses.
+
+### Parameters
+
+- `text` **[string][1794]** Everything the writer submitted
+
+Returns **({message: [string][1794]} | null)**&#x20;
 
 ## commandConsults
 
@@ -3552,7 +3806,7 @@ Whether running this costs a model call, and so whose turn it lands in.
 
 - `command` &#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## commandTakesTurn
 
@@ -3566,7 +3820,7 @@ not the same question as whose turn it is.
 
 - `command` &#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## assembleTurn
 
@@ -3582,7 +3836,7 @@ rule expandMessage follows.
 
 - `segments` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## inspectCommand
 
@@ -3594,7 +3848,7 @@ last point at which refusing it costs nothing.
 
 ### Parameters
 
-- `parsed` **[CommandInput][149]**&#x20;
+- `parsed` **[CommandInput][150]**&#x20;
 
 ## askedCommand
 
@@ -3606,7 +3860,7 @@ and the part they would have to retype.
 
 ### Parameters
 
-- `parsed` **[CommandInput][149]**&#x20;
+- `parsed` **[CommandInput][150]**&#x20;
 
 Returns **ChatCommand**&#x20;
 
@@ -3616,7 +3870,7 @@ A command that is still being answered.
 
 ### Parameters
 
-- `parsed` **[CommandInput][149]**&#x20;
+- `parsed` **[CommandInput][150]**&#x20;
 
 Returns **ChatCommand**&#x20;
 
@@ -3639,7 +3893,7 @@ of progress. See composables/useChatCommands.js.
 
 - `command` &#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## segmentProse
 
@@ -3651,7 +3905,7 @@ not in prose, and reads as nothing here.
 
 - `segment` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## pendingSegment
 
@@ -3660,7 +3914,7 @@ into a turn: the question, and room for the rest.
 
 ### Parameters
 
-- `parsed` **[CommandInput][149]**&#x20;
+- `parsed` **[CommandInput][150]**&#x20;
 
 ## commandRepeatable
 
@@ -3674,7 +3928,7 @@ flag above.
 
 - `command` &#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## mcp/servers
 
@@ -3685,11 +3939,10 @@ Set by the store that keeps them (`stores/mcpServerStore.js`), the way the
 skills library is, so the tool registry and the chat can read them without
 reaching for a store, and be told when they change.
 
-A server is opted into, not out of. Each lists the profiles whose chats use
-it; a chat follows that until the writer picks servers in the chat itself.
-The usual rule — every group on unless withheld — would put a server added
-tomorrow into every Roleplay chat, which withholds the groups it knows of
-and has never heard of this one.
+Each server's tools are a group of their own, switched on a profile and a
+chat as every group is (ai/tools/choice.js): on wherever nothing switched
+them off, so a server added is there in the chat it was added for, but for
+the profiles that offer only some, Roleplay and Blank.
 
 ## servers
 
@@ -3699,7 +3952,7 @@ and has never heard of this one.
 
 ## servers
 
-Type: [Array][1621]\<McpServer>
+Type: [Array][1798]\<McpServer>
 
 ## listeners
 
@@ -3711,7 +3964,7 @@ Replace the servers with these, and tell everything made from them.
 
 ### Parameters
 
-- `stored` **[Array][1621]\<McpServer>**&#x20;
+- `stored` **[Array][1798]\<McpServer>**&#x20;
 
 ## onServersChanged
 
@@ -3723,15 +3976,15 @@ Be told whenever the servers change.
 
 ## allServers
 
-Returns **[Array][1621]\<McpServer>** Every server, in the order they were added
+Returns **[Array][1798]\<McpServer>** Every server, in the order they were added
 
 ## getServer
 
 ### Parameters
 
-- `id` **[string][1617]**&#x20;
+- `id` **[string][1794]**&#x20;
 
-Returns **(McpServer | [undefined][1627])**&#x20;
+Returns **(McpServer | [undefined][1804])**&#x20;
 
 ## reachable
 
@@ -3742,7 +3995,7 @@ as a local program needs a bridge first.
 
 - `server` **McpServer**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## missingHeaders
 
@@ -3753,7 +4006,7 @@ was restored from, and not sent until the writer enters it again.
 
 - `server` **Pick\<McpServer, `"headers"`>**&#x20;
 
-Returns **[Array][1621]<[string][1617]>** Their names
+Returns **[Array][1798]<[string][1794]>** Their names
 
 ## serverTool
 
@@ -3761,22 +4014,9 @@ The server a tool the model calls belongs to, and the tool.
 
 ### Parameters
 
-- `exposed` **[string][1617]** The name the model called
+- `exposed` **[string][1794]** The name the model called
 
 Returns **({server: McpServer, tool: McpTool} | null)**&#x20;
-
-## serversForChat
-
-The servers whose tools a chat is offered: the ones it chose, or, until it
-chooses, the ones that list its profile.
-
-### Parameters
-
-- `chat` &#x20;
-- `profileId` **[string][1617]** The chat's profile, the default resolved
-- `from` **[Array][1621]\<McpServer>?** The servers to choose among; every one by default (optional, default `servers`)
-
-Returns **[Array][1621]\<McpServer>**&#x20;
 
 ## requiredArguments
 
@@ -3786,7 +4026,7 @@ How many of a prompt's arguments the writer has to fill in.
 
 - `prompt` **McpPrompt**&#x20;
 
-Returns **[number][1619]**&#x20;
+Returns **[number][1796]**&#x20;
 
 ## PromptCommand
 
@@ -3798,7 +4038,7 @@ one filled in is listed with its server and not offered. One that needs
 none takes the text, if any, as its first argument, or after it when it
 has none at all.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Parameters
 
@@ -3807,18 +4047,18 @@ Type: [Object][1618]
 
 ### Properties
 
-- `name` **[string][1617]** What the writer types after the slash: `<prefix>:<prompt>`
+- `name` **[string][1794]** What the writer types after the slash: `<prefix>:<prompt>`
 - `server` **McpServer**&#x20;
 - `prompt` **McpPrompt**&#x20;
 
-Returns **([PromptCommand][337] | null)**&#x20;
+Returns **([PromptCommand][344] | null)**&#x20;
 
 ## promptCommands
 
 Every server prompt the writer can type, in the order the servers were
 added.
 
-Returns **[Array][1621]<[PromptCommand][337]>**&#x20;
+Returns **[Array][1798]<[PromptCommand][344]>**&#x20;
 
 ## needsApproval
 
@@ -3830,9 +4070,9 @@ should not be connected at all.
 
 ### Parameters
 
-- `exposed` **[string][1617]**&#x20;
+- `exposed` **[string][1794]**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## mcp/client
 
@@ -3873,7 +4113,7 @@ Who the app says it is, to the server.
 
 How many pages of tools or prompts are read before giving up.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## loadSdk
 
@@ -3886,7 +4126,7 @@ The SDK, loaded the first time anything here is used.
 Open connections, by server id, with what they were opened with, so a
 server whose address or headers changed gets a new one.
 
-Type: [Map][1624]<[string][1617], {key: [string][1617], client: [Promise][1625]\<Client>}>
+Type: [Map][1801]<[string][1794], {key: [string][1794], client: [Promise][1802]\<Client>}>
 
 ## connectionKey
 
@@ -3896,7 +4136,7 @@ What a connection depends on.
 
 - `server` **Pick\<McpServer, (`"url"` | `"headers"`)>**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## statusOf
 
@@ -3906,7 +4146,7 @@ The HTTP status an SDK error carries, if it carries one.
 
 - `error` **any**&#x20;
 
-Returns **([number][1619] | [undefined][1627])**&#x20;
+Returns **([number][1796] | [undefined][1804])**&#x20;
 
 ## open
 
@@ -3917,7 +4157,7 @@ server says it does not take the newer one.
 
 - `server` **Pick\<McpServer, (`"url"` | `"headers"`)>**&#x20;
 
-Returns **[Promise][1625]\<Client>**&#x20;
+Returns **[Promise][1802]\<Client>**&#x20;
 
 ## open
 
@@ -3937,7 +4177,7 @@ what has to be said about the text itself rather than read from it.
 
 ### Parameters
 
-- `storyId` **[string][1617]**&#x20;
+- `storyId` **[string][1794]**&#x20;
 - `chat` &#x20;
 
 ## connection
@@ -3948,7 +4188,7 @@ The open connection to a server, opening one if there is none.
 
 - `server` **McpServer**&#x20;
 
-Returns **[Promise][1625]\<Client>**&#x20;
+Returns **[Promise][1802]\<Client>**&#x20;
 
 ## disconnect
 
@@ -3956,7 +4196,7 @@ Close a server's connection, if it has one.
 
 ### Parameters
 
-- `serverId` **[string][1617]**&#x20;
+- `serverId` **[string][1794]**&#x20;
 
 ## everyPage
 
@@ -3965,13 +4205,13 @@ Every page of a listing.
 ### Parameters
 
 - `list` &#x20;
-- `key` **[string][1617]** Which field of a page holds the items
+- `key` **[string][1794]** Which field of a page holds the items
 
-Returns **[Promise][1625]<[Array][1621]\<T>>**&#x20;
+Returns **[Promise][1802]<[Array][1798]\<T>>**&#x20;
 
 ## items
 
-Type: [Array][1621]\<T>
+Type: [Array][1798]\<T>
 
 ## listServer
 
@@ -3985,7 +4225,7 @@ server that may never be saved.
 
 - `server` **Pick\<McpServer, (`"url"` | `"headers"`)>**&#x20;
 
-Returns **[Promise][1625]<{serverName: [string][1617], instructions: [string][1617], tools: [Array][1621]\<Omit\<McpTool, `"exposed"`>>, prompts: [Array][1621]\<McpPrompt>}>**&#x20;
+Returns **[Promise][1802]<{serverName: [string][1794], instructions: [string][1794], tools: [Array][1798]\<Omit\<McpTool, `"exposed"`>>, prompts: [Array][1798]\<McpPrompt>}>**&#x20;
 
 ## callServerTool
 
@@ -3994,15 +4234,15 @@ Call one of a server's tools.
 ### Parameters
 
 - `server` **McpServer**&#x20;
-- `name` **[string][1617]** The server's name for the tool
-- `args` **Record<[string][1617], any>**&#x20;
-- `options` **[Object][1618]?** (optional, default `{}`)
+- `name` **[string][1794]** The server's name for the tool
+- `args` **Record<[string][1794], any>**&#x20;
+- `options` **[Object][1795]?** (optional, default `{}`)
   - `options.signal` **AbortSignal?** Stops the call, and tells the server so
-  - `options.timeout` **[number][1619]?** How long to wait, in milliseconds. The
+  - `options.timeout` **[number][1796]?** How long to wait, in milliseconds. The
     SDK's own limit is a minute, and gives up on a call the caller is still
     willing to wait for.
 
-Returns **[Promise][1625]\<any>** The server's CallToolResult
+Returns **[Promise][1802]\<any>** The server's CallToolResult
 
 ## getServerPrompt
 
@@ -4011,10 +4251,10 @@ Ask a server for one of its prompts, filled in with these arguments.
 ### Parameters
 
 - `server` **McpServer**&#x20;
-- `name` **[string][1617]** The server's name for the prompt
-- `args` **Record<[string][1617], [string][1617]>**&#x20;
+- `name` **[string][1794]** The server's name for the prompt
+- `args` **Record<[string][1794], [string][1794]>**&#x20;
 
-Returns **[Promise][1625]\<any>** The server's GetPromptResult
+Returns **[Promise][1802]\<any>** The server's GetPromptResult
 
 ## promptText
 
@@ -4025,13 +4265,13 @@ after another, with a note for anything that is not text.
 
 - `result` **any** A GetPromptResult
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## SIGN_IN_NEEDED
 
 What a failure that wants the writer to sign in says.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## wantsSignIn
 
@@ -4042,7 +4282,7 @@ screen can offer to.
 
 - `error` **any**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## answeredOtherwise
 
@@ -4054,7 +4294,7 @@ expect or as the whole list of what its schema found wrong.
 
 - `error` **any**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## describeFailure
 
@@ -4064,7 +4304,7 @@ Why a server could not be reached or listed, for the writer.
 
 - `error` **any**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## resultForModel
 
@@ -4076,7 +4316,7 @@ server marked as an error goes back as one.
 
 - `result` **any** A CallToolResult
 
-Returns **([string][1617] | {error: [string][1617]})**&#x20;
+Returns **([string][1794] | {error: [string][1794]})**&#x20;
 
 ## mcp/auth
 
@@ -4109,21 +4349,21 @@ Settings, with a click, which is also what lets the app open a tab at all.
 
 ## CALLBACK_PATH
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## CALLBACK_PATH
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## CALLBACK_PATH
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## CALLBACK_PATH
 
 Where an authorization server sends the writer back.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## PUBLIC_ORIGIN
 
@@ -4131,7 +4371,7 @@ The site the app and its client ID metadata document are served from. Not
 inksprite.io, which only redirects here: a page can offer the document only
 on the origin the document sends the writer back to.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## CLIENT_METADATA_URL
 
@@ -4141,19 +4381,19 @@ The document, which is the app's client ID wherever it is accepted.
 
 The channel a finished sign-in is announced on, to the tab that asked for it.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## AUTH_KEY
 
 What is kept for each server, by its address.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## PENDING_KEY
 
 Sign-ins under way, by their state.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## SIGN_IN_TTL_MS
 
@@ -4163,15 +4403,15 @@ How long a sign-in may take before its state is forgotten.
 
 What is kept for one server.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `clients` **Record<[string][1617], any>?** Client information, by issuer
-- `tokens` **Record<[string][1617], any>?** Tokens, by issuer
-- `latest` **[string][1617]?** The issuer whose tokens were saved last: the
+- `clients` **Record<[string][1794], any>?** Client information, by issuer
+- `tokens` **Record<[string][1794], any>?** Tokens, by issuer
+- `latest` **[string][1794]?** The issuer whose tokens were saved last: the
   ones a request is sent with, when the transport does not say which
-- `verifier` **[string][1617]?** The PKCE verifier of the sign-in under way
+- `verifier` **[string][1794]?** The PKCE verifier of the sign-in under way
 - `discovery` **OAuthDiscoveryState?** Where its authorization server
   was found, so the way back need not look again
 
@@ -4193,21 +4433,21 @@ Keep sign-ins somewhere else: for a test, which has no browser.
 
 ## records
 
-Returns **Record<[string][1617], [AuthRecord][398]>**&#x20;
+Returns **Record<[string][1794], [AuthRecord][405]>**&#x20;
 
 ## recordOf
 
 ### Parameters
 
-- `url` **[string][1617]**&#x20;
+- `url` **[string][1794]**&#x20;
 
-Returns **[AuthRecord][398]**&#x20;
+Returns **[AuthRecord][405]**&#x20;
 
 ## updateRecord
 
 ### Parameters
 
-- `url` **[string][1617]**&#x20;
+- `url` **[string][1794]**&#x20;
 - `change` &#x20;
 
 ## issuerKey
@@ -4218,7 +4458,7 @@ The key credentials are kept under for an authorization server.
 
 - `ctx` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## signedIn
 
@@ -4226,9 +4466,9 @@ Whether the writer has signed in to the server at this address.
 
 ### Parameters
 
-- `url` **[string][1617]**&#x20;
+- `url` **[string][1794]**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## signOut
 
@@ -4237,7 +4477,7 @@ registered as.
 
 ### Parameters
 
-- `url` **[string][1617]**&#x20;
+- `url` **[string][1794]**&#x20;
 
 ## appOrigin
 
@@ -4255,7 +4495,7 @@ with. The same as the metadata document says.
 
 ### Parameters
 
-- `redirect` **[string][1617]**&#x20;
+- `redirect` **[string][1794]**&#x20;
 
 Returns **OAuthClientMetadata**&#x20;
 
@@ -4270,8 +4510,8 @@ were started and never finished.
 
 ### Parameters
 
-- `state` **[string][1617]**&#x20;
-- `url` **[string][1617]**&#x20;
+- `state` **[string][1794]**&#x20;
+- `url` **[string][1794]**&#x20;
 
 ## takeSignIn
 
@@ -4280,9 +4520,9 @@ answer it came back with.
 
 ### Parameters
 
-- `state` **[string][1617]**&#x20;
+- `state` **[string][1794]**&#x20;
 
-Returns **([string][1617] | null)**&#x20;
+Returns **([string][1794] | null)**&#x20;
 
 ## authProvider
 
@@ -4290,8 +4530,8 @@ The SDK's view of a server's sign-in.
 
 ### Parameters
 
-- `url` **[string][1617]** The server's address
-- `$1` **[Object][1618]** (optional, default `{}`)
+- `url` **[string][1794]** The server's address
+- `$1` **[Object][1795]** (optional, default `{}`)
   - `$1.onRedirect` (optional, default `()=>{}`)
 
 Returns **OAuthClientProvider**&#x20;
@@ -4303,10 +4543,10 @@ ID, and hand over the address to sign in at.
 
 ### Parameters
 
-- `url` **[string][1617]** The server's address
+- `url` **[string][1794]** The server's address
 - `onRedirect` &#x20;
 
-Returns **[Promise][1625]<(`"AUTHORIZED"` | `"REDIRECT"`)>** AUTHORIZED when it was already
+Returns **[Promise][1802]<(`"AUTHORIZED"` | `"REDIRECT"`)>** AUTHORIZED when it was already
 signed in, or a refresh was enough
 
 ## SignInError
@@ -4318,8 +4558,8 @@ known, so the tab waiting on it can be told.
 
 ### Parameters
 
-- `message` **[string][1617]** What the writer should be told
-- `url` **([string][1617] | null)** The server, when the state named one
+- `message` **[string][1794]** What the writer should be told
+- `url` **([string][1794] | null)** The server, when the state named one
 
 ## finishSignIn
 
@@ -4335,9 +4575,136 @@ the writer cancelled is over too, and the tab waiting on it should hear so.
 
 <!---->
 
-- Throws **[SignInError][428]** With what the writer should be told
+- Throws **[SignInError][435]** With what the writer should be told
 
-Returns **[Promise][1625]<{url: [string][1617]}>**&#x20;
+Returns **[Promise][1802]<{url: [string][1794]}>**&#x20;
+
+## composables/useExplore
+
+Exploring a folder, a document, or the whole project, from a
+chat: by the model's `explore_documents` or the writer's `/explore`, while
+the chat waits, on the chat's model. The writer is asked first only when it
+reads a lot, until they say to always allow it (Settings › System › Chats).
+See `jobs/explore.js` for what is made.
+
+## tokenCount
+
+### Parameters
+
+- `tokens` &#x20;
+
+## tokenCount
+
+A count of tokens as the question gives it, rounded as an estimate should
+be: `800`, `12k`, `1.5M`.
+
+### Parameters
+
+- `tokens` **[number][1796]**&#x20;
+
+Returns **[string][1794]**&#x20;
+
+## ExploreDecision
+
+The writer's answer to a question about exploring: `always` is yes, and
+stop asking.
+
+Type: (`"allow"` | `"always"` | `"deny"`)
+
+## tokensOf
+
+About how many tokens a plan sends: a token is about four characters of
+English.
+
+### Parameters
+
+- `planned` **PlannedExplore**&#x20;
+
+Returns **[number][1796]**&#x20;
+
+## exploredName
+
+What something explored is called in a question or a heading: a folder by
+its path and a slash, a document by its path, and the root as the project.
+
+### Parameters
+
+- `node` &#x20;
+
+Returns **[string][1794]**&#x20;
+
+## exploreQuestion
+
+The question asked before exploring: what, and what it costs, which is
+the part the writer weighs. `Explore Notes/ (~60k tokens)?`
+
+### Parameters
+
+- `node` &#x20;
+- `planned` **PlannedExplore**&#x20;
+
+Returns **[string][1794]**&#x20;
+
+## askInDialog
+
+Ask a question about exploring in the app's confirm dialog, from anywhere,
+as the confirm service does, the question its heading.
+
+### Parameters
+
+- `question` **[string][1794]**&#x20;
+
+Returns **[Promise][1802]<[boolean][1797]>**&#x20;
+
+## confirmExploring
+
+Ask about exploring in the app's dialog, from anywhere: for the writer's
+`/explore`, which has no call to ask beside.
+
+### Parameters
+
+- `question` **[string][1794]** `exploreQuestion`'s
+
+Returns **[Promise][1802]<[ExploreDecision][444]>**&#x20;
+
+## ASK_FROM_TOKENS
+
+More than this many tokens is asked about before it is explored: more
+than a few requests, or a bill worth knowing about before it is run up. A
+lorebook's folder is well under it, and a shelf of books well over.
+
+Type: [number][1796]
+
+## ExploredOutcome
+
+What came of exploring from a chat.
+
+Type: ({done: `true`} | {declined: `true`} | {error: [string][1794]})
+
+## exploreNow
+
+Explore a folder, a document, or the whole project, and wait until it is
+done: for a chat, whose model or writer asked, on the model the chat runs
+on. What is current is not read again, so asking twice costs nothing the
+second time. One that reads a lot is asked about first, while the writer
+has Ask before exploring large folders on; an answer of always turns it
+off.
+
+### Parameters
+
+- `storyId` **[string][1794]**&#x20;
+- `id` **[string][1794]**&#x20;
+- `$2` **[Object][1795]** (optional, default `{}`)
+  - `$2.signal` &#x20;
+  - `$2.progress` &#x20;
+  - `$2.approve` &#x20;
+  - `$2.preset` &#x20;
+
+<!---->
+
+- Throws **[Error][1800]** When it is gone or hidden, or the chat's model can't be asked
+
+Returns **[Promise][1802]<[ExploredOutcome][456]>**&#x20;
 
 ## ai/compaction
 
@@ -4393,6 +4760,8 @@ nothing the model reads.
 opening, the summary before it, and everything since — the turns it will sit
 above included. Those are kept so the next turn has a scene to continue
 rather than an account of one, not because the summary leaves them out.
+It is asked of the chat's own model at the end of the thread, so the model
+writes it from the calls and attached documents too, not from a transcript.
 
 This module is the whole idea and none of the plumbing: what a compaction is,
 and how a history reads once there is one. The skill that writes a summary
@@ -4402,13 +4771,13 @@ it imports none of them.
 
 ## COMPACT_COMMAND
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## COMPACT_COMMAND
 
 The command that writes one, and the tag its record is stored under.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## DEFAULT_KEEP
 
@@ -4418,17 +4787,37 @@ None. A compaction folds in everything, and the writer who wants the scene
 being played to stay verbatim asks for it: `/compact(4)` keeps two exchanges
 under the summary.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## KEPT_OPENING
 
 How much of the top of a conversation no summary stands in for.
 
-One message, always, and not the writer's to say yet: how a chat opens is a
-fact about the chat, and nobody should have to remember to protect a greeting
+One message, and not the writer's to say yet: how a chat opens is a fact
+about the chat, and nobody should have to remember to protect a greeting
 every time they compact.
 
-Type: [number][1619]
+A profile may keep more (`keptOpening`): roleplay keeps two, since a scene
+opens over two messages whichever way it is started. A card's chat opens
+with the card's documents and then the greeting; a greeting written in by
+hand is followed by the writer's reply to it; and a game set up in the
+writer's first message has the model's opening scene after it.
+
+A summary says how much it kept (`metadata.opening`), where that is not
+one, so that what it stands for is read off the conversation alone and
+stays what it was if the chat moves to another profile.
+
+Type: [number][1796]
+
+## openingKept
+
+How much of the top a summary left standing.
+
+### Parameters
+
+- `summary` **(Message | [undefined][1804])**&#x20;
+
+Returns **[number][1796]**&#x20;
 
 ## parseKeep
 
@@ -4436,9 +4825,9 @@ How many turns a compaction was asked to sit above.
 
 ### Parameters
 
-- `raw` **([string][1617] | [number][1619])?** What the writer typed, if they typed one
+- `raw` **([string][1794] | [number][1796])?** What the writer typed, if they typed one
 
-Returns **([number][1619] | null)** The count, or null if what they typed is not one
+Returns **([number][1796] | null)** The count, or null if what they typed is not one
 
 ## isCompacting
 
@@ -4452,7 +4841,7 @@ halfway never finished streaming either.
 
 - `message` **Message**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## isCompaction
 
@@ -4466,7 +4855,7 @@ lose the conversation to a failed request.
 
 - `message` **Message**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## compactionCover
 
@@ -4480,13 +4869,13 @@ things up in it.
 
 ### Parameters
 
-- `history` **[Array][1621]\<Message>** The conversation in order
+- `history` **[Array][1798]\<Message>** The conversation in order
 
-Returns **[Set][1628]<[number][1619]>** Empty when nothing has been compacted
+Returns **[Set][1805]<[number][1796]>** Empty when nothing has been compacted
 
 ## covered
 
-Type: [Set][1628]<[number][1619]>
+Type: [Set][1805]<[number][1796]>
 
 ## applyCompaction
 
@@ -4494,9 +4883,9 @@ The conversation as its summaries leave it: what the model is sent.
 
 ### Parameters
 
-- `history` **[Array][1621]\<Message>** The conversation in order
+- `history` **[Array][1798]\<Message>** The conversation in order
 
-Returns **[Array][1621]\<Message>** A new array, or the same one when nothing is compacted
+Returns **[Array][1798]\<Message>** A new array, or the same one when nothing is compacted
 
 ## firstSummarizable
 
@@ -4511,9 +4900,10 @@ on, so it is offered from here down.
 
 ### Parameters
 
-- `history` **[Array][1621]\<Message>** The conversation in order
+- `history` **[Array][1798]\<Message>** The conversation in order
+- `opening` **[number][1796]?** How much of the top the chat keeps (optional, default `KEPT_OPENING`)
 
-Returns **[number][1619]** An index; the length of the history or more when there is nowhere
+Returns **[number][1796]** An index; the length of the history or more when there is nowhere
 
 ## ai/complete
 
@@ -4537,28 +4927,28 @@ Ask a model once and wait for all of its answer.
 
 ### Parameters
 
-- `args` **[Object][1618]**&#x20;
+- `args` **[Object][1795]**&#x20;
   - `args.provider` **AIProvider**&#x20;
-  - `args.model` **[string][1617]**&#x20;
-  - `args.messages` **[Array][1621]<{role: [string][1617], content: [string][1617]}>**&#x20;
+  - `args.model` **[string][1794]**&#x20;
+  - `args.messages` **[Array][1798]<{role: [string][1794], content: [string][1794]}>**&#x20;
   - `args.signal` **AbortSignal?**&#x20;
 
 <!---->
 
-- Throws **[Error][1623]** When the provider refuses, fails mid-stream, or the request is aborted
+- Throws **[Error][1800]** When the provider refuses, fails mid-stream, or the request is aborted
 
-Returns **[Promise][1625]<[Completion][455]>**&#x20;
+Returns **[Promise][1802]<[Completion][484]>**&#x20;
 
 ## Completion
 
 What came back.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `content` **[string][1617]** The model's answer, whole
-- `finishReason` **([string][1617] | null)** What ended the answer: `stop`, `length`, or a provider's word
+- `content` **[string][1794]** The model's answer, whole
+- `finishReason` **([string][1794] | null)** What ended the answer: `stop`, `length`, or a provider's word
 
 ## ask
 
@@ -4566,7 +4956,7 @@ The request itself, read to the end of its stream.
 
 ### Parameters
 
-- `$0` **[Object][1618]**&#x20;
+- `$0` **[Object][1795]**&#x20;
   - `$0.provider` &#x20;
   - `$0.model` &#x20;
   - `$0.upstreams` &#x20;
@@ -4575,35 +4965,171 @@ The request itself, read to the end of its stream.
   - `$0.signal` &#x20;
   - `$0.onChunk` &#x20;
 
-Returns **[Promise][1625]<[Completion][455]>**&#x20;
+Returns **[Promise][1802]<[Completion][484]>**&#x20;
 
 ## headers
 
-Type: Record<[string][1617], [string][1617]>
+Type: Record<[string][1794], [string][1794]>
 
 ### headers
 
-Type: [Headers][1626]
+Type: [Headers][1803]
 
 ## headers
 
-Type: Record<[string][1617], [string][1617]>
+Type: Record<[string][1794], [string][1794]>
 
 ### headers
 
-Type: [Headers][1626]
+Type: [Headers][1803]
 
 ## headers
 
-Type: Record<[string][1617], [string][1617]>
+Type: Record<[string][1794], [string][1794]>
 
 ### headers
 
-Type: [Headers][1626]
+Type: [Headers][1803]
 
 ## finishReason
 
-Type: ([string][1617] | null)
+Type: ([string][1794] | null)
+
+## ai/context/attachments
+
+Documents the writer attaches to a message.
+
+A link to a document, `[[`, is a reference: the model may read it or not.
+The same link with an `@` before it, `@[Cast list](</Notes/Cast list>)`,
+attaches the document: its text goes to the model with the message, without
+the model asking.
+
+The text is copied onto the message when it is sent, and that copy is what
+every later turn sends. A document that rode along as it stands now would
+change the conversation behind it each time it was edited, and no prompt
+cache would cover anything after it; a copy never moves, so it is paid once.
+It is a record of one moment, as a read is, and counts as one: the project
+block says when the document has changed since, and `read_document` answers
+that an unchanged one is above (ai/context/reads.js).
+
+The model reads a block for each document ahead of what the writer said, and
+the mention in their words as the plain link it would be without the `@`,
+so a sentence written around it still reads and names the block by its path.
+
+Nothing here reaches a store: it is handed text and messages, and the copy
+is taken by `attachedDocuments` in ai/tools/documents.js. See
+.llm/attached_context_design.md.
+
+## Attachment
+
+Type: [Object][1795]
+
+### Properties
+
+- `id` **[string][1794]** The document
+- `path` **[string][1794]** Its path when it was attached, as the tools give it
+- `hash` **[string][1794]** A hash of the text it had then, as a read's
+- `text` **[string][1794]** What it said then, as the chat reads it; a line
+  on why not, for a file with no text
+
+## MENTION
+
+A link with an `@` before it: its words, and its path between angle
+brackets as the picker writes it, or bare where it has no spaces.
+
+## mentionsIn
+
+The mentions in a text, in order: where each `@` is and the path it names.
+An `@` at the end of a word is part of the word, an address or a handle.
+
+### Parameters
+
+- `text` **[string][1794]**&#x20;
+
+Returns **[Array][1798]<{at: [number][1796], path: [string][1794]}>**&#x20;
+
+## onlyAttaches
+
+Whether a text says nothing but its mentions: a turn that only attaches, as
+a card's chat opens with.
+
+### Parameters
+
+- `text` **[string][1794]**&#x20;
+
+Returns **[boolean][1797]**&#x20;
+
+## mentionOf
+
+A mention of a document, as the picker writes one: its words, and its path
+from the top of the project.
+
+### Parameters
+
+- `words` **[string][1794]**&#x20;
+- `path` **[string][1794]** As the tools give it
+
+Returns **[string][1794]**&#x20;
+
+## attachingTurn
+
+A turn of the writer's that says nothing and attaches these documents, a
+mention to a line: what a chat on a card opens with, ahead of its greeting.
+
+### Parameters
+
+- `attachments` **[Array][1798]<[Attachment][496]>**&#x20;
+
+## withoutSigils
+
+A text with each mention as the plain link it is without its `@`.
+
+### Parameters
+
+- `text` **[string][1794]**&#x20;
+
+Returns **[string][1794]**&#x20;
+
+## attachmentsOf
+
+What a message attached, in the order it did: the copies on the pieces of
+the writer's turn, each document once.
+
+### Parameters
+
+- `message` **(Message | [undefined][1804] | null)**&#x20;
+
+Returns **[Array][1798]<[Attachment][496]>**&#x20;
+
+## attached
+
+Type: [Map][1801]<[string][1794], [Attachment][496]>
+
+## attached
+
+## renderAttachments
+
+The attached documents as the model reads them: a block each, named by the
+path every tool takes.
+
+### Parameters
+
+- `attachments` **[Array][1798]<[Attachment][496]>**&#x20;
+
+Returns **[string][1794]** Empty for none
+
+## withAttachments
+
+A message's words as the model is sent them: its attached documents, then
+what was said with its mentions as plain links. The same words back for a
+message that attached nothing.
+
+### Parameters
+
+- `message` **Message**&#x20;
+
+Returns **{content: [string][1794], lead: [number][1796]}** `lead` is how much of the
+content, from its start, is the documents
 
 ## ai/context/build
 
@@ -4611,15 +5137,12 @@ Build chat completion messages for the AI request.
 
 The model reaches the project through tools, and a small block rides at the
 tail of every conversation carrying what is true right now: the project's
-name and overview, how much is in it, the current text of the documents the
-writer pinned, and which documents read earlier have changed since. Not the
-tree: the block moves forward to the newest message every turn, so no
-prompt cache ever covers it, and what is in it is paid in full on every
-request. The model lists the project with a tool when it needs to.
-
-A pin is on the chat, not in the history, so it outlives the turns that made
-it and a compaction that replaces them. Only the writer pins. See
-pinnedContent.
+name and overview, how much is in it, and which documents read earlier have
+changed since. Not the tree, and no document's text: the block moves forward
+to the newest message every turn, so no prompt cache ever covers it, and
+what is in it is paid in full on every request. The model lists the project
+with a tool when it needs to, and a document the writer wants in front of
+it is attached to a message, where it stays (ai/context/attachments.js).
 
 Every call a turn made goes back on every later turn, where it was made, with
 its result and without its words — the turn's content is the one copy of
@@ -4654,9 +5177,8 @@ invalidating a single completed turn — and nobody spends a round trip
 asking what already exists.
 
 A chat that plays a card has names for its macros, and they are filled in
-here in what the chat holds as written: the prompt, the author's note and
-the pinned documents. The tools fill in what they read the same way; see
-cards/macros.js.
+here in what the chat holds as written: the prompt and the author's note.
+The tools fill in what they read the same way; see cards/macros.js.
 
 Nothing here is persisted. The block is built per request; the stored
 conversation holds only what the writer and the model actually said.
@@ -4673,36 +5195,39 @@ Type: TranscriptRoles
 
 ## Stores
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `storyId` **[string][1617]**&#x20;
-- `chatId` **[string][1617]?**&#x20;
-- `systemPrompt` **[string][1617]**&#x20;
-- `note` **[string][1617]?** The chat's author's note: the writer's standing
+- `storyId` **[string][1794]**&#x20;
+- `chatId` **[string][1794]?**&#x20;
+- `systemPrompt` **[string][1794]**&#x20;
+- `note` **[string][1794]?** The chat's author's note: the writer's standing
   instructions, sent after the project block and ahead of what they said.
   Not read in a transcript — a skill reading the conversation is not the
   one the note is addressed to. See `renderAuthorsNote`.
 - `transcript` **TranscriptRoles?** Set to hand the conversation over
   as a transcript inside one user message, under these names, rather than as
   messages. For a reader that is not a party to it.
-- `before` **[string][1617]?** Read the conversation as it stood before this
+- `ask` **[string][1794]?** Something asked of the chat's own model at the
+  end of the conversation as it reads it, in place of a turn: a summary. The
+  conversation goes as the turn sends it, calls and attached documents and
+  all, so the request shares the turn's cached prefix, and this follows as
+  the writer's last word. No project block and no author's note go with it:
+  they are for a turn. See `askInThread` in composables/useAIChat.js.
+- `before` **[string][1794]?** Read the conversation as it stood before this
   message, which is not in it. For a request that is itself a message in the
   chat: what it says cannot be part of what it read, and asking it again
   later must read the same conversation it read the first time.
-- `past` **[number][1619]?** With `before`: read this many messages past it
+- `past` **[number][1796]?** With `before`: read this many messages past it
   as well. Compaction's. A summary sits above the turns that were kept when
   it was asked for, and it read those too — so asked again, it reads the same
   conversation, and not the one that has carried on since.
-- `comments` **[boolean][1620]?** Whether the pinned documents' open comments
-  go after their text: for a chat offered the comment tools. Absent means
-  the text alone.
-- `settled` **[Array][1621]<{suggestion: [string][1617], path: [string][1617], accepted: [boolean][1620], at: [number][1619]}>?** The chat's suggestions the writer has accepted or rejected, when. The
+- `settled` **[Array][1798]<{suggestion: [string][1794], path: [string][1794], accepted: [boolean][1797], at: [number][1796]}>?** The chat's suggestions the writer has accepted or rejected, when. The
   block says those settled since the model's last answer began, so it is
   told of each once. See `settledSuggestions`.
-- `user` **[string][1617]** What to call the writer's turns
-- `assistant` **[string][1617]** What to call the assistant's
+- `user` **[string][1794]** What to call the writer's turns
+- `assistant` **[string][1794]** What to call the assistant's
 - `documentsStore` **any**&#x20;
 - `chatsStore` **any**&#x20;
 - `messagesStore` **any**&#x20;
@@ -4711,28 +5236,27 @@ Type: [Object][1618]
 
 ### Parameters
 
-- `stores` **[Stores][468]**&#x20;
+- `stores` **[Stores][519]**&#x20;
 - `opts` **BuildOptions**&#x20;
   - `opts.storyId` &#x20;
   - `opts.chatId` &#x20;
   - `opts.systemPrompt` &#x20;
   - `opts.project` &#x20;
-  - `opts.pinned` &#x20;
   - `opts.note` &#x20;
   - `opts.transcript` &#x20;
+  - `opts.ask` &#x20;
   - `opts.before` &#x20;
   - `opts.past` &#x20;
   - `opts.keeps` &#x20;
   - `opts.locate` &#x20;
   - `opts.names` &#x20;
-  - `opts.comments` &#x20;
   - `opts.settled` (optional, default `[]`)
 
-Returns **[Promise][1625]<{messages: [Array][1621]\<ChatMessage>}>**&#x20;
+Returns **[Promise][1802]<{messages: [Array][1798]\<ChatMessage>}>**&#x20;
 
 ## messages
 
-Type: [Array][1621]\<ChatMessage>
+Type: [Array][1798]\<ChatMessage>
 
 ## renderAuthorsNote
 
@@ -4751,9 +5275,9 @@ shown are called the same thing.
 
 ### Parameters
 
-- `note` **[string][1617]?**&#x20;
+- `note` **[string][1794]?**&#x20;
 
-Returns **[string][1617]** Empty when there is no note
+Returns **[string][1794]** Empty when there is no note
 
 ## renderTranscript
 
@@ -4777,10 +5301,10 @@ another one out in plain text.
 
 ### Parameters
 
-- `history` **[Array][1621]\<any>**&#x20;
+- `history` **[Array][1798]\<any>**&#x20;
 - `roles` **TranscriptRoles**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## renderLoads
 
@@ -4793,40 +5317,17 @@ transcript goes here as well.
 
 ### Parameters
 
-- `read` **[Array][1621]\<any>** The conversation before compaction
-- `history` **[Array][1621]\<any>** What the transcript shows of it
+- `read` **[Array][1798]\<any>** The conversation before compaction
+- `history` **[Array][1798]\<any>** What the transcript shows of it
 
-Returns **[string][1617]** Empty when nothing is loaded
-
-## pinnedContent
-
-What the documents the writer pinned say now, each with its listing.
-
-Now, not what they said when they were pinned. That is the whole point: the
-writer edits the same documents the model is working from, and a copy taken
-eight turns ago is a copy of something that has since moved.
-
-Text and files both: a file's content is the text that was read out of it.
-Length is no bar. A long document in this list was pinned by the writer from
-the outline, or by a card import: a decision, which the block honours whole
-rather than second-guessing with a note.
-
-### Parameters
-
-- `stores` **[Stores][468]**&#x20;
-- `pinned` &#x20;
-- `names` &#x20;
-- `comments` **[boolean][1620]?** Whether a text document's open comments go after its text
-- `chatId` **[string][1617]?** Whose suggestions it sees made
+Returns **[string][1794]** Empty when nothing is loaded
 
 ## renderProjectState
 
 The project as it stands, for the model to read without asking.
 
-JSON, in the shape the document tools already answer in, because a pinned
-document carries both what is said about it and its text, and prose has no
-way of saying which is which. Empty fields are dropped rather than sent
-blank, so an absent key means the thing is absent.
+JSON, in the shape the document tools already answer in. Empty fields are
+dropped rather than sent blank, so an absent key means the thing is absent.
 
 What this block _is_ belongs in the system prompt, not in here. This sits
 past every cache breakpoint, so a line of explanation is a line re-sent on
@@ -4843,14 +5344,12 @@ running the Director does. Named, it can be pointed at instead of located.
 ### Parameters
 
 - `project` &#x20;
-- `pinned` **[Array][1621]<{path: [string][1617], content: [string][1617]}>?** The pinned
-  documents, with their text now (optional, default `[]`)
-- `changed` **[Array][1621]<{path: [string][1617], since: [string][1617]}>?** Documents read in
+- `changed` **[Array][1798]<{path: [string][1794], since: [string][1794]}>?** Documents read in
   view that have changed since, by the path they were read at (optional, default `[]`)
-- `settled` **[Array][1621]<{suggestion: [string][1617], path: [string][1617], accepted: [boolean][1620]}>?** The model's suggestions the writer accepted or rejected since it last
+- `settled` **[Array][1798]<{suggestion: [string][1794], path: [string][1794], accepted: [boolean][1797]}>?** The model's suggestions the writer accepted or rejected since it last
   answered (optional, default `[]`)
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## settledSince
 
@@ -4861,9 +5360,9 @@ was answering is told of on the next turn, and one told of is not again.
 ### Parameters
 
 - `settled` &#x20;
-- `read` **[Array][1621]\<any>** The conversation, without the answer being written
+- `read` **[Array][1798]\<any>** The conversation, without the answer being written
 
-Returns **[Array][1621]<{suggestion: [string][1617], path: [string][1617], accepted: [boolean][1620]}>**&#x20;
+Returns **[Array][1798]<{suggestion: [string][1794], path: [string][1794], accepted: [boolean][1797]}>**&#x20;
 
 ## mergeAdjacentTurns
 
@@ -4883,9 +5382,9 @@ ever contains.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<ChatMessage>**&#x20;
+- `messages` **[Array][1798]\<ChatMessage>**&#x20;
 
-Returns **[Array][1621]\<ChatMessage>** The same array, mutated and returned for chaining
+Returns **[Array][1798]\<ChatMessage>** The same array, mutated and returned for chaining
 
 ## attachProjectState
 
@@ -4902,8 +5401,8 @@ alternate, and render a non-alternating array wrong or drop a turn outright.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<ChatMessage>**&#x20;
-- `block` **[string][1617]**&#x20;
+- `messages` **[Array][1798]\<ChatMessage>**&#x20;
+- `block` **[string][1794]**&#x20;
 
 ## expandMessage
 
@@ -4921,7 +5420,7 @@ reads.
 ### Parameters
 
 - `msg` **any**&#x20;
-- `out` **[Array][1621]\<ChatMessage>**&#x20;
+- `out` **[Array][1798]\<ChatMessage>**&#x20;
 - `replays` &#x20;
 
 ## carriedMessages
@@ -4934,7 +5433,7 @@ their turn.
 
 - `carried` &#x20;
 
-Returns **[Array][1621]\<ChatMessage>**&#x20;
+Returns **[Array][1798]\<ChatMessage>**&#x20;
 
 ## replayedCalls
 
@@ -4950,10 +5449,10 @@ which no model minds.
 
 ### Parameters
 
-- `trajectory` **([Array][1621]\<any> | [undefined][1627])**&#x20;
+- `trajectory` **([Array][1798]\<any> | [undefined][1804])**&#x20;
 - `replays` &#x20;
 
-Returns **[Array][1621]\<ChatMessage>**&#x20;
+Returns **[Array][1798]\<ChatMessage>**&#x20;
 
 ## chatMessages
 
@@ -4970,13 +5469,13 @@ covers, which compaction leaves out.
 
 ### Parameters
 
-- `stores` **[Stores][468]**&#x20;
-- `chatId` **[string][1617]**&#x20;
-- `$2` **[Object][1618]** (optional, default `{}`)
+- `stores` **[Stores][519]**&#x20;
+- `chatId` **[string][1794]**&#x20;
+- `$2` **[Object][1795]** (optional, default `{}`)
   - `$2.before` &#x20;
   - `$2.past` (optional, default `0`)
 
-Returns **[Array][1621]\<any>**&#x20;
+Returns **[Array][1798]\<any>**&#x20;
 
 ## ai/context/reads
 
@@ -4995,6 +5494,9 @@ things read them:
 - `read_document`, which answers that a document is unchanged rather than
   send a second copy of a read still in view.
 
+A document the writer attached to a message is a read as well, of the whole
+of it, noted on the message (ai/context/attachments.js).
+
 A read a summary stands in for is not in view, and nothing here counts it.
 A turn written before document calls stayed in the conversation is not
 marked, and its reads are not in view either: none of them go back. A turn
@@ -5006,16 +5508,18 @@ them. See .llm/project_context_design.md.
 
 ## Located
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `id` **[string][1617]** The document read
-- `path` **[string][1617]** Its path when it was read
-- `hash` **[string][1617]** A hash of the text it had then
-- `args` **Record<[string][1617], any>** What the read asked for
-- `path` **[string][1617]** Where the document is now
-- `text` **[string][1617]** What it says now
+- `id` **[string][1794]** The document read
+- `path` **[string][1794]** Its path when it was read
+- `hash` **[string][1794]** A hash of the text it had then
+- `args` **Record<[string][1794], any>** What the read asked for
+- `whole` **`true`?** The whole document, whatever a read of it asks
+  for: one the writer attached
+- `path` **[string][1794]** Where the document is now
+- `text` **[string][1794]** What it says now
 
 ## keepsEveryCall
 
@@ -5026,7 +5530,7 @@ written since they began to, which says so on its metadata.
 
 - `message` **Message**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## keepsDocumentCalls
 
@@ -5037,7 +5541,7 @@ keeps every call, and one written while only the document calls went back.
 
 - `message` **Message**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## textHash
 
@@ -5046,17 +5550,17 @@ read. FNV-1a: not for security, only for telling two texts apart.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## parsedArgs
 
 ### Parameters
 
-- `text` **([string][1617] | [undefined][1627])**&#x20;
+- `text` **([string][1794] | [undefined][1804])**&#x20;
 
-Returns **Record<[string][1617], any>**&#x20;
+Returns **Record<[string][1794], any>**&#x20;
 
 ## readsIn
 
@@ -5065,17 +5569,21 @@ they read, each with what its call asked for.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<Message>**&#x20;
+- `messages` **[Array][1798]\<Message>**&#x20;
 
-Returns **[Array][1621]\<Read>**&#x20;
+Returns **[Array][1798]\<Read>**&#x20;
 
 ## reads
 
-Type: [Array][1621]\<Read>
+Type: [Array][1798]\<Read>
 
 ## calls
 
-Type: [Map][1624]<[string][1617], any>
+Type: [Map][1801]<[string][1794], any>
+
+## calls
+
+The round's, by their place in it. @type {Map\<number, Streamed>}
 
 ## readsInView
 
@@ -5084,9 +5592,9 @@ no summary stands in for.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<Message>** The chat, in order, before compaction
+- `messages` **[Array][1798]\<Message>** The chat, in order, before compaction
 
-Returns **[Array][1621]\<Read>**&#x20;
+Returns **[Array][1798]\<Read>**&#x20;
 
 ## partOf
 
@@ -5095,9 +5603,9 @@ the same text that took the same part read the same thing.
 
 ### Parameters
 
-- `args` **Record<[string][1617], any>**&#x20;
+- `args` **Record<[string][1794], any>**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## readInView
 
@@ -5106,12 +5614,12 @@ did: the same document, the same part of it, and the same text.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<Message>** The chat, in order, before compaction
-- `id` **[string][1617]** The document
-- `args` **Record<[string][1617], any>** What the read asks for
-- `hash` **[string][1617]** A hash of the document's text now
+- `messages` **[Array][1798]\<Message>** The chat, in order, before compaction
+- `id` **[string][1794]** The document
+- `args` **Record<[string][1794], any>** What the read asks for
+- `hash` **[string][1794]** A hash of the document's text now
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## changedSinceRead
 
@@ -5120,15 +5628,15 @@ by the path the model read them at: edited, moved, or gone.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<Message>** The chat, in order, before compaction
+- `messages` **[Array][1798]\<Message>** The chat, in order, before compaction
 - `locate` &#x20;
 
-Returns **[Array][1621]<{path: [string][1617], since: [string][1617]}>** In the order they were
+Returns **[Array][1798]<{path: [string][1794], since: [string][1794]}>** In the order they were
 last read
 
 ## latest
 
-Type: [Map][1624]<[string][1617], Read>
+Type: [Map][1801]<[string][1794], Read>
 
 ## AISamplerParameters
 
@@ -5139,24 +5647,24 @@ presets, profile overrides). The UI is gone; values are now defined
 here. Edit this file to tune them. Future advanced settings could
 re-expose a subset.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `maxTokens` **[number][1619]** Max response tokens. 0 = let provider decide.
-- `seed` **[number][1619]** Deterministic seed. 0 = disabled.
+- `maxTokens` **[number][1796]** Max response tokens. 0 = let provider decide.
+- `seed` **[number][1796]** Deterministic seed. 0 = disabled.
 - `reasoningEffort` **(`"disabled"` | `"enabled"` | `"minimal"` | `"low"` | `"medium"` | `"high"` | `"xhigh"` | `"max"`)** How hard the model thinks. `enabled` asks for thinking without naming a level, for models whose thinking is a switch rather than a dial. A model is sent the nearest it takes (see ai/capabilities.js).
-- `showModelReasoning` **[boolean][1620]** Whether to surface reasoning tokens.
-- `maxToolRounds` **[number][1619]** How many rounds of tool calls a turn may make before it has to answer. 0 = no limit. See runCompletionLoop in composables/useAIChat.js.
-- `parameters` **[AISamplerParameters][521]** Sampler parameters. Fields with sentinel values are omitted from requests.
-- `temperature` **[number][1619]** 1.0 = omitted.
-- `topP` **[number][1619]** 1.0 = omitted.
-- `minP` **[number][1619]** 0 = omitted.
-- `topA` **[number][1619]** 0 = omitted.
-- `topK` **[number][1619]** 0 = omitted.
-- `frequencyPenalty` **[number][1619]** 0 = omitted.
-- `presencePenalty` **[number][1619]** 0 = omitted.
-- `repetitionPenalty` **[number][1619]** 1.0 = omitted.
+- `showModelReasoning` **[boolean][1797]** Whether to surface reasoning tokens.
+- `maxToolRounds` **[number][1796]** How many rounds of tool calls a turn may make before it has to answer. 0 = no limit. See runCompletionLoop in composables/useAIChat.js.
+- `parameters` **[AISamplerParameters][571]** Sampler parameters. Fields with sentinel values are omitted from requests.
+- `temperature` **[number][1796]** 1.0 = omitted.
+- `topP` **[number][1796]** 1.0 = omitted.
+- `minP` **[number][1796]** 0 = omitted.
+- `topA` **[number][1796]** 0 = omitted.
+- `topK` **[number][1796]** 0 = omitted.
+- `frequencyPenalty` **[number][1796]** 0 = omitted.
+- `presencePenalty` **[number][1796]** 0 = omitted.
+- `repetitionPenalty` **[number][1796]** 1.0 = omitted.
 
 ## REASONING_EFFORT_OPTIONS
 
@@ -5171,7 +5679,7 @@ deleted: the one in use until the writer picks another. Stored under the
 legacy "chat" id, so installs from before presets collapsed into one keep
 theirs.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## AI_DEFAULTS
 
@@ -5186,6 +5694,7 @@ demand a complete `parameters` bag whenever that key is present.
 ### Parameters
 
 - `overrides` &#x20;
+- `modelDefaults` &#x20;
 
 ## resolveAISettings
 
@@ -5193,9 +5702,14 @@ Merge sparse overrides over AI_DEFAULTS to get the settings a request should
 actually use. `parameters` merges one level deep so an override touching a
 single sampler value doesn't drop the rest.
 
+A model's own defaults, where its list gives them, sit between: the app's
+settings, then the model's, then the writer's changes.
+
 ### Parameters
 
 - `overrides` **AISettingsOverrides?**&#x20;
+- `modelDefaults` **Partial<[AISamplerParameters][571]>?** The samplers the
+  model's makers say it runs best at
 
 Returns **AIDefaults**&#x20;
 
@@ -5216,7 +5730,7 @@ saying something about temperature, not about top-k.
 - `base` **AISettingsOverrides?**&#x20;
 - `over` **AISettingsOverrides?** Wins where the two overlap
 
-Returns **(AISettingsOverrides | [undefined][1627])**&#x20;
+Returns **(AISettingsOverrides | [undefined][1804])**&#x20;
 
 ## TITLE_DEFAULTS
 
@@ -5259,13 +5773,13 @@ Kept for the page: a reload starts every connection afresh.
 
 ## RATE_RETRIES
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## RATE_RETRIES
 
 How many times a request the service refused for its rate is asked again.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## Urgency
 
@@ -5278,7 +5792,7 @@ Type: (`"now"` | `"later"`)
 
 How long to wait the first time a service refuses without saying how long, in ms; doubling after.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## LONGEST_WAIT_MS
 
@@ -5286,15 +5800,11 @@ The longest a request waits to be asked again. A service that says to wait
 longer than this has run out for the day, or the hour, and the writer is
 better told than kept waiting.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## AT_HOME
 
 The built-in connections to servers at home, by id: one request at a time.
-
-## HOSTED
-
-The types that are hosted services.
 
 ## RateLimitedError
 
@@ -5306,14 +5816,14 @@ said.
 
 ### Parameters
 
-- `message` **[string][1617]**&#x20;
-- `retryAfter` **[number][1619]?** In ms
+- `message` **[string][1794]**&#x20;
+- `retryAfter` **[number][1796]?** In ms
 
 ## RATE_LIMITED
 
 What a rate-limited request says when it gives up.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## retryAfterOf
 
@@ -5322,9 +5832,9 @@ date.
 
 ### Parameters
 
-- `headers` **([Headers][1626] | Record<[string][1617], [string][1617]> | null | [undefined][1627])**&#x20;
+- `headers` **([Headers][1803] | Record<[string][1794], [string][1794]> | null | [undefined][1804])**&#x20;
 
-Returns **([number][1619] | [undefined][1627])** In ms
+Returns **([number][1796] | [undefined][1804])** In ms
 
 ## isAtHome
 
@@ -5333,9 +5843,9 @@ or a name only the local network knows.
 
 ### Parameters
 
-- `address` **([string][1617] | [undefined][1627])**&#x20;
+- `address` **([string][1794] | [undefined][1804])**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## defaultRoom
 
@@ -5347,9 +5857,9 @@ for; and for any other server, one at home and as many as asked elsewhere.
 ### Parameters
 
 - `provider` **AIProvider**&#x20;
-- `slots` **[number][1619]?** What llama.cpp said, when it has
+- `slots` **[number][1796]?** What llama.cpp said, when it has
 
-Returns **[number][1619]** Infinity for no limit
+Returns **[number][1796]** Infinity for no limit
 
 ## roomFor
 
@@ -5360,48 +5870,48 @@ else what it takes by default.
 
 - `provider` **AIProvider**&#x20;
 
-Returns **[Promise][1625]<[number][1619]>** Infinity for no limit
+Returns **[Promise][1802]<[number][1796]>** Infinity for no limit
 
 ## Waiting
 
 A request waiting for its place.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `urgency` **[Urgency][536]**&#x20;
+- `urgency` **[Urgency][586]**&#x20;
 
 ## Lane
 
 A connection, as this page is asking it.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `room` **[number][1619]** How many it takes at once, as last worked out
-- `busy` **[number][1619]** Places taken: requests sent and not yet answered in full
-- `eased` **[number][1619]** How many at once since it was last refused for
+- `room` **[number][1796]** How many it takes at once, as last worked out
+- `busy` **[number][1796]** Places taken: requests sent and not yet answered in full
+- `eased` **[number][1796]** How many at once since it was last refused for
   its rate, rising by one with each answer; Infinity once back to its room
-- `until` **[number][1619]** When it may be asked again after a refusal, in ms since the epoch
-- `waiting` **[Array][1621]<[Waiting][552]>** Those waiting now first, then jobs, each in the order they came
+- `until` **[number][1796]** When it may be asked again after a refusal, in ms since the epoch
+- `waiting` **[Array][1798]<[Waiting][601]>** Those waiting now first, then jobs, each in the order they came
 
 ## lanes
 
-Type: [Map][1624]<[string][1617], [Lane][554]>
+Type: [Map][1801]<[string][1794], [Lane][603]>
 
 ## laneOf
 
 ### Parameters
 
-- `id` **[string][1617]**&#x20;
+- `id` **[string][1794]**&#x20;
 
 ## hasPlace
 
 ### Parameters
 
-- `lane` **[Lane][554]**&#x20;
+- `lane` **[Lane][603]**&#x20;
 
 ## wake
 
@@ -5412,7 +5922,7 @@ woken when the wait is over.
 
 ### Parameters
 
-- `lane` **[Lane][554]**&#x20;
+- `lane` **[Lane][603]**&#x20;
 
 ## take
 
@@ -5422,13 +5932,19 @@ goes before a job; otherwise in the order they came.
 
 ### Parameters
 
-- `lane` **[Lane][554]**&#x20;
-- `urgency` **[Urgency][536]**&#x20;
-- `signal` **(AbortSignal | [undefined][1627])**&#x20;
+- `lane` **[Lane][603]**&#x20;
+- `urgency` **[Urgency][586]**&#x20;
+- `signal` **(AbortSignal | [undefined][1804])**&#x20;
+
+## take
+
+### Parameters
+
+- `pattern` **[RegExp][1806]** Sticky, so it matches where reading has got to
 
 ## waiting
 
-Type: [Waiting][552]
+Type: [Waiting][601]
 
 ## settle
 
@@ -5449,13 +5965,13 @@ anything else is passed on as it is.
 ### Parameters
 
 - `provider` **AIProvider**&#x20;
-- `$1` **[Object][1618]** (optional, default `{}`)
+- `$1` **[Object][1795]** (optional, default `{}`)
   - `$1.urgency` (optional, default `'now'`)
   - `$1.signal` &#x20;
 
 - `send` &#x20;
 
-Returns **[Promise][1625]\<T>**&#x20;
+Returns **[Promise][1802]\<T>**&#x20;
 
 ## inTurn
 
@@ -5463,7 +5979,7 @@ Run calls at most so many at a time, each starting as one before it ends.
 
 ### Parameters
 
-- `room` **[number][1619]** Infinity for all at once
+- `room` **[number][1796]** Infinity for all at once
 
 ## queued
 
@@ -5484,6 +6000,7 @@ as once it has outgrown its window — see ./compaction.js), asides (a
 question and its answer left out of every request after them — see
 ./asides.js), what the model
 has read of the project and what of it has changed since (./context/reads.js),
+the documents attached to a message (./context/attachments.js),
 how many requests each connection is asked at once and who goes first
 (./gate.js), what a llama.cpp server says it has (./llamacpp.js), and the
 tool registry for the inksprite chat and summarize features.
@@ -5509,20 +6026,20 @@ Where a server says what it has.
 
 ### Parameters
 
-- `endpoint` **([string][1617] | [undefined][1627])** The connection's, ending in `/v1` as often as not
+- `endpoint` **([string][1794] | [undefined][1804])** The connection's, ending in `/v1` as often as not
 
-Returns **([string][1617] | null)**&#x20;
+Returns **([string][1794] | null)**&#x20;
 
 ## ServerProps
 
 What a server said of itself; a field it said nothing of is absent.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `slots` **[number][1619]?** How many requests it answers at once
-- `context` **[number][1619]?** How many tokens a slot holds, prompt and answer
+- `slots` **[number][1796]?** How many requests it answers at once
+- `context` **[number][1796]?** How many tokens a slot holds, prompt and answer
 
 ## count
 
@@ -5538,23 +6055,23 @@ What a llama.cpp server says it has.
 
 - `provider` **AIProvider**&#x20;
 
-Returns **[Promise][1625]<[ServerProps][580]>**&#x20;
+Returns **[Promise][1802]<[ServerProps][631]>**&#x20;
 
 ## found
 
-Type: [ServerProps][580]
+Type: [ServerProps][631]
 
 ## found
 
-Type: [Map][1624]<[string][1617], [FoundSkill][733]>
+Type: [Map][1801]<[string][1794], [FoundSkill][846]>
 
 ## found
 
-Type: [Array][1621]<{line: [number][1619], text: [string][1617]}>
+Type: [Array][1798]<{line: [number][1796], text: [string][1794]}>
 
 ## found
 
-Type: [Array][1621]<[Heading][1527]>
+Type: [Array][1798]<[Heading][1686]>
 
 ## forgetProps
 
@@ -5565,10 +6082,10 @@ Forget what every server said: for tests.
 What a connection serves, and what each of its models can do.
 
 The model pickers ask for a list (composables/useModelLists.js), and so,
-for OpenRouter, does a request: OpenRouter's list is the only place that
-says which parameters a model there takes and how it reasons, and a request
-is fitted to that (ai/capabilities.js). Its answer is kept for the page, so
-a request asks once at most, and not at all once a picker has.
+for OpenRouter and NanoGPT, does a request: their lists are the only place
+that says which parameters a model there takes and how it reasons, and a
+request is fitted to that (ai/capabilities.js). The answer is kept for the
+page, so a request asks once at most, and not at all once a picker has.
 
 Anthropic's list is asked of its own API (ai/anthropic.js), which keeps what
 each model can do itself.
@@ -5581,23 +6098,28 @@ read with, and what voices each has where that can be known
 
 ## SAMPLER_NAMES
 
-Type: Record<[string][1617], Sampler>
+Type: Record<[string][1794], Sampler>
 
 ## AIModel
 
 One model a connection serves.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `id` **[string][1617]**&#x20;
-- `name` **[string][1617]**&#x20;
-- `traits` **[ModelTraits][107]?** What the list says it can do, where it says
-- `voices` **[Array][1621]<[string][1617]>?** A speech model's voices, where its connection
+- `id` **[string][1794]**&#x20;
+- `name` **[string][1794]**&#x20;
+- `traits` **[ModelTraits][108]?** What the list says it can do, where it says
+- `voices` **[Array][1798]<[string][1794]>?** A speech model's voices, where its connection
   says which; otherwise they are asked of the server (`tts/client.js`)
-- `inputLimit` **[number][1619]?** The most a speech model reads in one
+- `inputLimit` **[number][1796]?** The most a speech model reads in one
   request, in characters, where that is known
+- `free` **[boolean][1797]?** OpenRouter: it costs nothing, and counts
+  against the account's free requests
+- `pricing` **{prompt: [number][1796], completion: [number][1796]}?** What a token
+  costs, in dollars, read and written: OpenRouter's and NanoGPT's lists
+  say, and for Anthropic's and OpenAI's, OpenRouter's public list
 
 ## openRouterTraits
 
@@ -5611,15 +6133,119 @@ instead, and OpenRouter sets the budget from an effort for it.
 
 ### Parameters
 
-- `model` **Record<[string][1617], any>** One entry of OpenRouter's `/models`
+- `model` **Record<[string][1794], any>** One entry of OpenRouter's `/models`
 
-Returns **[ModelTraits][107]**&#x20;
+Returns **[ModelTraits][108]**&#x20;
 
 ## traits
 
-Type: [ModelTraits][107]
+Type: [ModelTraits][108]
+
+## traits
+
+Type: [ModelTraits][108]
 
 ## levels
+
+## nanoGptTraits
+
+What NanoGPT's detailed list says a model can do: whether it calls tools,
+how much it reads, and how it reasons. Not which samplers it takes, which
+NanoGPT passes on to whoever serves the model.
+
+`reasoning_efforts` are the levels a model takes, `none` among them where
+its reasoning can be turned off. A model that reasons and lists none of
+them is described no further than OpenRouter's undescribed ones.
+
+### Parameters
+
+- `model` **Record<[string][1794], any>** One entry of NanoGPT's
+  `/models?detailed=true`
+
+Returns **[ModelTraits][108]**&#x20;
+
+## NanoGptProvider
+
+One of the providers NanoGPT serves a model from, as a model's settings
+offer it.
+
+Type: [Object][1795]
+
+### Properties
+
+- `slug` **[string][1794]** Its id, as NanoGPT's `provider.only` takes it
+- `name` **[string][1794]**&#x20;
+- `zdr` **[boolean][1797]** Whether NanoGPT classes it as keeping nothing
+- `pricing` **{prompt: [number][1796], completion: [number][1796]}?** Dollars per
+  token, NanoGPT's fee for choosing it included
+
+## NanoGptProviders
+
+Whether NanoGPT lets a model's providers be chosen, and the ones serving it
+now.
+
+Type: [Object][1795]
+
+### Properties
+
+- `selectable` **[boolean][1797]**&#x20;
+- `providers` **[Array][1798]<[NanoGptProvider][654]>** By name
+
+## nanoGptProvidersOf
+
+What NanoGPT's `/api/models/<id>/providers` says of a model. A model that
+runs on a fixed route (Claude, GPT, Gemini) says it can't be chosen for and
+lists nobody. A provider it lists as unavailable is left out: a choice of
+it would only fail.
+
+### Parameters
+
+- `data` **any**&#x20;
+
+Returns **[NanoGptProviders][656]**&#x20;
+
+## provider
+
+Type: [NanoGptProvider][654]
+
+## defaultsOf
+
+The samplers a model's makers say it runs best at, as OpenRouter lists
+them, under the settings' names. What a model's settings show and send
+until the writer changes them.
+
+### Parameters
+
+- `listed` **any** The model's `default_parameters`
+
+Returns **(Partial\<Record\<Sampler, [number][1796]>> | [undefined][1804])**&#x20;
+
+## defaults
+
+Type: Partial\<Record\<Sampler, [number][1796]>>
+
+## pricingOf
+
+What a model costs a token, read and written, or undefined where the list
+doesn't say.
+
+### Parameters
+
+- `pricing` **any** The model's `pricing`
+- `per` **[number][1796]?** How many tokens the list prices: OpenRouter's one,
+  as strings, NanoGPT's a million, as numbers (optional, default `1`)
+
+Returns **({prompt: [number][1796], completion: [number][1796]} | [undefined][1804])**&#x20;
+
+## isFree
+
+Whether OpenRouter charges nothing for a model, in or out.
+
+### Parameters
+
+- `pricing` **any** The model's `pricing`, prices as strings
+
+Returns **[boolean][1797]**&#x20;
 
 ## entriesOf
 
@@ -5627,21 +6253,21 @@ The entries of a `/models` answer, as the service gave them.
 
 ### Parameters
 
-- `response` **[Response][1629]**&#x20;
+- `response` **[Response][1807]**&#x20;
 
 <!---->
 
-- Throws **[Error][1623]** When the provider refused, or answered with no list
+- Throws **[Error][1800]** When the provider refused, or answered with no list
 
-Returns **[Promise][1625]<[Array][1621]\<Record<[string][1617], any>>>**&#x20;
+Returns **[Promise][1802]<[Array][1798]\<Record<[string][1794], any>>>**&#x20;
 
 ## byName
 
 ### Parameters
 
-- `models` **[Array][1621]<[AIModel][594]>**&#x20;
+- `models` **[Array][1798]<[AIModel][645]>**&#x20;
 
-Returns **[Array][1621]<[AIModel][594]>**&#x20;
+Returns **[Array][1798]<[AIModel][645]>**&#x20;
 
 ## parseModelsResponse
 
@@ -5649,22 +6275,26 @@ The models in a `/models` answer that a chat can use, by name.
 
 ### Parameters
 
-- `response` **[Response][1629]**&#x20;
+- `response` **[Response][1807]**&#x20;
 - `provider` **AIProvider** Whose list it is
 
 <!---->
 
-- Throws **[Error][1623]** When the provider refused, or answered with no list
+- Throws **[Error][1800]** When the provider refused, or answered with no list
 
-Returns **[Promise][1625]<[Array][1621]<[AIModel][594]>>**&#x20;
-
-## entry
-
-Type: [AIModel][594]
+Returns **[Promise][1802]<[Array][1798]<[AIModel][645]>>**&#x20;
 
 ## entry
 
-Type: [AIModel][594]
+Type: [AIModel][645]
+
+## entry
+
+Type: [AIModel][645]
+
+## entry
+
+Type: [AIModel][645]
 
 ## listHeaders
 
@@ -5672,19 +6302,30 @@ Type: [AIModel][594]
 
 - `provider` **AIProvider**&#x20;
 
-Returns **Record<[string][1617], [string][1617]>**&#x20;
+Returns **Record<[string][1794], [string][1794]>**&#x20;
 
 ## catalogs
 
-Type: [Map][1624]<[string][1617], [Promise][1625]<[Map][1624]<[string][1617], [AIModel][594]>>>
+Type: [Map][1801]<[string][1794], [Promise][1802]<[Map][1801]<[string][1794], [AIModel][645]>>>
+
+## describesModels
+
+Whether this service's list says what a request needs to know of a model,
+and so is asked by a request no picker has asked yet.
+
+### Parameters
+
+- `type` **[string][1794]?**&#x20;
+
+Returns **[boolean][1797]**&#x20;
 
 ## byId
 
 ### Parameters
 
-- `models` **[Array][1621]<[AIModel][594]>**&#x20;
+- `models` **[Array][1798]<[AIModel][645]>**&#x20;
 
-Returns **[Map][1624]<[string][1617], [AIModel][594]>**&#x20;
+Returns **[Map][1801]<[string][1794], [AIModel][645]>**&#x20;
 
 ## listModels
 
@@ -5696,36 +6337,76 @@ Ask a connection what it serves.
 
 <!---->
 
-- Throws **[Error][1623]** When it can't be reached or refuses
+- Throws **[Error][1800]** When it can't be reached or refuses
 
-Returns **[Promise][1625]<[Array][1621]<[AIModel][594]>>** Those a chat can use, by name
+Returns **[Promise][1802]<[Array][1798]<[AIModel][645]>>** Those a chat can use, by name
+
+## plainModelId
+
+A model's id without its maker, its date, or how its version is written:
+Anthropic's `claude-sonnet-4-5-20250929` and OpenRouter's
+`anthropic/claude-sonnet-4.5` are both `claude-sonnet-4-5`.
+
+### Parameters
+
+- `id` **[string][1794]**&#x20;
+
+Returns **[string][1794]**&#x20;
+
+## publicList
+
+Type: ([Promise][1802]<[Array][1798]\<Record<[string][1794], any>>> | null)
+
+## pricesOf
+
+What each of a maker's models costs, by its plain id, from OpenRouter's
+public list: Anthropic and OpenAI list their models without prices, and
+OpenRouter charges what they do.
+
+### Parameters
+
+- `maker` **(`"anthropic"` | `"openai"`)**&#x20;
+
+Returns **[Promise][1802]<[Map][1801]<[string][1794], {prompt: [number][1796], completion: [number][1796]}>>**&#x20;
+
+## withPrices
+
+A maker's models with what each costs, where OpenRouter's list has it.
+Without the list, they are as they came.
+
+### Parameters
+
+- `maker` **(`"anthropic"` | `"openai"`)**&#x20;
+- `models` **[Array][1798]<[AIModel][645]>**&#x20;
+
+Returns **[Promise][1802]<[Array][1798]<[AIModel][645]>>**&#x20;
 
 ## traitsOf
 
-What the connection's list says of a model, for the one connection whose
-list says what a request needs: OpenRouter's. Asked for once, the first
-time a request needs it and no picker has asked yet; a list that couldn't
-be had is nothing known, and is asked for again next time.
+What the connection's list says of a model, for the connections whose
+lists say what a request needs: OpenRouter's and NanoGPT's. Asked for once,
+the first time a request needs it and no picker has asked yet; a list that
+couldn't be had is nothing known, and is asked for again next time.
 
 ### Parameters
 
 - `provider` **AIProvider**&#x20;
-- `model` **[string][1617]?**&#x20;
+- `model` **[string][1794]?**&#x20;
 
-Returns **[Promise][1625]<([ModelTraits][107] | [undefined][1627])>**&#x20;
+Returns **[Promise][1802]<([ModelTraits][108] | [undefined][1804])>**&#x20;
 
 ## contextOf
 
 How many tokens a model reads and writes in one request, where its
-connection says: OpenRouter's list, or what a llama.cpp server says each of
-its slots holds. Nothing for any other.
+connection says: OpenRouter's or NanoGPT's list, or what a llama.cpp server
+says each of its slots holds. Nothing for any other.
 
 ### Parameters
 
 - `provider` **AIProvider**&#x20;
-- `model` **[string][1617]?**&#x20;
+- `model` **[string][1794]?**&#x20;
 
-Returns **[Promise][1625]<([number][1619] | [undefined][1627])>**&#x20;
+Returns **[Promise][1802]<([number][1796] | [undefined][1804])>**&#x20;
 
 ## OPENAI_VOICES
 
@@ -5737,22 +6418,23 @@ are newer, and `gpt-4o-mini-tts` alone has them.
 
 The most OpenAI's speech endpoint reads in one request, in characters.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## openAIVoices
 
 ### Parameters
 
-- `id` **[string][1617]**&#x20;
+- `id` **[string][1794]**&#x20;
 
-Returns **[Array][1621]<[string][1617]>**&#x20;
+Returns **[Array][1798]<[string][1794]>**&#x20;
 
 ## listSpeechModels
 
 Ask a connection which models it reads aloud with, by name. OpenRouter
-lists them apart from its chat models, each with its voices; OpenAI lists
-them among everything else, and its voices are known here; any other server
-lists what it lists, and is asked for its voices when they are wanted.
+and NanoGPT list them apart from their chat models, each with its voices;
+OpenAI lists them among everything else, and its voices are known here; any
+other server lists what it lists, and is asked for its voices when they are
+wanted. NanoGPT's list of what speaks has music and transcription in it too.
 Kokoro-FastAPI lists one model under four names, the three besides `kokoro`
 being OpenAI's for clients that ask for those; only `kokoro` is shown.
 
@@ -5762,9 +6444,20 @@ being OpenAI's for clients that ask for those; only `kokoro` is shown.
 
 <!---->
 
-- Throws **[Error][1623]** When it can't be reached or refuses
+- Throws **[Error][1800]** When it can't be reached or refuses
 
-Returns **[Promise][1625]<[Array][1621]<[AIModel][594]>>**&#x20;
+Returns **[Promise][1802]<[Array][1798]<[AIModel][645]>>**&#x20;
+
+## listNanoGptSpeech
+
+NanoGPT's models that read aloud, each with its voices and the most it
+reads at once where its list says.
+
+### Parameters
+
+- `provider` **AIProvider**&#x20;
+
+Returns **[Promise][1802]<[Array][1798]<[AIModel][645]>>**&#x20;
 
 ## ai/profiles
 
@@ -5782,12 +6475,23 @@ already followed for the prompt, and for the same reason: a writer who
 changes a setting in one chat has not asked to change it in nine others, and
 nothing on screen would tell them they had.
 
-The wording is the exception in one direction only. The prompt and the
-skills' prompts are read from the profile every turn, so a chat keeps up
-with its profile's words, until the writer changes them in the chat: then
-the chat keeps its own (`Chat.prompt`, `Chat.skills`). The AI preset is
-read the same way (`Chat.presetId`). Every change in a chat is the chat's;
-Save to profile is how one reaches the profile.
+The prompt is the exception in one direction only. It is read from the
+profile every turn, so a chat keeps up with its profile's words, until the
+writer changes it in the chat: then the chat keeps its own (`Chat.prompt`).
+The Save beside it, and beside the author's note, in the chat's settings,
+is how a change of those reaches the profile.
+
+A skill's wording is the profile's: reworded in Settings › Skills, it is
+changed on the profile the chat showing runs on, and every chat on it reads
+it. A chat given wording of its own before that (`Chat.skills`) keeps it
+until the skill is changed on its profile from it.
+
+The model and the tools are the exception the other way. A chat keeps the
+model it was started on, how hard the model thinks, whether its edits wait
+and which tools it has, and only the writer changes them; a change in a
+chat also goes to the profile, so the next chat on it starts there
+(`useChatSettings`). A chat already going never changes because another
+one did. See `.llm/ai_setup_design.md` and `.llm/tools_design.md`.
 
 These ship as source rather than data, like the prompts in `ai/prompts`, so
 an improvement reaches chats that have not been created yet when the app
@@ -5804,68 +6508,79 @@ The settings a profile stamps onto a chat. Every field is one the chat
 already has, so applying a profile is an object spread and nothing downstream
 learns a new word.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `prompt` **[string][1617]** The system prompt, sent ahead of the conversation
-- `disabledTools` **[Array][1621]<[string][1617]>?**&#x20;
-- `disabledToolGroups` **[Array][1621]<[string][1617]>?**&#x20;
-- `rules` **[string][1617]?** The author's note a chat on this profile starts
+- `prompt` **[string][1794]** The system prompt, sent ahead of the conversation
+- `disabledTools` **[Array][1798]<[string][1794]>?** Its chats' tools off, by name. See
+  ai/tools/choice.js, with the two below.
+- `disabledToolGroups` **[Array][1798]<[string][1794]>?** Its chats' groups of tools off
+- `toolsOff` **`true`?** Its chats' tools off as a whole, each switch
+  kept as it is
+- `onlyToolGroups` **[Array][1798]<[string][1794]>?** The groups its chats may have on at
+  all, for one that offers only some: anything added later stays off.
+  Absent means every group.
+- `rules` **[string][1794]?** The author's note a chat on this profile starts
   with: standing instructions, sent in the writer's latest message ahead of
   what they said. See `renderAuthorsNote` in ai/context/build.js.
-- `presetId` **[string][1617]?** The AI preset a chat on this profile runs
-  on, read every turn as the prompt is. Absent means the default. See
-  `presetFor` in composables/useAIConfig.js.
-- `id` **[string][1617]** Stable identifier, prefixed so it cannot collide with a stored profile
-- `name` **[string][1617]** Display name
-- `description` **[string][1617]?** One line, for the picker; the built-ins have one
+- `keptOpening` **[number][1796]?** How many messages at the top of a chat on
+  it a summary leaves standing. Absent means one. Not the writer's to set,
+  and read from the profile, never copied onto a chat. See ai/compaction.js.
+- `presetId` **[string][1794]?** Legacy: the preset its chats started on,
+  before a model's settings were found by the model. Read once, to give the
+  profile that model (composables/useChatPresets.js), and never written.
+- `providerId` **[string][1794]?** The connection a chat on this profile
+  starts on, with `model`: the last picked in a chat on it. Absent on one
+  never picked on, whose chats start on what new chats start on.
+- `model` **[string][1794]?** The model a chat on this profile starts on.
+- `reasoningEffort` **([string][1794] | null)?** How hard the model thinks in a
+  chat started on it, as last picked in one. Absent means the app's.
+- `applyEdits` **(`"auto"` | `"ask"`)?** Whether a chat started on it has its
+  edits wait for the writer, as last picked in one. Absent means the app's
+  choice from before chats had their own.
+- `id` **[string][1794]** Stable identifier, prefixed so it cannot collide with a stored profile
+- `name` **[string][1794]** Display name
 - `settings` **ProfileSettings**&#x20;
-- `nsfw` **[boolean][1620]?** Written for explicit content: offered, in place
+- `nsfw` **[boolean][1797]?** Written for explicit content: offered, in place
   of its general counterpart, only once the writer switches NSFW profiles on
   in the settings. See composables/useProfiles.js.
-- `roleplay` **[boolean][1620]?** Part of the Roleplay extension: offered only
+- `roleplay` **[boolean][1797]?** Part of the Roleplay extension: offered only
   while it is on. A chat already on one runs on it either way. See extensions/.
-- `generalId` **[string][1617]?** For an NSFW one, that counterpart: the same
+- `generalId` **[string][1794]?** For an NSFW one, that counterpart: the same
   thing without the opt-ins
-
-## ALL_TOOL_GROUPS
-
-Every group of tools the app has, by the ids `TOOL_GROUP_LABELS` names
-them — written out rather than imported: a profile is data, and
-`ai/tools/index.js` registers every tool in the app as a side effect of
-being loaded. A server's tools are not among them; a server reaches only the
-profiles it lists.
-
-## EXPERIMENTAL
-
-The skills still being tuned, Interpret and Write, which no built-in offers
-the model. While the writer has one switched on for the app, a chat
-switches it on for itself; the writer's own `/interpret` or `/write` works
-in any chat then. See ai/tools.
-
-Type: [string][1617]
 
 ## ROLEPLAY_SETTINGS
 
 What both roleplay profiles run with besides their words.
 
-The documents, so the model can look up what a card's lorebook says rather
-than have all of it in context: a world's worth of entries is more than a
-turn can carry, and a lorebook is pulled from, not pushed. Nothing in the
-prompt asks for them; the tools' own descriptions are enough, and a card
-written for a model with no tools reads the same.
+The documents, which the prompt has the model read once, up front: the
+writer's persona, whatever of a lorebook bears on the story, and the card
+where its chat did not open with it attached (composables/useCardChat.js).
+A read stays where it was made in the conversation, under the cache; and a
+world's worth of entries is more than a turn can carry, so a lorebook is
+pulled from, not pushed.
 
-Nothing else. A tool schema in context pulls the voice toward the assistant
-register a card was written to get away from, so the dice and the skills
-are the writer's to switch on.
+Nothing else, the web, Python and the writer's servers included, and
+whatever comes after them: a tool schema in context pulls the voice toward
+the assistant register a card was written to get away from, so the dice
+and the skills are the writer's to switch on. The groups are named by the
+ids `TOOL_GROUP_LABELS` gives them, written out rather than imported: a
+profile is data, and `ai/tools/index.js` registers every tool in the app as
+a side effect of being loaded.
+
+The groups it had off before it offered only some stay off, for an app
+from before that reads them alone.
 
 And what a played-out scene is made of is the scenes and the lines, not what
 was decided and what is left to do. See ai/skills/compact.
 
+A summary leaves the first two messages standing, which is how a scene
+opens however it was started. See `KEPT_OPENING` in ai/compaction.js.
+
 ## BUILT_IN_PROFILES
 
-Type: [Array][1621]<[ChatProfile][626]>
+Type: [Array][1798]<[ChatProfile][706]>
 
 ## isBuiltInProfileId
 
@@ -5874,9 +6589,9 @@ stored one.
 
 ### Parameters
 
-- `id` **([string][1617] | null | [undefined][1627])** Profile ID to test
+- `id` **([string][1794] | null | [undefined][1804])** Profile ID to test
 
-Returns **[boolean][1620]** True for built-in IDs
+Returns **[boolean][1797]** True for built-in IDs
 
 ## getBuiltInProfile
 
@@ -5884,9 +6599,9 @@ The built-in profile with this ID, if there is one.
 
 ### Parameters
 
-- `id` **([string][1617] | null | [undefined][1627])** Profile ID to look up
+- `id` **([string][1794] | null | [undefined][1804])** Profile ID to look up
 
-Returns **([ChatProfile][626] | null)** The profile, or null if the ID names none
+Returns **([ChatProfile][706] | null)** The profile, or null if the ID names none
 
 ## DEFAULT_PROFILE_ID
 
@@ -5896,11 +6611,10 @@ The profile a new chat is stamped from when nobody has chosen one.
 
 What to stamp onto a new chat, given the profile it is being started on.
 
-Everything but the wording and the preset. Those stay on the profile and
-are read on every turn, so a chat follows its profile's words and model;
-the rest is copied and then the chat's own, which is the rule `createChat`
-has always followed — a writer who switches a tool off in one chat has not
-asked to switch it off in nine others.
+Everything but the wording, which stays on the profile and is read on
+every turn, so a chat follows its profile's words. The rest is copied and
+then the chat's own, the model with it: a writer who switches a tool off,
+or the model, in one chat has not asked to do it in nine others.
 
 Takes the profile rather than its id because the writer's own live in the
 database, and this module is the built-ins and nothing else. See
@@ -5910,12 +6624,23 @@ database, and this module is the built-ins and nothing else. See
 
 - `profile` &#x20;
 
-Returns **[Object][1618]** Settings to copy onto the chat
+Returns **[Object][1795]** Settings to copy onto the chat
+
+## keptOpeningOf
+
+How many messages at the top of a chat on this profile a summary leaves
+standing.
+
+### Parameters
+
+- `profile` &#x20;
+
+Returns **[number][1796]**&#x20;
 
 ## STAMPED_SETTINGS
 
-The settings a profile can stamp onto a chat: `ProfileSettings` less the
-wording and the preset, which stay on the profile.
+The settings a profile can stamp onto a chat: `ProfileSettings`, the
+wording among them, which a chat moved to another profile reads from it.
 
 ## settingsForProfileSwitch
 
@@ -5928,7 +6653,7 @@ the tools back, and Chat names none.
 
 - `profile` &#x20;
 
-Returns **[Object][1618]** Updates for the chat
+Returns **[Object][1795]** Updates for the chat
 
 ## noteOnProfile
 
@@ -5943,10 +6668,10 @@ without the opt-ins, and switched back keeps them.
 
 ### Parameters
 
-- `note` **([string][1617] | [undefined][1627])** The chat's
-- `profile` **({id: [string][1617]} | null | [undefined][1627])** The one it runs on
+- `note` **([string][1794] | [undefined][1804])** The chat's
+- `profile` **({id: [string][1794]} | null | [undefined][1804])** The one it runs on
 
-Returns **([string][1617] | [undefined][1627])**&#x20;
+Returns **([string][1794] | [undefined][1804])**&#x20;
 
 ## ai/prompts
 
@@ -5994,17 +6719,17 @@ saved as a profile of their own, for every chat they start.
 
 A prompt that ships with the app.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `id` **[string][1617]** Stable identifier, prefixed so it cannot collide with a stored prompt
-- `name` **[string][1617]** Display name
-- `content` **[string][1617]** The prompt text
+- `id` **[string][1794]** Stable identifier, prefixed so it cannot collide with a stored prompt
+- `name` **[string][1794]** Display name
+- `content` **[string][1794]** The prompt text
 
 ## BUILT_IN_PROMPTS
 
-Type: [Array][1621]<[BuiltInPrompt][649]>
+Type: [Array][1798]<[BuiltInPrompt][729]>
 
 ## isBuiltInPromptId
 
@@ -6012,9 +6737,9 @@ Whether an ID refers to a built-in prompt rather than a stored one.
 
 ### Parameters
 
-- `id` **([string][1617] | null | [undefined][1627])** Prompt ID to test
+- `id` **([string][1794] | null | [undefined][1804])** Prompt ID to test
 
-Returns **[boolean][1620]** True for built-in IDs
+Returns **[boolean][1797]** True for built-in IDs
 
 ## getBuiltInPrompt
 
@@ -6022,9 +6747,9 @@ The built-in prompt with this ID, if there is one.
 
 ### Parameters
 
-- `id` **([string][1617] | null | [undefined][1627])** Prompt ID to look up
+- `id` **([string][1794] | null | [undefined][1804])** Prompt ID to look up
 
-Returns **([BuiltInPrompt][649] | null)** The prompt, or null if the ID is not a built-in
+Returns **([BuiltInPrompt][729] | null)** The prompt, or null if the ID is not a built-in
 
 ## DEFAULT_PROMPT_ID
 
@@ -6053,26 +6778,44 @@ only in where they look.
 
 ## ProviderType
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `id` **[string][1617]** Stored on providers, so renaming one orphans every
+- `id` **[string][1794]** Stored on providers, so renaming one orphans every
   connection saved under it
-- `label` **[string][1617]** The short name, for a line that already says
+- `label` **[string][1794]** The short name, for a line that already says
   what it is naming
-- `menu` **[string][1617]** The name in the type menu, which has room to say more
-- `address` **[string][1617]?** Where the API lives, for a hosted service
+- `menu` **[string][1794]** The name in the type menu, which has room to say more
+- `address` **[string][1794]?** Where the API lives, for a hosted service
   whose address is known without asking. A type without one is a server
   someone runs, and is told where it is.
-- `key` **[boolean][1620]?** Whether nothing gets through without an API key
-- `hidden` **[boolean][1620]?** Left out of the type menu and the built-in
+- `key` **[boolean][1797]?** Whether nothing gets through without an API key
+- `hidden` **[boolean][1797]?** Left out of the type menu and the built-in
   connections: known here, but not offered yet
-- `notChat` **[RegExp][1630]?** The models in the service's list that a chat
+- `notChat` **[RegExp][1806]?** The models in the service's list that a chat
   cannot use (embeddings, speech, pictures, and OpenAI's that answer only its
   Responses API), which a model picker leaves out
-- `does` **ReadonlyArray<[ProviderKind][660]>?** What a connection of this
+- `does` **ReadonlyArray<[ProviderKind][742]>?** What a connection of this
   type can be asked for; a chat alone when absent
+- `signIn` **[SignIn][740]?** Where the writer signs in to have a key made
+  for them, for a service that offers it
+- `credits` **[string][1794]?** Where an account buys more, for a service
+  that answers 402 when it has run out
+
+## SignIn
+
+A service's sign-in, OAuth with PKCE as OpenRouter has it: the writer is
+sent to `authorize` with a challenge, comes back with a code, and the code
+is traded at `exchange` for an API key (`composables/useSignIn.js`).
+
+Type: [Object][1795]
+
+### Properties
+
+- `authorize` **[string][1794]** Where the writer is sent
+- `exchange` **[string][1794]** Where the code is traded for a key
+- `params` **Record<[string][1794], [string][1794]>?** What else the sign-in is told
 
 ## ProviderKind
 
@@ -6085,7 +6828,7 @@ Type: (`"chat"` | `"speech"`)
 
 Every connection type, in the order the settings menu offers them.
 
-Type: [Array][1621]<[ProviderType][658]>
+Type: [Array][1798]<[ProviderType][738]>
 
 ## BUILT_IN_PROVIDERS
 
@@ -6103,7 +6846,82 @@ and `does` what it can be asked for, where that is less than its type's.
 
 The connection narration speaks through until the writer picks another.
 
-Type: [string][1617]
+Type: [string][1794]
+
+## ConnectionKind
+
+What the writer can connect to, as setup offers it: a hosted service, a
+server of a kind they run at home, or any other that speaks OpenAI's API.
+Each built-in connection was one of these, and the first connection of a
+kind still takes its id, so presets made for it, and every device of the
+writer's, find it there.
+
+Type: [Object][1795]
+
+### Properties
+
+- `id` **[string][1794]**&#x20;
+- `name` **[string][1794]** What a connection of it is called to start with
+- `endpoint` **[string][1794]?** Where a server of it listens when started
+  without being told, or where a hosted service's API is, for the row
+- `server` **[string][1794]?** The server behind a generic connection, for
+  what it takes (ai/capabilities.js)
+- `does` **ReadonlyArray<[ProviderKind][742]>** What it can be asked for
+- `builtInId` **[string][1794]?** The built-in connection it was
+
+## BUILT_IN_KINDS
+
+Type: ReadonlyArray<[ConnectionKind][746]>
+
+## CONNECTION_KINDS
+
+Type: ReadonlyArray<[ConnectionKind][746]>
+
+###
+
+Type: const
+
+###
+
+Type: const
+
+## connectionKind
+
+A kind by its id.
+
+### Parameters
+
+- `id` **([string][1794] | null | [undefined][1804])**&#x20;
+
+Returns **([ConnectionKind][746] | [undefined][1804])**&#x20;
+
+## connectionKind
+
+Type: [ConnectionKind][746]
+
+## kindOf
+
+What kind a connection is: the server it names, the built-in it is, else
+its type, and an OpenAI-compatible server for anything else.
+
+### Parameters
+
+- `provider` &#x20;
+
+Returns **[ConnectionKind][746]**&#x20;
+
+## untouchedBuiltIn
+
+Whether a built-in connection is as every install made it, with nothing of
+the writer's in it: not added by them, no key, no routing, its own
+address. Since setup took their place they are made no more, but older
+devices still make them. Neither sync nor a settings file carries one.
+
+### Parameters
+
+- `provider` **any**&#x20;
+
+Returns **[boolean][1797]**&#x20;
 
 ## inMenuOrder
 
@@ -6114,17 +6932,17 @@ install that made it then can't delete it.
 
 ### Parameters
 
-- `providers` **[Array][1621]\<T>**&#x20;
+- `providers` **[Array][1798]\<T>**&#x20;
 
-Returns **[Array][1621]\<T>**&#x20;
+Returns **[Array][1798]\<T>**&#x20;
 
 ## typeOf
 
 ### Parameters
 
-- `type` **[string][1617]?**&#x20;
+- `type` **[string][1794]?**&#x20;
 
-Returns **([ProviderType][658] | [undefined][1627])**&#x20;
+Returns **([ProviderType][738] | [undefined][1804])**&#x20;
 
 ## providerDoes
 
@@ -6135,15 +6953,15 @@ narration.
 ### Parameters
 
 - `provider` &#x20;
-- `kind` **[ProviderKind][660]**&#x20;
+- `kind` **[ProviderKind][742]**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## DEFAULT_PROVIDER_TYPE
 
 The type a connection falls back to when it does not say, or says something unknown.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## providerLabel
 
@@ -6155,9 +6973,9 @@ front of it looks broken when it is merely unfamiliar.
 
 ### Parameters
 
-- `type` **[string][1617]?**&#x20;
+- `type` **[string][1794]?**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## knownAddress
 
@@ -6166,9 +6984,9 @@ whose address is on the connection.
 
 ### Parameters
 
-- `type` **[string][1617]?**&#x20;
+- `type` **[string][1794]?**&#x20;
 
-Returns **([string][1617] | [undefined][1627])**&#x20;
+Returns **([string][1794] | [undefined][1804])**&#x20;
 
 ## needsEndpoint
 
@@ -6181,9 +6999,9 @@ types one at a time and forgetting the next one.
 
 ### Parameters
 
-- `type` **[string][1617]?**&#x20;
+- `type` **[string][1794]?**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## needsKey
 
@@ -6193,9 +7011,9 @@ default.
 
 ### Parameters
 
-- `type` **[string][1617]?**&#x20;
+- `type` **[string][1794]?**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## connectionGap
 
@@ -6215,26 +7033,71 @@ Returns **(`"key"` | `"endpoint"` | null)**&#x20;
 What stands between a preset and a request through it, as the error the
 request would fail with, or null when nothing does: no connection, no
 model, or a connection still missing its key or address. What a chat says
-above its box, and what the welcome reads to know the AI is set up.
+above its box.
 
 ### Parameters
 
 - `preset` &#x20;
 - `findProvider` &#x20;
 
-Returns **([Error][1623] | null)**&#x20;
+Returns **([Error][1800] | null)**&#x20;
 
 ## canListModels
 
 Whether the connection can be asked what it serves. A server needs its
-address; a hosted service needs its key, except OpenRouter, whose list is
-public.
+address; a hosted service needs its key, except OpenRouter and NanoGPT,
+whose lists are public.
 
 ### Parameters
 
 - `provider` &#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
+
+## listsPublicly
+
+Whether this service's list of models is public, asked without a key, and
+so says nothing of whether a key is good.
+
+### Parameters
+
+- `type` **[string][1794]?**&#x20;
+
+Returns **[boolean][1797]**&#x20;
+
+## signInOf
+
+Where the writer signs in to this service to have a key made, or undefined
+for one that offers no sign-in.
+
+### Parameters
+
+- `type` **[string][1794]?**&#x20;
+
+Returns **([SignIn][740] | [undefined][1804])**&#x20;
+
+## creditsPage
+
+Where an account with this service buys more, or undefined for a service
+that doesn't sell by the request.
+
+### Parameters
+
+- `type` **[string][1794]?**&#x20;
+
+Returns **([string][1794] | [undefined][1804])**&#x20;
+
+## speaksOpenRouterReasoning
+
+Whether a request to this service is told about reasoning as OpenRouter
+tells it: a `reasoning` object, with an effort, `enabled` and `exclude`.
+NanoGPT took the same shape.
+
+### Parameters
+
+- `type` **[string][1794]?**&#x20;
+
+Returns **[boolean][1797]**&#x20;
 
 ## servesChat
 
@@ -6244,10 +7107,10 @@ and picture models too, which answer a chat with an error.
 
 ### Parameters
 
-- `type` **([string][1617] | [undefined][1627])**&#x20;
-- `id` **[string][1617]** The model's id, as the service lists it
+- `type` **([string][1794] | [undefined][1804])**&#x20;
+- `id` **[string][1794]** The model's id, as the service lists it
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## takesReasoningEffort
 
@@ -6261,9 +7124,9 @@ its own default instead, which works on every one of them.
 
 ### Parameters
 
-- `type` **[string][1617]?**&#x20;
+- `type` **[string][1794]?**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## takesChatTemplateKwargs
 
@@ -6278,9 +7141,56 @@ not a field the server has to recognise, so nothing 400s over it.
 
 ### Parameters
 
-- `type` **[string][1617]?**&#x20;
+- `type` **[string][1794]?**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
+
+## ai/recommended
+
+The models the picker lists first, each with the routing it
+runs best on: a short list kept here and updated with releases, not drawn
+from OpenRouter's rankings, which aren't an API anyone promises.
+
+OpenRouter's "latest" aliases where there is one, so the list keeps up
+with a family's new versions by itself. What a model's samplers start at
+comes from OpenRouter's list (`defaults` in ai/models.js), not from here.
+
+Design: `.llm/ai_setup_design.md`, "Step 3: models".
+
+## RecommendedModel
+
+Type: [Object][1795]
+
+### Properties
+
+- `model` **[string][1794]** The model's id on the connection
+- `free` **[boolean][1797]?** The one for an account that has never bought credits
+
+## RECOMMENDED
+
+Recommended, by connection kind: OpenRouter's, and the same families on
+NanoGPT, which routes them its own way.
+
+Type: Readonly\<Record<[string][1794], ReadonlyArray<[RecommendedModel][795]>>>
+
+## recommendedFor
+
+The recommended models of a connection kind.
+
+### Parameters
+
+- `kindId` **([string][1794] | null | [undefined][1804])**&#x20;
+
+Returns **ReadonlyArray<[RecommendedModel][795]>**&#x20;
+
+## recommendedRouting
+
+The routing a recommended model comes with, or undefined for any other.
+
+### Parameters
+
+- `kindId` **([string][1794] | null | [undefined][1804])**&#x20;
+- `model` **[string][1794]**&#x20;
 
 ## ai/rounds
 
@@ -6314,18 +7224,18 @@ holds, ran every search. Each such call is answered with an error of its own.
 
 ## ROUND_LIMIT
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## ROUND_LIMIT
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## ROUND_LIMIT
 
 The most calls one round runs. More than a model reading a handful of papers
 at once needs, and far fewer than a response that has come apart asks for.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## asked
 
@@ -6334,9 +7244,9 @@ spaced.
 
 ### Parameters
 
-- `call` **[ToolCall][1445]**&#x20;
+- `call` **[ToolCall][1559]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## trimRound
 
@@ -6345,18 +7255,18 @@ leaves out in all.
 
 ### Parameters
 
-- `calls` **[Array][1621]<[ToolCall][1445]>** What the model asked for, in order
-- `options` **[Object][1618]?** (optional, default `{}`)
-  - `options.limit` **[number][1619]?** (optional, default `ROUND_LIMIT`)
+- `calls` **[Array][1798]<[ToolCall][1559]>** What the model asked for, in order
+- `options` **[Object][1795]?** (optional, default `{}`)
+  - `options.limit` **[number][1796]?** (optional, default `ROUND_LIMIT`)
   - `options.draws` (optional, default `()=>false`)
 
 ## run
 
-Type: [Array][1621]<[ToolCall][1445]>
+Type: [Array][1798]<[ToolCall][1559]>
 
 ## over
 
-Type: [Array][1621]<[ToolCall][1445]>
+Type: [Array][1798]<[ToolCall][1559]>
 
 ## refusedAnswer
 
@@ -6364,11 +7274,11 @@ The answer to the first call a round left out, which speaks for all of them.
 
 ### Parameters
 
-- `call` **[ToolCall][1445]**&#x20;
-- `left` **[number][1619]** How many calls the round left out, this one included
-- `limit` **[number][1619]?** (optional, default `ROUND_LIMIT`)
+- `call` **[ToolCall][1559]**&#x20;
+- `left` **[number][1796]** How many calls the round left out, this one included
+- `limit` **[number][1796]?** (optional, default `ROUND_LIMIT`)
 
-Returns **{role: `"tool"`, tool_call_id: [string][1617], content: [string][1617]}**&#x20;
+Returns **{role: `"tool"`, tool_call_id: [string][1794], content: [string][1794]}**&#x20;
 
 ## splitOffered
 
@@ -6377,18 +7287,18 @@ rest, which are answered without running.
 
 ### Parameters
 
-- `calls` **[Array][1621]<[ToolCall][1445]>**&#x20;
-- `tools` **[Array][1621]<[ToolDefinition][1443]>** What the request that asked for them offered
+- `calls` **[Array][1798]<[ToolCall][1559]>**&#x20;
+- `tools` **[Array][1798]<[ToolDefinition][1557]>** What the request that asked for them offered
 
-Returns **{offered: [Array][1621]<[ToolCall][1445]>, unoffered: [Array][1621]<[ToolCall][1445]>}**&#x20;
+Returns **{offered: [Array][1798]<[ToolCall][1559]>, unoffered: [Array][1798]<[ToolCall][1559]>}**&#x20;
 
 ## offered
 
-Type: [Array][1621]<[ToolCall][1445]>
+Type: [Array][1798]<[ToolCall][1559]>
 
 ## unoffered
 
-Type: [Array][1621]<[ToolCall][1445]>
+Type: [Array][1798]<[ToolCall][1559]>
 
 ## unofferedAnswer
 
@@ -6396,16 +7306,18 @@ The answer to a call to a tool the request did not offer.
 
 ### Parameters
 
-- `call` **[ToolCall][1445]**&#x20;
+- `call` **[ToolCall][1559]**&#x20;
 
-Returns **{role: `"tool"`, tool_call_id: [string][1617], content: [string][1617]}**&#x20;
+Returns **{role: `"tool"`, tool_call_id: [string][1794], content: [string][1794]}**&#x20;
 
 ## ai/routing
 
-- **See**: [https://openrouter.ai/docs/guides/routing/provider-selection][1631]
+- **See**: [https://openrouter.ai/docs/guides/routing/provider-selection][1808]
+- **See**: [https://docs.nano-gpt.com/api-reference/miscellaneous/provider-selection][1809]
 
 OpenRouter provider routing — which upstream provider is allowed
-to serve a request, and which ones are disqualified.
+to serve a request, and which ones are disqualified — and NanoGPT's one
+piece of it, zero data retention.
 
 Two owners. The policy here is stored on the AIProvider: it describes an
 OpenRouter _connection_, not a model. A privacy floor ("never route to an
@@ -6418,17 +7330,24 @@ and handed in with the request. So is the one upstream that serves this
 model badly: the preset's `ignoredProviders` are left out as well as the
 connection's, which still hold for every model.
 
+NanoGPT routes among upstreams too, and takes the same `provider` field.
+Only its zero-data-retention floor is the connection's, stored as
+OpenRouter's `zdr` is and on by default as it is. The providers a model
+prefers and ignores are the model's, as on OpenRouter; NanoGPT bills a
+request that names any as pay-as-you-go, with a markup, off a
+subscription, so they go only where the writer chose some.
+
 ## OpenRouterRouting
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `ignore` **[Array][1621]<[string][1617]>** Provider slugs never routed to.
+- `ignore` **[Array][1798]<[string][1794]>** Provider slugs never routed to.
 - `dataCollection` **(`"allow"` | `"deny"`)** Whether providers that may store prompts are eligible.
-- `zdr` **[boolean][1620]** Restrict routing to zero-data-retention endpoints.
-- `quantizations` **[Array][1621]<[string][1617]>** Quantization levels eligible to serve. Empty = any.
-- `allowFallbacks` **[boolean][1620]** Whether OpenRouter may fall back past the allowed set.
+- `zdr` **[boolean][1797]** Restrict routing to zero-data-retention endpoints.
+- `quantizations` **[Array][1798]<[string][1794]>** Quantization levels eligible to serve. Empty = any.
+- `allowFallbacks` **[boolean][1797]** Whether OpenRouter may fall back past the allowed set.
 
 ## ModelUpstreams
 
@@ -6436,12 +7355,13 @@ What a preset says of the upstreams for its model, on top of the
 connection's policy. A preset is one, and so is a workflow on a model of its
 own. Either list may come from a backup, so junk in them is dropped.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `allowedProviders` **[Array][1621]<[string][1617]>?** The only ones that may serve the model; empty or absent allows any
-- `ignoredProviders` **[Array][1621]<[string][1617]>?** Never routed to for the model, besides the connection's `ignore`
+- `allowedProviders` **[Array][1798]<[string][1794]>?** The model's preferred providers, tried first and in this order; empty or absent prefers none
+- `fallbacks` **[boolean][1797]?** Whether any other provider that passes the connection's floor may serve once the preferred ones can't. Absent, as on a list from before it was asked, the preferred are the only ones
+- `ignoredProviders` **[Array][1798]<[string][1794]>?** Never routed to for the model, besides the connection's `ignore`
 
 ## ROUTING_DEFAULTS
 
@@ -6465,14 +7385,14 @@ tool call, hundreds of times over (harness/findings.md). A writer can take it
 off the list like any other. The fallback switch stays neutral: permissive
 means "don't constrain", and is left out of the request.
 
-Type: [OpenRouterRouting][710]
+Type: [OpenRouterRouting][821]
 
 ## QUANTIZATIONS
 
 Quantization levels OpenRouter can filter on, ordered from most to least
 lossy so the list reads as a precision ladder.
 
-Type: [Array][1621]<{value: [string][1617], label: [string][1617]}>
+Type: [Array][1798]<{value: [string][1794], label: [string][1794]}>
 
 ## toSlugList
 
@@ -6484,7 +7404,7 @@ malformed allowed list would silently narrow routing to nothing.
 
 - `value` **unknown**&#x20;
 
-Returns **[Array][1621]<[string][1617]>**&#x20;
+Returns **[Array][1798]<[string][1794]>**&#x20;
 
 ## resolveRouting
 
@@ -6500,9 +7420,9 @@ whole policy on every change, so a writer who turned the floor off has
 
 ### Parameters
 
-- `routing` **Partial<[OpenRouterRouting][710]>?**&#x20;
+- `routing` **Partial<[OpenRouterRouting][821]>?**&#x20;
 
-Returns **[OpenRouterRouting][710]**&#x20;
+Returns **[OpenRouterRouting][821]**&#x20;
 
 ## isRoutingOverridden
 
@@ -6511,10 +7431,10 @@ affordance in the settings UI.
 
 ### Parameters
 
-- `routing` **(Partial<[OpenRouterRouting][710]> | [undefined][1627])**&#x20;
+- `routing` **(Partial<[OpenRouterRouting][821]> | [undefined][1804])**&#x20;
 - `key` &#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## CLOSED_VENDORS
 
@@ -6526,22 +7446,53 @@ Whether a model id names closed weights, which no quantization applies to.
 
 ### Parameters
 
-- `model` **[string][1617]?**&#x20;
+- `model` **[string][1794]?**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
+
+## routingFilterOf
+
+What left a request with no endpoint, from the step OpenRouter names when
+it refuses one (`error.metadata.failed_routing_step`, a 404): the
+connection's floor, the providers the model is limited to, or the model
+itself, which can't use tools. Null for a step not known here, or none.
+
+OpenRouter's steps as it named them on 11 Nov 2026: "Filter by Data
+Policy" (zero data retention, data collection), "Filter by Quantization",
+"Filter by Ignored Providers", "Filter by Allowed Providers", "Filter by
+Tool Compatibility". A model it has dropped names none.
+
+Ignored providers are the connection's and the model's both; the
+connection's are the ones a writer is likelier to have widened.
+
+### Parameters
+
+- `step` **unknown**&#x20;
+
+Returns **(`"connection"` | `"model"` | `"tools"` | null)**&#x20;
 
 ## buildProviderRouting
 
-Build the `provider` field of an OpenRouter chat completion request.
+Build the `provider` field of an OpenRouter or NanoGPT request.
+
+NanoGPT's holds `zdr`, sent while the connection asks for zero data
+retention: NanoGPT then serves through providers that keep nothing, its
+fallbacks too, and fails a request none of them can serve rather than
+relax it. Beside it go the model's preferred and ignored providers, as
+OpenRouter's do; NanoGPT has no connection-wide list of its own here, and
+none of OpenRouter's other knobs.
 
 Only knobs that constrain routing are sent: the permissive values are what
 OpenRouter does anyway, so a connection with the whole floor lowered, on a
-preset that allows any provider, yields `undefined` and the field is
+model that prefers no provider, yields `undefined` and the field is
 omitted. A connection at the defaults sends the floor, because the floor is
 not OpenRouter's default. Every filter sent is a hard one — `allow_fallbacks` lets
 OpenRouter try the next eligible provider when the cheapest is down, never
-one outside the filters. The preset's ignored providers join the
+one outside the filters. The model's ignored providers join the
 connection's in one `ignore`; neither takes the other's away.
+
+The model's preferred providers go as `order`, tried first, where it may
+fall back to others, and as `only` where it may not.
 
 The quantization floor is for open weights, which any provider may serve at
 any precision. A vendor serving its own closed model — Anthropic, OpenAI,
@@ -6551,14 +7502,14 @@ all; so for those the floor is left out, and the rest of the policy holds.
 ### Parameters
 
 - `provider` &#x20;
-- `model` **[string][1617]?** The model asked for, to tell closed weights from open
-- `upstreams` **[ModelUpstreams][712]?** The preset's allowed and ignored providers
+- `model` **[string][1794]?** The model asked for, to tell closed weights from open
+- `upstreams` **[ModelUpstreams][823]?** The preset's allowed and ignored providers
 
-Returns **([Object][1618] | [undefined][1627])** The `provider` field, or undefined to omit it
+Returns **([Object][1795] | [undefined][1804])** The `provider` field, or undefined to omit it
 
 ## field
 
-Type: Record<[string][1617], any>
+Type: Record<[string][1794], any>
 
 ## ai/skills/bundle
 
@@ -6590,25 +7541,25 @@ The largest file that comes along: instructions, not a library.
 
 A file in what was handed over, by where it was.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `path` **[string][1617]** Folders separated by `/`
-- `bytes` **[Uint8Array][1632]**&#x20;
+- `path` **[string][1794]** Folders separated by `/`
+- `bytes` **[Uint8Array][1810]**&#x20;
 
 ## FoundSkill
 
 A skill found in what was handed over.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `path` **[string][1617]** Where its SKILL.md, or its one file, was
-- `text` **[string][1617]** The SKILL.md
-- `files` **[Array][1621]\<SkillFile>** The text in its folder, by where it sits in it
-- `dropped` **[Array][1621]<[string][1617]>** What in its folder was left behind, and why
+- `path` **[string][1794]** Where its SKILL.md, or its one file, was
+- `text` **[string][1794]** The SKILL.md
+- `files` **[Array][1798]\<SkillFile>** The text in its folder, by where it sits in it
+- `dropped` **[Array][1798]<[string][1794]>** What in its folder was left behind, and why
 
 ## isNoise
 
@@ -6617,21 +7568,21 @@ version-control folder, the macOS resource forks a zip made there carries.
 
 ### Parameters
 
-- `path` **[string][1617]**&#x20;
+- `path` **[string][1794]**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## folderOf
 
 ### Parameters
 
-- `path` **[string][1617]**&#x20;
+- `path` **[string][1794]**&#x20;
 
 ## nameOf
 
 ### Parameters
 
-- `path` **[string][1617]**&#x20;
+- `path` **[string][1794]**&#x20;
 
 ## nameOf
 
@@ -6640,25 +7591,15 @@ make it two, and not a name that means a folder already.
 
 ### Parameters
 
-- `title` **[string][1617]**&#x20;
+- `title` **[string][1794]**&#x20;
 
 ## textOf
 
 ### Parameters
 
-- `bytes` **[Uint8Array][1632]**&#x20;
+- `bytes` **[Uint8Array][1810]**&#x20;
 
-Returns **([string][1617] | null)** The text, or null when it is not UTF-8
-
-## textOf
-
-A field's text, or nothing for anything that is not text.
-
-### Parameters
-
-- `value` **unknown**&#x20;
-
-Returns **[string][1617]**&#x20;
+Returns **([string][1794] | null)** The text, or null when it is not UTF-8
 
 ## entriesFromZip
 
@@ -6666,9 +7607,9 @@ The files in a `.zip`.
 
 ### Parameters
 
-- `bytes` **[Uint8Array][1632]**&#x20;
+- `bytes` **[Uint8Array][1810]**&#x20;
 
-Returns **[Array][1621]<[BundleEntry][731]>**&#x20;
+Returns **[Array][1798]<[BundleEntry][844]>**&#x20;
 
 ## entriesFromFiles
 
@@ -6679,15 +7620,15 @@ contents are read in place of them.
 
 - `chosen` **Iterable\<File>**&#x20;
 
-Returns **[Promise][1625]<[Array][1621]<[BundleEntry][731]>>**&#x20;
+Returns **[Promise][1802]<[Array][1798]<[BundleEntry][844]>>**&#x20;
 
 ## entries
 
-Type: [Array][1621]<[BundleEntry][731]>
+Type: [Array][1798]<[BundleEntry][844]>
 
 ## entries
 
-Type: [Array][1621]<{document: [Document][1622], depth: [number][1619]}>
+Type: [Array][1798]<{document: [Document][1799], depth: [number][1796]}>
 
 ## webkitRelativePath
 
@@ -6702,10 +7643,10 @@ put one in.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
-- `path` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
+- `path` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## findSkills
 
@@ -6718,19 +7659,19 @@ skill's folder is not part of one, and is named in `stray`.
 
 ### Parameters
 
-- `entries` **[Array][1621]<[BundleEntry][731]>**&#x20;
+- `entries` **[Array][1798]<[BundleEntry][844]>**&#x20;
 
-Returns **{skills: [Array][1621]<[FoundSkill][733]>, stray: [Array][1621]<[string][1617]>}**&#x20;
+Returns **{skills: [Array][1798]<[FoundSkill][846]>, stray: [Array][1798]<[string][1794]>}**&#x20;
 
 ## ownerOf
 
 ### Parameters
 
-- `path` **[string][1617]** The skill folder a file is in, deepest first, or null
+- `path` **[string][1794]** The skill folder a file is in, deepest first, or null
 
 ## stray
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## zipSkills
 
@@ -6741,15 +7682,15 @@ files that came with it.
 
 - `skills` &#x20;
 
-Returns **[Uint8Array][1632]**&#x20;
+Returns **[Uint8Array][1810]**&#x20;
 
 ## zipSkills
 
-Type: [Uint8Array][1632]<[ArrayBuffer][1633]>
+Type: [Uint8Array][1810]<[ArrayBuffer][1811]>
 
 ## contents
 
-Type: Record<[string][1617], [Uint8Array][1632]>
+Type: Record<[string][1794], [Uint8Array][1810]>
 
 ## zipBlob
 
@@ -6759,7 +7700,7 @@ Skills as a `.zip` to hand the browser to save. See `zipSkills`.
 
 - `skills` &#x20;
 
-Returns **[Blob][1634]**&#x20;
+Returns **[Blob][1812]**&#x20;
 
 ## ai/skills/compact
 
@@ -6799,38 +7740,52 @@ The place to tune the role — see ai/skills/index.js.
 
 ## buildCompactPrompt
 
-The role, and what this particular compaction is for.
-
-The writer's instructions go in the system prompt rather than the transcript,
-for the same reason a skill's question does: the transcript is the material,
-and a note about how to read it that arrives inside the material reads as
-something a character said.
+What a summary is asked for with, and what this particular one is for: the
+skill's wording, or the profile's, and what the writer asked it to favour
+under it.
 
 ### Parameters
 
-- `instructions` **[string][1617]?** What the writer asked this one to favour
-- `base` **[string][1617]?** What the role runs under; its own when not given
+- `instructions` **[string][1794]?** What the writer asked this one to favour
+- `base` **[string][1794]?** The wording; the skill's own when not given
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
+
+## IN_PLACE_OF_A_TURN
+
+What goes ahead of the wording when the summary is asked for in the thread.
+
+The chat's own prompt is still above the conversation, and for a scene it
+says to stay in it, so this says the one thing the wording does not: that
+what is wanted is not the next turn. In brackets, as the app's other words
+to a model in the writer's place are.
+
+Type: [string][1794]
 
 ## askCompact
 
 Write the summary.
 
+It is asked of the chat's own model at the end of the conversation, as the
+writer's last word (`inThread`): the model has what the conversation holds,
+the documents it read and the ones the writer attached among them, where a
+transcript has only what was said, and the request goes on from the turn's
+cached prefix where a transcript is read from nothing. A context with no
+`inThread` hands it a transcript under the wording as a system prompt, as
+every summary once was.
+
 It reads the turns it is keeping as well as the ones it stands for: they are
 kept so the next turn has a scene to continue, not because the summary
-leaves them out. And it reads them under the default names rather than the
-table's — compaction happens to any chat, and a summarizer told it is
-reading a game master starts writing like one.
+leaves them out.
 
 ### Parameters
 
-- `instructions` **[string][1617]** What the writer asked this one to favour, if anything
-- `context` **[ToolContext][1449]?** (optional, default `{}`)
-- `$2` **[Object][1618]** (optional, default `{}`)
+- `instructions` **[string][1794]** What the writer asked this one to favour, if anything
+- `context` **[ToolContext][1563]?** (optional, default `{}`)
+- `$2` **[Object][1795]** (optional, default `{}`)
   - `$2.past` &#x20;
 
-Returns **[Promise][1625]<({answer: [string][1617]} | {error: [string][1617]})>**&#x20;
+Returns **[Promise][1802]<({answer: [string][1794]} | {error: [string][1794]})>**&#x20;
 
 ## unwrapSummary
 
@@ -6844,9 +7799,9 @@ summary wrapped twice.
 
 ### Parameters
 
-- `summary` **[string][1617]**&#x20;
+- `summary` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## ai/skills/consultations
 
@@ -6878,33 +7833,33 @@ The fields a skill's answer is found under, by skill.
 
 One consultation, ready to show.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `id` **[string][1617]** The call's id, for a key
-- `label` **[string][1617]** The skill, as the writer calls it
-- `asked` **[string][1617]** What it was asked, or nothing for one that reads
+- `id` **[string][1794]** The call's id, for a key
+- `label` **[string][1794]** The skill, as the writer calls it
+- `asked` **[string][1794]** What it was asked, or nothing for one that reads
   the turn it is in
-- `answer` **[string][1617]** What it answered, as prose
-- `error` **[string][1617]** Why there is no answer, when there is none
-- `thinking` **[string][1617]** What it thought on the way
-- `pending` **[boolean][1620]** It has not answered yet
-- `reply` **[boolean][1620]** Its answer is the turn's reply, shown below as the reply
-- `calls` **[Array][1621]<[CallView][784]>** The tools it called, in order
+- `answer` **[string][1794]** What it answered, as prose
+- `error` **[string][1794]** Why there is no answer, when there is none
+- `thinking` **[string][1794]** What it thought on the way
+- `pending` **[boolean][1797]** It has not answered yet
+- `reply` **[boolean][1797]** Its answer is the turn's reply, shown below as the reply
+- `calls` **[Array][1798]<[CallView][896]>** The tools it called, in order
 
 ## CallView
 
 One tool a skill called.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `name` **[string][1617]**&#x20;
-- `args` **[string][1617]** What it was asked, compactly
-- `result` **[string][1617]** What it answered, prettified and cut short
-- `skill` **([ConsultationView][782] | null)** When the tool was itself a skill:
+- `name` **[string][1794]**&#x20;
+- `args` **[string][1794]** What it was asked, compactly
+- `result` **[string][1794]** What it answered, prettified and cut short
+- `skill` **([ConsultationView][894] | null)** When the tool was itself a skill:
   that one's block, to show inside this one
 
 ## SET_ASIDE
@@ -6924,16 +7879,16 @@ it gets.
 
 ### Parameters
 
-- `name` **[string][1617]**&#x20;
-- `result` **(ApiMessage | [undefined][1627])?**&#x20;
+- `name` **[string][1794]**&#x20;
+- `result` **(ApiMessage | [undefined][1804])?**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## parsed
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
 
 Returns **any**&#x20;
 
@@ -6941,7 +7896,7 @@ Returns **any**&#x20;
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
 
 Returns **any**&#x20;
 
@@ -6952,9 +7907,9 @@ one that takes one, since its name says nothing the block does not.
 
 ### Parameters
 
-- `args` **[string][1617]** As the model wrote them
+- `args` **[string][1794]** As the model wrote them
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## consultationView
 
@@ -6962,14 +7917,14 @@ A skill's call as a block, from the call and what came back.
 
 ### Parameters
 
-- `$0` **[Object][1618]**&#x20;
+- `$0` **[Object][1795]**&#x20;
   - `$0.id` (optional, default `''`)
   - `$0.name` &#x20;
   - `$0.arguments` &#x20;
   - `$0.result` &#x20;
   - `$0.consultation` &#x20;
 
-Returns **[ConsultationView][782]**&#x20;
+Returns **[ConsultationView][894]**&#x20;
 
 ## consultationsIn
 
@@ -6978,22 +7933,22 @@ trajectory has, answered, and then the ones still running.
 
 ### Parameters
 
-- `trajectory` **([Array][1621]\<ApiMessage> | [undefined][1627])** The turn's record of its calls
+- `trajectory` **([Array][1798]\<ApiMessage> | [undefined][1804])** The turn's record of its calls
 - `pending` &#x20;
 
-Returns **[Array][1621]<[ConsultationView][782]>**&#x20;
+Returns **[Array][1798]<[ConsultationView][894]>**&#x20;
 
 ## results
 
-Type: [Map][1624]<[string][1617], ApiMessage>
+Type: [Map][1801]<[string][1794], ApiMessage>
 
 ## results
 
-Type: [Map][1624]<[string][1617], ApiMessage>
+Type: [Map][1801]<[string][1794], ApiMessage>
 
 ## results
 
-Type: [Array][1621]<[Hit][1197]>
+Type: [Array][1798]<[Hit][1312]>
 
 ## fromDirectorNote
 
@@ -7004,7 +7959,7 @@ ahead of the assistant rather than leaving the call to the model.
 
 - `note` **DirectorNote**&#x20;
 
-Returns **[ConsultationView][782]**&#x20;
+Returns **[ConsultationView][894]**&#x20;
 
 ## ai/skills/director
 
@@ -7074,7 +8029,7 @@ table, not that the Director should go back to guessing.
 Names, not definitions, so this module imports nothing from ../tools — which
 imports this one. The caller resolves them.
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## DIRECTOR_SETTINGS
 
@@ -7107,10 +8062,10 @@ What the model calls it by: its SKILL.md's description, and no parameters.
 
 ### Parameters
 
-- `_args` **[Object][1618]** The Director takes no arguments; it reads the turn it is in
-- `context` **[ToolContext][1449]?** (optional, default `{}`)
+- `_args` **[Object][1795]** The Director takes no arguments; it reads the turn it is in
+- `context` **[ToolContext][1563]?** (optional, default `{}`)
 
-Returns **[Promise][1625]<({direction: [string][1617]} | {error: [string][1617]})>**&#x20;
+Returns **[Promise][1802]<({direction: [string][1794]} | {error: [string][1794]})>**&#x20;
 
 ## buildDirectionBlock
 
@@ -7132,127 +8087,131 @@ kept for the reader — a Game Master handed the working narrates the working.
 
 ### Parameters
 
-- `direction` **[string][1617]** What the Director said
+- `direction` **[string][1794]** What the Director said
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## ai/skills/form
 
-A SKILL.md as the fields a form edits, and back.
+A SKILL.md as the three fields the settings edit, and back.
 
 The library keeps a skill as its file, and the file is what is exported, so
-the form does not own a copy of anything: it reads its fields out of the
-frontmatter and writes them back into it. Every other field stays where it
-was — a license, a `model`, a key another tool invented, a summary for the
-/ menu written by hand — and so does the order the fields were in. What does not survive a save from the form is a
-comment in the frontmatter, because the frontmatter is written afresh.
+the fields own a copy of nothing: a name, a description and the
+instructions are read out of the file and written back into it. Everything
+else in it stays where it was: who may call it, how it runs, a license, a
+key another tool invented. Those are changed in the file itself, which the
+editor opens whole.
 
-Settings at their default are taken out rather than written, so a skill
-saved from the form reads the way one written by hand would: no
-`user-invocable: true`, no empty `metadata`.
+The name is written as the writer would say it, "Short Story Editor", and
+the name the skill is called by is made from that: `short-story-editor`.
+What they wrote is kept beside it, as `metadata.inksprite-title`, where it
+says more than the name does.
 
-## OUTPUTS
-
-## OUTPUTS
-
-## OUTPUTS
+A change to the instructions alone leaves the frontmatter exactly as it was
+written. A change to the name or the description writes the frontmatter
+afresh, and a comment in it goes.
 
 ## SkillForm
 
-What the form edits.
+What the settings edit of a skill.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `name` **[string][1617]**&#x20;
-- `description` **[string][1617]** What the model reads
-- `model` **[boolean][1620]** The model may call it
-- `user` **[boolean][1620]** The writer may
-- `fork` **[boolean][1620]** It runs on its own
-- `output` **[SkillOutput][845]** Where its answer goes, when it runs on its own
-- `argument` **[string][1617]** Its argument's name, or empty for none
-- `argumentDescription` **[string][1617]** What to type for it: shown after
-  the name in the / menu, and what the model is told about it
-- `tools` **[Array][1621]<[string][1617]>** The tools it is given, when it runs on its own
-- `body` **[string][1617]** Its instructions
+- `name` **[string][1794]** As the writer wrote it: a title, or the name
+  itself
+- `description` **[string][1794]** What it does and when to use it, which
+  the model reads
+- `body` **[string][1794]** Its instructions
 
-## listOf
+## FRONT_BLOCK
 
-### Parameters
+The frontmatter as it was written, dashes and all, up to the body.
 
-- `value` **unknown**&#x20;
+## shown
 
-Returns **[Array][1621]<[string][1617]>**&#x20;
-
-## listOf
-
-A space- or comma-separated string, or a list, as a list.
+A field as the form shows it: text, or what YAML read a bare word as.
 
 ### Parameters
 
 - `value` **unknown**&#x20;
 
-Returns **([Array][1621]<[string][1617]> | null)** Null when it is neither
+Returns **[string][1794]**&#x20;
+
+## shown
+
+Type: ([string][1794] | null)
+
+## TITLE
+
+Where a file keeps what the writer called its skill.
+
+Type: [string][1794]
+
+## titleIn
+
+What a file's frontmatter says the writer called its skill, when it does.
+
+### Parameters
+
+- `front` **Record<[string][1794], unknown>**&#x20;
+
+Returns **[string][1794]**&#x20;
+
+## meta
+
+Type: Record<[string][1794], unknown>
 
 ## formFromText
 
-The form's fields, from a SKILL.md, with the frontmatter they came from. A
-file whose frontmatter cannot be read has no form, and says why: it is
-edited as the file until it can be.
+The three fields, from a SKILL.md. A file whose frontmatter cannot be read
+has none, and says why: it is put right in the file.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
 
-Returns **({form: [SkillForm][819], front: Record<[string][1617], unknown>} | {error: [string][1617]})**&#x20;
+Returns **({form: [SkillForm][928]} | {error: [string][1794]})**&#x20;
 
-## front
+## nameFromTitle
 
-Type: Record<[string][1617], unknown>
+The name a skill is called by, from what the writer wrote for one:
+lowercase letters, digits and single hyphens, a letter first. A name
+written that way already is itself.
 
-## includes
+### Parameters
 
-Type: [SkillOutput][845]
+- `written` **[string][1794]**&#x20;
+
+Returns **[string][1794]** Nothing when there is no name in it
+
+## withTitle
+
+The frontmatter with the skill called this, and the rest of it as it was.
+What was written is kept only where the name does not already say it.
+
+### Parameters
+
+- `front` **Record<[string][1794], unknown>**&#x20;
+- `title` **[string][1794]** Nothing, for a name that says it all
+
+Returns **Record<[string][1794], unknown>**&#x20;
 
 ##
 
-Type: [SkillOutput][845]
-
-## put
-
-Set a field, or take it out when it is at its default.
-
-### Parameters
-
-- `fields` **Record<[string][1617], unknown>**&#x20;
-- `key` **[string][1617]**&#x20;
-- `value` **unknown**&#x20;
-- `unset` **[boolean][1620]** Whether it is at its default
+Type: Record<[string][1794], unknown>
 
 ## textFromForm
 
-The SKILL.md the form says, written into the frontmatter it came from.
+The SKILL.md with the three fields as given, and the rest of it as it was.
 
 ### Parameters
 
-- `form` **[SkillForm][819]**&#x20;
-- `front` **Record<[string][1617], unknown>?** What the file had, kept where the
-  form does not reach; a new skill has none (optional, default `{}`)
+- `form` **[SkillForm][928]**&#x20;
+- `text` **[string][1794]?** The file as it stands; none for a new skill (optional, default `''`)
 
-Returns **[string][1617]**&#x20;
-
-## fields
-
-Type: Record<[string][1617], unknown>
-
-## metadata
-
-Type: Record<[string][1617], unknown>
-
-## metadata
-
-Type: Record<[string][1617], unknown>
+Returns **[string][1794]**&#x20;
 
 ## withName
 
@@ -7263,23 +8222,10 @@ read is left as it is.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
-- `name` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
+- `name` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
-
-## newSkillText
-
-The SKILL.md a new skill starts as: one only the writer calls, so it is a
-saved prompt until they say otherwise, and a name they will change. Its
-description and instructions are the writer's to write, so they start empty
-and it does not read as a skill until they are written.
-
-### Parameters
-
-- `name` **[string][1617]**&#x20;
-
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## ai/skills/format
 
@@ -7325,33 +8271,36 @@ Type: (`"result"` | `"reply"` | `"summary"` | `"edit"`)
 
 A skill, as read from its file.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `name` **[string][1617]** What the writer types after the slash, and the
+- `name` **[string][1794]** What the writer types after the slash, and the
   model's name for the tool
-- `description` **[string][1617]** What it does and when to use it. The model
+- `title` **[string][1794]** What the writer called it, where that is more
+  than its name can hold: "Short Story Editor" for `short-story-editor`.
+  Nothing when the name is all there is.
+- `description` **[string][1794]** What it does and when to use it. The model
   reads this to decide whether to call it.
-- `summary` **[string][1617]** What it does, in a line, for the writer: the
+- `summary` **[string][1794]** What it does, in a line, for the writer: the
   command menu and the chat's settings. The description when the file gives
   no line of its own.
-- `model` **[boolean][1620]** Whether the model may call it
-- `user` **[boolean][1620]** Whether the writer may
-- `fork` **[boolean][1620]** Whether it runs on its own, as an inference of its
+- `model` **[boolean][1797]** Whether the model may call it
+- `user` **[boolean][1797]** Whether the writer may
+- `fork` **[boolean][1797]** Whether it runs on its own, as an inference of its
   own under its own prompt, rather than joining its caller's conversation
-- `output` **[SkillOutput][845]** Where its answer goes, when it runs on its own
-- `argument` **([string][1617] | null)** The name of its one argument, when it names
+- `output` **[SkillOutput][953]** Where its answer goes, when it runs on its own
+- `argument` **([string][1794] | null)** The name of its one argument, when it names
   one. A named argument is required.
-- `argumentHint` **[string][1617]** What the writer is shown after the name
-- `argumentDescription` **[string][1617]** What the model is told about the argument
-- `tools` **[Array][1621]<[string][1617]>** The tools it is given, when it runs on its own
+- `argumentHint` **[string][1794]** What the writer is shown after the name
+- `argumentDescription` **[string][1794]** What the model is told about the argument
+- `tools` **[Array][1798]<[string][1794]>** The tools it is given, when it runs on its own
 - `speakers` **(TranscriptRoles | null)** What the conversation it reads
   calls its two voices, when it says; the transcript's own names otherwise
-- `body` **[string][1617]** Its instructions: the prompt it runs under, or the
+- `body` **[string][1794]** Its instructions: the prompt it runs under, or the
   text an inline skill brings to its caller
-- `license` **[string][1617]?**&#x20;
-- `compatibility` **[string][1617]?**&#x20;
+- `license` **[string][1794]?**&#x20;
+- `compatibility` **[string][1794]?**&#x20;
 
 ## NAME
 
@@ -7363,17 +8312,19 @@ would take more; this is the part both agree on.
 
 The longest name and description the standard allows.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## MAX_NAME
 
 The longest a function name may be.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## ARGUMENT
 
 What an argument can be called and still be written `$name` in a body.
+
+## OUTPUTS
 
 ## FIELDS
 
@@ -7383,6 +8334,27 @@ another product's models, when which model runs a skill is the writer's
 setup rather than the skill's, and `agent`, `background`, `hooks`, `paths`
 and `shell`, which are about how a coding tool hosts one.
 
+## listOf
+
+A space- or comma-separated string, or a list, as a list.
+
+### Parameters
+
+- `value` **unknown**&#x20;
+
+Returns **([Array][1798]<[string][1794]> | null)** Null when it is neither
+
+## yamlProblem
+
+What YAML could not read, in a line: js-yaml's own message runs to several,
+with the lines around the fault drawn out under it.
+
+### Parameters
+
+- `error` **any**&#x20;
+
+Returns **[string][1794]**&#x20;
+
 ## splitSkill
 
 A SKILL.md in its two parts: the frontmatter, as the fields YAML reads it
@@ -7391,13 +8363,13 @@ into, and the body. Nothing about what the fields mean — that is
 
 ### Parameters
 
-- `text` **[string][1617]** The whole file
+- `text` **[string][1794]** The whole file
 
-Returns **({front: Record<[string][1617], unknown>, body: [string][1617]} | {error: [string][1617]})**&#x20;
+Returns **({front: Record<[string][1794], unknown>, body: [string][1794]} | {error: [string][1794]})**&#x20;
 
 ##
 
-Type: Record<[string][1617], unknown>
+Type: Record<[string][1794], unknown>
 
 ## joinSkill
 
@@ -7406,22 +8378,22 @@ dashes, and the body under them.
 
 ### Parameters
 
-- `front` **Record<[string][1617], unknown>**&#x20;
-- `body` **[string][1617]**&#x20;
+- `front` **Record<[string][1794], unknown>**&#x20;
+- `body` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## NEEDS_DESCRIPTION
 
 What a skill with no description is told.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## NEEDS_INSTRUCTIONS
 
 What a skill with no instructions is told.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## nameError
 
@@ -7429,80 +8401,112 @@ What is wrong with a skill's name as a name, whatever else has it.
 
 ### Parameters
 
-- `name` **[string][1617]** Trimmed
+- `name` **[string][1794]** Trimmed
 
-Returns **[string][1617]** Nothing for a good one
+Returns **[string][1794]** Nothing for a good one
 
 ## parseSkill
 
 Read a SKILL.md.
 
-Everything that is wrong with it is said, not just the first thing, so a
-writer fixing a file by hand fixes it once. Fields it does not use are named
-in `ignored`, for anyone importing it who wants to know what did not come
-across.
+Three things keep a file from being a skill: frontmatter that can't be
+read, no name it can be called by, and no description or instructions.
+They are said in that order, so the first is the one to put right first.
+
+Nothing else does. A field this app has no use for, and one it knows whose
+value it can't use, are both passed over as other tools pass them over, and
+named in `ignored` for anyone importing the file who wants to know what did
+not come across. `unusable` says what was wrong with the second kind, which
+only a skill that ships with the app is held to.
 
 ### Parameters
 
-- `text` **[string][1617]** The whole file
+- `text` **[string][1794]** The whole file
 
-Returns **({skill: [SkillDefinition][846], ignored: [Array][1621]<[string][1617]>} | {errors: [Array][1621]<[string][1617]>})**&#x20;
+Returns **({skill: [SkillDefinition][954], ignored: [Array][1798]<[string][1794]>, unusable: [Array][1798]<[string][1794]>} | {errors: [Array][1798]<[string][1794]>})**&#x20;
 
 ## errors
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
+
+## passed
+
+What was passed over, by its field, and why. @type {Map\<string, string>}
 
 ##
 
-Type: [string][1617]
+Type: [string][1794]
 
 ##
 
-Type: [string][1617]
+Type: [string][1794]
 
 ##
 
-Type: [boolean][1620]
+Type: [string][1794]
 
 ##
 
-Type: [string][1617]
+Type: [string][1794]
 
 ##
 
-Type: [SkillOutput][845]
+Type: [boolean][1797]
 
-## outputAsked
+## readable
 
-Type: [SkillOutput][845]
+Type: Record<[string][1794], unknown>
+
+## readable
+
+A document as a chat reads it: the names in its title, summary, digest
+and text, and its text without the comments' markup and with suggestions
+as the chat sees them. The same document back when there is nothing to
+change.
+
+The text only when it is asked for: a path is built from every document
+above it, and the tree is walked whole for every listing and search, while
+the body of a long file is read rarely.
+
+### Parameters
+
+- `document` **[Document][1799]**&#x20;
+- `names` &#x20;
+- `chatId` **([string][1794] | null | [undefined][1804])**&#x20;
+
+Returns **[Document][1799]**&#x20;
 
 ##
 
-Type: [SkillOutput][845]
+Type: [string][1794]
 
 ##
 
-Type: [Array][1621]<[string][1617]>
+Type: [SkillOutput][953]
+
+## outputKnown
+
+Type: [SkillOutput][953]
 
 ## readBuiltInSkill
 
 Read a skill that ships with the app.
 
-One that does not read is a bug in the app rather than a file somebody
-brought, so it throws, and the module that ships it fails to load where a
-test will see it.
+One that does not read, or that has a field this app can't use, is a bug in
+the app rather than a file somebody brought, so it throws, and the module
+that ships it fails to load where a test will see it.
 
 ### Parameters
 
-- `text` **[string][1617]** The SKILL.md
+- `text` **[string][1794]** The SKILL.md
 
-Returns **[SkillDefinition][846]**&#x20;
+Returns **[SkillDefinition][954]**&#x20;
 
 ## HANDS_OVER_REPLY
 
 What the model is told about a skill whose answer is the reply.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## toolDefinitionFor
 
@@ -7519,9 +8523,9 @@ its answer here.
 
 ### Parameters
 
-- `skill` **[SkillDefinition][846]**&#x20;
+- `skill` **[SkillDefinition][954]**&#x20;
 
-Returns **[ToolDefinition][1443]**&#x20;
+Returns **[ToolDefinition][1557]**&#x20;
 
 ##
 
@@ -7535,16 +8539,24 @@ the registry of them.
 A skill is a SKILL.md — a name, a description, instructions — and three
 settings: who may call it (the model, the writer, or both), whether it runs
 on its own or joins its caller's conversation, and, when it runs on its own,
-where its answer goes. The file format is ./format.js; the four that ship
-with the app each have a folder here, their SKILL.md beside the code for
-what a file cannot say. See `.llm/skills_design.md`.
+where its answer goes. The file format is ./format.js; the one that ships
+with the app, Compact, has a folder here, its SKILL.md beside the code for
+what a file cannot say, as the Director does, which is not offered. See
+`.llm/skills_design.md`.
+
+A file the writer brings or writes is read forgivingly: only frontmatter
+that can't be read, a name that can't be one, and no description or
+instructions keep it from being a skill, and what else it can't use is
+passed over. The settings edit three fields of it, its name, description
+and instructions (./form.js), the name written as a title and the name it
+is called by made from that. See `.llm/skills_rework_design.md`.
 
 Everything else is made from this list rather than naming skills one at a
 time: the tools the model can call a skill by (../tools/index.js), the
-commands the writer can (../commands.js), and the chat settings that list
-them and hold a profile's rewording of each.
+commands the writer can (../commands.js), and Settings › Skills, which lists
+them and holds a profile's rewording of each.
 
-All four run on their own. Such a skill is another inference: its own system
+Those run on their own. Such a skill is another inference: its own system
 prompt, over the conversation the caller is already in, handing back what it
 said. That is the whole contract — same registry, same tool call, no
 orchestration layer above the turn loop, which already sequences model calls
@@ -7576,34 +8588,35 @@ cannot be right for all of them at once. The bag is laid over what the
 writer tuned rather than replacing it, so it should name only what it
 actually means to change: every field left out is one they keep.
 
-Compact is the writer's alone: a summary is not an answer at all. A scene
-is, and a turn can hand its reply to a skill, so what Write writes is the
-reply rather than relayed and written twice (see handOverReply in
-composables/useAIChat.js). Whether a chat that hands off its writing still
-reads well is the harness's to say, so Write is offered to the model, with
-Interpret, only in a chat that switches the experimental group on.
+Compact is the writer's alone: a summary is not an answer at all. It is
+asked in the thread, of the chat's own model as the writer's last word
+(`inThread`), not under a prompt of its own over a transcript. A scene
+is, and a turn can hand its reply to a skill, so what such a skill writes
+is the reply rather than relayed and written twice (see handOverReply in
+composables/useAIChat.js).
 
-Each is there at all only while the writer has switched it on, for the
-whole app (`setExperimentalSkills`). Off, it is no tool, no command, and no
-row in a chat's settings; the records it left in chats read as they did.
+Skills still being tuned are not in the app at all. The harness keeps them
+(`harness/skills`: Interpret and Write) and sets them beside the built-ins
+while it runs (`setTrialSkills`); the records they left in chats read as
+any command's whose skill is gone.
 
-The wording is the writer's to change, in two places: a built-in's for every
-chat, in the library, and any skill's for the chats on one profile. Each is
+The wording is the writer's to change, for the chats on one profile. It is
 an override, never a copy: a skill whose prompt the writer has not touched
 reads the one its file has, and keeps picking up improvements to it — the
 reason a profile made today is not stranded on today's wording. See
-`skillPrompt`.
+`skillPrompt`. The app-wide wordings of the built-ins there once were
+(the `skillWordings` table) are no longer read.
 
 ## SKILL_MAX_ROUNDS
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## SKILL_MAX_ROUNDS
 
 A skill the app can run: what its file says, and the code for what a file
 cannot.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## SKILL_MAX_ROUNDS
 
@@ -7614,7 +8627,7 @@ is the budget for its whole conversation with itself: enough to ask, look,
 and answer, and not enough to run a scene. A skill that spends it without
 answering is treated as having said nothing.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## SKILL_MAX_DEPTH
 
@@ -7631,7 +8644,7 @@ own depth is a model choosing how long the writer waits.
 The limit lives at the point tools are resolved (see getToolDefinitionsFor),
 so it holds whatever a skill's list asks for.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## BUILT_IN_SKILLS
 
@@ -7645,7 +8658,7 @@ executeDirector }` back at the head of this list brings it back. The
 writer's own `/director`, which asks no model, is a command of its own and
 stays.
 
-Type: [Array][1621]\<Skill>
+Type: [Array][1798]\<Skill>
 
 ## library
 
@@ -7657,27 +8670,14 @@ Set by the store that keeps the library (`setLibrarySkills`) rather than
 read from it, so nothing here knows there is a database, and a test can
 hand it a library of its own.
 
-Type: [Array][1621]\<Skill>
+Type: [Array][1798]\<Skill>
 
-## wordings
+## trials
 
-What the writer has a built-in run under in every chat, by name, as their
-library last said. A built-in absent here runs under its own file's words.
+The skills the harness is tuning, which it sets beside the built-ins while
+it runs (`setTrialSkills`). The app sets none.
 
-Set from the same store as the library (`setSkillWordings`). A skill of the
-writer's has no entry: its words are its file, which they edit instead.
-
-Type: [Map][1624]<[string][1617], [string][1617]>
-
-## switchedOn
-
-The experimental built-ins the writer has switched on, by name, as their
-switches last said. None until they say otherwise, as the switches start.
-
-Set from the switches (`setExperimentalSkills`) rather than read from them,
-for the reason the library is.
-
-Type: [Set][1628]<[string][1617]>
+Type: [Array][1798]\<Skill>
 
 ## fromLibrary
 
@@ -7685,8 +8685,11 @@ A skill of the writer's, from what the library keeps of it.
 
 One whose file does not read is left out rather than guessed at. The screen
 that keeps the library says what is wrong with it; the model and the command
-line never see it. So is one that takes a built-in's name, which the screen
-does not allow and a library from elsewhere might.
+line never see it. So is one that takes a built-in's name, and one whose
+file names it something other than the name the library keeps it under:
+the file is kept as it is typed, and a name it could not have, another
+skill's or a command's, is one the library did not give it
+(`composables/useSkills.js`).
 
 ### Parameters
 
@@ -7700,7 +8703,11 @@ Type: Skill
 
 ## made
 
-Type: [Array][1621]\<Skill>
+Type: [Array][1798]\<Skill>
+
+## made
+
+Previews made so far, for each to have an id of its own.
 
 ## setLibrarySkills
 
@@ -7711,42 +8718,27 @@ list — the model's tools, the commands — to make itself again.
 
 - `stored` &#x20;
 
-## setSkillWordings
+## setTrialSkills
 
-Replace the writer's wordings of the built-ins with these.
-
-Nothing made from the list changes with them — a tool's description is its
-file's, and the prompt is read when the skill runs — so no one is told.
-
-### Parameters
-
-- `stored` **[Array][1621]<{name: [string][1617], prompt: [string][1617]}>** The wordings, as kept
-
-## setExperimentalSkills
-
-Have these experimental built-ins switched on and the rest off, and tell
-everything made from the list to make itself again, as a change to the
-library does.
+Set the skills the harness is tuning beside the built-ins, in place of any
+it set before, and tell everything made from the list to make itself again,
+as a change to the library does. Only the harness calls this; see
+`harness/skills`.
 
 ### Parameters
 
-- `names` **[Array][1621]<[string][1617]>** The ones switched on
+- `skills` **[Array][1798]\<Skill>**&#x20;
 
-## skillIsOn
+## builtInSkills
 
-Whether a skill is there to use: any but an experimental built-in, and one
-of those while the writer has it switched on.
+The skills that come with the code rather than from the library: the
+built-ins, and the harness's while it runs.
 
-### Parameters
-
-- `name` **[string][1617]**&#x20;
-
-Returns **[boolean][1620]**&#x20;
+Returns **[Array][1798]\<Skill>**&#x20;
 
 ## onSkillsChanged
 
-Be told whenever the library changes, or an experimental skill is
-switched.
+Be told whenever the library changes.
 
 ### Parameters
 
@@ -7756,41 +8748,32 @@ switched.
 
 Every skill there is: the built-ins, then the writer's own.
 
-Returns **[Array][1621]\<Skill>**&#x20;
-
-## availableSkills
-
-Every skill there is to use: all of them, less the experimental built-ins
-the writer has not switched on. What the model is offered, what the writer
-can type, and what a chat's settings list are made from this. A record a
-skill left in a chat is read through `getSkill`, which finds it either way.
-
-Returns **[Array][1621]\<Skill>**&#x20;
+Returns **[Array][1798]\<Skill>**&#x20;
 
 ## librarySkills
 
 The writer's own skills, as the registry has them now.
 
-Returns **[Array][1621]\<Skill>**&#x20;
+Returns **[Array][1798]\<Skill>**&#x20;
 
 ## getSkill
 
 ### Parameters
 
-- `name` **[string][1617]**&#x20;
+- `name` **[string][1794]**&#x20;
 
 Returns **(Skill | null)**&#x20;
 
 ## skillLabel
 
-What the writer calls a skill: its name, as a word. `house-style` is House
-style.
+What the writer calls a skill: what they called it, or else its name, as a
+word. `house-style` is House style.
 
 ### Parameters
 
-- `skill` **{name: [string][1617]}**&#x20;
+- `skill` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## skillPrompt
 
@@ -7802,136 +8785,21 @@ wording of nothing but space is no wording at all.
 
 ### Parameters
 
-- `name` **[string][1617]** The skill's
+- `name` **[string][1794]** The skill's
 - `settings` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## ownPrompt
 
-What a skill runs under on a profile that has not reworded it: the writer's
-wording of it in the library, for a built-in they have changed there, and
-its file's otherwise.
+What a skill runs under on a profile that has not reworded it: its file's
+instructions.
 
 ### Parameters
 
-- `name` **[string][1617]** The skill's
+- `name` **[string][1794]** The skill's
 
-Returns **[string][1617]**&#x20;
-
-## ai/skills/interpret
-
-Interpret: an idea, for the places the fiction does not settle
-itself.
-
-Ask it a question — what this NPC wants, what is in the diary, where the
-scene should turn — and it draws a tarot card, reads it against the story it
-is in, and answers with what it made of it.
-
-The draw stays here. That is the whole reason this is a skill rather than a
-tool: a card like The Tower, reversed, is a prompt, not an answer, and a
-model handed one mid-turn stops running the game and starts solving it —
-paragraphs of reasoning about what the card could mean, and then a scene bent
-around whichever reading it argued itself into, because the reading is the
-freshest thing in its context. Interpreting it somewhere else costs an
-inference and returns a sentence the caller can simply use.
-
-It imports the draw rather than asking for one as a tool. Not for the round
-it saves: a skill that has to choose to draw can choose not to, and
-an `interpret` that answered out of its own head would look exactly like one
-that had drawn. The draw is the point, so it is not the model's to skip.
-(Importing ../../tools/rpg.js is not the cycle the other skills step around —
-that one is ../../tools/index.js, which imports this module.)
-
-What it is lives in its SKILL.md, beside this; the draw is the part a file
-cannot say.
-
-## INTERPRET
-
-## INTERPRET
-
-## INTERPRET
-
-Interpret, as its SKILL.md has it.
-
-## INTERPRET_SETTINGS
-
-How the oracle's own request is sampled.
-
-Nothing, at the moment: it runs at whatever the writer tuned for their model,
-thinking included. Which is a position and not an oversight — an empty bag
-says this role has no quarrel with the profile, and the reading it does is
-close enough to what the model is already set up to do.
-
-Its thinking is worth having here in a way it is not in the turn itself. The
-card is the one thing an interpretation turns on and the one thing nobody is
-allowed to see; watching it reason toward a reading is the only view of that
-there is. `/interpret` shows it in the message.
-
-The place to tune the role. Whatever goes in is laid over the writer's
-settings, so it should name only what it means to change — see
-ai/skills/index.js.
-
-## describeCard
-
-A drawn card as the oracle is shown it: its name, and which way up. Upright
-is said too, so the reader is never left to guess which way it came.
-
-### Parameters
-
-- `$0` **[Object][1618]**&#x20;
-  - `$0.card` &#x20;
-  - `$0.reversed` &#x20;
-
-Returns **[string][1617]**&#x20;
-
-## buildInterpretPrompt
-
-The role, the question it was asked, and the draw it has to read.
-
-All three go in the system prompt because that is the one message a skill
-gets to itself — the rest of the conversation is the game, which it is
-reading over the caller's shoulder and must not be seen to answer.
-
-Put after the role here rather than written into its body as `$question`:
-a profile that rewords the role stores the role alone, and a body that
-expected to be filled in would lose the question from every one of those.
-
-### Parameters
-
-- `question` **[string][1617]** What the caller wants an idea about
-- `draw` &#x20;
-- `base` **[string][1617]?** What the role runs under; its own when not given
-
-Returns **[string][1617]**&#x20;
-
-## interpretDefinition
-
-What the model calls it by: its SKILL.md's description, and the question.
-
-## executeInterpret
-
-### Parameters
-
-- `args` &#x20;
-- `context` **[ToolContext][1449]?** (optional, default `{}`)
-
-Returns **[Promise][1625]<({interpretation: [string][1617]} | {error: [string][1617]})>**&#x20;
-
-## askInterpret
-
-Interpret, asked by the writer: `/interpret What is she afraid of?`.
-
-The same skill the model reaches, making the same draw; what differs is only
-who asked, and that the answer is text for the writer's turn rather than a
-tool result.
-
-### Parameters
-
-- `question` **[string][1617]**&#x20;
-- `context` **[ToolContext][1449]?** (optional, default `{}`)
-
-Returns **[Promise][1625]<({answer: [string][1617]} | {error: [string][1617]})>**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## ai/skills/loads
 
@@ -7969,13 +8837,13 @@ in them.
 
 ## USE_SKILL
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## USE_SKILL
 
 The tool the model loads a skill with.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## USE_SKILL
 
@@ -7983,17 +8851,17 @@ Type: [string][1617]
 
 One load of a skill, where it happened.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `name` **[string][1617]** The skill
-- `messageId` **[string][1617]** The message holding the record
+- `name` **[string][1794]** The skill
+- `messageId` **[string][1794]** The message holding the record
 - `by` **(`"model"` | `"writer"`)** Who loaded it
-- `dropped` **[boolean][1620]** The writer dropped it
-- `call` **[ToolCall][1445]?** The model's call, for a load it made
+- `dropped` **[boolean][1797]** The writer dropped it
+- `call` **[ToolCall][1559]?** The model's call, for a load it made
 - `result` **ApiMessage?** What the call returned
-- `index` **[number][1619]?** Which of the writer's segments, for a load they made
+- `index` **[number][1796]?** Which of the writer's segments, for a load they made
 - `command` **ChatCommand?** The command they typed
 
 ## skillCalls
@@ -8015,11 +8883,11 @@ not a load, and nor is one that failed or found the skill already loaded.
 
 - `message` **Message**&#x20;
 
-Returns **[Array][1621]<[Load][931]>**&#x20;
+Returns **[Array][1798]<[Load][1030]>**&#x20;
 
 ## loads
 
-Type: [Array][1621]<[Load][931]>
+Type: [Array][1798]<[Load][1030]>
 
 ##
 
@@ -8038,7 +8906,7 @@ the skill that writes the scene too.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<Message>** The chat, in order, before compaction
+- `messages` **[Array][1798]\<Message>** The chat, in order, before compaction
 
 ## loaded
 
@@ -8049,9 +8917,9 @@ dropped one is loaded until a summary stands in for where it was loaded.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<Message>** The chat, in order
+- `messages` **[Array][1798]\<Message>** The chat, in order
 
-Returns **[Array][1621]<[string][1617]>**&#x20;
+Returns **[Array][1798]<[string][1794]>**&#x20;
 
 ## droppedSkills
 
@@ -8061,9 +8929,9 @@ kept.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<Message>** The chat, in order
+- `messages` **[Array][1798]\<Message>** The chat, in order
 
-Returns **[Array][1621]<[string][1617]>**&#x20;
+Returns **[Array][1798]<[string][1794]>**&#x20;
 
 ## carriedLoads
 
@@ -8074,13 +8942,13 @@ where it is.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<Message>** The chat, in order, before compaction
+- `messages` **[Array][1798]\<Message>** The chat, in order, before compaction
 
-Returns **[Array][1621]<[Load][931]>** In the order they were loaded
+Returns **[Array][1798]<[Load][1030]>** In the order they were loaded
 
 ## carried
 
-Type: [Map][1624]<[string][1617], [Load][931]>
+Type: [Map][1801]<[string][1794], [Load][1030]>
 
 ## droppedFrom
 
@@ -8090,9 +8958,9 @@ kept past a summary. Null when the message has none to drop.
 ### Parameters
 
 - `message` **Message**&#x20;
-- `name` **[string][1617]** The skill
+- `name` **[string][1794]** The skill
 
-Returns **({metadata: Record<[string][1617], any>} | {segments: [Array][1621]\<MessageSegment>} | null)**&#x20;
+Returns **({metadata: Record<[string][1794], any>} | {segments: [Array][1798]\<MessageSegment>} | null)**&#x20;
 
 ##
 
@@ -8144,11 +9012,11 @@ typed, nothing is added.
 
 ### Parameters
 
-- `text` **[string][1617]** The instructions
-- `argument` **([string][1617] | null)** The name the skill gives its argument, if any
-- `input` **[string][1617]?** What was typed after the name
+- `text` **[string][1794]** The instructions
+- `argument` **([string][1794] | null)** The name the skill gives its argument, if any
+- `input` **[string][1794]?** What was typed after the name
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## offeredToModel
 
@@ -8158,9 +9026,9 @@ hands over to it, and ends with what it writes.
 
 ### Parameters
 
-- `skill` **[SkillDefinition][846]**&#x20;
+- `skill` **[SkillDefinition][954]**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## loadedByModel
 
@@ -8170,9 +9038,9 @@ conversation and that the model may call.
 
 ### Parameters
 
-- `skill` **[SkillDefinition][846]**&#x20;
+- `skill` **[SkillDefinition][954]**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## writerCalls
 
@@ -8186,21 +9054,9 @@ How the writer can call this skill yet, if they can.
 
 ### Parameters
 
-- `skill` **[SkillDefinition][846]**&#x20;
+- `skill` **[SkillDefinition][954]**&#x20;
 
 Returns **(`"ask"` | `"prompt"` | null)**&#x20;
-
-## describeCallers
-
-Who calls a skill, in a line for the writer: the one thing about it the list
-cannot otherwise show, since a skill the model calls looks like any other.
-How it runs and where its answer goes are the editor's to say.
-
-### Parameters
-
-- `skill` **[SkillDefinition][846]**&#x20;
-
-Returns **[string][1617]**&#x20;
 
 ## waitingOn
 
@@ -8209,9 +9065,9 @@ of it works now.
 
 ### Parameters
 
-- `skill` **[SkillDefinition][846]**&#x20;
+- `skill` **[SkillDefinition][954]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## runOnItsOwn
 
@@ -8221,115 +9077,202 @@ conversation, with the tools and the speakers its file names.
 
 ### Parameters
 
-- `skill` **[SkillDefinition][846]**&#x20;
-- `input` **[string][1617]** Its argument, as typed or as the model gave it
-- `context` **[ToolContext][1449]?** (optional, default `{}`)
+- `skill` **[SkillDefinition][954]**&#x20;
+- `input` **[string][1794]** Its argument, as typed or as the model gave it
+- `context` **[ToolContext][1563]?** (optional, default `{}`)
 
-Returns **[Promise][1625]<({answer: [string][1617]} | {error: [string][1617]})>**&#x20;
+Returns **[Promise][1802]<({answer: [string][1794]} | {error: [string][1794]})>**&#x20;
 
-## ai/skills/write
+## ai/suggestions
 
-Write: a piece of prose, from the project's notes, on its own
-prompt.
+The model setup has picked already when the writer reaches a
+connection's list: one that answers a chat well, and costs nothing where
+the account hasn't paid for anything yet.
 
-The chat's prompt is editorial — brainstorm, read, give notes — and the rules
-that make a model write well are prohibitions, which cost something wherever
-they sit: told never to say what a gesture means, an assistant asked for
-feedback on a gesture has been told not to give it. So the writing gets a
-prompt of its own, and this is it. What the prompt says was arrived at by
-measurement, one rule per round, in the transcript harness (`harness/` in
-the app; each round's scores are beside its transcripts), and it should
-change the same way: a sentence at a time, against five runs.
+Design: `.llm/ai_setup_design.md`, "Step 2: setup".
 
-It is a skill by the same contract as the others — its own prompt over the
-conversation it is asked in, reached through `consult`. A tool's answer is
-consumed by the model that called it, and a scene handed back that way would
-be relayed by a second model pass: twice the tokens, and a rewrite by
-exactly the prompt this one exists to get away from. So a turn hands its
-reply to Write outright (handOverReply in composables/useAIChat.js).
-Whether a chat that does reads well is the harness's to say, and until it
-has, it is there only while the writer has it switched on, and the model is
-offered it only in a chat that switches the
-experimental group on. The writer reaches it themselves as `/write`, and
-what it writes is the reply. See ai/commands.js.
+## SONNET
 
-It reads the project and never writes to it. Where a piece goes is the
-writer's decision, made after they have read it.
+Type: [string][1794]
 
-What it is lives in its SKILL.md, beside this.
+## SONNET
 
-## WRITE
+OpenRouter's alias for its newest Sonnet, which the Default preset runs on.
 
-## WRITE
+Type: [string][1794]
 
-Write, as its SKILL.md has it.
+## NANOGPT_SONNET
 
-## WRITE_TOOLS
+NanoGPT's.
 
-The tools it asks for: the ones that read. Names, not definitions, the same
-way the Director declares its own — the caller resolves them, and this module
-imports nothing from ../../tools. They are the `allowed-tools` of its
-SKILL.md.
+Type: [string][1794]
 
-Type: [Array][1621]<[string][1617]>
+## FREE_FIRST
 
-## WRITE_SETTINGS
+OpenRouter's free models, best first, among those that call tools, after the recommended one.
 
-How the writing request is sampled.
+## OPENAI_FIRST
 
-Nothing yet: the prompt was tuned at the writer's own settings, and a change
-here would be a change to what was measured. It is the place to make one —
-writing wants variance where judging does not, and the design notes argue
-for thinking off on lines of dialogue — but each is a round of the harness,
-not an assumption. Whatever goes in is laid over the writer's settings and
-should name only what it means to change; see ai/skills/index.js.
+OpenAI's, best first.
 
-## buildWritePrompt
+## newest
 
-The role, and what it was asked for.
-
-The brief goes in the system prompt because that is the one message a skill
-gets to itself; the rest of what it reads is the writer's conversation and
-the project, and it is not the writer's turn it is answering.
-
-After the role, rather than written into its body, for the reason
-Interpret's question is: a profile's rewording is the role alone.
+The newest of these, by the numbers in their ids.
 
 ### Parameters
 
-- `brief` **[string][1617]** What the writer asked for, in their words
-- `base` **[string][1617]?** What the role runs under; its own when not given
+- `models` **[Array][1798]<[AIModel][645]>**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **([AIModel][645] | [undefined][1804])**&#x20;
 
-## executeWrite
+## suggestModel
 
-### Parameters
+The model to start a connection on, or null for one with none.
 
-- `args` &#x20;
-- `context` **[ToolContext][1449]?** (optional, default `{}`)
-
-Returns **[Promise][1625]<({draft: [string][1617]} | {error: [string][1617]})>**&#x20;
-
-## askWrite
-
-Write, asked by the writer: `/write The scene at the door`. What it writes is
-the reply.
+- One model, as a server at home with one loaded: that one.
+- OpenRouter: a free model that calls tools for an account that has never
+  bought credits, and Sonnet for any other.
+- NanoGPT, Anthropic: the newest Sonnet. OpenAI: the first of a short list
+  here.
+- Anything else: the first in its list.
 
 ### Parameters
 
-- `brief` **[string][1617]**&#x20;
-- `context` **[ToolContext][1449]?** (optional, default `{}`)
+- `kindId` **[string][1794]** The connection's kind (`ai/providers.js`)
+- `models` **[Array][1798]<[AIModel][645]>** What it serves
+- `$2` **[Object][1795]** (optional, default `{}`)
+  - `$2.freeTier` (optional, default `false`)
 
-Returns **[Promise][1625]<({answer: [string][1617]} | {error: [string][1617]})>**&#x20;
+Returns **([string][1794] | null)**&#x20;
+
+## ai/tools/choice
+
+Which of the model's tools a profile, or a chat, has on: one
+rule for every group there is, the app's own (documents, RPG, skills), the
+web, Python and each MCP server alike. See `.llm/tools_design.md`.
+
+A choice names what is off rather than what is on, so a group added later,
+a server connected tomorrow or web search set up, is on wherever nothing
+said otherwise: nobody adds a thing in order to go and switch it on. A
+profile written to offer only some groups names those instead
+(`onlyToolGroups`), and anything added later stays off in it: Blank, which
+offers none, and Roleplay, which offers the documents alone. A tool is on
+when its group is and it isn't named off, and while tools are on at all:
+switched off as a whole (`toolsOff`), every group and tool keeps its own
+switch, for when they are back on.
+
+A profile holds a choice, and a chat started on it a copy, which is the
+chat's from then on (ai/profiles). A switch in a chat changes the chat and
+its profile alike, so the next chat on it starts with what was switched
+(`useChatSettings`). Whether a group can be offered at all, the web without
+a service or Python outside the desktop app, is not the choice's to say;
+see `getEnabledToolDefinitions` in ./index.js.
+
+## ToolChoice
+
+Type: [Object][1795]
+
+### Properties
+
+- `disabledTools` **[Array][1798]<[string][1794]>?** Tools off, by name
+- `disabledToolGroups` **[Array][1798]<[string][1794]>?** Groups off, by id
+- `onlyToolGroups` **[Array][1798]<[string][1794]>?** The groups that may be on at all,
+  for a choice that offers only some. Absent means every group.
+- `toolsOff` **`true`?** Every tool off, whatever each is switched to
+
+## toggled
+
+### Parameters
+
+- `list` **([Array][1798]<[string][1794]> | [undefined][1804])**&#x20;
+- `item` **[string][1794]**&#x20;
+- `present` **[boolean][1797]**&#x20;
+
+Returns **[Array][1798]<[string][1794]>**&#x20;
+
+## toolsSwitchedOff
+
+Whether every tool is off, whatever each is switched to.
+
+### Parameters
+
+- `choice` **([ToolChoice][1079] | null | [undefined][1804])**&#x20;
+
+Returns **[boolean][1797]**&#x20;
+
+## groupOn
+
+Whether a group is switched on: its own switch, which tools switched off
+as a whole leave as it is.
+
+### Parameters
+
+- `choice` **([ToolChoice][1079] | null | [undefined][1804])**&#x20;
+- `group` **[string][1794]**&#x20;
+
+Returns **[boolean][1797]**&#x20;
+
+## toolOn
+
+Whether a tool is on: tools are, its group is, and it is not off by name.
+
+### Parameters
+
+- `choice` **([ToolChoice][1079] | null | [undefined][1804])**&#x20;
+- `name` **[string][1794]**&#x20;
+- `group` **([string][1794] | [undefined][1804])** The tool's; undefined for one in none
+
+Returns **[boolean][1797]**&#x20;
+
+## switchGroups
+
+What switching groups writes on a choice. Their tools' own switches are
+left as they were, so they come back as they were with them.
+
+### Parameters
+
+- `choice` **([ToolChoice][1079] | null | [undefined][1804])**&#x20;
+- `groups` **[Array][1798]<[string][1794]>**&#x20;
+- `on` **[boolean][1797]**&#x20;
+
+Returns **[ToolChoice][1079]**&#x20;
+
+## switchTool
+
+What switching a tool writes on a choice. Its group's switch is left as it
+is: a tool in a group that is off stays off either way.
+
+### Parameters
+
+- `choice` **([ToolChoice][1079] | null | [undefined][1804])**&#x20;
+- `name` **[string][1794]**&#x20;
+- `on` **[boolean][1797]**&#x20;
+
+Returns **[ToolChoice][1079]**&#x20;
+
+## copyChoice
+
+A choice as it stands, to copy: onto a chat from its profile, or onto a
+profile from a chat. Only what it holds, so a copy of one that offers
+every group goes on offering every group.
+
+### Parameters
+
+- `choice` **([ToolChoice][1079] | null | [undefined][1804])**&#x20;
+
+Returns **[ToolChoice][1079]**&#x20;
+
+## copy
+
+Type: [ToolChoice][1079]
 
 ## ai/tools/commentReads
 
 The comments a read lists after its text, as the model reads
 them: where each passage is in the text without the markup, with the
 chat's suggestions as it sees them and its names filled in, and what has
-been said on it, by whom. Shared by `read_document`, `list_comments` and
-the pinned documents of the project block. Pure.
+been said on it, by whom. Shared by `read_document` and `list_comments`.
+Pure.
 
 A chat sees its own pending suggestions made and everyone else's not, as
 Docs shows a writer theirs: the change it suggested is the text it goes on
@@ -8339,7 +9282,7 @@ from. See editor/suggestions.js.
 
 A passage longer than this is shown by its two ends in a read's list.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## ownSuggestions
 
@@ -8349,9 +9292,9 @@ model made that are still open.
 ### Parameters
 
 - `threads` &#x20;
-- `chatId` **([string][1617] | null | [undefined][1627])**&#x20;
+- `chatId` **([string][1794] | null | [undefined][1804])**&#x20;
 
-Returns **[Array][1621]<[string][1617]>**&#x20;
+Returns **[Array][1798]<[string][1794]>**&#x20;
 
 ## seenText
 
@@ -8361,10 +9304,10 @@ own pending suggestions made, everyone else's not. A plain one holds none.
 ### Parameters
 
 - `document` &#x20;
-- `content` **[string][1617]** Its text, the store's or the editor's
-- `chatId` **([string][1617] | null | [undefined][1627])**&#x20;
+- `content` **[string][1794]** Its text, the store's or the editor's
+- `chatId` **([string][1794] | null | [undefined][1804])**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## placedAsRead
 
@@ -8376,11 +9319,11 @@ names filled in.
 
 - `stored` &#x20;
 - `names` &#x20;
-- `chatId` **([string][1617] | null)?** (optional, default `null`)
+- `chatId` **([string][1794] | null)?** (optional, default `null`)
 
 ##
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## postsOf
 
@@ -8402,13 +9345,13 @@ of its words, and its posts.
 
 ### Parameters
 
-- `$0` **[Object][1618]**&#x20;
+- `$0` **[Object][1795]**&#x20;
   - `$0.text` &#x20;
   - `$0.placed` &#x20;
 
 - `names` &#x20;
-- `from` **[number][1619]**&#x20;
-- `to` **[number][1619]**&#x20;
+- `from` **[number][1796]**&#x20;
+- `to` **[number][1796]**&#x20;
 - `people` (optional, default `null`)
 
 ## ai/tools/data/names
@@ -8429,19 +9372,19 @@ repository.
 
 ## WeightedName
 
-Type: \[[string][1617], [number][1619]]
+Type: \[[string][1794], [number][1796]]
 
 ## FEMALE_FIRST_NAMES
 
-Type: [Array][1621]<[WeightedName][996]>
+Type: [Array][1798]<[WeightedName][1110]>
 
 ## MALE_FIRST_NAMES
 
-Type: [Array][1621]<[WeightedName][996]>
+Type: [Array][1798]<[WeightedName][1110]>
 
 ## SURNAMES
 
-Type: [Array][1621]<[WeightedName][996]>
+Type: [Array][1798]<[WeightedName][1110]>
 
 ## ai/tools/data/tarot
 
@@ -8467,9 +9410,13 @@ The whole deck, Major Arcana first.
 ## ai/tools/dice
 
 The model's dice: `roll_dice`, the same roll as the writer's
-`/roll`, read the same way. It answers with the roll itself — the dice by
-kind, the modifier, and the total — where `/roll` writes the same dice as
-lines in the writer's turn. See `DiceRoll` in ./rpg.js.
+`/roll`, read the same way. It answers with the roll itself — its working,
+the dice by kind, those that count if any were dropped, and the total — where
+`/roll` writes the same working as lines in the writer's turn. See
+`DiceRoll` and `workingOf` in ./rpg.js.
+
+`min()` and `max()` still roll, but the description leaves them out, so the
+model has one way to write advantage.
 
 ## diceToolDefinition
 
@@ -8483,9 +9430,12 @@ Type: const
 
 Execute the dice roll tool
 
+The working goes in beside the dice, for what the dice by kind can't say:
+which term threw which.
+
 ### Parameters
 
-- `args` **{dice: [string][1617]}** Tool arguments
+- `args` **{dice: [string][1794]}** Tool arguments
 
 ## ai/tools/documents
 
@@ -8495,16 +9445,13 @@ A lore entry and a chapter are the same kind of thing, so the model gets one
 set of verbs for both — and can create a chapter, which it never could when
 the only writable thing was a lore entry.
 
-These are the model's only view of the project. The project block on every
-turn says only its name, its overview, how much is in it, and the documents
-the writer pinned (`projectOverview` and `pinnedDocuments` below); the rest
-the model finds with `list_documents` and reads with `read_document`. A
-turn's calls to these tools stay in the conversation, results and all, until
-a summary stands in for them, and the block says which reads have changed
-since (ai/context/reads.js). See .llm/project_context_design.md.
-
-Only the writer pins. The model has no keep: what it read stays in the
-conversation, which is all a keep was for.
+These are the model's view of the project, with what the writer attaches to
+a message (`attachedDocuments` below). The project block on every turn says
+only its name, its overview and how much is in it (`projectOverview`); the
+rest the model finds with `list_documents` and reads with `read_document`.
+A turn's calls to these tools stay in the conversation, results and all,
+until a summary stands in for them, and the block says which reads have
+changed since (ai/context/reads.js). See .llm/project_context_design.md.
 
 A document is addressed by its path, and only by its path — the same string
 `list_documents` gives for everything in the project. Nothing here takes a
@@ -8555,10 +9502,10 @@ it says where (see `namedElsewhere`).
 
 ### Parameters
 
-- `path` **[string][1617]**&#x20;
-- `named` **[Array][1621]<[string][1617]>?** Paths of what goes by that name elsewhere (optional, default `[]`)
+- `path` **[string][1794]**&#x20;
+- `named` **[Array][1798]<[string][1794]>?** Paths of what goes by that name elsewhere (optional, default `[]`)
 
-Returns **{error: [string][1617]}**&#x20;
+Returns **{error: [string][1794]}**&#x20;
 
 ## namedElsewhere
 
@@ -8574,26 +9521,20 @@ folders can hold one name, and the path is the address.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `storyId` **[string][1617]**&#x20;
-- `path` **[string][1617]**&#x20;
+- `storyId` **[string][1794]**&#x20;
+- `path` **[string][1794]**&#x20;
 - `sees` &#x20;
 - `kind` (optional, default `()=>true`)
 
-Returns **[Array][1621]<[string][1617]>** A few paths, those nearest the top first
+Returns **[Array][1798]<[string][1794]>** A few paths, those nearest the top first
 
 ## goesByThatName
 
 ### Parameters
 
-- `named` **[Array][1621]<[string][1617]>** Paths from `namedElsewhere`
+- `named` **[Array][1798]<[string][1794]>** Paths from `namedElsewhere`
 
-Returns **[string][1617]** A sentence saying where they are, or nothing
-
-## norm
-
-### Parameters
-
-- `s` &#x20;
+Returns **[string][1794]** A sentence saying where they are, or nothing
 
 ## norm
 
@@ -8623,7 +9564,13 @@ Returns **[string][1617]** A sentence saying where they are, or nothing
 
 ### Parameters
 
-- `s` **[string][1617]**&#x20;
+- `s` &#x20;
+
+## norm
+
+### Parameters
+
+- `s` **[string][1794]**&#x20;
 
 ## record
 
@@ -8640,7 +9587,7 @@ still writing can be told apart from the turn's own copy.
 
 ### Parameters
 
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 - `edit` **Omit\<DocumentEdit, `"id"`>**&#x20;
 
 ## fileIsNotWritten
@@ -8653,15 +9600,15 @@ the listing's and can change; what it says is the file's.
 
 ### Parameters
 
-- `path` **[string][1617]**&#x20;
+- `path` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## PROPOSED_NOTE
 
 What the model is told when a change waits on the writer.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## propose
 
@@ -8669,7 +9616,7 @@ Record a change as proposed rather than making it, and say so.
 
 ### Parameters
 
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 - `edit` **Omit\<DocumentEdit, (`"id"` | `"status"`)>** With the tool's own arguments as `old` and `new`
 
 ## pairOf
@@ -8680,10 +9627,10 @@ suggestion's is found where it is, whatever tool made it.
 
 ### Parameters
 
-- `tool` **[string][1617]**&#x20;
-- `before` **[string][1617]**&#x20;
-- `after` **[string][1617]**&#x20;
-- `suggested` **[boolean][1620]?** (optional, default `false`)
+- `tool` **[string][1794]**&#x20;
+- `before` **[string][1794]**&#x20;
+- `after` **[string][1794]**&#x20;
+- `suggested` **[boolean][1797]?** (optional, default `false`)
 
 ## recording
 
@@ -8692,13 +9639,13 @@ with the comment threads it changed beside the text.
 
 ### Parameters
 
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 - `api` **DocumentsApi**&#x20;
-- `document` **[Document][1622]**&#x20;
-- `tool` **[string][1617]**&#x20;
+- `document` **[Document][1799]**&#x20;
+- `tool` **[string][1794]**&#x20;
 - `write` &#x20;
 - `comments` &#x20;
-- `suggested` **[boolean][1620]?** Whether the write was a suggestion (optional, default `false`)
+- `suggested` **[boolean][1797]?** Whether the write was a suggestion (optional, default `false`)
 
 ## readerView
 
@@ -8714,36 +9661,13 @@ the model is shown; writes go to the tree as it is.
 
 - `api` **DocumentsApi**&#x20;
 - `names` &#x20;
-- `chatId` **([string][1617] | null | [undefined][1627])**&#x20;
+- `chatId` **([string][1794] | null | [undefined][1804])**&#x20;
 
 Returns **DocumentsApi**&#x20;
 
 ##
 
-Type: ([Document][1622] | [undefined][1627])
-
-## readable
-
-A document as a chat reads it: the names in its title, summary, digest
-and text, and its text without the comments' markup and with suggestions
-as the chat sees them. The same document back when there is nothing to
-change.
-
-The text only when it is asked for: a path is built from every document
-above it, and the tree is walked whole for every listing and search, while
-the body of a long file is read rarely.
-
-### Parameters
-
-- `document` **[Document][1622]**&#x20;
-- `names` &#x20;
-- `chatId` **([string][1617] | null | [undefined][1627])**&#x20;
-
-Returns **[Document][1622]**&#x20;
-
-## shown
-
-Type: ([string][1617] | null)
+Type: ([Document][1799] | [undefined][1804])
 
 ## readBasis
 
@@ -8754,17 +9678,17 @@ note, and by the project block from `documentLocator`'s text.
 
 ### Parameters
 
-- `document` **([Document][1622] | [undefined][1627])** As stored
+- `document` **([Document][1799] | [undefined][1804])** As stored
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## readKey
 
 ### Parameters
 
-- `document` **([Document][1622] | [undefined][1627])** As stored
+- `document` **([Document][1799] | [undefined][1804])** As stored
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## collectDocuments
 
@@ -8778,14 +9702,14 @@ A name the model can read but not resolve would be a trap.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `storyId` **[string][1617]**&#x20;
+- `storyId` **[string][1794]**&#x20;
 - `include` &#x20;
 
-Returns **[Array][1621]<[Document][1622]>**&#x20;
+Returns **[Array][1798]<[Document][1799]>**&#x20;
 
 ##
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## allDocuments
 
@@ -8797,9 +9721,9 @@ tree has to be consulted, which is whether a path is free.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `storyId` **[string][1617]**&#x20;
+- `storyId` **[string][1794]**&#x20;
 
-Returns **[Array][1621]<[Document][1622]>**&#x20;
+Returns **[Array][1798]<[Document][1799]>**&#x20;
 
 ## visibleDocuments
 
@@ -8808,10 +9732,10 @@ The project as the model in one chat may see it.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `storyId` **[string][1617]**&#x20;
+- `storyId` **[string][1794]**&#x20;
 - `sees` &#x20;
 
-Returns **[Array][1621]<[Document][1622]>**&#x20;
+Returns **[Array][1798]<[Document][1799]>**&#x20;
 
 ## pathOf
 
@@ -8830,9 +9754,9 @@ level. One name for the root, and it is the one the model is shown.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `document` **[Document][1622]**&#x20;
+- `document` **[Document][1799]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## documentForChat
 
@@ -8842,11 +9766,11 @@ when the chat sees nothing there.
 
 ### Parameters
 
-- `storyId` **[string][1617]**&#x20;
-- `chatId` **([string][1617] | null | [undefined][1627])**&#x20;
-- `path` **[string][1617]** `/` for the project
+- `storyId` **[string][1794]**&#x20;
+- `chatId` **([string][1794] | null | [undefined][1804])**&#x20;
+- `path` **[string][1794]** `/` for the project
 
-Returns **[Promise][1625]<({document: [Document][1622], path: [string][1617]} | null)>**&#x20;
+Returns **[Promise][1802]<({document: [Document][1799], path: [string][1794]} | null)>**&#x20;
 
 ## documentsForChat
 
@@ -8856,10 +9780,10 @@ module of its own. The project itself first.
 
 ### Parameters
 
-- `storyId` **[string][1617]**&#x20;
-- `chatId` **([string][1617] | null | [undefined][1627])**&#x20;
+- `storyId` **[string][1794]**&#x20;
+- `chatId` **([string][1794] | null | [undefined][1804])**&#x20;
 
-Returns **[Promise][1625]<[Array][1621]<{document: [Document][1622], path: [string][1617], titles: [Array][1621]<[string][1617]>}>>**&#x20;
+Returns **[Promise][1802]<[Array][1798]<{document: [Document][1799], path: [string][1794], titles: [Array][1798]<[string][1794]>}>>**&#x20;
 
 ## findByPath
 
@@ -8882,11 +9806,11 @@ calls: to it, a hidden path is not there.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `storyId` **[string][1617]**&#x20;
-- `path` **[string][1617]**&#x20;
+- `storyId` **[string][1794]**&#x20;
+- `path` **[string][1794]**&#x20;
 - `sees` &#x20;
 
-Returns **([Document][1622] | null)**&#x20;
+Returns **([Document][1799] | null)**&#x20;
 
 ## resolveNewPath
 
@@ -8907,42 +9831,34 @@ path held by a document the model cannot see: a hidden one still holds its
 place in the tree, and a second document there would leave the writer with
 two of the same name and the model with one it can never reach again.
 
+The folder may be a card, which takes documents as a folder does. Any other
+document holds only what an import or Convert put under it: nothing new
+goes in, but what is there is renamed where it is, so a move names the
+parent its document is in now as `stayingIn`.
+
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `storyId` **[string][1617]**&#x20;
-- `path` **[string][1617]**&#x20;
+- `storyId` **[string][1794]**&#x20;
+- `path` **[string][1794]**&#x20;
 - `sees` &#x20;
+- `$4` **[Object][1795]** (optional, default `{}`)
+  - `$4.stayingIn` &#x20;
 
-Returns **({parentId: [string][1617], title: [string][1617], path: [string][1617]} | {error: [string][1617]})**&#x20;
-
-## DocumentListing
-
-Type: [Object][1618]
-
-### Properties
-
-- `id` **[string][1617]** Not sent to the model; what a read is matched against
-- `path` **[string][1617]**&#x20;
-- `type` **[string][1617]**&#x20;
-- `words` **[number][1619]?** How long a document is; a folder has no length
-- `pages` **[number][1619]?** A file's pages, for one that has pages
-- `lines` **[number][1619]?** A source file's lines, in place of words
-- `comments` **[number][1619]?** How many of the writer's comments it holds, when any
+Returns **({parentId: [string][1794], title: [string][1794], path: [string][1794]} | {error: [string][1794]})**&#x20;
 
 ## ProjectOverview
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `project` **[string][1617]** The project's name
-- `summary` **[string][1617]?** The story's overview, when someone wrote one
-- `about` **[string][1617]?** What explore said the project holds, when no
+- `project` **[string][1794]** The project's name
+- `summary` **[string][1794]?** The story's overview, when someone wrote one
+- `about` **[string][1794]?** What explore said the project holds, when no
   one wrote an overview
-- `size` **{documents: [number][1619], folders: [number][1619]}?** How much of it the
-  chat can see, so the model knows there is more than the block shows. Not
-  for a model that can't reach the rest.
+- `size` **{documents: [number][1796], folders: [number][1796]}** How much of it the
+  chat can see, so the model knows there is more than the block shows
 
 ## sizeOf
 
@@ -8955,7 +9871,7 @@ says how many of the writer's comments it holds, when it holds any.
 
 ### Parameters
 
-- `document` **[Document][1622]**&#x20;
+- `document` **[Document][1799]**&#x20;
 - `get` &#x20;
 
 ## entriesBelow
@@ -8968,18 +9884,18 @@ folder and show one thing in it.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `parentId` **[string][1617]**&#x20;
+- `parentId` **[string][1794]**&#x20;
 - `sees` &#x20;
 
-Returns **[Array][1621]<{document: [Document][1622], depth: [number][1619]}>**&#x20;
+Returns **[Array][1798]<{document: [Document][1799], depth: [number][1796]}>**&#x20;
 
 ##
 
-Type: [string][1617]
+Type: [string][1794]
 
 ##
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## holdsNote
 
@@ -8990,36 +9906,8 @@ holds nothing the chat can see.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `document` **[Document][1622]**&#x20;
+- `document` **[Document][1799]**&#x20;
 - `sees` &#x20;
-
-## pinnedDocuments
-
-The documents a chat has pinned, whose text rides in the project block on
-every turn, from the first.
-
-A pin names one document or one folder. A folder pins everything under it,
-the way any mark covers what is under it — a character's folder is the thing
-a writer points at, not the six documents inside it — except where something
-nearer says otherwise: a greeting shown, or a document hidden, inside a
-pinned folder is not pinned. See utils/visibility.js.
-
-What the chat cannot see is never pinned, whichever way it came to be out of
-sight. A pin is a lasting thing and `hidden` is set afterwards as often as
-before: pin a character, hide the folder they are in, and they have to stop
-riding in every turn of a chat that cannot see them.
-
-A pin on a document that has since been deleted names nothing and is skipped
-rather than reported: the writer deleted it, which is an answer.
-
-Only documents come back. A pinned folder is what is under it.
-
-### Parameters
-
-- `storyId` **[string][1617]**&#x20;
-- `chat` **(ChatMarks | null)?** The chat, whose marks say what is pinned
-
-Returns **[Promise][1625]<[Array][1621]<[DocumentListing][1070]>>** Each once, in tree order
 
 ## projectOverview
 
@@ -9033,24 +9921,22 @@ request; the model lists the project when it needs to.
 
 ### Parameters
 
-- `storyId` **[string][1617]**&#x20;
+- `storyId` **[string][1794]**&#x20;
 - `chat` **(ChatMarks | null)?** The chat it is for, whose marks say what it sees
-- `$2` **[Object][1618]** (optional, default `{}`)
-  - `$2.size` (optional, default `true`)
 
-Returns **[Promise][1625]<([ProjectOverview][1072] | null)>**&#x20;
+Returns **[Promise][1802]<([ProjectOverview][1181] | null)>**&#x20;
 
 ## LISTING_LIMIT
 
 How many entries a listing shows before it lists less deep.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## ABOUT_MOST
 
 The longest a listing's line on what something is about runs, in characters.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## aboutLine
 
@@ -9059,14 +9945,14 @@ writer's summary, or else of explore's digest while it is current.
 
 ### Parameters
 
-- `document` **[Document][1622]**&#x20;
+- `document` **[Document][1799]**&#x20;
 - `current` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## listDocumentsDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9076,7 +9962,7 @@ Type: const
 
 ### Parameters
 
-- `n` **[number][1619]**&#x20;
+- `n` **[number][1796]**&#x20;
 
 ## fileKind
 
@@ -9085,9 +9971,9 @@ title lost its extension at import, and a link to the file needs it.
 
 ### Parameters
 
-- `document` **[Document][1622]**&#x20;
+- `document` **[Document][1799]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## listingLine
 
@@ -9096,12 +9982,11 @@ One entry of a listing, as a line: its path, and what can be said of it.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `document` **[Document][1622]**&#x20;
-- `markFor` &#x20;
-- `hidden` **([number][1619] | null)** For a folder, or a document that holds others,
+- `document` **[Document][1799]**&#x20;
+- `hidden` **([number][1796] | null)** For a folder, or a document that holds others,
   listed without what is in it, how many entries are under it
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## executeListDocuments
 
@@ -9117,21 +10002,21 @@ is under it is not.
 ### Parameters
 
 - `args` &#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
-Returns **[Promise][1625]<([string][1617] | {error: [string][1617]})>**&#x20;
+Returns **[Promise][1802]<([string][1794] | {error: [string][1794]})>**&#x20;
 
 ## folded
 
-Type: [Map][1624]<[string][1617], [number][1619]>
+Type: [Map][1801]<[string][1794], [number][1796]>
 
 ## inside
 
-Type: ({id: [string][1617], depth: [number][1619]} | null)
+Type: ({id: [string][1794], depth: [number][1796]} | null)
 
 ## inside
 
-Type: [Array][1621]<[Document][1622]>
+Type: [Array][1798]<[Document][1799]>
 
 ## inside
 
@@ -9143,7 +10028,7 @@ Where a document that holds others is, under its own name in its directory.
 
 ## readDocumentDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9153,7 +10038,7 @@ Type: const
 
 How long a line of code a read shows before it is cut.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## readSource
 
@@ -9164,40 +10049,88 @@ numbers on each line are what make that possible without counting.
 
 ### Parameters
 
-- `document` **[Document][1622]**&#x20;
-- `base` **Record<[string][1617], any>** What every read answers with
+- `document` **[Document][1799]**&#x20;
+- `base` **Record<[string][1794], any>** What every read answers with
 - `args` &#x20;
 
-Returns **Record<[string][1617], any>**&#x20;
+Returns **Record<[string][1794], any>**&#x20;
 
 ##
 
-Type: [string][1617]
+Type: [string][1794]
+
+## unreadNote
+
+Why a file has no text to read, for a model that cannot see the file
+itself: so it can tell a scan from a document that is empty.
+
+### Parameters
+
+- `document` **[Document][1799]** A file
+
+Returns **[string][1794]**&#x20;
+
+## attachedDocuments
+
+The documents a writer's message attaches, each as it stands now for the
+chat that reads it: whole, however long, since the writer chose it. A copy,
+kept on the message and sent from there on every later turn, with what a
+read notes of a document so that it counts as one. See
+ai/context/attachments.js.
+
+A path the chat sees no document at attaches nothing, a folder among them,
+and a document named twice is attached once.
+
+### Parameters
+
+- `storyId` **[string][1794]**&#x20;
+- `chatId` **([string][1794] | null | [undefined][1804])**&#x20;
+- `paths` **[Array][1798]<[string][1794]>** From the top of the project, as a chat's links
+  are written; a heading after a `#` is let go
+
+## attachedById
+
+The same for documents named by id rather than by a mention: what a chat
+on a card opens with. One the chat cannot see is left out.
+
+### Parameters
+
+- `storyId` **[string][1794]**&#x20;
+- `chatId` **([string][1794] | null | [undefined][1804])**&#x20;
+- `ids` **[Array][1798]<[string][1794]>**&#x20;
+
+## copiesOf
+
+### Parameters
+
+- `api` **DocumentsApi** As the chat reads the tree
+- `stored` **DocumentsApi** The tree as it is
+- `documents` **[Array][1798]<([Document][1799] | null | [undefined][1804])>**&#x20;
 
 ## executeReadDocument
 
 ### Parameters
 
 - `args` &#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ## withComments
 
 ### Parameters
 
 - `result` **T**&#x20;
-- `from` **[number][1619]**&#x20;
-- `to` **[number][1619]**&#x20;
+- `from` **[number][1796]**&#x20;
+- `to` **[number][1796]**&#x20;
 
 ## MAP_NODES
 
 How many sections a read shows at most, beside its text; describe_document shows more.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## describeDocumentDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9208,7 +10141,7 @@ Type: const
 ### Parameters
 
 - `args` &#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ## digestAbout
 
@@ -9218,11 +10151,11 @@ does where the model wrote only the one.
 
 ### Parameters
 
-- `$0` **[Object][1618]**&#x20;
+- `$0` **[Object][1795]**&#x20;
   - `$0.line` &#x20;
   - `$0.text` &#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## sectionLines
 
@@ -9232,7 +10165,7 @@ The lines explore wrote of a document's long sections, by link.
 
 - `digest` &#x20;
 
-Returns **[Map][1624]<[string][1617], [string][1617]>**&#x20;
+Returns **[Map][1801]<[string][1794], [string][1794]>**&#x20;
 
 ## withSectionLines
 
@@ -9242,13 +10175,13 @@ one: what is in it, for telling which to read.
 ### Parameters
 
 - `nodes` &#x20;
-- `lines` **[Map][1624]<[string][1617], [string][1617]>** By link
+- `lines` **[Map][1801]<[string][1794], [string][1794]>** By link
 
 ## SUBTREE_LIMIT
 
 How many nodes the subsections of one section list: a run of every spell is the answer.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## readNotes
 
@@ -9260,10 +10193,10 @@ starts with an underscore is.
 
 ### Parameters
 
-- `toolName` **[string][1617]**&#x20;
+- `toolName` **[string][1794]**&#x20;
 - `result` **any** The tool's own return value, before it was serialized
 
-Returns **({\_document: [string][1617], \_path: [string][1617], \_hash: [string][1617]} | null)** Null for
+Returns **({\_document: [string][1794], \_path: [string][1794], \_hash: [string][1794]} | null)** Null for
 a call that read no document
 
 ## documentLocator
@@ -9274,7 +10207,7 @@ see: deleted, or hidden from it.
 
 ### Parameters
 
-- `storyId` **[string][1617]**&#x20;
+- `storyId` **[string][1794]**&#x20;
 - `chat` **(ChatMarks | null)?**&#x20;
 
 ## resolving
@@ -9309,10 +10242,10 @@ has of these ids that are not resolved already.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `documentId` **[string][1617]**&#x20;
-- `ids` **[Array][1621]<[string][1617]>**&#x20;
+- `documentId` **[string][1794]**&#x20;
+- `ids` **[Array][1798]<[string][1794]>**&#x20;
 
-Returns **[Array][1621]\<CommentChange>**&#x20;
+Returns **[Array][1798]\<CommentChange>**&#x20;
 
 ## resolvedNote
 
@@ -9321,7 +10254,7 @@ words: each by its id, with what its first post said.
 
 ### Parameters
 
-- `changes` **[Array][1621]\<CommentChange>**&#x20;
+- `changes` **[Array][1798]\<CommentChange>**&#x20;
 - `names` &#x20;
 
 ## commentable
@@ -9331,15 +10264,15 @@ A text document a comment tool can work on, or what to tell the model.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `storyId` **[string][1617]**&#x20;
-- `path` **[string][1617]**&#x20;
+- `storyId` **[string][1794]**&#x20;
+- `path` **[string][1794]**&#x20;
 - `sees` &#x20;
 
-Returns **({document: [Document][1622]} | {error: [string][1617]})**&#x20;
+Returns **({document: [Document][1799]} | {error: [string][1794]})**&#x20;
 
 ## listCommentsDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9350,15 +10283,15 @@ Type: const
 ### Parameters
 
 - `args` &#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ## documents
 
-Type: [Array][1621]<[Document][1622]>
+Type: [Array][1798]<[Document][1799]>
 
 ## addCommentDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9368,20 +10301,20 @@ Type: const
 
 ### Parameters
 
-- `args` **{path: [string][1617], passage: [string][1617], text: [string][1617]}**&#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `args` **{path: [string][1794], passage: [string][1794], text: [string][1794]}**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ## comments
 
-Type: [Array][1621]\<CommentChange>
+Type: [Array][1798]\<CommentChange>
 
 ## comments
 
-Type: [Array][1621]\<CommentChange>
+Type: [Array][1798]\<CommentChange>
 
 ## replyCommentDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9397,8 +10330,8 @@ what it changed.
 
 ### Parameters
 
-- `args` **{path: [string][1617], id: [string][1617], text: [string][1617]}**&#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `args` **{path: [string][1794], id: [string][1794], text: [string][1794]}**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ## noComment
 
@@ -9406,11 +10339,11 @@ What the model is told when it names a comment that is not there.
 
 ### Parameters
 
-- `args` **{path: [string][1617], id: [string][1617]}**&#x20;
+- `args` **{path: [string][1794], id: [string][1794]}**&#x20;
 
 ## resolveCommentDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9420,12 +10353,12 @@ Type: const
 
 ### Parameters
 
-- `args` **{path: [string][1617], id: [string][1617]}**&#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `args` **{path: [string][1794], id: [string][1794]}**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ## searchDocumentsDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9435,13 +10368,13 @@ Type: const
 
 How many documents a search reports, and how many passages from each.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## LINES_PER_FILE
 
 How many lines of one source file a search shows, and how much of each.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## linesSaying
 
@@ -9451,10 +10384,10 @@ run together with the next the way a passage of prose is.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
-- `needle` **[string][1617]** Lowercased
+- `text` **[string][1794]**&#x20;
+- `needle` **[string][1794]** Lowercased
 
-Returns **[Array][1621]<{line: [number][1619], text: [string][1617]}>**&#x20;
+Returns **[Array][1798]<{line: [number][1796], text: [string][1794]}>**&#x20;
 
 ## isUnder
 
@@ -9463,8 +10396,8 @@ Whether a document is under a folder, at any depth.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `document` **[Document][1622]**&#x20;
-- `folderId` **[string][1617]**&#x20;
+- `document` **[Document][1799]**&#x20;
+- `folderId` **[string][1794]**&#x20;
 
 ## snippetsOf
 
@@ -9472,14 +10405,14 @@ The passages around each place a document says something, up to a few.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
-- `needle` **[string][1617]** Lowercased
+- `text` **[string][1794]**&#x20;
+- `needle` **[string][1794]** Lowercased
 
-Returns **[Array][1621]<{at: [number][1619], text: [string][1617]}>** Each with the offset of the hit it is around
+Returns **[Array][1798]<{at: [number][1796], text: [string][1794]}>** Each with the offset of the hit it is around
 
 ## snippets
 
-Type: [Array][1621]<{at: [number][1619], text: [string][1617]}>
+Type: [Array][1798]<{at: [number][1796], text: [string][1794]}>
 
 ## countOf
 
@@ -9487,8 +10420,8 @@ How many times a document says something, across its text.
 
 ### Parameters
 
-- `lower` **[string][1617]** The text, lowercased
-- `needle` **[string][1617]** Lowercased
+- `lower` **[string][1794]** The text, lowercased
+- `needle` **[string][1794]** Lowercased
 
 ## findIn
 
@@ -9496,10 +10429,10 @@ A document searched for one needle: where it says it, and how often.
 
 ### Parameters
 
-- `document` **[Document][1622]**&#x20;
-- `needle` **[string][1617]** Lowercased
+- `document` **[Document][1799]**&#x20;
+- `needle` **[string][1794]** Lowercased
 
-Returns **({matches: [number][1619], snippets: [Array][1621]<{at: [number][1619], text: [string][1617]}>, inTitle: [boolean][1620]} | null)** Null when the document does not say it anywhere
+Returns **({matches: [number][1796], snippets: [Array][1798]<{at: [number][1796], text: [string][1794]}>, inTitle: [boolean][1797]} | null)** Null when the document does not say it anywhere
 
 ## RUN
 
@@ -9514,9 +10447,9 @@ without them. Null when that is no different from the words as given.
 
 ### Parameters
 
-- `words` **[string][1617]** Lowercased
+- `words` **[string][1794]** Lowercased
 
-Returns **([RegExp][1630] | [string][1617] | null)**&#x20;
+Returns **([RegExp][1806] | [string][1794] | null)**&#x20;
 
 ## spelledIn
 
@@ -9525,10 +10458,10 @@ what a loose match found in its text or its title. Null when it has neither.
 
 ### Parameters
 
-- `document` **[Document][1622]**&#x20;
-- `term` **([string][1617] | [RegExp][1630])** Lowercased
+- `document` **[Document][1799]**&#x20;
+- `term` **([string][1794] | [RegExp][1806])** Lowercased
 
-Returns **([string][1617] | null)**&#x20;
+Returns **([string][1794] | null)**&#x20;
 
 ## findLoosely
 
@@ -9536,8 +10469,8 @@ A document searched for words, however it writes them.
 
 ### Parameters
 
-- `document` **[Document][1622]**&#x20;
-- `term` **([string][1617] | [RegExp][1630])** Lowercased
+- `document` **[Document][1799]**&#x20;
+- `term` **([string][1794] | [RegExp][1806])** Lowercased
 
 ## passagesOf
 
@@ -9552,13 +10485,13 @@ the document around an offset.
 
 ### Parameters
 
-- `document` **[Document][1622]**&#x20;
-- `snippets` **[Array][1621]<{at: [number][1619], text: [string][1617]}>**&#x20;
-- `needle` **[string][1617]?** Lowercased, for finding a passage in each section
+- `document` **[Document][1799]**&#x20;
+- `snippets` **[Array][1798]<{at: [number][1796], text: [string][1794]}>**&#x20;
+- `needle` **[string][1794]?** Lowercased, for finding a passage in each section
 
 ## first
 
-Type: [Map][1624]<[number][1619], [number][1619]>
+Type: [Map][1801]<[number][1796], [number][1796]>
 
 ## INDEX_LINE
 
@@ -9568,19 +10501,19 @@ A line of a converted document's index: a link to one of its sections.
 
 How many hits in one document a search looks through for their sections.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## SECTIONS_PER_DOCUMENT
 
 How many sections of one document a search shows a passage from.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## TITLED_LIMIT
 
 How many sections titled with the words a search lists per document.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## titledSections
 
@@ -9591,48 +10524,48 @@ that mentions it.
 
 ### Parameters
 
-- `document` **[Document][1622]**&#x20;
-- `needle` **[string][1617]** Lowercased
+- `document` **[Document][1799]**&#x20;
+- `needle` **[string][1794]** Lowercased
 
-Returns **{titled: [Array][1621]<{section: [string][1617], in: [string][1617], words: [number][1619]}>, exact: [boolean][1620]}**&#x20;
+Returns **{titled: [Array][1798]<{section: [string][1794], in: [string][1794], words: [number][1796]}>, exact: [boolean][1797]}**&#x20;
 
 ## executeSearchDocuments
 
 ### Parameters
 
 - `args` &#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ## Hit
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `id` **[string][1617]**&#x20;
-- `title` **[string][1617]**&#x20;
-- `path` **[string][1617]**&#x20;
-- `matches` **[number][1619]**&#x20;
-- `hits` **[Array][1621]<{line: [number][1619], text: [string][1617]}>?** In a source file, the lines
+- `id` **[string][1794]**&#x20;
+- `title` **[string][1794]**&#x20;
+- `path` **[string][1794]**&#x20;
+- `matches` **[number][1796]**&#x20;
+- `hits` **[Array][1798]<{line: [number][1796], text: [string][1794]}>?** In a source file, the lines
   that say it, in place of passages
-- `titled` **[Array][1621]<{section: [string][1617], in: [string][1617], words: [number][1619]}>?** Sections named with the words
-- `inSections` **[number][1619]?** How many sections have the words, when more than are shown
-- `exact` **[boolean][1620]?** Whether a section is named exactly that; for ranking, not sent
-- `words` **[number][1619]?** How long the document is, for deciding whether to read it whole
-- `pages` **[number][1619]?**&#x20;
-- `lines` **[number][1619]?** A source file's length, in place of words
-- `missing` **[string][1617]?** The one word of the query it lacks, when no document had them all
-- `rank` **[number][1619]?** How many documents have the word it lacks; for ranking, not sent
+- `titled` **[Array][1798]<{section: [string][1794], in: [string][1794], words: [number][1796]}>?** Sections named with the words
+- `inSections` **[number][1796]?** How many sections have the words, when more than are shown
+- `exact` **[boolean][1797]?** Whether a section is named exactly that; for ranking, not sent
+- `words` **[number][1796]?** How long the document is, for deciding whether to read it whole
+- `pages` **[number][1796]?**&#x20;
+- `lines` **[number][1796]?** A source file's length, in place of words
+- `missing` **[string][1794]?** The one word of the query it lacks, when no document had them all
+- `rank` **[number][1796]?** How many documents have the word it lacks; for ranking, not sent
 
 ##
 
-Type: [Document][1622]
+Type: [Document][1799]
 
 ##
 
 ##
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## matchedBy
 
@@ -9645,7 +10578,7 @@ which is the one that says most about why it matched.
 
 ### Parameters
 
-- `index` **[number][1619]**&#x20;
+- `index` **[number][1796]**&#x20;
 
 ## plainIf
 
@@ -9653,13 +10586,13 @@ What a new document is made with when it is to be kept as written.
 
 ### Parameters
 
-- `plain` **[boolean][1620]**&#x20;
+- `plain` **[boolean][1797]**&#x20;
 
-Returns **Partial<[Document][1622]>**&#x20;
+Returns **Partial<[Document][1799]>**&#x20;
 
 ## createDocumentDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9670,11 +10603,11 @@ Type: const
 ### Parameters
 
 - `args` &#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ## createFolderDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9684,8 +10617,8 @@ Type: const
 
 ### Parameters
 
-- `args` **{path: [string][1617]}**&#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `args` **{path: [string][1794]}**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ## folderToKeepIn
 
@@ -9696,10 +10629,10 @@ does for create_document.
 
 ### Parameters
 
-- `context` **[ToolContext][1449]**&#x20;
-- `path` **([string][1617] | [undefined][1627])**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
+- `path` **([string][1794] | [undefined][1804])**&#x20;
 
-Returns **[Promise][1625]<({id: [string][1617], path: [string][1617]} | {error: [string][1617]})>**&#x20;
+Returns **[Promise][1802]<({id: [string][1794], path: [string][1794]} | {error: [string][1794]})>**&#x20;
 
 ## keptFrom
 
@@ -9708,10 +10641,10 @@ was kept from, when the chat can see it there.
 
 ### Parameters
 
-- `context` **[ToolContext][1449]**&#x20;
-- `url` **[string][1617]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
+- `url` **[string][1794]**&#x20;
 
-Returns **[Promise][1625]<([string][1617] | null)>** Its path
+Returns **[Promise][1802]<([string][1794] | null)>** Its path
 
 ## pathInProject
 
@@ -9719,16 +10652,16 @@ A document's path, as every tool gives it.
 
 ### Parameters
 
-- `context` **[ToolContext][1449]**&#x20;
-- `id` **[string][1617]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
+- `id` **[string][1794]**&#x20;
 
-Returns **[Promise][1625]<[string][1617]>** '' when it is not there
+Returns **[Promise][1802]<[string][1794]>** '' when it is not there
 
 ## SUGGESTED_NOTE
 
 What the model is told when its change waits on the writer in the text.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## suggests
 
@@ -9739,10 +10672,10 @@ proposed in the chat.
 
 ### Parameters
 
-- `context` **[ToolContext][1449]**&#x20;
-- `document` **[Document][1622]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
+- `document` **[Document][1799]**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## changesSeen
 
@@ -9753,11 +10686,11 @@ text's.
 
 ### Parameters
 
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 - `api` **DocumentsApi**&#x20;
-- `document` **[Document][1622]**&#x20;
+- `document` **[Document][1799]**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## SeenText
 
@@ -9765,33 +10698,33 @@ A document's text as the chat's model sees it, to change: as stored,
 read; the chat's own pending suggestions in it; and the text with those
 made and every other not, without the comments' markup.
 
-Type: {before: [Node][1635], own: [Array][1621]<[string][1617]>, text: [string][1617]}
+Type: {before: [Node][1813], own: [Array][1798]<[string][1794]>, text: [string][1794]}
 
 ## seenToChange
 
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `document` **[Document][1622]**&#x20;
-- `chatId` **([string][1617] | [undefined][1627])**&#x20;
+- `document` **[Document][1799]**&#x20;
+- `chatId` **([string][1794] | [undefined][1804])**&#x20;
 
-Returns **[SeenText][986]**&#x20;
+Returns **[SeenText][1100]**&#x20;
 
 ## SeenChange
 
 What a change to the text as the chat sees it came to.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `changed` **[boolean][1620]** False when the text already read so
-- `suggesting` **[boolean][1620]**&#x20;
-- `suggested` **[Array][1621]<[string][1617]>** The suggestions it made or went into
-- `joined` **[Array][1621]<{id: [string][1617], into: [string][1617]}>** Those of the chat's
+- `changed` **[boolean][1797]** False when the text already read so
+- `suggesting` **[boolean][1797]**&#x20;
+- `suggested` **[Array][1798]<[string][1794]>** The suggestions it made or went into
+- `joined` **[Array][1798]<{id: [string][1794], into: [string][1794]}>** Those of the chat's
   own it joined to an older one
-- `withdrawn` **[Array][1621]<[string][1617]>** Those of the chat's own it took back
-- `resolved` **[Array][1621]\<CommentChange>** The comments whose passages a
+- `withdrawn` **[Array][1798]<[string][1794]>** Those of the chat's own it took back
+- `resolved` **[Array][1798]\<CommentChange>** The comments whose passages a
   change made at once took
 
 ## changeSeen
@@ -9806,17 +10739,17 @@ with the turn, threads and all, so rewinding takes it back.
 
 ### Parameters
 
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 - `api` **DocumentsApi**&#x20;
-- `document` **[Document][1622]**&#x20;
-- `tool` **[string][1617]**&#x20;
-- `seen` **[SeenText][986]**&#x20;
+- `document` **[Document][1799]**&#x20;
+- `tool` **[string][1794]**&#x20;
+- `seen` **[SeenText][1100]**&#x20;
   - `seen.before` &#x20;
   - `seen.own` &#x20;
 
-- `written` **[string][1617]**&#x20;
+- `written` **[string][1794]**&#x20;
 
-Returns **([SeenChange][1229] | {error: [string][1617]})**&#x20;
+Returns **([SeenChange][1344] | {error: [string][1794]})**&#x20;
 
 ## suggestionThreads
 
@@ -9827,27 +10760,27 @@ that one's thread and itself gone; and one it took back, closed.
 
 ### Parameters
 
-- `threads` **Record<[string][1617], CommentThread>**&#x20;
-- `doc` **[Node][1635]** With the change made
-- `into` **Record<[string][1617], [string][1617]>**&#x20;
-- `own` **[Array][1621]<[string][1617]>** Oldest first
-- `ids` **[Array][1621]<[string][1617]>** Those the change made, in the text's order
-- `$5` **[Object][1618]**&#x20;
+- `threads` **Record<[string][1794], CommentThread>**&#x20;
+- `doc` **[Node][1813]** With the change made
+- `into` **Record<[string][1794], [string][1794]>**&#x20;
+- `own` **[Array][1798]<[string][1794]>** Oldest first
+- `ids` **[Array][1798]<[string][1794]>** Those the change made, in the text's order
+- `$5` **[Object][1795]**&#x20;
   - `$5.suggesting` &#x20;
   - `$5.chat` &#x20;
 
-Returns **{changes: [Array][1621]\<CommentChange>, suggested: [Array][1621]<[string][1617]>, joined: [Array][1621]<{id: [string][1617], into: [string][1617]}>, withdrawn: [Array][1621]<[string][1617]>}**&#x20;
+Returns **{changes: [Array][1798]\<CommentChange>, suggested: [Array][1798]<[string][1794]>, joined: [Array][1798]<{id: [string][1794], into: [string][1794]}>, withdrawn: [Array][1798]<[string][1794]>}**&#x20;
 
 ## next
 
-Type: [Map][1624]<[string][1617], (CommentThread | null)>
+Type: [Map][1801]<[string][1794], (CommentThread | null)>
 
 ## saying
 
 ### Parameters
 
 - `thread` **CommentThread**&#x20;
-- `each` **[string][1617]**&#x20;
+- `each` **[string][1794]**&#x20;
 
 Returns **CommentThread**&#x20;
 
@@ -9861,15 +10794,15 @@ Type: CommentSuggestion
 
 ## joined
 
-Type: [Array][1621]<{id: [string][1617], into: [string][1617]}>
+Type: [Array][1798]<{id: [string][1794], into: [string][1794]}>
 
 ## withdrawn
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## suggested
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## answerSeen
 
@@ -9878,12 +10811,12 @@ What the model is told of a change it made to the text as it sees it.
 ### Parameters
 
 - `api` **DocumentsApi**&#x20;
-- `document` **[Document][1622]**&#x20;
-- `change` **[SeenChange][1229]**&#x20;
+- `document` **[Document][1799]**&#x20;
+- `change` **[SeenChange][1344]**&#x20;
 - `names` &#x20;
-- `counts` **Record<[string][1617], [number][1619]>** What a write made at once says it wrote
+- `counts` **Record<[string][1794], [number][1796]>** What a write made at once says it wrote
 
-Returns **Record<[string][1617], any>**&#x20;
+Returns **Record<[string][1794], any>**&#x20;
 
 ## settledSuggestions
 
@@ -9892,14 +10825,14 @@ be told on its next turn: each with the document it was in, and when.
 
 ### Parameters
 
-- `storyId` **[string][1617]**&#x20;
+- `storyId` **[string][1794]**&#x20;
 - `chat` &#x20;
 
-Returns **[Promise][1625]<[Array][1621]<{suggestion: [string][1617], path: [string][1617], accepted: [boolean][1620], at: [number][1619]}>>**&#x20;
+Returns **[Promise][1802]<[Array][1798]<{suggestion: [string][1794], path: [string][1794], accepted: [boolean][1797], at: [number][1796]}>>**&#x20;
 
 ## updateDocumentDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9910,11 +10843,11 @@ Type: const
 ### Parameters
 
 - `args` &#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ## moveDocumentDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9924,8 +10857,8 @@ Type: const
 
 ### Parameters
 
-- `args` **{path: [string][1617], to: [string][1617]}**&#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `args` **{path: [string][1794], to: [string][1794]}**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ## DELETE_PROPOSED_NOTE
 
@@ -9935,11 +10868,11 @@ that it goes to the trash, the model told the writer it was in the trash.
 This one was not enough either until the description said a delete can wait
 on the writer too.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## deleteDocumentDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9954,16 +10887,16 @@ past the turn brings it back from the trash.
 
 ### Parameters
 
-- `args` **{path: [string][1617]}**&#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `args` **{path: [string][1794]}**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ##
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## editDocumentDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -9975,7 +10908,7 @@ Whitespace as one space, for telling a wrong quote from a wrongly spaced one.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
 
 ## nearestContext
 
@@ -9985,14 +10918,14 @@ passage's first line; the window is that line with one either side.
 
 ### Parameters
 
-- `content` **[string][1617]**&#x20;
-- `passage` **[string][1617]**&#x20;
+- `content` **[string][1794]**&#x20;
+- `passage` **[string][1794]**&#x20;
 
-Returns **[string][1617]** A few lines of the document, or its opening when nothing is alike
+Returns **[string][1794]** A few lines of the document, or its opening when nothing is alike
 
 ##
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## missedQuote
 
@@ -10000,11 +10933,11 @@ What the model is told when its quote is not in the text once.
 
 ### Parameters
 
-- `path` **[string][1617]**&#x20;
-- `content` **[string][1617]** The text as the model sees it
-- `quoted` **[string][1617]** As the model gave it
-- `plainQuote` **[string][1617]** Without any markup
-- `count` **[number][1619]**&#x20;
+- `path` **[string][1794]**&#x20;
+- `content` **[string][1794]** The text as the model sees it
+- `quoted` **[string][1794]** As the model gave it
+- `plainQuote` **[string][1794]** Without any markup
+- `count` **[number][1796]**&#x20;
 
 ## editSeen
 
@@ -10015,28 +10948,28 @@ has not changed yet.
 
 ### Parameters
 
-- `context` **[ToolContext][1449]**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 - `api` **DocumentsApi**&#x20;
-- `document` **[Document][1622]**&#x20;
+- `document` **[Document][1799]**&#x20;
 - `names` &#x20;
-- `path` **[string][1617]** As the model gave it
-- `quoted` **[string][1617]**&#x20;
-- `replacement` **[string][1617]**&#x20;
+- `path` **[string][1794]** As the model gave it
+- `quoted` **[string][1794]**&#x20;
+- `replacement` **[string][1794]**&#x20;
 
 ## executeEditDocument
 
 ### Parameters
 
-- `args` **{path: [string][1617], old: [string][1617], new: [string][1617]}**&#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `args` **{path: [string][1794], old: [string][1794], new: [string][1794]}**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
 
 ## outcome
 
-Type: {applied: [boolean][1620], count: [number][1619]}
+Type: {applied: [boolean][1797], count: [number][1796]}
 
 ## appendDocumentDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -10046,8 +10979,37 @@ Type: const
 
 ### Parameters
 
-- `args` **{path: [string][1617], text: [string][1617]}**&#x20;
-- `context` **[ToolContext][1449]**&#x20;
+- `args` **{path: [string][1794], text: [string][1794]}**&#x20;
+- `context` **[ToolContext][1563]**&#x20;
+
+## appendTarget
+
+The document an append_document call still being written adds to, for the
+editor to show its text arriving there: one the call will write to, with
+whether the text goes in as a suggestion. Null for a path the call will be
+refused, and for a plain document, which is shown as text and has no room
+for a preview.
+
+### Parameters
+
+- `storyId` **[string][1794]**&#x20;
+- `chatId` **([string][1794] | [undefined][1804])**&#x20;
+- `path` **[string][1794]** Whole, as the call has it
+- `propose` **[boolean][1797]?** The chat asks before changing documents (optional, default `false`)
+
+Returns **[Promise][1802]<({documentId: [string][1794], suggested: [boolean][1797]} | null)>**&#x20;
+
+## appendedText
+
+What an append_document call writes of the text it was given: never a
+comment or a suggestion's markup, which add_comment and the edits of a
+chat that asks first make.
+
+### Parameters
+
+- `text` **unknown**&#x20;
+
+Returns **[string][1794]**&#x20;
 
 ## applyProposal
 
@@ -10061,10 +11023,10 @@ told.
 
 ### Parameters
 
-- `storyId` **[string][1617]**&#x20;
+- `storyId` **[string][1794]**&#x20;
 - `edit` **DocumentEdit** As proposed
 
-Returns **[Promise][1625]<({documentId: [string][1617], path: [string][1617], old: [string][1617], new: [string][1617]} | {error: [string][1617]})>**&#x20;
+Returns **[Promise][1802]<({documentId: [string][1794], path: [string][1794], old: [string][1794], new: [string][1794]} | {error: [string][1794]})>**&#x20;
 
 ## ai/tools/explore
 
@@ -10091,13 +11053,13 @@ the answer into their turn.
 
 ## EXPLORE_DOCUMENTS
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## EXPLORE_DOCUMENTS
 
 The tool's name.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## EXPLORE_TIMEOUT_MS
 
@@ -10114,14 +11076,14 @@ Type: const
 
 What exploring answers with.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `path` **[string][1617]** What was explored, as the tools give it: a folder's with a slash
-- `name` **[string][1617]** What it is called in a heading: `Notes/`, `the project`
-- `about` **[string][1617]** Explore's paragraph on it
-- `listing` **[string][1617]?** For a folder: what it holds, with each line
+- `path` **[string][1794]** What was explored, as the tools give it: a folder's with a slash
+- `name` **[string][1794]** What it is called in a heading: `Notes/`, `the project`
+- `about` **[string][1794]** Explore's paragraph on it
+- `listing` **[string][1794]?** For a folder: what it holds, with each line
 
 ## linedOnly
 
@@ -10139,10 +11101,10 @@ writer's command alike, each with its own way of asking first.
 
 ### Parameters
 
-- `asked` **[string][1617]** The path, as typed or called; empty for the project
-- `context` **[ToolContext][1449]**&#x20;
+- `asked` **[string][1794]** The path, as typed or called; empty for the project
+- `context` **[ToolContext][1563]**&#x20;
 
-Returns **[Promise][1625]<([Explored][1287] | {declined: `true`} | {error: [string][1617]})>**&#x20;
+Returns **[Promise][1802]<([Explored][1406] | {declined: `true`} | {error: [string][1794]})>**&#x20;
 
 ## executeExploreDocuments
 
@@ -10152,9 +11114,9 @@ with the same.
 ### Parameters
 
 - `args` &#x20;
-- `context` **[ToolContext][1449]?** (optional, default `{}`)
+- `context` **[ToolContext][1563]?** (optional, default `{}`)
 
-Returns **[Promise][1625]\<Record<[string][1617], any>>**&#x20;
+Returns **[Promise][1802]\<Record<[string][1794], any>>**&#x20;
 
 ## outline
 
@@ -10164,9 +11126,9 @@ the line on it where there is one.
 ### Parameters
 
 - `nodes` &#x20;
-- `depth` **[number][1619]?** (optional, default `0`)
+- `depth` **[number][1796]?** (optional, default `0`)
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## exploredText
 
@@ -10175,9 +11137,9 @@ a folder holds or a document's sections under it, as the model reads it.
 
 ### Parameters
 
-- `explored` **[Explored][1287]**&#x20;
+- `explored` **[Explored][1406]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## ai/tools
 
@@ -10228,13 +11190,20 @@ tool of its own. The model loads every one of those through `use_skill`
 covers it; each skill it offers keeps a switch of its own, by its name, as
 if it were a tool.
 
+## Which are offered
+
+Every group is switched the same way, on a profile and on a chat started
+from it: on unless switched off, so something added later is on wherever
+nothing said otherwise, except in a profile written to offer only some
+(Blank and Roleplay). See ./choice.js. A group that can't be offered here
+isn't, whatever the switches say: the web without a service set up, and
+Python outside the desktop app or without its extension.
+
 ## Tools from MCP servers
 
 Each server the writer connected is a group of its own, its tools named
 `<prefix>__<tool>` (see ../../mcp/names.js) and registered from what the
-server offered when it was last listed. Unlike the built-in groups, a
-server's is opted into: a chat is offered a server's tools only when the
-selection names the server. See ../../mcp/servers.js.
+server offered when it was last listed. See ../../mcp/servers.js.
 
 ## Explore
 
@@ -10245,17 +11214,22 @@ job, and the turn waits on it; see jobs/explore.js.
 ## The web
 
 `web_search` and `read_web_page` (./web.js) are a group of their own,
-opted into the same way: offered only when the selection says the chat
-searches, which a service set up and the chat's profile or its own choice
-decide. See ../../web/config.js.
+offered while a service is set up to search. See ../../web/config.js.
 
 ## Python
 
 `run_python` (./python.js) runs the model's code, or a script kept in the
 project, in the desktop app, in a session for each chat, with the project
-read-only at `/project`. A group of its own, opted into as the web is:
-offered only when the selection says the chat runs Python, which the
-Python extension and the chat's profile or its own choice decide.
+read-only at `/project`. A group of its own, offered while the Python
+extension is on.
+
+## Calls still being written
+
+A call's arguments stream in a token at a time. `./progress.js` says what
+one in flight is doing, for the chat to show the prose growing, and
+`./streamedAppends.js` shows an `append_document` call's text at the end of
+its document while the editor has it open (../../editor/streaming.js). The
+text is written only when the call runs.
 ```
 
 ## SKILLS_GROUP
@@ -10265,29 +11239,15 @@ The group skills are registered in.
 Named, because it is the one group that gets treated differently: a skill
 never goes into another skill's tool set. See getToolDefinitionsFor.
 
-Type: [string][1617]
-
-## EXPERIMENTAL_GROUP
-
-The group the built-in skills still being tuned are registered in:
-Interpret and Write, each while the writer has it switched on. Every
-built-in profile starts with the group off, so the model is offered them
-only in a chat that switches one on; the writer's `/interpret` and `/write`
-work in any chat while they are on. See ai/profiles.
-
-Type: [string][1617]
-
-## SKILL_GROUPS
-
-The groups whose tools are skills.
+Type: [string][1794]
 
 ## TOOL_GROUP_LABELS
 
-Tool groups, in display order. The keys are stored on chats that switch a
-group off, so renaming one orphans that setting — change the label, not the
-key.
+The app's own tool groups, in the order they are listed, a server's coming
+after Python. The keys are stored on chats and profiles that switch a group
+off, so renaming one orphans that setting — change the label, not the key.
 
-Type: Record<[string][1617], [string][1617]>
+Type: Record<[string][1794], [string][1794]>
 
 ## SKILL_TIMEOUT_MS
 
@@ -10295,14 +11255,19 @@ How long a skill may take. It runs whole inferences rather than a lookup, and
 with tools of its own it runs up to SKILL_MAX_ROUNDS of them, so the limit
 that suits a document read would cut off every call on a slow model.
 
+## builtInTools
+
+The built-in skills registered as tools, as last made.
+
+##
+
+Type: [Array][1798]<[string][1794]>
+
 ## registerBuiltInTools
 
 Register every built-in skill the model may call, as the tool its SKILL.md
-describes, in the experimental group while it is still being tuned, and
-then only while the writer has it switched on. `interpret` draws a card of
-its own out of sight and returns what it made of it, for a Game Master that
-wants an idea rather than a card to read; `draw_tarot`, above, is for one
-that wants the cards. See ../skills/interpret.
+describes, and the harness's while it runs (`setTrialSkills` in
+../skills). None of the app's own is one yet: Compact is the writer's.
 
 One already registered is left where it is, so a change to the library does
 not move the built-ins in the list the model is offered.
@@ -10313,7 +11278,7 @@ The tools the writer's own skills are registered under, as last made.
 
 ##
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## registerLibraryTools
 
@@ -10330,7 +11295,7 @@ How long a server's tool may take. It is someone else's service, doing who
 knows what — a search, a page fetched and summarised — and the limit that
 suits a document read would cut most of them off.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## serverTools
 
@@ -10338,7 +11303,7 @@ The tools the servers are registered under, as last made.
 
 ##
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## serverToolDefinition
 
@@ -10352,7 +11317,7 @@ schema as the parameters.
 
 ## inputSchema
 
-Type: Record<[string][1617], any>
+Type: Record<[string][1794], any>
 
 ##
 
@@ -10365,12 +11330,12 @@ said the way the writer would be told.
 
 ### Parameters
 
-- `serverId` **[string][1617]**&#x20;
-- `name` **[string][1617]** The server's name for the tool
-- `args` **Record<[string][1617], any>**&#x20;
+- `serverId` **[string][1794]**&#x20;
+- `name` **[string][1794]** The server's name for the tool
+- `args` **Record<[string][1794], any>**&#x20;
 - `signal` **AbortSignal?** The call's, which the server is told of
 
-Returns **[Promise][1625]<([string][1617] | {error: [string][1617]})>**&#x20;
+Returns **[Promise][1802]<([string][1794] | {error: [string][1794]})>**&#x20;
 
 ## registerServerTools
 
@@ -10384,7 +11349,7 @@ The group whose calls went back with the conversation before every call
 did. A turn written then still sends these, and only these; one written
 since sends every call it made. See ai/context/build.js.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## keptInConversation
 
@@ -10393,9 +11358,9 @@ document calls did, until a summary stands in for it.
 
 ### Parameters
 
-- `name` **[string][1617]** Tool name
+- `name` **[string][1794]** Tool name
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## offersDocuments
 
@@ -10405,24 +11370,9 @@ block; see composables/useAIContext.js.
 
 ### Parameters
 
-- `selection` &#x20;
+- `choice` &#x20;
 
-Returns **[boolean][1620]**&#x20;
-
-## offersComments
-
-Whether a chat is offered any of the comment tools: what decides whether
-its pinned documents come with their comments.
-
-### Parameters
-
-- `selection` &#x20;
-
-Returns **[boolean][1620]**&#x20;
-
-## COMMENT_TOOLS
-
-The tools that work on comments.
+Returns **[boolean][1797]**&#x20;
 
 ## getToolTimeout
 
@@ -10430,31 +11380,39 @@ The time limit a tool has asked for, if it has asked for one.
 
 ### Parameters
 
-- `name` **[string][1617]** Tool name
+- `name` **[string][1794]** Tool name
 
-Returns **([number][1619] | [undefined][1627])** Milliseconds, Infinity for none, or undefined to
+Returns **([number][1796] | [undefined][1804])** Milliseconds, Infinity for none, or undefined to
 use the caller's default
 
 ## getToolDefinitions
 
 Get tool definitions for API requests
 
+## groupAvailable
+
+Whether a group can be offered here at all, whatever a chat's switches
+say: the web while its extension is on and a service is set up to search,
+Python while its extension is on in the desktop app. A server's tools are registered only
+while it can be reached, and every other group always can be.
+
+### Parameters
+
+- `group` **([string][1794] | [undefined][1804])**&#x20;
+
+Returns **[boolean][1797]**&#x20;
+
 ## getEnabledToolDefinitions
 
-Tool definitions minus whatever a chat has switched off, by tool or by group.
+Tool definitions minus whatever a chat has switched off, by tool or by
+group (./choice.js), and any group that can't be offered here.
 
 A skill the model loads is switched off by its name, like any tool, and
 that takes it out of `use_skill`'s list; with none left, `use_skill` goes.
 
-A server's tools are offered only when `servers` names the server, and then
-less any the chat switched off by name. The web tools are the same: offered
-only when `web` says the chat searches (web/config.js `webForChat`), and
-Python only when `python` says the chat runs it (python.js
-`pythonForChat`).
-
 ### Parameters
 
-- `selection` &#x20;
+- `choice` &#x20;
 
 ## getToolDefinitionsFor
 
@@ -10477,8 +11435,8 @@ turn.
 
 ### Parameters
 
-- `names` **[Array][1621]<[string][1617]>** Tool names the skill's role needs
-- `depth` **[number][1619]?** How many skills deep the caller already is. The
+- `names` **[Array][1798]<[string][1794]>** Tool names the skill's role needs
+- `depth` **[number][1796]?** How many skills deep the caller already is. The
   turn itself is 0, so a skill's own tools resolve at 1 by default. (optional, default `1`)
 
 ## isSkill
@@ -10493,9 +11451,9 @@ runs nothing.
 
 ### Parameters
 
-- `name` **[string][1617]** Tool name
+- `name` **[string][1794]** Tool name
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## drawsByChance
 
@@ -10505,9 +11463,9 @@ call is two draws rather than a repeat. See ai/rounds.js.
 
 ### Parameters
 
-- `name` **[string][1617]** Tool name
+- `name` **[string][1794]** Tool name
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## toolGroupOf
 
@@ -10515,9 +11473,9 @@ The group a tool is in: for the switch over a skill, which is its group's.
 
 ### Parameters
 
-- `name` **[string][1617]** Tool name
+- `name` **[string][1794]** Tool name
 
-Returns **([string][1617] | [undefined][1627])** Undefined if no tool has that name
+Returns **([string][1794] | [undefined][1804])** Undefined if no tool has that name
 
 ## handsOverReply
 
@@ -10528,13 +11486,19 @@ text back to rewrite. See runCompletionLoop in composables/useAIChat.js.
 
 ### Parameters
 
-- `name` **[string][1617]** Tool name
+- `name` **[string][1794]** Tool name
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## getToolGroups
 
-Registered tools arranged into groups, for the settings UI.
+Registered tools arranged into groups, for the settings UI: where each
+comes from, the documents first, then the web, Python and each server, then
+the skills and the RPG tools. Only the groups that can be offered here.
+
+## labels
+
+Type: Record<[string][1794], [string][1794]>
 
 ## hasTool
 
@@ -10543,9 +11507,9 @@ writer's from taking one.
 
 ### Parameters
 
-- `name` **[string][1617]**&#x20;
+- `name` **[string][1794]**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## executeTool
 
@@ -10560,7 +11524,7 @@ Execute a tool call
 
 Check if any tools are available
 
-Returns **[boolean][1620]** True if tools are registered
+Returns **[boolean][1797]** True if tools are registered
 
 ## mcp/names
 
@@ -10577,13 +11541,13 @@ these names, and a rename that changed them would orphan both.
 
 What a server's tool group is keyed by, before the server's id.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## MAX_PREFIX
 
 The longest a prefix is made, leaving the tool most of the name.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## serverGroup
 
@@ -10591,9 +11555,9 @@ The group a server's tools are registered under.
 
 ### Parameters
 
-- `serverId` **[string][1617]**&#x20;
+- `serverId` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## serverOfGroup
 
@@ -10601,9 +11565,9 @@ Whether a group is a server's, and which.
 
 ### Parameters
 
-- `group` **([string][1617] | [undefined][1627])**&#x20;
+- `group` **([string][1794] | [undefined][1804])**&#x20;
 
-Returns **([string][1617] | null)** The server's id, or null for a group of the app's own
+Returns **([string][1794] | null)** The server's id, or null for a group of the app's own
 
 ## slug
 
@@ -10612,9 +11576,9 @@ run of anything else as one `_`.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## serverPrefix
 
@@ -10623,10 +11587,10 @@ server's.
 
 ### Parameters
 
-- `name` **[string][1617]** What the writer called it
-- `taken` **[Array][1621]<[string][1617]>?** The other servers' prefixes (optional, default `[]`)
+- `name` **[string][1794]** What the writer called it
+- `taken` **[Array][1798]<[string][1794]>?** The other servers' prefixes (optional, default `[]`)
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## exposedNames
 
@@ -10636,15 +11600,15 @@ cut to length, gets a number.
 
 ### Parameters
 
-- `prefix` **[string][1617]** The server's
-- `tools` **[Array][1621]<[string][1617]>** The tools' own names
-- `taken` **[Array][1621]<[string][1617]>?** Names its other tools already have (optional, default `[]`)
+- `prefix` **[string][1794]** The server's
+- `tools` **[Array][1798]<[string][1794]>** The tools' own names
+- `taken` **[Array][1798]<[string][1794]>?** Names its other tools already have (optional, default `[]`)
 
-Returns **[Array][1621]<[string][1617]>**&#x20;
+Returns **[Array][1798]<[string][1794]>**&#x20;
 
 ## names
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## ai/tools/names
 
@@ -10670,7 +11634,7 @@ The two pools there are. See ./data/names.js for why there are two.
 
 Enough for a tavern's worth of NPCs; past this the model is looping.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## pickWeighted
 
@@ -10680,20 +11644,20 @@ the first handful of steps.
 
 ### Parameters
 
-- `pool` **[Array][1621]<[WeightedName][996]>** \[name, weight] pairs, heaviest first
-- `total` **[number][1619]** Sum of the pool's weights
+- `pool` **[Array][1798]<[WeightedName][1110]>** \[name, weight] pairs, heaviest first
+- `total` **[number][1796]** Sum of the pool's weights
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## sumWeights
 
 ### Parameters
 
-- `pool` **[Array][1621]<[WeightedName][996]>**&#x20;
+- `pool` **[Array][1798]<[WeightedName][1110]>**&#x20;
 
 ## generateNamesDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -10718,35 +11682,35 @@ watches the chapter grow instead of a spinner.
 
 ## ToolProgress
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `verb` **[string][1617]** What the call is doing, as a heading: "Editing"
-- `path` **[string][1617]?** The document it is doing it to, once known
-- `old` **[string][1617]?** For an edit, the passage being replaced
-- `prose` **[string][1617]?** The text being written, as far as it has got
+- `verb` **[string][1794]** What the call is doing, as a heading: "Editing"
+- `path` **[string][1794]?** The document it is doing it to, once known
+- `old` **[string][1794]?** For an edit, the passage being replaced
+- `prose` **[string][1794]?** The text being written, as far as it has got
 
 ## WRITING_TOOLS
 
 Which argument each writing tool's prose arrives in, and how to say it.
 
-Type: Record<[string][1617], {verb: [string][1617], prose: [string][1617]}>
+Type: Record<[string][1794], {verb: [string][1794], prose: [string][1794]}>
 
 ## SUGGESTING
 
 How the tools that change a document's text read in a chat whose edits
 are suggested rather than made: present and past.
 
-Type: Record<[string][1617], \[[string][1617], [string][1617]]>
+Type: Record<[string][1794], \[[string][1794], [string][1794]]>
 
 ## Wording
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `suggesting` **[boolean][1620]?** The chat suggests its edits to the text
+- `suggesting` **[boolean][1797]?** The chat suggests its edits to the text
   rather than making them: it asks first, with suggestions on
 
 ## writesProse
@@ -10756,16 +11720,16 @@ chat shows those calls growing, and says the rest in the turn's status line.
 
 ### Parameters
 
-- `name` **[string][1617]**&#x20;
+- `name` **[string][1794]**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## NAMED_TOOLS
 
 Tools whose call reads better as what it does than as a call, and the word
 for it. Each takes a path, which the chip shows after the verb.
 
-Type: Record<[string][1617], [string][1617]>
+Type: Record<[string][1794], [string][1794]>
 
 ## describeEdit
 
@@ -10780,7 +11744,7 @@ document again, and is shown cut back to what changed.
 
 - `edit` &#x20;
 
-Returns **[ToolProgress][1378]**&#x20;
+Returns **[ToolProgress][1497]**&#x20;
 
 ## describeProgress
 
@@ -10788,12 +11752,12 @@ Describe a call from its name and however much of its arguments has come.
 
 ### Parameters
 
-- `name` **[string][1617]** Tool name
-- `argumentsText` **([string][1617] | null | [undefined][1627])** The arguments JSON so far
-- `wording` **[Wording][1382]?** (optional, default `{}`)
+- `name` **[string][1794]** Tool name
+- `argumentsText` **([string][1794] | null | [undefined][1804])** The arguments JSON so far
+- `wording` **[Wording][1501]?** (optional, default `{}`)
   - `wording.suggesting` (optional, default `false`)
 
-Returns **[ToolProgress][1378]**&#x20;
+Returns **[ToolProgress][1497]**&#x20;
 
 ## ROUND_VERBS
 
@@ -10801,7 +11765,7 @@ How a round's calls read in the status line under a turn: while they run,
 and once they have and the model is taking in what they returned. Present
 and past, so the line can say which of the two the wait is.
 
-Type: Record<[string][1617], \[[string][1617], [string][1617]]>
+Type: Record<[string][1794], \[[string][1794], [string][1794]]>
 
 ## WHOLE_PROJECT
 
@@ -10818,9 +11782,9 @@ what it searched for.
 
 ### Parameters
 
-- `args` **Record<[string][1617], [string][1617]>**&#x20;
+- `args` **Record<[string][1794], [string][1794]>**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## addressed
 
@@ -10828,9 +11792,9 @@ An address, short: the last part of its path, or its site.
 
 ### Parameters
 
-- `url` **[string][1617]** As much of it as has come
+- `url` **[string][1794]** As much of it as has come
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## describeRound
 
@@ -10841,7 +11805,7 @@ arguments has come.
 
 - `calls` &#x20;
 - `done` &#x20;
-- `$2` **[Object][1618]** (optional, default `{}`)
+- `$2` **[Object][1795]** (optional, default `{}`)
   - `$2.suggesting` (optional, default `false`)
 
 ## describeRound
@@ -10851,12 +11815,12 @@ Chapter 3", "Read 2 documents", "Ran 3 tools".
 
 ### Parameters
 
-- `calls` **[Array][1621]\<RoundCall>** The round's calls
-- `done` **[boolean][1620]** Whether they have run, rather than are running
-- `wording` **[Wording][1382]?** (optional, default `{}`)
+- `calls` **[Array][1798]\<RoundCall>** The round's calls
+- `done` **[boolean][1797]** Whether they have run, rather than are running
+- `wording` **[Wording][1501]?** (optional, default `{}`)
   - `wording.suggesting` (optional, default `false`)
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## ai/tools/python
 
@@ -10875,32 +11839,30 @@ a PDF's, is beside it, and a file still only on the sync server is fetched
 when the code reads it. A script kept in the project is run by its path
 (`file`).
 
-Opted into, as the web is (web/config.js says why): a chat runs Python
-while the Python extension is on and either the chat chose it
-(`Chat.python`) or, until it does, its profile is one the extension lists.
-See `pythonForChat`.
+Offered while the Python extension is on, to a chat that has its group on,
+as every group is (./choice.js). See `pythonOffered`.
 
 Design: `.llm/code_sandbox_design.md`.
 
 ## PYTHON_GROUP
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## PYTHON_GROUP
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## PYTHON_GROUP
 
 The group the tool is switched by, and the extension's id.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## RUN_PYTHON
 
 The tool's name.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## PYTHON_TIME_LIMITS
 
@@ -10912,33 +11874,33 @@ whatever its limit.
 
 What the call adds to the run's limit: Python starting, with time to spare.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## pythonTimeLimit
 
 How long a run may take, as the writer set it, or null for as long as it
 takes.
 
-Returns **([number][1619] | null)** Milliseconds
+Returns **([number][1796] | null)** Milliseconds
 
 ## pythonCallTimeout
 
 How long a call may take: the run's limit and Python starting. The run is
 stopped at its own limit first, and says so. Infinity for none.
 
-Returns **[number][1619]**&#x20;
+Returns **[number][1796]**&#x20;
 
 ## RESTARTED
 
 What the model is told when Python had to start again.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## PROJECT_FOLDER
 
 Where Python finds the project.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## runPythonDefinition
 
@@ -10953,50 +11915,22 @@ Type: const
 Whether Python is there to be offered: in the desktop app, with the AI on
 and the extension switched on.
 
-Returns **[boolean][1620]**&#x20;
-
-## pythonProfiles
-
-The profiles whose chats run Python until they choose: as the writer chose
-them, or Default alone.
-
-Returns **[Array][1621]<[string][1617]>**&#x20;
-
-## setPythonProfile
-
-Run Python in chats on this profile, or stop.
-
-### Parameters
-
-- `profileId` **[string][1617]**&#x20;
-- `on` **[boolean][1620]**&#x20;
-
-## pythonForChat
-
-Whether a chat runs Python: Python is offered, and the chat chose it, or,
-until it chooses, its profile is one the extension lists.
-
-### Parameters
-
-- `chat` &#x20;
-- `profileId` **[string][1617]** The chat's profile, the default resolved
-
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## PythonResult
 
 What a run comes back to the model as: only the parts there are.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `stdout` **[string][1617]?**&#x20;
-- `stderr` **[string][1617]?**&#x20;
-- `value` **[string][1617]?** The `repr` of the last line's value
-- `error` **[string][1617]?** The traceback, or why the run was stopped
-- `restarted` **[string][1617]?** Said when what earlier runs defined is gone
-- `note` **[string][1617]?** Where a path of the project the code was refused
+- `stdout` **[string][1794]?**&#x20;
+- `stderr` **[string][1794]?**&#x20;
+- `value` **[string][1794]?** The `repr` of the last line's value
+- `error` **[string][1794]?** The traceback, or why the run was stopped
+- `restarted` **[string][1794]?** Said when what earlier runs defined is gone
+- `note` **[string][1794]?** Where a path of the project the code was refused
   is, when it took it as the tools give it
 
 ## seesProject
@@ -11007,13 +11941,13 @@ model sees nothing.
 
 ### Parameters
 
-- `chatId` **([string][1617] | null | [undefined][1627])**&#x20;
+- `chatId` **([string][1794] | null | [undefined][1804])**&#x20;
 
 ## TEXT_BESIDE
 
 What is added to a file's path for the text read out of it.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## entryOf
 
@@ -11024,10 +11958,10 @@ aren't here, its text. Null for a file that is none of these.
 
 ### Parameters
 
-- `document` **[Document][1622]**&#x20;
-- `path` **[string][1617]**&#x20;
+- `document` **[Document][1799]**&#x20;
+- `path` **[string][1794]**&#x20;
 
-Returns **[Promise][1625]<(PythonProjectEntry | null)>**&#x20;
+Returns **[Promise][1802]<(PythonProjectEntry | null)>**&#x20;
 
 ## textBeside
 
@@ -11036,8 +11970,8 @@ page by page, as Python finds it beside the file; null for one with none.
 
 ### Parameters
 
-- `document` **[Document][1622]**&#x20;
-- `path` **[string][1617]** The file's
+- `document` **[Document][1799]**&#x20;
+- `path` **[string][1794]** The file's
 
 Returns **(PythonProjectEntry | null)**&#x20;
 
@@ -11054,7 +11988,7 @@ of the project is there.
 
 - `context` &#x20;
 
-Returns **[Promise][1625]<([Array][1621]\<PythonProjectEntry> | null)>**&#x20;
+Returns **[Promise][1802]<([Array][1798]\<PythonProjectEntry> | null)>**&#x20;
 
 ## pathNote
 
@@ -11066,14 +12000,14 @@ Null when the run names no such path.
 
 ### Parameters
 
-- `error` **[string][1617]** The run's traceback, or what it printed
-- `project` **[Array][1621]\<PythonProjectEntry>**&#x20;
+- `error` **[string][1794]** The run's traceback, or what it printed
+- `project` **[Array][1798]\<PythonProjectEntry>**&#x20;
 
-Returns **([string][1617] | null)**&#x20;
+Returns **([string][1794] | null)**&#x20;
 
 ##
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## fetchForPython
 
@@ -11083,9 +12017,9 @@ couldn't be fetched.
 
 ### Parameters
 
-- `id` **[string][1617]** The file document's
+- `id` **[string][1794]** The file document's
 
-Returns **[Promise][1625]<([string][1617] | null)>**&#x20;
+Returns **[Promise][1802]<([string][1794] | null)>**&#x20;
 
 ## scriptAt
 
@@ -11094,10 +12028,10 @@ traceback calls it.
 
 ### Parameters
 
-- `path` **[string][1617]** As list_documents gives it, or under `/project`
+- `path` **[string][1794]** As list_documents gives it, or under `/project`
 - `context` &#x20;
 
-Returns **[Promise][1625]<({code: [string][1617], filename: [string][1617]} | {error: [string][1617]})>**&#x20;
+Returns **[Promise][1802]<({code: [string][1794], filename: [string][1794]} | {error: [string][1794]})>**&#x20;
 
 ## executeRunPython
 
@@ -11109,7 +12043,7 @@ with the project at `/project`.
 - `args` &#x20;
 - `context` &#x20;
 
-Returns **[Promise][1625]<[PythonResult][1421]>**&#x20;
+Returns **[Promise][1802]<[PythonResult][1535]>**&#x20;
 
 ## script
 
@@ -11122,40 +12056,40 @@ Tools are registered with their OpenAI-format definitions and execute functions.
 
 Tool definition in OpenAI format
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
 - `type` **`"function"`** Tool type (always 'function')
-- `function` **[Object][1618]** Function definition
-  - `function.name` **[string][1617]** Function name
-  - `function.description` **[string][1617]** Function description
-  - `function.parameters` **[Object][1618]** JSON Schema for parameters
+- `function` **[Object][1795]** Function definition
+  - `function.name` **[string][1794]** Function name
+  - `function.description` **[string][1794]** Function description
+  - `function.parameters` **[Object][1795]** JSON Schema for parameters
 
 ## ToolCall
 
 Tool call from the model
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `id` **[string][1617]** Unique call ID
+- `id` **[string][1794]** Unique call ID
 - `type` **`"function"`** Call type (always 'function')
-- `function` **[Object][1618]** Function call details
-  - `function.name` **[string][1617]** Function name
-  - `function.arguments` **[string][1617]** JSON string of arguments
+- `function` **[Object][1795]** Function call details
+  - `function.name` **[string][1794]** Function name
+  - `function.arguments` **[string][1794]** JSON string of arguments
 
 ## ToolResult
 
 Tool execution result
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `tool_call_id` **[string][1617]** The ID of the tool call this responds to
-- `content` **[string][1617]** JSON string result
+- `tool_call_id` **[string][1794]** The ID of the tool call this responds to
+- `content` **[string][1794]** JSON string result
 - `result` **any?** What the tool returned, before it was serialized.
   For callers that need a field out of it and should not have to parse back
   what was just stringified. Absent when the call never reached the tool.
@@ -11164,16 +12098,19 @@ Type: [Object][1618]
 
 Context passed to tool execution
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `storyId` **[string][1617]?** Current story ID
-- `documentId` **[string][1617]?** The document the editor is showing
-- `chatId` **[string][1617]?** Current chat ID
-- `propose` **[boolean][1620]?** Whether a tool that would change a document
+- `storyId` **[string][1794]?** Current story ID
+- `documentId` **[string][1794]?** The document the editor is showing
+- `chatId` **[string][1794]?** Current chat ID
+- `propose` **[boolean][1797]?** Whether a tool that would change a document
   proposes the change to the writer instead of making it. The chat's
   setting, read by whoever runs the turn.
+- `opening` **[number][1796]?** How many messages at the top of the chat a
+  summary leaves standing, where its profile keeps more than one. See
+  ai/compaction.js.
 - `signal` **AbortSignal?** Aborted when the call is stopped: its
   time is up, or the turn it is part of was stopped. A tool with something
   slow to wait on — a request, a server — hands it on; one that doesn't is
@@ -11184,24 +12121,24 @@ Type: [Object][1618]
 
 Registered tool
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `definition` **[ToolDefinition][1443]** OpenAI-format tool definition
-- `group` **[string][1617]** Group id this tool belongs to
+- `definition` **[ToolDefinition][1557]** OpenAI-format tool definition
+- `group` **[string][1794]** Group id this tool belongs to
 
 ## ToolGroup
 
 A group of related tools, toggled together in the UI.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `id` **[string][1617]** Stable id, stored on chats that disable the group
-- `label` **[string][1617]** Display name
-- `definitions` **[Array][1621]<[ToolDefinition][1443]>** Members, in registration order
+- `id` **[string][1794]** Stable id, stored on chats that disable the group
+- `label` **[string][1794]** Display name
+- `definitions` **[Array][1798]<[ToolDefinition][1557]>** Members, in registration order
 
 ## ToolRegistry
 
@@ -11209,7 +12146,7 @@ Tool registry for managing AI tools
 
 ### tools
 
-Type: [Map][1624]<[string][1617], [RegisteredTool][1451]>
+Type: [Map][1801]<[string][1794], [RegisteredTool][1565]>
 
 ### register
 
@@ -11217,10 +12154,10 @@ Register a tool
 
 #### Parameters
 
-- `name` **[string][1617]** Tool name
-- `definition` **[ToolDefinition][1443]** OpenAI-format tool definition
+- `name` **[string][1794]** Tool name
+- `definition` **[ToolDefinition][1557]** OpenAI-format tool definition
 - `execute` &#x20;
-- `group` **[string][1617]** Group id (see TOOL_GROUP_LABELS in ./index.js)
+- `group` **[string][1794]** Group id (see TOOL_GROUP_LABELS in ./index.js)
 - `timeoutMs` &#x20;
 
 ### unregister
@@ -11230,9 +12167,9 @@ writer's own skills, as their library changes.
 
 #### Parameters
 
-- `name` **[string][1617]** Tool name
+- `name` **[string][1794]** Tool name
 
-Returns **[boolean][1620]** Whether there was one to take away
+Returns **[boolean][1797]** Whether there was one to take away
 
 ### has
 
@@ -11240,9 +12177,9 @@ Whether a tool is registered under this name.
 
 #### Parameters
 
-- `name` **[string][1617]** Tool name
+- `name` **[string][1794]** Tool name
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ### timeoutFor
 
@@ -11251,9 +12188,9 @@ limit the writer sets.
 
 #### Parameters
 
-- `name` **[string][1617]** Tool name
+- `name` **[string][1794]** Tool name
 
-Returns **([number][1619] | [undefined][1627])** Milliseconds, Infinity for no limit, or
+Returns **([number][1796] | [undefined][1804])** Milliseconds, Infinity for no limit, or
 undefined to use the caller's default
 
 ### groupOf
@@ -11262,30 +12199,28 @@ The group a tool was registered in.
 
 #### Parameters
 
-- `name` **[string][1617]** Tool name
+- `name` **[string][1794]** Tool name
 
-Returns **([string][1617] | [undefined][1627])** The group id, or undefined if nothing is registered under that name
+Returns **([string][1794] | [undefined][1804])** The group id, or undefined if nothing is registered under that name
 
 ### getDefinitions
 
 Get all tool definitions for API requests
 
-Returns **[Array][1621]<[ToolDefinition][1443]>** Array of tool definitions
+Returns **[Array][1798]<[ToolDefinition][1557]>** Array of tool definitions
 
 ### getEnabledDefinitions
 
-Tool definitions minus anything the caller has switched off.
-
-Both lists name what is _withheld_ rather than what is allowed, so a tool
-registered later reaches existing chats instead of going silently missing.
-A disabled group withholds its members even if they were never named
-individually — which is the point of the group.
+Tool definitions minus anything the caller has switched off: a tool on
+by the choice's rule (./choice.js), which names what is off, so a tool
+registered later reaches existing chats instead of going silently
+missing.
 
 #### Parameters
 
-- `selection` (optional, default `{}`)
+- `choice` (optional, default `{}`)
 
-Returns **[Array][1621]<[ToolDefinition][1443]>**&#x20;
+Returns **[Array][1798]<[ToolDefinition][1557]>**&#x20;
 
 ### getDefinitionsFor
 
@@ -11303,9 +12238,9 @@ failing the turn that called it.
 
 #### Parameters
 
-- `names` **[Array][1621]<[string][1617]>** Tool names, in the order they should be offered
+- `names` **[Array][1798]<[string][1794]>** Tool names, in the order they should be offered
 
-Returns **[Array][1621]<[ToolDefinition][1443]>**&#x20;
+Returns **[Array][1798]<[ToolDefinition][1557]>**&#x20;
 
 ### getGroups
 
@@ -11313,9 +12248,9 @@ Registered tools by group, for building a grouped UI.
 
 #### Parameters
 
-- `labels` **Record<[string][1617], [string][1617]>** group id to display name
+- `labels` **Record<[string][1794], [string][1794]>** group id to display name
 
-Returns **[Array][1621]<[ToolGroup][1453]>** Groups in the order their labels are declared
+Returns **[Array][1798]<[ToolGroup][1567]>** Groups in the order their labels are declared
 
 ### execute
 
@@ -11323,16 +12258,16 @@ Execute a tool call
 
 #### Parameters
 
-- `toolCall` **[ToolCall][1445]** The tool call to execute
-- `context` **[ToolContext][1449]?** Execution context (optional, default `{}`)
+- `toolCall` **[ToolCall][1559]** The tool call to execute
+- `context` **[ToolContext][1563]?** Execution context (optional, default `{}`)
 
-Returns **[Promise][1625]<[ToolResult][1447]>** Tool result
+Returns **[Promise][1802]<[ToolResult][1561]>** Tool result
 
 ### hasTools
 
 Check if registry has any tools
 
-Returns **[boolean][1620]** True if tools are registered
+Returns **[boolean][1797]** True if tools are registered
 
 ## ai/tools/rpg
 
@@ -11372,19 +12307,19 @@ its dice.
 
 ## LIKELIHOOD_TARGETS
 
-Type: Record<[string][1617], [number][1619]>
+Type: Record<[string][1794], [number][1796]>
 
 ## rollDie
 
 ### Parameters
 
-- `sides` **[number][1619]**&#x20;
+- `sides` **[number][1796]**&#x20;
 
-Returns **[number][1619]** 1–`sides` inclusive
+Returns **[number][1796]** 1–`sides` inclusive
 
 ## rollD100
 
-Returns **[number][1619]** 1–100 inclusive
+Returns **[number][1796]** 1–100 inclusive
 
 ## MAX_DICE
 
@@ -11392,28 +12327,77 @@ Ceilings on what a line of notation can ask for. Not a rule about play —
 nothing at a table needs two hundred dice, and a mistyped `3d600000` should
 come back as a mistake rather than as a number nobody wanted.
 
-Type: [number][1619]
+Type: [number][1796]
 
-## DIE_TERM
+## DICE_AT
 
-Terms of `XdY`, split off the modifiers between them.
+Dice, and any run of advantage and burden letters after them, at the point
+the notation is read to: `3d6a`, `3d20b2`. A run, so dice carrying both are
+read as one term to refuse.
 
-## KEPT_TERM
+## KEPT_AT
 
 `min(2d20)`, `max(2d20)`: dice of which only one counts.
+
+## KEPT_DICE
+
+What `min()` and `max()` take: dice of one kind, with no letters.
+
+## NUMBER_AT
+
+A whole number, and not the start of a word, so `3a` is said to be wrong as
+it was written. `x` multiplies, so it may follow one.
+
+## WORD_AT
+
+What isn't dice or a number: a word, which is said back as it is.
+
+## SIGNS
+
+The signs that join terms, and what each does: `x` and `×` multiply too.
+
+Type: Record<[string][1794], (`"+"` | `"-"` | `"*"` | `"/"`)>
 
 ## DiceTerm
 
 Dice of one kind in the notation, and which of them count: all of them, or
-only the lowest or the highest.
+only so many of the lowest or the highest.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `count` **[number][1619]**&#x20;
-- `sides` **[number][1619]**&#x20;
-- `keep` **(`"min"` | `"max"`)?**&#x20;
+- `written` **[string][1794]** The term as written, to name its line of working
+- `count` **[number][1796]** Every die thrown, the ones to be dropped too
+- `sides` **[number][1796]**&#x20;
+- `keep` **(`"min"` | `"max"`)?** Whether the lowest or the highest count
+- `kept` **[number][1796]?** How many of them count, beside `keep`
+
+## NotationError
+
+**Extends Error**
+
+The notation as it was read, a part at a time: dice, a number, a minus in
+front of something, or two parts joined by a sign.
+
+## NotationError
+
+**Extends Error**
+
+What is wrong with notation, said to whoever wrote it.
+
+## DiceNotation
+
+Notation that has been read: the dice it throws, in the order written, and
+how they make the total.
+
+Type: [Object][1795]
+
+### Properties
+
+- `notation` **[string][1794]** As written
+- `dice` **[Array][1798]<[DiceTerm][1604]>**&#x20;
+- `tree` **DiceNode**&#x20;
 
 ## parseDice
 
@@ -11424,24 +12408,101 @@ times: whether a line is dice at all can be answered while the writer is
 still typing it, or when they edit one they already rolled, and neither
 moment wants a new result. See ../commands.js.
 
-`3d6+2`, `d20`, `2d6+1d4+1`: dice added together, with whole-number modifiers
-on the end. A modifier may be negative; a die may not, because a term the
-writer meant to subtract is rare enough that reading it wrong is worse than
-refusing it.
+`3d6+2`, `d20`, `2d6+1d4+1`: dice and whole numbers, added and subtracted,
+dice as well as numbers, so `2d6-2d6` is one pair of dice against another.
+`*` (or `x`) multiplies, as in `5d4*10`, and `/` divides by a whole number,
+rounding down, as in `8d6/2`. Dividing only by a number, because dividing by
+dice is not a roll anyone makes, and dice can come to nothing.
+
+Spaces say how far a sign reaches. `3d6+1` is one roll at a table, so
+`3d6+1 * 4` multiplies all of it, as the player means, where `3d6 + 1 * 4`
+multiplies only the 1. Signs written alike, all spaced or none, go by
+arithmetic's order, so `3d6+1*4` multiplies only the 1 too. Brackets say
+otherwise: `(3d6 + 1) * 4`.
 
 `min(2d20)+1` and `max(2d20)+1` count only the lowest or the highest of the
 dice in them: disadvantage and advantage. Dice of one kind, because the
 higher of a d20 and a d4 is not a roll anyone makes.
 
+`3d6a` is three dice with an advantage die: one more is thrown and the lowest
+dropped. `3d20b` is three with a burden die: one more, and the highest
+dropped. A number says how many, as in `3d6a2`. Dice carry one or the other,
+because whether the two cancel is for the game to say.
+
+Spaces are not read anywhere else, so `3d6 B2` is `3d6b2`.
+
 ### Parameters
 
-- `notation` **[string][1617]** What the writer typed
+- `notation` **[string][1794]** What the writer typed
 
-Returns **({notation: [string][1617], dice: [Array][1621]<[DiceTerm][1486]>, modifier: [number][1619]} | {error: [string][1617]})**&#x20;
+Returns **([DiceNotation][1608] | {error: [string][1794]})**&#x20;
 
-## kept
+## spaced
 
-Type: (`"min"` | `"max"` | [undefined][1627])
+Type: [Array][1798]<[boolean][1797]>
+
+## takeChar
+
+### Parameters
+
+- `char` **[string][1794]**&#x20;
+
+## unreadable
+
+What is wrong where a term should be, or where one ended.
+
+## signAt
+
+The sign where reading has got to, if it is one of these and spaced as
+asked.
+
+### Parameters
+
+- `signs` **[string][1794]**&#x20;
+- `loose` **[boolean][1797]** Whether a space is written beside it
+
+## sum
+
+Terms added and taken away: those joined by spaced signs, each of them
+whatever is written without, or those joined by signs without spaces.
+
+### Parameters
+
+- `loose` **[boolean][1797]**&#x20;
+
+Returns **DiceNode**&#x20;
+
+## product
+
+Terms multiplied and divided, before they are added.
+
+### Parameters
+
+- `loose` **[boolean][1797]**&#x20;
+
+Returns **DiceNode**&#x20;
+
+## operand
+
+Returns **DiceNode**&#x20;
+
+## toLowerCase
+
+Type: (`"min"` | `"max"`)
+
+## diceTerm
+
+Dice as written, read: how many, how many sides, and any advantage or burden
+dice, which add to what is thrown and say which count.
+
+### Parameters
+
+- `written` **[string][1794]** The term, for saying what is wrong with it
+- `count` **[string][1794]** The number before the `d`, if any
+- `sides` **[string][1794]**&#x20;
+- `letters` **[string][1794]** Any run of `a` and `b` after it, with their numbers
+
+Returns **[DiceTerm][1604]**&#x20;
 
 ## DiceRoll
 
@@ -11449,40 +12510,115 @@ A roll as `roll_dice` answers it, and as `/roll` keeps it.
 
 The dice go with the total, kept apart by kind, because how a roll reads is
 often in the dice rather than the sum: the lower of two d20s, doubles, the
-highest of three. A flat list of numbers cannot say which were the d4s, and
-a sum written out cannot say which number was the modifier.
+highest of three. A flat list of numbers cannot say which were the d4s.
 
-Type: [Object][1618]
+Where dice were dropped, the ones that count go too. A game that counts
+successes has no use for the total, and a reader told which three of four dice
+stand has no sorting to get wrong.
+
+Each term's dice are the next so many of their kind, in the order the
+notation throws them, so the dice by kind say which term threw which: see
+`workingOf`, which shows them term by term.
+
+Type: [Object][1795]
 
 ### Properties
 
-- `roll` **[string][1617]** The notation, as written
-- `dice` **Record<[string][1617], [Array][1621]<[number][1619]>>** What each die came up, by kind:
-  `{d6: [4, 2, 5], d4: [3]}`. Every die thrown, the ones `min` and `max`
-  passed over too, in the notation's order.
-- `modifier` **[number][1619]** Everything added or taken away, summed
-- `total` **[number][1619]**&#x20;
+- `roll` **[string][1794]** The notation, as written
+- `dice` **Record<[string][1794], [Array][1798]<[number][1796]>>** What each die came up, by kind:
+  `{d6: [4, 2, 5], d4: [3]}`. Every die thrown, the ones dropped too, in the
+  notation's order.
+- `kept` **Record<[string][1794], [Array][1798]<[number][1796]>>?** The dice that count, by kind and
+  in the same order, where any were dropped
+- `modifier` **[number][1796]?** Rolls from before dice could be multiplied:
+  the numbers added and taken away, summed. No longer written, as `(2d6+1)*2`
+  has nothing it could say
+- `total` **[number][1796]**&#x20;
 
-## diceTotal
+## facesByTerm
 
-The total the notation makes of the dice: each term's dice taken in turn
-from their kind, and added up, or the lowest or highest of them, with the
-modifier on top.
+Where each of the notation's dice terms is among the dice of its kind: the
+next so many, in the order written.
 
-Apart from the roll because a roll the writer edits is worked out again from
+Null where the dice are not as many as the notation throws, as in a roll
+saved by a version that read the notation another way.
+
+### Parameters
+
+- `asked` **[DiceNotation][1608]**&#x20;
+- `dice` **Record<[string][1794], [Array][1798]<[number][1796]>>** What the dice came up, by kind
+
+Returns **([Map][1801]<[DiceTerm][1604], [Array][1798]<[number][1796]>> | null)**&#x20;
+
+## facesByTerm
+
+Type: [Map][1801]<[DiceTerm][1604], [Array][1798]<[number][1796]>>
+
+## taken
+
+Type: Record<[string][1794], [number][1796]>
+
+## faces
+
+Type: [Map][1801]<[DiceTerm][1604], [Array][1798]<[number][1796]>>
+
+## countedAt
+
+Which of a term's dice count, by where they fall among them.
+
+### Parameters
+
+- `term` **[DiceTerm][1604]**&#x20;
+  - `term.keep` &#x20;
+  - `term.kept` &#x20;
+
+- `faces` **[Array][1798]<[number][1796]>** What the term's dice came up
+
+Returns **[Set][1805]<[number][1796]>**&#x20;
+
+## facesKept
+
+The faces of a term that count, in the order they were thrown.
+
+### Parameters
+
+- `term` **[DiceTerm][1604]**&#x20;
+- `faces` **[Array][1798]<[number][1796]>**&#x20;
+
+Returns **[Array][1798]<[number][1796]>**&#x20;
+
+## valueOf
+
+What the notation comes to, given what each dice term counts for.
+
+Division rounds down, as the games that halve damage say to.
+
+### Parameters
+
+- `node` **DiceNode**&#x20;
+- `counted` &#x20;
+
+Returns **[number][1796]**&#x20;
+
+## rollFrom
+
+The roll the notation makes of the dice: each term's dice taken in turn from
+their kind, those that count worked through the notation's arithmetic.
+
+Apart from the throw because a roll the writer edits is worked out again from
 the dice they wrote. See ../commands.js.
 
 ### Parameters
 
-- `asked` **{dice: [Array][1621]<[DiceTerm][1486]>, modifier: [number][1619]}** The notation, read
-- `dice` **Record<[string][1617], [Array][1621]<[number][1619]>>** What the dice came up, by kind, as
+- `asked` **[DiceNotation][1608]** The notation, read
+- `dice` **Record<[string][1794], [Array][1798]<[number][1796]>>** What the dice came up, by kind, as
   many of each as the notation throws
 
-Returns **[number][1619]**&#x20;
+Returns **[DiceRoll][1626]**&#x20;
 
-## taken
+## kept
 
-Type: Record<[string][1617], [number][1619]>
+Type: Record<[string][1794], [Array][1798]<[number][1796]>>
 
 ## rollDice
 
@@ -11490,20 +12626,90 @@ Roll what the notation asks for.
 
 ### Parameters
 
-- `notation` **[string][1617]** What the writer typed
+- `notation` **[string][1794]** What the writer typed
 
-Returns **([DiceRoll][1491] | {error: [string][1617]})**&#x20;
+Returns **([DiceRoll][1626] | {error: [string][1794]})**&#x20;
+
+## workingOf
+
+A piece of a line of working: some of its text, or the dice a term dropped,
+which are drawn struck through.
+
+### Parameters
+
+- `roll` &#x20;
+
+## workingOf
+
+A roll's dice as they are read: a line for each term, the dice it dropped
+first, lowest first and struck through, then those that count as they fell,
+as in `3d6a2: ~~1, 2~~, 6, 4, 2 → 12`. Each term on a line of its own, so
+which die went with which is plain where the dice by kind run two d20 terms
+together.
+
+Only the dice, which nothing else on screen says: the arithmetic is the
+notation's, above them, and the total is below. A line is named by its term
+only where there are others, and says what its dice come to only where more
+than one counts and the term isn't the whole roll. Nothing for a lone die,
+which the total already is, nor for a roll whose dice this notation doesn't
+throw.
+
+### Parameters
+
+- `roll` **[DiceRoll][1626]**&#x20;
+
+## line
+
+Type: [Array][1798]\<WorkingPart>
+
+## write
+
+### Parameters
+
+- `text` **[string][1794]**&#x20;
+
+## workingText
+
+The working as text, for the model, a copy and the writer's edit: a line
+for each term, the dice that were dropped struck through as Markdown strikes,
+`~~1, 2~~`, which is how dice bots have long shown them.
+
+### Parameters
+
+- `lines` &#x20;
+
+Returns **[string][1794]**&#x20;
+
+## sameThrow
+
+Whether two throws are the same dice for the notation: each term's faces the
+same, in whatever order. The working shows a term's dropped dice first, so
+dice read back from it can be the same throw written in another order.
+
+### Parameters
+
+- `asked` **[DiceNotation][1608]**&#x20;
+- `one` **Record<[string][1794], [Array][1798]<[number][1796]>>** Dice by kind
+- `other` **Record<[string][1794], [Array][1798]<[number][1796]>>**&#x20;
+
+Returns **[boolean][1797]**&#x20;
+
+## sorted
+
+### Parameters
+
+- `faces` **[Array][1798]<[number][1796]>**&#x20;
 
 ## interpretRoll
 
 ### Parameters
 
-- `roll` **[number][1619]**&#x20;
-- `target` **[number][1619]**&#x20;
+- `roll` **[number][1796]**&#x20;
+- `target` **[number][1796]**&#x20;
 
 ## oracleDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -11521,20 +12727,20 @@ player hears about a 73 against a target of 65.
 
 ### Parameters
 
-- `args` **{question: [string][1617], likelihood: [string][1617]}**&#x20;
+- `args` **{question: [string][1794], likelihood: [string][1794]}**&#x20;
 
-Returns **[Promise][1625]<(`"yes"` | `"no"` | `"exceptional yes"` | `"exceptional no"` | {error: [string][1617]})>**&#x20;
+Returns **[Promise][1802]<(`"yes"` | `"no"` | `"exceptional yes"` | `"exceptional no"` | {error: [string][1794]})>**&#x20;
 
 ## MAX_TABLE_OPTIONS
 
 Guard against a table so long it is obviously a mistake — a model looping on
 generation, say — rather than a real one a GM would write.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## rollTableDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -11559,20 +12765,20 @@ that wants them.
 
 The deck a draw comes from when the writer does not say.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## TAROT_SPREAD
 
 How many cards a draw turns over when the writer does not say: a past, present and future.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## MAX_TAROT_CARDS
 
 The most a draw can ask for. The Celtic Cross is ten, and nothing anyone
 reads is bigger; a number past it is a typo.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## drawTarot
 
@@ -11585,18 +12791,18 @@ front of them, the writer or the model that drew them.
 
 ### Parameters
 
-- `count` **[number][1619]?** How many to turn over (optional, default `TAROT_SPREAD`)
+- `count` **[number][1796]?** How many to turn over (optional, default `TAROT_SPREAD`)
 - `cards` (optional, default `TAROT_DECKS[DEFAULT_TAROT_DECK]`)
 
-Returns **[Array][1621]<[string][1617]>**&#x20;
+Returns **[Array][1798]<[string][1794]>**&#x20;
 
 ## drawn
 
-Type: [Array][1621]<[string][1617]>
+Type: [Array][1798]<[string][1794]>
 
 ## drawTarotDefinition
 
-Type: [ToolDefinition][1443]
+Type: [ToolDefinition][1557]
 
 ###
 
@@ -11615,16 +12821,16 @@ to; a count sent as "3" is read as the number it says.
 
 - `args` &#x20;
 
-Returns **[Promise][1625]<([Array][1621]<[string][1617]> | {error: [string][1617]})>**&#x20;
+Returns **[Promise][1802]<([Array][1798]<[string][1794]> | {error: [string][1794]})>**&#x20;
 
 ## DrawnCard
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `card` **[string][1617]** Its name, as TAROT_DECK has it
-- `reversed` **[boolean][1620]** Whether it came up upside down
+- `card` **[string][1794]** Its name, as TAROT_DECK has it
+- `reversed` **[boolean][1797]** Whether it came up upside down
 
 ## drawCard
 
@@ -11643,7 +12849,7 @@ the everyday — a quarrel, a windfall, a rival — with a suit to say what
 kind. Reversed half the time, as a reader lays them: the card's meaning
 blocked or turned inward, and twice the answers from the same deck.
 
-Returns **[DrawnCard][1520]**&#x20;
+Returns **[DrawnCard][1679]**&#x20;
 
 ## ai/tools/slices
 
@@ -11666,13 +12872,13 @@ How much of a document one read returns, in characters: about ten thousand
 tokens of English prose. A document up to this long is read whole; a
 longer one is read in slices and cannot be kept.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## SLACK
 
 How far back from the budget a slice may stop to end at a paragraph.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## PAGE_MARKER
 
@@ -11688,23 +12894,23 @@ Whether a document is too long for one read.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## Slice
 
 One slice of a text, starting at an offset.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `text` **[string][1617]**&#x20;
-- `from` **[number][1619]** Where it starts, as an offset into the whole
-- `to` **[number][1619]** Where it ends, exclusive
-- `length` **[number][1619]** The whole text's length
-- `next` **([number][1619] | null)** Where the next slice starts, or null at the end
+- `text` **[string][1794]**&#x20;
+- `from` **[number][1796]** Where it starts, as an offset into the whole
+- `to` **[number][1796]** Where it ends, exclusive
+- `length` **[number][1796]** The whole text's length
+- `next` **([number][1796] | null)** Where the next slice starts, or null at the end
 
 ## sliceAt
 
@@ -11716,11 +12922,11 @@ breaks to stop at. An offset past the end gives an empty slice at the end.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
-- `from` **[number][1619]?** (optional, default `0`)
-- `budget` **[number][1619]?** (optional, default `READ_BUDGET`)
+- `text` **[string][1794]**&#x20;
+- `from` **[number][1796]?** (optional, default `0`)
+- `budget` **[number][1796]?** (optional, default `READ_BUDGET`)
 
-Returns **[Slice][1530]**&#x20;
+Returns **[Slice][1689]**&#x20;
 
 ## offsetOfPage
 
@@ -11729,10 +12935,10 @@ page's number. Null when the text has no such page.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
-- `page` **[number][1619]** Counted from one
+- `text` **[string][1794]**&#x20;
+- `page` **[number][1796]** Counted from one
 
-Returns **([number][1619] | null)**&#x20;
+Returns **([number][1796] | null)**&#x20;
 
 ## pageAt
 
@@ -11741,24 +12947,24 @@ the text has no page markers before that point.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
-- `offset` **[number][1619]**&#x20;
+- `text` **[string][1794]**&#x20;
+- `offset` **[number][1796]**&#x20;
 
-Returns **([number][1619] | null)**&#x20;
+Returns **([number][1796] | null)**&#x20;
 
 ## Heading
 
 A heading in a text, with where it is.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `title` **[string][1617]**&#x20;
-- `level` **[number][1619]** 1 for `#` or a chapter, 2 for `##` or `4.1`, and so on
-- `offset` **[number][1619]** Where its line starts
-- `number` **[string][1617]?** Its number, `4` or `4.1.1`, for a numbered heading
-- `page` **([number][1619] | null)?** For a text with pages, the page it is on
+- `title` **[string][1794]**&#x20;
+- `level` **[number][1796]** 1 for `#` or a chapter, 2 for `##` or `4.1`, and so on
+- `offset` **[number][1796]** Where its line starts
+- `number` **[string][1794]?** Its number, `4` or `4.1.1`, for a numbered heading
+- `page` **([number][1796] | null)?** For a text with pages, the page it is on
 
 ## CHAPTER
 
@@ -11777,7 +12983,7 @@ dot leaders, or a page number at the end.
 
 How many headings the map carries at most; a long map is its own cost.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## headingsOf
 
@@ -11794,18 +13000,18 @@ the offsets still work.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
-- `limit` **[number][1619]?** At most this many (optional, default `MAP_LIMIT`)
+- `text` **[string][1794]**&#x20;
+- `limit` **[number][1796]?** At most this many (optional, default `MAP_LIMIT`)
 
-Returns **[Array][1621]<[Heading][1527]>**&#x20;
+Returns **[Array][1798]<[Heading][1686]>**&#x20;
 
 ##
 
-Type: [Heading][1527]
+Type: [Heading][1686]
 
 ## marked
 
-Type: [Array][1621]<[Heading][1527]>
+Type: [Array][1798]<[Heading][1686]>
 
 ## numberedHeadings
 
@@ -11819,9 +13025,9 @@ top of every page, and the first is the section.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
 
-Returns **[Array][1621]<[Heading][1527]>** In order of offset
+Returns **[Array][1798]<[Heading][1686]>** In order of offset
 
 ## trimMap
 
@@ -11830,22 +13036,22 @@ as far as the limit allows, in document order.
 
 ### Parameters
 
-- `headings` **[Array][1621]<[Heading][1527]>**&#x20;
-- `limit` **[number][1619]**&#x20;
+- `headings` **[Array][1798]<[Heading][1686]>**&#x20;
+- `limit` **[number][1796]**&#x20;
 
-Returns **[Array][1621]<[Heading][1527]>**&#x20;
+Returns **[Array][1798]<[Heading][1686]>**&#x20;
 
 ## Section
 
 A section of a text: a heading, and where the next heading at its level or
 above begins.
 
-Type: [Object][1618]
+Type: [Object][1795]
 
 ### Properties
 
-- `heading` **[Heading][1527]**&#x20;
-- `until` **[number][1619]** The offset the section runs to, exclusive
+- `heading` **[Heading][1686]**&#x20;
+- `until` **[number][1796]** The offset the section runs to, exclusive
 
 ## sectionOf
 
@@ -11854,11 +13060,11 @@ or a piece of its title, case aside. Null when nothing matches.
 
 ### Parameters
 
-- `headings` **[Array][1621]<[Heading][1527]>**&#x20;
-- `reference` **[string][1617]**&#x20;
-- `length` **[number][1619]** The whole text's length, for the last section
+- `headings` **[Array][1798]<[Heading][1686]>**&#x20;
+- `reference` **[string][1794]**&#x20;
+- `length` **[number][1796]** The whole text's length, for the last section
 
-Returns **([Section][1552] | null)**&#x20;
+Returns **([Section][1711] | null)**&#x20;
 
 ## wordsIn
 
@@ -11867,9 +13073,9 @@ slice or a whole is in the unit the listing uses.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
 
-Returns **[number][1619]**&#x20;
+Returns **[number][1796]**&#x20;
 
 ## sectionsOfText
 
@@ -11881,7 +13087,81 @@ titled with its number.
 
 ### Parameters
 
-- `text` **[string][1617]**&#x20;
+- `text` **[string][1794]**&#x20;
+
+## ai/tools/streamedAppends
+
+A turn's append_document calls shown in their documents as
+the model writes them.
+
+A call's arguments come a token at a time. Once its path has come whole,
+the document is looked up as the tool will look it up, and from then on,
+while the editor has that document open, the text as far as it has come is
+shown at its end (`editor/streaming`). Nothing is written until the call
+runs. Its preview ends once it has run, whatever it did; with the round,
+for a call the round leaves out; and with the turn, however that ends.
+
+## Streamed
+
+One call being shown.
+
+Type: [Object][1795]
+
+### Properties
+
+- `id` **[string][1794]** Its preview's
+- `target` **({documentId: [string][1794], suggested: [boolean][1797]} | null | [undefined][1804])** Where it goes; undefined while that is looked up, null where it is not shown
+- `text` **[string][1794]** As far as it has come, as the tool will write it
+- `ended` **[boolean][1797]**&#x20;
+
+## StreamedAppends
+
+Type: [Object][1795]
+
+## streamAppends
+
+Show a turn's appends as they are written.
+
+### Parameters
+
+- `turn` **[Object][1795]**&#x20;
+  - `turn.storyId` **([string][1794] | null | [undefined][1804])**&#x20;
+  - `turn.chatId` **[string][1794]?**&#x20;
+  - `turn.propose` **[boolean][1797]?** The chat asks before changing documents (optional, default `false`)
+
+Returns **[StreamedAppends][1722]**&#x20;
+
+## running
+
+The round's that will run, by the call. @type {Map\<object, Streamed>}
+
+## show
+
+### Parameters
+
+- `streamed` **[Streamed][1720]**&#x20;
+
+## stop
+
+### Parameters
+
+- `streamed` **[Streamed][1720]**&#x20;
+
+## begin
+
+### Parameters
+
+- `path` **[string][1794]**&#x20;
+
+Returns **[Streamed][1720]**&#x20;
+
+## streamed
+
+Type: [Streamed][1720]
+
+##
+
+Type: [string][1794]
 
 ## ai/tools/useSkill
 
@@ -11909,7 +13189,7 @@ and says which.
 
 The skills the model may load, as the registry has them now.
 
-Returns **[Array][1621]\<Skill>**&#x20;
+Returns **[Array][1798]\<Skill>**&#x20;
 
 ## useSkillDefinition
 
@@ -11917,9 +13197,9 @@ The tool, offering these skills.
 
 ### Parameters
 
-- `skills` **[Array][1621]\<Skill>** The ones it may load here
+- `skills` **[Array][1798]\<Skill>** The ones it may load here
 
-Returns **[ToolDefinition][1443]**&#x20;
+Returns **[ToolDefinition][1557]**&#x20;
 
 ##
 
@@ -11932,9 +13212,9 @@ relative to the skill's folder, with nothing in front.
 
 ### Parameters
 
-- `path` **[string][1617]**&#x20;
+- `path` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## skillWithFile
 
@@ -11943,18 +13223,18 @@ one: a path a skill's instructions give, asked for as a document.
 
 ### Parameters
 
-- `path` **[string][1617]**&#x20;
+- `path` **[string][1794]**&#x20;
 
-Returns **([string][1617] | null)** The skill's name
+Returns **([string][1794] | null)** The skill's name
 
 ## executeUseSkill
 
 ### Parameters
 
 - `args` &#x20;
-- `context` **[ToolContext][1449]?** (optional, default `{}`)
+- `context` **[ToolContext][1563]?** (optional, default `{}`)
 
-Returns **[Promise][1625]<[Object][1618]>**&#x20;
+Returns **[Promise][1802]<[Object][1795]>**&#x20;
 
 ## ai/tools/web
 
@@ -11976,36 +13256,43 @@ not to be (`savesWithoutAsking`).
 
 The group the web tools are switched by.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## READ_WEB_PAGE
 
 The page read's name, which Save to project keeps a result of.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## SAVE_WEB_PAGE
 
 The page save's name, which asks the writer before it runs.
 
-Type: [string][1617]
+Type: [string][1794]
 
 ## WEB_TIMEOUT_MS
 
 How long a web call may take: a page read through a service can take thirty seconds.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## SAVE_TIMEOUT_MS
 
 How long a save may take: a big PDF is a long download, and its text is
 read out before it lands.
 
-Type: [number][1619]
+Type: [number][1796]
 
 ## NOT_SET_UP
 
 What a call says when no service can search.
+
+## webSearchOffered
+
+Whether the web tools can be offered: the Web search extension is on, as
+it is unless the writer switched it off, and a service is set up to search.
+
+Returns **[boolean][1797]**&#x20;
 
 ##
 
@@ -12023,7 +13310,7 @@ The address a call gave, when it is one a page can be read at.
 
 - `value` **any**&#x20;
 
-Returns **([string][1617] | null)**&#x20;
+Returns **([string][1794] | null)**&#x20;
 
 ## executeWebSearch
 
@@ -12034,7 +13321,7 @@ Search the web.
 - `args` &#x20;
 - `context` &#x20;
 
-Returns **[Promise][1625]<[object][1618]>**&#x20;
+Returns **[Promise][1802]<[object][1795]>**&#x20;
 
 ## executeReadWebPage
 
@@ -12045,7 +13332,7 @@ Read a web page, or the slice of it from `from`.
 - `args` &#x20;
 - `context` &#x20;
 
-Returns **[Promise][1625]<[object][1618]>**&#x20;
+Returns **[Promise][1802]<[object][1795]>**&#x20;
 
 ##
 
@@ -12058,9 +13345,9 @@ PDF kept in a browser is kept as its text, and the answer says so.
 
 ### Parameters
 
-- `url` **[string][1617]**&#x20;
+- `url` **[string][1794]**&#x20;
 
-Returns **[boolean][1620]**&#x20;
+Returns **[boolean][1797]**&#x20;
 
 ## executeSaveWebPage
 
@@ -12081,7 +13368,7 @@ every one, and it is theirs.
 - `args` &#x20;
 - `context` &#x20;
 
-Returns **[Promise][1625]<[object][1618]>**&#x20;
+Returns **[Promise][1802]<[object][1795]>**&#x20;
 
 ## ai/wire
 
@@ -12111,10 +13398,10 @@ Join base URL and path.
 
 ### Parameters
 
-- `base` **[string][1617]**&#x20;
-- `path` **[string][1617]**&#x20;
+- `base` **[string][1794]**&#x20;
+- `path` **[string][1794]**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## baseUrl
 
@@ -12125,7 +13412,7 @@ one a server someone runs was given.
 
 - `provider` **AIProvider**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## modelsUrl
 
@@ -12133,7 +13420,17 @@ Returns **[string][1617]**&#x20;
 
 - `provider` **AIProvider**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
+
+## audioModelsUrl
+
+NanoGPT's list of the models that speak, kept apart from its chat models.
+
+### Parameters
+
+- `provider` **AIProvider**&#x20;
+
+Returns **[string][1794]**&#x20;
 
 ## chatCompletionsUrl
 
@@ -12141,7 +13438,7 @@ Returns **[string][1617]**&#x20;
 
 - `provider` **AIProvider**&#x20;
 
-Returns **[string][1617]**&#x20;
+Returns **[string][1794]**&#x20;
 
 ## attributionHeaders
 
@@ -12157,7 +13454,7 @@ sending headers it has not heard of, so they go to OpenRouter alone.
 
 - `provider` &#x20;
 
-Returns **Record<[string][1617], [string][1617]>**&#x20;
+Returns **Record<[string][1794], [string][1794]>**&#x20;
 
 ## withCacheControl
 
@@ -12176,14 +13473,15 @@ Two breakpoints:
     which would force a miss next turn.
 
 Only applied to openrouter-typed providers; we don't know whether a
-generic-typed provider's backend supports cache_control.
+generic-typed provider's backend supports cache_control. NanoGPT is asked
+its own way (`promptCaching`).
 
 ### Parameters
 
-- `messages` **[Array][1621]\<any>**&#x20;
-- `provider` **{type: [string][1617]}**&#x20;
+- `messages` **[Array][1798]\<any>**&#x20;
+- `provider` **{type: [string][1794]}**&#x20;
 
-Returns **[Array][1621]\<any>**&#x20;
+Returns **[Array][1798]\<any>**&#x20;
 
 ## withSupportedReasoning
 
@@ -12200,7 +13498,10 @@ There is no one field for it. `reasoning_details` is OpenRouter's
 normalization over a dozen incompatible conventions and the only one
 carrying Anthropic's signatures, which Anthropic needs echoed back
 verbatim. Everyone else gets `reasoning_content`, the shape DeepSeek
-defined and LM Studio, lmdeploy, and llama.cpp follow.
+defined and LM Studio, lmdeploy, and llama.cpp follow. NanoGPT sends
+`reasoning_details` back for some models and not others, so it is given
+them where it sent them, and the thinking as `reasoning_content` where it
+didn't.
 
 `_reasoning` is ours, set by whoever ran the turn (see
 composables/useAIChat.js) and never sent under that name. It is only ever
@@ -12210,10 +13511,10 @@ answer with a 400.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<any>**&#x20;
-- `provider` **{type: [string][1617]}**&#x20;
+- `messages` **[Array][1798]\<any>**&#x20;
+- `provider` **{type: [string][1794]}**&#x20;
 
-Returns **[Array][1621]\<any>**&#x20;
+Returns **[Array][1798]\<any>**&#x20;
 
 ## withoutPrivateFields
 
@@ -12229,9 +13530,9 @@ strict server, on every tool-using turn.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<any>**&#x20;
+- `messages` **[Array][1798]\<any>**&#x20;
 
-Returns **[Array][1621]\<any>**&#x20;
+Returns **[Array][1798]\<any>**&#x20;
 
 ## toWireMessages
 
@@ -12244,10 +13545,10 @@ sent.
 
 ### Parameters
 
-- `messages` **[Array][1621]\<any>**&#x20;
-- `provider` **{type: [string][1617]}**&#x20;
+- `messages` **[Array][1798]\<any>**&#x20;
+- `provider` **{type: [string][1794]}**&#x20;
 
-Returns **[Array][1621]\<any>**&#x20;
+Returns **[Array][1798]\<any>**&#x20;
 
 ## reasoningFields
 
@@ -12257,15 +13558,17 @@ backend has for it.
 Saying nothing is not saying no: a model that thinks by default goes on
 thinking, and `disabled` reads on the settings panel like a switch that did
 something. So OpenRouter is told so, explicitly. There is no `exclude` on
-that branch because there is nothing to exclude.
+that branch because there is nothing to exclude. NanoGPT takes the same
+object, and needs `enabled` the more: some of its models think only when
+asked.
 
 ### Parameters
 
-- `provider` **{type: [string][1617]}**&#x20;
+- `provider` **{type: [string][1794]}**&#x20;
 - `settings` **AISettings** Fitted to the model
-- `askedForEffort` **[boolean][1620]** Whether a level is named
+- `askedForEffort` **[boolean][1797]** Whether a level is named
 
-Returns **Record<[string][1617], any>**&#x20;
+Returns **Record<[string][1794], any>**&#x20;
 
 ## buildCompletionBody
 
@@ -12288,25 +13591,25 @@ terms that won't explain themselves, so the caller can say what happened.
 
 ### Parameters
 
-- `args` **[Object][1618]**&#x20;
-  - `args.messages` **[Array][1621]\<any>** The conversation, before wire translation
-  - `args.model` **[string][1617]**&#x20;
+- `args` **[Object][1795]**&#x20;
+  - `args.messages` **[Array][1798]\<any>** The conversation, before wire translation
+  - `args.model` **[string][1794]**&#x20;
   - `args.provider` **AIProvider**&#x20;
   - `args.settings` **AISettings** Already resolved over AI_DEFAULTS
-  - `args.traits` **[ModelTraits][107]?** What the provider's list says of the
+  - `args.traits` **[ModelTraits][108]?** What the provider's list says of the
     model (ai/models.js), where it says anything
-  - `args.tools` **[Array][1621]<[ToolDefinition][1443]>?**&#x20;
+  - `args.tools` **[Array][1798]<[ToolDefinition][1557]>?**&#x20;
   - `args.toolChoice` **(`"auto"` | `"none"`)?** `none` for a request that must
     answer without calling anything, with the tools still declared: a
     conversation that has called them is refused by some providers once they
     are not
   - `args.upstreams` &#x20;
 
-Returns **{body: Record<[string][1617], any>, sentReasoning: [boolean][1620], askedForEffort: [boolean][1620]}**&#x20;
+Returns **{body: Record<[string][1794], any>, sentReasoning: [boolean][1797], askedForEffort: [boolean][1797]}**&#x20;
 
 ## body
 
-Type: Record<[string][1617], any>
+Type: Record<[string][1794], any>
 
 [1]: #aianthropic
 [2]: #thinking_format
@@ -12405,1541 +13708,1719 @@ Type: Record<[string][1617], any>
 [95]: #parameters-23
 [96]: #read
 [97]: #parameters-24
-[98]: #lastaside
-[99]: #parameters-25
-[100]: #intoconversation
-[101]: #parameters-26
-[102]: #withoutmark
-[103]: #parameters-27
-[104]: #aicapabilities
-[105]: #levels
-[106]: #levels-1
-[107]: #modeltraits
-[108]: #properties-1
-[109]: #reasoningtraits
-[110]: #properties-2
-[111]: #capabilities
-[112]: #properties-3
-[113]: #-4
-[114]: #all_samplers
-[115]: #undescribed_efforts
-[116]: #undescribed_efforts-1
-[117]: #openai_sampling_models
-[118]: #openai_samplers
-[119]: #server
-[120]: #parameters-28
-[121]: #servers
-[122]: #serverof
-[123]: #parameters-29
-[124]: #capabilitiesof
-[125]: #parameters-30
-[126]: #-5
-[127]: #fiteffort
-[128]: #parameters-31
-[129]: #rank
-[130]: #parameters-32
-[131]: #-6
-[132]: #samplersat
-[133]: #parameters-33
-[134]: #blockedby
-[135]: #parameters-34
-[136]: #isset
-[137]: #parameters-35
-[138]: #fitsettings
-[139]: #parameters-36
-[140]: #keys
-[141]: #aicommands
-[142]: #how-they-are-typed
-[143]: #whose-turn-they-are
-[144]: #everyone-in-the-scene
-[145]: #likelihoods
-[146]: #likelihoods-1
-[147]: #likelihoods-2
-[148]: #likelihoods-3
-[149]: #commandinput
-[150]: #properties-4
-[151]: #default_likelihood
-[152]: #likelihoodsaid
-[153]: #parameters-37
-[154]: #likelihoodlabel
-[155]: #parameters-38
-[156]: #commandparameter
-[157]: #properties-5
-[158]: #commanddefinition
-[159]: #properties-6
-[160]: #compactnote
-[161]: #parameters-39
-[162]: #parsenameask
-[163]: #parameters-40
-[164]: #describenameask
-[165]: #parameters-41
-[166]: #dice_term
-[167]: #dice_then_question
-[168]: #parseroll
-[169]: #parameters-42
-[170]: #dice_line
-[171]: #dicelines
-[172]: #parameters-43
-[173]: #readroll
-[174]: #parameters-44
-[175]: #thrown
-[176]: #total
-[177]: #diceasthrown
-[178]: #parameters-45
-[179]: #sides
-[180]: #counts
-[181]: #dice
-[182]: #dice-1
-[183]: #dice-2
-[184]: #tarot_deck_names
-[185]: #tarot_deck_names-1
-[186]: #parsetarotask
-[187]: #parameters-46
-[188]: #describetarotask
-[189]: #parameters-47
-[190]: #table_token
-[191]: #parsetable
-[192]: #parameters-48
-[193]: #options
-[194]: #tablelabel
-[195]: #parameters-49
-[196]: #explore
-[197]: #written
-[198]: #skillcommand
-[199]: #parameters-50
-[200]: #needsitsargument
-[201]: #parameters-51
-[202]: #savedprompt
-[203]: #parameters-52
-[204]: #-7
-[205]: #-8
-[206]: #commands
-[207]: #fromskills
-[208]: #-9
-[209]: #serverpromptcommand
-[210]: #parameters-53
-[211]: #-10
-[212]: #fromservers
-[213]: #-11
-[214]: #character
-[215]: #unknowncommand
-[216]: #parameters-54
-[217]: #commandentry
-[218]: #properties-7
-[219]: #listcommands
-[220]: #matchcommands
-[221]: #parameters-55
-[222]: #typing_name
-[223]: #commandatcaret
-[224]: #parameters-56
-[225]: #definitionfor
-[226]: #parameters-57
-[227]: #command_line
-[228]: #parsecommand
-[229]: #parameters-58
-[230]: #-12
-[231]: #-13
-[232]: #formatcommand
-[233]: #parameters-59
-[234]: #answer_line
-[235]: #formatsegment
-[236]: #parameters-60
-[237]: #answertext
-[238]: #parameters-61
-[239]: #answeredcommand
-[240]: #parameters-62
-[241]: #formatturn
-[242]: #parameters-63
-[243]: #formatanswered
-[244]: #parameters-64
-[245]: #splitanswered
-[246]: #parameters-65
-[247]: #splitinput
-[248]: #parameters-66
-[249]: #segments
-[250]: #said
-[251]: #said-1
-[252]: #said-2
-[253]: #-14
-[254]: #-15
-[255]: #-16
-[256]: #withparam
-[257]: #parameters-67
-[258]: #-17
-[259]: #storedparam
-[260]: #parameters-68
-[261]: #wordsof
-[262]: #parameters-69
-[263]: #sayvalue
-[264]: #parameters-70
-[265]: #checkparam
-[266]: #parameters-71
-[267]: #commandswitchedoff
-[268]: #parameters-72
-[269]: #runcommand
-[270]: #parameters-73
-[271]: #rendercommand
-[272]: #parameters-74
-[273]: #rollof
-[274]: #parameters-75
-[275]: #rolllines
-[276]: #parameters-76
-[277]: #saidunder
-[278]: #parameters-77
-[279]: #commandtag
-[280]: #parameters-78
-[281]: #commanddetail
-[282]: #parameters-79
-[283]: #commandlabel
-[284]: #parameters-80
-[285]: #commandischaracter
-[286]: #parameters-81
-[287]: #commandspeaks
-[288]: #parameters-82
-[289]: #commandisprompt
-[290]: #parameters-83
-[291]: #commandisaside
-[292]: #parameters-84
-[293]: #commandconsults
-[294]: #parameters-85
-[295]: #commandtakesturn
-[296]: #parameters-86
-[297]: #assembleturn
-[298]: #parameters-87
-[299]: #inspectcommand
-[300]: #parameters-88
-[301]: #askedcommand
-[302]: #parameters-89
-[303]: #pendingcommand
-[304]: #parameters-90
-[305]: #commandwritesprose
-[306]: #parameters-91
-[307]: #segmentprose
-[308]: #parameters-92
-[309]: #pendingsegment
-[310]: #parameters-93
-[311]: #commandrepeatable
-[312]: #parameters-94
-[313]: #mcpservers
-[314]: #servers-1
-[315]: #servers-2
-[316]: #servers-3
-[317]: #servers-4
-[318]: #listeners
-[319]: #listeners-1
-[320]: #setservers
-[321]: #parameters-95
-[322]: #onserverschanged
-[323]: #parameters-96
-[324]: #allservers
-[325]: #getserver
-[326]: #parameters-97
-[327]: #reachable
-[328]: #parameters-98
-[329]: #missingheaders
-[330]: #parameters-99
-[331]: #servertool
-[332]: #parameters-100
-[333]: #serversforchat
-[334]: #parameters-101
-[335]: #requiredarguments
-[336]: #parameters-102
-[337]: #promptcommand
-[338]: #parameters-103
-[339]: #properties-8
-[340]: #promptcommands
-[341]: #needsapproval
-[342]: #parameters-104
-[343]: #mcpclient
-[344]: #fetch
-[345]: #fetch-1
-[346]: #fetch-2
-[347]: #fetch-3
-[348]: #client_info
-[349]: #max_pages
-[350]: #loadsdk
-[351]: #loadsdk-1
-[352]: #connections
-[353]: #connectionkey
-[354]: #parameters-105
-[355]: #statusof
-[356]: #parameters-106
-[357]: #open
-[358]: #parameters-107
-[359]: #open-1
-[360]: #parameters-108
-[361]: #open-2
-[362]: #parameters-109
-[363]: #connection
-[364]: #parameters-110
-[365]: #disconnect
-[366]: #parameters-111
-[367]: #everypage
-[368]: #parameters-112
-[369]: #items
-[370]: #listserver
-[371]: #parameters-113
-[372]: #callservertool
-[373]: #parameters-114
-[374]: #getserverprompt
-[375]: #parameters-115
-[376]: #prompttext
-[377]: #parameters-116
-[378]: #sign_in_needed
-[379]: #wantssignin
-[380]: #parameters-117
-[381]: #answeredotherwise
-[382]: #parameters-118
-[383]: #describefailure
-[384]: #parameters-119
-[385]: #resultformodel
-[386]: #parameters-120
-[387]: #mcpauth
-[388]: #callback_path
-[389]: #callback_path-1
-[390]: #callback_path-2
-[391]: #callback_path-3
-[392]: #public_origin
-[393]: #client_metadata_url
-[394]: #sign_in_channel
-[395]: #auth_key
-[396]: #pending_key
-[397]: #sign_in_ttl_ms
-[398]: #authrecord
-[399]: #properties-9
-[400]: #storage
-[401]: #storage-1
-[402]: #useauthstorage
-[403]: #parameters-121
-[404]: #records
-[405]: #recordof
-[406]: #parameters-122
-[407]: #updaterecord
-[408]: #parameters-123
-[409]: #issuerkey
-[410]: #parameters-124
-[411]: #signedin
-[412]: #parameters-125
-[413]: #signout
-[414]: #parameters-126
-[415]: #apporigin
-[416]: #callbackurl
-[417]: #clientmetadata
-[418]: #parameters-127
-[419]: #randomstate
-[420]: #remembersignin
+[98]: #read-1
+[99]: #lastaside
+[100]: #parameters-25
+[101]: #intoconversation
+[102]: #parameters-26
+[103]: #withoutmark
+[104]: #parameters-27
+[105]: #aicapabilities
+[106]: #levels
+[107]: #levels-1
+[108]: #modeltraits
+[109]: #properties-1
+[110]: #reasoningtraits
+[111]: #properties-2
+[112]: #capabilities
+[113]: #properties-3
+[114]: #-4
+[115]: #all_samplers
+[116]: #undescribed_efforts
+[117]: #undescribed_efforts-1
+[118]: #openai_sampling_models
+[119]: #openai_samplers
+[120]: #server
+[121]: #parameters-28
+[122]: #servers
+[123]: #serverof
+[124]: #parameters-29
+[125]: #capabilitiesof
+[126]: #parameters-30
+[127]: #-5
+[128]: #fiteffort
+[129]: #parameters-31
+[130]: #rank
+[131]: #parameters-32
+[132]: #-6
+[133]: #samplersat
+[134]: #parameters-33
+[135]: #blockedby
+[136]: #parameters-34
+[137]: #isset
+[138]: #parameters-35
+[139]: #fitsettings
+[140]: #parameters-36
+[141]: #keys
+[142]: #aicommands
+[143]: #how-they-are-typed
+[144]: #whose-turn-they-are
+[145]: #everyone-in-the-scene
+[146]: #likelihoods
+[147]: #likelihoods-1
+[148]: #likelihoods-2
+[149]: #likelihoods-3
+[150]: #commandinput
+[151]: #properties-4
+[152]: #default_likelihood
+[153]: #likelihoodsaid
+[154]: #parameters-37
+[155]: #likelihoodlabel
+[156]: #parameters-38
+[157]: #commandparameter
+[158]: #properties-5
+[159]: #commanddefinition
+[160]: #properties-6
+[161]: #compactnote
+[162]: #parameters-39
+[163]: #parsenameask
+[164]: #parameters-40
+[165]: #describenameask
+[166]: #parameters-41
+[167]: #dice_term
+[168]: #dice_operand
+[169]: #dice_then_question
+[170]: #arithmetic
+[171]: #parseroll
+[172]: #parameters-42
+[173]: #dice_line
+[174]: #term_line
+[175]: #thrownin
+[176]: #parameters-43
+[177]: #thrown
+[178]: #exec
+[179]: #byterm
+[180]: #readroll
+[181]: #parameters-44
+[182]: #diceasthrown
+[183]: #parameters-45
+[184]: #sides
+[185]: #counts
+[186]: #dice
+[187]: #dice-1
+[188]: #dice-2
+[189]: #tarot_deck_names
+[190]: #tarot_deck_names-1
+[191]: #parsetarotask
+[192]: #parameters-46
+[193]: #describetarotask
+[194]: #parameters-47
+[195]: #table_token
+[196]: #parsetable
+[197]: #parameters-48
+[198]: #options
+[199]: #tablelabel
+[200]: #parameters-49
+[201]: #explore
+[202]: #written
+[203]: #skillcommand
+[204]: #parameters-50
+[205]: #needsitsargument
+[206]: #parameters-51
+[207]: #savedprompt
+[208]: #parameters-52
+[209]: #-7
+[210]: #-8
+[211]: #commands
+[212]: #fromskills
+[213]: #-9
+[214]: #serverpromptcommand
+[215]: #parameters-53
+[216]: #-10
+[217]: #fromservers
+[218]: #-11
+[219]: #character
+[220]: #unknowncommand
+[221]: #parameters-54
+[222]: #commandentry
+[223]: #properties-7
+[224]: #listcommands
+[225]: #matchcommands
+[226]: #parameters-55
+[227]: #typing_name
+[228]: #commandatcaret
+[229]: #parameters-56
+[230]: #definitionfor
+[231]: #parameters-57
+[232]: #command_line
+[233]: #parsecommand
+[234]: #parameters-58
+[235]: #formatcommand
+[236]: #parameters-59
+[237]: #answer_line
+[238]: #formatsegment
+[239]: #parameters-60
+[240]: #answertext
+[241]: #parameters-61
+[242]: #answeredcommand
+[243]: #parameters-62
+[244]: #formatturn
+[245]: #parameters-63
+[246]: #formatanswered
+[247]: #parameters-64
+[248]: #splitanswered
+[249]: #parameters-65
+[250]: #splitinput
+[251]: #parameters-66
+[252]: #segments
+[253]: #said
+[254]: #said-1
+[255]: #said-2
+[256]: #-12
+[257]: #-13
+[258]: #-14
+[259]: #withparam
+[260]: #parameters-67
+[261]: #-15
+[262]: #storedparam
+[263]: #parameters-68
+[264]: #wordsof
+[265]: #parameters-69
+[266]: #sayvalue
+[267]: #parameters-70
+[268]: #checkparam
+[269]: #parameters-71
+[270]: #commandswitchedoff
+[271]: #parameters-72
+[272]: #runcommand
+[273]: #parameters-73
+[274]: #rendercommand
+[275]: #parameters-74
+[276]: #rollof
+[277]: #parameters-75
+[278]: #rollworking
+[279]: #parameters-76
+[280]: #saidunder
+[281]: #parameters-77
+[282]: #commandtag
+[283]: #parameters-78
+[284]: #commanddetail
+[285]: #parameters-79
+[286]: #commandlabel
+[287]: #parameters-80
+[288]: #commandischaracter
+[289]: #parameters-81
+[290]: #commandspeaks
+[291]: #parameters-82
+[292]: #commandisprompt
+[293]: #parameters-83
+[294]: #commandisaside
+[295]: #parameters-84
+[296]: #commandiswhole
+[297]: #parameters-85
+[298]: #commandforks
+[299]: #parameters-86
+[300]: #forkasked
+[301]: #parameters-87
+[302]: #commandconsults
+[303]: #parameters-88
+[304]: #commandtakesturn
+[305]: #parameters-89
+[306]: #assembleturn
+[307]: #parameters-90
+[308]: #inspectcommand
+[309]: #parameters-91
+[310]: #askedcommand
+[311]: #parameters-92
+[312]: #pendingcommand
+[313]: #parameters-93
+[314]: #commandwritesprose
+[315]: #parameters-94
+[316]: #segmentprose
+[317]: #parameters-95
+[318]: #pendingsegment
+[319]: #parameters-96
+[320]: #commandrepeatable
+[321]: #parameters-97
+[322]: #mcpservers
+[323]: #servers-1
+[324]: #servers-2
+[325]: #servers-3
+[326]: #servers-4
+[327]: #listeners
+[328]: #listeners-1
+[329]: #setservers
+[330]: #parameters-98
+[331]: #onserverschanged
+[332]: #parameters-99
+[333]: #allservers
+[334]: #getserver
+[335]: #parameters-100
+[336]: #reachable
+[337]: #parameters-101
+[338]: #missingheaders
+[339]: #parameters-102
+[340]: #servertool
+[341]: #parameters-103
+[342]: #requiredarguments
+[343]: #parameters-104
+[344]: #promptcommand
+[345]: #parameters-105
+[346]: #properties-8
+[347]: #promptcommands
+[348]: #needsapproval
+[349]: #parameters-106
+[350]: #mcpclient
+[351]: #fetch
+[352]: #fetch-1
+[353]: #fetch-2
+[354]: #fetch-3
+[355]: #client_info
+[356]: #max_pages
+[357]: #loadsdk
+[358]: #loadsdk-1
+[359]: #connections
+[360]: #connectionkey
+[361]: #parameters-107
+[362]: #statusof
+[363]: #parameters-108
+[364]: #open
+[365]: #parameters-109
+[366]: #open-1
+[367]: #parameters-110
+[368]: #open-2
+[369]: #parameters-111
+[370]: #connection
+[371]: #parameters-112
+[372]: #disconnect
+[373]: #parameters-113
+[374]: #everypage
+[375]: #parameters-114
+[376]: #items
+[377]: #listserver
+[378]: #parameters-115
+[379]: #callservertool
+[380]: #parameters-116
+[381]: #getserverprompt
+[382]: #parameters-117
+[383]: #prompttext
+[384]: #parameters-118
+[385]: #sign_in_needed
+[386]: #wantssignin
+[387]: #parameters-119
+[388]: #answeredotherwise
+[389]: #parameters-120
+[390]: #describefailure
+[391]: #parameters-121
+[392]: #resultformodel
+[393]: #parameters-122
+[394]: #mcpauth
+[395]: #callback_path
+[396]: #callback_path-1
+[397]: #callback_path-2
+[398]: #callback_path-3
+[399]: #public_origin
+[400]: #client_metadata_url
+[401]: #sign_in_channel
+[402]: #auth_key
+[403]: #pending_key
+[404]: #sign_in_ttl_ms
+[405]: #authrecord
+[406]: #properties-9
+[407]: #storage
+[408]: #storage-1
+[409]: #useauthstorage
+[410]: #parameters-123
+[411]: #records
+[412]: #recordof
+[413]: #parameters-124
+[414]: #updaterecord
+[415]: #parameters-125
+[416]: #issuerkey
+[417]: #parameters-126
+[418]: #signedin
+[419]: #parameters-127
+[420]: #signout
 [421]: #parameters-128
-[422]: #takesignin
-[423]: #parameters-129
-[424]: #authprovider
-[425]: #parameters-130
-[426]: #startsignin
-[427]: #parameters-131
-[428]: #signinerror
-[429]: #parameters-132
-[430]: #finishsignin
-[431]: #parameters-133
-[432]: #aicompaction
-[433]: #compact_command
-[434]: #compact_command-1
-[435]: #default_keep
-[436]: #kept_opening
-[437]: #parsekeep
-[438]: #parameters-134
-[439]: #iscompacting
-[440]: #parameters-135
-[441]: #iscompaction
-[442]: #parameters-136
-[443]: #compactioncover
-[444]: #parameters-137
-[445]: #covered
-[446]: #applycompaction
-[447]: #parameters-138
-[448]: #firstsummarizable
-[449]: #parameters-139
-[450]: #aicomplete
-[451]: #complete
-[452]: #parameters-140
-[453]: #complete-1
-[454]: #parameters-141
-[455]: #completion
-[456]: #properties-10
-[457]: #ask
-[458]: #parameters-142
-[459]: #headers
-[460]: #headers-1
-[461]: #headers-2
-[462]: #headers-3
-[463]: #headers-4
-[464]: #headers-5
-[465]: #finishreason
-[466]: #aicontextbuild
-[467]: #default_transcript_roles
-[468]: #stores
-[469]: #properties-11
-[470]: #buildcontext
-[471]: #parameters-143
-[472]: #messages
-[473]: #renderauthorsnote
-[474]: #parameters-144
-[475]: #rendertranscript
-[476]: #parameters-145
-[477]: #renderloads
-[478]: #parameters-146
-[479]: #pinnedcontent
-[480]: #parameters-147
-[481]: #renderprojectstate
-[482]: #parameters-148
-[483]: #settledsince
-[484]: #parameters-149
-[485]: #mergeadjacentturns
-[486]: #parameters-150
-[487]: #attachprojectstate
-[488]: #parameters-151
-[489]: #expandmessage
-[490]: #parameters-152
-[491]: #carriedmessages
-[492]: #parameters-153
-[493]: #replayedcalls
-[494]: #parameters-154
-[495]: #chatmessages
-[496]: #parameters-155
-[497]: #aicontextreads
-[498]: #located
-[499]: #properties-12
-[500]: #keepseverycall
-[501]: #parameters-156
-[502]: #keepsdocumentcalls
-[503]: #parameters-157
-[504]: #texthash
-[505]: #parameters-158
-[506]: #parsedargs
-[507]: #parameters-159
-[508]: #readsin
-[509]: #parameters-160
-[510]: #reads
-[511]: #calls
-[512]: #readsinview
-[513]: #parameters-161
-[514]: #partof
-[515]: #parameters-162
-[516]: #readinview
-[517]: #parameters-163
-[518]: #changedsinceread
-[519]: #parameters-164
-[520]: #latest
-[521]: #aisamplerparameters
-[522]: #properties-13
-[523]: #reasoning_effort_options
-[524]: #default_preset_id
-[525]: #ai_defaults
-[526]: #resolveaisettings
-[527]: #parameters-165
-[528]: #resolveaisettings-1
-[529]: #parameters-166
-[530]: #mergeaisettings
-[531]: #parameters-167
-[532]: #title_defaults
-[533]: #aigate
-[534]: #rate_retries
-[535]: #rate_retries-1
-[536]: #urgency
-[537]: #first_wait_ms
-[538]: #longest_wait_ms
-[539]: #at_home
-[540]: #hosted
-[541]: #ratelimitederror
-[542]: #parameters-168
-[543]: #rate_limited
-[544]: #retryafterof
-[545]: #parameters-169
-[546]: #isathome
-[547]: #parameters-170
-[548]: #defaultroom
-[549]: #parameters-171
-[550]: #roomfor
-[551]: #parameters-172
-[552]: #waiting
-[553]: #properties-14
-[554]: #lane
-[555]: #properties-15
-[556]: #lanes
-[557]: #laneof
-[558]: #parameters-173
-[559]: #hasplace
-[560]: #parameters-174
-[561]: #wake
-[562]: #parameters-175
-[563]: #take
-[564]: #parameters-176
-[565]: #waiting-1
-[566]: #settle
-[567]: #parameters-177
-[568]: #throughgate
-[569]: #parameters-178
-[570]: #inturn
-[571]: #parameters-179
-[572]: #queued
-[573]: #resetgate
-[574]: #ai
-[575]: #aillamacpp
-[576]: #propsaddress
-[577]: #parameters-180
-[578]: #propsaddress-1
-[579]: #parameters-181
-[580]: #serverprops
-[581]: #properties-16
-[582]: #count
-[583]: #parameters-182
-[584]: #askprops
-[585]: #parameters-183
-[586]: #found
-[587]: #found-1
-[588]: #found-2
-[589]: #found-3
-[590]: #forgetprops
-[591]: #aimodels
-[592]: #sampler_names
-[593]: #sampler_names-1
-[594]: #aimodel
-[595]: #properties-17
-[596]: #openroutertraits
-[597]: #parameters-184
-[598]: #traits
-[599]: #levels-2
-[600]: #entriesof
-[601]: #parameters-185
-[602]: #byname
-[603]: #parameters-186
-[604]: #parsemodelsresponse
-[605]: #parameters-187
-[606]: #entry
-[607]: #entry-1
-[608]: #listheaders
-[609]: #parameters-188
-[610]: #catalogs
-[611]: #byid
-[612]: #parameters-189
-[613]: #listmodels
-[614]: #parameters-190
-[615]: #traitsof
-[616]: #parameters-191
-[617]: #contextof
-[618]: #parameters-192
-[619]: #openai_voices
-[620]: #openai_input_limit
-[621]: #openaivoices
-[622]: #parameters-193
-[623]: #listspeechmodels
-[624]: #parameters-194
-[625]: #aiprofiles
-[626]: #chatprofile
-[627]: #properties-18
-[628]: #all_tool_groups
-[629]: #experimental
-[630]: #roleplay_settings
-[631]: #built_in_profiles
-[632]: #isbuiltinprofileid
-[633]: #parameters-195
-[634]: #getbuiltinprofile
-[635]: #parameters-196
-[636]: #default_profile_id
-[637]: #settingsfornewchat
-[638]: #parameters-197
-[639]: #stamped_settings
-[640]: #settingsforprofileswitch
-[641]: #parameters-198
-[642]: #noteonprofile
-[643]: #parameters-199
-[644]: #aiprompts
-[645]: #default_roleplay_nsfw_prompt
-[646]: #roleplay_compaction_prompt
-[647]: #default_roleplay_note
-[648]: #default_roleplay_nsfw_note
-[649]: #builtinprompt
-[650]: #properties-19
-[651]: #built_in_prompts
-[652]: #isbuiltinpromptid
-[653]: #parameters-200
-[654]: #getbuiltinprompt
-[655]: #parameters-201
-[656]: #default_prompt_id
-[657]: #aiproviders
-[658]: #providertype
-[659]: #properties-20
-[660]: #providerkind
-[661]: #provider_types
-[662]: #built_in_providers
-[663]: #default_speech_provider_id
-[664]: #inmenuorder
-[665]: #parameters-202
-[666]: #typeof
-[667]: #parameters-203
-[668]: #providerdoes
-[669]: #parameters-204
-[670]: #default_provider_type
-[671]: #providerlabel
-[672]: #parameters-205
-[673]: #knownaddress
-[674]: #parameters-206
-[675]: #needsendpoint
-[676]: #parameters-207
-[677]: #needskey
-[678]: #parameters-208
-[679]: #connectiongap
-[680]: #parameters-209
-[681]: #presetproblem
-[682]: #parameters-210
-[683]: #canlistmodels
-[684]: #parameters-211
-[685]: #serveschat
-[686]: #parameters-212
-[687]: #takesreasoningeffort
-[688]: #parameters-213
-[689]: #takeschattemplatekwargs
-[690]: #parameters-214
-[691]: #airounds
-[692]: #round_limit
-[693]: #round_limit-1
-[694]: #round_limit-2
-[695]: #asked
-[696]: #parameters-215
-[697]: #trimround
-[698]: #parameters-216
-[699]: #run
-[700]: #over
-[701]: #refusedanswer
-[702]: #parameters-217
-[703]: #splitoffered
-[704]: #parameters-218
-[705]: #offered
-[706]: #unoffered
-[707]: #unofferedanswer
-[708]: #parameters-219
-[709]: #airouting
-[710]: #openrouterrouting
-[711]: #properties-21
-[712]: #modelupstreams
-[713]: #properties-22
-[714]: #routing_defaults
-[715]: #quantizations
-[716]: #tosluglist
-[717]: #parameters-220
-[718]: #resolverouting
-[719]: #parameters-221
-[720]: #isroutingoverridden
-[721]: #parameters-222
-[722]: #closed_vendors
-[723]: #isclosedweights
-[724]: #parameters-223
-[725]: #buildproviderrouting
-[726]: #parameters-224
-[727]: #field
-[728]: #aiskillsbundle
-[729]: #max_file_bytes
-[730]: #max_file_bytes-1
-[731]: #bundleentry
-[732]: #properties-23
-[733]: #foundskill
-[734]: #properties-24
-[735]: #isnoise
-[736]: #parameters-225
-[737]: #folderof
-[738]: #parameters-226
-[739]: #nameof
-[740]: #parameters-227
-[741]: #nameof-1
-[742]: #parameters-228
-[743]: #textof
-[744]: #parameters-229
-[745]: #textof-1
-[746]: #parameters-230
-[747]: #entriesfromzip
-[748]: #parameters-231
-[749]: #entriesfromfiles
-[750]: #parameters-232
-[751]: #entries
-[752]: #entries-1
-[753]: #webkitrelativepath
-[754]: #namedafterfile
-[755]: #parameters-233
-[756]: #findskills
-[757]: #parameters-234
-[758]: #ownerof
-[759]: #parameters-235
-[760]: #stray
-[761]: #zipskills
+[422]: #apporigin
+[423]: #callbackurl
+[424]: #clientmetadata
+[425]: #parameters-129
+[426]: #randomstate
+[427]: #remembersignin
+[428]: #parameters-130
+[429]: #takesignin
+[430]: #parameters-131
+[431]: #authprovider
+[432]: #parameters-132
+[433]: #startsignin
+[434]: #parameters-133
+[435]: #signinerror
+[436]: #parameters-134
+[437]: #finishsignin
+[438]: #parameters-135
+[439]: #composablesuseexplore
+[440]: #tokencount
+[441]: #parameters-136
+[442]: #tokencount-1
+[443]: #parameters-137
+[444]: #exploredecision
+[445]: #tokensof
+[446]: #parameters-138
+[447]: #exploredname
+[448]: #parameters-139
+[449]: #explorequestion
+[450]: #parameters-140
+[451]: #askindialog
+[452]: #parameters-141
+[453]: #confirmexploring
+[454]: #parameters-142
+[455]: #ask_from_tokens
+[456]: #exploredoutcome
+[457]: #explorenow
+[458]: #parameters-143
+[459]: #aicompaction
+[460]: #compact_command
+[461]: #compact_command-1
+[462]: #default_keep
+[463]: #kept_opening
+[464]: #openingkept
+[465]: #parameters-144
+[466]: #parsekeep
+[467]: #parameters-145
+[468]: #iscompacting
+[469]: #parameters-146
+[470]: #iscompaction
+[471]: #parameters-147
+[472]: #compactioncover
+[473]: #parameters-148
+[474]: #covered
+[475]: #applycompaction
+[476]: #parameters-149
+[477]: #firstsummarizable
+[478]: #parameters-150
+[479]: #aicomplete
+[480]: #complete
+[481]: #parameters-151
+[482]: #complete-1
+[483]: #parameters-152
+[484]: #completion
+[485]: #properties-10
+[486]: #ask
+[487]: #parameters-153
+[488]: #headers
+[489]: #headers-1
+[490]: #headers-2
+[491]: #headers-3
+[492]: #headers-4
+[493]: #headers-5
+[494]: #finishreason
+[495]: #aicontextattachments
+[496]: #attachment
+[497]: #properties-11
+[498]: #mention
+[499]: #mentionsin
+[500]: #parameters-154
+[501]: #onlyattaches
+[502]: #parameters-155
+[503]: #mentionof
+[504]: #parameters-156
+[505]: #attachingturn
+[506]: #parameters-157
+[507]: #withoutsigils
+[508]: #parameters-158
+[509]: #attachmentsof
+[510]: #parameters-159
+[511]: #attached
+[512]: #attached-1
+[513]: #renderattachments
+[514]: #parameters-160
+[515]: #withattachments
+[516]: #parameters-161
+[517]: #aicontextbuild
+[518]: #default_transcript_roles
+[519]: #stores
+[520]: #properties-12
+[521]: #buildcontext
+[522]: #parameters-162
+[523]: #messages
+[524]: #renderauthorsnote
+[525]: #parameters-163
+[526]: #rendertranscript
+[527]: #parameters-164
+[528]: #renderloads
+[529]: #parameters-165
+[530]: #renderprojectstate
+[531]: #parameters-166
+[532]: #settledsince
+[533]: #parameters-167
+[534]: #mergeadjacentturns
+[535]: #parameters-168
+[536]: #attachprojectstate
+[537]: #parameters-169
+[538]: #expandmessage
+[539]: #parameters-170
+[540]: #carriedmessages
+[541]: #parameters-171
+[542]: #replayedcalls
+[543]: #parameters-172
+[544]: #chatmessages
+[545]: #parameters-173
+[546]: #aicontextreads
+[547]: #located
+[548]: #properties-13
+[549]: #keepseverycall
+[550]: #parameters-174
+[551]: #keepsdocumentcalls
+[552]: #parameters-175
+[553]: #texthash
+[554]: #parameters-176
+[555]: #parsedargs
+[556]: #parameters-177
+[557]: #readsin
+[558]: #parameters-178
+[559]: #reads
+[560]: #calls
+[561]: #calls-1
+[562]: #readsinview
+[563]: #parameters-179
+[564]: #partof
+[565]: #parameters-180
+[566]: #readinview
+[567]: #parameters-181
+[568]: #changedsinceread
+[569]: #parameters-182
+[570]: #latest
+[571]: #aisamplerparameters
+[572]: #properties-14
+[573]: #reasoning_effort_options
+[574]: #default_preset_id
+[575]: #ai_defaults
+[576]: #resolveaisettings
+[577]: #parameters-183
+[578]: #resolveaisettings-1
+[579]: #parameters-184
+[580]: #mergeaisettings
+[581]: #parameters-185
+[582]: #title_defaults
+[583]: #aigate
+[584]: #rate_retries
+[585]: #rate_retries-1
+[586]: #urgency
+[587]: #first_wait_ms
+[588]: #longest_wait_ms
+[589]: #at_home
+[590]: #ratelimitederror
+[591]: #parameters-186
+[592]: #rate_limited
+[593]: #retryafterof
+[594]: #parameters-187
+[595]: #isathome
+[596]: #parameters-188
+[597]: #defaultroom
+[598]: #parameters-189
+[599]: #roomfor
+[600]: #parameters-190
+[601]: #waiting
+[602]: #properties-15
+[603]: #lane
+[604]: #properties-16
+[605]: #lanes
+[606]: #laneof
+[607]: #parameters-191
+[608]: #hasplace
+[609]: #parameters-192
+[610]: #wake
+[611]: #parameters-193
+[612]: #take
+[613]: #parameters-194
+[614]: #take-1
+[615]: #parameters-195
+[616]: #waiting-1
+[617]: #settle
+[618]: #parameters-196
+[619]: #throughgate
+[620]: #parameters-197
+[621]: #inturn
+[622]: #parameters-198
+[623]: #queued
+[624]: #resetgate
+[625]: #ai
+[626]: #aillamacpp
+[627]: #propsaddress
+[628]: #parameters-199
+[629]: #propsaddress-1
+[630]: #parameters-200
+[631]: #serverprops
+[632]: #properties-17
+[633]: #count
+[634]: #parameters-201
+[635]: #askprops
+[636]: #parameters-202
+[637]: #found
+[638]: #found-1
+[639]: #found-2
+[640]: #found-3
+[641]: #forgetprops
+[642]: #aimodels
+[643]: #sampler_names
+[644]: #sampler_names-1
+[645]: #aimodel
+[646]: #properties-18
+[647]: #openroutertraits
+[648]: #parameters-203
+[649]: #traits
+[650]: #traits-1
+[651]: #levels-2
+[652]: #nanogpttraits
+[653]: #parameters-204
+[654]: #nanogptprovider
+[655]: #properties-19
+[656]: #nanogptproviders
+[657]: #properties-20
+[658]: #nanogptprovidersof
+[659]: #parameters-205
+[660]: #provider
+[661]: #defaultsof
+[662]: #parameters-206
+[663]: #defaults
+[664]: #pricingof
+[665]: #parameters-207
+[666]: #isfree
+[667]: #parameters-208
+[668]: #entriesof
+[669]: #parameters-209
+[670]: #byname
+[671]: #parameters-210
+[672]: #parsemodelsresponse
+[673]: #parameters-211
+[674]: #entry
+[675]: #entry-1
+[676]: #entry-2
+[677]: #listheaders
+[678]: #parameters-212
+[679]: #catalogs
+[680]: #describesmodels
+[681]: #parameters-213
+[682]: #byid
+[683]: #parameters-214
+[684]: #listmodels
+[685]: #parameters-215
+[686]: #plainmodelid
+[687]: #parameters-216
+[688]: #publiclist
+[689]: #pricesof
+[690]: #parameters-217
+[691]: #withprices
+[692]: #parameters-218
+[693]: #traitsof
+[694]: #parameters-219
+[695]: #contextof
+[696]: #parameters-220
+[697]: #openai_voices
+[698]: #openai_input_limit
+[699]: #openaivoices
+[700]: #parameters-221
+[701]: #listspeechmodels
+[702]: #parameters-222
+[703]: #listnanogptspeech
+[704]: #parameters-223
+[705]: #aiprofiles
+[706]: #chatprofile
+[707]: #properties-21
+[708]: #roleplay_settings
+[709]: #built_in_profiles
+[710]: #isbuiltinprofileid
+[711]: #parameters-224
+[712]: #getbuiltinprofile
+[713]: #parameters-225
+[714]: #default_profile_id
+[715]: #settingsfornewchat
+[716]: #parameters-226
+[717]: #keptopeningof
+[718]: #parameters-227
+[719]: #stamped_settings
+[720]: #settingsforprofileswitch
+[721]: #parameters-228
+[722]: #noteonprofile
+[723]: #parameters-229
+[724]: #aiprompts
+[725]: #default_roleplay_nsfw_prompt
+[726]: #roleplay_compaction_prompt
+[727]: #default_roleplay_note
+[728]: #default_roleplay_nsfw_note
+[729]: #builtinprompt
+[730]: #properties-22
+[731]: #built_in_prompts
+[732]: #isbuiltinpromptid
+[733]: #parameters-230
+[734]: #getbuiltinprompt
+[735]: #parameters-231
+[736]: #default_prompt_id
+[737]: #aiproviders
+[738]: #providertype
+[739]: #properties-23
+[740]: #signin
+[741]: #properties-24
+[742]: #providerkind
+[743]: #provider_types
+[744]: #built_in_providers
+[745]: #default_speech_provider_id
+[746]: #connectionkind
+[747]: #properties-25
+[748]: #built_in_kinds
+[749]: #connection_kinds
+[750]: #-16
+[751]: #-17
+[752]: #connectionkind-1
+[753]: #parameters-232
+[754]: #connectionkind-2
+[755]: #kindof
+[756]: #parameters-233
+[757]: #untouchedbuiltin
+[758]: #parameters-234
+[759]: #inmenuorder
+[760]: #parameters-235
+[761]: #typeof
 [762]: #parameters-236
-[763]: #zipskills-1
-[764]: #contents
-[765]: #zipblob
-[766]: #parameters-237
-[767]: #aiskillscompact
-[768]: #compact
-[769]: #compact-1
-[770]: #compact_settings
-[771]: #buildcompactprompt
-[772]: #parameters-238
-[773]: #askcompact
-[774]: #parameters-239
-[775]: #unwrapsummary
-[776]: #parameters-240
-[777]: #aiskillsconsultations
-[778]: #answer_fields
-[779]: #answer_fields-1
-[780]: #answer_fields-2
-[781]: #answer_fields-3
-[782]: #consultationview
-[783]: #properties-25
-[784]: #callview
-[785]: #properties-26
-[786]: #set_aside
-[787]: #isconsultation
-[788]: #parameters-241
-[789]: #parsed
-[790]: #parameters-242
-[791]: #parsed-1
-[792]: #parameters-243
-[793]: #askedin
-[794]: #parameters-244
-[795]: #consultationview-1
-[796]: #parameters-245
-[797]: #consultationsin
-[798]: #parameters-246
-[799]: #results
-[800]: #results-1
-[801]: #results-2
-[802]: #fromdirectornote
-[803]: #parameters-247
-[804]: #aiskillsdirector
-[805]: #director
-[806]: #director-1
-[807]: #director-2
-[808]: #director_tools
-[809]: #director_settings
-[810]: #directordefinition
-[811]: #executedirector
-[812]: #parameters-248
-[813]: #builddirectionblock
-[814]: #parameters-249
-[815]: #aiskillsform
-[816]: #outputs
-[817]: #outputs-1
-[818]: #outputs-2
-[819]: #skillform
-[820]: #properties-27
-[821]: #listof
-[822]: #parameters-250
-[823]: #listof-1
-[824]: #parameters-251
-[825]: #formfromtext
-[826]: #parameters-252
-[827]: #front
-[828]: #includes
-[829]: #-18
-[830]: #put
-[831]: #parameters-253
-[832]: #textfromform
-[833]: #parameters-254
-[834]: #fields
-[835]: #metadata
-[836]: #metadata-1
-[837]: #withname
-[838]: #parameters-255
-[839]: #newskilltext
-[840]: #parameters-256
-[841]: #aiskillsformat
-[842]: #frontmatter
-[843]: #frontmatter-1
-[844]: #frontmatter-2
-[845]: #skilloutput
-[846]: #skilldefinition
-[847]: #properties-28
-[848]: #name
-[849]: #max_name
-[850]: #max_name-1
-[851]: #argument
-[852]: #fields-1
-[853]: #splitskill
-[854]: #parameters-257
-[855]: #-19
-[856]: #joinskill
-[857]: #parameters-258
-[858]: #needs_description
-[859]: #needs_instructions
-[860]: #nameerror
-[861]: #parameters-259
-[862]: #parseskill
-[863]: #parameters-260
-[864]: #errors
-[865]: #-20
-[866]: #-21
-[867]: #-22
-[868]: #-23
-[869]: #-24
-[870]: #outputasked
-[871]: #-25
-[872]: #-26
-[873]: #readbuiltinskill
-[874]: #parameters-261
-[875]: #hands_over_reply
-[876]: #tooldefinitionfor
-[877]: #parameters-262
-[878]: #-27
-[879]: #aiskills
-[880]: #skill_max_rounds
-[881]: #skill_max_rounds-1
-[882]: #skill_max_rounds-2
-[883]: #skill_max_depth
-[884]: #built_in_skills
-[885]: #library
-[886]: #wordings
-[887]: #switchedon
-[888]: #fromlibrary
-[889]: #parameters-263
-[890]: #made
-[891]: #made-1
-[892]: #setlibraryskills
-[893]: #parameters-264
-[894]: #setskillwordings
-[895]: #parameters-265
-[896]: #setexperimentalskills
-[897]: #parameters-266
-[898]: #skillison
-[899]: #parameters-267
-[900]: #onskillschanged
-[901]: #parameters-268
-[902]: #allskills
-[903]: #availableskills
-[904]: #libraryskills
-[905]: #getskill
-[906]: #parameters-269
-[907]: #skilllabel
-[908]: #parameters-270
-[909]: #skillprompt
-[910]: #parameters-271
-[911]: #ownprompt
-[912]: #parameters-272
-[913]: #aiskillsinterpret
-[914]: #interpret
-[915]: #interpret-1
-[916]: #interpret-2
-[917]: #interpret_settings
-[918]: #describecard
-[919]: #parameters-273
-[920]: #buildinterpretprompt
-[921]: #parameters-274
-[922]: #interpretdefinition
-[923]: #executeinterpret
-[924]: #parameters-275
-[925]: #askinterpret
-[926]: #parameters-276
-[927]: #aiskillsloads
-[928]: #use_skill
-[929]: #use_skill-1
-[930]: #use_skill-2
-[931]: #load
-[932]: #properties-29
-[933]: #skillcalls
-[934]: #parameters-277
-[935]: #loadsin
-[936]: #parameters-278
-[937]: #loads
-[938]: #-28
-[939]: #loadedtext
-[940]: #parameters-279
-[941]: #loaded
-[942]: #loadedskills
-[943]: #parameters-280
-[944]: #droppedskills
-[945]: #parameters-281
-[946]: #carriedloads
-[947]: #parameters-282
-[948]: #carried
-[949]: #droppedfrom
-[950]: #parameters-283
-[951]: #-29
-[952]: #aiskillsrunner
-[953]: #fillargument
-[954]: #parameters-284
-[955]: #fillargument-1
-[956]: #parameters-285
-[957]: #fillargument-2
-[958]: #parameters-286
-[959]: #offeredtomodel
-[960]: #parameters-287
-[961]: #loadedbymodel
-[962]: #parameters-288
-[963]: #writercalls
-[964]: #parameters-289
-[965]: #describecallers
-[966]: #parameters-290
-[967]: #waitingon
-[968]: #parameters-291
-[969]: #runonitsown
-[970]: #parameters-292
-[971]: #aiskillswrite
-[972]: #write
-[973]: #write-1
-[974]: #write_tools
-[975]: #write_settings
-[976]: #buildwriteprompt
-[977]: #parameters-293
-[978]: #executewrite
-[979]: #parameters-294
-[980]: #askwrite
-[981]: #parameters-295
-[982]: #aitoolscommentreads
-[983]: #passage_limit
-[984]: #ownsuggestions
-[985]: #parameters-296
-[986]: #seentext
-[987]: #parameters-297
-[988]: #placedasread
-[989]: #parameters-298
-[990]: #-30
-[991]: #postsof
-[992]: #parameters-299
-[993]: #commentsbetween
-[994]: #parameters-300
-[995]: #aitoolsdatanames
-[996]: #weightedname
-[997]: #female_first_names
-[998]: #male_first_names
-[999]: #surnames
-[1000]: #aitoolsdatatarot
-[1001]: #major_arcana
-[1002]: #suits
-[1003]: #ranks
-[1004]: #minor_arcana
-[1005]: #tarot_deck
-[1006]: #aitoolsdice
-[1007]: #dicetooldefinition
-[1008]: #-31
-[1009]: #executedicetool
-[1010]: #parameters-301
-[1011]: #aitoolsdocuments
-[1012]: #nodocument
-[1013]: #parameters-302
-[1014]: #namedelsewhere
-[1015]: #parameters-303
-[1016]: #goesbythatname
-[1017]: #parameters-304
-[1018]: #norm
-[1019]: #parameters-305
-[1020]: #norm-1
-[1021]: #parameters-306
-[1022]: #norm-2
-[1023]: #parameters-307
-[1024]: #norm-3
-[1025]: #parameters-308
-[1026]: #norm-4
-[1027]: #parameters-309
-[1028]: #norm-5
-[1029]: #parameters-310
-[1030]: #record
-[1031]: #parameters-311
-[1032]: #record-1
-[1033]: #parameters-312
-[1034]: #fileisnotwritten
-[1035]: #parameters-313
-[1036]: #proposed_note
-[1037]: #propose
-[1038]: #parameters-314
-[1039]: #pairof
-[1040]: #parameters-315
-[1041]: #recording
+[763]: #providerdoes
+[764]: #parameters-237
+[765]: #default_provider_type
+[766]: #providerlabel
+[767]: #parameters-238
+[768]: #knownaddress
+[769]: #parameters-239
+[770]: #needsendpoint
+[771]: #parameters-240
+[772]: #needskey
+[773]: #parameters-241
+[774]: #connectiongap
+[775]: #parameters-242
+[776]: #presetproblem
+[777]: #parameters-243
+[778]: #canlistmodels
+[779]: #parameters-244
+[780]: #listspublicly
+[781]: #parameters-245
+[782]: #signinof
+[783]: #parameters-246
+[784]: #creditspage
+[785]: #parameters-247
+[786]: #speaksopenrouterreasoning
+[787]: #parameters-248
+[788]: #serveschat
+[789]: #parameters-249
+[790]: #takesreasoningeffort
+[791]: #parameters-250
+[792]: #takeschattemplatekwargs
+[793]: #parameters-251
+[794]: #airecommended
+[795]: #recommendedmodel
+[796]: #properties-26
+[797]: #recommended
+[798]: #recommendedfor
+[799]: #parameters-252
+[800]: #recommendedrouting
+[801]: #parameters-253
+[802]: #airounds
+[803]: #round_limit
+[804]: #round_limit-1
+[805]: #round_limit-2
+[806]: #asked
+[807]: #parameters-254
+[808]: #trimround
+[809]: #parameters-255
+[810]: #run
+[811]: #over
+[812]: #refusedanswer
+[813]: #parameters-256
+[814]: #splitoffered
+[815]: #parameters-257
+[816]: #offered
+[817]: #unoffered
+[818]: #unofferedanswer
+[819]: #parameters-258
+[820]: #airouting
+[821]: #openrouterrouting
+[822]: #properties-27
+[823]: #modelupstreams
+[824]: #properties-28
+[825]: #routing_defaults
+[826]: #quantizations
+[827]: #tosluglist
+[828]: #parameters-259
+[829]: #resolverouting
+[830]: #parameters-260
+[831]: #isroutingoverridden
+[832]: #parameters-261
+[833]: #closed_vendors
+[834]: #isclosedweights
+[835]: #parameters-262
+[836]: #routingfilterof
+[837]: #parameters-263
+[838]: #buildproviderrouting
+[839]: #parameters-264
+[840]: #field
+[841]: #aiskillsbundle
+[842]: #max_file_bytes
+[843]: #max_file_bytes-1
+[844]: #bundleentry
+[845]: #properties-29
+[846]: #foundskill
+[847]: #properties-30
+[848]: #isnoise
+[849]: #parameters-265
+[850]: #folderof
+[851]: #parameters-266
+[852]: #nameof
+[853]: #parameters-267
+[854]: #nameof-1
+[855]: #parameters-268
+[856]: #textof
+[857]: #parameters-269
+[858]: #entriesfromzip
+[859]: #parameters-270
+[860]: #entriesfromfiles
+[861]: #parameters-271
+[862]: #entries
+[863]: #entries-1
+[864]: #webkitrelativepath
+[865]: #namedafterfile
+[866]: #parameters-272
+[867]: #findskills
+[868]: #parameters-273
+[869]: #ownerof
+[870]: #parameters-274
+[871]: #stray
+[872]: #zipskills
+[873]: #parameters-275
+[874]: #zipskills-1
+[875]: #contents
+[876]: #zipblob
+[877]: #parameters-276
+[878]: #aiskillscompact
+[879]: #compact
+[880]: #compact-1
+[881]: #compact_settings
+[882]: #buildcompactprompt
+[883]: #parameters-277
+[884]: #in_place_of_a_turn
+[885]: #askcompact
+[886]: #parameters-278
+[887]: #unwrapsummary
+[888]: #parameters-279
+[889]: #aiskillsconsultations
+[890]: #answer_fields
+[891]: #answer_fields-1
+[892]: #answer_fields-2
+[893]: #answer_fields-3
+[894]: #consultationview
+[895]: #properties-31
+[896]: #callview
+[897]: #properties-32
+[898]: #set_aside
+[899]: #isconsultation
+[900]: #parameters-280
+[901]: #parsed
+[902]: #parameters-281
+[903]: #parsed-1
+[904]: #parameters-282
+[905]: #askedin
+[906]: #parameters-283
+[907]: #consultationview-1
+[908]: #parameters-284
+[909]: #consultationsin
+[910]: #parameters-285
+[911]: #results
+[912]: #results-1
+[913]: #results-2
+[914]: #fromdirectornote
+[915]: #parameters-286
+[916]: #aiskillsdirector
+[917]: #director
+[918]: #director-1
+[919]: #director-2
+[920]: #director_tools
+[921]: #director_settings
+[922]: #directordefinition
+[923]: #executedirector
+[924]: #parameters-287
+[925]: #builddirectionblock
+[926]: #parameters-288
+[927]: #aiskillsform
+[928]: #skillform
+[929]: #properties-33
+[930]: #front_block
+[931]: #shown
+[932]: #parameters-289
+[933]: #shown-1
+[934]: #title
+[935]: #titlein
+[936]: #parameters-290
+[937]: #meta
+[938]: #formfromtext
+[939]: #parameters-291
+[940]: #namefromtitle
+[941]: #parameters-292
+[942]: #withtitle
+[943]: #parameters-293
+[944]: #-18
+[945]: #textfromform
+[946]: #parameters-294
+[947]: #withname
+[948]: #parameters-295
+[949]: #aiskillsformat
+[950]: #frontmatter
+[951]: #frontmatter-1
+[952]: #frontmatter-2
+[953]: #skilloutput
+[954]: #skilldefinition
+[955]: #properties-34
+[956]: #name
+[957]: #max_name
+[958]: #max_name-1
+[959]: #argument
+[960]: #outputs
+[961]: #fields
+[962]: #listof
+[963]: #parameters-296
+[964]: #yamlproblem
+[965]: #parameters-297
+[966]: #splitskill
+[967]: #parameters-298
+[968]: #-19
+[969]: #joinskill
+[970]: #parameters-299
+[971]: #needs_description
+[972]: #needs_instructions
+[973]: #nameerror
+[974]: #parameters-300
+[975]: #parseskill
+[976]: #parameters-301
+[977]: #errors
+[978]: #passed
+[979]: #-20
+[980]: #-21
+[981]: #-22
+[982]: #-23
+[983]: #-24
+[984]: #readable
+[985]: #readable-1
+[986]: #parameters-302
+[987]: #-25
+[988]: #-26
+[989]: #outputknown
+[990]: #readbuiltinskill
+[991]: #parameters-303
+[992]: #hands_over_reply
+[993]: #tooldefinitionfor
+[994]: #parameters-304
+[995]: #-27
+[996]: #aiskills
+[997]: #skill_max_rounds
+[998]: #skill_max_rounds-1
+[999]: #skill_max_rounds-2
+[1000]: #skill_max_depth
+[1001]: #built_in_skills
+[1002]: #library
+[1003]: #trials
+[1004]: #fromlibrary
+[1005]: #parameters-305
+[1006]: #made
+[1007]: #made-1
+[1008]: #made-2
+[1009]: #setlibraryskills
+[1010]: #parameters-306
+[1011]: #settrialskills
+[1012]: #parameters-307
+[1013]: #builtinskills
+[1014]: #onskillschanged
+[1015]: #parameters-308
+[1016]: #allskills
+[1017]: #libraryskills
+[1018]: #getskill
+[1019]: #parameters-309
+[1020]: #skilllabel
+[1021]: #parameters-310
+[1022]: #skillprompt
+[1023]: #parameters-311
+[1024]: #ownprompt
+[1025]: #parameters-312
+[1026]: #aiskillsloads
+[1027]: #use_skill
+[1028]: #use_skill-1
+[1029]: #use_skill-2
+[1030]: #load
+[1031]: #properties-35
+[1032]: #skillcalls
+[1033]: #parameters-313
+[1034]: #loadsin
+[1035]: #parameters-314
+[1036]: #loads
+[1037]: #-28
+[1038]: #loadedtext
+[1039]: #parameters-315
+[1040]: #loaded
+[1041]: #loadedskills
 [1042]: #parameters-316
-[1043]: #readerview
+[1043]: #droppedskills
 [1044]: #parameters-317
-[1045]: #-32
-[1046]: #readable
-[1047]: #parameters-318
-[1048]: #shown
-[1049]: #readbasis
-[1050]: #parameters-319
-[1051]: #readkey
-[1052]: #parameters-320
-[1053]: #collectdocuments
-[1054]: #parameters-321
-[1055]: #-33
-[1056]: #alldocuments
+[1045]: #carriedloads
+[1046]: #parameters-318
+[1047]: #carried
+[1048]: #droppedfrom
+[1049]: #parameters-319
+[1050]: #-29
+[1051]: #aiskillsrunner
+[1052]: #fillargument
+[1053]: #parameters-320
+[1054]: #fillargument-1
+[1055]: #parameters-321
+[1056]: #fillargument-2
 [1057]: #parameters-322
-[1058]: #visibledocuments
+[1058]: #offeredtomodel
 [1059]: #parameters-323
-[1060]: #pathof
+[1060]: #loadedbymodel
 [1061]: #parameters-324
-[1062]: #documentforchat
+[1062]: #writercalls
 [1063]: #parameters-325
-[1064]: #documentsforchat
+[1064]: #waitingon
 [1065]: #parameters-326
-[1066]: #findbypath
+[1066]: #runonitsown
 [1067]: #parameters-327
-[1068]: #resolvenewpath
-[1069]: #parameters-328
-[1070]: #documentlisting
-[1071]: #properties-30
-[1072]: #projectoverview
-[1073]: #properties-31
-[1074]: #sizeof
-[1075]: #parameters-329
-[1076]: #entriesbelow
-[1077]: #parameters-330
-[1078]: #-34
-[1079]: #-35
-[1080]: #holdsnote
-[1081]: #parameters-331
-[1082]: #pinneddocuments
-[1083]: #parameters-332
-[1084]: #projectoverview-1
-[1085]: #parameters-333
-[1086]: #listing_limit
-[1087]: #about_most
-[1088]: #aboutline
-[1089]: #parameters-334
-[1090]: #listdocumentsdefinition
-[1091]: #-36
-[1092]: #counted
-[1093]: #parameters-335
-[1094]: #filekind
-[1095]: #parameters-336
-[1096]: #listingline
-[1097]: #parameters-337
-[1098]: #executelistdocuments
-[1099]: #parameters-338
-[1100]: #folded
-[1101]: #inside
-[1102]: #inside-1
-[1103]: #inside-2
-[1104]: #parameters-339
-[1105]: #readdocumentdefinition
-[1106]: #-37
-[1107]: #line_limit
-[1108]: #readsource
-[1109]: #parameters-340
-[1110]: #-38
-[1111]: #executereaddocument
-[1112]: #parameters-341
-[1113]: #withcomments
-[1114]: #parameters-342
-[1115]: #map_nodes
-[1116]: #describedocumentdefinition
-[1117]: #-39
-[1118]: #executedescribedocument
-[1119]: #parameters-343
-[1120]: #digestabout
-[1121]: #parameters-344
-[1122]: #sectionlines
-[1123]: #parameters-345
-[1124]: #withsectionlines
-[1125]: #parameters-346
-[1126]: #subtree_limit
-[1127]: #readnotes
-[1128]: #parameters-347
-[1129]: #documentlocator
-[1130]: #parameters-348
-[1131]: #resolving
-[1132]: #parameters-349
-[1133]: #resolving-1
-[1134]: #parameters-350
-[1135]: #resolving-2
-[1136]: #parameters-351
-[1137]: #resolving-3
-[1138]: #parameters-352
-[1139]: #resolvednote
-[1140]: #parameters-353
-[1141]: #commentable
-[1142]: #parameters-354
-[1143]: #listcommentsdefinition
-[1144]: #-40
-[1145]: #executelistcomments
-[1146]: #parameters-355
-[1147]: #documents
-[1148]: #addcommentdefinition
-[1149]: #-41
-[1150]: #executeaddcomment
-[1151]: #parameters-356
-[1152]: #comments
-[1153]: #comments-1
-[1154]: #replycommentdefinition
-[1155]: #-42
-[1156]: #executereplycomment
-[1157]: #parameters-357
-[1158]: #nocomment
-[1159]: #parameters-358
-[1160]: #resolvecommentdefinition
-[1161]: #-43
-[1162]: #executeresolvecomment
-[1163]: #parameters-359
-[1164]: #searchdocumentsdefinition
-[1165]: #-44
-[1166]: #search_limit
-[1167]: #lines_per_file
-[1168]: #linessaying
-[1169]: #parameters-360
-[1170]: #isunder
-[1171]: #parameters-361
-[1172]: #snippetsof
-[1173]: #parameters-362
-[1174]: #snippets
-[1175]: #countof
-[1176]: #parameters-363
-[1177]: #findin
-[1178]: #parameters-364
-[1179]: #run-1
-[1180]: #loosematch
-[1181]: #parameters-365
-[1182]: #spelledin
-[1183]: #parameters-366
-[1184]: #findloosely
-[1185]: #parameters-367
-[1186]: #passagesof
-[1187]: #parameters-368
-[1188]: #first
-[1189]: #index_line
-[1190]: #scan_limit
-[1191]: #sections_per_document
-[1192]: #titled_limit
-[1193]: #titledsections
-[1194]: #parameters-369
-[1195]: #executesearchdocuments
-[1196]: #parameters-370
-[1197]: #hit
-[1198]: #properties-32
-[1199]: #-45
-[1200]: #-46
-[1201]: #-47
-[1202]: #matchedby
-[1203]: #hiton
-[1204]: #parameters-371
-[1205]: #plainif
-[1206]: #parameters-372
-[1207]: #createdocumentdefinition
-[1208]: #-48
-[1209]: #executecreatedocument
-[1210]: #parameters-373
-[1211]: #createfolderdefinition
-[1212]: #-49
-[1213]: #executecreatefolder
-[1214]: #parameters-374
-[1215]: #foldertokeepin
-[1216]: #parameters-375
-[1217]: #keptfrom
-[1218]: #parameters-376
-[1219]: #pathinproject
-[1220]: #parameters-377
-[1221]: #suggested_note
-[1222]: #suggests
-[1223]: #parameters-378
-[1224]: #changesseen
-[1225]: #parameters-379
-[1226]: #seentext-1
-[1227]: #seentochange
-[1228]: #parameters-380
-[1229]: #seenchange
-[1230]: #properties-33
-[1231]: #changeseen
-[1232]: #parameters-381
-[1233]: #suggestionthreads
-[1234]: #parameters-382
-[1235]: #next
-[1236]: #saying
-[1237]: #parameters-383
-[1238]: #thread
-[1239]: #thread-1
-[1240]: #joined
-[1241]: #withdrawn
-[1242]: #suggested
-[1243]: #answerseen
-[1244]: #parameters-384
-[1245]: #settledsuggestions
-[1246]: #parameters-385
-[1247]: #updatedocumentdefinition
-[1248]: #-50
-[1249]: #executeupdatedocument
-[1250]: #parameters-386
-[1251]: #movedocumentdefinition
-[1252]: #-51
-[1253]: #executemovedocument
-[1254]: #parameters-387
-[1255]: #delete_proposed_note
-[1256]: #deletedocumentdefinition
-[1257]: #-52
-[1258]: #executedeletedocument
-[1259]: #parameters-388
-[1260]: #-53
-[1261]: #editdocumentdefinition
-[1262]: #-54
-[1263]: #squash
-[1264]: #parameters-389
-[1265]: #nearestcontext
-[1266]: #parameters-390
-[1267]: #-55
-[1268]: #missedquote
-[1269]: #parameters-391
-[1270]: #editseen
-[1271]: #parameters-392
-[1272]: #executeeditdocument
-[1273]: #parameters-393
-[1274]: #outcome
-[1275]: #appenddocumentdefinition
-[1276]: #-56
-[1277]: #executeappenddocument
-[1278]: #parameters-394
-[1279]: #applyproposal
-[1280]: #parameters-395
-[1281]: #aitoolsexplore
-[1282]: #explore_documents
-[1283]: #explore_documents-1
-[1284]: #explore_timeout_ms
-[1285]: #exploredocumentsdefinition
-[1286]: #-57
-[1287]: #explored
-[1288]: #properties-34
-[1289]: #linedonly
-[1290]: #parameters-396
-[1291]: #explorefor
-[1292]: #parameters-397
-[1293]: #executeexploredocuments
-[1294]: #parameters-398
-[1295]: #outline
-[1296]: #parameters-399
-[1297]: #exploredtext
-[1298]: #parameters-400
-[1299]: #aitools
-[1300]: #adding-new-tools
-[1301]: #examples
-[1302]: #skills_group
-[1303]: #experimental_group
-[1304]: #skill_groups
-[1305]: #tool_group_labels
-[1306]: #skill_timeout_ms
-[1307]: #registerbuiltintools
-[1308]: #librarytools
-[1309]: #-58
-[1310]: #registerlibrarytools
-[1311]: #server_tool_timeout_ms
-[1312]: #servertools
-[1313]: #-59
-[1314]: #servertooldefinition
-[1315]: #parameters-401
-[1316]: #inputschema
-[1317]: #-60
-[1318]: #runservertool
-[1319]: #parameters-402
-[1320]: #registerservertools
-[1321]: #kept_group
-[1322]: #keptinconversation
-[1323]: #parameters-403
-[1324]: #offersdocuments
-[1325]: #parameters-404
-[1326]: #offerscomments
-[1327]: #parameters-405
-[1328]: #comment_tools
-[1329]: #gettooltimeout
-[1330]: #parameters-406
-[1331]: #gettooldefinitions
-[1332]: #getenabledtooldefinitions
-[1333]: #parameters-407
-[1334]: #gettooldefinitionsfor
-[1335]: #parameters-408
-[1336]: #isskill
-[1337]: #parameters-409
-[1338]: #drawsbychance
-[1339]: #parameters-410
-[1340]: #toolgroupof
-[1341]: #parameters-411
-[1342]: #handsoverreply
-[1343]: #parameters-412
-[1344]: #gettoolgroups
-[1345]: #hastool
-[1346]: #parameters-413
-[1347]: #executetool
-[1348]: #parameters-414
-[1349]: #hastools
-[1350]: #mcpnames
-[1351]: #server_group_prefix
-[1352]: #max_prefix
-[1353]: #servergroup
-[1354]: #parameters-415
-[1355]: #serverofgroup
-[1356]: #parameters-416
-[1357]: #slug
-[1358]: #parameters-417
-[1359]: #serverprefix
-[1360]: #parameters-418
-[1361]: #exposednames
-[1362]: #parameters-419
-[1363]: #names
-[1364]: #aitoolsnames
-[1365]: #genders
-[1366]: #genders-1
-[1367]: #genders-2
-[1368]: #max_names
-[1369]: #pickweighted
-[1370]: #parameters-420
-[1371]: #sumweights
-[1372]: #parameters-421
-[1373]: #generatenamesdefinition
-[1374]: #-61
-[1375]: #executegeneratenames
-[1376]: #parameters-422
-[1377]: #aitoolsprogress
-[1378]: #toolprogress
-[1379]: #properties-35
-[1380]: #writing_tools
-[1381]: #suggesting
-[1382]: #wording
-[1383]: #properties-36
-[1384]: #writesprose
-[1385]: #parameters-423
-[1386]: #named_tools
-[1387]: #describeedit
-[1388]: #parameters-424
-[1389]: #describeprogress
-[1390]: #parameters-425
-[1391]: #round_verbs
-[1392]: #whole_project
-[1393]: #path_nouns
-[1394]: #objectof
-[1395]: #parameters-426
-[1396]: #addressed
-[1397]: #parameters-427
-[1398]: #describeround
-[1399]: #parameters-428
-[1400]: #describeround-1
-[1401]: #parameters-429
-[1402]: #aitoolspython
-[1403]: #python_group
-[1404]: #python_group-1
-[1405]: #python_group-2
-[1406]: #run_python
-[1407]: #python_time_limits
-[1408]: #start_ms
-[1409]: #pythontimelimit
-[1410]: #pythoncalltimeout
-[1411]: #restarted
-[1412]: #project_folder
-[1413]: #runpythondefinition
-[1414]: #-62
-[1415]: #pythonoffered
-[1416]: #pythonprofiles
-[1417]: #setpythonprofile
-[1418]: #parameters-430
-[1419]: #pythonforchat
-[1420]: #parameters-431
-[1421]: #pythonresult
-[1422]: #properties-37
-[1423]: #seesproject
-[1424]: #parameters-432
-[1425]: #text_beside
-[1426]: #entryof
-[1427]: #parameters-433
-[1428]: #textbeside
-[1429]: #parameters-434
-[1430]: #projectforpython
-[1431]: #parameters-435
-[1432]: #pathnote
-[1433]: #parameters-436
-[1434]: #-63
-[1435]: #fetchforpython
-[1436]: #parameters-437
-[1437]: #scriptat
-[1438]: #parameters-438
-[1439]: #executerunpython
-[1440]: #parameters-439
-[1441]: #script
-[1442]: #aitoolsregistry
-[1443]: #tooldefinition
-[1444]: #properties-38
-[1445]: #toolcall
-[1446]: #properties-39
-[1447]: #toolresult
-[1448]: #properties-40
-[1449]: #toolcontext
-[1450]: #properties-41
-[1451]: #registeredtool
-[1452]: #properties-42
-[1453]: #toolgroup
-[1454]: #properties-43
-[1455]: #toolregistry
-[1456]: #tools
-[1457]: #register
-[1458]: #parameters-440
-[1459]: #unregister
-[1460]: #parameters-441
-[1461]: #has
-[1462]: #parameters-442
-[1463]: #timeoutfor
-[1464]: #parameters-443
-[1465]: #groupof
-[1466]: #parameters-444
-[1467]: #getdefinitions
-[1468]: #getenableddefinitions
-[1469]: #parameters-445
-[1470]: #getdefinitionsfor
-[1471]: #parameters-446
-[1472]: #getgroups
-[1473]: #parameters-447
-[1474]: #execute
-[1475]: #parameters-448
-[1476]: #hastools-1
-[1477]: #aitoolsrpg
-[1478]: #likelihood_targets
-[1479]: #likelihood_targets-1
-[1480]: #rolldie
-[1481]: #parameters-449
-[1482]: #rolld100
-[1483]: #max_dice
-[1484]: #die_term
-[1485]: #kept_term
-[1486]: #diceterm
-[1487]: #properties-44
-[1488]: #parsedice
-[1489]: #parameters-450
-[1490]: #kept
-[1491]: #diceroll
-[1492]: #properties-45
-[1493]: #dicetotal
-[1494]: #parameters-451
-[1495]: #taken
-[1496]: #rolldice
-[1497]: #parameters-452
-[1498]: #interpretroll
-[1499]: #parameters-453
-[1500]: #oracledefinition
-[1501]: #-64
-[1502]: #executeoracle
-[1503]: #parameters-454
-[1504]: #max_table_options
-[1505]: #rolltabledefinition
-[1506]: #-65
-[1507]: #executerolltable
-[1508]: #parameters-455
-[1509]: #tarot_decks
-[1510]: #default_tarot_deck
-[1511]: #tarot_spread
-[1512]: #max_tarot_cards
-[1513]: #drawtarot
-[1514]: #parameters-456
-[1515]: #drawn
-[1516]: #drawtarotdefinition
-[1517]: #-66
-[1518]: #executedrawtarot
-[1519]: #parameters-457
-[1520]: #drawncard
-[1521]: #properties-46
-[1522]: #drawcard
-[1523]: #aitoolsslices
-[1524]: #read_budget
-[1525]: #slack
-[1526]: #page_marker
-[1527]: #heading
-[1528]: #islong
-[1529]: #parameters-458
-[1530]: #slice
-[1531]: #properties-47
-[1532]: #sliceat
-[1533]: #parameters-459
-[1534]: #offsetofpage
-[1535]: #parameters-460
-[1536]: #pageat
-[1537]: #parameters-461
-[1538]: #heading-1
-[1539]: #properties-48
-[1540]: #chapter
-[1541]: #numbered
-[1542]: #contents_line
-[1543]: #map_limit
-[1544]: #headingsof
-[1545]: #parameters-462
-[1546]: #-67
-[1547]: #marked
-[1548]: #numberedheadings
-[1549]: #parameters-463
-[1550]: #trimmap
-[1551]: #parameters-464
-[1552]: #section
-[1553]: #properties-49
-[1554]: #sectionof
-[1555]: #parameters-465
-[1556]: #wordsin
-[1557]: #parameters-466
-[1558]: #sectionsoftext
-[1559]: #parameters-467
-[1560]: #aitoolsuseskill
-[1561]: #loadableskills
-[1562]: #useskilldefinition
-[1563]: #parameters-468
-[1564]: #-68
-[1565]: #infolder
-[1566]: #parameters-469
-[1567]: #skillwithfile
-[1568]: #parameters-470
-[1569]: #executeuseskill
-[1570]: #parameters-471
-[1571]: #aitoolsweb
-[1572]: #web_group
-[1573]: #read_web_page
-[1574]: #save_web_page
-[1575]: #web_timeout_ms
-[1576]: #save_timeout_ms
-[1577]: #not_set_up
-[1578]: #-69
-[1579]: #-70
-[1580]: #webaddress
-[1581]: #parameters-472
-[1582]: #executewebsearch
-[1583]: #parameters-473
-[1584]: #executereadwebpage
-[1585]: #parameters-474
-[1586]: #-71
-[1587]: #namesfile
-[1588]: #parameters-475
-[1589]: #executesavewebpage
-[1590]: #parameters-476
-[1591]: #aiwire
-[1592]: #joinurl
-[1593]: #parameters-477
-[1594]: #joinurl-1
-[1595]: #parameters-478
-[1596]: #baseurl
-[1597]: #parameters-479
-[1598]: #modelsurl
-[1599]: #parameters-480
-[1600]: #chatcompletionsurl
-[1601]: #parameters-481
-[1602]: #attributionheaders
-[1603]: #parameters-482
-[1604]: #withcachecontrol
-[1605]: #parameters-483
-[1606]: #withsupportedreasoning
-[1607]: #parameters-484
-[1608]: #withoutprivatefields
-[1609]: #parameters-485
-[1610]: #towiremessages
-[1611]: #parameters-486
-[1612]: #reasoningfields
-[1613]: #parameters-487
-[1614]: #buildcompletionbody
-[1615]: #parameters-488
-[1616]: #body
-[1617]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[1618]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[1619]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[1620]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[1621]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[1622]: https://developer.mozilla.org/docs/Web/API/Document
-[1623]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[1624]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[1625]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[1626]: https://developer.mozilla.org/docs/Web/HTML/Element/header
-[1627]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[1628]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
-[1629]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[1630]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp
-[1631]: https://openrouter.ai/docs/guides/routing/provider-selection
-[1632]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[1633]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
-[1634]: https://developer.mozilla.org/docs/Web/API/Blob
-[1635]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
+[1068]: #aisuggestions
+[1069]: #sonnet
+[1070]: #sonnet-1
+[1071]: #nanogpt_sonnet
+[1072]: #free_first
+[1073]: #openai_first
+[1074]: #newest
+[1075]: #parameters-328
+[1076]: #suggestmodel
+[1077]: #parameters-329
+[1078]: #aitoolschoice
+[1079]: #toolchoice
+[1080]: #properties-36
+[1081]: #toggled
+[1082]: #parameters-330
+[1083]: #toolsswitchedoff
+[1084]: #parameters-331
+[1085]: #groupon
+[1086]: #parameters-332
+[1087]: #toolon
+[1088]: #parameters-333
+[1089]: #switchgroups
+[1090]: #parameters-334
+[1091]: #switchtool
+[1092]: #parameters-335
+[1093]: #copychoice
+[1094]: #parameters-336
+[1095]: #copy
+[1096]: #aitoolscommentreads
+[1097]: #passage_limit
+[1098]: #ownsuggestions
+[1099]: #parameters-337
+[1100]: #seentext
+[1101]: #parameters-338
+[1102]: #placedasread
+[1103]: #parameters-339
+[1104]: #-30
+[1105]: #postsof
+[1106]: #parameters-340
+[1107]: #commentsbetween
+[1108]: #parameters-341
+[1109]: #aitoolsdatanames
+[1110]: #weightedname
+[1111]: #female_first_names
+[1112]: #male_first_names
+[1113]: #surnames
+[1114]: #aitoolsdatatarot
+[1115]: #major_arcana
+[1116]: #suits
+[1117]: #ranks
+[1118]: #minor_arcana
+[1119]: #tarot_deck
+[1120]: #aitoolsdice
+[1121]: #dicetooldefinition
+[1122]: #-31
+[1123]: #executedicetool
+[1124]: #parameters-342
+[1125]: #aitoolsdocuments
+[1126]: #nodocument
+[1127]: #parameters-343
+[1128]: #namedelsewhere
+[1129]: #parameters-344
+[1130]: #goesbythatname
+[1131]: #parameters-345
+[1132]: #norm
+[1133]: #parameters-346
+[1134]: #norm-1
+[1135]: #parameters-347
+[1136]: #norm-2
+[1137]: #parameters-348
+[1138]: #norm-3
+[1139]: #parameters-349
+[1140]: #norm-4
+[1141]: #parameters-350
+[1142]: #norm-5
+[1143]: #parameters-351
+[1144]: #record
+[1145]: #parameters-352
+[1146]: #record-1
+[1147]: #parameters-353
+[1148]: #fileisnotwritten
+[1149]: #parameters-354
+[1150]: #proposed_note
+[1151]: #propose
+[1152]: #parameters-355
+[1153]: #pairof
+[1154]: #parameters-356
+[1155]: #recording
+[1156]: #parameters-357
+[1157]: #readerview
+[1158]: #parameters-358
+[1159]: #-32
+[1160]: #readbasis
+[1161]: #parameters-359
+[1162]: #readkey
+[1163]: #parameters-360
+[1164]: #collectdocuments
+[1165]: #parameters-361
+[1166]: #-33
+[1167]: #alldocuments
+[1168]: #parameters-362
+[1169]: #visibledocuments
+[1170]: #parameters-363
+[1171]: #pathof
+[1172]: #parameters-364
+[1173]: #documentforchat
+[1174]: #parameters-365
+[1175]: #documentsforchat
+[1176]: #parameters-366
+[1177]: #findbypath
+[1178]: #parameters-367
+[1179]: #resolvenewpath
+[1180]: #parameters-368
+[1181]: #projectoverview
+[1182]: #properties-37
+[1183]: #sizeof
+[1184]: #parameters-369
+[1185]: #entriesbelow
+[1186]: #parameters-370
+[1187]: #-34
+[1188]: #-35
+[1189]: #holdsnote
+[1190]: #parameters-371
+[1191]: #projectoverview-1
+[1192]: #parameters-372
+[1193]: #listing_limit
+[1194]: #about_most
+[1195]: #aboutline
+[1196]: #parameters-373
+[1197]: #listdocumentsdefinition
+[1198]: #-36
+[1199]: #counted
+[1200]: #parameters-374
+[1201]: #filekind
+[1202]: #parameters-375
+[1203]: #listingline
+[1204]: #parameters-376
+[1205]: #executelistdocuments
+[1206]: #parameters-377
+[1207]: #folded
+[1208]: #inside
+[1209]: #inside-1
+[1210]: #inside-2
+[1211]: #parameters-378
+[1212]: #readdocumentdefinition
+[1213]: #-37
+[1214]: #line_limit
+[1215]: #readsource
+[1216]: #parameters-379
+[1217]: #-38
+[1218]: #unreadnote
+[1219]: #parameters-380
+[1220]: #attacheddocuments
+[1221]: #parameters-381
+[1222]: #attachedbyid
+[1223]: #parameters-382
+[1224]: #copiesof
+[1225]: #parameters-383
+[1226]: #executereaddocument
+[1227]: #parameters-384
+[1228]: #withcomments
+[1229]: #parameters-385
+[1230]: #map_nodes
+[1231]: #describedocumentdefinition
+[1232]: #-39
+[1233]: #executedescribedocument
+[1234]: #parameters-386
+[1235]: #digestabout
+[1236]: #parameters-387
+[1237]: #sectionlines
+[1238]: #parameters-388
+[1239]: #withsectionlines
+[1240]: #parameters-389
+[1241]: #subtree_limit
+[1242]: #readnotes
+[1243]: #parameters-390
+[1244]: #documentlocator
+[1245]: #parameters-391
+[1246]: #resolving
+[1247]: #parameters-392
+[1248]: #resolving-1
+[1249]: #parameters-393
+[1250]: #resolving-2
+[1251]: #parameters-394
+[1252]: #resolving-3
+[1253]: #parameters-395
+[1254]: #resolvednote
+[1255]: #parameters-396
+[1256]: #commentable
+[1257]: #parameters-397
+[1258]: #listcommentsdefinition
+[1259]: #-40
+[1260]: #executelistcomments
+[1261]: #parameters-398
+[1262]: #documents
+[1263]: #addcommentdefinition
+[1264]: #-41
+[1265]: #executeaddcomment
+[1266]: #parameters-399
+[1267]: #comments
+[1268]: #comments-1
+[1269]: #replycommentdefinition
+[1270]: #-42
+[1271]: #executereplycomment
+[1272]: #parameters-400
+[1273]: #nocomment
+[1274]: #parameters-401
+[1275]: #resolvecommentdefinition
+[1276]: #-43
+[1277]: #executeresolvecomment
+[1278]: #parameters-402
+[1279]: #searchdocumentsdefinition
+[1280]: #-44
+[1281]: #search_limit
+[1282]: #lines_per_file
+[1283]: #linessaying
+[1284]: #parameters-403
+[1285]: #isunder
+[1286]: #parameters-404
+[1287]: #snippetsof
+[1288]: #parameters-405
+[1289]: #snippets
+[1290]: #countof
+[1291]: #parameters-406
+[1292]: #findin
+[1293]: #parameters-407
+[1294]: #run-1
+[1295]: #loosematch
+[1296]: #parameters-408
+[1297]: #spelledin
+[1298]: #parameters-409
+[1299]: #findloosely
+[1300]: #parameters-410
+[1301]: #passagesof
+[1302]: #parameters-411
+[1303]: #first
+[1304]: #index_line
+[1305]: #scan_limit
+[1306]: #sections_per_document
+[1307]: #titled_limit
+[1308]: #titledsections
+[1309]: #parameters-412
+[1310]: #executesearchdocuments
+[1311]: #parameters-413
+[1312]: #hit
+[1313]: #properties-38
+[1314]: #-45
+[1315]: #-46
+[1316]: #-47
+[1317]: #matchedby
+[1318]: #hiton
+[1319]: #parameters-414
+[1320]: #plainif
+[1321]: #parameters-415
+[1322]: #createdocumentdefinition
+[1323]: #-48
+[1324]: #executecreatedocument
+[1325]: #parameters-416
+[1326]: #createfolderdefinition
+[1327]: #-49
+[1328]: #executecreatefolder
+[1329]: #parameters-417
+[1330]: #foldertokeepin
+[1331]: #parameters-418
+[1332]: #keptfrom
+[1333]: #parameters-419
+[1334]: #pathinproject
+[1335]: #parameters-420
+[1336]: #suggested_note
+[1337]: #suggests
+[1338]: #parameters-421
+[1339]: #changesseen
+[1340]: #parameters-422
+[1341]: #seentext-1
+[1342]: #seentochange
+[1343]: #parameters-423
+[1344]: #seenchange
+[1345]: #properties-39
+[1346]: #changeseen
+[1347]: #parameters-424
+[1348]: #suggestionthreads
+[1349]: #parameters-425
+[1350]: #next
+[1351]: #saying
+[1352]: #parameters-426
+[1353]: #thread
+[1354]: #thread-1
+[1355]: #joined
+[1356]: #withdrawn
+[1357]: #suggested
+[1358]: #answerseen
+[1359]: #parameters-427
+[1360]: #settledsuggestions
+[1361]: #parameters-428
+[1362]: #updatedocumentdefinition
+[1363]: #-50
+[1364]: #executeupdatedocument
+[1365]: #parameters-429
+[1366]: #movedocumentdefinition
+[1367]: #-51
+[1368]: #executemovedocument
+[1369]: #parameters-430
+[1370]: #delete_proposed_note
+[1371]: #deletedocumentdefinition
+[1372]: #-52
+[1373]: #executedeletedocument
+[1374]: #parameters-431
+[1375]: #-53
+[1376]: #editdocumentdefinition
+[1377]: #-54
+[1378]: #squash
+[1379]: #parameters-432
+[1380]: #nearestcontext
+[1381]: #parameters-433
+[1382]: #-55
+[1383]: #missedquote
+[1384]: #parameters-434
+[1385]: #editseen
+[1386]: #parameters-435
+[1387]: #executeeditdocument
+[1388]: #parameters-436
+[1389]: #outcome
+[1390]: #appenddocumentdefinition
+[1391]: #-56
+[1392]: #executeappenddocument
+[1393]: #parameters-437
+[1394]: #appendtarget
+[1395]: #parameters-438
+[1396]: #appendedtext
+[1397]: #parameters-439
+[1398]: #applyproposal
+[1399]: #parameters-440
+[1400]: #aitoolsexplore
+[1401]: #explore_documents
+[1402]: #explore_documents-1
+[1403]: #explore_timeout_ms
+[1404]: #exploredocumentsdefinition
+[1405]: #-57
+[1406]: #explored
+[1407]: #properties-40
+[1408]: #linedonly
+[1409]: #parameters-441
+[1410]: #explorefor
+[1411]: #parameters-442
+[1412]: #executeexploredocuments
+[1413]: #parameters-443
+[1414]: #outline
+[1415]: #parameters-444
+[1416]: #exploredtext
+[1417]: #parameters-445
+[1418]: #aitools
+[1419]: #adding-new-tools
+[1420]: #examples
+[1421]: #skills_group
+[1422]: #tool_group_labels
+[1423]: #skill_timeout_ms
+[1424]: #builtintools
+[1425]: #-58
+[1426]: #registerbuiltintools
+[1427]: #librarytools
+[1428]: #-59
+[1429]: #registerlibrarytools
+[1430]: #server_tool_timeout_ms
+[1431]: #servertools
+[1432]: #-60
+[1433]: #servertooldefinition
+[1434]: #parameters-446
+[1435]: #inputschema
+[1436]: #-61
+[1437]: #runservertool
+[1438]: #parameters-447
+[1439]: #registerservertools
+[1440]: #kept_group
+[1441]: #keptinconversation
+[1442]: #parameters-448
+[1443]: #offersdocuments
+[1444]: #parameters-449
+[1445]: #gettooltimeout
+[1446]: #parameters-450
+[1447]: #gettooldefinitions
+[1448]: #groupavailable
+[1449]: #parameters-451
+[1450]: #getenabledtooldefinitions
+[1451]: #parameters-452
+[1452]: #gettooldefinitionsfor
+[1453]: #parameters-453
+[1454]: #isskill
+[1455]: #parameters-454
+[1456]: #drawsbychance
+[1457]: #parameters-455
+[1458]: #toolgroupof
+[1459]: #parameters-456
+[1460]: #handsoverreply
+[1461]: #parameters-457
+[1462]: #gettoolgroups
+[1463]: #labels
+[1464]: #hastool
+[1465]: #parameters-458
+[1466]: #executetool
+[1467]: #parameters-459
+[1468]: #hastools
+[1469]: #mcpnames
+[1470]: #server_group_prefix
+[1471]: #max_prefix
+[1472]: #servergroup
+[1473]: #parameters-460
+[1474]: #serverofgroup
+[1475]: #parameters-461
+[1476]: #slug
+[1477]: #parameters-462
+[1478]: #serverprefix
+[1479]: #parameters-463
+[1480]: #exposednames
+[1481]: #parameters-464
+[1482]: #names
+[1483]: #aitoolsnames
+[1484]: #genders
+[1485]: #genders-1
+[1486]: #genders-2
+[1487]: #max_names
+[1488]: #pickweighted
+[1489]: #parameters-465
+[1490]: #sumweights
+[1491]: #parameters-466
+[1492]: #generatenamesdefinition
+[1493]: #-62
+[1494]: #executegeneratenames
+[1495]: #parameters-467
+[1496]: #aitoolsprogress
+[1497]: #toolprogress
+[1498]: #properties-41
+[1499]: #writing_tools
+[1500]: #suggesting
+[1501]: #wording
+[1502]: #properties-42
+[1503]: #writesprose
+[1504]: #parameters-468
+[1505]: #named_tools
+[1506]: #describeedit
+[1507]: #parameters-469
+[1508]: #describeprogress
+[1509]: #parameters-470
+[1510]: #round_verbs
+[1511]: #whole_project
+[1512]: #path_nouns
+[1513]: #objectof
+[1514]: #parameters-471
+[1515]: #addressed
+[1516]: #parameters-472
+[1517]: #describeround
+[1518]: #parameters-473
+[1519]: #describeround-1
+[1520]: #parameters-474
+[1521]: #aitoolspython
+[1522]: #python_group
+[1523]: #python_group-1
+[1524]: #python_group-2
+[1525]: #run_python
+[1526]: #python_time_limits
+[1527]: #start_ms
+[1528]: #pythontimelimit
+[1529]: #pythoncalltimeout
+[1530]: #restarted
+[1531]: #project_folder
+[1532]: #runpythondefinition
+[1533]: #-63
+[1534]: #pythonoffered
+[1535]: #pythonresult
+[1536]: #properties-43
+[1537]: #seesproject
+[1538]: #parameters-475
+[1539]: #text_beside
+[1540]: #entryof
+[1541]: #parameters-476
+[1542]: #textbeside
+[1543]: #parameters-477
+[1544]: #projectforpython
+[1545]: #parameters-478
+[1546]: #pathnote
+[1547]: #parameters-479
+[1548]: #-64
+[1549]: #fetchforpython
+[1550]: #parameters-480
+[1551]: #scriptat
+[1552]: #parameters-481
+[1553]: #executerunpython
+[1554]: #parameters-482
+[1555]: #script
+[1556]: #aitoolsregistry
+[1557]: #tooldefinition
+[1558]: #properties-44
+[1559]: #toolcall
+[1560]: #properties-45
+[1561]: #toolresult
+[1562]: #properties-46
+[1563]: #toolcontext
+[1564]: #properties-47
+[1565]: #registeredtool
+[1566]: #properties-48
+[1567]: #toolgroup
+[1568]: #properties-49
+[1569]: #toolregistry
+[1570]: #tools
+[1571]: #register
+[1572]: #parameters-483
+[1573]: #unregister
+[1574]: #parameters-484
+[1575]: #has
+[1576]: #parameters-485
+[1577]: #timeoutfor
+[1578]: #parameters-486
+[1579]: #groupof
+[1580]: #parameters-487
+[1581]: #getdefinitions
+[1582]: #getenableddefinitions
+[1583]: #parameters-488
+[1584]: #getdefinitionsfor
+[1585]: #parameters-489
+[1586]: #getgroups
+[1587]: #parameters-490
+[1588]: #execute
+[1589]: #parameters-491
+[1590]: #hastools-1
+[1591]: #aitoolsrpg
+[1592]: #likelihood_targets
+[1593]: #likelihood_targets-1
+[1594]: #rolldie
+[1595]: #parameters-492
+[1596]: #rolld100
+[1597]: #max_dice
+[1598]: #dice_at
+[1599]: #kept_at
+[1600]: #kept_dice
+[1601]: #number_at
+[1602]: #word_at
+[1603]: #signs
+[1604]: #diceterm
+[1605]: #properties-50
+[1606]: #notationerror
+[1607]: #notationerror-1
+[1608]: #dicenotation
+[1609]: #properties-51
+[1610]: #parsedice
+[1611]: #parameters-493
+[1612]: #spaced
+[1613]: #takechar
+[1614]: #parameters-494
+[1615]: #unreadable
+[1616]: #signat
+[1617]: #parameters-495
+[1618]: #sum
+[1619]: #parameters-496
+[1620]: #product
+[1621]: #parameters-497
+[1622]: #operand
+[1623]: #tolowercase
+[1624]: #diceterm-1
+[1625]: #parameters-498
+[1626]: #diceroll
+[1627]: #properties-52
+[1628]: #facesbyterm
+[1629]: #parameters-499
+[1630]: #facesbyterm-1
+[1631]: #taken
+[1632]: #faces
+[1633]: #countedat
+[1634]: #parameters-500
+[1635]: #faceskept
+[1636]: #parameters-501
+[1637]: #valueof
+[1638]: #parameters-502
+[1639]: #rollfrom
+[1640]: #parameters-503
+[1641]: #kept
+[1642]: #rolldice
+[1643]: #parameters-504
+[1644]: #workingof
+[1645]: #parameters-505
+[1646]: #workingof-1
+[1647]: #parameters-506
+[1648]: #line
+[1649]: #write
+[1650]: #parameters-507
+[1651]: #workingtext
+[1652]: #parameters-508
+[1653]: #samethrow
+[1654]: #parameters-509
+[1655]: #sorted
+[1656]: #parameters-510
+[1657]: #interpretroll
+[1658]: #parameters-511
+[1659]: #oracledefinition
+[1660]: #-65
+[1661]: #executeoracle
+[1662]: #parameters-512
+[1663]: #max_table_options
+[1664]: #rolltabledefinition
+[1665]: #-66
+[1666]: #executerolltable
+[1667]: #parameters-513
+[1668]: #tarot_decks
+[1669]: #default_tarot_deck
+[1670]: #tarot_spread
+[1671]: #max_tarot_cards
+[1672]: #drawtarot
+[1673]: #parameters-514
+[1674]: #drawn
+[1675]: #drawtarotdefinition
+[1676]: #-67
+[1677]: #executedrawtarot
+[1678]: #parameters-515
+[1679]: #drawncard
+[1680]: #properties-53
+[1681]: #drawcard
+[1682]: #aitoolsslices
+[1683]: #read_budget
+[1684]: #slack
+[1685]: #page_marker
+[1686]: #heading
+[1687]: #islong
+[1688]: #parameters-516
+[1689]: #slice
+[1690]: #properties-54
+[1691]: #sliceat
+[1692]: #parameters-517
+[1693]: #offsetofpage
+[1694]: #parameters-518
+[1695]: #pageat
+[1696]: #parameters-519
+[1697]: #heading-1
+[1698]: #properties-55
+[1699]: #chapter
+[1700]: #numbered
+[1701]: #contents_line
+[1702]: #map_limit
+[1703]: #headingsof
+[1704]: #parameters-520
+[1705]: #-68
+[1706]: #marked
+[1707]: #numberedheadings
+[1708]: #parameters-521
+[1709]: #trimmap
+[1710]: #parameters-522
+[1711]: #section
+[1712]: #properties-56
+[1713]: #sectionof
+[1714]: #parameters-523
+[1715]: #wordsin
+[1716]: #parameters-524
+[1717]: #sectionsoftext
+[1718]: #parameters-525
+[1719]: #aitoolsstreamedappends
+[1720]: #streamed
+[1721]: #properties-57
+[1722]: #streamedappends
+[1723]: #streamappends
+[1724]: #parameters-526
+[1725]: #running
+[1726]: #show
+[1727]: #parameters-527
+[1728]: #stop
+[1729]: #parameters-528
+[1730]: #begin
+[1731]: #parameters-529
+[1732]: #streamed-1
+[1733]: #-69
+[1734]: #aitoolsuseskill
+[1735]: #loadableskills
+[1736]: #useskilldefinition
+[1737]: #parameters-530
+[1738]: #-70
+[1739]: #infolder
+[1740]: #parameters-531
+[1741]: #skillwithfile
+[1742]: #parameters-532
+[1743]: #executeuseskill
+[1744]: #parameters-533
+[1745]: #aitoolsweb
+[1746]: #web_group
+[1747]: #read_web_page
+[1748]: #save_web_page
+[1749]: #web_timeout_ms
+[1750]: #save_timeout_ms
+[1751]: #not_set_up
+[1752]: #websearchoffered
+[1753]: #-71
+[1754]: #-72
+[1755]: #webaddress
+[1756]: #parameters-534
+[1757]: #executewebsearch
+[1758]: #parameters-535
+[1759]: #executereadwebpage
+[1760]: #parameters-536
+[1761]: #-73
+[1762]: #namesfile
+[1763]: #parameters-537
+[1764]: #executesavewebpage
+[1765]: #parameters-538
+[1766]: #aiwire
+[1767]: #joinurl
+[1768]: #parameters-539
+[1769]: #joinurl-1
+[1770]: #parameters-540
+[1771]: #baseurl
+[1772]: #parameters-541
+[1773]: #modelsurl
+[1774]: #parameters-542
+[1775]: #audiomodelsurl
+[1776]: #parameters-543
+[1777]: #chatcompletionsurl
+[1778]: #parameters-544
+[1779]: #attributionheaders
+[1780]: #parameters-545
+[1781]: #withcachecontrol
+[1782]: #parameters-546
+[1783]: #withsupportedreasoning
+[1784]: #parameters-547
+[1785]: #withoutprivatefields
+[1786]: #parameters-548
+[1787]: #towiremessages
+[1788]: #parameters-549
+[1789]: #reasoningfields
+[1790]: #parameters-550
+[1791]: #buildcompletionbody
+[1792]: #parameters-551
+[1793]: #body
+[1794]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[1795]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[1796]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[1797]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[1798]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[1799]: https://developer.mozilla.org/docs/Web/API/Document
+[1800]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[1801]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[1802]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[1803]: https://developer.mozilla.org/docs/Web/HTML/Element/header
+[1804]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[1805]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
+[1806]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp
+[1807]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[1808]: https://openrouter.ai/docs/guides/routing/provider-selection
+[1809]: https://docs.nano-gpt.com/api-reference/miscellaneous/provider-selection
+[1810]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[1811]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
+[1812]: https://developer.mozilla.org/docs/Web/API/Blob
+[1813]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling

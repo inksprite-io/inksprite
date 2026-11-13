@@ -50,6 +50,9 @@ vi.mock('@/composables/useDriveSync.js', () => ({
     sync: mockSync.sync,
   }),
 }))
+vi.mock('@/composables/useSkills.js', () => ({
+  useSkills: () => ({ getSkill: id => (id === 'skill_1' ? { id, name: 'critique' } : null) }),
+}))
 vi.mock('@/composables/useChats.js', () => ({
   useChats: () => ({ getChatById: id => (id === 'chat_1' ? { id, title: 'Heist' } : null) }),
 }))
@@ -77,6 +80,10 @@ const ChatTextView = {
   props: ['chatId', 'text'],
   template: '<div data-chat-text :data-chat="chatId" :data-text="text" />',
 }
+const SkillTextView = {
+  props: ['skillId'],
+  template: '<div data-skill-text :data-skill="skillId" />',
+}
 const EmptyEditor = { template: '<div data-empty />' }
 
 const mountPanel = (tabs, props = {}) => {
@@ -86,7 +93,15 @@ const mountPanel = (tabs, props = {}) => {
     global: {
       plugins: [PrimeVue],
       directives: { tooltip: {} },
-      stubs: { Editor, RawMarkdown, EmptyEditor, FileView, ChatTextView, ShortcutsDialog },
+      stubs: {
+        Editor,
+        RawMarkdown,
+        EmptyEditor,
+        FileView,
+        ChatTextView,
+        SkillTextView,
+        ShortcutsDialog,
+      },
     },
   })
 }
@@ -118,7 +133,7 @@ describe('EditorPanel', () => {
 
   it("offers to copy a link to a tab's document from its menu", () => {
     const wrapper = mountPanel({ open: ['doc_1', 'doc_2'], active: 'doc_1' })
-    const actions = wrapper.findComponent({ name: 'EditorTabs' }).props('actions')
+    const actions = wrapper.findComponent({ name: 'TabStrip' }).props('actions')
 
     const items = actions('doc_2')
     expect(items[0].label).toBe('Copy link')
@@ -258,7 +273,7 @@ describe('EditorPanel', () => {
   /** A tab's menu entry for switching kind, taken from the tab strip. */
   const plainTextItem = (wrapper, id) =>
     wrapper
-      .findComponent({ name: 'EditorTabs' })
+      .findComponent({ name: 'TabStrip' })
       .props('actions')(id)
       .find(item => item.label === 'Edit in plain text editor')
 
@@ -269,7 +284,7 @@ describe('EditorPanel', () => {
     expect(asText.find('[data-editor]').exists()).toBe(false)
     expect(plainTextItem(asText, 'doc_2').icon).toBe('pi pi-check')
     // Its tab says so; the other's does not.
-    const tabs = asText.findComponent({ name: 'EditorTabs' }).props('items')
+    const tabs = asText.findComponent({ name: 'TabStrip' }).props('items')
     expect(tabs.map(item => item.plain)).toEqual([false, true])
     // Either kind has a find of its own.
     expect(asText.find('[data-action="find"]').exists()).toBe(true)
@@ -288,7 +303,7 @@ describe('EditorPanel', () => {
     expect(wrapper.find('[data-shortcuts]').exists()).toBe(true)
 
     mockApi.plainIds.add('doc_2')
-    const actions = wrapper.findComponent({ name: 'EditorTabs' }).props('actions')
+    const actions = wrapper.findComponent({ name: 'TabStrip' }).props('actions')
     expect(actions('doc_1').map(item => item.label)).toContain('Keyboard shortcuts')
     // The plain text editor has keys of its own.
     expect(actions('doc_2').map(item => item.label)).not.toContain('Keyboard shortcuts')
@@ -321,7 +336,7 @@ describe('EditorPanel', () => {
     expect(wrapper.find('[data-raw]').exists()).toBe(false)
     expect(wrapper.find('[data-action="find"]').exists()).toBe(false)
 
-    const actions = wrapper.findComponent({ name: 'EditorTabs' }).props('actions')
+    const actions = wrapper.findComponent({ name: 'TabStrip' }).props('actions')
     // A file is never a document to lay out, so there is no kind to switch.
     expect(actions('pdf_1').map(item => item.label)).toEqual(['Copy link', 'Show as text'])
 
@@ -410,9 +425,32 @@ describe('EditorPanel', () => {
 
     it('has nothing on its menu', () => {
       const wrapper = mountPanel({ open: ['chat:chat_1:prompt'], active: 'chat:chat_1:prompt' })
-      const actions = wrapper.findComponent({ name: 'EditorTabs' }).props('actions')
+      const actions = wrapper.findComponent({ name: 'TabStrip' }).props('actions')
 
       expect(actions('chat:chat_1:prompt')).toEqual([])
+    })
+  })
+
+  describe("a skill's file", () => {
+    beforeEach(() => {
+      mockApi.get.mockImplementation(id =>
+        id.startsWith('skill:') ? null : { id, type: 'text', title: 'Two' }
+      )
+    })
+
+    it('shows in a tab named for the skill, as plain text', () => {
+      const wrapper = mountPanel({ open: ['doc_2', 'skill:skill_1'], active: 'skill:skill_1' })
+
+      expect(wrapper.findAll('[role="tab"]').map(t => t.text())).toEqual(['Two', 'critique'])
+      expect(wrapper.find('[data-skill-text]').attributes('data-skill')).toBe('skill_1')
+      expect(wrapper.find('[data-editor]').exists()).toBe(false)
+    })
+
+    it('has nothing on its menu', () => {
+      const wrapper = mountPanel({ open: ['skill:skill_1'], active: 'skill:skill_1' })
+      const actions = wrapper.findComponent({ name: 'TabStrip' }).props('actions')
+
+      expect(actions('skill:skill_1')).toEqual([])
     })
   })
 

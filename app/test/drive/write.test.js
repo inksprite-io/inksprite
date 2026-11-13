@@ -4,7 +4,7 @@ import { withoutIdleStyles, writeDoc } from '@/drive/write.js'
 import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
 import { applyRequests } from '@/drive/apply.js'
 import { bulleted, docOf, inline, item, numbered, para, run, styled, table } from './docsHelpers.js'
-import { WORDS, anyEdit, busy, imported, objects, plain, random } from './randomEdits.js'
+import { WORDS, anyEdit, busy, edits, imported, objects, plain, random } from './randomEdits.js'
 
 const MONO = { weightedFontFamily: { fontFamily: 'Courier New' } }
 const QUOTE = {
@@ -49,6 +49,14 @@ function roundTrip(document, edit, { held } = {}) {
   expect(heldOf(after)).toEqual(held ?? heldOf(document))
   return { written, after, reread }
 }
+
+/** A Doc's body as its characters, each paragraph's newline among them. */
+const docText = document =>
+  document.tabs[0].documentTab.body.content
+    .map(element =>
+      (element.paragraph?.elements ?? []).map(part => part.textRun?.content ?? '').join('')
+    )
+    .join('')
 
 /** What the writer leaves unsent for an edit. */
 function unsentFor(document, edit) {
@@ -99,6 +107,37 @@ describe('writeDoc', () => {
         .replace('the rail', '[the rail](https://example.com/rail)')
         .replace('rope was', '`rope` was')
     )
+  })
+
+  it('sends formulas as their TeX, in a sentence and on their own', () => {
+    const { after } = roundTrip(chapter(), md =>
+      md
+        .replace('late again', 'late by $t_0 + 5$ again, \\(n\\)2 times')
+        // A function, as `$$` in a string put in is one dollar.
+        .replace(
+          'Rain came in from the west.',
+          () => 'Rain came in.\n\n$$\nv = d / t \\\\\nw = 1\n$$'
+        )
+    )
+    expect(docText(after)).toContain('late by $t_0 + 5$ again, \\(n\\)2 times')
+    expect(docText(after)).toContain('Rain came in.\n$$v = d / t \\\\\vw = 1$$\n')
+  })
+
+  it('changes a formula a character at a time, one unchanged keeping the Doc’s delimiters', () => {
+    const document = docOf([para('So $x^2$, \\(y\\) and $$z$$ here.'), para('$$a = 1$$')])
+    const { written, after } = roundTrip(document, md =>
+      md.replace('x^2', 'x^3').replace('here', 'there').replace('a = 1', 'a = 2')
+    )
+    expect(docText(after)).toBe('So $x^3$, \\(y\\) and $$z$$ there.\n$$a = 2$$\n')
+    const inserted = written.requests.flatMap(request =>
+      'insertText' in request ? [request.insertText.text] : []
+    )
+    expect(inserted).toEqual(['2', 'there', '3'])
+  })
+
+  it('leaves here a formula of its own in a quote or a list, which a Doc reads as words', () => {
+    expect(unsentFor(chapter(), md => `${md}\n\n> $$\n> x\n> $$`)).toEqual(['layout'])
+    expect(unsentFor(chapter(), md => `${md}\n\n- One\n\n  $$\n  x\n  $$`)).toEqual(['layout'])
   })
 
   it('puts in paragraphs at the start, the middle and the end', () => {
@@ -898,6 +937,85 @@ describe('writeDoc, edited at random', { timeout: 30_000 }, () => {
       expect(objects(after, 'kix.photo'), `round ${round}: the picture`).toBe(
         edited.includes('image1.png') ? 1 : 0
       )
+    }
+  })
+})
+
+// Seconds each here, and past the default five on a CI runner with coverage.
+describe('writeDoc, formulas edited at random', { timeout: 30_000 }, () => {
+  /** A Doc with formulas of every kind, and words between them. */
+  const formulaic = () =>
+    docOf([
+      styled('HEADING_1', 'Speeds'),
+      para('The ferry made $v_0$ knots, then $v_1$ by noon.'),
+      para('  $$v = d / t$$'),
+      para([run('Rain came at '), run('$t^2$', { italic: true }), run(' and stayed.')]),
+      para('$$a \\\\\vb$$'),
+      para('Nothing here but words.'),
+      styled('HEADING_2', 'Where \\(n\\) is'),
+      para('Last $$k$$ words.'),
+    ])
+
+  /** A formula of one word's TeX, made up. */
+  const tex = next => `${WORDS[Math.floor(next() * WORDS.length)][0]}_${Math.floor(next() * 9)}`
+
+  /** Edits to formulas: one in among words, one's TeX changed or one out, and one of its own. */
+  const formulaEdits = [
+    (blocks, pick, next) => {
+      const i = pick(blocks)
+      if (i < 0) return
+      const words = blocks[i].split(' ')
+      words.splice(1 + Math.floor(next() * words.length), 0, `$${tex(next)}$`)
+      blocks[i] = words.join(' ')
+    },
+    (blocks, _pick, next) => {
+      const found = blocks.flatMap((block, i) =>
+        block.startsWith('$$')
+          ? []
+          : [...block.matchAll(/\$[^$\s]+\$/g)].map(match => ({ i, match }))
+      )
+      if (found.length === 0) return
+      const { i, match } = found[Math.floor(next() * found.length)]
+      const at = /** @type {number} */ (match.index)
+      const put = next() < 0.5 ? `$${tex(next)}$` : 'gone'
+      blocks[i] = blocks[i].slice(0, at) + put + blocks[i].slice(at + match[0].length)
+    },
+    (blocks, _pick, next) => {
+      const own = blocks.flatMap((block, i) => (block.startsWith('$$') ? [i] : []))
+      const roll = next()
+      if (roll < 0.4 || own.length === 0) {
+        const at = Math.floor(next() * (blocks.length + 1))
+        blocks.splice(at, 0, `$$\n${tex(next)} = ${tex(next)}\n$$`)
+      } else {
+        const i = own[Math.floor(next() * own.length)]
+        if (roll < 0.7) blocks.splice(i, 1)
+        else blocks[i] = `$$\n${tex(next)}\n$$`
+      }
+    },
+  ]
+
+  it('reads back as each edit', () => {
+    const next = random(17)
+    const document = formulaic()
+    const markdown = readDoc(document).markdown
+    for (let round = 0; round < 200; round++) {
+      const blocks = markdown.split('\n\n')
+      const pick = list => {
+        const choices = list.map((block, i) => (plain(block) ? i : -1)).filter(i => i >= 0)
+        return choices.length ? choices[Math.floor(next() * choices.length)] : -1
+      }
+      const count = 1 + Math.floor(next() * 4)
+      for (let k = 0; k < count; k++) {
+        const all = next() < 0.5 ? formulaEdits : edits
+        all[Math.floor(next() * all.length)](blocks, pick, next)
+      }
+      const edited = blocks.join('\n\n')
+      const target = parseMarkdown(edited)
+      const written = writeDoc(document, target)
+      expect(written.unsent, `round ${round}: ${edited}`).toEqual([])
+      const after = applyRequests(document, written.requests)
+      expect(readDoc(after).markdown, `round ${round}: ${edited}`).toBe(serializeMarkdown(target))
+      expect(writeDoc(after, target).requests, `round ${round}: again`).toEqual([])
     }
   })
 })

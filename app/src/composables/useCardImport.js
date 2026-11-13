@@ -31,18 +31,10 @@ import { shapeOf, readCard, readLorebook } from '@/cards/card.js'
 import { reimportCard, shelfFor, writeCard, writeLorebook, writeMarkdown } from '@/cards/write.js'
 import { docxToMarkdown, isDocx } from '@/files/docx.js'
 import { takePictures } from '@/files/pictures.js'
-import {
-  MAX_TEXT_BYTES,
-  inspectFile,
-  isStructured,
-  refuseTooLarge,
-  titleOf,
-} from '@/files/inspect.js'
+import { MAX_TEXT_BYTES, inspectFile, refuseTooLarge, titleOf } from '@/files/inspect.js'
 import { writeFile } from '@/files/write.js'
-import { useJobsToast } from '@/composables/useJobsToast.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useDocuments } from '@/composables/useDocuments'
-import { startConversion } from '@/jobs/index.js'
 import { useFilesStore } from '@/stores/filesStore'
 import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
@@ -295,24 +287,7 @@ export function useCardImport(storyId) {
         pictures: found.pictures,
       })
     }
-    if (found.shape === 'file') {
-      const written = await writeFile(storyId, found.value, { parentId })
-      // Converted as it lands, when the Convert role says so, the AI is
-      // switched on, and there is text to convert that lacks its structure.
-      // The job runs on its own; the import does not wait.
-      const appState = useApplicationState()
-      if (
-        appState.aiEnabled.value &&
-        appState.workflows.value.convert?.onImport &&
-        found.value.text &&
-        !isStructured(found.value.mime)
-      ) {
-        startConversion(storyId, written.folderId)
-          .then(() => useJobsToast().show())
-          .catch(error => console.error('Conversion on import failed to start:', error))
-      }
-      return written
-    }
+    if (found.shape === 'file') return writeFile(storyId, found.value, { parentId })
 
     const onProject = !parentId || parentId === rootIdFor(storyId)
     if (found.shape === 'lorebook') {

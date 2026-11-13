@@ -12,7 +12,7 @@
     <div
       v-if="showActions"
       :class="[
-        'absolute top-0 right-0 z-10 flex gap-1 rounded-lg bg-surface-0 dark:bg-surface-800 transition-opacity',
+        'absolute top-0 right-0 z-10 flex gap-1 rounded-lg bg-surface-0 dark:bg-surface-850 transition-opacity',
         isMobile ? 'opacity-60' : 'opacity-0 group-hover/segment:opacity-100',
       ]"
     >
@@ -85,13 +85,19 @@
       <div v-if="label" class="text-sm text-surface-600 dark:text-surface-300">
         {{ label }}
       </div>
-      <!-- A roll's dice, above the total they make. -->
+      <!-- A roll's dice above the total they make, a line for each term,
+           the ones it dropped struck through. -->
       <div
-        v-if="diceLines.length"
+        v-if="diceWorking.length"
         class="text-sm text-surface-600 dark:text-surface-300 flex flex-col"
         data-dice
       >
-        <span v-for="(line, i) in diceLines" :key="i">{{ line }}</span>
+        <span v-for="(line, i) in diceWorking" :key="i" data-dice-line
+          ><template v-for="(part, j) in line" :key="j"
+            ><s v-if="part.dropped" class="opacity-60" data-dropped>{{ part.text }}</s
+            ><template v-else>{{ part.text }}</template></template
+          ></span
+        >
       </div>
       <!-- Only until the first words arrive: the answer streams in below, and
            dots beside prose already being written say it has not started. -->
@@ -236,7 +242,7 @@ import {
   commandIsPrompt,
   commandDetail,
   commandLabel,
-  rollLines,
+  rollWorking,
   formatSegment,
   segmentProse,
 } from '@/ai/commands.js'
@@ -309,8 +315,8 @@ const detail = computed(() => (command.value ? commandDetail(command.value) : ''
 /** What it was asked, less what the header already says. */
 const label = computed(() => (command.value ? commandLabel(command.value) : ''))
 
-/** The dice a roll threw, while they still add up to its answer. */
-const diceLines = computed(() => (command.value ? rollLines(command.value) : []))
+/** A roll's dice worked through, while they still add up to its answer. */
+const diceWorking = computed(() => (command.value ? rollWorking(command.value) : []))
 
 /**
  * Whether this answer wants the room a paragraph needs: a character's line, or

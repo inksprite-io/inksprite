@@ -24,6 +24,7 @@ import { readPage } from '@/web/pages.js'
 import { savedPage } from '@/mcp/saved.js'
 import { isDesktop } from '@/platform/desktop.js'
 import { mimeOf, UNKNOWN_MIME } from '@/files/inspect.js'
+import { useApplicationState } from '@/composables/useApplicationState'
 import { useCardImport } from '@/composables/useCardImport.js'
 import { useDocuments } from '@/composables/useDocuments.js'
 import { useDocumentsStore } from '@/stores/documentsStore.js'
@@ -48,7 +49,17 @@ export const SAVE_TIMEOUT_MS = 180000
 
 /** What a call says when no service can search. */
 const NOT_SET_UP = {
-  error: 'Web search is not set up. The writer sets it up in Settings › Connections › Web search.',
+  error: 'Web search is not set up. The writer sets it up in Settings › Extensions › Web search.',
+}
+
+/**
+ * Whether the web tools can be offered: the Web search extension is on, as
+ * it is unless the writer switched it off, and a service is set up to search.
+ *
+ * @returns {boolean}
+ */
+export function webSearchOffered() {
+  return useApplicationState().webSearch.value && Boolean(serviceInUse())
 }
 
 export const webSearchDefinition = {

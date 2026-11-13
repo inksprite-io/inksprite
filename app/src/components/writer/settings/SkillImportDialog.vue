@@ -37,7 +37,9 @@
           <li v-for="error in row.errors" :key="error">{{ error }}</li>
         </ul>
         <template v-else>
-          <span class="text-xs text-surface-500 dark:text-surface-400">{{ kindOf(row) }}</span>
+          <span v-if="waitingFor(row)" class="text-xs text-surface-500 dark:text-surface-400">{{
+            waitingFor(row)
+          }}</span>
           <span
             v-if="row.replaces"
             class="text-xs text-amber-700 dark:text-amber-300"
@@ -105,7 +107,7 @@ import InputText from 'primevue/inputtext'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { parseSkill } from '@/ai/skills/format.js'
 import { withName } from '@/ai/skills/form.js'
-import { describeCallers, waitingOn } from '@/ai/skills/runner.js'
+import { waitingOn } from '@/ai/skills/runner.js'
 import { useSkills } from '@/composables/useSkills'
 import { useToast } from '@/composables/useToast'
 
@@ -170,11 +172,9 @@ const rename = (index, name) => {
 }
 
 /** @param {ImportRow} row */
-const kindOf = row => {
+const waitingFor = row => {
   const read = parseSkill(row.text)
-  if ('errors' in read) return ''
-  const waiting = waitingOn(read.skill)
-  return waiting ? `${describeCallers(read.skill)}. ${waiting}` : describeCallers(read.skill)
+  return 'errors' in read ? '' : waitingOn(read.skill)
 }
 
 const picked = computed(() => rows.value.filter((row, index) => chosen(index)))

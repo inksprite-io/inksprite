@@ -20,6 +20,7 @@
 import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
+import { setUpAI } from './setup.js'
 
 const FILES = [
   {
@@ -362,33 +363,19 @@ export async function research(ui, { standIn, context }) {
   await ui.goto('/')
   await dialog('Welcome').waitFor()
   await ui.click(button('Start writing'))
+  await setUpAI(page, ui, { provider: 'Anthropic', key: ANTHROPIC_KEY, model: game.model })
   await ui.click(button('Settings'))
-  await ui.click(settings.getByRole('button', { name: 'AI', exact: true }))
-  await ui.click(page.getByRole('combobox', { name: 'Provider', exact: true }))
-  await ui.click(page.getByRole('option', { name: 'Anthropic' }))
-  await ui.click(settings.getByRole('button', { name: 'Connect', exact: true }))
-  const provider = dialog('Provider configuration')
-  await ui.paste(provider.getByRole('textbox', { name: 'API key' }), ANTHROPIC_KEY)
-  await ui.click(provider.getByRole('button', { name: 'Connect' }))
-  await settings.getByText('Ready').waitFor()
-  await ui.click(provider.getByRole('button', { name: 'Close' }))
-  await provider.waitFor({ state: 'hidden' })
-  await ui.click(page.getByRole('combobox', { name: 'Model' }))
-  await ui.click(page.getByRole('option', { name: game.model }))
 
   await ui.click(settings.getByRole('button', { name: 'Connections', exact: true }))
-  await ui.click(page.getByRole('combobox', { name: 'Web search service' }))
-  await ui.click(page.getByRole('option', { name: 'Exa' }))
-  await settings.locator('[data-web-check]').waitFor()
-  const searching = page.getByRole('switch', {
-    name: 'Search the web in chats on Default',
-  })
-  // Default starts on, as a new install's does; this makes sure.
-  for (let tries = 0; tries < 3 && !(await searching.isChecked()); tries++) {
-    await ui.click(searching)
-    await ui.pause(800)
-  }
-  if (!(await searching.isChecked())) throw new Error('Web search is not on for Default')
+  await ui.click(settings.getByRole('button', { name: 'Web search', exact: true }))
+  const exa = settings.locator('[data-web-service="exa"]')
+  await ui.click(exa.locator('button[aria-expanded]'))
+  await ui.click(exa.locator('[data-action="web-connect"]'))
+  // The first to answer is the one used, which its card doesn't say: the
+  // extension does. On in every chat on Default from then: nothing to switch.
+  await ui.click(settings.getByRole('button', { name: 'Extensions', exact: true }))
+  await ui.click(settings.getByRole('button', { name: 'Web search', exact: true }))
+  await settings.locator('[data-web-service-choice]').getByText('Exa').waitFor()
   await quiet()
   await ui.shot('research-web-search', { of: settings, pad: 0 })
   await ui.click(settings.getByRole('button', { name: 'Close' }))

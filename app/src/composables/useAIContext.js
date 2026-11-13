@@ -6,13 +6,8 @@ import { useDocumentsStore } from '@/stores/documentsStore.js'
 import { useChatsStore } from '@/stores/chatsStore.js'
 import { useMessagesStore } from '@/stores/messagesStore.js'
 import { buildContext } from '@/ai/context/build.js'
-import {
-  documentLocator,
-  projectOverview,
-  pinnedDocuments,
-  settledSuggestions,
-} from '@/ai/tools/documents.js'
-import { keptInConversation, offersComments, offersDocuments } from '@/ai/tools/index.js'
+import { documentLocator, projectOverview, settledSuggestions } from '@/ai/tools/documents.js'
+import { keptInConversation, offersDocuments } from '@/ai/tools/index.js'
 import { useEditor } from './useEditor.js'
 import { namesOf } from '@/cards/macros.js'
 
@@ -26,6 +21,8 @@ import { namesOf } from '@/cards/macros.js'
  *   for the turn alone: a skill reads the conversation as a transcript and is
  *   not who it is for
  * @property {import('@/ai/context/build.js').TranscriptRoles} [transcript]
+ * @property {string} [ask] - Something asked at the end of the conversation in
+ *   place of a turn; see `BuildOptions`
  * @property {string} [before]
  * @property {number} [past]
  * @property {boolean} [toolsAllowed] - Whether the model may call tools at
@@ -52,46 +49,24 @@ export function useAIContext(storyId) {
     // an argument and touches no store of its own.
     //
     // The project block is for a model that can reach the project: a chat
-    // offered the document tools sends it on every turn. One that is not sends
-    // it only for what the writer pinned, since a pin asks for those documents
-    // whatever the tools are, and then without how much else there is or which
-    // reads have gone stale, which a model with no tools can do nothing about.
-    // Blank, with no tools and no pins, sends none. The chat's switches decide
-    // rather than the reader's tools, so every reader of this conversation
-    // agrees — a skill consulted inside a plain chat is in the same plain chat.
+    // offered the document tools sends it on every turn. One that is not
+    // sends none, as Blank: how much there is, and which reads have gone
+    // stale, are nothing a model with no tools can act on. The chat's
+    // switches decide rather than the reader's tools, so every reader of this
+    // conversation agrees — a skill consulted inside a plain chat is in the
+    // same plain chat.
     const chat = opts.chatId ? stores.chatsStore.getChatById(opts.chatId) : null
-    const inChat = Boolean(storyId)
-    const reaches =
-      inChat &&
-      opts.toolsAllowed !== false &&
-      offersDocuments({
-        disabledTools: chat?.disabledTools,
-        disabledGroups: chat?.disabledToolGroups,
-      })
+    const reaches = Boolean(storyId) && opts.toolsAllowed !== false && offersDocuments(chat)
 
-    // What the chat pinned, resolved to documents here for the same reason the
-    // overview is: the builder takes what it needs as an argument.
-    const pinned = inChat ? await pinnedDocuments(storyId, chat) : []
-    const project =
-      reaches || pinned.length > 0 ? await projectOverview(storyId, chat, { size: reaches }) : null
+    const project = reaches ? await projectOverview(storyId, chat) : null
     // Where each document the model read is now, for the block to say which
     // have changed since, and which of its suggestions the writer settled.
     const locate = reaches ? await documentLocator(storyId, chat) : undefined
     const settled = reaches ? await settledSuggestions(storyId, chat) : []
-    // A pinned document's comments go with it to a model that can answer them.
-    const comments =
-      inChat &&
-      opts.toolsAllowed !== false &&
-      offersComments({
-        disabledTools: chat?.disabledTools,
-        disabledGroups: chat?.disabledToolGroups,
-      })
     return buildContext(stores, {
       ...opts,
       storyId,
       project,
-      pinned,
-      comments,
       keeps: keptInConversation,
       locate,
       settled,

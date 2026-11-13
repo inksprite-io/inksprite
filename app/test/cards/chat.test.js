@@ -82,7 +82,7 @@ describe('cards/chat', () => {
       expect(card.greetings.map(g => g.content)).toEqual(['Well?'])
     })
 
-    it('pins the same documents the import did', async () => {
+    it('names what a chat that cannot read would pin', async () => {
       const written = await imported({
         mes_example: 'Elara: Well?',
         character_book: {
@@ -95,7 +95,14 @@ describe('cards/chat', () => {
 
       const card = await readCardChat(STORY, written.folderId)
 
-      expect(card.pinnedIds.sort()).toEqual([...written.pinnedIds].sort())
+      // Not the greeting: it is seeded as the opening message, and in context
+      // as well would be the same words twice.
+      expect(card.openingIds.map(id => store.getDocument(id).kind).sort()).toEqual([
+        'description',
+        'examples',
+        'lore-constant',
+        'personality',
+      ])
     })
 
     it('still finds everything after the writer has rearranged it', async () => {
@@ -115,7 +122,7 @@ describe('cards/chat', () => {
 
       const card = await readCardChat(STORY, written.folderId)
 
-      expect(card.pinnedIds).toContain(description.id)
+      expect(card.openingIds).toContain(description.id)
     })
 
     it('keeps the greetings in the order the card had them', async () => {
@@ -172,7 +179,10 @@ describe('cards/chat', () => {
       expect(isCard(store.getDocument(written.folderId))).toBe(true)
       const card = await readCardChat(STORY, written.folderId)
       expect(card).toMatchObject({ title: 'Elara', rules: 'Never write for them.' })
-      expect(card.pinnedIds.sort()).toEqual([...written.pinnedIds].sort())
+      expect(card.openingIds.map(id => store.getDocument(id).kind).sort()).toEqual([
+        'description',
+        'personality',
+      ])
     })
 
     it('is found by its character', async () => {

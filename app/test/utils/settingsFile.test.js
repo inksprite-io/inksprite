@@ -14,15 +14,18 @@ import {
 } from '@/utils/settingsFile.js'
 import { keysLeftOut } from '@/utils/backup.js'
 
+/** A choice of the team's preset on the Default profile. */
+const TEAM_CHOICE = { builtin_profile_chat: { providerId: 'provider_proxy', model: 'house-large' } }
+
 /** The outside settings as a fresh install has them. */
 const SETTINGS = {
-  aiPreset: 'profile_default_chat',
+  builtInProfiles: {},
   applyEdits: 'auto',
   askBeforeExploring: true,
   nsfwProfiles: false,
   chatProfileId: null,
   roleplayProfileId: null,
-  workflows: { convert: { providerId: null, model: null, reasoningEffort: null, onImport: false } },
+  workflows: { convert: { providerId: null, model: null, reasoningEffort: null } },
   narration: { providerId: 'provider_kokoro_default', model: 'kokoro' },
   theme: 'system',
   highlightSpeakers: true,
@@ -91,7 +94,6 @@ describe('settingsItems', () => {
         chatProfiles: [{ id: 'chatprofile_a', name: 'Plain' }],
         mcpServers: [server],
         skills: [{ id: 'skill_a', name: 'outline' }],
-        skillWordings: [{ name: 'write', prompt: 'Shorter.' }],
         webSearch: [{ id: 'web', service: 'exa', keys: {}, profiles: [] }],
       },
       SETTINGS
@@ -103,16 +105,14 @@ describe('settingsItems', () => {
       ['chatProfiles', 'Plain'],
       ['mcpServers', 'Tracker'],
       ['skills', 'outline'],
-      ['skillWordings', '/write'],
       ['webSearch', 'Web search'],
-      ['settings', 'Preset in use'],
+      ['settings', 'Built-in profiles'],
       ['settings', 'Profiles chats start on'],
       ['settings', 'Narration'],
-      ['settings', 'Workflows'],
+      ['settings', 'Convert to Markdown'],
       ['settings', 'Preferences'],
       ['settings', 'Spelling'],
     ])
-    expect(items.find(item => item.kind === 'skillWordings')?.key).toBe('skillWordings/write')
   })
 
   it('leaves out a built-in connection with nothing of the writer’s in it', () => {
@@ -147,12 +147,34 @@ describe('settingsItems', () => {
 
   it('says what each item is no use without', () => {
     const items = settingsItems(
-      { aiProviders: [proxy], aiProfiles: [preset] },
-      { ...SETTINGS, aiPreset: 'profile_team', chatProfileId: 'chatprofile_a' }
+      {
+        aiProviders: [proxy],
+        aiProfiles: [preset],
+        chatProfiles: [
+          {
+            id: 'chatprofile_a',
+            name: 'Plain',
+            settings: { presetId: 'profile_team', providerId: 'provider_proxy', model: 'glm' },
+          },
+        ],
+      },
+      {
+        ...SETTINGS,
+        builtInProfiles: {
+          builtin_profile_chat: {
+            presetId: 'profile_team',
+            providerId: 'provider_proxy',
+            model: 'glm',
+          },
+        },
+        chatProfileId: 'chatprofile_a',
+      }
     )
     const needs = Object.fromEntries(items.map(item => [item.key, item.needs]))
     expect(needs['aiProfiles/profile_team']).toEqual(['aiProviders/provider_proxy'])
-    expect(needs['settings/aiPreset']).toEqual(['aiProfiles/profile_team'])
+    // A profile's chats start on its model, on its connection.
+    expect(needs['chatProfiles/chatprofile_a']).toEqual(['aiProviders/provider_proxy'])
+    expect(needs['settings/builtInProfiles']).toEqual(['aiProviders/provider_proxy'])
     expect(needs['settings/startingProfiles']).toEqual(['chatProfiles/chatprofile_a'])
     expect(needs['settings/narration']).toEqual(['aiProviders/provider_kokoro_default'])
   })
@@ -162,14 +184,10 @@ describe('pickWithNeeds', () => {
   it('picks what an item needs, and what that needs', () => {
     const items = settingsItems(
       { aiProviders: [proxy], aiProfiles: [preset] },
-      { ...SETTINGS, aiPreset: 'profile_team' }
+      { ...SETTINGS, builtInProfiles: TEAM_CHOICE }
     )
-    const picked = pickWithNeeds(new Set(), items, 'settings/aiPreset')
-    expect([...picked].sort()).toEqual([
-      'aiProfiles/profile_team',
-      'aiProviders/provider_proxy',
-      'settings/aiPreset',
-    ])
+    const picked = pickWithNeeds(new Set(), items, 'settings/builtInProfiles')
+    expect([...picked].sort()).toEqual(['aiProviders/provider_proxy', 'settings/builtInProfiles'])
   })
 
   it('leaves alone a need that isn’t in the list', () => {
@@ -185,11 +203,11 @@ describe('pickSettings', () => {
   it('keeps only the rows and settings groups picked', () => {
     const { tables, settings } = pickSettings(
       { aiProviders: [proxy, untouchedKokoro], aiProfiles: [preset], mcpServers: [server] },
-      { ...SETTINGS, aiPreset: 'profile_team' },
-      new Set(['aiProviders/provider_proxy', 'aiProfiles/profile_team', 'settings/aiPreset'])
+      { ...SETTINGS, builtInProfiles: TEAM_CHOICE },
+      new Set(['aiProviders/provider_proxy', 'aiProfiles/profile_team', 'settings/builtInProfiles'])
     )
     expect(tables).toEqual({ aiProviders: [proxy], aiProfiles: [preset] })
-    expect(settings).toEqual({ aiPreset: 'profile_team' })
+    expect(settings).toEqual({ builtInProfiles: TEAM_CHOICE })
   })
 
   it('carries every setting of a group', () => {
@@ -217,7 +235,7 @@ describe('planImport', () => {
     const plan = planImport(
       {
         tables: { aiProviders: [proxy], aiProfiles: [preset] },
-        settings: { aiPreset: 'profile_team' },
+        settings: { builtInProfiles: TEAM_CHOICE },
       },
       freshInstall(),
       { byHand: true, now: NOW }
@@ -225,16 +243,16 @@ describe('planImport', () => {
 
     expect(plan.rows.aiProviders).toEqual([{ ...proxy, updated: NOW }])
     expect(plan.rows.aiProfiles).toEqual([{ ...preset, updated: NOW }])
-    expect(plan.settings).toEqual({ aiPreset: 'profile_team' })
+    expect(plan.settings).toEqual({ builtInProfiles: TEAM_CHOICE })
     expect(plan.added.map(item => item.key)).toEqual([
       'aiProviders/provider_proxy',
       'aiProfiles/profile_team',
     ])
-    expect(plan.changed.map(item => item.key)).toEqual(['settings/aiPreset'])
+    expect(plan.changed.map(item => item.key)).toEqual(['settings/builtInProfiles'])
     expect(Object.keys(plan.fingerprints).sort()).toEqual([
       'aiProfiles/profile_team',
       'aiProviders/provider_proxy',
-      'settings/aiPreset',
+      'settings/builtInProfiles',
     ])
   })
 
@@ -411,19 +429,22 @@ describe('planImport', () => {
   })
 
   it('left by a script, skips what the file hasn’t changed since it was last imported', () => {
-    const file = { tables: { aiProfiles: [preset] }, settings: { aiPreset: 'profile_team' } }
+    const file = { tables: { aiProfiles: [preset] }, settings: { builtInProfiles: TEAM_CHOICE } }
     const first = planImport(file, freshInstall(), { byHand: false })
 
     // The writer changed the preset's model, and chose another preset.
     const here = {
       tables: { aiProfiles: [{ ...preset, model: 'their-own' }] },
-      settings: { ...SETTINGS, aiPreset: 'profile_default_chat' },
+      settings: {
+        ...SETTINGS,
+        builtInProfiles: { builtin_profile_chat: { presetId: 'profile_default_chat' } },
+      },
     }
     const again = planImport(file, here, { byHand: false, fingerprints: first.fingerprints })
     expect(changesAnything(again)).toBe(false)
     expect(again.fingerprints).toEqual(first.fingerprints)
 
-    // The team changed the preset; the preset in use is still the writer's.
+    // The team changed the preset; the Default profile's is still the writer's.
     const newer = {
       tables: { aiProfiles: [{ ...preset, model: 'house-larger' }] },
       settings: file.settings,
@@ -488,19 +509,6 @@ describe('planImport', () => {
     expect(plan.added).toEqual([])
     expect(plan.changed.map(item => item.name)).toEqual(['Kokoro', 'Default'])
   })
-
-  it('matches a skill’s wording by the skill’s name', () => {
-    const here = {
-      tables: { skillWordings: [{ name: 'write', prompt: 'Old.', updated: 1 }] },
-      settings: SETTINGS,
-    }
-    const plan = planImport(
-      { tables: { skillWordings: [{ name: 'write', prompt: 'New.', updated: 2 }] } },
-      here,
-      { byHand: true }
-    )
-    expect(plan.changed.map(item => item.key)).toEqual(['skillWordings/write'])
-  })
 })
 
 describe('describeImport', () => {
@@ -539,13 +547,13 @@ describe('describeImport', () => {
           [['webSearch', 'Web search']],
           [
             ['aiProviders', 'Kokoro'],
-            ['settings', 'aiPreset'],
+            ['settings', 'builtInProfiles'],
             ['settings', 'narration'],
           ]
         )
       )
     ).toBe(
-      'Adds the web search setup. Changes the connection Kokoro, the preset in use and the narration connection.'
+      'Adds the web search setup. Changes the connection Kokoro, your choices on the built-in profiles and the narration connection.'
     )
   })
 
@@ -580,14 +588,15 @@ describe('rowId', () => {
     expect(rowId('skillWordings', { name: 'write', id: 'x' })).toBe('write')
     expect(rowId('aiProviders', { id: 'p', name: 'P' })).toBe('p')
     expect(rowId('aiProviders', { id: '' })).toBeUndefined()
-    expect(SETTINGS_TABLES).toContain('skillWordings')
+    // Sync still carries the legacy wordings; a settings file no longer does.
+    expect(SETTINGS_TABLES).not.toContain('skillWordings')
   })
 })
 
 describe('describeSelection', () => {
   const nothing = { added: [], changed: [] }
   const preset = { key: 'aiProfiles/profile_team', kind: 'aiProfiles', name: 'Team' }
-  const inUse = { key: 'settings/aiPreset', kind: 'settings', name: 'Preset in use' }
+  const inUse = { key: 'settings/builtInProfiles', kind: 'settings', name: 'Built-in profiles' }
 
   it('adds the projects and cards with the settings, and says what it changes', () => {
     expect(
@@ -597,7 +606,7 @@ describe('describeSelection', () => {
         plan: { added: [preset], changed: [inUse] },
       })
     ).toBe(
-      'Adds the project Thief, the character cards Wren and Tal and the preset Team. Changes the preset in use.'
+      'Adds the project Thief, the character cards Wren and Tal and the preset Team. Changes your choices on the built-in profiles.'
     )
   })
 

@@ -9,7 +9,7 @@
       <div class="flex flex-col gap-1">
         <div class="flex items-center justify-between gap-2">
           <SettingLabel
-            label="Max tokens"
+            label="Max reply length"
             :overridden="isOverridden('maxTokens')"
             @reset="resetSettings(['maxTokens'])"
           />
@@ -28,26 +28,8 @@
           :slider-max="2000"
           :step="50"
           :fractional="false"
-          label="Max tokens"
+          label="Max reply length"
           @update:model-value="setSetting('maxTokens', $event)"
-        />
-      </div>
-
-      <div v-if="effortOptions.length > 1" class="flex flex-col gap-1">
-        <SettingLabel
-          label="Reasoning effort"
-          :overridden="isOverridden('reasoningEffort')"
-          @reset="resetSettings(['reasoningEffort'])"
-        />
-        <Select
-          :model-value="effort"
-          :options="effortOptions"
-          option-label="label"
-          option-value="value"
-          class="w-full dark:!bg-surface-900"
-          size="small"
-          aria-label="Reasoning effort"
-          @update:model-value="setSetting('reasoningEffort', $event)"
         />
       </div>
 
@@ -112,38 +94,48 @@
 
 <script setup>
 import { computed } from 'vue'
-import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
 import CustomSlider from './CustomSlider.vue'
 import SettingLabel from '@/components/common/SettingLabel.vue'
 import { useGenerationSettings } from '@/composables/useGenerationSettings'
-import { REASONING_EFFORT_OPTIONS } from '@/ai/defaults.js'
-import { fitEffort } from '@/ai/capabilities.js'
 import { useAIConfig } from '@/composables/useAIConfig'
 import { useModelCapabilities } from '@/composables/useModelCapabilities'
 
-const { effective, isOverridden, setSetting, resetSettings } = useGenerationSettings()
+/**
+ * How a model writes on a connection: how long a reply may be, whether its
+ * reasoning shows, whether it calls tools and how many rounds a turn may take.
+ *
+ * @typedef {Object} Props
+ * @property {string} providerId
+ * @property {string} model
+ */
+const props = defineProps({
+  providerId: { type: String, required: true },
+  model: { type: String, required: true },
+})
+
+const { effective, isOverridden, setSetting, resetSettings } = useGenerationSettings(
+  () => props.providerId,
+  () => props.model
+)
 
 const aiConfig = useAIConfig()
 
-// Only what the preset's model takes, and the effort it would be sent: a
-// level it lacks reads as the nearest it has, and stays stored as chosen.
+// Only what the model takes. How hard it thinks is each chat's own, chosen
+// in the chat.
 const capabilities = useModelCapabilities(
-  () => aiConfig.shownPreset.value?.providerId,
-  () => aiConfig.shownPreset.value?.model
+  () => props.providerId,
+  () => props.model
 )
-const effortOptions = computed(() =>
-  REASONING_EFFORT_OPTIONS.filter(option => capabilities.value.efforts.includes(option.value))
-)
-const effort = computed(() => fitEffort(effective.value.reasoningEffort, capabilities.value))
 
-// Presets saved before this setting existed have no flag; treat them as
+// Settings saved before this one existed have no flag; treat them as
 // allowing tools, which is what they did.
-const toolsEnabled = computed(() => aiConfig.shownPreset.value?.toolsEnabled !== false)
+const toolsEnabled = computed(
+  () => aiConfig.runOn(props.providerId, props.model).toolsEnabled !== false
+)
 
-const setToolsEnabled = enabled => {
-  const preset = aiConfig.shownPreset.value
-  if (preset) aiConfig.updatePreset(preset.id, { toolsEnabled: enabled })
-}
+/** @param {boolean} enabled */
+const setToolsEnabled = enabled =>
+  aiConfig.changeModelSettings(props.providerId, props.model, { toolsEnabled: enabled })
 </script>

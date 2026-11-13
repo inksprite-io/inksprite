@@ -23,7 +23,10 @@
  * italic, struck, linked or in a monospaced font, and paragraphs as
  * headings, quotes (indented 30 pt either side, as Docs makes a pasted one)
  * and list items. A rule goes up as a paragraph of `* * *`, which reads back
- * as one.
+ * as one. A formula goes up as its TeX between dollars, in a sentence or a
+ * paragraph of its own, its characters compared as words are; one the Doc
+ * has keeps the delimiters it has there, `\(…\)` say, while it reads the
+ * same.
  *
  * A table is made the document's shape first (`drive/shape`): rows and
  * columns put in and taken out, tables put in empty and deleted. The Doc as
@@ -47,12 +50,13 @@ import { applyRequests } from './apply.js'
 import { NO_LINKS } from './links.js'
 import { MONOSPACED, readDoc, tabsOf } from './convert.js'
 import { shapeTables } from './shape.js'
-import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
+import { parseMarkdown, serializeMarkdown, writtenFormula } from '@/editor/markdown.js'
 import { suggestionsIn } from '@/editor/suggestions.js'
 import { diffSequences, deletionsFirst } from '@/utils/diff.js'
 import { schema } from '@/editor/schema.js'
 import { pictureOf } from '@/utils/pictures.js'
 import { isDocumentHref } from '@/utils/documentLinks.js'
+import { formulaAt, trimTex } from '@/utils/tex.js'
 import { Fragment } from 'prosemirror-model'
 
 /**
@@ -114,7 +118,7 @@ import { Fragment } from 'prosemirror-model'
 
 /**
  * @typedef {Object} Block
- * @property {'text'|'code'|'rule'|'table'} type
+ * @property {'text'|'code'|'rule'|'formula'|'table'} type
  * @property {string} key
  * @property {Node} node
  * @property {number} pos
@@ -621,19 +625,43 @@ function withoutComments(doc) {
   const comment = schema.marks.comment
   let marked = false
   doc.descendants(node => {
-    if (node.isText && comment.isInSet(node.marks)) marked = true
+    if (node.isInline && comment.isInSet(node.marks)) marked = true
     return !marked
   })
   if (!marked) return doc
   /** @param {Node} node @returns {Node} */
   const strip = node => {
-    if (node.isText) return node.mark(comment.removeFromSet(node.marks))
+    if (node.isInline) return node.mark(comment.removeFromSet(node.marks))
     /** @type {Node[]} */
     const content = []
     node.forEach(child => content.push(strip(child)))
     return node.copy(Fragment.from(content))
   }
   return strip(doc)
+}
+
+/**
+ * A formula by its kind and TeX: one in a sentence and one of its own are
+ * written apart.
+ *
+ * @param {Node} node
+ * @returns {string}
+ */
+const formulaKey = node => `${node.type.name}:${node.attrs.tex}`
+
+/**
+ * The first character of what follows a block's child, if anything does: a
+ * formula's dollar, or a placeholder for another node.
+ *
+ * @param {Node} block
+ * @param {number} index - The child's
+ * @returns {string}
+ */
+function charAfter(block, index) {
+  const next = index + 1 < block.childCount ? block.child(index + 1) : null
+  if (!next) return ''
+  if (next.isText) return (next.text ?? '').slice(0, 1)
+  return next.type.name === 'formula' ? '$' : '\uFFFC'
 }
 
 /**
@@ -823,6 +851,12 @@ class Writer {
     this.tableStarts = new Map([['', tableStartsOf(tab.body?.content ?? [])]])
     /** @type {StructuralElement[]} The body's tables, in order. */
     this.tables = (tab.body?.content ?? []).filter(element => element.table)
+    /** @type {Map<string, string>} How the Doc writes each formula it has, by its kind and TeX. */
+    this.formulas = new Map()
+    for (const span of spans) {
+      const node = span.kind === 'formula' ? doc.nodeAt(span.pos) : null
+      if (node && span.written) this.formulas.set(formulaKey(node), span.written)
+    }
     /** @type {Set<Unsent>} */
     this.unsent = new Set()
     /** @type {Array<{segment: string, start: number, end: number}>} */
@@ -903,6 +937,10 @@ class Writer {
         add('code', { kind: 'code' }, !!context.odd || inside)
       } else if (name === 'horizontal_rule') {
         add('rule', { kind: 'paragraph' }, !!context.odd || inside)
+      } else if (name === 'formula_block') {
+        // A paragraph of its own; in a quote or a list it would read back as
+        // the quote's or the item's words.
+        add('formula', { kind: 'paragraph' }, !!context.odd || inside)
       } else if (name === 'table') {
         const odd = !!context.odd || inside
         add('table', { kind: 'table' }, odd)
@@ -1092,7 +1130,10 @@ class Writer {
       units.push(unit)
     }
     const code = block.type === 'code'
-    block.node.forEach((child, offset) => {
+    if (block.type === 'formula') {
+      this.#formula(block.node, block.pos, spans, read, segment, kind, '').forEach(push)
+    }
+    block.node.forEach((child, offset, index) => {
       const at = start + offset
       if (child.isText) {
         const look = code ? { ...NO_LOOK, code: true } : lookOf(child.marks)
@@ -1132,6 +1173,9 @@ class Writer {
         }
       } else if (child.type.name === 'image') {
         push(this.#picture(child, at, spans, read, segment, kind))
+      } else if (child.type.name === 'formula') {
+        const after = charAfter(block.node, index)
+        this.#formula(child, at, spans, read, segment, kind, after).forEach(push)
       } else if (child.type.name === 'hard_break') {
         const span = read ? spanAt(at) : null
         push({
@@ -1194,6 +1238,57 @@ class Writer {
     const name = pictureOf(src)?.name
     const id = name ? this.pictures[name]?.docsId : undefined
     return { type: 'picture', key: id ? `p${id}` : `q${src}`, segment, kind }
+  }
+
+  /**
+   * A formula as its characters, a line break among them a break: as the
+   * Doc has it, or as it is to be written.
+   *
+   * @param {Node} node
+   * @param {number} pos
+   * @param {Span[]} spans
+   * @param {boolean} read
+   * @param {string} segment
+   * @param {Kind} kind
+   * @param {string} after - The character after it in its block, if any
+   * @returns {Unit[]}
+   */
+  #formula(node, pos, spans, read, segment, kind, after) {
+    const span = read ? spans.find(each => each.kind === 'formula' && each.pos === pos) : null
+    const written = read ? (span?.written ?? '') : this.#written(node, after)
+    const look = lookOf(node.marks)
+    /** @type {Unit[]} */
+    const out = []
+    for (let k = 0; k < written.length; k++) {
+      const char = written[k]
+      const index = span ? span.index + k : undefined
+      out.push(
+        char === '\v'
+          ? { type: 'break', key: 'b', segment, kind, index, size: 1 }
+          : { type: 'char', key: `c${char}`, char, look, segment, kind, index, size: 1 }
+      )
+    }
+    return out
+  }
+
+  /**
+   * How a formula of the document's goes into the Doc: as the Doc writes
+   * one of the same TeX, where that reads the same here, or between dollars,
+   * `$$` for one of its own. One in a sentence goes on one line.
+   *
+   * @param {Node} node
+   * @param {string} after - The character after it in its block, if any
+   * @returns {string}
+   */
+  #written(node, after) {
+    const tex = String(node.attrs.tex)
+    const known = this.formulas.get(formulaKey(node))
+    if (node.type === schema.nodes.formula_block) return known ?? `$$${tex.replace(/\n/g, '\v')}$$`
+    if (known !== undefined) {
+      const found = formulaAt(known + after, false)
+      if (found?.raw === known && trimTex(found.tex) === tex) return known
+    }
+    return writtenFormula(tex.replace(/\s*\n\s*/g, ' '), /^\d/.test(after))
   }
 
   /**

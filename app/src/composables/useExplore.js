@@ -1,20 +1,17 @@
 /**
  * @module composables/useExplore
- * @description Exploring a folder, a document, or the whole project. From a
- * folder's menu, in the background, on the model a new chat would run on.
- * From a chat, by the model's `explore_documents` or the writer's `/explore`,
- * while the chat waits, on the chat's model. Either way the writer is asked
- * first only when it reads a lot, until they say to always allow it
- * (Settings › System › Chats). See `jobs/explore.js` for what is made.
+ * @description Exploring a folder, a document, or the whole project, from a
+ * chat: by the model's `explore_documents` or the writer's `/explore`, while
+ * the chat waits, on the chat's model. The writer is asked first only when it
+ * reads a lot, until they say to always allow it (Settings › System › Chats).
+ * See `jobs/explore.js` for what is made.
  */
 
 import ConfirmationEventBus from 'primevue/confirmationeventbus'
-import { exploreAndWait, exploreNode, planExploring, startExplore } from '@/jobs/index.js'
+import { exploreAndWait, exploreNode, planExploring } from '@/jobs/index.js'
 import { useApplicationState } from '@/composables/useApplicationState.js'
-import { useJobsToast } from '@/composables/useJobsToast.js'
 
 /** @typedef {import('@/jobs/explore.js').PlannedExplore} PlannedExplore */
-/** @typedef {import('@/jobs/index.js').PlannedExploring} PlannedExploring */
 
 /**
  * The writer's answer to a question about exploring: `always` is yes, and
@@ -70,22 +67,15 @@ export function exploreQuestion(node, planned) {
 }
 
 /**
- * Show the app's confirm dialog from anywhere, as the confirm service does.
- * @param {import('primevue/confirmationoptions').ConfirmationOptions} options
- */
-const confirmAnywhere = options => ConfirmationEventBus.emit('confirm', options)
-
-/**
- * Ask a question about exploring in a dialog, the question its heading.
+ * Ask a question about exploring in the app's confirm dialog, from anywhere,
+ * as the confirm service does, the question its heading.
  *
  * @param {string} question
- * @param {(options: import('primevue/confirmationoptions').ConfirmationOptions) => void} [require] -
- *   A component's `useConfirm().require`, or the dialog from anywhere
  * @returns {Promise<boolean>}
  */
-function askInDialog(question, require = confirmAnywhere) {
+function askInDialog(question) {
   return new Promise(resolve =>
-    require({
+    ConfirmationEventBus.emit('confirm', {
       header: question,
       rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
       acceptProps: { label: 'Explore' },
@@ -115,42 +105,6 @@ export async function confirmExploring(question) {
 export const ASK_FROM_TOKENS = 50_000
 
 /**
- * What came of asking to explore. Nothing is to do when everything in it is
- * explored already, or there is nothing in it to read.
- *
- * @typedef {{job: import('@/types/models.js').Job, planned: PlannedExploring}
- *   | {declined: true}
- *   | {nothing: true}} ExploreOutcome
- */
-
-/**
- * Explore a folder in the background, from its menu, asking the writer
- * first, with what it costs, when it reads a lot and they have Ask before
- * exploring large folders on. Outside a chat, it runs on the model a new
- * chat would.
- *
- * @param {string} storyId
- * @param {string} folderId - The folder, or the project's root
- * @param {{require?: (options: import('primevue/confirmationoptions').ConfirmationOptions) => void}} [options]
- *   - How to ask: a component's `useConfirm().require`, or the dialog from anywhere
- * @returns {Promise<ExploreOutcome>}
- * @throws {Error} When the folder is gone or hidden, or no chat could run
- */
-export async function askToExplore(storyId, folderId, { require = confirmAnywhere } = {}) {
-  const planned = await planExploring(folderId)
-  if (planned.steps.length === 0) return { nothing: true }
-  const { askBeforeExploring } = useApplicationState()
-  if (tokensOf(planned) > ASK_FROM_TOKENS && askBeforeExploring.value) {
-    const question = exploreQuestion(exploreNode(folderId), planned)
-    if (!(await askInDialog(question, require))) return { declined: true }
-  }
-  const job = await startExplore(storyId, folderId, planned)
-  if (!job) return { nothing: true }
-  useJobsToast().show()
-  return { job, planned }
-}
-
-/**
  * What came of exploring from a chat.
  *
  * @typedef {{done: true}|{declined: true}|{error: string}} ExploredOutcome
@@ -168,8 +122,7 @@ export async function askToExplore(storyId, folderId, { require = confirmAnywher
  * @param {string} id
  * @param {{signal?: AbortSignal, progress?: (said: string) => void, approve?: (question: string) => Promise<ExploreDecision>, preset?: import('@/types/models.js').AIPreset|null}} [options] -
  *   The chat's signal; where to say how far it has got; how to ask first,
- *   without which a big one does not start; and the preset the chat runs on,
- *   the active one when it is not said
+ *   without which a big one does not start; and the preset the chat runs on
  * @returns {Promise<ExploredOutcome>}
  * @throws {Error} When it is gone or hidden, or the chat's model can't be asked
  */

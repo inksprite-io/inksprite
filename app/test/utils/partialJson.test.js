@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { partialStrings } from '../../src/utils/partialJson'
+import { partialFields, partialStrings } from '../../src/utils/partialJson'
 
 describe('partialStrings', () => {
   it('reads the string fields of a whole object', () => {
@@ -39,5 +39,28 @@ describe('partialStrings', () => {
     expect(partialStrings(undefined)).toEqual({})
     expect(partialStrings('{"pa')).toEqual({})
     expect(partialStrings('{"count": 3')).toEqual({})
+  })
+})
+
+describe('partialFields', () => {
+  it('says which fields have come whole', () => {
+    expect(partialFields('{"path":"Chapter 1","text":"Snow fell')).toEqual({
+      path: { value: 'Chapter 1', done: true },
+      text: { value: 'Snow fell', done: false },
+    })
+  })
+
+  it('takes a field as whole once its closing quote is in, whatever follows', () => {
+    expect(partialFields('{"path":"Chapter 1"')).toEqual({
+      path: { value: 'Chapter 1', done: true },
+    })
+    expect(partialFields('{"path":"Chapter')).toEqual({ path: { value: 'Chapter', done: false } })
+  })
+
+  it('does not take an escaped quote for the end', () => {
+    expect(partialFields('{"text":"She said \\"')).toEqual({
+      text: { value: 'She said "', done: false },
+    })
+    expect(partialFields('{"text":"tail\\')).toEqual({ text: { value: 'tail', done: false } })
   })
 })

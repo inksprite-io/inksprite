@@ -1,559 +1,323 @@
 <template>
-  <div class="flex flex-col gap-4" data-skill-editor>
-    <div class="flex items-center gap-2">
-      <Button
-        icon="pi pi-chevron-left"
-        severity="secondary"
-        text
-        rounded
-        size="small"
-        aria-label="Back to skills"
-        data-action="back"
-        @click="emit('close')"
-      />
-      <h3 class="flex-1 min-w-0 truncate text-base font-semibold">
-        {{ skillId ? `Edit ${form?.name || 'skill'}` : 'New skill' }}
-      </h3>
-      <div
-        class="flex rounded-lg border border-surface-200 dark:border-surface-700 overflow-hidden"
-      >
-        <button
-          v-for="choice in MODES"
-          :key="choice.id"
-          type="button"
-          class="px-3 py-1 text-xs"
-          :class="
-            mode === choice.id
-              ? 'bg-surface-200 dark:bg-surface-700 font-semibold'
-              : 'hover:bg-surface-100 dark:hover:bg-surface-800'
-          "
-          :aria-pressed="mode === choice.id"
-          :data-mode="choice.id"
-          @click="switchTo(choice.id)"
-        >
-          {{ choice.label }}
-        </button>
-      </div>
-    </div>
-
-    <p v-if="modeError" class="text-xs text-red-600 dark:text-red-400" data-mode-error>
-      {{ modeError }}
-    </p>
-
-    <!-- The form: the fields of the frontmatter, and the instructions. -->
-    <div v-if="mode === 'form' && form" class="flex flex-col gap-4">
+  <div class="flex flex-col gap-3" data-skill-editor>
+    <template v-if="!unreadable">
       <div class="flex flex-col gap-1">
-        <SettingLabel label="Name" description="Lowercase letters, digits and hyphens." />
+        <SettingLabel label="Name" />
         <InputText
           ref="nameField"
-          v-model="form.name"
+          v-model="name"
           size="small"
-          class="w-full"
-          :invalid="Boolean(nameIssue)"
+          class="w-full dark:!bg-surface-900"
+          :maxlength="MAX_NAME"
+          placeholder="Short Story Editor"
           aria-label="Name"
+          autocomplete="off"
           data-field="name"
         />
-        <p v-if="nameIssue" class="text-xs text-red-600 dark:text-red-400" data-name-problem>
-          {{ nameIssue }}
-        </p>
       </div>
 
       <div class="flex flex-col gap-1">
         <SettingLabel label="Description" />
         <Textarea
-          v-model="form.description"
+          v-model="description"
           auto-resize
           rows="2"
           size="small"
-          class="w-full"
-          placeholder="What it does, and when to use it"
+          class="w-full max-h-32 !overflow-y-auto dark:!bg-surface-900"
+          :maxlength="MAX_DESCRIPTION"
+          placeholder="Provides critical feedback on short stories."
           aria-label="Description"
           data-field="description"
-          :invalid="Boolean(descriptionIssue)"
-          @blur="touched.description = true"
-        />
-        <p
-          v-if="descriptionIssue"
-          class="text-xs text-red-600 dark:text-red-400"
-          data-description-problem
-        >
-          {{ descriptionIssue }}
-        </p>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <SettingLabel label="Who can call it" />
-        <Select
-          v-model="callers"
-          :options="callerOptions"
-          option-label="label"
-          option-value="value"
-          size="small"
-          class="w-full"
-          aria-label="Who can call it"
-          data-field="callers"
         />
       </div>
 
       <div class="flex flex-col gap-1">
-        <SettingLabel label="How it runs" />
-        <Select
-          v-model="form.fork"
-          :options="RUNS"
-          option-label="label"
-          option-value="value"
-          size="small"
-          class="w-full"
-          aria-label="How it runs"
-          data-field="fork"
-        />
-      </div>
-
-      <template v-if="form.fork">
-        <div class="flex flex-col gap-1">
-          <SettingLabel label="Its answer" />
-          <Select
-            v-model="form.output"
-            :options="ANSWERS"
-            option-label="label"
-            option-value="value"
-            size="small"
-            class="w-full"
-            aria-label="Its answer"
-            data-field="output"
+        <div class="flex items-center justify-between gap-2">
+          <SettingLabel label="Instructions" />
+          <HeaderButton
+            v-if="storyId"
+            icon="pi pi-window-maximize"
+            label="Open in editor"
+            class="-my-1.5"
+            data-action="open"
+            @click="openInEditor"
           />
         </div>
-
-        <div class="flex flex-col gap-1">
-          <SettingLabel label="Tools" />
-          <MultiSelect
-            v-model="form.tools"
-            :options="toolOptions"
-            placeholder="None"
-            display="chip"
-            size="small"
-            class="w-full"
-            aria-label="Tools"
-            data-field="tools"
-          />
-        </div>
-      </template>
-
-      <div class="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-3">
-        <div class="flex flex-col gap-1">
-          <SettingLabel label="Argument" description="Naming it makes it required." />
-          <InputText
-            v-model="form.argument"
-            size="small"
-            placeholder="none"
-            class="w-full"
-            aria-label="Argument"
-            data-field="argument"
-          />
-        </div>
-        <div class="flex flex-col gap-1">
-          <SettingLabel
-            label="Argument description"
-            description="Shown after its name in the / menu, and told to the model."
-          />
-          <InputText
-            v-model="form.argumentDescription"
-            size="small"
-            placeholder="e.g. the chapter to review"
-            class="w-full"
-            aria-label="Argument description"
-            data-field="argumentDescription"
-          />
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <SettingLabel
-          label="Instructions"
-          :description="`The argument goes where ${placeholder} is, or at the end.`"
-        />
         <Textarea
-          v-model="form.body"
+          v-model="body"
           auto-resize
-          rows="8"
+          rows="6"
           size="small"
-          class="w-full font-mono text-sm"
-          :placeholder="`What to do with ${placeholder}`"
+          class="w-full max-h-64 !overflow-y-auto dark:!bg-surface-900"
+          placeholder="Read and critique the following short story. Give me feedback on the general structure, plot elements, writing style, and dialogue, as well as any other constructive criticism you might have."
           aria-label="Instructions"
           data-field="body"
-          :invalid="Boolean(bodyIssue)"
-          @blur="touched.body = true"
         />
-        <p v-if="bodyIssue" class="text-xs text-red-600 dark:text-red-400" data-body-problem>
-          {{ bodyIssue }}
-        </p>
       </div>
-    </div>
+    </template>
 
-    <!-- The file itself, for anything the form does not reach. -->
-    <div v-else-if="mode === 'file'" class="flex flex-col gap-1">
-      <SettingLabel
-        label="SKILL.md"
-        description="Saving from the form drops comments in the frontmatter."
-      />
-      <Textarea
-        v-model="text"
-        auto-resize
-        rows="16"
-        size="small"
-        class="w-full font-mono text-sm"
-        aria-label="SKILL.md"
-        data-field="text"
-      />
-    </div>
-
-    <p v-if="files.length" class="text-xs text-surface-500 dark:text-surface-400">
-      Other files, unused: {{ files.map(file => file.path).join(', ') }}.
+    <!-- Why it can't be used, as it stood when the card was opened or last
+         saved: under the fields, or in their place for a file they can't be
+         read out of. -->
+    <p v-if="problem" class="text-xs text-red-600 dark:text-red-400" data-problem>
+      {{ problem }}
     </p>
 
-    <ul
-      v-if="listed.length"
-      class="text-xs text-red-600 dark:text-red-400 list-disc pl-5"
-      data-problems
-    >
-      <li v-for="problem in listed" :key="problem">{{ problem }}</li>
-    </ul>
-    <p
-      v-else-if="waiting && problems.length === 0"
-      class="text-xs italic text-surface-500 dark:text-surface-400"
-      data-waiting
-    >
-      {{ waiting }}
-    </p>
-
-    <div class="flex items-center gap-2">
-      <Button
-        v-if="skillId"
-        label="Delete"
-        icon="pi pi-trash"
-        severity="danger"
-        text
-        size="small"
-        data-action="delete"
-        @click="remove"
-      />
-      <Button
-        label="Export"
-        icon="pi pi-download"
-        severity="secondary"
-        text
-        size="small"
-        :disabled="'errors' in reading"
-        data-action="export"
-        @click="exportIt"
-      />
+    <div class="flex items-center gap-1">
+      <template v-if="stored">
+        <HeaderButton icon="pi pi-download" label="Export" data-action="export" @click="exportIt" />
+        <HeaderButton icon="pi pi-trash" label="Delete" data-action="delete" @click="remove" />
+        <HeaderButton
+          v-if="unreadable && storyId"
+          icon="pi pi-window-maximize"
+          label="Open in editor"
+          data-action="open"
+          @click="openInEditor"
+        />
+        <p
+          v-if="stored.files?.length"
+          class="min-w-0 truncate pl-1 text-xs text-surface-500 dark:text-surface-400"
+          data-files
+        >
+          {{ stored.files.map(file => file.path).join(', ') }}
+        </p>
+      </template>
       <span class="flex-1" />
-      <Button
-        label="Cancel"
-        severity="secondary"
-        outlined
-        size="small"
-        data-action="cancel"
-        @click="emit('close')"
-      />
-      <Button
-        label="Save"
-        size="small"
-        :disabled="problems.length > 0 || saving"
-        data-action="save"
-        @click="save"
-      />
+      <!-- As a message is edited: nothing is kept until it is saved. -->
+      <template v-if="!unreadable">
+        <Button
+          v-tooltip.top="'Cancel'"
+          aria-label="Cancel"
+          icon="pi pi-times"
+          text
+          rounded
+          size="small"
+          data-action="cancel"
+          @click="cancel"
+        />
+        <Button
+          v-tooltip.top="'Save'"
+          aria-label="Save"
+          icon="pi pi-check"
+          text
+          rounded
+          size="small"
+          severity="success"
+          data-action="save"
+          @click="confirmed"
+        />
+      </template>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
-import Select from 'primevue/select'
-import MultiSelect from 'primevue/multiselect'
 import { useConfirm } from 'primevue/useconfirm'
 import SettingLabel from '@/components/common/SettingLabel.vue'
-import { NEEDS_DESCRIPTION, NEEDS_INSTRUCTIONS, nameError, parseSkill } from '@/ai/skills/format.js'
-import { formFromText, textFromForm, newSkillText } from '@/ai/skills/form.js'
+import HeaderButton from '../layout/HeaderButton.vue'
+import { MAX_DESCRIPTION, MAX_NAME, nameError, parseSkill } from '@/ai/skills/format.js'
+import { formFromText, textFromForm } from '@/ai/skills/form.js'
 import { waitingOn } from '@/ai/skills/runner.js'
 import { zipBlob } from '@/ai/skills/bundle.js'
 import { downloadBlob } from '@/files/download.js'
-import { getToolDefinitions } from '@/ai/tools/index.js'
 import { useSkills } from '@/composables/useSkills'
-import { useToast } from '@/composables/useToast'
+import { useDocuments } from '@/composables/useDocuments'
+import { useEditorRequest } from '@/composables/useEditorRequest.js'
+import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
+import { skillTabId } from '@/utils/chatTabs.js'
+
+/** @typedef {import('@/types/models.js').StoredSkill} StoredSkill */
 
 /**
- * One skill of the writer's, being written: as a form over its frontmatter
- * and instructions, or as the file itself. The file is what is kept either
- * way — the form reads its fields out of it and writes them back — so the two
- * never disagree about what the skill is. See ai/skills/form.js.
+ * One skill of the writer's, in its card: its name, its description and its
+ * instructions. The file is what is kept, and these are three fields read out
+ * of it and written back into it (ai/skills/form.js); the rest of the file is
+ * changed in the editor, which opens the whole of it.
+ *
+ * What is typed is kept when it is saved, and the card shuts on a skill that
+ * can be used. Cancel puts the fields back as they were. Shutting the card
+ * any other way keeps what was typed, as Save does, so that nothing written
+ * is lost to a click elsewhere. With no skill given it is a new one, which is
+ * kept the first time there is something of it to keep.
+ *
+ * Why a skill can't be used is said under the fields, as it stood when the
+ * card was opened or last saved, and not while it is being written.
+ *
+ * @typedef {Object} Props
+ * @property {string} [skillId] - The skill; none for one not yet made
+ * @property {string} [storyId] - The project open, whose editor the file
+ *   opens in; with none there is nowhere to open it
  */
-
-/** @typedef {import('@/ai/skills/form.js').SkillForm} SkillForm */
-/** @typedef {import('@/types/models.js').SkillFile} SkillFile */
-
 const props = defineProps({
-  /** The skill being edited, or none for a new one. */
-  skillId: { type: String, default: null },
+  skillId: { type: String, default: '' },
+  storyId: { type: String, default: '' },
 })
 
-const emit = defineEmits(['close'])
-
-const MODES = [
-  { id: 'form', label: 'Form' },
-  { id: 'file', label: 'File' },
-]
-
-/** Who can call a skill, as the form's one choice over the file's two switches. */
-const CALLERS = {
-  both: { model: true, user: true },
-  user: { model: false, user: true },
-  model: { model: true, user: false },
-}
-
-const callerOptions = computed(() => [
-  { value: 'both', label: 'You and the model' },
-  { value: 'user', label: `Only you, as /${form.value?.name || 'name'}` },
-  { value: 'model', label: 'Only the model, when its description fits' },
-])
-
-const callers = computed({
-  get: () => (!form.value?.model ? 'user' : !form.value?.user ? 'model' : 'both'),
-  set: value => {
-    if (form.value) Object.assign(form.value, CALLERS[/** @type {keyof CALLERS} */ (value)])
-  },
-})
-
-const RUNS = [
-  { value: true, label: 'On its own, reporting back' },
-  { value: false, label: 'Joining the conversation' },
-]
-
-const ANSWERS = [
-  { value: 'result', label: 'Back to whoever called it' },
-  { value: 'reply', label: 'As the reply' },
-  { value: 'edit', label: 'As an edit to a document (not yet)' },
-]
+/** `made`: a new skill was saved, with its id. `close`: done with, to be shut. */
+const emit = defineEmits(['made', 'close'])
 
 const skillsApi = useSkills()
 const confirm = useConfirm()
-const toast = useToast()
 
-/** A name for a new skill that nothing has yet. */
-const freeName = () => {
-  for (let n = 1; ; n++) {
-    const name = n === 1 ? 'new-skill' : `new-skill-${n}`
-    if (!skillsApi.nameProblem(name)) return name
-  }
-}
+/** The skill as the library keeps it; none for one not yet made. */
+const stored = computed(() => (props.skillId ? skillsApi.getSkill(props.skillId) : null))
 
-const stored = props.skillId ? skillsApi.getSkill(props.skillId) : null
+const name = ref('')
+const description = ref('')
+const body = ref('')
+/** Why the fields can't be read out of the file, when they can't. */
+const unreadable = ref('')
+/** Why the skill can't be used, as last looked at. */
+const problem = ref('')
 
-/** The SKILL.md as it stands: what is kept when it is saved. */
-const text = ref(stored?.text ?? newSkillText(freeName()))
-
-/** The rest of its folder, kept as it came. */
-const files = /** @type {SkillFile[]} */ (stored?.files ?? [])
-
-/** @type {import('vue').Ref<'form'|'file'>} */
-const mode = ref('form')
-const modeError = ref('')
-
-/** The form's fields, and the frontmatter they were read from. */
-const form = ref(/** @type {SkillForm|null} */ (null))
-/** @type {Record<string, unknown>} */
-let front = {}
+/** The file as these fields last read or wrote it. */
+let known = ''
+/** The fields as they were read out of it. */
+let read = { name: '', description: '', body: '' }
+/** A new skill once it is kept, and any skill once deleted: nothing more is kept from here. */
+let finished = false
 
 /**
- * Set while the form is being read out of the file, so reading it does not
- * write it back: a skill only opened keeps its file exactly as it was,
- * comments and all, until a field is changed.
- */
-let loadingForm = false
-
-/**
- * Read the form out of the file. A file whose frontmatter cannot be read is
- * edited as the file until it can.
+ * Why a skill can't be used, or can't do all its file asks of it.
  *
- * @returns {boolean} Whether there is a form to show
+ * @param {StoredSkill} skill
+ * @returns {string}
  */
-const readForm = () => {
-  const read = formFromText(text.value)
-  if ('error' in read) {
-    modeError.value = `${read.error} Fix it here to use the form.`
-    mode.value = 'file'
-    return false
-  }
-  front = read.front
-  loadingForm = true
-  form.value = read.form
-  modeError.value = ''
-  return true
+const whyNot = skill => {
+  const wrong = skillsApi.problemOf(skill)
+  if (wrong) return wrong
+  const parsed = parseSkill(skill.text)
+  return 'skill' in parsed ? waitingOn(parsed.skill) : ''
 }
 
-// A change to a field writes the file, so saving, the checks below and the
-// file view all read the same text. Watching before the first read, so that
-// read is the one the flag skips.
+/** @param {string} text */
+const show = text => {
+  known = text
+  const from = formFromText(text)
+  unreadable.value = 'error' in from ? from.error : ''
+  if ('error' in from) return
+  read = from.form
+  name.value = read.name
+  description.value = read.description
+  body.value = read.body
+}
+
+// The file as it is when the card opens, and as it is changed from outside
+// it: the editor's tab, or another window.
 watch(
-  form,
-  value => {
-    if (loadingForm) {
-      loadingForm = false
-      return
-    }
-    if (value && mode.value === 'form') text.value = textFromForm(value, front)
+  () => stored.value?.text,
+  text => {
+    if (typeof text !== 'string' || text === known) return
+    show(text)
+    problem.value = stored.value ? whyNot(stored.value) : ''
   },
-  { deep: true }
+  { immediate: true }
 )
 
-readForm()
+const changed = () =>
+  name.value !== read.name || description.value !== read.description || body.value !== read.body
 
-/** @param {'form'|'file'} next */
-const switchTo = next => {
-  if (next === mode.value) return
-  if (next === 'form') {
-    if (readForm()) mode.value = 'form'
-  } else {
-    mode.value = 'file'
-  }
+/**
+ * Keep what is typed, when anything was.
+ *
+ * @param {{always?: boolean}} [options] - `always`: keep a new skill though
+ *   nothing of it is written, for the editor to open
+ * @returns {Promise<StoredSkill|null>} The skill as kept; none for a new one
+ *   with nothing written
+ */
+const keep = async ({ always = false } = {}) => {
+  if (finished || unreadable.value) return stored.value
+  if (!changed() && (props.skillId || !always)) return stored.value
+
+  const form = { name: name.value, description: description.value, body: body.value }
+  known = textFromForm(form, known)
+  read = form
+  if (props.skillId) return skillsApi.writeSkill(props.skillId, known)
+
+  finished = true
+  return skillsApi.createSkill(known)
 }
 
-/** The file as the registry would read it, and whether its name is free. */
-const reading = computed(() => parseSkill(text.value))
-const problems = computed(() => {
-  const read = reading.value
-  if ('errors' in read) return read.errors
-  const problem = skillsApi.nameProblem(read.skill.name, props.skillId)
-  return problem ? [problem] : []
-})
-/** What is wrong with the name, as the file's reading says it. */
-const nameProblem = computed(() => {
-  if (mode.value !== 'form' || !form.value) return ''
-  const name = form.value.name.trim()
-  return nameError(name) || skillsApi.nameProblem(name, props.skillId)
-})
+/** Save: keep it, say what is wrong with it, and shut on one that can be used. */
+const confirmed = async () => {
+  const kept = await keep()
+  // A new one with nothing written is not kept, and still wants its name.
+  if (!kept) {
+    problem.value = nameError('')
+    return
+  }
+  if (!props.skillId) emit('made', kept.id)
+  problem.value = whyNot(kept)
+  if (!skillsApi.problemOf(kept)) emit('close')
+}
 
-/**
- * What is wrong with the name, said under it rather than with the rest, and
- * in the form's words rather than the file's: the form has a Name field, not
- * a `name` key.
- */
-const nameIssue = computed(() =>
-  form.value && !form.value.name.trim() && nameProblem.value
-    ? 'It needs a name.'
-    : nameProblem.value
-)
+/** Cancel: the fields as they were, and the card shut. */
+const cancel = () => {
+  name.value = read.name
+  description.value = read.description
+  body.value = read.body
+  emit('close')
+}
 
-/**
- * Which of the fields a skill needs have been left by the writer. One not yet
- * reached is empty because it has not been written, not by mistake, so its
- * placeholder says what goes there and Save waits without a word.
- */
-const touched = ref({ description: false, body: false })
-
-/** An empty Description, said under it once the writer has been and gone. */
-const descriptionIssue = computed(() =>
-  mode.value === 'form' && touched.value.description && problems.value.includes(NEEDS_DESCRIPTION)
-    ? 'It needs a description.'
-    : ''
-)
-
-/** Empty Instructions, the same way. */
-const bodyIssue = computed(() =>
-  mode.value === 'form' && touched.value.body && problems.value.includes(NEEDS_INSTRUCTIONS)
-    ? 'It needs instructions.'
-    : ''
-)
-
-/** The problems said under the form: all of them, less what is said by a field. */
-const listed = computed(() => {
-  if (mode.value !== 'form') return problems.value
-  return problems.value.filter(
-    problem =>
-      problem !== nameProblem.value &&
-      problem !== NEEDS_DESCRIPTION &&
-      problem !== NEEDS_INSTRUCTIONS
-  )
+// Shut some other way with something typed: it is kept, as Save keeps it.
+onBeforeUnmount(() => {
+  keep()
 })
 
-const waiting = computed(() => {
-  const read = reading.value
-  return 'skill' in read ? waitingOn(read.skill) : ''
-})
-
-/** How the instructions name what was typed: its name, or `$ARGUMENTS`. */
-const placeholder = computed(() =>
-  form.value?.argument ? `$${form.value.argument}` : '$ARGUMENTS'
-)
-
-/**
- * The tools a skill can be given: every registered one but itself, and any
- * its file names that this app does not have, so a save does not drop them.
- */
-const toolOptions = computed(() => {
-  const own = form.value?.name
-  const registered = getToolDefinitions()
-    .map(definition => definition.function.name)
-    .filter(name => name !== own)
-  const named = form.value?.tools || []
-  return [...new Set([...registered, ...named])]
-})
-
-const saving = ref(false)
-
-/** @type {import('vue').Ref<any>} */
+/** @type {import('vue').Ref<{$el: HTMLInputElement}|null>} */
 const nameField = ref(null)
 
-// A new skill is named first, and the name it starts with is there to be
-// typed over.
-onMounted(() => {
+// A new skill is named first.
+onMounted(async () => {
   if (props.skillId) return
-  const field = nameField.value?.$el
-  field?.focus?.()
-  field?.select?.()
+  await nextTick()
+  nameField.value?.$el.focus()
 })
 
-const save = async () => {
-  saving.value = true
-  try {
-    const saved = await skillsApi.saveSkill({ id: props.skillId, text: text.value, files })
-    if ('errors' in saved) {
-      toast.error(saved.errors.join(' '))
-      return
-    }
-    emit('close')
-  } finally {
-    saving.value = false
-  }
+const editorRequest = useEditorRequest()
+
+/**
+ * Open the whole file in a tab of the editor's, and the editor with it, with
+ * what is typed here kept in it; the settings close for it.
+ */
+const openInEditor = async () => {
+  const kept = await keep({ always: true })
+  if (!kept) return
+  if (!props.skillId) emit('made', kept.id)
+  useDocuments(props.storyId).open(skillTabId(kept.id))
+  editorRequest.show()
+  useSettingsPanel().close()
 }
 
 /**
- * The skill as it stands here, as a `.zip` of its folder: the shape claude.ai
- * takes and a skills folder holds.
+ * The skill as it is kept, as a `.zip` of its folder: the shape other tools
+ * take and a skills folder holds.
  */
 const exportIt = () => {
-  const read = reading.value
-  if ('errors' in read) return
+  if (!stored.value) return
+  const called = stored.value.name
   downloadBlob(
-    zipBlob([{ name: read.skill.name, text: text.value, files }]),
-    `${read.skill.name}.zip`
+    zipBlob([{ name: called, text: stored.value.text, files: stored.value.files || [] }]),
+    `${called}.zip`
   )
 }
 
 const remove = () => {
-  const name = form.value?.name || stored?.name || 'this skill'
+  const called = stored.value?.name || 'this skill'
   confirm.require({
-    header: `Delete ${name}?`,
-    message: `It goes from every chat, and /${name} with it.`,
+    header: `Delete ${called}?`,
+    message: 'This can’t be undone.',
     icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancel', severity: 'secondary', outlined: true },
     acceptProps: { label: 'Delete', severity: 'danger' },
     accept: () => {
-      if (props.skillId) skillsApi.deleteSkill(props.skillId)
+      finished = true
       emit('close')
+      skillsApi.deleteSkill(props.skillId)
     },
   })
 }

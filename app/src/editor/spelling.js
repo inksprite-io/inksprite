@@ -17,8 +17,9 @@
  * so a lint at offset `i` is at position `start + i`. A paragraph with
  * suggestions in it is checked as it would read with them taken, so what
  * they would take out is not in the string, and its offsets are mapped back
- * (`blockText`). Code blocks are not checked, and a lint that touches inline
- * code is not drawn.
+ * (`blockText`). Code blocks are not checked, nor formulas on lines of their
+ * own; one in a sentence is a word to the checker, and a lint that touches it,
+ * or inline code, is not drawn.
  *
  * Only what is near the screen is checked: Harper takes about a quarter of a
  * millisecond a word, so a novel in one document would keep a core busy for
@@ -84,6 +85,20 @@ const SCROLL_DELAY = 200
 const BREAK = '\n'
 
 /**
+ * What a formula in a sentence is in the text sent: a word, one character
+ * long as it is one position, so the sentence around it is still one.
+ */
+const FORMULA = 'x'
+
+/**
+ * A leaf as the text sent has it: a formula a word, anything else a break.
+ *
+ * @param {Node} leaf
+ * @returns {string}
+ */
+const leafText = leaf => (leaf.type.name === 'formula' ? FORMULA : BREAK)
+
+/**
  * Join ranges that overlap or touch, in order.
  *
  * @param {Range[]} ranges
@@ -134,14 +149,14 @@ export const blockText = node => {
     taken ||= child.marks.some(mark => mark.type.name === 'deletion')
   })
   if (!taken) {
-    return { text: node.textBetween(0, node.content.size, undefined, BREAK), offsets: null }
+    return { text: node.textBetween(0, node.content.size, undefined, leafText), offsets: null }
   }
   let text = ''
   /** @type {number[]} */
   const offsets = []
   node.forEach((child, offset) => {
     if (child.marks.some(mark => mark.type.name === 'deletion')) return
-    const part = child.isText ? (child.text ?? '') : BREAK
+    const part = child.isText ? (child.text ?? '') : leafText(child)
     text += part
     for (let i = 0; i < part.length; i++) offsets.push(offset + i)
   })
@@ -149,7 +164,8 @@ export const blockText = node => {
 }
 
 /**
- * Where the inline code in a paragraph is, as offsets into its text.
+ * Where the inline code and the formulas in a paragraph are, as offsets into
+ * its text.
  *
  * @param {Node} node
  * @returns {Range[]}
@@ -158,7 +174,7 @@ const codeIn = node => {
   /** @type {Range[]} */
   const ranges = []
   node.forEach((child, offset) => {
-    if (child.marks.some(mark => mark.type.spec.code)) {
+    if (child.type.name === 'formula' || child.marks.some(mark => mark.type.spec.code)) {
       ranges.push({ from: offset, to: offset + child.nodeSize })
     }
   })

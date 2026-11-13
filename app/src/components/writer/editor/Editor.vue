@@ -104,7 +104,7 @@
          comment is read and written in the Comments tab, beside the text. -->
     <div
       v-if="barShown"
-      class="w-full flex-none border-t border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 px-2 py-1"
+      class="w-full flex-none border-t border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-850 px-2 py-1"
       data-comment-bar
     >
       <TextBar
@@ -1489,6 +1489,16 @@ onBeforeUnmount(() => {
   color: color-mix(in srgb, currentColor 40%, transparent);
 }
 
+/* Text the model is still writing at the end (editor/streaming): an empty
+   document's one line gives way to it, as the append will replace it, and
+   its first block sits where the document's first would. */
+.ProseMirror .streaming-hidden {
+  display: none;
+}
+.ProseMirror .streaming-hidden + .streaming-text > :first-child {
+  margin-top: 0;
+}
+
 /* A commented passage: marked in the text, with the comment on hover. */
 .ProseMirror mark.comment {
   background-color: rgb(250 204 21 / 0.25);
@@ -1558,6 +1568,101 @@ onBeforeUnmount(() => {
 .ProseMirror .figure {
   text-align: center;
 }
+/* A formula (see editor/formulas): typeset, outlined when selected, and its
+   TeX in a field in its place while it is open, the formula typeset under
+   it. One in a sentence shows that under the line, over the text below; one
+   of its own, in the column. Its TeX as written while KaTeX loads, and in
+   red when KaTeX can't read it. */
+.ProseMirror .formula {
+  border-radius: 0.25rem;
+}
+.ProseMirror .formula-block {
+  margin: 1.25em 0;
+  text-align: center;
+}
+.ProseMirror .formula-block .katex-display {
+  margin: 0;
+}
+.ProseMirror .formula.ProseMirror-selectednode {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
+}
+.ProseMirror .formula.formula-editing {
+  position: relative;
+  outline: none;
+}
+.ProseMirror .formula.formula-editing > .formula-shown {
+  display: none;
+}
+.ProseMirror .formula-shown:empty {
+  display: inline-block;
+  min-width: 1.5em;
+  min-height: 1em;
+  border: 1px dashed color-mix(in srgb, currentColor 35%, transparent);
+  border-radius: 0.25rem;
+  vertical-align: middle;
+}
+.ProseMirror .formula-waiting,
+.ProseMirror .formula-error {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875em;
+}
+.ProseMirror .formula-waiting {
+  color: color-mix(in srgb, currentColor 60%, transparent);
+}
+.ProseMirror .formula-error {
+  color: rgb(220 38 38);
+}
+.ProseMirror .formula-field {
+  max-width: 100%;
+  padding: 0 0.3em;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 0.25rem;
+  background-color: color-mix(in srgb, currentColor 5%, transparent);
+  color: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875em;
+  line-height: 1.5;
+  outline: none;
+}
+.ProseMirror .formula-field:focus {
+  border-color: var(--p-primary-color);
+}
+.ProseMirror .formula-block .formula-field {
+  display: block;
+  width: 100%;
+  padding: 0.4em 0.6em;
+  resize: none;
+  text-align: left;
+}
+.ProseMirror .formula-preview {
+  display: block;
+  margin-top: 0.5em;
+}
+.ProseMirror .formula-preview[hidden] {
+  display: none;
+}
+.ProseMirror .formula:not(.formula-block) .formula-preview {
+  position: absolute;
+  top: calc(100% + 0.35em);
+  left: 0;
+  z-index: 10;
+  margin: 0;
+  padding: 0.3em 0.6em;
+  border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  border-radius: 0.375rem;
+  background-color: var(--p-surface-0);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+  white-space: nowrap;
+}
+.dark .ProseMirror .formula:not(.formula-block) .formula-preview {
+  background-color: var(--color-surface-850);
+}
+.ProseMirror .formula-preview.formula-error {
+  font-size: 0.75em;
+  white-space: normal;
+}
+
 /* Where a picture is not shown: one not there, or one on the web. */
 .ProseMirror .picture-placeholder {
   display: inline-block;

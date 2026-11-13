@@ -8,7 +8,8 @@
  *   projects yet, an invitation to start one
  * - `/project/:storyId` - The writer, on one project. It opens on the document
  *   the writer left, which the story remembers
- * - `/connect/openrouter` - OAuth callback for OpenRouter authentication
+ * - `/connect/openrouter`, `/connect/nanogpt` - Where OpenRouter's and
+ *   NanoGPT's sign-ins send the writer back, with a code to trade for a key
  * - `/connect/mcp` - OAuth callback for signing in to an MCP server
  * - `/connect/google` - Where Google's sign-in, with its picker, sends the
  *   Drive import's popup back to
@@ -32,9 +33,10 @@
 
 import { createRouter, createWebHistory } from 'vue-router'
 import WriterView from '../components/writer/WriterView.vue'
-import OpenRouterCallback from '../components/oauth/OpenRouterCallback.vue'
+import SignInCallback from '../components/oauth/SignInCallback.vue'
 import McpCallback from '../components/oauth/McpCallback.vue'
 import GoogleCallback from '../components/oauth/GoogleCallback.vue'
+import { signInPath } from '../composables/useSignIn.js'
 
 /** @type {import('vue-router').RouteRecordRaw[]} */
 const routes = [
@@ -48,11 +50,12 @@ const routes = [
     name: 'project',
     component: WriterView,
   },
-  {
-    path: '/connect/openrouter',
-    name: 'openrouter-callback',
-    component: OpenRouterCallback,
-  },
+  ...['openrouter', 'nanogpt'].map(service => ({
+    path: signInPath(service),
+    name: `${service}-callback`,
+    component: SignInCallback,
+    props: { service },
+  })),
   {
     path: '/connect/mcp',
     name: 'mcp-callback',

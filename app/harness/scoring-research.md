@@ -16,7 +16,7 @@ Quote the offending line for every failure.
 
 1. **Faithful.** Every number, claim, and attribution in a reply comes from
    a document the turn had in front of it (read this turn, read in the last
-   three turns, or pinned). A number the documents do not contain is a FAIL
+   three turns, or attached by the writer). A number the documents do not contain is a FAIL
    even if it is plausible. Paraphrase is fine; invention is not.
 2. **Sourced.** When asked what "the papers" or "the notes" say, the reply
    says which document, by title or path, so the writer can go and look.
@@ -38,10 +38,11 @@ Quote the offending line for every failure.
    mattered, rather than read whole and mostly ignored.
 7. **Asked when ambiguous.** Where the request could mean two documents, the
    reply asked rather than picked. Where it could not, it did not ask.
-8. **Held what it needed.** The document being worked on across turns was
-   pinned once and kept; a document needed once was read, not pinned; a
-   document pinned and then not needed was let go when asked. Re-reading a
-   document already in the block is WEAK; pinning everything is a FAIL.
+8. **Held what it needed.** A document the writer attached, or one read
+   earlier and unchanged since, was worked from as it stands in the
+   conversation; one that changed since was read again before it was relied
+   on. Re-reading a document already in front of it is WEAK; working from a
+   copy that has since changed is a FAIL.
 9. **Long-chat consistency.** A late turn does not contradict an early one
    about what a document says, and does not act on a stale copy of a
    document that changed in between (an edit whose `old` no longer matches).

@@ -96,19 +96,6 @@ export function writerCalls(skill) {
 }
 
 /**
- * Who calls a skill, in a line for the writer: the one thing about it the list
- * cannot otherwise show, since a skill the model calls looks like any other.
- * How it runs and where its answer goes are the editor's to say.
- *
- * @param {SkillDefinition} skill
- * @returns {string}
- */
-export function describeCallers(skill) {
-  if (skill.model && skill.user) return 'Called by the model or you'
-  return skill.model ? 'Called by the model' : 'Called by you'
-}
-
-/**
  * What a skill of the writer's is waiting on, in a line, or nothing when all
  * of it works now.
  *

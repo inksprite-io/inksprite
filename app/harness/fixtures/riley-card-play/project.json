@@ -1,0 +1,14 @@
+{
+  "title": "Heat Wave",
+  "summary": "Riley and Noah, three days into a heat wave, and the argument about March that neither of them will start.",
+  "documents": [
+    {
+      "path": "Cards/Characters/Riley",
+      "card": "../../cards/Riley.json",
+      "userName": "Noah",
+      "hidden": ["greeting"]
+    },
+    { "path": "Personas/Noah", "file": "../riley-card/noah.md" },
+    { "path": "Lore/Noah's apartment", "file": "../riley-card/apartment.md" }
+  ]
+}

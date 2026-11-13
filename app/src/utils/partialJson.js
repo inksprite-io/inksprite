@@ -19,7 +19,7 @@ const STRING_BODY = String.raw`(?:[^"\\]|\\.)*`
  * `"key": "value"` where the value is closed by a quote or by the end of the
  * text — which may fall on a backslash that has not yet said what it escapes.
  */
-const FIELD = new RegExp(String.raw`"(${STRING_BODY})"\s*:\s*"(${STRING_BODY})(?:"|\\?$)`, 'g')
+const FIELD = new RegExp(String.raw`"(${STRING_BODY})"\s*:\s*"(${STRING_BODY})(?:(")|\\?$)`, 'g')
 
 /**
  * Decode a JSON string body, tolerating an escape cut off at the end.
@@ -49,9 +49,31 @@ function decode(body) {
 export function partialStrings(text) {
   /** @type {Record<string, string>} */
   const out = {}
+  for (const [key, field] of Object.entries(partialFields(text))) out[key] = field.value
+  return out
+}
+
+/**
+ * A string field of JSON still arriving: as far as it has got, and whether
+ * its closing quote has come.
+ *
+ * @typedef {{value: string, done: boolean}} PartialField
+ */
+
+/**
+ * The string fields of a JSON object text, complete or not, each saying
+ * whether it is: a path is worth looking up only once the whole of it has
+ * come. Read as `partialStrings` reads them.
+ *
+ * @param {string|null|undefined} text - JSON, or the front part of some
+ * @returns {Record<string, PartialField>}
+ */
+export function partialFields(text) {
+  /** @type {Record<string, PartialField>} */
+  const out = {}
   if (!text) return out
   for (const match of text.matchAll(FIELD)) {
-    out[decode(match[1])] = decode(match[2])
+    out[decode(match[1])] = { value: decode(match[2]), done: match[3] === '"' }
   }
   return out
 }

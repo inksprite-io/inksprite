@@ -17,7 +17,7 @@
  * only in where they look.
  */
 
-import { ProviderNotConfiguredError } from '@/utils/errors.js'
+import { ConnectionNeededError, ProviderNotConfiguredError } from '@/utils/errors.js'
 
 /**
  * @typedef {Object} ProviderType
@@ -37,6 +37,21 @@ import { ProviderNotConfiguredError } from '@/utils/errors.js'
  *   Responses API), which a model picker leaves out
  * @property {ReadonlyArray<ProviderKind>} [does] - What a connection of this
  *   type can be asked for; a chat alone when absent
+ * @property {SignIn} [signIn] - Where the writer signs in to have a key made
+ *   for them, for a service that offers it
+ * @property {string} [credits] - Where an account buys more, for a service
+ *   that answers 402 when it has run out
+ */
+
+/**
+ * A service's sign-in, OAuth with PKCE as OpenRouter has it: the writer is
+ * sent to `authorize` with a challenge, comes back with a code, and the code
+ * is traded at `exchange` for an API key (`composables/useSignIn.js`).
+ *
+ * @typedef {Object} SignIn
+ * @property {string} authorize - Where the writer is sent
+ * @property {string} exchange - Where the code is traded for a key
+ * @property {Record<string, string>} [params] - What else the sign-in is told
  */
 
 /**
@@ -59,6 +74,11 @@ export const PROVIDER_TYPES = [
     address: 'https://openrouter.ai/api/v1/',
     key: true,
     does: ['chat', 'speech'],
+    signIn: {
+      authorize: 'https://openrouter.ai/auth',
+      exchange: 'https://openrouter.ai/api/v1/auth/keys',
+    },
+    credits: 'https://openrouter.ai/settings/credits',
   },
   {
     // Not OpenAI-shaped at all: spoken to in its own API, by ai/anthropic.js.
@@ -79,6 +99,31 @@ export const PROVIDER_TYPES = [
     does: ['chat', 'speech'],
     notChat:
       /embedding|tts|whisper|transcribe|dall-e|gpt-image|moderation|realtime|audio|davinci|babbage|instruct|sora|codex|-pro\b|computer-use|deep-research/,
+  },
+  {
+    // OpenRouter's request, near enough: its `reasoning` object, the samplers
+    // passed on to whoever serves the model, a list anyone may read. The list
+    // says less of each model, and prices by the million (ai/models.js).
+    id: 'nanogpt',
+    label: 'NanoGPT',
+    menu: 'NanoGPT',
+    address: 'https://api.nano-gpt.com/api/v1/',
+    key: true,
+    does: ['chat', 'speech'],
+    signIn: {
+      authorize: 'https://nano-gpt.com/auth',
+      exchange: 'https://nano-gpt.com/api/v1/auth/keys',
+      params: {
+        client_name: 'inksprite',
+        scope: 'api.use models.read',
+        // inksprite's referral link (nano-gpt.com/r/GNjxyGKL). An account
+        // made during the sign-in is referred, if the writer leaves NanoGPT's
+        // checkbox for it ticked: they get 5% off, and inksprite a share of
+        // what they spend. An account made before is never referred.
+        invitation_code: 'GNjxyGKL',
+      },
+    },
+    credits: 'https://nano-gpt.com/balance',
   },
   {
     // Gemini's OpenAI-compatible endpoint. It takes `reasoning_effort`, and
@@ -174,6 +219,99 @@ export const BUILT_IN_PROVIDERS = Object.freeze([
 
 /** The connection narration speaks through until the writer picks another. */
 export const DEFAULT_SPEECH_PROVIDER_ID = 'provider_kokoro_default'
+
+/**
+ * What the writer can connect to, as setup offers it: a hosted service, a
+ * server of a kind they run at home, or any other that speaks OpenAI's API.
+ * Each built-in connection was one of these, and the first connection of a
+ * kind still takes its id, so presets made for it, and every device of the
+ * writer's, find it there.
+ *
+ * @typedef {Object} ConnectionKind
+ * @property {string} id
+ * @property {string} name - What a connection of it is called to start with
+ * @property {import('@/types/models.js').AIProvider['type']} type
+ * @property {string} [endpoint] - Where a server of it listens when started
+ *   without being told, or where a hosted service's API is, for the row
+ * @property {string} [server] - The server behind a generic connection, for
+ *   what it takes (ai/capabilities.js)
+ * @property {ReadonlyArray<ProviderKind>} does - What it can be asked for
+ * @property {string} [builtInId] - The built-in connection it was
+ */
+
+/** @type {ReadonlyArray<ConnectionKind>} */
+const BUILT_IN_KINDS = BUILT_IN_PROVIDERS.map(entry => ({
+  id: entry.server ?? entry.type,
+  name: entry.name,
+  type: entry.type,
+  ...(entry.endpoint ? { endpoint: entry.endpoint } : {}),
+  ...(entry.server ? { server: entry.server } : {}),
+  does: entry.does ?? typeOf(entry.type)?.does ?? ['chat'],
+  builtInId: entry.id,
+}))
+
+/** @type {ReadonlyArray<ConnectionKind>} */
+export const CONNECTION_KINDS = Object.freeze([
+  // The hosted services, then the servers people run at home.
+  ...BUILT_IN_KINDS.filter(kind => knownAddress(kind.type)),
+  {
+    // Never built in, so no connection to it has a fixed id. Its address
+    // is kept on the row as well, though this app knows it without: an app
+    // from before NanoGPT was known then reaches it as any OpenAI-compatible
+    // server, rather than as one with no address.
+    id: 'nanogpt',
+    name: 'NanoGPT',
+    type: /** @type {const} */ ('nanogpt'),
+    endpoint: 'https://api.nano-gpt.com/api/v1',
+    does: ['chat', 'speech'],
+  },
+  ...BUILT_IN_KINDS.filter(kind => !knownAddress(kind.type)),
+  {
+    id: 'generic',
+    name: 'OpenAI-compatible',
+    type: /** @type {const} */ ('generic'),
+    does: ['chat', 'speech'],
+  },
+])
+
+/**
+ * A kind by its id.
+ * @param {string|null|undefined} id
+ * @returns {ConnectionKind|undefined}
+ */
+export function connectionKind(id) {
+  return CONNECTION_KINDS.find(kind => kind.id === id)
+}
+
+/**
+ * What kind a connection is: the server it names, the built-in it is, else
+ * its type, and an OpenAI-compatible server for anything else.
+ *
+ * @param {{id?: string, type?: string, server?: string}|null|undefined} provider
+ * @returns {ConnectionKind}
+ */
+export function kindOf(provider) {
+  const builtIn = BUILT_IN_PROVIDERS.find(entry => entry.id === provider?.id)
+  const id = provider?.server ?? builtIn?.server ?? provider?.type
+  return connectionKind(id) ?? /** @type {ConnectionKind} */ (connectionKind(DEFAULT_PROVIDER_TYPE))
+}
+
+/**
+ * Whether a built-in connection is as every install made it, with nothing of
+ * the writer's in it: not added by them, no key, no routing, its own
+ * address. Since setup took their place they are made no more, but older
+ * devices still make them. Neither sync nor a settings file carries one.
+ *
+ * @param {any} provider
+ * @returns {boolean}
+ */
+export function untouchedBuiltIn(provider) {
+  const builtIn = BUILT_IN_PROVIDERS.find(entry => entry.id === provider?.id)
+  if (!builtIn || provider.added) return false
+  return (
+    !provider.apiKey && !provider.routing && (provider.endpoint || '') === (builtIn.endpoint || '')
+  )
+}
 
 /**
  * The connections the provider menus list, in their order: the built-in ones
@@ -298,32 +436,26 @@ export function connectionGap(provider) {
  * What stands between a preset and a request through it, as the error the
  * request would fail with, or null when nothing does: no connection, no
  * model, or a connection still missing its key or address. What a chat says
- * above its box, and what the welcome reads to know the AI is set up.
+ * above its box.
  *
  * @param {{ providerId?: string, model?: string } | null | undefined} preset
- * @param {(id: string) => { name?: string, type?: string, apiKey?: string, endpoint?: string } | null | undefined} findProvider
+ * @param {(id: string) => { id: string, name?: string, type?: string, apiKey?: string, endpoint?: string } | null | undefined} findProvider
  * @returns {Error|null}
  */
 export function presetProblem(preset, findProvider) {
   const provider = preset?.providerId ? findProvider(preset.providerId) : null
   if (!preset || !provider) return new ProviderNotConfiguredError('No AI provider is connected.')
-  if (!preset.model) return new Error('Pick a model in Settings › AI.')
-
-  const gap = connectionGap(provider)
-  // OpenRouter has its own way in, the connect dialog; a key for anything
-  // else is pasted in the provider's settings.
-  if (gap === 'key' && provider.type === 'openrouter') {
-    return new ProviderNotConfiguredError('Connect OpenRouter in Settings › AI.')
+  if (!preset.model) return new Error('Choose a model for this chat.')
+  if (connectionGap(provider)) {
+    return new ConnectionNeededError(`${provider.name} isn't connected.`, provider.id)
   }
-  if (gap === 'key') return new Error(`Add your ${provider.name} key in Settings › AI.`)
-  if (gap === 'endpoint') return new Error('Add the server address in Settings › AI.')
   return null
 }
 
 /**
  * Whether the connection can be asked what it serves. A server needs its
- * address; a hosted service needs its key, except OpenRouter, whose list is
- * public.
+ * address; a hosted service needs its key, except OpenRouter and NanoGPT,
+ * whose lists are public.
  *
  * @param {{ type?: string, apiKey?: string, endpoint?: string } | null | undefined} provider
  * @returns {boolean}
@@ -331,7 +463,52 @@ export function presetProblem(preset, findProvider) {
 export function canListModels(provider) {
   if (!provider) return false
   const gap = connectionGap(provider)
-  return !gap || (gap === 'key' && provider.type === 'openrouter')
+  return !gap || (gap === 'key' && listsPublicly(provider.type))
+}
+
+/**
+ * Whether this service's list of models is public, asked without a key, and
+ * so says nothing of whether a key is good.
+ *
+ * @param {string} [type]
+ * @returns {boolean}
+ */
+export function listsPublicly(type) {
+  return type === 'openrouter' || type === 'nanogpt'
+}
+
+/**
+ * Where the writer signs in to this service to have a key made, or undefined
+ * for one that offers no sign-in.
+ *
+ * @param {string} [type]
+ * @returns {SignIn|undefined}
+ */
+export function signInOf(type) {
+  return typeOf(type)?.signIn
+}
+
+/**
+ * Where an account with this service buys more, or undefined for a service
+ * that doesn't sell by the request.
+ *
+ * @param {string} [type]
+ * @returns {string|undefined}
+ */
+export function creditsPage(type) {
+  return typeOf(type)?.credits
+}
+
+/**
+ * Whether a request to this service is told about reasoning as OpenRouter
+ * tells it: a `reasoning` object, with an effort, `enabled` and `exclude`.
+ * NanoGPT took the same shape.
+ *
+ * @param {string} [type]
+ * @returns {boolean}
+ */
+export function speaksOpenRouterReasoning(type) {
+  return type === 'openrouter' || type === 'nanogpt'
 }
 
 /**

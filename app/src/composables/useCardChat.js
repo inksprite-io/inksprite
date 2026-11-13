@@ -5,16 +5,23 @@
  * This is where the pieces meet: the Roleplay profile says how the chat runs,
  * the card's own documents say who is in it, and the greeting goes in as the
  * first thing said. None of it is new machinery — a chat stamped from a
- * profile, a few pins, and a message — which is the point. "Chat with
+ * profile, what it can see, and a message — which is the point. "Chat with
  * Seraphina" is a profile being applied, not a feature of cards.
+ *
+ * The card's documents open the chat, attached to a turn of the writer's ahead
+ * of the greeting: with the first reply, whether or not the model can read
+ * the project, not read again when a reply is asked again, and kept with the
+ * opening through every summary. See ai/context/attachments.js.
  *
  * A chat imported from SillyTavern gets here the other way round: it has its
  * messages already and no idea who it was with beyond a name. `attach` finds
- * that character's card and puts the same pins and instructions on it.
+ * that character's card and puts the same instructions on it.
  */
 
 import { useChats } from './useChats.js'
 import { useProfiles } from './useProfiles.js'
+import { attachingTurn } from '@/ai/context/attachments.js'
+import { attachedById } from '@/ai/tools/documents.js'
 import { cardsNamed, readCardChat } from '@/cards/chat.js'
 import { substitute } from '@/cards/macros.js'
 
@@ -42,7 +49,6 @@ export function useCardChat(storyId) {
   function settingsFrom(card) {
     /** @type {Partial<import('@/types/models.js').Chat>} */
     const settings = {}
-    if (card.pinnedIds.length > 0) settings.pinnedIds = card.pinnedIds
     // The other characters, out of sight. See `readCardChat`.
     if (card.hiddenIds.length > 0) settings.hiddenIds = card.hiddenIds
     if (card.shownIds.length > 0) settings.shownIds = card.shownIds
@@ -56,6 +62,24 @@ export function useCardChat(storyId) {
     if (card.rules) settings.postHistory = card.rules
 
     return settings
+  }
+
+  /**
+   * Open a chat with its card's documents: a turn of the writer's that says
+   * nothing and attaches them, at the top. After the card's settings are on
+   * the chat, since they say what it sees and what its names are.
+   *
+   * @param {import('@/cards/chat.js').CardChat} card
+   * @param {string} chatId
+   * @returns {Promise<void>}
+   */
+  async function attachCard(card, chatId) {
+    const attachments = await attachedById(storyId, chatId, card.openingIds)
+    if (attachments.length === 0) return
+    const { content, segments } = attachingTurn(attachments)
+    const above = chatsApi.getMessagesForChat(chatId)?.value?.length || 0
+    const turn = chatsApi.addMessage(chatId, 'user', content, null, segments)
+    if (turn && above > 0) chatsApi.moveMessage(turn.id, above)
   }
 
   /**
@@ -82,6 +106,7 @@ export function useCardChat(storyId) {
       characterName: names.char,
     }
     chatsApi.updateChat(chat.id, settings)
+    await attachCard(card, chat.id)
 
     // The opening turn is most of why cards work: it sets voice, tense, length
     // and formatting by example before anything has been asked. It is an
@@ -107,7 +132,7 @@ export function useCardChat(storyId) {
    * examples that made the character answer the way they did are not.
    *
    * Only when exactly one card in the project is that character. With none
-   * there is nothing to pin, and with two there is no telling which.
+   * there is nothing to put on it, and with two there is no telling which.
    *
    * The Author's Note the chat carried from ST stays in its author's note,
    * after the profile's, where the import put it.
@@ -126,8 +151,12 @@ export function useCardChat(storyId) {
     const card = await readCardChat(storyId, found[0].id)
     if (!card) return { card: null, named }
 
+    const chat = chatsApi.getChatById(chatId)
+    if (!chat) return { card: null, named }
+
     const settings = settingsFrom(card)
     if (Object.keys(settings).length > 0) chatsApi.updateChat(chatId, settings)
+    await attachCard(card, chatId)
 
     return { card, named }
   }

@@ -12,7 +12,7 @@ import { useDocuments, clearDocumentInstances } from '../../src/composables/useD
 import { useDocumentsStore } from '../../src/stores/documentsStore'
 import { useProjectViewsStore } from '../../src/stores/projectViewsStore.js'
 import { useChatsStore } from '../../src/stores/chatsStore'
-import { clearChatsInstances, useChats } from '../../src/composables/useChats'
+import { clearChatsInstances } from '../../src/composables/useChats'
 import { LONG_PRESS_MS } from '../../src/composables/useLongPress.js'
 import { OPEN_AFTER, useTreeDrop } from '../../src/composables/useTreeDrop.js'
 import { useTreeHistory } from '../../src/composables/useTreeHistory.js'
@@ -398,7 +398,7 @@ describe('DocumentNode', () => {
   })
 
   describe('a document that holds others', () => {
-    /** A card's portrait, as an import makes it, with a field under it. */
+    /** A card that came in a picture, as the import makes it, with a field under it. */
     const holding = () => {
       const card = useDocumentsStore().createDocument({
         storyId: 'story_1',
@@ -406,7 +406,7 @@ describe('DocumentNode', () => {
         type: 'file',
         title: 'Wren',
         mime: 'image/png',
-        kind: 'portrait',
+        kind: 'card',
       })
       useDocumentsStore().createDocument({
         storyId: 'story_1',
@@ -416,6 +416,44 @@ describe('DocumentNode', () => {
       })
       return card
     }
+
+    /** A PDF with the Markdown converted from it under it, as Convert makes it. */
+    const converted = () => {
+      const pdf = useDocumentsStore().createDocument({
+        storyId: 'story_1',
+        parentId: 'notes_story_1',
+        type: 'file',
+        title: 'Rulebook',
+        mime: 'application/pdf',
+      })
+      useDocumentsStore().createDocument({
+        storyId: 'story_1',
+        parentId: pdf.id,
+        type: 'text',
+        title: 'Rulebook (Markdown)',
+      })
+      return pdf
+    }
+
+    /** The labels on a row's menu, without its separators. */
+    const menuOf = wrapper =>
+      wrapper
+        .findComponent({ name: 'ContextMenu' })
+        .props('model')
+        .filter(item => !item.separator)
+        .map(item => item.label)
+
+    /** Drag `documentId` over the middle of a row, as the tracker sees it. */
+    const holdOver = (row, documentId) => {
+      row.element.getBoundingClientRect = () => ({ top: 0, height: 40, bottom: 40 })
+      document.elementFromPoint = () => row.element
+      useTreeDrop().start('story_1', documentId)
+      const over = new Event('dragover')
+      Object.assign(over, { clientX: 5, clientY: 20 })
+      document.dispatchEvent(over)
+    }
+
+    afterEach(() => useTreeDrop().end())
 
     it('starts shut, opens as a document, and twists open on what it holds', async () => {
       const card = holding()
@@ -448,18 +486,51 @@ describe('DocumentNode', () => {
       expect(wrapper.text()).toContain('Description')
     })
 
-    it('takes no drop into it, and offers nothing to make in it', () => {
-      const card = holding()
-      const wrapper = mountNode(card.id)
-      const labels = wrapper
-        .findComponent({ name: 'ContextMenu' })
-        .props('model')
-        .map(item => item.label)
+    it('takes no drop into it, and offers nothing to make in it', async () => {
+      const pdf = converted()
+      const loose = api.createTextDocument('notes_story_1', 'Loose')
+      const wrapper = mountNode(pdf.id)
+      const labels = menuOf(wrapper)
 
-      expect(row(wrapper, card.id).attributes('data-folder')).toBeUndefined()
+      expect(row(wrapper, pdf.id).attributes('data-folder')).toBeUndefined()
       expect(labels).not.toContain('New document')
       expect(labels).not.toContain('New folder')
+      expect(labels).not.toContain('Import')
       expect(labels).toContain('Export')
+
+      holdOver(row(wrapper, pdf.id), loose.id)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.attributes('data-drop-target')).toBeUndefined()
+      useTreeDrop().end()
+      expect(api.get(loose.id).parentId).toBe('notes_story_1')
+    })
+
+    it('is a card that takes documents as a folder does: made in it, and dropped into it', async () => {
+      const card = holding()
+      const loose = api.createTextDocument('notes_story_1', 'Loose')
+      const wrapper = mountNode(card.id)
+      const labels = menuOf(wrapper)
+
+      expect(row(wrapper, card.id).attributes('data-folder')).toBe('true')
+      expect(labels.slice(0, 3)).toEqual(['New document', 'New folder', 'Keep in order'])
+      expect(labels).toContain('Import')
+      // Still the picture it is.
+      expect(labels).toContain('Export')
+
+      wrapper
+        .findComponent({ name: 'ContextMenu' })
+        .props('model')
+        .find(item => item.label === 'New document')
+        .command()
+      const made = api.childrenOf(card.id).find(child => child.title !== 'Description')
+      expect(made).toMatchObject({ type: 'text', parentId: card.id })
+      expect(api.tabs.value.active).toBe(made.id)
+
+      holdOver(row(wrapper, card.id), loose.id)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.attributes('data-drop-target')).toBe('true')
+      useTreeDrop().end()
+      expect(api.get(loose.id).parentId).toBe(card.id)
     })
   })
 
@@ -824,16 +895,7 @@ describe('DocumentNode', () => {
     })
 
     const menuOf = wrapper => () => wrapper.findComponent({ name: 'ContextMenu' }).props('model')
-    const pick = (items, label) =>
-      items()
-        .find(item => item.label === label)
-        .command()
-    const chatItems = [
-      'Pin to chat',
-      'Unpin from chat',
-      'Hide from this chat',
-      'Unhide in this chat',
-    ]
+    const chatItems = ['Hide from this chat', 'Unhide in this chat']
 
     it('keeps the chat’s marks out of the menu, where the row’s toggles are', () => {
       const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
@@ -842,26 +904,6 @@ describe('DocumentNode', () => {
       expect(labels).toContain('Hide from all chats')
       for (const item of chatItems) expect(labels).not.toContain(item)
     })
-
-    it('keeps them in the menu on a phone, which has no hover to find a toggle by', () =>
-      onPhone(async () => {
-        const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
-        const wrapper = mountNode(chapter.id, { chatId: CHAT })
-        const items = menuOf(wrapper)
-        const labels = () => items().map(item => item.label)
-
-        expect(labels()).toContain('Pin to chat')
-        pick(items, 'Hide from this chat')
-        await wrapper.vm.$nextTick()
-
-        expect(chats.getChatById(CHAT).hiddenIds).toEqual([chapter.id])
-        // The document's own flag is untouched: every other chat still sees it.
-        expect(api.isHidden(chapter.id)).toBe(false)
-        expect(labels()).toContain('Unhide in this chat')
-
-        pick(items, 'Unhide in this chat')
-        expect(chats.getChatById(CHAT).hiddenIds).toBeUndefined()
-      }))
 
     it('offers nothing of the chat’s on what every chat is kept from', () =>
       onPhone(() => {
@@ -874,74 +916,122 @@ describe('DocumentNode', () => {
         expect(wrapper.find('[data-toggle]').exists()).toBe(false)
       }))
 
-    it('pins from the row, and unpins from the pin', async () => {
+    it('has the eye alone on the row, now that nothing is pinned', () => {
       const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
       const wrapper = mountNode(chapter.id, { chatId: CHAT })
-      const pin = () => wrapper.find('[data-toggle="pin"]')
+      const toggles = wrapper.find('[data-row-toggles]')
 
-      const title = () => wrapper.find('span.truncate')
-      expect(pin().attributes('aria-label')).toBe('Pin to this chat')
-      expect(pin().attributes('aria-pressed')).toBe('false')
-      expect(title().classes()).not.toContain('text-primary-600')
-
-      await pin().trigger('click')
-
-      expect(chats.getChatById(CHAT).pinnedIds).toEqual([chapter.id])
-      expect(pin().attributes('aria-label')).toBe('Pinned to this chat')
-      // At rest the row says so by its colour, not by an icon: the toggle
-      // only shows on hover, whatever state it is in.
-      expect(wrapper.find('[data-row-toggles]').classes()).toContain('opacity-0')
-      expect(title().classes()).toContain('text-primary-600')
-      expect(title().attributes('title')).toBe('Pinned to this chat')
-
-      await pin().trigger('click')
-
-      expect(chats.getChatById(CHAT).pinnedIds).toBeUndefined()
-      expect(pin().attributes('aria-label')).toBe('Pin to this chat')
-      expect(title().classes()).not.toContain('text-primary-600')
+      expect(toggles.findAll('button').map(button => button.attributes('data-toggle'))).toEqual([
+        'sight',
+      ])
+      expect(wrapper.find('.pi-thumbtack').exists()).toBe(false)
+      for (const label of menuOf(wrapper)().map(item => item.label ?? '')) {
+        expect(label).not.toMatch(/pin/i)
+      }
     })
 
-    it('marks the unstarted chat, which carries them into the chat it becomes', async () => {
+    it('shows the eye on hover, and when the keyboard is on it, and takes no clicks until then', () => {
       const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
-      const chatsApi = useChats('story_1')
-      const id = chatsApi.unstartedChat.value.id
-      const wrapper = mountNode(chapter.id, { chatId: id })
+      const wrapper = mountNode(chapter.id, { chatId: CHAT })
+      const toggles = wrapper.find('[data-row-toggles]')
 
-      await wrapper.find('[data-toggle="pin"]').trigger('click')
-
-      expect(chatsApi.unstartedChat.value.pinnedIds).toEqual([chapter.id])
-      expect(wrapper.find('[data-toggle="pin"]').attributes('aria-label')).toBe(
-        'Pinned to this chat'
+      expect(toggles.classes()).toEqual(
+        expect.arrayContaining([
+          'opacity-0',
+          'pointer-events-none',
+          'group-hover:opacity-100',
+          'group-hover:pointer-events-auto',
+          'focus-within:opacity-100',
+          'focus-within:pointer-events-auto',
+        ])
       )
-      chatsApi.startChat()
-      expect(chats.getChatById(id).pinnedIds).toEqual([chapter.id])
+      // The row is the group whose hover it shows on, and is inside it.
+      expect(toggles.element.closest('.group')).toBe(row(wrapper, chapter.id).element)
+      // Out of the tab order: the row is the one stop, and the menu has it for the keys.
+      expect(wrapper.find('[data-toggle="sight"]').attributes('tabindex')).toBe('-1')
+      expect(wrapper.find('[data-toggle="sight"]').attributes('title')).toBe('Hide from this chat')
     })
 
-    it('shows a folder’s pin faintly on what is under it, and lets one thing go', async () => {
-      const act = api.createFolder('manuscript_story_1', 'First Act')
-      const opening = api.createTextDocument(act.id, 'Opening')
-      chats.updateChat(CHAT, { pinnedIds: [act.id] })
-      const rows = mountNode(act.id, { chatId: CHAT }).findAll('.group')
-      const pinOf = row => row.find('[data-toggle="pin"]')
+    it('does not open the document, or keep its tab, when the eye is clicked', async () => {
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      const wrapper = mountNode(chapter.id, { chatId: CHAT })
 
-      expect(pinOf(rows[0]).attributes('aria-label')).toBe('Pinned to this chat')
-      expect(pinOf(rows[0]).find('i').classes()).not.toContain('opacity-50')
-      expect(pinOf(rows[1]).attributes('aria-label')).toBe('Pinned with the folder above')
-      expect(pinOf(rows[1]).find('i').classes()).toContain('opacity-50')
-      // Both are carried, and both say so.
-      for (const row of rows)
-        expect(row.find('span.truncate').classes()).toContain('text-primary-600')
+      await wrapper.find('[data-toggle="sight"]').trigger('click')
+      await wrapper.find('[data-toggle="sight"]').trigger('dblclick')
 
-      await pinOf(rows[1]).trigger('click')
+      expect(wrapper.emitted('open')).toBeUndefined()
+      expect(wrapper.emitted('keep')).toBeUndefined()
+    })
 
-      // The folder's pin stays the folder's; the document is shown instead,
-      // which is in sight and not carried.
-      expect(chats.getChatById(CHAT).pinnedIds).toEqual([act.id])
-      expect(chats.getChatById(CHAT).shownIds).toEqual([opening.id])
-      expect(pinOf(rows[1]).attributes('aria-label')).toBe('Pin to this chat')
-      expect(rows[1].find('span.truncate').classes()).not.toContain('text-primary-600')
-      // Not a matter of sight, so no eye says "shown".
-      expect(rows[1].find('[data-toggle="sight"]').attributes('aria-pressed')).toBe('false')
+    it('has no eye with no chat open, nor on the project itself', () => {
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+
+      expect(mountNode(chapter.id).find('[data-row-toggles]').exists()).toBe(false)
+      const root = mountNode('root_story_1', { chatId: CHAT, canDelete: false })
+      expect(row(root, 'root_story_1').find(':scope > [data-row-toggles]').exists()).toBe(false)
+    })
+
+    it('has the chat’s mark in the menu on a phone, where no row has an eye', () =>
+      onPhone(async () => {
+        const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+        const wrapper = mountNode(chapter.id, { chatId: CHAT })
+        const item = label => menuOf(wrapper)().find(one => one.label === label)
+        // The button's menu is the same one.
+        const buttonMenu = () =>
+          wrapper
+            .findComponent({ name: 'TieredMenu' })
+            .props('model')
+            .map(one => one.label)
+
+        expect(wrapper.find('[data-row-toggles]').exists()).toBe(false)
+        expect(item('Hide from this chat').icon).toBe('pi pi-eye-slash')
+        expect(item('Unhide in this chat')).toBeUndefined()
+        expect(buttonMenu()).toContain('Hide from this chat')
+
+        item('Hide from this chat').command()
+        await wrapper.vm.$nextTick()
+
+        expect(chats.getChatById(CHAT).hiddenIds).toEqual([chapter.id])
+        expect(item('Hide from this chat')).toBeUndefined()
+        expect(item('Unhide in this chat').icon).toBe('pi pi-eye')
+        expect(buttonMenu()).toContain('Unhide in this chat')
+
+        item('Unhide in this chat').command()
+        await wrapper.vm.$nextTick()
+        expect(chats.getChatById(CHAT).hiddenIds).toBeUndefined()
+      }))
+
+    it('has it in the menu opened from the keys, which cannot reach the eye, and not on a right click', async () => {
+      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
+      const wrapper = mountNode(chapter.id, { chatId: CHAT })
+      const item = label => menuOf(wrapper)().find(one => one.label === label)
+
+      await row(wrapper, chapter.id).trigger('keydown', { key: 'ContextMenu' })
+      expect(item('Hide from this chat')).toBeDefined()
+
+      item('Hide from this chat').command()
+      await wrapper.vm.$nextTick()
+      expect(chats.getChatById(CHAT).hiddenIds).toEqual([chapter.id])
+      expect(item('Unhide in this chat')).toBeDefined()
+
+      // The mouse has the row's eye for it.
+      await row(wrapper, chapter.id).trigger('contextmenu', { clientX: 40, clientY: 12 })
+      for (const label of chatItems) expect(item(label)).toBeUndefined()
+    })
+
+    it('shows from the keys’ menu what a hidden folder dims, in its own right', async () => {
+      const shelf = api.createFolder('notes_story_1', 'Characters')
+      const sheet = api.createTextDocument(shelf.id, 'Maren')
+      chats.updateChat(CHAT, { hiddenIds: [shelf.id] })
+      const wrapper = mountNode(sheet.id, { chatId: CHAT })
+
+      await row(wrapper, sheet.id).trigger('keydown', { key: 'ContextMenu' })
+      menuOf(wrapper)()
+        .find(one => one.label === 'Unhide in this chat')
+        .command()
+
+      expect(chats.getChatById(CHAT).shownIds).toEqual([sheet.id])
+      expect(chats.getChatById(CHAT).hiddenIds).toEqual([shelf.id])
     })
 
     it('hides from the row, and shows again from the eye', async () => {
@@ -981,40 +1071,6 @@ describe('DocumentNode', () => {
       await eye().trigger('click')
       expect(chats.getChatById(CHAT).shownIds).toBeUndefined()
       expect(chats.getChatById(CHAT).hiddenIds).toEqual([shelf.id])
-    })
-
-    it('has no toggles without a chat, on the project’s sight, or on what every chat is kept from', () => {
-      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
-      expect(mountNode(chapter.id).find('[data-toggle]').exists()).toBe(false)
-
-      // The root's own row: the rows under it are its children's.
-      const root = mountNode('root_story_1', { chatId: CHAT, canDelete: false }).find('.group')
-      expect(root.find('[data-toggle="pin"]').exists()).toBe(true)
-      expect(root.find('[data-toggle="sight"]').exists()).toBe(false)
-
-      api.setHidden(chapter.id, true)
-      expect(mountNode(chapter.id, { chatId: CHAT }).find('[data-toggle]').exists()).toBe(false)
-    })
-
-    it('does not open the document, or keep its tab, from a toggle', async () => {
-      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
-      const wrapper = mountNode(chapter.id, { chatId: CHAT })
-
-      await wrapper.find('[data-toggle="pin"]').trigger('click')
-      await wrapper.find('[data-toggle="pin"]').trigger('dblclick')
-
-      expect(wrapper.emitted('open')).toBeUndefined()
-    })
-
-    it('pins in place of a hide, not beside it', async () => {
-      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
-      chats.updateChat(CHAT, { hiddenIds: [chapter.id] })
-      const wrapper = mountNode(chapter.id, { chatId: CHAT })
-
-      await wrapper.find('[data-toggle="pin"]').trigger('click')
-
-      expect(chats.getChatById(CHAT).pinnedIds).toEqual([chapter.id])
-      expect(chats.getChatById(CHAT).hiddenIds).toBeUndefined()
     })
   })
 
@@ -1193,25 +1249,6 @@ describe('DocumentNode', () => {
       const buttons = folder.findAll('button')
       expect(buttons.length).toBeGreaterThan(1)
       for (const button of buttons) expect(button.attributes('tabindex')).toBe('-1')
-    })
-
-    it('offers the chat’s marks on the menu opened from the keys, which cannot reach the toggles', async () => {
-      const chapter = api.createTextDocument('manuscript_story_1', 'Chapter 1')
-      clearChatsInstances()
-      useChatsStore().chats.set('chat_1', { id: 'chat_1', storyId: 'story_1', title: 'Chat' })
-      const wrapper = mountNode(chapter.id, { chatId: 'chat_1' })
-      const labels = () =>
-        wrapper
-          .findComponent({ name: 'ContextMenu' })
-          .props('model')
-          .map(item => item.label)
-
-      await wrapper.find('.group').trigger('contextmenu')
-      expect(labels()).not.toContain('Pin to chat')
-
-      await wrapper.find('.group').trigger('keydown', { key: 'ContextMenu' })
-      expect(labels()).toContain('Pin to chat')
-      expect(labels()).toContain('Hide from this chat')
     })
 
     it('gives the focus back to the row when a menu it opened shuts', async () => {
@@ -1670,26 +1707,11 @@ describe('DocumentNode', () => {
         .map(item => item.label)
         .filter(Boolean)
 
-    it('offers Explore on a folder and on the project, and on nothing else', () => {
+    it('offers no Explore: exploring is a chat’s, on its model', () => {
       const folder = api.createFolder('notes_story_1', 'Places')
-      const text = api.createTextDocument('notes_story_1', 'Elara')
 
-      expect(labelsOf(mountNode(folder.id))).toContain('Explore…')
-      expect(labelsOf(mountNode('root_story_1', { canDelete: false }))).toContain('Explore…')
-      expect(labelsOf(mountNode(text.id))).not.toContain('Explore…')
-
-      api.setHidden(folder.id, true)
       expect(labelsOf(mountNode(folder.id))).not.toContain('Explore…')
-    })
-
-    it('asks its tree to explore it', () => {
-      const wrapper = mountNode('notes_story_1')
-      wrapper
-        .findComponent({ name: 'ContextMenu' })
-        .props('model')
-        .find(item => item.label === 'Explore…')
-        .command()
-      expect(wrapper.emitted('explore')).toEqual([['notes_story_1']])
+      expect(labelsOf(mountNode('root_story_1', { canDelete: false }))).not.toContain('Explore…')
     })
 
     it('says so on the spinner while it is being explored', async () => {

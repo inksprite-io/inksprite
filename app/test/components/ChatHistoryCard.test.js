@@ -19,9 +19,9 @@ vi.mock('../../src/stores/syncStore', () => ({
   useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
-const mountCard = chatId =>
+const mountCard = (chatId, props = {}) =>
   mount(ChatHistoryCard, {
-    props: { chatId, storyId: 'story_1' },
+    props: { chatId, storyId: 'story_1', ...props },
     global: { plugins: [PrimeVue, ConfirmationService] },
   })
 
@@ -35,6 +35,12 @@ describe('ChatHistoryCard', () => {
     setActivePinia(createPinia())
     clearChatsInstances()
     chat = useChatsStore().createChat('story_1', 'Plot holes')
+  })
+
+  it('marks a chat the model is working in, or one it finished in unseen', () => {
+    expect(mountCard(chat.id, { busy: true }).find('[data-mark="busy"]').exists()).toBe(true)
+    expect(mountCard(chat.id, { unread: true }).find('[data-mark="unread"]').exists()).toBe(true)
+    expect(mountCard(chat.id).find('[data-mark]').exists()).toBe(false)
   })
 
   it('opens the chat on a plain click', async () => {
@@ -79,6 +85,24 @@ describe('ChatHistoryCard', () => {
 
     // Right-clicking the input is how you paste a title; that is the browser's.
     expect(wrapper.findComponent({ name: 'ContextMenu' }).emitted('before-show')).toBeUndefined()
+  })
+
+  it('ends a fork’s wait for a name when the writer names it', async () => {
+    const store = useChatsStore()
+    store.updateChat(chat.id, { title: 'Plot holes - forked', nameAfter: 'msg_last' })
+    const wrapper = mountCard(chat.id)
+    await wrapper
+      .findComponent({ name: 'Menu' })
+      .props('model')
+      .find(item => item.label === 'Rename')
+      .command()
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('input').setValue('The second act')
+    await wrapper.find('input').trigger('keyup', { key: 'Enter' })
+
+    expect(store.getChatById(chat.id)).toMatchObject({ title: 'The second act' })
+    expect(store.getChatById(chat.id).nameAfter).toBeUndefined()
   })
 
   it('leaves exporting to the list, which owns the files', () => {

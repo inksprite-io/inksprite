@@ -329,12 +329,18 @@ describe('EditorMenu', () => {
     })
   })
 
-  it('inserts a picture, a table, a rule or a code block', async () => {
+  it('inserts a picture, a table, a rule, a code block or a formula', async () => {
     const view = viewOf('Nothing flagged here.', [])
     const { wrapper } = mountMenu()
     await openAt(wrapper, view, 3)
     const insert = item(wrapper, 'Insert')
-    expect(labels(insert.items)).toEqual(['Picture…', 'Table', 'Horizontal rule', 'Code block'])
+    expect(labels(insert.items)).toEqual([
+      'Picture…',
+      'Table',
+      'Horizontal rule',
+      'Code block',
+      'Formula',
+    ])
     insert.items[0].command()
     expect(wrapper.emitted('insert-picture')).toHaveLength(1)
     await insert.items[1].command()

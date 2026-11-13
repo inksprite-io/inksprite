@@ -293,6 +293,13 @@ export const ICON_CREDITS = Object.freeze([
     usedAs: ['SettingsIcon'],
   },
   {
+    id: 4927881,
+    title: 'Settings',
+    creator: 'Mohamed Salah Hajji',
+    file: 'noun_Settings_4927881.svg',
+    usedAs: ['SlidersIcon'],
+  },
+  {
     id: 5497891,
     title: 'side navigation',
     creator: 'Gregor Cresnar',
@@ -304,6 +311,13 @@ export const ICON_CREDITS = Object.freeze([
     title: 'sketch',
     creator: 'Corner Pixel',
     file: 'noun-sketch-7247484.svg',
+    usedAs: [],
+  },
+  {
+    id: 8143942,
+    title: 'Sliders',
+    creator: 'Skena Grafis',
+    file: 'noun_Sliders_8143942.svg',
     usedAs: [],
   },
   {

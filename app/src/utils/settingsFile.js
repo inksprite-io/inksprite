@@ -23,7 +23,7 @@
  * Design: `.llm/settings_import_design.md`.
  */
 
-import { BUILT_IN_PROVIDERS } from '../ai/providers.js'
+import { BUILT_IN_PROVIDERS, untouchedBuiltIn } from '../ai/providers.js'
 import { DEFAULT_PRESET_ID } from '../ai/defaults.js'
 
 /** @typedef {import('./backup.js').TableData} TableData */
@@ -32,7 +32,7 @@ import { DEFAULT_PRESET_ID } from '../ai/defaults.js'
 /**
  * The app tables a setup is made of, in the order the export lists them.
  *
- * @typedef {'aiProviders'|'aiProfiles'|'chatProfiles'|'mcpServers'|'skills'|'skillWordings'|'webSearch'} SettingsTable
+ * @typedef {'aiProviders'|'aiProfiles'|'chatProfiles'|'mcpServers'|'skills'|'webSearch'} SettingsTable
  *
  * @type {SettingsTable[]}
  */
@@ -42,7 +42,6 @@ export const SETTINGS_TABLES = [
   'chatProfiles',
   'mcpServers',
   'skills',
-  'skillWordings',
   'webSearch',
 ]
 
@@ -50,12 +49,12 @@ export const SETTINGS_TABLES = [
  * The settings kept outside the database, in the groups the export offers
  * them: each group is one item.
  *
- * @typedef {'aiPreset'|'startingProfiles'|'narration'|'workflows'|'preferences'|'spelling'} SettingsGroup
+ * @typedef {'builtInProfiles'|'startingProfiles'|'narration'|'workflows'|'preferences'|'spelling'} SettingsGroup
  *
  * @type {Record<SettingsGroup, Array<keyof BackedUpSettings>>}
  */
 export const SETTINGS_GROUPS = {
-  aiPreset: ['aiPreset'],
+  builtInProfiles: ['builtInProfiles'],
   startingProfiles: ['chatProfileId', 'roleplayProfileId'],
   narration: ['narration'],
   workflows: ['workflows'],
@@ -66,11 +65,10 @@ export const SETTINGS_GROUPS = {
     'askBeforeExploring',
     'roleplay',
     'python',
-    'pythonProfiles',
     'pythonTimeLimit',
+    'web',
     'nsfwProfiles',
     'blurNsfw',
-    'experimentalSkills',
     'highlightSpeakers',
   ],
   spelling: ['spelling'],
@@ -96,7 +94,6 @@ export const KINDS = {
   chatProfiles: { heading: 'Chat profiles', one: 'chat profile', many: 'chat profiles' },
   mcpServers: { heading: 'MCP servers', one: 'MCP server', many: 'MCP servers' },
   skills: { heading: 'Skills', one: 'skill', many: 'skills' },
-  skillWordings: { heading: 'Skill wordings', one: 'skill wording', many: 'skill wordings' },
   webSearch: { heading: 'Web search', one: '', many: '' },
   settings: { heading: 'App settings', one: '', many: '' },
 }
@@ -107,10 +104,10 @@ export const KINDS = {
  * @type {Record<SettingsGroup, {label: string, phrase: string}>}
  */
 const GROUP_NAMES = {
-  aiPreset: { label: 'Preset in use', phrase: 'the preset in use' },
+  builtInProfiles: { label: 'Built-in profiles', phrase: 'your choices on the built-in profiles' },
   startingProfiles: { label: 'Profiles chats start on', phrase: 'the profiles chats start on' },
   narration: { label: 'Narration', phrase: 'the narration connection' },
-  workflows: { label: 'Workflows', phrase: 'the workflows' },
+  workflows: { label: 'Convert to Markdown', phrase: 'the model Convert uses' },
   preferences: { label: 'Preferences', phrase: 'your preferences' },
   spelling: { label: 'Spelling', phrase: 'your spelling settings' },
 }
@@ -136,6 +133,7 @@ const GROUP_NAMES = {
  * @returns {string|undefined}
  */
 export function rowId(table, row) {
+  // The legacy wordings, which sync still carries, are known by their skill.
   const id = table === 'skillWordings' ? row?.name : row?.id
   return typeof id === 'string' && id ? id : undefined
 }
@@ -162,21 +160,6 @@ function everyInstallHas(table, id) {
 }
 
 /**
- * Whether a built-in connection is as every install makes it, with nothing
- * of the writer's in it to carry: no key, no routing, its own address.
- *
- * @param {any} provider
- * @returns {boolean}
- */
-export function untouchedBuiltIn(provider) {
-  const builtIn = BUILT_IN_PROVIDERS.find(entry => entry.id === provider.id)
-  if (!builtIn) return false
-  return (
-    !provider.apiKey && !provider.routing && (provider.endpoint || '') === (builtIn.endpoint || '')
-  )
-}
-
-/**
  * What a row is called in the export's list and in a sentence.
  *
  * @param {SettingsTable} table
@@ -185,7 +168,6 @@ export function untouchedBuiltIn(provider) {
  */
 function rowName(table, row) {
   if (table === 'webSearch') return 'Web search'
-  if (table === 'skillWordings') return `/${row.name}`
   return typeof row.name === 'string' && row.name ? row.name : rowId(table, row) || ''
 }
 
@@ -213,6 +195,10 @@ export function settingsItems(tables, settings) {
       }
       if (table === 'aiProfiles' && row.providerId) {
         item.needs = [itemKey('aiProviders', row.providerId)]
+      }
+      // A profile's chats start on its model, on its connection.
+      if (table === 'chatProfiles' && row.settings?.providerId) {
+        item.needs = [itemKey('aiProviders', row.settings.providerId)]
       }
       items.push(item)
     }
@@ -250,7 +236,11 @@ function settingsNeeds(group, settings) {
   const add = (table, id) => {
     if (typeof id === 'string' && id) needs.push(itemKey(table, id))
   }
-  if (group === 'aiPreset') add('aiProfiles', settings.aiPreset)
+  if (group === 'builtInProfiles') {
+    for (const choices of Object.values(settings.builtInProfiles || {})) {
+      add('aiProviders', choices?.providerId)
+    }
+  }
   if (group === 'startingProfiles') {
     add('chatProfiles', settings.chatProfileId)
     add('chatProfiles', settings.roleplayProfileId)
@@ -606,7 +596,7 @@ function itemPhrases(items) {
 
 /**
  * What an import adds and changes, in a sentence or two: "Adds the
- * connection Work proxy and the preset Work. Changes the preset in use."
+ * connection Work proxy and the preset Work. Changes the narration connection."
  *
  * @param {SettingsImport} plan
  * @param {{done?: boolean}} [options] - Said of an import that has happened
@@ -626,7 +616,7 @@ export function describeImport(plan, { done = false } = {}) {
 
 /**
  * What taking a selection adds and changes, in a sentence or two: "Adds the
- * project Thief and the connection Work proxy. Changes the preset in use."
+ * project Thief and the connection Work proxy. Changes the narration connection."
  *
  * @param {{projects: string[], cards: string[], plan: Pick<SettingsImport, 'added'|'changed'>}} selection -
  *   The names of its projects and cards, and what its settings change here

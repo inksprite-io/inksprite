@@ -2,73 +2,51 @@
 
 ### Table of Contents
 
-- [GUIDE_URL][1]
-- [LINK][2]
-- [HEADING][3]
-- [components][4]
-- [Component Structure][5]
-  - [Layout Components][6]
-  - [Feature Components][7]
-  - [Icon Components][8]
-- [Component Patterns][9]
-  - [Examples][10]
-- [components/writer/layout/layout][11]
-- [PANELS][12]
-  - [][13]
-  - [][14]
-  - [][15]
-- [Panel][16]
-- [][17]
-- [][18]
-- [][19]
-- [][20]
-- [][21]
-- [AI_SIDEBAR_TABS][22]
-- [AI_SIDEBAR_TABS][23]
-- [CHATS][24]
-- [DEFAULT_LAYOUT][25]
-- [NO_PROJECT_LAYOUT][26]
-- [CONTENT_PANELS][27]
-- [normalizeLayout][28]
-  - [Parameters][29]
-- [isSidebarTab][30]
-  - [Parameters][31]
-- [][32]
-- [selectSidebarTab][33]
-  - [Parameters][34]
-- [canHide][35]
-  - [Parameters][36]
-- [togglePanel][37]
-  - [Parameters][38]
-- [withoutAI][39]
-  - [Parameters][40]
-- [keptWithoutAI][41]
-  - [Parameters][42]
-- [ROW_SIZES][43]
-- [keptSizes][44]
-  - [Parameters][45]
-- [shownLayout][46]
-  - [Parameters][47]
-- [importItems][48]
-  - [Parameters][49]
+- [components/common/sectionHeading][1]
+- [SECTION_HEADING][2]
+- [useSectionHeading][3]
+- [components/common/settingsLook][4]
+- [settingsLook][5]
+  - [Parameters][6]
+- [components][7]
+- [Component Structure][8]
+  - [Layout Components][9]
+  - [Feature Components][10]
+  - [Icon Components][11]
+- [Component Patterns][12]
+  - [Examples][13]
 
-## GUIDE_URL
+## components/common/sectionHeading
 
-Where the welcome points, and how its words look.
+Where a section of a `SectionLayout` puts buttons of its own,
+beside its heading: Settings › Skills' plus and import. A section shown
+anywhere else has none to put them in, and keeps them where it is.
 
-Type: [string][50]
+## SECTION_HEADING
 
-## LINK
+The selector of the place beside the open section's heading.
 
-A link, or a button that reads as one.
+## useSectionHeading
 
-Type: [string][50]
+The place beside the heading of the section this is in, for a `Teleport`
+to; null outside a `SectionLayout`.
 
-## HEADING
+Returns **([string][14] | null)**&#x20;
 
-A heading inside a section.
+## components/common/settingsLook
 
-Type: [string][50]
+How a dialog looks like Settings: its header on the dialog's
+own colour, its body on the lighter one Settings' sections sit on, and a
+rule over its footer, as the welcome's. For PrimeVue Dialog's `pt`.
+
+## settingsLook
+
+### Parameters
+
+- `body` **[string][14]?** More classes for the body, as a dialog of a fixed
+  size lays it out (optional, default `''`)
+
+Returns **{content: {class: [string][14]}, footer: {class: [string][14]}}**&#x20;
 
 ## components
 
@@ -164,280 +142,17 @@ All components follow Vue 3 Composition API patterns:
     :story="currentStory"
 ```
 
-## components/writer/layout/layout
-
-The writer's panel arrangement: which of the sidebar, the editor
-and the chat are showing, and which list the sidebar is on — the outline,
-the search, the chats, the narration of the open document, or the
-project's comments.
-It is kept in each project's view rather than app-wide, so each project
-reopens the way it was left: an adventure chat-only, a novel with the
-editor beside its chat.
-
-The rail picks the sidebar's list, and picking the list showing hides the
-sidebar; the editor and the chat each hide the other from a toggle at the
-edge of their header. The sidebar's width is its own, and the editor and
-the chat divide the rest. In a window too narrow for all three, the sidebar
-and the chat take turns beside the editor. With the AI switched off there
-is no chat and no narration, and the editor is the one panel. The rules for
-all of it are here, as pure functions over the layout.
-
-## PANELS
-
-###
-
-Type: [Panel][16]
-
-###
-
-Type: [Panel][16]
-
-###
-
-Type: [Panel][16]
-
-## Panel
-
-Type: (`"sidebar"` | `"editor"` | `"chat"`)
-
-##
-
-Type: `"outline"`
-
-##
-
-Type: `"search"`
-
-##
-
-Type: `"chats"`
-
-##
-
-Type: `"narration"`
-
-##
-
-Type: `"comments"`
-
-## AI_SIDEBAR_TABS
-
-## AI_SIDEBAR_TABS
-
-The lists that are the AI's, which go when it is switched off.
-
-## CHATS
-
-Type: [Array][51]\<SidebarTab>
-
-## DEFAULT_LAYOUT
-
-Type: StoryLayout
-
-## NO_PROJECT_LAYOUT
-
-The arrangement with no project open: no sidebar, since every list in it is
-a project's, and room to say so. Nothing here is the writer's to change
-until a project is.
-
-Type: StoryLayout
-
-## CONTENT_PANELS
-
-The panels whose content the writer is working in, as opposed to picking from.
-
-## normalizeLayout
-
-A stored layout, or anything else, made whole. Missing fields take the
-default, and a record that shows neither content panel gets the editor back,
-so nothing that was saved can open onto an empty screen.
-
-### Parameters
-
-- `stored` **(Partial\<StoryLayout> | null | [undefined][52])**&#x20;
-
-Returns **StoryLayout**&#x20;
-
-## isSidebarTab
-
-### Parameters
-
-- `value` **unknown**&#x20;
-
-##
-
-Type: SidebarTab
-
-## selectSidebarTab
-
-The layout after a list is picked on the rail. Picking a list is asking to
-see it, so the sidebar shows on it — unless it is the list already showing,
-in which case the writer is asking for it to go: the sidebar hides, on that
-list, so the next pick brings it straight back.
-
-### Parameters
-
-- `layout` **StoryLayout**&#x20;
-- `tab` **SidebarTab**&#x20;
-
-Returns **StoryLayout**&#x20;
-
-## canHide
-
-Whether the panel can be hidden right now. The editor and the chat are never
-both hidden: the last one showing stays.
-
-### Parameters
-
-- `layout` **StoryLayout**&#x20;
-- `panel` **[Panel][16]**&#x20;
-
-Returns **[boolean][53]**&#x20;
-
-## togglePanel
-
-The layout with one panel shown or hidden.
-
-Hiding a content panel while the sidebar is on its list moves the sidebar to
-the other's — the chats when the editor goes, the outline when the chat
-does — since that is what the writer is about to look for. Any other list,
-and showing a panel, leave the tab where it is. A toggle that would hide the
-last content panel changes nothing.
-
-### Parameters
-
-- `layout` **StoryLayout**&#x20;
-- `panel` **[Panel][16]**&#x20;
-
-Returns **StoryLayout**&#x20;
-
-## withoutAI
-
-What of a layout there is with the AI switched off: the editor, alone
-beside the sidebar, and the sidebar on the outline where it was on a list
-of the AI's. The project's own layout is not changed by it, so switching
-the AI back on brings its chat back as it was.
-
-### Parameters
-
-- `layout` **StoryLayout**&#x20;
-
-Returns **StoryLayout**&#x20;
-
-## keptWithoutAI
-
-What to keep of a change made to the layout while the AI is switched off:
-the sidebar as the writer left it, and the chat and the editor as they were
-before, since they were not the writer's to change then.
-
-### Parameters
-
-- `next` **StoryLayout** The change, made to what showed
-- `kept` **StoryLayout** The project's layout as it was
-
-Returns **StoryLayout**&#x20;
-
-## ROW_SIZES
-
-Starting widths, as percentages, for the sidebar against the content and,
-within the content, for the editor against the chat. A panel hidden leaves
-the whole of its splitter to the other and comes back to the split as it
-was; what the writer drags a splitter to is kept from one session to the
-next, so these matter only the first time.
-
-## keptSizes
-
-The widths a splitter was last dragged to, as kept, or the starting ones
-when what is kept is not a width for each of its panels: nothing yet, or
-something an older version or another hand left there.
-
-### Parameters
-
-- `kept` **unknown** What was read back from storage
-- `starting` **[Array][51]<[number][54]>** The splitter's starting widths, one per panel
-
-Returns **[Array][51]<[number][54]>**&#x20;
-
-## shownLayout
-
-What of a layout shows in the window. In a narrow one the sidebar and the
-chat take turns beside the editor: with all three on, the chat folds away
-while the sidebar is open, and comes back when it closes. Only what shows
-changes; the layout is left as the writer set it, so a wider window shows
-all three again.
-
-### Parameters
-
-- `layout` **StoryLayout**&#x20;
-- `narrow` **[boolean][53]** Whether the window is too narrow for all three;
-  see useScreenSize
-
-Returns **StoryLayout**&#x20;
-
-## importItems
-
-The ways into a folder, as menu items: files chosen together, a folder whole
-with the folders inside it, a character card from the library, Google
-Drive, and a codebase. A folder's Import submenu offers them, and so does
-the Import button at the top of the outline, for the project's top; one
-list, so the two can't drift apart.
-
-### Parameters
-
-- `on` **[Object][55]** What each does
-
-[1]: #guide_url
-[2]: #link
-[3]: #heading
-[4]: #components
-[5]: #component-structure
-[6]: #layout-components
-[7]: #feature-components
-[8]: #icon-components
-[9]: #component-patterns
-[10]: #examples
-[11]: #componentswriterlayoutlayout
-[12]: #panels
-[13]: #
-[14]: #-1
-[15]: #-2
-[16]: #panel
-[17]: #-3
-[18]: #-4
-[19]: #-5
-[20]: #-6
-[21]: #-7
-[22]: #ai_sidebar_tabs
-[23]: #ai_sidebar_tabs-1
-[24]: #chats
-[25]: #default_layout
-[26]: #no_project_layout
-[27]: #content_panels
-[28]: #normalizelayout
-[29]: #parameters
-[30]: #issidebartab
-[31]: #parameters-1
-[32]: #-8
-[33]: #selectsidebartab
-[34]: #parameters-2
-[35]: #canhide
-[36]: #parameters-3
-[37]: #togglepanel
-[38]: #parameters-4
-[39]: #withoutai
-[40]: #parameters-5
-[41]: #keptwithoutai
-[42]: #parameters-6
-[43]: #row_sizes
-[44]: #keptsizes
-[45]: #parameters-7
-[46]: #shownlayout
-[47]: #parameters-8
-[48]: #importitems
-[49]: #parameters-9
-[50]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[51]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[52]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[53]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[54]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[55]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[1]: #componentscommonsectionheading
+[2]: #section_heading
+[3]: #usesectionheading
+[4]: #componentscommonsettingslook
+[5]: #settingslook
+[6]: #parameters
+[7]: #components
+[8]: #component-structure
+[9]: #layout-components
+[10]: #feature-components
+[11]: #icon-components
+[12]: #component-patterns
+[13]: #examples
+[14]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String

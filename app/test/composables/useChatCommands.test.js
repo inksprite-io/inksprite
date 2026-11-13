@@ -2,9 +2,19 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useChatCommands } from '@/composables/useChatCommands'
-import { setExperimentalSkills, setLibrarySkills } from '@/ai/skills/index.js'
+import { setLibrarySkills, setTrialSkills } from '@/ai/skills/index.js'
+import { TRIAL_SKILLS } from '../../harness/skills/trials.js'
 
 vi.mock('@/composables/useChats', () => ({ useChats: vi.fn() }))
+
+// The project's documents, by the path a mention names: what a turn attaches.
+const attachable = vi.hoisted(() => new Map())
+vi.mock('@/ai/tools/documents.js', async original => ({
+  ...(await original()),
+  attachedDocuments: vi.fn(async (_story, _chat, paths) =>
+    paths.flatMap(path => (attachable.has(path) ? [attachable.get(path)] : []))
+  ),
+}))
 
 describe('useChatCommands', () => {
   const storyId = 'story_1'
@@ -15,8 +25,8 @@ describe('useChatCommands', () => {
   beforeEach(async () => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
-    // Interpret and Write are here, as in an app with them switched on.
-    setExperimentalSkills(['interpret', 'write'])
+    // Interpret and Write are here, as in the harness, which tunes them.
+    setTrialSkills(TRIAL_SKILLS)
 
     chatsApi = {
       addMessage: vi.fn().mockReturnValue({ id: 'msg_1', role: 'user', content: '' }),
@@ -50,6 +60,59 @@ describe('useChatCommands', () => {
     expect(chatsApi.updateMessage).not.toHaveBeenCalled()
   })
 
+  describe('a document attached', () => {
+    const cast = { id: 'd1', path: 'Notes/Cast', hash: 'h1', text: 'A knight.' }
+
+    beforeEach(() => {
+      attachable.clear()
+      attachable.set('/Notes/Cast', cast)
+    })
+
+    it('is copied onto the piece that mentions it, and the words left as typed', async () => {
+      const { spoken } = await commands.submit('Is @[Cast](</Notes/Cast>) right?')
+
+      expect(spoken).toBe('Is @[Cast](</Notes/Cast>) right?')
+      expect(chatsApi.addMessage).toHaveBeenCalledWith(
+        chatId,
+        'user',
+        'Is @[Cast](</Notes/Cast>) right?',
+        null,
+        [{ type: 'text', content: 'Is @[Cast](</Notes/Cast>) right?', attachments: [cast] }]
+      )
+    })
+
+    it('attaches nothing for a mention of no document', async () => {
+      await commands.submit('Is @[Plan](</Notes/Plan>) right?')
+
+      const [, , , , segments] = chatsApi.addMessage.mock.calls[0]
+      expect(segments).toEqual([{ type: 'text', content: 'Is @[Plan](</Notes/Plan>) right?' }])
+    })
+
+    it('is copied again, as it stands now, when the turn is written again', async () => {
+      chatsApi.getMessageById.mockReturnValue({
+        value: {
+          id: 'msg_1',
+          role: 'user',
+          content: 'Is @[Cast](</Notes/Cast>) right?',
+          segments: [
+            { type: 'text', content: 'Is @[Cast](</Notes/Cast>) right?', attachments: [cast] },
+          ],
+        },
+      })
+      const now = { ...cast, hash: 'h2', text: 'A squire.' }
+      attachable.set('/Notes/Cast', now)
+
+      await commands.revise('msg_1', null, 'Is @[Cast](</Notes/Cast>) wrong?')
+
+      expect(chatsApi.updateMessage).toHaveBeenCalledWith('msg_1', {
+        segments: [
+          { type: 'text', content: 'Is @[Cast](</Notes/Cast>) wrong?', attachments: [now] },
+        ],
+        content: 'Is @[Cast](</Notes/Cast>) wrong?',
+      })
+    })
+  })
+
   it("writes an answer in as the writer's own turn", async () => {
     // Their turn because they chose to ask, and because it is established
     // fact by the time the model reads it.
@@ -70,30 +133,38 @@ describe('useChatCommands', () => {
     })
   })
 
-  it('writes a character line as the writer saying it, because they did', async () => {
-    await commands.submit('@cody I quickly hide in the closet.')
+  it('sends a line that opens with @ as what the writer said', async () => {
+    // `@name` was somebody speaking, and is prose now that `@` attaches.
+    const { spoken } = await commands.submit('@cody I quickly hide in the closet.')
 
-    const [, role, content, , segments] = chatsApi.addMessage.mock.calls[0]
-    expect(role).toBe('user')
-    expect(content).toBe('<cody>\nI quickly hide in the closet.\n</cody>')
-    expect(segments[0].command).toMatchObject({
-      name: 'cody',
-      result: 'I quickly hide in the closet.',
-    })
+    expect(spoken).toBe('@cody I quickly hide in the closet.')
+    expect(chatsApi.addMessage).toHaveBeenCalledWith(
+      chatId,
+      'user',
+      '@cody I quickly hide in the closet.',
+      null,
+      [{ type: 'text', content: '@cody I quickly hide in the closet.' }]
+    )
   })
 
-  it('lets a scene be typed as the several people in it', async () => {
-    const { spoken } = await commands.submit(
-      '@cody I quickly hide in the closet.\n@emily "Ugh! I was having a nap!"'
-    )
+  it('keeps a character’s line from before when the turn around it is written again', async () => {
+    const cody = { name: 'cody', character: true, input: 'I hide.', result: 'I hide.' }
+    chatsApi.getMessageById.mockReturnValue({
+      value: {
+        id: 'msg_1',
+        role: 'user',
+        content: '<cody>\nI hide.\n</cody>',
+        segments: [{ type: 'command', command: cody }],
+      },
+    })
 
-    // One turn, two people in it.
-    expect(chatsApi.addMessage).toHaveBeenCalledTimes(1)
-    expect(chatsApi.addMessage.mock.calls[0][2]).toBe(
-      '<cody>\nI quickly hide in the closet.\n</cody>\n\n<emily>\n"Ugh! I was having a nap!"\n</emily>'
-    )
-    // Somebody acted, so the turn has been taken and the table is waiting.
-    expect(spoken).toBe('I quickly hide in the closet.\n\n"Ugh! I was having a nap!"')
+    await commands.revise('msg_1', null, '<cody>\nI hide.\n</cody>\n\nThen I wait.')
+
+    // Prose now, and the same words to the model.
+    expect(chatsApi.updateMessage).toHaveBeenCalledWith('msg_1', {
+      segments: [{ type: 'text', content: '<cody>\nI hide.\n</cody>\n\nThen I wait.' }],
+      content: '<cody>\nI hide.\n</cody>\n\nThen I wait.',
+    })
   })
 
   it('asks for no turn when there is nothing but tools', async () => {
@@ -320,13 +391,16 @@ describe('useChatCommands', () => {
       value: { id: 'msg_i', segments: [{ type: 'command', command: { name: 'interpret' } }] },
     })
 
-    await commands.submit('@emily I check the fridge\n/interpret How does she react?', { consult })
+    await commands.submit('I check the fridge\n/interpret How does she react?', { consult })
 
     // One message, in the writer's voice, holding both.
     expect(chatsApi.addMessage).toHaveBeenCalledTimes(1)
     const [, role, , , segments] = chatsApi.addMessage.mock.calls[0]
     expect(role).toBe('user')
-    expect(segments.map(segment => segment.command.name)).toEqual(['emily', 'interpret'])
+    expect(segments.map(segment => segment.command?.name ?? segment.type)).toEqual([
+      'text',
+      'interpret',
+    ])
   })
 
   it('refuses to write past a command that answers on a turn of its own', async () => {
@@ -395,6 +469,40 @@ describe('useChatCommands', () => {
       await commands.submit('/compact(3)', { consult: asked })
 
       expect(asked.mock.calls[0][2]).toMatchObject({ before: 'msg_c', past: 3 })
+    })
+
+    it('says how much of the top it leaves standing, where its profile keeps more than one message', async () => {
+      chatOf(turn('a'), turn('b'), turn('c'), turn('d'), turn('e'))
+
+      await commands.submit('/compact(8)', { consult: consult(), opening: 2 })
+
+      // Three turns of room under an opening of two, not four.
+      expect(chatsApi.moveMessage).toHaveBeenCalledWith('msg_c', 3)
+      expect(chatsApi.updateMessage.mock.calls[0][1].metadata).toMatchObject({ opening: 2 })
+    })
+
+    it('says nothing of the opening for a chat that keeps one message', async () => {
+      chatOf(turn('a'), turn('b'), turn('c'))
+
+      await commands.submit('/compact', { consult: consult() })
+
+      expect(chatsApi.updateMessage.mock.calls[0][1].metadata).not.toHaveProperty('opening')
+    })
+
+    it('keeps what a summary said of the opening when it is written again', async () => {
+      chatOf(turn('a'), turn('b'), turn('c'))
+      chatsApi.getMessageById.mockReturnValue({
+        value: {
+          id: 'msg_c',
+          role: 'assistant',
+          metadata: { command: { name: 'compact', input: '', keep: 0 }, opening: 2 },
+        },
+      })
+
+      await commands.rerun('msg_c', null, { consult: consult() })
+
+      const written = chatsApi.updateMessage.mock.calls.map(call => call[1].metadata)
+      expect(written.filter(Boolean).every(metadata => metadata.opening === 2)).toBe(true)
     })
 
     it('stays at the end when it keeps nothing', async () => {
@@ -829,31 +937,13 @@ describe('useChatCommands', () => {
       chatsApi.getMessagesForChat.mockReturnValue({ value: messages })
     }
 
-    it('is a message of its own that says what it is, and asks for an answer', async () => {
-      const { spoken } = await commands.submit('/aside What should Mara do next?')
-
-      expect(spoken).toBe('What should Mara do next?')
-      expect(chatsApi.addMessage).toHaveBeenCalledWith(
-        chatId,
-        'user',
-        '<aside>\nWhat should Mara do next?\n</aside>',
-        null,
-        [asked('What should Mara do next?')],
-        { aside: true }
+    it('is asked no more: /fork took its place, and nothing is written', async () => {
+      await expect(commands.submit('/aside What should Mara do next?')).rejects.toThrow(/\/fork/)
+      await expect(commands.submit('I look around.\n/aside What is here?')).rejects.toThrow(
+        /\/fork/
       )
-    })
-
-    it('never joins the turn the writer is taking', async () => {
-      // The rolls are part of the conversation, and the aside is not.
-      standing(
-        { id: 'msg_a', role: 'assistant', content: 'It gives.' },
-        { id: 'msg_u', role: 'user', segments: [piece('I try the door.')] }
-      )
-
-      await commands.submit('/aside Is the door worth it?')
-
+      expect(chatsApi.addMessage).not.toHaveBeenCalled()
       expect(chatsApi.writeTurn).not.toHaveBeenCalled()
-      expect(chatsApi.addMessage.mock.calls[0][5]).toEqual({ aside: true })
     })
 
     it('is never joined by what is said after it', async () => {
@@ -865,13 +955,6 @@ describe('useChatCommands', () => {
       expect(chatsApi.addMessage).toHaveBeenCalledWith(chatId, 'user', 'I step through.', null, [
         piece('I step through.'),
       ])
-    })
-
-    it('refuses anything before it, and writes nothing', async () => {
-      await expect(commands.submit('I look around.\n/aside What is here?')).rejects.toThrow(
-        /message of its own/
-      )
-      expect(chatsApi.addMessage).not.toHaveBeenCalled()
     })
 
     it('is never folded into the writer’s turns around it', () => {
@@ -887,15 +970,14 @@ describe('useChatCommands', () => {
       expect(chatsApi.deleteMessage).toHaveBeenCalledTimes(1)
     })
 
-    it('stays an aside when it is edited, and nothing else becomes one', async () => {
+    it('stays an aside, asked as it was, and nothing else becomes one', async () => {
       chatsApi.getMessageById.mockReturnValue({
         value: { id: 'msg_q', segments: [asked('Now?')], metadata: { aside: true } },
       })
-      await commands.revise('msg_q', null, '/aside Now, or later?')
-      expect(chatsApi.updateMessage.mock.calls[0][1].content).toBe(
-        '<aside>\nNow, or later?\n</aside>'
+      // Asked anew, it would be a new aside.
+      await expect(commands.revise('msg_q', null, '/aside Now, or later?')).rejects.toThrow(
+        /\/fork/
       )
-
       await expect(commands.revise('msg_q', null, 'I step through.')).rejects.toThrow(
         /stays an aside/
       )
@@ -905,30 +987,51 @@ describe('useChatCommands', () => {
       })
       await expect(
         commands.revise('msg_u', null, 'I try the door.\n/aside Should I?')
-      ).rejects.toThrow(/message of its own/)
-      expect(chatsApi.updateMessage).toHaveBeenCalledTimes(1)
+      ).rejects.toThrow(/\/fork/)
+      expect(chatsApi.updateMessage).not.toHaveBeenCalled()
     })
 
-    it('stays asked as one in a fork that brought it into the conversation', async () => {
+    it('can be said plainly in a fork that brought it into the conversation', async () => {
       chatsApi.getMessageById.mockReturnValue({
         value: { id: 'msg_q', segments: [asked('Now?')], metadata: {} },
       })
-      await commands.revise('msg_q', null, '/aside Now, or later?')
-      expect(chatsApi.updateMessage.mock.calls[0][1].content).toBe(
-        '<aside>\nNow, or later?\n</aside>'
-      )
 
       await commands.revise('msg_q', null, 'Now, or later?')
-      expect(chatsApi.updateMessage.mock.calls[1][1].content).toBe('Now, or later?')
+      expect(chatsApi.updateMessage.mock.calls[0][1].content).toBe('Now, or later?')
     })
   })
 
-  describe('with the experimental skills off', () => {
-    beforeEach(() => {
-      setExperimentalSkills([])
+  describe('a fork', () => {
+    // The chat makes the fork from a message that is nothing but /fork,
+    // before anything is submitted; see forkAsked.
+    it('is refused with anything before it, and writes nothing', async () => {
+      await expect(commands.submit('I look around.\n/fork What is here?')).rejects.toThrow(
+        /message of its own/
+      )
+      expect(chatsApi.addMessage).not.toHaveBeenCalled()
     })
 
-    /** A turn holding an interpretation, as one asked before they were switched off. */
+    it('is refused in a turn edited to hold one', async () => {
+      chatsApi.getMessageById.mockReturnValue({
+        value: {
+          id: 'msg_u',
+          role: 'user',
+          segments: [{ type: 'text', content: 'I try the door.' }],
+        },
+      })
+      await expect(
+        commands.revise('msg_u', null, 'I try the door.\n/fork Should I?')
+      ).rejects.toThrow(/message of its own/)
+      expect(chatsApi.updateMessage).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("without the harness's skills", () => {
+    beforeEach(() => {
+      setTrialSkills([])
+    })
+
+    /** A turn holding an interpretation, as one asked before they left the app. */
     const interpreted = () => {
       chatsApi.getMessageById.mockReturnValue({
         value: {
@@ -950,7 +1053,7 @@ describe('useChatCommands', () => {
     }
 
     it('refuses one before a word is written', async () => {
-      await expect(commands.submit('/interpret Who knocks?')).rejects.toThrow(/experimental/)
+      await expect(commands.submit('/interpret Who knocks?')).rejects.toThrow()
       expect(chatsApi.addMessage).not.toHaveBeenCalled()
     })
 
@@ -958,24 +1061,19 @@ describe('useChatCommands', () => {
       const consult = vi.fn()
       interpreted()
 
-      await expect(commands.rerun('msg_1', 1, { consult })).rejects.toThrow(/experimental/)
+      await expect(commands.rerun('msg_1', 1, { consult })).rejects.toThrow()
 
       expect(consult).not.toHaveBeenCalled()
       expect(chatsApi.writeSegment).not.toHaveBeenCalled()
     })
 
-    it('lets a turn holding one be edited, while its line is left alone', async () => {
+    it('refuses an edit of a turn holding one, as it does a line it does not know', async () => {
       interpreted()
 
-      await commands.revise(
-        'msg_1',
-        null,
-        'I wait by the door.\n/interpret Who knocks?\n> A friend.'
-      )
-
-      const [, updates] = chatsApi.updateMessage.mock.calls[0]
-      expect(updates.segments[0].content).toBe('I wait by the door.')
-      expect(updates.segments[1].command.result).toBe('A friend.')
+      await expect(
+        commands.revise('msg_1', null, 'I wait by the door.\n/interpret Who knocks?\n> A friend.')
+      ).rejects.toThrow(/No command called \/interpret/)
+      expect(chatsApi.updateMessage).not.toHaveBeenCalled()
     })
 
     it('refuses an edit that asks one a new question', async () => {
@@ -983,7 +1081,7 @@ describe('useChatCommands', () => {
 
       await expect(
         commands.revise('msg_1', null, 'I wait.\n/interpret Who is it?')
-      ).rejects.toThrow(/experimental/)
+      ).rejects.toThrow()
       expect(chatsApi.updateMessage).not.toHaveBeenCalled()
     })
   })
@@ -1055,7 +1153,7 @@ describe('useChatCommands', () => {
     })
 
     it('keeps a fudged roll at the writer’s number, without the dice', async () => {
-      const roll = { roll: '2d6', dice: { d6: [4, 4] }, modifier: 0, total: 8 }
+      const roll = { roll: '2d6', dice: { d6: [4, 4] }, total: 8 }
       standing(ran({ name: 'roll', input: '2d6', label: '2d6', roll, result: '8' }))
 
       await commands.revise('msg_1', null, '/roll 2d6\n> 12')
@@ -1067,19 +1165,19 @@ describe('useChatCommands', () => {
     })
 
     it('keeps the dice of a roll that came through unchanged', async () => {
-      const roll = { roll: '2d6', dice: { d6: [4, 4] }, modifier: 0, total: 8 }
+      const roll = { roll: '2d6', dice: { d6: [4, 4] }, total: 8 }
       standing(ran({ name: 'roll', input: '2d6', label: '2d6', roll, result: '8' }))
 
-      await commands.revise('msg_1', null, '/roll 2d6\n> d6: 4, 4\n> 8')
+      await commands.revise('msg_1', null, '/roll 2d6\n> 4, 4\n> 8')
 
       expect(chatsApi.updateMessage.mock.calls[0][1].segments[0].command.roll).toEqual(roll)
     })
 
     it('takes dice the writer changed, when the total goes with them', async () => {
-      const roll = { roll: '2d6', dice: { d6: [4, 4] }, modifier: 0, total: 8 }
+      const roll = { roll: '2d6', dice: { d6: [4, 4] }, total: 8 }
       standing(ran({ name: 'roll', input: '2d6', label: '2d6', roll, result: '8' }))
 
-      await commands.revise('msg_1', null, '/roll 2d6\n> d6: 6, 6\n> 12')
+      await commands.revise('msg_1', null, '/roll 2d6\n> 6, 6\n> 12')
 
       expect(chatsApi.updateMessage.mock.calls[0][1].segments[0].command).toMatchObject({
         result: '12',
@@ -1088,24 +1186,44 @@ describe('useChatCommands', () => {
     })
 
     it('works the total out again when a die is changed and the total is not', async () => {
-      const roll = { roll: '2d6', dice: { d6: [4, 4] }, modifier: 0, total: 8 }
+      const roll = { roll: '2d6', dice: { d6: [4, 4] }, total: 8 }
       standing(ran({ name: 'roll', input: '2d6', label: '2d6', roll, result: '8' }))
 
-      await commands.revise('msg_1', null, '/roll 2d6\n> d6: 6, 4\n> 8')
+      await commands.revise('msg_1', null, '/roll 2d6\n> 6, 4\n> 8')
 
       const [, updates] = chatsApi.updateMessage.mock.calls[0]
       expect(updates.segments[0].command).toMatchObject({
         result: '10',
         roll: { dice: { d6: [6, 4] }, total: 10 },
       })
-      expect(updates.content).toBe('<roll>\n2d6\nd6: 6, 4\n10\n</roll>')
+      expect(updates.content).toBe('<roll>\n2d6\n6, 4\n10\n</roll>')
+    })
+
+    it('works out again what a burden die leaves when a die is changed', async () => {
+      const roll = {
+        roll: '3d20b',
+        dice: { d20: [18, 4, 11, 9] },
+        kept: { d20: [4, 11, 9] },
+        total: 24,
+      }
+      standing(ran({ name: 'roll', input: '3d20b', label: '3d20b', roll, result: '24' }))
+
+      // The die that was struck changed, and the strike and the total left behind.
+      await commands.revise('msg_1', null, '/roll 3d20b\n> ~~2~~, 4, 11, 9\n> 24')
+
+      const [, updates] = chatsApi.updateMessage.mock.calls[0]
+      expect(updates.segments[0].command).toMatchObject({
+        result: '15',
+        roll: { dice: { d20: [2, 4, 11, 9] }, kept: { d20: [2, 4, 9] }, total: 15 },
+      })
+      expect(updates.content).toBe('<roll>\n3d20b\n~~11~~, 2, 4, 9\n15\n</roll>')
     })
 
     it('keeps a total changed under dice left as they were, without the dice', async () => {
-      const roll = { roll: '2d6', dice: { d6: [4, 4] }, modifier: 0, total: 8 }
+      const roll = { roll: '2d6', dice: { d6: [4, 4] }, total: 8 }
       standing(ran({ name: 'roll', input: '2d6', label: '2d6', roll, result: '8' }))
 
-      await commands.revise('msg_1', null, '/roll 2d6\n> d6: 4, 4\n> 12')
+      await commands.revise('msg_1', null, '/roll 2d6\n> 4, 4\n> 12')
 
       const [, updates] = chatsApi.updateMessage.mock.calls[0]
       expect(updates.segments[0].command.result).toBe('12')

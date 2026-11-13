@@ -80,7 +80,7 @@ async function main() {
             await there.click(authorize)
             await tab.waitForEvent('close')
           })
-          await page.getByText('Connected to your OpenRouter account').waitFor()
+          await page.locator('[data-setup-wizard] [data-state="connected"]').waitFor()
           await context.storageState({ path: SESSION })
         }
       )
@@ -118,7 +118,7 @@ async function inTab({ url, headed, theme, storageState }, then) {
     await ui.click(button('Connect'))
 
     const opening = page.waitForEvent('popup')
-    await ui.click(button('Connect to OpenRouter'))
+    await ui.click(button('Sign in with OpenRouter'))
     const tab = await opening
     // Settled, as far as can be told: a site that keeps a connection open
     // never goes quiet.

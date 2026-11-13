@@ -1,0 +1,34 @@
+{
+  "fixture": "saltmarsh",
+  "prompt": "harness/prompts/adventure.md",
+  "messages": [
+    {
+      "text": "Before we start, roll my Strength. Roll 4d6 and drop the lowest.",
+      "calls": ["roll_dice"]
+    },
+    {
+      "text": "I swing my boathook at the toll-keeper's dog. I have advantage and +5 to hit. Roll it.",
+      "calls": ["roll_dice"]
+    },
+    {
+      "text": "I climb the sea wall in the fog. In this game we roll three d20s and each 11 or higher is a success. The fog imposes a burden die. Roll it and tell me how many successes I got.",
+      "calls": ["roll_dice"]
+    },
+    {
+      "text": "I try it again with the rope, which gives me two advantage dice instead. Same rules. How many successes?",
+      "calls": ["roll_dice"]
+    },
+    {
+      "text": "/roll 3d20b Does the rope hold?\nSame rules. How many successes did I get on that?",
+      "notCalls": ["roll_dice"]
+    },
+    {
+      "text": "/roll d20a - d20b Opposed check\nThat's my d20 with advantage against the toll-keeper's d20 with a burden. What did each of us roll, and who won?",
+      "notCalls": ["roll_dice"]
+    },
+    {
+      "text": "My alchemist's fire crits the toll-keeper. Roll 2d6+3 and double the whole thing.",
+      "calls": ["roll_dice"]
+    }
+  ]
+}

@@ -4,12 +4,19 @@
  */
 
 import { useAIConfig } from '@/composables/useAIConfig'
+import { useApplicationState } from '@/composables/useApplicationState'
 import { fetch } from '@/platform/fetch.js'
 import { resolveAISettings } from '@/ai/defaults.js'
 import { attributionHeaders, buildCompletionBody, chatCompletionsUrl } from '@/ai/wire.js'
-import { listModels as listProviderModels, listSpeechModels, traitsOf } from '@/ai/models.js'
+import {
+  listModels as listProviderModels,
+  listSpeechModels,
+  nanoGptProvidersOf,
+  traitsOf,
+} from '@/ai/models.js'
 import { streamAnthropic } from '@/ai/anthropic.js'
 import { RATE_LIMITED, RateLimitedError, retryAfterOf, throughGate } from '@/ai/gate.js'
+import { routingFilterOf } from '@/ai/routing.js'
 
 /**
  * @typedef {import('../types/models.js').AIPreset} AIPreset
@@ -21,10 +28,12 @@ import { RATE_LIMITED, RateLimitedError, retryAfterOf, throughGate } from '@/ai/
  * @typedef {Object} AIConfig
  * @property {string} providerId - Provider ID
  * @property {string} model - Model identifier
- * @property {string[]} [allowedProviders] - OpenRouter only: the upstreams
- *   allowed to serve this model. Empty or absent allows any.
- * @property {string[]} [ignoredProviders] - OpenRouter only: upstreams never
- *   routed to for this model, besides the connection's ignored ones.
+ * @property {string[]} [allowedProviders] - OpenRouter and NanoGPT: the
+ *   upstreams allowed to serve this model. Empty or absent allows any.
+ * @property {string[]} [ignoredProviders] - OpenRouter and NanoGPT: upstreams
+ *   never routed to for this model, besides OpenRouter's connection's ignored ones.
+ * @property {boolean} [fallbacks] - Whether others may serve once the
+ *   allowed ones can't; absent, only the allowed ones may.
  */
 
 /**
@@ -111,6 +120,7 @@ function accumulateReasoningDetails(accumulated, deltas) {
 
 /**
  * @typedef {{slug: string, name: string}} OpenRouterProvider
+ * @typedef {import('../ai/models.js').NanoGptProviders} NanoGptProviders
  */
 
 /**
@@ -207,6 +217,40 @@ function listModelProviders(model) {
 }
 
 /**
+ * NanoGPT's answers on which providers serve each model, by model id, kept
+ * for the life of the page as OpenRouter's are.
+ *
+ * @type {Map<string, Promise<NanoGptProviders>>}
+ */
+const nanoGptProvidersPromises = new Map()
+
+/**
+ * Whether NanoGPT lets a model's providers be chosen, and which serve it, so
+ * its settings can offer them with their prices. Public, and not under
+ * NanoGPT's API address: the whole id is one segment of the path.
+ *
+ * @param {string} model - A model id as NanoGPT lists it, `z-ai/glm-5`
+ * @returns {Promise<NanoGptProviders>}
+ * @throws {Error} When the request fails
+ */
+function listNanoGptProviders(model) {
+  if (!nanoGptProvidersPromises.has(model)) {
+    const promise = (async () => {
+      const response = await fetch(
+        `https://nano-gpt.com/api/models/${encodeURIComponent(model)}/providers`
+      )
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      return nanoGptProvidersOf(await response.json())
+    })().catch(error => {
+      nanoGptProvidersPromises.delete(model)
+      throw error
+    })
+    nanoGptProvidersPromises.set(model, promise)
+  }
+  return nanoGptProvidersPromises.get(model)
+}
+
+/**
  * Say what a provider's refusal actually means, when it means the reasoning.
  *
  * Two ways a request gets refused over thinking, and they need different
@@ -223,21 +267,24 @@ function listModelProviders(model) {
  *
  * The third is routing. A connection's policy — the privacy and precision
  * floor it has by default — can exclude every endpoint that serves a model,
- * and so can a preset's allowed providers, when none of them serves the model
- * it was moved to. OpenRouter answers with a 404 that names the filter and
- * nothing else. The writer never set the floor, and may have set the list for
- * another model, so say where both live.
+ * and so can the providers a model is limited to, when none of them serves
+ * it any more. OpenRouter answers with a 404 that names the filter and
+ * nothing else. The writer never set the floor, and may have set the list
+ * long ago, so say where both live. A chat says it in its own words
+ * (`describeFailure`); this is for everywhere else a reply can fail.
  *
  * @param {unknown} reported - What the provider said
- * @param {{sentReasoning: boolean, askedForEffort: boolean, routed?: boolean}} request - What this request carried
+ * @param {{sentReasoning: boolean, askedForEffort: boolean, routingStep?: string}} request -
+ *   What this request carried, and the routing step OpenRouter said left it no endpoint
  * @returns {string}
  */
-function explainFailure(reported, { sentReasoning, askedForEffort, routed = false }) {
+function explainFailure(reported, { sentReasoning, askedForEffort, routingStep }) {
   const message = typeof reported === 'string' ? reported : JSON.stringify(reported)
 
-  if (routed && /no endpoints found/i.test(message)) {
-    console.warn('No endpoint passed the routing policy this request carried:', message)
-    return `${message} — no endpoint for this model passes the routing settings. Check the preset's Allowed providers, or loosen Quantization or Zero data retention in the connection's Provider routing.`
+  const filter = routingFilterOf(routingStep)
+  if (filter === 'connection' || filter === 'model') {
+    console.warn('No endpoint passed the routing this request carried:', message)
+    return `${message} — no provider of this model passes the routing settings. Check the model's Providers, or loosen Quantization or Zero data retention in the connection's Provider routing.`
   }
 
   if (!/signature|thinking|reasoning|effort/i.test(message)) return message
@@ -262,13 +309,16 @@ function explainFailure(reported, { sentReasoning, askedForEffort, routed = fals
  *   listModels: (providerId: string, kind?: import('@/ai/providers.js').ProviderKind) => Promise<AIModel[]>,
  *   listOpenRouterProviders: () => Promise<OpenRouterProvider[]>,
  *   listModelProviders: (model: string) => Promise<OpenRouterProvider[]>,
+ *   listNanoGptProviders: (model: string) => Promise<NanoGptProviders>,
  *   generateChatCompletion: (messages: Array<{role: string, content: string|null, tool_call_id?: string, tool_calls?: ToolCall[], reasoning_details?: ReasoningDetail[]}>, config: AIConfig, onChunk: (chunk: StreamChunk) => void, options?: {tools?: ToolDefinition[], toolChoice?: 'auto'|'none', overrides?: AISettingsOverrides, signal?: AbortSignal}) => Promise<{usage?: {prompt_tokens: number, completion_tokens: number, total_tokens: number}, toolCalls?: ToolCall[], reasoningDetails?: ReasoningDetail[], finishReason?: string|null}>,
  *   validateOpenRouterKey: (apiKey: string) => Promise<boolean>,
- *   exchangeOAuthCode: (code: string, codeVerifier: string) => Promise<string>
+ *   checkOpenRouterKey: (apiKey: string) => Promise<{freeTier: boolean}>,
+ *   checkNanoGptKey: (apiKey: string) => Promise<{balance: number|null}>
  * }}
  */
 export const useAIService = () => {
   const aiConfig = useAIConfig()
+  const app = useApplicationState()
 
   /**
    * List available models for a specific provider
@@ -326,9 +376,14 @@ export const useAIService = () => {
     }
     // Sent when the connection has room for it, and asked again when the
     // service says too many: see ai/gate.js.
-    return throughGate(provider, { urgency: options.urgency, signal: options.signal }, () =>
-      streamCompletion(provider, messages, config, onChunk, options)
+    const result = await throughGate(
+      provider,
+      { urgency: options.urgency, signal: options.signal },
+      () => streamCompletion(provider, messages, config, onChunk, options)
     )
+    // An answer, for the models used lately: see ModelList.
+    app.noteModelUse(provider.id, config.model, result?.usage?.completion_tokens)
+    return result
   }
 
   /**
@@ -373,13 +428,16 @@ export const useAIService = () => {
 
       // The two things in this request a provider can reject for reasons its
       // error message won't explain on its own come back alongside the body.
+      // What the model's list says of it, its makers' samplers among them,
+      // which the request starts from under the writer's changes.
+      const traits = await traitsOf(provider, config.model)
       const { body, sentReasoning, askedForEffort } = buildCompletionBody({
         messages,
         model: config.model,
         provider,
         upstreams: config,
-        settings: resolveAISettings(options.overrides),
-        traits: await traitsOf(provider, config.model),
+        settings: resolveAISettings(options.overrides, traits?.defaults),
+        traits,
         tools: options.tools,
         toolChoice: options.toolChoice,
       })
@@ -399,12 +457,15 @@ export const useAIService = () => {
         }
         const error = await response.json().catch(() => ({ error: 'Connection failed' }))
         const reported = error.error?.message || error.error || `HTTP ${response.status}`
-        throw new Error(
-          explainFailure(reported, {
-            sentReasoning,
-            askedForEffort,
-            routed: Boolean(body.provider),
-          })
+        // With its status, the code a service names its refusal by, and the
+        // routing step OpenRouter says left it no endpoint, for the chat to
+        // say what to do about it.
+        const code = typeof error.error?.code === 'string' ? error.error.code : undefined
+        const step = error.error?.metadata?.failed_routing_step
+        const routingStep = typeof step === 'string' ? step : undefined
+        throw Object.assign(
+          new Error(explainFailure(reported, { sentReasoning, askedForEffort, routingStep })),
+          { status: response.status, ...(code && { code }), ...(routingStep && { routingStep }) }
         )
       }
 
@@ -558,50 +619,64 @@ export const useAIService = () => {
   }
 
   /**
-   * Exchange OAuth authorization code for an API key
-   * @param {string} code - Authorization code from OAuth callback
-   * @param {string} codeVerifier - PKCE code verifier
-   * @returns {Promise<string>} The API key
-   * @throws {Error} When exchange fails
+   * Ask OpenRouter about a key: whether it takes it, and whether the account
+   * has ever bought credits. Its model list is public, so listing models
+   * proves nothing of a key; this does.
+   *
+   * @param {string} apiKey
+   * @returns {Promise<{freeTier: boolean}>}
+   * @throws {Error} With `status` when OpenRouter answered and refused, and
+   *   without it when it couldn't be reached
    */
-  async function exchangeOAuthCode(code, codeVerifier) {
-    try {
-      const response = await fetch('https://openrouter.ai/api/v1/auth/keys', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          code,
-          code_verifier: codeVerifier,
-          code_challenge_method: 'S256',
-        }),
-      })
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: 'Failed to exchange code' }))
-        throw new Error(error.error?.message || error.error || `HTTP ${response.status}`)
-      }
-
-      const data = await response.json()
-
-      if (!data.key) {
-        throw new Error('No API key returned from OAuth exchange')
-      }
-
-      return data.key
-    } catch (error) {
-      console.error('Failed to exchange OAuth code:', error)
-      throw error
+  async function checkOpenRouterKey(apiKey) {
+    const response = await fetch('https://openrouter.ai/api/v1/key', {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${apiKey}` },
+    })
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}))
+      throw Object.assign(
+        new Error(error.error?.message || error.error || `HTTP ${response.status}`),
+        { status: response.status }
+      )
     }
+    const { data } = await response.json().catch(() => ({}))
+    return { freeTier: data?.is_free_tier === true }
+  }
+
+  /**
+   * Ask NanoGPT about a key: its balance, which only an account's own key may
+   * ask. Its model list is public, so listing models proves nothing of a key.
+   *
+   * @param {string} apiKey
+   * @returns {Promise<{balance: number|null}>} In dollars, where it says
+   * @throws {Error} With `status` when NanoGPT answered and refused, and
+   *   without it when it couldn't be reached
+   */
+  async function checkNanoGptKey(apiKey) {
+    const response = await fetch('https://api.nano-gpt.com/api/check-balance', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}` },
+    })
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      throw Object.assign(
+        new Error(data.error?.message || data.message || data.error || `HTTP ${response.status}`),
+        { status: response.status }
+      )
+    }
+    const balance = Number(data.usd_balance)
+    return { balance: Number.isFinite(balance) ? balance : null }
   }
 
   return {
     listModels,
     listOpenRouterProviders,
     listModelProviders,
+    listNanoGptProviders,
     generateChatCompletion,
     validateOpenRouterKey,
-    exchangeOAuthCode,
+    checkOpenRouterKey,
+    checkNanoGptKey,
   }
 }

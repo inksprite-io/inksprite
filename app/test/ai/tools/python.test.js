@@ -19,13 +19,9 @@ import {
   pathNote,
   projectForPython,
   pythonCallTimeout,
-  pythonForChat,
   pythonOffered,
-  pythonProfiles,
-  setPythonProfile,
 } from '@/ai/tools/python.js'
 import { toolRegistry } from '@/ai/tools/registry.js'
-import { DEFAULT_PROFILE_ID } from '@/ai/profiles/index.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 
 /** A document as the chat's view hands it out. */
@@ -135,7 +131,6 @@ beforeEach(() => {
   const state = useApplicationState()
   state.setAiEnabled(true)
   state.setExtension('python', true)
-  state.state.value.system.pythonProfiles = null
   state.setPythonTimeLimit(600)
 })
 
@@ -161,32 +156,6 @@ describe('pythonOffered', () => {
     useApplicationState().setExtension('python', true)
     useApplicationState().setAiEnabled(false)
     expect(pythonOffered()).toBe(false)
-  })
-})
-
-describe('pythonForChat', () => {
-  it('runs Python on Default until the writer chooses the profiles', () => {
-    expect(pythonProfiles()).toEqual([DEFAULT_PROFILE_ID])
-    expect(pythonForChat(null, DEFAULT_PROFILE_ID)).toBe(true)
-    expect(pythonForChat(null, 'builtin_profile_roleplay')).toBe(false)
-  })
-
-  it('runs it on the profiles the writer lists', () => {
-    setPythonProfile('chatprofile_mine', true)
-    setPythonProfile(DEFAULT_PROFILE_ID, false)
-    expect(pythonProfiles()).toEqual(['chatprofile_mine'])
-    expect(pythonForChat(null, 'chatprofile_mine')).toBe(true)
-    expect(pythonForChat(null, DEFAULT_PROFILE_ID)).toBe(false)
-  })
-
-  it('takes the chat’s own choice over its profile’s', () => {
-    expect(pythonForChat({ python: false }, DEFAULT_PROFILE_ID)).toBe(false)
-    expect(pythonForChat({ python: true }, 'builtin_profile_roleplay')).toBe(true)
-  })
-
-  it('runs none where Python isn’t offered, whatever the chat chose', () => {
-    useApplicationState().setExtension('python', false)
-    expect(pythonForChat({ python: true }, DEFAULT_PROFILE_ID)).toBe(false)
   })
 })
 

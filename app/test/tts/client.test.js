@@ -84,6 +84,43 @@ describe('synthesize', () => {
     expect(parseWav(audio).data).toEqual(new Uint8Array([1, 2, 3]))
   })
 
+  it('asks NanoGPT for MP3 at its own address, with zero data retention, and decodes it', async () => {
+    mockDecode.decodeToWav.mockImplementation(async mp3 => encodeWav(MONO, [new Uint8Array(mp3)]))
+    const nanoGpt = speechConnectionOf(
+      /** @type {any} */ ({ id: 'p', type: 'nanogpt', apiKey: 'sk-nano', endpoint: 'ignored' }),
+      'some-tts'
+    )
+
+    await synthesize(nanoGpt, { input: 'Hi', voice: 'ana' })
+
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe('https://api.nano-gpt.com/api/v1/audio/speech')
+    expect(init.headers).toEqual({
+      Authorization: 'Bearer sk-nano',
+      'Content-Type': 'application/json',
+    })
+    expect(JSON.parse(init.body)).toEqual({
+      model: 'some-tts',
+      input: 'Hi',
+      voice: 'ana',
+      response_format: 'mp3',
+      provider: { zdr: true },
+    })
+    expect(mockDecode.decodeToWav).toHaveBeenCalled()
+  })
+
+  it('asks NanoGPT unrouted once its zero data retention is off', async () => {
+    mockDecode.decodeToWav.mockImplementation(async mp3 => encodeWav(MONO, [new Uint8Array(mp3)]))
+    const nanoGpt = speechConnectionOf(
+      /** @type {any} */ ({ id: 'p', type: 'nanogpt', apiKey: 'sk-nano', routing: { zdr: false } }),
+      'some-tts'
+    )
+
+    await synthesize(nanoGpt, { input: 'Hi', voice: 'ana' })
+
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).not.toHaveProperty('provider')
+  })
+
   it('asks for a text longer than the model reads in pieces cut at sentence ends, and joins them', async () => {
     const sizes = [4, 6]
     vi.stubGlobal(

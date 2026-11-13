@@ -6,16 +6,13 @@
  * set of verbs for both — and can create a chapter, which it never could when
  * the only writable thing was a lore entry.
  *
- * These are the model's only view of the project. The project block on every
- * turn says only its name, its overview, how much is in it, and the documents
- * the writer pinned (`projectOverview` and `pinnedDocuments` below); the rest
- * the model finds with `list_documents` and reads with `read_document`. A
- * turn's calls to these tools stay in the conversation, results and all, until
- * a summary stands in for them, and the block says which reads have changed
- * since (ai/context/reads.js). See .llm/project_context_design.md.
- *
- * Only the writer pins. The model has no keep: what it read stays in the
- * conversation, which is all a keep was for.
+ * These are the model's view of the project, with what the writer attaches to
+ * a message (`attachedDocuments` below). The project block on every turn says
+ * only its name, its overview and how much is in it (`projectOverview`); the
+ * rest the model finds with `list_documents` and reads with `read_document`.
+ * A turn's calls to these tools stay in the conversation, results and all,
+ * until a summary stands in for them, and the block says which reads have
+ * changed since (ai/context/reads.js). See .llm/project_context_design.md.
  *
  * A document is addressed by its path, and only by its path — the same string
  * `list_documents` gives for everything in the project. Nothing here takes a
@@ -549,13 +546,19 @@ function findByPath(api, storyId, path, sees) {
  * place in the tree, and a second document there would leave the writer with
  * two of the same name and the model with one it can never reach again.
  *
+ * The folder may be a card, which takes documents as a folder does. Any other
+ * document holds only what an import or Convert put under it: nothing new
+ * goes in, but what is there is renamed where it is, so a move names the
+ * parent its document is in now as `stayingIn`.
+ *
  * @param {DocumentsApi} api
  * @param {string} storyId
  * @param {string} path
  * @param {(document: Document) => boolean} sees
+ * @param {{stayingIn?: string}} [options]
  * @returns {{parentId: string, title: string, path: string}|{error: string}}
  */
-function resolveNewPath(api, storyId, path, sees) {
+function resolveNewPath(api, storyId, path, sees, { stayingIn } = {}) {
   const segments = (path || '')
     .split('/')
     .map(segment => segment.trim())
@@ -575,7 +578,9 @@ function resolveNewPath(api, storyId, path, sees) {
       error: `No folder at "${parentPath}". list_documents shows the folders that exist; create_folder adds one.`,
     }
   }
-  if (parent.type !== 'folder') return { error: `"${parentPath}" is a document, not a folder` }
+  if (!api.takesDocuments(parent) && parent.id !== stayingIn) {
+    return { error: `"${parentPath}" is a document, not a folder` }
+  }
   if (repositoryOf(api.get, parent)) {
     return { error: `"${parentPath}" is in a repository, which is read-only. Put it elsewhere.` }
   }
@@ -592,25 +597,13 @@ function resolveNewPath(api, storyId, path, sees) {
 }
 
 /**
- * @typedef {Object} DocumentListing
- * @property {string} id - Not sent to the model; what a read is matched against
- * @property {string} path
- * @property {string} type
- * @property {number} [words] - How long a document is; a folder has no length
- * @property {number} [pages] - A file's pages, for one that has pages
- * @property {number} [lines] - A source file's lines, in place of words
- * @property {number} [comments] - How many of the writer's comments it holds, when any
- */
-
-/**
  * @typedef {Object} ProjectOverview
  * @property {string} project - The project's name
  * @property {string} [summary] - The story's overview, when someone wrote one
  * @property {string} [about] - What explore said the project holds, when no
  *   one wrote an overview
- * @property {{documents: number, folders: number}} [size] - How much of it the
- *   chat can see, so the model knows there is more than the block shows. Not
- *   for a model that can't reach the rest.
+ * @property {{documents: number, folders: number}} size - How much of it the
+ *   chat can see, so the model knows there is more than the block shows
  */
 
 /**
@@ -677,45 +670,6 @@ function holdsNote(api, document, sees) {
 }
 
 /**
- * The documents a chat has pinned, whose text rides in the project block on
- * every turn, from the first.
- *
- * A pin names one document or one folder. A folder pins everything under it,
- * the way any mark covers what is under it — a character's folder is the thing
- * a writer points at, not the six documents inside it — except where something
- * nearer says otherwise: a greeting shown, or a document hidden, inside a
- * pinned folder is not pinned. See utils/visibility.js.
- *
- * What the chat cannot see is never pinned, whichever way it came to be out of
- * sight. A pin is a lasting thing and `hidden` is set afterwards as often as
- * before: pin a character, hide the folder they are in, and they have to stop
- * riding in every turn of a chat that cannot see them.
- *
- * A pin on a document that has since been deleted names nothing and is skipped
- * rather than reported: the writer deleted it, which is an answer.
- *
- * Only documents come back. A pinned folder is what is under it.
- *
- * @param {string} storyId
- * @param {ChatMarks|null} [chat] - The chat, whose marks say what is pinned
- * @returns {Promise<DocumentListing[]>} Each once, in tree order
- */
-export async function pinnedDocuments(storyId, chat) {
-  if (!chat?.pinnedIds?.length) return []
-  const { api, sees, markFor } = await open(storyId, chat)
-
-  return allDocuments(api, storyId)
-    .filter(document => document.type !== 'folder' && sees(document))
-    .filter(document => markFor(document) === 'pinned')
-    .map(document => ({
-      id: document.id,
-      path: pathOf(api, document),
-      type: document.type,
-      ...sizeOf(document, api.get),
-    }))
-}
-
-/**
  * What the project block says of the project itself: its name, the story's
  * overview (or the line of explore's digest of it, where there is none), and
  * how much is in it for this chat.
@@ -726,25 +680,22 @@ export async function pinnedDocuments(storyId, chat) {
  *
  * @param {string} storyId
  * @param {ChatMarks|null} [chat] - The chat it is for, whose marks say what it sees
- * @param {{size?: boolean}} [options] - `size: false` leaves out how much is
- *   in it, for a chat offered no tool to reach any of it
  * @returns {Promise<ProjectOverview|null>}
  */
-export async function projectOverview(storyId, chat, { size = true } = {}) {
+export async function projectOverview(storyId, chat) {
   const { api, sees } = await open(storyId, chat)
   const root = api.get(rootIdFor(storyId))
   if (!root) return null
   const summary = root.summary?.trim()
   const about = !summary && currentDigests(storyId)(root.id) ? root.digest?.line : undefined
-  const overview = {
+  const seen = visibleDocuments(api, storyId, sees).filter(document => document.id !== root.id)
+  const folders = seen.filter(document => document.type === 'folder').length
+  return {
     project: root.title || 'Untitled',
     ...(summary ? { summary } : {}),
     ...(about ? { about } : {}),
+    size: { documents: seen.length - folders, folders },
   }
-  if (!size) return overview
-  const seen = visibleDocuments(api, storyId, sees).filter(document => document.id !== root.id)
-  const folders = seen.filter(document => document.type === 'folder').length
-  return { ...overview, size: { documents: seen.length - folders, folders } }
 }
 
 // ============================================================================
@@ -755,7 +706,7 @@ export async function projectOverview(storyId, chat, { size = true } = {}) {
 export const LISTING_LIMIT = 200
 
 const LISTING =
-  'List what the project holds, or what is under one folder: a line for each document and folder, by the full path every tool takes, with how long each document is, how many comments the user left on it, and whether they pinned it, and under it, indented, what it is about where that has been said: the user\'s summary, or a description written for you from its text by explore_documents. A folder ends in "/". A document can hold others as a folder does, an imported card\'s picture its fields or a PDF the Markdown converted from it: they are listed under it, by paths that go through it. Everything under the folder is listed when it fits; in a large project, a folder or document further down says how many it holds instead, and listing it shows them. A repository (a codebase) is one line until its own path is listed; its files are code, measured in lines.'
+  'List what the project holds, or what is under one folder: a line for each document and folder, by the full path every tool takes, with how long each document is and how many comments the user left on it, and under it, indented, what it is about where that has been said: the user\'s summary, or a description written for you from its text by explore_documents. A folder ends in "/". A document can hold others as a folder does, an imported card\'s picture its fields or a PDF the Markdown converted from it: they are listed under it, by paths that go through it. Everything under the folder is listed when it fits; in a large project, a folder or document further down says how many it holds instead, and listing it shows them. A repository (a codebase) is one line until its own path is listed; its files are code, measured in lines.'
 
 /** The longest a listing's line on what something is about runs, in characters. */
 const ABOUT_MOST = 300
@@ -819,12 +770,11 @@ function fileKind(document) {
  *
  * @param {DocumentsApi} api
  * @param {Document} document
- * @param {(document: Document) => import('@/utils/visibility.js').ChatMark|null} markFor
  * @param {number|null} hidden - For a folder, or a document that holds others,
  *   listed without what is in it, how many entries are under it
  * @returns {string}
  */
-function listingLine(api, document, markFor, hidden) {
+function listingLine(api, document, hidden) {
   const path = pathOf(api, document)
   if (document.type === 'folder') {
     if (hidden === null) return `${path}/`
@@ -843,7 +793,6 @@ function listingLine(api, document, markFor, hidden) {
       ]
   const comments = document.type === 'text' ? countOpen(document.comments) : 0
   if (comments > 0) facts.push(comments === 1 ? '1 comment' : `${counted(comments)} comments`)
-  if (markFor(document) === 'pinned') facts.push('pinned')
   if (hidden) facts.push(`${counted(hidden)} inside, not listed`)
   return `${path} — ${facts.join(', ')}`
 }
@@ -864,7 +813,7 @@ function listingLine(api, document, markFor, hidden) {
  */
 export async function executeListDocuments(args, context) {
   if (!context?.storyId) return { error: 'No story context available' }
-  const { api, sees, markFor } = await open(context.storyId, context.chatId)
+  const { api, sees } = await open(context.storyId, context.chatId)
   const asked = typeof args?.path === 'string' && args.path.trim() ? args.path : '/'
   const folder = findByPath(api, context.storyId, asked, sees)
   if (!folder) {
@@ -935,7 +884,7 @@ export async function executeListDocuments(args, context) {
           hidden++
         }
       }
-      const line = listingLine(api, entry.document, markFor, hidden)
+      const line = listingLine(api, entry.document, hidden)
       const about = aboutLine(entry.document, current)
       return about ? `${line}\n  ${about}` : line
     })
@@ -1059,6 +1008,95 @@ function readSource(document, base, args) {
 }
 
 /**
+ * Why a file has no text to read, for a model that cannot see the file
+ * itself: so it can tell a scan from a document that is empty.
+ *
+ * @param {Document} document - A file
+ * @returns {string}
+ */
+function unreadNote(document) {
+  if (isUnreadText(document)) {
+    return `This file is too large to read here, at ${sizeLabel(document.size || 0)}. Code can read it, in a chat with run_python.`
+  }
+  if (isData(document.mime || '')) {
+    return `This is a data file, of ${sizeLabel(document.size || 0)}. Code can read it, in a chat with run_python.`
+  }
+  return 'No text could be read out of this file. It may be a scan, or a picture.'
+}
+
+/**
+ * The documents a writer's message attaches, each as it stands now for the
+ * chat that reads it: whole, however long, since the writer chose it. A copy,
+ * kept on the message and sent from there on every later turn, with what a
+ * read notes of a document so that it counts as one. See
+ * ai/context/attachments.js.
+ *
+ * A path the chat sees no document at attaches nothing, a folder among them,
+ * and a document named twice is attached once.
+ *
+ * @param {string} storyId
+ * @param {string|null|undefined} chatId
+ * @param {string[]} paths - From the top of the project, as a chat's links
+ *   are written; a heading after a `#` is let go
+ * @returns {Promise<import('@/ai/context/attachments.js').Attachment[]>}
+ */
+export async function attachedDocuments(storyId, chatId, paths) {
+  if (paths.length === 0) return []
+  const { api, stored, sees } = await open(storyId, chatId)
+  return copiesOf(
+    api,
+    stored,
+    paths.map(path => {
+      const hash = path.indexOf('#')
+      return (
+        findByPath(api, storyId, path, sees) ||
+        (hash > 0 ? findByPath(api, storyId, path.slice(0, hash), sees) : null)
+      )
+    })
+  )
+}
+
+/**
+ * The same for documents named by id rather than by a mention: what a chat
+ * on a card opens with. One the chat cannot see is left out.
+ *
+ * @param {string} storyId
+ * @param {string|null|undefined} chatId
+ * @param {string[]} ids
+ * @returns {Promise<import('@/ai/context/attachments.js').Attachment[]>}
+ */
+export async function attachedById(storyId, chatId, ids) {
+  if (ids.length === 0) return []
+  const { api, stored, sees } = await open(storyId, chatId)
+  return copiesOf(
+    api,
+    stored,
+    ids.map(id => api.get(id)).filter(document => document && sees(document))
+  )
+}
+
+/**
+ * @param {DocumentsApi} api - As the chat reads the tree
+ * @param {DocumentsApi} stored - The tree as it is
+ * @param {Array<Document|null|undefined>} documents
+ * @returns {import('@/ai/context/attachments.js').Attachment[]} Each once
+ */
+function copiesOf(api, stored, documents) {
+  /** @type {Map<string, import('@/ai/context/attachments.js').Attachment>} */
+  const attached = new Map()
+  for (const document of documents) {
+    if (!document || document.type === 'folder' || attached.has(document.id)) continue
+    attached.set(document.id, {
+      id: document.id,
+      path: pathOf(api, document),
+      hash: readKey(stored.get(document.id)),
+      text: document.content || (document.type === 'file' ? unreadNote(document) : ''),
+    })
+  }
+  return [...attached.values()]
+}
+
+/**
  * @param {{path: string, section?: string, from?: number, page?: number, line?: number, until?: number}} args
  * @param {ToolContext} context
  */
@@ -1127,15 +1165,7 @@ export async function executeReadDocument(args, context) {
       ? {
           type: 'file',
           mime: document.mime || '',
-          ...(text
-            ? {}
-            : {
-                note: isUnreadText(document)
-                  ? `This file is too large to read here, at ${sizeLabel(document.size || 0)}. Code can read it, in a chat with run_python.`
-                  : isData(document.mime || '')
-                    ? `This is a data file, of ${sizeLabel(document.size || 0)}. Code can read it, in a chat with run_python.`
-                    : 'No text could be read out of this file. It may be a scan, or a picture.',
-              }),
+          ...(text ? {} : { note: unreadNote(document) }),
         }
       : { type: 'text' }
 
@@ -2466,7 +2496,7 @@ export async function folderToKeepIn(context, path) {
       error: `No folder at "${asked}". list_documents shows the folders that exist; create_folder adds one.`,
     }
   }
-  if (folder.type !== 'folder') return { error: `"${asked}" is a document, not a folder.` }
+  if (!api.takesDocuments(folder)) return { error: `"${asked}" is a document, not a folder.` }
   if (repositoryOf(api.get, folder)) {
     return { error: `"${asked}" is in a repository, which is read-only. Put it elsewhere.` }
   }
@@ -2959,7 +2989,7 @@ export async function executeMoveDocument(args, context) {
     .filter(Boolean)
     .join('/')
   if (to === from) return { error: `"${from}" is already there.` }
-  const target = resolveNewPath(api, context.storyId, to, sees)
+  const target = resolveNewPath(api, context.storyId, to, sees, { stayingIn: document.parentId })
   if ('error' in target) {
     return {
       error: target.error.replace('Use update_document to change it.', 'Choose another name.'),
@@ -3355,11 +3385,7 @@ export async function executeAppendDocument(args, context) {
   if (document.type === 'folder') return { error: 'A folder has no content to append to' }
   if (document.type === 'file') return { error: fileIsNotWritten(args.path) }
 
-  // What the model writes never makes a comment or a suggestion: add_comment
-  // and the edits in a chat that asks first do.
-  const text = withoutComments(
-    withoutSuggestionMarkup(typeof args.text === 'string' ? args.text : '')
-  )
+  const text = appendedText(args.text)
   if (!text.trim()) return { error: 'No text provided' }
 
   if (changesSeen(context, api, document)) {
@@ -3388,6 +3414,39 @@ export async function executeAppendDocument(args, context) {
     charactersWritten: text.length,
   }
 }
+
+/**
+ * The document an append_document call still being written adds to, for the
+ * editor to show its text arriving there: one the call will write to, with
+ * whether the text goes in as a suggestion. Null for a path the call will be
+ * refused, and for a plain document, which is shown as text and has no room
+ * for a preview.
+ *
+ * @param {string} storyId
+ * @param {string|undefined} chatId
+ * @param {string} path - Whole, as the call has it
+ * @param {boolean} [propose] - The chat asks before changing documents
+ * @returns {Promise<{documentId: string, suggested: boolean}|null>}
+ */
+export async function appendTarget(storyId, chatId, path, propose = false) {
+  const { api, sees } = await open(storyId, chatId)
+  const document = findByPath(api, storyId, path, sees)
+  if (!document || document.type !== 'text' || document.plain) return null
+  // A chat that asks first suggests its change to a document that is not
+  // plain, which this is (`suggests`).
+  return { documentId: document.id, suggested: propose }
+}
+
+/**
+ * What an append_document call writes of the text it was given: never a
+ * comment or a suggestion's markup, which add_comment and the edits of a
+ * chat that asks first make.
+ *
+ * @param {unknown} text
+ * @returns {string}
+ */
+export const appendedText = text =>
+  withoutComments(withoutSuggestionMarkup(typeof text === 'string' ? text : ''))
 
 // ============================================================================
 // applyProposal — what the writer's Accept runs

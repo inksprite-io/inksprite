@@ -86,15 +86,24 @@ export const AI_DEFAULTS = {
  * actually use. `parameters` merges one level deep so an override touching a
  * single sampler value doesn't drop the rest.
  *
+ * A model's own defaults, where its list gives them, sit between: the app's
+ * settings, then the model's, then the writer's changes.
+ *
  * @param {AISettingsOverrides} [overrides]
+ * @param {Partial<AISamplerParameters>} [modelDefaults] - The samplers the
+ *   model's makers say it runs best at
  * @returns {AIDefaults}
  */
-export function resolveAISettings(overrides) {
-  if (!overrides) return AI_DEFAULTS
+export function resolveAISettings(overrides, modelDefaults) {
+  if (!overrides && !modelDefaults) return AI_DEFAULTS
   return {
     ...AI_DEFAULTS,
-    ...overrides,
-    parameters: { ...AI_DEFAULTS.parameters, ...(overrides.parameters || {}) },
+    ...(overrides || {}),
+    parameters: {
+      ...AI_DEFAULTS.parameters,
+      ...(modelDefaults || {}),
+      ...(overrides?.parameters || {}),
+    },
   }
 }
 

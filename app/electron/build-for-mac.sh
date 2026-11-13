@@ -2,7 +2,7 @@
 # Builds the desktop app for a Mac from this checkout, unsigned, for
 # install-on-mac.sh to sign and put in place of the installed app. Runs in the
 # container, where npm does; a Mac app can be built here but signed only on a
-# Mac.
+# Mac. install-on-mac.sh runs it here through docker before it signs.
 #
 #   app/electron/build-for-mac.sh [arm64|x64]
 #
@@ -52,4 +52,4 @@ rm -rf "$out"
 rm -f "$out"/*.zip "$out"/*.blockmap "$out"/*.yml
 cp "$here/node_modules/app-builder-lib/templates/entitlements.mac.plist" "$out/"
 
-echo "Built inksprite $version. On the Mac: app/electron/install-on-mac.sh"
+echo "Built inksprite $version."

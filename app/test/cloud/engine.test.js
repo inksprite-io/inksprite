@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url'
 import { CloudError, createApi } from '@/cloud/api.js'
 import { signIn, signUp } from '@/cloud/account.js'
 import { PART_SIZE, SETTLE_MS } from '@/cloud/engine.js'
+import { FORMAT } from '@/cloud/format.js'
 import { CLASHED } from '@/utils/versions.js'
 import { makeDevice } from './device.js'
 import { createDiagnostics } from '@/cloud/diagnostics.js'
@@ -577,7 +578,7 @@ describe.skipIf(!HAVE_SERVER)('a newer app’s records', () => {
     await a.sync()
     await b.sync()
 
-    a.update({ format: 3 })
+    a.update({ format: FORMAT + 1 })
     const chapter = a.db.documents.get('doc_ch1')
     a.put('documents', {
       ...chapter,
@@ -615,7 +616,7 @@ describe.skipIf(!HAVE_SERVER)('a newer app’s records', () => {
     await b.sync()
     expect(sent).toEqual([])
 
-    b.update({ format: 3 })
+    b.update({ format: FORMAT + 1 })
     await b.sync()
     await a.sync()
     expect(b.engine.status.phase).toBe('idle')
@@ -700,7 +701,7 @@ describe.skipIf(!HAVE_SERVER)('a newer app’s records', () => {
     await settled(a)
     await a.sync()
     await b.sync()
-    a.update({ format: 3 })
+    a.update({ format: FORMAT + 1 })
     a.put('documents', {
       ...a.db.documents.get('doc_ch1'),
       content: 'Another way in.\n',
@@ -731,7 +732,7 @@ describe.skipIf(!HAVE_SERVER)('a newer app’s records', () => {
     expect(b.db.documents.get('doc_ch1').content).toContain('She climbed the wall.')
     expect(b.db.messages.has('msg_ghost')).toBe(true)
 
-    b.update({ format: 3 })
+    b.update({ format: FORMAT + 1 })
     await b.sync()
     expect(b.engine.status.phase).toBe('idle')
     expect(b.db.documents.get('doc_ch1').content).toBe('Another way in.\n')

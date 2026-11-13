@@ -12,6 +12,7 @@ import 'prosemirror-view/style/prosemirror.css'
 import { COMPARED, versionBetween } from '@/editor/comparison.js'
 import { mapHrefs } from '@/editor/links.js'
 import { figuresPlugin, pictures } from '@/editor/pictures.js'
+import { formulasPlugin } from '@/editor/formulas.js'
 import { useDocumentLinks } from '@/composables/useDocumentLinks.js'
 import { usePictures } from '@/composables/usePictures.js'
 
@@ -58,6 +59,7 @@ const plugins = [
     open: node => documentPictures.open(node.attrs.src, props.documentId, node.attrs.alt),
   }),
   figuresPlugin(),
+  formulasPlugin(),
 ]
 
 /** @param {import('prosemirror-model').Node} doc */

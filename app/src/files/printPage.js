@@ -10,6 +10,8 @@
  * - A picture is shown from the bytes the caller says, and one it has none
  *   for, such as a picture on the web, is left out. A paragraph that is only
  *   a picture is a figure, as in the editor.
+ * - A formula is typeset, KaTeX loaded for it if it isn't yet; one KaTeX
+ *   can't read is its TeX as written.
  *
  * - Where each page's text can bring its own room above and below, the page's
  *   margins there are zero, which keeps Chrome from printing its own header
@@ -24,6 +26,7 @@ import { parseMarkdown } from '@/editor/markdown.js'
 import { schema } from '@/editor/schema.js'
 import { textAsItStands } from '@/editor/suggestionText.js'
 import { isDocumentHref } from '@/utils/documentLinks.js'
+import { loadMath, typesetMath } from '@/utils/math.js'
 
 /**
  * The page's classes: the editor's for its text (`Editor.vue`), at the one
@@ -67,6 +70,12 @@ export async function printPage(content, picture) {
     const src = await picture(image.getAttribute('src') || '')
     if (src) image.setAttribute('src', src)
     else image.remove()
+  }
+  const formulas = page.querySelectorAll('[data-tex]')
+  if (formulas.length) await loadMath()
+  for (const formula of formulas) {
+    const html = typesetMath(formula.getAttribute('data-tex') || '', formula.tagName === 'DIV')
+    if (html !== null) formula.innerHTML = html
   }
   for (const paragraph of page.querySelectorAll('p')) {
     const [only] = paragraph.childNodes

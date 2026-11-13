@@ -208,10 +208,10 @@ Type: [Object][186]
 - `endpoint` **[string][187]** The API's base, e.g. `http://localhost:8880/v1`
 - `apiKey` **[string][187]?** Sent as a bearer token when present
 - `model` **[string][187]** `kokoro`, `tts-1`, `hexgrad/kokoro-82m`
-- `type` **[string][187]?** The connection's type: OpenRouter's is asked
-  for MP3, and for its routing
-- `routing` **Record<[string][187], any>?** OpenRouter's `provider` field, as
-  a chat on the connection sends it
+- `type` **[string][187]?** The connection's type: OpenRouter's and
+  NanoGPT's are asked for MP3
+- `routing` **Record<[string][187], any>?** OpenRouter's or NanoGPT's
+  `provider` field, as a chat on the connection sends it
 - `inputLimit` **[number][188]?** The most one request may say, in
   characters; a longer text is asked for in pieces
 
@@ -293,7 +293,8 @@ Returns **[Promise][191]<[string][187]>**&#x20;
 
 ## ask
 
-Say something, in one request. OpenRouter's MP3 comes back decoded.
+Say something, in one request. OpenRouter's and NanoGPT's MP3 comes back
+decoded: not every model they serve makes a WAV.
 
 ### Parameters
 

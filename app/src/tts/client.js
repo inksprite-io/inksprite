@@ -22,10 +22,10 @@ import { concatParts, joinClips } from './wav.js'
  * @property {string} endpoint - The API's base, e.g. `http://localhost:8880/v1`
  * @property {string} [apiKey] - Sent as a bearer token when present
  * @property {string} model - `kokoro`, `tts-1`, `hexgrad/kokoro-82m`
- * @property {string} [type] - The connection's type: OpenRouter's is asked
- *   for MP3, and for its routing
- * @property {Record<string, any>} [routing] - OpenRouter's `provider` field, as
- *   a chat on the connection sends it
+ * @property {string} [type] - The connection's type: OpenRouter's and
+ *   NanoGPT's are asked for MP3
+ * @property {Record<string, any>} [routing] - OpenRouter's or NanoGPT's
+ *   `provider` field, as a chat on the connection sends it
  * @property {number} [inputLimit] - The most one request may say, in
  *   characters; a longer text is asked for in pieces
  */
@@ -112,7 +112,8 @@ async function refusal(response) {
 }
 
 /**
- * Say something, in one request. OpenRouter's MP3 comes back decoded.
+ * Say something, in one request. OpenRouter's and NanoGPT's MP3 comes back
+ * decoded: not every model they serve makes a WAV.
  *
  * @param {SpeechConnection} connection
  * @param {SpeechRequest} request
@@ -120,7 +121,7 @@ async function refusal(response) {
  * @returns {Promise<ArrayBuffer>} A WAV file
  */
 async function ask(connection, { input, voice, speed = 1 }, signal) {
-  const mp3 = connection.type === 'openrouter'
+  const mp3 = connection.type === 'openrouter' || connection.type === 'nanogpt'
   /** @type {Record<string, any>} */
   const body = { model: connection.model, input, voice, response_format: mp3 ? 'mp3' : 'wav' }
   // Left out at 1, as a chat leaves out a neutral sampler: some of

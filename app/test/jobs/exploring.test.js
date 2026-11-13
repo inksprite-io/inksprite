@@ -1,14 +1,7 @@
 /* global structuredClone, AbortController */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import {
-  currentDigests,
-  exploreAndWait,
-  isRunning,
-  planExploring,
-  startExplore,
-  startJob,
-} from '@/jobs/index.js'
+import { currentDigests, exploreAndWait, isRunning, planExploring, startJob } from '@/jobs/index.js'
 import { useDocumentsStore } from '@/stores/documentsStore.js'
 import { useJobsStore } from '@/stores/jobsStore.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
@@ -38,15 +31,20 @@ const providers = {
   p1: { id: 'p1', name: 'Test', type: 'generic', endpoint: 'http://x' },
   p2: { id: 'p2', name: 'Home', type: 'generic', endpoint: 'http://home' },
 }
-// The preset in use, which every chat runs on and a new one starts on.
+// The chat's preset, which an exploration runs on; and what new chats start
+// on, which a job from when explore was a workflow runs on.
 const active = vi.hoisted(() => ({ value: /** @type {any} */ (null) }))
 vi.mock('@/composables/useAIConfig.js', () => ({
-  useAIConfig: () => ({ activeAIPreset: active, getProvider: id => providers[id] || null }),
+  useAIConfig: () => ({
+    startingPreset: active,
+    getProvider: id => providers[id] || null,
+    runOn: (providerId, model) => ({ providerId, model, generationOverrides: {} }),
+  }),
 }))
 // The workflows as a state saved while explore was one may still have them.
 const workflows = vi.hoisted(() => ({ value: /** @type {any} */ ({}) }))
 vi.mock('@/composables/useApplicationState.js', () => ({
-  useApplicationState: () => ({ workflows }),
+  useApplicationState: () => ({ workflows, noteModelUse: () => {} }),
 }))
 // How long a context the model has: a small one, so a long document is read in parts.
 const context = vi.hoisted(() => ({ value: /** @type {number|undefined} */ (undefined) }))
@@ -101,6 +99,30 @@ const settled = async id => {
   await new Promise(resolve => setTimeout(resolve, 5))
 }
 
+/**
+ * Explore as planned, in the background, as a chat's explore does while it
+ * waits but keeping the job to look at: null when everything is current.
+ *
+ * @param {string} storyId
+ * @param {string} id
+ * @param {import('@/jobs/index.js').PlannedExploring} planned
+ */
+async function startExplore(storyId, id, planned) {
+  if (planned.steps.length === 0) return null
+  const explored = useDocumentsStore().getDocument(id)
+  const job = await useJobsStore().createJob({
+    storyId,
+    kind: 'explore',
+    runsOn: planned.runsOn,
+    documentId: id,
+    title: `Explore ${explored?.title || 'Untitled'}`,
+    steps: planned.steps,
+    plan: planned.plan,
+  })
+  startJob(job.id).catch(() => {})
+  return job
+}
+
 describe('exploring a project, as a job', () => {
   /** @type {ReturnType<typeof useDocumentsStore>} */
   let documents
@@ -114,7 +136,7 @@ describe('exploring a project, as a job', () => {
 
   /** @param {string} folderId */
   const explore = async folderId => {
-    const planned = await planExploring(folderId)
+    const planned = await planExploring(folderId, active.value)
     const job = await startExplore(STORY, folderId, planned)
     if (job) await settled(job.id)
     return { planned, job: job ? useJobsStore().getJob(job.id) : null }
@@ -191,10 +213,10 @@ describe('exploring a project, as a job', () => {
     text(ROOT, 'Outline', prose(200, 'outline'))
     await explore(ROOT)
 
-    expect((await planExploring(ROOT)).steps).toEqual([])
+    expect((await planExploring(ROOT, active.value)).steps).toEqual([])
 
     documents.updateDocument(elara.id, { content: prose(220, 'elara') })
-    const again = await planExploring(ROOT)
+    const again = await planExploring(ROOT, active.value)
     expect(again.steps).toHaveLength(1)
     expect(again.documents).toBe(3)
   })
@@ -240,7 +262,7 @@ describe('exploring a project, as a job', () => {
   it('starts nothing when everything is current', async () => {
     text(ROOT, 'Outline', prose(200))
     await explore(ROOT)
-    const planned = await planExploring(ROOT)
+    const planned = await planExploring(ROOT, active.value)
     expect(await startExplore(STORY, ROOT, planned)).toBeNull()
   })
 
@@ -257,7 +279,7 @@ describe('exploring a project, as a job', () => {
     expect(sent.join('\n')).not.toContain('bran')
     expect(documents.getDocument(elara.id)?.digest?.line).toBe('About Notes/Elara.')
     expect(documents.getDocument(notes.id)?.digest).toBeUndefined()
-    expect((await planExploring(elara.id)).steps).toEqual([])
+    expect((await planExploring(elara.id, active.value)).steps).toEqual([])
   })
 
   it('gives a long section a line on its document’s digest, read whole or in parts', async () => {
@@ -323,7 +345,7 @@ describe('exploring while a chat waits', () => {
       title: 'Outline',
       content: prose(200),
     })
-    const planned = await planExploring(ROOT)
+    const planned = await planExploring(ROOT, active.value)
     /** @type {string[]} */
     const said = []
 
@@ -356,7 +378,7 @@ describe('exploring while a chat waits', () => {
         content: prose(900, title.toLowerCase()),
       })
     }
-    const planned = await planExploring(ROOT)
+    const planned = await planExploring(ROOT, active.value)
     const stop = new AbortController()
 
     const outcome = await exploreAndWait(STORY, ROOT, planned, {
@@ -366,7 +388,7 @@ describe('exploring while a chat waits', () => {
 
     expect(outcome).toEqual({ error: 'Stopped.' })
     expect(useJobsStore().getJobs()).toEqual([])
-    const left = await planExploring(ROOT)
+    const left = await planExploring(ROOT, active.value)
     expect(left.steps.length).toBeGreaterThan(0)
     expect(left.steps.length).toBeLessThan(planned.steps.length)
   })
@@ -383,7 +405,9 @@ describe('exploring while a chat waits', () => {
     stop.abort()
 
     expect(
-      await exploreAndWait(STORY, ROOT, await planExploring(ROOT), { signal: stop.signal })
+      await exploreAndWait(STORY, ROOT, await planExploring(ROOT, active.value), {
+        signal: stop.signal,
+      })
     ).toEqual({ error: 'Stopped.' })
     expect(sent).toEqual([])
     expect(useJobsStore().getJobs()).toEqual([])
@@ -440,7 +464,7 @@ describe('the model an exploration runs on', () => {
       overrides: { reasoningEffort: 'low', temperature: 0.4 },
     })
 
-    // The preset in use changes while it runs; the job goes on as planned.
+    // What new chats start on changes while it runs; the job goes on as planned.
     active.value = { providerId: 'p1', model: 'small' }
     const job = await startExplore(STORY, ROOT, planned)
     if (job) await settled(job.id)
@@ -459,18 +483,11 @@ describe('the model an exploration runs on', () => {
     ])
   })
 
-  it('is the one a new chat runs on when no chat asks: the preset in use', async () => {
-    const planned = await planExploring(ROOT)
-
-    expect(planned.runsOn).toEqual({ providerId: 'p1', model: 'small' })
-    expect(measured).toEqual(['p1 small'])
-  })
-
   it('says what a chat would say when there is none to run on', async () => {
     active.value = null
-    await expect(planExploring(ROOT)).rejects.toThrow('No AI provider is connected.')
+    await expect(planExploring(ROOT, active.value)).rejects.toThrow('No AI provider is connected.')
     await expect(planExploring(ROOT, { ...chatPreset, model: '' })).rejects.toThrow(
-      'Pick a model in Settings › AI.'
+      'Choose a model for this chat.'
     )
     expect(sent).toEqual([])
   })
@@ -496,8 +513,8 @@ describe('the model an exploration runs on', () => {
     expect(sent).toEqual([])
   })
 
-  it('runs one made while explore was a workflow, on that workflow’s model or the preset in use', async () => {
-    const planned = await planExploring(ROOT)
+  it('runs one made while explore was a workflow, on that workflow’s model or what new chats start on', async () => {
+    const planned = await planExploring(ROOT, active.value)
     const { runsOn, ...before } = planned
     const old = () =>
       useJobsStore().createJob({

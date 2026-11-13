@@ -345,6 +345,35 @@ describe('syncDoc', () => {
     expect(state.writes).toHaveLength(writes)
   })
 
+  it('sends formulas as their TeX between dollars, and reads them back as formulas', async () => {
+    const start = paragraphs('The ferry left at six.', 'It rained.')
+    const { state } = google(start)
+    const mine = 'The ferry left at $t_0$, six.\n\n$$\nv = d / t\n$$\n\nIt rained.'
+    const first = await sync({ base: baseOf(start), mine })
+    const words = state.doc.tabs[0].documentTab.body.content
+      .map(element => element.paragraph?.elements.map(part => part.textRun?.content).join(''))
+      .join('')
+    expect(words).toBe('The ferry left at $t_0$, six.\n$$v = d / t$$\nIt rained.\n')
+    expect(serializeMarkdown(first.doc)).toBe(as(mine))
+    expect(first.base.markdown).toBe(as(mine))
+    const second = await sync({ base: { ...baseOf(state.doc), ...first.base }, mine })
+    expect(second).toMatchObject({ sent: 0, changed: false })
+  })
+
+  it('brings TeX typed in the Doc in as a formula', async () => {
+    const start = paragraphs('The ferry left at six.', 'It rained.')
+    const { state } = google(start)
+    state.doc = applyRequests(state.doc, [
+      { insertText: { text: ', $t_0$', location: { index: 22, tabId: 't.0' } } },
+    ])
+    const synced = await sync({
+      base: { ...baseOf(start), revisionId: 'rev-old' },
+      mine: 'The ferry left at six.\n\nIt rained.',
+    })
+    expect(serializeMarkdown(synced.doc)).toBe('The ferry left at six, $t_0$.\n\nIt rained.')
+    expect(synced.doc.firstChild.child(1).type.name).toBe('formula')
+  })
+
   it('puts a document of lists nested deep into a new Doc whole, and writes it once', async () => {
     const { state } = google(docOf([para('')]))
     const mine =
@@ -516,12 +545,6 @@ describe('syncDoc, comments both ways', () => {
         },
       ])
     )
-  /** The Doc's anchored words for a thread, by what its first post says. */
-  const anchoredIn = (doc, said) => {
-    const comment = doc.comments.find(each => each.headPost.content === said)
-    const [range] = doc.tabs[0].documentTab.commentAnchors[comment.anchorId].ranges
-    return text(doc).length >= 0 && range
-  }
   /** Another's comment made in the Doc on some words of it. */
   const theirComment = (doc, words, said, author = ANA) => {
     const at = text(doc).indexOf(words)
@@ -575,6 +598,17 @@ describe('syncDoc, comments both ways', () => {
       threads: synced.threads,
     })
     expect(state.writes).toHaveLength(writes)
+  })
+
+  it('makes a comment on a formula the Doc’s, on the TeX it is written in there', async () => {
+    const start = paragraphs('The ferry left at $t_0$, six.', 'It rained.')
+    const { state } = google(start)
+    const mine = 'The ferry left at {==$t_0$, six==}{>>cmta02<<}.\n\nIt rained.'
+    const synced = await sync({ base: baseOf(start), mine, threads: { cmta02: writers('When?') } })
+    expect(threadsIn(state.doc)).toEqual({
+      'When?': { status: 'OPEN', on: '$t_0$, six', posts: ['me: When?'] },
+    })
+    expect(serializeMarkdown(synced.doc)).toBe(as(mine))
   })
 
   it('brings a collaborator’s comment in on its words, with their name, and replies both ways', async () => {
@@ -816,6 +850,54 @@ describe('syncDoc, the Doc’s suggestions', () => {
     expect(second).toMatchObject({ sent: 0, changed: false, suggestions: { came: 0, changed: 0 } })
     expect(second.threads).toEqual(first.threads)
     expect(state.writes).toEqual([])
+  })
+
+  it('lays one in a formula’s TeX in on its words, a formula again once accepted', async () => {
+    const before = docOf([para('The ferry made $v^2$ knots.')])
+    const doc = {
+      ...docOf([
+        para([
+          run('The ferry made $v^'),
+          run('3', {}, { suggestedInsertionIds: ['suggest.f'] }),
+          run('2', {}, { suggestedDeletionIds: ['suggest.f'] }),
+          run('$ knots.'),
+        ]),
+      ]),
+      suggestions: [
+        {
+          suggestionId: 'suggest.f',
+          status: 'OPEN',
+          headPost: { postId: 'post.f.0', author: ANA, createTime: '2026-10-01T00:00:00Z' },
+        },
+      ],
+    }
+    const { state } = google(doc)
+    // As words while it is open: a formula holds no suggestion.
+    const first = await sync({ base: baseOf(before), mine: 'The ferry made $v^2$ knots.' })
+    const [[id, thread]] = Object.entries(first.threads)
+    expect(serializeMarkdown(first.doc)).toBe(
+      as(`The ferry made \\$v^{--2--}{>>${id}<<}{++3++}{>>${id}<<}$ knots.`)
+    )
+    const mine = serializeMarkdown(acceptSuggestion(first.doc, id))
+    const threads = {
+      [id]: {
+        ...thread,
+        status: 'resolved',
+        suggestion: { ...thread.suggestion, settled: 'accepted' },
+      },
+    }
+    const second = await sync({ base: next(state, first), mine, threads })
+    expect(state.writes.map(write => write.requests)).toEqual([
+      [{ acceptSuggestion: { suggestionId: 'suggest.f' } }],
+    ])
+    expect(serializeMarkdown(second.doc)).toBe('The ferry made $v^3$ knots.')
+    expect(second.doc.firstChild.child(1).type.name).toBe('formula')
+    const third = await sync({
+      base: next(state, second),
+      mine: serializeMarkdown(second.doc),
+      threads: second.threads,
+    })
+    expect(third).toMatchObject({ sent: 0, changed: false })
   })
 
   it('accepts it in the Doc when it was accepted here, before the words, edited after', async () => {

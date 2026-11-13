@@ -45,6 +45,25 @@ describe('setMenu', () => {
     expect(newWindow).toHaveBeenCalled()
   })
 
+  it('pastes without formatting on Shift-Command-V on a Mac, beside the Option one it shows', () => {
+    onPlatform('darwin')
+    setMenu({ newWindow: vi.fn() })
+
+    const edit = menuBar().find(menu => menu.label === 'Edit')
+    const plain = edit.submenu.filter(item => item.role === 'pasteAndMatchStyle')
+    expect(plain).toEqual([
+      { role: 'pasteAndMatchStyle' },
+      { role: 'pasteAndMatchStyle', accelerator: 'Cmd+Shift+V', visible: false },
+    ])
+  })
+
+  it('keeps Electron’s own Edit menu elsewhere, which has Shift-Control-V already', () => {
+    onPlatform('win32')
+    setMenu({ newWindow: vi.fn() })
+
+    expect(menuBar()).toContainEqual({ role: 'editMenu' })
+  })
+
   it('quits from File elsewhere, as Electron’s own menu does, and has no Dock', () => {
     onPlatform('win32')
     setMenu({ newWindow: vi.fn() })

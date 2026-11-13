@@ -26,3 +26,15 @@ describe('chatTabs', () => {
     expect(CHAT_TEXT_TITLES['post-history']).toBe('Post-history instructions')
   })
 })
+
+describe('a skill’s tab', () => {
+  it('is told from a document’s and a chat’s text by its id', async () => {
+    const { skillTabId, skillTabOf } = await import('@/utils/chatTabs.js')
+
+    expect(skillTabId('skill_abc')).toBe('skill:skill_abc')
+    expect(skillTabOf('skill:skill_abc')).toBe('skill_abc')
+    expect(skillTabOf('doc_abc')).toBeNull()
+    expect(skillTabOf('chat:chat_1:prompt')).toBeNull()
+    expect(skillTabOf(null)).toBeNull()
+  })
+})

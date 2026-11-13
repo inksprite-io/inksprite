@@ -13,6 +13,9 @@
  * - **Python** - Python the model runs code in, in the desktop app only, in
  *   chats on the profiles its settings list or that switch it on. Off until
  *   switched on: nothing before it was in use. See ai/tools/python.js.
+ * - **Web search** - The model searching the web and reading pages, through
+ *   the service chosen here, whose key is in Settings › Connections. On
+ *   unless switched off. See web/ and ai/tools/web.js.
  *
  * Design: `.llm/extensions_design.md`.
  *
@@ -66,6 +69,9 @@ export async function roleplayInUse() {
 export const EXTENSIONS = [
   { id: 'roleplay', name: 'Roleplay', inUse: roleplayInUse },
   { id: 'python', name: 'Python', inUse: async () => false },
+  // On from the start, for everyone: it does nothing until a service is set
+  // up to search with.
+  { id: 'web', name: 'Web search', inUse: async () => true },
 ]
 
 /**

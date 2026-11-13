@@ -9,6 +9,10 @@
  * can have: a document's is `doc_` and a nanoid, which never has a colon in
  * it. They are kept with the rest, so a project reopens on them, and go when
  * their chat does.
+ *
+ * A skill of the writer's opens the same way, as its SKILL.md: a tab that
+ * goes when the skill does. The skill is the app's and the tab the
+ * project's, so one skill may be open in several.
  */
 
 /**
@@ -47,4 +51,22 @@ export function chatTabOf(tabId) {
   const match = tabId ? CHAT_TAB.exec(tabId) : null
   const text = /** @type {ChatText} */ (match?.[2])
   return match && Object.hasOwn(CHAT_TEXT_TITLES, text) ? { chatId: match[1], text } : null
+}
+
+const SKILL_TAB = /^skill:(.+)$/
+
+/**
+ * The tab for one of the writer's skills, as its SKILL.md.
+ * @param {string} skillId
+ * @returns {string}
+ */
+export const skillTabId = skillId => `skill:${skillId}`
+
+/**
+ * The skill a tab holds, or null for any other tab.
+ * @param {string|null|undefined} tabId
+ * @returns {string|null}
+ */
+export function skillTabOf(tabId) {
+  return (tabId ? SKILL_TAB.exec(tabId) : null)?.[1] ?? null
 }

@@ -129,10 +129,11 @@ describe('ProviderRouting', () => {
     }
     const wrapper = await mountPanel()
 
-    const [zdr, allowFallbacks] = wrapper.findAllComponents(ToggleSwitch)
+    // Falling back is the model's to say now, beside its preferred providers.
+    const switches = wrapper.findAllComponents(ToggleSwitch)
+    expect(switches).toHaveLength(1)
     expect(wrapper.findComponent(Select).props('modelValue')).toBe('allow')
-    expect(zdr.props('modelValue')).toBe(false)
-    expect(allowFallbacks.props('modelValue')).toBe(false)
+    expect(switches[0].props('modelValue')).toBe(false)
   })
 
   it('shows the privacy floor for a connection with no stored policy', async () => {

@@ -53,7 +53,6 @@ export {
   getServer,
   reachable,
   serverTool,
-  serversForChat,
   needsApproval,
 } from './servers.js'
 export {

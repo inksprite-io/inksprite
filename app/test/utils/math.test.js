@@ -87,7 +87,9 @@ describe('math', () => {
       expect(prevented).toBe(true)
       expect(data['text/plain']).toContain('So $x^2$ and')
       expect(data['text/plain']).toContain('$$y = 1$$')
-      expect(data['text/html']).toBe('<p>So $x^2$ and</p>\n<p>$$y = 1$$</p>\n')
+      expect(data['text/html']).toBe(
+        '<p>So <span data-tex="x^2">$x^2$</span> and</p>\n<div data-tex="y = 1">$$y = 1$$</div>\n'
+      )
     })
 
     it('takes the whole of a formula a selection starts inside', () => {
@@ -101,6 +103,20 @@ describe('math', () => {
       })
 
       expect(data['text/plain']).toBe('$x^2$ and on')
+    })
+
+    it('leaves a copy something has handled to it', () => {
+      document.addEventListener('copy', event => event.preventDefault(), {
+        capture: true,
+        once: true,
+      })
+      const { data } = copy('So $x^2$', root => {
+        const range = document.createRange()
+        range.selectNodeContents(root)
+        return range
+      })
+
+      expect(data).toEqual({})
     })
 
     it('leaves a copy with no math in it to the browser', () => {

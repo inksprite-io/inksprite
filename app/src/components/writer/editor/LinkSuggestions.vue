@@ -24,7 +24,7 @@
     >
       <i
         class="pi flex-none text-surface-500 dark:text-surface-400"
-        :class="entry.heading ? 'pi-hashtag' : 'pi-file'"
+        :class="entry.heading ? 'pi-hashtag' : entry.folder ? 'pi-folder' : 'pi-file'"
       />
       <span class="truncate text-surface-800 dark:text-surface-100">{{ entry.title }}</span>
       <span
@@ -32,6 +32,14 @@
         class="ml-auto flex-none max-w-[45%] truncate text-xs text-surface-500 dark:text-surface-400"
       >
         {{ entry.detail }}
+      </span>
+      <!-- How long a document is, where it is about to be attached whole. -->
+      <span
+        v-if="typeof entry.words === 'number'"
+        class="flex-none text-xs tabular-nums text-surface-500 dark:text-surface-400"
+        :class="entry.detail ? '' : 'ml-auto'"
+      >
+        {{ entry.words.toLocaleString() }} {{ entry.words === 1 ? 'word' : 'words' }}
       </span>
     </div>
   </div>

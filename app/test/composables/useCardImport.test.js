@@ -387,33 +387,13 @@ describe('useCardImport', () => {
   })
 
   describe('write', () => {
-    it('starts a conversion for a file with text when the Convert role says so on import', async () => {
-      startConversion.mockClear()
-      const pdf = file('paper.pdf', minimalPdf([['Hello there']]))
-      const found = await cards.inspect(pdf)
-
-      const quiet = await cards.write(found, {})
-      expect(startConversion).not.toHaveBeenCalled()
-
-      useApplicationState().setWorkflow('convert', { onImport: true })
-      const written = await cards.write(found, {})
-      expect(startConversion).toHaveBeenCalledWith(STORY, written.folderId)
-      expect(written.folderId).not.toBe(quiet.folderId)
-      useApplicationState().setWorkflow('convert', { onImport: false })
-    })
-
-    it('starts no conversion with the AI switched off, whatever the Convert role says', async () => {
+    it('starts no conversion as a file comes in: that is asked for, costing what it does', async () => {
       startConversion.mockClear()
       const found = await cards.inspect(file('paper.pdf', minimalPdf([['Hello there']])))
-      useApplicationState().setWorkflow('convert', { onImport: true })
-      useApplicationState().setAiEnabled(false)
-      try {
-        await cards.write(found, {})
-        expect(startConversion).not.toHaveBeenCalled()
-      } finally {
-        useApplicationState().setWorkflow('convert', { onImport: false })
-        useApplicationState().setAiEnabled(true)
-      }
+      useApplicationState().setWorkflow('convert', /** @type {any} */ ({ onImport: true }))
+
+      await cards.write(found, {})
+      expect(startConversion).not.toHaveBeenCalled()
     })
 
     it('writes what was found, where it was asked to', async () => {

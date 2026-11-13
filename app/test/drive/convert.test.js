@@ -63,6 +63,12 @@ function checkSpans(read, document) {
       expect(at.get(span.index)).toBe('inline')
       expect(doc.nodeAt(span.pos)?.type.name).toBe('image')
     }
+    if (span.kind === 'formula') {
+      expect(['formula', 'formula_block']).toContain(doc.nodeAt(span.pos)?.type.name)
+      let there = ''
+      for (let i = span.index; i < span.index + span.size; i++) there += at.get(i)
+      expect(there).toBe(span.written)
+    }
   }
   for (const [segment, at] of indices) {
     for (const [i, what] of at) {
@@ -550,6 +556,48 @@ describe('readDoc', () => {
     expect(result.markdown).toBe(
       '1\\) First, the rope.\n\n\\# Not a heading\n\nFish \\&amp; chips 🐟 here'
     )
+  })
+
+  it('reads TeX between dollars as a formula, by the rule a document’s markdown has', () => {
+    const result = read(
+      docOf([
+        para([
+          run('So '),
+          run('$x', { bold: true }),
+          run('^2$', { bold: true, italic: true }),
+          run(' is \\(y\\), from $5-$10, and '),
+          run('$z$', MONO),
+          run(' is code.'),
+        ]),
+        para('  $$v = d / t$$ '),
+        para('$$a \\\\\vb$$'),
+        styled('HEADING_2', 'Where $n > 1$'),
+        para([run('A Doc’s own '), inline('equation'), run(' is held, and $ x$ is no formula.')]),
+        para('$$x$$ in a sentence, and $$y$$.'),
+      ])
+    )
+    expect(result.markdown).toBe(
+      [
+        // Escaped, as the code's dollar would close a formula in markdown.
+        'So **$x^2$** is $y$, from \\$5-\\$10, and `$z$` is code.',
+        '$$\nv = d / t\n$$',
+        '$$\na \\\\\nb\n$$',
+        '## Where $n > 1$',
+        'A Doc’s own  is held, and $ x$ is no formula.',
+        '$x$ in a sentence, and $y$.',
+      ].join('\n\n')
+    )
+    const formulas = (result.spans ?? []).filter(span => span.kind === 'formula')
+    expect(formulas.map(span => span.written)).toEqual([
+      '$x^2$',
+      '\\(y\\)',
+      '$$v = d / t$$',
+      '$$a \\\\\vb$$',
+      '$n > 1$',
+      '$$x$$',
+      '$$y$$',
+    ])
+    expect(heldIn(result)).toEqual(expect.arrayContaining(['equation', 'space']))
   })
 
   it('reads an empty Doc as an empty document', () => {

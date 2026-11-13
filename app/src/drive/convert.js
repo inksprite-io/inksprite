@@ -22,26 +22,33 @@
  * the whitespace markdown would drop at a line's ends are held. A smart chip
  * comes in as its words: a person's name linked to their address, a date as
  * it shows, a rich link as a link. A footnote's number comes in as `[^1]`,
- * its note at the end of the document as `[^1]: …`, as markdown writes one. A table's cells hold one line here, so a cell's
- * paragraphs are joined by spaces. A Title and a Subtitle are Heading 1 and
- * 2; a paragraph indented at its start and its first line alike, which is
- * what a quote pasted into Docs becomes, is a quote; a paragraph holding
- * only a horizontal line, or only `* * *`, is a rule.
+ * its note at the end of the document as `[^1]: …`, as markdown writes one.
+ * A table's cells hold one line here, so a cell's paragraphs are joined by
+ * spaces. TeX between dollars is a formula, by the rule a document's
+ * markdown has (`utils/tex.js`): `$…$` or `\(…\)` in a sentence, and a
+ * paragraph of nothing but `$$…$$` one on its own. A Doc's own equations are
+ * held: the Docs API gives them no content. A Title and a Subtitle are
+ * Heading 1 and 2; a paragraph indented at its start and its first line
+ * alike, which is what a quote pasted into Docs becomes, is a quote; a
+ * paragraph holding only a horizontal line, or only `* * *`, is a rule.
  *
  * Where a document is in the Doc is a list of spans, in the document's order.
  * A span of text is the same characters at both ends, a hard break being a
  * line break in the Doc. A chip's words are its one index, and a picture is
- * the Doc's. A block's end is its newline. A held part takes no room in the document. Positions and
- * indices both count UTF-16 code units, so a span of text is as long at each
- * end. The document is the one its own markdown reads back as, so the spans
- * hold for the document an import writes; one that would not come back the
- * same (which the tests keep from happening) has none.
+ * the Doc's. A formula is one position for the characters it is written in
+ * there. A block's end is its newline. A held part takes no room in the
+ * document. Positions and indices both count UTF-16 code units, so a span of
+ * text is as long at each end. The document is the one its own markdown
+ * reads back as, so the spans hold for the document an import writes; one
+ * that would not come back the same (which the tests keep from happening)
+ * has none.
  */
 
 import { Mark } from 'prosemirror-model'
 import { schema } from '@/editor/schema.js'
 import { parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
 import { markerFor } from '@/files/pictures.js'
+import { formulaAt, trimTex } from '@/utils/tex.js'
 
 /**
  * @typedef {import('prosemirror-model').Node} Node
@@ -60,10 +67,11 @@ import { markerFor } from '@/files/pictures.js'
  * Where a stretch of the document is in the Doc.
  *
  * @typedef {Object} Span
- * @property {'text'|'chip'|'picture'|'end'|'rule'|'held'} kind - Text is the
- *   same at both ends; a chip is words for one index; a picture is one, for
- *   the Doc's; an end is a block's newline; a rule is a horizontal rule for
- *   its paragraph; held is in the Doc only
+ * @property {'text'|'chip'|'picture'|'formula'|'end'|'rule'|'held'} kind - Text
+ *   is the same at both ends; a chip is words for one index; a picture is
+ *   one, for the Doc's; a formula is one for the characters it is written
+ *   in; an end is a block's newline; a rule is a horizontal rule for its
+ *   paragraph; held is in the Doc only
  * @property {number} pos - Where it starts in the document
  * @property {number} length - Positions it takes there: none for an end or
  *   for what is held
@@ -74,6 +82,8 @@ import { markerFor } from '@/files/pictures.js'
  * @property {string} [held] - What is held: `image`, `pageBreak`, `space`,
  *   `suggestion`, `paragraph`, …
  * @property {string} [object] - A picture's inline object, by id
+ * @property {string} [written] - A formula as the Doc has it, delimiters and
+ *   all, a line break as `\v`
  */
 
 /**
@@ -110,10 +120,11 @@ import { markerFor } from '@/files/pictures.js'
  * A piece of a paragraph as read, before it is written into the document.
  *
  * @typedef {Object} Piece
- * @property {'text'|'break'|'chip'|'picture'|'held'|'fixed'} kind - Fixed
- *   text is the converter's own, as a footnote's `[^1]: `, and nowhere in
- *   the Doc
- * @property {string} [text]
+ * @property {'text'|'break'|'chip'|'picture'|'formula'|'held'|'fixed'} kind -
+ *   Fixed text is the converter's own, as a footnote's `[^1]: `, and nowhere
+ *   in the Doc
+ * @property {string} [text] - Its words; a formula's TeX
+ * @property {string} [written] - A formula as the Doc has it
  * @property {readonly Mark[]} [marks]
  * @property {number} index
  * @property {number} size
@@ -264,6 +275,7 @@ const shows = piece =>
   (piece.kind === 'text' && /\S/.test(piece.text ?? '')) ||
   piece.kind === 'chip' ||
   piece.kind === 'picture' ||
+  piece.kind === 'formula' ||
   piece.kind === 'fixed'
 
 /**
@@ -583,7 +595,7 @@ class Reader {
    * What a paragraph is here.
    *
    * @param {Line} line
-   * @returns {'blank'|'heading'|'list'|'rule'|'quote'|'code'|'paragraph'}
+   * @returns {'blank'|'heading'|'list'|'rule'|'quote'|'code'|'formula'|'paragraph'}
    */
   #kindOf(line) {
     const showing = line.pieces.filter(shows)
@@ -600,7 +612,8 @@ class Reader {
     const code = showing.every(
       piece => piece.kind === 'text' && piece.marks?.some(mark => mark.type === marks.code)
     )
-    return code ? 'code' : 'paragraph'
+    if (code) return 'code'
+    return displayOf(line.pieces) ? 'formula' : 'paragraph'
   }
 
   /**
@@ -685,6 +698,8 @@ class Reader {
         out.push(rule)
       } else if (kind === 'heading') {
         out.push(...this.#split(nodes.heading, { level: HEADINGS[line.named] }, line))
+      } else if (kind === 'formula') {
+        out.push(this.#formulaBlock(line))
       } else {
         out.push(...this.#split(nodes.paragraph, null, line))
       }
@@ -862,6 +877,38 @@ class Reader {
   }
 
   /**
+   * A formula on its own, from a paragraph of nothing but it: the spacing
+   * either side held.
+   *
+   * @param {Line} line
+   * @returns {Node}
+   */
+  #formulaBlock(line) {
+    const { tex, start, end, written } = /** @type {Display} */ (displayOf(line.pieces))
+    const index = line.pieces[0].index
+    const node = nodes.formula_block.create({ tex })
+    /** @type {LocalSpan[]} */
+    const spans = []
+    if (start > 0)
+      spans.push({ kind: 'held', pos: 0, length: 0, index, size: start, held: 'space' })
+    spans.push({
+      kind: 'formula',
+      pos: 0,
+      length: 1,
+      index: index + start,
+      size: end - start,
+      written: written.slice(start, end).replace(/\n/g, '\v'),
+    })
+    if (end < written.length) {
+      const size = written.length - end
+      spans.push({ kind: 'held', pos: 1, length: 0, index: index + end, size, held: 'space' })
+    }
+    spans.push({ kind: 'end', pos: 1, length: 0, index: line.end, size: 1 })
+    this.#register(node, spans)
+    return node
+  }
+
+  /**
    * A table, its cells each one line.
    *
    * @param {StructuralElement} element
@@ -957,7 +1004,7 @@ class Reader {
           piece.kind === 'break' ? { ...piece, kind: 'text', text: ' ', marks: Mark.none } : piece
         )
       }
-      laid = codeWithoutEdges(trimLines(laid))
+      laid = formulasIn(codeWithoutEdges(trimLines(laid)))
     }
 
     /** @type {Node[]} */
@@ -979,6 +1026,20 @@ class Reader {
           index: piece.index,
           size: piece.size,
           object,
+          ...segment,
+        })
+        pos += 1
+        continue
+      }
+      if (piece.kind === 'formula') {
+        content.push(nodes.formula.create({ tex: piece.text }, null, piece.marks))
+        spans.push({
+          kind: 'formula',
+          pos,
+          length: 1,
+          index: piece.index,
+          size: piece.size,
+          written: piece.written,
           ...segment,
         })
         pos += 1
@@ -1162,6 +1223,130 @@ function codeWithoutEdges(pieces) {
     }
     return out
   })
+}
+
+/**
+ * Whether a piece is words a formula can be written in: text, not code.
+ *
+ * @param {Piece} piece
+ * @returns {boolean}
+ */
+const isWords = piece =>
+  piece.kind === 'text' && !piece.marks?.some(mark => mark.type === marks.code)
+
+/**
+ * A block's pieces with each formula written in its words one piece. A
+ * formula is read within words that follow on, nothing else between them,
+ * whose indices follow on too; it takes the marks all of it has.
+ *
+ * @param {Piece[]} pieces
+ * @returns {Piece[]}
+ */
+function formulasIn(pieces) {
+  /** @type {Piece[]} */
+  const out = []
+  for (let i = 0; i < pieces.length; ) {
+    let j = i
+    while (j < pieces.length && isWords(pieces[j])) j++
+    if (j === i) {
+      out.push(pieces[i++])
+      continue
+    }
+    out.push(...formulasAmong(pieces.slice(i, j)))
+    i = j
+  }
+  return out
+}
+
+/**
+ * @param {Piece[]} words - Text that follows on, in the Doc as here
+ * @returns {Piece[]}
+ */
+function formulasAmong(words) {
+  const text = words.map(piece => piece.text ?? '').join('')
+  if (!/\$|\\\(/.test(text)) return words
+  /** @type {Array<{from: number, to: number, tex: string}>} */
+  const found = []
+  for (let at = 0; at < text.length; at++) {
+    if (text[at] !== '$' && text[at] !== '\\') continue
+    const formula = formulaAt(text.slice(at), false)
+    if (!formula) continue
+    found.push({ from: at, to: at + formula.raw.length, tex: trimTex(formula.tex) })
+    at += formula.raw.length - 1
+  }
+  if (found.length === 0) return words
+
+  // Where each piece starts in the text.
+  /** @type {number[]} */
+  const starts = []
+  let length = 0
+  for (const piece of words) {
+    starts.push(length)
+    length += (piece.text ?? '').length
+  }
+  /**
+   * The words between two places, in their pieces.
+   *
+   * @param {number} from
+   * @param {number} to
+   * @returns {Piece[]}
+   */
+  const between = (from, to) =>
+    words.flatMap((piece, k) => {
+      const lo = Math.max(from, starts[k])
+      const hi = Math.min(to, starts[k] + (piece.text ?? '').length)
+      if (lo >= hi) return []
+      const text = (piece.text ?? '').slice(lo - starts[k], hi - starts[k])
+      return [{ ...piece, text, index: piece.index + lo - starts[k], size: hi - lo }]
+    })
+  /** @type {Piece[]} */
+  const out = []
+  let at = 0
+  for (const { from, to, tex } of found) {
+    out.push(...between(at, from))
+    const covered = between(from, to)
+    const shared = (covered[0].marks ?? Mark.none).filter(mark =>
+      covered.every(piece => mark.isInSet(piece.marks ?? Mark.none))
+    )
+    out.push({
+      kind: 'formula',
+      text: tex,
+      written: text.slice(from, to),
+      marks: shared,
+      index: covered[0].index,
+      size: to - from,
+    })
+    at = to
+  }
+  out.push(...between(at, text.length))
+  return out
+}
+
+/**
+ * A paragraph that is a formula on its own: its TeX, and where it is in the
+ * paragraph's characters, which follow on.
+ *
+ * @typedef {{tex: string, start: number, end: number, written: string}} Display
+ */
+
+/**
+ * Whether a paragraph is a formula on its own: nothing but words and line
+ * breaks, making `$$`, its TeX and `$$`, with spacing either side.
+ *
+ * @param {Piece[]} pieces
+ * @returns {Display|null}
+ */
+function displayOf(pieces) {
+  if (pieces.length === 0) return null
+  if (!pieces.every(piece => piece.kind === 'break' || isWords(piece))) return null
+  const written = pieces.map(piece => (piece.kind === 'break' ? '\n' : piece.text)).join('')
+  const start = written.length - written.trimStart().length
+  const end = written.trimEnd().length
+  const formula = written.slice(start, end)
+  if (!formula.startsWith('$$')) return null
+  const found = formulaAt(formula, false)
+  if (!found?.display || found.raw !== formula) return null
+  return { tex: trimTex(found.tex), start, end, written }
 }
 
 /** Marks given up, in turn, by a block whose marks markdown cannot write. */

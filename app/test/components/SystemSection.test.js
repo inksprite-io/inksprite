@@ -1,8 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
-import ToggleSwitch from 'primevue/toggleswitch'
 import SystemSection from '@/components/writer/settings/SystemSection.vue'
 
 const {
@@ -12,15 +11,10 @@ const {
   setDebug,
   compactText,
   setCompactText,
-  setChatProfileId,
-  askBeforeExploring,
-  setAskBeforeExploring,
   forgetSavedRequests,
   setSpellingEnabled,
   setSpellingDialect,
   setGrammar,
-  activeAIPresetId,
-  setActiveAIPreset,
 } = vi.hoisted(() => ({
   aiEnabled: { value: true },
   setAiEnabled: vi.fn(),
@@ -28,15 +22,10 @@ const {
   setDebug: vi.fn(),
   compactText: { value: true },
   setCompactText: vi.fn(),
-  setChatProfileId: vi.fn(),
-  askBeforeExploring: { value: true },
-  setAskBeforeExploring: vi.fn(),
   forgetSavedRequests: vi.fn(),
   setSpellingEnabled: vi.fn(),
   setSpellingDialect: vi.fn(),
   setGrammar: vi.fn(),
-  activeAIPresetId: { value: 'profile_default' },
-  setActiveAIPreset: vi.fn(),
 }))
 
 const SPELLING = { enabled: true, dialect: 'american', grammar: true, words: [] }
@@ -55,39 +44,15 @@ vi.mock('@/composables/useApplicationState', () => ({
     setDebug,
     compactText,
     setCompactText,
-    setChatProfileId,
-    askBeforeExploring,
-    setAskBeforeExploring,
     spelling,
     setSpellingEnabled,
     setSpellingDialect,
     setGrammar,
   }),
 }))
-vi.mock('@/composables/useProfiles', () => ({
-  useProfiles: () => ({
-    profiles: ref([
-      { id: 'builtin_profile_chat', name: 'Default', readOnly: true },
-      { id: 'builtin_profile_roleplay', name: 'Roleplay', readOnly: true },
-      { id: 'chatprofile_mine', name: 'Default - Custom', readOnly: false },
-    ]),
-    getProfile: id => ({ id }),
-    chatDefaultId: () => 'chatprofile_mine',
-    roleplayDefaultId: () => 'builtin_profile_roleplay',
-  }),
-}))
-vi.mock('@/composables/useAIConfig', () => ({
-  useAIConfig: () => ({
-    presets: {
-      value: [
-        { id: 'profile_default', name: 'Default' },
-        { id: 'profile_glm', name: 'GLM' },
-      ],
-    },
-    activeAIPresetId,
-    setActiveAIPreset,
-  }),
-}))
+/** Whether the writer types on a touch screen's keyboard. */
+const touch = vi.hoisted(() => ({ keyboard: false }))
+vi.mock('@/utils/touch.js', () => ({ hasTouchKeyboard: () => touch.keyboard }))
 vi.mock('@/stores/messagesStore', () => ({ useMessagesStore: () => ({ forgetSavedRequests }) }))
 
 /** The switch whose root carries this attribute. */
@@ -165,20 +130,6 @@ describe('SystemSection debug', () => {
   })
 })
 
-describe('SystemSection switches', () => {
-  it("has no roleplay switches: they are the Roleplay extension's", () => {
-    const switches = mountSection().findAllComponents(ToggleSwitch)
-    expect(switches.map(one => one.props('inputId'))).toEqual([
-      'ai-switch',
-      'compact-text-switch',
-      'debug-switch',
-      'spelling-switch',
-      'grammar-switch',
-      'ask-before-exploring',
-    ])
-  })
-})
-
 describe('SystemSection AI', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -201,33 +152,6 @@ describe('SystemSection AI', () => {
   it('stays with the AI switched off, to switch it back on', () => {
     aiEnabled.value = false
     expect(toggle(mountSection(), 'data-ai-enabled').props('modelValue')).toBe(false)
-  })
-})
-
-describe('SystemSection folds', () => {
-  beforeEach(() => {
-    window.sessionStorage.clear()
-    aiEnabled.value = true
-  })
-
-  /** The button that opens and closes the section with this title. */
-  const fold = (wrapper, title) =>
-    wrapper.findAll('button[aria-expanded]').find(button => button.text() === title)
-
-  it('has spelling and the chats folded away, and opens them', async () => {
-    const wrapper = mountSection()
-    for (const title of ['Spelling', 'Chats']) {
-      expect(fold(wrapper, title).attributes('aria-expanded')).toBe('false')
-      await fold(wrapper, title).trigger('click')
-      expect(fold(wrapper, title).attributes('aria-expanded')).toBe('true')
-    }
-  })
-
-  it('opens them as they were left', async () => {
-    await fold(mountSection(), 'Chats').trigger('click')
-    const wrapper = mountSection()
-    expect(fold(wrapper, 'Chats').attributes('aria-expanded')).toBe('true')
-    expect(fold(wrapper, 'Spelling').attributes('aria-expanded')).toBe('false')
   })
 })
 
@@ -301,47 +225,64 @@ describe('SystemSection chats', () => {
     aiEnabled.value = true
   })
 
-  /** The picker whose root carries this attribute. */
-  const picker = (wrapper, attribute) => wrapper.findComponent(`[${attribute}]`)
-
-  it('shows the profile new chats start on, and keeps the one chosen', async () => {
-    const wrapper = mountSection()
-    expect(picker(wrapper, 'data-chat-profile').props('modelValue')).toBe('chatprofile_mine')
-    expect(picker(wrapper, 'data-roleplay-profile').exists()).toBe(false)
-
-    await picker(wrapper, 'data-chat-profile').vm.$emit('update:modelValue', 'builtin_profile_chat')
-    expect(setChatProfileId).toHaveBeenCalledWith('builtin_profile_chat')
-  })
-
-  it('shows the preset chats run on when they name none, and keeps the one chosen', async () => {
-    const wrapper = mountSection()
-    expect(wrapper.find('[for="chat-preset"]').text()).toBe('Default preset')
-    expect(picker(wrapper, 'data-chat-preset').props('modelValue')).toBe('profile_default')
-
-    await picker(wrapper, 'data-chat-preset').vm.$emit('update:modelValue', 'profile_glm')
-    expect(setActiveAIPreset).toHaveBeenCalledWith('profile_glm')
-  })
-
-  it('asks before exploring a lot until switched off', async () => {
+  it('has no Chats group: a profile, a model and asking before exploring are a chat’s own', () => {
     const wrapper = mountSection()
 
-    expect(wrapper.find('[for="ask-before-exploring"]').text()).toBe(
-      'Ask before exploring large folders'
-    )
-    const ask = toggle(wrapper, 'data-ask-before-exploring')
-    expect(ask.props('modelValue')).toBe(true)
-    await ask.vm.$emit('update:modelValue', false)
-    expect(setAskBeforeExploring).toHaveBeenCalledWith(false)
+    expect(wrapper.text()).not.toContain('Chats')
+    expect(wrapper.text()).not.toContain('exploring')
+    for (const attribute of ['data-chat-profile', 'data-roleplay-profile', 'data-chat-preset']) {
+      expect(wrapper.find(`[${attribute}]`).exists()).toBe(false)
+    }
   })
 
-  it('goes with the AI switched off, and the rest stays', () => {
+  it('is the same with the AI switched off', () => {
     aiEnabled.value = false
     const wrapper = mountSection()
 
-    expect(picker(wrapper, 'data-chat-profile').exists()).toBe(false)
-    expect(picker(wrapper, 'data-chat-preset').exists()).toBe(false)
-    expect(toggle(wrapper, 'data-ask-before-exploring').exists()).toBe(false)
     expect(wrapper.text()).not.toContain('Chats')
+    expect(toggle(wrapper, 'data-debug').exists()).toBe(true)
+  })
+})
+
+describe('SystemSection layout', () => {
+  beforeEach(() => {
+    window.localStorage.clear()
+    spelling.value = { ...SPELLING }
+  })
+
+  afterEach(() => (touch.keyboard = false))
+
+  /** The folds' titles, in order. */
+  const folds = wrapper => wrapper.findAll('h3 button[aria-expanded]').map(one => one.text())
+
+  it('has the theme and the switches in the open, and Spelling as its one fold', () => {
+    const wrapper = mountSection()
+
+    expect(
+      wrapper
+        .findAll('label')
+        .map(label => label.text())
+        .slice(0, 4)
+    ).toEqual(['Theme', 'Enable AI', 'Compact text', 'Debug'])
+    expect(folds(wrapper)).toEqual(['Spelling'])
+  })
+
+  it('opens and shuts Spelling from its title', async () => {
+    const wrapper = mountSection()
+    const title = wrapper.find('h3 button[aria-expanded]')
+    const before = title.attributes('aria-expanded')
+
+    await title.trigger('click')
+
+    expect(title.attributes('aria-expanded')).toBe(before === 'true' ? 'false' : 'true')
+  })
+
+  it('offers no spelling on a phone, which keeps its keyboard’s checker', () => {
+    touch.keyboard = true
+    const wrapper = mountSection()
+
+    expect(folds(wrapper)).toEqual([])
+    expect(wrapper.find('[data-spelling-enabled]').exists()).toBe(false)
     expect(toggle(wrapper, 'data-debug').exists()).toBe(true)
   })
 })

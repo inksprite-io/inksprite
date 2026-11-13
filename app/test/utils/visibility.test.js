@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { chatVisibility, markOf, unpinned, withMark } from '@/utils/visibility.js'
+import { chatVisibility, markOf, withMark } from '@/utils/visibility.js'
 
 // root
 // └ Cards
@@ -27,12 +27,18 @@ const get = id => tree[id]
 
 describe('markOf', () => {
   it('is the mark put on the document itself', () => {
-    const chat = { pinnedIds: ['a'], shownIds: ['b'], hiddenIds: ['c'] }
+    const chat = { shownIds: ['b'], hiddenIds: ['c'] }
 
-    expect(markOf(chat, 'a')).toBe('pinned')
     expect(markOf(chat, 'b')).toBe('shown')
     expect(markOf(chat, 'c')).toBe('hidden')
     expect(markOf(chat, 'd')).toBeNull()
+  })
+
+  it('reads a pin from before as a document the chat shows', () => {
+    // A pin carried a document's text on every turn. Nothing pins now, and a
+    // chat that still lists one keeps the document in sight, as the pin did.
+    expect(markOf({ pinnedIds: ['a'] }, 'a')).toBe('shown')
+    expect(markOf({ pinnedIds: ['a'], hiddenIds: ['a'] }, 'a')).toBe('hidden')
   })
 
   it('is nothing without a chat', () => {
@@ -43,19 +49,25 @@ describe('markOf', () => {
 
 describe('withMark', () => {
   it('keeps a document in one state at most', () => {
-    const chat = { pinnedIds: ['a', 'b'], hiddenIds: ['c'] }
+    const chat = { shownIds: ['a', 'b'], hiddenIds: ['c'] }
 
     expect(withMark(chat, 'a', 'hidden')).toEqual({
+      shownIds: ['b'],
+      hiddenIds: ['c', 'a'],
+    })
+  })
+
+  it('takes a document off the pins a chat from before lists', () => {
+    expect(withMark({ pinnedIds: ['a', 'b'] }, 'a', 'hidden')).toEqual({
       pinnedIds: ['b'],
       shownIds: undefined,
-      hiddenIds: ['c', 'a'],
+      hiddenIds: ['a'],
     })
   })
 
   it('writes an emptied list as absent', () => {
     // A chat that never marked anything and one that has stopped read the same.
-    expect(withMark({ pinnedIds: ['a'] }, 'a', null)).toEqual({
-      pinnedIds: undefined,
+    expect(withMark({ shownIds: ['a'] }, 'a', null)).toEqual({
       shownIds: undefined,
       hiddenIds: undefined,
     })
@@ -100,7 +112,7 @@ describe('chatVisibility', () => {
     ])
   })
 
-  it('sees a pin under a folder the chat hid', () => {
+  it('sees a pin from before under a folder the chat hid', () => {
     expect(seen({ hiddenIds: ['chars'], pinnedIds: ['elaraDesc'] })).toContain('elaraDesc')
     expect(seen({ hiddenIds: ['chars'], pinnedIds: ['elaraDesc'] })).not.toContain('elara')
   })
@@ -118,51 +130,16 @@ describe('chatVisibility', () => {
   })
 
   it('says why: hidden everywhere, and the mark that decides', () => {
-    const visibility = chatVisibility({ hiddenIds: ['chars'], pinnedIds: ['vivi'] }, get)
+    const visibility = chatVisibility({ hiddenIds: ['chars'], shownIds: ['vivi'] }, get)
 
     expect(visibility.hiddenEverywhere(tree.plot)).toBe(true)
     expect(visibility.hiddenEverywhere(tree.elara)).toBe(false)
-    expect(visibility.markFor(tree.viviDesc)).toBe('pinned')
+    expect(visibility.markFor(tree.viviDesc)).toBe('shown')
     expect(visibility.markFor(tree.elaraDesc)).toBe('hidden')
     expect(visibility.markFor(tree.root)).toBeNull()
   })
 
   it('does not see nothing', () => {
     expect(chatVisibility(null, get).sees(null)).toBe(false)
-  })
-})
-
-describe('unpinned', () => {
-  it('takes off a pin of the document’s own', () => {
-    const chat = { pinnedIds: ['viviDesc', 'elaraDesc'], hiddenIds: ['notes'] }
-
-    expect(unpinned(chat, tree.viviDesc, get)).toEqual({
-      pinnedIds: ['elaraDesc'],
-      shownIds: undefined,
-      hiddenIds: ['notes'],
-    })
-  })
-
-  it('lets a document go from under a pinned folder, keeping it in sight', () => {
-    // The folder's pin stays the folder's. The document is shown instead:
-    // listed, readable, and not carried — letting go is not hiding.
-    const chat = { pinnedIds: ['vivi'] }
-    const next = unpinned(chat, tree.viviDesc, get)
-
-    expect(next).toEqual({ pinnedIds: ['vivi'], shownIds: ['viviDesc'], hiddenIds: undefined })
-    const { sees, markFor } = chatVisibility(next, get)
-    expect(sees(tree.viviDesc)).toBe(true)
-    expect(markFor(tree.viviDesc)).toBe('shown')
-    expect(markFor(tree.viviGreet)).toBe('pinned')
-  })
-
-  it('does the same for a document pinned in its own right under a pinned folder', () => {
-    const chat = { pinnedIds: ['vivi', 'viviDesc'] }
-
-    expect(unpinned(chat, tree.viviDesc, get)).toEqual({
-      pinnedIds: ['vivi'],
-      shownIds: ['viviDesc'],
-      hiddenIds: undefined,
-    })
   })
 })

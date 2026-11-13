@@ -43,6 +43,7 @@ import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
 import { generateDocumentId, useDocumentsStore } from '@/stores/documentsStore'
 import { useFilesStore } from '@/stores/filesStore'
 import { useVersionsStore } from '@/stores/versionsStore'
+import { useSkillStore } from '@/stores/skillStore.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { useEditor } from '@/composables/useEditor.js'
 import { useChats } from '@/composables/useChats.js'
@@ -50,7 +51,7 @@ import { appendBlocks, settleMarkdown } from '@/editor/markdown.js'
 import { documentPath, documentTitles, freeTitle, namesake } from '@/utils/documentPath.js'
 import { applyEdit, reverseEdit } from '@/utils/edits.js'
 import { sameThread } from '@/editor/comments.js'
-import { chatTabOf } from '@/utils/chatTabs.js'
+import { chatTabOf, skillTabOf } from '@/utils/chatTabs.js'
 import { pictureKey, repointPictures } from '@/utils/pictures.js'
 import { linkTargets, relinked } from '@/utils/linkUpdates.js'
 import {
@@ -136,9 +137,19 @@ export const useDocuments = storyId => {
   }
 
   /**
+   * Whether a skill whose file a tab holds is still in the library. Until the
+   * library is read any is.
+   * @param {string} skillId
+   */
+  const hasSkill = skillId => {
+    const skills = useSkillStore()
+    return !skills.loaded || !!skills.getSkill(skillId)
+  }
+
+  /**
    * The editor's tabs, as the project's view remembers them and the tree allows: only
    * a document still in the tree with something to show — text, or a file —
-   * or the text of a chat still there can be open, so anything else has been
+   * or the text of a chat or a skill still there can be open, so anything else has been
    * dropped by the time they are read. Before the tree is loaded they are
    * taken as stored.
    * @type {import('vue').ComputedRef<Tabs>}
@@ -149,6 +160,8 @@ export const useDocuments = storyId => {
     return normalizeTabs(stored, id => {
       const chatTab = chatTabOf(id)
       if (chatTab) return hasChat(chatTab.chatId)
+      const skillId = skillTabOf(id)
+      if (skillId) return hasSkill(skillId)
       const type = documentsStore.getDocument(id)?.type
       return type === 'text' || type === 'file'
     })
@@ -234,9 +247,9 @@ export const useDocuments = storyId => {
   }
 
   /**
-   * Close a tab. The document is written out and let go of, and the
-   * neighbour comes forward. Closing the last leaves nothing open, which the
-   * story remembers too.
+   * Close a tab. The document is written out and let go of, and the one
+   * shown before it comes forward. Closing the last leaves nothing open,
+   * which the story remembers too.
    * @param {string} documentId
    */
   const closeTab = documentId => {
@@ -272,6 +285,20 @@ export const useDocuments = storyId => {
    * @returns {boolean}
    */
   const isFolder = document => document?.type === 'folder'
+
+  /**
+   * Whether the writer, or the model, can put a document into this one: make
+   * one there, drag one in, import into it. A folder, and a card in either
+   * shape, a folder or the picture it came in holding its fields: what the
+   * writer keeps about a character goes with the character. Any other
+   * document holds only what an import or Convert put under it
+   * (`.llm/nested_documents_design.md`). Whether a move may go there at all,
+   * which undo and the tools ask too, is `canDropInto`'s.
+   * @param {Document|null|undefined} document
+   * @returns {boolean}
+   */
+  const takesDocuments = document =>
+    document?.type === 'folder' || (document?.type === 'file' && document.kind === 'card')
 
   /**
    * Whether a folder sequences its children, which decides both the sort and
@@ -1107,6 +1134,7 @@ export const useDocuments = storyId => {
     childrenOf,
     firstTextDocument,
     isFolder,
+    takesDocuments,
     isOrdered,
     isHidden,
     displayTitle,

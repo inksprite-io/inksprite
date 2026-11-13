@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   DEFAULT_KEEP,
   KEPT_OPENING,
@@ -125,6 +125,23 @@ describe('compactionCover', () => {
     expect(compactionCover([turn('a'), turn('b'), summary('s')]).has(0)).toBe(false)
   })
 
+  it('leaves standing as much of the top as the summary says it kept', () => {
+    // A roleplay chat's opening is two messages. The summary says so, so what
+    // it stands for is read off the conversation alone.
+    const kept = { ...summary('s'), metadata: { ...summary('s').metadata, opening: 2 } }
+    const history = [turn('a'), turn('b'), turn('c'), turn('d'), kept, turn('e')]
+
+    expect([...compactionCover(history)]).toEqual([2, 3])
+    expect(ids(applyCompaction(history))).toEqual(['a', 'b', 's', 'e'])
+  })
+
+  it('goes by the newest summary’s opening, whatever one before it kept', () => {
+    const two = { ...summary('s1'), metadata: { ...summary('s1').metadata, opening: 2 } }
+    const history = [turn('a'), turn('b'), turn('c'), two, turn('d'), summary('s2')]
+
+    expect([...compactionCover(history)]).toEqual([1, 2, 3, 4])
+  })
+
   it('covers the summaries before the newest, which it was written from', () => {
     const history = [
       turn('a'),
@@ -225,6 +242,10 @@ describe('firstSummarizable', () => {
     expect(firstSummarizable([...history, turn('e')])).toBe(6)
   })
 
+  it('starts below a longer opening, for a chat that keeps one', () => {
+    expect(firstSummarizable([turn('a'), turn('b'), turn('c'), turn('d')], 2)).toBe(3)
+  })
+
   it('is past the end when a summary has nothing to fold in', () => {
     expect(firstSummarizable([turn('a')])).toBe(2)
     expect(firstSummarizable([turn('a'), turn('b'), summary('s1')])).toBe(4)
@@ -264,5 +285,48 @@ describe('unwrapSummary', () => {
     const consult = async () => '<summary>They ran.</summary>'
 
     expect(await askCompact('', { consult })).toEqual({ answer: 'They ran.' })
+  })
+})
+
+describe('askCompact', () => {
+  it('asks in the thread where it can, with the wording as the last word', async () => {
+    const inThread = vi.fn(async () => 'They ran.')
+    const consult = vi.fn()
+
+    expect(await askCompact('keep the heist', { inThread, consult }, { past: 4 })).toEqual({
+      answer: 'They ran.',
+    })
+
+    // Not a transcript under a prompt of its own: the chat's model, with all
+    // the conversation holds.
+    expect(consult).not.toHaveBeenCalled()
+    const [instruction, options] = inThread.mock.calls[0]
+    expect(instruction).toMatch(/^\[The user has asked for a summary/)
+    expect(instruction).toContain('Summarize this chat')
+    expect(instruction).toContain('keep the heist')
+    expect(options).toMatchObject({ past: 4 })
+  })
+
+  it('asks under the profile’s wording, where it has one', async () => {
+    const inThread = vi.fn(async () => 'They ran.')
+
+    await askCompact('', { inThread, promptFor: () => 'Summarize this roleplay.' })
+
+    expect(inThread.mock.calls[0][0]).toContain('Summarize this roleplay.')
+    expect(inThread.mock.calls[0][0]).not.toContain('Summarize this chat')
+  })
+
+  it('hands a transcript to a context that cannot ask in the thread', async () => {
+    const consult = vi.fn(async () => 'They ran.')
+
+    await askCompact('', { consult })
+
+    expect(consult.mock.calls[0][0]).toMatch(/^Summarize this chat/)
+  })
+
+  it('says so when there is no conversation to ask about', async () => {
+    expect(await askCompact('', {})).toEqual({
+      error: 'There is no conversation here to compact.',
+    })
   })
 })

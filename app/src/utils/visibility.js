@@ -8,25 +8,25 @@
  * a card's JSON, the prompt it replaces — and nothing a chat says brings it
  * back, nor anything under a folder that has it.
  *
- * Under that, each chat marks documents for itself: **pinned** (its text rides
- * in the project block from the first turn), **shown** (listed, and the model
- * reads it when it wants to), or **hidden** (not there, for this chat). A mark
- * on a folder covers what is under it, and the nearest mark going up the tree
- * decides. So a chat on one character hides the folder all the characters are
- * in and shows its own, and a character imported next week lands hidden in
- * that chat without anybody touching it. A document nothing is marked on is
- * shown, which is what every chat had before there were marks.
+ * Under that, each chat marks documents for itself: **shown** (listed, and the
+ * model reads it when it wants to), or **hidden** (not there, for this chat).
+ * A mark on a folder covers what is under it, and the nearest mark going up
+ * the tree decides. So a chat on one character hides the folder all the
+ * characters are in and shows its own, and a character imported next week
+ * lands hidden in that chat without anybody touching it. A document nothing
+ * is marked on is shown, which is what every chat had before there were marks.
  *
- * A pin is a mark like the other two rather than a flag beside them, so that a
- * document can only be in one state in a chat and a pin under a hidden folder
- * is seen.
+ * There was a third mark, a pin, which carried a document's text on every
+ * turn; a document is attached to a message now (ai/context/attachments.js).
+ * A chat from before may still list its pins (`pinnedIds`). They are read as
+ * shown, which a pin also was: one under a hidden folder stays in sight.
  */
 
 /** @typedef {import('../types/models.js').Document} TreeDocument */
 /** @typedef {import('../types/models.js').Chat} ChatRecord */
 
 /**
- * @typedef {'pinned'|'shown'|'hidden'} ChatMark
+ * @typedef {'shown'|'hidden'} ChatMark
  */
 
 /**
@@ -37,7 +37,6 @@
 
 /** Where each mark is stored on a chat. */
 const FIELDS = /** @type {const} */ ({
-  pinned: 'pinnedIds',
   shown: 'shownIds',
   hidden: 'hiddenIds',
 })
@@ -54,16 +53,17 @@ export function markOf(chat, id) {
   for (const [mark, field] of Object.entries(FIELDS)) {
     if (chat[field]?.includes(id)) return /** @type {ChatMark} */ (mark)
   }
-  return null
+  // A pin from before, which showed what it pinned.
+  return chat.pinnedIds?.includes(id) ? 'shown' : null
 }
 
 /**
  * Put a mark on a document for a chat, or take it off.
  *
- * Taken off the other two first, so a document is in one state at most. A
- * list left empty is written as absent, so a chat that never marked anything
- * and one that has stopped read the same. Every mark is the writer's: the
- * model has none of its own.
+ * Taken off the other first, so a document is in one state at most, and off
+ * the pins a chat from before may list. A list left empty is written as
+ * absent, so a chat that never marked anything and one that has stopped read
+ * the same. Every mark is the writer's: the model has none of its own.
  *
  * @param {ChatMarks|null|undefined} chat
  * @param {string} id
@@ -78,26 +78,11 @@ export function withMark(chat, id, mark) {
     if (name === mark) list.push(id)
     next[field] = list.length ? list : undefined
   }
+  if (chat?.pinnedIds?.includes(id)) {
+    const pins = chat.pinnedIds.filter(other => other !== id)
+    next.pinnedIds = pins.length ? pins : undefined
+  }
   return next
-}
-
-/**
- * The chat's marks with a document let go of, wherever its pin came from.
- *
- * A pin of its own comes off. One it takes from a folder above stays the
- * folder's, and the document is marked shown instead: listed, readable, and
- * not carried. Either way the document stays in sight — letting go is not
- * hiding.
- *
- * @param {ChatMarks|null|undefined} chat
- * @param {TreeDocument} document
- * @param {(id: string) => TreeDocument|undefined|null} get - Documents by id
- * @returns {ChatMarks} The three lists, to update the chat with
- */
-export function unpinned(chat, document, get) {
-  const bare = withMark(chat, document.id, null)
-  const byFolder = chatVisibility(bare, get).markFor(document) === 'pinned'
-  return byFolder ? withMark(chat, document.id, 'shown') : bare
 }
 
 /**

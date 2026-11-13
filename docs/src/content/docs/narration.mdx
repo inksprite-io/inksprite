@@ -64,17 +64,17 @@ The voice called **Narrator** reads everything. Open **Voices** to change it.
 
 <Screenshot name="narration-voices" alt="The voice settings" />
 
-At the top, **Provider** is already **Kokoro**, and with the server running,
-**Model** shows `kokoro`. If your server isn't at `http://localhost:8880/v1`,
-click **⋮** beside **Provider** and change **Endpoint**. Each project keeps its
-own **Provider** and **Model**.
+At the top, click **+** beside **Provider** to add Kokoro: its **Address** is
+filled in as `http://localhost:8880/v1`. Change it if your server is elsewhere,
+click **Connect**, then **Done**. With the server running, **Model** shows
+`kokoro`. Each project keeps its own **Provider** and **Model**.
 
 :::note[Other speech services]
-Narration can also speak through **OpenRouter** or **OpenAI**, with the key you
-connected for the chat. Choose one under **Provider**, then a **Model**, and
-pick one of the model's voices under **Voice**. OpenRouter has Kokoro too,
-with most of its voices; only Kokoro mixes them. Both charge for what they
-read.
+Narration can also speak through **OpenRouter**, **OpenAI** or **NanoGPT**,
+with the connection you made for the chat. Choose one under **Provider**, then
+a **Model**, and pick one of the model's voices under **Voice**. OpenRouter has
+Kokoro too, with most of its voices; only Kokoro mixes them. OpenRouter and
+OpenAI charge for what they read.
 :::
 
 Below them is the voice itself:
@@ -164,6 +164,9 @@ OpenAI is paid for again. The desktop app keeps it with the project.
 :::
 
 ## More than one voice
+
+The voice a chat's turns are read in is chosen in the chat: right-click
+**Read aloud** on a turn; see [Chats](/chats/#voices).
 
 Each segment can have a voice of its own. Add a voice with **+** under
 **Voices**, then click the person icon on a segment's row and choose it; with

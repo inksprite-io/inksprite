@@ -45,6 +45,15 @@ const mockEditor = vi.hoisted(() => ({
 }))
 vi.mock('@/composables/useEditor.js', () => ({ useEditor: () => mockEditor }))
 
+/** The skill library, for the tabs that hold a skill's file. */
+const mockSkills = vi.hoisted(() => ({ loaded: true, ids: new Set(['skill_1']) }))
+vi.mock('@/stores/skillStore.js', () => ({
+  useSkillStore: () => ({
+    loaded: mockSkills.loaded,
+    getSkill: id => (mockSkills.ids.has(id) ? { id } : null),
+  }),
+}))
+
 /** The project's chats, for the tabs that hold a chat's text. */
 const mockChats = vi.hoisted(() => ({
   ready: { value: true },
@@ -73,6 +82,8 @@ const mockUpdateView = vi.fn((_id, updates) => Object.assign(mockView, updates))
 /** Where the project was left, or a view from before tabs. */
 const rememberView = fields => {
   delete mockView.openDocumentIds
+  delete mockView.previewDocumentId
+  delete mockView.shownDocumentIds
   Object.assign(mockView, { lastDocumentId: null }, fields)
 }
 vi.mock('@/stores/projectViewsStore.js', () => ({
@@ -535,7 +546,7 @@ describe('useDocuments', () => {
     })
 
     it('start empty for a project never opened', () => {
-      expect(api.tabs.value).toEqual({ open: [], active: null, preview: null })
+      expect(api.tabs.value).toEqual({ open: [], active: null, preview: null, shown: [] })
       expect(api.activeDocumentId.value).toBe('')
     })
 
@@ -558,8 +569,14 @@ describe('useDocuments', () => {
         openDocumentIds: ['doc_1', 'doc_2'],
         lastDocumentId: 'doc_2',
         previewDocumentId: null,
+        shownDocumentIds: ['doc_2', 'doc_1'],
       })
-      expect(api.tabs.value).toEqual({ open: ['doc_1', 'doc_2'], active: 'doc_2', preview: null })
+      expect(api.tabs.value).toEqual({
+        open: ['doc_1', 'doc_2'],
+        active: 'doc_2',
+        preview: null,
+        shown: ['doc_2', 'doc_1'],
+      })
       expect(api.activeDocumentId.value).toBe('doc_2')
     })
 
@@ -568,7 +585,12 @@ describe('useDocuments', () => {
       api.open('doc_2')
       api.open('doc_1')
 
-      expect(api.tabs.value).toEqual({ open: ['doc_1', 'doc_2'], active: 'doc_1', preview: null })
+      expect(api.tabs.value).toEqual({
+        open: ['doc_1', 'doc_2'],
+        active: 'doc_1',
+        preview: null,
+        shown: ['doc_1', 'doc_2'],
+      })
     })
 
     describe("a chat's text", () => {
@@ -585,6 +607,7 @@ describe('useDocuments', () => {
           open: ['doc_1', 'chat:chat_1:prompt'],
           active: 'chat:chat_1:prompt',
           preview: null,
+          shown: ['chat:chat_1:prompt', 'doc_1'],
         })
       })
 
@@ -598,6 +621,7 @@ describe('useDocuments', () => {
           open: ['chat:chat_1:note', 'chat:chat_new:prompt'],
           active: 'chat:chat_1:note',
           preview: null,
+          shown: ['chat:chat_1:note'],
         })
       })
 
@@ -612,9 +636,39 @@ describe('useDocuments', () => {
       })
     })
 
+    describe("a skill's file", () => {
+      beforeEach(() => {
+        mockSkills.loaded = true
+      })
+
+      it('is kept while its skill is, and left out once it is gone', () => {
+        rememberView({
+          openDocumentIds: ['skill:skill_gone', 'skill:skill_1'],
+          lastDocumentId: 'skill:skill_gone',
+        })
+
+        expect(api.tabs.value.open).toEqual(['skill:skill_1'])
+      })
+
+      it('is kept until the library is read', () => {
+        mockSkills.loaded = false
+        rememberView({
+          openDocumentIds: ['skill:skill_gone'],
+          lastDocumentId: 'skill:skill_gone',
+        })
+
+        expect(api.tabs.value.open).toEqual(['skill:skill_gone'])
+      })
+    })
+
     it('gives a view from before tabs one, its last document', () => {
       rememberView({ lastDocumentId: 'doc_2' })
-      expect(api.tabs.value).toEqual({ open: ['doc_2'], active: 'doc_2', preview: null })
+      expect(api.tabs.value).toEqual({
+        open: ['doc_2'],
+        active: 'doc_2',
+        preview: null,
+        shown: ['doc_2'],
+      })
     })
 
     it('leaves out what is not a text document in the tree', () => {
@@ -622,19 +676,32 @@ describe('useDocuments', () => {
         openDocumentIds: ['doc_1', 'manuscript_story_1', 'doc_gone'],
         lastDocumentId: 'doc_gone',
       })
-      expect(api.tabs.value).toEqual({ open: ['doc_1'], active: 'doc_1', preview: null })
+      expect(api.tabs.value).toEqual({
+        open: ['doc_1'],
+        active: 'doc_1',
+        preview: null,
+        shown: ['doc_1'],
+      })
     })
 
-    it('closes a tab, writing the document out, and brings the neighbour forward', () => {
+    it('closes a tab, writing the document out, and brings back the one shown before', () => {
       api.open('doc_1')
       api.open('doc_2')
       api.open('doc_3')
+      api.open('doc_1')
       api.open('doc_2')
 
       api.closeTab('doc_2')
 
       expect(mockEditor.close).toHaveBeenCalledWith('doc_2')
-      expect(api.tabs.value).toEqual({ open: ['doc_1', 'doc_3'], active: 'doc_3', preview: null })
+      // Not doc_3, beside it in the strip.
+      expect(api.tabs.value).toEqual({
+        open: ['doc_1', 'doc_3'],
+        active: 'doc_1',
+        preview: null,
+        shown: ['doc_1', 'doc_3'],
+      })
+      expect(mockView.shownDocumentIds).toEqual(['doc_1', 'doc_3'])
     })
 
     it('opens a preview in the preview tab, letting go of what was there', () => {
@@ -648,6 +715,7 @@ describe('useDocuments', () => {
         open: ['doc_1', 'doc_3'],
         active: 'doc_3',
         preview: 'doc_3',
+        shown: ['doc_3', 'doc_1'],
       })
     })
 
@@ -661,6 +729,7 @@ describe('useDocuments', () => {
         open: ['doc_1', 'doc_2'],
         active: 'doc_2',
         preview: 'doc_2',
+        shown: ['doc_2', 'doc_1'],
       })
     })
 
@@ -677,7 +746,7 @@ describe('useDocuments', () => {
       api.open('doc_1')
       api.closeTab('doc_1')
 
-      expect(api.tabs.value).toEqual({ open: [], active: null, preview: null })
+      expect(api.tabs.value).toEqual({ open: [], active: null, preview: null, shown: [] })
       expect(mockView.openDocumentIds).toEqual([])
       expect(mockView.lastDocumentId).toBeNull()
     })
@@ -692,7 +761,12 @@ describe('useDocuments', () => {
       expect(mockEditor.close).toHaveBeenCalledWith('doc_1')
       expect(mockEditor.close).toHaveBeenCalledWith('doc_2')
       expect(mockUpdateView).not.toHaveBeenCalled()
-      expect(api.tabs.value).toEqual({ open: ['doc_1', 'doc_2'], active: 'doc_2', preview: null })
+      expect(api.tabs.value).toEqual({
+        open: ['doc_1', 'doc_2'],
+        active: 'doc_2',
+        preview: null,
+        shown: ['doc_2', 'doc_1'],
+      })
     })
 
     it('drops the tabs of what a deletion takes, and their editor state', () => {
@@ -704,7 +778,12 @@ describe('useDocuments', () => {
       api.remove('doc_2')
 
       expect(mockEditor.discard).toHaveBeenCalledWith('doc_2')
-      expect(api.tabs.value).toEqual({ open: ['doc_1', 'doc_3'], active: 'doc_3', preview: null })
+      expect(api.tabs.value).toEqual({
+        open: ['doc_1', 'doc_3'],
+        active: 'doc_3',
+        preview: null,
+        shown: ['doc_3', 'doc_1'],
+      })
       expect(mockView.openDocumentIds).toEqual(['doc_1', 'doc_3'])
     })
 
@@ -717,7 +796,7 @@ describe('useDocuments', () => {
 
       expect(mockEditor.discard).toHaveBeenCalledWith('doc_1')
       expect(mockEditor.discard).toHaveBeenCalledWith('doc_2')
-      expect(api.tabs.value).toEqual({ open: [], active: null, preview: null })
+      expect(api.tabs.value).toEqual({ open: [], active: null, preview: null, shown: [] })
       expect(mockUpdateView).toHaveBeenCalledTimes(1)
     })
 
@@ -728,7 +807,12 @@ describe('useDocuments', () => {
       api.remove('doc_3')
 
       expect(mockUpdateView).not.toHaveBeenCalled()
-      expect(api.tabs.value).toEqual({ open: ['doc_1'], active: 'doc_1', preview: null })
+      expect(api.tabs.value).toEqual({
+        open: ['doc_1'],
+        active: 'doc_1',
+        preview: null,
+        shown: ['doc_1'],
+      })
     })
   })
 
@@ -1186,6 +1270,30 @@ describe('useDocuments', () => {
       expect(() => store.updateDocument(act.id, { parentId: nested.id })).toThrow(
         'into its own subtree'
       )
+    })
+  })
+
+  describe('takesDocuments', () => {
+    it('takes a folder and a card in either shape, and no other document', () => {
+      const file = (/** @type {string} */ title, /** @type {string|undefined} */ kind) =>
+        store.createDocument({
+          storyId: 'story_1',
+          parentId: 'notes_story_1',
+          type: 'file',
+          title,
+          mime: 'image/png',
+          ...(kind ? { kind } : {}),
+        })
+      const cardFolder = api.createFolder('notes_story_1', 'Elara')
+      store.updateDocument(cardFolder.id, { kind: 'card' })
+
+      expect(api.takesDocuments(api.createFolder('notes_story_1', 'Places'))).toBe(true)
+      expect(api.takesDocuments(api.get(cardFolder.id))).toBe(true)
+      expect(api.takesDocuments(file('Wren', 'card'))).toBe(true)
+      expect(api.takesDocuments(file('Map'))).toBe(false)
+      expect(api.takesDocuments(file('Old portrait', 'portrait'))).toBe(false)
+      expect(api.takesDocuments(api.createTextDocument('notes_story_1', 'Chapter 1'))).toBe(false)
+      expect(api.takesDocuments(null)).toBe(false)
     })
   })
 

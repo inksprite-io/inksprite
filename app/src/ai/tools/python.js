@@ -15,10 +15,8 @@
  * when the code reads it. A script kept in the project is run by its path
  * (`file`).
  *
- * Opted into, as the web is (web/config.js says why): a chat runs Python
- * while the Python extension is on and either the chat chose it
- * (`Chat.python`) or, until it does, its profile is one the extension lists.
- * See `pythonForChat`.
+ * Offered while the Python extension is on, to a chat that has its group on,
+ * as every group is (./choice.js). See `pythonOffered`.
  *
  * Design: `.llm/code_sandbox_design.md`.
  */
@@ -29,7 +27,6 @@ import { isUnreadText, showsAsText } from '@/files/inspect.js'
 import { hasPython, runPython } from '@/platform/python.js'
 import { storage } from '@/storage/index.js'
 import { useChatsStore } from '@/stores/chatsStore.js'
-import { DEFAULT_PROFILE_ID } from '../profiles/index.js'
 import { documentForChat, documentsForChat } from './documents.js'
 import { toolRegistry } from './registry.js'
 
@@ -126,40 +123,6 @@ export function pythonOffered() {
 }
 
 /**
- * The profiles whose chats run Python until they choose: as the writer chose
- * them, or Default alone.
- *
- * @returns {string[]}
- */
-export function pythonProfiles() {
-  return useApplicationState().pythonProfiles.value ?? [DEFAULT_PROFILE_ID]
-}
-
-/**
- * Run Python in chats on this profile, or stop.
- *
- * @param {string} profileId
- * @param {boolean} on
- */
-export function setPythonProfile(profileId, on) {
-  const others = pythonProfiles().filter(id => id !== profileId)
-  useApplicationState().setPythonProfiles(on ? [...others, profileId] : others)
-}
-
-/**
- * Whether a chat runs Python: Python is offered, and the chat chose it, or,
- * until it chooses, its profile is one the extension lists.
- *
- * @param {{python?: boolean}|null|undefined} chat
- * @param {string} profileId - The chat's profile, the default resolved
- * @returns {boolean}
- */
-export function pythonForChat(chat, profileId) {
-  if (!pythonOffered()) return false
-  return typeof chat?.python === 'boolean' ? chat.python : pythonProfiles().includes(profileId)
-}
-
-/**
  * What a run comes back to the model as: only the parts there are.
  *
  * @typedef {Object} PythonResult
@@ -193,10 +156,7 @@ const nameOf = title => {
 function seesProject(chatId) {
   const chat = chatId ? useChatsStore().getChatById(chatId) : null
   return toolRegistry
-    .getEnabledDefinitions({
-      disabledTools: chat?.disabledTools,
-      disabledGroups: chat?.disabledToolGroups,
-    })
+    .getEnabledDefinitions(chat ?? {})
     .some(definition => toolRegistry.groupOf(definition.function.name) === 'documents')
 }
 

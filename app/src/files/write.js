@@ -64,7 +64,6 @@ export async function writeFile(storyId, file, { parentId } = {}) {
   return {
     folderId: made.id,
     title: made.title,
-    pinnedIds: [],
     greetingIds: [],
     documents: 1,
     ...(isScan(file) && { scan: true }),
@@ -146,7 +145,6 @@ async function writeBook(storyId, file, sections, parent) {
   return {
     folderId: book.id,
     title: book.title,
-    pinnedIds: [],
     greetingIds: [],
     documents: chapters + 1,
   }

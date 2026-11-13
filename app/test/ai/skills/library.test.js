@@ -58,20 +58,24 @@ describe('the writer’s own skills in the registry', () => {
   it('comes after the built-ins, and is found by name', () => {
     setLibrarySkills([critique])
 
-    expect(allSkills().map(skill => skill.name)).toEqual([
-      'interpret',
-      'write',
-      'compact',
-      'critique',
-    ])
+    expect(allSkills().map(skill => skill.name)).toEqual(['compact', 'critique'])
     expect(getSkill('critique')).toMatchObject({ id: 'skill_critique', builtIn: false })
   })
 
   it('leaves out a skill whose file does not read, and one with a built-in’s name', () => {
     setLibrarySkills([
       { id: 'broken', text: 'no frontmatter' },
-      stored('taken', 'name: interpret\ndescription: Mine.'),
+      stored('taken', 'name: compact\ndescription: Mine.'),
       critique,
+    ])
+
+    expect(librarySkills().map(skill => skill.id)).toEqual(['skill_critique'])
+  })
+
+  it('leaves out a skill whose file takes a name the library does not keep it under', () => {
+    setLibrarySkills([
+      { ...critique, name: 'critique' },
+      { ...tighten, name: 'trim' },
     ])
 
     expect(librarySkills().map(skill => skill.id)).toEqual(['skill_critique'])
@@ -149,7 +153,7 @@ describe('the model’s tools, as the library changes', () => {
       offered({ disabledTools: ['house-style'] }).function.parameters.properties.name.enum
     ).toEqual(['notes-voice'])
     expect(offered({ disabledTools: ['house-style', 'notes-voice'] })).toBeUndefined()
-    expect(offered({ disabledGroups: ['skills'] })).toBeUndefined()
+    expect(offered({ disabledToolGroups: ['skills'] })).toBeUndefined()
   })
 
   it('does not count use_skill as a skill that runs a model', () => {

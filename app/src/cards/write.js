@@ -46,8 +46,6 @@ export const SIDECAR_TITLE = '.card.json'
  *   holding its documents, or the one document an import that had only one
  *   to write
  * @property {string} title - What it ended up called
- * @property {string[]} pinnedIds - What a chat on this card should pin: the
- *   documents that have to be in context from the first turn
  * @property {string[]} greetingIds - The greetings, in the card's own order
  * @property {number} documents - How many were written, sidecar included
  * @property {boolean} [scan] - The one document is a PDF with no text in it,
@@ -159,8 +157,6 @@ export async function reimportCard(
   const discard = (/** @type {string} */ id) => api.trash(id)
 
   /** @type {string[]} */
-  const pinnedIds = []
-  /** @type {string[]} */
   const greetingIds = []
   let documents = 0
 
@@ -198,12 +194,11 @@ export async function reimportCard(
   }
 
   for (const part of parts.fields) {
-    const id = place(
+    place(
       folderId,
       part,
       take(child => child.kind === part.kind)
     )
-    if (part.pin) pinnedIds.push(id)
   }
 
   const greetings = children
@@ -245,8 +240,7 @@ export async function reimportCard(
         found = /** @type {Document} */ (rest.shift())
         unmatched.delete(found.id)
       }
-      const id = place(loreId, part, found)
-      if (part.pin) pinnedIds.push(id)
+      place(loreId, part, found)
     })
     for (const id of unmatched) discard(id)
   }
@@ -265,7 +259,7 @@ export async function reimportCard(
   }
 
   for (const id of left) discard(id)
-  return { folderId, title: folder.title, pinnedIds, greetingIds, documents }
+  return { folderId, title: folder.title, greetingIds, documents }
 }
 
 /**
@@ -277,7 +271,6 @@ export async function reimportCard(
  * @property {string} kind
  * @property {string} content
  * @property {boolean} [hidden] - Kept from the model
- * @property {boolean} [pin] - In context in a chat on the card from its first turn
  */
 
 /** The kinds of the documents a card is written as, in its folder. */
@@ -322,10 +315,10 @@ function partsOf(card, { useSystemPrompt }) {
     /** @type {string} */ title,
     /** @type {string} */ kind,
     value,
-    { pin = true, hidden = false } = {}
+    { hidden = false } = {}
   ) => {
     const content = uncomment(value)
-    if (content) fields.push({ title, kind, content, pin, ...(hidden ? { hidden } : {}) })
+    if (content) fields.push({ title, kind, content, ...(hidden ? { hidden } : {}) })
   }
 
   // These two are instructions to a chat rather than things to know about the
@@ -335,9 +328,8 @@ function partsOf(card, { useSystemPrompt }) {
   // the card copies both into its Roleplay settings, sent after its profile's
   // prompt and its author's note — see `withOriginal` — and after that they
   // are the chat's to change.
-  if (useSystemPrompt)
-    field('System prompt', 'system-prompt', card.systemPrompt, { pin: false, hidden: true })
-  field('Post-history instructions', 'rules', card.rules, { pin: false, hidden: true })
+  if (useSystemPrompt) field('System prompt', 'system-prompt', card.systemPrompt, { hidden: true })
+  field('Post-history instructions', 'rules', card.rules, { hidden: true })
 
   field('Description', 'description', card.description)
   field('Personality', 'personality', card.personality)
@@ -347,8 +339,7 @@ function partsOf(card, { useSystemPrompt }) {
   // The greetings are not context. The first is seeded as the chat's opening
   // message, which is most of why cards work at all, and the rest are what the
   // dialog that starts a chat offers instead. They are documents so that they
-  // survive and can be edited; they are not pinned, because a greeting in
-  // context as well as in the conversation is the same words twice.
+  // survive and can be edited.
   const greetings = card.greetings.map((greeting, at) => ({
     title: at === 0 ? 'Greeting' : `Greeting ${at + 1}`,
     kind: 'greeting',
@@ -371,9 +362,9 @@ function partsOf(card, { useSystemPrompt }) {
  * A lorebook's entries as documents: each under its own name, a second of one
  * name as `Name (2)`, its keys on its first line. A `constant` entry is not
  * retrieval at all — it is a statement that this paragraph is always in
- * context, which is what a pin is. It goes in the kind rather than only into
- * what a write returns, because a chat started on the card next week cannot
- * ask the file what it said.
+ * context, which a chat that can't read pins (`cards/chat.js`). It goes in the
+ * kind because a chat started on the card next week cannot ask the file what
+ * it said.
  *
  * @param {LoreEntry[]} entries
  * @returns {CardPart[]}
@@ -389,7 +380,6 @@ function loreParts(entries) {
       title,
       kind: entry.constant ? 'lore-constant' : 'lore-entry',
       content: uncomment(`${keys}${entry.content}`),
-      ...(entry.constant ? { pin: true } : {}),
     }
   })
 }
@@ -402,14 +392,12 @@ function loreParts(entries) {
  * @param {Card} card
  * @param {Object} options
  * @param {boolean} options.useSystemPrompt
- * @returns {Promise<Pick<Written, 'pinnedIds'|'greetingIds'|'documents'>>} The
+ * @returns {Promise<Pick<Written, 'greetingIds'|'documents'>>} The
  *   count is of what this wrote: the folder is not counted here
  */
 async function fillCard(storyId, folderId, card, { useSystemPrompt }) {
   const store = useDocumentsStore()
   const parts = partsOf(card, { useSystemPrompt })
-  /** @type {string[]} */
-  const pinnedIds = []
   let documents = 0
 
   /** @param {CardPart} part */
@@ -427,21 +415,16 @@ async function fillCard(storyId, folderId, card, { useSystemPrompt }) {
     }).id
   }
 
-  for (const part of parts.fields) {
-    const id = write(part)
-    if (part.pin) pinnedIds.push(id)
-  }
+  for (const part of parts.fields) write(part)
   const greetingIds = parts.greetings.map(write)
 
   if (card.lore.length > 0) {
-    const written = writeLore(store, storyId, folderId, card.lore)
-    pinnedIds.push(...written.pinnedIds)
-    documents += written.documents
+    documents += writeLore(store, storyId, folderId, card.lore)
   }
 
   if (parts.sidecar) write(parts.sidecar)
 
-  return { pinnedIds, greetingIds, documents }
+  return { greetingIds, documents }
 }
 
 /**
@@ -552,7 +535,6 @@ export async function writeMarkdown(
   return {
     folderId: made.id,
     title: made.title,
-    pinnedIds: [],
     greetingIds: [],
     documents: 1,
   }
@@ -591,9 +573,8 @@ export async function writeLorebook(storyId, book, { parentId, title } = {}) {
   return {
     folderId: folder.id,
     title: folder.title,
-    pinnedIds: written.pinnedIds,
     greetingIds: [],
-    documents: 1 + written.documents + sidecar,
+    documents: 1 + written + sidecar,
   }
 }
 
@@ -621,7 +602,7 @@ export async function writeLorebook(storyId, book, { parentId, title } = {}) {
  * @param {string} folderId - The card's folder, or the book's own
  * @param {LoreEntry[]} entries
  * @param {{into?: string}} [options] - Write straight into `into` rather than a `Lore` folder
- * @returns {{pinnedIds: string[], documents: number}}
+ * @returns {number} How many documents it wrote
  */
 function writeLore(store, storyId, folderId, entries, { into } = {}) {
   let documents = 0
@@ -638,11 +619,8 @@ function writeLore(store, storyId, folderId, entries, { into } = {}) {
     documents++
   }
 
-  /** @type {string[]} */
-  const pinnedIds = []
-
   for (const part of loreParts(entries)) {
-    const made = store.createDocument({
+    store.createDocument({
       storyId,
       parentId,
       type: 'text',
@@ -654,10 +632,9 @@ function writeLore(store, storyId, folderId, entries, { into } = {}) {
       kind: part.kind,
     })
     documents++
-    if (part.pin) pinnedIds.push(made.id)
   }
 
-  return { pinnedIds, documents }
+  return documents
 }
 
 /**

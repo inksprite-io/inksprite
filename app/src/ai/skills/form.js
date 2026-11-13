@@ -1,151 +1,157 @@
 /**
  * @module ai/skills/form
- * @description A SKILL.md as the fields a form edits, and back.
+ * @description A SKILL.md as the three fields the settings edit, and back.
  *
  * The library keeps a skill as its file, and the file is what is exported, so
- * the form does not own a copy of anything: it reads its fields out of the
- * frontmatter and writes them back into it. Every other field stays where it
- * was — a license, a `model`, a key another tool invented, a summary for the
- * / menu written by hand — and so does the order the fields were in. What does not survive a save from the form is a
- * comment in the frontmatter, because the frontmatter is written afresh.
+ * the fields own a copy of nothing: a name, a description and the
+ * instructions are read out of the file and written back into it. Everything
+ * else in it stays where it was: who may call it, how it runs, a license, a
+ * key another tool invented. Those are changed in the file itself, which the
+ * editor opens whole.
  *
- * Settings at their default are taken out rather than written, so a skill
- * saved from the form reads the way one written by hand would: no
- * `user-invocable: true`, no empty `metadata`.
+ * The name is written as the writer would say it, "Short Story Editor", and
+ * the name the skill is called by is made from that: `short-story-editor`.
+ * What they wrote is kept beside it, as `metadata.inksprite-title`, where it
+ * says more than the name does.
+ *
+ * A change to the instructions alone leaves the frontmatter exactly as it was
+ * written. A change to the name or the description writes the frontmatter
+ * afresh, and a comment in it goes.
  */
 
-import { joinSkill, splitSkill } from './format.js'
-
-/** @typedef {import('./format.js').SkillOutput} SkillOutput */
+import { MAX_NAME, joinSkill, splitSkill } from './format.js'
 
 /**
- * What the form edits.
+ * What the settings edit of a skill.
  *
  * @typedef {Object} SkillForm
- * @property {string} name
- * @property {string} description - What the model reads
- * @property {boolean} model - The model may call it
- * @property {boolean} user - The writer may
- * @property {boolean} fork - It runs on its own
- * @property {SkillOutput} output - Where its answer goes, when it runs on its own
- * @property {string} argument - Its argument's name, or empty for none
- * @property {string} argumentDescription - What to type for it: shown after
- *   the name in the / menu, and what the model is told about it
- * @property {string[]} tools - The tools it is given, when it runs on its own
+ * @property {string} name - As the writer wrote it: a title, or the name
+ *   itself
+ * @property {string} description - What it does and when to use it, which
+ *   the model reads
  * @property {string} body - Its instructions
  */
 
-/** @type {readonly SkillOutput[]} */
-const OUTPUTS = ['result', 'reply', 'summary', 'edit']
+/** The frontmatter as it was written, dashes and all, up to the body. */
+const FRONT_BLOCK = /^---[ \t]*\r?\n[\s\S]*?\r?\n---[ \t]*(?:\r?\n|$)/
 
 /**
- * A field's text, or nothing for anything that is not text.
+ * A field as the form shows it: text, or what YAML read a bare word as.
  *
  * @param {unknown} value
  * @returns {string}
  */
-const textOf = value => (typeof value === 'string' ? value.trim() : '')
+const shown = value =>
+  typeof value === 'string' ? value.trim() : typeof value === 'number' ? String(value) : ''
+
+/** Where a file keeps what the writer called its skill. */
+const TITLE = 'inksprite-title'
 
 /**
- * @param {unknown} value
- * @returns {string[]}
+ * What a file's frontmatter says the writer called its skill, when it does.
+ *
+ * @param {Record<string, unknown>} front
+ * @returns {string}
  */
-function listOf(value) {
-  if (typeof value === 'string') return value.split(/[\s,]+/).filter(Boolean)
-  if (Array.isArray(value)) return value.filter(item => typeof item === 'string')
-  return []
+function titleIn(front) {
+  const meta = front.metadata
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return ''
+  return shown(/** @type {Record<string, unknown>} */ (meta)[TITLE])
 }
 
 /**
- * The form's fields, from a SKILL.md, with the frontmatter they came from. A
- * file whose frontmatter cannot be read has no form, and says why: it is
- * edited as the file until it can be.
+ * The three fields, from a SKILL.md. A file whose frontmatter cannot be read
+ * has none, and says why: it is put right in the file.
  *
  * @param {string} text
- * @returns {{form: SkillForm, front: Record<string, unknown>}|{error: string}}
+ * @returns {{form: SkillForm}|{error: string}}
  */
 export function formFromText(text) {
   const split = splitSkill(text)
   if ('error' in split) return split
 
-  const { front, body } = split
-  const metadata =
-    front.metadata && typeof front.metadata === 'object' && !Array.isArray(front.metadata)
-      ? /** @type {Record<string, unknown>} */ (front.metadata)
-      : {}
-
-  const model = front['disable-model-invocation'] !== true
-  const output = textOf(metadata['inksprite-output'])
-
   return {
-    front,
     form: {
-      name: textOf(front.name),
-      description: textOf(front.description),
-      model,
-      user: front['user-invocable'] !== false,
-      fork: front.context === 'fork',
-      output: /** @type {SkillOutput} */ (
-        OUTPUTS.includes(/** @type {SkillOutput} */ (output)) ? output : model ? 'result' : 'reply'
-      ),
-      argument: listOf(front.arguments)[0] || '',
-      argumentDescription: textOf(metadata['inksprite-argument']) || textOf(front['argument-hint']),
-      tools: listOf(front['allowed-tools']),
-      body,
+      name: titleIn(split.front) || shown(split.front.name),
+      description: shown(split.front.description),
+      body: split.body,
     },
   }
 }
 
 /**
- * Set a field, or take it out when it is at its default.
+ * The name a skill is called by, from what the writer wrote for one:
+ * lowercase letters, digits and single hyphens, a letter first. A name
+ * written that way already is itself.
  *
- * @param {Record<string, unknown>} fields
- * @param {string} key
- * @param {unknown} value
- * @param {boolean} unset - Whether it is at its default
+ * @param {string} written
+ * @returns {string} Nothing when there is no name in it
  */
-function put(fields, key, value, unset) {
-  if (unset) delete fields[key]
-  else fields[key] = value
+export function nameFromTitle(written) {
+  return (
+    (written || '')
+      // An accented letter is its letter.
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[\s_]+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-{2,}/g, '-')
+      .replace(/^[^a-z]+/, '')
+      .slice(0, MAX_NAME)
+      .replace(/-+$/, '')
+  )
 }
 
 /**
- * The SKILL.md the form says, written into the frontmatter it came from.
+ * The frontmatter with the skill called this, and the rest of it as it was.
+ * What was written is kept only where the name does not already say it.
+ *
+ * @param {Record<string, unknown>} front
+ * @param {string} title - Nothing, for a name that says it all
+ * @returns {Record<string, unknown>}
+ */
+function withTitle(front, title) {
+  const meta = front.metadata
+  const kept =
+    meta && typeof meta === 'object' && !Array.isArray(meta)
+      ? { .../** @type {Record<string, unknown>} */ (meta) }
+      : {}
+  delete kept[TITLE]
+  if (title) kept[TITLE] = title
+
+  const { metadata: _, ...rest } = front
+  return Object.keys(kept).length > 0 ? { ...rest, metadata: kept } : rest
+}
+
+/**
+ * The SKILL.md with the three fields as given, and the rest of it as it was.
  *
  * @param {SkillForm} form
- * @param {Record<string, unknown>} [front] - What the file had, kept where the
- *   form does not reach; a new skill has none
+ * @param {string} [text] - The file as it stands; none for a new skill
  * @returns {string}
  */
-export function textFromForm(form, front = {}) {
-  /** @type {Record<string, unknown>} */
-  const fields = { ...front }
-  const metadata = /** @type {Record<string, unknown>} */ ({
-    ...(fields.metadata && typeof fields.metadata === 'object' ? fields.metadata : {}),
-  })
+export function textFromForm(form, text = '') {
+  const split = text ? splitSkill(text) : { front: {}, body: '' }
+  const front = 'error' in split ? {} : split.front
+  const written = form.name.trim()
+  const name = nameFromTitle(written)
+  const title = written === name ? '' : written
+  const description = form.description.trim()
 
-  fields.name = form.name.trim()
-  fields.description = form.description.trim()
-  put(fields, 'disable-model-invocation', true, form.model)
-  put(fields, 'user-invocable', false, form.user)
-  put(fields, 'context', 'fork', !form.fork)
-  put(fields, 'arguments', form.argument.trim(), !form.argument.trim())
-  // One wording for both readers: the hint the / menu shows is what the
-  // model is told, so a separate one for the model goes.
-  const described = form.argumentDescription.trim()
-  put(fields, 'argument-hint', described, !described)
-  delete metadata['inksprite-argument']
-  // A skill that joins the conversation has whatever tools its chat has.
-  put(fields, 'allowed-tools', form.tools.join(' '), !form.fork || form.tools.length === 0)
+  // Only the instructions changed: the frontmatter is the writer's own
+  // typing, and stays that way.
+  const block = FRONT_BLOCK.exec(text)?.[0]
+  if (
+    block &&
+    shown(front.name) === name &&
+    titleIn(front) === title &&
+    shown(front.description) === description
+  ) {
+    return `${block.trimEnd()}\n\n${form.body.trim()}\n`
+  }
 
-  // Where the answer goes only matters to a skill that runs on its own, and
-  // the default — back to whoever asked, or as the reply when only the writer
-  // calls it — needs no saying.
-  const byDefault = form.model ? 'result' : 'reply'
-  put(metadata, 'inksprite-output', form.output, !form.fork || form.output === byDefault)
-  put(fields, 'metadata', metadata, Object.keys(metadata).length === 0)
-
-  return joinSkill(fields, form.body)
+  return joinSkill(withTitle({ ...front, name, description }, title), form.body)
 }
 
 /**
@@ -162,28 +168,4 @@ export function withName(text, name) {
   const split = splitSkill(text)
   if ('error' in split) return text
   return joinSkill({ ...split.front, name: name.trim() }, split.body)
-}
-
-/**
- * The SKILL.md a new skill starts as: one only the writer calls, so it is a
- * saved prompt until they say otherwise, and a name they will change. Its
- * description and instructions are the writer's to write, so they start empty
- * and it does not read as a skill until they are written.
- *
- * @param {string} name
- * @returns {string}
- */
-export function newSkillText(name) {
-  return textFromForm({
-    name,
-    description: '',
-    model: false,
-    user: true,
-    fork: false,
-    output: 'reply',
-    argument: '',
-    argumentDescription: '',
-    tools: [],
-    body: '',
-  })
 }

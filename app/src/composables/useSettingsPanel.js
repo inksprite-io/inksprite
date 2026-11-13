@@ -13,9 +13,13 @@
 
 import { ref } from 'vue'
 
-/** @typedef {'system'|'sync'|'project'|'ai'|'workflows'|'skills'|'connections'|'extensions'} SettingsSection */
+/** @typedef {'system'|'sync'|'project'|'prompts'|'connections'|'models'|'tools'|'skills'|'extensions'} SettingsSection */
 
-/** @typedef {'sharing'} SettingsPart */
+/**
+ * A part of a section: the project's sharing, or one of the parts Sync and
+ * sharing and Connections are shown in.
+ * @typedef {'sharing'|'account'|'people'|'devices'|'backup'|'providers'|'mcp'|'web'} SettingsPart
+ */
 
 const visible = ref(false)
 

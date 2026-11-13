@@ -26,9 +26,10 @@ import { SHELF_KINDS } from './write.js'
  * @property {string} title - The card's, and the chat's
  * @property {string} name - The character's: what `{{char}}` becomes in a chat
  *   on the card. See `characterOf`.
- * @property {string[]} pinnedIds - What rides in the project block from turn one
+ * @property {string[]} openingIds - The documents a chat on it opens with, ahead
+ *   of its greeting; see `useCardChat`
  * @property {string[]} hiddenIds - What a chat on this card hides: the shelf the
- *   other characters are on, when the card is on one
+ *   other characters are on, when the card is on one, and its greetings
  * @property {string[]} shownIds - What it shows under that: the card itself
  * @property {Greeting[]} greetings - In the card's own order; the first is its `first_mes`
  * @property {string} rules - The card's post-history instructions, as written,
@@ -42,8 +43,13 @@ import { SHELF_KINDS } from './write.js'
  * @property {string} content
  */
 
-/** The documents that have to be in context before the model says anything. */
-const PINNED_KINDS = new Set([
+/**
+ * What a chat on a card opens with, attached ahead of the greeting: who the
+ * character is, without which it has none. With the first reply, so a model
+ * that can't read the project has them and one that can need not, and kept
+ * through every summary with the opening.
+ */
+const OPENING_KINDS = new Set([
   'description',
   'personality',
   'scenario',
@@ -160,20 +166,28 @@ export async function readCardChat(storyId, folderId) {
   let shelf = api.get(folder.parentId)
   while (shelf && shelf.kind !== SHELF_KINDS.characters) shelf = api.get(shelf.parentId)
 
+  // The greetings are the chat's opening, or scenes it didn't open on. A model
+  // reading up on the card would take them for what has happened, or read the
+  // first message twice. Hidden from the chat rather than on the document, so
+  // a chat working on the card can still read them.
+  const greetings = of('greeting').sort((a, b) => a.order - b.order)
+
   return {
     title: folder.title,
     name: characterOf(api, folder),
-    hiddenIds: shelf ? [shelf.id] : [],
+    hiddenIds: [...(shelf ? [shelf.id] : []), ...greetings.map(greeting => greeting.id)],
     shownIds: shelf ? [folder.id] : [],
-    pinnedIds: documents
-      .filter(document => document.type === 'text' && PINNED_KINDS.has(document.kind))
+    openingIds: documents
+      .filter(document => document.type === 'text' && OPENING_KINDS.has(document.kind))
       .map(document => document.id),
     // In the order the import wrote them, which is the card's own: `first_mes`
     // and then its alternates. Order rather than title, because `Greeting 2` is
     // a name the writer may well have changed.
-    greetings: of('greeting')
-      .sort((a, b) => a.order - b.order)
-      .map(document => ({ id: document.id, title: document.title, content: document.content })),
+    greetings: greetings.map(document => ({
+      id: document.id,
+      title: document.title,
+      content: document.content,
+    })),
     rules: textOf('rules'),
     systemPrompt: textOf('system-prompt'),
   }

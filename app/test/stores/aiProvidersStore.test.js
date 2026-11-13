@@ -237,7 +237,7 @@ describe('AIProvidersStore', () => {
       )
     })
 
-    it('should throw error when trying to delete default provider', () => {
+    it('deletes one that was built in, as any other', () => {
       store.createProvider({
         id: 'provider_default',
         name: 'Default Provider',
@@ -245,9 +245,8 @@ describe('AIProvidersStore', () => {
         isDefault: true,
       })
 
-      expect(() => store.deleteProvider('provider_default')).toThrow(
-        "Cannot delete default provider 'provider_default'"
-      )
+      expect(store.deleteProvider('provider_default')).toBe(true)
+      expect(store.getProvider('provider_default')).toBeNull()
     })
   })
 

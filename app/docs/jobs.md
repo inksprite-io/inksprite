@@ -241,194 +241,193 @@
   - [Parameters][237]
 - [exploreJob][238]
   - [Parameters][239]
-- [startExplore][240]
+- [exploreAndWait][240]
   - [Parameters][241]
-- [exploreAndWait][242]
+- [currentDigests][242]
   - [Parameters][243]
-- [currentDigests][244]
+- [dropJobsForStory][244]
   - [Parameters][245]
-- [dropJobsForStory][246]
-  - [Parameters][247]
-- [jobs/live][248]
-- [JobActivity][249]
-  - [Properties][250]
-- [activity][251]
-- [setActivity][252]
+- [jobs/live][246]
+- [JobActivity][247]
+  - [Properties][248]
+- [activity][249]
+- [setActivity][250]
+  - [Parameters][251]
+- [addChars][252]
   - [Parameters][253]
-- [addChars][254]
+- [clearActivity][254]
   - [Parameters][255]
-- [clearActivity][256]
-  - [Parameters][257]
-- [jobs/runner][258]
+- [jobs/runner][256]
+- [kinds][257]
+- [kinds][258]
 - [kinds][259]
 - [kinds][260]
-- [kinds][261]
-- [kinds][262]
-- [ResolvedModel][263]
-  - [Properties][264]
-- [JobKind][265]
-- [StepRun][266]
-  - [Properties][267]
-- [running][268]
-- [registerJobKind][269]
+- [ResolvedModel][261]
+  - [Properties][262]
+- [JobKind][263]
+- [StepRun][264]
+  - [Properties][265]
+- [running][266]
+- [registerJobKind][267]
+  - [Parameters][268]
+- [messageOf][269]
   - [Parameters][270]
-- [messageOf][271]
-  - [Parameters][272]
-- [RETRY][273]
-- [TRANSIENT][274]
-- [isTransient][275]
+- [RETRY][271]
+- [TRANSIENT][272]
+- [isTransient][273]
+  - [Parameters][274]
+- [pause][275]
   - [Parameters][276]
-- [pause][277]
-  - [Parameters][278]
-- [MOST_STEPS_AT_ONCE][279]
-- [readySteps][280]
+- [MOST_STEPS_AT_ONCE][277]
+- [readySteps][278]
+  - [Parameters][279]
+- [roomOf][280]
   - [Parameters][281]
-- [roomOf][282]
+- [isRunning][282]
   - [Parameters][283]
-- [isRunning][284]
+- [resolveWorkflow][284]
   - [Parameters][285]
-- [resolveWorkflow][286]
-  - [Parameters][287]
-- [settings][288]
-- [chatModel][289]
-  - [Parameters][290]
-- [resolveModel][291]
-  - [Parameters][292]
-- [resolveJob][293]
-  - [Parameters][294]
-- [startJob][295]
-  - [Parameters][296]
-- [][297]
-- [jobId][298]
-- [stopping][299]
-  - [Parameters][300]
-- [inFlight][301]
-- [failed][302]
-- [run][303]
-  - [Parameters][304]
+- [settings][286]
+- [][287]
+- [chatModel][288]
+  - [Parameters][289]
+- [resolveModel][290]
+  - [Parameters][291]
+- [resolveJob][292]
+  - [Parameters][293]
+- [startJob][294]
+  - [Parameters][295]
+- [][296]
+- [jobId][297]
+- [stopping][298]
+  - [Parameters][299]
+- [inFlight][300]
+- [failed][301]
+- [run][302]
+  - [Parameters][303]
+- [getJob][304]
 - [getJob][305]
-- [getJob][306]
-- [pauseJob][307]
-  - [Parameters][308]
-- [cancelJob][309]
-  - [Parameters][310]
-- [resumeJob][311]
-  - [Parameters][312]
-- [jobs/sections][313]
-- [SourceLine][314]
-  - [Properties][315]
-- [PlannedHeading][316]
-  - [Properties][317]
-- [Unit][318]
-  - [Properties][319]
-- [Request][320]
-  - [Properties][321]
-- [REQUEST_CHARS][322]
-- [STRUCTURE_CHARS][323]
-- [DEEPEST][324]
-- [linesOfLayout][325]
-  - [Parameters][326]
-- [linesOfText][327]
-  - [Parameters][328]
-- [bodySize][329]
-  - [Parameters][330]
-- [chars][331]
-- [wordsOfTitle][332]
-  - [Parameters][333]
-- [titleMatch][334]
-  - [Parameters][335]
-- [][336]
-- [wrappedLength][337]
-  - [Parameters][338]
-- [NUMBER][339]
-- [numbered][340]
-  - [Parameters][341]
-- [numbered][342]
-- [LABEL][343]
-- [placeBookmarks][344]
-  - [Parameters][345]
-- [pageStart][346]
-- [pageEnd][347]
-- [][348]
-- [taken][349]
-- [printed][350]
-  - [Parameters][351]
-- [spans][352]
-- [max][353]
-- [byHeight][354]
-  - [Parameters][355]
+- [pauseJob][306]
+  - [Parameters][307]
+- [cancelJob][308]
+  - [Parameters][309]
+- [resumeJob][310]
+  - [Parameters][311]
+- [jobs/sections][312]
+- [SourceLine][313]
+  - [Properties][314]
+- [PlannedHeading][315]
+  - [Properties][316]
+- [Unit][317]
+  - [Properties][318]
+- [Request][319]
+  - [Properties][320]
+- [REQUEST_CHARS][321]
+- [STRUCTURE_CHARS][322]
+- [DEEPEST][323]
+- [linesOfLayout][324]
+  - [Parameters][325]
+- [linesOfText][326]
+  - [Parameters][327]
+- [bodySize][328]
+  - [Parameters][329]
+- [chars][330]
+- [wordsOfTitle][331]
+  - [Parameters][332]
+- [titleMatch][333]
+  - [Parameters][334]
+- [][335]
+- [wrappedLength][336]
+  - [Parameters][337]
+- [NUMBER][338]
+- [numbered][339]
+  - [Parameters][340]
+- [numbered][341]
+- [LABEL][342]
+- [placeBookmarks][343]
+  - [Parameters][344]
+- [pageStart][345]
+- [pageEnd][346]
+- [][347]
+- [taken][348]
+- [printed][349]
+  - [Parameters][350]
+- [spans][351]
+- [max][352]
+- [byHeight][353]
+  - [Parameters][354]
+- [placed][355]
 - [placed][356]
-- [placed][357]
-- [waiting][358]
-- [settle][359]
-  - [Parameters][360]
-- [runningKey][361]
-  - [Parameters][362]
-- [MARGIN][363]
-- [RUNNING_BUCKET][364]
-- [EDGE_SLACK][365]
-- [runningLines][366]
-  - [Parameters][367]
-- [runningAtEdge][368]
-  - [Parameters][369]
-- [edges][370]
-- [seen][371]
-- [line][372]
-- [SAME_SIZE][373]
-- [larger][374]
-  - [Parameters][375]
-- [outranks][376]
-  - [Parameters][377]
-- [setAlike][378]
-  - [Parameters][379]
-- [setAsHeading][380]
-  - [Parameters][381]
-- [nextWithText][382]
-  - [Parameters][383]
-- [previousWithText][384]
-  - [Parameters][385]
-- [styleHeadings][386]
-  - [Parameters][387]
-- [Open][388]
-- [open][389]
-- [sibling][390]
-- [Look][391]
-  - [Properties][392]
-- [lookOf][393]
-  - [Parameters][394]
-- [sameLook][395]
-  - [Parameters][396]
-- [structureOfLayout][397]
-  - [Parameters][398]
-- [structureMessages][399]
-  - [Parameters][400]
-- [parseStructure][401]
-  - [Parameters][402]
-- [unitsOf][403]
-  - [Parameters][404]
-- [units][405]
-- [charsOf][406]
-  - [Parameters][407]
-- [cutPoint][408]
-  - [Parameters][409]
-- [splitUnit][410]
-  - [Parameters][411]
-- [parts][412]
-- [planRequests][413]
-  - [Parameters][414]
-- [requests][415]
-- [headingLine][416]
-  - [Parameters][417]
-- [requestText][418]
-  - [Parameters][419]
-- [givenHeadings][420]
-  - [Parameters][421]
-- [unit][422]
-- [ancestorsOf][423]
-  - [Parameters][424]
-- [above][425]
-- [requestLabel][426]
-  - [Parameters][427]
+- [waiting][357]
+- [settle][358]
+  - [Parameters][359]
+- [runningKey][360]
+  - [Parameters][361]
+- [MARGIN][362]
+- [RUNNING_BUCKET][363]
+- [EDGE_SLACK][364]
+- [runningLines][365]
+  - [Parameters][366]
+- [runningAtEdge][367]
+  - [Parameters][368]
+- [edges][369]
+- [seen][370]
+- [line][371]
+- [SAME_SIZE][372]
+- [larger][373]
+  - [Parameters][374]
+- [outranks][375]
+  - [Parameters][376]
+- [setAlike][377]
+  - [Parameters][378]
+- [setAsHeading][379]
+  - [Parameters][380]
+- [nextWithText][381]
+  - [Parameters][382]
+- [previousWithText][383]
+  - [Parameters][384]
+- [styleHeadings][385]
+  - [Parameters][386]
+- [Open][387]
+- [open][388]
+- [sibling][389]
+- [Look][390]
+  - [Properties][391]
+- [lookOf][392]
+  - [Parameters][393]
+- [sameLook][394]
+  - [Parameters][395]
+- [structureOfLayout][396]
+  - [Parameters][397]
+- [structureMessages][398]
+  - [Parameters][399]
+- [parseStructure][400]
+  - [Parameters][401]
+- [unitsOf][402]
+  - [Parameters][403]
+- [units][404]
+- [charsOf][405]
+  - [Parameters][406]
+- [cutPoint][407]
+  - [Parameters][408]
+- [splitUnit][409]
+  - [Parameters][410]
+- [parts][411]
+- [planRequests][412]
+  - [Parameters][413]
+- [requests][414]
+- [headingLine][415]
+  - [Parameters][416]
+- [requestText][417]
+  - [Parameters][418]
+- [givenHeadings][419]
+  - [Parameters][420]
+- [unit][421]
+- [ancestorsOf][422]
+  - [Parameters][423]
+- [above][424]
+- [requestLabel][425]
+  - [Parameters][426]
 
 ## jobs/convert
 
@@ -469,13 +468,13 @@ The line under a table's header row.
 
 How far an answer's word count may stray from its text's before it is refused.
 
-Type: [number][428]
+Type: [number][427]
 
 ## COUNTED_FROM
 
 Below this many words a request is too short for the count to mean anything.
 
-Type: [number][428]
+Type: [number][427]
 
 ## unfence
 
@@ -483,9 +482,9 @@ Strip a code fence a model may have wrapped the whole answer in.
 
 ### Parameters
 
-- `answer` **[string][429]**&#x20;
+- `answer` **[string][428]**&#x20;
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## conversionMessages
 
@@ -493,13 +492,13 @@ The messages that ask a model to convert one request.
 
 ### Parameters
 
-- `args` **[Object][430]**&#x20;
-  - `args.title` **[string][429]** The document's title, for the model's bearings
-  - `args.text` **[string][429]** The request's text, headings written in
-  - `args.above` **[Array][431]<[PlannedHeading][316]>** The headings the text sits under
-  - `args.continued` **[boolean][432]** Whether the text goes on from a section begun before it
+- `args` **[Object][429]**&#x20;
+  - `args.title` **[string][428]** The document's title, for the model's bearings
+  - `args.text` **[string][428]** The request's text, headings written in
+  - `args.above` **[Array][430]<[PlannedHeading][315]>** The headings the text sits under
+  - `args.continued` **[boolean][431]** Whether the text goes on from a section begun before it
 
-Returns **[Array][431]<{role: [string][429], content: [string][429]}>**&#x20;
+Returns **[Array][430]<{role: [string][428], content: [string][428]}>**&#x20;
 
 ## wordCount
 
@@ -508,9 +507,9 @@ pipes and a page's numbers count for nothing on either side.
 
 ### Parameters
 
-- `text` **[string][429]**&#x20;
+- `text` **[string][428]**&#x20;
 
-Returns **[number][428]**&#x20;
+Returns **[number][427]**&#x20;
 
 ## withoutRepeats
 
@@ -522,19 +521,19 @@ that share a line or two word for word are not a passage given twice.
 
 ### Parameters
 
-- `text` **[string][429]**&#x20;
+- `text` **[string][428]**&#x20;
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## firstAt
 
-Type: [Map][433]<[string][429], [number][428]>
+Type: [Map][432]<[string][428], [number][427]>
 
 ## REPEATED_RUN
 
 How many lines in a row have to repeat an earlier run to be a passage given twice.
 
-Type: [number][428]
+Type: [number][427]
 
 ## editDistance
 
@@ -542,8 +541,8 @@ How many single-character edits turn one string into another.
 
 ### Parameters
 
-- `a` **[string][429]**&#x20;
-- `b` **[string][429]**&#x20;
+- `a` **[string][428]**&#x20;
+- `b` **[string][428]**&#x20;
 
 ## headingMatch
 
@@ -553,8 +552,8 @@ a PDF that reads `ti` as `8` gives `Rou8nes` — or not the same heading.
 
 ### Parameters
 
-- `written` **[string][429]**&#x20;
-- `given` **[string][429]**&#x20;
+- `written` **[string][428]**&#x20;
+- `given` **[string][428]**&#x20;
 
 Returns **(`"same"` | `"near"` | null)**&#x20;
 
@@ -567,10 +566,10 @@ written in as Markdown, are left as they are.
 
 ### Parameters
 
-- `text` **[string][429]**&#x20;
-- `given` **[Array][431]<[PlannedHeading][316]>**&#x20;
+- `text` **[string][428]**&#x20;
+- `given` **[Array][430]<[PlannedHeading][315]>**&#x20;
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## fixHeadings
 
@@ -588,14 +587,14 @@ before the next one.
 
 ### Parameters
 
-- `markdown` **[string][429]**&#x20;
-- `given` **[Array][431]<[PlannedHeading][316]>**&#x20;
-- `floor` **[number][428]** The level an added heading must be below: 6,
+- `markdown` **[string][428]**&#x20;
+- `given` **[Array][430]<[PlannedHeading][315]>**&#x20;
+- `floor` **[number][427]** The level an added heading must be below: 6,
   where nothing may be added, as a conversion has it; lower lets a model
   add headings under the given ones
-- `empty` **[Array][431]<[boolean][432]>?** For each given heading, whether it has no text of its own (optional, default `[]`)
+- `empty` **[Array][430]<[boolean][431]>?** For each given heading, whether it has no text of its own (optional, default `[]`)
 
-Returns **{markdown: [string][429], missing: [Array][431]<[PlannedHeading][316]>}**&#x20;
+Returns **{markdown: [string][428], missing: [Array][430]<[PlannedHeading][315]>}**&#x20;
 
 ## checkConversion
 
@@ -606,13 +605,13 @@ made up.
 
 ### Parameters
 
-- `args` **[Object][430]**&#x20;
-  - `args.text` **[string][429]** What was sent
-  - `args.markdown` **[string][429]** The answer, headings put right
-  - `args.missing` **[Array][431]<[PlannedHeading][316]>** Given headings the answer lacks
-  - `args.finishReason` **([string][429] | null)?**&#x20;
+- `args` **[Object][429]**&#x20;
+  - `args.text` **[string][428]** What was sent
+  - `args.markdown` **[string][428]** The answer, headings put right
+  - `args.missing` **[Array][430]<[PlannedHeading][315]>** Given headings the answer lacks
+  - `args.finishReason` **([string][428] | null)?**&#x20;
 
-Returns **([string][429] | null)** What is wrong, or null when nothing is
+Returns **([string][428] | null)** What is wrong, or null when nothing is
 
 ## cellsOf
 
@@ -620,7 +619,7 @@ The columns of a table row.
 
 ### Parameters
 
-- `row` **[string][429]**&#x20;
+- `row` **[string][428]**&#x20;
 
 ## joinConverted
 
@@ -632,10 +631,10 @@ a model given a table's middle makes its first row the header.
 
 ### Parameters
 
-- `first` **[string][429]**&#x20;
-- `second` **[string][429]**&#x20;
+- `first` **[string][428]**&#x20;
+- `second` **[string][428]**&#x20;
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## splitRequest
 
@@ -645,10 +644,10 @@ its middle. Null when there is nothing to cut.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `request` **[Request][320]**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `request` **[Request][319]**&#x20;
 
-Returns **(\[[Request][320], [Request][320]] | null)**&#x20;
+Returns **(\[[Request][319], [Request][319]] | null)**&#x20;
 
 ## convertRequest
 
@@ -657,15 +656,15 @@ check fails — ask again as two halves, twice over at most.
 
 ### Parameters
 
-- `args` **[Object][430]**&#x20;
-  - `args.title` **[string][429]**&#x20;
-  - `args.lines` **[Array][431]<[SourceLine][314]>**&#x20;
-  - `args.headings` **[Array][431]<[PlannedHeading][316]>**&#x20;
-  - `args.request` **[Request][320]**&#x20;
+- `args` **[Object][429]**&#x20;
+  - `args.title` **[string][428]**&#x20;
+  - `args.lines` **[Array][430]<[SourceLine][313]>**&#x20;
+  - `args.headings` **[Array][430]<[PlannedHeading][315]>**&#x20;
+  - `args.request` **[Request][319]**&#x20;
   - `args.ask` &#x20;
   - `args.note` &#x20;
 
-- `depth` **[number][428]?** How many times this request has been halved already (optional, default `0`)
+- `depth` **[number][427]?** How many times this request has been halved already (optional, default `0`)
 
 ## assemble
 
@@ -674,9 +673,9 @@ links to its sections on top.
 
 ### Parameters
 
-- `outputs` **[Array][431]<[string][429]>** In request order
+- `outputs` **[Array][430]<[string][428]>** In request order
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## addUsage
 
@@ -736,37 +735,37 @@ project as it stands when it runs through an `ExploreReader`.
 
 ## SECTION_WORDS
 
-Type: [number][428]
+Type: [number][427]
 
 ## SECTION_WORDS
 
-Type: [number][428]
+Type: [number][427]
 
 ## SECTION_WORDS
 
 A section this long, its subsections with it, gets a line of its own on its
 document's digest. Shorter, it is quicker to read than to describe.
 
-Type: [number][428]
+Type: [number][427]
 
 ## ExploreNode
 
 A document or folder as explore sees it.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
-- `id` **[string][429]**&#x20;
-- `path` **[string][429]** As the tools give it: `Notes/Elara`, and `/` for the project
-- `title` **[string][429]**&#x20;
+- `id` **[string][428]**&#x20;
+- `path` **[string][428]** As the tools give it: `Notes/Elara`, and `/` for the project
+- `title` **[string][428]**&#x20;
 - `type` **(`"folder"` | `"text"` | `"file"`)**&#x20;
-- `text` **[string][429]** What is read of it: a text's markdown, the text
+- `text` **[string][428]** What is read of it: a text's markdown, the text
   read out of a file; '' for a folder
-- `words` **[number][428]**&#x20;
-- `leftOut` **[string][429]?** Why it is not read, said in its folder's
+- `words` **[number][427]**&#x20;
+- `leftOut` **[string][428]?** Why it is not read, said in its folder's
   digest: `a codebase`, `a file with no text`
-- `children` **[Array][431]<[ExploreNode][46]>** The ones shown to the model, in the outline's
+- `children` **[Array][430]<[ExploreNode][46]>** The ones shown to the model, in the outline's
   order: a folder's, or a document's that holds others
 - `digest` **Digest?**&#x20;
 
@@ -775,75 +774,75 @@ Type: [Object][430]
 What a step puts together from: a digest made already, a short document's
 text, an earlier step's answer, or something not read, by name.
 
-Type: ({digest: [string][429]} | {text: [string][429]} | {step: [string][429]} | {left: [string][429]})
+Type: ({digest: [string][428]} | {text: [string][428]} | {step: [string][428]} | {left: [string][428]})
 
 ## ExploreWork
 
 One request of an explore job.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
 - `kind` **(`"read"` | `"part"` | `"gather"`)** Read documents whole, read part of
   one, or put together what was said of others
-- `reads` **[Array][431]<[string][429]>?** read: the documents whose text it sends
-- `whole` **[string][429]?** read: the folder read whole, when it is one
-- `of` **[string][429]?** part: the document it reads part of; gather: the
+- `reads` **[Array][430]<[string][428]>?** read: the documents whose text it sends
+- `whole` **[string][428]?** read: the folder read whole, when it is one
+- `of` **[string][428]?** part: the document it reads part of; gather: the
   document or folder it puts together
-- `from` **[number][428]?** part: its first line, of `linesOfText`
-- `to` **[number][428]?** part: its end, exclusive
-- `part` **[number][428]?** part, and a gather in parts: which, from 1
-- `parts` **[number][428]?** How many parts there are
-- `pieces` **[Array][431]<[Piece][48]>?** gather: what it reads
-- `answers` **Record<[string][429], [string][429]>** What it describes, by id, with
+- `from` **[number][427]?** part: its first line, of `linesOfText`
+- `to` **[number][427]?** part: its end, exclusive
+- `part` **[number][427]?** part, and a gather in parts: which, from 1
+- `parts` **[number][427]?** How many parts there are
+- `pieces` **[Array][430]<[Piece][48]>?** gather: what it reads
+- `answers` **Record<[string][428], [string][428]>** What it describes, by id, with
   what each digest is made from. Empty for a part, whose answer only goes
   into what is put together from it.
-- `drop` **[Array][431]<[string][429]>?** Short documents whose old digests go: they are
+- `drop` **[Array][430]<[string][428]>?** Short documents whose old digests go: they are
   read as part of their folder's now
-- `sections` **Record<[string][429], [Array][431]<[string][429]>>?** read and part: the long
+- `sections` **Record<[string][428], [Array][430]<[string][428]>>?** read and part: the long
   sections whose headings it reads, by link, by the document's id: each is
   asked for a line
-- `sectionsFrom` **[Array][431]<[string][429]>?** gather of a document read in parts:
+- `sectionsFrom` **[Array][430]<[string][428]>?** gather of a document read in parts:
   the parts whose answers hold its sections' lines
 
 ## ExplorePlan
 
 What an explore job is planned from.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
-- `rootId` **[string][429]** What was explored: a folder, a document, or the
+- `rootId` **[string][428]** What was explored: a folder, a document, or the
   project's root
-- `budget` **[number][428]** How much text a request carries, in characters
-- `work` **Record<[string][429], [ExploreWork][49]>** By step id
+- `budget` **[number][427]** How much text a request carries, in characters
+- `work` **Record<[string][428], [ExploreWork][49]>** By step id
 
 ## PlannedExplore
 
 A plan, and what it will cost.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
 - `plan` **[ExplorePlan][51]**&#x20;
-- `steps` **[Array][431]\<JobStep>**&#x20;
-- `documents` **[number][428]** How many documents it reads
-- `chars` **[number][428]** About how much text it sends, in all
+- `steps` **[Array][430]\<JobStep>**&#x20;
+- `documents` **[number][427]** How many documents it reads
+- `chars` **[number][427]** About how much text it sends, in all
 
 ## ExploreReader
 
 What a step reads, as the project is when it runs.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ## SECTIONS_MOST
 
 The most sections of one document that get a line: the longest first.
 
-Type: [number][428]
+Type: [number][427]
 
 ## SHORT_WORDS
 
@@ -851,49 +850,49 @@ A document shorter than this has no digest of its own: its text is about as
 short as one would be, and it is read in its folder's. A note of a hundred
 words is worth a line of its own in the listing; a standup of forty is not.
 
-Type: [number][428]
+Type: [number][427]
 
 ## PACK_MOST
 
 How many documents one request describes at most, when several go together.
 
-Type: [number][428]
+Type: [number][427]
 
 ## DEFAULT_BUDGET
 
 What a request carries where nothing says how long a context the model has.
 
-Type: [number][428]
+Type: [number][427]
 
 ## MOST_BUDGET
 
 The most a request carries: past this a description gets worse rather than better.
 
-Type: [number][428]
+Type: [number][427]
 
 ## DIGEST_CHARS
 
 What a digest comes to, about, for planning what is put together from them.
 
-Type: [number][428]
+Type: [number][427]
 
 ## OVERHEAD
 
 What each document costs in a request beside its text: its tags and path.
 
-Type: [number][428]
+Type: [number][427]
 
 ## CHARS_PER_TOKEN
 
 Characters to a token, counted low: a PDF's text is noisy, and too much is refused.
 
-Type: [number][428]
+Type: [number][427]
 
 ## KEPT_TOKENS
 
 Tokens kept for the prompt around the text and for the answer.
 
-Type: [number][428]
+Type: [number][427]
 
 ## budgetFor
 
@@ -904,9 +903,9 @@ says.
 
 ### Parameters
 
-- `contextLength` **([number][428] | [undefined][434])** In tokens
+- `contextLength` **([number][427] | [undefined][433])** In tokens
 
-Returns **[number][428]**&#x20;
+Returns **[number][427]**&#x20;
 
 ## bases
 
@@ -914,7 +913,7 @@ Documents' bases as last worked out, by id, with what they were worked out
 from. The listing asks after every digest on every turn, and a document
 whose text is the same string as before needs no hashing again.
 
-Type: [Map][433]<[string][429], {title: [string][429], text: [string][429], basis: [string][429]}>
+Type: [Map][432]<[string][428], {title: [string][428], text: [string][428], basis: [string][428]}>
 
 ## documentBasis
 
@@ -924,7 +923,7 @@ What a document's digest is made from, hashed: its title and its text.
 
 - `node` **[ExploreNode][46]**&#x20;
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## folderBasis
 
@@ -935,9 +934,9 @@ changed, added, hidden or taken out below changes it.
 ### Parameters
 
 - `folder` **[ExploreNode][46]**&#x20;
-- `known` **[Map][433]<[string][429], [string][429]>?** Folders worked out already (optional, default `new Map()`)
+- `known` **[Map][432]<[string][428], [string][428]>?** Folders worked out already (optional, default `new Map()`)
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## basisOf
 
@@ -946,9 +945,9 @@ What a document's or a folder's digest is made from.
 ### Parameters
 
 - `node` **[ExploreNode][46]**&#x20;
-- `known` **[Map][433]<[string][429], [string][429]>?** Worked out already, by id
+- `known` **[Map][432]<[string][428], [string][428]>?** Worked out already, by id
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## partsOf
 
@@ -959,10 +958,10 @@ PDF's page markers out and keeps each line's page.
 
 ### Parameters
 
-- `text` **[string][429]**&#x20;
-- `budget` **[number][428]**&#x20;
+- `text` **[string][428]**&#x20;
+- `budget` **[number][427]**&#x20;
 
-Returns **[Array][431]<{from: [number][428], to: [number][428], chars: [number][428]}>**&#x20;
+Returns **[Array][430]<{from: [number][427], to: [number][427], chars: [number][427]}>**&#x20;
 
 ## partText
 
@@ -971,22 +970,22 @@ A part's text, with its page markers written back in where the page turns.
 ### Parameters
 
 - `lines` &#x20;
-- `from` **[number][428]**&#x20;
-- `to` **[number][428]**&#x20;
+- `from` **[number][427]**&#x20;
+- `to` **[number][427]**&#x20;
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## out
 
-Type: [Array][431]<[string][429]>
+Type: [Array][430]<[string][428]>
 
 ## page
 
-Type: ([number][428] | null)
+Type: ([number][427] | null)
 
 ## page
 
-Type: ([number][428] | null)
+Type: ([number][427] | null)
 
 ## pagesOf
 
@@ -995,10 +994,10 @@ The pages a part runs over, as a label says them: `pp. 12–19`.
 ### Parameters
 
 - `lines` &#x20;
-- `from` **[number][428]**&#x20;
-- `to` **[number][428]**&#x20;
+- `from` **[number][427]**&#x20;
+- `to` **[number][427]**&#x20;
 
-Returns **[string][429]** '' for a text without pages
+Returns **[string][428]** '' for a text without pages
 
 ## labelOf
 
@@ -1047,9 +1046,9 @@ request to ask a line of each.
 
 ### Parameters
 
-- `docs` **[Array][431]<[ExploreNode][46]>**&#x20;
+- `docs` **[Array][430]<[ExploreNode][46]>**&#x20;
 
-Returns **(Record<[string][429], [Array][431]<[string][429]>> | [undefined][434])**&#x20;
+Returns **(Record<[string][428], [Array][430]<[string][428]>> | [undefined][433])**&#x20;
 
 ## sectionsByPart
 
@@ -1060,13 +1059,13 @@ in order.
 ### Parameters
 
 - `doc` **[ExploreNode][46]**&#x20;
-- `parts` **[Array][431]<{from: [number][428], to: [number][428]}>**&#x20;
+- `parts` **[Array][430]<{from: [number][427], to: [number][427]}>**&#x20;
 
-Returns **[Map][433]<[number][428], [Array][431]<[string][429]>>** The sections' links, by part
+Returns **[Map][432]<[number][427], [Array][430]<[string][428]>>** The sections' links, by part
 
 ## byPart
 
-Type: [Map][433]<[number][428], [Array][431]<[string][429]>>
+Type: [Map][432]<[number][427], [Array][430]<[string][428]>>
 
 ## planExplore
 
@@ -1078,21 +1077,21 @@ for; in a folder, one too short to need a line is read as it is.
 ### Parameters
 
 - `root` **[ExploreNode][46]**&#x20;
-- `budget` **[number][428]** How much text a request carries
+- `budget` **[number][427]** How much text a request carries
 
 Returns **[PlannedExplore][53]**&#x20;
 
 ## known
 
-Type: [Map][433]<[string][429], [string][429]>
+Type: [Map][432]<[string][428], [string][428]>
 
 ## known
 
-Type: [Map][433]<[string][429], [string][429]>
+Type: [Map][432]<[string][428], [string][428]>
 
 ## steps
 
-Type: [Array][431]\<JobStep>
+Type: [Array][430]\<JobStep>
 
 ###
 
@@ -1104,7 +1103,7 @@ Type: const
 
 ## work
 
-Type: Record<[string][429], [ExploreWork][49]>
+Type: Record<[string][428], [ExploreWork][49]>
 
 ## answeredBy
 
@@ -1112,7 +1111,7 @@ The step that answers for each document or folder. @type {Map\<string, string>}
 
 ## nodes
 
-Type: [Map][433]<[string][429], [ExploreNode][46]>
+Type: [Map][432]<[string][428], [ExploreNode][46]>
 
 ## nodes
 
@@ -1136,7 +1135,7 @@ Type: [Map][433]<[string][429], [ExploreNode][46]>
 
 ## all
 
-Type: [Array][431]<[ExploreNode][46]>
+Type: [Array][430]<[ExploreNode][46]>
 
 ##
 
@@ -1156,23 +1155,23 @@ Type: [ExploreNode][46]
 
 ## current
 
-Type: [Array][431]<[Unit][318]>
+Type: [Array][430]<[Unit][317]>
 
 ## hashes
 
 ### Parameters
 
-- `answered` **[Array][431]<[ExploreNode][46]>**&#x20;
+- `answered` **[Array][430]<[ExploreNode][46]>**&#x20;
 
 ## add
 
 ### Parameters
 
-- `prefix` **[string][429]**&#x20;
-- `label` **[string][429]**&#x20;
-- `after` **[Array][431]<[string][429]>**&#x20;
+- `prefix` **[string][428]**&#x20;
+- `label` **[string][428]**&#x20;
+- `after` **[Array][430]<[string][428]>**&#x20;
 - `item` **[ExploreWork][49]**&#x20;
-- `sent` **[number][428]**&#x20;
+- `sent` **[number][427]**&#x20;
 
 ## sizeOf
 
@@ -1194,27 +1193,27 @@ will not all go in one request.
 ### Parameters
 
 - `node` **[ExploreNode][46]**&#x20;
-- `pieces` **[Array][431]<[Piece][48]>**&#x20;
-- `drop` **[Array][431]<[string][429]>?** (optional, default `[]`)
-- `sectionsFrom` **[Array][431]<[string][429]>?** For a document: the parts its sections' lines are in (optional, default `[]`)
+- `pieces` **[Array][430]<[Piece][48]>**&#x20;
+- `drop` **[Array][430]<[string][428]>?** (optional, default `[]`)
+- `sectionsFrom` **[Array][430]<[string][428]>?** For a document: the parts its sections' lines are in (optional, default `[]`)
 
-Returns **[string][429]** The step that answers for it
+Returns **[string][428]** The step that answers for it
 
 ## waits
 
 ### Parameters
 
-- `some` **[Array][431]<[Piece][48]>**&#x20;
+- `some` **[Array][430]<[Piece][48]>**&#x20;
 
 ## filter
 
-Type: [Array][431]<[string][429]>
+Type: [Array][430]<[string][428]>
 
 ## sizeOfAll
 
 ### Parameters
 
-- `some` **[Array][431]<[Piece][48]>**&#x20;
+- `some` **[Array][430]<[Piece][48]>**&#x20;
 
 ## groups
 
@@ -1224,11 +1223,11 @@ Read documents small enough to go together, several to a request.
 
 ### Parameters
 
-- `docs` **[Array][431]<[ExploreNode][46]>**&#x20;
+- `docs` **[Array][430]<[ExploreNode][46]>**&#x20;
 
 ## group
 
-Type: [Array][431]<[ExploreNode][46]>
+Type: [Array][430]<[ExploreNode][46]>
 
 ## inParts
 
@@ -1246,7 +1245,7 @@ Plan a folder and what is under it.
 
 - `node` **[ExploreNode][46]**&#x20;
 
-Returns **[boolean][432]** Whether it has a digest, or will
+Returns **[boolean][431]** Whether it has a digest, or will
 
 ## plan
 
@@ -1264,15 +1263,15 @@ Type: [ConversionPlan][207]
 
 ## pieces
 
-Type: [Array][431]<[Piece][48]>
+Type: [Array][430]<[Piece][48]>
 
 ## packed
 
-Type: [Array][431]<[ExploreNode][46]>
+Type: [Array][430]<[ExploreNode][46]>
 
 ## shortWithDigests
 
-Type: [Array][431]<[string][429]>
+Type: [Array][430]<[string][428]>
 
 ## take
 
@@ -1300,7 +1299,7 @@ A path as a heading writes it: a folder's with a slash, the project's as `/`.
 
 ### Parameters
 
-- `n` **[number][428]**&#x20;
+- `n` **[number][427]**&#x20;
 
 ## documentsUnder
 
@@ -1310,7 +1309,7 @@ How many documents are under a folder.
 
 - `folder` **[ExploreNode][46]**&#x20;
 
-Returns **[number][428]**&#x20;
+Returns **[number][427]**&#x20;
 
 ## documentBlock
 
@@ -1340,7 +1339,7 @@ Why something is not read, as a request names it.
 
 What joins a document's path to a section's title in a heading.
 
-Type: [string][429]
+Type: [string][428]
 
 ## asking
 
@@ -1348,14 +1347,14 @@ The headings an answer is to be given under, as the request asks for them.
 
 ### Parameters
 
-- `headings` **[Array][431]<[string][429]>**&#x20;
+- `headings` **[Array][430]<[string][428]>**&#x20;
 
 ## SectionAsk
 
 A section asked for a line: the document it is in, its link, and the
 heading it is answered under. Its id is the document's and its link.
 
-Type: {id: [string][429], path: [string][429], of: [string][429], link: [string][429]}
+Type: {id: [string][428], path: [string][428], of: [string][428], link: [string][428]}
 
 ## sectionsAskedFor
 
@@ -1364,10 +1363,10 @@ link is gone since it was planned is not asked.
 
 ### Parameters
 
-- `sections` **(Record<[string][429], [Array][431]<[string][429]>> | [undefined][434])**&#x20;
+- `sections` **(Record<[string][428], [Array][430]<[string][428]>> | [undefined][433])**&#x20;
 - `read` **[ExploreReader][55]**&#x20;
 
-Returns **[Array][431]<[SectionAsk][171]>**&#x20;
+Returns **[Array][430]<[SectionAsk][171]>**&#x20;
 
 ## askedFor
 
@@ -1379,7 +1378,7 @@ is for. Documents and folders; the sections are `sectionsAskedFor`'s.
 - `work` **[ExploreWork][49]**&#x20;
 - `read` **[ExploreReader][55]**&#x20;
 
-Returns **[Array][431]<{id: [string][429], path: [string][429]}>**&#x20;
+Returns **[Array][430]<{id: [string][428], path: [string][428]}>**&#x20;
 
 ## partHeading
 
@@ -1401,15 +1400,15 @@ gone, or been hidden, since it was planned.
 - `work` **[ExploreWork][49]**&#x20;
 - `read` **[ExploreReader][55]**&#x20;
 
-Returns **([Array][431]<{role: [string][429], content: [string][429]}> | null)**&#x20;
+Returns **([Array][430]<{role: [string][428], content: [string][428]}> | null)**&#x20;
 
 ## blocks
 
-Type: [Array][431]<[string][429]>
+Type: [Array][430]<[string][428]>
 
 ## left
 
-Type: [Array][431]<[string][429]>
+Type: [Array][430]<[string][428]>
 
 ## cleanAnswer
 
@@ -1418,9 +1417,9 @@ the text, and a code fence around the whole.
 
 ### Parameters
 
-- `answer` **[string][429]**&#x20;
+- `answer` **[string][428]**&#x20;
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## headingKey
 
@@ -1429,9 +1428,9 @@ taken away.
 
 ### Parameters
 
-- `text` **[string][429]**&#x20;
+- `text` **[string][428]**&#x20;
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## headingText
 
@@ -1440,15 +1439,15 @@ on its own in bold.
 
 ### Parameters
 
-- `line` **[string][429]**&#x20;
+- `line` **[string][428]**&#x20;
 
-Returns **([string][429] | null)**&#x20;
+Returns **([string][428] | null)**&#x20;
 
 ## LINE_MOST
 
 The longest a line is kept, in characters; a longer one is cut at a word.
 
-Type: [number][428]
+Type: [number][427]
 
 ## digestOf
 
@@ -1457,9 +1456,9 @@ that wrote a single paragraph has its first sentence for the line.
 
 ### Parameters
 
-- `body` **[string][429]**&#x20;
+- `body` **[string][428]**&#x20;
 
-Returns **({line: [string][429], text: [string][429]} | null)**&#x20;
+Returns **({line: [string][428], text: [string][428]} | null)**&#x20;
 
 ## parseDigests
 
@@ -1472,46 +1471,46 @@ A section's heading is also found by its title alone.
 
 ### Parameters
 
-- `answer` **[string][429]**&#x20;
-- `asked` **[Array][431]<{id: [string][429], path: [string][429]}>**&#x20;
-- `$2` **[Object][430]** (optional, default `{}`)
+- `answer` **[string][428]**&#x20;
+- `asked` **[Array][430]<{id: [string][428], path: [string][428]}>**&#x20;
+- `$2` **[Object][429]** (optional, default `{}`)
   - `$2.alone` (optional, default `true`)
 
-Returns **[Map][433]<[string][429], {line: [string][429], text: [string][429]}>**&#x20;
+Returns **[Map][432]<[string][428], {line: [string][428], text: [string][428]}>**&#x20;
 
 ## byLast
 
-Type: [Map][433]<[string][429], [Array][431]<[string][429]>>
+Type: [Map][432]<[string][428], [Array][430]<[string][428]>>
 
 ## match
 
 ### Parameters
 
-- `heading` **[string][429]**&#x20;
+- `heading` **[string][428]**&#x20;
 
 ## bodies
 
-Type: [Map][433]<[string][429], [Array][431]<[string][429]>>
+Type: [Map][432]<[string][428], [Array][430]<[string][428]>>
 
 ## loose
 
-Type: [Array][431]<[string][429]>
+Type: [Array][430]<[string][428]>
 
 ## at
 
-Type: ([string][429] | null)
+Type: ([string][428] | null)
 
 ## found
 
-Type: [Map][433]<[string][429], {line: [string][429], text: [string][429]}>
+Type: [Map][432]<[string][428], {line: [string][428], text: [string][428]}>
 
 ## found
 
-Type: [Array][431]<[number][428]>
+Type: [Array][430]<[number][427]>
 
 ## found
 
-Type: [Array][431]<[PlannedHeading][316]>
+Type: [Array][430]<[PlannedHeading][315]>
 
 ## partAnswer
 
@@ -1520,10 +1519,10 @@ for what is put together from it.
 
 ### Parameters
 
-- `answer` **[string][429]**&#x20;
-- `path` **[string][429]** What it is part of, as its heading names it
+- `answer` **[string][428]**&#x20;
+- `path` **[string][428]** What it is part of, as its heading names it
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## jobs
 
@@ -1541,32 +1540,33 @@ the jobs toast lists them all.
 
 A job is a row in the `jobs` table (`stores/jobsStore.js`) with a plan of
 steps; the runner walks it, and a kind registered here says what a step
-does and what happens at the end. A conversion runs on its workflow's model
-(Settings › Workflows); an exploration on the model it keeps, the chat's.
+does and what happens at the end. A conversion runs on its workflow's model,
+chosen where it is asked for; an exploration on the model it keeps, the
+chat's.
 `useJobs` is the composable the outline and the jobs toast use.
 
 ## CONVERT_WORKFLOW
 
 The workflow whose model converts documents; see `useApplicationState().workflows`.
 
-Type: [string][429]
+Type: [string][428]
 
 ## STRUCTURE_STEP
 
 The step that asks for a text's headings, when its PDF has no bookmarks.
 
-Type: [string][429]
+Type: [string][428]
 
 ## ConversionPlan
 
 What a conversion planned from: the source as lines, its headings once
 known, and the requests cut along them.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
-- `title` **[string][429]** The source's title, for the model and for the copy's name
+- `title` **[string][428]** The source's title, for the model and for the copy's name
 
 ## requestSteps
 
@@ -1586,14 +1586,14 @@ The copy a conversion of a document wrote before, if it is still there.
 
 ### Parameters
 
-- `storyId` **[string][429]**&#x20;
-- `sourceId` **[string][429]**&#x20;
+- `storyId` **[string][428]**&#x20;
+- `sourceId` **[string][428]**&#x20;
 
 ## headings
 
 ## headings
 
-Type: [Array][431]<[PlannedHeading][316]>
+Type: [Array][430]<[PlannedHeading][315]>
 
 ## sourceOf
 
@@ -1612,9 +1612,9 @@ About how many requests a conversion of a text makes, for asking first.
 
 ### Parameters
 
-- `text` **[string][429]**&#x20;
+- `text` **[string][428]**&#x20;
 
-Returns **[number][428]**&#x20;
+Returns **[number][427]**&#x20;
 
 ## startConversion
 
@@ -1624,12 +1624,12 @@ model for it, and the requests are planned when it answers.
 
 ### Parameters
 
-- `storyId` **[string][429]**&#x20;
-- `documentId` **[string][429]**&#x20;
+- `storyId` **[string][428]**&#x20;
+- `documentId` **[string][428]**&#x20;
 
 <!---->
 
-- Throws **[Error][435]** When the document has no text to convert
+- Throws **[Error][434]** When the document has no text to convert
 
 ## exploreNode
 
@@ -1639,13 +1639,13 @@ file with no text named and not read. Null for one gone or hidden.
 
 ### Parameters
 
-- `id` **[string][429]**&#x20;
+- `id` **[string][428]**&#x20;
 
 ## get
 
 ### Parameters
 
-- `at` **[string][429]**&#x20;
+- `at` **[string][428]**&#x20;
 
 ## nodeOf
 
@@ -1657,22 +1657,22 @@ file with no text named and not read. Null for one gone or hidden.
 
 ## lines
 
-Type: [Map][433]<[string][429], [Map][433]<[string][429], [string][429]>>
+Type: [Map][432]<[string][428], [Map][432]<[string][428], [string][428]>>
 
 ## lines
 
-Type: [Array][431]<[SourceLine][314]>
+Type: [Array][430]<[SourceLine][313]>
 
 ## lines
 
-Type: [Array][431]<[SourceLine][314]>
+Type: [Array][430]<[SourceLine][313]>
 
 ## keep
 
 ### Parameters
 
 - `asks` &#x20;
-- `said` **[Map][433]<[string][429], {line: [string][429]}>**&#x20;
+- `said` **[Map][432]<[string][428], {line: [string][428]}>**&#x20;
 
 ## planExploring
 
@@ -1688,20 +1688,19 @@ request carries is that model's context.
 
 What exploring a folder, a document, or the whole project from its root,
 would do: the plan, how many documents it reads, and about how much it
-sends. For asking first, and for starting it. Planned on the model a chat
-on the preset runs on: the chat's that asks, or, asked from outside a
-chat, the active preset's, which a new chat runs on.
+sends. For asking first, and for starting it. Planned on the model of the
+chat that asks.
 
 ### Parameters
 
-- `id` **[string][429]**&#x20;
+- `id` **[string][428]**&#x20;
 - `preset` &#x20;
 
 <!---->
 
-- Throws **[Error][435]** When it is gone or hidden, or a chat on the preset could not run
+- Throws **[Error][434]** When it is gone or hidden, or a chat on the preset could not run
 
-Returns **[Promise][436]\<PlannedExploring>**&#x20;
+Returns **[Promise][435]\<PlannedExploring>**&#x20;
 
 ## exploreJob
 
@@ -1710,20 +1709,9 @@ model it was planned for, kept on the job.
 
 ### Parameters
 
-- `storyId` **[string][429]**&#x20;
-- `id` **[string][429]** A folder, a document, or the project's root
+- `storyId` **[string][428]**&#x20;
+- `id` **[string][428]** A folder, a document, or the project's root
 - `planned` **PlannedExploring**&#x20;
-
-## startExplore
-
-Explore a folder, a document, or the whole project from its root, as
-planned, in the background: the jobs toast shows it.
-
-### Parameters
-
-- `storyId` **[string][429]**&#x20;
-- `id` **[string][429]**&#x20;
-- `planned` **PlannedExploring** From `planExploring`
 
 ## exploreAndWait
 
@@ -1734,10 +1722,10 @@ again goes on from there.
 
 ### Parameters
 
-- `storyId` **[string][429]**&#x20;
-- `id` **[string][429]**&#x20;
+- `storyId` **[string][428]**&#x20;
+- `id` **[string][428]**&#x20;
 - `planned` **PlannedExploring** From `planExploring`
-- `$3` **[Object][430]** (optional, default `{}`)
+- `$3` **[Object][429]** (optional, default `{}`)
   - `$3.signal` &#x20;
   - `$3.progress` &#x20;
 
@@ -1750,7 +1738,7 @@ stands when this is called, and asked of as often as needed after.
 
 ### Parameters
 
-- `storyId` **[string][429]**&#x20;
+- `storyId` **[string][428]**&#x20;
 
 ## dropJobsForStory
 
@@ -1760,9 +1748,9 @@ spent on a document that is going.
 
 ### Parameters
 
-- `storyId` **[string][429]**&#x20;
+- `storyId` **[string][428]**&#x20;
 
-Returns **[Promise][436]\<void>**&#x20;
+Returns **[Promise][435]\<void>**&#x20;
 
 ## jobs/live
 
@@ -1775,20 +1763,20 @@ for as long as the request is, and a reload starts it over.
 
 ## JobActivity
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
 - `phase` **(`"asking"` | `"checking"` | `"retrying"` | `"fallback"` | `"finishing"`)**&#x20;
-- `since` **[number][428]** When this phase began
-- `started` **[number][428]** When this run of the job began: the job's
+- `since` **[number][427]** When this phase began
+- `started` **[number][427]** When this run of the job began: the job's
   `elapsed` plus the time since is how long it has run in all
-- `detail` **[string][429]?** A line on what is being done: the step, a note from the kind
-- `chars` **[number][428]?** How much of the answer has come back so far
+- `detail` **[string][428]?** A line on what is being done: the step, a note from the kind
+- `chars` **[number][427]?** How much of the answer has come back so far
 
 ## activity
 
-Type: Record<[string][429], [JobActivity][249]>
+Type: Record<[string][428], [JobActivity][247]>
 
 ## setActivity
 
@@ -1796,9 +1784,9 @@ Say what a job is doing.
 
 ### Parameters
 
-- `jobId` **[string][429]**&#x20;
+- `jobId` **[string][428]**&#x20;
 - `phase` &#x20;
-- `detail` **[string][429]?**&#x20;
+- `detail` **[string][428]?**&#x20;
 
 ## addChars
 
@@ -1806,8 +1794,8 @@ Note how much of an answer has come back.
 
 ### Parameters
 
-- `jobId` **[string][429]**&#x20;
-- `chars` **[number][428]** Added since the last note
+- `jobId` **[string][428]**&#x20;
+- `chars` **[number][427]** Added since the last note
 
 ## clearActivity
 
@@ -1815,7 +1803,7 @@ Forget what a job was doing: it stopped.
 
 ### Parameters
 
-- `jobId` **[string][429]**&#x20;
+- `jobId` **[string][428]**&#x20;
 
 ## jobs/runner
 
@@ -1832,9 +1820,8 @@ Resuming is starting again; the finished steps are skipped. Nothing here
 knows what a step does.
 
 A job runs on the model it keeps (`runsOn`), the one the chat that asked
-for it runs on, or else on its workflow's: a kind of job the writer can put
-on a model of its own in Settings › Workflows, and which runs on the active
-preset until they do.
+for it runs on, or else on its workflow's: a conversion's, chosen in the
+dialog that asks for one, and until then what new chats start on.
 
 One job runs at a time per browser tab. The requests it makes are its
 own — see `ai/complete.js` — so a chat can go on beside it. A job writes
@@ -1849,31 +1836,31 @@ into its project as it goes, so while it runs the project is its window's
 
 ## kinds
 
-Type: [Map][433]<[string][429], [JobKind][265]>
+Type: [Map][432]<[string][428], [JobKind][263]>
 
 ## ResolvedModel
 
 The way to ask a model: its connection, the model, the providers allowed
 and ignored for it, and the settings its requests are sent with.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
-- `model` **[string][429]**&#x20;
+- `model` **[string][428]**&#x20;
 - `overrides` **any?** On top of AI_DEFAULTS, as a preset's `generationOverrides`
 
 ## JobKind
 
 What a kind of job supplies.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ## StepRun
 
 What a step is given to run with.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
@@ -1889,8 +1876,8 @@ Teach the runner a kind of job.
 
 ### Parameters
 
-- `name` **[string][429]**&#x20;
-- `kind` **[JobKind][265]**&#x20;
+- `name` **[string][428]**&#x20;
+- `kind` **[JobKind][263]**&#x20;
 
 ## messageOf
 
@@ -1922,17 +1909,17 @@ Wait, or stop waiting when the job is paused.
 
 ### Parameters
 
-- `ms` **[number][428]**&#x20;
+- `ms` **[number][427]**&#x20;
 - `signal` **AbortSignal**&#x20;
 
-Returns **[Promise][436]\<void>**&#x20;
+Returns **[Promise][435]\<void>**&#x20;
 
 ## MOST_STEPS_AT_ONCE
 
 However many requests its connection takes, a job has at most this many
 steps asking at once: a pause throws away what is in flight.
 
-Type: [number][428]
+Type: [number][427]
 
 ## readySteps
 
@@ -1941,9 +1928,9 @@ A step that names nothing waits on the one before it.
 
 ### Parameters
 
-- `steps` **[Array][431]\<JobStep>**&#x20;
+- `steps` **[Array][430]\<JobStep>**&#x20;
 
-Returns **[Array][431]\<JobStep>**&#x20;
+Returns **[Array][430]\<JobStep>**&#x20;
 
 ## roomOf
 
@@ -1954,7 +1941,7 @@ resolved: the step that starts then says why.
 
 - `job` **Job**&#x20;
 
-Returns **[Promise][436]<[number][428]>**&#x20;
+Returns **[Promise][435]<[number][427]>**&#x20;
 
 ## isRunning
 
@@ -1968,28 +1955,30 @@ Whether a job is running in this tab. @param {string} jobId
 
 The way to ask the model a workflow names, or an error saying what is not set.
 
-The allowed and ignored providers come with the model they were chosen
-for: the preset's with the preset's, the workflow's own with its own.
+Its own model where it has one, else what new chats start on, on that
+model's settings (`runOn` in useAIConfig), with the workflow's own effort.
 
 ### Parameters
 
-- `name` **[string][429]** A workflow in the application state's `workflows`
+- `name` **[string][428]** A workflow in the application state's `workflows`
 
 <!---->
 
-- Throws **(ProviderNotConfiguredError | [Error][435])**&#x20;
+- Throws **(ProviderNotConfiguredError | [Error][434])**&#x20;
 
-Returns **[ResolvedModel][263]**&#x20;
+Returns **[ResolvedModel][261]**&#x20;
 
 ## settings
 
+##
+
+Type: any
+
 ## chatModel
 
-The model a chat on a preset runs on, as a job keeps it: the connection
-and the model, the providers allowed and ignored for it, and the preset's
-settings, copied, so the job goes on as it was planned whatever is done to
-the preset after. Without a preset, the active one, which every chat runs
-on: a new chat in any project as much as one going.
+The model a chat runs on, as a job keeps it: the connection and the model,
+the providers preferred and ignored for it, and its settings, copied, so
+the job goes on as it was planned whatever is done to them after.
 
 ### Parameters
 
@@ -1997,7 +1986,7 @@ on: a new chat in any project as much as one going.
 
 <!---->
 
-- Throws **(ProviderNotConfiguredError | [Error][435])** What a chat on it would fail with
+- Throws **(ProviderNotConfiguredError | [Error][434])** What a chat on it would fail with
 
 Returns **JobModel**&#x20;
 
@@ -2013,14 +2002,14 @@ The way to ask a model a job keeps, or an error saying it can't be.
 
 - Throws **ProviderNotConfiguredError** When its connection is gone
 
-Returns **[ResolvedModel][263]**&#x20;
+Returns **[ResolvedModel][261]**&#x20;
 
 ## resolveJob
 
 The way to ask the model a job runs on: the one it keeps, or its
 workflow's. An exploration from before explore kept one names the
-workflow it ran on, `explore`, which runs on the active preset unless the
-writer gave it a model of its own then.
+workflow it ran on, `explore`, which runs on what new chats start on
+unless the writer gave it a model of its own then.
 
 ### Parameters
 
@@ -2028,9 +2017,9 @@ writer gave it a model of its own then.
 
 <!---->
 
-- Throws **(ProviderNotConfiguredError | [Error][435])**&#x20;
+- Throws **(ProviderNotConfiguredError | [Error][434])**&#x20;
 
-Returns **[ResolvedModel][263]**&#x20;
+Returns **[ResolvedModel][261]**&#x20;
 
 ## startJob
 
@@ -2038,14 +2027,14 @@ Run a job from where it stands until it is done or stopped.
 
 ### Parameters
 
-- `jobId` **[string][429]**&#x20;
+- `jobId` **[string][428]**&#x20;
 
 <!---->
 
-- Throws **[Error][435]** When the job's project is open in another window, or has
+- Throws **[Error][434]** When the job's project is open in another window, or has
   changed there since this window had it
 
-Returns **[Promise][436]\<void>**&#x20;
+Returns **[Promise][435]\<void>**&#x20;
 
 ##
 
@@ -2094,7 +2083,7 @@ Stop a running job after the request in flight, keeping its place.
 
 ### Parameters
 
-- `jobId` **[string][429]**&#x20;
+- `jobId` **[string][428]**&#x20;
 
 ## cancelJob
 
@@ -2102,9 +2091,9 @@ Stop a job for good. A job not running is closed where it stands.
 
 ### Parameters
 
-- `jobId` **[string][429]**&#x20;
+- `jobId` **[string][428]**&#x20;
 
-Returns **[Promise][436]\<void>**&#x20;
+Returns **[Promise][435]\<void>**&#x20;
 
 ## resumeJob
 
@@ -2112,9 +2101,9 @@ Take up a paused or failed job again. A failed step is tried again.
 
 ### Parameters
 
-- `jobId` **[string][429]**&#x20;
+- `jobId` **[string][428]**&#x20;
 
-Returns **[Promise][436]\<void>**&#x20;
+Returns **[Promise][435]\<void>**&#x20;
 
 ## jobs/sections
 
@@ -2135,29 +2124,29 @@ each is set in and the page it is on, a text document's with neither.
 
 A line of the source, where it came from.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
-- `text` **[string][429]** '' for a paragraph break
-- `page` **([number][428] | null)** Counted from one; null for a text without pages
-- `size` **[number][428]** The size it is set in; 0 when unknown
-- `y` **[number][428]?** Its height on the page, for placing a bookmark that names no line
-- `bold` **[boolean][432]?** Set in a bold face throughout
+- `text` **[string][428]** '' for a paragraph break
+- `page` **([number][427] | null)** Counted from one; null for a text without pages
+- `size` **[number][427]** The size it is set in; 0 when unknown
+- `y` **[number][427]?** Its height on the page, for placing a bookmark that names no line
+- `bold` **[boolean][431]?** Set in a bold face throughout
 
 ## PlannedHeading
 
 A heading of the tree, placed on the source.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
-- `title` **[string][429]**&#x20;
-- `level` **[number][428]** 1 to 6
-- `line` **[number][428]** The line it starts at: its own printed line, or
+- `title` **[string][428]**&#x20;
+- `level` **[number][427]** 1 to 6
+- `line` **[number][427]** The line it starts at: its own printed line, or
   the line it is placed before when the source does not print it
-- `consumed` **[number][428]** How many source lines are the printed
+- `consumed` **[number][427]** How many source lines are the printed
   heading, and so are not body text; 0 when it is not printed
 
 ## Unit
@@ -2165,44 +2154,44 @@ Type: [Object][430]
 A stretch of the source that is converted as one: a section's body, or
 part of one too long for a request.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
-- `heading` **([number][428] | null)** Index into the headings; null for what comes before the first
-- `from` **[number][428]** First body line
-- `to` **[number][428]** Exclusive
-- `part` **[number][428]** 0 for the part that opens with the heading
+- `heading` **([number][427] | null)** Index into the headings; null for what comes before the first
+- `from` **[number][427]** First body line
+- `to` **[number][427]** Exclusive
+- `part` **[number][427]** 0 for the part that opens with the heading
 
 ## Request
 
 What one request converts.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
-- `id` **[string][429]**&#x20;
-- `units` **[Array][431]<[Unit][318]>**&#x20;
+- `id` **[string][428]**&#x20;
+- `units` **[Array][430]<[Unit][317]>**&#x20;
 
 ## REQUEST_CHARS
 
 How much source one request carries, in characters: about six thousand
 tokens of English, which comes back as about as many.
 
-Type: [number][428]
+Type: [number][427]
 
 ## STRUCTURE_CHARS
 
 How much text the structure request reads whole; past it, only the lines that could be headings.
 
-Type: [number][428]
+Type: [number][427]
 
 ## DEEPEST
 
 The deepest a heading goes in Markdown.
 
-Type: [number][428]
+Type: [number][427]
 
 ## linesOfLayout
 
@@ -2213,7 +2202,7 @@ in the text; each line carries its page.
 
 - `layout` &#x20;
 
-Returns **[Array][431]<[SourceLine][314]>**&#x20;
+Returns **[Array][430]<[SourceLine][313]>**&#x20;
 
 ## linesOfText
 
@@ -2222,9 +2211,9 @@ The lines of a stored text. A PDF's text as the importer wrote it carries
 
 ### Parameters
 
-- `text` **[string][429]**&#x20;
+- `text` **[string][428]**&#x20;
 
-Returns **[Array][431]<[SourceLine][314]>**&#x20;
+Returns **[Array][430]<[SourceLine][313]>**&#x20;
 
 ## bodySize
 
@@ -2232,13 +2221,13 @@ The size the body is set in: the one most characters have.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
 
-Returns **[number][428]** 0 when the lines carry no sizes
+Returns **[number][427]** 0 when the lines carry no sizes
 
 ## chars
 
-Type: [Map][433]<[number][428], [number][428]>
+Type: [Map][432]<[number][427], [number][427]>
 
 ## wordsOfTitle
 
@@ -2247,9 +2236,9 @@ and digits only, lower case, accents aside.
 
 ### Parameters
 
-- `text` **[string][429]**&#x20;
+- `text` **[string][428]**&#x20;
 
-Returns **[Array][431]<[string][429]>**&#x20;
+Returns **[Array][430]<[string][428]>**&#x20;
 
 ## titleMatch
 
@@ -2260,15 +2249,15 @@ that wraps, and null when it is not the heading.
 
 ### Parameters
 
-- `line` **[Array][431]<[string][429]>** The line's words
-- `title` **[Array][431]<[string][429]>** The title's words
-- `text` **[string][429]?** The line as printed, for telling a gloss from more words (optional, default `''`)
+- `line` **[Array][430]<[string][428]>** The line's words
+- `title` **[Array][430]<[string][428]>** The title's words
+- `text` **[string][428]?** The line as printed, for telling a gloss from more words (optional, default `''`)
 
 Returns **(`"whole"` | `"start"` | null)**&#x20;
 
 ##
 
-Type: [number][428]
+Type: [number][427]
 
 ## wrappedLength
 
@@ -2277,11 +2266,11 @@ several: the first, and each after it while the title goes on.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `at` **[number][428]**&#x20;
-- `title` **[Array][431]<[string][429]>**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `at` **[number][427]**&#x20;
+- `title` **[Array][430]<[string][428]>**&#x20;
 
-Returns **[number][428]**&#x20;
+Returns **[number][427]**&#x20;
 
 ## NUMBER
 
@@ -2296,13 +2285,13 @@ it by name.
 
 ### Parameters
 
-- `title` **[string][429]** The bookmark's
-- `above` **([string][429] | null)** A label line printed above the heading
-- `printed` **[string][429]** The heading's own printed line
+- `title` **[string][428]** The bookmark's
+- `above` **([string][428] | null)** A label line printed above the heading
+- `printed` **[string][428]** The heading's own printed line
 
 ## numbered
 
-Type: [Array][431]<[string][429]>
+Type: [Array][430]<[string][428]>
 
 ## LABEL
 
@@ -2329,22 +2318,22 @@ neighbours.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
 - `outline` &#x20;
 
-Returns **[Array][431]<[PlannedHeading][316]>**&#x20;
+Returns **[Array][430]<[PlannedHeading][315]>**&#x20;
 
 ## pageStart
 
-Type: [Map][433]<[number][428], [number][428]>
+Type: [Map][432]<[number][427], [number][427]>
 
 ## pageEnd
 
-Type: [Map][433]<[number][428], [number][428]>
+Type: [Map][432]<[number][427], [number][427]>
 
 ##
 
-Type: [number][428]
+Type: [number][427]
 
 ## taken
 
@@ -2358,18 +2347,18 @@ not list its bookmarks in the order the pages print them.
 
 ### Parameters
 
-- `index` **[number][428]**&#x20;
-- `floor` **[number][428]**&#x20;
+- `index` **[number][427]**&#x20;
+- `floor` **[number][427]**&#x20;
 
-Returns **([PlannedHeading][316] | null)**&#x20;
+Returns **([PlannedHeading][315] | null)**&#x20;
 
 ## spans
 
-Type: [Array][431]<\[[number][428], [number][428], [boolean][432]]>
+Type: [Array][430]<\[[number][427], [number][427], [boolean][431]]>
 
 ## max
 
-Type: \[[number][428], [number][428], [boolean][432]]
+Type: \[[number][427], [number][427], [boolean][431]]
 
 ## byHeight
 
@@ -2377,15 +2366,15 @@ An unprinted bookmark at the height it points to, between `low` and `high`.
 
 ### Parameters
 
-- `index` **[number][428]**&#x20;
-- `low` **[number][428]**&#x20;
-- `high` **[number][428]**&#x20;
+- `index` **[number][427]**&#x20;
+- `low` **[number][427]**&#x20;
+- `high` **[number][427]**&#x20;
 
-Returns **[PlannedHeading][316]**&#x20;
+Returns **[PlannedHeading][315]**&#x20;
 
 ## placed
 
-Type: [Array][431]<[PlannedHeading][316]>
+Type: [Array][430]<[PlannedHeading][315]>
 
 ## placed
 
@@ -2393,7 +2382,7 @@ The headings placed so far, each with the open headings above it then. @type {Ar
 
 ## waiting
 
-Type: [Array][431]<[number][428]>
+Type: [Array][430]<[number][427]>
 
 ## settle
 
@@ -2402,8 +2391,8 @@ printed one is at `high`, whose level is `level`.
 
 ### Parameters
 
-- `high` **[number][428]**&#x20;
-- `level` **[number][428]**&#x20;
+- `high` **[number][427]**&#x20;
+- `level` **[number][427]**&#x20;
 
 ## runningKey
 
@@ -2412,25 +2401,25 @@ mark, so `Chapter 3 · 41` and `Chapter 3 · 42` read the same.
 
 ### Parameters
 
-- `text` **[string][429]**&#x20;
+- `text` **[string][428]**&#x20;
 
 ## MARGIN
 
 How much of a page, top and bottom, a running header or footer sits in.
 
-Type: [number][428]
+Type: [number][427]
 
 ## RUNNING_BUCKET
 
 How near two lines' heights have to be to be the same place on the page.
 
-Type: [number][428]
+Type: [number][427]
 
 ## EDGE_SLACK
 
 How far inside the page's outermost text a line may sit and still be outermost.
 
-Type: [number][428]
+Type: [number][427]
 
 ## runningLines
 
@@ -2443,10 +2432,10 @@ breaks a table that runs over a page and reads as a heading.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `heights` **[Map][433]<[number][428], [number][428]>** Each page's height, by page number
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `heights` **[Map][432]<[number][427], [number][427]>** Each page's height, by page number
 
-Returns **[Set][437]<[number][428]>** The lines' indices
+Returns **[Set][436]<[number][427]>** The lines' indices
 
 ## runningAtEdge
 
@@ -2455,37 +2444,37 @@ page, top and bottom, that repeat.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `heights` **[Map][433]<[number][428], [number][428]>**&#x20;
-- `gone` **[Set][437]<[number][428]>** Lines already taken, as if not there
-- `threshold` **[number][428]** How many pages a line has to be on
-- `streaks` **[boolean][432]** Whether three numbered pages running are enough
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `heights` **[Map][432]<[number][427], [number][427]>**&#x20;
+- `gone` **[Set][436]<[number][427]>** Lines already taken, as if not there
+- `threshold` **[number][427]** How many pages a line has to be on
+- `streaks` **[boolean][431]** Whether three numbered pages running are enough
 
-Returns **[Array][431]<[number][428]>**&#x20;
+Returns **[Array][430]<[number][427]>**&#x20;
 
 ## edges
 
-Type: [Map][433]<[number][428], {top: [number][428], bottom: [number][428]}>
+Type: [Map][432]<[number][427], {top: [number][427], bottom: [number][427]}>
 
 ## seen
 
-Type: [Map][433]<[string][429], {pages: [Set][437]<[number][428]>, at: [Array][431]<[number][428]>, numbered: [boolean][432]}>
+Type: [Map][432]<[string][428], {pages: [Set][436]<[number][427]>, at: [Array][430]<[number][427]>, numbered: [boolean][431]}>
 
 ## line
 
-Type: [number][428]
+Type: [number][427]
 
 ## SAME_SIZE
 
 Sizes within this share of each other are one size; a glyph's height jitters.
 
-Type: [number][428]
+Type: [number][427]
 
 ## larger
 
 ### Parameters
 
-- `a` **[number][428]** @param {number} b
+- `a` **[number][427]** @param {number} b
 - `b` &#x20;
 
 ## outranks
@@ -2515,8 +2504,8 @@ caption, or a line of a table of contents.
 
 ### Parameters
 
-- `line` **([SourceLine][314] | [undefined][434])**&#x20;
-- `body` **[number][428]**&#x20;
+- `line` **([SourceLine][313] | [undefined][433])**&#x20;
+- `body` **[number][427]**&#x20;
 
 ## nextWithText
 
@@ -2524,8 +2513,8 @@ The next line with text after `at`, within a few.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `at` **[number][428]**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `at` **[number][427]**&#x20;
 
 ## previousWithText
 
@@ -2533,8 +2522,8 @@ The previous line with text before `at`, within a few.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `at` **[number][428]**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `at` **[number][427]**&#x20;
 
 ## styleHeadings
 
@@ -2553,34 +2542,34 @@ are bookmarks: that is the title page.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `marked` **[Array][431]<[PlannedHeading][316]>** The headings already placed, from bookmarks
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `marked` **[Array][430]<[PlannedHeading][315]>** The headings already placed, from bookmarks
 
-Returns **[Array][431]<[PlannedHeading][316]>** Every heading, the marked ones and these, in text order
+Returns **[Array][430]<[PlannedHeading][315]>** Every heading, the marked ones and these, in text order
 
 ## Open
 
-Type: {level: [number][428], look: [Look][391], fixed: [boolean][432]}
+Type: {level: [number][427], look: [Look][390], fixed: [boolean][431]}
 
 ## open
 
-Type: [Array][431]<[Open][388]>
+Type: [Array][430]<[Open][387]>
 
 ## sibling
 
-Type: ({entry: [Open][388], above: [Array][431]<[Open][388]>} | null)
+Type: ({entry: [Open][387], above: [Array][430]<[Open][387]>} | null)
 
 ## Look
 
 How a heading is set: its size, and the size of the text under it.
 
-Type: [Object][430]
+Type: [Object][429]
 
 ### Properties
 
-- `size` **[number][428]** Infinity for a bookmark the page does not print, above everything
-- `bold` **[boolean][432]** Set in a bold face
-- `under` **[number][428]** The size of the first text after it; NaN when there is none
+- `size` **[number][427]** Infinity for a bookmark the page does not print, above everything
+- `bold` **[boolean][431]** Set in a bold face
+- `under` **[number][427]** The size of the first text after it; NaN when there is none
 
 ## lookOf
 
@@ -2590,10 +2579,10 @@ two spells, two monsters — where size alone is not enough: a stat block's
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `heading` **[PlannedHeading][316]**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `heading` **[PlannedHeading][315]**&#x20;
 
-Returns **[Look][391]**&#x20;
+Returns **[Look][390]**&#x20;
 
 ## sameLook
 
@@ -2601,8 +2590,8 @@ Whether two headings are set alike.
 
 ### Parameters
 
-- `a` **[Look][391]**&#x20;
-- `b` **[Look][391]**&#x20;
+- `a` **[Look][390]**&#x20;
+- `b` **[Look][390]**&#x20;
 
 ## structureOfLayout
 
@@ -2625,11 +2614,11 @@ or standing alone.
 
 ### Parameters
 
-- `args` **[Object][430]**&#x20;
-  - `args.title` **[string][429]**&#x20;
-  - `args.lines` **[Array][431]<[SourceLine][314]>**&#x20;
+- `args` **[Object][429]**&#x20;
+  - `args.title` **[string][428]**&#x20;
+  - `args.lines` **[Array][430]<[SourceLine][313]>**&#x20;
 
-Returns **[Array][431]<{role: [string][429], content: [string][429]}>**&#x20;
+Returns **[Array][430]<{role: [string][428], content: [string][428]}>**&#x20;
 
 ## parseStructure
 
@@ -2639,14 +2628,14 @@ wraps takes the lines its title runs over.
 
 ### Parameters
 
-- `answer` **[string][429]** One heading per line: `<line> <level> <title>`
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
+- `answer` **[string][428]** One heading per line: `<line> <level> <title>`
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
 
 <!---->
 
-- Throws **[Error][435]** When the answer names no headings the lines have
+- Throws **[Error][434]** When the answer names no headings the lines have
 
-Returns **[Array][431]<[PlannedHeading][316]>**&#x20;
+Returns **[Array][430]<[PlannedHeading][315]>**&#x20;
 
 ## unitsOf
 
@@ -2657,14 +2646,14 @@ is in the tree either way.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `headings` **[Array][431]<[PlannedHeading][316]>**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `headings` **[Array][430]<[PlannedHeading][315]>**&#x20;
 
-Returns **[Array][431]<[Unit][318]>**&#x20;
+Returns **[Array][430]<[Unit][317]>**&#x20;
 
 ## units
 
-Type: [Array][431]<[Unit][318]>
+Type: [Array][430]<[Unit][317]>
 
 ## charsOf
 
@@ -2672,9 +2661,9 @@ How many characters a run of lines is.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `from` **[number][428]**&#x20;
-- `to` **[number][428]**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `from` **[number][427]**&#x20;
+- `to` **[number][427]**&#x20;
 
 ## cutPoint
 
@@ -2684,12 +2673,12 @@ break, else at a line.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `from` **[number][428]**&#x20;
-- `to` **[number][428]**&#x20;
-- `budget` **[number][428]**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `from` **[number][427]**&#x20;
+- `to` **[number][427]**&#x20;
+- `budget` **[number][427]**&#x20;
 
-Returns **[number][428]** The first line of the second piece
+Returns **[number][427]** The first line of the second piece
 
 ## splitUnit
 
@@ -2697,15 +2686,15 @@ Split a unit too long for one request into parts that fit.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `unit` **[Unit][318]**&#x20;
-- `budget` **[number][428]**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `unit` **[Unit][317]**&#x20;
+- `budget` **[number][427]**&#x20;
 
-Returns **[Array][431]<[Unit][318]>**&#x20;
+Returns **[Array][430]<[Unit][317]>**&#x20;
 
 ## parts
 
-Type: [Array][431]<[Unit][318]>
+Type: [Array][430]<[Unit][317]>
 
 ## planRequests
 
@@ -2715,15 +2704,15 @@ of its own.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `units` **[Array][431]<[Unit][318]>**&#x20;
-- `budget` **[number][428]?** (optional, default `REQUEST_CHARS`)
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `units` **[Array][430]<[Unit][317]>**&#x20;
+- `budget` **[number][427]?** (optional, default `REQUEST_CHARS`)
 
-Returns **[Array][431]<[Request][320]>**&#x20;
+Returns **[Array][430]<[Request][319]>**&#x20;
 
 ## requests
 
-Type: [Array][431]<[Request][320]>
+Type: [Array][430]<[Request][319]>
 
 ## headingLine
 
@@ -2731,7 +2720,7 @@ A heading as Markdown.
 
 ### Parameters
 
-- `heading` **[PlannedHeading][316]**&#x20;
+- `heading` **[PlannedHeading][315]**&#x20;
 
 ## requestText
 
@@ -2741,11 +2730,11 @@ page markers — a table that runs over a page arrives in one piece.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `request` **[Request][320]**&#x20;
-- `headings` **[Array][431]<[PlannedHeading][316]>**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `request` **[Request][319]**&#x20;
+- `headings` **[Array][430]<[PlannedHeading][315]>**&#x20;
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 ## givenHeadings
 
@@ -2753,14 +2742,14 @@ The headings a request's answer must carry, in order.
 
 ### Parameters
 
-- `request` **[Request][320]**&#x20;
-- `headings` **[Array][431]<[PlannedHeading][316]>**&#x20;
+- `request` **[Request][319]**&#x20;
+- `headings` **[Array][430]<[PlannedHeading][315]>**&#x20;
 
-Returns **[Array][431]<[PlannedHeading][316]>**&#x20;
+Returns **[Array][430]<[PlannedHeading][315]>**&#x20;
 
 ## unit
 
-Type: [number][428]
+Type: [number][427]
 
 ## ancestorsOf
 
@@ -2770,14 +2759,14 @@ a subsection on its own, reads in its place.
 
 ### Parameters
 
-- `request` **[Request][320]**&#x20;
-- `headings` **[Array][431]<[PlannedHeading][316]>**&#x20;
+- `request` **[Request][319]**&#x20;
+- `headings` **[Array][430]<[PlannedHeading][315]>**&#x20;
 
-Returns **[Array][431]<[PlannedHeading][316]>**&#x20;
+Returns **[Array][430]<[PlannedHeading][315]>**&#x20;
 
 ## above
 
-Type: [Array][431]<[PlannedHeading][316]>
+Type: [Array][430]<[PlannedHeading][315]>
 
 ## requestLabel
 
@@ -2786,11 +2775,11 @@ more it carries, and its pages when it has them.
 
 ### Parameters
 
-- `lines` **[Array][431]<[SourceLine][314]>**&#x20;
-- `request` **[Request][320]**&#x20;
-- `headings` **[Array][431]<[PlannedHeading][316]>**&#x20;
+- `lines` **[Array][430]<[SourceLine][313]>**&#x20;
+- `request` **[Request][319]**&#x20;
+- `headings` **[Array][430]<[PlannedHeading][315]>**&#x20;
 
-Returns **[string][429]**&#x20;
+Returns **[string][428]**&#x20;
 
 [1]: #jobsconvert
 [2]: #heading
@@ -3031,201 +3020,200 @@ Returns **[string][429]**&#x20;
 [237]: #parameters-75
 [238]: #explorejob
 [239]: #parameters-76
-[240]: #startexplore
+[240]: #exploreandwait
 [241]: #parameters-77
-[242]: #exploreandwait
+[242]: #currentdigests
 [243]: #parameters-78
-[244]: #currentdigests
+[244]: #dropjobsforstory
 [245]: #parameters-79
-[246]: #dropjobsforstory
-[247]: #parameters-80
-[248]: #jobslive
-[249]: #jobactivity
-[250]: #properties-5
-[251]: #activity
-[252]: #setactivity
+[246]: #jobslive
+[247]: #jobactivity
+[248]: #properties-5
+[249]: #activity
+[250]: #setactivity
+[251]: #parameters-80
+[252]: #addchars
 [253]: #parameters-81
-[254]: #addchars
+[254]: #clearactivity
 [255]: #parameters-82
-[256]: #clearactivity
-[257]: #parameters-83
-[258]: #jobsrunner
-[259]: #kinds
-[260]: #kinds-1
-[261]: #kinds-2
-[262]: #kinds-3
-[263]: #resolvedmodel
-[264]: #properties-6
-[265]: #jobkind
-[266]: #steprun
-[267]: #properties-7
-[268]: #running
-[269]: #registerjobkind
+[256]: #jobsrunner
+[257]: #kinds
+[258]: #kinds-1
+[259]: #kinds-2
+[260]: #kinds-3
+[261]: #resolvedmodel
+[262]: #properties-6
+[263]: #jobkind
+[264]: #steprun
+[265]: #properties-7
+[266]: #running
+[267]: #registerjobkind
+[268]: #parameters-83
+[269]: #messageof
 [270]: #parameters-84
-[271]: #messageof
-[272]: #parameters-85
-[273]: #retry
-[274]: #transient
-[275]: #istransient
+[271]: #retry
+[272]: #transient
+[273]: #istransient
+[274]: #parameters-85
+[275]: #pause
 [276]: #parameters-86
-[277]: #pause
-[278]: #parameters-87
-[279]: #most_steps_at_once
-[280]: #readysteps
+[277]: #most_steps_at_once
+[278]: #readysteps
+[279]: #parameters-87
+[280]: #roomof
 [281]: #parameters-88
-[282]: #roomof
+[282]: #isrunning
 [283]: #parameters-89
-[284]: #isrunning
+[284]: #resolveworkflow
 [285]: #parameters-90
-[286]: #resolveworkflow
-[287]: #parameters-91
-[288]: #settings
-[289]: #chatmodel
-[290]: #parameters-92
-[291]: #resolvemodel
-[292]: #parameters-93
-[293]: #resolvejob
-[294]: #parameters-94
-[295]: #startjob
-[296]: #parameters-95
-[297]: #-4
-[298]: #jobid
-[299]: #stopping
-[300]: #parameters-96
-[301]: #inflight
-[302]: #failed
-[303]: #run
-[304]: #parameters-97
-[305]: #getjob
-[306]: #getjob-1
-[307]: #pausejob
-[308]: #parameters-98
-[309]: #canceljob
-[310]: #parameters-99
-[311]: #resumejob
-[312]: #parameters-100
-[313]: #jobssections
-[314]: #sourceline
-[315]: #properties-8
-[316]: #plannedheading
-[317]: #properties-9
-[318]: #unit
-[319]: #properties-10
-[320]: #request
-[321]: #properties-11
-[322]: #request_chars
-[323]: #structure_chars
-[324]: #deepest
-[325]: #linesoflayout
-[326]: #parameters-101
-[327]: #linesoftext
-[328]: #parameters-102
-[329]: #bodysize
-[330]: #parameters-103
-[331]: #chars
-[332]: #wordsoftitle
-[333]: #parameters-104
-[334]: #titlematch
-[335]: #parameters-105
-[336]: #-5
-[337]: #wrappedlength
-[338]: #parameters-106
-[339]: #number
-[340]: #numbered
-[341]: #parameters-107
-[342]: #numbered-1
-[343]: #label
-[344]: #placebookmarks
-[345]: #parameters-108
-[346]: #pagestart
-[347]: #pageend
-[348]: #-6
-[349]: #taken
-[350]: #printed
-[351]: #parameters-109
-[352]: #spans
-[353]: #max
-[354]: #byheight
-[355]: #parameters-110
-[356]: #placed
-[357]: #placed-1
-[358]: #waiting
-[359]: #settle
-[360]: #parameters-111
-[361]: #runningkey
-[362]: #parameters-112
-[363]: #margin
-[364]: #running_bucket
-[365]: #edge_slack
-[366]: #runninglines
-[367]: #parameters-113
-[368]: #runningatedge
-[369]: #parameters-114
-[370]: #edges
-[371]: #seen
-[372]: #line
-[373]: #same_size
-[374]: #larger
-[375]: #parameters-115
-[376]: #outranks
-[377]: #parameters-116
-[378]: #setalike
-[379]: #parameters-117
-[380]: #setasheading
-[381]: #parameters-118
-[382]: #nextwithtext
-[383]: #parameters-119
-[384]: #previouswithtext
-[385]: #parameters-120
-[386]: #styleheadings
-[387]: #parameters-121
-[388]: #open
-[389]: #open-1
-[390]: #sibling
-[391]: #look
-[392]: #properties-12
-[393]: #lookof
-[394]: #parameters-122
-[395]: #samelook
-[396]: #parameters-123
-[397]: #structureoflayout
-[398]: #parameters-124
-[399]: #structuremessages
-[400]: #parameters-125
-[401]: #parsestructure
-[402]: #parameters-126
-[403]: #unitsof
-[404]: #parameters-127
-[405]: #units
-[406]: #charsof
-[407]: #parameters-128
-[408]: #cutpoint
-[409]: #parameters-129
-[410]: #splitunit
-[411]: #parameters-130
-[412]: #parts
-[413]: #planrequests
-[414]: #parameters-131
-[415]: #requests
-[416]: #headingline
-[417]: #parameters-132
-[418]: #requesttext
-[419]: #parameters-133
-[420]: #givenheadings
-[421]: #parameters-134
-[422]: #unit-1
-[423]: #ancestorsof
-[424]: #parameters-135
-[425]: #above
-[426]: #requestlabel
-[427]: #parameters-136
-[428]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[429]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[430]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[431]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[432]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[433]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[434]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[435]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[436]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[437]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
+[286]: #settings
+[287]: #-4
+[288]: #chatmodel
+[289]: #parameters-91
+[290]: #resolvemodel
+[291]: #parameters-92
+[292]: #resolvejob
+[293]: #parameters-93
+[294]: #startjob
+[295]: #parameters-94
+[296]: #-5
+[297]: #jobid
+[298]: #stopping
+[299]: #parameters-95
+[300]: #inflight
+[301]: #failed
+[302]: #run
+[303]: #parameters-96
+[304]: #getjob
+[305]: #getjob-1
+[306]: #pausejob
+[307]: #parameters-97
+[308]: #canceljob
+[309]: #parameters-98
+[310]: #resumejob
+[311]: #parameters-99
+[312]: #jobssections
+[313]: #sourceline
+[314]: #properties-8
+[315]: #plannedheading
+[316]: #properties-9
+[317]: #unit
+[318]: #properties-10
+[319]: #request
+[320]: #properties-11
+[321]: #request_chars
+[322]: #structure_chars
+[323]: #deepest
+[324]: #linesoflayout
+[325]: #parameters-100
+[326]: #linesoftext
+[327]: #parameters-101
+[328]: #bodysize
+[329]: #parameters-102
+[330]: #chars
+[331]: #wordsoftitle
+[332]: #parameters-103
+[333]: #titlematch
+[334]: #parameters-104
+[335]: #-6
+[336]: #wrappedlength
+[337]: #parameters-105
+[338]: #number
+[339]: #numbered
+[340]: #parameters-106
+[341]: #numbered-1
+[342]: #label
+[343]: #placebookmarks
+[344]: #parameters-107
+[345]: #pagestart
+[346]: #pageend
+[347]: #-7
+[348]: #taken
+[349]: #printed
+[350]: #parameters-108
+[351]: #spans
+[352]: #max
+[353]: #byheight
+[354]: #parameters-109
+[355]: #placed
+[356]: #placed-1
+[357]: #waiting
+[358]: #settle
+[359]: #parameters-110
+[360]: #runningkey
+[361]: #parameters-111
+[362]: #margin
+[363]: #running_bucket
+[364]: #edge_slack
+[365]: #runninglines
+[366]: #parameters-112
+[367]: #runningatedge
+[368]: #parameters-113
+[369]: #edges
+[370]: #seen
+[371]: #line
+[372]: #same_size
+[373]: #larger
+[374]: #parameters-114
+[375]: #outranks
+[376]: #parameters-115
+[377]: #setalike
+[378]: #parameters-116
+[379]: #setasheading
+[380]: #parameters-117
+[381]: #nextwithtext
+[382]: #parameters-118
+[383]: #previouswithtext
+[384]: #parameters-119
+[385]: #styleheadings
+[386]: #parameters-120
+[387]: #open
+[388]: #open-1
+[389]: #sibling
+[390]: #look
+[391]: #properties-12
+[392]: #lookof
+[393]: #parameters-121
+[394]: #samelook
+[395]: #parameters-122
+[396]: #structureoflayout
+[397]: #parameters-123
+[398]: #structuremessages
+[399]: #parameters-124
+[400]: #parsestructure
+[401]: #parameters-125
+[402]: #unitsof
+[403]: #parameters-126
+[404]: #units
+[405]: #charsof
+[406]: #parameters-127
+[407]: #cutpoint
+[408]: #parameters-128
+[409]: #splitunit
+[410]: #parameters-129
+[411]: #parts
+[412]: #planrequests
+[413]: #parameters-130
+[414]: #requests
+[415]: #headingline
+[416]: #parameters-131
+[417]: #requesttext
+[418]: #parameters-132
+[419]: #givenheadings
+[420]: #parameters-133
+[421]: #unit-1
+[422]: #ancestorsof
+[423]: #parameters-134
+[424]: #above
+[425]: #requestlabel
+[426]: #parameters-135
+[427]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[428]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[429]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[430]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[431]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[432]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[433]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[434]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[435]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[436]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set

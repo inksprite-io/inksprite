@@ -575,8 +575,8 @@ export function piecesOf(doc, id) {
 }
 
 /**
- * What a leaf reads as in a change's text: a rule as it is written, a break
- * as one.
+ * What a leaf reads as in a change's text: a rule or a formula as it is
+ * written, a break as one.
  *
  * @param {Node} leaf
  * @returns {string}
@@ -586,7 +586,9 @@ const leafText = leaf =>
     ? '---'
     : leaf.type === schema.nodes.hard_break
       ? '\n'
-      : ''
+      : leaf.type === schema.nodes.formula || leaf.type === schema.nodes.formula_block
+        ? (leaf.type.spec.leafText?.(leaf) ?? '')
+        : ''
 
 /**
  * One run of a suggestion's marks: text one half covers, or a block it puts
@@ -1062,6 +1064,19 @@ function wholly(node, type, id) {
     children.push(made)
   }
   return remade(node, children)
+}
+
+/**
+ * A block as a suggestion that puts it in whole shows it, for the editor to
+ * show text still arriving that will be suggested: its words marked as put
+ * in, or where it has none to mark, itself.
+ *
+ * @param {Node} node
+ * @param {string} id
+ * @returns {Node}
+ */
+export function insertedWhole(node, id) {
+  return wholly(node, schema.marks.insertion, id) || node
 }
 
 /**

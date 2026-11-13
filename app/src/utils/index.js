@@ -8,6 +8,7 @@
  * - **formatters** - Text formatting utilities
  * - **markdown** - Markdown parsing and rendering
  * - **math** - TeX in markdown typeset with KaTeX, loaded the first time a formula needs it
+ * - **tex** - Where a formula is in markdown, by the delimiters the chat and a document read
  * - **partialJson** - The strings in JSON that has not finished arriving
  * - **plainCopy** - A deep copy of a row, as JSON would have it, without writing it out as JSON
  * - **wordCount** - Words in a document's markdown
@@ -21,6 +22,7 @@
  *   for a plain document's versions
  *
  * ### AI Integration
+ * - **oauth** - Signing in with OAuth (PKCE): the address the writer is sent to, and the code that comes back exchanged for a key
  *
  * ### Chat
  * - **turns** - Fold a chat's messages into the turns they were sent as
@@ -34,7 +36,7 @@
  * - **pictures** - A document's own pictures as its text refers to them, `.images/<id>/<name>`,
  *   and where their bytes are kept
  * - **dataUrl** - What a `data:` address holds, as bytes
- * - **visibility** - What one chat sees of the project: hidden outright, and each chat's pins, shows and hides
+ * - **visibility** - What one chat sees of the project: hidden outright, and each chat's shows and hides
  * - **chatTitle** - What a chat is called before it has a name, and a title the model wrote, made plain
  *
  * ### Editor

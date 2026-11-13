@@ -55,9 +55,8 @@ describe.skipIf(files.length === 0)('writing the cards people actually share', (
 
     expect(written.title.trim()).toBeTruthy()
     expect(documents).toHaveLength(written.documents)
-    // Every document is findable and every pin names one of them.
+    // Every document is findable.
     expect(documents.every(document => document.title.trim())).toBe(true)
-    expect(written.pinnedIds.every(id => store.getDocument(id))).toBe(true)
     // Stored as the card has them, macros and all, and edited as the text
     // they are rather than settled to what the editor can show.
     const texts = documents.filter(document => document.type === 'text')

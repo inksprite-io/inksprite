@@ -1,8 +1,7 @@
 /**
  * @module stores/webSearchStore
  * @description How the writer set web search up, app-wide: the service in
- * use, a key for each service they gave one for, and the profiles whose chats
- * search. One row, `id` 'web'.
+ * use, and a key for each service they gave one for. One row, `id` 'web'.
  *
  * Whatever is here is handed to `web/config.js` the moment it changes, so the
  * tools and the turn read what is here now without reaching for a store — the
@@ -23,7 +22,11 @@ import { onTablesWritten } from '@/platform/windows.js'
 /** The one row's id. */
 const ROW = /** @type {const} */ ('web')
 
-/** @returns {WebSearchSetup} A setup with nothing chosen, used in chats on Default once it is */
+/**
+ * A setup with nothing chosen. Its legacy list of profiles is what an app
+ * from before a chat's tools said reads: Default.
+ * @returns {WebSearchSetup}
+ */
 function emptySetup() {
   return { id: ROW, keys: {}, profiles: [CHAT_PROFILE_ID] }
 }

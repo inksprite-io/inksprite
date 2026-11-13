@@ -15,6 +15,9 @@
  * - `read_document`, which answers that a document is unchanged rather than
  *   send a second copy of a read still in view.
  *
+ * A document the writer attached to a message is a read as well, of the whole
+ * of it, noted on the message (ai/context/attachments.js).
+ *
  * A read a summary stands in for is not in view, and nothing here counts it.
  * A turn written before document calls stayed in the conversation is not
  * marked, and its reads are not in view either: none of them go back. A turn
@@ -26,6 +29,7 @@
  */
 
 import { applyCompaction } from '../compaction.js'
+import { attachmentsOf } from './attachments.js'
 
 /**
  * @typedef {import('../../types/models.js').Message} Message
@@ -35,6 +39,8 @@ import { applyCompaction } from '../compaction.js'
  * @property {string} path - Its path when it was read
  * @property {string} hash - A hash of the text it had then
  * @property {Record<string, any>} args - What the read asked for
+ * @property {true} [whole] - The whole document, whatever a read of it asks
+ *   for: one the writer attached
  *
  * @typedef {Object} Located
  * @property {string} path - Where the document is now
@@ -103,6 +109,10 @@ function readsIn(messages) {
   /** @type {Read[]} */
   const reads = []
   for (const message of messages) {
+    // What the writer attached is a read too, of the whole document.
+    for (const { id, path, hash } of attachmentsOf(message)) {
+      reads.push({ id, path, hash, args: {}, whole: true })
+    }
     if (!keepsDocumentCalls(message)) continue
     const trajectory = message.metadata?.apiTrajectory || []
     /** @type {Map<string, any>} */
@@ -166,7 +176,7 @@ function partOf(args) {
 export function readInView(messages, id, args, hash) {
   const part = partOf(args)
   return readsInView(messages).some(
-    read => read.id === id && read.hash === hash && partOf(read.args) === part
+    read => read.id === id && read.hash === hash && (read.whole || partOf(read.args) === part)
   )
 }
 

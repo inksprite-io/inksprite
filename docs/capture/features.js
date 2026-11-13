@@ -16,6 +16,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { setUpAI } from './setup.js'
 
 /** A made-up key: the stand-in takes any. */
 const ANTHROPIC_KEY = 'sk-ant-made-up-for-the-guide'
@@ -74,21 +75,13 @@ const HOW_IT_ENDS = {
   ],
 }
 
-/** The review skill the skills page makes, as its SKILL.md. */
-const REVIEW_SKILL = `---
-name: review
-description: >-
-  Critique a draft the way an editor would: what works, where it drags or loses
-  the reader, and the one change that would help most.
-disable-model-invocation: true
-context: fork
-arguments: document
-argument-hint: the document to review
-allowed-tools: read_document list_documents
----
-
-You are an editor reading a draft for its writer. Read $document with
-read_document, all of it, before you say anything.
+/** The review skill the skills page makes: what goes in its three fields. */
+const REVIEW_SKILL = {
+  name: 'Review',
+  description:
+    'Critique a draft the way an editor would: what works, where it drags or loses the reader, and the one change that would help most.',
+  instructions: `You are an editor reading a draft for its writer. Read the document
+named below, all of it, before you say anything.
 
 Then write a short critique:
 
@@ -96,12 +89,12 @@ Then write a short critique:
 - Where the pace drags or the reader could get lost, quoting the lines you mean.
 - The one change that would help most.
 
-Don't rewrite the draft, and don't praise what doesn't earn it.
-`
+Don't rewrite the draft, and don't praise what doesn't earn it.`,
+}
 
-/** What the review skill says, run on its own. */
+/** What the model says to the review skill's instructions, in the writer's turn. */
 const REVIEW = {
-  system: 'You are an editor reading a draft for its writer',
+  match: 'You are an editor reading a draft for its writer',
   steps: [
     { tool: 'read_document', args: { path: 'Manuscript/Prologue' } },
     {
@@ -154,7 +147,7 @@ function countingWords(folder) {
   }
   const file = 'app/src/utils/wordCount.js'
   const counts = lineOf(file, /^export function countWords\(/)
-  lineOf(file, /stripMarkdown\(textAsItStands\(content\)\.replace\(PICTURE, ' '\)\)/)
+  lineOf(file, /replaceFormulas\(textAsItStands\(content\)\.replace\(PICTURE, ' '\)/)
   const keeps = lineOf(file, /\.filter\(word => \/\[\\p\{L\}\\p\{N\}\]\/u/)
   const strips = lineOf('app/src/utils/markdown.js', /^export function stripMarkdown\(/)
   const stands = lineOf('app/src/editor/suggestionText.js', /^export function textAsItStands\(/)
@@ -166,8 +159,8 @@ function countingWords(folder) {
       { tool: 'read_document', args: { path: `inksprite/${file}` } },
       {
         text:
-          `\`countWords\` in **inksprite/${file}:${counts}** does it. It reads the text as it stands with \`textAsItStands\` (**app/src/editor/suggestionText.js:${stands}**), your comments taken out and any suggestion not yet accepted left undone, then takes out any pictures, and the Markdown with \`stripMarkdown\` (**app/src/utils/markdown.js:${strips}**). It splits what is left on whitespace and keeps the runs with a letter or a digit in them (line ${keeps}).\n\n` +
-          'So a rule, a bare dash or a stray `|` from a table isn’t a word, and nor is anything you wrote in a comment, a word a suggestion would add, or a picture’s alt text.',
+          `\`countWords\` in **inksprite/${file}:${counts}** does it. It reads the text as it stands with \`textAsItStands\` (**app/src/editor/suggestionText.js:${stands}**), your comments taken out and any suggestion not yet accepted left undone, then takes out any pictures, counts a formula in a sentence as one word and one on lines of its own as none, and takes out the Markdown with \`stripMarkdown\` (**app/src/utils/markdown.js:${strips}**). It splits what is left on whitespace and keeps the runs with a letter or a digit in them (line ${keeps}).\n\n` +
+          'So a rule, a bare dash or a stray `|` from a table isn’t a word, and nor is anything you wrote in a comment, a word a suggestion would add, a picture’s alt text, or the TeX inside a formula.',
       },
     ],
   }
@@ -311,29 +304,7 @@ export async function features(ui, { standIn, context }) {
   await ui.goto('/')
   await dialog('Welcome').waitFor()
   await ui.click(button('Start writing'))
-  await openSettings('AI')
-  await ui.click(page.getByRole('combobox', { name: 'Provider', exact: true }))
-  await ui.click(page.getByRole('option', { name: 'Anthropic' }))
-  await ui.click(settings.getByRole('button', { name: 'Connect', exact: true }))
-  const provider = dialog('Provider configuration')
-  await ui.paste(provider.getByRole('textbox', { name: 'API key' }), ANTHROPIC_KEY)
-  await ui.click(provider.getByRole('button', { name: 'Connect' }))
-  await settings.getByText('Ready').waitFor()
-  await ui.click(provider.getByRole('button', { name: 'Close' }))
-  await provider.waitFor({ state: 'hidden' })
-  await ui.click(page.getByRole('combobox', { name: 'Model' }))
-  await ui.click(page.getByRole('option', { name: 'Claude Sonnet 5.5' }))
-
-  // Workflows: the model a conversion runs on
-  await ui.click(settings.getByRole('button', { name: 'Workflows', exact: true }))
-  const convert = settings.locator('[data-workflow="convert"]')
-  await ui.click(convert.getByRole('combobox', { name: 'Provider', exact: true }))
-  await ui.click(page.getByRole('option', { name: 'Anthropic' }))
-  await ui.click(convert.getByRole('combobox', { name: 'Model' }))
-  await ui.click(page.getByRole('option', { name: 'Claude Haiku 5.5' }))
-  await quiet()
-  await ui.shot('files-workflows', { of: settings, pad: 0 })
-  await closeSettings()
+  await setUpAI(page, ui, { provider: 'Anthropic', key: ANTHROPIC_KEY, model: 'Claude Sonnet 5.5' })
 
   // Two other projects, so the switcher has something to list
   for (const [minute, name] of [
@@ -533,15 +504,7 @@ export async function features(ui, { standIn, context }) {
   await ui.press('Escape')
   await ui.press('Escape')
 
-  // A pin, and what a row offers
   await ui.click(row('Plot Outline'))
-  await row('Plot Outline').hover()
-  await ui.click(row('Plot Outline').getByRole('button', { name: 'Pin to this chat' }))
-  await row('Plot Outline').getByRole('button', { name: 'Pinned to this chat' }).waitFor()
-  await ui.shot('chat-pinned', {
-    of: [button('Projects'), row('Plot Outline')],
-    pad: 12,
-  })
 
   // A chat, its answers and a turn's menu, with the chat wide
   await ui.click(button('Expand chat'))
@@ -570,21 +533,30 @@ export async function features(ui, { standIn, context }) {
   await ui.press('Escape')
   await page.keyboard.press('Backspace')
 
-  // The chat's settings
-  await ui.click(button('Chat settings'))
-  await ui.click(button('Tools'))
+  // A document to attach, picked from the list @ opens. The picture keeps
+  // the name it had when a document was pinned, until the guide's is renamed.
+  await ui.type('@Plot')
+  const documents = page.getByRole('listbox', { name: 'Documents' })
+  await documents.waitFor()
+  await ui.shot('chat-attach', { of: [documents, message], pad: 12 })
+  await ui.press('Escape')
+  for (let typed = '@Plot'.length; typed > 0; typed--) await page.keyboard.press('Backspace')
+
+  // The chat's settings, in the settings under its profile, at its tools
+  await openSettings('Tools')
   await ui.pause(400)
-  await ui.shot('chat-settings')
-  await ui.click(button('Back to chat'))
+  await ui.shot('chat-settings', { of: settings, pad: 0 })
+  await closeSettings()
 
   // A skill of one's own
   await openSettings('Skills')
   await ui.click(settings.getByRole('button', { name: 'New skill' }))
-  await ui.click(settings.locator('[data-mode="file"]'))
-  await ui.paste(settings.getByRole('textbox', { name: 'SKILL.md' }), REVIEW_SKILL)
+  await ui.paste(settings.getByRole('textbox', { name: 'Name' }), REVIEW_SKILL.name)
+  await ui.paste(settings.getByRole('textbox', { name: 'Description' }), REVIEW_SKILL.description)
+  await ui.paste(settings.getByRole('textbox', { name: 'Instructions' }), REVIEW_SKILL.instructions)
+  await ui.shot('skills-library', { of: settings, pad: 0 })
   await ui.click(settings.getByRole('button', { name: 'Save' }))
   await settings.getByText('/review').first().waitFor()
-  await ui.shot('skills-library', { of: settings, pad: 0 })
   await closeSettings()
 
   await at(46)
@@ -627,6 +599,7 @@ export async function features(ui, { standIn, context }) {
 
   // An MCP server: DeepWiki, as the page adds it
   await openSettings('Connections')
+  await ui.click(settings.getByRole('button', { name: 'MCP servers', exact: true }))
   await ui.click(settings.getByRole('button', { name: 'Add a server' }))
   await ui.paste(settings.getByRole('textbox', { name: 'Address' }), 'https://mcp.deepwiki.com/mcp')
   await ui.paste(settings.locator('[data-field="name"]'), 'DeepWiki')

@@ -42,6 +42,11 @@ const AT = {
     },
   },
 }
+// Formulas, which only a text that may hold one carries.
+AT[3] = {
+  nodes: { ...AT[1].nodes, formula: ['tex'], formula_block: ['tex'] },
+  marks: AT[1].marks,
+}
 
 /** @param {Record<string, import('prosemirror-model').NodeType|import('prosemirror-model').MarkType>} types */
 const withAttributes = types =>
@@ -63,8 +68,16 @@ describe('the format synced records carry', () => {
   it('is the oldest that holds each record, and never newer than the app reads', () => {
     expect(formatOf('documents', { parentId: 'doc_ch1' }, 'text')).toBe(HELD_FORMAT)
     expect(formatOf('documents', { parentId: 'doc_pdf' }, 'file')).toBe(HELD_FORMAT)
-    expect(formatOf('documents', { parentId: 'root_story_1' }, 'folder')).toBe(TEXT_FORMAT)
-    expect(formatOf('documents', { parentId: 'story_1' })).toBe(TEXT_FORMAT)
+    expect(formatOf('documents', { parentId: 'root_story_1' }, 'folder')).toBe(1)
+    expect(formatOf('documents', { parentId: 'story_1' })).toBe(1)
+    expect(formatOf('documents', { type: 'text', content: 'It cost $5 and $10.' })).toBe(1)
+    expect(formatOf('documents', { type: 'text', content: 'So $x^2$.' })).toBe(TEXT_FORMAT)
+    expect(formatOf('documents', { type: 'text', content: 'Not \\$x$.' })).toBe(TEXT_FORMAT)
+    expect(formatOf('documents', { type: 'text', content: 'A \\[bracket\\]' })).toBe(1)
+    expect(formatOf('documents', { type: 'file', content: 'So $x^2$.' })).toBe(1)
+    expect(
+      formatOf('documents', { type: 'text', content: '$x$', parentId: 'doc_ch1' }, 'text')
+    ).toBe(TEXT_FORMAT)
     expect(formatOf('documents', null)).toBe(1)
     expect(formatOf('chats', { id: 'chat_1' })).toBe(1)
     expect(Math.max(TEXT_FORMAT, HELD_FORMAT)).toBe(FORMAT)

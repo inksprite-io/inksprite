@@ -14,10 +14,9 @@ const ChatHistory = {
   template: "<div data-history @click=\"$emit('select-chat', 'chat_picked')\" />",
 }
 const ChatPanel = {
-  props: { chatId: String, showBack: Boolean },
-  emits: ['back', 'update:chatId'],
-  template:
-    '<div data-chat-panel :data-id="chatId" :data-back="showBack" @click="$emit(\'back\')" />',
+  props: { showBack: Boolean },
+  emits: ['back'],
+  template: '<div data-chat-panel :data-back="showBack" @click="$emit(\'back\')" />',
 }
 
 const DocumentTree = { props: ['chatId'], template: '<div data-tree :data-chat-id="chatId" />' }
@@ -44,11 +43,10 @@ describe('MobileView chat', () => {
     clearChatsInstances()
   })
 
-  it('opens on the chat open, with a way back to the list', () => {
+  it('opens on the chats open, with a way back to the list', () => {
     const wrapper = mountView({ chatId: 'chat_open' })
 
     expect(wrapper.find('[data-history]').exists()).toBe(false)
-    expect(wrapper.find('[data-chat-panel]').attributes('data-id')).toBe('chat_open')
     expect(wrapper.find('[data-chat-panel]').attributes('data-back')).toBe('true')
   })
 
@@ -68,8 +66,8 @@ describe('MobileView chat', () => {
     await wrapper.setProps({ activeMobileTab: 'chat' })
     expect(wrapper.find('[data-history]').exists()).toBe(true)
 
+    // The list opened the chat picked, in a tab; the panel shows it.
     await wrapper.find('[data-history]').trigger('click')
-    expect(wrapper.emitted('update:chatId')).toEqual([['chat_picked']])
     expect(wrapper.find('[data-chat-panel]').exists()).toBe(true)
   })
 

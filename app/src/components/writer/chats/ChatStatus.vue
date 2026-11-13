@@ -18,7 +18,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { describeRound } from '@/ai/tools/progress.js'
-import { useApplicationState } from '@/composables/useApplicationState'
 
 /**
  * What a turn is doing while nothing streams: its tools running, or the model
@@ -37,6 +36,8 @@ import { useApplicationState } from '@/composables/useApplicationState'
 const props = defineProps({
   /** @type {import('vue').PropType<import('@/composables/useAIChat.js').TurnActivity>} */
   activity: { type: Object, required: true },
+  /** Whether the chat suggests its edits to the text, for how its calls read. */
+  suggesting: { type: Boolean, default: false },
 })
 
 /** A wait shorter than this says nothing about time: a clock that flickers is noise. */
@@ -81,11 +82,7 @@ const elapsed = computed(() => {
 
 const calls = computed(() => props.activity.calls || [])
 
-const { applyEdits } = useApplicationState()
-/** Whether the chat suggests its edits to the text, for how its calls read. */
-const wording = computed(() => ({
-  suggesting: applyEdits.value === 'ask',
-}))
+const wording = computed(() => ({ suggesting: props.suggesting }))
 
 /** What the wait is, without how long: the time is kept apart, so it is never cut. */
 const line = computed(() => {

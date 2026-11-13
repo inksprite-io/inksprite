@@ -1,5 +1,5 @@
 /* global structuredClone */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 
@@ -169,7 +169,6 @@ describe('useApplicationState', () => {
         providerId: 'p1',
         model: 'strong',
         reasoningEffort: 'low',
-        onImport: false,
       })
     })
   })
@@ -262,24 +261,13 @@ describe('useApplicationState', () => {
     })
   })
 
-  describe('experimentalSkills', () => {
-    it('has each off until switched on, and app-wide', () => {
-      const a = useApplicationState()
-      const b = useApplicationState()
-      expect(a.experimentalSkills.value).toEqual([])
-      a.setExperimentalSkill('write', true)
-      a.setExperimentalSkill('interpret', true)
-      a.setExperimentalSkill('write', true)
-      expect(b.experimentalSkills.value).toEqual(['interpret', 'write'])
-      a.setExperimentalSkill('write', false)
-      expect(b.experimentalSkills.value).toEqual(['interpret'])
-    })
-
-    it('reads anything but a list of names as none on', () => {
+  describe('toolsGiven', () => {
+    it('is not given until it is, on this device', () => {
       const state = useApplicationState()
-      state.state.value.system.experimentalSkills = true
-
-      expect(state.experimentalSkills.value).toEqual([])
+      expect(state.toolsGiven.value).toBe(false)
+      state.setToolsGiven(true)
+      expect(useApplicationState().toolsGiven.value).toBe(true)
+      state.setToolsGiven(false)
     })
   })
 
@@ -371,35 +359,103 @@ describe('useApplicationState', () => {
     })
   })
 
+  describe('the built-in profiles', () => {
+    afterEach(() => {
+      useApplicationState().state.value.system.builtInProfiles = {}
+    })
+
+    it('keeps choices on one beside it, over those it had, and takes one off for undefined', () => {
+      const state = useApplicationState()
+      state.setBuiltInProfile('builtin_profile_chat', { presetId: 'p_glm', applyEdits: 'ask' })
+      state.setBuiltInProfile('builtin_profile_chat', { presetId: 'p_opus' })
+      state.setBuiltInProfile('builtin_profile_roleplay', { presetId: 'p_local' })
+
+      expect(state.builtInProfiles.value).toEqual({
+        builtin_profile_chat: { presetId: 'p_opus', applyEdits: 'ask' },
+        builtin_profile_roleplay: { presetId: 'p_local' },
+      })
+
+      state.setBuiltInProfile('builtin_profile_chat', { applyEdits: undefined })
+      expect(state.builtInProfiles.value.builtin_profile_chat).toEqual({ presetId: 'p_opus' })
+    })
+
+    it('reads a chat’s own edits choice over the app’s from before', () => {
+      const state = useApplicationState()
+      state.setApplyEdits('auto')
+
+      expect(state.applyEditsFor({ applyEdits: 'ask' })).toBe('ask')
+      expect(state.applyEditsFor({})).toBe('auto')
+      expect(state.applyEditsFor(null)).toBe('auto')
+    })
+  })
+
+  describe('the models used lately', () => {
+    afterEach(() => {
+      useApplicationState().state.value.ai = {
+        ...useApplicationState().state.value.ai,
+        recentModels: [],
+        recentSeeded: false,
+      }
+    })
+
+    /** @param {string} model */
+    const on = model => ({ providerId: 'p', model })
+
+    it('keeps each chosen first, once, and as many as eight', () => {
+      const state = useApplicationState()
+      for (const model of ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'])
+        state.rememberModel('p', model)
+      state.rememberModel('p', 'c')
+
+      expect(state.recentModels.value.map(one => one.model)).toEqual([
+        'c',
+        'i',
+        'h',
+        'g',
+        'f',
+        'e',
+        'd',
+        'b',
+      ])
+    })
+
+    it('is filled once from those used before, after any chosen since', () => {
+      const state = useApplicationState()
+      state.rememberModel('p', 'chosen')
+      state.seedRecentModels([on('older'), on('chosen'), on('oldest')])
+      state.seedRecentModels([on('again')])
+
+      expect(state.recentModels.value.map(one => one.model)).toEqual(['chosen', 'older', 'oldest'])
+    })
+  })
+
   describe('settings in a backup', () => {
     it('carries the choices worth taking to another computer', () => {
       const state = useApplicationState()
       state.setAiEnabled(false)
-      state.setActiveAIPresetId('preset_mine')
+      state.setBuiltInProfile('builtin_profile_chat', { presetId: 'preset_mine' })
       state.setApplyEdits('ask')
       state.setNsfwProfiles(true)
-      state.setExperimentalSkill('write', true)
       state.setExtension('roleplay', true)
       state.setExtension('python', true)
-      state.setPythonProfiles(['chatprofile_mine'])
       state.setPythonTimeLimit(3600)
       state.setChatProfileId('chatprofile_mine')
-      state.setWorkflow('convert', { providerId: 'p1', model: 'strong', onImport: true })
+      state.setWorkflow('convert', { providerId: 'p1', model: 'strong' })
       state.setNarration({ providerId: 'provider_openai_default', model: 'tts-1' })
       state.setTheme('dark')
       state.setHighlightSpeakers(false)
 
       expect(state.settingsForBackup()).toEqual({
         aiEnabled: false,
-        aiPreset: 'preset_mine',
+        aiPreset: null,
         applyEdits: 'ask',
+        builtInProfiles: { builtin_profile_chat: { presetId: 'preset_mine' } },
         askBeforeExploring: true,
         nsfwProfiles: true,
         blurNsfw: true,
-        experimentalSkills: ['write'],
         roleplay: true,
         python: true,
-        pythonProfiles: ['chatprofile_mine'],
+        web: true,
         pythonTimeLimit: 3600,
         chatProfileId: 'chatprofile_mine',
         roleplayProfileId: null,
@@ -408,7 +464,6 @@ describe('useApplicationState', () => {
             providerId: 'p1',
             model: 'strong',
             reasoningEffort: null,
-            onImport: true,
           },
         },
         narration: { providerId: 'provider_openai_default', model: 'tts-1' },
@@ -444,8 +499,8 @@ describe('useApplicationState', () => {
         aiEnabled: false,
         aiPreset: 'preset_mine',
         applyEdits: 'ask',
+        builtInProfiles: { builtin_profile_roleplay: { presetId: 'preset_local' } },
         nsfwProfiles: true,
-        experimentalSkills: ['interpret', 7],
         roleplayProfileId: 'chatprofile_cards',
         workflows: {
           convert: {
@@ -464,15 +519,14 @@ describe('useApplicationState', () => {
         aiEnabled: false,
         aiPreset: 'preset_mine',
         applyEdits: 'ask',
+        builtInProfiles: { builtin_profile_roleplay: { presetId: 'preset_local' } },
         nsfwProfiles: true,
-        experimentalSkills: ['interpret'],
         roleplayProfileId: 'chatprofile_cards',
         workflows: {
           convert: {
             providerId: 'p1',
             model: 'strong',
             ignoredProviders: ['novita'],
-            onImport: true,
           },
         },
         theme: 'dark',
@@ -503,7 +557,9 @@ describe('useApplicationState', () => {
       expect(state.aiEnabled.value).toBe(true)
       expect(state.nsfwProfiles.value).toBe(true)
       expect(state.applyEdits.value).toBe('auto')
-      expect(state.workflows.value.convert).toMatchObject({ model: null, onImport: true })
+      expect(state.workflows.value.convert).toMatchObject({ model: null })
+      // Converting on import is gone: too costly to run unasked.
+      expect(state.workflows.value.convert).not.toHaveProperty('onImport')
       expect(state.workflows.value.convert).not.toHaveProperty('ignoredProviders')
     })
   })

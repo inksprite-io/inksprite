@@ -18,6 +18,7 @@ import { NodeSelection, TextSelection } from 'prosemirror-state'
 import { cellAround, deleteColumn, deleteRow, deleteTable } from 'prosemirror-tables'
 import { alignColumn, alignmentAt, insertColumn, insertRow } from '@/editor/tables.js'
 import { insertCodeBlock, insertRule, insertTable } from '@/editor/insert.js'
+import { insertFormula } from '@/editor/formulas.js'
 import { forgetWord, lintAt, replaceWith, spellingKey } from '@/editor/spelling.js'
 import { pasteMarkdown, readClipboard, selectionMarkdown } from '@/editor/clipboard.js'
 import { canLink, linkAround } from '@/editor/links.js'
@@ -297,7 +298,7 @@ const commandItem = (view, label, command) => ({
 })
 
 /**
- * Blocks otherwise only typed: a table, a rule, a code block. In a table, the
+ * Blocks otherwise only typed: a table, a rule, a code block, a formula. In a table, the
  * table's rows and columns added and taken away, a column's alignment, and
  * the table gone. No key adds a row or a column; this is where they're added.
  *
@@ -318,6 +319,7 @@ function blockItems(view) {
         commandItem(view, 'Table', insertTable),
         commandItem(view, 'Horizontal rule', insertRule),
         commandItem(view, 'Code block', insertCodeBlock),
+        commandItem(view, 'Formula', insertFormula),
       ],
     },
   ]

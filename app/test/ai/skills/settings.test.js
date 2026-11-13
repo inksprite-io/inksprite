@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { DIRECTOR_SETTINGS, INTERPRET_SETTINGS } from '@/ai/skills/index.js'
+import { DIRECTOR_SETTINGS } from '@/ai/skills/index.js'
+import { INTERPRET_SETTINGS } from '../../../harness/skills/interpret/index.js'
 import { AI_DEFAULTS } from '@/ai/defaults.js'
 
 /**

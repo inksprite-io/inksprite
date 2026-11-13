@@ -7,6 +7,13 @@
 
 @theme {
   --shadow-inset-bottom: inset 0 -12px 12px -10px rgba(0, 0, 0, 0.28);
+  /* The page in the dark: the editor and the chat, halfway between the
+     sidebar's 800 and 900, which stood too far apart. Used under dark:
+     alone; the page in the light is surface-0. */
+  --color-surface-850: color-mix(in srgb, var(--p-surface-800), var(--p-surface-900));
+  /* The chat's message box in the dark, a step lighter than the page as it
+     was before the page lightened. */
+  --color-surface-750: color-mix(in srgb, var(--p-surface-700), var(--p-surface-800));
 }
 
 /* The typography plugin wraps every block quote in curly quotes, and inline
@@ -72,7 +79,7 @@
 }
 
 .dark .ProseMirror .table-scroll {
-  --table-page: var(--p-surface-900);
+  --table-page: var(--color-surface-850);
   --table-edge: rgb(255 255 255 / 0.14);
 }
 

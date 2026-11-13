@@ -126,54 +126,80 @@ describe('parseSkill', () => {
   })
 
   it('refuses a skill with no name, no description, or nothing to do', () => {
-    expect(refused('description: A.').join(' ')).toMatch(/needs a `name`/)
-    expect(refused('name: a').join(' ')).toMatch(/needs a `description`/)
-    expect(refused('name: a\ndescription: A.', '').join(' ')).toMatch(/needs instructions/)
+    expect(refused('description: A.')).toEqual(['It needs a name.'])
+    expect(refused('name: a')).toEqual(['It needs a description.'])
+    expect(refused('name: a\ndescription: A.', '')).toEqual(['It needs instructions.'])
   })
 
-  it('refuses a description longer than the standard allows', () => {
-    expect(refused(`name: a\ndescription: ${'x'.repeat(1025)}`).join(' ')).toMatch(/longer/)
+  it('says what is wrong in the order to put it right: the name, the description, the instructions', () => {
+    expect(refused('context: inline', '')).toEqual([
+      'It needs a name.',
+      'It needs a description.',
+      'It needs instructions.',
+    ])
   })
 
-  it('refuses a skill nobody can call', () => {
-    expect(
-      refused('name: a\ndescription: A.\ndisable-model-invocation: true\nuser-invocable: false')
-    ).toEqual(['Nobody can call it: the model is kept from it, and so are you.'])
+  it('reads a name YAML took for a number as the name that was written', () => {
+    expect(refused('name: 2024\ndescription: A.').join(' ')).toMatch(/"2024" cannot be a name/)
   })
 
-  it('refuses more than one argument: a command is everything after its name', () => {
-    expect(refused('name: a\ndescription: A.\narguments: [one, two]').join(' ')).toMatch(
-      /one argument/
+  it('takes a description longer than the standard allows', () => {
+    expect(read(`name: a\ndescription: ${'x'.repeat(1025)}`).description).toHaveLength(1025)
+  })
+
+  it('reads a skill nobody can call', () => {
+    const skill = read(
+      'name: a\ndescription: A.\ndisable-model-invocation: true\nuser-invocable: false'
     )
+    expect([skill.model, skill.user]).toEqual([false, false])
   })
 
-  it('refuses a context it cannot run, and an output it has not heard of', () => {
-    expect(refused('name: a\ndescription: A.\ncontext: inline').join(' ')).toMatch(/fork/)
-    expect(
-      refused('name: a\ndescription: A.\nmetadata:\n  inksprite-output: email').join(' ')
-    ).toMatch(/inksprite-output/)
+  /** What a file reads as, with what was passed over in it. */
+  const passed = front => {
+    const result = parseSkill(file(front))
+    if ('errors' in result) throw new Error(result.errors.join(' | '))
+    return result
+  }
+
+  it('passes over a field whose value it cannot use, as it does one it has no use for', () => {
+    const several = passed('name: a\ndescription: A.\narguments: [one, two]')
+    expect(several.skill.argument).toBeNull()
+    expect(several.ignored).toEqual(['arguments'])
+    expect(several.unusable.join(' ')).toMatch(/one argument/)
+
+    const inline = passed('name: a\ndescription: A.\ncontext: inline')
+    expect(inline.skill.fork).toBe(false)
+    expect(inline.ignored).toEqual(['context'])
+
+    const emailed = passed('name: a\ndescription: A.\nmetadata:\n  inksprite-output: email')
+    expect(emailed.skill.output).toBe('result')
+    expect(emailed.ignored).toEqual(['metadata.inksprite-output'])
+
+    const maybe = passed('name: a\ndescription: A.\nuser-invocable: maybe\nmodel: opus')
+    expect(maybe.skill.user).toBe(true)
+    expect(maybe.ignored).toEqual(['model', 'user-invocable'])
+    expect(maybe.unusable).toEqual(['`user-invocable` has to be true or false.'])
   })
 
-  it('refuses a hint that YAML read as a list, which unquoted brackets are', () => {
-    expect(refused('name: a\ndescription: A.\nargument-hint: [instructions]').join(' ')).toMatch(
-      /argument-hint/
-    )
+  it('passes over a hint that YAML read as a list, which unquoted brackets are', () => {
+    const listed = passed('name: a\ndescription: A.\nargument-hint: [instructions]')
+    expect(listed.skill.argumentHint).toBe('')
+    expect(listed.ignored).toEqual(['argument-hint'])
     expect(read("name: a\ndescription: A.\nargument-hint: '[instructions]'").argumentHint).toBe(
       '[instructions]'
     )
   })
 
-  it('says everything that is wrong at once, so a file is fixed once', () => {
-    expect(refused('context: inline\nuser-invocable: maybe')).toHaveLength(4)
-  })
-
-  it('refuses a file with no frontmatter, or frontmatter that is not YAML', () => {
+  it('refuses a file with no frontmatter, or frontmatter that cannot be read, in a line', () => {
     expect(parseSkill('Just some instructions.')).toEqual({
       errors: ['A skill starts with its frontmatter, between two lines of three dashes.'],
     })
-    expect(parseSkill(file('name: [unclosed')).errors[0]).toMatch(/not YAML/)
+    const unclosed = parseSkill(file('name: a\ndescription: [unclosed')).errors
+    expect(unclosed).toHaveLength(1)
+    expect(unclosed[0]).toMatch(/^The frontmatter can’t be read: .+, on line \d+\.$/)
+    expect(unclosed[0]).not.toMatch(/\n/)
     expect(parseSkill(file('- a list')).errors).toEqual([
-      'Its frontmatter has to be a set of fields.',
+      'The frontmatter can’t be read: it has to be a set of fields.',
     ])
   })
 
@@ -187,6 +213,12 @@ describe('parseSkill', () => {
 describe('readBuiltInSkill', () => {
   it('throws for a skill the app ships that does not read, which is a bug', () => {
     expect(() => readBuiltInSkill('no frontmatter')).toThrow(/built-in skill does not read/)
+  })
+
+  it('holds one to the fields a file from elsewhere is let off', () => {
+    expect(() => readBuiltInSkill(file('name: a\ndescription: A.\ncontext: inline'))).toThrow(
+      /context/
+    )
   })
 })
 

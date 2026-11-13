@@ -1,3 +1,4 @@
+/* global MouseEvent */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
@@ -160,6 +161,28 @@ describe('ChatTurn', () => {
     it('has nothing to offer a turn with no words', () => {
       const wrapper = show([message('m1', 'assistant', { content: '' })])
       expect(wrapper.find('.read-aloud').exists()).toBe(false)
+    })
+
+    it('asks for the voice menu on a right click, with the click, on either side’s turn', () => {
+      for (const role of ['assistant', 'user']) {
+        const wrapper = show([message('m1', role)])
+        const click = new MouseEvent('contextmenu', { bubbles: true, cancelable: true })
+
+        wrapper.find('.read-aloud').element.dispatchEvent(click)
+
+        expect(wrapper.emitted('voice-menu')).toEqual([[click]])
+        // The browser's own menu is kept off.
+        expect(click.defaultPrevented).toBe(true)
+      }
+    })
+
+    it('asks for no voice menu on a right click elsewhere in the turn', async () => {
+      const wrapper = show([message('m1', 'assistant')])
+
+      await wrapper.find('.message').trigger('contextmenu')
+      await button(wrapper, 'copy').trigger('contextmenu')
+
+      expect(wrapper.emitted('voice-menu')).toBeUndefined()
     })
   })
 

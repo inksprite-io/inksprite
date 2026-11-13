@@ -3,11 +3,9 @@
  * @description How the writer set web search up, for whatever needs to know
  * without reaching for a store: the tools, and the turn choosing them.
  *
- * Web search is opted into, as a server's tools are. Profiles and chats name
- * the tool groups they withhold, so a group added later would turn up in
- * every chat there is, Roleplay and Blank included. So a chat searches when a
- * service is set up and either the setup lists the chat's profile or the
- * chat itself said so (`Chat.web`).
+ * A chat searches when a service is set up and the chat has the web on, as
+ * every group of tools is (ai/tools/choice.js): on wherever nothing switched
+ * it off, but for the profiles that offer only some, Roleplay and Blank.
  */
 
 import { isDesktop } from '@/platform/desktop.js'
@@ -76,25 +74,11 @@ export function serviceInUse(from = setup) {
 /**
  * Whether the model keeps a page in the project without asking the writer
  * first: only once they said so, with Always allow or in Settings ›
- * Connections.
+ * Extensions › Web search.
  *
  * @param {WebSearchSetup|null} [from]
  * @returns {boolean}
  */
 export function savesWithoutAsking(from = setup) {
   return from?.saveWithoutAsking === true
-}
-
-/**
- * Whether a chat searches the web: a service can search, and the chat chose
- * it, or, until it chooses, its profile is one the setup lists.
- *
- * @param {{web?: boolean}|null|undefined} chat
- * @param {string} profileId - The chat's profile, the default resolved
- * @param {WebSearchSetup|null} [from]
- * @returns {boolean}
- */
-export function webForChat(chat, profileId, from = setup) {
-  if (!serviceInUse(from)) return false
-  return typeof chat?.web === 'boolean' ? chat.web : (from?.profiles || []).includes(profileId)
 }

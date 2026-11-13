@@ -5,6 +5,8 @@
  * @module utils/oauth
  */
 
+import { fetch } from '@/platform/fetch.js'
+
 /**
  * Generates a cryptographically random code verifier for PKCE
  * @returns {string} A random string suitable for use as a code verifier
@@ -62,21 +64,25 @@ function base64URLEncode(buffer) {
  * @param {Object} params - OAuth parameters
  * @param {string} params.verifier - Code verifier
  * @param {string} params.state - State parameter
+ * @param {string} [params.providerId] - The connection the key is for, when
+ *   it was signed in from one
  */
 function storeOAuthParams(params) {
   localStorage.setItem('oauth_verifier', params.verifier)
   localStorage.setItem('oauth_state', params.state)
+  if (params.providerId) localStorage.setItem('oauth_provider', params.providerId)
+  else localStorage.removeItem('oauth_provider')
 }
 
 /**
  * Retrieves and clears OAuth flow parameters from local storage
- * @returns {Object|null} OAuth parameters or null if not found
- * @property {string} verifier - Code verifier
- * @property {string} state - State parameter
+ * @returns {{verifier: string, state: string, providerId?: string}|null} OAuth
+ *   parameters, or null if not found
  */
 export function retrieveOAuthParams() {
   const verifier = localStorage.getItem('oauth_verifier')
   const state = localStorage.getItem('oauth_state')
+  const providerId = localStorage.getItem('oauth_provider')
 
   if (!verifier || !state) {
     return null
@@ -85,19 +91,21 @@ export function retrieveOAuthParams() {
   // Clear stored params immediately
   localStorage.removeItem('oauth_verifier')
   localStorage.removeItem('oauth_state')
+  localStorage.removeItem('oauth_provider')
 
-  return { verifier, state }
+  return { verifier, state, ...(providerId ? { providerId } : {}) }
 }
 
 /**
- * The address to connect an OpenRouter account at, with a fresh PKCE
- * challenge; the verifier and state are kept for when OpenRouter sends the
- * writer back
+ * The address to sign in to a service at, with a fresh PKCE challenge; the
+ * verifier and state are kept for when the service sends the writer back
+ * @param {import('@/ai/providers.js').SignIn} service - Where it signs in
  * @param {string} callbackUrl - The callback URL to redirect to after authorization
+ * @param {string} [providerId] - The connection the key is for
  * @returns {Promise<string>}
  * @throws {Error} If not in a secure context or Web Crypto API unavailable
  */
-export async function openRouterAuthorizationUrl(callbackUrl) {
+export async function authorizationUrl(service, callbackUrl, providerId) {
   // Check if we're in a secure context
   if (typeof window !== 'undefined' && window.isSecureContext === false) {
     throw new Error('Signing in needs the app to be served over HTTPS, or from localhost.')
@@ -108,23 +116,42 @@ export async function openRouterAuthorizationUrl(callbackUrl) {
   const state = generateState()
 
   // Store params for callback validation
-  storeOAuthParams({ verifier, state })
+  storeOAuthParams({ verifier, state, providerId })
 
   // Build authorization URL
-  const authUrl = new URL('https://openrouter.ai/auth')
+  const authUrl = new URL(service.authorize)
   authUrl.searchParams.set('callback_url', callbackUrl)
   authUrl.searchParams.set('code_challenge', challenge)
   authUrl.searchParams.set('code_challenge_method', 'S256')
   authUrl.searchParams.set('state', state)
+  for (const [name, value] of Object.entries(service.params ?? {})) {
+    authUrl.searchParams.set(name, value)
+  }
   return authUrl.toString()
 }
 
 /**
- * Initiates OpenRouter OAuth flow by opening authorization URL in new tab
- * @param {string} callbackUrl - The callback URL to redirect to after authorization
- * @returns {Promise<void>}
- * @throws {Error} If not in a secure context or Web Crypto API unavailable
+ * Trade the code a service sent the writer back with for an API key
+ * @param {import('@/ai/providers.js').SignIn} service - Where it signs in
+ * @param {string} code - Authorization code from OAuth callback
+ * @param {string} codeVerifier - PKCE code verifier
+ * @returns {Promise<string>} The API key
+ * @throws {Error} When the service refuses, in its words
  */
-export async function initiateOpenRouterOAuth(callbackUrl) {
-  window.open(await openRouterAuthorizationUrl(callbackUrl), '_blank')
+export async function exchangeCode(service, code, codeVerifier) {
+  const response = await fetch(service.exchange, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, code_verifier: codeVerifier, code_challenge_method: 'S256' }),
+  })
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    // OpenRouter's `{error: {message}}`, or OAuth's `{error, error_description}`.
+    throw new Error(
+      data.error_description || data.error?.message || data.error || `HTTP ${response.status}`
+    )
+  }
+  const key = data.key ?? data.access_token
+  if (!key) throw new Error('No API key returned from OAuth exchange')
+  return key
 }

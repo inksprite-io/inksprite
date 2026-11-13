@@ -1,7 +1,8 @@
 /**
  * @module composables/useWebSearch
- * @description Web search as Settings › Connections sets it up: which service
- * is in use, its key, and which profiles' chats search. See web/ and
+ * @description Web search as the settings set it up: which service is in
+ * use and whether a page is kept without asking, in Settings › Extensions,
+ * and each service's key, in Settings › Connections. See web/ and
  * .llm/web_search_design.md.
  *
  * Choosing a service checks it at once where that costs nothing (listing its
@@ -45,10 +46,9 @@ const PROBE_TIMEOUT_MS = 30000
  *   inUse: import('vue').ComputedRef<boolean>,
  *   checks: typeof checks,
  *   checking: typeof checking,
- *   choose: (id: WebServiceId|null) => Promise<void>,
+ *   choose: (id: WebServiceId|null, options?: {checked?: boolean}) => Promise<void>,
  *   setKey: (id: WebServiceId, key: string) => void,
  *   connect: (id: WebServiceId, key: string) => Promise<void>,
- *   setProfile: (profileId: string, on: boolean) => void,
  *   setAskBeforeSaving: (ask: boolean) => void,
  * }}
  */
@@ -97,13 +97,14 @@ export function useWebSearch() {
   }
 
   /**
-   * Use this service, or none.
+   * Use this service, or none; checked, unless it was just now.
    *
    * @param {WebServiceId|null} id
+   * @param {{checked?: boolean}} [options]
    */
-  async function choose(id) {
+  async function choose(id, { checked = false } = {}) {
     store.update({ service: id || undefined })
-    if (id) await check(id)
+    if (id && !checked) await check(id)
   }
 
   /**
@@ -131,19 +132,6 @@ export function useWebSearch() {
   }
 
   /**
-   * Search in chats on this profile, or stop.
-   *
-   * @param {string} profileId
-   * @param {boolean} on
-   */
-  function setProfile(profileId, on) {
-    const current = setup.value.profiles || []
-    store.update({
-      profiles: on ? [...new Set([...current, profileId])] : current.filter(id => id !== profileId),
-    })
-  }
-
-  /**
    * Ask before the model keeps a page in the project, or stop asking.
    *
    * @param {boolean} ask
@@ -163,7 +151,6 @@ export function useWebSearch() {
     choose,
     setKey,
     connect,
-    setProfile,
     setAskBeforeSaving,
   }
 }

@@ -37,20 +37,12 @@
         />
       </div>
 
-      <div class="flex items-center justify-between gap-2">
-        <SettingLabel
-          label="Zero data retention"
-          description="Some models have no such endpoint and need this off."
-          :overridden="isOverridden('zdr')"
-          @reset="setRouting({ zdr: ROUTING_DEFAULTS.zdr })"
-        />
-        <ToggleSwitch
-          :model-value="routing.zdr"
-          class="flex-none"
-          aria-label="Zero data retention"
-          @update:model-value="setRouting({ zdr: $event })"
-        />
-      </div>
+      <ZeroDataRetention
+        :model-value="routing.zdr"
+        :overridden="isOverridden('zdr')"
+        @update:model-value="setRouting({ zdr: $event })"
+        @reset="setRouting({ zdr: ROUTING_DEFAULTS.zdr })"
+      />
 
       <div class="flex flex-col gap-1">
         <SettingLabel
@@ -72,20 +64,6 @@
           @update:model-value="setRouting({ quantizations: $event || [] })"
         />
       </div>
-
-      <div class="flex items-center justify-between gap-2">
-        <SettingLabel
-          label="Allow fallbacks"
-          :overridden="isOverridden('allowFallbacks')"
-          @reset="setRouting({ allowFallbacks: ROUTING_DEFAULTS.allowFallbacks })"
-        />
-        <ToggleSwitch
-          :model-value="routing.allowFallbacks"
-          class="flex-none"
-          aria-label="Allow fallbacks"
-          @update:model-value="setRouting({ allowFallbacks: $event })"
-        />
-      </div>
     </div>
   </ExpandableSection>
 </template>
@@ -94,10 +72,10 @@
 import { computed } from 'vue'
 import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
-import ToggleSwitch from 'primevue/toggleswitch'
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
 import SettingLabel from '@/components/common/SettingLabel.vue'
 import OpenRouterProviderSelect from './OpenRouterProviderSelect.vue'
+import ZeroDataRetention from './ZeroDataRetention.vue'
 import { useAIConfig } from '@/composables/useAIConfig'
 import {
   QUANTIZATIONS,

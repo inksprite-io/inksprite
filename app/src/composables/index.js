@@ -5,13 +5,18 @@
  * ## Composables Overview
  *
  * ### AI
- * - **useAIChat** - A chat turn: context, request, tool calls, and streaming into a message
+ * - **useAIChat** - A chat turn: context, request, tool calls, and streaming into a message; one per chat, so a reply outlives the view showing it; `askInThread` asks its model something at the end of the conversation in place of a turn (a summary)
+ * - **useChatActivity** - Which chats the model is working in, app-wide, and word when it stops
+ * - **useChatTabs** - A project's chat tabs: open, showing, previews, the history closing goes back through, and unread chats
+ * - **useChatPlaces** - Where the writer was in each chat they left, for its tab coming back
  * - **useAIConfig** - AI configuration (provider + model)
+ * - **useConnections** - The AI connections the writer has: which are theirs, how each answered last, and adding, checking and removing one
+ * - **useSignIn** - Connecting an account by signing in to a service that makes the app a key: OpenRouter and NanoGPT
+ * - **useWebSearch** - Web search as the settings set it up: the service in use and whether a page is kept without asking, and each service's key
  * - **useModelLists** - The models each provider serves, app-wide: asked for on Connect or Refresh, never as an address is typed
  * - **useExplore** - Exploring a folder, a document or the project for the model, on the chat's model: asked first with its size, then the job
  * - **useProfiles** - The chat profiles: how a chat is run, built-in and saved
- * - **useSkills** - The writer's own skills: the library, and when it has been read
- * - **useLoadedSkills** - The skills a chat has loaded, read off its messages, and dropping one
+ * - **useSkills** - The writer's own skills: the library, a file kept as it is written (`createSkill`, `writeSkill`), and why one can't be used (`problemOf`)
  * - **useMcpServers** - The writer's MCP servers: adding one after a look at what it offers, listing it again, its profiles and the tools always allowed
  * - **useToolApprovals** - The calls of a server's tools waiting on the writer to allow them
  * - **usePrompts** - Legacy. The prompt library the profiles replaced; read by cleanup alone
@@ -21,6 +26,8 @@
  * - **useDocuments** - A story's document tree, shaped for the tree UI, and the editor's tabs
  * - **useChats** - Chat session management
  * - **useChatSettings** - One chat's settings and profile, started or not
+ * - **useChatPresets** - Giving every chat the model it runs on, so a pick on its profile, or a preset changed or deleted, never moves it
+ * - **useToolChoices** - Giving every profile and chat, once, the web, Python and MCP servers as switches of its own, from the lists that said before
  * - **useBackup** - Whole-database export and restore, and single chats, projects and settings as files
  * - **useExport** - A project, a folder or a document handed out as it would be published, a zip of it where it is more than one file
  * - **usePrint** - A document printed, or saved as a PDF, in the editor's styles, on Command-P and Export as PDF…
@@ -37,8 +44,10 @@
  * - **useScreenSize** - Breakpoint-aware screen size
  * - **useKeyboardCover** - How much of an element the on-screen keyboard covers
  * - **useMessageField** - The chat's message field, fitted to its draft
+ * - **useLinkMenu** - The documents `[[` lists in the message field, folders among them, and `@`, which attaches the one picked
  * - **useCommandMenu** - The menu of commands a slash at the start of a line opens in the message field
  * - **useJumpToBottom** - When to offer the way back to the end of a long chat: far from it, and heading for it
+ * - **useNearScreen** - Which rows of a long list are on the screen or close to it, so only those are drawn in full
  * - **useNearTurns** - Which of a chat's turns are in the page: those near the screen, the newest two, and any with an editor open; plus the state a turn keeps while it is away
  * - **useSettingsPanel** - Opening the settings, on a section and a part of it, from anywhere in the writer
  * - **useCardLibraryPanel** - Opening the card library, to browse or to pick a card for a folder, from anywhere in the writer
@@ -98,12 +107,13 @@ export { useExport } from './useExport.js'
 export { usePrint, usePrintKey, isPrintKey } from './usePrint.js'
 export { useProfiles } from './useProfiles.js'
 export { useSkills } from './useSkills.js'
-export { useLoadedSkills } from './useLoadedSkills.js'
 export { useMcpServers } from './useMcpServers.js'
 export { useToolApprovals } from './useToolApprovals.js'
 export { usePrompts } from './usePrompts.js'
 export { useChats } from './useChats.js'
 export { useChatSettings } from './useChatSettings.js'
+export { stampFor, stampChats, stampEveryChat, seedRecentModels } from './useChatPresets.js'
+export { giveToolChoices, givenChoice } from './useToolChoices.js'
 export { useDocuments } from './useDocuments.js'
 export { useNarration } from './useNarration.js'
 export { useComments } from './useComments.js'

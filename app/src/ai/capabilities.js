@@ -7,8 +7,9 @@
  *
  * Three sources, the most particular first:
  * - What the provider's list says of the model. OpenRouter lists each model's
- *   parameters and how it reasons; Anthropic's Models API says how each Claude
- *   thinks and at which efforts. These arrive as {@link ModelTraits}.
+ *   parameters and how it reasons; NanoGPT's, how each reasons; Anthropic's
+ *   Models API says how each Claude thinks and at which efforts. These arrive
+ *   as {@link ModelTraits}.
  * - What the API was found to take, family by family, where its list says
  *   nothing: OpenAI's samplers.
  * - What the server takes at all. A server someone runs answers to the names
@@ -40,6 +41,10 @@ import { BUILT_IN_PROVIDERS } from '@/ai/providers.js'
  *   model that doesn't
  * @property {number} [contextLength] - How many tokens it reads and writes in
  *   one request, its answer among them
+ * @property {boolean} [tools] - Whether it can call tools, where the list says
+ * @property {Partial<Record<Sampler, number>>} [defaults] - The samplers its
+ *   makers say it runs best at, where the list says: what its settings start
+ *   from, under the writer's changes
  */
 
 /**
@@ -68,6 +73,8 @@ import { BUILT_IN_PROVIDERS } from '@/ai/providers.js'
  *   keep the reasoning to itself, which is what Show reasoning does
  * @property {Partial<Record<Sampler, string>>} names - The key a server reads a
  *   sampler under, where it isn't OpenAI's name for it
+ * @property {boolean} tools - Whether it can call tools: unless its list says
+ *   it can't
  */
 
 /** The effort levels, lowest first. */
@@ -110,6 +117,7 @@ const OPENAI_SAMPLERS = ['temperature', 'topP', 'frequencyPenalty', 'presencePen
  * @returns {Omit<Capabilities, 'samplers'> & {samplers: Sampler[]}}
  */
 const server = described => ({
+  tools: true,
   samplersWhileThinking: true,
   exclusive: [],
   efforts: [],
@@ -132,6 +140,13 @@ const server = described => ({
  */
 const SERVERS = {
   openrouter: server({
+    samplers: ALL_SAMPLERS,
+    efforts: UNDESCRIBED_EFFORTS,
+    reasoningDisplay: true,
+  }),
+  // As OpenRouter: it passes the samplers on, and hides reasoning when asked.
+  // Its list says how each model reasons, but not which samplers it takes.
+  nanogpt: server({
     samplers: ALL_SAMPLERS,
     efforts: UNDESCRIBED_EFFORTS,
     reasoningDisplay: true,
@@ -183,16 +198,16 @@ const SERVERS = {
 }
 
 /**
- * Which kind of server a connection reaches. Its type, except for the built-in
- * connections to servers that speak the generic dialect: those are known by
- * which built-in they are.
+ * Which kind of server a connection reaches. Its type, except for servers
+ * that speak the generic dialect: those are known by the server the
+ * connection names, or the built-in it is.
  *
- * @param {{id?: string, type?: string}} provider
+ * @param {{id?: string, type?: string, server?: string}} provider
  * @returns {string}
  */
 export function serverOf(provider) {
   const builtIn = BUILT_IN_PROVIDERS.find(entry => entry.id === provider.id)
-  const server = builtIn?.server ?? provider.type
+  const server = provider.server ?? builtIn?.server ?? provider.type
   return server && server in SERVERS ? server : 'generic'
 }
 
@@ -232,6 +247,7 @@ export function capabilitiesOf(provider, model, traits) {
     efforts: /** @type {ReasoningEffort[]} */ (efforts),
     defaultEffort,
     reasons,
+    tools: traits?.tools !== false,
   }
 }
 

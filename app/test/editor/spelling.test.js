@@ -181,6 +181,14 @@ describe('spellingPlugin', () => {
     expect(checker.asked.flat()).toEqual(['Call fooBar and walkd.'])
   })
 
+  it('reads a formula in a sentence as a word, and leaves one of its own alone', async () => {
+    const checker = standIn()
+    const view = mount('$$\nteh\n$$\n\nSo $walkd$ is teh.', checker)
+    await settle()
+    expect(underlined(view)).toEqual(['spelling-error:teh'])
+    expect(checker.asked.flat()).toEqual(['So x is teh.'])
+  })
+
   it('asks only about the paragraphs an edit touched', async () => {
     const checker = standIn()
     const view = mount('She walkd.\n\nAll is well.', checker)

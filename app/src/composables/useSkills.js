@@ -3,6 +3,7 @@ import { useSkillStore } from '@/stores/skillStore.js'
 import { useChatProfileStore } from '@/stores/chatProfileStore.js'
 import { useChatsStore } from '@/stores/chatsStore.js'
 import { BUILT_IN_SKILLS, parseSkill } from '@/ai/skills/index.js'
+import { nameError, splitSkill } from '@/ai/skills/format.js'
 import { COMMANDS } from '@/ai/commands.js'
 import { hasTool } from '@/ai/tools/index.js'
 import { storage } from '@/storage/index.js'
@@ -14,10 +15,15 @@ import { storage } from '@/storage/index.js'
  *
  * The rows are `stores/skillStore.js`; the skills made from them — the model's
  * tools, the writer's commands — are the registry in ai/skills, which the
- * store keeps up to date. This is what components and the turn reach for, and
- * where a skill is checked before it is kept: that its file reads, and that its
- * name is free. And the writer's wording of a built-in, for every chat: the one
- * part of a skill that ships with the app that is theirs to change.
+ * store keeps up to date. This is what components and the turn reach for.
+ *
+ * A skill's file is kept as it is typed, whatever state it is in
+ * (`writeSkill`), and one that can't be used yet says why (`problemOf`) and
+ * is offered to nobody. The name a skill is kept under is the last one its
+ * file gave it that it could have: a name that is another skill's, a
+ * command's or a tool's stays in the file and is not taken, so the skill that
+ * had the name first keeps it. A skill brought in from outside is checked
+ * before it is kept at all (`saveSkill`).
  */
 
 /** @typedef {import('../types/models.js').StoredSkill} StoredSkill */
@@ -75,12 +81,14 @@ export function renamedIn(settings, from, to) {
  *   skills: import('vue').ComputedRef<StoredSkill[]>,
  *   getSkill: (id: string) => StoredSkill|null,
  *   nameProblem: (name: string, exceptId?: string|null) => string,
+ *   loaded: import('vue').ComputedRef<boolean>,
+ *   problemOf: (skill: StoredSkill) => string,
+ *   createSkill: (text: string) => StoredSkill,
+ *   writeSkill: (id: string, text: string) => Promise<StoredSkill|null>,
  *   saveSkill: (skill: {id?: string|null, text: string, files?: SkillFile[]}) => Promise<{skill: StoredSkill}|{errors: string[]}>,
- *   deleteSkill: (id: string) => boolean,
+ *   deleteSkill: (id: string) => Promise<boolean>,
  *   planImport: (found: import('@/ai/skills/bundle.js').FoundSkill[]) => ImportRow[],
  *   importSkills: (rows: ImportRow[]) => Promise<{imported: number, failed: string[]}>,
- *   wordingOf: (name: string) => string|null,
- *   setWording: (name: string, prompt: string) => boolean,
  * }}
  */
 export function useSkills() {
@@ -146,7 +154,102 @@ export function useSkills() {
   }
 
   /**
-   * Keep a skill: a new one, or a change to one already kept.
+   * Why a skill of the writer's can't be used as it stands, or nothing when
+   * it can: the first thing wrong with its file, or with the name its file
+   * gives it.
+   *
+   * @param {StoredSkill} skill
+   * @returns {string}
+   */
+  const problemOf = skill => {
+    const read = parseSkill(skill.text)
+    if ('errors' in read) return read.errors[0]
+    return nameProblem(read.skill.name, skill.id)
+  }
+
+  /**
+   * The name a file gives its skill, when it is one the skill can be kept
+   * under: a name as names go, and nobody else's.
+   *
+   * @param {string} text
+   * @param {string|null} id - The skill, which may keep its own; none for a new one
+   * @returns {string} Nothing when it gives none it can have
+   */
+  const nameFrom = (text, id) => {
+    const split = splitSkill(text)
+    if ('error' in split) return ''
+    const named = split.front.name
+    const name = typeof named === 'string' || typeof named === 'number' ? `${named}`.trim() : ''
+    return name && !nameError(name) && !nameProblem(name, id) ? name : ''
+  }
+
+  /**
+   * Give each skill the name its file asks for, where it can now have it: a
+   * name comes free when the skill that had it is renamed or deleted.
+   */
+  const settleNames = async () => {
+    for (const skill of store.getAllSkills()) {
+      const name = nameFrom(skill.text, skill.id)
+      if (!name || name === skill.name) continue
+      store.updateSkill(skill.id, { name })
+      await carryRename(skill.name, name)
+    }
+  }
+
+  /**
+   * A new skill, kept as it was written, whatever state it is in. It is kept
+   * under the name its file gives it where it can have that, and under one
+   * nothing else has until then.
+   *
+   * @param {string} text - The whole SKILL.md
+   * @returns {StoredSkill}
+   */
+  const createSkill = text => {
+    let name = nameFrom(text, null)
+    if (!name) {
+      name = 'new-skill'
+      for (let n = 2; nameProblem(name); n++) name = `new-skill-${n}`
+    }
+    return store.createSkill({ name, text, files: [] })
+  }
+
+  /**
+   * Keep a skill's file as it was just typed, whatever state it is in.
+   *
+   * The name it is kept under follows the file's only to a name it can have,
+   * and a change of name carries the rewordings and the switches with it.
+   *
+   * @param {string} id
+   * @param {string} text - The whole SKILL.md
+   * @returns {Promise<StoredSkill|null>} Null for a skill no longer kept
+   */
+  const writeSkill = async (id, text) => {
+    const before = store.getSkill(id)
+    if (!before) return null
+    if (before.text === text) return before
+
+    const name = nameFrom(text, id) || before.name
+    const saved = store.updateSkill(id, { name, text })
+    if (saved && name !== before.name) {
+      await carryRename(before.name, name)
+      await settleNames()
+    }
+    return saved
+  }
+
+  /**
+   * @param {string} id
+   * @returns {Promise<boolean>} Whether there was one to delete
+   */
+  const deleteSkill = async id => {
+    const deleted = store.deleteSkill(id)
+    if (deleted) await settleNames()
+    return deleted
+  }
+
+  /**
+   * Keep a skill brought in from outside: a new one, or a change to one
+   * already kept.
    *
    * Refused, with every reason, when its file does not read or its name is not
    * free. A change of name carries the rewordings and the switches with it.
@@ -235,17 +338,14 @@ export function useSkills() {
     skills: computed(() => store.getAllSkills()),
     getSkill: id => store.getSkill(id),
     nameProblem,
+    /** Whether the library has been read. */
+    loaded: computed(() => store.loaded),
+    problemOf,
+    createSkill,
+    writeSkill,
     saveSkill,
-    deleteSkill: id => store.deleteSkill(id),
+    deleteSkill,
     planImport,
     importSkills,
-    /**
-     * The writer's wording of a built-in, when they have one. Read off the
-     * state rather than through the store's getter, which as an action would
-     * make its store's Pinia the active one wherever it was watched from.
-     */
-    wordingOf: name => store.wordings.get(name)?.prompt ?? null,
-    /** Reword a built-in for every chat. Its own words, or none, put it back. */
-    setWording: (name, prompt) => store.setWording(name, prompt),
   }
 }

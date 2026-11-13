@@ -6,6 +6,128 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.28
+
+The AI set up from the chat, each chat keeping its own model, chats in tabs,
+documents attached to a message with `@`, a chat's settings in Settings, your
+own skills as three fields, NanoGPT, and formulas in documents.
+
+- The AI is set up from the chat. With nothing connected, the chat says so,
+  and Connect walks you through it: choose a provider, connect it, which
+  inksprite checks for real, and choose a model, one suggested. No
+  connections are made for you any more. Settings › Connections lists yours
+  and adds more, and a connection's card says only what went wrong when it
+  last answered.
+- A reply that fails offers what would fix it: the connection's settings
+  for a key that isn't accepted or a server that can't be reached, Add
+  credits for an OpenRouter account that has run out, or another model.
+  When OpenRouter refuses a model because of your routing settings, the
+  chat says that, rather than that the model is no longer offered.
+- NanoGPT is a provider, with a sign-in, for chat and for narration. Zero
+  data retention is on by default for it, and a model's providers can be
+  chosen where NanoGPT lets them be. The sign-in carries inksprite's
+  referral code.
+- Each chat keeps the model it first answered on. Under the message box
+  are its profile, its model and how hard the model thinks, and whether its
+  edits wait for you, each a menu. A change there is the chat's, and the
+  next new chat on its profile starts with it too; chats already going keep
+  their own.
+- Settings › Models is where models are chosen: the ones that answered
+  lately, recommended ones, then each connection's, sorted by name or cost.
+  Search it, show only free models or ones that call tools, and see each
+  one's price per million tokens, its context and whether it calls tools.
+  A click on a group's heading shuts it. With a chat showing, a click on a
+  model puts the chat on it. A model's settings are its own, for every chat
+  on it, starting from the ones its makers recommend where OpenRouter lists
+  them, and are changed from its card. Presets are gone.
+- A chat's settings are in Settings, while the chat is showing: its
+  profile at the top, and Prompts, Models, Tools and Skills, with Roleplay
+  under Prompts in a roleplay chat.
+- Profiles are picked, made, renamed, deleted and starred from the profile
+  menu under the message box; the star marks the one new chats start on, in
+  place of Profile for new chats in Settings › System. Prompts… there opens
+  the profile's system prompt and author's note, each with a Save. A
+  built-in profile changes in place, and the reset button beside its prompt
+  or note puts back the one it ships with.
+- What the model can do is one list, Settings › Tools, by where each comes
+  from: the documents, the web, Python, each MCP server, your skills, and
+  the RPG tools. Switching one in a chat switches it for the next new chats
+  on its profile too. Something you add, a web search service, an MCP
+  server or Python, is on in every chat at once, except on the Roleplay and
+  Blank profiles, and the switches for which profiles use it are gone. A
+  tool that asks before each call says so, and one you've always allowed
+  says that. A model that can't call tools is sent none.
+- A document is attached to a message with `@` in the message box. Its
+  text is copied onto the message and goes to the model with it from then
+  on; when the document changes later, the model is told. Pins are gone:
+  a chat that had pinned documents still shows them to the model, and
+  attaches nothing. `[[` in the message box lists folders as well as
+  documents. `@Name` at the start of a line no longer speaks as a
+  character; the lines already in chats still show.
+- Roleplay chats open with the card's documents attached to a first turn
+  of yours, ahead of the greeting, rather than pinned to every message, and
+  leave its other greetings unread. A summary of a roleplay chat leaves its
+  first two messages standing.
+- A summary is written by the chat's own model at the end of the
+  conversation, so it has the documents the model read and the ones you
+  attached, not only what was said.
+- A skill of your own is three fields in Settings › Skills: its name,
+  written as a title, a description, and its instructions, kept with the
+  check. Its command is made from the name. Open in editor shows the whole
+  SKILL.md in a tab, for anything else a skill file can say. A skill that
+  can't be used says why under its instructions. The longer form and
+  Export all are gone, and a file with values inksprite can't use still
+  imports.
+- A built-in skill is worded for one profile at a time, in Settings ›
+  Skills. Wordings for every profile are gone, and settings files carry
+  none.
+- Web search is an extension, on from the start, in Settings › Extensions.
+  The service to search with is chosen there or from its card in Settings ›
+  Connections › Web search.
+- Settings › Connections and Sync and sharing list their parts under them:
+  AI providers, MCP servers and Web search; Account, People, Devices and
+  Backup.
+- The voice a side of a chat is read in is set with a right click on Read
+  aloud.
+- Convert to Markdown runs on a model of its own, chosen in its dialog.
+  Converting every PDF as it comes in, Settings › Workflows, and the
+  outline's Explore… are gone; ask in a chat, or type `/explore`. Ask
+  before exploring is gone from Settings › System: the chat asks.
+- Add as user and Add as assistant are a right-click on send, or a finger
+  held on it, in place of the arrow beside it.
+- Chats open in tabs above the chat, as documents do above the editor. A
+  chat picked from the list is a preview until you send in it, New chat and
+  forks open beside the tab you're in, and closing a tab goes back to the
+  one you were in before, in the editor too. A spinner marks a chat the
+  model is working in, and a dot one it stopped in while you were
+  elsewhere, on its tab and in the chat list. A reply keeps going when you
+  switch chats, and you can type while it replies.
+- A fork is named from the first thing said in it. `/fork` and a message
+  copy the whole chat into a new tab and send the message there, so the
+  chat you were in goes on as if it was never asked. `/aside` is gone; the
+  asides already in chats still show.
+- What the model appends to a document open in the editor shows at its end
+  as it is written.
+- A character card that came in as a picture takes new documents, made,
+  dragged or imported into it, as a folder does.
+- Interpret and Write, the experimental skills, are gone, with their
+  switches. Their answers already in chats still show.
+- A roll shows its dice a line for each term, the dropped ones first and
+  struck through. `/roll` and the model's dice take an advantage die, `a`,
+  which drops the lowest, and a burden die, `b`, which drops the highest:
+  `3d6a`, `d20b`, `3d6a2`. Dice can be subtracted, multiplied and divided,
+  rounding down, and what's written without spaces counts as one roll.
+- Formulas in documents: TeX between dollars is typeset, as in the chat,
+  `$x^2$` in a sentence and `$$` on a line of its own, typed, from Insert ›
+  Formula or Shift-Command-E, or pasted from the chat. Clicking or arrowing
+  onto one opens its TeX in place with a preview. Formulas print, and go to
+  a linked Google Doc as their TeX between dollars and come back as
+  formulas; a Doc's own equations still don't come across. Documents with
+  formulas need this version on every device that syncs them.
+- The welcome has Getting started and Feedback tabs.
+- In the Mac app, Shift-Command-V pastes without formatting.
+- In the dark, the editor and the chat are a shade lighter.
+
 ## v0.1.0-dev.27
 
 Sharing by invitation, the people you share with kept by name, Remove in

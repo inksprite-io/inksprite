@@ -1,192 +1,159 @@
 <template>
-  <div class="flex flex-col gap-4 px-2 pt-2 pb-1" data-skills-section>
-    <BuiltInSkillEditor
-      v-if="editing?.builtIn"
-      :key="editing.key"
-      :name="editing.builtIn"
-      @close="editing = null"
+  <div class="flex flex-col gap-3" data-skills-section>
+    <!-- A new skill and an import, beside the heading, as a chat's Profiles
+         has its plus. -->
+    <Teleport defer :to="heading" :disabled="!heading">
+      <HeaderButton
+        icon="pi pi-upload"
+        label="Import skills"
+        aria-haspopup="true"
+        aria-controls="skill_import_menu"
+        data-action="import"
+        @click="importMenu?.toggle($event)"
+      />
+      <HeaderButton icon="pi pi-plus" label="New skill" data-action="new-skill" @click="startNew" />
+    </Teleport>
+    <Menu id="skill_import_menu" ref="importMenu" :model="importChoices" :popup="true" />
+    <!-- The two ways in: files or a .zip, and a whole folder. -->
+    <input
+      ref="filePicker"
+      type="file"
+      accept=".md,.zip"
+      multiple
+      class="hidden"
+      data-pick="files"
+      @change="picked($event)"
     />
-    <SkillEditor
-      v-else-if="editing"
-      :key="editing.key"
-      :skill-id="editing.id"
-      @close="editing = null"
+    <input
+      ref="folderPicker"
+      type="file"
+      webkitdirectory
+      class="hidden"
+      data-pick="folder"
+      @change="picked($event)"
     />
 
-    <template v-else>
-      <div class="flex flex-wrap gap-2">
-        <Button
-          label="New skill"
-          icon="pi pi-plus"
-          size="small"
-          data-action="new-skill"
-          @click="open(null)"
-        />
-        <Button
-          label="Import…"
-          icon="pi pi-upload"
-          severity="secondary"
-          outlined
-          size="small"
-          aria-haspopup="true"
-          aria-controls="skill_import_menu"
-          data-action="import"
-          @click="importMenu?.toggle($event)"
-        />
-        <Menu id="skill_import_menu" ref="importMenu" :model="importChoices" :popup="true" />
-        <Button
-          label="Export all"
-          icon="pi pi-download"
-          severity="secondary"
-          outlined
-          size="small"
-          :disabled="yours.length === 0"
-          data-action="export-all"
-          @click="exportAll"
-        />
-        <!-- The two ways in: files or a .zip, and a whole folder. -->
-        <input
-          ref="filePicker"
-          type="file"
-          accept=".md,.zip"
-          multiple
-          class="hidden"
-          data-pick="files"
-          @change="picked($event)"
-        />
-        <input
-          ref="folderPicker"
-          type="file"
-          webkitdirectory
-          class="hidden"
-          data-pick="folder"
-          @change="picked($event)"
-        />
+    <SkillImportDialog
+      v-if="importing"
+      :key="importing.key"
+      v-model:visible="importing.visible"
+      :found="importing.found"
+      :stray="importing.stray"
+    />
+
+    <!-- The built-ins, then the writer's own where they have any; each opens
+         on its wording, or on the whole skill. -->
+    <CardList>
+      <div data-list="built-in">
+        <CardHeading>Built-in</CardHeading>
+        <CardItem
+          v-for="skill in builtIns"
+          :key="skill.name"
+          :title="skill.label"
+          :subtitle="skill.summary"
+          :open="openKey === `built-in:${skill.name}`"
+          :data-skill="skill.name"
+          @toggle="toggle(`built-in:${skill.name}`)"
+        >
+          <template #badges>
+            <span
+              v-if="skill.command"
+              class="flex-none text-xs font-mono text-surface-500 dark:text-surface-400"
+              >{{ skill.command }}</span
+            >
+            <span v-if="skill.reworded" class="flex-none text-xs text-surface-400" data-reworded>
+              reworded
+            </span>
+          </template>
+          <BuiltInSkillEditor
+            :key="`${skill.name}:${selectedProfileId}`"
+            :name="skill.name"
+            :story-id="storyId"
+            :chat-id="chatId"
+          />
+        </CardItem>
       </div>
 
-      <SkillImportDialog
-        v-if="importing"
-        :key="importing.key"
-        v-model:visible="importing.visible"
-        :found="importing.found"
-        :stray="importing.stray"
-      />
-
-      <section class="flex flex-col gap-2" data-list="yours">
-        <h3 class="text-sm font-semibold text-surface-800 dark:text-surface-100">Yours</h3>
-        <p v-if="yours.length === 0" class="text-sm text-surface-500 dark:text-surface-400">
-          None yet.
-        </p>
-        <button
+      <div
+        v-if="yours.length > 0 || drafting"
+        class="border-t border-surface-200 dark:border-surface-700"
+        data-list="yours"
+      >
+        <CardHeading>Custom skills</CardHeading>
+        <CardItem
           v-for="skill in yours"
           :key="skill.id"
-          type="button"
-          class="flex flex-col gap-0.5 rounded-lg px-3 py-2 text-left border border-surface-200 dark:border-surface-700 hover:bg-surface-100 dark:hover:bg-surface-800"
+          :title="skill.label"
+          :subtitle="skill.summary"
+          :open="openKey === skill.id"
           :data-skill="skill.name"
-          @click="open(skill.id)"
+          @toggle="toggle(skill.id)"
         >
-          <span class="flex items-center gap-2 min-w-0">
-            <span class="text-sm font-medium truncate">{{ skill.label }}</span>
-            <span v-if="skill.command" class="text-xs font-mono text-surface-500">
-              {{ skill.command }}
-            </span>
-          </span>
-          <span class="text-xs text-surface-500 dark:text-surface-400">{{ skill.kind }}</span>
-          <span v-if="skill.summary" class="text-xs text-surface-600 dark:text-surface-300">
-            {{ skill.summary }}
-          </span>
-          <span v-if="skill.problem" class="text-xs text-red-600 dark:text-red-400">
-            {{ skill.problem }}
-          </span>
-          <span
-            v-else-if="skill.waiting"
-            class="text-xs italic text-surface-500 dark:text-surface-400"
-          >
-            {{ skill.waiting }}
-          </span>
-        </button>
-      </section>
-
-      <!-- The built-ins, and under them the ones still being tuned, each with
-           the switch that decides whether it is there at all. -->
-      <section
-        v-for="group in shipped"
-        :key="group.id"
-        class="flex flex-col gap-2"
-        :data-list="group.id"
-      >
-        <h3 class="text-sm font-semibold text-surface-800 dark:text-surface-100">
-          {{ group.heading }}
-        </h3>
-        <div
-          v-for="skill in group.skills"
-          :key="skill.name"
-          class="flex items-center gap-2 rounded-lg bg-surface-50 dark:bg-surface-900/40 hover:bg-surface-100 dark:hover:bg-surface-800"
+          <template #badges>
+            <span
+              v-if="skill.command"
+              class="flex-none text-xs font-mono text-surface-500 dark:text-surface-400"
+              >{{ skill.command }}</span
+            >
+          </template>
+          <SkillEditor :key="skill.id" :skill-id="skill.id" :story-id="storyId" @close="shut" />
+        </CardItem>
+        <!-- One being written, which is not a skill until it is saved. -->
+        <CardItem
+          v-if="drafting"
+          title="New skill"
+          open
+          data-skill-draft
+          @toggle="drafting = false"
         >
-          <button
-            type="button"
-            class="flex flex-1 min-w-0 flex-col gap-0.5 px-3 py-2 text-left"
-            :class="{ 'opacity-60': skill.off }"
-            :data-skill="skill.name"
-            @click="openBuiltIn(skill.name)"
-          >
-            <span class="flex items-center gap-2 min-w-0">
-              <span class="text-sm font-medium truncate">{{ skill.label }}</span>
-              <span v-if="skill.command" class="text-xs font-mono text-surface-500">
-                {{ skill.command }}
-              </span>
-              <span v-if="skill.reworded" class="text-xs text-surface-400" data-reworded>
-                reworded
-              </span>
-            </span>
-            <span class="text-xs text-surface-500 dark:text-surface-400">{{ skill.kind }}</span>
-            <span class="text-xs text-surface-600 dark:text-surface-300">{{ skill.summary }}</span>
-          </button>
-          <ToggleSwitch
-            v-if="skill.experimental"
-            :model-value="!skill.off"
-            class="flex-none mr-3"
-            :aria-label="skill.label"
-            :data-skill-switch="skill.name"
-            @update:model-value="appState.setExperimentalSkill(skill.name, $event)"
-          />
-        </div>
-      </section>
-    </template>
+          <SkillEditor :story-id="storyId" @made="made" @close="shut" />
+        </CardItem>
+      </div>
+    </CardList>
   </div>
 </template>
 
 <script setup>
 import { computed, ref } from 'vue'
-import Button from 'primevue/button'
 import Menu from 'primevue/menu'
-import ToggleSwitch from 'primevue/toggleswitch'
+import CardList from '@/components/common/CardList.vue'
+import CardHeading from '@/components/common/CardHeading.vue'
+import CardItem from '@/components/common/CardItem.vue'
 import SkillEditor from './SkillEditor.vue'
 import BuiltInSkillEditor from './BuiltInSkillEditor.vue'
 import SkillImportDialog from './SkillImportDialog.vue'
+import HeaderButton from '../layout/HeaderButton.vue'
+import { useSectionHeading } from '@/components/common/sectionHeading.js'
 import { BUILT_IN_SKILLS, skillLabel } from '@/ai/skills/index.js'
 import { parseSkill } from '@/ai/skills/format.js'
-import { describeCallers, waitingOn, writerCalls } from '@/ai/skills/runner.js'
-import { entriesFromFiles, findSkills, zipBlob } from '@/ai/skills/bundle.js'
+import { formFromText, nameFromTitle } from '@/ai/skills/form.js'
+import { writerCalls } from '@/ai/skills/runner.js'
+import { entriesFromFiles, findSkills } from '@/ai/skills/bundle.js'
 import { COMMANDS } from '@/ai/commands.js'
-import { downloadBlob } from '@/files/download.js'
 import { useSkills } from '@/composables/useSkills'
+import { useChatSettings } from '@/composables/useChatSettings'
 import { useToast } from '@/composables/useToast'
-import { useApplicationState } from '@/composables/useApplicationState'
 
 /**
- * The library: the writer's own skills, to write and change, and the ones that
- * ship with the app, to reword. App-wide, beside Workflows — a skill is not any
- * one project's. See `.llm/skills_design.md`, part 3.
+ * The library: the ones that ship with the app, to reword for the profile
+ * the chat showing runs on, and the writer's own, to write and change, each
+ * a card that opens on its editor; a new one, written in a card under the
+ * rest, and an import, from beside the heading. The library is app-wide: a skill is not
+ * any one project's. See `.llm/skills_rework_design.md`.
  *
- * The built-ins still being tuned are listed under the rest, each with the
- * switch that decides whether it is there at all. Off, it can still be
- * reworded.
+ * @typedef {Object} Props
+ * @property {string} [storyId] - The project open
+ * @property {string} [chatId] - The chat showing in it, whose profile's
+ *   wording of the built-ins this is
  */
+const props = defineProps({
+  storyId: { type: String, default: '' },
+  chatId: { type: String, default: '' },
+})
 
 const skillsApi = useSkills()
+const { selectedProfileId, isSkillReworded } = useChatSettings(props.storyId, () => props.chatId)
 const toast = useToast()
-const appState = useApplicationState()
 
 const importMenu = ref(/** @type {InstanceType<typeof Menu>|null} */ (null))
 const filePicker = ref(/** @type {HTMLInputElement|null} */ (null))
@@ -229,77 +196,89 @@ const picked = async event => {
   }
 }
 
-/** Every skill of the writer's, as a `.zip` of their folders. */
-const exportAll = () => {
-  downloadBlob(zipBlob(skillsApi.skills.value), 'inksprite-skills.zip')
+/** Where the plus and the import go: beside the section's heading. */
+const heading = useSectionHeading()
+
+/**
+ * The card open: one of the writer's skills by its id, or a built-in as
+ * `built-in:<name>`.
+ */
+const openKey = ref(/** @type {string|null} */ (null))
+
+/** A new skill being written, in a card of its own under the rest. */
+const drafting = ref(false)
+
+/** @param {string} key */
+const toggle = key => {
+  drafting.value = false
+  openKey.value = openKey.value === key ? null : key
 }
 
-/** The skill being written, or none while the list shows. */
-const editing = ref(/** @type {{id: string|null, builtIn?: string, key: number}|null} */ (null))
-let opened = 0
-
-/** @param {string|null} id - A skill of theirs, or none for a new one */
-const open = id => {
-  editing.value = { id, key: ++opened }
+/** Shut whichever card is open. */
+const shut = () => {
+  drafting.value = false
+  openKey.value = null
 }
 
-/** @param {string} name - A skill that ships with the app */
-const openBuiltIn = name => {
-  editing.value = { id: null, builtIn: name, key: ++opened }
+/**
+ * What the list calls a skill: what its file's name was written as, read as
+ * a word where it is only a name, and the name it is kept under where the
+ * file gives none.
+ *
+ * @param {string} written
+ * @param {string} kept
+ * @returns {string}
+ */
+const labelOf = (written, kept) => {
+  if (!written) return skillLabel({ name: kept })
+  return written === nameFromTitle(written) ? skillLabel({ name: written }) : written
 }
 
-/** Each of the writer's skills, as the list shows it: read from its file. */
+/** A new skill: a card to write it in, kept once it is saved. */
+const startNew = () => {
+  openKey.value = null
+  drafting.value = true
+}
+
+/**
+ * The new skill was saved: it is one of the list's now, open where it is.
+ *
+ * @param {string} id
+ */
+const made = id => {
+  drafting.value = false
+  openKey.value = id
+}
+
+/**
+ * Each of the writer's skills, as the list shows it: what its file calls it
+ * and says of it, however much else of the file reads, and its command once
+ * it can be called.
+ */
 const yours = computed(() =>
   skillsApi.skills.value.map(stored => {
+    const fields = formFromText(stored.text)
     const read = parseSkill(stored.text)
-    if ('errors' in read) {
-      return {
-        id: stored.id,
-        name: stored.name,
-        label: skillLabel(stored),
-        command: '',
-        kind: 'Can’t be read',
-        summary: '',
-        problem: read.errors[0],
-        waiting: '',
-      }
-    }
-    const { skill } = read
+    const skill = 'skill' in read ? read.skill : null
+    const usable = skill && !skillsApi.problemOf(stored)
     return {
       id: stored.id,
-      name: skill.name,
-      label: skillLabel(skill),
-      command: writerCalls(skill) ? `/${skill.name}` : '',
-      kind: describeCallers(skill),
-      summary: skill.summary,
-      problem: '',
-      waiting: waitingOn(skill),
+      name: stored.name,
+      label: labelOf('form' in fields ? fields.form.name : '', stored.name),
+      command: usable && writerCalls(skill) ? `/${skill.name}` : '',
+      summary: skill?.summary ?? ('form' in fields ? fields.form.description : ''),
     }
   })
 )
 
-/**
- * The skills that ship with the app, whether the writer has reworded each, and
- * whether an experimental one is switched off: the built-ins, then the
- * experimental ones, each by name.
- */
-const shipped = computed(() => {
-  const on = appState.experimentalSkills.value
-  const listed = BUILT_IN_SKILLS.map(skill => ({
+/** The skills that ship with the app, by name, and whether the profile rewords each. */
+const builtIns = computed(() =>
+  BUILT_IN_SKILLS.map(skill => ({
     name: skill.name,
     label: skillLabel(skill),
     command: skill.user && skill.name in COMMANDS ? `/${skill.name}` : '',
-    kind: describeCallers(skill),
     summary: skill.summary,
-    reworded: skillsApi.wordingOf(skill.name) !== null,
-    experimental: Boolean(skill.experimental),
-    off: Boolean(skill.experimental) && !on.includes(skill.name),
+    reworded: isSkillReworded(skill.name),
   })).sort((a, b) => a.label.localeCompare(b.label))
-  return [
-    { id: 'built-in', heading: 'Built-in', skills: listed.filter(s => !s.experimental) },
-    { id: 'experimental', heading: 'Experimental', skills: listed.filter(s => s.experimental) },
-  ]
-})
-
-defineExpose({ open })
+)
 </script>

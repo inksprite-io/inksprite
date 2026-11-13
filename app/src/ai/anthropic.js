@@ -699,7 +699,8 @@ async function clientFor(provider) {
 function plainly(error) {
   if (error?.status === 429) return new RateLimitedError(RATE_LIMITED, retryAfterOf(error.headers))
   const said = error?.error?.error?.message
-  return said ? new Error(said) : error
+  // With its status, for the chat to tell a refused key from the rest.
+  return said ? Object.assign(new Error(said), { status: error.status }) : error
 }
 
 /** @type {Map<string, Promise<ModelInfo|null>>} What each model can do, by connection and model, for the page. */

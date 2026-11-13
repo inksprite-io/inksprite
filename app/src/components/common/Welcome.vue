@@ -31,27 +31,27 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import SectionLayout from '@/components/common/SectionLayout.vue'
 import WelcomeSection from './welcome/WelcomeSection.vue'
-import TermsSection from './welcome/TermsSection.vue'
-import AiConfigSection from '@/components/writer/settings/ai/AiConfigSection.vue'
+import MarkdownSection from './welcome/MarkdownSection.vue'
 import MagicBookAltIcon from '@/components/icons/MagicBookAltIcon.vue'
-import AiNetworkIcon from '@/components/icons/AiNetworkIcon.vue'
+import BooksIcon from '@/components/icons/BooksIcon.vue'
+import CommentIcon from '@/components/icons/CommentIcon.vue'
 import BookIcon from '@/components/icons/BookIcon.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
-import { useAIConfig } from '@/composables/useAIConfig'
-import { presetProblem } from '@/ai/providers.js'
-import { LINK } from './welcome/links.js'
+import { LINK } from './welcome/markdown.js'
+import gettingStarted from './welcome/getting-started.md?raw'
+import feedback from './welcome/feedback.md?raw'
+import terms from './welcome/terms.md?raw'
 
 /**
  * What a first visit opens on, laid out as the settings are: what inksprite
- * is and where it keeps the work, the AI settings to connect a provider now,
- * and the terms, which the footer says using it agrees to. The AI settings
- * aren't offered with the AI switched off, or when it is set up already, as
- * a settings file left by a script sets it up before the first visit.
+ * is and where it keeps the work, where the guide is, where to report a bug
+ * or say what's wanted, and the terms, which the footer says using it agrees
+ * to. The AI is set up from the chat, the first time it is used.
  *
  * @typedef {Object} Props
  * @property {boolean} visible - Whether the dialog is visible
@@ -66,32 +66,43 @@ defineProps({
 defineEmits(['update:visible'])
 
 const appState = useApplicationState()
-const aiConfig = useAIConfig()
-
-/** Whether the preset in use can be asked something as it stands. */
-const aiReady = computed(
-  () => !presetProblem(aiConfig.activeAIPreset.value, id => aiConfig.getProvider(id))
-)
 
 const activeId = ref('welcome')
 
 /** @param {string} id */
 const show = id => (activeId.value = id)
 
-const sections = computed(() => [
+const sections = [
   {
     id: 'welcome',
     label: 'Welcome',
     title: 'Welcome to inksprite',
     icon: MagicBookAltIcon,
     component: WelcomeSection,
-    props: { onShow: show, aiReady: aiReady.value },
   },
-  ...(appState.aiEnabled.value && !aiReady.value
-    ? [{ id: 'ai', label: 'AI', icon: AiNetworkIcon, component: AiConfigSection }]
-    : []),
-  { id: 'terms', label: 'Terms of Service', icon: BookIcon, component: TermsSection },
-])
+  {
+    id: 'getting-started',
+    label: 'Getting started',
+    icon: BooksIcon,
+    component: MarkdownSection,
+    props: { source: gettingStarted },
+  },
+  {
+    id: 'feedback',
+    label: 'Feedback',
+    icon: CommentIcon,
+    component: MarkdownSection,
+    props: { source: feedback },
+  },
+  {
+    id: 'terms',
+    label: 'Terms of Service',
+    icon: BookIcon,
+    component: MarkdownSection,
+    // The docs' About page has them too, and a test fails when the two differ.
+    props: { source: terms },
+  },
+]
 
 /**
  * Handle close button click

@@ -6,8 +6,7 @@ import PrimeVue from 'primevue/config'
 import WebSearchConnection from '@/components/writer/settings/WebSearchConnection.vue'
 import { useWebSearchStore } from '@/stores/webSearchStore.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
-import { savesWithoutAsking, setWebSearch } from '@/web/config.js'
-import { CHAT_PROFILE_ID } from '@/ai/profiles/index.js'
+import { setWebSearch } from '@/web/config.js'
 
 vi.mock('@/stores/db', () => ({
   default: { webSearch: { get: vi.fn(async () => undefined) } },
@@ -37,29 +36,45 @@ vi.mock('@/composables/useProfiles', () => ({
 }))
 
 const mountSection = async () => {
-  const wrapper = mount(WebSearchConnection, { global: { plugins: [PrimeVue] } })
+  const wrapper = mount(WebSearchConnection, {
+    global: {
+      plugins: [PrimeVue],
+      directives: { tooltip: {} },
+      stubs: { ExpandableSection: { template: '<div><slot name="actions" /><slot /></div>' } },
+    },
+  })
   await flushPromises()
   return wrapper
 }
 
-/** Pick a service as the dropdown would. */
-const pick = async (wrapper, id) => {
-  await wrapper.findComponent({ name: 'Select' }).vm.$emit('update:modelValue', id)
+/** A service's card. */
+const card = (wrapper, id) => wrapper.find(`[data-web-service="${id}"]`)
+
+/** Open a service's card, as a click on it does. */
+const open = async (wrapper, id) => {
+  if (card(wrapper, id).find('[data-connection-body]').exists()) return
+  await card(wrapper, id).find('button[aria-expanded]').trigger('click')
   await flushPromises()
 }
 
-/** Type a key and leave the field, as a click elsewhere would. */
-const typeKey = async (wrapper, key) => {
-  await wrapper.find('[data-field="web-key"]').setValue(key)
-  await wrapper.find('[data-field="web-key"]').trigger('blur')
+/** Type a key in a service's card and leave the field, as a click elsewhere would. */
+const typeKey = async (wrapper, id, key) => {
+  await open(wrapper, id)
+  const field = card(wrapper, id).find('[data-field="web-key"]')
+  await field.setValue(key)
+  await field.trigger('blur')
   await flushPromises()
 }
 
-/** Press Connect. */
-const connect = async wrapper => {
-  await wrapper.find('[data-action="web-connect"]').trigger('click')
+/** Press Connect on a service's card. */
+const connect = async (wrapper, id) => {
+  await open(wrapper, id)
+  await card(wrapper, id).find('[data-action="web-connect"]').trigger('click')
   await flushPromises()
 }
+
+/** What a service's card says of how it answered. */
+const status = (wrapper, id) => card(wrapper, id).find('[data-status]').text()
 
 describe('WebSearchConnection', () => {
   beforeEach(() => {
@@ -74,109 +89,40 @@ describe('WebSearchConnection', () => {
 
   afterEach(() => setWebSearch(null))
 
-  it('starts on none, asking for nothing', async () => {
+  it('lists every service as a card with its address, none in use, asking for nothing', async () => {
     const wrapper = await mountSection()
 
-    expect(wrapper.findComponent({ name: 'Select' }).props('modelValue')).toBe('none')
+    expect(
+      wrapper.findAll('[data-web-service]').map(one => one.attributes('data-web-service'))
+    ).toEqual(['exa', 'kagi', 'brave'])
+    expect(card(wrapper, 'exa').find('[data-connection-address]').text()).toBe('mcp.exa.ai')
+    expect(wrapper.find('[data-in-use]').exists()).toBe(false)
     expect(wrapper.find('[data-field="web-key"]').exists()).toBe(false)
+    expect(listServer).not.toHaveBeenCalled()
   })
 
   it('offers Brave only in the desktop app', async () => {
-    const options = wrapper => wrapper.findComponent({ name: 'Select' }).props('options')
-    const brave = wrapper => options(wrapper).find(option => option.value === 'brave')
-
-    expect(brave(await mountSection()).disabled).toBe(true)
+    let wrapper = await mountSection()
+    expect(status(wrapper, 'brave')).toBe('Desktop app only')
+    await card(wrapper, 'brave').find('button[aria-expanded]').trigger('click')
+    expect(card(wrapper, 'brave').find('[data-connection-body]').exists()).toBe(false)
 
     globalThis.__INKSPRITE_DESKTOP__ = {}
     try {
-      expect(brave(await mountSection()).disabled).toBe(false)
+      wrapper = await mountSection()
+      await open(wrapper, 'brave')
+      expect(card(wrapper, 'brave').find('[data-field="web-key"]').exists()).toBe(true)
     } finally {
       delete globalThis.__INKSPRITE_DESKTOP__
     }
-  })
-
-  it('searches with Brave, whose only check costs, only on Connect', async () => {
-    globalThis.__INKSPRITE_DESKTOP__ = {}
-    try {
-      fetch.mockResolvedValue({ ok: true, json: async () => ({}) })
-      const wrapper = await mountSection()
-      await pick(wrapper, 'brave')
-      await typeKey(wrapper, 'bk')
-
-      expect(useWebSearchStore().setup.keys).toEqual({ brave: 'bk' })
-      expect(fetch).not.toHaveBeenCalled()
-      expect(wrapper.find('[data-web-check]').exists()).toBe(false)
-
-      await connect(wrapper)
-
-      expect(fetch).toHaveBeenCalledOnce()
-      expect(fetch.mock.calls[0][1].headers['X-Subscription-Token']).toBe('bk')
-      expect(wrapper.find('[data-web-check]').text()).toBe('Connected')
-    } finally {
-      delete globalThis.__INKSPRITE_DESKTOP__
-    }
-  })
-
-  it('uses Exa with no key, checks it, and says where searches go', async () => {
-    const wrapper = await mountSection()
-
-    await pick(wrapper, 'exa')
-
-    expect(useWebSearchStore().setup.service).toBe('exa')
-    expect(listServer).toHaveBeenCalledWith(
-      expect.objectContaining({ url: 'https://mcp.exa.ai/mcp' })
-    )
-    expect(wrapper.find('[data-web-check]').text()).toBe('Connected')
-    expect(wrapper.text()).toContain('Searches go to Exa, which may keep them.')
-    expect(wrapper.find('[data-field="web-key"]').attributes('placeholder')).toBe('Optional')
-  })
-
-  it('keeps a key typed in, and checks the service with it on Connect', async () => {
-    const wrapper = await mountSection()
-    await pick(wrapper, 'exa')
-    listServer.mockClear()
-
-    await typeKey(wrapper, 'k1')
-
-    expect(useWebSearchStore().setup.keys).toEqual({ exa: 'k1' })
-    expect(listServer).not.toHaveBeenCalled()
-    expect(wrapper.find('[data-web-check]').exists()).toBe(false)
-
-    await connect(wrapper)
-
-    expect(listServer).toHaveBeenCalledWith(
-      expect.objectContaining({ headers: { 'x-api-key': 'k1' } })
-    )
-    expect(wrapper.find('[data-web-check]').text()).toBe('Connected')
-  })
-
-  it('searches with Kagi, whose server lists its tools for any key, only on Connect', async () => {
-    callServerTool.mockResolvedValue({ content: [{ type: 'text', text: 'Results.' }] })
-    const wrapper = await mountSection()
-    await pick(wrapper, 'kagi')
-    await typeKey(wrapper, 'kk')
-
-    expect(callServerTool).not.toHaveBeenCalled()
-
-    await connect(wrapper)
-
-    expect(listServer).not.toHaveBeenCalled()
-    expect(callServerTool).toHaveBeenCalledWith(
-      expect.objectContaining({ headers: { Authorization: 'Bearer kk' } }),
-      'kagi_search_fetch',
-      expect.anything(),
-      expect.anything()
-    )
-    expect(wrapper.find('[data-web-check]').text()).toBe('Connected')
   })
 
   it('connects on Enter in the key field', async () => {
     const wrapper = await mountSection()
-    await pick(wrapper, 'exa')
-    listServer.mockClear()
+    await open(wrapper, 'exa')
 
-    await wrapper.find('[data-field="web-key"]').setValue('k1')
-    await wrapper.find('[data-field="web-key"]').trigger('keydown.enter')
+    await card(wrapper, 'exa').find('[data-field="web-key"]').setValue('k1')
+    await card(wrapper, 'exa').find('[data-field="web-key"]').trigger('keydown.enter')
     await flushPromises()
 
     expect(useWebSearchStore().setup.keys).toEqual({ exa: 'k1' })
@@ -186,87 +132,144 @@ describe('WebSearchConnection', () => {
   it('says why a service refused', async () => {
     listServer.mockRejectedValue(Object.assign(new Error('Unauthorized'), { code: 401 }))
     const wrapper = await mountSection()
-    await pick(wrapper, 'exa')
 
-    await typeKey(wrapper, 'bad')
-    await connect(wrapper)
+    await typeKey(wrapper, 'exa', 'bad')
+    await connect(wrapper, 'exa')
 
-    expect(wrapper.find('[data-web-check]').text()).toBe('Exa refused the key.')
+    expect(card(wrapper, 'exa').find('[data-web-check]').text()).toBe('Exa refused the key.')
+    expect(status(wrapper, 'exa')).toBe('Not connected')
+    // One that doesn't answer isn't made the one in use.
+    expect(useWebSearchStore().setup.service).toBeUndefined()
   })
 
   it('forgets what a check found once the key changes', async () => {
     listServer.mockRejectedValue(Object.assign(new Error('Unauthorized'), { code: 401 }))
     const wrapper = await mountSection()
-    await pick(wrapper, 'exa')
-    await typeKey(wrapper, 'bad')
-    await connect(wrapper)
+    await typeKey(wrapper, 'exa', 'bad')
+    await connect(wrapper, 'exa')
 
-    await typeKey(wrapper, 'good')
+    await typeKey(wrapper, 'exa', 'good')
 
-    expect(wrapper.find('[data-web-check]').exists()).toBe(false)
+    expect(card(wrapper, 'exa').find('[data-web-check]').exists()).toBe(false)
   })
 
   it('does not check Kagi before it has a key', async () => {
     const wrapper = await mountSection()
 
-    await pick(wrapper, 'kagi')
+    await open(wrapper, 'kagi')
 
     expect(listServer).not.toHaveBeenCalled()
-    expect(wrapper.find('[data-web-check]').exists()).toBe(false)
-    expect(wrapper.find('[data-action="web-connect"]').attributes('disabled')).toBeDefined()
+    expect(
+      card(wrapper, 'kagi').find('[data-action="web-connect"]').attributes('disabled')
+    ).toBeDefined()
   })
 
-  it('stops searching when None is chosen', async () => {
+  it('holds a key, Connect and Use for web search in a card', async () => {
     const wrapper = await mountSection()
-    await pick(wrapper, 'exa')
+    await open(wrapper, 'exa')
 
-    await pick(wrapper, 'none')
-
-    expect(useWebSearchStore().setup.service).toBeUndefined()
-    expect(wrapper.find('[data-field="web-key"]').exists()).toBe(false)
-  })
-
-  it('keeps the key of a service switched away from', async () => {
-    const wrapper = await mountSection()
-    await pick(wrapper, 'kagi')
-    await typeKey(wrapper, 'kk')
-
-    await pick(wrapper, 'exa')
-    await pick(wrapper, 'kagi')
-
-    expect(wrapper.find('[data-field="web-key"]').element.value).toBe('kk')
-  })
-
-  it('asks before the model saves a page, until switched off', async () => {
-    const wrapper = await mountSection()
-    await pick(wrapper, 'exa')
-    const ask = wrapper.find('[data-field="web-ask-before-saving"]').findComponent({
-      name: 'ToggleSwitch',
-    })
-
-    expect(ask.props('modelValue')).toBe(true)
-    expect(savesWithoutAsking()).toBe(false)
-
-    await ask.vm.$emit('update:modelValue', false)
-
-    expect(useWebSearchStore().setup.saveWithoutAsking).toBe(true)
-    expect(savesWithoutAsking()).toBe(true)
-  })
-
-  it('searches in chats on Default to start with, and on another profile once asked', async () => {
-    const wrapper = await mountSection()
-    await pick(wrapper, 'exa')
-    const toggle = label =>
-      wrapper
-        .findAllComponents({ name: 'ToggleSwitch' })
-        .find(one => one.props('ariaLabel') === label)
-
-    expect(toggle('Search the web in chats on Default').props('modelValue')).toBe(true)
-    await toggle('Search the web in chats on Roleplay').vm.$emit('update:modelValue', true)
-
-    expect(useWebSearchStore().setup.profiles).toEqual([
-      CHAT_PROFILE_ID,
-      'builtin_profile_roleplay',
+    const body = card(wrapper, 'exa').find('[data-connection-body]')
+    expect(body.findAll('input')).toHaveLength(1)
+    expect(body.find('[data-field="web-key"]').attributes('placeholder')).toBe('Optional')
+    expect(body.findAll('button').map(button => button.text())).toEqual([
+      'Connect',
+      'Use for web search',
     ])
+    // Whether a page is kept unasked is the extension's.
+    for (const words of ['In use', 'Stop using', 'Ask before saving']) {
+      expect(wrapper.text()).not.toContain(words)
+    }
+    expect(wrapper.find('[data-field="web-ask-before-saving"]').exists()).toBe(false)
+  })
+
+  it('searches with a service from its card, which is then tinted and offers it no more', async () => {
+    const wrapper = await mountSection()
+    await connect(wrapper, 'exa')
+    await typeKey(wrapper, 'kagi', 'k2')
+
+    await card(wrapper, 'kagi').find('[data-action="web-use"]').trigger('click')
+    await flushPromises()
+
+    expect(useWebSearchStore().setup.service).toBe('kagi')
+    expect(card(wrapper, 'kagi').find('[aria-current]').exists()).toBe(true)
+    expect(card(wrapper, 'kagi').find('[data-action="web-use"]').exists()).toBe(false)
+    await open(wrapper, 'exa')
+    expect(card(wrapper, 'exa').find('[aria-current]').exists()).toBe(false)
+    expect(card(wrapper, 'exa').find('[data-action="web-use"]').exists()).toBe(true)
+  })
+
+  it('keeps the key typed in when a service is made the one used', async () => {
+    const wrapper = await mountSection()
+    await open(wrapper, 'kagi')
+    const use = () => card(wrapper, 'kagi').find('[data-action="web-use"]')
+    expect(use().attributes('disabled')).toBeDefined()
+
+    await card(wrapper, 'kagi').find('[data-field="web-key"]').setValue('k3')
+    expect(use().attributes('disabled')).toBeUndefined()
+    await use().trigger('click')
+    await flushPromises()
+
+    expect(useWebSearchStore().setup).toMatchObject({ service: 'kagi', keys: { kagi: 'k3' } })
+  })
+
+  it('opens one card at a time, and shuts the one clicked again', async () => {
+    const wrapper = await mountSection()
+
+    await open(wrapper, 'exa')
+    await open(wrapper, 'kagi')
+    expect(wrapper.findAll('[data-connection-body]')).toHaveLength(1)
+    expect(card(wrapper, 'kagi').find('[data-connection-body]').exists()).toBe(true)
+
+    await card(wrapper, 'kagi').find('button[aria-expanded]').trigger('click')
+    expect(wrapper.find('[data-connection-body]').exists()).toBe(false)
+  })
+
+  it('says nothing of a service that answered, or of one not asked', async () => {
+    const wrapper = await mountSection()
+
+    await connect(wrapper, 'exa')
+
+    expect(listServer).toHaveBeenCalledOnce()
+    expect(card(wrapper, 'exa').find('[data-status]').exists()).toBe(false)
+    expect(card(wrapper, 'exa').find('[data-web-check]').exists()).toBe(false)
+    expect(card(wrapper, 'kagi').find('[data-status]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('Connected')
+  })
+
+  it('marks a refusal with a red dot, and what only is with none', async () => {
+    listServer.mockRejectedValue(Object.assign(new Error('Unauthorized'), { code: 401 }))
+    const wrapper = await mountSection()
+    await typeKey(wrapper, 'exa', 'bad')
+    await connect(wrapper, 'exa')
+
+    const refused = card(wrapper, 'exa').find('[data-status]')
+    expect(refused.attributes('data-status')).toBe('bad')
+    expect(refused.find('.bg-red-500').exists()).toBe(true)
+    const elsewhere = card(wrapper, 'brave').find('[data-status]')
+    expect(elsewhere.attributes('data-status')).toBe('neutral')
+    expect(elsewhere.find('.bg-red-500').exists()).toBe(false)
+  })
+
+  it('makes the first service to answer the one used, where none is', async () => {
+    const wrapper = await mountSection()
+    expect(useWebSearchStore().setup.service).toBeUndefined()
+
+    await connect(wrapper, 'exa')
+
+    expect(useWebSearchStore().setup.service).toBe('exa')
+    // Checked just now: not asked a second time for being chosen.
+    expect(listServer).toHaveBeenCalledOnce()
+  })
+
+  it('leaves the one used as it is when another answers', async () => {
+    const wrapper = await mountSection()
+    await connect(wrapper, 'exa')
+
+    await typeKey(wrapper, 'kagi', 'k2')
+    await connect(wrapper, 'kagi')
+
+    expect(useWebSearchStore().setup.keys).toMatchObject({ kagi: 'k2' })
+    expect(card(wrapper, 'kagi').find('[data-status]').exists()).toBe(false)
+    expect(useWebSearchStore().setup.service).toBe('exa')
   })
 })

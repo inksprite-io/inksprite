@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import ChatStatus from '../../src/components/writer/chats/ChatStatus.vue'
-import { useApplicationState } from '../../src/composables/useApplicationState'
 
 const call = (name, args) => ({ name, arguments: JSON.stringify(args) })
 
@@ -31,19 +30,17 @@ describe('ChatStatus', () => {
   })
 
   it('says an edit is suggested in a chat that asks first', () => {
-    const { setApplyEdits } = useApplicationState()
-    setApplyEdits('ask')
-    try {
-      const edit = call('edit_document', { path: 'Draft/Chapter 1', old: 'Snow', new: 'Rain' })
-      expect(line(show({ phase: 'running', calls: [edit] })).text()).toBe(
-        'Suggesting changes to Chapter 1…'
-      )
-      expect(line(show({ phase: 'waiting', calls: [edit] })).text()).toBe(
-        'Suggested changes to Chapter 1 · waiting for the model'
-      )
-    } finally {
-      setApplyEdits('auto')
-    }
+    const edit = call('edit_document', { path: 'Draft/Chapter 1', old: 'Snow', new: 'Rain' })
+    const asking = activity =>
+      mount(ChatStatus, {
+        props: { activity: { messageId: 'm1', since: Date.now(), ...activity }, suggesting: true },
+      })
+    expect(line(asking({ phase: 'running', calls: [edit] })).text()).toBe(
+      'Suggesting changes to Chapter 1…'
+    )
+    expect(line(asking({ phase: 'waiting', calls: [edit] })).text()).toBe(
+      'Suggested changes to Chapter 1 · waiting for the model'
+    )
   })
 
   it('says how far a long call has got, as it said', () => {

@@ -73,11 +73,20 @@ export async function narration(ui) {
   await page.getByText(/^Imported /).waitFor({ state: 'hidden' })
   await ui.shot('narration-panel')
 
-  // What it is read through, the built-in Kokoro with its one model, and the voice
+  // What it is read through, Kokoro, added here with its address filled in,
+  // with its one model, and the voice
   await ui.click(button('Voices'))
   const voice = page.getByRole('textbox', { name: 'Voice' })
   await voice.waitFor()
+  await ui.click(button('Add connection'))
+  const kokoro = page.locator('[data-connection-dialog]')
+  await ui.click(kokoro.getByRole('button', { name: 'Connect', exact: true }))
+  await kokoro.locator('[data-state="connected"]').waitFor()
+  await ui.click(kokoro.getByRole('button', { name: 'Done', exact: true }))
+  await kokoro.waitFor({ state: 'hidden' })
   await page.getByRole('combobox', { name: 'Model' }).getByText('kokoro').waitFor()
+  // Connecting says so in a toast, which would cover the chat in the next pictures.
+  await page.getByText('Connected to Kokoro.').waitFor({ state: 'hidden' })
   await ui.shot('narration-voices', {
     of: [button('Voices'), button('Preview')],
     pad: 12,

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import {
   drawsByChance,
   getToolGroups,
@@ -9,12 +9,26 @@ import {
   offersDocuments,
   TOOL_GROUP_LABELS,
 } from '@/ai/tools/index.js'
-import { DIRECTOR_TOOLS, SKILL_MAX_DEPTH, setExperimentalSkills } from '@/ai/skills/index.js'
+import { DIRECTOR_TOOLS, SKILL_MAX_DEPTH, setTrialSkills } from '@/ai/skills/index.js'
+import { setWebSearch } from '@/web/config.js'
+import { useApplicationState } from '@/composables/useApplicationState'
+import { TRIAL_SKILLS } from '../../../harness/skills/trials.js'
 
-// Every tool there is, Interpret and Write among them, as in an app that has
-// switched the experimental skills on.
+// Every tool there is, Interpret and Write among them as in the harness, with
+// a service to search the web and Python on, as in the desktop app.
 beforeAll(() => {
-  setExperimentalSkills(['interpret', 'write'])
+  setTrialSkills(TRIAL_SKILLS)
+  setWebSearch({ id: 'web', service: 'exa', keys: {} })
+  globalThis.__INKSPRITE_DESKTOP__ = { python: { run: () => {}, stop: () => {} } }
+  useApplicationState().setAiEnabled(true)
+  useApplicationState().setExtension('python', true)
+})
+
+afterAll(() => {
+  setTrialSkills([])
+  setWebSearch(null)
+  delete globalThis.__INKSPRITE_DESKTOP__
+  useApplicationState().setExtension('python', false)
 })
 
 describe('tool groups', () => {
@@ -52,35 +66,50 @@ describe('tool groups', () => {
       'explore_documents',
     ])
     expect(byId.rpg).toEqual(['roll_dice', 'oracle', 'roll_table', 'draw_tarot', 'generate_names'])
-    // The skills group holds the writer's own, and they have none here.
-    expect(byId.skills).toBeUndefined()
-    expect(byId.experimental).toEqual(['interpret', 'write'])
+    // The skills group holds the writer's own, and they have none here: these
+    // are the harness's.
+    expect(byId.skills).toEqual(['interpret', 'write'])
     expect(byId.web).toEqual(['web_search', 'read_web_page', 'save_web_page'])
     expect(byId.python).toEqual(['run_python'])
   })
 
-  it('offers the web only to a chat that searches, less any tool it switched off', () => {
-    const offered = selection =>
-      getEnabledToolDefinitions(selection)
+  it('offers the web to a chat that has not switched it off, while a service can search', () => {
+    const offered = choice =>
+      getEnabledToolDefinitions(choice)
         .map(definition => definition.function.name)
         .filter(name => name === 'web_search' || name === 'read_web_page')
 
-    // Opted into: a chat that withholds nothing still does not search.
-    expect(offered({})).toEqual([])
-    expect(offered({ web: true })).toEqual(['web_search', 'read_web_page'])
-    expect(offered({ web: true, disabledTools: ['read_web_page'] })).toEqual(['web_search'])
+    expect(offered({})).toEqual(['web_search', 'read_web_page'])
+    expect(offered({ disabledTools: ['read_web_page'] })).toEqual(['web_search'])
+    expect(offered({ disabledToolGroups: ['web'] })).toEqual([])
+    // Not in a profile that offers only some, unless it is among them.
+    expect(offered({ onlyToolGroups: ['documents'] })).toEqual([])
+
+    setWebSearch(null)
+    try {
+      expect(offered({})).toEqual([])
+      expect(getToolGroups().map(group => group.id)).not.toContain('web')
+    } finally {
+      setWebSearch({ id: 'web', service: 'exa', keys: {} })
+    }
   })
 
-  it('offers Python only to a chat that runs it, less the tool if it switched it off', () => {
-    const offered = selection =>
-      getEnabledToolDefinitions(selection)
+  it('offers Python to a chat that has not switched it off, while its extension is on', () => {
+    const offered = choice =>
+      getEnabledToolDefinitions(choice)
         .map(definition => definition.function.name)
         .filter(name => name === 'run_python')
 
-    // Opted into: a chat that withholds nothing still does not run Python.
-    expect(offered({})).toEqual([])
-    expect(offered({ python: true })).toEqual(['run_python'])
-    expect(offered({ python: true, disabledTools: ['run_python'] })).toEqual([])
+    expect(offered({})).toEqual(['run_python'])
+    expect(offered({ disabledToolGroups: ['python'] })).toEqual([])
+    expect(offered({ disabledTools: ['run_python'] })).toEqual([])
+
+    useApplicationState().setExtension('python', false)
+    try {
+      expect(offered({})).toEqual([])
+    } finally {
+      useApplicationState().setExtension('python', true)
+    }
   })
 
   it('keeps the document calls of a turn from when only they went back', () => {
@@ -98,9 +127,10 @@ describe('tool groups', () => {
       .definitions.map(definition => definition.function.name)
 
     expect(offersDocuments({})).toBe(true)
-    expect(offersDocuments({ disabledGroups: ['rpg', 'web'] })).toBe(true)
+    expect(offersDocuments({ disabledToolGroups: ['rpg', 'web'] })).toBe(true)
     expect(offersDocuments({ disabledTools: documents.slice(1) })).toBe(true)
-    expect(offersDocuments({ disabledGroups: ['documents'] })).toBe(false)
+    expect(offersDocuments({ disabledToolGroups: ['documents'] })).toBe(false)
+    expect(offersDocuments({ onlyToolGroups: [] })).toBe(false)
     expect(offersDocuments({ disabledTools: documents })).toBe(false)
   })
 
@@ -112,9 +142,10 @@ describe('tool groups', () => {
     expect(drawsByChance('interpret')).toBe(false)
   })
 
-  it('exposes groups in declared order with their labels, less any with no tools', () => {
-    const declared = Object.entries(TOOL_GROUP_LABELS).filter(([id]) => id !== 'skills')
+  it('lists the groups by where each comes from, in declared order with their labels', () => {
+    const declared = Object.entries(TOOL_GROUP_LABELS)
 
+    expect(getToolGroups().map(g => g.id)).toEqual(['documents', 'web', 'python', 'skills', 'rpg'])
     expect(getToolGroups().map(g => g.id)).toEqual(declared.map(([id]) => id))
     expect(getToolGroups().map(g => g.label)).toEqual(declared.map(([, label]) => label))
   })

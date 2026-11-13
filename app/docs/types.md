@@ -70,7 +70,7 @@
   - [Properties][66]
 - [MessageAlternate][67]
   - [Properties][68]
-- [MessageSegment][69]
+- [][69]
 - [CommentPost][70]
   - [Properties][71]
 - [CommentThread][72]
@@ -312,6 +312,18 @@ Type: [Object][131]
 - `previewDocumentId` **([string][132] | null)?** The open document that is only being
   looked at, whose tab the next one opened from the outline takes. Absent or
   null means every tab is kept.
+- `shownDocumentIds` **[Array][135]<[string][132]>?** The open documents as they were last
+  shown, the active one first: where closing a tab goes back to. Absent means
+  only the active one is known; see `utils/tabs.js`.
+- `openChatIds` **[Array][135]<[string][132]>?** The chats open in the chat panel, in tab order.
+  Absent means the project's chats were never in tabs; see `useChatTabs`.
+- `lastChatId` **([string][132] | null)?** The chat panel's tab showing
+- `previewChatId` **([string][132] | null)?** The chat only being looked at, whose tab
+  the next one opened from the chat list takes
+- `shownChatIds` **[Array][135]<[string][132]>?** The open chats as they were last shown, the
+  one showing first
+- `unreadChatIds` **[Array][135]<[string][132]>?** Chats the model finished in while they weren't
+  showing, until they are
 - `layout` **[StoryLayout][14]?** How the writer left the panels. Absent means the
   default arrangement; see `components/writer/layout/layout.js`.
 - `expanded` **[Object][131]<[string][132], [boolean][134]>?** The outline's folders the writer
@@ -662,23 +674,32 @@ Type: [Object][131]
 - `storyId` **[string][132]** Parent story ID
 - `title` **[string][132]** Chat title
 - `titleSet` **[boolean][134]** Whether title has been set (auto or manual)
+- `nameAfter` **[string][132]?** A fork's last copied message: the chat waits to be
+  named, as a new chat is, from the first thing the writer says after it. Gone once
+  it is named, or the writer names it; see `useChats.forkChat`.
 - `lastMessageAt` **([number][133] | null)** Timestamp of last message
 - `description` **[string][132]?** Chat description/purpose
 - `messageCount` **[number][133]?** Number of messages in chat
 - `profileId` **([string][132] | null)?** Chat profile this chat runs on, built-in or the writer's own. Absent, or naming one since deleted, means the profile its project starts chats on.
 - `promptId` **([string][132] | null)?** Legacy. The library prompt this chat ran on before prompts became profiles; kept as the record of what it was pointed at. See `stores/migrations/profiles.js`.
-- `disabledTools` **[Array][135]<[string][132]>?** Names of tools withheld from this chat. Absent means every registered tool is offered.
-- `disabledToolGroups` **[Array][135]<[string][132]>?** Group ids withheld from this chat, which also withholds tools added to those groups later.
-- `mcpServers` **[Array][135]<[string][132]>?** The MCP servers whose tools this chat is offered, by id, once the writer has chosen here. Absent means the servers that list the chat's profile. A server's tools are opted into rather than withheld, so a server connected later reaches no chat that did not ask for it. See mcp/servers.js.
-- `web` **[boolean][134]?** Whether this chat searches the web, once the writer has chosen here. Absent means it does when web search is set up for the chat's profile. Opted into, as a server's tools are. See web/config.js.
-- `python` **[boolean][134]?** Whether this chat runs Python, once the writer has chosen here. Absent means it does when the Python extension lists the chat's profile. Opted into, as the web is. See ai/tools/python.js.
+- `disabledTools` **[Array][135]<[string][132]>?** Names of tools withheld from this chat. Absent means every registered tool is offered. See ai/tools/choice.js.
+- `disabledToolGroups` **[Array][135]<[string][132]>?** Group ids withheld from this chat, which also withholds tools added to those groups later: the app's own, the web, Python, and a server's.
+- `toolsOff` **`true`?** Every tool off in this chat, each group's and tool's own switch kept as it is for when they are back on. See ai/tools/choice.js.
+- `onlyToolGroups` **[Array][135]<[string][132]>?** The groups this chat may have on at all, copied from a profile that offers only some (Roleplay, Blank): a group added later stays off. Absent means every group.
+- `mcpServers` **[Array][135]<[string][132]>?** Legacy: the MCP servers whose tools this chat was offered, once the writer chose here, from before its tools said. Read once, to give it that (composables/useToolChoices.js).
+- `web` **[boolean][134]?** Legacy: whether this chat searched the web, as `mcpServers`.
+- `python` **[boolean][134]?** Legacy: whether this chat ran Python, as `mcpServers`.
 - `voiceId` **([string][132] | null)?** The voice this chat's messages are read aloud in, one of the project's. Absent, or naming a voice since removed, means the project's default.
 - `prompt` **[string][132]?** The chat's own system prompt, once the writer has changed it here. Absent means the profile's, read on every turn. See ai/profiles.
-- `presetId` **[string][132]?** The AI preset this chat runs on, once the writer has chosen one here. Absent, or naming one not on this device, means its profile's, and then the default. See `presetFor` in composables/useAIConfig.js.
+- `presetId` **[string][132]?** Legacy: the preset this chat ran on, before a model's settings were found by the model. Read once, to give the chat that model (composables/useChatPresets.js), and never written.
+- `providerId` **[string][132]?** The connection this chat runs on, with `model`: what it first answered on, or was moved to since. It stays there whatever is done to presets. Absent on a chat that hasn't answered, which goes where its preset goes.
+- `model` **[string][132]?** The model this chat runs on, on `providerId`'s connection.
+- `reasoningEffort` **[string][132]?** How hard the model thinks in this chat, as started from its profile or picked here, fitted to the model as it is sent. Absent means its preset's.
+- `applyEdits` **(`"auto"` | `"ask"`)?** Whether the model's changes to documents go straight in or wait for the writer, as started from its profile or picked here. Absent means the app's choice from before chats had their own.
 - `rules` **[string][132]?** The chat's author's note: standing instructions the writer keeps as they go, sent in their latest message after the project block and ahead of what they said. Starts as the profile's. Absent means none.
-- `pinnedIds` **[Array][135]<[string][132]>?** Documents whose text rides in the project block from the first turn, without the model having read them. A folder pins what is under it. Absent means none.
+- `pinnedIds` **[Array][135]<[string][132]>?** Legacy: the documents a chat pinned, when a pin carried a document's text on every turn. Never written now, and read only as documents the chat shows; a document is attached to a message instead. See utils/visibility.js.
 - `shownIds` **[Array][135]<[string][132]>?** Documents this chat sees although a folder above them is hidden in it: a character's own folder, under the folder all the characters are in. Absent means none.
-- `hiddenIds` **[Array][135]<[string][132]>?** Documents kept from this chat's model, and everything under them unless something nearer is pinned or shown. The document's own `hidden` keeps it from every chat. See `utils/visibility.js`. Absent means none.
+- `hiddenIds` **[Array][135]<[string][132]>?** Documents kept from this chat's model, and everything under them unless something nearer is shown. The document's own `hidden` keeps it from every chat. See `utils/visibility.js`. Absent means none.
 - `userVoiceId` **([string][132] | null)?** The voice this chat's own messages are read aloud in, one of the project's. Absent means the same voice everything else is read in.
 - `userName` **[string][132]?** The writer's name in this chat: what `{{user}}` becomes in what its model reads. Asked for when a chat on a card starts. Absent means the macro is read as written. See `cards/macros.js`.
 - `characterName` **[string][132]?** The name of the character this chat plays: what `{{char}}` becomes in what its model reads. Absent means the macro is read as written.
@@ -862,7 +883,7 @@ Type: [Object][131]
 - `editedAt` **([number][133] | null)?**&#x20;
 - `metadata` **([MessageMetadata][80] | null)?**&#x20;
 
-## MessageSegment
+##
 
 One thing a turn was made of.
 
@@ -871,7 +892,8 @@ their character does, and tells the Director the scene has gone on long
 enough. That is one turn — one speaker, taken in pieces — and the pieces are
 these. See ai/commands.js.
 
-Type: ({type: `"text"`, content: [string][132]} | {type: `"command"`, command: [ChatCommand][63]})
+A piece of prose carries the documents it attached, each as it stood when
+the piece was sent: `@` before a link to one. See ai/context/attachments.js.
 
 ## CommentPost
 
@@ -984,6 +1006,7 @@ Type: [Object][131]
 ### Properties
 
 - `command` **[ChatCommand][63]?** The tool this message is a record of, when the writer ran one themselves rather than typing a message
+- `opening` **[number][133]?** On a summary: how many messages at the top of the chat it left standing, where that is not one. See ai/compaction.js.
 - `aside` **`true`?** Set on a question the writer asked on the side, `/aside`, and on the answer to it: both are left out of every request after it. See ai/asides.js.
 - `director` **[DirectorNote][65]?** The Director's turn, when this chat runs it before the assistant
 - `usage` **[TurnUsage][61]?** Token usage reported by the provider, when it reports any
@@ -1017,7 +1040,7 @@ Type: [Object][131]
 - `chatId` **[string][132]** Parent chat ID
 - `role` **(`"user"` | `"assistant"`)** Message sender role
 - `content` **[string][132]** What the model is sent. For a message with segments this is assembled from them and never written by hand; see `assembleTurn`.
-- `segments` **[Array][135]<[MessageSegment][69]>?** What the turn was made of, when it was made of more than prose. The writer's side only: a consultation is one speaker saying one thing and carries its record in `metadata.command` instead.
+- `segments` **[Array][135]\<MessageSegment>?** What the turn was made of, when it was made of more than prose. The writer's side only: a consultation is one speaker saying one thing and carries its record in `metadata.command` instead.
 - `reasoningContent` **([string][132] | null)?** AI reasoning content (for assistant messages)
 - `streamingStartTime` **([number][133] | null)?** Timestamp when streaming started
 - `streamingFinishTime` **([number][133] | null)?** Timestamp when streaming finished
@@ -1105,11 +1128,13 @@ Type: [Object][131]
 
 - `id` **[string][132]** Unique provider identifier (provider_xxx)
 - `name` **[string][132]** User-friendly name for the provider
-- `type` **(`"openrouter"` | `"anthropic"` | `"openai"` | `"gemini"` | `"llamacpp"` | `"generic"`)** Provider type. See ai/providers.js.
+- `type` **(`"openrouter"` | `"anthropic"` | `"openai"` | `"nanogpt"` | `"gemini"` | `"llamacpp"` | `"generic"`)** Provider type. See ai/providers.js.
 - `endpoint` **[string][132]?** API endpoint URL, for a type without a known address (see ai/providers.js)
 - `apiKey` **[string][132]?** API key for authentication
 - `rememberKey` **[boolean][134]?** Whether to persist API key in IndexedDB (default true). If false, key is stored in sessionStorage only
-- `isDefault` **[boolean][134]?** Whether this is a default provider (cannot be deleted)
+- `isDefault` **[boolean][134]?** Legacy. A built-in connection, which every install made on start until setup took their place (ai/providers.js).
+- `server` **[string][132]?** The server behind a generic connection, by its kind's id (`lmstudio`, `kokoro`…), for what it takes. Absent on a built-in, which is known by its id. See `kindOf` in ai/providers.js.
+- `added` **[boolean][134]?** Whether the writer added it, in setup or in Settings › Connections. One without it shows only while it holds something of theirs. See `isSetUp` in composables/useConnections.js.
 - `concurrency` **[number][133]?** How many requests the connection is
   asked at once, as the writer set it. Absent: one for a server at home (or
   as many as llama.cpp has slots), and no limit for a hosted service, which
@@ -1120,17 +1145,23 @@ Type: [Object][131]
 
 ## AIPreset
 
+A model's settings on a connection: one to a connection and model, made
+the first time the writer changes one of them, and holding only the
+changes. Never shown as a preset, or by its name. See `runOn` in
+composables/useAIConfig.js.
+
 Type: [Object][131]
 
 ### Properties
 
-- `id` **[string][132]** Unique profile identifier (profile_xxx)
-- `type` **[string][132]?** Profile type (legacy, retained for stored data compatibility)
-- `name` **[string][132]** Profile name
-- `providerId` **[string][132]** ID of the AI provider to use
-- `model` **[string][132]** Model identifier
-- `allowedProviders` **[Array][135]<[string][132]>?** OpenRouter only: the upstream providers allowed to serve this model, by slug. Absent or empty allows any the connection's routing does. Here rather than on the connection because it is a choice about the model. See ai/routing.js.
-- `ignoredProviders` **[Array][135]<[string][132]>?** OpenRouter only: upstream providers never routed to for this model, by slug, on top of the connection's ignored ones. Absent or empty adds none.
+- `id` **[string][132]** Unique identifier (profile_xxx)
+- `type` **[string][132]?** Legacy, retained for stored data compatibility
+- `name` **[string][132]** Legacy: the model's id, for presets made since they became a model's settings
+- `providerId` **[string][132]** The connection
+- `model` **[string][132]** The model, on the connection
+- `allowedProviders` **[Array][135]<[string][132]>?** OpenRouter and NanoGPT: the upstream providers this model prefers, by slug, tried first and in this order. Absent means the ones it is recommended with, or none (ai/recommended.js); empty, none. Here rather than on the connection because it is a choice about the model. See ai/routing.js.
+- `fallbacks` **[boolean][134]?** OpenRouter and NanoGPT: whether other providers that pass the connection's floor may serve once the preferred ones can't. Absent on a list from before it was asked, where the preferred are the only ones.
+- `ignoredProviders` **[Array][135]<[string][132]>?** OpenRouter and NanoGPT: upstream providers never routed to for this model, by slug, on top of the connection's ignored ones. Absent means the ones it is recommended with, or none.
 - `toolsEnabled` **[boolean][134]?** Whether the model may call tools. Undefined is treated as enabled.
 - `isDefault` **[boolean][134]** Whether this is a default profile
 - `version` **[number][133]** Version number for conflict resolution
@@ -1155,6 +1186,7 @@ Type: [Object][131]
 
 - `id` **[string][132]** chatprofile_xxx, or a migrated prompt_xxx
 - `name` **[string][132]**&#x20;
+- `description` **[string][132]?** One line on what it is for, as the built-ins have
 - `version` **[number][133]**&#x20;
 - `created` **[number][133]**&#x20;
 - `updated` **[number][133]**&#x20;
@@ -1182,13 +1214,16 @@ Type: [Object][131]
 
 ## SkillWording
 
+Legacy: the writer's app-wide wording of a built-in skill, from before a
+skill's wording was its profile's alone. The `skillWordings` table still
+holds and syncs them, for an app from before; nothing reads them.
+
 Type: [Object][131]
 
 ### Properties
 
-- `name` **[string][132]** The built-in skill it rewords
-- `prompt` **[string][132]** What that skill runs under instead of its file's
-  instructions, in every chat whose profile has no wording of its own
+- `name` **[string][132]** The built-in skill it reworded
+- `prompt` **[string][132]**&#x20;
 - `updated` **[number][133]**&#x20;
 
 ## WebServiceId
@@ -1211,8 +1246,9 @@ Type: [Object][131]
   each service they set one for, kept when they switch to another. Left out
   of backups unless the writer includes keys, as a provider's is: the
   services stay and the keys come back empty.
-- `profiles` **[Array][135]<[string][132]>** The chat profiles whose chats search the
-  web, unless a chat chooses otherwise
+- `profiles` **[Array][135]<[string][132]>?** Legacy: the chat profiles whose chats
+  searched the web, from before a profile and a chat said which of their
+  tools are on. Read once, to give them that (composables/useToolChoices.js).
 - `saveWithoutAsking` **[boolean][134]?** The model keeps a page in the
   project (`save_web_page`) without asking first. Absent means it asks.
 - `updated` **[number][133]?**&#x20;
@@ -1299,8 +1335,9 @@ Type: [Object][131]
 - `args` **[Array][135]<[string][132]>?**&#x20;
 - `tools` **[Array][135]<[McpTool][117]>** Its tools as last listed
 - `prompts` **[Array][135]<[McpPrompt][119]>** Its prompts as last listed
-- `profiles` **[Array][135]<[string][132]>** The chat profiles whose chats use it, unless
-  a chat chooses otherwise
+- `profiles` **[Array][135]<[string][132]>?** Legacy: the chat profiles whose chats used
+  it, from before a profile and a chat said which of their tools are on.
+  Read once, to give them that (composables/useToolChoices.js).
 - `allowed` **[Array][135]<[string][132]>** Its tools the writer always allows, by their
   own names, so a call to one runs without asking
 - `allowAll` **[boolean][134]?** The writer always allows every tool it has,
@@ -1384,7 +1421,7 @@ Type: [Object][131]
 - `workflow` **[string][132]?** The workflow whose model runs it, for a job
   that has one (a conversion's); see application state `workflows`. An
   exploration made before explore ran on the chat's model says `explore`,
-  and runs on what that workflow still names, or the active preset.
+  and runs on what that workflow still names, or what new chats start on.
 - `runsOn` **[JobModel][127]?** The model it runs on, for a job that has no
   workflow: an exploration's, the chat's that asked for it
 - `documentId` **[string][132]?** The document it works on, when it works on one
@@ -1412,25 +1449,26 @@ Type: [Object][131]
 
 - `providerId` **[string][132]**&#x20;
 - `model` **[string][132]**&#x20;
-- `allowedProviders` **[Array][135]<[string][132]>?** OpenRouter only: as on the preset it came from
-- `ignoredProviders` **[Array][135]<[string][132]>?** OpenRouter only: as on the preset it came from
+- `allowedProviders` **[Array][135]<[string][132]>?** OpenRouter and NanoGPT: as on the model's settings it came from
+- `fallbacks` **[boolean][134]?** OpenRouter and NanoGPT: as on the model's settings it came from
+- `ignoredProviders` **[Array][135]<[string][132]>?** OpenRouter and NanoGPT: as on the model's settings it came from
 
 ## WorkflowSettings
 
 Which model a workflow runs on: long work with needs of its own, a
 conversion, that may want a stronger or a cheaper model than a chat does.
+Chosen where the work is asked for, and kept for the next time.
 
 Type: [Object][131]
 
 ### Properties
 
-- `providerId` **([string][132] | null)** The provider the workflow runs on; null for the active preset's
-- `model` **([string][132] | null)** The model; null for the active preset's
-- `allowedProviders` **[Array][135]<[string][132]>?** OpenRouter only: the upstreams allowed to serve the model, like a preset's. Read only when the workflow names its own provider; one that runs on the active preset runs on the preset's list.
-- `ignoredProviders` **[Array][135]<[string][132]>?** OpenRouter only: the upstreams never routed to for the model, like a preset's, and read the same way as `allowedProviders`.
+- `providerId` **([string][132] | null)** The connection the workflow runs on; null for the model the Default profile's chats start on
+- `model` **([string][132] | null)** The model; null for that one
+- `allowedProviders` **[Array][135]<[string][132]>?** Legacy: OpenRouter upstreams copied from a preset, before a model's settings were found by the model. No longer read.
+- `ignoredProviders` **[Array][135]<[string][132]>?** Legacy, as `allowedProviders`.
 - `reasoningEffort` **([string][132] | null)?** How hard the model thinks: one of `REASONING_EFFORT_OPTIONS`, fitted to the model as it is sent;
   null for the app's default (`AI_DEFAULTS.reasoningEffort`)
-- `onImport` **[boolean][134]?** Convert only: convert every file with text as it is imported
 
 [1]: #
 [2]: #chatmessage
@@ -1500,7 +1538,7 @@ Type: [Object][131]
 [66]: #properties-29
 [67]: #messagealternate
 [68]: #properties-30
-[69]: #messagesegment
+[69]: #-2
 [70]: #commentpost
 [71]: #properties-31
 [72]: #commentthread

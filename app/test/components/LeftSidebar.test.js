@@ -9,10 +9,9 @@ const DocumentTree = {
   template: "<div data-tree @click=\"$emit('open', 'doc_2')\" />",
 }
 const ChatHistory = {
-  props: ['storyId', 'selectedChatId'],
+  props: ['storyId'],
   emits: ['select-chat'],
-  template:
-    '<div data-list :data-selected="selectedChatId" @click="$emit(\'select-chat\', \'chat_9\')" />',
+  template: "<div data-list @click=\"$emit('select-chat', 'chat_9')\" />",
 }
 const NarrationPanel = {
   props: ['storyId', 'documentId'],
@@ -43,7 +42,7 @@ describe('LeftSidebar', () => {
 
     const chats = mountSidebar({ tab: 'chats', chatId: 'chat_3' })
     expect(chats.find('[data-tree]').exists()).toBe(false)
-    expect(chats.find('[data-list]').attributes('data-selected')).toBe('chat_3')
+    expect(chats.find('[data-list]').exists()).toBe(true)
 
     const narration = mountSidebar({ tab: 'narration', documentId: 'doc_7' })
     expect(narration.find('[data-narration]').attributes('data-document')).toBe('doc_7')

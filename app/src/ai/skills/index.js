@@ -6,16 +6,24 @@
  * A skill is a SKILL.md — a name, a description, instructions — and three
  * settings: who may call it (the model, the writer, or both), whether it runs
  * on its own or joins its caller's conversation, and, when it runs on its own,
- * where its answer goes. The file format is ./format.js; the four that ship
- * with the app each have a folder here, their SKILL.md beside the code for
- * what a file cannot say. See `.llm/skills_design.md`.
+ * where its answer goes. The file format is ./format.js; the one that ships
+ * with the app, Compact, has a folder here, its SKILL.md beside the code for
+ * what a file cannot say, as the Director does, which is not offered. See
+ * `.llm/skills_design.md`.
+ *
+ * A file the writer brings or writes is read forgivingly: only frontmatter
+ * that can't be read, a name that can't be one, and no description or
+ * instructions keep it from being a skill, and what else it can't use is
+ * passed over. The settings edit three fields of it, its name, description
+ * and instructions (./form.js), the name written as a title and the name it
+ * is called by made from that. See `.llm/skills_rework_design.md`.
  *
  * Everything else is made from this list rather than naming skills one at a
  * time: the tools the model can call a skill by (../tools/index.js), the
- * commands the writer can (../commands.js), and the chat settings that list
- * them and hold a profile's rewording of each.
+ * commands the writer can (../commands.js), and Settings › Skills, which lists
+ * them and holds a profile's rewording of each.
  *
- * All four run on their own. Such a skill is another inference: its own system
+ * Those run on their own. Such a skill is another inference: its own system
  * prompt, over the conversation the caller is already in, handing back what it
  * said. That is the whole contract — same registry, same tool call, no
  * orchestration layer above the turn loop, which already sequences model calls
@@ -47,27 +55,26 @@
  * writer tuned rather than replacing it, so it should name only what it
  * actually means to change: every field left out is one they keep.
  *
- * Compact is the writer's alone: a summary is not an answer at all. A scene
- * is, and a turn can hand its reply to a skill, so what Write writes is the
- * reply rather than relayed and written twice (see handOverReply in
- * composables/useAIChat.js). Whether a chat that hands off its writing still
- * reads well is the harness's to say, so Write is offered to the model, with
- * Interpret, only in a chat that switches the experimental group on.
+ * Compact is the writer's alone: a summary is not an answer at all. It is
+ * asked in the thread, of the chat's own model as the writer's last word
+ * (`inThread`), not under a prompt of its own over a transcript. A scene
+ * is, and a turn can hand its reply to a skill, so what such a skill writes
+ * is the reply rather than relayed and written twice (see handOverReply in
+ * composables/useAIChat.js).
  *
- * Each is there at all only while the writer has switched it on, for the
- * whole app (`setExperimentalSkills`). Off, it is no tool, no command, and no
- * row in a chat's settings; the records it left in chats read as they did.
+ * Skills still being tuned are not in the app at all. The harness keeps them
+ * (`harness/skills`: Interpret and Write) and sets them beside the built-ins
+ * while it runs (`setTrialSkills`); the records they left in chats read as
+ * any command's whose skill is gone.
  *
- * The wording is the writer's to change, in two places: a built-in's for every
- * chat, in the library, and any skill's for the chats on one profile. Each is
+ * The wording is the writer's to change, for the chats on one profile. It is
  * an override, never a copy: a skill whose prompt the writer has not touched
  * reads the one its file has, and keeps picking up improvements to it — the
  * reason a profile made today is not stranded on today's wording. See
- * `skillPrompt`.
+ * `skillPrompt`. The app-wide wordings of the built-ins there once were
+ * (the `skillWordings` table) are no longer read.
  */
 
-import { INTERPRET, executeInterpret, askInterpret } from './interpret/index.js'
-import { WRITE, askWrite, executeWrite } from './write/index.js'
 import { COMPACT, askCompact } from './compact/index.js'
 import { parseSkill } from './format.js'
 import { offeredToModel, runOnItsOwn, writerCalls } from './runner.js'
@@ -84,7 +91,6 @@ import { offeredToModel, runOnItsOwn, writerCalls } from './runner.js'
  *   files?: import('../../types/models.js').SkillFile[],
  *   execute?: (args: Object, context?: ToolContext) => Promise<Object>,
  *   ask?: (argument: string, context?: ToolContext, options?: {past?: number}) => Promise<{answer: string}|{error: string}>,
- *   experimental?: boolean,
  * }} Skill
  *
  * `builtIn` says whether it ships with the app; one of the writer's has the
@@ -96,11 +102,6 @@ import { offeredToModel, runOnItsOwn, writerCalls } from './runner.js'
  * text: a record in their turn, the reply, or a summary, as the skill's output
  * says. A skill with neither is one the model or the writer cannot call yet,
  * or one the writer calls as a saved prompt; see ./runner.js.
- *
- * `experimental` marks a built-in still being tuned. Its tool is in the
- * experimental group, which every built-in profile starts with off, and it is
- * there at all only while the writer has it switched on, its command with it.
- * See `availableSkills`.
  */
 
 /**
@@ -142,11 +143,7 @@ export const SKILL_MAX_DEPTH = 2
  *
  * @type {Skill[]}
  */
-export const BUILT_IN_SKILLS = [
-  { ...INTERPRET, builtIn: true, experimental: true, execute: executeInterpret, ask: askInterpret },
-  { ...WRITE, builtIn: true, experimental: true, execute: executeWrite, ask: askWrite },
-  { ...COMPACT, builtIn: true, ask: askCompact },
-]
+export const BUILT_IN_SKILLS = [{ ...COMPACT, builtIn: true, ask: askCompact }]
 
 /**
  * The writer's own skills, as their library last said: each read from its
@@ -162,26 +159,12 @@ export const BUILT_IN_SKILLS = [
 let library = []
 
 /**
- * What the writer has a built-in run under in every chat, by name, as their
- * library last said. A built-in absent here runs under its own file's words.
+ * The skills the harness is tuning, which it sets beside the built-ins while
+ * it runs (`setTrialSkills`). The app sets none.
  *
- * Set from the same store as the library (`setSkillWordings`). A skill of the
- * writer's has no entry: its words are its file, which they edit instead.
- *
- * @type {Map<string, string>}
+ * @type {Skill[]}
  */
-let wordings = new Map()
-
-/**
- * The experimental built-ins the writer has switched on, by name, as their
- * switches last said. None until they say otherwise, as the switches start.
- *
- * Set from the switches (`setExperimentalSkills`) rather than read from them,
- * for the reason the library is.
- *
- * @type {Set<string>}
- */
-let switchedOn = new Set()
+let trials = []
 
 /** @type {Set<() => void>} */
 const listeners = new Set()
@@ -191,17 +174,21 @@ const listeners = new Set()
  *
  * One whose file does not read is left out rather than guessed at. The screen
  * that keeps the library says what is wrong with it; the model and the command
- * line never see it. So is one that takes a built-in's name, which the screen
- * does not allow and a library from elsewhere might.
+ * line never see it. So is one that takes a built-in's name, and one whose
+ * file names it something other than the name the library keeps it under:
+ * the file is kept as it is typed, and a name it could not have, another
+ * skill's or a command's, is one the library did not give it
+ * (`composables/useSkills.js`).
  *
- * @param {{id: string, text: string, files?: import('../../types/models.js').SkillFile[]}} stored
+ * @param {{id: string, name?: string, text: string, files?: import('../../types/models.js').SkillFile[]}} stored
  * @returns {Skill|null}
  */
 function fromLibrary(stored) {
   const read = parseSkill(stored.text)
   if ('errors' in read) return null
   const skill = read.skill
-  if (BUILT_IN_SKILLS.some(one => one.name === skill.name)) return null
+  if (stored.name !== undefined && stored.name !== skill.name) return null
+  if (builtInSkills().some(one => one.name === skill.name)) return null
 
   /** @type {Skill} */
   const made = { ...skill, id: stored.id, builtIn: false, files: stored.files || [] }
@@ -219,7 +206,7 @@ function fromLibrary(stored) {
  * Replace the writer's skills with these, and tell everything made from the
  * list — the model's tools, the commands — to make itself again.
  *
- * @param {Array<{id: string, text: string, files?: import('../../types/models.js').SkillFile[]}>} stored -
+ * @param {Array<{id: string, name?: string, text: string, files?: import('../../types/models.js').SkillFile[]}>} stored -
  *   The library, as kept
  */
 export function setLibrarySkills(stored) {
@@ -234,50 +221,30 @@ export function setLibrarySkills(stored) {
 }
 
 /**
- * Replace the writer's wordings of the built-ins with these.
+ * Set the skills the harness is tuning beside the built-ins, in place of any
+ * it set before, and tell everything made from the list to make itself again,
+ * as a change to the library does. Only the harness calls this; see
+ * `harness/skills`.
  *
- * Nothing made from the list changes with them — a tool's description is its
- * file's, and the prompt is read when the skill runs — so no one is told.
- *
- * @param {Array<{name: string, prompt: string}>} stored - The wordings, as kept
+ * @param {Skill[]} skills
  */
-export function setSkillWordings(stored) {
-  wordings = new Map(
-    (stored || [])
-      .filter(one => BUILT_IN_SKILLS.some(skill => skill.name === one.name))
-      .filter(one => typeof one.prompt === 'string' && one.prompt.trim())
-      .map(one => [one.name, one.prompt.trim()])
-  )
-}
-
-/**
- * Have these experimental built-ins switched on and the rest off, and tell
- * everything made from the list to make itself again, as a change to the
- * library does.
- *
- * @param {string[]} names - The ones switched on
- */
-export function setExperimentalSkills(names) {
-  const next = new Set(Array.isArray(names) ? names : [])
-  if (next.size === switchedOn.size && [...next].every(name => switchedOn.has(name))) return
-  switchedOn = next
+export function setTrialSkills(skills) {
+  trials = (skills || []).map(skill => ({ ...skill, builtIn: true }))
   for (const listener of listeners) listener()
 }
 
 /**
- * Whether a skill is there to use: any but an experimental built-in, and one
- * of those while the writer has it switched on.
+ * The skills that come with the code rather than from the library: the
+ * built-ins, and the harness's while it runs.
  *
- * @param {string} name
- * @returns {boolean}
+ * @returns {Skill[]}
  */
-export function skillIsOn(name) {
-  return !getSkill(name)?.experimental || switchedOn.has(name)
+export function builtInSkills() {
+  return [...BUILT_IN_SKILLS, ...trials]
 }
 
 /**
- * Be told whenever the library changes, or an experimental skill is
- * switched.
+ * Be told whenever the library changes.
  *
  * @param {() => void} listener
  * @returns {() => void} What to call to stop being told
@@ -293,19 +260,7 @@ export function onSkillsChanged(listener) {
  * @returns {Skill[]}
  */
 export function allSkills() {
-  return [...BUILT_IN_SKILLS, ...library]
-}
-
-/**
- * Every skill there is to use: all of them, less the experimental built-ins
- * the writer has not switched on. What the model is offered, what the writer
- * can type, and what a chat's settings list are made from this. A record a
- * skill left in a chat is read through `getSkill`, which finds it either way.
- *
- * @returns {Skill[]}
- */
-export function availableSkills() {
-  return allSkills().filter(skill => !skill.experimental || switchedOn.has(skill.name))
+  return [...builtInSkills(), ...library]
 }
 
 /**
@@ -326,13 +281,14 @@ export function getSkill(name) {
 }
 
 /**
- * What the writer calls a skill: its name, as a word. `house-style` is House
- * style.
+ * What the writer calls a skill: what they called it, or else its name, as a
+ * word. `house-style` is House style.
  *
- * @param {{name: string}} skill
+ * @param {{name: string, title?: string}} skill
  * @returns {string}
  */
 export function skillLabel(skill) {
+  if (skill.title) return skill.title
   const words = skill.name.replace(/-/g, ' ')
   return words.charAt(0).toUpperCase() + words.slice(1)
 }
@@ -355,15 +311,14 @@ export function skillPrompt(name, settings) {
 }
 
 /**
- * What a skill runs under on a profile that has not reworded it: the writer's
- * wording of it in the library, for a built-in they have changed there, and
- * its file's otherwise.
+ * What a skill runs under on a profile that has not reworded it: its file's
+ * instructions.
  *
  * @param {string} name - The skill's
  * @returns {string}
  */
 export function ownPrompt(name) {
-  return wordings.get(name) ?? (getSkill(name)?.body || '')
+  return getSkill(name)?.body || ''
 }
 
 export {
@@ -375,24 +330,6 @@ export {
   DIRECTOR_TOOLS,
   DIRECTOR_SETTINGS,
 } from './director/index.js'
-export {
-  INTERPRET,
-  interpretDefinition,
-  executeInterpret,
-  askInterpret,
-  INTERPRET_PROMPT,
-  INTERPRET_SETTINGS,
-  buildInterpretPrompt,
-} from './interpret/index.js'
-export {
-  WRITE,
-  executeWrite,
-  askWrite,
-  buildWritePrompt,
-  WRITE_PROMPT,
-  WRITE_TOOLS,
-  WRITE_SETTINGS,
-} from './write/index.js'
 export {
   COMPACT,
   askCompact,

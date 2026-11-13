@@ -1,9 +1,9 @@
 <template>
-  <main class="h-full w-full min-w-0 flex flex-col bg-surface-0 dark:bg-surface-900">
+  <main class="h-full w-full min-w-0 flex flex-col bg-surface-0 dark:bg-surface-850">
     <!-- The strip is the panel's header. Beside the chat it is always there,
          since the chat's toggle lives at its end; alone, as on a phone, it is
          there only while something is open; and in focus mode, never. -->
-    <EditorTabs
+    <TabStrip
       v-if="!focused && (items.length > 0 || chatShowing !== null)"
       :items="items"
       :active-id="activeId"
@@ -47,11 +47,12 @@
           @toggle="$emit('toggle-chat')"
         />
       </template>
-    </EditorTabs>
+    </TabStrip>
     <!-- Keyed on the document: a tab coming forward is a new view over the
          entry the registry already holds for it. Which view is the
          document's own kind: a file as the file, plain text in a field, or a
-         document laid out; or for a chat's text, that text in a field. In
+         document laid out; or for a chat's text or a skill, that text in a
+         field. In
          focus mode the text starts further down the screen, which the
          editors read as --page-top. -->
     <div
@@ -66,6 +67,12 @@
         :story-id="storyId"
         :chat-id="chatTab.chatId"
         :text="chatTab.text"
+        class="h-full w-full"
+      />
+      <SkillTextView
+        v-else-if="skillTab"
+        ref="editorView"
+        :skill-id="skillTab"
         class="h-full w-full"
       />
       <FileView
@@ -99,7 +106,7 @@
 <script setup>
 import { computed, defineAsyncComponent, ref } from 'vue'
 import Editor from '../editor/Editor.vue'
-import EditorTabs from '../editor/EditorTabs.vue'
+import TabStrip from './TabStrip.vue'
 import EmptyEditor from '../editor/EmptyEditor.vue'
 import FileView from '../editor/FileView.vue'
 import ShortcutsDialog from '../editor/ShortcutsDialog.vue'
@@ -116,13 +123,15 @@ import { useScreenSize } from '@/composables/useScreenSize.js'
 import { usePlainText } from '@/composables/usePlainText.js'
 import { usePrint } from '@/composables/usePrint.js'
 import { tabNames } from '@/utils/tabs.js'
-import { CHAT_TEXT_TITLES, chatTabOf } from '@/utils/chatTabs.js'
+import { CHAT_TEXT_TITLES, chatTabOf, skillTabOf } from '@/utils/chatTabs.js'
+import { useSkills } from '@/composables/useSkills.js'
 import { shownChatTitle } from '@/utils/chatTitle.js'
 
 // Loaded the first time a plain document, or a chat's text, is opened, with
 // CodeMirror.
 const RawMarkdown = defineAsyncComponent(() => import('../editor/RawMarkdown.vue'))
 const ChatTextView = defineAsyncComponent(() => import('../editor/ChatTextView.vue'))
+const SkillTextView = defineAsyncComponent(() => import('../editor/SkillTextView.vue'))
 
 /**
  * The editor panel: the strip of open documents, the one showing — laid out,
@@ -176,11 +185,11 @@ const showingShortcuts = ref(false)
  * switch between the file and its text. A document laid out offers the same
  * PDF, and the list of the editor's keys too, the way to it that is not
  * itself a key. A chat's
- * text is none of these, and has no menu.
+ * text and a skill are none of these, and have no menu.
  * @param {string} id
  */
 const tabActions = id =>
-  chatTabOf(id)
+  chatTabOf(id) || skillTabOf(id)
     ? []
     : [
         { label: 'Copy link', icon: 'pi pi-copy', command: () => copyLink(id) },
@@ -212,6 +221,8 @@ const tabActions = id =>
 const activeId = computed(() => api.tabs.value.active)
 /** The chat and which of its texts the tab showing holds, if it holds one. */
 const chatTab = computed(() => chatTabOf(activeId.value))
+/** The skill whose file the tab showing holds, if it holds one. */
+const skillTab = computed(() => skillTabOf(activeId.value))
 /** A file showing as the file. Its text is a plain document like any other. */
 const file = computed(() => api.get(activeId.value)?.type === 'file' && !showsText(activeId.value))
 const plain = computed(() => api.isPlain(activeId.value))
@@ -224,13 +235,17 @@ const findable = computed(
 )
 
 /** Whether the document showing is linked to a Google Doc, and so syncs with it. */
-const syncable = computed(() => !chatTab.value && driveSync.canSync(activeId.value))
+const syncable = computed(
+  () => !chatTab.value && !skillTab.value && driveSync.canSync(activeId.value)
+)
 
 /** Whether focus mode is offered: there is a document to focus on, and a way back out. */
 const focusable = computed(() => !!activeId.value && !isMobile.value)
 
 /** @type {import('vue').Ref<{ openFind: () => boolean, findable?: boolean }|null>} */
 const editorView = ref(null)
+
+const skills = useSkills()
 
 /**
  * What a chat is called, for a tab that holds one of its texts.
@@ -240,13 +255,15 @@ const chatTitle = chatId => shownChatTitle(useChats(props.storyId).getChatById(c
 
 /**
  * The titles a tab is named from, from the top down, its own last: a
- * document's path, or a chat's text under the chat.
+ * document's path, a chat's text under the chat, or a skill by its name.
  * @param {string} id
  * @returns {string[]}
  */
 const titlesOf = id => {
   const chatTab = chatTabOf(id)
   if (chatTab) return [chatTitle(chatTab.chatId), CHAT_TEXT_TITLES[chatTab.text]]
+  const skillId = skillTabOf(id)
+  if (skillId) return ['Skills', skills.getSkill(skillId)?.name || 'Skill']
   return [...api.titlesOf(id).slice(0, -1), api.displayTitle(api.get(id))]
 }
 
@@ -261,9 +278,10 @@ const items = computed(() => {
     return {
       id,
       ...names[at],
-      path: chatTab ? paths[at].join('/') : api.pathOf(id),
+      path: chatTab || skillTabOf(id) ? paths[at].join('/') : api.pathOf(id),
       preview: id === preview,
-      plain: api.get(id)?.type === 'text' && api.isPlain(id),
+      // A skill's file is plain text too, and is marked as one.
+      plain: (api.get(id)?.type === 'text' && api.isPlain(id)) || !!skillTabOf(id),
       chat: chatTab ? paths[at][0] : undefined,
     }
   })

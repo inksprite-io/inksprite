@@ -18,6 +18,9 @@
  * - **comparison** - A version against the text now, laid out as a suggestion
  *   is, for the Versions dialog to show: what a restore would take out and
  *   bring back, and the version's own text to copy out of it
+ * - **streaming** - Text the model is still writing into an append, drawn at
+ *   the end of the document as it arrives by a widget, and written only when
+ *   the call runs
  * - **commentDraft** - The passage a new comment is being written on in the
  *   Comments tab: a range in the state, mapped through every change and tinted
  * - **state** - `createEditorState`, the keys and typed shortcuts, and the
@@ -47,6 +50,8 @@
  *   what the editor component says its path is, a picture from the web as a
  *   placeholder that fetches nothing, figures, and the object URLs the bytes
  *   are shown on
+ * - **formulas** - TeX typeset where it stands, opened as it is written in a
+ *   field in its place, typed as `$x^2$` or `$$`, and put in from the menu
  * - **format** - What the formatting buttons over a selection offer: its
  *   marks, its blocks' style, quoted or listed, and the commands that change
  *   them

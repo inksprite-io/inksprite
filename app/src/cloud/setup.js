@@ -19,7 +19,8 @@
  */
 
 import { DEFAULT_PRESET_ID } from '@/ai/defaults.js'
-import { SETTINGS_GROUPS, rowId, untouchedBuiltIn } from '@/utils/settingsFile.js'
+import { SETTINGS_GROUPS, rowId } from '@/utils/settingsFile.js'
+import { untouchedBuiltIn } from '@/ai/providers.js'
 
 /** @typedef {import('@/composables/useApplicationState.js').BackedUpSettings} BackedUpSettings */
 /** @typedef {import('@/utils/settingsFile.js').SettingsGroup} SettingsGroup */

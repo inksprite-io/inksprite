@@ -13,7 +13,8 @@
  * should hold afterwards — each is checked and reported.
  *
  * A batch's `state-N.json` is what makes the document checks possible: the
- * runner snapshots every document and the chat's pins after every turn.
+ * runner snapshots every document after every turn. What the writer attached
+ * is read off the chat itself, where each message holds what it attached.
  *
  * @example
  * npm run tools -- harness/runs/2026-09-26T10-00-00-findable-design
@@ -22,6 +23,8 @@
 import { readFile, readdir } from 'node:fs/promises'
 import { basename, join, resolve } from 'node:path'
 import { withoutComments as stripComments } from '../src/editor/comments.js'
+import { attachmentsOf } from '../src/ai/context/attachments.js'
+import { isCompaction } from '../src/ai/compaction.js'
 
 /** @param {string} path */
 const norm = path => (path || '').trim().toLowerCase().replace(/^\/+/, '')
@@ -31,11 +34,12 @@ const norm = path => (path || '').trim().toLowerCase().replace(/^\/+/, '')
  * @property {string} text
  * @property {string[]} [mentions] - Regex sources the reply should match
  * @property {string[]} [reads] - Paths the turn should have to hand: read now, read
- *   earlier in the conversation and not edited by the writer since, or pinned
+ *   earlier in the conversation or attached by the writer, and not edited by
+ *   the writer since
  * @property {string[]} [readsAgain] - Paths the turn should read now, whatever came
  *   before: a document the writer changed since the model read it
- * @property {string[]} [notRead] - Paths the turn should not read: pinned, or still
- *   in the conversation as they were
+ * @property {string[]} [notRead] - Paths the turn should not read: attached, or
+ *   still in the conversation as they were
  * @property {boolean} [noRereads] - The turn should read nothing it already has to
  *   hand
  * @property {string[]} [calls] - Tools the turn should call at least once
@@ -44,8 +48,6 @@ const norm = path => (path || '').trim().toLowerCase().replace(/^\/+/, '')
  *   search result
  * @property {string[]} [findsAny] - Of which at least one should have been found
  * @property {boolean} [noWrites] - The turn should have changed nothing
- * @property {string[]} [pins] - Paths that should be pinned after the turn
- * @property {string[]} [pinnedAtEnd] - The whole pinned set after the turn
  * @property {{path: string, contains: string[]}} [document] - Passages the document should hold
  * @property {{path: string, patterns: string[]}} [notContains] - Passages it should not
  * @property {string[]} [gone] - Paths that should hold nothing after the turn: what a
@@ -206,12 +208,12 @@ const missing = (patterns, text) =>
  * @param {Object} args
  * @param {any} turn - The assistant message
  * @param {Expectation} expect
- * @param {Set<string>} holding - Paths read earlier in the conversation, and not
- *   edited by the writer since, or pinned at the start of the turn
- * @param {Set<string>} pinnedBefore
- * @param {any} state - The snapshot after the turn: {pinned: string[], documents: {path: {content, summary}}}
+ * @param {Set<string>} holding - Paths the turn began with: read earlier in the
+ *   conversation or attached by the writer, and not changed since
+ * @param {Set<string>} attached - Those of them the writer attached
+ * @param {any} state - The snapshot after the turn: {documents: {path: {content, summary}}}
  */
-function measure({ turn, expect, holding, pinnedBefore, state }) {
+function measure({ turn, expect, holding, attached, state }) {
   const calls = callsOf(turn)
   const content = turn.content || ''
   const reads = calls.filter(call => call.name === 'read_document')
@@ -241,12 +243,12 @@ function measure({ turn, expect, holding, pinnedBefore, state }) {
   const unchanged = reads.filter(call => call.result?.unchanged)
   const lists = calls.filter(call => call.name === 'list_documents')
   const errors = calls.filter(call => call.error)
-  // A read of something pinned buys nothing: its text is in the block already.
-  const rereads = readPaths.filter(path => pinnedBefore.has(path))
+  // A read of something attached buys nothing: its text came with the
+  // writer's message, whole.
+  const ofAttached = readPaths.filter(path => attached.has(path))
   // A read of something still in the conversation as it was read: another
   // part of a long document, or a model that lost track of what it has.
-  const again = readPaths.filter(path => holding.has(path) && !pinnedBefore.has(path))
-  const pinnedAfter = new Set((state?.pinned || []).map(norm))
+  const again = readPaths.filter(path => holding.has(path) && !attached.has(path))
   const documents = state?.documents || {}
   const docAt = (/** @type {string} */ path) =>
     Object.entries(documents).find(([key]) => norm(key) === norm(path))?.[1]
@@ -255,7 +257,7 @@ function measure({ turn, expect, holding, pinnedBefore, state }) {
   const failures = []
   for (const pattern of missing(expect.mentions, content)) failures.push(`mentions ${pattern}`)
   // What the turn had to hand: read this turn, still in the conversation, or
-  // pinned when the turn began.
+  // attached by the writer.
   for (const path of expect.reads || []) {
     if (!holding.has(norm(path)) && !readPaths.includes(norm(path))) failures.push(`reads ${path}`)
   }
@@ -265,7 +267,8 @@ function measure({ turn, expect, holding, pinnedBefore, state }) {
   for (const path of expect.notRead || []) {
     if (readPaths.includes(norm(path))) failures.push(`read ${path}`)
   }
-  if (expect.noRereads && again.length) failures.push(`read again ${again.join(', ')}`)
+  const had = [...ofAttached, ...again]
+  if (expect.noRereads && had.length) failures.push(`read again ${had.join(', ')}`)
   for (const name of expect.calls || []) {
     if (!calls.some(call => call.name === name)) failures.push(`calls ${name}`)
   }
@@ -281,14 +284,6 @@ function measure({ turn, expect, holding, pinnedBefore, state }) {
   }
   if (expect.noWrites && writes.some(call => !call.error)) {
     failures.push(`wrote ${writes.map(call => call.name).join(', ')}`)
-  }
-  for (const path of expect.pins || []) {
-    if (!pinnedAfter.has(norm(path))) failures.push(`pins ${path}`)
-  }
-  if (expect.pinnedAtEnd) {
-    const want = new Set(expect.pinnedAtEnd.map(norm))
-    const same = want.size === pinnedAfter.size && [...want].every(path => pinnedAfter.has(path))
-    if (!same) failures.push(`pinned=[${[...pinnedAfter].join(', ')}]`)
   }
   if (expect.document) {
     const doc = docAt(expect.document.path)
@@ -340,14 +335,12 @@ function measure({ turn, expect, holding, pinnedBefore, state }) {
     unchanged: unchanged.length,
     lists: lists.length,
     errors: errors.map(call => `${call.name}: ${call.error}`),
-    rereads,
+    ofAttached,
     again,
     promptTokens: usage.promptTokens || 0,
     requests: usage.requests || 0,
     words: content.trim().split(/\s+/).filter(Boolean).length,
     failures,
-    pinnedAfter,
-    pinnedBefore,
   }
 }
 
@@ -377,7 +370,7 @@ async function report(dir) {
     misses: 0,
     lists: 0,
     unchanged: 0,
-    rereads: 0,
+    ofAttached: 0,
     again: 0,
     promptTokens: 0,
     turns: 0,
@@ -395,35 +388,59 @@ async function report(dir) {
     } catch {
       // A batch from before states were written: the document checks are skipped.
     }
-    const turns = messages.filter(
-      message => message.role === 'assistant' && !message.metadata?.command
-    )
-
     console.log(`  ${file}`)
     /** Paths read earlier in the conversation and not changed since. */
     const seen = new Set()
-    let pinned = new Set()
-    turns.forEach((turn, i) => {
-      // The writer's edit before the turn makes the model's read of it old.
+    /** Paths the writer attached, not changed since. */
+    const attached = new Set()
+    /** Those attached as the chat opened, which a summary keeps. */
+    const opening = new Set()
+    /** @type {string[]} What the writer has attached since the last turn. */
+    let sent = []
+    /** Which of the scenario's messages is answered next. */
+    let next = 0
+    for (const message of messages) {
+      // A summary takes the place of what was read and attached above it,
+      // all but the chat's opening. It answers a message of the scenario's
+      // without being a turn.
+      if (isCompaction(message)) {
+        seen.clear()
+        attached.clear()
+        for (const path of opening) attached.add(path)
+        if (/^\/compact\b/.test(expectations[next]?.text || '')) next++
+        continue
+      }
+      if (message.role === 'user') {
+        const paths = attachmentsOf(message).map(attachment => norm(attachment.path))
+        sent.push(...paths)
+        if (message === messages[0]) for (const path of paths) opening.add(path)
+        continue
+      }
+      if (message.role !== 'assistant' || message.metadata?.command) continue
+      const turn = message
+      const i = next++
+      // The writer's edit before the turn makes what the model has of it old.
       const edited = expectations[i]?.before?.edit?.path
-      if (edited) seen.delete(norm(edited))
-      const holding = new Set([...pinned, ...seen])
+      for (const held of edited ? [seen, attached, opening] : []) held.delete(norm(edited))
+      // What is attached to the message is copied as it is sent, after the edit.
+      for (const path of sent) attached.add(path)
+      sent = []
+      const holding = new Set([...attached, ...seen])
       const state = states[i]
       const m = measure({
         turn,
         expect: expectations[i] || { text: '' },
         holding,
-        pinnedBefore: pinned,
+        attached,
         state,
       })
       for (const path of m.reads) seen.add(path)
-      // Its own writes it knows, but its read of the document is old.
-      for (const path of m.written) seen.delete(path)
-      pinned = m.pinnedAfter.size || state ? m.pinnedAfter : pinned
+      // Its own writes it knows, but what it has of the document is old.
+      for (const path of m.written) for (const held of [seen, attached, opening]) held.delete(path)
 
       const bits = [
         `T${i + 1}`,
-        `reads=${m.reads.length}${m.rereads.length ? ` (pinned ${m.rereads.length})` : ''}${m.again.length ? ` (again ${m.again.length})` : ''}`,
+        `reads=${m.reads.length}${m.ofAttached.length ? ` (attached ${m.ofAttached.length})` : ''}${m.again.length ? ` (again ${m.again.length})` : ''}`,
         m.misses ? `misses=${m.misses}` : '',
         m.searches ? `search=${m.searches}` : '',
         m.writes.length ? `writes=${m.writes.join(',')}` : '',
@@ -441,7 +458,7 @@ async function report(dir) {
       totals.misses += m.misses
       totals.lists += m.lists
       totals.unchanged += m.unchanged
-      totals.rereads += m.rereads.length
+      totals.ofAttached += m.ofAttached.length
       totals.again += m.again.length
       totals.promptTokens += m.promptTokens
       totals.turns++
@@ -455,7 +472,7 @@ async function report(dir) {
       if (m.failures.length) bucket.failed++
       bucket.failures.push(...m.failures)
       perTurn.set(i, bucket)
-    })
+    }
 
     // A scenario that rewinds the chat at the end expects the project back as
     // it began.
@@ -475,7 +492,7 @@ async function report(dir) {
 
   console.log(`  --`)
   console.log(
-    `  runs=${files.length}  turns=${totals.turns}  tool errors=${totals.errors}  path misses=${totals.misses}  lists=${totals.lists}  unchanged=${totals.unchanged}  reads of pinned=${totals.rereads}  reads again=${totals.again}  prompt tokens=${(totals.promptTokens / 1000).toFixed(0)}k (${(totals.promptTokens / 1000 / Math.max(1, totals.turns)).toFixed(1)}k a turn)  checks failed=${totals.failed}/${totals.checks}`
+    `  runs=${files.length}  turns=${totals.turns}  tool errors=${totals.errors}  path misses=${totals.misses}  lists=${totals.lists}  unchanged=${totals.unchanged}  reads of attached=${totals.ofAttached}  reads again=${totals.again}  prompt tokens=${(totals.promptTokens / 1000).toFixed(0)}k (${(totals.promptTokens / 1000 / Math.max(1, totals.turns)).toFixed(1)}k a turn)  checks failed=${totals.failed}/${totals.checks}`
   )
   for (const [i, bucket] of [...perTurn].sort((a, b) => a[0] - b[0])) {
     if (!bucket.failed) continue

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import {
   projectOverview,
-  pinnedDocuments,
+  attachedDocuments,
   readNotes,
   documentLocator,
   executeReadDocument,
@@ -22,6 +22,8 @@ import {
   nearestContext,
   applyProposal,
   PROPOSED_NOTE,
+  appendTarget,
+  appendedText,
 } from '@/ai/tools/documents.js'
 import { useDocumentsStore } from '@/stores/documentsStore'
 import { useChatsStore } from '@/stores/chatsStore'
@@ -68,9 +70,6 @@ const listedPaths = async chatId => {
     .filter(line => !line.startsWith(' '))
     .map(line => line.split(' — ')[0].replace(/\/$/, ''))
 }
-
-/** The ids of what a chat has pinned. */
-const pinnedIds = async chat => (await pinnedDocuments(STORY, chat)).map(entry => entry.id)
 
 describe('document tools', () => {
   /** @type {ReturnType<typeof useDocumentsStore>} */
@@ -134,90 +133,6 @@ describe('document tools', () => {
       content: 'Snow fell on the road.',
     })
   }
-
-  describe('pinnedDocuments', () => {
-    it('resolves a document to itself, with its path and length', async () => {
-      await seed()
-
-      expect(await pinnedDocuments(STORY, { pinnedIds: ['lore_1'] })).toEqual([
-        { id: 'lore_1', path: 'notes/Characters/Elara', type: 'text', words: expect.any(Number) },
-      ])
-    })
-
-    it('resolves a folder to the text under it, however deep', async () => {
-      await seed()
-
-      // A writer points at the character's folder, not at the six documents
-      // inside it.
-      expect(await pinnedIds({ pinnedIds: [notesIdFor(STORY)] })).toEqual(['lore_1'])
-    })
-
-    it('leaves out folders themselves', async () => {
-      await seed()
-
-      // A folder is a line in the listing already, and the listing is its
-      // content.
-      const ids = await pinnedIds({ pinnedIds: [rootIdFor(STORY)] })
-      expect(ids).not.toContain('cat_1')
-      expect(ids.sort()).toEqual(['lore_1', 'sc_1'])
-    })
-
-    it('leaves out anything hidden, and anything under something hidden', async () => {
-      await seed()
-      store.updateDocument('cat_1', { hidden: true })
-
-      // Pinning the folder above it must not smuggle back in what the writer
-      // took out of the model's reach.
-      expect(await pinnedIds({ pinnedIds: [notesIdFor(STORY)] })).toEqual([])
-      expect(await pinnedIds({ pinnedIds: ['lore_1'] })).toEqual([])
-    })
-
-    it('names each document once however many pins reach it', async () => {
-      await seed()
-
-      expect(await pinnedIds({ pinnedIds: ['lore_1', 'cat_1', notesIdFor(STORY)] })).toEqual([
-        'lore_1',
-      ])
-    })
-
-    it('skips a pin on a document that is gone', async () => {
-      await seed()
-
-      // The writer deleted it, which is an answer. Not an error to raise at a
-      // turn that is trying to be taken.
-      expect(await pinnedIds({ pinnedIds: ['nothing_here', 'lore_1'] })).toEqual(['lore_1'])
-    })
-
-    it('does nothing when the chat has pinned nothing', async () => {
-      await seed()
-
-      expect(await pinnedIds({ pinnedIds: [] })).toEqual([])
-      expect(await pinnedIds(null)).toEqual([])
-    })
-
-    it('leaves out what the chat hid inside a pinned folder', async () => {
-      await seed()
-
-      const chat = { pinnedIds: [rootIdFor(STORY)], hiddenIds: ['cat_1'] }
-      expect(await pinnedIds(chat)).toEqual(['sc_1'])
-    })
-
-    it('leaves out what the chat only shows inside a pinned folder', async () => {
-      // A card's greetings are shown, not pinned: in context as well as in the
-      // conversation would be the same words twice.
-      await seed()
-
-      const chat = { pinnedIds: [rootIdFor(STORY)], shownIds: ['lore_1'] }
-      expect(await pinnedIds(chat)).toEqual(['sc_1'])
-    })
-
-    it('keeps a pin under a folder the chat hid', async () => {
-      await seed()
-
-      const chat = { pinnedIds: ['lore_1'], hiddenIds: [notesIdFor(STORY)] }
-      expect(await pinnedIds(chat)).toEqual(['lore_1'])
-    })
-  })
 
   describe('a chat’s own marks', () => {
     const CHAT = 'chat_1'
@@ -360,15 +275,6 @@ describe('document tools', () => {
       })
     })
 
-    it('says nothing of how much is in it when asked not to', async () => {
-      await seed()
-
-      expect(await projectOverview(STORY, null, { size: false })).toEqual({
-        project: 'My Story',
-        summary: 'A knight rides north.',
-      })
-    })
-
     it('omits an overview nobody wrote rather than sending it empty', async () => {
       await seed()
       store.updateDocument(rootIdFor(STORY), { summary: '' })
@@ -422,6 +328,73 @@ describe('document tools', () => {
       const locate = await documentLocator(STORY, { hiddenIds: ['lore_1'] })
 
       expect(locate('lore_1')).toBeNull()
+    })
+  })
+
+  describe('attachedDocuments', () => {
+    it('copies each document as it stands, with what a read notes of it', async () => {
+      await seed()
+
+      expect(
+        await attachedDocuments(STORY, null, ['/notes/Characters/Elara', '/manuscript/Chapter 1'])
+      ).toEqual([
+        {
+          id: 'lore_1',
+          path: 'notes/Characters/Elara',
+          hash: textHash('A knight of the north.'),
+          text: 'A knight of the north.',
+        },
+        {
+          id: 'sc_1',
+          path: 'manuscript/Chapter 1',
+          hash: textHash('Snow fell on the road.'),
+          text: 'Snow fell on the road.',
+        },
+      ])
+    })
+
+    it('attaches a document once, and by a link to one of its headings', async () => {
+      await seed()
+
+      const attached = await attachedDocuments(STORY, null, [
+        '/notes/Characters/Elara#past',
+        'notes/characters/elara',
+      ])
+      expect(attached.map(each => each.id)).toEqual(['lore_1'])
+    })
+
+    it('attaches nothing for a folder, a path with nothing at it, or a hidden document', async () => {
+      await seed()
+      store.updateDocument('sc_1', { hidden: true })
+
+      expect(
+        await attachedDocuments(STORY, null, ['/notes', '/notes/Nobody', '/manuscript/Chapter 1'])
+      ).toEqual([])
+    })
+
+    it('attaches a long document whole', async () => {
+      await seed()
+      const long = 'word '.repeat(20000)
+      store.updateDocument('sc_1', { content: long })
+
+      const [attached] = await attachedDocuments(STORY, null, ['/manuscript/Chapter 1'])
+      expect(attached.text).toBe(long)
+    })
+
+    it('says why a file has no text', async () => {
+      await seed()
+      store.createDocument({
+        id: 'file_1',
+        storyId: STORY,
+        parentId: notesIdFor(STORY),
+        type: 'file',
+        title: 'Map.png',
+        mime: 'image/png',
+        content: '',
+      })
+
+      const [attached] = await attachedDocuments(STORY, null, ['/notes/Map.png'])
+      expect(attached.text).toMatch(/No text could be read out of this file/)
     })
   })
 
@@ -554,7 +527,7 @@ describe('document tools', () => {
   })
 
   describe('list_documents', () => {
-    it('lists the whole project by full path, with lengths and pins', async () => {
+    it('lists the whole project by full path, with lengths, and says nothing of a pin from before', async () => {
       await seed()
       const CHAT = 'chat_1'
       useChatsStore().chats.set(CHAT, { id: CHAT, storyId: STORY, pinnedIds: ['lore_1'] })
@@ -567,7 +540,7 @@ describe('document tools', () => {
           'manuscript/Chapter 1 — 5 words',
           'notes/',
           'notes/Characters/',
-          'notes/Characters/Elara — 5 words, pinned',
+          'notes/Characters/Elara — 5 words',
           '  A knight.',
         ].join('\n')
       )
@@ -1274,6 +1247,43 @@ describe('document tools', () => {
     })
   })
 
+  describe('appendTarget', () => {
+    it('finds the document an append still being written goes to', async () => {
+      await seed()
+      expect(await appendTarget(STORY, undefined, '/Manuscript/chapter 1')).toEqual({
+        documentId: 'sc_1',
+        suggested: false,
+      })
+    })
+
+    it('says the text goes in as a suggestion in a chat that asks first', async () => {
+      await seed()
+      expect(await appendTarget(STORY, undefined, 'manuscript/Chapter 1', true)).toEqual({
+        documentId: 'sc_1',
+        suggested: true,
+      })
+    })
+
+    it('finds nothing the call would be refused, or that is plain', async () => {
+      await seed()
+      expect(await appendTarget(STORY, undefined, 'Nobody')).toBeNull()
+      expect(await appendTarget(STORY, undefined, 'notes/Characters')).toBeNull()
+
+      store.updateDocument('lore_1', { hidden: true })
+      expect(await appendTarget(STORY, undefined, 'notes/Characters/Elara')).toBeNull()
+
+      store.updateDocument('sc_1', { plain: true })
+      expect(await appendTarget(STORY, undefined, 'manuscript/Chapter 1')).toBeNull()
+    })
+
+    it('reads the text as the tool writes it', () => {
+      expect(appendedText('A {==cold==}{>>cabcd2<<} night{++, still++}{>>sabcd2<<}.')).toBe(
+        'A cold night, still.'
+      )
+      expect(appendedText(undefined)).toBe('')
+    })
+  })
+
   describe('hidden documents', () => {
     // The writer decides what the model gets to see. A hidden document is not
     // in the model's project: not listed, not readable, not searchable — and a
@@ -1863,6 +1873,47 @@ describe('document tools', () => {
           context
         )
       ).toMatchObject({ error: expect.stringContaining('is a document, not a folder') })
+    })
+
+    it('renames what it holds where it is, and lets it out, but takes nothing back', async () => {
+      await seedHolding()
+
+      expect(
+        await executeMoveDocument(
+          { path: 'manuscript/Chapter 1/Arrival', to: 'manuscript/Chapter 1/Landing' },
+          context
+        )
+      ).toMatchObject({ success: true, document: { path: 'manuscript/Chapter 1/Landing' } })
+      expect(store.getDocument('arrival')).toMatchObject({ parentId: 'sc_1', title: 'Landing' })
+
+      expect(
+        await executeMoveDocument(
+          { path: 'manuscript/Chapter 1/Landing', to: 'manuscript/Landing' },
+          context
+        )
+      ).toMatchObject({ success: true, document: { path: 'manuscript/Landing' } })
+      expect(
+        await executeMoveDocument(
+          { path: 'manuscript/Landing', to: 'manuscript/Chapter 1/Landing' },
+          context
+        )
+      ).toEqual({ error: '"manuscript/Chapter 1" is a document, not a folder' })
+    })
+
+    it('takes a document made and moved into it when it is a card', async () => {
+      await seedHolding()
+      store.updateDocument('wren', { kind: 'card' })
+
+      expect(
+        await executeCreateDocument({ path: 'notes/Wren/Notes', content: 'Owes Elara.' }, context)
+      ).toMatchObject({ success: true, document: { path: 'notes/Wren/Notes' } })
+      expect(
+        await executeMoveDocument(
+          { path: 'notes/Characters/Elara', to: 'notes/Wren/Elara' },
+          context
+        )
+      ).toMatchObject({ success: true, document: { path: 'notes/Wren/Elara' } })
+      expect(store.getDocument('lore_1').parentId).toBe('wren')
     })
 
     it('goes to the trash with what it holds, and says how much', async () => {

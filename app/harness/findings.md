@@ -2062,3 +2062,116 @@ text into the code, which the description asks it not to, harmless at these
 sizes; and both models once or twice asked `read_document` for
 `Rules/House rules.txt`, Python's name for the PDF's text, and read the PDF
 on the next call.
+
+## Reading the card up front, no pins (4 Nov 2026, GLM 5.2, the Riley card)
+
+The user had stopped pinning in roleplay chats: a pin comes to the end of the
+context on every turn, description and example dialogue included. They replaced
+the Roleplay prompt's Context section with one that has the model list the
+project and read them. New scenario `riley-card-roleplay`: the fixture laid out
+as an import leaves it (`Cards/Characters/Riley`, `Personas/Noah`,
+`Lore/Noah's apartment`), nothing pinned, a turn, a turn, `/compact`, a turn.
+Their section, with a Personality line, Lorebooks beside Lore (where a lorebook
+on its own lands), and a line saying to do it before the first reply and again
+after a summary.
+
+- **Up front.** 3 of 3 listed the project and read the description, the example
+  dialogue, the persona and the place on the first turn.
+- **Once.** 0 calls on the second turn, in all 6 runs. A read in the conversation
+  is enough for it.
+- **After a summary.** 6 of 6 read all four again on the first turn after
+  `/compact`, unprompted.
+- **The greetings.** Batch `2026-11-04T22-12-34`, with the greetings in sight:
+  every run read at least one on the first turn (1, 3 and 3 of the three), and 2
+  of 3 again after the summary. "Any other relevant context" takes them in. This
+  is the finding from 23 Sep again, and worse now that the model goes looking, so
+  a card chat hides its greetings. The fixture's `"hidden": ["greeting"]` stands
+  in for that here, since the harness doesn't start chats through `useCardChat`.
+- Batch `2026-11-04T22-15-16`, with them out of sight: 9 of 9 checks, no misses,
+  8.9k prompt tokens a turn, 26.6k a run against 29.2k with them.
+- **No tools.** A model that can't read gets the card pinned, as before, under the
+  same prompt, which tells it what `pinned` means. Batch
+  `2026-11-04T22-17-10`, 2 runs with the document tools off: in character, nothing
+  said about listing anything.
+
+Not scored for prose: this asks whether the card reaches the model, not how it
+reads once there.
+
+## Advantage and burden dice (4 Nov 2026, GLM 5.2)
+
+`roll_dice` and `/roll` took `3d6a` and `3d20b2`: that many more dice thrown and
+as many dropped, the lowest for `a` and the highest for `b`. Asked for because a
+game that counts successes can't use `max()`, which keeps one die. New scenario
+`dice-advantage`, over the Adventure prompt: a stat, an attack with advantage, a
+check with a burden die, a check with two advantage dice, and a `/roll` with a
+burden die, the last three counting successes.
+
+- **What it writes.** `d20a+5`, `3d20b` and `3d20a2`, each 9 of 9 across both
+  batches, with the writer naming the die rather than the notation.
+- **"Roll 4d6 and drop the lowest".** The one place it goes wrong, as the count
+  before the `d` is the dice left and not the dice thrown. Batch
+  `2026-11-04T23-44-07`, 3 runs: `3d6a` once, and `4d6a` twice, which throws five.
+  One of those saw five dice and rolled again; the other reported the five-dice
+  total as a 4d6. The description then said `3d6a` is how to write that, and that
+  `4d6a` throws five. Batch `2026-11-04T23-46-03`, 6 runs: `3d6a` 4 times, and
+  `4d6a` twice, both rolling again. No wrong total, but a second throw it wasn't
+  owed. Left there: a player asks for a stat or names the die, and doesn't dictate
+  the dice to the model like this.
+- **Counting from the dice that count.** 24 of 24 correct across both batches, 6
+  of them read from the `(kept …)` of a `/roll`. Each answer says which dice were
+  kept, so nothing asks the model to sort them. Not tried without it.
+
+Not tried on another model.
+
+## A roll's working, struck dice, and arithmetic (7 Nov 2026, GLM 5.2)
+
+A roll now shows one line of working in the notation's shape, each term's dice
+in its place and the dropped ones struck through as `~~2~~`, in place of a line
+for each kind with `(kept …)`; `roll_dice` answers with that `working` beside
+the dice by kind, and no modifier. Dice can be subtracted, multiplied and
+divided. `dice-advantage` gained a sixth turn: `/roll d20a - d20b`, an opposed
+check, asking what each side rolled and who won, read from
+`(~~12~~, 16) - (1, ~~13~~)` and the like. Batch `2026-11-07T18-20-57`, 6 runs,
+run from the branch before it was committed.
+
+- **Counting from struck dice.** 18 of 18 success counts right, 6 of them from
+  a `/roll`'s working with nothing but the strike to say which die went. The
+  same as with `(kept …)`, which is no longer needed.
+- **The opposed check.** 6 of 6 named both sides' kept dice and the margin
+  right, ties included: advantage on `(3, ~~3~~)` and a burden on `(2, ~~2~~)`,
+  each dropping one of two equal dice. Each term's dice are kept apart, where
+  the old lines would have run all four d20s together.
+- **What it writes.** `d20a+5`, `3d20b` and `3d20a2` 6 of 6 each. "Roll 4d6 and
+  drop the lowest" as before: `3d6a` 4 times, `4d6a` twice. One of those rolled
+  again; the other kept four of five dice and called the 18 a 4d6. The working
+  shows five dice plainly, and it still read past them.
+- **Strikes in the reply.** Two runs copied `~~14~~` into their narration, which
+  the chat draws struck through. Harmless, and in keeping with the roll above it.
+
+Not tried on another model.
+
+## A line of dice for each term, and spaces that group (7 Nov 2026, GLM 5.2)
+
+The working became a line for each dice term, the dropped dice first and
+struck together (`3d6a2: ~~1, 2~~, 6, 2, 4 → 12`), named by its term where
+there are others, with no arithmetic: that stays in the notation. Spaces
+now group, so `2d6+3 * 2` doubles all of `2d6+3`. `dice-advantage` gained a
+seventh turn: an alchemist's fire crit, "Roll 2d6+3 and double the whole
+thing." Batch `2026-11-07T19-05-36`, 6 runs.
+
+- **Counting from struck dice.** 18 of 18 again, 6 of them from a `/roll`,
+  with the struck group at the front of the line rather than where the dice
+  fell.
+- **The opposed check.** 6 of 6, a tie at 9 among them, read from
+  `d20a: ~~2~~, 9` / `d20b: ~~11~~, 9`.
+- **Doubling the whole roll.** 6 of 6 wrote `2d6+3 * 2`, the spaced form the
+  description gives, and each said the dice, the 3 and the doubling right.
+- **What it writes.** `d20a+5` and `3d20b` 6 of 6. One run first wrote
+  `3d20a2b` for the rope, carrying the fog's burden over, was refused, and
+  wrote `3d20a2`. "Roll 4d6 and drop the lowest": `3d6a` 3 times, `4d6a` 3
+  times, two of them rolling again and one calling four kept dice (9) a
+  Strength score. Across the three batches since the description named
+  `3d6a`, 7 of 18 wrote `4d6a`; the working shows the fifth die and doesn't
+  stop it.
+
+Not tried on another model.

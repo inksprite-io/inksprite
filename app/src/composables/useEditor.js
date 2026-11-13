@@ -32,6 +32,7 @@ import {
   replaceContent as replaceIn,
 } from '@/editor/state.js'
 import { appendBlocks, parseMarkdown, serializeMarkdown } from '@/editor/markdown.js'
+import { startPreview, endPreview as stopPreview } from '@/editor/streaming.js'
 import { useDocumentsStore } from '@/stores/documentsStore.js'
 
 /**
@@ -163,6 +164,8 @@ const makeEntry = (markdown, plain, scrollTop = 0) =>
  *   editContent: (id: string, markdown: string) => void,
  *   takeStored: (id: string, markdown: string, stored: string) => void,
  *   appendContent: (id: string, markdown: string) => void,
+ *   showPreview: (id: string, previewId: string, suggested: boolean) => boolean,
+ *   endPreview: (previewId: string) => void,
  *   markdown: (id: string) => string,
  *   focus: (id: string) => void,
  * }}
@@ -423,6 +426,37 @@ export function useEditor() {
   }
 
   /**
+   * Show text the model is still writing at the end of an open document, as
+   * it arrives (`editor/streaming`). Nothing is written: the document stays
+   * as it is until the call that writes it runs. Only a structured document
+   * shows one.
+   *
+   * @param {string} id
+   * @param {string} previewId - The call's
+   * @param {boolean} suggested - Shown as a suggestion that puts it in
+   * @returns {boolean} Whether the document shows it
+   */
+  const showPreview = (id, previewId, suggested) => {
+    const entry = entries.get(id)
+    if (entry?.kind !== 'document') return false
+    const tr = startPreview(entry.state, { id: previewId, suggested })
+    if (tr) dispatch(id, tr)
+    return true
+  }
+
+  /**
+   * Stop showing a call's text, in whichever document shows it.
+   * @param {string} previewId
+   */
+  const endPreview = previewId => {
+    for (const [id, entry] of entries) {
+      if (entry.kind !== 'document') continue
+      const tr = stopPreview(entry.state, previewId)
+      if (tr) dispatch(id, tr)
+    }
+  }
+
+  /**
    * An open document as markdown, whether or not it has been flushed.
    * @param {string} id
    * @returns {string}
@@ -457,6 +491,8 @@ export function useEditor() {
     editContent,
     takeStored,
     appendContent,
+    showPreview,
+    endPreview,
     markdown,
     focus,
   }

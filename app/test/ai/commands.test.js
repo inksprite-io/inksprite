@@ -9,7 +9,7 @@ import {
   splitInput,
   runCommand,
   renderCommand,
-  rollLines,
+  rollWorking,
   rollOf,
   answeredCommand,
   commandLabel,
@@ -24,19 +24,22 @@ import {
   listCommands,
   matchCommands,
   commandAtCaret,
-  commandSwitchedOff,
   commandIsAside,
+  commandSwitchedOff,
   commandSpeaks,
+  forkAsked,
   COMMANDS,
   LIKELIHOODS,
 } from '@/ai/commands.js'
+import { workingText } from '@/ai/tools/rpg.js'
 import { MAJOR_ARCANA, MINOR_ARCANA } from '@/ai/tools/data/tarot.js'
-import { setExperimentalSkills } from '@/ai/skills/index.js'
+import { setTrialSkills } from '@/ai/skills/index.js'
+import { TRIAL_SKILLS } from '../../harness/skills/trials.js'
 
-// Interpret and Write are here as they are in an app that has switched each
-// on; 'with an experimental skill switched off' is the rest.
+// Interpret and Write are here as they are in the harness, which tunes them;
+// 'without the harness's skills' is the app.
 beforeEach(() => {
-  setExperimentalSkills(['interpret', 'write'])
+  setTrialSkills(TRIAL_SKILLS)
 })
 
 afterEach(() => {
@@ -78,27 +81,16 @@ describe('parseCommand', () => {
     expect(parseCommand('/compact')).toEqual({ name: 'compact', input: '' })
   })
 
-  it('takes a name with the punctuation names have', () => {
-    expect(parseCommand("@o'brien He shrugs.")).toEqual({
-      name: "o'brien",
-      character: true,
-      input: 'He shrugs.',
-    })
-    expect(parseCommand('@mrs-hale She sets down the tray.').name).toBe('mrs-hale')
+  it('reads a line that opens with @ as prose', () => {
+    // `@name` was somebody speaking. `@` attaches a document now, and a line
+    // that opens with one is what the writer said.
+    expect(parseCommand("@o'brien He shrugs.")).toBeNull()
+    expect(parseCommand('@[Cast list](</Notes/Cast list>) Who is missing?')).toBeNull()
   })
 
-  it('reads the sigil, not the name', () => {
-    // `/` is an instruction to the application and `@` is a person, which is
-    // what both mean everywhere else. Nothing about the name decides it.
-    expect(parseCommand('/oracle Is it?').character).toBeUndefined()
-    expect(parseCommand('@oracle "I see all."').character).toBe(true)
-  })
-
-  it('keeps the name as it was typed, whoever it turns out to be', () => {
-    // A command is canonicalised where it is looked up. A character's name is
-    // theirs, and Mrs-Hale is not mrs-hale.
+  it('keeps the name as it was typed', () => {
+    // A command is canonicalised where it is looked up.
     expect(parseCommand('/Oracle Is it?').name).toBe('Oracle')
-    expect(parseCommand('@Mrs-Hale She sets down the tray.').name).toBe('Mrs-Hale')
   })
 
   it('keeps a direction that runs to more than one line', () => {
@@ -145,7 +137,12 @@ describe('listCommands', () => {
   it('lists every command, in alphabetical order', () => {
     const names = listCommands().map(entry => entry.name)
 
-    expect(names).toEqual(Object.keys(COMMANDS).sort())
+    // All but /aside, which is retired: its records read, and nothing asks it anew.
+    expect(names).toEqual(
+      Object.keys(COMMANDS)
+        .filter(name => name !== 'aside')
+        .sort()
+    )
   })
 
   it('gives every command a line saying what it does', () => {
@@ -174,7 +171,7 @@ describe('listCommands', () => {
 
 describe('matchCommands', () => {
   it('offers everything for a bare slash', () => {
-    expect(matchCommands('')).toHaveLength(Object.keys(COMMANDS).length)
+    expect(matchCommands('')).toHaveLength(listCommands().length)
   })
 
   it('puts the names a query starts before the ones with a later word it starts', () => {
@@ -318,14 +315,14 @@ describe('runCommand', () => {
     const before = { name: 'roll', input: '3d6', label: '3d6', detail: '4 + 1 + 6', result: '11' }
 
     expect(commandDetail(before)).toBe('3d6')
-    expect(rollLines(before)).toEqual(['4 + 1 + 6'])
+    expect(rollWorking(before)).toEqual([[{ text: '4 + 1 + 6' }]])
   })
 
   it('leaves the working of everything else as it was written', () => {
     expect(commandDetail({ name: 'tighten', input: 'the fight', detail: 'the fight' })).toBe(
       'the fight'
     )
-    expect(rollLines({ name: 'tighten', input: 'the fight', detail: 'the fight' })).toEqual([])
+    expect(rollWorking({ name: 'tighten', input: 'the fight', detail: 'the fight' })).toEqual([])
     expect(commandDetail({ name: 'cody', character: true, input: 'I hide.' })).toBe('')
   })
 
@@ -351,14 +348,12 @@ describe('runCommand', () => {
   })
 
   it('names what there is when the command is not one of them', async () => {
-    // The error the sigil buys back: with `/` a closed set, a name nothing
-    // answers to is a mistake worth naming rather than a character.
+    // `/` is a closed set, so a name nothing answers to is a mistake worth
+    // naming.
     const outcome = await runCommand({ name: 'directr', input: 'Wrap this up' })
 
     expect(outcome.error).toMatch(/\/directr/)
     expect(outcome.error).toMatch(/\/oracle/)
-    // And says where they would have gone if they meant a person.
-    expect(outcome.error).toMatch(/@directr/)
   })
 
   it('answers to a command however it was capitalised', async () => {
@@ -692,49 +687,51 @@ describe('/director', () => {
 })
 
 describe('/aside', () => {
-  it('is asked as the writer asking, under its own tag and nothing more', async () => {
-    const command = await runCommand({ name: 'aside', input: 'What should Mara do next?' })
+  it('is retired for /fork, and offered no more', async () => {
+    const outcome = await runCommand({ name: 'aside', input: 'What should Mara do next?' })
 
-    expect(command).toMatchObject({ name: 'aside', result: 'What should Mara do next?' })
-    expect(renderCommand(command)).toBe('<aside>\nWhat should Mara do next?\n</aside>')
-    // It wants an answer, as anything the writer says does.
+    expect(outcome.error).toMatch(/\/fork/)
+    expect(commandSwitchedOff({ name: 'aside' })).toMatch(/\/fork/)
+    expect(listCommands().map(command => command.name)).not.toContain('aside')
+  })
+
+  it('still reads, under its own tag, where one was asked before', () => {
+    const asked = 'What should Mara do next?'
+    const command = { name: 'aside', input: asked, result: asked }
+
+    expect(renderCommand(command)).toBe(`<aside>\n${asked}\n</aside>`)
     expect(commandSpeaks(command)).toBe(true)
     expect(commandIsAside(command)).toBe(true)
     expect(commandIsAside({ name: 'director' })).toBe(false)
+    expect(formatSegment({ type: 'command', command })).toBe(`/aside ${asked}`)
   })
 
-  it('asks for a question rather than asking nothing', async () => {
-    const outcome = await runCommand({ name: 'aside', input: '' })
-
-    expect(outcome.error).toMatch(/ask something/i)
-    expect(outcome.error).toContain(COMMANDS.aside.usage)
-  })
-
-  it('takes everything after it as its question, lines and all', () => {
-    expect(splitInput('/aside Is this scene dragging?\nThe fight has gone on a while.')).toEqual([
-      {
-        type: 'command',
-        name: 'aside',
-        input: 'Is this scene dragging?\nThe fight has gone on a while.',
-      },
-    ])
-    // Even what would be a command, or an answer, on a line of its own.
+  it('still takes everything after it as its question, lines and all', () => {
     expect(splitInput('/aside Should I\n/roll 2d6\n> 7').at(0).input).toBe(
       'Should I\n/roll 2d6\n> 7'
     )
   })
+})
 
-  it('leaves what came before it to be refused, rather than taking it in', () => {
-    expect(splitInput('I look around.\n/aside What is here?')).toEqual([
-      { type: 'text', content: 'I look around.' },
-      { type: 'command', name: 'aside', input: 'What is here?' },
-    ])
+describe('/fork', () => {
+  it('is offered in the menu', () => {
+    expect(matchCommands('fo').map(command => command.name)).toContain('fork')
   })
 
-  it('is written back as it was typed, with no answer under it', async () => {
-    const command = await runCommand({ name: 'aside', input: 'One thing.\nAnd another.' })
+  it('takes everything after it as the message for the fork, lines, commands and all', () => {
+    expect(forkAsked('/fork Is this scene dragging?\n/roll 2d6\n> 7')).toEqual({
+      message: 'Is this scene dragging?\n/roll 2d6\n> 7',
+    })
+  })
 
-    expect(formatSegment({ type: 'command', command })).toBe('/aside One thing.\nAnd another.')
+  it('forks with nothing to say yet', () => {
+    expect(forkAsked('/fork')).toEqual({ message: '' })
+  })
+
+  it('is no fork with something before it, nor any other message', () => {
+    expect(forkAsked('I look around.\n/fork What is here?')).toBeNull()
+    expect(forkAsked('/director Wrap this up.')).toBeNull()
+    expect(forkAsked('Just talking.')).toBeNull()
   })
 })
 
@@ -793,10 +790,17 @@ describe('a character', () => {
     ).toMatch(/nothing in parentheses/i)
   })
 
-  it('is typed and read back as the same line, sigil and all', () => {
-    for (const line of ['@cody I quickly hide in the closet.', '/oracle(likely) Is it?']) {
-      expect(formatCommand(parseCommand(line))).toBe(line)
-    }
+  it('is written down as the model reads it, which read back is prose', () => {
+    // No line asks for a character now. A turn written again holds theirs as
+    // the words the model was sent.
+    const line = formatCommand({ name: 'cody', character: true, input: 'I hide in the closet.' })
+
+    expect(line).toBe('<cody>\nI hide in the closet.\n</cody>')
+    expect(splitInput(line)).toEqual([{ type: 'text', content: line }])
+  })
+
+  it('leaves a command typed and read back as the same line', () => {
+    expect(formatCommand(parseCommand('/oracle(likely) Is it?'))).toBe('/oracle(likely) Is it?')
   })
 })
 
@@ -813,17 +817,21 @@ describe('/roll', () => {
       input: '3d6+2',
       label: '3d6+2',
       result: '14',
-      roll: { roll: '3d6+2', dice: { d6: [4, 4, 4] }, modifier: 2, total: 14 },
+      roll: { roll: '3d6+2', dice: { d6: [4, 4, 4] }, total: 14 },
     })
     expect(command.detail).toBeUndefined()
+    // Nothing a roll that multiplies could say: the working says it instead.
+    expect(command.roll).not.toHaveProperty('modifier')
   })
 
-  it('sends the model the dice as the writer reads them, above the total', async () => {
+  it('sends the model the working as the writer reads it, above the total', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.5)
 
     const command = await runCommand({ name: 'roll', input: '3d6+2d4-1' })
 
-    expect(renderCommand(command)).toBe('<roll>\n3d6+2d4-1\nd6: 4, 4, 4\nd4: 3, 3\n17\n</roll>')
+    expect(renderCommand(command)).toBe(
+      '<roll>\n3d6+2d4-1\n3d6: 4, 4, 4 → 12\n2d4: 3, 3 → 6\n17\n</roll>'
+    )
   })
 
   it('takes a question after the dice, and keeps the dice to read it by', async () => {
@@ -837,7 +845,7 @@ describe('/roll', () => {
       roll: { dice: { d20: [11, 11] } },
     })
     expect(renderCommand(command)).toBe(
-      '<roll>\n2d20 rolling with disadvantage\nd20: 11, 11\n22\n</roll>'
+      '<roll>\n2d20 rolling with disadvantage\n11, 11\n22\n</roll>'
     )
   })
 
@@ -852,22 +860,117 @@ describe('/roll', () => {
     expect(worse).toMatchObject({
       label: 'min(2d20)+1 to sneak past',
       result: '4',
-      roll: { roll: 'min(2d20)+1', dice: { d20: [3, 15] }, modifier: 1, total: 4 },
+      roll: { roll: 'min(2d20)+1', dice: { d20: [3, 15] }, total: 4 },
     })
     expect(better).toMatchObject({ result: '16', roll: { dice: { d20: [3, 15] }, total: 16 } })
     expect(commandDetail(worse)).toBe('min(2d20)+1')
     expect(commandLabel(worse)).toBe('to sneak past')
-    expect(renderCommand(worse)).toBe('<roll>\nmin(2d20)+1 to sneak past\nd20: 3, 15\n4\n</roll>')
+    expect(renderCommand(worse)).toBe('<roll>\nmin(2d20)+1 to sneak past\n~~15~~, 3\n4\n</roll>')
   })
 
-  it('shows the writer a line for each kind of die, and not what was added', async () => {
+  it('strikes through the dice an advantage or a burden dropped', async () => {
+    // A 5, a 2, a 1 and a 3 on a d6, then an 18, a 4, an 11 and a 9 on a d20.
+    const random = vi.spyOn(Math, 'random')
+    for (const value of [0.7, 0.2, 0.05, 0.4, 0.85, 0.15, 0.5, 0.4]) {
+      random.mockReturnValueOnce(value)
+    }
+
+    const stat = await runCommand({ name: 'roll', input: '3d6a Strength' })
+    const check = await runCommand({ name: 'roll', input: '3d20b does the rope hold?' })
+
+    expect(stat).toMatchObject({
+      label: '3d6a Strength',
+      result: '10',
+      roll: { roll: '3d6a', dice: { d6: [5, 2, 1, 3] }, kept: { d6: [5, 2, 3] }, total: 10 },
+    })
+    expect(commandDetail(check)).toBe('3d20b')
+    expect(commandLabel(check)).toBe('does the rope hold?')
+    expect(rollWorking(check)).toEqual([[{ text: '18', dropped: true }, { text: ', 4, 11, 9' }]])
+    expect(renderCommand(check)).toBe(
+      '<roll>\n3d20b does the rope hold?\n~~18~~, 4, 11, 9\n24\n</roll>'
+    )
+    expect(formatSegment({ type: 'command', command: stat })).toBe(
+      '/roll 3d6a Strength\n> ~~1~~, 5, 2, 3\n> 10'
+    )
+  })
+
+  it('puts the dropped dice first, lowest first, and the rest as they fell', async () => {
+    // A 6, a 2, a 1, a 4 and a 2 on a d6.
+    const random = vi.spyOn(Math, 'random')
+    for (const value of [0.9, 0.2, 0.05, 0.5, 0.2]) random.mockReturnValueOnce(value)
+
+    const command = await runCommand({ name: 'roll', input: '3d6a2' })
+
+    expect(command.roll?.dice).toEqual({ d6: [6, 2, 1, 4, 2] })
+    // Of the two 2s, the one thrown first counts.
+    expect(workingText(rollWorking(command))).toBe('~~1, 2~~, 6, 2, 4')
+    expect(rollWorking(command)).toEqual([[{ text: '1, 2', dropped: true }, { text: ', 6, 2, 4' }]])
+  })
+
+  it('gives each term a line of its own, named where there are others', async () => {
+    // A 6, a 2, a 1, a 4 and a 2, then a 4, a 2, a 3, a 5 and a 6, on a d6.
+    const random = vi.spyOn(Math, 'random')
+    for (const value of [0.9, 0.2, 0.05, 0.5, 0.2, 0.5, 0.2, 0.4, 0.7, 0.9]) {
+      random.mockReturnValueOnce(value)
+    }
+
+    const command = await runCommand({ name: 'roll', input: '3d6a2 - 3d6b2' })
+
+    expect(command.result).toBe('3')
+    expect(renderCommand(command)).toBe(
+      '<roll>\n3d6a2 - 3d6b2\n3d6a2: ~~1, 2~~, 6, 2, 4 → 12\n3d6b2: ~~5, 6~~, 4, 2, 3 → 9\n3\n</roll>'
+    )
+  })
+
+  it('works out what a roll saved before dice were marked dropped', () => {
+    const roll = { roll: 'max(2d20)', dice: { d20: [3, 15] }, modifier: 0, total: 15 }
+
+    expect(workingText(rollWorking({ name: 'roll', input: 'max(2d20)', roll, result: '15' }))).toBe(
+      '~~3~~, 15'
+    )
+  })
+
+  it('shows a roll saved with its dice by kind term by term', () => {
+    const roll = { roll: 'd20a + d20b', dice: { d20: [10, 20, 3, 20] }, kept: { d20: [20, 3] } }
+    const command = {
+      name: 'roll',
+      input: 'd20a + d20b',
+      roll: { ...roll, total: 23 },
+      result: '23',
+    }
+
+    expect(workingText(rollWorking(command))).toBe('d20a: ~~10~~, 20\nd20b: ~~20~~, 3')
+  })
+
+  it('shows only the dice, and leaves the arithmetic to the notation above them', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5)
+    /** @param {string} input */
+    const working = async input =>
+      workingText(rollWorking(await runCommand({ name: 'roll', input })))
+
+    expect(await working('3d6+2d4-1')).toBe('3d6: 4, 4, 4 → 12\n2d4: 3, 3 → 6')
+    expect(await working('2d6 - 2d6')).toBe('2d6: 4, 4 → 8\n2d6: 4, 4 → 8')
+    expect(await working('2d6 * 4')).toBe('4, 4 → 8')
+    expect(await working('(2d6+1)*2 for the crit')).toBe('4, 4 → 8')
+    // What one die comes to is the die, and what the whole roll comes to is
+    // the total under it.
+    expect(await working('d20+3')).toBe('11')
+    expect(await working('d20a+5')).toBe('~~11~~, 11')
+    expect(await working('3d6a2')).toBe('~~4, 4~~, 4, 4, 4')
+  })
+
+  it('reads what is written without spaces as one roll', async () => {
     vi.spyOn(Math, 'random').mockReturnValue(0.5)
 
-    expect(rollLines(await runCommand({ name: 'roll', input: '3d6+2d4-1' }))).toEqual([
-      'd6: 4, 4, 4',
-      'd4: 3, 3',
-    ])
-    expect(rollLines(await runCommand({ name: 'roll', input: 'd20+3' }))).toEqual(['d20: 11'])
+    expect(await runCommand({ name: 'roll', input: '3d6+1 * 4' })).toMatchObject({ result: '52' })
+    expect(await runCommand({ name: 'roll', input: '3d6 + 1 * 4' })).toMatchObject({
+      result: '16',
+    })
+    expect(await runCommand({ name: 'roll', input: '3d6+1*4' })).toMatchObject({ result: '16' })
+    const asked = await runCommand({ name: 'roll', input: '3d6+1 * 4 for the fall' })
+    expect(asked).toMatchObject({ result: '52' })
+    expect(commandDetail(asked)).toBe('3d6+1 * 4')
+    expect(commandLabel(asked)).toBe('for the fall')
   })
 
   it('writes the dice above the total in the text of the turn', async () => {
@@ -875,7 +978,7 @@ describe('/roll', () => {
     const command = await runCommand({ name: 'roll', input: '3d6+1 for strength' })
 
     expect(formatSegment({ type: 'command', command })).toBe(
-      '/roll 3d6+1 for strength\n> d6: 4, 4, 4\n> 13'
+      '/roll 3d6+1 for strength\n> 4, 4, 4 → 12\n> 13'
     )
     const die = await runCommand({ name: 'roll', input: 'd20' })
     expect(formatSegment({ type: 'command', command: die })).toBe('/roll d20\n> 11')
@@ -885,33 +988,78 @@ describe('/roll', () => {
     const read = result => answeredCommand({ name: 'roll', input: '3d6+1', result })
 
     it('keeps dice that are the notation’s and make the total', () => {
-      expect(read('d6: 3, 6, 5\n15')).toMatchObject({
+      expect(read('3, 6, 5 → 14\n15')).toMatchObject({
         result: '15',
-        roll: { roll: '3d6+1', dice: { d6: [3, 6, 5] }, modifier: 1, total: 15 },
+        roll: { roll: '3d6+1', dice: { d6: [3, 6, 5] }, total: 15 },
       })
-      // A line a die, the way it might be typed.
+      // Only the dice are read, so they can be typed plainly.
+      expect(read('3 6 5\n15').roll?.dice).toEqual({ d6: [3, 6, 5] })
+      // A line for each kind, as rolls were written before, or a line a die.
+      expect(read('d6: 3, 6, 5\n15').roll?.dice).toEqual({ d6: [3, 6, 5] })
       expect(read('d6: 3\nd6: 6\nd6: 5\n15').roll?.dice).toEqual({ d6: [3, 6, 5] })
     })
 
+    it('doesn’t read what a line says its dice come to', () => {
+      expect(read('3, 6, 5 → 99\n15')).toMatchObject({ result: '15', roll: { total: 15 } })
+    })
+
     it('works the total out when it is left off', () => {
+      expect(read('6, 6, 6')).toMatchObject({ result: '19', roll: { total: 19 } })
       expect(read('d6: 6, 6, 6')).toMatchObject({ result: '19', roll: { total: 19 } })
     })
 
     it('works the total out again from dice the writer changed', () => {
-      const before = answeredCommand({ name: 'roll', input: '3d6+1', result: 'd6: 3, 6, 5\n15' })
+      const before = answeredCommand({ name: 'roll', input: '3d6+1', result: '3, 6, 5 → 14\n15' })
 
       expect(
-        answeredCommand({ name: 'roll', input: '3d6+1', result: 'd6: 3, 6, 6\n15' }, before)
+        answeredCommand({ name: 'roll', input: '3d6+1', result: '3, 6, 6 → 14\n15' }, before)
       ).toMatchObject({ result: '16', roll: { dice: { d6: [3, 6, 6] }, total: 16 } })
       // Nothing to say which changed without a record from before: the dice
       // are what happened, so they make the total.
-      expect(read('d6: 3, 6, 6\n15')).toMatchObject({ result: '16', roll: { total: 16 } })
+      expect(read('3, 6, 6 → 14\n15')).toMatchObject({ result: '16', roll: { total: 16 } })
+    })
+
+    it('reads each term’s dice back into their place', () => {
+      const against = result => answeredCommand({ name: 'roll', input: '2d6 - 2d6', result })
+      const both = result => answeredCommand({ name: 'roll', input: 'd20a + d20b', result })
+
+      expect(against('2d6: 6, 2 → 8\n2d6: 5, 1 → 6\n0')).toMatchObject({
+        result: '2',
+        roll: { dice: { d6: [6, 2, 5, 1] }, total: 2 },
+      })
+      // Every die on one line, in the order of the terms.
+      expect(against('6, 2, 5, 1').roll?.total).toBe(2)
+      // What a line is named is not read: the order says which term it is.
+      expect(against('first: 6, 2\nsecond: 5, 1').roll?.total).toBe(2)
+      expect(both('d20a: ~~10~~, 20\nd20b: ~~20~~, 3\n23')).toMatchObject({
+        result: '23',
+        roll: { dice: { d20: [10, 20, 20, 3] }, kept: { d20: [20, 3] } },
+      })
+    })
+
+    it('keeps a roll whose dice come back in the order shown as it fell', async () => {
+      // A 5, a 2, a 1 and a 3 on a d6, shown with the 1 first.
+      const random = vi.spyOn(Math, 'random')
+      for (const value of [0.7, 0.2, 0.05, 0.4]) random.mockReturnValueOnce(value)
+      const rolled = await runCommand({ name: 'roll', input: '3d6a' })
+      const stat = { ...rolled, input: '3d6a' }
+
+      expect(
+        answeredCommand({ name: 'roll', input: '3d6a', result: '~~1~~, 5, 2, 3\n10' }, stat).roll
+      ).toEqual(rolled.roll)
+      // And a total changed under them is still a fudge.
+      const fudged = answeredCommand(
+        { name: 'roll', input: '3d6a', result: '~~1~~, 5, 2, 3\n14' },
+        stat
+      )
+      expect(fudged.result).toBe('14')
+      expect(fudged.roll).toBeUndefined()
     })
 
     it('keeps a total the writer changed under the same dice, and drops the dice', () => {
-      const before = answeredCommand({ name: 'roll', input: '3d6+1', result: 'd6: 3, 6, 5\n15' })
+      const before = answeredCommand({ name: 'roll', input: '3d6+1', result: '3, 6, 5 → 14\n15' })
       const fudged = answeredCommand(
-        { name: 'roll', input: '3d6+1', result: 'd6: 3, 6, 5\n18' },
+        { name: 'roll', input: '3d6+1', result: '3, 6, 5 → 14\n18' },
         before
       )
 
@@ -922,24 +1070,51 @@ describe('/roll', () => {
     })
 
     it('drops dice the notation does not throw', () => {
+      expect(read('3, 6\n10').roll).toBeUndefined()
+      expect(read('3, 6, 5, 2\n17').roll).toBeUndefined()
+      expect(read('3, 6, 9\n19').roll).toBeUndefined()
+      expect(read('3, 6, 9\n19').result).toBe('19')
       expect(read('d6: 3, 6\n10').roll).toBeUndefined()
       expect(read('d8: 3, 6, 4\n14').roll).toBeUndefined()
-      expect(read('d6: 3, 6, 9\n19').roll).toBeUndefined()
-      expect(read('d6: 3, 6, 9\n19').result).toBe('19')
+      expect(
+        answeredCommand({ name: 'roll', input: '2d6 - 2d6', result: '6, 2\n5, 1\n4, 4\n0' }).roll
+      ).toBeUndefined()
     })
 
     it('works the total out by min() and max()', () => {
       expect(
-        answeredCommand({ name: 'roll', input: 'max(2d20)+1', result: 'd20: 3, 15\n16' })
+        answeredCommand({ name: 'roll', input: 'max(2d20)+1', result: '~~3~~, 15\n16' })
       ).toMatchObject({ result: '16', roll: { dice: { d20: [3, 15] }, total: 16 } })
       expect(
-        answeredCommand({ name: 'roll', input: 'min(2d20)+1', result: 'd20: 12, 15' })
+        answeredCommand({ name: 'roll', input: 'min(2d20)+1', result: '12, 15' })
       ).toMatchObject({ result: '13', roll: { total: 13 } })
+    })
+
+    it('works the total and what was dropped out again for an advantage or a burden', () => {
+      const burden = result => answeredCommand({ name: 'roll', input: '3d20b', result })
+
+      expect(burden('~~18~~, 4, 11, 9\n24')).toMatchObject({
+        result: '24',
+        roll: { roll: '3d20b', dice: { d20: [18, 4, 11, 9] }, kept: { d20: [4, 11, 9] } },
+      })
+      // The struck die changed, with the strike and the total left behind.
+      expect(burden('~~2~~, 4, 11, 9\n24')).toMatchObject({
+        result: '15',
+        roll: { dice: { d20: [2, 4, 11, 9] }, kept: { d20: [2, 4, 9] }, total: 15 },
+      })
+      // The strikes left off, or put on the wrong die, are no matter: the dice
+      // decide. And so with the note rolls had before.
+      expect(burden('18, 4, 11, 9').roll?.kept).toEqual({ d20: [4, 11, 9] })
+      expect(burden('18, ~~4~~, 11, 9').roll?.kept).toEqual({ d20: [4, 11, 9] })
+      expect(burden('d20: 18, 4, 11, 9 (kept 18)').roll?.kept).toEqual({ d20: [4, 11, 9] })
+      // As many dice as are thrown, the extra one too.
+      expect(burden('18, 4, 11\n33').roll).toBeUndefined()
     })
 
     it('takes anything else as written', () => {
       expect(read('a lot')).toEqual(expect.objectContaining({ result: 'a lot' }))
       expect(read('a lot').roll).toBeUndefined()
+      expect(read('a lot\n18')).toEqual(expect.objectContaining({ result: 'a lot\n18' }))
     })
   })
 
@@ -949,7 +1124,7 @@ describe('/roll', () => {
     const command = await runCommand({ name: 'roll', input: 'd20' })
 
     expect(command.result).toBe('11')
-    expect(rollLines(command)).toEqual([])
+    expect(rollWorking(command)).toEqual([])
   })
 
   it('drops the dice once the total is not theirs', async () => {
@@ -959,7 +1134,7 @@ describe('/roll', () => {
     const fudged = { ...(await runCommand({ name: 'roll', input: '3d6' })), result: '18' }
 
     expect(rollOf(fudged)).toBeNull()
-    expect(rollLines(fudged)).toEqual([])
+    expect(rollWorking(fudged)).toEqual([])
     expect(renderCommand(fudged)).toBe('<roll>\n3d6\n18\n</roll>')
   })
 
@@ -989,6 +1164,40 @@ describe('/roll', () => {
     )
   })
 
+  it('adds, takes away, multiplies and divides dice, rather than asking about it', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5)
+
+    const times = await runCommand({ name: 'roll', input: '2d6 * 4' })
+    expect(times).toMatchObject({ result: '32' })
+    expect(commandDetail(times)).toBe('2d6 * 4')
+    expect(commandLabel(times)).toBe('')
+
+    expect(await runCommand({ name: 'roll', input: '2d6 - 2d6' })).toMatchObject({ result: '0' })
+    expect(await runCommand({ name: 'roll', input: '8d6 / 2' })).toMatchObject({ result: '16' })
+
+    const crit = await runCommand({ name: 'roll', input: '(2d6+1) x 2 for the crit' })
+    expect(crit).toMatchObject({ result: '18' })
+    expect(commandDetail(crit)).toBe('(2d6+1) x 2')
+    expect(commandLabel(crit)).toBe('for the crit')
+  })
+
+  it('refuses arithmetic it doesn’t do, rather than taking it for a question', () => {
+    expect(inspectCommand({ name: 'roll', input: '2d6 ^ 4' }).error).toMatch(/not "\^"/)
+    expect(inspectCommand({ name: 'roll', input: '2d6 % 4 for luck' }).error).toMatch(/not "%"/)
+    expect(inspectCommand({ name: 'roll', input: '8d6 / d4' }).error).toMatch(/whole number/)
+  })
+
+  it('still takes a question that starts with something like a sign', () => {
+    for (const [input, question] of [
+      ['d20 (for the climb)', '(for the climb)'],
+      ['d20 - does the rope hold?', '- does the rope hold?'],
+      ['2d6 x marks the spot', 'x marks the spot'],
+    ]) {
+      expect(inspectCommand({ name: 'roll', input }).error).toBeUndefined()
+      expect(commandLabel({ name: 'roll', input, label: input, result: '7' })).toBe(question)
+    }
+  })
+
   it('takes dice of one kind in min() and max()', () => {
     expect(inspectCommand({ name: 'roll', input: 'min(2d20+1)' }).error).toMatch(
       /dice of one kind in min\(\)/
@@ -998,6 +1207,24 @@ describe('/roll', () => {
     )
     expect(inspectCommand({ name: 'roll', input: 'max()' }).error).toMatch(/one kind/)
     expect(inspectCommand({ name: 'roll', input: 'min(2d1)' }).error).toMatch(/sides/i)
+  })
+
+  it('takes advantage and burden dice, with or without a question', () => {
+    for (const input of [
+      '3d6a',
+      'd20a+5',
+      '3d20b2',
+      '3D6A1 + 2',
+      '2d6a+1d4b for luck',
+      '3d20a2 a question that starts with a',
+      '3d20 a question without any',
+    ]) {
+      expect(inspectCommand({ name: 'roll', input }).error).toBeUndefined()
+    }
+    expect(inspectCommand({ name: 'roll', input: '3d6a1b1 for luck' }).error).toMatch(/both/)
+    expect(inspectCommand({ name: 'roll', input: '99d6a2 for luck' }).error).toMatch(
+      /between 1 and/i
+    )
   })
 
   it('refuses notation that is not dice, before anything is written', () => {
@@ -1537,12 +1764,12 @@ describe('/write', () => {
   })
 })
 
-describe('with an experimental skill switched off', () => {
+describe("without the harness's skills", () => {
   beforeEach(() => {
-    setExperimentalSkills([])
+    setTrialSkills([])
   })
 
-  it('leaves their commands out of the menu', () => {
+  it('has no commands of theirs', () => {
     const names = listCommands().map(entry => entry.name)
 
     expect(names).not.toContain('interpret')
@@ -1551,38 +1778,17 @@ describe('with an experimental skill switched off', () => {
     expect(matchCommands('wr')).toEqual([])
   })
 
-  it('refuses to run one, and says where it is switched on', async () => {
+  it('refuses one as it does any name it does not know', async () => {
     const consult = vi.fn()
 
     const outcome = await runCommand({ name: 'interpret', input: 'Who knocks?' }, { consult })
 
-    expect(outcome.error).toMatch(/experimental/)
-    expect(outcome.error).toContain('Settings › Skills')
+    expect(outcome.error).toBeTruthy()
     expect(consult).not.toHaveBeenCalled()
-    expect(commandSwitchedOff({ name: 'Write' })).toMatch(/^\/write is/)
-    expect(commandSwitchedOff({ name: 'compact' })).toBe('')
-    expect(commandSwitchedOff({ name: 'write', character: true })).toBe('')
   })
 
-  it('reads the records they left as it did', () => {
-    const draft = { name: 'write', input: 'A scene.', detail: 'A scene.', result: 'Prose.' }
-
-    expect(commandTakesTurn(draft)).toBe(true)
-    expect(renderCommand(draft)).toBe('<draft>\nProse.\n</draft>')
-    expect(inspectCommand({ name: 'interpret', input: 'Who knocks?' })).toMatchObject({
-      consults: true,
-      label: 'Who knocks?',
-    })
-  })
-
-  it('takes back only the one switched on', () => {
-    setExperimentalSkills(['write'])
-    const names = listCommands().map(entry => entry.name)
-
-    expect(names).toContain('write')
-    expect(names).not.toContain('interpret')
-    expect(commandSwitchedOff({ name: 'write' })).toBe('')
-    expect(commandSwitchedOff({ name: 'interpret' })).toMatch(/^\/interpret is/)
+  it('writes back the records they left as they were typed', () => {
+    expect(formatCommand({ name: 'write', input: 'A scene.' })).toBe('/write A scene.')
   })
 })
 

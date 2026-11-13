@@ -177,7 +177,7 @@ export async function startStandIn({ wordDelay = 35, speechDelay = 250, log = ()
     }
 
     if (path === '/openrouter/api/v1/auth/keys') return json({ key: DEMO_KEY })
-    if (path === '/openrouter/api/v1/auth/key') {
+    if (path === '/openrouter/api/v1/auth/key' || path === '/openrouter/api/v1/key') {
       return json({ data: { label: 'inksprite', usage: 0, limit: null, is_free_tier: false } })
     }
     if (path === '/openrouter/api/v1/models') return json({ data: OPENROUTER_MODELS })

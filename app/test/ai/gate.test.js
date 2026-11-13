@@ -41,7 +41,7 @@ const hosted = /** @type {any} */ ({ id: 'hosted', type: 'openrouter' })
 
 describe('defaultRoom', () => {
   it('asks a hosted service, and vLLM, as much at once as there is', () => {
-    for (const type of ['openrouter', 'anthropic', 'openai', 'gemini']) {
+    for (const type of ['openrouter', 'anthropic', 'openai', 'nanogpt', 'gemini']) {
       expect(defaultRoom(/** @type {any} */ ({ id: 'x', type }))).toBe(Infinity)
     }
     expect(defaultRoom(/** @type {any} */ ({ id: 'provider_vllm_default', type: 'generic' }))).toBe(

@@ -13,6 +13,11 @@ const { mockGetStory, mockGetProfile, mockSaveProfile } = vi.hoisted(() => ({
 // Mock the stores
 vi.mock('@/stores/chatsStore')
 vi.mock('@/stores/messagesStore')
+// Giving a chat the preset it runs on is useChatPresets.test.js's.
+vi.mock('@/composables/useChatPresets.js', () => ({
+  stampChats: vi.fn(async () => 0),
+  stampFor: vi.fn(() => null),
+}))
 vi.mock('@/stores/storiesStore', () => ({
   useStoriesStore: () => ({ getStory: mockGetStory }),
 }))
@@ -302,7 +307,6 @@ describe('useChats', () => {
 
       expect(chatsStore.createChat).toHaveBeenCalledWith(mockStoryId, 'New Discussion', null, {
         profileId: 'builtin_profile_chat',
-        disabledToolGroups: ['experimental'],
       })
       expect(result.title).toBe('New Discussion')
       expect(result.storyId).toBe(mockStoryId)
@@ -372,7 +376,6 @@ describe('useChats', () => {
 
       expect(chatsStore.createChat).toHaveBeenCalledWith(mockStoryId, undefined, null, {
         profileId: 'builtin_profile_chat',
-        disabledToolGroups: ['experimental'],
       })
       expect(result.title).toBe('New Chat')
     })
@@ -847,6 +850,17 @@ describe('useChats', () => {
     })
   })
 
+  describe('renameChat', () => {
+    it('gives the chat the writer’s name, ending a fork’s wait for one', () => {
+      composable.renameChat(mockChatId, 'The heist')
+
+      expect(chatsStore.updateChat).toHaveBeenCalledWith(mockChatId, {
+        title: 'The heist',
+        nameAfter: undefined,
+      })
+    })
+  })
+
   describe('forkChat', () => {
     beforeEach(async () => {
       await composable.init()
@@ -868,6 +882,16 @@ describe('useChats', () => {
         }
       )
       expect(forkedChat.title).toContain('- forked')
+    })
+
+    it('should wait to be named from what is said after its last copied message', () => {
+      const forkedChat = composable.forkChat(mockChatId, mockMessageId)
+      const lastCopy = messagesStore.duplicateMessage.mock.results.at(-1).value
+
+      expect(chatsStore.updateChat).toHaveBeenCalledWith(
+        forkedChat.id,
+        expect.objectContaining({ nameAfter: lastCopy.id })
+      )
     })
 
     it('should carry its settings over from the source chat', () => {
@@ -901,17 +925,13 @@ describe('useChats', () => {
       })
     })
 
-    it('should run the fork on the preset the chat ran on', () => {
-      chatsStore.chats.set(mockChatId, {
-        ...chatsStore.chats.get(mockChatId),
-        presetId: 'profile_glm',
-      })
+    it('should run the fork on the model the chat ran on', () => {
+      const ran = { providerId: 'provider_or', model: 'glm' }
+      chatsStore.chats.set(mockChatId, { ...chatsStore.chats.get(mockChatId), ...ran })
 
       composable.forkChat(mockChatId, mockMessageId)
 
-      expect(chatsStore.createChat.mock.calls.at(-1)[3]).toMatchObject({
-        presetId: 'profile_glm',
-      })
+      expect(chatsStore.createChat.mock.calls.at(-1)[3]).toMatchObject(ran)
     })
 
     it("should keep the chat's own wording of its prompt and skills", () => {
@@ -954,18 +974,20 @@ describe('useChats', () => {
       expect(carried.interpret).not.toBe(skills.interpret)
     })
 
-    it("should keep the chat's choice of web search and Python, off as well as on", () => {
+    it("should keep the chat's tools, the groups a profile offers only some of with them", () => {
       chatsStore.chats.set(mockChatId, {
         ...chatsStore.chats.get(mockChatId),
-        web: false,
-        python: true,
+        disabledTools: ['oracle'],
+        disabledToolGroups: ['web'],
+        onlyToolGroups: ['documents', 'web'],
       })
 
       composable.forkChat(mockChatId, mockMessageId)
 
       expect(chatsStore.createChat.mock.calls.at(-1)[3]).toMatchObject({
-        web: false,
-        python: true,
+        disabledTools: ['oracle'],
+        disabledToolGroups: ['web'],
+        onlyToolGroups: ['documents', 'web'],
       })
     })
 
@@ -975,8 +997,7 @@ describe('useChats', () => {
       const carried = chatsStore.createChat.mock.calls.at(-1)[3]
       expect(carried).not.toHaveProperty('prompt')
       expect(carried).not.toHaveProperty('skills')
-      expect(carried).not.toHaveProperty('web')
-      expect(carried).not.toHaveProperty('python')
+      expect(carried).not.toHaveProperty('onlyToolGroups')
     })
 
     it('should give the fork pins of its own to edit', () => {
