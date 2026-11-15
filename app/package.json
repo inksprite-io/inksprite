@@ -15,6 +15,7 @@
     "transcripts": "vite-node harness/run.js --",
     "surface": "node harness/surface.js",
     "tools": "vite-node harness/tools.js --",
+    "sync-flows": "node harness/sync/run.js",
     "files": "vite-node harness/files.js --",
     "source": "vite-node harness/source.js --",
     "scrivener": "vite-node harness/scrivener.js --",

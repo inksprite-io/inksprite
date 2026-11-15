@@ -331,7 +331,9 @@ const props = defineProps({
 })
 
 // `sent` says something went into the chat, which keeps a tab only being
-// looked at; `open-chat` asks for another chat, such as a fork, to be shown.
+// looked at, and names the chat: one that has just started is no longer the
+// unstarted chat the panel may be showing for want of a tab. `open-chat` asks
+// for another chat, such as a fork, to be shown.
 const emit = defineEmits(['open-chat', 'sent'])
 
 // Composables
@@ -844,7 +846,7 @@ const handleSendMessage = async () => {
 
   try {
     startIfUnstarted()
-    emit('sent')
+    emit('sent', props.chatId)
     // Clear draft immediately
     chatsApi.clearDraftMessage(props.chatId)
 
@@ -913,7 +915,7 @@ const handleInsertMessage = async role => {
 
   try {
     startIfUnstarted()
-    emit('sent')
+    emit('sent', props.chatId)
     chatsApi.clearDraftMessage(props.chatId)
     await seeIn(() => chatGeneration.insertMessage(messageContent, role))
   } catch (error) {

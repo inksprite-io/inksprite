@@ -39,7 +39,7 @@ const Chat = {
     return { forking }
   },
   template:
-    '<div data-chat :data-id="chatId"><button data-fork @click="$emit(\'open-chat\', { chatId: forking.to, send: forking.send })" /><button data-send @click="$emit(\'sent\')" /></div>',
+    '<div data-chat :data-id="chatId"><button data-fork @click="$emit(\'open-chat\', { chatId: forking.to, send: forking.send })" /><button data-send @click="$emit(\'sent\', chatId)" /></div>',
 }
 
 const mountPanel = async (props = {}) => {
@@ -96,6 +96,24 @@ describe('ChatPanel', () => {
     const id = chats.unstartedChat.value.id
     const wrapper = await mountPanel()
 
+    chats.startChat()
+    await wrapper.find('[data-send]').trigger('click')
+    await flushPromises()
+
+    expect(shown(wrapper)).toBe(id)
+    expect(strip(wrapper)).toEqual([id])
+  })
+
+  it('keeps showing a chat started with every tab closed', async () => {
+    const first = store.createChat('story_1', 'First')
+    const wrapper = await mountPanel()
+    useChatTabs('story_1').close(first.id)
+    await flushPromises()
+    const chats = useChats('story_1')
+    const id = chats.unstartedChat.value.id
+    expect(shown(wrapper)).toBe(id)
+
+    // As the chat does it: the chat is made, then the panel is told.
     chats.startChat()
     await wrapper.find('[data-send]').trigger('click')
     await flushPromises()

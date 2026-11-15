@@ -237,6 +237,23 @@ with each document's words, to set beside Scrivener's binder. `--show TITLE`
 prints the markdown of every document with that title. `harness/test-scriv/`
 is gitignored.
 
+## Sync and sharing flows
+
+`npm run sync-flows` goes through sync and sharing in a browser, as writers
+do: accounts made, signed out of and recovered, a second device, projects
+shared by friend code and by name, accepted, rejected, removed and restored,
+people blocked and unblocked. It starts a sync server of its own with nothing
+in it and the app beside it, and each account is a browser profile of its own
+(`harness/sync/`), so nothing reaches the hosted server. It needs the sync
+server's source beside the app, and Playwright from `docs/`.
+
+- `--only block` runs the flows with that in their names, `--headed` shows
+  the browser.
+- `--keep` makes four accounts, prints where the app and the server are and
+  the accounts' passphrase, and waits, for trying something by hand.
+- A flow that fails leaves a picture of each of its pages in
+  `harness/runs/sync/`.
+
 ## The loop
 
 1. Run the scenario five or so times.

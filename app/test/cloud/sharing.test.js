@@ -304,6 +304,21 @@ describe.skipIf(!HAVE_SERVER)('a project shared with a friend', () => {
     expect(a.db.chats.get('chat_late').title).toBe('Late')
   })
 
+  it('is sent first when it is shared before it has synced', async () => {
+    const owner = await writer()
+    const a = owner.device
+    writeProject(a)
+    const friend = await writer()
+    const f = friend.device
+    const { friend: code } = await f.engine.profile()
+
+    await shareWith(a, f, code)
+    await sync(f)
+
+    expect(f.db.stories.get('story_s')).toBeDefined()
+    expect(f.db.documents.get('doc_s1')).toBeDefined()
+  })
+
   it('says who is in it, by their account names, on both sides', async () => {
     const { owner, friend, a, f } = await sharedProject()
     await sync(f)

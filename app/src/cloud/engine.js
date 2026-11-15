@@ -1101,6 +1101,20 @@ export function createEngine({
   }
 
   /**
+   * A project's collection as the server lists it, sent first where it
+   * hasn't been: a project made a moment ago is shared as readily as any.
+   * @param {string} storyId
+   * @returns {Promise<ListedCollection|null>}
+   */
+  async function listedOnceSent(storyId) {
+    const listed = await listedFor(storyId)
+    if (listed) return listed
+    await noted()
+    await round()
+    return listedFor(storyId)
+  }
+
+  /**
    * Whether every chat and message of a project the server has is this
    * account's own, and none waits to go; and, shared with only some of its
    * documents, every one hidden from the others, with its files and versions.
@@ -1148,7 +1162,7 @@ export function createEngine({
     const letters = readFriendCode(code)
     if (!letters) throw new Error("That isn't a friend code.")
     await idle()
-    const listed = await listedFor(storyId)
+    const listed = await listedOnceSent(storyId)
     if (!listed || listed.deleted != null) {
       throw new Error("This project isn't on the sync server yet. Try again once it has synced.")
     }
@@ -1195,7 +1209,7 @@ export function createEngine({
    */
   async function setSelective(storyId, selective) {
     await idle()
-    const listed = await listedFor(storyId)
+    const listed = await listedOnceSent(storyId)
     if (!listed || listed.deleted != null) {
       throw new Error("This project isn't on the sync server yet. Try again once it has synced.")
     }

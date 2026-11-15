@@ -52,7 +52,7 @@
       :chat-id="activeId"
       class="flex-1 min-h-0 w-full"
       @open-chat="showChat"
-      @sent="chatTabs.keep(activeId)"
+      @sent="chatTabs.keep"
     />
   </div>
 </template>

@@ -6,6 +6,17 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.29
+
+A chat started with no tab open stays showing, and a project made a moment
+ago can be shared at once.
+
+- A chat started with every chat tab closed stays in its tab. The panel had
+  gone to an empty Untitled chat, with the chat just started left in the
+  chat list.
+- A project made a moment ago is shared at once: it is sent to the sync
+  server first. Share had said it wasn't on the sync server yet.
+
 ## v0.1.0-dev.28
 
 The AI set up from the chat, each chat keeping its own model, chats in tabs,
