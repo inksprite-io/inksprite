@@ -32,12 +32,16 @@
  * reason, rather than read out as noise.
  */
 
-import { unzipSync } from 'fflate'
+import { withoutHead } from './html.js'
+import { MIB, TooLargeError, unzipWithin } from '@/utils/unzip.js'
 import { DOMParser as ProseMirrorDOMParser } from 'prosemirror-model'
 import { schema } from '@/editor/schema.js'
 import { serializeMarkdown } from '@/editor/markdown.js'
 
 /** The files an epub's text is in, or that say where it is. */
+/** The most text a book is taken to hold, unpacked: far more than any does. */
+const MOST_TEXT = 256 * MIB
+
 const READ = /\.(xml|opf|ncx|x?html?)$/i
 
 /** What is dropped from a page whole: it is never the book's words. */
@@ -69,8 +73,17 @@ function attributesOf(tag) {
  */
 function tagsNamed(source, name) {
   const pattern = new RegExp(`<(?:[\\w-]+:)?${name}(?=[\\s/>])[^>]*>`, 'g')
-  return [...source.matchAll(pattern)].map(([tag]) => attributesOf(tag))
+  return [...closedTags(source).matchAll(pattern)].map(([tag]) => attributesOf(tag))
 }
+
+/**
+ * A source up to the last `>` in it: after that no tag ends, and a pattern
+ * for a tag would go over what is left once for every `<` in it.
+ *
+ * @param {string} source
+ * @returns {string}
+ */
+const closedTags = source => source.slice(0, source.lastIndexOf('>') + 1)
 
 /**
  * The five entities XML has, and numeric ones; enough for titles and paths.
@@ -184,6 +197,9 @@ const labelText = label =>
     .replace(/\s+/g, ' ')
     .trim()
 
+/** The most levels a table of contents is read to. */
+const DEEPEST = 32
+
 /**
  * Read a table of contents as the tree it is: an NCX's nested navPoints, or
  * the nested lists of a nav page's `toc` nav. Read by walking its tags with a
@@ -202,14 +218,22 @@ export function readToc(source, path) {
   const root = { title: '', path: '', fragment: '', children: [] }
   const stack = [root]
   const top = () => stack[stack.length - 1]
+  // No book's contents go this many levels down, and one that says it does
+  // would be walked a level at a time until the walk ran out of room.
+  let tooDeep = 0
   const open = () => {
+    if (stack.length > DEEPEST) {
+      tooDeep++
+      return
+    }
     /** @type {TocEntry} */
     const entry = { title: '', path: '', fragment: '', children: [] }
     top().children.push(entry)
     stack.push(entry)
   }
   const close = () => {
-    if (stack.length > 1) stack.pop()
+    if (tooDeep > 0) tooDeep--
+    else if (stack.length > 1) stack.pop()
   }
   const point = (/** @type {string} */ href) => {
     const entry = top()
@@ -227,31 +251,65 @@ export function readToc(source, path) {
     if (entry !== root && !entry.title && !entry.children.length) entry.title = labelText(label)
   }
 
-  if (/<(?:[\w-]+:)?navMap/i.test(source)) {
+  // Each element is found from the front, once, and its end looked for from
+  // there: a pattern for the pair went over the rest of the source for every
+  // opening tag that had no end. One with no end has none after it either,
+  // so its kind is looked for no more.
+  const text = closedTags(source)
+  if (/<(?:[\w-]+:)?navMap/i.test(text)) {
     // NCX: <navPoint><navLabel><text>Title</text></navLabel><content src="…"/>…</navPoint>
-    const map = source
-      .slice(source.search(/<(?:[\w-]+:)?navMap/i))
-      .split(/<\/(?:[\w-]+:)?navMap>/)[0]
+    const map = text.slice(text.search(/<(?:[\w-]+:)?navMap/i)).split(/<\/(?:[\w-]+:)?navMap>/)[0]
     const tokens =
-      /<(\/?)(?:[\w-]+:)?navPoint\b[^>]*>|<(?:[\w-]+:)?text>([\s\S]*?)<\/(?:[\w-]+:)?text>|<(?:[\w-]+:)?content\b([^>]*)>/g
-    for (const [, closing, label, content] of map.matchAll(tokens)) {
+      /<(\/?)(?:[\w-]+:)?navPoint\b[^>]*>|<(?:[\w-]+:)?text>|<(?:[\w-]+:)?content\b([^>]*)>/g
+    const ends = /<\/(?:[\w-]+:)?text>/g
+    let labelled = true
+    for (let found; (found = tokens.exec(map)); ) {
+      const [, closing, content] = found
       if (content !== undefined) point(attributesOf(content).src)
-      else if (label !== undefined) name(label)
-      else if (closing) close()
-      else open()
+      else if (closing !== undefined) closing ? close() : open()
+      else if (labelled) {
+        ends.lastIndex = tokens.lastIndex
+        const end = ends.exec(map)
+        if (!end) {
+          labelled = false
+          continue
+        }
+        name(map.slice(tokens.lastIndex, end.index))
+        tokens.lastIndex = ends.lastIndex
+      }
     }
   } else {
     // Nav: the `toc` nav's lists; the landmarks and page lists are not chapters.
-    const navs = [...source.matchAll(/<nav\b([^>]*)>([\s\S]*?)<\/nav>/g)]
-    const toc = navs.find(([, attrs]) => /type\s*=\s*["']toc["']/.test(attrs)) || navs[0]
-    const tokens = /<(\/?)li\b[^>]*>|<a\b([^>]*)>([\s\S]*?)<\/a>|<span\b[^>]*>([\s\S]*?)<\/span>/g
-    for (const [, closing, attrs, linked, plain] of (toc?.[2] || '').matchAll(tokens)) {
-      if (attrs !== undefined) {
-        if (!top().title) point(attributesOf(attrs).href)
-        name(linked)
-      } else if (plain !== undefined) name(plain)
-      else if (closing) close()
-      else open()
+    /** @type {Array<[string, string]>} Each nav's attributes, and what it holds */
+    const navs = []
+    const opens = /<nav\b([^>]*)>/g
+    for (let found; (found = opens.exec(text)); ) {
+      const end = text.indexOf('</nav>', opens.lastIndex)
+      if (end < 0) break
+      navs.push([found[1], text.slice(opens.lastIndex, end)])
+      opens.lastIndex = end + '</nav>'.length
+    }
+    const toc = navs.find(([attrs]) => /type\s*=\s*["']toc["']/.test(attrs)) || navs[0]
+    const held = toc?.[1] || ''
+    const tokens = /<(\/?)li\b[^>]*>|<(a|span)\b([^>]*)>/g
+    const endless = new Set()
+    for (let found; (found = tokens.exec(held)); ) {
+      const [, closing, element, attrs] = found
+      if (!element) {
+        if (closing) close()
+        else open()
+        continue
+      }
+      if (endless.has(element)) continue
+      const end = held.indexOf(`</${element}>`, tokens.lastIndex)
+      if (end < 0) {
+        endless.add(element)
+        continue
+      }
+      const label = held.slice(tokens.lastIndex, end)
+      tokens.lastIndex = end + element.length + 3
+      if (element === 'a' && !top().title) point(attributesOf(attrs).href)
+      name(label)
     }
   }
 
@@ -298,7 +356,7 @@ const CONTAINERS = new Set([
  */
 export function pageMarkdown(source, cuts = new Map()) {
   // The head is links to stylesheets and fonts, which a parser may go and fetch.
-  const body = source.replace(/<head\b[\s\S]*?<\/head>/i, '')
+  const body = withoutHead(source)
   const page = new DOMParser().parseFromString(body, 'text/html')
   for (const [fragment, marker] of cuts) {
     const paragraph = page.createElement('p')
@@ -581,11 +639,16 @@ export function extractEpub(data) {
   /** @type {Record<string, Uint8Array>} */
   let raw
   try {
-    raw = unzipSync(data instanceof Uint8Array ? data : new Uint8Array(data), {
+    raw = unzipWithin(
+      data instanceof Uint8Array ? data : new Uint8Array(data),
+      MOST_TEXT,
       // Pictures and fonts are most of a book's bytes and none of its words.
-      filter: entry => READ.test(entry.name),
-    })
-  } catch {
+      entry => READ.test(entry.name)
+    )
+  } catch (error) {
+    if (error instanceof TooLargeError) {
+      throw new Error('This epub cannot be opened: it is too large.')
+    }
     throw new Error('This epub cannot be opened: it is not a zip file.')
   }
   const decoder = new TextDecoder('utf-8')

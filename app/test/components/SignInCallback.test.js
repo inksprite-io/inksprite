@@ -4,12 +4,12 @@ import SignInCallback from '@/components/oauth/SignInCallback.vue'
 
 /** Finishing a sign-in: the service's type, then what the writer came back with. */
 const finish = vi.hoisted(() => vi.fn())
+/** Telling the app's other windows, which the tab that started the sign-in is among. */
+const tell = vi.hoisted(() => vi.fn())
 vi.mock('@/composables/useSignIn.js', () => ({
   useSignIn: type => ({ finish: params => finish(type, params) }),
+  tellSignedIn: (...args) => tell(...args),
 }))
-
-/** The tab that started the sign-in. */
-const opener = { closed: false, postMessage: vi.fn() }
 
 /** @param {string} service */
 const mountCallback = service => mount(SignInCallback, { props: { service } })
@@ -17,15 +17,12 @@ const mountCallback = service => mount(SignInCallback, { props: { service } })
 describe('SignInCallback', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    opener.closed = false
-    window.opener = opener
     vi.spyOn(window, 'close').mockImplementation(() => {})
     vi.spyOn(console, 'error').mockImplementation(() => {})
     window.history.replaceState({}, '', '/connect/nanogpt?code=abc&state=xyz')
   })
 
   afterEach(() => {
-    window.opener = null
     vi.restoreAllMocks()
   })
 
@@ -40,7 +37,7 @@ describe('SignInCallback', () => {
     expect(type).toBe('nanogpt')
     expect(params.get('code')).toBe('abc')
     expect(params.get('state')).toBe('xyz')
-    expect(opener.postMessage).not.toHaveBeenCalled()
+    expect(tell).not.toHaveBeenCalled()
     expect(window.close).not.toHaveBeenCalled()
   })
 
@@ -55,26 +52,11 @@ describe('SignInCallback', () => {
     const wrapper = mountCallback('nanogpt')
     await flushPromises()
 
-    expect(opener.postMessage).toHaveBeenCalledWith(
-      { type: 'oauth-success', provider: 'nanogpt', providerId: 'provider_nano' },
-      window.location.origin
-    )
+    expect(tell).toHaveBeenCalledWith('nanogpt', 'provider_nano')
     expect(window.close).toHaveBeenCalled()
     // For a tab the browser won't let close itself.
     expect(wrapper.find('h2').text()).toBe('Connected')
     expect(wrapper.text()).toContain('You can close this tab.')
-  })
-
-  it('tells nobody where the tab that started it is gone', async () => {
-    opener.closed = true
-    finish.mockResolvedValue('provider_nano')
-
-    const wrapper = mountCallback('nanogpt')
-    await flushPromises()
-
-    expect(opener.postMessage).not.toHaveBeenCalled()
-    expect(wrapper.find('h2').text()).toBe('Connected')
-    expect(window.close).toHaveBeenCalled()
   })
 
   it('shows the service’s own refusal, and stays open to be read', async () => {
@@ -86,7 +68,7 @@ describe('SignInCallback', () => {
     expect(wrapper.find('h2').text()).toBe('Couldn’t connect')
     expect(wrapper.find('.error-message').text()).toBe('NanoGPT sent no code to sign in with.')
     expect(wrapper.text()).toContain('You can close this tab and try again.')
-    expect(opener.postMessage).not.toHaveBeenCalled()
+    expect(tell).not.toHaveBeenCalled()
     expect(window.close).not.toHaveBeenCalled()
   })
 

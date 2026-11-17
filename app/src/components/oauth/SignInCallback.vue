@@ -31,7 +31,7 @@
  * closes.
  */
 import { ref, onMounted } from 'vue'
-import { useSignIn } from '@/composables/useSignIn.js'
+import { tellSignedIn, useSignIn } from '@/composables/useSignIn.js'
 import { providerLabel } from '@/ai/providers.js'
 
 const props = defineProps({
@@ -51,13 +51,9 @@ onMounted(async () => {
 
     status.value = 'success'
 
-    // Notify the opener tab that OAuth completed successfully
-    if (window.opener && !window.opener.closed) {
-      window.opener.postMessage(
-        { type: 'oauth-success', provider: props.service, providerId },
-        window.location.origin
-      )
-    }
+    // The app's other windows hear it: this tab has no way back to the one
+    // that opened it.
+    tellSignedIn(props.service, providerId)
 
     window.close()
   } catch (error) {

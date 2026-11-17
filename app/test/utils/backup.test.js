@@ -875,6 +875,15 @@ describe('withFreshIds', () => {
   let minted = 0
   const mint = (/** @type {string} */ prefix) => `${prefix}_new${++minted}`
 
+  it('refuses a project with a row that has no id, which it would look for forever', () => {
+    const nameless = { ...project(), story: { ...project().story, id: '' } }
+    expect(() => withFreshIds(nameless)).toThrow('has no id')
+
+    const lost = project()
+    lost.documents = [...lost.documents, { storyId: lost.story.id, title: 'No id' }]
+    expect(() => withFreshIds(lost)).toThrow('has no id')
+  })
+
   it('gives every row a new id', () => {
     minted = 0
     const fresh = withFreshIds(project(), mint)

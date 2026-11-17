@@ -24,7 +24,7 @@ vi.mock('@/platform/signIn.js', async importOriginal => ({
   signInInBrowser: browser.signInInBrowser,
 }))
 
-import { useSignIn, signInPath } from '@/composables/useSignIn.js'
+import { openApart, tellSignedIn, useSignIn, signInPath } from '@/composables/useSignIn.js'
 import { signInOf } from '@/ai/providers.js'
 
 beforeEach(() => {
@@ -98,7 +98,8 @@ describe('finish', () => {
 
 describe('start', () => {
   it('opens a tab in a browser, coming back to this origin, for the connection shown', async () => {
-    const open = vi.fn()
+    const tab = { opener: {}, location: { href: '' } }
+    const open = vi.fn(() => tab)
     vi.stubGlobal('window', { location: { origin: 'https://app.example' }, open })
 
     await useSignIn('nanogpt').start({ providerId: 'p_mine' })
@@ -108,8 +109,20 @@ describe('start', () => {
       'https://app.example/connect/nanogpt',
       'p_mine'
     )
-    expect(open).toHaveBeenCalledWith('https://service.example/auth?x', '_blank')
+    // Opened empty, cut loose from this tab, and only then sent to the service.
+    expect(open).toHaveBeenCalledWith('', '_blank')
+    expect(tab.opener).toBeNull()
+    expect(tab.location.href).toBe('https://service.example/auth?x')
     expect(browser.signInInBrowser).not.toHaveBeenCalled()
+  })
+
+  it('opens it with no opener where the browser hands back no tab', () => {
+    const open = vi.fn(() => null)
+    vi.stubGlobal('window', { location: { origin: 'https://app.example' }, open })
+
+    openApart('https://service.example/auth?x')
+
+    expect(open).toHaveBeenLastCalledWith('https://service.example/auth?x', '_blank', 'noopener')
   })
 
   it('in the desktop window, waits in the system browser, finishes, and says so', async () => {
@@ -134,6 +147,23 @@ describe('start', () => {
     expect(postMessage).toHaveBeenCalledWith(
       { type: 'oauth-success', provider: 'openrouter', providerId: 'provider_openrouter_made' },
       'app://inksprite'
+    )
+  })
+})
+
+describe('a sign-in finished in another tab', () => {
+  it('is told on a channel, and said in the window that hears as its own would be', async () => {
+    const postMessage = vi.fn()
+    vi.stubGlobal('window', { location: { origin: 'https://app.example' }, postMessage })
+    // Any use of it in a window opens the window's ear.
+    useSignIn('openrouter')
+
+    tellSignedIn('openrouter', 'provider_made')
+    await vi.waitFor(() => expect(postMessage).toHaveBeenCalled())
+
+    expect(postMessage).toHaveBeenCalledWith(
+      { type: 'oauth-success', provider: 'openrouter', providerId: 'provider_made' },
+      'https://app.example'
     )
   })
 })

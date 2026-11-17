@@ -114,6 +114,23 @@ function walk(node, parts) {
 }
 
 /**
+ * A page without its head, which is links to stylesheets and fonts a parser
+ * may go and fetch. Found from the front, once: a pattern that looked for
+ * the head's end from each `<head` went over the rest of the page for every
+ * one that had no end.
+ *
+ * @param {string} source - The HTML
+ * @returns {string}
+ */
+export function withoutHead(source) {
+  const open = /<head\b/i.exec(source)
+  if (!open) return source
+  const close = /<\/head>/gi
+  close.lastIndex = open.index
+  return close.exec(source) ? source.slice(0, open.index) + source.slice(close.lastIndex) : source
+}
+
+/**
  * A page as markdown, for reading: the article's blocks, emphasis, lists,
  * tables and links, read through the editor's schema as a paste is, so the
  * schema decides what comes through and the rest is left out.
@@ -134,7 +151,7 @@ function walk(node, parts) {
  * @returns {string}
  */
 export function markdownOfHtml(source, { pictures = false } = {}) {
-  const body = source.replace(/<head\b[\s\S]*?<\/head>/i, '')
+  const body = withoutHead(source)
   const page = new DOMParser().parseFromString(body, 'text/html')
   const dropped = pictures ? `${DROPPED}, ${UNSHOWN}` : `${DROPPED}, ${UNSHOWN}, img`
   for (const node of page.querySelectorAll(dropped)) node.remove()

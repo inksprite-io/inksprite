@@ -13,6 +13,8 @@ import {
   listServer,
   promptText,
   resultForModel,
+  withinLimit,
+  MOST_ANSWER,
 } from '@/mcp/client.js'
 
 /**
@@ -217,6 +219,22 @@ describe('describeFailure', () => {
     expect(describeFailure(new Error(`MCP error: ${JSON.stringify(issues)}`))).toMatch(/not an MCP/)
     expect(describeFailure(Object.assign(new Error('bad'), { issues }))).toMatch(/not an MCP/)
     expect(describeFailure(new Error('Unexpected content type: text/html'))).toMatch(/not an MCP/)
+  })
+})
+
+describe('withinLimit', () => {
+  it('hands on an answer that fits as it came, and cuts one that doesn’t, saying how much went', () => {
+    expect(withinLimit('short')).toBe('short')
+    expect(withinLimit({ error: 'no' })).toEqual({ error: 'no' })
+
+    const cut = withinLimit('a'.repeat(MOST_ANSWER + 2500))
+    expect(cut.startsWith('a'.repeat(MOST_ANSWER))).toBe(true)
+    expect(cut.length).toBeLessThan(MOST_ANSWER + 200)
+    expect(cut).toContain('2,500 more characters were left out')
+
+    const refused = withinLimit({ error: 'x'.repeat(30) }, 10)
+    expect(refused.error).toContain('20 more characters were left out')
+    expect(refused.error.startsWith('x'.repeat(10))).toBe(true)
   })
 })
 

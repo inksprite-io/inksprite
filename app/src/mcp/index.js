@@ -61,5 +61,6 @@ export {
   disconnect,
   describeFailure,
   resultForModel,
+  withinLimit,
 } from './client.js'
 export { signedIn, signOut, startSignIn, finishSignIn, SignInError } from './auth.js'

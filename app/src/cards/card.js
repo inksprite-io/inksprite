@@ -173,10 +173,33 @@ export function readLorebook(value) {
  */
 export function uncomment(value) {
   if (!value) return ''
-  return value
-    .replace(/^[ \t]*\{\{\/\/[\s\S]*?\}\}[ \t]*(?:\r?\n|$)/gm, '')
-    .replace(/\{\{\/\/[\s\S]*?\}\}/g, '')
+  // Read once, from the front: a pattern that looked for each comment's end
+  // from its start went over the rest of the text for every `{{//` with no
+  // end, and a field of nothing but those took minutes.
+  let out = ''
+  let at = 0
+  for (;;) {
+    const open = value.indexOf('{{//', at)
+    const close = open < 0 ? -1 : value.indexOf('}}', open + 4)
+    if (close < 0) return out + value.slice(at)
+    let from = open
+    let to = close + 2
+    // On a line of its own, it takes the line: nothing but spaces before it
+    // on the line, and nothing but spaces after it.
+    let blank = open
+    while (blank > at && (value[blank - 1] === ' ' || value[blank - 1] === '\t')) blank--
+    LINE_END.lastIndex = to
+    if ((blank === 0 || value[blank - 1] === '\n') && LINE_END.test(value)) {
+      from = blank
+      to = LINE_END.lastIndex
+    }
+    out += value.slice(at, from)
+    at = to
+  }
 }
+
+/** What is left of a line after a comment that had the line to itself. */
+const LINE_END = /[ \t]*(?:\r?\n|$)/my
 
 /** Where what a card overrides goes, as ST writes it. */
 const ORIGINAL = /\{\{\s*original\s*\}\}/i

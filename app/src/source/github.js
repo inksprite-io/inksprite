@@ -14,6 +14,10 @@
  */
 
 import { unzipSync } from 'fflate'
+import { MIB, unzipWithin } from '@/utils/unzip.js'
+
+/** The most of a repository's archive that is unpacked: the files the rules let in. */
+const MOST_SOURCE = 1024 * MIB
 import { fetch } from '@/platform/fetch.js'
 import { isDesktop } from '@/platform/desktop.js'
 import { gatherSource } from './gather.js'
@@ -185,7 +189,7 @@ export async function readArchive(bytes, { subpath = '', signal, onProgress } = 
     prepare: kept => {
       const wanted = new Set(kept.map(entry => /** @type {any} */ (entry).name))
       inflated = new Map(
-        Object.entries(unzipSync(bytes, { filter: file => wanted.has(file.name) }))
+        Object.entries(unzipWithin(bytes, MOST_SOURCE, file => wanted.has(file.name)))
       )
     },
   })

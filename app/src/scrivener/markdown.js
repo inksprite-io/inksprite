@@ -87,7 +87,7 @@ export function markdownOfBlocks(blocks) {
         lines.push(line.runs.map(run => run.text).join(''))
         at++
       }
-      const text = lines.join('\n').replace(/^\n+|\s+$/g, '')
+      const text = lines.join('\n').replace(/^\n+/, '').trimEnd()
       if (text) nodes.push(schema.nodes.code_block.create(null, schema.text(text)))
       continue
     }

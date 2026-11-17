@@ -500,3 +500,27 @@ export function resultForModel(result) {
   const text = parts.join('\n\n') || '(The tool returned nothing.)'
   return result?.isError ? { error: text } : text
 }
+
+/**
+ * The most of a server's answer the model is handed, in characters: some
+ * twenty-five thousand tokens. A server answers with whatever it likes, and
+ * every character of it is paid for on each turn from then on.
+ */
+export const MOST_ANSWER = 100_000
+
+/**
+ * A tool's answer as the model reads it, cut where it runs past the most it
+ * is handed, and saying so: how much was left out, so the model asks for
+ * less at a time rather than taking the cut for the end.
+ *
+ * @param {string|{error: string}} read - As `resultForModel` gave it
+ * @param {number} [most]
+ * @returns {string|{error: string}}
+ */
+export function withinLimit(read, most = MOST_ANSWER) {
+  const text = typeof read === 'string' ? read : read.error
+  if (text.length <= most) return read
+  const left = (text.length - most).toLocaleString('en-US')
+  const cut = `${text.slice(0, most)}\n\n[The answer was cut here: ${left} more characters were left out. Ask the tool for less at a time.]`
+  return typeof read === 'string' ? cut : { error: cut }
+}

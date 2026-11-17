@@ -140,6 +140,8 @@ export function useMcpServers() {
   const signIn = url => {
     const desktop = isDesktop()
     const tab = desktop ? null : window.open('', '_blank')
+    // With no way back to this tab, for whatever page it is sent on to.
+    if (tab) tab.opener = null
     const waiting = new AbortController()
     return new Promise(resolve => {
       const channel = new BroadcastChannel(SIGN_IN_CHANNEL)
@@ -169,7 +171,7 @@ export function useMcpServers() {
               error => waiting.signal.aborted || done({ error: error.message })
             )
         } else if (tab) tab.location.href = address.toString()
-        else window.open(address.toString(), '_blank')
+        else window.open(address.toString(), '_blank', 'noopener')
       })
         .then(result => {
           // Signed in already, or a refresh was enough: nowhere to go.

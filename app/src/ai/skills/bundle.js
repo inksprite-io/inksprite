@@ -20,7 +20,11 @@
  * and all, which is the shape every tool that reads skills expects.
  */
 
-import { strToU8, unzipSync, zipSync } from 'fflate'
+import { strToU8, zipSync } from 'fflate'
+import { MIB, unzipWithin } from '@/utils/unzip.js'
+
+/** The most a zip of skills is taken to hold, unpacked. */
+const MOST_BUNDLE = 64 * MIB
 import { joinSkill, splitSkill } from './format.js'
 
 /** @typedef {import('../../types/models.js').SkillFile} SkillFile */
@@ -84,7 +88,7 @@ function textOf(bytes) {
  * @returns {BundleEntry[]}
  */
 export function entriesFromZip(bytes) {
-  return Object.entries(unzipSync(bytes))
+  return Object.entries(unzipWithin(bytes, MOST_BUNDLE))
     .filter(([path]) => !path.endsWith('/'))
     .map(([path, data]) => ({ path, bytes: data }))
 }

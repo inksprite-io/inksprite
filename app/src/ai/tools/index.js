@@ -149,7 +149,7 @@ import { allServers, getServer, onServersChanged, reachable } from '../../mcp/se
 import { SKILLS_GROUP } from './choice.js'
 import { offEverywhere } from './everywhere.js'
 import { serverGroup } from '../../mcp/names.js'
-import { callServerTool, describeFailure, resultForModel } from '../../mcp/client.js'
+import { callServerTool, describeFailure, resultForModel, withinLimit } from '../../mcp/client.js'
 import {
   SAVE_TIMEOUT_MS,
   SAVE_WEB_PAGE,
@@ -425,7 +425,7 @@ async function runServerTool(serverId, name, args, signal) {
   try {
     // Waited for as long as the chat waits, not the SDK's minute.
     const options = { signal, timeout: SERVER_TOOL_TIMEOUT_MS }
-    return resultForModel(await callServerTool(server, name, args, options))
+    return withinLimit(resultForModel(await callServerTool(server, name, args, options)))
   } catch (error) {
     return { error: describeFailure(error) }
   }

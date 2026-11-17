@@ -90,6 +90,7 @@ export async function writeArchive(backup, { entryChars = ENTRY_CHARS } = {}) {
  * @property {string} name
  * @property {number} method - 0 stored, 8 deflated
  * @property {number} size - As stored
+ * @property {number} length - Unpacked, as its directory says
  * @property {number} offset - Of its local header
  */
 
@@ -191,6 +192,7 @@ async function entriesOf(file) {
     entries.push({
       method: directory.getUint16(at + 10, true),
       size: directory.getUint32(at + 20, true),
+      length: directory.getUint32(at + 24, true),
       offset: directory.getUint32(at + 42, true),
       name: decoder.decode(
         new Uint8Array(directory.buffer, directory.byteOffset + at + 46, nameLength)
@@ -227,6 +229,9 @@ async function blobOf(file, entry, type) {
   return new Blob([await bytesOf(file, entry, start)], { type })
 }
 
+/** The most one entry of a backup is taken to hold, unpacked: twice the largest file the app takes. */
+const MOST_ENTRY = 2048 * 1024 * 1024
+
 /**
  * An entry's bytes, read and inflated.
  * @param {Blob} file
@@ -238,7 +243,14 @@ async function bytesOf(file, entry, from) {
   const start = from ?? (await dataStart(file, entry))
   const stored = new Uint8Array(await file.slice(start, start + entry.size).arrayBuffer())
   if (entry.method === 0) return stored
-  if (entry.method === 8) return /** @type {Uint8Array<ArrayBuffer>} */ (inflateSync(stored))
+  if (entry.method === 8) {
+    // No more than it says it holds, and not that when it says too much: a
+    // few kilobytes can inflate to gigabytes.
+    if (entry.length > MOST_ENTRY) throw new Error('This backup has a part too large to read.')
+    return /** @type {Uint8Array<ArrayBuffer>} */ (
+      inflateSync(stored, { out: new Uint8Array(entry.length) })
+    )
+  }
   throw new Error(`This zip uses a compression inksprite can't read (${entry.method}).`)
 }
 

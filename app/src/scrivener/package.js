@@ -19,6 +19,10 @@
  */
 
 import { unzipSync } from 'fflate'
+import { MIB, unzipWithin } from '@/utils/unzip.js'
+
+/** The most a zipped project is taken to hold, unpacked. */
+const MOST_PROJECT = 2048 * MIB
 import { folderOf } from '@/files/batch.js'
 
 /**
@@ -117,12 +121,14 @@ export async function packageOfZip(zip) {
   const found = /** @type {string} */ (binder)
   const slash = found.lastIndexOf('/')
   const prefix = found.slice(0, slash + 1)
-  const unpacked = unzipSync(bytes, {
-    filter: entry =>
+  const unpacked = unzipWithin(
+    bytes,
+    MOST_PROJECT,
+    entry =>
       entry.name.startsWith(prefix) &&
       !entry.name.startsWith('__MACOSX/') &&
-      !entry.name.endsWith('/'),
-  })
+      !entry.name.endsWith('/')
+  )
   /** @type {Map<string, Blob>} */
   const files = new Map()
   for (const [path, data] of Object.entries(unpacked)) {
