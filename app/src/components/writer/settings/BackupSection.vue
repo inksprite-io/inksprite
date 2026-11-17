@@ -43,15 +43,16 @@
       :visible="restoring !== null"
       :message="restoring?.message ?? ''"
       :addable="restoring?.addable ?? null"
+      :here="restoring?.here ?? []"
+      :plan="restoring?.plan ?? null"
       @update:visible="restoreDialogShown"
-      @replace="replaceAll"
       @add="addPicked"
     />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import Button from 'primevue/button'
 import { useConfirm } from 'primevue/useconfirm'
 import { useBackup } from '@/composables/useBackup'
@@ -86,11 +87,12 @@ const isImporting = ref(false)
 const fileInput = ref(null)
 /**
  * The whole backup being asked about: what it holds, said, and what of it
- * can be added.
+ * can be added. Held as it was read, since its rows go to storage as they
+ * are, which takes nothing Vue has wrapped.
  *
- * @type {import('vue').Ref<{backup: Backup, message: string, addable: import('@/composables/useBackup').BackupAddable}|null>}
+ * @type {import('vue').Ref<{message: string, addable: import('@/composables/useBackup').BackupAddable, here: string[], plan: SettingsImport}|null>}
  */
-const restoring = ref(null)
+const restoring = shallowRef(null)
 
 /** What a web search service is called, for naming the keys a file left out. */
 const webName = (/** @type {string} */ id) => getWebService(id)?.name ?? id
@@ -153,7 +155,7 @@ const handleFileChange = async event => {
     const read = await backup.readDataFile(file)
     if (read.kind === 'settings') askToImportSettings(read.backup, read.plan)
     else if (read.kind === 'selection') askToImportSelection(read.backup, read.selection)
-    else askToRestore(read.backup, read.addable)
+    else askToRestore(read)
   } catch (error) {
     console.error('Import failed:', error)
     toast.error(error.message)
@@ -162,21 +164,20 @@ const handleFileChange = async event => {
 }
 
 /**
- * Ask whether a whole backup takes the place of everything here, or only
- * some of its projects and cards are added beside what is here.
+ * Ask what of a whole backup to take: its projects and cards, added beside
+ * what is here, and its settings, merged into those here.
  *
- * @param {Backup} parsed
- * @param {import('@/composables/useBackup').BackupAddable} addable
+ * @param {Extract<Awaited<ReturnType<typeof backup.readDataFile>>, {kind: 'backup'}>} read
  */
-function askToRestore(parsed, addable) {
+function askToRestore({ backup: parsed, addable, here, plan }) {
   // The keys to enter again afterwards, named while the writer can still
   // go and find them: otherwise a chat or a search is how they find out.
-  const leftOut = keysLeftOut(parsed, webName)
+  const leftOut = keysLeftOut({ ...parsed, tables: plan.rows }, webName)
   const keys = leftOut.length > 0 ? ` Keys left out: ${leftOut.join(', ')}.` : ''
-  restoring.value = { backup: parsed, message: `${describeBackupContents(parsed)}${keys}`, addable }
+  restoring.value = { message: `${describeBackupContents(parsed)}${keys}`, addable, here, plan }
 }
 
-/** Whether the dialog closed on a restore or an add, which keeps the spinner going. */
+/** Whether the dialog closed on an add, which keeps the spinner going. */
 let taking = false
 
 /** @param {boolean} visible */
@@ -186,36 +187,23 @@ function restoreDialogShown(visible) {
   if (!taking) isImporting.value = false
 }
 
-/** Put the backup asked about in place of everything here, and start again on it. */
-async function replaceAll() {
-  const parsed = restoring.value?.backup
-  if (!parsed) return
-  taking = true
-  try {
-    await backup.restoreBackup(parsed)
-    // Every Pinia store is holding rows that no longer exist. Reloading
-    // is the only honest way back to a consistent view.
-    window.location.reload()
-  } catch (error) {
-    console.error('Backup restore failed:', error)
-    toast.error(`The backup couldn't be restored. ${error.message}`)
-    taking = false
-    isImporting.value = false
-  }
-}
-
 /**
- * Add the projects and cards ticked of a backup beside what is here, and say
- * what was added, since none of it shows from here.
+ * Add the projects and cards ticked of a backup beside what is here, with
+ * its settings when they are ticked, and say what was added, since none of
+ * it shows from here; settings changed reload the page instead.
  *
- * @param {import('@/composables/useBackup').BackupAddable} taken
+ * @param {import('@/composables/useBackup').BackupAddable & {settings: boolean}} taken
  */
-async function addPicked(taken) {
+async function addPicked({ settings, ...taken }) {
+  const plan = restoring.value?.plan
   taking = true
   try {
-    const done = await backup.addFromBackup(taken)
-    const added = describeSelection({ ...done, plan: { added: [], changed: [] } }, { done: true })
-    if (added) toast.success(added)
+    if (settings && plan) await importSelection({ ...taken, plan })
+    else {
+      const done = await backup.addFromBackup(taken)
+      const added = describeSelection({ ...done, plan: { added: [], changed: [] } }, { done: true })
+      if (added) toast.success(added)
+    }
   } catch (error) {
     console.error('Import failed:', error)
     toast.error(`Nothing was imported. ${error.message}`)

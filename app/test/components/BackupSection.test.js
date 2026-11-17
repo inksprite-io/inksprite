@@ -1,6 +1,7 @@
 /* global File */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
+import { isReactive } from 'vue'
 import PrimeVue from 'primevue/config'
 import Tooltip from 'primevue/tooltip'
 import BackupSection from '../../src/components/writer/settings/BackupSection.vue'
@@ -141,6 +142,8 @@ describe('BackupSection', () => {
         backup: parsed,
         summary: [],
         addable,
+        here: [],
+        plan: { added: [], changed: [], rows: parsed.tables ?? {}, settings: {}, fingerprints: {} },
       })
 
     /** Pick a backup, and the dialog it opens. */
@@ -149,33 +152,6 @@ describe('BackupSection', () => {
       await flushPromises()
       return wrapper.findComponent(ImportBackupDialog)
     }
-
-    it('asks what to do, and restores in place of everything when asked to', async () => {
-      const parsed = {
-        app: 'inksprite',
-        tables: { chats: [{ id: 'c1' }], messages: [{ id: 'm1' }, { id: 'm2' }] },
-      }
-      readBackup(parsed)
-      backup.restoreBackup.mockResolvedValue(undefined)
-      vi.stubGlobal('location', { reload: vi.fn() })
-      const wrapper = mountSection()
-
-      await buttonNamed(wrapper, 'Import').trigger('click')
-      const dialog = await picked(wrapper)
-
-      expect(backup.restoreBackup).not.toHaveBeenCalled()
-      expect(dialog.props('visible')).toBe(true)
-      expect(dialog.props('message')).toBe('This backup holds 1 chat.')
-      expect(dialog.props('addable')).toEqual(addable)
-
-      await dialog.vm.$emit('replace')
-      await dialog.vm.$emit('update:visible', false)
-      await flushPromises()
-
-      expect(backup.restoreBackup).toHaveBeenCalledWith(parsed)
-      expect(window.location.reload).toHaveBeenCalled()
-      vi.unstubAllGlobals()
-    })
 
     it('adds what was ticked beside what is here, and says what it added', async () => {
       readBackup({ app: 'inksprite', tables: { stories: [{ id: 's1' }] } })
@@ -194,6 +170,32 @@ describe('BackupSection', () => {
         'Added the project Thief (2) and the character card Wren.'
       )
       expect(wrapper.findComponent(ImportBackupDialog).props('visible')).toBe(false)
+    })
+
+    it('takes the settings with what was ticked when they are, as they were read', async () => {
+      readBackup({ app: 'inksprite', tables: { mcpServers: [{ id: 'mcp_home' }] } })
+      backup.importSelection.mockResolvedValue({
+        projects: ['Thief'],
+        cards: [],
+        settingsChanged: true,
+      })
+      vi.stubGlobal('location', { reload: vi.fn() })
+      const wrapper = mountSection()
+      const dialog = await picked(wrapper)
+      const taken = { projects: [{ story: { id: 's1' } }], cards: { rows: [], files: [] } }
+
+      await dialog.vm.$emit('add', { ...taken, settings: true })
+      await dialog.vm.$emit('update:visible', false)
+      await flushPromises()
+
+      expect(backup.addFromBackup).not.toHaveBeenCalled()
+      const [selection] = backup.importSelection.mock.calls[0]
+      expect(selection).toMatchObject(taken)
+      // Its rows go to storage, which takes nothing Vue has wrapped.
+      expect(isReactive(selection.plan.rows)).toBe(false)
+      expect(selection.plan.rows).toEqual({ mcpServers: [{ id: 'mcp_home' }] })
+      expect(window.location.reload).toHaveBeenCalled()
+      vi.unstubAllGlobals()
     })
 
     it('does nothing when cancelled', async () => {

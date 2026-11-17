@@ -209,6 +209,20 @@ describe('a project added from a backup', () => {
     await seed()
   })
 
+  it('is said to be here while this device has it, and not once it is gone', async () => {
+    const backup = useBackup()
+    const file = asFile(await backup.createBackup())
+    const here = await backup.readDataFile(file)
+    expect(here.kind === 'backup' && here.here).toContain(STORY)
+    expect(here.kind === 'backup' && here.plan.changed).toEqual([])
+
+    await Promise.all(db.tables.map((/** @type {import('dexie').Table} */ table) => table.clear()))
+    setActivePinia(createPinia())
+    const gone = await useBackup().readDataFile(file)
+    expect(gone.kind === 'backup' && gone.here).toEqual([])
+    expect(gone.kind === 'backup' && gone.addable.projects.map(p => p.story.id)).toContain(STORY)
+  })
+
   it('is offered with its chats, its files and the profile it runs on, without its trash', async () => {
     await db.documents.add(
       doc('doc_Gone000000000000000000', STORY, ROOT, { type: 'text', title: 'Cut', trashed: 9 })

@@ -359,12 +359,14 @@ export function useBackup() {
    * Read a file picked to import from the settings: a whole backup, a
    * settings file, or a selection, which says which it is; a project file is
    * taken as a selection of one project. Nothing is written. A backup comes
-   * back with what it holds, and what of it could be added beside what is
-   * here; settings with what importing them would change here; a selection
-   * with its projects and cards as well.
+   * back with what it holds, what of it could be added beside what is here,
+   * which of its projects are here already (`here`, by their ids, the trash's
+   * among them), and what its settings would change; settings with what
+   * importing them would change here; a selection with its projects and
+   * cards as well.
    *
    * @param {File} file
-   * @returns {Promise<{kind: 'backup', backup: Backup, summary: Array<{table: string, count: number}>, addable: BackupAddable}
+   * @returns {Promise<{kind: 'backup', backup: Backup, summary: Array<{table: string, count: number}>, addable: BackupAddable, here: string[], plan: SettingsImport}
    *   | {kind: 'settings', backup: Backup, plan: SettingsImport}
    *   | {kind: 'selection', backup: Backup, selection: SelectionImport}>}
    * @throws {Error} If the file is none of them, saying why
@@ -381,16 +383,26 @@ export function useBackup() {
     }
     const backup = checkBackup(parsed, 'database')
     const tables = upgradeTables(backup.tables, backup.dbVersion, storage.schemaVersion())
+    const storiesStore = useStoriesStore()
+    await storiesStore.loadNames()
+    const addable = { projects: addableProjects(tables), cards: cardsOf(tables) }
     return {
       kind: 'backup',
       backup,
       summary: summarizeBackup(backup),
-      addable: { projects: addableProjects(tables), cards: cardsOf(tables) },
+      addable,
+      here: addable.projects
+        .map(project => project.story.id)
+        .filter(id => storiesStore.stories.has(id) || storiesStore.trash.has(id)),
+      plan: await planSettings(backup, { byHand: true }),
     }
   }
 
   /**
-   * Replace the database contents with a backup.
+   * Replace the database contents with a backup. The app no longer offers
+   * this: a backup is taken back as projects and cards added beside what is
+   * here, and its settings merged in (`importSelection`). It is how a test
+   * browser is given a whole database to start from.
    *
    * Rows are moved forward to the running schema version first, so a backup
    * taken before a migration restores into the shape the app expects. Tables

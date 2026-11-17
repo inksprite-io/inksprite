@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { isArchive, writeArchive } from '@/utils/backupArchive.js'
 import { deserializeFiles } from '@/utils/backup'
+import { SETTINGS_TABLES } from '@/utils/settingsFile.js'
 
 const { mockDb, mockProcessSync } = vi.hoisted(() => {
   const mockProcessSync = vi.fn().mockResolvedValue(undefined)
@@ -57,6 +58,10 @@ describe('useBackup', () => {
     ]
     // Run the transaction body directly.
     mockDb.transaction = vi.fn(async (_mode, _tables, fn) => fn())
+    // What reading a backup looks at here: the projects, and the setup.
+    for (const table of ['stories', 'documents', ...SETTINGS_TABLES]) {
+      mockDb[table] = { ...fakeTable(table), ...mockDb[table] }
+    }
   })
 
   describe('createBackup', () => {
@@ -99,7 +104,7 @@ describe('useBackup', () => {
       new File([typeof contents === 'string' ? contents : JSON.stringify(contents)], 'backup.json')
 
     it('parses and summarizes without touching the database', async () => {
-      const { kind, backup, summary } = await useBackup().readDataFile(
+      const { kind, backup, summary, plan } = await useBackup().readDataFile(
         fileOf({
           app: 'inksprite',
           format: 1,
@@ -111,6 +116,7 @@ describe('useBackup', () => {
       expect(kind).toBe('backup')
       expect(backup.dbVersion).toBe(2)
       expect(summary).toEqual([{ table: 'stories', count: 2 }])
+      expect(plan).toMatchObject({ added: [], changed: [] })
       expect(mockDb.transaction).not.toHaveBeenCalled()
       expect(mockDb.tables[0].clear).not.toHaveBeenCalled()
     })
