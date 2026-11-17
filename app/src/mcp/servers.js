@@ -152,11 +152,11 @@ export function promptCommands() {
 }
 
 /**
- * Whether calling this tool waits for the writer: any tool of a server's that
- * does not say it only reads, unless the writer has said to always allow it,
- * or everything the server has.
- * A hint is only the server's word, but a server the writer does not trust
- * should not be connected at all.
+ * Whether calling this tool waits for the writer: one they said asks first;
+ * else any tool of a server's that does not say it only reads, unless the
+ * writer has said to always allow it, or everything the server has.
+ * A hint is only the server's word, so it is where a tool starts and not
+ * what it is held to: the writer can have one that says it only reads ask.
  *
  * @param {string} exposed
  * @returns {boolean}
@@ -165,6 +165,7 @@ export function needsApproval(exposed) {
   const found = serverTool(exposed)
   if (!found) return false
   const { server, tool } = found
+  if ((server.asks || []).includes(tool.name)) return true
   if (server.allowAll || tool.annotations?.readOnlyHint === true) return false
   return !(server.allowed || []).includes(tool.name)
 }

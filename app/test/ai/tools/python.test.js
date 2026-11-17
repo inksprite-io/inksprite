@@ -1,5 +1,6 @@
 /* global AbortController */
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest'
+import { DOCUMENT_ROWS } from '@/ai/tools/choice.js'
 
 const documents = vi.hoisted(() => ({ documentsForChat: vi.fn(), documentForChat: vi.fn() }))
 vi.mock('@/ai/tools/documents.js', () => documents)
@@ -387,7 +388,7 @@ describe('projectForPython', () => {
     expect(await projectForPython({ chatId: 'chat-1' })).toBeNull()
     chats['chat-1'] = { disabledToolGroups: ['documents'] }
     expect(await projectForPython({ chatId: 'chat-1', storyId: 'story-1' })).toBeNull()
-    chats['chat-1'] = { disabledTools: ['read_document'] }
+    chats['chat-1'] = { disabledTools: [...DOCUMENT_ROWS[0].tools] }
     expect(await projectForPython({ chatId: 'chat-1', storyId: 'story-1' })).toBeNull()
     expect(documents.documentsForChat).not.toHaveBeenCalled()
   })

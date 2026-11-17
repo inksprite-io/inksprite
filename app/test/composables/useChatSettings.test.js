@@ -153,6 +153,47 @@ describe('useChatSettings', () => {
     })
   })
 
+  describe('how the model edits the documents', () => {
+    it('is as suggestions, straight in or not at all, in the chat and in its profile’s next', () => {
+      const chatSettings = settings()
+      expect(chatSettings.editing.value).toBe('auto')
+
+      chatSettings.setEditing('ask')
+      expect(chatSettings.editing.value).toBe('ask')
+      expect(chat.value.applyEdits).toBe('ask')
+      expect(useProfiles().getProfile(CHAT_PROFILE_ID)?.settings.applyEdits).toBe('ask')
+
+      chatSettings.setEditing('off')
+      expect(chatSettings.editing.value).toBe('off')
+      expect(chat.value.disabledTools).toContain('edit_document')
+      expect(chat.value.disabledTools).not.toContain('read_document')
+      expect(useProfiles().getProfile(CHAT_PROFILE_ID)?.settings.disabledTools).toContain(
+        'edit_document'
+      )
+      // Whether its edits wait is kept, for when it edits again.
+      expect(chat.value.applyEdits).toBe('ask')
+
+      chatSettings.setEditing('auto')
+      expect(chatSettings.editing.value).toBe('auto')
+      expect(chat.value.disabledTools).not.toContain('edit_document')
+    })
+
+    it('switches reading off with everything that needs it, and back on with commenting', () => {
+      const chatSettings = settings()
+
+      chatSettings.setDocumentRow('read', false)
+      expect(chatSettings.editing.value).toBe('off')
+      expect(chat.value.disabledTools).toEqual(
+        expect.arrayContaining(['read_document', 'edit_document', 'add_comment'])
+      )
+
+      chatSettings.setDocumentRow('comment', true)
+      expect(chat.value.disabledTools).not.toContain('read_document')
+      expect(chat.value.disabledTools).not.toContain('add_comment')
+      expect(chatSettings.editing.value).toBe('off')
+    })
+  })
+
   describe('setToolsOn', () => {
     it("switches the chat's tools off, and its profile's next chats', keeping each switch", () => {
       chat.value = { ...chat.value, disabledToolGroups: ['rpg'] }

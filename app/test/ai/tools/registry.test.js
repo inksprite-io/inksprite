@@ -124,12 +124,13 @@ describe('ToolRegistry', () => {
       ])
     })
 
-    it('withholds a named tool', () => {
+    it('withholds no tool a choice names off, but a document’s row or a skill', () => {
+      // Every other tool is switched for the whole app: ai/tools/everywhere.js.
       const names = registry
         .getEnabledDefinitions({ disabledTools: ['write_lore'] })
         .map(d => d.function.name)
 
-      expect(names).toEqual(['read_lore', 'roll_dice'])
+      expect(names).toEqual(['read_lore', 'write_lore', 'roll_dice'])
     })
 
     it('withholds every member of a disabled group', () => {

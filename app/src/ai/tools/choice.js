@@ -10,9 +10,16 @@
  * profile written to offer only some groups names those instead
  * (`onlyToolGroups`), and anything added later stays off in it: Blank, which
  * offers none, and Roleplay, which offers the documents alone. A tool is on
- * when its group is and it isn't named off, and while tools are on at all:
- * switched off as a whole (`toolsOff`), every group and tool keeps its own
- * switch, for when they are back on.
+ * when its group is, and while tools are on at all: switched off as a whole
+ * (`toolsOff`), every group keeps its own switch, for when they are back on.
+ *
+ * Inside a group, what a profile says is only of the documents and the
+ * skills. The documents go by what the model does with them, not tool by
+ * tool: it reads them, edits them, comments on them (`DOCUMENT_ROWS`), and
+ * since nothing is edited or commented on unread, reading is on wherever
+ * either is. A skill is on or off by its name. Every other tool is switched
+ * for the whole app, where it is kept with whatever it is a tool of (the web
+ * search's, a server's): see ./everywhere.js.
  *
  * A profile holds a choice, and a chat started on it a copy, which is the
  * chat's from then on (ai/profiles). A switch in a chat changes the chat and
@@ -24,7 +31,10 @@
 
 /**
  * @typedef {Object} ToolChoice
- * @property {string[]} [disabledTools] - Tools off, by name
+ * @property {string[]} [disabledTools] - Tools off, by name: the documents'
+ *   of a row that is off, every one of them, and the skills that are off.
+ *   Any other name is from before the rest were switched for the whole app,
+ *   and says nothing
  * @property {string[]} [disabledToolGroups] - Groups off, by id
  * @property {string[]} [onlyToolGroups] - The groups that may be on at all,
  *   for a choice that offers only some. Absent means every group.
@@ -66,8 +76,93 @@ export function groupOn(choice, group) {
   return !(choice?.disabledToolGroups || []).includes(group)
 }
 
+/** The documents' group, whose tools go by row. */
+export const DOCUMENTS_GROUP = 'documents'
+
+/** The skills' group, each switched by its name. */
+export const SKILLS_GROUP = 'skills'
+
 /**
- * Whether a tool is on: tools are, its group is, and it is not off by name.
+ * What the model does with the documents, and the tools that are each: the
+ * rows a profile switches. Reading is first, since the others need it.
+ *
+ * @type {ReadonlyArray<{id: 'read'|'edit'|'comment', label: string, tools: readonly string[]}>}
+ */
+export const DOCUMENT_ROWS = [
+  {
+    id: 'read',
+    label: 'Read',
+    tools: [
+      'list_documents',
+      'read_document',
+      'describe_document',
+      'search_documents',
+      'explore_documents',
+    ],
+  },
+  {
+    id: 'edit',
+    label: 'Edit',
+    tools: [
+      'create_document',
+      'create_folder',
+      'update_document',
+      'edit_document',
+      'append_document',
+      'move_document',
+      'delete_document',
+    ],
+  },
+  {
+    id: 'comment',
+    label: 'Comment',
+    tools: ['list_comments', 'add_comment', 'reply_comment', 'resolve_comment'],
+  },
+]
+
+/** The row a document tool is in. @param {string} name */
+const rowOf = name => DOCUMENT_ROWS.find(row => row.tools.includes(name))
+
+/**
+ * Whether a row of the documents is switched on: its own switch, whatever
+ * its group's. Off only when every tool in it is named off, so a choice from
+ * before, with one of them off, has the row on and that tool back. Editing
+ * and commenting are off wherever reading is.
+ *
+ * @param {ToolChoice|null|undefined} choice
+ * @param {'read'|'edit'|'comment'} id
+ * @returns {boolean}
+ */
+export function rowOn(choice, id) {
+  const off = choice?.disabledTools || []
+  /** @param {string} one */
+  const named = one =>
+    !DOCUMENT_ROWS.find(row => row.id === one)?.tools.every(name => off.includes(name))
+  return named(id) && (id === 'read' || named('read'))
+}
+
+/**
+ * What switching a row of the documents writes on a choice. Editing and
+ * commenting switch reading on with them, and reading switched off takes
+ * them with it.
+ *
+ * @param {ToolChoice|null|undefined} choice
+ * @param {'read'|'edit'|'comment'} id
+ * @param {boolean} on
+ * @returns {ToolChoice}
+ */
+export function switchRow(choice, id, on) {
+  const switched =
+    id === 'read' ? (on ? ['read'] : ['read', 'edit', 'comment']) : on ? [id, 'read'] : [id]
+  const names = DOCUMENT_ROWS.filter(row => switched.includes(row.id)).flatMap(row => row.tools)
+  const others = (choice?.disabledTools || []).filter(name => !names.includes(name))
+  return { disabledTools: on ? others : [...others, ...names] }
+}
+
+/**
+ * Whether a tool is on in a choice: tools are, its group is, and for a
+ * document its row, for a skill its own name. Any other is on wherever its
+ * group is: it is switched for the whole app (./everywhere.js).
  *
  * @param {ToolChoice|null|undefined} choice
  * @param {string} name
@@ -77,7 +172,12 @@ export function groupOn(choice, group) {
 export function toolOn(choice, name, group) {
   if (toolsSwitchedOff(choice)) return false
   if (group !== undefined && !groupOn(choice, group)) return false
-  return !(choice?.disabledTools || []).includes(name)
+  if (group === DOCUMENTS_GROUP) {
+    const row = rowOf(name)
+    return !row || rowOn(choice, row.id)
+  }
+  if (group === SKILLS_GROUP) return !(choice?.disabledTools || []).includes(name)
+  return true
 }
 
 /**
@@ -102,8 +202,8 @@ export function switchGroups(choice, groups, on) {
 }
 
 /**
- * What switching a tool writes on a choice. Its group's switch is left as it
- * is: a tool in a group that is off stays off either way.
+ * What switching a skill writes on a choice. Its group's switch is left as
+ * it is: a skill in a group that is off stays off either way.
  *
  * @param {ToolChoice|null|undefined} choice
  * @param {string} name

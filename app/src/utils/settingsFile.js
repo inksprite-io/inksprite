@@ -63,6 +63,7 @@ export const SETTINGS_GROUPS = {
     'theme',
     'applyEdits',
     'askBeforeExploring',
+    'toolsOff',
     'roleplay',
     'python',
     'pythonTimeLimit',
@@ -419,10 +420,18 @@ function mergeRow(table, row, here, { byHand, now }) {
         Object.entries(headers).map(([name, value]) => [name, value || kept(name) || ''])
       )
     }
+    // What is always allowed is this install's to say, never a file's, and
+    // was said of the server at the address it had here.
     if (byHand) {
-      merged.allowed = here?.allowed || []
-      if (here?.allowAll) merged.allowAll = true
+      merged.allowed = moved ? [] : here?.allowed || []
+      if (here?.allowAll && !moved) merged.allowAll = true
       else delete merged.allowAll
+      // What asks whatever else says, and what is off, are this install's
+      // too, and hold at any address.
+      for (const field of ['asks', 'off']) {
+        if (here?.[field] === undefined) delete merged[field]
+        else merged[field] = here[field]
+      }
     }
     if (here && (here.listedAt || 0) > (row.listedAt || 0)) {
       for (const field of LISTING) {
@@ -437,6 +446,14 @@ function mergeRow(table, row, here, { byHand, now }) {
     const given = Object.fromEntries(Object.entries(keys).filter(([, key]) => key))
     const empty = Object.fromEntries(Object.keys(keys).map(service => [service, '']))
     merged.keys = { ...empty, ...(here?.keys || {}), ...given }
+    // What is read and kept without asking is this install's to say, never
+    // a file's.
+    if (byHand) {
+      for (const field of ['saveWithoutAsking', 'readWithoutAsking', 'allowedSites']) {
+        if (here?.[field] === undefined) delete merged[field]
+        else merged[field] = here[field]
+      }
+    }
   }
   return merged
 }

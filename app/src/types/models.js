@@ -904,6 +904,11 @@
  *   tools are on. Read once, to give them that (composables/useToolChoices.js).
  * @property {boolean} [saveWithoutAsking] - The model keeps a page in the
  *   project (`save_web_page`) without asking first. Absent means it asks.
+ * @property {boolean} [readWithoutAsking] - The model reads any address
+ *   without asking first, those it put together itself among them
+ *   (web/addresses.js). Absent means those ask.
+ * @property {string[]} [allowedSites] - The sites, by host name, whose
+ *   addresses are always read without asking.
  * @property {number} [updated]
  */
 
@@ -983,6 +988,11 @@
  *   own names, so a call to one runs without asking
  * @property {boolean} [allowAll] - The writer always allows every tool it has,
  *   the ones it adds later included, so none of its calls asks
+ * @property {string[]} [asks] - Its tools the writer has ask first whatever
+ *   else says they needn't, by their own names: one that says it only reads,
+ *   or one of a server whose every tool is always allowed
+ * @property {string[]} [off] - Its tools switched off for the whole app, by
+ *   their own names (ai/tools/everywhere.js)
  * @property {number} [listedAt] - When its tools were last listed
  * @property {string} [error] - Why it could not be listed, the last time it was tried
  * @property {number} created

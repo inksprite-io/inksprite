@@ -80,7 +80,11 @@ describe('tool groups', () => {
         .filter(name => name === 'web_search' || name === 'read_web_page')
 
     expect(offered({})).toEqual(['web_search', 'read_web_page'])
-    expect(offered({ disabledTools: ['read_web_page'] })).toEqual(['web_search'])
+    // One of its tools is off for the whole app, not for a chat.
+    expect(offered({ disabledTools: ['read_web_page'] })).toEqual(['web_search', 'read_web_page'])
+    useApplicationState().setToolOff('read_web_page', true)
+    expect(offered({})).toEqual(['web_search'])
+    useApplicationState().setToolOff('read_web_page', false)
     expect(offered({ disabledToolGroups: ['web'] })).toEqual([])
     // Not in a profile that offers only some, unless it is among them.
     expect(offered({ onlyToolGroups: ['documents'] })).toEqual([])
@@ -102,7 +106,7 @@ describe('tool groups', () => {
 
     expect(offered({})).toEqual(['run_python'])
     expect(offered({ disabledToolGroups: ['python'] })).toEqual([])
-    expect(offered({ disabledTools: ['run_python'] })).toEqual([])
+    expect(offered({ disabledTools: ['run_python'] })).toEqual(['run_python'])
 
     useApplicationState().setExtension('python', false)
     try {

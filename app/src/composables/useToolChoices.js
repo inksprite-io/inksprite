@@ -27,7 +27,9 @@ import { useChatsStore } from '@/stores/chatsStore'
 import { useStoriesStore } from '@/stores/storiesStore'
 import { storage } from '@/storage/index.js'
 import { BUILT_IN_PROFILES, DEFAULT_PROFILE_ID } from '@/ai/profiles/index.js'
-import { groupOn } from '@/ai/tools/choice.js'
+import { DOCUMENTS_GROUP, SKILLS_GROUP, groupOn } from '@/ai/tools/choice.js'
+import { groupOfTool } from '@/ai/tools/index.js'
+import { serverTool } from '@/mcp/servers.js'
 import { WEB_GROUP } from '@/ai/tools/web.js'
 import { PYTHON_GROUP, pythonOffered } from '@/ai/tools/python.js'
 import { serverGroup } from '@/mcp/names.js'
@@ -198,4 +200,47 @@ export async function giveToolChoices() {
   } catch (error) {
     console.error('Failed to give chats their web, Python and servers as tools:', error)
   }
+}
+
+/**
+ * The names a profile had switched off that are no longer a profile's to
+ * switch: every tool but the documents' and the skills, which are switched
+ * for the whole app now (ai/tools/everywhere.js). A name that is no tool
+ * here, a server's that is gone or a skill not loaded, is left where it is.
+ *
+ * @param {string[]|undefined} off - A choice's `disabledTools`
+ * @returns {string[]}
+ */
+export function switchesToMove(off) {
+  return (off || []).filter(name => {
+    if (serverTool(name)) return true
+    const group = groupOfTool(name)
+    return group !== undefined && group !== DOCUMENTS_GROUP && group !== SKILLS_GROUP
+  })
+}
+
+/**
+ * Take the tools the Default profile had switched off, one by one, as off
+ * for the whole app, where a tool is switched now; every other profile's and
+ * chat's say nothing from here on. Moved, not copied: taken off the profile
+ * as they are set for the app, so a tool switched back on stays on, and a
+ * second device finds nothing left to move.
+ *
+ * @returns {Promise<void>}
+ */
+export async function moveToolSwitches() {
+  const app = useApplicationState()
+  const profiles = useProfiles()
+  const servers = useMcpServers()
+  await Promise.all([profiles.ready(), servers.ready()])
+  const off = profiles.getProfile(DEFAULT_PROFILE_ID)?.settings?.disabledTools || []
+  const moving = switchesToMove(off)
+  if (moving.length === 0) return
+  for (const name of moving) {
+    if (serverTool(name)) servers.setToolSetting(name, 'off')
+    else app.setToolOff(name, true)
+  }
+  profiles.setProfileChoices(DEFAULT_PROFILE_ID, {
+    disabledTools: off.filter(name => !moving.includes(name)),
+  })
 }

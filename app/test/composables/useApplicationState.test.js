@@ -451,6 +451,7 @@ describe('useApplicationState', () => {
         applyEdits: 'ask',
         builtInProfiles: { builtin_profile_chat: { presetId: 'preset_mine' } },
         askBeforeExploring: true,
+        toolsOff: [],
         nsfwProfiles: true,
         blurNsfw: true,
         roleplay: true,

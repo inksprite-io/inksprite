@@ -395,6 +395,15 @@ const server = http.createServer(async (req, res) => {
     return res.end()
   }
   if (OAUTH && (await handleOAuth(req, res, cors))) return
+  // An address that leads on to the server's own: `/old`, as a server does
+  // that wants its path written another way. And `/away`, to another site.
+  if (req.url === '/old' || req.url === '/away') {
+    const location = req.url === '/old' ? '/mcp' : 'http://elsewhere.invalid/mcp'
+    res.writeHead(307, { ...cors, Location: location })
+    res.end()
+    return
+  }
+
   if (!req.url?.startsWith('/mcp')) {
     res.writeHead(404, cors)
     return res.end()

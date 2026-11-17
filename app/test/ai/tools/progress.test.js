@@ -52,6 +52,24 @@ describe('describeProgress', () => {
 })
 
 describe('describeEdit', () => {
+  it('shows a move as where it was, over where it goes', () => {
+    expect(
+      describeEdit({
+        documentId: 'd',
+        path: 'notes/Elara',
+        tool: 'move_document',
+        old: 'notes/Elara',
+        new: 'cast/Elara Vance',
+        status: 'proposed',
+      })
+    ).toEqual({
+      verb: 'Moving',
+      path: 'notes/Elara',
+      old: 'notes/Elara',
+      prose: 'cast/Elara Vance',
+    })
+  })
+
   it('says what a comment it makes or resolves says, not its markup', () => {
     const thread = {
       status: 'open',

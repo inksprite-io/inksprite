@@ -50,6 +50,8 @@ const PROBE_TIMEOUT_MS = 30000
  *   setKey: (id: WebServiceId, key: string) => void,
  *   connect: (id: WebServiceId, key: string) => Promise<void>,
  *   setAskBeforeSaving: (ask: boolean) => void,
+ *   setAskBeforeReading: (ask: boolean) => void,
+ *   allowSite: (site: string) => void,
  * }}
  */
 export function useWebSearch() {
@@ -140,6 +142,26 @@ export function useWebSearch() {
     store.update({ saveWithoutAsking: !ask })
   }
 
+  /**
+   * Have reading a page ask about an address the model put together, or
+   * never ask.
+   *
+   * @param {boolean} ask
+   */
+  function setAskBeforeReading(ask) {
+    store.update({ readWithoutAsking: !ask })
+  }
+
+  /**
+   * Always read a site's addresses without asking, from now on.
+   *
+   * @param {string} site - Its host name
+   */
+  function allowSite(site) {
+    const sites = store.setup.allowedSites || []
+    if (!sites.includes(site)) store.update({ allowedSites: [...sites, site] })
+  }
+
   return {
     ready: () => store.ensureInitialized(),
     setup,
@@ -152,5 +174,7 @@ export function useWebSearch() {
     setKey,
     connect,
     setAskBeforeSaving,
+    setAskBeforeReading,
+    allowSite,
   }
 }

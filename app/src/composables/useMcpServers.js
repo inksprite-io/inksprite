@@ -88,10 +88,11 @@ if (typeof BroadcastChannel !== 'undefined') {
  *   signOut: (url: string) => void,
  *   addServer: (configured: ConfiguredServer, preview?: ServerPreview) => McpServer,
  *   refreshServer: (id: string) => Promise<{server: McpServer}|{error: string}>,
- *   updateServer: (id: string, updates: Partial<Pick<McpServer, 'name'|'url'|'headers'|'allowed'|'allowAll'|'auth'>>) => McpServer|null,
+ *   updateServer: (id: string, updates: Partial<Pick<McpServer, 'name'|'url'|'headers'|'allowed'|'allowAll'|'asks'|'off'|'auth'>>) => McpServer|null,
  *   removeServer: (id: string) => boolean,
  *   allowTool: (exposed: string) => void,
  *   allowServer: (exposed: string) => void,
+ *   setToolSetting: (exposed: string, setting: 'off'|'ask'|'always') => void,
  * }}
  */
 export function useMcpServers() {
@@ -265,7 +266,7 @@ export function useMcpServers() {
 
   /**
    * @param {string} id
-   * @param {Partial<Pick<McpServer, 'name'|'url'|'headers'|'allowed'|'allowAll'|'auth'>>} updates
+   * @param {Partial<Pick<McpServer, 'name'|'url'|'headers'|'allowed'|'allowAll'|'asks'|'off'|'auth'>>} updates
    */
   const updateServer = (id, updates) => {
     if ('url' in updates || 'headers' in updates) disconnect(id)
@@ -295,8 +296,38 @@ export function useMcpServers() {
     const found = serverTool(exposed)
     if (!found) return
     const { server, tool } = found
-    if ((server.allowed || []).includes(tool.name)) return
-    store.updateServer(server.id, { allowed: [...(server.allowed || []), tool.name] })
+    setToolSetting(exposed, 'always', server, tool)
+  }
+
+  /**
+   * Set one of a server's tools for the whole app: off, asking the writer
+   * before each call, or always allowed.
+   *
+   * @param {string} exposed - The tool, as the model calls it
+   * @param {'off'|'ask'|'always'} setting
+   * @param {McpServer} [server] - Found already
+   * @param {import('@/types/models.js').McpTool} [tool]
+   */
+  function setToolSetting(exposed, setting, server, tool) {
+    const found = server && tool ? { server, tool } : serverTool(exposed)
+    if (!found) return
+    const { name } = found.tool
+    /** @param {string[]|undefined} list @param {boolean} present */
+    const having = (list, present) => {
+      const others = (list || []).filter(one => one !== name)
+      return present ? [...others, name] : others
+    }
+    const row = found.server
+    store.updateServer(row.id, {
+      off: having(row.off, setting === 'off'),
+      // Switched off, it keeps what it was set to, for when it is back on.
+      ...(setting === 'off'
+        ? {}
+        : {
+            allowed: having(row.allowed, setting === 'always'),
+            asks: having(row.asks, setting === 'ask'),
+          }),
+    })
   }
 
   /**
@@ -307,12 +338,14 @@ export function useMcpServers() {
    */
   const allowServer = exposed => {
     const found = serverTool(exposed)
-    if (!found || found.server.allowAll) return
-    store.updateServer(found.server.id, { allowAll: true })
+    if (!found) return
+    // Everything: what was set to ask first no longer does.
+    store.updateServer(found.server.id, { allowAll: true, asks: [] })
   }
 
   return {
     allowServer,
+    setToolSetting,
     ready,
     servers,
     preview,

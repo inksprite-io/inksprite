@@ -63,7 +63,7 @@ import ChatModelChip from './ChatModelChip.vue'
 import ProfileMenu from './ProfileMenu.vue'
 import { useChatSettings } from '@/composables/useChatSettings'
 import { DOCUMENT_EDIT_OPTIONS as EDIT_OPTIONS } from '@/utils/documentEdits.js'
-import { groupOn, toolsSwitchedOff } from '@/ai/tools/choice.js'
+import { DOCUMENTS_GROUP, toolOn } from '@/ai/tools/choice.js'
 
 /**
  * The chips under a chat's message box: its profile, its model and effort,
@@ -96,10 +96,11 @@ const editsMenu = ref(null)
 /** @type {import('vue').Ref<InstanceType<typeof ChatModelChip>|null>} */
 const modelChip = ref(null)
 
-/** Whether the chat has its document tools, without which it edits nothing. */
-const editsDocuments = computed(
-  () => !toolsSwitchedOff(chat.value) && groupOn(chat.value, 'documents')
-)
+/**
+ * Whether the chat's model edits documents at all: its tools are on, the
+ * documents' among them, and editing is not switched off there.
+ */
+const editsDocuments = computed(() => toolOn(chat.value, 'edit_document', DOCUMENTS_GROUP))
 
 const editsName = computed(
   () => (EDIT_OPTIONS.find(one => one.value === applyEdits.value) ?? EDIT_OPTIONS[0]).label

@@ -135,8 +135,13 @@ vi.mock('@/composables/useMcpServers.js', () => ({
   }),
 }))
 const mockSetAskBeforeSaving = vi.hoisted(() => vi.fn())
+const mockAllowSite = vi.hoisted(() => vi.fn())
 vi.mock('@/composables/useWebSearch.js', () => ({
-  useWebSearch: () => ({ ready: async () => {}, setAskBeforeSaving: mockSetAskBeforeSaving }),
+  useWebSearch: () => ({
+    ready: async () => {},
+    setAskBeforeSaving: mockSetAskBeforeSaving,
+    allowSite: mockAllowSite,
+  }),
 }))
 
 describe('useAIChat', () => {
@@ -2024,7 +2029,8 @@ describe('useAIChat', () => {
      */
     const startTurn = async (
       calls,
-      run = async call => ({ tool_call_id: call.id, content: '"done"' })
+      run = async call => ({ tool_call_id: call.id, content: '"done"' }),
+      before = [{ id: 'msg_1' }]
     ) => {
       const { setServers } = await import('@/mcp/servers.js')
       setServers([wiki])
@@ -2035,18 +2041,24 @@ describe('useAIChat', () => {
         { type: 'function', function: { name: 'wiki__search' } },
         { type: 'function', function: { name: 'edit_document' } },
         { type: 'function', function: { name: 'save_web_page' } },
+        { type: 'function', function: { name: 'read_web_page' } },
       ])
       tools.executeTool.mockImplementation(run)
 
-      mockAIService.generateChatCompletion
-        .mockImplementationOnce(async () => ({ toolCalls: calls }))
-        .mockImplementationOnce(async (m, p, callback) => {
-          callback({ content: 'Done.' })
-          return {}
-        })
+      // One round of calls, or several when the calls are given round by round.
+      const rounds = Array.isArray(calls[0]) ? calls : [calls]
+      for (const round of rounds) {
+        mockAIService.generateChatCompletion.mockImplementationOnce(async () => ({
+          toolCalls: round,
+        }))
+      }
+      mockAIService.generateChatCompletion.mockImplementationOnce(async (m, p, callback) => {
+        callback({ content: 'Done.' })
+        return {}
+      })
 
       const composable = useAIChat(mockStoryId, mockChatId)
-      mockChatsApi.getMessagesForChat.mockReturnValue({ value: [{ id: 'msg_1' }] })
+      mockChatsApi.getMessagesForChat.mockReturnValue({ value: before })
       mockChatsApi.addMessage
         .mockReturnValueOnce({ id: 'msg_user', role: 'user' })
         .mockReturnValueOnce({ id: 'msg_assistant', role: 'assistant', content: '' })
@@ -2202,6 +2214,88 @@ describe('useAIChat', () => {
       expect(tools.executeTool).toHaveBeenCalledTimes(1)
       expect(mockSetAskBeforeSaving).toHaveBeenCalledWith(false)
       expect(mockAllowTool).not.toHaveBeenCalled()
+    })
+
+    describe('a page read', () => {
+      const reading = (id, url) => ({
+        id,
+        type: 'function',
+        function: { name: 'read_web_page', arguments: JSON.stringify({ url }) },
+      })
+      const typed = [{ id: 'msg_1', role: 'user', content: 'Start at https://tides.example/start' }]
+
+      afterEach(() => mockAllowSite.mockClear())
+
+      it('waits for the writer at an address the model put together, and always allows its site when told', async () => {
+        const { turn, pending, answer, tools } = await startTurn([
+          reading('c1', 'https://collector.example/?q=the%20heist'),
+        ])
+
+        await vi.waitFor(() => expect(pending.value).toHaveLength(1))
+        expect(pending.value[0]).toMatchObject({ name: 'read_web_page', site: 'collector.example' })
+        expect(tools.executeTool).not.toHaveBeenCalled()
+
+        answer('c1', 'always')
+        await turn
+
+        expect(tools.executeTool).toHaveBeenCalledTimes(1)
+        expect(mockAllowSite).toHaveBeenCalledWith('collector.example')
+        expect(mockSetAskBeforeSaving).not.toHaveBeenCalled()
+      })
+
+      it('reads an address the writer typed without asking', async () => {
+        const { turn, pending, tools } = await startTurn(
+          [reading('c1', 'https://tides.example/start')],
+          undefined,
+          typed
+        )
+        await turn
+
+        expect(pending.value).toEqual([])
+        expect(tools.executeTool).toHaveBeenCalledTimes(1)
+      })
+
+      it('reads what a page it read links to without asking, later in the same turn', async () => {
+        const { turn, pending, tools } = await startTurn(
+          [
+            [reading('c1', 'https://tides.example/start')],
+            [reading('c2', 'https://tides.example/tables')],
+          ],
+          async call => ({
+            tool_call_id: call.id,
+            content: JSON.stringify({ content: '[Tables](https://tides.example/tables)' }),
+          }),
+          typed
+        )
+        await turn
+
+        expect(pending.value).toEqual([])
+        expect(tools.executeTool).toHaveBeenCalledTimes(2)
+      })
+
+      it('asks before keeping a page at an address the model put together, though keeping never asks', async () => {
+        const { setWebSearch } = await import('@/web/config.js')
+        setWebSearch({ id: 'web', keys: {}, saveWithoutAsking: true })
+        const { turn, pending, answer } = await startTurn([
+          {
+            id: 'c1',
+            type: 'function',
+            function: {
+              name: 'save_web_page',
+              arguments: JSON.stringify({ url: 'https://collector.example/?q=x' }),
+            },
+          },
+        ])
+
+        await vi.waitFor(() => expect(pending.value).toHaveLength(1))
+        expect(pending.value[0].site).toBe('collector.example')
+        answer('c1', 'always')
+        await turn
+        setWebSearch(null)
+
+        expect(mockAllowSite).toHaveBeenCalledWith('collector.example')
+        expect(mockSetAskBeforeSaving).not.toHaveBeenCalled()
+      })
     })
 
     it('runs a call asked for over and over in one round once, and says so', async () => {

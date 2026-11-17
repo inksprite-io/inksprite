@@ -1,3 +1,4 @@
+/* global AbortController */
 /**
  * @module mcp/client
  * @description Talking to an MCP server from the page.
@@ -103,21 +104,115 @@ async function open(server) {
     ...(signedIn(server.url) ? { authProvider: authProvider(server.url) } : {}),
   }
 
-  const client = new Client(CLIENT_INFO)
-  try {
-    await client.connect(new StreamableHTTPClientTransport(url, options))
-    return client
-  } catch (error) {
-    const status = statusOf(error)
-    // Sign-in and refusals are answers, and another transport would get the
-    // same one. A server that does not know the newer transport says so with
-    // a 400, 404 or 405.
-    if (status === undefined || status === 401 || status === 403 || status >= 500) throw error
+  /**
+   * Streamable HTTP, and the older SSE transport when the server says it
+   * does not take the newer one.
+   * @param {URL} at
+   */
+  const connect = async at => {
+    const client = new Client(CLIENT_INFO)
+    try {
+      await client.connect(new StreamableHTTPClientTransport(at, options))
+      return client
+    } catch (error) {
+      const status = statusOf(error)
+      // Sign-in and refusals are answers, and another transport would get the
+      // same one. A server that does not know the newer transport says so with
+      // a 400, 404 or 405.
+      if (status === undefined || status === 401 || status === 403 || status >= 500) throw error
+    }
+
+    const legacy = new Client(CLIENT_INFO)
+    await legacy.connect(new SSEClientTransport(at, options))
+    return legacy
   }
 
-  const legacy = new Client(CLIENT_INFO)
-  await legacy.connect(new SSEClientTransport(url, options))
-  return legacy
+  try {
+    return await connect(url)
+  } catch (error) {
+    // The SDK follows an address that leads on within the server's own site,
+    // and nowhere else. A browser doesn't tell it where one leads, so it
+    // follows none there: found out here, the same rule is kept.
+    if (!wasRedirected(error) || redirectTargetIn(error)) throw error
+    const leads = await whereItLeads(url)
+    if (!leads) throw error
+    if (!onSameSite(url, leads))
+      throw Object.assign(new Error(error.message), { leadsTo: leads.href })
+    return connect(leads)
+  }
+}
+
+/** How long an address is given to say where it leads, in ms. */
+const LEADS_TIMEOUT_MS = 10000
+
+/**
+ * Where an address leads, when it leads on to another: asked with nothing of
+ * the writer's on the request, no header and no sign-in, so whatever it leads
+ * to learns nothing.
+ *
+ * @param {URL} address
+ * @returns {Promise<URL|null>} Null when it leads nowhere else, or doesn't say
+ */
+async function whereItLeads(address) {
+  const stopping = new AbortController()
+  const timer = setTimeout(() => stopping.abort(), LEADS_TIMEOUT_MS)
+  try {
+    const response = await fetch(address.href, {
+      redirect: 'follow',
+      credentials: 'omit',
+      signal: stopping.signal,
+    })
+    return response.url && response.url !== address.href ? new URL(response.url) : null
+  } catch {
+    return null
+  } finally {
+    clearTimeout(timer)
+    // Only where it ended up was wanted, not what it answered.
+    stopping.abort()
+  }
+}
+
+/**
+ * Whether two addresses are one site's, as the SDK counts it: the same
+ * scheme, host and port, or the https form of an http address.
+ *
+ * @param {URL} from
+ * @param {URL} to
+ * @returns {boolean}
+ */
+function onSameSite(from, to) {
+  if (from.protocol === to.protocol && from.host === to.host) return true
+  return (
+    from.protocol === 'http:' &&
+    to.protocol === 'https:' &&
+    from.hostname === to.hostname &&
+    !from.port &&
+    !to.port
+  )
+}
+
+/**
+ * Whether a failure is an address leading on to another that was not
+ * followed, as the SDK words it.
+ *
+ * @param {any} error
+ * @returns {boolean}
+ */
+function wasRedirected(error) {
+  return /redirect\b.* not followed/i.test(String(error?.message ?? ''))
+}
+
+/**
+ * Where the SDK's message says a redirect led, when it knew.
+ *
+ * @param {any} error
+ * @returns {string|undefined}
+ */
+function redirectTargetIn(error) {
+  const found = /Redirect to (\S+) not followed|try (\S+) as the endpoint/.exec(
+    String(error?.message ?? '')
+  )
+  return found?.[1] || found?.[2]
 }
 
 /**
@@ -333,6 +428,21 @@ function answeredOtherwise(error) {
 }
 
 /**
+ * What to say of an address that leads on to another site, which is never
+ * followed: the key a writer gave one server would go to whichever it named.
+ *
+ * @param {any} error
+ * @returns {string|null}
+ */
+function leadsElsewhere(error) {
+  if (!wasRedirected(error)) return null
+  const address = error?.leadsTo || redirectTargetIn(error)
+  return address
+    ? `That address redirects to ${address}. Enter that address instead.`
+    : 'That address redirects. Enter the address it redirects to.'
+}
+
+/**
  * Why a server could not be reached or listed, for the writer.
  *
  * @param {any} error
@@ -347,6 +457,8 @@ export function describeFailure(error) {
   if (answeredOtherwise(error)) {
     return 'Something answered, but not an MCP server. Check the URL, including its path.'
   }
+  const redirected = leadsElsewhere(error)
+  if (redirected) return redirected
   // A page is refused by a server that does not allow its origin (CORS), and
   // told nothing more than if the server were down. The desktop app's
   // requests have no origin to refuse.

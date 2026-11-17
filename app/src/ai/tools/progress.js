@@ -73,6 +73,7 @@ const NAMED_TOOLS = {
   reply_comment: 'Replying to a comment in',
   resolve_comment: 'Resolving a comment in',
   delete_document: 'Deleting',
+  move_document: 'Moving',
 }
 
 /**
@@ -88,6 +89,10 @@ const NAMED_TOOLS = {
  */
 export function describeEdit(edit) {
   if (edit.tool === 'delete_document') return { verb: NAMED_TOOLS.delete_document, path: edit.path }
+  // Where it was, struck through, over where it goes.
+  if (edit.tool === 'move_document') {
+    return { verb: NAMED_TOOLS.move_document, path: edit.old, old: edit.old, prose: edit.new }
+  }
   // A comment made or resolved changes only markup in the text: what is said
   // on it is the change.
   const changes = edit.comments || []

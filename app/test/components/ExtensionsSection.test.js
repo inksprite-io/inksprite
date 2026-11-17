@@ -152,7 +152,6 @@ describe('ExtensionsSection', () => {
     const webSwitch = wrapper => wrapper.findComponent('[data-extension-switch="web"]')
     const choice = wrapper => wrapper.findComponent('[data-web-service-choice]')
     const problem = wrapper => wrapper.find('[data-web-service-problem]')
-    const asks = wrapper => wrapper.findComponent('[data-field="web-ask-before-saving"]')
 
     beforeEach(() => {
       listServer.mockReset()
@@ -284,19 +283,6 @@ describe('ExtensionsSection', () => {
 
       expect(choice(wrapper).props('modelValue')).toBeNull()
       expect(problem(wrapper).exists()).toBe(false)
-    })
-
-    it('asks before a page is saved until that is switched off', async () => {
-      const wrapper = await mountSection()
-      expect(asks(wrapper).props('modelValue')).toBe(true)
-
-      await asks(wrapper).vm.$emit('update:modelValue', false)
-
-      expect(useWebSearchStore().setup.saveWithoutAsking).toBe(true)
-      expect(asks(wrapper).props('modelValue')).toBe(false)
-
-      await asks(wrapper).vm.$emit('update:modelValue', true)
-      expect(useWebSearchStore().setup.saveWithoutAsking).toBe(false)
     })
 
     it('holds no service’s key: those are in Connections', async () => {

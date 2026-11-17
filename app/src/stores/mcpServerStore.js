@@ -118,6 +118,13 @@ export const useMcpServerStore = defineStore('mcpServers', () => {
       updated: Date.now(),
     }
 
+    // What the writer always allowed, they allowed of the server at the
+    // address it had: at another, its tools ask again.
+    if ('url' in updates && updates.url !== server.url) {
+      updated.allowed = []
+      delete updated.allowAll
+    }
+
     servers.value.set(serverId, updated)
     syncStore.trackChange('mcpServers', serverId, updated)
     publish()

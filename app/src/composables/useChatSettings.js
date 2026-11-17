@@ -24,7 +24,14 @@ import {
 } from '@/ai/profiles/index.js'
 import { ownPrompt, skillPrompt } from '@/ai/skills/index.js'
 import { resolveAISettings } from '@/ai/defaults.js'
-import { copyChoice, switchGroups, switchTool, toolsSwitchedOff } from '@/ai/tools/choice.js'
+import {
+  copyChoice,
+  rowOn,
+  switchGroups,
+  switchRow,
+  switchTool,
+  toolsSwitchedOff,
+} from '@/ai/tools/choice.js'
 
 /** @typedef {import('../types/models.js').Chat} Chat */
 
@@ -159,8 +166,9 @@ export function useChatSettings(storyId, chatId) {
   }
 
   /**
-   * Switch one tool on or off in this chat, and in its profile's next chats,
-   * as a group is.
+   * Switch a skill on or off in this chat, and in its profile's next chats,
+   * as a group is. Every other tool is switched for the whole app
+   * (ai/tools/everywhere.js), but the documents', which go by row.
    * @param {string} name
    * @param {boolean} on
    */
@@ -168,6 +176,33 @@ export function useChatSettings(storyId, chatId) {
     update(switchTool(chat.value, name, on))
     const profile = selectedProfile.value
     if (profile) profilesApi.setProfileChoices(profile.id, switchTool(profile.settings, name, on))
+  }
+
+  /**
+   * Switch what the model does with the documents, reading, editing or
+   * commenting, on or off in this chat and in its profile's next chats.
+   * @param {'read'|'edit'|'comment'} row
+   * @param {boolean} on
+   */
+  const setDocumentRow = (row, on) => {
+    update(switchRow(chat.value, row, on))
+    const profile = selectedProfile.value
+    if (profile) profilesApi.setProfileChoices(profile.id, switchRow(profile.settings, row, on))
+  }
+
+  /**
+   * How the model edits the documents in this chat: not at all, as
+   * suggestions that wait on the writer, or straight in. One setting to the
+   * writer, kept as two: whether the editing tools are on, and whether what
+   * they change waits.
+   * @type {import('vue').ComputedRef<'off'|'ask'|'auto'>}
+   */
+  const editing = computed(() => (rowOn(chat.value, 'edit') ? applyEdits.value : 'off'))
+
+  /** @param {'off'|'ask'|'auto'} mode */
+  const setEditing = mode => {
+    setDocumentRow('edit', mode !== 'off')
+    if (mode !== 'off') setApplyEdits(mode)
   }
 
   /** Whether the chat's tools are on at all, whatever each is switched to. */
@@ -429,6 +464,9 @@ export function useChatSettings(storyId, chatId) {
     setApplyEdits,
     setToolGroups,
     setTool,
+    setDocumentRow,
+    editing,
+    setEditing,
     toolsOn,
     setToolsOn,
     skillPromptOf,

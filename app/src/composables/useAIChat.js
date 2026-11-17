@@ -55,10 +55,11 @@ import {
   handsOverReply,
   drawsByChance,
 } from '@/ai/tools/index.js'
-import { SAVE_WEB_PAGE } from '@/ai/tools/web.js'
+import { READ_WEB_PAGE, SAVE_WEB_PAGE, WEB_SEARCH } from '@/ai/tools/web.js'
 import { inTurn, roomFor } from '@/ai/gate.js'
 import { traitsOf } from '@/ai/models.js'
-import { askApproval, asksFirst, denyWaiting } from './useToolApprovals.js'
+import { askApproval, asksFirst, denyWaiting, siteAsking } from './useToolApprovals.js'
+import { noteWebResult, seenIn } from '@/web/addresses.js'
 import { reportWorking } from './useChatActivity.js'
 import { useMcpServers } from './useMcpServers.js'
 import { useWebSearch } from './useWebSearch.js'
@@ -313,8 +314,16 @@ function createAIChat(storyId, chatId) {
    * documents as they were written, which end as each call runs. A chat runs
    * one turn at a time.
    */
-  /** @type {{messageId: string, finish: (() => void)|null, appends: import('../ai/tools/streamedAppends.js').StreamedAppends|null}} */
-  const turn = { messageId: '', finish: null, appends: null }
+  /** @type {{messageId: string, finish: (() => void)|null, appends: import('../ai/tools/streamedAppends.js').StreamedAppends|null, seen: import('@/web/addresses.js').Seen|null}} */
+  const turn = { messageId: '', finish: null, appends: null, seen: null }
+
+  /**
+   * The addresses the chat has from outside the model, for a web call to be
+   * asked about or not: read from its messages the first time a turn needs
+   * them, and added to as the turn's own searches and pages answer.
+   */
+  const addressesSeen = () =>
+    (turn.seen ??= seenIn(chatsApi.getMessagesForChat(chatId)?.value || []))
 
   /**
    * The work under way — a turn, a submission and the turn it asks for, a
@@ -972,8 +981,13 @@ function createAIChat(storyId, chatId) {
     // A server's tool that may change something asks first, and so does a page
     // kept in the project. The wait is as long as the writer takes, and it is
     // not the tool's, so it is not timed.
-    if (asksFirst(toolCall.function.name)) {
-      const decision = await askWriter(turn.messageId, toolCall)
+    // So does a page read or kept at an address the model put together.
+    const { name, arguments: written } = toolCall.function
+    const fetches = name === READ_WEB_PAGE || name === SAVE_WEB_PAGE
+    const seen = fetches || name === WEB_SEARCH ? addressesSeen() : undefined
+    if (asksFirst(name, written, seen)) {
+      const site = siteAsking(name, written, seen)
+      const decision = await askWriter(turn.messageId, toolCall, undefined, site)
       if (decision === 'deny') {
         return {
           role: 'tool',
@@ -981,10 +995,10 @@ function createAIChat(storyId, chatId) {
           content: JSON.stringify({ error: 'The writer did not allow this call.' }),
         }
       }
-      if (decision === 'always' && toolCall.function.name === SAVE_WEB_PAGE) {
-        webApi.setAskBeforeSaving(false)
-      } else if (decision === 'always') mcpApi.allowTool(toolCall.function.name)
-      if (decision === 'always-server') mcpApi.allowServer(toolCall.function.name)
+      if (decision === 'always' && site) webApi.allowSite(site)
+      else if (decision === 'always' && name === SAVE_WEB_PAGE) webApi.setAskBeforeSaving(false)
+      else if (decision === 'always') mcpApi.allowTool(name)
+      if (decision === 'always-server') mcpApi.allowServer(name)
     }
 
     // Whether the writer is asked before a document changes is theirs to
@@ -996,7 +1010,6 @@ function createAIChat(storyId, chatId) {
     // Timed from here, after any wait on the writer, which is not the tool's.
     // The call stops when its time is up or when the work it is part of does.
     // One with no limit (Python, as the writer may set it) waits for the work.
-    const name = toolCall.function.name
     const timeout = getToolTimeout(name) ?? TOOL_TIMEOUT_MS
     const timer = new AbortController()
     const handle = Number.isFinite(timeout)
@@ -1072,6 +1085,9 @@ function createAIChat(storyId, chatId) {
     } finally {
       clearTimeout(handle)
     }
+    // What a search found and a page links to are addresses from outside the
+    // model, read without asking from here on.
+    if (seen) noteWebResult(seen, name, written, message.content)
     // An append shown in its document as it was written has been written now,
     // or will not be: off with its preview, before anything is drawn.
     if (depth === 0) turn.appends?.ran(toolCall)
@@ -1458,6 +1474,7 @@ function createAIChat(storyId, chatId) {
       turn.messageId = ''
       turn.finish = null
       turn.appends = null
+      turn.seen = null
       // What the tools changed that the message has no record of yet: a round
       // stopped, or thrown, partway through, with a call that wrote finished
       // beside one still running. On the record as a finished round's changes
@@ -1478,6 +1495,7 @@ function createAIChat(storyId, chatId) {
     turn.messageId = messageId
     turn.finish = finish
     turn.appends = appends
+    turn.seen = null
 
     // The last round's calls, whose results the next request carries: what
     // the status line says the model is taking in.

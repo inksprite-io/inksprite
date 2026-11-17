@@ -2947,7 +2947,7 @@ export const moveDocumentDefinition = {
   function: {
     name: 'move_document',
     description:
-      'Rename a document or folder, move it into another folder, or both. Give the path it has and the full path it should have. The folder it goes into has to exist already: create_folder adds one. A folder moves with everything in it. Links to it and from it are updated to match; the result lists the documents that changed (`linksUpdated`).',
+      'Rename a document or folder, move it into another folder, or both. Give the path it has and the full path it should have. The folder it goes into has to exist already: create_folder adds one. A folder moves with everything in it. Links to it and from it are updated to match; the result lists the documents that changed (`linksUpdated`). When the writer approves changes first, the call proposes the move instead, and nothing moves until they accept it in the chat; the result says which it was.',
     parameters: {
       type: 'object',
       properties: {
@@ -2976,36 +2976,25 @@ export async function executeMoveDocument(args, context) {
 
   const document = findByPath(api, context.storyId, args.path, sees)
   if (!document) return noDocument(args.path, namedElsewhere(api, context.storyId, args.path, sees))
-  if (document.id === rootIdFor(context.storyId))
-    return { error: 'The project itself stays where it is.' }
   const from = pathOf(api, document)
-  if (document.type !== 'text' && inRepository(api.get, document)) {
-    return { error: `"${from}" is part of a repository, which is read-only.` }
-  }
+  const target = placeToMoveTo(api, context.storyId, document, args.to, sees)
+  if ('error' in target) return target
 
-  const to = (args.to || '')
-    .split('/')
-    .map(segment => segment.trim())
-    .filter(Boolean)
-    .join('/')
-  if (to === from) return { error: `"${from}" is already there.` }
-  const target = resolveNewPath(api, context.storyId, to, sees, { stayingIn: document.parentId })
-  if ('error' in target) {
+  if (context.propose) {
     return {
-      error: target.error.replace('Use update_document to change it.', 'Choose another name.'),
+      ...propose(context, {
+        documentId: document.id,
+        path: from,
+        tool: 'move_document',
+        old: from,
+        new: target.path,
+      }),
+      to: target.path,
+      note: moveProposedNote(from),
     }
   }
-  if (target.parentId !== document.parentId && !api.canDropInto(target.parentId, document.id)) {
-    return { error: `"${from}" cannot go into a folder inside itself.` }
-  }
 
-  // The links to it, and from it, still go where they went: those that would
-  // not are written again, and the model is told which documents changed.
-  const { relinked } = api.keepingLinks(() => {
-    if (target.parentId !== document.parentId) api.moveInto(target.parentId, document.id)
-    if (api.get(document.id)?.title !== target.title) api.rename(document.id, target.title)
-  })
-
+  const { relinked } = moveTo(api, document, target)
   const moved = api.get(document.id)
   const path = pathOf(api, moved)
   record(context, { documentId: document.id, path, tool: 'move_document', old: from, new: path })
@@ -3019,6 +3008,66 @@ export async function executeMoveDocument(args, context) {
     from,
     ...(linksUpdated.length > 0 ? { linksUpdated } : {}),
   }
+}
+
+/**
+ * What the model is told when a move waits on the writer: where the document
+ * still is, since the next call in the turn has to name it there.
+ * @param {string} from
+ */
+const moveProposedNote = from =>
+  `Not moved yet. The writer is asked in the chat, and it moves only if they accept. Until then it is still at "${from}". Tell them what you asked to move and why.`
+
+/**
+ * Where a document would go, and under what name, or why it can't.
+ *
+ * @param {DocumentsApi} api
+ * @param {string} storyId
+ * @param {Document} document
+ * @param {string|undefined} to - The full path it should have
+ * @param {(document: Document) => boolean} sees
+ * @returns {{parentId: string, title: string, path: string}|{error: string}}
+ */
+function placeToMoveTo(api, storyId, document, to, sees) {
+  if (document.id === rootIdFor(storyId)) return { error: 'The project itself stays where it is.' }
+  const from = pathOf(api, document)
+  if (document.type !== 'text' && inRepository(api.get, document)) {
+    return { error: `"${from}" is part of a repository, which is read-only.` }
+  }
+
+  const wanted = (to || '')
+    .split('/')
+    .map(segment => segment.trim())
+    .filter(Boolean)
+    .join('/')
+  if (wanted === from) return { error: `"${from}" is already there.` }
+  const target = resolveNewPath(api, storyId, wanted, sees, { stayingIn: document.parentId })
+  if ('error' in target) {
+    return {
+      error: target.error.replace('Use update_document to change it.', 'Choose another name.'),
+    }
+  }
+  if (target.parentId !== document.parentId && !api.canDropInto(target.parentId, document.id)) {
+    return { error: `"${from}" cannot go into a folder inside itself.` }
+  }
+  return target
+}
+
+/**
+ * Move a document to a place `placeToMoveTo` gave. The links to it, and from
+ * it, still go where they went: those that would not are written again, and
+ * which documents changed comes back.
+ *
+ * @param {DocumentsApi} api
+ * @param {Document} document
+ * @param {{parentId: string, title: string}} target
+ * @returns {{relinked: string[]}}
+ */
+function moveTo(api, document, target) {
+  return api.keepingLinks(() => {
+    if (target.parentId !== document.parentId) api.moveInto(target.parentId, document.id)
+    if (api.get(document.id)?.title !== target.title) api.rename(document.id, target.title)
+  })
 }
 
 // ============================================================================
@@ -3488,6 +3537,19 @@ export async function applyProposal(storyId, edit) {
     const path = pathOf(api, going)
     api.trash(going.id)
     return { documentId: going.id, path, old: '', new: '' }
+  }
+
+  if (edit.tool === 'move_document') {
+    const moving = api.get(edit.documentId)
+    if (!moving) return noDocument(edit.old)
+    // From wherever it is by now, to where the model asked: the writer
+    // accepted where it goes, and may have moved it since.
+    const from = pathOf(api, moving)
+    const target = placeToMoveTo(api, storyId, moving, edit.new, sees)
+    if ('error' in target) return target
+    moveTo(api, moving, target)
+    const path = pathOf(api, api.get(moving.id))
+    return { documentId: moving.id, path, old: from, new: path }
   }
 
   const document = api.get(edit.documentId)

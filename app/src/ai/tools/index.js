@@ -146,6 +146,8 @@ import {
   exploreDocumentsDefinition,
 } from './explore.js'
 import { allServers, getServer, onServersChanged, reachable } from '../../mcp/servers.js'
+import { SKILLS_GROUP } from './choice.js'
+import { offEverywhere } from './everywhere.js'
 import { serverGroup } from '../../mcp/names.js'
 import { callServerTool, describeFailure, resultForModel } from '../../mcp/client.js'
 import {
@@ -176,7 +178,7 @@ import {
  * Named, because it is the one group that gets treated differently: a skill
  * never goes into another skill's tool set. See getToolDefinitionsFor.
  */
-export const SKILLS_GROUP = 'skills'
+export { SKILLS_GROUP }
 
 /**
  * The app's own tool groups, in the order they are listed, a server's coming
@@ -507,6 +509,16 @@ export function getToolDefinitions() {
 }
 
 /**
+ * The group a tool is registered in: undefined for what is no tool here.
+ *
+ * @param {string} name
+ * @returns {string|undefined}
+ */
+export function groupOfTool(name) {
+  return toolRegistry.groupOf(name)
+}
+
+/**
  * Whether a group can be offered here at all, whatever a chat's switches
  * say: the web while its extension is on and a service is set up to search,
  * Python while its extension is on in the desktop app. A server's tools are registered only
@@ -522,8 +534,9 @@ export function groupAvailable(group) {
 }
 
 /**
- * Tool definitions minus whatever a chat has switched off, by tool or by
- * group (./choice.js), and any group that can't be offered here.
+ * Tool definitions minus whatever a chat has switched off (./choice.js),
+ * whatever is off for the whole app (./everywhere.js), and any group that
+ * can't be offered here.
  *
  * A skill the model loads is switched off by its name, like any tool, and
  * that takes it out of `use_skill`'s list; with none left, `use_skill` goes.
@@ -535,7 +548,7 @@ export function getEnabledToolDefinitions(choice) {
   const off = new Set(choice?.disabledTools || [])
   return toolRegistry.getEnabledDefinitions(choice ?? {}).flatMap(definition => {
     const name = definition.function.name
-    if (!groupAvailable(toolRegistry.groupOf(name))) return []
+    if (!groupAvailable(toolRegistry.groupOf(name)) || offEverywhere(name)) return []
     if (name !== USE_SKILL) return [definition]
     const offered = loadableSkills().filter(skill => !off.has(skill.name))
     return offered.length > 0 ? [useSkillDefinition(offered)] : []

@@ -673,53 +673,11 @@ describe('Settings, a chat’s tools', () => {
     useApplicationState().state.value.system.builtInProfiles = {}
   })
 
-  /** The groups listed, in order, by their switches. */
-  const groups = wrapper =>
-    wrapper.findAll('[data-tool-group]').map(one => one.attributes('data-tool-group'))
-
-  it('lists the groups by where each comes from, the skills among them', async () => {
-    const wrapper = await mountSettings()
-
-    expect(groups(wrapper)).toEqual(['documents', 'skills', 'rpg'])
-    expect(toggle(wrapper, 'Interpret')).toBeDefined()
-    expect(toggle(wrapper, 'Write')).toBeDefined()
-    // Compact is the writer's, and no tool.
-    expect(toggle(wrapper, 'Compact')).toBeUndefined()
-  })
-
-  it('lists the tools by their names in words, not as the model calls them', async () => {
-    const wrapper = await mountSettings()
-
-    expect(toggle(wrapper, 'Read document')).toBeDefined()
-    expect(toggle(wrapper, 'read_document')).toBeUndefined()
-    expect(wrapper.text()).toContain('Roll dice')
-    expect(wrapper.text()).not.toContain('roll_dice')
-  })
-
   it('names a group already called tools once', async () => {
     const wrapper = await mountSettings()
 
     expect(toggle(wrapper, 'RPG Tools')).toBeDefined()
     expect(toggle(wrapper, 'RPG Tools tools')).toBeUndefined()
-  })
-
-  it('switches a group in this chat and in its profile’s next chats', async () => {
-    const wrapper = await mountSettings()
-
-    await toggle(wrapper, 'RPG Tools').vm.$emit('update:modelValue', false)
-
-    expect(updateChat).toHaveBeenLastCalledWith('chat_1', { disabledToolGroups: ['rpg'] })
-    expect(onProfile().disabledToolGroups).toEqual(['rpg'])
-    expect(toggle(wrapper, 'Roll dice').props('disabled')).toBe(true)
-  })
-
-  it('switches a tool in this chat and in its profile’s next chats', async () => {
-    const wrapper = await mountSettings()
-
-    await toggle(wrapper, 'Interpret').vm.$emit('update:modelValue', false)
-
-    expect(updateChat).toHaveBeenLastCalledWith('chat_1', { disabledTools: ['interpret'] })
-    expect(onProfile().disabledTools).toEqual(['interpret'])
   })
 
   it('switches the profile’s tools as asked, not to the chat’s whole list', async () => {
@@ -748,36 +706,6 @@ describe('Settings, a chat’s tools', () => {
     expect(chat.value.onlyToolGroups).toEqual(['documents', 'rpg'])
     expect(chat.value.disabledToolGroups).toEqual(['skills'])
     expect(toggle(wrapper, 'RPG Tools').props('modelValue')).toBe(true)
-  })
-
-  it('switches every tool off from Enable tools, greying each switch as it was set', async () => {
-    chat.value = { disabledToolGroups: ['rpg'] }
-    const wrapper = await mountSettings()
-    expect(toggle(wrapper, 'Enable tools').props('modelValue')).toBe(true)
-
-    await toggle(wrapper, 'Enable tools').vm.$emit('update:modelValue', false)
-
-    expect(updateChat).toHaveBeenLastCalledWith('chat_1', { toolsOff: true })
-    expect(onProfile().toolsOff).toBe(true)
-    // What was switched stays as it was, for when the tools are back on.
-    expect(chat.value.disabledToolGroups).toEqual(['rpg'])
-    expect(onProfile().disabledToolGroups).toBeUndefined()
-    expect(toggle(wrapper, 'Enable tools').props('modelValue')).toBe(false)
-    for (const [label, on] of [
-      ['Documents tools', true],
-      ['RPG Tools', false],
-      ['Read document', true],
-    ]) {
-      expect(toggle(wrapper, label).props('disabled')).toBe(true)
-      expect(toggle(wrapper, label).props('modelValue')).toBe(on)
-    }
-
-    await toggle(wrapper, 'Enable tools').vm.$emit('update:modelValue', true)
-
-    expect(chat.value.toolsOff).toBeUndefined()
-    expect(chat.value.disabledToolGroups).toEqual(['rpg'])
-    expect(toggle(wrapper, 'Documents tools').props('disabled')).toBe(false)
-    expect(toggle(wrapper, 'Read document').props('disabled')).toBe(false)
   })
 
   it('leaves whether edits wait to the chip under the message box', async () => {
@@ -845,15 +773,6 @@ describe('Settings, a chat’s servers', () => {
     useApplicationState().state.value.system.builtInProfiles = {}
   })
 
-  it('lists a server after the documents, on until switched off', async () => {
-    const wrapper = await mountSettings()
-
-    expect(toggle(wrapper, 'Wiki tools').props('modelValue')).toBe(true)
-    expect(toggle(wrapper, 'Search')).toBeDefined()
-    const ids = wrapper.findAll('[data-tool-group]').map(one => one.attributes('data-tool-group'))
-    expect(ids.slice(0, 2)).toEqual(['documents', 'mcp:mcp_wiki'])
-  })
-
   it('is off in a chat that switched it off, and in its profile’s next chats', async () => {
     const wrapper = await mountSettings()
 
@@ -871,24 +790,6 @@ describe('Settings, a chat’s servers', () => {
     const wrapper = await mountSettings()
 
     expect(toggle(wrapper, 'Wiki tools').props('modelValue')).toBe(false)
-  })
-
-  it('switches one of its tools off by the name the model calls it', async () => {
-    const wrapper = await mountSettings()
-
-    await toggle(wrapper, 'Search').vm.$emit('update:modelValue', false)
-
-    expect(updateChat).toHaveBeenLastCalledWith('chat_1', { disabledTools: ['wiki__search'] })
-  })
-
-  it('says which tools ask first, and which are always allowed, beside their switches', async () => {
-    const wrapper = await mountSettings()
-    const marker = name => wrapper.find(`[data-tool="${name}"] [data-approval]`)
-
-    expect(marker('wiki__search').exists()).toBe(false)
-    expect(marker('wiki__edit').text()).toBe('Asks first')
-    expect(marker('wiki__delete').text()).toBe('Always allowed')
-    expect(marker('read_document').exists()).toBe(false)
   })
 })
 
@@ -912,16 +813,6 @@ describe('Settings, a chat’s web search', () => {
     useApplicationState().state.value.system.builtInProfiles = {}
   })
 
-  it('lists the web after the documents, on until switched off', async () => {
-    const wrapper = await mountSettings()
-
-    expect(toggle(wrapper, 'Web tools').props('modelValue')).toBe(true)
-    expect(toggle(wrapper, 'Web search')).toBeDefined()
-    expect(toggle(wrapper, 'Read web page')).toBeDefined()
-    const ids = wrapper.findAll('[data-tool-group]').map(one => one.attributes('data-tool-group'))
-    expect(ids.slice(0, 2)).toEqual(['documents', 'web'])
-  })
-
   it('switches off in this chat and its profile’s next', async () => {
     const wrapper = await mountSettings()
 
@@ -930,19 +821,6 @@ describe('Settings, a chat’s web search', () => {
     expect(updateChat).toHaveBeenLastCalledWith('chat_1', { disabledToolGroups: ['web'] })
     expect(useApplicationState().builtInProfiles.value[CHAT_PROFILE_ID].disabledToolGroups).toEqual(
       ['web']
-    )
-  })
-
-  it('says keeping a page asks first until it is always allowed', async () => {
-    let wrapper = await mountSettings()
-    expect(wrapper.find('[data-tool="save_web_page"] [data-approval]').text()).toBe('Asks first')
-
-    setWebSearch({ ...storedWeb.value, saveWithoutAsking: true })
-    storedWeb.value = { ...storedWeb.value, saveWithoutAsking: true }
-    setActivePinia(createPinia())
-    wrapper = await mountSettings()
-    expect(wrapper.find('[data-tool="save_web_page"] [data-approval]').text()).toBe(
-      'Always allowed'
     )
   })
 
@@ -973,13 +851,6 @@ describe('Settings, a chat’s Python', () => {
     delete globalThis.__INKSPRITE_DESKTOP__
     useApplicationState().setExtension('python', false)
     useApplicationState().state.value.system.builtInProfiles = {}
-  })
-
-  it('lists Python after the documents, on until switched off', async () => {
-    const wrapper = await mountSettings()
-
-    expect(toggle(wrapper, 'Python tools').props('modelValue')).toBe(true)
-    expect(toggle(wrapper, 'Run python')).toBeDefined()
   })
 
   it('switches off in this chat and its profile’s next', async () => {

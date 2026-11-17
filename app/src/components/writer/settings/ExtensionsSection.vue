@@ -123,20 +123,6 @@
             </button>
           </p>
         </div>
-        <div class="flex items-center justify-between gap-2">
-          <label
-            for="web-ask-before-saving"
-            class="text-xs font-medium text-surface-700 dark:text-surface-200"
-            >Ask before saving pages</label
-          >
-          <ToggleSwitch
-            :model-value="!web.setup.value.saveWithoutAsking"
-            input-id="web-ask-before-saving"
-            class="flex-none"
-            data-field="web-ask-before-saving"
-            @update:model-value="web.setAskBeforeSaving"
-          />
-        </div>
       </div>
     </ExpandableSection>
 

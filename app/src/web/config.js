@@ -82,3 +82,14 @@ export function serviceInUse(from = setup) {
 export function savesWithoutAsking(from = setup) {
   return from?.saveWithoutAsking === true
 }
+
+/**
+ * How the writer has reading set: whether an address the model put together
+ * is read without asking, and the sites that always are.
+ *
+ * @param {WebSearchSetup|null} [from]
+ * @returns {import('./addresses.js').ReadingAllowed}
+ */
+export function readingAllowed(from = setup) {
+  return { always: from?.readWithoutAsking === true, sites: from?.allowedSites || [] }
+}

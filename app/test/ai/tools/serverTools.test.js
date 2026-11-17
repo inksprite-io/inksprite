@@ -72,15 +72,20 @@ describe('a server’s tools in the registry', () => {
     })
   })
 
-  it('offers them to every chat that has not switched the server off, less any it switched off', () => {
+  it('offers them to every chat that has not switched the server off, less any off for the whole app', () => {
     setServers([wiki])
 
     expect(names(getEnabledToolDefinitions({}))).toEqual(
       expect.arrayContaining(['wiki__search', 'wiki__edit'])
     )
-    expect(names(getEnabledToolDefinitions({ disabledTools: ['wiki__edit'] }))).not.toContain(
+    // A chat's own word on one of them is from before, and says nothing.
+    expect(names(getEnabledToolDefinitions({ disabledTools: ['wiki__edit'] }))).toContain(
       'wiki__edit'
     )
+    setServers([{ ...wiki, off: ['edit'] }])
+    expect(names(getEnabledToolDefinitions({}))).not.toContain('wiki__edit')
+    expect(names(getEnabledToolDefinitions({}))).toContain('wiki__search')
+    setServers([wiki])
     expect(names(getEnabledToolDefinitions({ disabledToolGroups: ['mcp:mcp_wiki'] }))).toEqual(
       expect.not.arrayContaining(['wiki__search'])
     )

@@ -1,9 +1,9 @@
 // @vitest-environment node
-/* global AbortController */
+/* global AbortController, Response */
 // The client is run against the harness's test server, in Node, where fetch
 // is the real thing: the point is that a server speaking the protocol is
 // listed and called, session and all.
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest'
 import { spawn } from 'node:child_process'
 import {
   callServerTool,
@@ -87,6 +87,61 @@ describe('the client, against a server', () => {
     expect(listed.tools).toHaveLength(3)
   })
 
+  it('follows an address that leads on within the server’s own site', async () => {
+    const listed = await listServer({ url: open.url.replace('/mcp', '/old') })
+    expect(listed.tools).toHaveLength(3)
+  })
+
+  it('follows nothing to another site, and says where it led', async () => {
+    const error = await listServer({ url: open.url.replace('/mcp', '/away') }).catch(
+      failure => failure
+    )
+    expect(describeFailure(error)).toBe(
+      'That address redirects to http://elsewhere.invalid/mcp. Enter that address instead.'
+    )
+  })
+
+  describe('in a browser, which doesn’t say where a redirect leads', () => {
+    /** Node's fetch answering a redirect it was told not to follow as a browser's does. */
+    const asBrowser = () => {
+      const real = globalThis.fetch
+      vi.stubGlobal('fetch', async (input, init) => {
+        const response = await real(input, init)
+        if (init?.redirect !== 'manual' || response.status < 300 || response.status >= 400) {
+          return response
+        }
+        const hidden = new Response(null)
+        Object.defineProperties(hidden, {
+          type: { value: 'opaqueredirect' },
+          status: { value: 0 },
+          ok: { value: false },
+        })
+        return hidden
+      })
+    }
+
+    afterEach(() => vi.unstubAllGlobals())
+
+    it('finds where the address leads, and follows it within the server’s own site', async () => {
+      asBrowser()
+      const listed = await listServer({
+        url: keyed.url.replace('/mcp', '/old'),
+        headers: { Authorization: 'Bearer secret' },
+      })
+      expect(listed.tools).toHaveLength(3)
+    })
+
+    it('says so when it can’t find where the address leads', async () => {
+      asBrowser()
+      const error = await listServer({ url: open.url.replace('/mcp', '/away') }).catch(
+        failure => failure
+      )
+      expect(describeFailure(error)).toBe(
+        'That address redirects. Enter the address it redirects to.'
+      )
+    })
+  })
+
   it('says a server that wants signing in does', async () => {
     const error = await listServer({ url: keyed.url }).catch(failure => failure)
 
@@ -118,6 +173,23 @@ describe('promptText', () => {
 })
 
 describe('describeFailure', () => {
+  it('says an address redirects, and where to when that is known', () => {
+    expect(
+      describeFailure(
+        new Error(
+          "SSE error: Redirect not followed: this runtime does not expose where it points (redirectPolicy: 'same-origin')"
+        )
+      )
+    ).toBe('That address redirects. Enter the address it redirects to.')
+    expect(
+      describeFailure(
+        new Error(
+          "Redirect to https://elsewhere.example/mcp not followed; use that URL as the endpoint if it is the intended server (redirectPolicy: 'same-origin')"
+        )
+      )
+    ).toBe('That address redirects to https://elsewhere.example/mcp. Enter that address instead.')
+  })
+
   it('says what each kind of failure means', () => {
     const http = status => ({ data: { status } })
 

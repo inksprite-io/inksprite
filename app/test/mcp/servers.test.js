@@ -42,6 +42,17 @@ describe('needsApproval', () => {
   })
 })
 
+describe('needsApproval, of a tool the writer has ask first', () => {
+  it('asks before one that says it only reads, and one of a server always allowed', () => {
+    setServers([server('a', { asks: ['read'] })])
+    expect(needsApproval('a__read')).toBe(true)
+
+    setServers([server('a', { allowAll: true, asks: ['write'] })])
+    expect(needsApproval('a__write')).toBe(true)
+    expect(needsApproval('a__read')).toBe(false)
+  })
+})
+
 describe('serverTool', () => {
   it('finds the server and tool behind a name the model called', () => {
     setServers([server('a'), server('b')])

@@ -32,6 +32,9 @@ import { useDocumentsStore } from '@/stores/documentsStore.js'
 /** The group the web tools are switched by. */
 export const WEB_GROUP = 'web'
 
+/** The search's name. */
+export const WEB_SEARCH = 'web_search'
+
 /** The page read's name, which Save to project keeps a result of. */
 export const READ_WEB_PAGE = 'read_web_page'
 
@@ -65,7 +68,7 @@ export function webSearchOffered() {
 export const webSearchDefinition = {
   type: /** @type {const} */ ('function'),
   function: {
-    name: 'web_search',
+    name: WEB_SEARCH,
     description:
       'Search the web. Answers up to five pages, each with its title, address, date when known, and the passage that matched. Search when the answer depends on something outside the project and what you already know: a current fact, a source to check, a detail to look up. A passage is a glimpse: read the page with read_web_page before quoting it or relying on more than the passage says, and say which page a fact came from.',
     parameters: {

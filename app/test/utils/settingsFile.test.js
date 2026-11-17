@@ -313,6 +313,40 @@ describe('planImport', () => {
     expect(plan.rows.webSearch[0].keys).toEqual({ exa: 'exa-mine', kagi: 'kagi-mine' })
   })
 
+  it('by hand, takes nothing a file says is read or kept without asking', () => {
+    const file = {
+      tables: {
+        webSearch: [
+          {
+            id: 'web',
+            service: 'kagi',
+            keys: {},
+            saveWithoutAsking: true,
+            readWithoutAsking: true,
+            allowedSites: ['collector.example'],
+          },
+        ],
+      },
+    }
+    const fresh = planImport(file, freshInstall(), { byHand: true, now: NOW })
+    expect(fresh.rows.webSearch[0]).not.toHaveProperty('saveWithoutAsking')
+    expect(fresh.rows.webSearch[0]).not.toHaveProperty('readWithoutAsking')
+    expect(fresh.rows.webSearch[0]).not.toHaveProperty('allowedSites')
+
+    const here = {
+      tables: {
+        webSearch: [{ id: 'web', service: 'exa', keys: {}, allowedSites: ['tides.example'] }],
+      },
+      settings: SETTINGS,
+    }
+    const kept = planImport(file, here, { byHand: true, now: NOW })
+    expect(kept.rows.webSearch[0]).toMatchObject({
+      service: 'kagi',
+      allowedSites: ['tides.example'],
+    })
+    expect(kept.rows.webSearch[0]).not.toHaveProperty('readWithoutAsking')
+  })
+
   it('by hand, sends no key here to an address the file moved it to', () => {
     const here = {
       tables: {
@@ -390,12 +424,23 @@ describe('planImport', () => {
     expect(plan.rows.mcpServers[0]).not.toHaveProperty('allowAll')
 
     const here = {
-      tables: { mcpServers: [{ ...server, allowed: ['find'], allowAll: false, url: 'x' }] },
+      tables: { mcpServers: [{ ...server, allowed: ['find'], allowAll: false, name: 'x' }] },
       settings: SETTINGS,
     }
     const replaced = planImport({ tables: { mcpServers: [server] } }, here, { byHand: true })
     expect(replaced.rows.mcpServers[0].allowed).toEqual(['find'])
     expect(replaced.rows.mcpServers[0]).not.toHaveProperty('allowAll')
+  })
+
+  it('by hand, keeps nothing always allowed of a server the file gives another address', () => {
+    const here = {
+      tables: { mcpServers: [{ ...server, allowed: ['find'], allowAll: true, url: 'x' }] },
+      settings: SETTINGS,
+    }
+    const moved = planImport({ tables: { mcpServers: [server] } }, here, { byHand: true })
+    expect(moved.rows.mcpServers[0].url).toBe(server.url)
+    expect(moved.rows.mcpServers[0].allowed).toEqual([])
+    expect(moved.rows.mcpServers[0]).not.toHaveProperty('allowAll')
   })
 
   it('left by a script, takes the server’s allowances from the file', () => {

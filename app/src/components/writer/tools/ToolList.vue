@@ -36,31 +36,28 @@
       </template>
       <div class="flex flex-col gap-1 pt-1 pb-2">
         <div
-          v-for="tool in group.tools"
-          :key="tool.name"
+          v-for="row in group.rows"
+          :key="row.name"
           class="flex items-center gap-2"
-          :data-tool="tool.name"
+          :data-tool="row.name"
         >
           <span
-            v-tooltip.top="{ value: tool.description, showDelay: 400 }"
+            v-tooltip.top="{ value: row.description, showDelay: 400 }"
             class="flex-1 min-w-0 text-xs text-surface-700 dark:text-surface-200 truncate"
             :class="{ 'opacity-50': !allOn || !isGroupOn(group.id) }"
           >
-            {{ tool.label }}
+            {{ row.label }}
           </span>
-          <span
-            v-if="tool.approval"
-            class="flex-none text-xs text-surface-400"
-            :data-approval="tool.approval"
-          >
-            {{ tool.approval === 'asks' ? 'Asks first' : 'Always allowed' }}
-          </span>
-          <ToggleSwitch
-            :model-value="isToolOn(group.id, tool.name)"
+          <Select
+            :model-value="disabled ? 'off' : row.value"
+            :options="row.options"
+            option-label="label"
+            option-value="value"
             :disabled="!allOn || !isGroupOn(group.id)"
-            class="flex-none"
-            :aria-label="tool.label"
-            @update:model-value="emit('tool', tool.name, $event)"
+            :aria-label="row.label"
+            size="small"
+            class="flex-none w-48 dark:!bg-surface-900"
+            @update:model-value="row.set"
           />
         </div>
       </div>
@@ -70,36 +67,57 @@
 
 <script setup>
 import { computed } from 'vue'
+import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
-import { getToolGroups, SKILLS_GROUP } from '@/ai/tools/index.js'
-import { groupOn, toolOn, toolsSwitchedOff } from '@/ai/tools/choice.js'
+import { getToolGroups } from '@/ai/tools/index.js'
+import {
+  DOCUMENTS_GROUP,
+  DOCUMENT_ROWS,
+  SKILLS_GROUP,
+  groupOn,
+  rowOn,
+  toolOn,
+  toolsSwitchedOff,
+} from '@/ai/tools/choice.js'
+import { mayAsk, settingOf } from '@/ai/tools/everywhere.js'
+import { READ_WEB_PAGE, SAVE_WEB_PAGE, WEB_SEARCH } from '@/ai/tools/web.js'
 import { allSkills, skillLabel } from '@/ai/skills/index.js'
 import { loadedByModel } from '@/ai/skills/runner.js'
+import { useApplicationState } from '@/composables/useApplicationState.js'
 import { useSkills } from '@/composables/useSkills'
 import { useMcpServers } from '@/composables/useMcpServers.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
-import { approvalOf } from '@/composables/useToolApprovals.js'
 import { serverTool } from '@/mcp/servers.js'
 
 /**
  * What the model can reach for, by where each comes from: the documents, the
  * web, Python, each server, the skills, the RPG tools (`getToolGroups`). A
- * group switches on or off and opens to switch single tools; beside a tool
- * that asks before each call, whether it does, as text and never a switch.
+ * group switches on or off, and opens on what is in it, each with its own
+ * setting: off or on, or for a tool that may ask the writer first, off,
+ * asking first, or always allowed.
+ *
+ * A group's switch is the chat's, and its profile's (ai/tools/choice.js), as
+ * are the documents' rows, what the model does with them rather than tool by
+ * tool, and each skill; whoever holds the choice writes those. Every other
+ * tool's setting is the whole app's (ai/tools/everywhere.js), and written
+ * from here.
+ *
  * Enable tools, over them all, switches every tool off or back on without
- * touching their own switches, which wait as they are, greyed, until it is
- * on. It shows a choice of tools (ai/tools/choice.js) and says what was
- * switched, and whoever holds the choice writes it.
+ * touching their own settings, which wait as they are, greyed, until it is
+ * on.
  *
  * @typedef {Object} Props
  * @property {import('@/ai/tools/choice.js').ToolChoice|null} [choice] - The
  *   tools as they are switched
+ * @property {'off'|'ask'|'auto'} [editing] - How the model edits the
+ *   documents: not at all, as suggestions, or straight in
  * @property {boolean} [disabled] - The model can't be offered tools at all:
- *   every switch reads as off and can't be switched
+ *   everything reads as off and can't be switched
  */
 const props = defineProps({
   choice: { type: Object, default: null },
+  editing: { type: String, default: 'auto' },
   disabled: { type: Boolean, default: false },
 })
 
@@ -109,16 +127,51 @@ const emit = defineEmits({
   /** Groups switched on or off, by id. */
   groups: (/** @type {string[]} */ ids, /** @type {boolean} */ on) =>
     Array.isArray(ids) && typeof on === 'boolean',
-  /** A tool switched on or off, by the name the model calls it. */
+  /** A skill switched on or off, by the name the model calls it. */
   tool: (/** @type {string} */ name, /** @type {boolean} */ on) =>
     typeof name === 'string' && typeof on === 'boolean',
+  /** Reading or commenting on the documents switched on or off. */
+  row: (/** @type {'read'|'comment'} */ id, /** @type {boolean} */ on) =>
+    typeof id === 'string' && typeof on === 'boolean',
+  /** How the model edits the documents. */
+  editing: (/** @type {'off'|'ask'|'auto'} */ mode) => ['off', 'ask', 'auto'].includes(mode),
 })
 
 // What is listed is made from the writer's skills, servers and web search,
 // so it is read again when they change. See ai/tools.
 const { skills: library } = useSkills()
-const { servers } = useMcpServers()
+const mcp = useMcpServers()
 const webSearch = useWebSearch()
+const app = useApplicationState()
+
+/** @typedef {{label: string, value: string}} Option */
+
+/** @type {Option[]} */
+const OFF_ON = [
+  { label: 'Off', value: 'off' },
+  { label: 'On', value: 'on' },
+]
+
+/** For a tool that may ask the writer before it runs. @type {Option[]} */
+const OFF_ASK_ALWAYS = [
+  { label: 'Off', value: 'off' },
+  { label: 'Ask first', value: 'ask' },
+  { label: 'Always allow', value: 'always' },
+]
+
+/** For editing the documents. @type {Option[]} */
+const OFF_SUGGEST_EDIT = [
+  { label: 'Off', value: 'off' },
+  { label: 'Suggest changes', value: 'ask' },
+  { label: 'Edit directly', value: 'auto' },
+]
+
+/** The web's tools as the writer reads them, the group's name left unsaid. */
+const WEB_LABELS = {
+  [WEB_SEARCH]: 'Search',
+  [READ_WEB_PAGE]: 'Read pages',
+  [SAVE_WEB_PAGE]: 'Save pages',
+}
 
 /**
  * A tool as the writer reads it: its name in words, as a server's tool is
@@ -140,8 +193,25 @@ const readableTool = name => {
 const toolsOf = label => (/\btools$/i.test(label) ? label : `${label} tools`)
 
 /**
- * A tool as the list shows it: a server's by the title it gave, the app's
- * own by its name in words, and whether it asks before each call.
+ * Set a tool for the whole app: a server's on its row, the web's two that
+ * ask in the web search's settings, and off or on for any of the app's own.
+ * @param {string} name
+ * @param {string} setting - `off`, `on`, `ask` or `always`
+ */
+function setEverywhere(name, setting) {
+  if (serverTool(name)) {
+    mcp.setToolSetting(name, /** @type {'off'|'ask'|'always'} */ (setting))
+    return
+  }
+  app.setToolOff(name, setting === 'off')
+  if (setting === 'off') return
+  if (name === READ_WEB_PAGE) webSearch.setAskBeforeReading(setting === 'ask')
+  if (name === SAVE_WEB_PAGE) webSearch.setAskBeforeSaving(setting === 'ask')
+}
+
+/**
+ * A tool switched for the whole app, as the list shows it: a server's by the
+ * title it gave, the app's own by its name in words.
  * @param {import('@/ai/tools/registry.js').ToolDefinition} definition
  */
 const toolRow = definition => {
@@ -149,11 +219,28 @@ const toolRow = definition => {
   const found = serverTool(name)
   return {
     name,
-    label: found ? found.tool.title || found.tool.name : readableTool(name),
+    label: found ? found.tool.title || found.tool.name : (WEB_LABELS[name] ?? readableTool(name)),
     description: (found ? found.tool.description : definition.function.description) || '',
-    approval: approvalOf(name),
+    options: mayAsk(name) ? OFF_ASK_ALWAYS : OFF_ON,
+    value: settingOf(name),
+    set: (/** @type {string} */ setting) => setEverywhere(name, setting),
   }
 }
+
+/** What the model does with the documents: reading, editing, commenting. */
+const documentRows = computed(() =>
+  DOCUMENT_ROWS.map(row => ({
+    name: row.id,
+    label: row.label,
+    description: '',
+    options: row.id === 'edit' ? OFF_SUGGEST_EDIT : OFF_ON,
+    value: row.id === 'edit' ? props.editing : rowOn(switched.value, row.id) ? 'on' : 'off',
+    set: (/** @type {string} */ setting) =>
+      row.id === 'edit'
+        ? emit('editing', /** @type {'off'|'ask'|'auto'} */ (setting))
+        : emit('row', row.id, setting === 'on'),
+  }))
+)
 
 /**
  * The skills the model can call or load, by name rather than as
@@ -172,22 +259,30 @@ const skillRows = computed(() => {
       name: skill.name,
       label,
       description: skill.summary,
-      approval: /** @type {'asks'|'allowed'|null} */ (null),
+      options: OFF_ON,
+      value: toolOn(switched.value, skill.name, SKILLS_GROUP) ? 'on' : 'off',
+      set: (/** @type {string} */ setting) => emit('tool', skill.name, setting === 'on'),
     }))
 })
 
 /** The groups, in the order the registry lists them, less any with nothing in them. */
 const groups = computed(() => {
-  void servers.value
+  // What each tool is set to for the whole app is kept in these.
+  void mcp.servers.value
   void webSearch.setup.value
-  const skills = skillRows.value
+  void app.toolsOff.value
   return getToolGroups()
     .map(group => ({
       id: group.id,
       label: group.label,
-      tools: group.id === SKILLS_GROUP ? skills : group.definitions.map(toolRow),
+      rows:
+        group.id === DOCUMENTS_GROUP
+          ? documentRows.value
+          : group.id === SKILLS_GROUP
+            ? skillRows.value
+            : group.definitions.map(toolRow),
     }))
-    .filter(group => group.tools.length > 0)
+    .filter(group => group.rows.length > 0)
 })
 
 /** Whether tools are on at all: the switch over all of them. */
@@ -198,7 +293,4 @@ const switched = computed(() => ({ ...props.choice, toolsOff: undefined }))
 
 /** @param {string} id */
 const isGroupOn = id => !props.disabled && groupOn(switched.value, id)
-
-/** @param {string} groupId @param {string} name */
-const isToolOn = (groupId, name) => !props.disabled && toolOn(switched.value, name, groupId)
 </script>

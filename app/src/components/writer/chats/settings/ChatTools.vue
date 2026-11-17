@@ -1,10 +1,13 @@
 <template>
   <ToolList
     :choice="chat"
+    :editing="editing"
     :disabled="!modelToolsEnabled"
     @all="setToolsOn"
     @groups="setToolGroups"
     @tool="setTool"
+    @row="setDocumentRow"
+    @editing="setEditing"
   >
     <p v-if="modelToolsNote" class="text-xs text-surface-500 dark:text-surface-400" data-tools-note>
       {{ modelToolsNote }}
@@ -19,10 +22,11 @@ import { useChatSettings } from '@/composables/useChatSettings'
 import { useModelCapabilities } from '@/composables/useModelCapabilities'
 
 /**
- * What a chat's model can reach for (`ToolList`). A switch here is the
- * chat's, and goes to its profile too, for the chats started on it next. See
- * `setToolGroups` in useChatSettings. Whether its edits wait is the chip
- * under the message box.
+ * What a chat's model can reach for (`ToolList`). A group's switch here is
+ * the chat's, and goes to its profile too, for the chats started on it next,
+ * as do the documents' rows and each skill. See `setToolGroups` in
+ * useChatSettings. Whether its edits wait is Edit's setting here, and the
+ * chip under the message box.
  *
  * @typedef {Object} Props
  * @property {string} storyId
@@ -33,10 +37,8 @@ const props = defineProps({
   chatId: { type: String, required: true },
 })
 
-const { chat, preset, setToolsOn, setToolGroups, setTool } = useChatSettings(
-  props.storyId,
-  () => props.chatId
-)
+const { chat, preset, editing, setToolsOn, setToolGroups, setTool, setDocumentRow, setEditing } =
+  useChatSettings(props.storyId, () => props.chatId)
 
 const capabilities = useModelCapabilities(
   () => preset.value?.providerId,

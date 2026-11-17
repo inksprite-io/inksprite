@@ -57,6 +57,10 @@ const defaultState = {
     // Whether a chat asks before exploring more than about 50,000 tokens
     // (`ASK_FROM_TOKENS`). Always allow on the question turns it off.
     askBeforeExploring: true,
+    // The app's own tools switched off for the whole app, by name: a tool of
+    // the web's, Python's or the RPG's, where a profile switches only the
+    // group (ai/tools/everywhere.js). A server's are kept on its own row.
+    toolsOff: [],
     // Whether the built-in profiles written for explicit content are offered.
     // Off until the writer switches it on, so nobody meets them by opening a
     // menu.
@@ -263,6 +267,8 @@ if (typeof window !== 'undefined') {
  *   What the writer has chosen on each built-in profile, by its id
  * @property {boolean} askBeforeExploring - Whether a chat asks before a big explore.
  *   A file from before has it as the Explore workflow's `askFirst` instead.
+ * @property {string[]} [toolsOff] - The app's own tools switched off for the
+ *   whole app, by name
  * @property {boolean} nsfwProfiles
  * @property {boolean} blurNsfw - Whether the card library blurs NSFW pictures
  * @property {boolean} roleplay - Whether the Roleplay extension is on
@@ -380,6 +386,8 @@ function workflowFrom(settings) {
  *   setApplyEdits: (mode: 'auto'|'ask') => void,
  *   applyEditsFor: (chat: {applyEdits?: string}|null|undefined) => 'auto'|'ask',
  *   askBeforeExploring: import('vue').ComputedRef<boolean>,
+ *   toolsOff: import('vue').ComputedRef<string[]>,
+ *   setToolOff: (name: string, off: boolean) => void,
  *   setAskBeforeExploring: (ask: boolean) => void,
  *   nsfwProfiles: import('vue').ComputedRef<boolean>,
  *   setNsfwProfiles: (on: boolean) => void,
@@ -640,6 +648,26 @@ export function useApplicationState() {
   const setAskBeforeExploring = ask => {
     if (!state.value.system) state.value.system = {}
     state.value.system.askBeforeExploring = ask !== false
+  }
+
+  /**
+   * The app's own tools switched off for the whole app, by name. See
+   * ai/tools/everywhere.js.
+   * @type {import('vue').ComputedRef<string[]>}
+   */
+  const toolsOff = computed(() =>
+    Array.isArray(state.value.system?.toolsOff) ? state.value.system.toolsOff : []
+  )
+
+  /**
+   * Switch one of the app's own tools off for the whole app, or back on.
+   * @param {string} name
+   * @param {boolean} off
+   */
+  const setToolOff = (name, off) => {
+    if (!state.value.system) state.value.system = {}
+    const others = toolsOff.value.filter(one => one !== name)
+    state.value.system.toolsOff = off ? [...others, name] : others
   }
 
   /**
@@ -1032,6 +1060,7 @@ export function useApplicationState() {
         applyEdits: applyEdits.value,
         builtInProfiles: builtInProfiles.value,
         askBeforeExploring: askBeforeExploring.value,
+        toolsOff: toolsOff.value,
         nsfwProfiles: nsfwProfiles.value,
         blurNsfw: blurNsfw.value,
         roleplay: extensionOn('roleplay') === true,
@@ -1082,6 +1111,10 @@ export function useApplicationState() {
     const ask =
       typeof settings.askBeforeExploring === 'boolean' ? settings.askBeforeExploring : askFirst
     if (typeof ask === 'boolean') setAskBeforeExploring(ask)
+    if (Array.isArray(settings.toolsOff)) {
+      if (!state.value.system) state.value.system = {}
+      state.value.system.toolsOff = settings.toolsOff.filter(name => typeof name === 'string')
+    }
     if (typeof settings.nsfwProfiles === 'boolean') setNsfwProfiles(settings.nsfwProfiles)
     if (typeof settings.blurNsfw === 'boolean') setBlurNsfw(settings.blurNsfw)
     if (typeof settings.roleplay === 'boolean') setExtension('roleplay', settings.roleplay)
@@ -1167,6 +1200,8 @@ export function useApplicationState() {
     setAskBeforeExploring,
 
     // Whether the NSFW chat profiles are offered
+    toolsOff,
+    setToolOff,
     nsfwProfiles,
     setNsfwProfiles,
 

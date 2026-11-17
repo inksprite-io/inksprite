@@ -41,7 +41,10 @@ vi.mock('@/stores/storiesStore', () => ({
   useStoriesStore: () => ({ getStory: () => null }),
 }))
 
-const { giveToolChoices, givenChoice } = await import('@/composables/useToolChoices.js')
+const { giveToolChoices, givenChoice, moveToolSwitches, switchesToMove } = await import(
+  '@/composables/useToolChoices.js'
+)
+const { useMcpServers } = await import('@/composables/useMcpServers.js')
 
 /** A server the writer connected, used in chats on these profiles. */
 const server = (id, profiles) => ({
@@ -189,5 +192,66 @@ describe('giving profiles and chats their tools', () => {
     await giveToolChoices()
 
     expect(updateChat).not.toHaveBeenCalled()
+  })
+})
+
+describe('moving the tools switched off one by one to the whole app', () => {
+  /** A server with a tool, as kept. */
+  const wiki = {
+    ...server('wiki', []),
+    tools: [{ name: 'edit', exposed: 'wiki__edit', inputSchema: {} }],
+  }
+
+  beforeEach(async () => {
+    setActivePinia(createPinia())
+    useApplicationState().resetState()
+    vi.clearAllMocks()
+    rows.web = undefined
+    rows.servers = [wiki]
+    await useChatProfileStore().ensureInitialized()
+    await useMcpServers().ready()
+  })
+
+  it('moves a tool of the web’s, the RPG’s or a server’s, and leaves a document’s, a skill’s and what is no tool', () => {
+    expect(
+      switchesToMove([
+        'read_web_page',
+        'oracle',
+        'wiki__edit',
+        'delete_document',
+        'interpret',
+        'gone__tool',
+      ])
+    ).toEqual(['read_web_page', 'oracle', 'wiki__edit'])
+    expect(switchesToMove(undefined)).toEqual([])
+  })
+
+  it('takes Default’s as the whole app’s, off the profile, and nothing a second time', async () => {
+    const app = useApplicationState()
+    app.setBuiltInProfile(CHAT_PROFILE_ID, {
+      disabledTools: ['oracle', 'wiki__edit', 'delete_document'],
+    })
+
+    await moveToolSwitches()
+
+    expect(app.toolsOff.value).toEqual(['oracle'])
+    expect(useMcpServers().servers.value[0].off).toEqual(['edit'])
+    expect(app.builtInProfiles.value[CHAT_PROFILE_ID].disabledTools).toEqual(['delete_document'])
+
+    // Switched back on, it stays on: there is nothing left to move.
+    app.setToolOff('oracle', false)
+    await moveToolSwitches()
+    expect(app.toolsOff.value).toEqual([])
+  })
+
+  it('takes nothing from a profile of the writer’s own', async () => {
+    useChatProfileStore().createProfile({
+      name: 'Mine',
+      settings: { prompt: 'x', disabledTools: ['oracle'] },
+    })
+
+    await moveToolSwitches()
+
+    expect(useApplicationState().toolsOff.value).toEqual([])
   })
 })

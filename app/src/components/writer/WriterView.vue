@@ -85,7 +85,7 @@ import { useAIProvidersStore } from '@/stores/aiProvidersStore'
 import { signInOf } from '@/ai/providers.js'
 import { useAIConfig } from '@/composables/useAIConfig'
 import { seedRecentModels, stampEveryChat } from '@/composables/useChatPresets'
-import { giveToolChoices } from '@/composables/useToolChoices.js'
+import { giveToolChoices, moveToolSwitches } from '@/composables/useToolChoices.js'
 import { useProjects } from '@/composables/useProjects'
 import { useLastOpened } from '@/composables/useLastOpened.js'
 import { saveNow } from '@/composables/useSaveBeforeClosing.js'
@@ -469,7 +469,7 @@ onMounted(async () => {
   stampEveryChat().then(seedRecentModels)
   // Once: the web, Python and servers become switches of each profile's and
   // chat's own, from the lists that said before.
-  giveToolChoices()
+  giveToolChoices().then(moveToolSwitches)
   window.addEventListener('message', handleOAuthMessage)
   await appState.checkAndShowWelcomeDialog()
 })

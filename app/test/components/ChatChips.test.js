@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
 import ChatChips from '@/components/writer/chats/ChatChips.vue'
+import { switchRow } from '@/ai/tools/choice.js'
 
 /** The chat's settings, as useChatSettings hands them over. */
 const chat = ref(/** @type {any} */ ({}))
@@ -183,6 +184,20 @@ describe('ChatChips', () => {
       chat.value = { disabledToolGroups: ['rpg'] }
       await wrapper.vm.$nextTick()
       expect(editsChip(wrapper).exists()).toBe(true)
+    })
+
+    it('is gone while editing is off in the chat’s tools, or reading, which it needs', async () => {
+      chat.value = switchRow({}, 'edit', false)
+      const wrapper = mountChips()
+      expect(editsChip(wrapper).exists()).toBe(false)
+
+      chat.value = switchRow({}, 'comment', false)
+      await wrapper.vm.$nextTick()
+      expect(editsChip(wrapper).exists()).toBe(true)
+
+      chat.value = switchRow({}, 'read', false)
+      await wrapper.vm.$nextTick()
+      expect(editsChip(wrapper).exists()).toBe(false)
     })
 
     it('is gone on a profile that offers only other groups, as Blank does', () => {

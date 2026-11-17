@@ -75,3 +75,65 @@ describe('signIn, in the desktop window', () => {
     expect(outcome).toEqual({ error: 'Sign-in was cancelled.' })
   })
 })
+
+describe('a server’s tool, set for the whole app', () => {
+  beforeEach(() => setActivePinia(createPinia()))
+
+  /** A server with a tool that says it only reads and one that doesn't. */
+  const connected = async () => {
+    const { useMcpServerStore } = await import('@/stores/mcpServerStore.js')
+    const store = useMcpServerStore()
+    const server = store.createServer({
+      name: 'Wiki',
+      prefix: 'wiki',
+      url: 'https://wiki.example/mcp',
+      tools: [
+        {
+          name: 'search',
+          exposed: 'wiki__search',
+          inputSchema: {},
+          annotations: { readOnlyHint: true },
+        },
+        { name: 'edit', exposed: 'wiki__edit', inputSchema: {} },
+      ],
+      prompts: [],
+      allowed: [],
+    })
+    return () => store.getServer(server.id)
+  }
+
+  it('asks first, always allows, or is off, each taking the last one’s place', async () => {
+    const row = await connected()
+    const { setToolSetting } = useMcpServers()
+
+    setToolSetting('wiki__edit', 'always')
+    expect(row()).toMatchObject({ allowed: ['edit'], asks: [], off: [] })
+
+    setToolSetting('wiki__search', 'ask')
+    expect(row()).toMatchObject({ allowed: ['edit'], asks: ['search'] })
+
+    setToolSetting('wiki__edit', 'ask')
+    expect(row()).toMatchObject({ allowed: [], asks: ['search', 'edit'] })
+  })
+
+  it('keeps what a tool was set to while it is off, for when it is back on', async () => {
+    const row = await connected()
+    const { setToolSetting } = useMcpServers()
+
+    setToolSetting('wiki__edit', 'always')
+    setToolSetting('wiki__edit', 'off')
+    expect(row()).toMatchObject({ allowed: ['edit'], off: ['edit'] })
+
+    setToolSetting('wiki__edit', 'always')
+    expect(row()).toMatchObject({ allowed: ['edit'], off: [] })
+  })
+
+  it('has nothing ask once everything from the server is always allowed', async () => {
+    const row = await connected()
+    const { setToolSetting, allowServer } = useMcpServers()
+
+    setToolSetting('wiki__search', 'ask')
+    allowServer('wiki__edit')
+    expect(row()).toMatchObject({ allowAll: true, asks: [] })
+  })
+})

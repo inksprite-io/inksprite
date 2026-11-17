@@ -240,6 +240,12 @@
           >
         </span>
         <span
+          v-else-if="approval.read"
+          class="text-sm text-surface-600 dark:text-surface-300 min-w-0 break-words"
+        >
+          Read <span class="font-mono break-all">{{ approval.read }}</span>
+        </span>
+        <span
           v-else-if="approval.question"
           class="text-sm text-surface-600 dark:text-surface-300 min-w-0 break-words"
           data-question
@@ -259,10 +265,11 @@
           data-action="deny"
           @click="answerApproval(approval.id, 'deny')"
         />
-        <!-- Every page from now on, or what the tool asking says it means. -->
+        <!-- The site, where the address is what asks; else every page from
+             now on, or what the tool asking says it means. -->
         <Button
-          v-if="approval.save || approval.question"
-          label="Always allow"
+          v-if="approval.save || approval.read || approval.question"
+          :label="approval.site ? `Always allow ${approval.site}` : 'Always allow'"
           size="small"
           text
           data-action="always"
@@ -1165,6 +1172,21 @@ const saveAsked = written => {
 }
 
 /**
+ * An address for the writer to read: with what was encoded in it spelled
+ * out, so words written into it show as words.
+ *
+ * @param {string} address
+ * @returns {string}
+ */
+const asWritten = address => {
+  try {
+    return decodeURIComponent(address)
+  } catch {
+    return address
+  }
+}
+
+/**
  * The calls this turn is waiting on the writer to allow, named the way they
  * were named when the server was added: the server, and the tool's own name.
  * A page to keep is said by its address and where it goes.
@@ -1172,9 +1194,21 @@ const saveAsked = written => {
 const approvals = computed(() =>
   pendingApprovals.value.map(approval => {
     if (approval.name === SAVE_WEB_PAGE) {
+      const save = saveAsked(approval.arguments)
       return {
         id: approval.id,
-        save: saveAsked(approval.arguments),
+        save: { ...save, url: asWritten(save.url) },
+        site: approval.site,
+        server: '',
+        tool: '',
+        args: '',
+      }
+    }
+    if (approval.name === READ_WEB_PAGE) {
+      return {
+        id: approval.id,
+        read: asWritten(saveAsked(approval.arguments).url),
+        site: approval.site,
         server: '',
         tool: '',
         args: '',

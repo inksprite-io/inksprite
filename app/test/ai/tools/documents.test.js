@@ -1193,6 +1193,62 @@ describe('document tools', () => {
       expect(back).not.toHaveProperty('linksUpdated')
     })
 
+    it('asks first when the chat does, and moves once accepted', async () => {
+      await seed()
+      const ctx = { ...context, propose: true, edits: [] }
+      const result = await executeMoveDocument(
+        { path: 'notes/Characters/Elara', to: 'manuscript/Elara Vance' },
+        ctx
+      )
+
+      expect(result).toMatchObject({
+        proposed: true,
+        document: { path: 'notes/Characters/Elara' },
+        to: 'manuscript/Elara Vance',
+      })
+      expect(result.note).toContain('still at "notes/Characters/Elara"')
+      expect(store.getDocument('lore_1')).toMatchObject({ parentId: 'cat_1', title: 'Elara' })
+      expect(recorded(ctx)).toEqual([
+        {
+          documentId: 'lore_1',
+          path: 'notes/Characters/Elara',
+          tool: 'move_document',
+          old: 'notes/Characters/Elara',
+          new: 'manuscript/Elara Vance',
+          status: 'proposed',
+        },
+      ])
+
+      expect(await applyProposal(STORY, ctx.edits[0])).toEqual({
+        documentId: 'lore_1',
+        path: 'manuscript/Elara Vance',
+        old: 'notes/Characters/Elara',
+        new: 'manuscript/Elara Vance',
+      })
+      expect(store.getDocument('lore_1')).toMatchObject({
+        parentId: 'manuscript_story_1',
+        title: 'Elara Vance',
+      })
+    })
+
+    it('proposes nothing it would refuse to do', async () => {
+      await seed()
+      const ctx = { ...context, propose: true, edits: [] }
+      const result = await executeMoveDocument({ path: 'notes', to: 'notes/Characters/Notes' }, ctx)
+
+      expect(result.error).toContain('inside itself')
+      expect(ctx.edits).toEqual([])
+    })
+
+    it('says why when what it proposed can no longer be done', async () => {
+      await seed()
+      const ctx = { ...context, propose: true, edits: [] }
+      await executeMoveDocument({ path: 'notes/Characters/Elara', to: 'manuscript/Elara' }, ctx)
+      store.deleteDocument('lore_1')
+
+      expect(await applyProposal(STORY, ctx.edits[0])).toHaveProperty('error')
+    })
+
     it('records the move, so a rewind can put it back', async () => {
       await seed()
       const ctx = { ...context, edits: [] }
