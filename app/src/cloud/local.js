@@ -46,6 +46,7 @@ import { pictureKey, pictureOfKey } from '@/utils/pictures.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 import { isSourceFile } from '@/source/tree.js'
 import { settleText } from './merge.js'
+import { belongs } from './incoming.js'
 import { SETTINGS, SETUP, SETUP_TABLES, settingsOf, settingsRows } from './setup.js'
 
 /** @typedef {import('./engine.js').Local} Local */
@@ -138,7 +139,9 @@ export function appLocal({ syncsForApp }) {
     const byTable = {}
     /** @type {any[]} */
     const settings = []
-    for (const { table, id, row } of incoming) {
+    for (const item of incoming) {
+      if (!belongs(SETUP, item)) continue
+      const { table, id, row } = item
       if (table === SETTINGS) {
         if (row) settings.push(row)
         continue
@@ -172,7 +175,10 @@ export function appLocal({ syncsForApp }) {
     /** @type {Array<any|null>} */
     const versions = []
 
-    for (const { table, id, row, replaced } of incoming) {
+    for (const item of incoming) {
+      // Only the project's own rows, whatever came for it.
+      if (!belongs(storyId, item)) continue
+      const { table, id, row, replaced } = item
       // A merge about to change this device's text keeps it as a version.
       if (replaced) versionsStore.before(replaced, 'sync')
       if (table === 'versions') versions.push(row)

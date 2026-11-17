@@ -135,7 +135,8 @@ import { CloudError } from './api.js'
 import { UNCOUNTED, errorTag } from './diagnostics.js'
 import { FORMAT, formatOf as recordFormat } from './format.js'
 import { comparable, mergeRow } from './merge.js'
-import { SETTINGS, SETUP, SETUP_TABLES, asMade, asSent, idOf } from './setup.js'
+import { OWN, SETUP_SYNCED, SYNCED, isStoryId, refusal } from './incoming.js'
+import { SETUP, asMade, asSent, idOf } from './setup.js'
 import { hiddenDocuments, treeFixes } from './tree.js'
 import { rootIdFor } from '@/stores/migrations/projectTree.js'
 
@@ -147,11 +148,7 @@ import { rootIdFor } from '@/stores/migrations/projectTree.js'
 /** @typedef {import('@/types/models.js').Change} Change */
 /** @typedef {import('@/storage/index.js').Written} Written */
 
-/** The tables a project is synced as. */
-export const SYNCED = ['stories', 'documents', 'chats', 'messages', 'files', 'versions']
-
-/** The tables the account's own collection is synced as: the setup's, and its settings. */
-const SETUP_SYNCED = [...SETUP_TABLES, SETTINGS]
+export { SYNCED }
 
 /** The tables whose rows are kept as the base of a three-way merge. */
 const MERGED = new Set([
@@ -163,9 +160,6 @@ const MERGED = new Set([
 
 /** The tables with a trash. */
 const TRASHED = new Set(['stories', 'documents', 'chats'])
-
-/** The tables whose rows, in a shared project, are their writer's own. */
-const OWN = new Set(['chats', 'messages'])
 
 /**
  * The tables whose rows go as their document does in a project shared with
@@ -1272,9 +1266,37 @@ export function createEngine({
     const { privateKey } = await keyPair()
     const about = `collection ${collection}`
     const secret = await openFor(privateKey, listed.key, about)
+    if (!(await mayJoin(listed, secret))) {
+      // It says it is something this device has already: nothing to accept.
+      diagnostics.error('refused invitation')
+      await reject(collection)
+      return
+    }
     await api.accept(collection, await seal(keys.wrap, secret, about))
     forgetInvitation(collection)
     await round()
+  }
+
+  /**
+   * Whether an invitation is to a project this device could take: one it
+   * doesn't have, or the one it had of that very collection and left.
+   * @param {ListedCollection} listed
+   * @param {Bytes} secret - The collection's key, opened
+   */
+  async function mayJoin(listed, secret) {
+    if (!listed.meta) return false
+    /** @type {unknown} */
+    let storyId
+    try {
+      const { seal: sealing } = await collectionKeys(secret)
+      storyId = (await openJson(sealing, listed.meta, `meta ${listed.id}`)).storyId
+    } catch {
+      return false
+    }
+    if (!isStoryId(storyId)) return false
+    const pinned = await pinnedTo(storyId)
+    if (pinned) return pinned === listed.id
+    return !(await local.stories()).some(story => story.id === storyId)
   }
 
   /**
@@ -1472,10 +1494,9 @@ export function createEngine({
     const setupId = await setupCollection()
     /** @type {Map<string, Known>} */
     const known = new Map()
+    /** The collection each project is kept to from now on. @type {Change[]} */
+    const pins = []
     left = new Set()
-    sharedHere = new Set()
-    removedHere = new Set()
-    selectiveHere = new Set()
     invitations = []
     for (const collection of listed) {
       if (collection.left) {
@@ -1496,6 +1517,17 @@ export function createEngine({
               ? (await openJson(opened.seal, collection.meta, `meta ${collection.id}`)).storyId
               : null
         if (!storyId) continue
+        if (collection.id !== setupId) {
+          const pinned = await mayBe(collection.id, storyId, known)
+          if (pinned === false) {
+            diagnostics.error('refused collection')
+            console.warn(
+              `Sync left the collection ${collection.id} alone: it is no project of this device's.`
+            )
+            continue
+          }
+          if (pinned !== collection.id) pins.push(pinOf(storyId, collection.id))
+        }
         known.set(storyId, {
           id: collection.id,
           storyId,
@@ -1513,15 +1545,74 @@ export function createEngine({
           shared: Boolean(collection.shared),
           selective: Boolean(collection.selective),
         })
-        if (collection.shared) sharedHere.add(storyId)
-        if (collection.removed) removedHere.add(storyId)
-        if (collection.selective && collection.role === 'owner') selectiveHere.add(storyId)
       } catch (error) {
         diagnostics.error('open collection')
         console.error(`Sync could not open the collection ${collection.id}:`, error)
       }
     }
+    if (pins.length > 0) await state.write('cloudState', pins)
+    const taken = [...known.values()]
+    sharedHere = new Set(taken.filter(one => one.shared).map(one => one.storyId))
+    removedHere = new Set(taken.filter(one => one.removed).map(one => one.storyId))
+    selectiveHere = new Set(
+      taken.filter(one => one.selective && one.role === 'owner').map(one => one.storyId)
+    )
     return known
+  }
+
+  /** The collection this account makes for each project, by story. @type {Map<string, string>} */
+  const madeIds = new Map()
+
+  /**
+   * The collection this account's devices make for a project: the same on
+   * each, and one nobody else can make.
+   * @param {string} storyId
+   */
+  async function madeFor(storyId) {
+    let id = madeIds.get(storyId)
+    if (!id) madeIds.set(storyId, (id = await hashName(keys.ids, `project:${storyId}`)))
+    return id
+  }
+
+  /**
+   * What says, from now on, which collection a project is. Kept apart from
+   * how far the collection was read, which goes when the project is left.
+   * @param {string} storyId
+   * @param {string} collection
+   */
+  const pinOf = (storyId, collection) =>
+    put('cloudState', { id: `pin:${storyId}`, project: storyId, collection })
+
+  /**
+   * The collection a project was kept to when this device first met it.
+   * @param {string} storyId
+   * @returns {Promise<string|null>}
+   */
+  async function pinnedTo(storyId) {
+    const pin = await state.get('cloudState', `pin:${storyId}`)
+    if (pin) return pin.collection
+    // From before there were pins: the collection it was read from.
+    return (await state.get('cloudState', `collection:${storyId}`))?.collection ?? null
+  }
+
+  /**
+   * Whether a collection is the project it says it is. Whoever made it
+   * wrote what it says, and everyone it is shared with can be told anything:
+   * so it is believed only where it is this account's own making, or where
+   * this device knows the project as no other collection.
+   *
+   * @param {string} id - The collection's
+   * @param {unknown} storyId - The project it says it is
+   * @param {Map<string, Known>} known - The collections taken so far this round
+   * @returns {Promise<string|null|false>} What the project is kept to already
+   *   (none, for one new here), or false where the collection is not it
+   */
+  async function mayBe(id, storyId, known) {
+    if (!isStoryId(storyId)) return false
+    const pinned = await pinnedTo(storyId)
+    if (id === (await madeFor(storyId))) return pinned
+    if (known.has(storyId)) return false
+    return !pinned || pinned === id ? pinned : false
   }
 
   /** @type {string|null} */
@@ -1699,6 +1790,8 @@ export function createEngine({
 
     /** @type {Set<string>} */
     const received = new Set()
+    /** The records that came and were passed over, by name. @type {Set<string>} */
+    const passed = new Set()
     let documents = false
     /** @type {WrittenBy|null} */
     let held = null
@@ -1716,6 +1809,7 @@ export function createEngine({
       for (const record of page.records) {
         const payload = await openRecord(collection, record.name, record.body, record.own)
         if (!payload) {
+          if (record.body) passed.add(record.name)
           cursor = record.rev
           continue
         }
@@ -1725,8 +1819,12 @@ export function createEngine({
           break
         }
         const key = `${payload.table}:${payload.id}`
-        received.add(key)
         const record_ = /** @type {Kept|undefined} */ (await state.get('cloudRecords', key))
+        if (elsewhere(collection, record_)) {
+          cursor = record.rev
+          continue
+        }
+        received.add(key)
         if (
           collection.role === 'owner' &&
           payload.table === 'documents' &&
@@ -1771,8 +1869,23 @@ export function createEngine({
       if (held || !page.more) break
     }
     // Held partway, it hasn't received all it will.
-    if (whole && !held) await dropUnreceived(storyId, received, ownWaiting)
+    if (whole && !held) await dropUnreceived(storyId, received, ownWaiting, passed)
     return documents || whole
+  }
+
+  /**
+   * Whether a record is of a row this device has as another project's: a
+   * row is known by its id alone, and one project's is never another's.
+   * @param {Known} collection
+   * @param {Kept|undefined} record - What is kept of the row here
+   */
+  function elsewhere(collection, record) {
+    if (!record || record.storyId === collection.storyId) return false
+    diagnostics.error('refused record: elsewhere')
+    console.warn(
+      `Sync passed over a record of ${collection.storyId}: its row is another project's.`
+    )
+    return true
   }
 
   // Checking.
@@ -1988,8 +2101,10 @@ export function createEngine({
   }
 
   /**
-   * Open a record's body: null for one this device can't read, which is
-   * passed over rather than stop every other.
+   * Open a record's body: null for one this device can't read, or that is
+   * no row of the collection it came in (`incoming.js`), which is passed over
+   * rather than stop every other. One from a newer app is given as it is,
+   * to be waited for.
    *
    * @param {Known} collection
    * @param {string} name
@@ -2002,15 +2117,28 @@ export function createEngine({
     try {
       const sealing = own ? await ownOf(collection) : collection.keys
       /** @type {Payload} */
-      const payload = await openJson(sealing.seal, body, `${collection.id}/${name}`)
+      let payload = await openJson(sealing.seal, body, `${collection.id}/${name}`)
+      if (payload && ahead(payload)) return payload
       // Whether a project ever shared is in the trash is each account's own,
       // whatever an older app sent.
       if (payload.table === 'stories' && payload.row?.trashed && collection.shared) {
         const { trashed: _trashed, ...row } = payload.row
         payload.row = row
       }
+      const why =
+        refusal(collection, payload, { own }) ??
+        (name === (await hashName(collection.keys.names, `${payload.table}:${payload.id}`))
+          ? null
+          : 'name')
+      if (why) {
+        diagnostics.error(`refused record: ${why}`)
+        console.warn(`Sync passed over a record of ${collection.storyId}: ${why}.`)
+        return null
+      }
       if (payload.row && payload.schema < schema) {
-        return { ...payload, row: upgrade(payload.table, payload.row, payload.schema), schema }
+        payload = { ...payload, row: upgrade(payload.table, payload.row, payload.schema), schema }
+        // As it is now: an older row may say less than this app asks of one.
+        if (refusal(collection, payload, { own })) return null
       }
       return payload
     } catch (error) {
@@ -2044,6 +2172,8 @@ export function createEngine({
         }
         cursor = record.rev
         if (!payload) continue
+        const had = await state.get('cloudRecords', `${payload.table}:${payload.id}`)
+        if (elsewhere(collection, had)) continue
         const taken = await take(collection, payload, record.name, record.rev, {
           own: record.own,
         })
@@ -2126,10 +2256,14 @@ export function createEngine({
    * @param {string} storyId
    * @param {Set<string>} received
    * @param {Map<string, Waiting>} waiting
+   * @param {Set<string>} passed - The records that came and were passed over, by
+   *   name: what this device had of them stays, whatever they hold now
    */
-  async function dropUnreceived(storyId, received, waiting) {
+  async function dropUnreceived(storyId, received, waiting, passed) {
     const records = /** @type {Kept[]} */ (await state.ofStory('cloudRecords', storyId))
-    const stale = records.filter(record => !received.has(record.id) && !waiting.has(record.id))
+    const stale = records.filter(
+      record => !received.has(record.id) && !waiting.has(record.id) && !passed.has(record.name)
+    )
     if (stale.length === 0) return
     await local.write(
       storyId,
@@ -2225,9 +2359,7 @@ export function createEngine({
    * @returns {Promise<Known>}
    */
   async function make(storyId, was) {
-    const id =
-      was?.id ??
-      (storyId === SETUP ? await setupCollection() : await hashName(keys.ids, `project:${storyId}`))
+    const id = was?.id ?? (storyId === SETUP ? await setupCollection() : await madeFor(storyId))
     const secret = randomBytes(32)
     const fresh = was?.keys ?? (await collectionKeys(secret))
     // Made again, it keeps the key it had, which the server still holds.
@@ -2665,6 +2797,20 @@ export function createEngine({
         result.conflict.body,
         result.conflict.own
       )
+      if (!theirs && result.conflict.body) {
+        // What is there is nothing this device takes: this row goes over it.
+        kept.push(
+          put('cloudRecords', {
+            id: entry.id,
+            storyId,
+            name: result.name,
+            rev: result.conflict.rev,
+            print: null,
+            ...(result.conflict.own ? { own: true } : {}),
+          })
+        )
+        continue
+      }
       if (!theirs) {
         // The server has none any more: send it as new.
         await state.write('cloudRecords', [removal('cloudRecords', entry.id)])

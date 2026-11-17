@@ -4,6 +4,8 @@ import { appLocal } from '@/cloud/local.js'
 
 /** A project's rows, as storage would hand them over. */
 const rows = vi.hoisted(() => ({ documents: /** @type {any[]} */ ([]) }))
+/** What was written straight to storage, by table. */
+const written = vi.hoisted(() => /** @type {Array<[string, any[]]>} */ ([]))
 vi.mock('@/storage/index.js', () => ({
   storage: {
     stories: async () => [],
@@ -12,6 +14,9 @@ vi.mock('@/storage/index.js', () => ({
     chats: async () => [],
     messages: async () => [],
     ofStory: async () => [],
+    write: async (/** @type {string} */ table, /** @type {any[]} */ changes) => {
+      written.push([table, changes])
+    },
   },
 }))
 
@@ -31,7 +36,40 @@ const doc = (id, parentId, fields = {}) => ({
 })
 
 describe('cloud/local', () => {
-  beforeEach(() => setActivePinia(createPinia()))
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    written.length = 0
+  })
+
+  describe('write', () => {
+    it('writes a project only its own rows, of a project’s tables', async () => {
+      const local = appLocal({ syncsForApp: () => true })
+
+      await local.write('story_1', [
+        { table: 'files', id: 'doc_pdf', row: { id: 'doc_pdf', storyId: 'story_1' } },
+        { table: 'files', id: 'doc_other', row: { id: 'doc_other', storyId: 'story_2' } },
+        { table: 'mcpServers', id: 'mcp_1', row: { id: 'mcp_1', allowAll: true } },
+        { table: 'aiProviders', id: 'conn_1', row: null },
+        { table: 'cloudState', id: 'account', row: { id: 'account' } },
+      ])
+
+      expect(written.map(([table, changes]) => [table, changes.map(change => change.id)])).toEqual([
+        ['files', ['doc_pdf']],
+      ])
+    })
+
+    it('writes the setup only rows of the setup’s tables', async () => {
+      const local = appLocal({ syncsForApp: () => true })
+
+      await local.write('setup', [
+        { table: 'skills', id: 'skill_1', row: { id: 'skill_1' } },
+        { table: 'documents', id: 'doc_1', row: { id: 'doc_1', storyId: 'story_1' } },
+        { table: 'cloudState', id: 'account', row: { id: 'account' } },
+      ])
+
+      expect(written.map(([table]) => table)).toEqual(['skills'])
+    })
+  })
 
   describe('readProject', () => {
     it('lists the bytes of files and pictures, and none for a repository’s source files', async () => {
