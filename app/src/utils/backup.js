@@ -23,6 +23,7 @@
  */
 
 import { nanoid } from 'nanoid'
+import { KEY_LEFT_OUT, hasKeyLeftOut, withoutAddressKeys } from './addressKeys.js'
 
 import { partsAndScenesToDocuments } from '../stores/migrations/documents.js'
 import { documentsToProjectTree, rootIdFor } from '../stores/migrations/projectTree.js'
@@ -477,10 +478,13 @@ function replaceById(rows, changed) {
   return rows.map(row => byId.get(row?.id) || row)
 }
 
+export { KEY_LEFT_OUT, hasKeyLeftOut, withoutAddressKeys }
+
 /**
  * Empty the keys of provider rows, keeping which providers had one, so a
  * restored backup can say which keys to enter again. A row with no key loses
  * the field altogether: an empty key only ever means one that was left out.
+ * A key written into its endpoint goes too (`withoutAddressKeys`).
  *
  * Providers saved with `rememberKey: false` keep their key in sessionStorage
  * and never reach the database, so they are already absent here.
@@ -490,15 +494,19 @@ function replaceById(rows, changed) {
  */
 export function redactApiKeys(providers) {
   return providers.map(provider => {
-    if (!provider || !('apiKey' in provider)) return provider
-    const { apiKey, ...rest } = provider
+    if (!provider) return provider
+    const endpoint = withoutAddressKeys(provider.endpoint)
+    const kept = endpoint === provider.endpoint ? provider : { ...provider, endpoint }
+    if (!('apiKey' in kept)) return kept
+    const { apiKey, ...rest } = kept
     return apiKey ? { ...rest, apiKey: '' } : rest
   })
 }
 
 /**
  * Empty the headers of MCP server rows, which hold an API key as a provider's
- * row does.
+ * row does, and take out a key written into its address, where a hosted
+ * server's often is.
  *
  * Each header keeps its name, so a restored server can say what it needs
  * entered again; the client sends none that is empty.
@@ -509,8 +517,13 @@ export function redactApiKeys(providers) {
 export function redactServerKeys(servers) {
   return servers.map(server => {
     const names = Object.keys(server?.headers || {})
-    if (names.length === 0) return server
-    return { ...server, headers: Object.fromEntries(names.map(name => [name, ''])) }
+    const url = withoutAddressKeys(server?.url)
+    if (names.length === 0 && url === server?.url) return server
+    return {
+      ...server,
+      ...(url === server.url ? {} : { url }),
+      ...(names.length > 0 ? { headers: Object.fromEntries(names.map(name => [name, ''])) } : {}),
+    }
   })
 }
 
@@ -755,11 +768,14 @@ export function keysLeftOut(backup, webName = id => id) {
 
   const names = [
     ...rows('aiProviders')
-      .filter(provider => provider.apiKey === '')
+      .filter(provider => provider.apiKey === '' || hasKeyLeftOut(provider.endpoint))
       .map(provider => provider.name),
     ...rows('webSearch').flatMap(setup => Object.keys(setup.keys || {}).map(webName)),
     ...rows('mcpServers')
-      .filter(server => Object.values(server.headers || {}).some(value => !value))
+      .filter(
+        server =>
+          Object.values(server.headers || {}).some(value => !value) || hasKeyLeftOut(server.url)
+      )
       .map(server => server.name),
   ]
   return [...new Set(names.filter(name => typeof name === 'string' && name))]

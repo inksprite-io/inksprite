@@ -52,6 +52,7 @@ const PROBE_TIMEOUT_MS = 30000
  *   setAskBeforeSaving: (ask: boolean) => void,
  *   setAskBeforeReading: (ask: boolean) => void,
  *   allowSite: (site: string) => void,
+ *   disallowSite: (site: string) => void,
  * }}
  */
 export function useWebSearch() {
@@ -162,6 +163,16 @@ export function useWebSearch() {
     if (!sites.includes(site)) store.update({ allowedSites: [...sites, site] })
   }
 
+  /**
+   * Ask again before reading an address the model put together on a site
+   * that was always allowed.
+   *
+   * @param {string} site - Its host name
+   */
+  function disallowSite(site) {
+    store.update({ allowedSites: (store.setup.allowedSites || []).filter(one => one !== site) })
+  }
+
   return {
     ready: () => store.ensureInitialized(),
     setup,
@@ -176,5 +187,6 @@ export function useWebSearch() {
     setAskBeforeSaving,
     setAskBeforeReading,
     allowSite,
+    disallowSite,
   }
 }

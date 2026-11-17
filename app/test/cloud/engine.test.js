@@ -71,14 +71,18 @@ async function twoDevices({ schema, now, at = server, diagnostics } = {}) {
     code: 'code',
     kdf: FAST,
   })
-  const other = await signIn(createApi(at), { name, passphrase: 'a long passphrase' })
+  const other = await signIn(createApi(at), { name, passphrase: 'a long passphrase', least: FAST })
   return {
     name,
     a: makeDevice({ api: createApi(at, made.token), keys: made.keys, now, diagnostics }),
     b: makeDevice({ api: createApi(at, other.token), keys: other.keys, schema, now }),
     /** A third device, signed in later. */
     async c() {
-      const signedIn = await signIn(createApi(at), { name, passphrase: 'a long passphrase' })
+      const signedIn = await signIn(createApi(at), {
+        name,
+        passphrase: 'a long passphrase',
+        least: FAST,
+      })
       return makeDevice({ api: createApi(at, signedIn.token), keys: signedIn.keys })
     },
   }
@@ -1146,7 +1150,11 @@ describe.skipIf(!HAVE_SERVER)('a hosted server', () => {
         code: 'code',
         kdf: FAST,
       })
-      const other = await signIn(createApi(at), { name: 'braked', passphrase: 'a long passphrase' })
+      const other = await signIn(createApi(at), {
+        name: 'braked',
+        passphrase: 'a long passphrase',
+        least: FAST,
+      })
       const a = makeDevice({
         api: createApi(at, made.token, { app: '0.1.0-dev.21' }),
         keys: made.keys,

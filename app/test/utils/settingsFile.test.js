@@ -347,6 +347,53 @@ describe('planImport', () => {
     expect(kept.rows.webSearch[0]).not.toHaveProperty('readWithoutAsking')
   })
 
+  it('keeps an address here whose key the file left out, and what goes with it', () => {
+    const key = 'k3yQ9fZ2mB7xT4pL8sW1vN6c'
+    const mine = `https://hosted.example.com/s/${key}/mcp`
+    const here = {
+      tables: {
+        mcpServers: [
+          { ...server, url: mine, headers: { Authorization: 'Bearer mine' }, allowed: ['find'] },
+        ],
+      },
+      settings: SETTINGS,
+    }
+    const plan = planImport(
+      {
+        tables: {
+          mcpServers: [
+            {
+              ...server,
+              url: 'https://hosted.example.com/s/key-left-out/mcp',
+              headers: { Authorization: '' },
+            },
+          ],
+        },
+      },
+      here,
+      { byHand: true, now: NOW }
+    )
+    // The same server, not one moved: its address, its key and what it is allowed stay.
+    expect(plan.rows.mcpServers?.[0] ?? here.tables.mcpServers[0]).toMatchObject({
+      url: mine,
+      headers: { Authorization: 'Bearer mine' },
+      allowed: ['find'],
+    })
+
+    // Another address with a key left out is another server's, and takes nothing.
+    const elsewhere = planImport(
+      {
+        tables: {
+          mcpServers: [{ ...server, url: 'https://other.example.com/s/key-left-out/mcp' }],
+        },
+      },
+      here,
+      { byHand: true, now: NOW }
+    )
+    expect(elsewhere.rows.mcpServers[0].url).toBe('https://other.example.com/s/key-left-out/mcp')
+    expect(elsewhere.rows.mcpServers[0].allowed).toEqual([])
+  })
+
   it('by hand, sends no key here to an address the file moved it to', () => {
     const here = {
       tables: {

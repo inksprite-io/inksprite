@@ -123,6 +123,53 @@
             </button>
           </p>
         </div>
+        <!-- Each of the web's tools as it is set for the whole app: the same
+             settings as in a chat's tools, here beside the service. -->
+        <div
+          v-for="tool in webTools"
+          :key="tool.name"
+          class="flex items-center justify-between gap-2"
+          :data-web-tool="tool.name"
+        >
+          <label
+            :for="`web-tool-${tool.name}`"
+            class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >{{ tool.label }}</label
+          >
+          <Select
+            :input-id="`web-tool-${tool.name}`"
+            :model-value="tool.value"
+            :options="tool.options"
+            option-label="label"
+            option-value="value"
+            size="small"
+            class="flex-none w-48 dark:!bg-surface-900"
+            @update:model-value="setting => toolSettings.setSetting(tool.name, setting)"
+          />
+        </div>
+        <div v-if="allowedSites.length > 0" class="flex flex-col gap-1" data-allowed-sites>
+          <span class="text-xs font-medium text-surface-700 dark:text-surface-200"
+            >Sites always allowed</span
+          >
+          <ul class="m-0 list-none p-0">
+            <li
+              v-for="site in allowedSites"
+              :key="site"
+              class="flex items-center justify-between gap-2 rounded px-2 py-1 text-sm text-surface-700 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800"
+              data-allowed-site
+            >
+              <span class="min-w-0 truncate">{{ site }}</span>
+              <button
+                type="button"
+                class="flex-none w-6 h-6 rounded-full flex items-center justify-center text-xs text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700"
+                :aria-label="`Remove ${site}`"
+                @click="web.disallowSite(site)"
+              >
+                <i class="pi pi-times" />
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
     </ExpandableSection>
 
@@ -183,6 +230,8 @@ import { useProfiles } from '@/composables/useProfiles'
 import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
+import { WEB_TOOL_LABELS, useToolSettings } from '@/composables/useToolSettings.js'
+import { compareNames } from '@/utils/compareNames.js'
 import { serviceInUse } from '@/web/config.js'
 import { hasPython } from '@/platform/python.js'
 import { PYTHON_GROUP, PYTHON_TIME_LIMITS } from '@/ai/tools/python.js'
@@ -223,6 +272,21 @@ const webOn = computed(() => applicationState.extensionOn('web') !== false)
 
 /** The services this copy of the app can reach. */
 const webServices = web.services.filter(web.reachable)
+
+const toolSettings = useToolSettings()
+
+/** The web's tools, each as it is set for the whole app. */
+const webTools = computed(() =>
+  Object.entries(WEB_TOOL_LABELS).map(([name, label]) => ({
+    name,
+    label,
+    options: toolSettings.optionsFor(name),
+    value: toolSettings.settingOf(name),
+  }))
+)
+
+/** The sites whose addresses are read without asking, by name. */
+const allowedSites = computed(() => [...(web.setup.value.allowedSites || [])].sort(compareNames))
 
 /** The service chosen, where it can be reached from here. */
 const webChoice = computed(() => {

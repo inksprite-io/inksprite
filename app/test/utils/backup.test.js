@@ -4,6 +4,9 @@ import {
   buildBackup,
   redactApiKeys,
   redactServerKeys,
+  withoutAddressKeys,
+  hasKeyLeftOut,
+  KEY_LEFT_OUT,
   redactWebKeys,
   keysLeftOut,
   validateBackup,
@@ -93,6 +96,70 @@ describe('redactWebKeys', () => {
   it('drops a service whose key was already empty', () => {
     const out = redactWebKeys([{ id: 'web', service: 'kagi', keys: { kagi: 'k', exa: '' } }])
     expect(out[0].keys).toEqual({ kagi: '' })
+  })
+})
+
+describe('withoutAddressKeys', () => {
+  const key = 'k3yQ9fZ2mB7xT4pL8sW1vN6c'
+
+  it('takes out a password, a parameter that carries a credential, and a piece of the path that looks like one', () => {
+    expect(withoutAddressKeys(`https://writer:${key}@mcp.example.com/mcp`)).toBe(
+      `https://writer:${KEY_LEFT_OUT}@mcp.example.com/mcp`
+    )
+    expect(withoutAddressKeys('https://mcp.example.com/mcp?api_key=abc&team=blue')).toBe(
+      `https://mcp.example.com/mcp?api_key=${KEY_LEFT_OUT}&team=blue`
+    )
+    // Named for nothing, but plainly a key.
+    expect(withoutAddressKeys(`https://mcp.example.com/mcp?id=${key}`)).toBe(
+      `https://mcp.example.com/mcp?id=${KEY_LEFT_OUT}`
+    )
+    expect(withoutAddressKeys(`https://hosted.example.com/api/mcp/s/${key}/mcp`)).toBe(
+      `https://hosted.example.com/api/mcp/s/${KEY_LEFT_OUT}/mcp`
+    )
+  })
+
+  it('leaves an address with no key in it exactly as it was written', () => {
+    for (const address of [
+      'https://mcp.example.com/mcp',
+      'http://localhost:1234/v1',
+      'https://API.Example.com/v1/chat?stream=true',
+      'https://docs.example.com/getting-started-with-everything-there-is',
+      'not an address',
+      '',
+    ]) {
+      expect(withoutAddressKeys(address)).toBe(address)
+    }
+    expect(withoutAddressKeys(undefined)).toBeUndefined()
+  })
+
+  it('says whether an address has a key left out', () => {
+    expect(hasKeyLeftOut(`https://mcp.example.com/mcp?api_key=${KEY_LEFT_OUT}`)).toBe(true)
+    expect(hasKeyLeftOut('https://mcp.example.com/mcp')).toBe(false)
+    expect(hasKeyLeftOut(undefined)).toBe(false)
+  })
+})
+
+describe('keys written into an address', () => {
+  const key = 'k3yQ9fZ2mB7xT4pL8sW1vN6c'
+  const tables = {
+    aiProviders: [{ id: 'p1', name: 'Home', endpoint: `https://ai.example.com/v1?token=${key}` }],
+    mcpServers: [{ id: 'mcp_1', name: 'Hosted', url: `https://hosted.example.com/s/${key}/mcp` }],
+  }
+
+  it('are left out of a file made without keys, and named among those to enter again', () => {
+    const backup = buildBackup(tables, { dbVersion: 2 })
+    expect(JSON.stringify(backup)).not.toContain(key)
+    expect(backup.tables.aiProviders[0].endpoint).toBe(
+      `https://ai.example.com/v1?token=${KEY_LEFT_OUT}`
+    )
+    expect(backup.tables.mcpServers[0].url).toBe(`https://hosted.example.com/s/${KEY_LEFT_OUT}/mcp`)
+    expect(keysLeftOut(backup)).toEqual(['Home', 'Hosted'])
+  })
+
+  it('stay in a file made with keys', () => {
+    const backup = buildBackup(tables, { dbVersion: 2, includeApiKeys: true })
+    expect(backup.tables.mcpServers[0].url).toContain(key)
+    expect(keysLeftOut(backup)).toEqual([])
   })
 })
 

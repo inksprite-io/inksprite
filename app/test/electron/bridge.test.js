@@ -143,6 +143,20 @@ describe('fetch', () => {
     redirect: 'follow',
   }
 
+  it('fetches nothing but a web address: no file, and nothing that is no address', async () => {
+    for (const url of [
+      'file:///etc/passwd',
+      'app://inksprite/index.html',
+      'chrome://settings',
+      'x',
+    ]) {
+      expect(await handlers.fetch(page(), 6, { url, method: 'GET', headers: [] })).toMatchObject({
+        error: expect.stringContaining('Not an address to fetch'),
+      })
+    }
+    expect(net.fetch).not.toHaveBeenCalled()
+  })
+
   it('makes the request, answers with its head, and sends the body after', async () => {
     net.fetch.mockResolvedValue(
       streamed(['data: 1\n\n', 'data: 2\n\n'], {

@@ -1,9 +1,10 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import { readFileSync } from 'node:fs'
 import { copyFile } from 'node:fs/promises'
 import { fileURLToPath, URL } from 'node:url'
+import { PRICES_PATH, priceListResponse } from './src/ai/prices.js'
 
 /**
  * The version Settings › About shows: a release build's from its tag
@@ -96,16 +97,51 @@ const serviceWorker = {
   },
 }
 
+/**
+ * The names the dev server answers to besides localhost: whoever runs it
+ * says which, as `DEV_ALLOWED_HOSTS` in app/.env.local, a comma between
+ * them, and none is written here. The test server's container is given the
+ * file's values as it is made; a dev server run by hand reads the file.
+ *
+ * @returns {string[]}
+ */
+function allowedHosts() {
+  const here = fileURLToPath(new URL('.', import.meta.url))
+  const named =
+    process.env.DEV_ALLOWED_HOSTS ?? loadEnv('development', here, 'DEV_').DEV_ALLOWED_HOSTS ?? ''
+  return named
+    .split(',')
+    .map(host => host.trim())
+    .filter(Boolean)
+}
+
+/**
+ * The site's price list (api/prices.js), answered by the dev server as the
+ * site answers it, so a model's price shows here as it does there.
+ * @type {import('vite').Plugin}
+ */
+const priceList = {
+  name: 'inksprite-price-list',
+  configureServer(server) {
+    server.middlewares.use(PRICES_PATH, async (_request, response) => {
+      const answer = await priceListResponse()
+      response.statusCode = answer.status
+      answer.headers.forEach((value, name) => response.setHeader(name, value))
+      response.end(await answer.text())
+    })
+  },
+}
+
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), tailwindcss(), draggableWithoutEval, serviceWorker],
+  plugins: [vue(), tailwindcss(), draggableWithoutEval, serviceWorker, priceList],
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(appVersion()),
   },
   server: {
     port: 8002,
     host: '127.0.0.1',
-    allowedHosts: ['inksprite.shimmerspire.io'],
+    allowedHosts: allowedHosts(),
     // The desktop app's main process, and its packages, which are large.
     watch: { ignored: ['**/electron/**'] },
   },

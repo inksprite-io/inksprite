@@ -70,7 +70,11 @@ async function writer() {
     device,
     /** Another device, signed in to the same account. */
     async another() {
-      const signedIn = await signIn(createApi(server), { name, passphrase: 'a long passphrase' })
+      const signedIn = await signIn(createApi(server), {
+        name,
+        passphrase: 'a long passphrase',
+        least: FAST,
+      })
       return makeDevice({ api: createApi(server, signedIn.token), keys: signedIn.keys })
     },
   }

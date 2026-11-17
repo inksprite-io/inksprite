@@ -28,6 +28,7 @@
  * Settings, with a click, which is also what lets the app open a tab at all.
  */
 
+import { SITE_ORIGIN } from '@/config/site.js'
 import { fetch } from '@/platform/fetch.js'
 import { callbackOrigin } from '@/platform/signIn.js'
 import { localStorage as appStorage } from '@/utils/localStorage.js'
@@ -44,7 +45,7 @@ export const CALLBACK_PATH = '/connect/mcp'
  * inksprite.io, which only redirects here: a page can offer the document only
  * on the origin the document sends the writer back to.
  */
-export const PUBLIC_ORIGIN = 'https://app.inksprite.io'
+export const PUBLIC_ORIGIN = SITE_ORIGIN
 
 /** The document, which is the app's client ID wherever it is accepted. */
 export const CLIENT_METADATA_URL = `${PUBLIC_ORIGIN}/oauth/mcp-client.json`

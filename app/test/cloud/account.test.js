@@ -97,12 +97,14 @@ describe.skipIf(!HAVE_SERVER)('a sync account', () => {
         name: made.name,
         passphrase: 'first passphrase',
         device: 'x',
+        least: FAST,
       })
     ).rejects.toThrow('wrong')
     const again = await signIn(createApi(server), {
       name: made.name,
       passphrase: 'second passphrase',
       device: 'x',
+      least: FAST,
     })
     expect(await sameAccount(again.keys, made.keys)).toBe(true)
     await expect(
@@ -145,10 +147,10 @@ describe.skipIf(!HAVE_SERVER)('a sync account', () => {
 
   it('makes a new recovery code with the passphrase, and the old one stops working', async () => {
     const made = await account()
-    await expect(remakeRecovery(made.api, 'wrong passphrase')).rejects.toThrow(
+    await expect(remakeRecovery(made.api, 'wrong passphrase', FAST)).rejects.toThrow(
       'The passphrase is wrong.'
     )
-    const code = await remakeRecovery(made.api, 'first passphrase')
+    const code = await remakeRecovery(made.api, 'first passphrase', FAST)
     expect(code).not.toBe(made.recoveryCode)
     await expect(
       recover(
@@ -165,27 +167,81 @@ describe.skipIf(!HAVE_SERVER)('a sync account', () => {
     ).rejects.toThrow()
   })
 
-  it('changes the passphrase, and the devices signed in stay so', async () => {
+  it('changes the passphrase, and signs every other device out', async () => {
     const made = await account()
+    const phone = await signIn(createApi(server), {
+      name: made.name,
+      passphrase: 'first passphrase',
+      device: 'Safari on iPhone',
+      least: FAST,
+    })
     await expect(
-      changePassphrase(made.api, { current: 'wrong', next: 'a new passphrase', kdf: FAST })
+      changePassphrase(made.api, {
+        current: 'wrong',
+        next: 'a new passphrase',
+        kdf: FAST,
+        least: FAST,
+      })
     ).rejects.toThrow('The passphrase is wrong.')
     await expect(
-      changePassphrase(made.api, { current: 'first passphrase', next: 'too short', kdf: FAST })
+      changePassphrase(made.api, {
+        current: 'first passphrase',
+        next: 'too short',
+        kdf: FAST,
+        least: FAST,
+      })
     ).rejects.toThrow('at least 12 characters')
+    // Neither try signed anyone out.
+    expect((await createApi(server, phone.token).account()).name).toBe(made.name)
+
     await changePassphrase(made.api, {
       current: 'first passphrase',
       next: 'a new passphrase',
       kdf: FAST,
+      least: FAST,
     })
 
+    // The device that changed it stays; the other signs in again, with the new one.
+    expect((await made.api.account()).name).toBe(made.name)
+    await expect(createApi(server, phone.token).account()).rejects.toMatchObject({ status: 401 })
     const again = await signIn(createApi(server), {
       name: made.name,
       passphrase: 'a new passphrase',
       device: 'x',
+      least: FAST,
     })
     expect(await sameAccount(again.keys, made.keys)).toBe(true)
-    expect((await made.api.account()).name).toBe(made.name)
+  })
+
+  it('takes no weaker settings for the passphrase from the server than the app’s own', async () => {
+    // Made with fewer rounds than the app uses, as these tests' accounts are
+    // to be quick: the server says so, and without being told to take it,
+    // nothing here does.
+    const made = await account()
+    const refusal = 'weaker protection of the passphrase'
+    await expect(
+      signIn(createApi(server), { name: made.name, passphrase: 'first passphrase', device: 'x' })
+    ).rejects.toThrow(refusal)
+    await expect(remakeRecovery(made.api, 'first passphrase')).rejects.toThrow(refusal)
+    await expect(
+      changePassphrase(made.api, { current: 'first passphrase', next: 'a new passphrase' })
+    ).rejects.toThrow(refusal)
+
+    // Nor another hash, nor settings that are no settings.
+    const lying = kdf => ({
+      ...createApi(server),
+      prelogin: async () => ({ salt: 'c2FsdA==', kdf }),
+    })
+    for (const kdf of [
+      { name: 'PBKDF2', hash: 'SHA-1', iterations: 5_000_000 },
+      { name: 'PBKDF2', hash: 'SHA-256', iterations: 1 },
+      { name: 'PBKDF2', hash: 'SHA-256' },
+      undefined,
+    ]) {
+      await expect(
+        signIn(lying(kdf), { name: made.name, passphrase: 'first passphrase', device: 'x' })
+      ).rejects.toThrow(refusal)
+    }
   })
 
   it('lists the devices by name, and signs one out from another', async () => {
@@ -194,6 +250,7 @@ describe.skipIf(!HAVE_SERVER)('a sync account', () => {
       name: made.name,
       passphrase: 'first passphrase',
       device: 'Safari on iPhone',
+      least: FAST,
     })
 
     const listed = await made.api.devices()

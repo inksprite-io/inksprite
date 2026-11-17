@@ -245,7 +245,7 @@
               Runs as a program, so it needs an HTTP bridge.
             </span>
             <span
-              v-else-if="missingHeaders(server).length"
+              v-else-if="keyLeftOut(server)"
               class="text-xs text-red-600 dark:text-red-400"
               data-key-missing
             >
@@ -440,7 +440,7 @@ import { useMcpServers } from '@/composables/useMcpServers.js'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { isWebAddress, nameFromUrl, parseServerConfig } from '@/mcp/config.js'
 import { SIGN_IN_NEEDED } from '@/mcp/client.js'
-import { missingHeaders, promptCommand, requiredArguments } from '@/mcp/servers.js'
+import { keyLeftOut, promptCommand, requiredArguments } from '@/mcp/servers.js'
 
 /** @typedef {import('@/types/models.js').McpServer} McpServer */
 /** @typedef {import('@/mcp/config.js').ConfiguredServer} ConfiguredServer */
@@ -581,7 +581,7 @@ const summaryOf = server =>
  * @param {McpServer} server
  */
 const statusOf = server =>
-  server.url && (missingHeaders(server).length || server.error) ? 'Not connected' : ''
+  server.url && (keyLeftOut(server) || server.error) ? 'Not connected' : ''
 
 /**
  * The command a server's prompt is typed as, or nothing for one that is not
@@ -662,7 +662,7 @@ const signingIn = ref(null)
 const needsSignIn = server =>
   Boolean(server.url) &&
   !isSignedIn(/** @type {string} */ (server.url)) &&
-  missingHeaders(server).length === 0 &&
+  !keyLeftOut(server) &&
   (server.auth === 'oauth' || server.error === SIGN_IN_NEEDED)
 
 /**

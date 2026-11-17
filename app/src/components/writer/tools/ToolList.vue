@@ -80,12 +80,11 @@ import {
   toolOn,
   toolsSwitchedOff,
 } from '@/ai/tools/choice.js'
-import { mayAsk, settingOf } from '@/ai/tools/everywhere.js'
-import { READ_WEB_PAGE, SAVE_WEB_PAGE, WEB_SEARCH } from '@/ai/tools/web.js'
 import { allSkills, skillLabel } from '@/ai/skills/index.js'
 import { loadedByModel } from '@/ai/skills/runner.js'
 import { useApplicationState } from '@/composables/useApplicationState.js'
 import { useSkills } from '@/composables/useSkills'
+import { OFF_ON, WEB_TOOL_LABELS, useToolSettings } from '@/composables/useToolSettings.js'
 import { useMcpServers } from '@/composables/useMcpServers.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
 import { serverTool } from '@/mcp/servers.js'
@@ -143,35 +142,14 @@ const { skills: library } = useSkills()
 const mcp = useMcpServers()
 const webSearch = useWebSearch()
 const app = useApplicationState()
+const everywhere = useToolSettings()
 
-/** @typedef {{label: string, value: string}} Option */
-
-/** @type {Option[]} */
-const OFF_ON = [
-  { label: 'Off', value: 'off' },
-  { label: 'On', value: 'on' },
-]
-
-/** For a tool that may ask the writer before it runs. @type {Option[]} */
-const OFF_ASK_ALWAYS = [
-  { label: 'Off', value: 'off' },
-  { label: 'Ask first', value: 'ask' },
-  { label: 'Always allow', value: 'always' },
-]
-
-/** For editing the documents. @type {Option[]} */
+/** For editing the documents. @type {import('@/composables/useToolSettings.js').Option[]} */
 const OFF_SUGGEST_EDIT = [
   { label: 'Off', value: 'off' },
   { label: 'Suggest changes', value: 'ask' },
   { label: 'Edit directly', value: 'auto' },
 ]
-
-/** The web's tools as the writer reads them, the group's name left unsaid. */
-const WEB_LABELS = {
-  [WEB_SEARCH]: 'Search',
-  [READ_WEB_PAGE]: 'Read pages',
-  [SAVE_WEB_PAGE]: 'Save pages',
-}
 
 /**
  * A tool as the writer reads it: its name in words, as a server's tool is
@@ -193,23 +171,6 @@ const readableTool = name => {
 const toolsOf = label => (/\btools$/i.test(label) ? label : `${label} tools`)
 
 /**
- * Set a tool for the whole app: a server's on its row, the web's two that
- * ask in the web search's settings, and off or on for any of the app's own.
- * @param {string} name
- * @param {string} setting - `off`, `on`, `ask` or `always`
- */
-function setEverywhere(name, setting) {
-  if (serverTool(name)) {
-    mcp.setToolSetting(name, /** @type {'off'|'ask'|'always'} */ (setting))
-    return
-  }
-  app.setToolOff(name, setting === 'off')
-  if (setting === 'off') return
-  if (name === READ_WEB_PAGE) webSearch.setAskBeforeReading(setting === 'ask')
-  if (name === SAVE_WEB_PAGE) webSearch.setAskBeforeSaving(setting === 'ask')
-}
-
-/**
  * A tool switched for the whole app, as the list shows it: a server's by the
  * title it gave, the app's own by its name in words.
  * @param {import('@/ai/tools/registry.js').ToolDefinition} definition
@@ -219,11 +180,13 @@ const toolRow = definition => {
   const found = serverTool(name)
   return {
     name,
-    label: found ? found.tool.title || found.tool.name : (WEB_LABELS[name] ?? readableTool(name)),
+    label: found
+      ? found.tool.title || found.tool.name
+      : (WEB_TOOL_LABELS[name] ?? readableTool(name)),
     description: (found ? found.tool.description : definition.function.description) || '',
-    options: mayAsk(name) ? OFF_ASK_ALWAYS : OFF_ON,
-    value: settingOf(name),
-    set: (/** @type {string} */ setting) => setEverywhere(name, setting),
+    options: everywhere.optionsFor(name),
+    value: everywhere.settingOf(name),
+    set: (/** @type {string} */ setting) => everywhere.setSetting(name, setting),
   }
 }
 

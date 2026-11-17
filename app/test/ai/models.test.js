@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { PRICES_PATH, makerPrices } from '@/ai/prices.js'
 
 const listAnthropicModels = vi.hoisted(() => vi.fn())
 vi.mock('@/ai/anthropic.js', () => ({ listAnthropicModels }))
@@ -217,12 +218,22 @@ describe('NanoGPT’s list', () => {
 })
 
 describe('prices for Anthropic’s and OpenAI’s models', () => {
-  /** OpenRouter's public list, as the maker's prices are read off it. */
+  /** OpenRouter's public list, as the site reads the makers' prices off it. */
   const PUBLIC = [
     { id: 'anthropic/claude-sonnet-4.5', pricing: { prompt: '0.000003', completion: '0.000015' } },
     { id: 'openai/gpt-6.1-sol', pricing: { prompt: '0.000002', completion: '0.000008' } },
     { id: 'openai/gpt-6.1-sol:batch', pricing: { prompt: '0.000001', completion: '0.000004' } },
   ]
+
+  /** The site answering with its prices, and a maker with its own list of models. */
+  const serveWithPrices = (models = []) =>
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async url => ({
+        ok: true,
+        json: async () => (String(url) === PRICES_PATH ? makerPrices(PUBLIC) : { data: models }),
+      }))
+    )
 
   it('names a model plainly, without its maker, its date or how its version is written', () => {
     expect(plainModelId('claude-sonnet-4-5-20250929')).toBe('claude-sonnet-4-5')
@@ -230,8 +241,8 @@ describe('prices for Anthropic’s and OpenAI’s models', () => {
     expect(plainModelId('gpt-6.1-sol-2026-09-29')).toBe('gpt-6-1-sol')
   })
 
-  it('gives each the price OpenRouter lists it at, and none where it lists none', async () => {
-    serve(PUBLIC)
+  it('gives each the price the site lists it at, and none where it lists none', async () => {
+    serveWithPrices()
     listAnthropicModels.mockResolvedValueOnce([
       { id: 'claude-sonnet-4-5-20250929', name: 'Claude Sonnet 4.5' },
       { id: 'claude-unlisted', name: 'Unlisted' },
@@ -246,18 +257,14 @@ describe('prices for Anthropic’s and OpenAI’s models', () => {
 
     expect(sonnet.pricing).toEqual({ prompt: 0.000003, completion: 0.000015 })
     expect(unlisted).not.toHaveProperty('pricing')
+    // Asked of the site, and nothing of OpenRouter, which this writer has no key of.
+    const asked = vi.mocked(fetch).mock.calls.map(([url]) => String(url))
+    expect(asked).toContain(PRICES_PATH)
+    expect(asked.some(url => url.includes('openrouter.ai'))).toBe(false)
   })
 
   it('prices OpenAI’s list the same way, its batch prices aside', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async url => ({
-        ok: true,
-        json: async () => ({
-          data: String(url).startsWith('https://openrouter.ai') ? PUBLIC : [{ id: 'gpt-6.1-sol' }],
-        }),
-      }))
-    )
+    serveWithPrices([{ id: 'gpt-6.1-sol' }])
 
     const [sol] = await listModels({ id: 'o', name: 'OpenAI', type: 'openai', apiKey: 'k' })
 

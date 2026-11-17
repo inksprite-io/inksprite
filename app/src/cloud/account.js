@@ -107,15 +107,46 @@ export async function signUp(api, { name, passphrase, code, device, kdf = KDF })
 }
 
 /**
+ * The settings a server gave for turning a passphrase into keys, where they
+ * are no weaker than the app's own. The server says them, since an account
+ * keeps the ones it was made with; but one that could ask for a single round
+ * would be sent a sign-in key it could guess the passphrase from, as fast as
+ * it can hash. So fewer rounds than the app would use itself, or another
+ * hash, are refused before the passphrase is touched.
+ *
+ * @param {Kdf} kdf - As the server gave it
+ * @param {Kdf} least
+ * @returns {Kdf}
+ * @throws {Error}
+ */
+function noWeakerThan(kdf, least) {
+  const strong =
+    kdf?.name === least.name &&
+    kdf.hash === least.hash &&
+    Number.isInteger(kdf.iterations) &&
+    kdf.iterations >= least.iterations
+  if (!strong) {
+    throw new Error(
+      'The sync server asked for weaker protection of the passphrase than inksprite allows.'
+    )
+  }
+  return kdf
+}
+
+/**
  * Sign this device in to an account.
  *
  * @param {Api} api
- * @param {{name: string, passphrase: string, device: string}} account
+ * @param {{name: string, passphrase: string, device: string, least?: Kdf}} account -
+ *   `least` is the weakest settings taken from the server, the app's own
+ *   unless a test says otherwise
  * @returns {Promise<{token: string, keys: AccountKeys}>}
+ * @throws {Error} When the server asks for weaker settings than that
  */
-export async function signIn(api, { name, passphrase, device }) {
+export async function signIn(api, { name, passphrase, device, least = KDF }) {
   const { salt, kdf } = await api.prelogin(name)
-  const { auth, wrapping } = await passphraseKeys(passphrase, fromBase64(salt), kdf)
+  const settings = noWeakerThan(kdf, least)
+  const { auth, wrapping } = await passphraseKeys(passphrase, fromBase64(salt), settings)
   const { token, key } = await api.signIn(name, auth, device)
   const secret = await open(wrapping, key, ACCOUNT)
   return { token, keys: await accountKeys(secret) }
@@ -127,12 +158,14 @@ export async function signIn(api, { name, passphrase, device }) {
  *
  * @param {Api} api - As this device signed in
  * @param {string} passphrase
+ * @param {Kdf} [least] - The weakest settings taken from the server
  * @returns {Promise<{secret: Bytes, auth: Bytes}>}
  * @throws {Error} For a passphrase that doesn't open it
  */
-async function unlock(api, passphrase) {
+async function unlock(api, passphrase, least = KDF) {
   const account = await api.account()
-  const { auth, wrapping } = await passphraseKeys(passphrase, account.salt, account.kdf)
+  const settings = noWeakerThan(account.kdf, least)
+  const { auth, wrapping } = await passphraseKeys(passphrase, account.salt, settings)
   try {
     return { secret: await open(wrapping, account.key, ACCOUNT), auth }
   } catch {
@@ -145,23 +178,27 @@ async function unlock(api, passphrase) {
  *
  * @param {Api} api - As this device signed in
  * @param {string} passphrase
+ * @param {Kdf} [least] - The weakest settings taken from the server
  * @returns {Promise<string>} The code, to show once
  */
-export async function remakeRecovery(api, passphrase) {
-  const { secret, auth } = await unlock(api, passphrase)
+export async function remakeRecovery(api, passphrase, least = KDF) {
+  const { secret, auth } = await unlock(api, passphrase, least)
   const recovery = await recoveryFor(secret)
   await api.setRecovery({ current: auth }, recovery)
   return recovery.code
 }
 
 /**
- * Change the passphrase. Devices signed in stay so.
+ * Change the passphrase. Every other device is signed out, and signs in
+ * again with the new one.
  *
  * @param {Api} api - As this device signed in
- * @param {{current: string, next: string, kdf?: Kdf}} passphrases
+ * @param {{current: string, next: string, kdf?: Kdf, least?: Kdf}} passphrases -
+ *   `kdf` for the new one, `least` the weakest taken from the server for the
+ *   one there is
  */
-export async function changePassphrase(api, { current, next, kdf = KDF }) {
-  const { secret, auth } = await unlock(api, current)
+export async function changePassphrase(api, { current, next, kdf = KDF, least = KDF }) {
+  const { secret, auth } = await unlock(api, current, least)
   await api.setPassphrase({ current: auth }, await passphraseFor(next, secret, kdf))
 }
 

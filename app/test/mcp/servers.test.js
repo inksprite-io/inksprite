@@ -1,5 +1,12 @@
 import { describe, it, expect, afterEach } from 'vitest'
-import { missingHeaders, needsApproval, serverTool, setServers } from '@/mcp/servers.js'
+import {
+  keyLeftOut,
+  missingHeaders,
+  needsApproval,
+  reachable,
+  serverTool,
+  setServers,
+} from '@/mcp/servers.js'
 
 const server = (id, extra = {}) => ({
   id,
@@ -61,6 +68,22 @@ describe('serverTool', () => {
     expect(found.server.id).toBe('b')
     expect(found.tool.name).toBe('write')
     expect(serverTool('c__write')).toBeNull()
+  })
+})
+
+describe('a server whose key a backup left out', () => {
+  it('is one with a header empty, or a gap in its address where a key was', () => {
+    expect(keyLeftOut({ url: 'https://a.example/mcp', headers: { Authorization: '' } })).toBe(true)
+    expect(keyLeftOut({ url: 'https://a.example/s/key-left-out/mcp' })).toBe(true)
+    expect(
+      keyLeftOut({ url: 'https://a.example/mcp', headers: { Authorization: 'Bearer k' } })
+    ).toBe(false)
+  })
+
+  it('isn’t asked anything at an address that isn’t whole', () => {
+    expect(reachable({ url: 'https://a.example/mcp' })).toBe(true)
+    expect(reachable({ url: 'https://a.example/mcp?api_key=key-left-out' })).toBe(false)
+    expect(reachable({})).toBe(false)
   })
 })
 

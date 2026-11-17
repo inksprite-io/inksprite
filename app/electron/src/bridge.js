@@ -76,6 +76,12 @@ export function handleBridge(origin, { openWindow }) {
     const send = part => {
       if (!event.sender.isDestroyed()) event.sender.send('fetch:body', id, part)
     }
+    // Only what a page could ask a server for: Chromium's stack would read
+    // a file from the disk just as readily.
+    if (!webAddress(request.url)) {
+      requests.delete(key)
+      throw new Error(`Not an address to fetch: ${request.url}`)
+    }
     let response
     try {
       response = await net.fetch(request.url, {

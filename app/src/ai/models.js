@@ -17,6 +17,9 @@
  */
 
 import { fetch } from '@/platform/fetch.js'
+import { isDesktop } from '@/platform/desktop.js'
+import { SITE_ORIGIN } from '@/config/site.js'
+import { PRICES_PATH, plainModelId, pricingOf } from './prices.js'
 import { attributionHeaders, audioModelsUrl, modelsUrl } from '@/ai/wire.js'
 import { BUILT_IN_PROVIDERS, providerDoes, servesChat } from '@/ai/providers.js'
 import { LEVELS } from '@/ai/capabilities.js'
@@ -205,23 +208,6 @@ function defaultsOf(listed) {
 }
 
 /**
- * What a model costs a token, read and written, or undefined where the list
- * doesn't say.
- * @param {any} pricing - The model's `pricing`
- * @param {number} [per] - How many tokens the list prices: OpenRouter's one,
- *   as strings, NanoGPT's a million, as numbers
- * @returns {{prompt: number, completion: number}|undefined}
- */
-function pricingOf(pricing, per = 1) {
-  if (pricing?.prompt == null || pricing?.completion == null) return undefined
-  const prompt = Number(pricing.prompt) / per
-  const completion = Number(pricing.completion) / per
-  return Number.isFinite(prompt) && Number.isFinite(completion) && prompt >= 0 && completion >= 0
-    ? { prompt, completion }
-    : undefined
-}
-
-/**
  * Whether OpenRouter charges nothing for a model, in or out.
  * @param {any} pricing - The model's `pricing`, prices as strings
  * @returns {boolean}
@@ -345,48 +331,37 @@ export async function listModels(provider) {
 }
 
 /**
- * A model's id without its maker, its date, or how its version is written:
- * Anthropic's `claude-sonnet-4-5-20250929` and OpenRouter's
- * `anthropic/claude-sonnet-4.5` are both `claude-sonnet-4-5`.
- * @param {string} id
+ * Where the makers' prices are asked for: the site the page came from, and
+ * for the desktop app, which came from no site, the site itself.
  * @returns {string}
  */
-export function plainModelId(id) {
-  return id
-    .toLowerCase()
-    .replace(/^[^/]+\//, '')
-    .replace(/-(\d{8}|\d{4}-\d{2}-\d{2})$/, '')
-    .replace(/\./g, '-')
-}
+const pricesAddress = () => (isDesktop() ? `${SITE_ORIGIN}${PRICES_PATH}` : PRICES_PATH)
 
-/** @type {Promise<Array<Record<string, any>>>|null} OpenRouter's public list, asked for once */
-let publicList = null
+/** @type {Promise<import('./prices.js').MakerPrices>|null} The site's list, asked for once */
+let priceList = null
 
 /**
- * What each of a maker's models costs, by its plain id, from OpenRouter's
- * public list: Anthropic and OpenAI list their models without prices, and
- * OpenRouter charges what they do.
+ * What each of a maker's models costs, by its plain id: Anthropic and OpenAI
+ * list their models without prices, so the site reads them off OpenRouter's
+ * public list, and the app asks the site (./prices.js).
  * @param {'anthropic'|'openai'} maker
  * @returns {Promise<Map<string, {prompt: number, completion: number}>>}
  */
 async function pricesOf(maker) {
-  publicList ??= fetch('https://openrouter.ai/api/v1/models', { method: 'GET' })
-    .then(entriesOf)
+  priceList ??= fetch(pricesAddress(), { method: 'GET' })
+    .then(async response => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      return response.json()
+    })
     .catch(error => {
-      publicList = null
+      priceList = null
       throw error
     })
-  const prices = new Map()
-  for (const model of await publicList) {
-    if (!String(model.id).startsWith(`${maker}/`) || String(model.id).endsWith(':batch')) continue
-    const pricing = pricingOf(model.pricing)
-    if (pricing && !prices.has(plainModelId(model.id))) prices.set(plainModelId(model.id), pricing)
-  }
-  return prices
+  return new Map(Object.entries((await priceList)?.[maker] || {}))
 }
 
 /**
- * A maker's models with what each costs, where OpenRouter's list has it.
+ * A maker's models with what each costs, where the site's list has it.
  * Without the list, they are as they came.
  * @param {'anthropic'|'openai'} maker
  * @param {AIModel[]} models
@@ -564,3 +539,5 @@ async function listNanoGptSpeech(provider) {
       })
   )
 }
+
+export { plainModelId }

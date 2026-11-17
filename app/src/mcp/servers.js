@@ -13,6 +13,8 @@
  * the profiles that offer only some, Roleplay and Blank.
  */
 
+import { hasKeyLeftOut } from '@/utils/addressKeys.js'
+
 /** @typedef {import('../types/models.js').McpServer} McpServer */
 /** @typedef {import('../types/models.js').McpTool} McpTool */
 /** @typedef {import('../types/models.js').McpPrompt} McpPrompt */
@@ -58,14 +60,27 @@ export function getServer(id) {
 }
 
 /**
- * Whether a server can be reached from here: it has an address. One that runs
- * as a local program needs a bridge first.
+ * Whether a server can be reached from here: it has an address, and the
+ * address is whole. One that runs as a local program needs a bridge first,
+ * and one whose address had a key in it that a backup left out isn't asked
+ * anything until the writer enters it again.
  *
  * @param {McpServer} server
  * @returns {boolean}
  */
 export function reachable(server) {
-  return Boolean(server.url)
+  return Boolean(server.url) && !hasKeyLeftOut(server.url)
+}
+
+/**
+ * Whether a server is missing a key a backup left out: a header's value, or
+ * one that was part of its address.
+ *
+ * @param {Pick<McpServer, 'headers'|'url'>} server
+ * @returns {boolean}
+ */
+export function keyLeftOut(server) {
+  return missingHeaders(server).length > 0 || hasKeyLeftOut(server.url)
 }
 
 /**

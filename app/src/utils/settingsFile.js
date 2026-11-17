@@ -25,6 +25,7 @@
 
 import { BUILT_IN_PROVIDERS, untouchedBuiltIn } from '../ai/providers.js'
 import { DEFAULT_PRESET_ID } from '../ai/defaults.js'
+import { hasKeyLeftOut, withoutAddressKeys } from './addressKeys.js'
 
 /** @typedef {import('./backup.js').TableData} TableData */
 /** @typedef {import('../composables/useApplicationState.js').BackedUpSettings} BackedUpSettings */
@@ -404,11 +405,22 @@ function mergeRow(table, row, here, { byHand, now }) {
   if (here?.created !== undefined) merged.created = here.created
   else if (merged.created === undefined) merged.created = now
 
+  // An address the file left a key out of is this row's own, where it is
+  // that address but for the key: as a key of its own, left out, is.
+  const address = table === 'aiProviders' ? 'endpoint' : table === 'mcpServers' ? 'url' : null
+  if (
+    address &&
+    hasKeyLeftOut(row[address]) &&
+    withoutAddressKeys(here?.[address]) === row[address]
+  ) {
+    merged[address] = here[address]
+  }
+
   const moved =
     byHand &&
     (table === 'aiProviders'
-      ? here?.type !== row.type || (here?.endpoint || '') !== (row.endpoint || '')
-      : table === 'mcpServers' && here?.url !== row.url)
+      ? here?.type !== row.type || (here?.endpoint || '') !== (merged.endpoint || '')
+      : table === 'mcpServers' && here?.url !== merged.url)
 
   if (table === 'aiProviders' && !row.apiKey && here?.apiKey && !moved) merged.apiKey = here.apiKey
 
