@@ -83,6 +83,8 @@ See the desktop app [README](app/electron/README.md) for more details.
 
 [Feedback](https://github.com/inksprite-io/inksprite/discussions), [bug reports](https://github.com/inksprite-io/inksprite/issues), and [patches](https://github.com/inksprite-io/inksprite/pulls) are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
+Please report security issues privately, under [Security › Report a vulnerability](https://github.com/inksprite-io/inksprite/security/advisories/new).
+
 ## License
 
 inksprite is licensed under the [GNU General Public License, version 3 or later](LICENSE). All rights to the inksprite name and logo are reserved. See [CREDITS.md](CREDITS.md) for a list of third-party resources not covered by this license.
