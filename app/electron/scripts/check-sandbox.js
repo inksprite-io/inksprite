@@ -15,7 +15,7 @@
  *
  * On a Mac, with the Electron `start-on-mac.sh` fetched:
  *
- *   ~/Library/Caches/inksprite/electron-v44.7.0-darwin-arm64/Electron.app/Contents/MacOS/Electron scripts/check-sandbox.js
+ *   ~/Library/Caches/inksprite/electron-v44.11.3-darwin-arm64/Electron.app/Contents/MacOS/Electron scripts/check-sandbox.js
  *
  * Python won't start in a process the system isn't sandboxing, so with
  * Chromium's sandbox off, in part or whole, every check fails. With

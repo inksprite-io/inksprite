@@ -7,6 +7,8 @@ export default defineConfig({
   // Not the app's own .env files: a test sees the same environment on every
   // machine, whatever a developer has put in .env.local. Nothing is kept here.
   envDir: './test',
+  // The sync tests run the server itself, which is beside the app, not in it.
+  server: { fs: { allow: ['..'] } },
   test: {
     globals: true,
     environment: 'happy-dom',

@@ -76,6 +76,9 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+// The tests' DOM has no print dialog: each test spies on this in its place.
+if (typeof window.print !== 'function') window.print = () => {}
+
 describe('usePrint', () => {
   it('prints only a text laid out', () => {
     const { printable } = usePrint('story_1')
