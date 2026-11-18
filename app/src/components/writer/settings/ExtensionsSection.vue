@@ -148,29 +148,18 @@
             @update:model-value="row.set"
           />
         </div>
-        <div v-if="allowedSites.length > 0" class="flex flex-col gap-1" data-allowed-sites>
-          <span class="text-xs font-medium text-surface-700 dark:text-surface-200"
-            >Sites always allowed</span
-          >
-          <ul class="m-0 list-none p-0">
-            <li
-              v-for="site in allowedSites"
-              :key="site"
-              class="flex items-center justify-between gap-2 rounded px-2 py-1 text-sm text-surface-700 dark:text-surface-200 hover:bg-surface-100 dark:hover:bg-surface-800"
-              data-allowed-site
-            >
-              <span class="min-w-0 truncate">{{ site }}</span>
-              <button
-                type="button"
-                class="flex-none w-6 h-6 rounded-full flex items-center justify-center text-xs text-surface-500 hover:bg-surface-200 dark:hover:bg-surface-700"
-                :aria-label="`Remove ${site}`"
-                @click="web.disallowSite(site)"
-              >
-                <i class="pi pi-times" />
-              </button>
-            </li>
-          </ul>
+        <div class="flex flex-wrap gap-2">
+          <Button
+            label="Manage allowed sites"
+            icon="pi pi-globe"
+            size="small"
+            outlined
+            severity="secondary"
+            data-manage-sites
+            @click="sitesVisible = true"
+          />
         </div>
+        <AllowedSitesDialog v-model:visible="sitesVisible" />
       </div>
     </ExpandableSection>
 
@@ -226,6 +215,7 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import { useConfirm } from 'primevue/useconfirm'
 import { useToast } from 'primevue/usetoast'
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
+import AllowedSitesDialog from './AllowedSitesDialog.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useProfiles } from '@/composables/useProfiles'
 import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
@@ -233,7 +223,6 @@ import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
 import { useReadingConfirm } from '@/composables/useReadingConfirm.js'
 import { ASK_ALWAYS, WEB_TOOL_LABELS, useToolSettings } from '@/composables/useToolSettings.js'
-import { compareNames } from '@/utils/compareNames.js'
 import { serviceInUse } from '@/web/config.js'
 import { READ_WEB_PAGE } from '@/ai/tools/web.js'
 import { hasPython } from '@/platform/python.js'
@@ -318,8 +307,8 @@ const readingRows = computed(() => [
   },
 ])
 
-/** The sites whose addresses are read without asking, by name. */
-const allowedSites = computed(() => [...(web.setup.value.allowedSites || [])].sort(compareNames))
+/** Whether the sites always allowed are showing, in their dialog. */
+const sitesVisible = ref(false)
 
 /** The service chosen, where it can be reached from here. */
 const webChoice = computed(() => {
