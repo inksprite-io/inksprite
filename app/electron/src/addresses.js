@@ -93,7 +93,10 @@ export async function fetchFromWeb(fetch, url, init, home = leadsHome, allowed =
     const to = response.status >= 300 && response.status < 400 && response.headers.get('location')
     if (!to) return response
     const next = new URL(to, at)
-    if (next.protocol !== 'http:' && next.protocol !== 'https:') throw new Error(LOCAL_REFUSED)
+    // Not home, and nothing to ask the writer about: no page is there.
+    if (next.protocol !== 'http:' && next.protocol !== 'https:') {
+      throw new Error('That address redirects to what is no web page.')
+    }
     at = next.href
   }
   throw new Error('That address redirects too many times.')

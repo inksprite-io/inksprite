@@ -27,10 +27,10 @@ Security:
 - A file exported without API keys leaves out a key written into a
   server's address too.
 - Files that unpack as they are imported (an epub, a Scrivener project, a
-  repository, a zip of skills, a backup) are refused if they would unpack too
-  large, and an MCP server's answer is cut at 100,000 characters.
-- On Windows and Linux, the desktop app checks an update against a signature
-  of ours. In this release a failed check is only written to the app's log,
+  repository, a zip of skills, a backup) are refused if they would be too
+  large unpacked, and an MCP server's answer is cut at 100,000 characters.
+- On Windows and Linux, the desktop app checks that an update is signed
+  by us. In this release a failed check is only written to the app's log,
   which is now `inksprite.log`.
 - The desktop app is on Electron 44.11.3, and dependencies with advisories
   against them are updated.
@@ -41,7 +41,8 @@ The web:
   gave it, a search result, or a link on a page it reached from one is read
   without asking. **Always allow** in the question covers that one site.
 - The model asks every time before it reads a page on your own computer or
-  network, until you always allow its site.
+  network, until you always allow its site. **Read pages on my network** can
+  also be **Off**.
 - In the desktop app, the model reads and saves pages with no search service
   connected. Searching still needs one.
 - The Web search extension is now **Web**. **Settings** › **Extensions** ›
@@ -50,10 +51,13 @@ The web:
 
 Tools:
 
-- Each tool has one setting for every chat, in **Settings** › **Tools**:
+- A tool's setting now applies to every chat, in **Settings** › **Tools**:
   **Off** or **On**, and for a tool that can ask first, **Off**, **Ask
-  first** or **Always allow**. A group's switch is still the chat's and its
-  profile's.
+  first** or **Always allow**. A whole group is still switched per chat and
+  profile.
+- Tools you had switched off on the Default profile stay off, for every chat.
+  A tool switched off on another profile is on again; switch it off in
+  **Settings** › **Tools**.
 - **Documents** has three settings, **Read**, **Edit mode** and **Comment**.
   **Edit mode** is **Off**, **Suggesting** or **Editing**.
 - In a chat that suggests its changes, a move or a rename waits for you, as

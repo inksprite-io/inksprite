@@ -10,6 +10,7 @@
  * check, as with Brave, does so with a search, the writer having asked.
  */
 
+import { forgetPages } from '@/web/pages.js'
 import { computed, ref } from 'vue'
 import { useWebSearchStore } from '@/stores/webSearchStore.js'
 import { WEB_SERVICES, getWebService } from '@/web/services.js'
@@ -162,6 +163,8 @@ export function useWebSearch() {
    */
   function setLocalReading(setting) {
     store.update({ readLocalOff: setting === 'off', readLocalWithoutAsking: setting === 'always' })
+    // Switched off, what was read there a moment ago isn't handed out again.
+    if (setting === 'off') forgetPages()
   }
 
   /**

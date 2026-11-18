@@ -84,6 +84,12 @@ describe('asksFirst', () => {
       expect(asksFirst('read_web_page', made, seen)).toBe(true)
     })
 
+    it('asks nothing of a page at home that won’t be kept, reading there being off', () => {
+      setWebSearch({ id: 'web', keys: {}, readLocalOff: true })
+      expect(asksFirst('save_web_page', at('http://localhost:3000/notes'), seen)).toBe(false)
+      expect(asksFirst('save_web_page', at('https://tides.example/start'), seen)).toBe(true)
+    })
+
     it('carries the site with the call that waits', async () => {
       const call = { id: 'c9', function: { name: 'read_web_page', arguments: made } }
       const decided = askApproval('m9', call, undefined, 'collector.example')

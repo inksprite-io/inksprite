@@ -20,7 +20,7 @@
 import { computed, reactive, toValue } from 'vue'
 import { needsApproval } from '@/mcp/servers.js'
 import { readingAllowed, savesWithoutAsking } from '@/web/config.js'
-import { addressFetched, addressKey, readingAsks, siteOf } from '@/web/addresses.js'
+import { addressFetched, addressKey, isLocalAddress, readingAsks, siteOf } from '@/web/addresses.js'
 import { READ_WEB_PAGE, SAVE_WEB_PAGE } from '@/ai/tools/web.js'
 
 /**
@@ -75,6 +75,10 @@ export function siteAsking(name, written, seen) {
 export function asksFirst(name, written, seen) {
   if (name === READ_WEB_PAGE) return siteAsking(name, written, seen) !== null
   if (name === SAVE_WEB_PAGE) {
+    // Nothing is asked of a page the tool will refuse: one at home, with
+    // reading there switched off.
+    const address = addressFetched(name, written)
+    if (address && readingAllowed().localOff && isLocalAddress(address)) return false
     return !savesWithoutAsking() || siteAsking(name, written, seen) !== null
   }
   return needsApproval(name)

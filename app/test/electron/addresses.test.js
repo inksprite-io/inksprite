@@ -114,9 +114,10 @@ describe('fetchFromWeb', () => {
     expect(homeward).toHaveBeenCalledTimes(1)
 
     const toFile = vi.fn().mockResolvedValueOnce(redirect('file:///etc/passwd'))
-    await expect(fetchFromWeb(toFile, 'https://tides.example/a', {}, home)).rejects.toThrow(
-      LOCAL_REFUSED
-    )
+    // No page, and not home: nothing the writer could be asked to allow.
+    const refused = fetchFromWeb(toFile, 'https://tides.example/a', {}, home)
+    await expect(refused).rejects.toThrow('no web page')
+    await expect(refused).rejects.not.toThrow(LOCAL_REFUSED)
   })
 
   it('gives up on an address that only ever redirects', async () => {

@@ -83,6 +83,23 @@ describe('reading an address that turns out to be on the writer’s own network'
     expect(allowSite).toHaveBeenCalledWith('router.home.example')
   })
 
+  it('asks about each place at home a read is led through, in the one call', async () => {
+    readPage
+      .mockRejectedValueOnce(Object.assign(leadsHome(), { site: 'shelf.home.example' }))
+      .mockRejectedValueOnce(Object.assign(leadsHome(), { site: 'shelf.home.example:5001' }))
+      .mockResolvedValueOnce(page)
+    const approve = vi.fn(async () => 'allow')
+
+    const read = await executeReadWebPage({ url }, { approve, mayLeadHome: () => [] })
+
+    expect(approve).toHaveBeenCalledTimes(2)
+    expect(readPage.mock.calls[2][2].home).toEqual([
+      'shelf.home.example',
+      'shelf.home.example:5001',
+    ])
+    expect(read.content).toBe('At home.')
+  })
+
   it('asks nothing once reading on the writer’s network never asks', async () => {
     readPage.mockResolvedValueOnce(page)
     const approve = vi.fn()

@@ -138,17 +138,17 @@ function whyNot(error) {
  */
 async function askSite(url, { signal, timeout, home = false }) {
   const signals = [signal, timeout ? AbortSignal.timeout(timeout) : undefined].filter(Boolean)
+  // An address that is local by its name was asked about, or its site is
+  // allowed: that site and no other at home, wherever it redirects.
+  const sites = [
+    ...(Array.isArray(home) ? home : []),
+    ...(isLocalAddress(url) ? [siteOf(url) ?? ''] : []),
+  ]
   let response
   try {
     // An address that is local by its name was the writer's to allow, and
     // they did, as they did one they typed or whose site they always allow.
     // Any other is fetched only as far as it stays on the web.
-    // An address that is local by its name was asked about, or its site is
-    // allowed: that site and no other at home, wherever it redirects.
-    const sites = [
-      ...(Array.isArray(home) ? home : []),
-      ...(isLocalAddress(url) ? [siteOf(url) ?? ''] : []),
-    ]
     /** @type {(url: string, init: RequestInit) => Promise<Response>} */
     const ask = home === true ? fetch : (at, init) => fetchFromWeb(at, init, sites)
     response = await ask(url, {
@@ -168,6 +168,15 @@ async function askSite(url, { signal, timeout, home = false }) {
       )
     }
     throw new ServiceError(`${url} couldn’t be reached.${whyNot(error)}`)
+  }
+  // A page in a browser follows redirects itself, and nothing looked where
+  // they led: one that ended at a place local by its name is not read.
+  const ended = home === true ? null : siteOf(response.url)
+  if (ended && isLocalAddress(response.url) && !sites.includes(ended)) {
+    throw Object.assign(
+      new ServiceError(`${url} leads to this computer or its network, and wasn’t read.`),
+      { home: true, site: ended }
+    )
   }
   if (response.status === 404 || response.status === 410) {
     throw new ServiceError(`There is no page at ${url} (${response.status}).`)

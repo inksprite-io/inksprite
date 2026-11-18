@@ -119,6 +119,9 @@ export const readWebPageDefinition = {
   },
 }
 
+/** How many places at home one read is asked about, a redirect leading to the next. */
+const MOST_HOME_STEPS = 3
+
 /** What the model is told of an address at home while reading there is off. */
 const LOCAL_OFF = {
   error:
@@ -140,27 +143,30 @@ const LOCAL_OFF = {
  * @returns {Promise<T>}
  */
 async function whereverAllowed(context, url, fetching) {
-  const allowed = context?.mayLeadHome?.() ?? []
-  try {
-    return await fetching(allowed)
-  } catch (error) {
-    const refused = /** @type {any} */ (error)
-    if (allowed === true || !refused?.home || !context?.approve) throw error
-    if (readingAllowed().localOff) throw error
-    // The step that was refused, which a redirect makes another place than
-    // the address: that is what is asked about, and all that is allowed.
-    const at = siteOf(url)
-    const site = refused.site || at
-    if (!site) throw error
-    const decision = await context.approve(
-      site === at
-        ? `${url} is on this computer or its network. Read it?`
-        : `${url} leads to ${site}, on this computer or its network. Read it?`,
-      site
-    )
-    if (decision === 'deny') throw error
-    if (decision === 'always') useWebSearch().allowSite(site)
-    return fetching([...allowed, site])
+  let allowed = context?.mayLeadHome?.() ?? []
+  // A step at home is asked about as it is met; a few, and no more.
+  for (let asked = 0; ; asked++) {
+    try {
+      return await fetching(allowed)
+    } catch (error) {
+      const refused = /** @type {any} */ (error)
+      if (allowed === true || !refused?.home || !context?.approve) throw error
+      if (asked === MOST_HOME_STEPS || readingAllowed().localOff) throw error
+      // The step that was refused, which a redirect makes another place than
+      // the address: that is what is asked about, and all that is allowed.
+      const at = siteOf(url)
+      const site = refused.site || at
+      if (!site || allowed.includes(site)) throw error
+      const decision = await context.approve(
+        site === at
+          ? `${url} is on this computer or its network. Read it?`
+          : `${url} leads to ${site}, on this computer or its network. Read it?`,
+        site
+      )
+      if (decision === 'deny') throw error
+      if (decision === 'always') useWebSearch().allowSite(site)
+      allowed = [...allowed, site]
+    }
   }
 }
 

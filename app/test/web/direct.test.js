@@ -227,4 +227,15 @@ describe('fileNameOf', () => {
       )
     }
   })
+
+  it('reads nothing a redirect ended at on the writer’s own computer, in a browser', async () => {
+    const ended = new Response('<p>Status</p>', { headers: { 'content-type': 'text/html' } })
+    Object.defineProperty(ended, 'url', { value: 'http://localhost:5173/status' })
+    fetch.mockResolvedValueOnce(ended)
+
+    await expect(fetchDirect('https://tides.example/go', {})).rejects.toMatchObject({
+      home: true,
+      site: 'localhost:5173',
+    })
+  })
 })

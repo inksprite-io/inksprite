@@ -223,7 +223,7 @@ import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
 import { useReadingConfirm } from '@/composables/useReadingConfirm.js'
-import { WEB_TOOL_LABELS, useToolSettings } from '@/composables/useToolSettings.js'
+import { OFF_ASK_ALWAYS, WEB_TOOL_LABELS, useToolSettings } from '@/composables/useToolSettings.js'
 import { serviceInUse } from '@/web/config.js'
 import { READ_WEB_PAGE } from '@/ai/tools/web.js'
 import { hasPython } from '@/platform/python.js'
@@ -301,7 +301,7 @@ const readingRows = computed(() => [
   {
     id: 'local',
     label: 'Read pages on my network',
-    options: toolSettings.optionsFor(READ_WEB_PAGE),
+    options: OFF_ASK_ALWAYS,
     value: web.setup.value.readLocalOff
       ? 'off'
       : web.setup.value.readLocalWithoutAsking
