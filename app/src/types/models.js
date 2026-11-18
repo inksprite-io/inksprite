@@ -909,6 +909,9 @@
  *   (web/addresses.js). Absent means those ask.
  * @property {string[]} [allowedSites] - The sites, by host name, whose
  *   addresses are always read without asking.
+ * @property {boolean} [readLocalWithoutAsking] - The model reads addresses on
+ *   the writer's own computer and network without asking first. Absent means
+ *   each asks, until its site is always allowed.
  * @property {number} [updated]
  */
 

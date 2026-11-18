@@ -213,4 +213,18 @@ describe('fileNameOf', () => {
       'https://tides.example/a leads to this computer or its network, and wasn’t read.'
     )
   })
+
+  it('says why a site couldn’t be reached, where the network says something to act on', async () => {
+    for (const [said, why] of [
+      ['net::ERR_NAME_NOT_RESOLVED', ' Nothing answers to that name.'],
+      ['net::ERR_CERT_AUTHORITY_INVALID', ' Its certificate wasn’t accepted.'],
+      ['net::ERR_CONNECTION_REFUSED', ' It refused the connection.'],
+      ['net::ERR_FAILED', ''],
+    ]) {
+      fetch.mockRejectedValueOnce(new TypeError(said))
+      await expect(fetchDirect('https://tides.example/a', {})).rejects.toThrow(
+        `https://tides.example/a couldn’t be reached.${why}`
+      )
+    }
+  })
 })

@@ -71,7 +71,7 @@ export const EXTENSIONS = [
   { id: 'python', name: 'Python', inUse: async () => false },
   // On from the start, for everyone: it does nothing until a service is set
   // up to search with.
-  { id: 'web', name: 'Web search', inUse: async () => true },
+  { id: 'web', name: 'Web', inUse: async () => true },
 ]
 
 /**

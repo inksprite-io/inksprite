@@ -20,7 +20,7 @@
 import { computed, reactive, toValue } from 'vue'
 import { needsApproval } from '@/mcp/servers.js'
 import { readingAllowed, savesWithoutAsking } from '@/web/config.js'
-import { addressFetched, readingAsks, siteOf } from '@/web/addresses.js'
+import { addressFetched, addressKey, readingAsks, siteOf } from '@/web/addresses.js'
 import { READ_WEB_PAGE, SAVE_WEB_PAGE } from '@/ai/tools/web.js'
 
 /**
@@ -54,7 +54,10 @@ import { READ_WEB_PAGE, SAVE_WEB_PAGE } from '@/ai/tools/web.js'
  */
 export function siteAsking(name, written, seen) {
   const address = seen ? addressFetched(name, written) : null
-  return address && readingAsks(address, seen, readingAllowed()) ? siteOf(address) : null
+  if (!address || !seen) return null
+  // A page the chat has read is kept without being asked about again.
+  if (name === SAVE_WEB_PAGE && seen.read.has(addressKey(address) ?? '')) return null
+  return readingAsks(address, seen, readingAllowed()) ? siteOf(address) : null
 }
 
 /**

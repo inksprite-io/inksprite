@@ -51,7 +51,7 @@ describe('web_search', () => {
     setWebSearch(null)
 
     expect(await executeWebSearch({ query: 'tides' })).toEqual({
-      error: expect.stringMatching(/Settings › Extensions › Web search/),
+      error: expect.stringMatching(/Settings › Extensions › Web\./),
     })
     expect(callServerTool).not.toHaveBeenCalled()
   })

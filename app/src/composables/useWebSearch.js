@@ -51,6 +51,7 @@ const PROBE_TIMEOUT_MS = 30000
  *   connect: (id: WebServiceId, key: string) => Promise<void>,
  *   setAskBeforeSaving: (ask: boolean) => void,
  *   setAskBeforeReading: (ask: boolean) => void,
+ *   setAskBeforeLocal: (ask: boolean) => void,
  *   allowSite: (site: string) => void,
  *   disallowSite: (site: string) => void,
  * }}
@@ -154,6 +155,16 @@ export function useWebSearch() {
   }
 
   /**
+   * Have reading an address on the writer's own computer or network ask, or
+   * never ask.
+   *
+   * @param {boolean} ask
+   */
+  function setAskBeforeLocal(ask) {
+    store.update({ readLocalWithoutAsking: !ask })
+  }
+
+  /**
    * Always read a site's addresses without asking, from now on.
    *
    * @param {string} site - Its host name
@@ -186,6 +197,7 @@ export function useWebSearch() {
     connect,
     setAskBeforeSaving,
     setAskBeforeReading,
+    setAskBeforeLocal,
     allowSite,
     disallowSite,
   }

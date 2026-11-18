@@ -70,7 +70,7 @@
     </ExpandableSection>
 
     <ExpandableSection
-      title="Web search"
+      title="Web"
       storage-key="ui.settings.extensions.web"
       subsection
       :disabled="!webOn"
@@ -82,7 +82,7 @@
         <ToggleSwitch
           :model-value="webOn"
           class="flex-none"
-          aria-label="Web search"
+          aria-label="Web"
           data-extension-switch="web"
           @update:model-value="on => applicationState.setExtension('web', on)"
         />
@@ -123,29 +123,36 @@
             </button>
           </p>
         </div>
-        <!-- Each of the web's tools as it is set for the whole app: the same
-             settings as in a chat's tools, here beside the service. -->
+        <!-- What reading asks the writer first. Whether a chat searches,
+             reads or saves at all is among its tools. -->
         <div
-          v-for="tool in webTools"
-          :key="tool.name"
-          class="flex items-center justify-between gap-2"
-          :data-web-tool="tool.name"
+          v-for="row in readingRows"
+          :key="row.id"
+          class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1"
+          :data-web-reading="row.id"
         >
           <label
-            :for="`web-tool-${tool.name}`"
+            :for="`web-reading-${row.id}`"
             class="text-xs font-medium text-surface-700 dark:text-surface-200"
-            >{{ tool.label }}</label
+            >{{ row.label }}</label
           >
           <Select
-            :input-id="`web-tool-${tool.name}`"
-            :model-value="tool.value"
-            :options="tool.options"
+            :input-id="`web-reading-${row.id}`"
+            :model-value="row.value"
+            :options="row.options"
             option-label="label"
             option-value="value"
             size="small"
             class="flex-none w-48 dark:!bg-surface-900"
-            @update:model-value="setting => toolSettings.setSetting(tool.name, setting)"
+            @update:model-value="row.set"
           />
+          <p
+            v-if="row.warning"
+            class="m-0 basis-full text-xs text-amber-700 dark:text-amber-400"
+            data-web-warning
+          >
+            {{ row.warning }}
+          </p>
         </div>
         <div v-if="allowedSites.length > 0" class="flex flex-col gap-1" data-allowed-sites>
           <span class="text-xs font-medium text-surface-700 dark:text-surface-200"
@@ -230,10 +237,15 @@ import { useProfiles } from '@/composables/useProfiles'
 import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
-import { WEB_TOOL_LABELS, useToolSettings } from '@/composables/useToolSettings.js'
+import {
+  ASK_ALWAYS,
+  LOCAL_UNASKED,
+  WEB_TOOL_LABELS,
+  useToolSettings,
+} from '@/composables/useToolSettings.js'
 import { compareNames } from '@/utils/compareNames.js'
 import { serviceInUse } from '@/web/config.js'
-import { WEB_SEARCH } from '@/ai/tools/web.js'
+import { READ_WEB_PAGE } from '@/ai/tools/web.js'
 import { hasPython } from '@/platform/python.js'
 import { PYTHON_GROUP, PYTHON_TIME_LIMITS } from '@/ai/tools/python.js'
 
@@ -276,18 +288,29 @@ const webServices = web.services.filter(web.reachable)
 
 const toolSettings = useToolSettings()
 
-/** The web's tools, each as it is set for the whole app. */
-const webTools = computed(() =>
-  Object.entries(WEB_TOOL_LABELS)
-    // Searching needs a service; reading and keeping a page don't, in the desktop app.
-    .filter(([name]) => name !== WEB_SEARCH || web.inUse.value)
-    .map(([name, label]) => ({
-      name,
-      label,
-      options: toolSettings.optionsFor(name),
-      value: toolSettings.settingOf(name),
-    }))
-)
+/**
+ * What reading asks first: pages on the web, set here as among a chat's
+ * tools, and pages on the writer's own computer and network, which asking
+ * about the web never covers.
+ */
+const readingRows = computed(() => [
+  {
+    id: 'web',
+    label: WEB_TOOL_LABELS[READ_WEB_PAGE],
+    options: toolSettings.optionsFor(READ_WEB_PAGE),
+    value: toolSettings.settingOf(READ_WEB_PAGE),
+    warning: toolSettings.warningOf(READ_WEB_PAGE),
+    set: (/** @type {string} */ setting) => toolSettings.setSetting(READ_WEB_PAGE, setting),
+  },
+  {
+    id: 'local',
+    label: 'Read pages on my network',
+    options: ASK_ALWAYS,
+    value: web.setup.value.readLocalWithoutAsking ? 'always' : 'ask',
+    warning: web.setup.value.readLocalWithoutAsking ? LOCAL_UNASKED : '',
+    set: (/** @type {string} */ setting) => web.setAskBeforeLocal(setting === 'ask'),
+  },
+])
 
 /** The sites whose addresses are read without asking, by name. */
 const allowedSites = computed(() => [...(web.setup.value.allowedSites || [])].sort(compareNames))

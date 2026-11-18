@@ -23,6 +23,12 @@ export const OFF_ON = [
   { label: 'On', value: 'on' },
 ]
 
+/** For what is always there, and only asks or doesn't. @type {Option[]} */
+export const ASK_ALWAYS = [
+  { label: 'Ask first', value: 'ask' },
+  { label: 'Always allow', value: 'always' },
+]
+
 /** For a tool that may ask the writer before it runs. @type {Option[]} */
 export const OFF_ASK_ALWAYS = [
   { label: 'Off', value: 'off' },
@@ -42,8 +48,18 @@ export const WEB_TOOL_LABELS = {
 }
 
 /**
+ * What a writer is told of a setting that takes a guard away, under it while
+ * it is set so. Only these two say anything.
+ */
+export const READS_UNASKED =
+  'A page or document the model reads could make it send your writing to another site.'
+export const LOCAL_UNASKED =
+  'The model can read anything on your computer and network that a browser can open.'
+
+/**
  * @returns {{
  *   optionsFor: (name: string) => Option[],
+ *   warningOf: (name: string) => string,
  *   settingOf: (name: string) => import('@/ai/tools/everywhere.js').ToolSetting,
  *   setSetting: (name: string, setting: string) => void,
  * }}
@@ -56,6 +72,13 @@ export function useToolSettings() {
   return {
     /** What a tool can be set to: three ways for one that may ask first. */
     optionsFor: name => (mayAsk(name) ? OFF_ASK_ALWAYS : OFF_ON),
+
+    /** What a tool's setting costs the writer, said under it; mostly nothing. */
+    warningOf(name) {
+      void webSearch.setup.value
+      void app.toolsOff.value
+      return name === READ_WEB_PAGE && settingOf(name) === 'always' ? READS_UNASKED : ''
+    },
 
     /** How a tool is set, read again when what keeps it changes. */
     settingOf(name) {

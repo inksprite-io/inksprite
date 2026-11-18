@@ -49,6 +49,41 @@ describe('asksFirst', () => {
       expect(asksFirst('save_web_page', at('https://tides.example/start'), seen)).toBe(false)
     })
 
+    it('keeps a page the chat has read without asking about its address again', () => {
+      const read = seenIn([
+        { role: 'user', content: 'Find the tables.' },
+        {
+          role: 'assistant',
+          content: '',
+          metadata: {
+            apiTrajectory: [
+              {
+                role: 'assistant',
+                content: '',
+                tool_calls: [{ id: 'r1', function: { name: 'read_web_page', arguments: made } }],
+              },
+              { role: 'tool', tool_call_id: 'r1', content: JSON.stringify({ content: 'Tables.' }) },
+            ],
+          },
+        },
+      ])
+      setWebSearch({ id: 'web', keys: {}, saveWithoutAsking: true })
+      expect(asksFirst('save_web_page', made, read)).toBe(false)
+      // Reading it again is still the model's own address, and asks.
+      expect(asksFirst('read_web_page', made, read)).toBe(true)
+    })
+
+    it('asks about the writer’s own network until they say reading there never asks', () => {
+      const home = at('http://192.168.1.10/status')
+      setWebSearch({ id: 'web', keys: {}, readWithoutAsking: true })
+      expect(asksFirst('read_web_page', home, seen)).toBe(true)
+
+      setWebSearch({ id: 'web', keys: {}, readLocalWithoutAsking: true })
+      expect(asksFirst('read_web_page', home, seen)).toBe(false)
+      // Which says nothing of an address on the web that the model put together.
+      expect(asksFirst('read_web_page', made, seen)).toBe(true)
+    })
+
     it('carries the site with the call that waits', async () => {
       const call = { id: 'c9', function: { name: 'read_web_page', arguments: made } }
       const decided = askApproval('m9', call, undefined, 'collector.example')

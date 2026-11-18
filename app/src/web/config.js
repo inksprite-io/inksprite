@@ -93,7 +93,7 @@ export function readerInUse(from = setup) {
 /**
  * Whether the model keeps a page in the project without asking the writer
  * first: only once they said so, with Always allow or in Settings ›
- * Extensions › Web search.
+ * Extensions › Web.
  *
  * @param {WebSearchSetup|null} [from]
  * @returns {boolean}
@@ -110,5 +110,9 @@ export function savesWithoutAsking(from = setup) {
  * @returns {import('./addresses.js').ReadingAllowed}
  */
 export function readingAllowed(from = setup) {
-  return { always: from?.readWithoutAsking === true, sites: from?.allowedSites || [] }
+  return {
+    always: from?.readWithoutAsking === true,
+    local: from?.readLocalWithoutAsking === true,
+    sites: from?.allowedSites || [],
+  }
 }

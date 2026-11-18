@@ -15,8 +15,10 @@
  * address of a page that says back what it was sent. So what a page links to
  * counts only where the page was itself reached by an address from outside.
  *
- * An address on the writer's own computer or network is asked about unless
- * they typed it: a page has no business pointing the model at their router.
+ * An address on the writer's own computer or network is asked about
+ * whoever named it, until they always allow its site: a page has no
+ * business pointing the model at their router, and what is on their network
+ * is not always what they meant a model to read.
  *
  * A site the writer always allows is read whatever the address, and so is
  * everything once they say reading never asks. Nothing is kept of what a chat
@@ -31,7 +33,9 @@
  * The addresses a chat has from outside the model: those the writer typed,
  * and those searches and pages gave.
  *
- * @typedef {{typed: Set<string>, found: Set<string>}} Seen
+ * @typedef {{typed: Set<string>, found: Set<string>, read: Set<string>}} Seen - `read`
+ *   the addresses the chat has read a page at, whoever named them: one read
+ *   is kept without being asked about again
  */
 
 /**
@@ -91,14 +95,31 @@ export function addressKey(address) {
 }
 
 /**
- * The site an address is on, as the writer allows one: its host name.
+ * The site an address is on, as the writer allows one: its host name, and
+ * its port where it names one. A computer serves a different thing on each
+ * port, so allowing one is not allowing them all.
  *
  * @param {unknown} address
  * @returns {string|null}
  */
 export function siteOf(address) {
   try {
-    return new URL(String(address ?? '').trim()).hostname.toLowerCase() || null
+    return new URL(String(address ?? '').trim()).host.toLowerCase() || null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * An address's host name alone, an IPv6 number without its brackets.
+ *
+ * @param {unknown} address
+ * @returns {string|null}
+ */
+function hostOf(address) {
+  try {
+    const host = new URL(String(address ?? '').trim()).hostname.toLowerCase()
+    return host.replace(/^\[|\]$/g, '') || null
   } catch {
     return null
   }
@@ -121,6 +142,29 @@ export function addressesIn(text) {
   return keys
 }
 
+/** A site named without its scheme, as a writer types one: `tides.example/tables`. */
+const NAME =
+  /(?<![\w@/.-])(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}(?::\d+)?(?:\/[^\s<>"'`]*)?/gi
+
+/**
+ * Every site a text names without a scheme, as `addressKey` compares
+ * addresses: what a writer types when they say "read tides.example". Only
+ * for what the writer wrote; a page's words are not addresses for looking
+ * like them.
+ *
+ * @param {unknown} text
+ * @returns {string[]}
+ */
+export function namesIn(text) {
+  if (typeof text !== 'string' || !text) return []
+  const keys = []
+  for (const [found] of text.matchAll(NAME)) {
+    const key = addressKey(`https://${withoutSurroundings(found)}`)
+    if (key) keys.push(key)
+  }
+  return keys
+}
+
 /**
  * Whether an address is on the writer's own computer or network, by its
  * name: `localhost`, a name with no dot or one that ends as a home network's
@@ -131,7 +175,7 @@ export function addressesIn(text) {
  * @returns {boolean}
  */
 export function isLocalAddress(address) {
-  const host = siteOf(address)?.replace(/^\[|\]$/g, '')
+  const host = hostOf(address)
   if (!host) return false
   // An IPv6 number: this computer, a private or link-local range, or an IPv4
   // number written as one.
@@ -161,7 +205,7 @@ export function isLocalAddress(address) {
 }
 
 /** @returns {Seen} */
-export const nothingSeen = () => ({ typed: new Set(), found: new Set() })
+export const nothingSeen = () => ({ typed: new Set(), found: new Set(), read: new Set() })
 
 /**
  * Whether the chat has an address from outside the model. One on the
@@ -229,6 +273,8 @@ export function noteWebResult(seen, name, written, answered) {
     return
   }
 
+  const at = addressKey(args.url)
+  if (name === READ && at) seen.read.add(at)
   // A page reached by an address the model put together may say that address
   // back, or whatever was written into it: its links count for nothing.
   if (!hasSeen(seen, args.url)) return
@@ -250,7 +296,9 @@ export function seenIn(messages) {
       const typed = message.segments
         ? message.segments.flatMap(segment => (segment.type === 'text' ? [segment.content] : []))
         : [message.content]
-      for (const text of typed) for (const key of addressesIn(text)) seen.typed.add(key)
+      for (const text of typed) {
+        for (const key of [...addressesIn(text), ...namesIn(text)]) seen.typed.add(key)
+      }
       continue
     }
     noteTrajectory(seen, message.metadata?.apiTrajectory || [])
@@ -296,42 +344,44 @@ export function addressFetched(name, written) {
  *
  * @typedef {Object} ReadingAllowed
  * @property {boolean} [always] - Reading never asks
- * @property {string[]} [sites] - Host names always allowed
+ * @property {boolean} [local] - Reading on the writer's own computer and
+ *   network never asks
+ * @property {string[]} [sites] - Sites always allowed
  */
 
 /**
  * Whether reading an address waits on the writer: one the model put
  * together, on a site they haven't always allowed. On their own network,
- * one they didn't type, whatever else is allowed but its own site.
+ * any, whoever named it and whatever else is allowed but its own site.
  *
  * @param {unknown} address
  * @param {Seen} seen
  * @param {ReadingAllowed} [allowed]
  * @returns {boolean}
  */
-export function readingAsks(address, seen, { always = false, sites = [] } = {}) {
+export function readingAsks(address, seen, { always = false, local = false, sites = [] } = {}) {
   const site = siteOf(address)
   // No address at all is the tool's to refuse, with nothing to ask about.
   if (!site || !addressKey(address)) return false
-  if (sites.includes(site) || hasSeen(seen, address)) return false
-  return isLocalAddress(address) || !always
+  if (sites.includes(site)) return false
+  // Their own network is asked about whoever named the address, they among
+  // them: what is there is theirs, and not always what they meant to show.
+  if (isLocalAddress(address)) return !local
+  return !hasSeen(seen, address) && !always
 }
 
 /**
  * Whether the writer said an address may be read wherever it leads, their
- * own computer and network among it: they typed it, or always allow its
- * site. A name of theirs can lead home without looking as if it does.
+ * own computer and network among it: they always allow its site, or reading
+ * on their network at all. Typing the
+ * address is not enough: a name of theirs can lead home without looking as
+ * if it does, and they are asked the first time it is read.
  *
  * @param {unknown} address
- * @param {Seen} seen
  * @param {ReadingAllowed} [allowed]
  * @returns {boolean}
  */
-export function mayLeadHome(address, seen, { sites = [] } = {}) {
-  const key = addressKey(address)
+export function mayLeadHome(address, { local = false, sites = [] } = {}) {
   const site = siteOf(address)
-  return (
-    Boolean(key && site) &&
-    (seen.typed.has(/** @type {string} */ (key)) || sites.includes(/** @type {string} */ (site)))
-  )
+  return local || (Boolean(site) && sites.includes(/** @type {string} */ (site)))
 }

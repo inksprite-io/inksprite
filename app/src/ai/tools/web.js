@@ -19,6 +19,8 @@ import { sliceAt } from './slices.js'
 import { folderToKeepIn, keptFrom, pathInProject } from './documents.js'
 import { describeRefusal } from '@/web/answers.js'
 import { readerInUse, serviceInUse } from '@/web/config.js'
+import { siteOf } from '@/web/addresses.js'
+import { useWebSearch } from '@/composables/useWebSearch.js'
 import { fetchToKeep } from '@/web/keep.js'
 import { readPage } from '@/web/pages.js'
 import { savedPage } from '@/mcp/saved.js'
@@ -52,7 +54,7 @@ export const SAVE_TIMEOUT_MS = 180000
 
 /** What a call says when no service can search. */
 const NOT_SET_UP = {
-  error: 'Web search is not set up. The writer sets it up in Settings › Extensions › Web search.',
+  error: 'Web search is not set up. The writer sets it up in Settings › Extensions › Web.',
 }
 
 /**
@@ -133,6 +135,33 @@ function webAddress(value) {
 }
 
 /**
+ * Fetch an address as far as the writer allows: only on the web, unless they
+ * typed it or always allow its site; and where it turns out to lead to their
+ * own computer or network, which a name of their own can without looking as
+ * if it does, they are asked, and it is fetched if they say so. Always allow
+ * is for the address's site, as it is for a page read.
+ *
+ * @template T
+ * @param {import('./registry.js').ToolContext|undefined} context
+ * @param {string} url
+ * @param {(home: boolean) => Promise<T>} fetching - Told whether it may lead home
+ * @returns {Promise<T>}
+ */
+async function whereverAllowed(context, url, fetching) {
+  const allowed = context?.mayLeadHome?.(url) === true
+  try {
+    return await fetching(allowed)
+  } catch (error) {
+    if (allowed || !(/** @type {any} */ (error)?.home) || !context?.approve) throw error
+    const site = siteOf(url)
+    const decision = await context.approve(`${url} is on this computer or its network. Read it?`)
+    if (decision === 'deny') throw error
+    if (decision === 'always' && site) useWebSearch().allowSite(site)
+    return fetching(true)
+  }
+}
+
+/**
  * Search the web.
  *
  * @param {{query?: string}} args
@@ -173,8 +202,9 @@ export async function executeReadWebPage(args, context) {
   const { key } = service
   const signal = context?.signal
   try {
-    const home = context?.mayLeadHome?.(url) === true
-    const page = await readPage(service, url, { key, signal, timeout: WEB_TIMEOUT_MS, home })
+    const page = await whereverAllowed(context, url, home =>
+      readPage(service, url, { key, signal, timeout: WEB_TIMEOUT_MS, home })
+    )
     if (!page.text.trim()) return { error: `${service.name} found nothing to read at ${url}.` }
     const slice = sliceAt(page.text, Number(args?.from) || 0)
     return {
@@ -265,8 +295,9 @@ export async function executeSaveWebPage(args, context) {
   const signal = context.signal
   let keepable
   try {
-    const home = context?.mayLeadHome?.(url) === true
-    keepable = await fetchToKeep(url, { signal, timeout: SAVE_TIMEOUT_MS, home })
+    keepable = await whereverAllowed(context, url, home =>
+      fetchToKeep(url, { signal, timeout: SAVE_TIMEOUT_MS, home })
+    )
   } catch (error) {
     if (signal?.aborted) throw error
     return { error: describeRefusal(serviceInUse()?.service.name || 'The site', error) }

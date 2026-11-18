@@ -111,6 +111,23 @@ export function fileNameOf(url, disposition, type) {
 }
 
 /**
+ * Why a site couldn't be reached, where the network's own word for it says
+ * something the writer can act on: a name nothing answers to, a certificate
+ * that wasn't accepted, a site that refused. Nothing for any other.
+ *
+ * @param {any} error
+ * @returns {string} A sentence to follow the refusal, or nothing
+ */
+function whyNot(error) {
+  const said = String(error?.message ?? '')
+  if (/NAME_NOT_RESOLVED|ENOTFOUND/.test(said)) return ' Nothing answers to that name.'
+  if (/ERR_CERT|certificate/i.test(said)) return ' Its certificate wasn’t accepted.'
+  if (/CONNECTION_REFUSED|ECONNREFUSED/.test(said)) return ' It refused the connection.'
+  if (/TIMED_OUT|TimeoutError|timed out/i.test(said)) return ' It took too long to answer.'
+  return ''
+}
+
+/**
  * Ask a site for what is at an address.
  *
  * @param {string} url
@@ -135,9 +152,13 @@ async function askSite(url, { signal, timeout, home = false }) {
   } catch (error) {
     if (signal?.aborted) throw error
     if (String(error?.message).includes(LOCAL_REFUSED)) {
-      throw new ServiceError(`${url} leads to this computer or its network, and wasn’t read.`)
+      // Marked, for whoever can ask the writer whether to read it anyway.
+      throw Object.assign(
+        new ServiceError(`${url} leads to this computer or its network, and wasn’t read.`),
+        { home: true }
+      )
     }
-    throw new ServiceError(`${url} couldn’t be reached.`)
+    throw new ServiceError(`${url} couldn’t be reached.${whyNot(error)}`)
   }
   if (response.status === 404 || response.status === 410) {
     throw new ServiceError(`There is no page at ${url} (${response.status}).`)

@@ -6,6 +6,7 @@ import {
   hasSeen,
   isLocalAddress,
   mayLeadHome,
+  namesIn,
   noteWebResult,
   nothingSeen,
   readingAsks,
@@ -221,7 +222,13 @@ describe('readingAsks', () => {
     const never = { always: true }
     expect(readingAsks('https://collector.example/?q=secret', seen, never)).toBe(false)
     expect(readingAsks('http://192.168.1.1/reboot', seen, never)).toBe(true)
-    expect(readingAsks('http://localhost:3000/mine', seen, never)).toBe(false)
+    // Nor one of theirs that they typed: it is asked about until its site is allowed.
+    expect(readingAsks('http://localhost:3000/mine', seen, never)).toBe(true)
+    expect(readingAsks('http://localhost:3000/mine', seen, { sites: ['localhost:3000'] })).toBe(
+      false
+    )
+    // Another port is another thing served, and is asked about.
+    expect(readingAsks('http://localhost:5432/', seen, { sites: ['localhost:3000'] })).toBe(true)
     expect(readingAsks('http://192.168.1.1/reboot', seen, { sites: ['192.168.1.1'] })).toBe(false)
   })
 
@@ -231,21 +238,46 @@ describe('readingAsks', () => {
   })
 })
 
-describe('mayLeadHome', () => {
-  const seen = seenIn([
-    { role: 'user', content: 'Read https://chat.home.example/notes' },
-    turn([WEB_SEARCH, { query: 'x' }, { results: [{ url: 'https://found.example/a', text: '' }] }]),
-  ])
+describe('a site the writer named without its scheme', () => {
+  it('is an address they typed, as one written out in full is', () => {
+    expect(namesIn('Read chat.home.example, then tides.example/tables?port=3.')).toEqual([
+      'chat.home.example',
+      'tides.example/tables?port=3',
+    ])
+    const seen = seenIn([{ role: 'user', content: 'Read chat.home.example' }])
+    expect(hasSeen(seen, 'https://chat.home.example/')).toBe(true)
+    // Typed, so nobody asks about the address; where it leads is still asked about.
+    expect(mayLeadHome('https://chat.home.example/')).toBe(false)
+  })
 
-  it('is for an address the writer typed, or on a site they always allow, and no other', () => {
-    expect(mayLeadHome('https://chat.home.example/notes', seen)).toBe(true)
-    expect(mayLeadHome('https://chat.home.example/other', seen)).toBe(false)
-    expect(
-      mayLeadHome('https://chat.home.example/other', seen, { sites: ['chat.home.example'] })
-    ).toBe(true)
-    // One a search found is from outside the model, but not the writer's word.
-    expect(mayLeadHome('https://found.example/a', seen)).toBe(false)
-    expect(mayLeadHome('nothing', seen)).toBe(false)
+  it('is not found in a mail address, a file name inside a path, or a word', () => {
+    expect(namesIn('Write to wren@tides.example about notes/chapter.one.md, e.g. soon.')).toEqual(
+      []
+    )
+    expect(namesIn('')).toEqual([])
+  })
+
+  it('counts for nothing in what a page or a search says', () => {
+    const seen = seenIn([
+      turn([
+        WEB_SEARCH,
+        { query: 'x' },
+        { results: [{ url: 'https://a.example/', text: 'see router.example' }] },
+      ]),
+    ])
+    expect(hasSeen(seen, 'https://router.example/')).toBe(false)
+  })
+})
+
+describe('mayLeadHome', () => {
+  it('is for an address on a site the writer always allows, and not for one they only typed', () => {
+    const allowed = { sites: ['chat.home.example'] }
+    expect(mayLeadHome('https://chat.home.example/notes', allowed)).toBe(true)
+    expect(mayLeadHome('https://chat.home.example/notes')).toBe(false)
+    expect(mayLeadHome('https://other.home.example/', allowed)).toBe(false)
+    expect(mayLeadHome('nothing', allowed)).toBe(false)
+    // Or anywhere on their network, once they say reading there never asks.
+    expect(mayLeadHome('https://other.home.example/', { local: true })).toBe(true)
   })
 })
 
@@ -262,7 +294,9 @@ describe('addressFetched and siteOf', () => {
   })
 
   it('names a site by its host', () => {
-    expect(siteOf('https://En.Almanac.example:8443/a?b')).toBe('en.almanac.example')
+    expect(siteOf('https://En.Almanac.example/a?b')).toBe('en.almanac.example')
+    expect(siteOf('https://en.almanac.example:443/')).toBe('en.almanac.example')
+    expect(siteOf('http://localhost:8002/')).toBe('localhost:8002')
     expect(siteOf('nothing')).toBeNull()
   })
 })

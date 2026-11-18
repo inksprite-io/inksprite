@@ -12,7 +12,12 @@ vi.mock('@/stores/syncStore', () => ({
 }))
 vi.mock('@/mcp/client.js', () => ({ disconnect: vi.fn() }))
 
-import { OFF_ASK_ALWAYS, OFF_ON, useToolSettings } from '@/composables/useToolSettings.js'
+import {
+  OFF_ASK_ALWAYS,
+  OFF_ON,
+  READS_UNASKED,
+  useToolSettings,
+} from '@/composables/useToolSettings.js'
 import { useApplicationState } from '@/composables/useApplicationState.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
 import { useMcpServerStore } from '@/stores/mcpServerStore.js'
@@ -35,6 +40,25 @@ describe('a tool’s setting for the whole app, as a screen reads and writes it'
     expect(settings.optionsFor('read_web_page')).toBe(OFF_ASK_ALWAYS)
     expect(settings.optionsFor('web_search')).toBe(OFF_ON)
     expect(settings.optionsFor('roll_dice')).toBe(OFF_ON)
+  })
+
+  it('warns under reading pages while it never asks, and under nothing else', () => {
+    const settings = useToolSettings()
+    expect(settings.warningOf('read_web_page')).toBe('')
+
+    settings.setSetting('read_web_page', 'always')
+    expect(settings.warningOf('read_web_page')).toBe(READS_UNASKED)
+    settings.setSetting('save_web_page', 'always')
+    expect(settings.warningOf('save_web_page')).toBe('')
+  })
+
+  it('keeps whether reading on the writer’s own network asks, apart from the web', () => {
+    const web = useWebSearch()
+    web.setAskBeforeLocal(false)
+    expect(web.setup.value.readLocalWithoutAsking).toBe(true)
+    expect(web.setup.value.readWithoutAsking).not.toBe(true)
+    web.setAskBeforeLocal(true)
+    expect(web.setup.value.readLocalWithoutAsking).toBe(false)
   })
 
   it('keeps what reading and keeping a page ask in the web search’s settings', () => {

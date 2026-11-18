@@ -1042,7 +1042,7 @@ function createAIChat(storyId, chatId) {
       // calls only. A skill reads a transcript without them, so a read above
       // is not in front of it, and it is never told one is.
       ...(depth === 0 ? { conversation: conversationRead } : {}),
-      ...(seen ? { mayLeadHome: address => mayLeadHome(address, seen, readingAllowed()) } : {}),
+      ...(seen ? { mayLeadHome: address => mayLeadHome(address, readingAllowed()) } : {}),
       signal: callSignal,
       // Asked beside the call, like a server's tool, and answered no when the
       // turn stops. What always means is the tool's to keep.

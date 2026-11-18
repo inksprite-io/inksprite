@@ -461,7 +461,12 @@ function mergeRow(table, row, here, { byHand, now }) {
     // What is read and kept without asking is this install's to say, never
     // a file's.
     if (byHand) {
-      for (const field of ['saveWithoutAsking', 'readWithoutAsking', 'allowedSites']) {
+      for (const field of [
+        'saveWithoutAsking',
+        'readWithoutAsking',
+        'readLocalWithoutAsking',
+        'allowedSites',
+      ]) {
         if (here?.[field] === undefined) delete merged[field]
         else merged[field] = here[field]
       }

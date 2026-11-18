@@ -73,7 +73,7 @@ import { hostOf } from '@/composables/useConnections.js'
  * Settings → Connections → Web search: a card for each service the model can
  * search the web through, with its key and whether it refused it. The one
  * used is tinted, and another is made the one from its card, as it is in
- * Settings › Extensions › Web search; which chats search is each chat's,
+ * Settings › Extensions › Web; which chats search is each chat's,
  * among its tools. See composables/useWebSearch.js.
  */
 

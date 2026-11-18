@@ -38,7 +38,7 @@
         <div
           v-for="row in group.rows"
           :key="row.name"
-          class="flex items-center gap-2"
+          class="flex flex-wrap items-center gap-x-2 gap-y-1"
           :data-tool="row.name"
         >
           <span
@@ -59,6 +59,13 @@
             class="flex-none w-48 dark:!bg-surface-900"
             @update:model-value="row.set"
           />
+          <p
+            v-if="row.warning && !disabled"
+            class="m-0 basis-full text-xs text-amber-700 dark:text-amber-400"
+            data-tool-warning
+          >
+            {{ row.warning }}
+          </p>
         </div>
       </div>
     </ExpandableSection>
@@ -186,6 +193,7 @@ const toolRow = definition => {
     description: (found ? found.tool.description : definition.function.description) || '',
     options: everywhere.optionsFor(name),
     value: everywhere.settingOf(name),
+    warning: everywhere.warningOf(name),
     set: (/** @type {string} */ setting) => everywhere.setSetting(name, setting),
   }
 }
@@ -196,6 +204,7 @@ const documentRows = computed(() =>
     name: row.id,
     label: row.label,
     description: '',
+    warning: '',
     options: row.id === 'edit' ? OFF_SUGGEST_EDIT : OFF_ON,
     value: row.id === 'edit' ? props.editing : rowOn(switched.value, row.id) ? 'on' : 'off',
     set: (/** @type {string} */ setting) =>
