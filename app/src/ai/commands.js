@@ -291,22 +291,6 @@ function parseNameAsk(param) {
 }
 
 /**
- * The ask, in words, for the writer's side of the record.
- *
- * Falls back to what was typed when it does not parse, because a label is not
- * the place a mistake gets reported — `check` has already said so.
- *
- * @param {string} param
- * @returns {string}
- */
-function describeNameAsk(param) {
-  const asked = parseNameAsk(param)
-  if ('error' in asked) return param
-
-  return asked.count === 1 ? `a ${asked.gender} name` : `${asked.count} ${asked.gender} names`
-}
-
-/**
  * A term `parseDice` reads: dice with any advantage or burden they carry,
  * `min(…)` or `max(…)` of them, or a number. Anything up to the bracket in
  * `min(…)`, and any run of those letters, so what is wrong there is what
@@ -538,24 +522,6 @@ function parseTarotAsk(param) {
 }
 
 /**
- * The ask, in words, for the writer's side of the record.
- *
- * The deck only when it is not the usual one, since the cards say the rest.
- * Falls back to what was typed when it does not parse; `check` has already
- * said what was wrong with it.
- *
- * @param {string} param
- * @returns {string}
- */
-function describeTarotAsk(param) {
-  const asked = parseTarotAsk(param)
-  if ('error' in asked) return param
-
-  const cards = asked.count === 1 ? '1 card' : `${asked.count} cards`
-  return asked.deck === DEFAULT_TAROT_DECK ? cards : `${cards}, ${asked.deck} deck`
-}
-
-/**
  * The pieces of a table as typed: an option in straight or curly quotes, the
  * space or comma between two of them, or something outside the quotes that
  * should not be.
@@ -699,7 +665,7 @@ const WRITTEN = {
     description: 'Make up names for someone new.',
     tag: 'names',
     repeatable: true,
-    param: { name: 'gender and count', label: describeNameAsk },
+    param: { name: 'gender and count' },
     check({ input, param }) {
       if (!param) return 'Say who to name: /name(female) or /name(male, 3)'
 
@@ -818,9 +784,7 @@ const WRITTEN = {
     usage: '/tarot(<how many>, <deck>) [question]',
     description: 'Draw tarot cards, with or without a question.',
     repeatable: true,
-    // No default: the record keeps what the writer asked for, and a draw they
-    // asked nothing about reads as a draw rather than as "3 cards".
-    param: { name: 'cards and deck', label: describeTarotAsk },
+    param: { name: 'cards and deck' },
     check({ param }) {
       const asked = parseTarotAsk(param)
       if ('error' in asked) return asked.error

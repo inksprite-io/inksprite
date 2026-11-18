@@ -501,10 +501,7 @@
         @keydown="handleEditKeydown"
       />
       <div class="flex items-center gap-2">
-        <span v-if="command" class="flex-1 text-xs text-surface-400">
-          Keeps the answer it has. Ask again for a new one.
-        </span>
-        <span v-else class="flex-1" />
+        <span class="flex-1" />
         <Button
           v-tooltip.top="'Cancel'"
           aria-label="Cancel"

@@ -1361,14 +1361,12 @@ describe('/tarot', () => {
   it('draws as many as asked', async () => {
     const one = await runCommand({ name: 'tarot', param: '1', input: '' })
     expect(one.result).toMatch(/^"[^"]+"$/)
-    expect(commandDetail(one)).toBe('1 card')
 
     const five = await runCommand({ name: 'tarot', param: '5', input: '' })
     expect(five.result.match(/"[^"]+"/g)).toHaveLength(5)
-    expect(commandDetail(five)).toBe('5 cards')
   })
 
-  it('draws from the full deck when asked, and says so', async () => {
+  it('draws from the full deck when asked', async () => {
     // The bottom of the deck every time: the last card of whichever deck it is.
     vi.spyOn(Math, 'random').mockReturnValue(0.999)
 
@@ -1377,20 +1375,24 @@ describe('/tarot', () => {
 
     const full = await runCommand({ name: 'tarot', param: '1, full', input: '' })
     expect(full.result).toBe('"King of Pentacles"')
-    expect(commandDetail(full)).toBe('1 card, full deck')
   })
 
   it('takes the count and the deck in either order', async () => {
     const command = await runCommand({ name: 'tarot', param: 'full, 2', input: '' })
 
     expect(command.result.match(/"[^"]+"/g)).toHaveLength(2)
-    expect(commandDetail(command)).toBe('2 cards, full deck')
   })
 
-  it('says nothing about the deck when it is the usual one', async () => {
+  it('puts nothing beside its name, the cards being the record', async () => {
+    const command = await runCommand({ name: 'tarot', param: 'full, 2', input: 'Why?' })
+
+    expect(commandDetail(command)).toBe('')
+    expect(command.label).toBe('Why?')
+  })
+
+  it('draws from the major arcana when that is the deck asked for', async () => {
     const command = await runCommand({ name: 'tarot', param: 'major', input: '' })
 
-    expect(commandDetail(command)).toBe('3 cards')
     for (const card of command.result.match(/"[^"]+"/g)) {
       expect(MINOR_ARCANA).not.toContain(card.slice(1, -1))
     }
@@ -1471,13 +1473,10 @@ describe('/name', () => {
     expect(renderCommand(command)).toBe(`<names>\n${command.result}\n</names>`)
   })
 
-  it('says what it was asked for the way it would be said', async () => {
+  it('puts nothing beside its name, the names being the record', async () => {
     const command = await runCommand({ name: 'name', param: 'male, 2', input: '' })
 
-    expect(commandDetail(command)).toBe('2 male names')
-    expect(commandDetail(await runCommand({ name: 'name', param: 'female', input: '' }))).toBe(
-      'a female name'
-    )
+    expect(commandDetail(command)).toBe('')
   })
 
   it('asks who to name rather than drawing from nothing', () => {
