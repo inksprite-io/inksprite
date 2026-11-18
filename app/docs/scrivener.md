@@ -62,105 +62,106 @@
   - [Parameters][58]
 - [lines][59]
 - [scrivener/package][60]
-- [ScrivenerPackage][61]
-  - [Properties][62]
-- [SCRIVX][63]
-- [isZip][64]
-  - [Parameters][65]
-- [mayHoldProject][66]
-  - [Parameters][67]
-- [nameOf][68]
-  - [Parameters][69]
-- [packageOfFolder][70]
-  - [Parameters][71]
-- [packageOfZip][72]
-  - [Parameters][73]
-- [binder][74]
-- [][75]
-- [files][76]
-- [depthOf][77]
-  - [Parameters][78]
-- [scrivener/project][79]
-- [OWN_FILES][80]
+- [MOST_PROJECT][61]
+- [ScrivenerPackage][62]
+  - [Properties][63]
+- [SCRIVX][64]
+- [isZip][65]
+  - [Parameters][66]
+- [mayHoldProject][67]
+  - [Parameters][68]
+- [nameOf][69]
+  - [Parameters][70]
+- [packageOfFolder][71]
+  - [Parameters][72]
+- [packageOfZip][73]
+  - [Parameters][74]
+- [binder][75]
+- [][76]
+- [files][77]
+- [depthOf][78]
+  - [Parameters][79]
+- [scrivener/project][80]
 - [OWN_FILES][81]
 - [OWN_FILES][82]
 - [OWN_FILES][83]
-- [ScrivenerProject][84]
-  - [Properties][85]
-- [sourceOf][86]
-  - [Parameters][87]
-- [openProject][88]
-  - [Parameters][89]
-- [get][90]
-- [styles][91]
-- [writeProject][92]
-  - [Parameters][93]
-- [result][94]
-- [owned][95]
-- [fileOf][96]
-  - [Parameters][97]
-- [markdownOf][98]
-  - [Parameters][99]
-- [folder][100]
-  - [Parameters][101]
-- [text][102]
-  - [Parameters][103]
-- [attachmentOf][104]
-  - [Parameters][105]
-- [attach][106]
-  - [Parameters][107]
-- [asides][108]
-  - [Parameters][109]
-- [write][110]
-  - [Parameters][111]
-- [scrivener/rtf][112]
-- [Run][113]
-  - [Properties][114]
-- [RtfParagraph][115]
-  - [Properties][116]
-- [RtfTable][117]
-  - [Properties][118]
-- [RtfBlock][119]
-- [SKIPPED][120]
-- [NAMED][121]
-- [emdash][122]
-- [BULLET][123]
-- [NO_NUMBER][124]
-- [MARKER][125]
-- [PARAGRAPH_STYLE][126]
-- [Destination][127]
-- [GroupState][128]
-  - [Properties][129]
-- [readRtf][130]
-  - [Parameters][131]
-- [blocks][132]
-- [group][133]
-- [groups][134]
-- [runs][135]
-- [openStyle][136]
-- [rows][137]
-- [row][138]
-- [cell][139]
-- [listFormats][140]
-- [formats][141]
-- [overrides][142]
-- [add][143]
-  - [Parameters][144]
-- [addChar][145]
-  - [Parameters][146]
-- [takeMarkers][147]
-  - [Parameters][148]
-- [style][149]
-- [reached][150]
-  - [Parameters][151]
-- [kept][152]
-- [lineOf][153]
-  - [Parameters][154]
-- [listOf][155]
-  - [Parameters][156]
-- [control][157]
-  - [Parameters][158]
-- [exec][159]
+- [OWN_FILES][84]
+- [ScrivenerProject][85]
+  - [Properties][86]
+- [sourceOf][87]
+  - [Parameters][88]
+- [openProject][89]
+  - [Parameters][90]
+- [get][91]
+- [styles][92]
+- [writeProject][93]
+  - [Parameters][94]
+- [result][95]
+- [owned][96]
+- [fileOf][97]
+  - [Parameters][98]
+- [markdownOf][99]
+  - [Parameters][100]
+- [folder][101]
+  - [Parameters][102]
+- [text][103]
+  - [Parameters][104]
+- [attachmentOf][105]
+  - [Parameters][106]
+- [attach][107]
+  - [Parameters][108]
+- [asides][109]
+  - [Parameters][110]
+- [write][111]
+  - [Parameters][112]
+- [scrivener/rtf][113]
+- [Run][114]
+  - [Properties][115]
+- [RtfParagraph][116]
+  - [Properties][117]
+- [RtfTable][118]
+  - [Properties][119]
+- [RtfBlock][120]
+- [SKIPPED][121]
+- [NAMED][122]
+- [emdash][123]
+- [BULLET][124]
+- [NO_NUMBER][125]
+- [MARKER][126]
+- [PARAGRAPH_STYLE][127]
+- [Destination][128]
+- [GroupState][129]
+  - [Properties][130]
+- [readRtf][131]
+  - [Parameters][132]
+- [blocks][133]
+- [group][134]
+- [groups][135]
+- [runs][136]
+- [openStyle][137]
+- [rows][138]
+- [row][139]
+- [cell][140]
+- [listFormats][141]
+- [formats][142]
+- [overrides][143]
+- [add][144]
+  - [Parameters][145]
+- [addChar][146]
+  - [Parameters][147]
+- [takeMarkers][148]
+  - [Parameters][149]
+- [style][150]
+- [reached][151]
+  - [Parameters][152]
+- [kept][153]
+- [lineOf][154]
+  - [Parameters][155]
+- [listOf][156]
+  - [Parameters][157]
+- [control][158]
+  - [Parameters][159]
+- [exec][160]
 
 ## scrivener/binder
 
@@ -179,16 +180,16 @@ the ids of the styles it uses, and its markers number them in that order.
 
 An item in the binder.
 
-Type: [Object][160]
+Type: [Object][161]
 
 ### Properties
 
-- `id` **[string][161]** Its UUID, which names the folder its files are in
-- `type` **[string][161]** Scrivener's own: `DraftFolder`, `ResearchFolder`,
+- `id` **[string][162]** Its UUID, which names the folder its files are in
+- `type` **[string][162]** Scrivener's own: `DraftFolder`, `ResearchFolder`,
   `Folder`, `Text`, `PDF`, `Image`, …
-- `title` **[string][161]** As written; empty for an untitled item
-- `extension` **[string][161]?** A file's, from the item's metadata
-- `children` **[Array][162]<[BinderItem][2]>**&#x20;
+- `title` **[string][162]** As written; empty for an untitled item
+- `extension` **[string][162]?** A file's, from the item's metadata
+- `children` **[Array][163]<[BinderItem][2]>**&#x20;
 
 ## FOLDER_TYPES
 
@@ -200,10 +201,10 @@ Read XML, saying plainly when it cannot be.
 
 ### Parameters
 
-- `xml` **[string][161]**&#x20;
-- `what` **[string][161]** What it is, for the error
+- `xml` **[string][162]**&#x20;
+- `what` **[string][162]** What it is, for the error
 
-Returns **[Document][163]**&#x20;
+Returns **[Document][164]**&#x20;
 
 ## childrenNamed
 
@@ -211,25 +212,25 @@ An element's children with a name, in order.
 
 ### Parameters
 
-- `element` **[Element][164]**&#x20;
-- `name` **[string][161]**&#x20;
+- `element` **[Element][165]**&#x20;
+- `name` **[string][162]**&#x20;
 
-Returns **[Array][162]<[Element][164]>**&#x20;
+Returns **[Array][163]<[Element][165]>**&#x20;
 
 ## childText
 
 ### Parameters
 
-- `element` **[Element][164]**&#x20;
-- `name` **[string][161]**&#x20;
+- `element` **[Element][165]**&#x20;
+- `name` **[string][162]**&#x20;
 
-Returns **([string][161] | [undefined][165])**&#x20;
+Returns **([string][162] | [undefined][166])**&#x20;
 
 ## itemOf
 
 ### Parameters
 
-- `element` **[Element][164]** A `BinderItem`
+- `element` **[Element][165]** A `BinderItem`
 
 Returns **[BinderItem][2]**&#x20;
 
@@ -237,9 +238,9 @@ Returns **[BinderItem][2]**&#x20;
 
 ### Parameters
 
-- `element` **[Element][164]** The binder, or an item's `Children`
+- `element` **[Element][165]** The binder, or an item's `Children`
 
-Returns **[Array][162]<[BinderItem][2]>**&#x20;
+Returns **[Array][163]<[BinderItem][2]>**&#x20;
 
 ## readBinder
 
@@ -247,13 +248,13 @@ The binder, from the project's `.scrivx`, without the Trash.
 
 ### Parameters
 
-- `xml` **[string][161]**&#x20;
+- `xml` **[string][162]**&#x20;
 
 <!---->
 
-- Throws **[Error][166]** When it is not XML, or has no binder
+- Throws **[Error][167]** When it is not XML, or has no binder
 
-Returns **[Array][162]<[BinderItem][2]>**&#x20;
+Returns **[Array][163]<[BinderItem][2]>**&#x20;
 
 ## readStyles
 
@@ -261,13 +262,13 @@ The project's styles' names by their ids, from `Files/styles.xml`.
 
 ### Parameters
 
-- `xml` **[string][161]**&#x20;
+- `xml` **[string][162]**&#x20;
 
-Returns **[Map][167]<[string][161], [string][161]>**&#x20;
+Returns **[Map][168]<[string][162], [string][162]>**&#x20;
 
 ## names
 
-Type: [Map][167]<[string][161], [string][161]>
+Type: [Map][168]<[string][162], [string][162]>
 
 ## scrivener
 
@@ -364,7 +365,7 @@ What a paragraph in a style is written as.
 
 ### Parameters
 
-- `style` **([string][161] | null)** A Scrivener paragraph style's name
+- `style` **([string][162] | null)** A Scrivener paragraph style's name
 
 Returns **Kind**&#x20;
 
@@ -374,13 +375,13 @@ A Scrivener text as markdown.
 
 ### Parameters
 
-- `blocks` **[Array][162]<[RtfBlock][119]>**&#x20;
+- `blocks` **[Array][163]<[RtfBlock][120]>**&#x20;
 
-Returns **[string][161]**&#x20;
+Returns **[string][162]**&#x20;
 
 ## nodes
 
-Type: [Array][162]<[Node][168]>
+Type: [Array][163]<[Node][169]>
 
 ## markdownOfText
 
@@ -388,15 +389,15 @@ Plain text, such as a synopsis, as markdown: each line a paragraph.
 
 ### Parameters
 
-- `text` **[string][161]**&#x20;
+- `text` **[string][162]**&#x20;
 
-Returns **[string][161]**&#x20;
+Returns **[string][162]**&#x20;
 
 ## isEmpty
 
 ### Parameters
 
-- `paragraph` **[RtfParagraph][115]**&#x20;
+- `paragraph` **[RtfParagraph][116]**&#x20;
 
 ## inline
 
@@ -405,16 +406,16 @@ off.
 
 ### Parameters
 
-- `paragraph` **[RtfParagraph][115]**&#x20;
+- `paragraph` **[RtfParagraph][116]**&#x20;
   - `paragraph.runs` &#x20;
 
-- `bold` **[boolean][169]?** Whether bold is kept (optional, default `true`)
+- `bold` **[boolean][170]?** Whether bold is kept (optional, default `true`)
 
-Returns **[Array][162]<[Node][168]>**&#x20;
+Returns **[Array][163]<[Node][169]>**&#x20;
 
 ## out
 
-Type: [Array][162]<[Node][168]>
+Type: [Array][163]<[Node][169]>
 
 ## trimRuns
 
@@ -422,9 +423,9 @@ Runs without the space at either end of the whole.
 
 ### Parameters
 
-- `runs` **[Array][162]<[Run][113]>**&#x20;
+- `runs` **[Array][163]<[Run][114]>**&#x20;
 
-Returns **[Array][162]<[Run][113]>**&#x20;
+Returns **[Array][163]<[Run][114]>**&#x20;
 
 ## listsOf
 
@@ -432,25 +433,25 @@ A run of list items as lists, nested by level.
 
 ### Parameters
 
-- `items` **[Array][162]<[RtfParagraph][115]>**&#x20;
+- `items` **[Array][163]<[RtfParagraph][116]>**&#x20;
 
-Returns **[Array][162]<[Node][168]>**&#x20;
+Returns **[Array][163]<[Node][169]>**&#x20;
 
 ## List
 
-Type: {ordered: [boolean][169], items: [Array][162]<{paragraph: [RtfParagraph][115], lists: [Array][162]<[List][49]>}>}
+Type: {ordered: [boolean][170], items: [Array][163]<{paragraph: [RtfParagraph][116], lists: [Array][163]<[List][49]>}>}
 
 ## top
 
-Type: [Array][162]<[List][49]>
+Type: [Array][163]<[List][49]>
 
 ## open
 
-Type: [Array][162]<[List][49]>
+Type: [Array][163]<[List][49]>
 
 ## paragraph
 
-Type: {level: [number][170], ordered: [boolean][169]}
+Type: {level: [number][171], ordered: [boolean][170]}
 
 ## nodeOf
 
@@ -458,7 +459,7 @@ Type: {level: [number][170], ordered: [boolean][169]}
 
 - `list` **[List][49]**&#x20;
 
-Returns **[Node][168]**&#x20;
+Returns **[Node][169]**&#x20;
 
 ## tableOf
 
@@ -468,7 +469,7 @@ A table, its first row the header, every row as wide as the widest.
 
 - `rows` &#x20;
 
-Returns **[Node][168]**&#x20;
+Returns **[Node][169]**&#x20;
 
 ## cellParagraph
 
@@ -476,13 +477,13 @@ A cell laid out on a page, as a paragraph with its lines.
 
 ### Parameters
 
-- `text` **[string][161]**&#x20;
+- `text` **[string][162]**&#x20;
 
-Returns **[Node][168]**&#x20;
+Returns **[Node][169]**&#x20;
 
 ## lines
 
-Type: [Array][162]<[Node][168]>
+Type: [Array][163]<[Node][169]>
 
 ## scrivener/package
 
@@ -502,15 +503,19 @@ holds a project costs only its directory, and only the project's own files
 are unpacked: not the `__MACOSX` folder Finder adds, nor anything beside the
 project.
 
+## MOST_PROJECT
+
+The most a zipped project is taken to hold, unpacked.
+
 ## ScrivenerPackage
 
-Type: [Object][160]
+Type: [Object][161]
 
 ### Properties
 
-- `name` **[string][161]** The project's: its `.scriv` folder's name without
+- `name` **[string][162]** The project's: its `.scriv` folder's name without
   the extension
-- `files` **[Map][167]<[string][161], [Blob][171]>** Every file in it, by its path inside
+- `files` **[Map][168]<[string][162], [Blob][172]>** Every file in it, by its path inside
   it, `/`-separated
 
 ## SCRIVX
@@ -525,7 +530,7 @@ Whether a file is a zip, by its name or its type.
 
 - `file` **File**&#x20;
 
-Returns **[boolean][169]**&#x20;
+Returns **[boolean][170]**&#x20;
 
 ## mayHoldProject
 
@@ -536,7 +541,7 @@ that does not zip a package might hand one over.
 
 - `file` **File**&#x20;
 
-Returns **[boolean][169]**&#x20;
+Returns **[boolean][170]**&#x20;
 
 ## nameOf
 
@@ -545,10 +550,10 @@ is in none.
 
 ### Parameters
 
-- `folder` **[string][161]** Empty when the binder is at the top
-- `binder` **[string][161]** The `.scrivx` file's name
+- `folder` **[string][162]** Empty when the binder is at the top
+- `binder` **[string][162]** The `.scrivx` file's name
 
-Returns **[string][161]**&#x20;
+Returns **[string][162]**&#x20;
 
 ## packageOfFolder
 
@@ -568,27 +573,27 @@ project's; Finder's `__MACOSX` copies are not.
 
 ### Parameters
 
-- `zip` **[Blob][171]**&#x20;
+- `zip` **[Blob][172]**&#x20;
 
-Returns **[Promise][172]<([ScrivenerPackage][60] | null)>**&#x20;
+Returns **[Promise][173]<([ScrivenerPackage][60] | null)>**&#x20;
 
 ## binder
 
-Type: ([string][161] | null)
+Type: ([string][162] | null)
 
 ##
 
-Type: [string][161]
+Type: [string][162]
 
 ## files
 
-Type: [Map][167]<[string][161], [Blob][171]>
+Type: [Map][168]<[string][162], [Blob][172]>
 
 ## depthOf
 
 ### Parameters
 
-- `path` **[string][161]**&#x20;
+- `path` **[string][162]**&#x20;
 
 ## scrivener/project
 
@@ -630,14 +635,14 @@ An item's own files, beside its file proper, that are not the file.
 
 A project, opened and ready to write.
 
-Type: [Object][160]
+Type: [Object][161]
 
 ### Properties
 
-- `name` **[string][161]**&#x20;
-- `binder` **[Array][162]<[BinderItem][2]>** Without the Trash
-- `styles` **[Map][167]<[string][161], [string][161]>** Style names by id
-- `files` **[Map][167]<[string][161], [Blob][171]>** By path inside the project
+- `name` **[string][162]**&#x20;
+- `binder` **[Array][163]<[BinderItem][2]>** Without the Trash
+- `styles` **[Map][168]<[string][162], [string][162]>** Style names by id
+- `files` **[Map][168]<[string][162], [Blob][172]>** By path inside the project
 
 ## sourceOf
 
@@ -646,9 +651,9 @@ escaped, and read in the code page it names.
 
 ### Parameters
 
-- `blob` **[Blob][171]**&#x20;
+- `blob` **[Blob][172]**&#x20;
 
-Returns **[Promise][172]<[string][161]>**&#x20;
+Returns **[Promise][173]<[string][162]>**&#x20;
 
 ## openProject
 
@@ -661,17 +666,17 @@ the binder and the styles.
 
 <!---->
 
-- Throws **[Error][166]** When there is no project, or none this can read
+- Throws **[Error][167]** When there is no project, or none this can read
 
-Returns **[Promise][172]<[ScrivenerProject][79]>**&#x20;
+Returns **[Promise][173]<[ScrivenerProject][80]>**&#x20;
 
 ## get
 
-Type: [Blob][171]
+Type: [Blob][172]
 
 ## styles
 
-Type: [Map][167]<[string][161], [string][161]>
+Type: [Map][168]<[string][162], [string][162]>
 
 ## writeProject
 
@@ -679,15 +684,15 @@ Write a project into a project's tree.
 
 ### Parameters
 
-- `storyId` **[string][161]**&#x20;
-- `project` **[ScrivenerProject][79]**&#x20;
-- `options` **[Object][160]?** (optional, default `{}`)
-  - `options.parentId` **[string][161]?** Where it goes; the project's top otherwise
-  - `options.asFolder` **[boolean][169]?** In a folder named after the project,
+- `storyId` **[string][162]**&#x20;
+- `project` **[ScrivenerProject][80]**&#x20;
+- `options` **[Object][161]?** (optional, default `{}`)
+  - `options.parentId` **[string][162]?** Where it goes; the project's top otherwise
+  - `options.asFolder` **[boolean][170]?** In a folder named after the project,
     rather than straight into where it goes, which is then kept in order as a
     folder made for it would be (optional, default `false`)
 
-Returns **[Promise][172]\<Imported>**&#x20;
+Returns **[Promise][173]\<Imported>**&#x20;
 
 ## result
 
@@ -695,14 +700,14 @@ Type: Imported
 
 ## owned
 
-Type: [Map][167]<[string][161], [Array][162]<[string][161]>>
+Type: [Map][168]<[string][162], [Array][163]<[string][162]>>
 
 ## fileOf
 
 ### Parameters
 
-- `id` **[string][161]**&#x20;
-- `name` **[string][161]**&#x20;
+- `id` **[string][162]**&#x20;
+- `name` **[string][162]**&#x20;
 
 ## markdownOf
 
@@ -710,27 +715,27 @@ An item's text, or its notes, as markdown, when it has any.
 
 ### Parameters
 
-- `id` **[string][161]**&#x20;
+- `id` **[string][162]**&#x20;
 - `which` **(`"content"` | `"notes"`)**&#x20;
 
-Returns **[Promise][172]<([string][161] | null)>**&#x20;
+Returns **[Promise][173]<([string][162] | null)>**&#x20;
 
 ## folder
 
 ### Parameters
 
-- `parent` **[string][161]**&#x20;
-- `title` **[string][161]**&#x20;
+- `parent` **[string][162]**&#x20;
+- `title` **[string][162]**&#x20;
 
 ## text
 
 ### Parameters
 
-- `parent` **[string][161]**&#x20;
-- `title` **[string][161]**&#x20;
-- `markdown` **[string][161]**&#x20;
+- `parent` **[string][162]**&#x20;
+- `title` **[string][162]**&#x20;
+- `markdown` **[string][162]**&#x20;
 
-Returns **[Promise][172]<[string][161]>** The document's id
+Returns **[Promise][173]<[string][162]>** The document's id
 
 ## attachmentOf
 
@@ -741,19 +746,19 @@ folder its metadata names, or the one that is not its text or notes.
 
 - `item` **[BinderItem][2]**&#x20;
 
-Returns **({name: [string][161], blob: [Blob][171]} | null)**&#x20;
+Returns **({name: [string][162], blob: [Blob][172]} | null)**&#x20;
 
 ## attach
 
 ### Parameters
 
-- `parent` **[string][161]**&#x20;
-- `title` **[string][161]**&#x20;
-- `attachment` **{name: [string][161], blob: [Blob][171]}**&#x20;
+- `parent` **[string][162]**&#x20;
+- `title` **[string][162]**&#x20;
+- `attachment` **{name: [string][162], blob: [Blob][172]}**&#x20;
   - `attachment.name` &#x20;
   - `attachment.blob` &#x20;
 
-Returns **[Promise][172]<[string][161]>** The document's id
+Returns **[Promise][173]<[string][162]>** The document's id
 
 ## asides
 
@@ -762,15 +767,15 @@ An item's synopsis and notes, after its text.
 ### Parameters
 
 - `item` **[BinderItem][2]**&#x20;
-- `title` **[string][161]**&#x20;
-- `parent` **[string][161]**&#x20;
+- `title` **[string][162]**&#x20;
+- `parent` **[string][162]**&#x20;
 
 ## write
 
 ### Parameters
 
 - `item` **[BinderItem][2]**&#x20;
-- `parent` **[string][161]**&#x20;
+- `parent` **[string][162]**&#x20;
 
 ## scrivener/rtf
 
@@ -799,27 +804,27 @@ throws.
 A stretch of text with one set of marks. A line break inside a paragraph is
 a `\n` in it.
 
-Type: [Object][160]
+Type: [Object][161]
 
 ### Properties
 
-- `text` **[string][161]**&#x20;
-- `bold` **[boolean][169]**&#x20;
-- `italic` **[boolean][169]**&#x20;
-- `strike` **[boolean][169]**&#x20;
+- `text` **[string][162]**&#x20;
+- `bold` **[boolean][170]**&#x20;
+- `italic` **[boolean][170]**&#x20;
+- `strike` **[boolean][170]**&#x20;
 
 ## RtfParagraph
 
 A paragraph, and what it is part of.
 
-Type: [Object][160]
+Type: [Object][161]
 
 ### Properties
 
 - `type` **`"paragraph"`**&#x20;
-- `runs` **[Array][162]<[Run][113]>**&#x20;
-- `style` **([string][161] | null)** The name of the Scrivener paragraph style it is in
-- `list` **({level: [number][170], ordered: [boolean][169]} | null)** Where it is in a
+- `runs` **[Array][163]<[Run][114]>**&#x20;
+- `style` **([string][162] | null)** The name of the Scrivener paragraph style it is in
+- `list` **({level: [number][171], ordered: [boolean][170]} | null)** Where it is in a
   list, when it is in one: how deep, from 0, and whether it is numbered
 
 ## RtfTable
@@ -827,7 +832,7 @@ Type: [Object][160]
 A table, as the text in its cells, row by row: a cell's paragraphs a line
 each.
 
-Type: [Object][160]
+Type: [Object][161]
 
 ### Properties
 
@@ -835,7 +840,7 @@ Type: [Object][160]
 
 ## RtfBlock
 
-Type: ([RtfParagraph][115] | [RtfTable][117])
+Type: ([RtfParagraph][116] | [RtfTable][118])
 
 ## SKIPPED
 
@@ -849,19 +854,19 @@ Characters RTF has a word for.
 
 ## emdash
 
-Type: Record<[string][161], [string][161]>
+Type: Record<[string][162], [string][162]>
 
 ## BULLET
 
 The number format a bullet list's level has in the list table.
 
-Type: [number][170]
+Type: [number][171]
 
 ## NO_NUMBER
 
 A level with no number at all.
 
-Type: [number][170]
+Type: [number][171]
 
 ## MARKER
 
@@ -880,16 +885,16 @@ Type: (`"text"` | `"lists"` | `"overrides"` | `"skip"`)
 
 ## GroupState
 
-Type: [Object][160]
+Type: [Object][161]
 
 ### Properties
 
-- `bold` **[boolean][169]**&#x20;
-- `italic` **[boolean][169]**&#x20;
-- `strike` **[boolean][169]**&#x20;
-- `uc` **[number][170]** How many characters stand in after a `\u` for a
+- `bold` **[boolean][170]**&#x20;
+- `italic` **[boolean][170]**&#x20;
+- `strike` **[boolean][170]**&#x20;
+- `uc` **[number][171]** How many characters stand in after a `\u` for a
   reader that cannot show it
-- `destination` **[Destination][127]**&#x20;
+- `destination` **[Destination][128]**&#x20;
 
 ## readRtf
 
@@ -897,65 +902,65 @@ Read a text's RTF.
 
 ### Parameters
 
-- `source` **[string][161]** The RTF, one character per byte
-- `styles` **[Array][162]<[string][161]>?** The names of the paragraph styles the text
+- `source` **[string][162]** The RTF, one character per byte
+- `styles` **[Array][163]<[string][162]>?** The names of the paragraph styles the text
   uses, in the order its markers number them (optional, default `[]`)
 
-Returns **[Array][162]<[RtfBlock][119]>**&#x20;
+Returns **[Array][163]<[RtfBlock][120]>**&#x20;
 
 ## blocks
 
-Type: [Array][162]<[RtfBlock][119]>
+Type: [Array][163]<[RtfBlock][120]>
 
 ## group
 
-Type: [GroupState][128]
+Type: [GroupState][129]
 
 ## groups
 
-Type: [Array][162]<[GroupState][128]>
+Type: [Array][163]<[GroupState][129]>
 
 ## runs
 
-Type: [Array][162]<[Run][113]>
+Type: [Array][163]<[Run][114]>
 
 ## openStyle
 
-Type: ([number][170] | null)
+Type: ([number][171] | null)
 
 ## rows
 
 ## row
 
-Type: [Array][162]<[string][161]>
+Type: [Array][163]<[string][162]>
 
 ## cell
 
-Type: [Array][162]<[string][161]>
+Type: [Array][163]<[string][162]>
 
 ## listFormats
 
-Type: [Map][167]<[number][170], [Array][162]<[number][170]>>
+Type: [Map][168]<[number][171], [Array][163]<[number][171]>>
 
 ## formats
 
-Type: [Array][162]<[number][170]>
+Type: [Array][163]<[number][171]>
 
 ## overrides
 
-Type: [Map][167]<[number][170], [number][170]>
+Type: [Map][168]<[number][171], [number][171]>
 
 ## add
 
 ### Parameters
 
-- `text` **[string][161]**&#x20;
+- `text` **[string][162]**&#x20;
 
 ## addChar
 
 ### Parameters
 
-- `char` **[string][161]**&#x20;
+- `char` **[string][162]**&#x20;
 
 ## takeMarkers
 
@@ -965,41 +970,41 @@ of the paragraph after it.
 
 ### Parameters
 
-- `read` **[Array][162]<[Run][113]>**&#x20;
+- `read` **[Array][163]<[Run][114]>**&#x20;
 
 ## style
 
-Type: ([number][170] | null | [undefined][165])
+Type: ([number][171] | null | [undefined][166])
 
 ## reached
 
 ### Parameters
 
-- `text` **[string][161]**&#x20;
+- `text` **[string][162]**&#x20;
 
 ## kept
 
-Type: [Array][162]<[Run][113]>
+Type: [Array][163]<[Run][114]>
 
 ## lineOf
 
 ### Parameters
 
-- `read` **[Array][162]<[Run][113]>**&#x20;
+- `read` **[Array][163]<[Run][114]>**&#x20;
 
 ## listOf
 
 ### Parameters
 
-- `override` **[number][170]**&#x20;
-- `depth` **[number][170]**&#x20;
+- `override` **[number][171]**&#x20;
+- `depth` **[number][171]**&#x20;
 
 ## control
 
 ### Parameters
 
-- `word` **[string][161]**&#x20;
-- `param` **([number][170] | null)**&#x20;
+- `word` **[string][162]**&#x20;
+- `param` **([number][171] | null)**&#x20;
 
 ## exec
 
@@ -1065,115 +1070,116 @@ Type: RegExpExecArray
 [58]: #parameters-21
 [59]: #lines
 [60]: #scrivenerpackage
-[61]: #scrivenerpackage-1
-[62]: #properties-1
-[63]: #scrivx
-[64]: #iszip
-[65]: #parameters-22
-[66]: #mayholdproject
-[67]: #parameters-23
-[68]: #nameof
-[69]: #parameters-24
-[70]: #packageoffolder
-[71]: #parameters-25
-[72]: #packageofzip
-[73]: #parameters-26
-[74]: #binder
-[75]: #
-[76]: #files
-[77]: #depthof
-[78]: #parameters-27
-[79]: #scrivenerproject
-[80]: #own_files
-[81]: #own_files-1
-[82]: #own_files-2
-[83]: #own_files-3
-[84]: #scrivenerproject-1
-[85]: #properties-2
-[86]: #sourceof
-[87]: #parameters-28
-[88]: #openproject
-[89]: #parameters-29
-[90]: #get
-[91]: #styles
-[92]: #writeproject
-[93]: #parameters-30
-[94]: #result
-[95]: #owned
-[96]: #fileof
-[97]: #parameters-31
-[98]: #markdownof
-[99]: #parameters-32
-[100]: #folder
-[101]: #parameters-33
-[102]: #text
-[103]: #parameters-34
-[104]: #attachmentof
-[105]: #parameters-35
-[106]: #attach
-[107]: #parameters-36
-[108]: #asides
-[109]: #parameters-37
-[110]: #write
-[111]: #parameters-38
-[112]: #scrivenerrtf
-[113]: #run
-[114]: #properties-3
-[115]: #rtfparagraph
-[116]: #properties-4
-[117]: #rtftable
-[118]: #properties-5
-[119]: #rtfblock
-[120]: #skipped
-[121]: #named
-[122]: #emdash
-[123]: #bullet
-[124]: #no_number
-[125]: #marker
-[126]: #paragraph_style
-[127]: #destination
-[128]: #groupstate
-[129]: #properties-6
-[130]: #readrtf
-[131]: #parameters-39
-[132]: #blocks
-[133]: #group
-[134]: #groups
-[135]: #runs
-[136]: #openstyle
-[137]: #rows
-[138]: #row
-[139]: #cell
-[140]: #listformats
-[141]: #formats
-[142]: #overrides
-[143]: #add
-[144]: #parameters-40
-[145]: #addchar
-[146]: #parameters-41
-[147]: #takemarkers
-[148]: #parameters-42
-[149]: #style
-[150]: #reached
-[151]: #parameters-43
-[152]: #kept
-[153]: #lineof
-[154]: #parameters-44
-[155]: #listof
-[156]: #parameters-45
-[157]: #control
-[158]: #parameters-46
-[159]: #exec
-[160]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[161]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[162]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[163]: https://developer.mozilla.org/docs/Web/API/Document
-[164]: https://developer.mozilla.org/docs/Web/API/Element
-[165]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[166]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[167]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[168]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
-[169]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[170]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[171]: https://developer.mozilla.org/docs/Web/API/Blob
-[172]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[61]: #most_project
+[62]: #scrivenerpackage-1
+[63]: #properties-1
+[64]: #scrivx
+[65]: #iszip
+[66]: #parameters-22
+[67]: #mayholdproject
+[68]: #parameters-23
+[69]: #nameof
+[70]: #parameters-24
+[71]: #packageoffolder
+[72]: #parameters-25
+[73]: #packageofzip
+[74]: #parameters-26
+[75]: #binder
+[76]: #
+[77]: #files
+[78]: #depthof
+[79]: #parameters-27
+[80]: #scrivenerproject
+[81]: #own_files
+[82]: #own_files-1
+[83]: #own_files-2
+[84]: #own_files-3
+[85]: #scrivenerproject-1
+[86]: #properties-2
+[87]: #sourceof
+[88]: #parameters-28
+[89]: #openproject
+[90]: #parameters-29
+[91]: #get
+[92]: #styles
+[93]: #writeproject
+[94]: #parameters-30
+[95]: #result
+[96]: #owned
+[97]: #fileof
+[98]: #parameters-31
+[99]: #markdownof
+[100]: #parameters-32
+[101]: #folder
+[102]: #parameters-33
+[103]: #text
+[104]: #parameters-34
+[105]: #attachmentof
+[106]: #parameters-35
+[107]: #attach
+[108]: #parameters-36
+[109]: #asides
+[110]: #parameters-37
+[111]: #write
+[112]: #parameters-38
+[113]: #scrivenerrtf
+[114]: #run
+[115]: #properties-3
+[116]: #rtfparagraph
+[117]: #properties-4
+[118]: #rtftable
+[119]: #properties-5
+[120]: #rtfblock
+[121]: #skipped
+[122]: #named
+[123]: #emdash
+[124]: #bullet
+[125]: #no_number
+[126]: #marker
+[127]: #paragraph_style
+[128]: #destination
+[129]: #groupstate
+[130]: #properties-6
+[131]: #readrtf
+[132]: #parameters-39
+[133]: #blocks
+[134]: #group
+[135]: #groups
+[136]: #runs
+[137]: #openstyle
+[138]: #rows
+[139]: #row
+[140]: #cell
+[141]: #listformats
+[142]: #formats
+[143]: #overrides
+[144]: #add
+[145]: #parameters-40
+[146]: #addchar
+[147]: #parameters-41
+[148]: #takemarkers
+[149]: #parameters-42
+[150]: #style
+[151]: #reached
+[152]: #parameters-43
+[153]: #kept
+[154]: #lineof
+[155]: #parameters-44
+[156]: #listof
+[157]: #parameters-45
+[158]: #control
+[159]: #parameters-46
+[160]: #exec
+[161]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[162]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[163]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[164]: https://developer.mozilla.org/docs/Web/API/Document
+[165]: https://developer.mozilla.org/docs/Web/API/Element
+[166]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[167]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[168]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[169]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
+[170]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[171]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[172]: https://developer.mozilla.org/docs/Web/API/Blob
+[173]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise

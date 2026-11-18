@@ -8,18 +8,26 @@
   - [Examples][4]
 - [routes][5]
 - [composables/useSignIn][6]
-- [signInPath][7]
-  - [Parameters][8]
-- [WAIT_MS][9]
-- [sleep][10]
-  - [Parameters][11]
-- [useSignIn][12]
-  - [Parameters][13]
-- [service][14]
-- [finish][15]
+- [SIGNED_IN_CHANNEL][7]
+- [listening][8]
+- [listenForSignIns][9]
+- [][10]
+- [tellSignedIn][11]
+  - [Parameters][12]
+- [openApart][13]
+  - [Parameters][14]
+- [signInPath][15]
   - [Parameters][16]
-- [start][17]
-  - [Parameters][18]
+- [WAIT_MS][17]
+- [sleep][18]
+  - [Parameters][19]
+- [useSignIn][20]
+  - [Parameters][21]
+- [service][22]
+- [finish][23]
+  - [Parameters][24]
+- [start][25]
+  - [Parameters][26]
 
 ## router
 
@@ -69,14 +77,59 @@ service that makes the app a key for it: OpenRouter and NanoGPT
 `start` sends the writer to the service. In a browser that is a tab of its
 own, which the service sends back to `/connect/<type>`
 (`SignInCallback.vue`); that page calls `finish` and tells the tab that
-started it with an `oauth-success` message. In the desktop window it is the
-system browser, which comes back to the window's listener on localhost:
-`start` calls `finish` itself and posts the same message to its own window.
-Whoever listens for the message hears it either way.
+started it, over a channel (`tellSignedIn`), since the tab was opened with
+no way back to it; the window that hears says so to itself with an
+`oauth-success` message. In the desktop window it is the system browser,
+which comes back to the window's listener on localhost: `start` calls
+`finish` itself and posts the same message to its own window. Whoever
+listens for the message hears it either way.
 
 The key goes on the connection signed in from, or on a new connection of
 the service where there was none, which takes the built-in's id where the
 service had one (`addConnection`).
+
+## SIGNED_IN_CHANNEL
+
+The channel a tab that finished a sign-in tells the app's other windows
+on: the tab is opened with no way back to the one that opened it, so the
+service signed in at has none either.
+
+Type: [string][27]
+
+## listening
+
+Type: (BroadcastChannel | null)
+
+## listenForSignIns
+
+Hear of a sign-in finished in another tab, and say it in this window as
+the desktop window says its own: an `oauth-success` message to itself,
+which is what everything here listens for.
+
+##
+
+Type: any
+
+## tellSignedIn
+
+Tell the app's other windows that a sign-in finished here: the tab the
+service sent the writer back to says so, and closes.
+
+### Parameters
+
+- `provider` **[string][27]** The connection's type
+- `providerId` **[string][27]** The connection the key is on
+
+## openApart
+
+Open an address in a tab of its own that has no way back to this one:
+a page given its opener can send the tab that opened it anywhere. Opened
+empty and cut loose before it is sent on, so the tab can still be closed
+by the page that ends up in it.
+
+### Parameters
+
+- `address` **[string][27]**&#x20;
 
 ## signInPath
 
@@ -84,9 +137,9 @@ Where a service sends the writer back after signing in.
 
 ### Parameters
 
-- `type` **[string][19]** The connection's type: `openrouter`, `nanogpt`
+- `type` **[string][27]** The connection's type: `openrouter`, `nanogpt`
 
-Returns **[string][19]**&#x20;
+Returns **[string][27]**&#x20;
 
 ## WAIT_MS
 
@@ -96,13 +149,13 @@ How long the desktop window waits for the writer to come back.
 
 ### Parameters
 
-- `ms` **[number][20]**&#x20;
+- `ms` **[number][28]**&#x20;
 
 ## useSignIn
 
 ### Parameters
 
-- `type` **[string][19]** The connection's type, one with a sign-in
+- `type` **[string][27]** The connection's type, one with a sign-in
 
 ## service
 
@@ -119,9 +172,9 @@ the code for a key, and keep it on the connection.
 
 <!---->
 
-- Throws **[Error][21]** With what the writer should be told
+- Throws **[Error][29]** With what the writer should be told
 
-Returns **[Promise][22]<[string][19]>** The connection's id
+Returns **[Promise][30]<[string][27]>** The connection's id
 
 ## start
 
@@ -131,14 +184,14 @@ back and the key is kept.
 
 ### Parameters
 
-- `$0` **[Object][23]** (optional, default `{}`)
+- `$0` **[Object][31]** (optional, default `{}`)
   - `$0.providerId` &#x20;
 
 <!---->
 
-- Throws **[Error][21]** With what the writer should be told
+- Throws **[Error][29]** With what the writer should be told
 
-Returns **[Promise][22]\<void>**&#x20;
+Returns **[Promise][30]\<void>**&#x20;
 
 [1]: #router
 [2]: #routes
@@ -146,20 +199,28 @@ Returns **[Promise][22]\<void>**&#x20;
 [4]: #examples
 [5]: #routes-1
 [6]: #composablesusesignin
-[7]: #signinpath
-[8]: #parameters
-[9]: #wait_ms
-[10]: #sleep
-[11]: #parameters-1
-[12]: #usesignin
-[13]: #parameters-2
-[14]: #service
-[15]: #finish
-[16]: #parameters-3
-[17]: #start
-[18]: #parameters-4
-[19]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[20]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[21]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[22]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[23]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[7]: #signed_in_channel
+[8]: #listening
+[9]: #listenforsignins
+[10]: #
+[11]: #tellsignedin
+[12]: #parameters
+[13]: #openapart
+[14]: #parameters-1
+[15]: #signinpath
+[16]: #parameters-2
+[17]: #wait_ms
+[18]: #sleep
+[19]: #parameters-3
+[20]: #usesignin
+[21]: #parameters-4
+[22]: #service
+[23]: #finish
+[24]: #parameters-5
+[25]: #start
+[26]: #parameters-6
+[27]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[28]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[29]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[30]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[31]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object

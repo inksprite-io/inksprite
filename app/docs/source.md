@@ -44,114 +44,115 @@
 - [entriesOfFolder][40]
   - [Parameters][41]
 - [source/github][42]
-- [GitHubError][43]
-  - [Parameters][44]
-- [GitHubAddress][45]
-  - [Properties][46]
-- [parseGitHubUrl][47]
-  - [Parameters][48]
-- [refCandidates][49]
-  - [Parameters][50]
-- [refusal][51]
-  - [Parameters][52]
-- [downloadArchive][53]
-  - [Parameters][54]
-- [readArchive][55]
-  - [Parameters][56]
-- [listed][57]
-- [inflated][58]
-- [entry][59]
-- [source][60]
-  - [Examples][61]
-- [source/language][62]
-- [BY_EXTENSION][63]
-- [BY_NAME][64]
-- [BINARY_EXTENSIONS][65]
-- [FILE_EXTENSIONS][66]
-- [extensionOf][67]
-  - [Parameters][68]
-- [languageOf][69]
-  - [Parameters][70]
-- [isBinaryName][71]
-  - [Parameters][72]
-- [isWholeFileName][73]
-  - [Parameters][74]
-- [isCodeName][75]
-  - [Parameters][76]
-- [source/rules][77]
-- [NEVER][78]
-- [NOT_BY_DEFAULT][79]
-- [createRules][80]
+- [MOST_SOURCE][43]
+- [GitHubError][44]
+  - [Parameters][45]
+- [GitHubAddress][46]
+  - [Properties][47]
+- [parseGitHubUrl][48]
+  - [Parameters][49]
+- [refCandidates][50]
+  - [Parameters][51]
+- [refusal][52]
+  - [Parameters][53]
+- [downloadArchive][54]
+  - [Parameters][55]
+- [readArchive][56]
+  - [Parameters][57]
+- [listed][58]
+- [inflated][59]
+- [entry][60]
+- [source][61]
+  - [Examples][62]
+- [source/language][63]
+- [BY_EXTENSION][64]
+- [BY_NAME][65]
+- [BINARY_EXTENSIONS][66]
+- [FILE_EXTENSIONS][67]
+- [extensionOf][68]
+  - [Parameters][69]
+- [languageOf][70]
+  - [Parameters][71]
+- [isBinaryName][72]
+  - [Parameters][73]
+- [isWholeFileName][74]
+  - [Parameters][75]
+- [isCodeName][76]
+  - [Parameters][77]
+- [source/rules][78]
+- [NEVER][79]
+- [NOT_BY_DEFAULT][80]
 - [createRules][81]
-- [Rules][82]
-- [gitignores][83]
-- [get][84]
-- [source/text][85]
-- [SNIFF_BYTES][86]
-- [TEXT_CONTROLS][87]
-- [encodingOf][88]
-  - [Parameters][89]
-- [textOf][90]
-  - [Parameters][91]
-- [textOfFile][92]
-  - [Parameters][93]
-- [startsAsText][94]
-  - [Parameters][95]
-- [lineCount][96]
-  - [Parameters][97]
-- [source/tree][98]
-- [isRepository][99]
-  - [Parameters][100]
-- [isRepository][101]
-  - [Parameters][102]
-- [isRepository][103]
-  - [Parameters][104]
-- [repositoryOf][105]
-  - [Parameters][106]
-- [inRepository][107]
-  - [Parameters][108]
-- [keptWhole][109]
-  - [Parameters][110]
-- [isSourceFile][111]
-  - [Parameters][112]
-- [describeRepository][113]
-  - [Parameters][114]
-- [source/write][115]
-- [BATCH][116]
+- [createRules][82]
+- [Rules][83]
+- [gitignores][84]
+- [get][85]
+- [source/text][86]
+- [SNIFF_BYTES][87]
+- [TEXT_CONTROLS][88]
+- [encodingOf][89]
+  - [Parameters][90]
+- [textOf][91]
+  - [Parameters][92]
+- [textOfFile][93]
+  - [Parameters][94]
+- [startsAsText][95]
+  - [Parameters][96]
+- [lineCount][97]
+  - [Parameters][98]
+- [source/tree][99]
+- [isRepository][100]
+  - [Parameters][101]
+- [isRepository][102]
+  - [Parameters][103]
+- [isRepository][104]
+  - [Parameters][105]
+- [repositoryOf][106]
+  - [Parameters][107]
+- [inRepository][108]
+  - [Parameters][109]
+- [keptWhole][110]
+  - [Parameters][111]
+- [isSourceFile][112]
+  - [Parameters][113]
+- [describeRepository][114]
+  - [Parameters][115]
+- [source/write][116]
 - [BATCH][117]
 - [BATCH][118]
 - [BATCH][119]
-- [folderOf][120]
-  - [Parameters][121]
-- [contentsOf][122]
-  - [Parameters][123]
-- [folders][124]
-- [][125]
+- [BATCH][120]
+- [folderOf][121]
+  - [Parameters][122]
+- [contentsOf][123]
+  - [Parameters][124]
+- [folders][125]
 - [][126]
-- [foldersUnder][127]
-  - [Parameters][128]
-- [ids][129]
-- [path][130]
-- [][131]
-- [blobOf][132]
-  - [Parameters][133]
-- [file][134]
+- [][127]
+- [foldersUnder][128]
+  - [Parameters][129]
+- [ids][130]
+- [path][131]
+- [][132]
+- [blobOf][133]
+  - [Parameters][134]
 - [file][135]
-- [textOfWhole][136]
-  - [Parameters][137]
-- [createFile][138]
-  - [Parameters][139]
-- [sameBytes][140]
-  - [Parameters][141]
-- [writeRepository][142]
-  - [Parameters][143]
-- [Refreshed][144]
-  - [Properties][145]
-- [refreshRepository][146]
-  - [Parameters][147]
-- [result][148]
-- [depthOf][149]
-  - [Parameters][150]
+- [file][136]
+- [textOfWhole][137]
+  - [Parameters][138]
+- [createFile][139]
+  - [Parameters][140]
+- [sameBytes][141]
+  - [Parameters][142]
+- [writeRepository][143]
+  - [Parameters][144]
+- [Refreshed][145]
+  - [Properties][146]
+- [refreshRepository][147]
+  - [Parameters][148]
+- [result][149]
+- [depthOf][150]
+  - [Parameters][151]
 
 ## source/detect
 
@@ -162,7 +163,7 @@ and so is worth asking about before it comes in as ordinary files.
 
 What a codebase has at least this many of.
 
-Type: [number][151]
+Type: [number][152]
 
 ## NOT_CODE
 
@@ -175,9 +176,9 @@ configuration and markup that go with one.
 
 ### Parameters
 
-- `path` **[string][152]**&#x20;
+- `path` **[string][153]**&#x20;
 
-Returns **[boolean][153]**&#x20;
+Returns **[boolean][154]**&#x20;
 
 ## looksLikeCodebase
 
@@ -190,9 +191,9 @@ git is a folder of markdown, and is not asked about.
 
 ### Parameters
 
-- `paths` **[Array][154]<[string][152]>** Each file's path under the folder
+- `paths` **[Array][155]<[string][153]>** Each file's path under the folder
 
-Returns **[boolean][153]**&#x20;
+Returns **[boolean][154]**&#x20;
 
 ## source/gather
 
@@ -221,7 +222,7 @@ Larger than this, a file that comes in whole is left out.
 
 More files than this, and the import stops.
 
-Type: [number][151]
+Type: [number][152]
 
 ## MAX_TOTAL_BYTES
 
@@ -235,69 +236,69 @@ More bytes of files that come in whole than this, and the import stops.
 
 One file of a codebase, before it is read.
 
-Type: [Object][155]
+Type: [Object][156]
 
 ### Properties
 
-- `path` **[string][152]** From the codebase's top, `/` between folders
-- `size` **[number][151]** Bytes
+- `path` **[string][153]** From the codebase's top, `/` between folders
+- `size` **[number][152]** Bytes
 
 ## SourceFile
 
 One file that came in: its text, or a file that comes in whole, its bytes,
 whose text is read out of them when it is written.
 
-Type: [Object][155]
+Type: [Object][156]
 
 ### Properties
 
-- `path` **[string][152]**&#x20;
-- `text` **[string][152]** As it is, with `\n` line ends; '' for a file that comes in whole
-- `size` **[number][151]** Bytes, as it came
-- `bytes` **[Uint8Array][156]?** A file that comes in whole: a PDF, a book, a Word file, a picture
-- `mime` **[string][152]?** Its media type, for one that comes in whole
+- `path` **[string][153]**&#x20;
+- `text` **[string][153]** As it is, with `\n` line ends; '' for a file that comes in whole
+- `size` **[number][152]** Bytes, as it came
+- `bytes` **[Uint8Array][157]?** A file that comes in whole: a PDF, a book, a Word file, a picture
+- `mime` **[string][153]?** Its media type, for one that comes in whole
 
 ## LeftOut
 
 What was left out, and why.
 
-Type: [Object][155]
+Type: [Object][156]
 
 ### Properties
 
-- `never` **[number][151]** Version control, installed packages, secrets
-- `ignored` **[number][151]** The default list or a `.gitignore`
-- `binary` **[Array][154]<[string][152]>** Not text, and not a file that comes in whole
-- `large` **[Array][154]<[string][152]>** Over MAX_FILE_BYTES, or MAX_WHOLE_FILE_BYTES for a file that comes in whole
+- `never` **[number][152]** Version control, installed packages, secrets
+- `ignored` **[number][152]** The default list or a `.gitignore`
+- `binary` **[Array][155]<[string][153]>** Not text, and not a file that comes in whole
+- `large` **[Array][155]<[string][153]>** Over MAX_FILE_BYTES, or MAX_WHOLE_FILE_BYTES for a file that comes in whole
 
 ## GatheredSource
 
-Type: [Object][155]
+Type: [Object][156]
 
 ### Properties
 
-- `files` **[Array][154]<[SourceFile][17]>** In path order
+- `files` **[Array][155]<[SourceFile][17]>** In path order
 - `left` **[LeftOut][19]**&#x20;
-- `bytes` **[number][151]** The text's size in all
-- `wholeBytes` **[number][151]** The size of the files that came in whole, in all
+- `bytes` **[number][152]** The text's size in all
+- `wholeBytes` **[number][152]** The size of the files that came in whole, in all
 
 ## nameOf
 
 ### Parameters
 
-- `path` **[string][152]**&#x20;
+- `path` **[string][153]**&#x20;
 
 ## nameOf
 
 ### Parameters
 
-- `path` **[string][152]**&#x20;
+- `path` **[string][153]**&#x20;
 
 ## megabytes
 
 ### Parameters
 
-- `bytes` **[number][151]**&#x20;
+- `bytes` **[number][152]**&#x20;
 
 ## SourceTooLargeError
 
@@ -307,9 +308,9 @@ A codebase too big to take whole.
 
 ### Parameters
 
-- `files` **[number][151]** How many files would have come in, at least
-- `bytes` **[number][151]** Of text
-- `wholeBytes` **[number][151]?** Of the files that would have come in whole (optional, default `0`)
+- `files` **[number][152]** How many files would have come in, at least
+- `bytes` **[number][152]** Of text
+- `wholeBytes` **[number][152]?** Of the files that would have come in whole (optional, default `0`)
 
 ## sortEntries
 
@@ -318,13 +319,13 @@ The files a codebase's rules let in, sizes and all, without reading them.
 
 ### Parameters
 
-- `entries` **[Array][154]<[SourceEntry][15]>**&#x20;
-- `options` **[Object][155]?** (optional, default `{}`)
-  - `options.gitignores` **[boolean][153]?** Whether to read and apply the
+- `entries` **[Array][155]<[SourceEntry][15]>**&#x20;
+- `options` **[Object][156]?** (optional, default `{}`)
+  - `options.gitignores` **[boolean][154]?** Whether to read and apply the
     codebase's `.gitignore` files; default true (optional, default `true`)
   - `options.rules` (optional, default `createRules()`)
 
-Returns **[Promise][157]<{kept: [Array][154]<[SourceEntry][15]>, left: [LeftOut][19]}>**&#x20;
+Returns **[Promise][158]<{kept: [Array][155]<[SourceEntry][15]>, left: [LeftOut][19]}>**&#x20;
 
 ## left
 
@@ -332,7 +333,7 @@ Type: [LeftOut][19]
 
 ## kept
 
-Type: [Array][154]<[SourceEntry][15]>
+Type: [Array][155]<[SourceEntry][15]>
 
 ## gatherSource
 
@@ -340,10 +341,10 @@ Read a codebase's entries and keep the text.
 
 ### Parameters
 
-- `entries` **[Array][154]<[SourceEntry][15]>**&#x20;
-- `options` **[Object][155]?** (optional, default `{}`)
+- `entries` **[Array][155]<[SourceEntry][15]>**&#x20;
+- `options` **[Object][156]?** (optional, default `{}`)
   - `options.signal` **AbortSignal?**&#x20;
-  - `options.gitignores` **[boolean][153]?** See `sortEntries`
+  - `options.gitignores` **[boolean][154]?** See `sortEntries`
   - `options.onProgress` &#x20;
   - `options.prepare` &#x20;
 
@@ -352,19 +353,19 @@ Read a codebase's entries and keep the text.
 - Throws **[SourceTooLargeError][29]** Before reading anything, when the files
   let in are over a cap
 
-Returns **[Promise][157]<[GatheredSource][21]>**&#x20;
+Returns **[Promise][158]<[GatheredSource][21]>**&#x20;
 
 ##
 
-Type: [boolean][153]
+Type: [boolean][154]
 
 ## files
 
-Type: [Array][154]<[SourceFile][17]>
+Type: [Array][155]<[SourceFile][17]>
 
 ## files
 
-Type: [Map][158]<[string][152], [Document][159]>
+Type: [Map][159]<[string][153], [Document][160]>
 
 ## entriesOfFolder
 
@@ -373,9 +374,9 @@ the path below the folder, and the folder's name.
 
 ### Parameters
 
-- `listed` **[Array][154]\<Gathered>** As `files/batch.js` lists them, dotfiles and all
+- `listed` **[Array][155]\<Gathered>** As `files/batch.js` lists them, dotfiles and all
 
-Returns **{name: [string][152], entries: [Array][154]<[SourceEntry][15]>}**&#x20;
+Returns **{name: [string][153], entries: [Array][155]<[SourceEntry][15]>}**&#x20;
 
 ## source/github
 
@@ -391,6 +392,10 @@ archive is opened twice: once to list it, which reads only its directory,
 and once to inflate the files the rules let in, so nothing left out is
 ever decompressed.
 
+## MOST_SOURCE
+
+The most of a repository's archive that is unpacked: the files the rules let in.
+
 ## GitHubError
 
 **Extends Error**
@@ -399,7 +404,7 @@ Something GitHub, or the way to it, said no to.
 
 ### Parameters
 
-- `message` **[string][152]**&#x20;
+- `message` **[string][153]**&#x20;
 
 ## GitHubAddress
 
@@ -407,13 +412,13 @@ A repository named by a URL, and whatever followed `tree/` in it: a ref,
 perhaps with a folder after it, which cannot be told apart until GitHub is
 asked (`feature/login` is one branch or a branch and a folder).
 
-Type: [Object][155]
+Type: [Object][156]
 
 ### Properties
 
-- `owner` **[string][152]**&#x20;
-- `repo` **[string][152]**&#x20;
-- `rest` **[Array][154]<[string][152]>** The segments after `tree/`, if any
+- `owner` **[string][153]**&#x20;
+- `repo` **[string][153]**&#x20;
+- `rest` **[Array][155]<[string][153]>** The segments after `tree/`, if any
 
 ## parseGitHubUrl
 
@@ -423,9 +428,9 @@ shows it (with `/tree/<ref>/<folder>` or without), a clone URL, or just
 
 ### Parameters
 
-- `input` **[string][152]**&#x20;
+- `input` **[string][153]**&#x20;
 
-Returns **([GitHubAddress][45] | null)** Null when it does not name a GitHub repository
+Returns **([GitHubAddress][46] | null)** Null when it does not name a GitHub repository
 
 ## refCandidates
 
@@ -433,18 +438,18 @@ The ways to read `rest` as a ref and a folder in it, shortest ref first.
 
 ### Parameters
 
-- `rest` **[Array][154]<[string][152]>**&#x20;
+- `rest` **[Array][155]<[string][153]>**&#x20;
 
-Returns **[Array][154]<{ref: [string][152], subpath: [string][152]}>**&#x20;
+Returns **[Array][155]<{ref: [string][153], subpath: [string][153]}>**&#x20;
 
 ## refusal
 
 ### Parameters
 
-- `response` **[Response][160]**&#x20;
-- `withToken` **[boolean][153]**&#x20;
+- `response` **[Response][161]**&#x20;
+- `withToken` **[boolean][154]**&#x20;
 
-Returns **[GitHubError][43]**&#x20;
+Returns **[GitHubError][44]**&#x20;
 
 ## downloadArchive
 
@@ -453,14 +458,14 @@ URL's segments as a ref until GitHub knows one.
 
 ### Parameters
 
-- `address` **[GitHubAddress][45]**&#x20;
-- `options` **[Object][155]?** (optional, default `{}`)
-  - `options.token` **[string][152]?**&#x20;
+- `address` **[GitHubAddress][46]**&#x20;
+- `options` **[Object][156]?** (optional, default `{}`)
+  - `options.token` **[string][153]?**&#x20;
   - `options.signal` **AbortSignal?**&#x20;
-  - `options.at` **{ref: [string][152], subpath: [string][152]}?** The ref and folder
+  - `options.at` **{ref: [string][153], subpath: [string][153]}?** The ref and folder
     already settled, as a refresh has them, rather than read from `rest`
 
-Returns **[Promise][157]<{bytes: [Uint8Array][156], ref: [string][152], subpath: [string][152]}>**&#x20;
+Returns **[Promise][158]<{bytes: [Uint8Array][157], ref: [string][153], subpath: [string][153]}>**&#x20;
 
 ## readArchive
 
@@ -470,19 +475,19 @@ through the codebase rules.
 
 ### Parameters
 
-- `bytes` **[Uint8Array][156]**&#x20;
-- `options` **[Object][155]?** (optional, default `{}`)
-  - `options.subpath` **[string][152]?** (optional, default `''`)
+- `bytes` **[Uint8Array][157]**&#x20;
+- `options` **[Object][156]?** (optional, default `{}`)
+  - `options.subpath` **[string][153]?** (optional, default `''`)
   - `options.signal` **AbortSignal?**&#x20;
   - `options.onProgress` &#x20;
 
 ## listed
 
-Type: [Array][154]<{name: [string][152], size: [number][151]}>
+Type: [Array][155]<{name: [string][153], size: [number][152]}>
 
 ## inflated
 
-Type: [Map][158]<[string][152], [Uint8Array][156]>
+Type: [Map][159]<[string][153], [Uint8Array][157]>
 
 ## entry
 
@@ -550,7 +555,7 @@ the viewer picks its highlighting by filename itself
 By extension, lowercased: the language's name and the media type to store.
 A registered type where there is one, `text/x-<language>` otherwise.
 
-Type: Record<[string][152], \[[string][152], [string][152]]>
+Type: Record<[string][153], \[[string][153], [string][153]]>
 
 ## BY_NAME
 
@@ -572,7 +577,7 @@ Every other extension in `BINARY_EXTENSIONS` is left out.
 
 ### Parameters
 
-- `name` **[string][152]**&#x20;
+- `name` **[string][153]**&#x20;
 
 ## languageOf
 
@@ -581,9 +586,9 @@ name. Anything unrecognised is plain text.
 
 ### Parameters
 
-- `filename` **[string][152]** The file's name, without the folders above it
+- `filename` **[string][153]** The file's name, without the folders above it
 
-Returns **{language: [string][152], mime: [string][152]}**&#x20;
+Returns **{language: [string][153], mime: [string][153]}**&#x20;
 
 ## isBinaryName
 
@@ -591,9 +596,9 @@ Whether a file's name says it is not text, so it need not be read to find out.
 
 ### Parameters
 
-- `filename` **[string][152]**&#x20;
+- `filename` **[string][153]**&#x20;
 
-Returns **[boolean][153]**&#x20;
+Returns **[boolean][154]**&#x20;
 
 ## isWholeFileName
 
@@ -602,9 +607,9 @@ bytes and all, rather than as its text: `FILE_EXTENSIONS`.
 
 ### Parameters
 
-- `filename` **[string][152]**&#x20;
+- `filename` **[string][153]**&#x20;
 
-Returns **[boolean][153]**&#x20;
+Returns **[boolean][154]**&#x20;
 
 ## isCodeName
 
@@ -615,9 +620,9 @@ change it.
 
 ### Parameters
 
-- `filename` **[string][152]**&#x20;
+- `filename` **[string][153]**&#x20;
 
-Returns **[boolean][153]**&#x20;
+Returns **[boolean][154]**&#x20;
 
 ## source/rules
 
@@ -654,13 +659,13 @@ speaks of it — the defaults, then each `.gitignore` from the top down, a
 nearer one later — leaves it out. That is git's own order: a nested
 `.gitignore` can take back what the one above it said.
 
-Returns **[Rules][82]**&#x20;
+Returns **[Rules][83]**&#x20;
 
 ## Rules
 
 The rules for one codebase.
 
-Type: [Object][155]
+Type: [Object][156]
 
 ## gitignores
 
@@ -676,7 +681,7 @@ Whether a file's bytes are text, and the text if they are.
 
 How far into a file to look for the marks of a binary one.
 
-Type: [number][151]
+Type: [number][152]
 
 ## TEXT_CONTROLS
 
@@ -691,7 +696,7 @@ full of NULs besides.
 
 ### Parameters
 
-- `head` **[Uint8Array][156]**&#x20;
+- `head` **[Uint8Array][157]**&#x20;
 
 Returns **(`"utf-8"` | `"utf-16le"` | `"utf-16be"` | null)**&#x20;
 
@@ -704,9 +709,9 @@ system wrote it.
 
 ### Parameters
 
-- `bytes` **[Uint8Array][156]**&#x20;
+- `bytes` **[Uint8Array][157]**&#x20;
 
-Returns **([string][152] | null)**&#x20;
+Returns **([string][153] | null)**&#x20;
 
 ## textOfFile
 
@@ -715,9 +720,9 @@ tell, so a large binary file costs nothing to turn away.
 
 ### Parameters
 
-- `blob` **[Blob][161]**&#x20;
+- `blob` **[Blob][162]**&#x20;
 
-Returns **[Promise][157]<([string][152] | null)>**&#x20;
+Returns **[Promise][158]<([string][153] | null)>**&#x20;
 
 ## startsAsText
 
@@ -725,9 +730,9 @@ Whether a file looks like text from its top, reading no more of it than that.
 
 ### Parameters
 
-- `blob` **[Blob][161]**&#x20;
+- `blob` **[Blob][162]**&#x20;
 
-Returns **[Promise][157]<[boolean][153]>**&#x20;
+Returns **[Promise][158]<[boolean][154]>**&#x20;
 
 ## lineCount
 
@@ -736,9 +741,9 @@ an empty text has none.
 
 ### Parameters
 
-- `text` **[string][152]**&#x20;
+- `text` **[string][153]**&#x20;
 
-Returns **[number][151]**&#x20;
+Returns **[number][152]**&#x20;
 
 ## source/tree
 
@@ -764,9 +769,9 @@ refresh, by path. So everything here goes by the nearest repository above.
 
 ### Parameters
 
-- `document` **([Document][159] | null | [undefined][162])**&#x20;
+- `document` **([Document][160] | null | [undefined][163])**&#x20;
 
-Returns **[boolean][153]**&#x20;
+Returns **[boolean][154]**&#x20;
 
 ## repositoryOf
 
@@ -776,9 +781,9 @@ or above it.
 ### Parameters
 
 - `get` **Lookup**&#x20;
-- `document` **([Document][159] | null | [undefined][162])**&#x20;
+- `document` **([Document][160] | null | [undefined][163])**&#x20;
 
-Returns **([Document][159] | null)**&#x20;
+Returns **([Document][160] | null)**&#x20;
 
 ## inRepository
 
@@ -788,9 +793,9 @@ something a refresh would put back as it was.
 ### Parameters
 
 - `get` **Lookup**&#x20;
-- `document` **([Document][159] | null | [undefined][162])**&#x20;
+- `document` **([Document][160] | null | [undefined][163])**&#x20;
 
-Returns **[boolean][153]**&#x20;
+Returns **[boolean][154]**&#x20;
 
 ## keptWhole
 
@@ -800,9 +805,9 @@ it. Any other file of a repository is its text.
 
 ### Parameters
 
-- `document` **([Document][159] | null | [undefined][162])**&#x20;
+- `document` **([Document][160] | null | [undefined][163])**&#x20;
 
-Returns **[boolean][153]**&#x20;
+Returns **[boolean][154]**&#x20;
 
 ## isSourceFile
 
@@ -812,9 +817,9 @@ is code to be read by line.
 ### Parameters
 
 - `get` **Lookup**&#x20;
-- `document` **([Document][159] | null | [undefined][162])**&#x20;
+- `document` **([Document][160] | null | [undefined][163])**&#x20;
 
-Returns **[boolean][153]**&#x20;
+Returns **[boolean][154]**&#x20;
 
 ## describeRepository
 
@@ -822,10 +827,10 @@ A repository's line in a listing: what it is, where from, and how much.
 
 ### Parameters
 
-- `repository` **[Document][159]**&#x20;
-- `files` **[number][151]** How many files are in it
+- `repository` **[Document][160]**&#x20;
+- `files` **[number][152]** How many files are in it
 
-Returns **[string][152]**&#x20;
+Returns **[string][153]**&#x20;
 
 ## source/write
 
@@ -850,27 +855,27 @@ bytes never change under its id, which sync counts on.
 
 ## BATCH
 
-Type: [number][151]
+Type: [number][152]
 
 ## BATCH
 
-Type: [number][151]
+Type: [number][152]
 
 ## BATCH
 
-Type: [number][151]
+Type: [number][152]
 
 ## BATCH
 
 How many files are written between breaths.
 
-Type: [number][151]
+Type: [number][152]
 
 ## folderOf
 
 ### Parameters
 
-- `path` **[string][152]**&#x20;
+- `path` **[string][153]**&#x20;
 
 ## contentsOf
 
@@ -879,21 +884,21 @@ What a repository holds, by path below it: its files and its folders.
 ### Parameters
 
 - `childrenOf` &#x20;
-- `folderId` **[string][152]**&#x20;
+- `folderId` **[string][153]**&#x20;
 
-Returns **{files: [Map][158]<[string][152], [Document][159]>, folders: [Map][158]<[string][152], [Document][159]>}**&#x20;
+Returns **{files: [Map][159]<[string][153], [Document][160]>, folders: [Map][159]<[string][153], [Document][160]>}**&#x20;
 
 ## folders
 
-Type: [Map][158]<[string][152], [Document][159]>
+Type: [Map][159]<[string][153], [Document][160]>
 
 ##
 
-Type: [string][152]
+Type: [string][153]
 
 ##
 
-Type: [string][152]
+Type: [string][153]
 
 ## foldersUnder
 
@@ -901,21 +906,21 @@ The function that finds or makes the folder for a path, under a repository.
 
 ### Parameters
 
-- `storyId` **[string][152]**&#x20;
-- `rootId` **[string][152]** The repository folder
-- `folders` **[Map][158]<[string][152], [Document][159]>** What is there already, by path; added to
+- `storyId` **[string][153]**&#x20;
+- `rootId` **[string][153]** The repository folder
+- `folders` **[Map][159]<[string][153], [Document][160]>** What is there already, by path; added to
 
 ## ids
 
-Type: [Map][158]<[string][152], [string][152]>
+Type: [Map][159]<[string][153], [string][153]>
 
 ## path
 
-Type: \[[string][152], [string][152]]
+Type: \[[string][153], [string][153]]
 
 ##
 
-Type: [string][152]
+Type: [string][153]
 
 ## blobOf
 
@@ -925,7 +930,7 @@ A file that came in whole, as a blob of its type.
 
 - `file` **[SourceFile][17]** With its bytes
 
-Returns **[Blob][161]**&#x20;
+Returns **[Blob][162]**&#x20;
 
 ## file
 
@@ -933,7 +938,7 @@ Type: BlobPart
 
 ## file
 
-Type: [Uint8Array][156]
+Type: [Uint8Array][157]
 
 ## textOfWhole
 
@@ -948,8 +953,8 @@ comes in all the same, with none.
 
 ### Parameters
 
-- `storyId` **[string][152]**&#x20;
-- `parentId` **[string][152]**&#x20;
+- `storyId` **[string][153]**&#x20;
+- `parentId` **[string][153]**&#x20;
 - `file` **[SourceFile][17]**&#x20;
 
 ## sameBytes
@@ -959,10 +964,10 @@ the bytes themselves, fetched from the sync server if they are only there.
 
 ### Parameters
 
-- `document` **[Document][159]**&#x20;
+- `document` **[Document][160]**&#x20;
 - `file` **[SourceFile][17]** With its bytes
 
-Returns **[Promise][157]<[boolean][153]>**&#x20;
+Returns **[Promise][158]<[boolean][154]>**&#x20;
 
 ## writeRepository
 
@@ -970,29 +975,29 @@ Write a codebase into the tree as a new repository folder.
 
 ### Parameters
 
-- `storyId` **[string][152]**&#x20;
-- `options` **[Object][155]**&#x20;
-  - `options.parentId` **[string][152]?** The folder it goes in; the project's top otherwise
-  - `options.title` **[string][152]** What to call the folder; made unique among its siblings
+- `storyId` **[string][153]**&#x20;
+- `options` **[Object][156]**&#x20;
+  - `options.parentId` **[string][153]?** The folder it goes in; the project's top otherwise
+  - `options.title` **[string][153]** What to call the folder; made unique among its siblings
   - `options.source` **RepositorySource**&#x20;
-  - `options.files` **[Array][154]<[SourceFile][17]>**&#x20;
+  - `options.files` **[Array][155]<[SourceFile][17]>**&#x20;
   - `options.signal` **AbortSignal?** Stops between files; what was written stays
   - `options.onProgress` &#x20;
 
-Returns **[Promise][157]<{folderId: [string][152], files: [number][151]}>**&#x20;
+Returns **[Promise][158]<{folderId: [string][153], files: [number][152]}>**&#x20;
 
 ## Refreshed
 
 What a refresh changed.
 
-Type: [Object][155]
+Type: [Object][156]
 
 ### Properties
 
-- `added` **[number][151]**&#x20;
-- `updated` **[number][151]**&#x20;
-- `removed` **[number][151]**&#x20;
-- `unchanged` **[number][151]**&#x20;
+- `added` **[number][152]**&#x20;
+- `updated` **[number][152]**&#x20;
+- `removed` **[number][152]**&#x20;
+- `unchanged` **[number][152]**&#x20;
 
 ## refreshRepository
 
@@ -1000,26 +1005,26 @@ Settle a repository against its source as it is now.
 
 ### Parameters
 
-- `storyId` **[string][152]**&#x20;
-- `folderId` **[string][152]** The repository folder
-- `options` **[Object][155]**&#x20;
+- `storyId` **[string][153]**&#x20;
+- `folderId` **[string][153]** The repository folder
+- `options` **[Object][156]**&#x20;
   - `options.source` **RepositorySource** Where it was read from this time
-  - `options.files` **[Array][154]<[SourceFile][17]>**&#x20;
+  - `options.files` **[Array][155]<[SourceFile][17]>**&#x20;
   - `options.signal` **AbortSignal?**&#x20;
   - `options.onProgress` &#x20;
 
-Returns **[Promise][157]<[Refreshed][144]>**&#x20;
+Returns **[Promise][158]<[Refreshed][145]>**&#x20;
 
 ## result
 
-Type: [Refreshed][144]
+Type: [Refreshed][145]
 
 ## depthOf
 
 ### Parameters
 
 - `get` &#x20;
-- `document` **[Document][159]**&#x20;
+- `document` **[Document][160]**&#x20;
 
 [1]: #sourcedetect
 [2]: #min_code_files
@@ -1063,123 +1068,124 @@ Type: [Refreshed][144]
 [40]: #entriesoffolder
 [41]: #parameters-8
 [42]: #sourcegithub
-[43]: #githuberror
-[44]: #parameters-9
-[45]: #githubaddress
-[46]: #properties-4
-[47]: #parsegithuburl
-[48]: #parameters-10
-[49]: #refcandidates
-[50]: #parameters-11
-[51]: #refusal
-[52]: #parameters-12
-[53]: #downloadarchive
-[54]: #parameters-13
-[55]: #readarchive
-[56]: #parameters-14
-[57]: #listed
-[58]: #inflated
-[59]: #entry
-[60]: #source
-[61]: #examples
-[62]: #sourcelanguage
-[63]: #by_extension
-[64]: #by_name
-[65]: #binary_extensions
-[66]: #file_extensions
-[67]: #extensionof
-[68]: #parameters-15
-[69]: #languageof
-[70]: #parameters-16
-[71]: #isbinaryname
-[72]: #parameters-17
-[73]: #iswholefilename
-[74]: #parameters-18
-[75]: #iscodename
-[76]: #parameters-19
-[77]: #sourcerules
-[78]: #never
-[79]: #not_by_default
-[80]: #createrules
-[81]: #createrules-1
-[82]: #rules
-[83]: #gitignores
-[84]: #get
-[85]: #sourcetext
-[86]: #sniff_bytes
-[87]: #text_controls
-[88]: #encodingof
-[89]: #parameters-20
-[90]: #textof
-[91]: #parameters-21
-[92]: #textoffile
-[93]: #parameters-22
-[94]: #startsastext
-[95]: #parameters-23
-[96]: #linecount
-[97]: #parameters-24
-[98]: #sourcetree
-[99]: #isrepository
-[100]: #parameters-25
-[101]: #isrepository-1
-[102]: #parameters-26
-[103]: #isrepository-2
-[104]: #parameters-27
-[105]: #repositoryof
-[106]: #parameters-28
-[107]: #inrepository
-[108]: #parameters-29
-[109]: #keptwhole
-[110]: #parameters-30
-[111]: #issourcefile
-[112]: #parameters-31
-[113]: #describerepository
-[114]: #parameters-32
-[115]: #sourcewrite
-[116]: #batch
-[117]: #batch-1
-[118]: #batch-2
-[119]: #batch-3
-[120]: #folderof
-[121]: #parameters-33
-[122]: #contentsof
-[123]: #parameters-34
-[124]: #folders
-[125]: #-1
-[126]: #-2
-[127]: #foldersunder
-[128]: #parameters-35
-[129]: #ids
-[130]: #path
-[131]: #-3
-[132]: #blobof
-[133]: #parameters-36
-[134]: #file
-[135]: #file-1
-[136]: #textofwhole
-[137]: #parameters-37
-[138]: #createfile
-[139]: #parameters-38
-[140]: #samebytes
-[141]: #parameters-39
-[142]: #writerepository
-[143]: #parameters-40
-[144]: #refreshed
-[145]: #properties-5
-[146]: #refreshrepository
-[147]: #parameters-41
-[148]: #result
-[149]: #depthof
-[150]: #parameters-42
-[151]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[152]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[153]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[154]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[155]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[156]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[157]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[158]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[159]: https://developer.mozilla.org/docs/Web/API/Document
-[160]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
-[161]: https://developer.mozilla.org/docs/Web/API/Blob
-[162]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[43]: #most_source
+[44]: #githuberror
+[45]: #parameters-9
+[46]: #githubaddress
+[47]: #properties-4
+[48]: #parsegithuburl
+[49]: #parameters-10
+[50]: #refcandidates
+[51]: #parameters-11
+[52]: #refusal
+[53]: #parameters-12
+[54]: #downloadarchive
+[55]: #parameters-13
+[56]: #readarchive
+[57]: #parameters-14
+[58]: #listed
+[59]: #inflated
+[60]: #entry
+[61]: #source
+[62]: #examples
+[63]: #sourcelanguage
+[64]: #by_extension
+[65]: #by_name
+[66]: #binary_extensions
+[67]: #file_extensions
+[68]: #extensionof
+[69]: #parameters-15
+[70]: #languageof
+[71]: #parameters-16
+[72]: #isbinaryname
+[73]: #parameters-17
+[74]: #iswholefilename
+[75]: #parameters-18
+[76]: #iscodename
+[77]: #parameters-19
+[78]: #sourcerules
+[79]: #never
+[80]: #not_by_default
+[81]: #createrules
+[82]: #createrules-1
+[83]: #rules
+[84]: #gitignores
+[85]: #get
+[86]: #sourcetext
+[87]: #sniff_bytes
+[88]: #text_controls
+[89]: #encodingof
+[90]: #parameters-20
+[91]: #textof
+[92]: #parameters-21
+[93]: #textoffile
+[94]: #parameters-22
+[95]: #startsastext
+[96]: #parameters-23
+[97]: #linecount
+[98]: #parameters-24
+[99]: #sourcetree
+[100]: #isrepository
+[101]: #parameters-25
+[102]: #isrepository-1
+[103]: #parameters-26
+[104]: #isrepository-2
+[105]: #parameters-27
+[106]: #repositoryof
+[107]: #parameters-28
+[108]: #inrepository
+[109]: #parameters-29
+[110]: #keptwhole
+[111]: #parameters-30
+[112]: #issourcefile
+[113]: #parameters-31
+[114]: #describerepository
+[115]: #parameters-32
+[116]: #sourcewrite
+[117]: #batch
+[118]: #batch-1
+[119]: #batch-2
+[120]: #batch-3
+[121]: #folderof
+[122]: #parameters-33
+[123]: #contentsof
+[124]: #parameters-34
+[125]: #folders
+[126]: #-1
+[127]: #-2
+[128]: #foldersunder
+[129]: #parameters-35
+[130]: #ids
+[131]: #path
+[132]: #-3
+[133]: #blobof
+[134]: #parameters-36
+[135]: #file
+[136]: #file-1
+[137]: #textofwhole
+[138]: #parameters-37
+[139]: #createfile
+[140]: #parameters-38
+[141]: #samebytes
+[142]: #parameters-39
+[143]: #writerepository
+[144]: #parameters-40
+[145]: #refreshed
+[146]: #properties-5
+[147]: #refreshrepository
+[148]: #parameters-41
+[149]: #result
+[150]: #depthof
+[151]: #parameters-42
+[152]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[153]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[154]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[155]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[156]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[157]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[158]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[159]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[160]: https://developer.mozilla.org/docs/Web/API/Document
+[161]: https://developer.mozilla.org/docs/Web/Guide/HTML/HTML5
+[162]: https://developer.mozilla.org/docs/Web/API/Blob
+[163]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined

@@ -1251,6 +1251,16 @@ Type: [Object][131]
   tools are on. Read once, to give them that (composables/useToolChoices.js).
 - `saveWithoutAsking` **[boolean][134]?** The model keeps a page in the
   project (`save_web_page`) without asking first. Absent means it asks.
+- `readWithoutAsking` **[boolean][134]?** The model reads any address
+  without asking first, those it put together itself among them
+  (web/addresses.js). Absent means those ask.
+- `allowedSites` **[Array][135]<[string][132]>?** The sites, by host name, whose
+  addresses are always read without asking.
+- `readLocalOff` **[boolean][134]?** The model reads nothing on the
+  writer's own computer and network, whatever else is allowed.
+- `readLocalWithoutAsking` **[boolean][134]?** The model reads addresses on
+  the writer's own computer and network without asking first. Absent means
+  each asks, until its site is always allowed.
 - `updated` **[number][133]?**&#x20;
 
 ## LibraryCard
@@ -1342,6 +1352,11 @@ Type: [Object][131]
   own names, so a call to one runs without asking
 - `allowAll` **[boolean][134]?** The writer always allows every tool it has,
   the ones it adds later included, so none of its calls asks
+- `asks` **[Array][135]<[string][132]>?** Its tools the writer has ask first whatever
+  else says they needn't, by their own names: one that says it only reads,
+  or one of a server whose every tool is always allowed
+- `off` **[Array][135]<[string][132]>?** Its tools switched off for the whole app, by
+  their own names (ai/tools/everywhere.js)
 - `listedAt` **[number][133]?** When its tools were last listed
 - `error` **[string][132]?** Why it could not be listed, the last time it was tried
 - `created` **[number][133]**&#x20;

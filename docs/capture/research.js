@@ -260,7 +260,16 @@ export async function research(ui, { standIn, context }) {
     }
     await ui.press('Enter')
     await button('Stop generating').waitFor()
-    await button('Send message').waitFor({ timeout: 120_000 })
+    // A page at an address the model put together asks before it is read:
+    // allowed, each one, as the writer allowed them in the session.
+    const done = button('Send message')
+    const allow = page.locator('[data-approval] [data-action="allow"]').first()
+    const until = Date.now() + 120_000
+    while (!(await done.isVisible())) {
+      if (Date.now() > until) throw new Error('The reply took more than two minutes.')
+      if (await allow.isVisible()) await allow.click()
+      else await page.waitForTimeout(200)
+    }
     await ui.pause(500)
     const failed = await failedCalls()
     if (failed.length > 0) {
@@ -374,7 +383,7 @@ export async function research(ui, { standIn, context }) {
   // The first to answer is the one used, which its card doesn't say: the
   // extension does. On in every chat on Default from then: nothing to switch.
   await ui.click(settings.getByRole('button', { name: 'Extensions', exact: true }))
-  await ui.click(settings.getByRole('button', { name: 'Web search', exact: true }))
+  await ui.click(settings.getByRole('button', { name: 'Web', exact: true }))
   await settings.locator('[data-web-service-choice]').getByText('Exa').waitFor()
   await quiet()
   await ui.shot('research-web-search', { of: settings, pad: 0 })
