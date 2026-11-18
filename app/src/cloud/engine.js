@@ -1294,6 +1294,8 @@ export function createEngine({
       return false
     }
     if (!isStoryId(storyId)) return false
+    // This account's own collection of the project is never one it is invited to.
+    if (listed.id === (await madeFor(storyId))) return false
     const pinned = await pinnedTo(storyId)
     if (pinned) return pinned === listed.id
     return !(await local.stories()).some(story => story.id === storyId)

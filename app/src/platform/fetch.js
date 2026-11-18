@@ -45,11 +45,13 @@ export function fetch(input, init) {
  *
  * @param {RequestInfo|URL} input
  * @param {RequestInit} [init]
+ * @param {string[]} [homeSites] - The sites the writer always allows, which
+ *   may be on their computer or network
  * @returns {Promise<Response>}
  */
-export function fetchFromWeb(input, init) {
+export function fetchFromWeb(input, init, homeSites = []) {
   if (!isDesktop()) return globalThis.fetch(input, init)
-  return fetchNatively(new Request(input, init), { webOnly: true })
+  return fetchNatively(new Request(input, init), { webOnly: true, homeSites })
 }
 
 /**
@@ -57,10 +59,11 @@ export function fetchFromWeb(input, init) {
  * comes.
  *
  * @param {Request} request
- * @param {{webOnly?: boolean}} [options] - Refuse it where it leads home
+ * @param {{webOnly?: boolean, homeSites?: string[]}} [options] - Refuse it
+ *   where it leads home, but to these sites
  * @returns {Promise<Response>}
  */
-async function fetchNatively(request, { webOnly = false } = {}) {
+async function fetchNatively(request, { webOnly = false, homeSites = [] } = {}) {
   const { signal } = request
   signal.throwIfAborted()
   const bridge = desktop()
@@ -113,7 +116,7 @@ async function fetchNatively(request, { webOnly = false } = {}) {
         headers: [...request.headers],
         body,
         redirect: request.redirect,
-        ...(webOnly ? { webOnly: true } : {}),
+        ...(webOnly ? { webOnly: true, homeSites } : {}),
       },
       onBody
     )

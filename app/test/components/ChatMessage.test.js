@@ -547,6 +547,188 @@ describe('ChatMessage with a server’s tool waiting on the writer', () => {
     await block.find('[data-action="always"]').trigger('click')
     expect(await decided).toBe('always')
   })
+
+  it('asks the question of a page that turned out to be on the writer’s network, not the read', async () => {
+    const { askApproval } = await import('../../src/composables/useToolApprovals.js')
+    const asked = 'http://shelf.example:8080/admin is on this computer or its network. Read it?'
+    const decided = askApproval(
+      'm1',
+      {
+        id: 'c9',
+        type: 'function',
+        function: {
+          name: 'read_web_page',
+          arguments: '{"url":"http://shelf.example:8080/admin"}',
+        },
+      },
+      asked,
+      'shelf.example:8080'
+    )
+    const wrapper = show()
+    await nextTick()
+
+    const block = wrapper.find('[data-approval]')
+    expect(block.find('[data-question]').text()).toBe(asked)
+    expect(block.find('[data-action="always"]').text()).toBe('Always allow shelf.example:8080')
+
+    await block.find('[data-action="allow"]').trigger('click')
+    expect(await decided).toBe('allow')
+  })
+
+  it('asks to read a page by its address, spelled out, and always allows its site', async () => {
+    const { askApproval } = await import('../../src/composables/useToolApprovals.js')
+    const decided = askApproval(
+      'm1',
+      {
+        id: 'c5',
+        type: 'function',
+        function: {
+          name: 'read_web_page',
+          arguments: '{"url":"https://tides.example/tables?port=North%20Quay&note=%C3%A9bb"}',
+        },
+      },
+      undefined,
+      'tides.example'
+    )
+    const wrapper = show()
+    await nextTick()
+
+    const block = wrapper.find('[data-approval]')
+    expect(block.text().replace(/\s+/g, ' ')).toContain(
+      'Read https://tides.example/tables?port=North Quay&note=ébb'
+    )
+    expect(block.find('[data-question]').exists()).toBe(false)
+    expect(block.find('pre').exists()).toBe(false)
+    expect(block.findAll('button').map(button => button.text())).toEqual([
+      'Deny',
+      'Always allow tides.example',
+      'Allow',
+    ])
+
+    await block.find('[data-action="always"]').trigger('click')
+    expect(await decided).toBe('always')
+    expect(wrapper.find('[data-approval]').exists()).toBe(false)
+  })
+
+  it('shows an address that can’t be spelled out as the model wrote it', async () => {
+    const { askApproval } = await import('../../src/composables/useToolApprovals.js')
+    askApproval(
+      'm1',
+      {
+        id: 'c6',
+        type: 'function',
+        function: { name: 'read_web_page', arguments: '{"url":"https://tides.example/100%"}' },
+      },
+      undefined,
+      'tides.example'
+    )
+    const wrapper = show()
+    await nextTick()
+
+    expect(wrapper.find('[data-approval]').text()).toContain('Read https://tides.example/100%')
+  })
+
+  it('names the site to always allow for a page to keep at an address the model made', async () => {
+    const { askApproval } = await import('../../src/composables/useToolApprovals.js')
+    askApproval(
+      'm1',
+      {
+        id: 'c7',
+        type: 'function',
+        function: { name: 'save_web_page', arguments: '{"url":"https://tides.example/tables"}' },
+      },
+      undefined,
+      'tides.example'
+    )
+    const wrapper = show()
+    await nextTick()
+
+    expect(wrapper.find('[data-approval] [data-action="always"]').text()).toBe(
+      'Always allow tides.example'
+    )
+  })
+
+  it('reads a page once on Allow, and not at all on Deny', async () => {
+    const { askApproval } = await import('../../src/composables/useToolApprovals.js')
+    const read = id =>
+      askApproval(
+        'm1',
+        {
+          id,
+          type: 'function',
+          function: { name: 'read_web_page', arguments: '{"url":"https://tides.example/tables"}' },
+        },
+        undefined,
+        'tides.example'
+      )
+    const first = read('c8')
+    const second = read('c9')
+    const wrapper = show()
+    await nextTick()
+    expect(wrapper.findAll('[data-approval]')).toHaveLength(2)
+
+    await wrapper.find('[data-approval] [data-action="allow"]').trigger('click')
+    await wrapper.find('[data-approval] [data-action="deny"]').trigger('click')
+
+    expect(await first).toBe('allow')
+    expect(await second).toBe('deny')
+  })
+})
+
+describe('ChatMessage with a change put to the writer', () => {
+  /** A move the model proposed in a chat that asks first. */
+  const move = {
+    id: 'e1',
+    documentId: 'd_chapter',
+    path: 'Notes/Tide tables',
+    tool: 'move_document',
+    old: 'Notes/Tide tables',
+    new: 'Manuscript/Part one/Tide tables',
+    status: 'proposed',
+  }
+
+  /** The card of the first change put to the writer. */
+  const card = wrapper => wrapper.find('pre.line-through').element.parentElement.parentElement
+
+  it('shows a move as where the document was, struck through, over where it goes', () => {
+    const wrapper = show({ metadata: { documentEdits: [move] } })
+
+    expect(wrapper.text()).toContain('Moving')
+    const lines = [...card(wrapper).querySelectorAll('pre')]
+    expect(lines.map(line => line.textContent)).toEqual([
+      'Notes/Tide tables',
+      'Manuscript/Part one/Tide tables',
+    ])
+    expect(lines.map(line => line.classList.contains('line-through'))).toEqual([true, false])
+  })
+
+  it('accepts or rejects it from its card, by where it stands among the turn’s changes', async () => {
+    const wrapper = show({
+      metadata: {
+        documentEdits: [
+          // One that went straight in is the tool panel's to show.
+          { ...move, id: 'e0', status: undefined },
+          move,
+        ],
+      },
+    })
+    expect(wrapper.findAll('pre.line-through')).toHaveLength(1)
+    const buttons = [...card(wrapper).querySelectorAll('button')]
+    expect(buttons.map(button => button.textContent)).toEqual(['Reject', 'Accept'])
+
+    buttons[1].click()
+    buttons[0].click()
+
+    expect(wrapper.emitted('accept')).toEqual([[1]])
+    expect(wrapper.emitted('reject')).toEqual([[1]])
+  })
+
+  it('says how a move was decided in place of its buttons', () => {
+    const wrapper = show({ metadata: { documentEdits: [{ ...move, status: 'rejected' }] } })
+
+    expect(card(wrapper).querySelector('button')).toBeNull()
+    expect(card(wrapper).textContent).toContain('rejected')
+  })
 })
 
 describe('ChatMessage with an answer a tool showed the writer', () => {

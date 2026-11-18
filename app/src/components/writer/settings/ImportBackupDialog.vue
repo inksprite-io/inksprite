@@ -23,6 +23,9 @@
         }"
       />
     </div>
+    <p v-if="picked.settings && settingsNote" class="pb-3 text-sm" data-settings-note>
+      {{ settingsNote }}
+    </p>
     <template #footer>
       <Button
         label="Cancel"
@@ -32,7 +35,7 @@
         @click="emit('update:visible', false)"
       />
       <Button
-        label="Add"
+        label="Import"
         size="small"
         data-action="add"
         :disabled="picked.projects.length === 0 && picked.cards.length === 0 && !picked.settings"
@@ -65,6 +68,8 @@ const props = defineProps({
   visible: { type: Boolean, default: false },
   /** What the backup holds, said as the dialog opens. */
   message: { type: String, default: '' },
+  /** What its settings add and change here, said while they are ticked. */
+  settingsNote: { type: String, default: '' },
   /** What of it can be added. @type {import('vue').PropType<BackupAddable|null>} */
   addable: { type: Object, default: null },
   /** The ids of its projects that are here already. @type {import('vue').PropType<string[]>} */

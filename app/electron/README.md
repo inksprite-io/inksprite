@@ -158,5 +158,9 @@ checkout never looks.
 
 Each update is checked against the hash its `latest*.yml` gives, which comes
 from the same release. A Mac also checks that the new app is signed by the
-same developer as the one it replaces; the Windows and Linux builds are not
-signed, so there the release itself is what an update is trusted on.
+same developer as the one it replaces. The Windows and Linux builds carry
+no signature the system checks, so a release signs its `latest*.yml` with a key
+of our own, and the app checks an update against the keys built into it
+(`src/updateKeys.js`). For now a failed check is only written to the app's
+log (`inksprite.log`), and the update is offered all the same
+(`UPDATE_CHECK` is `warn`).

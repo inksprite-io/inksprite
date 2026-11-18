@@ -176,26 +176,30 @@ switching profiles keeps it.
 ### Tools
 
 **Tools** lists what the model can use, in groups by where each comes from.
-Switch off a group, or one tool in it, to keep it from the model; hover a tool
-to see what it does. A switch here is this chat's, and the next new chat on
-its profile starts with it too; chats already going keep their own.
-**Enable tools** switches them all off, and back on as each was switched.
+A group's switch keeps the whole group from the model. It's this chat's, and
+the next new chat on its profile starts with it too; chats already going keep
+their own. **Enable tools** switches them all off, and back on as each was
+switched.
+
+Under a group is a setting for each tool; hover one to see what it does. It's
+**Off** or **On**, or for a tool that can ask before it runs, **Off**, **Ask
+first** or **Always allow**. Apart from **Documents** and **Skills**, a tool's
+setting is for every chat, not just this one.
 
 Something you add, a search service, an [MCP server](/mcp/) or
 [Python](/python/), is on in every chat, except on the Roleplay and Blank
-profiles, which offer only what they start with. A tool that asks before each
-call says **Asks first**, and one you've let run without asking says **Always
-allowed**.
+profiles, which offer only what they start with.
 
-- **Documents**: listing, searching, reading, creating, editing, renaming,
-  moving and deleting the project's documents,
-  [exploring](#explore-the-project) them, and reading and resolving your
-  [comments](/comments/). What the model deletes goes to the
+- **Documents** has three settings, kept with the chat's profile. **Read**:
+  listing, searching, reading and [exploring](#explore-the-project) the
+  project's documents. **Edit mode**: creating, editing, renaming, moving
+  and deleting them, set to **Off**, **Suggesting** or **Editing** (see
+  [Document edits](#document-edits)). **Comment**: reading, leaving and
+  resolving [comments](/comments/). What the model deletes goes to the
   [trash](/projects/#delete-and-the-trash). To let the model read but not
-  write, leave **Read document**, **Describe document**, **List documents**,
-  **Search documents** and **Explore documents** on, and switch off the rest.
-- **Web**: searching the web and reading pages, once you've connected a search
-  service. See [Web Search](/web-search/).
+  write, set **Edit mode** and **Comment** to **Off**.
+- **Web**: searching the web, and reading and saving pages. See
+  [Web Search](/web-search/).
 - **Python**: running code, in the desktop app, once you've turned it on. See
   [Python](/python/).
 - Each [MCP server](/mcp/) you've connected has a group of its own.
@@ -210,19 +214,21 @@ tool use** is off under **Generation** in its
 
 The last chip under the message box says whether the model's changes to
 documents wait for you. It's this chat's, and new chats on its profile start
-with it. The chip is there while the chat has its **Documents** tools.
+with it. The chip is there unless **Edit mode** is **Off** under **Documents** in
+**Tools**.
 **Editing** makes the model's changes at once; **Suggesting** has it ask
 first:
 
 - Its changes to a document's text are [suggestions](/comments/#suggestions)
   in the text, each change on its own, for you to accept or reject there or in
   the **Comments** tab.
-- A new document, a delete, a comment it leaves or resolves, and a change to a
+- A new document, a delete, a move, a rename, a comment it leaves or resolves,
+  and a change to a
   document in the [plain text editor](/editor/#the-plain-text-editor) wait in
   the chat, showing what goes and what comes in, until you click **Accept** or
   **Reject**.
 
-A move, a rename or a new folder is made at once.
+A new folder is made at once.
 
 When the model adds to the end of a document you have open, its words appear
 there as it writes them, as a suggestion if it's suggesting. They go into the

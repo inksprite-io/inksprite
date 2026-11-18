@@ -100,6 +100,20 @@ describe('AiConnections', () => {
     expect(away.find('.bg-red-500').exists()).toBe(true)
   })
 
+  it('says when a connection’s key was left out of the backup it came from', () => {
+    const box = rows.find(row => row.id === 'provider_box')
+    rows.splice(rows.indexOf(box), 1, {
+      ...box,
+      endpoint: 'http://box:1234/v1?api_key=key-left-out',
+    })
+    delete states.provider_box
+    const wrapper = mountList()
+
+    expect(card(wrapper, 'provider_box').find('[data-status]').text()).toBe(
+      'Its key was left out of a backup.'
+    )
+  })
+
   it('opens a connection’s settings in its card', async () => {
     const wrapper = mountList()
 

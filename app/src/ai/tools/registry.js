@@ -89,7 +89,7 @@ import { toolOn } from './choice.js'
  *   request shares the turn's cached prefix. No tool runs. A summary is asked
  *   for this way. `before` and `past` are `consult`'s. Supplied by whoever is
  *   running the turn.
- * @property {(question: string) => Promise<'allow'|'always'|'deny'>} [approve] -
+ * @property {(question: string, site?: string|null) => Promise<'allow'|'always'|'deny'>} [approve] -
  *   Ask the writer before doing something that costs a lot, beside the call.
  *   `always` is yes and stop asking, which the tool keeps where the writer
  *   can undo it. Supplied by whoever runs the turn. Absent outside a turn,
@@ -107,9 +107,9 @@ import { toolOn } from './choice.js'
  *   turn: for one they should read in the tool's own words rather than have
  *   retold. The model is sent the result as ever, and the tool tells it the
  *   writer has it. Absent where nothing would show it.
- * @property {(address: string) => boolean} [mayLeadHome] - Whether the writer
- *   said an address may be read wherever it leads, their own network among
- *   it: they typed it, or always allow its site (web/addresses.js)
+ * @property {() => true|string[]} [mayLeadHome] - Where on the writer's own
+ *   computer and network a fetch may go: anywhere, or only to the sites
+ *   they always allow (web/addresses.js)
  * @property {AbortSignal} [signal] - Aborted when the call is stopped: its
  *   time is up, or the turn it is part of was stopped. A tool with something
  *   slow to wait on — a request, a server — hands it on; one that doesn't is

@@ -1,13 +1,17 @@
 ---
 title: Web Search
-description: Let the model search the web and read pages through Exa, Kagi or Brave, and keep the pages and documents it finds in your project.
+description: Let the model search the web through Exa, Kagi or Brave, read pages, and keep the pages and documents it finds in your project.
 ---
 
 import Screenshot from '../../components/Screenshot.astro';
 
-With web search on, the model can look things up while you chat: a date to
+With the web on, the model can look things up while you chat: a date to
 check, a source to read, a detail for a scene. It searches through a service
 you connect, and reads the pages it finds.
+
+In the [desktop app](/desktop/), the model reads and saves pages with no
+service connected: give it an address, and the app fetches the page itself.
+Searching needs a service everywhere, and in a browser so does reading.
 
 ## Choose a service
 
@@ -32,31 +36,37 @@ you connect, and reads the pages it finds.
    search, paid for like any other. The first service that connects is the one
    used.
 
-<Screenshot name="research-web-search" alt="Exa chosen under Web search in Settings › Extensions" />
+<Screenshot name="research-web-search" alt="Exa chosen under Web in Settings › Extensions" />
 
 One service is used at a time, and its card is tinted. To switch, open
 another's card and click **Use for web search**; the others keep their keys.
-**Search with**, under **Web search** in **Settings** › **Extensions**, says
+**Search with**, under **Web** in **Settings** › **Extensions**, says
 which is used and switches too. If the one chosen needs a key, or refused the
 one it has, a line under it says so, with **Open Connections**.
 
-Web search is an extension, on to start with. To stop every chat searching,
-switch **Web search** off in **Settings** › **Extensions**. Your keys are kept
-for when it's back on.
+**Web** is an extension, on to start with. To keep every chat off the web,
+switch **Web** off in **Settings** › **Extensions**. Your keys are kept for
+when it's back on.
 
 A [backup](/projects/#back-up-everything) leaves the keys out unless you tick
-**Include API keys**. Restoring one without them names the services that need
+**Include API keys**. Importing one without them names the services that need
 a key again; paste it under **Key**.
 
-## Choose which chats search
+## Choose which chats use the web
 
-Once a service is set up, every chat searches, except on the Roleplay and
-Blank [profiles](/chats/#profiles). To change one chat, open **Settings** ›
-**Tools** while it's showing, and switch **Web** on or off. Its three tools, **Web search**, **Read web page** and
-**Save web page**, can be switched off one at a time. New chats on the same
-profile start the same way; chats already going keep their own.
+Every chat can use the web, except on the Roleplay and Blank
+[profiles](/chats/#profiles). To change one chat, open **Settings** ›
+**Tools** while it's showing, and switch **Web** on or off. New chats on the
+same profile start the same way; chats already going keep their own.
 
-**Web** is listed only while a service is chosen, with its key if it needs one.
+Under **Web** are its three tools, each set for every chat at once:
+
+- **Search** is **On** or **Off**. It's listed while a service is chosen,
+  with its key if it needs one.
+- **Read pages** is **Off**, **Ask first** or **Always allow**. On **Ask
+  first** the model [asks about some addresses](#reading-without-asking),
+  not all.
+- **Save pages** is **Off**, **Ask first** or **Always allow**.
 
 ## Ask
 
@@ -76,7 +86,9 @@ place of the turns that read them, so a follow-up about one doesn't read it
 again. The [research guide](/research/) has this example in full.
 
 The model reads PDFs and Word files on the web as well as pages. Exa and Kagi
-read them for it; with Brave, the desktop app does.
+read them for it; with Brave, or with no service, the desktop app does. A
+page that only fills in once its scripts have run reads as empty when the app
+fetches it itself; Exa and Kagi can read those.
 
 ## The model keeps what it finds
 
@@ -88,8 +100,8 @@ turn shows **Save** with the address and the folder it goes in.
 - **Always allow** saves this one and every one after it without asking.
 - **Deny** leaves it out, and the model is told so.
 
-To be asked again after **Always allow**, switch on **Ask before saving
-pages** in **Settings** › **Extensions**, under **Web search**.
+To be asked again after **Always allow**, set **Save pages** to **Ask first**
+in **Settings** › **Tools**.
 
 In the desktop app, a PDF or another file is saved as the file itself, as if
 you had imported it. In a browser, most sites won't hand the file to the page,
@@ -130,8 +142,8 @@ If the model obeys, it reads
 attacker's site receives that address, and your notes with it.
 
 So the model asks before it reads an address it wrote itself. It doesn't ask
-about an address you gave it, a search result, or a link on a page it reached
-from one of those. **Always allow** in the question covers that one site.
+about an address you gave it, with or without `https://`, a search result, or
+a link on a page it reached from one of those. **Always allow** in the question covers that one site.
 Setting **Read pages** to **Always allow** stops the question for every site.
 
 ### Pages on your network
@@ -142,9 +154,11 @@ lately, a router lists every device in the house. A hidden instruction can
 have the model read one of these pages and send what it finds to an attacker,
 as above.
 
-So a page on your computer or network asks every time, until you always
-allow its site. Setting **Read pages on my network** to **Always allow**
-stops the question for all of them.
+So the model asks every time before it reads a page on your computer or
+network, until you always allow its site. A site is counted with its port,
+so `localhost:8000` and `localhost:9000` are two sites. Setting **Read pages on my network** to **Always allow**
+stops the question for all of them, and **Off** keeps the model from reading
+any of them.
 
 Both settings are under **Web** in **Settings** › **Extensions**. **Manage
 allowed sites** there lists the sites you always allow.
@@ -154,8 +168,9 @@ allowed sites** there lists the sites you always allow.
 Searches go straight from your computer to the service, with your key; they
 don't pass through inksprite. The words searched for are the model's, drawn
 from your chat. Exa and Kagi also read the pages for the model, so they see
-which pages it reads. With Brave, the desktop app reads pages from their own
-sites.
+which pages it reads. With Brave, or with no service, the desktop app reads
+pages from their own sites. A page it saves is always fetched from the page's own site, whichever
+service you use.
 
 What the services say they keep:
 

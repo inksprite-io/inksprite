@@ -4,6 +4,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { setActivePinia, createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'
 import ExtensionsSection from '@/components/writer/settings/ExtensionsSection.vue'
+import AllowedSitesDialog from '@/components/writer/settings/AllowedSitesDialog.vue'
 import { useApplicationState } from '@/composables/useApplicationState'
 import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
 import { useWebSearchStore } from '@/stores/webSearchStore.js'
@@ -148,7 +149,7 @@ describe('ExtensionsSection', () => {
     expect(wrapper.find('[data-delete-card-library]').attributes('disabled')).toBeDefined()
   })
 
-  describe('Web search', () => {
+  describe('Web', () => {
     const webSwitch = wrapper => wrapper.findComponent('[data-extension-switch="web"]')
     const choice = wrapper => wrapper.findComponent('[data-web-service-choice]')
     const problem = wrapper => wrapper.find('[data-web-service-problem]')
@@ -289,6 +290,136 @@ describe('ExtensionsSection', () => {
       const wrapper = await mountSection()
       expect(wrapper.find('[data-extension="web"] input[type="password"]').exists()).toBe(false)
       expect(wrapper.find('[data-field="web-key"]').exists()).toBe(false)
+    })
+
+    describe('what reading asks first', () => {
+      /** A row's select, by the row's id. */
+      const reading = (wrapper, id) =>
+        wrapper.find(`[data-web-reading="${id}"]`).findComponent({ name: 'Select' })
+      const labels = select => select.props('options').map(option => option.label)
+
+      /** Answer the question a change asked, as the writer would. */
+      const answer = async accepted => {
+        const question = require.mock.calls.at(-1)[0]
+        if (accepted) question.accept()
+        else question.reject()
+        await flushPromises()
+      }
+
+      it('is called Web, with a row for pages and one for pages on the writer’s network', async () => {
+        const wrapper = await mountSection()
+        const section = wrapper
+          .findAllComponents({ name: 'ExpandableSection' })
+          .find(one => one.attributes('data-extension') === 'web')
+
+        expect(section.props('title')).toBe('Web')
+        expect(
+          wrapper
+            .findAll('[data-web-reading]')
+            .map(row => [row.attributes('data-web-reading'), row.find('label').text()])
+        ).toEqual([
+          ['web', 'Read pages'],
+          ['local', 'Read pages on my network'],
+        ])
+        expect(labels(reading(wrapper, 'web'))).toEqual(['Off', 'Ask first', 'Always allow'])
+        expect(labels(reading(wrapper, 'local'))).toEqual(['Off', 'Ask first', 'Always allow'])
+        expect(reading(wrapper, 'web').props('modelValue')).toBe('ask')
+        expect(reading(wrapper, 'local').props('modelValue')).toBe('ask')
+      })
+
+      it('has no row for searching or for saving pages: those are among a chat’s tools', async () => {
+        const wrapper = await mountSection()
+        const rows = wrapper.findAll('[data-web-reading] label').map(label => label.text())
+
+        expect(rows).not.toContain('Search')
+        expect(rows).not.toContain('Save pages')
+      })
+
+      it('asks before pages are always read, and reads them so once the writer says', async () => {
+        const wrapper = await mountSection()
+
+        await reading(wrapper, 'web').vm.$emit('update:modelValue', 'always')
+        await flushPromises()
+
+        expect(require).toHaveBeenCalledOnce()
+        expect(require.mock.calls[0][0]).toMatchObject({
+          header: 'Always allow reading pages?',
+          acceptProps: { label: 'Always allow' },
+        })
+        expect(useWebSearchStore().setup.readWithoutAsking).toBeUndefined()
+
+        await answer(true)
+        expect(useWebSearchStore().setup.readWithoutAsking).toBe(true)
+        expect(reading(wrapper, 'web').props('modelValue')).toBe('always')
+      })
+
+      it('leaves reading pages as it was when the writer says no', async () => {
+        const wrapper = await mountSection()
+
+        await reading(wrapper, 'web').vm.$emit('update:modelValue', 'always')
+        await answer(false)
+
+        expect(useWebSearchStore().setup.readWithoutAsking).toBeUndefined()
+        expect(reading(wrapper, 'web').props('modelValue')).toBe('ask')
+      })
+
+      it('leaves it as it was when the question is closed unanswered', async () => {
+        const wrapper = await mountSection()
+
+        await reading(wrapper, 'local').vm.$emit('update:modelValue', 'always')
+        require.mock.calls[0][0].onHide()
+        await flushPromises()
+
+        expect(useWebSearchStore().setup.readLocalWithoutAsking).toBeUndefined()
+        expect(reading(wrapper, 'local').props('modelValue')).toBe('ask')
+      })
+
+      it('asks before pages on the writer’s network are always read, by its own question', async () => {
+        const wrapper = await mountSection()
+
+        await reading(wrapper, 'local').vm.$emit('update:modelValue', 'always')
+        await flushPromises()
+
+        expect(require.mock.calls[0][0].header).toBe('Always allow reading pages on your network?')
+        await answer(true)
+
+        expect(useWebSearchStore().setup.readLocalWithoutAsking).toBe(true)
+        expect(useWebSearchStore().setup.readWithoutAsking).toBeUndefined()
+        expect(reading(wrapper, 'local').props('modelValue')).toBe('always')
+      })
+
+      it('goes back to asking first, and switches reading off, without a question', async () => {
+        useWebSearchStore().update({ readWithoutAsking: true, readLocalWithoutAsking: true })
+        const wrapper = await mountSection()
+        expect(reading(wrapper, 'web').props('modelValue')).toBe('always')
+
+        await reading(wrapper, 'web').vm.$emit('update:modelValue', 'ask')
+        await reading(wrapper, 'local').vm.$emit('update:modelValue', 'ask')
+        await flushPromises()
+
+        expect(useWebSearchStore().setup).toMatchObject({
+          readWithoutAsking: false,
+          readLocalWithoutAsking: false,
+        })
+
+        await reading(wrapper, 'web').vm.$emit('update:modelValue', 'off')
+        await flushPromises()
+
+        expect(reading(wrapper, 'web').props('modelValue')).toBe('off')
+        expect(require).not.toHaveBeenCalled()
+      })
+
+      it('opens the sites always allowed from its button', async () => {
+        const wrapper = await mountSection()
+        const dialog = () => wrapper.findComponent(AllowedSitesDialog)
+        expect(dialog().props('visible')).toBe(false)
+
+        const manage = wrapper.find('[data-manage-sites]')
+        expect(manage.text()).toBe('Manage allowed sites')
+        await manage.trigger('click')
+
+        expect(dialog().props('visible')).toBe(true)
+      })
     })
   })
 

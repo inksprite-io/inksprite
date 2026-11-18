@@ -17,8 +17,8 @@
           v-if="message.guide"
           :href="message.guide"
           target="_blank"
-          rel="noopener"
-          class="underline"
+          rel="noopener noreferrer"
+          class="text-primary-600 dark:text-primary-400 hover:underline"
           data-confirm-guide
           >See the guide.</a
         >

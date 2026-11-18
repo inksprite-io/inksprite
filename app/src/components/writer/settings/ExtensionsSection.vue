@@ -143,6 +143,7 @@
             :options="row.options"
             option-label="label"
             option-value="value"
+            :aria-label="row.label"
             size="small"
             class="flex-none w-48 dark:!bg-surface-900"
             @update:model-value="row.set"
@@ -222,7 +223,7 @@ import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
 import { useReadingConfirm } from '@/composables/useReadingConfirm.js'
-import { ASK_ALWAYS, WEB_TOOL_LABELS, useToolSettings } from '@/composables/useToolSettings.js'
+import { WEB_TOOL_LABELS, useToolSettings } from '@/composables/useToolSettings.js'
 import { serviceInUse } from '@/web/config.js'
 import { READ_WEB_PAGE } from '@/ai/tools/web.js'
 import { hasPython } from '@/platform/python.js'
@@ -300,10 +301,16 @@ const readingRows = computed(() => [
   {
     id: 'local',
     label: 'Read pages on my network',
-    options: ASK_ALWAYS,
-    value: web.setup.value.readLocalWithoutAsking ? 'always' : 'ask',
+    options: toolSettings.optionsFor(READ_WEB_PAGE),
+    value: web.setup.value.readLocalOff
+      ? 'off'
+      : web.setup.value.readLocalWithoutAsking
+        ? 'always'
+        : 'ask',
     set: (/** @type {string} */ setting) =>
-      unlessRefused('local', setting, () => web.setAskBeforeLocal(setting === 'ask')),
+      unlessRefused('local', setting, () =>
+        web.setLocalReading(/** @type {'off'|'ask'|'always'} */ (setting))
+      ),
   },
 ])
 

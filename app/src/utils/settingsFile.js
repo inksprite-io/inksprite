@@ -464,6 +464,7 @@ function mergeRow(table, row, here, { byHand, now }) {
       for (const field of [
         'saveWithoutAsking',
         'readWithoutAsking',
+        'readLocalOff',
         'readLocalWithoutAsking',
         'allowedSites',
       ]) {

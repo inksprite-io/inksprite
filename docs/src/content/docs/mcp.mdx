@@ -20,7 +20,9 @@ Connect a server, and the model can call its tools in your chats.
    name on the left and its value on the right. Most want `Authorization` and
    `Bearer ` followed by the key; the server's docs say which.
 5. Click **Connect**. inksprite says how many tools the server offers. Click
-   the server to see them, with what each one tells the model it does.
+   the server to see them, with what each one tells the model it does. If the
+   address redirects to another site, inksprite doesn't follow it, and says
+   which address to enter instead.
 6. Click **Keep it**. It takes the place of **Connect** until you change what
    you typed.
 
@@ -94,10 +96,12 @@ DeepWiki answers, and the model writes its reply from that.
 
 Once you keep a server, every chat has its tools, except on the Roleplay and
 Blank [profiles](/chats/#profiles). To change one chat, open **Settings** ›
-**Tools** while it's showing. Each
-server has a switch of its own, and one for each of its tools, marked **Asks
-first** or **Always allowed**. New chats on the same profile start the same
-way; chats already going keep their own.
+**Tools** while it's showing. Each server has a switch of its own. New chats
+on the same profile start the same way; chats already going keep their own.
+
+Under the server, each of its tools is **Off**, **Ask first** or **Always
+allow**, for every chat at once. A tool that says it only reads starts on
+**Always allow**; set it to **Ask first** if you'd sooner be asked.
 
 ## Allow a call
 
@@ -117,6 +121,12 @@ To change what's allowed, click the server in **Settings** › **Connections** �
 Under **Tools**, each tool has an **Always allow** switch, or says **Reads
 only**. **Always allow all of them** covers every tool, including those the
 server adds later.
+
+If you give a server another address, everything you always allowed asks
+again.
+
+A server's answer longer than 100,000 characters is cut there, and the model
+is told how much was left out.
 
 <Screenshot name="mcp-server-tools" alt="DeepWiki's tools, each with an Always allow switch" />
 

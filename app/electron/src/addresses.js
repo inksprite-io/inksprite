@@ -77,13 +77,18 @@ export async function leadsHome(url, resolve = host => lookup(host, { all: true 
  * @param {string} url
  * @param {object} init - What the request is made with, its redirect aside
  * @param {(url: string) => Promise<boolean>} [home]
+ * @param {string[]} [allowed] - The sites (host, and port where one is
+ *   named) the writer always allows, which may be at home: only these, so
+ *   that an allowed site's redirect leads to no other place there
  * @returns {Promise<Response>}
  * @throws {Error} `LOCAL_REFUSED`, or for more redirects than are followed
  */
-export async function fetchFromWeb(fetch, url, init, home = leadsHome) {
+export async function fetchFromWeb(fetch, url, init, home = leadsHome, allowed = []) {
   let at = url
   for (let step = 0; step <= MOST_STEPS; step++) {
-    if (await home(at)) throw new Error(LOCAL_REFUSED)
+    const site = new URL(at).host.toLowerCase()
+    // Which step it was goes on a line of its own, for the page to ask about.
+    if (!allowed.includes(site) && (await home(at))) throw new Error(`${LOCAL_REFUSED}\n${site}`)
     const response = await fetch(at, { ...init, redirect: 'manual' })
     const to = response.status >= 300 && response.status < 400 && response.headers.get('location')
     if (!to) return response

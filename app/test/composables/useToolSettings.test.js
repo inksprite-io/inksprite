@@ -39,10 +39,10 @@ describe('a tool’s setting for the whole app, as a screen reads and writes it'
 
   it('keeps whether reading on the writer’s own network asks, apart from the web', () => {
     const web = useWebSearch()
-    web.setAskBeforeLocal(false)
+    web.setLocalReading('always')
     expect(web.setup.value.readLocalWithoutAsking).toBe(true)
     expect(web.setup.value.readWithoutAsking).not.toBe(true)
-    web.setAskBeforeLocal(true)
+    web.setLocalReading('ask')
     expect(web.setup.value.readLocalWithoutAsking).toBe(false)
   })
 

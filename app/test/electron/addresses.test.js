@@ -72,6 +72,24 @@ describe('fetchFromWeb', () => {
     })
   })
 
+  it('goes home only to a site the writer always allows, and no further there', async () => {
+    const fetch = vi.fn(async () => new Response('status'))
+    const response = await fetchFromWeb(fetch, 'https://router.example/status', {}, home, [
+      'router.example',
+    ])
+    expect(await response.text()).toBe('status')
+
+    // An allowed site on the web that redirects home is followed no further.
+    const homeward = vi.fn(async () => redirect('https://router.example/reboot'))
+    await expect(
+      fetchFromWeb(homeward, 'https://tides.example/go', {}, home, ['tides.example'])
+    ).rejects.toThrow(LOCAL_REFUSED)
+    // Nor is another port of an allowed name.
+    await expect(
+      fetchFromWeb(fetch, 'https://router.example:8443/', {}, home, ['router.example'])
+    ).rejects.toThrow(LOCAL_REFUSED)
+  })
+
   it('refuses an address that leads home before asking it anything', async () => {
     const fetch = vi.fn()
     await expect(fetchFromWeb(fetch, 'https://router.example/reboot', {}, home)).rejects.toThrow(

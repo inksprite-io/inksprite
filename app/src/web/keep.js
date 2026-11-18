@@ -28,7 +28,7 @@ import { keptRead, wholePage } from './pages.js'
  * What to keep of an address.
  *
  * @param {string} url
- * @param {{signal?: AbortSignal, timeout?: number, home?: boolean}} [options]
+ * @param {{signal?: AbortSignal, timeout?: number, home?: boolean|string[]}} [options]
  * @returns {Promise<Keepable>}
  * @throws When neither the site nor a service gives anything: the site's
  *   refusal, in the writer's words

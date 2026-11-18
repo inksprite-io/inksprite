@@ -24,7 +24,7 @@
         :key="provider.id"
         :name="provider.name"
         :address="addressOf(provider)"
-        :status="statusOf(provider.id)"
+        :status="statusOf(provider)"
         :open="open === provider.id"
         :data-connection="provider.id"
         @toggle="open = open === provider.id ? null : provider.id"
@@ -37,6 +37,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { hasKeyLeftOut } from '@/utils/addressKeys.js'
 import Button from 'primevue/button'
 import { useSectionHeading } from '@/components/common/sectionHeading.js'
 import CardList from '@/components/common/CardList.vue'
@@ -93,12 +94,14 @@ const addressOf = provider =>
   HOSTED[provider.type] || hostOf(provider.endpoint || kindOf(provider).endpoint || '')
 
 /**
- * What went wrong the last time it was asked, if something did: a card says
- * nothing of one that answered.
- * @param {string} id
+ * What is wrong with it: its key was left out of the backup it came from,
+ * which no answer is needed to know, or what went wrong the last time it was
+ * asked. A card says nothing of one that answered.
+ * @param {import('@/types/models.js').AIProvider} provider
  */
-const statusOf = id => {
-  const state = connections.stateOf(id)
+const statusOf = provider => {
+  if (hasKeyLeftOut(provider.endpoint)) return 'Its key was left out of a backup.'
+  const state = connections.stateOf(provider.id)
   return state && state !== 'connected' ? STATE_LABELS[/** @type {ConnectionState} */ (state)] : ''
 }
 </script>

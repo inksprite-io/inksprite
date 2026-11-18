@@ -1190,6 +1190,18 @@ const asWritten = address => {
  */
 const approvals = computed(() =>
   pendingApprovals.value.map(approval => {
+    // What a tool asks as it runs is the question, whichever tool asks it: a
+    // page that turned out to be on the writer's own network, not the read.
+    if (approval.question) {
+      return {
+        id: approval.id,
+        question: approval.question,
+        site: approval.site,
+        server: '',
+        tool: '',
+        args: '',
+      }
+    }
     if (approval.name === SAVE_WEB_PAGE) {
       const save = saveAsked(approval.arguments)
       return {
@@ -1210,9 +1222,6 @@ const approvals = computed(() =>
         tool: '',
         args: '',
       }
-    }
-    if (approval.question) {
-      return { id: approval.id, question: approval.question, server: '', tool: '', args: '' }
     }
     const found = serverTool(approval.name)
     let args = approval.arguments

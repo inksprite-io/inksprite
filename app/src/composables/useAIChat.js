@@ -1042,12 +1042,12 @@ function createAIChat(storyId, chatId) {
       // calls only. A skill reads a transcript without them, so a read above
       // is not in front of it, and it is never told one is.
       ...(depth === 0 ? { conversation: conversationRead } : {}),
-      ...(seen ? { mayLeadHome: address => mayLeadHome(address, readingAllowed()) } : {}),
+      mayLeadHome: () => mayLeadHome(readingAllowed()),
       signal: callSignal,
       // Asked beside the call, like a server's tool, and answered no when the
       // turn stops. What always means is the tool's to keep.
-      approve: async question => {
-        const decision = await askWriter(turn.messageId, toolCall, question)
+      approve: async (question, site) => {
+        const decision = await askWriter(turn.messageId, toolCall, question, site)
         return decision === 'always-server' ? 'always' : decision
       },
       // In the turn's status line while its calls run.

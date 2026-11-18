@@ -112,7 +112,8 @@ export function savesWithoutAsking(from = setup) {
 export function readingAllowed(from = setup) {
   return {
     always: from?.readWithoutAsking === true,
-    local: from?.readLocalWithoutAsking === true,
+    local: from?.readLocalWithoutAsking === true && from?.readLocalOff !== true,
+    localOff: from?.readLocalOff === true,
     sites: from?.allowedSites || [],
   }
 }

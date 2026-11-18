@@ -153,8 +153,8 @@ const drawn = ref(0)
 /** For editing the documents. @type {import('@/composables/useToolSettings.js').Option[]} */
 const OFF_SUGGEST_EDIT = [
   { label: 'Off', value: 'off' },
-  { label: 'Suggest changes', value: 'ask' },
-  { label: 'Edit directly', value: 'auto' },
+  { label: 'Suggesting', value: 'ask' },
+  { label: 'Editing', value: 'auto' },
 ]
 
 /**
@@ -207,7 +207,8 @@ const toolRow = definition => {
 const documentRows = computed(() =>
   DOCUMENT_ROWS.map(row => ({
     name: row.id,
-    label: row.label,
+    // The chip's words for the same setting: "Edit mode: Suggesting".
+    label: row.id === 'edit' ? 'Edit mode' : row.label,
     description: '',
     options: row.id === 'edit' ? OFF_SUGGEST_EDIT : OFF_ON,
     value: row.id === 'edit' ? props.editing : rowOn(switched.value, row.id) ? 'on' : 'off',

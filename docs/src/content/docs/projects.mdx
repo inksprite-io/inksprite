@@ -219,7 +219,7 @@ desktop app, or to share your setup with someone.
 2. Untick anything you don't want in the file. Ticking a model's settings ticks
    the connection they're for.
 3. Leave **Include API keys** off unless the file stays with you, and click
-   **Export**.
+   **Export**. A key written into a server's address is left out too.
 
 To bring one in, click **Import** and choose the file. inksprite says
 what the file adds and what it changes, and asks before it goes on, then
@@ -241,16 +241,20 @@ every document's versions.
 3. Click **Export**. inksprite saves a file named with the date.
 
 To bring one back, click **Import** and choose the file. inksprite says what
-the backup holds, and lists its projects and character cards.
+the backup holds, and lists its projects, its character cards and
+**Settings**. What you don't have yet is ticked. Tick what you want and click
+**Import**:
 
-- **Replace** deletes everything inksprite holds now, puts the backup in its
-  place, and reloads. It signs the device out of [sync](/sync/).
-- **Add** brings in only the projects and cards you tick, beside yours. Each
-  project comes with its chats and the profiles they run on, and a name
-  that's taken gets a number. A card joins your library unless you have it
-  already. Your settings stay as they are.
+- Each project comes in beside yours, with its chats and the profiles they
+  run on. A name that's taken gets a number, so ticking a project you already
+  have makes a second one.
+- A card joins your library unless you have it already.
+- **Settings** adds the backup's settings to yours, as a
+  [settings file](#move-your-settings) does.
 
-A backup made without keys comes back without them. Before you restore it,
+Nothing you have is deleted.
+
+A backup made without keys comes back without them. Before you import it,
 inksprite lists the services whose keys were left out, so you know which to
 connect again. Your sign-ins to [MCP servers](/mcp/) and the **Debug** switch
 are never in a backup. A backup from an older version of inksprite restores

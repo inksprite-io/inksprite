@@ -95,7 +95,15 @@ export function handleBridge(origin, { openWindow }) {
       // An address the model named, and the page took for the web: fetched
       // only as far as it stays there (`addresses.js`).
       response = request.webOnly
-        ? await fetchFromWeb((url, with_) => net.fetch(url, with_), request.url, init)
+        ? await fetchFromWeb(
+            (url, with_) => net.fetch(url, with_),
+            request.url,
+            init,
+            undefined,
+            Array.isArray(request.homeSites)
+              ? request.homeSites.filter(s => typeof s === 'string')
+              : []
+          )
         : await net.fetch(request.url, { ...init, redirect: request.redirect })
     } catch (error) {
       requests.delete(key)

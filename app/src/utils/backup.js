@@ -947,7 +947,7 @@ export function withFreshIds(project, mint = prefix => `${prefix}_${nanoid()}`) 
   const named = [story, ...documents, ...chats, ...messages].every(
     row => typeof row?.id === 'string' && row.id
   )
-  if (!named) throw new Error('This file can’t be read: something in it has no id.')
+  if (!named) throw new Error('This file can’t be read. Part of it is missing.')
 
   /** @type {Map<string, string>} */
   const ids = new Map([[story.id, mint('story')]])

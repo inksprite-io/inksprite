@@ -175,6 +175,13 @@ describe('read_web_page', () => {
     })
   })
 
+  it('reads no address given as a list, which nothing asked about', async () => {
+    expect(await executeReadWebPage({ url: ['https://collector.example/?q=secret'] })).toEqual({
+      error: expect.stringMatching(/https:\/\//),
+    })
+    expect(callServerTool).not.toHaveBeenCalled()
+  })
+
   it('says when the service found nothing to read', async () => {
     callServerTool.mockResolvedValue(answered('# Empty\nURL: https://example.org/e\n\n'))
 

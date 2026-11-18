@@ -51,7 +51,7 @@ const PROBE_TIMEOUT_MS = 30000
  *   connect: (id: WebServiceId, key: string) => Promise<void>,
  *   setAskBeforeSaving: (ask: boolean) => void,
  *   setAskBeforeReading: (ask: boolean) => void,
- *   setAskBeforeLocal: (ask: boolean) => void,
+ *   setLocalReading: (setting: 'off'|'ask'|'always') => void,
  *   allowSite: (site: string) => void,
  *   disallowSite: (site: string) => void,
  * }}
@@ -155,13 +155,13 @@ export function useWebSearch() {
   }
 
   /**
-   * Have reading an address on the writer's own computer or network ask, or
-   * never ask.
+   * Whether the model reads pages on the writer's own computer and network:
+   * never, asking each time, or without asking.
    *
-   * @param {boolean} ask
+   * @param {'off'|'ask'|'always'} setting
    */
-  function setAskBeforeLocal(ask) {
-    store.update({ readLocalWithoutAsking: !ask })
+  function setLocalReading(setting) {
+    store.update({ readLocalOff: setting === 'off', readLocalWithoutAsking: setting === 'always' })
   }
 
   /**
@@ -197,7 +197,7 @@ export function useWebSearch() {
     connect,
     setAskBeforeSaving,
     setAskBeforeReading,
-    setAskBeforeLocal,
+    setLocalReading,
     allowSite,
     disallowSite,
   }

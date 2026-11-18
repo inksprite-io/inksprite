@@ -18,8 +18,8 @@
 import { sliceAt } from './slices.js'
 import { folderToKeepIn, keptFrom, pathInProject } from './documents.js'
 import { describeRefusal } from '@/web/answers.js'
-import { readerInUse, serviceInUse } from '@/web/config.js'
-import { siteOf } from '@/web/addresses.js'
+import { readerInUse, readingAllowed, serviceInUse } from '@/web/config.js'
+import { isLocalAddress, siteOf, webAddress } from '@/web/addresses.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
 import { fetchToKeep } from '@/web/keep.js'
 import { readPage } from '@/web/pages.js'
@@ -119,19 +119,10 @@ export const readWebPageDefinition = {
   },
 }
 
-/**
- * The address a call gave, when it is one a page can be read at.
- *
- * @param {any} value
- * @returns {string|null}
- */
-function webAddress(value) {
-  try {
-    const url = new URL(String(value || '').trim())
-    return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null
-  } catch {
-    return null
-  }
+/** What the model is told of an address at home while reading there is off. */
+const LOCAL_OFF = {
+  error:
+    'Reading pages on this computer and its network is switched off. The writer changes it in Settings › Extensions › Web.',
 }
 
 /**
@@ -144,20 +135,32 @@ function webAddress(value) {
  * @template T
  * @param {import('./registry.js').ToolContext|undefined} context
  * @param {string} url
- * @param {(home: boolean) => Promise<T>} fetching - Told whether it may lead home
+ * @param {(home: boolean|string[]) => Promise<T>} fetching - Told where at
+ *   home it may lead: anywhere, or the sites always allowed
  * @returns {Promise<T>}
  */
 async function whereverAllowed(context, url, fetching) {
-  const allowed = context?.mayLeadHome?.(url) === true
+  const allowed = context?.mayLeadHome?.() ?? []
   try {
     return await fetching(allowed)
   } catch (error) {
-    if (allowed || !(/** @type {any} */ (error)?.home) || !context?.approve) throw error
-    const site = siteOf(url)
-    const decision = await context.approve(`${url} is on this computer or its network. Read it?`)
+    const refused = /** @type {any} */ (error)
+    if (allowed === true || !refused?.home || !context?.approve) throw error
+    if (readingAllowed().localOff) throw error
+    // The step that was refused, which a redirect makes another place than
+    // the address: that is what is asked about, and all that is allowed.
+    const at = siteOf(url)
+    const site = refused.site || at
+    if (!site) throw error
+    const decision = await context.approve(
+      site === at
+        ? `${url} is on this computer or its network. Read it?`
+        : `${url} leads to ${site}, on this computer or its network. Read it?`,
+      site
+    )
     if (decision === 'deny') throw error
-    if (decision === 'always' && site) useWebSearch().allowSite(site)
-    return fetching(true)
+    if (decision === 'always') useWebSearch().allowSite(site)
+    return fetching([...allowed, site])
   }
 }
 
@@ -197,6 +200,7 @@ export async function executeWebSearch(args, context) {
 export async function executeReadWebPage(args, context) {
   const url = webAddress(args?.url)
   if (!url) return { error: 'Give the page’s full address, starting http:// or https://.' }
+  if (readingAllowed().localOff && isLocalAddress(url)) return LOCAL_OFF
   const service = readerInUse()
   if (!service) return NOT_SET_UP
   const { key } = service
@@ -286,6 +290,7 @@ export async function executeSaveWebPage(args, context) {
   if (!url) {
     return { error: 'Give the full address of the page or the file, starting http:// or https://.' }
   }
+  if (readingAllowed().localOff && isLocalAddress(url)) return LOCAL_OFF
   if (!context?.storyId) return { error: 'No story context available' }
   const already = await keptFrom(context, url)
   if (already !== null) return { path: already, note: 'This is in the project already.' }

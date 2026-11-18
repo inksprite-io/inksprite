@@ -42,6 +42,7 @@
     <ImportBackupDialog
       :visible="restoring !== null"
       :message="restoring?.message ?? ''"
+      :settings-note="restoring?.settingsNote ?? ''"
       :addable="restoring?.addable ?? null"
       :here="restoring?.here ?? []"
       :plan="restoring?.plan ?? null"
@@ -170,11 +171,23 @@ const handleFileChange = async event => {
  * @param {Extract<Awaited<ReturnType<typeof backup.readDataFile>>, {kind: 'backup'}>} read
  */
 function askToRestore({ backup: parsed, addable, here, plan }) {
+  // A backup with nothing to add here does nothing, as a settings file does.
+  if (addable.projects.length === 0 && addable.cards.length === 0 && !changesAnything(plan)) {
+    isImporting.value = false
+    return
+  }
   // The keys to enter again afterwards, named while the writer can still
   // go and find them: otherwise a chat or a search is how they find out.
   const leftOut = keysLeftOut({ ...parsed, tables: plan.rows }, webName)
   const keys = leftOut.length > 0 ? ` Keys left out: ${leftOut.join(', ')}.` : ''
-  restoring.value = { message: `${describeBackupContents(parsed)}${keys}`, addable, here, plan }
+  restoring.value = {
+    message: describeBackupContents(parsed),
+    // Said while Settings is ticked: what they add and change here.
+    settingsNote: `${describeImport(plan)}${keys}`.trim(),
+    addable,
+    here,
+    plan,
+  }
 }
 
 /** Whether the dialog closed on an add, which keeps the spinner going. */

@@ -206,6 +206,37 @@ describe('ConnectionsSection', () => {
     expect(row().find('[data-key-missing]').exists()).toBe(false)
   })
 
+  it('says so of a server whose address lost its key in a backup, until the address has it again', async () => {
+    listServer.mockResolvedValue(offered)
+    const wrapper = await mountSection()
+    await connectTo(wrapper, 'https://mcp.example.com/mcp')
+    await wrapper.find('[data-action="keep"]').trigger('click')
+    const store = useMcpServerStore()
+    const [kept] = store.getAllServers()
+    const row = () => wrapper.find(`[data-server="${kept.id}"]`)
+    expect(row().find('[data-key-missing]').exists()).toBe(false)
+
+    // As a backup without keys restores one whose key was part of its address.
+    store.updateServer(kept.id, { url: 'https://mcp.example.com/key-left-out/mcp' })
+    await flushPromises()
+
+    expect(row().find('[data-key-missing]').text()).toBe('Its key was left out of a backup.')
+    expect(row().find('[data-status]').text()).toBe('Not connected')
+    expect(row().text()).toContain('https://mcp.example.com/key-left-out/mcp')
+
+    // It says that rather than why the server refused, and offers no sign-in.
+    store.updateServer(kept.id, { error: SIGN_IN_NEEDED })
+    await flushPromises()
+    expect(row().findAll('[data-key-missing]')).toHaveLength(1)
+    expect(row().text()).not.toContain(SIGN_IN_NEEDED)
+    expect(row().find('[data-action="sign-in"]').exists()).toBe(false)
+
+    store.updateServer(kept.id, { url: 'https://mcp.example.com/k/mcp', error: undefined })
+    await flushPromises()
+    expect(row().find('[data-key-missing]').exists()).toBe(false)
+    expect(row().find('[data-status]').exists()).toBe(false)
+  })
+
   it('adds a header to a kept server that had none', async () => {
     listServer.mockResolvedValue(offered)
     const wrapper = await mountSection()

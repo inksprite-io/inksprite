@@ -23,12 +23,6 @@ export const OFF_ON = [
   { label: 'On', value: 'on' },
 ]
 
-/** For what is always there, and only asks or doesn't. @type {Option[]} */
-export const ASK_ALWAYS = [
-  { label: 'Ask first', value: 'ask' },
-  { label: 'Always allow', value: 'always' },
-]
-
 /** For a tool that may ask the writer before it runs. @type {Option[]} */
 export const OFF_ASK_ALWAYS = [
   { label: 'Off', value: 'off' },

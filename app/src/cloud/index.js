@@ -24,6 +24,9 @@
  *   a record of a newer one holds the pull until the app is updated
  * - **engine** - The rounds: the outbox sent, what others wrote brought in,
  *   the two merged, files' bytes in parts
+ * - **incoming** - What the server sent, taken only as rows of the collection
+ *   it came in: a project is kept to the collection it was first met as, and
+ *   nothing that came in removes what was here
  * - **local** - The app as the engine reaches it: the stores for what is
  *   loaded, storage for the rest
  * - **setup** - The writer's setup as sync sends it: which tables and

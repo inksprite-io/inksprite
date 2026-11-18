@@ -224,9 +224,8 @@ describe('BackupSection', () => {
 
       const dialog = await picked(wrapper)
 
-      expect(dialog.props('message')).toBe(
-        'This backup holds your settings. Keys left out: OpenRouter, Kagi.'
-      )
+      expect(dialog.props('message')).toBe('This backup holds your settings.')
+      expect(dialog.props('settingsNote')).toContain('Keys left out: OpenRouter, Kagi.')
     })
 
     it('says nothing of keys when none were left out', async () => {

@@ -42,7 +42,17 @@ describe('a zip opened with a ceiling', () => {
       const name = new TextDecoder().decode(lying.subarray(at + 46, at + 46 + length))
       if (name === 'book/cover.png') view.setUint32(at + 24, 10, true)
     }
-    const opened = unzipWithin(lying, 1024)
+    const opened = unzipWithin(lying, 16 * 1024)
     expect(opened['book/cover.png'].length).toBe(10)
+  })
+
+  it('counts a stored entry by what the file holds of it, whatever it says it unpacks to', () => {
+    // Stored, not deflated: copied out by its size in the file.
+    const stored = zipSync({ 'blob.bin': [new Uint8Array(MIB).fill(7), { level: 0 }] })
+    const view = new DataView(stored.buffer)
+    for (let at = stored.length - 46; at >= 0; at--) {
+      if (view.getUint32(at, true) === 0x02014b50) view.setUint32(at + 24, 0, true)
+    }
+    expect(() => unzipWithin(stored, 1024)).toThrow(TooLargeError)
   })
 })

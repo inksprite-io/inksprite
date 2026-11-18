@@ -21,7 +21,7 @@
 
 import { DOMParser as ProseMirrorDOMParser } from 'prosemirror-model'
 import { fetch, fetchFromWeb } from '@/platform/fetch.js'
-import { isLocalAddress } from './addresses.js'
+import { isLocalAddress, siteOf } from './addresses.js'
 import { DROPPED } from '@/files/html.js'
 import { docxToMarkdown, isDocx } from '@/files/docx.js'
 import { UNKNOWN_MIME, extensionFor, inspectFile, mimeOf, titleOf } from '@/files/inspect.js'
@@ -120,7 +120,7 @@ export function fileNameOf(url, disposition, type) {
  */
 function whyNot(error) {
   const said = String(error?.message ?? '')
-  if (/NAME_NOT_RESOLVED|ENOTFOUND/.test(said)) return ' Nothing answers to that name.'
+  if (/NAME_NOT_RESOLVED|ENOTFOUND/.test(said)) return ' No site was found by that name.'
   if (/ERR_CERT|certificate/i.test(said)) return ' Its certificate wasn’t accepted.'
   if (/CONNECTION_REFUSED|ECONNREFUSED/.test(said)) return ' It refused the connection.'
   if (/TIMED_OUT|TimeoutError|timed out/i.test(said)) return ' It took too long to answer.'
@@ -131,7 +131,7 @@ function whyNot(error) {
  * Ask a site for what is at an address.
  *
  * @param {string} url
- * @param {{signal?: AbortSignal, timeout?: number, home?: boolean}} options - `home`
+ * @param {{signal?: AbortSignal, timeout?: number, home?: boolean|string[]}} options - `home`
  *   where the writer said it may be read wherever it leads
  * @returns {Promise<Response>}
  * @throws {ServiceError} When the site cannot be reached, or will not answer
@@ -143,7 +143,14 @@ async function askSite(url, { signal, timeout, home = false }) {
     // An address that is local by its name was the writer's to allow, and
     // they did, as they did one they typed or whose site they always allow.
     // Any other is fetched only as far as it stays on the web.
-    const ask = home || isLocalAddress(url) ? fetch : fetchFromWeb
+    // An address that is local by its name was asked about, or its site is
+    // allowed: that site and no other at home, wherever it redirects.
+    const sites = [
+      ...(Array.isArray(home) ? home : []),
+      ...(isLocalAddress(url) ? [siteOf(url) ?? ''] : []),
+    ]
+    /** @type {(url: string, init: RequestInit) => Promise<Response>} */
+    const ask = home === true ? fetch : (at, init) => fetchFromWeb(at, init, sites)
     response = await ask(url, {
       headers: { Accept: 'text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.5' },
       redirect: 'follow',
@@ -153,9 +160,11 @@ async function askSite(url, { signal, timeout, home = false }) {
     if (signal?.aborted) throw error
     if (String(error?.message).includes(LOCAL_REFUSED)) {
       // Marked, for whoever can ask the writer whether to read it anyway.
+      // And with the step that was refused, when the native side said which.
+      const site = String(error.message).split(LOCAL_REFUSED)[1]?.trim() || null
       throw Object.assign(
         new ServiceError(`${url} leads to this computer or its network, and wasn’t read.`),
-        { home: true }
+        { home: true, site }
       )
     }
     throw new ServiceError(`${url} couldn’t be reached.${whyNot(error)}`)
@@ -177,7 +186,7 @@ async function askSite(url, { signal, timeout, home = false }) {
  * address that says nothing either is a page if it reads like one.
  *
  * @param {string} url
- * @param {{signal?: AbortSignal, timeout?: number, home?: boolean}} options
+ * @param {{signal?: AbortSignal, timeout?: number, home?: boolean|string[]}} options
  * @returns {Promise<Fetched>}
  * @throws {ServiceError} When the site cannot be reached or will not answer,
  *   or the file is too big to fetch

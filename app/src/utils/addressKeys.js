@@ -41,8 +41,14 @@ export function withoutAddressKeys(address) {
     return address
   }
   let found = false
-  if (url.password) {
+  if (url.password && url.username) {
+    // Either may be the key, the other a word a service asks for beside it.
+    url.username = KEY_LEFT_OUT
     url.password = KEY_LEFT_OUT
+    found = true
+  } else if (url.password || url.username) {
+    if (url.password) url.password = KEY_LEFT_OUT
+    else url.username = KEY_LEFT_OUT
     found = true
   }
   for (const [name, value] of [...url.searchParams]) {

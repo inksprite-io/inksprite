@@ -6,6 +6,7 @@ import {
   hasSeen,
   isLocalAddress,
   mayLeadHome,
+  webAddress,
   namesIn,
   noteWebResult,
   nothingSeen,
@@ -246,8 +247,6 @@ describe('a site the writer named without its scheme', () => {
     ])
     const seen = seenIn([{ role: 'user', content: 'Read chat.home.example' }])
     expect(hasSeen(seen, 'https://chat.home.example/')).toBe(true)
-    // Typed, so nobody asks about the address; where it leads is still asked about.
-    expect(mayLeadHome('https://chat.home.example/')).toBe(false)
   })
 
   it('is not found in a mail address, a file name inside a path, or a word', () => {
@@ -270,14 +269,32 @@ describe('a site the writer named without its scheme', () => {
 })
 
 describe('mayLeadHome', () => {
-  it('is for an address on a site the writer always allows, and not for one they only typed', () => {
-    const allowed = { sites: ['chat.home.example'] }
-    expect(mayLeadHome('https://chat.home.example/notes', allowed)).toBe(true)
-    expect(mayLeadHome('https://chat.home.example/notes')).toBe(false)
-    expect(mayLeadHome('https://other.home.example/', allowed)).toBe(false)
-    expect(mayLeadHome('nothing', allowed)).toBe(false)
-    // Or anywhere on their network, once they say reading there never asks.
-    expect(mayLeadHome('https://other.home.example/', { local: true })).toBe(true)
+  it('is the sites always allowed and no others, or anywhere once reading at home never asks', () => {
+    expect(mayLeadHome({ sites: ['chat.home.example'] })).toEqual(['chat.home.example'])
+    expect(mayLeadHome()).toEqual([])
+    expect(mayLeadHome({ local: true, sites: ['chat.home.example'] })).toBe(true)
+    // And nowhere there once reading at home is off, whatever is allowed.
+    expect(mayLeadHome({ localOff: true, sites: ['chat.home.example'] })).toEqual([])
+    expect(readingAsks('http://localhost:3000/', nothingSeen(), { localOff: true })).toBe(false)
+  })
+})
+
+describe('webAddress', () => {
+  it('is an address written out as text, on the web', () => {
+    expect(webAddress(' https://tides.example/a ')).toBe('https://tides.example/a')
+    expect(webAddress('file:///etc/hosts')).toBeNull()
+    expect(webAddress('tides.example')).toBeNull()
+  })
+
+  it('is none for a list or anything else that only reads as an address', () => {
+    expect(webAddress(['https://collector.example/?q=secret'])).toBeNull()
+    expect(webAddress({ toString: () => 'https://collector.example/' })).toBeNull()
+    expect(addressFetched(READ_WEB_PAGE, args({ url: ['http://192.168.1.1/'] }))).toBeNull()
+  })
+
+  it('is none with a name or a password in it', () => {
+    expect(webAddress('https://secret@collector.example/page')).toBeNull()
+    expect(webAddress('https://tides.example%2Fdocs@collector.example/x')).toBeNull()
   })
 })
 

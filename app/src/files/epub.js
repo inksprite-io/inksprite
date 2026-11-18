@@ -647,7 +647,7 @@ export function extractEpub(data) {
     )
   } catch (error) {
     if (error instanceof TooLargeError) {
-      throw new Error('This epub cannot be opened: it is too large.')
+      throw new Error('This epub is too large to open.')
     }
     throw new Error('This epub cannot be opened: it is not a zip file.')
   }

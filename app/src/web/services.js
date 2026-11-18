@@ -22,7 +22,7 @@ import { readDirect } from './direct.js'
  * @property {string} [key] - The writer's key for the service
  * @property {AbortSignal} [signal] - The call's, which stops it
  * @property {number} [timeout] - How long the call may take, in milliseconds
- * @property {boolean} [home] - The writer said the address may be read
+ * @property {boolean|string[]} [home] - The writer said the address may be read
  *   wherever it leads, their own network among it (web/addresses.js)
  *
  * @typedef {Object} WebService

@@ -20,6 +20,8 @@ Practically, this means that you might get banned from a service like OpenAI if 
 
 If you connect to one of the built-in web search providers or a third party MCP server, requests go straight from your device to that service.
 
+Pricing data for Anthropic and OpenAI is fetched from https://app.inksprite.io/api/prices, which we source from OpenRouter.
+
 #### Google Drive
 
 Nothing goes to Google until you import from Google Drive or sync a document to a new Doc. Then Google's own sign-in opens, in a window of its own (in the desktop app, in your browser). inksprite can open the files you choose there, and the Docs and folders it makes, and no others. They go straight from Google to your device, and a sync sends your edits and comments straight back to the Doc, so we never see them. In a browser the sign-in is kept in memory for the hour it lasts. The desktop app keeps it on your device until you take its access away in your Google account, and never in a backup. Google's [privacy policy](https://policies.google.com/privacy) covers its side.

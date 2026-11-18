@@ -38,7 +38,9 @@ export function unzipWithin(bytes, most, filter = () => true) {
   return unzipSync(bytes, {
     filter: entry => {
       if (!filter(entry)) return false
-      total += entry.originalSize
+      // A stored entry is copied by its size in the file, whatever it says
+      // it unpacks to.
+      total += Math.max(entry.originalSize, entry.size)
       if (total > most) throw new TooLargeError()
       return true
     },

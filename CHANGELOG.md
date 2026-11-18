@@ -6,6 +6,71 @@ published, not with each change. The release workflow puts the section
 for its tag at the top of the release's notes.
 -->
 
+## v0.1.0-dev.30
+
+Security fixes after a review of the app and the sync service, the model
+asking before it reads some pages, tools set once for every chat, and pages
+read in the desktop app with no search service.
+
+Security:
+
+- Sync takes from the server only what belongs to the project it is
+  syncing, so a shared project can't change another of yours.
+- A new passphrase signs your other devices out. Sign in on each with the
+  new one.
+- An MCP server's address that redirects to another site is no longer
+  followed, so your key for it goes nowhere else. inksprite says which
+  address to enter. The MCP client is updated to a version that fixes
+  GHSA-6prh-2h8m-c8cw.
+- If you change an MCP server's address, the tools you always allowed ask
+  again.
+- A file exported without API keys leaves out a key written into a
+  server's address too.
+- Files that unpack as they are imported (an epub, a Scrivener project, a
+  repository, a zip of skills, a backup) are refused if they would unpack too
+  large, and an MCP server's answer is cut at 100,000 characters.
+- On Windows and Linux, the desktop app checks an update against a signature
+  of ours. In this release a failed check is only written to the app's log,
+  which is now `inksprite.log`.
+- The desktop app is on Electron 44.11.3, and dependencies with advisories
+  against them are updated.
+
+The web:
+
+- The model asks before it reads an address it wrote itself. An address you
+  gave it, a search result, or a link on a page it reached from one is read
+  without asking. **Always allow** in the question covers that one site.
+- The model asks every time before it reads a page on your own computer or
+  network, until you always allow its site.
+- In the desktop app, the model reads and saves pages with no search service
+  connected. Searching still needs one.
+- The Web search extension is now **Web**. **Settings** › **Extensions** ›
+  **Web** has **Read pages**, **Read pages on my network** and **Manage
+  allowed sites**.
+
+Tools:
+
+- Each tool has one setting for every chat, in **Settings** › **Tools**:
+  **Off** or **On**, and for a tool that can ask first, **Off**, **Ask
+  first** or **Always allow**. A group's switch is still the chat's and its
+  profile's.
+- **Documents** has three settings, **Read**, **Edit mode** and **Comment**.
+  **Edit mode** is **Off**, **Suggesting** or **Editing**.
+- In a chat that suggests its changes, a move or a rename waits for you, as
+  a delete does.
+
+Backup:
+
+- Importing a backup adds to what you have: the projects and cards you tick,
+  and its settings. It no longer offers to replace everything.
+
+Also:
+
+- The model list shows prices for a direct Anthropic or OpenAI connection
+  without the app asking OpenRouter.
+- The note under a command message's edit box and the words beside `/tarot`
+  and `/name` are gone.
+
 ## v0.1.0-dev.29
 
 A chat started with no tab open stays showing, and a project made a moment

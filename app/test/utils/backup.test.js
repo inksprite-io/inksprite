@@ -104,10 +104,14 @@ describe('withoutAddressKeys', () => {
 
   it('takes out a password, a parameter that carries a credential, and a piece of the path that looks like one', () => {
     expect(withoutAddressKeys(`https://writer:${key}@mcp.example.com/mcp`)).toBe(
-      `https://writer:${KEY_LEFT_OUT}@mcp.example.com/mcp`
+      `https://${KEY_LEFT_OUT}:${KEY_LEFT_OUT}@mcp.example.com/mcp`
     )
     expect(withoutAddressKeys('https://mcp.example.com/mcp?api_key=abc&team=blue')).toBe(
       `https://mcp.example.com/mcp?api_key=${KEY_LEFT_OUT}&team=blue`
+    )
+    // A token written where a name goes, with no password after it.
+    expect(withoutAddressKeys(`https://${key}@mcp.example.com/mcp`)).toBe(
+      `https://${KEY_LEFT_OUT}@mcp.example.com/mcp`
     )
     // Named for nothing, but plainly a key.
     expect(withoutAddressKeys(`https://mcp.example.com/mcp?id=${key}`)).toBe(
@@ -877,11 +881,11 @@ describe('withFreshIds', () => {
 
   it('refuses a project with a row that has no id, which it would look for forever', () => {
     const nameless = { ...project(), story: { ...project().story, id: '' } }
-    expect(() => withFreshIds(nameless)).toThrow('has no id')
+    expect(() => withFreshIds(nameless)).toThrow('Part of it is missing')
 
     const lost = project()
     lost.documents = [...lost.documents, { storyId: lost.story.id, title: 'No id' }]
-    expect(() => withFreshIds(lost)).toThrow('has no id')
+    expect(() => withFreshIds(lost)).toThrow('Part of it is missing')
   })
 
   it('gives every row a new id', () => {

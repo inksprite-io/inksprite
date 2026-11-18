@@ -334,8 +334,28 @@ export function noteTrajectory(seen, trajectory) {
  */
 export function addressFetched(name, written) {
   if (name !== READ && name !== SAVE) return null
-  const { url } = argumentsOf(written)
-  return typeof url === 'string' && url.trim() ? url.trim() : null
+  return webAddress(argumentsOf(written).url)
+}
+
+/**
+ * The address a call gave, when it is one a page can be read at: written
+ * out as text, http or https, and with no name or password in it, which a
+ * site takes as said to it and a reader takes for the site's name. What
+ * asks about an address and what fetches it both read it here, so neither
+ * sees one the other doesn't.
+ *
+ * @param {unknown} value
+ * @returns {string|null}
+ */
+export function webAddress(value) {
+  if (typeof value !== 'string') return null
+  try {
+    const url = new URL(value.trim())
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null
+    return url.username || url.password ? null : url.href
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -346,6 +366,7 @@ export function addressFetched(name, written) {
  * @property {boolean} [always] - Reading never asks
  * @property {boolean} [local] - Reading on the writer's own computer and
  *   network never asks
+ * @property {boolean} [localOff] - Nothing there is read at all
  * @property {string[]} [sites] - Sites always allowed
  */
 
@@ -359,10 +380,16 @@ export function addressFetched(name, written) {
  * @param {ReadingAllowed} [allowed]
  * @returns {boolean}
  */
-export function readingAsks(address, seen, { always = false, local = false, sites = [] } = {}) {
+export function readingAsks(
+  address,
+  seen,
+  { always = false, local = false, localOff = false, sites = [] } = {}
+) {
   const site = siteOf(address)
   // No address at all is the tool's to refuse, with nothing to ask about.
   if (!site || !addressKey(address)) return false
+  // Switched off, there is nothing to ask: the tool says no itself.
+  if (localOff && isLocalAddress(address)) return false
   if (sites.includes(site)) return false
   // Their own network is asked about whoever named the address, they among
   // them: what is there is theirs, and not always what they meant to show.
@@ -371,17 +398,15 @@ export function readingAsks(address, seen, { always = false, local = false, site
 }
 
 /**
- * Whether the writer said an address may be read wherever it leads, their
- * own computer and network among it: they always allow its site, or reading
- * on their network at all. Typing the
- * address is not enough: a name of theirs can lead home without looking as
- * if it does, and they are asked the first time it is read.
+ * Where on the writer's own computer and network a fetch may go: anywhere,
+ * once they say reading there never asks, and otherwise only to the sites
+ * they always allow. Only those: an allowed site that redirects is followed
+ * to no other place at home.
  *
- * @param {unknown} address
  * @param {ReadingAllowed} [allowed]
- * @returns {boolean}
+ * @returns {true|string[]}
  */
-export function mayLeadHome(address, { local = false, sites = [] } = {}) {
-  const site = siteOf(address)
-  return local || (Boolean(site) && sites.includes(/** @type {string} */ (site)))
+export function mayLeadHome({ local = false, localOff = false, sites = [] } = {}) {
+  if (localOff) return []
+  return local ? true : [...sites]
 }
