@@ -128,7 +128,7 @@
         <div
           v-for="row in readingRows"
           :key="row.id"
-          class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1"
+          class="flex items-center justify-between gap-2"
           :data-web-reading="row.id"
         >
           <label
@@ -137,6 +137,7 @@
             >{{ row.label }}</label
           >
           <Select
+            :key="drawn"
             :input-id="`web-reading-${row.id}`"
             :model-value="row.value"
             :options="row.options"
@@ -146,13 +147,6 @@
             class="flex-none w-48 dark:!bg-surface-900"
             @update:model-value="row.set"
           />
-          <p
-            v-if="row.warning"
-            class="m-0 basis-full text-xs text-amber-700 dark:text-amber-400"
-            data-web-warning
-          >
-            {{ row.warning }}
-          </p>
         </div>
         <div v-if="allowedSites.length > 0" class="flex flex-col gap-1" data-allowed-sites>
           <span class="text-xs font-medium text-surface-700 dark:text-surface-200"
@@ -225,7 +219,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
@@ -237,12 +231,8 @@ import { useProfiles } from '@/composables/useProfiles'
 import { useCardLibraryStore } from '@/stores/cardLibraryStore.js'
 import { useSettingsPanel } from '@/composables/useSettingsPanel.js'
 import { useWebSearch } from '@/composables/useWebSearch.js'
-import {
-  ASK_ALWAYS,
-  LOCAL_UNASKED,
-  WEB_TOOL_LABELS,
-  useToolSettings,
-} from '@/composables/useToolSettings.js'
+import { useReadingConfirm } from '@/composables/useReadingConfirm.js'
+import { ASK_ALWAYS, WEB_TOOL_LABELS, useToolSettings } from '@/composables/useToolSettings.js'
 import { compareNames } from '@/utils/compareNames.js'
 import { serviceInUse } from '@/web/config.js'
 import { READ_WEB_PAGE } from '@/ai/tools/web.js'
@@ -288,6 +278,22 @@ const webServices = web.services.filter(web.reachable)
 
 const toolSettings = useToolSettings()
 
+/** Raised to draw the selects again as they are set, after a change is refused. */
+const drawn = ref(0)
+const { confirmUnasked } = useReadingConfirm()
+
+/**
+ * Make a change, confirming first one that stops reading asking.
+ *
+ * @param {'web'|'local'} kind
+ * @param {string} setting
+ * @param {() => void} change
+ */
+async function unlessRefused(kind, setting, change) {
+  if (setting === 'always' && !(await confirmUnasked(kind))) drawn.value++
+  else change()
+}
+
 /**
  * What reading asks first: pages on the web, set here as among a chat's
  * tools, and pages on the writer's own computer and network, which asking
@@ -299,16 +305,16 @@ const readingRows = computed(() => [
     label: WEB_TOOL_LABELS[READ_WEB_PAGE],
     options: toolSettings.optionsFor(READ_WEB_PAGE),
     value: toolSettings.settingOf(READ_WEB_PAGE),
-    warning: toolSettings.warningOf(READ_WEB_PAGE),
-    set: (/** @type {string} */ setting) => toolSettings.setSetting(READ_WEB_PAGE, setting),
+    set: (/** @type {string} */ setting) =>
+      unlessRefused('web', setting, () => toolSettings.setSetting(READ_WEB_PAGE, setting)),
   },
   {
     id: 'local',
     label: 'Read pages on my network',
     options: ASK_ALWAYS,
     value: web.setup.value.readLocalWithoutAsking ? 'always' : 'ask',
-    warning: web.setup.value.readLocalWithoutAsking ? LOCAL_UNASKED : '',
-    set: (/** @type {string} */ setting) => web.setAskBeforeLocal(setting === 'ask'),
+    set: (/** @type {string} */ setting) =>
+      unlessRefused('local', setting, () => web.setAskBeforeLocal(setting === 'ask')),
   },
 ])
 

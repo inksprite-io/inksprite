@@ -6,3 +6,6 @@
 
 /** Not inksprite.io, which only redirects here. */
 export const SITE_ORIGIN = 'https://app.inksprite.io'
+
+/** The user guide. */
+export const GUIDE_ORIGIN = 'https://docs.inksprite.io'

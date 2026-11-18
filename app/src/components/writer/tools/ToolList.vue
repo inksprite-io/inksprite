@@ -38,7 +38,7 @@
         <div
           v-for="row in group.rows"
           :key="row.name"
-          class="flex flex-wrap items-center gap-x-2 gap-y-1"
+          class="flex items-center gap-2"
           :data-tool="row.name"
         >
           <span
@@ -49,6 +49,7 @@
             {{ row.label }}
           </span>
           <Select
+            :key="drawn"
             :model-value="disabled ? 'off' : row.value"
             :options="row.options"
             option-label="label"
@@ -59,13 +60,6 @@
             class="flex-none w-48 dark:!bg-surface-900"
             @update:model-value="row.set"
           />
-          <p
-            v-if="row.warning && !disabled"
-            class="m-0 basis-full text-xs text-amber-700 dark:text-amber-400"
-            data-tool-warning
-          >
-            {{ row.warning }}
-          </p>
         </div>
       </div>
     </ExpandableSection>
@@ -73,7 +67,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { useReadingConfirm } from '@/composables/useReadingConfirm.js'
+import { READ_WEB_PAGE } from '@/ai/tools/web.js'
 import Select from 'primevue/select'
 import ToggleSwitch from 'primevue/toggleswitch'
 import ExpandableSection from '@/components/common/ExpandableSection.vue'
@@ -150,6 +146,9 @@ const mcp = useMcpServers()
 const webSearch = useWebSearch()
 const app = useApplicationState()
 const everywhere = useToolSettings()
+const { confirmUnasked } = useReadingConfirm()
+/** Raised to draw the selects again as they are set, after a change is refused. */
+const drawn = ref(0)
 
 /** For editing the documents. @type {import('@/composables/useToolSettings.js').Option[]} */
 const OFF_SUGGEST_EDIT = [
@@ -193,8 +192,14 @@ const toolRow = definition => {
     description: (found ? found.tool.description : definition.function.description) || '',
     options: everywhere.optionsFor(name),
     value: everywhere.settingOf(name),
-    warning: everywhere.warningOf(name),
-    set: (/** @type {string} */ setting) => everywhere.setSetting(name, setting),
+    set: async (/** @type {string} */ setting) => {
+      // Reading that stops asking is confirmed first; said no, the row is
+      // drawn again as it was.
+      const unasked =
+        name === READ_WEB_PAGE && setting === 'always' && everywhere.settingOf(name) !== 'always'
+      if (unasked && !(await confirmUnasked('web'))) drawn.value++
+      else everywhere.setSetting(name, setting)
+    },
   }
 }
 
@@ -204,7 +209,6 @@ const documentRows = computed(() =>
     name: row.id,
     label: row.label,
     description: '',
-    warning: '',
     options: row.id === 'edit' ? OFF_SUGGEST_EDIT : OFF_ON,
     value: row.id === 'edit' ? props.editing : rowOn(switched.value, row.id) ? 'on' : 'off',
     set: (/** @type {string} */ setting) =>

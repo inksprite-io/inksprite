@@ -6,7 +6,25 @@
   <SyncUpdateDialog />
   <InvitationNotices />
   <RouterView />
-  <ConfirmDialog :pt="{ root: { class: 'max-w-lg' } }" />
+  <ConfirmDialog :pt="{ root: { class: 'max-w-lg' } }">
+    <!-- As the dialog draws a message itself, with a link to the guide after
+         one that has more to say than fits. -->
+    <template #message="{ message }">
+      <i v-if="message.icon" :class="['p-confirmdialog-icon', message.icon]" />
+      <span class="p-confirmdialog-message">
+        {{ message.message }}
+        <a
+          v-if="message.guide"
+          :href="message.guide"
+          target="_blank"
+          rel="noopener"
+          class="underline"
+          data-confirm-guide
+          >See the guide.</a
+        >
+      </span>
+    </template>
+  </ConfirmDialog>
 </template>
 
 <script setup>

@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { setActivePinia, createPinia } from 'pinia'
 import { mount, flushPromises } from '@vue/test-utils'
 import PrimeVue from 'primevue/config'
+import ConfirmationService from 'primevue/confirmationservice'
 import Settings from '@/components/writer/settings/Settings.vue'
 import { useProfiles } from '@/composables/useProfiles'
 import { useEditorRequest } from '@/composables/useEditorRequest.js'
@@ -167,7 +168,7 @@ async function mountSettings(chatId = 'chat_1', options = {}) {
     ...options,
     props: { storyId: 'story_1' },
     global: {
-      plugins: [PrimeVue],
+      plugins: [PrimeVue, ConfirmationService],
       directives: { tooltip: {} },
       // ExpandableSection is stubbed open so the sections' contents are there
       // to find without clicking five headers first.
