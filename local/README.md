@@ -1,6 +1,7 @@
 # Local material
 
-Everything in this directory except this file is ignored by git. It holds
+Everything in this directory except this file and the release scripts is
+ignored by git. It holds
 material used to try the app by hand that must not be published with it:
 rulebooks, settings and adventures condensed from published games, raw
 conversions of the same, and anything else that is not ours to redistribute.

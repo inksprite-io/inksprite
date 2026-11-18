@@ -53,9 +53,34 @@ A change goes into dev as soon as it works and looks right, and is finished once
    - Logic gets its tests as it is written: stores, composables, utils, the AI, storage, sync. A test of logic the change breaks is fixed.
    - Components don't, yet. A component test the change breaks because it pinned the old UI is deleted, not rewritten, and the component's tests are owed.
    - No docs yet: no guide pages, feature text in CLAUDE.md, "as built" in the design doc, module docs or capture scripts. What the change owes goes in `.llm/owed/<name>.md`, a line each.
-2. **Ask to merge.** First merge dev into the branch and run `npm run ci` once, there. The merge into dev then makes the tree CI just passed, so CI runs again only if dev moved in between.
+2. **Ask to merge.** First merge dev into the branch and run `npm run ci` once, there. The merge into dev then makes the tree CI just passed, so CI runs again only if dev moved in between. Merge with `git merge --no-ff -m "<subject>"`, the subject saying what the change does, as a commit's does ("Check a pasted link before it is opened"): the merge is the change's one commit in the public history, and "Merge branch …" is not published.
 3. **The user tries it** on :8002, or in the desktop app with `install-on-mac.sh`. What they ask for goes through 1 and 2 again.
-4. **Finish** once the user stops changing it, or before the next snapshot is published at the latest: component tests of the UI it ended with, the guide pages, CLAUDE.md, the design doc's "as built", the capture scripts. Then delete `.llm/owed/<name>.md`; nothing is published while `.llm/owed/` holds anything.
+4. **Finish** once the user stops changing it, or before the next snapshot is published at the latest.
+   - First read the change whole and ask whether it would be designed this way from scratch. Rounds of changes leave shapes nobody chose. Where it wouldn't, propose the rework to the user, and do it before the tests and docs, which would be written twice.
+   - A change to what the app takes from outside (a sync record, an imported file, a page, a card, what a model or a tool returns), to the desktop shell or to the sync server gets its security review now (see Releases), while it is one change to read.
+   - Then what it owes: component tests of the UI it ended with, the guide pages, CLAUDE.md, the design doc's "as built", the capture scripts. Delete `.llm/owed/<name>.md`; nothing is published while `.llm/owed/` holds anything.
+
+## Releases
+
+A release publishes dev's commits since the last one to the public repository and tags the last. Each merge or commit on dev becomes one public commit under the message it has on dev; a commit that changes only private paths (`.llm/`, `server/`) is left out, so private and public files need no separating. Before a release:
+
+1. **Nothing owed**: `.llm/owed/` is empty.
+2. **CI** passes on dev.
+3. **Reviews** of everything since the last release (`local/publish-snapshot.sh --list` lists the commits). Each is done by a subagent that wrote none of it, given the diff and the guideline it reviews against, not a summary of the changes. What they find is fixed through the development cycle, and the fixes are reviewed too.
+   - **Security**: what the changes take from outside the app and what they do with it, what the desktop shell exposes, the sync server (reviewed though it isn't published), new dependencies, and whether what the docs say about privacy is still true. `.llm/security_review_2026-11-14.md` reviewed the whole app this way. That is done again before a milestone, not for every release.
+   - **Text**: every line a user reads that the release adds or changes: the app's strings, the guides, the README, the changelog section, and the commit messages, which are published as written. Does the reader need it? If not, remove it. Does it take effort to read? Simplify it. Does it read as a person wrote it? If not, reword it. Third-party names (below) are looked for here too, in every commit and not only the last.
+   - **UX**: every toast, confirm, dialog, banner and note under a control the release adds, in a list, each kept only if Messages or Help text below allows it. And each new piece of UI in a screenshot beside the UI around it, for the user to look at: the same components, spacing and wording as its neighbours.
+4. **The record**: `.llm/review.md`, written over the last release's, with a `Reviewed: <commit>` line naming the dev commit the reviews read up to, and under `## Security`, `## Text` and `## UX` what each found and what was done. `publish-snapshot.sh` refuses without it, and if anything but the changelog, the private paths, the module docs and the pictures changed after that commit.
+5. **The changelog**: a section headed with the release's tag.
+6. **Publish** with `local/publish-snapshot.sh`, in the container. A commit that needs another subject, or that should go out with the next, is changed in a plan (`--list`, then `--plan`). The user reads the commits it lists and pushes them with `local/push-snapshot.sh`.
+
+A change to the docs or the README between releases (`--no-release`) needs the Text review alone.
+
+### The user's documents
+
+The user writes `README.md`, `CONTRIBUTING.md`, `LICENSE`, the guide's About page (`docs/src/content/docs/about.md`) and a `SECURITY.md` if there comes to be one, or reads every change to them. Propose a change as a diff and wait for a yes. `push-snapshot.sh` shows what a release changes in them before it asks to push.
+
+The same goes for a promise to users or contributors wherever it is written: what we collect, what we keep, what is supported, how contributions are taken. Never write one the user hasn't made.
 
 ## Guidelines
 
@@ -103,7 +128,7 @@ What is only for developing inksprite, and never released, checks `hasDevFeature
 This repository is published. The rulebooks, books, papers, character cards and chats we test against are other people's work:
 
 - Keep them in the gitignored folders: `app/harness/test-*/` (cards, chats, PDFs, epubs), `app/harness/research/`, and `local/` at the repository root.
-- Never name them in anything committed: design notes, comments, tests, fixtures, harness findings, commit messages. Describe them by their role instead: "the largest rulebook", "a third-party card", "a novel".
+- Never name them in anything committed: design notes, comments, tests, fixtures, harness findings, commit messages. A commit is published as it is made, message and all, so one that names them can't be put right by the next. Describe them by their role instead: "the largest rulebook", "a third-party card", "a novel".
 - Never copy their text into a test or fixture, not even a heading or a line. Make up text of the same shape.
 
 ### Testing

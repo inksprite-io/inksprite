@@ -15,6 +15,10 @@ inksprite-tts/
 # README says what goes there.
 local/*
 !local/README.md
+# The release scripts are kept on dev, and out of the published repository
+# by their own list of private paths.
+!local/publish-snapshot.sh
+!local/push-snapshot.sh
 
 # Claude Code — personal settings and transient worktree checkouts.
 # Deliberately not the whole directory: a shared .claude/settings.json
