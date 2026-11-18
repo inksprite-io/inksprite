@@ -15,8 +15,9 @@ design is `.llm/desktop_design.md`.
   writer chooses, in place of one there of that name.
 - `src/closing.js` has the window wait for the page to save before it
   closes or the app quits.
-- `src/gone.js` logs why a window's page died, in `windows.log` in the app's
-  logs folder (`~/Library/Logs/inksprite` on a Mac), and offers to reload it.
+- `src/gone.js` logs why a window's page died, in `inksprite.log` in the app's
+  logs folder (`~/Library/Logs/inksprite` on a Mac; `src/log.js`), and offers
+  to reload it.
 - `src/sandbox.js` and `sandbox/` are Python for the model: Pyodide in a
   page of its own, fenced from the app's data and the network, a session
   for each chat, with the chat's project read-only at `/project`, its

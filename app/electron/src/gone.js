@@ -2,19 +2,14 @@
  * A window whose page has died: a crash, or out of memory. Without this it
  * stays open and white, and nothing says why.
  *
- * What it died of goes in a log (`windows.log` in the app's logs folder:
- * `~/Library/Logs/inksprite` on a Mac), for an installed app has no terminal to
- * say it in. The writer is told it stopped, and can reload it or close it. A
- * page that dies again as it loads, on what it died of the first time, asks
- * again, so closing it is always there.
+ * What it died of goes in the app's log (`log.js`), for an installed app has
+ * no terminal to say it in. The writer is told it stopped, and can reload it
+ * or close it. A page that dies again as it loads, on what it died of the
+ * first time, asks again, so closing it is always there.
  */
 
 import { app, dialog } from 'electron'
-import { appendFile, mkdir } from 'node:fs/promises'
-import path from 'node:path'
-
-/** The log, in the app's logs folder. */
-const LOG_FILE = 'windows.log'
+import { logLine } from './log.js'
 
 /** The answers, in the order the dialog has them. */
 const RELOAD = 0
@@ -34,24 +29,14 @@ app.on('before-quit', () => {
 })
 
 /**
- * Say in the log what a page died of. A log that can't be written is no reason
- * to get in the way of the window.
+ * Say in the log what a page died of.
  *
  * @param {string} url - What the window was showing
  * @param {Electron.RenderProcessGoneDetails} details
  * @returns {Promise<void>}
  */
-async function logGone(url, { reason, exitCode }) {
-  const line = `${new Date().toISOString()} page gone: ${reason}, exit code ${exitCode}, at ${url}`
-  console.error(line)
-  try {
-    const folder = app.getPath('logs')
-    await mkdir(folder, { recursive: true })
-    await appendFile(path.join(folder, LOG_FILE), `${line}\n`)
-  } catch (error) {
-    console.error(`The log couldn't be written: ${error.message}`)
-  }
-}
+const logGone = (url, { reason, exitCode }) =>
+  logLine(`page gone: ${reason}, exit code ${exitCode}, at ${url}`)
 
 /**
  * When a window's page dies, log why, and offer to bring it back.

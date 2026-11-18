@@ -54,7 +54,7 @@ describe('offerReloadWhenGone', () => {
 
     await window.die({ reason: 'crashed', exitCode: 5 })
 
-    const log = await readFile(path.join(logs, 'windows.log'), 'utf8')
+    const log = await readFile(path.join(logs, 'inksprite.log'), 'utf8')
     expect(log).toMatch(/^\d{4}-.*page gone: crashed, exit code 5, at app:\/\/inksprite\/project/)
     expect(said).toHaveBeenCalledWith(expect.stringContaining('page gone: crashed'))
   })
@@ -116,7 +116,7 @@ describe('offerReloadWhenGone', () => {
     await first
 
     expect(dialog.showMessageBox).toHaveBeenCalledTimes(1)
-    expect(await readFile(path.join(logs, 'windows.log'), 'utf8')).toContain('exit code 6')
+    expect(await readFile(path.join(logs, 'inksprite.log'), 'utf8')).toContain('exit code 6')
   })
 
   it('asks again when the page dies again after a reload', async () => {

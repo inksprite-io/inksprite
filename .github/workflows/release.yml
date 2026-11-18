@@ -17,8 +17,10 @@ name: Desktop Release
 #
 # The app updates itself from the latest release (app/electron/src/
 # updates.js): each system's build comes with a latest*.yml that names its
-# update and the update's hash. GitHub's latest release is never a
-# pre-release, so these are not marked as pre-releases.
+# update and the update's hash, and on Windows and Linux with a signature of
+# our own beside each update, which the app checks before it installs one.
+# GitHub's latest release is never a pre-release, so these are not marked as
+# pre-releases.
 #
 # Never on a pull request: this workflow holds the signing secrets. They live
 # in the `release` environment. It runs only on a public repository, because
@@ -192,6 +194,18 @@ jobs:
           fi
           npx electron-builder ${{ matrix.system }} --publish never
 
+      # What the app checks an update against before it installs it, on
+      # Windows and Linux, where nothing else says an update is ours
+      # (app/electron/src/updateSignature.js): a .sig beside each update, made
+      # with a key only this environment has. Checked here as the app will
+      # check it, so a key the app wasn't built with stops the release.
+      - name: Sign the updates
+        if: runner.os != 'macOS'
+        working-directory: app/electron
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+        run: node scripts/sign-updates.js dist
+
       # The check a Mac makes on an app downloaded from the internet: signed
       # with a Developer ID, and notarized, with the ticket stapled on.
       - name: Check Gatekeeper accepts the app
@@ -215,6 +229,7 @@ jobs:
             app/electron/dist/*.AppImage
             app/electron/dist/*.deb
             app/electron/dist/*.blockmap
+            app/electron/dist/*.sig
             app/electron/dist/latest*.yml
           if-no-files-found: error
           retention-days: 7
@@ -252,7 +267,7 @@ jobs:
           - **Windows**: the `.exe`. It isn't signed, so Windows warns that it doesn't recognize the app: choose More info, then Run anyway.
           - **Linux**: the `.AppImage`, or the `.deb` for Debian and Ubuntu. If the AppImage won't start on Ubuntu 24.04 or later, install the `.deb`.
 
-          Once installed, the app updates itself: it downloads each new release and offers to restart into it. The `.zip`, `.blockmap` and `.yml` files are for the updater.
+          Once installed, the app updates itself: it downloads each new release and offers to restart into it. The Windows and Linux builds aren't code-signed, so there the app checks each update against a signature made as the release was built. The `.zip`, `.blockmap`, `.sig` and `.yml` files are for the updater.
 
           An app installed from a release before v0.1.0-dev.8, the first built with Electron, doesn't update to this one; install it over that one.
           EOF
