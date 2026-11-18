@@ -10,6 +10,7 @@
 
 import { isDesktop } from '@/platform/desktop.js'
 import { getWebService } from './services.js'
+import { readDirect } from './direct.js'
 
 /** @typedef {import('../types/models.js').WebSearchSetup} WebSearchSetup */
 /** @typedef {import('./services.js').WebService} WebService */
@@ -69,6 +70,24 @@ export function serviceInUse(from = setup) {
   const key = from?.keys?.[service.id] || ''
   if (service.needsKey && !key) return null
   return { service, key }
+}
+
+/**
+ * Who reads a page at an address: the service in use, where there is one;
+ * and in the desktop app with none, the app itself, straight from the site
+ * (web/direct.js). A page in a browser can't ask another site for anything,
+ * so there a page is read only through a service.
+ *
+ * @param {WebSearchSetup|null} [from]
+ * @returns {{name: string, key: string, read: WebService['read'], id: string, limited?: WebService['limited']}|null}
+ */
+export function readerInUse(from = setup) {
+  const using = serviceInUse(from)
+  if (using) {
+    const { service, key } = using
+    return { id: service.id, name: service.name, key, read: service.read, limited: service.limited }
+  }
+  return isDesktop() ? { id: 'direct', name: 'inksprite', key: '', read: readDirect } : null
 }
 
 /**

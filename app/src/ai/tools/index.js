@@ -162,6 +162,7 @@ import {
   saveWebPageDefinition,
   webSearchDefinition,
   webSearchOffered,
+  webToolOffered,
 } from './web.js'
 import {
   PYTHON_GROUP,
@@ -549,6 +550,7 @@ export function getEnabledToolDefinitions(choice) {
   return toolRegistry.getEnabledDefinitions(choice ?? {}).flatMap(definition => {
     const name = definition.function.name
     if (!groupAvailable(toolRegistry.groupOf(name)) || offEverywhere(name)) return []
+    if (!webToolOffered(name)) return []
     if (name !== USE_SKILL) return [definition]
     const offered = loadableSkills().filter(skill => !off.has(skill.name))
     return offered.length > 0 ? [useSkillDefinition(offered)] : []
@@ -649,7 +651,13 @@ export function getToolGroups() {
   for (const server of allServers()) {
     if (reachable(server)) labels[serverGroup(server.id)] = server.name
   }
-  return toolRegistry.getGroups({ ...labels, ...rest }).filter(group => groupAvailable(group.id))
+  return toolRegistry
+    .getGroups({ ...labels, ...rest })
+    .filter(group => groupAvailable(group.id))
+    .map(group => ({
+      ...group,
+      definitions: group.definitions.filter(definition => webToolOffered(definition.function.name)),
+    }))
 }
 
 /**

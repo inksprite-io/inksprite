@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-const serviceInUse = vi.hoisted(() => vi.fn())
-vi.mock('@/web/config.js', () => ({ serviceInUse }))
+const readerInUse = vi.hoisted(() => vi.fn())
+vi.mock('@/web/config.js', () => ({ readerInUse }))
 
 const { forgetPages, readPage, wholePage } = await import('@/web/pages.js')
 
@@ -54,7 +54,7 @@ describe('wholePage', () => {
   it('gives the copy kept, whichever service read it, without asking again', async () => {
     const kagi = { ...service(), id: 'kagi' }
     await readPage(/** @type {any} */ (kagi), 'https://example.org/a', {})
-    serviceInUse.mockReturnValue({ service: service(), key: '' })
+    readerInUse.mockReturnValue({ ...service(), key: '' })
 
     expect((await wholePage('https://example.org/a'))?.text).toBe('Text of https://example.org/a.')
     expect(kagi.read).toHaveBeenCalledTimes(1)
@@ -62,7 +62,7 @@ describe('wholePage', () => {
 
   it('reads a page no longer kept with the service in use, and its key', async () => {
     const exa = service()
-    serviceInUse.mockReturnValue({ service: exa, key: 'k1' })
+    readerInUse.mockReturnValue({ ...exa, key: 'k1' })
 
     expect((await wholePage('https://example.org/b', { timeout: 5 }))?.text).toBe(
       'Text of https://example.org/b.'
@@ -70,8 +70,8 @@ describe('wholePage', () => {
     expect(exa.read).toHaveBeenCalledWith('https://example.org/b', { timeout: 5, key: 'k1' })
   })
 
-  it('has nothing when no copy is kept and no service is set up', async () => {
-    serviceInUse.mockReturnValue(null)
+  it('has nothing when no copy is kept and nothing here reads a page', async () => {
+    readerInUse.mockReturnValue(null)
 
     expect(await wholePage('https://example.org/c')).toBeNull()
   })

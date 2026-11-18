@@ -18,7 +18,7 @@
 import { sliceAt } from './slices.js'
 import { folderToKeepIn, keptFrom, pathInProject } from './documents.js'
 import { describeRefusal } from '@/web/answers.js'
-import { serviceInUse } from '@/web/config.js'
+import { readerInUse, serviceInUse } from '@/web/config.js'
 import { fetchToKeep } from '@/web/keep.js'
 import { readPage } from '@/web/pages.js'
 import { savedPage } from '@/mcp/saved.js'
@@ -57,12 +57,24 @@ const NOT_SET_UP = {
 
 /**
  * Whether the web tools can be offered: the Web search extension is on, as
- * it is unless the writer switched it off, and a service is set up to search.
+ * it is unless the writer switched it off, and something here reads a page,
+ * a service set up to search or, in the desktop app, the app itself.
  *
  * @returns {boolean}
  */
 export function webSearchOffered() {
-  return useApplicationState().webSearch.value && Boolean(serviceInUse())
+  return useApplicationState().webSearch.value && Boolean(readerInUse())
+}
+
+/**
+ * Whether one of the web's tools can be offered where the web is: the
+ * search only with a service to search, the rest wherever a page is read.
+ *
+ * @param {string} name
+ * @returns {boolean}
+ */
+export function webToolOffered(name) {
+  return name !== WEB_SEARCH || Boolean(serviceInUse())
 }
 
 export const webSearchDefinition = {
@@ -156,12 +168,13 @@ export async function executeWebSearch(args, context) {
 export async function executeReadWebPage(args, context) {
   const url = webAddress(args?.url)
   if (!url) return { error: 'Give the page’s full address, starting http:// or https://.' }
-  const using = serviceInUse()
-  if (!using) return NOT_SET_UP
-  const { service, key } = using
+  const service = readerInUse()
+  if (!service) return NOT_SET_UP
+  const { key } = service
   const signal = context?.signal
   try {
-    const page = await readPage(service, url, { key, signal, timeout: WEB_TIMEOUT_MS })
+    const home = context?.mayLeadHome?.(url) === true
+    const page = await readPage(service, url, { key, signal, timeout: WEB_TIMEOUT_MS, home })
     if (!page.text.trim()) return { error: `${service.name} found nothing to read at ${url}.` }
     const slice = sliceAt(page.text, Number(args?.from) || 0)
     return {
@@ -252,7 +265,8 @@ export async function executeSaveWebPage(args, context) {
   const signal = context.signal
   let keepable
   try {
-    keepable = await fetchToKeep(url, { signal, timeout: SAVE_TIMEOUT_MS })
+    const home = context?.mayLeadHome?.(url) === true
+    keepable = await fetchToKeep(url, { signal, timeout: SAVE_TIMEOUT_MS, home })
   } catch (error) {
     if (signal?.aborted) throw error
     return { error: describeRefusal(serviceInUse()?.service.name || 'The site', error) }

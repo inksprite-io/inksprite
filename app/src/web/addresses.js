@@ -316,3 +316,22 @@ export function readingAsks(address, seen, { always = false, sites = [] } = {}) 
   if (sites.includes(site) || hasSeen(seen, address)) return false
   return isLocalAddress(address) || !always
 }
+
+/**
+ * Whether the writer said an address may be read wherever it leads, their
+ * own computer and network among it: they typed it, or always allow its
+ * site. A name of theirs can lead home without looking as if it does.
+ *
+ * @param {unknown} address
+ * @param {Seen} seen
+ * @param {ReadingAllowed} [allowed]
+ * @returns {boolean}
+ */
+export function mayLeadHome(address, seen, { sites = [] } = {}) {
+  const key = addressKey(address)
+  const site = siteOf(address)
+  return (
+    Boolean(key && site) &&
+    (seen.typed.has(/** @type {string} */ (key)) || sites.includes(/** @type {string} */ (site)))
+  )
+}

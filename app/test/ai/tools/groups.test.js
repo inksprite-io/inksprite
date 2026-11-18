@@ -89,11 +89,23 @@ describe('tool groups', () => {
     // Not in a profile that offers only some, unless it is among them.
     expect(offered({ onlyToolGroups: ['documents'] })).toEqual([])
 
+    // With no service to search, the desktop app still reads a page itself.
     setWebSearch(null)
+    const bridge = globalThis.__INKSPRITE_DESKTOP__
     try {
+      expect(offered({})).toEqual(['read_web_page'])
+      const web = getToolGroups().find(group => group.id === 'web')
+      expect(web.definitions.map(definition => definition.function.name)).toEqual([
+        'read_web_page',
+        'save_web_page',
+      ])
+
+      // A page in a browser can't, and has no web tools without one.
+      delete globalThis.__INKSPRITE_DESKTOP__
       expect(offered({})).toEqual([])
       expect(getToolGroups().map(group => group.id)).not.toContain('web')
     } finally {
+      globalThis.__INKSPRITE_DESKTOP__ = bridge
       setWebSearch({ id: 'web', service: 'exa', keys: {} })
     }
   })

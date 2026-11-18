@@ -59,7 +59,8 @@ import { READ_WEB_PAGE, SAVE_WEB_PAGE, WEB_SEARCH } from '@/ai/tools/web.js'
 import { inTurn, roomFor } from '@/ai/gate.js'
 import { traitsOf } from '@/ai/models.js'
 import { askApproval, asksFirst, denyWaiting, siteAsking } from './useToolApprovals.js'
-import { noteWebResult, seenIn } from '@/web/addresses.js'
+import { mayLeadHome, noteWebResult, seenIn } from '@/web/addresses.js'
+import { readingAllowed } from '@/web/config.js'
 import { reportWorking } from './useChatActivity.js'
 import { useMcpServers } from './useMcpServers.js'
 import { useWebSearch } from './useWebSearch.js'
@@ -1041,6 +1042,7 @@ function createAIChat(storyId, chatId) {
       // calls only. A skill reads a transcript without them, so a read above
       // is not in front of it, and it is never told one is.
       ...(depth === 0 ? { conversation: conversationRead } : {}),
+      ...(seen ? { mayLeadHome: address => mayLeadHome(address, seen, readingAllowed()) } : {}),
       signal: callSignal,
       // Asked beside the call, like a server's tool, and answered no when the
       // turn stops. What always means is the tool's to keep.

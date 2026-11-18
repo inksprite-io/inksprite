@@ -1,5 +1,11 @@
 import { describe, it, expect, afterEach } from 'vitest'
-import { serviceInUse, setWebSearch, webSearchSetup, onWebSearchChanged } from '@/web/config.js'
+import {
+  readerInUse,
+  serviceInUse,
+  setWebSearch,
+  webSearchSetup,
+  onWebSearchChanged,
+} from '@/web/config.js'
 
 /** A setup with this service, keys and profiles. */
 const setup = (service, keys = {}, profiles = ['p_default']) => ({
@@ -55,5 +61,23 @@ describe('serviceInUse', () => {
     setWebSearch(setup('kagi'))
 
     expect(told).toBe(1)
+  })
+})
+
+describe('readerInUse', () => {
+  afterEach(() => {
+    setWebSearch(null)
+    delete globalThis.__INKSPRITE_DESKTOP__
+  })
+
+  it('is the service in use, with its key', () => {
+    setWebSearch({ id: 'web', service: 'kagi', keys: { kagi: 'k' } })
+    expect(readerInUse()).toMatchObject({ id: 'kagi', name: 'Kagi', key: 'k' })
+  })
+
+  it('is the app itself in the desktop app with no service, and nothing in a browser', () => {
+    expect(readerInUse()).toBeNull()
+    globalThis.__INKSPRITE_DESKTOP__ = {}
+    expect(readerInUse()).toMatchObject({ id: 'direct', key: '' })
   })
 })

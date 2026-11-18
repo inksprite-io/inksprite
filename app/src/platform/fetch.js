@@ -37,13 +37,30 @@ export function fetch(input, init) {
 }
 
 /**
+ * `fetch`, for an address that is to be on the web and nowhere nearer: one
+ * the model named. In the desktop app the native side refuses it where it
+ * leads to this computer or its network, by a name that resolves there or a
+ * redirect (`electron/src/addresses.js`); a browser keeps a page from most
+ * of those itself.
+ *
+ * @param {RequestInfo|URL} input
+ * @param {RequestInit} [init]
+ * @returns {Promise<Response>}
+ */
+export function fetchFromWeb(input, init) {
+  if (!isDesktop()) return globalThis.fetch(input, init)
+  return fetchNatively(new Request(input, init), { webOnly: true })
+}
+
+/**
  * Make `request` from the native side. Its body is streamed back as it
  * comes.
  *
  * @param {Request} request
+ * @param {{webOnly?: boolean}} [options] - Refuse it where it leads home
  * @returns {Promise<Response>}
  */
-async function fetchNatively(request) {
+async function fetchNatively(request, { webOnly = false } = {}) {
   const { signal } = request
   signal.throwIfAborted()
   const bridge = desktop()
@@ -96,6 +113,7 @@ async function fetchNatively(request) {
         headers: [...request.headers],
         body,
         redirect: request.redirect,
+        ...(webOnly ? { webOnly: true } : {}),
       },
       onBody
     )

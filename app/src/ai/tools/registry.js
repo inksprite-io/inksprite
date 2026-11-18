@@ -107,6 +107,9 @@ import { toolOn } from './choice.js'
  *   turn: for one they should read in the tool's own words rather than have
  *   retold. The model is sent the result as ever, and the tool tells it the
  *   writer has it. Absent where nothing would show it.
+ * @property {(address: string) => boolean} [mayLeadHome] - Whether the writer
+ *   said an address may be read wherever it leads, their own network among
+ *   it: they typed it, or always allow its site (web/addresses.js)
  * @property {AbortSignal} [signal] - Aborted when the call is stopped: its
  *   time is up, or the turn it is part of was stopped. A tool with something
  *   slow to wait on — a request, a server — hands it on; one that doesn't is

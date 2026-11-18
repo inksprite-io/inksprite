@@ -20,7 +20,8 @@
  */
 
 import { DOMParser as ProseMirrorDOMParser } from 'prosemirror-model'
-import { fetch } from '@/platform/fetch.js'
+import { fetch, fetchFromWeb } from '@/platform/fetch.js'
+import { isLocalAddress } from './addresses.js'
 import { DROPPED } from '@/files/html.js'
 import { docxToMarkdown, isDocx } from '@/files/docx.js'
 import { UNKNOWN_MIME, extensionFor, inspectFile, mimeOf, titleOf } from '@/files/inspect.js'
@@ -29,6 +30,9 @@ import { serializeMarkdown } from '@/editor/markdown.js'
 import { ServiceError } from './answers.js'
 
 /** @typedef {import('./answers.js').Page} Page */
+
+/** What the native side says of a fetch it refused for where it led (`electron/src/addresses.js`). */
+const LOCAL_REFUSED = 'That address is on this computer or its network.'
 
 /** The most of a page read, in characters, before it is made markdown. */
 const SOURCE_LENGTH = 5_000_000
@@ -110,21 +114,29 @@ export function fileNameOf(url, disposition, type) {
  * Ask a site for what is at an address.
  *
  * @param {string} url
- * @param {{signal?: AbortSignal, timeout?: number}} options
+ * @param {{signal?: AbortSignal, timeout?: number, home?: boolean}} options - `home`
+ *   where the writer said it may be read wherever it leads
  * @returns {Promise<Response>}
  * @throws {ServiceError} When the site cannot be reached, or will not answer
  */
-async function askSite(url, { signal, timeout }) {
+async function askSite(url, { signal, timeout, home = false }) {
   const signals = [signal, timeout ? AbortSignal.timeout(timeout) : undefined].filter(Boolean)
   let response
   try {
-    response = await fetch(url, {
+    // An address that is local by its name was the writer's to allow, and
+    // they did, as they did one they typed or whose site they always allow.
+    // Any other is fetched only as far as it stays on the web.
+    const ask = home || isLocalAddress(url) ? fetch : fetchFromWeb
+    response = await ask(url, {
       headers: { Accept: 'text/html,application/xhtml+xml,text/plain;q=0.9,*/*;q=0.5' },
       redirect: 'follow',
       signal: signals.length ? AbortSignal.any(/** @type {AbortSignal[]} */ (signals)) : undefined,
     })
   } catch (error) {
     if (signal?.aborted) throw error
+    if (String(error?.message).includes(LOCAL_REFUSED)) {
+      throw new ServiceError(`${url} leads to this computer or its network, and wasn’t read.`)
+    }
     throw new ServiceError(`${url} couldn’t be reached.`)
   }
   if (response.status === 404 || response.status === 410) {
@@ -144,7 +156,7 @@ async function askSite(url, { signal, timeout }) {
  * address that says nothing either is a page if it reads like one.
  *
  * @param {string} url
- * @param {{signal?: AbortSignal, timeout?: number}} options
+ * @param {{signal?: AbortSignal, timeout?: number, home?: boolean}} options
  * @returns {Promise<Fetched>}
  * @throws {ServiceError} When the site cannot be reached or will not answer,
  *   or the file is too big to fetch

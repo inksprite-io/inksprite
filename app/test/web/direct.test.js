@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { barePng, minimalPdf } from '../files/helpers.js'
 
 const fetch = vi.hoisted(() => vi.fn())
-vi.mock('@/platform/fetch.js', () => ({ fetch }))
+vi.mock('@/platform/fetch.js', () => ({ fetch, fetchFromWeb: fetch }))
 
 const { FILE_BYTES, fetchDirect, fileNameOf, pageOfHtml, readDirect } = await import(
   '@/web/direct.js'
@@ -194,5 +194,23 @@ describe('fileNameOf', () => {
     ).toBe('standards maths.pdf')
     expect(fileNameOf('https://example.org/download/42', null, 'application/pdf')).toBe('42.pdf')
     expect(fileNameOf('https://example.org/', null, '')).toBe('example.org')
+  })
+
+  it('asks for an address on the web as one, and for one the writer allowed as it is', async () => {
+    const asked = []
+    fetch.mockImplementation(async url => {
+      asked.push(url)
+      return new Response('<p>Hi</p>', { headers: { 'content-type': 'text/html' } })
+    })
+    await fetchDirect('https://tides.example/a', {})
+    await fetchDirect('http://192.168.1.20:8080/status', {})
+    expect(asked).toEqual(['https://tides.example/a', 'http://192.168.1.20:8080/status'])
+  })
+
+  it('says so when an address turned out to lead to this computer or its network', async () => {
+    fetch.mockRejectedValue(new TypeError('That address is on this computer or its network.'))
+    await expect(fetchDirect('https://tides.example/a', {})).rejects.toThrow(
+      'https://tides.example/a leads to this computer or its network, and wasn’t read.'
+    )
   })
 })

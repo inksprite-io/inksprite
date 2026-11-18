@@ -11,7 +11,7 @@
  * project: the whole page, not the part the model happened to be reading.
  */
 
-import { serviceInUse } from './config.js'
+import { readerInUse } from './config.js'
 
 /** @typedef {import('./answers.js').Page} Page */
 /** @typedef {import('./services.js').WebService} WebService */
@@ -24,9 +24,10 @@ const KEPT = 8
 const pages = new Map()
 
 /**
- * A page, from the copy kept of it or from the service.
+ * A page, from the copy kept of it or from whoever reads pages: a service,
+ * or the app itself.
  *
- * @param {WebService} service
+ * @param {{id: string, read: WebService['read']}} service
  * @param {string} url
  * @param {CallOptions} options
  * @returns {Promise<Page>}
@@ -56,16 +57,16 @@ export function readPage(service, url, options) {
  *
  * @param {string} url
  * @param {CallOptions} [options]
- * @returns {Promise<Page|null>} null when no copy is kept and no service is
- *   set up to read one
+ * @returns {Promise<Page|null>} null when no copy is kept and nothing here
+ *   can read one
  * @throws When the service fails to read it
  */
 export async function wholePage(url, options = {}) {
   const kept = keptRead(url)
   if (kept) return kept
-  const using = serviceInUse()
-  if (!using) return null
-  return readPage(using.service, url, { ...options, key: using.key })
+  const reader = readerInUse()
+  if (!reader) return null
+  return readPage(reader, url, { ...options, key: reader.key })
 }
 
 /**

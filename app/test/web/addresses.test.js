@@ -5,6 +5,7 @@ import {
   addressesIn,
   hasSeen,
   isLocalAddress,
+  mayLeadHome,
   noteWebResult,
   nothingSeen,
   readingAsks,
@@ -227,6 +228,24 @@ describe('readingAsks', () => {
   it('asks nothing of what is no address, which the tool refuses itself', () => {
     expect(readingAsks('', seen)).toBe(false)
     expect(readingAsks('ftp://files.example/', seen)).toBe(false)
+  })
+})
+
+describe('mayLeadHome', () => {
+  const seen = seenIn([
+    { role: 'user', content: 'Read https://chat.home.example/notes' },
+    turn([WEB_SEARCH, { query: 'x' }, { results: [{ url: 'https://found.example/a', text: '' }] }]),
+  ])
+
+  it('is for an address the writer typed, or on a site they always allow, and no other', () => {
+    expect(mayLeadHome('https://chat.home.example/notes', seen)).toBe(true)
+    expect(mayLeadHome('https://chat.home.example/other', seen)).toBe(false)
+    expect(
+      mayLeadHome('https://chat.home.example/other', seen, { sites: ['chat.home.example'] })
+    ).toBe(true)
+    // One a search found is from outside the model, but not the writer's word.
+    expect(mayLeadHome('https://found.example/a', seen)).toBe(false)
+    expect(mayLeadHome('nothing', seen)).toBe(false)
   })
 })
 

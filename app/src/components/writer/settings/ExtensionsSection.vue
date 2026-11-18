@@ -233,6 +233,7 @@ import { useWebSearch } from '@/composables/useWebSearch.js'
 import { WEB_TOOL_LABELS, useToolSettings } from '@/composables/useToolSettings.js'
 import { compareNames } from '@/utils/compareNames.js'
 import { serviceInUse } from '@/web/config.js'
+import { WEB_SEARCH } from '@/ai/tools/web.js'
 import { hasPython } from '@/platform/python.js'
 import { PYTHON_GROUP, PYTHON_TIME_LIMITS } from '@/ai/tools/python.js'
 
@@ -277,12 +278,15 @@ const toolSettings = useToolSettings()
 
 /** The web's tools, each as it is set for the whole app. */
 const webTools = computed(() =>
-  Object.entries(WEB_TOOL_LABELS).map(([name, label]) => ({
-    name,
-    label,
-    options: toolSettings.optionsFor(name),
-    value: toolSettings.settingOf(name),
-  }))
+  Object.entries(WEB_TOOL_LABELS)
+    // Searching needs a service; reading and keeping a page don't, in the desktop app.
+    .filter(([name]) => name !== WEB_SEARCH || web.inUse.value)
+    .map(([name, label]) => ({
+      name,
+      label,
+      options: toolSettings.optionsFor(name),
+      value: toolSettings.settingOf(name),
+    }))
 )
 
 /** The sites whose addresses are read without asking, by name. */

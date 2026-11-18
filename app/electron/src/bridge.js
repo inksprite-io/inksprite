@@ -13,6 +13,7 @@
 import { BrowserWindow, ipcMain, net, shell } from 'electron'
 import { realpath } from 'node:fs/promises'
 import { openable, originOf, webAddress } from './links.js'
+import { fetchFromWeb } from './addresses.js'
 import { listen } from './loopback.js'
 import { downloadUpdate, installUpdate } from './updates.js'
 import { readSettingsFile } from './settingsFile.js'
@@ -84,14 +85,18 @@ export function handleBridge(origin, { openWindow }) {
     }
     let response
     try {
-      response = await net.fetch(request.url, {
+      const init = {
         method: request.method,
         headers: request.headers,
         body: request.body,
-        redirect: request.redirect,
         credentials: 'omit',
         signal: controller.signal,
-      })
+      }
+      // An address the model named, and the page took for the web: fetched
+      // only as far as it stays there (`addresses.js`).
+      response = request.webOnly
+        ? await fetchFromWeb((url, with_) => net.fetch(url, with_), request.url, init)
+        : await net.fetch(request.url, { ...init, redirect: request.redirect })
     } catch (error) {
       requests.delete(key)
       throw error
