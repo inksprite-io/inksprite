@@ -148,7 +148,10 @@ describe('appReads', () => {
 
     await reads.put('app_1', 'doc_1', record())
     await expect(reads.forgetDocuments('doc_1')).rejects.toThrow('list')
-    await expect(reads.forgetDocuments(['../../apps'])).rejects.toThrow('id')
+    // An id no record could be kept under is passed over, and the rest go.
+    await reads.forgetDocuments(['../../apps', 'a/b', 7, 'doc_1'])
+    expect(await reads.get('app_1', 'doc_1')).toBeNull()
+    await reads.put('app_1', 'doc_1', record())
     await expect(reads.forgetDocuments(['doc_1'], '../app_1')).rejects.toThrow('id')
     expect(await reads.get('app_1', 'doc_1')).toEqual(record())
   })

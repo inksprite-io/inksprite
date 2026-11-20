@@ -126,33 +126,35 @@ describe('windowAsker', () => {
     expect(closed.send).not.toHaveBeenCalled()
   })
 
-  it('goes on to the next window when the one asked closes', async () => {
+  it('passes over a window that is gone before it is asked', async () => {
     const one = page(1)
+    one.isDestroyed.mockReturnValue(true)
     const two = page(2)
     const asker = windowAsker(() => [one, two])
 
     const answer = asker.ask(CONNECTION, MESSAGE, new AbortController().signal)
     await tick()
-    one.close()
-    await tick()
     asker.answered(2, asked(two), { response: { jsonrpc: '2.0', id: 7, result: {} } })
 
     expect(await answer).toEqual({ jsonrpc: '2.0', id: 7, result: {} })
-    expect(one.off).toHaveBeenCalledWith('destroyed', expect.any(Function))
+    expect(one.send).not.toHaveBeenCalled()
   })
 
-  it('goes on to the next window when the one asked is reloaded, or its process ends', async () => {
-    for (const leave of [at => at.navigate(), at => at.crash()]) {
+  it('tells the app when the window asked goes before it answers, and asks no other', async () => {
+    // It may have done what was asked before it went: closed, loaded again,
+    // or its process ended.
+    for (const leave of [at => at.close(), at => at.navigate(), at => at.crash()]) {
       const [front, behind] = [page(1), page(2)]
       const asker = windowAsker(() => [front, behind])
 
       const answer = asker.ask(CONNECTION, MESSAGE, new AbortController().signal)
+      const told = expect(answer).rejects.toThrow(/closed or was loaded again.*may have been done/)
       await tick()
       leave(front)
-      await tick()
-      asker.answered(2, asked(behind), { response: { result: 'behind' } })
 
-      await expect(answer).resolves.toEqual({ result: 'behind' })
+      await told
+      expect(behind.send).not.toHaveBeenCalled()
+      expect(front.off).toHaveBeenCalledWith('destroyed', expect.any(Function))
     }
   })
 

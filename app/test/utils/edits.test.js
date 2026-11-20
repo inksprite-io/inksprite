@@ -66,16 +66,21 @@ describe('diffEdit', () => {
     expect(before.replace(pair.old, pair.new)).toBe(after)
   })
 
-  it('takes in context, in a text that repeats itself, until the pair is too long to be there twice', () => {
+  it('takes in context, in a text that repeats itself, until the pair is at one place alone', () => {
     // Two hundred letters, one changed in the middle. The letters around it
-    // are everywhere, so the pair grows by twenty a side until a second like
-    // it would not fit beside the first: 121 letters, after three steps.
+    // are at every other place, one copy over the next, so nothing short of
+    // the whole text is at one place and no other: a shorter pair would be
+    // put back two letters off.
     const before = 'ab'.repeat(100)
     const after = `${before.slice(0, 100)}X${before.slice(101)}`
     const pair = diffEdit(before, after)
-    expect(pair).toEqual({ old: before.slice(40, 161), new: after.slice(40, 161) })
-    expect(before.split(pair.old).length - 1).toBe(1)
-    expect(before.split(pair.old.slice(20, -20)).length - 1).toBe(2)
+    expect(pair).toEqual({ old: before, new: after })
+
+    // Where the text around the change tells its place sooner, so does the pair.
+    const told = `${'ab'.repeat(40)}cd${'ab'.repeat(59)}`
+    const short = diffEdit(told, `${told.slice(0, 100)}X${told.slice(101)}`)
+    expect(told.indexOf(short.old)).toBe(told.lastIndexOf(short.old))
+    expect(short.old.length).toBeLessThan(told.length)
   })
 
   it('searches a text that repeats itself a few dozen times, however long it is', () => {
@@ -194,6 +199,26 @@ describe('reverseEdit', () => {
     expect(reverseEdit('Sleet fell.', edit)).toBeNull()
     expect(reverseEdit('Rain, Rain.', edit)).toBeNull()
     expect(reverseEdit('anything', { ...edit, new: '' })).toBeNull()
+  })
+
+  it('refuses a passage that is at two places, one over the other', () => {
+    // "111" is in "1111" at two places, and put back at the first would be a place off.
+    expect(reverseEdit('in room 1111', { ...edit, old: '999', new: '111' })).toBeNull()
+  })
+
+  it('puts back a change whose words overlap themselves, where it was made', () => {
+    for (const [before, after] of [
+      ['in room 1999', 'in room 1111'],
+      ['He said nooooo to it.', 'He said no way to it.'],
+      ['aaaa', 'aaa'],
+    ]) {
+      const pair = {
+        ...edit,
+        .../** @type {{old: string, new: string}} */ (diffEdit(before, after)),
+      }
+      expect(reverseEdit(after, pair)).toBe(before)
+      expect(applyEdit(before, pair)).toBe(after)
+    }
   })
 
   it('takes an append off the end, and only the end', () => {

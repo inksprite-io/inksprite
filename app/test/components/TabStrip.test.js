@@ -28,6 +28,40 @@ describe('TabStrip', () => {
     expect(html.indexOf('data-end')).toBeGreaterThan(html.indexOf('data-tab-id="doc_2"'))
   })
 
+  it('keeps the tab showing in view: as it comes forward, and as it is given another name', async () => {
+    const original = window.HTMLElement.prototype.scrollIntoView
+    const scrolled = vi.fn()
+    window.HTMLElement.prototype.scrollIntoView = scrolled
+    try {
+      const wrapper = mountStrip()
+      await wrapper.vm.$nextTick()
+      /** The tabs brought into view so far, by their ids. */
+      const shown = () => scrolled.mock.contexts.map(el => el.getAttribute('data-tab-id'))
+      expect(shown()).toEqual(['doc_1'])
+
+      await wrapper.setProps({ activeId: 'doc_2' })
+      await wrapper.vm.$nextTick()
+      expect(shown()).toEqual(['doc_1', 'doc_2'])
+
+      // A longer name can put the tab's end past the strip's.
+      await wrapper.setProps({ items: [items[0], { id: 'doc_2', title: 'A much longer name' }] })
+      await wrapper.vm.$nextTick()
+      expect(shown()).toEqual(['doc_1', 'doc_2', 'doc_2'])
+
+      // Another tab's name moves nothing.
+      await wrapper.setProps({
+        items: [
+          { id: 'doc_1', title: 'Renamed' },
+          { id: 'doc_2', title: 'A much longer name' },
+        ],
+      })
+      await wrapper.vm.$nextTick()
+      expect(shown()).toHaveLength(3)
+    } finally {
+      window.HTMLElement.prototype.scrollIntoView = original
+    }
+  })
+
   it('marks a chat the model is working in, and one unread, to the eye and the ear', () => {
     const wrapper = mountStrip({
       items: [

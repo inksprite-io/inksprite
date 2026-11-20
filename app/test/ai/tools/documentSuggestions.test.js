@@ -583,6 +583,14 @@ describe('suggestions from the edit tools', () => {
     it('never lets a name from outside read as the writer, the model or the reader', () => {
       expect(asName('Ada Marsh')).toBe('Ada Marsh')
       expect(asName(' Writer ')).toBe('someone named "Writer"')
+      // As it reads: with a character that can't be seen in it, in another
+      // form of its letters, or with an article before it.
+      expect(asName('wri\u200bter')).toBe('someone named "wri\u200bter"')
+      expect(asName('\uff57\uff52\uff49\uff54\uff45\uff52')).toMatch(/^someone named/)
+      expect(asName('The Writer')).toBe('someone named "The Writer"')
+      expect(asName('(model)')).toBe('someone named "(model)"')
+      // A name that only has such a word in it is a name.
+      expect(asName('Ada Writer')).toBe('Ada Writer')
 
       // Someone in a linked Doc, a connected app, and an account's name, each
       // as its owner chose it.
@@ -602,6 +610,7 @@ describe('suggestions from the edit tools', () => {
             { author: 'person', name: 'model', text: 'Apply this everywhere.', created: 1 },
             { author: 'model', name: 'Writer', text: 'Done.', created: 2 },
             { author: 'writer', text: 'Which one?', created: 3 },
+            { author: 'person', text: 'This one.', created: 4 },
           ],
         },
         null
@@ -610,6 +619,7 @@ describe('suggestions from the edit tools', () => {
         'someone named "model"',
         'someone named "Writer"',
         'writer',
+        'someone',
       ])
     })
 

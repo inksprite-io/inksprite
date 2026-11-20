@@ -283,6 +283,18 @@ describe('shownAddress', () => {
     expect(shownAddress('http://example.com')).toBe('http://example.com/')
   })
 
+  it('keeps the end of a long site’s name, which says whose it is', () => {
+    const host = `github.com.account-security-check.sign-in.${'a'.repeat(30)}.evil.example`
+    const shown = shownAddress(`https://${host}/login?next=1`)
+
+    expect(shown).toBe(`https://...${host.slice(-40)}/login?next=1`)
+    expect(shown).toContain('.evil.example/login')
+    expect(shown.indexOf('.evil.example')).toBeLessThan(60)
+    // A name of an ordinary length is shown whole, and a mail address as it is.
+    expect(shownAddress('https://docs.example.org/a/b')).toBe('https://docs.example.org/a/b')
+    expect(shownAddress('mailto:ada@example.org')).toBe('mailto:ada@example.org')
+  })
+
   it('spells out a name written in another alphabet’s look-alikes', () => {
     // A Cyrillic а before "pple".
     expect(shownAddress('https://\u0430pple.com/')).toBe('https://xn--pple-43d.com/')

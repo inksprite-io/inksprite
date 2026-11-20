@@ -161,7 +161,7 @@ describe('suggestions as one reader is told of them', () => {
     expect(told.placed[0].thread).toBe(stored.comments.sabc1)
   })
 
-  it('places one among paragraphs that read alike where it is, not at the first that reads so', () => {
+  it('tells one among paragraphs that read alike in words that are at its place and no other', () => {
     const alike = 'The tide came in and the tide went out again.'
     const changed = alike.replace('went', '{--went--}{>>sabc1<<}{++crept++}{>>sabc1<<}')
     const stored = storedOf(
@@ -170,11 +170,12 @@ describe('suggestions as one reader is told of them', () => {
 
     const [told] = suggestionsAsRead(stored, null, CHAT).placed
 
-    // Its words are as much of the text as is there once, and so are there
-    // again, a paragraph over: put in where it says, they make the change.
+    // Its words take in as much of the text as it takes to be at one place
+    // alone, counted wherever they start: put in there, they make the change.
     const text = whole(stored, [])
     expect(text.slice(told.start, told.end)).toBe(told.from)
-    expect(text.indexOf(told.from)).toBeLessThan(told.start)
+    expect(text.indexOf(told.from)).toBe(told.start)
+    expect(text.lastIndexOf(told.from)).toBe(told.start)
     expect(`${text.slice(0, told.start)}${told.to}${text.slice(told.end)}`).toBe(
       whole(stored, ['sabc1'])
     )

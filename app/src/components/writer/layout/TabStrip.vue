@@ -394,10 +394,12 @@ onBeforeUnmount(() => {
 })
 
 // A tab brought forward off the end of a full strip is scrolled to, so the
-// writer sees where they are.
+// writer sees where they are. And again when the tab showing is given
+// another name, which a terminal's is by its shell a moment after it is
+// made: a longer name puts its end, and its close button, past the strip's.
 watch(
-  () => props.activeId,
-  async id => {
+  [() => props.activeId, () => props.items.find(item => item.id === props.activeId)?.title],
+  async ([id]) => {
     await nextTick()
     if (id) elements.get(id)?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
   },

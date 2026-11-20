@@ -1081,17 +1081,19 @@ async function checkAll() {
     }
   })
 
-  await check('asks the next window when the one asked closes', async () => {
+  await check('tells the app when the window asked closes, and asks no other', async () => {
     await inFront(one)
     await set(one, 'hang')
+    const before = await askedOf(two)
     const message = request()
     const { answer } = ask(port, { token: third.token, body: message })
     const reached = await until(async () => (await stoppedIn(one, message)) !== null)
     one.close()
-    const { json } = await answer
+    const told = await answer
+    const more = (await askedOf(two)) - before
     return {
-      ok: reached && one.isDestroyed() && json.result?.window === 'two',
-      detail: `one was ${reached ? '' : 'not '}asked, and ${one.isDestroyed() ? 'closed' : 'is still open'}; answered by ${json.result?.window}`,
+      ok: reached && one.isDestroyed() && saysWhy(told, message) && more === 0,
+      detail: `one was ${reached ? '' : 'not '}asked, and ${one.isDestroyed() ? 'closed' : 'is still open'}; ${said(told)}; two was asked ${more} more`,
     }
   })
 

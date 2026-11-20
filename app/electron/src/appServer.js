@@ -336,7 +336,7 @@ export function appDoor({ connections, ask, exports }) {
       problem =
         /** @type {NodeJS.ErrnoException} */ (error).code === 'EADDRINUSE'
           ? `Port ${port} is in use by something else.`
-          : `Port ${port} couldn’t be listened on.`
+          : `Port ${port} couldn’t be opened.`
       console.error(`${problem} ${/** @type {Error} */ (error).message}`)
     }
   }

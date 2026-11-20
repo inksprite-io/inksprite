@@ -170,14 +170,19 @@ export function appReads(folder = readsPath()) {
      * Forget what was kept of some documents: one connection's, or every
      * connection's where none is named, as for documents deleted for good.
      *
-     * @param {unknown} documents - Their ids
+     * @param {unknown} documents - Their ids. One that no record could be
+     *   kept under is passed over: the rest are still forgotten.
      * @param {unknown} [connection]
      * @returns {Promise<void>}
-     * @throws {Error} For anything that isn't a list of ids
+     * @throws {Error} For anything that isn't a list
      */
     async forgetDocuments(documents, connection) {
       if (!Array.isArray(documents)) throw new Error('Not a list of documents.')
-      const gone = new Set(documents.map(document => `${idOf(document)}.json`))
+      const gone = new Set(
+        documents
+          .filter(document => typeof document === 'string' && ID.test(document))
+          .map(document => `${document}.json`)
+      )
       for (const dir of await dirsOf(connection)) {
         for (const name of await filesIn(dir)) {
           if (gone.has(name)) await fs.rm(path.join(dir, name), { force: true })

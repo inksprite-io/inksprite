@@ -101,8 +101,18 @@ const SPEAKERS = new Set(['you', 'writer', 'model', 'someone'])
  * @param {string} name
  * @returns {string}
  */
-export const asName = name =>
-  SPEAKERS.has(name.trim().toLowerCase()) ? `someone named "${name.trim()}"` : name
+export const asName = name => {
+  // As it reads, not as it is spelled: without what can't be seen, in one
+  // form of each letter, and without an article before it.
+  const read = name
+    .normalize('NFKC')
+    .replace(/[\p{Cf}\p{Cc}]/gu, '')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim()
+    .toLowerCase()
+    .replace(/^(the|a) /, '')
+  return SPEAKERS.has(read) ? `someone named "${name.trim()}"` : name
+}
 
 /**
  * What has been said on a thread, by whom, as the model reads it: someone in
@@ -118,7 +128,9 @@ export const postsOf = (thread, names, people = null) =>
   thread.posts.map(post => ({
     author:
       post.author === 'person'
-        ? asName(post.name || 'someone')
+        ? post.name
+          ? asName(post.name)
+          : 'someone'
         : post.author === 'writer' && people && !isMine(post, people)
           ? asName(nameOf(post, people))
           : post.author === 'model' && post.name

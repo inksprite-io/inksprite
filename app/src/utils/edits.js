@@ -21,25 +21,26 @@
 const CONTEXT_STEP = 20
 
 /**
- * How many times `needle` occurs in `text`.
+ * Where `needle` is in `text` when it is at one place and no other, or -1.
+ * A match is counted wherever it starts: `111` is at two places in `1111`,
+ * and a passage put back at the first of them is put back one place off.
  * @param {string} text
  * @param {string} needle
  * @returns {number}
  */
-const occurrences = (text, needle) => (needle ? text.split(needle).length - 1 : 0)
+const onlyAt = (text, needle) => {
+  if (!needle) return -1
+  const at = text.indexOf(needle)
+  return at !== -1 && text.indexOf(needle, at + 1) === -1 ? at : -1
+}
 
 /**
- * Whether `needle` is in `text` once, as `occurrences` counts: nowhere again
- * past where it is first found.
+ * Whether `needle` is in `text` at one place and no other.
  * @param {string} text
  * @param {string} needle
  * @returns {boolean}
  */
-const once = (text, needle) => {
-  if (!needle) return false
-  const at = text.indexOf(needle)
-  return at !== -1 && text.indexOf(needle, at + needle.length) === -1
-}
+const once = (text, needle) => onlyAt(text, needle) !== -1
 
 /**
  * The least count from 0 to `most` that is enough, or `most` when none below
@@ -226,8 +227,9 @@ export function reverseEdit(content, edit) {
       ? content.slice(0, content.length - edit.new.length) + edit.old
       : null
   }
-  if (occurrences(content, edit.new) !== 1) return null
-  return content.replace(edit.new, () => edit.old)
+  const at = onlyAt(content, edit.new)
+  if (at === -1) return null
+  return content.slice(0, at) + edit.old + content.slice(at + edit.new.length)
 }
 
 /**
@@ -250,8 +252,9 @@ export function applyEdit(content, edit) {
       : null
   }
   if (edit.old === '') return content === '' ? edit.new : null
-  if (occurrences(content, edit.old) !== 1) return null
-  return content.replace(edit.old, () => edit.new)
+  const at = onlyAt(content, edit.old)
+  if (at === -1) return null
+  return content.slice(0, at) + edit.new + content.slice(at + edit.old.length)
 }
 
 /**

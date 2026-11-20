@@ -46,6 +46,7 @@
             data-field="apps-port"
             @blur="savePort"
             @keydown.enter="savePort"
+            @keydown.esc="showPort"
           />
         </div>
         <p
@@ -374,7 +375,7 @@ const switchReadOnly = async (one, readOnly) => {
     await setReadOnly(one.id, readOnly)
   } catch (error) {
     console.error('Failed to change what a connected app may do:', error)
-    toast.error("What the app may do couldn't be changed.")
+    toast.error("Read only couldn't be changed.")
     redrawn.value++
   }
 }
@@ -462,9 +463,7 @@ const enabled = computed(() => state.value?.enabled !== false)
 const status = computed(() => {
   if (!state.value || !enabled.value) return ''
   if (state.value.problem) return state.value.problem
-  return state.value.listening
-    ? `Running on ${appAddress(state.value.port)}`
-    : 'Starts when an app is added.'
+  return state.value.listening ? `Running on ${appAddress(state.value.port)}` : ''
 })
 
 /** @param {boolean} on */
@@ -495,7 +494,7 @@ const savePort = async () => {
     await setPort(port)
   } catch (error) {
     console.error('Failed to change the port apps connect on:', error)
-    toast.error("That port can't be used.")
+    toast.error("That port can't be used. Choose a number from 1024 to 65535.")
   }
   showPort()
 }

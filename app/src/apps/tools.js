@@ -257,8 +257,8 @@ const SAID_OUTSIDE = {
     description: description
       .replace(', by the writer and by you:', ':')
       .replace(
-        '(`you`, or `model` for another chat, named under `chat`)',
-        "(`you`, `model` for inksprite's own assistant, or a name)"
+        '(`you`, `writer`, `model` for another chat, named under `chat`, or someone else by name)',
+        "(`you`, `writer` for the user, `model` for inksprite's own assistant, or someone else by name)"
       ),
   }),
   move_document: ({ description }) => ({

@@ -17,6 +17,14 @@
 const MOST = 2000
 
 /**
+ * The most of a site's name that is shown: its end, which says whose it is.
+ * The line cuts what it can't hold from its end, and a name made long
+ * (`github.com.account-security-check.….example`) would otherwise show its
+ * borrowed start and hide the rest.
+ */
+const HOST_MOST = 40
+
+/**
  * What to show for a link's address, or nothing for one that isn't an
  * address.
  *
@@ -26,7 +34,11 @@ const MOST = 2000
 export function shownAddress(url) {
   if (typeof url !== 'string') return ''
   try {
-    return new URL(url).href.slice(0, MOST)
+    const { href, host } = new URL(url)
+    if (host.length <= HOST_MOST) return href.slice(0, MOST)
+    const at = href.indexOf(host)
+    const shown = `${href.slice(0, at)}...${host.slice(-HOST_MOST)}${href.slice(at + host.length)}`
+    return shown.slice(0, MOST)
   } catch {
     return ''
   }

@@ -15,8 +15,9 @@
 
 /**
  * What a page says to a request: its answer, or that another window is to be
- * asked. Or nothing, for longer than it is waited on.
- * @typedef {{response: object}|{pass: Pass}|{late: true}} PageAnswer
+ * asked. Or nothing: for longer than it is waited on (`late`), or because it
+ * went while it was at it (`lost`).
+ * @typedef {{response: object}|{pass: Pass}|{late: true}|{lost: true}} PageAnswer
  */
 
 /**
@@ -58,7 +59,8 @@ export function windowAsker(pages, { patience = PATIENCE_MS } = {}) {
   /**
    * Ask one page, and wait for its answer, for it to go (closed, reloaded,
    * or its process ended, any of which takes the answer with it), for the
-   * app asking to give up, or for as long as a page is waited on.
+   * app asking to give up, or for as long as a page is waited on. A page
+   * that is gone before it is asked is passed over.
    *
    * @param {Electron.WebContents} page
    * @param {ReturnType<typeof forPage>} asking - Who asks, as a page is told
@@ -87,7 +89,9 @@ export function windowAsker(pages, { patience = PATIENCE_MS } = {}) {
             ? { response: answer.response }
             : { pass: typeof answer?.pass === 'string' ? answer.pass : 'unready' }
         )
-      const gone = () => done({ pass: 'gone' })
+      // A page that goes once it has been asked may have done what was
+      // asked before it went, a write among it.
+      const gone = () => done({ lost: true })
       // The page is another once its window loads again; a link followed
       // within it (the app's own routes) leaves it the same one.
       const left = (/** @type {{isMainFrame?: boolean, isSameDocument?: boolean}} */ event) => {
@@ -98,7 +102,7 @@ export function windowAsker(pages, { patience = PATIENCE_MS } = {}) {
       }
       const stopped = () => {
         stop()
-        gone()
+        done({ pass: 'gone' })
       }
       const limit = setTimeout(() => {
         stop()
@@ -135,9 +139,13 @@ export function windowAsker(pages, { patience = PATIENCE_MS } = {}) {
         if (signal.aborted) throw new Error('The request was given up on.')
         if ('response' in answer) return answer.response
         // No other window is asked: this one may have done what was asked.
-        if ('late' in answer) {
+        if ('late' in answer || 'lost' in answer) {
           throw new Error(
-            'inksprite took too long to answer. What was asked may have been done all the same: look before asking again.'
+            `${
+              'late' in answer
+                ? 'inksprite took too long to answer.'
+                : 'The window that was answering closed or was loaded again.'
+            } What was asked may have been done all the same: look before asking again.`
           )
         }
         passes.push(answer.pass)

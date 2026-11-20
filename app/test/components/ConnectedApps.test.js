@@ -625,7 +625,7 @@ describe('ConnectedApps', () => {
       await readOnlySwitch(open()).trigger('change')
       await flushPromises()
 
-      expect(toast.error).toHaveBeenCalledWith("What the app may do couldn't be changed.")
+      expect(toast.error).toHaveBeenCalledWith("Read only couldn't be changed.")
       expect(lineOf(wrapper, app.id)).toBe('No projects')
     })
 
@@ -843,11 +843,11 @@ describe('ConnectedApps', () => {
       expect(labelFor('Port')).toBe(portField().attributes('id'))
     })
 
-    it('says it starts when an app is added, with none yet', async () => {
+    it('says nothing of where it runs with no app yet', async () => {
       const wrapper = await mountApps()
       await openPopup(wrapper)
 
-      expect(status().text()).toBe('Starts when an app is added.')
+      expect(status().exists()).toBe(false)
 
       await wrapper.find('[data-action="add-app"]').trigger('click')
       await flushPromises()
@@ -1019,9 +1019,26 @@ describe('ConnectedApps', () => {
       await flushPromises()
 
       expect(native.platform.setAppsPort).toHaveBeenCalledWith(80)
-      expect(toast.error).toHaveBeenCalledWith("That port can't be used.")
+      expect(toast.error).toHaveBeenCalledWith(
+        "That port can't be used. Choose a number from 1024 to 65535."
+      )
       expect(portField().element.value).toBe('4657')
-      expect(status().text()).toBe('Starts when an app is added.')
+      expect(status().exists()).toBe(false)
+    })
+
+    it('leaves the port as it was on Escape, whatever was typed', async () => {
+      native.has()
+      const wrapper = await mountApps()
+      await openPopup(wrapper)
+
+      await portField().setValue('5000')
+      await portField().trigger('keydown', { key: 'Escape' })
+      // The popup shuts on Escape, which takes the caret out of the field.
+      await portField().trigger('blur')
+      await flushPromises()
+
+      expect(native.platform.setAppsPort).not.toHaveBeenCalled()
+      expect(native.kept.port).toBe(4657)
     })
   })
 
