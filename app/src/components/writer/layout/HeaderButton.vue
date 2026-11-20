@@ -8,7 +8,12 @@
     :aria-busy="loading || undefined"
     @click="$emit('click', $event)"
   >
-    <i :class="loading ? 'pi pi-spin pi-spinner' : icon" style="font-size: 0.75rem"></i>
+    <i
+      v-if="loading || icon"
+      :class="loading ? 'pi pi-spin pi-spinner' : icon"
+      style="font-size: 0.75rem"
+    ></i>
+    <slot v-else />
     <span
       v-if="dot"
       class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-primary-500"
@@ -23,13 +28,14 @@
  * chat's header, the sidebar's lists. Its label is its tooltip and its name.
  *
  * @typedef {Object} Props
- * @property {string} icon - A PrimeIcons class, `pi pi-plus`
+ * @property {string} [icon] - A PrimeIcons class, `pi pi-plus`. Without one,
+ *   the button holds the icon it is given in its slot.
  * @property {string} label
  * @property {boolean} [loading] - Busy: a spinner in place of the icon, and no clicks
  * @property {boolean} [dot] - Something in what it opens waits for the writer
  */
 defineProps({
-  icon: { type: String, required: true },
+  icon: { type: String, default: '' },
   label: { type: String, required: true },
   loading: { type: Boolean, default: false },
   dot: { type: Boolean, default: false },

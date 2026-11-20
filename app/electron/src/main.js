@@ -13,6 +13,7 @@ import { originOf } from './links.js'
 import { setMenu } from './menu.js'
 import { PAGE_URL, registerScheme, servePage } from './page.js'
 import { SANDBOX_SCHEME_PRIVILEGES } from './sandbox.js'
+import { TERMINAL_SCHEME_PRIVILEGES, serveTerminalFrame } from './terminals.js'
 import { windowOpener } from './windows.js'
 
 /**
@@ -47,7 +48,7 @@ const PERMISSIONS = new Set([
   'persistent-storage',
 ])
 
-registerScheme([SANDBOX_SCHEME_PRIVILEGES])
+registerScheme([SANDBOX_SCHEME_PRIVILEGES, TERMINAL_SCHEME_PRIVILEGES])
 
 // A run from the checkout keeps its data apart from the installed app's, so
 // that the two can be open at once.
@@ -72,6 +73,7 @@ async function start() {
   // The projects' folder is there before the window that keeps them.
   await ensureLibrary()
   servePage(pageRoot)
+  serveTerminalFrame(origin)
   handleBridge(origin, { openWindow })
   session.defaultSession.setPermissionRequestHandler((_, permission, grant) =>
     grant(PERMISSIONS.has(permission))

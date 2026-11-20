@@ -456,6 +456,7 @@ describe('useApplicationState', () => {
         blurNsfw: true,
         roleplay: true,
         python: true,
+        terminal: false,
         web: true,
         pythonTimeLimit: 3600,
         chatProfileId: 'chatprofile_mine',

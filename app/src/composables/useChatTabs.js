@@ -21,12 +21,19 @@
  * marked unread until it is shown (`useChatActivity`). A turn that stops to
  * wait for the writer to allow a call has stopped working too.
  *
+ * In the desktop app a tab may be a terminal instead (`useTerminals`), by an
+ * id that says so. A terminal is the window's and not the project's, so it
+ * has a tab in whichever project the window shows, for as long as its shell
+ * runs: closing the tab ends the shell, and the shell ending closes the tab.
+ *
  * One instance per project, made in a scope of its own like `useAIChat`, so
  * the watch that clears what is read outlives the view that first asked.
  */
 import { computed, effectScope, watch } from 'vue'
 import { useChats } from './useChats.js'
 import { onStoppedWorking } from './useChatActivity.js'
+import { onTerminalEnded, useTerminals } from './useTerminals.js'
+import { isTerminalId } from '@/platform/terminal.js'
 import { useProjectViewsStore } from '@/stores/projectViewsStore.js'
 import {
   CHAT_TABS,
@@ -44,12 +51,19 @@ import {
 /**
  * @typedef {Object} ChatTabsApi
  * @property {import('vue').ComputedRef<Tabs>} tabs - What the strip shows
- * @property {import('vue').ComputedRef<string|null>} activeChatId - The chat showing
+ * @property {import('vue').ComputedRef<string|null>} activeId - The tab showing: a
+ *   chat's id, or a terminal's
+ * @property {import('vue').ComputedRef<string|null>} activeChatId - The chat showing,
+ *   or with a terminal showing the chat shown before it
  * @property {(chatId: string) => void} open - Show a chat, in a tab beside the one
  *   showing unless it has one. The unstarted chat shown for want of anything
  *   open is written into the strip by it, as when it is sent in.
  * @property {() => void} openNew - Show the unstarted chat
- * @property {(chatId: string) => void} close
+ * @property {() => Promise<void>} openTerminal - Make a terminal, and show it
+ * @property {(chatId: string) => void} close - Close a tab. A terminal's
+ *   shell is ended with it.
+ * @property {(chatId: string) => void} shut - Close a tab and no more, as for
+ *   a terminal whose shell has ended
  * @property {(chatId: string) => void} closeOthers - Close every tab but this one
  * @property {(chatId: string) => boolean} isUnread - Whether the model finished in
  *   it while it wasn't showing
@@ -59,7 +73,7 @@ import {
 /** @type {Map<string, ChatTabsApi>} */
 const instances = new Map()
 
-/** What stops the listener that marks chats unread, once it is listening. */
+/** What stops the listeners that mark chats unread and close terminals' tabs, once they are listening. */
 let stopListening = /** @type {(() => void)|null} */ (null)
 
 /**
@@ -83,9 +97,14 @@ export function useChatTabs(storyId) {
     instance = /** @type {ChatTabsApi} */ (effectScope(true).run(() => createChatTabs(storyId)))
     instances.set(storyId, instance)
   }
-  // Any chat that stops working, in whichever project, is marked there.
+  // Any chat that stops working, in whichever project, is marked there. A
+  // terminal whose shell ended loses its tab in every project that has one.
   if (!stopListening) {
-    stopListening = onStoppedWorking((inStory, chatId) => useChatTabs(inStory).markUnread(chatId))
+    const stops = [
+      onStoppedWorking((inStory, chatId) => useChatTabs(inStory).markUnread(chatId)),
+      onTerminalEnded(id => instances.forEach(tabs => tabs.shut(id))),
+    ]
+    stopListening = () => stops.forEach(stop => stop())
   }
   return instance
 }
@@ -96,6 +115,7 @@ export function useChatTabs(storyId) {
  */
 function createChatTabs(storyId) {
   const chatsApi = useChats(storyId)
+  const terminals = useTerminals()
   const views = useProjectViewsStore()
 
   /** @returns {Record<string, any>|undefined} */
@@ -103,10 +123,26 @@ function createChatTabs(storyId) {
 
   /**
    * Whether a tab's chat is there to show: one of the project's, or the
-   * unstarted one.
+   * unstarted one. A terminal's tab is there while its shell runs in this
+   * window, and until the window's terminals are known is taken as stored.
    * @param {string} chatId
    */
-  const canShow = chatId => chatsApi.isUnstarted(chatId) || Boolean(chatsApi.getChatById(chatId))
+  const canShow = chatId =>
+    isTerminalId(chatId)
+      ? !terminals.ready.value || terminals.has(chatId)
+      : chatsApi.isUnstarted(chatId) || Boolean(chatsApi.getChatById(chatId))
+
+  /**
+   * The tabs with a tab for each of the window's terminals that has none
+   * here, as one made while another project was open has none: a terminal
+   * with no tab would run where nothing shows it.
+   * @param {Tabs} tabs
+   * @returns {Tabs}
+   */
+  const withTerminals = tabs => {
+    const missing = terminals.ids().filter(id => !tabs.open.includes(id))
+    return missing.length ? { ...tabs, open: [...tabs.open, ...missing] } : tabs
+  }
 
   /**
    * The tabs as kept, less any whose chat has gone. A project whose chats
@@ -120,16 +156,24 @@ function createChatTabs(storyId) {
     const tabs = { ...tabsOf(kept, CHAT_TABS), preview: null }
     if (!chatsApi.ready.value) return tabs
     const latest = chatsApi.chats.value[0]
-    if (!Array.isArray(kept?.[CHAT_TABS.open]) && latest) return openTab(NO_TABS, latest.id)
-    return normalizeTabs(tabs, canShow)
+    if (!Array.isArray(kept?.[CHAT_TABS.open]) && latest) {
+      return withTerminals(openTab(NO_TABS, latest.id))
+    }
+    return withTerminals(normalizeTabs(tabs, canShow))
   })
 
   /** @type {import('vue').ComputedRef<Tabs>} */
   const tabs = computed(() =>
-    stored.value.active ? stored.value : openTab(NO_TABS, chatsApi.unstartedChat.value.id)
+    stored.value.active ? stored.value : openTab(stored.value, chatsApi.unstartedChat.value.id)
   )
 
-  const activeChatId = computed(() => tabs.value.active)
+  const activeId = computed(() => tabs.value.active)
+
+  const activeChatId = computed(() => {
+    const { active, shown } = tabs.value
+    if (!isTerminalId(active)) return active
+    return shown.find(id => !isTerminalId(id)) ?? chatsApi.unstartedChat.value.id
+  })
 
   /** @param {Tabs} next */
   const write = next => {
@@ -141,18 +185,23 @@ function createChatTabs(storyId) {
 
   const openNew = () => open(chatsApi.unstartedChat.value.id)
 
+  const openTerminal = async () => open(await terminals.create())
+
+  /** @type {ChatTabsApi['shut']} */
+  const shut = chatId => write(closeTab(stored.value, chatId))
+
   /** @type {ChatTabsApi['close']} */
-  const close = chatId => write(closeTab(stored.value, chatId))
+  const close = chatId => {
+    shut(chatId)
+    if (isTerminalId(chatId)) terminals.close(chatId)
+  }
 
   /** @type {ChatTabsApi['closeOthers']} */
   const closeOthers = chatId => {
     const showing = openTab(stored.value, chatId)
-    write(
-      dropTabs(
-        showing,
-        showing.open.filter(id => id !== chatId)
-      )
-    )
+    const others = showing.open.filter(id => id !== chatId)
+    write(dropTabs(showing, others))
+    for (const id of others) if (isTerminalId(id)) terminals.close(id)
   }
 
   /** The chats marked unread, as kept. @returns {string[]} */
@@ -178,5 +227,17 @@ function createChatTabs(storyId) {
     { immediate: true }
   )
 
-  return { tabs, activeChatId, open, openNew, close, closeOthers, isUnread, markUnread }
+  return {
+    tabs,
+    activeId,
+    activeChatId,
+    open,
+    openNew,
+    openTerminal,
+    close,
+    shut,
+    closeOthers,
+    isUnread,
+    markUnread,
+  }
 }

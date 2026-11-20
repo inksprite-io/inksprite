@@ -64,5 +64,15 @@ export { askToKeepData, storageAdvice } from './persistence.js'
 export { settingsFileText } from './settingsFile.js'
 export { beforeClosing } from './closing.js'
 export { hasPython, runPython } from './python.js'
+export {
+  TERMINAL_ORIGIN,
+  closeTerminal,
+  createTerminal,
+  hasTerminal,
+  isTerminalId,
+  listTerminals,
+  onTerminalEvent,
+  terminalFrameUrl,
+} from './terminal.js'
 export { canExportToFolder, chooseExportFolder, writeExportFolder } from './exportFolder.js'
 export { canSavePdf, savePdf } from './printing.js'

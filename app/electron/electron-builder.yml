@@ -10,14 +10,27 @@ directories:
 
 # The main process, and the page beside it. The Python sandbox's page, and
 # the packages it offers, fetched by scripts/fetch-python.mjs before a build
-# (src/sandbox.js). Pyodide comes with the dependencies.
+# (src/sandbox.js). Pyodide comes with the dependencies. The terminal's
+# frame's page (src/terminals.js), whose emulator comes with them too.
 files:
   - package.json
   - src/**
   - sandbox/**
+  - terminal/**
   - python/**
   - from: ../dist
     to: page
+  # Of node-pty, what runs: not what it is built from.
+  - '!node_modules/node-pty/{src,deps,third_party,scripts,typings,binding.gyp}'
+  - '!node_modules/node-pty/prebuilds/**/*.pdb'
+
+# node-pty comes with its binaries built for every system, so nothing is
+# compiled here, and a Mac's app can be built on Linux (build-for-mac.sh).
+# Each system's build carries its own (below). They are files beside the
+# archive, since a Mac starts a shell through a program of node-pty's.
+npmRebuild: false
+asarUnpack:
+  - node_modules/node-pty/**
 
 # No spaces: GitHub renames a release's files with spaces in, and the
 # updater would then look for names that aren't there.
@@ -43,6 +56,8 @@ publish:
 # Apple secrets are set.
 mac:
   category: public.app-category.productivity
+  files:
+    - '!node_modules/node-pty/prebuilds/{linux,win32}-*'
   target:
     - target: dmg
       arch: [arm64, x64]
@@ -55,6 +70,8 @@ win:
   target:
     - target: nsis
       arch: [x64]
+  files:
+    - '!node_modules/node-pty/prebuilds/{darwin,linux}-*'
 nsis:
   oneClick: true
   perMachine: false
@@ -63,6 +80,8 @@ nsis:
 # (package.json).
 linux:
   target: [AppImage, deb]
+  files:
+    - '!node_modules/node-pty/prebuilds/{darwin,win32}-*'
   category: Office
   maintainer: inksprite
   syncDesktopName: true

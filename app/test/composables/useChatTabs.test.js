@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import { computed, nextTick, reactive, ref } from 'vue'
 
 const chats = ref([])
@@ -26,6 +27,7 @@ vi.mock('@/stores/projectViewsStore.js', () => ({
 
 const { clearChatTabsInstances, useChatTabs } = await import('@/composables/useChatTabs.js')
 const { clearChatActivity, reportWorking } = await import('@/composables/useChatActivity.js')
+const { clearTerminals } = await import('@/composables/useTerminals.js')
 
 /** The chats there are, newest first, as useChats lists them. */
 const haveChats = (...ids) => {
@@ -36,6 +38,7 @@ describe('useChatTabs', () => {
   beforeEach(() => {
     clearChatTabsInstances()
     clearChatActivity()
+    clearTerminals()
     for (const key of Object.keys(view)) if (key !== 'id') delete view[key]
     updateView.mockClear()
     unstartedId.value = 'chat_new'
@@ -191,6 +194,124 @@ describe('useChatTabs', () => {
       await nextTick()
       expect(api.isUnread('chat_2')).toBe(false)
       expect(view.unreadChatIds).toEqual([])
+    })
+  })
+
+  describe('terminals', () => {
+    /** The native side's terminals, and the way to say what becomes of one. */
+    let native
+    /** @type {(id: string, event: object) => void} */
+    let say
+
+    beforeEach(() => {
+      let made = 0
+      native = {
+        create: vi.fn(async () => `terminal:${++made}`),
+        list: vi.fn().mockResolvedValue([]),
+        close: vi.fn().mockResolvedValue(undefined),
+        onEvent: vi.fn(listener => {
+          say = listener
+        }),
+      }
+      globalThis.__INKSPRITE_DESKTOP__ = { terminals: native }
+    })
+
+    afterEach(() => {
+      delete globalThis.__INKSPRITE_DESKTOP__
+    })
+
+    it('opens a terminal in a tab beside the one showing, and shows it', async () => {
+      const api = useChatTabs('story_1')
+      api.open('chat_1')
+      await api.openTerminal()
+
+      expect(api.tabs.value.open).toEqual(['chat_3', 'chat_1', 'terminal:1'])
+      expect(api.activeId.value).toBe('terminal:1')
+    })
+
+    it('keeps the chat shown before as the chat showing', async () => {
+      const api = useChatTabs('story_1')
+      api.open('chat_1')
+      await api.openTerminal()
+      await api.openTerminal()
+
+      expect(api.activeId.value).toBe('terminal:2')
+      expect(api.activeChatId.value).toBe('chat_1')
+    })
+
+    it('has the unstarted chat as the chat showing where only terminals are open', async () => {
+      haveChats()
+      const api = useChatTabs('story_1')
+      await api.openTerminal()
+
+      expect(api.tabs.value.open).toEqual(['terminal:1'])
+      expect(api.activeChatId.value).toBe('chat_new')
+    })
+
+    it('ends the shell when its tab is closed, and goes back to the tab before', async () => {
+      const api = useChatTabs('story_1')
+      api.open('chat_1')
+      await api.openTerminal()
+      api.close('terminal:1')
+
+      expect(native.close).toHaveBeenCalledWith('terminal:1')
+      expect(api.tabs.value.open).toEqual(['chat_3', 'chat_1'])
+      expect(api.activeId.value).toBe('chat_1')
+    })
+
+    it('closes the tab of a shell that ended, with nothing left to end', async () => {
+      const api = useChatTabs('story_1')
+      api.open('chat_1')
+      await api.openTerminal()
+      say('terminal:1', { type: 'exit' })
+
+      expect(native.close).not.toHaveBeenCalled()
+      expect(api.tabs.value.open).toEqual(['chat_3', 'chat_1'])
+      expect(api.activeId.value).toBe('chat_1')
+      expect(view.openChatIds).toEqual(['chat_3', 'chat_1'])
+    })
+
+    it('ends the other terminals with Close others', async () => {
+      const api = useChatTabs('story_1')
+      await api.openTerminal()
+      await api.openTerminal()
+      api.closeOthers('terminal:2')
+
+      expect(native.close.mock.calls).toEqual([['terminal:1']])
+      expect(api.tabs.value.open).toEqual(['terminal:2'])
+    })
+
+    it('gives a terminal of the window a tab in a project that has none for it', async () => {
+      native.list.mockResolvedValue([{ id: 'terminal:kept', title: '' }])
+      const api = useChatTabs('story_1')
+      await flushPromises()
+
+      expect(api.tabs.value.open).toEqual(['chat_3', 'terminal:kept'])
+      expect(api.activeId.value).toBe('chat_3')
+    })
+
+    it('shows the unstarted chat beside a terminal that is all there is', async () => {
+      haveChats()
+      native.list.mockResolvedValue([{ id: 'terminal:kept', title: '' }])
+      const api = useChatTabs('story_1')
+      await flushPromises()
+
+      expect(api.tabs.value.open).toEqual(['terminal:kept', 'chat_new'])
+      expect(api.activeId.value).toBe('chat_new')
+    })
+
+    it('drops the tab of a terminal that isn’t this window’s, once its own are known', async () => {
+      Object.assign(view, {
+        openChatIds: ['chat_3', 'terminal:elsewhere'],
+        lastChatId: 'terminal:elsewhere',
+      })
+      const api = useChatTabs('story_1')
+      // Taken as stored until the window's terminals are known.
+      expect(api.tabs.value.open).toEqual(['chat_3', 'terminal:elsewhere'])
+      await flushPromises()
+
+      expect(api.tabs.value.open).toEqual(['chat_3'])
+      expect(api.activeId.value).toBe('chat_3')
     })
   })
 })

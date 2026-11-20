@@ -2,13 +2,13 @@
   <div class="h-full w-full min-w-0 flex flex-col bg-surface-0 dark:bg-surface-850">
     <!-- The chats open, as the editor's documents are. Before them, the
          editor's toggle beside an editor, or on a phone the way back to the
-         list behind the panel; after them, finding in the chat showing and
-         a new chat. -->
+         list behind the panel; after them, finding in the chat showing, a
+         new terminal where there are terminals, and a new chat. -->
     <TabStrip
       :items="items"
       :active-id="activeId"
       :actions="tabActions"
-      @activate="chatTabs.open"
+      @activate="showTab"
       @close="chatTabs.close"
     >
       <template v-if="showBack || editorShowing !== null" #start>
@@ -31,12 +31,20 @@
         <!-- Finding in the chat, which the browser's find cannot do for the
              turns not in the page. A chat not started has nothing to find. -->
         <HeaderButton
-          v-if="activeId && !chatsApi.isUnstarted(activeId)"
+          v-if="activeId && !isTerminalId(activeId) && !chatsApi.isUnstarted(activeId)"
           icon="pi pi-search"
           label="Find in chat"
           data-action="find"
           @click="chat?.openFind()"
         />
+        <HeaderButton
+          v-if="terminalsOffered"
+          label="New terminal"
+          data-action="new-terminal"
+          @click="openTerminal"
+        >
+          <TerminalIcon style="font-size: 0.85rem" />
+        </HeaderButton>
         <HeaderButton icon="pi pi-plus" label="New chat" @click="chatTabs.openNew()" />
       </template>
     </TabStrip>
@@ -46,7 +54,7 @@
          strip from then on: the unstarted chat shown for want of anything
          open is not until it is used. -->
     <Chat
-      v-if="ready && activeId"
+      v-if="ready && activeId && !isTerminalId(activeId)"
       ref="chat"
       :key="`chat:${activeId}`"
       :story-id="storyId"
@@ -55,27 +63,45 @@
       @open-chat="showChat"
       @sent="chatTabs.open"
     />
+    <!-- The terminals open, each kept behind the tab showing, so that going
+         back to one is at once. -->
+    <TerminalFrame
+      v-for="id in terminalIds"
+      v-show="id === activeId"
+      :key="id"
+      :ref="frame => keepFrame(id, frame)"
+      :terminal-id="id"
+      :active="id === activeId"
+      class="flex-1 w-full"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watchEffect } from 'vue'
 import Chat from '../chats/Chat.vue'
 import HeaderButton from './HeaderButton.vue'
 import PanelToggle from './PanelToggle.vue'
 import TabStrip from './TabStrip.vue'
+import TerminalFrame from '../terminal/TerminalFrame.vue'
+import TerminalIcon from '../terminal/TerminalIcon.vue'
+import { useApplicationState } from '@/composables/useApplicationState'
 import { useBackup } from '@/composables/useBackup'
 import { isWorking } from '@/composables/useChatActivity.js'
 import { useChats } from '@/composables/useChats'
 import { useChatTabs } from '@/composables/useChatTabs.js'
 import { useProfiles } from '@/composables/useProfiles'
+import { onTerminalEnded, useTerminals } from '@/composables/useTerminals.js'
 import { useToast } from '@/composables/useToast'
+import { hasTerminal, isTerminalId } from '@/platform/terminal.js'
 import { shownChatTitle } from '@/utils/chatTitle.js'
 
 /**
  * The conversation panel: the project's chats open in tabs, and the one
  * showing under them. Which are open is the project's (`useChatTabs`); the
  * strip is never empty, since with nothing open it shows the unstarted chat.
+ * In the desktop app, with the Terminal extension on, a tab may be a terminal
+ * instead (`useTerminals`).
  *
  * @typedef {Object} Props
  * @property {string} storyId
@@ -96,6 +122,8 @@ defineEmits(['toggle-editor', 'back'])
 
 const chatsApi = useChats(props.storyId)
 const chatTabs = useChatTabs(props.storyId)
+const terminals = useTerminals()
+const applicationState = useApplicationState()
 const profilesApi = useProfiles()
 const backup = useBackup()
 const toast = useToast()
@@ -119,7 +147,51 @@ const showChat = async ({ chatId, send }) => {
   else chat.value?.focusMessage()
 }
 
-const activeId = computed(() => chatTabs.activeChatId.value)
+const activeId = computed(() => chatTabs.activeId.value)
+
+/** Whether a new terminal is offered: in the desktop app, with its extension on. */
+const terminalsOffered = computed(() => hasTerminal() && applicationState.terminal.value)
+
+/** The tabs that are terminals of this window's, in strip order. */
+const terminalIds = computed(() => chatTabs.tabs.value.open.filter(id => terminals.has(id)))
+
+/**
+ * The terminals' frames, by their ids, to put the keys in.
+ * @type {Map<string, {focus: () => void}>}
+ */
+const frames = new Map()
+
+/**
+ * @param {string} id
+ * @param {any} frame - The frame's component, or null once it is gone
+ */
+const keepFrame = (id, frame) => {
+  if (frame) frames.set(id, frame)
+  else frames.delete(id)
+}
+
+/**
+ * Show a tab the strip was clicked on. A terminal's takes the keys, whether
+ * or not it was already the one showing.
+ *
+ * @param {string} id
+ */
+const showTab = async id => {
+  chatTabs.open(id)
+  if (!isTerminalId(id)) return
+  await nextTick()
+  frames.get(id)?.focus()
+}
+
+/** Make a terminal, in a tab beside the one showing. */
+const openTerminal = async () => {
+  try {
+    await chatTabs.openTerminal()
+  } catch (error) {
+    console.error('A terminal could not be made:', error)
+    toast.error('The terminal couldn’t be opened.')
+  }
+}
 
 /**
  * A tab's chat: one of the project's, or the unstarted one's settings.
@@ -141,6 +213,10 @@ const profileName = chatId =>
 
 const items = computed(() => {
   return chatTabs.tabs.value.open.map(id => {
+    if (isTerminalId(id)) {
+      const title = terminals.get(id)?.title || 'Terminal'
+      return { id, title, terminal: true, mark: terminals.rang(id) ? 'unread' : undefined }
+    }
     const title = shownChatTitle(chatOf(id)?.title)
     const profile = profileName(id)
     return {
@@ -154,14 +230,15 @@ const items = computed(() => {
 
 /**
  * What a tab's right-click menu offers: closing it or the others, and for a
- * chat that has started, what the chat list offers for it.
+ * chat that has started, what the chat list offers for it. Closing a
+ * terminal's tab ends its shell.
  * @param {string} chatId
  * @returns {import('primevue/menuitem').MenuItem[]}
  */
 const tabActions = chatId => [
   { label: 'Close', icon: 'pi pi-times', command: () => chatTabs.close(chatId) },
   { label: 'Close others', command: () => chatTabs.closeOthers(chatId) },
-  ...(chatsApi.isUnstarted(chatId)
+  ...(isTerminalId(chatId) || chatsApi.isUnstarted(chatId)
     ? []
     : [
         { separator: true },
@@ -182,6 +259,19 @@ const exportChat = async chatId => {
     toast.error(`The chat couldn't be exported. ${error.message}`)
   }
 }
+
+// A terminal that rang is marked until it is the tab showing.
+watchEffect(() => {
+  const id = activeId.value
+  if (id && terminals.rang(id)) terminals.seen(id)
+})
+
+// A shell that never started closes its tab, and here is why it went.
+onBeforeUnmount(
+  onTerminalEnded((_id, failed) => {
+    if (failed) toast.error('The terminal couldn’t start.')
+  })
+)
 
 onMounted(async () => {
   await chatsApi.init()

@@ -68,7 +68,17 @@ export default [
   },
   {
     files: ['electron/**/*.cjs'],
-    languageOptions: { sourceType: 'commonjs' },
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: { location: 'readonly', MessageChannel: 'readonly' },
+    },
+  },
+  // A terminal's frame is a page of its own.
+  {
+    files: ['electron/terminal/*.js'],
+    languageOptions: {
+      globals: { location: 'readonly', URLSearchParams: 'readonly' },
+    },
   },
   // The Python sandbox's page and its worker run in a page of their own.
   {

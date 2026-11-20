@@ -1,0 +1,26 @@
+/* The terminal's frame: the emulator, filling it. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+#terminal {
+  position: absolute;
+  inset: 0;
+}
+
+/* The fit counts this padding out of the room it has. */
+#terminal .xterm {
+  height: 100%;
+  box-sizing: border-box;
+  padding: 8px 4px 4px 12px;
+}
+
+/* The emulator keeps an element behind the screen that scrolled it once, in
+   black with a scrollbar of the system's. The screen has its own of both. */
+#terminal .xterm .xterm-viewport {
+  background-color: transparent !important;
+  scrollbar-width: none;
+}

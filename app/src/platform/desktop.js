@@ -66,6 +66,26 @@
  * @property {DesktopApps} [apps] - Other apps on this computer let into the
  *   writer's projects. Missing from a desktop app older than the page it
  *   loads.
+ * @property {DesktopTerminals} [terminals] - Terminals, each a shell of the
+ *   writer's. Missing from a desktop app older than the page it loads.
+ */
+
+/**
+ * What the page is told of a terminal of its own: the program in it named
+ * it, it rang, or its shell ended, `failed` when it never started.
+ *
+ * @typedef {{type: 'title', title: string}|{type: 'bell'}|{type: 'exit', failed?: true}} TerminalEvent
+ */
+
+/**
+ * This window's terminals (`app/electron/src/terminals.js`). The page makes
+ * and ends them; it is not what types in them.
+ *
+ * @typedef {Object} DesktopTerminals
+ * @property {() => Promise<string>} create - Make one, and say its id
+ * @property {() => Promise<{id: string, title: string}[]>} list
+ * @property {(id: string) => Promise<void>} close
+ * @property {(listener: (id: string, event: TerminalEvent) => void) => void} onEvent
  */
 
 /**

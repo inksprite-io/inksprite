@@ -273,6 +273,7 @@ if (typeof window !== 'undefined') {
  * @property {boolean} blurNsfw - Whether the card library blurs NSFW pictures
  * @property {boolean} roleplay - Whether the Roleplay extension is on
  * @property {boolean} python - Whether the Python extension is on
+ * @property {boolean} [terminal] - Whether the Terminal extension is on
  * @property {boolean} [web] - Whether the Web search extension is on
  * @property {number} pythonTimeLimit - How long a run of Python may take, in
  *   seconds; 0 for no limit
@@ -400,6 +401,7 @@ function workflowFrom(settings) {
  *   setExtension: (id: string, on: boolean) => void,
  *   roleplay: import('vue').ComputedRef<boolean>,
  *   webSearch: import('vue').ComputedRef<boolean>,
+ *   terminal: import('vue').ComputedRef<boolean>,
  *   chatProfileId: import('vue').ComputedRef<string|null>,
  *   roleplayProfileId: import('vue').ComputedRef<string|null>,
  *   setChatProfileId: (id: string|null) => void,
@@ -766,6 +768,14 @@ export function useApplicationState() {
   const webSearch = computed(() => aiEnabled.value && state.value.extensions?.web !== false)
 
   /**
+   * Whether new terminals are offered, in the chat panel of the desktop app:
+   * its extension switched on, and the AI with it, since the panel is the
+   * chats'.
+   * @type {import('vue').ComputedRef<boolean>}
+   */
+  const terminal = computed(() => aiEnabled.value && state.value.extensions?.terminal === true)
+
+  /**
    * The profile new chats start on, where a project has not chosen one, and
    * the one chats on a character card start on. Null for the built-ins'. See
    * `chatDefaultId` and `roleplayDefaultId` in useProfiles.
@@ -1065,6 +1075,7 @@ export function useApplicationState() {
         blurNsfw: blurNsfw.value,
         roleplay: extensionOn('roleplay') === true,
         python: extensionOn('python') === true,
+        terminal: extensionOn('terminal') === true,
         web: extensionOn('web') !== false,
         pythonTimeLimit: pythonTimeLimit.value,
         chatProfileId: chatProfileId.value,
@@ -1119,6 +1130,7 @@ export function useApplicationState() {
     if (typeof settings.blurNsfw === 'boolean') setBlurNsfw(settings.blurNsfw)
     if (typeof settings.roleplay === 'boolean') setExtension('roleplay', settings.roleplay)
     if (typeof settings.python === 'boolean') setExtension('python', settings.python)
+    if (typeof settings.terminal === 'boolean') setExtension('terminal', settings.terminal)
     if (typeof settings.web === 'boolean') setExtension('web', settings.web)
     if (typeof settings.pythonTimeLimit === 'number') setPythonTimeLimit(settings.pythonTimeLimit)
     if (isChoice(settings.chatProfileId)) setChatProfileId(settings.chatProfileId)
@@ -1221,6 +1233,7 @@ export function useApplicationState() {
     setExtension,
     roleplay,
     webSearch,
+    terminal,
 
     chatProfileId,
     roleplayProfileId,

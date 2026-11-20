@@ -205,6 +205,26 @@
         </div>
       </div>
     </ExpandableSection>
+
+    <!-- Nothing of its own to set, so nothing to open. -->
+    <ExpandableSection
+      v-if="terminalHere"
+      title="Terminal"
+      subsection
+      disabled
+      container-class="pt-1"
+      data-extension="terminal"
+    >
+      <template #actions>
+        <ToggleSwitch
+          :model-value="terminalOn"
+          class="flex-none"
+          aria-label="Terminal"
+          data-extension-switch="terminal"
+          @update:model-value="on => applicationState.setExtension('terminal', on)"
+        />
+      </template>
+    </ExpandableSection>
   </div>
 </template>
 
@@ -227,6 +247,7 @@ import { OFF_ASK_ALWAYS, WEB_TOOL_LABELS, useToolSettings } from '@/composables/
 import { serviceInUse } from '@/web/config.js'
 import { READ_WEB_PAGE } from '@/ai/tools/web.js'
 import { hasPython } from '@/platform/python.js'
+import { hasTerminal } from '@/platform/terminal.js'
 import { PYTHON_GROUP, PYTHON_TIME_LIMITS } from '@/ai/tools/python.js'
 
 /**
@@ -241,6 +262,10 @@ import { PYTHON_GROUP, PYTHON_TIME_LIMITS } from '@/ai/tools/python.js'
  *
  * Python is the model running code, in the desktop app only, in the chats
  * that have it on among their tools. See `ai/tools/python.js`.
+ *
+ * Terminal is a shell of the writer's own in a tab of the chat panel, in the
+ * desktop app only. Off, no new one is offered, and one open runs on until
+ * its tab is closed. See `platform/terminal.js`.
  *
  * See `extensions/`.
  */
@@ -258,6 +283,10 @@ const roleplayOn = computed(() => applicationState.extensionOn('roleplay') === t
 /** Whether Python can run here at all: in the desktop app. */
 const pythonHere = hasPython()
 const pythonOn = computed(() => applicationState.extensionOn(PYTHON_GROUP) === true)
+
+/** Whether there are terminals here at all: in the desktop app. */
+const terminalHere = hasTerminal()
+const terminalOn = computed(() => applicationState.extensionOn('terminal') === true)
 
 const web = useWebSearch()
 const settingsPanel = useSettingsPanel()

@@ -23,7 +23,7 @@ export const PAGE_URL = `${SCHEME}://inksprite/`
  * before the app is ready.
  *
  * @param {Electron.CustomScheme[]} [others] - The Python sandbox's
- *   (`sandbox.js`)
+ *   (`sandbox.js`) and the terminal's frame's (`terminals.js`)
  */
 export function registerScheme(others = []) {
   protocol.registerSchemesAsPrivileged([

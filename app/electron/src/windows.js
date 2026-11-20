@@ -54,6 +54,9 @@ export function windowOpener(pageUrl) {
       webPreferences: {
         preload: fileURLToPath(new URL('./preload.cjs', import.meta.url)),
         sandbox: true,
+        // The preload in every frame, for a terminal's (`terminals.js`). It
+        // gives no other frame anything.
+        nodeIntegrationInSubFrames: true,
       },
     })
     window.once('ready-to-show', () => window.show())

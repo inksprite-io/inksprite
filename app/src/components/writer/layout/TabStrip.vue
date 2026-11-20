@@ -59,8 +59,8 @@
         >
           <!-- The path gives way before the title does, which is the part that
            says what the tab is. A preview reads in italics until it is kept.
-           A document in the plain text editor is marked so before it, and a
-           chat's text as the chat's. -->
+           A document in the plain text editor is marked so before it, a
+           chat's text as the chat's, and a terminal as one. -->
           <i
             v-if="item.plain"
             class="pi pi-code flex-none text-surface-500 dark:text-surface-400"
@@ -75,6 +75,12 @@
             aria-hidden="true"
             data-chat
           ></i>
+          <TerminalIcon
+            v-else-if="item.terminal"
+            class="flex-none text-surface-500 dark:text-surface-400"
+            style="font-size: 0.75rem"
+            data-terminal
+          />
           <span class="flex-1 min-w-0 flex items-baseline" :class="{ italic: item.preview }">
             <span
               v-if="item.prefix"
@@ -142,6 +148,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import ContextMenu from 'primevue/contextmenu'
+import TerminalIcon from '../terminal/TerminalIcon.vue'
 
 /**
  * A panel's strip of tabs: the open documents above the editor, or the open
@@ -159,6 +166,7 @@ import ContextMenu from 'primevue/contextmenu'
  * @property {boolean} [plain] - In the plain text editor rather than laid out
  * @property {string} [chat] - The chat whose text the tab holds, by its
  *   title, for a tab that holds a chat's text rather than a document
+ * @property {boolean} [terminal] - A terminal, not a chat
  * @property {'busy'|'unread'} [mark] - For a chat: the model working in it, or
  *   finished in it while it wasn't showing
  * @property {string} [tooltip] - What hovering says, where the title and

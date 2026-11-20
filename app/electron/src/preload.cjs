@@ -5,9 +5,18 @@
  *
  * Run in the window's sandbox, apart from the page, so it is CommonJS and
  * reaches nothing but Electron's messages.
+ *
+ * It runs in every frame of the window, so that a terminal's frame can be
+ * given its own bridge, `__INKSPRITE_TERMINAL__`, which is all that frame
+ * gets. Only the window's own page is given `__INKSPRITE_DESKTOP__`, and any
+ * other frame nothing: what listens below hears nothing there, since the
+ * native side speaks to the page alone.
  */
 
 const { contextBridge, ipcRenderer } = require('electron')
+
+/** Where a terminal's frame is (`terminals.js`). */
+const TERMINAL_ORIGIN = 'terminal://frame'
 
 /**
  * The page's listeners for a response's body, and for the browser coming
@@ -97,6 +106,17 @@ ipcRenderer.on('window:save', async () => {
 })
 
 /**
+ * What the page does when a terminal of its own is named by the program in
+ * it, rings, or ends (`terminals.js`).
+ * @type {((id: string, event: object) => void)|null}
+ */
+let terminalEvents = null
+
+ipcRenderer.on('terminal:event', (_, id, event) => {
+  terminalEvents?.(id, event)
+})
+
+/**
  * Ask the native side, and throw what went wrong there as an Error.
  *
  * @param {string} channel
@@ -108,7 +128,7 @@ async function call(channel, ...args) {
   return value
 }
 
-contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', {
+const desktop = {
   fetch(id, request, onBody) {
     bodies.set(id, onBody)
     return call('fetch', id, request).catch(error => {
@@ -175,6 +195,15 @@ contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', {
     save: name => call('pdf:save', name),
   },
 
+  terminals: {
+    create: () => call('terminal:create'),
+    list: () => call('terminal:list'),
+    close: id => call('terminal:close', id),
+    onEvent(listener) {
+      terminalEvents = listener
+    },
+  },
+
   apps: {
     list: () => call('apps:list'),
     add: name => call('apps:add', name),
@@ -185,4 +214,32 @@ contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', {
       answerApps = answer
     },
   },
-})
+}
+
+if (process.isMainFrame) contextBridge.exposeInMainWorld('__INKSPRITE_DESKTOP__', desktop)
+else if (location.origin === TERMINAL_ORIGIN) exposeTerminal()
+
+/**
+ * A terminal's frame's bridge to its shell (`terminals.js`, and
+ * `../terminal/frame.js` in the frame): a port of the frame's own, which the
+ * native side joins to the one terminal the frame names. The page around the
+ * frame has no part in it.
+ */
+function exposeTerminal() {
+  /** @type {MessagePort|null} */
+  let port = null
+  contextBridge.exposeInMainWorld('__INKSPRITE_TERMINAL__', {
+    attach(request, onMessage) {
+      port?.close()
+      const channel = new MessageChannel()
+      port = channel.port1
+      port.onmessage = event => {
+        onMessage(event.data)
+      }
+      ipcRenderer.postMessage('terminal:attach', request, [channel.port2])
+    },
+    send(message) {
+      port?.postMessage(message)
+    },
+  })
+}
