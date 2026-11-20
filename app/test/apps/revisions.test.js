@@ -1,0 +1,464 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { setActivePinia, createPinia } from 'pinia'
+
+vi.mock('@/stores/db', () => ({
+  default: {
+    documents: {
+      where: vi.fn(() => ({ equals: vi.fn(() => ({ toArray: vi.fn(async () => []) })) })),
+      filter: vi.fn(() => ({ toArray: vi.fn(async () => []) })),
+      bulkDelete: vi.fn(),
+      bulkGet: vi.fn(async () => []),
+      get: vi.fn(async () => undefined),
+    },
+    stories: { toArray: vi.fn(async () => []) },
+  },
+}))
+
+vi.mock('@/stores/syncStore', () => ({
+  useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
+}))
+
+/** What the native side keeps for each connection, stood in for. */
+const records = vi.hoisted(() => ({
+  /** @type {Map<string, object>} */
+  kept: new Map(),
+}))
+vi.mock('@/platform/apps.js', () => ({
+  appRead: vi.fn(
+    async (connection, document) => records.kept.get(`${connection}/${document}`) ?? null
+  ),
+  appReads: vi.fn(async connection =>
+    [...records.kept]
+      .filter(([key]) => key.startsWith(`${connection}/`))
+      .map(([, record]) => record)
+  ),
+  keepAppRead: vi.fn(async (connection, document, record) => {
+    records.kept.set(`${connection}/${document}`, JSON.parse(JSON.stringify(record)))
+  }),
+}))
+
+import {
+  CHANGED_SINCE_NOTE,
+  UNKNOWN_NOTE,
+  changesSince,
+  keep,
+  kept,
+  stateAt,
+  unchangedAt,
+  withRevision,
+} from '@/apps/revisions.js'
+import {
+  executeAddComment,
+  executeDeleteDocument,
+  executeEditDocument,
+  executeMoveDocument,
+  executeReadDocument,
+  executeReplyComment,
+  executeResolveComment,
+  projectOverview,
+} from '@/ai/tools/documents.js'
+import { useDocumentsStore } from '@/stores/documentsStore'
+import { clearDocumentInstances } from '@/composables/useDocuments'
+import { useComments } from '@/composables/useComments.js'
+import { rootIdFor } from '@/stores/migrations/projectTree.js'
+
+const STORY = 'story_1'
+const APP = {
+  id: 'app_1',
+  name: 'Claude Code',
+  projects: [STORY],
+  edit: 'suggesting',
+  comment: true,
+}
+const asking = { storyId: STORY, chatId: 'app:app_1', postsAs: 'Claude Code' }
+/** The writer, at the keyboard: no chat, nothing suggested. */
+const writer = { storyId: STORY }
+
+const TEXT = ['# The vault', '', 'The vault opens at noon.', '', 'Bring rope and a lamp.'].join(
+  '\n'
+)
+
+/** @type {ReturnType<typeof useDocumentsStore>} */
+let store
+
+/** The plan's revision as the connection reads it now. */
+const revision = async () => (await stateAt(asking, 'Plan')).seen.revision
+
+/** Have the connection read the plan, as a whole read does. */
+const read = () =>
+  withRevision(
+    APP,
+    asking,
+    'Plan',
+    () => executeReadDocument({ path: 'Plan' }, asking),
+    () => true
+  )
+
+beforeEach(async () => {
+  setActivePinia(createPinia())
+  clearDocumentInstances()
+  vi.clearAllMocks()
+  records.kept = new Map()
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+  store = useDocumentsStore()
+  await projectOverview(STORY)
+  store.createDocument({
+    id: 'doc_plan',
+    storyId: STORY,
+    parentId: rootIdFor(STORY),
+    type: 'text',
+    title: 'Plan',
+    content: TEXT,
+  })
+  store.createDocument({
+    id: 'folder_notes',
+    storyId: STORY,
+    parentId: rootIdFor(STORY),
+    type: 'folder',
+    title: 'notes',
+  })
+  store.createDocument({
+    id: 'doc_crew',
+    storyId: STORY,
+    parentId: 'folder_notes',
+    type: 'text',
+    title: 'Crew',
+    content: 'Mara picks locks.',
+  })
+})
+
+describe('a document’s revision', () => {
+  it('is the same for the same text and comments, and changes with the text', async () => {
+    const first = await revision()
+    expect(await revision()).toBe(first)
+
+    await executeEditDocument({ path: 'Plan', old: 'rope', new: 'wire' }, writer)
+    expect(await revision()).not.toBe(first)
+  })
+
+  it('changes when a comment is made, answered or resolved', async () => {
+    const seen = [await revision()]
+    const { comment } = await executeAddComment(
+      { path: 'Plan', passage: 'Bring rope', text: 'How much?' },
+      writer
+    )
+    seen.push(await revision())
+    await executeReplyComment({ path: 'Plan', id: comment, text: 'Thirty metres.' }, writer)
+    seen.push(await revision())
+    await executeResolveComment({ path: 'Plan', id: comment }, writer)
+    seen.push(await revision())
+
+    expect(new Set(seen).size).toBe(4)
+  })
+
+  it('changes with the connection’s own suggestion, and not with another’s', async () => {
+    const first = await revision()
+    await executeEditDocument(
+      { path: 'Plan', old: 'noon', new: 'dusk' },
+      { storyId: STORY, chatId: 'app:app_2', propose: true }
+    )
+    expect(await revision()).toBe(first)
+
+    await executeEditDocument(
+      { path: 'Plan', old: 'rope', new: 'wire' },
+      { ...asking, propose: true }
+    )
+    expect(await revision()).not.toBe(first)
+  })
+
+  it('is of nothing for a folder, or a path with no document', async () => {
+    expect(await stateAt(asking, 'notes')).toBeNull()
+    expect(await stateAt(asking, 'Nothing')).toBeNull()
+  })
+})
+
+describe('withRevision', () => {
+  it('puts the revision in a read’s answer, and keeps what the connection has', async () => {
+    const answer = await read()
+
+    expect(answer.revision).toBe(await revision())
+    expect(answer.content).toBe(TEXT)
+    expect(await kept(APP, 'doc_plan')).toMatchObject({
+      storyId: STORY,
+      document: 'doc_plan',
+      path: 'Plan',
+      revision: answer.revision,
+      text: TEXT,
+    })
+  })
+
+  it('keeps what a write left, when the connection was up to date', async () => {
+    const { revision: read1 } = await read()
+    const edit = { path: 'Plan', old: 'rope', new: 'wire' }
+    const answer = await withRevision(APP, asking, 'Plan', () => executeEditDocument(edit, asking))
+
+    expect(answer.success).toBe(true)
+    expect(answer.revision).not.toBe(read1)
+    expect(answer.changedSince).toBeUndefined()
+    expect((await kept(APP, 'doc_plan')).text).toBe(TEXT.replace('rope', 'wire'))
+  })
+
+  it('says so, and keeps what it had, when the document had changed besides the write', async () => {
+    const { revision: had } = await read()
+    await executeEditDocument({ path: 'Plan', old: 'noon', new: 'dusk' }, writer)
+
+    const edit = { path: 'Plan', old: 'rope', new: 'wire' }
+    const answer = await withRevision(APP, asking, 'Plan', () => executeEditDocument(edit, asking))
+
+    expect(answer.changedSince).toEqual({ revision: had, note: CHANGED_SINCE_NOTE })
+    expect(answer.revision).toBe(await revision())
+    // What it had is still there to tell changes from.
+    expect((await kept(APP, 'doc_plan')).revision).toBe(had)
+    const since = await changesSince(APP, asking, { path: 'Plan', revision: had })
+    expect(since.content).toContain('-The vault opens at noon.')
+    expect(since.content).toContain('+Bring wire and a lamp.')
+  })
+
+  it('keeps what a write left for a connection that had read nothing of the document', async () => {
+    const edit = { path: 'Plan', old: 'rope', new: 'wire' }
+    const answer = await withRevision(APP, asking, 'Plan', () => executeEditDocument(edit, asking))
+
+    expect(answer.changedSince).toBeUndefined()
+    expect((await kept(APP, 'doc_plan')).revision).toBe(answer.revision)
+  })
+
+  it('leaves a part read as a write is: what is kept stays when the rest had changed', async () => {
+    const { revision: had } = await read()
+    await executeEditDocument({ path: 'Plan', old: 'noon', new: 'dusk' }, writer)
+
+    const part = await withRevision(
+      APP,
+      asking,
+      'Plan',
+      () => executeReadDocument({ path: 'Plan' }, asking),
+      () => false
+    )
+
+    expect(part.changedSince.revision).toBe(had)
+    expect((await kept(APP, 'doc_plan')).revision).toBe(had)
+  })
+
+  it('adds nothing to a refusal', async () => {
+    const answer = await withRevision(APP, asking, 'Nothing', () =>
+      executeReadDocument({ path: 'Nothing' }, asking)
+    )
+    expect(answer.error).toContain('No document')
+    expect(answer.revision).toBeUndefined()
+  })
+})
+
+describe('unchangedAt', () => {
+  it('says a document is still at the revision the connection holds', async () => {
+    const { revision: had } = await read()
+    expect(await unchangedAt(APP, asking, 'Plan', had)).toEqual({
+      path: 'Plan',
+      revision: had,
+      unchanged: 'Unchanged since that revision.',
+    })
+  })
+
+  it('says nothing once it has changed, or for no revision', async () => {
+    const { revision: had } = await read()
+    await executeEditDocument({ path: 'Plan', old: 'rope', new: 'wire' }, writer)
+
+    expect(await unchangedAt(APP, asking, 'Plan', had)).toBeNull()
+    expect(await unchangedAt(APP, asking, 'Plan', undefined)).toBeNull()
+    expect(await unchangedAt(APP, asking, 'Nothing', had)).toBeNull()
+  })
+})
+
+describe('changesSince', () => {
+  it('says nothing has changed at the revision the document is at', async () => {
+    const { revision: had } = await read()
+    expect(await changesSince(APP, asking, { path: 'Plan', revision: had })).toEqual({
+      path: 'Plan',
+      revision: had,
+      unchanged: 'Nothing has changed since that revision.',
+    })
+  })
+
+  it('gives what the writer changed as a diff, and the revision it is at now', async () => {
+    const { revision: had } = await read()
+    await executeEditDocument({ path: 'Plan', old: 'rope', new: 'wire' }, writer)
+
+    const since = await changesSince(APP, asking, { path: 'Plan', revision: had })
+
+    expect(since).toMatchObject({ path: 'Plan', since: had, revision: await revision() })
+    expect(since.content).toBe(
+      [
+        '@@ -3,3 +3,3 @@',
+        ' The vault opens at noon.',
+        ' ',
+        '-Bring rope and a lamp.',
+        '+Bring wire and a lamp.',
+      ].join('\n')
+    )
+    expect(since.comments).toBeUndefined()
+  })
+
+  it('brings the connection up to date: asked again, nothing has changed', async () => {
+    const { revision: had } = await read()
+    await executeEditDocument({ path: 'Plan', old: 'rope', new: 'wire' }, writer)
+    const since = await changesSince(APP, asking, { path: 'Plan', revision: had })
+
+    expect(
+      (await changesSince(APP, asking, { path: 'Plan', revision: since.revision })).unchanged
+    ).toBe('Nothing has changed since that revision.')
+    // The one before is no longer the one kept.
+    expect((await changesSince(APP, asking, { path: 'Plan', revision: had })).unknown).toBe(
+      UNKNOWN_NOTE
+    )
+  })
+
+  it('tells of a comment made, one answered, and one resolved', async () => {
+    const mine = await executeAddComment(
+      { path: 'Plan', passage: 'Bring rope', text: 'How much?' },
+      asking
+    )
+    const old = await executeAddComment({ path: 'Plan', passage: 'at noon', text: 'Sure?' }, asking)
+    const { revision: had } = await read()
+
+    await executeReplyComment({ path: 'Plan', id: mine.comment, text: 'Thirty metres.' }, writer)
+    await executeResolveComment({ path: 'Plan', id: old.comment }, writer)
+    const made = await executeAddComment(
+      { path: 'Plan', passage: 'a lamp', text: 'Two lamps.' },
+      writer
+    )
+
+    const since = await changesSince(APP, asking, { path: 'Plan', revision: had })
+
+    expect(since.text).toBe('The text is as it was.')
+    const byId = Object.fromEntries(since.comments.map(comment => [comment.id, comment]))
+    expect(byId[mine.comment]).toEqual({
+      id: mine.comment,
+      passage: 'Bring rope',
+      posts: [{ author: 'model', text: 'Thirty metres.' }],
+    })
+    expect(byId[old.comment]).toEqual({ id: old.comment, passage: 'at noon', resolved: true })
+    expect(byId[made.comment]).toMatchObject({ new: true, passage: 'a lamp' })
+    expect(byId[made.comment].posts).toHaveLength(1)
+  })
+
+  it('tells which of the connection’s suggestions the writer accepted and rejected', async () => {
+    const suggesting = { ...asking, propose: true }
+    const first = await executeEditDocument({ path: 'Plan', old: 'noon', new: 'dusk' }, suggesting)
+    const second = await executeEditDocument({ path: 'Plan', old: 'rope', new: 'wire' }, suggesting)
+    const { revision: had } = await read()
+
+    const comments = useComments(STORY)
+    expect(comments.accept('doc_plan', first.suggestion)).toBe(true)
+    expect(comments.reject('doc_plan', second.suggestion)).toBe(true)
+
+    const since = await changesSince(APP, asking, { path: 'Plan', revision: had })
+    expect(since.suggestions).toHaveLength(2)
+    expect(since.suggestions).toEqual(
+      expect.arrayContaining([
+        { id: first.suggestion, outcome: 'accepted', from: 'noon', to: 'dusk' },
+        { id: second.suggestion, outcome: 'rejected', from: 'rope', to: 'wire' },
+      ])
+    )
+    // The accepted one is in the text for everyone now; to the connection,
+    // which read it as made, only the rejected one is a change.
+    expect(since.content).toContain('-Bring wire and a lamp.')
+    expect(since.content).toContain('+Bring rope and a lamp.')
+    expect(since.content).not.toContain('noon')
+  })
+
+  it('says to read again for a revision it has no record of', async () => {
+    await read()
+    await executeEditDocument({ path: 'Plan', old: 'rope', new: 'wire' }, writer)
+
+    expect(await changesSince(APP, asking, { path: 'Plan', revision: 'not.one' })).toEqual({
+      path: 'Plan',
+      revision: await revision(),
+      unknown: UNKNOWN_NOTE,
+    })
+    // And for a document the connection never read.
+    const crew = await changesSince(APP, asking, { path: 'notes/Crew', revision: 'any' })
+    expect(crew.unknown).toBe(UNKNOWN_NOTE)
+  })
+
+  it('asks for the revision of a document, and says when nothing is there', async () => {
+    expect((await changesSince(APP, asking, { path: 'Plan' })).error).toContain('"revision"')
+    expect((await changesSince(APP, asking, { path: 'Nowhere', revision: 'x' })).error).toContain(
+      'Nothing at "Nowhere"'
+    )
+  })
+
+  it('says where a document was, when it has moved since', async () => {
+    const { revision: had } = await read()
+    await executeMoveDocument({ path: 'Plan', to: 'notes/Plan' }, writer)
+    await executeEditDocument({ path: 'notes/Plan', old: 'rope', new: 'wire' }, writer)
+
+    const since = await changesSince(APP, asking, { path: 'notes/Plan', revision: had })
+    expect(since).toMatchObject({ path: 'notes/Plan', movedFrom: 'Plan' })
+  })
+
+  describe('of a folder', () => {
+    const readCrew = () =>
+      withRevision(
+        APP,
+        asking,
+        'notes/Crew',
+        () => executeReadDocument({ path: 'notes/Crew' }, asking),
+        () => true
+      )
+
+    it('names the documents the connection has read that have changed, with the revision it had', async () => {
+      const plan = await read()
+      await readCrew()
+      await executeEditDocument({ path: 'Plan', old: 'rope', new: 'wire' }, writer)
+
+      const since = await changesSince(APP, asking, { path: '/' })
+      expect(since.changed).toEqual([{ path: 'Plan', revision: plan.revision }])
+      expect(since.gone).toBeUndefined()
+
+      expect((await changesSince(APP, asking, {})).changed).toHaveLength(1)
+    })
+
+    it('looks only under the folder named', async () => {
+      await read()
+      const crew = await readCrew()
+      await executeEditDocument({ path: 'Plan', old: 'rope', new: 'wire' }, writer)
+      await executeEditDocument({ path: 'notes/Crew', old: 'locks', new: 'safes' }, writer)
+
+      const since = await changesSince(APP, asking, { path: 'notes' })
+      expect(since.changed).toEqual([{ path: 'notes/Crew', revision: crew.revision }])
+    })
+
+    it('says nothing has changed when nothing read has, and leaves out what was never read', async () => {
+      await read()
+      await executeEditDocument({ path: 'notes/Crew', old: 'locks', new: 'safes' }, writer)
+
+      const since = await changesSince(APP, asking, { path: '/' })
+      expect(since.changed).toEqual([])
+      expect(since.note).toBe('Nothing you have read here has changed.')
+    })
+
+    it('names a document that is gone', async () => {
+      await readCrew()
+      await executeDeleteDocument({ path: 'notes/Crew' }, writer)
+
+      const since = await changesSince(APP, asking, { path: '/' })
+      expect(since.gone).toEqual(['notes/Crew'])
+    })
+
+    it('knows nothing of another project’s documents, or another connection’s reads', async () => {
+      await read()
+      await keep(
+        { ...APP, id: 'app_2' },
+        { ...(await stateAt(asking, 'Plan')).seen, revision: 'old' }
+      )
+      records.kept.set('app_1/doc_else', {
+        storyId: 'story_2',
+        document: 'doc_else',
+        path: 'Else',
+        revision: 'x',
+        text: '',
+        threads: {},
+      })
+
+      expect((await changesSince(APP, asking, { path: '/' })).changed).toEqual([])
+    })
+  })
+})

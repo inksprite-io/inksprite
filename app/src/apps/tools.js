@@ -24,6 +24,9 @@
  *   project block, the chat, or tools an app isn't offered, the app is given
  *   another.
  * - **Several edits in a call, and how the text was stored** (`./writes.js`).
+ * - **A revision on every read and write, and what changed since one**
+ *   (`./revisions.js`): what a chat's model is told on every turn of the
+ *   documents it read, an app asks for.
  * - **A connection is who its comments are by**: its posts are a model's
  *   under the connection's name, which the Comments tab and other readers
  *   show.
@@ -43,6 +46,7 @@ import { toolRegistry } from '@/ai/tools/index.js'
 import { SUGGESTED_NOTE, documentForChat } from '@/ai/tools/documents.js'
 import { findProject, inProject, projectsOf } from './projects.js'
 import { answeringStored, editMany } from './writes.js'
+import { changesSince, unchangedAt, withRevision } from './revisions.js'
 
 /** @typedef {import('@/platform/apps.js').AskingApp} AskingApp */
 
@@ -65,6 +69,9 @@ import { answeringStored, editMany } from './writes.js'
 
 /** The tool that names an app's projects. */
 export const LIST_PROJECTS = 'list_projects'
+
+/** The tool that says what changed since a revision an app holds. */
+export const CHANGES_SINCE = 'changes_since'
 
 /**
  * The document tools that read. `explore_documents` is left out: it runs a
@@ -106,6 +113,9 @@ const WRITES_TEXT = new Set([
   'append_document',
 ])
 
+/** Those that say something on a document's comments. */
+const SAYS = new Set(['add_comment', 'reply_comment', 'resolve_comment'])
+
 /** Those that change the text of a document that is there: what a connection that suggests suggests. */
 const CHANGES_TEXT = new Set(['update_document', 'edit_document', 'append_document'])
 
@@ -142,9 +152,20 @@ const SAID_OUTSIDE = {
       'a description written from its text'
     ),
   }),
-  read_document: () => ({
+  read_document: ({ parameters }) => ({
     description:
-      'Read a document. Its text comes after what is said about it, as it is written: Markdown. A document up to about 7,000 words comes whole; a longer one comes one slice at a time, with `next` for the offset to go on from and its top sections with their links. For a long document, look at its sections with describe_document first and read the ones you need with `section`, rather than paging through it. The open comments on what was read are listed after it, each with the passage it is on. The user may be writing in it: what a read gives is the text as it stood then. A source file in a repository comes with its line numbers, and is read by line with `line` and `until`.',
+      'Read a document. Its text comes after what is said about it, as it is written: Markdown. A document up to about 7,000 words comes whole; a longer one comes one slice at a time, with `next` for the offset to go on from and its top sections with their links. For a long document, look at its sections with describe_document first and read the ones you need with `section`, rather than paging through it. The open comments on what was read are listed after it, each with the passage it is on. The user may be writing in it: what a read gives is the text as it stood then, and its `revision`, which changes_since takes to say what has changed since. A source file in a repository comes with its line numbers, and is read by line with `line` and `until`.',
+    parameters: {
+      ...parameters,
+      properties: {
+        ...parameters.properties,
+        revision: {
+          type: 'string',
+          description:
+            'The revision you hold of the document, from an earlier read or write. When it is still at that revision, the answer says so and the text is not sent again.',
+        },
+      },
+    },
   }),
   describe_document: ({ description }) => ({
     description: description.replace(
@@ -228,6 +249,28 @@ const LIST_PROJECTS_TOOL = {
   annotations: { readOnlyHint: true },
 }
 
+/** @type {AppTool} */
+const CHANGES_SINCE_TOOL = {
+  name: CHANGES_SINCE,
+  description:
+    'What has changed in a document since a revision you hold: its text as a diff, what has been said on its comments, and which of your suggestions the user accepted or rejected. Every read and write of a document answers with its `revision`; give the one you have. Use it when the user has had time with a document, in place of reading it again. Given a folder, or "/" for the whole project, it names the documents you have read that have changed since, each with the revision you had. Where no record is kept of a revision, it says so, and the document is to be read again.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      project: PROJECT,
+      path: {
+        type: 'string',
+        description: 'The document\'s path from the project root, or a folder\'s. Default "/".',
+      },
+      revision: {
+        type: 'string',
+        description: 'The revision you hold of the document. Not needed for a folder.',
+      },
+    },
+  },
+  annotations: { readOnlyHint: true },
+}
+
 /**
  * The document tools an app is offered, by name: those that read, and those
  * of what else its connection may do.
@@ -282,8 +325,25 @@ export function toolsFor(app) {
         : { readOnlyHint: false, destructiveHint: !ADDING.has(chat.name) },
     }
   })
-  return [LIST_PROJECTS_TOOL, ...documents]
+  // What changed since, after the tools that read: it stands in for a read.
+  return [
+    LIST_PROJECTS_TOOL,
+    ...documents.slice(0, READING.length),
+    CHANGES_SINCE_TOOL,
+    ...documents.slice(READING.length),
+  ]
 }
+
+/**
+ * Whether a read's answer sent the document's whole text, and not a slice,
+ * a section or some lines of it.
+ * @param {Record<string, any>} answer
+ */
+const sendsAll = answer =>
+  typeof answer.content === 'string' &&
+  !('section' in answer) &&
+  !('from' in answer) &&
+  !('line' in answer)
 
 /** @param {string} text */
 const said = text => ({ type: /** @type {const} */ ('text'), text })
@@ -351,25 +411,36 @@ export async function callTool(app, name, args, signal) {
   const project = await findProject(app, named)
   if ('error' in project) return { result: toResult(project) }
 
-  const tool = toolRegistry.tools.get(name)
-  if (!tool || !offered(app).includes(name)) {
-    return { result: toResult({ error: `Unknown tool: ${name}` }) }
-  }
   // The connection's own id where a chat's goes: no chat is found by it, so
   // only what is hidden outright is left out. Its name is who its comments
-  // are by.
+  // and suggestions are by.
   const asking = { storyId: project.id, chatId: `app:${app.id}`, postsAs: app.name, signal }
-
+  const tool = toolRegistry.tools.get(name)
+  if (name !== CHANGES_SINCE && (!tool || !offered(app).includes(name))) {
+    return { result: toResult({ error: `Unknown tool: ${name}` }) }
+  }
   const ran = await inProject(project.id, async () => {
     try {
+      if (name === CHANGES_SINCE || !tool) return await changesSince(app, asking, rest)
+      const path = typeof rest.path === 'string' ? rest.path : ''
+      if (name === 'read_document') {
+        // Still at the revision the app holds: said, and nothing sent.
+        const same = await unchangedAt(app, asking, path, rest.revision)
+        if (same) return same
+        return await withRevision(app, asking, path, () => tool.execute(rest, asking), sendsAll)
+      }
+
       const context = { ...asking, propose: await suggests(app, name, rest, asking) }
       const run = () =>
         name === 'edit_document' && (Array.isArray(rest.edits) || rest.all === true)
           ? editMany(rest, context)
           : tool.execute(rest, context)
-      const answer = WRITES_TEXT.has(name)
-        ? await answeringStored(name, rest, context, run)
-        : await run()
+      const write = () =>
+        WRITES_TEXT.has(name) ? answeringStored(name, rest, context, run) : run()
+      const answer =
+        WRITES_TEXT.has(name) || SAYS.has(name)
+          ? await withRevision(app, asking, name === 'create_document' ? '' : path, write)
+          : await write()
       return answer?.note === SUGGESTED_NOTE && !app.comment
         ? { ...answer, note: SUGGESTED_NOTE_NO_COMMENT }
         : answer

@@ -73,6 +73,37 @@ export const removeApp = id => bridge().remove(id)
 export const setAppsPort = port => bridge().setPort(port)
 
 /**
+ * What a connection last read or wrote of a document, as `keepAppRead` was
+ * handed it: null for none, and in a desktop app from before they were kept.
+ *
+ * @param {string} connection
+ * @param {string} document
+ * @returns {Promise<object|null>}
+ */
+export const appRead = async (connection, document) =>
+  (await bridge().read?.(connection, document)) ?? null
+
+/**
+ * Everything kept for a connection, a record for each document.
+ *
+ * @param {string} connection
+ * @returns {Promise<object[]>}
+ */
+export const appReads = async connection => (await bridge().reads?.(connection)) ?? []
+
+/**
+ * Keep what a connection now has of a document, in place of what it had.
+ *
+ * @param {string} connection
+ * @param {string} document
+ * @param {object} record
+ * @returns {Promise<void>}
+ */
+export const keepAppRead = async (connection, document, record) => {
+  await bridge().keep?.(connection, document, record)
+}
+
+/**
  * Say what answers an app's request in this window.
  *
  * @param {(app: AskingApp, message: object, signal: AbortSignal) => Promise<AppAnswer>} answer -

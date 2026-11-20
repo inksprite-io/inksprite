@@ -39,7 +39,7 @@ export function instructionsFor(app) {
     '- A project is a tree of documents and folders. list_projects names the projects, and every other tool takes one as `project`.',
     '- A document is addressed by its path from the top of its project, as list_documents gives it: "Designs/Sync". A path has no file extension.',
     '- Documents are Markdown. A link from one to another is the path from the linking document, ending in .md.',
-    '- The user may be writing while you work. Read a document again before relying on what an earlier read said.',
+    '- The user may be writing while you work. Every read and write of a document answers with its `revision`: before relying on what you read earlier, changes_since with the revision you hold shows what has changed since, without reading it all again.',
     ...(edits
       ? [
           app.edit === 'suggesting'

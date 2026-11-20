@@ -17,6 +17,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { appDoor } from './appServer.js'
 import { windowAsker } from './appCalls.js'
+import { appReads } from './appReads.js'
 
 /** The file's name, beside `library.json`. */
 export const APPS_FILE = 'apps.json'
@@ -297,6 +298,7 @@ export function handleApps({ handle, on, pages }) {
   const connections = appConnections()
   const asker = windowAsker(pages)
   const door = appDoor({ connections, ask: asker.ask })
+  const reads = appReads()
 
   on('apps:answer', (event, request, answer) => asker.answered(event.sender.id, request, answer))
 
@@ -312,12 +314,20 @@ export function handleApps({ handle, on, pages }) {
   handle('apps:remove', async (_, id) => {
     await connections.remove(id)
     await door.sync()
+    // What it had read goes with it.
+    await reads.forget(id).catch(() => {})
   })
   handle('apps:port', async (_, port) => {
     await connections.setPort(port)
     await door.sync()
     return state()
   })
+
+  // What each connection last read or wrote of each document, kept for the
+  // page to say what changed since (`appReads.js`).
+  handle('apps:read', (_, connection, document) => reads.get(connection, document))
+  handle('apps:reads', (_, connection) => reads.all(connection))
+  handle('apps:keep', (_, connection, document, record) => reads.put(connection, document, record))
 
   // Connections made before the app last quit are let in as it starts.
   door.sync().catch(error => console.error(`Apps could not be listened for: ${error.message}`))

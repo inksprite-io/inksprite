@@ -210,6 +210,9 @@ const desktop = {
     update: (id, patch) => call('apps:update', id, patch),
     remove: id => call('apps:remove', id),
     setPort: port => call('apps:port', port),
+    read: (connection, document) => call('apps:read', connection, document),
+    reads: connection => call('apps:reads', connection),
+    keep: (connection, document, record) => call('apps:keep', connection, document, record),
     answer: answer => {
       answerApps = answer
     },

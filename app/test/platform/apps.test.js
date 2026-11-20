@@ -2,7 +2,10 @@ import { describe, it, expect, afterEach, vi } from 'vitest'
 import {
   addApp,
   answerApps,
+  appRead,
+  appReads,
   canConnectApps,
+  keepAppRead,
   listApps,
   removeApp,
   setAppsPort,
@@ -55,6 +58,26 @@ describe('platform/apps', () => {
 
     expect(apps.update).toHaveBeenCalledWith('app_1', { projects: ['story_a'] })
     expect(apps.remove).toHaveBeenCalledWith('app_1')
+  })
+
+  it('keeps and reads back what a connection has of a document', async () => {
+    const apps = bridge()
+    apps.read = vi.fn(async () => ({ revision: 'r1' }))
+    apps.reads = vi.fn(async () => [{ revision: 'r1' }])
+    apps.keep = vi.fn(async () => {})
+
+    await keepAppRead('app_1', 'doc_1', { revision: 'r1' })
+    expect(apps.keep).toHaveBeenCalledWith('app_1', 'doc_1', { revision: 'r1' })
+    expect(await appRead('app_1', 'doc_1')).toEqual({ revision: 'r1' })
+    expect(await appReads('app_1')).toEqual([{ revision: 'r1' }])
+  })
+
+  it('has nothing kept in a desktop app from before reads were', async () => {
+    bridge()
+
+    await keepAppRead('app_1', 'doc_1', { revision: 'r1' })
+    expect(await appRead('app_1', 'doc_1')).toBeNull()
+    expect(await appReads('app_1')).toEqual([])
   })
 
   it('answers an app with a signal that is aborted when the app gives up', async () => {

@@ -132,6 +132,14 @@
  * @property {(id: string, patch: Partial<Pick<AppConnection, 'name'|'projects'|'edit'|'comment'>>) => Promise<AppConnection>} update
  * @property {(id: string) => Promise<void>} remove
  * @property {(port: number) => Promise<AppsState>} setPort
+ * @property {(connection: string, document: string) => Promise<object|null>} [read] -
+ *   What a connection last read or wrote of a document, as `keep` was handed
+ *   it, or null. Missing, with `reads` and `keep`, from a desktop app from
+ *   before they were kept.
+ * @property {(connection: string) => Promise<object[]>} [reads] - Everything
+ *   kept for a connection
+ * @property {(connection: string, document: string, record: object) => Promise<void>} [keep] -
+ *   Keep what a connection now has of a document
  * @property {(answer: (connection: Omit<AppConnection, 'token'|'created'>, message: object, onStop: (stop: () => void) => void) => Promise<AppAnswer>) => void} answer -
  *   Say what answers an app's request in this window. `onStop` takes what
  *   stops the request, should the app give up on it.

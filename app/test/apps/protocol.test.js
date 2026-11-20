@@ -54,6 +54,7 @@ describe('answerRequest', () => {
   it('tells the app what its connection may do, and no more', () => {
     const reads = instructionsFor(APP)
     expect(reads).toContain('to list, search and read their documents')
+    expect(reads).toContain('changes_since')
     expect(reads).not.toMatch(/edit_document|add_comment/)
 
     const edits = instructionsFor({ ...APP, edit: 'editing' })

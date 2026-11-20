@@ -19,6 +19,25 @@ vi.mock('@/stores/syncStore', () => ({
   useSyncStore: () => ({ trackChange: vi.fn(), trackDelete: vi.fn(), start: () => false }),
 }))
 
+/** What the native side keeps for each connection, stood in for. */
+const records = vi.hoisted(() => ({
+  /** @type {Map<string, object>} */
+  kept: new Map(),
+}))
+vi.mock('@/platform/apps.js', () => ({
+  appRead: vi.fn(
+    async (connection, document) => records.kept.get(`${connection}/${document}`) ?? null
+  ),
+  appReads: vi.fn(async connection =>
+    [...records.kept]
+      .filter(([key]) => key.startsWith(`${connection}/`))
+      .map(([, record]) => record)
+  ),
+  keepAppRead: vi.fn(async (connection, document, record) => {
+    records.kept.set(`${connection}/${document}`, JSON.parse(JSON.stringify(record)))
+  }),
+}))
+
 const projects = vi.hoisted(() => ({
   projectsOf: vi.fn(),
   findProject: vi.fn(),
@@ -63,6 +82,7 @@ describe('toolsFor', () => {
       'read_document',
       'describe_document',
       'search_documents',
+      'changes_since',
     ])
     for (const tool of tools) {
       expect(tool.annotations).toEqual({ readOnlyHint: true })
@@ -78,6 +98,7 @@ describe('toolsFor', () => {
       'read_document',
       'describe_document',
       'search_documents',
+      'changes_since',
       'create_document',
       'create_folder',
       'update_document',
@@ -94,7 +115,7 @@ describe('toolsFor', () => {
 
   it('offers the tools that comment to a connection that comments', () => {
     const names = toolsFor({ ...APP, comment: true }).map(tool => tool.name)
-    expect(names.slice(5)).toEqual([
+    expect(names.slice(6)).toEqual([
       'list_comments',
       'add_comment',
       'reply_comment',
@@ -132,6 +153,17 @@ describe('toolsFor', () => {
         /explore_documents|project block|conversation|use_skill|still above|in the chat|approves changes first|\bchat\b/
       )
     }
+  })
+
+  it('lets a read name the revision held, and offers what changed since one', () => {
+    const tools = toolsFor(APP)
+    const read = tools.find(tool => tool.name === 'read_document')
+    expect(Object.keys(read.inputSchema.properties)).toContain('revision')
+    expect(read.inputSchema.required).toEqual(['path'])
+
+    const since = tools.find(tool => tool.name === 'changes_since')
+    expect(Object.keys(since.inputSchema.properties)).toEqual(['project', 'path', 'revision'])
+    expect(since.annotations).toEqual({ readOnlyHint: true })
   })
 
   it('lets an edit be several, or of every place a passage appears', () => {
@@ -209,6 +241,7 @@ describe('callTool', () => {
     setActivePinia(createPinia())
     clearDocumentInstances()
     vi.clearAllMocks()
+    records.kept = new Map()
     store = useDocumentsStore()
     projects.projectsOf.mockResolvedValue([
       { id: STORY, name: 'Thief', summary: 'A heist in a walled city.' },
@@ -273,6 +306,99 @@ describe('callTool', () => {
     await callTool(APP, 'read_document', args, signal)
     const again = await callTool(APP, 'read_document', args, signal)
     expect(parts(again)[1]).toBe('The vault opens at "noon".\n\nBring rope.')
+  })
+
+  it('answers a read with the document’s revision, and says so when it is still at it', async () => {
+    const args = { project: 'Thief', path: 'notes/Plan' }
+    const first = await callTool(APP, 'read_document', args, signal)
+    const { revision } = JSON.parse(parts(first)[0])
+    expect(revision).toEqual(expect.any(String))
+
+    const again = await callTool(APP, 'read_document', { ...args, revision }, signal)
+    expect(parts(again)).toHaveLength(1)
+    expect(JSON.parse(parts(again)[0])).toEqual({
+      path: 'notes/Plan',
+      revision,
+      unchanged: 'Unchanged since that revision.',
+    })
+
+    store.updateDocument('doc_plan', { content: 'The vault opens at dusk.' })
+    const changed = await callTool(APP, 'read_document', { ...args, revision }, signal)
+    expect(parts(changed)[1]).toBe('The vault opens at dusk.')
+    expect(JSON.parse(parts(changed)[0]).revision).not.toBe(revision)
+  })
+
+  it('says what the writer changed since a revision, as a diff after what is said of it', async () => {
+    const read = await callTool(APP, 'read_document', { path: 'notes/Plan' }, signal)
+    const { revision } = JSON.parse(parts(read)[0])
+    store.updateDocument('doc_plan', { content: 'The vault opens at "noon".\n\nBring wire.' })
+
+    const since = await callTool(APP, 'changes_since', { path: 'notes/Plan', revision }, signal)
+
+    const [about, diff] = parts(since)
+    expect(JSON.parse(about)).toMatchObject({ path: 'notes/Plan', since: revision })
+    expect(diff).toContain('-Bring rope.')
+    expect(diff).toContain('+Bring wire.')
+    expect(projects.inProject).toHaveBeenCalledWith(STORY, expect.any(Function))
+
+    const all = await callTool(APP, 'changes_since', {}, signal)
+    expect(JSON.parse(parts(all)[0]).changed).toEqual([])
+  })
+
+  it('answers a write with the revision it left', async () => {
+    const read = await callTool(WRITER, 'read_document', { path: 'notes/Plan' }, signal)
+    const before = JSON.parse(parts(read)[0]).revision
+    const edit = await callTool(
+      WRITER,
+      'edit_document',
+      { path: 'notes/Plan', old: 'rope', new: 'wire' },
+      signal
+    )
+
+    const { revision, changedSince } = JSON.parse(parts(edit)[0])
+    expect(revision).not.toBe(before)
+    expect(changedSince).toBeUndefined()
+    const since = await callTool(WRITER, 'changes_since', { path: 'notes/Plan', revision }, signal)
+    expect(JSON.parse(parts(since)[0]).unchanged).toBe('Nothing has changed since that revision.')
+
+    const made = await callTool(
+      WRITER,
+      'create_document',
+      { path: 'notes/Crew', content: 'Mara.' },
+      signal
+    )
+    expect(JSON.parse(parts(made)[0]).revision).toEqual(expect.any(String))
+    const comment = await callTool(
+      WRITER,
+      'add_comment',
+      { path: 'notes/Crew', passage: 'Mara', text: 'Who?' },
+      signal
+    )
+    expect(JSON.parse(parts(comment)[0]).revision).toEqual(expect.any(String))
+  })
+
+  it('tells a write that the document had changed since the connection last had it', async () => {
+    const read = await callTool(WRITER, 'read_document', { path: 'notes/Plan' }, signal)
+    const had = JSON.parse(parts(read)[0]).revision
+    store.updateDocument('doc_plan', { content: 'The vault opens at "dusk".\n\nBring rope.' })
+
+    const edit = await callTool(
+      WRITER,
+      'edit_document',
+      { path: 'notes/Plan', old: 'rope', new: 'wire' },
+      signal
+    )
+
+    const said = JSON.parse(parts(edit)[0])
+    expect(said.success).toBe(true)
+    expect(said.changedSince.revision).toBe(had)
+    const since = await callTool(
+      WRITER,
+      'changes_since',
+      { path: 'notes/Plan', revision: had },
+      signal
+    )
+    expect(parts(since)[1]).toContain('+The vault opens at "dusk".')
   })
 
   it('lists and searches without what is hidden', async () => {
@@ -468,6 +594,7 @@ describe('a connection that suggests', () => {
     setActivePinia(createPinia())
     clearDocumentInstances()
     vi.clearAllMocks()
+    records.kept = new Map()
     store = useDocumentsStore()
     projects.findProject.mockResolvedValue({ id: STORY, name: 'Thief', summary: '' })
     projects.inProject.mockImplementation(async (_, work) => ({ value: await work() }))
