@@ -2,11 +2,13 @@
   <!-- The frame is of another origin, which is the point of it: the page
        sets it here and can't reach into it (`platform/terminal.js`). The
        ground under it is the panel's, so the frame is that colour before it
-       has drawn. -->
+       has drawn. While the pointer is held from a press in the page, a
+       panel's edge being dragged, the frame lets it through: over the frame
+       the page would hear nothing of it (`usePagePress`). -->
   <div
     ref="root"
     class="relative min-h-0 bg-surface-0 dark:bg-surface-850 text-surface-900 dark:text-surface-0"
-    data-terminal
+    data-terminal-frame
   >
     <iframe
       v-if="src"
@@ -15,6 +17,7 @@
       title="Terminal"
       allow="clipboard-read; clipboard-write"
       class="absolute inset-0 w-full h-full border-0 block"
+      :class="{ 'pointer-events-none': pagePress }"
       @load="onLoad"
     ></iframe>
   </div>
@@ -23,6 +26,7 @@
 <script setup>
 /* global getComputedStyle, KeyboardEvent, MouseEvent, MutationObserver */
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { usePagePress } from '@/composables/usePagePress.js'
 import { TERMINAL_ORIGIN, terminalFrameUrl } from '@/platform/terminal.js'
 import { appShortcutFrom } from '@/utils/terminalFrame.js'
 
@@ -53,6 +57,9 @@ const FONT_SIZE = 13
 const root = ref(null)
 /** @type {import('vue').Ref<HTMLIFrameElement|null>} */
 const frame = ref(null)
+
+/** Whether the pointer is held from a press in the page, and the frame out of its way. */
+const pagePress = usePagePress()
 
 /** The frame's address, which names how it looks at first; set once. */
 const src = ref('')
@@ -101,7 +108,8 @@ const onLoad = () => focus()
 
 /**
  * What the frame says: it was clicked, or one of the app's shortcuts was
- * pressed in it. Each is played here as if it had happened on the panel.
+ * pressed in it. Each is played here as if it had happened on the panel, a
+ * click whole, down and up, so nothing is left thinking the pointer held.
  *
  * @param {MessageEvent} event
  */
@@ -110,7 +118,7 @@ function onMessage(event) {
   if (!target || event.origin !== TERMINAL_ORIGIN) return
   if (event.source !== frame.value?.contentWindow) return
   if (event.data?.type === 'pointer') {
-    for (const type of ['pointerdown', 'mousedown', 'click']) {
+    for (const type of ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click']) {
       target.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true }))
     }
   } else if (event.data?.type === 'key') {
