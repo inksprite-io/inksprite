@@ -67,7 +67,7 @@
  * - **usePictures** - What a picture's path in a document is (its own, a file document, or the
  *   web), and opening one
  * - **usePictureViewer** - The picture shown at its own size over the whole window, from anywhere
- * - **usePlainText** - Turn a document plain or back, with an undo when that rewrote its text
+ * - **usePlainText** - Turn a document plain, or back into a document
  * - **useLongPress** - A finger held still on something, for what a right-click opens elsewhere, and how
  *   long one is held before it drags a row of the outline or a tab
  * - **useTreeDrop** - A document dragged onto a folder's row goes into the folder, and a shut
