@@ -29,6 +29,9 @@ is. What it is switched off from stays where it was, for when it is back on.
 - **Web search** - The model searching the web and reading pages, through
   the service chosen here, whose key is in Settings › Connections. On
   unless switched off. See web/ and ai/tools/web.js.
+- **Terminal** - The writer's own shell in a tab of the chat panel, in the
+  desktop app only. Off until switched on, and never decided from what is
+  in use. See platform/terminal.js and composables/useTerminals.js.
 
 Design: `.llm/extensions_design.md`.
 

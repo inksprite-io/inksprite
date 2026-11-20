@@ -185,147 +185,158 @@
   - [Parameters][181]
 - [get][182]
 - [get][183]
-- [files/html][184]
-- [UNSHOWN][185]
-- [LINKED][186]
-- [BLOCKS][187]
-- [textOfHtml][188]
-  - [Parameters][189]
-- [parts][190]
-- [toLowerCase][191]
-- [withoutHead][192]
-  - [Parameters][193]
-- [markdownOfHtml][194]
-  - [Parameters][195]
-- [files/inspect][196]
-- [PARQUET_MIME][197]
-- [MIME_BY_EXTENSION][198]
-- [UNKNOWN_MIME][199]
-- [mimeOf][200]
-  - [Parameters][201]
-- [extensionFor][202]
-  - [Parameters][203]
-- [isData][204]
-  - [Parameters][205]
-- [PROSE_EXTENSIONS][206]
-- [titleOf][207]
-  - [Parameters][208]
-- [isImage][209]
-  - [Parameters][210]
-- [isText][211]
+- [files/exportStamp][184]
+- [STAMP_KEY][185]
+- [STAMP_NOTE][186]
+- [stamped][187]
+  - [Parameters][188]
+- [FRONT][189]
+- [OPENS][190]
+- [bare][191]
+  - [Parameters][192]
+- [withoutStamp][193]
+  - [Parameters][194]
+- [files/html][195]
+- [UNSHOWN][196]
+- [LINKED][197]
+- [BLOCKS][198]
+- [textOfHtml][199]
+  - [Parameters][200]
+- [parts][201]
+- [toLowerCase][202]
+- [withoutHead][203]
+  - [Parameters][204]
+- [markdownOfHtml][205]
+  - [Parameters][206]
+- [files/inspect][207]
+- [PARQUET_MIME][208]
+- [MIME_BY_EXTENSION][209]
+- [UNKNOWN_MIME][210]
+- [mimeOf][211]
   - [Parameters][212]
-- [showsAsText][213]
+- [extensionFor][213]
   - [Parameters][214]
-- [KEPT_AS_BYTES][215]
-- [EPUB_MIME][216]
-- [MAX_TEXT_BYTES][217]
-- [MAX_FILE_BYTES][218]
-- [refuseTooLarge][219]
-  - [Parameters][220]
-- [isUnreadText][221]
-  - [Parameters][222]
-- [hasText][223]
-  - [Parameters][224]
-- [isStructured][225]
-  - [Parameters][226]
-- [sizeLabel][227]
-  - [Parameters][228]
-- [InspectedFile][229]
-  - [Properties][230]
-- [inspectFile][231]
-  - [Parameters][232]
-- [isUnread][233]
-  - [Parameters][234]
-- [files/pdf][235]
-- [library][236]
-- [loadPdfjs][237]
-- [pageMarker][238]
+- [isData][215]
+  - [Parameters][216]
+- [PROSE_EXTENSIONS][217]
+- [titleOf][218]
+  - [Parameters][219]
+- [isImage][220]
+  - [Parameters][221]
+- [isText][222]
+  - [Parameters][223]
+- [showsAsText][224]
+  - [Parameters][225]
+- [KEPT_AS_BYTES][226]
+- [EPUB_MIME][227]
+- [MAX_TEXT_BYTES][228]
+- [MAX_FILE_BYTES][229]
+- [refuseTooLarge][230]
+  - [Parameters][231]
+- [isUnreadText][232]
+  - [Parameters][233]
+- [hasText][234]
+  - [Parameters][235]
+- [isStructured][236]
+  - [Parameters][237]
+- [sizeLabel][238]
   - [Parameters][239]
-- [pageText][240]
-  - [Parameters][241]
-- [joinPages][242]
+- [InspectedFile][240]
+  - [Properties][241]
+- [inspectFile][242]
   - [Parameters][243]
-- [imageDecoderAllowed][244]
+- [isUnread][244]
   - [Parameters][245]
-- [OpenedPdf][246]
-- [openPdf][247]
-  - [Parameters][248]
-- [extractPdf][249]
+- [files/pdf][246]
+- [library][247]
+- [loadPdfjs][248]
+- [pageMarker][249]
   - [Parameters][250]
-- [pages][251]
-- [pages][252]
-- [content][253]
-- [content][254]
-- [LayoutLine][255]
-  - [Properties][256]
-- [Bookmark][257]
-  - [Properties][258]
-- [PdfLayout][259]
-  - [Properties][260]
-- [pageLines][261]
-  - [Parameters][262]
-- [lines][263]
-- [sizes][264]
-- [y][265]
-- [outlineOf][266]
-  - [Parameters][267]
-- [placed][268]
-- [BOLD_FACE][269]
-- [boldFonts][270]
-  - [Parameters][271]
-- [readPdfLayout][272]
+- [pageText][251]
+  - [Parameters][252]
+- [joinPages][253]
+  - [Parameters][254]
+- [imageDecoderAllowed][255]
+  - [Parameters][256]
+- [OpenedPdf][257]
+- [openPdf][258]
+  - [Parameters][259]
+- [extractPdf][260]
+  - [Parameters][261]
+- [pages][262]
+- [pages][263]
+- [content][264]
+- [content][265]
+- [LayoutLine][266]
+  - [Properties][267]
+- [Bookmark][268]
+  - [Properties][269]
+- [PdfLayout][270]
+  - [Properties][271]
+- [pageLines][272]
   - [Parameters][273]
-- [files/pictures][274]
-- [TakenPicture][275]
-  - [Properties][276]
-- [MARKER][277]
-- [markerFor][278]
-  - [Parameters][279]
-- [TAKEN][280]
-- [withoutPictures][281]
+- [lines][274]
+- [sizes][275]
+- [y][276]
+- [outlineOf][277]
+  - [Parameters][278]
+- [placed][279]
+- [BOLD_FACE][280]
+- [boldFonts][281]
   - [Parameters][282]
-- [REFERENCE][283]
-- [INLINE][284]
-- [DEFINITION][285]
-- [unescape][286]
-  - [Parameters][287]
-- [takePictures][288]
-  - [Parameters][289]
-- [defined][290]
-- [definitions][291]
-- [take][292]
+- [readPdfLayout][283]
+  - [Parameters][284]
+- [files/pictures][285]
+- [TakenPicture][286]
+  - [Properties][287]
+- [MARKER][288]
+- [markerFor][289]
+  - [Parameters][290]
+- [TAKEN][291]
+- [withoutPictures][292]
   - [Parameters][293]
-- [measurePicture][294]
-  - [Parameters][295]
-- [placePictures][296]
-  - [Parameters][297]
-- [known][298]
-- [picture][299]
-- [files/printPage][300]
-- [PAGE_CLASS][301]
-- [paged][302]
-- [PAGED][303]
-- [printPage][304]
-  - [Parameters][305]
-- [adoptNode][306]
-- [files/write][307]
-- [writeFile][308]
-  - [Parameters][309]
-- [writeFile][310]
-  - [Parameters][311]
-- [writeFile][312]
-  - [Parameters][313]
-- [writeBook][314]
-  - [Parameters][315]
-- [][316]
-- [][317]
-- [][318]
-- [write][319]
+- [REFERENCE][294]
+- [INLINE][295]
+- [DEFINITION][296]
+- [unescape][297]
+  - [Parameters][298]
+- [takePictures][299]
+  - [Parameters][300]
+- [defined][301]
+- [definitions][302]
+- [take][303]
+  - [Parameters][304]
+- [measurePicture][305]
+  - [Parameters][306]
+- [placePictures][307]
+  - [Parameters][308]
+- [known][309]
+- [picture][310]
+- [files/printPage][311]
+- [PAGE_CLASS][312]
+- [paged][313]
+- [PAGED][314]
+- [printPage][315]
+  - [Parameters][316]
+- [adoptNode][317]
+- [files/write][318]
+- [writeFile][319]
   - [Parameters][320]
-- [reextractFile][321]
+- [writeFile][321]
   - [Parameters][322]
-- [isScan][323]
+- [writeFile][323]
   - [Parameters][324]
+- [writeBook][325]
+  - [Parameters][326]
+- [][327]
+- [][328]
+- [][329]
+- [write][330]
+  - [Parameters][331]
+- [reextractFile][332]
+  - [Parameters][333]
+- [isScan][334]
+  - [Parameters][335]
 
 ## files/batch
 
@@ -346,12 +357,12 @@ import then drops what nobody meant to import (`withoutJunk`).
 
 A file to import, and where under the chosen root it was.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
 - `file` **File**&#x20;
-- `folders` **[Array][326]<[string][327]>** The folders above it, outermost first; empty
+- `folders` **[Array][337]<[string][338]>** The folders above it, outermost first; empty
   for a file chosen or dropped on its own
 - `base` **[BaseRead][4]?** Where a Google Doc read through the converter
   was read, which with its text is the base the document it becomes keeps
@@ -360,7 +371,7 @@ Type: [Object][325]
 
 The revision and the tab a Google Doc was read at.
 
-Type: {revisionId: [string][327], tabId: [string][327]}
+Type: {revisionId: [string][338], tabId: [string][338]}
 
 ## isJunk
 
@@ -368,9 +379,9 @@ What a file system leaves lying around that nobody meant to import.
 
 ### Parameters
 
-- `name` **[string][327]**&#x20;
+- `name` **[string][338]**&#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## listFiles
 
@@ -385,7 +396,7 @@ gives no paths, and each file lands where it was asked for.
 
 - `files` **ArrayLike\<File>**&#x20;
 
-Returns **[Array][326]<[Gathered][2]>**&#x20;
+Returns **[Array][337]<[Gathered][2]>**&#x20;
 
 ## webkitRelativePath
 
@@ -398,9 +409,9 @@ system's own litter, and anything in a dot-folder.
 
 ### Parameters
 
-- `listed` **[Array][326]<[Gathered][2]>**&#x20;
+- `listed` **[Array][337]<[Gathered][2]>**&#x20;
 
-Returns **[Array][326]<[Gathered][2]>**&#x20;
+Returns **[Array][337]<[Gathered][2]>**&#x20;
 
 ## gatherFiles
 
@@ -410,7 +421,7 @@ The files a chooser handed over, for the ordinary import.
 
 - `files` **ArrayLike\<File>**&#x20;
 
-Returns **[Array][326]<[Gathered][2]>**&#x20;
+Returns **[Array][337]<[Gathered][2]>**&#x20;
 
 ## folderOf
 
@@ -419,9 +430,9 @@ or dropped on its own.
 
 ### Parameters
 
-- `listed` **[Array][326]<[Gathered][2]>**&#x20;
+- `listed` **[Array][337]<[Gathered][2]>**&#x20;
 
-Returns **([string][327] | null)** Its name
+Returns **([string][338] | null)** Its name
 
 ## listDropped
 
@@ -436,27 +447,27 @@ as `.git`, are not walked.
 
 - `transfer` **DataTransfer**&#x20;
 
-Returns **[Promise][329]<[Array][326]<[Gathered][2]>>**&#x20;
+Returns **[Promise][340]<[Array][337]<[Gathered][2]>>**&#x20;
 
 ## out
 
-Type: [Array][326]<[Gathered][2]>
+Type: [Array][337]<[Gathered][2]>
 
 ## out
 
-Type: [Array][326]<[EpubSection][95]>
+Type: [Array][337]<[EpubSection][95]>
 
 ## out
 
-Type: [Array][326]<[string][327]>
+Type: [Array][337]<[string][338]>
 
 ## entries
 
-Type: [Array][326]\<any>
+Type: [Array][337]\<any>
 
 ## entries
 
-Type: [Array][326]<[ExportEntry][143]>
+Type: [Array][337]<[ExportEntry][143]>
 
 ## gatherDropped
 
@@ -466,7 +477,7 @@ The files dropped from the desktop, for the ordinary import.
 
 - `transfer` **DataTransfer**&#x20;
 
-Returns **[Promise][329]<[Array][326]<[Gathered][2]>>**&#x20;
+Returns **[Promise][340]<[Array][337]<[Gathered][2]>>**&#x20;
 
 ## carriesFiles
 
@@ -477,33 +488,33 @@ document being moved within the tree.
 
 - `transfer` **(DataTransfer | null)**&#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## walk
 
 ### Parameters
 
 - `entry` **any** A FileSystemEntry
-- `folders` **[Array][326]<[string][327]>**&#x20;
-- `out` **[Array][326]<[Gathered][2]>**&#x20;
+- `folders` **[Array][337]<[string][338]>**&#x20;
+- `out` **[Array][337]<[Gathered][2]>**&#x20;
 
 ## walk
 
 ### Parameters
 
-- `node` **[Node][330]**&#x20;
-- `parts` **[Array][326]<[string][327]>**&#x20;
+- `node` **[Node][341]**&#x20;
+- `parts` **[Array][337]<[string][338]>**&#x20;
 
 ## walk
 
 ### Parameters
 
-- `items` **([Array][326]\<any> | [undefined][331])**&#x20;
-- `level` **[number][332]**&#x20;
+- `items` **([Array][337]\<any> | [undefined][342])**&#x20;
+- `level` **[number][343]**&#x20;
 
 ## batch
 
-Type: [Array][326]\<any>
+Type: [Array][337]\<any>
 
 ## files/docx
 
@@ -523,7 +534,7 @@ mammoth is loaded with the first Word file, not with the app.
 
 A Word file's media type.
 
-Type: [string][327]
+Type: [string][338]
 
 ## DOCX
 
@@ -535,9 +546,9 @@ Whether a file is a Word file, by its type or its name.
 
 ### Parameters
 
-- `file` **{name: [string][327], type: [string][327]}**&#x20;
+- `file` **{name: [string][338], type: [string][338]}**&#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## BACK_LINK
 
@@ -550,25 +561,25 @@ A Word file's text as markdown, and the pictures taken out of it.
 
 ### Parameters
 
-- `data` **[ArrayBuffer][333]** The file's bytes
+- `data` **[ArrayBuffer][344]** The file's bytes
 
 <!---->
 
-- Throws **[Error][334]** When it cannot be read as a Word file
+- Throws **[Error][345]** When it cannot be read as a Word file
 
 ## pictures
 
 ## pictures
 
-Type: [Array][326]<[TakenPicture][275]>
+Type: [Array][337]<[TakenPicture][286]>
 
 ## read
 
-Type: ([ArrayBuffer][333] | [Uint8Array][335])
+Type: ([ArrayBuffer][344] | [Uint8Array][346])
 
 ## arrayBuffer
 
-Type: {arrayBuffer: [ArrayBuffer][333]}
+Type: {arrayBuffer: [ArrayBuffer][344]}
 
 ## files/download
 
@@ -589,9 +600,9 @@ keeps it, `photo.jpeg` as well as `photo.jpg`.
 
 ### Parameters
 
-- `document` **Pick<[Document][336], (`"title"` | `"mime"`)>**&#x20;
+- `document` **Pick<[Document][347], (`"title"` | `"mime"`)>**&#x20;
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## downloadBlob
 
@@ -599,8 +610,8 @@ Hand the browser a blob to save.
 
 ### Parameters
 
-- `blob` **[Blob][337]**&#x20;
-- `filename` **[string][327]**&#x20;
+- `blob` **[Blob][348]**&#x20;
+- `filename` **[string][338]**&#x20;
 
 ## files/epub
 
@@ -646,13 +657,13 @@ The most text a book is taken to hold, unpacked: far more than any does.
 
 What is dropped from a page whole: it is never the book's words.
 
-Type: [string][327]
+Type: [string][338]
 
 ## DROPPED
 
 What is dropped whole: it is never the article.
 
-Type: [string][327]
+Type: [string][338]
 
 ## attributesOf
 
@@ -660,13 +671,13 @@ The attributes of a tag, by name, without their namespace prefixes.
 
 ### Parameters
 
-- `tag` **[string][327]** An opening tag, `<item id="c1" href="c1.xhtml"/>`
+- `tag` **[string][338]** An opening tag, `<item id="c1" href="c1.xhtml"/>`
 
-Returns **Record<[string][327], [string][327]>**&#x20;
+Returns **Record<[string][338], [string][338]>**&#x20;
 
 ## found
 
-Type: Record<[string][327], [string][327]>
+Type: Record<[string][338], [string][338]>
 
 ## tagsNamed
 
@@ -674,10 +685,10 @@ Every opening tag of an element, namespace prefix or not.
 
 ### Parameters
 
-- `source` **[string][327]**&#x20;
-- `name` **[string][327]** Without a prefix: `item`, `itemref`
+- `source` **[string][338]**&#x20;
+- `name` **[string][338]** Without a prefix: `item`, `itemref`
 
-Returns **[Array][326]\<Record<[string][327], [string][327]>>**&#x20;
+Returns **[Array][337]\<Record<[string][338], [string][338]>>**&#x20;
 
 ## closedTags
 
@@ -686,9 +697,9 @@ for a tag would go over what is left once for every `<` in it.
 
 ### Parameters
 
-- `source` **[string][327]**&#x20;
+- `source` **[string][338]**&#x20;
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## decodeEntities
 
@@ -696,9 +707,9 @@ The five entities XML has, and numeric ones; enough for titles and paths.
 
 ### Parameters
 
-- `text` **[string][327]**&#x20;
+- `text` **[string][338]**&#x20;
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## resolvePath
 
@@ -706,23 +717,23 @@ A path inside the zip, from a reference relative to the file it was in.
 
 ### Parameters
 
-- `base` **[string][327]** The referring file's path, `OEBPS/content.opf`
-- `href` **[string][327]** What it referred to, `Text/ch%201.xhtml#start`
+- `base` **[string][338]** The referring file's path, `OEBPS/content.opf`
+- `href` **[string][338]** What it referred to, `Text/ch%201.xhtml#start`
 
-Returns **[string][327]** `OEBPS/Text/ch 1.xhtml`
+Returns **[string][338]** `OEBPS/Text/ch 1.xhtml`
 
 ## EpubPackage
 
 What an epub's package says: its title, its pages in reading order, and
 where its table of contents is.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
-- `title` **[string][327]**&#x20;
-- `spine` **[Array][326]<[string][327]>** Paths in the zip, in reading order
-- `toc` **([string][327] | null)** Path of the table of contents, nav or NCX
+- `title` **[string][338]**&#x20;
+- `spine` **[Array][337]<[string][338]>** Paths in the zip, in reading order
+- `toc` **([string][338] | null)** Path of the table of contents, nav or NCX
 
 ## readPackage
 
@@ -730,36 +741,36 @@ Read an epub's package from its files.
 
 ### Parameters
 
-- `files` **Record<[string][327], [string][327]>** Path to text, for the files read
+- `files` **Record<[string][338], [string][338]>** Path to text, for the files read
 
 <!---->
 
-- Throws **[Error][334]** When there is no package to read
+- Throws **[Error][345]** When there is no package to read
 
 Returns **[EpubPackage][69]**&#x20;
 
 ## manifest
 
-Type: [Map][338]<[string][327], Record<[string][327], [string][327]>>
+Type: [Map][349]<[string][338], Record<[string][338], [string][338]>>
 
 ##
 
-Type: [string][327]
+Type: [string][338]
 
 ## TocEntry
 
 An entry in a table of contents: a title, the place it points to, and the
 entries under it.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
-- `title` **[string][327]**&#x20;
-- `path` **[string][327]** The page it opens, as a path in the zip; '' when
+- `title` **[string][338]**&#x20;
+- `path` **[string][338]** The page it opens, as a path in the zip; '' when
   it points nowhere (a heading in the nav with no link)
-- `fragment` **[string][327]** The anchor in that page; '' for its top
-- `children` **[Array][326]<[TocEntry][75]>**&#x20;
+- `fragment` **[string][338]** The anchor in that page; '' for its top
+- `children` **[Array][337]<[TocEntry][75]>**&#x20;
 
 ## labelText
 
@@ -767,15 +778,15 @@ A label as plain text.
 
 ### Parameters
 
-- `label` **[string][327]** What the TOC had between the tags, markup and all
+- `label` **[string][338]** What the TOC had between the tags, markup and all
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## DEEPEST
 
 The most levels a table of contents is read to.
 
-Type: [number][332]
+Type: [number][343]
 
 ## readToc
 
@@ -789,10 +800,10 @@ its first child does.
 
 ### Parameters
 
-- `source` **[string][327]** The NCX or the nav page
-- `path` **[string][327]** Where it is in the zip, for resolving its links
+- `source` **[string][338]** The NCX or the nav page
+- `path` **[string][338]** Where it is in the zip, for resolving its links
 
-Returns **[Array][326]<[TocEntry][75]>**&#x20;
+Returns **[Array][337]<[TocEntry][75]>**&#x20;
 
 ## root
 
@@ -804,21 +815,21 @@ Type: [TocEntry][75]
 
 ##
 
-Type: [string][327]
+Type: [string][338]
 
 ##
 
-Type: [string][327]
+Type: [string][338]
 
 ## navs
 
-Type: [Array][326]<\[[string][327], [string][327]]>
+Type: [Array][337]<\[[string][338], [string][338]]>
 
 ## settle
 
 ### Parameters
 
-- `entries` **[Array][326]<[TocEntry][75]>** @returns {TocEntry\[]}
+- `entries` **[Array][337]<[TocEntry][75]>** @returns {TocEntry\[]}
 
 ## CUT
 
@@ -839,10 +850,10 @@ blocks rather than through one.
 
 ### Parameters
 
-- `source` **[string][327]** The page's XHTML
-- `cuts` **[Map][338]<[string][327], [number][332]>?** Anchor ('' for the top) to marker number (optional, default `new Map()`)
+- `source` **[string][338]** The page's XHTML
+- `cuts` **[Map][349]<[string][338], [number][343]>?** Anchor ('' for the top) to marker number (optional, default `new Map()`)
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## lockedPages
 
@@ -851,35 +862,35 @@ publisher may obfuscate without locking the book.
 
 ### Parameters
 
-- `encryption` **([string][327] | [undefined][331])** `META-INF/encryption.xml`
+- `encryption` **([string][338] | [undefined][342])** `META-INF/encryption.xml`
 
-Returns **[Array][326]<[string][327]>**&#x20;
+Returns **[Array][337]<[string][338]>**&#x20;
 
 ## EpubSection
 
 A part of the book as it goes into the tree: a chapter, which is a
 document, or a part of several chapters, which is a folder.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
-- `title` **[string][327]**&#x20;
-- `text` **[string][327]** A chapter's markdown; for a part, what comes
+- `title` **[string][338]**&#x20;
+- `text` **[string][338]** A chapter's markdown; for a part, what comes
   before its first chapter, when that is more than its title
-- `children` **[Array][326]<[EpubSection][95]>?** A part's chapters; absent for a chapter
+- `children` **[Array][337]<[EpubSection][95]>?** A part's chapters; absent for a chapter
 
 ## ExtractedEpub
 
 An epub read out: its title, its parts and chapters, and its text whole.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
-- `title` **[string][327]** The title the book gives itself
-- `sections` **[Array][326]<[EpubSection][95]>** In reading order
-- `text` **[string][327]** Markdown, the whole book, each chapter under its title
+- `title` **[string][338]** The title the book gives itself
+- `sections` **[Array][337]<[EpubSection][95]>** In reading order
+- `text` **[string][338]** Markdown, the whole book, each chapter under its title
 
 ## PART_WORDS
 
@@ -893,13 +904,13 @@ many from Project Gutenberg — has no pages to go by, and there an entry
 is a part when it has next to nothing of its own (a "BOOK I" heading)
 and would make a document too long to read whole.
 
-Type: [number][332]
+Type: [number][343]
 
 ## FRONT_MATTER
 
 What the text ahead of the first entry is called: the title page, the copyright.
 
-Type: [string][327]
+Type: [string][338]
 
 ## proseWords
 
@@ -907,9 +918,9 @@ How many words a text has, its headings aside.
 
 ### Parameters
 
-- `text` **[string][327]**&#x20;
+- `text` **[string][338]**&#x20;
 
-Returns **[number][332]**&#x20;
+Returns **[number][343]**&#x20;
 
 ## treeTitle
 
@@ -918,9 +929,9 @@ a folder.
 
 ### Parameters
 
-- `title` **[string][327]**&#x20;
+- `title` **[string][338]**&#x20;
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## firstHeading
 
@@ -928,9 +939,9 @@ The first heading of a text, for a chapter the table of contents does not name.
 
 ### Parameters
 
-- `text` **[string][327]**&#x20;
+- `text` **[string][338]**&#x20;
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## sectionsOf
 
@@ -946,9 +957,9 @@ table of contents is one chapter per page.
 ### Parameters
 
 - `book` &#x20;
-- `files` **Record<[string][327], [string][327]>**&#x20;
+- `files` **Record<[string][338], [string][338]>**&#x20;
 
-Returns **[Array][326]<[EpubSection][95]>**&#x20;
+Returns **[Array][337]<[EpubSection][95]>**&#x20;
 
 ## order
 
@@ -956,21 +967,21 @@ Every entry, in the order the table of contents gives them. @type {TocEntry\[]}
 
 ##
 
-Type: [Array][326]<[TocEntry][75]>
+Type: [Array][337]<[TocEntry][75]>
 
 ## markers
 
-Type: [Map][338]<[string][327], [number][332]>
+Type: [Map][349]<[string][338], [number][343]>
 
 ## cutsByPage
 
-Type: [Map][338]<[string][327], [Map][338]<[string][327], [number][332]>>
+Type: [Map][349]<[string][338], [Map][349]<[string][338], [number][343]>>
 
 ## segments
 
 ## segmentOf
 
-Type: [Map][338]<[number][332], [number][332]>
+Type: [Map][349]<[number][343], [number][343]>
 
 ## opening
 
@@ -982,15 +993,15 @@ Type: [TocEntry][75]
 
 ##
 
-Type: [number][332]
+Type: [number][343]
 
 ##
 
-Type: [number][332]
+Type: [number][343]
 
 ## startOf
 
-Type: [Map][338]<[TocEntry][75], [number][332]>
+Type: [Map][349]<[TocEntry][75], [number][343]>
 
 ## startFrom
 
@@ -999,9 +1010,9 @@ placed entry at or after it, or the end of the book.
 
 ### Parameters
 
-- `index` **[number][332]** Into `order`
+- `index` **[number][343]** Into `order`
 
-Returns **[number][332]** A segment
+Returns **[number][343]** A segment
 
 ## size
 
@@ -1013,9 +1024,9 @@ Returns **[number][332]** A segment
 
 ### Parameters
 
-- `list` **[Array][326]<[TocEntry][75]>**&#x20;
+- `list` **[Array][337]<[TocEntry][75]>**&#x20;
 
-Returns **[Array][326]<[EpubSection][95]>**&#x20;
+Returns **[Array][337]<[EpubSection][95]>**&#x20;
 
 ## bookText
 
@@ -1024,9 +1035,9 @@ with a heading of its own — for reading it straight through.
 
 ### Parameters
 
-- `sections` **[Array][326]<[EpubSection][95]>**&#x20;
+- `sections` **[Array][337]<[EpubSection][95]>**&#x20;
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## extractEpub
 
@@ -1034,21 +1045,21 @@ Read an epub's text out of its bytes.
 
 ### Parameters
 
-- `data` **([ArrayBuffer][333] | [Uint8Array][335])**&#x20;
+- `data` **([ArrayBuffer][344] | [Uint8Array][346])**&#x20;
 
 <!---->
 
-- Throws **[Error][334]** When it is not a zip, not an epub, or locked
+- Throws **[Error][345]** When it is not a zip, not an epub, or locked
 
 Returns **[ExtractedEpub][97]**&#x20;
 
 ## raw
 
-Type: Record<[string][327], [Uint8Array][335]>
+Type: Record<[string][338], [Uint8Array][346]>
 
 ## files
 
-Type: Record<[string][327], [string][327]>
+Type: Record<[string][338], [string][338]>
 
 ## files
 
@@ -1079,6 +1090,8 @@ paper through the tools it already has, on every model there is.
 - **download** - The file handed back, named as it came in
 - **exportDocument** - A project, a folder or a document as it would be
   published: its files and directories, each text as it stands
+- **exportStamp** - The front matter on a document exported for another app,
+  saying which document it came from, and taken off one brought back in
 - **printPage** - A document as a printed page, in the editor's styles,
   which takes the app's place while it prints
 - **batch** - Many files at once, each with the folders it came in: a
@@ -1103,7 +1116,7 @@ await writeFile(storyId, found, { parentId })
 
 ## files
 
-Type: [Array][326]<{key: [string][327], blob: [Blob][337]}>
+Type: [Array][337]<{key: [string][338], blob: [Blob][348]}>
 
 ## files/exportDocument
 
@@ -1152,7 +1165,7 @@ The end of a plain text's title that is its file's extension: `.py`, `.json`.
 
 What an export is read from.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
@@ -1163,32 +1176,32 @@ Type: [Object][325]
 One thing in an export, by its path there: a directory, a text, or a
 file's bytes, read or to be copied from the library.
 
-Type: ({path: [string][327], folder: `true`} | {path: [string][327], text: [string][327]} | {path: [string][327], blob: [Blob][337]} | {path: [string][327], file: [string][327]})
+Type: ({path: [string][338], folder: `true`} | {path: [string][338], text: [string][338]} | {path: [string][338], blob: [Blob][348]} | {path: [string][338], file: [string][338]})
 
 ## Export
 
 An export, read and ready to be written.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
-- `name` **[string][327]** What it is called: a folder's directory's name,
+- `name` **[string][338]** What it is called: a folder's directory's name,
   or a document's file's
-- `entries` **[Array][326]<[ExportEntry][143]>** Each directory before what is in it
-- `missing` **[number][332]** The files left out, whose bytes couldn't be had
+- `entries` **[Array][337]<[ExportEntry][143]>** Each directory before what is in it
+- `missing` **[number][343]** The files left out, whose bytes couldn't be had
 
 ## Place
 
 Where a document goes in an export.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
-- `path` **[string][327]** Its file's, or a folder's directory's
-- `dir` **[string][327]** The directory it is in: '' at the top
-- `inside` **[string][327]?** Where what it holds goes: a folder's own
+- `path` **[string][338]** Its file's, or a folder's directory's
+- `dir` **[string][338]** The directory it is in: '' at the top
+- `inside` **[string][338]?** Where what it holds goes: a folder's own
   directory, or the one beside a document that holds others
 
 ## MAY_LINK
@@ -1201,15 +1214,15 @@ The name a document takes in an export, before any `(2)`.
 
 ### Parameters
 
-- `document` **[Document][336]**&#x20;
+- `document` **[Document][347]**&#x20;
 
-Returns **{stem: [string][327], extension: [string][327]}**&#x20;
+Returns **{stem: [string][338], extension: [string][338]}**&#x20;
 
 ## join
 
 ### Parameters
 
-- `dir` **[string][327]** @param {string} name
+- `dir` **[string][338]** @param {string} name
 - `name` &#x20;
 
 ## relative
@@ -1220,10 +1233,10 @@ goes up from it and down again.
 
 ### Parameters
 
-- `fromDir` **[string][327]**&#x20;
-- `toPath` **[string][327]**&#x20;
+- `fromDir` **[string][338]**&#x20;
+- `toPath` **[string][338]**&#x20;
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## rewrite
 
@@ -1233,10 +1246,10 @@ picture is a link too.
 
 ### Parameters
 
-- `node` **[Node][330]**&#x20;
+- `node` **[Node][341]**&#x20;
 - `change` &#x20;
 
-Returns **[Node][330]** The node itself when nothing in it changed
+Returns **[Node][341]** The node itself when nothing in it changed
 
 ## relinked
 
@@ -1246,7 +1259,7 @@ Returns **[Node][330]** The node itself when nothing in it changed
 
 ## children
 
-Type: [Array][326]<[Node][330]>
+Type: [Array][337]<[Node][341]>
 
 ## imageSources
 
@@ -1254,13 +1267,13 @@ The sources of every picture in a document's text.
 
 ### Parameters
 
-- `doc` **[Node][330]**&#x20;
+- `doc` **[Node][341]**&#x20;
 
-Returns **[Array][326]<[string][327]>**&#x20;
+Returns **[Array][337]<[string][338]>**&#x20;
 
 ## sources
 
-Type: [Array][326]<[string][327]>
+Type: [Array][337]<[string][338]>
 
 ## exportEntries
 
@@ -1269,14 +1282,14 @@ Read a project, a folder or a document as an export of it.
 ### Parameters
 
 - `source` **[ExportSource][141]**&#x20;
-- `topId` **[string][327]** What is exported: the project's root, a folder, or
+- `topId` **[string][338]** What is exported: the project's root, a folder, or
   a document
 
 <!---->
 
-- Throws **[Error][334]** When there is no such document
+- Throws **[Error][345]** When there is no such document
 
-Returns **[Promise][329]<[Export][144]>**&#x20;
+Returns **[Promise][340]<[Export][144]>**&#x20;
 
 ## taken
 
@@ -1284,24 +1297,24 @@ The names taken in each directory, by `nameKey`. @type {Map\<string, Set<string>
 
 ## taken
 
-Type: [Set][339]<[string][327]>
+Type: [Set][350]<[string][338]>
 
 ## takenIn
 
 ### Parameters
 
-- `dir` **[string][327]**&#x20;
+- `dir` **[string][338]**&#x20;
 
 ## places
 
-Type: [Map][338]<[string][327], [Place][146]>
+Type: [Map][349]<[string][338], [Place][146]>
 
 ## place
 
 ### Parameters
 
-- `document` **[Document][336]**&#x20;
-- `dir` **[string][327]**&#x20;
+- `document` **[Document][347]**&#x20;
+- `dir` **[string][338]**&#x20;
 
 ## shelves
 
@@ -1316,10 +1329,10 @@ show it, and the source they show it by; null when it has no bytes.
 
 ### Parameters
 
-- `dir` **[string][327]**&#x20;
-- `picture` **{documentId: [string][327], name: [string][327]}**&#x20;
+- `dir` **[string][338]**&#x20;
+- `picture` **{documentId: [string][338], name: [string][338]}**&#x20;
 
-Returns **[Promise][329]<([string][327] | null)>**&#x20;
+Returns **[Promise][340]<([string][338] | null)>**&#x20;
 
 ## linkTo
 
@@ -1329,11 +1342,11 @@ a place in the text it is in.
 
 ### Parameters
 
-- `href` **[string][327]**&#x20;
-- `fromId` **[string][327]**&#x20;
-- `fromDir` **[string][327]**&#x20;
+- `href` **[string][338]**&#x20;
+- `fromId` **[string][338]**&#x20;
+- `fromDir` **[string][338]**&#x20;
 
-Returns **([string][327] | null)**&#x20;
+Returns **([string][338] | null)**&#x20;
 
 ## textOf
 
@@ -1341,14 +1354,14 @@ A text as it is exported.
 
 ### Parameters
 
-- `document` **[Document][336]**&#x20;
+- `document` **[Document][347]**&#x20;
 - `at` **[Place][146]**&#x20;
 
-Returns **[Promise][329]<[string][327]>**&#x20;
+Returns **[Promise][340]<[string][338]>**&#x20;
 
 ## shelved
 
-Type: [Map][338]<[string][327], [string][327]>
+Type: [Map][349]<[string][338], [string][338]>
 
 ## fileOf
 
@@ -1358,18 +1371,109 @@ whose bytes can't be had.
 
 ### Parameters
 
-- `document` **[Document][336]**&#x20;
-- `path` **[string][327]**&#x20;
+- `document` **[Document][347]**&#x20;
+- `path` **[string][338]**&#x20;
 
-Returns **[Promise][329]<([ExportEntry][143] | null)>**&#x20;
+Returns **[Promise][340]<([ExportEntry][143] | null)>**&#x20;
 
 ## get
 
-Type: [Document][336]
+Type: [Document][347]
 
 ## get
 
 Type: [Place][146]
+
+## files/exportStamp
+
+The stamp on a document exported for another app
+(`apps/exports.js`): front matter saying where it came from, as generated
+code says what generated it.
+
+```yaml
+---
+inksprite:
+  project: Thief
+  document: Designs/Sync
+  id: doc_x
+  note: Exported from inksprite. Edit the document there and export again; changes made to this file are overwritten.
+---
+```
+
+The note is for whoever opens the file, a model first: it says what to do
+and what happens otherwise. The id finds the document whatever it is
+called now. There is no date in it, so a file changes only when its text
+does.
+
+Only an export made for an app is stamped: one made from the menus is as
+it would be published. A stamped file brought back in has its stamp taken
+off, the editor having no front matter to keep it in. It is taken off as
+text: an imported file is somebody else's, and its front matter is neither
+loaded as YAML nor written out again, which a file made to grow on the way
+(aliases within aliases) would be.
+
+Design: `.llm/mcp_server_design.md`, "The stamp".
+
+## STAMP_KEY
+
+The key the stamp is under, in a file's front matter.
+
+Type: [string][338]
+
+## STAMP_NOTE
+
+What the stamp tells whoever opens the file.
+
+Type: [string][338]
+
+## stamped
+
+A document's text as it is exported for another app: stamped.
+
+### Parameters
+
+- `from` **{project: [string][338], document: [string][338], id: [string][338]}**&#x20;
+  - `from.project` &#x20;
+  - `from.document` &#x20;
+  - `from.id` &#x20;
+
+- `body` **[string][338]**&#x20;
+
+Returns **[string][338]**&#x20;
+
+## FRONT
+
+A file's front matter as `storage/frontmatter.js` finds it, in its three
+parts: the line of dashes that opens it, the YAML, and the line that
+closes it.
+
+## OPENS
+
+The line a stamp starts on: its key at the left edge, with its fields under it.
+
+## bare
+
+A line without the break that ends it.
+
+### Parameters
+
+- `line` **[string][338]**&#x20;
+
+## withoutStamp
+
+A file's text without its stamp, for one brought back in. The stamp's
+lines alone go, and whatever else its front matter held stays as it was
+written, to the byte; front matter that held only the stamp goes whole. A
+file with no stamp is as it came.
+
+A stamp is the `inksprite:` key with fields indented under it, an `id`
+among them, as `stamped` writes it.
+
+### Parameters
+
+- `text` **[string][338]**&#x20;
+
+Returns **[string][338]**&#x20;
 
 ## files/html
 
@@ -1387,7 +1491,7 @@ which is also how a Word file's HTML becomes a document.
 What is dropped besides, for reading: anything that would load or play.
 A page's pictures (`img`) go too, unless they were made from the file.
 
-Type: [string][327]
+Type: [string][338]
 
 ## LINKED
 
@@ -1406,17 +1510,17 @@ handed back as it is, which is still text.
 
 ### Parameters
 
-- `source` **[string][327]** The HTML
+- `source` **[string][338]** The HTML
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## parts
 
-Type: [Array][326]<[string][327]>
+Type: [Array][337]<[string][338]>
 
 ## toLowerCase
 
-Type: [Element][340]
+Type: [Element][351]
 
 ## withoutHead
 
@@ -1427,9 +1531,9 @@ one that had no end.
 
 ### Parameters
 
-- `source` **[string][327]** The HTML
+- `source` **[string][338]** The HTML
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## markdownOfHtml
 
@@ -1450,11 +1554,11 @@ file's own, and is kept as a picture.
 
 ### Parameters
 
-- `source` **[string][327]** The HTML
-- `$1` **[Object][325]** (optional, default `{}`)
+- `source` **[string][338]** The HTML
+- `$1` **[Object][336]** (optional, default `{}`)
   - `$1.pictures` (optional, default `false`)
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## files/inspect
 
@@ -1468,7 +1572,7 @@ then decides where it goes; a test asks it the same and checks the answer.
 
 A Parquet file's media type.
 
-Type: [string][327]
+Type: [string][338]
 
 ## MIME_BY_EXTENSION
 
@@ -1476,13 +1580,13 @@ Media types by extension, for the files a browser hands over with an empty
 `type` — which it does for anything it has never heard of, and on some
 systems for everything.
 
-Type: Record<[string][327], [string][327]>
+Type: Record<[string][338], [string][338]>
 
 ## UNKNOWN_MIME
 
 What a file is called when nothing says otherwise.
 
-Type: [string][327]
+Type: [string][338]
 
 ## mimeOf
 
@@ -1491,10 +1595,10 @@ nothing in particular.
 
 ### Parameters
 
-- `name` **[string][327]** The filename
-- `declared` **[string][327]?** The type the browser gave it
+- `name` **[string][338]** The filename
+- `declared` **[string][338]?** The type the browser gave it
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## extensionFor
 
@@ -1502,9 +1606,9 @@ The extension a file of this type is saved with, for handing one back.
 
 ### Parameters
 
-- `mime` **[string][327]**&#x20;
+- `mime` **[string][338]**&#x20;
 
-Returns **[string][327]** Without the dot; '' when nothing is known
+Returns **[string][338]** Without the dot; '' when nothing is known
 
 ## isData
 
@@ -1514,9 +1618,9 @@ code how to read it.
 
 ### Parameters
 
-- `mime` **[string][327]**&#x20;
+- `mime` **[string][338]**&#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## PROSE_EXTENSIONS
 
@@ -1535,10 +1639,10 @@ and `foo.cpp` and `foo.h` are two files. So too for a data file (`isData`).
 
 ### Parameters
 
-- `name` **[string][327]**&#x20;
-- `mime` **[string][327]?** The type it came in as; without one, the extension goes (optional, default `''`)
+- `name` **[string][338]**&#x20;
+- `mime` **[string][338]?** The type it came in as; without one, the extension goes (optional, default `''`)
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## isImage
 
@@ -1546,9 +1650,9 @@ Whether a file of this type is a picture.
 
 ### Parameters
 
-- `mime` **[string][327]**&#x20;
+- `mime` **[string][338]**&#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## isText
 
@@ -1556,9 +1660,9 @@ Whether a file of this type is text that can be read as it is.
 
 ### Parameters
 
-- `mime` **[string][327]**&#x20;
+- `mime` **[string][338]**&#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## showsAsText
 
@@ -1567,9 +1671,9 @@ picture, a page or a book.
 
 ### Parameters
 
-- `mime` **[string][327]**&#x20;
+- `mime` **[string][338]**&#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## KEPT_AS_BYTES
 
@@ -1581,7 +1685,7 @@ looked at, in case it is.
 
 An epub's media type.
 
-Type: [string][327]
+Type: [string][338]
 
 ## MAX_TEXT_BYTES
 
@@ -1608,7 +1712,7 @@ Refuse a file too large for a project to keep.
 
 <!---->
 
-- Throws **[Error][334]** Saying so, for the writer to read
+- Throws **[Error][345]** Saying so, for the writer to read
 
 ## isUnreadText
 
@@ -1620,7 +1724,7 @@ was a limit keeps the text it came in with.
 
 - `document` &#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## hasText
 
@@ -1629,9 +1733,9 @@ whether reading it again could give a different answer.
 
 ### Parameters
 
-- `mime` **[string][327]**&#x20;
+- `mime` **[string][338]**&#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## isStructured
 
@@ -1641,9 +1745,9 @@ Markdown would be paying a model to write out what is already written.
 
 ### Parameters
 
-- `mime` **[string][327]**&#x20;
+- `mime` **[string][338]**&#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## sizeLabel
 
@@ -1651,25 +1755,25 @@ A size as a person reads one: `2 GB`, `1.2 MB`, `640 KB`, `12 bytes`.
 
 ### Parameters
 
-- `bytes` **[number][332]**&#x20;
+- `bytes` **[number][343]**&#x20;
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## InspectedFile
 
 A file, looked at.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
-- `title` **[string][327]** What the document will be called
-- `mime` **[string][327]**&#x20;
-- `size` **[number][332]** Bytes
-- `text` **[string][327]** What could be read out of it: a PDF's text page
+- `title` **[string][338]** What the document will be called
+- `mime` **[string][338]**&#x20;
+- `size` **[number][343]** Bytes
+- `text` **[string][338]** What could be read out of it: a PDF's text page
   by page, a text file as it is, nothing for an image
-- `pages` **[number][332]?** For a format that has pages
-- `blob` **[Blob][337]** The file itself
+- `pages` **[number][343]?** For a format that has pages
+- `blob` **[Blob][348]** The file itself
 
 ## inspectFile
 
@@ -1698,10 +1802,10 @@ to type it, and it comes in with no text.
 
 <!---->
 
-- Throws **[Error][334]** When a PDF or an epub cannot be opened, or the file is too
+- Throws **[Error][345]** When a PDF or an epub cannot be opened, or the file is too
   large for a project to keep
 
-Returns **[Promise][329]<[InspectedFile][229]>**&#x20;
+Returns **[Promise][340]<[InspectedFile][240]>**&#x20;
 
 ## isUnread
 
@@ -1710,9 +1814,9 @@ text by its type, not a picture, and not a type kept as bytes on purpose.
 
 ### Parameters
 
-- `mime` **[string][327]**&#x20;
+- `mime` **[string][338]**&#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## files/pdf
 
@@ -1755,9 +1859,9 @@ How a page is marked in the text: on a line of its own, ahead of the page.
 
 ### Parameters
 
-- `page` **[number][332]** Counted from one, as a reader would
+- `page` **[number][343]** Counted from one, as a reader would
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## pageText
 
@@ -1773,7 +1877,7 @@ model reads through them.
 
 - `items` &#x20;
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## joinPages
 
@@ -1782,9 +1886,9 @@ nothing on any of them.
 
 ### Parameters
 
-- `pages` **[Array][326]<[string][327]>** Each page's text, in order
+- `pages` **[Array][337]<[string][338]>** Each page's text, in order
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## imageDecoderAllowed
 
@@ -1797,15 +1901,15 @@ any JPEG the API cannot take.
 
 ### Parameters
 
-- `userAgent` **[string][327]?**&#x20;
+- `userAgent` **[string][338]?**&#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## OpenedPdf
 
 A PDF opened for reading its pages, and the way to let it go.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ## openPdf
 
@@ -1816,15 +1920,15 @@ text. Fonts are laid out only when asked, since the text needs none.
 
 ### Parameters
 
-- `data` **([ArrayBuffer][333] | [Uint8Array][335])** The file
-- `options` **[Object][325]?** (optional, default `{}`)
-  - `options.fonts` **[boolean][328]?** Lay out the fonts the pages name; for drawing (optional, default `false`)
+- `data` **([ArrayBuffer][344] | [Uint8Array][346])** The file
+- `options` **[Object][336]?** (optional, default `{}`)
+  - `options.fonts` **[boolean][339]?** Lay out the fonts the pages name; for drawing (optional, default `false`)
 
 <!---->
 
-- Throws **[Error][334]** When the file is not a PDF pdf.js can open
+- Throws **[Error][345]** When the file is not a PDF pdf.js can open
 
-Returns **[Promise][329]<[OpenedPdf][246]>**&#x20;
+Returns **[Promise][340]<[OpenedPdf][257]>**&#x20;
 
 ## extractPdf
 
@@ -1832,18 +1936,18 @@ Read a PDF's text.
 
 ### Parameters
 
-- `data` **([ArrayBuffer][333] | [Uint8Array][335])** The file
+- `data` **([ArrayBuffer][344] | [Uint8Array][346])** The file
 
 <!---->
 
-- Throws **[Error][334]** When the file is not a PDF pdf.js can open
+- Throws **[Error][345]** When the file is not a PDF pdf.js can open
 
-Returns **[Promise][329]<{pages: [number][332], text: [string][327]}>** How many pages it has, and
+Returns **[Promise][340]<{pages: [number][343], text: [string][338]}>** How many pages it has, and
 their text under markers — '' when no page has any
 
 ## pages
 
-Type: [Array][326]<[string][327]>
+Type: [Array][337]<[string][338]>
 
 ## pages
 
@@ -1851,21 +1955,21 @@ Type: [Array][326]<[string][327]>
 
 ## content
 
-Type: [Array][326]\<any>
+Type: [Array][337]\<any>
 
 ## LayoutLine
 
 A line of a page as it was set: its text, the size most of it is set in,
 and how far up the page it sits.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
-- `text` **[string][327]** '' for a blank line between paragraphs
-- `size` **[number][332]** In the page's units; a heading is set larger than the body
-- `y` **[number][332]** Its baseline, measured from the bottom of the page
-- `bold` **[boolean][328]?** Set in a bold face throughout: a heading at the
+- `text` **[string][338]** '' for a blank line between paragraphs
+- `size` **[number][343]** In the page's units; a heading is set larger than the body
+- `y` **[number][343]** Its baseline, measured from the bottom of the page
+- `bold` **[boolean][339]?** Set in a bold face throughout: a heading at the
   body's size can be told from the body by its weight
 
 ## Bookmark
@@ -1873,26 +1977,26 @@ Type: [Object][325]
 A bookmark from the PDF's own outline, placed: the page it points at, and
 where on that page when the PDF says.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
-- `title` **[string][327]**&#x20;
-- `level` **[number][332]** 1 for a bookmark at the top of the outline
-- `page` **[number][332]** Counted from one
-- `top` **([number][332] | null)** The height on the page it points at, or null for the page as a whole
+- `title` **[string][338]**&#x20;
+- `level` **[number][343]** 1 for a bookmark at the top of the outline
+- `page` **[number][343]** Counted from one
+- `top` **([number][343] | null)** The height on the page it points at, or null for the page as a whole
 
 ## PdfLayout
 
 What a PDF's layout says about its structure, beyond its words.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
-- `pages` **[Array][326]<{number: [number][332], height: [number][332], lines: [Array][326]<[LayoutLine][255]>}>** Each
+- `pages` **[Array][337]<{number: [number][343], height: [number][343], lines: [Array][337]<[LayoutLine][266]>}>** Each
   page's height, in the units its lines' heights are measured in, and its lines
-- `outline` **[Array][326]<[Bookmark][257]>** In outline order; empty when the PDF has none
+- `outline` **[Array][337]<[Bookmark][268]>** In outline order; empty when the PDF has none
 
 ## pageLines
 
@@ -1904,21 +2008,21 @@ where a bookmark on the page points.
 ### Parameters
 
 - `items` &#x20;
-- `bold` **[Set][339]<[string][327]>?** The page's fonts that are bold faces, by the names its items use (optional, default `new Set()`)
+- `bold` **[Set][350]<[string][338]>?** The page's fonts that are bold faces, by the names its items use (optional, default `new Set()`)
 
-Returns **[Array][326]<[LayoutLine][255]>**&#x20;
+Returns **[Array][337]<[LayoutLine][266]>**&#x20;
 
 ## lines
 
-Type: [Array][326]<[LayoutLine][255]>
+Type: [Array][337]<[LayoutLine][266]>
 
 ## sizes
 
-Type: [Map][338]<[number][332], [number][332]>
+Type: [Map][349]<[number][343], [number][343]>
 
 ## y
 
-Type: ([number][332] | null)
+Type: ([number][343] | null)
 
 ## outlineOf
 
@@ -1930,11 +2034,11 @@ left out, and its children keep their own levels.
 
 - `pdf` &#x20;
 
-Returns **[Promise][329]<[Array][326]<[Bookmark][257]>>**&#x20;
+Returns **[Promise][340]<[Array][337]<[Bookmark][268]>>**&#x20;
 
 ## placed
 
-Type: [Array][326]<[Bookmark][257]>
+Type: [Array][337]<[Bookmark][268]>
 
 ## BOLD_FACE
 
@@ -1949,9 +2053,9 @@ drawing has been read, which loads the fonts it uses.
 ### Parameters
 
 - `page` &#x20;
-- `content` **{items: [Array][326]\<any>}**&#x20;
+- `content` **{items: [Array][337]\<any>}**&#x20;
 
-Returns **[Promise][329]<[Set][339]<[string][327]>>**&#x20;
+Returns **[Promise][340]<[Set][350]<[string][338]>>**&#x20;
 
 ## readPdfLayout
 
@@ -1961,13 +2065,13 @@ from; the importer's text is the same words without the layout.
 
 ### Parameters
 
-- `data` **([ArrayBuffer][333] | [Uint8Array][335])** The file
+- `data` **([ArrayBuffer][344] | [Uint8Array][346])** The file
 
 <!---->
 
-- Throws **[Error][334]** When the file is not a PDF pdf.js can open
+- Throws **[Error][345]** When the file is not a PDF pdf.js can open
 
-Returns **[Promise][329]<[PdfLayout][259]>**&#x20;
+Returns **[Promise][340]<[PdfLayout][270]>**&#x20;
 
 ## files/pictures
 
@@ -1991,22 +2095,22 @@ Design: `.llm/images_design.md`.
 
 A picture taken out of what was imported.
 
-Type: [Object][325]
+Type: [Object][336]
 
 ### Properties
 
-- `marker` **[string][327]** The destination that stands for it in the markdown
-- `name` **[string][327]?** What it was called where it came from, a Doc's `image1`
-- `mime` **[string][327]** Its media type
-- `bytes` **[Uint8Array][335]** The picture
-- `docsId` **[string][327]?** A Google Doc's id for it, an inline object's,
+- `marker` **[string][338]** The destination that stands for it in the markdown
+- `name` **[string][338]?** What it was called where it came from, a Doc's `image1`
+- `mime` **[string][338]** Its media type
+- `bytes` **[Uint8Array][346]** The picture
+- `docsId` **[string][338]?** A Google Doc's id for it, an inline object's,
   which its entry on the row keeps
 
 ## MARKER
 
 What a marker starts with: a path no document has, which the schema keeps.
 
-Type: [string][327]
+Type: [string][338]
 
 ## markerFor
 
@@ -2014,9 +2118,9 @@ The marker for the nth picture taken.
 
 ### Parameters
 
-- `n` **[number][332]** From 1
+- `n` **[number][343]** From 1
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## TAKEN
 
@@ -2030,9 +2134,9 @@ which is shown from its bytes.
 
 ### Parameters
 
-- `markdown` **[string][327]**&#x20;
+- `markdown` **[string][338]**&#x20;
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## REFERENCE
 
@@ -2051,9 +2155,9 @@ A definition holding a picture: `[label]: <data:…>`, on a line of its own.
 
 ### Parameters
 
-- `text` **[string][327]**&#x20;
+- `text` **[string][338]**&#x20;
 
-Returns **[string][327]**&#x20;
+Returns **[string][338]**&#x20;
 
 ## takePictures
 
@@ -2065,21 +2169,21 @@ definition no use names goes with its bytes.
 
 ### Parameters
 
-- `markdown` **[string][327]**&#x20;
+- `markdown` **[string][338]**&#x20;
 
-Returns **{markdown: [string][327], pictures: [Array][326]<[TakenPicture][275]>}**&#x20;
+Returns **{markdown: [string][338], pictures: [Array][337]<[TakenPicture][286]>}**&#x20;
 
 ## defined
 
 ## definitions
 
-Type: [Set][339]<[number][332]>
+Type: [Set][350]<[number][343]>
 
 ## take
 
 ### Parameters
 
-- `picture` **Omit<[TakenPicture][275], `"marker"`>**&#x20;
+- `picture` **Omit<[TakenPicture][286], `"marker"`>**&#x20;
 
 ## measurePicture
 
@@ -2088,7 +2192,7 @@ it: an iPhone's HEIC in Chromium.
 
 ### Parameters
 
-- `blob` **[Blob][337]**&#x20;
+- `blob` **[Blob][348]**&#x20;
 
 ## placePictures
 
@@ -2098,9 +2202,9 @@ and its path put where its marker was.
 
 ### Parameters
 
-- `markdown` **[string][327]** With the markers in it
-- `pictures` **[Array][326]<[TakenPicture][275]>**&#x20;
-- `documentId` **[string][327]** The document they will be in
+- `markdown` **[string][338]** With the markers in it
+- `pictures` **[Array][337]<[TakenPicture][286]>**&#x20;
+- `documentId` **[string][338]** The document they will be in
 
 ## known
 
@@ -2137,7 +2241,7 @@ is asked for by the path in the text.
 The page's classes: the editor's for its text (`Editor.vue`), at the one
 size, without the dark theme's.
 
-Type: [string][327]
+Type: [string][338]
 
 ## paged
 
@@ -2147,13 +2251,13 @@ and prints no header or footer unless asked. Asked here rather than in
 `style.css`, whose build would count Safari's prefixed property, which
 clones the edges of words alone.
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 ## PAGED
 
 The page's margins above and below, where its text brings its own room.
 
-Type: [string][327]
+Type: [string][338]
 
 ## printPage
 
@@ -2161,14 +2265,14 @@ A document's page, ready to be put in the app's.
 
 ### Parameters
 
-- `content` **[string][327]** The document's markdown
+- `content` **[string][338]** The document's markdown
 - `picture` &#x20;
 
-Returns **[Promise][329]<[HTMLElement][341]>**&#x20;
+Returns **[Promise][340]<[HTMLElement][352]>**&#x20;
 
 ## adoptNode
 
-Type: [HTMLElement][341]
+Type: [HTMLElement][352]
 
 ## files/write
 
@@ -2192,7 +2296,7 @@ reading was not good enough — `reextractFile`.
 
 - `storyId` &#x20;
 - `file` &#x20;
-- `$2` **[Object][325]** (optional, default `{}`)
+- `$2` **[Object][336]** (optional, default `{}`)
   - `$2.parentId` &#x20;
 
 ## writeFile
@@ -2201,7 +2305,7 @@ reading was not good enough — `reextractFile`.
 
 - `storyId` &#x20;
 - `file` &#x20;
-- `$2` **[Object][325]** (optional, default `{}`)
+- `$2` **[Object][336]** (optional, default `{}`)
   - `$2.parentId` &#x20;
 
 ## writeFile
@@ -2215,12 +2319,12 @@ written holding them: `writeBook`.
 
 ### Parameters
 
-- `storyId` **[string][327]**&#x20;
-- `file` **[InspectedFile][229]**&#x20;
-- `options` **[Object][325]?** (optional, default `{}`)
-  - `options.parentId` **[string][327]?** Where to put it; the project root otherwise
+- `storyId` **[string][338]**&#x20;
+- `file` **[InspectedFile][240]**&#x20;
+- `options` **[Object][336]?** (optional, default `{}`)
+  - `options.parentId` **[string][338]?** Where to put it; the project root otherwise
 
-Returns **[Promise][329]\<Written>**&#x20;
+Returns **[Promise][340]\<Written>**&#x20;
 
 ## writeBook
 
@@ -2236,31 +2340,31 @@ its chapters, and one that says nothing is an ordered folder of them.
 
 ### Parameters
 
-- `storyId` **[string][327]**&#x20;
-- `file` **[InspectedFile][229]**&#x20;
+- `storyId` **[string][338]**&#x20;
+- `file` **[InspectedFile][240]**&#x20;
 - `sections` &#x20;
-- `parent` **[string][327]**&#x20;
+- `parent` **[string][338]**&#x20;
 
-Returns **[Promise][329]\<Written>**&#x20;
-
-##
-
-Type: [string][327]
+Returns **[Promise][340]\<Written>**&#x20;
 
 ##
 
-Type: [string][327]
+Type: [string][338]
 
 ##
 
-Type: [string][327]
+Type: [string][338]
+
+##
+
+Type: [string][338]
 
 ## write
 
 ### Parameters
 
 - `list` &#x20;
-- `parentId` **[string][327]**&#x20;
+- `parentId` **[string][338]**&#x20;
 
 ## reextractFile
 
@@ -2274,14 +2378,14 @@ is.
 
 ### Parameters
 
-- `storyId` **[string][327]**&#x20;
-- `documentId` **[string][327]** A file document
+- `storyId` **[string][338]**&#x20;
+- `documentId` **[string][338]** A file document
 
 <!---->
 
-- Throws **[Error][334]** When the file cannot be opened, as at import
+- Throws **[Error][345]** When the file cannot be opened, as at import
 
-Returns **[Promise][329]<([InspectedFile][229] | null)>** What was read, or null when there
+Returns **[Promise][340]<([InspectedFile][240] | null)>** What was read, or null when there
 were no bytes to read it from
 
 ## isScan
@@ -2291,9 +2395,9 @@ can't see the file has nothing of to read.
 
 ### Parameters
 
-- `file` **[InspectedFile][229]**&#x20;
+- `file` **[InspectedFile][240]**&#x20;
 
-Returns **[boolean][328]**&#x20;
+Returns **[boolean][339]**&#x20;
 
 [1]: #filesbatch
 [2]: #gathered
@@ -2478,161 +2582,172 @@ Returns **[boolean][328]**&#x20;
 [181]: #parameters-48
 [182]: #get
 [183]: #get-1
-[184]: #fileshtml
-[185]: #unshown
-[186]: #linked
-[187]: #blocks
-[188]: #textofhtml
-[189]: #parameters-49
-[190]: #parts
-[191]: #tolowercase
-[192]: #withouthead
-[193]: #parameters-50
-[194]: #markdownofhtml
-[195]: #parameters-51
-[196]: #filesinspect
-[197]: #parquet_mime
-[198]: #mime_by_extension
-[199]: #unknown_mime
-[200]: #mimeof
-[201]: #parameters-52
-[202]: #extensionfor
-[203]: #parameters-53
-[204]: #isdata
-[205]: #parameters-54
-[206]: #prose_extensions
-[207]: #titleof
-[208]: #parameters-55
-[209]: #isimage
-[210]: #parameters-56
-[211]: #istext
-[212]: #parameters-57
-[213]: #showsastext
-[214]: #parameters-58
-[215]: #kept_as_bytes
-[216]: #epub_mime
-[217]: #max_text_bytes
-[218]: #max_file_bytes
-[219]: #refusetoolarge
-[220]: #parameters-59
-[221]: #isunreadtext
-[222]: #parameters-60
-[223]: #hastext
-[224]: #parameters-61
-[225]: #isstructured
-[226]: #parameters-62
-[227]: #sizelabel
-[228]: #parameters-63
-[229]: #inspectedfile
-[230]: #properties-8
-[231]: #inspectfile
-[232]: #parameters-64
-[233]: #isunread
-[234]: #parameters-65
-[235]: #filespdf
-[236]: #library
-[237]: #loadpdfjs
-[238]: #pagemarker
+[184]: #filesexportstamp
+[185]: #stamp_key
+[186]: #stamp_note
+[187]: #stamped
+[188]: #parameters-49
+[189]: #front
+[190]: #opens
+[191]: #bare
+[192]: #parameters-50
+[193]: #withoutstamp
+[194]: #parameters-51
+[195]: #fileshtml
+[196]: #unshown
+[197]: #linked
+[198]: #blocks
+[199]: #textofhtml
+[200]: #parameters-52
+[201]: #parts
+[202]: #tolowercase
+[203]: #withouthead
+[204]: #parameters-53
+[205]: #markdownofhtml
+[206]: #parameters-54
+[207]: #filesinspect
+[208]: #parquet_mime
+[209]: #mime_by_extension
+[210]: #unknown_mime
+[211]: #mimeof
+[212]: #parameters-55
+[213]: #extensionfor
+[214]: #parameters-56
+[215]: #isdata
+[216]: #parameters-57
+[217]: #prose_extensions
+[218]: #titleof
+[219]: #parameters-58
+[220]: #isimage
+[221]: #parameters-59
+[222]: #istext
+[223]: #parameters-60
+[224]: #showsastext
+[225]: #parameters-61
+[226]: #kept_as_bytes
+[227]: #epub_mime
+[228]: #max_text_bytes
+[229]: #max_file_bytes
+[230]: #refusetoolarge
+[231]: #parameters-62
+[232]: #isunreadtext
+[233]: #parameters-63
+[234]: #hastext
+[235]: #parameters-64
+[236]: #isstructured
+[237]: #parameters-65
+[238]: #sizelabel
 [239]: #parameters-66
-[240]: #pagetext
-[241]: #parameters-67
-[242]: #joinpages
-[243]: #parameters-68
-[244]: #imagedecoderallowed
-[245]: #parameters-69
-[246]: #openedpdf
-[247]: #openpdf
-[248]: #parameters-70
-[249]: #extractpdf
-[250]: #parameters-71
-[251]: #pages
-[252]: #pages-1
-[253]: #content
-[254]: #content-1
-[255]: #layoutline
-[256]: #properties-9
-[257]: #bookmark
-[258]: #properties-10
-[259]: #pdflayout
-[260]: #properties-11
-[261]: #pagelines
-[262]: #parameters-72
-[263]: #lines
-[264]: #sizes
-[265]: #y
-[266]: #outlineof
-[267]: #parameters-73
-[268]: #placed
-[269]: #bold_face
-[270]: #boldfonts
-[271]: #parameters-74
-[272]: #readpdflayout
+[240]: #inspectedfile
+[241]: #properties-8
+[242]: #inspectfile
+[243]: #parameters-67
+[244]: #isunread
+[245]: #parameters-68
+[246]: #filespdf
+[247]: #library
+[248]: #loadpdfjs
+[249]: #pagemarker
+[250]: #parameters-69
+[251]: #pagetext
+[252]: #parameters-70
+[253]: #joinpages
+[254]: #parameters-71
+[255]: #imagedecoderallowed
+[256]: #parameters-72
+[257]: #openedpdf
+[258]: #openpdf
+[259]: #parameters-73
+[260]: #extractpdf
+[261]: #parameters-74
+[262]: #pages
+[263]: #pages-1
+[264]: #content
+[265]: #content-1
+[266]: #layoutline
+[267]: #properties-9
+[268]: #bookmark
+[269]: #properties-10
+[270]: #pdflayout
+[271]: #properties-11
+[272]: #pagelines
 [273]: #parameters-75
-[274]: #filespictures
-[275]: #takenpicture
-[276]: #properties-12
-[277]: #marker
-[278]: #markerfor
-[279]: #parameters-76
-[280]: #taken-2
-[281]: #withoutpictures
+[274]: #lines
+[275]: #sizes
+[276]: #y
+[277]: #outlineof
+[278]: #parameters-76
+[279]: #placed
+[280]: #bold_face
+[281]: #boldfonts
 [282]: #parameters-77
-[283]: #reference
-[284]: #inline
-[285]: #definition
-[286]: #unescape
-[287]: #parameters-78
-[288]: #takepictures
-[289]: #parameters-79
-[290]: #defined
-[291]: #definitions
-[292]: #take
+[283]: #readpdflayout
+[284]: #parameters-78
+[285]: #filespictures
+[286]: #takenpicture
+[287]: #properties-12
+[288]: #marker
+[289]: #markerfor
+[290]: #parameters-79
+[291]: #taken-2
+[292]: #withoutpictures
 [293]: #parameters-80
-[294]: #measurepicture
-[295]: #parameters-81
-[296]: #placepictures
-[297]: #parameters-82
-[298]: #known
-[299]: #picture
-[300]: #filesprintpage
-[301]: #page_class
-[302]: #paged
-[303]: #paged-1
-[304]: #printpage
-[305]: #parameters-83
-[306]: #adoptnode
-[307]: #fileswrite
-[308]: #writefile
-[309]: #parameters-84
-[310]: #writefile-1
-[311]: #parameters-85
-[312]: #writefile-2
-[313]: #parameters-86
-[314]: #writebook
-[315]: #parameters-87
-[316]: #-7
-[317]: #-8
-[318]: #-9
-[319]: #write
-[320]: #parameters-88
-[321]: #reextractfile
-[322]: #parameters-89
-[323]: #isscan
-[324]: #parameters-90
-[325]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[326]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[327]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[328]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[329]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[330]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
-[331]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[332]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[333]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
-[334]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[335]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[336]: https://developer.mozilla.org/docs/Web/API/Document
-[337]: https://developer.mozilla.org/docs/Web/API/Blob
-[338]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[339]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
-[340]: https://developer.mozilla.org/docs/Web/API/Element
-[341]: https://developer.mozilla.org/docs/Web/HTML/Element
+[294]: #reference
+[295]: #inline
+[296]: #definition
+[297]: #unescape
+[298]: #parameters-81
+[299]: #takepictures
+[300]: #parameters-82
+[301]: #defined
+[302]: #definitions
+[303]: #take
+[304]: #parameters-83
+[305]: #measurepicture
+[306]: #parameters-84
+[307]: #placepictures
+[308]: #parameters-85
+[309]: #known
+[310]: #picture
+[311]: #filesprintpage
+[312]: #page_class
+[313]: #paged
+[314]: #paged-1
+[315]: #printpage
+[316]: #parameters-86
+[317]: #adoptnode
+[318]: #fileswrite
+[319]: #writefile
+[320]: #parameters-87
+[321]: #writefile-1
+[322]: #parameters-88
+[323]: #writefile-2
+[324]: #parameters-89
+[325]: #writebook
+[326]: #parameters-90
+[327]: #-7
+[328]: #-8
+[329]: #-9
+[330]: #write
+[331]: #parameters-91
+[332]: #reextractfile
+[333]: #parameters-92
+[334]: #isscan
+[335]: #parameters-93
+[336]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[337]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[338]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[339]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[340]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[341]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
+[342]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[343]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[344]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
+[345]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[346]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[347]: https://developer.mozilla.org/docs/Web/API/Document
+[348]: https://developer.mozilla.org/docs/Web/API/Blob
+[349]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[350]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
+[351]: https://developer.mozilla.org/docs/Web/API/Element
+[352]: https://developer.mozilla.org/docs/Web/HTML/Element

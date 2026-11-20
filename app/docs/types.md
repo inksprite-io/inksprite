@@ -250,7 +250,7 @@ Type: [Object][131]
 - `sidebar` **[boolean][134]** Whether the left sidebar is showing
 - `editor` **[boolean][134]** Whether the editor is showing
 - `chat` **[boolean][134]** Whether the chat is showing. Never false while `editor` is.
-- `sidebarTab` **(`"outline"` | `"search"` | `"chats"` | `"narration"` | `"comments"`)** Which list the sidebar is on
+- `sidebarTab` **(`"outline"` | `"chats"` | `"narration"` | `"comments"`)** Which list the sidebar is on
 
 ## Story
 
@@ -315,13 +315,18 @@ Type: [Object][131]
 - `shownDocumentIds` **[Array][135]<[string][132]>?** The open documents as they were last
   shown, the active one first: where closing a tab goes back to. Absent means
   only the active one is known; see `utils/tabs.js`.
-- `openChatIds` **[Array][135]<[string][132]>?** The chats open in the chat panel, in tab order.
-  Absent means the project's chats were never in tabs; see `useChatTabs`.
+- `closedDocumentIds` **[Array][135]<[string][132]>?** The editor's tabs closed and not opened
+  since, the one closed last first: what reopening a tab brings back
+- `openChatIds` **[Array][135]<[string][132]>?** The chat panel's tabs, in tab order: the chats
+  open, and in the desktop app the terminals among them, by ids that say so. Absent
+  means the project's chats were never in tabs; see `useChatTabs`.
 - `lastChatId` **([string][132] | null)?** The chat panel's tab showing
-- `previewChatId` **([string][132] | null)?** The chat only being looked at, whose tab
-  the next one opened from the chat list takes
-- `shownChatIds` **[Array][135]<[string][132]>?** The open chats as they were last shown, the
-  one showing first
+- `previewChatId` **([string][132] | null)?** Always null: a chat's tab was a preview
+  once, as a document's can be, and every one is kept now
+- `shownChatIds` **[Array][135]<[string][132]>?** The chat panel's tabs as they were last shown,
+  the one showing first
+- `closedChatIds` **[Array][135]<[string][132]>?** The chat panel's tabs closed and not opened
+  since, the one closed last first
 - `unreadChatIds` **[Array][135]<[string][132]>?** Chats the model finished in while they weren't
   showing, until they are
 - `layout` **[StoryLayout][14]?** How the writer left the panels. Absent means the
@@ -905,7 +910,9 @@ Type: [Object][131]
 
 - `author` **[string][132]** `writer`, `model`, or `person`: someone else,
   in a Google Doc the document is linked to
-- `name` **[string][132]?** A person's, as Google shows it
+- `name` **[string][132]?** A person's, as Google shows it; or, on a
+  model's post, the connected app that said it, by its connection's name
+  (see `apps/tools.js`). A chat's own model's posts have none.
 - `user` **[string][132]?** A person's id at Google
 - `by` **[number][133]?** The sync account a writer's post was written as,
   where the device was signed in: in a project shared, who of them said it
@@ -947,7 +954,9 @@ Type: [Object][131]
 
 - `text` **[string][132]** What it puts in, as it last read
 - `created` **[number][133]** When it was suggested
-- `chat` **[string][132]?** The chat whose model suggested it
+- `chat` **[string][132]?** The chat whose model suggested it, or a
+  connected app's connection, as `app:<its id>` (see `apps/tools.js`),
+  which then has its `name` beside it
 - `author` **(`"writer"` | `"person"`)?** Who suggested it, when it came
   from a linked Google Doc: the writer, or someone else, by `name` and
   `user` as a post's are

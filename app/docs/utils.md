@@ -70,1577 +70,1641 @@
 - [out][66]
 - [out][67]
 - [out][68]
-- [validateBackup][69]
-  - [Parameters][70]
-- [errors][71]
-- [upgradeTables][72]
-  - [Parameters][73]
-- [summarizeBackup][74]
-  - [Parameters][75]
-- [COUNTED][76]
-- [PART_OF_COUNTED][77]
-- [describeBackupContents][78]
-  - [Parameters][79]
-- [rows][80]
-  - [Parameters][81]
-- [rows][82]
-- [parts][83]
-- [keysLeftOut][84]
-  - [Parameters][85]
-- [][86]
-- [backupFilename][87]
-  - [Parameters][88]
-- [][89]
-- [slugOf][90]
-  - [Parameters][91]
+- [out][69]
+- [validateBackup][70]
+  - [Parameters][71]
+- [errors][72]
+- [upgradeTables][73]
+  - [Parameters][74]
+- [summarizeBackup][75]
+  - [Parameters][76]
+- [COUNTED][77]
+- [PART_OF_COUNTED][78]
+- [describeBackupContents][79]
+  - [Parameters][80]
+- [rows][81]
+  - [Parameters][82]
+- [rows][83]
+- [parts][84]
+- [parts][85]
+- [keysLeftOut][86]
+  - [Parameters][87]
+- [][88]
+- [backupFilename][89]
+  - [Parameters][90]
+- [][91]
 - [slugOf][92]
   - [Parameters][93]
-- [chatFilename][94]
+- [slugOf][94]
   - [Parameters][95]
-- [chatFromTables][96]
+- [chatFilename][96]
   - [Parameters][97]
-- [ProjectRows][98]
-  - [Properties][99]
-- [projectFromTables][100]
-  - [Parameters][101]
-- [own][102]
+- [chatFromTables][98]
+  - [Parameters][99]
+- [ProjectRows][100]
+  - [Properties][101]
+- [projectFromTables][102]
   - [Parameters][103]
-- [projectName][104]
+- [own][104]
   - [Parameters][105]
-- [projectsFromTables][106]
+- [projectName][106]
   - [Parameters][107]
-- [withFreshIds][108]
+- [projectsFromTables][108]
   - [Parameters][109]
-- [ids][110]
-- [ids][111]
+- [withFreshIds][110]
+  - [Parameters][111]
 - [ids][112]
 - [ids][113]
-- [renew][114]
-  - [Parameters][115]
-- [rewriteRows][116]
+- [ids][114]
+- [ids][115]
+- [renew][116]
   - [Parameters][117]
-- [idRewriter][118]
+- [rewriteRows][118]
   - [Parameters][119]
-- [rewriteRun][120]
+- [idRewriter][120]
   - [Parameters][121]
-- [rewriteIds][122]
+- [rewriteRun][122]
   - [Parameters][123]
-- [rewrite][124]
-- [map][125]
-- [map][126]
-  - [Parameters][127]
-- [fromEntries][128]
-- [stores/migrations/documents][129]
-- [partsAndScenesToDocuments][130]
-  - [Parameters][131]
+- [rewriteIds][124]
+  - [Parameters][125]
+- [rewrite][126]
+- [map][127]
+- [map][128]
+  - [Parameters][129]
+- [fromEntries][130]
+- [stores/migrations/documents][131]
 - [partsAndScenesToDocuments][132]
   - [Parameters][133]
-- [documents][134]
-- [skipped][135]
-- [skipped][136]
-- [storyIdByPart][137]
-- [deleted][138]
-- [deleted][139]
+- [partsAndScenesToDocuments][134]
+  - [Parameters][135]
+- [documents][136]
+- [skipped][137]
+- [skipped][138]
+- [storyIdByPart][139]
 - [deleted][140]
 - [deleted][141]
-- [deletedAt][142]
-- [deletedAt][143]
-- [stores/migrations/projectTree][144]
-- [rootIdFor][145]
-  - [Parameters][146]
+- [deleted][142]
+- [deleted][143]
+- [deletedAt][144]
+- [deletedAt][145]
+- [stores/migrations/projectTree][146]
 - [rootIdFor][147]
   - [Parameters][148]
-- [manuscriptIdFor][149]
+- [rootIdFor][149]
   - [Parameters][150]
-- [notesIdFor][151]
+- [manuscriptIdFor][151]
   - [Parameters][152]
-- [draftsIdFor][153]
+- [notesIdFor][153]
   - [Parameters][154]
-- [folder][155]
+- [draftsIdFor][155]
   - [Parameters][156]
 - [folder][157]
   - [Parameters][158]
-- [rootNode][159]
+- [folder][159]
   - [Parameters][160]
-- [defaultProjectFolders][161]
+- [rootNode][161]
   - [Parameters][162]
-- [actTitle][163]
+- [defaultProjectFolders][163]
   - [Parameters][164]
-- [byOrder][165]
+- [actTitle][165]
   - [Parameters][166]
-- [documentsToProjectTree][167]
+- [byOrder][167]
   - [Parameters][168]
-- [byStory][169]
-- [restructured][170]
-- [stores/migrations/lore][171]
-- [slug][172]
-  - [Parameters][173]
+- [documentsToProjectTree][169]
+  - [Parameters][170]
+- [byStory][171]
+- [restructured][172]
+- [stores/migrations/lore][173]
 - [slug][174]
   - [Parameters][175]
 - [slug][176]
   - [Parameters][177]
-- [categoryFolderIdFor][178]
+- [slug][178]
   - [Parameters][179]
-- [archiveFolderIdFor][180]
+- [categoryFolderIdFor][180]
   - [Parameters][181]
-- [plainTextToHtml][182]
+- [archiveFolderIdFor][182]
   - [Parameters][183]
-- [countWords][184]
+- [plainTextToHtml][184]
   - [Parameters][185]
 - [countWords][186]
   - [Parameters][187]
-- [loreToDocuments][188]
+- [countWords][188]
   - [Parameters][189]
-- [storyIdByLorebook][190]
-- [emittedFolders][191]
-- [folderCount][192]
-- [entryCount][193]
-- [nextOrder][194]
-  - [Parameters][195]
-- [][196]
-- [entry][197]
-- [stores/migrations/lastDocument][198]
-- [lastSceneToLastDocument][199]
-  - [Parameters][200]
+- [loreToDocuments][190]
+  - [Parameters][191]
+- [storyIdByLorebook][192]
+- [emittedFolders][193]
+- [folderCount][194]
+- [entryCount][195]
+- [nextOrder][196]
+  - [Parameters][197]
+- [][198]
+- [entry][199]
+- [stores/migrations/lastDocument][200]
 - [lastSceneToLastDocument][201]
   - [Parameters][202]
-- [stores/migrations/overview][203]
-- [overviewToRootSummary][204]
-  - [Parameters][205]
+- [lastSceneToLastDocument][203]
+  - [Parameters][204]
+- [stores/migrations/overview][205]
 - [overviewToRootSummary][206]
   - [Parameters][207]
 - [overviewToRootSummary][208]
   - [Parameters][209]
-- [byId][210]
-- [byId][211]
+- [overviewToRootSummary][210]
+  - [Parameters][211]
 - [byId][212]
 - [byId][213]
-- [root][214]
-- [stores/migrations/commandInput][215]
-- [commandArgsToInput][216]
-  - [Parameters][217]
+- [byId][214]
+- [byId][215]
+- [root][216]
+- [stores/migrations/commandInput][217]
 - [commandArgsToInput][218]
   - [Parameters][219]
 - [commandArgsToInput][220]
   - [Parameters][221]
-- [message][222]
-  - [message][223]
-  - [message][224]
+- [commandArgsToInput][222]
+  - [Parameters][223]
+- [message][224]
   - [message][225]
-- [stores/migrations/commandVoice][226]
-- [CONSULTED][227]
-- [CONSULTED][228]
-- [commandsIntoTheirVoice][229]
-  - [Parameters][230]
-- [stores/migrations/characterSigil][231]
-- [COMMANDS][232]
-- [COMMANDS][233]
-- [markCharacters][234]
-  - [Parameters][235]
-- [][236]
-- [stores/migrations/turnSegments][237]
-- [TAGS][238]
-- [TAGS][239]
-- [renderCommand][240]
-  - [Parameters][241]
-- [segmentOf][242]
+  - [message][226]
+  - [message][227]
+- [stores/migrations/commandVoice][228]
+- [CONSULTED][229]
+- [CONSULTED][230]
+- [commandsIntoTheirVoice][231]
+  - [Parameters][232]
+- [stores/migrations/characterSigil][233]
+- [COMMANDS][234]
+- [COMMANDS][235]
+- [markCharacters][236]
+  - [Parameters][237]
+- [][238]
+- [stores/migrations/turnSegments][239]
+- [TAGS][240]
+- [TAGS][241]
+- [renderCommand][242]
   - [Parameters][243]
-- [foldTurns][244]
+- [segmentOf][244]
   - [Parameters][245]
-- [byChat][246]
-- [byChat][247]
-- [untouched][248]
-- [run][249]
-- [run][250]
+- [foldTurns][246]
+  - [Parameters][247]
+- [byChat][248]
+- [byChat][249]
+- [untouched][250]
 - [run][251]
-- [stores/migrations/turnRuns][252]
-- [cutOf][253]
-  - [Parameters][254]
-- [cutOf][255]
-  - [Parameters][256]
-- [piecesOf][257]
-  - [Parameters][258]
-- [piecesOf][259]
-  - [Parameters][260]
-- [foldChat][261]
-  - [Parameters][262]
-- [foldRuns][263]
-  - [Parameters][264]
-- [stores/migrations/markdown][265]
-- [htmlToMarkdown][266]
-  - [Parameters][267]
-- [htmlToMarkdown][268]
-  - [Parameters][269]
-- [documentsToMarkdown][270]
-  - [Parameters][271]
-- [editor/schema][272]
-- [languageOf][273]
-  - [Parameters][274]
-- [code_block][275]
-- [][276]
-- [KEPT_SOURCE][277]
-- [image][278]
-- [getAttribute][279]
+- [run][252]
+- [stores/migrations/turnRuns][253]
+- [cutOf][254]
+  - [Parameters][255]
+- [cutOf][256]
+  - [Parameters][257]
+- [piecesOf][258]
+  - [Parameters][259]
+- [piecesOf][260]
+  - [Parameters][261]
+- [foldChat][262]
+  - [Parameters][263]
+- [foldRuns][264]
+  - [Parameters][265]
+- [stores/migrations/markdown][266]
+- [htmlToMarkdown][267]
+  - [Parameters][268]
+- [htmlToMarkdown][269]
+  - [Parameters][270]
+- [documentsToMarkdown][271]
+  - [Parameters][272]
+- [editor/schema][273]
+- [languageOf][274]
+  - [Parameters][275]
+- [code_block][276]
+- [][277]
+- [KEPT_SOURCE][278]
+- [image][279]
 - [getAttribute][280]
 - [getAttribute][281]
 - [getAttribute][282]
-- [texOf][283]
-  - [Parameters][284]
-- [pastedFormula][285]
-  - [Parameters][286]
-- [][287]
-- [formula][288]
-- [formula_block][289]
-- [strikethrough][290]
-- [ALIGNMENTS][291]
-- [alignmentOf][292]
-  - [Parameters][293]
-- [alignmentOf][294]
-  - [Parameters][295]
-- [cellAttrs][296]
-  - [Parameters][297]
-- [BREAKS][298]
-- [cellContent][299]
-  - [Parameters][300]
-- [cloneNode][301]
-- [table][302]
-- [table_row][303]
-- [table_cell][304]
-- [comment][305]
-- [suggested][306]
-  - [Parameters][307]
-- [getAttrs][308]
-  - [Parameters][309]
-- [BLOCK_MARKS][310]
-- [NODE_NAMES][311]
-- [MARK_NAMES][312]
-- [schema][313]
-- [stores/migrations/commentThreads][314]
-- [threadsOffText][315]
-  - [Parameters][316]
-- [threadsOffText][317]
-  - [Parameters][318]
-- [stores/migrations/profiles][319]
-- [builtInFor][320]
+- [getAttribute][283]
+- [texOf][284]
+  - [Parameters][285]
+- [pastedFormula][286]
+  - [Parameters][287]
+- [][288]
+- [formula][289]
+- [formula_block][290]
+- [strikethrough][291]
+- [ALIGNMENTS][292]
+- [alignmentOf][293]
+  - [Parameters][294]
+- [alignmentOf][295]
+  - [Parameters][296]
+- [cellAttrs][297]
+  - [Parameters][298]
+- [BREAKS][299]
+- [cellContent][300]
+  - [Parameters][301]
+- [cloneNode][302]
+- [table][303]
+- [table_row][304]
+- [table_cell][305]
+- [comment][306]
+- [suggested][307]
+  - [Parameters][308]
+- [getAttrs][309]
+  - [Parameters][310]
+- [BLOCK_MARKS][311]
+- [NODE_NAMES][312]
+- [MARK_NAMES][313]
+- [schema][314]
+- [editor/markdown][315]
+- [formulaInline][316]
+  - [Parameters][317]
+- [formulaInline][318]
+  - [Parameters][319]
+- [closeOn][320]
   - [Parameters][321]
-- [profileFrom][322]
+- [formulaBlock][322]
   - [Parameters][323]
-- [promptsToProfiles][324]
-  - [Parameters][325]
-- [chatsToProfiles][326]
+- [lines][324]
+- [lines][325]
+- [cellsIn][326]
   - [Parameters][327]
-- [storiesToProfiles][328]
-  - [Parameters][329]
-- [stores/migrations/summariesInPlace][330]
-- [stoodFor][331]
-  - [Parameters][332]
-- [stoodFor][333]
+- [tokenizerOf][328]
+- [block][329]
+- [block][330]
+- [top][331]
+- [split][332]
+- [state][333]
   - [Parameters][334]
-- [placeChat][335]
+- [state][335]
   - [Parameters][336]
-- [targets][337]
-- [targets][338]
-- [order][339]
-- [moved][340]
-- [moved][341]
+- [state][337]
+  - [Parameters][338]
+- [state][339]
+  - [Parameters][340]
+- [state][341]
   - [Parameters][342]
-- [summariesIntoPlace][343]
+- [state][343]
   - [Parameters][344]
-- [chats][345]
-- [changed][346]
-- [changed][347]
-- [stores/migrations/purgeDeleted][348]
-- [FLAGGED_TABLES][349]
-- [Purged][350]
-  - [Properties][351]
-- [withoutDeleted][352]
+- [state][345]
+  - [Parameters][346]
+- [][347]
+- [][348]
+- [TAIL][349]
+- [ROOM][350]
+- [DELIMITED][351]
+- [spacesAsNeighbours][352]
   - [Parameters][353]
-- [goneFiles][354]
-- [deletedIds][355]
-  - [Parameters][356]
-- [stores/migrations/profileSkills][357]
-- [RENAMED][358]
-- [rolesToSkills][359]
-  - [Parameters][360]
-- [skills][361]
-- [][362]
-- [stores/migrations/jobWorkflows][363]
-- [rolesToWorkflows][364]
-  - [Parameters][365]
-- [stores/migrations/modelKeeps][366]
-- [withoutModelKeeps][367]
-  - [Parameters][368]
-- [stores/migrations/allowedProviders][369]
-- [allowedProvidersToPresets][370]
+- [children][354]
+- [children][355]
+- [LinearSerializer][356]
+  - [serialize][357]
+    - [Parameters][358]
+  - [write][359]
+    - [Parameters][360]
+- [dollars][361]
+- [dollars][362]
+- [dollars][363]
+  - [Parameters][364]
+- [][365]
+- [DOLLAR_MARKS][366]
+- [DOLLAR_MARKS][367]
+- [dollarsResolved][368]
+  - [Parameters][369]
+- [opensFormula][370]
   - [Parameters][371]
-- [stores/migrations/experimentalSkills][372]
-- [withExperimentalOff][373]
-  - [Parameters][374]
-- [experimentalOffChats][375]
-  - [Parameters][376]
-- [experimentalOffProfiles][377]
+- [dollarsIn][372]
+  - [Parameters][373]
+- [][374]
+- [][375]
+- [BETWEEN_DOLLARS][376]
+- [writtenFormula][377]
   - [Parameters][378]
-- [stores/migrations/projectViews][379]
-- [VIEW_FIELDS][380]
-- [viewsOffStories][381]
-  - [Parameters][382]
-- [views][383]
-- [view][384]
-- [view][385]
+- [writtenFormulaBlock][379]
+  - [Parameters][380]
+- [ENTITY][381]
+- [AUTOLINK][382]
+- [escapeMore][383]
+  - [Parameters][384]
+- [endsLine][385]
   - [Parameters][386]
-- [utils/backupArchive][387]
-- [MANIFEST][388]
-- [BYTES][389]
-  - [BYTES][390]
-  - [BYTES][391]
-- [ENTRY_CHARS][392]
-- [writeArchive][393]
-  - [Parameters][394]
-- [named][395]
-- [named][396]
-  - [Parameters][397]
-- [pieces][398]
-- [pieces][399]
-- [pieces][400]
-- [pieces][401]
-- [pieces][402]
-- [ZipEntry][403]
-  - [Properties][404]
-- [isArchive][405]
+- [withBlockSuggestions][387]
+  - [Parameters][388]
+- [withBlockSuggestions][389]
+  - [Parameters][390]
+- [type][391]
+- [type][392]
+- [][393]
+- [][394]
+- [serializer][395]
+- [][396]
+- [][397]
+- [cells][398]
+- [rowOf][399]
+  - [Parameters][400]
+- [ruleOf][401]
+  - [Parameters][402]
+- [parseMarkdown][403]
+  - [Parameters][404]
+- [serializeMarkdown][405]
   - [Parameters][406]
-- [isZip][407]
+- [settleMarkdown][407]
   - [Parameters][408]
-- [readArchive][409]
+- [appendBlocks][409]
   - [Parameters][410]
-- [tables][411]
-- [][412]
-- [entriesOf][413]
-  - [Parameters][414]
-- [entriesOf][415]
-  - [Parameters][416]
-- [entries][417]
-- [dataStart][418]
-  - [Parameters][419]
-- [blobOf][420]
-  - [Parameters][421]
-- [MOST_ENTRY][422]
-- [bytesOf][423]
-  - [Parameters][424]
-- [inflateSync][425]
-- [textOf][426]
-  - [Parameters][427]
-- [utils/chatTabs][428]
-- [ChatText][429]
-- [CHAT_TEXT_TITLES][430]
-- [chatTabId][431]
+- [stores/migrations/commentThreads][411]
+- [threadsOffText][412]
+  - [Parameters][413]
+- [threadsOffText][414]
+  - [Parameters][415]
+- [editor/comments][416]
+- [Threads][417]
+- [FoundComment][418]
+  - [Properties][419]
+- [MarkupToken][420]
+  - [Properties][421]
+- [OPEN_MARKUP][422]
+- [OPEN_MARKUP][423]
+- [ParsedMarkup][424]
+- [TOKEN_PATTERN][425]
+- [CLOSE_PATTERN][426]
+- [newCommentId][427]
+- [BREAK_PATTERN][428]
+- [closeMarkup][429]
+  - [Parameters][430]
+- [cleanComment][431]
   - [Parameters][432]
-- [chatTabOf][433]
+- [commentOf][433]
   - [Parameters][434]
-- [match][435]
-- [match][436]
-- [match][437]
-- [skillTabId][438]
-  - [Parameters][439]
-- [skillTabOf][440]
-  - [Parameters][441]
-- [utils/chatTitle][442]
-- [DEFAULT_CHAT_TITLE][443]
-- [EARLIER_DEFAULTS][444]
-- [isDefaultChatTitle][445]
-  - [Parameters][446]
-- [shownChatTitle][447]
-  - [Parameters][448]
-- [][449]
-- [plainLine][450]
-  - [Parameters][451]
-- [plainTitle][452]
-  - [Parameters][453]
-- [plainTitle][454]
-  - [Parameters][455]
-- [chatPreview][456]
-  - [Parameters][457]
-- [utils/compareNames][458]
-- [compareNames][459]
-  - [Parameters][460]
-- [utils/dataUrl][461]
-- [DATA_URL][462]
-- [decodeDataPayload][463]
-  - [Parameters][464]
-- [bytesOfDataUrl][465]
+- [parseMarkup][435]
+  - [Parameters][436]
+- [stack][437]
+- [stack][438]
+- [pairs][439]
+- [pop][440]
+- [pop][441]
+- [tokens][442]
+- [runs][443]
+- [runs][444]
+- [runs][445]
+- [get][446]
+- [get][447]
+- [get][448]
+- [get][449]
+- [Span][450]
+- [renderMarkup][451]
+  - [Parameters][452]
+- [pop][453]
+- [pop][454]
+- [open][455]
+- [open][456]
+- [open][457]
+- [open][458]
+- [open][459]
+- [joinRuns][460]
+  - [Parameters][461]
+- [joined][462]
+- [joined][463]
+- [last][464]
+- [markupOffset][465]
   - [Parameters][466]
-- [utils/diff][467]
-- [Step][468]
-- [diffSequences][469]
+- [changeStretch][467]
+  - [Parameters][468]
+- [withoutRuns][469]
   - [Parameters][470]
-- [steps][471]
-- [shortestEdit][472]
-  - [Parameters][473]
-- [trace][474]
-- [at][475]
+- [findComments][471]
+  - [Parameters][472]
+- [settleComments][473]
+  - [Parameters][474]
+- [withoutComments][475]
   - [Parameters][476]
-- [deletionsFirst][477]
-  - [Parameters][478]
-- [added][479]
-- [Chunk][480]
-  - [Properties][481]
-- [diff3][482]
+- [HALF_PATTERN][477]
+- [quoteWithoutComments][478]
+  - [Parameters][479]
+- [nearest][480]
+  - [Parameters][481]
+- [nearest][482]
   - [Parameters][483]
-- [chunks][484]
-- [matches][485]
-  - [Parameters][486]
-- [pairUp][487]
-  - [Parameters][488]
-- [sharedCount][489]
-  - [Parameters][490]
-- [counts][491]
-- [counts][492]
-- [utils/documentEdits][493]
-- [DOCUMENT_EDIT_OPTIONS][494]
-- [utils/documentLinks][495]
-- [ELSEWHERE][496]
-- [ELSEWHERE][497]
-- [LinkTree][498]
-  - [Properties][499]
-- [ORDER_PREFIX][500]
-- [UNSAFE_IN_LINK][501]
-- [isDocumentHref][502]
+- [editAroundComments][484]
+  - [Parameters][485]
+- [lost][486]
+- [lost][487]
+- [spans][488]
+- [spans][489]
+- [rewriteAroundComments][490]
+  - [Parameters][491]
+- [placed][492]
+- [countComments][493]
+  - [Parameters][494]
+- [CONTEXT_CHARS][495]
+- [newPost][496]
+  - [Parameters][497]
+- [authorOf][498]
+  - [Parameters][499]
+- [suggesterOf][500]
+  - [Parameters][501]
+- [newThread][502]
   - [Parameters][503]
-- [unwrap][504]
+- [placedIds][504]
   - [Parameters][505]
-- [pathOf][506]
+- [threadState][506]
   - [Parameters][507]
-- [fileNameOf][508]
+- [wordsAround][508]
   - [Parameters][509]
-- [stepNameOf][510]
+- [suggestionPlaced][510]
   - [Parameters][511]
-- [pathNames][512]
+- [settleThreads][512]
   - [Parameters][513]
-- [namesOf][514]
-  - [Parameters][515]
-- [childNamed][516]
-  - [Parameters][517]
-- [][518]
-- [walk][519]
+- [next][514]
+- [next][515]
+- [next][516]
+- [liftThreads][517]
+  - [Parameters][518]
+- [withThreadsOnly][519]
   - [Parameters][520]
-- [resolveLink][521]
+- [countOpen][521]
   - [Parameters][522]
-- [documentNamed][523]
+- [sameThread][523]
   - [Parameters][524]
-- [found][525]
-- [found][526]
-- [][527]
-- [readableHref][528]
-  - [Parameters][529]
-- [lineage][530]
+- [said][525]
+  - [Parameters][526]
+- [placeThread][527]
+  - [Parameters][528]
+- [spots][529]
+- [commentOn][530]
   - [Parameters][531]
-- [encodeName][532]
-  - [Parameters][533]
-- [hrefFor][534]
+- [PlacedThread][532]
+  - [Properties][533]
+- [readableText][534]
   - [Parameters][535]
-- [headingHref][536]
-  - [Parameters][537]
-- [headingOf][538]
-  - [Parameters][539]
-- [namesHeading][540]
+- [WIDEN_STEP][536]
+- [passageInText][537]
+  - [Parameters][538]
+- [][539]
+- [withoutComment][540]
   - [Parameters][541]
-- [plain][542]
-  - [Parameters][543]
-- [ownHref][544]
-  - [Parameters][545]
-- [linkOnClipboard][546]
-  - [Parameters][547]
-- [projectHref][548]
-  - [Parameters][549]
-- [utils/documentPath][550]
-- [documentTitles][551]
-  - [Parameters][552]
-- [documentTitles][553]
-  - [Parameters][554]
-- [documentPath][555]
-  - [Parameters][556]
-- [titleKey][557]
-  - [Parameters][558]
-- [namesake][559]
-  - [Parameters][560]
-- [freeTitle][561]
-  - [Parameters][562]
-- [utils/edits][563]
-- [CONTEXT_STEP][564]
-- [CONTEXT_STEP][565]
-- [occurrences][566]
+- [CommentRange][542]
+- [runsOver][543]
+  - [Parameters][544]
+- [ranges][545]
+- [going][546]
+- [commentRanges][547]
+  - [Parameters][548]
+- [pieces][549]
+- [pieces][550]
+- [pieces][551]
+- [pieces][552]
+- [pieces][553]
+- [keepComments][554]
+  - [Parameters][555]
+- [][556]
+- [nodes][557]
+- [commentAround][558]
+  - [Parameters][559]
+- [CommentEntry][560]
+  - [Properties][561]
+- [entriesOf][562]
+  - [Parameters][563]
+- [entriesOf][564]
+  - [Parameters][565]
+- [commentsInDoc][566]
   - [Parameters][567]
-- [diffEdit][568]
+- [commentsGone][568]
   - [Parameters][569]
-- [diffAppend][570]
+- [commentsInMarkdown][570]
   - [Parameters][571]
-- [narrowEdit][572]
+- [plainPassage][572]
   - [Parameters][573]
-- [reverseEdit][574]
+- [closeOf][574]
   - [Parameters][575]
-- [applyEdit][576]
-  - [Parameters][577]
-- [keepDecisions][578]
-  - [Parameters][579]
-- [utils/errors][580]
-- [ProviderNotConfiguredError][581]
+- [CommentCount][576]
+- [commentMarkupPlugin][577]
+  - [Parameters][578]
+- [counts][579]
+- [counts][580]
+- [countOf][581]
   - [Parameters][582]
-- [ConnectionNeededError][583]
+- [countOf][583]
   - [Parameters][584]
-- [CommandError][585]
-  - [Parameters][586]
-- [CannotApplyError][587]
-  - [Parameters][588]
-- [AnswerFailedError][589]
-  - [Parameters][590]
-- [SummaryCutShortError][591]
-  - [Parameters][592]
-- [failureNotice][593]
-  - [Parameters][594]
-- [utils/focus][595]
-- [isTextField][596]
+- [loose][585]
+- [loose][586]
+- [stores/migrations/profiles][587]
+- [builtInFor][588]
+  - [Parameters][589]
+- [profileFrom][590]
+  - [Parameters][591]
+- [promptsToProfiles][592]
+  - [Parameters][593]
+- [chatsToProfiles][594]
+  - [Parameters][595]
+- [storiesToProfiles][596]
   - [Parameters][597]
-- [formatThinkingTime][598]
-  - [Parameters][599]
-- [formatRelativeTime][600]
-  - [Parameters][601]
-- [TOOL_RESULT_PREVIEW_LIMIT][602]
-- [formatToolArguments][603]
+- [stores/migrations/summariesInPlace][598]
+- [stoodFor][599]
+  - [Parameters][600]
+- [stoodFor][601]
+  - [Parameters][602]
+- [placeChat][603]
   - [Parameters][604]
-- [PYTHON_RESULT_PREVIEW_LIMIT][605]
-- [formatPythonResult][606]
-  - [Parameters][607]
-- [formatToolResult][608]
-  - [Parameters][609]
-- [utils][610]
-- [Utilities Overview][611]
-  - [Text Processing][612]
-  - [AI Integration][613]
-  - [Chat][614]
-  - [Editor][615]
-  - [Browser][616]
-  - [Storage][617]
-- [Usage Examples][618]
-  - [Examples][619]
-- [utils/lineDiff][620]
-- [LineChange][621]
-  - [Properties][622]
-- [MAX_MATCHED][623]
-- [changedLines][624]
-  - [Parameters][625]
-- [changes][626]
-- [changes][627]
-- [utils/linkUpdates][628]
-- [DESTINATION][629]
-- [DESTINATION][630]
-- [LinkedText][631]
-- [LinkTarget][632]
-- [LinkTargets][633]
-- [mayLink][634]
-  - [Parameters][635]
-- [][636]
-- [destinationsIn][637]
-  - [Parameters][638]
-- [partsOf][639]
-  - [Parameters][640]
-- [partsOf][641]
+- [targets][605]
+- [targets][606]
+- [order][607]
+- [moved][608]
+- [moved][609]
+  - [Parameters][610]
+- [summariesIntoPlace][611]
+  - [Parameters][612]
+- [chats][613]
+- [changed][614]
+- [changed][615]
+- [stores/migrations/purgeDeleted][616]
+- [FLAGGED_TABLES][617]
+- [Purged][618]
+  - [Properties][619]
+- [withoutDeleted][620]
+  - [Parameters][621]
+- [goneFiles][622]
+- [deletedIds][623]
+  - [Parameters][624]
+- [stores/migrations/profileSkills][625]
+- [RENAMED][626]
+- [rolesToSkills][627]
+  - [Parameters][628]
+- [skills][629]
+- [][630]
+- [stores/migrations/jobWorkflows][631]
+- [rolesToWorkflows][632]
+  - [Parameters][633]
+- [stores/migrations/modelKeeps][634]
+- [withoutModelKeeps][635]
+  - [Parameters][636]
+- [stores/migrations/allowedProviders][637]
+- [allowedProvidersToPresets][638]
+  - [Parameters][639]
+- [stores/migrations/experimentalSkills][640]
+- [withExperimentalOff][641]
   - [Parameters][642]
-- [canonical][643]
+- [experimentalOffChats][643]
   - [Parameters][644]
-- [linkTargets][645]
+- [experimentalOffProfiles][645]
   - [Parameters][646]
-- [went][647]
-- [rewritten][648]
-  - [Parameters][649]
-- [relinked][650]
-  - [Parameters][651]
-- [now][652]
-- [utils/localStorage][653]
-- [localStorage][654]
-  - [get][655]
-    - [Parameters][656]
-  - [set][657]
-    - [Parameters][658]
-  - [remove][659]
-    - [Parameters][660]
-- [utils/markdown][661]
-- [SAFE_SCHEMES][662]
-- [escapeHtml][663]
-  - [Parameters][664]
-- [isSafeUrl][665]
-  - [Parameters][666]
-- [mathToken][667]
-  - [Parameters][668]
-- [math][669]
-- [reader][670]
-- [renderMarkdown][671]
-  - [Parameters][672]
-- [stripMarkdown][673]
-  - [Parameters][674]
-- [utils/math][675]
-- [katex][676]
-- [katex][677]
-- [shallowRef][678]
-- [loading][679]
-- [remembered][680]
-- [REMEMBER][681]
-- [OPTIONS][682]
-- [loadMath][683]
-- [mathReady][684]
-- [typesetMath][685]
+- [stores/migrations/projectViews][647]
+- [VIEW_FIELDS][648]
+- [viewsOffStories][649]
+  - [Parameters][650]
+- [views][651]
+- [view][652]
+- [view][653]
+  - [Parameters][654]
+- [utils/backupArchive][655]
+- [MANIFEST][656]
+- [BYTES][657]
+  - [BYTES][658]
+  - [BYTES][659]
+- [ENTRY_CHARS][660]
+- [writeArchive][661]
+  - [Parameters][662]
+- [named][663]
+- [named][664]
+  - [Parameters][665]
+- [ZipEntry][666]
+  - [Properties][667]
+- [isArchive][668]
+  - [Parameters][669]
+- [isZip][670]
+  - [Parameters][671]
+- [readArchive][672]
+  - [Parameters][673]
+- [tables][674]
+- [][675]
+- [entries][676]
+- [dataStart][677]
+  - [Parameters][678]
+- [blobOf][679]
+  - [Parameters][680]
+- [MOST_ENTRY][681]
+- [bytesOf][682]
+  - [Parameters][683]
+- [inflateSync][684]
+- [textOf][685]
   - [Parameters][686]
-- [html][687]
-- [mathError][688]
-  - [Parameters][689]
-- [asWritten][690]
+- [utils/chatTabs][687]
+- [ChatText][688]
+- [CHAT_TEXT_TITLES][689]
+- [chatTabId][690]
   - [Parameters][691]
-- [formulaAround][692]
+- [chatTabOf][692]
   - [Parameters][693]
-- [copyTex][694]
-  - [Parameters][695]
-- [event][696]
-- [utils/modelFacts][697]
-- [dollars][698]
-  - [Parameters][699]
-- [dollars][700]
-- [dollars][701]
-- [formatPrice][702]
-  - [Parameters][703]
-- [formatContext][704]
+- [match][694]
+- [match][695]
+- [match][696]
+- [skillTabId][697]
+  - [Parameters][698]
+- [skillTabOf][699]
+  - [Parameters][700]
+- [utils/chatTitle][701]
+- [DEFAULT_CHAT_TITLE][702]
+- [EARLIER_DEFAULTS][703]
+- [isDefaultChatTitle][704]
   - [Parameters][705]
-- [utils/oauth][706]
-- [generateCodeVerifier][707]
-- [generateCodeChallenge][708]
-  - [Parameters][709]
-- [generateState][710]
-- [base64URLEncode][711]
+- [shownChatTitle][706]
+  - [Parameters][707]
+- [][708]
+- [plainLine][709]
+  - [Parameters][710]
+- [plainTitle][711]
   - [Parameters][712]
-- [storeOAuthParams][713]
+- [plainTitle][713]
   - [Parameters][714]
-- [retrieveOAuthParams][715]
-- [authorizationUrl][716]
-  - [Parameters][717]
-- [exchangeCode][718]
+- [chatPreview][715]
+  - [Parameters][716]
+- [utils/compareNames][717]
+- [compareNames][718]
   - [Parameters][719]
-- [utils/obfuscate][720]
-- [UPPER][721]
-- [UPPER][722]
-- [UPPER][723]
-- [ObfuscateOptions][724]
-- [KEPT_KEYS][725]
-- [isKept][726]
-  - [Parameters][727]
-- [scrambleText][728]
+- [utils/dataUrl][720]
+- [DATA_URL][721]
+- [decodeDataPayload][722]
+  - [Parameters][723]
+- [bytesOfDataUrl][724]
+  - [Parameters][725]
+- [utils/diff][726]
+- [Step][727]
+- [diffSequences][728]
   - [Parameters][729]
-- [scrambleValue][730]
-  - [Parameters][731]
-- [scrambleValue][732]
-- [scrambleJsonText][733]
-  - [Parameters][734]
-- [scrambleCommand][735]
-  - [Parameters][736]
-- [scrambleConsultation][737]
-  - [Parameters][738]
-- [scrambleApiMessage][739]
-  - [Parameters][740]
-- [scrambleMetadata][741]
+- [steps][730]
+- [shortestEdit][731]
+  - [Parameters][732]
+- [trace][733]
+- [at][734]
+  - [Parameters][735]
+- [deletionsFirst][736]
+  - [Parameters][737]
+- [added][738]
+- [Chunk][739]
+  - [Properties][740]
+- [diff3][741]
   - [Parameters][742]
-- [scrambleMessage][743]
-  - [Parameters][744]
-- [obfuscateBackup][745]
-  - [Parameters][746]
-- [settings][747]
-- [utils/partialJson][748]
-- [STRING_BODY][749]
-- [FIELD][750]
-- [decode][751]
-  - [Parameters][752]
-- [partialStrings][753]
-  - [Parameters][754]
-- [PartialField][755]
-- [partialFields][756]
-  - [Parameters][757]
-- [utils/pictures][758]
-- [PICTURES_DIR][759]
-- [ID][760]
-- [PATH][761]
-- [PLAIN][762]
-- [decoded][763]
+- [chunks][743]
+- [matches][744]
+  - [Parameters][745]
+- [pairUp][746]
+  - [Parameters][747]
+- [sharedCount][748]
+  - [Parameters][749]
+- [utils/documentEdits][750]
+- [DOCUMENT_EDIT_OPTIONS][751]
+- [utils/documentLinks][752]
+- [ELSEWHERE][753]
+- [ELSEWHERE][754]
+- [LinkTree][755]
+  - [Properties][756]
+- [ORDER_PREFIX][757]
+- [UNSAFE_IN_LINK][758]
+- [isDocumentHref][759]
+  - [Parameters][760]
+- [unwrap][761]
+  - [Parameters][762]
+- [pathOf][763]
   - [Parameters][764]
-- [decoded][765]
+- [fileNameOf][765]
   - [Parameters][766]
-- [extensionOf][767]
+- [stepNameOf][767]
   - [Parameters][768]
-- [pictureName][769]
+- [pathNames][769]
   - [Parameters][770]
-- [pictureHref][771]
+- [namesOf][771]
   - [Parameters][772]
-- [pictureOf][773]
+- [childNamed][773]
   - [Parameters][774]
-- [pictureKey][775]
-  - [Parameters][776]
-- [pictureOfKey][777]
-  - [Parameters][778]
-- [picturesIn][779]
-  - [Parameters][780]
-- [keys][781]
-- [keys][782]
-- [keys][783]
-- [keys][784]
-- [keys][785]
-- [][786]
-- [][787]
-- [repointPictures][788]
-  - [Parameters][789]
-- [unreferencedPictures][790]
-  - [Parameters][791]
-- [utils/plainCopy][792]
-- [plainCopy][793]
+- [][775]
+- [walk][776]
+  - [Parameters][777]
+- [resolveLink][778]
+  - [Parameters][779]
+- [documentNamed][780]
+  - [Parameters][781]
+- [found][782]
+- [found][783]
+- [][784]
+- [readableHref][785]
+  - [Parameters][786]
+- [lineage][787]
+  - [Parameters][788]
+- [encodeName][789]
+  - [Parameters][790]
+- [hrefFor][791]
+  - [Parameters][792]
+- [headingHref][793]
   - [Parameters][794]
-- [copyOf][795]
-- [copyOf][796]
-  - [Parameters][797]
-- [utils/projectList][798]
-- [ProjectRow][799]
-  - [Properties][800]
-- [byName][801]
+- [headingOf][795]
+  - [Parameters][796]
+- [namesHeading][797]
+  - [Parameters][798]
+- [plain][799]
+  - [Parameters][800]
+- [plain][801]
   - [Parameters][802]
-- [byName][803]
+- [ownHref][803]
   - [Parameters][804]
-- [sortProjects][805]
+- [linkOnClipboard][805]
   - [Parameters][806]
-- [][807]
-- [][808]
-- [recentProjects][809]
-  - [Parameters][810]
-- [folded][811]
-  - [Parameters][812]
-- [folded][813]
-- [projectsNamed][814]
+- [projectHref][807]
+  - [Parameters][808]
+- [utils/documentPath][809]
+- [documentTitles][810]
+  - [Parameters][811]
+- [documentTitles][812]
+  - [Parameters][813]
+- [documentPath][814]
   - [Parameters][815]
-- [utils/routeHelpers][816]
-- [storyIdFromRoute][817]
-  - [Parameters][818]
-- [pushProjectToRoute][819]
-  - [Parameters][820]
-- [goToProject][821]
-  - [Parameters][822]
-- [replaceProjectInRoute][823]
-  - [Parameters][824]
-- [utils/sections][825]
-- [HEADING][826]
-- [FENCE][827]
-- [MarkdownSection][828]
-  - [Properties][829]
-- [SectionNode][830]
-  - [Properties][831]
-- [linker][832]
-- [seen][833]
-- [seen][834]
-- [wordsOf][835]
+- [titleKey][816]
+  - [Parameters][817]
+- [namesake][818]
+  - [Parameters][819]
+- [freeTitle][820]
+  - [Parameters][821]
+- [utils/edits][822]
+- [CONTEXT_STEP][823]
+- [CONTEXT_STEP][824]
+- [onlyAt][825]
+  - [Parameters][826]
+- [once][827]
+  - [Parameters][828]
+- [leastEnough][829]
+  - [Parameters][830]
+- [diffEdit][831]
+  - [Parameters][832]
+- [placedEdit][833]
+  - [Parameters][834]
+- [padded][835]
   - [Parameters][836]
-- [wordsOf][837]
-  - [Parameters][838]
-- [wordsOf][839]
-  - [Parameters][840]
-- [markdownSections][841]
-  - [Parameters][842]
-- [TREE_LIMIT][843]
-- [LIST_LIMIT][844]
-- [sectionTree][845]
-  - [Parameters][846]
-- [stack][847]
-- [stack][848]
-- [roots][849]
-- [node][850]
-- [collapse][851]
+- [][837]
+- [foundOnce][838]
+  - [Parameters][839]
+- [diffAppend][840]
+  - [Parameters][841]
+- [narrowEdit][842]
+  - [Parameters][843]
+- [reverseEdit][844]
+  - [Parameters][845]
+- [applyEdit][846]
+  - [Parameters][847]
+- [keepDecisions][848]
+  - [Parameters][849]
+- [utils/errors][850]
+- [ProviderNotConfiguredError][851]
   - [Parameters][852]
-- [all][853]
-- [all][854]
-- [][855]
-- [][856]
-- [cut][857]
+- [ConnectionNeededError][853]
+  - [Parameters][854]
+- [CommandError][855]
+  - [Parameters][856]
+- [CannotApplyError][857]
   - [Parameters][858]
-- [countOf][859]
+- [AnswerFailedError][859]
   - [Parameters][860]
-- [countOf][861]
+- [SummaryCutShortError][861]
   - [Parameters][862]
-- [findSection][863]
+- [failureNotice][863]
   - [Parameters][864]
-- [indexOf][865]
-  - [Parameters][866]
-- [pop][867]
-- [pop][868]
-- [open][869]
-- [open][870]
-- [open][871]
-- [open][872]
-- [open][873]
-- [lines][874]
-- [lines][875]
-- [sectionIndexAt][876]
+- [utils/focus][865]
+- [isTextField][866]
+  - [Parameters][867]
+- [formatThinkingTime][868]
+  - [Parameters][869]
+- [formatRelativeTime][870]
+  - [Parameters][871]
+- [TOOL_RESULT_PREVIEW_LIMIT][872]
+- [formatToolArguments][873]
+  - [Parameters][874]
+- [PYTHON_RESULT_PREVIEW_LIMIT][875]
+- [formatPythonResult][876]
   - [Parameters][877]
-- [sectionPath][878]
+- [formatToolResult][878]
   - [Parameters][879]
-- [utils/sessionStorage][880]
-- [sessionStorage][881]
-  - [get][882]
-    - [Parameters][883]
-  - [set][884]
-    - [Parameters][885]
-  - [remove][886]
-    - [Parameters][887]
-- [utils/settingsFile][888]
-- [SETTINGS_TABLES][889]
-- [SETTINGS_TABLES][890]
-- [SettingsTable][891]
-- [SettingsGroup][892]
-- [UNPICKED][893]
-- [KINDS][894]
-- [GROUP_NAMES][895]
-- [SettingsItem][896]
-  - [Properties][897]
-- [rowId][898]
-  - [Parameters][899]
-- [rowId][900]
-- [itemKey][901]
+- [utils][880]
+- [Utilities Overview][881]
+  - [Text Processing][882]
+  - [AI Integration][883]
+  - [Chat][884]
+  - [Editor][885]
+  - [Browser][886]
+  - [Storage][887]
+- [Usage Examples][888]
+  - [Examples][889]
+- [utils/lineDiff][890]
+- [CONTEXT][891]
+- [MOST_EDITS][892]
+- [lineDiff][893]
+  - [Parameters][894]
+- [utils/linkUpdates][895]
+- [DESTINATION][896]
+- [DESTINATION][897]
+- [LinkedText][898]
+- [LinkTarget][899]
+- [LinkTargets][900]
+- [mayLink][901]
   - [Parameters][902]
-- [everyInstallHas][903]
-  - [Parameters][904]
-- [rowName][905]
-  - [Parameters][906]
-- [settingsItems][907]
-  - [Parameters][908]
-- [items][909]
-- [item][910]
-- [item][911]
-- [settingsNeeds][912]
+- [][903]
+- [destinationsIn][904]
+  - [Parameters][905]
+- [partsOf][906]
+  - [Parameters][907]
+- [partsOf][908]
+  - [Parameters][909]
+- [canonical][910]
+  - [Parameters][911]
+- [linkTargets][912]
   - [Parameters][913]
-- [needs][914]
-- [add][915]
+- [went][914]
+- [rewritten][915]
   - [Parameters][916]
-- [pickWithNeeds][917]
+- [relinked][917]
   - [Parameters][918]
-- [pop][919]
-- [pop][920]
-- [pickSettings][921]
-  - [Parameters][922]
-- [chosen][923]
-- [settingsFilename][924]
-  - [Parameters][925]
-- [][926]
-- [LISTING][927]
-- [essence][928]
-  - [Parameters][929]
-- [stableJson][930]
+- [now][919]
+- [utils/localStorage][920]
+- [localStorage][921]
+  - [get][922]
+    - [Parameters][923]
+  - [set][924]
+    - [Parameters][925]
+  - [remove][926]
+    - [Parameters][927]
+- [utils/markdown][928]
+- [SAFE_SCHEMES][929]
+- [escapeHtml][930]
   - [Parameters][931]
-- [fingerprint][932]
+- [isSafeUrl][932]
   - [Parameters][933]
-- [mergeRow][934]
+- [mathToken][934]
   - [Parameters][935]
-- [][936]
-- [SettingsImport][937]
-  - [Properties][938]
-- [planImport][939]
-  - [Parameters][940]
-- [plan][941]
-- [changesAnything][942]
-  - [Parameters][943]
-- [listed][944]
-  - [Parameters][945]
-- [NAMED][946]
-- [itemsInWords][947]
-  - [Parameters][948]
-- [itemPhrases][949]
-  - [Parameters][950]
-- [phrases][951]
-- [slice][952]
-- [][953]
-- [describeImport][954]
-  - [Parameters][955]
-- [sentences][956]
-- [sentences][957]
-- [describeSelection][958]
-  - [Parameters][959]
-- [ai/providers][960]
-- [ProviderType][961]
-  - [Properties][962]
-- [SignIn][963]
-  - [Properties][964]
-- [ProviderKind][965]
-- [PROVIDER_TYPES][966]
-- [BUILT_IN_PROVIDERS][967]
-- [DEFAULT_SPEECH_PROVIDER_ID][968]
-- [ConnectionKind][969]
-  - [Properties][970]
-- [BUILT_IN_KINDS][971]
-- [CONNECTION_KINDS][972]
-  - [][973]
-  - [][974]
-- [connectionKind][975]
-  - [Parameters][976]
-- [connectionKind][977]
-- [kindOf][978]
-  - [Parameters][979]
-- [untouchedBuiltIn][980]
-  - [Parameters][981]
-- [inMenuOrder][982]
-  - [Parameters][983]
-- [typeOf][984]
-  - [Parameters][985]
-- [providerDoes][986]
-  - [Parameters][987]
-- [DEFAULT_PROVIDER_TYPE][988]
-- [providerLabel][989]
+- [math][936]
+- [reader][937]
+- [renderMarkdown][938]
+  - [Parameters][939]
+- [stripMarkdown][940]
+  - [Parameters][941]
+- [utils/math][942]
+- [katex][943]
+- [katex][944]
+- [shallowRef][945]
+- [loading][946]
+- [remembered][947]
+- [REMEMBER][948]
+- [OPTIONS][949]
+- [loadMath][950]
+- [mathReady][951]
+- [typesetMath][952]
+  - [Parameters][953]
+- [html][954]
+- [mathError][955]
+  - [Parameters][956]
+- [asWritten][957]
+  - [Parameters][958]
+- [formulaAround][959]
+  - [Parameters][960]
+- [copyTex][961]
+  - [Parameters][962]
+- [event][963]
+- [utils/modelFacts][964]
+- [formatPrice][965]
+  - [Parameters][966]
+- [formatContext][967]
+  - [Parameters][968]
+- [utils/oauth][969]
+- [generateCodeVerifier][970]
+- [generateCodeChallenge][971]
+  - [Parameters][972]
+- [generateState][973]
+- [base64URLEncode][974]
+  - [Parameters][975]
+- [storeOAuthParams][976]
+  - [Parameters][977]
+- [retrieveOAuthParams][978]
+- [authorizationUrl][979]
+  - [Parameters][980]
+- [exchangeCode][981]
+  - [Parameters][982]
+- [utils/obfuscate][983]
+- [UPPER][984]
+- [UPPER][985]
+- [UPPER][986]
+- [ObfuscateOptions][987]
+- [KEPT_KEYS][988]
+- [isKept][989]
   - [Parameters][990]
-- [knownAddress][991]
+- [scrambleText][991]
   - [Parameters][992]
-- [needsEndpoint][993]
+- [scrambleValue][993]
   - [Parameters][994]
-- [needsKey][995]
-  - [Parameters][996]
-- [connectionGap][997]
-  - [Parameters][998]
-- [presetProblem][999]
-  - [Parameters][1000]
-- [canListModels][1001]
-  - [Parameters][1002]
-- [listsPublicly][1003]
-  - [Parameters][1004]
-- [signInOf][1005]
-  - [Parameters][1006]
-- [creditsPage][1007]
-  - [Parameters][1008]
-- [speaksOpenRouterReasoning][1009]
-  - [Parameters][1010]
-- [servesChat][1011]
-  - [Parameters][1012]
-- [takesReasoningEffort][1013]
-  - [Parameters][1014]
-- [takesChatTemplateKwargs][1015]
-  - [Parameters][1016]
-- [AISamplerParameters][1017]
-  - [Properties][1018]
-- [REASONING_EFFORT_OPTIONS][1019]
-- [DEFAULT_PRESET_ID][1020]
-- [AI_DEFAULTS][1021]
-- [resolveAISettings][1022]
-  - [Parameters][1023]
-- [resolveAISettings][1024]
-  - [Parameters][1025]
-- [mergeAISettings][1026]
+- [scrambleValue][995]
+- [scrambleJsonText][996]
+  - [Parameters][997]
+- [scrambleCommand][998]
+  - [Parameters][999]
+- [scrambleConsultation][1000]
+  - [Parameters][1001]
+- [scrambleApiMessage][1002]
+  - [Parameters][1003]
+- [scrambleMetadata][1004]
+  - [Parameters][1005]
+- [scrambleMessage][1006]
+  - [Parameters][1007]
+- [obfuscateBackup][1008]
+  - [Parameters][1009]
+- [settings][1010]
+- [utils/partialJson][1011]
+- [STRING_BODY][1012]
+- [FIELD][1013]
+- [decode][1014]
+  - [Parameters][1015]
+- [partialStrings][1016]
+  - [Parameters][1017]
+- [PartialField][1018]
+- [partialFields][1019]
+  - [Parameters][1020]
+- [utils/pictures][1021]
+- [PICTURES_DIR][1022]
+- [ID][1023]
+- [PATH][1024]
+- [PLAIN][1025]
+- [decoded][1026]
   - [Parameters][1027]
-- [TITLE_DEFAULTS][1028]
-- [utils/settingsTree][1029]
-- [settingKey][1030]
+- [decoded][1028]
+  - [Parameters][1029]
+- [extensionOf][1030]
   - [Parameters][1031]
-- [settingKey][1032]
+- [pictureName][1032]
   - [Parameters][1033]
-- [SettingsNode][1034]
-  - [Properties][1035]
-- [][1036]
-- [itemOf][1037]
-  - [Parameters][1038]
-- [itemOf][1039]
-  - [Parameters][1040]
-- [settingsTree][1041]
-  - [Parameters][1042]
-- [][1043]
-- [leavesOf][1044]
-  - [Parameters][1045]
-- [selectionKeys][1046]
-  - [Parameters][1047]
-- [visit][1048]
-  - [Parameters][1049]
-- [visit][1050]
-  - [Parameters][1051]
-- [tickedLeaves][1052]
-  - [Parameters][1053]
-- [pickedSettings][1054]
-  - [Parameters][1055]
-- [utils/sharedDocuments][1056]
-- [shareTree][1057]
-  - [Parameters][1058]
-- [shareTree][1059]
+- [pictureHref][1034]
+  - [Parameters][1035]
+- [pictureOf][1036]
+  - [Parameters][1037]
+- [pictureKey][1038]
+  - [Parameters][1039]
+- [pictureOfKey][1040]
+  - [Parameters][1041]
+- [picturesIn][1042]
+  - [Parameters][1043]
+- [keys][1044]
+- [keys][1045]
+- [keys][1046]
+- [keys][1047]
+- [keys][1048]
+- [][1049]
+- [][1050]
+- [repointPictures][1051]
+  - [Parameters][1052]
+- [unreferencedPictures][1053]
+  - [Parameters][1054]
+- [utils/plainCopy][1055]
+- [plainCopy][1056]
+  - [Parameters][1057]
+- [copyOf][1058]
+- [copyOf][1059]
   - [Parameters][1060]
-- [shareTree][1061]
-  - [Parameters][1062]
-- [Sharing][1063]
-- [nodeOf][1064]
+- [utils/projectList][1061]
+- [ProjectRow][1062]
+  - [Properties][1063]
+- [byName][1064]
   - [Parameters][1065]
-- [sharingOf][1066]
+- [byName][1066]
   - [Parameters][1067]
-- [sharedWith][1068]
+- [sortProjects][1068]
   - [Parameters][1069]
-- [utils/siblingOrder][1070]
-- [orderSiblings][1071]
-  - [Parameters][1072]
-- [][1073]
-- [][1074]
-- [][1075]
-- [][1076]
-- [utils/tabs][1077]
-- [Tabs][1078]
-  - [Properties][1079]
-- [NO_TABS][1080]
-- [TabFields][1081]
-  - [Properties][1082]
-- [DOCUMENT_TABS][1083]
-- [CHAT_TABS][1084]
-- [showing][1085]
-  - [Parameters][1086]
-- [settled][1087]
-  - [Parameters][1088]
-- [tabsOf][1089]
-  - [Parameters][1090]
-- [tabsPatch][1091]
-  - [Parameters][1092]
-- [normalizeTabs][1093]
-  - [Parameters][1094]
-- [openTab][1095]
-  - [Parameters][1096]
-- [keepTab][1097]
-  - [Parameters][1098]
-- [closeTab][1099]
-  - [Parameters][1100]
-- [dropTabs][1101]
-  - [Parameters][1102]
-- [tabNames][1103]
-  - [Parameters][1104]
-- [tail][1105]
-  - [Parameters][1106]
-- [utils/tex][1107]
-- [TEX][1108]
-- [DISPLAY][1109]
-- [MATH_BLOCK][1110]
-- [SINGLE][1111]
-- [MATH_INLINE][1112]
-- [Found][1113]
-  - [Properties][1114]
-- [trimTex][1115]
-  - [Parameters][1116]
-- [foundIn][1117]
-  - [Parameters][1118]
-- [formulaAt][1119]
-  - [Parameters][1120]
-- [mayHoldFormula][1121]
-  - [Parameters][1122]
-- [replaceFormulas][1123]
-  - [Parameters][1124]
-- [utils/titleValidation][1125]
-- [normalizeTitle][1126]
+- [][1070]
+- [][1071]
+- [recentProjects][1072]
+  - [Parameters][1073]
+- [folded][1074]
+  - [Parameters][1075]
+- [folded][1076]
+- [projectsNamed][1077]
+  - [Parameters][1078]
+- [utils/routeHelpers][1079]
+- [storyIdFromRoute][1080]
+  - [Parameters][1081]
+- [pushProjectToRoute][1082]
+  - [Parameters][1083]
+- [goToProject][1084]
+  - [Parameters][1085]
+- [replaceProjectInRoute][1086]
+  - [Parameters][1087]
+- [utils/sections][1088]
+- [HEADING][1089]
+- [FENCE][1090]
+- [MarkdownSection][1091]
+  - [Properties][1092]
+- [SectionNode][1093]
+  - [Properties][1094]
+- [linker][1095]
+- [seen][1096]
+- [seen][1097]
+- [wordsOf][1098]
+  - [Parameters][1099]
+- [wordsOf][1100]
+  - [Parameters][1101]
+- [wordsOf][1102]
+  - [Parameters][1103]
+- [markdownSections][1104]
+  - [Parameters][1105]
+- [TREE_LIMIT][1106]
+- [LIST_LIMIT][1107]
+- [sectionTree][1108]
+  - [Parameters][1109]
+- [roots][1110]
+- [node][1111]
+- [collapse][1112]
+  - [Parameters][1113]
+- [all][1114]
+- [all][1115]
+- [][1116]
+- [][1117]
+- [cut][1118]
+  - [Parameters][1119]
+- [findSection][1120]
+  - [Parameters][1121]
+- [indexOf][1122]
+  - [Parameters][1123]
+- [sectionIndexAt][1124]
+  - [Parameters][1125]
+- [sectionPath][1126]
   - [Parameters][1127]
-- [shouldUpdateTitle][1128]
-  - [Parameters][1129]
-- [isCustomTitle][1130]
-  - [Parameters][1131]
-- [getTitlePlaceholder][1132]
-  - [Parameters][1133]
-- [freeName][1134]
-  - [Parameters][1135]
-- [][1136]
-- [utils/touch][1137]
-- [hasTouchKeyboard][1138]
-- [submitOnEnter][1139]
-  - [Parameters][1140]
-- [utils/trash][1141]
-- [TRASH_KEPT_MS][1142]
-- [TRASH_KEPT_MS][1143]
-- [expired][1144]
-  - [Parameters][1145]
-- [trashedIds][1146]
+- [utils/sessionStorage][1128]
+- [sessionStorage][1129]
+  - [get][1130]
+    - [Parameters][1131]
+  - [set][1132]
+    - [Parameters][1133]
+  - [remove][1134]
+    - [Parameters][1135]
+- [utils/settingsFile][1136]
+- [SETTINGS_TABLES][1137]
+- [SETTINGS_TABLES][1138]
+- [SettingsTable][1139]
+- [SettingsGroup][1140]
+- [UNPICKED][1141]
+- [KINDS][1142]
+- [GROUP_NAMES][1143]
+- [SettingsItem][1144]
+  - [Properties][1145]
+- [rowId][1146]
   - [Parameters][1147]
-- [known][1148]
-- [known][1149]
-- [][1150]
-- [outOfTrash][1151]
+- [rowId][1148]
+- [itemKey][1149]
+  - [Parameters][1150]
+- [everyInstallHas][1151]
   - [Parameters][1152]
-- [utils/turns][1153]
-- [Turn][1154]
-  - [Properties][1155]
-- [commandOf][1156]
-  - [Parameters][1157]
-- [groupTurns][1158]
-  - [Parameters][1159]
-- [turns][1160]
-- [compactedRuns][1161]
-  - [Parameters][1162]
-- [runs][1163]
-- [runs][1164]
-- [runs][1165]
-- [textLines][1166]
-  - [Parameters][1167]
-- [utils/unzip][1168]
-- [MIB][1169]
-- [TooLargeError][1170]
-- [unzipWithin][1171]
-  - [Parameters][1172]
-- [utils/versions][1173]
-- [PAUSE_MS][1174]
-- [PAUSE_MS][1175]
-- [PAUSE_MS][1176]
-- [STRETCH_MS][1177]
-- [DAILY_FOR_MS][1178]
-- [dayOf][1179]
-  - [Parameters][1180]
-- [weekOf][1181]
-  - [Parameters][1182]
-- [thinned][1183]
-  - [Parameters][1184]
-- [CLASHED][1185]
-- [DOC_CLASHED][1186]
-- [TAKEN_BEFORE][1187]
-- [model][1188]
-- [utils/visibility][1189]
-- [FIELDS][1190]
-- [FIELDS][1191]
-- [FIELDS][1192]
-- [ChatMark][1193]
-- [ChatMarks][1194]
-- [shown][1195]
-- [markOf][1196]
-  - [Parameters][1197]
-- [][1198]
-- [withMark][1199]
-  - [Parameters][1200]
-- [next][1201]
-- [next][1202]
-- [next][1203]
-- [chatVisibility][1204]
+- [rowName][1153]
+  - [Parameters][1154]
+- [settingsItems][1155]
+  - [Parameters][1156]
+- [items][1157]
+- [item][1158]
+- [item][1159]
+- [settingsNeeds][1160]
+  - [Parameters][1161]
+- [needs][1162]
+- [add][1163]
+  - [Parameters][1164]
+- [pickWithNeeds][1165]
+  - [Parameters][1166]
+- [pickSettings][1167]
+  - [Parameters][1168]
+- [chosen][1169]
+- [settingsFilename][1170]
+  - [Parameters][1171]
+- [][1172]
+- [LISTING][1173]
+- [essence][1174]
+  - [Parameters][1175]
+- [stableJson][1176]
+  - [Parameters][1177]
+- [fingerprint][1178]
+  - [Parameters][1179]
+- [mergeRow][1180]
+  - [Parameters][1181]
+- [][1182]
+- [SettingsImport][1183]
+  - [Properties][1184]
+- [planImport][1185]
+  - [Parameters][1186]
+- [plan][1187]
+- [changesAnything][1188]
+  - [Parameters][1189]
+- [listed][1190]
+  - [Parameters][1191]
+- [NAMED][1192]
+- [itemsInWords][1193]
+  - [Parameters][1194]
+- [itemPhrases][1195]
+  - [Parameters][1196]
+- [phrases][1197]
+- [slice][1198]
+- [][1199]
+- [describeImport][1200]
+  - [Parameters][1201]
+- [sentences][1202]
+- [sentences][1203]
+- [describeSelection][1204]
   - [Parameters][1205]
-- [settle][1206]
-  - [Parameters][1207]
-- [sees][1208]
-  - [Parameters][1209]
-- [hiddenEverywhere][1210]
-  - [Parameters][1211]
-- [markFor][1212]
-  - [Parameters][1213]
-- [utils/webkit][1214]
-- [isWebKit][1215]
-  - [Parameters][1216]
-- [utils/wordCount][1217]
-- [PICTURE][1218]
-- [editor/suggestionText][1219]
-- [CLOSE][1220]
-- [INSERTED][1221]
-- [DELETED][1222]
-- [holdsSuggestions][1223]
-  - [Parameters][1224]
-- [seenMarkdown][1225]
-  - [Parameters][1226]
-- [textAsItStands][1227]
-  - [Parameters][1228]
-- [withoutSuggestionMarkup][1229]
-  - [Parameters][1230]
-- [editor/comments][1231]
-- [Threads][1232]
-- [FoundComment][1233]
-  - [Properties][1234]
-- [MarkupToken][1235]
-  - [Properties][1236]
-- [OPEN_MARKUP][1237]
-- [OPEN_MARKUP][1238]
-- [ParsedMarkup][1239]
-- [TOKEN_PATTERN][1240]
-- [CLOSE_PATTERN][1241]
-- [newCommentId][1242]
-- [BREAK_PATTERN][1243]
-- [closeMarkup][1244]
-  - [Parameters][1245]
-- [cleanComment][1246]
-  - [Parameters][1247]
-- [commentOf][1248]
-  - [Parameters][1249]
-- [parseMarkup][1250]
-  - [Parameters][1251]
-- [pairs][1252]
-- [tokens][1253]
-- [get][1254]
-- [get][1255]
-- [get][1256]
-- [get][1257]
-- [Span][1258]
-- [renderMarkup][1259]
+- [ai/providers][1206]
+- [ProviderType][1207]
+  - [Properties][1208]
+- [SignIn][1209]
+  - [Properties][1210]
+- [ProviderKind][1211]
+- [PROVIDER_TYPES][1212]
+- [BUILT_IN_PROVIDERS][1213]
+- [DEFAULT_SPEECH_PROVIDER_ID][1214]
+- [ConnectionKind][1215]
+  - [Properties][1216]
+- [BUILT_IN_KINDS][1217]
+- [CONNECTION_KINDS][1218]
+  - [][1219]
+  - [][1220]
+- [connectionKind][1221]
+  - [Parameters][1222]
+- [connectionKind][1223]
+- [kindOf][1224]
+  - [Parameters][1225]
+- [untouchedBuiltIn][1226]
+  - [Parameters][1227]
+- [inMenuOrder][1228]
+  - [Parameters][1229]
+- [typeOf][1230]
+  - [Parameters][1231]
+- [providerDoes][1232]
+  - [Parameters][1233]
+- [DEFAULT_PROVIDER_TYPE][1234]
+- [providerLabel][1235]
+  - [Parameters][1236]
+- [knownAddress][1237]
+  - [Parameters][1238]
+- [needsEndpoint][1239]
+  - [Parameters][1240]
+- [needsKey][1241]
+  - [Parameters][1242]
+- [connectionGap][1243]
+  - [Parameters][1244]
+- [presetProblem][1245]
+  - [Parameters][1246]
+- [canListModels][1247]
+  - [Parameters][1248]
+- [listsPublicly][1249]
+  - [Parameters][1250]
+- [signInOf][1251]
+  - [Parameters][1252]
+- [creditsPage][1253]
+  - [Parameters][1254]
+- [speaksOpenRouterReasoning][1255]
+  - [Parameters][1256]
+- [servesChat][1257]
+  - [Parameters][1258]
+- [takesReasoningEffort][1259]
   - [Parameters][1260]
-- [joinRuns][1261]
+- [takesChatTemplateKwargs][1261]
   - [Parameters][1262]
-- [joined][1263]
-- [joined][1264]
-- [last][1265]
-- [markupOffset][1266]
-  - [Parameters][1267]
-- [changeStretch][1268]
+- [AISamplerParameters][1263]
+  - [Properties][1264]
+- [REASONING_EFFORT_OPTIONS][1265]
+- [DEFAULT_PRESET_ID][1266]
+- [AI_DEFAULTS][1267]
+- [resolveAISettings][1268]
   - [Parameters][1269]
-- [withoutRuns][1270]
+- [resolveAISettings][1270]
   - [Parameters][1271]
-- [findComments][1272]
+- [mergeAISettings][1272]
   - [Parameters][1273]
-- [settleComments][1274]
-  - [Parameters][1275]
-- [withoutComments][1276]
+- [TITLE_DEFAULTS][1274]
+- [utils/settingsTree][1275]
+- [settingKey][1276]
   - [Parameters][1277]
-- [HALF_PATTERN][1278]
-- [quoteWithoutComments][1279]
-  - [Parameters][1280]
-- [nearest][1281]
-  - [Parameters][1282]
-- [editAroundComments][1283]
+- [settingKey][1278]
+  - [Parameters][1279]
+- [SettingsNode][1280]
+  - [Properties][1281]
+- [][1282]
+- [itemOf][1283]
   - [Parameters][1284]
-- [lost][1285]
-- [lost][1286]
-- [spans][1287]
-- [rewriteAroundComments][1288]
-  - [Parameters][1289]
-- [placed][1290]
-- [countComments][1291]
-  - [Parameters][1292]
-- [CONTEXT_CHARS][1293]
-- [newPost][1294]
+- [itemOf][1285]
+  - [Parameters][1286]
+- [settingsTree][1287]
+  - [Parameters][1288]
+- [][1289]
+- [leavesOf][1290]
+  - [Parameters][1291]
+- [selectionKeys][1292]
+  - [Parameters][1293]
+- [visit][1294]
   - [Parameters][1295]
-- [authorOf][1296]
+- [visit][1296]
   - [Parameters][1297]
-- [suggesterOf][1298]
+- [tickedLeaves][1298]
   - [Parameters][1299]
-- [newThread][1300]
+- [pickedSettings][1300]
   - [Parameters][1301]
-- [placedIds][1302]
-  - [Parameters][1303]
-- [threadState][1304]
-  - [Parameters][1305]
-- [wordsAround][1306]
-  - [Parameters][1307]
-- [suggestionPlaced][1308]
-  - [Parameters][1309]
-- [settleThreads][1310]
+- [utils/sharedDocuments][1302]
+- [shareTree][1303]
+  - [Parameters][1304]
+- [shareTree][1305]
+  - [Parameters][1306]
+- [shareTree][1307]
+  - [Parameters][1308]
+- [Sharing][1309]
+- [nodeOf][1310]
   - [Parameters][1311]
-- [liftThreads][1312]
+- [sharingOf][1312]
   - [Parameters][1313]
-- [withThreadsOnly][1314]
+- [sharedWith][1314]
   - [Parameters][1315]
-- [countOpen][1316]
-  - [Parameters][1317]
-- [sameThread][1318]
+- [changes][1316]
+- [utils/siblingOrder][1317]
+- [orderSiblings][1318]
   - [Parameters][1319]
-- [said][1320]
-  - [Parameters][1321]
-- [placeThread][1322]
-  - [Parameters][1323]
-- [spots][1324]
-- [commentOn][1325]
-  - [Parameters][1326]
-- [PlacedThread][1327]
-  - [Properties][1328]
-- [readableText][1329]
-  - [Parameters][1330]
-- [WIDEN_STEP][1331]
-- [passageInText][1332]
-  - [Parameters][1333]
-- [][1334]
-- [withoutComment][1335]
+- [][1320]
+- [][1321]
+- [][1322]
+- [][1323]
+- [utils/tabs][1324]
+- [Tabs][1325]
+  - [Properties][1326]
+- [NO_TABS][1327]
+- [CLOSED_KEPT][1328]
+- [TabFields][1329]
+  - [Properties][1330]
+- [DOCUMENT_TABS][1331]
+- [CHAT_TABS][1332]
+- [showing][1333]
+  - [Parameters][1334]
+- [settled][1335]
   - [Parameters][1336]
-- [CommentRange][1337]
-- [runsOver][1338]
-  - [Parameters][1339]
-- [ranges][1340]
-- [going][1341]
-- [commentRanges][1342]
-  - [Parameters][1343]
-- [keepComments][1344]
-  - [Parameters][1345]
-- [][1346]
-- [nodes][1347]
-- [commentAround][1348]
-  - [Parameters][1349]
-- [CommentEntry][1350]
-  - [Properties][1351]
-- [commentsInDoc][1352]
-  - [Parameters][1353]
-- [commentsGone][1354]
-  - [Parameters][1355]
-- [commentsInMarkdown][1356]
-  - [Parameters][1357]
-- [plainPassage][1358]
-  - [Parameters][1359]
-- [closeOf][1360]
-  - [Parameters][1361]
-- [CommentCount][1362]
-- [commentMarkupPlugin][1363]
+- [tabsOf][1337]
+  - [Parameters][1338]
+- [tabsPatch][1339]
+  - [Parameters][1340]
+- [normalizeTabs][1341]
+  - [Parameters][1342]
+- [openTab][1343]
+  - [Parameters][1344]
+- [keepTab][1345]
+  - [Parameters][1346]
+- [moveTab][1347]
+  - [Parameters][1348]
+- [without][1349]
+  - [Parameters][1350]
+- [closeTab][1351]
+  - [Parameters][1352]
+- [closeTabs][1353]
+  - [Parameters][1354]
+- [dropTabs][1355]
+  - [Parameters][1356]
+- [lastClosed][1357]
+  - [Parameters][1358]
+- [tabBeside][1359]
+  - [Parameters][1360]
+- [tabAt][1361]
+  - [Parameters][1362]
+- [tabNames][1363]
   - [Parameters][1364]
-- [top][1365]
-- [split][1366]
-- [state][1367]
-  - [Parameters][1368]
-- [state][1369]
-  - [Parameters][1370]
-- [state][1371]
-  - [Parameters][1372]
-- [state][1373]
-  - [Parameters][1374]
-- [state][1375]
-  - [Parameters][1376]
-- [state][1377]
-  - [Parameters][1378]
-- [state][1379]
-  - [Parameters][1380]
-- [loose][1381]
-- [loose][1382]
-- [editor/markdown][1383]
-- [formulaInline][1384]
+- [tail][1365]
+  - [Parameters][1366]
+- [utils/tarWriter][1367]
+- [BLOCK][1368]
+- [NAME_MOST][1369]
+- [SIZE_MOST][1370]
+- [TarWriter][1371]
+- [header][1372]
+  - [Parameters][1373]
+- [put][1374]
+  - [Parameters][1375]
+- [octal][1376]
+  - [Parameters][1377]
+- [record][1378]
+  - [Parameters][1379]
+- [padding][1380]
+  - [Parameters][1381]
+- [tarWriter][1382]
+  - [Parameters][1383]
+- [begin][1384]
   - [Parameters][1385]
-- [formulaInline][1386]
-  - [Parameters][1387]
-- [closeOn][1388]
-  - [Parameters][1389]
-- [formulaBlock][1390]
-  - [Parameters][1391]
-- [cellsIn][1392]
-  - [Parameters][1393]
-- [tokenizerOf][1394]
-- [block][1395]
-- [block][1396]
-- [][1397]
-- [][1398]
-- [TAIL][1399]
-- [ROOM][1400]
-- [DELIMITED][1401]
-- [spacesAsNeighbours][1402]
+- [utils/tex][1386]
+- [TEX][1387]
+- [DISPLAY][1388]
+- [MATH_BLOCK][1389]
+- [SINGLE][1390]
+- [MATH_INLINE][1391]
+- [Found][1392]
+  - [Properties][1393]
+- [trimTex][1394]
+  - [Parameters][1395]
+- [foundIn][1396]
+  - [Parameters][1397]
+- [formulaAt][1398]
+  - [Parameters][1399]
+- [mayHoldFormula][1400]
+  - [Parameters][1401]
+- [replaceFormulas][1402]
   - [Parameters][1403]
-- [children][1404]
-- [children][1405]
-- [LinearSerializer][1406]
-  - [serialize][1407]
-    - [Parameters][1408]
-  - [write][1409]
-    - [Parameters][1410]
-- [][1411]
-- [DOLLAR_MARKS][1412]
-- [DOLLAR_MARKS][1413]
-- [dollarsResolved][1414]
-  - [Parameters][1415]
-- [opensFormula][1416]
-  - [Parameters][1417]
-- [dollarsIn][1418]
+- [utils/titleValidation][1404]
+- [normalizeTitle][1405]
+  - [Parameters][1406]
+- [shouldUpdateTitle][1407]
+  - [Parameters][1408]
+- [isCustomTitle][1409]
+  - [Parameters][1410]
+- [getTitlePlaceholder][1411]
+  - [Parameters][1412]
+- [freeName][1413]
+  - [Parameters][1414]
+- [][1415]
+- [utils/touch][1416]
+- [hasTouchKeyboard][1417]
+- [submitOnEnter][1418]
   - [Parameters][1419]
-- [][1420]
-- [][1421]
-- [BETWEEN_DOLLARS][1422]
-- [writtenFormula][1423]
+- [utils/trash][1420]
+- [TRASH_KEPT_MS][1421]
+- [TRASH_KEPT_MS][1422]
+- [expired][1423]
   - [Parameters][1424]
-- [writtenFormulaBlock][1425]
+- [trashedIds][1425]
   - [Parameters][1426]
-- [ENTITY][1427]
-- [AUTOLINK][1428]
-- [escapeMore][1429]
-  - [Parameters][1430]
-- [endsLine][1431]
-  - [Parameters][1432]
-- [withBlockSuggestions][1433]
-  - [Parameters][1434]
-- [withBlockSuggestions][1435]
+- [known][1427]
+- [known][1428]
+- [][1429]
+- [outOfTrash][1430]
+  - [Parameters][1431]
+- [utils/turns][1432]
+- [Turn][1433]
+  - [Properties][1434]
+- [commandOf][1435]
   - [Parameters][1436]
-- [type][1437]
-- [type][1438]
-- [][1439]
-- [][1440]
-- [serializer][1441]
-- [][1442]
-- [][1443]
-- [cells][1444]
-- [rowOf][1445]
-  - [Parameters][1446]
-- [ruleOf][1447]
+- [groupTurns][1437]
+  - [Parameters][1438]
+- [turns][1439]
+- [compactedRuns][1440]
+  - [Parameters][1441]
+- [textLines][1442]
+  - [Parameters][1443]
+- [utils/unzip][1444]
+- [MIB][1445]
+- [TooLargeError][1446]
+- [unzipWithin][1447]
   - [Parameters][1448]
-- [parseMarkdown][1449]
-  - [Parameters][1450]
-- [serializeMarkdown][1451]
-  - [Parameters][1452]
-- [settleMarkdown][1453]
-  - [Parameters][1454]
-- [appendBlocks][1455]
+- [utils/versions][1449]
+- [PAUSE_MS][1450]
+- [PAUSE_MS][1451]
+- [PAUSE_MS][1452]
+- [STRETCH_MS][1453]
+- [DAILY_FOR_MS][1454]
+- [dayOf][1455]
   - [Parameters][1456]
-- [editor/suggestions][1457]
-- [SUGGESTION_MARKUP][1458]
-- [SUGGESTION_MARKUP][1459]
-- [SUGGESTION_MARKUP][1460]
-- [SUGGESTION_MARKUP][1461]
-- [ID_PATTERN][1462]
-- [MAX_EDITS][1463]
-- [MAX_BLOCK_EDITS][1464]
-- [MAX_PAIRS][1465]
-- [NEAR_BLOCKS][1466]
-- [PIECES][1467]
-- [newSuggestionId][1468]
-- [closeSuggestion][1469]
-  - [Parameters][1470]
-- [Suggested][1471]
-  - [Properties][1472]
-- [NEAR][1473]
-- [WORD][1474]
-- [SENTENCE_END][1475]
-- [suggestChange][1476]
-  - [Parameters][1477]
-- [layOut][1478]
-  - [Parameters][1479]
-- [Part][1480]
-  - [Properties][1481]
-- [placesOf][1482]
-  - [Parameters][1483]
-- [its][1484]
-  - [Parameters][1485]
-- [its][1486]
-  - [Parameters][1487]
-- [its][1488]
+- [weekOf][1457]
+  - [Parameters][1458]
+- [thinned][1459]
+  - [Parameters][1460]
+- [CLASHED][1461]
+- [DOC_CLASHED][1462]
+- [TAKEN_BEFORE][1463]
+- [model][1464]
+- [utils/visibility][1465]
+- [FIELDS][1466]
+- [FIELDS][1467]
+- [FIELDS][1468]
+- [ChatMark][1469]
+- [ChatMarks][1470]
+- [shown][1471]
+- [markOf][1472]
+  - [Parameters][1473]
+- [][1474]
+- [withMark][1475]
+  - [Parameters][1476]
+- [chatVisibility][1477]
+  - [Parameters][1478]
+- [settle][1479]
+  - [Parameters][1480]
+- [sees][1481]
+  - [Parameters][1482]
+- [hiddenEverywhere][1483]
+  - [Parameters][1484]
+- [markFor][1485]
+  - [Parameters][1486]
+- [utils/webkit][1487]
+- [isWebKit][1488]
   - [Parameters][1489]
-- [marks][1490]
-- [apart][1491]
-  - [Parameters][1492]
-- [find][1493]
-  - [Parameters][1494]
-- [find][1495]
-- [join][1496]
-  - [Parameters][1497]
-- [touch][1498]
-  - [Parameters][1499]
-- [owner][1500]
-- [into][1501]
-- [near][1502]
-  - [Parameters][1503]
-- [beside][1504]
-- [][1505]
-- [rejecting][1506]
-  - [Parameters][1507]
-- [][1508]
-- [putBack][1509]
+- [utils/wordCount][1490]
+- [PICTURE][1491]
+- [editor/suggestionText][1492]
+- [CLOSE][1493]
+- [CLOSE][1494]
+- [INSERTED][1495]
+- [DELETED][1496]
+- [holdsSuggestions][1497]
+  - [Parameters][1498]
+- [seenMarkdown][1499]
+  - [Parameters][1500]
+- [textAsItStands][1501]
+  - [Parameters][1502]
+- [withoutSuggestionMarkup][1503]
+  - [Parameters][1504]
+- [Turned][1505]
+  - [Properties][1506]
+- [Reading][1507]
+  - [Properties][1508]
+- [written][1509]
   - [Parameters][1510]
-- [docOf][1511]
-  - [Parameters][1512]
-- [acceptSuggestion][1513]
-  - [Parameters][1514]
-- [rejectSuggestion][1515]
-  - [Parameters][1516]
-- [settling][1517]
-  - [Parameters][1518]
-- [][1519]
-- [seeing][1520]
-  - [Parameters][1521]
-- [goes][1522]
-  - [Parameters][1523]
-- [changeOf][1524]
-  - [Parameters][1525]
-- [texts][1526]
-  - [Parameters][1527]
-- [leafText][1528]
-  - [Parameters][1529]
-- [SuggestionRange][1530]
-  - [Properties][1531]
-- [suggestionRanges][1532]
-  - [Parameters][1533]
-- [suggestionAround][1534]
-  - [Parameters][1535]
-- [suggestionOf][1536]
-  - [Parameters][1537]
-- [SuggestionEntry][1538]
-- [suggestionEntries][1539]
-  - [Parameters][1540]
-- [starts][1541]
-- [suggestionsIn][1542]
+- [written][1511]
+- [filter][1512]
+- [filter][1513]
+- [readingOf][1514]
+  - [Parameters][1515]
+- [blocks][1516]
+- [held][1517]
+- [says][1518]
+- [endOf][1519]
+  - [Parameters][1520]
+- [editor/suggestions][1521]
+- [SUGGESTION_MARKUP][1522]
+- [SUGGESTION_MARKUP][1523]
+- [SUGGESTION_MARKUP][1524]
+- [SUGGESTION_MARKUP][1525]
+- [ID_PATTERN][1526]
+- [MAX_EDITS][1527]
+- [MAX_BLOCK_EDITS][1528]
+- [MAX_PAIRS][1529]
+- [NEAR_BLOCKS][1530]
+- [PIECES][1531]
+- [newSuggestionId][1532]
+- [closeSuggestion][1533]
+  - [Parameters][1534]
+- [Suggested][1535]
+  - [Properties][1536]
+- [NEAR][1537]
+- [WORD][1538]
+- [SENTENCE_END][1539]
+- [suggestChange][1540]
+  - [Parameters][1541]
+- [layOut][1542]
   - [Parameters][1543]
-- [contentOf][1544]
-  - [Parameters][1545]
-- [sequenceOf][1546]
+- [Part][1544]
+  - [Properties][1545]
+- [placesOf][1546]
   - [Parameters][1547]
-- [gone][1548]
-- [come][1549]
-- [latest][1550]
+- [its][1548]
+  - [Parameters][1549]
+- [its][1550]
   - [Parameters][1551]
-- [][1552]
-- [isList][1553]
-  - [Parameters][1554]
-- [stretchOf][1555]
+- [its][1552]
+  - [Parameters][1553]
+- [marks][1554]
+- [apart][1555]
   - [Parameters][1556]
-- [][1557]
-- [pairsOf][1558]
-  - [Parameters][1559]
-- [changedOf][1560]
+- [find][1557]
+  - [Parameters][1558]
+- [find][1559]
+- [join][1560]
   - [Parameters][1561]
-- [tableChanged][1562]
+- [touch][1562]
   - [Parameters][1563]
-- [made][1564]
-- [row][1565]
-- [wordsChanged][1566]
+- [owner][1564]
+- [into][1565]
+- [near][1566]
   - [Parameters][1567]
-- [laid][1568]
-- [content][1569]
-- [content][1570]
-- [content][1571]
-- [inComments][1572]
-  - [Parameters][1573]
-- [wholly][1574]
-  - [Parameters][1575]
-- [insertedWhole][1576]
-  - [Parameters][1577]
-- [dropping][1578]
-  - [Parameters][1579]
-- [inline][1580]
-- [goneIn][1581]
+- [beside][1568]
+- [][1569]
+- [rejecting][1570]
+  - [Parameters][1571]
+- [][1572]
+- [putBack][1573]
+  - [Parameters][1574]
+- [docOf][1575]
+  - [Parameters][1576]
+- [acceptSuggestion][1577]
+  - [Parameters][1578]
+- [rejectSuggestion][1579]
+  - [Parameters][1580]
+- [settling][1581]
   - [Parameters][1582]
-- [suggestionMarkupPlugin][1583]
-  - [Parameters][1584]
-- [opened][1585]
-- [closeAhead][1586]
+- [][1583]
+- [seeing][1584]
+  - [Parameters][1585]
+- [blockSeen][1586]
   - [Parameters][1587]
-- [suggestedBlock][1588]
+- [goneFor][1588]
   - [Parameters][1589]
-- [][1590]
-- [][1591]
-- [likeness][1592]
+- [changeOf][1590]
+  - [Parameters][1591]
+- [texts][1592]
   - [Parameters][1593]
-- [blockWords][1594]
-- [wordsIn][1595]
-  - [Parameters][1596]
-- [alike][1597]
-  - [Parameters][1598]
-- [marked][1599]
-  - [Parameters][1600]
-- [isSuggestion][1601]
-  - [Parameters][1602]
-- [commentsOf][1603]
-  - [Parameters][1604]
-- [remade][1605]
+- [leafText][1594]
+  - [Parameters][1595]
+- [SuggestionRange][1596]
+  - [Properties][1597]
+- [suggestionRanges][1598]
+  - [Parameters][1599]
+- [suggestionAround][1600]
+  - [Parameters][1601]
+- [suggestionOf][1602]
+  - [Parameters][1603]
+- [SuggestionEntry][1604]
+- [suggestionEntries][1605]
   - [Parameters][1606]
-- [childrenOf][1607]
-  - [Parameters][1608]
-- [keyOf][1609]
-  - [Parameters][1610]
-- [child][1611]
-- [markupKey][1612]
+- [starts][1607]
+- [suggestionsIn][1608]
+  - [Parameters][1609]
+- [contentOf][1610]
+  - [Parameters][1611]
+- [sequenceOf][1612]
   - [Parameters][1613]
-- [marksKey][1614]
-  - [Parameters][1615]
-- [utils/wordDiff][1616]
-- [Piece][1617]
-  - [Properties][1618]
-- [MOST_CHANGES][1619]
-- [linesOf][1620]
-  - [Parameters][1621]
-- [textChanges][1622]
-  - [Parameters][1623]
-- [][1624]
-- [][1625]
-- [filter][1626]
-- [utils/zipWriter][1627]
-- [SLICE][1628]
-- [GATHER][1629]
-- [MOST_BYTES][1630]
-- [ZipWriter][1631]
-- [zipWriter][1632]
+- [gone][1614]
+- [come][1615]
+- [latest][1616]
+  - [Parameters][1617]
+- [][1618]
+- [isList][1619]
+  - [Parameters][1620]
+- [stretchOf][1621]
+  - [Parameters][1622]
+- [][1623]
+- [pairsOf][1624]
+  - [Parameters][1625]
+- [changedOf][1626]
+  - [Parameters][1627]
+- [tableChanged][1628]
+  - [Parameters][1629]
+- [made][1630]
+- [row][1631]
+- [wordsChanged][1632]
   - [Parameters][1633]
-- [written][1634]
-- [gathered][1635]
-- [failed][1636]
-- [][1637]
-- [counted][1638]
+- [laid][1634]
+- [content][1635]
+- [content][1636]
+- [content][1637]
+- [inComments][1638]
   - [Parameters][1639]
+- [wholly][1640]
+  - [Parameters][1641]
+- [insertedWhole][1642]
+  - [Parameters][1643]
+- [dropping][1644]
+  - [Parameters][1645]
+- [inline][1646]
+- [goneIn][1647]
+  - [Parameters][1648]
+- [suggestionMarkupPlugin][1649]
+  - [Parameters][1650]
+- [opened][1651]
+- [closeAhead][1652]
+  - [Parameters][1653]
+- [suggestedBlock][1654]
+  - [Parameters][1655]
+- [][1656]
+- [][1657]
+- [likeness][1658]
+  - [Parameters][1659]
+- [blockWords][1660]
+- [wordsIn][1661]
+  - [Parameters][1662]
+- [alike][1663]
+  - [Parameters][1664]
+- [marked][1665]
+  - [Parameters][1666]
+- [isSuggestion][1667]
+  - [Parameters][1668]
+- [commentsOf][1669]
+  - [Parameters][1670]
+- [remade][1671]
+  - [Parameters][1672]
+- [childrenOf][1673]
+  - [Parameters][1674]
+- [keyOf][1675]
+  - [Parameters][1676]
+- [child][1677]
+- [markupKey][1678]
+  - [Parameters][1679]
+- [marksKey][1680]
+  - [Parameters][1681]
+- [utils/wordDiff][1682]
+- [Piece][1683]
+  - [Properties][1684]
+- [MOST_CHANGES][1685]
+- [linesOf][1686]
+  - [Parameters][1687]
+- [textChanges][1688]
+  - [Parameters][1689]
+- [][1690]
+- [][1691]
+- [utils/zipWriter][1692]
+- [SLICE][1693]
+- [GATHER][1694]
+- [MOST_BYTES][1695]
+- [ZipWriter][1696]
+- [zipWriter][1697]
+  - [Parameters][1698]
+- [gathered][1699]
+- [failed][1700]
+- [][1701]
+- [counted][1702]
+  - [Parameters][1703]
 
 ## utils/addressKeys
 
@@ -1652,7 +1716,7 @@ often part of its address, and a connection's endpoint can carry one.
 
 What stands in an address where a key was, in a file made without keys.
 
-Type: [string][1640]
+Type: [string][1704]
 
 ## CREDENTIAL_NAME
 
@@ -1666,9 +1730,9 @@ An account's id in a path looks like one too, and is left out with them.
 
 ### Parameters
 
-- `piece` **[string][1640]**&#x20;
+- `piece` **[string][1704]**&#x20;
 
-Returns **[boolean][1641]**&#x20;
+Returns **[boolean][1705]**&#x20;
 
 ## withoutAddressKeys
 
@@ -1692,7 +1756,7 @@ Whether an address has a key left out of it.
 
 - `address` **unknown**&#x20;
 
-Returns **[boolean][1641]**&#x20;
+Returns **[boolean][1705]**&#x20;
 
 ## utils/backup
 
@@ -1720,19 +1784,19 @@ beside the others, a settings file is merged into the setup here
 
 Format of the backup envelope itself, independent of the database schema.
 
-Type: [number][1642]
+Type: [number][1706]
 
 ## Backup
 
-Type: [Object][1643]
+Type: [Object][1707]
 
 ### Properties
 
-- `app` **[string][1640]** Always 'inksprite'; guards against importing a stray JSON file
-- `format` **[number][1642]** Envelope format, see BACKUP_FORMAT
-- `dbVersion` **[number][1642]** Dexie schema version the rows were written at
-- `exported` **[number][1642]** Timestamp
-- `includesApiKeys` **[boolean][1641]** Whether provider credentials were kept
+- `app` **[string][1704]** Always 'inksprite'; guards against importing a stray JSON file
+- `format` **[number][1706]** Envelope format, see BACKUP_FORMAT
+- `dbVersion` **[number][1706]** Dexie schema version the rows were written at
+- `exported` **[number][1706]** Timestamp
+- `includesApiKeys` **[boolean][1705]** Whether provider credentials were kept
 - `scope` **BackupScope?** What the file holds: every table, one chat and its messages, one project and its chats, the writer's settings, or what they ticked in Export of their projects, character cards and settings. Files written before there was a choice have none, and hold the database.
 - `tables` **TableData** Row arrays keyed by table name
 
@@ -1741,7 +1805,7 @@ Type: [Object][1643]
 What a file can hold, and where in the app each kind is read back — for
 telling a writer who picked the right file in the wrong place.
 
-Type: Record<[string][1640], {noun: [string][1640], hint: [string][1640]}>
+Type: Record<[string][1704], {noun: [string][1704], hint: [string][1704]}>
 
 ## UPGRADES
 
@@ -1761,17 +1825,17 @@ megabytes; the limit is on the call, so slices of it cost nothing.
 
 ### Parameters
 
-- `bytes` **[Uint8Array][1644]**&#x20;
+- `bytes` **[Uint8Array][1708]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## fromBase64
 
 ### Parameters
 
-- `base64` **[string][1640]**&#x20;
+- `base64` **[string][1704]**&#x20;
 
-Returns **[Uint8Array][1644]<[ArrayBuffer][1645]>**&#x20;
+Returns **[Uint8Array][1708]<[ArrayBuffer][1709]>**&#x20;
 
 ## SerializedFile
 
@@ -1782,14 +1846,14 @@ hold every file's name and none of its bytes, and say nothing about it. The
 bytes go out as base64 with the media type beside them; the file grows by a
 third, which is what base64 costs.
 
-Type: [Object][1643]
+Type: [Object][1707]
 
 ### Properties
 
-- `id` **[string][1640]**&#x20;
-- `storyId` **[string][1640]**&#x20;
-- `mime` **[string][1640]** The blob's type
-- `data` **[string][1640]** Its bytes, base64Going into a zip (`utils/backupArchive.js`), the bytes stay a Blob, which
+- `id` **[string][1704]**&#x20;
+- `storyId` **[string][1704]**&#x20;
+- `mime` **[string][1704]** The blob's type
+- `data` **[string][1704]** Its bytes, base64Going into a zip (`utils/backupArchive.js`), the bytes stay a Blob, which
   the archive keeps as an entry of their own.
 
 ## deserializeFiles
@@ -1815,14 +1879,14 @@ A `cardFiles` row as JSON can carry it: the PNG as base64, as a file's bytes
 go. The thumbnail is left out; it is made again from the PNG when the grid
 first wants it.
 
-Type: [Object][1643]
+Type: [Object][1707]
 
 ### Properties
 
-- `id` **[string][1640]**&#x20;
+- `id` **[string][1704]**&#x20;
 - `card` **any**&#x20;
-- `mime` **[string][1640]** The PNG's type, or empty for a card with none
-- `data` **[string][1640]** Its bytes, base64, or empty
+- `mime` **[string][1704]** The PNG's type, or empty for a card with none
+- `data` **[string][1704]** Its bytes, base64, or empty
 
 ## deserializeCardFiles
 
@@ -1839,11 +1903,11 @@ Type: any
 
 ## kept
 
-Type: [Set][1646]<[string][1640]>
+Type: [Set][1710]<[string][1704]>
 
 ## kept
 
-Type: [Set][1646]<[string][1640]>
+Type: [Set][1710]<[string][1704]>
 
 ## replaceById
 
@@ -1851,10 +1915,10 @@ Overlay changed rows onto a table, matching by id.
 
 ### Parameters
 
-- `rows` **[Array][1647]\<any>**&#x20;
-- `changed` **[Array][1647]\<any>**&#x20;
+- `rows` **[Array][1711]\<any>**&#x20;
+- `changed` **[Array][1711]\<any>**&#x20;
 
-Returns **[Array][1647]\<any>**&#x20;
+Returns **[Array][1711]\<any>**&#x20;
 
 ## redactApiKeys
 
@@ -1868,9 +1932,9 @@ and never reach the database, so they are already absent here.
 
 ### Parameters
 
-- `providers` **[Array][1647]\<any>**&#x20;
+- `providers` **[Array][1711]\<any>**&#x20;
 
-Returns **[Array][1647]\<any>** Providers with every key emptied
+Returns **[Array][1711]\<any>** Providers with every key emptied
 
 ## redactServerKeys
 
@@ -1883,9 +1947,9 @@ entered again; the client sends none that is empty.
 
 ### Parameters
 
-- `servers` **[Array][1647]\<any>**&#x20;
+- `servers` **[Array][1711]\<any>**&#x20;
 
-Returns **[Array][1647]\<any>** Servers with every header's value emptied
+Returns **[Array][1711]\<any>** Servers with every header's value emptied
 
 ## redactWebKeys
 
@@ -1895,9 +1959,9 @@ key was already empty is dropped, as a provider's is.
 
 ### Parameters
 
-- `rows` **[Array][1647]\<any>**&#x20;
+- `rows` **[Array][1711]\<any>**&#x20;
 
-Returns **[Array][1647]\<any>** Rows with every key emptied
+Returns **[Array][1711]\<any>** Rows with every key emptied
 
 ## REDACTED
 
@@ -1910,10 +1974,10 @@ Assemble a backup envelope from raw table contents.
 ### Parameters
 
 - `tables` **TableData** Every table, keyed by name
-- `opts` **[object][1643]**&#x20;
-  - `opts.dbVersion` **[number][1642]** Schema version the rows came from
-  - `opts.includeApiKeys` **[boolean][1641]?** Keep provider, server and web search credentials (default false) (optional, default `false`)
-  - `opts.exported` **[number][1642]?** Timestamp, injectable for tests (optional, default `Date.now()`)
+- `opts` **[object][1707]**&#x20;
+  - `opts.dbVersion` **[number][1706]** Schema version the rows came from
+  - `opts.includeApiKeys` **[boolean][1705]?** Keep provider, server and web search credentials (default false) (optional, default `false`)
+  - `opts.exported` **[number][1706]?** Timestamp, injectable for tests (optional, default `Date.now()`)
   - `opts.scope` **BackupScope?** What the tables hold (default the whole database) (optional, default `'database'`)
   - `opts.settings` &#x20;
 
@@ -1925,55 +1989,59 @@ Type: TableData
 
 ## out
 
-Type: [Array][1647]<[Document][1648]>
+Type: [Array][1711]<[Document][1712]>
 
 ## out
 
-Type: [Array][1647]<[Document][1648]>
+Type: [Array][1711]<[Document][1712]>
 
 ## out
 
-Type: [Array][1647]<[Document][1648]>
+Type: [Array][1711]<[Document][1712]>
 
 ## out
 
-Type: [Array][1647]\<Message>
+Type: [Array][1711]\<Message>
 
 ## out
 
-Type: [Array][1647]\<Message>
+Type: [Array][1711]\<Message>
 
 ## out
 
-Type: [Array][1647]<[Document][1648]>
+Type: [Array][1711]<[Document][1712]>
 
 ## out
 
-Type: Record<[string][1640], [Array][1647]\<any>>
+Type: Record<[string][1704], [Array][1711]\<any>>
 
 ## out
 
-Type: [Array][1647]<[Step][468]>
+Type: [Array][1711]<[Step][727]>
 
 ## out
 
-Type: [Array][1647]\<T>
+Type: [Array][1711]\<T>
 
 ## out
 
-Type: [Array][1647]<\[[number][1642], [number][1642]]>
+Type: [Array][1711]<\[[number][1706], [number][1706]]>
 
 ## out
 
-Type: [Array][1647]<[Document][1648]>
+Type: [Array][1711]<[Document][1712]>
 
 ## out
 
-Type: Record<[string][1640], [string][1640]>
+Type: [Array][1711]<[string][1704]>
 
 ## out
 
-Type: Record<[string][1640], [PartialField][755]>
+Type: Record<[string][1704], [string][1704]>
+
+## out
+
+Type: Record<[string][1704], [PartialField][1018]>
 
 ## out
 
@@ -1981,43 +2049,43 @@ Type: TableData
 
 ## out
 
-Type: [Set][1646]<[string][1640]>
+Type: [Set][1710]<[string][1704]>
 
 ## out
 
-Type: [Array][1647]<[string][1640]>
+Type: [Array][1711]<[string][1704]>
 
 ## out
 
-Type: [Array][1647]<[Part][1480]>
+Type: [Array][1711]<[Part][1544]>
 
 ## out
 
-Type: [Array][1647]<[SuggestionRange][1530]>
+Type: [Array][1711]<[SuggestionRange][1596]>
 
 ## out
 
-Type: [Array][1647]<[Node][1649]>
+Type: [Array][1711]<[Node][1713]>
 
 ## out
 
-Type: [Array][1647]<([Node][1649] | null)>
+Type: [Array][1711]<([Node][1713] | null)>
 
 ## out
 
-Type: [Array][1647]<\[[number][1642], [number][1642]]>
+Type: [Array][1711]<\[[number][1706], [number][1706]]>
 
 ## out
 
-Type: [Array][1647]<\[[number][1642], [number][1642]]>
+Type: [Array][1711]<\[[number][1706], [number][1706]]>
 
 ## out
 
-Type: [Array][1647]<{key: [string][1640], node: [Node][1649]}>
+Type: [Array][1711]<{key: [string][1704], node: [Node][1713]}>
 
 ## out
 
-Type: [Array][1647]<[Node][1649]>
+Type: [Array][1711]<[Node][1713]>
 
 ## validateBackup
 
@@ -2026,14 +2094,14 @@ Check that parsed JSON is a backup this build can read.
 ### Parameters
 
 - `data` **any** Result of JSON.parse on an uploaded file
-- `currentDbVersion` **[number][1642]** Schema version of the running database
+- `currentDbVersion` **[number][1706]** Schema version of the running database
 - `scope` **BackupScope?** What the caller is expecting the file to hold (optional, default `'database'`)
 
-Returns **{ok: [boolean][1641], errors: [Array][1647]<[string][1640]>}**&#x20;
+Returns **{ok: [boolean][1705], errors: [Array][1711]<[string][1704]>}**&#x20;
 
 ## errors
 
-Type: [Array][1647]<[string][1640]>
+Type: [Array][1711]<[string][1704]>
 
 ## upgradeTables
 
@@ -2042,12 +2110,12 @@ Move table data forward to the running schema version.
 ### Parameters
 
 - `tables` **TableData**&#x20;
-- `fromVersion` **[number][1642]** Schema version the rows were written at
-- `toVersion` **[number][1642]** Schema version of the running database
+- `fromVersion` **[number][1706]** Schema version the rows were written at
+- `toVersion` **[number][1706]** Schema version of the running database
 
 <!---->
 
-- Throws **[Error][1650]** If the rows are from a newer schema, or a version in the range
+- Throws **[Error][1714]** If the rows are from a newer schema, or a version in the range
   has no registered transform
 
 Returns **TableData**&#x20;
@@ -2061,7 +2129,7 @@ Tables with no rows are omitted — an empty list is noise in a summary.
 
 - `backup` **[Backup][12]**&#x20;
 
-Returns **[Array][1647]<{table: [string][1640], count: [number][1642]}>** Largest first
+Returns **[Array][1711]<{table: [string][1704], count: [number][1706]}>** Largest first
 
 ## COUNTED
 
@@ -2084,21 +2152,25 @@ profiles, skills, servers — which are not worth counting one by one.
 
 - `backup` **[Backup][12]**&#x20;
 
-Returns **[string][1640]** A sentence
+Returns **[string][1704]** A sentence
 
 ## rows
 
 ### Parameters
 
-- `table` **[string][1640]**&#x20;
+- `table` **[string][1704]**&#x20;
 
 ## rows
 
-Type: [Array][1647]\<Message>
+Type: [Array][1711]\<Message>
 
 ## parts
 
-Type: [Array][1647]<[string][1640]>
+Type: [Array][1711]<[string][1704]>
+
+## parts
+
+Type: [Array][1711]\<BlobPart>
 
 ## keysLeftOut
 
@@ -2113,11 +2185,11 @@ the services and servers alone.
 - `backup` **[Backup][12]**&#x20;
 - `webName` (optional, default `id=>id`)
 
-Returns **[Array][1647]<[string][1640]>** Each name once, providers first
+Returns **[Array][1711]<[string][1704]>** Each name once, providers first
 
 ##
 
-Type: [string][1640]
+Type: [string][1704]
 
 ## backupFilename
 
@@ -2125,13 +2197,13 @@ Filename for a downloaded backup, e.g. `inksprite-backup-2026-08-23.json`.
 
 ### Parameters
 
-- `date` **[Date][1651]**&#x20;
+- `date` **[Date][1715]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ##
 
-Type: [number][1642]
+Type: [number][1706]
 
 ## slugOf
 
@@ -2140,9 +2212,9 @@ hyphens, cut to a length a file browser shows.
 
 ### Parameters
 
-- `title` **[string][1640]**&#x20;
+- `title` **[string][1704]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## slugOf
 
@@ -2150,9 +2222,9 @@ The link a heading's title makes, before it is made unique.
 
 ### Parameters
 
-- `title` **[string][1640]**&#x20;
+- `title` **[string][1704]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## chatFilename
 
@@ -2160,9 +2232,9 @@ Filename for a downloaded chat, e.g. `inksprite-chat-plot-holes-in-act-two.json`
 
 ### Parameters
 
-- `title` **[string][1640]**&#x20;
+- `title` **[string][1704]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## chatFromTables
 
@@ -2180,17 +2252,17 @@ the user's own, which the importing library may not hold.
 
 <!---->
 
-- Throws **[Error][1650]** If there is no chat in the file
+- Throws **[Error][1714]** If there is no chat in the file
 
 ## ProjectRows
 
 One project's rows, as a project file holds them.
 
-Type: [Object][1643]
+Type: [Object][1707]
 
 ### Properties
 
-- `files` **[Array][1647]<[SerializedFile][20]>** The bytes behind its file documents, still as the file carries them
+- `files` **[Array][1711]<[SerializedFile][20]>** The bytes behind its file documents, still as the file carries them
 
 ## projectFromTables
 
@@ -2204,20 +2276,20 @@ under an id nothing else uses.
 ### Parameters
 
 - `tables` **TableData** Already moved forward to the running schema
-- `storyId` **[string][1640]?** Which project, when the file has several; the
+- `storyId` **[string][1704]?** Which project, when the file has several; the
   first otherwise
 
 <!---->
 
-- Throws **[Error][1650]** If there is no such project in the file
+- Throws **[Error][1714]** If there is no such project in the file
 
-Returns **[ProjectRows][98]**&#x20;
+Returns **[ProjectRows][100]**&#x20;
 
 ## own
 
 ### Parameters
 
-- `rows` **[Array][1647]\<any>?**&#x20;
+- `rows` **[Array][1711]\<any>?**&#x20;
 
 ## projectName
 
@@ -2225,9 +2297,9 @@ What a project in a file is called: its root's title.
 
 ### Parameters
 
-- `project` **[ProjectRows][98]**&#x20;
+- `project` **[ProjectRows][100]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## projectsFromTables
 
@@ -2237,7 +2309,7 @@ Every project a file holds, each as `projectFromTables` picks it out.
 
 - `tables` **TableData** Already moved forward to the running schema
 
-Returns **[Array][1647]<[ProjectRows][98]>**&#x20;
+Returns **[Array][1711]<[ProjectRows][100]>**&#x20;
 
 ## withFreshIds
 
@@ -2260,33 +2332,33 @@ the project's, and one the library already holds is the one to use.
 
 ### Parameters
 
-- `project` **[ProjectRows][98]**&#x20;
+- `project` **[ProjectRows][100]**&#x20;
 - `mint` (optional, default `` prefix=>`${prefix}_${nanoid()}` ``)
 
-Returns **[ProjectRows][98]**&#x20;
+Returns **[ProjectRows][100]**&#x20;
 
 ## ids
 
-Type: [Map][1652]<[string][1640], [string][1640]>
+Type: [Map][1716]<[string][1704], [string][1704]>
 
 ## ids
 
-Type: [Array][1647]<[string][1640]>
+Type: [Array][1711]<[string][1704]>
 
 ## ids
 
-Type: [Set][1646]<[string][1640]>
+Type: [Set][1710]<[string][1704]>
 
 ## ids
 
-Type: [Set][1646]<[string][1640]>
+Type: [Set][1710]<[string][1704]>
 
 ## renew
 
 ### Parameters
 
-- `rows` **[Array][1647]<{id: [string][1640]}>**&#x20;
-- `prefix` **[string][1640]**&#x20;
+- `rows` **[Array][1711]<{id: [string][1704]}>**&#x20;
+- `prefix` **[string][1704]**&#x20;
 
 ## rewriteRows
 
@@ -2307,13 +2379,13 @@ one wins.
 
 ### Parameters
 
-- `ids` **[Map][1652]<[string][1640], [string][1640]>** Old id to new
+- `ids` **[Map][1716]<[string][1704], [string][1704]>** Old id to new
 
 ## rewriteRun
 
 ### Parameters
 
-- `run` **[string][1640]**&#x20;
+- `run` **[string][1704]**&#x20;
 
 ## rewriteIds
 
@@ -2338,7 +2410,7 @@ Type: T
 
 ### Parameters
 
-- `pos` **[number][1642]** @param {number} assoc
+- `pos` **[number][1706]** @param {number} assoc
 - `assoc` &#x20;
 
 ## fromEntries
@@ -2378,26 +2450,26 @@ to be skipped rather than guessed at.
 
 ### Parameters
 
-- `parts` **[Array][1647]<[Part][1480]>**&#x20;
-- `scenes` **[Array][1647]\<Scene>**&#x20;
+- `parts` **[Array][1711]<[Part][1544]>**&#x20;
+- `scenes` **[Array][1711]\<Scene>**&#x20;
 
-Returns **{documents: [Array][1647]<[Document][1648]>, skipped: [Array][1647]<{id: [string][1640], reason: [string][1640]}>}**&#x20;
+Returns **{documents: [Array][1711]<[Document][1712]>, skipped: [Array][1711]<{id: [string][1704], reason: [string][1704]}>}**&#x20;
 
 ## documents
 
-Type: [Array][1647]<[Document][1648]>
+Type: [Array][1711]<[Document][1712]>
 
 ## skipped
 
-Type: [Array][1647]<{id: [string][1640], reason: [string][1640]}>
+Type: [Array][1711]<{id: [string][1704], reason: [string][1704]}>
 
 ## skipped
 
-Type: [Array][1647]<{id: [string][1640], reason: [string][1640]}>
+Type: [Array][1711]<{id: [string][1704], reason: [string][1704]}>
 
 ## storyIdByPart
 
-Type: [Map][1652]<[string][1640], [string][1640]>
+Type: [Map][1716]<[string][1704], [string][1704]>
 
 ## deleted
 
@@ -2445,25 +2517,25 @@ and shared between the Dexie upgrade hook and backup restore.
 
 ### Parameters
 
-- `storyId` **[string][1640]**&#x20;
+- `storyId` **[string][1704]**&#x20;
 
 ## manuscriptIdFor
 
 ### Parameters
 
-- `storyId` **[string][1640]**&#x20;
+- `storyId` **[string][1704]**&#x20;
 
 ## notesIdFor
 
 ### Parameters
 
-- `storyId` **[string][1640]**&#x20;
+- `storyId` **[string][1704]**&#x20;
 
 ## draftsIdFor
 
 ### Parameters
 
-- `storyId` **[string][1640]**&#x20;
+- `storyId` **[string][1704]**&#x20;
 
 ## folder
 
@@ -2471,16 +2543,16 @@ Build one of the fixed structural folders.
 
 ### Parameters
 
-- `opts` **[object][1643]**&#x20;
-  - `opts.id` **[string][1640]**&#x20;
-  - `opts.storyId` **[string][1640]**&#x20;
-  - `opts.parentId` **[string][1640]**&#x20;
-  - `opts.title` **[string][1640]**&#x20;
-  - `opts.order` **[number][1642]**&#x20;
-  - `opts.ordered` **[boolean][1641]**&#x20;
-  - `opts.now` **[number][1642]**&#x20;
+- `opts` **[object][1707]**&#x20;
+  - `opts.id` **[string][1704]**&#x20;
+  - `opts.storyId` **[string][1704]**&#x20;
+  - `opts.parentId` **[string][1704]**&#x20;
+  - `opts.title` **[string][1704]**&#x20;
+  - `opts.order` **[number][1706]**&#x20;
+  - `opts.ordered` **[boolean][1705]**&#x20;
+  - `opts.now` **[number][1706]**&#x20;
 
-Returns **[Document][1648]**&#x20;
+Returns **[Document][1712]**&#x20;
 
 ## folder
 
@@ -2488,15 +2560,15 @@ Build a folder document.
 
 ### Parameters
 
-- `opts` **[object][1643]**&#x20;
-  - `opts.id` **[string][1640]**&#x20;
-  - `opts.storyId` **[string][1640]**&#x20;
-  - `opts.parentId` **[string][1640]**&#x20;
-  - `opts.title` **[string][1640]**&#x20;
-  - `opts.order` **[number][1642]**&#x20;
-  - `opts.now` **[number][1642]**&#x20;
+- `opts` **[object][1707]**&#x20;
+  - `opts.id` **[string][1704]**&#x20;
+  - `opts.storyId` **[string][1704]**&#x20;
+  - `opts.parentId` **[string][1704]**&#x20;
+  - `opts.title` **[string][1704]**&#x20;
+  - `opts.order` **[number][1706]**&#x20;
+  - `opts.now` **[number][1706]**&#x20;
 
-Returns **[Document][1648]**&#x20;
+Returns **[Document][1712]**&#x20;
 
 ## rootNode
 
@@ -2509,11 +2581,11 @@ root without searching.
 
 ### Parameters
 
-- `storyId` **[string][1640]**&#x20;
-- `storyTitle` **[string][1640]?** Copied once; the root node's title is its own from then on
-- `now` **[number][1642]?** (optional, default `Date.now()`)
+- `storyId` **[string][1704]**&#x20;
+- `storyTitle` **[string][1704]?** Copied once; the root node's title is its own from then on
+- `now` **[number][1706]?** (optional, default `Date.now()`)
 
-Returns **[Document][1648]**&#x20;
+Returns **[Document][1712]**&#x20;
 
 ## defaultProjectFolders
 
@@ -2526,11 +2598,11 @@ nothing under its root.
 
 ### Parameters
 
-- `storyId` **[string][1640]**&#x20;
-- `storyTitle` **[string][1640]** Copied once; the root node's title is its own from then on
-- `now` **[number][1642]?** (optional, default `Date.now()`)
+- `storyId` **[string][1704]**&#x20;
+- `storyTitle` **[string][1704]** Copied once; the root node's title is its own from then on
+- `now` **[number][1706]?** (optional, default `Date.now()`)
 
-Returns **[Array][1647]<[Document][1648]>** root, manuscript, notes
+Returns **[Array][1711]<[Document][1712]>** root, manuscript, notes
 
 ## actTitle
 
@@ -2538,9 +2610,9 @@ The title the old outline would have displayed for an untitled act.
 
 ### Parameters
 
-- `act` **[Document][1648]**&#x20;
+- `act` **[Document][1712]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## byOrder
 
@@ -2548,8 +2620,8 @@ Sort helper matching the store's stable ordering.
 
 ### Parameters
 
-- `a` **[Document][1648]**&#x20;
-- `b` **[Document][1648]**&#x20;
+- `a` **[Document][1712]**&#x20;
+- `b` **[Document][1712]**&#x20;
 
 ## documentsToProjectTree
 
@@ -2564,19 +2636,19 @@ retried upgrade or a re-imported backup cannot double-nest.
 
 ### Parameters
 
-- `documents` **[Array][1647]<[Document][1648]>** Every document, across all stories
+- `documents` **[Array][1711]<[Document][1712]>** Every document, across all stories
 - `stories` &#x20;
-- `now` **[number][1642]?** (optional, default `Date.now()`)
+- `now` **[number][1706]?** (optional, default `Date.now()`)
 
-Returns **{documents: [Array][1647]<[Document][1648]>, restructured: [Array][1647]<[string][1640]>}** Full document set, and the stories touched
+Returns **{documents: [Array][1711]<[Document][1712]>, restructured: [Array][1711]<[string][1704]>}** Full document set, and the stories touched
 
 ## byStory
 
-Type: [Map][1652]<[string][1640], [Array][1647]<[Document][1648]>>
+Type: [Map][1716]<[string][1704], [Array][1711]<[Document][1712]>>
 
 ## restructured
 
-Type: [Array][1647]<[string][1640]>
+Type: [Array][1711]<[string][1704]>
 
 ## stores/migrations/lore
 
@@ -2607,15 +2679,15 @@ land in one folder rather than two that look identical in the tree.
 
 ### Parameters
 
-- `category` **[string][1640]**&#x20;
+- `category` **[string][1704]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## slug
 
 ### Parameters
 
-- `text` **[string][1640]**&#x20;
+- `text` **[string][1704]**&#x20;
 
 ## categoryFolderIdFor
 
@@ -2624,10 +2696,10 @@ the folder it made last time instead of building a second one.
 
 ### Parameters
 
-- `storyId` **[string][1640]**&#x20;
-- `category` **[string][1640]**&#x20;
+- `storyId` **[string][1704]**&#x20;
+- `category` **[string][1704]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## archiveFolderIdFor
 
@@ -2635,9 +2707,9 @@ Where entries the writer had switched off end up.
 
 ### Parameters
 
-- `storyId` **[string][1640]**&#x20;
+- `storyId` **[string][1704]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## plainTextToHtml
 
@@ -2649,17 +2721,17 @@ dropping them would run a character sheet into one block of prose.
 
 ### Parameters
 
-- `text` **[string][1640]**&#x20;
+- `text` **[string][1704]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## countWords
 
 ### Parameters
 
-- `text` **[string][1640]**&#x20;
+- `text` **[string][1704]**&#x20;
 
-Returns **[number][1642]**&#x20;
+Returns **[number][1706]**&#x20;
 
 ## countWords
 
@@ -2674,9 +2746,9 @@ and one on lines of its own none.
 
 ### Parameters
 
-- `content` **([string][1640] | null | [undefined][1653])** Markdown
+- `content` **([string][1704] | null | [undefined][1717])** Markdown
 
-Returns **[number][1642]**&#x20;
+Returns **[number][1706]**&#x20;
 
 ## loreToDocuments
 
@@ -2695,39 +2767,39 @@ upgrade or a re-imported backup cannot migrate it twice.
 
 ### Parameters
 
-- `lorebooks` **[Array][1647]\<Lorebook>**&#x20;
-- `loreEntries` **[Array][1647]\<LoreEntry>**&#x20;
-- `documents` **[Array][1647]<[Document][1648]>** Every existing document, across all stories
-- `now` **[number][1642]?** (optional, default `Date.now()`)
+- `lorebooks` **[Array][1711]\<Lorebook>**&#x20;
+- `loreEntries` **[Array][1711]\<LoreEntry>**&#x20;
+- `documents` **[Array][1711]<[Document][1712]>** Every existing document, across all stories
+- `now` **[number][1706]?** (optional, default `Date.now()`)
 
-Returns **{documents: [Array][1647]<[Document][1648]>, skipped: [Array][1647]<{id: [string][1640], reason: [string][1640]}>}** New documents only
+Returns **{documents: [Array][1711]<[Document][1712]>, skipped: [Array][1711]<{id: [string][1704], reason: [string][1704]}>}** New documents only
 
 ## storyIdByLorebook
 
-Type: [Map][1652]<[string][1640], [string][1640]>
+Type: [Map][1716]<[string][1704], [string][1704]>
 
 ## emittedFolders
 
-Type: [Set][1646]<[string][1640]>
+Type: [Set][1710]<[string][1704]>
 
 ## folderCount
 
-Type: [Map][1652]<[string][1640], [number][1642]>
+Type: [Map][1716]<[string][1704], [number][1706]>
 
 ## entryCount
 
-Type: [Map][1652]<[string][1640], [number][1642]>
+Type: [Map][1716]<[string][1704], [number][1706]>
 
 ## nextOrder
 
 ### Parameters
 
 - `counter` &#x20;
-- `parentId` **[string][1640]**&#x20;
+- `parentId` **[string][1704]**&#x20;
 
 ##
 
-Type: [Map][1652]<[string][1640], [number][1642]>
+Type: [Map][1716]<[string][1704], [number][1706]>
 
 ## entry
 
@@ -2808,26 +2880,26 @@ since edited back to the overview it was copied from.
 
 ### Parameters
 
-- `stories` **[Array][1647]\<Story>**&#x20;
-- `documents` **[Array][1647]<[Document][1648]>**&#x20;
+- `stories` **[Array][1711]\<Story>**&#x20;
+- `documents` **[Array][1711]<[Document][1712]>**&#x20;
 
-Returns **{documents: [Array][1647]<[Document][1648]>, moved: [number][1642]}**&#x20;
-
-## byId
-
-Type: [Map][1652]<[string][1640], [Document][1648]>
+Returns **{documents: [Array][1711]<[Document][1712]>, moved: [number][1706]}**&#x20;
 
 ## byId
 
-Type: [Map][1652]<[string][1640], [Document][1648]>
+Type: [Map][1716]<[string][1704], [Document][1712]>
 
 ## byId
 
-Type: [Map][1652]<[string][1640], [PlacedThread][1327]>
+Type: [Map][1716]<[string][1704], [PlacedThread][532]>
 
 ## byId
 
-Type: [Map][1652]<[string][1640], [CommentEntry][1350]>
+Type: [Map][1716]<[string][1704], [CommentEntry][560]>
+
+## byId
+
+Type: [Map][1716]<[string][1704], [Document][1712]>
 
 ## root
 
@@ -2874,13 +2946,13 @@ message that never held a command, which is nearly all of them.
 
 ### Parameters
 
-- `messages` **[Array][1647]\<Message>**&#x20;
+- `messages` **[Array][1711]\<Message>**&#x20;
 
-Returns **{messages: [Array][1647]\<Message>, converted: [number][1642]}**&#x20;
+Returns **{messages: [Array][1711]\<Message>, converted: [number][1706]}**&#x20;
 
 ## message
 
-Type: (StoredCommand | [undefined][1653])
+Type: (StoredCommand | [undefined][1717])
 
 ### message
 
@@ -2934,9 +3006,9 @@ assistant turn that said nothing looks like anyway.
 
 ### Parameters
 
-- `messages` **[Array][1647]\<Message>**&#x20;
+- `messages` **[Array][1711]\<Message>**&#x20;
 
-Returns **{messages: [Array][1647]\<Message>, moved: [number][1642]}**&#x20;
+Returns **{messages: [Array][1711]\<Message>, moved: [number][1706]}**&#x20;
 
 ## stores/migrations/characterSigil
 
@@ -2973,9 +3045,9 @@ retried upgrade or a backup taken after this one restores unchanged.
 
 ### Parameters
 
-- `messages` **[Array][1647]\<Message>**&#x20;
+- `messages` **[Array][1711]\<Message>**&#x20;
 
-Returns **{messages: [Array][1647]\<Message>, marked: [number][1642]}**&#x20;
+Returns **{messages: [Array][1711]\<Message>, marked: [number][1706]}**&#x20;
 
 ##
 
@@ -3018,7 +3090,7 @@ The block a command was already being sent as. See ai/commands.js.
 
 - `command` **any**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## segmentOf
 
@@ -3043,33 +3115,29 @@ being read as a single run anyway.
 
 ### Parameters
 
-- `messages` **[Array][1647]\<Message>**&#x20;
+- `messages` **[Array][1711]\<Message>**&#x20;
 
-Returns **{messages: [Array][1647]\<Message>, folded: [number][1642]}**&#x20;
-
-## byChat
-
-Type: [Map][1652]<[string][1640], [Array][1647]\<Message>>
+Returns **{messages: [Array][1711]\<Message>, folded: [number][1706]}**&#x20;
 
 ## byChat
 
-Type: [Map][1652]<[string][1640], [Array][1647]\<Message>>
+Type: [Map][1716]<[string][1704], [Array][1711]\<Message>>
+
+## byChat
+
+Type: [Map][1716]<[string][1704], [Array][1711]\<Message>>
 
 ## untouched
 
-Type: [Array][1647]\<Message>
+Type: [Array][1711]\<Message>
 
 ## run
 
-Type: [Array][1647]\<Message>
+Type: [Array][1711]\<Message>
 
 ## run
 
-Type: [Array][1647]<{message: Message, at: [number][1642]}>
-
-## run
-
-Type: [LineChange][621]
+Type: [Array][1711]<{message: Message, at: [number][1706]}>
 
 ## stores/migrations/turnRuns
 
@@ -3104,9 +3172,9 @@ ai/compaction.js.
 
 ### Parameters
 
-- `history` **[Array][1647]\<Message>** The chat in order
+- `history` **[Array][1711]\<Message>** The chat in order
 
-Returns **({index: [number][1642], cut: [number][1642]} | null)** Where the summary sits, and how
+Returns **({index: [number][1706], cut: [number][1706]} | null)** Where the summary sits, and how
 many messages from the start it stands for
 
 ## piecesOf
@@ -3118,7 +3186,7 @@ since schema 11; one that somehow does not is its content, as one piece.
 
 - `message` **any**&#x20;
 
-Returns **[Array][1647]\<any>**&#x20;
+Returns **[Array][1711]\<any>**&#x20;
 
 ## piecesOf
 
@@ -3127,10 +3195,10 @@ each stretch of it, its blocks' words parted by a newline.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
-- `id` **[string][1640]**&#x20;
+- `doc` **[Node][1713]**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **{out: [Array][1647]<[string][1640]>, in: [Array][1647]<[string][1640]>}**&#x20;
+Returns **{out: [Array][1711]<[string][1704]>, in: [Array][1711]<[string][1704]>}**&#x20;
 
 ## foldChat
 
@@ -3138,9 +3206,9 @@ Fold every run of the writer's messages in a chat into one message each.
 
 ### Parameters
 
-- `history` **[Array][1647]\<Message>** The chat in order
+- `history` **[Array][1711]\<Message>** The chat in order
 
-Returns **{rows: [Array][1647]\<Message>, folded: [number][1642]}** The chat with its runs folded,
+Returns **{rows: [Array][1711]\<Message>, folded: [number][1706]}** The chat with its runs folded,
 and how many were
 
 ## foldRuns
@@ -3153,9 +3221,9 @@ being read as a single run anyway.
 
 ### Parameters
 
-- `messages` **[Array][1647]\<Message>**&#x20;
+- `messages` **[Array][1711]\<Message>**&#x20;
 
-Returns **{messages: [Array][1647]\<Message>, folded: [number][1642]}**&#x20;
+Returns **{messages: [Array][1711]\<Message>, folded: [number][1706]}**&#x20;
 
 ## stores/migrations/markdown
 
@@ -3194,9 +3262,9 @@ The markdown a piece of editor HTML held.
 
 ### Parameters
 
-- `html` **[string][1640]**&#x20;
+- `html` **[string][1704]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## documentsToMarkdown
 
@@ -3206,9 +3274,9 @@ reads the same either way.
 
 ### Parameters
 
-- `documents` **[Array][1647]<[Document][1648]>**&#x20;
+- `documents` **[Array][1711]<[Document][1712]>**&#x20;
 
-Returns **{documents: [Array][1647]<[Document][1648]>, converted: [number][1642]}** Only the documents that changed
+Returns **{documents: [Array][1711]<[Document][1712]>, converted: [number][1706]}** Only the documents that changed
 
 ## editor/schema
 
@@ -3255,15 +3323,15 @@ A code block's language, from the info string kept on `data-params` or the
 
 ### Parameters
 
-- `dom` **[HTMLElement][1654]**&#x20;
+- `dom` **[HTMLElement][1718]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## code_block
 
 ##
 
-Type: [HTMLElement][1654]
+Type: [HTMLElement][1718]
 
 ## KEPT_SOURCE
 
@@ -3273,19 +3341,19 @@ The sources a pasted picture keeps: a path, an address on the web, or the pictur
 
 ## getAttribute
 
-Type: [HTMLElement][1654]
+Type: [HTMLElement][1718]
 
 ## getAttribute
 
-Type: [HTMLElement][1654]
+Type: [HTMLElement][1718]
 
 ## getAttribute
 
-Type: [HTMLElement][1654]
+Type: [HTMLElement][1718]
 
 ## getAttribute
 
-Type: [HTMLElement][1654]
+Type: [HTMLElement][1718]
 
 ## texOf
 
@@ -3295,19 +3363,19 @@ MathJax write it. Null where there is none.
 
 ### Parameters
 
-- `dom` **[HTMLElement][1654]**&#x20;
+- `dom` **[HTMLElement][1718]**&#x20;
 
-Returns **([string][1640] | null)**&#x20;
+Returns **([string][1704] | null)**&#x20;
 
 ## pastedFormula
 
 ### Parameters
 
-- `display` **[boolean][1641]** Whether the formula pasted is set on its own
+- `display` **[boolean][1705]** Whether the formula pasted is set on its own
 
 ##
 
-Type: [HTMLElement][1654]
+Type: [HTMLElement][1718]
 
 ## formula
 
@@ -3331,9 +3399,9 @@ A pasted cell's alignment, from its style or the attribute older pages use.
 
 ### Parameters
 
-- `dom` **[HTMLElement][1654]**&#x20;
+- `dom` **[HTMLElement][1718]**&#x20;
 
-Returns **([string][1640] | null)**&#x20;
+Returns **([string][1704] | null)**&#x20;
 
 ## alignmentOf
 
@@ -3347,13 +3415,13 @@ A cell's alignment, from the style markdown-it gives it.
 
 ### Parameters
 
-- `dom` **[HTMLElement][1654]**&#x20;
+- `dom` **[HTMLElement][1718]**&#x20;
 
 ## BREAKS
 
 Where one block, or one line, of a pasted cell ends.
 
-Type: [string][1640]
+Type: [string][1704]
 
 ## cellContent
 
@@ -3365,12 +3433,12 @@ words to go, and a space after each keeps two blocks' words apart.
 
 ### Parameters
 
-- `dom` **[Node][1649]**&#x20;
+- `dom` **[Node][1713]**&#x20;
 - `schema` **Schema**&#x20;
 
 ## cloneNode
 
-Type: [HTMLElement][1654]
+Type: [HTMLElement][1718]
 
 ## table
 
@@ -3405,13 +3473,13 @@ form is in `suggestions.js`.
 
 ### Parameters
 
-- `dom` **[HTMLElement][1654]**&#x20;
+- `dom` **[HTMLElement][1718]**&#x20;
 
 ## BLOCK_MARKS
 
 The marks a block can carry: a suggestion's, put in or taken out whole.
 
-Type: [string][1640]
+Type: [string][1704]
 
 ## NODE_NAMES
 
@@ -3428,6492 +3496,6 @@ The schema itself. One instance for the editor, the migration, and the
 tests, so a node from any of them is a node in all of them.
 
 Type: Schema
-
-## stores/migrations/commentThreads
-
-What each comment says moves out of the text onto its
-document's row.
-
-A comment was CriticMarkup holding its id and what was said,
-`{==passage==}{>>c7k2m1: reword this<<}`. The text keeps the passage and the
-id now, `{==passage==}{>>c7k2m1<<}`, and what was said is the first post of
-a thread in the row's `comments`, by that id, so that a comment can have
-replies and say who wrote it. Every comment from before is the writer's;
-the model could not make one. The post is dated with the document's last
-change, which is when it was last known to stand, and the same on every
-run, so a backup restored twice comes out the same.
-
-Plain documents too: their text is stored as typed, and the Comments tab
-read comments out of it all the same.
-
-Pure, like the migrations before it, so the Dexie upgrade hook and backup
-restore share one transform. Idempotent: a document with nothing in the old
-form is left as it is.
-
-## threadsOffText
-
-### Parameters
-
-- `documents` &#x20;
-
-## threadsOffText
-
-### Parameters
-
-- `documents` **[Array][1647]<[Document][1648]>**&#x20;
-
-Returns **{documents: [Array][1647]<[Document][1648]>, moved: [number][1642]}** The documents, and how
-many comments moved
-
-## stores/migrations/profiles
-
-The prompt library becomes chat profiles.
-
-A prompt was a piece of text a chat could be pointed at, and everything else
-about how a chat runs lived on the chat. A profile is all of it in one place:
-the prompt, and the roles that run under it. So every saved prompt becomes a
-profile whose prompt it is, and every chat that named a prompt names that
-profile instead.
-
-The saved prompt keeps its id, which makes the chat side a copy rather than a
-lookup, and makes the way back obvious if there has to be one. The `aiPrompts`
-table is left where it is — Dexie carries it, and a table nobody reads costs
-nothing next to a conversion nobody can undo.
-
-## builtInFor
-
-The built-in profile that was built around a given built-in prompt.
-
-The profiles used to name a prompt; now they carry one. A chat pointed at
-`builtin_roleplay` was asking for the Roleplay profile in everything but
-name, so that is what it gets; one whose profile the app no longer ships,
-as `builtin_adventure`'s, gets the default.
-
-### Parameters
-
-- `promptId` **[string][1640]**&#x20;
-
-Returns **([string][1640] | null)**&#x20;
-
-## profileFrom
-
-One saved prompt as the profile it becomes.
-
-### Parameters
-
-- `prompt` **any** An `aiPrompts` row
-
-Returns **any** A `chatProfiles` row
-
-## promptsToProfiles
-
-The profiles a library of saved prompts becomes.
-
-### Parameters
-
-- `prompts` **[Array][1647]\<any>** `aiPrompts` rows
-
-Returns **{profiles: [Array][1647]\<any>}**&#x20;
-
-## chatsToProfiles
-
-Chats, pointed at profiles rather than prompts.
-
-A chat that named a saved prompt names the profile that prompt became, which
-has the same id. One that named a built-in names the profile built around it.
-One that named nothing still names nothing, and falls back the way it always
-did — to whatever its project starts chats on.
-
-`promptId` stays on the row. Nothing reads it, and it is the only record of
-what the chat was pointed at before this ran.
-
-### Parameters
-
-- `chats` **[Array][1647]\<any>**&#x20;
-
-Returns **{chats: [Array][1647]\<any>, converted: [number][1642]}**&#x20;
-
-## storiesToProfiles
-
-The project's default, which named a prompt for the same reason a chat did.
-
-### Parameters
-
-- `stories` **[Array][1647]\<any>**&#x20;
-
-Returns **{stories: [Array][1647]\<any>, converted: [number][1642]}**&#x20;
-
-## stores/migrations/summariesInPlace
-
-Move each summary to where it is read.
-
-A summary used to be stored where it was asked for, at the end of the chat,
-carrying a count of the turns before it that it left alone. The reader did
-the rest: it found the summary, counted back, and hoisted it over the turns
-it kept. So what the writer saw, what the model was sent, and what a fork or
-a rewind cut by were three different orders, and the count had to be brought
-down whenever a message was deleted from among the ones it counted.
-
-Now a summary is stored above the turns it kept, and where it sits is what
-says what it stands for. See ai/compaction.js. This brings what was already
-stored up to that: each summary is given a time between the last message it
-stood for and the first it kept.
-
-What is read changes in one way, on purpose. Only the newest summary used to
-apply, and an older one went with everything else above it — so a game
-compacted twice had lost its first session altogether. Every summary is read
-now, and the older ones come back.
-
-Frozen at what version 15 meant by all of this, like the transforms before
-it: how the app reads a summary can change later without changing what these
-rows were.
-
-## stoodFor
-
-### Parameters
-
-- `message` &#x20;
-
-## stoodFor
-
-Whether this was a summary that stood in for anything, as of schema 14.
-
-### Parameters
-
-- `message` **Message**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## placeChat
-
-One chat's messages, with its summaries where they are read.
-
-### Parameters
-
-- `history` **[Array][1647]\<Message>** The chat in order
-
-Returns **{rows: [Array][1647]\<Message>, moved: [number][1642]}**&#x20;
-
-## targets
-
-Type: [Map][1652]<[string][1640], [number][1642]>
-
-## targets
-
-Type: [LinkTargets][633]
-
-## order
-
-Type: [Array][1647]\<Message>
-
-## moved
-
-Type: [Set][1646]<[string][1640]>
-
-## moved
-
-Whether a block put in or taken out whole and the words changed beside it,
-at the end of the block before it or the start of the one after, with no
-words between, are a paragraph parted or two joined: one change, since
-accepting either alone would lose words or have them twice. They are where
-the block shares half its words, or half theirs, with what they change the
-other way: what they take out, for a block put in.
-
-### Parameters
-
-- `laid` **[Node][1649]**&#x20;
-- `standing` **[Node][1649]**&#x20;
-- `parts` **[Array][1647]<[Part][1480]>** In `laid`
-- `at` **[Array][1647]<{from: [number][1642], to: [number][1642], whole: [boolean][1641]}>** In `standing`
-- `i` **[number][1642]** The second of the two
-
-## summariesIntoPlace
-
-Move every summary to where it is read.
-
-Deleted messages are left exactly where they are, and are not counted among
-the turns a summary kept: they were invisible to the reader that did the
-counting.
-
-### Parameters
-
-- `messages` **[Array][1647]\<Message>** Every message, in any order
-
-Returns **{messages: [Array][1647]\<Message>, moved: [number][1642]}** The rows that changed, and
-how many summaries moved
-
-## chats
-
-Type: [Map][1652]<[string][1640], [Array][1647]\<Message>>
-
-## changed
-
-Type: [Array][1647]\<Message>
-
-## changed
-
-Type: [Array][1647]<[LinkedText][631]>
-
-## stores/migrations/purgeDeleted
-
-The trash, emptied for good.
-
-Until schema version 17 a delete only marked the row, and a sweep dropped
-rows marked longer than a month. Now a delete removes the row, and there
-is no trash to sweep — so what was in it when this version arrived goes,
-in the database and in any backup restored from before. A file's bytes are
-keyed by its document's id, and go with the document.
-
-## FLAGGED_TABLES
-
-The tables that carried the flag.
-
-## Purged
-
-Type: [Object][1643]
-
-### Properties
-
-- `tables` **Record<[string][1640], [Array][1647]\<any>>** The same tables, without the rows marked deleted
-- `removed` **[number][1642]** How many rows went, file rows included
-
-## withoutDeleted
-
-Drop every row marked deleted, and the bytes of any file document among them.
-
-### Parameters
-
-- `tables` **Record<[string][1640], [Array][1647]\<any>>** Rows by table name
-
-Returns **[Purged][350]**&#x20;
-
-## goneFiles
-
-Type: [Set][1646]<[string][1640]>
-
-## deletedIds
-
-The ids of the rows in a table that are marked deleted.
-
-For the Dexie upgrade, which deletes by id rather than rewriting tables.
-
-### Parameters
-
-- `rows` **[Array][1647]\<any>**&#x20;
-
-Returns **[Array][1647]<[string][1640]>**&#x20;
-
-## stores/migrations/profileSkills
-
-A profile's wording for its roles becomes its wording for its
-skills.
-
-A profile could reword what each role ran under — the Director, Interpret,
-Write, Compaction — kept on `settings.roles` by role id. They are skills now,
-named by what the writer types, and "role" has come to mean something else:
-which model a piece of work runs on, since renamed workflows. So the wording moves to
-`settings.skills`, keyed by skill name, and Compaction's under `compact`,
-the one whose name changed.
-
-The role ids as of schema 18 are named here rather than read from the
-skills, for the reason every migration here names what it migrates: this is
-a statement about what was true then.
-
-Pure, like the migrations before it, so the Dexie upgrade hook and backup
-restore share one transform.
-
-## RENAMED
-
-Role ids, as of schema 18, whose skill has another name.
-
-## rolesToSkills
-
-Move every profile's role wording onto its skills.
-
-Idempotent: a profile with no `roles` is left as it is, so a retried upgrade
-or a backup taken after this one restores unchanged. Where a profile
-somehow has both, what is already under `skills` wins.
-
-### Parameters
-
-- `profiles` **[Array][1647]\<any>** `chatProfiles` rows
-
-Returns **{profiles: [Array][1647]\<any>, moved: [number][1642]}**&#x20;
-
-## skills
-
-##
-
-## stores/migrations/jobWorkflows
-
-A job's `role` becomes its `workflow`.
-
-A job names the settings its model is picked from: which provider, which
-model, how hard it thinks. Those were called roles until they were renamed
-workflows, and a job kept the name under `role`. A job paused before the
-rename still has to find its settings when it is resumed, so the name moves
-across rather than being read under both.
-
-Pure, like the migrations before it, so the Dexie upgrade hook and backup
-restore share one transform.
-
-## rolesToWorkflows
-
-Move every job's `role` to `workflow`.
-
-Idempotent: a job with no `role` is left as it is, so a retried upgrade or a
-backup taken after this one restores unchanged. One that somehow has both
-keeps its `workflow`.
-
-### Parameters
-
-- `jobs` **[Array][1647]\<any>** `jobs` rows
-
-Returns **{jobs: [Array][1647]\<any>, moved: [number][1642]}**&#x20;
-
-## stores/migrations/modelKeeps
-
-The model's keeps come off a chat's pins.
-
-The model could keep a document with `read_document(keep)`: a pin on the
-chat, like the writer's, recorded as the model's own in `keptIds`. Only the
-writer pins now, and what the model reads stays in the conversation instead
-(.llm/project_context_design.md). A keep left on the pins would become a pin
-of the writer's that the writer never chose, so it comes off, and `keptIds`
-goes. The model reads the document again when it wants it.
-
-Pure, like the migrations before it, so the Dexie upgrade hook and backup
-restore share one transform.
-
-## withoutModelKeeps
-
-Take every chat's keeps off its pins, and drop the record of them.
-
-Idempotent: a chat with no `keptIds` is left as it is, so a retried upgrade
-or a backup taken after this one restores unchanged.
-
-### Parameters
-
-- `chats` **[Array][1647]\<any>** `chats` rows
-
-Returns **{chats: [Array][1647]\<any>, moved: [number][1642]}**&#x20;
-
-## stores/migrations/allowedProviders
-
-A connection's allowed providers move onto its presets.
-
-OpenRouter's allowed list was part of a connection's routing policy, as
-`routing.only`, and held for every model on that account. It is a choice
-about a model — the upstreams that serve this one well — so it is the
-preset's now, as `allowedProviders` beside the model (ai/routing.js).
-
-Dropped rather than moved, a list somebody set would quietly stop applying,
-and requests they had kept to a few providers would go to any. So every
-preset on the connection takes the list it was running under, unless it has
-one of its own, and the connection's copy comes off.
-
-Pure, like the migrations before it, so the Dexie upgrade hook and backup
-restore share one transform; and self-contained, so what it does to an old
-row does not change when the routing module does.
-
-## allowedProvidersToPresets
-
-Move each connection's `routing.only` onto the presets that use it.
-
-Idempotent: a connection with no `only` is left as it is, and a preset that
-already has `allowedProviders` keeps them, so a retried upgrade or a backup
-taken after this one restores unchanged.
-
-### Parameters
-
-- `providers` **[Array][1647]\<any>** `aiProviders` rows
-- `presets` **[Array][1647]\<any>** `aiProfiles` rows
-
-Returns **{providers: [Array][1647]\<any>, presets: [Array][1647]\<any>, moved: [number][1642]}** `moved` counts
-the connections whose list came off
-
-## stores/migrations/experimentalSkills
-
-Interpret and Write go into a group of their own, switched off.
-
-The built-in skills were all in the skills group, which a chat on Default
-had on: the model was offered Interpret, and Write was the writer's alone.
-Interpret and Write are in the experimental group now, which every built-in
-profile starts with off, and Write is offered in it. A chat or a profile
-from before names no such group, so it would be offered both; it has the
-group switched off instead, as one started today does. The writer's own
-`/interpret` and `/write` are not tools, and work as they did.
-
-The group's id as of schema 28 is named here rather than imported, for the
-reason every migration here names what it migrates: this is a statement
-about what was true then.
-
-Pure, like the migrations before it, so the Dexie upgrade hook and backup
-restore share one transform.
-
-## withExperimentalOff
-
-Withheld groups with the experimental one among them.
-
-### Parameters
-
-- `groups` **([Array][1647]<[string][1640]> | [undefined][1653])**&#x20;
-
-Returns **([Array][1647]<[string][1640]> | null)** Null when it is there already
-
-## experimentalOffChats
-
-Switch the experimental group off on every chat.
-
-Idempotent: a chat with the group off already is left as it is, so a
-retried upgrade or a backup taken after this one restores unchanged.
-
-### Parameters
-
-- `chats` **[Array][1647]\<any>** `chats` rows
-
-Returns **{chats: [Array][1647]\<any>, moved: [number][1642]}**&#x20;
-
-## experimentalOffProfiles
-
-Switch the experimental group off on every profile of the writer's, which
-new chats are stamped from.
-
-Idempotent, as `experimentalOffChats` is.
-
-### Parameters
-
-- `profiles` **[Array][1647]\<any>** `chatProfiles` rows
-
-Returns **{profiles: [Array][1647]\<any>, moved: [number][1642]}**&#x20;
-
-## stores/migrations/projectViews
-
-Where the writer left a project comes off its story.
-
-The editor's tabs and the panels showing were kept on the story row, so a
-project reopened as it was left. They belong to this copy of the app, not
-to the project: in the desktop app's library the story is a file, and a
-library synced to a second machine would have each machine's tabs written
-over the other's. They move to `projectViews`, a row a project, kept with
-the app's settings.
-
-Pure, like the migrations before it, so the Dexie upgrade hook and backup
-restore share one transform.
-
-## VIEW_FIELDS
-
-The story's fields that are where the writer left it.
-
-## viewsOffStories
-
-Take where the writer left each project off its story, as a view of its
-own under the story's id. The view's `updated` is the story's, which tabs
-and panels moved with every change, so the project last worked in is still
-the last.
-
-Idempotent: a story with none of the fields is left as it is and has no
-view made for it.
-
-### Parameters
-
-- `stories` **[Array][1647]\<any>** `stories` rows
-
-Returns **{stories: [Array][1647]\<any>, views: [Array][1647]\<any>, moved: [number][1642]}**&#x20;
-
-## views
-
-Type: [Array][1647]\<any>
-
-## view
-
-Type: Record<[string][1640], any>
-
-## view
-
-### Parameters
-
-- `bytes` **[Uint8Array][1644]**&#x20;
-
-## utils/backupArchive
-
-A backup as a zip, for anything that can hold files: a
-whole backup, a selection, a project.
-
-A backup used to be one JSON file, files' bytes in it as base64. A string
-in a browser can't be longer than about 512 MB, so past that the backup
-could neither be written nor read back, and base64 made every file a third
-larger on the way. In a zip, each file's bytes are an entry of their own,
-stored as they are; the rows are JSON, a table in one entry or several,
-compressed; and `backup.json` is the envelope a JSON backup has, its
-`tables` naming the entries that hold each table's rows. A file's row
-names the entry holding its bytes (`entry`) where a JSON backup has them
-as `data`.
-
-Read back, an archive is the same envelope as a JSON backup, but for the
-rows that carry bytes: those hold a Blob (`blob`), cut from the file
-picked without reading it. The zip is read from its central directory, so
-nothing in a file's bytes can be taken for where an entry ends.
-
-Without ZIP64, an archive holds at most 4 GB and 65,535 entries; one
-larger is refused rather than written wrong.
-
-Design: the backup's format is `utils/backup.js`.
-
-## MANIFEST
-
-The envelope's entry.
-
-Type: [string][1640]
-
-## BYTES
-
-The tables whose rows carry bytes, and where a row keeps them.
-
-### BYTES
-
-Type: Record<[string][1640], [string][1640]>
-
-### BYTES
-
-Type: Record<[string][1640], [string][1640]>
-
-## ENTRY_CHARS
-
-How much JSON text an entry holds before the next is begun.
-
-## writeArchive
-
-Write a backup as a zip. Its byte-carrying rows hold Blobs: `blob` for a
-file's, `image` for a library card's, as storage keeps them.
-
-### Parameters
-
-- `backup` &#x20;
-- `$1` **[Object][1643]** (optional, default `{}`)
-  - `$1.entryChars` (optional, default `ENTRY_CHARS`)
-
-<!---->
-
-- Throws **[Error][1650]** When it is too large for a zip to hold
-
-Returns **[Promise][1655]<[Blob][1656]>**&#x20;
-
-## named
-
-Type: Record<[string][1640], [Array][1647]<[string][1640]>>
-
-## named
-
-Things of one kind as a phrase: by name when there are few, by count when
-there are more, and none when there are none.
-
-### Parameters
-
-- `names` **[Array][1647]<[string][1640]>**&#x20;
-- `one` **[string][1640]** The kind, said of one
-- `many` **[string][1640]** Said of several
-
-Returns **[Array][1647]<[string][1640]>**&#x20;
-
-## pieces
-
-Type: [Array][1647]<[string][1640]>
-
-## pieces
-
-Type: [Array][1647]<{node: [Node][1649], pos: [number][1642]}>
-
-## pieces
-
-Type: [Array][1647]<{node: [Node][1649], pos: [number][1642]}>
-
-## pieces
-
-Type: Record<[string][1640], [Array][1647]<{to: [number][1642], text: [string][1640]}>>
-
-## pieces
-
-Type: [Array][1647]<[Piece][1617]>
-
-## ZipEntry
-
-An entry of a zip, as its central directory gives it.
-
-Type: [Object][1643]
-
-### Properties
-
-- `name` **[string][1640]**&#x20;
-- `method` **[number][1642]** 0 stored, 8 deflated
-- `size` **[number][1642]** As stored
-- `length` **[number][1642]** Unpacked, as its directory says
-- `offset` **[number][1642]** Of its local header
-
-## isArchive
-
-Whether a file is a zip with a backup in it, rather than a JSON backup or
-some other zip (a Scrivener project's).
-
-### Parameters
-
-- `file` **[Blob][1656]**&#x20;
-
-## isZip
-
-### Parameters
-
-- `file` **[Blob][1656]**&#x20;
-
-## readArchive
-
-Read a backup from a zip: its envelope, with each table's rows, and the
-byte-carrying rows' bytes as Blobs cut from the file.
-
-### Parameters
-
-- `file` **[Blob][1656]**&#x20;
-
-<!---->
-
-- Throws **[Error][1650]** If it is not a backup's zip, saying why
-
-Returns **[Promise][1655]\<any>** The envelope, unchecked
-
-## tables
-
-Type: Record<[string][1640], [Array][1647]\<any>>
-
-##
-
-Type: [Array][1647]<[string][1640]>
-
-## entriesOf
-
-The entries a zip's central directory lists.
-
-### Parameters
-
-- `file` **[Blob][1656]**&#x20;
-
-Returns **[Promise][1655]<[Array][1647]<[ZipEntry][403]>>**&#x20;
-
-## entriesOf
-
-Entries in the order their comments start, the runs of one id joined.
-
-### Parameters
-
-- `runs` **[Array][1647]<[CommentEntry][1350]>**&#x20;
-
-Returns **[Array][1647]<[CommentEntry][1350]>**&#x20;
-
-## entries
-
-Type: [Array][1647]<[ZipEntry][403]>
-
-## dataStart
-
-Where an entry's bytes begin: after its local header, whose name and extra
-field may differ in length from the central directory's.
-
-### Parameters
-
-- `file` **[Blob][1656]**&#x20;
-- `entry` **[ZipEntry][403]**&#x20;
-
-## blobOf
-
-An entry's bytes, as a Blob cut from the file: stored, never read.
-
-### Parameters
-
-- `file` **[Blob][1656]**&#x20;
-- `entry` **[ZipEntry][403]**&#x20;
-- `type` **[string][1640]**&#x20;
-
-## MOST_ENTRY
-
-The most one entry of a backup is taken to hold, unpacked: twice the largest file the app takes.
-
-## bytesOf
-
-An entry's bytes, read and inflated.
-
-### Parameters
-
-- `file` **[Blob][1656]**&#x20;
-- `entry` **[ZipEntry][403]**&#x20;
-- `from` **[number][1642]?** Where its data begins, if known
-
-Returns **[Promise][1655]<[Uint8Array][1644]<[ArrayBuffer][1645]>>**&#x20;
-
-## inflateSync
-
-Type: [Uint8Array][1644]<[ArrayBuffer][1645]>
-
-## textOf
-
-### Parameters
-
-- `file` **[Blob][1656]**&#x20;
-- `entry` **[ZipEntry][403]**&#x20;
-
-## utils/chatTabs
-
-Tabs that hold a chat's text rather than a document: the
-system prompt it runs under, its author's note, or its roleplay
-instructions, edited in the plain text editor at a length the chat's
-settings have no room for.
-
-They sit in the editor's tabs beside the documents, under ids no document
-can have: a document's is `doc_` and a nanoid, which never has a colon in
-it. They are kept with the rest, so a project reopens on them, and go when
-their chat does.
-
-A skill of the writer's opens the same way, as its SKILL.md: a tab that
-goes when the skill does. The skill is the app's and the tab the
-project's, so one skill may be open in several.
-
-## ChatText
-
-Which of a chat's texts a tab holds.
-
-Type: (`"prompt"` | `"note"` | `"roleplay-prompt"` | `"post-history"`)
-
-## CHAT_TEXT_TITLES
-
-What each tab is called. The roleplay prompt says whose it is, since the
-chat has a system prompt of its own and the tab may sit beside it.
-
-Type: Record<[ChatText][429], [string][1640]>
-
-## chatTabId
-
-The tab for one of a chat's texts.
-
-### Parameters
-
-- `chatId` **[string][1640]**&#x20;
-- `text` **[ChatText][429]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## chatTabOf
-
-The chat and the text a tab holds, or null for a document's tab.
-
-### Parameters
-
-- `tabId` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **({chatId: [string][1640], text: [ChatText][429]} | null)**&#x20;
-
-## match
-
-Type: [ChatText][429]
-
-## match
-
-Type: (RegExpExecArray | null)
-
-## match
-
-Type: [string][1640]
-
-## skillTabId
-
-The tab for one of the writer's skills, as its SKILL.md.
-
-### Parameters
-
-- `skillId` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## skillTabOf
-
-The skill a tab holds, or null for any other tab.
-
-### Parameters
-
-- `tabId` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **([string][1640] | null)**&#x20;
-
-## utils/chatTitle
-
-What a chat is called before it has a name, a title the
-model wrote, made plain, and the plain words a chat's preview shows.
-
-## DEFAULT_CHAT_TITLE
-
-What a chat is called until the model or the writer names it.
-
-Type: [string][1640]
-
-## EARLIER_DEFAULTS
-
-What chats were called by default before there was one name for it. Chats
-saved under them are still waiting for a name.
-
-## isDefaultChatTitle
-
-Whether a chat has yet to be named: it carries the default, or a default it
-was saved with before this one, or nothing at all.
-
-### Parameters
-
-- `title` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## shownChatTitle
-
-What a chat is shown as: its title, or the default while it has none of
-its own.
-
-### Parameters
-
-- `title` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-##
-
-Type: [string][1640]
-
-## plainLine
-
-A line of markdown as the words it says: without a heading's hashes, a
-quote's or a list's marker, links' addresses, or the marks around bold,
-italic, struck and code words. Shown as text, `**not**` would be read with
-its stars.
-
-### Parameters
-
-- `line` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## plainTitle
-
-A line of the model's as a title: plain, without a "Title:" it was
-introduced with, or the quotes it was put in.
-
-### Parameters
-
-- `line` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## plainTitle
-
-A heading's text without the marks that dress it: `**Rules**` is Rules.
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-
-## chatPreview
-
-The start of a message as a chat's preview: its lines made plain and run
-together, without any HTML, cut at a hundred characters.
-
-### Parameters
-
-- `content` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## utils/compareNames
-
-Names in the order a person expects: "Chapter 2" before
-"Chapter 10". Everything listed by name sorts this way, so the outline, the
-project picker, what the model is shown and the folders on disk agree.
-
-## compareNames
-
-Compare two names, reading runs of digits as numbers.
-
-### Parameters
-
-- `a` **[string][1640]**&#x20;
-- `b` **[string][1640]**&#x20;
-
-Returns **[number][1642]**&#x20;
-
-## utils/dataUrl
-
-What a `data:` address holds, as bytes.
-
-A picture written into markdown or HTML as `data:image/png;base64,…` is
-the whole picture. These read it back out, for it to be kept as a file.
-
-## DATA_URL
-
-A `data:` address: its media type, its parameters, and its payload.
-
-## decodeDataPayload
-
-The bytes of a data URI's payload: base64, or percent-encoded text.
-
-### Parameters
-
-- `params` **[string][1640]** What followed the media type, `;base64` among them
-- `data` **[string][1640]** The payload
-
-Returns **[Uint8Array][1644]** Empty when it cannot be read
-
-## bytesOfDataUrl
-
-What a `data:` address holds, or null for any other address or an empty one.
-
-### Parameters
-
-- `url` **[string][1640]**&#x20;
-
-Returns **({mime: [string][1640], bytes: [Uint8Array][1644]} | null)**&#x20;
-
-## utils/diff
-
-The shortest edit from one sequence to another, as steps:
-what each keeps, what the first loses, what the second adds.
-
-Myers' algorithm, which costs time in the sequences' length times the
-size of the edit, and room in the square of the edit's size: cheap for a
-few changes in a long text, and given up on past a limit for a rewrite,
-which the caller handles as one change. What both share at the ends is
-set aside first, the end before the start, so that a sequence's last item
-is kept wherever it can be: a Google Doc's last newline cannot be
-deleted. Within a change, what goes comes before what comes in. Asked
-to, the start is set aside first instead, which lines an addition up
-after what it repeats rather than before.
-
-`diff3` lays two versions of a sequence against the one both came from:
-the stretches all three share, and between them those where one side or
-both changed, for a three-way merge.
-
-`pairUp` pairs two sequences whose items are alike rather than equal, a
-table's rows or columns: as many pairs as can be, in order, the likest.
-
-## Step
-
-Type: ({op: `"equal"`, a: [number][1642], b: [number][1642]} | {op: `"delete"`, a: [number][1642]} | {op: `"insert"`, b: [number][1642]})
-
-## diffSequences
-
-The steps from `a` to `b`, items compared with `===`.
-
-### Parameters
-
-- `a` &#x20;
-- `b` &#x20;
-- `$2` **[Object][1643]** (optional, default `{}`)
-  - `$2.maxEdits` (optional, default `Infinity`)
-  - `$2.startFirst` (optional, default `false`)
-
-- `options` **[Object][1643]?**&#x20;
-  - `options.maxEdits` **[number][1642]?** Past this many deletions and
-    insertions, give up
-  - `options.startFirst` **[boolean][1641]?** Set aside what the two share at
-    the start before what they share at the end
-
-Returns **([Array][1647]<[Step][468]> | null)** Null when the edit is over `maxEdits`
-
-## steps
-
-Type: [Array][1647]<[Step][468]>
-
-## shortestEdit
-
-Myers' greedy search for the fewest deletions and insertions between
-`a[aLo, aHi)` and `b[bLo, bHi)`, then the path back.
-
-### Parameters
-
-- `a` &#x20;
-- `b` &#x20;
-- `aLo` **[number][1642]**&#x20;
-- `aHi` **[number][1642]**&#x20;
-- `bLo` **[number][1642]**&#x20;
-- `bHi` **[number][1642]**&#x20;
-- `maxEdits` **[number][1642]**&#x20;
-
-Returns **([Array][1647]<[Step][468]> | null)**&#x20;
-
-## trace
-
-Type: [Array][1647]<[Int32Array][1657]>
-
-## at
-
-A diagonal's reach after `d` steps, from the array kept for it.
-
-### Parameters
-
-- `v` **[Int32Array][1657]**&#x20;
-- `d` **[number][1642]**&#x20;
-- `k` **[number][1642]**&#x20;
-
-Returns **[number][1642]**&#x20;
-
-## deletionsFirst
-
-Each change's deletions before its insertions, each kept in order.
-
-### Parameters
-
-- `steps` **[Array][1647]\<T>**&#x20;
-
-Returns **[Array][1647]\<T>**&#x20;
-
-## added
-
-Type: [Array][1647]\<T>
-
-## Chunk
-
-A stretch of a sequence in three versions, as `diff3` lays them out: one
-all three share, or one between where a side differs from the base. Each
-range is `[from, to)`.
-
-Type: [Object][1643]
-
-### Properties
-
-- `stable` **[boolean][1641]** All three have the same items here
-- `base` **\[[number][1642], [number][1642]]**&#x20;
-- `mine` **\[[number][1642], [number][1642]]**&#x20;
-- `theirs` **\[[number][1642], [number][1642]]**&#x20;
-
-## diff3
-
-Two versions of a sequence against the one both came from, in
-stretches: those all three share, and those between, where one side or
-both changed. Items compared with `===`.
-
-### Parameters
-
-- `base` &#x20;
-- `mine` &#x20;
-- `theirs` &#x20;
-- `options` **[Object][1643]?**&#x20;
-  - `options.maxEdits` **[number][1642]?** Past this many deletions and
-    insertions on either side, give up
-  - `options.startFirst` **[boolean][1641]?** Line each side up against the
-    base from the start first (`diffSequences`)
-
-Returns **([Array][1647]<[Chunk][480]> | null)** Null when either side's edit is over `maxEdits`
-
-## chunks
-
-Type: [Array][1647]<[Chunk][480]>
-
-## matches
-
-Where each item of `a` is in `b`, or -1 where `b` lost it.
-
-### Parameters
-
-- `a` &#x20;
-- `b` &#x20;
-- `options` &#x20;
-
-Returns **([Int32Array][1657] | null)**&#x20;
-
-## pairUp
-
-Two sequences paired in order, as many pairs as can be and the likest:
-the pairs whose total, one for each and its likeness, is greatest. Where
-that leaves one over, it is the last.
-
-### Parameters
-
-- `n` **[number][1642]**&#x20;
-- `m` **[number][1642]**&#x20;
-- `likenessOf` &#x20;
-
-Returns **[Array][1647]<\[[number][1642], [number][1642]]>**&#x20;
-
-## sharedCount
-
-How many items two lists share, each counted once: empty ones aside.
-
-### Parameters
-
-- `a` **[Array][1647]<[string][1640]>**&#x20;
-- `b` **[Array][1647]<[string][1640]>**&#x20;
-
-Returns **[number][1642]**&#x20;
-
-## counts
-
-Type: [Map][1652]<[string][1640], [number][1642]>
-
-## counts
-
-## utils/documentEdits
-
-What happens to the model's changes to documents in a chat,
-as the chat's chip and its settings offer it: Suggesting, for the writer to
-accept or reject, or Editing, applied at once. Stored as `applyEdits`,
-`'ask'` or `'auto'`.
-
-## DOCUMENT_EDIT_OPTIONS
-
-## utils/documentLinks
-
-Links from one document to another, as Markdown files link to
-the files beside them.
-
-A link is written the way Obsidian writes one with its "relative path to
-file" setting: from the linking document's folder to the file, by the
-names the files have on disk, with `.md` on a text document and spaces as
-`%20`. A project kept in a folder on disk (see `storage/layout.js`) can
-then be read by any Markdown editor and its links still go somewhere.
-The one thing left out is an ordered folder's place prefix (`03 - `),
-which changes whenever the folder is reordered: a link into an ordered
-folder works here, and outside only once the prefix is added.
-
-Reading one is more forgiving, since links come from models and from
-other apps: a destination in `<…>` with the spaces left in, a name with no
-extension, a title as well as the name on disk, and a project path from
-the top (the form every tool lists, with or without a `/` in front). A
-link is tried from the linking document's folder first, then from the top.
-
-Anything with a scheme (`https:`, `mailto:`) is a link to somewhere else,
-and not this module's.
-
-Design: `.llm/document_links_design.md`.
-
-## ELSEWHERE
-
-## ELSEWHERE
-
-A scheme, or the `//` of an address on another host.
-
-## LinkTree
-
-The tree a link is resolved in.
-
-Type: [Object][1643]
-
-### Properties
-
-- `rootId` **[string][1640]** The project's own row
-
-## ORDER_PREFIX
-
-A place in an ordered folder, as a file's name on disk starts with it.
-
-## UNSAFE_IN_LINK
-
-What a link destination cannot hold as it is, or a reader would take for
-something else: a space or anything else outside printable ASCII, and the
-characters the editor's Markdown reader would encode on the next save, so
-a link it reads back is the link that was written.
-
-## isDocumentHref
-
-Whether a link goes to a document in the project rather than somewhere
-else: it has no scheme.
-
-### Parameters
-
-- `href` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## unwrap
-
-A destination without the `<…>` CommonMark lets it be written in.
-
-### Parameters
-
-- `href` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## pathOf
-
-The names in a link's path, decoded one by one, so an encoded `/` in a
-name stays in it. What follows a `#` or a `?` is not part of the path.
-
-### Parameters
-
-- `href` **[string][1640]**&#x20;
-
-Returns **{names: [Array][1647]<[string][1640]>, fromTop: [boolean][1641]}**&#x20;
-
-## fileNameOf
-
-The name a document's file or folder has on disk, without the place an
-ordered folder puts in front of it.
-
-### Parameters
-
-- `document` **[Document][1648]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## stepNameOf
-
-The name a link's path has for a document on the way to another: a
-folder's, or a document's that holds others, by its name without the
-extension. Links follow the outline, not the directory such a document has
-on disk (`.llm/nested_documents_design.md`).
-
-### Parameters
-
-- `document` **[Document][1648]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## pathNames
-
-The names of a link's path to a document, from below the first of them.
-
-### Parameters
-
-- `documents` **[Array][1647]<[Document][1648]>** The document last, what holds it before it
-
-Returns **[Array][1647]<[string][1640]>**&#x20;
-
-## namesOf
-
-Every name a document answers to in a link, as names are compared.
-
-### Parameters
-
-- `document` **[Document][1648]**&#x20;
-
-Returns **[Set][1646]<[string][1640]>**&#x20;
-
-## childNamed
-
-The child of a folder a name in a link means. The name as it is first;
-then without a place prefix, as a file in an ordered folder is named on
-disk; then, for the last name, without its extension, which a link to a
-file whose kind the writer did not know may have wrong.
-
-### Parameters
-
-- `tree` **[LinkTree][498]**&#x20;
-- `folderId` **[string][1640]**&#x20;
-- `name` **[string][1640]**&#x20;
-- `last` **[boolean][1641]**&#x20;
-
-Returns **([Document][1648] | null)**&#x20;
-
-##
-
-Type: [string][1640]
-
-## walk
-
-Follow a link's names from a folder. `..` above the project stays at its
-top: a link cannot leave the project, and one that tries most likely
-meant the folder it got to.
-
-### Parameters
-
-- `tree` **[LinkTree][498]**&#x20;
-- `folderId` **[string][1640]**&#x20;
-- `names` **[Array][1647]<[string][1640]>**&#x20;
-
-Returns **([Document][1648] | null)**&#x20;
-
-## resolveLink
-
-The document a link goes to, or null for none. Only for a link
-`isDocumentHref` says is one. A link that is only a `#` or a `?` is the
-document it is in.
-
-### Parameters
-
-- `tree` **[LinkTree][498]**&#x20;
-- `href` **[string][1640]**&#x20;
-- `fromId` **([string][1640] | null)?** The document the link is in. Without one,
-  as in a chat, a link is read from the top of the project.
-
-Returns **([Document][1648] | null)**&#x20;
-
-## documentNamed
-
-The one document anywhere in the project that goes by a name, for a link
-the writer types as nothing but that. Null when none does, or more than
-one: a link has to go to one document.
-
-### Parameters
-
-- `tree` **[LinkTree][498]**&#x20;
-- `name` **[string][1640]**&#x20;
-
-Returns **([Document][1648] | null)**&#x20;
-
-## found
-
-Type: [Array][1647]<[Document][1648]>
-
-## found
-
-Type: [Array][1647]<{title: [string][1640], level: [number][1642], link: [string][1640], offset: [number][1642]}>
-
-##
-
-Type: [string][1640]
-
-## readableHref
-
-A link as the writer should read it: its path, decoded, without `<…>`.
-
-### Parameters
-
-- `href` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## lineage
-
-The documents from the top of the project down to this one, the project
-itself left out.
-
-### Parameters
-
-- `tree` **[LinkTree][498]**&#x20;
-- `id` **[string][1640]**&#x20;
-
-Returns **[Array][1647]<[Document][1648]>**&#x20;
-
-## encodeName
-
-A name as a link destination holds it: spaces, letters outside ASCII and
-the few characters a reader would take for something else percent-encoded,
-the rest as it is.
-
-### Parameters
-
-- `name` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## hrefFor
-
-The link from one document to another, as it is written in the first.
-
-### Parameters
-
-- `tree` **[LinkTree][498]**&#x20;
-- `fromId` **[string][1640]** The document the link goes in
-- `toId` **[string][1640]** The document it goes to
-
-Returns **[string][1640]**&#x20;
-
-## headingHref
-
-A link to a heading, after a document's path or on its own for one in the
-same document: `#` and the heading's words, encoded as a name is, as
-Obsidian writes one (`Cast%20list.md#The%20crew`).
-
-### Parameters
-
-- `words` **[string][1640]** The heading's
-
-Returns **[string][1640]**&#x20;
-
-## headingOf
-
-The heading a link names after its `#`, decoded; empty for none.
-
-### Parameters
-
-- `href` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## namesHeading
-
-Whether the heading a link names is one with these words: as they are, in
-any case, or as the slug a page on the web makes of them (`the-crew`).
-
-### Parameters
-
-- `named` **[string][1640]** As `headingOf` reads it
-- `words` **[string][1640]** The heading's
-
-Returns **[boolean][1641]**&#x20;
-
-## plain
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-
-## ownHref
-
-A link the app put on the clipboard, as it was put there: a browser writes
-a link from the top of the project as a whole address on the app's own
-(`http://localhost:8002/Notes/Cast%20list.md`), and this takes that off.
-
-### Parameters
-
-- `href` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## linkOnClipboard
-
-The link a clipboard holds, when it holds one and nothing else, as the app
-copies one (`useCopyLink`): its address and its words.
-
-### Parameters
-
-- `data` **(DataTransfer | null | [undefined][1653])**&#x20;
-
-Returns **({href: [string][1640], words: [string][1640]} | null)**&#x20;
-
-## projectHref
-
-A document's link from the top of the project, `/Notes/Cast%20list.md`,
-which `resolveLink` reads from the top wherever it is written. What a link
-is carried as on the clipboard: the document it is pasted into may be in
-another folder, where the link as written would go somewhere else.
-
-### Parameters
-
-- `tree` **[LinkTree][498]**&#x20;
-- `id` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## utils/documentPath
-
-How a document is addressed: by its titles from the root down.
-
-`Characters/Elara` is a document; `/` is the project. It is the one address
-a document has — the AI tools list and resolve it, and the outline copies
-it — so it is spelled in exactly one place. A title nobody has given reads
-as "Untitled".
-
-Being an address, a path has to lead to one document. So no two documents
-in a folder go by one name, compared the way a tool matches a path: without
-the spaces round it, whatever its case, and "Untitled" for none.
-
-## documentTitles
-
-### Parameters
-
-- `get` &#x20;
-- `document` &#x20;
-
-## documentTitles
-
-The titles a document's path is made of, from the top down, its own last.
-Empty for no document and for the project itself.
-
-### Parameters
-
-- `get` &#x20;
-- `document` **([Document][1648] | null | [undefined][1653])**&#x20;
-
-Returns **[Array][1647]<[string][1640]>**&#x20;
-
-## documentPath
-
-The path of a document, given a way to find its ancestors.
-
-The document is taken as passed rather than looked up, so that a record of
-a change can name the document as it was when the change was made.
-
-### Parameters
-
-- `get` &#x20;
-- `document` **([Document][1648] | null | [undefined][1653])**&#x20;
-
-Returns **[string][1640]** The path, or '' for no document
-
-## titleKey
-
-A title as names in one folder are compared.
-
-### Parameters
-
-- `title` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## namesake
-
-The document among `siblings` that already goes by `title`.
-
-### Parameters
-
-- `siblings` **[Array][1647]<[Document][1648]>** A folder's children
-- `title` **[string][1640]**&#x20;
-- `exceptId` **[string][1640]?** The document being renamed or moved, which
-  does not stand in its own way
-
-Returns **([Document][1648] | null)**&#x20;
-
-## freeTitle
-
-`title` if none of `siblings` goes by it, and otherwise the first of
-`Title (2)`, `Title (3)`… that none does.
-
-### Parameters
-
-- `siblings` **[Array][1647]<[Document][1648]>** A folder's children
-- `title` **[string][1640]**&#x20;
-- `exceptId` **[string][1640]?** The document being renamed or moved
-
-Returns **[string][1640]**&#x20;
-
-## utils/edits
-
-A change to a document as a reversible pair, and how to undo
-one later — or make it again — without touching what changed around it.
-
-A turn that rewrote a chapter is recorded as the passage it replaced and
-the passage it wrote, cut as small as the two versions allow. Undoing it is
-finding the written passage and putting the replaced one back — which works
-after the writer has edited elsewhere in the document, and refuses, rather
-than guessing, when they have edited the passage itself. The same way a
-commit is reverted. Making it again is the same move the other way: a
-message with more than one answer switches between them, and the answer
-being switched to has to put back what it did.
-
-## CONTEXT_STEP
-
-Type: [number][1642]
-
-## CONTEXT_STEP
-
-How much more context to take in when a pair needs to be findable.
-
-Type: [number][1642]
-
-## occurrences
-
-How many times `needle` occurs in `text`.
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-- `needle` **[string][1640]**&#x20;
-
-Returns **[number][1642]**&#x20;
-
-## diffEdit
-
-The smallest pair that turns `before` into `after`: the text between the
-longest shared prefix and suffix, on each side.
-
-Widened with context until each side can be found once in the version it
-belongs to. What was written would otherwise be empty for a pure deletion,
-and what was replaced empty for a pure insertion — nothing to find on the
-way back, or the way forward again — and either could occur more than once,
-which is one place too many to put the other text.
-
-### Parameters
-
-- `before` **[string][1640]**&#x20;
-- `after` **[string][1640]**&#x20;
-
-Returns **({old: [string][1640], new: [string][1640]} | null)** Null when nothing changed
-
-## diffAppend
-
-The pair for an append: nothing replaced, and what arrived at the end.
-
-An append needs no context to be found again — it is undone from the end
-and made again onto it — so the pair stays what was appended, which is
-also what the chat shows as the change. When the end did not survive the
-append as it was (a trailing blank line settled away), it is a pair like
-any other.
-
-### Parameters
-
-- `before` **[string][1640]**&#x20;
-- `after` **[string][1640]**&#x20;
-
-Returns **({old: [string][1640], new: [string][1640]} | null)** Null when nothing changed
-
-## narrowEdit
-
-The pair cut to what changed, for showing: the context it was widened
-with is what finds it in a document, and is not the change.
-
-### Parameters
-
-- `pair` **{old: [string][1640], new: [string][1640]}**&#x20;
-
-Returns **{old: [string][1640], new: [string][1640]}**&#x20;
-
-## reverseEdit
-
-The document as it was before the edit, or null when the edit's text is
-no longer where it was put — the writer has been there since, and their
-version stands.
-
-An append is undone from the end, where it went; anything else by finding
-what it wrote, which has to be there exactly once. So is a suggestion,
-whichever tool made it: an append's may have gone into one before the end.
-
-### Parameters
-
-- `content` **[string][1640]** The document now
-- `edit` **DocumentEdit**&#x20;
-
-Returns **([string][1640] | null)**&#x20;
-
-## applyEdit
-
-The document with the edit made again, or null when the passage it
-replaced is not there to replace — the writer has been there since.
-
-The mirror of `reverseEdit`. An append goes back onto the end, which has
-to still read as it did; anything else, a suggestion among them, where the
-old passage is, which has to be there exactly once. A pair that replaced nothing was written onto an
-empty document, and goes back onto one.
-
-### Parameters
-
-- `content` **[string][1640]** The document now
-- `edit` **DocumentEdit**&#x20;
-
-Returns **([string][1640] | null)**&#x20;
-
-## keepDecisions
-
-A turn's record of its changes, with the writer's decisions kept.
-
-A turn writes its record as it goes, and the writer can accept or reject a
-proposal before the turn is over — the prose arrives, and the model is
-still explaining it. The turn's next write must not put that proposal back
-to proposed. Matched by id: an entry the writer has decided is theirs, as
-they left it, applied pair and all.
-
-### Parameters
-
-- `fresh` **[Array][1647]\<DocumentEdit>** The turn's own record
-- `stored` **([Array][1647]\<DocumentEdit> | [undefined][1653])** The message's record as it stands
-
-Returns **[Array][1647]\<DocumentEdit>**&#x20;
-
-## utils/errors
-
-Custom error classes for the application, and what the writer
-is told of them
-
-## ProviderNotConfiguredError
-
-**Extends Error**
-
-Error thrown when an AI provider is not configured
-This error signals that the user needs to set up an AI provider
-before they can use AI features
-
-### Parameters
-
-- `message` **[string][1640]** Error message (optional, default `'AI provider not configured'`)
-
-## ConnectionNeededError
-
-**Extends Error**
-
-A chat's connection is there but can't be asked anything yet: it has no
-key, or no address. The chat offers to connect it.
-
-### Parameters
-
-- `message` **[string][1640]**&#x20;
-- `providerId` **[string][1640]** The connection to connect
-
-## CommandError
-
-**Extends Error**
-
-Error thrown when a slash command cannot run.
-
-Its own class because nothing has been written when it is thrown — commands
-run before any message is recorded, precisely so a typo leaves nothing
-behind. The caller can put the text back in the box knowing the chat is
-unchanged, which it cannot assume of a failure any later than this.
-
-### Parameters
-
-- `message` **[string][1640]** Error message
-
-## CannotApplyError
-
-**Extends Error**
-
-Error thrown when an action can't apply as things stand: a reply asked for
-while one is being written, a message that has gone, a change decided
-already.
-
-Its own class because there is nothing to tell the writer. The control
-that asked is disabled where it can be, and a press that gets through does
-nothing, so the caller lets it go without a word.
-
-### Parameters
-
-- `message` **[string][1640]** What couldn't apply, for the console
-
-## AnswerFailedError
-
-**Extends Error**
-
-Error thrown when a turn fails after its answer was made: the provider
-refused, the connection dropped, a round could not be built.
-
-Its own class because the reason is already on the answer by then, kept
-with the chat (`metadata.error`) and shown where the reply would have been,
-so the caller has nothing left to report.
-
-### Parameters
-
-- `cause` **[Error][1650]** What went wrong
-- `messageId` **[string][1640]** The answer it is recorded on
-
-## SummaryCutShortError
-
-**Extends Error**
-
-Error thrown when a summary stops short because its request failed.
-
-What it had written is kept as the summary by then, to be asked for again,
-finished by hand or deleted; this is only the news, for the caller to pass
-on.
-
-### Parameters
-
-- `reason` **[string][1640]** Why its request failed
-
-## failureNotice
-
-What to tell the writer of an action that failed: what didn't happen, then
-why, when the error's words are theirs to read. Null when there is nothing
-to tell: the action couldn't apply, or the turn says why already.
-
-### Parameters
-
-- `error` **[Error][1650]**&#x20;
-- `said` **[string][1640]** What didn't happen, as a sentence
-- `$2` **[Object][1643]** (optional, default `{}`)
-  - `$2.why` (optional, default `false`)
-
-Returns **([string][1640] | null)**&#x20;
-
-## utils/focus
-
-Whether the writer is typing somewhere already.
-
-A document opening takes the caret, so that the next keystroke goes into
-it — unless the writer is in the middle of typing somewhere else: naming
-the document in the tree, asking the chat something, filling in a field.
-Then the caret stays where it is, and the document waits its turn.
-
-## isTextField
-
-Whether the element with the focus is a field the writer types into.
-
-### Parameters
-
-- `element` **([Element][1658] | null)?** Defaults to whatever has the focus (optional, default `document.activeElement`)
-
-Returns **[boolean][1641]**&#x20;
-
-## formatThinkingTime
-
-Format thinking/reasoning time duration
-
-### Parameters
-
-- `milliseconds` **[number][1642]** Duration in milliseconds
-
-Returns **[string][1640]** Formatted duration string (e.g., "2.5s", "1.2s")
-
-## formatRelativeTime
-
-Format a date as relative time (e.g., "2 hours ago", "3 days ago")
-
-### Parameters
-
-- `timestamp` **[number][1642]** Unix timestamp in milliseconds
-
-Returns **[string][1640]** Formatted relative time string
-
-## TOOL_RESULT_PREVIEW_LIMIT
-
-How much of a tool's result is shown before it is cut short.
-
-Type: [number][1642]
-
-## formatToolArguments
-
-A tool call's arguments, compactly, for the line naming the call. Strings
-stay quoted; other values stringify; an object shows its fields as
-`key: value`.
-
-### Parameters
-
-- `args` **any** Parsed, or the raw text when it did not parse
-
-Returns **[string][1640]**&#x20;
-
-## PYTHON_RESULT_PREVIEW_LIMIT
-
-How much of a run of Python's output is shown before it is cut short: a table's worth.
-
-Type: [number][1642]
-
-## formatPythonResult
-
-A run of Python's result for display, as it came: what it printed, the
-value of its last line, and its traceback, rather than the JSON the model
-read them in. Cut short when it is long.
-
-### Parameters
-
-- `content` **[string][1640]** The result as the model was sent it
-
-Returns **[string][1640]**&#x20;
-
-## formatToolResult
-
-A tool's result for display: pretty-printed when it is JSON, and cut short
-when it is long.
-
-### Parameters
-
-- `content` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## utils
-
-Utility functions and helpers for the inksprite application.
-
-## Utilities Overview
-
-### Text Processing
-
-- **formatters** - Text formatting utilities
-- **markdown** - Markdown parsing and rendering
-- **math** - TeX in markdown typeset with KaTeX, loaded the first time a formula needs it
-- **tex** - Where a formula is in markdown, by the delimiters the chat and a document read
-- **partialJson** - The strings in JSON that has not finished arriving
-- **plainCopy** - A deep copy of a row, as JSON would have it, without writing it out as JSON
-- **wordCount** - Words in a document's markdown
-- **lineDiff** - The lines that changed between two versions of a text
-- **compareNames** - Names in the order a person expects, numbers by value
-- **projectList** - The projects as listed for picking one: found by name, and in an order
-- **siblingOrder** - The order a folder's children are shown in
-- **trash** - How long the trash keeps what is in it, and which of a project's documents are there
-- **versions** - When a document's version is due, and which go as they age
-- **wordDiff** - Two texts as one, word by word: what both have and what only one has,
-  for a plain document's versions
-
-### AI Integration
-
-- **oauth** - Signing in with OAuth (PKCE): the address the writer is sent to, and the code that comes back exchanged for a key
-
-### Chat
-
-- **turns** - Fold a chat's messages into the turns they were sent as
-- **obfuscate** - A chat export with its words taken out, for sharing its shape (the Export obfuscated menu item, with Debug on)
-- **focus** - Whether the writer is typing somewhere already
-- **documentPath** - How a document is addressed: by its titles from the root down
-- **documentLinks** - Links from one document to another, written as Markdown files link to
-  the files beside them, and followed back
-- **linkUpdates** - The links a rename or a move would break, written again to where their
-  documents are
-- **pictures** - A document's own pictures as its text refers to them, `.images/<id>/<name>`,
-  and where their bytes are kept
-- **dataUrl** - What a `data:` address holds, as bytes
-- **visibility** - What one chat sees of the project: hidden outright, and each chat's shows and hides
-- **chatTitle** - What a chat is called before it has a name, and a title the model wrote, made plain
-
-### Editor
-
-- **tabs** - The editor's tabs: open, close, and what a story remembers of them
-
-### Browser
-
-- **webkit** - Whether the page is running in WebKit, for what only WebKit does
-- **touch** - Whether the writer is typing on a touch screen's keyboard, where Enter starts a new line
-
-### Storage
-
-- **localStorage** - LocalStorage wrapper with quota management
-- **backup** - Build and validate backup files: the whole database, a chat, settings, and a project or a selection saved before
-- **backupArchive** - A backup as a zip, its rows as JSON and each file's bytes an entry of its own
-- **zipWriter** - A zip written a piece at a time, a backup's and an export's
-- **settingsFile** - What a settings file holds, which of it the writer picked, and what importing one changes
-- **settingsTree** - What Export settings offers, as a tree of boxes, and what the boxes ticked choose
-
-## Usage Examples
-
-### Examples
-
-```javascript
-// Word counting
-import { countWords } from '@/utils/wordCount'
-const wordCount = countWords(storyContent)
-```
-
-```javascript
-// Markdown rendering
-import { renderMarkdown } from '@/utils/markdown'
-const html = renderMarkdown(markdownText)
-```
-
-## utils/lineDiff
-
-What changed between two versions of a text, line by line.
-
-For showing a writer what a rewrite did, not for applying it: only the
-lines that changed, in runs, each run the lines that went and the lines
-that came in their place. A settled document differs from the one typed in
-a bullet here and an escape there, and a run per place is what reads.
-
-## LineChange
-
-Type: [Object][1643]
-
-### Properties
-
-- `removed` **[Array][1647]<[string][1640]>** The lines that went, in order
-- `added` **[Array][1647]<[string][1640]>** The lines in their place, in order
-
-## MAX_MATCHED
-
-Past this many lines on each side of the part that differs, the lines are
-not matched up one by one: the table that matches them grows with the
-square, and a change that big is one run anyway.
-
-Type: [number][1642]
-
-## changedLines
-
-The runs of lines that differ between two texts.
-
-The lines both share at either end are set aside first, which on a
-rewrite of a few lines leaves little to match. What is left is matched by
-the longest run of lines both keep in order, and every stretch between two
-kept lines is a change.
-
-### Parameters
-
-- `before` **[string][1640]**&#x20;
-- `after` **[string][1640]**&#x20;
-
-Returns **[Array][1647]<[LineChange][621]>** Empty when nothing changed
-
-## changes
-
-Type: [Array][1647]<[LineChange][621]>
-
-## changes
-
-Type: [Map][1652]<[string][1640], [boolean][1641]>
-
-## utils/linkUpdates
-
-Links kept going where they went when the tree changes under
-them: a document renamed, or moved, or the document a link is in moved, so
-that a relative path from it means something else.
-
-Around a change, every link in the project's text is read once before
-(`linkTargets`), for the document it goes to, and once after
-(`relinked`). One that now goes nowhere, or to another document, is
-written again as a link from where it is to where its document is now
-(`hrefFor`), or from the top of the project if it was written from the
-top, with whatever followed its path (`#…`, `?…`) kept. So is one that was
-written as the app writes it and would be written otherwise now: a link
-read forgivingly still opens here after a move, from the top of the
-project, but not in another Markdown editor. A link in a form of the
-writer's own — a title, a name without its extension — that still goes
-there is left as it is, and a link to a document that is gone is left
-alone.
-
-Links are found in the markdown as it is written, `[…](…)` and pictures'
-`![…](…)` alike, since a picture can be a file document of the project's.
-Only a destination that went to a document is ever written again.
-
-Design: `.llm/document_links_design.md`.
-
-## DESTINATION
-
-## DESTINATION
-
-A link's destination in markdown: `<…>`, or a run with balanced
-parentheses and no spaces; then its title, if it has one, and the
-bracket that closes it.
-
-## LinkedText
-
-A document's text, as the links in it are read and written.
-
-Type: {id: [string][1640], content: [string][1640]}
-
-## LinkTarget
-
-Where a link went: the document, and whether the link was written as the
-app writes one to it.
-
-Type: {id: [string][1640], exact: [boolean][1641]}
-
-## LinkTargets
-
-Where each document's links went: by document, by each destination as it
-is written.
-
-Type: [Map][1652]<[string][1640], [Map][1652]<[string][1640], [LinkTarget][632]>>
-
-## mayLink
-
-Whether there could be a link in a text at all, before looking for one.
-
-### Parameters
-
-- `content` &#x20;
-
-##
-
-Type: [string][1640]
-
-## destinationsIn
-
-Every destination in a text, in order.
-
-### Parameters
-
-- `content` **[string][1640]**&#x20;
-
-Returns **[Array][1647]<[string][1640]>**&#x20;
-
-## partsOf
-
-A destination's path, without `<…>` and without what follows it.
-
-### Parameters
-
-- `href` **[string][1640]**&#x20;
-
-Returns **{path: [string][1640], after: [string][1640]}**&#x20;
-
-## partsOf
-
-The parts of a document carrying a suggestion's marks, in order. A block
-of words all put in or all taken out is one part; a table's cell is not,
-since it goes only with its table.
-
-### Parameters
-
-- `doc` **[Node][1649]**&#x20;
-- `id` **[string][1640]**&#x20;
-
-Returns **[Array][1647]<[Part][1480]>**&#x20;
-
-## canonical
-
-The link the app writes from one document to another: from the top of the
-project for one written from there, from the linking document otherwise.
-
-### Parameters
-
-- `tree` **[LinkTree][498]**&#x20;
-- `path` **[string][1640]** The link's path as it is written
-- `fromId` **[string][1640]**&#x20;
-- `toId` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## linkTargets
-
-Where the links in these documents go now.
-
-### Parameters
-
-- `tree` **[LinkTree][498]**&#x20;
-- `documents` **[Array][1647]<[LinkedText][631]>**&#x20;
-
-Returns **[LinkTargets][633]**&#x20;
-
-## went
-
-Type: [Map][1652]<[string][1640], [LinkTarget][632]>
-
-## rewritten
-
-What a link should say now, or null when it should stay as it is: it
-still goes where it went, and in the form it was written in.
-
-### Parameters
-
-- `tree` **[LinkTree][498]**&#x20;
-- `href` **[string][1640]** As it is written
-- `fromId` **[string][1640]**&#x20;
-- `target` **([LinkTarget][632] | [undefined][1653])** Where it went
-
-Returns **([string][1640] | null)**&#x20;
-
-## relinked
-
-The documents whose links no longer go where they went, each with its
-text as it should be now, links written again. Documents with nothing to
-change are left out.
-
-### Parameters
-
-- `tree` **[LinkTree][498]** As it is now
-- `documents` **[Array][1647]<[LinkedText][631]>** As they are now
-- `targets` **[LinkTargets][633]** Where their links went, from `linkTargets`
-
-Returns **[Array][1647]<[LinkedText][631]>**&#x20;
-
-## now
-
-Type: [Map][1652]<[string][1640], ([string][1640] | null)>
-
-## utils/localStorage
-
-Simple localStorage wrapper with JSON serialization support
-
-## localStorage
-
-localStorage utility for managing application state persistence
-
-### get
-
-Get a value from localStorage
-
-#### Parameters
-
-- `key` **[string][1640]** The storage key
-- `defaultValue` **T** Default value if key doesn't exist (optional, default `null`)
-
-Returns **T** The stored value or defaultValue
-
-### set
-
-Set a value in localStorage
-
-#### Parameters
-
-- `key` **[string][1640]** The storage key
-- `value` **any** The value to store (will be JSON stringified)
-
-Returns **[boolean][1641]** Success status
-
-### remove
-
-Remove an item from localStorage
-
-#### Parameters
-
-- `key` **[string][1640]** The storage key
-
-Returns **[boolean][1641]** Success status
-
-## utils/markdown
-
-Markdown to HTML, for text nobody here wrote.
-
-What goes through this is a model's output and whatever the writer typed, and
-it comes out into `v-html`. Neither is trusted: a model repeats what it was
-shown, and what it was shown includes documents and tool results that came
-from somewhere else. The app has no backend and keeps provider keys in
-IndexedDB, so script running in this origin is script running with the keys.
-
-So no HTML gets through. Not sanitised — escaped, tags and all, which is both
-safer and more honest: a writer who types `<oracle>` sees `<oracle>` rather
-than watching their tags silently disappear into an element the browser does
-not know. Nothing here needs to write HTML; it is a markdown app.
-
-URLs are the other way in, because markdown's own link syntax carries them
-and `javascript:` is a URL. They are checked against a list of what a link in
-a story could reasonably be, after being decoded — `java&#09;script:` is the
-same URL once the browser has read the attribute.
-
-An image is a link to it. Shown, it would be fetched the moment it was on the
-screen, with whatever the model put in its address. The page's
-Content-Security-Policy (`index.html`) refuses images from elsewhere too.
-
-A lone newline is a line break, not CommonMark's soft wrap. What is rendered
-here is shown where it was typed — a chat message, a model's reply, a
-document — and a writer who ended a line meant it to end there.
-
-Math is TeX, as models write it: `$$…$$` or `\[…\]` for a formula set on
-its own, `$…$` or `\(…\)` for one in a sentence, found as a document finds
-them (`utils/tex.js`) and typeset by `utils/math.js`. Where a formula has
-nothing to show, it stays as it was written.
-
-## SAFE_SCHEMES
-
-What a link in a story is allowed to be. Everything else is not a link.
-
-## escapeHtml
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## isSafeUrl
-
-Whether this is somewhere a link may point.
-
-Read the way the browser will read it: entities decoded, and whitespace and
-control characters dropped, because they are ignored in a scheme and are only
-ever there to hide one. A URL with no scheme at all is relative, and relative
-is this app.
-
-### Parameters
-
-- `href` **[string][1640]**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## mathToken
-
-A formula token, or nothing when there is no formula.
-
-### Parameters
-
-- `type` **[string][1640]**&#x20;
-- `found` &#x20;
-
-## math
-
-The formulas, as marked extensions: one for those with lines of their own,
-which stops a paragraph where it starts, and one for those in a sentence.
-
-## reader
-
-The one reader everything goes through.
-
-A renderer that returns `false` is saying it has nothing special to do, and
-marked falls back to its own — so the safe cases render exactly as they
-always did, and only the refused ones are written out here.
-
-## renderMarkdown
-
-Render markdown to HTML
-
-### Parameters
-
-- `markdown` **[string][1640]** Markdown text to render
-
-Returns **[string][1640]** Rendered HTML
-
-## stripMarkdown
-
-Strip markdown formatting from text for immediate display
-
-### Parameters
-
-- `text` **[string][1640]** Text with markdown formatting
-
-Returns **[string][1640]** Plain text with markdown symbols removed
-
-## utils/math
-
-Typesetting the math a model writes, with KaTeX.
-
-Models write formulas in TeX, and `utils/markdown.js` finds them; this turns
-one into HTML. KaTeX is most of a megabyte with its fonts and most chats
-never need it, so it is loaded the first time a formula is asked for. Until
-it is here a formula has nothing to show and is left as it was written. It
-is kept in a ref, so a computed that rendered a formula then renders it
-again once it arrives.
-
-What KaTeX writes is safe to put in the page as long as `trust` stays false:
-no `\href`, `\url`, `\includegraphics` or `\html…`, and a color is checked
-before it goes into a style. A formula KaTeX cannot read has nothing to show
-either.
-
-Copying out of typeset math copies its TeX, between the delimiters it came
-in, rather than the glyphs and the MathML beside them that the browser
-would otherwise put on the clipboard twice over. In the HTML each formula
-is the element the editor writes for one, so it pastes there as a formula.
-A copy something has handled already, the editor's own, is left to it.
-
-## katex
-
-## katex
-
-KaTeX, once something has asked for it.
-
-## shallowRef
-
-## loading
-
-Type: ([Promise][1655]\<void> | null)
-
-## remembered
-
-Formulas already typeset, by mode and TeX. A reply being written renders
-again on every word, and so would every formula in it.
-
-Type: [Map][1652]<[string][1640], ([string][1640] | null)>
-
-## REMEMBER
-
-How many formulas to remember before starting again.
-
-Type: [number][1642]
-
-## OPTIONS
-
-How KaTeX is asked to typeset, but for whether a formula is set on its own.
-
-## loadMath
-
-Load KaTeX, its stylesheet and fonts. Once is enough; every later call has
-the same promise.
-
-Returns **[Promise][1655]\<void>**&#x20;
-
-## mathReady
-
-Whether formulas can be typeset yet. Reactive, so what counted on it hears
-when they can.
-
-Returns **[boolean][1641]**&#x20;
-
-## typesetMath
-
-A formula as HTML, or null where there is nothing to show yet: KaTeX is
-still on its way, which this sets going, or it cannot read the TeX.
-
-### Parameters
-
-- `tex` **[string][1640]** The TeX, without its delimiters
-- `display` **[boolean][1641]** On a line of its own, rather than in a sentence
-
-Returns **([string][1640] | null)**&#x20;
-
-## html
-
-Type: ([string][1640] | null)
-
-## mathError
-
-What KaTeX says is wrong with a formula it cannot read, in its own words
-without its own name; null for one it can, or before it is here.
-
-### Parameters
-
-- `tex` **[string][1640]**&#x20;
-- `display` **[boolean][1641]**&#x20;
-
-Returns **([string][1640] | null)**&#x20;
-
-## asWritten
-
-A formula's TeX as an element of the editor's own (`editor/schema.js`): its
-TeX on an attribute, for the editor, and between its delimiters, for
-anywhere else.
-
-### Parameters
-
-- `tex` **[string][1640]**&#x20;
-- `display` **[boolean][1641]**&#x20;
-
-Returns **[HTMLElement][1654]**&#x20;
-
-## formulaAround
-
-The formula a node is in, if it is in one.
-
-### Parameters
-
-- `node` **[Node][1649]**&#x20;
-
-Returns **([Element][1658] | null)**&#x20;
-
-## copyTex
-
-Put a selection that has math in it on the clipboard with each formula as
-its TeX. A selection that starts or ends inside a formula takes the whole
-of it.
-
-The plain text is read from the selection laid out in the page, off screen,
-so its paragraphs and lines come apart as they do in any copy.
-
-### Parameters
-
-- `event` **ClipboardEvent**&#x20;
-
-## event
-
-Type: ([Element][1658] | null)
-
-## utils/modelFacts
-
-What the model picker says of a model in a few characters:
-its price, in and out, per million tokens, and how much it reads at once.
-
-## dollars
-
-A price per million tokens, from one per token: `$3`, `$0.37`, `$0.01`.
-
-### Parameters
-
-- `perToken` **[number][1642]** Dollars
-
-Returns **[string][1640]**&#x20;
-
-## dollars
-
-Type: Dollars
-
-## dollars
-
-Type: [Array][1647]<[string][1640]>
-
-## formatPrice
-
-What a model costs per million tokens, read and written, as `$3 / $15`;
-`Free` for one that costs nothing, and '' where the list doesn't say.
-
-### Parameters
-
-- `pricing` **({prompt: [number][1642], completion: [number][1642]} | [undefined][1653])**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## formatContext
-
-How many tokens a model reads at once, as `200K` or `1M`; '' where unknown.
-
-### Parameters
-
-- `tokens` **([number][1642] | [undefined][1653])**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## utils/oauth
-
-OAuth PKCE utilities for secure authentication flows
-
-## generateCodeVerifier
-
-Generates a cryptographically random code verifier for PKCE
-
-Returns **[string][1640]** A random string suitable for use as a code verifier
-
-## generateCodeChallenge
-
-Generates a code challenge from a code verifier using SHA-256
-
-### Parameters
-
-- `verifier` **[string][1640]** The code verifier
-
-<!---->
-
-- Throws **[Error][1650]** If Web Crypto API is not available (insecure context)
-
-Returns **[Promise][1655]<[string][1640]>** The base64url-encoded SHA-256 hash of the verifier
-
-## generateState
-
-Generates a random state parameter for OAuth security
-
-Returns **[string][1640]** A random state string
-
-## base64URLEncode
-
-Encodes a byte array to base64url format (without padding)
-
-### Parameters
-
-- `buffer` **[Uint8Array][1644]** The byte array to encode
-
-Returns **[string][1640]** Base64url-encoded string
-
-## storeOAuthParams
-
-Stores OAuth flow parameters in local storage
-Note: localStorage is used instead of sessionStorage because the OAuth callback
-happens in a new tab which doesn't share sessionStorage with the originating tab.
-These values are immediately deleted after the callback completes.
-
-### Parameters
-
-- `params` **[Object][1643]** OAuth parameters
-  - `params.verifier` **[string][1640]** Code verifier
-  - `params.state` **[string][1640]** State parameter
-  - `params.providerId` **[string][1640]?** The connection the key is for, when
-    it was signed in from one
-
-## retrieveOAuthParams
-
-Retrieves and clears OAuth flow parameters from local storage
-
-## authorizationUrl
-
-The address to sign in to a service at, with a fresh PKCE challenge; the
-verifier and state are kept for when the service sends the writer back
-
-### Parameters
-
-- `service` &#x20;
-- `callbackUrl` **[string][1640]** The callback URL to redirect to after authorization
-- `providerId` **[string][1640]?** The connection the key is for
-
-<!---->
-
-- Throws **[Error][1650]** If not in a secure context or Web Crypto API unavailable
-
-Returns **[Promise][1655]<[string][1640]>**&#x20;
-
-## exchangeCode
-
-Trade the code a service sent the writer back with for an API key
-
-### Parameters
-
-- `service` &#x20;
-- `code` **[string][1640]** Authorization code from OAuth callback
-- `codeVerifier` **[string][1640]** PKCE code verifier
-
-<!---->
-
-- Throws **[Error][1650]** When the service refuses, in its words
-
-Returns **[Promise][1655]<[string][1640]>** The API key
-
-## utils/obfuscate
-
-A chat export with its words taken out.
-
-For handing a chat to someone who needs its shape and not its story — how
-many turns, how long, what the model was sent — without the story. Every
-letter becomes a random letter of the same case, and nothing else changes:
-digits, punctuation, whitespace, markdown and tags stay, so the text is the
-same size and the same shape and says nothing. A letter is drawn afresh
-every time, so the same word comes out differently each time it appears
-and nothing can be read back off frequencies.
-
-Every string is scrambled unless it is known to hold the export together:
-keys, ids, roles, timestamps, tool names, the names and parameters of
-commands. That way round, so that a field nobody thought of cannot carry
-the story out in plain text; what is kept is kept by name. The JSON inside a
-tool call's arguments and a tool's result is scrambled inside its keys, so
-it is still JSON of the same shape. A command that answers by rule — a
-roll, an oracle, a drawn name — keeps its answer, since there is nothing in
-it to hide; one that answers in prose loses it like the rest, and so does
-one whose answer is the writer's own words given back, as a direction's
-is: an answer the app drew is never the same words as the question. A turn made
-of segments is put back together from the scrambled segments, the way the
-app puts it together, so what the model would read and what is recorded
-agree.
-
-## UPPER
-
-Type: [string][1640]
-
-## UPPER
-
-Type: [string][1640]
-
-## UPPER
-
-Type: [string][1640]
-
-## ObfuscateOptions
-
-Type: [Object][1643]
-
-## KEPT_KEYS
-
-Keys whose values hold the export together rather than say anything, and
-so are kept wherever they occur: identifiers, kinds, roles and the like.
-A key ending in Id or Ids is an identifier by convention.
-
-## isKept
-
-### Parameters
-
-- `key` **[string][1640]**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## scrambleText
-
-The text with every letter replaced by a random letter of the same case.
-A letter with no case of its own becomes a lowercase one. Everything that
-is not a letter is left where it is.
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-- `random` (optional, default `Math.random`)
-
-Returns **[string][1640]**&#x20;
-
-## scrambleValue
-
-A value with every string in it scrambled, keys and kept keys aside. The
-same shape as it was given, which is why it answers as `any`: it is the
-one rule everything else here starts from.
-
-### Parameters
-
-- `value` **any**&#x20;
-- `random` &#x20;
-- `key` **[string][1640]?** The key this value sits under, if any (optional, default `''`)
-
-Returns **any**&#x20;
-
-## scrambleValue
-
-Type: ChatCommand
-
-## scrambleJsonText
-
-Text that is JSON — a tool's arguments, a tool's result — scrambled inside
-its structure, so it is still JSON with the same keys. Text that is not
-JSON is scrambled as text.
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-- `random` &#x20;
-
-Returns **[string][1640]**&#x20;
-
-## scrambleCommand
-
-A command with everything scrambled but what makes it the command it is:
-its name (a character's is the writer's, and goes), its parameter, and an
-answer given by rule rather than in prose — which is never the writer's
-own words given back, so an answer that is the input, or the question as
-the model read it, is the writer's and goes too.
-
-### Parameters
-
-- `command` **ChatCommand**&#x20;
-- `options` **Required\<Pick<[ObfuscateOptions][724], (`"consults"` | `"random"`)>>**&#x20;
-  - `options.consults` &#x20;
-  - `options.random` &#x20;
-
-Returns **ChatCommand**&#x20;
-
-## scrambleConsultation
-
-What a skill did on its way to its answer, scrambled the way a turn's own
-calls are: each tool kept by name, with what it was asked and what it
-answered scrambled inside their JSON.
-
-### Parameters
-
-- `consultation` **any**&#x20;
-- `random` &#x20;
-
-Returns **any**&#x20;
-
-## scrambleApiMessage
-
-One message of the model's trajectory, or of a saved request: everything
-scrambled, with what a tool answered scrambled inside its JSON and what the
-model called kept by name with its arguments scrambled inside theirs.
-
-### Parameters
-
-- `item` **any**&#x20;
-- `random` &#x20;
-
-Returns **any**&#x20;
-
-## scrambleMetadata
-
-### Parameters
-
-- `metadata` **any**&#x20;
-- `options` **Required\<Pick<[ObfuscateOptions][724], (`"consults"` | `"random"`)>>**&#x20;
-
-Returns **any**&#x20;
-
-## scrambleMessage
-
-A message, or one of its alternates, with its words taken out: everything
-by the one rule first, and then the parts that need more care.
-
-### Parameters
-
-- `message` **any**&#x20;
-- `options` **Required<[ObfuscateOptions][724]>**&#x20;
-
-Returns **any**&#x20;
-
-## obfuscateBackup
-
-A backup envelope — a whole one, or the one chat a chat is exported in —
-with its words taken out and everything else as it was.
-
-### Parameters
-
-- `backup` **T**&#x20;
-- `options` **[ObfuscateOptions][724]?** (optional, default `{}`)
-
-Returns **T**&#x20;
-
-## settings
-
-Type: Required<[ObfuscateOptions][724]>
-
-## utils/partialJson
-
-Read the strings out of JSON that has not finished arriving.
-
-A tool call streams as a JSON object one token at a time, and the prose the
-model is writing into it is a string value that may run for minutes before
-its closing quote. `JSON.parse` has nothing to say until then. This does:
-every string field that has fully arrived, plus the one still being written,
-as far as it has got.
-
-## STRING_BODY
-
-A JSON string's body: anything but a quote or a backslash, or a backslash
-and whatever it escapes.
-
-## FIELD
-
-`"key": "value"` where the value is closed by a quote or by the end of the
-text — which may fall on a backslash that has not yet said what it escapes.
-
-## decode
-
-Decode a JSON string body, tolerating an escape cut off at the end.
-
-### Parameters
-
-- `body` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## partialStrings
-
-The string fields of a JSON object text, complete or not, keyed by name.
-Nested objects are read through: their string fields count, with their own
-keys. A later field with the same key wins.
-
-### Parameters
-
-- `text` **([string][1640] | null | [undefined][1653])** JSON, or the front part of some
-
-Returns **Record<[string][1640], [string][1640]>**&#x20;
-
-## PartialField
-
-A string field of JSON still arriving: as far as it has got, and whether
-its closing quote has come.
-
-Type: {value: [string][1640], done: [boolean][1641]}
-
-## partialFields
-
-The string fields of a JSON object text, complete or not, each saying
-whether it is: a path is worth looking up only once the whole of it has
-come. Read as `partialStrings` reads them.
-
-### Parameters
-
-- `text` **([string][1640] | null | [undefined][1653])** JSON, or the front part of some
-
-Returns **Record<[string][1640], [PartialField][755]>**&#x20;
-
-## utils/pictures
-
-A document's own pictures, as its text refers to them.
-
-A picture pasted or dropped into a document is the document's, as in a
-Google Doc: not a document of its own, not in the outline, not renamed or
-edited once it is in. Its text refers to it by a path from the document's
-folder, `.images/<document id>/<name>`, which on desktop is where the
-picture is on disk, beside the document and moved with it. The id makes the
-path the same however the document is renamed or moved, so it is read by the
-id, wherever it is written and whatever comes before it.
-
-What the document knows of each picture (its media type and size) is on its
-row, under `pictures`, by name. The bytes are kept under `pictureKey`: in
-the `files` table in a browser, in `.images/<id>/` in the library.
-
-Design: `.llm/images_design.md`.
-
-## PICTURES_DIR
-
-The folder a document's pictures are kept in, beside it.
-
-Type: [string][1640]
-
-## ID
-
-The characters a document's id is made of: `doc_` and a nanoid, or an older id's prefix.
-
-Type: [string][1640]
-
-## PATH
-
-A picture's path, at the end of a destination: what is read of one.
-
-## PLAIN
-
-Pictures in markdown, written plain (`](.images/doc_x/map.png)`) or in
-`<…>`, where a name may have its spaces left in.
-
-## decoded
-
-One of a document's pictures, as its row has it.
-
-### Parameters
-
-- `name` &#x20;
-
-## decoded
-
-A name as it was written, decoded. A `%` that starts no escape is a `%`.
-
-### Parameters
-
-- `name` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## extensionOf
-
-The extension a picture of this type is named with: the usual one where
-it is known, the type's own name otherwise (`image/heic`, `heic`).
-
-### Parameters
-
-- `mime` **[string][1640]**&#x20;
-
-Returns **[string][1640]** Without the dot; '' for no type at all
-
-## pictureName
-
-The name a picture takes in a document: the one it came with, made safe
-for a file and given an extension when it has none, or `image`; and
-`(2)`, `(3)` and on when the document has one by that name already.
-
-### Parameters
-
-- `wanted` **([string][1640] | [undefined][1653])** What it was called, a file's name or a Doc's label
-- `mime` **[string][1640]** Its media type
-- `taken` **[Set][1646]<[string][1640]>** The keys of the names in use (`nameKey`); the one chosen is added
-
-Returns **[string][1640]**&#x20;
-
-## pictureHref
-
-The path a document's text refers to one of its pictures by.
-
-### Parameters
-
-- `documentId` **[string][1640]**&#x20;
-- `name` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## pictureOf
-
-The picture a path refers to, or null when it is not one of a document's
-own: a link to a file document, or an address on the web.
-
-### Parameters
-
-- `src` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **({documentId: [string][1640], name: [string][1640]} | null)**&#x20;
-
-## pictureKey
-
-Where a picture's bytes are kept, in the `files` table and the stores'
-calls for a file's bytes.
-
-### Parameters
-
-- `documentId` **[string][1640]**&#x20;
-- `name` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## pictureOfKey
-
-The document a key of `pictureKey`'s belongs to, or null for a file
-document's own key, which has no `/` in it.
-
-### Parameters
-
-- `key` **[string][1640]**&#x20;
-
-Returns **({documentId: [string][1640], name: [string][1640]} | null)**&#x20;
-
-## picturesIn
-
-The keys of every picture a document's text refers to, its own and any
-other's, comment and suggestion markup and all. A look at the text, not a
-parse of it: it may find a path in a code span too, which only keeps a
-picture that would otherwise go.
-
-### Parameters
-
-- `markdown` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[Set][1646]<[string][1640]>**&#x20;
-
-## keys
-
-Type: [Set][1646]<[string][1640]>
-
-## keys
-
-Type: [Array][1647]<[SettingsGroup][892]>
-
-## keys
-
-Type: [Array][1647]<[SettingsGroup][892]>
-
-## keys
-
-Type: TreeSelectionKeys
-
-## keys
-
-Type: [WeakMap][1659]<[Node][1649], [string][1640]>
-
-##
-
-Type: [string][1640]
-
-##
-
-Type: [string][1640]
-
-## repointPictures
-
-A document's text with its paths to one document's pictures made paths to
-another's: a copy's text, whose pictures are copied under its own id.
-
-### Parameters
-
-- `markdown` **[string][1640]**&#x20;
-- `fromId` **[string][1640]**&#x20;
-- `toId` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## unreferencedPictures
-
-The names of a document's pictures that no text refers to.
-
-### Parameters
-
-- `documentId` **[string][1640]**&#x20;
-- `pictures` **(Record<[string][1640], PictureInfo> | [undefined][1653])** Its row's
-- `referred` **[Set][1646]<[string][1640]>** Every key the project's text refers to
-
-Returns **[Array][1647]<[string][1640]>**&#x20;
-
-## utils/plainCopy
-
-A deep copy of a row, as JSON would have it, without writing it
-out as JSON.
-
-## plainCopy
-
-A copy of `value` holding what `JSON.parse(JSON.stringify(value))` would:
-plain objects and arrays, no reactivity, nothing JSON leaves out.
-
-A string is the same string in the copy. Only objects are copied, so a
-document of any length costs what a short one does. Writing one out instead
-takes seconds at a few hundred megabytes, and past 128 million characters,
-with a character anywhere beside it that doesn't fit in a byte, V8's
-`JSON.stringify` can kill the page outright with an out-of-memory error
-nothing can catch.
-
-### Parameters
-
-- `value` **T**&#x20;
-
-<!---->
-
-- Throws **[RangeError][1660]** When the value holds a cycle, as JSON's TypeError would
-
-Returns **T**&#x20;
-
-## copyOf
-
-Type: T
-
-## copyOf
-
-### Parameters
-
-- `value` **any**&#x20;
-
-Returns **any** Undefined for what JSON leaves out
-
-## utils/projectList
-
-The projects as they are listed for picking one: found by
-name, and in an order.
-
-Pure: the rows come from `useProjects`.
-
-## ProjectRow
-
-A project in a list.
-
-Type: [Object][1643]
-
-### Properties
-
-- `id` **[string][1640]**&#x20;
-- `name` **[string][1640]**&#x20;
-- `edited` **[number][1642]?** When something in it last changed
-- `created` **[number][1642]?**&#x20;
-
-## byName
-
-What a list is sorted by, and which way.
-
-### Parameters
-
-- `a` &#x20;
-- `b` &#x20;
-
-## byName
-
-By name, numbers as numbers, with two of one name in a fixed order.
-
-### Parameters
-
-- `a` **[ProjectRow][799]**&#x20;
-- `b` **[ProjectRow][799]**&#x20;
-
-Returns **[number][1642]**&#x20;
-
-## sortProjects
-
-In the order asked for. Projects with the same time go by name, whichever
-way the times run.
-
-### Parameters
-
-- `rows` **[Array][1647]<[ProjectRow][799]>**&#x20;
-- `order` **ProjectOrder**&#x20;
-  - `order.by` &#x20;
-  - `order.descending` &#x20;
-
-Returns **[Array][1647]<[ProjectRow][799]>**&#x20;
-
-##
-
-Type: [ProjectRow][799]
-
-##
-
-Type: [ProjectRow][799]
-
-## recentProjects
-
-The projects edited most recently, the latest first.
-
-### Parameters
-
-- `rows` **[Array][1647]<[ProjectRow][799]>**&#x20;
-- `limit` **[number][1642]**&#x20;
-
-Returns **[Array][1647]<[ProjectRow][799]>**&#x20;
-
-## folded
-
-Text as it is compared when looking for a name: without case or accents.
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## folded
-
-## projectsNamed
-
-The projects with every word of the query somewhere in their names.
-
-### Parameters
-
-- `rows` **[Array][1647]<[ProjectRow][799]>**&#x20;
-- `query` **[string][1640]**&#x20;
-
-Returns **[Array][1647]<[ProjectRow][799]>**&#x20;
-
-## utils/routeHelpers
-
-Route helpers for addressing projects.
-
-A URL names one project: `/project/<storyId>`. What is open in it — the
-document, the panels — is the project's own state, kept on the story, and
-the URL does not repeat it: that would be a second source for one fact, and
-a segment to keep in step. The document used to be the address; it stopped
-being one when the story started remembering it.
-
-## storyIdFromRoute
-
-Resolve a route parameter to a story ID
-
-### Parameters
-
-- `routeParam` **([string][1640] | [Array][1647]<[string][1640]>)** The story ID from route params
-
-Returns **[string][1640]** The story ID, or '' if absent
-
-## pushProjectToRoute
-
-Navigate to a project
-
-### Parameters
-
-- `router` &#x20;
-- `storyId` **[string][1640]** The project to open
-
-## goToProject
-
-Go to a project, as the writer asked for it. In the desktop app, one open
-in another window is shown there instead (`platform/windows.js`).
-
-### Parameters
-
-- `router` &#x20;
-- `storyId` **[string][1640]** The project to open
-
-Returns **[Promise][1655]\<void>**&#x20;
-
-## replaceProjectInRoute
-
-Replace the current route with a project, for redirects that should not
-leave a step in the history
-
-### Parameters
-
-- `router` &#x20;
-- `storyId` **[string][1640]** The project to open
-
-## utils/sections
-
-A Markdown document's sections: its headings, each with the
-link that names it, where it runs, and how long it is.
-
-A link is made from a heading the way Markdown viewers make one — lower
-case, spaces as hyphens, punctuation dropped, a repeat numbered `-1`,
-`-2` — so an index written with them works outside the app too, and the
-model reads a section by the same name the index gives it.
-
-## HEADING
-
-A Markdown heading line.
-
-## FENCE
-
-A fence opening or closing a code block.
-
-## MarkdownSection
-
-One section of a Markdown text.
-
-Type: [Object][1643]
-
-### Properties
-
-- `title` **[string][1640]** The heading's text, emphasis marks aside
-- `level` **[number][1642]** 1 for `#`
-- `link` **[string][1640]** Unique within the text
-- `offset` **[number][1642]** Where the heading line starts
-- `end` **[number][1642]** Where the next heading of any level starts: the section's own text ends
-- `until` **[number][1642]** Where the next heading at its level or above starts: the section and its subsections end
-- `words` **[number][1642]** In the section and its subsections
-
-## SectionNode
-
-A node of the section tree, as the model is shown it.
-
-Type: [Object][1643]
-
-### Properties
-
-- `link` **[string][1640]**&#x20;
-- `title` **[string][1640]**&#x20;
-- `words` **[number][1642]**&#x20;
-- `sections` **[Array][1647]<[SectionNode][830]>?**&#x20;
-- `entries` **[number][1642]?** How many subsections a long run has, not listed here
-- `range` **[string][1640]?** The first and last of that run
-- `more` **[number][1642]?** Subsections left out of this tree for its size
-- `about` **[string][1640]?** What is in it, in a line, where explore wrote
-  one: see `withSectionLines` in ai/tools/documents.js
-
-## linker
-
-A maker of unique links for one text: the first `intro`, then `intro-1`.
-
-## seen
-
-Type: [Map][1652]<[string][1640], [number][1642]>
-
-## seen
-
-Type: [Set][1646]<[string][1640]>
-
-## wordsOf
-
-How many words a stretch of text has.
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-
-## wordsOf
-
-A block's words, each with what it is for comparing: its text and marks,
-comments and suggestions aside. An inline node is one word.
-
-### Parameters
-
-- `block` **[Node][1649]**&#x20;
-
-Returns **[Array][1647]<{key: [string][1640], node: [Node][1649]}>**&#x20;
-
-## wordsOf
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-
-## markdownSections
-
-The sections of a Markdown text, in order. A `#` line inside a code
-block is code, not a heading.
-
-### Parameters
-
-- `markdown` **[string][1640]**&#x20;
-
-Returns **[Array][1647]<[MarkdownSection][828]>**&#x20;
-
-## TREE_LIMIT
-
-How many nodes the tree shows at most; a long map is its own cost.
-
-Type: [number][1642]
-
-## LIST_LIMIT
-
-How many subsections a node lists before it says how many instead.
-
-Type: [number][1642]
-
-## sectionTree
-
-The sections as a tree, cut to size. A node with a long run of
-subsections — every spell, every monster — gives how many there are and
-the first and last of them instead of listing them, since that is a
-list to look into, not a map to read; then, if the tree is still too big,
-whole levels are kept from the top down while they fit, and a node whose
-subsections were left out says how many there are.
-
-The top level is listed whole however long it is: for the subsections of
-one section, asked for by name, that list is the answer.
-
-### Parameters
-
-- `sections` **[Array][1647]<[MarkdownSection][828]>**&#x20;
-- `limit` **[number][1642]?** (optional, default `TREE_LIMIT`)
-- `list` **[number][1642]?** How many subsections a node lists before it counts them instead (optional, default `LIST_LIMIT`)
-
-Returns **[Array][1647]<[SectionNode][830]>**&#x20;
-
-## stack
-
-Type: [Array][1647]<{node: [SectionNode][830], level: [number][1642], depth: [number][1642]}>
-
-## stack
-
-Type: [Array][1647]<[number][1642]>
-
-## roots
-
-Type: [Array][1647]<[SectionNode][830]>
-
-## node
-
-Type: [SectionNode][830]
-
-## collapse
-
-### Parameters
-
-- `node` **[SectionNode][830]**&#x20;
-
-## all
-
-Type: [Array][1647]<{depth: [number][1642]}>
-
-## all
-
-Type: [Set][1646]<[string][1640]>
-
-##
-
-Type: [Array][1647]<[SectionNode][830]>
-
-##
-
-Type: [number][1642]
-
-## cut
-
-### Parameters
-
-- `node` **[SectionNode][830]**&#x20;
-- `at` **[number][1642]**&#x20;
-
-## countOf
-
-How many nodes a list of subtrees holds.
-
-### Parameters
-
-- `nodes` **[Array][1647]<[SectionNode][830]>**&#x20;
-
-Returns **[number][1642]**&#x20;
-
-## countOf
-
-### Parameters
-
-- `state` &#x20;
-
-## findSection
-
-The section a reference names: its link, or else its title, case aside;
-failing both, the first whose title contains the reference.
-
-### Parameters
-
-- `sections` **[Array][1647]<[MarkdownSection][828]>**&#x20;
-- `reference` **[string][1640]**&#x20;
-
-Returns **([MarkdownSection][828] | null)**&#x20;
-
-## indexOf
-
-An index of a text's sections as a Markdown list of links, down to a
-depth below the text's top level.
-
-### Parameters
-
-- `sections` **[Array][1647]<[MarkdownSection][828]>**&#x20;
-- `depth` **[number][1642]?** How many levels, counting the top (optional, default `3`)
-
-Returns **[string][1640]** '' for a text with no headings
-
-## pop
-
-Type: [Span][1258]
-
-## pop
-
-Type: [Span][1258]
-
-## open
-
-Type: [Array][1647]<[number][1642]>
-
-## open
-
-Type: [Array][1647]<[Span][1258]>
-
-## open
-
-Type: const
-
-## open
-
-Type: [Array][1647]<[number][1642]>
-
-## open
-
-Type: [Array][1647]<[number][1642]>
-
-## lines
-
-Type: [Array][1647]<[string][1640]>
-
-## lines
-
-Type: [Array][1647]<[string][1640]>
-
-## sectionIndexAt
-
-The section an offset falls in: the last heading at or before it.
-
-### Parameters
-
-- `sections` **[Array][1647]<[MarkdownSection][828]>**&#x20;
-- `offset` **[number][1642]**&#x20;
-
-Returns **[number][1642]** Its index, or -1 before the first heading
-
-## sectionPath
-
-The titles from the top down to a section: where it sits, as a reader
-would say it — `Spells / Spell Descriptions / Fire Burst`.
-
-### Parameters
-
-- `sections` **[Array][1647]<[MarkdownSection][828]>**&#x20;
-- `index` **[number][1642]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## utils/sessionStorage
-
-Simple sessionStorage wrapper with JSON serialization support
-
-## sessionStorage
-
-sessionStorage utility for managing temporary state persistence
-
-### get
-
-Get a value from sessionStorage
-
-#### Parameters
-
-- `key` **[string][1640]** The storage key
-- `defaultValue` **T** Default value if key doesn't exist (optional, default `null`)
-
-Returns **T** The stored value or defaultValue
-
-### set
-
-Set a value in sessionStorage
-
-#### Parameters
-
-- `key` **[string][1640]** The storage key
-- `value` **any** The value to store (will be JSON stringified)
-
-Returns **[boolean][1641]** Success status
-
-### remove
-
-Remove an item from sessionStorage
-
-#### Parameters
-
-- `key` **[string][1640]** The storage key
-
-Returns **[boolean][1641]** Success status
-
-## utils/settingsFile
-
-The writer's setup without their projects: what a settings
-file can hold, which of it the writer picked, and what importing one
-changes here.
-
-A settings file is a backup envelope (`utils/backup.js`) with the scope
-`settings`: rows of the app tables a setup is made of, and the settings
-kept outside the database that the writer picked. Everything here is plain
-data in and out; reading and writing the rows is `composables/useBackup.js`.
-
-An item is one row, or one group of the outside settings. Importing works
-by item: one not here is added, one here is replaced by the file's copy
-when the two differ, and nothing is removed. A key the file leaves out
-keeps the one here.
-
-Each item imported leaves a fingerprint of the file's copy behind. A file
-left by a script is imported as the app opens, without asking, and skips
-every item whose fingerprint is unchanged, so what the writer did to an
-item since stands until the file changes that item. A file picked by hand
-is imported whole, after the writer has seen what it changes.
-
-Design: `.llm/settings_import_design.md`.
-
-## SETTINGS_TABLES
-
-## SETTINGS_TABLES
-
-## SettingsTable
-
-The app tables a setup is made of, in the order the export lists them.
-
-Type: [Array][1647]<[SettingsTable][891]>
-
-## SettingsGroup
-
-The settings kept outside the database, in the groups the export offers
-them: each group is one item.
-
-Type: (`"builtInProfiles"` | `"startingProfiles"` | `"narration"` | `"workflows"` | `"preferences"` | `"spelling"`)
-
-## UNPICKED
-
-The groups left unpicked until the writer picks them: how one person likes
-to work, which a setup handed to someone else shouldn't carry unasked.
-
-Type: ReadonlySet<[SettingsGroup][892]>
-
-## KINDS
-
-What each kind of item is called: as a heading, and in a sentence about
-one of them or several.
-
-Type: Record<([SettingsTable][891] | `"settings"`), {heading: [string][1640], one: [string][1640], many: [string][1640]}>
-
-## GROUP_NAMES
-
-Each group of settings by name, as a heading's item and in a sentence.
-
-Type: Record<[SettingsGroup][892], {label: [string][1640], phrase: [string][1640]}>
-
-## SettingsItem
-
-One thing a settings file can hold: a row of a table, or a group of the
-outside settings.
-
-Type: [Object][1643]
-
-### Properties
-
-- `key` **[string][1640]** `table/id`, or `settings/group`
-- `kind` **([SettingsTable][891] | `"settings"`)**&#x20;
-- `name` **[string][1640]** What the writer calls it
-- `picked` **[boolean][1641]?** Whether the export starts with it picked
-- `needs` **[Array][1647]<[string][1640]>?** The keys of the items it is no use without
-
-## rowId
-
-What a row is known by in its table: its name for a skill's wording, which
-is keyed by the skill's, and its id for the rest.
-
-### Parameters
-
-- `table` **[string][1640]**&#x20;
-- `row` **any**&#x20;
-
-Returns **([string][1640] | [undefined][1653])**&#x20;
-
-## rowId
-
-Type: [string][1640]
-
-## itemKey
-
-### Parameters
-
-- `table` **[string][1640]**&#x20;
-- `id` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## everyInstallHas
-
-Whether every install has this row, made on its first start: a built-in
-connection, or the default preset. One a file brings is a change to it,
-even where the app hasn't made it yet, as it opens for the first time.
-
-### Parameters
-
-- `table` **[string][1640]**&#x20;
-- `id` **[string][1640]**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## rowName
-
-What a row is called in the export's list and in a sentence.
-
-### Parameters
-
-- `table` **[SettingsTable][891]**&#x20;
-- `row` **any**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## settingsItems
-
-Everything the writer could put in a settings file, in the order the
-export lists it.
-
-### Parameters
-
-- `tables` **Partial\<Record<[SettingsTable][891], [Array][1647]\<any>>>** The rows here
-- `settings` **BackedUpSettings** The outside settings here
-
-Returns **[Array][1647]<[SettingsItem][896]>**&#x20;
-
-## items
-
-Type: [Array][1647]<[SettingsItem][896]>
-
-## item
-
-Type: [SettingsItem][896]
-
-## item
-
-Type: [SettingsItem][896]
-
-## settingsNeeds
-
-The rows a group of settings names, which it is no use without.
-
-### Parameters
-
-- `group` **[SettingsGroup][892]**&#x20;
-- `settings` **BackedUpSettings**&#x20;
-
-Returns **[Array][1647]<[string][1640]>**&#x20;
-
-## needs
-
-Type: [Array][1647]<[string][1640]>
-
-## add
-
-### Parameters
-
-- `table` **[string][1640]**&#x20;
-- `id` **unknown**&#x20;
-
-## pickWithNeeds
-
-The picked keys with what `key` needs added, and what that needs in turn,
-of the items there are.
-
-### Parameters
-
-- `picked` **[Set][1646]<[string][1640]>**&#x20;
-- `items` **[Array][1647]<[SettingsItem][896]>**&#x20;
-- `key` **[string][1640]** The item just picked
-
-Returns **[Set][1646]<[string][1640]>** A new set
-
-## pop
-
-Type: [string][1640]
-
-## pop
-
-Type: [number][1642]
-
-## pickSettings
-
-The tables and outside settings of the items picked, ready for the
-backup envelope.
-
-### Parameters
-
-- `tables` **Partial\<Record<[SettingsTable][891], [Array][1647]\<any>>>** The rows here
-- `settings` **BackedUpSettings** The outside settings here
-- `picked` **[Set][1646]<[string][1640]>** The keys of the items to put in
-
-Returns **{tables: TableData, settings: Partial\<BackedUpSettings>}**&#x20;
-
-## chosen
-
-Type: Partial\<BackedUpSettings>
-
-## settingsFilename
-
-Filename for a downloaded settings file, e.g. `inksprite-settings-2026-10-13.json`.
-
-### Parameters
-
-- `date` **[Date][1651]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-##
-
-Type: [number][1642]
-
-## LISTING
-
-What an MCP server last listed, which is news about it rather than a change to it.
-
-## essence
-
-A row as it is compared and fingerprinted: without when it was made and
-changed, without what a server last listed, and with an empty key the
-same as none.
-
-### Parameters
-
-- `table` **[string][1640]**&#x20;
-- `row` **any**&#x20;
-
-Returns **[object][1643]**&#x20;
-
-## stableJson
-
-JSON with every object's keys in order, so the same data is always the
-same text.
-
-### Parameters
-
-- `value` **unknown**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## fingerprint
-
-A short fingerprint of some data (cyrb53): enough to tell one copy of an
-item from the next, and no more.
-
-### Parameters
-
-- `value` **unknown**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## mergeRow
-
-A row of the file's as it goes in here, over the row here with its id.
-
-The keys the file left out are this row's; so is when it was made. A
-server's allowances are this row's too, unless the file was left by a
-script, and its listing is whichever is newer. A file brought in by hand
-that sends a connection or a server somewhere else takes this row's keys
-no further: they're left out, and said to be, so a file can't make the
-writer's key go to an address of its choosing.
-
-### Parameters
-
-- `table` **[SettingsTable][891]**&#x20;
-- `row` **any** The file's
-- `here` **any** The row here, if there is one
-- `options` **{byHand: [boolean][1641], now: [number][1642]}**&#x20;
-  - `options.byHand` &#x20;
-  - `options.now` &#x20;
-
-Returns **any**&#x20;
-
-##
-
-Type: [string][1640]
-
-## SettingsImport
-
-What importing a settings file does here.
-
-Type: [Object][1643]
-
-### Properties
-
-- `rows` **TableData** The rows to write, by table
-- `settings` **Partial\<BackedUpSettings>** The outside settings to take
-- `added` **[Array][1647]<[SettingsItem][896]>** Items not here before
-- `changed` **[Array][1647]<[SettingsItem][896]>** Items here that the file's copies replace
-- `fingerprints` **Record<[string][1640], [string][1640]>** Every item's fingerprint once this is done
-
-## planImport
-
-Work out what a settings file changes here, writing nothing.
-
-### Parameters
-
-- `file` &#x20;
-- `here` **{tables: Partial\<Record<[SettingsTable][891], [Array][1647]\<any>>>, settings: BackedUpSettings}**&#x20;
-- `$2` **[Object][1643]**&#x20;
-  - `$2.byHand` &#x20;
-  - `$2.fingerprints` (optional, default `{}`)
-  - `$2.now` (optional, default `Date.now()`)
-
-- `options` **[object][1643]**&#x20;
-  - `options.byHand` **[boolean][1641]** Picked by the writer, who is shown what it
-    changes, rather than left by a script and imported as the app opens
-  - `options.fingerprints` **Record<[string][1640], [string][1640]>?** Each item's as last imported
-  - `options.now` **[number][1642]?** Timestamp, injectable for tests
-
-Returns **[SettingsImport][937]**&#x20;
-
-## plan
-
-Type: [SettingsImport][937]
-
-## changesAnything
-
-Whether importing would change anything here.
-
-### Parameters
-
-- `plan` **[SettingsImport][937]**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## listed
-
-Words joined as a list is in a sentence: `a`, `a and b`, `a, b and c`.
-
-### Parameters
-
-- `words` **[Array][1647]<[string][1640]>**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## NAMED
-
-How many of a kind are named in a sentence before they are counted instead.
-
-Type: [number][1642]
-
-## itemsInWords
-
-Items as a sentence's list: by kind, in the export's order, each kind by
-name when there are few and by count when there are more.
-
-### Parameters
-
-- `items` **[Array][1647]<[SettingsItem][896]>**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## itemPhrases
-
-Items as the phrases of a sentence's list, a kind each; see `itemsInWords`.
-
-### Parameters
-
-- `items` **[Array][1647]<[SettingsItem][896]>**&#x20;
-
-Returns **[Array][1647]<[string][1640]>**&#x20;
-
-## phrases
-
-Type: [Array][1647]<[string][1640]>
-
-## slice
-
-Type: [SettingsGroup][892]
-
-##
-
-Type: [SettingsTable][891]
-
-## describeImport
-
-What an import adds and changes, in a sentence or two: "Adds the
-connection Work proxy and the preset Work. Changes the narration connection."
-
-### Parameters
-
-- `plan` **[SettingsImport][937]**&#x20;
-- `$1` **[Object][1643]** (optional, default `{}`)
-  - `$1.done` (optional, default `false`)
-
-Returns **[string][1640]**&#x20;
-
-## sentences
-
-Type: [Array][1647]<[string][1640]>
-
-## sentences
-
-Type: [Array][1647]<[string][1640]>
-
-## describeSelection
-
-What taking a selection adds and changes, in a sentence or two: "Adds the
-project Thief and the connection Work proxy. Changes the narration connection."
-
-### Parameters
-
-- `$0` **[Object][1643]**&#x20;
-  - `$0.projects` &#x20;
-  - `$0.cards` &#x20;
-  - `$0.plan` &#x20;
-
-- `$1` **[Object][1643]** (optional, default `{}`)
-  - `$1.done` (optional, default `false`)
-
-- `selection` **{projects: [Array][1647]<[string][1640]>, cards: [Array][1647]<[string][1640]>, plan: Pick<[SettingsImport][937], (`"added"` | `"changed"`)>}** The names of its projects and cards, and what its settings change here
-
-Returns **[string][1640]**&#x20;
-
-## ai/providers
-
-What kind of server is on the other end of a connection.
-
-Most of what a connection needs is the same everywhere: an OpenAI-shaped
-endpoint, a key, a list of models. The type exists for the places that
-genuinely differ — where the API lives, which of the dozen reasoning
-conventions the server speaks, whether an address has to be typed in at all.
-
-`generic` is the honest default and stays the fallback: an OpenAI-compatible
-server we know nothing else about, spoken to in the subset everyone
-implements. A named type earns its place by making a request different, so
-adding one that changes nothing is worse than leaving the server on generic
-— it is a setting that looks like it does something. LM Studio has no
-reasoning parameter to send, so it is generic and should stay generic, and
-so are vLLM, Ollama and KoboldCpp: the built-in connections to them differ
-only in where they look.
-
-## ProviderType
-
-Type: [Object][1643]
-
-### Properties
-
-- `id` **[string][1640]** Stored on providers, so renaming one orphans every
-  connection saved under it
-- `label` **[string][1640]** The short name, for a line that already says
-  what it is naming
-- `menu` **[string][1640]** The name in the type menu, which has room to say more
-- `address` **[string][1640]?** Where the API lives, for a hosted service
-  whose address is known without asking. A type without one is a server
-  someone runs, and is told where it is.
-- `key` **[boolean][1641]?** Whether nothing gets through without an API key
-- `hidden` **[boolean][1641]?** Left out of the type menu and the built-in
-  connections: known here, but not offered yet
-- `notChat` **[RegExp][1661]?** The models in the service's list that a chat
-  cannot use (embeddings, speech, pictures, and OpenAI's that answer only its
-  Responses API), which a model picker leaves out
-- `does` **ReadonlyArray<[ProviderKind][965]>?** What a connection of this
-  type can be asked for; a chat alone when absent
-- `signIn` **[SignIn][963]?** Where the writer signs in to have a key made
-  for them, for a service that offers it
-- `credits` **[string][1640]?** Where an account buys more, for a service
-  that answers 402 when it has run out
-
-## SignIn
-
-A service's sign-in, OAuth with PKCE as OpenRouter has it: the writer is
-sent to `authorize` with a challenge, comes back with a code, and the code
-is traded at `exchange` for an API key (`composables/useSignIn.js`).
-
-Type: [Object][1643]
-
-### Properties
-
-- `authorize` **[string][1640]** Where the writer is sent
-- `exchange` **[string][1640]** Where the code is traded for a key
-- `params` **Record<[string][1640], [string][1640]>?** What else the sign-in is told
-
-## ProviderKind
-
-What a connection is asked for: a chat's replies, or speech, for narration
-and reading aloud.
-
-Type: (`"chat"` | `"speech"`)
-
-## PROVIDER_TYPES
-
-Every connection type, in the order the settings menu offers them.
-
-Type: [Array][1647]<[ProviderType][961]>
-
-## BUILT_IN_PROVIDERS
-
-The connections every install has, in the order the provider menus list
-them: the hosted services, then the servers people run at home, each at the
-address it listens on when started without being told. They are created on
-start when missing and can't be deleted or renamed; an address or a key is
-the writer's to change.
-
-`id` is what presets point at, so it never changes. `server` names the
-server behind a generic connection, for what it takes (ai/capabilities.js),
-and `does` what it can be asked for, where that is less than its type's.
-
-## DEFAULT_SPEECH_PROVIDER_ID
-
-The connection narration speaks through until the writer picks another.
-
-Type: [string][1640]
-
-## ConnectionKind
-
-What the writer can connect to, as setup offers it: a hosted service, a
-server of a kind they run at home, or any other that speaks OpenAI's API.
-Each built-in connection was one of these, and the first connection of a
-kind still takes its id, so presets made for it, and every device of the
-writer's, find it there.
-
-Type: [Object][1643]
-
-### Properties
-
-- `id` **[string][1640]**&#x20;
-- `name` **[string][1640]** What a connection of it is called to start with
-- `endpoint` **[string][1640]?** Where a server of it listens when started
-  without being told, or where a hosted service's API is, for the row
-- `server` **[string][1640]?** The server behind a generic connection, for
-  what it takes (ai/capabilities.js)
-- `does` **ReadonlyArray<[ProviderKind][965]>** What it can be asked for
-- `builtInId` **[string][1640]?** The built-in connection it was
-
-## BUILT_IN_KINDS
-
-Type: ReadonlyArray<[ConnectionKind][969]>
-
-## CONNECTION_KINDS
-
-Type: ReadonlyArray<[ConnectionKind][969]>
-
-###
-
-Type: const
-
-###
-
-Type: const
-
-## connectionKind
-
-A kind by its id.
-
-### Parameters
-
-- `id` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **([ConnectionKind][969] | [undefined][1653])**&#x20;
-
-## connectionKind
-
-Type: [ConnectionKind][969]
-
-## kindOf
-
-What kind a connection is: the server it names, the built-in it is, else
-its type, and an OpenAI-compatible server for anything else.
-
-### Parameters
-
-- `provider` &#x20;
-
-Returns **[ConnectionKind][969]**&#x20;
-
-## untouchedBuiltIn
-
-Whether a built-in connection is as every install made it, with nothing of
-the writer's in it: not added by them, no key, no routing, its own
-address. Since setup took their place they are made no more, but older
-devices still make them. Neither sync nor a settings file carries one.
-
-### Parameters
-
-- `provider` **any**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## inMenuOrder
-
-The connections the provider menus list, in their order: the built-in ones
-first, in their own order, then the writer's, in the order given. One of a
-type not offered yet is left out: Gemini was a built-in for a while, and an
-install that made it then can't delete it.
-
-### Parameters
-
-- `providers` **[Array][1647]\<T>**&#x20;
-
-Returns **[Array][1647]\<T>**&#x20;
-
-## typeOf
-
-### Parameters
-
-- `type` **[string][1640]?**&#x20;
-
-Returns **([ProviderType][961] | [undefined][1653])**&#x20;
-
-## providerDoes
-
-Whether a connection can be asked for this: from which built-in it is, else
-its type. So Kokoro is never offered to a chat, and Anthropic never to
-narration.
-
-### Parameters
-
-- `provider` &#x20;
-- `kind` **[ProviderKind][965]**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## DEFAULT_PROVIDER_TYPE
-
-The type a connection falls back to when it does not say, or says something unknown.
-
-Type: [string][1640]
-
-## providerLabel
-
-What to call a connection of this type.
-
-A type saved before it was known here — or after it stopped being — reads as
-generic rather than as nothing, because a connection with a blank type in
-front of it looks broken when it is merely unfamiliar.
-
-### Parameters
-
-- `type` **[string][1640]?**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## knownAddress
-
-Where a hosted service's API lives, or undefined for a server someone runs,
-whose address is on the connection.
-
-### Parameters
-
-- `type` **[string][1640]?**&#x20;
-
-Returns **([string][1640] | [undefined][1653])**&#x20;
-
-## needsEndpoint
-
-Whether this type has to be told where to find its API.
-
-A hosted service's address is known without being asked. Everything else is
-a server someone is running, and a connection to one with no endpoint has
-nowhere to go — so this is what validation asks, rather than naming the
-types one at a time and forgetting the next one.
-
-### Parameters
-
-- `type` **[string][1640]?**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## needsKey
-
-Whether this type gets nothing through without an API key. A server someone
-runs may ask for one, and the connection then has it, but goes without by
-default.
-
-### Parameters
-
-- `type` **[string][1640]?**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## connectionGap
-
-What a connection is still missing before a request can go through it, or
-null when nothing is. `key` is a hosted service with no API key; `endpoint`
-is a self-hosted server with no address. The settings show it beside the
-connection, so nothing looks ready that is not.
-
-### Parameters
-
-- `provider` &#x20;
-
-Returns **(`"key"` | `"endpoint"` | null)**&#x20;
-
-## presetProblem
-
-What stands between a preset and a request through it, as the error the
-request would fail with, or null when nothing does: no connection, no
-model, or a connection still missing its key or address. What a chat says
-above its box.
-
-### Parameters
-
-- `preset` &#x20;
-- `findProvider` &#x20;
-
-Returns **([Error][1650] | null)**&#x20;
-
-## canListModels
-
-Whether the connection can be asked what it serves. A server needs its
-address; a hosted service needs its key, except OpenRouter and NanoGPT,
-whose lists are public.
-
-### Parameters
-
-- `provider` &#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## listsPublicly
-
-Whether this service's list of models is public, asked without a key, and
-so says nothing of whether a key is good.
-
-### Parameters
-
-- `type` **[string][1640]?**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## signInOf
-
-Where the writer signs in to this service to have a key made, or undefined
-for one that offers no sign-in.
-
-### Parameters
-
-- `type` **[string][1640]?**&#x20;
-
-Returns **([SignIn][963] | [undefined][1653])**&#x20;
-
-## creditsPage
-
-Where an account with this service buys more, or undefined for a service
-that doesn't sell by the request.
-
-### Parameters
-
-- `type` **[string][1640]?**&#x20;
-
-Returns **([string][1640] | [undefined][1653])**&#x20;
-
-## speaksOpenRouterReasoning
-
-Whether a request to this service is told about reasoning as OpenRouter
-tells it: a `reasoning` object, with an effort, `enabled` and `exclude`.
-NanoGPT took the same shape.
-
-### Parameters
-
-- `type` **[string][1640]?**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## servesChat
-
-Whether a model in this service's list is one a chat can use. Most lists
-are only chat models; OpenAI's and Gemini's carry their embeddings, speech
-and picture models too, which answer a chat with an error.
-
-### Parameters
-
-- `type` **([string][1640] | [undefined][1653])**&#x20;
-- `id` **[string][1640]** The model's id, as the service lists it
-
-Returns **[boolean][1641]**&#x20;
-
-## takesReasoningEffort
-
-Whether a request to this service may name a reasoning effort level, as
-`reasoning_effort`. OpenRouter says it its own way, in `reasoning`.
-
-Not OpenAI's chat completions, though they have the field: the models that
-don't reason refuse it, and the newest ones refuse it alongside tools,
-which the chat always offers ("use /v1/responses"). Each model reasons at
-its own default instead, which works on every one of them.
-
-### Parameters
-
-- `type` **[string][1640]?**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## takesChatTemplateKwargs
-
-Whether a request to this server may carry `chat_template_kwargs`.
-
-llama-server passes that object into the Jinja chat template it renders. A
-template that reads `enable_thinking` — Qwen3's does, and it is the way its
-thinking is meant to be switched off — emits an empty think block instead of
-inviting one, which is what actually stops the model reasoning. A template
-that has never heard of the key ignores it: it is an argument to a template,
-not a field the server has to recognise, so nothing 400s over it.
-
-### Parameters
-
-- `type` **[string][1640]?**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## AISamplerParameters
-
-Default AI request parameters.
-
-These were previously editable via the settings UI (parameter sliders,
-presets, profile overrides). The UI is gone; values are now defined
-here. Edit this file to tune them. Future advanced settings could
-re-expose a subset.
-
-Type: [Object][1643]
-
-### Properties
-
-- `maxTokens` **[number][1642]** Max response tokens. 0 = let provider decide.
-- `seed` **[number][1642]** Deterministic seed. 0 = disabled.
-- `reasoningEffort` **(`"disabled"` | `"enabled"` | `"minimal"` | `"low"` | `"medium"` | `"high"` | `"xhigh"` | `"max"`)** How hard the model thinks. `enabled` asks for thinking without naming a level, for models whose thinking is a switch rather than a dial. A model is sent the nearest it takes (see ai/capabilities.js).
-- `showModelReasoning` **[boolean][1641]** Whether to surface reasoning tokens.
-- `maxToolRounds` **[number][1642]** How many rounds of tool calls a turn may make before it has to answer. 0 = no limit. See runCompletionLoop in composables/useAIChat.js.
-- `parameters` **[AISamplerParameters][1017]** Sampler parameters. Fields with sentinel values are omitted from requests.
-- `temperature` **[number][1642]** 1.0 = omitted.
-- `topP` **[number][1642]** 1.0 = omitted.
-- `minP` **[number][1642]** 0 = omitted.
-- `topA` **[number][1642]** 0 = omitted.
-- `topK` **[number][1642]** 0 = omitted.
-- `frequencyPenalty` **[number][1642]** 0 = omitted.
-- `presencePenalty` **[number][1642]** 0 = omitted.
-- `repetitionPenalty` **[number][1642]** 1.0 = omitted.
-
-## REASONING_EFFORT_OPTIONS
-
-The reasoning efforts a request can ask for, as a settings menu lists them.
-One list for every menu, so they read the same; each shows those its model
-takes (see ai/capabilities.js).
-
-## DEFAULT_PRESET_ID
-
-The AI preset every install has, made on the first start and never
-deleted: the one in use until the writer picks another. Stored under the
-legacy "chat" id, so installs from before presets collapsed into one keep
-theirs.
-
-Type: [string][1640]
-
-## AI_DEFAULTS
-
-Type: AIDefaults
-
-## resolveAISettings
-
-A sparse override on AI_DEFAULTS. Every key is optional, including the
-individual sampler parameters — `Partial<AIDefaults>` alone would still
-demand a complete `parameters` bag whenever that key is present.
-
-### Parameters
-
-- `overrides` &#x20;
-- `modelDefaults` &#x20;
-
-## resolveAISettings
-
-Merge sparse overrides over AI_DEFAULTS to get the settings a request should
-actually use. `parameters` merges one level deep so an override touching a
-single sampler value doesn't drop the rest.
-
-A model's own defaults, where its list gives them, sit between: the app's
-settings, then the model's, then the writer's changes.
-
-### Parameters
-
-- `overrides` **AISettingsOverrides?**&#x20;
-- `modelDefaults` **Partial<[AISamplerParameters][1017]>?** The samplers the
-  model's makers say it runs best at
-
-Returns **AIDefaults**&#x20;
-
-## mergeAISettings
-
-Lay one sparse override over another, keeping both sparse.
-
-Not the same as resolving: the result is still an override bag, so what
-neither side mentions stays unmentioned and AI_DEFAULTS still decides it.
-For a caller with settings of its own that should not throw away the ones
-the writer tuned for their model — a skill wanting a cooler temperature is
-saying something about temperature, not about top-k.
-
-`parameters` merges one level deep, the same way resolveAISettings does it.
-
-### Parameters
-
-- `base` **AISettingsOverrides?**&#x20;
-- `over` **AISettingsOverrides?** Wins where the two overlap
-
-Returns **(AISettingsOverrides | [undefined][1653])**&#x20;
-
-## TITLE_DEFAULTS
-
-Title-generation request overrides. Short, and no sampler values: these go
-to whatever model the chat is on, instead of the writer's, and a strict
-server refuses the whole request over one it doesn't take — Claude over a
-temperature and a top-p together. A title comes out fine at the defaults.
-
-Type: AISettingsOverrides
-
-## utils/settingsTree
-
-What Export settings offers, as a tree of boxes, and what the
-boxes ticked choose: the writer's setup, under a heading for each kind
-(`utils/settingsFile.js`). Its nodes and ticks are PrimeVue Tree's: a key,
-a label and children each, and the ticks as `selectionKeys`, a node
-checked or partly checked.
-
-What is kept between ticks is only the settings ticked. A heading is
-ticked when everything under it is, and partly when some is, and ticking
-a setting ticks what it is no use without, such as a preset's connection.
-
-Pure: reading and writing the rows is `composables/useBackup.js`.
-
-## settingKey
-
-### Parameters
-
-- `itemKey` &#x20;
-
-## settingKey
-
-### Parameters
-
-- `itemKey` &#x20;
-
-## SettingsNode
-
-A box in the tree.
-
-Type: [Object][1643]
-
-### Properties
-
-- `key` **[string][1640]**&#x20;
-- `label` **[string][1640]**&#x20;
-- `children` **[Array][1647]<[SettingsNode][1034]>?**&#x20;
-
-##
-
-Type: [string][1640]
-
-## itemOf
-
-The item a leaf's key holds.
-
-### Parameters
-
-- `key` **[string][1640]**&#x20;
-
-Returns **([string][1640] | [undefined][1653])**&#x20;
-
-## itemOf
-
-### Parameters
-
-- `step` &#x20;
-
-## settingsTree
-
-The tree Export settings shows: a heading for each kind there is any of,
-in the order the kinds are listed.
-
-### Parameters
-
-- `items` **[Array][1647]<[SettingsItem][896]>**&#x20;
-
-Returns **[Array][1647]<[SettingsNode][1034]>**&#x20;
-
-##
-
-Type: const
-
-## leavesOf
-
-Every leaf of the tree, in order.
-
-### Parameters
-
-- `nodes` **[Array][1647]<[SettingsNode][1034]>**&#x20;
-
-Returns **[Array][1647]<[string][1640]>**&#x20;
-
-## selectionKeys
-
-The ticks to show for the leaves ticked: each heading checked when all
-under it is, partly when some is.
-
-### Parameters
-
-- `nodes` **[Array][1647]<[SettingsNode][1034]>**&#x20;
-- `ticked` **[Set][1646]<[string][1640]>** Leaf keys
-
-Returns **TreeSelectionKeys**&#x20;
-
-## visit
-
-### Parameters
-
-- `node` **[SettingsNode][1034]**&#x20;
-
-Returns **(`"all"` | `"some"` | `"none"`)**&#x20;
-
-## visit
-
-### Parameters
-
-- `at` **[string][1640]**&#x20;
-
-## tickedLeaves
-
-The leaves ticked, read back from the ticks the tree reports after a
-click, with what each setting newly ticked is no use without ticked too
-(`pickWithNeeds`).
-
-### Parameters
-
-- `nodes` **[Array][1647]<[SettingsNode][1034]>**&#x20;
-- `keys` **TreeSelectionKeys**&#x20;
-- `before` **[Set][1646]<[string][1640]>** The leaves ticked before the click
-- `items` **[Array][1647]<[SettingsItem][896]>**&#x20;
-
-Returns **[Set][1646]<[string][1640]>**&#x20;
-
-## pickedSettings
-
-The settings items the boxes ticked choose, by their keys
-(`SettingsItem.key`).
-
-### Parameters
-
-- `ticked` **[Set][1646]<[string][1640]>**&#x20;
-
-Returns **[Set][1646]<[string][1640]>**&#x20;
-
-## utils/sharedDocuments
-
-Which documents of a project its owner shares with only some
-of them, as the owner sees and changes it: each document shared, seen only
-on the way to something shared (a folder, or the project itself), or
-hidden. The outline marks the first two, and **Share…** ticks the first and
-half-ticks the second. Sharing a document, or no longer, goes for
-everything in it, and never changes the folders above: a folder shared
-with one thing in it held back is still shared, and what is made in it
-later is shared too. A document that holds others isn't a folder, and
-what is under it can't be seen without it, so sharing what it holds
-shares it too.
-
-Each document keeps its own answer on its row, `unshared` where it is not
-shared; the engine hides those from the others but for the folders on the
-way to something shared (`cloud/tree.js`).
-
-Design: `.llm/sync_design.md`, "Only some documents".
-
-## shareTree
-
-### Parameters
-
-- `root` &#x20;
-- `childrenOf` &#x20;
-- `titleOf` &#x20;
-
-## shareTree
-
-### Parameters
-
-- `root` &#x20;
-- `childrenOf` &#x20;
-- `titleOf` &#x20;
-
-## shareTree
-
-The project's documents as a tree, from its root, in the outline's order.
-
-### Parameters
-
-- `root` **[Document][1648]**&#x20;
-- `childrenOf` &#x20;
-- `titleOf` &#x20;
-
-Returns **[Array][1647]\<TreeNode>**&#x20;
-
-## Sharing
-
-What the people a document is shared with see of it.
-
-Type: (`"shared"` | `"partly"` | `"hidden"`)
-
-## nodeOf
-
-### Parameters
-
-- `document` **[Document][1648]** @returns {TreeNode}
-
-## sharingOf
-
-What the others see of each of a project's documents.
-
-### Parameters
-
-- `documents` **[Array][1647]<[Document][1648]>** The project's
-- `storyId` **[string][1640]**&#x20;
-
-Returns **[Map][1652]<[string][1640], [Sharing][1063]>**&#x20;
-
-## sharedWith
-
-What changes when a document is shared, or stops being: it and everything
-in it, each with whether it is shared now; and, shared, the documents it
-is in up to its folder, without what else they hold.
-
-### Parameters
-
-- `id` **[string][1640]**&#x20;
-- `shared` **[boolean][1641]**&#x20;
-- `childrenOf` &#x20;
-- `documentOf` &#x20;
-
-Returns **[Map][1652]<[string][1640], [boolean][1641]>**&#x20;
-
-## utils/siblingOrder
-
-The order a folder's children are shown in.
-
-## orderSiblings
-
-A folder's children in the order the outline shows them.
-
-An ordered folder sorts by `order`; anything else sorts the way a file
-explorer does, folders first and then by title, numbers by value. A
-document nobody has named sorts as the "Untitled" it reads as, rather than
-as an empty title ahead of everything. Ties fall back to the id, so equal
-keys don't shuffle between renders.
-
-### Parameters
-
-- `children` &#x20;
-- `ordered` **[boolean][1641]?** Whether the folder they are in is ordered (optional, default `false`)
-
-##
-
-##
-
-##
-
-##
-
-## utils/tabs
-
-A panel's tabs: which documents are open in the editor, or
-which chats in the chat panel, in strip order, which is showing, which is
-only being looked at, and the order they were shown in. Kept in the
-project's view, the editor's as `openDocumentIds`, `lastDocumentId`,
-`previewDocumentId` and `shownDocumentIds` and the chat panel's under the
-same names for chats, so a project reopens with what it was left on. The
-rules are here, as pure functions over the set, the same for both panels;
-`tabsOf` reads it off a view and `tabsPatch` writes it back.
-
-A document opened from the outline is a preview: it takes the preview tab,
-if there is one, rather than adding another, so looking through the
-outline leaves one tab behind rather than a strip of them. The tab stays
-once the writer keeps it — types in it, or double-clicks it — and is then
-like any other.
-
-Closing the tab showing goes back to the one shown before it, and closing
-that to the one before, down the whole history: a document opened to look
-something up and closed again leaves the writer where they were. Only past
-the history, as for tabs from before it was kept, does a neighbour come
-forward.
-
-## Tabs
-
-Type: [Object][1643]
-
-### Properties
-
-- `open` **[Array][1647]<[string][1640]>** Document ids in strip order
-- `active` **([string][1640] | null)** The one showing; null with nothing open
-- `preview` **([string][1640] | null)** The one only being looked at, which the
-  next preview replaces; null when every tab is kept
-- `shown` **[Array][1647]<[string][1640]>** Open ids, the one showing first and then the
-  others as they were shown before it, most recent first: where closing
-  goes back to. A tab not shown since the history was kept is not in it.
-
-## NO_TABS
-
-Type: [Tabs][1078]
-
-## TabFields
-
-The fields of a project's view a panel's tabs are kept in.
-
-Type: [Object][1643]
-
-### Properties
-
-- `open` **[string][1640]**&#x20;
-- `active` **[string][1640]**&#x20;
-- `preview` **[string][1640]**&#x20;
-- `shown` **[string][1640]**&#x20;
-
-## DOCUMENT_TABS
-
-The editor's. @type {TabFields}
-
-## CHAT_TABS
-
-The chat panel's. @type {TabFields}
-
-## showing
-
-The history with a tab put at its head, as the one showing now.
-
-### Parameters
-
-- `shown` **[Array][1647]<[string][1640]>**&#x20;
-- `id` **[string][1640]**&#x20;
-
-Returns **[Array][1647]<[string][1640]>**&#x20;
-
-## settled
-
-Whether the active and preview tabs are among the open ones, and the
-history only open tabs, headed by the one showing. The set is inconsistent
-otherwise, and something showing that is not open is repaired to the first
-tab, or to nothing; a preview that is not open is no preview.
-
-### Parameters
-
-- `open` **[Array][1647]<[string][1640]>**&#x20;
-- `active` **([string][1640] | null)**&#x20;
-- `preview` **([string][1640] | null)?** (optional, default `null`)
-- `shown` **[Array][1647]<[string][1640]>?** (optional, default `[]`)
-
-Returns **[Tabs][1078]**&#x20;
-
-## tabsOf
-
-The tabs a project's view describes. One from before tabs has no list of
-what is open; it opens with one tab, the last one shown. One with the list
-but nothing in it was closed down to nothing on purpose. One from before
-previews has every tab kept, and one from before the history was kept
-knows only the tab showing.
-
-### Parameters
-
-- `view` **(Record<[string][1640], any> | null | [undefined][1653])**&#x20;
-- `fields` **[TabFields][1081]?** Which panel's: the editor's unless given (optional, default `DOCUMENT_TABS`)
-
-Returns **[Tabs][1078]**&#x20;
-
-## tabsPatch
-
-The view's fields a set of tabs is written to.
-
-### Parameters
-
-- `tabs` **[Tabs][1078]**&#x20;
-- `fields` **[TabFields][1081]?** Which panel's: the editor's unless given (optional, default `DOCUMENT_TABS`)
-
-Returns **Record<[string][1640], ([Array][1647]<[string][1640]> | [string][1640] | null)>**&#x20;
-
-## normalizeTabs
-
-The tabs with any that can no longer be shown dropped: a document deleted
-since, or one that was never a text document. What is left keeps its
-order; a dropped active tab gives way as a close does.
-
-### Parameters
-
-- `tabs` **[Tabs][1078]**&#x20;
-- `canShow` &#x20;
-
-Returns **[Tabs][1078]**&#x20;
-
-## openTab
-
-The tabs with a document open and showing. One already open is brought to
-the front where it is, kept or not as it was. A new one goes at the end of
-the strip, or beside the tab showing when asked — unless it is a preview
-and there is one already, in which case it takes that tab's place, and the
-place in the history of the document it replaces, which is no longer open.
-
-### Parameters
-
-- `tabs` **[Tabs][1078]**&#x20;
-- `id` **[string][1640]**&#x20;
-- `$2` **[Object][1643]** (optional, default `{}`)
-  - `$2.preview` (optional, default `false`)
-  - `$2.beside` (optional, default `false`)
-
-Returns **[Tabs][1078]**&#x20;
-
-## keepTab
-
-The tabs with one kept: no longer a preview, so the next preview goes
-elsewhere. Any other tab is kept already.
-
-### Parameters
-
-- `tabs` **[Tabs][1078]**&#x20;
-- `id` **[string][1640]**&#x20;
-
-Returns **[Tabs][1078]**&#x20;
-
-## closeTab
-
-The tabs with one closed. Closing the one showing brings back the one
-shown before it; past the history, its neighbour, the one to its right,
-else the one to its left; and closing the last leaves nothing showing.
-Closing one that is not showing changes nothing else, but that it is gone
-from the history.
-
-### Parameters
-
-- `tabs` **[Tabs][1078]**&#x20;
-- `id` **[string][1640]**&#x20;
-
-Returns **[Tabs][1078]**&#x20;
-
-## dropTabs
-
-The tabs with several closed at once, for the documents a deletion took.
-Each goes as a close does, so the tab left showing is the latest shown of
-those that survive, else the nearest survivor to the right of the one that
-was, else to its left.
-
-### Parameters
-
-- `tabs` **[Tabs][1078]**&#x20;
-- `ids` **[Array][1647]<[string][1640]>**&#x20;
-
-Returns **[Tabs][1078]**&#x20;
-
-## tabNames
-
-What to call each tab: its title, and as much of the path above it as
-tells it apart from another open tab of the same title — `bar/a` and
-`baz/a`, or `foo/bar/a` and `qux/bar/a` — and none where the title alone
-does. Two documents of the same title in the same folder cannot be told
-apart by path, and show all of it.
-
-### Parameters
-
-- `paths` &#x20;
-
-Returns **[Array][1647]<{prefix: [string][1640], title: [string][1640]}>** The path shown above each
-title, ending in `/`, or '' for none
-
-## tail
-
-The last `n` titles of a path, as one key.
-
-### Parameters
-
-- `path` **[Array][1647]<[string][1640]>**&#x20;
-- `n` **[number][1642]**&#x20;
-
-## utils/tex
-
-Where a formula is in markdown: TeX between the delimiters
-models write, read the same in the chat (`utils/markdown.js`) and in a
-document (`editor/markdown.js`).
-
-`$$…$$` or `\[…\]` is a formula set on its own, `$…$` or `\(…\)` one in a
-sentence. A dollar is money as often as it is math, so a single one opens a
-formula only as Pandoc has it: something other than a space straight after
-it, and a closing one with no space before it and no digit after, on the
-same line. "$5 and $10" is two prices. No formula runs past a blank line,
-and one with nothing between its delimiters is none.
-
-A document reads no `\[…\]`: its markdown writes a bracket in the text as
-`\[`, so every bracket in it would be one.
-
-## TEX
-
-A formula's TeX: anything up to its closing delimiter, but not past a blank line.
-
-## DISPLAY
-
-Display math, in either of its delimiters.
-
-## MATH_BLOCK
-
-A formula with lines of its own, from the start of one to the end of
-another. Sticky: set `lastIndex` to where to look.
-
-## SINGLE
-
-A single dollar's formula, as Pandoc reads one.
-
-## MATH_INLINE
-
-A formula in a sentence, by its delimiters, the display ones first: `$$`
-would otherwise read as an empty `$…$`. A single dollar keeps to one line.
-
-## Found
-
-A formula found: what was written, its TeX, and whether it is set on its
-own.
-
-Type: [Object][1643]
-
-### Properties
-
-- `raw` **[string][1640]** The formula as written, delimiters and all
-- `tex` **[string][1640]** What is between them
-- `display` **[boolean][1641]** Written as a formula set on its own
-
-## trimTex
-
-A formula's TeX without the space around it, which TeX does without, but
-for the space after a backslash, which is TeX's own.
-
-### Parameters
-
-- `tex` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## foundIn
-
-The formula a match is, or none when there is no TeX between its delimiters.
-
-### Parameters
-
-- `match` **(RegExpExecArray | null)**&#x20;
-- `display` **[boolean][1641]**&#x20;
-
-Returns **([Found][525] | null)**&#x20;
-
-## formulaAt
-
-The formula that starts a piece of text, if one does.
-
-### Parameters
-
-- `src` **[string][1640]**&#x20;
-- `brackets` **[boolean][1641]?** Whether `\[…\]` is one, as it is but in a
-  document (optional, default `true`)
-
-Returns **([Found][525] | null)**&#x20;
-
-## mayHoldFormula
-
-Whether a document's markdown may have a formula in it, or a dollar escaped
-so as not to be one. Quick, and sure never to miss one; it finds some that
-are not, a pair of dollars in code, say.
-
-### Parameters
-
-- `markdown` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## replaceFormulas
-
-A document's markdown with each formula in it put another way, for what
-reads it as words. Escapes are passed over, as markdown reads them; code is
-not, and a formula's delimiters in it are read as one, which a count of
-words can bear.
-
-### Parameters
-
-- `markdown` **[string][1640]**&#x20;
-- `put` &#x20;
-
-Returns **[string][1640]**&#x20;
-
-## utils/titleValidation
-
-Utilities for validating and normalizing titles
-
-## normalizeTitle
-
-Normalize a title by trimming whitespace
-
-### Parameters
-
-- `title` **([string][1640] | null | [undefined][1653])** The title to normalize
-
-Returns **[string][1640]** The normalized title (empty string if null/undefined)
-
-## shouldUpdateTitle
-
-Check if a title should be updated
-
-### Parameters
-
-- `newTitle` **([string][1640] | null | [undefined][1653])** The new title value
-- `currentTitle` **([string][1640] | null | [undefined][1653])** The current title value
-
-Returns **[boolean][1641]** True if the title should be updated
-
-## isCustomTitle
-
-Check if a title is considered custom (non-empty after trimming)
-
-### Parameters
-
-- `title` **([string][1640] | null | [undefined][1653])** The title to check
-
-Returns **[boolean][1641]** True if the title is custom
-
-## getTitlePlaceholder
-
-Get placeholder text for title inputs
-
-### Parameters
-
-- `type` **[string][1640]** The type of item ('part', 'scene', 'draft')
-- `position` **[number][1642]** The position/index of the item
-
-Returns **[string][1640]** Placeholder text
-
-## freeName
-
-A name nothing else in a list has, for a project or a profile: `name`
-itself when it is free, and otherwise numbered past the copies already
-there — `Thief (2)`, then `Thief (3)`, the original being the
-first, as a document's copies are (see `freeTitle` in utils/documentPath.js).
-A name that is already a numbered copy counts on from its own number rather
-than gaining a second one, so importing `Thief (2)` beside itself gives
-`Thief (3)`. Names are compared without the spaces round them and
-whatever their case.
-
-### Parameters
-
-- `taken` **[Array][1647]<[string][1640]>** The names of the others
-- `name` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-##
-
-Type: [string][1640]
-
-## utils/touch
-
-Whether the writer is typing on a touch screen's keyboard.
-
-Asked where Enter would send or save: such a keyboard has no Shift-Enter,
-so Return is its only way to start a new line, and the field's button does
-the sending. Told by the main pointer being a finger, not by the width of
-the window, so a phone on its side still counts and a narrow desktop window
-does not.
-
-## hasTouchKeyboard
-
-Returns **[boolean][1641]**&#x20;
-
-## submitOnEnter
-
-Send or save on Enter, except from a touch screen's keyboard, where the
-Enter is left to start a new line.
-
-### Parameters
-
-- `event` **[KeyboardEvent][1662]**&#x20;
-- `action` &#x20;
-
-## utils/trash
-
-The trash's rules, shared by the stores that keep it: how long
-something stays there, and which of a project's documents are in it.
-
-What was deleted carries `trashed`, when it went. What is inside a trashed
-folder keeps its row as it was and is in the trash because the folder is,
-so that it goes and comes back with the folder. The stores keep what is in
-the trash apart from what everything else reads. See
-`.llm/trash_design.md`.
-
-## TRASH_KEPT_MS
-
-## TRASH_KEPT_MS
-
-How long the trash keeps what is in it: 30 days, in milliseconds.
-
-## expired
-
-Whether something in the trash has been there long enough to go for good.
-
-### Parameters
-
-- `row` &#x20;
-- `now` **[number][1642]?** (optional, default `Date.now()`)
-
-Returns **[boolean][1641]**&#x20;
-
-## trashedIds
-
-The documents in the trash: each one trashed, and every one under a
-trashed folder. A document whose folders loop, or lead nowhere, is in it
-only if one of them was trashed.
-
-### Parameters
-
-- `documents` **Iterable<[Document][1648]>** A project's, or any set of them
-
-Returns **[Set][1646]<[string][1640]>** Their ids
-
-## known
-
-Type: [Map][1652]<[string][1640], [boolean][1641]>
-
-## known
-
-##
-
-Type: ([Document][1648] | [undefined][1653])
-
-## outOfTrash
-
-A project's documents without what is in its trash.
-
-### Parameters
-
-- `documents` **[Array][1647]<[Document][1648]>**&#x20;
-
-Returns **[Array][1647]<[Document][1648]>**&#x20;
-
-## utils/turns
-
-Fold a chat's messages into the turns they are.
-
-A turn is normally one message: the writer's, holding everything they wrote
-and rolled as its segments; the assistant's, holding what it said. The same
-side can still speak twice in a row — a reply that failed or was deleted and
-then more written under it, or a paragraph pushed after a generated one — and
-`mergeAdjacentTurns` in ai/context/build.js sends that run as one turn,
-because that is what it is to the model.
-
-This is the same fold for the reader. Two boxes in a row under one name say
-the writer spoke twice; one box holding both says what actually happened, and
-matches what the model is being told.
-
-An aside is a turn of its own on either side, question and answer: the model
-reads the turns around it and never it, so it is folded into neither. See
-ai/asides.js.
-
-## Turn
-
-Type: [Object][1643]
-
-### Properties
-
-- `id` **[string][1640]** The first message's id, which is stable enough to key on
-- `role` **(`"user"` | `"assistant"`)** Whose turn it is
-- `command` **[string][1640]?** The command that answered, when the turn is one
-  rather than something anybody said
-- `messages` **[Array][1647]\<Message>** What it was taken in, in order
-- `compacted` **[boolean][1641]** Whether a summary now stands in for it
-- `aside` **[boolean][1641]** Whether it was said on the side: an aside, or
-  the answer to one
-
-## commandOf
-
-Which voice a message is in, which is not quite its role.
-
-A command that takes a turn of its own — `/compact` — is stored as an
-assistant message, because that is what it is; but it is not the Game Master,
-and folding a summary into the narration after it would put one name over two
-different things. The writer's own commands are the opposite case: an oracle
-belongs in the turn it was rolled in, beside the sentence it settles, as a
-piece of that message.
-
-### Parameters
-
-- `message` **Message**&#x20;
-
-Returns **([string][1640] | [undefined][1653])**&#x20;
-
-## groupTurns
-
-Group a conversation into turns.
-
-A turn is never half replaced by a summary: where what the summaries stand
-for begins and ends, a turn ends too, so the line drawn there falls between
-turns and the opening a summary kept is not folded into what came after it.
-
-### Parameters
-
-- `messages` **[Array][1647]\<Message>** The conversation in order
-- `covered` **[Set][1646]<[number][1642]>?** Which of them a summary stands in for, by
-  position. See `compactionCover` in ai/compaction.js. (optional, default `new Set()`)
-
-Returns **[Array][1647]<[Turn][1154]>**&#x20;
-
-## turns
-
-Type: [Array][1647]<[Turn][1154]>
-
-## compactedRuns
-
-Where the lines go that say a summary has taken over, and what each says.
-
-One under the run of turns a summary stands in for, which is above the
-summary that stands in for them. A chat compacted three times still has one:
-the newest summary stands for everything above it, the two before it
-included, so they are in the run rather than closing runs of their own.
-
-### Parameters
-
-- `turns` **[Array][1647]<[Turn][1154]>**&#x20;
-
-Returns **[Map][1652]<[number][1642], [number][1642]>** For each turn a line goes above, how many
-messages were in the run it closes
-
-## runs
-
-Type: [Map][1652]<[number][1642], [number][1642]>
-
-## runs
-
-Type: [Array][1647]\<MarkedRun>
-
-## runs
-
-Type: [Map][1652]<[string][1640], [Array][1647]<[FoundComment][1233]>>
-
-## textLines
-
-How many lines text takes in a column `perLine` characters wide: each of its
-lines wrapped, and a line's worth for each break between paragraphs, which
-is about what the space between them comes to. What a turn's height is
-guessed from until it has had one; see composables/useNearTurns.js.
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-- `perLine` **[number][1642]** Characters that fit across the column
-
-Returns **[number][1642]**&#x20;
-
-## utils/unzip
-
-A zip opened whole, with a ceiling on what it opens into.
-
-A few kilobytes of zip can say they hold gigabytes, and inflating them is
-the end of the page. Each entry says in the zip's directory how large it
-is unpacked, and fflate inflates no more of an entry than that, so the
-sizes the entries taken declare are the most memory opening them can
-cost: past the reader's ceiling, nothing is inflated at all.
-
-## MIB
-
-One mebibyte, for a reader to say its ceiling in.
-
-## TooLargeError
-
-**Extends Error**
-
-A zip that would open into more than its reader takes.
-
-## unzipWithin
-
-The entries of a zip that a filter lets in, inflated, unless together they
-would come to more than `most` bytes.
-
-### Parameters
-
-- `bytes` **[Uint8Array][1644]**&#x20;
-- `most` **[number][1642]** Bytes, unpacked
-- `filter` (optional, default `()=>true`)
-
-<!---->
-
-- Throws **[TooLargeError][1170]**&#x20;
-
-## utils/versions
-
-When a text document's version is due, which versions go as
-they age, and what each says it was taken before. See
-`stores/versionsStore.js` and `.llm/versions_design.md`.
-
-## PAUSE_MS
-
-## PAUSE_MS
-
-## PAUSE_MS
-
-How long a document goes unchanged before the text it was left at is kept: 10 minutes.
-
-## STRETCH_MS
-
-How long a stretch of editing goes before a version is kept anyway: an hour.
-
-## DAILY_FOR_MS
-
-How long one version of each day is kept, before one of each week is.
-
-## dayOf
-
-The day a moment is in, by the clock here.
-
-### Parameters
-
-- `at` **[number][1642]**&#x20;
-
-## weekOf
-
-The week a moment is in, by the Monday it starts on, by the clock here.
-
-### Parameters
-
-- `at` **[number][1642]**&#x20;
-
-## thinned
-
-The versions of a document to let go of as they age. A named one stays.
-Of the rest, every one from the last day stays; then the newest of each
-day, for 30 days; then the newest of each week.
-
-### Parameters
-
-- `versions` **[Array][1647]\<Version>** One document's
-- `now` **[number][1642]?** (optional, default `Date.now()`)
-
-Returns **[Array][1647]<[string][1640]>** Their ids
-
-## CLASHED
-
-The name a clash's lost text is kept under.
-
-Type: [string][1640]
-
-## DOC_CLASHED
-
-The name a Google Doc's text is kept under when words of it gave way to its document's.
-
-Type: [string][1640]
-
-## TAKEN_BEFORE
-
-What a version says it was taken before, by what was about to change the text.
-
-## model
-
-Type: Record\<VersionBy, [string][1640]>
-
-## utils/visibility
-
-What one chat sees of the project.
-
-Two layers, and they are not the same kind of thing.
-
-A document's own `hidden` is absolute. It is for what no chat should read —
-a card's JSON, the prompt it replaces — and nothing a chat says brings it
-back, nor anything under a folder that has it.
-
-Under that, each chat marks documents for itself: **shown** (listed, and the
-model reads it when it wants to), or **hidden** (not there, for this chat).
-A mark on a folder covers what is under it, and the nearest mark going up
-the tree decides. So a chat on one character hides the folder all the
-characters are in and shows its own, and a character imported next week
-lands hidden in that chat without anybody touching it. A document nothing
-is marked on is shown, which is what every chat had before there were marks.
-
-There was a third mark, a pin, which carried a document's text on every
-turn; a document is attached to a message now (ai/context/attachments.js).
-A chat from before may still list its pins (`pinnedIds`). They are read as
-shown, which a pin also was: one under a hidden folder stays in sight.
-
-## FIELDS
-
-## FIELDS
-
-## FIELDS
-
-Where each mark is stored on a chat.
-
-## ChatMark
-
-Type: (`"shown"` | `"hidden"`)
-
-## ChatMarks
-
-The marks a chat carries, which is all of it this module reads.
-
-Type: Pick\<ChatRecord, (`"pinnedIds"` | `"shownIds"` | `"hiddenIds"`)>
-
-## shown
-
-Type: const
-
-## markOf
-
-The mark a chat put on this document itself, not on a folder above it.
-
-### Parameters
-
-- `chat` **([ChatMarks][1194] | null | [undefined][1653])**&#x20;
-- `id` **[string][1640]**&#x20;
-
-Returns **([ChatMark][1193] | null)**&#x20;
-
-##
-
-Type: [ChatMark][1193]
-
-## withMark
-
-Put a mark on a document for a chat, or take it off.
-
-Taken off the other first, so a document is in one state at most, and off
-the pins a chat from before may list. A list left empty is written as
-absent, so a chat that never marked anything and one that has stopped read
-the same. Every mark is the writer's: the model has none of its own.
-
-### Parameters
-
-- `chat` **([ChatMarks][1194] | null | [undefined][1653])**&#x20;
-- `id` **[string][1640]**&#x20;
-- `mark` **([ChatMark][1193] | null)** Null to leave it to the folders above
-
-Returns **[ChatMarks][1194]** The lists, to update the chat with
-
-## next
-
-Type: [ChatMarks][1194]
-
-## next
-
-Type: [Threads][1232]
-
-## next
-
-Type: [Threads][1232]
-
-## chatVisibility
-
-How one chat reads a project: whether a document is there for it, and why.
-
-Each question walks up to the root at most once — answers are kept for the
-life of the reader, which is one listing or one tool call. Make a new one
-when the tree or the chat changes.
-
-### Parameters
-
-- `chat` **([ChatMarks][1194] | null | [undefined][1653])** Null reads with no marks at all
-- `get` &#x20;
-
-## settle
-
-Whether anything from here up is hidden outright, and the nearest mark.
-
-### Parameters
-
-- `document` **TreeDocument**&#x20;
-
-## sees
-
-Whether the model in this chat may see a document.
-
-### Parameters
-
-- `document` **(TreeDocument | null | [undefined][1653])**&#x20;
-
-## hiddenEverywhere
-
-Whether a document is out of sight for every chat: its own flag, or a
-folder's above it.
-
-### Parameters
-
-- `document` **TreeDocument**&#x20;
-
-## markFor
-
-The mark that decides for this document in this chat, its own or the
-nearest folder's. Null when nothing above it is marked.
-
-### Parameters
-
-- `document` **TreeDocument**&#x20;
-
-Returns **([ChatMark][1193] | null)**&#x20;
-
-## utils/webkit
-
-Whether the page is running in WebKit.
-
-Asked only where WebKit does something no feature test can show: its
-`ImageDecoder` on Linux brings the page down (see `files/pdf`). WebKit is
-Safari, the desktop app's window on the Mac and on Linux, and every browser
-on iOS whatever it calls itself: those send `CriOS/` or `EdgiOS/` rather
-than `Chrome/` or `Edg/`.
-
-## isWebKit
-
-### Parameters
-
-- `userAgent` **[string][1640]?** (optional, default `globalThis.navigator?.userAgent||''`)
-
-Returns **[boolean][1641]**&#x20;
-
-## utils/wordCount
-
-The words in a document's markdown.
-
-## PICTURE
-
-A picture: `![alt](path)`, its alt text holding no `]` but an escaped one.
-
-## editor/suggestionText
-
-Suggestions in markdown, for what holds a document's text
-rather than its editor state: whether a text has any, the text as one
-reader sees it, and text from outside with any markup of theirs read as
-meant.
-
-The markup is CriticMarkup holding an id (see `suggestions.js`), and only
-the parser tells a half that pairs from one that is text, so a text with
-suggestions is read as a document and written out again. A text without
-any comes back as it was, untouched.
-
-Every reader but the editor reads the text as it stands: the word count,
-explore's digests, a document exported, and the model's reads, its own
-suggestions made in its chat. Narration and the spelling checker read the
-editor's document and leave the marks out there (`tts/script.js`,
-`editor/spelling.js`).
-
-## CLOSE
-
-The close of either half, which a text with a suggestion has.
-
-## INSERTED
-
-A half put in, with what it puts in.
-
-## DELETED
-
-A half taken out.
-
-## holdsSuggestions
-
-Whether a text may hold a suggestion: it has a half's close.
-
-### Parameters
-
-- `content` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## seenMarkdown
-
-Markdown as one reader sees it: the suggestions `accepted` names accepted,
-every other rejected, and comments' markup kept. With none named, the text
-as it stands, which is what every reader but the editor reads.
-
-### Parameters
-
-- `content` **[string][1640]**&#x20;
-- `accepted` **[Array][1647]<[string][1640]>?** (optional, default `[]`)
-
-Returns **[string][1640]**&#x20;
-
-## textAsItStands
-
-Markdown as a reader of the text reads it, a word count or a digest: as
-it stands, each suggestion rejected, and without comments' markup.
-
-### Parameters
-
-- `content` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## withoutSuggestionMarkup
-
-Text from outside with suggestions' markup read as meant: what a half
-takes out gone, and what one puts in kept. A model writing the markup
-means the change it marks, and what it writes is never a suggestion of
-its own: the tools make those.
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## editor/comments
-
-A comment on a passage: its place in the text, and its thread
-on the document's row.
-
-A writer highlights a run of text and says something about it; the model
-reads it, answers, and resolves it. The passage has to survive every edit
-around it and every round trip through the file format, so its place is in
-the text itself: a mark in the editor and, in the markdown, CriticMarkup
-that holds only an id:
-
-    We had a {==cold and narrow==}{>>c7k2m1<<} attic.
-
-What was said, by whom, and the replies are the thread, kept on the
-document's row as `comments`, by that id (see `CommentThread`). A thread is
-placed while its id is in the text; an open one whose id is not is stale,
-its passage deleted, and undoing the delete places it again.
-
-Comments may overlap. In the editor several comment marks can sit on the
-same text. In the markup one comment nests inside another, and where two
-only partly overlap, one of them is written in pieces, each with its id, as
-one over two paragraphs is:
-
-    We had a {==cold and {==narrow==}{>>c2<<}==}{>>c1<<}{== attic==}{>>c2<<}.
-
-A close ends the innermost comment still open. Text without overlaps reads
-as it always did.
-
-Until 16 Oct 2026 what was said was in the markup too, as
-`{>>c7k2m1: reword this<<}`, with each break written `<br>`. That form is
-still read: `liftThreads` moves what it says onto a thread, which is how a
-document from before is brought forward.
-
-Everything here is pure: the pattern, the helpers over a string and over
-threads, and the markdown-it rules the parser runs. The mark spec is in
-`schema.js` and the serializer rule in `markdown.js`, both built on what is
-here.
-
-## Threads
-
-Type: Record<[string][1640], CommentThread>
-
-## FoundComment
-
-One run of a comment, found in markdown: where its passage is in the text as
-it reads without the markup. A comment over two paragraphs has a run in
-each; the pieces of one written around another are one run.
-
-Type: [Object][1643]
-
-### Properties
-
-- `id` **[string][1640]**&#x20;
-- `text` **[string][1640]** The passage it is on, as markdown, without the
-  markup of comments inside it
-- `comment` **[string][1640]** What the old form said about it, in its
-  markup; empty for the form that holds only the id
-- `legacy` **[boolean][1641]** Whether it is in the old form
-- `start` **[number][1642]** Where the passage starts in the text without the markup
-- `end` **[number][1642]** Where it ends
-
-## MarkupToken
-
-One half of a comment's markup, as written: where it is in the markdown,
-and where in the text without the markup.
-
-Type: [Object][1643]
-
-### Properties
-
-- `from` **[number][1642]**&#x20;
-- `to` **[number][1642]**&#x20;
-- `at` **[number][1642]**&#x20;
-
-## OPEN_MARKUP
-
-A run as the markup holds it: the run, and its two halves.
-
-Type: [string][1640]
-
-## OPEN_MARKUP
-
-How the two halves are written around a passage.
-
-Type: [string][1640]
-
-## ParsedMarkup
-
-Markdown read for its comments: the text without the markup, and the runs.
-
-Type: {source: [string][1640], text: [string][1640], runs: [Array][1647]\<MarkedRun>}
-
-## TOKEN_PATTERN
-
-Either half of a comment's markup: the open, or the close with the id and,
-in the old form, what was said. Global, for finding every one.
-
-## CLOSE_PATTERN
-
-The close half alone, for the parser's closing rule.
-
-## newCommentId
-
-A fresh comment id: short, lower-case, and unlike a word, so it reads as a
-handle in the markup and in a tool call.
-
-Returns **[string][1640]**&#x20;
-
-## BREAK_PATTERN
-
-A break in what the old form said, as it may be written.
-
-## closeMarkup
-
-The closing markup for a comment: the end of the passage, then the id.
-
-### Parameters
-
-- `id` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## cleanComment
-
-What someone said, as a post keeps it: its lines, each with its spaces run
-together and trimmed.
-
-### Parameters
-
-- `comment` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## commentOf
-
-What the old form said, from its markup: its breaks as new lines.
-
-### Parameters
-
-- `markup` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## parseMarkup
-
-Markdown read for its comments. Each close ends the innermost comment still
-open, as in the editor's parser; a half with no other half is text, and so
-is an open with a blank line before its close, since the markup sits in a
-paragraph.
-
-### Parameters
-
-- `content` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[ParsedMarkup][1239]**&#x20;
-
-## pairs
-
-Type: [Map][1652]<[number][1642], [number][1642]>
-
-## tokens
-
-Type: [Map][1652]<[number][1642], [MarkupToken][1235]>
-
-## get
-
-Type: [MarkupToken][1235]
-
-## get
-
-Type: [MarkupToken][1235]
-
-## get
-
-Type: [string][1640]
-
-## get
-
-Type: [string][1640]
-
-## Span
-
-A stretch of text a comment is on, by its id.
-
-Type: {id: [string][1640], start: [number][1642], end: [number][1642]}
-
-## renderMarkup
-
-Text with comments put on it as markup, nested where they nest. Where two
-only partly overlap, the one that starts inside the other is written in
-pieces, and where several open at one place the one that runs on longest
-is outermost, so there are as few pieces as can be. An empty span is no
-comment, and spans of one id that touch are one.
-
-### Parameters
-
-- `text` **[string][1640]** Without any markup
-- `spans` **[Array][1647]<[Span][1258]>**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## joinRuns
-
-Runs with the pieces of each comment that touch made one, in the order they
-start: what a comment written around another reads as.
-
-### Parameters
-
-- `runs` **[Array][1647]\<T>**&#x20;
-
-Returns **[Array][1647]\<T>**&#x20;
-
-## joined
-
-Type: [Array][1647]\<T>
-
-## joined
-
-Type: [Array][1647]<[Node][1649]>
-
-## last
-
-Type: [Map][1652]<[string][1640], T>
-
-## markupOffset
-
-Where a place in the text without the markup is in the markdown: after
-the comments that close there and before those that open.
-
-### Parameters
-
-- `parsed` **[ParsedMarkup][1239]**&#x20;
-- `at` **[number][1642]**&#x20;
-
-Returns **[number][1642]**&#x20;
-
-## changeStretch
-
-A change to a stretch of the text and the comments over it, as a change to
-the markdown. The stretch is widened over every comment it reaches, and
-over every one those reach, so that the markup there is written again
-whole: `change` is handed the text of the stretch and the runs in it, by
-where they are in it, and gives back what they become.
-
-### Parameters
-
-- `parsed` **[ParsedMarkup][1239]**&#x20;
-- `from` **[number][1642]** In the text without the markup
-- `to` **[number][1642]**&#x20;
-- `change` &#x20;
-
-Returns **{old: [string][1640], new: [string][1640], from: [number][1642], to: [number][1642], start: [number][1642], end: [number][1642]}** The markdown it replaces, where, and what with; and the stretch
-
-## withoutRuns
-
-Markdown with the halves of some comments' markup taken out, their
-passages left.
-
-### Parameters
-
-- `parsed` **[ParsedMarkup][1239]**&#x20;
-- `take` &#x20;
-
-Returns **[string][1640]**&#x20;
-
-## findComments
-
-Every run of every comment in a piece of markdown, in the order they start.
-
-### Parameters
-
-- `content` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[Array][1647]<[FoundComment][1233]>**&#x20;
-
-## settleComments
-
-Markdown with its comments' markup written the one way it is written
-everywhere, as `renderMarkup` writes it: nested by where each comment
-starts and ends, not by the order they were made in, and the pieces of one
-that touch made one. Each half stays where it was in the text.
-
-### Parameters
-
-- `content` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## withoutComments
-
-Markdown as it reads without its comments: each passage left, what was
-said about it gone.
-
-### Parameters
-
-- `content` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## HALF_PATTERN
-
-Either half of a comment's markup, as a quote that starts or ends inside one has it.
-
-## quoteWithoutComments
-
-A quote from text with comments in it, as it reads without them. A quote
-cut from the middle of a comment has half of its markup, which goes too.
-
-### Parameters
-
-- `quote` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## nearest
-
-Where a passage is in a text nearest to where it was, or -1.
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-- `passage` **[string][1640]**&#x20;
-- `near` **[number][1642]**&#x20;
-
-Returns **[number][1642]**&#x20;
-
-## editAroundComments
-
-An edit made on the text as it reads, without the comments' markup, as an
-edit to the markdown that holds them. What it replaces takes in the whole
-of any comment it reaches, and of any comment over that one. A comment
-whose passage comes through the edit unchanged is put back on it; one
-whose passage it changed is resolved, its markup gone with the old words,
-and is named in what comes back.
-
-### Parameters
-
-- `content` **[string][1640]** The markdown, comments and all
-- `old` **[string][1640]** The passage to change, as it reads without them
-- `replacement` **[string][1640]** What it becomes, without them
-
-Returns **{count: [number][1642], old: [string][1640], new: [string][1640], resolved: [Array][1647]<[FoundComment][1233]>}** How many times `old` is in the text, and when once, the edit to make
-
-## lost
-
-Type: [Array][1647]<[FoundComment][1233]>
-
-## lost
-
-Type: [Set][1646]<[string][1640]>
-
-## spans
-
-Type: [Array][1647]<[Span][1258]>
-
-## rewriteAroundComments
-
-A whole new body for a document that has comments, with each comment put
-back on its passage where the new body still says it, word for word and
-once, overlapping as they did. The body's own markup is taken out first:
-what the model writes never makes a comment, and one it copied comes back
-the way the rest do. A comment with a run whose words are gone, or there
-more than once, is resolved, and named in what comes back.
-
-### Parameters
-
-- `content` **[string][1640]** The document as it is, comments and all
-- `body` **[string][1640]** What it becomes
-
-Returns **{body: [string][1640], resolved: [Array][1647]<[FoundComment][1233]>}**&#x20;
-
-## placed
-
-Type: [Map][1652]<[string][1640], [Array][1647]<[Span][1258]>>
-
-## countComments
-
-How many runs of comments a piece of markdown holds.
-
-### Parameters
-
-- `content` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[number][1642]**&#x20;
-
-## CONTEXT_CHARS
-
-How much of the text on each side of a passage its thread keeps.
-
-Type: [number][1642]
-
-## newPost
-
-A post, as someone just wrote it.
-
-### Parameters
-
-- `author` **[string][1640]** `writer` or `model`
-- `text` **[string][1640]**&#x20;
-- `now` **[number][1642]?** (optional, default `Date.now()`)
-
-Returns **CommentPost**&#x20;
-
-## authorOf
-
-Who said a post, as the writer reads it: You, the Assistant, the person
-by name, from a linked Google Doc, or, in a project shared, the one of
-them who wrote it by the name they show.
-
-### Parameters
-
-- `post` &#x20;
-- `people` (optional, default `null`)
-
-Returns **[string][1640]**&#x20;
-
-## suggesterOf
-
-Who suggested a change, as the writer reads it: You, or the person by name,
-from a linked Google Doc. Nothing for the model's, whose chat says it.
-
-### Parameters
-
-- `suggestion` &#x20;
-
-Returns **[string][1640]**&#x20;
-
-## newThread
-
-A thread, opened on a passage by its first post.
-
-### Parameters
-
-- `post` **CommentPost**&#x20;
-- `quote` **[string][1640]** The passage, as markdown
-
-Returns **CommentThread**&#x20;
-
-## placedIds
-
-The ids whose markers are in a piece of markdown: the threads it places.
-
-### Parameters
-
-- `content` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[Set][1646]<[string][1640]>**&#x20;
-
-## threadState
-
-How a thread stands: open on its passage, stale with its passage gone, or
-resolved. A marker in the text makes it open whatever it says, which is how
-undoing a resolve opens it again.
-
-### Parameters
-
-- `thread` **CommentThread**&#x20;
-- `placed` **[boolean][1641]** Whether its id is in the text
-
-Returns **(`"open"` | `"stale"` | `"resolved"`)**&#x20;
-
-## wordsAround
-
-The words before and after a stretch of text, within its line and cut
-back to whole words.
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-- `start` **[number][1642]**&#x20;
-- `end` **[number][1642]**&#x20;
-
-Returns **{before: [string][1640], after: [string][1640]}**&#x20;
-
-## suggestionPlaced
-
-Whether a suggestion's marks are in a piece of markdown: a half's close
-holding its id.
-
-### Parameters
-
-- `content` **[string][1640]**&#x20;
-- `id` **[string][1640]**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## settleThreads
-
-Threads brought up to date with the text: each placed one open, with its
-passage and the words around it as they read now, so that a thread whose
-passage goes later still knows what it was on and where. A suggestion's
-thread is open while its marks are in the text, as a comment's is, which
-is how undoing an accept opens it again. The same object back when nothing
-changed, so a save that touched no comment writes none.
-
-### Parameters
-
-- `content` **([string][1640] | null | [undefined][1653])**&#x20;
-- `threads` **([Threads][1232] | [undefined][1653])**&#x20;
-
-Returns **([Threads][1232] | [undefined][1653])**&#x20;
-
-## liftThreads
-
-Markdown in the form from before 16 Oct 2026 brought forward: what each
-comment said moved out of its markup onto a thread of its own, the
-writer's, and the markup left holding the id. A thread there is already
-for an id is kept as it is.
-
-### Parameters
-
-- `content` **[string][1640]**&#x20;
-- `threads` **([Threads][1232] | [undefined][1653])**&#x20;
-- `now` **[number][1642]?** When the moved posts say they were written (optional, default `Date.now()`)
-
-## withThreadsOnly
-
-Markdown with the markers that have no thread taken out, their passages
-left: one pasted from another document, or written by hand.
-
-### Parameters
-
-- `content` **[string][1640]**&#x20;
-- `threads` **([Threads][1232] | [undefined][1653])**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## countOpen
-
-How many of a document's comments are open: on their passages, or stale
-with their passages gone, and not resolved. Saving the text keeps a
-placed thread open (`settleThreads`), so the row says it without the text.
-A suggestion's thread is not a comment's.
-
-### Parameters
-
-- `threads` **([Threads][1232] | [undefined][1653])**&#x20;
-
-Returns **[number][1642]**&#x20;
-
-## sameThread
-
-Whether two versions of a thread say the same: its standing and its posts.
-Where its passage is, and the words around it, follow the text and are
-not what anyone said; nor is what a sync keeps of a linked Doc's.
-
-### Parameters
-
-- `a` **(CommentThread | null | [undefined][1653])**&#x20;
-- `b` **(CommentThread | null | [undefined][1653])**&#x20;
-
-Returns **[boolean][1641]**&#x20;
-
-## said
-
-### Parameters
-
-- `thread` **CommentThread**&#x20;
-
-## placeThread
-
-Markdown with a thread's marker put back on its passage, for a resolved
-thread opened again: where its quote is once, or once among several with
-the words that were around it, over other comments or not. Null when that
-place cannot be told: the words are gone, or are there more than once
-with nothing to choose between them. Within one paragraph only, as the
-markup is.
-
-### Parameters
-
-- `content` **[string][1640]**&#x20;
-- `id` **[string][1640]**&#x20;
-- `thread` **CommentThread**&#x20;
-
-Returns **([string][1640] | null)**&#x20;
-
-## spots
-
-Type: [Array][1647]<[number][1642]>
-
-## commentOn
-
-Markdown with a new comment's marker on a stretch of its text, as the text
-reads without the markup: over other comments or not, written as nesting
-needs. Null for an empty stretch.
-
-### Parameters
-
-- `content` **[string][1640]**&#x20;
-- `start` **[number][1642]**&#x20;
-- `end` **[number][1642]**&#x20;
-- `id` **[string][1640]**&#x20;
-
-Returns **([string][1640] | null)**&#x20;
-
-## PlacedThread
-
-A thread as a read lists it: where its passage is in the text as read.
-
-Type: [Object][1643]
-
-### Properties
-
-- `id` **[string][1640]**&#x20;
-- `thread` **CommentThread**&#x20;
-- `start` **[number][1642]** Where its passage starts in the text
-- `end` **[number][1642]** Where its last run ends
-
-## readableText
-
-Markdown as the model reads it, without the comments' markup, and each
-thread its text places, in the order their passages start. A marker with
-no thread is only taken out.
-
-### Parameters
-
-- `content` **([string][1640] | null | [undefined][1653])**&#x20;
-- `threads` **([Threads][1232] | [undefined][1653])**&#x20;
-
-Returns **{text: [string][1640], placed: [Array][1647]<[PlacedThread][1327]>}**&#x20;
-
-## WIDEN_STEP
-
-How far a passage's context grows at a step, and how far at most.
-
-Type: [number][1642]
-
-## passageInText
-
-A passage, and what tells it apart where its words are in the text more
-than once: the passage with as much around it as makes it once, the way an
-undo pair is widened (see utils/edits.js), or past a paragraph's length,
-which of its occurrences it is.
-
-### Parameters
-
-- `text` **[string][1640]**&#x20;
-- `start` **[number][1642]**&#x20;
-- `end` **[number][1642]**&#x20;
-
-##
-
-Type: [string][1640]
-
-## withoutComment
-
-Markdown with one comment's markers taken out, its passage left.
-
-### Parameters
-
-- `content` **[string][1640]**&#x20;
-- `id` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## CommentRange
-
-Type: {id: [string][1640], from: [number][1642], to: [number][1642]}
-
-## runsOver
-
-The runs of comment marks over a sequence of inline nodes, each run as far
-as its mark goes on unbroken: several over the same text where comments
-overlap. In the order they start.
-
-### Parameters
-
-- `pieces` **[Array][1647]<{node: [Node][1649], pos: [number][1642]}>** In order
-- `type` &#x20;
-
-Returns **[Array][1647]<[CommentRange][1337]>**&#x20;
-
-## ranges
-
-Type: [Array][1647]<[CommentRange][1337]>
-
-## going
-
-Type: [Map][1652]<[string][1640], [CommentRange][1337]>
-
-## commentRanges
-
-The comments in an editor document, as the ranges their marks cover.
-
-A mark on text that runs across a paragraph is the same id on two runs;
-each run is a range here, so a click on either finds the comment. Where
-comments overlap their ranges do too. A picture or a line break in a
-passage is part of it, not the end of a run.
-
-### Parameters
-
-- `doc` **[Node][1649]**&#x20;
-
-Returns **[Array][1647]<[CommentRange][1337]>**&#x20;
-
-## keepComments
-
-A slice with the comment marks taken off that it may not keep: a paste
-that would put a second marker of one thread in a document, or a marker
-whose thread is in another.
-
-### Parameters
-
-- `slice` **Slice**&#x20;
-- `keep` &#x20;
-
-Returns **Slice**&#x20;
-
-##
-
-Type: Fragment
-
-## nodes
-
-Type: [Array][1647]<[Node][1649]>
-
-## commentAround
-
-The comment the position is in, or against at either end: its id, and the
-run of it in this textblock. Where comments overlap, the one on the fewest
-words, the innermost, and of two as short the one that starts later.
-
-### Parameters
-
-- `$pos` **ResolvedPos**&#x20;
-
-Returns **([CommentRange][1337] | null)**&#x20;
-
-## CommentEntry
-
-A comment's place as a list shows it: once, however many runs its mark
-has, with the passage as it reads rather than as markdown. What was said
-is on its thread.
-
-Type: [Object][1643]
-
-### Properties
-
-- `id` **[string][1640]**&#x20;
-- `passage` **[string][1640]** The text it is on, its runs joined with a space
-
-## commentsInDoc
-
-The comments in an editor document, one entry each.
-
-### Parameters
-
-- `doc` **[Node][1649]**&#x20;
-
-Returns **[Array][1647]<[CommentEntry][1350]>**&#x20;
-
-## commentsGone
-
-The comments a change took the passages of: on the text before it, and
-nowhere after.
-
-### Parameters
-
-- `before` **[Node][1649]**&#x20;
-- `after` **[Node][1649]**&#x20;
-
-Returns **[Array][1647]<[string][1640]>**&#x20;
-
-## commentsInMarkdown
-
-The comments in a piece of markdown, one entry each: what `commentsInDoc`
-gives for the same text, without parsing it.
-
-### Parameters
-
-- `content` **([string][1640] | null | [undefined][1653])**&#x20;
-
-Returns **[Array][1647]<[CommentEntry][1350]>**&#x20;
-
-## plainPassage
-
-A passage's markdown as it reads: a link as its text, the emphasis, code
-and strikethrough delimiters taken off, escapes undone. Only the inline
-markdown the serializer writes inside a comment.
-
-### Parameters
-
-- `markdown` **[string][1640]**&#x20;
-
-Returns **[string][1640]**&#x20;
-
-## closeOf
-
-Where the close is that ends the comment opening at a place: past every
-comment that opens and closes inside it. Null when it has none.
-
-### Parameters
-
-- `src` **[string][1640]**&#x20;
-- `pos` **[number][1642]** At the open
-- `max` **[number][1642]**&#x20;
-
-Returns **({id: [string][1640], end: [number][1642]} | null)**&#x20;
-
-## CommentCount
-
-What the rules keep over one parse of a run of inline content: how many
-comments are open, and whether any has.
-
-Type: {depth: [number][1642], opened: [boolean][1641]}
-
-## commentMarkupPlugin
-
-The markdown-it rules that read the markup: one that opens a comment at
-`{==` when its close is ahead, past any comment inside it, and one that
-closes the innermost comment open at `==}{>>…<<}`. The parser maps
-`comment_open` and `comment_close` to the mark, both with the id, so that
-a close ends only its own comment (see `markdown.js`).
-
-A rule scanning past text without reading it, as a link does to find the
-end of its text, runs the rules silently, and each has to move past what
-it matched: to it a comment is one thing, so a `]` in what was said does
-not end the link. A close another rule swallows — a code span running
-over it — leaves its open with nothing to end it, and that open is put
-back as the text it was, so a comment never runs on past its paragraph.
-
-How many comments are open is counted for each parse of a run of text,
-not in the parser's `env`, which a picture's alt text, read in a parse of
-its own, shares with the passage around it.
-
-### Parameters
-
-- `md` &#x20;
-
-## top
-
-## split
-
-Type: (`"insertion"` | `"deletion"`)
-
-## state
-
-### Parameters
-
-- `state` &#x20;
-- `silent` &#x20;
-
-## state
-
-### Parameters
-
-- `state` &#x20;
-- `silent` &#x20;
-
-## state
-
-### Parameters
-
-- `state` &#x20;
-
-## state
-
-### Parameters
-
-- `state` **StateBlock**&#x20;
-- `startLine` **[number][1642]**&#x20;
-- `endLine` **[number][1642]**&#x20;
-- `silent` **[boolean][1641]**&#x20;
-
-## state
-
-### Parameters
-
-- `state` &#x20;
-- `silent` &#x20;
-
-## state
-
-### Parameters
-
-- `state` &#x20;
-- `silent` &#x20;
-
-## state
-
-### Parameters
-
-- `state` &#x20;
-
-## loose
-
-Type: [Array][1647]<[number][1642]>
-
-## loose
-
-Type: [Array][1647]<[number][1642]>
 
 ## editor/markdown
 
@@ -9980,9 +3562,9 @@ hold, as every inline rule is.
 ### Parameters
 
 - `state` **StateInline**&#x20;
-- `silent` **[boolean][1641]**&#x20;
+- `silent` **[boolean][1705]**&#x20;
 
-Returns **[boolean][1641]**&#x20;
+Returns **[boolean][1705]**&#x20;
 
 ## closeOn
 
@@ -9991,9 +3573,9 @@ nothing but spaces after it, or -1.
 
 ### Parameters
 
-- `line` **[string][1640]**&#x20;
+- `line` **[string][1704]**&#x20;
 
-Returns **[number][1642]**&#x20;
+Returns **[number][1706]**&#x20;
 
 ## formulaBlock
 
@@ -10004,11 +3586,19 @@ where it starts, as a fence does.
 ### Parameters
 
 - `state` **StateBlock**&#x20;
-- `startLine` **[number][1642]**&#x20;
-- `endLine` **[number][1642]**&#x20;
-- `silent` **[boolean][1641]**&#x20;
+- `startLine` **[number][1706]**&#x20;
+- `endLine` **[number][1706]**&#x20;
+- `silent` **[boolean][1705]**&#x20;
 
-Returns **[boolean][1641]**&#x20;
+Returns **[boolean][1705]**&#x20;
+
+## lines
+
+Type: [Array][1711]<[string][1704]>
+
+## lines
+
+Type: [Array][1711]<[string][1704]>
 
 ## cellsIn
 
@@ -10017,9 +3607,9 @@ escaped, less the empty ends a leading and a trailing pipe leave.
 
 ### Parameters
 
-- `line` **[string][1640]**&#x20;
+- `line` **[string][1704]**&#x20;
 
-Returns **[number][1642]**&#x20;
+Returns **[number][1706]**&#x20;
 
 ## tokenizerOf
 
@@ -10030,11 +3620,66 @@ which must be answered the same way without leaving anything behind.
 
 ## block
 
-Type: {\_\_rules\_\_: [Array][1647]<{name: [string][1640], fn: [Function][1663], alt: [Array][1647]<[string][1640]>}>}
+Type: {\_\_rules\_\_: [Array][1711]<{name: [string][1704], fn: [Function][1719], alt: [Array][1711]<[string][1704]>}>}
 
 ## block
 
 Type: unknown
+
+## top
+
+## split
+
+Type: (`"insertion"` | `"deletion"`)
+
+## state
+
+### Parameters
+
+- `state` **StateBlock**&#x20;
+- `startLine` **[number][1706]**&#x20;
+- `endLine` **[number][1706]**&#x20;
+- `silent` **[boolean][1705]**&#x20;
+
+## state
+
+### Parameters
+
+- `state` &#x20;
+- `silent` &#x20;
+
+## state
+
+### Parameters
+
+- `state` &#x20;
+- `silent` &#x20;
+
+## state
+
+### Parameters
+
+- `state` &#x20;
+
+## state
+
+### Parameters
+
+- `state` &#x20;
+- `silent` &#x20;
+
+## state
+
+### Parameters
+
+- `state` &#x20;
+- `silent` &#x20;
+
+## state
+
+### Parameters
+
+- `state` &#x20;
 
 ##
 
@@ -10047,13 +3692,13 @@ Type: unknown
 How much of the output the state keeps to look back on. Two characters would
 do: whether a line has ended, and whether a `!` before a link is escaped.
 
-Type: [number][1642]
+Type: [number][1706]
 
 ## ROOM
 
 How long the state's output grows before all but its tail is moved out.
 
-Type: [number][1642]
+Type: [number][1706]
 
 ## DELIMITED
 
@@ -10070,17 +3715,17 @@ asterisks and all.
 
 ### Parameters
 
-- `parent` **[Node][1649]**&#x20;
+- `parent` **[Node][1713]**&#x20;
 
-Returns **[Node][1649]**&#x20;
-
-## children
-
-Type: [Array][1647]<[Node][1649]>
+Returns **[Node][1713]**&#x20;
 
 ## children
 
-Type: [Array][1647]<[Node][1649]>
+Type: [Array][1711]<[Node][1713]>
+
+## children
+
+Type: [Array][1711]<[Node][1713]>
 
 ## LinearSerializer
 
@@ -10105,20 +3750,38 @@ tried, and with none left every dollar is escaped.
 
 #### Parameters
 
-- `content` **[Node][1649]**&#x20;
+- `content` **[Node][1713]**&#x20;
 - `options` (optional, default `{}`)
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ### write
 
 #### Parameters
 
-- `content` **[Node][1649]**&#x20;
+- `content` **[Node][1713]**&#x20;
 - `options` &#x20;
 - `dollars` **Dollars**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
+
+## dollars
+
+Type: Dollars
+
+## dollars
+
+Type: [Array][1711]<[string][1704]>
+
+## dollars
+
+A price per million tokens, from one per token: `$3`, `$0.37`, `$0.01`.
+
+### Parameters
+
+- `perToken` **[number][1706]** Dollars
+
+Returns **[string][1704]**&#x20;
 
 ##
 
@@ -10140,9 +3803,9 @@ written after it, and a dollar escaped is no formula's close.
 
 ### Parameters
 
-- `pieces` **[Array][1647]<[string][1640]>** What was written, cut at the marks
+- `pieces` **[Array][1711]<[string][1704]>** What was written, cut at the marks
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## opensFormula
 
@@ -10151,11 +3814,11 @@ after it as far as a blank line, beyond which no formula reaches.
 
 ### Parameters
 
-- `pieces` **[Array][1647]<[string][1640]>**&#x20;
-- `dollars` **[Array][1647]<[string][1640]>** Those after it, settled
-- `i` **[number][1642]**&#x20;
+- `pieces` **[Array][1711]<[string][1704]>**&#x20;
+- `dollars` **[Array][1711]<[string][1704]>** Those after it, settled
+- `i` **[number][1706]**&#x20;
 
-Returns **[boolean][1641]**&#x20;
+Returns **[boolean][1705]**&#x20;
 
 ## dollarsIn
 
@@ -10164,9 +3827,9 @@ A text's dollars as the serialization writes them (`Dollars`).
 ### Parameters
 
 - `state` **MarkdownSerializerState**&#x20;
-- `text` **[string][1640]**&#x20;
+- `text` **[string][1704]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ##
 
@@ -10186,10 +3849,10 @@ space, running over lines, or a digit following it.
 
 ### Parameters
 
-- `tex` **[string][1640]**&#x20;
-- `digitAfter` **[boolean][1641]?** Whether a digit follows it (optional, default `false`)
+- `tex` **[string][1704]**&#x20;
+- `digitAfter` **[boolean][1705]?** Whether a digit follows it (optional, default `false`)
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## writtenFormulaBlock
 
@@ -10198,9 +3861,9 @@ between, a blank line among them closed up, since none can be in it.
 
 ### Parameters
 
-- `tex` **[string][1640]**&#x20;
+- `tex` **[string][1704]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## ENTITY
 
@@ -10220,11 +3883,11 @@ a heading. At the end of a heading, a `#` would be read as its closing.
 
 ### Parameters
 
-- `text` **[string][1640]** Already escaped by the reference
-- `startOfLine` **[boolean][1641]**&#x20;
-- `endsHeading` **[boolean][1641]**&#x20;
+- `text` **[string][1704]** Already escaped by the reference
+- `startOfLine` **[boolean][1705]**&#x20;
+- `endsHeading` **[boolean][1705]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## endsLine
 
@@ -10233,10 +3896,10 @@ the serializer drops trailing breaks.
 
 ### Parameters
 
-- `parent` **[Node][1649]**&#x20;
-- `index` **[number][1642]**&#x20;
+- `parent` **[Node][1713]**&#x20;
+- `index` **[number][1706]**&#x20;
 
-Returns **[boolean][1641]**&#x20;
+Returns **[boolean][1705]**&#x20;
 
 ## withBlockSuggestions
 
@@ -10252,9 +3915,9 @@ and the id.
 
 ### Parameters
 
-- `writers` **Record<[string][1640], BlockWriter>**&#x20;
+- `writers` **Record<[string][1704], BlockWriter>**&#x20;
 
-Returns **Record<[string][1640], BlockWriter>**&#x20;
+Returns **Record<[string][1704], BlockWriter>**&#x20;
 
 ## type
 
@@ -10293,9 +3956,9 @@ One row of a table, as a line.
 
 ### Parameters
 
-- `row` **[Node][1649]**&#x20;
+- `row` **[Node][1713]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## ruleOf
 
@@ -10303,9 +3966,9 @@ A column's cell in the line under the header.
 
 ### Parameters
 
-- `align` **([string][1640] | null)**&#x20;
+- `align` **([string][1704] | null)**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## parseMarkdown
 
@@ -10314,9 +3977,9 @@ cannot hold is read as the text it was written as.
 
 ### Parameters
 
-- `markdown` **([string][1640] | null | [undefined][1653])**&#x20;
+- `markdown` **([string][1704] | null | [undefined][1717])**&#x20;
 
-Returns **[Node][1649]** A document in the editor's schema
+Returns **[Node][1713]** A document in the editor's schema
 
 ## serializeMarkdown
 
@@ -10324,9 +3987,9 @@ Write a document as markdown.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
+- `doc` **[Node][1713]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## settleMarkdown
 
@@ -10339,9 +4002,9 @@ is byte-identical.
 
 ### Parameters
 
-- `markdown` **([string][1640] | null | [undefined][1653])**&#x20;
+- `markdown` **([string][1704] | null | [undefined][1717])**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## appendBlocks
 
@@ -10350,10 +4013,6815 @@ block of its own rather than running on from the last one.
 
 ### Parameters
 
-- `content` **([string][1640] | null | [undefined][1653])**&#x20;
-- `text` **[string][1640]**&#x20;
+- `content` **([string][1704] | null | [undefined][1717])**&#x20;
+- `text` **[string][1704]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
+
+## stores/migrations/commentThreads
+
+What each comment says moves out of the text onto its
+document's row.
+
+A comment was CriticMarkup holding its id and what was said,
+`{==passage==}{>>c7k2m1: reword this<<}`. The text keeps the passage and the
+id now, `{==passage==}{>>c7k2m1<<}`, and what was said is the first post of
+a thread in the row's `comments`, by that id, so that a comment can have
+replies and say who wrote it. Every comment from before is the writer's;
+the model could not make one. The post is dated with the document's last
+change, which is when it was last known to stand, and the same on every
+run, so a backup restored twice comes out the same.
+
+Plain documents too: their text is stored as typed, and the Comments tab
+read comments out of it all the same.
+
+Pure, like the migrations before it, so the Dexie upgrade hook and backup
+restore share one transform. Idempotent: a document with nothing in the old
+form is left as it is.
+
+## threadsOffText
+
+### Parameters
+
+- `documents` &#x20;
+
+## threadsOffText
+
+### Parameters
+
+- `documents` **[Array][1711]<[Document][1712]>**&#x20;
+
+Returns **{documents: [Array][1711]<[Document][1712]>, moved: [number][1706]}** The documents, and how
+many comments moved
+
+## editor/comments
+
+A comment on a passage: its place in the text, and its thread
+on the document's row.
+
+A writer highlights a run of text and says something about it; the model
+reads it, answers, and resolves it. The passage has to survive every edit
+around it and every round trip through the file format, so its place is in
+the text itself: a mark in the editor and, in the markdown, CriticMarkup
+that holds only an id:
+
+    We had a {==cold and narrow==}{>>c7k2m1<<} attic.
+
+What was said, by whom, and the replies are the thread, kept on the
+document's row as `comments`, by that id (see `CommentThread`). A thread is
+placed while its id is in the text; an open one whose id is not is stale,
+its passage deleted, and undoing the delete places it again.
+
+Comments may overlap. In the editor several comment marks can sit on the
+same text. In the markup one comment nests inside another, and where two
+only partly overlap, one of them is written in pieces, each with its id, as
+one over two paragraphs is:
+
+    We had a {==cold and {==narrow==}{>>c2<<}==}{>>c1<<}{== attic==}{>>c2<<}.
+
+A close ends the innermost comment still open. Text without overlaps reads
+as it always did.
+
+Until 16 Oct 2026 what was said was in the markup too, as
+`{>>c7k2m1: reword this<<}`, with each break written `<br>`. That form is
+still read: `liftThreads` moves what it says onto a thread, which is how a
+document from before is brought forward.
+
+Everything here is pure: the pattern, the helpers over a string and over
+threads, and the markdown-it rules the parser runs. The mark spec is in
+`schema.js` and the serializer rule in `markdown.js`, both built on what is
+here.
+
+## Threads
+
+Type: Record<[string][1704], CommentThread>
+
+## FoundComment
+
+One run of a comment, found in markdown: where its passage is in the text as
+it reads without the markup. A comment over two paragraphs has a run in
+each; the pieces of one written around another are one run.
+
+Type: [Object][1707]
+
+### Properties
+
+- `id` **[string][1704]**&#x20;
+- `text` **[string][1704]** The passage it is on, as markdown, without the
+  markup of comments inside it
+- `comment` **[string][1704]** What the old form said about it, in its
+  markup; empty for the form that holds only the id
+- `legacy` **[boolean][1705]** Whether it is in the old form
+- `start` **[number][1706]** Where the passage starts in the text without the markup
+- `end` **[number][1706]** Where it ends
+
+## MarkupToken
+
+One half of a comment's markup, as written: where it is in the markdown,
+and where in the text without the markup.
+
+Type: [Object][1707]
+
+### Properties
+
+- `from` **[number][1706]**&#x20;
+- `to` **[number][1706]**&#x20;
+- `at` **[number][1706]**&#x20;
+
+## OPEN_MARKUP
+
+A run as the markup holds it: the run, and its two halves.
+
+Type: [string][1704]
+
+## OPEN_MARKUP
+
+How the two halves are written around a passage.
+
+Type: [string][1704]
+
+## ParsedMarkup
+
+Markdown read for its comments: the text without the markup, and the runs.
+
+Type: {source: [string][1704], text: [string][1704], runs: [Array][1711]\<MarkedRun>}
+
+## TOKEN_PATTERN
+
+Either half of a comment's markup: the open, or the close with the id and,
+in the old form, what was said. Global, for finding every one.
+
+## CLOSE_PATTERN
+
+The close half alone, for the parser's closing rule.
+
+## newCommentId
+
+A fresh comment id: short, lower-case, and unlike a word, so it reads as a
+handle in the markup and in a tool call.
+
+Returns **[string][1704]**&#x20;
+
+## BREAK_PATTERN
+
+A break in what the old form said, as it may be written.
+
+## closeMarkup
+
+The closing markup for a comment: the end of the passage, then the id.
+
+### Parameters
+
+- `id` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## cleanComment
+
+What someone said, as a post keeps it: its lines, each with its spaces run
+together and trimmed.
+
+### Parameters
+
+- `comment` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## commentOf
+
+What the old form said, from its markup: its breaks as new lines.
+
+### Parameters
+
+- `markup` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## parseMarkup
+
+Markdown read for its comments. Each close ends the innermost comment still
+open, as in the editor's parser; a half with no other half is text, and so
+is an open with a blank line before its close, since the markup sits in a
+paragraph.
+
+### Parameters
+
+- `content` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[ParsedMarkup][424]**&#x20;
+
+## stack
+
+Type: [Array][1711]<[number][1706]>
+
+## stack
+
+Type: [Array][1711]<{node: [SectionNode][1093], level: [number][1706], depth: [number][1706]}>
+
+## pairs
+
+Type: [Map][1716]<[number][1706], [number][1706]>
+
+## pop
+
+Type: [number][1706]
+
+## pop
+
+Type: [string][1704]
+
+## tokens
+
+Type: [Map][1716]<[number][1706], [MarkupToken][420]>
+
+## runs
+
+Type: [Array][1711]\<MarkedRun>
+
+## runs
+
+Type: [Map][1716]<[string][1704], [Array][1711]<[FoundComment][418]>>
+
+## runs
+
+Type: [Map][1716]<[number][1706], [number][1706]>
+
+## get
+
+Type: [MarkupToken][420]
+
+## get
+
+Type: [MarkupToken][420]
+
+## get
+
+Type: [string][1704]
+
+## get
+
+Type: [string][1704]
+
+## Span
+
+A stretch of text a comment is on, by its id.
+
+Type: {id: [string][1704], start: [number][1706], end: [number][1706]}
+
+## renderMarkup
+
+Text with comments put on it as markup, nested where they nest. Where two
+only partly overlap, the one that starts inside the other is written in
+pieces, and where several open at one place the one that runs on longest
+is outermost, so there are as few pieces as can be. An empty span is no
+comment, and spans of one id that touch are one.
+
+### Parameters
+
+- `text` **[string][1704]** Without any markup
+- `spans` **[Array][1711]<[Span][450]>**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## pop
+
+Type: [Span][450]
+
+## pop
+
+Type: [Span][450]
+
+## open
+
+Type: [Array][1711]<[Span][450]>
+
+## open
+
+Type: const
+
+## open
+
+Type: [Array][1711]<[number][1706]>
+
+## open
+
+Type: [Array][1711]<[number][1706]>
+
+## open
+
+Type: [Array][1711]<[number][1706]>
+
+## joinRuns
+
+Runs with the pieces of each comment that touch made one, in the order they
+start: what a comment written around another reads as.
+
+### Parameters
+
+- `runs` **[Array][1711]\<T>**&#x20;
+
+Returns **[Array][1711]\<T>**&#x20;
+
+## joined
+
+Type: [Array][1711]\<T>
+
+## joined
+
+Type: [Array][1711]<[Node][1713]>
+
+## last
+
+Type: [Map][1716]<[string][1704], T>
+
+## markupOffset
+
+Where a place in the text without the markup is in the markdown: after
+the comments that close there and before those that open.
+
+### Parameters
+
+- `parsed` **[ParsedMarkup][424]**&#x20;
+- `at` **[number][1706]**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## changeStretch
+
+A change to a stretch of the text and the comments over it, as a change to
+the markdown. The stretch is widened over every comment it reaches, and
+over every one those reach, so that the markup there is written again
+whole: `change` is handed the text of the stretch and the runs in it, by
+where they are in it, and gives back what they become.
+
+### Parameters
+
+- `parsed` **[ParsedMarkup][424]**&#x20;
+- `from` **[number][1706]** In the text without the markup
+- `to` **[number][1706]**&#x20;
+- `change` &#x20;
+
+Returns **{old: [string][1704], new: [string][1704], from: [number][1706], to: [number][1706], start: [number][1706], end: [number][1706]}** The markdown it replaces, where, and what with; and the stretch
+
+## withoutRuns
+
+Markdown with the halves of some comments' markup taken out, their
+passages left.
+
+### Parameters
+
+- `parsed` **[ParsedMarkup][424]**&#x20;
+- `take` &#x20;
+
+Returns **[string][1704]**&#x20;
+
+## findComments
+
+Every run of every comment in a piece of markdown, in the order they start.
+
+### Parameters
+
+- `content` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[Array][1711]<[FoundComment][418]>**&#x20;
+
+## settleComments
+
+Markdown with its comments' markup written the one way it is written
+everywhere, as `renderMarkup` writes it: nested by where each comment
+starts and ends, not by the order they were made in, and the pieces of one
+that touch made one. Each half stays where it was in the text.
+
+### Parameters
+
+- `content` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## withoutComments
+
+Markdown as it reads without its comments: each passage left, what was
+said about it gone.
+
+### Parameters
+
+- `content` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## HALF_PATTERN
+
+Either half of a comment's markup, as a quote that starts or ends inside one has it.
+
+## quoteWithoutComments
+
+A quote from text with comments in it, as it reads without them. A quote
+cut from the middle of a comment has half of its markup, which goes too.
+
+### Parameters
+
+- `quote` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## nearest
+
+Where a passage is in a text nearest to where it was, or -1.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+- `passage` **[string][1704]**&#x20;
+- `near` **[number][1706]**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## nearest
+
+The nearest block the reader has words of, before a block or after it:
+-1 or `blocks.length` where there is none. One left standing with
+nothing written for it, an empty paragraph, is no place to write from:
+what follows it is written by what came before it.
+
+### Parameters
+
+- `from` **[number][1706]**&#x20;
+- `step` **(`-1` | `1`)**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## editAroundComments
+
+An edit made on the text as it reads, without the comments' markup, as an
+edit to the markdown that holds them. What it replaces takes in the whole
+of any comment it reaches, and of any comment over that one. A comment
+whose passage comes through the edit unchanged is put back on it; one
+whose passage it changed is resolved, its markup gone with the old words,
+and is named in what comes back.
+
+### Parameters
+
+- `content` **[string][1704]** The markdown, comments and all
+- `old` **[string][1704]** The passage to change, as it reads without them
+- `replacement` **[string][1704]** What it becomes, without them
+
+Returns **{count: [number][1706], old: [string][1704], new: [string][1704], resolved: [Array][1711]<[FoundComment][418]>}** How many times `old` is in the text, and when once, the edit to make
+
+## lost
+
+Type: [Array][1711]<[FoundComment][418]>
+
+## lost
+
+Type: [Set][1710]<[string][1704]>
+
+## spans
+
+Type: [Array][1711]<[Span][450]>
+
+## spans
+
+Type: [Map][1716]<[string][1704], {first: [number][1706], last: [number][1706]}>
+
+## rewriteAroundComments
+
+A whole new body for a document that has comments, with each comment put
+back on its passage where the new body still says it, word for word and
+once, overlapping as they did. The body's own markup is taken out first:
+what the model writes never makes a comment, and one it copied comes back
+the way the rest do. A comment with a run whose words are gone, or there
+more than once, is resolved, and named in what comes back.
+
+### Parameters
+
+- `content` **[string][1704]** The document as it is, comments and all
+- `body` **[string][1704]** What it becomes
+
+Returns **{body: [string][1704], resolved: [Array][1711]<[FoundComment][418]>}**&#x20;
+
+## placed
+
+Type: [Map][1716]<[string][1704], [Array][1711]<[Span][450]>>
+
+## countComments
+
+How many runs of comments a piece of markdown holds.
+
+### Parameters
+
+- `content` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## CONTEXT_CHARS
+
+How much of the text on each side of a passage its thread keeps.
+
+Type: [number][1706]
+
+## newPost
+
+A post, as someone just wrote it.
+
+### Parameters
+
+- `author` **[string][1704]** `writer` or `model`
+- `text` **[string][1704]**&#x20;
+- `now` **[number][1706]?** (optional, default `Date.now()`)
+
+Returns **CommentPost**&#x20;
+
+## authorOf
+
+Who said a post, as the writer reads it: You, the Assistant, a connected
+app by its connection's name, the person by name, from a linked Google
+Doc, or, in a project shared, the one of them who wrote it by the name
+they show.
+
+### Parameters
+
+- `post` &#x20;
+- `people` (optional, default `null`)
+
+Returns **[string][1704]**&#x20;
+
+## suggesterOf
+
+Who suggested a change, as the writer reads it: You, or the person by name,
+from a linked Google Doc, or a connected app by its connection's name.
+Nothing for the chat's own model's, whose chat says it.
+
+### Parameters
+
+- `suggestion` &#x20;
+
+Returns **[string][1704]**&#x20;
+
+## newThread
+
+A thread, opened on a passage by its first post.
+
+### Parameters
+
+- `post` **CommentPost**&#x20;
+- `quote` **[string][1704]** The passage, as markdown
+
+Returns **CommentThread**&#x20;
+
+## placedIds
+
+The ids whose markers are in a piece of markdown: the threads it places.
+
+### Parameters
+
+- `content` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[Set][1710]<[string][1704]>**&#x20;
+
+## threadState
+
+How a thread stands: open on its passage, stale with its passage gone, or
+resolved. A marker in the text makes it open whatever it says, which is how
+undoing a resolve opens it again.
+
+### Parameters
+
+- `thread` **CommentThread**&#x20;
+- `placed` **[boolean][1705]** Whether its id is in the text
+
+Returns **(`"open"` | `"stale"` | `"resolved"`)**&#x20;
+
+## wordsAround
+
+The words before and after a stretch of text, within its line and cut
+back to whole words.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+- `start` **[number][1706]**&#x20;
+- `end` **[number][1706]**&#x20;
+
+Returns **{before: [string][1704], after: [string][1704]}**&#x20;
+
+## suggestionPlaced
+
+Whether a suggestion's marks are in a piece of markdown: a half's close
+holding its id.
+
+### Parameters
+
+- `content` **[string][1704]**&#x20;
+- `id` **[string][1704]**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## settleThreads
+
+Threads brought up to date with the text: each placed one open, with its
+passage and the words around it as they read now, so that a thread whose
+passage goes later still knows what it was on and where. A suggestion's
+thread is open while its marks are in the text, as a comment's is, which
+is how undoing an accept opens it again. The same object back when nothing
+changed, so a save that touched no comment writes none.
+
+### Parameters
+
+- `content` **([string][1704] | null | [undefined][1717])**&#x20;
+- `threads` **([Threads][417] | [undefined][1717])**&#x20;
+
+Returns **([Threads][417] | [undefined][1717])**&#x20;
+
+## next
+
+Type: [Threads][417]
+
+## next
+
+Type: [Threads][417]
+
+## next
+
+Type: [ChatMarks][1470]
+
+## liftThreads
+
+Markdown in the form from before 16 Oct 2026 brought forward: what each
+comment said moved out of its markup onto a thread of its own, the
+writer's, and the markup left holding the id. A thread there is already
+for an id is kept as it is.
+
+### Parameters
+
+- `content` **[string][1704]**&#x20;
+- `threads` **([Threads][417] | [undefined][1717])**&#x20;
+- `now` **[number][1706]?** When the moved posts say they were written (optional, default `Date.now()`)
+
+## withThreadsOnly
+
+Markdown with the markers that have no thread taken out, their passages
+left: one pasted from another document, or written by hand.
+
+### Parameters
+
+- `content` **[string][1704]**&#x20;
+- `threads` **([Threads][417] | [undefined][1717])**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## countOpen
+
+How many of a document's comments are open: on their passages, or stale
+with their passages gone, and not resolved. Saving the text keeps a
+placed thread open (`settleThreads`), so the row says it without the text.
+A suggestion's thread is not a comment's.
+
+### Parameters
+
+- `threads` **([Threads][417] | [undefined][1717])**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## sameThread
+
+Whether two versions of a thread say the same: its standing and its posts.
+Where its passage is, and the words around it, follow the text and are
+not what anyone said; nor is what a sync keeps of a linked Doc's.
+
+### Parameters
+
+- `a` **(CommentThread | null | [undefined][1717])**&#x20;
+- `b` **(CommentThread | null | [undefined][1717])**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## said
+
+### Parameters
+
+- `thread` **CommentThread**&#x20;
+
+## placeThread
+
+Markdown with a thread's marker put back on its passage, for a resolved
+thread opened again: where its quote is once, or once among several with
+the words that were around it, over other comments or not. Null when that
+place cannot be told: the words are gone, or are there more than once
+with nothing to choose between them. Within one paragraph only, as the
+markup is.
+
+### Parameters
+
+- `content` **[string][1704]**&#x20;
+- `id` **[string][1704]**&#x20;
+- `thread` **CommentThread**&#x20;
+
+Returns **([string][1704] | null)**&#x20;
+
+## spots
+
+Type: [Array][1711]<[number][1706]>
+
+## commentOn
+
+Markdown with a new comment's marker on a stretch of its text, as the text
+reads without the markup: over other comments or not, written as nesting
+needs. Null for an empty stretch.
+
+### Parameters
+
+- `content` **[string][1704]**&#x20;
+- `start` **[number][1706]**&#x20;
+- `end` **[number][1706]**&#x20;
+- `id` **[string][1704]**&#x20;
+
+Returns **([string][1704] | null)**&#x20;
+
+## PlacedThread
+
+A thread as a read lists it: where its passage is in the text as read.
+
+Type: [Object][1707]
+
+### Properties
+
+- `id` **[string][1704]**&#x20;
+- `thread` **CommentThread**&#x20;
+- `start` **[number][1706]** Where its passage starts in the text
+- `end` **[number][1706]** Where its last run ends
+
+## readableText
+
+Markdown as the model reads it, without the comments' markup, and each
+thread its text places, in the order their passages start. A marker with
+no thread is only taken out.
+
+### Parameters
+
+- `content` **([string][1704] | null | [undefined][1717])**&#x20;
+- `threads` **([Threads][417] | [undefined][1717])**&#x20;
+
+Returns **{text: [string][1704], placed: [Array][1711]<[PlacedThread][532]>}**&#x20;
+
+## WIDEN_STEP
+
+How far a passage's context grows at a step, and how far at most.
+
+Type: [number][1706]
+
+## passageInText
+
+A passage, and what tells it apart where its words are in the text more
+than once: the passage with as much around it as makes it once, the way an
+undo pair is widened (see utils/edits.js), or past a paragraph's length,
+which of its occurrences it is.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+- `start` **[number][1706]**&#x20;
+- `end` **[number][1706]**&#x20;
+
+##
+
+Type: [string][1704]
+
+## withoutComment
+
+Markdown with one comment's markers taken out, its passage left.
+
+### Parameters
+
+- `content` **[string][1704]**&#x20;
+- `id` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## CommentRange
+
+Type: {id: [string][1704], from: [number][1706], to: [number][1706]}
+
+## runsOver
+
+The runs of comment marks over a sequence of inline nodes, each run as far
+as its mark goes on unbroken: several over the same text where comments
+overlap. In the order they start.
+
+### Parameters
+
+- `pieces` **[Array][1711]<{node: [Node][1713], pos: [number][1706]}>** In order
+- `type` &#x20;
+
+Returns **[Array][1711]<[CommentRange][542]>**&#x20;
+
+## ranges
+
+Type: [Array][1711]<[CommentRange][542]>
+
+## going
+
+Type: [Map][1716]<[string][1704], [CommentRange][542]>
+
+## commentRanges
+
+The comments in an editor document, as the ranges their marks cover.
+
+A mark on text that runs across a paragraph is the same id on two runs;
+each run is a range here, so a click on either finds the comment. Where
+comments overlap their ranges do too. A picture or a line break in a
+passage is part of it, not the end of a run.
+
+### Parameters
+
+- `doc` **[Node][1713]**&#x20;
+
+Returns **[Array][1711]<[CommentRange][542]>**&#x20;
+
+## pieces
+
+Type: [Array][1711]<{node: [Node][1713], pos: [number][1706]}>
+
+## pieces
+
+Type: [Array][1711]<{node: [Node][1713], pos: [number][1706]}>
+
+## pieces
+
+Type: [Array][1711]<[string][1704]>
+
+## pieces
+
+Type: Record<[string][1704], [Array][1711]<{to: [number][1706], text: [string][1704]}>>
+
+## pieces
+
+Type: [Array][1711]<[Piece][1683]>
+
+## keepComments
+
+A slice with the comment marks taken off that it may not keep: a paste
+that would put a second marker of one thread in a document, or a marker
+whose thread is in another.
+
+### Parameters
+
+- `slice` **Slice**&#x20;
+- `keep` &#x20;
+
+Returns **Slice**&#x20;
+
+##
+
+Type: Fragment
+
+## nodes
+
+Type: [Array][1711]<[Node][1713]>
+
+## commentAround
+
+The comment the position is in, or against at either end: its id, and the
+run of it in this textblock. Where comments overlap, the one on the fewest
+words, the innermost, and of two as short the one that starts later.
+
+### Parameters
+
+- `$pos` **ResolvedPos**&#x20;
+
+Returns **([CommentRange][542] | null)**&#x20;
+
+## CommentEntry
+
+A comment's place as a list shows it: once, however many runs its mark
+has, with the passage as it reads rather than as markdown. What was said
+is on its thread.
+
+Type: [Object][1707]
+
+### Properties
+
+- `id` **[string][1704]**&#x20;
+- `passage` **[string][1704]** The text it is on, its runs joined with a space
+
+## entriesOf
+
+Entries in the order their comments start, the runs of one id joined.
+
+### Parameters
+
+- `runs` **[Array][1711]<[CommentEntry][560]>**&#x20;
+
+Returns **[Array][1711]<[CommentEntry][560]>**&#x20;
+
+## entriesOf
+
+The entries a zip's central directory lists.
+
+### Parameters
+
+- `file` **[Blob][1720]**&#x20;
+
+Returns **[Promise][1721]<[Array][1711]<[ZipEntry][666]>>**&#x20;
+
+## commentsInDoc
+
+The comments in an editor document, one entry each.
+
+### Parameters
+
+- `doc` **[Node][1713]**&#x20;
+
+Returns **[Array][1711]<[CommentEntry][560]>**&#x20;
+
+## commentsGone
+
+The comments a change took the passages of: on the text before it, and
+nowhere after.
+
+### Parameters
+
+- `before` **[Node][1713]**&#x20;
+- `after` **[Node][1713]**&#x20;
+
+Returns **[Array][1711]<[string][1704]>**&#x20;
+
+## commentsInMarkdown
+
+The comments in a piece of markdown, one entry each: what `commentsInDoc`
+gives for the same text, without parsing it.
+
+### Parameters
+
+- `content` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[Array][1711]<[CommentEntry][560]>**&#x20;
+
+## plainPassage
+
+A passage's markdown as it reads: a link as its text, the emphasis, code
+and strikethrough delimiters taken off, escapes undone. Only the inline
+markdown the serializer writes inside a comment.
+
+### Parameters
+
+- `markdown` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## closeOf
+
+Where the close is that ends the comment opening at a place: past every
+comment that opens and closes inside it. Null when it has none.
+
+### Parameters
+
+- `src` **[string][1704]**&#x20;
+- `pos` **[number][1706]** At the open
+- `max` **[number][1706]**&#x20;
+
+Returns **({id: [string][1704], end: [number][1706]} | null)**&#x20;
+
+## CommentCount
+
+What the rules keep over one parse of a run of inline content: how many
+comments are open, and whether any has.
+
+Type: {depth: [number][1706], opened: [boolean][1705]}
+
+## commentMarkupPlugin
+
+The markdown-it rules that read the markup: one that opens a comment at
+`{==` when its close is ahead, past any comment inside it, and one that
+closes the innermost comment open at `==}{>>…<<}`. The parser maps
+`comment_open` and `comment_close` to the mark, both with the id, so that
+a close ends only its own comment (see `markdown.js`).
+
+A rule scanning past text without reading it, as a link does to find the
+end of its text, runs the rules silently, and each has to move past what
+it matched: to it a comment is one thing, so a `]` in what was said does
+not end the link. A close another rule swallows — a code span running
+over it — leaves its open with nothing to end it, and that open is put
+back as the text it was, so a comment never runs on past its paragraph.
+
+How many comments are open is counted for each parse of a run of text,
+not in the parser's `env`, which a picture's alt text, read in a parse of
+its own, shares with the passage around it.
+
+### Parameters
+
+- `md` &#x20;
+
+## counts
+
+## counts
+
+Type: [Map][1716]<[string][1704], [number][1706]>
+
+## countOf
+
+### Parameters
+
+- `state` &#x20;
+
+## countOf
+
+How many nodes a list of subtrees holds.
+
+### Parameters
+
+- `nodes` **[Array][1711]<[SectionNode][1093]>**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## loose
+
+Type: [Array][1711]<[number][1706]>
+
+## loose
+
+Type: [Array][1711]<[number][1706]>
+
+## stores/migrations/profiles
+
+The prompt library becomes chat profiles.
+
+A prompt was a piece of text a chat could be pointed at, and everything else
+about how a chat runs lived on the chat. A profile is all of it in one place:
+the prompt, and the roles that run under it. So every saved prompt becomes a
+profile whose prompt it is, and every chat that named a prompt names that
+profile instead.
+
+The saved prompt keeps its id, which makes the chat side a copy rather than a
+lookup, and makes the way back obvious if there has to be one. The `aiPrompts`
+table is left where it is — Dexie carries it, and a table nobody reads costs
+nothing next to a conversion nobody can undo.
+
+## builtInFor
+
+The built-in profile that was built around a given built-in prompt.
+
+The profiles used to name a prompt; now they carry one. A chat pointed at
+`builtin_roleplay` was asking for the Roleplay profile in everything but
+name, so that is what it gets; one whose profile the app no longer ships,
+as `builtin_adventure`'s, gets the default.
+
+### Parameters
+
+- `promptId` **[string][1704]**&#x20;
+
+Returns **([string][1704] | null)**&#x20;
+
+## profileFrom
+
+One saved prompt as the profile it becomes.
+
+### Parameters
+
+- `prompt` **any** An `aiPrompts` row
+
+Returns **any** A `chatProfiles` row
+
+## promptsToProfiles
+
+The profiles a library of saved prompts becomes.
+
+### Parameters
+
+- `prompts` **[Array][1711]\<any>** `aiPrompts` rows
+
+Returns **{profiles: [Array][1711]\<any>}**&#x20;
+
+## chatsToProfiles
+
+Chats, pointed at profiles rather than prompts.
+
+A chat that named a saved prompt names the profile that prompt became, which
+has the same id. One that named a built-in names the profile built around it.
+One that named nothing still names nothing, and falls back the way it always
+did — to whatever its project starts chats on.
+
+`promptId` stays on the row. Nothing reads it, and it is the only record of
+what the chat was pointed at before this ran.
+
+### Parameters
+
+- `chats` **[Array][1711]\<any>**&#x20;
+
+Returns **{chats: [Array][1711]\<any>, converted: [number][1706]}**&#x20;
+
+## storiesToProfiles
+
+The project's default, which named a prompt for the same reason a chat did.
+
+### Parameters
+
+- `stories` **[Array][1711]\<any>**&#x20;
+
+Returns **{stories: [Array][1711]\<any>, converted: [number][1706]}**&#x20;
+
+## stores/migrations/summariesInPlace
+
+Move each summary to where it is read.
+
+A summary used to be stored where it was asked for, at the end of the chat,
+carrying a count of the turns before it that it left alone. The reader did
+the rest: it found the summary, counted back, and hoisted it over the turns
+it kept. So what the writer saw, what the model was sent, and what a fork or
+a rewind cut by were three different orders, and the count had to be brought
+down whenever a message was deleted from among the ones it counted.
+
+Now a summary is stored above the turns it kept, and where it sits is what
+says what it stands for. See ai/compaction.js. This brings what was already
+stored up to that: each summary is given a time between the last message it
+stood for and the first it kept.
+
+What is read changes in one way, on purpose. Only the newest summary used to
+apply, and an older one went with everything else above it — so a game
+compacted twice had lost its first session altogether. Every summary is read
+now, and the older ones come back.
+
+Frozen at what version 15 meant by all of this, like the transforms before
+it: how the app reads a summary can change later without changing what these
+rows were.
+
+## stoodFor
+
+### Parameters
+
+- `message` &#x20;
+
+## stoodFor
+
+Whether this was a summary that stood in for anything, as of schema 14.
+
+### Parameters
+
+- `message` **Message**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## placeChat
+
+One chat's messages, with its summaries where they are read.
+
+### Parameters
+
+- `history` **[Array][1711]\<Message>** The chat in order
+
+Returns **{rows: [Array][1711]\<Message>, moved: [number][1706]}**&#x20;
+
+## targets
+
+Type: [Map][1716]<[string][1704], [number][1706]>
+
+## targets
+
+Type: [LinkTargets][900]
+
+## order
+
+Type: [Array][1711]\<Message>
+
+## moved
+
+Type: [Set][1710]<[string][1704]>
+
+## moved
+
+Whether a block put in or taken out whole and the words changed beside it,
+at the end of the block before it or the start of the one after, with no
+words between, are a paragraph parted or two joined: one change, since
+accepting either alone would lose words or have them twice. They are where
+the block shares half its words, or half theirs, with what they change the
+other way: what they take out, for a block put in.
+
+### Parameters
+
+- `laid` **[Node][1713]**&#x20;
+- `standing` **[Node][1713]**&#x20;
+- `parts` **[Array][1711]<[Part][1544]>** In `laid`
+- `at` **[Array][1711]<{from: [number][1706], to: [number][1706], whole: [boolean][1705]}>** In `standing`
+- `i` **[number][1706]** The second of the two
+
+## summariesIntoPlace
+
+Move every summary to where it is read.
+
+Deleted messages are left exactly where they are, and are not counted among
+the turns a summary kept: they were invisible to the reader that did the
+counting.
+
+### Parameters
+
+- `messages` **[Array][1711]\<Message>** Every message, in any order
+
+Returns **{messages: [Array][1711]\<Message>, moved: [number][1706]}** The rows that changed, and
+how many summaries moved
+
+## chats
+
+Type: [Map][1716]<[string][1704], [Array][1711]\<Message>>
+
+## changed
+
+Type: [Array][1711]\<Message>
+
+## changed
+
+Type: [Array][1711]<[LinkedText][898]>
+
+## stores/migrations/purgeDeleted
+
+The trash, emptied for good.
+
+Until schema version 17 a delete only marked the row, and a sweep dropped
+rows marked longer than a month. Now a delete removes the row, and there
+is no trash to sweep — so what was in it when this version arrived goes,
+in the database and in any backup restored from before. A file's bytes are
+keyed by its document's id, and go with the document.
+
+## FLAGGED_TABLES
+
+The tables that carried the flag.
+
+## Purged
+
+Type: [Object][1707]
+
+### Properties
+
+- `tables` **Record<[string][1704], [Array][1711]\<any>>** The same tables, without the rows marked deleted
+- `removed` **[number][1706]** How many rows went, file rows included
+
+## withoutDeleted
+
+Drop every row marked deleted, and the bytes of any file document among them.
+
+### Parameters
+
+- `tables` **Record<[string][1704], [Array][1711]\<any>>** Rows by table name
+
+Returns **[Purged][618]**&#x20;
+
+## goneFiles
+
+Type: [Set][1710]<[string][1704]>
+
+## deletedIds
+
+The ids of the rows in a table that are marked deleted.
+
+For the Dexie upgrade, which deletes by id rather than rewriting tables.
+
+### Parameters
+
+- `rows` **[Array][1711]\<any>**&#x20;
+
+Returns **[Array][1711]<[string][1704]>**&#x20;
+
+## stores/migrations/profileSkills
+
+A profile's wording for its roles becomes its wording for its
+skills.
+
+A profile could reword what each role ran under — the Director, Interpret,
+Write, Compaction — kept on `settings.roles` by role id. They are skills now,
+named by what the writer types, and "role" has come to mean something else:
+which model a piece of work runs on, since renamed workflows. So the wording moves to
+`settings.skills`, keyed by skill name, and Compaction's under `compact`,
+the one whose name changed.
+
+The role ids as of schema 18 are named here rather than read from the
+skills, for the reason every migration here names what it migrates: this is
+a statement about what was true then.
+
+Pure, like the migrations before it, so the Dexie upgrade hook and backup
+restore share one transform.
+
+## RENAMED
+
+Role ids, as of schema 18, whose skill has another name.
+
+## rolesToSkills
+
+Move every profile's role wording onto its skills.
+
+Idempotent: a profile with no `roles` is left as it is, so a retried upgrade
+or a backup taken after this one restores unchanged. Where a profile
+somehow has both, what is already under `skills` wins.
+
+### Parameters
+
+- `profiles` **[Array][1711]\<any>** `chatProfiles` rows
+
+Returns **{profiles: [Array][1711]\<any>, moved: [number][1706]}**&#x20;
+
+## skills
+
+##
+
+## stores/migrations/jobWorkflows
+
+A job's `role` becomes its `workflow`.
+
+A job names the settings its model is picked from: which provider, which
+model, how hard it thinks. Those were called roles until they were renamed
+workflows, and a job kept the name under `role`. A job paused before the
+rename still has to find its settings when it is resumed, so the name moves
+across rather than being read under both.
+
+Pure, like the migrations before it, so the Dexie upgrade hook and backup
+restore share one transform.
+
+## rolesToWorkflows
+
+Move every job's `role` to `workflow`.
+
+Idempotent: a job with no `role` is left as it is, so a retried upgrade or a
+backup taken after this one restores unchanged. One that somehow has both
+keeps its `workflow`.
+
+### Parameters
+
+- `jobs` **[Array][1711]\<any>** `jobs` rows
+
+Returns **{jobs: [Array][1711]\<any>, moved: [number][1706]}**&#x20;
+
+## stores/migrations/modelKeeps
+
+The model's keeps come off a chat's pins.
+
+The model could keep a document with `read_document(keep)`: a pin on the
+chat, like the writer's, recorded as the model's own in `keptIds`. Only the
+writer pins now, and what the model reads stays in the conversation instead
+(.llm/project_context_design.md). A keep left on the pins would become a pin
+of the writer's that the writer never chose, so it comes off, and `keptIds`
+goes. The model reads the document again when it wants it.
+
+Pure, like the migrations before it, so the Dexie upgrade hook and backup
+restore share one transform.
+
+## withoutModelKeeps
+
+Take every chat's keeps off its pins, and drop the record of them.
+
+Idempotent: a chat with no `keptIds` is left as it is, so a retried upgrade
+or a backup taken after this one restores unchanged.
+
+### Parameters
+
+- `chats` **[Array][1711]\<any>** `chats` rows
+
+Returns **{chats: [Array][1711]\<any>, moved: [number][1706]}**&#x20;
+
+## stores/migrations/allowedProviders
+
+A connection's allowed providers move onto its presets.
+
+OpenRouter's allowed list was part of a connection's routing policy, as
+`routing.only`, and held for every model on that account. It is a choice
+about a model — the upstreams that serve this one well — so it is the
+preset's now, as `allowedProviders` beside the model (ai/routing.js).
+
+Dropped rather than moved, a list somebody set would quietly stop applying,
+and requests they had kept to a few providers would go to any. So every
+preset on the connection takes the list it was running under, unless it has
+one of its own, and the connection's copy comes off.
+
+Pure, like the migrations before it, so the Dexie upgrade hook and backup
+restore share one transform; and self-contained, so what it does to an old
+row does not change when the routing module does.
+
+## allowedProvidersToPresets
+
+Move each connection's `routing.only` onto the presets that use it.
+
+Idempotent: a connection with no `only` is left as it is, and a preset that
+already has `allowedProviders` keeps them, so a retried upgrade or a backup
+taken after this one restores unchanged.
+
+### Parameters
+
+- `providers` **[Array][1711]\<any>** `aiProviders` rows
+- `presets` **[Array][1711]\<any>** `aiProfiles` rows
+
+Returns **{providers: [Array][1711]\<any>, presets: [Array][1711]\<any>, moved: [number][1706]}** `moved` counts
+the connections whose list came off
+
+## stores/migrations/experimentalSkills
+
+Interpret and Write go into a group of their own, switched off.
+
+The built-in skills were all in the skills group, which a chat on Default
+had on: the model was offered Interpret, and Write was the writer's alone.
+Interpret and Write are in the experimental group now, which every built-in
+profile starts with off, and Write is offered in it. A chat or a profile
+from before names no such group, so it would be offered both; it has the
+group switched off instead, as one started today does. The writer's own
+`/interpret` and `/write` are not tools, and work as they did.
+
+The group's id as of schema 28 is named here rather than imported, for the
+reason every migration here names what it migrates: this is a statement
+about what was true then.
+
+Pure, like the migrations before it, so the Dexie upgrade hook and backup
+restore share one transform.
+
+## withExperimentalOff
+
+Withheld groups with the experimental one among them.
+
+### Parameters
+
+- `groups` **([Array][1711]<[string][1704]> | [undefined][1717])**&#x20;
+
+Returns **([Array][1711]<[string][1704]> | null)** Null when it is there already
+
+## experimentalOffChats
+
+Switch the experimental group off on every chat.
+
+Idempotent: a chat with the group off already is left as it is, so a
+retried upgrade or a backup taken after this one restores unchanged.
+
+### Parameters
+
+- `chats` **[Array][1711]\<any>** `chats` rows
+
+Returns **{chats: [Array][1711]\<any>, moved: [number][1706]}**&#x20;
+
+## experimentalOffProfiles
+
+Switch the experimental group off on every profile of the writer's, which
+new chats are stamped from.
+
+Idempotent, as `experimentalOffChats` is.
+
+### Parameters
+
+- `profiles` **[Array][1711]\<any>** `chatProfiles` rows
+
+Returns **{profiles: [Array][1711]\<any>, moved: [number][1706]}**&#x20;
+
+## stores/migrations/projectViews
+
+Where the writer left a project comes off its story.
+
+The editor's tabs and the panels showing were kept on the story row, so a
+project reopened as it was left. They belong to this copy of the app, not
+to the project: in the desktop app's library the story is a file, and a
+library synced to a second machine would have each machine's tabs written
+over the other's. They move to `projectViews`, a row a project, kept with
+the app's settings.
+
+Pure, like the migrations before it, so the Dexie upgrade hook and backup
+restore share one transform.
+
+## VIEW_FIELDS
+
+The story's fields that are where the writer left it.
+
+## viewsOffStories
+
+Take where the writer left each project off its story, as a view of its
+own under the story's id. The view's `updated` is the story's, which tabs
+and panels moved with every change, so the project last worked in is still
+the last.
+
+Idempotent: a story with none of the fields is left as it is and has no
+view made for it.
+
+### Parameters
+
+- `stories` **[Array][1711]\<any>** `stories` rows
+
+Returns **{stories: [Array][1711]\<any>, views: [Array][1711]\<any>, moved: [number][1706]}**&#x20;
+
+## views
+
+Type: [Array][1711]\<any>
+
+## view
+
+Type: Record<[string][1704], any>
+
+## view
+
+### Parameters
+
+- `bytes` **[Uint8Array][1708]**&#x20;
+
+## utils/backupArchive
+
+A backup as a zip, for anything that can hold files: a
+whole backup, a selection, a project.
+
+A backup used to be one JSON file, files' bytes in it as base64. A string
+in a browser can't be longer than about 512 MB, so past that the backup
+could neither be written nor read back, and base64 made every file a third
+larger on the way. In a zip, each file's bytes are an entry of their own,
+stored as they are; the rows are JSON, a table in one entry or several,
+compressed; and `backup.json` is the envelope a JSON backup has, its
+`tables` naming the entries that hold each table's rows. A file's row
+names the entry holding its bytes (`entry`) where a JSON backup has them
+as `data`.
+
+Read back, an archive is the same envelope as a JSON backup, but for the
+rows that carry bytes: those hold a Blob (`blob`), cut from the file
+picked without reading it. The zip is read from its central directory, so
+nothing in a file's bytes can be taken for where an entry ends.
+
+Without ZIP64, an archive holds at most 4 GB and 65,535 entries; one
+larger is refused rather than written wrong.
+
+Design: the backup's format is `utils/backup.js`.
+
+## MANIFEST
+
+The envelope's entry.
+
+Type: [string][1704]
+
+## BYTES
+
+The tables whose rows carry bytes, and where a row keeps them.
+
+### BYTES
+
+Type: Record<[string][1704], [string][1704]>
+
+### BYTES
+
+Type: Record<[string][1704], [string][1704]>
+
+## ENTRY_CHARS
+
+How much JSON text an entry holds before the next is begun.
+
+## writeArchive
+
+Write a backup as a zip. Its byte-carrying rows hold Blobs: `blob` for a
+file's, `image` for a library card's, as storage keeps them.
+
+### Parameters
+
+- `backup` &#x20;
+- `$1` **[Object][1707]** (optional, default `{}`)
+  - `$1.entryChars` (optional, default `ENTRY_CHARS`)
+
+<!---->
+
+- Throws **[Error][1714]** When it is too large for a zip to hold
+
+Returns **[Promise][1721]<[Blob][1720]>**&#x20;
+
+## named
+
+Type: Record<[string][1704], [Array][1711]<[string][1704]>>
+
+## named
+
+Things of one kind as a phrase: by name when there are few, by count when
+there are more, and none when there are none.
+
+### Parameters
+
+- `names` **[Array][1711]<[string][1704]>**&#x20;
+- `one` **[string][1704]** The kind, said of one
+- `many` **[string][1704]** Said of several
+
+Returns **[Array][1711]<[string][1704]>**&#x20;
+
+## ZipEntry
+
+An entry of a zip, as its central directory gives it.
+
+Type: [Object][1707]
+
+### Properties
+
+- `name` **[string][1704]**&#x20;
+- `method` **[number][1706]** 0 stored, 8 deflated
+- `size` **[number][1706]** As stored
+- `length` **[number][1706]** Unpacked, as its directory says
+- `offset` **[number][1706]** Of its local header
+
+## isArchive
+
+Whether a file is a zip with a backup in it, rather than a JSON backup or
+some other zip (a Scrivener project's).
+
+### Parameters
+
+- `file` **[Blob][1720]**&#x20;
+
+## isZip
+
+### Parameters
+
+- `file` **[Blob][1720]**&#x20;
+
+## readArchive
+
+Read a backup from a zip: its envelope, with each table's rows, and the
+byte-carrying rows' bytes as Blobs cut from the file.
+
+### Parameters
+
+- `file` **[Blob][1720]**&#x20;
+
+<!---->
+
+- Throws **[Error][1714]** If it is not a backup's zip, saying why
+
+Returns **[Promise][1721]\<any>** The envelope, unchecked
+
+## tables
+
+Type: Record<[string][1704], [Array][1711]\<any>>
+
+##
+
+Type: [Array][1711]<[string][1704]>
+
+## entries
+
+Type: [Array][1711]<[ZipEntry][666]>
+
+## dataStart
+
+Where an entry's bytes begin: after its local header, whose name and extra
+field may differ in length from the central directory's.
+
+### Parameters
+
+- `file` **[Blob][1720]**&#x20;
+- `entry` **[ZipEntry][666]**&#x20;
+
+## blobOf
+
+An entry's bytes, as a Blob cut from the file: stored, never read.
+
+### Parameters
+
+- `file` **[Blob][1720]**&#x20;
+- `entry` **[ZipEntry][666]**&#x20;
+- `type` **[string][1704]**&#x20;
+
+## MOST_ENTRY
+
+The most one entry of a backup is taken to hold, unpacked: twice the largest file the app takes.
+
+## bytesOf
+
+An entry's bytes, read and inflated.
+
+### Parameters
+
+- `file` **[Blob][1720]**&#x20;
+- `entry` **[ZipEntry][666]**&#x20;
+- `from` **[number][1706]?** Where its data begins, if known
+
+Returns **[Promise][1721]<[Uint8Array][1708]<[ArrayBuffer][1709]>>**&#x20;
+
+## inflateSync
+
+Type: [Uint8Array][1708]<[ArrayBuffer][1709]>
+
+## textOf
+
+### Parameters
+
+- `file` **[Blob][1720]**&#x20;
+- `entry` **[ZipEntry][666]**&#x20;
+
+## utils/chatTabs
+
+Tabs that hold a chat's text rather than a document: the
+system prompt it runs under, its author's note, or its roleplay
+instructions, edited in the plain text editor at a length the chat's
+settings have no room for.
+
+They sit in the editor's tabs beside the documents, under ids no document
+can have: a document's is `doc_` and a nanoid, which never has a colon in
+it. They are kept with the rest, so a project reopens on them, and go when
+their chat does.
+
+A skill of the writer's opens the same way, as its SKILL.md: a tab that
+goes when the skill does. The skill is the app's and the tab the
+project's, so one skill may be open in several.
+
+## ChatText
+
+Which of a chat's texts a tab holds.
+
+Type: (`"prompt"` | `"note"` | `"roleplay-prompt"` | `"post-history"`)
+
+## CHAT_TEXT_TITLES
+
+What each tab is called. The roleplay prompt says whose it is, since the
+chat has a system prompt of its own and the tab may sit beside it.
+
+Type: Record<[ChatText][688], [string][1704]>
+
+## chatTabId
+
+The tab for one of a chat's texts.
+
+### Parameters
+
+- `chatId` **[string][1704]**&#x20;
+- `text` **[ChatText][688]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## chatTabOf
+
+The chat and the text a tab holds, or null for a document's tab.
+
+### Parameters
+
+- `tabId` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **({chatId: [string][1704], text: [ChatText][688]} | null)**&#x20;
+
+## match
+
+Type: [ChatText][688]
+
+## match
+
+Type: (RegExpExecArray | null)
+
+## match
+
+Type: [string][1704]
+
+## skillTabId
+
+The tab for one of the writer's skills, as its SKILL.md.
+
+### Parameters
+
+- `skillId` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## skillTabOf
+
+The skill a tab holds, or null for any other tab.
+
+### Parameters
+
+- `tabId` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **([string][1704] | null)**&#x20;
+
+## utils/chatTitle
+
+What a chat is called before it has a name, a title the
+model wrote, made plain, and the plain words a chat's preview shows.
+
+## DEFAULT_CHAT_TITLE
+
+What a chat is called until the model or the writer names it.
+
+Type: [string][1704]
+
+## EARLIER_DEFAULTS
+
+What chats were called by default before there was one name for it. Chats
+saved under them are still waiting for a name.
+
+## isDefaultChatTitle
+
+Whether a chat has yet to be named: it carries the default, or a default it
+was saved with before this one, or nothing at all.
+
+### Parameters
+
+- `title` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## shownChatTitle
+
+What a chat is shown as: its title, or the default while it has none of
+its own.
+
+### Parameters
+
+- `title` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+##
+
+Type: [string][1704]
+
+## plainLine
+
+A line of markdown as the words it says: without a heading's hashes, a
+quote's or a list's marker, links' addresses, or the marks around bold,
+italic, struck and code words. Shown as text, `**not**` would be read with
+its stars.
+
+### Parameters
+
+- `line` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## plainTitle
+
+A line of the model's as a title: plain, without a "Title:" it was
+introduced with, or the quotes it was put in.
+
+### Parameters
+
+- `line` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## plainTitle
+
+A heading's text without the marks that dress it: `**Rules**` is Rules.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+
+## chatPreview
+
+The start of a message as a chat's preview: its lines made plain and run
+together, without any HTML, cut at a hundred characters.
+
+### Parameters
+
+- `content` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## utils/compareNames
+
+Names in the order a person expects: "Chapter 2" before
+"Chapter 10". Everything listed by name sorts this way, so the outline, the
+project picker, what the model is shown and the folders on disk agree.
+
+## compareNames
+
+Compare two names, reading runs of digits as numbers.
+
+### Parameters
+
+- `a` **[string][1704]**&#x20;
+- `b` **[string][1704]**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## utils/dataUrl
+
+What a `data:` address holds, as bytes.
+
+A picture written into markdown or HTML as `data:image/png;base64,…` is
+the whole picture. These read it back out, for it to be kept as a file.
+
+## DATA_URL
+
+A `data:` address: its media type, its parameters, and its payload.
+
+## decodeDataPayload
+
+The bytes of a data URI's payload: base64, or percent-encoded text.
+
+### Parameters
+
+- `params` **[string][1704]** What followed the media type, `;base64` among them
+- `data` **[string][1704]** The payload
+
+Returns **[Uint8Array][1708]** Empty when it cannot be read
+
+## bytesOfDataUrl
+
+What a `data:` address holds, or null for any other address or an empty one.
+
+### Parameters
+
+- `url` **[string][1704]**&#x20;
+
+Returns **({mime: [string][1704], bytes: [Uint8Array][1708]} | null)**&#x20;
+
+## utils/diff
+
+The shortest edit from one sequence to another, as steps:
+what each keeps, what the first loses, what the second adds.
+
+Myers' algorithm, which costs time in the sequences' length times the
+size of the edit, and room in the square of the edit's size: cheap for a
+few changes in a long text, and given up on past a limit for a rewrite,
+which the caller handles as one change. What both share at the ends is
+set aside first, the end before the start, so that a sequence's last item
+is kept wherever it can be: a Google Doc's last newline cannot be
+deleted. Within a change, what goes comes before what comes in. Asked
+to, the start is set aside first instead, which lines an addition up
+after what it repeats rather than before.
+
+`diff3` lays two versions of a sequence against the one both came from:
+the stretches all three share, and between them those where one side or
+both changed, for a three-way merge.
+
+`pairUp` pairs two sequences whose items are alike rather than equal, a
+table's rows or columns: as many pairs as can be, in order, the likest.
+
+## Step
+
+Type: ({op: `"equal"`, a: [number][1706], b: [number][1706]} | {op: `"delete"`, a: [number][1706]} | {op: `"insert"`, b: [number][1706]})
+
+## diffSequences
+
+The steps from `a` to `b`, items compared with `===`.
+
+### Parameters
+
+- `a` &#x20;
+- `b` &#x20;
+- `$2` **[Object][1707]** (optional, default `{}`)
+  - `$2.maxEdits` (optional, default `Infinity`)
+  - `$2.startFirst` (optional, default `false`)
+
+- `options` **[Object][1707]?**&#x20;
+  - `options.maxEdits` **[number][1706]?** Past this many deletions and
+    insertions, give up
+  - `options.startFirst` **[boolean][1705]?** Set aside what the two share at
+    the start before what they share at the end
+
+Returns **([Array][1711]<[Step][727]> | null)** Null when the edit is over `maxEdits`
+
+## steps
+
+Type: [Array][1711]<[Step][727]>
+
+## shortestEdit
+
+Myers' greedy search for the fewest deletions and insertions between
+`a[aLo, aHi)` and `b[bLo, bHi)`, then the path back.
+
+### Parameters
+
+- `a` &#x20;
+- `b` &#x20;
+- `aLo` **[number][1706]**&#x20;
+- `aHi` **[number][1706]**&#x20;
+- `bLo` **[number][1706]**&#x20;
+- `bHi` **[number][1706]**&#x20;
+- `maxEdits` **[number][1706]**&#x20;
+
+Returns **([Array][1711]<[Step][727]> | null)**&#x20;
+
+## trace
+
+Type: [Array][1711]<[Int32Array][1722]>
+
+## at
+
+A diagonal's reach after `d` steps, from the array kept for it.
+
+### Parameters
+
+- `v` **[Int32Array][1722]**&#x20;
+- `d` **[number][1706]**&#x20;
+- `k` **[number][1706]**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## deletionsFirst
+
+Each change's deletions before its insertions, each kept in order.
+
+### Parameters
+
+- `steps` **[Array][1711]\<T>**&#x20;
+
+Returns **[Array][1711]\<T>**&#x20;
+
+## added
+
+Type: [Array][1711]\<T>
+
+## Chunk
+
+A stretch of a sequence in three versions, as `diff3` lays them out: one
+all three share, or one between where a side differs from the base. Each
+range is `[from, to)`.
+
+Type: [Object][1707]
+
+### Properties
+
+- `stable` **[boolean][1705]** All three have the same items here
+- `base` **\[[number][1706], [number][1706]]**&#x20;
+- `mine` **\[[number][1706], [number][1706]]**&#x20;
+- `theirs` **\[[number][1706], [number][1706]]**&#x20;
+
+## diff3
+
+Two versions of a sequence against the one both came from, in
+stretches: those all three share, and those between, where one side or
+both changed. Items compared with `===`.
+
+### Parameters
+
+- `base` &#x20;
+- `mine` &#x20;
+- `theirs` &#x20;
+- `options` **[Object][1707]?**&#x20;
+  - `options.maxEdits` **[number][1706]?** Past this many deletions and
+    insertions on either side, give up
+  - `options.startFirst` **[boolean][1705]?** Line each side up against the
+    base from the start first (`diffSequences`)
+
+Returns **([Array][1711]<[Chunk][739]> | null)** Null when either side's edit is over `maxEdits`
+
+## chunks
+
+Type: [Array][1711]<[Chunk][739]>
+
+## matches
+
+Where each item of `a` is in `b`, or -1 where `b` lost it.
+
+### Parameters
+
+- `a` &#x20;
+- `b` &#x20;
+- `options` &#x20;
+
+Returns **([Int32Array][1722] | null)**&#x20;
+
+## pairUp
+
+Two sequences paired in order, as many pairs as can be and the likest:
+the pairs whose total, one for each and its likeness, is greatest. Where
+that leaves one over, it is the last.
+
+### Parameters
+
+- `n` **[number][1706]**&#x20;
+- `m` **[number][1706]**&#x20;
+- `likenessOf` &#x20;
+
+Returns **[Array][1711]<\[[number][1706], [number][1706]]>**&#x20;
+
+## sharedCount
+
+How many items two lists share, each counted once: empty ones aside.
+
+### Parameters
+
+- `a` **[Array][1711]<[string][1704]>**&#x20;
+- `b` **[Array][1711]<[string][1704]>**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## utils/documentEdits
+
+What happens to the model's changes to documents in a chat,
+as the chat's chip and its settings offer it: Suggesting, for the writer to
+accept or reject, or Editing, applied at once. Stored as `applyEdits`,
+`'ask'` or `'auto'`.
+
+## DOCUMENT_EDIT_OPTIONS
+
+## utils/documentLinks
+
+Links from one document to another, as Markdown files link to
+the files beside them.
+
+A link is written the way Obsidian writes one with its "relative path to
+file" setting: from the linking document's folder to the file, by the
+names the files have on disk, with `.md` on a text document and spaces as
+`%20`. A project kept in a folder on disk (see `storage/layout.js`) can
+then be read by any Markdown editor and its links still go somewhere.
+The one thing left out is an ordered folder's place prefix (`03 - `),
+which changes whenever the folder is reordered: a link into an ordered
+folder works here, and outside only once the prefix is added.
+
+Reading one is more forgiving, since links come from models and from
+other apps: a destination in `<…>` with the spaces left in, a name with no
+extension, a title as well as the name on disk, and a project path from
+the top (the form every tool lists, with or without a `/` in front). A
+link is tried from the linking document's folder first, then from the top.
+
+Anything with a scheme (`https:`, `mailto:`) is a link to somewhere else,
+and not this module's.
+
+Design: `.llm/document_links_design.md`.
+
+## ELSEWHERE
+
+## ELSEWHERE
+
+A scheme, or the `//` of an address on another host.
+
+## LinkTree
+
+The tree a link is resolved in.
+
+Type: [Object][1707]
+
+### Properties
+
+- `rootId` **[string][1704]** The project's own row
+
+## ORDER_PREFIX
+
+A place in an ordered folder, as a file's name on disk starts with it.
+
+## UNSAFE_IN_LINK
+
+What a link destination cannot hold as it is, or a reader would take for
+something else: a space or anything else outside printable ASCII, and the
+characters the editor's Markdown reader would encode on the next save, so
+a link it reads back is the link that was written.
+
+## isDocumentHref
+
+Whether a link goes to a document in the project rather than somewhere
+else: it has no scheme.
+
+### Parameters
+
+- `href` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## unwrap
+
+A destination without the `<…>` CommonMark lets it be written in.
+
+### Parameters
+
+- `href` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## pathOf
+
+The names in a link's path, decoded one by one, so an encoded `/` in a
+name stays in it. What follows a `#` or a `?` is not part of the path.
+
+### Parameters
+
+- `href` **[string][1704]**&#x20;
+
+Returns **{names: [Array][1711]<[string][1704]>, fromTop: [boolean][1705]}**&#x20;
+
+## fileNameOf
+
+The name a document's file or folder has on disk, without the place an
+ordered folder puts in front of it.
+
+### Parameters
+
+- `document` **[Document][1712]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## stepNameOf
+
+The name a link's path has for a document on the way to another: a
+folder's, or a document's that holds others, by its name without the
+extension. Links follow the outline, not the directory such a document has
+on disk (`.llm/nested_documents_design.md`).
+
+### Parameters
+
+- `document` **[Document][1712]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## pathNames
+
+The names of a link's path to a document, from below the first of them.
+
+### Parameters
+
+- `documents` **[Array][1711]<[Document][1712]>** The document last, what holds it before it
+
+Returns **[Array][1711]<[string][1704]>**&#x20;
+
+## namesOf
+
+Every name a document answers to in a link, as names are compared.
+
+### Parameters
+
+- `document` **[Document][1712]**&#x20;
+
+Returns **[Set][1710]<[string][1704]>**&#x20;
+
+## childNamed
+
+The child of a folder a name in a link means. The name as it is first;
+then without a place prefix, as a file in an ordered folder is named on
+disk; then, for the last name, without its extension, which a link to a
+file whose kind the writer did not know may have wrong.
+
+### Parameters
+
+- `tree` **[LinkTree][755]**&#x20;
+- `folderId` **[string][1704]**&#x20;
+- `name` **[string][1704]**&#x20;
+- `last` **[boolean][1705]**&#x20;
+
+Returns **([Document][1712] | null)**&#x20;
+
+##
+
+Type: [string][1704]
+
+## walk
+
+Follow a link's names from a folder. `..` above the project stays at its
+top: a link cannot leave the project, and one that tries most likely
+meant the folder it got to.
+
+### Parameters
+
+- `tree` **[LinkTree][755]**&#x20;
+- `folderId` **[string][1704]**&#x20;
+- `names` **[Array][1711]<[string][1704]>**&#x20;
+
+Returns **([Document][1712] | null)**&#x20;
+
+## resolveLink
+
+The document a link goes to, or null for none. Only for a link
+`isDocumentHref` says is one. A link that is only a `#` or a `?` is the
+document it is in.
+
+### Parameters
+
+- `tree` **[LinkTree][755]**&#x20;
+- `href` **[string][1704]**&#x20;
+- `fromId` **([string][1704] | null)?** The document the link is in. Without one,
+  as in a chat, a link is read from the top of the project.
+
+Returns **([Document][1712] | null)**&#x20;
+
+## documentNamed
+
+The one document anywhere in the project that goes by a name, for a link
+the writer types as nothing but that. Null when none does, or more than
+one: a link has to go to one document.
+
+### Parameters
+
+- `tree` **[LinkTree][755]**&#x20;
+- `name` **[string][1704]**&#x20;
+
+Returns **([Document][1712] | null)**&#x20;
+
+## found
+
+Type: [Array][1711]<[Document][1712]>
+
+## found
+
+Type: [Array][1711]<{title: [string][1704], level: [number][1706], link: [string][1704], offset: [number][1706]}>
+
+##
+
+Type: [string][1704]
+
+## readableHref
+
+A link as the writer should read it: its path, decoded, without `<…>`.
+
+### Parameters
+
+- `href` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## lineage
+
+The documents from the top of the project down to this one, the project
+itself left out.
+
+### Parameters
+
+- `tree` **[LinkTree][755]**&#x20;
+- `id` **[string][1704]**&#x20;
+
+Returns **[Array][1711]<[Document][1712]>**&#x20;
+
+## encodeName
+
+A name as a link destination holds it: spaces, letters outside ASCII and
+the few characters a reader would take for something else percent-encoded,
+the rest as it is.
+
+### Parameters
+
+- `name` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## hrefFor
+
+The link from one document to another, as it is written in the first.
+
+### Parameters
+
+- `tree` **[LinkTree][755]**&#x20;
+- `fromId` **[string][1704]** The document the link goes in
+- `toId` **[string][1704]** The document it goes to
+
+Returns **[string][1704]**&#x20;
+
+## headingHref
+
+A link to a heading, after a document's path or on its own for one in the
+same document: `#` and the heading's words, encoded as a name is, as
+Obsidian writes one (`Cast%20list.md#The%20crew`).
+
+### Parameters
+
+- `words` **[string][1704]** The heading's
+
+Returns **[string][1704]**&#x20;
+
+## headingOf
+
+The heading a link names after its `#`, decoded; empty for none.
+
+### Parameters
+
+- `href` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## namesHeading
+
+Whether the heading a link names is one with these words: as they are, in
+any case, or as the slug a page on the web makes of them (`the-crew`).
+
+### Parameters
+
+- `named` **[string][1704]** As `headingOf` reads it
+- `words` **[string][1704]** The heading's
+
+Returns **[boolean][1705]**&#x20;
+
+## plain
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+
+## plain
+
+Whether a name goes in a header as it is.
+
+### Parameters
+
+- `name` **[string][1704]**&#x20;
+
+## ownHref
+
+A link the app put on the clipboard, as it was put there: a browser writes
+a link from the top of the project as a whole address on the app's own
+(`http://localhost:8002/Notes/Cast%20list.md`), and this takes that off.
+
+### Parameters
+
+- `href` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## linkOnClipboard
+
+The link a clipboard holds, when it holds one and nothing else, as the app
+copies one (`useCopyLink`): its address and its words.
+
+### Parameters
+
+- `data` **(DataTransfer | null | [undefined][1717])**&#x20;
+
+Returns **({href: [string][1704], words: [string][1704]} | null)**&#x20;
+
+## projectHref
+
+A document's link from the top of the project, `/Notes/Cast%20list.md`,
+which `resolveLink` reads from the top wherever it is written. What a link
+is carried as on the clipboard: the document it is pasted into may be in
+another folder, where the link as written would go somewhere else.
+
+### Parameters
+
+- `tree` **[LinkTree][755]**&#x20;
+- `id` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## utils/documentPath
+
+How a document is addressed: by its titles from the root down.
+
+`Characters/Elara` is a document; `/` is the project. It is the one address
+a document has — the AI tools list and resolve it, and the outline copies
+it — so it is spelled in exactly one place. A title nobody has given reads
+as "Untitled".
+
+Being an address, a path has to lead to one document. So no two documents
+in a folder go by one name, compared the way a tool matches a path: without
+the spaces round it, whatever its case, and "Untitled" for none.
+
+## documentTitles
+
+### Parameters
+
+- `get` &#x20;
+- `document` &#x20;
+
+## documentTitles
+
+The titles a document's path is made of, from the top down, its own last.
+Empty for no document and for the project itself.
+
+### Parameters
+
+- `get` &#x20;
+- `document` **([Document][1712] | null | [undefined][1717])**&#x20;
+
+Returns **[Array][1711]<[string][1704]>**&#x20;
+
+## documentPath
+
+The path of a document, given a way to find its ancestors.
+
+The document is taken as passed rather than looked up, so that a record of
+a change can name the document as it was when the change was made.
+
+### Parameters
+
+- `get` &#x20;
+- `document` **([Document][1712] | null | [undefined][1717])**&#x20;
+
+Returns **[string][1704]** The path, or '' for no document
+
+## titleKey
+
+A title as names in one folder are compared.
+
+### Parameters
+
+- `title` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## namesake
+
+The document among `siblings` that already goes by `title`.
+
+### Parameters
+
+- `siblings` **[Array][1711]<[Document][1712]>** A folder's children
+- `title` **[string][1704]**&#x20;
+- `exceptId` **[string][1704]?** The document being renamed or moved, which
+  does not stand in its own way
+
+Returns **([Document][1712] | null)**&#x20;
+
+## freeTitle
+
+`title` if none of `siblings` goes by it, and otherwise the first of
+`Title (2)`, `Title (3)`… that none does.
+
+### Parameters
+
+- `siblings` **[Array][1711]<[Document][1712]>** A folder's children
+- `title` **[string][1704]**&#x20;
+- `exceptId` **[string][1704]?** The document being renamed or moved
+
+Returns **[string][1704]**&#x20;
+
+## utils/edits
+
+A change to a document as a reversible pair, and how to undo
+one later — or make it again — without touching what changed around it.
+
+A turn that rewrote a chapter is recorded as the passage it replaced and
+the passage it wrote, cut as small as the two versions allow. Undoing it is
+finding the written passage and putting the replaced one back — which works
+after the writer has edited elsewhere in the document, and refuses, rather
+than guessing, when they have edited the passage itself. The same way a
+commit is reverted. Making it again is the same move the other way: a
+message with more than one answer switches between them, and the answer
+being switched to has to put back what it did.
+
+## CONTEXT_STEP
+
+Type: [number][1706]
+
+## CONTEXT_STEP
+
+How much more context to take in when a pair needs to be findable.
+
+Type: [number][1706]
+
+## onlyAt
+
+Where `needle` is in `text` when it is at one place and no other, or -1.
+A match is counted wherever it starts: `111` is at two places in `1111`,
+and a passage put back at the first of them is put back one place off.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+- `needle` **[string][1704]**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## once
+
+Whether `needle` is in `text` at one place and no other.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+- `needle` **[string][1704]**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## leastEnough
+
+The least count from 0 to `most` that is enough, or `most` when none below
+it is. For a question that stays yes once it is yes: it is asked of 0, 1,
+2, 4, 8 and on, then of the counts between the last no and the first yes,
+so a count in the thousands is found in a couple of dozen askings rather
+than thousands. `most` is taken without asking.
+
+### Parameters
+
+- `most` **[number][1706]**&#x20;
+- `enough` &#x20;
+
+Returns **[number][1706]**&#x20;
+
+## diffEdit
+
+The smallest pair that turns `before` into `after`: the text between the
+longest shared prefix and suffix, on each side.
+
+Widened with context until each side can be found once in the version it
+belongs to. What was written would otherwise be empty for a pure deletion,
+and what was replaced empty for a pure insertion — nothing to find on the
+way back, or the way forward again — and either could occur more than once,
+which is one place too many to put the other text.
+
+### Parameters
+
+- `before` **[string][1704]**&#x20;
+- `after` **[string][1704]**&#x20;
+
+Returns **({old: [string][1704], new: [string][1704]} | null)** Null when nothing changed
+
+## placedEdit
+
+The pair `diffEdit` gives, and where it starts: the same place in both
+texts, since all before it is the same in both.
+
+A caller that made one text from the other by changing a stretch of it
+knows how much the two share at each end, and says so in `same`: at least
+that much is not compared again, which keeps the comparing to the stretch
+in a long text.
+
+### Parameters
+
+- `before` **[string][1704]**&#x20;
+- `after` **[string][1704]**&#x20;
+- `same` (optional, default `{}`)
+
+Returns **({old: [string][1704], new: [string][1704], at: [number][1706]} | null)** Null when nothing changed
+
+## padded
+
+The pair with so many characters of context taken in on each side.
+
+### Parameters
+
+- `pad` &#x20;
+
+##
+
+Type: [number][1706]
+
+## foundOnce
+
+Whether one side of the pair is found once in its text, with so many
+steps of context. More context never loses that and less never gains
+it, so a side is searched for only where it has not answered already.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+- `side` **(`"old"` | `"new"`)**&#x20;
+
+## diffAppend
+
+The pair for an append: nothing replaced, and what arrived at the end.
+
+An append needs no context to be found again — it is undone from the end
+and made again onto it — so the pair stays what was appended, which is
+also what the chat shows as the change. When the end did not survive the
+append as it was (a trailing blank line settled away), it is a pair like
+any other.
+
+### Parameters
+
+- `before` **[string][1704]**&#x20;
+- `after` **[string][1704]**&#x20;
+
+Returns **({old: [string][1704], new: [string][1704]} | null)** Null when nothing changed
+
+## narrowEdit
+
+The pair cut to what changed, for showing: the context it was widened
+with is what finds it in a document, and is not the change.
+
+### Parameters
+
+- `pair` **{old: [string][1704], new: [string][1704]}**&#x20;
+
+Returns **{old: [string][1704], new: [string][1704]}**&#x20;
+
+## reverseEdit
+
+The document as it was before the edit, or null when the edit's text is
+no longer where it was put — the writer has been there since, and their
+version stands.
+
+An append is undone from the end, where it went; anything else by finding
+what it wrote, which has to be there exactly once. So is a suggestion,
+whichever tool made it: an append's may have gone into one before the end.
+
+### Parameters
+
+- `content` **[string][1704]** The document now
+- `edit` **DocumentEdit**&#x20;
+
+Returns **([string][1704] | null)**&#x20;
+
+## applyEdit
+
+The document with the edit made again, or null when the passage it
+replaced is not there to replace — the writer has been there since.
+
+The mirror of `reverseEdit`. An append goes back onto the end, which has
+to still read as it did; anything else, a suggestion among them, where the
+old passage is, which has to be there exactly once. A pair that replaced nothing was written onto an
+empty document, and goes back onto one.
+
+### Parameters
+
+- `content` **[string][1704]** The document now
+- `edit` **DocumentEdit**&#x20;
+
+Returns **([string][1704] | null)**&#x20;
+
+## keepDecisions
+
+A turn's record of its changes, with the writer's decisions kept.
+
+A turn writes its record as it goes, and the writer can accept or reject a
+proposal before the turn is over — the prose arrives, and the model is
+still explaining it. The turn's next write must not put that proposal back
+to proposed. Matched by id: an entry the writer has decided is theirs, as
+they left it, applied pair and all.
+
+### Parameters
+
+- `fresh` **[Array][1711]\<DocumentEdit>** The turn's own record
+- `stored` **([Array][1711]\<DocumentEdit> | [undefined][1717])** The message's record as it stands
+
+Returns **[Array][1711]\<DocumentEdit>**&#x20;
+
+## utils/errors
+
+Custom error classes for the application, and what the writer
+is told of them
+
+## ProviderNotConfiguredError
+
+**Extends Error**
+
+Error thrown when an AI provider is not configured
+This error signals that the user needs to set up an AI provider
+before they can use AI features
+
+### Parameters
+
+- `message` **[string][1704]** Error message (optional, default `'AI provider not configured'`)
+
+## ConnectionNeededError
+
+**Extends Error**
+
+A chat's connection is there but can't be asked anything yet: it has no
+key, or no address. The chat offers to connect it.
+
+### Parameters
+
+- `message` **[string][1704]**&#x20;
+- `providerId` **[string][1704]** The connection to connect
+
+## CommandError
+
+**Extends Error**
+
+Error thrown when a slash command cannot run.
+
+Its own class because nothing has been written when it is thrown — commands
+run before any message is recorded, precisely so a typo leaves nothing
+behind. The caller can put the text back in the box knowing the chat is
+unchanged, which it cannot assume of a failure any later than this.
+
+### Parameters
+
+- `message` **[string][1704]** Error message
+
+## CannotApplyError
+
+**Extends Error**
+
+Error thrown when an action can't apply as things stand: a reply asked for
+while one is being written, a message that has gone, a change decided
+already.
+
+Its own class because there is nothing to tell the writer. The control
+that asked is disabled where it can be, and a press that gets through does
+nothing, so the caller lets it go without a word.
+
+### Parameters
+
+- `message` **[string][1704]** What couldn't apply, for the console
+
+## AnswerFailedError
+
+**Extends Error**
+
+Error thrown when a turn fails after its answer was made: the provider
+refused, the connection dropped, a round could not be built.
+
+Its own class because the reason is already on the answer by then, kept
+with the chat (`metadata.error`) and shown where the reply would have been,
+so the caller has nothing left to report.
+
+### Parameters
+
+- `cause` **[Error][1714]** What went wrong
+- `messageId` **[string][1704]** The answer it is recorded on
+
+## SummaryCutShortError
+
+**Extends Error**
+
+Error thrown when a summary stops short because its request failed.
+
+What it had written is kept as the summary by then, to be asked for again,
+finished by hand or deleted; this is only the news, for the caller to pass
+on.
+
+### Parameters
+
+- `reason` **[string][1704]** Why its request failed
+
+## failureNotice
+
+What to tell the writer of an action that failed: what didn't happen, then
+why, when the error's words are theirs to read. Null when there is nothing
+to tell: the action couldn't apply, or the turn says why already.
+
+### Parameters
+
+- `error` **[Error][1714]**&#x20;
+- `said` **[string][1704]** What didn't happen, as a sentence
+- `$2` **[Object][1707]** (optional, default `{}`)
+  - `$2.why` (optional, default `false`)
+
+Returns **([string][1704] | null)**&#x20;
+
+## utils/focus
+
+Whether the writer is typing somewhere already.
+
+A document opening takes the caret, so that the next keystroke goes into
+it — unless the writer is in the middle of typing somewhere else: naming
+the document in the tree, asking the chat something, filling in a field.
+Then the caret stays where it is, and the document waits its turn.
+
+## isTextField
+
+Whether the element with the focus is a field the writer types into.
+
+### Parameters
+
+- `element` **([Element][1723] | null)?** Defaults to whatever has the focus (optional, default `document.activeElement`)
+
+Returns **[boolean][1705]**&#x20;
+
+## formatThinkingTime
+
+Format thinking/reasoning time duration
+
+### Parameters
+
+- `milliseconds` **[number][1706]** Duration in milliseconds
+
+Returns **[string][1704]** Formatted duration string (e.g., "2.5s", "1.2s")
+
+## formatRelativeTime
+
+Format a date as relative time (e.g., "2 hours ago", "3 days ago")
+
+### Parameters
+
+- `timestamp` **[number][1706]** Unix timestamp in milliseconds
+
+Returns **[string][1704]** Formatted relative time string
+
+## TOOL_RESULT_PREVIEW_LIMIT
+
+How much of a tool's result is shown before it is cut short.
+
+Type: [number][1706]
+
+## formatToolArguments
+
+A tool call's arguments, compactly, for the line naming the call. Strings
+stay quoted; other values stringify; an object shows its fields as
+`key: value`.
+
+### Parameters
+
+- `args` **any** Parsed, or the raw text when it did not parse
+
+Returns **[string][1704]**&#x20;
+
+## PYTHON_RESULT_PREVIEW_LIMIT
+
+How much of a run of Python's output is shown before it is cut short: a table's worth.
+
+Type: [number][1706]
+
+## formatPythonResult
+
+A run of Python's result for display, as it came: what it printed, the
+value of its last line, and its traceback, rather than the JSON the model
+read them in. Cut short when it is long.
+
+### Parameters
+
+- `content` **[string][1704]** The result as the model was sent it
+
+Returns **[string][1704]**&#x20;
+
+## formatToolResult
+
+A tool's result for display: pretty-printed when it is JSON, and cut short
+when it is long.
+
+### Parameters
+
+- `content` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## utils
+
+Utility functions and helpers for the inksprite application.
+
+## Utilities Overview
+
+### Text Processing
+
+- **formatters** - Text formatting utilities
+- **markdown** - Markdown parsing and rendering
+- **math** - TeX in markdown typeset with KaTeX, loaded the first time a formula needs it
+- **tex** - Where a formula is in markdown, by the delimiters the chat and a document read
+- **partialJson** - The strings in JSON that has not finished arriving
+- **plainCopy** - A deep copy of a row, as JSON would have it, without writing it out as JSON
+- **wordCount** - Words in a document's markdown
+- **lineDiff** - What changed between two texts line by line, as a patch's hunks, for a model that has the first
+- **compareNames** - Names in the order a person expects, numbers by value
+- **projectList** - The projects as listed for picking one: found by name, and in an order
+- **siblingOrder** - The order a folder's children are shown in
+- **trash** - How long the trash keeps what is in it, and which of a project's documents are there
+- **versions** - When a document's version is due, and which go as they age
+- **wordDiff** - Two texts as one, word by word: what both have and what only one has,
+  for a plain document's versions
+
+### AI Integration
+
+- **oauth** - Signing in with OAuth (PKCE): the address the writer is sent to, and the code that comes back exchanged for a key
+
+### Chat
+
+- **turns** - Fold a chat's messages into the turns they were sent as
+- **obfuscate** - A chat export with its words taken out, for sharing its shape (the Export obfuscated menu item, with Debug on)
+- **focus** - Whether the writer is typing somewhere already
+- **documentPath** - How a document is addressed: by its titles from the root down
+- **documentLinks** - Links from one document to another, written as Markdown files link to
+  the files beside them, and followed back
+- **linkUpdates** - The links a rename or a move would break, written again to where their
+  documents are
+- **pictures** - A document's own pictures as its text refers to them, `.images/<id>/<name>`,
+  and where their bytes are kept
+- **dataUrl** - What a `data:` address holds, as bytes
+- **visibility** - What one chat sees of the project: hidden outright, and each chat's shows and hides
+- **chatTitle** - What a chat is called before it has a name, and a title the model wrote, made plain
+
+### Editor
+
+- **tabs** - A panel's tabs, the editor's or the chat's: open, close, reopen the one closed last, put
+  one at another place, the next one and the one at a place, and what a project remembers of them
+
+### Browser
+
+- **webkit** - Whether the page is running in WebKit, for what only WebKit does
+- **touch** - Whether the writer is typing on a touch screen's keyboard, where Enter starts a new line
+
+### Storage
+
+- **localStorage** - LocalStorage wrapper with quota management
+- **backup** - Build and validate backup files: the whole database, a chat, settings, and a project or a selection saved before
+- **backupArchive** - A backup as a zip, its rows as JSON and each file's bytes an entry of its own
+- **zipWriter** - A zip written a piece at a time, a backup's and an export's
+- **tarWriter** - A tar written a piece at a time, an export handed to another app
+- **settingsFile** - What a settings file holds, which of it the writer picked, and what importing one changes
+- **settingsTree** - What Export settings offers, as a tree of boxes, and what the boxes ticked choose
+
+## Usage Examples
+
+### Examples
+
+```javascript
+// Word counting
+import { countWords } from '@/utils/wordCount'
+const wordCount = countWords(storyContent)
+```
+
+```javascript
+// Markdown rendering
+import { renderMarkdown } from '@/utils/markdown'
+const html = renderMarkdown(markdownText)
+```
+
+## utils/lineDiff
+
+What changed between two texts, line by line, in the form a
+patch has: the lines that went marked `-`, those that came `+`, a few
+around them unmarked, and above each stretch where it sits in both. For a
+reader that has the first text and is to be told of the second: a model,
+which reads this form as written.
+
+## CONTEXT
+
+How many unchanged lines are shown either side of a change.
+
+Type: [number][1706]
+
+## MOST_EDITS
+
+Past this many lines gone and come, two texts are told apart no further.
+
+Type: [number][1706]
+
+## lineDiff
+
+The changes from one text to another, as a patch's hunks.
+
+### Parameters
+
+- `before` **[string][1704]**&#x20;
+- `after` **[string][1704]**&#x20;
+- `options` **[Object][1707]?** (optional, default `{}`)
+  - `options.context` **[number][1706]?** Unchanged lines shown either side of a change (optional, default `CONTEXT`)
+  - `options.maxEdits` **[number][1706]?** Past this many lines changed, give up (optional, default `MOST_EDITS`)
+
+Returns **([string][1704] | null)** Empty when the texts are the same; null when they
+differ by more than `maxEdits` lines
+
+## utils/linkUpdates
+
+Links kept going where they went when the tree changes under
+them: a document renamed, or moved, or the document a link is in moved, so
+that a relative path from it means something else.
+
+Around a change, every link in the project's text is read once before
+(`linkTargets`), for the document it goes to, and once after
+(`relinked`). One that now goes nowhere, or to another document, is
+written again as a link from where it is to where its document is now
+(`hrefFor`), or from the top of the project if it was written from the
+top, with whatever followed its path (`#…`, `?…`) kept. So is one that was
+written as the app writes it and would be written otherwise now: a link
+read forgivingly still opens here after a move, from the top of the
+project, but not in another Markdown editor. A link in a form of the
+writer's own — a title, a name without its extension — that still goes
+there is left as it is, and a link to a document that is gone is left
+alone.
+
+Links are found in the markdown as it is written, `[…](…)` and pictures'
+`![…](…)` alike, since a picture can be a file document of the project's.
+Only a destination that went to a document is ever written again.
+
+Design: `.llm/document_links_design.md`.
+
+## DESTINATION
+
+## DESTINATION
+
+A link's destination in markdown: `<…>`, or a run with balanced
+parentheses and no spaces; then its title, if it has one, and the
+bracket that closes it.
+
+## LinkedText
+
+A document's text, as the links in it are read and written.
+
+Type: {id: [string][1704], content: [string][1704]}
+
+## LinkTarget
+
+Where a link went: the document, and whether the link was written as the
+app writes one to it.
+
+Type: {id: [string][1704], exact: [boolean][1705]}
+
+## LinkTargets
+
+Where each document's links went: by document, by each destination as it
+is written.
+
+Type: [Map][1716]<[string][1704], [Map][1716]<[string][1704], [LinkTarget][899]>>
+
+## mayLink
+
+Whether there could be a link in a text at all, before looking for one.
+
+### Parameters
+
+- `content` &#x20;
+
+##
+
+Type: [string][1704]
+
+## destinationsIn
+
+Every destination in a text, in order.
+
+### Parameters
+
+- `content` **[string][1704]**&#x20;
+
+Returns **[Array][1711]<[string][1704]>**&#x20;
+
+## partsOf
+
+A destination's path, without `<…>` and without what follows it.
+
+### Parameters
+
+- `href` **[string][1704]**&#x20;
+
+Returns **{path: [string][1704], after: [string][1704]}**&#x20;
+
+## partsOf
+
+The parts of a document carrying a suggestion's marks, in order. A block
+of words all put in or all taken out is one part; a table's cell is not,
+since it goes only with its table.
+
+### Parameters
+
+- `doc` **[Node][1713]**&#x20;
+- `id` **[string][1704]**&#x20;
+
+Returns **[Array][1711]<[Part][1544]>**&#x20;
+
+## canonical
+
+The link the app writes from one document to another: from the top of the
+project for one written from there, from the linking document otherwise.
+
+### Parameters
+
+- `tree` **[LinkTree][755]**&#x20;
+- `path` **[string][1704]** The link's path as it is written
+- `fromId` **[string][1704]**&#x20;
+- `toId` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## linkTargets
+
+Where the links in these documents go now.
+
+### Parameters
+
+- `tree` **[LinkTree][755]**&#x20;
+- `documents` **[Array][1711]<[LinkedText][898]>**&#x20;
+
+Returns **[LinkTargets][900]**&#x20;
+
+## went
+
+Type: [Map][1716]<[string][1704], [LinkTarget][899]>
+
+## rewritten
+
+What a link should say now, or null when it should stay as it is: it
+still goes where it went, and in the form it was written in.
+
+### Parameters
+
+- `tree` **[LinkTree][755]**&#x20;
+- `href` **[string][1704]** As it is written
+- `fromId` **[string][1704]**&#x20;
+- `target` **([LinkTarget][899] | [undefined][1717])** Where it went
+
+Returns **([string][1704] | null)**&#x20;
+
+## relinked
+
+The documents whose links no longer go where they went, each with its
+text as it should be now, links written again. Documents with nothing to
+change are left out.
+
+### Parameters
+
+- `tree` **[LinkTree][755]** As it is now
+- `documents` **[Array][1711]<[LinkedText][898]>** As they are now
+- `targets` **[LinkTargets][900]** Where their links went, from `linkTargets`
+
+Returns **[Array][1711]<[LinkedText][898]>**&#x20;
+
+## now
+
+Type: [Map][1716]<[string][1704], ([string][1704] | null)>
+
+## utils/localStorage
+
+Simple localStorage wrapper with JSON serialization support
+
+## localStorage
+
+localStorage utility for managing application state persistence
+
+### get
+
+Get a value from localStorage
+
+#### Parameters
+
+- `key` **[string][1704]** The storage key
+- `defaultValue` **T** Default value if key doesn't exist (optional, default `null`)
+
+Returns **T** The stored value or defaultValue
+
+### set
+
+Set a value in localStorage
+
+#### Parameters
+
+- `key` **[string][1704]** The storage key
+- `value` **any** The value to store (will be JSON stringified)
+
+Returns **[boolean][1705]** Success status
+
+### remove
+
+Remove an item from localStorage
+
+#### Parameters
+
+- `key` **[string][1704]** The storage key
+
+Returns **[boolean][1705]** Success status
+
+## utils/markdown
+
+Markdown to HTML, for text nobody here wrote.
+
+What goes through this is a model's output and whatever the writer typed, and
+it comes out into `v-html`. Neither is trusted: a model repeats what it was
+shown, and what it was shown includes documents and tool results that came
+from somewhere else. The app has no backend and keeps provider keys in
+IndexedDB, so script running in this origin is script running with the keys.
+
+So no HTML gets through. Not sanitised — escaped, tags and all, which is both
+safer and more honest: a writer who types `<oracle>` sees `<oracle>` rather
+than watching their tags silently disappear into an element the browser does
+not know. Nothing here needs to write HTML; it is a markdown app.
+
+URLs are the other way in, because markdown's own link syntax carries them
+and `javascript:` is a URL. They are checked against a list of what a link in
+a story could reasonably be, after being decoded — `java&#09;script:` is the
+same URL once the browser has read the attribute.
+
+An image is a link to it. Shown, it would be fetched the moment it was on the
+screen, with whatever the model put in its address. The page's
+Content-Security-Policy (`index.html`) refuses images from elsewhere too.
+
+A lone newline is a line break, not CommonMark's soft wrap. What is rendered
+here is shown where it was typed — a chat message, a model's reply, a
+document — and a writer who ended a line meant it to end there.
+
+Math is TeX, as models write it: `$$…$$` or `\[…\]` for a formula set on
+its own, `$…$` or `\(…\)` for one in a sentence, found as a document finds
+them (`utils/tex.js`) and typeset by `utils/math.js`. Where a formula has
+nothing to show, it stays as it was written.
+
+## SAFE_SCHEMES
+
+What a link in a story is allowed to be. Everything else is not a link.
+
+## escapeHtml
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## isSafeUrl
+
+Whether this is somewhere a link may point.
+
+Read the way the browser will read it: entities decoded, and whitespace and
+control characters dropped, because they are ignored in a scheme and are only
+ever there to hide one. A URL with no scheme at all is relative, and relative
+is this app.
+
+### Parameters
+
+- `href` **[string][1704]**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## mathToken
+
+A formula token, or nothing when there is no formula.
+
+### Parameters
+
+- `type` **[string][1704]**&#x20;
+- `found` &#x20;
+
+## math
+
+The formulas, as marked extensions: one for those with lines of their own,
+which stops a paragraph where it starts, and one for those in a sentence.
+
+## reader
+
+The one reader everything goes through.
+
+A renderer that returns `false` is saying it has nothing special to do, and
+marked falls back to its own — so the safe cases render exactly as they
+always did, and only the refused ones are written out here.
+
+## renderMarkdown
+
+Render markdown to HTML
+
+### Parameters
+
+- `markdown` **[string][1704]** Markdown text to render
+
+Returns **[string][1704]** Rendered HTML
+
+## stripMarkdown
+
+Strip markdown formatting from text for immediate display
+
+### Parameters
+
+- `text` **[string][1704]** Text with markdown formatting
+
+Returns **[string][1704]** Plain text with markdown symbols removed
+
+## utils/math
+
+Typesetting the math a model writes, with KaTeX.
+
+Models write formulas in TeX, and `utils/markdown.js` finds them; this turns
+one into HTML. KaTeX is most of a megabyte with its fonts and most chats
+never need it, so it is loaded the first time a formula is asked for. Until
+it is here a formula has nothing to show and is left as it was written. It
+is kept in a ref, so a computed that rendered a formula then renders it
+again once it arrives.
+
+What KaTeX writes is safe to put in the page as long as `trust` stays false:
+no `\href`, `\url`, `\includegraphics` or `\html…`, and a color is checked
+before it goes into a style. A formula KaTeX cannot read has nothing to show
+either.
+
+Copying out of typeset math copies its TeX, between the delimiters it came
+in, rather than the glyphs and the MathML beside them that the browser
+would otherwise put on the clipboard twice over. In the HTML each formula
+is the element the editor writes for one, so it pastes there as a formula.
+A copy something has handled already, the editor's own, is left to it.
+
+## katex
+
+## katex
+
+KaTeX, once something has asked for it.
+
+## shallowRef
+
+## loading
+
+Type: ([Promise][1721]\<void> | null)
+
+## remembered
+
+Formulas already typeset, by mode and TeX. A reply being written renders
+again on every word, and so would every formula in it.
+
+Type: [Map][1716]<[string][1704], ([string][1704] | null)>
+
+## REMEMBER
+
+How many formulas to remember before starting again.
+
+Type: [number][1706]
+
+## OPTIONS
+
+How KaTeX is asked to typeset, but for whether a formula is set on its own.
+
+## loadMath
+
+Load KaTeX, its stylesheet and fonts. Once is enough; every later call has
+the same promise.
+
+Returns **[Promise][1721]\<void>**&#x20;
+
+## mathReady
+
+Whether formulas can be typeset yet. Reactive, so what counted on it hears
+when they can.
+
+Returns **[boolean][1705]**&#x20;
+
+## typesetMath
+
+A formula as HTML, or null where there is nothing to show yet: KaTeX is
+still on its way, which this sets going, or it cannot read the TeX.
+
+### Parameters
+
+- `tex` **[string][1704]** The TeX, without its delimiters
+- `display` **[boolean][1705]** On a line of its own, rather than in a sentence
+
+Returns **([string][1704] | null)**&#x20;
+
+## html
+
+Type: ([string][1704] | null)
+
+## mathError
+
+What KaTeX says is wrong with a formula it cannot read, in its own words
+without its own name; null for one it can, or before it is here.
+
+### Parameters
+
+- `tex` **[string][1704]**&#x20;
+- `display` **[boolean][1705]**&#x20;
+
+Returns **([string][1704] | null)**&#x20;
+
+## asWritten
+
+A formula's TeX as an element of the editor's own (`editor/schema.js`): its
+TeX on an attribute, for the editor, and between its delimiters, for
+anywhere else.
+
+### Parameters
+
+- `tex` **[string][1704]**&#x20;
+- `display` **[boolean][1705]**&#x20;
+
+Returns **[HTMLElement][1718]**&#x20;
+
+## formulaAround
+
+The formula a node is in, if it is in one.
+
+### Parameters
+
+- `node` **[Node][1713]**&#x20;
+
+Returns **([Element][1723] | null)**&#x20;
+
+## copyTex
+
+Put a selection that has math in it on the clipboard with each formula as
+its TeX. A selection that starts or ends inside a formula takes the whole
+of it.
+
+The plain text is read from the selection laid out in the page, off screen,
+so its paragraphs and lines come apart as they do in any copy.
+
+### Parameters
+
+- `event` **ClipboardEvent**&#x20;
+
+## event
+
+Type: ([Element][1723] | null)
+
+## utils/modelFacts
+
+What the model picker says of a model in a few characters:
+its price, in and out, per million tokens, and how much it reads at once.
+
+## formatPrice
+
+What a model costs per million tokens, read and written, as `$3 / $15`;
+`Free` for one that costs nothing, and '' where the list doesn't say.
+
+### Parameters
+
+- `pricing` **({prompt: [number][1706], completion: [number][1706]} | [undefined][1717])**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## formatContext
+
+How many tokens a model reads at once, as `200K` or `1M`; '' where unknown.
+
+### Parameters
+
+- `tokens` **([number][1706] | [undefined][1717])**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## utils/oauth
+
+OAuth PKCE utilities for secure authentication flows
+
+## generateCodeVerifier
+
+Generates a cryptographically random code verifier for PKCE
+
+Returns **[string][1704]** A random string suitable for use as a code verifier
+
+## generateCodeChallenge
+
+Generates a code challenge from a code verifier using SHA-256
+
+### Parameters
+
+- `verifier` **[string][1704]** The code verifier
+
+<!---->
+
+- Throws **[Error][1714]** If Web Crypto API is not available (insecure context)
+
+Returns **[Promise][1721]<[string][1704]>** The base64url-encoded SHA-256 hash of the verifier
+
+## generateState
+
+Generates a random state parameter for OAuth security
+
+Returns **[string][1704]** A random state string
+
+## base64URLEncode
+
+Encodes a byte array to base64url format (without padding)
+
+### Parameters
+
+- `buffer` **[Uint8Array][1708]** The byte array to encode
+
+Returns **[string][1704]** Base64url-encoded string
+
+## storeOAuthParams
+
+Stores OAuth flow parameters in local storage
+Note: localStorage is used instead of sessionStorage because the OAuth callback
+happens in a new tab which doesn't share sessionStorage with the originating tab.
+These values are immediately deleted after the callback completes.
+
+### Parameters
+
+- `params` **[Object][1707]** OAuth parameters
+  - `params.verifier` **[string][1704]** Code verifier
+  - `params.state` **[string][1704]** State parameter
+  - `params.providerId` **[string][1704]?** The connection the key is for, when
+    it was signed in from one
+
+## retrieveOAuthParams
+
+Retrieves and clears OAuth flow parameters from local storage
+
+## authorizationUrl
+
+The address to sign in to a service at, with a fresh PKCE challenge; the
+verifier and state are kept for when the service sends the writer back
+
+### Parameters
+
+- `service` &#x20;
+- `callbackUrl` **[string][1704]** The callback URL to redirect to after authorization
+- `providerId` **[string][1704]?** The connection the key is for
+
+<!---->
+
+- Throws **[Error][1714]** If not in a secure context or Web Crypto API unavailable
+
+Returns **[Promise][1721]<[string][1704]>**&#x20;
+
+## exchangeCode
+
+Trade the code a service sent the writer back with for an API key
+
+### Parameters
+
+- `service` &#x20;
+- `code` **[string][1704]** Authorization code from OAuth callback
+- `codeVerifier` **[string][1704]** PKCE code verifier
+
+<!---->
+
+- Throws **[Error][1714]** When the service refuses, in its words
+
+Returns **[Promise][1721]<[string][1704]>** The API key
+
+## utils/obfuscate
+
+A chat export with its words taken out.
+
+For handing a chat to someone who needs its shape and not its story — how
+many turns, how long, what the model was sent — without the story. Every
+letter becomes a random letter of the same case, and nothing else changes:
+digits, punctuation, whitespace, markdown and tags stay, so the text is the
+same size and the same shape and says nothing. A letter is drawn afresh
+every time, so the same word comes out differently each time it appears
+and nothing can be read back off frequencies.
+
+Every string is scrambled unless it is known to hold the export together:
+keys, ids, roles, timestamps, tool names, the names and parameters of
+commands. That way round, so that a field nobody thought of cannot carry
+the story out in plain text; what is kept is kept by name. The JSON inside a
+tool call's arguments and a tool's result is scrambled inside its keys, so
+it is still JSON of the same shape. A command that answers by rule — a
+roll, an oracle, a drawn name — keeps its answer, since there is nothing in
+it to hide; one that answers in prose loses it like the rest, and so does
+one whose answer is the writer's own words given back, as a direction's
+is: an answer the app drew is never the same words as the question. A turn made
+of segments is put back together from the scrambled segments, the way the
+app puts it together, so what the model would read and what is recorded
+agree.
+
+## UPPER
+
+Type: [string][1704]
+
+## UPPER
+
+Type: [string][1704]
+
+## UPPER
+
+Type: [string][1704]
+
+## ObfuscateOptions
+
+Type: [Object][1707]
+
+## KEPT_KEYS
+
+Keys whose values hold the export together rather than say anything, and
+so are kept wherever they occur: identifiers, kinds, roles and the like.
+A key ending in Id or Ids is an identifier by convention.
+
+## isKept
+
+### Parameters
+
+- `key` **[string][1704]**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## scrambleText
+
+The text with every letter replaced by a random letter of the same case.
+A letter with no case of its own becomes a lowercase one. Everything that
+is not a letter is left where it is.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+- `random` (optional, default `Math.random`)
+
+Returns **[string][1704]**&#x20;
+
+## scrambleValue
+
+A value with every string in it scrambled, keys and kept keys aside. The
+same shape as it was given, which is why it answers as `any`: it is the
+one rule everything else here starts from.
+
+### Parameters
+
+- `value` **any**&#x20;
+- `random` &#x20;
+- `key` **[string][1704]?** The key this value sits under, if any (optional, default `''`)
+
+Returns **any**&#x20;
+
+## scrambleValue
+
+Type: ChatCommand
+
+## scrambleJsonText
+
+Text that is JSON — a tool's arguments, a tool's result — scrambled inside
+its structure, so it is still JSON with the same keys. Text that is not
+JSON is scrambled as text.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+- `random` &#x20;
+
+Returns **[string][1704]**&#x20;
+
+## scrambleCommand
+
+A command with everything scrambled but what makes it the command it is:
+its name (a character's is the writer's, and goes), its parameter, and an
+answer given by rule rather than in prose — which is never the writer's
+own words given back, so an answer that is the input, or the question as
+the model read it, is the writer's and goes too.
+
+### Parameters
+
+- `command` **ChatCommand**&#x20;
+- `options` **Required\<Pick<[ObfuscateOptions][987], (`"consults"` | `"random"`)>>**&#x20;
+  - `options.consults` &#x20;
+  - `options.random` &#x20;
+
+Returns **ChatCommand**&#x20;
+
+## scrambleConsultation
+
+What a skill did on its way to its answer, scrambled the way a turn's own
+calls are: each tool kept by name, with what it was asked and what it
+answered scrambled inside their JSON.
+
+### Parameters
+
+- `consultation` **any**&#x20;
+- `random` &#x20;
+
+Returns **any**&#x20;
+
+## scrambleApiMessage
+
+One message of the model's trajectory, or of a saved request: everything
+scrambled, with what a tool answered scrambled inside its JSON and what the
+model called kept by name with its arguments scrambled inside theirs.
+
+### Parameters
+
+- `item` **any**&#x20;
+- `random` &#x20;
+
+Returns **any**&#x20;
+
+## scrambleMetadata
+
+### Parameters
+
+- `metadata` **any**&#x20;
+- `options` **Required\<Pick<[ObfuscateOptions][987], (`"consults"` | `"random"`)>>**&#x20;
+
+Returns **any**&#x20;
+
+## scrambleMessage
+
+A message, or one of its alternates, with its words taken out: everything
+by the one rule first, and then the parts that need more care.
+
+### Parameters
+
+- `message` **any**&#x20;
+- `options` **Required<[ObfuscateOptions][987]>**&#x20;
+
+Returns **any**&#x20;
+
+## obfuscateBackup
+
+A backup envelope — a whole one, or the one chat a chat is exported in —
+with its words taken out and everything else as it was.
+
+### Parameters
+
+- `backup` **T**&#x20;
+- `options` **[ObfuscateOptions][987]?** (optional, default `{}`)
+
+Returns **T**&#x20;
+
+## settings
+
+Type: Required<[ObfuscateOptions][987]>
+
+## utils/partialJson
+
+Read the strings out of JSON that has not finished arriving.
+
+A tool call streams as a JSON object one token at a time, and the prose the
+model is writing into it is a string value that may run for minutes before
+its closing quote. `JSON.parse` has nothing to say until then. This does:
+every string field that has fully arrived, plus the one still being written,
+as far as it has got.
+
+## STRING_BODY
+
+A JSON string's body: anything but a quote or a backslash, or a backslash
+and whatever it escapes.
+
+## FIELD
+
+`"key": "value"` where the value is closed by a quote or by the end of the
+text — which may fall on a backslash that has not yet said what it escapes.
+
+## decode
+
+Decode a JSON string body, tolerating an escape cut off at the end.
+
+### Parameters
+
+- `body` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## partialStrings
+
+The string fields of a JSON object text, complete or not, keyed by name.
+Nested objects are read through: their string fields count, with their own
+keys. A later field with the same key wins.
+
+### Parameters
+
+- `text` **([string][1704] | null | [undefined][1717])** JSON, or the front part of some
+
+Returns **Record<[string][1704], [string][1704]>**&#x20;
+
+## PartialField
+
+A string field of JSON still arriving: as far as it has got, and whether
+its closing quote has come.
+
+Type: {value: [string][1704], done: [boolean][1705]}
+
+## partialFields
+
+The string fields of a JSON object text, complete or not, each saying
+whether it is: a path is worth looking up only once the whole of it has
+come. Read as `partialStrings` reads them.
+
+### Parameters
+
+- `text` **([string][1704] | null | [undefined][1717])** JSON, or the front part of some
+
+Returns **Record<[string][1704], [PartialField][1018]>**&#x20;
+
+## utils/pictures
+
+A document's own pictures, as its text refers to them.
+
+A picture pasted or dropped into a document is the document's, as in a
+Google Doc: not a document of its own, not in the outline, not renamed or
+edited once it is in. Its text refers to it by a path from the document's
+folder, `.images/<document id>/<name>`, which on desktop is where the
+picture is on disk, beside the document and moved with it. The id makes the
+path the same however the document is renamed or moved, so it is read by the
+id, wherever it is written and whatever comes before it.
+
+What the document knows of each picture (its media type and size) is on its
+row, under `pictures`, by name. The bytes are kept under `pictureKey`: in
+the `files` table in a browser, in `.images/<id>/` in the library.
+
+Design: `.llm/images_design.md`.
+
+## PICTURES_DIR
+
+The folder a document's pictures are kept in, beside it.
+
+Type: [string][1704]
+
+## ID
+
+The characters a document's id is made of: `doc_` and a nanoid, or an older id's prefix.
+
+Type: [string][1704]
+
+## PATH
+
+A picture's path, at the end of a destination: what is read of one.
+
+## PLAIN
+
+Pictures in markdown, written plain (`](.images/doc_x/map.png)`) or in
+`<…>`, where a name may have its spaces left in.
+
+## decoded
+
+One of a document's pictures, as its row has it.
+
+### Parameters
+
+- `name` &#x20;
+
+## decoded
+
+A name as it was written, decoded. A `%` that starts no escape is a `%`.
+
+### Parameters
+
+- `name` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## extensionOf
+
+The extension a picture of this type is named with: the usual one where
+it is known, the type's own name otherwise (`image/heic`, `heic`).
+
+### Parameters
+
+- `mime` **[string][1704]**&#x20;
+
+Returns **[string][1704]** Without the dot; '' for no type at all
+
+## pictureName
+
+The name a picture takes in a document: the one it came with, made safe
+for a file and given an extension when it has none, or `image`; and
+`(2)`, `(3)` and on when the document has one by that name already.
+
+### Parameters
+
+- `wanted` **([string][1704] | [undefined][1717])** What it was called, a file's name or a Doc's label
+- `mime` **[string][1704]** Its media type
+- `taken` **[Set][1710]<[string][1704]>** The keys of the names in use (`nameKey`); the one chosen is added
+
+Returns **[string][1704]**&#x20;
+
+## pictureHref
+
+The path a document's text refers to one of its pictures by.
+
+### Parameters
+
+- `documentId` **[string][1704]**&#x20;
+- `name` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## pictureOf
+
+The picture a path refers to, or null when it is not one of a document's
+own: a link to a file document, or an address on the web.
+
+### Parameters
+
+- `src` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **({documentId: [string][1704], name: [string][1704]} | null)**&#x20;
+
+## pictureKey
+
+Where a picture's bytes are kept, in the `files` table and the stores'
+calls for a file's bytes.
+
+### Parameters
+
+- `documentId` **[string][1704]**&#x20;
+- `name` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## pictureOfKey
+
+The document a key of `pictureKey`'s belongs to, or null for a file
+document's own key, which has no `/` in it.
+
+### Parameters
+
+- `key` **[string][1704]**&#x20;
+
+Returns **({documentId: [string][1704], name: [string][1704]} | null)**&#x20;
+
+## picturesIn
+
+The keys of every picture a document's text refers to, its own and any
+other's, comment and suggestion markup and all. A look at the text, not a
+parse of it: it may find a path in a code span too, which only keeps a
+picture that would otherwise go.
+
+### Parameters
+
+- `markdown` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[Set][1710]<[string][1704]>**&#x20;
+
+## keys
+
+Type: [Set][1710]<[string][1704]>
+
+## keys
+
+Type: [Array][1711]<[SettingsGroup][1140]>
+
+## keys
+
+Type: [Array][1711]<[SettingsGroup][1140]>
+
+## keys
+
+Type: TreeSelectionKeys
+
+## keys
+
+Type: [WeakMap][1724]<[Node][1713], [string][1704]>
+
+##
+
+Type: [string][1704]
+
+##
+
+Type: [string][1704]
+
+## repointPictures
+
+A document's text with its paths to one document's pictures made paths to
+another's: a copy's text, whose pictures are copied under its own id.
+
+### Parameters
+
+- `markdown` **[string][1704]**&#x20;
+- `fromId` **[string][1704]**&#x20;
+- `toId` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## unreferencedPictures
+
+The names of a document's pictures that no text refers to.
+
+### Parameters
+
+- `documentId` **[string][1704]**&#x20;
+- `pictures` **(Record<[string][1704], PictureInfo> | [undefined][1717])** Its row's
+- `referred` **[Set][1710]<[string][1704]>** Every key the project's text refers to
+
+Returns **[Array][1711]<[string][1704]>**&#x20;
+
+## utils/plainCopy
+
+A deep copy of a row, as JSON would have it, without writing it
+out as JSON.
+
+## plainCopy
+
+A copy of `value` holding what `JSON.parse(JSON.stringify(value))` would:
+plain objects and arrays, no reactivity, nothing JSON leaves out.
+
+A string is the same string in the copy. Only objects are copied, so a
+document of any length costs what a short one does. Writing one out instead
+takes seconds at a few hundred megabytes, and past 128 million characters,
+with a character anywhere beside it that doesn't fit in a byte, V8's
+`JSON.stringify` can kill the page outright with an out-of-memory error
+nothing can catch.
+
+### Parameters
+
+- `value` **T**&#x20;
+
+<!---->
+
+- Throws **[RangeError][1725]** When the value holds a cycle, as JSON's TypeError would
+
+Returns **T**&#x20;
+
+## copyOf
+
+Type: T
+
+## copyOf
+
+### Parameters
+
+- `value` **any**&#x20;
+
+Returns **any** Undefined for what JSON leaves out
+
+## utils/projectList
+
+The projects as they are listed for picking one: found by
+name, and in an order.
+
+Pure: the rows come from `useProjects`.
+
+## ProjectRow
+
+A project in a list.
+
+Type: [Object][1707]
+
+### Properties
+
+- `id` **[string][1704]**&#x20;
+- `name` **[string][1704]**&#x20;
+- `edited` **[number][1706]?** When something in it last changed
+- `created` **[number][1706]?**&#x20;
+
+## byName
+
+What a list is sorted by, and which way.
+
+### Parameters
+
+- `a` &#x20;
+- `b` &#x20;
+
+## byName
+
+By name, numbers as numbers, with two of one name in a fixed order.
+
+### Parameters
+
+- `a` **[ProjectRow][1062]**&#x20;
+- `b` **[ProjectRow][1062]**&#x20;
+
+Returns **[number][1706]**&#x20;
+
+## sortProjects
+
+In the order asked for. Projects with the same time go by name, whichever
+way the times run.
+
+### Parameters
+
+- `rows` **[Array][1711]<[ProjectRow][1062]>**&#x20;
+- `order` **ProjectOrder**&#x20;
+  - `order.by` &#x20;
+  - `order.descending` &#x20;
+
+Returns **[Array][1711]<[ProjectRow][1062]>**&#x20;
+
+##
+
+Type: [ProjectRow][1062]
+
+##
+
+Type: [ProjectRow][1062]
+
+## recentProjects
+
+The projects edited most recently, the latest first.
+
+### Parameters
+
+- `rows` **[Array][1711]<[ProjectRow][1062]>**&#x20;
+- `limit` **[number][1706]**&#x20;
+
+Returns **[Array][1711]<[ProjectRow][1062]>**&#x20;
+
+## folded
+
+Text as it is compared when looking for a name: without case or accents.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## folded
+
+## projectsNamed
+
+The projects with every word of the query somewhere in their names.
+
+### Parameters
+
+- `rows` **[Array][1711]<[ProjectRow][1062]>**&#x20;
+- `query` **[string][1704]**&#x20;
+
+Returns **[Array][1711]<[ProjectRow][1062]>**&#x20;
+
+## utils/routeHelpers
+
+Route helpers for addressing projects.
+
+A URL names one project: `/project/<storyId>`. What is open in it — the
+document, the panels — is the project's own state, kept on the story, and
+the URL does not repeat it: that would be a second source for one fact, and
+a segment to keep in step. The document used to be the address; it stopped
+being one when the story started remembering it.
+
+## storyIdFromRoute
+
+Resolve a route parameter to a story ID
+
+### Parameters
+
+- `routeParam` **([string][1704] | [Array][1711]<[string][1704]>)** The story ID from route params
+
+Returns **[string][1704]** The story ID, or '' if absent
+
+## pushProjectToRoute
+
+Navigate to a project
+
+### Parameters
+
+- `router` &#x20;
+- `storyId` **[string][1704]** The project to open
+
+## goToProject
+
+Go to a project, as the writer asked for it. In the desktop app, one open
+in another window is shown there instead (`platform/windows.js`).
+
+### Parameters
+
+- `router` &#x20;
+- `storyId` **[string][1704]** The project to open
+
+Returns **[Promise][1721]\<void>**&#x20;
+
+## replaceProjectInRoute
+
+Replace the current route with a project, for redirects that should not
+leave a step in the history
+
+### Parameters
+
+- `router` &#x20;
+- `storyId` **[string][1704]** The project to open
+
+## utils/sections
+
+A Markdown document's sections: its headings, each with the
+link that names it, where it runs, and how long it is.
+
+A link is made from a heading the way Markdown viewers make one — lower
+case, spaces as hyphens, punctuation dropped, a repeat numbered `-1`,
+`-2` — so an index written with them works outside the app too, and the
+model reads a section by the same name the index gives it.
+
+## HEADING
+
+A Markdown heading line.
+
+## FENCE
+
+A fence opening or closing a code block.
+
+## MarkdownSection
+
+One section of a Markdown text.
+
+Type: [Object][1707]
+
+### Properties
+
+- `title` **[string][1704]** The heading's text, emphasis marks aside
+- `level` **[number][1706]** 1 for `#`
+- `link` **[string][1704]** Unique within the text
+- `offset` **[number][1706]** Where the heading line starts
+- `end` **[number][1706]** Where the next heading of any level starts: the section's own text ends
+- `until` **[number][1706]** Where the next heading at its level or above starts: the section and its subsections end
+- `words` **[number][1706]** In the section and its subsections
+
+## SectionNode
+
+A node of the section tree, as the model is shown it.
+
+Type: [Object][1707]
+
+### Properties
+
+- `link` **[string][1704]**&#x20;
+- `title` **[string][1704]**&#x20;
+- `words` **[number][1706]**&#x20;
+- `sections` **[Array][1711]<[SectionNode][1093]>?**&#x20;
+- `entries` **[number][1706]?** How many subsections a long run has, not listed here
+- `range` **[string][1704]?** The first and last of that run
+- `more` **[number][1706]?** Subsections left out of this tree for its size
+- `about` **[string][1704]?** What is in it, in a line, where explore wrote
+  one: see `withSectionLines` in ai/tools/documents.js
+
+## linker
+
+A maker of unique links for one text: the first `intro`, then `intro-1`.
+
+## seen
+
+Type: [Map][1716]<[string][1704], [number][1706]>
+
+## seen
+
+Type: [Set][1710]<[string][1704]>
+
+## wordsOf
+
+How many words a stretch of text has.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+
+## wordsOf
+
+A block's words, each with what it is for comparing: its text and marks,
+comments and suggestions aside. An inline node is one word.
+
+### Parameters
+
+- `block` **[Node][1713]**&#x20;
+
+Returns **[Array][1711]<{key: [string][1704], node: [Node][1713]}>**&#x20;
+
+## wordsOf
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+
+## markdownSections
+
+The sections of a Markdown text, in order. A `#` line inside a code
+block is code, not a heading.
+
+### Parameters
+
+- `markdown` **[string][1704]**&#x20;
+
+Returns **[Array][1711]<[MarkdownSection][1091]>**&#x20;
+
+## TREE_LIMIT
+
+How many nodes the tree shows at most; a long map is its own cost.
+
+Type: [number][1706]
+
+## LIST_LIMIT
+
+How many subsections a node lists before it says how many instead.
+
+Type: [number][1706]
+
+## sectionTree
+
+The sections as a tree, cut to size. A node with a long run of
+subsections — every spell, every monster — gives how many there are and
+the first and last of them instead of listing them, since that is a
+list to look into, not a map to read; then, if the tree is still too big,
+whole levels are kept from the top down while they fit, and a node whose
+subsections were left out says how many there are.
+
+The top level is listed whole however long it is: for the subsections of
+one section, asked for by name, that list is the answer.
+
+### Parameters
+
+- `sections` **[Array][1711]<[MarkdownSection][1091]>**&#x20;
+- `limit` **[number][1706]?** (optional, default `TREE_LIMIT`)
+- `list` **[number][1706]?** How many subsections a node lists before it counts them instead (optional, default `LIST_LIMIT`)
+
+Returns **[Array][1711]<[SectionNode][1093]>**&#x20;
+
+## roots
+
+Type: [Array][1711]<[SectionNode][1093]>
+
+## node
+
+Type: [SectionNode][1093]
+
+## collapse
+
+### Parameters
+
+- `node` **[SectionNode][1093]**&#x20;
+
+## all
+
+Type: [Array][1711]<{depth: [number][1706]}>
+
+## all
+
+Type: [Set][1710]<[string][1704]>
+
+##
+
+Type: [Array][1711]<[SectionNode][1093]>
+
+##
+
+Type: [number][1706]
+
+## cut
+
+### Parameters
+
+- `node` **[SectionNode][1093]**&#x20;
+- `at` **[number][1706]**&#x20;
+
+## findSection
+
+The section a reference names: its link, or else its title, case aside;
+failing both, the first whose title contains the reference.
+
+### Parameters
+
+- `sections` **[Array][1711]<[MarkdownSection][1091]>**&#x20;
+- `reference` **[string][1704]**&#x20;
+
+Returns **([MarkdownSection][1091] | null)**&#x20;
+
+## indexOf
+
+An index of a text's sections as a Markdown list of links, down to a
+depth below the text's top level.
+
+### Parameters
+
+- `sections` **[Array][1711]<[MarkdownSection][1091]>**&#x20;
+- `depth` **[number][1706]?** How many levels, counting the top (optional, default `3`)
+
+Returns **[string][1704]** '' for a text with no headings
+
+## sectionIndexAt
+
+The section an offset falls in: the last heading at or before it.
+
+### Parameters
+
+- `sections` **[Array][1711]<[MarkdownSection][1091]>**&#x20;
+- `offset` **[number][1706]**&#x20;
+
+Returns **[number][1706]** Its index, or -1 before the first heading
+
+## sectionPath
+
+The titles from the top down to a section: where it sits, as a reader
+would say it — `Spells / Spell Descriptions / Fire Burst`.
+
+### Parameters
+
+- `sections` **[Array][1711]<[MarkdownSection][1091]>**&#x20;
+- `index` **[number][1706]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## utils/sessionStorage
+
+Simple sessionStorage wrapper with JSON serialization support
+
+## sessionStorage
+
+sessionStorage utility for managing temporary state persistence
+
+### get
+
+Get a value from sessionStorage
+
+#### Parameters
+
+- `key` **[string][1704]** The storage key
+- `defaultValue` **T** Default value if key doesn't exist (optional, default `null`)
+
+Returns **T** The stored value or defaultValue
+
+### set
+
+Set a value in sessionStorage
+
+#### Parameters
+
+- `key` **[string][1704]** The storage key
+- `value` **any** The value to store (will be JSON stringified)
+
+Returns **[boolean][1705]** Success status
+
+### remove
+
+Remove an item from sessionStorage
+
+#### Parameters
+
+- `key` **[string][1704]** The storage key
+
+Returns **[boolean][1705]** Success status
+
+## utils/settingsFile
+
+The writer's setup without their projects: what a settings
+file can hold, which of it the writer picked, and what importing one
+changes here.
+
+A settings file is a backup envelope (`utils/backup.js`) with the scope
+`settings`: rows of the app tables a setup is made of, and the settings
+kept outside the database that the writer picked. Everything here is plain
+data in and out; reading and writing the rows is `composables/useBackup.js`.
+
+An item is one row, or one group of the outside settings. Importing works
+by item: one not here is added, one here is replaced by the file's copy
+when the two differ, and nothing is removed. A key the file leaves out
+keeps the one here.
+
+Each item imported leaves a fingerprint of the file's copy behind. A file
+left by a script is imported as the app opens, without asking, and skips
+every item whose fingerprint is unchanged, so what the writer did to an
+item since stands until the file changes that item. A file picked by hand
+is imported whole, after the writer has seen what it changes.
+
+Design: `.llm/settings_import_design.md`.
+
+## SETTINGS_TABLES
+
+## SETTINGS_TABLES
+
+## SettingsTable
+
+The app tables a setup is made of, in the order the export lists them.
+
+Type: [Array][1711]<[SettingsTable][1139]>
+
+## SettingsGroup
+
+The settings kept outside the database, in the groups the export offers
+them: each group is one item.
+
+Type: (`"builtInProfiles"` | `"startingProfiles"` | `"narration"` | `"workflows"` | `"preferences"` | `"spelling"`)
+
+## UNPICKED
+
+The groups left unpicked until the writer picks them: how one person likes
+to work, which a setup handed to someone else shouldn't carry unasked.
+
+Type: ReadonlySet<[SettingsGroup][1140]>
+
+## KINDS
+
+What each kind of item is called: as a heading, and in a sentence about
+one of them or several.
+
+Type: Record<([SettingsTable][1139] | `"settings"`), {heading: [string][1704], one: [string][1704], many: [string][1704]}>
+
+## GROUP_NAMES
+
+Each group of settings by name, as a heading's item and in a sentence.
+
+Type: Record<[SettingsGroup][1140], {label: [string][1704], phrase: [string][1704]}>
+
+## SettingsItem
+
+One thing a settings file can hold: a row of a table, or a group of the
+outside settings.
+
+Type: [Object][1707]
+
+### Properties
+
+- `key` **[string][1704]** `table/id`, or `settings/group`
+- `kind` **([SettingsTable][1139] | `"settings"`)**&#x20;
+- `name` **[string][1704]** What the writer calls it
+- `picked` **[boolean][1705]?** Whether the export starts with it picked
+- `needs` **[Array][1711]<[string][1704]>?** The keys of the items it is no use without
+
+## rowId
+
+What a row is known by in its table: its name for a skill's wording, which
+is keyed by the skill's, and its id for the rest.
+
+### Parameters
+
+- `table` **[string][1704]**&#x20;
+- `row` **any**&#x20;
+
+Returns **([string][1704] | [undefined][1717])**&#x20;
+
+## rowId
+
+Type: [string][1704]
+
+## itemKey
+
+### Parameters
+
+- `table` **[string][1704]**&#x20;
+- `id` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## everyInstallHas
+
+Whether every install has this row, made on its first start: a built-in
+connection, or the default preset. One a file brings is a change to it,
+even where the app hasn't made it yet, as it opens for the first time.
+
+### Parameters
+
+- `table` **[string][1704]**&#x20;
+- `id` **[string][1704]**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## rowName
+
+What a row is called in the export's list and in a sentence.
+
+### Parameters
+
+- `table` **[SettingsTable][1139]**&#x20;
+- `row` **any**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## settingsItems
+
+Everything the writer could put in a settings file, in the order the
+export lists it.
+
+### Parameters
+
+- `tables` **Partial\<Record<[SettingsTable][1139], [Array][1711]\<any>>>** The rows here
+- `settings` **BackedUpSettings** The outside settings here
+
+Returns **[Array][1711]<[SettingsItem][1144]>**&#x20;
+
+## items
+
+Type: [Array][1711]<[SettingsItem][1144]>
+
+## item
+
+Type: [SettingsItem][1144]
+
+## item
+
+Type: [SettingsItem][1144]
+
+## settingsNeeds
+
+The rows a group of settings names, which it is no use without.
+
+### Parameters
+
+- `group` **[SettingsGroup][1140]**&#x20;
+- `settings` **BackedUpSettings**&#x20;
+
+Returns **[Array][1711]<[string][1704]>**&#x20;
+
+## needs
+
+Type: [Array][1711]<[string][1704]>
+
+## add
+
+### Parameters
+
+- `table` **[string][1704]**&#x20;
+- `id` **unknown**&#x20;
+
+## pickWithNeeds
+
+The picked keys with what `key` needs added, and what that needs in turn,
+of the items there are.
+
+### Parameters
+
+- `picked` **[Set][1710]<[string][1704]>**&#x20;
+- `items` **[Array][1711]<[SettingsItem][1144]>**&#x20;
+- `key` **[string][1704]** The item just picked
+
+Returns **[Set][1710]<[string][1704]>** A new set
+
+## pickSettings
+
+The tables and outside settings of the items picked, ready for the
+backup envelope.
+
+### Parameters
+
+- `tables` **Partial\<Record<[SettingsTable][1139], [Array][1711]\<any>>>** The rows here
+- `settings` **BackedUpSettings** The outside settings here
+- `picked` **[Set][1710]<[string][1704]>** The keys of the items to put in
+
+Returns **{tables: TableData, settings: Partial\<BackedUpSettings>}**&#x20;
+
+## chosen
+
+Type: Partial\<BackedUpSettings>
+
+## settingsFilename
+
+Filename for a downloaded settings file, e.g. `inksprite-settings-2026-10-13.json`.
+
+### Parameters
+
+- `date` **[Date][1715]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+##
+
+Type: [number][1706]
+
+## LISTING
+
+What an MCP server last listed, which is news about it rather than a change to it.
+
+## essence
+
+A row as it is compared and fingerprinted: without when it was made and
+changed, without what a server last listed, and with an empty key the
+same as none.
+
+### Parameters
+
+- `table` **[string][1704]**&#x20;
+- `row` **any**&#x20;
+
+Returns **[object][1707]**&#x20;
+
+## stableJson
+
+JSON with every object's keys in order, so the same data is always the
+same text.
+
+### Parameters
+
+- `value` **unknown**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## fingerprint
+
+A short fingerprint of some data (cyrb53): enough to tell one copy of an
+item from the next, and no more.
+
+### Parameters
+
+- `value` **unknown**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## mergeRow
+
+A row of the file's as it goes in here, over the row here with its id.
+
+The keys the file left out are this row's; so is when it was made. A
+server's allowances are this row's too, unless the file was left by a
+script, and its listing is whichever is newer. A file brought in by hand
+that sends a connection or a server somewhere else takes this row's keys
+no further: they're left out, and said to be, so a file can't make the
+writer's key go to an address of its choosing.
+
+### Parameters
+
+- `table` **[SettingsTable][1139]**&#x20;
+- `row` **any** The file's
+- `here` **any** The row here, if there is one
+- `options` **{byHand: [boolean][1705], now: [number][1706]}**&#x20;
+  - `options.byHand` &#x20;
+  - `options.now` &#x20;
+
+Returns **any**&#x20;
+
+##
+
+Type: [string][1704]
+
+## SettingsImport
+
+What importing a settings file does here.
+
+Type: [Object][1707]
+
+### Properties
+
+- `rows` **TableData** The rows to write, by table
+- `settings` **Partial\<BackedUpSettings>** The outside settings to take
+- `added` **[Array][1711]<[SettingsItem][1144]>** Items not here before
+- `changed` **[Array][1711]<[SettingsItem][1144]>** Items here that the file's copies replace
+- `fingerprints` **Record<[string][1704], [string][1704]>** Every item's fingerprint once this is done
+
+## planImport
+
+Work out what a settings file changes here, writing nothing.
+
+### Parameters
+
+- `file` &#x20;
+- `here` **{tables: Partial\<Record<[SettingsTable][1139], [Array][1711]\<any>>>, settings: BackedUpSettings}**&#x20;
+- `$2` **[Object][1707]**&#x20;
+  - `$2.byHand` &#x20;
+  - `$2.fingerprints` (optional, default `{}`)
+  - `$2.now` (optional, default `Date.now()`)
+
+- `options` **[object][1707]**&#x20;
+  - `options.byHand` **[boolean][1705]** Picked by the writer, who is shown what it
+    changes, rather than left by a script and imported as the app opens
+  - `options.fingerprints` **Record<[string][1704], [string][1704]>?** Each item's as last imported
+  - `options.now` **[number][1706]?** Timestamp, injectable for tests
+
+Returns **[SettingsImport][1183]**&#x20;
+
+## plan
+
+Type: [SettingsImport][1183]
+
+## changesAnything
+
+Whether importing would change anything here.
+
+### Parameters
+
+- `plan` **[SettingsImport][1183]**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## listed
+
+Words joined as a list is in a sentence: `a`, `a and b`, `a, b and c`.
+
+### Parameters
+
+- `words` **[Array][1711]<[string][1704]>**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## NAMED
+
+How many of a kind are named in a sentence before they are counted instead.
+
+Type: [number][1706]
+
+## itemsInWords
+
+Items as a sentence's list: by kind, in the export's order, each kind by
+name when there are few and by count when there are more.
+
+### Parameters
+
+- `items` **[Array][1711]<[SettingsItem][1144]>**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## itemPhrases
+
+Items as the phrases of a sentence's list, a kind each; see `itemsInWords`.
+
+### Parameters
+
+- `items` **[Array][1711]<[SettingsItem][1144]>**&#x20;
+
+Returns **[Array][1711]<[string][1704]>**&#x20;
+
+## phrases
+
+Type: [Array][1711]<[string][1704]>
+
+## slice
+
+Type: [SettingsGroup][1140]
+
+##
+
+Type: [SettingsTable][1139]
+
+## describeImport
+
+What an import adds and changes, in a sentence or two: "Adds the
+connection Work proxy and the preset Work. Changes the narration connection."
+
+### Parameters
+
+- `plan` **[SettingsImport][1183]**&#x20;
+- `$1` **[Object][1707]** (optional, default `{}`)
+  - `$1.done` (optional, default `false`)
+
+Returns **[string][1704]**&#x20;
+
+## sentences
+
+Type: [Array][1711]<[string][1704]>
+
+## sentences
+
+Type: [Array][1711]<[string][1704]>
+
+## describeSelection
+
+What taking a selection adds and changes, in a sentence or two: "Adds the
+project Thief and the connection Work proxy. Changes the narration connection."
+
+### Parameters
+
+- `$0` **[Object][1707]**&#x20;
+  - `$0.projects` &#x20;
+  - `$0.cards` &#x20;
+  - `$0.plan` &#x20;
+
+- `$1` **[Object][1707]** (optional, default `{}`)
+  - `$1.done` (optional, default `false`)
+
+- `selection` **{projects: [Array][1711]<[string][1704]>, cards: [Array][1711]<[string][1704]>, plan: Pick<[SettingsImport][1183], (`"added"` | `"changed"`)>}** The names of its projects and cards, and what its settings change here
+
+Returns **[string][1704]**&#x20;
+
+## ai/providers
+
+What kind of server is on the other end of a connection.
+
+Most of what a connection needs is the same everywhere: an OpenAI-shaped
+endpoint, a key, a list of models. The type exists for the places that
+genuinely differ — where the API lives, which of the dozen reasoning
+conventions the server speaks, whether an address has to be typed in at all.
+
+`generic` is the honest default and stays the fallback: an OpenAI-compatible
+server we know nothing else about, spoken to in the subset everyone
+implements. A named type earns its place by making a request different, so
+adding one that changes nothing is worse than leaving the server on generic
+— it is a setting that looks like it does something. LM Studio has no
+reasoning parameter to send, so it is generic and should stay generic, and
+so are vLLM, Ollama and KoboldCpp: the built-in connections to them differ
+only in where they look.
+
+## ProviderType
+
+Type: [Object][1707]
+
+### Properties
+
+- `id` **[string][1704]** Stored on providers, so renaming one orphans every
+  connection saved under it
+- `label` **[string][1704]** The short name, for a line that already says
+  what it is naming
+- `menu` **[string][1704]** The name in the type menu, which has room to say more
+- `address` **[string][1704]?** Where the API lives, for a hosted service
+  whose address is known without asking. A type without one is a server
+  someone runs, and is told where it is.
+- `key` **[boolean][1705]?** Whether nothing gets through without an API key
+- `hidden` **[boolean][1705]?** Left out of the type menu and the built-in
+  connections: known here, but not offered yet
+- `notChat` **[RegExp][1726]?** The models in the service's list that a chat
+  cannot use (embeddings, speech, pictures, and OpenAI's that answer only its
+  Responses API), which a model picker leaves out
+- `does` **ReadonlyArray<[ProviderKind][1211]>?** What a connection of this
+  type can be asked for; a chat alone when absent
+- `signIn` **[SignIn][1209]?** Where the writer signs in to have a key made
+  for them, for a service that offers it
+- `credits` **[string][1704]?** Where an account buys more, for a service
+  that answers 402 when it has run out
+
+## SignIn
+
+A service's sign-in, OAuth with PKCE as OpenRouter has it: the writer is
+sent to `authorize` with a challenge, comes back with a code, and the code
+is traded at `exchange` for an API key (`composables/useSignIn.js`).
+
+Type: [Object][1707]
+
+### Properties
+
+- `authorize` **[string][1704]** Where the writer is sent
+- `exchange` **[string][1704]** Where the code is traded for a key
+- `params` **Record<[string][1704], [string][1704]>?** What else the sign-in is told
+
+## ProviderKind
+
+What a connection is asked for: a chat's replies, or speech, for narration
+and reading aloud.
+
+Type: (`"chat"` | `"speech"`)
+
+## PROVIDER_TYPES
+
+Every connection type, in the order the settings menu offers them.
+
+Type: [Array][1711]<[ProviderType][1207]>
+
+## BUILT_IN_PROVIDERS
+
+The connections every install has, in the order the provider menus list
+them: the hosted services, then the servers people run at home, each at the
+address it listens on when started without being told. They are created on
+start when missing and can't be deleted or renamed; an address or a key is
+the writer's to change.
+
+`id` is what presets point at, so it never changes. `server` names the
+server behind a generic connection, for what it takes (ai/capabilities.js),
+and `does` what it can be asked for, where that is less than its type's.
+
+## DEFAULT_SPEECH_PROVIDER_ID
+
+The connection narration speaks through until the writer picks another.
+
+Type: [string][1704]
+
+## ConnectionKind
+
+What the writer can connect to, as setup offers it: a hosted service, a
+server of a kind they run at home, or any other that speaks OpenAI's API.
+Each built-in connection was one of these, and the first connection of a
+kind still takes its id, so presets made for it, and every device of the
+writer's, find it there.
+
+Type: [Object][1707]
+
+### Properties
+
+- `id` **[string][1704]**&#x20;
+- `name` **[string][1704]** What a connection of it is called to start with
+- `endpoint` **[string][1704]?** Where a server of it listens when started
+  without being told, or where a hosted service's API is, for the row
+- `server` **[string][1704]?** The server behind a generic connection, for
+  what it takes (ai/capabilities.js)
+- `does` **ReadonlyArray<[ProviderKind][1211]>** What it can be asked for
+- `builtInId` **[string][1704]?** The built-in connection it was
+
+## BUILT_IN_KINDS
+
+Type: ReadonlyArray<[ConnectionKind][1215]>
+
+## CONNECTION_KINDS
+
+Type: ReadonlyArray<[ConnectionKind][1215]>
+
+###
+
+Type: const
+
+###
+
+Type: const
+
+## connectionKind
+
+A kind by its id.
+
+### Parameters
+
+- `id` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **([ConnectionKind][1215] | [undefined][1717])**&#x20;
+
+## connectionKind
+
+Type: [ConnectionKind][1215]
+
+## kindOf
+
+What kind a connection is: the server it names, the built-in it is, else
+its type, and an OpenAI-compatible server for anything else.
+
+### Parameters
+
+- `provider` &#x20;
+
+Returns **[ConnectionKind][1215]**&#x20;
+
+## untouchedBuiltIn
+
+Whether a built-in connection is as every install made it, with nothing of
+the writer's in it: not added by them, no key, no routing, its own
+address. Since setup took their place they are made no more, but older
+devices still make them. Neither sync nor a settings file carries one.
+
+### Parameters
+
+- `provider` **any**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## inMenuOrder
+
+The connections the provider menus list, in their order: the built-in ones
+first, in their own order, then the writer's, in the order given. One of a
+type not offered yet is left out: Gemini was a built-in for a while, and an
+install that made it then can't delete it.
+
+### Parameters
+
+- `providers` **[Array][1711]\<T>**&#x20;
+
+Returns **[Array][1711]\<T>**&#x20;
+
+## typeOf
+
+### Parameters
+
+- `type` **[string][1704]?**&#x20;
+
+Returns **([ProviderType][1207] | [undefined][1717])**&#x20;
+
+## providerDoes
+
+Whether a connection can be asked for this: from which built-in it is, else
+its type. So Kokoro is never offered to a chat, and Anthropic never to
+narration.
+
+### Parameters
+
+- `provider` &#x20;
+- `kind` **[ProviderKind][1211]**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## DEFAULT_PROVIDER_TYPE
+
+The type a connection falls back to when it does not say, or says something unknown.
+
+Type: [string][1704]
+
+## providerLabel
+
+What to call a connection of this type.
+
+A type saved before it was known here — or after it stopped being — reads as
+generic rather than as nothing, because a connection with a blank type in
+front of it looks broken when it is merely unfamiliar.
+
+### Parameters
+
+- `type` **[string][1704]?**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## knownAddress
+
+Where a hosted service's API lives, or undefined for a server someone runs,
+whose address is on the connection.
+
+### Parameters
+
+- `type` **[string][1704]?**&#x20;
+
+Returns **([string][1704] | [undefined][1717])**&#x20;
+
+## needsEndpoint
+
+Whether this type has to be told where to find its API.
+
+A hosted service's address is known without being asked. Everything else is
+a server someone is running, and a connection to one with no endpoint has
+nowhere to go — so this is what validation asks, rather than naming the
+types one at a time and forgetting the next one.
+
+### Parameters
+
+- `type` **[string][1704]?**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## needsKey
+
+Whether this type gets nothing through without an API key. A server someone
+runs may ask for one, and the connection then has it, but goes without by
+default.
+
+### Parameters
+
+- `type` **[string][1704]?**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## connectionGap
+
+What a connection is still missing before a request can go through it, or
+null when nothing is. `key` is a hosted service with no API key; `endpoint`
+is a self-hosted server with no address. The settings show it beside the
+connection, so nothing looks ready that is not.
+
+### Parameters
+
+- `provider` &#x20;
+
+Returns **(`"key"` | `"endpoint"` | null)**&#x20;
+
+## presetProblem
+
+What stands between a preset and a request through it, as the error the
+request would fail with, or null when nothing does: no connection, no
+model, or a connection still missing its key or address. What a chat says
+above its box.
+
+### Parameters
+
+- `preset` &#x20;
+- `findProvider` &#x20;
+
+Returns **([Error][1714] | null)**&#x20;
+
+## canListModels
+
+Whether the connection can be asked what it serves. A server needs its
+address; a hosted service needs its key, except OpenRouter and NanoGPT,
+whose lists are public.
+
+### Parameters
+
+- `provider` &#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## listsPublicly
+
+Whether this service's list of models is public, asked without a key, and
+so says nothing of whether a key is good.
+
+### Parameters
+
+- `type` **[string][1704]?**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## signInOf
+
+Where the writer signs in to this service to have a key made, or undefined
+for one that offers no sign-in.
+
+### Parameters
+
+- `type` **[string][1704]?**&#x20;
+
+Returns **([SignIn][1209] | [undefined][1717])**&#x20;
+
+## creditsPage
+
+Where an account with this service buys more, or undefined for a service
+that doesn't sell by the request.
+
+### Parameters
+
+- `type` **[string][1704]?**&#x20;
+
+Returns **([string][1704] | [undefined][1717])**&#x20;
+
+## speaksOpenRouterReasoning
+
+Whether a request to this service is told about reasoning as OpenRouter
+tells it: a `reasoning` object, with an effort, `enabled` and `exclude`.
+NanoGPT took the same shape.
+
+### Parameters
+
+- `type` **[string][1704]?**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## servesChat
+
+Whether a model in this service's list is one a chat can use. Most lists
+are only chat models; OpenAI's and Gemini's carry their embeddings, speech
+and picture models too, which answer a chat with an error.
+
+### Parameters
+
+- `type` **([string][1704] | [undefined][1717])**&#x20;
+- `id` **[string][1704]** The model's id, as the service lists it
+
+Returns **[boolean][1705]**&#x20;
+
+## takesReasoningEffort
+
+Whether a request to this service may name a reasoning effort level, as
+`reasoning_effort`. OpenRouter says it its own way, in `reasoning`.
+
+Not OpenAI's chat completions, though they have the field: the models that
+don't reason refuse it, and the newest ones refuse it alongside tools,
+which the chat always offers ("use /v1/responses"). Each model reasons at
+its own default instead, which works on every one of them.
+
+### Parameters
+
+- `type` **[string][1704]?**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## takesChatTemplateKwargs
+
+Whether a request to this server may carry `chat_template_kwargs`.
+
+llama-server passes that object into the Jinja chat template it renders. A
+template that reads `enable_thinking` — Qwen3's does, and it is the way its
+thinking is meant to be switched off — emits an empty think block instead of
+inviting one, which is what actually stops the model reasoning. A template
+that has never heard of the key ignores it: it is an argument to a template,
+not a field the server has to recognise, so nothing 400s over it.
+
+### Parameters
+
+- `type` **[string][1704]?**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## AISamplerParameters
+
+Default AI request parameters.
+
+These were previously editable via the settings UI (parameter sliders,
+presets, profile overrides). The UI is gone; values are now defined
+here. Edit this file to tune them. Future advanced settings could
+re-expose a subset.
+
+Type: [Object][1707]
+
+### Properties
+
+- `maxTokens` **[number][1706]** Max response tokens. 0 = let provider decide.
+- `seed` **[number][1706]** Deterministic seed. 0 = disabled.
+- `reasoningEffort` **(`"disabled"` | `"enabled"` | `"minimal"` | `"low"` | `"medium"` | `"high"` | `"xhigh"` | `"max"`)** How hard the model thinks. `enabled` asks for thinking without naming a level, for models whose thinking is a switch rather than a dial. A model is sent the nearest it takes (see ai/capabilities.js).
+- `showModelReasoning` **[boolean][1705]** Whether to surface reasoning tokens.
+- `maxToolRounds` **[number][1706]** How many rounds of tool calls a turn may make before it has to answer. 0 = no limit. See runCompletionLoop in composables/useAIChat.js.
+- `parameters` **[AISamplerParameters][1263]** Sampler parameters. Fields with sentinel values are omitted from requests.
+- `temperature` **[number][1706]** 1.0 = omitted.
+- `topP` **[number][1706]** 1.0 = omitted.
+- `minP` **[number][1706]** 0 = omitted.
+- `topA` **[number][1706]** 0 = omitted.
+- `topK` **[number][1706]** 0 = omitted.
+- `frequencyPenalty` **[number][1706]** 0 = omitted.
+- `presencePenalty` **[number][1706]** 0 = omitted.
+- `repetitionPenalty` **[number][1706]** 1.0 = omitted.
+
+## REASONING_EFFORT_OPTIONS
+
+The reasoning efforts a request can ask for, as a settings menu lists them.
+One list for every menu, so they read the same; each shows those its model
+takes (see ai/capabilities.js).
+
+## DEFAULT_PRESET_ID
+
+The AI preset every install has, made on the first start and never
+deleted: the one in use until the writer picks another. Stored under the
+legacy "chat" id, so installs from before presets collapsed into one keep
+theirs.
+
+Type: [string][1704]
+
+## AI_DEFAULTS
+
+Type: AIDefaults
+
+## resolveAISettings
+
+A sparse override on AI_DEFAULTS. Every key is optional, including the
+individual sampler parameters — `Partial<AIDefaults>` alone would still
+demand a complete `parameters` bag whenever that key is present.
+
+### Parameters
+
+- `overrides` &#x20;
+- `modelDefaults` &#x20;
+
+## resolveAISettings
+
+Merge sparse overrides over AI_DEFAULTS to get the settings a request should
+actually use. `parameters` merges one level deep so an override touching a
+single sampler value doesn't drop the rest.
+
+A model's own defaults, where its list gives them, sit between: the app's
+settings, then the model's, then the writer's changes.
+
+### Parameters
+
+- `overrides` **AISettingsOverrides?**&#x20;
+- `modelDefaults` **Partial<[AISamplerParameters][1263]>?** The samplers the
+  model's makers say it runs best at
+
+Returns **AIDefaults**&#x20;
+
+## mergeAISettings
+
+Lay one sparse override over another, keeping both sparse.
+
+Not the same as resolving: the result is still an override bag, so what
+neither side mentions stays unmentioned and AI_DEFAULTS still decides it.
+For a caller with settings of its own that should not throw away the ones
+the writer tuned for their model — a skill wanting a cooler temperature is
+saying something about temperature, not about top-k.
+
+`parameters` merges one level deep, the same way resolveAISettings does it.
+
+### Parameters
+
+- `base` **AISettingsOverrides?**&#x20;
+- `over` **AISettingsOverrides?** Wins where the two overlap
+
+Returns **(AISettingsOverrides | [undefined][1717])**&#x20;
+
+## TITLE_DEFAULTS
+
+Title-generation request overrides. Short, and no sampler values: these go
+to whatever model the chat is on, instead of the writer's, and a strict
+server refuses the whole request over one it doesn't take — Claude over a
+temperature and a top-p together. A title comes out fine at the defaults.
+
+Type: AISettingsOverrides
+
+## utils/settingsTree
+
+What Export settings offers, as a tree of boxes, and what the
+boxes ticked choose: the writer's setup, under a heading for each kind
+(`utils/settingsFile.js`). Its nodes and ticks are PrimeVue Tree's: a key,
+a label and children each, and the ticks as `selectionKeys`, a node
+checked or partly checked.
+
+What is kept between ticks is only the settings ticked. A heading is
+ticked when everything under it is, and partly when some is, and ticking
+a setting ticks what it is no use without, such as a preset's connection.
+
+Pure: reading and writing the rows is `composables/useBackup.js`.
+
+## settingKey
+
+### Parameters
+
+- `itemKey` &#x20;
+
+## settingKey
+
+### Parameters
+
+- `itemKey` &#x20;
+
+## SettingsNode
+
+A box in the tree.
+
+Type: [Object][1707]
+
+### Properties
+
+- `key` **[string][1704]**&#x20;
+- `label` **[string][1704]**&#x20;
+- `children` **[Array][1711]<[SettingsNode][1280]>?**&#x20;
+
+##
+
+Type: [string][1704]
+
+## itemOf
+
+The item a leaf's key holds.
+
+### Parameters
+
+- `key` **[string][1704]**&#x20;
+
+Returns **([string][1704] | [undefined][1717])**&#x20;
+
+## itemOf
+
+### Parameters
+
+- `step` &#x20;
+
+## settingsTree
+
+The tree Export settings shows: a heading for each kind there is any of,
+in the order the kinds are listed.
+
+### Parameters
+
+- `items` **[Array][1711]<[SettingsItem][1144]>**&#x20;
+
+Returns **[Array][1711]<[SettingsNode][1280]>**&#x20;
+
+##
+
+Type: const
+
+## leavesOf
+
+Every leaf of the tree, in order.
+
+### Parameters
+
+- `nodes` **[Array][1711]<[SettingsNode][1280]>**&#x20;
+
+Returns **[Array][1711]<[string][1704]>**&#x20;
+
+## selectionKeys
+
+The ticks to show for the leaves ticked: each heading checked when all
+under it is, partly when some is.
+
+### Parameters
+
+- `nodes` **[Array][1711]<[SettingsNode][1280]>**&#x20;
+- `ticked` **[Set][1710]<[string][1704]>** Leaf keys
+
+Returns **TreeSelectionKeys**&#x20;
+
+## visit
+
+### Parameters
+
+- `node` **[SettingsNode][1280]**&#x20;
+
+Returns **(`"all"` | `"some"` | `"none"`)**&#x20;
+
+## visit
+
+### Parameters
+
+- `at` **[string][1704]**&#x20;
+
+## tickedLeaves
+
+The leaves ticked, read back from the ticks the tree reports after a
+click, with what each setting newly ticked is no use without ticked too
+(`pickWithNeeds`).
+
+### Parameters
+
+- `nodes` **[Array][1711]<[SettingsNode][1280]>**&#x20;
+- `keys` **TreeSelectionKeys**&#x20;
+- `before` **[Set][1710]<[string][1704]>** The leaves ticked before the click
+- `items` **[Array][1711]<[SettingsItem][1144]>**&#x20;
+
+Returns **[Set][1710]<[string][1704]>**&#x20;
+
+## pickedSettings
+
+The settings items the boxes ticked choose, by their keys
+(`SettingsItem.key`).
+
+### Parameters
+
+- `ticked` **[Set][1710]<[string][1704]>**&#x20;
+
+Returns **[Set][1710]<[string][1704]>**&#x20;
+
+## utils/sharedDocuments
+
+Which documents of a project its owner shares with only some
+of them, as the owner sees and changes it: each document shared, seen only
+on the way to something shared (a folder, or the project itself), or
+hidden. The outline marks the first two, and **Share…** ticks the first and
+half-ticks the second. Sharing a document, or no longer, goes for
+everything in it, and never changes the folders above: a folder shared
+with one thing in it held back is still shared, and what is made in it
+later is shared too. A document that holds others isn't a folder, and
+what is under it can't be seen without it, so sharing what it holds
+shares it too.
+
+Each document keeps its own answer on its row, `unshared` where it is not
+shared; the engine hides those from the others but for the folders on the
+way to something shared (`cloud/tree.js`).
+
+Design: `.llm/sync_design.md`, "Only some documents".
+
+## shareTree
+
+### Parameters
+
+- `root` &#x20;
+- `childrenOf` &#x20;
+- `titleOf` &#x20;
+
+## shareTree
+
+### Parameters
+
+- `root` &#x20;
+- `childrenOf` &#x20;
+- `titleOf` &#x20;
+
+## shareTree
+
+The project's documents as a tree, from its root, in the outline's order.
+
+### Parameters
+
+- `root` **[Document][1712]**&#x20;
+- `childrenOf` &#x20;
+- `titleOf` &#x20;
+
+Returns **[Array][1711]\<TreeNode>**&#x20;
+
+## Sharing
+
+What the people a document is shared with see of it.
+
+Type: (`"shared"` | `"partly"` | `"hidden"`)
+
+## nodeOf
+
+### Parameters
+
+- `document` **[Document][1712]** @returns {TreeNode}
+
+## sharingOf
+
+What the others see of each of a project's documents.
+
+### Parameters
+
+- `documents` **[Array][1711]<[Document][1712]>** The project's
+- `storyId` **[string][1704]**&#x20;
+
+Returns **[Map][1716]<[string][1704], [Sharing][1309]>**&#x20;
+
+## sharedWith
+
+What changes when a document is shared, or stops being: it and everything
+in it, each with whether it is shared now; and, shared, the documents it
+is in up to its folder, without what else they hold.
+
+### Parameters
+
+- `id` **[string][1704]**&#x20;
+- `shared` **[boolean][1705]**&#x20;
+- `childrenOf` &#x20;
+- `documentOf` &#x20;
+
+Returns **[Map][1716]<[string][1704], [boolean][1705]>**&#x20;
+
+## changes
+
+Type: [Map][1716]<[string][1704], [boolean][1705]>
+
+## utils/siblingOrder
+
+The order a folder's children are shown in.
+
+## orderSiblings
+
+A folder's children in the order the outline shows them.
+
+An ordered folder sorts by `order`; anything else sorts the way a file
+explorer does, folders first and then by title, numbers by value. A
+document nobody has named sorts as the "Untitled" it reads as, rather than
+as an empty title ahead of everything. Ties fall back to the id, so equal
+keys don't shuffle between renders.
+
+### Parameters
+
+- `children` &#x20;
+- `ordered` **[boolean][1705]?** Whether the folder they are in is ordered (optional, default `false`)
+
+##
+
+##
+
+##
+
+##
+
+## utils/tabs
+
+A panel's tabs: which documents are open in the editor, or
+which chats in the chat panel, in strip order, which is showing, which is
+only being looked at, and the order they were shown in. Kept in the
+project's view, the editor's as `openDocumentIds`, `lastDocumentId`,
+`previewDocumentId`, `shownDocumentIds` and `closedDocumentIds` and the
+chat panel's under the same names for chats, so a project reopens with
+what it was left on. The
+rules are here, as pure functions over the set, the same for both panels;
+`tabsOf` reads it off a view and `tabsPatch` writes it back.
+
+A document opened from the outline is a preview: it takes the preview tab,
+if there is one, rather than adding another, so looking through the
+outline leaves one tab behind rather than a strip of them. The tab stays
+once the writer keeps it — types in it, or double-clicks it — and is then
+like any other.
+
+Closing the tab showing goes back to the one shown before it, and closing
+that to the one before, down the whole history: a document opened to look
+something up and closed again leaves the writer where they were. Only past
+the history, as for tabs from before it was kept, does a neighbour come
+forward.
+
+A tab the writer closes is remembered, the last few of them, so that the
+one closed last can be brought back, and the one before it after that. One
+opened again by any other way is no longer among them, and one that went
+because its document was deleted never was.
+
+## Tabs
+
+Type: [Object][1707]
+
+### Properties
+
+- `open` **[Array][1711]<[string][1704]>** Document ids in strip order
+- `active` **([string][1704] | null)** The one showing; null with nothing open
+- `preview` **([string][1704] | null)** The one only being looked at, which the
+  next preview replaces; null when every tab is kept
+- `shown` **[Array][1711]<[string][1704]>** Open ids, the one showing first and then the
+  others as they were shown before it, most recent first: where closing
+  goes back to. A tab not shown since the history was kept is not in it.
+- `closed` **[Array][1711]<[string][1704]>** Ids the writer closed and has not opened
+  since, the one closed last first: what reopening brings back
+
+## NO_TABS
+
+Type: [Tabs][1325]
+
+## CLOSED_KEPT
+
+How many closed tabs are remembered.
+
+Type: [number][1706]
+
+## TabFields
+
+The fields of a project's view a panel's tabs are kept in.
+
+Type: [Object][1707]
+
+### Properties
+
+- `open` **[string][1704]**&#x20;
+- `active` **[string][1704]**&#x20;
+- `preview` **[string][1704]**&#x20;
+- `shown` **[string][1704]**&#x20;
+- `closed` **[string][1704]**&#x20;
+
+## DOCUMENT_TABS
+
+The editor's. @type {TabFields}
+
+## CHAT_TABS
+
+The chat panel's. @type {TabFields}
+
+## showing
+
+The history with a tab put at its head, as the one showing now.
+
+### Parameters
+
+- `shown` **[Array][1711]<[string][1704]>**&#x20;
+- `id` **[string][1704]**&#x20;
+
+Returns **[Array][1711]<[string][1704]>**&#x20;
+
+## settled
+
+Whether the active and preview tabs are among the open ones, and the
+history only open tabs, headed by the one showing. The set is inconsistent
+otherwise, and something showing that is not open is repaired to the first
+tab, or to nothing; a preview that is not open is no preview; and a tab
+that is open is not a closed one.
+
+### Parameters
+
+- `open` **[Array][1711]<[string][1704]>**&#x20;
+- `active` **([string][1704] | null)**&#x20;
+- `preview` **([string][1704] | null)?** (optional, default `null`)
+- `shown` **[Array][1711]<[string][1704]>?** (optional, default `[]`)
+- `closed` **[Array][1711]<[string][1704]>?** (optional, default `[]`)
+
+Returns **[Tabs][1325]**&#x20;
+
+## tabsOf
+
+The tabs a project's view describes. One from before tabs has no list of
+what is open; it opens with one tab, the last one shown. One with the list
+but nothing in it was closed down to nothing on purpose. One from before
+previews has every tab kept, one from before the history was kept knows
+only the tab showing, and one from before closed tabs were remembered has
+none to bring back.
+
+### Parameters
+
+- `view` **(Record<[string][1704], any> | null | [undefined][1717])**&#x20;
+- `fields` **[TabFields][1329]?** Which panel's: the editor's unless given (optional, default `DOCUMENT_TABS`)
+
+Returns **[Tabs][1325]**&#x20;
+
+## tabsPatch
+
+The view's fields a set of tabs is written to.
+
+### Parameters
+
+- `tabs` **[Tabs][1325]**&#x20;
+- `fields` **[TabFields][1329]?** Which panel's: the editor's unless given (optional, default `DOCUMENT_TABS`)
+
+Returns **Record<[string][1704], ([Array][1711]<[string][1704]> | [string][1704] | null)>**&#x20;
+
+## normalizeTabs
+
+The tabs with any that can no longer be shown dropped: a document deleted
+since, or one that was never a text document. What is left keeps its
+order; a dropped active tab gives way as a close does.
+
+### Parameters
+
+- `tabs` **[Tabs][1325]**&#x20;
+- `canShow` &#x20;
+
+Returns **[Tabs][1325]**&#x20;
+
+## openTab
+
+The tabs with a document open and showing. One already open is brought to
+the front where it is, kept or not as it was. A new one goes at the end of
+the strip, or beside the tab showing when asked — unless it is a preview
+and there is one already, in which case it takes that tab's place, and the
+place in the history of the document it replaces, which is no longer open.
+The document a preview replaces was only being looked at, and is not
+remembered as closed.
+
+### Parameters
+
+- `tabs` **[Tabs][1325]**&#x20;
+- `id` **[string][1704]**&#x20;
+- `$2` **[Object][1707]** (optional, default `{}`)
+  - `$2.preview` (optional, default `false`)
+  - `$2.beside` (optional, default `false`)
+
+Returns **[Tabs][1325]**&#x20;
+
+## keepTab
+
+The tabs with one kept: no longer a preview, so the next preview goes
+elsewhere. Any other tab is kept already.
+
+### Parameters
+
+- `tabs` **[Tabs][1325]**&#x20;
+- `id` **[string][1704]**&#x20;
+
+Returns **[Tabs][1325]**&#x20;
+
+## moveTab
+
+The tabs with one put at another place in the strip, the rest keeping
+their order around it. A tab the writer puts somewhere is one they mean to
+have there, so a preview is kept by it. What is showing, and the history,
+are as they were.
+
+### Parameters
+
+- `tabs` **[Tabs][1325]**&#x20;
+- `id` **[string][1704]**&#x20;
+- `to` **[number][1706]** The place it comes to have in the strip, from 0; past
+  either end is that end
+
+Returns **[Tabs][1325]** The same tabs where it is not open, or is there already
+
+## without
+
+The tabs with one gone from the strip. The one showing gives way to the
+one shown before it; past the history, to its neighbour, the one to its
+right, else the one to its left; and the last going leaves nothing
+showing. One that is not showing changes nothing else, but that it is gone
+from the history.
+
+### Parameters
+
+- `tabs` **[Tabs][1325]**&#x20;
+- `id` **[string][1704]**&#x20;
+- `remember` **[boolean][1705]** Whether it is the tab closed last, for
+  reopening: one the writer closed, rather than one whose document went
+
+Returns **[Tabs][1325]**&#x20;
+
+## closeTab
+
+The tabs with one closed by the writer. Closing the one showing brings
+back the one shown before it; past the history, its neighbour, the one to
+its right, else the one to its left; and closing the last leaves nothing
+showing. Closing one that is not showing changes nothing else, but that it
+is gone from the history. Either way it is the tab closed last, for
+reopening.
+
+### Parameters
+
+- `tabs` **[Tabs][1325]**&#x20;
+- `id` **[string][1704]**&#x20;
+
+Returns **[Tabs][1325]**&#x20;
+
+## closeTabs
+
+The tabs with several closed by the writer at once, as Close others does,
+each remembered as a close is.
+
+### Parameters
+
+- `tabs` **[Tabs][1325]**&#x20;
+- `ids` **[Array][1711]<[string][1704]>**&#x20;
+
+Returns **[Tabs][1325]**&#x20;
+
+## dropTabs
+
+The tabs with several dropped at once, for the documents a deletion took.
+Each goes as a close does, so the tab left showing is the latest shown of
+those that survive, else the nearest survivor to the right of the one that
+was, else to its left. None is remembered as closed: there is nothing of
+it to open again.
+
+### Parameters
+
+- `tabs` **[Tabs][1325]**&#x20;
+- `ids` **[Array][1711]<[string][1704]>**&#x20;
+
+Returns **[Tabs][1325]**&#x20;
+
+## lastClosed
+
+The tab closed last that can still be shown: what reopening brings back.
+One whose document has been deleted since is passed over for the one
+closed before it.
+
+### Parameters
+
+- `tabs` **[Tabs][1325]**&#x20;
+- `canShow` &#x20;
+
+Returns **([string][1704] | null)** Null with none to bring back
+
+## tabBeside
+
+The tab a step along the strip from the one showing, round its ends: the
+next one, or the one before.
+
+### Parameters
+
+- `tabs` **[Tabs][1325]**&#x20;
+- `step` **(`1` | `-1`)**&#x20;
+
+Returns **([string][1704] | null)** Null with no other tab to go to
+
+## tabAt
+
+The tab at a place in the strip, counted from 1 as its keys are; 9 is the
+last tab however many there are, as it is in a browser.
+
+### Parameters
+
+- `tabs` **[Tabs][1325]**&#x20;
+- `place` **[number][1706]** 1 to 9
+
+Returns **([string][1704] | null)** Null with no tab there
+
+## tabNames
+
+What to call each tab: its title, and as much of the path above it as
+tells it apart from another open tab of the same title — `bar/a` and
+`baz/a`, or `foo/bar/a` and `qux/bar/a` — and none where the title alone
+does. Two documents of the same title in the same folder cannot be told
+apart by path, and show all of it.
+
+### Parameters
+
+- `paths` &#x20;
+
+Returns **[Array][1711]<{prefix: [string][1704], title: [string][1704]}>** The path shown above each
+title, ending in `/`, or '' for none
+
+## tail
+
+The last `n` titles of a path, as one key.
+
+### Parameters
+
+- `path` **[Array][1711]<[string][1704]>**&#x20;
+- `n` **[number][1706]**&#x20;
+
+## utils/tarWriter
+
+A tar written a piece at a time, as `utils/zipWriter.js`
+writes a zip: an export handed to another app (`apps/exports.js`), which
+unpacks it as it arrives with `tar`, there on systems that have no
+`unzip`.
+
+It is POSIX's format (ustar), not compressed. A name too long for a
+header's hundred bytes, or not plain ASCII, is given in full in a pax
+record before its entry, which GNU tar and bsdtar both read. A file's
+bytes go in as the Blob they are, unread.
+
+## BLOCK
+
+A tar is made of blocks this long.
+
+Type: [number][1706]
+
+## NAME_MOST
+
+The most a header's name holds.
+
+Type: [number][1706]
+
+## SIZE_MOST
+
+The most a header's size can say: eleven octal digits.
+
+Type: [number][1706]
+
+## TarWriter
+
+Type: [Object][1707]
+
+## header
+
+A header: one block saying what follows.
+
+### Parameters
+
+- `name` **[string][1704]** Plain ASCII, a hundred characters at most
+- `size` **[number][1706]** How many bytes follow
+- `type` **(`"0"` | `"5"` | `"x"`)** A file, a directory, or pax records
+- `at` **[number][1706]** When, in seconds
+
+Returns **[Uint8Array][1708]<[ArrayBuffer][1709]>**&#x20;
+
+## put
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+- `offset` **[number][1706]**&#x20;
+
+## octal
+
+A number as a field holds it: octal, then a NUL.
+
+### Parameters
+
+- `value` **[number][1706]**&#x20;
+- `offset` **[number][1706]**&#x20;
+- `length` **[number][1706]** The field's, its NUL included
+
+## record
+
+A pax record: its own length, a key and a value.
+
+### Parameters
+
+- `key` **[string][1704]**&#x20;
+- `value` **[string][1704]**&#x20;
+
+Returns **[Uint8Array][1708]<[ArrayBuffer][1709]>**&#x20;
+
+## padding
+
+What fills the last block of something `size` bytes long.
+
+### Parameters
+
+- `size` **[number][1706]**&#x20;
+
+## tarWriter
+
+Start a tar.
+
+### Parameters
+
+- `at` **[number][1706]?** The time its entries carry, in seconds: now (optional, default `Math.floor(Date.now()/1000)`)
+
+Returns **[TarWriter][1371]**&#x20;
+
+## begin
+
+Say what comes next.
+
+### Parameters
+
+- `name` **[string][1704]** A path below wherever the tar is unpacked
+- `size` **[number][1706]**&#x20;
+- `type` **(`"0"` | `"5"`)**&#x20;
+
+<!---->
+
+- Throws **[Error][1714]** For a name that would be unpacked anywhere else, or a
+  file larger than a tar says the size of
+
+## utils/tex
+
+Where a formula is in markdown: TeX between the delimiters
+models write, read the same in the chat (`utils/markdown.js`) and in a
+document (`editor/markdown.js`).
+
+`$$…$$` or `\[…\]` is a formula set on its own, `$…$` or `\(…\)` one in a
+sentence. A dollar is money as often as it is math, so a single one opens a
+formula only as Pandoc has it: something other than a space straight after
+it, and a closing one with no space before it and no digit after, on the
+same line. "$5 and $10" is two prices. No formula runs past a blank line,
+and one with nothing between its delimiters is none.
+
+A document reads no `\[…\]`: its markdown writes a bracket in the text as
+`\[`, so every bracket in it would be one.
+
+## TEX
+
+A formula's TeX: anything up to its closing delimiter, but not past a blank line.
+
+## DISPLAY
+
+Display math, in either of its delimiters.
+
+## MATH_BLOCK
+
+A formula with lines of its own, from the start of one to the end of
+another. Sticky: set `lastIndex` to where to look.
+
+## SINGLE
+
+A single dollar's formula, as Pandoc reads one.
+
+## MATH_INLINE
+
+A formula in a sentence, by its delimiters, the display ones first: `$$`
+would otherwise read as an empty `$…$`. A single dollar keeps to one line.
+
+## Found
+
+A formula found: what was written, its TeX, and whether it is set on its
+own.
+
+Type: [Object][1707]
+
+### Properties
+
+- `raw` **[string][1704]** The formula as written, delimiters and all
+- `tex` **[string][1704]** What is between them
+- `display` **[boolean][1705]** Written as a formula set on its own
+
+## trimTex
+
+A formula's TeX without the space around it, which TeX does without, but
+for the space after a backslash, which is TeX's own.
+
+### Parameters
+
+- `tex` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## foundIn
+
+The formula a match is, or none when there is no TeX between its delimiters.
+
+### Parameters
+
+- `match` **(RegExpExecArray | null)**&#x20;
+- `display` **[boolean][1705]**&#x20;
+
+Returns **([Found][782] | null)**&#x20;
+
+## formulaAt
+
+The formula that starts a piece of text, if one does.
+
+### Parameters
+
+- `src` **[string][1704]**&#x20;
+- `brackets` **[boolean][1705]?** Whether `\[…\]` is one, as it is but in a
+  document (optional, default `true`)
+
+Returns **([Found][782] | null)**&#x20;
+
+## mayHoldFormula
+
+Whether a document's markdown may have a formula in it, or a dollar escaped
+so as not to be one. Quick, and sure never to miss one; it finds some that
+are not, a pair of dollars in code, say.
+
+### Parameters
+
+- `markdown` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## replaceFormulas
+
+A document's markdown with each formula in it put another way, for what
+reads it as words. Escapes are passed over, as markdown reads them; code is
+not, and a formula's delimiters in it are read as one, which a count of
+words can bear.
+
+### Parameters
+
+- `markdown` **[string][1704]**&#x20;
+- `put` &#x20;
+
+Returns **[string][1704]**&#x20;
+
+## utils/titleValidation
+
+Utilities for validating and normalizing titles
+
+## normalizeTitle
+
+Normalize a title by trimming whitespace
+
+### Parameters
+
+- `title` **([string][1704] | null | [undefined][1717])** The title to normalize
+
+Returns **[string][1704]** The normalized title (empty string if null/undefined)
+
+## shouldUpdateTitle
+
+Check if a title should be updated
+
+### Parameters
+
+- `newTitle` **([string][1704] | null | [undefined][1717])** The new title value
+- `currentTitle` **([string][1704] | null | [undefined][1717])** The current title value
+
+Returns **[boolean][1705]** True if the title should be updated
+
+## isCustomTitle
+
+Check if a title is considered custom (non-empty after trimming)
+
+### Parameters
+
+- `title` **([string][1704] | null | [undefined][1717])** The title to check
+
+Returns **[boolean][1705]** True if the title is custom
+
+## getTitlePlaceholder
+
+Get placeholder text for title inputs
+
+### Parameters
+
+- `type` **[string][1704]** The type of item ('part', 'scene', 'draft')
+- `position` **[number][1706]** The position/index of the item
+
+Returns **[string][1704]** Placeholder text
+
+## freeName
+
+A name nothing else in a list has, for a project or a profile: `name`
+itself when it is free, and otherwise numbered past the copies already
+there — `Thief (2)`, then `Thief (3)`, the original being the
+first, as a document's copies are (see `freeTitle` in utils/documentPath.js).
+A name that is already a numbered copy counts on from its own number rather
+than gaining a second one, so importing `Thief (2)` beside itself gives
+`Thief (3)`. Names are compared without the spaces round them and
+whatever their case.
+
+### Parameters
+
+- `taken` **[Array][1711]<[string][1704]>** The names of the others
+- `name` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+##
+
+Type: [string][1704]
+
+## utils/touch
+
+Whether the writer is typing on a touch screen's keyboard.
+
+Asked where Enter would send or save: such a keyboard has no Shift-Enter,
+so Return is its only way to start a new line, and the field's button does
+the sending. Told by the main pointer being a finger, not by the width of
+the window, so a phone on its side still counts and a narrow desktop window
+does not.
+
+## hasTouchKeyboard
+
+Returns **[boolean][1705]**&#x20;
+
+## submitOnEnter
+
+Send or save on Enter, except from a touch screen's keyboard, where the
+Enter is left to start a new line.
+
+### Parameters
+
+- `event` **[KeyboardEvent][1727]**&#x20;
+- `action` &#x20;
+
+## utils/trash
+
+The trash's rules, shared by the stores that keep it: how long
+something stays there, and which of a project's documents are in it.
+
+What was deleted carries `trashed`, when it went. What is inside a trashed
+folder keeps its row as it was and is in the trash because the folder is,
+so that it goes and comes back with the folder. The stores keep what is in
+the trash apart from what everything else reads. See
+`.llm/trash_design.md`.
+
+## TRASH_KEPT_MS
+
+## TRASH_KEPT_MS
+
+How long the trash keeps what is in it: 30 days, in milliseconds.
+
+## expired
+
+Whether something in the trash has been there long enough to go for good.
+
+### Parameters
+
+- `row` &#x20;
+- `now` **[number][1706]?** (optional, default `Date.now()`)
+
+Returns **[boolean][1705]**&#x20;
+
+## trashedIds
+
+The documents in the trash: each one trashed, and every one under a
+trashed folder. A document whose folders loop, or lead nowhere, is in it
+only if one of them was trashed.
+
+### Parameters
+
+- `documents` **Iterable<[Document][1712]>** A project's, or any set of them
+
+Returns **[Set][1710]<[string][1704]>** Their ids
+
+## known
+
+Type: [Map][1716]<[string][1704], [boolean][1705]>
+
+## known
+
+##
+
+Type: ([Document][1712] | [undefined][1717])
+
+## outOfTrash
+
+A project's documents without what is in its trash.
+
+### Parameters
+
+- `documents` **[Array][1711]<[Document][1712]>**&#x20;
+
+Returns **[Array][1711]<[Document][1712]>**&#x20;
+
+## utils/turns
+
+Fold a chat's messages into the turns they are.
+
+A turn is normally one message: the writer's, holding everything they wrote
+and rolled as its segments; the assistant's, holding what it said. The same
+side can still speak twice in a row — a reply that failed or was deleted and
+then more written under it, or a paragraph pushed after a generated one — and
+`mergeAdjacentTurns` in ai/context/build.js sends that run as one turn,
+because that is what it is to the model.
+
+This is the same fold for the reader. Two boxes in a row under one name say
+the writer spoke twice; one box holding both says what actually happened, and
+matches what the model is being told.
+
+An aside is a turn of its own on either side, question and answer: the model
+reads the turns around it and never it, so it is folded into neither. See
+ai/asides.js.
+
+## Turn
+
+Type: [Object][1707]
+
+### Properties
+
+- `id` **[string][1704]** The first message's id, which is stable enough to key on
+- `role` **(`"user"` | `"assistant"`)** Whose turn it is
+- `command` **[string][1704]?** The command that answered, when the turn is one
+  rather than something anybody said
+- `messages` **[Array][1711]\<Message>** What it was taken in, in order
+- `compacted` **[boolean][1705]** Whether a summary now stands in for it
+- `aside` **[boolean][1705]** Whether it was said on the side: an aside, or
+  the answer to one
+
+## commandOf
+
+Which voice a message is in, which is not quite its role.
+
+A command that takes a turn of its own — `/compact` — is stored as an
+assistant message, because that is what it is; but it is not the Game Master,
+and folding a summary into the narration after it would put one name over two
+different things. The writer's own commands are the opposite case: an oracle
+belongs in the turn it was rolled in, beside the sentence it settles, as a
+piece of that message.
+
+### Parameters
+
+- `message` **Message**&#x20;
+
+Returns **([string][1704] | [undefined][1717])**&#x20;
+
+## groupTurns
+
+Group a conversation into turns.
+
+A turn is never half replaced by a summary: where what the summaries stand
+for begins and ends, a turn ends too, so the line drawn there falls between
+turns and the opening a summary kept is not folded into what came after it.
+
+### Parameters
+
+- `messages` **[Array][1711]\<Message>** The conversation in order
+- `covered` **[Set][1710]<[number][1706]>?** Which of them a summary stands in for, by
+  position. See `compactionCover` in ai/compaction.js. (optional, default `new Set()`)
+
+Returns **[Array][1711]<[Turn][1433]>**&#x20;
+
+## turns
+
+Type: [Array][1711]<[Turn][1433]>
+
+## compactedRuns
+
+Where the lines go that say a summary has taken over, and what each says.
+
+One under the run of turns a summary stands in for, which is above the
+summary that stands in for them. A chat compacted three times still has one:
+the newest summary stands for everything above it, the two before it
+included, so they are in the run rather than closing runs of their own.
+
+### Parameters
+
+- `turns` **[Array][1711]<[Turn][1433]>**&#x20;
+
+Returns **[Map][1716]<[number][1706], [number][1706]>** For each turn a line goes above, how many
+messages were in the run it closes
+
+## textLines
+
+How many lines text takes in a column `perLine` characters wide: each of its
+lines wrapped, and a line's worth for each break between paragraphs, which
+is about what the space between them comes to. What a turn's height is
+guessed from until it has had one; see composables/useNearTurns.js.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+- `perLine` **[number][1706]** Characters that fit across the column
+
+Returns **[number][1706]**&#x20;
+
+## utils/unzip
+
+A zip opened whole, with a ceiling on what it opens into.
+
+A few kilobytes of zip can say they hold gigabytes, and inflating them is
+the end of the page. Each entry says in the zip's directory how large it
+is unpacked, and fflate inflates no more of an entry than that, so the
+sizes the entries taken declare are the most memory opening them can
+cost: past the reader's ceiling, nothing is inflated at all.
+
+## MIB
+
+One mebibyte, for a reader to say its ceiling in.
+
+## TooLargeError
+
+**Extends Error**
+
+A zip that would open into more than its reader takes.
+
+## unzipWithin
+
+The entries of a zip that a filter lets in, inflated, unless together they
+would come to more than `most` bytes.
+
+### Parameters
+
+- `bytes` **[Uint8Array][1708]**&#x20;
+- `most` **[number][1706]** Bytes, unpacked
+- `filter` (optional, default `()=>true`)
+
+<!---->
+
+- Throws **[TooLargeError][1446]**&#x20;
+
+## utils/versions
+
+When a text document's version is due, which versions go as
+they age, and what each says it was taken before. See
+`stores/versionsStore.js` and `.llm/versions_design.md`.
+
+## PAUSE_MS
+
+## PAUSE_MS
+
+## PAUSE_MS
+
+How long a document goes unchanged before the text it was left at is kept: 10 minutes.
+
+## STRETCH_MS
+
+How long a stretch of editing goes before a version is kept anyway: an hour.
+
+## DAILY_FOR_MS
+
+How long one version of each day is kept, before one of each week is.
+
+## dayOf
+
+The day a moment is in, by the clock here.
+
+### Parameters
+
+- `at` **[number][1706]**&#x20;
+
+## weekOf
+
+The week a moment is in, by the Monday it starts on, by the clock here.
+
+### Parameters
+
+- `at` **[number][1706]**&#x20;
+
+## thinned
+
+The versions of a document to let go of as they age. A named one stays.
+Of the rest, every one from the last day stays; then the newest of each
+day, for 30 days; then the newest of each week.
+
+### Parameters
+
+- `versions` **[Array][1711]\<Version>** One document's
+- `now` **[number][1706]?** (optional, default `Date.now()`)
+
+Returns **[Array][1711]<[string][1704]>** Their ids
+
+## CLASHED
+
+The name a clash's lost text is kept under.
+
+Type: [string][1704]
+
+## DOC_CLASHED
+
+The name a Google Doc's text is kept under when words of it gave way to its document's.
+
+Type: [string][1704]
+
+## TAKEN_BEFORE
+
+What a version says it was taken before, by what was about to change the text.
+
+## model
+
+Type: Record\<VersionBy, [string][1704]>
+
+## utils/visibility
+
+What one chat sees of the project.
+
+Two layers, and they are not the same kind of thing.
+
+A document's own `hidden` is absolute. It is for what no chat should read —
+a card's JSON, the prompt it replaces — and nothing a chat says brings it
+back, nor anything under a folder that has it.
+
+Under that, each chat marks documents for itself: **shown** (listed, and the
+model reads it when it wants to), or **hidden** (not there, for this chat).
+A mark on a folder covers what is under it, and the nearest mark going up
+the tree decides. So a chat on one character hides the folder all the
+characters are in and shows its own, and a character imported next week
+lands hidden in that chat without anybody touching it. A document nothing
+is marked on is shown, which is what every chat had before there were marks.
+
+There was a third mark, a pin, which carried a document's text on every
+turn; a document is attached to a message now (ai/context/attachments.js).
+A chat from before may still list its pins (`pinnedIds`). They are read as
+shown, which a pin also was: one under a hidden folder stays in sight.
+
+## FIELDS
+
+## FIELDS
+
+## FIELDS
+
+Where each mark is stored on a chat.
+
+## ChatMark
+
+Type: (`"shown"` | `"hidden"`)
+
+## ChatMarks
+
+The marks a chat carries, which is all of it this module reads.
+
+Type: Pick\<ChatRecord, (`"pinnedIds"` | `"shownIds"` | `"hiddenIds"`)>
+
+## shown
+
+Type: const
+
+## markOf
+
+The mark a chat put on this document itself, not on a folder above it.
+
+### Parameters
+
+- `chat` **([ChatMarks][1470] | null | [undefined][1717])**&#x20;
+- `id` **[string][1704]**&#x20;
+
+Returns **([ChatMark][1469] | null)**&#x20;
+
+##
+
+Type: [ChatMark][1469]
+
+## withMark
+
+Put a mark on a document for a chat, or take it off.
+
+Taken off the other first, so a document is in one state at most, and off
+the pins a chat from before may list. A list left empty is written as
+absent, so a chat that never marked anything and one that has stopped read
+the same. Every mark is the writer's: the model has none of its own.
+
+### Parameters
+
+- `chat` **([ChatMarks][1470] | null | [undefined][1717])**&#x20;
+- `id` **[string][1704]**&#x20;
+- `mark` **([ChatMark][1469] | null)** Null to leave it to the folders above
+
+Returns **[ChatMarks][1470]** The lists, to update the chat with
+
+## chatVisibility
+
+How one chat reads a project: whether a document is there for it, and why.
+
+Each question walks up to the root at most once — answers are kept for the
+life of the reader, which is one listing or one tool call. Make a new one
+when the tree or the chat changes.
+
+### Parameters
+
+- `chat` **([ChatMarks][1470] | null | [undefined][1717])** Null reads with no marks at all
+- `get` &#x20;
+
+## settle
+
+Whether anything from here up is hidden outright, and the nearest mark.
+
+### Parameters
+
+- `document` **TreeDocument**&#x20;
+
+## sees
+
+Whether the model in this chat may see a document.
+
+### Parameters
+
+- `document` **(TreeDocument | null | [undefined][1717])**&#x20;
+
+## hiddenEverywhere
+
+Whether a document is out of sight for every chat: its own flag, or a
+folder's above it.
+
+### Parameters
+
+- `document` **TreeDocument**&#x20;
+
+## markFor
+
+The mark that decides for this document in this chat, its own or the
+nearest folder's. Null when nothing above it is marked.
+
+### Parameters
+
+- `document` **TreeDocument**&#x20;
+
+Returns **([ChatMark][1469] | null)**&#x20;
+
+## utils/webkit
+
+Whether the page is running in WebKit.
+
+Asked only where WebKit does something no feature test can show: its
+`ImageDecoder` on Linux brings the page down (see `files/pdf`). WebKit is
+Safari, the desktop app's window on the Mac and on Linux, and every browser
+on iOS whatever it calls itself: those send `CriOS/` or `EdgiOS/` rather
+than `Chrome/` or `Edg/`.
+
+## isWebKit
+
+### Parameters
+
+- `userAgent` **[string][1704]?** (optional, default `globalThis.navigator?.userAgent||''`)
+
+Returns **[boolean][1705]**&#x20;
+
+## utils/wordCount
+
+The words in a document's markdown.
+
+## PICTURE
+
+A picture: `![alt](path)`, its alt text holding no `]` but an escaped one.
+
+## editor/suggestionText
+
+Suggestions in markdown, for what holds a document's text
+rather than its editor state: whether a text has any, the text as one
+reader sees it, that text with one suggestion the other way, and text
+from outside with any markup of theirs read as meant.
+
+The markup is CriticMarkup holding an id (see `suggestions.js`), and only
+the parser tells a half that pairs from one that is text, so a text with
+suggestions is read as a document and written out again. A text without
+any comes back as it was, untouched.
+
+Every reader but the editor reads the text as it stands: the word count,
+explore's digests, a document exported, and the model's reads, its own
+suggestions made in its chat. Narration and the spelling checker read the
+editor's document and leave the marks out there (`tts/script.js`,
+`editor/spelling.js`).
+
+## CLOSE
+
+## CLOSE
+
+The close of either half, which a text with a suggestion has.
+
+## INSERTED
+
+A half put in, with what it puts in.
+
+## DELETED
+
+A half taken out.
+
+## holdsSuggestions
+
+Whether a text may hold a suggestion: it has a half's close.
+
+### Parameters
+
+- `content` **([string][1704] | null | [undefined][1717])**&#x20;
+
+Returns **[boolean][1705]**&#x20;
+
+## seenMarkdown
+
+Markdown as one reader sees it: the suggestions `accepted` names accepted,
+every other rejected, and comments' markup kept. With none named, the text
+as it stands, which is what every reader but the editor reads.
+
+### Parameters
+
+- `content` **[string][1704]**&#x20;
+- `accepted` **[Array][1711]<[string][1704]>?** (optional, default `[]`)
+
+Returns **[string][1704]**&#x20;
+
+## textAsItStands
+
+Markdown as a reader of the text reads it, a word count or a digest: as
+it stands, each suggestion rejected, and without comments' markup.
+
+### Parameters
+
+- `content` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## withoutSuggestionMarkup
+
+Text from outside with suggestions' markup read as meant: what a half
+takes out gone, and what one puts in kept. A model writing the markup
+means the change it marks, and what it writes is never a suggestion of
+its own: the tools make those.
+
+### Parameters
+
+- `text` **[string][1704]**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## Turned
+
+A reader's text with one suggestion the other way.
+
+Type: [Object][1707]
+
+### Properties
+
+- `text` **[string][1704]**&#x20;
+- `start` **[number][1706]** How many characters, at least, it shares with
+  the reader's text at the start
+- `end` **[number][1706]** And at the end
+
+## Reading
+
+A document as one reader has it, and as they would with any one of its
+suggestions the other way.
+
+Type: [Object][1707]
+
+### Properties
+
+- `text` **[string][1704]** The reader's text, without comments' markup
+
+## written
+
+Blocks written as a document of their own, as a read gives it: without
+comments' markup, and without the blocks a reader has nothing of.
+
+### Parameters
+
+- `blocks` **[Array][1711]<([Node][1713] | null)>**&#x20;
+
+Returns **[string][1704]**&#x20;
+
+## written
+
+Type: [Array][1711]<[Blob][1720]>
+
+## filter
+
+Type: [Array][1711]<[Node][1713]>
+
+## filter
+
+Type: [Array][1711]<[Piece][1683]>
+
+## readingOf
+
+A document's text as one reader has it, and that text with any one of its
+suggestions the other way: the two differ by the change the suggestion
+makes.
+
+The document is written whole once. A suggestion the other way changes
+only the blocks its marks are in, so only they are written again, between
+the nearest block on each side that the reader has words of: what is
+written between two blocks hangs on both, and on nothing further off.
+Where those blocks are in the text is found by writing the text up to
+them again, a stretch at a time.
+
+The whole document is written the other way instead where blocks written
+alone are not what it would have of them. One case is known: a text that
+holds every character the serializer marks a dollar by has all its dollars
+escaped, which blocks written without those characters would not. And
+should a stretch written alone not be what the reader's text has there,
+a block's markdown has come to hang on more than its neighbours.
+
+### Parameters
+
+- `doc` **[Node][1713]** As parsed, suggestions' marks and all
+- `accepted` **[Array][1711]<[string][1704]>** The suggestions the reader sees made
+
+Returns **[Reading][1507]**&#x20;
+
+## blocks
+
+Type: [Array][1711]<[Node][1713]>
+
+## held
+
+Type: [Array][1711]<([Set][1710]<[string][1704]> | [undefined][1717])>
+
+## says
+
+Type: [Array][1711]<([boolean][1705] | [undefined][1717])>
+
+## endOf
+
+Where a block with words of its own ends in the text: the blocks from
+the nearest one known before it, written alone, are what the text has
+next, after the empty lines between. Undefined where it has not.
+
+### Parameters
+
+- `block` **[number][1706]**&#x20;
+
+Returns **([number][1706] | [undefined][1717])**&#x20;
 
 ## editor/suggestions
 
@@ -10412,7 +10880,7 @@ Design: `.llm/suggestions_design.md`.
 
 How each half is written: what opens it, and what closes it before the id.
 
-Type: Record<(`"insertion"` | `"deletion"`), {open: [string][1640], close: [string][1640]}>
+Type: Record<(`"insertion"` | `"deletion"`), {open: [string][1704], close: [string][1704]}>
 
 ## ID_PATTERN
 
@@ -10422,26 +10890,26 @@ The id after a half's close.
 
 Past this many changes, a stretch of words is one change.
 
-Type: [number][1642]
+Type: [number][1706]
 
 ## MAX_BLOCK_EDITS
 
 Past this many blocks changed, the blocks are one stretch.
 
-Type: [number][1642]
+Type: [number][1706]
 
 ## MAX_PAIRS
 
 Past this many pairs of blocks to weigh in a stretch, those taken out are
 paired with those put in near where they are, not with the likest.
 
-Type: [number][1642]
+Type: [number][1706]
 
 ## NEAR_BLOCKS
 
 How many blocks along, of those put in, one taken out looks for its like.
 
-Type: [number][1642]
+Type: [number][1706]
 
 ## PIECES
 
@@ -10451,7 +10919,7 @@ A word, or any other character.
 
 A fresh suggestion id: like a comment's, but for its first letter.
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## closeSuggestion
 
@@ -10460,9 +10928,9 @@ The closing markup for one half of a suggestion.
 ### Parameters
 
 - `kind` **(`"insertion"` | `"deletion"`)**&#x20;
-- `id` **[string][1640]**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## Suggested
 
@@ -10470,19 +10938,19 @@ A change suggested, and where it went: the document, the suggestions it
 made, and each of the model's own it joined to an older one, by the one it
 went into.
 
-Type: [object][1643]
+Type: [object][1707]
 
 ### Properties
 
-- `doc` **[Node][1649]**&#x20;
-- `ids` **[Array][1647]<[string][1640]>** Those it made, in the text's order
-- `into` **Record<[string][1640], [string][1640]>**&#x20;
+- `doc` **[Node][1713]**&#x20;
+- `ids` **[Array][1711]<[string][1704]>** Those it made, in the text's order
+- `into` **Record<[string][1704], [string][1704]>**&#x20;
 
 ## NEAR
 
 Changes this many words apart in a sentence, or fewer, are one.
 
-Type: [number][1642]
+Type: [number][1706]
 
 ## WORD
 
@@ -10515,13 +10983,13 @@ comments, suggestions and all.
 
 ### Parameters
 
-- `before` **[Node][1649]**&#x20;
-- `after` **[Node][1649]**&#x20;
-- `id` **[string][1640]**&#x20;
-- `own` **[Array][1647]<[string][1640]>?** The model's own pending suggestions, oldest first (optional, default `[]`)
+- `before` **[Node][1713]**&#x20;
+- `after` **[Node][1713]**&#x20;
+- `id` **[string][1704]**&#x20;
+- `own` **[Array][1711]<[string][1704]>?** The model's own pending suggestions, oldest first (optional, default `[]`)
 - `fresh` (optional, default `newSuggestionId`)
 
-Returns **([Suggested][306] | null)**&#x20;
+Returns **([Suggested][307] | null)**&#x20;
 
 ## layOut
 
@@ -10536,25 +11004,25 @@ back.
 
 ### Parameters
 
-- `before` **[Node][1649]**&#x20;
-- `after` **[Node][1649]**&#x20;
-- `id` **[string][1640]**&#x20;
+- `before` **[Node][1713]**&#x20;
+- `after` **[Node][1713]**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **([Node][1649] | null)**&#x20;
+Returns **([Node][1713] | null)**&#x20;
 
 ## Part
 
 A part of a suggestion: a run of words carrying one of its marks, or a
 block it puts in or takes out whole, with the marks that make it so.
 
-Type: [object][1643]
+Type: [object][1707]
 
 ### Properties
 
-- `from` **[number][1642]**&#x20;
-- `to` **[number][1642]**&#x20;
-- `whole` **[boolean][1641]**&#x20;
-- `marks` **[Array][1647]<{from: [number][1642], to: [number][1642], mark: Mark, block: [boolean][1641]}>**&#x20;
+- `from` **[number][1706]**&#x20;
+- `to` **[number][1706]**&#x20;
+- `whole` **[boolean][1705]**&#x20;
+- `marks` **[Array][1711]<{from: [number][1706], to: [number][1706], mark: Mark, block: [boolean][1705]}>**&#x20;
 
 ## placesOf
 
@@ -10563,11 +11031,11 @@ take out as it is there, and what they put in as the place it would go.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
-- `own` **[Array][1647]<[string][1640]>**&#x20;
+- `doc` **[Node][1713]**&#x20;
+- `own` **[Array][1711]<[string][1704]>**&#x20;
 - `map` &#x20;
 
-Returns **[Array][1647]<[Array][1647]<{from: [number][1642], to: [number][1642]}>>** One list for each of `own`
+Returns **[Array][1711]<[Array][1711]<{from: [number][1706], to: [number][1706]}>>** One list for each of `own`
 
 ## its
 
@@ -10603,20 +11071,20 @@ near they are, unless what the change does between them joins them.
 
 ### Parameters
 
-- `laid` **[Node][1649]**&#x20;
-- `standing` **[Node][1649]** The text as it stands, which `laid` is laid over
-- `id` **[string][1640]**&#x20;
-- `own` **[Array][1647]<[string][1640]>** Oldest first
-- `places` **[Array][1647]<[Array][1647]<{from: [number][1642], to: [number][1642]}>>** Each of `own`'s, in `standing`
+- `laid` **[Node][1713]**&#x20;
+- `standing` **[Node][1713]** The text as it stands, which `laid` is laid over
+- `id` **[string][1704]**&#x20;
+- `own` **[Array][1711]<[string][1704]>** Oldest first
+- `places` **[Array][1711]<[Array][1711]<{from: [number][1706], to: [number][1706]}>>** Each of `own`'s, in `standing`
 - `fresh` &#x20;
 
-Returns **{doc: [Node][1649], ids: [Array][1647]<[string][1640]>, all: [Array][1647]<[string][1640]>, into: Record<[string][1640], [string][1640]>}**&#x20;
+Returns **{doc: [Node][1713], ids: [Array][1711]<[string][1704]>, all: [Array][1711]<[string][1704]>, into: Record<[string][1704], [string][1704]>}**&#x20;
 
 ## find
 
 ### Parameters
 
-- `i` **[number][1642]** @returns {number}
+- `i` **[number][1706]** @returns {number}
 
 ## find
 
@@ -10626,23 +11094,23 @@ Type: const
 
 ### Parameters
 
-- `i` **[number][1642]** @param {number} j
+- `i` **[number][1706]** @param {number} j
 - `j` &#x20;
 
 ## touch
 
 ### Parameters
 
-- `a` **{from: [number][1642], to: [number][1642]}** @param {{from: number, to: number}} b
+- `a` **{from: [number][1706], to: [number][1706]}** @param {{from: number, to: number}} b
 - `b` &#x20;
 
 ## owner
 
-Type: [Map][1652]<[number][1642], [string][1640]>
+Type: [Map][1716]<[number][1706], [string][1704]>
 
 ## into
 
-Type: Record<[string][1640], [string][1640]>
+Type: Record<[string][1704], [string][1704]>
 
 ## near
 
@@ -10652,17 +11120,17 @@ word or two of one sentence, so a sentence rewritten is one.
 
 ### Parameters
 
-- `doc` **[Node][1649]** The text as it stands
-- `a` **{from: [number][1642], to: [number][1642], whole: [boolean][1641]}**&#x20;
-- `b` **{from: [number][1642], to: [number][1642], whole: [boolean][1641]}** The one after
+- `doc` **[Node][1713]** The text as it stands
+- `a` **{from: [number][1706], to: [number][1706], whole: [boolean][1705]}**&#x20;
+- `b` **{from: [number][1706], to: [number][1706], whole: [boolean][1705]}** The one after
 
 ## beside
 
-Type: [Array][1647]<[string][1640]>
+Type: [Array][1711]<[string][1704]>
 
 ##
 
-Type: [string][1640]
+Type: [string][1704]
 
 ## rejecting
 
@@ -10670,8 +11138,8 @@ The steps that reject some suggestions at once.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
-- `ids` **[Array][1647]<[string][1640]>**&#x20;
+- `doc` **[Node][1713]**&#x20;
+- `ids` **[Array][1711]<[string][1704]>**&#x20;
 
 Returns **Transform**&#x20;
 
@@ -10690,20 +11158,23 @@ if one will not go back, or rejecting the change would not give `before`.
 
 ### Parameters
 
-- `before` **[Node][1649]**&#x20;
+- `before` **[Node][1713]**&#x20;
 - `standing` **Transform**&#x20;
-- `laid` **[Node][1649]**&#x20;
-- `ids` **[Array][1647]<[string][1640]>** The change's
+- `laid` **[Node][1713]**&#x20;
+- `ids` **[Array][1711]<[string][1704]>** The change's
 
-Returns **([Node][1649] | null)**&#x20;
+Returns **([Node][1713] | null)**&#x20;
 
 ## docOf
 
+A document of these blocks: of none, the one empty paragraph an empty
+document holds.
+
 ### Parameters
 
-- `blocks` **[Array][1647]<[Node][1649]>**&#x20;
+- `blocks` **[Array][1711]<[Node][1713]>**&#x20;
 
-Returns **[Node][1649]**&#x20;
+Returns **[Node][1713]**&#x20;
 
 ## acceptSuggestion
 
@@ -10712,10 +11183,10 @@ kept as plain words, and the blocks it took out gone.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
-- `id` **[string][1640]**&#x20;
+- `doc` **[Node][1713]**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **[Node][1649]**&#x20;
+Returns **[Node][1713]**&#x20;
 
 ## rejectSuggestion
 
@@ -10724,10 +11195,10 @@ would have taken out kept, and the blocks it put in gone.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
-- `id` **[string][1640]**&#x20;
+- `doc` **[Node][1713]**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **[Node][1649]**&#x20;
+Returns **[Node][1713]**&#x20;
 
 ## settling
 
@@ -10736,9 +11207,9 @@ can be undone.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
-- `id` **[string][1640]**&#x20;
-- `accepted` **[boolean][1641]**&#x20;
+- `doc` **[Node][1713]**&#x20;
+- `id` **[string][1704]**&#x20;
+- `accepted` **[boolean][1705]**&#x20;
 
 Returns **Transform**&#x20;
 
@@ -10754,16 +11225,32 @@ left. With none named, it is the text as it stands.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
-- `accepted` **[Array][1647]<[string][1640]>**&#x20;
+- `doc` **[Node][1713]**&#x20;
+- `accepted` **[Array][1711]<[string][1704]>**&#x20;
 
 Returns **Transform**&#x20;
 
-## goes
+## blockSeen
+
+One of a document's blocks as `seeing` shows it to a reader, or null where
+nothing of it is left. A document seen is its blocks seen, each alone and
+those left kept, so a long one can be seen a block at a time.
 
 ### Parameters
 
-- `mark` **Mark**&#x20;
+- `block` **[Node][1713]**&#x20;
+- `accepted` **[Array][1711]<[string][1704]>**&#x20;
+
+Returns **([Node][1713] | null)**&#x20;
+
+## goneFor
+
+Which marks take what they are on out of a reader's sight: an insertion
+not accepted, and a deletion accepted.
+
+### Parameters
+
+- `accepted` **[Array][1711]<[string][1704]>**&#x20;
 
 ## changeOf
 
@@ -10772,16 +11259,16 @@ each in order, those apart parted by an ellipsis.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
-- `id` **[string][1640]**&#x20;
+- `doc` **[Node][1713]**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **{out: [string][1640], in: [string][1640]}**&#x20;
+Returns **{out: [string][1704], in: [string][1704]}**&#x20;
 
 ## texts
 
 ### Parameters
 
-- `list` **[Array][1647]<{text: [string][1640]}>**&#x20;
+- `list` **[Array][1711]<{text: [string][1704]}>**&#x20;
 
 ## leafText
 
@@ -10790,24 +11277,24 @@ written, a break as one.
 
 ### Parameters
 
-- `leaf` **[Node][1649]**&#x20;
+- `leaf` **[Node][1713]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## SuggestionRange
 
 One run of a suggestion's marks: text one half covers, or a block it puts
 in or takes out whole.
 
-Type: [Object][1643]
+Type: [Object][1707]
 
 ### Properties
 
-- `id` **[string][1640]**&#x20;
-- `from` **[number][1642]**&#x20;
-- `to` **[number][1642]**&#x20;
+- `id` **[string][1704]**&#x20;
+- `from` **[number][1706]**&#x20;
+- `to` **[number][1706]**&#x20;
 - `kind` **(`"insertion"` | `"deletion"`)**&#x20;
-- `block` **[boolean][1641]** The mark is on a block, not on text
+- `block` **[boolean][1705]** The mark is on a block, not on text
 
 ## suggestionRanges
 
@@ -10816,9 +11303,9 @@ half that touch joined.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
+- `doc` **[Node][1713]**&#x20;
 
-Returns **[Array][1647]<[SuggestionRange][1530]>**&#x20;
+Returns **[Array][1711]<[SuggestionRange][1596]>**&#x20;
 
 ## suggestionAround
 
@@ -10829,7 +11316,7 @@ or on a block it is in.
 
 - `$pos` &#x20;
 
-Returns **([string][1640] | null)** Its id
+Returns **([string][1704] | null)** Its id
 
 ## suggestionOf
 
@@ -10840,14 +11327,14 @@ a selection touches, the words between its halves or around it with it.
 
 - `selection` &#x20;
 
-Returns **([string][1640] | null)** Its id
+Returns **([string][1704] | null)** Its id
 
 ## SuggestionEntry
 
 A suggestion as a list shows it: once, where it starts, with what it
 changes.
 
-Type: {id: [string][1640], from: [number][1642], change: {out: [string][1640], in: [string][1640]}}
+Type: {id: [string][1704], from: [number][1706], change: {out: [string][1704], in: [string][1704]}}
 
 ## suggestionEntries
 
@@ -10855,13 +11342,13 @@ The suggestions in a document, one entry each, in the order they start.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
+- `doc` **[Node][1713]**&#x20;
 
-Returns **[Array][1647]<[SuggestionEntry][1538]>**&#x20;
+Returns **[Array][1711]<[SuggestionEntry][1604]>**&#x20;
 
 ## starts
 
-Type: [Map][1652]<[string][1640], [number][1642]>
+Type: [Map][1716]<[string][1704], [number][1706]>
 
 ## suggestionsIn
 
@@ -10869,9 +11356,9 @@ The ids of the suggestions in a document, in the order they start.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
+- `doc` **[Node][1713]**&#x20;
 
-Returns **[Array][1647]<[string][1640]>**&#x20;
+Returns **[Array][1711]<[string][1704]>**&#x20;
 
 ## contentOf
 
@@ -10880,9 +11367,9 @@ holds is no block to suggest taking out.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
+- `doc` **[Node][1713]**&#x20;
 
-Returns **[Array][1647]<[Node][1649]>**&#x20;
+Returns **[Array][1711]<[Node][1713]>**&#x20;
 
 ## sequenceOf
 
@@ -10891,19 +11378,19 @@ Sibling blocks with a change to them suggested. Those both have stay as
 
 ### Parameters
 
-- `before` **[Array][1647]<[Node][1649]>**&#x20;
-- `after` **[Array][1647]<[Node][1649]>**&#x20;
-- `id` **[string][1640]**&#x20;
+- `before` **[Array][1711]<[Node][1713]>**&#x20;
+- `after` **[Array][1711]<[Node][1713]>**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **([Array][1647]<[Node][1649]> | null)**&#x20;
+Returns **([Array][1711]<[Node][1713]> | null)**&#x20;
 
 ## gone
 
-Type: [Array][1647]<[Node][1649]>
+Type: [Array][1711]<[Node][1713]>
 
 ## come
 
-Type: [Array][1647]<[Node][1649]>
+Type: [Array][1711]<[Node][1713]>
 
 ## latest
 
@@ -10920,13 +11407,13 @@ more changed around it comes out where it was.
 
 ##
 
-Type: {op: `"equal"`, a: [number][1642], b: [number][1642]}
+Type: {op: `"equal"`, a: [number][1706], b: [number][1706]}
 
 ## isList
 
 ### Parameters
 
-- `node` **[Node][1649]**&#x20;
+- `node` **[Node][1713]**&#x20;
 
 ## stretchOf
 
@@ -10935,15 +11422,15 @@ paired and changed within, the rest taken out or put in whole.
 
 ### Parameters
 
-- `gone` **[Array][1647]<[Node][1649]>**&#x20;
-- `come` **[Array][1647]<[Node][1649]>**&#x20;
-- `id` **[string][1640]**&#x20;
+- `gone` **[Array][1711]<[Node][1713]>**&#x20;
+- `come` **[Array][1711]<[Node][1713]>**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **([Array][1647]<[Node][1649]> | null)**&#x20;
+Returns **([Array][1711]<[Node][1713]> | null)**&#x20;
 
 ##
 
-Type: [Array][1647]<[Node][1649]>
+Type: [Array][1711]<[Node][1713]>
 
 ## pairsOf
 
@@ -10955,10 +11442,10 @@ of the next few put in.
 
 ### Parameters
 
-- `gone` **[Array][1647]<[Node][1649]>**&#x20;
-- `come` **[Array][1647]<[Node][1649]>**&#x20;
+- `gone` **[Array][1711]<[Node][1713]>**&#x20;
+- `come` **[Array][1711]<[Node][1713]>**&#x20;
 
-Returns **[Array][1647]<\[[number][1642], [number][1642]]>**&#x20;
+Returns **[Array][1711]<\[[number][1706], [number][1706]]>**&#x20;
 
 ## changedOf
 
@@ -10969,11 +11456,11 @@ put in.
 
 ### Parameters
 
-- `before` **[Node][1649]**&#x20;
-- `after` **[Node][1649]**&#x20;
-- `id` **[string][1640]**&#x20;
+- `before` **[Node][1713]**&#x20;
+- `after` **[Node][1713]**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **([Array][1647]<[Node][1649]> | null)**&#x20;
+Returns **([Array][1711]<[Node][1713]> | null)**&#x20;
 
 ## tableChanged
 
@@ -10982,19 +11469,19 @@ not, for the table to be taken out and put in whole.
 
 ### Parameters
 
-- `before` **[Node][1649]**&#x20;
-- `after` **[Node][1649]**&#x20;
-- `id` **[string][1640]**&#x20;
+- `before` **[Node][1713]**&#x20;
+- `after` **[Node][1713]**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **([Node][1649] | null)**&#x20;
+Returns **([Node][1713] | null)**&#x20;
 
 ## made
 
-Type: [Array][1647]<[Node][1649]>
+Type: [Array][1711]<[Node][1713]>
 
 ## row
 
-Type: [Array][1647]<[Node][1649]>
+Type: [Array][1711]<[Node][1713]>
 
 ## wordsChanged
 
@@ -11007,25 +11494,25 @@ one block taken out and the other put in.
 
 ### Parameters
 
-- `before` **[Node][1649]**&#x20;
-- `after` **[Node][1649]**&#x20;
-- `id` **[string][1640]**&#x20;
+- `before` **[Node][1713]**&#x20;
+- `after` **[Node][1713]**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **([Node][1649] | null)**&#x20;
+Returns **([Node][1713] | null)**&#x20;
 
 ## laid
 
 ## content
 
-Type: [Array][1647]<[Node][1649]>
+Type: [Array][1711]<[Node][1713]>
 
 ## content
 
-Type: [Array][1647]<[Node][1649]>
+Type: [Array][1711]<[Node][1713]>
 
 ## content
 
-Type: [Array][1647]<([string][1640] | {text: [string][1640], marks: [string][1640]})>
+Type: [Array][1711]<([string][1704] | {text: [string][1704], marks: [string][1704]})>
 
 ## inComments
 
@@ -11034,11 +11521,11 @@ in: words put in inside a commented passage are in its comment.
 
 ### Parameters
 
-- `node` **[Node][1649]**&#x20;
-- `laid` **[Array][1647]<{op: [string][1640], node: [Node][1649]}>**&#x20;
-- `at` **[number][1642]**&#x20;
+- `node` **[Node][1713]**&#x20;
+- `laid` **[Array][1711]<{op: [string][1704], node: [Node][1713]}>**&#x20;
+- `at` **[number][1706]**&#x20;
 
-Returns **[Node][1649]**&#x20;
+Returns **[Node][1713]**&#x20;
 
 ## wholly
 
@@ -11047,11 +11534,11 @@ to mark, itself. A list's or a quote's are its blocks'.
 
 ### Parameters
 
-- `node` **[Node][1649]**&#x20;
+- `node` **[Node][1713]**&#x20;
 - `type` **MarkType**&#x20;
-- `id` **[string][1640]**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **([Node][1649] | null)**&#x20;
+Returns **([Node][1713] | null)**&#x20;
 
 ## insertedWhole
 
@@ -11061,10 +11548,10 @@ in, or where it has none to mark, itself.
 
 ### Parameters
 
-- `node` **[Node][1649]**&#x20;
-- `id` **[string][1640]**&#x20;
+- `node` **[Node][1713]**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **[Node][1649]**&#x20;
+Returns **[Node][1713]**&#x20;
 
 ## dropping
 
@@ -11076,7 +11563,7 @@ paragraph.
 
 ### Parameters
 
-- `doc` **[Node][1649]**&#x20;
+- `doc` **[Node][1713]**&#x20;
 - `drops` &#x20;
 - `keeps` &#x20;
 
@@ -11084,7 +11571,7 @@ Returns **Transform**&#x20;
 
 ## inline
 
-Type: [Array][1647]\<Mark>
+Type: [Array][1711]\<Mark>
 
 ## goneIn
 
@@ -11093,12 +11580,12 @@ null when all of it, or else the ranges inside it, in order.
 
 ### Parameters
 
-- `node` **[Node][1649]**&#x20;
-- `pos` **[number][1642]** Where it starts; -1 for the document
-- `removable` **[boolean][1641]** False for a table's row or cell, which goes only with the table
+- `node` **[Node][1713]**&#x20;
+- `pos` **[number][1706]** Where it starts; -1 for the document
+- `removable` **[boolean][1705]** False for a table's row or cell, which goes only with the table
 - `drops` &#x20;
 
-Returns **([Array][1647]<\[[number][1642], [number][1642]]> | null)**&#x20;
+Returns **([Array][1711]<\[[number][1706], [number][1706]]> | null)**&#x20;
 
 ## suggestionMarkupPlugin
 
@@ -11121,12 +11608,12 @@ first close of its kind ahead, since a half holds no other of its kind.
 
 ### Parameters
 
-- `src` **[string][1640]**&#x20;
-- `from` **[number][1642]** Past the open
-- `max` **[number][1642]**&#x20;
-- `close` **[string][1640]**&#x20;
+- `src` **[string][1704]**&#x20;
+- `from` **[number][1706]** Past the open
+- `max` **[number][1706]**&#x20;
+- `close` **[string][1704]**&#x20;
 
-Returns **({id: [string][1640], end: [number][1642]} | null)**&#x20;
+Returns **({id: [string][1704], end: [number][1706]} | null)**&#x20;
 
 ## suggestedBlock
 
@@ -11138,15 +11625,15 @@ empty paragraph writes.
 ### Parameters
 
 - `state` &#x20;
-- `startLine` **[number][1642]**&#x20;
-- `endLine` **[number][1642]**&#x20;
-- `silent` **[boolean][1641]**&#x20;
+- `startLine` **[number][1706]**&#x20;
+- `endLine` **[number][1706]**&#x20;
+- `silent` **[boolean][1705]**&#x20;
 
-Returns **[boolean][1641]**&#x20;
+Returns **[boolean][1705]**&#x20;
 
 ##
 
-Type: [number][1642]
+Type: [number][1706]
 
 ##
 
@@ -11159,14 +11646,14 @@ one kind, so that a pair of one kind is taken over a pair of two.
 
 ### Parameters
 
-- `a` **[Node][1649]**&#x20;
-- `b` **[Node][1649]**&#x20;
+- `a` **[Node][1713]**&#x20;
+- `b` **[Node][1713]**&#x20;
 
-Returns **[number][1642]**&#x20;
+Returns **[number][1706]**&#x20;
 
 ## blockWords
 
-Type: [WeakMap][1659]<[Node][1649], [Array][1647]<[string][1640]>>
+Type: [WeakMap][1724]<[Node][1713], [Array][1711]<[string][1704]>>
 
 ## wordsIn
 
@@ -11176,9 +11663,9 @@ weighs against every block on the other side of it.
 
 ### Parameters
 
-- `node` **[Node][1649]**&#x20;
+- `node` **[Node][1713]**&#x20;
 
-Returns **[Array][1647]<[string][1640]>**&#x20;
+Returns **[Array][1711]<[string][1704]>**&#x20;
 
 ## alike
 
@@ -11187,18 +11674,18 @@ put in: of one kind, and sharing at least half the words of the shorter.
 
 ### Parameters
 
-- `a` **[Node][1649]**&#x20;
-- `b` **[Node][1649]**&#x20;
+- `a` **[Node][1713]**&#x20;
+- `b` **[Node][1713]**&#x20;
 
 ## marked
 
 ### Parameters
 
-- `node` **[Node][1649]**&#x20;
+- `node` **[Node][1713]**&#x20;
 - `type` **MarkType**&#x20;
-- `id` **[string][1640]**&#x20;
+- `id` **[string][1704]**&#x20;
 
-Returns **[Node][1649]**&#x20;
+Returns **[Node][1713]**&#x20;
 
 ## isSuggestion
 
@@ -11210,9 +11697,9 @@ Returns **[Node][1649]**&#x20;
 
 ### Parameters
 
-- `node` **[Node][1649]**&#x20;
+- `node` **[Node][1713]**&#x20;
 
-Returns **[Array][1647]\<Mark>**&#x20;
+Returns **[Array][1711]\<Mark>**&#x20;
 
 ## remade
 
@@ -11220,18 +11707,18 @@ A node of the kind `like` is, holding `content`. Null when it cannot.
 
 ### Parameters
 
-- `like` **[Node][1649]**&#x20;
-- `content` **[Array][1647]<[Node][1649]>**&#x20;
+- `like` **[Node][1713]**&#x20;
+- `content` **[Array][1711]<[Node][1713]>**&#x20;
 
-Returns **([Node][1649] | null)**&#x20;
+Returns **([Node][1713] | null)**&#x20;
 
 ## childrenOf
 
 ### Parameters
 
-- `node` **[Node][1649]**&#x20;
+- `node` **[Node][1713]**&#x20;
 
-Returns **[Array][1647]<[Node][1649]>**&#x20;
+Returns **[Array][1711]<[Node][1713]>**&#x20;
 
 ## keyOf
 
@@ -11240,13 +11727,13 @@ text joined where only those parted it.
 
 ### Parameters
 
-- `node` **[Node][1649]**&#x20;
+- `node` **[Node][1713]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## child
 
-Type: [string][1640]
+Type: [string][1704]
 
 ## markupKey
 
@@ -11254,9 +11741,9 @@ What kind of node one is, its contents aside.
 
 ### Parameters
 
-- `node` **[Node][1649]**&#x20;
+- `node` **[Node][1713]**&#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## marksKey
 
@@ -11266,7 +11753,7 @@ Marks, comments and suggestions left out.
 
 - `marks` &#x20;
 
-Returns **[string][1640]**&#x20;
+Returns **[string][1704]**&#x20;
 
 ## utils/wordDiff
 
@@ -11281,24 +11768,24 @@ compared line by line instead, and past as many lines, shown whole.
 
 ## Piece
 
-Type: [Object][1643]
+Type: [Object][1707]
 
 ### Properties
 
-- `text` **[string][1640]**&#x20;
+- `text` **[string][1704]**&#x20;
 - `in` **(`"both"` | `"first"` | `"second"`)** Which of the texts has it
 
 ## MOST_CHANGES
 
 How many words or lines may differ before a finer comparison gives up.
 
-Type: [number][1642]
+Type: [number][1706]
 
 ## linesOf
 
 ### Parameters
 
-- `text` **[string][1640]**&#x20;
+- `text` **[string][1704]**&#x20;
 
 ## textChanges
 
@@ -11307,20 +11794,16 @@ has comes before what only the second has.
 
 ### Parameters
 
-- `first` **[string][1640]**&#x20;
-- `second` **[string][1640]**&#x20;
+- `first` **[string][1704]**&#x20;
+- `second` **[string][1704]**&#x20;
 
-Returns **[Array][1647]<[Piece][1617]>**&#x20;
-
-##
-
-Type: [string][1640]
+Returns **[Array][1711]<[Piece][1683]>**&#x20;
 
 ##
 
-## filter
+Type: [string][1704]
 
-Type: [Array][1647]<[Piece][1617]>
+##
 
 ## utils/zipWriter
 
@@ -11348,11 +11831,11 @@ How much of what is written is gathered before it is let go to a Blob.
 
 What a zip without ZIP64 can hold.
 
-Type: [number][1642]
+Type: [number][1706]
 
 ## ZipWriter
 
-Type: [Object][1643]
+Type: [Object][1707]
 
 ## zipWriter
 
@@ -11360,36 +11843,32 @@ Start a zip.
 
 ### Parameters
 
-- `tooLarge` **[string][1640]** What the error says when it would hold more
+- `tooLarge` **[string][1704]** What the error says when it would hold more
   than a zip can
 
 <!---->
 
-- Throws **[Error][1650]** From any of its calls, when it would hold more than a zip can
+- Throws **[Error][1714]** From any of its calls, when it would hold more than a zip can
 
-Returns **[ZipWriter][1631]**&#x20;
-
-## written
-
-Type: [Array][1647]<[Blob][1656]>
+Returns **[ZipWriter][1696]**&#x20;
 
 ## gathered
 
-Type: [Array][1647]<[Uint8Array][1644]>
+Type: [Array][1711]<[Uint8Array][1708]>
 
 ## failed
 
-Type: ([Error][1650] | null)
+Type: ([Error][1714] | null)
 
 ##
 
-Type: [Array][1647]\<BlobPart>
+Type: [Array][1711]\<BlobPart>
 
 ## counted
 
 ### Parameters
 
-- `name` **[string][1640]**&#x20;
+- `name` **[string][1704]**&#x20;
 
 [1]: #utilsaddresskeys
 [2]: #key_left_out
@@ -11459,1598 +11938,1662 @@ Type: [Array][1647]\<BlobPart>
 [66]: #out-22
 [67]: #out-23
 [68]: #out-24
-[69]: #validatebackup
-[70]: #parameters-12
-[71]: #errors
-[72]: #upgradetables
-[73]: #parameters-13
-[74]: #summarizebackup
-[75]: #parameters-14
-[76]: #counted
-[77]: #part_of_counted
-[78]: #describebackupcontents
-[79]: #parameters-15
-[80]: #rows
-[81]: #parameters-16
-[82]: #rows-1
-[83]: #parts
-[84]: #keysleftout
-[85]: #parameters-17
-[86]: #
-[87]: #backupfilename
-[88]: #parameters-18
-[89]: #-1
-[90]: #slugof
-[91]: #parameters-19
-[92]: #slugof-1
-[93]: #parameters-20
-[94]: #chatfilename
-[95]: #parameters-21
-[96]: #chatfromtables
-[97]: #parameters-22
-[98]: #projectrows
-[99]: #properties-3
-[100]: #projectfromtables
-[101]: #parameters-23
-[102]: #own
-[103]: #parameters-24
-[104]: #projectname
-[105]: #parameters-25
-[106]: #projectsfromtables
-[107]: #parameters-26
-[108]: #withfreshids
-[109]: #parameters-27
-[110]: #ids
-[111]: #ids-1
-[112]: #ids-2
-[113]: #ids-3
-[114]: #renew
-[115]: #parameters-28
-[116]: #rewriterows
-[117]: #parameters-29
-[118]: #idrewriter
-[119]: #parameters-30
-[120]: #rewriterun
-[121]: #parameters-31
-[122]: #rewriteids
-[123]: #parameters-32
-[124]: #rewrite
-[125]: #map
-[126]: #map-1
-[127]: #parameters-33
-[128]: #fromentries
-[129]: #storesmigrationsdocuments
-[130]: #partsandscenestodocuments
-[131]: #parameters-34
-[132]: #partsandscenestodocuments-1
-[133]: #parameters-35
-[134]: #documents
-[135]: #skipped
-[136]: #skipped-1
-[137]: #storyidbypart
-[138]: #deleted
-[139]: #deleted-1
-[140]: #deleted-2
-[141]: #deleted-3
-[142]: #deletedat
-[143]: #deletedat-1
-[144]: #storesmigrationsprojecttree
-[145]: #rootidfor
-[146]: #parameters-36
-[147]: #rootidfor-1
-[148]: #parameters-37
-[149]: #manuscriptidfor
-[150]: #parameters-38
-[151]: #notesidfor
-[152]: #parameters-39
-[153]: #draftsidfor
-[154]: #parameters-40
-[155]: #folder
-[156]: #parameters-41
-[157]: #folder-1
-[158]: #parameters-42
-[159]: #rootnode
-[160]: #parameters-43
-[161]: #defaultprojectfolders
-[162]: #parameters-44
-[163]: #acttitle
-[164]: #parameters-45
-[165]: #byorder
-[166]: #parameters-46
-[167]: #documentstoprojecttree
-[168]: #parameters-47
-[169]: #bystory
-[170]: #restructured
-[171]: #storesmigrationslore
-[172]: #slug
-[173]: #parameters-48
-[174]: #slug-1
-[175]: #parameters-49
-[176]: #slug-2
-[177]: #parameters-50
-[178]: #categoryfolderidfor
-[179]: #parameters-51
-[180]: #archivefolderidfor
-[181]: #parameters-52
-[182]: #plaintexttohtml
-[183]: #parameters-53
-[184]: #countwords
-[185]: #parameters-54
-[186]: #countwords-1
-[187]: #parameters-55
-[188]: #loretodocuments
-[189]: #parameters-56
-[190]: #storyidbylorebook
-[191]: #emittedfolders
-[192]: #foldercount
-[193]: #entrycount
-[194]: #nextorder
-[195]: #parameters-57
-[196]: #-2
-[197]: #entry
-[198]: #storesmigrationslastdocument
-[199]: #lastscenetolastdocument
-[200]: #parameters-58
-[201]: #lastscenetolastdocument-1
-[202]: #parameters-59
-[203]: #storesmigrationsoverview
-[204]: #overviewtorootsummary
-[205]: #parameters-60
-[206]: #overviewtorootsummary-1
-[207]: #parameters-61
-[208]: #overviewtorootsummary-2
-[209]: #parameters-62
-[210]: #byid
-[211]: #byid-1
-[212]: #byid-2
-[213]: #byid-3
-[214]: #root
-[215]: #storesmigrationscommandinput
-[216]: #commandargstoinput
-[217]: #parameters-63
-[218]: #commandargstoinput-1
-[219]: #parameters-64
-[220]: #commandargstoinput-2
-[221]: #parameters-65
-[222]: #message
-[223]: #message-1
-[224]: #message-2
-[225]: #message-3
-[226]: #storesmigrationscommandvoice
-[227]: #consulted
-[228]: #consulted-1
-[229]: #commandsintotheirvoice
-[230]: #parameters-66
-[231]: #storesmigrationscharactersigil
-[232]: #commands
-[233]: #commands-1
-[234]: #markcharacters
-[235]: #parameters-67
-[236]: #-3
-[237]: #storesmigrationsturnsegments
-[238]: #tags
-[239]: #tags-1
-[240]: #rendercommand
-[241]: #parameters-68
-[242]: #segmentof
-[243]: #parameters-69
-[244]: #foldturns
-[245]: #parameters-70
-[246]: #bychat
-[247]: #bychat-1
-[248]: #untouched
-[249]: #run
-[250]: #run-1
-[251]: #run-2
-[252]: #storesmigrationsturnruns
-[253]: #cutof
-[254]: #parameters-71
-[255]: #cutof-1
-[256]: #parameters-72
-[257]: #piecesof
-[258]: #parameters-73
-[259]: #piecesof-1
-[260]: #parameters-74
-[261]: #foldchat
-[262]: #parameters-75
-[263]: #foldruns
-[264]: #parameters-76
-[265]: #storesmigrationsmarkdown
-[266]: #htmltomarkdown
-[267]: #parameters-77
-[268]: #htmltomarkdown-1
-[269]: #parameters-78
-[270]: #documentstomarkdown
-[271]: #parameters-79
-[272]: #editorschema
-[273]: #languageof
-[274]: #parameters-80
-[275]: #code_block
-[276]: #-4
-[277]: #kept_source
-[278]: #image
-[279]: #getattribute
-[280]: #getattribute-1
-[281]: #getattribute-2
-[282]: #getattribute-3
-[283]: #texof
-[284]: #parameters-81
-[285]: #pastedformula
-[286]: #parameters-82
-[287]: #-5
-[288]: #formula
-[289]: #formula_block
-[290]: #strikethrough
-[291]: #alignments
-[292]: #alignmentof
-[293]: #parameters-83
-[294]: #alignmentof-1
-[295]: #parameters-84
-[296]: #cellattrs
-[297]: #parameters-85
-[298]: #breaks
-[299]: #cellcontent
-[300]: #parameters-86
-[301]: #clonenode
-[302]: #table
-[303]: #table_row
-[304]: #table_cell
-[305]: #comment
-[306]: #suggested
-[307]: #parameters-87
-[308]: #getattrs
-[309]: #parameters-88
-[310]: #block_marks
-[311]: #node_names
-[312]: #mark_names
-[313]: #schema
-[314]: #storesmigrationscommentthreads
-[315]: #threadsofftext
-[316]: #parameters-89
-[317]: #threadsofftext-1
-[318]: #parameters-90
-[319]: #storesmigrationsprofiles
-[320]: #builtinfor
+[69]: #out-25
+[70]: #validatebackup
+[71]: #parameters-12
+[72]: #errors
+[73]: #upgradetables
+[74]: #parameters-13
+[75]: #summarizebackup
+[76]: #parameters-14
+[77]: #counted
+[78]: #part_of_counted
+[79]: #describebackupcontents
+[80]: #parameters-15
+[81]: #rows
+[82]: #parameters-16
+[83]: #rows-1
+[84]: #parts
+[85]: #parts-1
+[86]: #keysleftout
+[87]: #parameters-17
+[88]: #
+[89]: #backupfilename
+[90]: #parameters-18
+[91]: #-1
+[92]: #slugof
+[93]: #parameters-19
+[94]: #slugof-1
+[95]: #parameters-20
+[96]: #chatfilename
+[97]: #parameters-21
+[98]: #chatfromtables
+[99]: #parameters-22
+[100]: #projectrows
+[101]: #properties-3
+[102]: #projectfromtables
+[103]: #parameters-23
+[104]: #own
+[105]: #parameters-24
+[106]: #projectname
+[107]: #parameters-25
+[108]: #projectsfromtables
+[109]: #parameters-26
+[110]: #withfreshids
+[111]: #parameters-27
+[112]: #ids
+[113]: #ids-1
+[114]: #ids-2
+[115]: #ids-3
+[116]: #renew
+[117]: #parameters-28
+[118]: #rewriterows
+[119]: #parameters-29
+[120]: #idrewriter
+[121]: #parameters-30
+[122]: #rewriterun
+[123]: #parameters-31
+[124]: #rewriteids
+[125]: #parameters-32
+[126]: #rewrite
+[127]: #map
+[128]: #map-1
+[129]: #parameters-33
+[130]: #fromentries
+[131]: #storesmigrationsdocuments
+[132]: #partsandscenestodocuments
+[133]: #parameters-34
+[134]: #partsandscenestodocuments-1
+[135]: #parameters-35
+[136]: #documents
+[137]: #skipped
+[138]: #skipped-1
+[139]: #storyidbypart
+[140]: #deleted
+[141]: #deleted-1
+[142]: #deleted-2
+[143]: #deleted-3
+[144]: #deletedat
+[145]: #deletedat-1
+[146]: #storesmigrationsprojecttree
+[147]: #rootidfor
+[148]: #parameters-36
+[149]: #rootidfor-1
+[150]: #parameters-37
+[151]: #manuscriptidfor
+[152]: #parameters-38
+[153]: #notesidfor
+[154]: #parameters-39
+[155]: #draftsidfor
+[156]: #parameters-40
+[157]: #folder
+[158]: #parameters-41
+[159]: #folder-1
+[160]: #parameters-42
+[161]: #rootnode
+[162]: #parameters-43
+[163]: #defaultprojectfolders
+[164]: #parameters-44
+[165]: #acttitle
+[166]: #parameters-45
+[167]: #byorder
+[168]: #parameters-46
+[169]: #documentstoprojecttree
+[170]: #parameters-47
+[171]: #bystory
+[172]: #restructured
+[173]: #storesmigrationslore
+[174]: #slug
+[175]: #parameters-48
+[176]: #slug-1
+[177]: #parameters-49
+[178]: #slug-2
+[179]: #parameters-50
+[180]: #categoryfolderidfor
+[181]: #parameters-51
+[182]: #archivefolderidfor
+[183]: #parameters-52
+[184]: #plaintexttohtml
+[185]: #parameters-53
+[186]: #countwords
+[187]: #parameters-54
+[188]: #countwords-1
+[189]: #parameters-55
+[190]: #loretodocuments
+[191]: #parameters-56
+[192]: #storyidbylorebook
+[193]: #emittedfolders
+[194]: #foldercount
+[195]: #entrycount
+[196]: #nextorder
+[197]: #parameters-57
+[198]: #-2
+[199]: #entry
+[200]: #storesmigrationslastdocument
+[201]: #lastscenetolastdocument
+[202]: #parameters-58
+[203]: #lastscenetolastdocument-1
+[204]: #parameters-59
+[205]: #storesmigrationsoverview
+[206]: #overviewtorootsummary
+[207]: #parameters-60
+[208]: #overviewtorootsummary-1
+[209]: #parameters-61
+[210]: #overviewtorootsummary-2
+[211]: #parameters-62
+[212]: #byid
+[213]: #byid-1
+[214]: #byid-2
+[215]: #byid-3
+[216]: #root
+[217]: #storesmigrationscommandinput
+[218]: #commandargstoinput
+[219]: #parameters-63
+[220]: #commandargstoinput-1
+[221]: #parameters-64
+[222]: #commandargstoinput-2
+[223]: #parameters-65
+[224]: #message
+[225]: #message-1
+[226]: #message-2
+[227]: #message-3
+[228]: #storesmigrationscommandvoice
+[229]: #consulted
+[230]: #consulted-1
+[231]: #commandsintotheirvoice
+[232]: #parameters-66
+[233]: #storesmigrationscharactersigil
+[234]: #commands
+[235]: #commands-1
+[236]: #markcharacters
+[237]: #parameters-67
+[238]: #-3
+[239]: #storesmigrationsturnsegments
+[240]: #tags
+[241]: #tags-1
+[242]: #rendercommand
+[243]: #parameters-68
+[244]: #segmentof
+[245]: #parameters-69
+[246]: #foldturns
+[247]: #parameters-70
+[248]: #bychat
+[249]: #bychat-1
+[250]: #untouched
+[251]: #run
+[252]: #run-1
+[253]: #storesmigrationsturnruns
+[254]: #cutof
+[255]: #parameters-71
+[256]: #cutof-1
+[257]: #parameters-72
+[258]: #piecesof
+[259]: #parameters-73
+[260]: #piecesof-1
+[261]: #parameters-74
+[262]: #foldchat
+[263]: #parameters-75
+[264]: #foldruns
+[265]: #parameters-76
+[266]: #storesmigrationsmarkdown
+[267]: #htmltomarkdown
+[268]: #parameters-77
+[269]: #htmltomarkdown-1
+[270]: #parameters-78
+[271]: #documentstomarkdown
+[272]: #parameters-79
+[273]: #editorschema
+[274]: #languageof
+[275]: #parameters-80
+[276]: #code_block
+[277]: #-4
+[278]: #kept_source
+[279]: #image
+[280]: #getattribute
+[281]: #getattribute-1
+[282]: #getattribute-2
+[283]: #getattribute-3
+[284]: #texof
+[285]: #parameters-81
+[286]: #pastedformula
+[287]: #parameters-82
+[288]: #-5
+[289]: #formula
+[290]: #formula_block
+[291]: #strikethrough
+[292]: #alignments
+[293]: #alignmentof
+[294]: #parameters-83
+[295]: #alignmentof-1
+[296]: #parameters-84
+[297]: #cellattrs
+[298]: #parameters-85
+[299]: #breaks
+[300]: #cellcontent
+[301]: #parameters-86
+[302]: #clonenode
+[303]: #table
+[304]: #table_row
+[305]: #table_cell
+[306]: #comment
+[307]: #suggested
+[308]: #parameters-87
+[309]: #getattrs
+[310]: #parameters-88
+[311]: #block_marks
+[312]: #node_names
+[313]: #mark_names
+[314]: #schema
+[315]: #editormarkdown
+[316]: #formulainline
+[317]: #parameters-89
+[318]: #formulainline-1
+[319]: #parameters-90
+[320]: #closeon
 [321]: #parameters-91
-[322]: #profilefrom
+[322]: #formulablock
 [323]: #parameters-92
-[324]: #promptstoprofiles
-[325]: #parameters-93
-[326]: #chatstoprofiles
-[327]: #parameters-94
-[328]: #storiestoprofiles
-[329]: #parameters-95
-[330]: #storesmigrationssummariesinplace
-[331]: #stoodfor
-[332]: #parameters-96
-[333]: #stoodfor-1
-[334]: #parameters-97
-[335]: #placechat
-[336]: #parameters-98
-[337]: #targets
-[338]: #targets-1
-[339]: #order
-[340]: #moved
-[341]: #moved-1
-[342]: #parameters-99
-[343]: #summariesintoplace
-[344]: #parameters-100
-[345]: #chats
-[346]: #changed
-[347]: #changed-1
-[348]: #storesmigrationspurgedeleted
-[349]: #flagged_tables
-[350]: #purged
-[351]: #properties-4
-[352]: #withoutdeleted
+[324]: #lines
+[325]: #lines-1
+[326]: #cellsin
+[327]: #parameters-93
+[328]: #tokenizerof
+[329]: #block
+[330]: #block-1
+[331]: #top
+[332]: #split
+[333]: #state
+[334]: #parameters-94
+[335]: #state-1
+[336]: #parameters-95
+[337]: #state-2
+[338]: #parameters-96
+[339]: #state-3
+[340]: #parameters-97
+[341]: #state-4
+[342]: #parameters-98
+[343]: #state-5
+[344]: #parameters-99
+[345]: #state-6
+[346]: #parameters-100
+[347]: #-6
+[348]: #-7
+[349]: #tail
+[350]: #room
+[351]: #delimited
+[352]: #spacesasneighbours
 [353]: #parameters-101
-[354]: #gonefiles
-[355]: #deletedids
-[356]: #parameters-102
-[357]: #storesmigrationsprofileskills
-[358]: #renamed
-[359]: #rolestoskills
+[354]: #children
+[355]: #children-1
+[356]: #linearserializer
+[357]: #serialize
+[358]: #parameters-102
+[359]: #write
 [360]: #parameters-103
-[361]: #skills
-[362]: #-6
-[363]: #storesmigrationsjobworkflows
-[364]: #rolestoworkflows
-[365]: #parameters-104
-[366]: #storesmigrationsmodelkeeps
-[367]: #withoutmodelkeeps
-[368]: #parameters-105
-[369]: #storesmigrationsallowedproviders
-[370]: #allowedproviderstopresets
+[361]: #dollars
+[362]: #dollars-1
+[363]: #dollars-2
+[364]: #parameters-104
+[365]: #-8
+[366]: #dollar_marks
+[367]: #dollar_marks-1
+[368]: #dollarsresolved
+[369]: #parameters-105
+[370]: #opensformula
 [371]: #parameters-106
-[372]: #storesmigrationsexperimentalskills
-[373]: #withexperimentaloff
-[374]: #parameters-107
-[375]: #experimentaloffchats
-[376]: #parameters-108
-[377]: #experimentaloffprofiles
-[378]: #parameters-109
-[379]: #storesmigrationsprojectviews
-[380]: #view_fields
-[381]: #viewsoffstories
-[382]: #parameters-110
-[383]: #views
-[384]: #view
-[385]: #view-1
+[372]: #dollarsin
+[373]: #parameters-107
+[374]: #-9
+[375]: #-10
+[376]: #between_dollars
+[377]: #writtenformula
+[378]: #parameters-108
+[379]: #writtenformulablock
+[380]: #parameters-109
+[381]: #entity
+[382]: #autolink
+[383]: #escapemore
+[384]: #parameters-110
+[385]: #endsline
 [386]: #parameters-111
-[387]: #utilsbackuparchive
-[388]: #manifest
-[389]: #bytes
-[390]: #bytes-1
-[391]: #bytes-2
-[392]: #entry_chars
-[393]: #writearchive
-[394]: #parameters-112
-[395]: #named
-[396]: #named-1
-[397]: #parameters-113
-[398]: #pieces
-[399]: #pieces-1
-[400]: #pieces-2
-[401]: #pieces-3
-[402]: #pieces-4
-[403]: #zipentry
-[404]: #properties-5
-[405]: #isarchive
-[406]: #parameters-114
-[407]: #iszip
-[408]: #parameters-115
-[409]: #readarchive
-[410]: #parameters-116
-[411]: #tables
-[412]: #-7
-[413]: #entriesof
-[414]: #parameters-117
-[415]: #entriesof-1
-[416]: #parameters-118
-[417]: #entries
-[418]: #datastart
-[419]: #parameters-119
-[420]: #blobof
-[421]: #parameters-120
-[422]: #most_entry
-[423]: #bytesof
-[424]: #parameters-121
-[425]: #inflatesync
-[426]: #textof
-[427]: #parameters-122
-[428]: #utilschattabs
-[429]: #chattext
-[430]: #chat_text_titles
-[431]: #chattabid
+[387]: #withblocksuggestions
+[388]: #parameters-112
+[389]: #withblocksuggestions-1
+[390]: #parameters-113
+[391]: #type
+[392]: #type-1
+[393]: #-11
+[394]: #-12
+[395]: #serializer
+[396]: #-13
+[397]: #-14
+[398]: #cells
+[399]: #rowof
+[400]: #parameters-114
+[401]: #ruleof
+[402]: #parameters-115
+[403]: #parsemarkdown
+[404]: #parameters-116
+[405]: #serializemarkdown
+[406]: #parameters-117
+[407]: #settlemarkdown
+[408]: #parameters-118
+[409]: #appendblocks
+[410]: #parameters-119
+[411]: #storesmigrationscommentthreads
+[412]: #threadsofftext
+[413]: #parameters-120
+[414]: #threadsofftext-1
+[415]: #parameters-121
+[416]: #editorcomments
+[417]: #threads
+[418]: #foundcomment
+[419]: #properties-4
+[420]: #markuptoken
+[421]: #properties-5
+[422]: #open_markup
+[423]: #open_markup-1
+[424]: #parsedmarkup
+[425]: #token_pattern
+[426]: #close_pattern
+[427]: #newcommentid
+[428]: #break_pattern
+[429]: #closemarkup
+[430]: #parameters-122
+[431]: #cleancomment
 [432]: #parameters-123
-[433]: #chattabof
+[433]: #commentof
 [434]: #parameters-124
-[435]: #match
-[436]: #match-1
-[437]: #match-2
-[438]: #skilltabid
-[439]: #parameters-125
-[440]: #skilltabof
-[441]: #parameters-126
-[442]: #utilschattitle
-[443]: #default_chat_title
-[444]: #earlier_defaults
-[445]: #isdefaultchattitle
-[446]: #parameters-127
-[447]: #shownchattitle
-[448]: #parameters-128
-[449]: #-8
-[450]: #plainline
-[451]: #parameters-129
-[452]: #plaintitle
-[453]: #parameters-130
-[454]: #plaintitle-1
-[455]: #parameters-131
-[456]: #chatpreview
-[457]: #parameters-132
-[458]: #utilscomparenames
-[459]: #comparenames
-[460]: #parameters-133
-[461]: #utilsdataurl
-[462]: #data_url
-[463]: #decodedatapayload
-[464]: #parameters-134
-[465]: #bytesofdataurl
-[466]: #parameters-135
-[467]: #utilsdiff
-[468]: #step
-[469]: #diffsequences
-[470]: #parameters-136
-[471]: #steps
-[472]: #shortestedit
-[473]: #parameters-137
-[474]: #trace
-[475]: #at
-[476]: #parameters-138
-[477]: #deletionsfirst
-[478]: #parameters-139
-[479]: #added
-[480]: #chunk
-[481]: #properties-6
-[482]: #diff3
-[483]: #parameters-140
-[484]: #chunks
-[485]: #matches
-[486]: #parameters-141
-[487]: #pairup
-[488]: #parameters-142
-[489]: #sharedcount
-[490]: #parameters-143
-[491]: #counts
-[492]: #counts-1
-[493]: #utilsdocumentedits
-[494]: #document_edit_options
-[495]: #utilsdocumentlinks
-[496]: #elsewhere
-[497]: #elsewhere-1
-[498]: #linktree
-[499]: #properties-7
-[500]: #order_prefix
-[501]: #unsafe_in_link
-[502]: #isdocumenthref
-[503]: #parameters-144
-[504]: #unwrap
-[505]: #parameters-145
-[506]: #pathof
-[507]: #parameters-146
-[508]: #filenameof
-[509]: #parameters-147
-[510]: #stepnameof
-[511]: #parameters-148
-[512]: #pathnames
-[513]: #parameters-149
-[514]: #namesof
-[515]: #parameters-150
-[516]: #childnamed
-[517]: #parameters-151
-[518]: #-9
-[519]: #walk
-[520]: #parameters-152
-[521]: #resolvelink
-[522]: #parameters-153
-[523]: #documentnamed
-[524]: #parameters-154
-[525]: #found
-[526]: #found-1
-[527]: #-10
-[528]: #readablehref
-[529]: #parameters-155
-[530]: #lineage
-[531]: #parameters-156
-[532]: #encodename
-[533]: #parameters-157
-[534]: #hreffor
-[535]: #parameters-158
-[536]: #headinghref
-[537]: #parameters-159
-[538]: #headingof
-[539]: #parameters-160
-[540]: #namesheading
-[541]: #parameters-161
-[542]: #plain
-[543]: #parameters-162
-[544]: #ownhref
-[545]: #parameters-163
-[546]: #linkonclipboard
-[547]: #parameters-164
-[548]: #projecthref
-[549]: #parameters-165
-[550]: #utilsdocumentpath
-[551]: #documenttitles
-[552]: #parameters-166
-[553]: #documenttitles-1
-[554]: #parameters-167
-[555]: #documentpath
-[556]: #parameters-168
-[557]: #titlekey
-[558]: #parameters-169
-[559]: #namesake
-[560]: #parameters-170
-[561]: #freetitle
-[562]: #parameters-171
-[563]: #utilsedits
-[564]: #context_step
-[565]: #context_step-1
-[566]: #occurrences
-[567]: #parameters-172
-[568]: #diffedit
-[569]: #parameters-173
-[570]: #diffappend
-[571]: #parameters-174
-[572]: #narrowedit
-[573]: #parameters-175
-[574]: #reverseedit
-[575]: #parameters-176
-[576]: #applyedit
-[577]: #parameters-177
-[578]: #keepdecisions
-[579]: #parameters-178
-[580]: #utilserrors
-[581]: #providernotconfigurederror
-[582]: #parameters-179
-[583]: #connectionneedederror
-[584]: #parameters-180
-[585]: #commanderror
-[586]: #parameters-181
-[587]: #cannotapplyerror
-[588]: #parameters-182
-[589]: #answerfailederror
-[590]: #parameters-183
-[591]: #summarycutshorterror
-[592]: #parameters-184
-[593]: #failurenotice
-[594]: #parameters-185
-[595]: #utilsfocus
-[596]: #istextfield
-[597]: #parameters-186
-[598]: #formatthinkingtime
-[599]: #parameters-187
-[600]: #formatrelativetime
-[601]: #parameters-188
-[602]: #tool_result_preview_limit
-[603]: #formattoolarguments
-[604]: #parameters-189
-[605]: #python_result_preview_limit
-[606]: #formatpythonresult
-[607]: #parameters-190
-[608]: #formattoolresult
-[609]: #parameters-191
-[610]: #utils
-[611]: #utilities-overview
-[612]: #text-processing
-[613]: #ai-integration
-[614]: #chat
-[615]: #editor
-[616]: #browser
-[617]: #storage
-[618]: #usage-examples
-[619]: #examples
-[620]: #utilslinediff
-[621]: #linechange
-[622]: #properties-8
-[623]: #max_matched
-[624]: #changedlines
-[625]: #parameters-192
-[626]: #changes
-[627]: #changes-1
-[628]: #utilslinkupdates
-[629]: #destination
-[630]: #destination-1
-[631]: #linkedtext
-[632]: #linktarget
-[633]: #linktargets
-[634]: #maylink
-[635]: #parameters-193
-[636]: #-11
-[637]: #destinationsin
-[638]: #parameters-194
-[639]: #partsof
-[640]: #parameters-195
-[641]: #partsof-1
-[642]: #parameters-196
-[643]: #canonical
-[644]: #parameters-197
-[645]: #linktargets-1
-[646]: #parameters-198
-[647]: #went
-[648]: #rewritten
-[649]: #parameters-199
-[650]: #relinked
-[651]: #parameters-200
-[652]: #now
-[653]: #utilslocalstorage
-[654]: #localstorage
-[655]: #get
-[656]: #parameters-201
-[657]: #set
-[658]: #parameters-202
-[659]: #remove
-[660]: #parameters-203
-[661]: #utilsmarkdown
-[662]: #safe_schemes
-[663]: #escapehtml
-[664]: #parameters-204
-[665]: #issafeurl
-[666]: #parameters-205
-[667]: #mathtoken
-[668]: #parameters-206
-[669]: #math
-[670]: #reader
-[671]: #rendermarkdown
-[672]: #parameters-207
-[673]: #stripmarkdown
-[674]: #parameters-208
-[675]: #utilsmath
-[676]: #katex
-[677]: #katex-1
-[678]: #shallowref
-[679]: #loading
-[680]: #remembered
-[681]: #remember
-[682]: #options
-[683]: #loadmath
-[684]: #mathready
-[685]: #typesetmath
-[686]: #parameters-209
-[687]: #html
-[688]: #matherror
-[689]: #parameters-210
-[690]: #aswritten
-[691]: #parameters-211
-[692]: #formulaaround
-[693]: #parameters-212
-[694]: #copytex
-[695]: #parameters-213
-[696]: #event
-[697]: #utilsmodelfacts
-[698]: #dollars
-[699]: #parameters-214
-[700]: #dollars-1
-[701]: #dollars-2
-[702]: #formatprice
-[703]: #parameters-215
-[704]: #formatcontext
-[705]: #parameters-216
-[706]: #utilsoauth
-[707]: #generatecodeverifier
-[708]: #generatecodechallenge
-[709]: #parameters-217
-[710]: #generatestate
-[711]: #base64urlencode
-[712]: #parameters-218
-[713]: #storeoauthparams
-[714]: #parameters-219
-[715]: #retrieveoauthparams
-[716]: #authorizationurl
-[717]: #parameters-220
-[718]: #exchangecode
-[719]: #parameters-221
-[720]: #utilsobfuscate
-[721]: #upper
-[722]: #upper-1
-[723]: #upper-2
-[724]: #obfuscateoptions
-[725]: #kept_keys
-[726]: #iskept
-[727]: #parameters-222
-[728]: #scrambletext
-[729]: #parameters-223
-[730]: #scramblevalue
-[731]: #parameters-224
-[732]: #scramblevalue-1
-[733]: #scramblejsontext
-[734]: #parameters-225
-[735]: #scramblecommand
-[736]: #parameters-226
-[737]: #scrambleconsultation
-[738]: #parameters-227
-[739]: #scrambleapimessage
-[740]: #parameters-228
-[741]: #scramblemetadata
-[742]: #parameters-229
-[743]: #scramblemessage
-[744]: #parameters-230
-[745]: #obfuscatebackup
-[746]: #parameters-231
-[747]: #settings
-[748]: #utilspartialjson
-[749]: #string_body
-[750]: #field
-[751]: #decode
-[752]: #parameters-232
-[753]: #partialstrings
-[754]: #parameters-233
-[755]: #partialfield
-[756]: #partialfields
-[757]: #parameters-234
-[758]: #utilspictures
-[759]: #pictures_dir
-[760]: #id
-[761]: #path
-[762]: #plain-1
-[763]: #decoded
-[764]: #parameters-235
-[765]: #decoded-1
-[766]: #parameters-236
-[767]: #extensionof
-[768]: #parameters-237
-[769]: #picturename
-[770]: #parameters-238
-[771]: #picturehref
-[772]: #parameters-239
-[773]: #pictureof
-[774]: #parameters-240
-[775]: #picturekey
-[776]: #parameters-241
-[777]: #pictureofkey
-[778]: #parameters-242
-[779]: #picturesin
-[780]: #parameters-243
-[781]: #keys
-[782]: #keys-1
-[783]: #keys-2
-[784]: #keys-3
-[785]: #keys-4
-[786]: #-12
-[787]: #-13
-[788]: #repointpictures
-[789]: #parameters-244
-[790]: #unreferencedpictures
-[791]: #parameters-245
-[792]: #utilsplaincopy
-[793]: #plaincopy
-[794]: #parameters-246
-[795]: #copyof
-[796]: #copyof-1
-[797]: #parameters-247
-[798]: #utilsprojectlist
-[799]: #projectrow
-[800]: #properties-9
-[801]: #byname
-[802]: #parameters-248
-[803]: #byname-1
-[804]: #parameters-249
-[805]: #sortprojects
-[806]: #parameters-250
-[807]: #-14
-[808]: #-15
-[809]: #recentprojects
-[810]: #parameters-251
-[811]: #folded
-[812]: #parameters-252
-[813]: #folded-1
-[814]: #projectsnamed
-[815]: #parameters-253
-[816]: #utilsroutehelpers
-[817]: #storyidfromroute
-[818]: #parameters-254
-[819]: #pushprojecttoroute
-[820]: #parameters-255
-[821]: #gotoproject
-[822]: #parameters-256
-[823]: #replaceprojectinroute
-[824]: #parameters-257
-[825]: #utilssections
-[826]: #heading
-[827]: #fence
-[828]: #markdownsection
-[829]: #properties-10
-[830]: #sectionnode
-[831]: #properties-11
-[832]: #linker
-[833]: #seen
-[834]: #seen-1
-[835]: #wordsof
+[435]: #parsemarkup
+[436]: #parameters-125
+[437]: #stack
+[438]: #stack-1
+[439]: #pairs
+[440]: #pop
+[441]: #pop-1
+[442]: #tokens
+[443]: #runs
+[444]: #runs-1
+[445]: #runs-2
+[446]: #get
+[447]: #get-1
+[448]: #get-2
+[449]: #get-3
+[450]: #span
+[451]: #rendermarkup
+[452]: #parameters-126
+[453]: #pop-2
+[454]: #pop-3
+[455]: #open
+[456]: #open-1
+[457]: #open-2
+[458]: #open-3
+[459]: #open-4
+[460]: #joinruns
+[461]: #parameters-127
+[462]: #joined
+[463]: #joined-1
+[464]: #last
+[465]: #markupoffset
+[466]: #parameters-128
+[467]: #changestretch
+[468]: #parameters-129
+[469]: #withoutruns
+[470]: #parameters-130
+[471]: #findcomments
+[472]: #parameters-131
+[473]: #settlecomments
+[474]: #parameters-132
+[475]: #withoutcomments
+[476]: #parameters-133
+[477]: #half_pattern
+[478]: #quotewithoutcomments
+[479]: #parameters-134
+[480]: #nearest
+[481]: #parameters-135
+[482]: #nearest-1
+[483]: #parameters-136
+[484]: #editaroundcomments
+[485]: #parameters-137
+[486]: #lost
+[487]: #lost-1
+[488]: #spans
+[489]: #spans-1
+[490]: #rewritearoundcomments
+[491]: #parameters-138
+[492]: #placed
+[493]: #countcomments
+[494]: #parameters-139
+[495]: #context_chars
+[496]: #newpost
+[497]: #parameters-140
+[498]: #authorof
+[499]: #parameters-141
+[500]: #suggesterof
+[501]: #parameters-142
+[502]: #newthread
+[503]: #parameters-143
+[504]: #placedids
+[505]: #parameters-144
+[506]: #threadstate
+[507]: #parameters-145
+[508]: #wordsaround
+[509]: #parameters-146
+[510]: #suggestionplaced
+[511]: #parameters-147
+[512]: #settlethreads
+[513]: #parameters-148
+[514]: #next
+[515]: #next-1
+[516]: #next-2
+[517]: #liftthreads
+[518]: #parameters-149
+[519]: #withthreadsonly
+[520]: #parameters-150
+[521]: #countopen
+[522]: #parameters-151
+[523]: #samethread
+[524]: #parameters-152
+[525]: #said
+[526]: #parameters-153
+[527]: #placethread
+[528]: #parameters-154
+[529]: #spots
+[530]: #commenton
+[531]: #parameters-155
+[532]: #placedthread
+[533]: #properties-6
+[534]: #readabletext
+[535]: #parameters-156
+[536]: #widen_step
+[537]: #passageintext
+[538]: #parameters-157
+[539]: #-15
+[540]: #withoutcomment
+[541]: #parameters-158
+[542]: #commentrange
+[543]: #runsover
+[544]: #parameters-159
+[545]: #ranges
+[546]: #going
+[547]: #commentranges
+[548]: #parameters-160
+[549]: #pieces
+[550]: #pieces-1
+[551]: #pieces-2
+[552]: #pieces-3
+[553]: #pieces-4
+[554]: #keepcomments
+[555]: #parameters-161
+[556]: #-16
+[557]: #nodes
+[558]: #commentaround
+[559]: #parameters-162
+[560]: #commententry
+[561]: #properties-7
+[562]: #entriesof
+[563]: #parameters-163
+[564]: #entriesof-1
+[565]: #parameters-164
+[566]: #commentsindoc
+[567]: #parameters-165
+[568]: #commentsgone
+[569]: #parameters-166
+[570]: #commentsinmarkdown
+[571]: #parameters-167
+[572]: #plainpassage
+[573]: #parameters-168
+[574]: #closeof
+[575]: #parameters-169
+[576]: #commentcount
+[577]: #commentmarkupplugin
+[578]: #parameters-170
+[579]: #counts
+[580]: #counts-1
+[581]: #countof
+[582]: #parameters-171
+[583]: #countof-1
+[584]: #parameters-172
+[585]: #loose
+[586]: #loose-1
+[587]: #storesmigrationsprofiles
+[588]: #builtinfor
+[589]: #parameters-173
+[590]: #profilefrom
+[591]: #parameters-174
+[592]: #promptstoprofiles
+[593]: #parameters-175
+[594]: #chatstoprofiles
+[595]: #parameters-176
+[596]: #storiestoprofiles
+[597]: #parameters-177
+[598]: #storesmigrationssummariesinplace
+[599]: #stoodfor
+[600]: #parameters-178
+[601]: #stoodfor-1
+[602]: #parameters-179
+[603]: #placechat
+[604]: #parameters-180
+[605]: #targets
+[606]: #targets-1
+[607]: #order
+[608]: #moved
+[609]: #moved-1
+[610]: #parameters-181
+[611]: #summariesintoplace
+[612]: #parameters-182
+[613]: #chats
+[614]: #changed
+[615]: #changed-1
+[616]: #storesmigrationspurgedeleted
+[617]: #flagged_tables
+[618]: #purged
+[619]: #properties-8
+[620]: #withoutdeleted
+[621]: #parameters-183
+[622]: #gonefiles
+[623]: #deletedids
+[624]: #parameters-184
+[625]: #storesmigrationsprofileskills
+[626]: #renamed
+[627]: #rolestoskills
+[628]: #parameters-185
+[629]: #skills
+[630]: #-17
+[631]: #storesmigrationsjobworkflows
+[632]: #rolestoworkflows
+[633]: #parameters-186
+[634]: #storesmigrationsmodelkeeps
+[635]: #withoutmodelkeeps
+[636]: #parameters-187
+[637]: #storesmigrationsallowedproviders
+[638]: #allowedproviderstopresets
+[639]: #parameters-188
+[640]: #storesmigrationsexperimentalskills
+[641]: #withexperimentaloff
+[642]: #parameters-189
+[643]: #experimentaloffchats
+[644]: #parameters-190
+[645]: #experimentaloffprofiles
+[646]: #parameters-191
+[647]: #storesmigrationsprojectviews
+[648]: #view_fields
+[649]: #viewsoffstories
+[650]: #parameters-192
+[651]: #views
+[652]: #view
+[653]: #view-1
+[654]: #parameters-193
+[655]: #utilsbackuparchive
+[656]: #manifest
+[657]: #bytes
+[658]: #bytes-1
+[659]: #bytes-2
+[660]: #entry_chars
+[661]: #writearchive
+[662]: #parameters-194
+[663]: #named
+[664]: #named-1
+[665]: #parameters-195
+[666]: #zipentry
+[667]: #properties-9
+[668]: #isarchive
+[669]: #parameters-196
+[670]: #iszip
+[671]: #parameters-197
+[672]: #readarchive
+[673]: #parameters-198
+[674]: #tables
+[675]: #-18
+[676]: #entries
+[677]: #datastart
+[678]: #parameters-199
+[679]: #blobof
+[680]: #parameters-200
+[681]: #most_entry
+[682]: #bytesof
+[683]: #parameters-201
+[684]: #inflatesync
+[685]: #textof
+[686]: #parameters-202
+[687]: #utilschattabs
+[688]: #chattext
+[689]: #chat_text_titles
+[690]: #chattabid
+[691]: #parameters-203
+[692]: #chattabof
+[693]: #parameters-204
+[694]: #match
+[695]: #match-1
+[696]: #match-2
+[697]: #skilltabid
+[698]: #parameters-205
+[699]: #skilltabof
+[700]: #parameters-206
+[701]: #utilschattitle
+[702]: #default_chat_title
+[703]: #earlier_defaults
+[704]: #isdefaultchattitle
+[705]: #parameters-207
+[706]: #shownchattitle
+[707]: #parameters-208
+[708]: #-19
+[709]: #plainline
+[710]: #parameters-209
+[711]: #plaintitle
+[712]: #parameters-210
+[713]: #plaintitle-1
+[714]: #parameters-211
+[715]: #chatpreview
+[716]: #parameters-212
+[717]: #utilscomparenames
+[718]: #comparenames
+[719]: #parameters-213
+[720]: #utilsdataurl
+[721]: #data_url
+[722]: #decodedatapayload
+[723]: #parameters-214
+[724]: #bytesofdataurl
+[725]: #parameters-215
+[726]: #utilsdiff
+[727]: #step
+[728]: #diffsequences
+[729]: #parameters-216
+[730]: #steps
+[731]: #shortestedit
+[732]: #parameters-217
+[733]: #trace
+[734]: #at
+[735]: #parameters-218
+[736]: #deletionsfirst
+[737]: #parameters-219
+[738]: #added
+[739]: #chunk
+[740]: #properties-10
+[741]: #diff3
+[742]: #parameters-220
+[743]: #chunks
+[744]: #matches
+[745]: #parameters-221
+[746]: #pairup
+[747]: #parameters-222
+[748]: #sharedcount
+[749]: #parameters-223
+[750]: #utilsdocumentedits
+[751]: #document_edit_options
+[752]: #utilsdocumentlinks
+[753]: #elsewhere
+[754]: #elsewhere-1
+[755]: #linktree
+[756]: #properties-11
+[757]: #order_prefix
+[758]: #unsafe_in_link
+[759]: #isdocumenthref
+[760]: #parameters-224
+[761]: #unwrap
+[762]: #parameters-225
+[763]: #pathof
+[764]: #parameters-226
+[765]: #filenameof
+[766]: #parameters-227
+[767]: #stepnameof
+[768]: #parameters-228
+[769]: #pathnames
+[770]: #parameters-229
+[771]: #namesof
+[772]: #parameters-230
+[773]: #childnamed
+[774]: #parameters-231
+[775]: #-20
+[776]: #walk
+[777]: #parameters-232
+[778]: #resolvelink
+[779]: #parameters-233
+[780]: #documentnamed
+[781]: #parameters-234
+[782]: #found
+[783]: #found-1
+[784]: #-21
+[785]: #readablehref
+[786]: #parameters-235
+[787]: #lineage
+[788]: #parameters-236
+[789]: #encodename
+[790]: #parameters-237
+[791]: #hreffor
+[792]: #parameters-238
+[793]: #headinghref
+[794]: #parameters-239
+[795]: #headingof
+[796]: #parameters-240
+[797]: #namesheading
+[798]: #parameters-241
+[799]: #plain
+[800]: #parameters-242
+[801]: #plain-1
+[802]: #parameters-243
+[803]: #ownhref
+[804]: #parameters-244
+[805]: #linkonclipboard
+[806]: #parameters-245
+[807]: #projecthref
+[808]: #parameters-246
+[809]: #utilsdocumentpath
+[810]: #documenttitles
+[811]: #parameters-247
+[812]: #documenttitles-1
+[813]: #parameters-248
+[814]: #documentpath
+[815]: #parameters-249
+[816]: #titlekey
+[817]: #parameters-250
+[818]: #namesake
+[819]: #parameters-251
+[820]: #freetitle
+[821]: #parameters-252
+[822]: #utilsedits
+[823]: #context_step
+[824]: #context_step-1
+[825]: #onlyat
+[826]: #parameters-253
+[827]: #once
+[828]: #parameters-254
+[829]: #leastenough
+[830]: #parameters-255
+[831]: #diffedit
+[832]: #parameters-256
+[833]: #placededit
+[834]: #parameters-257
+[835]: #padded
 [836]: #parameters-258
-[837]: #wordsof-1
-[838]: #parameters-259
-[839]: #wordsof-2
-[840]: #parameters-260
-[841]: #markdownsections
-[842]: #parameters-261
-[843]: #tree_limit
-[844]: #list_limit
-[845]: #sectiontree
-[846]: #parameters-262
-[847]: #stack
-[848]: #stack-1
-[849]: #roots
-[850]: #node
-[851]: #collapse
-[852]: #parameters-263
-[853]: #all
-[854]: #all-1
-[855]: #-16
-[856]: #-17
-[857]: #cut
-[858]: #parameters-264
-[859]: #countof
-[860]: #parameters-265
-[861]: #countof-1
-[862]: #parameters-266
-[863]: #findsection
-[864]: #parameters-267
-[865]: #indexof
-[866]: #parameters-268
-[867]: #pop
-[868]: #pop-1
-[869]: #open
-[870]: #open-1
-[871]: #open-2
-[872]: #open-3
-[873]: #open-4
-[874]: #lines
-[875]: #lines-1
-[876]: #sectionindexat
-[877]: #parameters-269
-[878]: #sectionpath
-[879]: #parameters-270
-[880]: #utilssessionstorage
-[881]: #sessionstorage
-[882]: #get-1
-[883]: #parameters-271
-[884]: #set-1
-[885]: #parameters-272
-[886]: #remove-1
-[887]: #parameters-273
-[888]: #utilssettingsfile
-[889]: #settings_tables
-[890]: #settings_tables-1
-[891]: #settingstable
-[892]: #settingsgroup
-[893]: #unpicked
-[894]: #kinds
-[895]: #group_names
-[896]: #settingsitem
-[897]: #properties-12
-[898]: #rowid
-[899]: #parameters-274
-[900]: #rowid-1
-[901]: #itemkey
-[902]: #parameters-275
-[903]: #everyinstallhas
-[904]: #parameters-276
-[905]: #rowname
-[906]: #parameters-277
-[907]: #settingsitems
-[908]: #parameters-278
-[909]: #items
-[910]: #item
-[911]: #item-1
-[912]: #settingsneeds
-[913]: #parameters-279
-[914]: #needs
-[915]: #add
-[916]: #parameters-280
-[917]: #pickwithneeds
-[918]: #parameters-281
-[919]: #pop-2
-[920]: #pop-3
-[921]: #picksettings
-[922]: #parameters-282
-[923]: #chosen
-[924]: #settingsfilename
-[925]: #parameters-283
-[926]: #-18
-[927]: #listing
-[928]: #essence
-[929]: #parameters-284
-[930]: #stablejson
-[931]: #parameters-285
-[932]: #fingerprint
-[933]: #parameters-286
-[934]: #mergerow
-[935]: #parameters-287
-[936]: #-19
-[937]: #settingsimport
-[938]: #properties-13
-[939]: #planimport
-[940]: #parameters-288
-[941]: #plan
-[942]: #changesanything
-[943]: #parameters-289
-[944]: #listed
-[945]: #parameters-290
-[946]: #named-2
-[947]: #itemsinwords
-[948]: #parameters-291
-[949]: #itemphrases
-[950]: #parameters-292
-[951]: #phrases
-[952]: #slice
-[953]: #-20
-[954]: #describeimport
-[955]: #parameters-293
-[956]: #sentences
-[957]: #sentences-1
-[958]: #describeselection
-[959]: #parameters-294
-[960]: #aiproviders
-[961]: #providertype
-[962]: #properties-14
-[963]: #signin
-[964]: #properties-15
-[965]: #providerkind
-[966]: #provider_types
-[967]: #built_in_providers
-[968]: #default_speech_provider_id
-[969]: #connectionkind
-[970]: #properties-16
-[971]: #built_in_kinds
-[972]: #connection_kinds
-[973]: #-21
-[974]: #-22
-[975]: #connectionkind-1
-[976]: #parameters-295
-[977]: #connectionkind-2
-[978]: #kindof
-[979]: #parameters-296
-[980]: #untouchedbuiltin
-[981]: #parameters-297
-[982]: #inmenuorder
-[983]: #parameters-298
-[984]: #typeof
-[985]: #parameters-299
-[986]: #providerdoes
-[987]: #parameters-300
-[988]: #default_provider_type
-[989]: #providerlabel
-[990]: #parameters-301
-[991]: #knownaddress
-[992]: #parameters-302
-[993]: #needsendpoint
-[994]: #parameters-303
-[995]: #needskey
-[996]: #parameters-304
-[997]: #connectiongap
-[998]: #parameters-305
-[999]: #presetproblem
-[1000]: #parameters-306
-[1001]: #canlistmodels
-[1002]: #parameters-307
-[1003]: #listspublicly
-[1004]: #parameters-308
-[1005]: #signinof
-[1006]: #parameters-309
-[1007]: #creditspage
-[1008]: #parameters-310
-[1009]: #speaksopenrouterreasoning
-[1010]: #parameters-311
-[1011]: #serveschat
-[1012]: #parameters-312
-[1013]: #takesreasoningeffort
-[1014]: #parameters-313
-[1015]: #takeschattemplatekwargs
-[1016]: #parameters-314
-[1017]: #aisamplerparameters
-[1018]: #properties-17
-[1019]: #reasoning_effort_options
-[1020]: #default_preset_id
-[1021]: #ai_defaults
-[1022]: #resolveaisettings
-[1023]: #parameters-315
-[1024]: #resolveaisettings-1
-[1025]: #parameters-316
-[1026]: #mergeaisettings
-[1027]: #parameters-317
-[1028]: #title_defaults
-[1029]: #utilssettingstree
-[1030]: #settingkey
-[1031]: #parameters-318
-[1032]: #settingkey-1
-[1033]: #parameters-319
-[1034]: #settingsnode
-[1035]: #properties-18
-[1036]: #-23
-[1037]: #itemof
-[1038]: #parameters-320
-[1039]: #itemof-1
-[1040]: #parameters-321
-[1041]: #settingstree
-[1042]: #parameters-322
-[1043]: #-24
-[1044]: #leavesof
-[1045]: #parameters-323
-[1046]: #selectionkeys
-[1047]: #parameters-324
-[1048]: #visit
-[1049]: #parameters-325
-[1050]: #visit-1
-[1051]: #parameters-326
-[1052]: #tickedleaves
-[1053]: #parameters-327
-[1054]: #pickedsettings
-[1055]: #parameters-328
-[1056]: #utilsshareddocuments
-[1057]: #sharetree
-[1058]: #parameters-329
-[1059]: #sharetree-1
-[1060]: #parameters-330
-[1061]: #sharetree-2
-[1062]: #parameters-331
-[1063]: #sharing
-[1064]: #nodeof
-[1065]: #parameters-332
-[1066]: #sharingof
-[1067]: #parameters-333
-[1068]: #sharedwith
-[1069]: #parameters-334
-[1070]: #utilssiblingorder
-[1071]: #ordersiblings
-[1072]: #parameters-335
-[1073]: #-25
-[1074]: #-26
-[1075]: #-27
-[1076]: #-28
-[1077]: #utilstabs
-[1078]: #tabs
-[1079]: #properties-19
-[1080]: #no_tabs
-[1081]: #tabfields
-[1082]: #properties-20
-[1083]: #document_tabs
-[1084]: #chat_tabs
-[1085]: #showing
-[1086]: #parameters-336
-[1087]: #settled
-[1088]: #parameters-337
-[1089]: #tabsof
-[1090]: #parameters-338
-[1091]: #tabspatch
-[1092]: #parameters-339
-[1093]: #normalizetabs
-[1094]: #parameters-340
-[1095]: #opentab
-[1096]: #parameters-341
-[1097]: #keeptab
-[1098]: #parameters-342
-[1099]: #closetab
-[1100]: #parameters-343
-[1101]: #droptabs
-[1102]: #parameters-344
-[1103]: #tabnames
-[1104]: #parameters-345
-[1105]: #tail
-[1106]: #parameters-346
-[1107]: #utilstex
-[1108]: #tex
-[1109]: #display
-[1110]: #math_block
-[1111]: #single
-[1112]: #math_inline
-[1113]: #found-2
-[1114]: #properties-21
-[1115]: #trimtex
-[1116]: #parameters-347
-[1117]: #foundin
-[1118]: #parameters-348
-[1119]: #formulaat
-[1120]: #parameters-349
-[1121]: #mayholdformula
-[1122]: #parameters-350
-[1123]: #replaceformulas
-[1124]: #parameters-351
-[1125]: #utilstitlevalidation
-[1126]: #normalizetitle
-[1127]: #parameters-352
-[1128]: #shouldupdatetitle
-[1129]: #parameters-353
-[1130]: #iscustomtitle
+[837]: #-22
+[838]: #foundonce
+[839]: #parameters-259
+[840]: #diffappend
+[841]: #parameters-260
+[842]: #narrowedit
+[843]: #parameters-261
+[844]: #reverseedit
+[845]: #parameters-262
+[846]: #applyedit
+[847]: #parameters-263
+[848]: #keepdecisions
+[849]: #parameters-264
+[850]: #utilserrors
+[851]: #providernotconfigurederror
+[852]: #parameters-265
+[853]: #connectionneedederror
+[854]: #parameters-266
+[855]: #commanderror
+[856]: #parameters-267
+[857]: #cannotapplyerror
+[858]: #parameters-268
+[859]: #answerfailederror
+[860]: #parameters-269
+[861]: #summarycutshorterror
+[862]: #parameters-270
+[863]: #failurenotice
+[864]: #parameters-271
+[865]: #utilsfocus
+[866]: #istextfield
+[867]: #parameters-272
+[868]: #formatthinkingtime
+[869]: #parameters-273
+[870]: #formatrelativetime
+[871]: #parameters-274
+[872]: #tool_result_preview_limit
+[873]: #formattoolarguments
+[874]: #parameters-275
+[875]: #python_result_preview_limit
+[876]: #formatpythonresult
+[877]: #parameters-276
+[878]: #formattoolresult
+[879]: #parameters-277
+[880]: #utils
+[881]: #utilities-overview
+[882]: #text-processing
+[883]: #ai-integration
+[884]: #chat
+[885]: #editor
+[886]: #browser
+[887]: #storage
+[888]: #usage-examples
+[889]: #examples
+[890]: #utilslinediff
+[891]: #context
+[892]: #most_edits
+[893]: #linediff
+[894]: #parameters-278
+[895]: #utilslinkupdates
+[896]: #destination
+[897]: #destination-1
+[898]: #linkedtext
+[899]: #linktarget
+[900]: #linktargets
+[901]: #maylink
+[902]: #parameters-279
+[903]: #-23
+[904]: #destinationsin
+[905]: #parameters-280
+[906]: #partsof
+[907]: #parameters-281
+[908]: #partsof-1
+[909]: #parameters-282
+[910]: #canonical
+[911]: #parameters-283
+[912]: #linktargets-1
+[913]: #parameters-284
+[914]: #went
+[915]: #rewritten
+[916]: #parameters-285
+[917]: #relinked
+[918]: #parameters-286
+[919]: #now
+[920]: #utilslocalstorage
+[921]: #localstorage
+[922]: #get-4
+[923]: #parameters-287
+[924]: #set
+[925]: #parameters-288
+[926]: #remove
+[927]: #parameters-289
+[928]: #utilsmarkdown
+[929]: #safe_schemes
+[930]: #escapehtml
+[931]: #parameters-290
+[932]: #issafeurl
+[933]: #parameters-291
+[934]: #mathtoken
+[935]: #parameters-292
+[936]: #math
+[937]: #reader
+[938]: #rendermarkdown
+[939]: #parameters-293
+[940]: #stripmarkdown
+[941]: #parameters-294
+[942]: #utilsmath
+[943]: #katex
+[944]: #katex-1
+[945]: #shallowref
+[946]: #loading
+[947]: #remembered
+[948]: #remember
+[949]: #options
+[950]: #loadmath
+[951]: #mathready
+[952]: #typesetmath
+[953]: #parameters-295
+[954]: #html
+[955]: #matherror
+[956]: #parameters-296
+[957]: #aswritten
+[958]: #parameters-297
+[959]: #formulaaround
+[960]: #parameters-298
+[961]: #copytex
+[962]: #parameters-299
+[963]: #event
+[964]: #utilsmodelfacts
+[965]: #formatprice
+[966]: #parameters-300
+[967]: #formatcontext
+[968]: #parameters-301
+[969]: #utilsoauth
+[970]: #generatecodeverifier
+[971]: #generatecodechallenge
+[972]: #parameters-302
+[973]: #generatestate
+[974]: #base64urlencode
+[975]: #parameters-303
+[976]: #storeoauthparams
+[977]: #parameters-304
+[978]: #retrieveoauthparams
+[979]: #authorizationurl
+[980]: #parameters-305
+[981]: #exchangecode
+[982]: #parameters-306
+[983]: #utilsobfuscate
+[984]: #upper
+[985]: #upper-1
+[986]: #upper-2
+[987]: #obfuscateoptions
+[988]: #kept_keys
+[989]: #iskept
+[990]: #parameters-307
+[991]: #scrambletext
+[992]: #parameters-308
+[993]: #scramblevalue
+[994]: #parameters-309
+[995]: #scramblevalue-1
+[996]: #scramblejsontext
+[997]: #parameters-310
+[998]: #scramblecommand
+[999]: #parameters-311
+[1000]: #scrambleconsultation
+[1001]: #parameters-312
+[1002]: #scrambleapimessage
+[1003]: #parameters-313
+[1004]: #scramblemetadata
+[1005]: #parameters-314
+[1006]: #scramblemessage
+[1007]: #parameters-315
+[1008]: #obfuscatebackup
+[1009]: #parameters-316
+[1010]: #settings
+[1011]: #utilspartialjson
+[1012]: #string_body
+[1013]: #field
+[1014]: #decode
+[1015]: #parameters-317
+[1016]: #partialstrings
+[1017]: #parameters-318
+[1018]: #partialfield
+[1019]: #partialfields
+[1020]: #parameters-319
+[1021]: #utilspictures
+[1022]: #pictures_dir
+[1023]: #id
+[1024]: #path
+[1025]: #plain-2
+[1026]: #decoded
+[1027]: #parameters-320
+[1028]: #decoded-1
+[1029]: #parameters-321
+[1030]: #extensionof
+[1031]: #parameters-322
+[1032]: #picturename
+[1033]: #parameters-323
+[1034]: #picturehref
+[1035]: #parameters-324
+[1036]: #pictureof
+[1037]: #parameters-325
+[1038]: #picturekey
+[1039]: #parameters-326
+[1040]: #pictureofkey
+[1041]: #parameters-327
+[1042]: #picturesin
+[1043]: #parameters-328
+[1044]: #keys
+[1045]: #keys-1
+[1046]: #keys-2
+[1047]: #keys-3
+[1048]: #keys-4
+[1049]: #-24
+[1050]: #-25
+[1051]: #repointpictures
+[1052]: #parameters-329
+[1053]: #unreferencedpictures
+[1054]: #parameters-330
+[1055]: #utilsplaincopy
+[1056]: #plaincopy
+[1057]: #parameters-331
+[1058]: #copyof
+[1059]: #copyof-1
+[1060]: #parameters-332
+[1061]: #utilsprojectlist
+[1062]: #projectrow
+[1063]: #properties-12
+[1064]: #byname
+[1065]: #parameters-333
+[1066]: #byname-1
+[1067]: #parameters-334
+[1068]: #sortprojects
+[1069]: #parameters-335
+[1070]: #-26
+[1071]: #-27
+[1072]: #recentprojects
+[1073]: #parameters-336
+[1074]: #folded
+[1075]: #parameters-337
+[1076]: #folded-1
+[1077]: #projectsnamed
+[1078]: #parameters-338
+[1079]: #utilsroutehelpers
+[1080]: #storyidfromroute
+[1081]: #parameters-339
+[1082]: #pushprojecttoroute
+[1083]: #parameters-340
+[1084]: #gotoproject
+[1085]: #parameters-341
+[1086]: #replaceprojectinroute
+[1087]: #parameters-342
+[1088]: #utilssections
+[1089]: #heading
+[1090]: #fence
+[1091]: #markdownsection
+[1092]: #properties-13
+[1093]: #sectionnode
+[1094]: #properties-14
+[1095]: #linker
+[1096]: #seen
+[1097]: #seen-1
+[1098]: #wordsof
+[1099]: #parameters-343
+[1100]: #wordsof-1
+[1101]: #parameters-344
+[1102]: #wordsof-2
+[1103]: #parameters-345
+[1104]: #markdownsections
+[1105]: #parameters-346
+[1106]: #tree_limit
+[1107]: #list_limit
+[1108]: #sectiontree
+[1109]: #parameters-347
+[1110]: #roots
+[1111]: #node
+[1112]: #collapse
+[1113]: #parameters-348
+[1114]: #all
+[1115]: #all-1
+[1116]: #-28
+[1117]: #-29
+[1118]: #cut
+[1119]: #parameters-349
+[1120]: #findsection
+[1121]: #parameters-350
+[1122]: #indexof
+[1123]: #parameters-351
+[1124]: #sectionindexat
+[1125]: #parameters-352
+[1126]: #sectionpath
+[1127]: #parameters-353
+[1128]: #utilssessionstorage
+[1129]: #sessionstorage
+[1130]: #get-5
 [1131]: #parameters-354
-[1132]: #gettitleplaceholder
+[1132]: #set-1
 [1133]: #parameters-355
-[1134]: #freename
+[1134]: #remove-1
 [1135]: #parameters-356
-[1136]: #-29
-[1137]: #utilstouch
-[1138]: #hastouchkeyboard
-[1139]: #submitonenter
-[1140]: #parameters-357
-[1141]: #utilstrash
-[1142]: #trash_kept_ms
-[1143]: #trash_kept_ms-1
-[1144]: #expired
-[1145]: #parameters-358
-[1146]: #trashedids
-[1147]: #parameters-359
-[1148]: #known
-[1149]: #known-1
-[1150]: #-30
-[1151]: #outoftrash
-[1152]: #parameters-360
-[1153]: #utilsturns
-[1154]: #turn
-[1155]: #properties-22
-[1156]: #commandof
-[1157]: #parameters-361
-[1158]: #groupturns
-[1159]: #parameters-362
-[1160]: #turns
-[1161]: #compactedruns
-[1162]: #parameters-363
-[1163]: #runs
-[1164]: #runs-1
-[1165]: #runs-2
-[1166]: #textlines
-[1167]: #parameters-364
-[1168]: #utilsunzip
-[1169]: #mib
-[1170]: #toolargeerror
-[1171]: #unzipwithin
-[1172]: #parameters-365
-[1173]: #utilsversions
-[1174]: #pause_ms
-[1175]: #pause_ms-1
-[1176]: #pause_ms-2
-[1177]: #stretch_ms
-[1178]: #daily_for_ms
-[1179]: #dayof
-[1180]: #parameters-366
-[1181]: #weekof
-[1182]: #parameters-367
-[1183]: #thinned
-[1184]: #parameters-368
-[1185]: #clashed
-[1186]: #doc_clashed
-[1187]: #taken_before
-[1188]: #model
-[1189]: #utilsvisibility
-[1190]: #fields
-[1191]: #fields-1
-[1192]: #fields-2
-[1193]: #chatmark
-[1194]: #chatmarks
-[1195]: #shown
-[1196]: #markof
-[1197]: #parameters-369
-[1198]: #-31
-[1199]: #withmark
-[1200]: #parameters-370
-[1201]: #next
-[1202]: #next-1
-[1203]: #next-2
-[1204]: #chatvisibility
-[1205]: #parameters-371
-[1206]: #settle
-[1207]: #parameters-372
-[1208]: #sees
-[1209]: #parameters-373
-[1210]: #hiddeneverywhere
-[1211]: #parameters-374
-[1212]: #markfor
-[1213]: #parameters-375
-[1214]: #utilswebkit
-[1215]: #iswebkit
-[1216]: #parameters-376
-[1217]: #utilswordcount
-[1218]: #picture
-[1219]: #editorsuggestiontext
-[1220]: #close
-[1221]: #inserted
-[1222]: #deleted-4
-[1223]: #holdssuggestions
-[1224]: #parameters-377
-[1225]: #seenmarkdown
-[1226]: #parameters-378
-[1227]: #textasitstands
-[1228]: #parameters-379
-[1229]: #withoutsuggestionmarkup
-[1230]: #parameters-380
-[1231]: #editorcomments
-[1232]: #threads
-[1233]: #foundcomment
-[1234]: #properties-23
-[1235]: #markuptoken
-[1236]: #properties-24
-[1237]: #open_markup
-[1238]: #open_markup-1
-[1239]: #parsedmarkup
-[1240]: #token_pattern
-[1241]: #close_pattern
-[1242]: #newcommentid
-[1243]: #break_pattern
-[1244]: #closemarkup
-[1245]: #parameters-381
-[1246]: #cleancomment
-[1247]: #parameters-382
-[1248]: #commentof
-[1249]: #parameters-383
-[1250]: #parsemarkup
-[1251]: #parameters-384
-[1252]: #pairs
-[1253]: #tokens
-[1254]: #get-2
-[1255]: #get-3
-[1256]: #get-4
-[1257]: #get-5
-[1258]: #span
-[1259]: #rendermarkup
-[1260]: #parameters-385
-[1261]: #joinruns
-[1262]: #parameters-386
-[1263]: #joined
-[1264]: #joined-1
-[1265]: #last
-[1266]: #markupoffset
-[1267]: #parameters-387
-[1268]: #changestretch
-[1269]: #parameters-388
-[1270]: #withoutruns
-[1271]: #parameters-389
-[1272]: #findcomments
-[1273]: #parameters-390
-[1274]: #settlecomments
-[1275]: #parameters-391
-[1276]: #withoutcomments
-[1277]: #parameters-392
-[1278]: #half_pattern
-[1279]: #quotewithoutcomments
-[1280]: #parameters-393
-[1281]: #nearest
-[1282]: #parameters-394
-[1283]: #editaroundcomments
-[1284]: #parameters-395
-[1285]: #lost
-[1286]: #lost-1
-[1287]: #spans
-[1288]: #rewritearoundcomments
-[1289]: #parameters-396
-[1290]: #placed
-[1291]: #countcomments
-[1292]: #parameters-397
-[1293]: #context_chars
-[1294]: #newpost
-[1295]: #parameters-398
-[1296]: #authorof
-[1297]: #parameters-399
-[1298]: #suggesterof
-[1299]: #parameters-400
-[1300]: #newthread
-[1301]: #parameters-401
-[1302]: #placedids
-[1303]: #parameters-402
-[1304]: #threadstate
-[1305]: #parameters-403
-[1306]: #wordsaround
-[1307]: #parameters-404
-[1308]: #suggestionplaced
-[1309]: #parameters-405
-[1310]: #settlethreads
-[1311]: #parameters-406
-[1312]: #liftthreads
-[1313]: #parameters-407
-[1314]: #withthreadsonly
-[1315]: #parameters-408
-[1316]: #countopen
-[1317]: #parameters-409
-[1318]: #samethread
-[1319]: #parameters-410
-[1320]: #said
-[1321]: #parameters-411
-[1322]: #placethread
-[1323]: #parameters-412
-[1324]: #spots
-[1325]: #commenton
-[1326]: #parameters-413
-[1327]: #placedthread
-[1328]: #properties-25
-[1329]: #readabletext
-[1330]: #parameters-414
-[1331]: #widen_step
-[1332]: #passageintext
-[1333]: #parameters-415
-[1334]: #-32
-[1335]: #withoutcomment
-[1336]: #parameters-416
-[1337]: #commentrange
-[1338]: #runsover
-[1339]: #parameters-417
-[1340]: #ranges
-[1341]: #going
-[1342]: #commentranges
-[1343]: #parameters-418
-[1344]: #keepcomments
-[1345]: #parameters-419
-[1346]: #-33
-[1347]: #nodes
-[1348]: #commentaround
-[1349]: #parameters-420
-[1350]: #commententry
-[1351]: #properties-26
-[1352]: #commentsindoc
-[1353]: #parameters-421
-[1354]: #commentsgone
-[1355]: #parameters-422
-[1356]: #commentsinmarkdown
-[1357]: #parameters-423
-[1358]: #plainpassage
-[1359]: #parameters-424
-[1360]: #closeof
-[1361]: #parameters-425
-[1362]: #commentcount
-[1363]: #commentmarkupplugin
-[1364]: #parameters-426
-[1365]: #top
-[1366]: #split
-[1367]: #state
-[1368]: #parameters-427
-[1369]: #state-1
-[1370]: #parameters-428
-[1371]: #state-2
-[1372]: #parameters-429
-[1373]: #state-3
-[1374]: #parameters-430
-[1375]: #state-4
-[1376]: #parameters-431
-[1377]: #state-5
-[1378]: #parameters-432
-[1379]: #state-6
-[1380]: #parameters-433
-[1381]: #loose
-[1382]: #loose-1
-[1383]: #editormarkdown
-[1384]: #formulainline
-[1385]: #parameters-434
-[1386]: #formulainline-1
-[1387]: #parameters-435
-[1388]: #closeon
-[1389]: #parameters-436
-[1390]: #formulablock
-[1391]: #parameters-437
-[1392]: #cellsin
-[1393]: #parameters-438
-[1394]: #tokenizerof
-[1395]: #block
-[1396]: #block-1
-[1397]: #-34
-[1398]: #-35
-[1399]: #tail-1
-[1400]: #room
-[1401]: #delimited
-[1402]: #spacesasneighbours
-[1403]: #parameters-439
-[1404]: #children
-[1405]: #children-1
-[1406]: #linearserializer
-[1407]: #serialize
-[1408]: #parameters-440
-[1409]: #write
-[1410]: #parameters-441
-[1411]: #-36
-[1412]: #dollar_marks
-[1413]: #dollar_marks-1
-[1414]: #dollarsresolved
-[1415]: #parameters-442
-[1416]: #opensformula
-[1417]: #parameters-443
-[1418]: #dollarsin
-[1419]: #parameters-444
-[1420]: #-37
-[1421]: #-38
-[1422]: #between_dollars
-[1423]: #writtenformula
-[1424]: #parameters-445
-[1425]: #writtenformulablock
-[1426]: #parameters-446
-[1427]: #entity
-[1428]: #autolink
-[1429]: #escapemore
-[1430]: #parameters-447
-[1431]: #endsline
-[1432]: #parameters-448
-[1433]: #withblocksuggestions
-[1434]: #parameters-449
-[1435]: #withblocksuggestions-1
-[1436]: #parameters-450
-[1437]: #type
-[1438]: #type-1
-[1439]: #-39
-[1440]: #-40
-[1441]: #serializer
-[1442]: #-41
-[1443]: #-42
-[1444]: #cells
-[1445]: #rowof
-[1446]: #parameters-451
-[1447]: #ruleof
-[1448]: #parameters-452
-[1449]: #parsemarkdown
-[1450]: #parameters-453
-[1451]: #serializemarkdown
-[1452]: #parameters-454
-[1453]: #settlemarkdown
-[1454]: #parameters-455
-[1455]: #appendblocks
-[1456]: #parameters-456
-[1457]: #editorsuggestions
-[1458]: #suggestion_markup
-[1459]: #suggestion_markup-1
-[1460]: #suggestion_markup-2
-[1461]: #suggestion_markup-3
-[1462]: #id_pattern
-[1463]: #max_edits
-[1464]: #max_block_edits
-[1465]: #max_pairs
-[1466]: #near_blocks
-[1467]: #pieces-5
-[1468]: #newsuggestionid
-[1469]: #closesuggestion
-[1470]: #parameters-457
-[1471]: #suggested-1
-[1472]: #properties-27
-[1473]: #near
-[1474]: #word
-[1475]: #sentence_end
-[1476]: #suggestchange
-[1477]: #parameters-458
-[1478]: #layout
-[1479]: #parameters-459
-[1480]: #part
-[1481]: #properties-28
-[1482]: #placesof
-[1483]: #parameters-460
-[1484]: #its
-[1485]: #parameters-461
-[1486]: #its-1
-[1487]: #parameters-462
-[1488]: #its-2
-[1489]: #parameters-463
-[1490]: #marks
-[1491]: #apart
-[1492]: #parameters-464
-[1493]: #find
-[1494]: #parameters-465
-[1495]: #find-1
-[1496]: #join
-[1497]: #parameters-466
-[1498]: #touch
-[1499]: #parameters-467
-[1500]: #owner
-[1501]: #into
-[1502]: #near-1
-[1503]: #parameters-468
-[1504]: #beside
-[1505]: #-43
-[1506]: #rejecting
-[1507]: #parameters-469
-[1508]: #-44
-[1509]: #putback
-[1510]: #parameters-470
-[1511]: #docof
-[1512]: #parameters-471
-[1513]: #acceptsuggestion
-[1514]: #parameters-472
-[1515]: #rejectsuggestion
-[1516]: #parameters-473
-[1517]: #settling
-[1518]: #parameters-474
-[1519]: #-45
-[1520]: #seeing
-[1521]: #parameters-475
-[1522]: #goes
-[1523]: #parameters-476
-[1524]: #changeof
-[1525]: #parameters-477
-[1526]: #texts
-[1527]: #parameters-478
-[1528]: #leaftext
-[1529]: #parameters-479
-[1530]: #suggestionrange
-[1531]: #properties-29
-[1532]: #suggestionranges
-[1533]: #parameters-480
-[1534]: #suggestionaround
-[1535]: #parameters-481
-[1536]: #suggestionof
-[1537]: #parameters-482
-[1538]: #suggestionentry
-[1539]: #suggestionentries
-[1540]: #parameters-483
-[1541]: #starts
-[1542]: #suggestionsin
-[1543]: #parameters-484
-[1544]: #contentof
-[1545]: #parameters-485
-[1546]: #sequenceof
-[1547]: #parameters-486
-[1548]: #gone
-[1549]: #come
-[1550]: #latest
-[1551]: #parameters-487
-[1552]: #-46
-[1553]: #islist
-[1554]: #parameters-488
-[1555]: #stretchof
-[1556]: #parameters-489
-[1557]: #-47
-[1558]: #pairsof
-[1559]: #parameters-490
-[1560]: #changedof
-[1561]: #parameters-491
-[1562]: #tablechanged
-[1563]: #parameters-492
-[1564]: #made
-[1565]: #row
-[1566]: #wordschanged
-[1567]: #parameters-493
-[1568]: #laid
-[1569]: #content
-[1570]: #content-1
-[1571]: #content-2
-[1572]: #incomments
-[1573]: #parameters-494
-[1574]: #wholly
-[1575]: #parameters-495
-[1576]: #insertedwhole
-[1577]: #parameters-496
-[1578]: #dropping
-[1579]: #parameters-497
-[1580]: #inline
-[1581]: #gonein
-[1582]: #parameters-498
-[1583]: #suggestionmarkupplugin
-[1584]: #parameters-499
-[1585]: #opened
-[1586]: #closeahead
-[1587]: #parameters-500
-[1588]: #suggestedblock
-[1589]: #parameters-501
-[1590]: #-48
-[1591]: #-49
-[1592]: #likeness
+[1136]: #utilssettingsfile
+[1137]: #settings_tables
+[1138]: #settings_tables-1
+[1139]: #settingstable
+[1140]: #settingsgroup
+[1141]: #unpicked
+[1142]: #kinds
+[1143]: #group_names
+[1144]: #settingsitem
+[1145]: #properties-15
+[1146]: #rowid
+[1147]: #parameters-357
+[1148]: #rowid-1
+[1149]: #itemkey
+[1150]: #parameters-358
+[1151]: #everyinstallhas
+[1152]: #parameters-359
+[1153]: #rowname
+[1154]: #parameters-360
+[1155]: #settingsitems
+[1156]: #parameters-361
+[1157]: #items
+[1158]: #item
+[1159]: #item-1
+[1160]: #settingsneeds
+[1161]: #parameters-362
+[1162]: #needs
+[1163]: #add
+[1164]: #parameters-363
+[1165]: #pickwithneeds
+[1166]: #parameters-364
+[1167]: #picksettings
+[1168]: #parameters-365
+[1169]: #chosen
+[1170]: #settingsfilename
+[1171]: #parameters-366
+[1172]: #-30
+[1173]: #listing
+[1174]: #essence
+[1175]: #parameters-367
+[1176]: #stablejson
+[1177]: #parameters-368
+[1178]: #fingerprint
+[1179]: #parameters-369
+[1180]: #mergerow
+[1181]: #parameters-370
+[1182]: #-31
+[1183]: #settingsimport
+[1184]: #properties-16
+[1185]: #planimport
+[1186]: #parameters-371
+[1187]: #plan
+[1188]: #changesanything
+[1189]: #parameters-372
+[1190]: #listed
+[1191]: #parameters-373
+[1192]: #named-2
+[1193]: #itemsinwords
+[1194]: #parameters-374
+[1195]: #itemphrases
+[1196]: #parameters-375
+[1197]: #phrases
+[1198]: #slice
+[1199]: #-32
+[1200]: #describeimport
+[1201]: #parameters-376
+[1202]: #sentences
+[1203]: #sentences-1
+[1204]: #describeselection
+[1205]: #parameters-377
+[1206]: #aiproviders
+[1207]: #providertype
+[1208]: #properties-17
+[1209]: #signin
+[1210]: #properties-18
+[1211]: #providerkind
+[1212]: #provider_types
+[1213]: #built_in_providers
+[1214]: #default_speech_provider_id
+[1215]: #connectionkind
+[1216]: #properties-19
+[1217]: #built_in_kinds
+[1218]: #connection_kinds
+[1219]: #-33
+[1220]: #-34
+[1221]: #connectionkind-1
+[1222]: #parameters-378
+[1223]: #connectionkind-2
+[1224]: #kindof
+[1225]: #parameters-379
+[1226]: #untouchedbuiltin
+[1227]: #parameters-380
+[1228]: #inmenuorder
+[1229]: #parameters-381
+[1230]: #typeof
+[1231]: #parameters-382
+[1232]: #providerdoes
+[1233]: #parameters-383
+[1234]: #default_provider_type
+[1235]: #providerlabel
+[1236]: #parameters-384
+[1237]: #knownaddress
+[1238]: #parameters-385
+[1239]: #needsendpoint
+[1240]: #parameters-386
+[1241]: #needskey
+[1242]: #parameters-387
+[1243]: #connectiongap
+[1244]: #parameters-388
+[1245]: #presetproblem
+[1246]: #parameters-389
+[1247]: #canlistmodels
+[1248]: #parameters-390
+[1249]: #listspublicly
+[1250]: #parameters-391
+[1251]: #signinof
+[1252]: #parameters-392
+[1253]: #creditspage
+[1254]: #parameters-393
+[1255]: #speaksopenrouterreasoning
+[1256]: #parameters-394
+[1257]: #serveschat
+[1258]: #parameters-395
+[1259]: #takesreasoningeffort
+[1260]: #parameters-396
+[1261]: #takeschattemplatekwargs
+[1262]: #parameters-397
+[1263]: #aisamplerparameters
+[1264]: #properties-20
+[1265]: #reasoning_effort_options
+[1266]: #default_preset_id
+[1267]: #ai_defaults
+[1268]: #resolveaisettings
+[1269]: #parameters-398
+[1270]: #resolveaisettings-1
+[1271]: #parameters-399
+[1272]: #mergeaisettings
+[1273]: #parameters-400
+[1274]: #title_defaults
+[1275]: #utilssettingstree
+[1276]: #settingkey
+[1277]: #parameters-401
+[1278]: #settingkey-1
+[1279]: #parameters-402
+[1280]: #settingsnode
+[1281]: #properties-21
+[1282]: #-35
+[1283]: #itemof
+[1284]: #parameters-403
+[1285]: #itemof-1
+[1286]: #parameters-404
+[1287]: #settingstree
+[1288]: #parameters-405
+[1289]: #-36
+[1290]: #leavesof
+[1291]: #parameters-406
+[1292]: #selectionkeys
+[1293]: #parameters-407
+[1294]: #visit
+[1295]: #parameters-408
+[1296]: #visit-1
+[1297]: #parameters-409
+[1298]: #tickedleaves
+[1299]: #parameters-410
+[1300]: #pickedsettings
+[1301]: #parameters-411
+[1302]: #utilsshareddocuments
+[1303]: #sharetree
+[1304]: #parameters-412
+[1305]: #sharetree-1
+[1306]: #parameters-413
+[1307]: #sharetree-2
+[1308]: #parameters-414
+[1309]: #sharing
+[1310]: #nodeof
+[1311]: #parameters-415
+[1312]: #sharingof
+[1313]: #parameters-416
+[1314]: #sharedwith
+[1315]: #parameters-417
+[1316]: #changes
+[1317]: #utilssiblingorder
+[1318]: #ordersiblings
+[1319]: #parameters-418
+[1320]: #-37
+[1321]: #-38
+[1322]: #-39
+[1323]: #-40
+[1324]: #utilstabs
+[1325]: #tabs
+[1326]: #properties-22
+[1327]: #no_tabs
+[1328]: #closed_kept
+[1329]: #tabfields
+[1330]: #properties-23
+[1331]: #document_tabs
+[1332]: #chat_tabs
+[1333]: #showing
+[1334]: #parameters-419
+[1335]: #settled
+[1336]: #parameters-420
+[1337]: #tabsof
+[1338]: #parameters-421
+[1339]: #tabspatch
+[1340]: #parameters-422
+[1341]: #normalizetabs
+[1342]: #parameters-423
+[1343]: #opentab
+[1344]: #parameters-424
+[1345]: #keeptab
+[1346]: #parameters-425
+[1347]: #movetab
+[1348]: #parameters-426
+[1349]: #without
+[1350]: #parameters-427
+[1351]: #closetab
+[1352]: #parameters-428
+[1353]: #closetabs
+[1354]: #parameters-429
+[1355]: #droptabs
+[1356]: #parameters-430
+[1357]: #lastclosed
+[1358]: #parameters-431
+[1359]: #tabbeside
+[1360]: #parameters-432
+[1361]: #tabat
+[1362]: #parameters-433
+[1363]: #tabnames
+[1364]: #parameters-434
+[1365]: #tail-1
+[1366]: #parameters-435
+[1367]: #utilstarwriter
+[1368]: #block-2
+[1369]: #name_most
+[1370]: #size_most
+[1371]: #tarwriter
+[1372]: #header
+[1373]: #parameters-436
+[1374]: #put
+[1375]: #parameters-437
+[1376]: #octal
+[1377]: #parameters-438
+[1378]: #record
+[1379]: #parameters-439
+[1380]: #padding
+[1381]: #parameters-440
+[1382]: #tarwriter-1
+[1383]: #parameters-441
+[1384]: #begin
+[1385]: #parameters-442
+[1386]: #utilstex
+[1387]: #tex
+[1388]: #display
+[1389]: #math_block
+[1390]: #single
+[1391]: #math_inline
+[1392]: #found-2
+[1393]: #properties-24
+[1394]: #trimtex
+[1395]: #parameters-443
+[1396]: #foundin
+[1397]: #parameters-444
+[1398]: #formulaat
+[1399]: #parameters-445
+[1400]: #mayholdformula
+[1401]: #parameters-446
+[1402]: #replaceformulas
+[1403]: #parameters-447
+[1404]: #utilstitlevalidation
+[1405]: #normalizetitle
+[1406]: #parameters-448
+[1407]: #shouldupdatetitle
+[1408]: #parameters-449
+[1409]: #iscustomtitle
+[1410]: #parameters-450
+[1411]: #gettitleplaceholder
+[1412]: #parameters-451
+[1413]: #freename
+[1414]: #parameters-452
+[1415]: #-41
+[1416]: #utilstouch
+[1417]: #hastouchkeyboard
+[1418]: #submitonenter
+[1419]: #parameters-453
+[1420]: #utilstrash
+[1421]: #trash_kept_ms
+[1422]: #trash_kept_ms-1
+[1423]: #expired
+[1424]: #parameters-454
+[1425]: #trashedids
+[1426]: #parameters-455
+[1427]: #known
+[1428]: #known-1
+[1429]: #-42
+[1430]: #outoftrash
+[1431]: #parameters-456
+[1432]: #utilsturns
+[1433]: #turn
+[1434]: #properties-25
+[1435]: #commandof
+[1436]: #parameters-457
+[1437]: #groupturns
+[1438]: #parameters-458
+[1439]: #turns
+[1440]: #compactedruns
+[1441]: #parameters-459
+[1442]: #textlines
+[1443]: #parameters-460
+[1444]: #utilsunzip
+[1445]: #mib
+[1446]: #toolargeerror
+[1447]: #unzipwithin
+[1448]: #parameters-461
+[1449]: #utilsversions
+[1450]: #pause_ms
+[1451]: #pause_ms-1
+[1452]: #pause_ms-2
+[1453]: #stretch_ms
+[1454]: #daily_for_ms
+[1455]: #dayof
+[1456]: #parameters-462
+[1457]: #weekof
+[1458]: #parameters-463
+[1459]: #thinned
+[1460]: #parameters-464
+[1461]: #clashed
+[1462]: #doc_clashed
+[1463]: #taken_before
+[1464]: #model
+[1465]: #utilsvisibility
+[1466]: #fields
+[1467]: #fields-1
+[1468]: #fields-2
+[1469]: #chatmark
+[1470]: #chatmarks
+[1471]: #shown
+[1472]: #markof
+[1473]: #parameters-465
+[1474]: #-43
+[1475]: #withmark
+[1476]: #parameters-466
+[1477]: #chatvisibility
+[1478]: #parameters-467
+[1479]: #settle
+[1480]: #parameters-468
+[1481]: #sees
+[1482]: #parameters-469
+[1483]: #hiddeneverywhere
+[1484]: #parameters-470
+[1485]: #markfor
+[1486]: #parameters-471
+[1487]: #utilswebkit
+[1488]: #iswebkit
+[1489]: #parameters-472
+[1490]: #utilswordcount
+[1491]: #picture
+[1492]: #editorsuggestiontext
+[1493]: #close
+[1494]: #close-1
+[1495]: #inserted
+[1496]: #deleted-4
+[1497]: #holdssuggestions
+[1498]: #parameters-473
+[1499]: #seenmarkdown
+[1500]: #parameters-474
+[1501]: #textasitstands
+[1502]: #parameters-475
+[1503]: #withoutsuggestionmarkup
+[1504]: #parameters-476
+[1505]: #turned
+[1506]: #properties-26
+[1507]: #reading
+[1508]: #properties-27
+[1509]: #written
+[1510]: #parameters-477
+[1511]: #written-1
+[1512]: #filter
+[1513]: #filter-1
+[1514]: #readingof
+[1515]: #parameters-478
+[1516]: #blocks
+[1517]: #held
+[1518]: #says
+[1519]: #endof
+[1520]: #parameters-479
+[1521]: #editorsuggestions
+[1522]: #suggestion_markup
+[1523]: #suggestion_markup-1
+[1524]: #suggestion_markup-2
+[1525]: #suggestion_markup-3
+[1526]: #id_pattern
+[1527]: #max_edits
+[1528]: #max_block_edits
+[1529]: #max_pairs
+[1530]: #near_blocks
+[1531]: #pieces-5
+[1532]: #newsuggestionid
+[1533]: #closesuggestion
+[1534]: #parameters-480
+[1535]: #suggested-1
+[1536]: #properties-28
+[1537]: #near
+[1538]: #word
+[1539]: #sentence_end
+[1540]: #suggestchange
+[1541]: #parameters-481
+[1542]: #layout
+[1543]: #parameters-482
+[1544]: #part
+[1545]: #properties-29
+[1546]: #placesof
+[1547]: #parameters-483
+[1548]: #its
+[1549]: #parameters-484
+[1550]: #its-1
+[1551]: #parameters-485
+[1552]: #its-2
+[1553]: #parameters-486
+[1554]: #marks
+[1555]: #apart
+[1556]: #parameters-487
+[1557]: #find
+[1558]: #parameters-488
+[1559]: #find-1
+[1560]: #join
+[1561]: #parameters-489
+[1562]: #touch
+[1563]: #parameters-490
+[1564]: #owner
+[1565]: #into
+[1566]: #near-1
+[1567]: #parameters-491
+[1568]: #beside
+[1569]: #-44
+[1570]: #rejecting
+[1571]: #parameters-492
+[1572]: #-45
+[1573]: #putback
+[1574]: #parameters-493
+[1575]: #docof
+[1576]: #parameters-494
+[1577]: #acceptsuggestion
+[1578]: #parameters-495
+[1579]: #rejectsuggestion
+[1580]: #parameters-496
+[1581]: #settling
+[1582]: #parameters-497
+[1583]: #-46
+[1584]: #seeing
+[1585]: #parameters-498
+[1586]: #blockseen
+[1587]: #parameters-499
+[1588]: #gonefor
+[1589]: #parameters-500
+[1590]: #changeof
+[1591]: #parameters-501
+[1592]: #texts
 [1593]: #parameters-502
-[1594]: #blockwords
-[1595]: #wordsin
-[1596]: #parameters-503
-[1597]: #alike
-[1598]: #parameters-504
-[1599]: #marked
-[1600]: #parameters-505
-[1601]: #issuggestion
-[1602]: #parameters-506
-[1603]: #commentsof
-[1604]: #parameters-507
-[1605]: #remade
-[1606]: #parameters-508
-[1607]: #childrenof
-[1608]: #parameters-509
-[1609]: #keyof
-[1610]: #parameters-510
-[1611]: #child
-[1612]: #markupkey
-[1613]: #parameters-511
-[1614]: #markskey
-[1615]: #parameters-512
-[1616]: #utilsworddiff
-[1617]: #piece
-[1618]: #properties-30
-[1619]: #most_changes
-[1620]: #linesof
-[1621]: #parameters-513
-[1622]: #textchanges
-[1623]: #parameters-514
-[1624]: #-50
-[1625]: #-51
-[1626]: #filter
-[1627]: #utilszipwriter
-[1628]: #slice-1
-[1629]: #gather
-[1630]: #most_bytes
-[1631]: #zipwriter
-[1632]: #zipwriter-1
-[1633]: #parameters-515
-[1634]: #written
-[1635]: #gathered
-[1636]: #failed
-[1637]: #-52
-[1638]: #counted-1
-[1639]: #parameters-516
-[1640]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
-[1641]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
-[1642]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
-[1643]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
-[1644]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
-[1645]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
-[1646]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
-[1647]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
-[1648]: https://developer.mozilla.org/docs/Web/API/Document
-[1649]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
-[1650]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
-[1651]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Date
-[1652]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
-[1653]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
-[1654]: https://developer.mozilla.org/docs/Web/HTML/Element
-[1655]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
-[1656]: https://developer.mozilla.org/docs/Web/API/Blob
-[1657]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Int32Array
-[1658]: https://developer.mozilla.org/docs/Web/API/Element
-[1659]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/WeakMap
-[1660]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RangeError
-[1661]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp
-[1662]: https://developer.mozilla.org/docs/Web/API/KeyboardEvent
-[1663]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[1594]: #leaftext
+[1595]: #parameters-503
+[1596]: #suggestionrange
+[1597]: #properties-30
+[1598]: #suggestionranges
+[1599]: #parameters-504
+[1600]: #suggestionaround
+[1601]: #parameters-505
+[1602]: #suggestionof
+[1603]: #parameters-506
+[1604]: #suggestionentry
+[1605]: #suggestionentries
+[1606]: #parameters-507
+[1607]: #starts
+[1608]: #suggestionsin
+[1609]: #parameters-508
+[1610]: #contentof
+[1611]: #parameters-509
+[1612]: #sequenceof
+[1613]: #parameters-510
+[1614]: #gone
+[1615]: #come
+[1616]: #latest
+[1617]: #parameters-511
+[1618]: #-47
+[1619]: #islist
+[1620]: #parameters-512
+[1621]: #stretchof
+[1622]: #parameters-513
+[1623]: #-48
+[1624]: #pairsof
+[1625]: #parameters-514
+[1626]: #changedof
+[1627]: #parameters-515
+[1628]: #tablechanged
+[1629]: #parameters-516
+[1630]: #made
+[1631]: #row
+[1632]: #wordschanged
+[1633]: #parameters-517
+[1634]: #laid
+[1635]: #content
+[1636]: #content-1
+[1637]: #content-2
+[1638]: #incomments
+[1639]: #parameters-518
+[1640]: #wholly
+[1641]: #parameters-519
+[1642]: #insertedwhole
+[1643]: #parameters-520
+[1644]: #dropping
+[1645]: #parameters-521
+[1646]: #inline
+[1647]: #gonein
+[1648]: #parameters-522
+[1649]: #suggestionmarkupplugin
+[1650]: #parameters-523
+[1651]: #opened
+[1652]: #closeahead
+[1653]: #parameters-524
+[1654]: #suggestedblock
+[1655]: #parameters-525
+[1656]: #-49
+[1657]: #-50
+[1658]: #likeness
+[1659]: #parameters-526
+[1660]: #blockwords
+[1661]: #wordsin
+[1662]: #parameters-527
+[1663]: #alike
+[1664]: #parameters-528
+[1665]: #marked
+[1666]: #parameters-529
+[1667]: #issuggestion
+[1668]: #parameters-530
+[1669]: #commentsof
+[1670]: #parameters-531
+[1671]: #remade
+[1672]: #parameters-532
+[1673]: #childrenof
+[1674]: #parameters-533
+[1675]: #keyof
+[1676]: #parameters-534
+[1677]: #child
+[1678]: #markupkey
+[1679]: #parameters-535
+[1680]: #markskey
+[1681]: #parameters-536
+[1682]: #utilsworddiff
+[1683]: #piece
+[1684]: #properties-31
+[1685]: #most_changes
+[1686]: #linesof
+[1687]: #parameters-537
+[1688]: #textchanges
+[1689]: #parameters-538
+[1690]: #-51
+[1691]: #-52
+[1692]: #utilszipwriter
+[1693]: #slice-1
+[1694]: #gather
+[1695]: #most_bytes
+[1696]: #zipwriter
+[1697]: #zipwriter-1
+[1698]: #parameters-539
+[1699]: #gathered
+[1700]: #failed
+[1701]: #-53
+[1702]: #counted-1
+[1703]: #parameters-540
+[1704]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String
+[1705]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+[1706]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number
+[1707]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object
+[1708]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+[1709]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer
+[1710]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Set
+[1711]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array
+[1712]: https://developer.mozilla.org/docs/Web/API/Document
+[1713]: https://developer.mozilla.org/docs/Web/API/Node/nextSibling
+[1714]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Error
+[1715]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Date
+[1716]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Map
+[1717]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/undefined
+[1718]: https://developer.mozilla.org/docs/Web/HTML/Element
+[1719]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function
+[1720]: https://developer.mozilla.org/docs/Web/API/Blob
+[1721]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[1722]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Int32Array
+[1723]: https://developer.mozilla.org/docs/Web/API/Element
+[1724]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/WeakMap
+[1725]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RangeError
+[1726]: https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/RegExp
+[1727]: https://developer.mozilla.org/docs/Web/API/KeyboardEvent
