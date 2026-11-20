@@ -644,14 +644,19 @@ export const useDocuments = storyId => {
   /**
    * Make a document plain — edited as text, stored as typed — or structured
    * again. A plain document made structured is settled: anything the editor
-   * cannot show becomes the nearest thing it can, and the original is not
-   * kept. One that is open is turned in place, keeping what was typed.
+   * cannot show becomes the nearest thing it can. Where that changes the
+   * text, the text as typed is kept as a version first, which is the way
+   * back to it. One that is open is turned in place, keeping what was typed.
    * @param {string} documentId
    * @param {boolean} plain
    */
   const setPlain = (documentId, plain) => {
+    if (!plain) editor.flush(documentId)
     const document = documentsStore.getDocument(documentId)
     if (!document || document.type !== 'text' || !!document.plain === plain) return
+    if (!plain && settleMarkdown(document.content) !== document.content) {
+      versionsStore.settling(document)
+    }
     if (editor.holds(documentId)) {
       documentsStore.updateDocument(documentId, { plain })
       editor.convert(documentId, plain)

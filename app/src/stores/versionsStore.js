@@ -150,6 +150,25 @@ export const useVersionsStore = defineStore('versions', () => {
   }
 
   /**
+   * A plain document is about to be made a document again, which settles its
+   * text to what the editor can show: keep the text as it was typed,
+   * whatever the clock says, since nothing else will have it. Kept as a
+   * pause's version is, under no name.
+   *
+   * @param {Document} document - As it stands, the editor's typing in it
+   * @param {number} [now]
+   */
+  function settling(document, now = Date.now()) {
+    if (document.type !== 'text' || !document.content.trim()) return
+    inTurn(document.id, async () => {
+      const known = await newestOf(document.id)
+      if (known?.content === document.content) return
+      keep(document, { at: now })
+      await thin(document.id, now)
+    })
+  }
+
+  /**
    * A text document's text is about to change from outside the editor:
    * keep it as it stands, unless the same thing changed it last, with no
    * pause and nothing typed since.
@@ -309,6 +328,7 @@ export const useVersionsStore = defineStore('versions', () => {
 
   return {
     changing,
+    settling,
     before,
     around,
     keepNamed,

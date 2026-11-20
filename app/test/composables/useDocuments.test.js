@@ -4,6 +4,7 @@ import { reactive } from 'vue'
 import { setActivePinia, createPinia } from 'pinia'
 import { useDocuments, clearDocumentInstances } from '@/composables/useDocuments'
 import { useDocumentsStore } from '@/stores/documentsStore'
+import { useVersionsStore } from '@/stores/versionsStore'
 import { settleMarkdown } from '@/editor/markdown.js'
 
 vi.mock('@/stores/db', () => ({
@@ -515,6 +516,47 @@ describe('useDocuments', () => {
       expect(store.getDocument('p_1').plain).toBe(false)
       expect(store.getDocument('p_1').content).toBe('* one')
       expect(mockEditor.convert).toHaveBeenCalledWith('p_1', false)
+    })
+
+    describe('made structured again', () => {
+      /** @type {import('vitest').MockInstance} */
+      let settling
+
+      beforeEach(() => {
+        settling = vi.spyOn(useVersionsStore(), 'settling').mockImplementation(() => {})
+      })
+
+      it('keeps the text as typed as a version, where settling changes it', () => {
+        api.setPlain('p_1', false)
+
+        expect(settling).toHaveBeenCalledTimes(1)
+        expect(settling.mock.calls[0][0]).toMatchObject({ id: 'p_1', content: '* one' })
+      })
+
+      it('keeps it of an open document too, with what was typed written out first', () => {
+        mockEditor.holds.mockImplementation(id => id === 'p_1')
+        // What the editor holds reaches the store as it is written out.
+        mockEditor.flush.mockImplementationOnce(id =>
+          store.updateDocument(id, { content: '* one\n* two' })
+        )
+        api.setPlain('p_1', false)
+
+        expect(settling.mock.calls.map(([document]) => document.content)).toEqual(['* one\n* two'])
+        expect(mockEditor.convert).toHaveBeenCalledWith('p_1', false)
+      })
+
+      it('keeps nothing where the text is already as the editor would write it', () => {
+        api.setContent('p_1', '- one')
+        api.setPlain('p_1', false)
+
+        expect(settling).not.toHaveBeenCalled()
+      })
+
+      it('keeps nothing of a document made plain', () => {
+        api.setPlain('d_1', true)
+
+        expect(settling).not.toHaveBeenCalled()
+      })
     })
 
     it('does nothing for a folder, or a document already of that kind', () => {

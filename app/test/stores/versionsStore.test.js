@@ -87,6 +87,37 @@ describe('versionsStore', () => {
     expect(await all()).toHaveLength(1)
   })
 
+  it('keeps a plain document’s text as typed before it is settled, however lately it was typed', async () => {
+    const now = 10 * HOUR
+    // A version a minute old, and the text typed a moment ago: no pause, and
+    // no hour's stretch, would keep it.
+    store.changing(doc('* one', now - HOUR), now - 60_000)
+    store.settling(doc('* one\n* two', now - 1000), now)
+
+    const versions = await all()
+    expect(versions.map(v => v.content)).toEqual(['* one\n* two', '* one'])
+    expect(versions[0]).toMatchObject({ at: now })
+    expect(versions[0].by).toBeUndefined()
+  })
+
+  it('keeps nothing of it that the newest version has, or that is empty', async () => {
+    store.settling(doc('* one', 0), 10 * HOUR)
+    store.settling(doc('* one', 0), 10 * HOUR + 1)
+    store.settling(doc('  ', 0), 10 * HOUR + 2)
+
+    expect(await all()).toHaveLength(1)
+  })
+
+  it('leaves the settled text’s own write to what was kept before it', async () => {
+    const now = 10 * HOUR
+    const typed = doc('* one', now - PAUSE_MS)
+    store.settling(typed, now)
+    // The settled text is then written through the store, which tells of the change.
+    store.changing(typed, now)
+
+    expect((await all()).map(v => v.content)).toEqual(['* one'])
+  })
+
   it('keeps the text before the model changes it, once for a run of its edits', async () => {
     const write = vi.fn()
     store.around(doc('Snow fell.', 1000), 'model', write)
