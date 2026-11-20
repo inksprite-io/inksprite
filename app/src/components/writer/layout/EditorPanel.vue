@@ -22,13 +22,6 @@
           data-action="sync"
           @click="driveSync.sync(activeId)"
         />
-        <!-- The outline's New document, as the chat's strip has New chat. -->
-        <HeaderButton
-          icon="pi pi-plus"
-          label="New document"
-          data-action="new-document"
-          @click="newDocument"
-        />
         <!-- The way to the find where there is no key for it, as on a phone. -->
         <HeaderButton
           v-if="findable"
@@ -36,6 +29,14 @@
           :label="file ? 'Find' : 'Find and replace'"
           data-action="find"
           @click="editorView?.openFind()"
+        />
+        <!-- The outline's New document, after the find as the chat's strip
+             has New chat and the outline's header its own. -->
+        <HeaderButton
+          icon="pi pi-plus"
+          label="New document"
+          data-action="new-document"
+          @click="newDocument"
         />
         <!-- Esc or the same keys come back out, so not on a phone, which
              has neither. -->

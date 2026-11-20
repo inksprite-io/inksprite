@@ -210,7 +210,7 @@ describe('EditorPanel', () => {
     const ends = wrapper
       .findAll('[data-action], [data-panel-toggle]')
       .map(button => button.attributes('data-action') || button.attributes('data-panel-toggle'))
-    expect(ends).toEqual(['new-document', 'find', 'focus', 'chat'])
+    expect(ends).toEqual(['find', 'new-document', 'focus', 'chat'])
     expect(wrapper.find('[data-action="focus"]').attributes('aria-label')).toBe('Focus mode')
 
     await wrapper.find('[data-action="focus"]').trigger('click')
@@ -224,7 +224,7 @@ describe('EditorPanel', () => {
     const ends = wrapper
       .findAll('[data-action], [data-panel-toggle]')
       .map(button => button.attributes('data-action') || button.attributes('data-panel-toggle'))
-    expect(ends).toEqual(['sync', 'new-document', 'find', 'focus', 'chat'])
+    expect(ends).toEqual(['sync', 'find', 'new-document', 'focus', 'chat'])
     expect(wrapper.find('[data-action="sync"]').attributes('aria-label')).toBe(
       'Sync with Google Doc'
     )
