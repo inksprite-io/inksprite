@@ -7,6 +7,7 @@ import {
   dropTabs,
   keepTab,
   lastClosed,
+  moveTab,
   normalizeTabs,
   openTab,
   tabAt,
@@ -303,6 +304,41 @@ describe('previews', () => {
   it('forgets the preview when its tab closes', () => {
     expect(closeTab(tabs(['a', 'b'], 'a', 'b'), 'b')).toEqual(tabs(['a'], 'a', null, ['a'], ['b']))
     expect(closeTab(tabs(['a', 'b'], 'a', 'b'), 'a')).toEqual(tabs(['b'], 'b', 'b', ['b'], ['a']))
+  })
+})
+
+describe('moveTab', () => {
+  it('puts a tab at another place in the strip, the rest in order around it', () => {
+    const set = tabs(['a', 'b', 'c', 'd'], 'b', null, ['b', 'd'], ['x'])
+    expect(moveTab(set, 'a', 2)).toEqual(tabs(['b', 'c', 'a', 'd'], 'b', null, ['b', 'd'], ['x']))
+    expect(moveTab(set, 'd', 0).open).toEqual(['d', 'a', 'b', 'c'])
+    expect(moveTab(set, 'b', 3).open).toEqual(['a', 'c', 'd', 'b'])
+    expect(moveTab(set, 'c', 1).open).toEqual(['a', 'c', 'b', 'd'])
+  })
+
+  it('leaves what is showing, and the history, as they were', () => {
+    const moved = moveTab(tabs(['a', 'b', 'c'], 'c', null, ['c', 'a']), 'c', 0)
+    expect(moved).toMatchObject({ active: 'c', shown: ['c', 'a'] })
+  })
+
+  it('takes a place past either end as that end', () => {
+    const set = tabs(['a', 'b', 'c'])
+    expect(moveTab(set, 'a', 9).open).toEqual(['b', 'c', 'a'])
+    expect(moveTab(set, 'c', -1).open).toEqual(['c', 'a', 'b'])
+  })
+
+  it('is the same tabs for a tab where it is already, or one not open', () => {
+    const set = tabs(['a', 'b', 'c'], 'a', 'b')
+    expect(moveTab(set, 'b', 1)).toBe(set)
+    expect(moveTab(set, 'c', 5)).toBe(set)
+    expect(moveTab(set, 'x', 0)).toBe(set)
+    expect(moveTab(NO_TABS, 'a', 0)).toBe(NO_TABS)
+  })
+
+  it('keeps a preview that is moved, and leaves one that another tab moves past', () => {
+    const set = tabs(['a', 'b', 'c'], 'a', 'b')
+    expect(moveTab(set, 'b', 0)).toEqual(tabs(['b', 'a', 'c'], 'a'))
+    expect(moveTab(set, 'a', 2)).toEqual(tabs(['b', 'c', 'a'], 'a', 'b'))
   })
 })
 

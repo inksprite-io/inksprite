@@ -58,6 +58,7 @@ import {
   closeTab as closed,
   dropTabs,
   keepTab,
+  moveTab as moved,
   lastClosed,
   normalizeTabs,
   openTab,
@@ -241,6 +242,17 @@ export const useDocuments = storyId => {
    */
   const keep = documentId => {
     const after = keepTab(tabs.value, documentId)
+    if (after !== tabs.value) writeTabs(after)
+  }
+
+  /**
+   * Put a tab at another place in the strip, as the writer drags it there.
+   * A preview is kept by it.
+   * @param {string} documentId
+   * @param {number} to - The place it comes to have, from 0
+   */
+  const moveTab = (documentId, to) => {
+    const after = moved(tabs.value, documentId, to)
     if (after !== tabs.value) writeTabs(after)
   }
 
@@ -1134,6 +1146,7 @@ export const useDocuments = storyId => {
     focus,
     takesCaret,
     closeTab,
+    moveTab,
     reopenTab,
     releaseTabs,
     get,

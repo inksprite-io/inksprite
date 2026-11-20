@@ -44,6 +44,7 @@ import {
   closeTabs,
   dropTabs,
   lastClosed,
+  moveTab,
   normalizeTabs,
   openTab,
   tabsOf,
@@ -68,6 +69,8 @@ import {
  *   shell is ended with it.
  * @property {(chatId: string) => void} shut - Close a tab and no more, as for
  *   a terminal whose shell has ended
+ * @property {(chatId: string, to: number) => void} move - Put a tab at
+ *   another place in the strip, counted from 0
  * @property {() => void} reopen - Show again the chat whose tab was closed
  *   last, if it is still one of the project's
  * @property {(chatId: string) => void} closeOthers - Close every tab but this one
@@ -220,6 +223,17 @@ function createChatTabs(storyId) {
   }
 
   /**
+   * Among the tabs as the strip shows them: the unstarted chat shown for
+   * want of a chat open, beside a terminal, is written into the strip by
+   * being moved, as by being opened.
+   * @type {ChatTabsApi['move']}
+   */
+  const move = (chatId, to) => {
+    const next = moveTab(tabs.value, chatId, to)
+    if (next !== tabs.value) write(next)
+  }
+
+  /**
    * A chat not started has nothing to bring back, and is passed over.
    * @type {ChatTabsApi['reopen']}
    */
@@ -281,6 +295,7 @@ function createChatTabs(storyId) {
     openTerminal,
     close,
     shut,
+    move,
     reopen,
     closeOthers,
     focus,

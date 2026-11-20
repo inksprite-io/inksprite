@@ -13,6 +13,7 @@
       :actions="tabActions"
       @activate="showTab"
       @close="chatTabs.close"
+      @move="chatTabs.move"
     >
       <template v-if="showBack || editorShowing !== null" #start>
         <HeaderButton

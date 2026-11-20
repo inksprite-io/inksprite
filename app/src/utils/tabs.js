@@ -219,6 +219,28 @@ export function keepTab(tabs, id) {
 }
 
 /**
+ * The tabs with one put at another place in the strip, the rest keeping
+ * their order around it. A tab the writer puts somewhere is one they mean to
+ * have there, so a preview is kept by it. What is showing, and the history,
+ * are as they were.
+ *
+ * @param {Tabs} tabs
+ * @param {string} id
+ * @param {number} to - The place it comes to have in the strip, from 0; past
+ *   either end is that end
+ * @returns {Tabs} The same tabs where it is not open, or is there already
+ */
+export function moveTab(tabs, id, to) {
+  const from = tabs.open.indexOf(id)
+  if (from === -1) return tabs
+  const open = tabs.open.filter(other => other !== id)
+  const at = Math.max(0, Math.min(Math.trunc(to) || 0, open.length))
+  if (at === from) return tabs
+  open.splice(at, 0, id)
+  return { ...tabs, open, preview: tabs.preview === id ? null : tabs.preview }
+}
+
+/**
  * The tabs with one gone from the strip. The one showing gives way to the
  * one shown before it; past the history, to its neighbour, the one to its
  * right, else the one to its left; and the last going leaves nothing

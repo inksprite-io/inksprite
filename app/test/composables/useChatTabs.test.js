@@ -96,6 +96,41 @@ describe('useChatTabs', () => {
     })
   })
 
+  describe('moving', () => {
+    it('puts a tab at another place in the strip, and leaves the one showing', () => {
+      const api = useChatTabs('story_1')
+      api.open('chat_2')
+      api.open('chat_1')
+
+      api.move('chat_3', 2)
+
+      expect(api.tabs.value.open).toEqual(['chat_2', 'chat_1', 'chat_3'])
+      expect(api.activeId.value).toBe('chat_1')
+      expect(view.openChatIds).toEqual(['chat_2', 'chat_1', 'chat_3'])
+    })
+
+    it('writes nothing for a tab moved to where it is', () => {
+      const api = useChatTabs('story_1')
+      api.open('chat_2')
+      updateView.mockClear()
+
+      api.move('chat_2', 1)
+      api.move('chat_9', 0)
+
+      expect(updateView).not.toHaveBeenCalled()
+    })
+
+    it('leaves the unstarted chat unwritten where it is all there is', () => {
+      haveChats()
+      const api = useChatTabs('story_1')
+
+      api.move('chat_new', 0)
+
+      expect(api.tabs.value.open).toEqual(['chat_new'])
+      expect(updateView).not.toHaveBeenCalled()
+    })
+  })
+
   describe('the unstarted chat', () => {
     it('opens beside the tab showing on New chat, and only once', () => {
       const api = useChatTabs('story_1')
@@ -422,6 +457,31 @@ describe('useChatTabs', () => {
 
       expect(api.tabs.value.open).toEqual(['terminal:kept', 'chat_new'])
       expect(api.activeId.value).toBe('chat_new')
+    })
+
+    it('moves a terminal’s tab among the chats’', async () => {
+      const api = useChatTabs('story_1')
+      await api.openTerminal()
+
+      api.move('terminal:1', 0)
+
+      expect(api.tabs.value.open).toEqual(['terminal:1', 'chat_3'])
+      expect(api.activeId.value).toBe('terminal:1')
+    })
+
+    it('writes the unstarted chat in when it is moved past a terminal', async () => {
+      haveChats()
+      native.list.mockResolvedValue([
+        { id: 'terminal:kept', project: 'story_1', title: '', rang: false },
+      ])
+      const api = useChatTabs('story_1')
+      await flushPromises()
+      expect(api.tabs.value.open).toEqual(['terminal:kept', 'chat_new'])
+
+      api.move('chat_new', 0)
+
+      expect(api.tabs.value.open).toEqual(['chat_new', 'terminal:kept'])
+      expect(view.openChatIds).toEqual(['chat_new', 'terminal:kept'])
     })
 
     it('has no tab for another project’s terminal, which runs on unseen', async () => {

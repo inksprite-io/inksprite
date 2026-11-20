@@ -14,6 +14,7 @@
       @activate="api.open"
       @close="api.closeTab"
       @keep="api.keep"
+      @move="api.moveTab"
     >
       <template #end>
         <!-- A document linked to a Google Doc syncs with it from here. -->

@@ -783,6 +783,46 @@ describe('useDocuments', () => {
       expect(mockUpdateView).not.toHaveBeenCalled()
     })
 
+    it('puts a tab at another place in the strip, and remembers it there', () => {
+      api.open('doc_1')
+      api.open('doc_2')
+      api.open('doc_3')
+
+      api.moveTab('doc_3', 0)
+
+      expect(api.tabs.value).toMatchObject({
+        open: ['doc_3', 'doc_1', 'doc_2'],
+        active: 'doc_3',
+        shown: ['doc_3', 'doc_2', 'doc_1'],
+      })
+      expect(mockView.openDocumentIds).toEqual(['doc_3', 'doc_1', 'doc_2'])
+      expect(mockEditor.close).not.toHaveBeenCalled()
+    })
+
+    it('keeps a preview that is moved, so the next opens beside it', () => {
+      api.open('doc_1')
+      api.open('doc_2', { preview: true })
+
+      api.moveTab('doc_2', 0)
+      api.open('doc_3', { preview: true })
+
+      expect(api.tabs.value).toMatchObject({
+        open: ['doc_2', 'doc_1', 'doc_3'],
+        preview: 'doc_3',
+      })
+    })
+
+    it('writes nothing for a tab moved to where it is', () => {
+      api.open('doc_1')
+      api.open('doc_2')
+      mockUpdateView.mockClear()
+
+      api.moveTab('doc_2', 1)
+      api.moveTab('doc_9', 0)
+
+      expect(mockUpdateView).not.toHaveBeenCalled()
+    })
+
     it('remembers a project closed down to nothing', () => {
       api.open('doc_1')
       api.closeTab('doc_1')

@@ -19,113 +19,128 @@
          gone a moment after — what a scrollbar that overlays does, and a
          native one stops doing the moment it is styled. Nothing scrolls up and
          down, so nothing can be nudged that way; a wheel scrolls the strip
-         along instead. -->
+         along instead.
+
+         A tab is dragged along the strip to another place in it, as a row of
+         the outline is dragged (and held first under a finger, which
+         otherwise scrolls the strip). Not by its close button, which is only
+         ever pressed. -->
     <!-- What comes before the tabs, outside the scroll: the way to the
          panel beside, or back to a list. -->
     <div v-if="$slots.start" class="flex-none flex items-center pl-1">
       <slot name="start" />
     </div>
     <div class="relative flex-1 min-w-0 flex">
-      <div
-        ref="list"
+      <Draggable
+        ref="strip"
+        :model-value="items"
+        item-key="id"
         class="flex-1 min-w-0 flex items-stretch overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         role="tablist"
+        filter="button"
+        :prevent-on-filter="false"
+        :delay-on-touch-only="true"
+        :delay="120"
+        :animation="150"
+        ghost-class="opacity-40"
+        :set-data="setDragData"
+        @change="onChange"
         @wheel="scrollAlong"
         @scroll="onScroll"
       >
-        <div
-          v-for="item in items"
-          :key="item.id"
-          :ref="el => remember(item.id, el)"
-          role="tab"
-          :tabindex="item.id === tabStop ? 0 : -1"
-          :aria-selected="item.id === activeId"
-          :aria-label="tabLabel(item)"
-          :title="item.tooltip || item.path || item.title"
-          :data-tab-id="item.id"
-          :data-preview="item.preview || undefined"
-          class="group flex-none flex items-center gap-1 min-w-28 max-w-64 pl-3 pr-1 text-sm cursor-pointer border-r border-surface-0 dark:border-surface-850 transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500"
-          :class="
-            item.id === activeId
-              ? 'bg-surface-0 dark:bg-surface-850 shadow-[inset_0_2px_0_0_var(--p-primary-500)] text-surface-900 dark:text-surface-0'
-              : 'text-surface-600 dark:text-surface-400 hover:bg-surface-200/60 dark:hover:bg-surface-700/60'
-          "
-          @click="$emit('activate', item.id)"
-          @dblclick="$emit('keep', item.id)"
-          @mousedown.middle.prevent
-          @auxclick="event => event.button === 1 && $emit('close', item.id)"
-          @contextmenu="openMenu(item.id, $event)"
-          @keydown="onKeydown(item.id, $event)"
-        >
-          <!-- The path gives way before the title does, which is the part that
-           says what the tab is. A preview reads in italics until it is kept.
-           A document in the plain text editor is marked so before it, a
-           chat's text as the chat's, and a terminal as one. -->
-          <i
-            v-if="item.plain"
-            class="pi pi-code flex-none text-surface-500 dark:text-surface-400"
-            style="font-size: 0.7rem"
-            aria-hidden="true"
-            data-plain
-          ></i>
-          <i
-            v-else-if="item.chat"
-            class="pi pi-comment flex-none text-surface-500 dark:text-surface-400"
-            style="font-size: 0.7rem"
-            aria-hidden="true"
-            data-chat
-          ></i>
-          <TerminalIcon
-            v-else-if="item.terminal"
-            class="flex-none text-surface-500 dark:text-surface-400"
-            style="font-size: 0.75rem"
-            data-terminal
-          />
-          <span class="flex-1 min-w-0 flex items-baseline" :class="{ italic: item.preview }">
-            <span
-              v-if="item.prefix"
-              class="min-w-0 truncate shrink-[1000] text-surface-500 dark:text-surface-400"
-              >{{ item.prefix }}</span
-            >
-            <span class="min-w-0 truncate">{{ item.title }}</span>
-          </span>
-          <!-- Shown on the tab in front and on hover; a row of crosses is noise.
-               A chat the model is working in has a spinner in its place, and
-               one it finished in while another tab showed a dot until shown:
-               the place is always kept, so a mark coming or going moves
-               nothing, and on hover it gives way to the cross. -->
-          <button
-            type="button"
-            tabindex="-1"
-            :aria-label="`Close ${item.title}`"
-            class="flex-none w-5 h-5 rounded flex items-center justify-center text-surface-500 dark:text-surface-400 hover:bg-surface-300 dark:hover:bg-surface-600 hover:text-surface-900 dark:hover:text-surface-0 transition-opacity"
+        <template #item="{ element: item }">
+          <div
+            :ref="el => remember(item.id, el)"
+            role="tab"
+            :tabindex="item.id === tabStop ? 0 : -1"
+            :aria-selected="item.id === activeId"
+            :aria-label="tabLabel(item)"
+            :title="item.tooltip || item.path || item.title"
+            :data-tab-id="item.id"
+            :data-preview="item.preview || undefined"
+            class="group flex-none flex items-center gap-1 min-w-28 max-w-64 pl-3 pr-1 text-sm cursor-pointer border-r border-surface-0 dark:border-surface-850 transition-colors duration-150 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary-500"
             :class="
-              item.id === activeId || item.mark
-                ? 'opacity-100'
-                : 'opacity-0 group-hover:opacity-100'
+              item.id === activeId
+                ? 'bg-surface-0 dark:bg-surface-850 shadow-[inset_0_2px_0_0_var(--p-primary-500)] text-surface-900 dark:text-surface-0'
+                : 'bg-surface-100 dark:bg-surface-800 text-surface-600 dark:text-surface-400 hover:bg-surface-200/60 dark:hover:bg-surface-700/60'
             "
-            @click.stop="$emit('close', item.id)"
+            @click="$emit('activate', item.id)"
+            @dblclick="$emit('keep', item.id)"
+            @mousedown.middle.prevent
+            @auxclick="event => event.button === 1 && $emit('close', item.id)"
+            @contextmenu="openMenu(item.id, $event)"
+            @keydown="onKeydown(item.id, $event)"
           >
+            <!-- The path gives way before the title does, which is the part that
+                 says what the tab is. A preview reads in italics until it is kept.
+                 A document in the plain text editor is marked so before it, a
+                 chat's text as the chat's, and a terminal as one. -->
             <i
-              v-if="item.mark === 'busy'"
-              class="pi pi-spinner pi-spin group-hover:!hidden"
+              v-if="item.plain"
+              class="pi pi-code flex-none text-surface-500 dark:text-surface-400"
               style="font-size: 0.7rem"
               aria-hidden="true"
-              data-mark="busy"
+              data-plain
             ></i>
-            <span
-              v-else-if="item.mark === 'unread'"
-              class="w-1.5 h-1.5 rounded-full bg-primary-500 group-hover:hidden"
-              aria-hidden="true"
-              data-mark="unread"
-            ></span>
             <i
-              class="pi pi-times text-xs"
-              :class="{ '!hidden group-hover:!inline-block': item.mark }"
+              v-else-if="item.chat"
+              class="pi pi-comment flex-none text-surface-500 dark:text-surface-400"
+              style="font-size: 0.7rem"
+              aria-hidden="true"
+              data-chat
             ></i>
-          </button>
-        </div>
-      </div>
+            <TerminalIcon
+              v-else-if="item.terminal"
+              class="flex-none text-surface-500 dark:text-surface-400"
+              style="font-size: 0.75rem"
+              data-terminal
+            />
+            <span class="flex-1 min-w-0 flex items-baseline" :class="{ italic: item.preview }">
+              <span
+                v-if="item.prefix"
+                class="min-w-0 truncate shrink-[1000] text-surface-500 dark:text-surface-400"
+                >{{ item.prefix }}</span
+              >
+              <span class="min-w-0 truncate">{{ item.title }}</span>
+            </span>
+            <!-- Shown on the tab in front and on hover; a row of crosses is noise.
+                 A chat the model is working in has a spinner in its place, and
+                 one it finished in while another tab showed a dot until shown:
+                 the place is always kept, so a mark coming or going moves
+                 nothing, and on hover it gives way to the cross. -->
+            <button
+              type="button"
+              tabindex="-1"
+              :aria-label="`Close ${item.title}`"
+              class="flex-none w-5 h-5 rounded flex items-center justify-center text-surface-500 dark:text-surface-400 hover:bg-surface-300 dark:hover:bg-surface-600 hover:text-surface-900 dark:hover:text-surface-0 transition-opacity"
+              :class="
+                item.id === activeId || item.mark
+                  ? 'opacity-100'
+                  : 'opacity-0 group-hover:opacity-100'
+              "
+              @click.stop="$emit('close', item.id)"
+            >
+              <i
+                v-if="item.mark === 'busy'"
+                class="pi pi-spinner pi-spin group-hover:!hidden"
+                style="font-size: 0.7rem"
+                aria-hidden="true"
+                data-mark="busy"
+              ></i>
+              <span
+                v-else-if="item.mark === 'unread'"
+                class="w-1.5 h-1.5 rounded-full bg-primary-500 group-hover:hidden"
+                aria-hidden="true"
+                data-mark="unread"
+              ></span>
+              <i
+                class="pi pi-times text-xs"
+                :class="{ '!hidden group-hover:!inline-block': item.mark }"
+              ></i>
+            </button>
+          </div>
+        </template>
+      </Draggable>
       <div
         v-if="thumb"
         class="absolute bottom-0 h-1 rounded-full bg-surface-500/50 pointer-events-none transition-opacity duration-300"
@@ -148,13 +163,14 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import ContextMenu from 'primevue/contextmenu'
+import Draggable from 'vuedraggable'
 import TerminalIcon from '../terminal/TerminalIcon.vue'
 
 /**
  * A panel's strip of tabs: the open documents above the editor, or the open
  * chats above the chat. Presentational: what is open, and which is showing,
- * are the project's, and picking or closing one is asked for rather than
- * done here.
+ * are the project's, and picking, closing or moving one is asked for rather
+ * than done here.
  *
  * @typedef {Object} TabItem
  * @property {string} id
@@ -184,7 +200,26 @@ const props = defineProps({
   actions: { type: Function, default: null },
 })
 
-const emit = defineEmits(['activate', 'close', 'keep'])
+const emit = defineEmits(['activate', 'close', 'keep', 'move'])
+
+/**
+ * A tab was let go of at another place in the strip: ask for it there. The
+ * list puts its own rows back as they were, and the strip is drawn again
+ * from the tabs once they have changed.
+ * @param {{moved?: {element: TabItem, newIndex: number}}} change
+ */
+const onChange = ({ moved }) => {
+  if (moved) emit('move', moved.element.id, moved.newIndex)
+}
+
+/**
+ * What a tab carries while it is dragged: only that it is a tab. Left to
+ * itself the list would carry the tab's title as text, which a document
+ * would take as typed where the tab was let go over it. It has to carry
+ * something: a drag with nothing in it never starts in Firefox.
+ * @param {DataTransfer} data
+ */
+const setDragData = data => data.setData('application/x-inksprite-tab', 'tab')
 
 /**
  * What a tab is called to a screen reader: its title, and what the mark
@@ -291,8 +326,10 @@ const scrollAlong = event => {
   event.preventDefault()
 }
 
-/** The list of tabs, which is what scrolls. @type {import('vue').Ref<HTMLElement|null>} */
-const list = ref(null)
+/** The list of tabs, as a component. @type {import('vue').Ref<{$el: HTMLElement}|null>} */
+const strip = ref(null)
+/** Its element, which is what scrolls. */
+const list = computed(() => strip.value?.$el ?? null)
 
 /**
  * How far the tabs are scrolled and how far they go, read off the list
